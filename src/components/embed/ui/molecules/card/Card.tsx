@@ -1,6 +1,6 @@
 import React from "react";
 import styles from "./Card.module.css";
-import { CardBaseProps } from "./Card.types";
+import type { CardBaseProps } from "./Card.types";
 import { Box, XClose, ChevronLeft } from "../../atoms";
 import { Header } from "../header";
 import { Footer } from "../footer";

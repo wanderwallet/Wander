@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import styles from "./Dropdown.module.css";
-import { DropdownBaseProps } from "./Dropdown.types";
+import type { DropdownBaseProps } from "./Dropdown.types";
 import {
   ArrowDownIcon,
   ExpandItIcon,

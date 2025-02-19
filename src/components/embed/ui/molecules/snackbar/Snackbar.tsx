@@ -1,6 +1,6 @@
 import React from "react";
 import styles from "./Snackbar.module.css";
-import { SnackbarBaseProps } from "./Snackbar.types";
+import type { SnackbarBaseProps } from "./Snackbar.types";
 
 import { Text, Row } from "../../atoms";
 

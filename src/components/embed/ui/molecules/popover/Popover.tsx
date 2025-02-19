@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import styles from "./Popover.module.css";
-import { PopoverBaseProps } from "./Popover.types";
+import type { PopoverBaseProps } from "./Popover.types";
 import { ExpandItIcon, ProtocolLandIcon, Row, Text } from "../../atoms";
 
 const Popover = React.forwardRef<HTMLDivElement, PopoverBaseProps>(
