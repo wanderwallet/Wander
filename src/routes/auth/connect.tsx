@@ -56,7 +56,7 @@ export function ConnectAuthRequestView() {
     instance: ExtensionStorage
   });
 
-  const [signPolicy, setSignPolicy] = useState<SignPolicy>("always_ask");
+  const [signPolicy, setSignPolicy] = useState<SignPolicy>("ask_when_spending");
 
   const askPassword = useAskPassword();
 
