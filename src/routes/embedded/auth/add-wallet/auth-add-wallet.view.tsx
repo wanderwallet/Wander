@@ -1,8 +1,18 @@
-import { DevFigmaScreen } from "~components/dev/figma-screen/figma-screen.component";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useEffect } from "react";
 
-import screenSrc from "url:/assets-beta/figma-screens/add-a-wallet.view.png";
+import {
+  Box,
+  Button,
+  Card,
+  KeyIcon,
+  QRCodeIcon,
+  Row,
+  SeedIcon,
+  Text,
+  WalletIcon,
+  WanderIcon
+} from "~components/embed";
 
 export function AuthAddWalletEmbeddedView() {
   const { authMethod, generateTempWallet, registerWallet } = useEmbedded();
@@ -15,34 +25,66 @@ export function AuthAddWalletEmbeddedView() {
   }, []);
 
   return (
-    <DevFigmaScreen
-      title="Add a wallet"
-      src={screenSrc}
-      config={[
-        {
-          label: "Create New Wallet",
-          onClick: () => registerWallet("generated")
-        },
-        {
-          label: "Enter Seed Phrase",
-          to: "/auth/import-seed-phrase"
-        },
-        {
-          label: "Import Private Key",
-          to: "/auth/import-keyfile"
-        },
-        authMethod === "passkey"
-          ? {
-              label: "Add this device to an existing account",
-              to: "/auth/add-device",
-              variant: "secondary"
-            }
-          : {
-              label: `Add ${authMethod} to an existing account`,
-              to: "/auth/add-auth-provider",
-              variant: "secondary"
-            }
-      ]}
-    />
+    <Card
+      headerText="Add a wallet"
+      footerElement={
+        <Row>
+          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
+            {"Secured by"}
+          </Text>
+          <WanderIcon color="#838383" />
+        </Row>
+      }
+      hasBackButton={false}
+      hasCloseButton={false}
+      hasShadow={true}
+      size="auto"
+    >
+      <Box>
+        <Button
+          onClick={() => registerWallet("generated")}
+          variant="outlined"
+          isFullWidth
+          icon={<SeedIcon fontSize={24} />}
+        >
+          Create new wallet
+        </Button>
+        <Button
+          variant="outlined"
+          isFullWidth
+          icon={<WalletIcon fontSize={24} />}
+          href="/auth/import-seed-phrase"
+        >
+          Enter Seed Phrase
+        </Button>
+        <Button
+          variant="outlined"
+          isFullWidth
+          icon={<KeyIcon fontSize={24} />}
+          href="/auth/import-keyfile"
+        >
+          Import Keyfile
+        </Button>
+        {authMethod === "passkey" ? (
+          <Button
+            variant="outlined"
+            isFullWidth
+            icon={<QRCodeIcon fontSize={24} />}
+            href="/auth/add-device"
+          >
+            Add this device to an existing account
+          </Button>
+        ) : (
+          <Button
+            variant="outlined"
+            isFullWidth
+            icon={<QRCodeIcon fontSize={24} />}
+            href="/auth/add-auth-provider"
+          >
+            Add ${authMethod} to an existing account
+          </Button>
+        )}
+      </Box>
+    </Card>
   );
 }

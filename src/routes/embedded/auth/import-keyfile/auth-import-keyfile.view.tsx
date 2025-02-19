@@ -1,11 +1,16 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
-import { DevFigmaScreen } from "~components/dev/figma-screen/figma-screen.component";
-import { DevButtons } from "~components/dev/buttons/buttons.component";
 import { useEffect, useRef } from "react";
 import type { JWKInterface } from "arweave/web/lib/wallet";
 
-import screenSrc from "url:/assets-beta/figma-screens/import-keyfile.view.png";
-import confirmScreenSrc from "url:/assets-beta/figma-screens/import-keyfile-confirmation.view.png";
+import {
+  Card,
+  Row,
+  Upload,
+  WanderIcon,
+  Text,
+  Copyable,
+  Button
+} from "~components/embed";
 
 export function AuthImportKeyfileEmbeddedView() {
   const {
@@ -37,42 +42,67 @@ export function AuthImportKeyfileEmbeddedView() {
   }, []);
 
   return importedTempWalletAddress ? (
-    <DevFigmaScreen
-      title="Import private key"
-      src={confirmScreenSrc}
-      config={[
-        {
-          label: importedTempWalletAddress,
-          isDisabled: true
-        },
-        {
-          label: "No, upload again",
-          onClick: () => deleteImportedTempWallet(),
-          variant: "secondary"
-        },
-        {
-          label: "Yes, add",
-          onClick: () => registerWallet("imported")
-        }
-      ]}
-    />
-  ) : (
-    <DevFigmaScreen
-      title="Import private key"
-      src={screenSrc}
-      config={[
-        {
-          label: "Upload",
-          onClick: handleImportWallet
-        },
-        {
-          label: "Back",
-          to: "/auth/add-wallet",
-          variant: "secondary"
-        }
-      ]}
+    <Card
+      headerText="Enter Seedphrase"
+      subtitle="Would you like to add this wallet to your account?"
+      footerElement={
+        <Row>
+          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
+            {"Secured by"}
+          </Text>
+          <WanderIcon color="#838383" />
+        </Row>
+      }
+      hasBackButton={true}
+      hasCloseButton={false}
+      hasShadow={true}
+      size="auto"
     >
-      <textarea ref={textareaRef} placeholder="Upload keyfile"></textarea>
-    </DevFigmaScreen>
+      <Copyable
+        isFullWidth
+        label="Your account address"
+        value={importedTempWalletAddress}
+      />
+      <Row>
+        <Button
+          variant="secondary"
+          size="md"
+          onClick={deleteImportedTempWallet}
+        >
+          No, try again
+        </Button>
+        <Button
+          variant="primary"
+          size="md"
+          onClick={() => registerWallet("imported")}
+        >
+          Yes, add
+        </Button>
+      </Row>
+    </Card>
+  ) : (
+    <Card
+      headerText="Import private key"
+      subtitle="Upload your private key to connect your wallet to your account."
+      footerElement={
+        <Row>
+          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
+            {"Secured by"}
+          </Text>
+          <WanderIcon color="#838383" />
+        </Row>
+      }
+      hasBackButton={true}
+      hasCloseButton={false}
+      hasShadow={true}
+      size="auto"
+    >
+      <Upload
+        isFullWidth
+        title={"Click to upload"}
+        description={"or drag and drop your private key"}
+        loadingText={"Recovering account..."}
+      />
+    </Card>
   );
 }

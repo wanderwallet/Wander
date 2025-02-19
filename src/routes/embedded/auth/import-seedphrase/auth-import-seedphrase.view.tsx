@@ -1,9 +1,14 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
-import { DevFigmaScreen } from "~components/dev/figma-screen/figma-screen.component";
 import { useEffect, useRef } from "react";
 
-import screenSrc from "url:/assets-beta/figma-screens/import-seedphrase.view.png";
-import confirmScreenSrc from "url:/assets-beta/figma-screens/import-seedphrase-confirmation.view.png";
+import {
+  Row,
+  WanderIcon,
+  Card,
+  Button,
+  Text,
+  SeedInput
+} from "~components/embed";
 
 export function AuthImportSeedphraseEmbeddedView() {
   const {
@@ -32,43 +37,35 @@ export function AuthImportSeedphraseEmbeddedView() {
     };
   }, []);
 
-  return importedTempWalletAddress ? (
-    <DevFigmaScreen
-      title="Enter seedphrase"
-      src={confirmScreenSrc}
-      config={[
-        {
-          label: importedTempWalletAddress,
-          isDisabled: true
-        },
-        {
-          label: "No, try again",
-          onClick: () => deleteImportedTempWallet(),
-          variant: "secondary"
-        },
-        {
-          label: "Yes, add",
-          onClick: () => registerWallet("imported")
-        }
-      ]}
-    />
-  ) : (
-    <DevFigmaScreen
-      title="Enter seedphrase"
-      src={screenSrc}
-      config={[
-        {
-          label: "Import",
-          onClick: handleImportWallet
-        },
-        {
-          label: "Back",
-          to: "/auth/add-wallet",
-          variant: "secondary"
-        }
-      ]}
+  return (
+    <Card
+      headerText="Enter Seedphrase"
+      subtitle="Enter your seedphrase to connect your wallet to your account."
+      footerElement={
+        <Row>
+          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
+            {"Secured by"}
+          </Text>
+          <WanderIcon color="#838383" />
+        </Row>
+      }
+      hasBackButton={true}
+      hasCloseButton={false}
+      hasShadow={true}
+      size="auto"
     >
-      <textarea ref={textareaRef} placeholder="Enter seedphrase"></textarea>
-    </DevFigmaScreen>
+      <SeedInput
+        handleSubmit={handleImportWallet}
+        handleCopyToClipboard={function (): void {
+          throw new Error("Function not implemented.");
+        }}
+        handleInputChange={function (index: number, value: string): void {
+          throw new Error("Function not implemented.");
+        }}
+      />
+      <Button isFullWidth size="md">
+        Recover
+      </Button>
+    </Card>
   );
 }
