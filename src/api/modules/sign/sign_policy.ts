@@ -2,13 +2,14 @@ import Transaction from "arweave/web/lib/transaction";
 import BigNumber from "bignumber.js";
 import { DataItem } from "warp-arbundles";
 import type { RawDataItem } from "../sign_data_item/types";
-
+import type { AuthRequestData } from "~utils/auth/auth.types";
 export type SignPolicy = "always_ask" | "ask_when_spending" | "auto_confirm";
 
 export function checkIfUserNeedsToSign(
   signPolicy: SignPolicy,
   transaction?: Transaction | DataItem | RawDataItem,
-  walletType: "local" | "hardware" = "local"
+  walletType: "local" | "hardware" = "local",
+  apiName?: AuthRequestData["type"]
 ) {
   try {
     // Hardware wallets always need manual signing
@@ -20,6 +21,7 @@ export function checkIfUserNeedsToSign(
         return true;
 
       case "ask_when_spending":
+        if (apiName === "signature") return true;
         if (!transaction) return false;
         const tags = transaction?.tags || [];
         let isAo = false,

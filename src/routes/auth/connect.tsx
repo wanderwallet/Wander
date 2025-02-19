@@ -90,6 +90,15 @@ export function ConnectAuthRequestView() {
     gateway
   } = authRequest;
 
+  // wallet switcher open
+  const [switcherOpen, setSwitcherOpen] = useState(false);
+
+  // page
+  const [page, setPage] = useState<Page>("connect");
+
+  // password input
+  const passwordInput = useInput();
+
   // toasts
   const { setToast } = useToasts();
 
