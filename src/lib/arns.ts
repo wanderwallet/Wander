@@ -2,7 +2,7 @@ import { pLimit } from "plimit-lit";
 import { AOProcess } from "./ao";
 import type { NameServiceProfile } from "./types";
 
-export const AO_ARNS_PROCESS = "agYcCFJtrMG6cqMuZfskIkFTGvUPddICmtQSBIoPdiA";
+export const AO_ARNS_PROCESS = "qNvAoz0TgcH7DMg8BCVn8jF32QH5L6T29VjHxhHqqGE";
 
 export type ProcessId = string;
 export type WalletAddress = string;
