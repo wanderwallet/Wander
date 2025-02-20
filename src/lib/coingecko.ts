@@ -35,7 +35,11 @@ export async function getArPrice(currency: string) {
 
     const res = await redstone.getPrice("AR");
 
-    if (!res.value) throw new Error("Failed to fetch AR price");
+    if (!res.value) throw new Error("No price value returned from Redstone");
+
+    if (res.timestamp && Date.now() - res.timestamp >= 7200000) {
+      throw new Error("Price is older than 2 hours");
+    }
 
     const rate = await getConversionRate(currency);
 
