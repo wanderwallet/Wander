@@ -20,7 +20,7 @@ import {
   TempTransactionStorage,
   type RawStoredTransfer
 } from "~utils/storage";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { findGateway } from "~gateways/wayfinder";
 import Arweave from "arweave";
 import { useLocation } from "~wallets/router/router.utils";
@@ -97,6 +97,8 @@ export function ConfirmView({
   // TODO: Need to get Token information
   const [token, setToken] = useState<TokenInfo | undefined>();
   const [amount, setAmount] = useState<string>("");
+
+  const toastTimestamp = useRef<number | undefined>();
 
   const [isAo, setIsAo] = useState<boolean>(false);
   const passwordInput = useInput();
@@ -195,8 +197,8 @@ export function ConfirmView({
   ): Promise<Partial<RawStoredTransfer> | void> {
     try {
       // create tx
-      let gateway = await findGateway({});
-      let arweave = new Arweave(gateway);
+      const gateway = await findGateway({});
+      const arweave = new Arweave(gateway);
 
       // save tx json into the session
       // to be signed and submitted
@@ -205,7 +207,7 @@ export function ConfirmView({
         gateway: gateway
       };
 
-      const tx = await arweave.createTransaction({
+      const data = {
         target,
         quantity: fractionedToBalance(
           amount,
@@ -213,7 +215,18 @@ export function ConfirmView({
           "AR"
         ),
         data: message ? decodeURIComponent(message) : undefined
-      });
+      };
+
+      let tx: Transaction;
+
+      try {
+        tx = await arweave.createTransaction(data);
+      } catch {
+        const fallbackGateway = await findGateway({ random: true });
+        const fallbackArweave = new Arweave(fallbackGateway);
+        tx = await fallbackArweave.createTransaction(data);
+        storedTx.gateway = fallbackGateway;
+      }
 
       addTransferTags(tx);
 
@@ -221,11 +234,7 @@ export function ConfirmView({
 
       return storedTx;
     } catch {
-      return setToast({
-        type: "error",
-        content: browser.i18n.getMessage("transaction_send_error"),
-        duration: 2000
-      });
+      showTransferError();
     }
   }
 
@@ -239,6 +248,12 @@ export function ConfirmView({
   }
 
   function showTransferError() {
+    if (toastTimestamp.current && Date.now() - toastTimestamp.current < 1000) {
+      return;
+    }
+
+    toastTimestamp.current = Date.now();
+
     setToast({
       type: "error",
       content: (
