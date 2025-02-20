@@ -22,13 +22,12 @@ const Button = React.forwardRef<
       loadingChildren,
       icon,
       hasBorder,
-      onClick,
       color,
       ...props
     },
     ref
   ) => {
-    const isAnchor = variant === "link" && props.href;
+    const isAnchor = variant === "link" || props.href;
 
     const Component = isAnchor ? "a" : "button";
 
@@ -56,7 +55,6 @@ const Button = React.forwardRef<
       <Component
         ref={ref}
         href={isAnchor ? props.href : undefined}
-        target="_blank"
         rel="noopener noreferrer"
         className={`
         ${styles["button"]}

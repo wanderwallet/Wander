@@ -13,11 +13,23 @@ import {
   Wander2Icon,
   WanderIcon
 } from "~components/embed";
+import { useCallback, useState } from "react";
+import type { AuthMethod } from "~utils/authentication/fakeDB";
 
 export function AuthEmbeddedView() {
   const { authenticate, authStatus } = useEmbedded();
+  const [isLoading, setIsLoading] = useState({
+    calledId: "",
+    status: false
+  });
 
   // TODO: Remember last selection and highlight that one / show it in the main screen (not in "More")
+
+  const handleAuthenticate = useCallback(async (authMethod: AuthMethod) => {
+    setIsLoading({ calledId: authMethod, status: true });
+    await authenticate(authMethod);
+    setIsLoading({ calledId: "", status: false });
+  }, []);
 
   return (
     <Card
@@ -37,13 +49,10 @@ export function AuthEmbeddedView() {
       <Box>
         <Button
           isFullWidth
-          icon={
-            <KeyIcon fontSize={24} onClick={() => authenticate("passkey")} />
-          }
+          onClick={() => handleAuthenticate("passkey")}
+          icon={<KeyIcon fontSize={24} />}
           isLoading={
-            authStatus === "unknown" ||
-            authStatus === "loading" ||
-            authStatus === "authLoading"
+            isLoading.calledId === "passkey" && isLoading.status === true
           }
         >
           Create new wallet
@@ -53,7 +62,10 @@ export function AuthEmbeddedView() {
           <Button
             variant="outlined"
             size="md"
-            onClick={() => authenticate("google")}
+            isLoading={
+              isLoading.calledId === "google" && isLoading.status === true
+            }
+            onClick={() => handleAuthenticate("google")}
           >
             <GoogleIcon fontSize={24} />
           </Button>
@@ -64,6 +76,7 @@ export function AuthEmbeddedView() {
         <Button
           variant="outlined"
           isFullWidth
+          isLoading={isLoading.calledId === "more" && isLoading.status === true}
           icon={<SocialsIcon fontSize={24} />}
           onClick={() => alert("Not implemented")}
         >

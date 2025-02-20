@@ -27,6 +27,7 @@ export function AuthAddWalletEmbeddedView() {
   return (
     <Card
       headerText="Add a wallet"
+      subtitle="Add a wallet to your account to hold your funds. Create or add an existing wallet to continue."
       footerElement={
         <Row>
           <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
