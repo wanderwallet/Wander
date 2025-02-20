@@ -21,7 +21,7 @@ import {
   type RawStoredTransfer
 } from "~utils/storage";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { findGateway } from "~gateways/wayfinder";
+import { findGateway, retryWithGateways } from "~gateways/wayfinder";
 import Arweave from "arweave";
 import { useLocation } from "~wallets/router/router.utils";
 import { type Gateway } from "~gateways/gateway";
@@ -197,8 +197,22 @@ export function ConfirmView({
   ): Promise<Partial<RawStoredTransfer> | void> {
     try {
       // create tx
-      const gateway = await findGateway({});
-      const arweave = new Arweave(gateway);
+      const { result: tx, gateway } = await retryWithGateways(
+        async (arweave) => {
+          const transaction = await arweave.createTransaction({
+            target,
+            quantity: fractionedToBalance(
+              amount,
+              { decimals: token.Denomination },
+              "AR"
+            ),
+            data: message ? decodeURIComponent(message) : undefined
+          });
+
+          addTransferTags(transaction);
+          return transaction;
+        }
+      );
 
       // save tx json into the session
       // to be signed and submitted
@@ -206,29 +220,6 @@ export function ConfirmView({
         type: tokenID === "AR" ? "native" : "token",
         gateway: gateway
       };
-
-      const data = {
-        target,
-        quantity: fractionedToBalance(
-          amount,
-          { decimals: token.Denomination },
-          "AR"
-        ),
-        data: message ? decodeURIComponent(message) : undefined
-      };
-
-      let tx: Transaction;
-
-      try {
-        tx = await arweave.createTransaction(data);
-      } catch {
-        const fallbackGateway = await findGateway({ random: true });
-        const fallbackArweave = new Arweave(fallbackGateway);
-        tx = await fallbackArweave.createTransaction(data);
-        storedTx.gateway = fallbackGateway;
-      }
-
-      addTransferTags(tx);
 
       storedTx.transaction = tx.toJSON();
 
