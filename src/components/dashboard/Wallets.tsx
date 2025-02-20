@@ -14,7 +14,6 @@ import { FULL_HISTORY, useGateway } from "~gateways/wayfinder";
 import { useLocation } from "~wallets/router/router.utils";
 import { getNameServiceProfiles } from "~lib/nameservice";
 import type { NameServiceProfile } from "~lib/types";
-import { concatGatewayURL } from "~gateways/utils";
 
 export function WalletsDashboardView() {
   const { navigate } = useLocation();
