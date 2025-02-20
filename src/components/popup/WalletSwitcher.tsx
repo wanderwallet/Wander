@@ -147,7 +147,12 @@ export default function WalletSwitcher({ open, close }: Props) {
       isOpen={open}
       onClose={close}
     >
-      <CloseIcon onClick={close} />
+      <CloseIcon
+        onClick={(e) => {
+          e.stopPropagation();
+          close();
+        }}
+      />
       <Wrapper>
         <CurrentWallet>
           <Avatar img={activeWallet?.avatar}>
