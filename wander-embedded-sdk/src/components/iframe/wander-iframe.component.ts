@@ -97,6 +97,7 @@ export class WanderIframe {
   };
 
   // Elements:
+  private host: HTMLDivElement;
   private backdrop: HTMLDivElement;
   private iframe: HTMLIFrameElement;
 
@@ -152,6 +153,7 @@ export class WanderIframe {
 
     const elements = WanderIframe.initializeIframe(src, options);
 
+    this.host = elements.host;
     this.backdrop = elements.backdrop;
     this.iframe = elements.iframe;
 
@@ -176,6 +178,10 @@ export class WanderIframe {
 
   static initializeIframe(src: string, options: WanderEmbeddedIframeOptions) {
     // TODO: Considering using a `<dialog>` element or adding proper aria- tags.
+    const host = document.createElement("div");
+    host.id = options.id || WanderIframe.DEFAULT_IFRAME_ID;
+
+    const shadow = host.attachShadow({ mode: "open" });
 
     const backdrop = document.createElement("div");
 
@@ -183,19 +189,21 @@ export class WanderIframe {
 
     const iframe = document.createElement("iframe");
 
-    iframe.id = options.id || WanderIframe.DEFAULT_IFRAME_ID;
     iframe.src = src;
 
     // We don't add the iframe as a child of backdrop to have more control over the hide/show transitions:
-
+    shadow.appendChild(backdrop);
+    shadow.appendChild(iframe);
     return {
       iframe,
+      host,
       backdrop
     };
   }
 
   getElements() {
     return {
+      host: this.host,
       backdrop: this.backdrop,
       iframe: this.iframe
     };
