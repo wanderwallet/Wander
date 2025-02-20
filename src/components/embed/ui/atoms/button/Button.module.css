@@ -2,7 +2,7 @@
 
 .button {
   all: unset;
-  border-radius: var(--border-radius-xl);
+  border-radius: var(--border-radius-lg);
   text-align: center;
   box-sizing: border-box;
 
@@ -14,7 +14,7 @@
   cursor: pointer;
   overflow: hidden;
   transition: all 0.2s;
-  padding: var(--spacing-6) 0;
+  padding: var(--spacing-6) var(--spacing-3);
 }
 
 .button--icon-start {
@@ -61,9 +61,10 @@
 
 .button__variant__link {
   border: none;
+  margin: 0;
+  padding: 0;
   background-color: inherit;
   color: var(--color-link-primary);
-  padding: 0 auto;
 
   text-decoration: none;
   font-size: var(--font-size-md);
@@ -100,7 +101,7 @@
 .button__sm {
   min-width: var(--button-sm-width);
   height: var(--button-sm-height);
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semi);
   font-family: var(--font-family-serif);
 }

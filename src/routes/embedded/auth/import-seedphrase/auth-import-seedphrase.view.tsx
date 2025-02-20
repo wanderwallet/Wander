@@ -51,7 +51,6 @@ export function AuthImportSeedphraseEmbeddedView() {
       }
       hasBackButton={true}
       hasCloseButton={false}
-      hasShadow={true}
       size="auto"
     >
       <SeedInput

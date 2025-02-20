@@ -55,7 +55,6 @@ export function AuthImportKeyfileEmbeddedView() {
       }
       hasBackButton={true}
       hasCloseButton={false}
-      hasShadow={true}
       size="auto"
     >
       <Copyable
@@ -94,7 +93,6 @@ export function AuthImportKeyfileEmbeddedView() {
       }
       hasBackButton={true}
       hasCloseButton={false}
-      hasShadow={true}
       size="auto"
     >
       <Upload

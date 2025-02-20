@@ -6,6 +6,7 @@
 }
 
 .text__heading {
+  font-family: var(--font-family-satoshi);
   line-height: var(--line-height-shorter);
   font-weight: var(--font-weight-bold);
   color: var(--color-font-heading);
@@ -34,7 +35,7 @@
   font-size: var(--font-size-lg);
 }
 .text__variant__bodyMd {
-  font-size: var(--font-size-base);
+  font-size: var(--font-weight-semi);
 }
 .text__variant__bodySm {
   font-size: var(--font-size-sm);

@@ -1,9 +1,24 @@
 @import url("https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap");
 
+@font-face {
+  font-family: "Satoshi Sans";
+  font-style: normal;
+  font-weight: 500;
+  src: url(/assets/fonts/Satoshi-Variable.ttf) format("ttf");
+}
+
+@font-face {
+  font-family: "Satoshi Sans";
+  font-style: normal;
+  font-weight: 600;
+  src: url(/assets/fonts/Satoshi-VariableItalic.ttf) format("ttf");
+}
 :root {
   --font-family-serif: "Plus Jakarta Sans", serif;
   --font-family-mono: "Plus Jakarta Sans", monospace;
+
+  --font-family-satoshi: "Satoshi Sans", sans-serif !important;
 
   --font-size-xxs: 0.625rem;
   --font-size-xs: 0.75rem;

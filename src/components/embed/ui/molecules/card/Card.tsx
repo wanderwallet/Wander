@@ -14,7 +14,7 @@ const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
       children,
       footerElement,
       className,
-      hasShadow,
+      hasShadow = false,
       isBlurry,
       size = "md",
       hasBackButton = true,

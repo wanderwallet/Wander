@@ -32,7 +32,6 @@ export function AuthMoreProvidersEmbeddedView() {
       }
       hasBackButton={true}
       hasCloseButton={false}
-      hasShadow={true}
       size="auto"
     >
       <Box>

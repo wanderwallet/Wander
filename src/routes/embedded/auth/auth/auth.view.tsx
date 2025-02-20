@@ -22,7 +22,6 @@ export function AuthEmbeddedView() {
   return (
     <Card
       headerText="Sign Up or Sign In"
-      subtitle="Select a method to authenticate"
       footerElement={
         <Row>
           <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
@@ -33,7 +32,6 @@ export function AuthEmbeddedView() {
       }
       hasBackButton={false}
       hasCloseButton={false}
-      hasShadow={true}
       size="auto"
     >
       <Box>
@@ -72,7 +70,8 @@ export function AuthEmbeddedView() {
           More options
         </Button>
         <Row alignment="center">
-          <Button variant="link" href="/auth/recover-account">
+          <Text variant={"bodySm"}>{"Can’t sign in?"}</Text>
+          <Button variant="link" href="/auth/recover-account" size="sm">
             Recover account
           </Button>
         </Row>

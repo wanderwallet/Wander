@@ -73,5 +73,13 @@ export type ButtonBaseProps = {
    */
   alignment?: Alignments;
 
+  /**
+   * Optional prop for the color of the ButtonBase component
+   */
   color?: string;
+
+  /**
+   * Optional prop for the style of the ButtonBase component
+   */
+  style?: React.CSSProperties;
 };

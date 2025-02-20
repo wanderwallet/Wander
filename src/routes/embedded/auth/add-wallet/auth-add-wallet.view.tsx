@@ -37,7 +37,6 @@ export function AuthAddWalletEmbeddedView() {
       }
       hasBackButton={false}
       hasCloseButton={false}
-      hasShadow={true}
       size="auto"
     >
       <Box>
