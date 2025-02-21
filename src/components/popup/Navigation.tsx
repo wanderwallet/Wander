@@ -2,6 +2,7 @@ import { Compass03, Grid01, Home05, Users01 } from "@untitled-ui/icons-react";
 import browser from "webextension-polyfill";
 import styled from "styled-components";
 import { useLocation } from "~wallets/router/router.utils";
+import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 
 const Home05Active = () => (
   <svg
@@ -112,7 +113,7 @@ const NavigationBarWrapper = styled.nav`
   bottom: 0;
   height: 68px;
   background-color: ${(props) => props.theme.backgroundv2};
-  width: 100%;
+  width: ${IS_EMBEDDED_APP ? "100%" : "377px"};
   display: flex;
   box-sizing: border-box;
 `;
