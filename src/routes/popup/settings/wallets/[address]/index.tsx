@@ -12,7 +12,6 @@ import { CopyIcon } from "@iconicicons/react";
 import { removeWallet, type StoredWallet } from "~wallets";
 import { useEffect, useMemo, useState } from "react";
 import { useStorage } from "~utils/storage";
-import { type AnsUser, getAnsProfile } from "~lib/ans";
 import { ExtensionStorage } from "~utils/storage";
 import keystoneLogo from "url:/assets/hardware/keystone.png";
 import browser from "webextension-polyfill";
@@ -34,6 +33,7 @@ import {
 } from "@untitled-ui/icons-react";
 import { HorizontalLine } from "~components/HorizontalLine";
 import SliderMenu from "~components/SliderMenu";
+import { getNameServiceProfile } from "~lib/nameservice";
 
 export interface WalletViewParams {
   address: string;
@@ -67,19 +67,15 @@ export function WalletView({ params: { address } }: WalletViewProps) {
   // toasts
   const { setToast } = useToasts();
 
-  // ans
-  const [ansLabel, setAnsLabel] = useState<string>();
+  // name service name
+  const [nameServiceName, setNameServiceName] = useState<string>();
 
   useEffect(() => {
     (async () => {
       if (!wallet) return;
 
-      // get ans profile
-      const profile = (await getAnsProfile(wallet.address)) as AnsUser;
-
-      if (!profile?.currentLabel) return;
-
-      setAnsLabel(profile.currentLabel + ".ar");
+      const arnsProfile = await getNameServiceProfile(wallet.address);
+      setNameServiceName(arnsProfile?.name);
     })();
   }, [wallet?.address]);
 
@@ -88,12 +84,12 @@ export function WalletView({ params: { address } }: WalletViewProps) {
 
   useEffect(() => {
     if (!wallet) return;
-    walletNameInput.setState(ansLabel || wallet.nickname);
-  }, [wallet, ansLabel]);
+    walletNameInput.setState(nameServiceName || wallet.nickname);
+  }, [wallet, nameServiceName]);
 
   // update nickname function
   async function updateNickname() {
-    if (!!ansLabel) return;
+    if (!!nameServiceName) return;
 
     // check name
     const newName = walletNameInput.state;
@@ -165,7 +161,7 @@ export function WalletView({ params: { address } }: WalletViewProps) {
               }}
             >
               <WalletName>
-                {ansLabel || wallet.nickname}
+                {nameServiceName || wallet.nickname}
                 {wallet.type === "hardware" && (
                   <Tooltip
                     content={
@@ -179,12 +175,27 @@ export function WalletView({ params: { address } }: WalletViewProps) {
                   </Tooltip>
                 )}
               </WalletName>
-              <Edit02
-                style={{ cursor: "pointer" }}
-                height={20}
-                width={20}
-                onClick={() => setEditName(true)}
-              />
+              {nameServiceName ? (
+                <Tooltip
+                  position="bottomEnd"
+                  content={browser.i18n.getMessage(
+                    "cannot_edit_with_name_service"
+                  )}
+                >
+                  <Edit02
+                    style={{ cursor: "not-allowed" }}
+                    height={20}
+                    width={20}
+                  />
+                </Tooltip>
+              ) : (
+                <Edit02
+                  style={{ cursor: "pointer" }}
+                  height={20}
+                  width={20}
+                  onClick={() => setEditName(true)}
+                />
+              )}
             </div>
           ) : (
             <div style={{ display: "flex", gap: "0.8rem" }}>
@@ -194,7 +205,7 @@ export function WalletView({ params: { address } }: WalletViewProps) {
                 type="text"
                 placeholder={browser.i18n.getMessage("edit_wallet_name")}
                 fullWidth
-                disabled={!!ansLabel}
+                disabled={!!nameServiceName}
               />
               <Button
                 style={{ width: "100px" }}
@@ -204,7 +215,7 @@ export function WalletView({ params: { address } }: WalletViewProps) {
                   }
                   setEditName(false);
                 }}
-                disabled={!!ansLabel}
+                disabled={!!nameServiceName}
               >
                 {browser.i18n.getMessage(
                   walletNameInput.state === wallet.nickname ? "cancel" : "save"

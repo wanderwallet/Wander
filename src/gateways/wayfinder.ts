@@ -10,6 +10,7 @@ import {
 import { useEffect, useState } from "react";
 import { getGatewayCache } from "./cache";
 import { getSetting } from "~settings";
+import Arweave from "arweave";
 
 export const FULL_HISTORY: Requirements = { startBlock: 0 };
 
@@ -172,6 +173,48 @@ export function useGraphqlGateways(count?: number) {
 
   return graphqlGateways;
 }
+
+/**
+ * Retries an Arweave operation with different gateways
+ * @param operation - Function that takes an Arweave instance and returns a Promise
+ * @param options - Retry configuration
+ */
+export async function retryWithGateways<T>(
+  operation: (arweave: Arweave) => Promise<T>,
+  { maxAttempts = 3 }: RetryOptions = {}
+): Promise<RetryResult<T>> {
+  let lastError: Error | null = null;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const gateway = await findGateway({ random: attempt > 1 });
+
+    try {
+      const arweave = new Arweave(gateway);
+      const result = await operation(arweave);
+      return { result, arweave, gateway };
+    } catch (error) {
+      lastError = error as Error;
+      // console.warn(`Gateway attempt ${attempt} failed:`, error);
+      if (attempt === maxAttempts) {
+        throw new Error(
+          `Gateway operations failed after ${maxAttempts} attempts. Last error: ${lastError.message}`
+        );
+      }
+    }
+  }
+
+  throw lastError;
+}
+
+type RetryOptions = {
+  maxAttempts?: number;
+};
+
+type RetryResult<T> = {
+  result: T;
+  gateway: Gateway;
+  arweave: Arweave;
+};
 
 export interface Requirements {
   /* Whether the gateway should be selected randomly */

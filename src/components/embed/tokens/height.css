@@ -1,0 +1,31 @@
+:root {
+  --button-min-height: 38px; /* Smallest baseline height */
+  --button-default-height: 42px; /* Default button height */
+
+  /* Smaller Sizes */
+  --button-sm-height: 36px; /* 2px smaller than min */
+  --button-xs-height: 32px; /* 4px smaller than sm */
+
+  /* Larger Sizes */
+  --button-lg-height: 46px; /* 4px larger than default */
+  --button-xl-height: 52px; /* 6px larger than lg */
+  --button-xxl-height: 60px; /* 8px larger than xl */
+
+  --card-min-height: 226px; /* Smallest baseline height */
+  --card-default-height: 528px; /* Default card height */
+
+  /* Smaller Sizes */
+  --card-sm-height: 368px; /* 20px smaller than min */
+  --card-xs-height: 60px; /* 20px smaller than sm */
+  --card-xxs-height: 48px; /* 12px smaller than xs */
+
+  /* Larger Sizes */
+  --card-lg-height: 300px; /* 50px larger than default */
+  --card-xl-height: 400px; /* 100px larger than lg */
+  --card-xxl-height: 500px; /* 100px larger than xl */
+
+  --divider-min-height: 1px; /* Smallest baseline height */
+  --divider-default-height: 2px; /* Default divider height */
+
+  --checkbox-height: 16px; /* Default checkbox height */
+}

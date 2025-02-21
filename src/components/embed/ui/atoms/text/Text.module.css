@@ -1,0 +1,57 @@
+@import "../../../tokens/index.css";
+
+.text {
+  font-family: var(--font-family-serif);
+  white-space: pre-line;
+}
+
+.text__heading {
+  line-height: var(--line-height-shorter);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-font-heading);
+}
+
+.text__variant__headingLg {
+  font-size: var(--font-size-4xl);
+}
+
+.text__variant__headingMd {
+  font-size: var(--font-size-xl);
+}
+.text__variant__headingSm {
+  font-size: var(--font-size-lg);
+}
+.text__variant__headingXs {
+  font-size: var(--font-size-base);
+}
+
+.text__body {
+  line-height: var(--line-height-short);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-font-body);
+}
+.text__variant__bodyLg {
+  font-size: var(--font-size-lg);
+}
+.text__variant__bodyMd {
+  font-size: var(--font-size-base);
+}
+.text__variant__bodySm {
+  font-size: var(--font-size-sm);
+}
+.text__variant__bodyXs {
+  font-size: var(--font-size-xs);
+}
+
+.text__left {
+  text-align: left;
+}
+.text__center {
+  text-align: center;
+}
+.text__right {
+  text-align: right;
+}
+.text__justify {
+  text-align: justify;
+}

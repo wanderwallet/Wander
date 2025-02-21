@@ -1,4 +1,3 @@
-import { currencies } from "~lib/coingecko";
 import { ExtensionStorage } from "./storage";
 
 interface ExchangeRateResponse {
@@ -154,3 +153,51 @@ export async function getConversionRate(
   const rates = await getExchangeRates();
   return rates[targetCurrency.toUpperCase()];
 }
+
+export const currencies = [
+  "USD",
+  "EUR",
+  "GBP",
+  "CNY",
+  "INR",
+  "AED",
+  "ARS",
+  "AUD",
+  "BDT",
+  "BHD",
+  "BMD",
+  "BRL",
+  "CAD",
+  "CHF",
+  "CLP",
+  "CZK",
+  "DKK",
+  "HKD",
+  "HUF",
+  "IDR",
+  "ILS",
+  "JPY",
+  "KRW",
+  "KWD",
+  "LKR",
+  "MMK",
+  "MXN",
+  "MYR",
+  "NGN",
+  "NOK",
+  "NZD",
+  "PHP",
+  "PKR",
+  "PLN",
+  "RUB",
+  "SAR",
+  "SEK",
+  "SGD",
+  "THB",
+  "TRY",
+  "TWD",
+  "UAH",
+  "VEF",
+  "VND",
+  "ZAR"
+];

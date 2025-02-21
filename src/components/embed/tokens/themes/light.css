@@ -1,0 +1,54 @@
+/*
+ * Light Theme Colors
+ */
+:root,
+[data-theme="light"],
+.light {
+  --color-background-default: var(--brand-color-neutral6);
+  --color-background-button-primary: var(--brand-color-primary3);
+  --color-background-button-secondary: var(--brand-color-secondary6);
+  --color-button-primary-active: var(--brand-color-neutral6);
+  --color-button-primary-success: var(--brand-color-success1);
+  --color-button-primary-error: var(--brand-color-error1);
+
+  --color-button-outlined-active: var(--brand-color-neutral1);
+  --color-button-outlined-border: var(--brand-color-gray-200);
+
+  --color-button-secondary-active: var(--brand-color-neutral1);
+  --color-button-secondary-border: var(--brand-color-gray-200);
+  --color-button-secondary-background: var(--brand-color-gray-100);
+
+  --color-divider-default: var(--brand-color-gray-200);
+  --color-link-primary: var(--brand-color-primary3);
+  --color-link-secondary: var(--brand-color-secondary5);
+  --color-link-disabled: var(--brand-color-gray-300);
+  --color-loading-primary: var(--brand-color-neutral6);
+  --color-loading-secondary: var(--brand-color-neutral5);
+
+  --color-font-heading: var(--brand-color-gray-950);
+  --color-font-body: var(--brand-color-neutral3);
+
+  --color-card-background-default: var(--brand-color-neutral6);
+  --color-card-shadow-default: var(--brand-color-gray-200);
+  --color-card-border-default: var(--brand-color-gray-100);
+
+  --color-text-footer: var(--brand-color-neutral5);
+
+  --color-background-box: var(--brand-color-secondary7);
+  --color-border-box: var(--brand-color-secondary5);
+  --color-border-popover: var(--brand-color-gray-200);
+
+  --color-copyable-border: var(--brand-color-gray-200);
+  --color-copyable-text-label: var(--brand-color-neutral3);
+  --color-copyable-text-value: var(--brand-color-neutral1);
+
+  --color-seed-input-border: var(--brand-color-neutral3);
+  --color-seed-input-active: var(--brand-color-primary3);
+  --color-seed-input-background: var(--brand-color-gray-100);
+
+  --color-border-radio: var(--brand-color-primary3);
+  --color-non-checked-background-radio: var(--brand-color-secondary7);
+
+  --color-background-switch-enabled: var(--brand-color-primary3);
+  --color-background-button-disabled: var(--brand-color-neutral3);
+}

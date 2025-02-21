@@ -1,0 +1,64 @@
+@import "../../../tokens/index.css";
+
+.wrapper {
+  margin: var(--spacing-4);
+  align-self: flex-start;
+  background-color: ;
+}
+
+.checkbox {
+  -webkit-appearance: none;
+  appearance: none;
+  margin: 0;
+
+  background-color: var(--color-non-checked-background-radio);
+
+  width: var(--checkbox-width);
+  height: var(--checkbox-height);
+
+  color: var(--color-border-radio);
+  border-radius: var(--border-radius-sm);
+  border: 1.25px solid var(--color-border-radio);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: var(--spacing-2);
+}
+
+.checkbox__checked {
+  background-color: var(--color-border-radio);
+}
+
+.checkbox__label {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: flex-start;
+  font-size: var(--font-size-sm);
+  font-family: var(--font-family-serif);
+  font-weight: var(--font-weight-semi);
+  color: var(--color-copyable-text-value);
+}
+
+.checkbox__description {
+  color: var(--color-copyable-text-label);
+}
+
+.checkbox__text {
+  display: flex;
+  flex-direction: column;
+}
+
+.checkbox__icon {
+  width: 14px;
+  height: 14px;
+  position: absolute;
+  color: var(--color-background-default);
+  margin-left: 1px;
+  margin-top: 1px;
+}
+
+.checkbox__blurry {
+  filter: blur(2px);
+}

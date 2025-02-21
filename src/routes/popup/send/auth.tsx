@@ -34,15 +34,12 @@ import browser from "webextension-polyfill";
 import Head from "~components/popup/Head";
 import styled from "styled-components";
 import Arweave from "arweave";
-import {
-  defaultGateway,
-  fallbackGateway,
-  type Gateway
-} from "~gateways/gateway";
+import { defaultGateway, type Gateway } from "~gateways/gateway";
 import { EventType, trackEvent } from "~utils/analytics";
 import BigNumber from "bignumber.js";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { useStorage } from "@plasmohq/storage/hook";
+import { findGateway } from "~gateways/wayfinder";
 
 export interface SendAuthViewParams {
   tokenID?: string;
@@ -200,8 +197,8 @@ export function SendAuthView({ params: { tokenID } }: SendAuthViewProps) {
           // Post the transaction
           await submitTx(transaction, arweave, type);
         } catch (e) {
-          // FALLBACK IF ISP BLOCKS ARWEAVE.NET OR IF WAYFINDER FAILS
-          gateway = fallbackGateway;
+          // FALLBACK IF ISP BLOCKS the gateway or if the gateway fails
+          gateway = await findGateway({ random: true });
           const fallbackArweave = new Arweave(gateway);
           await fallbackArweave.transactions.sign(transaction, keyfile);
           await submitTx(transaction, fallbackArweave, type);
@@ -265,8 +262,8 @@ export function SendAuthView({ params: { tokenID } }: SendAuthViewProps) {
           // post tx
           await submitTx(transaction, arweave, type);
         } catch (e) {
-          // FALLBACK IF ISP BLOCKS ARWEAVE.NET OR IF WAYFINDER FAILS
-          gateway = fallbackGateway;
+          // FALLBACK IF ISP BLOCKS the gateway or if the gateway fails
+          gateway = await findGateway({ random: true });
           const fallbackArweave = new Arweave(gateway);
           await fallbackArweave.transactions.sign(transaction, keyfile);
           await submitTx(transaction, fallbackArweave, type);

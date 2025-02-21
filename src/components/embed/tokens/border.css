@@ -1,0 +1,16 @@
+:root {
+  --border-width-light: 0.041rem; /* 0.66px */
+  --border-width-thin: 0.0625rem; /* 1px */
+  --border-width-medium: 0.09375rem; /* 1.5px */
+  --border-width-thick: 0.125rem; /* 2px */
+  --border-width-heavy: 0.25rem; /* 4px */
+
+  --border-radius-xs: 2px;
+  --border-radius-sm: 4px;
+  --border-radius-md: 6px;
+  --border-radius-lg: 8px;
+  --border-radius-xl: 12px;
+  --border-radius-xxl: 16px;
+  --border-radius-xxxl: 50px;
+  --border-radius-full: 9999px;
+}

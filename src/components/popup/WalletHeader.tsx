@@ -9,7 +9,6 @@ import { useHardwareApi } from "~wallets/hooks";
 import type { StoredWallet } from "~wallets";
 import { formatAddress, getAppURL, truncateMiddle } from "~utils/format";
 import { removeApp } from "~applications";
-import { useAnsProfile } from "~lib/ans";
 import { useTheme } from "~utils/theme";
 import {
   Button,
@@ -40,6 +39,9 @@ import { type Gateway } from "~gateways/gateway";
 import { Bell03 } from "@untitled-ui/icons-react";
 import { svgie } from "~utils/svgies";
 import { useLocation } from "~wallets/router/router.utils";
+import { useNameServiceProfile } from "~lib/nameservice";
+import { concatGatewayURL } from "~gateways/utils";
+import { FULL_HISTORY, useGateway } from "~gateways/wayfinder";
 
 export default function WalletHeader() {
   const theme = useTheme();
@@ -83,7 +85,8 @@ export default function WalletHeader() {
   };
 
   // profile picture
-  const ansProfile = useAnsProfile(activeAddress);
+  const nameServiceProfile = useNameServiceProfile(activeAddress);
+  const gateway = useGateway(FULL_HISTORY);
 
   // fallback svgie for profile picture
   const svgieAvatar = useMemo(
@@ -99,7 +102,7 @@ export default function WalletHeader() {
 
   // wallet name
   const walletName = useMemo(() => {
-    if (!ansProfile?.label) {
+    if (!nameServiceProfile?.name) {
       const wallet = wallets.find(({ address }) => address === activeAddress);
       let name = wallet?.nickname || "Wallet";
 
@@ -110,8 +113,8 @@ export default function WalletHeader() {
       return wallet?.nickname || "Wallet";
     }
 
-    return ansProfile.label;
-  }, [wallets, ansProfile, activeAddress]);
+    return nameServiceProfile.name;
+  }, [wallets, nameServiceProfile, activeAddress]);
 
   // hardware wallet type
   const hardwareApi = useHardwareApi();
@@ -205,8 +208,14 @@ export default function WalletHeader() {
             if (!isOpen) setOpen(true);
           }}
         >
-          <Avatar img={ansProfile?.avatar || svgieAvatar}>
-            {!ansProfile?.avatar && !svgieAvatar && <NoAvatarIcon />}
+          <Avatar
+            img={
+              nameServiceProfile?.logo
+                ? concatGatewayURL(gateway) + "/" + nameServiceProfile.logo
+                : svgieAvatar
+            }
+          >
+            {!nameServiceProfile?.logo && !svgieAvatar && <NoAvatarIcon />}
             <AnimatePresence initial={false}>
               {hardwareApi === "keystone" && (
                 <HardwareWalletIcon

@@ -29,9 +29,8 @@ import { loadTokenLogo, type Token as TokenInterface } from "~tokens/token";
 import { useTheme } from "~utils/theme";
 import arLogoLight from "url:/assets/ar/logo_light.png";
 import arLogoDark from "url:/assets/ar/logo_dark.png";
-import Arweave from "arweave";
 import Collectible from "~components/popup/Collectible";
-import { findGateway } from "~gateways/wayfinder";
+import { retryWithGateways } from "~gateways/wayfinder";
 import { useLocation } from "~wallets/router/router.utils";
 import HeadV2 from "~components/popup/HeadV2";
 import SliderMenu from "~components/SliderMenu";
@@ -44,7 +43,7 @@ import {
   type TokenInfo
 } from "~tokens/aoTokens/ao";
 import BigNumber from "bignumber.js";
-import { AO_NATIVE_TOKEN, EXP_TOKEN } from "~utils/ao_import";
+import { EXP_TOKEN } from "~utils/ao_import";
 import { AnnouncementPopup } from "./announcement";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { useTokenBalance, useTokenPrice, useTokenPrices } from "~tokens/hooks";
@@ -289,9 +288,10 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
         if (note) {
           byte = new TextEncoder().encode(note).byteLength;
         }
-        const gateway = await findGateway({});
-        const arweave = new Arweave(gateway);
-        const txPrice = await arweave.transactions.getPrice(byte, recipient);
+
+        const { result: txPrice, arweave } = await retryWithGateways(
+          (arweave) => arweave.transactions.getPrice(byte, recipient)
+        );
 
         if (tokenID === "AR") {
           setNetworkFee(arweave.ar.winstonToAr(txPrice));
@@ -489,6 +489,7 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
                 ticker={
                   qtyMode === "fiat" ? "USD" : token?.Ticker?.toUpperCase()
                 }
+                autoFocus
               />
               {!!+price && (
                 <Flex

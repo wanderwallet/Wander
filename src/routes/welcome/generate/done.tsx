@@ -1,7 +1,7 @@
 import { Button, Text } from "@arconnect/components-rebrand";
 import { WalletContext, type SetupWelcomeViewParams } from "../setup";
 import browser from "webextension-polyfill";
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import { PageType, trackPage } from "~utils/analytics";
 import JSConfetti from "js-confetti";
 import WalletIconSvg from "url:~assets/setup/wallet.svg";

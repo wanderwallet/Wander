@@ -1,0 +1,166 @@
+@import "../../../tokens/index.css";
+
+.button {
+  all: unset;
+  border-radius: var(--border-radius-xl);
+  text-align: center;
+  box-sizing: border-box;
+
+  display: flex;
+  align-items: center;
+
+  margin: var(--spacing-2) 0;
+
+  cursor: pointer;
+  overflow: hidden;
+  transition: all 0.2s;
+  padding: var(--spacing-6) 0;
+}
+
+.button--icon-start {
+  svg {
+    justify-self: flex-start;
+  }
+}
+
+.button--icon-end {
+  svg {
+    justify-self: flex-end;
+  }
+}
+
+.button__variant__primary {
+  background-color: var(--color-background-button-primary);
+  color: var(--color-button-primary-active);
+  border: 1px solid transparent;
+}
+
+.button__variant__outlined {
+  background-color: inherit;
+  color: var(--color-button-outlined-active);
+  border: 1px solid var(--color-button-outlined-border);
+}
+
+.button__variant__secondary {
+  background-color: var(--color-button-secondary-background);
+  color: var(--color-button-secondary-active);
+  border: 1px solid var(--color-button-secondary-background);
+}
+
+.button__variant__success {
+  background-color: var(--color-button-primary-success);
+  color: var(--color-button-primary-active);
+  border: 1px solid var(--color-button-primary-success);
+}
+
+.button__variant__error {
+  background-color: var(--color-button-primary-error);
+  color: var(--color-button-primary-active);
+  border: 1px solid var(--color-button-primary-error);
+}
+
+.button__variant__link {
+  border: none;
+  background-color: inherit;
+  color: var(--color-link-primary);
+  padding: 0 auto;
+
+  text-decoration: none;
+  font-size: var(--font-size-md);
+  font-family: var(--font-family-serif);
+  font-weight: var(--font-weight-semi);
+}
+
+.button__variant__icon {
+  background-color: transparent;
+  color: transparent;
+  border: none;
+}
+
+.button__blurry {
+  filter: blur(2px);
+}
+
+.button__full__width {
+  width: var(--full-width) !important;
+  height: var(--button-default-height);
+
+  font-size: var(--font-size-md);
+  font-family: var(--font-family-serif);
+}
+
+.button__xs {
+  min-width: var(--button-xs-width);
+  height: var(--button-xs-height);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semi);
+  font-family: var(--font-family-serif);
+}
+
+.button__sm {
+  min-width: var(--button-sm-width);
+  height: var(--button-sm-height);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semi);
+  font-family: var(--font-family-serif);
+}
+
+.button__md {
+  width: var(--button-default-width);
+  height: var(--button-default-height);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semi);
+  font-family: var(--font-family-serif);
+  gap: var(--spacing-2);
+}
+
+.button__lg {
+  width: var(--button-lg-width);
+  height: var(--button-lg-height);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semi);
+  font-family: var(--font-family-serif);
+  gap: var(--spacing-2);
+}
+
+.button__xl {
+  width: var(--button-xl-width);
+  height: var(--button-xl-height);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semi);
+  font-family: var(--font-family-serif);
+  gap: var(--spacing-2);
+}
+
+.button__xxl {
+  width: var(--button-xxl-width);
+  height: var(--button-xxl-height);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semi);
+  font-family: var(--font-family-serif);
+  gap: var(--spacing-2);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+button:active {
+  transform: scale(0.95);
+  opacity: 0.8;
+}
+
+button:hover {
+  opacity: 0.8;
+}
+
+.button__left {
+  justify-content: left;
+}
+.button__center {
+  justify-content: center;
+}
+.button__right {
+  justify-content: right;
+}
