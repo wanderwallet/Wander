@@ -11,6 +11,7 @@ import {
 } from "@untitled-ui/icons-react";
 import { getAppURL, truncateMiddle } from "~utils/format";
 import WanderIcon from "url:assets/icon.svg";
+import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 
 export function ExploreView() {
   const [filteredApps, setFilteredApps] = useState(apps);
@@ -357,8 +358,10 @@ const FixedHeader = styled.div`
   gap: 1rem;
   flex-direction: column;
   position: fixed;
+  width: ${IS_EMBEDDED_APP ? "100%" : "377px"};
+  margin: 0 auto;
   left: 0;
-  width: 100vw;
+  right: 0;
   padding: 24px 24px 16px 24px;
   box-sizing: border-box;
   background: linear-gradient(
