@@ -1,0 +1,35 @@
+@import "../../../tokens/index.css";
+
+.checkbox {
+  -webkit-appearance: none;
+  position: relative;
+  width: 50px;
+  height: 30px;
+  border-radius: 25px;
+  background-color: var(--color-background-button-disabled);
+  transition: background 1s;
+  outline: none;
+  cursor: pointer;
+}
+
+.checkbox::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 30%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  height: 1.25rem;
+  width: 1.25rem;
+  background-color: rgb(255, 255, 255);
+  transition: left 0.3s;
+}
+
+.checkbox:checked {
+  background-color: var(--color-background-switch-enabled);
+}
+
+.checkbox:checked::after {
+  top: 50%;
+  left: 70%;
+}

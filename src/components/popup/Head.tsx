@@ -9,7 +9,6 @@ import { AnimatePresence, motion } from "framer-motion";
 import { hoverEffect, useTheme } from "~utils/theme";
 import { useStorage } from "~utils/storage";
 import { ArrowLeftIcon } from "@iconicicons/react";
-import { useAnsProfile } from "~lib/ans";
 import { ExtensionStorage } from "~utils/storage";
 import HardwareWalletIcon, {
   hwIconAnimateProps
@@ -21,6 +20,9 @@ import WalletSwitcher from "./WalletSwitcher";
 import styled from "styled-components";
 import { svgie } from "~utils/svgies";
 import { useLocation } from "~wallets/router/router.utils";
+import { useNameServiceProfile } from "~lib/nameservice";
+import { FULL_HISTORY, useGateway } from "~gateways/wayfinder";
+import { concatGatewayURL } from "~gateways/utils";
 
 export default function Head({
   title,
@@ -70,7 +72,7 @@ export default function Head({
     instance: ExtensionStorage
   });
 
-  const ans = useAnsProfile(activeAddress);
+  const nameServiceProfile = useNameServiceProfile(activeAddress);
 
   const svgieAvatar = useMemo(
     () => svgie(activeAddress, { asDataURI: true }),
@@ -87,6 +89,7 @@ export default function Head({
 
   // hardware api type
   const hardwareApi = useHardwareApi();
+  const gateway = useGateway(FULL_HISTORY);
 
   return (
     <HeadWrapper
@@ -114,13 +117,17 @@ export default function Head({
       >
         <PageTitle>{title}</PageTitle>
         <ClickableAvatar
-          img={ans?.avatar || svgieAvatar}
+          img={
+            nameServiceProfile?.logo
+              ? concatGatewayURL(gateway) + "/" + nameServiceProfile.logo
+              : svgieAvatar
+          }
           onClick={() => {
             if (!allowOpen) return;
             setOpen(true);
           }}
         >
-          {!ans?.avatar && !svgieAvatar && <NoAvatarIcon />}
+          {!nameServiceProfile?.logo && !svgieAvatar && <NoAvatarIcon />}
           <AnimatePresence initial={false}>
             {hardwareApi === "keystone" && (
               <HardwareWalletIcon

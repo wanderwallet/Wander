@@ -39,6 +39,9 @@ import WanderIcon from "url:assets/icon.svg";
 import Image from "~components/common/Image";
 import { Flex } from "~components/common/Flex";
 import { svgie } from "~utils/svgies";
+import { useNameServiceProfile } from "~lib/nameservice";
+import { FULL_HISTORY, useGateway } from "~gateways/wayfinder";
+import { concatGatewayURL } from "~gateways/utils";
 
 type Page = "unlock" | "connect" | "permissions" | "confirm";
 
@@ -53,7 +56,7 @@ export function ConnectAuthRequestView() {
     instance: ExtensionStorage
   });
 
-  const [signPolicy, setSignPolicy] = useState<SignPolicy>("always_ask");
+  const [signPolicy, setSignPolicy] = useState<SignPolicy>("ask_when_spending");
 
   const askPassword = useAskPassword();
 
@@ -64,11 +67,18 @@ export function ConnectAuthRequestView() {
 
   const [avatar, setAvatar] = useState("");
 
+  const nameServiceProfile = useNameServiceProfile(wallet?.address);
+  const nsGateway = useGateway(FULL_HISTORY);
+
   useEffect(() => {
     if (!wallet?.address) return;
 
-    setAvatar(svgie(wallet?.address, { asDataURI: true }));
-  }, [wallet]);
+    if (nameServiceProfile?.logo && nsGateway?.protocol && nsGateway?.host) {
+      setAvatar(concatGatewayURL(nsGateway) + "/" + nameServiceProfile.logo);
+    } else {
+      setAvatar(svgie(wallet?.address, { asDataURI: true }));
+    }
+  }, [wallet, nameServiceProfile, nsGateway]);
 
   const { authRequest, acceptRequest, rejectRequest } =
     useCurrentAuthRequest("connect");

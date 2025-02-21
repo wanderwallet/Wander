@@ -1,0 +1,46 @@
+@import "../../../tokens/index.css";
+
+.wrapper {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--spacing-2);
+
+  font-size: var(--font-size-sm);
+  font-family: var(--font-family-serif);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-copyable-text-value);
+}
+
+.radio {
+  -webkit-appearance: none;
+  appearance: none;
+  margin: 0;
+
+  background-color: var(--color-non-checked-background-radio);
+
+  width: var(--checkbox-width);
+  height: var(--checkbox-height);
+
+  color: var(--color-border-radio);
+  border: 2.25px solid var(--color-border-radio);
+  border-radius: 50%;
+  transform: translateY(-0.075em);
+}
+
+.radio__checked {
+  background-color: var(--color-border-radio);
+}
+
+.radio__icon {
+  width: 14px;
+  height: 14px;
+  position: absolute;
+  color: var(--color-background-default);
+  margin-left: 1px;
+}
+
+.radio__blurry {
+  filter: blur(2px);
+}

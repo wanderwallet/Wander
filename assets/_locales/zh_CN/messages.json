@@ -605,9 +605,9 @@
       "message": "地址已复制",
       "description": "Address copy notification 2"
   },
-  "cannot_edit_with_ans": {
-      "message": "无法编辑昵称。钱包已经有 ANS 标签。",
-      "description": "Explainer for disabled edits for wallets with ANS profiles"
+  "cannot_edit_with_name_service": {
+      "message": "无法编辑昵称。钱包已经有 Name Service 标签。",
+      "description": "Explainer for disabled edits for wallets with name service names"
   },
   "add_wallet_subtitle": {
       "message": "您可以添加任意数量",
@@ -1056,7 +1056,11 @@
       "description": "Transaction sent successfully notification"
   },
   "failed_tx": {
-      "message": "无法发送交易",
+      "message": "无法发送交易，请重试。",
+      "description": "Transfer error notification"
+  },
+  "failed_tx_with_gateway": {
+      "message": "无法发送交易。请重试或使用不同的网关。",
       "description": "Transfer error notification"
   },
   "assets": {
@@ -2907,5 +2911,9 @@
             "example": "USD"
         }
         }
+    },
+    "switch_gateway": {
+        "message": "切换网关",
+        "description": "Switch gateway text"
     }
 }

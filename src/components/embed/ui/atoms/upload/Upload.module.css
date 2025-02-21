@@ -1,0 +1,40 @@
+@import "../../../tokens/index.css";
+
+.upload {
+  all: unset;
+  border-radius: var(--border-radius-lg);
+  border: 1px solid var(--color-copyable-border);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-family-serif);
+
+  overflow: hidden;
+  transition: all 0.2s;
+  padding: var(--spacing-12) var(--spacing-6);
+}
+
+.upload__blurry {
+  filter: blur(2px);
+}
+
+.upload__full__width {
+  width: 90%;
+  font-size: var(--font-size-md);
+  font-family: var(--font-family-serif);
+}
+
+upload:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+upload:active {
+  transform: scale(0.95);
+  opacity: 0.8;
+}
+
+upload:hover {
+  opacity: 0.8;
+}

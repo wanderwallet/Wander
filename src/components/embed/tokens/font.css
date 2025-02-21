@@ -1,0 +1,40 @@
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap");
+
+:root {
+  --font-family-serif: "Plus Jakarta Sans", serif;
+  --font-family-mono: "Plus Jakarta Sans", monospace;
+
+  --font-size-xxs: 0.625rem;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-4xl: 2rem;
+  --font-size-5xl: 2.25rem;
+  --font-size-6xl: 3rem;
+  --font-size-7xl: 4rem;
+  --font-size-8xl: 4.5rem;
+  --font-size-9xl: 6rem;
+
+  --font-weight-xlight: 200;
+  --font-weight-light: 300;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semi: 600;
+  --font-weight-bold: 700;
+
+  --line-height-shorter: 125%;
+  --line-height-short: 140%;
+  --line-height-base: 160%;
+  --line-height-tall: 180%;
+
+  --line-spacing-tighter: -0.05em;
+  --line-spacing-tight: -0.025em;
+  --line-spacing-normal: 0;
+  --line-spacing-wide: 0.025em;
+  --line-spacing-wider: 0.05em;
+  --line-spacing-widest: 0.1em;
+}

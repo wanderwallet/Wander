@@ -1,4 +1,4 @@
-import { currencies } from "~lib/coingecko";
+import { currencies } from "~utils/currency";
 import Setting from "./setting";
 import {
   BarChart07,
