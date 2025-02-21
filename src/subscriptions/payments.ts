@@ -1,5 +1,4 @@
 import { ExtensionStorage, type RawStoredTransfer } from "~utils/storage";
-import { fallbackGateway } from "~gateways/gateway";
 import type Transaction from "arweave/web/lib/transaction";
 import { EventType, trackEvent } from "~utils/analytics";
 import { SubscriptionStatus, type SubscriptionData } from "./subscription";
@@ -161,8 +160,8 @@ export const send = async (
       return submitted;
     } catch (e) {
       console.log("entered fallback gateway");
-      // FALLBACK IF ISP BLOCKS ARWEAVE.NET OR IF WAYFINDER FAILS
-      gateway = fallbackGateway;
+      // FALLBACK IF ISP BLOCKS the gateway or if the gateway fails
+      gateway = await findGateway({ random: true });
       const fallbackArweave = new Arweave(gateway);
       await fallbackArweave.transactions.sign(unRaw, keyfile);
       const submitted = await submitTx(

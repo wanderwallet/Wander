@@ -1056,7 +1056,11 @@
       "description": "Transaction sent successfully notification"
   },
   "failed_tx": {
-      "message": "无法发送交易",
+      "message": "无法发送交易，请重试。",
+      "description": "Transfer error notification"
+  },
+  "failed_tx_with_gateway": {
+      "message": "无法发送交易。请重试或使用不同的网关。",
       "description": "Transfer error notification"
   },
   "assets": {
@@ -2907,5 +2911,9 @@
             "example": "USD"
         }
         }
+    },
+    "switch_gateway": {
+        "message": "切换网关",
+        "description": "Switch gateway text"
     }
 }
