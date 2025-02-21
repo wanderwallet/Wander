@@ -31,6 +31,7 @@ import BigNumber from "bignumber.js";
 import { fetchWalletBalances } from "~utils/balances";
 import useSetting from "~settings/hook";
 import QRModal from "~components/modals/QRModal";
+import { useArPrice } from "~lib/coingecko";
 
 export default function WalletSwitcher({ open, close }: Props) {
   const theme = useTheme();
@@ -56,12 +57,14 @@ export default function WalletSwitcher({ open, close }: Props) {
 
   const [currency] = useSetting<string>("currency");
 
+  const { data: price = "0" } = useArPrice(currency);
+
   // load wallet datas
   const [wallets, setWallets] = useState<DisplayedWallet[]>([]);
 
-  const [walletBalances, setWalletBalances] = useState<
-    Record<string, { ar: BigNumber; fiat: BigNumber }>
-  >({});
+  const [walletBalances, setWalletBalances] = useState<Record<string, string>>(
+    {}
+  );
 
   const activeWallet = useMemo(
     () => wallets?.find(({ address }) => address === activeAddress),
@@ -129,13 +132,20 @@ export default function WalletSwitcher({ open, close }: Props) {
   useEffect(() => {
     const updateBalances = async () => {
       if (open && inactiveWallets.length > 0) {
-        const balances = await fetchWalletBalances(inactiveWallets, currency);
+        const balances = await fetchWalletBalances(inactiveWallets);
         setWalletBalances(balances);
       }
     };
 
     updateBalances();
-  }, [open, inactiveWallets, currency]);
+  }, [open, inactiveWallets]);
+
+  const fiatBalances = useMemo(() => {
+    return Object.entries(walletBalances).reduce((acc, [address, balance]) => {
+      acc[address] = BigNumber(balance).multipliedBy(price);
+      return acc;
+    }, {} as Record<string, BigNumber>);
+  }, [walletBalances, price]);
 
   // toasts
   const { setToast } = useToasts();
@@ -301,7 +311,7 @@ export default function WalletSwitcher({ open, close }: Props) {
                 </div>
                 <Balance>
                   {formatFiatBalance(
-                    walletBalances[wallet.address]?.fiat || BigNumber(0),
+                    fiatBalances[wallet.address] || BigNumber(0),
                     currency.toLowerCase()
                   )}
                 </Balance>

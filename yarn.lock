@@ -9232,10 +9232,10 @@ readdirp@~3.6.0:
   dependencies:
     picomatch "^2.2.1"
 
-redstone-api@^0.4.11:
-  version "0.4.12"
-  resolved "https://registry.yarnpkg.com/redstone-api/-/redstone-api-0.4.12.tgz#b634f710e13e95ba64d9cc8b3be7f004707a3e96"
-  integrity sha512-AR1zb7Pv4uXdfmJXj8rMl96x09krXUFgYDQaBXo5tn34e/VrE1VMja3DLR0W81izEjr8KcG9b9SHjIy5a1peWw==
+redstone-api@^0.4.13:
+  version "0.4.13"
+  resolved "https://registry.npmjs.org/redstone-api/-/redstone-api-0.4.13.tgz#28819546f35de62eda61351d76f3dd86214d3840"
+  integrity sha512-PNPo9NZpTVEARAAtcbCs7B+ys9nLdcDDtw0fIl+5+RHGtvBEP99wR3W84f/Leazn0esn4ttRAL9SjMaLzS4zbA==
   dependencies:
     ar-gql "^0.0.6"
     arweave "^1.10.16"

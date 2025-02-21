@@ -3,11 +3,11 @@ import { isSplitTransaction } from "~api/modules/sign/transaction_builder";
 import { formatFiatBalance, formatTokenBalance } from "~tokens/currency";
 import type { DecodedTag } from "~api/modules/sign/tags";
 import type { Tag } from "arweave/web/lib/transaction";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useScanner } from "@arconnect/keystone-sdk";
 import { useActiveWallet, useAskPassword } from "~wallets/hooks";
 import { formatAddress } from "~utils/format";
-import { getArPrice } from "~lib/coingecko";
+import { useArPrice } from "~lib/coingecko";
 import type { UR } from "@ngraveio/bc-ur";
 import {
   AmountTitle,
@@ -73,13 +73,7 @@ export function SignAuthRequestView() {
   const passwordInput = useInput();
 
   // arweave price
-  const [arPrice, setArPrice] = useState(0);
-
-  useEffect(() => {
-    getArPrice(currency)
-      .then((res) => setArPrice(res))
-      .catch();
-  }, [currency]);
+  const { data: arPrice = "0" } = useArPrice(currency);
 
   // transaction price
   const fiatPrice = useMemo(

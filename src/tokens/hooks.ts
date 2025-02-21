@@ -31,6 +31,14 @@ export const defaultQueryCache = {
   staleTime: Infinity
 };
 
+export const useConversionRate = (currency: string) =>
+  useQuery({
+    queryKey: ["conversionRate", currency],
+    queryFn: () => getConversionRate(currency),
+    enabled: !!currency,
+    ...defaultOptions
+  });
+
 export function useQueryCache<T = unknown>(queryKey: unknown[]) {
   return useQuery({ ...defaultQueryCache, queryKey });
 }
@@ -59,11 +67,7 @@ export function useTokenBalance(
 export function useTokenPrice(id?: string, currency = "USD") {
   const isArToken = id === "AR";
 
-  const conversionRateQuery = useQuery({
-    queryKey: ["conversionRate", currency],
-    queryFn: () => getConversionRate(currency),
-    ...defaultOptions
-  });
+  const conversionRateQuery = useConversionRate(currency);
 
   const priceQuery = useQuery({
     queryKey: ["tokenPrice", id],
@@ -94,12 +98,7 @@ export function useTokenPrice(id?: string, currency = "USD") {
 export function useTokenPrices(ids?: string[]) {
   const [currency = "USD"] = useSetting("currency");
 
-  const conversionRateQuery = useQuery({
-    queryKey: ["conversionRate", currency],
-    queryFn: () => getConversionRate(currency),
-    enabled: !!currency,
-    ...defaultOptions
-  });
+  const conversionRateQuery = useConversionRate(currency);
 
   const pricesQuery = useQuery({
     queryKey: ["tokenPrices", ids?.slice().sort().join(",")],
