@@ -7,6 +7,7 @@ import {
   CreditCard01,
   Grid01,
   InfoCircle,
+  Maximize01,
   Pencil02,
   Settings01,
   Users01,
@@ -28,6 +29,7 @@ import { AboutDashboardView } from "~components/dashboard/About";
 import { SignSettingsDashboardView } from "~components/dashboard/SignSettings";
 import { ResetDashboardView } from "~components/dashboard/Reset";
 import { AnalyticsSettingsDashboardView } from "~components/dashboard/Analytics";
+import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 
 export interface DashboardRouteConfig extends Omit<SettingItemProps, "active"> {
   name: string;
@@ -173,3 +175,12 @@ export const quickSettingsMenuItems: Omit<
     externalLink: "tabs/dashboard.html"
   }
 ];
+
+if (process.env.NODE_ENV === "development" && !IS_EMBEDDED_APP) {
+  quickSettingsMenuItems.splice(5, 0, {
+    name: "fullscreen",
+    displayName: "setting_fullscreen",
+    icon: Maximize01,
+    externalLink: "tabs/fullscreen.html"
+  });
+}

@@ -2915,5 +2915,9 @@
     "switch_gateway": {
         "message": "切换网关",
         "description": "Switch gateway text"
+    },
+    "setting_fullscreen": {
+        "message": "全屏",
+        "description": "Fullscreen text"
     }
 }

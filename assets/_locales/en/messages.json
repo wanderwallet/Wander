@@ -2925,5 +2925,9 @@
   "switch_gateway": {
     "message": "Switch Gateway",
     "description": "Switch gateway text"
+  },
+  "setting_fullscreen": {
+    "message": "Fullscreen",
+    "description": "Fullscreen text"
   }
 }

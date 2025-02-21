@@ -150,7 +150,7 @@ export function useTotalFiatBalance() {
     .filter((id) => id !== EXP_TOKEN && id !== "AR");
 
   const pricesQuery = useQueryCache<Record<string, number>>([
-    "botegaPrices",
+    "tokenPrices",
     tokenIds?.slice().sort().join(",")
   ]);
 
@@ -185,6 +185,7 @@ export function useTotalFiatBalance() {
     address,
     conversionRateQuery.data,
     pricesQuery.data,
-    tokenBalanceQueries
+    tokenBalanceQueries,
+    arPrice
   ]);
 }
