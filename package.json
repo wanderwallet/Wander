@@ -52,7 +52,7 @@
   },
   "dependencies": {
     "@arconnect/components": "^1.0.0",
-    "@arconnect/components-rebrand": "github:arconnectio/components-rebrand.git#master",
+    "@arconnect/components-rebrand": "https://github.com/arconnectio/components-rebrand.git#master",
     "@arconnect/keystone-sdk": "^0.0.5",
     "@arconnect/webext-bridge": "^5.0.6",
     "@iconicicons/react": "^1.5.0",
