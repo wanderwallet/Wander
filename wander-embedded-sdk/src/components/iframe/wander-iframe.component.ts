@@ -15,31 +15,11 @@ import {
   WanderEmbeddedModalCSSVars
 } from "../../wander-embedded.types";
 import { addCSSVariables } from "../../utils/styles/styles.utils";
+import { getWanderIframeTemplateContent } from "./wander-iframe.template";
 
 export class WanderIframe {
   static DEFAULT_BACKDROP_ID = "wanderEmbeddedBackdrop" as const;
   static DEFAULT_IFRAME_ID = "wanderEmbeddedIframe" as const;
-
-  static IFRAME_BASE_STYLE: CSSProperties = {
-    position: "fixed",
-    zIndex: "calc(var(--zIndex, 9999) + 1)",
-    background: "var(--background, white)",
-    borderWidth: "var(--borderWidth, 2px)",
-    borderStyle: "solid",
-    borderColor: "var(--borderColor, rgba(0, 0, 0, .125))",
-    borderRadius: "var(--borderRadius, 10px)",
-    boxShadow: "var(--boxShadow, 0 0 16px 0 rgba(0, 0, 0, 0.125))",
-    width: "calc(var(--preferredWidth, 400px) - 2 * var(--borderWidth, 2px))",
-    height: "calc(var(--preferredHeight, 600px) - 2 * var(--borderWidth, 2px))",
-    // TODO: No min on mobile:
-    minWidth: "400px",
-    minHeight: "400px",
-    maxWidth:
-      "calc(100dvw - 2 * var(--backdropPadding, 32px) - 2 * var(--borderWidth, 2px))",
-    maxHeight:
-      "calc(100dvh - 2 * var(--backdropPadding, 32px) - 2 * var(--borderWidth, 2px))",
-    boxSizing: "content-box"
-  };
 
   static BACKDROP_HIDE_STYLE: CSSProperties = {
     pointerEvents: "none",
@@ -182,13 +162,20 @@ export class WanderIframe {
     host.id = options.id || WanderIframe.DEFAULT_IFRAME_ID;
 
     const shadow = host.attachShadow({ mode: "open" });
+    const template = document.createElement("template");
+
+    template.innerHTML = getWanderIframeTemplateContent({
+      mobileConfig: options.mobileConfig
+    });
+
+    shadow.appendChild(template.content);
 
     const backdrop = document.createElement("div");
-
+    backdrop.className = "backdrop";
     backdrop.id = WanderIframe.DEFAULT_BACKDROP_ID;
 
     const iframe = document.createElement("iframe");
-
+    iframe.className = "iframe";
     iframe.src = src;
 
     // We don't add the iframe as a child of backdrop to have more control over the hide/show transitions:
@@ -249,8 +236,7 @@ export class WanderIframe {
         iframeStyle.top = "50%";
         iframeStyle.left = "50%";
         iframeStyle.transform = "translate(-50%, -50%)"; // TODO: Add scale effect when appearing?
-        iframeStyle.transition =
-          "height linear 300ms, width linear 300ms, opacity linear 150ms";
+        iframeStyle.transition = "opacity linear 150ms";
         cssVars.preferredWidth ??= layoutConfig.fixedWidth || routeConfig.width;
         cssVars.preferredHeight ??=
           layoutConfig.fixedHeight || routeConfig.height;
@@ -268,8 +254,7 @@ export class WanderIframe {
 
         iframeStyle[y] = "var(--backdropPadding, 32px)";
         iframeStyle[x] = "var(--backdropPadding, 32px)";
-        iframeStyle.transition =
-          "height linear 300ms, width linear 300ms, opacity linear 150ms";
+        iframeStyle.transition = "opacity linear 150ms";
         // iframeStyle.minWidth = 0;
         // iframeStyle.minHeight = 0;
         cssVars.preferredWidth ??= layoutConfig.fixedWidth || routeConfig.width;
@@ -292,7 +277,7 @@ export class WanderIframe {
         iframeStyle[y] = layoutConfig.expanded
           ? 0
           : `var(--backdropPadding, 0)`;
-        iframeStyle.transition = "transform linear 150ms";
+        iframeStyle.transition = "opacity linear 150ms";
 
         this.iframeHideStyle = {
           transform: `translate(calc(${sign}100% ${sign} var(--backdropPadding, 32px)), 0)`
@@ -344,9 +329,6 @@ export class WanderIframe {
       this.iframe.removeAttribute("style");
 
       Object.assign(this.backdrop.style, WanderIframe.BACKDROP_BASE_STYLE);
-      Object.assign(this.iframe.style, WanderIframe.IFRAME_BASE_STYLE);
-
-      // TODO: Animate/transition this. First close the old layout. Then open the new one.
     }
 
     Object.assign(

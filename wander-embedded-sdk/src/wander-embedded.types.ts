@@ -7,10 +7,19 @@ export type RouteType =
   | "settings"
   | "auth-request";
 
+export interface MobileLayoutConfig {
+  fullscreen?: boolean;
+  padding?: number;
+  height?: string | number; // Allows percentage or fixed height
+  borderRadius?: number;
+  border?: boolean;
+}
+
 export interface ModalLayoutConfig {
   type: "modal";
   fixedWidth?: number;
   fixedHeight?: number;
+  mobile?: MobileLayoutConfig;
 }
 
 export interface PopupLayoutConfig {
@@ -18,6 +27,7 @@ export interface PopupLayoutConfig {
   position?: WanderEmbeddedButtonPosition;
   fixedWidth?: number;
   fixedHeight?: number;
+  mobile?: MobileLayoutConfig;
 }
 
 export interface SidebarLayoutConfig {
@@ -25,6 +35,7 @@ export interface SidebarLayoutConfig {
   position?: "left" | "right";
   expanded?: boolean;
   fixedWidth?: number;
+  mobile?: MobileLayoutConfig;
 }
 
 export interface HalfLayoutConfig {
@@ -133,6 +144,8 @@ export interface WanderEmbeddedIframeOptions
    *   backdrop is not visible.
    */
   clickOutsideBehavior?: WanderEmbeddedClickOutsideBehavior;
+
+  mobileConfig?: MobileLayoutConfig; // Add mobile layout configuration options
 }
 
 export interface WanderEmbeddedIframeConfig
