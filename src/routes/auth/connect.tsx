@@ -32,7 +32,7 @@ import Permissions from "../../components/auth/Permissions";
 import { HeadAuth } from "~components/HeadAuth";
 import { AuthButtons } from "~components/auth/AuthButtons";
 import Squircle from "~components/Squircle";
-import { useActiveWallet, useAskPassword } from "~wallets/hooks";
+import { useActiveWallet } from "~wallets/hooks";
 import Checkbox from "~components/Checkbox";
 import { ChevronRight, Edit02, InfoCircle } from "@untitled-ui/icons-react";
 import WanderIcon from "url:assets/icon.svg";
@@ -58,7 +58,13 @@ export function ConnectAuthRequestView() {
 
   const [signPolicy, setSignPolicy] = useState<SignPolicy>("ask_when_spending");
 
-  const askPassword = useAskPassword();
+  const [askPassword] = useStorage<boolean>(
+    {
+      key: "connect_require_password",
+      instance: ExtensionStorage
+    },
+    false
+  );
 
   // permissions to add
   const [permissions, setPermissions] = useState<PermissionType[]>([]);
