@@ -1,10 +1,6 @@
 import type { PropsWithChildren } from "react";
-import type {
-  DbWallet,
-  AuthMethod,
-  DbUser
-} from "~utils/authentication/fakeDB";
 import type { JWKInterface } from "arweave/web/lib/wallet";
+import type { DbWallet, DbUserProfile, AuthProviderType } from "embed-api";
 
 export type AuthStatus =
   | "unknown"
@@ -39,13 +35,13 @@ export interface EmbeddedProviderProps extends PropsWithChildren {}
 
 export interface EmbeddedContextState {
   authStatus: AuthStatus;
-  authMethod: null | AuthMethod;
+  authProviderType: null | AuthProviderType;
   userId: null | string;
   wallets: WalletInfo[];
   generatedTempWalletAddress: null | string;
   importedTempWalletAddress: null | string;
   lastRegisteredWallet: null | DbWallet;
-  recoverableAccounts: null | DbUser[];
+  recoverableAccounts: null | DbUserProfile[];
   // TODO: This needs to reference which wallet needs to be backed up (assuming each one is backed up individually)
   promptToBackUp: boolean;
   backedUp: boolean;
@@ -57,11 +53,11 @@ export interface RecoveryJSON {
 }
 
 export interface EmbeddedContextData extends EmbeddedContextState {
-  authenticate: (authMethod: AuthMethod) => Promise<void>;
-  fetchRecoverableAccounts: () => Promise<DbUser[]>;
+  authenticate: (authProviderType: AuthProviderType) => Promise<void>;
+  fetchRecoverableAccounts: () => Promise<DbUserProfile[]>;
   clearRecoverableAccounts: () => void;
   recoverAccount: (
-    authMethod: AuthMethod,
+    authProviderType: AuthProviderType,
     accountToRecoverId: string
   ) => Promise<void>;
   restoreWallet: (

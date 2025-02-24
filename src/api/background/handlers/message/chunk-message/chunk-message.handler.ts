@@ -23,7 +23,7 @@ export const handleChunkMessage: OnMessageCallback<
     isExactly(
       sender.context,
       "content-script",
-      "Chunk calls are only accepted from the injected-script -> content-script"
+      "Chunk message are only accepted from the injected-script -> content-script"
     );
     isChunk(data.data);
 

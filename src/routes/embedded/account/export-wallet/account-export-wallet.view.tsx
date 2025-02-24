@@ -1,9 +1,9 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { DevFigmaScreen } from "~components/dev/figma-screen/figma-screen.component";
-import { MockedFeatureFlags } from "~utils/authentication/fakeDB";
 import { WalletUtils } from "~utils/wallets/wallets.utils";
 
 import screenSrc from "url:/assets-beta/figma-screens/export-wallet.view.png";
+import { EMBEDDED_FEATURE_FLAGS } from "~utils/embedded/embedded.constants";
 
 export function AccountExportWalletEmbeddedView() {
   const { wallets, downloadKeyfile, copySeedphrase } = useEmbedded();
@@ -34,7 +34,7 @@ export function AccountExportWalletEmbeddedView() {
           // mentioning the seedPhrase might be gone and that it's only available in the device where the wallet was
           // created (we can show that browser that was used from the wallet metadata):
           isDisabled:
-            !MockedFeatureFlags.maintainSeedPhrase ||
+            !EMBEDDED_FEATURE_FLAGS.STORE_SEED_PHRASE ||
             !WalletUtils.hasEncryptedSeedPhrase(walletAddress)
         },
         {

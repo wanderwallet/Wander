@@ -22,6 +22,7 @@ import {
 } from "~utils/wallets/wallets.constants";
 import { ExtensionStorage } from "~utils/storage";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
+import { random, pki } from "node-forge";
 
 async function generateSeedPhrase() {
   log(LOG_GROUP.WALLET_GENERATION, "generateSeedPhrase()");
@@ -201,13 +202,59 @@ async function generateShareHash(share: string): Promise<string> {
   return Buffer.from(new Uint8Array(hashBuffer)).toString("base64");
 }
 
+/**
+ * See:
+ * - https://github.com/framp/zero-knowledge-node/blob/master/keypair-auth/crypto-utils.js
+ * - https://www.youtube.com/watch?v=cMoD0wIxIpQ
+ */
+async function generateSharePublicKey(share: string): Promise<string> {
+  log(LOG_GROUP.WALLET_GENERATION, "generateSharePublicKey()");
+
+  const sharePrng = random.createInstance();
+
+  sharePrng.seedFileSync = (needed) => {
+    let r = "",
+      i = 0,
+      j = 0;
+
+    while (i++ < needed) {
+      r += share[j++];
+      if (j === share.length) j = 0;
+    }
+
+    return r;
+  };
+
+  return new Promise((resolve, reject) => {
+    pki.rsa.generateKeyPair(
+      {
+        bits: 2048,
+        prng: sharePrng
+      },
+      (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          const publicKey = result.publicKey;
+          const publicKeyPEM = pki.publicKeyToPem(publicKey);
+
+          // TODO: Must be converted to base54:
+          resolve(publicKeyPEM);
+        }
+      }
+    );
+  });
+}
+
+// TODO: Add generateSharePrivateKey
+
 async function generateChallengeSignature(
   challenge: string,
   jwk: JWKInterface
 ): Promise<string> {
   log(LOG_GROUP.WALLET_GENERATION, "generateChallengeSignature()");
 
-  // TODO
+  // TODO: Coy from "embeded-api"
 
   return Promise.resolve("");
 }
@@ -391,6 +438,7 @@ export const WalletUtils = {
   generateDeviceNonce,
   generateWalletJWKFromShares,
   generateShareHash,
+  generateSharePublicKey,
   generateChallengeSignature,
 
   // Getters:

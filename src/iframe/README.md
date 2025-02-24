@@ -1,4 +1,4 @@
-# ArConnect Embedded
+# Wander Embedded
 
 ## Testing
 

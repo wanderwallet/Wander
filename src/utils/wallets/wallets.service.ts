@@ -1,51 +1,46 @@
-import { FakeDB, type DbWallet } from "~utils/authentication/fakeDB";
+import {
+  Chain,
+  trpcVanilla,
+  WalletPrivacySetting,
+  WalletStatus
+} from "embed-api";
 import {
   WalletUtils,
   type DeviceNonce,
   type DeviceShareInfo
 } from "~utils/wallets/wallets.utils";
 
-async function fetchWallets(userId: string): Promise<DbWallet[]> {
-  return FakeDB.fetchWallets(userId);
+async function fetchWallets() {
+  return trpcVanilla.fetchWallets.query();
 }
 
-export interface CreateWalletParams {
-  // TODO: Bring in the B64 utils and types from Othent
+export type CreatePublicWalletParams = Omit<
+  Exclude<Parameters<typeof trpcVanilla.createPublicWallet.mutate>[0], void>,
+  "status" | "chain" | "walletPrivacySetting" | "canRecoverAccountSetting"
+>;
 
-  // TODO: Local wallets for those that do not want anything to do with our server/db:
-  address: string;
-  publicKey: string;
-  walletType: "secret" | "private" | "public"; // TODO: Add "local"?
-  deviceNonce: string;
-  authShare: string;
-  deviceShareHash: string;
-  canBeUsedToRecoverAccount: boolean;
-  deviceInfo: any; // TODO: Add type
-
-  source: {
-    type: "imported" | "generated";
-    from: "seedPhrase" | "binary" | "keyFile" | "shareFile";
-  };
+async function createPublicWallet(wallet: CreatePublicWalletParams) {
+  return trpcVanilla.createPublicWallet.mutate({
+    ...wallet,
+    status: WalletStatus.ENABLED,
+    chain: Chain.ARWEAVE,
+    walletPrivacySetting: WalletPrivacySetting.PUBLIC,
+    canRecoverAccountSetting: true
+  });
 }
 
-async function createWallet(wallet: CreateWalletParams): Promise<DbWallet> {
-  return FakeDB.addWallet(wallet);
-}
+export type RegisterRecoveryShareParams = Omit<
+  Exclude<Parameters<typeof trpcVanilla.registerRecoveryShare.mutate>[0], void>,
+  ""
+>;
 
-export interface CreateRecoverySharePrams {
-  walletId: string;
-  walletAddress: string;
-  deviceNonce: string;
-  recoveryAuthShare: string;
-  recoveryBackupShareHash: string;
-  deviceInfo: any;
-}
-
-async function createRecoveryShare(
-  recoveryData: CreateRecoverySharePrams
+async function registerRecoveryShare(
+  recoveryData: RegisterRecoveryShareParams
 ): Promise<void> {
-  return FakeDB.addRecoveryShare(recoveryData);
+  return trpcVanilla.registerRecoveryShare.mutate(recoveryData);
 }
+
+// TODO: Add registerWalletExport
 
 export interface FetchFirstAvailableAuthShareParams {
   deviceNonce: DeviceNonce;
@@ -136,8 +131,8 @@ async function recoverWallet(
 
 export const WalletService = {
   fetchWallets,
-  createWallet,
-  createRecoveryShare,
+  createPublicWallet,
+  registerRecoveryShare,
   fetchFirstAvailableAuthShare,
   rotateAuthShare,
   fetchWalletRecoveryChallenge,

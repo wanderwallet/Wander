@@ -4,7 +4,7 @@ import { useWallets } from "~utils/wallets/wallets.hooks";
 import type { WalletStatus } from "~utils/wallets/wallets.provider";
 import type { ExtensionRouteOverride } from "~wallets/router/extension/extension.routes";
 import type {
-  ArConnectRoutePath,
+  WanderRoutePath,
   BaseLocationHook
 } from "~wallets/router/router.types";
 
@@ -30,5 +30,5 @@ export const useExtensionLocation: BaseLocationHook = () => {
 
   if (override) return [override, NOOP];
 
-  return [wocation as ArConnectRoutePath, wavigate];
+  return [wocation as WanderRoutePath, wavigate];
 };

@@ -1,64 +1,59 @@
-import {
-  FakeDB,
-  type AuthMethod,
-  type DbAuthenticateData,
-  type DbUser
-} from "~utils/authentication/fakeDB";
+import { AuthProviderType, Chain, trpcVanilla } from "embed-api";
 
-async function refreshSession(): Promise<DbAuthenticateData | null> {
-  return FakeDB.refreshSession();
+async function authenticate(authProviderType: AuthProviderType) {
+  return trpcVanilla.authenticate.mutate({ authProviderType });
 }
 
-async function authenticate(
-  authMethod: AuthMethod
-): Promise<DbAuthenticateData | null> {
-  return FakeDB.authenticate(authMethod);
+async function refreshSession() {
+  return trpcVanilla.refreshSession.mutate();
 }
 
-async function signOut(): Promise<void> {
-  // TODO
+async function logout() {
+  return trpcVanilla.logout.mutate();
 }
 
-async function fetchWalletRecoveryChallenge(
-  walletAddress: string
-): Promise<string> {
-  return FakeDB.fetchWalletRecoveryChallenge(walletAddress);
+async function generateFetchRecoverableAccountsChallenge(address: string) {
+  return trpcVanilla.generateFetchRecoverableAccountsChallenge.mutate({
+    chain: Chain.ARWEAVE,
+    address
+  });
 }
 
 async function fetchRecoverableAccounts(
-  walletAddress: string,
-  challengeSignature: string
-): Promise<DbUser[]> {
-  return FakeDB.fetchRecoverableAccounts(walletAddress, challengeSignature);
+  challengeId: string,
+  challengeSolution: string
+) {
+  return trpcVanilla.fetchRecoverableAccounts.mutate({
+    challengeId,
+    challengeSolution
+  });
 }
 
-async function fetchAccountRecoveryChallenge(
-  userId: string,
-  walletAddress: string
-): Promise<string> {
-  return FakeDB.fetchAccountRecoveryChallenge(userId, walletAddress);
+async function generateAccountRecoveryChallenge(
+  address: string,
+  userId: string
+) {
+  return trpcVanilla.generateAccountRecoveryChallenge.mutate({
+    chain: Chain.ARWEAVE,
+    address,
+    userId
+  });
 }
 
-async function recoverAccount(
-  authMethod: AuthMethod,
-  userId: string,
-  walletAddress: string,
-  challengeSignature: string
-): Promise<DbAuthenticateData> {
-  return FakeDB.recoverAccount(
-    authMethod,
+async function recoverAccount(userId: string, challengeSolution: string) {
+  return trpcVanilla.recoverAccount.mutate({
     userId,
-    walletAddress,
-    challengeSignature
-  );
+    challengeSolution
+  });
 }
 
 export const AuthenticationService = {
-  refreshSession,
   authenticate,
-  signOut,
-  fetchWalletRecoveryChallenge,
+  refreshSession,
+  logout,
+
+  generateFetchRecoverableAccountsChallenge,
   fetchRecoverableAccounts,
-  fetchAccountRecoveryChallenge,
+  generateAccountRecoveryChallenge,
   recoverAccount
 } as const;
