@@ -1,5 +1,6 @@
 import React from "react";
 import styles from "./Button.module.css";
+import { Link } from "~wallets/router/components/link/Link";
 import type { ButtonBaseProps } from "./Button.types";
 import { Loading } from "../loading";
 
@@ -29,7 +30,7 @@ const Button = React.forwardRef<
   ) => {
     const isAnchor = variant === "link" || props.href;
 
-    const Component = isAnchor ? "a" : "button";
+    const Component = isAnchor ? Link : "button";
 
     const hasSize = !isAnchor || !isFullWidth;
 

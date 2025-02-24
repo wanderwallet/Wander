@@ -13,6 +13,7 @@
   overflow: hidden;
   transition: all 0.2s;
   padding: var(--spacing-12) var(--spacing-6);
+  cursor: pointer;
 }
 
 .upload__blurry {

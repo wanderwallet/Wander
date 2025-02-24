@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import styles from "./Upload.module.css";
 import type { UploadBaseProps } from "./Upload.types";
 import { Loading } from "../loading";
-import { Box, Text, UploadIcon } from "..";
+import { Box, Text, UploadIcon, CheckIcon } from "..";
 
 const Upload = React.forwardRef<HTMLDivElement, UploadBaseProps>(
   (
@@ -14,6 +14,8 @@ const Upload = React.forwardRef<HTMLDivElement, UploadBaseProps>(
       isFullWidth,
       isBlurry,
       isLoading,
+      onFileChange,
+      textInputRef,
       ...props
     },
     ref
@@ -41,6 +43,7 @@ const Upload = React.forwardRef<HTMLDivElement, UploadBaseProps>(
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
       if (event.target.files && event.target.files[0]) {
         setFile(event.target.files[0]);
+        onFileChange(event.target.files[0]);
       }
     };
 
@@ -58,20 +61,23 @@ const Upload = React.forwardRef<HTMLDivElement, UploadBaseProps>(
 
       return (
         <Box alignment="center">
-          {file ? (
-            <Text
-              className={styles["text__label"]}
-              variant="bodyLg"
-              style={{ color: "#191919" }}
-            >
-              {file.name}
-            </Text>
+          {file && !isLoading ? (
+            <>
+              <CheckIcon style={{ color: "#0D6CE9" }} width={54} height={54} />
+              <Text variant="bodyMd" style={{ color: "#0D6CE9" }}>
+                {file.name}
+              </Text>
+              <br />
+            </>
           ) : (
-            <UploadIcon color="#757575" />
+            <>
+              <UploadIcon color="#757575" />
+              <Text variant="bodyMd" style={{ color: "#0D6CE9" }}>
+                {title}
+              </Text>
+            </>
           )}
-          <Text variant="bodyMd" style={{ color: "#0D6CE9" }}>
-            {title}
-          </Text>
+
           <Text variant="bodyMd">{description}</Text>
         </Box>
       );
@@ -79,7 +85,6 @@ const Upload = React.forwardRef<HTMLDivElement, UploadBaseProps>(
 
     return (
       <Component
-        ref={ref}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
@@ -93,6 +98,7 @@ const Upload = React.forwardRef<HTMLDivElement, UploadBaseProps>(
         {...props}
       >
         <input
+          ref={textInputRef}
           id="file-input"
           type="file"
           onChange={handleFileChange}

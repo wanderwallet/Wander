@@ -69,7 +69,7 @@ export function AuthEmbeddedView() {
           >
             <GoogleIcon fontSize={24} />
           </Button>
-          <Button variant="outlined" size="md" href="/auth/more-providers">
+          <Button variant="outlined" size="md" isDisabled>
             <Wander2Icon fontSize={24} />
           </Button>
         </Row>
@@ -78,7 +78,7 @@ export function AuthEmbeddedView() {
           isFullWidth
           isLoading={isLoading.calledId === "more" && isLoading.status === true}
           icon={<SocialsIcon fontSize={24} />}
-          onClick={() => alert("Not implemented")}
+          href="/auth/more-providers"
         >
           More options
         </Button>

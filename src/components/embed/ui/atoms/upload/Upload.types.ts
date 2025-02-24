@@ -1,5 +1,5 @@
 import React from "react";
-import { Sizes } from "../../../types";
+import type { Sizes } from "../../../types";
 
 export type UploadBaseProps = {
   title?: string;
@@ -12,4 +12,6 @@ export type UploadBaseProps = {
   isLoading?: boolean;
   testId?: string;
   accessibilityLabel?: string;
+  onFileChange: (file: File) => void;
+  textInputRef?: React.Ref<HTMLInputElement>;
 };

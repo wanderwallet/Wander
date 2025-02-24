@@ -1,22 +1,23 @@
-import { DevFigmaScreen } from "~components/dev/figma-screen/figma-screen.component";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 
-import screenSrc from "url:/assets-beta/figma-screens/restore-shares.view.png";
+import { Card, Row, Upload, WanderIcon, Text } from "~components/embed/ui";
 
 export function AuthRestoreSharesRecoveryFileEmbeddedView() {
+  const [loading, setLoading] = useState(false);
   const { wallets, restoreWallet } = useEmbedded();
   const walletAddress = wallets[0].address;
 
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const textInputRef = useRef<HTMLInputElement>(null);
 
   const handleRestore = () => {
-    const textareaElement = textareaRef.current;
+    setLoading(true);
+    const textareaElement = textInputRef.current;
 
     // TODO: Throw error with error message for `DevFigmaScreen` to display it:
     if (!textareaElement) return;
-
-    return restoreWallet(walletAddress, JSON.parse(textareaRef.current.value));
+    setLoading(false);
+    return restoreWallet(walletAddress, JSON.parse(textInputRef.current.value));
   };
 
   // TODO: The recovery file should probably include the wallet address or a hash so that we can
@@ -26,28 +27,35 @@ export function AuthRestoreSharesRecoveryFileEmbeddedView() {
   // TODO: This view should probably work if the user uploads a keyfile too as many might be confused about the two.
 
   return (
-    <DevFigmaScreen
-      title="Restore shares / wallet"
-      src={screenSrc}
-      config={[
-        {
-          // TODO: Does the recovery file leak the wallet address? If so, this needs to be populated once the recovery
-          // file is provided; otherwise, it should be removed it.
-          label: walletAddress,
-          isDisabled: true
-        },
-        {
-          label: "Upload",
-          onClick: handleRestore
-        },
-        {
-          label: "Back",
-          to: "/auth/restore-shares",
-          variant: "secondary"
-        }
-      ]}
+    <Card
+      headerText="Restore shares / wallet"
+      footerElement={
+        <Row>
+          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
+            {"Secured by"}
+          </Text>
+          <WanderIcon color="#838383" />
+        </Row>
+      }
+      hasBackButton={true}
+      onBackButtonClick={() => {
+        window.history.back();
+      }}
+      hasCloseButton={true}
+      onCloseButtonClick={() => {
+        window.location.href = "/auth/restore-shares";
+      }}
+      size="auto"
     >
-      <textarea ref={textareaRef} placeholder="Upload recovery file"></textarea>
-    </DevFigmaScreen>
+      <Upload
+        textInputRef={textInputRef}
+        isFullWidth
+        title={"Upload recovery file"}
+        description={"or drag and drop your private key"}
+        isLoading={loading}
+        loadingText={"Recovering account..."}
+        onFileChange={handleRestore}
+      />
+    </Card>
   );
 }

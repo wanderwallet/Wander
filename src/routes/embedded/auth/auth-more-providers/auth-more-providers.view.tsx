@@ -1,4 +1,3 @@
-import { DevFigmaScreen } from "~components/dev/figma-screen/figma-screen.component";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 
 import {
@@ -12,11 +11,23 @@ import {
   TwitterIcon,
   WanderIcon
 } from "~components/embed";
+import { useCallback, useState } from "react";
+import type { AuthMethod } from "~utils/authentication/fakeDB";
 
 export function AuthMoreProvidersEmbeddedView() {
   const { authenticate } = useEmbedded();
+  const [isLoading, setIsLoading] = useState({
+    calledId: "",
+    status: false
+  });
 
   // TODO: Remember last selection and highlight that one / show it in the main screen (not in "More")
+
+  const handleAuthenticate = useCallback(async (authMethod: AuthMethod) => {
+    setIsLoading({ calledId: authMethod, status: true });
+    await authenticate(authMethod);
+    setIsLoading({ calledId: "", status: false });
+  }, []);
 
   return (
     <Card
@@ -31,6 +42,9 @@ export function AuthMoreProvidersEmbeddedView() {
         </Row>
       }
       hasBackButton={true}
+      onBackButtonClick={() => {
+        window.history.back();
+      }}
       hasCloseButton={false}
       size="auto"
     >
@@ -39,15 +53,10 @@ export function AuthMoreProvidersEmbeddedView() {
           variant="outlined"
           isFullWidth
           icon={<FacebookIcon fontSize={24} />}
-          onClick={() => authenticate("emailPassword")}
-        >
-          Email & Password
-        </Button>
-        <Button
-          variant="outlined"
-          isFullWidth
-          icon={<FacebookIcon fontSize={24} />}
-          onClick={() => authenticate("facebook")}
+          onClick={() => handleAuthenticate("facebook")}
+          isLoading={
+            isLoading.calledId === "facebook" && isLoading.status === true
+          }
         >
           Continue with Facebook
         </Button>
@@ -55,7 +64,10 @@ export function AuthMoreProvidersEmbeddedView() {
           variant="outlined"
           isFullWidth
           icon={<AppleIcon fontSize={24} />}
-          onClick={() => authenticate("apple")}
+          onClick={() => handleAuthenticate("apple")}
+          isLoading={
+            isLoading.calledId === "apple" && isLoading.status === true
+          }
         >
           Continue with Apple
         </Button>
@@ -63,7 +75,8 @@ export function AuthMoreProvidersEmbeddedView() {
           variant="outlined"
           isFullWidth
           icon={<TwitterIcon fontSize={24} />}
-          onClick={() => authenticate("x")}
+          onClick={() => handleAuthenticate("x")}
+          isLoading={isLoading.calledId === "x" && isLoading.status === true}
         >
           Continue with X
         </Button>

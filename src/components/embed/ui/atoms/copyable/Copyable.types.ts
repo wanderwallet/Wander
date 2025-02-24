@@ -1,5 +1,5 @@
 import React from "react";
-import { Sizes } from "../../../types";
+import type { Sizes } from "../../../types";
 
 export type CopyableBaseProps = {
   label?: string;
@@ -13,5 +13,6 @@ export type CopyableBaseProps = {
   onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
   testId?: string;
   accessibilityLabel?: string;
+  tooltipValue?: string;
   style?: React.CSSProperties;
 };

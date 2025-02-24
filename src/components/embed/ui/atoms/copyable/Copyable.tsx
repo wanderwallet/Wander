@@ -15,6 +15,7 @@ const Copyable = React.forwardRef<HTMLDivElement, CopyableBaseProps>(
       isBlurry,
       isLoading,
       onClick,
+      tooltipValue,
       ...props
     },
     ref
@@ -28,17 +29,22 @@ const Copyable = React.forwardRef<HTMLDivElement, CopyableBaseProps>(
 
       return (
         <Box alignment="left">
-          <Text variant="bodyMd">{label}</Text>
-          <button className={styles["copyable__button"]} onClick={onClick}>
-            <Text
-              className={styles["text__label"]}
-              variant="bodyLg"
-              style={{ color: "#191919" }}
-            >
-              {value}
-            </Text>
-            <CopyableIcon color="#757575" />
-          </button>
+          <div className={styles["tooltip"]}>
+            <Text variant="bodyMd">{label}</Text>
+            <button className={styles["copyable__button"]} onClick={onClick}>
+              {tooltipValue && (
+                <span className={styles["tooltiptext"]}>{tooltipValue}</span>
+              )}
+              <Text
+                className={styles["text__label"]}
+                variant="bodyLg"
+                style={{ color: "#191919" }}
+              >
+                {value}
+              </Text>
+              <CopyableIcon color="#757575" />
+            </button>
+          </div>
         </Box>
       );
     };

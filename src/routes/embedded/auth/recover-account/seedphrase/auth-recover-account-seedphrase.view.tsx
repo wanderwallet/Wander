@@ -5,6 +5,15 @@ import { useLocation } from "~wallets/router/router.utils";
 
 import screenSrc from "url:/assets-beta/figma-screens/recover-account-seedphrase.view.png";
 import confirmScreenSrc from "url:/assets-beta/figma-screens/recover-account-seedphrase-confirmation.view.png";
+import {
+  Card,
+  Copyable,
+  Row,
+  WanderIcon,
+  Text,
+  Button,
+  SeedInput
+} from "~components/embed/ui";
 
 export function AuthRecoverAccountSeedphraseEmbeddedView() {
   const {
@@ -40,44 +49,79 @@ export function AuthRecoverAccountSeedphraseEmbeddedView() {
   }, []);
 
   return importedTempWalletAddress ? (
-    <DevFigmaScreen
-      title="Recover your account"
-      description="Enter seedphrase"
-      src={confirmScreenSrc}
-      config={[
-        {
-          label: importedTempWalletAddress,
-          isDisabled: true
-        },
-        {
-          label: "No, try again",
-          onClick: deleteImportedTempWallet,
-          variant: "secondary"
-        },
-        {
-          label: "Yes, recover",
-          onClick: handleRecover
-        }
-      ]}
-    />
-  ) : (
-    <DevFigmaScreen
-      title="Recover your account"
-      description="Enter seedphrase"
-      src={screenSrc}
-      config={[
-        {
-          label: "Recover",
-          onClick: handleImportWallet
-        },
-        {
-          label: "Back",
-          to: "/auth/recover-account",
-          variant: "secondary"
-        }
-      ]}
+    <Card
+      headerText="Recover your account"
+      subtitle="Enter seedphrase"
+      footerElement={
+        <Row>
+          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
+            {"Secured by"}
+          </Text>
+          <WanderIcon color="#838383" />
+        </Row>
+      }
+      hasBackButton={true}
+      onBackButtonClick={() => {
+        window.history.back();
+      }}
+      hasCloseButton={true}
+      onCloseButtonClick={() => {
+        window.location.href = "/auth/recover-account";
+      }}
+      size="auto"
     >
-      <textarea ref={textareaRef} placeholder="Enter seedphrase"></textarea>
-    </DevFigmaScreen>
+      <Copyable
+        isFullWidth
+        label="Your account address"
+        onClick={() => {
+          navigator.clipboard.writeText(importedTempWalletAddress);
+        }}
+        value={importedTempWalletAddress}
+      />
+      <Row>
+        <Button
+          variant="secondary"
+          size="md"
+          onClick={deleteImportedTempWallet}
+        >
+          No, try again
+        </Button>
+        <Button variant="primary" size="md" onClick={() => handleRecover}>
+          Yes, recover
+        </Button>
+      </Row>
+    </Card>
+  ) : (
+    <Card
+      headerText="Recover your account"
+      subtitle="Enter seedphrase"
+      footerElement={
+        <Row>
+          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
+            {"Secured by"}
+          </Text>
+          <WanderIcon color="#838383" />
+        </Row>
+      }
+      hasBackButton={true}
+      onBackButtonClick={() => {
+        window.history.back();
+      }}
+      hasCloseButton={false}
+      size="auto"
+    >
+      <SeedInput
+        handleSubmit={handleImportWallet}
+        handleCopyToClipboard={() => {
+          navigator.clipboard.writeText(importedTempWalletAddress);
+        }}
+        handleInputChange={function (index: number, value: string): void {
+          throw new Error("Function not implemented.");
+        }}
+      />
+      <Button isFullWidth size="md">
+        Recover
+      </Button>
+    </Card>
   );
 }

@@ -1,5 +1,5 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { JWKInterface } from "arweave/web/lib/wallet";
 
 import {
@@ -13,6 +13,7 @@ import {
 } from "~components/embed";
 
 export function AuthImportKeyfileEmbeddedView() {
+  const [loading, setLoading] = useState(false);
   const {
     importTempWallet,
     importedTempWalletAddress,
@@ -20,16 +21,16 @@ export function AuthImportKeyfileEmbeddedView() {
     registerWallet
   } = useEmbedded();
 
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const textInputRef = useRef<HTMLInputElement>(null);
 
   const handleImportWallet = () => {
-    const textareaElement = textareaRef.current;
+    const textInputElement = textInputRef.current;
 
     // TODO: Throw error with error message for `DevFigmaScreen` to display it:
-    if (!textareaElement) return;
+    if (!textInputElement) return;
 
-    const jwk = JSON.parse(textareaElement.value) as JWKInterface;
-
+    const jwk = JSON.parse(textInputElement.value) as JWKInterface;
+    setLoading(false);
     return importTempWallet(jwk);
   };
 
@@ -54,12 +55,18 @@ export function AuthImportKeyfileEmbeddedView() {
         </Row>
       }
       hasBackButton={true}
+      onBackButtonClick={() => {
+        window.history.back();
+      }}
       hasCloseButton={false}
       size="auto"
     >
       <Copyable
         isFullWidth
         label="Your account address"
+        onClick={() => {
+          navigator.clipboard.writeText(importedTempWalletAddress);
+        }}
         value={importedTempWalletAddress}
       />
       <Row>
@@ -92,14 +99,20 @@ export function AuthImportKeyfileEmbeddedView() {
         </Row>
       }
       hasBackButton={true}
+      onBackButtonClick={() => {
+        window.history.back();
+      }}
       hasCloseButton={false}
       size="auto"
     >
       <Upload
+        textInputRef={textInputRef}
         isFullWidth
         title={"Click to upload"}
         description={"or drag and drop your private key"}
+        isLoading={loading}
         loadingText={"Recovering account..."}
+        onFileChange={handleImportWallet}
       />
     </Card>
   );

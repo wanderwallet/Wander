@@ -3,6 +3,7 @@
 .text {
   font-family: var(--font-family-serif);
   white-space: pre-line;
+  word-break: break-all;
 }
 
 .text__heading {

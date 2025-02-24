@@ -50,13 +50,16 @@ export function AuthImportSeedphraseEmbeddedView() {
         </Row>
       }
       hasBackButton={true}
+      onBackButtonClick={() => {
+        window.history.back();
+      }}
       hasCloseButton={false}
       size="auto"
     >
       <SeedInput
         handleSubmit={handleImportWallet}
-        handleCopyToClipboard={function (): void {
-          throw new Error("Function not implemented.");
+        handleCopyToClipboard={() => {
+          navigator.clipboard.writeText(importedTempWalletAddress);
         }}
         handleInputChange={function (index: number, value: string): void {
           throw new Error("Function not implemented.");
