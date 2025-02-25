@@ -129,13 +129,71 @@ export const getWanderIframeTemplateContent = ({
       right: var(--backdropPadding, 32px);
     }
 
-
+    
     /* Modal specific styles */
     .iframe[data-layout="modal"] {
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
       transition: opacity linear 150ms;
+    }
+    
+    /* Sidebar and Half specific styles */
+    .iframe[data-layout="sidebar"],
+    .iframe[data-layout="half"] {
+      transition: opacity linear 150ms, transform linear 150ms;
+    }
+    
+    /* Right position */
+    .iframe[data-layout="sidebar"][data-position="right"],
+    .iframe[data-layout="half"][data-position="right"] {
+      top: var(--backdropPadding, 0);
+      right: var(--backdropPadding, 0);
+      border-width: 0 0 0 var(--borderWidth, 2px);
+    }
+    
+    /* Left position */
+    .iframe[data-layout="sidebar"][data-position="left"],
+    .iframe[data-layout="half"][data-position="left"] {
+      top: var(--backdropPadding, 0);
+      left: var(--backdropPadding, 0);
+      border-width: 0 var(--borderWidth, 2px) 0 0;
+    }
+    
+    /* Hide transform states */
+    .iframe[data-layout="sidebar"][data-position="right"]:not(.show),
+    .iframe[data-layout="half"][data-position="right"]:not(.show) {
+      transform: translate(calc(100% + var(--backdropPadding, 32px)), 0);
+    }
+    
+    .iframe[data-layout="sidebar"][data-position="left"]:not(.show),
+    .iframe[data-layout="half"][data-position="left"]:not(.show) {
+      transform: translate(calc(-100% - var(--backdropPadding, 32px)), 0);
+    }
+    
+    /* Show transform state */
+    .iframe[data-layout="sidebar"].show,
+    .iframe[data-layout="half"].show {
+      transform: translate(0, 0);
+    }
+    
+    /* Expanded styles */
+    .iframe[data-layout="sidebar"][data-expanded="true"],
+    .iframe[data-layout="half"][data-expanded="true"] {
+      top: 0;
+      height: var(--preferredHeight, 100dvh);
+      max-height: var(--preferredHeight, 100dvh);
+      border-radius: 0;
+    }
+    
+    .iframe[data-layout="sidebar"][data-expanded="true"][data-position="right"],
+    .iframe[data-layout="half"][data-expanded="true"][data-position="right"] {
+      right: 0;
+    }
+    
+    .iframe[data-layout="sidebar"][data-expanded="true"][data-position="left"],
+    .iframe[data-layout="half"][data-expanded="true"][data-position="left"] {
+      left: 0;
     }
   </style>
 `;

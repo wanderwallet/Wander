@@ -59,8 +59,6 @@ export class WanderIframe {
   // State:
   private currentLayoutType: LayoutType | null = null;
   private isOpen = false;
-  private iframeHideStyle: CSSProperties = {};
-  private iframeShowStyle: CSSProperties = {};
 
   constructor(src: string, options: WanderEmbeddedIframeOptions = {}) {
     this.options = options;
@@ -221,39 +219,15 @@ export class WanderIframe {
 
       case "sidebar":
       case "half": {
-        const y = layoutConfig.position || "right";
-        const sign = y === "right" ? "+" : "-";
-
-        iframeStyle.top = layoutConfig.expanded
-          ? 0
-          : `var(--backdropPadding, 0)`;
-        iframeStyle[y] = layoutConfig.expanded
-          ? 0
-          : `var(--backdropPadding, 0)`;
-        iframeStyle.transition = "opacity linear 150ms";
-
-        this.iframeHideStyle = {
-          transform: `translate(calc(${sign}100% ${sign} var(--backdropPadding, 32px)), 0)`
-        };
-
-        this.iframeShowStyle = {
-          transform: `translate(0, 0)`
-        };
+        const position = layoutConfig.position || "right";
+        this.iframe.dataset.position = position;
 
         if (layoutConfig.expanded) {
-          iframeStyle.borderWidth =
-            y === "right"
-              ? "0 0 0 var(--borderWidth, 2px)"
-              : "0 var(--borderWidth, 2px) 0 0";
-
-          iframeStyle.width = "var(--preferredWidth, 400px)";
-          iframeStyle.height = "var(--preferredHeight, 600px)";
-          iframeStyle.maxWidth = "var(--preferredWidth, 400px)";
-          iframeStyle.maxHeight = "var(--preferredHeight, 600px)";
-
+          this.iframe.dataset.expanded = "true";
           cssVars.backdropPadding = 0;
           cssVars.borderRadius ??= 0;
         } else {
+          this.iframe.dataset.expanded = "false";
           cssVars.backdropPadding ??= 8;
         }
 
@@ -261,12 +235,12 @@ export class WanderIframe {
           cssVars.preferredWidth ??=
             layoutConfig.fixedWidth || routeConfig.width;
           cssVars.preferredHeight ??=
-            "calc(100dvw - 2 * var(--backdropPadding, 0))";
+            "calc(100dvh - 2 * var(--backdropPadding, 0))";
         } else {
           cssVars.preferredWidth ??=
             "calc(50vw - 2 * var(--backdropPadding, 0))";
           cssVars.preferredHeight ??=
-            "calc(100dvw - 2 * var(--backdropPadding, 0))";
+            "calc(100dvh - 2 * var(--backdropPadding, 0))";
 
           // TODO Set imgSrc
         }
