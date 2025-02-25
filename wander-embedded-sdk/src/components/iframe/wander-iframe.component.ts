@@ -50,6 +50,7 @@ export class WanderIframe {
   private host: HTMLDivElement;
   private backdrop: HTMLDivElement;
   private iframe: HTMLIFrameElement;
+  private halfImage: HTMLImageElement;
 
   // Config (options):
   // private config: WanderEmbeddedIframeConfig;
@@ -104,6 +105,7 @@ export class WanderIframe {
     this.host = elements.host;
     this.backdrop = elements.backdrop;
     this.iframe = elements.iframe;
+    this.halfImage = elements.halfImage;
 
     // Apply initial styling:
 
@@ -144,13 +146,16 @@ export class WanderIframe {
     iframe.className = "iframe";
     iframe.src = src;
 
+    const halfImage = shadow.querySelector(".half-image") as HTMLImageElement;
+
     // We don't add the iframe as a child of backdrop to have more control over the hide/show transitions:
     shadow.appendChild(backdrop);
     shadow.appendChild(iframe);
     return {
       iframe,
       host,
-      backdrop
+      backdrop,
+      halfImage
     };
   }
 
@@ -158,7 +163,8 @@ export class WanderIframe {
     return {
       host: this.host,
       backdrop: this.backdrop,
-      iframe: this.iframe
+      iframe: this.iframe,
+      halfImage: this.halfImage
     };
   }
 
@@ -166,12 +172,17 @@ export class WanderIframe {
     this.isOpen = true;
     this.backdrop.classList.add("show");
     this.iframe.classList.add("show");
+
+    if (this.currentLayoutType === "half" && this.halfImage.src) {
+      this.halfImage.classList.add("show");
+    }
   }
 
   hide(): void {
     this.isOpen = false;
     this.backdrop.classList.remove("show");
     this.iframe.classList.remove("show");
+    this.halfImage.classList.remove("show");
   }
 
   resize(routeConfig: RouteConfig): void {
@@ -244,7 +255,28 @@ export class WanderIframe {
           cssVars.preferredHeight ??=
             "calc(100dvh - 2 * var(--backdropPadding, 0))";
 
-          // TODO Set imgSrc
+          // Handle imgSrc for half layout
+          this.halfImage.dataset.position =
+            position === "left" ? "right" : "left";
+          this.halfImage.dataset.expanded = layoutConfig.expanded
+            ? "true"
+            : "false";
+
+          // Check for imgSrc in routeConfig first (from iframe message), then fall back to layoutConfig
+          const imgSrc = routeConfig.imgSrc || layoutConfig.imgSrc;
+
+          if (imgSrc) {
+            if (typeof imgSrc === "string") {
+              this.halfImage.src = imgSrc;
+              this.halfImage.style.display = "block";
+            } else {
+              this.halfImage.style.display = "none";
+              this.halfImage.classList.remove("show");
+            }
+          } else {
+            this.halfImage.style.display = "none";
+            this.halfImage.classList.remove("show");
+          }
         }
 
         break;
@@ -256,6 +288,7 @@ export class WanderIframe {
     if (resetLayout) {
       this.backdrop.removeAttribute("style");
       this.iframe.removeAttribute("style");
+      this.halfImage.removeAttribute("style");
 
       Object.assign(this.backdrop.style, WanderIframe.BACKDROP_BASE_STYLE);
     }
