@@ -132,9 +132,7 @@ export class WanderIframe {
     const shadow = host.attachShadow({ mode: "open" });
     const template = document.createElement("template");
 
-    template.innerHTML = getWanderIframeTemplateContent({
-      mobileConfig: options.mobileConfig
-    });
+    template.innerHTML = getWanderIframeTemplateContent();
 
     shadow.appendChild(template.content);
 
@@ -187,6 +185,10 @@ export class WanderIframe {
     this.currentLayoutType = layoutType;
 
     this.iframe.dataset.layout = layoutType;
+
+    // Default to true, unless explicitly set to false, false is WIP
+    this.iframe.dataset.expandOnMobile =
+      layoutConfig.expandOnMobile !== false ? "true" : "false";
 
     const backdropStyle: CSSProperties = {};
     const iframeStyle: CSSProperties = {};

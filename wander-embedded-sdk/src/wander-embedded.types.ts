@@ -7,19 +7,11 @@ export type RouteType =
   | "settings"
   | "auth-request";
 
-export interface MobileLayoutConfig {
-  fullscreen?: boolean;
-  padding?: number;
-  height?: string | number; // Allows percentage or fixed height
-  borderRadius?: number;
-  border?: boolean;
-}
-
 export interface ModalLayoutConfig {
   type: "modal";
   fixedWidth?: number;
   fixedHeight?: number;
-  mobile?: MobileLayoutConfig;
+  expandOnMobile?: boolean;
 }
 
 export interface PopupLayoutConfig {
@@ -27,7 +19,7 @@ export interface PopupLayoutConfig {
   position?: WanderEmbeddedButtonPosition;
   fixedWidth?: number;
   fixedHeight?: number;
-  mobile?: MobileLayoutConfig;
+  expandOnMobile?: boolean;
 }
 
 export interface SidebarLayoutConfig {
@@ -35,7 +27,7 @@ export interface SidebarLayoutConfig {
   position?: "left" | "right";
   expanded?: boolean;
   fixedWidth?: number;
-  mobile?: MobileLayoutConfig;
+  expandOnMobile?: boolean;
 }
 
 export interface HalfLayoutConfig {
@@ -43,6 +35,7 @@ export interface HalfLayoutConfig {
   position?: "left" | "right";
   expanded?: boolean;
   imgSrc?: string | boolean;
+  expandOnMobile?: boolean;
 }
 
 export type LayoutConfig =
@@ -144,8 +137,6 @@ export interface WanderEmbeddedIframeOptions
    *   backdrop is not visible.
    */
   clickOutsideBehavior?: WanderEmbeddedClickOutsideBehavior;
-
-  mobileConfig?: MobileLayoutConfig; // Add mobile layout configuration options
 }
 
 export interface WanderEmbeddedIframeConfig
@@ -235,6 +226,14 @@ export interface WanderEmbeddedModalCSSVars {
    * a different value is specified. In any other case, this is ignored.
    */
   backdropPointerEvents: string;
+
+  // Mobile specific styles
+  mobilePadding: number;
+  mobileHeight: string | number;
+  mobileBorderRadius: number;
+  mobileBorderWidth: number;
+  mobileBorderColor: string;
+  mobileBoxShadow: string;
 }
 
 export interface WanderEmbeddedButtonCSSVars {

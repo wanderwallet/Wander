@@ -1,16 +1,8 @@
-import { MobileLayoutConfig } from "../../wander-embedded.types";
+export interface WanderIframeTemplateContentOptions {}
 
-export interface WanderIframeTemplateContentOptions {
-  mobileConfig?: MobileLayoutConfig;
-}
-
-export const getWanderIframeTemplateContent = ({
-  mobileConfig = {}
-}: WanderIframeTemplateContentOptions) => {
-  const isFullscreen = mobileConfig.fullscreen;
-  const padding = mobileConfig.padding ?? 0;
-
-  return `
+export const getWanderIframeTemplateContent =
+  ({}: WanderIframeTemplateContentOptions = {}) => {
+    return `
   <style>
     /* Base backdrop styles */
     .backdrop {
@@ -58,49 +50,35 @@ export const getWanderIframeTemplateContent = ({
     /* Mobile styles */
     @media (max-width: 540px) {
       .backdrop {
-        padding: ${padding}px;
+        padding: var(--mobilePadding, 0);
       }
 
       .iframe {
-        inset: ${padding}px;
-        width: ${isFullscreen ? "100dvw" : `calc(100dvw - ${padding * 2}px)`};
-        height: ${
-          isFullscreen
-            ? "100dvh"
-            : mobileConfig.height ?? `calc(100dvh - ${padding * 2}px)`
-        };
-        min-width: ${
-          isFullscreen ? "100dvw" : `calc(100dvw - ${padding * 2}px)`
-        };
-        min-height: ${
-          isFullscreen
-            ? "100dvh"
-            : mobileConfig.height ?? `calc(100dvh - ${padding * 2}px)`
-        };
-        max-width: ${
-          isFullscreen ? "100dvw" : `calc(100dvw - ${padding * 2}px)`
-        };
-        max-height: ${
-          isFullscreen
-            ? "100dvh"
-            : mobileConfig.height ?? `calc(100dvh - ${padding * 2}px)`
-        };
-        border: ${
-          isFullscreen
-            ? "none"
-            : mobileConfig.border !== undefined
-            ? mobileConfig.border
-              ? "var(--borderWidth, 2px) solid var(--borderColor, rgba(0, 0, 0, .125))"
-              : "none"
-            : "none"
-        };
-        border-radius: ${isFullscreen ? 0 : mobileConfig.borderRadius ?? 0}px;
-        box-shadow: ${
-          isFullscreen
-            ? "none"
-            : "var(--boxShadow, 0 0 16px 0 rgba(0, 0, 0, 0.125))"
-        };
+        inset: var(--mobilePadding, 0);
+        width: calc(100dvw - 2 * var(--mobilePadding, 0));
+        height: var(--mobileHeight, 100dvh);
+        min-width: calc(100dvw - 2 * var(--mobilePadding, 0));
+        min-height: var(--mobileHeight, 100dvh);
+        max-width: calc(100dvw - 2 * var(--mobilePadding, 0));
+        max-height: var(--mobileHeight, 100dvh);
+        border-width: var(--mobileBorderWidth, 0);
+        border-color: var(--mobileBorderColor, rgba(0, 0, 0, .125));
+        border-radius: var(--mobileBorderRadius, 0);
+        box-shadow: var(--mobileBoxShadow, none);
         transform: none;
+      }
+      
+      .iframe[data-expand-on-mobile="true"] {
+        inset: 0;
+        width: 100dvw;
+        height: 100dvh;
+        min-width: 100dvw;
+        min-height: 100dvh;
+        max-width: 100dvw;
+        max-height: 100dvh;
+        border: none;
+        border-radius: 0;
+        box-shadow: none;
       }
     }
 
@@ -129,7 +107,6 @@ export const getWanderIframeTemplateContent = ({
       right: var(--backdropPadding, 32px);
     }
 
-    
     /* Modal specific styles */
     .iframe[data-layout="modal"] {
       top: 50%;
@@ -197,4 +174,4 @@ export const getWanderIframeTemplateContent = ({
     }
   </style>
 `;
-};
+  };
