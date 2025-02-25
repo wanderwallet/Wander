@@ -98,6 +98,40 @@ export const getWanderIframeTemplateContent = ({
         transform: none !important;
       }
     }
+
+    /* Popup specific styles */
+    .iframe[data-layout="popup"] {
+      transition: opacity linear 150ms;
+    }
+
+    .iframe[data-layout="popup"][data-position="top-left"] {
+      top: var(--backdropPadding, 32px);
+      left: var(--backdropPadding, 32px);
+    }
+
+    .iframe[data-layout="popup"][data-position="top-right"] {
+      top: var(--backdropPadding, 32px);
+      right: var(--backdropPadding, 32px);
+    }
+
+    .iframe[data-layout="popup"][data-position="bottom-left"] {
+      bottom: var(--backdropPadding, 32px);
+      left: var(--backdropPadding, 32px);
+    }
+
+    .iframe[data-layout="popup"][data-position="bottom-right"] {
+      bottom: var(--backdropPadding, 32px);
+      right: var(--backdropPadding, 32px);
+    }
+
+
+    /* Modal specific styles */
+    .iframe[data-layout="modal"] {
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      transition: opacity linear 150ms;
+    }
   </style>
 `;
 };

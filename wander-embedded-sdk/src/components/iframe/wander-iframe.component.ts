@@ -188,6 +188,8 @@ export class WanderIframe {
 
     this.currentLayoutType = layoutType;
 
+    this.iframe.dataset.layout = layoutType;
+
     const backdropStyle: CSSProperties = {};
     const iframeStyle: CSSProperties = {};
 
@@ -201,32 +203,19 @@ export class WanderIframe {
 
     switch (layoutConfig.type) {
       case "modal": {
-        iframeStyle.top = "50%";
-        iframeStyle.left = "50%";
-        iframeStyle.transform = "translate(-50%, -50%)"; // TODO: Add scale effect when appearing?
-        iframeStyle.transition = "opacity linear 150ms";
         cssVars.preferredWidth ??= layoutConfig.fixedWidth || routeConfig.width;
         cssVars.preferredHeight ??=
           layoutConfig.fixedHeight || routeConfig.height;
-
         break;
       }
 
       case "popup": {
-        const [y, x] = (layoutConfig.position || "bottom-right").split("-") as [
-          "top" | "bottom",
-          "left" | "right"
-        ];
+        const position = layoutConfig.position || "bottom-right";
+        this.iframe.dataset.position = position;
 
-        iframeStyle[y] = "var(--backdropPadding, 32px)";
-        iframeStyle[x] = "var(--backdropPadding, 32px)";
-        iframeStyle.transition = "opacity linear 150ms";
-        // iframeStyle.minWidth = 0;
-        // iframeStyle.minHeight = 0;
         cssVars.preferredWidth ??= layoutConfig.fixedWidth || routeConfig.width;
         cssVars.preferredHeight ??=
           layoutConfig.fixedHeight || routeConfig.height;
-
         break;
       }
 
