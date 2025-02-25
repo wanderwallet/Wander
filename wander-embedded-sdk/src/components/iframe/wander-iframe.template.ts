@@ -44,6 +44,13 @@ export const getWanderIframeTemplateContent = ({
       backdropFilter: var(--backdropBackdropFilter, blur(12px));
       padding: var(--backdropPadding, 32px);
       transition: opacity linear 150ms;
+      pointer-events: none;
+      opacity: 0;
+    }
+
+    .backdrop.show {
+      pointer-events: auto;
+      opacity: 1;
     }
 
     /* Base iframe styles */
@@ -62,6 +69,13 @@ export const getWanderIframeTemplateContent = ({
       max-height: calc(100dvh - 2 * var(--backdropPadding, 32px) - 2 * var(--borderWidth, 2px));
       box-sizing: content-box;
       transition: transform linear 150ms, opacity linear 150ms;
+      pointer-events: none;
+      opacity: 0;
+    }
+
+    .iframe.show {
+      pointer-events: auto;
+      opacity: 1;
     }
 
     /* Mobile styles */

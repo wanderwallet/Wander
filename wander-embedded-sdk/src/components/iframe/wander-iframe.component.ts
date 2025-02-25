@@ -21,36 +21,6 @@ export class WanderIframe {
   static DEFAULT_BACKDROP_ID = "wanderEmbeddedBackdrop" as const;
   static DEFAULT_IFRAME_ID = "wanderEmbeddedIframe" as const;
 
-  static BACKDROP_HIDE_STYLE: CSSProperties = {
-    pointerEvents: "none",
-    opacity: 0
-  };
-
-  static BACKDROP_SHOW_STYLE: CSSProperties = {
-    pointerEvents: "auto",
-    opacity: 1
-  };
-
-  static MODAL_HIDE_STYLE: CSSProperties = {
-    pointerEvents: "none",
-    opacity: 0
-  };
-
-  static MODAL_SHOW_STYLE: CSSProperties = {
-    pointerEvents: "auto",
-    opacity: 1
-  };
-
-  static POPUP_HIDE_STYLE: CSSProperties = {
-    pointerEvents: "none",
-    opacity: 0
-  };
-
-  static POPUP_SHOW_STYLE: CSSProperties = {
-    pointerEvents: "auto",
-    opacity: 1
-  };
-
   static BACKDROP_BASE_STYLE: CSSProperties = {
     position: "fixed",
     zIndex: "var(--zIndex, 9999)",
@@ -198,16 +168,14 @@ export class WanderIframe {
 
   show(): void {
     this.isOpen = true;
-
-    Object.assign(this.backdrop.style, WanderIframe.BACKDROP_SHOW_STYLE);
-    Object.assign(this.iframe.style, this.iframeShowStyle);
+    this.backdrop.classList.add("show");
+    this.iframe.classList.add("show");
   }
 
   hide(): void {
     this.isOpen = false;
-
-    Object.assign(this.backdrop.style, WanderIframe.BACKDROP_HIDE_STYLE);
-    Object.assign(this.iframe.style, this.iframeHideStyle);
+    this.backdrop.classList.remove("show");
+    this.iframe.classList.remove("show");
   }
 
   resize(routeConfig: RouteConfig): void {
@@ -240,8 +208,6 @@ export class WanderIframe {
         cssVars.preferredWidth ??= layoutConfig.fixedWidth || routeConfig.width;
         cssVars.preferredHeight ??=
           layoutConfig.fixedHeight || routeConfig.height;
-        this.iframeHideStyle = WanderIframe.MODAL_HIDE_STYLE;
-        this.iframeShowStyle = WanderIframe.MODAL_SHOW_STYLE;
 
         break;
       }
@@ -260,8 +226,6 @@ export class WanderIframe {
         cssVars.preferredWidth ??= layoutConfig.fixedWidth || routeConfig.width;
         cssVars.preferredHeight ??=
           layoutConfig.fixedHeight || routeConfig.height;
-        this.iframeHideStyle = WanderIframe.POPUP_HIDE_STYLE;
-        this.iframeShowStyle = WanderIframe.POPUP_SHOW_STYLE;
 
         break;
       }
@@ -331,19 +295,9 @@ export class WanderIframe {
       Object.assign(this.backdrop.style, WanderIframe.BACKDROP_BASE_STYLE);
     }
 
-    Object.assign(
-      this.backdrop.style,
-      backdropStyle,
-      this.isOpen
-        ? WanderIframe.BACKDROP_SHOW_STYLE
-        : WanderIframe.BACKDROP_HIDE_STYLE
-    );
+    Object.assign(this.backdrop.style, backdropStyle);
 
-    Object.assign(
-      this.iframe.style,
-      iframeStyle,
-      this.isOpen ? this.iframeShowStyle : this.iframeHideStyle
-    );
+    Object.assign(this.iframe.style, iframeStyle);
 
     addCSSVariables(this.backdrop, cssVars);
     addCSSVariables(this.iframe, cssVars);
