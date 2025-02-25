@@ -4,34 +4,11 @@ export interface WanderIframeTemplateContentOptions {
   mobileConfig?: MobileLayoutConfig;
 }
 
-const getMobileStyles = (mobileConfig: MobileLayoutConfig = {}) => {
-  const padding = mobileConfig.padding ?? 0;
-  const isFullscreen = mobileConfig.fullscreen;
-
-  return {
-    width: isFullscreen ? "100dvw" : `calc(100dvw - ${padding * 2}px)`,
-    height: isFullscreen
-      ? "100dvh"
-      : mobileConfig.height ?? `calc(100dvh - ${padding * 2}px)`,
-    border: isFullscreen
-      ? "none"
-      : mobileConfig.border !== undefined
-      ? mobileConfig.border
-        ? "var(--borderWidth, 2px) solid var(--borderColor, rgba(0, 0, 0, .125))"
-        : "none"
-      : "none",
-    borderRadius: `${isFullscreen ? 0 : mobileConfig.borderRadius ?? 0}px`,
-    boxShadow: isFullscreen
-      ? "none"
-      : "var(--boxShadow, 0 0 16px 0 rgba(0, 0, 0, 0.125))",
-    padding: `${isFullscreen ? 0 : padding}px`
-  };
-};
-
 export const getWanderIframeTemplateContent = ({
   mobileConfig = {}
 }: WanderIframeTemplateContentOptions) => {
-  const mobileStyles = getMobileStyles(mobileConfig);
+  const isFullscreen = mobileConfig.fullscreen;
+  const padding = mobileConfig.padding ?? 0;
 
   return `
   <style>
@@ -81,21 +58,49 @@ export const getWanderIframeTemplateContent = ({
     /* Mobile styles */
     @media (max-width: 540px) {
       .backdrop {
-        padding: ${mobileStyles.padding} !important;
+        padding: ${padding}px;
       }
 
       .iframe {
-        inset: ${mobileStyles.padding} !important;
-        width: ${mobileStyles.width} !important;
-        height: ${mobileStyles.height} !important;
-        min-width: ${mobileStyles.width} !important;
-        min-height: ${mobileStyles.height} !important;
-        max-width: ${mobileStyles.width} !important;
-        max-height: ${mobileStyles.height} !important;
-        border: ${mobileStyles.border} !important;
-        border-radius: ${mobileStyles.borderRadius} !important;
-        box-shadow: ${mobileStyles.boxShadow} !important;
-        transform: none !important;
+        inset: ${padding}px;
+        width: ${isFullscreen ? "100dvw" : `calc(100dvw - ${padding * 2}px)`};
+        height: ${
+          isFullscreen
+            ? "100dvh"
+            : mobileConfig.height ?? `calc(100dvh - ${padding * 2}px)`
+        };
+        min-width: ${
+          isFullscreen ? "100dvw" : `calc(100dvw - ${padding * 2}px)`
+        };
+        min-height: ${
+          isFullscreen
+            ? "100dvh"
+            : mobileConfig.height ?? `calc(100dvh - ${padding * 2}px)`
+        };
+        max-width: ${
+          isFullscreen ? "100dvw" : `calc(100dvw - ${padding * 2}px)`
+        };
+        max-height: ${
+          isFullscreen
+            ? "100dvh"
+            : mobileConfig.height ?? `calc(100dvh - ${padding * 2}px)`
+        };
+        border: ${
+          isFullscreen
+            ? "none"
+            : mobileConfig.border !== undefined
+            ? mobileConfig.border
+              ? "var(--borderWidth, 2px) solid var(--borderColor, rgba(0, 0, 0, .125))"
+              : "none"
+            : "none"
+        };
+        border-radius: ${isFullscreen ? 0 : mobileConfig.borderRadius ?? 0}px;
+        box-shadow: ${
+          isFullscreen
+            ? "none"
+            : "var(--boxShadow, 0 0 16px 0 rgba(0, 0, 0, 0.125))"
+        };
+        transform: none;
       }
     }
 
