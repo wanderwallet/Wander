@@ -3,9 +3,11 @@ import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useEffect } from "react";
 
 import screenSrc from "url:/assets-beta/figma-screens/add-a-wallet.view.png";
+import { AuthProviderType, WalletSourceType } from "embed-api";
 
 export function AuthAddWalletEmbeddedView() {
-  const { authMethod, generateTempWallet, registerWallet } = useEmbedded();
+  const { authProviderType, generateTempWallet, registerWallet } =
+    useEmbedded();
 
   useEffect(() => {
     // Pre-generation starts on app load, but this call will re-generate it again if it has expired, as we are trying to
@@ -21,7 +23,7 @@ export function AuthAddWalletEmbeddedView() {
       config={[
         {
           label: "Create New Wallet",
-          onClick: () => registerWallet("generated")
+          onClick: () => registerWallet(WalletSourceType.GENERATED)
         },
         {
           label: "Enter Seed Phrase",
@@ -31,14 +33,14 @@ export function AuthAddWalletEmbeddedView() {
           label: "Import Private Key",
           to: "/auth/import-keyfile"
         },
-        authMethod === "passkey"
+        authProviderType === AuthProviderType.PASSKEYS
           ? {
               label: "Add this device to an existing account",
               to: "/auth/add-device",
               variant: "secondary"
             }
           : {
-              label: `Add ${authMethod} to an existing account`,
+              label: `Add ${authProviderType} to an existing account`,
               to: "/auth/add-auth-provider",
               variant: "secondary"
             }

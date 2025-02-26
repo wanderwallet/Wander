@@ -62,6 +62,8 @@ export interface RecoveryJSON {
 }
 
 export interface EmbeddedContextData extends EmbeddedContextState {
+  currentWallet: WalletInfo | null;
+
   authenticate: (authProviderType: AuthProviderType) => Promise<void>;
   fetchRecoverableAccounts: () => Promise<RecoverableAccount[]>;
   clearRecoverableAccounts: () => void;

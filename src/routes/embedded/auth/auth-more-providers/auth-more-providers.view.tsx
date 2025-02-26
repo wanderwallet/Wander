@@ -2,6 +2,7 @@ import { DevFigmaScreen } from "~components/dev/figma-screen/figma-screen.compon
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 
 import screenSrc from "url:/assets-beta/figma-screens/auth.view.png";
+import { AuthProviderType } from "embed-api";
 
 export function AuthMoreProvidersEmbeddedView() {
   const { authenticate } = useEmbedded();
@@ -15,19 +16,19 @@ export function AuthMoreProvidersEmbeddedView() {
       config={[
         {
           label: "Email & Password",
-          onClick: () => authenticate("emailPassword")
+          onClick: () => authenticate(AuthProviderType.EMAIL_N_PASSWORD)
         },
         {
           label: "Facebook",
-          onClick: () => authenticate("facebook")
+          onClick: () => authenticate(AuthProviderType.FACEBOOK)
         },
         {
           label: "Apple",
-          onClick: () => authenticate("apple")
+          onClick: () => authenticate(AuthProviderType.APPLE)
         },
         {
           label: "X",
-          onClick: () => authenticate("x")
+          onClick: () => authenticate(AuthProviderType.X)
         },
         {
           label: "Back",

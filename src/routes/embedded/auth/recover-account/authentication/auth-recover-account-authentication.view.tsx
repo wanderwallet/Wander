@@ -4,13 +4,14 @@ import { useLocation } from "~wallets/router/router.utils";
 import { useState } from "react";
 
 import screenSrc from "url:/assets-beta/figma-screens/recover-account-authentication.view.png";
+import { AuthProviderType } from "embed-api";
 
 export function AuthRecoverAccountAuthenticationEmbeddedView() {
   const { importedTempWalletAddress, recoverableAccounts, recoverAccount } =
     useEmbedded();
 
   const accountToRecover = recoverableAccounts?.[0];
-  const accountToRecoverId = accountToRecover?.id;
+  const accountToRecoverId = accountToRecover?.userId;
 
   const { back } = useLocation();
 
@@ -36,12 +37,14 @@ export function AuthRecoverAccountAuthenticationEmbeddedView() {
         },
         {
           label: "Passkey",
-          onClick: () => recoverAccount("passkey", accountToRecoverId),
+          onClick: () =>
+            recoverAccount(AuthProviderType.PASSKEYS, accountToRecoverId),
           isDisabled: !checkboxChecked
         },
         {
           label: "Google",
-          onClick: () => recoverAccount("google", accountToRecoverId),
+          onClick: () =>
+            recoverAccount(AuthProviderType.GOOGLE, accountToRecoverId),
           isDisabled: !checkboxChecked
         },
         {

@@ -4,9 +4,7 @@ import { DevFigmaScreen } from "~components/dev/figma-screen/figma-screen.compon
 import screenSrc from "url:/assets-beta/figma-screens/backup-options.view.png";
 
 export function AccountBackupSharesEmbeddedView() {
-  const { wallets, promptToBackUp, generateRecoveryAndDownload } =
-    useEmbedded();
-  const walletAddress = wallets[0].address;
+  const { currentWallet, generateRecoveryAndDownload } = useEmbedded();
 
   // TODO: What if the user already has more than 3 backup shares?
 
@@ -26,7 +24,7 @@ export function AccountBackupSharesEmbeddedView() {
       config={[
         {
           // TODO: This should be a selector / dropdown and we might want to include a bulk / download all option
-          label: walletAddress,
+          label: currentWallet.address,
           isDisabled: true
         },
         {
@@ -43,9 +41,9 @@ export function AccountBackupSharesEmbeddedView() {
         },
         {
           label: "Download Account Recovery File",
-          onClick: () => generateRecoveryAndDownload(walletAddress)
+          onClick: () => generateRecoveryAndDownload()
         },
-        promptToBackUp
+        currentWallet.totalBackups === 0
           ? {
               label: "Back",
               to: "/account/backup-shares/reminder",

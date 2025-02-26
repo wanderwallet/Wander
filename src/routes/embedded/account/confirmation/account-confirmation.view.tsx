@@ -2,6 +2,7 @@ import { DevFigmaScreen } from "~components/dev/figma-screen/figma-screen.compon
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 
 import screenSrc from "url:/assets-beta/figma-screens/add-wallet-confirmation.view.png";
+import { WalletSourceType } from "embed-api";
 
 export function AccountConfirmationEmbeddedView() {
   const { wallets, lastRegisteredWallet, clearLastRegisteredWallet } =
@@ -13,7 +14,7 @@ export function AccountConfirmationEmbeddedView() {
         wallets.length === 1
           ? "Congratulations, your account has been created!"
           : `Congratulations, your wallet has been ${
-              lastRegisteredWallet.source.type === "imported"
+              lastRegisteredWallet.source.type === WalletSourceType.IMPORTED
                 ? "imported"
                 : "created"
             }!`

@@ -1,11 +1,11 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { DevFigmaScreen } from "~components/dev/figma-screen/figma-screen.component";
-import { DevButtons } from "~components/dev/buttons/buttons.component";
 import { useEffect, useRef } from "react";
 import type { JWKInterface } from "arweave/web/lib/wallet";
 
 import screenSrc from "url:/assets-beta/figma-screens/import-keyfile.view.png";
 import confirmScreenSrc from "url:/assets-beta/figma-screens/import-keyfile-confirmation.view.png";
+import { WalletSourceType } from "embed-api";
 
 export function AuthImportKeyfileEmbeddedView() {
   const {
@@ -52,7 +52,7 @@ export function AuthImportKeyfileEmbeddedView() {
         },
         {
           label: "Yes, add",
-          onClick: () => registerWallet("imported")
+          onClick: () => registerWallet(WalletSourceType.IMPORTED)
         }
       ]}
     />

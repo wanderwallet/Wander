@@ -65,6 +65,9 @@ const EMBEDDED_CONTEXT_INITIAL_STATE: EmbeddedContextState = {
 
 export const EmbeddedContext = createContext<EmbeddedContextData>({
   ...EMBEDDED_CONTEXT_INITIAL_STATE,
+
+  currentWallet: null,
+
   authenticate: async () => null,
   fetchRecoverableAccounts: async () => null,
   clearRecoverableAccounts: async () => null,
@@ -214,7 +217,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     log(LOG_GROUP.EMBEDDED_FLOWS, `copySeedphrase()`);
 
     const seedPhrase = WalletUtils.getDecryptedSeedPhrase(
-      walletAddress,
+      walletId,
+      // TODO: Generate and pass JWK:
       {} as any
     );
 
@@ -232,7 +236,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     };
 
     updateCurrentWallet(updatedWalletInfo);
-  }, [walletId, walletAddress, updateCurrentWallet]);
+  }, [walletId, updateCurrentWallet]);
 
   const generateRecoveryAndDownload = useCallback(async () => {
     log(LOG_GROUP.EMBEDDED_FLOWS, `generateRecoveryAndDownload()`);
@@ -525,7 +529,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
       // TODO: This flag must be checked on launch and the stored seedphrase should be removed if the flag becomes false.
       if (seedPhrase && EMBEDDED_FEATURE_FLAGS.STORE_SEED_PHRASE) {
-        WalletUtils.storeEncryptedSeedPhrase(walletAddress, seedPhrase, jwk);
+        WalletUtils.storeEncryptedSeedPhrase(dbWallet.id, seedPhrase, jwk);
       }
 
       try {
@@ -885,6 +889,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     <EmbeddedContext.Provider
       value={{
         ...embeddedContextState,
+
+        currentWallet,
 
         authenticate,
         fetchRecoverableAccounts,

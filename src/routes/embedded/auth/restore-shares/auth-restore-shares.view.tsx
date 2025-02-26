@@ -4,8 +4,6 @@ import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import screenSrc from "url:/assets-beta/figma-screens/restore-shares.view.png";
 
 export function AuthRestoreSharesEmbeddedView() {
-  const { authMethod, activateWallet } = useEmbedded();
-
   return (
     <DevFigmaScreen
       title="Restore shares / wallet"

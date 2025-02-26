@@ -355,7 +355,7 @@ function getDeviceSharesInfo(userId: string): DeviceShareInfo[] {
 const ENCRYPTED_SEED_PHRASE_KEY = "ENCRYPTED_SEED_PHRASE";
 
 function storeEncryptedSeedPhrase(
-  walletAddress: string,
+  walletId: string,
   seedPhrase: string,
   jwk: JWKInterface
 ) {
@@ -365,20 +365,18 @@ function storeEncryptedSeedPhrase(
   const encryptedSeedPhrase = seedPhrase;
 
   localStorage.setItem(
-    `${ENCRYPTED_SEED_PHRASE_KEY}-${walletAddress}`,
+    `${ENCRYPTED_SEED_PHRASE_KEY}-${walletId}`,
     encryptedSeedPhrase
   );
 }
 
-function hasEncryptedSeedPhrase(walletAddress: string) {
-  return !!localStorage.getItem(
-    `${ENCRYPTED_SEED_PHRASE_KEY}-${walletAddress}`
-  );
+function hasEncryptedSeedPhrase(walletId: string) {
+  return !!localStorage.getItem(`${ENCRYPTED_SEED_PHRASE_KEY}-${walletId}`);
 }
 
-function getDecryptedSeedPhrase(walletAddress: string, jwk: JWKInterface) {
+function getDecryptedSeedPhrase(walletId: string, jwk: JWKInterface) {
   const encryptedSeedPhrase = localStorage.getItem(
-    `${ENCRYPTED_SEED_PHRASE_KEY}-${walletAddress}`
+    `${ENCRYPTED_SEED_PHRASE_KEY}-${walletId}`
   );
 
   // TODO: Decrypt it...

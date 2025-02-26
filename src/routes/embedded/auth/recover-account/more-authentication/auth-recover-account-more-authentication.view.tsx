@@ -3,13 +3,14 @@ import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useState } from "react";
 
 import screenSrc from "url:/assets-beta/figma-screens/recover-account-more-authentication.view.png";
+import { AuthProviderType } from "embed-api";
 
 export function AuthRecoverAccountMoreAuthenticationEmbeddedView() {
   const { importedTempWalletAddress, recoverableAccounts, recoverAccount } =
     useEmbedded();
 
   const accountToRecover = recoverableAccounts?.[0];
-  const accountToRecoverId = accountToRecover?.id;
+  const accountToRecoverId = accountToRecover?.userId;
 
   const [checkboxChecked, setCheckboxChecked] = useState<boolean>(false);
 
@@ -33,22 +34,28 @@ export function AuthRecoverAccountMoreAuthenticationEmbeddedView() {
         },
         {
           label: "Email & Password",
-          onClick: () => recoverAccount("emailPassword", accountToRecoverId),
+          onClick: () =>
+            recoverAccount(
+              AuthProviderType.EMAIL_N_PASSWORD,
+              accountToRecoverId
+            ),
           isDisabled: !checkboxChecked
         },
         {
           label: "Facebook",
-          onClick: () => recoverAccount("facebook", accountToRecoverId),
+          onClick: () =>
+            recoverAccount(AuthProviderType.FACEBOOK, accountToRecoverId),
           isDisabled: !checkboxChecked
         },
         {
           label: "Apple",
-          onClick: () => recoverAccount("apple", accountToRecoverId),
+          onClick: () =>
+            recoverAccount(AuthProviderType.APPLE, accountToRecoverId),
           isDisabled: !checkboxChecked
         },
         {
           label: "X",
-          onClick: () => recoverAccount("x", accountToRecoverId),
+          onClick: () => recoverAccount(AuthProviderType.X, accountToRecoverId),
           isDisabled: !checkboxChecked
         },
         {

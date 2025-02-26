@@ -6,8 +6,7 @@ import screenSrc from "url:/assets-beta/figma-screens/export-wallet.view.png";
 import { EMBEDDED_FEATURE_FLAGS } from "~utils/embedded/embedded.constants";
 
 export function AccountExportWalletEmbeddedView() {
-  const { wallets, downloadKeyfile, copySeedphrase } = useEmbedded();
-  const walletAddress = wallets[0].address;
+  const { currentWallet, downloadKeyfile, copySeedphrase } = useEmbedded();
 
   // TODO: Register the "export" event on the server.
 
@@ -20,22 +19,22 @@ export function AccountExportWalletEmbeddedView() {
       config={[
         {
           // TODO: This should be a selector / dropdown and we might want to include a bulk / download all option
-          label: walletAddress,
+          label: currentWallet.address,
           isDisabled: true
         },
         {
           label: "Download Private Key",
-          onClick: () => downloadKeyfile(walletAddress)
+          onClick: () => downloadKeyfile()
         },
         {
           label: "Copy Seedphrase",
-          onClick: () => copySeedphrase(walletAddress),
+          onClick: () => copySeedphrase(),
           // TODO: if the feature flag is enabled but there's no seedphrase, show a tooltip/explanation on hover,
           // mentioning the seedPhrase might be gone and that it's only available in the device where the wallet was
           // created (we can show that browser that was used from the wallet metadata):
           isDisabled:
             !EMBEDDED_FEATURE_FLAGS.STORE_SEED_PHRASE ||
-            !WalletUtils.hasEncryptedSeedPhrase(walletAddress)
+            !WalletUtils.hasEncryptedSeedPhrase(currentWallet.id)
         },
         {
           label: "Cancel",

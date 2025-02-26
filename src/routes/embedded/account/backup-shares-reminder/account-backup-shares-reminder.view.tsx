@@ -5,7 +5,7 @@ import { DevFigmaScreen } from "~components/dev/figma-screen/figma-screen.compon
 import screenSrc from "url:/assets-beta/figma-screens/backup-shares.view.png";
 
 export function AccountBackupSharesReminderEmbeddedView() {
-  const { promptToBackUp, skipBackUp } = useEmbedded();
+  const { currentWallet, skipBackUp } = useEmbedded();
 
   const checkboxRef = useRef<HTMLInputElement>();
 
@@ -22,7 +22,7 @@ export function AccountBackupSharesReminderEmbeddedView() {
           label: "Back up now",
           to: "/account/backup-shares"
         },
-        promptToBackUp
+        currentWallet.totalBackups === 0
           ? {
               label: "Back up later",
               to: "/account",
@@ -36,7 +36,7 @@ export function AccountBackupSharesReminderEmbeddedView() {
             }
       ]}
     >
-      {promptToBackUp ? (
+      {currentWallet.totalBackups === 0 ? (
         <label>
           <input type="checkbox" ref={checkboxRef} />
           Do not ask again

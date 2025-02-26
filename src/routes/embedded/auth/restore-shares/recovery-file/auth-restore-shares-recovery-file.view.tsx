@@ -5,8 +5,7 @@ import { useRef } from "react";
 import screenSrc from "url:/assets-beta/figma-screens/restore-shares.view.png";
 
 export function AuthRestoreSharesRecoveryFileEmbeddedView() {
-  const { wallets, recoverWallet } = useEmbedded();
-  const walletAddress = wallets[0].address;
+  const { currentWallet, recoverWallet } = useEmbedded();
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -33,7 +32,7 @@ export function AuthRestoreSharesRecoveryFileEmbeddedView() {
         {
           // TODO: Does the recovery file leak the wallet address? If so, this needs to be populated once the recovery
           // file is provided; otherwise, it should be removed it.
-          label: walletAddress,
+          label: currentWallet.address,
           isDisabled: true
         },
         {
