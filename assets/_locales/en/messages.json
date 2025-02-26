@@ -463,17 +463,21 @@
     "message": "Sign notification",
     "description": "Sign notification settings title"
   },
-  "setting_transfer_settings": {
-    "message": "Transfer settings",
-    "description": "Transfer settings title"
+  "setting_password_settings": {
+    "message": "Password settings",
+    "description": "Password settings title"
   },
-  "setting_transfer_settings_description": {
-    "message": "Requiring a password any time assets are being transferred",
-    "description": "Transfer settings description"
+  "setting_password_settings_description": {
+    "message": "Actions that require a password",
+    "description": "Password settings description"
   },
   "enable_transfer_settings": {
     "message": "Require password when signing a transaction",
     "description": "Enable transfer settings title"
+  },
+  "enable_connect_settings": {
+    "message": "Require password when connecting to an application",
+    "description": "Enable connect settings title"
   },
   "setting_display_theme": {
     "message": "Theme",
