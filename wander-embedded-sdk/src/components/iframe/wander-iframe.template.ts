@@ -1,8 +1,11 @@
-export interface WanderIframeTemplateContentOptions {}
+export interface WanderIframeTemplateContentOptions {
+  src?: string;
+}
 
-export const getWanderIframeTemplateContent =
-  ({}: WanderIframeTemplateContentOptions = {}) => {
-    return `
+export const getWanderIframeTemplateContent = ({
+  src = ""
+}: WanderIframeTemplateContentOptions = {}) => {
+  return `
   <style>
     /* Base backdrop styles */
     .backdrop {
@@ -10,7 +13,7 @@ export const getWanderIframeTemplateContent =
       z-index: var(--zIndex, 9999);
       inset: 0;
       background: var(--backdropBackground, rgba(255, 255, 255, .0625));
-      backdropFilter: var(--backdropBackdropFilter, blur(12px));
+      backdrop-filter: var(--backdropBackdropFilter, blur(12px));
       padding: var(--backdropPadding, 32px);
       transition: opacity linear 150ms;
       pointer-events: none;
@@ -173,5 +176,7 @@ export const getWanderIframeTemplateContent =
       left: 0;
     }
   </style>
+  <div class="backdrop" id="wanderEmbeddedBackdrop"></div>
+  <iframe class="iframe" src="${src}"></iframe>
 `;
-  };
+};

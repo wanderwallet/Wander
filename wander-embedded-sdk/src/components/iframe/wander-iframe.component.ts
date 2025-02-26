@@ -20,17 +20,6 @@ import { getWanderIframeTemplateContent } from "./wander-iframe.template";
 export class WanderIframe {
   static DEFAULT_BACKDROP_ID = "wanderEmbeddedBackdrop" as const;
   static DEFAULT_IFRAME_ID = "wanderEmbeddedIframe" as const;
-
-  static BACKDROP_BASE_STYLE: CSSProperties = {
-    position: "fixed",
-    zIndex: "var(--zIndex, 9999)",
-    inset: 0,
-    background: "var(--backdropBackground, rgba(255, 255, 255, .0625))",
-    backdropFilter: "var(--backdropBackdropFilter, blur(12px))",
-    padding: "var(--backdropPadding, 32px)",
-    transition: "opacity linear 150ms"
-  };
-
   static DEFAULT_ROUTE_LAYOUT = {
     modal: {
       type: "modal"
@@ -132,21 +121,14 @@ export class WanderIframe {
     const shadow = host.attachShadow({ mode: "open" });
     const template = document.createElement("template");
 
-    template.innerHTML = getWanderIframeTemplateContent();
+    template.innerHTML = getWanderIframeTemplateContent({ src });
 
     shadow.appendChild(template.content);
 
-    const backdrop = document.createElement("div");
-    backdrop.className = "backdrop";
-    backdrop.id = WanderIframe.DEFAULT_BACKDROP_ID;
+    // Elements from the shadow DOM
+    const backdrop = shadow.querySelector(".backdrop") as HTMLDivElement;
+    const iframe = shadow.querySelector(".iframe") as HTMLIFrameElement;
 
-    const iframe = document.createElement("iframe");
-    iframe.className = "iframe";
-    iframe.src = src;
-
-    // We don't add the iframe as a child of backdrop to have more control over the hide/show transitions:
-    shadow.appendChild(backdrop);
-    shadow.appendChild(iframe);
     return {
       iframe,
       host,
@@ -189,9 +171,6 @@ export class WanderIframe {
     // Default to true, unless explicitly set to false, false is WIP
     this.iframe.dataset.expandOnMobile =
       layoutConfig.expandOnMobile !== false ? "true" : "false";
-
-    const backdropStyle: CSSProperties = {};
-    const iframeStyle: CSSProperties = {};
 
     if (this.options.cssVars && isThemeRecord(this.options.cssVars)) {
       throw new Error("Not implemented yet");
@@ -256,13 +235,7 @@ export class WanderIframe {
     if (resetLayout) {
       this.backdrop.removeAttribute("style");
       this.iframe.removeAttribute("style");
-
-      Object.assign(this.backdrop.style, WanderIframe.BACKDROP_BASE_STYLE);
     }
-
-    Object.assign(this.backdrop.style, backdropStyle);
-
-    Object.assign(this.iframe.style, iframeStyle);
 
     addCSSVariables(this.backdrop, cssVars);
     addCSSVariables(this.iframe, cssVars);
