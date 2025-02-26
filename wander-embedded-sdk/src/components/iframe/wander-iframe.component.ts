@@ -38,6 +38,7 @@ export class WanderIframe {
   // Elements:
   private host: HTMLDivElement;
   private backdrop: HTMLDivElement;
+  private wrapper: HTMLDivElement;
   private iframe: HTMLIFrameElement;
 
   // Config (options):
@@ -92,6 +93,7 @@ export class WanderIframe {
 
     this.host = elements.host;
     this.backdrop = elements.backdrop;
+    this.wrapper = elements.wrapper;
     this.iframe = elements.iframe;
 
     // Apply initial styling:
@@ -127,12 +129,14 @@ export class WanderIframe {
 
     // Elements from the shadow DOM
     const backdrop = shadow.querySelector(".backdrop") as HTMLDivElement;
+    const wrapper = shadow.querySelector(".iframe-wrapper") as HTMLDivElement;
     const iframe = shadow.querySelector(".iframe") as HTMLIFrameElement;
 
     return {
       iframe,
       host,
-      backdrop
+      backdrop,
+      wrapper
     };
   }
 
@@ -140,6 +144,7 @@ export class WanderIframe {
     return {
       host: this.host,
       backdrop: this.backdrop,
+      wrapper: this.wrapper,
       iframe: this.iframe
     };
   }
@@ -147,13 +152,13 @@ export class WanderIframe {
   show(): void {
     this.isOpen = true;
     this.backdrop.classList.add("show");
-    this.iframe.classList.add("show");
+    this.wrapper.classList.add("show");
   }
 
   hide(): void {
     this.isOpen = false;
     this.backdrop.classList.remove("show");
-    this.iframe.classList.remove("show");
+    this.wrapper.classList.remove("show");
   }
 
   resize(routeConfig: RouteConfig): void {
@@ -166,10 +171,10 @@ export class WanderIframe {
 
     this.currentLayoutType = layoutType;
 
-    this.iframe.dataset.layout = layoutType;
+    this.wrapper.dataset.layout = layoutType;
 
     // Default to true, unless explicitly set to false, false is WIP
-    this.iframe.dataset.expandOnMobile =
+    this.wrapper.dataset.expandOnMobile =
       layoutConfig.expandOnMobile !== false ? "true" : "false";
 
     if (this.options.cssVars && isThemeRecord(this.options.cssVars)) {
@@ -190,7 +195,7 @@ export class WanderIframe {
 
       case "popup": {
         const position = layoutConfig.position || "bottom-right";
-        this.iframe.dataset.position = position;
+        this.wrapper.dataset.position = position;
 
         cssVars.preferredWidth ??= layoutConfig.fixedWidth || routeConfig.width;
         cssVars.preferredHeight ??=
@@ -201,14 +206,14 @@ export class WanderIframe {
       case "sidebar":
       case "half": {
         const position = layoutConfig.position || "right";
-        this.iframe.dataset.position = position;
+        this.wrapper.dataset.position = position;
 
         if (layoutConfig.expanded) {
-          this.iframe.dataset.expanded = "true";
+          this.wrapper.dataset.expanded = "true";
           cssVars.backdropPadding = 0;
           cssVars.borderRadius ??= 0;
         } else {
-          this.iframe.dataset.expanded = "false";
+          this.wrapper.dataset.expanded = "false";
           cssVars.backdropPadding ??= 8;
         }
 
@@ -234,10 +239,10 @@ export class WanderIframe {
     // style attribute must be reset to avoid conflicts with leftover properties from the previous layout
     if (resetLayout) {
       this.backdrop.removeAttribute("style");
-      this.iframe.removeAttribute("style");
+      this.wrapper.removeAttribute("style");
     }
 
     addCSSVariables(this.backdrop, cssVars);
-    addCSSVariables(this.iframe, cssVars);
+    addCSSVariables(this.wrapper, cssVars);
   }
 }
