@@ -1,6 +1,6 @@
 import { DevFigmaScreen } from "~components/dev/figma-screen/figma-screen.component";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation } from "~wallets/router/router.utils";
 
 import screenSrc from "url:/assets-beta/figma-screens/recover-account-seedphrase.view.png";
@@ -16,6 +16,8 @@ import {
 } from "~components/embed/ui";
 
 export function AuthRecoverAccountSeedphraseEmbeddedView() {
+  const [loading, setLoading] = useState(false);
+  const [seedPhrase, setSeedPhrase] = useState<string[]>([]);
   const {
     importTempWallet,
     importedTempWalletAddress,
@@ -38,9 +40,14 @@ export function AuthRecoverAccountSeedphraseEmbeddedView() {
   const { navigate } = useLocation();
 
   const handleRecover = async () => {
-    await fetchRecoverableAccounts();
-
-    navigate("/auth/recover-account/authentication");
+    try {
+      setLoading(true);
+      await fetchRecoverableAccounts();
+      setLoading(false);
+      navigate("/auth/recover-account/authentication");
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   useEffect(() => {
@@ -86,7 +93,12 @@ export function AuthRecoverAccountSeedphraseEmbeddedView() {
         >
           No, try again
         </Button>
-        <Button variant="primary" size="md" onClick={() => handleRecover}>
+        <Button
+          variant="primary"
+          size="md"
+          onClick={() => handleRecover}
+          isLoading={loading}
+        >
           Yes, recover
         </Button>
       </Row>
@@ -111,12 +123,17 @@ export function AuthRecoverAccountSeedphraseEmbeddedView() {
       size="auto"
     >
       <SeedInput
+        seedPhrase={seedPhrase}
         handleSubmit={handleImportWallet}
-        handleCopyToClipboard={() => {
-          navigator.clipboard.writeText(importedTempWalletAddress);
-        }}
-        handleInputChange={function (index: number, value: string): void {
-          throw new Error("Function not implemented.");
+        handleCopyToClipboard={() =>
+          navigator.clipboard.writeText(seedPhrase.join(" "))
+        }
+        handleInputChange={(index: number, value: string) => {
+          setSeedPhrase((prevSeedPhrase) => {
+            const newSeedPhrase = [...prevSeedPhrase];
+            newSeedPhrase[index] = value;
+            return newSeedPhrase;
+          });
         }}
       />
       <Button isFullWidth size="md">

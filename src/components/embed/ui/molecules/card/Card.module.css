@@ -51,13 +51,32 @@
 }
 
 .card__back__btn {
-  left: 1rem;
+  left: 0.8rem;
+  width: 2rem;
+  height: 2rem;
+  flex-direction: row;
+  text-align: center;
   cursor: pointer;
   position: absolute;
+  z-index: 9;
 }
 
 .card__close__btn {
-  right: 1rem;
-  cursor: pointer;
+  right: 0.8rem;
+  width: 2rem;
+  height: 2rem;
+  text-align: center;
+  cursor: pointer !important;
   position: absolute;
+  z-index: 9;
+}
+
+.card__back__btn:hover {
+  background-color: var(--brand-color-gray-200);
+  border-radius: 50%;
+}
+
+.card__close__btn:hover {
+  background-color: var(--brand-color-gray-200);
+  border-radius: 50%;
 }

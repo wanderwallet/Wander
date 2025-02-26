@@ -1,7 +1,14 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useRef, useState } from "react";
 
-import { Card, Row, Upload, WanderIcon, Text } from "~components/embed/ui";
+import {
+  Card,
+  Row,
+  Upload,
+  WanderIcon,
+  Text,
+  Button
+} from "~components/embed/ui";
 
 export function AuthRestoreSharesRecoveryFileEmbeddedView() {
   const [loading, setLoading] = useState(false);
@@ -53,9 +60,12 @@ export function AuthRestoreSharesRecoveryFileEmbeddedView() {
         title={"Upload recovery file"}
         description={"or drag and drop your private key"}
         isLoading={loading}
-        loadingText={"Recovering account..."}
+        loadingText={"Restoring account..."}
         onFileChange={handleRestore}
       />
+      <Button isFullWidth size="md" isLoading={loading} onClick={handleRestore}>
+        Restore
+      </Button>
     </Card>
   );
 }

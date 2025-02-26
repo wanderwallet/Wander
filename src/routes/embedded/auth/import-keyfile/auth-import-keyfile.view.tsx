@@ -23,7 +23,8 @@ export function AuthImportKeyfileEmbeddedView() {
 
   const textInputRef = useRef<HTMLInputElement>(null);
 
-  const handleImportWallet = () => {
+  const handleImportWallet = async () => {
+    setLoading(true);
     const textInputElement = textInputRef.current;
 
     // TODO: Throw error with error message for `DevFigmaScreen` to display it:
@@ -31,7 +32,7 @@ export function AuthImportKeyfileEmbeddedView() {
 
     const jwk = JSON.parse(textInputElement.value) as JWKInterface;
     setLoading(false);
-    return importTempWallet(jwk);
+    return await importTempWallet(jwk);
   };
 
   useEffect(() => {
@@ -114,6 +115,14 @@ export function AuthImportKeyfileEmbeddedView() {
         loadingText={"Recovering account..."}
         onFileChange={handleImportWallet}
       />
+      <Button
+        isFullWidth
+        size="md"
+        isLoading={loading}
+        onClick={handleImportWallet}
+      >
+        Import
+      </Button>
     </Card>
   );
 }

@@ -38,7 +38,7 @@ export function AccountConfirmationEmbeddedView() {
       }
       hasBackButton={true}
       onBackButtonClick={() => {
-        window.history.back();
+        window.location.href = "/auth";
       }}
       hasCloseButton={false}
       size="auto"

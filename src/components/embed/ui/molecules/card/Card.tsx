@@ -26,15 +26,13 @@ const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
     },
     ref
   ) => {
-    const closeIcon = customIcon ? (
-      customIcon
-    ) : (
-      <XClose
+    const closeIcon = (
+      <button
         className={styles["card__close__btn"]}
-        fontSize={24}
         onClick={onCloseButtonClick}
-        color="#757575"
-      />
+      >
+        {customIcon ?? <XClose fontSize={24} color="#757575" />}
+      </button>
     );
     return (
       <Box
@@ -49,12 +47,12 @@ const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
         {...props}
       >
         {hasBackButton && (
-          <ChevronLeft
+          <button
             className={styles["card__back__btn"]}
-            fontSize={24}
             onClick={onBackButtonClick}
-            color="#757575"
-          />
+          >
+            <ChevronLeft fontSize={24} color="#757575" />
+          </button>
         )}
         {hasCloseButton && closeIcon}
         {headerText && (

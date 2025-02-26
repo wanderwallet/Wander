@@ -12,6 +12,6 @@ export type UploadBaseProps = {
   isLoading?: boolean;
   testId?: string;
   accessibilityLabel?: string;
-  onFileChange: (file: File) => void;
+  onFileChange?: (file: File) => void;
   textInputRef?: React.Ref<HTMLInputElement>;
 };

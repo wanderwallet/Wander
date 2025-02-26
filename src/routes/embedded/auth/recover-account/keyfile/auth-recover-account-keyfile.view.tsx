@@ -36,11 +36,14 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
   const { navigate } = useLocation();
 
   const handleRecover = async () => {
-    setLoading(true);
-    await fetchRecoverableAccounts();
-
-    setLoading(false);
-    navigate("/auth/recover-account/authentication");
+    try {
+      setLoading(true);
+      await fetchRecoverableAccounts();
+      setLoading(false);
+      navigate("/auth/recover-account/authentication");
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   useEffect(() => {
@@ -86,7 +89,12 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
         >
           No, try again
         </Button>
-        <Button variant="primary" size="md" onClick={handleRecover}>
+        <Button
+          variant="primary"
+          size="md"
+          onClick={handleRecover}
+          isLoading={loading}
+        >
           Yes, recover
         </Button>
       </Row>
@@ -119,6 +127,14 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
         loadingText={"Recovering account..."}
         onFileChange={handleImportWallet}
       />
+      <Button
+        isFullWidth
+        size="md"
+        isLoading={loading}
+        onClick={handleImportWallet}
+      >
+        Import
+      </Button>
     </Card>
   );
 

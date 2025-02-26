@@ -23,7 +23,7 @@
   border: none;
   justify-content: flex-start;
   align-items: center;
-  width: 200px;
+  width: auto;
 
   padding-left: 0;
 }
@@ -31,6 +31,13 @@
 .text__label {
   color: var(--color-copyable-text-label);
   font-size: var(--font-size-sm);
+}
+
+.copyable__button:hover {
+  background-color: var(--brand-color-gray-100);
+  width: auto;
+
+  border-radius: 4px;
 }
 
 .copyable__blurry {
