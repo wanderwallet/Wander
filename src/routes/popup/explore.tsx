@@ -268,7 +268,7 @@ const AppTitle = styled(Text).attrs({
 
 const Pill = styled.div`
   color: ${(props) => props.theme.primaryText};
-  background-color: ${(props) => props.theme.backgroundSecondary};
+  background-color: ${(props) => props.theme.surfaceSecondary};
   padding: 4px 8px;
   border-radius: 50px;
   border: 1px solid ${(props) => props.theme.inputField};
@@ -330,7 +330,12 @@ const Category = styled.div`
   align-items: center;
   gap: 8px;
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(
+    255,
+    255,
+    255,
+    ${({ theme }) => (theme.displayTheme === "dark" ? "0.08" : "0.80")}
+  );
   backdrop-filter: blur(4px);
   font-weight: 500;
   font-size: 14px;
@@ -338,7 +343,12 @@ const Category = styled.div`
   color: ${(props) => props.theme.primaryText};
 
   &:hover {
-    background: rgba(255, 255, 255, 0.12);
+    background: rgba(
+      255,
+      255,
+      255,
+      ${({ theme }) => (theme.displayTheme === "dark" ? "0.12" : "0.90")}
+    );
   }
 
   &:active {
@@ -364,11 +374,10 @@ const FixedHeader = styled.div`
   right: 0;
   padding: 24px 24px 16px 24px;
   box-sizing: border-box;
-  background: linear-gradient(
-    180deg,
-    #26126f 0%,
-    ${({ theme }) => (theme.displayTheme === "dark" ? "#111" : "#FFF")} 150px
-  );
+  background: ${({ theme }) =>
+    theme.displayTheme === "dark"
+      ? `linear-gradient(180deg, #26126f 0%, #111 150px)`
+      : `linear-gradient(180deg, #E3D8F6 0%, #FFF 34.57%)`};
   z-index: 100;
 `;
 
