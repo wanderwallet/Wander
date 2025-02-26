@@ -27,6 +27,8 @@ export function loadDeviceNonce(): DeviceNonce | null {
   }
 }
 
+// TODO: Merge server changes and re-deploy
+
 export function generateDeviceNonce(): DeviceNonce {
   log(LOG_GROUP.WALLET_GENERATION, "generateDeviceNonce()");
 
@@ -38,14 +40,15 @@ export function storeDeviceNonce(deviceNonce: DeviceNonce) {
 
   setDeviceNonceHeader(deviceNonce);
 
-  localStorage.setItem(DEVICE_NONCE_KEY, _deviceNonce);
+  localStorage.setItem(DEVICE_NONCE_KEY, deviceNonce);
 
   return (_deviceNonce = deviceNonce);
 }
 
-let _deviceNonce: DeviceNonce | null = storeDeviceNonce(
-  loadDeviceNonce() || generateDeviceNonce()
-);
+let _deviceNonce: DeviceNonce | null =
+  loadDeviceNonce() || generateDeviceNonce();
+
+storeDeviceNonce(_deviceNonce);
 
 export function getDeviceNonce(): DeviceNonce {
   if (!_deviceNonce) {

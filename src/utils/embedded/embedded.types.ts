@@ -40,18 +40,19 @@ export interface TempWalletPromise {
 export interface EmbeddedProviderProps extends PropsWithChildren {}
 
 export interface EmbeddedContextState {
-  // Authentication:
-  authStatus: AuthStatus;
-  authProviderType: null | AuthProviderType;
-  user: null | SupabaseUser;
-
-  // Wallets:
   currentWalletId: string;
   wallets: WalletInfo[];
   generatedTempWalletAddress: null | string;
   importedTempWalletAddress: null | string;
   lastRegisteredWallet: null | DbWallet;
   recoverableAccounts: null | RecoverableAccount[];
+}
+
+export interface EmbeddedContextAuth {
+  authStatus: AuthStatus;
+  authProviderType: null | AuthProviderType;
+  user: null | SupabaseUser;
+  // accessToken?
 }
 
 export interface RecoveryJSON {
@@ -61,7 +62,9 @@ export interface RecoveryJSON {
   recoveryFileServerSignature: string;
 }
 
-export interface EmbeddedContextData extends EmbeddedContextState {
+export interface EmbeddedContextData
+  extends EmbeddedContextState,
+    EmbeddedContextAuth {
   currentWallet: WalletInfo | null;
 
   authenticate: (authProviderType: AuthProviderType) => Promise<void>;

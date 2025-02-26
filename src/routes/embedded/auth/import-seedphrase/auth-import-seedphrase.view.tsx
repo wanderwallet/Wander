@@ -4,7 +4,6 @@ import { useEffect, useRef } from "react";
 
 import screenSrc from "url:/assets-beta/figma-screens/import-seedphrase.view.png";
 import confirmScreenSrc from "url:/assets-beta/figma-screens/import-seedphrase-confirmation.view.png";
-import { WalletSourceType } from "embed-api";
 
 export function AuthImportSeedphraseEmbeddedView() {
   const {
@@ -49,7 +48,7 @@ export function AuthImportSeedphraseEmbeddedView() {
         },
         {
           label: "Yes, add",
-          onClick: () => registerWallet(WalletSourceType.IMPORTED)
+          onClick: () => registerWallet("IMPORTED")
         }
       ]}
     />

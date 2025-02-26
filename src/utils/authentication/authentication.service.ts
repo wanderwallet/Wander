@@ -1,23 +1,68 @@
-import { AuthProviderType, Chain } from "embed-api";
-import { trpcVanilla } from "~utils/embedded/embedded.utils";
+import { AuthProviderType, type SupabaseUser } from "embed-api";
+import { supabase, trpcVanilla } from "~utils/embedded/embedded.utils";
 
 async function authenticate(authProviderType: AuthProviderType) {
-  return trpcVanilla.authenticate.mutate({ authProviderType });
+  console.log("authenticate() 2");
+
+  // return trpcVanilla.authenticate.mutate({ authProviderType });
+
+  if ("GOOGLE" === authProviderType) {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        // redirectTo: undefined, // `${window.location.origin}/auth/callback/google`,
+        // redirectTo: `${window.location.origin}#/auth/callback/google`,
+      }
+    });
+
+    if (error) throw error;
+
+    console.log("URL =", data.url);
+
+    return { url: data.url };
+  }
 }
 
-/*
-async function refreshSession() {
-  return trpcVanilla.refreshSession.mutate();
+async function refreshSession(): Promise<SupabaseUser | null> {
+  console.log("refreshSession()");
+
+  try {
+    const { data, error } = await supabase.auth.refreshSession();
+
+    if (error) throw error;
+
+    console.log("refreshSession() =", data);
+
+    return data.user;
+  } catch (err) {
+    console.error("refreshSession() error =", err);
+
+    return null;
+  }
 }
 
 async function logout() {
-  return trpcVanilla.logout.mutate();
+  console.log("logout()");
+
+  try {
+    // setIsLoading(true);
+
+    // await logoutMutation.mutateAsync();
+    const { error } = await supabase.auth.signOut();
+
+    if (error) throw error;
+  } catch (err) {
+    console.error("logout() error =", err);
+
+    // setIsLoading(false);
+  }
 }
-*/
+
+(window as any).logout = logout;
 
 async function generateFetchRecoverableAccountsChallenge(address: string) {
   return trpcVanilla.generateFetchRecoverableAccountsChallenge.mutate({
-    chain: Chain.ARWEAVE,
+    chain: "ARWEAVE",
     address
   });
 }
@@ -37,7 +82,7 @@ async function generateAccountRecoveryChallenge(
   userId: string
 ) {
   return trpcVanilla.generateAccountRecoveryChallenge.mutate({
-    chain: Chain.ARWEAVE,
+    chain: "ARWEAVE",
     address,
     userId
   });
@@ -52,8 +97,8 @@ async function recoverAccount(userId: string, challengeSolution: string) {
 
 export const AuthenticationService = {
   authenticate,
-  // refreshSession,
-  // logout,
+  refreshSession,
+  logout,
 
   generateFetchRecoverableAccountsChallenge,
   fetchRecoverableAccounts,

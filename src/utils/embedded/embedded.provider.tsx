@@ -27,17 +27,21 @@ import type {
   TempWallet,
   AuthStatus,
   TempWalletPromise,
-  RecoveryJSON
+  RecoveryJSON,
+  EmbeddedContextAuth
 } from "~utils/embedded/embedded.types";
-import { isTempWalletPromiseExpired } from "~utils/embedded/embedded.utils";
+import {
+  isTempWalletPromiseExpired,
+  setAuthTokenHeader,
+  supabase,
+  trpcVanilla
+} from "~utils/embedded/embedded.utils";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import {
+  AuthProviderType,
   ChallengeClientV1,
-  WalletSourceFrom,
   WalletSourceType,
-  type AuthProviderType,
-  type DbWallet,
-  ExportType
+  type DbWallet
 } from "embed-api";
 import { AuthenticationService } from "~utils/authentication/authentication.service";
 import {
@@ -49,12 +53,6 @@ import { getDeviceNonce } from "~utils/embedded/device-nonce/device-nonce.utils"
 export type AuthStatusCopy = AuthStatus;
 
 const EMBEDDED_CONTEXT_INITIAL_STATE: EmbeddedContextState = {
-  // AuthenticatioN:
-  authStatus: "unknown",
-  authProviderType: null,
-  user: null,
-
-  // Wallets:
   currentWalletId: "",
   wallets: [],
   generatedTempWalletAddress: null,
@@ -63,8 +61,15 @@ const EMBEDDED_CONTEXT_INITIAL_STATE: EmbeddedContextState = {
   recoverableAccounts: null
 };
 
+const EMBEDDED_CONTEXT_INITIAL_AUTH: EmbeddedContextAuth = {
+  authStatus: "unknown",
+  authProviderType: null,
+  user: null
+};
+
 export const EmbeddedContext = createContext<EmbeddedContextData>({
   ...EMBEDDED_CONTEXT_INITIAL_STATE,
+  ...EMBEDDED_CONTEXT_INITIAL_AUTH,
 
   currentWallet: null,
 
@@ -94,12 +99,69 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
   const [embeddedContextState, setEmbeddedContextState] =
     useState<EmbeddedContextState>(EMBEDDED_CONTEXT_INITIAL_STATE);
 
-  const {
-    authStatus,
-    user,
-    currentWalletId: walletId,
-    wallets
-  } = embeddedContextState;
+  const [embeddedContextAuth, setEmbeddedContextAuth] =
+    useState<EmbeddedContextAuth>(EMBEDDED_CONTEXT_INITIAL_AUTH);
+
+  console.log("embeddedContextAuth =", embeddedContextAuth);
+
+  useEffect(() => {
+    /*
+    const checkSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      console.log("checkSession() =", session);
+
+      const accessToken = session?.access_token ?? null;
+
+      // setToken(accessToken);
+      setAuthTokenHeader(accessToken);
+
+      setEmbeddedContextAuth({
+        authStatus: "unknown",
+        // TODO: Can we know the provider type of a refreshed session?
+        authProviderType: "PASSKEYS",
+        user,
+      });
+    }
+
+    checkSession()
+    */
+
+    const {
+      data: { subscription }
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log("onAuthStateChange() =", session);
+
+      const accessToken = session?.access_token ?? null;
+
+      // setToken(accessToken);
+      setAuthTokenHeader(accessToken);
+
+      setEmbeddedContextAuth(
+        accessToken
+          ? {
+              authStatus: "authLoading",
+              // TODO: Can we know the provider type of a refreshed session?
+              authProviderType: "PASSKEYS",
+              user
+            }
+          : {
+              // TODO: Also clear wallet state?
+              authStatus: "noAuth",
+              authProviderType: null,
+              user: null
+            }
+      );
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Wallet props:
+
+  const { currentWalletId: walletId, wallets } = embeddedContextState;
 
   const currentWallet = useMemo(() => {
     return (
@@ -109,8 +171,13 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     );
   }, [wallets, walletId]);
 
+  const walletAddress = currentWallet?.id;
+
+  // Auth props:
+
+  const { authStatus, user } = embeddedContextAuth;
+
   const userId = user?.id || null;
-  const walletAddress = currentWallet.id;
 
   useEffect(() => {
     if (authStatus !== "unknown") {
@@ -201,7 +268,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
     const { wallet: updatedWallet } = await WalletService.registerWalletExport({
       walletId,
-      type: ExportType.KEYFILE
+      type: "KEYFILE"
     });
 
     const updatedWalletInfo: WalletInfo = {
@@ -226,7 +293,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
     const { wallet: updatedWallet } = await WalletService.registerWalletExport({
       walletId,
-      type: ExportType.SEEDPHRASE
+      type: "SEEDPHRASE"
     });
 
     const updatedWalletInfo: WalletInfo = {
@@ -493,7 +560,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       log(LOG_GROUP.WALLET_GENERATION, `registerWallet(${sourceType})`);
 
       const promise =
-        sourceType === WalletSourceType.GENERATED
+        sourceType === "GENERATED"
           ? generatedTempWalletPromiseRef.current?.promise
           : importedTempWalletPromiseRef.current?.promise;
 
@@ -507,8 +574,6 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         sharePublicKey: deviceSharePublicKey
       } = await WalletUtils.generateShareHashAndPublicKey(deviceShare);
 
-      const deviceNonce = getDeviceNonce();
-
       const createWalletResponse = await WalletService.createPublicWallet({
         address: walletAddress,
         publicKey: jwk.n,
@@ -517,9 +582,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         deviceSharePublicKey,
         source: {
           type: sourceType,
-          from: seedPhrase
-            ? WalletSourceFrom.SEEDPHRASE
-            : WalletSourceFrom.KEYFILE
+          from: seedPhrase ? "SEEDPHRASE" : "KEYFILE"
         }
       });
 
@@ -721,27 +784,51 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
   const initEmbeddedWallet = useCallback(
     async (authProviderType?: AuthProviderType) => {
-      setEmbeddedContextState({
-        ...EMBEDDED_CONTEXT_INITIAL_STATE,
+      console.log("initEmbeddedWallet()");
+
+      setEmbeddedContextState(EMBEDDED_CONTEXT_INITIAL_STATE);
+
+      setEmbeddedContextAuth({
         authStatus: "authLoading",
-        authProviderType
+        authProviderType: null,
+        user: null
       });
 
       // TODO: Handle errors and authentication redirects here:
 
-      const authentication = authProviderType
-        ? await AuthenticationService.authenticate(authProviderType)
-        : await AuthenticationService.refreshSession();
+      if (authProviderType) {
+        try {
+          // setIsLoading(true);
 
-      const userId = authentication?.userId || null;
+          const { url } = await AuthenticationService.authenticate(
+            authProviderType
+          );
 
-      if (!userId) {
+          if (url) {
+            // Redirect to Google's OAuth page
+            window.location.href = url;
+          } else {
+            console.error("No URL returned from authenticate");
+          }
+        } catch (error) {
+          console.error("Google sign-in failed:", error);
+          // setIsLoading(false);
+        }
+
+        return;
+      }
+
+      // TODO: Store in context. Do we need to do it from here or will the useAUth hook do it automatically?
+      const user = await AuthenticationService.refreshSession();
+
+      if (!user) {
         generateTempWallet();
 
-        setEmbeddedContextState((prevAuthContextState) => ({
-          ...prevAuthContextState,
-          authStatus: "noAuth"
-        }));
+        setEmbeddedContextAuth({
+          authStatus: "noAuth",
+          authProviderType: null,
+          user
+        });
 
         return;
       }
@@ -765,6 +852,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       let authStatus = "noAuth" as AuthStatus;
 
       if (wallets.length > 0) {
+        const userId = user.id;
+
         // TODO: The wallet activation can be deferred until the wallet is going to be used:
 
         // TODO: TODO: We need to keep track of the last used one, not the last created one:
@@ -845,11 +934,11 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         authStatus = "noWallets";
       }
 
-      setEmbeddedContextState((prevAuthContextState) => ({
-        ...prevAuthContextState,
+      setEmbeddedContextAuth({
         authStatus,
-        userId
-      }));
+        authProviderType: null,
+        user
+      });
     },
     []
   );
@@ -889,6 +978,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     <EmbeddedContext.Provider
       value={{
         ...embeddedContextState,
+        ...embeddedContextAuth,
 
         currentWallet,
 

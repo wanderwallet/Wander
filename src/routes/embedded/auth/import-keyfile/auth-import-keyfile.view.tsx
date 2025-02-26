@@ -5,7 +5,6 @@ import type { JWKInterface } from "arweave/web/lib/wallet";
 
 import screenSrc from "url:/assets-beta/figma-screens/import-keyfile.view.png";
 import confirmScreenSrc from "url:/assets-beta/figma-screens/import-keyfile-confirmation.view.png";
-import { WalletSourceType } from "embed-api";
 
 export function AuthImportKeyfileEmbeddedView() {
   const {
@@ -52,7 +51,7 @@ export function AuthImportKeyfileEmbeddedView() {
         },
         {
           label: "Yes, add",
-          onClick: () => registerWallet(WalletSourceType.IMPORTED)
+          onClick: () => registerWallet("IMPORTED")
         }
       ]}
     />

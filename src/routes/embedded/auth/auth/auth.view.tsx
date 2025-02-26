@@ -2,7 +2,6 @@ import { DevFigmaScreen } from "~components/dev/figma-screen/figma-screen.compon
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 
 import screenSrc from "url:/assets-beta/figma-screens/auth.view.png";
-import { AuthProviderType } from "embed-api";
 
 export function AuthEmbeddedView() {
   const { authenticate, authStatus } = useEmbedded();
@@ -21,11 +20,11 @@ export function AuthEmbeddedView() {
       config={[
         {
           label: "Passkey",
-          onClick: () => authenticate(AuthProviderType.PASSKEYS)
+          onClick: () => authenticate("PASSKEYS")
         },
         {
           label: "Google",
-          onClick: () => authenticate(AuthProviderType.GOOGLE)
+          onClick: () => authenticate("GOOGLE")
         },
         {
           label: "ArConnect",

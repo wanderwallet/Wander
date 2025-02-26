@@ -45,11 +45,19 @@ export function useAuthStatusOverride(
 ): null | ExtensionRouteOverride | RouteRedirect<WanderRoutePath> {
   const { authStatus, lastRegisteredWallet, promptToBackUp } = useEmbedded();
 
+  if (!location) return;
+
+  if (location?.startsWith("/access_token")) {
+    return null;
+  }
+
   // TODO: Memo all  this:
 
+  /*
   if (authStatus === "unknown" && location !== "/__OVERRIDES/cover") {
     return "/__REDIRECT/";
   }
+    */
 
   if (location) {
     if (authStatus === "noAuth" || authStatus === "authLoading") {

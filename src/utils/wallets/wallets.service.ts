@@ -1,10 +1,4 @@
-import {
-  Chain,
-  ChallengeClientV1,
-  WalletPrivacySetting,
-  WalletStatus,
-  type DbChallenge
-} from "embed-api";
+import { ChallengeClientV1, type DbChallenge } from "embed-api";
 import { EMPTY_SESSION } from "~utils/embedded/embedded.constants";
 import { trpcVanilla } from "~utils/embedded/embedded.utils";
 import {
@@ -24,9 +18,9 @@ export type CreatePublicWalletParams = Omit<
 async function createPublicWallet(wallet: CreatePublicWalletParams) {
   return trpcVanilla.createPublicWallet.mutate({
     ...wallet,
-    status: WalletStatus.ENABLED,
-    chain: Chain.ARWEAVE,
-    walletPrivacySetting: WalletPrivacySetting.PUBLIC,
+    status: "ENABLED",
+    chain: "ARWEAVE",
+    walletPrivacySetting: "PUBLIC",
     canRecoverAccountSetting: true
   });
 }

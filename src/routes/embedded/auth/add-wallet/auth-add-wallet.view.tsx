@@ -3,7 +3,6 @@ import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useEffect } from "react";
 
 import screenSrc from "url:/assets-beta/figma-screens/add-a-wallet.view.png";
-import { AuthProviderType, WalletSourceType } from "embed-api";
 
 export function AuthAddWalletEmbeddedView() {
   const { authProviderType, generateTempWallet, registerWallet } =
@@ -23,7 +22,7 @@ export function AuthAddWalletEmbeddedView() {
       config={[
         {
           label: "Create New Wallet",
-          onClick: () => registerWallet(WalletSourceType.GENERATED)
+          onClick: () => registerWallet("GENERATED")
         },
         {
           label: "Enter Seed Phrase",
@@ -33,7 +32,7 @@ export function AuthAddWalletEmbeddedView() {
           label: "Import Private Key",
           to: "/auth/import-keyfile"
         },
-        authProviderType === AuthProviderType.PASSKEYS
+        authProviderType === "PASSKEYS"
           ? {
               label: "Add this device to an existing account",
               to: "/auth/add-device",
