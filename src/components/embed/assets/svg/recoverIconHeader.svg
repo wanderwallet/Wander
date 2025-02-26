@@ -9,7 +9,7 @@
 <circle cx="62.5028" cy="2.19661" r="0.992019" fill="#6B57F9"/>
 <circle cx="12.9317" cy="30.9012" r="0.992019" fill="#6B57F9"/>
 <defs>
-<clipPath id="bgblur_0_10_4735_clip_path"><rect transform="translate(-11.105 -1.30787)" x="14.1357" y="15.1348" width="41.7134" height="30.7688" rx="1.98674" transform="rotate(-15 14.1357 15.1348)"/>
+<clipPath id="bgblur_0_10_4735_clip_path"><rect transform="translate(-11.105 -1.30787) rotate(-15 14.1357 15.1348)" x="14.1357" y="15.1348" width="41.7134" height="30.7688" rx="1.98674" />
 </clipPath><linearGradient id="paint0_linear_10_4735" x1="35.1394" y1="45.9036" x2="35.1394" y2="15.1348" gradientUnits="userSpaceOnUse">
 <stop stop-color="#6B57F9"/>
 <stop offset="1" stop-color="#9787FF"/>
