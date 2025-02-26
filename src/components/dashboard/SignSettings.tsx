@@ -14,15 +14,36 @@ export const SignSettingsDashboardView = () => {
     false
   );
 
+  const [connectRequirePassword, setConnectRequirePassword] = useStorage(
+    {
+      key: "connect_require_password",
+      instance: ExtensionStorage
+    },
+    false
+  );
+
   return (
     <Wrapper>
       <ToggleSwitchWrapper>
-        <Text>{browser.i18n.getMessage("enable_transfer_settings")}</Text>
+        <Text noMargin>
+          {browser.i18n.getMessage("enable_transfer_settings")}
+        </Text>
         <ToggleSwitch
           width={51}
           height={31}
           checked={transferRequirePassword}
           setChecked={setTransferRequirePassword}
+        />
+      </ToggleSwitchWrapper>
+      <ToggleSwitchWrapper>
+        <Text noMargin>
+          {browser.i18n.getMessage("enable_connect_settings")}
+        </Text>
+        <ToggleSwitch
+          width={51}
+          height={31}
+          checked={connectRequirePassword}
+          setChecked={setConnectRequirePassword}
         />
       </ToggleSwitchWrapper>
     </Wrapper>
@@ -31,6 +52,9 @@ export const SignSettingsDashboardView = () => {
 
 const Wrapper = styled.div`
   position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 `;
 
 const ToggleSwitchWrapper = styled.div`

@@ -92,9 +92,9 @@ export const basicSettings: (DashboardRouteConfig | Setting)[] = [
 
 export const advancedSettings: (DashboardRouteConfig | Setting)[] = [
   {
-    name: "transfer_settings",
-    displayName: "setting_transfer_settings",
-    description: "setting_transfer_settings_description",
+    name: "password_settings",
+    displayName: "setting_password_settings",
+    description: "setting_password_settings_description",
     icon: Pencil02,
     component: SignSettingsDashboardView
   },

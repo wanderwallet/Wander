@@ -229,7 +229,7 @@ export default function WalletHeader() {
 
           <WalletName>
             <Text weight="medium" noMargin>
-              {truncateMiddle(displayName, 10)}
+              {truncateMiddle(displayName, 9)}
             </Text>
             <Address>{address}</Address>
           </WalletName>
