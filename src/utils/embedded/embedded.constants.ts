@@ -6,9 +6,10 @@ export const EMBEDDED_FEATURE_FLAGS = {
   STORE_SEED_PHRASE: true
 } as const;
 
+// TODO: Replace with the real thing once authentication is implemented...
+
 export const EMPTY_SESSION: DbSession = {
   id: "",
-  providerSessionId: "",
   createdAt: new Date(0),
   updatedAt: new Date(0),
   deviceNonce: "",

@@ -1,4 +1,5 @@
 import { nanoid } from "nanoid";
+import { setDeviceNonceHeader } from "~utils/embedded/embedded.utils";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 
 const DEVICE_NONCE_KEY = "DEVICE_NONCE";
@@ -35,7 +36,7 @@ export function generateDeviceNonce(): DeviceNonce {
 export function storeDeviceNonce(deviceNonce: DeviceNonce) {
   log(LOG_GROUP.WALLET_GENERATION, "storeDeviceNonce()");
 
-  // TODO: Also add as a header on the tRPC client.
+  setDeviceNonceHeader(deviceNonce);
 
   localStorage.setItem(DEVICE_NONCE_KEY, _deviceNonce);
 

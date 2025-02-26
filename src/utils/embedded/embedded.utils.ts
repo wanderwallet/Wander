@@ -11,10 +11,18 @@ export function isTempWalletPromiseExpired(
 
 const {
   client: trpcVanilla,
-  getAuthToken,
-  setAuthToken
+  getAuthTokenHeader,
+  setAuthTokenHeader,
+  getDeviceNonceHeader,
+  setDeviceNonceHeader
 } = createTRPCClient({
   baseURL: "http://localhost:3000"
 });
 
-export { trpcVanilla, getAuthToken, setAuthToken };
+export {
+  trpcVanilla,
+  getAuthTokenHeader,
+  setAuthTokenHeader,
+  getDeviceNonceHeader,
+  setDeviceNonceHeader
+};

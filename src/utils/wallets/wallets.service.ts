@@ -5,7 +5,6 @@ import {
   WalletStatus,
   type DbChallenge
 } from "embed-api";
-import type { DeviceNonce } from "~utils/embedded/device-nonce/device-nonce.utils";
 import { EMPTY_SESSION } from "~utils/embedded/embedded.constants";
 import { trpcVanilla } from "~utils/embedded/embedded.utils";
 import {
