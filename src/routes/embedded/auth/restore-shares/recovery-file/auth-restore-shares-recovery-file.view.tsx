@@ -5,7 +5,7 @@ import { useRef } from "react";
 import screenSrc from "url:/assets-beta/figma-screens/restore-shares.view.png";
 
 export function AuthRestoreSharesRecoveryFileEmbeddedView() {
-  const { wallets, restoreWallet } = useEmbedded();
+  const { wallets, recoverWallet } = useEmbedded();
   const walletAddress = wallets[0].address;
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -16,7 +16,7 @@ export function AuthRestoreSharesRecoveryFileEmbeddedView() {
     // TODO: Throw error with error message for `DevFigmaScreen` to display it:
     if (!textareaElement) return;
 
-    return restoreWallet(walletAddress, JSON.parse(textareaRef.current.value));
+    return recoverWallet(JSON.parse(textareaRef.current.value));
   };
 
   // TODO: The recovery file should probably include the wallet address or a hash so that we can

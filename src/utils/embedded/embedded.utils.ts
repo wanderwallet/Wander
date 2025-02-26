@@ -1,3 +1,4 @@
+import { createTRPCClient } from "embed-api";
 import type { TempWalletPromise } from "~utils/embedded/embedded.types";
 
 const FIVE_MINS_IN_MS = 5 * 60 * 1000;
@@ -7,3 +8,13 @@ export function isTempWalletPromiseExpired(
 ) {
   return Date.now() - tempWalletPromise.createdAt >= FIVE_MINS_IN_MS;
 }
+
+const {
+  client: trpcVanilla,
+  getAuthToken,
+  setAuthToken
+} = createTRPCClient({
+  baseURL: "http://localhost:3000"
+});
+
+export { trpcVanilla, getAuthToken, setAuthToken };

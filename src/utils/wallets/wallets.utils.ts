@@ -1,10 +1,5 @@
 import * as bip39 from "bip39-web-crypto";
-import {
-  addWallet,
-  getWalletKeyLength,
-  updatePassword,
-  type WalletKeyLengths
-} from "~wallets";
+import { addWallet, getWalletKeyLength, type WalletKeyLengths } from "~wallets";
 import {
   checkPasswordValid,
   jwkFromMnemonic,
@@ -14,13 +9,8 @@ import * as SSS from "shamir-secret-sharing";
 import type { JWKInterface } from "arweave/web/lib/wallet";
 import { defaultGateway } from "~gateways/gateway";
 import Arweave from "arweave";
-import { nanoid } from "nanoid";
 import { setDecryptionKey } from "~wallets/auth";
-import {
-  INVALID_DEVICE_NONCE_ERR_MSG,
-  INVALID_DEVICE_SHARES_INFO_ERR_MSG
-} from "~utils/wallets/wallets.constants";
-import { ExtensionStorage } from "~utils/storage";
+import { INVALID_DEVICE_SHARES_INFO_ERR_MSG } from "~utils/wallets/wallets.constants";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { random, pki } from "node-forge";
 
@@ -138,12 +128,6 @@ async function generateWalletRecoveryShares(
   };
 }
 
-function generateDeviceNonce(): DeviceNonce {
-  log(LOG_GROUP.WALLET_GENERATION, "generateDeviceNonce()");
-
-  return `${new Date().toISOString()}-${nanoid()}` as DeviceNonce;
-}
-
 function generateRandomPassword(): string {
   log(LOG_GROUP.WALLET_GENERATION, "generateRandomPassword()");
 
@@ -202,12 +186,19 @@ async function generateShareHash(share: string): Promise<string> {
   return Buffer.from(new Uint8Array(hashBuffer)).toString("base64");
 }
 
+export interface GenerateShareHashAndPublicKeyReturn {
+  shareHash: string;
+  sharePublicKey: string;
+}
+
 /**
  * See:
  * - https://github.com/framp/zero-knowledge-node/blob/master/keypair-auth/crypto-utils.js
  * - https://www.youtube.com/watch?v=cMoD0wIxIpQ
  */
-async function generateSharePublicKey(share: string): Promise<string> {
+async function generateShareHashAndPublicKey(
+  share: string
+): Promise<GenerateShareHashAndPublicKeyReturn> {
   log(LOG_GROUP.WALLET_GENERATION, "generateSharePublicKey()");
 
   const sharePrng = random.createInstance();
@@ -231,71 +222,93 @@ async function generateSharePublicKey(share: string): Promise<string> {
         bits: 2048,
         prng: sharePrng
       },
-      (err, result) => {
+      async (err, result) => {
         if (err) {
           reject(err);
         } else {
+          const shareHash = await generateShareHash(share);
           const publicKey = result.publicKey;
           const publicKeyPEM = pki.publicKeyToPem(publicKey);
 
-          // TODO: Must be converted to base54:
-          resolve(publicKeyPEM);
+          // TODO: Must be converted to base64:
+          const sharePublicKey = publicKeyPEM;
+
+          resolve({
+            shareHash,
+            sharePublicKey
+          });
         }
       }
     );
   });
 }
 
-// TODO: Add generateSharePrivateKey
+export interface GenerateShareHashAndPrivateKeyReturn {
+  shareHash: string;
+  sharePrivateKeyJWK: JWKInterface;
+}
 
-async function generateChallengeSignature(
-  challenge: string,
-  jwk: JWKInterface
-): Promise<string> {
-  log(LOG_GROUP.WALLET_GENERATION, "generateChallengeSignature()");
+/**
+ * See:
+ * - https://github.com/framp/zero-knowledge-node/blob/master/keypair-auth/crypto-utils.js
+ * - https://www.youtube.com/watch?v=cMoD0wIxIpQ
+ */
+async function generateShareHashAndPrivateKey(
+  share: string
+): Promise<GenerateShareHashAndPrivateKeyReturn> {
+  log(LOG_GROUP.WALLET_GENERATION, "generateSharePublicKey()");
 
-  // TODO: Coy from "embeded-api"
+  const sharePrng = random.createInstance();
 
-  return Promise.resolve("");
+  sharePrng.seedFileSync = (needed) => {
+    let r = "",
+      i = 0,
+      j = 0;
+
+    while (i++ < needed) {
+      r += share[j++];
+      if (j === share.length) j = 0;
+    }
+
+    return r;
+  };
+
+  return new Promise((resolve, reject) => {
+    pki.rsa.generateKeyPair(
+      {
+        bits: 2048,
+        prng: sharePrng
+      },
+      async (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          const shareHash = await generateShareHash(share);
+          const privateKey = result.privateKey;
+          const privateKeyPEM = pki.privateKeyToPem(privateKey);
+
+          // TODO: Must be converted to JWK:
+          const sharePrivateKeyJWK = {} as JWKInterface;
+
+          resolve({
+            shareHash,
+            sharePrivateKeyJWK
+          });
+        }
+      }
+    );
+  });
 }
 
 // Data (localStorage):
 
-// Device Nonce:
-
-const DEVICE_NONCE_KEY = "DEVICE_NONCE";
-
-export type DeviceNonce =
-  `${number}-${number}-${number}T${number}:${number}:${number}.${number}Z-${string}`;
-
-function loadDeviceNonce(): DeviceNonce | null {
-  let deviceNonce = localStorage.getItem(DEVICE_NONCE_KEY) || null;
-
-  if (
-    deviceNonce === null ||
-    /\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z)\-[\w_-]{21}/.test(
-      deviceNonce
-    )
-  )
-    return deviceNonce as DeviceNonce;
-
-  if (process.env.NODE_ENV === "development") {
-    throw new Error(INVALID_DEVICE_NONCE_ERR_MSG);
-  } else {
-    console.warn(INVALID_DEVICE_NONCE_ERR_MSG);
-  }
-}
-
-let _deviceNonce: DeviceNonce | null = loadDeviceNonce();
-
-// Device Shares:
-
 const DEVICE_SHARES_INFO_KEY = "DEVICE_SHARES_INFO";
 
 export interface DeviceShareInfo {
+  walletId: string;
   deviceShare: string;
   // TODO: Do we want to use the walletAddress or maybe better a hash?
-  walletAddress: string;
+  // walletAddress: string;
   createdAt: number;
 }
 
@@ -330,10 +343,6 @@ let _deviceSharesInfo: Record<
 > = loadDeviceSharesInfo();
 
 // Getters:
-
-function getDeviceNonce(): DeviceNonce {
-  return _deviceNonce;
-}
 
 function getDeviceSharesInfo(userId: string): DeviceShareInfo[] {
   return Object.values(_deviceSharesInfo[userId] || {}).sort(
@@ -376,31 +385,24 @@ function getDecryptedSeedPhrase(walletAddress: string, jwk: JWKInterface) {
   return encryptedSeedPhrase;
 }
 
-function storeDeviceNonce(deviceNonce: DeviceNonce) {
-  log(LOG_GROUP.WALLET_GENERATION, "storeDeviceNonce()");
-
-  _deviceNonce = deviceNonce;
-
-  localStorage.setItem(DEVICE_NONCE_KEY, _deviceNonce);
-}
-
 function storeDeviceShare(
+  walletId: string,
   deviceShare: string,
-  userId: string,
+  userId: string
   // TODO: Do we want to use the walletAddress or maybe better a hash?
-  walletAddress: string
+  // walletAddress: string
 ) {
   log(LOG_GROUP.WALLET_GENERATION, "storeDeviceShare()");
 
   const deviceShareInfo: DeviceShareInfo = {
+    walletId,
     deviceShare,
-    walletAddress,
     createdAt: Date.now()
   };
 
   if (!_deviceSharesInfo[userId]) _deviceSharesInfo[userId] = {};
 
-  _deviceSharesInfo[userId][walletAddress] = deviceShareInfo;
+  _deviceSharesInfo[userId][walletId] = deviceShareInfo;
 
   localStorage.setItem(
     DEVICE_SHARES_INFO_KEY,
@@ -435,18 +437,15 @@ export const WalletUtils = {
   generateWalletJWK, // TODO: Rename to generateWalletKeyfile
   generateWalletWorkShares,
   generateWalletRecoveryShares,
-  generateDeviceNonce,
   generateWalletJWKFromShares,
   generateShareHash,
-  generateSharePublicKey,
-  generateChallengeSignature,
+  generateShareHashAndPublicKey,
+  generateShareHashAndPrivateKey,
 
   // Getters:
-  getDeviceNonce,
   getDeviceSharesInfo,
 
   // Storage:
-  storeDeviceNonce,
   storeDeviceShare,
   storeEncryptedSeedPhrase,
   hasEncryptedSeedPhrase,

@@ -1,6 +1,12 @@
 import type { PropsWithChildren } from "react";
 import type { JWKInterface } from "arweave/web/lib/wallet";
-import type { DbWallet, DbUserProfile, AuthProviderType } from "embed-api";
+import type {
+  DbWallet,
+  AuthProviderType,
+  SupabaseUser,
+  RecoverableAccount,
+  WalletSourceType
+} from "embed-api";
 
 export type AuthStatus =
   | "unknown"
@@ -34,34 +40,36 @@ export interface TempWalletPromise {
 export interface EmbeddedProviderProps extends PropsWithChildren {}
 
 export interface EmbeddedContextState {
+  // Authentication:
   authStatus: AuthStatus;
   authProviderType: null | AuthProviderType;
-  userId: null | string;
+  user: null | SupabaseUser;
+
+  // Wallets:
+  currentWalletId: string;
   wallets: WalletInfo[];
   generatedTempWalletAddress: null | string;
   importedTempWalletAddress: null | string;
   lastRegisteredWallet: null | DbWallet;
-  recoverableAccounts: null | DbUserProfile[];
-  // TODO: This needs to reference which wallet needs to be backed up (assuming each one is backed up individually)
-  promptToBackUp: boolean;
-  backedUp: boolean;
+  recoverableAccounts: null | RecoverableAccount[];
 }
 
 export interface RecoveryJSON {
   version: string;
+  walletId: string;
   recoveryBackupShare: string;
+  recoveryFileServerSignature: string;
 }
 
 export interface EmbeddedContextData extends EmbeddedContextState {
   authenticate: (authProviderType: AuthProviderType) => Promise<void>;
-  fetchRecoverableAccounts: () => Promise<DbUserProfile[]>;
+  fetchRecoverableAccounts: () => Promise<RecoverableAccount[]>;
   clearRecoverableAccounts: () => void;
   recoverAccount: (
     authProviderType: AuthProviderType,
     accountToRecoverId: string
   ) => Promise<void>;
-  restoreWallet: (
-    walletAddress: string,
+  recoverWallet: (
     recoveryData: RecoveryJSON | JWKInterface | string
   ) => Promise<void>;
 
@@ -73,12 +81,11 @@ export interface EmbeddedContextData extends EmbeddedContextState {
   ) => Promise<TempWallet>;
   deleteImportedTempWallet: () => Promise<void>;
 
-  registerWallet: (source: "generated" | "imported") => Promise<DbWallet>;
+  registerWallet: (sourceType: WalletSourceType) => Promise<DbWallet>;
   clearLastRegisteredWallet: () => void;
 
   skipBackUp: (doNotAskAgain: boolean) => void | Promise<void>;
-  registerBackUp: () => Promise<void>;
-  downloadKeyfile: (walletAddress: string) => Promise<void>;
-  copySeedphrase: (walletAddress: string) => Promise<void>;
-  generateRecoveryAndDownload: (walletAddress: string) => Promise<void>;
+  downloadKeyfile: () => Promise<void>;
+  copySeedphrase: () => Promise<void>;
+  generateRecoveryAndDownload: () => Promise<void>;
 }
