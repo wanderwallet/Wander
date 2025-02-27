@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Button,
   Card,
@@ -21,14 +21,18 @@ export function AccountImportSeedphraseEmbeddedView() {
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const handleImportWallet = () => {
-    const textareaElement = textareaRef.current;
-
-    // TODO: Throw error with error message for `DevFigmaScreen` to display it:
-    if (!textareaElement) return;
-
-    return importTempWallet(textareaRef.current.value);
-  };
+  const handleImportWallet = useCallback(async () => {
+    try {
+      setLoading(true);
+      if (!seedPhrase.length) return;
+      await importTempWallet(seedPhrase.join(" "));
+      await registerWallet("imported");
+    } catch (error) {
+      alert(error);
+    } finally {
+      setLoading(false);
+    }
+  }, [seedPhrase]);
 
   useEffect(() => {
     return () => {
@@ -71,7 +75,7 @@ export function AccountImportSeedphraseEmbeddedView() {
           });
         }}
       />
-      <Button isFullWidth size="md">
+      <Button isFullWidth size="md" onClick={handleImportWallet}>
         Recover
       </Button>
     </Card>

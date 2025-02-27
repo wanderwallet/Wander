@@ -1,5 +1,5 @@
 import type { JWKInterface } from "arweave/web/lib/wallet";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Button,
   Card,
@@ -22,16 +22,24 @@ export function AccountImportKeyfileEmbeddedView() {
 
   const textInputRef = useRef<HTMLInputElement>(null);
 
-  const handleImportWallet = () => {
-    const textInputElement = textInputRef.current;
+  const handleImportWallet = useCallback(async () => {
+    try {
+      const textInputElement = textInputRef.current;
 
-    // TODO: Throw error with error message for `DevFigmaScreen` to display it:
-    if (!textInputElement) return;
+      alert("textInputElement :: problem" + textInputElement);
 
-    const jwk = JSON.parse(textInputElement.value) as JWKInterface;
-    setLoading(false);
-    return importTempWallet(jwk);
-  };
+      const jwk = JSON.parse(textInputElement.value) as JWKInterface;
+
+      setLoading(false);
+
+      const tempWallet = await importTempWallet(jwk);
+      return tempWallet;
+    } catch (error) {
+      alert(error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     return () => {
