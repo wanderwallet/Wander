@@ -25,6 +25,7 @@ import {
   GlobeIcon,
   LogOutIcon,
   SettingsIcon,
+  MinimizeIcon,
   UserIcon
 } from "@iconicicons/react";
 import WalletSwitcher, { popoverAnimation } from "./WalletSwitcher";
@@ -40,6 +41,7 @@ import { type Gateway } from "~gateways/gateway";
 import { Bell03 } from "@untitled-ui/icons-react";
 import { svgie } from "~utils/svgies";
 import { useLocation } from "~wallets/router/router.utils";
+import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 
 export default function WalletHeader() {
   const theme = useTheme();
@@ -180,6 +182,8 @@ export default function WalletHeader() {
   // copied address
   const [copied, setCopied] = useState(false);
 
+  const isEmbedded = import.meta.env?.VITE_IS_EMBEDDED_APP === "1";
+
   return (
     <Wrapper displayTheme={theme} scrolled={scrollY > 14}>
       <AppAction
@@ -237,21 +241,39 @@ export default function WalletHeader() {
           />
         </Tooltip>
       </AddressContainer>
-
-      <Tooltip
-        content={browser.i18n.getMessage("setting_notifications")}
-        position="bottomEnd"
-      >
-        <Action
-          as={Bell03}
-          onClick={() => {
-            setNewNotifications(false);
-            navigate("/notifications");
-          }}
-          style={{ width: "24px", height: "24px" }}
-        />
-        {newNotifications && <Notifier />}
-      </Tooltip>
+      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+        <Tooltip
+          content={browser.i18n.getMessage("setting_notifications")}
+          position="bottomEnd"
+        >
+          <Action
+            as={Bell03}
+            onClick={() => {
+              setNewNotifications(false);
+              navigate("/notifications");
+            }}
+            style={{ width: "24px", height: "24px" }}
+          />
+          {newNotifications && <Notifier />}
+        </Tooltip>
+        {isEmbedded && (
+          <Tooltip
+            content={browser.i18n.getMessage("close")}
+            position="bottomEnd"
+          >
+            <Action
+              as={MinimizeIcon}
+              onClick={() => {
+                postEmbeddedMessage({
+                  type: "embedded_close",
+                  data: null
+                });
+              }}
+              style={{ width: "24px", height: "24px" }}
+            />
+          </Tooltip>
+        )}
+      </div>
 
       {appDataOpen && (
         <CloseLayer
@@ -436,7 +458,11 @@ const Address = styled(Text).attrs({
   variant: "secondary",
   weight: "medium",
   noMargin: true
-})``;
+})`
+  @media (max-width: 375px) {
+    display: none;
+  }
+`;
 
 const avatarSize = "1.5rem";
 
