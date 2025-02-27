@@ -1,5 +1,5 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
 import {
   Card,
@@ -17,15 +17,26 @@ export function AuthRestoreSharesRecoveryFileEmbeddedView() {
 
   const textInputRef = useRef<HTMLInputElement>(null);
 
-  const handleRestore = () => {
-    setLoading(true);
-    const textareaElement = textInputRef.current;
+  const handleRestore = useCallback(() => {
+    try {
+      setLoading(true);
+      const textareaElement = textInputRef.current;
 
-    // TODO: Throw error with error message for `DevFigmaScreen` to display it:
-    if (!textareaElement) return;
-    setLoading(false);
-    return restoreWallet(walletAddress, JSON.parse(textInputRef.current.value));
-  };
+      if (!textareaElement) return;
+
+      const restoredWallet = restoreWallet(
+        walletAddress,
+        JSON.parse(textInputRef.current.value)
+      );
+
+      setLoading(false);
+
+      return restoredWallet;
+    } catch (error) {
+      alert(error);
+      setLoading(false);
+    }
+  }, [walletAddress]);
 
   // TODO: The recovery file should probably include the wallet address or a hash so that we can
   // request the recovery of the right one from the backend without asking the user to manually select
@@ -61,7 +72,6 @@ export function AuthRestoreSharesRecoveryFileEmbeddedView() {
         description={"or drag and drop your private key"}
         isLoading={loading}
         loadingText={"Restoring account..."}
-        onFileChange={handleRestore}
       />
       <Button isFullWidth size="md" isLoading={loading} onClick={handleRestore}>
         Restore

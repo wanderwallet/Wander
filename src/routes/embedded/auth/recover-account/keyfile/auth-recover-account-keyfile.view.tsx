@@ -42,7 +42,8 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
       setLoading(false);
       navigate("/auth/recover-account/authentication");
     } catch (error) {
-      console.error(error);
+      alert(error);
+      setLoading(false);
     }
   };
 
@@ -137,24 +138,4 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
       </Button>
     </Card>
   );
-
-  //   <DevFigmaScreen
-  //     title="Recover your account"
-  //     description="Import private key"
-  //     src={screenSrc}
-  //     config={[
-  //       {
-  //         label: "Recover",
-  //         onClick: handleImportWallet
-  //       },
-  //       {
-  //         label: "Back",
-  //         to: "/auth/recover-account",
-  //         variant: "secondary"
-  //       }
-  //     ]}
-  //   >
-  //     <textarea ref={textareaRef} placeholder="Upload keyfile"></textarea>
-  //   </DevFigmaScreen>
-  // );
 }

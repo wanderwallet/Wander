@@ -53,7 +53,7 @@ export function AuthAddWalletEmbeddedView() {
       }
       hasBackButton={true}
       onBackButtonClick={() => {
-        window.history.back();
+        window.location.href = "/";
       }}
       hasCloseButton={false}
       size="auto"
@@ -67,6 +67,7 @@ export function AuthAddWalletEmbeddedView() {
           isLoading={
             isLoading.calledId === "generated" && isLoading.status === true
           }
+          isDisabled={isLoading.status}
         >
           Create new wallet
         </Button>
@@ -74,7 +75,8 @@ export function AuthAddWalletEmbeddedView() {
           variant="outlined"
           isFullWidth
           icon={<WalletIcon fontSize={24} />}
-          href="/auth/import-seed-phrase"
+          href="/auth/import-seedphrase"
+          isDisabled={isLoading.status}
         >
           Enter Seed Phrase
         </Button>
@@ -83,6 +85,7 @@ export function AuthAddWalletEmbeddedView() {
           isFullWidth
           icon={<KeyIcon fontSize={24} />}
           href="/auth/import-keyfile"
+          isDisabled={isLoading.status}
         >
           Import Keyfile
         </Button>
@@ -92,6 +95,7 @@ export function AuthAddWalletEmbeddedView() {
             isFullWidth
             icon={<QRCodeIcon fontSize={24} />}
             href="/auth/add-device"
+            isDisabled={isLoading.status}
           >
             Add this device to an existing account
           </Button>
@@ -101,6 +105,7 @@ export function AuthAddWalletEmbeddedView() {
             isFullWidth
             icon={<QRCodeIcon fontSize={24} />}
             href="/auth/add-auth-provider"
+            isDisabled={isLoading.status}
           >
             Add {authMethod.toLocaleUpperCase()} to an existing account
           </Button>

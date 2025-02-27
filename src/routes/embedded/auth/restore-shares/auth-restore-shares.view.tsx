@@ -72,7 +72,7 @@ export function AuthRestoreSharesEmbeddedView() {
           variant="outlined"
           isFullWidth
           icon={<SeedIcon fontSize={24} />}
-          href="/auth/import-seed-phrase"
+          href="/auth/import-seedphrase"
         >
           Enter Seed Phrase
         </Button>

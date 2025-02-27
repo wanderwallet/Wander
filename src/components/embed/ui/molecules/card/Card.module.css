@@ -2,12 +2,12 @@
 
 .card {
   overflow: hidden;
+  align-items: center;
   justify-content: space-between;
   background-color: var(--color-card-background-default);
-  width: var(--card-default-width);
-  border: 1px solid var(--color-card-border-default);
+  width: var(--full-width);
+  height: fit-content;
   padding: var(--spacing-8);
-  justify-self: center;
 }
 
 .card__shadow {
@@ -22,24 +22,17 @@
 .card__sm {
   width: var(--card-sm-width);
   min-height: var(--card-sm-height);
-
   font-size: var(--font-size-base);
-  border-radius: var(--border-radius-xxl);
 }
 
 .card__auto {
-  width: var(--card-sm-width);
   min-height: auto;
   font-size: var(--font-size-base);
-  border-radius: var(--border-radius-xxl);
 }
 
 .card__md {
-  width: var(--card-default-width);
   min-height: var(--card-default-height);
-
   font-size: var(--font-size-base);
-  border-radius: var(--border-radius-xxl);
 }
 
 .card__header {

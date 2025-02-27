@@ -1,16 +1,17 @@
-import { useEmbedded } from "~utils/embedded/embedded.hooks";
-import { useEffect, useRef } from "react";
-
+import { useEffect, useRef, useState } from "react";
 import {
-  Row,
-  WanderIcon,
-  Card,
   Button,
-  Text,
-  SeedInput
-} from "~components/embed";
+  Card,
+  Row,
+  SeedInput,
+  WanderIcon,
+  Text
+} from "~components/embed/ui";
+import { useEmbedded } from "~utils/embedded/embedded.hooks";
 
 export function AuthImportSeedphraseEmbeddedView() {
+  const [loading, setLoading] = useState(false);
+  const [seedPhrase, setSeedPhrase] = useState<string[]>([]);
   const {
     importTempWallet,
     importedTempWalletAddress,
@@ -58,11 +59,16 @@ export function AuthImportSeedphraseEmbeddedView() {
     >
       <SeedInput
         handleSubmit={handleImportWallet}
-        handleCopyToClipboard={() => {
-          navigator.clipboard.writeText(importedTempWalletAddress);
-        }}
-        handleInputChange={function (index: number, value: string): void {
-          throw new Error("Function not implemented.");
+        seedPhrase={seedPhrase}
+        handleCopyToClipboard={() =>
+          navigator.clipboard.writeText(seedPhrase.join(" "))
+        }
+        handleInputChange={(index: number, value: string) => {
+          setSeedPhrase((prevSeedPhrase) => {
+            const newSeedPhrase = [...prevSeedPhrase];
+            newSeedPhrase[index] = value;
+            return newSeedPhrase;
+          });
         }}
       />
       <Button isFullWidth size="md">

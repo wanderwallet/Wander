@@ -1,3 +1,4 @@
+import { useCallback, useState } from "react";
 import {
   Box,
   Button,
@@ -16,9 +17,21 @@ import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { Link } from "~wallets/router/components/link/Link";
 
 export function AccountBackupSharesEmbeddedView() {
+  const [loading, setLoading] = useState(false);
   const { wallets, promptToBackUp, generateRecoveryAndDownload } =
     useEmbedded();
   const walletAddress = wallets[0].address;
+
+  const handleGenerateRecoveryAndDownload = useCallback(() => {
+    try {
+      setLoading(true);
+      generateRecoveryAndDownload(walletAddress);
+      setLoading(false);
+    } catch (error) {
+      alert(error);
+      setLoading(false);
+    }
+  }, [generateRecoveryAndDownload, walletAddress]);
 
   // TODO: What if the user already has more than 3 backup shares?
 
@@ -57,6 +70,7 @@ export function AccountBackupSharesEmbeddedView() {
           variant="outlined"
           isFullWidth
           icon={<GDriveIcon fontSize={24} />}
+          isDisabled={loading}
         >
           Backup to Google Drive
         </Button>
@@ -64,6 +78,7 @@ export function AccountBackupSharesEmbeddedView() {
           variant="outlined"
           isFullWidth
           icon={<AppleIcon fontSize={24} />}
+          isDisabled={loading}
         >
           Backup to iCloud
         </Button>
@@ -71,6 +86,7 @@ export function AccountBackupSharesEmbeddedView() {
           variant="outlined"
           isFullWidth
           icon={<DropboxIcon fontSize={24} />}
+          isDisabled={loading}
         >
           Backup to Dropbox
         </Button>
@@ -78,7 +94,9 @@ export function AccountBackupSharesEmbeddedView() {
           variant="outlined"
           isFullWidth
           icon={<KeyIcon fontSize={24} />}
-          onClick={() => generateRecoveryAndDownload(walletAddress)}
+          isLoading={loading}
+          isDisabled={loading}
+          onClick={handleGenerateRecoveryAndDownload}
         >
           Export Private Key
         </Button>
@@ -86,6 +104,7 @@ export function AccountBackupSharesEmbeddedView() {
           variant="outlined"
           isFullWidth
           icon={<SeedIcon fontSize={24} />}
+          isDisabled={loading}
         >
           Copy Seedphrase
         </Button>

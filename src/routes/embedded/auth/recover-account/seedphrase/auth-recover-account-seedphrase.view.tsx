@@ -46,7 +46,8 @@ export function AuthRecoverAccountSeedphraseEmbeddedView() {
       setLoading(false);
       navigate("/auth/recover-account/authentication");
     } catch (error) {
-      console.error(error);
+      alert(error);
+      setLoading(false);
     }
   };
 

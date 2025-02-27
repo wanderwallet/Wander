@@ -57,7 +57,7 @@ const Copyable = React.forwardRef<HTMLDivElement, CopyableBaseProps>(
         ${className}
         ${styles[`copyable__${size}`]}
         ${isBlurry ? styles["copyable__blurry"] : ""}
-        ${isFullWidth ? styles["copyable__full__width"] : ""}
+        ${styles["copyable__full__width"]}
       `}
         {...props}
       >

@@ -73,7 +73,7 @@ export function AccountAddWalletEmbeddedView() {
           variant="outlined"
           isFullWidth
           icon={<WalletIcon fontSize={24} />}
-          href="/auth/import-seed-phrase"
+          href="/auth/import-seedphrase"
         >
           Enter Seed Phrase
         </Button>

@@ -17,7 +17,7 @@ export function AccountBackupSharesReminderEmbeddedView() {
   const checkboxRef = useRef<HTMLInputElement>();
 
   const handleSkipClicked = () => {
-    return skipBackUp(checkboxRef?.current.checked);
+    return skipBackUp(isChecked);
   };
 
   return (

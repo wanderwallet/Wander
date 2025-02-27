@@ -5,6 +5,8 @@
   border-radius: var(--border-radius-lg);
   text-align: center;
   box-sizing: border-box;
+  width: 100%;
+  height: var(--button-default-height);
 
   display: flex;
   align-items: center;
@@ -71,6 +73,7 @@
   padding: 0;
   background-color: inherit;
   color: var(--color-link-primary);
+  width: auto;
 
   text-decoration: none;
   font-size: var(--font-size-base);
@@ -82,6 +85,7 @@
   background-color: transparent;
   color: transparent;
   border: none;
+  width: auto;
 }
 
 .button__blurry {
@@ -113,7 +117,6 @@
 }
 
 .button__md {
-  width: var(--button-default-width);
   height: var(--button-default-height);
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-semi);
@@ -122,7 +125,6 @@
 }
 
 .button__lg {
-  width: var(--button-lg-width);
   height: var(--button-lg-height);
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-semi);
@@ -131,7 +133,6 @@
 }
 
 .button__xl {
-  width: var(--button-xl-width);
   height: var(--button-xl-height);
   font-size: var(--font-size-xl);
   font-weight: var(--font-weight-semi);
@@ -140,7 +141,6 @@
 }
 
 .button__xxl {
-  width: var(--button-xxl-width);
   height: var(--button-xxl-height);
   font-size: var(--font-size-2xl);
   font-weight: var(--font-weight-semi);

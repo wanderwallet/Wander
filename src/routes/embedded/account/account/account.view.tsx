@@ -11,6 +11,8 @@ import { useEmbedded } from "~utils/embedded/embedded.hooks";
 export function AccountEmbeddedView() {
   const { wallets } = useEmbedded();
 
+  const { address } = wallets[0];
+
   return (
     <Card
       headerText={"Account"}
@@ -35,9 +37,9 @@ export function AccountEmbeddedView() {
         isFullWidth
         label="Your account address"
         onClick={() => {
-          navigator.clipboard.writeText(JSON.stringify(wallets, null, 2));
+          navigator.clipboard.writeText(JSON.stringify(address, null, 2));
         }}
-        value={JSON.stringify(wallets, null, 2)}
+        value={JSON.stringify(address, null, 2)}
       />
       <Button isFullWidth size="md" href="/">
         Home
