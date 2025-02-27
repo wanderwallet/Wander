@@ -17,6 +17,7 @@ import { isIncomingMessage } from "./utils/message/message.utils";
 const NOOP = () => {};
 
 export class WanderEmbedded {
+  private static instance: WanderEmbedded | null = null;
   static DEFAULT_IFRAME_SRC = "http://localhost:5173/" as const;
 
   // Callbacks:
@@ -47,6 +48,10 @@ export class WanderEmbedded {
   public pendingRequests: number = 0;
 
   constructor(options: WanderEmbeddedOptions = {}) {
+    if (WanderEmbedded.instance) {
+      throw new Error("WanderEmbedded instance already exists.");
+    }
+
     // Callbacks:
     this.onAuth = options.onAuth ?? NOOP;
     this.onOpen = options.onOpen ?? NOOP;
@@ -197,7 +202,7 @@ export class WanderEmbedded {
           this.isOpen = false;
 
           this.buttonComponent?.unsetStatus("isOpen");
-
+          this.iframeComponent?.hide();
           this.onClose();
         }
         break;
@@ -295,6 +300,7 @@ export class WanderEmbedded {
       this.buttonHostRef?.remove();
       this.buttonRef?.remove();
     }
+    WanderEmbedded.instance = null;
   }
 
   get isAuthenticated() {
