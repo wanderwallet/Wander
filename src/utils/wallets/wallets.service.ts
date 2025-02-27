@@ -1,4 +1,4 @@
-import { ChallengeClientV1, type DbChallenge } from "embed-api";
+import { ChallengeClientV1, type DbChallenge, type DbWallet } from "embed-api";
 import { EMPTY_SESSION } from "~utils/embedded/embedded.constants";
 import { trpcVanilla } from "~utils/embedded/embedded.utils";
 import {

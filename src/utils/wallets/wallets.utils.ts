@@ -13,6 +13,7 @@ import { setDecryptionKey } from "~wallets/auth";
 import { INVALID_DEVICE_SHARES_INFO_ERR_MSG } from "~utils/wallets/wallets.constants";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { random, pki } from "node-forge";
+import { pemToBase64, pemToJWK } from "~utils/crypto/crypto.utils";
 
 async function generateSeedPhrase() {
   log(LOG_GROUP.WALLET_GENERATION, "generateSeedPhrase()");
@@ -170,18 +171,7 @@ async function generateWalletJWKFromShares(
 async function generateShareHash(share: string): Promise<string> {
   log(LOG_GROUP.WALLET_GENERATION, "generateShareHash()");
 
-  /*
-
-  TODO: Instead of using a share as a private key to sign, we can simply send a hash of it, the challange and some
-  additional data that the server already has. The server should also verify the IP / IP location.
-
-  hash(share + challenge + userAgent)
-
-  In any case, using signatures or zk would still be superior.
-
-  */
-
-  const hashBuffer = await crypto.subtle.digest("SHA-512", Buffer.from(share));
+  const hashBuffer = await crypto.subtle.digest("SHA-256", Buffer.from(share));
 
   return Buffer.from(new Uint8Array(hashBuffer)).toString("base64");
 }
@@ -199,7 +189,7 @@ export interface GenerateShareHashAndPublicKeyReturn {
 async function generateShareHashAndPublicKey(
   share: string
 ): Promise<GenerateShareHashAndPublicKeyReturn> {
-  log(LOG_GROUP.WALLET_GENERATION, "generateSharePublicKey()");
+  log(LOG_GROUP.WALLET_GENERATION, "generateShareHashAndPublicKey()");
 
   const sharePrng = random.createInstance();
 
@@ -219,7 +209,7 @@ async function generateShareHashAndPublicKey(
   return new Promise((resolve, reject) => {
     pki.rsa.generateKeyPair(
       {
-        bits: 2048,
+        bits: 4096,
         prng: sharePrng
       },
       async (err, result) => {
@@ -229,9 +219,7 @@ async function generateShareHashAndPublicKey(
           const shareHash = await generateShareHash(share);
           const publicKey = result.publicKey;
           const publicKeyPEM = pki.publicKeyToPem(publicKey);
-
-          // TODO: Must be converted to base64:
-          const sharePublicKey = publicKeyPEM;
+          const sharePublicKey = pemToBase64(publicKeyPEM);
 
           resolve({
             shareHash,
@@ -256,7 +244,7 @@ export interface GenerateShareHashAndPrivateKeyReturn {
 async function generateShareHashAndPrivateKey(
   share: string
 ): Promise<GenerateShareHashAndPrivateKeyReturn> {
-  log(LOG_GROUP.WALLET_GENERATION, "generateSharePublicKey()");
+  log(LOG_GROUP.WALLET_GENERATION, "generateShareHashAndPrivateKey()");
 
   const sharePrng = random.createInstance();
 
@@ -276,7 +264,7 @@ async function generateShareHashAndPrivateKey(
   return new Promise((resolve, reject) => {
     pki.rsa.generateKeyPair(
       {
-        bits: 2048,
+        bits: 4096,
         prng: sharePrng
       },
       async (err, result) => {
@@ -286,9 +274,9 @@ async function generateShareHashAndPrivateKey(
           const shareHash = await generateShareHash(share);
           const privateKey = result.privateKey;
           const privateKeyPEM = pki.privateKeyToPem(privateKey);
+          const sharePrivateKeyJWK = await pemToJWK(privateKeyPEM);
 
-          // TODO: Must be converted to JWK:
-          const sharePrivateKeyJWK = {} as JWKInterface;
+          // TODO: Test signatures work:
 
           resolve({
             shareHash,
@@ -304,11 +292,15 @@ async function generateShareHashAndPrivateKey(
 
 const DEVICE_SHARES_INFO_KEY = "DEVICE_SHARES_INFO";
 
-export interface DeviceShareInfo {
+// TODO: Remove walletId from localStorage it's already in the key.
+export interface DeviceShareRecord {
+  deviceShare: string;
+  createdAt: number;
+}
+
+export interface DeviceShareInfo extends DeviceShareRecord {
   walletId: string;
   deviceShare: string;
-  // TODO: Do we want to use the walletAddress or maybe better a hash?
-  // walletAddress: string;
   createdAt: number;
 }
 
@@ -360,6 +352,10 @@ function storeEncryptedSeedPhrase(
   jwk: JWKInterface
 ) {
   log(LOG_GROUP.WALLET_GENERATION, "storeEncryptedSeedPhrase()");
+
+  if (!jwk) {
+    throw new Error("Do not store unencrypted seed phrases!");
+  }
 
   // TODO: Encrypt it...
   const encryptedSeedPhrase = seedPhrase;

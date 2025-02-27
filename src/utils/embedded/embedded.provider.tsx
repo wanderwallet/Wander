@@ -104,61 +104,6 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
   console.log("embeddedContextAuth =", embeddedContextAuth);
 
-  useEffect(() => {
-    /*
-    const checkSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      console.log("checkSession() =", session);
-
-      const accessToken = session?.access_token ?? null;
-
-      // setToken(accessToken);
-      setAuthTokenHeader(accessToken);
-
-      setEmbeddedContextAuth({
-        authStatus: "unknown",
-        // TODO: Can we know the provider type of a refreshed session?
-        authProviderType: "PASSKEYS",
-        user,
-      });
-    }
-
-    checkSession()
-    */
-
-    const {
-      data: { subscription }
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      console.log("onAuthStateChange() =", session);
-
-      const accessToken = session?.access_token ?? null;
-
-      // setToken(accessToken);
-      setAuthTokenHeader(accessToken);
-
-      setEmbeddedContextAuth(
-        accessToken
-          ? {
-              authStatus: "authLoading",
-              // TODO: Can we know the provider type of a refreshed session?
-              authProviderType: "PASSKEYS",
-              user
-            }
-          : {
-              // TODO: Also clear wallet state?
-              authStatus: "noAuth",
-              authProviderType: null,
-              user: null
-            }
-      );
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
   // Wallet props:
 
   const { currentWalletId: walletId, wallets } = embeddedContextState;
@@ -271,6 +216,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       type: "KEYFILE"
     });
 
+    // TODO: Update wallet in state for all calls that return an updated wallet.
+
     const updatedWalletInfo: WalletInfo = {
       ...updatedWallet,
       isActive: true,
@@ -354,6 +301,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       // - Storage in the embedded wallet must be temp (memory).
       // - Router should force users out the auth screens
       // - See if signing, etc. works.
+
+      debugger;
 
       await WalletUtils.storeEncryptedWalletJWK(jwk);
 
@@ -574,6 +523,10 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         sharePublicKey: deviceSharePublicKey
       } = await WalletUtils.generateShareHashAndPublicKey(deviceShare);
 
+      console.log("authShare (3168) =", authShare.length);
+
+      if (authShare.length !== 3168) debugger;
+
       const createWalletResponse = await WalletService.createPublicWallet({
         address: walletAddress,
         publicKey: jwk.n,
@@ -780,199 +733,218 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     [userId, wallets]
   );
 
-  // INITIALIZATION:
+  // AUTHENTICATION:
 
-  const initEmbeddedWallet = useCallback(
-    async (authProviderType?: AuthProviderType) => {
-      console.log("initEmbeddedWallet()");
+  const authenticate = useCallback(
+    async (authProviderType: AuthProviderType) => {
+      if (user) {
+        // TODO: What to do if this is called while already authenticated?
+        await supabase.auth.refreshSession();
 
-      setEmbeddedContextState(EMBEDDED_CONTEXT_INITIAL_STATE);
-
-      setEmbeddedContextAuth({
-        authStatus: "authLoading",
-        authProviderType: null,
-        user: null
-      });
+        return;
+      }
 
       // TODO: Handle errors and authentication redirects here:
+      try {
+        // setIsLoading(true);
 
-      if (authProviderType) {
-        try {
-          // setIsLoading(true);
+        const { url } = await AuthenticationService.authenticate(
+          authProviderType
+        );
 
-          const { url } = await AuthenticationService.authenticate(
-            authProviderType
+        if (url) {
+          // Redirect to Google's OAuth page
+          window.location.href = url;
+        } else {
+          console.error("No URL returned from authenticate");
+        }
+      } catch (error) {
+        console.error("Google sign-in failed:", error);
+        // setIsLoading(false);
+      }
+    },
+    [user]
+  );
+
+  // INITIALIZATION:
+
+  const initEmbeddedWallet = useCallback(async (userId: string | null) => {
+    console.log(`initEmbeddedWallet(${userId})`);
+
+    setEmbeddedContextState(EMBEDDED_CONTEXT_INITIAL_STATE);
+
+    if (!userId) {
+      generateTempWallet();
+
+      return;
+    }
+
+    const dbWallets = await WalletService.fetchWallets();
+
+    // TODO: Use transformers/superjson to transform dates automatically and see how to get the right types straight from
+    // the trpc calls:
+
+    const walletsInfo = dbWallets.map((dbWallet) => ({
+      ...dbWallet,
+      isActive: false,
+      isReady: false
+    })) as unknown as WalletInfo[];
+
+    setEmbeddedContextState((prevAuthContextState) => ({
+      ...prevAuthContextState,
+      wallets: walletsInfo
+    }));
+
+    let authStatus = "noAuth" as AuthStatus;
+
+    if (walletsInfo.length > 0) {
+      // TODO: The wallet activation can be deferred until the wallet is going to be used:
+
+      // TODO: TODO: We need to keep track of the last used one, not the last created one:
+      const deviceSharesInfo = WalletUtils.getDeviceSharesInfo(userId);
+
+      // TODO: Verify if wallets match between dbWallets and deviceSharesInfo before
+      // calling fetchFirstAvailableAuthShare().
+
+      // TODO: If we think the wallets are lost, we just show a different screen like the "add wallet"
+      // one but with a different message.
+
+      // TODO: Create an issue for the new storage needs (e.g. expiration). Note that for wallets
+      // that haven't been backup up, we must never delete a share without notifying the user.
+
+      if (deviceSharesInfo.length > 0) {
+        const authShareResponse =
+          await WalletService.fetchFirstAvailableAuthShare(deviceSharesInfo);
+
+        if (authShareResponse) {
+          const jwk = await WalletUtils.generateWalletJWKFromShares(
+            walletAddress,
+            [authShareResponse.authShare, authShareResponse.deviceShare]
           );
 
-          if (url) {
-            // Redirect to Google's OAuth page
-            window.location.href = url;
-          } else {
-            console.error("No URL returned from authenticate");
-          }
-        } catch (error) {
-          console.error("Google sign-in failed:", error);
-          // setIsLoading(false);
-        }
+          const { walletId, rotationChallenge } = authShareResponse;
 
-        return;
-      }
+          if (rotationChallenge) {
+            const { authShare, deviceShare } =
+              await WalletUtils.generateWalletWorkShares(jwk);
 
-      // TODO: Store in context. Do we need to do it from here or will the useAUth hook do it automatically?
-      const user = await AuthenticationService.refreshSession();
+            const {
+              shareHash: deviceShareHash,
+              sharePublicKey: deviceSharePublicKey
+            } = await WalletUtils.generateShareHashAndPublicKey(deviceShare);
 
-      if (!user) {
-        generateTempWallet();
-
-        setEmbeddedContextAuth({
-          authStatus: "noAuth",
-          authProviderType: null,
-          user
-        });
-
-        return;
-      }
-
-      const dbWallets = await WalletService.fetchWallets();
-
-      const wallets = dbWallets.map(
-        (dbWallet) =>
-          ({
-            ...dbWallet,
-            isActive: false,
-            isReady: false
-          } satisfies WalletInfo)
-      );
-
-      setEmbeddedContextState((prevAuthContextState) => ({
-        ...prevAuthContextState,
-        wallets
-      }));
-
-      let authStatus = "noAuth" as AuthStatus;
-
-      if (wallets.length > 0) {
-        const userId = user.id;
-
-        // TODO: The wallet activation can be deferred until the wallet is going to be used:
-
-        // TODO: TODO: We need to keep track of the last used one, not the last created one:
-        const deviceSharesInfo = WalletUtils.getDeviceSharesInfo(userId);
-
-        // TODO: Verify if wallets match between dbWallets and deviceSharesInfo before
-        // calling fetchFirstAvailableAuthShare().
-
-        // TODO: If we think the wallets are lost, we just show a different screen like the "add wallet"
-        // one but with a different message.
-
-        // TODO: Create an issue for the new storage needs (e.g. expiration). Note that for wallets
-        // that haven't been backup up, we must never delete a share without notifying the user.
-
-        if (deviceSharesInfo.length > 0) {
-          const authShareResponse =
-            await WalletService.fetchFirstAvailableAuthShare(deviceSharesInfo);
-
-          if (authShareResponse) {
-            const jwk = await WalletUtils.generateWalletJWKFromShares(
-              walletAddress,
-              [authShareResponse.authShare, authShareResponse.deviceShare]
-            );
-
-            const { walletId, rotationChallenge } = authShareResponse;
-
-            if (rotationChallenge) {
-              const { authShare, deviceShare } =
-                await WalletUtils.generateWalletWorkShares(jwk);
-
-              const {
-                shareHash: deviceShareHash,
-                sharePublicKey: deviceSharePublicKey
-              } = await WalletUtils.generateShareHashAndPublicKey(deviceShare);
-
-              const challengeSolution = await ChallengeClientV1.solveChallenge({
-                challenge: rotationChallenge,
-                session: EMPTY_SESSION,
-                shareHash: null,
-                jwk
-              });
-
-              await WalletService.rotateAuthShare({
-                walletId,
-                authShare,
-                deviceShareHash,
-                deviceSharePublicKey,
-                challengeSolution
-              });
-
-              WalletUtils.storeDeviceShare(walletId, deviceShare, userId);
-            } else {
-              WalletUtils.storeDeviceShare(
-                walletId,
-                authShareResponse.deviceShare,
-                userId
-              );
-            }
-
-            const dbWallet = dbWallets.find((dbWallet) => {
-              return dbWallet.address === walletAddress;
+            const challengeSolution = await ChallengeClientV1.solveChallenge({
+              challenge: rotationChallenge,
+              session: EMPTY_SESSION,
+              shareHash: null,
+              jwk
             });
 
-            try {
-              await addWallet(jwk, dbWallet);
-            } finally {
-              freeDecryptedWallet(jwk);
-            }
+            await WalletService.rotateAuthShare({
+              walletId,
+              authShare,
+              deviceShareHash,
+              deviceSharePublicKey,
+              challengeSolution
+            });
 
-            authStatus = "unlocked";
+            WalletUtils.storeDeviceShare(walletId, deviceShare, userId);
           } else {
-            authStatus = "noShares";
+            WalletUtils.storeDeviceShare(
+              walletId,
+              authShareResponse.deviceShare,
+              userId
+            );
           }
+
+          const dbWallet = dbWallets.find((dbWallet) => {
+            return dbWallet.address === walletAddress;
+          });
+
+          try {
+            await addWallet(jwk, dbWallet);
+          } finally {
+            freeDecryptedWallet(jwk);
+          }
+
+          authStatus = "unlocked";
         } else {
           authStatus = "noShares";
         }
       } else {
-        authStatus = "noWallets";
+        authStatus = "noShares";
       }
+    } else {
+      authStatus = "noWallets";
+    }
 
-      setEmbeddedContextAuth({
-        authStatus,
-        authProviderType: null,
-        user
-      });
-    },
-    []
-  );
+    setEmbeddedContextAuth((prevEmbeddedContextAuth) => ({
+      ...prevEmbeddedContextAuth,
+      authStatus
+    }));
+  }, []);
 
-  const isInitializedRef = useRef(false);
+  const areBackgroundServicesInitialized = useRef(false);
 
   useEffect(() => {
-    if (isInitializedRef.current) return;
+    if (areBackgroundServicesInitialized.current) return;
 
-    isInitializedRef.current = true;
+    areBackgroundServicesInitialized.current = true;
 
     async function init() {
       log(
         LOG_GROUP.SETUP,
-        `Initializing ArConnect Embedded background services...`
+        `Initializing Wander Embedded background services...`
       );
-      setupBackgroundService();
 
-      log(LOG_GROUP.SETUP, `Initializing ArConnect Embedded wallets...`);
-      initEmbeddedWallet();
+      setupBackgroundService();
     }
 
     init();
+  }, []);
+
+  useEffect(() => {
+    console.log("Listening for onAuthStateChange()...");
+
+    const {
+      data: { subscription }
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log("onAuthStateChange =", session);
+
+      const accessToken = session?.access_token ?? null;
+      const user = session?.user ?? null;
+
+      // TODO: Map this properly
+      const authProviderType: AuthProviderType =
+        user?.identities?.[0]?.provider?.toUpperCase() as AuthProviderType;
+
+      // TODO: Why is the session still reported as valid after deleting it from the DB?
+      // TODO: Make sure any tRPC call returning UNAUTHORIZED forces de-authentication.
+
+      // setToken(accessToken);
+      setAuthTokenHeader(accessToken);
+
+      initEmbeddedWallet(user?.id || null);
+
+      setEmbeddedContextAuth(
+        accessToken && user && authProviderType
+          ? {
+              // TODO: Use a different state here?
+              authStatus: "authLoading",
+              authProviderType,
+              user
+            }
+          : {
+              // TODO: Also clear wallet state?
+              authStatus: "noAuth",
+              authProviderType: null,
+              user: null
+            }
+      );
+    });
+
+    return () => subscription.unsubscribe();
   }, [initEmbeddedWallet]);
-
-  const authenticate = useCallback(
-    async (authProviderType: AuthProviderType) => {
-      // TODO: What to do if this is called while already authenticated?
-
-      // TODO: Handle errors:
-      await initEmbeddedWallet(authProviderType);
-    },
-    [initEmbeddedWallet]
-  );
 
   return (
     <EmbeddedContext.Provider
