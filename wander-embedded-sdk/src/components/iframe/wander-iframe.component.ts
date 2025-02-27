@@ -15,72 +15,11 @@ import {
   WanderEmbeddedModalCSSVars
 } from "../../wander-embedded.types";
 import { addCSSVariables } from "../../utils/styles/styles.utils";
+import { getWanderIframeTemplateContent } from "./wander-iframe.template";
 
 export class WanderIframe {
   static DEFAULT_BACKDROP_ID = "wanderEmbeddedBackdrop" as const;
   static DEFAULT_IFRAME_ID = "wanderEmbeddedIframe" as const;
-
-  static IFRAME_BASE_STYLE: CSSProperties = {
-    position: "fixed",
-    zIndex: "calc(var(--zIndex, 9999) + 1)",
-    background: "var(--background, white)",
-    borderWidth: "var(--borderWidth, 2px)",
-    borderStyle: "solid",
-    borderColor: "var(--borderColor, rgba(0, 0, 0, .125))",
-    borderRadius: "var(--borderRadius, 10px)",
-    boxShadow: "var(--boxShadow, 0 0 16px 0 rgba(0, 0, 0, 0.125))",
-    width: "calc(var(--preferredWidth, 400px) - 2 * var(--borderWidth, 2px))",
-    height: "calc(var(--preferredHeight, 600px) - 2 * var(--borderWidth, 2px))",
-    // TODO: No min on mobile:
-    minWidth: "400px",
-    minHeight: "400px",
-    maxWidth:
-      "calc(100dvw - 2 * var(--backdropPadding, 32px) - 2 * var(--borderWidth, 2px))",
-    maxHeight:
-      "calc(100dvh - 2 * var(--backdropPadding, 32px) - 2 * var(--borderWidth, 2px))",
-    boxSizing: "content-box"
-  };
-
-  static BACKDROP_HIDE_STYLE: CSSProperties = {
-    pointerEvents: "none",
-    opacity: 0
-  };
-
-  static BACKDROP_SHOW_STYLE: CSSProperties = {
-    pointerEvents: "auto",
-    opacity: 1
-  };
-
-  static MODAL_HIDE_STYLE: CSSProperties = {
-    pointerEvents: "none",
-    opacity: 0
-  };
-
-  static MODAL_SHOW_STYLE: CSSProperties = {
-    pointerEvents: "auto",
-    opacity: 1
-  };
-
-  static POPUP_HIDE_STYLE: CSSProperties = {
-    pointerEvents: "none",
-    opacity: 0
-  };
-
-  static POPUP_SHOW_STYLE: CSSProperties = {
-    pointerEvents: "auto",
-    opacity: 1
-  };
-
-  static BACKDROP_BASE_STYLE: CSSProperties = {
-    position: "fixed",
-    zIndex: "var(--zIndex, 9999)",
-    inset: 0,
-    background: "var(--backdropBackground, rgba(255, 255, 255, .0625))",
-    backdropFilter: "var(--backdropBackdropFilter, blur(12px))",
-    padding: "var(--backdropPadding, 32px)",
-    transition: "opacity linear 150ms"
-  };
-
   static DEFAULT_ROUTE_LAYOUT = {
     modal: {
       type: "modal"
@@ -97,6 +36,7 @@ export class WanderIframe {
   };
 
   // Elements:
+  private host: HTMLDivElement;
   private backdrop: HTMLDivElement;
   private iframe: HTMLIFrameElement;
 
@@ -108,8 +48,6 @@ export class WanderIframe {
   // State:
   private currentLayoutType: LayoutType | null = null;
   private isOpen = false;
-  private iframeHideStyle: CSSProperties = {};
-  private iframeShowStyle: CSSProperties = {};
 
   constructor(src: string, options: WanderEmbeddedIframeOptions = {}) {
     this.options = options;
@@ -152,6 +90,7 @@ export class WanderIframe {
 
     const elements = WanderIframe.initializeIframe(src, options);
 
+    this.host = elements.host;
     this.backdrop = elements.backdrop;
     this.iframe = elements.iframe;
 
@@ -176,26 +115,30 @@ export class WanderIframe {
 
   static initializeIframe(src: string, options: WanderEmbeddedIframeOptions) {
     // TODO: Considering using a `<dialog>` element or adding proper aria- tags.
+    const host = document.createElement("div");
+    host.id = options.id || WanderIframe.DEFAULT_IFRAME_ID;
 
-    const backdrop = document.createElement("div");
+    const shadow = host.attachShadow({ mode: "open" });
+    const template = document.createElement("template");
 
-    backdrop.id = WanderIframe.DEFAULT_BACKDROP_ID;
+    template.innerHTML = getWanderIframeTemplateContent({ src });
 
-    const iframe = document.createElement("iframe");
+    shadow.appendChild(template.content);
 
-    iframe.id = options.id || WanderIframe.DEFAULT_IFRAME_ID;
-    iframe.src = src;
-
-    // We don't add the iframe as a child of backdrop to have more control over the hide/show transitions:
+    // Elements from the shadow DOM
+    const backdrop = shadow.querySelector(".backdrop") as HTMLDivElement;
+    const iframe = shadow.querySelector(".iframe") as HTMLIFrameElement;
 
     return {
       iframe,
+      host,
       backdrop
     };
   }
 
   getElements() {
     return {
+      host: this.host,
       backdrop: this.backdrop,
       iframe: this.iframe
     };
@@ -203,16 +146,14 @@ export class WanderIframe {
 
   show(): void {
     this.isOpen = true;
-
-    Object.assign(this.backdrop.style, WanderIframe.BACKDROP_SHOW_STYLE);
-    Object.assign(this.iframe.style, this.iframeShowStyle);
+    this.backdrop.classList.add("show");
+    this.iframe.classList.add("show");
   }
 
   hide(): void {
     this.isOpen = false;
-
-    Object.assign(this.backdrop.style, WanderIframe.BACKDROP_HIDE_STYLE);
-    Object.assign(this.iframe.style, this.iframeHideStyle);
+    this.backdrop.classList.remove("show");
+    this.iframe.classList.remove("show");
   }
 
   resize(routeConfig: RouteConfig): void {
@@ -225,8 +166,11 @@ export class WanderIframe {
 
     this.currentLayoutType = layoutType;
 
-    const backdropStyle: CSSProperties = {};
-    const iframeStyle: CSSProperties = {};
+    this.iframe.dataset.layout = layoutType;
+
+    // Default to true, unless explicitly set to false, false is WIP
+    this.iframe.dataset.expandOnMobile =
+      layoutConfig.expandOnMobile !== false ? "true" : "false";
 
     if (this.options.cssVars && isThemeRecord(this.options.cssVars)) {
       throw new Error("Not implemented yet");
@@ -238,76 +182,33 @@ export class WanderIframe {
 
     switch (layoutConfig.type) {
       case "modal": {
-        iframeStyle.top = "50%";
-        iframeStyle.left = "50%";
-        iframeStyle.transform = "translate(-50%, -50%)"; // TODO: Add scale effect when appearing?
-        iframeStyle.transition =
-          "height linear 300ms, width linear 300ms, opacity linear 150ms";
         cssVars.preferredWidth ??= layoutConfig.fixedWidth || routeConfig.width;
         cssVars.preferredHeight ??=
           layoutConfig.fixedHeight || routeConfig.height;
-        this.iframeHideStyle = WanderIframe.MODAL_HIDE_STYLE;
-        this.iframeShowStyle = WanderIframe.MODAL_SHOW_STYLE;
-
         break;
       }
 
       case "popup": {
-        const [y, x] = (layoutConfig.position || "bottom-right").split("-") as [
-          "top" | "bottom",
-          "left" | "right"
-        ];
+        const position = layoutConfig.position || "bottom-right";
+        this.iframe.dataset.position = position;
 
-        iframeStyle[y] = "var(--backdropPadding, 32px)";
-        iframeStyle[x] = "var(--backdropPadding, 32px)";
-        iframeStyle.transition =
-          "height linear 300ms, width linear 300ms, opacity linear 150ms";
-        // iframeStyle.minWidth = 0;
-        // iframeStyle.minHeight = 0;
         cssVars.preferredWidth ??= layoutConfig.fixedWidth || routeConfig.width;
         cssVars.preferredHeight ??=
           layoutConfig.fixedHeight || routeConfig.height;
-        this.iframeHideStyle = WanderIframe.POPUP_HIDE_STYLE;
-        this.iframeShowStyle = WanderIframe.POPUP_SHOW_STYLE;
-
         break;
       }
 
       case "sidebar":
       case "half": {
-        const y = layoutConfig.position || "right";
-        const sign = y === "right" ? "+" : "-";
-
-        iframeStyle.top = layoutConfig.expanded
-          ? 0
-          : `var(--backdropPadding, 0)`;
-        iframeStyle[y] = layoutConfig.expanded
-          ? 0
-          : `var(--backdropPadding, 0)`;
-        iframeStyle.transition = "transform linear 150ms";
-
-        this.iframeHideStyle = {
-          transform: `translate(calc(${sign}100% ${sign} var(--backdropPadding, 32px)), 0)`
-        };
-
-        this.iframeShowStyle = {
-          transform: `translate(0, 0)`
-        };
+        const position = layoutConfig.position || "right";
+        this.iframe.dataset.position = position;
 
         if (layoutConfig.expanded) {
-          iframeStyle.borderWidth =
-            y === "right"
-              ? "0 0 0 var(--borderWidth, 2px)"
-              : "0 var(--borderWidth, 2px) 0 0";
-
-          iframeStyle.width = "var(--preferredWidth, 400px)";
-          iframeStyle.height = "var(--preferredHeight, 600px)";
-          iframeStyle.maxWidth = "var(--preferredWidth, 400px)";
-          iframeStyle.maxHeight = "var(--preferredHeight, 600px)";
-
+          this.iframe.dataset.expanded = "true";
           cssVars.backdropPadding = 0;
           cssVars.borderRadius ??= 0;
         } else {
+          this.iframe.dataset.expanded = "false";
           cssVars.backdropPadding ??= 8;
         }
 
@@ -315,12 +216,12 @@ export class WanderIframe {
           cssVars.preferredWidth ??=
             layoutConfig.fixedWidth || routeConfig.width;
           cssVars.preferredHeight ??=
-            "calc(100dvw - 2 * var(--backdropPadding, 0))";
+            "calc(100dvh - 2 * var(--backdropPadding, 0))";
         } else {
           cssVars.preferredWidth ??=
             "calc(50vw - 2 * var(--backdropPadding, 0))";
           cssVars.preferredHeight ??=
-            "calc(100dvw - 2 * var(--backdropPadding, 0))";
+            "calc(100dvh - 2 * var(--backdropPadding, 0))";
 
           // TODO Set imgSrc
         }
@@ -334,26 +235,7 @@ export class WanderIframe {
     if (resetLayout) {
       this.backdrop.removeAttribute("style");
       this.iframe.removeAttribute("style");
-
-      Object.assign(this.backdrop.style, WanderIframe.BACKDROP_BASE_STYLE);
-      Object.assign(this.iframe.style, WanderIframe.IFRAME_BASE_STYLE);
-
-      // TODO: Animate/transition this. First close the old layout. Then open the new one.
     }
-
-    Object.assign(
-      this.backdrop.style,
-      backdropStyle,
-      this.isOpen
-        ? WanderIframe.BACKDROP_SHOW_STYLE
-        : WanderIframe.BACKDROP_HIDE_STYLE
-    );
-
-    Object.assign(
-      this.iframe.style,
-      iframeStyle,
-      this.isOpen ? this.iframeShowStyle : this.iframeHideStyle
-    );
 
     addCSSVariables(this.backdrop, cssVars);
     addCSSVariables(this.iframe, cssVars);

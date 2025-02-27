@@ -387,11 +387,6 @@ emoji-regex@^9.2.2:
   resolved "https://registry.yarnpkg.com/emoji-regex/-/emoji-regex-9.2.2.tgz#840c8803b0d8047f4ff0cf963176b32d4ef3ed72"
   integrity sha512-L18DaJsXSUk2+42pv8mLs5jJT2hqFkFE4j21wOmgbUqsZ2hL72NsUU785g9RXgo3s0ZNgVl42TiHp3ZtOv/Vyg==
 
-esbuild-raw-plugin@^0.1.1:
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/esbuild-raw-plugin/-/esbuild-raw-plugin-0.1.1.tgz#2735b80048dea9ce51e5526188955a4aad35eef3"
-  integrity sha512-bR8y48GRRFoVP1OHNo+AZyMPP75RsmPdo7QQEM6vXC8Udie7ABPyQfMBRAJwfMQLS1YjnToX9V6X6093oBf8NQ==
-
 esbuild@^0.24.0:
   version "0.24.2"
   resolved "https://registry.yarnpkg.com/esbuild/-/esbuild-0.24.2.tgz#b5b55bee7de017bff5fb8a4e3e44f2ebe2c3567d"

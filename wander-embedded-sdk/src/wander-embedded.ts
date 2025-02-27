@@ -82,14 +82,6 @@ export class WanderEmbedded {
 
     // ...and set `window.arweaveWallet`:
     setupWalletSDK(this.iframeRef.contentWindow as Window);
-
-    // And also the button click handler, if needed:
-    if (this.buttonRef) {
-      this.handleButtonClick = this.handleButtonClick.bind(this);
-      this.buttonRef.addEventListener("click", this.handleButtonClick);
-    }
-
-    WanderEmbedded.instance = this;
   }
 
   private initializeComponents(options: WanderEmbeddedOptions): void {
@@ -123,8 +115,8 @@ export class WanderEmbedded {
       this.backdropRef = elements.backdrop;
       this.iframeRef = elements.iframe;
 
-      document.body.appendChild(elements.backdrop);
-      document.body.appendChild(elements.iframe);
+      // document.body.appendChild(elements.backdrop);
+      // document.body.appendChild(elements.iframe);
     }
 
     if (typeof buttonOptions === "object" || buttonOptions === true) {
@@ -138,6 +130,9 @@ export class WanderEmbedded {
       this.buttonRef = button;
 
       document.body.appendChild(host);
+
+      this.handleButtonClick = this.handleButtonClick.bind(this);
+      this.buttonRef.addEventListener("click", this.handleButtonClick);
     }
 
     const clickOutsideBehavior =
@@ -162,6 +157,10 @@ export class WanderEmbedded {
 
         if (shouldClose) this.close();
       });
+    }
+
+    if (this.iframeComponent) {
+      document.body.appendChild(this.iframeComponent.getElements().host);
     }
   }
 

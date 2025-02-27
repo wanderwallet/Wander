@@ -11,6 +11,7 @@ export interface ModalLayoutConfig {
   type: "modal";
   fixedWidth?: number;
   fixedHeight?: number;
+  expandOnMobile?: boolean;
 }
 
 export interface PopupLayoutConfig {
@@ -18,6 +19,7 @@ export interface PopupLayoutConfig {
   position?: WanderEmbeddedButtonPosition;
   fixedWidth?: number;
   fixedHeight?: number;
+  expandOnMobile?: boolean;
 }
 
 export interface SidebarLayoutConfig {
@@ -25,6 +27,7 @@ export interface SidebarLayoutConfig {
   position?: "left" | "right";
   expanded?: boolean;
   fixedWidth?: number;
+  expandOnMobile?: boolean;
 }
 
 export interface HalfLayoutConfig {
@@ -32,6 +35,7 @@ export interface HalfLayoutConfig {
   position?: "left" | "right";
   expanded?: boolean;
   imgSrc?: string | boolean;
+  expandOnMobile?: boolean;
 }
 
 export type LayoutConfig =
@@ -222,6 +226,14 @@ export interface WanderEmbeddedModalCSSVars {
    * a different value is specified. In any other case, this is ignored.
    */
   backdropPointerEvents: string;
+
+  // Mobile specific styles
+  mobilePadding: number;
+  mobileHeight: string | number;
+  mobileBorderRadius: number;
+  mobileBorderWidth: number;
+  mobileBorderColor: string;
+  mobileBoxShadow: string;
 }
 
 export interface WanderEmbeddedButtonCSSVars {
