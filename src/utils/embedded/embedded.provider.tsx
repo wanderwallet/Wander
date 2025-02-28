@@ -768,7 +768,13 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
   // INITIALIZATION:
 
+  const lastUserIdRef = useRef<string | null>(null);
+
   const initEmbeddedWallet = useCallback(async (userId: string | null) => {
+    if (lastUserIdRef.current === userId) return;
+
+    lastUserIdRef.current = userId;
+
     console.log(`initEmbeddedWallet(${userId})`);
 
     setEmbeddedContextState(EMBEDDED_CONTEXT_INITIAL_STATE);
@@ -811,6 +817,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
       // TODO: Create an issue for the new storage needs (e.g. expiration). Note that for wallets
       // that haven't been backup up, we must never delete a share without notifying the user.
+
+      // TODO: Add try-catch. If the initialization process fails, show an error...
 
       if (deviceSharesInfo.length > 0) {
         const authShareResponse =

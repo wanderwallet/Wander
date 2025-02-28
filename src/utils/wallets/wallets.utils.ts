@@ -12,8 +12,12 @@ import Arweave from "arweave";
 import { setDecryptionKey } from "~wallets/auth";
 import { INVALID_DEVICE_SHARES_INFO_ERR_MSG } from "~utils/wallets/wallets.constants";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
-import { random, pki } from "node-forge";
-import { pemToBase64, pemToJWK } from "~utils/crypto/crypto.utils";
+import { random, pki, asn1 } from "node-forge";
+import {
+  pemToBase64,
+  pemToJWK,
+  privateKeyDerToJWK
+} from "~utils/crypto/crypto.utils";
 
 async function generateSeedPhrase() {
   log(LOG_GROUP.WALLET_GENERATION, "generateSeedPhrase()");
@@ -273,8 +277,15 @@ async function generateShareHashAndPrivateKey(
         } else {
           const shareHash = await generateShareHash(share);
           const privateKey = result.privateKey;
-          const privateKeyPEM = pki.privateKeyToPem(privateKey);
-          const sharePrivateKeyJWK = await pemToJWK(privateKeyPEM);
+          //const privateKeyPEM = pki.privateKeyToPem(privateKey);
+          //const sharePrivateKeyJWK = await pemToJWK(privateKeyPEM);
+
+          // Convert a Forge private key to an ASN.1 RSAPrivateKey:
+          const rsaPrivateKey = pki.privateKeyToAsn1(privateKey);
+          const der = asn1.toDer(rsaPrivateKey).getBytes();
+          const sharePrivateKeyJWK = await privateKeyDerToJWK(der);
+
+          // See https://github.com/digitalbazaar/forge/issues/256
 
           // TODO: Test signatures work:
 
