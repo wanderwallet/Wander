@@ -1,0 +1,45 @@
+@import "../../../tokens/index.css";
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: auto;
+  position: relative;
+  padding: var(--spacing-2);
+  transition: color 0.2s ease-in-out;
+  cursor: pointer;
+  font-family: var(--font-family-serif);
+  font-size: var(--font-size-base);
+  color: var(--color-link-primary);
+}
+
+.link:focus,
+.link:active {
+  color: var(--color-link-primary);
+}
+
+link:hover {
+  opacity: 0.8;
+}
+
+.isDisabled {
+  color: var(--color-link-disabled);
+  cursor: not-allowed;
+  opacity: 0.5;
+  text-decoration: none;
+}
+
+.button__icon {
+  display: inline-block;
+}
+
+.button--icon-left {
+  left: 8px;
+  margin-right: var(--spacing-2);
+}
+
+.button--icon-right {
+  right: 8px;
+  margin-left: var(--spacing-2);
+}

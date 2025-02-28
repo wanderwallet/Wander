@@ -1,0 +1,33 @@
+@import "../../../tokens/index.css";
+
+.tabs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #eee;
+  border-radius: 10px;
+  position: relative;
+}
+
+.tabs button {
+  width: 50%;
+  background-color: transparent;
+  border: none;
+  padding: 18px;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.tabs .active {
+  background-color: white;
+  border-radius: 10px;
+  height: calc(100% - 10px);
+  width: calc(50%);
+  position: absolute;
+
+  top: 5px;
+  transform: translateX(5px);
+  border-radius: inherit;
+  box-shadow: 0 2px 2px #ccc;
+  transition: all 200ms;
+}

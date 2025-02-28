@@ -1,13 +1,14 @@
-import { CompassIcon } from "~components/popup/home/Balance";
-import { currencies } from "~lib/coingecko";
+import { currencies } from "~utils/currency";
 import Setting from "./setting";
 import {
   BarChart07,
+  Compass01,
   CurrencyDollarCircle,
   Percent02,
   Star01,
   Sun
 } from "@untitled-ui/icons-react";
+import { ExtensionStorage } from "~utils/storage";
 
 export const PREFIX = "setting_";
 
@@ -66,12 +67,13 @@ const settings: Setting[] = [
     defaultValue: "arweave"
   }),
   new Setting({
-    name: "wayfinder",
-    displayName: "setting_wayfinder",
-    icon: CompassIcon,
-    description: "setting_wayfinder_description",
-    type: "boolean",
-    defaultValue: true
+    name: "gateways",
+    displayName: "setting_gateways",
+    icon: Compass01,
+    description: "setting_gateways_description",
+    type: "pick",
+    options: [],
+    defaultValue: { host: "arweave.net", port: 443, protocol: "https" }
   }),
   new Setting({
     name: "analytics",

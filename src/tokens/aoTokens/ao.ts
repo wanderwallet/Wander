@@ -46,7 +46,8 @@ export const defaultTokens: TokenInfo[] = [
     Ticker: "AO",
     Denomination: 12,
     Logo: "UkS-mdoiG8hcAClhKK8ch4ZhEzla0mCPDOix9hpdSFE",
-    processId: "m3PaWzK4PTG9lAaqYQPaPdOcXdO8hYqi5Fe9NWqXd0w"
+    // processId: "m3PaWzK4PTG9lAaqYQPaPdOcXdO8hYqi5Fe9NWqXd0w"
+    processId: "0syT13r0s0tgPmIed95bJnuSqaD29HQNN8D3ElLSrsc"
   },
   {
     Name: "Q Arweave",
@@ -497,9 +498,7 @@ export async function fetchTokenBalance(
   refresh?: boolean
 ): Promise<string> {
   try {
-    if (token.processId === AO_NATIVE_TOKEN) {
-      return (await getNativeTokenBalance(address)).toString();
-    } else if (token.processId === "AR") {
+    if (token.processId === "AR") {
       return await getArTokenBalance(address);
     } else {
       if (refresh) token = await getTokenInfo(token.processId);

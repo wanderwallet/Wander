@@ -1,0 +1,62 @@
+@import "../../../tokens/index.css";
+
+.card {
+  overflow: hidden;
+  justify-content: space-between;
+  background-color: var(--color-card-background-default);
+  width: var(--card-default-width);
+  border: 1px solid var(--color-card-border-default);
+  padding: var(--spacing-8);
+}
+
+.card__shadow {
+  box-shadow: 0 4px 40px 0 var(--color-card-shadow-default);
+  transition: 0.3s;
+}
+
+.card__blury {
+  filter: blur(var(--spacing-2));
+}
+
+.card__sm {
+  width: var(--card-sm-width);
+  min-height: var(--card-sm-height);
+
+  font-size: var(--font-size-base);
+  border-radius: var(--border-radius-xxl);
+}
+
+.card__auto {
+  width: var(--card-sm-width);
+  min-height: auto;
+  font-size: var(--font-size-base);
+  border-radius: var(--border-radius-xxl);
+}
+
+.card__md {
+  width: var(--card-default-width);
+  min-height: var(--card-default-height);
+
+  font-size: var(--font-size-base);
+  border-radius: var(--border-radius-xxl);
+}
+
+.card__header {
+  justify-self: flex-start;
+}
+
+.card__footer {
+  justify-self: flex-end;
+}
+
+.card__back__btn {
+  left: 1rem;
+  cursor: pointer;
+  position: absolute;
+}
+
+.card__close__btn {
+  right: 1rem;
+  cursor: pointer;
+  position: absolute;
+}

@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import BigNumber from "bignumber.js";
-import { useState, useCallback, useEffect } from "react";
 import redstone from "redstone-api";
-import { retryWithDelay } from "~utils/promises/retry";
+import { getConversionRate } from "~utils/currency";
+import { withRetry } from "~utils/promises/retry";
 import { ExtensionStorage } from "~utils/storage";
 
 /**
@@ -31,7 +31,19 @@ export async function getArPrice(currency: string) {
   try {
     return await getPrice("arweave", currency.toLowerCase());
   } catch (error) {
-    throw new Error("Failed to fetch AR price");
+    console.error(error, "redirecting to redstone");
+
+    const res = await redstone.getPrice("AR");
+
+    if (!res.value) throw new Error("No price value returned from Redstone");
+
+    if (res.timestamp && Date.now() - res.timestamp >= 7200000) {
+      throw new Error("Price is older than 2 hours");
+    }
+
+    const rate = await getConversionRate(currency);
+
+    return BigNumber(res.source.coingecko).multipliedBy(rate).toFixed();
   }
 }
 
@@ -47,7 +59,7 @@ export function useArPrice(currency: string) {
       if (!currency) return "0";
 
       try {
-        const result = await getArPrice(currency);
+        const result = await withRetry(() => getArPrice(currency), 3, 1000);
         if (result) {
           await ExtensionStorage.set("last_saved_price", String(result));
           return String(result);
@@ -117,51 +129,3 @@ interface CoinGeckoMarketChartResult {
   market_caps: [number, number][];
   total_volumes: [number, number][];
 }
-
-export const currencies = [
-  "USD",
-  "EUR",
-  "GBP",
-  "CNY",
-  "INR",
-  "AED",
-  "ARS",
-  "AUD",
-  "BDT",
-  "BHD",
-  "BMD",
-  "BRL",
-  "CAD",
-  "CHF",
-  "CLP",
-  "CZK",
-  "DKK",
-  "HKD",
-  "HUF",
-  "IDR",
-  "ILS",
-  "JPY",
-  "KRW",
-  "KWD",
-  "LKR",
-  "MMK",
-  "MXN",
-  "MYR",
-  "NGN",
-  "NOK",
-  "NZD",
-  "PHP",
-  "PKR",
-  "PLN",
-  "RUB",
-  "SAR",
-  "SEK",
-  "SGD",
-  "THB",
-  "TRY",
-  "TWD",
-  "UAH",
-  "VEF",
-  "VND",
-  "ZAR"
-];

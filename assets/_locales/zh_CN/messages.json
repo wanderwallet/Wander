@@ -428,7 +428,7 @@
       "description": "About settings title"
   },
   "setting_reset": {
-      "message": "重置",
+      "message": "重置 Wander",
       "description": "Reset settings title"
   },
   "setting_analytic": {
@@ -459,25 +459,29 @@
       "message": "签署通知",
       "description": "Sign notification settings title"
   },
-  "setting_transfer_settings": {
-      "message": "转账设置",
-      "description": "Transfer settings title"
+  "setting_password_settings": {
+      "message": "密码设置",
+      "description": "Password settings title"
   },
-  "setting_transfer_settings_description": {
-    "message": "任何时候转移资产时都需要密码",
-    "description": "Transfer settings description"
+  "setting_password_settings_description": {
+    "message": "需要密码的操作",
+    "description": "Password settings description"
   },
   "enable_transfer_settings": {
     "message": "签署交易时需要密码",
     "description": "Enable transfer settings title"
   },
+  "enable_connect_settings": {
+    "message": "连接应用时需要密码",
+    "description": "Enable connect settings title"
+  },
   "setting_display_theme": {
       "message": "主题",
       "description": "Theme settings title"
   },
-  "setting_wayfinder": {
-      "message": "Wayfinder",
-      "description": "Wayfinder settings title"
+  "setting_gateways": {
+      "message": "网关",
+      "description": "Gateways settings title"
   },
   "setting_notifications": {
       "message": "通知",
@@ -543,9 +547,9 @@
       "message": "扩展 UI 的主题",
       "description": "Display theme settings description"
   },
-  "setting_wayfinder_description": {
-      "message": "针对 ar.io 网关的实验性系统范围导航器",
-      "description": "Wayfinder settings description"
+  "setting_gateways_description": {
+      "message": "Arweave 网关简化了数据访问。",
+      "description": "Gateways settings description"
   },
   "search_pick_option": {
       "message": "搜索选项...",
@@ -605,9 +609,9 @@
       "message": "地址已复制",
       "description": "Address copy notification 2"
   },
-  "cannot_edit_with_ans": {
-      "message": "无法编辑昵称。钱包已经有 ANS 标签。",
-      "description": "Explainer for disabled edits for wallets with ANS profiles"
+  "cannot_edit_with_name_service": {
+      "message": "无法编辑昵称。钱包已经有 Name Service 标签。",
+      "description": "Explainer for disabled edits for wallets with name service names"
   },
   "add_wallet_subtitle": {
       "message": "您可以添加任意数量",
@@ -1056,7 +1060,11 @@
       "description": "Transaction sent successfully notification"
   },
   "failed_tx": {
-      "message": "无法发送交易",
+      "message": "无法发送交易，请重试。",
+      "description": "Transfer error notification"
+  },
+  "failed_tx_with_gateway": {
+      "message": "无法发送交易。请重试或使用不同的网关。",
       "description": "Transfer error notification"
   },
   "assets": {
@@ -2875,5 +2883,45 @@
     "privacy_policy": {
         "message": "隐私政策",
         "description": "Privacy policy text"
+    },
+    "exchange_rate": {
+        "message": "汇率",
+        "description": "Exchange rate text"
+    },
+    "max_buy_amount": {
+        "message": "AR 最高购买金额为 $AMOUNT$ $CURRENCY$",
+        "description": "Max buy amount text",
+        "placeholders": {
+        "amount": {
+            "content": "$1",
+            "example": "1"
+        },
+        "currency": {
+            "content": "$2",
+            "example": "USD"
+        }
+        }
+    },
+    "min_buy_amount": {
+        "message": "最低 AR 购买金额为 $AMOUNT$ $CURRENCY$",
+        "description": "Min buy amount text",
+        "placeholders": {
+        "amount": {
+            "content": "$1",
+            "example": "1"
+        },
+        "currency": {
+            "content": "$2",
+            "example": "USD"
+        }
+        }
+    },
+    "switch_gateway": {
+        "message": "切换网关",
+        "description": "Switch gateway text"
+    },
+    "setting_fullscreen": {
+        "message": "全屏",
+        "description": "Fullscreen text"
     }
 }

@@ -1,0 +1,59 @@
+@import "../../../tokens/index.css";
+
+/* Base styles for the popover button */
+.popover-button {
+  display: flex;
+  flex-direction: row;
+  width: 10vw;
+  height: 6vh;
+  padding: var(--spacing-3);
+  align-items: center;
+
+  border-radius: var(--border-radius-xxxl);
+  border: 1px solid var(--color-border-popover);
+  background: inherit;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+
+  transition: width 0.4s cubic-bezier(0.25, 1.25, 0.5, 1),
+    height 0.4s cubic-bezier(0.25, 1.25, 0.5, 1);
+}
+
+.popover-button--collapsed {
+  width: 10vw;
+  height: 6vh;
+}
+
+.popover-button--expanded {
+  width: auto;
+  height: auto;
+
+  border: none;
+  box-shadow: none;
+  border-radius: 1rem;
+  transition: width 0.4s cubic-bezier(0.25, 1.25, 0.5, 1),
+    height 0.4s cubic-bezier(0.25, 1.25, 0.5, 1);
+}
+
+.popover-button--collapsed > * {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.popover-button--expanded > * {
+  opacity: 1;
+  pointer-events: auto;
+  transition: opacity 0.2s ease 0.2s; /* Delayed to sync with expansion */
+}
+
+.popover-icon {
+  all: unset;
+  right: 0;
+  cursor: pointer;
+  margin: 6px 6px 0px 0px;
+}
+
+.popover-button--no-icon {
+  margin-left: 28px !important;
+}

@@ -1,0 +1,4 @@
+:root {
+  --z-index-overlay: 9995;
+  --z-index-modal: 9999;
+}

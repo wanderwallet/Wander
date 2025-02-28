@@ -1,6 +1,6 @@
 import { useEffect, type PropsWithChildren } from "react";
 import { useHardwareApi } from "~wallets/hooks";
-import { useTheme } from "~utils/theme";
+import { getFormattedColor, useTheme } from "~utils/theme";
 import { useTheme as useStyledComponentsTheme } from "styled-components";
 import { MotionGlobalConfig } from "framer-motion";
 import {
@@ -77,15 +77,7 @@ export function ThemeBackgroundObserver({
   useEffect(() => {
     if (!theme) return;
 
-    let formattedBackgroundColor = "";
-
-    if (backgroundColor.length === 3 || backgroundColor.length === 6) {
-      formattedBackgroundColor = `#${backgroundColor}`;
-    } else if (/\d{1,3}, ?\d{1,3}, ?\d{1,3}/.test(backgroundColor)) {
-      formattedBackgroundColor = `rgb(${backgroundColor})`;
-    } else if (/\d{1,3}, ?\d{1,3}, ?\d{1,3}, ?.+/.test(backgroundColor)) {
-      formattedBackgroundColor = `rgba(${backgroundColor})`;
-    }
+    let formattedBackgroundColor = getFormattedColor(backgroundColor);
 
     if (formattedBackgroundColor) {
       localStorage.setItem(
@@ -103,15 +95,7 @@ export function ThemeBackgroundObserver({
   useEffect(() => {
     if (!theme) return;
 
-    let formattedTextColor = "";
-
-    if (textColor.length === 3 || textColor.length === 6) {
-      formattedTextColor = `#${textColor}`;
-    } else if (/\d{1,3}, ?\d{1,3}, ?\d{1,3}/.test(textColor)) {
-      formattedTextColor = `rgb(${textColor})`;
-    } else if (/\d{1,3}, ?\d{1,3}, ?\d{1,3}, ?.+/.test(textColor)) {
-      formattedTextColor = `rgba(${textColor})`;
-    }
+    let formattedTextColor = getFormattedColor(textColor);
 
     if (formattedTextColor) {
       localStorage.setItem(ARCONNECT_THEME_TEXT_COLOR, formattedTextColor);

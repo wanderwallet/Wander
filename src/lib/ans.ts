@@ -1,6 +1,6 @@
 import { concatGatewayURL } from "~gateways/utils";
 import { findGateway } from "~gateways/wayfinder";
-import { useEffect, useState } from "react";
+import type { NameServiceProfile } from "./types";
 
 /**
  * Get the ANS profile for an address
@@ -8,28 +8,31 @@ import { useEffect, useState } from "react";
  * @param address Address to fetch the profile for
  * @returns Profile data
  */
-export async function getAnsProfile(
-  address: string | string[]
-): Promise<AnsUser[] | AnsUser> {
+export async function getAnsProfile(address: string): Promise<AnsUser> {
   // TODO: Fix this just like in Othent:
+  try {
+    const user = await (
+      await fetch(`http://ans-stats.decent.land/profile/${address}`)
+    ).json();
 
-  if (typeof address === "string") {
-    try {
-      const user = await (
-        await fetch(`http://ans-stats.decent.land/profile/${address}`)
-      ).json();
-
-      return user;
-    } catch {
-      return undefined;
-    }
+    return user;
+  } catch {
+    return undefined;
   }
+}
 
+/**
+ * Get the ANS profiles for a list of addresses
+ *
+ * @param address Address to fetch the profile for
+ * @returns Profile data
+ */
+export async function getAnsProfiles(addresses: string[]): Promise<AnsUser[]> {
   const { res } = await (
     await fetch("https://ans-stats.decent.land/users")
   ).json();
 
-  return res.filter(({ user }) => address?.includes(user));
+  return res.filter(({ user }) => addresses?.includes(user));
 }
 
 /**
@@ -61,42 +64,23 @@ export const isANS = (label: string): boolean => {
   return lastThreeLetters === ".ar";
 };
 
-/**
- * React hook for a simple ANS profile
- *
- * @param query Address or label
- */
-export function useAnsProfile(query: string) {
-  const [profile, setProfile] = useState<{
-    address: string;
-    label: string;
-    avatar?: string;
-  }>();
+export async function getAnsNameServiceProfile(
+  query: string
+): Promise<NameServiceProfile | undefined> {
+  if (!query) {
+    return undefined;
+  }
 
-  useEffect(() => {
-    (async () => {
-      if (!query) {
-        return setProfile(undefined);
-      }
+  const profile = await getAnsProfile(query);
+  const gateway = await findGateway({ startBlock: 0 });
 
-      const profile = (await getAnsProfile(query)) as AnsUser;
-      const gateway = await findGateway({ startBlock: 0 });
-
-      if (!profile) {
-        return setProfile(undefined);
-      }
-
-      setProfile({
+  return !profile
+    ? undefined
+    : {
         address: profile.user,
-        label: profile.currentLabel + ".ar",
-        avatar: profile.avatar
-          ? concatGatewayURL(gateway) + "/" + profile.avatar
-          : undefined
-      });
-    })();
-  }, [query]);
-
-  return profile;
+        name: profile.currentLabel + ".ar",
+        logo: profile.avatar
+      };
 }
 
 export interface AnsUsers {

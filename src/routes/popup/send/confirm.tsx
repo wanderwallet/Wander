@@ -1,4 +1,5 @@
 import {
+  Button,
   Input,
   Section,
   Spacer,
@@ -19,11 +20,11 @@ import {
   TempTransactionStorage,
   type RawStoredTransfer
 } from "~utils/storage";
-import { useEffect, useMemo, useState } from "react";
-import { findGateway } from "~gateways/wayfinder";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { findGateway, retryWithGateways } from "~gateways/wayfinder";
 import Arweave from "arweave";
 import { useLocation } from "~wallets/router/router.utils";
-import { fallbackGateway, type Gateway } from "~gateways/gateway";
+import { type Gateway } from "~gateways/gateway";
 import AnimatedQRScanner from "~components/hardware/AnimatedQRScanner";
 import AnimatedQRPlayer from "~components/hardware/AnimatedQRPlayer";
 import { getActiveKeyfile, getActiveWallet, type StoredWallet } from "~wallets";
@@ -75,6 +76,7 @@ import {
 import prettyBytes from "pretty-bytes";
 import { stringToBuffer } from "arweave/web/lib/utils";
 import useSetting from "~settings/hook";
+import { Flex } from "~components/common/Flex";
 
 export interface ConfirmViewParams {
   token: string;
@@ -95,6 +97,8 @@ export function ConfirmView({
   // TODO: Need to get Token information
   const [token, setToken] = useState<TokenInfo | undefined>();
   const [amount, setAmount] = useState<string>("");
+
+  const toastTimestamp = useRef<number | undefined>();
 
   const [isAo, setIsAo] = useState<boolean>(false);
   const passwordInput = useInput();
@@ -193,8 +197,22 @@ export function ConfirmView({
   ): Promise<Partial<RawStoredTransfer> | void> {
     try {
       // create tx
-      let gateway = await findGateway({});
-      let arweave = new Arweave(gateway);
+      const { result: tx, gateway } = await retryWithGateways(
+        async (arweave) => {
+          const transaction = await arweave.createTransaction({
+            target,
+            quantity: fractionedToBalance(
+              amount,
+              { decimals: token.Denomination },
+              "AR"
+            ),
+            data: message ? decodeURIComponent(message) : undefined
+          });
+
+          addTransferTags(transaction);
+          return transaction;
+        }
+      );
 
       // save tx json into the session
       // to be signed and submitted
@@ -203,27 +221,11 @@ export function ConfirmView({
         gateway: gateway
       };
 
-      const tx = await arweave.createTransaction({
-        target,
-        quantity: fractionedToBalance(
-          amount,
-          { decimals: token.Denomination },
-          "AR"
-        ),
-        data: message ? decodeURIComponent(message) : undefined
-      });
-
-      addTransferTags(tx);
-
       storedTx.transaction = tx.toJSON();
 
       return storedTx;
     } catch {
-      return setToast({
-        type: "error",
-        content: browser.i18n.getMessage("transaction_send_error"),
-        duration: 2000
-      });
+      showTransferError();
     }
   }
 
@@ -234,6 +236,36 @@ export function ConfirmView({
     transaction.addTag("Type", "Transfer");
     transaction.addTag("Client", "Wander");
     transaction.addTag("Client-Version", browser.runtime.getManifest().version);
+  }
+
+  function showTransferError() {
+    if (toastTimestamp.current && Date.now() - toastTimestamp.current < 1000) {
+      return;
+    }
+
+    toastTimestamp.current = Date.now();
+
+    setToast({
+      type: "error",
+      content: (
+        <Flex direction="column" gap={16}>
+          <Text style={{ color: "#EEE" }} noMargin>
+            {browser.i18n.getMessage("failed_tx_with_gateway")}
+          </Text>
+          <Button
+            fullWidth
+            onClick={() =>
+              browser.tabs.create({
+                url: browser.runtime.getURL("tabs/dashboard.html#/gateways")
+              })
+            }
+          >
+            {browser.i18n.getMessage("switch_gateway")}
+          </Button>
+        </Flex>
+      ),
+      duration: 5000
+    });
   }
 
   async function submitTx(
@@ -343,11 +375,19 @@ export function ConfirmView({
           });
           navigate(`/send/completed/${res}?isAo=true`);
           setIsLoading(false);
+        } else {
+          throw new Error("Failed to send ao transfer");
         }
         return res;
       } catch (err) {
         console.log("err in ao", err);
-        throw err;
+        setIsLoading(false);
+        setToast({
+          type: "error",
+          content: browser.i18n.getMessage("failed_tx"),
+          duration: 2000
+        });
+        return;
       }
     }
     // Prepare transaction
@@ -377,7 +417,7 @@ export function ConfirmView({
                 SubscriptionStatus.ACTIVE
               ));
           } catch (e) {
-            gateway = fallbackGateway;
+            gateway = await findGateway({ random: true });
             const fallbackArweave = new Arweave(gateway);
             await fallbackArweave.transactions.sign(
               convertedTransaction,
@@ -410,11 +450,7 @@ export function ConfirmView({
           console.log(e);
           setIsLoading(false);
           freeDecryptedWallet(keyfile);
-          setToast({
-            type: "error",
-            content: browser.i18n.getMessage("failed_tx"),
-            duration: 2000
-          });
+          showTransferError();
         }
       } else {
         const activeWallet = await getActiveWallet();
@@ -442,7 +478,7 @@ export function ConfirmView({
           try {
             await submitTx(convertedTransaction, arweave, type);
           } catch (e) {
-            gateway = fallbackGateway;
+            gateway = await findGateway({ random: true });
             const fallbackArweave = new Arweave(gateway);
             await fallbackArweave.transactions.sign(
               convertedTransaction,
@@ -471,11 +507,7 @@ export function ConfirmView({
         } catch (e) {
           freeDecryptedWallet(keyfile);
           setIsLoading(false);
-          setToast({
-            type: "error",
-            content: browser.i18n.getMessage("failed_tx"),
-            duration: 2000
-          });
+          showTransferError();
         }
       }
     }
@@ -656,11 +688,7 @@ export function ConfirmView({
         );
       } catch (e) {
         console.log(e);
-        setToast({
-          type: "error",
-          content: browser.i18n.getMessage("failed_tx"),
-          duration: 2000
-        });
+        showTransferError();
       }
     }
   );

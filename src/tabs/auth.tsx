@@ -10,6 +10,18 @@ import { useEffect } from "react";
 import { handleSyncLabelsAlarm } from "~api/background/handlers/alarms/sync-labels/sync-labels-alarm.handler";
 import { ErrorBoundary } from "~utils/error/ErrorBoundary/errorBoundary";
 import { FallbackView } from "~components/page/common/Fallback/fallback.view";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 300_000,
+      refetchInterval: 300_000,
+      retry: 2,
+      refetchOnWindowFocus: true
+    }
+  }
+});
 
 export function AuthApp() {
   useEffect(() => {
@@ -25,9 +37,11 @@ export function AuthAppRoot() {
       <ErrorBoundary fallback={FallbackView}>
         <WalletsProvider redirectToWelcome>
           <AuthRequestsProvider useStatusOverride={useExtensionStatusOverride}>
-            <Wouter hook={useAuthRequestsLocation}>
-              <AuthApp />
-            </Wouter>
+            <QueryClientProvider client={queryClient}>
+              <Wouter hook={useAuthRequestsLocation}>
+                <AuthApp />
+              </Wouter>
+            </QueryClientProvider>
           </AuthRequestsProvider>
         </WalletsProvider>
       </ErrorBoundary>

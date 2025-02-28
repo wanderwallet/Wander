@@ -447,7 +447,8 @@ const FiatBalance = styled(Text).attrs({
 const BalanceSection = styled.div`
   display: flex;
   flex-direction: column;
-  justify-content: right;
+  align-items: flex-end;
+  justify-content: center;
   flex-shrink: 0;
 
   p,

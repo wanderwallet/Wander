@@ -10,6 +10,7 @@ import styled, { useTheme } from "styled-components";
 import { Text } from "@arconnect/components-rebrand";
 import BigNumber from "bignumber.js";
 import { useTotalFiatBalance } from "~tokens/hooks";
+import NumberFlow from "@number-flow/react";
 
 export default function Balance() {
   // balance in AR
@@ -24,6 +25,8 @@ export default function Balance() {
     [price, balance]
   );
   const totalFiatBalance = useTotalFiatBalance();
+
+  const [fiatBalance, setFiatBalance] = useState(0);
 
   // balance display
   const [hideBalance, setHideBalance] = useStorage<boolean>(
@@ -73,6 +76,14 @@ export default function Balance() {
     })();
   }, [balance, currency]);
 
+  useEffect(() => {
+    if (hideBalance) {
+      setFiatBalance(0);
+    } else {
+      setFiatBalance(totalFiatBalance.toNumber());
+    }
+  }, [totalFiatBalance, hideBalance]);
+
   // balance history
   const [historicalBalance, setHistoricalBalance] = useStorage<number[]>(
     {
@@ -88,17 +99,21 @@ export default function Balance() {
       {!isLoading && (
         <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
           <BalanceText onClick={() => setHideBalance((val) => !val)} noMargin>
-            {(!hideBalance &&
-              formatFiatBalance(totalFiatBalance, currency.toLowerCase())) ||
-              "*".repeat(totalFiatBalance.toFixed(2).length)}
+            {hideBalance ? (
+              <>{"*".repeat(totalFiatBalance.toFixed(2).length)}</>
+            ) : (
+              <NumberFlow
+                value={fiatBalance}
+                format={{
+                  style: "currency",
+                  currency: currency
+                }}
+              />
+            )}
           </BalanceText>
-
           <PriceChangeIndicator
             percentageChange={percentage}
-            fiatChange={formatFiatBalance(
-              fiat.multipliedBy(percentage.dividedBy(100)),
-              currency.toLowerCase()
-            )}
+            fiatChange={fiat.multipliedBy(percentage.dividedBy(100))}
             hideBalance={hideBalance}
           />
         </div>
@@ -113,26 +128,55 @@ function PriceChangeIndicator({
   hideBalance
 }: {
   percentageChange: BigNumber;
-  fiatChange: string;
+  fiatChange: BigNumber;
   hideBalance?: boolean;
 }) {
   const theme = useTheme();
+  const [currency] = useSetting<string>("currency");
   const isPositive = percentageChange.isGreaterThanOrEqualTo(0);
   const isZeroChange = percentageChange.isEqualTo(0);
-  const absoluteFiatChange = fiatChange.replace(/[+-]/, "");
+  const absoluteFiatChange = formatFiatBalance(
+    fiatChange.multipliedBy(percentageChange.dividedBy(100)),
+    currency.toLowerCase()
+  );
+
+  const [fiatChangeNumber, setFiatChangeNumber] = useState(0);
+
+  useEffect(() => {
+    if (!hideBalance) {
+      setFiatChangeNumber(fiatChange.toNumber());
+    } else {
+      setFiatChangeNumber(0);
+    }
+  }, [fiatChange, hideBalance]);
 
   return (
     <PercentageChangeContainer>
       <Text variant="secondary" weight="medium" noMargin>
-        {isZeroChange ? "" : isPositive ? "+" : "-"}
-        {!hideBalance
-          ? absoluteFiatChange
-          : absoluteFiatChange.charAt(0) +
-            "*".repeat(absoluteFiatChange.length - 1)}
+        {!hideBalance ? (
+          <NumberFlow
+            value={fiatChangeNumber}
+            format={{
+              style: "currency",
+              currency: currency
+            }}
+          />
+        ) : (
+          absoluteFiatChange.charAt(0) +
+          "*".repeat(absoluteFiatChange.length - 1)
+        )}
       </Text>
-
       <Text variant="secondary" weight="medium" noMargin>
-        ({percentageChange.abs().toFixed(2)}%)
+        (
+        <NumberFlow
+          value={Math.abs(Number(percentageChange.toFixed(2)) / 100)}
+          format={{
+            style: "percent",
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+          }}
+        />
+        )
       </Text>
       {!isZeroChange && (
         <TriangleIcon
@@ -185,6 +229,7 @@ const BalanceHead = styled.div`
   align-items: center;
   justify-content: center;
   padding: 4px 0px;
+  height: 78.5px;
 `;
 
 const BalanceText = styled(Text).attrs({

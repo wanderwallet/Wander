@@ -1,0 +1,47 @@
+@import "../../../tokens/index.css";
+
+.box {
+  padding: var(--spacing-3);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+}
+
+.box__width-auto {
+  width: auto;
+}
+.box__border {
+  border-radius: var(--border-radius-lg);
+  border: 1px solid var(--brand-color-gray-200);
+}
+
+.box__relative {
+  position: relative;
+}
+.box__absolute {
+  position: absolute;
+}
+.box__fixed {
+  position: fixed;
+}
+.box__sticky {
+  position: sticky;
+}
+
+.box__blurry {
+  filter: blur(2px);
+}
+
+.box__left {
+  align-items: left;
+}
+.box__center {
+  align-items: center;
+}
+.box__right {
+  align-items: right;
+}
+.box__justify {
+  align-items: justify;
+}

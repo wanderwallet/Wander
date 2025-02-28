@@ -77,6 +77,7 @@ import AoctionHouseIcon from "url:/assets/ecosystem/aoctionhouse.png";
 import CtrlPlayIcon from "url:/assets/ecosystem/ctrlplay.png";
 import DecentraMindIcon from "url:/assets/ecosystem/decentramind.png";
 import PetOrRektIcon from "url:/assets/ecosystem/pet-or-rekt.png";
+import AolottoIcon from "url:/assets/ecosystem/aolotto.png";
 
 export interface App {
   name: string;
@@ -97,7 +98,9 @@ export interface App {
   icon: string;
   useAppIconWrapper?: boolean;
   backgroundColor?: string;
+  showBorder?: boolean;
   objectFit?: "contain" | "cover";
+  imageSize?: string;
 }
 
 export const apps: App[] = [
@@ -291,6 +294,15 @@ export const apps: App[] = [
     useAppIconWrapper: true,
     backgroundColor: "#000000"
   },
+  {
+    name: "Aolotto",
+    category: "Games",
+    url: "https://aolotto.com",
+    icon: AolottoIcon,
+    showBorder: true,
+    imageSize: "32px",
+    backgroundColor: "#FFF"
+  },
 
   // DeAI
   {
@@ -318,6 +330,7 @@ export const apps: App[] = [
     category: "NFTs",
     url: "https://1of1_aoction-house.arweave.net",
     icon: AoctionHouseIcon,
+    imageSize: "32px",
     useAppIconWrapper: true
   },
 

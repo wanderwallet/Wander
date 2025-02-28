@@ -15,6 +15,7 @@ import { ERR_MSG_NO_WALLETS_ADDED } from "~utils/auth/auth.constants";
 
 const PUBLIC_SEGMENT_WRITEKEY = "J97E4cvSZqmpeEdiUQNC2IxS1Kw4Cwxm";
 
+// TODO: uncomment this once we have a fix for the analytics
 // const analytics = AnalyticsBrowser.load({
 //   writeKey: PUBLIC_SEGMENT_WRITEKEY
 // });
@@ -24,8 +25,6 @@ export enum EventType {
   CONNECTED_APP = "CONNECTED_APP",
   LOGIN = "LOGIN",
   ONBOARDED = "ONBOARDED",
-  WAYFINDER_ACTIVATED = "WAYFINDER_ACTIVATED",
-  WAYFINDER_GATEWAY_SELECTED = "WAYFINDER_GATEWAY_SELECTED",
   BALANCE = "BALANCE",
   SIGNED = "SIGNED",
   TRANSACTION_INCOMPLETE = "TRANSACTION_INCOMPLETE",
@@ -75,7 +74,7 @@ export enum PageType {
 }
 
 export const trackPage = async (title: PageType) => {
-  // TODO: remove this once we have a proper solution
+  // TODO: remove this once we have a fix for the analytics
   return;
   const enabled = await getSetting("analytics").getValue();
 
@@ -126,7 +125,7 @@ export const trackDirect = async (
 };
 
 export const trackEvent = async (eventName: EventType, properties: any) => {
-  // TODO: remove this once we have a proper solution
+  // TODO: remove this once we have a fix for the analytics
   return;
   // first we check if we are allowed to collect data
   const enabled = await getSetting("analytics").getValue();

@@ -36,7 +36,7 @@ export async function handleGatewayUpdateAlarm(alarm?: Alarms.Alarm) {
         { name: "Action", value: "Paginated-Gateways" },
         { name: "Sort-By", value: "operatorStake" },
         { name: "Sort-Order", value: "desc" },
-        { name: "Limit", value: "100" }
+        { name: "Limit", value: "5" }
       ]
     });
 

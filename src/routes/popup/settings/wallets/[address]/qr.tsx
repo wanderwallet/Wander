@@ -107,8 +107,16 @@ export function GenerateQRView({ params: { address } }: GenerateQRViewProps) {
             ) : (
               <ContentWrapper>
                 <Section>
-                  <QRCodeWrapper size={275}>
-                    <QRCodeLoop frames={frames} fps={5} size={275} />
+                  <QRCodeWrapper size={297}>
+                    <div
+                      style={{
+                        backgroundColor: "#fff",
+                        padding: "12px",
+                        borderRadius: "12px"
+                      }}
+                    >
+                      <QRCodeLoop frames={frames} fps={5} size={275} />
+                    </div>
                   </QRCodeWrapper>
                 </Section>
                 <Section showPaddingVertical={false}>
@@ -206,7 +214,14 @@ const QRCodeLoop = ({
   }, [frames, fps]);
 
   return (
-    <div style={{ position: "relative", width: size, height: size }}>
+    <div
+      style={{
+        position: "relative",
+        width: size,
+        height: size,
+        backgroundColor: "#000"
+      }}
+    >
       {frames.map((chunk: any, i: Key) => (
         <div
           key={i}

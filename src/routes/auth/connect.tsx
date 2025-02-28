@@ -32,13 +32,16 @@ import Permissions from "../../components/auth/Permissions";
 import { HeadAuth } from "~components/HeadAuth";
 import { AuthButtons } from "~components/auth/AuthButtons";
 import Squircle from "~components/Squircle";
-import { useActiveWallet, useAskPassword } from "~wallets/hooks";
+import { useActiveWallet } from "~wallets/hooks";
 import Checkbox from "~components/Checkbox";
 import { ChevronRight, Edit02, InfoCircle } from "@untitled-ui/icons-react";
 import WanderIcon from "url:assets/icon.svg";
 import Image from "~components/common/Image";
 import { Flex } from "~components/common/Flex";
 import { svgie } from "~utils/svgies";
+import { useNameServiceProfile } from "~lib/nameservice";
+import { FULL_HISTORY, useGateway } from "~gateways/wayfinder";
+import { concatGatewayURL } from "~gateways/utils";
 
 type Page = "unlock" | "connect" | "permissions" | "confirm";
 
@@ -53,9 +56,15 @@ export function ConnectAuthRequestView() {
     instance: ExtensionStorage
   });
 
-  const [signPolicy, setSignPolicy] = useState<SignPolicy>("always_ask");
+  const [signPolicy, setSignPolicy] = useState<SignPolicy>("ask_when_spending");
 
-  const askPassword = useAskPassword();
+  const [askPassword] = useStorage<boolean>(
+    {
+      key: "connect_require_password",
+      instance: ExtensionStorage
+    },
+    false
+  );
 
   // permissions to add
   const [permissions, setPermissions] = useState<PermissionType[]>([]);
@@ -64,11 +73,18 @@ export function ConnectAuthRequestView() {
 
   const [avatar, setAvatar] = useState("");
 
+  const nameServiceProfile = useNameServiceProfile(wallet?.address);
+  const nsGateway = useGateway(FULL_HISTORY);
+
   useEffect(() => {
     if (!wallet?.address) return;
 
-    setAvatar(svgie(wallet?.address, { asDataURI: true }));
-  }, [wallet]);
+    if (nameServiceProfile?.logo && nsGateway?.protocol && nsGateway?.host) {
+      setAvatar(concatGatewayURL(nsGateway) + "/" + nameServiceProfile.logo);
+    } else {
+      setAvatar(svgie(wallet?.address, { asDataURI: true }));
+    }
+  }, [wallet, nameServiceProfile, nsGateway]);
 
   const { authRequest, acceptRequest, rejectRequest } =
     useCurrentAuthRequest("connect");
@@ -119,67 +135,78 @@ export function ConnectAuthRequestView() {
   }, [requestedPermissions, requestedPermCopy]);
 
   // connect
-  async function connect(checkPassword = true) {
-    if (!url) return;
+  const connect = useCallback(
+    async (checkPassword = true) => {
+      if (!url) return;
 
-    if (checkPassword) {
-      const unlockRes = await globalUnlock(passwordInput.state);
+      if (checkPassword) {
+        const unlockRes = await globalUnlock(passwordInput.state);
 
-      if (!unlockRes) {
-        passwordInput.setStatus("error");
-        return setToast({
-          type: "error",
-          content: browser.i18n.getMessage("invalidPassword"),
-          duration: 2200
+        if (!unlockRes) {
+          passwordInput.setStatus("error");
+          return setToast({
+            type: "error",
+            content: browser.i18n.getMessage("invalidPassword"),
+            duration: 2200
+          });
+        }
+      }
+
+      // get existing permissions
+      const app = new Application(url);
+      const isAppPresent = await app.isAppPresent();
+
+      if (!isAppPresent) {
+        // add the app
+        await addApp({
+          url,
+          permissions,
+          name: appInfo.name,
+          logo: appInfo.logo,
+          signPolicy,
+          // alwaysAsk,
+          allowance: {
+            enabled: false,
+            limit: "0",
+            spent: "0" // in winstons
+          },
+          // TODO: wayfinder
+          gateway: gateway || defaultGateway
+        });
+      } else {
+        // update existing permissions, if the app
+        // has already been added
+
+        await app.updateSettings({
+          signPolicy,
+          permissions,
+          // alwaysAsk,
+          allowance: {
+            enabled: false,
+            limit: "0",
+            spent: "0" // in winstons
+          }
         });
       }
-    }
 
-    // get existing permissions
-    const app = new Application(url);
-    const isAppPresent = await app.isAppPresent();
-
-    if (!isAppPresent) {
-      // add the app
-      await addApp({
-        url,
-        permissions,
-        name: appInfo.name,
-        logo: appInfo.logo,
-        signPolicy,
-        // alwaysAsk,
-        allowance: {
-          enabled: false,
-          limit: "0",
-          spent: "0" // in winstons
-        },
-        // TODO: wayfinder
-        gateway: gateway || defaultGateway
+      // track connected app.
+      await trackEvent(EventType.CONNECTED_APP, {
+        appName: appInfo.name,
+        appUrl: url
       });
-    } else {
-      // update existing permissions, if the app
-      // has already been added
 
-      await app.updateSettings({
-        signPolicy,
-        permissions,
-        // alwaysAsk,
-        allowance: {
-          enabled: false,
-          limit: "0",
-          spent: "0" // in winstons
-        }
-      });
-    }
-
-    // track connected app.
-    await trackEvent(EventType.CONNECTED_APP, {
-      appName: appInfo.name,
-      appUrl: url
-    });
-
-    acceptRequest();
-  }
+      acceptRequest();
+    },
+    [
+      url,
+      passwordInput.state,
+      permissions,
+      appInfo,
+      signPolicy,
+      gateway,
+      acceptRequest
+    ]
+  );
 
   const handleBack = useCallback(async () => {
     if (page === "confirm") {
@@ -201,7 +228,7 @@ export function ConnectAuthRequestView() {
     } else if (page === "unlock") {
       await connect();
     }
-  }, [page, askPassword, passwordInput.state]);
+  }, [page, askPassword, connect]);
 
   useEffect(() => {
     (async () => {

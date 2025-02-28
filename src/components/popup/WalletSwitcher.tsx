@@ -11,7 +11,6 @@ import { type Variants } from "framer-motion";
 import { formatFiatBalance } from "~tokens/currency";
 import type { HardwareApi } from "~wallets/hardware";
 import { useStorage } from "~utils/storage";
-import { type AnsUser, getAnsProfile } from "~lib/ans";
 import { ExtensionStorage } from "~utils/storage";
 import { formatAddress, truncateMiddle } from "~utils/format";
 import type { StoredWallet } from "~wallets";
@@ -24,6 +23,7 @@ import Squircle from "~components/Squircle";
 import styled, { useTheme } from "styled-components";
 import { svgie } from "~utils/svgies";
 import { useLocation } from "~wallets/router/router.utils";
+import { getNameServiceProfiles } from "~lib/nameservice";
 import SliderMenu from "~components/SliderMenu";
 import { CopyToClipboard } from "~components/CopyToClipboard";
 import { PlusCircle, QrCode02, XClose } from "@untitled-ui/icons-react";
@@ -31,6 +31,7 @@ import BigNumber from "bignumber.js";
 import { fetchWalletBalances } from "~utils/balances";
 import useSetting from "~settings/hook";
 import QRModal from "~components/modals/QRModal";
+import { useArPrice } from "~lib/coingecko";
 
 export default function WalletSwitcher({ open, close }: Props) {
   const theme = useTheme();
@@ -56,12 +57,14 @@ export default function WalletSwitcher({ open, close }: Props) {
 
   const [currency] = useSetting<string>("currency");
 
+  const { data: price = "0" } = useArPrice(currency);
+
   // load wallet datas
   const [wallets, setWallets] = useState<DisplayedWallet[]>([]);
 
-  const [walletBalances, setWalletBalances] = useState<
-    Record<string, { ar: BigNumber; fiat: BigNumber }>
-  >({});
+  const [walletBalances, setWalletBalances] = useState<Record<string, string>>(
+    {}
+  );
 
   const activeWallet = useMemo(
     () => wallets?.find(({ address }) => address === activeAddress),
@@ -97,29 +100,25 @@ export default function WalletSwitcher({ open, close }: Props) {
       if (wallets.length === 0 || !updateAvatars) return;
 
       // get ans profiles
-      const profiles = loadedAns
-        ? []
-        : ((await getAnsProfile(
-            wallets.map((val) => val.address)
-          )) as AnsUser[]);
+      const profiles = await getNameServiceProfiles(
+        wallets.map((val) => val.address)
+      );
       const gateway = await findGateway({ startBlock: 0 });
 
       // update wallets state
       setWallets((val) =>
         val.map((wallet) => {
-          const profile = profiles.find(({ user }) => user === wallet.address);
+          const profile = profiles.find(
+            ({ address }) => address === wallet.address
+          );
           const svgieAvatar = svgie(wallet.address, { asDataURI: true });
 
           return {
             ...wallet,
-            name: profile?.currentLabel
-              ? profile.currentLabel + ".ar"
-              : wallet.name,
-            avatar: profile?.avatar
-              ? concatGatewayURL(gateway) + "/" + profile.avatar
-              : svgieAvatar
-              ? svgieAvatar
-              : undefined,
+            name: profile?.name || wallet.name,
+            avatar: profile?.logo
+              ? concatGatewayURL(gateway) + "/" + profile.logo
+              : svgieAvatar,
             hasAns: !!profile
           };
         })
@@ -133,13 +132,20 @@ export default function WalletSwitcher({ open, close }: Props) {
   useEffect(() => {
     const updateBalances = async () => {
       if (open && inactiveWallets.length > 0) {
-        const balances = await fetchWalletBalances(inactiveWallets, currency);
+        const balances = await fetchWalletBalances(inactiveWallets);
         setWalletBalances(balances);
       }
     };
 
     updateBalances();
-  }, [open, inactiveWallets, currency]);
+  }, [open, inactiveWallets]);
+
+  const fiatBalances = useMemo(() => {
+    return Object.entries(walletBalances).reduce((acc, [address, balance]) => {
+      acc[address] = BigNumber(balance).multipliedBy(price);
+      return acc;
+    }, {} as Record<string, BigNumber>);
+  }, [walletBalances, price]);
 
   // toasts
   const { setToast } = useToasts();
@@ -151,7 +157,12 @@ export default function WalletSwitcher({ open, close }: Props) {
       isOpen={open}
       onClose={close}
     >
-      <CloseIcon onClick={close} />
+      <CloseIcon
+        onClick={(e) => {
+          e.stopPropagation();
+          close();
+        }}
+      />
       <Wrapper>
         <CurrentWallet>
           <Avatar img={activeWallet?.avatar}>
@@ -300,7 +311,7 @@ export default function WalletSwitcher({ open, close }: Props) {
                 </div>
                 <Balance>
                   {formatFiatBalance(
-                    walletBalances[wallet.address]?.fiat || BigNumber(0),
+                    fiatBalances[wallet.address] || BigNumber(0),
                     currency.toLowerCase()
                   )}
                 </Balance>

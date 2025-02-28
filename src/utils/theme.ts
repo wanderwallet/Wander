@@ -79,3 +79,17 @@ export const hoverEffect = css`
     background-color: rgba(${(props) => props.theme.theme}, 0.15);
   }
 `;
+
+export function getFormattedColor(color: string) {
+  let formattedColor = "";
+  if (/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(color)) {
+    formattedColor = color;
+  } else if (/^([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(color)) {
+    formattedColor = `#${color}`;
+  } else if (/^\d{1,3}, ?\d{1,3}, ?\d{1,3}$/.test(color)) {
+    formattedColor = `rgb(${color})`;
+  } else if (/^\d{1,3}, ?\d{1,3}, ?\d{1,3}, ?.+$/.test(color)) {
+    formattedColor = `rgba(${color})`;
+  }
+  return formattedColor;
+}

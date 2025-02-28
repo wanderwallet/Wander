@@ -1,0 +1,19 @@
+@import "../../../tokens/index.css";
+
+.snackbar {
+  border: 1px solid var(--color-border-box);
+  border-radius: var(--border-radius-lg);
+
+  padding: var(--spacing-2);
+  width: auto;
+  height: auto;
+}
+
+.snackbar__icon {
+  align-self: center;
+  margin-right: var(--spacing-1);
+}
+
+.snackbar__isFullWidth {
+  width: 96% !important;
+}

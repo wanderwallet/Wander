@@ -1,7 +1,6 @@
 import type { BackgroundModuleFunction } from "~api/background/background-modules";
 import { ExtensionStorage } from "~utils/storage";
-import { getAoTokenBalance, getNativeTokenBalance } from "~tokens/aoTokens/ao";
-import { AO_NATIVE_TOKEN } from "~utils/ao_import";
+import { getAoTokenBalance } from "~tokens/aoTokens/ao";
 import { isAddress } from "~utils/assertions";
 
 const background: BackgroundModuleFunction<string> = async (_, id?: string) => {
@@ -9,10 +8,7 @@ const background: BackgroundModuleFunction<string> = async (_, id?: string) => {
   isAddress(id);
   const address = await ExtensionStorage.get("active_address");
 
-  const balance =
-    id === AO_NATIVE_TOKEN
-      ? await getNativeTokenBalance(address)
-      : (await getAoTokenBalance(address, id)).toString();
+  const balance = (await getAoTokenBalance(address, id)).toString();
 
   return balance;
 };

@@ -55,6 +55,46 @@ export const goldskyGateway: Gateway = {
   protocol: "https"
 };
 
+export const clGateway = {
+  host: "arweave.ar",
+  port: 443,
+  protocol: "https"
+};
+
+export const defaultGateways = [
+  {
+    host: "arweave.net",
+    port: 443,
+    protocol: "https"
+  },
+  {
+    host: "ar-io.dev",
+    port: 443,
+    protocol: "https"
+  },
+  clGateway,
+  {
+    host: "g8way.io",
+    port: 443,
+    protocol: "https"
+  },
+  {
+    host: "permagate.io",
+    port: 443,
+    protocol: "https"
+  },
+  {
+    host: "defi.ao",
+    port: 443,
+    protocol: "https"
+  },
+  {
+    host: "aoweave.tech",
+    port: 443,
+    protocol: "https"
+  }
+];
+
 export const printTxWorkingGateways: Gateway[] = [
   goldskyGateway,
   {

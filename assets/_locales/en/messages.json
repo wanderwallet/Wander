@@ -432,7 +432,7 @@
     "description": "About settings title"
   },
   "setting_reset": {
-    "message": "Reset",
+    "message": "Reset Wander",
     "description": "Reset settings title"
   },
   "setting_analytic": {
@@ -463,25 +463,29 @@
     "message": "Sign notification",
     "description": "Sign notification settings title"
   },
-  "setting_transfer_settings": {
-    "message": "Transfer settings",
-    "description": "Transfer settings title"
+  "setting_password_settings": {
+    "message": "Password settings",
+    "description": "Password settings title"
   },
-  "setting_transfer_settings_description": {
-    "message": "Requiring a password any time assets are being transferred",
-    "description": "Transfer settings description"
+  "setting_password_settings_description": {
+    "message": "Actions that require a password",
+    "description": "Password settings description"
   },
   "enable_transfer_settings": {
     "message": "Require password when signing a transaction",
     "description": "Enable transfer settings title"
   },
+  "enable_connect_settings": {
+    "message": "Require password when connecting to an application",
+    "description": "Enable connect settings title"
+  },
   "setting_display_theme": {
     "message": "Theme",
     "description": "Theme settings title"
   },
-  "setting_wayfinder": {
-    "message": "Wayfinder",
-    "description": "Wayfinder settings title"
+  "setting_gateways": {
+    "message": "Gateways",
+    "description": "Gateways settings title"
   },
   "setting_notifications": {
     "message": "Notifications",
@@ -547,9 +551,9 @@
     "message": "The theme of the extension UI",
     "description": "Display theme settings description"
   },
-  "setting_wayfinder_description": {
-    "message": "Experimental system-wide wayfinder for ar.io gateways",
-    "description": "Wayfinder settings description"
+  "setting_gateways_description": {
+    "message": "Arweave gateways simplify data access.",
+    "description": "Gateways settings description"
   },
   "search_pick_option": {
     "message": "Search for an option...",
@@ -609,9 +613,9 @@
     "message": "address copied",
     "description": "Address copy notification 2"
   },
-  "cannot_edit_with_ans": {
-    "message": "Cannot edit nickname. Wallet already has an ANS label.",
-    "description": "Explainer for disabled edits for wallets with ANS profiles"
+  "cannot_edit_with_name_service": {
+    "message": "Cannot edit. It already has a name service.",
+    "description": "Explainer for disabled edits for wallets with name service names"
   },
   "add_wallet_subtitle": {
     "message": "You can add as many as you like",
@@ -1068,7 +1072,11 @@
     "description": "Transaction sent successfuly notification"
   },
   "failed_tx": {
-    "message": "Could not send transaction",
+    "message": "Could not send transaction. Please try again.",
+    "description": "Transfer error notification"
+  },
+  "failed_tx_with_gateway": {
+    "message": "Could not send transaction. Please try again or use a different gateway.",
     "description": "Transfer error notification"
   },
   "assets": {
@@ -2885,5 +2893,45 @@
   "privacy_policy": {
     "message": "Privacy policy",
     "description": "Privacy policy text"
+  },
+  "exchange_rate": {
+    "message": "Exchange Rate",
+    "description": "Exchange rate text"
+  },
+  "max_buy_amount": {
+    "message": "Maximum AR buy amount is $AMOUNT$ $CURRENCY$",
+    "description": "Max buy amount text",
+    "placeholders": {
+      "amount": {
+        "content": "$1",
+        "example": "1"
+      },
+      "currency": {
+        "content": "$2",
+        "example": "USD"
+      }
+    }
+  },
+  "min_buy_amount": {
+    "message": "Minimum AR buy amount is $AMOUNT$ $CURRENCY$",
+    "description": "Min buy amount text",
+    "placeholders": {
+      "amount": {
+        "content": "$1",
+        "example": "1"
+      },
+      "currency": {
+        "content": "$2",
+        "example": "USD"
+      }
+    }
+  },
+  "switch_gateway": {
+    "message": "Switch Gateway",
+    "description": "Switch gateway text"
+  },
+  "setting_fullscreen": {
+    "message": "Fullscreen",
+    "description": "Fullscreen text"
   }
 }

@@ -8,7 +8,6 @@ import useSetting from "~settings/hook";
 import styled, { useTheme } from "styled-components";
 import { createCoinWithAnimation } from "~api/modules/sign/animation";
 import { arconfettiIcon } from "~api/modules/sign/utils";
-import { EventType, trackEvent } from "~utils/analytics";
 import { ErrorTypes } from "~utils/error/error.utils";
 import { ToggleSwitch } from "~routes/popup/subscriptions/subscriptionDetails";
 
@@ -55,15 +54,6 @@ export function SettingDashboardView({ setting }: SettingDashboardViewProps) {
     return option.toLowerCase().includes(query.toLowerCase());
   }
 
-  // track experimental Wayfinder opt-in
-  const trackWayfinder = async (properties: { tracking: boolean }) => {
-    try {
-      await trackEvent(EventType.WAYFINDER_ACTIVATED, properties);
-    } catch (err) {
-      console.log("err tracking", err);
-    }
-  };
-
   switch (setting.type) {
     case "boolean":
       return (
@@ -88,9 +78,6 @@ export function SettingDashboardView({ setting }: SettingDashboardViewProps) {
               checked={!!settingState}
               setChecked={() => {
                 updateSetting((val) => !val);
-                if (setting.name === "wayfinder") {
-                  trackWayfinder({ tracking: !settingState });
-                }
               }}
             />
           </div>
@@ -124,10 +111,15 @@ export function SettingDashboardView({ setting }: SettingDashboardViewProps) {
       );
 
     case "pick":
+      const showSearchInput =
+        setting.name !== "gateways" &&
+        setting?.options &&
+        setting.options.length > 6;
+
       return (
         <>
           {/** search for "pick" settings with more than 6 options */}
-          {setting?.options && setting.options.length > 6 && (
+          {showSearchInput && (
             <>
               <SearchWrapper>
                 <SearchInput
@@ -139,21 +131,34 @@ export function SettingDashboardView({ setting }: SettingDashboardViewProps) {
               </SearchWrapper>
             </>
           )}
-          <RadioWrapper>
+          <RadioWrapper hidePadding={!showSearchInput}>
             {setting?.options &&
-              setting.options.filter(filterSearchResults).map((option, i) => (
-                <Checkbox
-                  label={fixupBooleanDisplay(option.toString())}
-                  checked={settingState === option}
-                  onChange={() => {
-                    updateSetting(option);
-                    if (setting.name === "arconfetti") {
-                      confetti();
-                    }
-                  }}
-                  key={i}
-                />
-              ))}
+              setting.options.filter(filterSearchResults).map((option, i) => {
+                if (setting.name === "gateways") {
+                  return (
+                    <Checkbox
+                      label={option.host}
+                      checked={settingState.host === option.host}
+                      onChange={() => updateSetting(option)}
+                      key={i}
+                    />
+                  );
+                } else {
+                  return (
+                    <Checkbox
+                      label={fixupBooleanDisplay(option.toString())}
+                      checked={settingState === option}
+                      onChange={() => {
+                        updateSetting(option);
+                        if (setting.name === "arconfetti") {
+                          confetti();
+                        }
+                      }}
+                      key={i}
+                    />
+                  );
+                }
+              })}
           </RadioWrapper>
         </>
       );
@@ -167,11 +172,11 @@ export function SettingDashboardView({ setting }: SettingDashboardViewProps) {
   }
 }
 
-export const RadioWrapper = styled.div`
+export const RadioWrapper = styled.div<{ hidePadding?: boolean }>`
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  padding: 1.5rem 0;
+  ${(props) => !props.hidePadding && `padding: 1.5rem 0;`}
 `;
 
 export const Radio = styled(Squircle).attrs((props) => ({

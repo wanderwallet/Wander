@@ -9,7 +9,6 @@ import { Action, Avatar, CloseLayer, NoAvatarIcon } from "./WalletHeader";
 import { AnimatePresence } from "framer-motion";
 import { useTheme } from "~utils/theme";
 import { useStorage } from "~utils/storage";
-import { useAnsProfile } from "~lib/ans";
 import { ExtensionStorage } from "~utils/storage";
 import HardwareWalletIcon, {
   hwIconAnimateProps
@@ -26,6 +25,9 @@ import { useLocation } from "~wallets/router/router.utils";
 import { ArrowNarrowLeft } from "@untitled-ui/icons-react";
 import { MinimizeIcon } from "@iconicicons/react";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
+import { useNameServiceProfile } from "~lib/nameservice";
+import { concatGatewayURL } from "~gateways/utils";
+import { FULL_HISTORY, useGateway } from "~gateways/wayfinder";
 
 export interface HeadV2Props {
   title: string;
@@ -90,7 +92,7 @@ export default function HeadV2({
     instance: ExtensionStorage
   });
 
-  const ans = useAnsProfile(activeAddress);
+  const nameServiceProfile = useNameServiceProfile(activeAddress);
 
   const svgieAvatar = useMemo(
     () => svgie(activeAddress, { asDataURI: true }),
@@ -107,6 +109,7 @@ export default function HeadV2({
   const appIconPlaceholderText = appInfo?.placeholder;
 
   const SquircleWrapper = onAppInfoClick ? ButtonSquircle : React.Fragment;
+  const gateway = useGateway(FULL_HISTORY);
 
   return (
     <HeadWrapper
@@ -146,12 +149,16 @@ export default function HeadV2({
           <AvatarButton>
             {showOptions && (
               <ButtonAvatar
-                img={ans?.avatar || svgieAvatar}
+                img={
+                  nameServiceProfile?.logo
+                    ? concatGatewayURL(gateway) + "/" + nameServiceProfile.logo
+                    : svgieAvatar
+                }
                 onClick={() => {
                   setOpen(true);
                 }}
               >
-                {!ans?.avatar && !svgieAvatar && <NoAvatarIcon />}
+                {!nameServiceProfile?.logo && !svgieAvatar && <NoAvatarIcon />}
                 <AnimatePresence initial={false}>
                   {hardwareApi === "keystone" && (
                     <HardwareWalletIcon

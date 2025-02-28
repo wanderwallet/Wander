@@ -7,6 +7,7 @@ import {
   CreditCard01,
   Grid01,
   InfoCircle,
+  Maximize01,
   Pencil02,
   Settings01,
   Users01,
@@ -28,6 +29,7 @@ import { AboutDashboardView } from "~components/dashboard/About";
 import { SignSettingsDashboardView } from "~components/dashboard/SignSettings";
 import { ResetDashboardView } from "~components/dashboard/Reset";
 import { AnalyticsSettingsDashboardView } from "~components/dashboard/Analytics";
+import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 
 export interface DashboardRouteConfig extends Omit<SettingItemProps, "active"> {
   name: string;
@@ -78,6 +80,7 @@ export const basicSettings: (DashboardRouteConfig | Setting)[] = [
     icon: Bell03,
     component: NotificationSettingsDashboardView
   },
+  getSetting("gateways"),
   {
     name: "about",
     displayName: "setting_about",
@@ -89,15 +92,17 @@ export const basicSettings: (DashboardRouteConfig | Setting)[] = [
 
 export const advancedSettings: (DashboardRouteConfig | Setting)[] = [
   {
-    name: "transfer_settings",
-    displayName: "setting_transfer_settings",
-    description: "setting_transfer_settings_description",
+    name: "password_settings",
+    displayName: "setting_password_settings",
+    description: "setting_password_settings_description",
     icon: Pencil02,
     component: SignSettingsDashboardView
   },
   ...settings.filter(
     (setting) =>
-      setting.name !== "display_theme" && setting.name !== "analytics"
+      setting.name !== "display_theme" &&
+      setting.name !== "analytics" &&
+      setting.name !== "gateways"
   ),
   // TODO
   /*{
@@ -170,3 +175,12 @@ export const quickSettingsMenuItems: Omit<
     externalLink: "tabs/dashboard.html"
   }
 ];
+
+if (process.env.NODE_ENV === "development" && !IS_EMBEDDED_APP) {
+  quickSettingsMenuItems.splice(5, 0, {
+    name: "fullscreen",
+    displayName: "setting_fullscreen",
+    icon: Maximize01,
+    externalLink: "tabs/fullscreen.html"
+  });
+}

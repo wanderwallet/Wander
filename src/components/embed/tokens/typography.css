@@ -1,0 +1,54 @@
+@import "./font.css";
+@import "./brand-color.css";
+
+:root {
+  /* .text-variant-heading-large {
+            fontSize: var(--font-size-xl),
+            lineHeight: lineHeights.tall,
+            letterSpacing: letterSpacing.tighter,
+            fontFamily: fontFamily["family-serif"],
+            fontWeight: fontWeights.bold
+        };
+        .text-variant-heading-medium {
+            fontSize: fontSizes.xl,
+            lineHeight: lineHeights.tall,
+            letterSpacing: letterSpacing.tighter,
+            fontFamily: fontFamily["family-serif"],
+            fontWeight: fontWeights.bold
+        };
+        .text-variant-heading-small {
+            font-size: fontSizes.lg,
+            lineHeight: lineHeights.tall,
+            letterSpacing: letterSpacing.tighter,
+            fontFamily: fontFamily["family-serif"],
+            fontWeight: fontWeights.bold
+        };
+        .text-variant-body-medium {
+            fontSize: fontSizes.base,
+            lineHeight: lineHeights.base,
+            letterSpacing: letterSpacing.normal,
+            fontFamily: fontFamily["family-serif"],
+            fontWeight: fontWeights.semi
+        };
+        .text-variant-body-small {
+            fontSize: fontSizes.sm,
+            lineHeight: lineHeights.base,
+            letterSpacing: letterSpacing.normal,
+            fontFamily: fontFamily["family-serif"],
+            fontWeight: fontWeights.semi
+        };
+        .text-variant-body-xsmall {
+            fontSize: fontSizes.xs,
+            lineHeight: lineHeights.base,
+            letterSpacing: letterSpacing.normal,
+            fontFamily: fontFamily["family-serif"],
+            fontWeight: fontWeights.semi
+        };
+        .text-variant-body-tiny {
+            fontSize: fontSizes.xxs,
+            lineHeight: lineHeights.base,
+            letterSpacing: letterSpacing.normal,
+            fontFamily: fontFamily["family-serif"],
+            fontWeight: fontWeights.semi
+        }; */
+}

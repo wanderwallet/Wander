@@ -9,6 +9,8 @@ import {
 import { signAuthKeystone, type AuthKeystoneData } from "../sign/sign_auth";
 import Arweave from "arweave";
 import { requestUserAuthorization } from "~utils/auth/auth.utils";
+import { checkIfUserNeedsToSign } from "../sign/sign_policy";
+import Application from "~applications/application";
 
 const background: BackgroundModuleFunction<number[]> = async (
   appData,
@@ -24,19 +26,30 @@ const background: BackgroundModuleFunction<number[]> = async (
 
   isArrayBuffer(dataToSign);
 
-  await requestUserAuthorization(
-    {
-      type: "signature",
-      message: data
-    },
-    appData
+  // get user wallet
+  const activeWallet = await getActiveKeyfile(appData);
+
+  const app = new Application(appData.url);
+  const signPolicy = await app.getSignPolicy();
+
+  const alwaysAsk = checkIfUserNeedsToSign(
+    signPolicy,
+    undefined,
+    activeWallet?.type
   );
+
+  if (alwaysAsk) {
+    await requestUserAuthorization(
+      {
+        type: "signature",
+        message: data
+      },
+      appData
+    );
+  }
 
   // hash the message
   const hash = await crypto.subtle.digest(options.hashAlgorithm, dataToSign);
-
-  // get user wallet
-  const activeWallet = await getActiveKeyfile(appData);
 
   // ensure that the currently selected
   // wallet is not a local wallet

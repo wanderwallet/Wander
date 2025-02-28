@@ -1,0 +1,22 @@
+import * as React from "react";
+import type { SVGProps } from "react";
+const SvgWebcam = (props: SVGProps<SVGSVGElement>) => (
+  <svg
+    width="25"
+    height="25"
+    viewBox="0 0 25 25"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    color="currentColor"
+    {...props}
+  >
+    <path
+      d="M12.5 18.5C16.9183 18.5 20.5 14.9183 20.5 10.5C20.5 6.08172 16.9183 2.5 12.5 2.5C8.08172 2.5 4.5 6.08172 4.5 10.5C4.5 14.9183 8.08172 18.5 12.5 18.5ZM12.5 18.5V22.5M12.5 22.5H7.5M12.5 22.5H17.5M15.5 10.5C15.5 12.1569 14.1569 13.5 12.5 13.5C10.8431 13.5 9.5 12.1569 9.5 10.5C9.5 8.84315 10.8431 7.5 12.5 7.5C14.1569 7.5 15.5 8.84315 15.5 10.5Z"
+      stroke="currentColor"
+      stroke-width="1.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </svg>
+);
+export default SvgWebcam;

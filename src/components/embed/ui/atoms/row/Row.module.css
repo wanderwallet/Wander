@@ -1,0 +1,41 @@
+@import "../../../tokens/index.css";
+
+.row {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  align-self: center;
+  width: var(--full-width);
+  gap: var(--spacing-2);
+}
+
+.row__overlap {
+  gap: 0;
+}
+
+.row__relative {
+  position: relative;
+}
+.row__absolute {
+  position: absolute;
+}
+.row__fixed {
+  position: fixed;
+}
+.row__sticky {
+  position: sticky;
+}
+
+.row__left {
+  justify-content: left;
+}
+.row__center {
+  justify-content: center;
+}
+.row__right {
+  justify-content: right;
+}
+.row__between {
+  justify-content: space-between;
+}

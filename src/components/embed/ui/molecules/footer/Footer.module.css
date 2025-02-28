@@ -1,0 +1,16 @@
+@import "../../../tokens/index.css";
+
+.footer {
+  padding: var(--spacing-1);
+  background-color: inherit;
+  bottom: -10px !important;
+}
+
+.footer__title__container {
+  padding: 0 var(--spacing-2);
+  width: 100%;
+}
+
+.footer__text {
+  color: var(--color-text-footer);
+}
