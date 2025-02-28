@@ -13,29 +13,29 @@ import { getExtensionOverrides } from "~wallets/router/extension/extension.route
 import type { RouteConfig } from "~wallets/router/router.types";
 
 export type AuthRoutePath =
-  | "/"
-  | `/connect/${string}`
-  | `/allowance/${string}`
-  | `/token/${string}`
-  | `/decrypt/${string}`
-  | `/sign/${string}`
-  | `/signKeystone/${string}`
-  | `/signature/${string}`
-  | `/signDataItem/${string}`
-  | `/batchSignDataItem/${string}`
-  | `/subscription/${string}`;
+  | "/auth-request"
+  | `/auth-request/connect/${string}`
+  | `/auth-request/allowance/${string}`
+  | `/auth-request/token/${string}`
+  | `/auth-request/decrypt/${string}`
+  | `/auth-request/sign/${string}`
+  | `/auth-request/signKeystone/${string}`
+  | `/auth-request/signature/${string}`
+  | `/auth-request/signDataItem/${string}`
+  | `/auth-request/batchSignDataItem/${string}`
+  | `/auth-request/subscription/${string}`;
 
 export const AuthPaths = {
-  Connect: "/connect/:authID",
-  Allowance: "/allowance/:authID",
-  Token: "/token/:authID",
-  Decrypt: "/decrypt/:authID",
-  Sign: "/sign/:authID",
-  SignKeystone: "/signKeystone/:authID",
-  Signature: "/signature/:authID",
-  SignDataItem: "/signDataItem/:authID",
-  BatchSignDataItem: "/batchSignDataItem/:authID",
-  Subscription: "/subscription/:authID"
+  Connect: "/auth-request/connect/:authID",
+  Allowance: "/auth-request/allowance/:authID",
+  Token: "/auth-request/token/:authID",
+  Decrypt: "/auth-request/decrypt/:authID",
+  Sign: "/auth-request/sign/:authID",
+  SignKeystone: "/auth-request/signKeystone/:authID",
+  Signature: "/auth-request/signature/:authID",
+  SignDataItem: "/auth-request/signDataItem/:authID",
+  BatchSignDataItem: "/auth-request/batchSignDataItem/:authID",
+  Subscription: "/auth-request/subscription/:authID"
 } as const satisfies Record<string, AuthRoutePath>;
 
 export const AUTH_ROUTES = [

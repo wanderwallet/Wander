@@ -28,6 +28,7 @@ import {
 } from "~api/background/handlers/browser/tabs/tabs.handler";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { handleAuthStateChange } from "./handlers/storage/auth-state-change/auth-state-change.handler";
+import { EMBEDDED_PARENT_ORIGIN } from "~utils/embedded/sdk/utils/url/sdk-url.utils";
 
 export function setupBackgroundService() {
   log(
@@ -41,6 +42,48 @@ export function setupBackgroundService() {
   // Watch for API call and chunk messages:
   onMessage("api_call", handleApiCallMessage);
   onMessage("chunk", handleChunkMessage);
+
+  if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1") {
+    window.addEventListener("message", (event: MessageEvent) => {
+      if (
+        !event.data ||
+        event.data.app !== "wanderEmbedded" ||
+        event.origin !== EMBEDDED_PARENT_ORIGIN
+      )
+        return;
+
+      console.log("MESSAGE FROM PARENT =", event.data);
+
+      handleApiCallMessage({
+        id: "",
+        timestamp: Date.now(),
+        data: event.data,
+        sender: {
+          tabId: 0,
+          context: "content-script"
+        }
+      });
+
+      // Example: check if the message is from our SDK
+
+      /*
+      if (event.data.type === "FROM_SDK") {
+        const incomingMsg = event.data.payload;
+        console.log(
+          "Iframe received message from WanderEmbedded:",
+          incomingMsg
+        );
+
+        // Respond back
+        event.source?.postMessage({
+          type: "FROM_IFRAME",
+          payload: `Got your message: ${incomingMsg}`
+        });
+      }
+      */
+    });
+  } else {
+  }
 
   // LIFECYCLE:
 

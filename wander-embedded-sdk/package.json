@@ -1,0 +1,36 @@
+{
+  "name": "wander-embedded-sdk",
+  "version": "0.0.5",
+  "description": "Wander Embedded SDK.",
+  "author": "kranthicodes",
+  "license": "MIT",
+  "files": [
+    "sdk-dist/",
+    "package.json"
+  ],
+  "exports": {
+    ".": {
+      "types": "./sdk-dist/index.d.ts",
+      "import": "./sdk-dist/index.js",
+      "require": "./sdk-dist/index.cjs"
+    }
+  },
+  "type": "module",
+  "main": "sdk-dist/index.cjs",
+  "module": "sdk-dist/index.js",
+  "unpkg": "sdk-dist/index.global.js",
+  "jsdelivr": "sdk-dist/index.global.js",
+  "types": "sdk-dist/index.d.ts",
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "clean": "rm -rf sdk-dist"
+  },
+  "devDependencies": {
+    "tsup": "^8.3.5",
+    "typescript": "^5.2.2"
+  },
+  "dependencies": {
+    "ts-deepmerge": "^7.0.2"
+  }
+}

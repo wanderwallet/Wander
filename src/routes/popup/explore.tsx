@@ -2,7 +2,13 @@ import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import browser from "webextension-polyfill";
 import { PageType, trackPage } from "~utils/analytics";
 import styled from "styled-components";
-import { Input, Section, useInput, Text } from "@arconnect/components-rebrand";
+import {
+  Input,
+  Section,
+  useInput,
+  Text,
+  Tooltip
+} from "@arconnect/components-rebrand";
 import { apps, categories, type App } from "~utils/apps";
 import {
   ArrowLeft,
@@ -11,12 +17,16 @@ import {
 } from "@untitled-ui/icons-react";
 import { getAppURL, truncateMiddle } from "~utils/format";
 import WanderIcon from "url:assets/icon.svg";
+import { MinimizeIcon } from "@iconicicons/react";
+import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
+import { Action } from "~components/popup/WalletHeader";
 import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 
 export function ExploreView() {
   const [filteredApps, setFilteredApps] = useState(apps);
   const searchInput = useInput();
   const categoriesRef = useRef<HTMLDivElement>(null);
+  const isEmbedded = import.meta.env?.VITE_IS_EMBEDDED_APP === "1";
 
   const scroll = useCallback((direction: "left" | "right") => {
     if (categoriesRef.current) {
@@ -62,6 +72,23 @@ export function ExploreView() {
           <ScrollButton direction="right" onClick={() => scroll("right")}>
             <ArrowRight height={20} width={20} />
           </ScrollButton>
+          {isEmbedded && (
+            <Tooltip
+              content={browser.i18n.getMessage("close")}
+              position="bottomEnd"
+            >
+              <Action
+                as={MinimizeIcon}
+                onClick={() => {
+                  postEmbeddedMessage({
+                    type: "embedded_close",
+                    data: null
+                  });
+                }}
+                style={{ width: "24px", height: "24px" }}
+              />
+            </Tooltip>
+          )}
         </Header>
         <Input
           {...searchInput.bindings}

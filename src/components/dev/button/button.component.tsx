@@ -1,4 +1,4 @@
-import type { ArConnectRoutePath } from "~wallets/router/router.types";
+import type { WanderRoutePath } from "~wallets/router/router.types";
 import { Link } from "~wallets/router/components/link/Link";
 import { DevSpinner } from "~components/dev/spinner/spinner.component";
 
@@ -6,7 +6,7 @@ import styles from "./button.module.scss";
 
 export interface DevButtonProps {
   label: string;
-  to?: ArConnectRoutePath;
+  to?: WanderRoutePath;
   onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
   variant?: "primary" | "secondary" | "dev";
   isLoading?: boolean;
