@@ -6,42 +6,55 @@
   flex-direction: column;
   justify-content: center;
   width: 100%;
+  transition: var(--transition-base);
 }
 
-.box__width-auto {
+/* Width variants */
+.box__width_auto {
   width: auto;
 }
+
+/* Border variants */
 .box__border {
   border-radius: var(--border-radius-lg);
-  border: 1px solid var(--brand-color-gray-200);
+  border: 1px solid var(--color-border-default, var(--brand-color-gray-200));
 }
 
+/* Position variants */
 .box__relative {
   position: relative;
 }
+
 .box__absolute {
   position: absolute;
 }
+
 .box__fixed {
   position: fixed;
 }
+
 .box__sticky {
   position: sticky;
 }
 
+/* Visual effects */
 .box__blurry {
   filter: blur(2px);
 }
 
+/* Alignment variants */
 .box__left {
-  align-items: left;
+  align-items: flex-start;
 }
+
 .box__center {
   align-items: center;
 }
+
 .box__right {
-  align-items: right;
+  align-items: flex-end;
 }
+
 .box__justify {
-  align-items: justify;
+  align-items: stretch;
 }

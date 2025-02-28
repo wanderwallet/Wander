@@ -1,0 +1,11 @@
+---
+description: Helps to estabilish a set of rules for CSS modules usage
+globs: 
+alwaysApply: false
+---
+
+- implement dark and light mode based on token.
+- use tokens instead of hard coded values on the classes.
+- CSS implementation is primarily achieved thtough CSS Modules, secondly via Stylesheet.
+- write reusable classes.
+- avoid repetion, using inheritantes.

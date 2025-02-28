@@ -1,5 +1,6 @@
 import * as React from "react";
 import type { SVGProps } from "react";
+import { withThemeAwareColor } from "./IconBase";
 const SvgSocials = (props: SVGProps<SVGSVGElement>) => (
   <svg
     width="71"
@@ -43,4 +44,4 @@ const SvgSocials = (props: SVGProps<SVGSVGElement>) => (
     </defs>
   </svg>
 );
-export default SvgSocials;
+export default withThemeAwareColor(SvgSocials);

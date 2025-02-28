@@ -82,7 +82,7 @@ export function AuthEmbeddedView() {
         >
           More options
         </Button>
-        <Row alignment="center">
+        <Row alignment="center" justifyContent="center">
           <Text variant={"bodySm"}>{"Can’t sign in?"}</Text>
           <Button variant="link" href="/auth/recover-account" size="sm">
             Recover account

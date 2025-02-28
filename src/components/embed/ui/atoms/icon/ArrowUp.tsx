@@ -1,5 +1,6 @@
 import * as React from "react";
 import type { SVGProps } from "react";
+import { withThemeAwareColor } from "./IconBase";
 const SvgArrowUp = (props: SVGProps<SVGSVGElement>) => (
   <svg
     width="16"
@@ -16,4 +17,4 @@ const SvgArrowUp = (props: SVGProps<SVGSVGElement>) => (
     />
   </svg>
 );
-export default SvgArrowUp;
+export default withThemeAwareColor(SvgArrowUp);

@@ -58,7 +58,7 @@ export function AccountImportKeyfileEmbeddedView() {
           <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
             {"Secured by"}
           </Text>
-          <WanderIcon color="#838383" />
+          <WanderIcon color="#838383" style={{ alignSelf: "end" }} />
         </Row>
       }
       hasBackButton={true}

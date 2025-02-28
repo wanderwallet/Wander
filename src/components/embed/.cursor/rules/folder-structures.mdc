@@ -1,0 +1,185 @@
+---
+description: Directory naming and structure to be used in react and react native projects
+globs: 
+alwaysApply: false
+---
+
+## Root Structure
+```src/```
+The source directory contains all the application code.
+
+### Core Directories
+
+```src/api/```
+- API related code, services, and configurations
+- HTTP client setup
+- API endpoints and request handlers
+- Response types and interfaces
+
+```src/assets/```
+- Static assets like images, fonts, and icons
+- SVG files
+- JSON data files
+- Localization files
+
+```src/components/```
+- Reusable UI components
+- Component-specific styles
+- Component unit tests
+- Component stories (if using Storybook)
+
+```src/config/```
+- Environment configurations
+- App constants
+- Theme configurations
+- Route configurations
+
+```src/hooks/```
+- Custom React hooks
+- Shared logic hooks
+- State management hooks
+
+```src/navigation/```
+- Navigation configurations
+- Stack navigators
+- Tab navigators
+- Navigation types
+- Navigation utilities
+
+```src/screens/```
+- Screen components
+- Screen-specific components
+- Screen-specific styles
+- Screen-specific logic
+
+```src/store/```
+- State management setup (Redux/MobX/Zustand)
+- Actions/Reducers
+- Selectors
+- Store types
+
+```src/types/```
+- TypeScript type definitions
+- Interfaces
+- Enums
+- Type utilities
+
+```src/utils/```
+- Helper functions
+- Utility classes
+- Common functions
+- Format functions
+
+### Optional Directories (Based on Project Needs)
+
+```src/contexts/```
+- React Context providers
+- Context-specific types
+- Context utilities
+
+```src/services/```
+- Third-party service integrations
+- Platform-specific services
+- Background services
+
+```src/styles/```
+- Global styles
+- Theme definitions
+- Style constants
+- Style utilities
+
+```src/i18n/```
+- Internationalization setup
+- Language files
+- Translation utilities
+
+## Directory Guidelines
+
+### Assets Structure
+```
+assets/
+├── fonts/
+├── icons/
+└── lotties/
+```
+
+### Components Structure
+```
+components/
+├── atoms/
+│   ├── buttons/
+│   ├── inputs/
+│   ├── text/
+│   └── cards/
+├── molecules/
+│   └── header/
+│   └── footer/
+└── organisms/
+│   └── list-item/
+```
+
+### Screens Structure
+```
+screens/
+├── auth/
+│   ├── login/
+│   └── register/
+├── home/
+├── profile/
+└── settings/
+```
+
+### Store Structure
+```
+store/
+├── account
+│   ├── slice.ts
+│   ├── index.ts
+│   ├── thunks.ts
+│   ├── types.ts
+│   ├── utils.ts
+```
+
+## Naming Conventions
+
+- Folders: lowercase with hyphens (e.g., `feature-specific`)
+- Components: PascalCase (e.g., `LoginButton.tsx`)
+- Utilities: camelCase (e.g., `formatDate.ts`)
+- Types: PascalCase with Type/Interface suffix (e.g., `UserType.ts`)
+- Constants: UPPERCASE_SNAKE_CASE
+- Hooks: camelCase with 'use' prefix (e.g., `useAuth.ts`)
+
+## File Organization Rules
+
+1. Each component should have its own directory with:
+   - Main component file
+   - Styles file (if needed)
+   - Test file
+   - Types file (if needed)
+
+2. Screen components should follow similar structure:
+   ```
+   screens/feature/
+   ├── FeatureScreen.tsx
+   ├── FeatureScreen.styles.ts
+   ├── FeatureScreen.test.tsx
+   ├── components/
+   └── hooks/
+   ```
+
+3. Keep related files close to their usage:
+   - Feature-specific components in the feature directory
+   - Feature-specific utilities with the feature
+   - Feature-specific types with the feature
+
+4. Avoid deep nesting (max 3 levels deep)
+
+## Import Guidelines
+
+1. Use absolute imports for app-wide shared code
+2. Use relative imports for closely related files
+3. Group imports in the following order:
+   - External libraries
+   - Absolute imports
+   - Relative imports
+   - Style imports

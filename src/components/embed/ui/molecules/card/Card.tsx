@@ -4,6 +4,7 @@ import type { CardBaseProps } from "./Card.types";
 import { Box, XClose, ChevronLeft } from "../../atoms";
 import { Header } from "../header";
 import { Footer } from "../footer";
+import { useTheme } from "../../../contexts/ThemeContext";
 
 const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
   (
@@ -26,14 +27,23 @@ const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
     },
     ref
   ) => {
+    const { isDarkMode } = useTheme();
+    const [isMinimized, setIsMinimized] = React.useState(false);
+
+    const iconColor = isDarkMode ? "var(--color-font-body)" : "#757575";
+    const cardBackground = isDarkMode
+      ? "var(--brand-color-neutral1)"
+      : "transparent";
+
     const closeIcon = (
       <button
         className={styles["card__close__btn"]}
         onClick={onCloseButtonClick}
       >
-        {customIcon ?? <XClose fontSize={24} color="#757575" />}
+        {customIcon ?? <XClose fontSize={24} color={iconColor} />}
       </button>
     );
+
     return (
       <Box
         ref={ref}
@@ -42,24 +52,47 @@ const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
         ${hasShadow && styles["card__shadow"]}
         ${isBlurry && styles["card__blury"]}
         ${size && styles[`card__${size}`]}
+        ${isMinimized && styles[`card_minimized__active`]}
         ${className}
       `}
+        style={{
+          backgroundColor: cardBackground
+        }}
         {...props}
       >
-        {hasBackButton && (
+        {!isMinimized ? (
+          <>
+            {hasBackButton && (
+              <button
+                className={styles["card__back__btn"]}
+                onClick={onBackButtonClick}
+              >
+                <ChevronLeft fontSize={24} color={iconColor} />
+              </button>
+            )}
+            {hasCloseButton && closeIcon}
+            {headerText && (
+              <Header
+                icon={headerIcon}
+                title={headerText}
+                subtitle={subtitle}
+              />
+            )}
+            {children}
+            {footerElement && <Footer children={footerElement} />}
+          </>
+        ) : (
           <button
-            className={styles["card__back__btn"]}
-            onClick={onBackButtonClick}
-          >
-            <ChevronLeft fontSize={24} color="#757575" />
-          </button>
+            id="toggleBtn"
+            onClick={() => setIsMinimized(!isMinimized)}
+            style={{
+              width: "100%",
+              height: "100%",
+              zIndex: 100,
+              cursor: "pointer"
+            }}
+          />
         )}
-        {hasCloseButton && closeIcon}
-        {headerText && (
-          <Header icon={headerIcon} title={headerText} subtitle={subtitle} />
-        )}
-        {children}
-        {footerElement && <Footer children={footerElement} />}
       </Box>
     );
   }

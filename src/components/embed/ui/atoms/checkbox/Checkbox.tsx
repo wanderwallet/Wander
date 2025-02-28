@@ -1,9 +1,11 @@
-import React from "react";
+import React, { forwardRef } from "react";
+import clsx from "clsx";
 import styles from "./Checkbox.module.css";
 import type { CheckboxBaseProps } from "./Checkbox.types";
 import { CheckIcon, Text } from "..";
+import { useTheme } from "../../../contexts/ThemeContext";
 
-const Checkbox = React.forwardRef<HTMLDivElement, CheckboxBaseProps>(
+const Checkbox = forwardRef<HTMLDivElement, CheckboxBaseProps>(
   (
     {
       id,
@@ -20,40 +22,57 @@ const Checkbox = React.forwardRef<HTMLDivElement, CheckboxBaseProps>(
     },
     ref
   ) => {
-    const Component = "div";
-    const Label = "label";
+    const { isDarkMode } = useTheme();
 
     return (
-      <Component
-        className={`
-        ${styles["wrapper"]}
-        ${className}
-        ${isBlurry && styles["checkbox__blurry"]}
-      `}
+      <div
+        className={clsx(
+          styles.wrapper,
+          isBlurry && styles.checkbox__blurry,
+          isDarkMode ? styles.checkbox__dark : styles.checkbox__light,
+          className
+        )}
+        ref={ref}
         {...props}
       >
-        {isChecked && <CheckIcon className={styles["checkbox__icon"]} />}
-        <Label
+        <label
           id="checkbox"
-          htmlFor="r1"
-          className={`${styles["checkbox__label"]}`}
+          htmlFor={id || "r1"}
+          className={styles.checkbox__label}
         >
-          <input
-            className={`${styles["checkbox"]}
-             ${isChecked && styles["checkbox__checked"]}
-             `}
-            type="checkbox"
-            name="rGroup"
-            id="r1"
-            checked={isChecked}
-            onClick={handleChange}
-          />
-          {label}
-        </Label>
-        <Text variant="bodyXs" className={styles["checkbox__description"]}>
-          {description}
-        </Text>
-      </Component>
+          <div className={styles.checkbox__input_container}>
+            <input
+              className={clsx(
+                styles.checkbox,
+                isChecked && styles.checkbox__checked
+              )}
+              type="checkbox"
+              name="rGroup"
+              id={id || "r1"}
+              checked={isChecked}
+              disabled={isDisabled}
+              required={isRequired}
+              onClick={handleChange}
+            />
+            {isChecked && (
+              <CheckIcon
+                className={styles.checkbox__icon}
+                color={
+                  isDarkMode ? "var(--color-background-default)" : undefined
+                }
+              />
+            )}
+          </div>
+          <div className={styles.checkbox__text}>
+            <span>{label}</span>
+            {description && (
+              <Text variant="bodyXs" className={styles.checkbox__description}>
+                {description}
+              </Text>
+            )}
+          </div>
+        </label>
+      </div>
     );
   }
 );

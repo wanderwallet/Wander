@@ -1,5 +1,6 @@
 import * as React from "react";
 import type { SVGProps } from "react";
+import { withThemeAwareColor } from "./IconBase";
 const SvgTwitter = (props: SVGProps<SVGSVGElement>) => (
   <svg
     width="24"
@@ -19,4 +20,4 @@ const SvgTwitter = (props: SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
-export default SvgTwitter;
+export default withThemeAwareColor(SvgTwitter);

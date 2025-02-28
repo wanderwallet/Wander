@@ -1,5 +1,6 @@
 import * as React from "react";
 import type { SVGProps } from "react";
+import { withThemeAwareColor } from "./IconBase";
 
 const SvgBackupComplete = ({
   width = 74,
@@ -95,4 +96,4 @@ const SvgBackupComplete = ({
   </svg>
 );
 
-export default SvgBackupComplete;
+export default withThemeAwareColor(SvgBackupComplete);

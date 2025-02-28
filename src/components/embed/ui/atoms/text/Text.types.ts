@@ -1,5 +1,5 @@
 import React from "react";
-import { Alignments, TextVariants } from "../../../types";
+import type { Alignments, TextVariants } from "../../../types";
 
 export type TextBaseProps = {
   children?: React.ReactNode;

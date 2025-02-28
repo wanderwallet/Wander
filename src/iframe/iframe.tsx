@@ -6,6 +6,7 @@ import { Routes } from "~wallets/router/routes.component";
 import { Router as Wouter } from "wouter";
 import { IFRAME_ROUTES } from "~wallets/router/iframe/iframe.routes";
 import { handleSyncLabelsAlarm } from "~api/background/handlers/alarms/sync-labels/sync-labels-alarm.handler";
+import { ThemeProvider } from "~/components/embed/contexts/ThemeContext";
 import {
   useAuthStatusOverride,
   useEmbeddedLocation
@@ -40,15 +41,17 @@ export function ArConnectEmbeddedApp() {
 export function ArConnectEmbeddedAppRoot() {
   return (
     <WanderThemeProvider>
-      <EmbeddedProvider>
-        <AuthRequestsProvider useStatusOverride={useAuthStatusOverride}>
-          <QueryClientProvider client={queryClient}>
-            <Wouter hook={useEmbeddedLocation}>
-              <ArConnectEmbeddedApp />
-            </Wouter>
-          </QueryClientProvider>
-        </AuthRequestsProvider>
-      </EmbeddedProvider>
+      <ThemeProvider>
+        <EmbeddedProvider>
+          <AuthRequestsProvider useStatusOverride={useAuthStatusOverride}>
+            <QueryClientProvider client={queryClient}>
+              <Wouter hook={useEmbeddedLocation}>
+                <ArConnectEmbeddedApp />
+              </Wouter>
+            </QueryClientProvider>
+          </AuthRequestsProvider>
+        </EmbeddedProvider>
+      </ThemeProvider>
     </WanderThemeProvider>
   );
 }
