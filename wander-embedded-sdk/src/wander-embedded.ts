@@ -18,7 +18,9 @@ const NOOP = () => {};
 
 export class WanderEmbedded {
   private static instance: WanderEmbedded | null = null;
-  static DEFAULT_IFRAME_SRC = "http://localhost:5173/" as const;
+  // static DEFAULT_IFRAME_SRC = "http://localhost:5173/" as const;
+  // static DEFAULT_IFRAME_SRC = "https://embed.wander.app/" as const;
+  static DEFAULT_IFRAME_SRC = "https://embed-dev.wander.app/" as const;
 
   // Callbacks:
   private onAuth: (userDetails: UserDetails | null) => void = NOOP;
