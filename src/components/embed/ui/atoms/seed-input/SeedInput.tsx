@@ -20,7 +20,6 @@ const SeedInput = forwardRef<HTMLDivElement, SeedInputBaseProps>(
     const [numInputs, setNumInputs] = useState(size);
     const allowedSizes = [12, 18, 24];
 
-    // Update numInputs if size prop changes
     useEffect(() => {
       if (allowedSizes.includes(size)) {
         setNumInputs(size);
@@ -115,13 +114,6 @@ const SeedInput = forwardRef<HTMLDivElement, SeedInputBaseProps>(
               />
             ))}
           </div>
-          <button
-            type="submit"
-            className={styles["submit-button"]}
-            style={{ display: "none" }}
-          >
-            Submit
-          </button>
         </form>
       </Component>
     );

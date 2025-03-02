@@ -1,5 +1,5 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation } from "~wallets/router/router.utils";
 
 import {
@@ -14,6 +14,7 @@ import {
 
 export function AuthRecoverAccountKeyfileEmbeddedView() {
   const [loading, setLoading] = useState(false);
+  const [file, setFile] = useState("");
   const {
     importTempWallet,
     importedTempWalletAddress,
@@ -24,14 +25,22 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
 
   const textInputRef = useRef<HTMLInputElement>(null);
 
-  const handleImportWallet = () => {
-    const textareaElement = textInputRef.current;
+  const handleImportWallet = useCallback(async () => {
+    try {
+      const textInputElement = textInputRef.current;
 
-    // TODO: Throw error with error message for `DevFigmaScreen` to display it:
-    if (!textareaElement) return;
+      const jwk = JSON.parse(textInputElement.value);
+      setFile(jwk);
+      setLoading(false);
 
-    return importTempWallet(textInputRef.current.value);
-  };
+      const tempWallet = await importTempWallet(file);
+      return tempWallet;
+    } catch (error) {
+      alert(error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   const { navigate } = useLocation();
 
@@ -93,7 +102,7 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
         <Button
           variant="primary"
           size="md"
-          onClick={handleRecover}
+          onClick={() => handleRecover()}
           isLoading={loading}
         >
           Yes, recover
@@ -126,7 +135,6 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
         description={"or drag and drop your private key"}
         isLoading={loading}
         loadingText={"Recovering account..."}
-        onFileChange={handleImportWallet}
       />
       <Button
         isFullWidth

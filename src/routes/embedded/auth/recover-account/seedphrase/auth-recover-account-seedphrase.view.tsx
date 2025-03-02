@@ -1,10 +1,7 @@
-import { DevFigmaScreen } from "~components/dev/figma-screen/figma-screen.component";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useLocation } from "~wallets/router/router.utils";
 
-import screenSrc from "url:/assets-beta/figma-screens/recover-account-seedphrase.view.png";
-import confirmScreenSrc from "url:/assets-beta/figma-screens/recover-account-seedphrase-confirmation.view.png";
 import {
   Card,
   Copyable,
@@ -26,16 +23,25 @@ export function AuthRecoverAccountSeedphraseEmbeddedView() {
     clearRecoverableAccounts
   } = useEmbedded();
 
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const handleImportWallet = useCallback(async () => {
+    try {
+      setLoading(true);
+      if (!seedPhrase.length) return;
+      await importTempWallet(seedPhrase.join(" "));
+    } catch (error) {
+      alert(error);
+    } finally {
+      setLoading(false);
+    }
+  }, [seedPhrase]);
 
-  const handleImportWallet = () => {
-    const textareaElement = textareaRef.current;
-
-    // TODO: Throw error with error message for `DevFigmaScreen` to display it:
-    if (!textareaElement) return;
-
-    return importTempWallet(textareaRef.current.value);
-  };
+  const handleInputChange = useCallback((index: number, value: string) => {
+    setSeedPhrase((prevSeedPhrase) => {
+      const newSeedPhrase = [...prevSeedPhrase];
+      newSeedPhrase[index] = value;
+      return newSeedPhrase;
+    });
+  }, []);
 
   const { navigate } = useLocation();
 
@@ -97,7 +103,7 @@ export function AuthRecoverAccountSeedphraseEmbeddedView() {
         <Button
           variant="primary"
           size="md"
-          onClick={() => handleRecover}
+          onClick={() => handleRecover()}
           isLoading={loading}
         >
           Yes, recover
@@ -129,15 +135,14 @@ export function AuthRecoverAccountSeedphraseEmbeddedView() {
         handleCopyToClipboard={() =>
           navigator.clipboard.writeText(seedPhrase.join(" "))
         }
-        handleInputChange={(index: number, value: string) => {
-          setSeedPhrase((prevSeedPhrase) => {
-            const newSeedPhrase = [...prevSeedPhrase];
-            newSeedPhrase[index] = value;
-            return newSeedPhrase;
-          });
-        }}
+        handleInputChange={handleInputChange}
       />
-      <Button isFullWidth size="md">
+      <Button
+        isFullWidth
+        size="md"
+        onClick={handleImportWallet}
+        isLoading={loading}
+      >
         Recover
       </Button>
     </Card>

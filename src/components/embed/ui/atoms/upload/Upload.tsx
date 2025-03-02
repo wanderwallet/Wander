@@ -43,7 +43,6 @@ const Upload = React.forwardRef<HTMLDivElement, UploadBaseProps>(
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
       if (event.target.files && event.target.files[0]) {
         setFile(event.target.files[0]);
-        onFileChange(event.target.files[0]);
       }
     };
 

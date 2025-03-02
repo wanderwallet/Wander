@@ -1,5 +1,5 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { JWKInterface } from "arweave/web/lib/wallet";
 
 import {
@@ -14,6 +14,8 @@ import {
 
 export function AuthImportKeyfileEmbeddedView() {
   const [loading, setLoading] = useState(false);
+  const [file, setFile] = useState("");
+
   const {
     importTempWallet,
     importedTempWalletAddress,
@@ -23,17 +25,22 @@ export function AuthImportKeyfileEmbeddedView() {
 
   const textInputRef = useRef<HTMLInputElement>(null);
 
-  const handleImportWallet = async () => {
-    setLoading(true);
-    const textInputElement = textInputRef.current;
+  const handleImportWallet = useCallback(async () => {
+    try {
+      const textInputElement = textInputRef.current;
 
-    // TODO: Throw error with error message for `DevFigmaScreen` to display it:
-    if (!textInputElement) return;
+      const jwk = JSON.parse(textInputElement.value);
+      setFile(jwk);
+      setLoading(false);
 
-    const jwk = JSON.parse(textInputElement.value) as JWKInterface;
-    setLoading(false);
-    return await importTempWallet(jwk);
-  };
+      const tempWallet = await importTempWallet(file);
+      return tempWallet;
+    } catch (error) {
+      alert(error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -113,7 +120,6 @@ export function AuthImportKeyfileEmbeddedView() {
         description={"or drag and drop your private key"}
         isLoading={loading}
         loadingText={"Recovering account..."}
-        onFileChange={handleImportWallet}
       />
       <Button
         isFullWidth

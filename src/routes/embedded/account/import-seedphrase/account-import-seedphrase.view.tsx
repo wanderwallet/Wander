@@ -19,7 +19,13 @@ export function AccountImportSeedphraseEmbeddedView() {
     registerWallet
   } = useEmbedded();
 
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const handleInputChange = useCallback((index: number, value: string) => {
+    setSeedPhrase((prevSeedPhrase) => {
+      const newSeedPhrase = [...prevSeedPhrase];
+      newSeedPhrase[index] = value;
+      return newSeedPhrase;
+    });
+  }, []);
 
   const handleImportWallet = useCallback(async () => {
     try {
@@ -67,15 +73,14 @@ export function AccountImportSeedphraseEmbeddedView() {
         handleCopyToClipboard={() =>
           navigator.clipboard.writeText(seedPhrase.join(" "))
         }
-        handleInputChange={(index: number, value: string) => {
-          setSeedPhrase((prevSeedPhrase) => {
-            const newSeedPhrase = [...prevSeedPhrase];
-            newSeedPhrase[index] = value;
-            return newSeedPhrase;
-          });
-        }}
+        handleInputChange={handleInputChange}
       />
-      <Button isFullWidth size="md" onClick={handleImportWallet}>
+      <Button
+        isFullWidth
+        size="md"
+        onClick={handleImportWallet}
+        isLoading={loading}
+      >
         Recover
       </Button>
     </Card>

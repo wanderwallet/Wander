@@ -13,6 +13,7 @@ import { useEmbedded } from "~utils/embedded/embedded.hooks";
 
 export function AccountImportKeyfileEmbeddedView() {
   const [loading, setLoading] = useState(false);
+  const [file, setFile] = useState("");
   const {
     importTempWallet,
     importedTempWalletAddress,
@@ -26,13 +27,11 @@ export function AccountImportKeyfileEmbeddedView() {
     try {
       const textInputElement = textInputRef.current;
 
-      alert("textInputElement :: problem" + textInputElement);
-
-      const jwk = JSON.parse(textInputElement.value) as JWKInterface;
-
+      const jwk = JSON.parse(textInputElement.value);
+      setFile(jwk);
       setLoading(false);
 
-      const tempWallet = await importTempWallet(jwk);
+      const tempWallet = await importTempWallet(file);
       return tempWallet;
     } catch (error) {
       alert(error);
@@ -119,8 +118,15 @@ export function AccountImportKeyfileEmbeddedView() {
         description={"or drag and drop your private key"}
         isLoading={loading}
         loadingText={"Recovering account..."}
-        onFileChange={handleImportWallet}
       />
+      <Button
+        isFullWidth
+        size="md"
+        isLoading={loading}
+        onClick={handleImportWallet}
+      >
+        Import
+      </Button>
     </Card>
   );
 }

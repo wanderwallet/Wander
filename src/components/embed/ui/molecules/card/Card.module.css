@@ -5,12 +5,10 @@
   align-items: center;
   justify-content: space-between;
   background-color: var(--color-card-background-default);
-  width: var(--full-width);
+  width: 98%;
   height: fit-content;
-  padding: var(--spacing-8);
   transition: all 0.4s ease-in-out;
   position: relative;
-  overflow: hidden;
 }
 
 .card__shadow {

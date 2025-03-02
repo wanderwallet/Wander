@@ -52,7 +52,6 @@ const Button = React.forwardRef<
       }
       return children;
     };
-    console.log({ isDarkMode });
     return (
       <Component
         ref={ref}

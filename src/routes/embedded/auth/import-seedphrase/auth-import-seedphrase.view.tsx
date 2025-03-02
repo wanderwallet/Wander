@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Button,
   Card,
@@ -19,16 +19,25 @@ export function AuthImportSeedphraseEmbeddedView() {
     registerWallet
   } = useEmbedded();
 
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const handleImportWallet = useCallback(async () => {
+    try {
+      setLoading(true);
+      if (!seedPhrase.length) return;
+      await importTempWallet(seedPhrase.join(" "));
+    } catch (error) {
+      alert(error);
+    } finally {
+      setLoading(false);
+    }
+  }, [seedPhrase]);
 
-  const handleImportWallet = () => {
-    const textareaElement = textareaRef.current;
-
-    // TODO: Throw error with error message for `DevFigmaScreen` to display it:
-    if (!textareaElement) return;
-
-    return importTempWallet(textareaRef.current.value);
-  };
+  const handleInputChange = useCallback((index: number, value: string) => {
+    setSeedPhrase((prevSeedPhrase) => {
+      const newSeedPhrase = [...prevSeedPhrase];
+      newSeedPhrase[index] = value;
+      return newSeedPhrase;
+    });
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -58,20 +67,19 @@ export function AuthImportSeedphraseEmbeddedView() {
       size="auto"
     >
       <SeedInput
-        handleSubmit={handleImportWallet}
         seedPhrase={seedPhrase}
+        handleSubmit={handleImportWallet}
         handleCopyToClipboard={() =>
           navigator.clipboard.writeText(seedPhrase.join(" "))
         }
-        handleInputChange={(index: number, value: string) => {
-          setSeedPhrase((prevSeedPhrase) => {
-            const newSeedPhrase = [...prevSeedPhrase];
-            newSeedPhrase[index] = value;
-            return newSeedPhrase;
-          });
-        }}
+        handleInputChange={handleInputChange}
       />
-      <Button isFullWidth size="md">
+      <Button
+        isFullWidth
+        size="md"
+        onClick={handleImportWallet}
+        isLoading={loading}
+      >
         Recover
       </Button>
     </Card>
