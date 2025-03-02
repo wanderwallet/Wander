@@ -1,6 +1,7 @@
 import { useHashLocation } from "wouter/use-hash-location";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import type { AuthStatusCopy as AuthStatus } from "~utils/embedded/embedded.provider";
+import type { Wallet } from "~utils/embedded/embedded.types";
 import { NOOP } from "~utils/misc";
 import { useAuthRequestsLocation } from "~wallets/router/auth/auth-router.hook";
 import type { ExtensionRouteOverride } from "~wallets/router/extension/extension.routes";
@@ -40,11 +41,22 @@ const AUTH_STATUS_TO_OVERRIDE: Record<
   unlocked: null
 };
 
-export function useAuthStatusOverride(
-  location?: RoutePath
-): null | ExtensionRouteOverride | RouteRedirect<WanderRoutePath> {
-  const { authStatus, lastRegisteredWallet, promptToBackUp } = useEmbedded();
+export interface UseAuthStatusOverride {
+  location?: RoutePath;
+  authStatus: AuthStatus;
+  lastRegisteredWallet: null | Wallet;
+  currentWallet: null | Wallet;
+}
 
+export function useEmbeddedOverride({
+  location,
+  authStatus,
+  lastRegisteredWallet,
+  currentWallet
+}: UseAuthStatusOverride):
+  | null
+  | ExtensionRouteOverride
+  | RouteRedirect<WanderRoutePath> {
   if (!location) return;
 
   if (location?.startsWith("/access_token")) {
@@ -120,7 +132,11 @@ export function useAuthStatusOverride(
         );
       }
 
-      if (promptToBackUp) {
+      if (
+        currentWallet.totalExports === 0 &&
+        currentWallet.totalBackups === 0 &&
+        !currentWallet.doNotAskAgainSetting
+      ) {
         return routeTrapMatches(
           location,
           [
@@ -133,7 +149,7 @@ export function useAuthStatusOverride(
       }
 
       // TODO: What if we are here but the wallet, for whatever reason, is not in the wallet provider / ExtensionStore?
-      // TODO: We need a routeOffLimits to keep users away from /auth after they authenticate (except for confirmation screen while it has location state data)
+      // if (!currentWallet.isActive)
 
       return routeTrapOutside(location, EmbeddedPaths.Auth, PopupPaths.Home);
     }
@@ -143,9 +159,15 @@ export function useAuthStatusOverride(
 }
 
 export const useEmbeddedLocation: BaseLocationHook = withRouterRedirects(() => {
+  const { authStatus, lastRegisteredWallet, currentWallet } = useEmbedded();
   const [wocation, wavigate] = useHashLocation();
-  const override = useAuthStatusOverride(wocation as RoutePath);
-  // const override = useAuthStatusOverride();
+  const override = useEmbeddedOverride({
+    location: wocation as RoutePath,
+    authStatus,
+    lastRegisteredWallet,
+    currentWallet
+  });
+
   const [authRequestsLocation, authRequestsNavigate] =
     useAuthRequestsLocation();
 

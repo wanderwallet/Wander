@@ -18,6 +18,7 @@ import {
   pemToJWK,
   privateKeyDerToJWK
 } from "~utils/crypto/crypto.utils";
+import type { Wallet } from "~utils/embedded/embedded.types";
 
 async function generateSeedPhrase() {
   log(LOG_GROUP.WALLET_GENERATION, "generateSeedPhrase()");
@@ -303,22 +304,13 @@ async function generateShareHashAndPrivateKey(
 
 const DEVICE_SHARES_INFO_KEY = "DEVICE_SHARES_INFO";
 
-// TODO: Remove walletId from localStorage it's already in the key.
-export interface DeviceShareRecord {
-  deviceShare: string;
-  createdAt: number;
-}
+// walletId - deviceShare
+export type DeviceShares = Record<string, string>;
 
-export interface DeviceShareInfo extends DeviceShareRecord {
-  walletId: string;
-  deviceShare: string;
-  createdAt: number;
-}
+// userId - DeviceShares
+export type DeviceSharesByUser = Record<string, DeviceShares>;
 
-function loadDeviceSharesInfo(): Record<
-  string,
-  Record<string, DeviceShareInfo>
-> {
+function loadDeviceSharesByUser(): DeviceSharesByUser {
   try {
     let deviceSharesInfo = JSON.parse(
       localStorage.getItem(DEVICE_SHARES_INFO_KEY)
@@ -330,7 +322,7 @@ function loadDeviceSharesInfo(): Record<
       deviceSharesInfo = {};
     }
 
-    return deviceSharesInfo as Record<string, Record<string, DeviceShareInfo>>;
+    return deviceSharesInfo as DeviceSharesByUser;
   } catch (err) {
     if (process.env.NODE_ENV === "development") {
       throw new Error(`${INVALID_DEVICE_SHARES_INFO_ERR_MSG}: ${err?.message}`);
@@ -340,17 +332,12 @@ function loadDeviceSharesInfo(): Record<
   }
 }
 
-let _deviceSharesInfo: Record<
-  string,
-  Record<string, DeviceShareInfo>
-> = loadDeviceSharesInfo();
+let _deviceSharesByUser: DeviceSharesByUser = loadDeviceSharesByUser();
 
 // Getters:
 
-function getDeviceSharesInfo(userId: string): DeviceShareInfo[] {
-  return Object.values(_deviceSharesInfo[userId] || {}).sort(
-    (a, b) => b.createdAt - a.createdAt
-  );
+function getDeviceSharesForUser(userId: string): DeviceShares {
+  return _deviceSharesByUser[userId] || {};
 }
 
 // Storage:
@@ -390,28 +377,16 @@ function getDecryptedSeedPhrase(walletId: string, jwk: JWKInterface) {
   return encryptedSeedPhrase;
 }
 
-function storeDeviceShare(
-  walletId: string,
-  deviceShare: string,
-  userId: string
-  // TODO: Do we want to use the walletAddress or maybe better a hash?
-  // walletAddress: string
-) {
+function storeDeviceShare(wallet: Wallet, userId: string) {
   log(LOG_GROUP.WALLET_GENERATION, "storeDeviceShare()");
 
-  const deviceShareInfo: DeviceShareInfo = {
-    walletId,
-    deviceShare,
-    createdAt: Date.now()
-  };
+  if (!_deviceSharesByUser[userId]) _deviceSharesByUser[userId] = {};
 
-  if (!_deviceSharesInfo[userId]) _deviceSharesInfo[userId] = {};
-
-  _deviceSharesInfo[userId][walletId] = deviceShareInfo;
+  _deviceSharesByUser[userId][wallet.id] = wallet.deviceShare;
 
   localStorage.setItem(
     DEVICE_SHARES_INFO_KEY,
-    JSON.stringify(_deviceSharesInfo)
+    JSON.stringify(_deviceSharesByUser)
   );
 }
 
@@ -448,7 +423,7 @@ export const WalletUtils = {
   generateShareHashAndPrivateKey,
 
   // Getters:
-  getDeviceSharesInfo,
+  getDeviceSharesForUser,
 
   // Storage:
   storeDeviceShare,

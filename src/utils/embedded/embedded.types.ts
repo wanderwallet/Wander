@@ -20,9 +20,28 @@ export type AuthStatus =
   | "locked"
   | "unlocked";
 
-export interface WalletInfo extends DbWallet {
-  isActive: boolean;
-  isReady: boolean;
+export type WalletActivationStatus =
+  // The wallet is DISABLED, READONLY or LOST.
+  | "disabled"
+  // The wallet deviceShare is not available and no export/backup was made.
+  | "lost"
+  // The wallet deviceShare is not available, but the wallet can be recovered.
+  | "recoveryNeeded"
+  // The wallet deviceShare is available, but its authShare hasn't been loaded.
+  | "authNeeded"
+  // The wallet private key is not in memory, but its authShare and deviceShare are.
+  | "ready"
+  // The wallet private key is currently in memory.
+  | "active";
+
+export interface Wallet extends DbWallet {
+  activationStatus: WalletActivationStatus;
+
+  // Added by the client (from localStorage).
+  deviceShare: null | string;
+
+  // Added by the client when activated.
+  authShare: null | string;
 }
 
 export interface TempWallet {
@@ -41,10 +60,10 @@ export interface EmbeddedProviderProps extends PropsWithChildren {}
 
 export interface EmbeddedContextState {
   currentWalletId: string;
-  wallets: WalletInfo[];
+  wallets: Wallet[];
   generatedTempWalletAddress: null | string;
   importedTempWalletAddress: null | string;
-  lastRegisteredWallet: null | DbWallet;
+  lastRegisteredWallet: null | Wallet;
   recoverableAccounts: null | RecoverableAccount[];
 }
 
@@ -65,7 +84,7 @@ export interface RecoveryJSON {
 export interface EmbeddedContextData
   extends EmbeddedContextState,
     EmbeddedContextAuth {
-  currentWallet: WalletInfo | null;
+  currentWallet: Wallet | null;
 
   authenticate: (authProviderType: AuthProviderType) => Promise<void>;
   fetchRecoverableAccounts: () => Promise<RecoverableAccount[]>;

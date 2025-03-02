@@ -6,6 +6,8 @@ import screenSrc from "url:/assets-beta/figma-screens/backup-shares.view.png";
 
 export function AccountBackupSharesReminderEmbeddedView() {
   const { currentWallet, skipBackUp } = useEmbedded();
+  const isMandatoryReminder =
+    currentWallet.totalBackups === 0 && !currentWallet.doNotAskAgainSetting;
 
   const checkboxRef = useRef<HTMLInputElement>();
 
@@ -22,7 +24,7 @@ export function AccountBackupSharesReminderEmbeddedView() {
           label: "Back up now",
           to: "/account/backup-shares"
         },
-        currentWallet.totalBackups === 0
+        isMandatoryReminder
           ? {
               label: "Back up later",
               to: "/account",
@@ -36,7 +38,7 @@ export function AccountBackupSharesReminderEmbeddedView() {
             }
       ]}
     >
-      {currentWallet.totalBackups === 0 ? (
+      {isMandatoryReminder ? (
         <label>
           <input type="checkbox" ref={checkboxRef} />
           Do not ask again

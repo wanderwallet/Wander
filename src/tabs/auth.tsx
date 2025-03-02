@@ -36,7 +36,7 @@ export function AuthAppRoot() {
     <WanderThemeProvider>
       <ErrorBoundary fallback={FallbackView}>
         <WalletsProvider redirectToWelcome>
-          <AuthRequestsProvider useStatusOverride={useExtensionStatusOverride}>
+          <AuthRequestsProvider>
             <QueryClientProvider client={queryClient}>
               <Wouter hook={useAuthRequestsLocation}>
                 <AuthApp />

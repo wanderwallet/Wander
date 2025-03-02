@@ -38,6 +38,7 @@ import type {
   RouteOverride,
   RouteRedirect
 } from "~wallets/router/router.types";
+import { getDecryptionKey } from "~wallets/auth";
 
 interface AuthRequestsContextState {
   authRequests: AuthRequest[];
@@ -62,14 +63,7 @@ export const AuthRequestsContext = createContext<AuthRequestsContextData>({
   completeAuthRequest: async () => {}
 });
 
-interface AuthRequestProviderProps extends PropsWithChildren {
-  useStatusOverride: () => RouteOverride | RouteRedirect;
-}
-
-export function AuthRequestsProvider({
-  children,
-  useStatusOverride
-}: AuthRequestProviderProps) {
+export function AuthRequestsProvider({ children }: PropsWithChildren) {
   const [
     { authRequests, currentAuthRequestIndex, lastCompletedAuthRequest },
     setAuthRequestContextState
@@ -436,33 +430,38 @@ export function AuthRequestsProvider({
     });
   }, []);
 
-  const statusOverride = useStatusOverride();
-
   useEffect(() => {
     let clearCloseAuthPopupTimeout = () => {};
 
-    const isDone =
-      authRequests.length > 0 &&
-      authRequests.every((authRequest) => authRequest.status !== "pending");
+    async function setCloseTimers() {
+      const isEmbedded = import.meta.env?.VITE_IS_EMBEDDED_APP === "1";
+      const isLocked = !!(await getDecryptionKey());
+      const isDone =
+        authRequests.length > 0 &&
+        authRequests.every((authRequest) => authRequest.status !== "pending");
 
-    if (statusOverride === null && authRequests.length === 0) {
-      // TODO: Maybe move to the app entry point?
-      // Close the popup if an AuthRequest doesn't arrive in less than `AUTH_POPUP_REQUEST_WAIT_MS` (1s), unless the
-      // wallet is locked (no timeout in that case):
-      clearCloseAuthPopupTimeout = closeAuthPopup(AUTH_POPUP_REQUEST_WAIT_MS);
-    } else if (statusOverride) {
-      // If the user doesn't unlock the wallet in 15 minutes, or somehow the popup gets stuck into any other state for
-      // more than that, we close it:
-      clearCloseAuthPopupTimeout = closeAuthPopup(
-        AUTH_POPUP_UNLOCK_REQUEST_TTL_MS
-      );
-    } else if (isDone) {
-      // Close the window if the last request has been handled:
+      console.log("setCloseTimers isLocked =", isLocked);
 
-      // TODO: Add setting to decide whether this closes automatically or stays open in a "done" state.
+      if (!isEmbedded && isLocked) {
+        // The user has `AUTH_POPUP_UNLOCK_REQUEST_TTL_MS` (15 minutes) to unlock the wallet before we close it:
+        clearCloseAuthPopupTimeout = closeAuthPopup(
+          AUTH_POPUP_UNLOCK_REQUEST_TTL_MS
+        );
+      } else if (!isEmbedded && authRequests.length === 0) {
+        // Once the wallet is unlocked, we close the popup if an AuthRequest doesn't arrive in less than
+        // `AUTH_POPUP_REQUEST_WAIT_MS` (1 second):
+        clearCloseAuthPopupTimeout = closeAuthPopup(AUTH_POPUP_REQUEST_WAIT_MS);
+      } else if (isDone) {
+        // Close the window if the last request has been handled:
+        // TODO: Add setting to decide whether this closes automatically or stays open in a "done" state.
 
-      clearCloseAuthPopupTimeout = closeAuthPopup(AUTH_POPUP_CLOSING_DELAY_MS);
+        clearCloseAuthPopupTimeout = closeAuthPopup(
+          AUTH_POPUP_CLOSING_DELAY_MS
+        );
+      }
     }
+
+    setCloseTimers();
 
     // Not needed in the embedded wallet, but can be left alone. It won't do anything:
     function handleBeforeUnload() {
@@ -485,7 +484,7 @@ export function AuthRequestsProvider({
 
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
-  }, [statusOverride, authRequests, currentAuthRequestIndex, closeAuthPopup]);
+  }, [authRequests, currentAuthRequestIndex, closeAuthPopup]);
 
   return (
     <AuthRequestsContext.Provider

@@ -1,13 +1,74 @@
 import { ChallengeClientV1, type DbChallenge, type DbWallet } from "embed-api";
 import { EMPTY_SESSION } from "~utils/embedded/embedded.constants";
+import type {
+  Wallet,
+  WalletActivationStatus
+} from "~utils/embedded/embedded.types";
 import { trpcVanilla } from "~utils/embedded/embedded.utils";
-import {
-  WalletUtils,
-  type DeviceShareInfo
-} from "~utils/wallets/wallets.utils";
+import { WalletUtils } from "~utils/wallets/wallets.utils";
 
-async function fetchWallets() {
-  return (await trpcVanilla.fetchWallets.query()).wallets;
+// TODO: Use transformers/superjson to transform dates automatically and see how to get the right types straight from
+// the trpc calls:
+
+// TODO: Consider getting `userId` automatically
+async function fetchWallets(userId: string): Promise<Wallet[]> {
+  const deviceShares = WalletUtils.getDeviceSharesForUser(userId);
+  const unusedDeviceSharesWalletIds = new Set(Object.keys(deviceShares));
+
+  const dbWallets = (await trpcVanilla.fetchWallets.query())
+    .wallets as unknown as DbWallet[];
+
+  const wallets = dbWallets
+    .map((dbWallet) => {
+      const walletId = dbWallet.id;
+      const walletStatus = dbWallet.status;
+      const deviceShare = deviceShares[walletId] || null;
+
+      if (deviceShare) unusedDeviceSharesWalletIds.delete(walletId);
+
+      let activationStatus: WalletActivationStatus = "authNeeded";
+
+      if (walletStatus !== "ENABLED") {
+        activationStatus = "disabled";
+      } else if (!deviceShare) {
+        if (
+          dbWallet.totalExports === 0 &&
+          dbWallet.totalBackups === 0 &&
+          dbWallet.source.type === "GENERATED"
+        ) {
+          activationStatus = "lost";
+        } else {
+          activationStatus = "recoveryNeeded";
+        }
+      }
+
+      return {
+        ...dbWallet,
+        activationStatus,
+        authShare: null,
+        deviceShare
+      } satisfies Wallet;
+    })
+    .sort((a, b) => {
+      // Most recently activated first:
+      return (
+        new Date(b.lastActivatedAt).getTime() -
+        new Date(a.lastActivatedAt).getTime()
+      );
+    });
+
+  if (unusedDeviceSharesWalletIds.size > 0) {
+    console.warn(
+      `Stored deviceShares for the following wallets not used: ${Array.from(
+        unusedDeviceSharesWalletIds
+      ).join(", ")}`
+    );
+  }
+
+  // TODO: Also make sure we remove any wallet from the "BE storage" (sessionStorage) that is not listed here. However,
+  // they should not be stored at all between refreshes.
+
+  return wallets;
 }
 
 export type CreatePublicWalletParams = Omit<
@@ -59,18 +120,16 @@ async function registerWalletExport(
 }
 
 export interface FetchFirstAvailableAuthShareReturn {
-  walletId: string;
-  authShare: string;
-  deviceShare: string;
-  rotationChallenge: DbChallenge;
+  activatedWallet: null | Wallet;
+  rotationChallenge?: DbChallenge;
 }
 
 async function fetchFirstAvailableAuthShare(
-  deviceSharesInfo: DeviceShareInfo[]
+  wallets: Wallet[]
 ): Promise<FetchFirstAvailableAuthShareReturn> {
   return new Promise(async (resolve, reject) => {
-    for (const deviceShareInfo of deviceSharesInfo) {
-      const { walletId, deviceShare } = deviceShareInfo;
+    for (const wallet of wallets) {
+      const { id: walletId, deviceShare } = wallet;
 
       const { activationChallenge } =
         await trpcVanilla.generateWalletActivationChallenge
@@ -95,29 +154,36 @@ async function fetchFirstAvailableAuthShare(
         jwk: deviceSharePrivateKeyJWK
       });
 
-      const activateWalletResponse = await trpcVanilla.activateWallet.mutate({
-        walletId,
-        challengeSolution
-      });
+      const { authShare, rotationChallenge } =
+        await trpcVanilla.activateWallet.mutate({
+          walletId,
+          challengeSolution
+        });
 
       // TODO: Better with zk: instead of hashes or use a challenge here?
 
-      if (activateWalletResponse) {
+      if (authShare) {
         // TODO: We need to have some date associated to the Share to force rotation. If `rotationChallenge` is ignored too many times, the share entry will be
         // removed and the user will be forced to use the recovery share or a keyfile/seedphrase.
 
+        const activatedWallet: Wallet = {
+          ...wallet,
+          activationStatus: "active",
+          authShare
+        };
+
         resolve({
-          walletId,
-          authShare: activateWalletResponse.authShare,
-          deviceShare,
-          rotationChallenge: activateWalletResponse.rotationChallenge
-        });
+          activatedWallet,
+          rotationChallenge: rotationChallenge as unknown as DbChallenge
+        } satisfies FetchFirstAvailableAuthShareReturn);
 
         return;
       }
     }
 
-    resolve(null);
+    resolve({
+      activatedWallet: null
+    } satisfies FetchFirstAvailableAuthShareReturn);
   });
 }
 

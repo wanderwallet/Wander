@@ -5,6 +5,8 @@ import screenSrc from "url:/assets-beta/figma-screens/backup-options.view.png";
 
 export function AccountBackupSharesEmbeddedView() {
   const { currentWallet, generateRecoveryAndDownload } = useEmbedded();
+  const isMandatoryReminder =
+    currentWallet.totalBackups === 0 && !currentWallet.doNotAskAgainSetting;
 
   // TODO: What if the user already has more than 3 backup shares?
 
@@ -43,7 +45,7 @@ export function AccountBackupSharesEmbeddedView() {
           label: "Download Account Recovery File",
           onClick: () => generateRecoveryAndDownload()
         },
-        currentWallet.totalBackups === 0
+        isMandatoryReminder
           ? {
               label: "Back",
               to: "/account/backup-shares/reminder",
