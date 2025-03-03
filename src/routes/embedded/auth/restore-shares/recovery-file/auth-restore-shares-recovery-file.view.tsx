@@ -14,29 +14,34 @@ export function AuthRestoreSharesRecoveryFileEmbeddedView() {
   const [loading, setLoading] = useState(false);
   const { wallets, restoreWallet } = useEmbedded();
   const walletAddress = wallets[0].address;
+  const [jsonData, setJsonData] = useState<any>(null);
 
-  const textInputRef = useRef<HTMLInputElement>(null);
+  const handleJsonParse = (parsedData: any) => {
+    setJsonData(parsedData);
+  };
 
-  const handleRestore = useCallback(() => {
+  const handleRestore = useCallback(async () => {
     try {
       setLoading(true);
-      const textareaElement = textInputRef.current;
+      if (jsonData) {
+        const restoredWallet = restoreWallet(
+          walletAddress,
+          JSON.stringify(jsonData, null, 2)
+        );
 
-      if (!textareaElement) return;
-
-      const restoredWallet = restoreWallet(
-        walletAddress,
-        JSON.parse(textInputRef.current.value)
-      );
-
-      setLoading(false);
-
-      return restoredWallet;
+        if (!restoredWallet) {
+          setLoading(false);
+          return alert(`Something isn't right`);
+        }
+        setLoading(false);
+        return restoredWallet;
+      }
     } catch (error) {
       alert(error);
+    } finally {
       setLoading(false);
     }
-  }, [walletAddress]);
+  }, [jsonData]);
 
   // TODO: The recovery file should probably include the wallet address or a hash so that we can
   // request the recovery of the right one from the backend without asking the user to manually select
@@ -66,12 +71,12 @@ export function AuthRestoreSharesRecoveryFileEmbeddedView() {
       size="auto"
     >
       <Upload
-        textInputRef={textInputRef}
         isFullWidth
         title={"Upload recovery file"}
         description={"or drag and drop your private key"}
         isLoading={loading}
         loadingText={"Restoring account..."}
+        onFileParse={handleJsonParse}
       />
       <Button isFullWidth size="md" isLoading={loading} onClick={handleRestore}>
         Restore

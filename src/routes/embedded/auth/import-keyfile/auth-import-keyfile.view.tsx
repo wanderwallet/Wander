@@ -14,7 +14,11 @@ import {
 
 export function AuthImportKeyfileEmbeddedView() {
   const [loading, setLoading] = useState(false);
-  const [file, setFile] = useState("");
+  const [jsonData, setJsonData] = useState<any>(null);
+
+  const handleJsonParse = (parsedData: any) => {
+    setJsonData(parsedData);
+  };
 
   const {
     importTempWallet,
@@ -23,24 +27,27 @@ export function AuthImportKeyfileEmbeddedView() {
     registerWallet
   } = useEmbedded();
 
-  const textInputRef = useRef<HTMLInputElement>(null);
-
   const handleImportWallet = useCallback(async () => {
     try {
-      const textInputElement = textInputRef.current;
+      setLoading(true);
+      if (jsonData) {
+        const tempWallet = await importTempWallet(
+          JSON.stringify(jsonData, null, 2)
+        );
 
-      const jwk = JSON.parse(textInputElement.value);
-      setFile(jwk);
-      setLoading(false);
-
-      const tempWallet = await importTempWallet(file);
-      return tempWallet;
+        if (!tempWallet) {
+          setLoading(false);
+          return alert(`Something isn't right`);
+        }
+        setLoading(false);
+        return tempWallet;
+      }
     } catch (error) {
       alert(error);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [jsonData]);
 
   useEffect(() => {
     return () => {
@@ -114,12 +121,12 @@ export function AuthImportKeyfileEmbeddedView() {
       size="auto"
     >
       <Upload
-        textInputRef={textInputRef}
         isFullWidth
         title={"Click to upload"}
         description={"or drag and drop your private key"}
         isLoading={loading}
         loadingText={"Recovering account..."}
+        onFileParse={handleJsonParse}
       />
       <Button
         isFullWidth

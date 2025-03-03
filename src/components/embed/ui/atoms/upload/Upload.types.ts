@@ -1,17 +1,23 @@
 import React from "react";
 import type { Sizes } from "../../../types";
 
-export type UploadBaseProps = {
+export interface FileUploadProps {
+  // Basic props
   title?: string;
   description?: string;
   loadingText?: string;
   className?: string;
   isFullWidth?: boolean;
-  isDisabled?: boolean;
   isBlurry?: boolean;
   isLoading?: boolean;
-  testId?: string;
-  accessibilityLabel?: string;
-  onFileChange?: (file: File) => void;
-  textInputRef?: React.Ref<HTMLInputElement>;
-};
+
+  // File handling
+  acceptedFileTypes?: string;
+  maxFileSizeInMB?: number;
+
+  // Callbacks
+  onFileSelect?: (file: File) => void;
+  onFileRead?: (content: string, file: File) => void;
+  onFileParse?: <T>(parsedData: T, file: File) => void;
+  onError?: (error: Error) => void;
+}
