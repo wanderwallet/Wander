@@ -4,7 +4,8 @@ import {
   Text,
   Tooltip
 } from "@arconnect/components-rebrand";
-import { Avatar, CloseLayer, NoAvatarIcon } from "./WalletHeader";
+import browser from "webextension-polyfill";
+import { Action, Avatar, CloseLayer, NoAvatarIcon } from "./WalletHeader";
 import { AnimatePresence } from "framer-motion";
 import { useTheme } from "~utils/theme";
 import { useStorage } from "~utils/storage";
@@ -22,6 +23,8 @@ import type { AppLogoInfo } from "~applications/application";
 import Squircle from "~components/Squircle";
 import { useLocation } from "~wallets/router/router.utils";
 import { ArrowNarrowLeft } from "@untitled-ui/icons-react";
+import { MinimizeIcon } from "@iconicicons/react";
+import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 import { useNameServiceProfile } from "~lib/nameservice";
 import { concatGatewayURL } from "~gateways/utils";
 import { FULL_HISTORY, useGateway } from "~gateways/wayfinder";
@@ -52,6 +55,7 @@ export default function HeadV2({
   // scroll position
   const [scrollDirection, setScrollDirection] = useState<"up" | "down">("up");
   const [scrolled, setScrolled] = useState(false);
+  const isEmbedded = import.meta.env?.VITE_IS_EMBEDDED_APP === "1";
 
   // TODO: figure out if this will still be used
   useEffect(() => {
@@ -126,11 +130,9 @@ export default function HeadV2({
           <BackButtonIcon />
         </BackButton>
       ) : null}
-
       <PageTitle showLeftMargin={showBack && !showOptions && !!appName}>
         {title}
       </PageTitle>
-
       {!showOptions && appName ? (
         <Tooltip content={appName} position="bottomEnd">
           <SquircleWrapper>
@@ -142,38 +144,59 @@ export default function HeadV2({
           </SquircleWrapper>
         </Tooltip>
       ) : null}
-
-      {showOptions ? (
+      {(showOptions || isEmbedded) && (
         <>
           <AvatarButton>
-            <ButtonAvatar
-              img={
-                nameServiceProfile?.logo
-                  ? concatGatewayURL(gateway) + "/" + nameServiceProfile.logo
-                  : svgieAvatar
-              }
-              onClick={() => {
-                setOpen(true);
-              }}
-            >
-              {!nameServiceProfile?.logo && !svgieAvatar && <NoAvatarIcon />}
-              <AnimatePresence initial={false}>
-                {hardwareApi === "keystone" && (
-                  <HardwareWalletIcon
-                    icon={keystoneLogo}
-                    color="#2161FF"
-                    {...hwIconAnimateProps}
-                  />
-                )}
-              </AnimatePresence>
-            </ButtonAvatar>
+            {showOptions && (
+              <ButtonAvatar
+                img={
+                  nameServiceProfile?.logo
+                    ? concatGatewayURL(gateway) + "/" + nameServiceProfile.logo
+                    : svgieAvatar
+                }
+                onClick={() => {
+                  setOpen(true);
+                }}
+              >
+                {!nameServiceProfile?.logo && !svgieAvatar && <NoAvatarIcon />}
+                <AnimatePresence initial={false}>
+                  {hardwareApi === "keystone" && (
+                    <HardwareWalletIcon
+                      icon={keystoneLogo}
+                      color="#2161FF"
+                      {...hwIconAnimateProps}
+                    />
+                  )}
+                </AnimatePresence>
+              </ButtonAvatar>
+            )}
+            {isEmbedded && (
+              <Tooltip
+                content={browser.i18n.getMessage("close")}
+                position="bottomEnd"
+              >
+                <Action
+                  as={MinimizeIcon}
+                  onClick={() => {
+                    postEmbeddedMessage({
+                      type: "embedded_close",
+                      data: null
+                    });
+                  }}
+                  style={{ width: "24px", height: "24px" }}
+                />
+              </Tooltip>
+            )}
           </AvatarButton>
 
-          <WalletSwitcher open={isOpen} close={() => setOpen(false)} />
-
-          {isOpen && <CloseLayer onClick={() => setOpen(false)} />}
+          {showOptions && (
+            <>
+              <WalletSwitcher open={isOpen} close={() => setOpen(false)} />
+              {isOpen && <CloseLayer onClick={() => setOpen(false)} />}
+            </>
+          )}
         </>
-      ) : null}
+      )}
     </HeadWrapper>
   );
 }
@@ -268,6 +291,10 @@ const AvatarButton = styled.button`
   top: 0;
   bottom: 0;
   right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
   cursor: pointer;
   padding: 0 24px;
   height: 100%;

@@ -33,8 +33,7 @@ import type {
 import {
   isTempWalletPromiseExpired,
   setAuthTokenHeader,
-  supabase,
-  trpcVanilla
+  supabase
 } from "~utils/embedded/embedded.utils";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import {

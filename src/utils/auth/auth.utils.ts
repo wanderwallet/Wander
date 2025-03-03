@@ -127,90 +127,101 @@ export async function createAuthPopup(
 ) {
   const unlock = await popupMutex.lock();
 
-  const [activeAddress, wallets] = await Promise.all([
-    getActiveAddress(),
-    getWallets()
-  ]);
-
-  const hasWallets = activeAddress && wallets.length > 0;
-
-  if (!hasWallets) {
-    openOrSelectWelcomePage(true);
-
-    unlock();
-
-    throw new Error(ERR_MSG_NO_WALLETS_ADDED);
-  }
-
-  const popupWindowTab: browser.Tabs.Tab | null = await browser.tabs
-    .get(POPUP_TAB_ID)
-    .catch(() => null);
-
-  if (
-    popupWindowTab &&
-    !popupWindowTab.url.startsWith(browser.runtime.getURL("tabs/auth.html"))
-  ) {
-    console.warn(
-      `Auth popup URL (${popupWindowTab.url}) doesn't match "tabs/auth.html"`
-    );
-  }
-
   try {
-    if (!popupWindowTab) {
-      // TODO: To center this, the injected tab should send the center or dimensions of the screen:
+    const [activeAddress, wallets] = await Promise.all([
+      getActiveAddress(),
+      getWallets()
+    ]);
 
-      const window = await browser.windows.create({
-        url: `${browser.runtime.getURL("tabs/auth.html")}#/`,
-        focused: true,
-        type: "popup",
-        width: 385,
-        height: 720
-      });
+    const hasWallets = activeAddress && wallets.length > 0;
 
-      setPopupTabID(window.tabs[0].id);
-    } else {
-      log(LOG_GROUP.AUTH, "reusePopupTabID =", POPUP_TAB_ID);
+    if (!hasWallets) {
+      openOrSelectWelcomePage(true);
 
-      await browser.windows.update(popupWindowTab.windowId, { focused: true });
+      unlock();
+
+      throw new Error(ERR_MSG_NO_WALLETS_ADDED);
     }
-  } catch (err) {
-    console.warn(
-      `Could not ${popupWindowTab ? "focus" : "open"} "tabs/auth.html":`,
-      err
-    );
-  }
 
-  let authID: string | undefined;
+    const popupWindowTab: browser.Tabs.Tab | null = await browser.tabs
+      .get(POPUP_TAB_ID)
+      .catch(() => null);
 
-  if (authRequestData) {
-    // Generate an unique id for the authentication to be checked later:
-    authID = nanoid();
+    if (
+      popupWindowTab &&
+      !popupWindowTab.url.startsWith(browser.runtime.getURL("tabs/auth.html"))
+    ) {
+      console.warn(
+        `Auth popup URL (${popupWindowTab.url}) doesn't match "tabs/auth.html"`
+      );
+    }
 
-    log(
-      LOG_GROUP.AUTH,
-      `isomorphicSendMessage(authID = "${authID}", tabId = ${POPUP_TAB_ID})`
-    );
+    // TODO: In Embedded we are already in the right window, so no need to create one, just skip
+    // this and make the authRequestData make it to the AuthRequestsProvider.
 
-    await isomorphicSendMessage({
-      messageId: "auth_request",
-      tabId: POPUP_TAB_ID,
-      data: {
-        ...authRequestData,
-        url: moduleAppData.url,
-        tabID: moduleAppData.tabID,
-        authID,
-        requestedAt: Date.now(),
-        status: "pending"
+    try {
+      if (!popupWindowTab) {
+        // TODO: To center this, the injected tab should send the center or dimensions of the screen:
+
+        const window = await browser.windows.create({
+          url: `${browser.runtime.getURL("tabs/auth.html")}#/`,
+          focused: true,
+          type: "popup",
+
+          // TODO: Use these dimensions for embedded too... (pass them rather than using a hardcoded value so that we can control updates)
+          width: 385,
+          height: 720
+        });
+
+        setPopupTabID(window.tabs[0].id);
+      } else {
+        log(LOG_GROUP.AUTH, "reusePopupTabID =", POPUP_TAB_ID);
+
+        await browser.windows.update(popupWindowTab.windowId, {
+          focused: true
+        });
       }
-    });
+    } catch (err) {
+      console.warn(
+        `Could not ${popupWindowTab ? "focus" : "open"} "tabs/auth.html":`,
+        err
+      );
+    }
+
+    let authID: string | undefined;
+
+    if (authRequestData) {
+      // Generate an unique id for the authentication to be checked later:
+      authID = nanoid();
+
+      log(
+        LOG_GROUP.AUTH,
+        `isomorphicSendMessage(authID = "${authID}", tabId = ${POPUP_TAB_ID})`
+      );
+
+      await isomorphicSendMessage({
+        messageId: "auth_request",
+        tabId: POPUP_TAB_ID,
+        data: {
+          ...authRequestData,
+          url: moduleAppData.url,
+          tabID: moduleAppData.tabID,
+          authID,
+          requestedAt: Date.now(),
+          status: "pending"
+        }
+      });
+    }
+
+    return {
+      authID,
+      popupWindowTabID: POPUP_TAB_ID
+    };
+  } catch (err) {
+    console.warn("Unexpected error in `createAuthPopup` =", err);
+  } finally {
+    unlock();
   }
-
-  unlock();
-
-  return {
-    authID,
-    popupWindowTabID: POPUP_TAB_ID
-  };
 }
 
 type AuthResultCallback<T> = (data: T) => void;

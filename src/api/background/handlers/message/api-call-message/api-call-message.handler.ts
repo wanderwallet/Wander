@@ -28,7 +28,7 @@ export const handleApiCallMessage: OnMessageCallback<
     isExactly(
       sender.context,
       "content-script",
-      "Chunk calls are only accepted from the injected-script -> content-script"
+      "API call messages are only accepted from the injected-script -> content-script"
     );
     isApiCall(data);
 

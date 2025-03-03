@@ -459,17 +459,21 @@
       "message": "签署通知",
       "description": "Sign notification settings title"
   },
-  "setting_transfer_settings": {
-      "message": "转账设置",
-      "description": "Transfer settings title"
+  "setting_password_settings": {
+      "message": "密码设置",
+      "description": "Password settings title"
   },
-  "setting_transfer_settings_description": {
-    "message": "任何时候转移资产时都需要密码",
-    "description": "Transfer settings description"
+  "setting_password_settings_description": {
+    "message": "需要密码的操作",
+    "description": "Password settings description"
   },
   "enable_transfer_settings": {
     "message": "签署交易时需要密码",
     "description": "Enable transfer settings title"
+  },
+  "enable_connect_settings": {
+    "message": "连接应用时需要密码",
+    "description": "Enable connect settings title"
   },
   "setting_display_theme": {
       "message": "主题",

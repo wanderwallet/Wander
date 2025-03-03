@@ -67,7 +67,7 @@ export function WalletsView() {
     const label = findProfile(address)?.name;
 
     if (!label) return undefined;
-    return label + ".ar";
+    return label;
   }
 
   return (

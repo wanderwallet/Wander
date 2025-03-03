@@ -2,7 +2,13 @@ import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import browser from "webextension-polyfill";
 import { PageType, trackPage } from "~utils/analytics";
 import styled from "styled-components";
-import { Input, Section, useInput, Text } from "@arconnect/components-rebrand";
+import {
+  Input,
+  Section,
+  useInput,
+  Text,
+  Tooltip
+} from "@arconnect/components-rebrand";
 import { apps, categories, type App } from "~utils/apps";
 import {
   ArrowLeft,
@@ -11,12 +17,16 @@ import {
 } from "@untitled-ui/icons-react";
 import { getAppURL, truncateMiddle } from "~utils/format";
 import WanderIcon from "url:assets/icon.svg";
+import { MinimizeIcon } from "@iconicicons/react";
+import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
+import { Action } from "~components/popup/WalletHeader";
 import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 
 export function ExploreView() {
   const [filteredApps, setFilteredApps] = useState(apps);
   const searchInput = useInput();
   const categoriesRef = useRef<HTMLDivElement>(null);
+  const isEmbedded = import.meta.env?.VITE_IS_EMBEDDED_APP === "1";
 
   const scroll = useCallback((direction: "left" | "right") => {
     if (categoriesRef.current) {
@@ -62,6 +72,23 @@ export function ExploreView() {
           <ScrollButton direction="right" onClick={() => scroll("right")}>
             <ArrowRight height={20} width={20} />
           </ScrollButton>
+          {isEmbedded && (
+            <Tooltip
+              content={browser.i18n.getMessage("close")}
+              position="bottomEnd"
+            >
+              <Action
+                as={MinimizeIcon}
+                onClick={() => {
+                  postEmbeddedMessage({
+                    type: "embedded_close",
+                    data: null
+                  });
+                }}
+                style={{ width: "24px", height: "24px" }}
+              />
+            </Tooltip>
+          )}
         </Header>
         <Input
           {...searchInput.bindings}
@@ -268,7 +295,7 @@ const AppTitle = styled(Text).attrs({
 
 const Pill = styled.div`
   color: ${(props) => props.theme.primaryText};
-  background-color: ${(props) => props.theme.backgroundSecondary};
+  background-color: ${(props) => props.theme.surfaceSecondary};
   padding: 4px 8px;
   border-radius: 50px;
   border: 1px solid ${(props) => props.theme.inputField};
@@ -330,7 +357,12 @@ const Category = styled.div`
   align-items: center;
   gap: 8px;
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(
+    255,
+    255,
+    255,
+    ${({ theme }) => (theme.displayTheme === "dark" ? "0.08" : "0.80")}
+  );
   backdrop-filter: blur(4px);
   font-weight: 500;
   font-size: 14px;
@@ -338,7 +370,12 @@ const Category = styled.div`
   color: ${(props) => props.theme.primaryText};
 
   &:hover {
-    background: rgba(255, 255, 255, 0.12);
+    background: rgba(
+      255,
+      255,
+      255,
+      ${({ theme }) => (theme.displayTheme === "dark" ? "0.12" : "0.90")}
+    );
   }
 
   &:active {
@@ -364,11 +401,10 @@ const FixedHeader = styled.div`
   right: 0;
   padding: 24px 24px 16px 24px;
   box-sizing: border-box;
-  background: linear-gradient(
-    180deg,
-    #26126f 0%,
-    ${({ theme }) => (theme.displayTheme === "dark" ? "#111" : "#FFF")} 150px
-  );
+  background: ${({ theme }) =>
+    theme.displayTheme === "dark"
+      ? `linear-gradient(180deg, #26126f 0%, #111 150px)`
+      : `linear-gradient(180deg, #E3D8F6 0%, #FFF 34.57%)`};
   z-index: 100;
 `;
 

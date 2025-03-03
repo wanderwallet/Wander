@@ -2,8 +2,6 @@
 
 ## Testing
 
-### Embedded
-
 Scenarios to test:
 
 **New account & wallet:**

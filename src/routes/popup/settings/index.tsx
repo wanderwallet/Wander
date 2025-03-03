@@ -11,7 +11,8 @@ import {
   ListItemIcon,
   Section,
   Spacer,
-  Text
+  Text,
+  Tooltip
 } from "@arconnect/components-rebrand";
 import { useActiveWallet } from "~wallets/hooks";
 import { formatAddress } from "~utils/format";
@@ -26,6 +27,9 @@ import type { StoredWallet } from "~wallets";
 import { useStorage } from "@plasmohq/storage/hook";
 import { ExtensionStorage } from "~utils/storage";
 import { svgie } from "~utils/svgies";
+import { Action } from "~components/popup/WalletHeader";
+import { MinimizeIcon } from "@iconicicons/react";
+import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 
 export interface QuickSettingsViewParams {
   setting?: string;
@@ -51,6 +55,8 @@ export function MenuView({ params }: QuickSettingsViewProps) {
     []
   );
 
+  const isEmbedded = import.meta.env?.VITE_IS_EMBEDDED_APP === "1";
+
   useEffect(() => {
     if (!wallet?.address) return;
 
@@ -59,38 +65,64 @@ export function MenuView({ params }: QuickSettingsViewProps) {
 
   return (
     <Section style={{ paddingBottom: 100 }}>
-      <ListItem
-        height={56}
-        title={
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            {wallet?.nickname}
-            <Online />
-          </div>
-        }
-        titleStyle={{ fontWeight: 500 }}
-        subtitle={formatAddress(wallet.address, 4)}
-        squircleSize={40}
-        showArrow
-        onClick={() => {
-          navigate(
-            `/quick-settings/wallets/${wallet.address}` as PopupRoutePath
-          );
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8
         }}
-        img={avatar}
       >
-        {!avatar && (
-          <ListItemIcon>
-            <Text
-              size="lg"
-              weight="medium"
-              noMargin
-              style={{ textAlign: "center", color: "white" }}
-            >
-              {wallet?.nickname?.charAt(0)?.toUpperCase() || "A"}
-            </Text>
-          </ListItemIcon>
+        <ListItem
+          height={56}
+          style={{ width: "100%" }}
+          title={
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              {wallet?.nickname}
+              <Online />
+            </div>
+          }
+          titleStyle={{ fontWeight: 500 }}
+          subtitle={formatAddress(wallet.address, 4)}
+          squircleSize={40}
+          showArrow
+          onClick={() => {
+            navigate(
+              `/quick-settings/wallets/${wallet.address}` as PopupRoutePath
+            );
+          }}
+          img={avatar}
+        >
+          {!avatar && (
+            <ListItemIcon>
+              <Text
+                size="lg"
+                weight="medium"
+                noMargin
+                style={{ textAlign: "center", color: "white" }}
+              >
+                {wallet?.nickname?.charAt(0)?.toUpperCase() || "A"}
+              </Text>
+            </ListItemIcon>
+          )}
+        </ListItem>
+        {isEmbedded && (
+          <Tooltip
+            content={browser.i18n.getMessage("close")}
+            position="bottomEnd"
+          >
+            <Action
+              as={MinimizeIcon}
+              onClick={() => {
+                postEmbeddedMessage({
+                  type: "embedded_close",
+                  data: null
+                });
+              }}
+              style={{ width: "24px", height: "24px" }}
+            />
+          </Tooltip>
         )}
-      </ListItem>
+      </div>
       <Spacer y={0.75} />
       <ListItem
         height={40}
