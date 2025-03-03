@@ -1,4 +1,4 @@
-import type { DbSession } from "embed-api";
+import type { AuthProviderType, DbSession } from "embed-api";
 
 export const IS_EMBEDDED_APP = import.meta.env?.VITE_IS_EMBEDDED_APP === "1";
 
@@ -18,3 +18,12 @@ export const EMPTY_SESSION: DbSession = {
   userAgent: "",
   userId: ""
 };
+
+export const AUTH_PROVIDER_TYPE_BY_PROVIDER_STR = {
+  passkeys: "PASSKEYS",
+  email: "EMAIL_N_PASSWORD",
+  google: "GOOGLE",
+  facebook: "FACEBOOK",
+  x: "X",
+  apple: "APPLE"
+} as const satisfies Record<string, AuthProviderType>;

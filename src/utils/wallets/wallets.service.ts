@@ -1,4 +1,4 @@
-import { ChallengeClientV1, type DbChallenge, type DbWallet } from "embed-api";
+import { ChallengeClientV1, type DbChallenge } from "embed-api";
 import { EMPTY_SESSION } from "~utils/embedded/embedded.constants";
 import type {
   Wallet,
@@ -6,6 +6,7 @@ import type {
 } from "~utils/embedded/embedded.types";
 import { trpcVanilla } from "~utils/embedded/embedded.utils";
 import { WalletUtils } from "~utils/wallets/wallets.utils";
+import { getWallets, removeWallet } from "~wallets";
 
 // TODO: Use transformers/superjson to transform dates automatically and see how to get the right types straight from
 // the trpc calls:
@@ -13,10 +14,14 @@ import { WalletUtils } from "~utils/wallets/wallets.utils";
 // TODO: Consider getting `userId` automatically
 async function fetchWallets(userId: string): Promise<Wallet[]> {
   const deviceShares = WalletUtils.getDeviceSharesForUser(userId);
-  const unusedDeviceSharesWalletIds = new Set(Object.keys(deviceShares));
+  const unusedDeviceSharesWalletIDs = new Set(Object.keys(deviceShares));
 
-  const dbWallets = (await trpcVanilla.fetchWallets.query())
-    .wallets as unknown as DbWallet[];
+  const storageWallets = await getWallets();
+  const unusedStorageWalletsAddresses = new Set(
+    storageWallets.map((storageWallet) => storageWallet.address)
+  );
+
+  const { wallets: dbWallets } = await trpcVanilla.fetchWallets.query();
 
   const wallets = dbWallets
     .map((dbWallet) => {
@@ -24,7 +29,8 @@ async function fetchWallets(userId: string): Promise<Wallet[]> {
       const walletStatus = dbWallet.status;
       const deviceShare = deviceShares[walletId] || null;
 
-      if (deviceShare) unusedDeviceSharesWalletIds.delete(walletId);
+      if (deviceShare) unusedDeviceSharesWalletIDs.delete(walletId);
+      unusedStorageWalletsAddresses.delete(dbWallet.address);
 
       let activationStatus: WalletActivationStatus = "authNeeded";
 
@@ -51,22 +57,30 @@ async function fetchWallets(userId: string): Promise<Wallet[]> {
     })
     .sort((a, b) => {
       // Most recently activated first:
-      return (
-        new Date(b.lastActivatedAt).getTime() -
-        new Date(a.lastActivatedAt).getTime()
-      );
+      return b.lastActivatedAt.getTime() - a.lastActivatedAt.getTime();
     });
 
-  if (unusedDeviceSharesWalletIds.size > 0) {
+  if (unusedDeviceSharesWalletIDs.size > 0) {
     console.warn(
-      `Stored deviceShares for the following wallets not used: ${Array.from(
-        unusedDeviceSharesWalletIds
+      `Orphan deviceShares stored in localStorage with IDs = ${Array.from(
+        unusedDeviceSharesWalletIDs
       ).join(", ")}`
     );
   }
 
-  // TODO: Also make sure we remove any wallet from the "BE storage" (sessionStorage) that is not listed here. However,
-  // they should not be stored at all between refreshes.
+  if (unusedStorageWalletsAddresses.size > 0) {
+    // TODO: These should actually be stored in memory. Clean up should not be necessary.
+
+    console.warn(
+      `Left over wallets stored in sessionStorage with addresses = ${Array.from(
+        unusedStorageWalletsAddresses
+      ).join(", ")}`
+    );
+
+    for (const unusedStorageWalletsAddress of unusedStorageWalletsAddresses) {
+      await removeWallet(unusedStorageWalletsAddress);
+    }
+  }
 
   return wallets;
 }
@@ -174,7 +188,7 @@ async function fetchFirstAvailableAuthShare(
 
         resolve({
           activatedWallet,
-          rotationChallenge: rotationChallenge as unknown as DbChallenge
+          rotationChallenge
         } satisfies FetchFirstAvailableAuthShareReturn);
 
         return;

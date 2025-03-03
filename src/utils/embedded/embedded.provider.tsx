@@ -47,6 +47,7 @@ import {
 } from "embed-api";
 import { AuthenticationService } from "~utils/authentication/authentication.service";
 import {
+  AUTH_PROVIDER_TYPE_BY_PROVIDER_STR,
   EMBEDDED_FEATURE_FLAGS,
   EMPTY_SESSION
 } from "~utils/embedded/embedded.constants";
@@ -181,7 +182,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
         updateCurrentWallet((currentWallet) => ({
           ...currentWallet,
-          ...(updatedWallet as unknown as Wallet)
+          ...updatedWallet
         }));
       } else {
         updateCurrentWallet((currentWallet) => ({
@@ -216,7 +217,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
     updateCurrentWallet((currentWallet) => ({
       ...currentWallet,
-      ...(updatedWallet as unknown as Wallet)
+      ...updatedWallet
     }));
   }, [walletId, walletAddress, updateCurrentWallet]);
 
@@ -238,7 +239,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
     updateCurrentWallet((currentWallet) => ({
       ...currentWallet,
-      ...(updatedWallet as unknown as Wallet)
+      ...updatedWallet
     }));
   }, [walletId, updateCurrentWallet]);
 
@@ -543,7 +544,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         }
       });
 
-      const dbWallet = createWalletResponse.wallet as unknown as DbWallet;
+      const dbWallet = createWalletResponse.wallet;
 
       const wallet: Wallet = {
         ...dbWallet,
@@ -596,7 +597,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       );
 
     const challengeSolution = await ChallengeClientV1.solveChallenge({
-      challenge: fetchRecoverableWalletsChallenge as unknown as DbChallenge,
+      challenge: fetchRecoverableWalletsChallenge,
       session: EMPTY_SESSION,
       shareHash: null,
       jwk
@@ -610,10 +611,10 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
     setEmbeddedContextState((prevAuthContextState) => ({
       ...prevAuthContextState,
-      recoverableAccounts: recoverAccount as unknown as RecoverableAccount[]
+      recoverableAccounts
     }));
 
-    return recoverableAccounts as unknown as RecoverableAccount[];
+    return recoverableAccounts;
   }, []);
 
   const clearRecoverableAccounts = useCallback(() => {
@@ -640,7 +641,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         );
 
       const challengeSolution = await ChallengeClientV1.solveChallenge({
-        challenge: accountRecoveryChallenge as unknown as DbChallenge,
+        challenge: accountRecoveryChallenge,
         session: EMPTY_SESSION,
         shareHash: null,
         jwk
@@ -679,7 +680,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       } = await WalletUtils.generateShareHashAndPrivateKey(recoveryBackupShare);
 
       const challengeSolution = await ChallengeClientV1.solveChallenge({
-        challenge: shareRecoveryChallenge as unknown as DbChallenge,
+        challenge: shareRecoveryChallenge,
         session: EMPTY_SESSION,
         shareHash: recoveryBackupShareHash,
         jwk: recoveryBackupSharePrivateKeyJWK
@@ -710,7 +711,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         await WalletUtils.generateWalletWorkShares(jwk);
 
       const rotateChallengeSignature = await ChallengeClientV1.solveChallenge({
-        challenge: rotationChallenge as unknown as DbChallenge,
+        challenge: rotationChallenge,
         session: EMPTY_SESSION,
         shareHash: null,
         jwk
@@ -729,7 +730,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         challengeSolution: rotateChallengeSignature
       });
 
-      const dbWallet = registerAuthShareResponse.wallet as unknown as DbWallet;
+      const dbWallet = registerAuthShareResponse.wallet;
 
       const wallet: Wallet = {
         ...dbWallet,
@@ -911,10 +912,9 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
       const accessToken = session?.access_token ?? null;
       const user = session?.user ?? null;
-
-      // TODO: Map this properly
-      const authProviderType: AuthProviderType =
-        user?.identities?.[0]?.provider?.toUpperCase() as AuthProviderType;
+      const authProviderType: AuthProviderType | null =
+        AUTH_PROVIDER_TYPE_BY_PROVIDER_STR[user?.identities?.[0]?.provider] ||
+        null;
 
       // TODO: Why is the session still reported as valid after deleting it from the DB?
       // TODO: Make sure any tRPC call returning UNAUTHORIZED forces de-authentication.
