@@ -1,5 +1,4 @@
-import { ChallengeClientV1, type DbChallenge } from "embed-api";
-import { EMPTY_SESSION } from "~utils/embedded/embedded.constants";
+import { ChallengeClientV1, type DbChallenge, type DbSession } from "embed-api";
 import type {
   Wallet,
   WalletActivationStatus
@@ -66,6 +65,10 @@ async function fetchWallets(userId: string): Promise<Wallet[]> {
         unusedDeviceSharesWalletIDs
       ).join(", ")}`
     );
+
+    unusedDeviceSharesWalletIDs.forEach((unusedDeviceSharesWalletID) => {
+      WalletUtils.removeDeviceShare(unusedDeviceSharesWalletID, userId);
+    });
   }
 
   if (unusedStorageWalletsAddresses.size > 0) {
@@ -139,59 +142,58 @@ export interface FetchFirstAvailableAuthShareReturn {
 }
 
 async function fetchFirstAvailableAuthShare(
-  wallets: Wallet[]
+  wallets: Wallet[],
+  session: DbSession
 ): Promise<FetchFirstAvailableAuthShareReturn> {
   return new Promise(async (resolve, reject) => {
     for (const wallet of wallets) {
       const { id: walletId, deviceShare } = wallet;
 
-      const { activationChallenge } =
-        await trpcVanilla.generateWalletActivationChallenge
-          .mutate({
+      try {
+        const {
+          shareHash: deviceShareHash,
+          sharePrivateKeyJWK: deviceSharePrivateKeyJWK
+        } = await WalletUtils.generateShareHashAndPrivateKey(deviceShare);
+
+        const { activationChallenge } =
+          await trpcVanilla.generateWalletActivationChallenge.mutate({
             walletId
-          })
-          .catch(() => {
-            return { activationChallenge: null };
           });
 
-      if (!activationChallenge) continue;
-
-      const {
-        shareHash: deviceShareHash,
-        sharePrivateKeyJWK: deviceSharePrivateKeyJWK
-      } = await WalletUtils.generateShareHashAndPrivateKey(deviceShare);
-
-      const challengeSolution = await ChallengeClientV1.solveChallenge({
-        challenge: activationChallenge,
-        session: EMPTY_SESSION,
-        shareHash: deviceShareHash,
-        jwk: deviceSharePrivateKeyJWK
-      });
-
-      const { authShare, rotationChallenge } =
-        await trpcVanilla.activateWallet.mutate({
-          walletId,
-          challengeSolution
+        const challengeSolution = await ChallengeClientV1.solveChallenge({
+          challenge: activationChallenge,
+          session,
+          shareHash: deviceShareHash,
+          jwk: deviceSharePrivateKeyJWK
         });
 
-      // TODO: Better with zk: instead of hashes or use a challenge here?
+        const { authShare, rotationChallenge } =
+          await trpcVanilla.activateWallet.mutate({
+            walletId,
+            challengeSolution
+          });
 
-      if (authShare) {
-        // TODO: We need to have some date associated to the Share to force rotation. If `rotationChallenge` is ignored too many times, the share entry will be
-        // removed and the user will be forced to use the recovery share or a keyfile/seedphrase.
+        // TODO: Better with zk: instead of hashes or use a challenge here?
 
-        const activatedWallet: Wallet = {
-          ...wallet,
-          activationStatus: "active",
-          authShare
-        };
+        if (authShare) {
+          // TODO: We need to have some date associated to the Share to force rotation. If `rotationChallenge` is ignored too many times, the share entry will be
+          // removed and the user will be forced to use the recovery share or a keyfile/seedphrase.
 
-        resolve({
-          activatedWallet,
-          rotationChallenge
-        } satisfies FetchFirstAvailableAuthShareReturn);
+          const activatedWallet: Wallet = {
+            ...wallet,
+            activationStatus: "active",
+            authShare
+          };
 
-        return;
+          resolve({
+            activatedWallet,
+            rotationChallenge
+          } satisfies FetchFirstAvailableAuthShareReturn);
+
+          return;
+        }
+      } catch (err) {
+        console.warn(`Wallet ${walletId} activation error =`, err);
       }
     }
 

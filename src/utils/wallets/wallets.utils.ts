@@ -19,6 +19,7 @@ import {
   privateKeyDerToJWK
 } from "~utils/crypto/crypto.utils";
 import type { Wallet } from "~utils/embedded/embedded.types";
+import { EMBEDDED_FEATURE_FLAGS } from "~utils/embedded/embedded.constants";
 
 async function generateSeedPhrase() {
   log(LOG_GROUP.WALLET_GENERATION, "generateSeedPhrase()");
@@ -143,7 +144,6 @@ function generateRandomPassword(): string {
 }
 
 async function generateWalletJWKFromShares(
-  // TODO: Do we want to use the walletAddress or maybe better a hash?
   walletAddress: string,
   shares: string[]
 ): Promise<JWKInterface> {
@@ -284,7 +284,13 @@ async function generateShareHashAndPrivateKey(
           // Convert a Forge private key to an ASN.1 RSAPrivateKey:
           const rsaPrivateKey = pki.privateKeyToAsn1(privateKey);
           const der = asn1.toDer(rsaPrivateKey).getBytes();
-          const sharePrivateKeyJWK = await privateKeyDerToJWK(der);
+          const sharePrivateKeyJWK = await privateKeyDerToJWK(der).catch(
+            (err) => {
+              console.warn(`Error generating private key JWK from share:`, err);
+
+              return null;
+            }
+          );
 
           // See https://github.com/digitalbazaar/forge/issues/256
 
@@ -344,7 +350,7 @@ function getDeviceSharesForUser(userId: string): DeviceShares {
 
 const ENCRYPTED_SEED_PHRASE_KEY = "ENCRYPTED_SEED_PHRASE";
 
-function storeEncryptedSeedPhrase(
+async function storeEncryptedSeedPhrase(
   walletId: string,
   seedPhrase: string,
   jwk: JWKInterface
@@ -355,8 +361,45 @@ function storeEncryptedSeedPhrase(
     throw new Error("Do not store unencrypted seed phrases!");
   }
 
-  // TODO: Encrypt it...
-  const encryptedSeedPhrase = seedPhrase;
+  const publicKey = {
+    kty: "RSA",
+    e: "AQAB",
+    n: jwk.n,
+    alg: "RSA-OAEP-256",
+    ext: true
+  };
+
+  const importedKey = await crypto.subtle.importKey(
+    "jwk",
+    publicKey,
+    {
+      name: "RSA-OAEP",
+      hash: "SHA-256"
+    },
+    false,
+    ["encrypt"]
+  );
+
+  // Make sure the seedPhrase is shorter than the maximum data we can safely
+  // encrypt with RSA-OAEM without using hybrid encryption:
+  // See https://crypto.stackexchange.com/questions/42097/what-is-the-maximum-size-of-the-plaintext-message-for-rsa-oaep
+  const maxLength = 4096 / 8 - (2 * 256) / 8 - 2;
+
+  if (seedPhrase.length > maxLength) {
+    throw new Error(`Seedphrase is too long to be encrypted with RSA-OAEP`);
+  }
+
+  const encryptedSeedPhraseBuffer = await crypto.subtle.encrypt(
+    {
+      name: "RSA-OAEP"
+    },
+    importedKey,
+    Buffer.from(seedPhrase)
+  );
+
+  const encryptedSeedPhrase = Buffer.from(encryptedSeedPhraseBuffer).toString(
+    "base64"
+  );
 
   localStorage.setItem(
     `${ENCRYPTED_SEED_PHRASE_KEY}-${walletId}`,
@@ -368,13 +411,45 @@ function hasEncryptedSeedPhrase(walletId: string) {
   return !!localStorage.getItem(`${ENCRYPTED_SEED_PHRASE_KEY}-${walletId}`);
 }
 
-function getDecryptedSeedPhrase(walletId: string, jwk: JWKInterface) {
+async function getDecryptedSeedPhrase(walletId: string, jwk: JWKInterface) {
+  log(LOG_GROUP.WALLET_GENERATION, "getDecryptedSeedPhrase()");
+
+  if (!jwk) {
+    throw new Error("Do not store unencrypted seed phrases!");
+  }
+
+  const privateKey = {
+    ...jwk,
+    alg: "RSA-OAEP-256",
+    ext: true
+  };
+
+  const importedKey = await crypto.subtle.importKey(
+    "jwk",
+    privateKey,
+    {
+      name: "RSA-OAEP",
+      hash: "SHA-256"
+    },
+    false,
+    ["decrypt"]
+  );
+
   const encryptedSeedPhrase = localStorage.getItem(
     `${ENCRYPTED_SEED_PHRASE_KEY}-${walletId}`
   );
 
-  // TODO: Decrypt it...
-  return encryptedSeedPhrase;
+  const decryptedSeedPhraseBuffer = await crypto.subtle.decrypt(
+    {
+      name: "RSA-OAEP"
+    },
+    importedKey,
+    Buffer.from(encryptedSeedPhrase, "base64")
+  );
+
+  const decryptedSeedPhrase = Buffer.from(decryptedSeedPhraseBuffer).toString();
+
+  return decryptedSeedPhrase;
 }
 
 function storeDeviceShare(wallet: Wallet, userId: string) {
@@ -383,6 +458,19 @@ function storeDeviceShare(wallet: Wallet, userId: string) {
   if (!_deviceSharesByUser[userId]) _deviceSharesByUser[userId] = {};
 
   _deviceSharesByUser[userId][wallet.id] = wallet.deviceShare;
+
+  localStorage.setItem(
+    DEVICE_SHARES_INFO_KEY,
+    JSON.stringify(_deviceSharesByUser)
+  );
+}
+
+function removeDeviceShare(walletId: string, userId: string) {
+  log(LOG_GROUP.WALLET_GENERATION, "storeDeviceShare()");
+
+  if (!_deviceSharesByUser[userId]) _deviceSharesByUser[userId] = {};
+
+  delete _deviceSharesByUser[userId][walletId];
 
   localStorage.setItem(
     DEVICE_SHARES_INFO_KEY,
@@ -414,7 +502,7 @@ async function storeEncryptedWalletJWK(jwk: JWKInterface): Promise<void> {
 export const WalletUtils = {
   // Generation:
   generateSeedPhrase,
-  generateWalletJWK, // TODO: Rename to generateWalletKeyfile
+  generateWalletJWK,
   generateWalletWorkShares,
   generateWalletRecoveryShares,
   generateWalletJWKFromShares,
@@ -427,8 +515,18 @@ export const WalletUtils = {
 
   // Storage:
   storeDeviceShare,
+  removeDeviceShare,
   storeEncryptedSeedPhrase,
   hasEncryptedSeedPhrase,
   getDecryptedSeedPhrase,
   storeEncryptedWalletJWK
 };
+
+// Stored seedphrase are removed if the `STORE_SEED_PHRASE` flag becomes false:
+if (!EMBEDDED_FEATURE_FLAGS.STORE_SEED_PHRASE) {
+  Object.keys(localStorage).forEach((key) => {
+    if (key.startsWith(ENCRYPTED_SEED_PHRASE_KEY)) {
+      localStorage.removeItem(key);
+    }
+  });
+}

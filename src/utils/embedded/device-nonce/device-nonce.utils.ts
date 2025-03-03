@@ -27,8 +27,6 @@ export function loadDeviceNonce(): DeviceNonce | null {
   }
 }
 
-// TODO: Merge server changes and re-deploy
-
 export function generateDeviceNonce(): DeviceNonce {
   log(LOG_GROUP.WALLET_GENERATION, "generateDeviceNonce()");
 

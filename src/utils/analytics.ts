@@ -185,6 +185,8 @@ export const trackEvent = async (eventName: EventType, properties: any) => {
  */
 
 export const initializeARBalanceMonitor = async () => {
+  console.log("initializeARBalanceMonitor");
+
   const timer = setToStartOfNextMonth(new Date());
   browser.alarms.create("track-balance", {
     when: timer.getTime()

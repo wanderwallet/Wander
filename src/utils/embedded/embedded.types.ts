@@ -5,7 +5,8 @@ import type {
   AuthProviderType,
   SupabaseUser,
   RecoverableAccount,
-  WalletSourceType
+  WalletSourceType,
+  DbSession
 } from "embed-api";
 
 export type AuthStatus =
@@ -71,6 +72,7 @@ export interface EmbeddedContextAuth {
   authStatus: AuthStatus;
   authProviderType: null | AuthProviderType;
   user: null | SupabaseUser;
+  session: null | DbSession;
   // accessToken?
 }
 

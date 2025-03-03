@@ -15,8 +15,6 @@ export async function pemToJWK(pem: string): Promise<JWKInterface> {
   // convert from a binary string to an ArrayBuffer
   const binaryDer = str2ab(binaryDerString);
 
-  debugger;
-
   const importedKey = await window.crypto.subtle.importKey(
     "pkcs8",
     binaryDer,
@@ -36,8 +34,6 @@ export async function pemToJWK(pem: string): Promise<JWKInterface> {
 
 export async function privateKeyDerToJWK(der: string): Promise<JWKInterface> {
   const binaryDer = str2ab(der);
-
-  debugger;
 
   const importedKey = await window.crypto.subtle.importKey(
     "pkcs8",

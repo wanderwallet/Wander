@@ -48,7 +48,7 @@ export const alarms = {
     } else if (delayInMs > 0) {
       alarmWithTimer.scheduledTime = Date.now() + delayInMs;
 
-      alarmWithTimer.timeoutID = setTimeout(() => {
+      alarmWithTimer.timeoutID = window.setTimeout(() => {
         delete alarmWithTimer.timeoutID;
 
         invokeAlarms(name);
@@ -57,7 +57,7 @@ export const alarms = {
 
         alarmWithTimer.scheduledTime = Date.now() + periodInMs;
 
-        alarmWithTimer.intervalID = setInterval(() => {
+        alarmWithTimer.intervalID = window.setInterval(() => {
           alarmWithTimer.scheduledTime = Date.now() + periodInMs;
 
           invokeAlarms(name);
@@ -68,7 +68,7 @@ export const alarms = {
     if (delayInMs <= 0 && periodInMs > 0) {
       alarmWithTimer.scheduledTime = Date.now() + periodInMs;
 
-      alarmWithTimer.intervalID = setInterval(() => {
+      alarmWithTimer.intervalID = window.setInterval(() => {
         alarmWithTimer.scheduledTime = Date.now() + periodInMs;
 
         invokeAlarms(name);

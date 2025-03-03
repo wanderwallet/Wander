@@ -2,22 +2,10 @@ import type { AuthProviderType, DbSession } from "embed-api";
 
 export const IS_EMBEDDED_APP = import.meta.env?.VITE_IS_EMBEDDED_APP === "1";
 
+// TODO: Should these be loaded from the backend or using Vercel's flags?
 export const EMBEDDED_FEATURE_FLAGS = {
-  STORE_SEED_PHRASE: false
+  STORE_SEED_PHRASE: true
 } as const;
-
-// TODO: Replace with the real thing once authentication is implemented...
-
-export const EMPTY_SESSION: DbSession = {
-  id: "",
-  createdAt: new Date(0),
-  updatedAt: new Date(0),
-  deviceNonce: "",
-  ip: "",
-  countryCode: "",
-  userAgent: "",
-  userId: ""
-};
 
 export const AUTH_PROVIDER_TYPE_BY_PROVIDER_STR = {
   passkeys: "PASSKEYS",

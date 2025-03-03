@@ -23,24 +23,6 @@ async function authenticate(authProviderType: AuthProviderType) {
   }
 }
 
-async function refreshSession(): Promise<SupabaseUser | null> {
-  console.log("refreshSession()");
-
-  try {
-    const { data, error } = await supabase.auth.refreshSession();
-
-    if (error) throw error;
-
-    console.log("refreshSession() =", data);
-
-    return data.user;
-  } catch (err) {
-    console.error("refreshSession() error =", err);
-
-    return null;
-  }
-}
-
 async function logout() {
   console.log("logout()");
 
@@ -97,7 +79,6 @@ async function recoverAccount(userId: string, challengeSolution: string) {
 
 export const AuthenticationService = {
   authenticate,
-  refreshSession,
   logout,
 
   generateFetchRecoverableAccountsChallenge,
