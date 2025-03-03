@@ -3,7 +3,6 @@ import {
   Box,
   Button,
   Card,
-  Checkbox,
   Row,
   WanderIcon,
   Text,
@@ -18,7 +17,7 @@ import { Link } from "~wallets/router/components/link/Link";
 
 export function AccountBackupSharesEmbeddedView() {
   const [loading, setLoading] = useState(false);
-  const { wallets, promptToBackUp, generateRecoveryAndDownload } =
+  const { wallets, generateRecoveryAndDownload, copySeedphrase } =
     useEmbedded();
   const walletAddress = wallets[0].address;
 
@@ -105,6 +104,7 @@ export function AccountBackupSharesEmbeddedView() {
           isFullWidth
           icon={<SeedIcon fontSize={24} />}
           isDisabled={loading}
+          onClick={() => copySeedphrase(walletAddress)}
         >
           Copy Seedphrase
         </Button>
