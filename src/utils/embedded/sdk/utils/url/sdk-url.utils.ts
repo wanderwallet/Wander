@@ -1,10 +1,15 @@
+import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
+
 export const PARAM_API_KEY = "api-key";
 export const PARAM_ORIGIN = "origin";
 
-const searchParams = new URLSearchParams(document.location.search);
+const searchParams =
+  IS_EMBEDDED_APP && typeof document !== "undefined"
+    ? new URLSearchParams(document.location.search)
+    : null;
 
-export const EMBEDDED_API_KEY = searchParams.get(PARAM_API_KEY);
-export const EMBEDDED_PARENT_ORIGIN = searchParams.get(PARAM_ORIGIN);
+export const EMBEDDED_API_KEY = searchParams?.get(PARAM_API_KEY);
+export const EMBEDDED_PARENT_ORIGIN = searchParams?.get(PARAM_ORIGIN);
 
 // TODO: We still need to validate EMBEDDED_API_KEY & EMBEDDED_PARENT_ORIGIN are allowed (e.g. the developer registered
 // the app and whitelisted the domain(s) correctly). We should probably use a mechanism like Google Search Console where
