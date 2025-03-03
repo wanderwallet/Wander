@@ -36,9 +36,9 @@ export const sendChunk = (chunk: Chunk) =>
   new Promise<void>((resolve, reject) => {
     const callID = nanoid();
     // construct message
-    const message: ApiCall & { ext: "wander" } = {
+    const message: ApiCall = {
       type: "chunk",
-      ext: "wander",
+      app: "wander",
       data: chunk,
       callID
     };
