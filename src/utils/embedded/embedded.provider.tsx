@@ -30,11 +30,7 @@ import type {
   EmbeddedContextAuth,
   Wallet
 } from "~utils/embedded/embedded.types";
-import {
-  isTempWalletPromiseExpired,
-  setAuthTokenHeader,
-  supabase
-} from "~utils/embedded/embedded.utils";
+import { setAuthTokenHeader, supabase } from "~utils/embedded/embedded.utils";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import {
   AuthProviderType,
@@ -50,6 +46,7 @@ import {
 import { getDeviceNonce } from "~utils/embedded/device-nonce/device-nonce.utils";
 import { jwtDecode } from "jwt-decode";
 import type { SupabaseJwtPayload } from "~utils/authentication/authentication.types";
+import { isTempWalletPromiseExpired } from "~utils/embedded/utils/wallets/embedded-wallets.utils";
 
 export type AuthStatusCopy = AuthStatus;
 
@@ -782,6 +779,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         return;
       }
 
+      // await supabase.auth.refreshSession();
+
       const wallets = await WalletService.fetchWallets(userId);
 
       setEmbeddedContextState((prevAuthContextState) => ({
@@ -916,6 +915,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
           userId: sub
         };
       }
+
+      console.log("dbSession =", dbSession);
 
       // TODO: Why is the session still reported as valid after deleting it from the DB?
       // TODO: Make sure any tRPC call returning UNAUTHORIZED forces de-authentication.

@@ -1,7 +1,5 @@
 import { createSupabaseClient, createTRPCClient } from "embed-api";
-import { getDeviceNonce } from "~utils/embedded/device-nonce/device-nonce.utils";
 import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
-import type { TempWalletPromise } from "~utils/embedded/embedded.types";
 
 if (!IS_EMBEDDED_APP || typeof document === "undefined") {
   throw new Error("This file should only be loaded in Wander Embedded.");
@@ -14,14 +12,6 @@ if (!IS_EMBEDDED_APP || typeof document === "undefined") {
 //
 // The code/functions below run in the context of Wander Embedded iframe/domain.
 
-const FIVE_MINS_IN_MS = 5 * 60 * 1000;
-
-export function isTempWalletPromiseExpired(
-  tempWalletPromise: TempWalletPromise
-) {
-  return Date.now() - tempWalletPromise.createdAt >= FIVE_MINS_IN_MS;
-}
-
 const { search, ancestorOrigins } = document.location;
 const searchParams = new URLSearchParams(search);
 const ancestorOrigin = ancestorOrigins[ancestorOrigins.length - 1];
@@ -30,7 +20,9 @@ const ancestorOrigin = ancestorOrigins[ancestorOrigins.length - 1];
 const PARAM_API_KEY = "api-key";
 const PARAM_ANCESTOR_ORIGIN = "ancestor-origin";
 
-const EMBEDDED_API_KEY = searchParams.get(PARAM_API_KEY);
+const EMBEDDED_API_KEY =
+  searchParams.get(PARAM_API_KEY) ||
+  (process.env.NODE_ENV === "development" ? "DEVELOPMENT_API_KEY" : "");
 const EMBEDDED_ANCESTOR_ORIGIN =
   ancestorOrigin || searchParams.get(PARAM_ANCESTOR_ORIGIN);
 
@@ -52,7 +44,7 @@ const {
 } = createTRPCClient({
   baseURL: "http://localhost:3000",
   authToken: null,
-  deviceNonce: getDeviceNonce(),
+  deviceNonce: undefined,
   apiKey: EMBEDDED_API_KEY
 });
 

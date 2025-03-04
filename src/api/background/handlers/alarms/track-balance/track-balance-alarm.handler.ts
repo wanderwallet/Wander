@@ -37,9 +37,9 @@ export async function handleTrackBalanceAlarm(alarmInfo?: Alarms.Alarm) {
 
     const timer = setToStartOfNextMonth(new Date());
 
-    browser.alarms.create("track-balance", {
-      when: timer.getTime()
-    });
+    // browser.alarms.create("track-balance", {
+    //   when: timer.getTime()
+    // });
   } catch (err) {
     console.log("err tracking", err);
   }
