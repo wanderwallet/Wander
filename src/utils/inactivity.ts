@@ -7,32 +7,30 @@ import { log, LOG_GROUP } from "./log/log.utils";
 const INACTIVITY_ALARM_KEY = "inactivity_alarm";
 const PORT_NAME = "popup-port";
 
-let activePort: browser.Runtime.Port | null = null;
+// Track both popups and ports
+let activePopups = 0;
+let activePortConnections = 0;
 
-function handlePopupOpened() {
-  log(LOG_GROUP.AUTH, "Popup opened");
-  // Clear any existing inactivity alarm when popup opens
-  browser.alarms.clear(INACTIVITY_ALARM_KEY);
-}
+async function checkAndHandleExtensionState() {
+  const isOpen = activePopups > 0 || activePortConnections > 0;
+  log(LOG_GROUP.AUTH, `Extension state check - ${isOpen ? "open" : "closed"}`);
 
-async function handlePopupClosed() {
-  log(LOG_GROUP.AUTH, "Popup closed");
+  if (isOpen) {
+    await browser.alarms.clear(INACTIVITY_ALARM_KEY);
+    return;
+  }
 
-  // check if there is a decryption key
+  // No popups or ports active, start inactivity timer
   const decryptionKey = await getDecryptionKey();
   if (!decryptionKey) return;
 
-  // Check if auto sign-out is enabled
   const isEnabled = await ExtensionStorage.get<boolean>(
     "auto_sign_out_enabled"
   );
   if (!isEnabled) return;
 
-  // Get timeout value in minutes
   const timeout =
     (await ExtensionStorage.get<number>("auto_sign_out_time")) || 15;
-
-  // Create alarm to sign out after timeout
   browser.alarms.create(INACTIVITY_ALARM_KEY, { delayInMinutes: timeout });
 
   log(
@@ -42,56 +40,73 @@ async function handlePopupClosed() {
 }
 
 export function initInactivityTracking() {
-  // Listen for popup port connections
+  // Initialize popup count
+  browser.windows
+    .getAll({ windowTypes: ["popup", "panel"] })
+    .then((windows) => {
+      activePopups = windows.length;
+      log(LOG_GROUP.AUTH, `Initial popups: ${activePopups}`);
+      checkAndHandleExtensionState();
+    })
+    .catch(() => {});
+
+  // Track port connections
   browser.runtime.onConnect.addListener((port) => {
     if (port.name !== PORT_NAME) return;
 
-    handlePopupOpened();
+    activePortConnections++;
+    log(
+      LOG_GROUP.AUTH,
+      `Port connected. Active ports: ${activePortConnections}`
+    );
+    checkAndHandleExtensionState();
 
     port.onDisconnect.addListener(() => {
-      activePort = null;
-      handlePopupClosed();
+      activePortConnections--;
+      if (activePortConnections < 0) activePortConnections = 0;
+      log(
+        LOG_GROUP.AUTH,
+        `Port disconnected. Active ports: ${activePortConnections}`
+      );
+      checkAndHandleExtensionState();
     });
   });
 
-  // Listen for api popup creation events
-  browser.windows.onCreated.addListener(async () => {
-    // Get all popup windows
-    const windows = await browser.windows.getAll({
-      windowTypes: ["popup", "panel"]
-    });
-
-    // Check if our popup is open
-    const popupIsOpen = windows.length > 0;
-    if (!popupIsOpen) return;
-
-    handlePopupOpened();
+  // Track window events
+  browser.windows.onCreated.addListener((window) => {
+    if (window.type === "popup" || window.type === "panel") {
+      activePopups++;
+      log(LOG_GROUP.AUTH, `Popup created. Active popups: ${activePopups}`);
+      checkAndHandleExtensionState();
+    }
   });
 
-  // Listen for popup window removal events
-  browser.windows.onRemoved.addListener(async () => {
-    // Get all popup windows
-    const windows = await browser.windows.getAll({
-      windowTypes: ["popup", "panel"]
-    });
-
-    // Check if our popup is open
-    const popupIsOpen = windows.length > 0;
-    console.log(popupIsOpen, activePort);
-    if (popupIsOpen || activePort) return;
-
-    handlePopupClosed();
+  browser.windows.onRemoved.addListener(() => {
+    // Verify actual window count after removal
+    browser.windows
+      .getAll({ windowTypes: ["popup", "panel"] })
+      .then((windows) => {
+        activePopups = windows.length;
+        log(LOG_GROUP.AUTH, `Popup removed. Active popups: ${activePopups}`);
+        checkAndHandleExtensionState();
+      })
+      .catch(() => {});
   });
 
-  // Handle decryption key removal
+  // Handle auto sign-out
   browser.alarms.onAlarm.addListener(async (alarm) => {
     if (alarm.name === INACTIVITY_ALARM_KEY) {
-      // check if there is a decryption key
-      const decryptionKey = await getDecryptionKey();
-      if (!decryptionKey) return;
+      // Double check state before signing out
+      if (activePopups === 0 && activePortConnections === 0) {
+        const decryptionKey = await getDecryptionKey();
+        if (!decryptionKey) return;
 
-      log(LOG_GROUP.AUTH, "Signing out due to inactivity");
-      await removeDecryptionKey();
+        log(LOG_GROUP.AUTH, "Signing out due to inactivity");
+        await removeDecryptionKey();
+      } else {
+        // Cancel alarm if extension is actually still open
+        await browser.alarms.clear(INACTIVITY_ALARM_KEY);
+      }
     }
   });
 }
@@ -99,12 +114,6 @@ export function initInactivityTracking() {
 export function initPopupPort() {
   if (IS_EMBEDDED_APP) return () => {};
 
-  // create a named connection to the background script for inactivity tracking
-  activePort = browser.runtime.connect({ name: PORT_NAME });
-
-  // Clean up when component unmounts
-  return () => {
-    activePort?.disconnect();
-    activePort = null;
-  };
+  const port = browser.runtime.connect({ name: PORT_NAME });
+  return () => port.disconnect();
 }
