@@ -55,7 +55,7 @@ export function AuthAddWalletEmbeddedView() {
       onBackButtonClick={() => {
         window.location.href = "/";
       }}
-      hasCloseButton={false}
+      //   hasCloseButton={false}
       size="auto"
     >
       <Box>

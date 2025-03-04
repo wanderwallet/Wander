@@ -5,7 +5,8 @@ import {
   Row,
   SeedInput,
   WanderIcon,
-  Text
+  Text,
+  Copyable
 } from "~components/embed/ui";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 
@@ -47,7 +48,55 @@ export function AuthImportSeedphraseEmbeddedView() {
     };
   }, []);
 
-  return (
+  return importedTempWalletAddress ? (
+    <Card
+      headerText="Recover your account"
+      subtitle="Enter seedphrase"
+      footerElement={
+        <Row>
+          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
+            {"Secured by"}
+          </Text>
+          <WanderIcon color="#838383" />
+        </Row>
+      }
+      hasBackButton={true}
+      onBackButtonClick={() => {
+        window.history.back();
+      }}
+      hasCloseButton={true}
+      onCloseButtonClick={() => {
+        window.location.href = "/auth/recover-account";
+      }}
+      size="auto"
+    >
+      <Copyable
+        isFullWidth
+        label="Your account address"
+        onClick={() => {
+          navigator.clipboard.writeText(importedTempWalletAddress);
+        }}
+        value={importedTempWalletAddress}
+      />
+      <Row>
+        <Button
+          variant="secondary"
+          size="md"
+          onClick={deleteImportedTempWallet}
+        >
+          No, try again
+        </Button>
+        <Button
+          variant="primary"
+          size="md"
+          onClick={() => registerWallet("imported")}
+          isLoading={loading}
+        >
+          Yes, recover
+        </Button>
+      </Row>
+    </Card>
+  ) : (
     <Card
       headerText="Enter Seedphrase"
       subtitle="Enter your seedphrase to connect your wallet to your account."
@@ -63,7 +112,7 @@ export function AuthImportSeedphraseEmbeddedView() {
       onBackButtonClick={() => {
         window.history.back();
       }}
-      hasCloseButton={false}
+      //   hasCloseButton={false}
       size="auto"
     >
       <SeedInput
@@ -80,7 +129,7 @@ export function AuthImportSeedphraseEmbeddedView() {
         onClick={handleImportWallet}
         isLoading={loading}
       >
-        Recover
+        Import
       </Button>
     </Card>
   );

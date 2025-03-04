@@ -54,7 +54,7 @@ export function AccountAddWalletEmbeddedView() {
       onBackButtonClick={() => {
         window.history.back();
       }}
-      hasCloseButton={false}
+      //   hasCloseButton={false}
       size="auto"
     >
       <Box>

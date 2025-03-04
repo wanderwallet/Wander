@@ -5,6 +5,7 @@ import { Box, XClose, ChevronLeft } from "../../atoms";
 import { Header } from "../header";
 import { Footer } from "../footer";
 import { useTheme } from "../../../contexts/ThemeContext";
+import { MinimizeIcon } from "@iconicicons/react";
 
 const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
   (
@@ -40,7 +41,8 @@ const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
         className={styles["card__close__btn"]}
         onClick={onCloseButtonClick}
       >
-        {customIcon ?? <XClose fontSize={24} color={iconColor} />}
+        {/* {customIcon ?? <XClose fontSize={24} color={iconColor} />} */}
+        {customIcon ?? <MinimizeIcon fontSize={24} color={iconColor} />}
       </button>
     );
 

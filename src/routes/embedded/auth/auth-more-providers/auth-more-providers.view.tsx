@@ -45,7 +45,7 @@ export function AuthMoreProvidersEmbeddedView() {
       onBackButtonClick={() => {
         window.history.back();
       }}
-      hasCloseButton={false}
+      //   hasCloseButton={false}
       size="auto"
     >
       <Box>

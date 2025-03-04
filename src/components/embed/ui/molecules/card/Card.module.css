@@ -56,6 +56,9 @@
   left: 0.8rem;
   width: 2rem;
   height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-direction: row;
   text-align: center;
   cursor: pointer;
@@ -67,6 +70,9 @@
   right: 0.8rem;
   width: 2rem;
   height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   cursor: pointer !important;
   position: absolute;

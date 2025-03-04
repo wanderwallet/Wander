@@ -43,7 +43,7 @@ export function AuthRecoverAccountAuthenticationEmbeddedView() {
       onBackButtonClick={() => {
         window.history.back();
       }}
-      hasCloseButton={false}
+      //   hasCloseButton={false}
       onCloseButtonClick={() => {
         window.history.back();
       }}

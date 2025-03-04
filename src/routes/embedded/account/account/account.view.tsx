@@ -29,7 +29,7 @@ export function AccountEmbeddedView() {
       onBackButtonClick={() => {
         window.history.back();
       }}
-      hasCloseButton={false}
+      //   hasCloseButton={false}
       size="auto"
     >
       <Copyable

@@ -72,7 +72,7 @@ export function AccountImportKeyfileEmbeddedView() {
       onBackButtonClick={() => {
         window.history.back();
       }}
-      hasCloseButton={false}
+      //   hasCloseButton={false}
       size="auto"
     >
       <Copyable
@@ -116,7 +116,7 @@ export function AccountImportKeyfileEmbeddedView() {
       onBackButtonClick={() => {
         window.history.back();
       }}
-      hasCloseButton={false}
+      //   hasCloseButton={false}
       size="auto"
     >
       <Upload

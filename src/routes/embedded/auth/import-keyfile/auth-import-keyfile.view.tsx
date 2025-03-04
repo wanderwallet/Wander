@@ -32,7 +32,7 @@ export function AuthImportKeyfileEmbeddedView() {
       setLoading(true);
       if (jsonData) {
         const tempWallet = await importTempWallet(
-          JSON.stringify(jsonData, null, 2)
+          JSON.parse(JSON.stringify(jsonData, null, 2))
         );
 
         if (!tempWallet) {
@@ -73,7 +73,7 @@ export function AuthImportKeyfileEmbeddedView() {
       onBackButtonClick={() => {
         window.history.back();
       }}
-      hasCloseButton={false}
+      //   hasCloseButton={false}
       size="auto"
     >
       <Copyable
@@ -117,7 +117,7 @@ export function AuthImportKeyfileEmbeddedView() {
       onBackButtonClick={() => {
         window.history.back();
       }}
-      hasCloseButton={false}
+      //   hasCloseButton={false}
       size="auto"
     >
       <Upload

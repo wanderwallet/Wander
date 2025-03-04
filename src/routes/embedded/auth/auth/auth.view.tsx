@@ -43,7 +43,7 @@ export function AuthEmbeddedView() {
         </Row>
       }
       hasBackButton={false}
-      hasCloseButton={false}
+      //   hasCloseButton={false}
       size="auto"
     >
       <Box>

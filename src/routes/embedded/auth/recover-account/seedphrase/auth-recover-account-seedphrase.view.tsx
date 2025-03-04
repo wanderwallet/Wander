@@ -126,7 +126,7 @@ export function AuthRecoverAccountSeedphraseEmbeddedView() {
       onBackButtonClick={() => {
         window.history.back();
       }}
-      hasCloseButton={false}
+      //   hasCloseButton={false}
       size="auto"
     >
       <SeedInput
