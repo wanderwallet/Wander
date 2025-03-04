@@ -7,104 +7,115 @@ import { log, LOG_GROUP } from "./log/log.utils";
 const INACTIVITY_ALARM_KEY = "inactivity_alarm";
 const PORT_NAME = "popup-port";
 
-// Track both popups and ports
+// Internal tracking for extension state
 let activePopups = 0;
 let activePortConnections = 0;
 
-async function checkAndHandleExtensionState() {
-  const isOpen = activePopups > 0 || activePortConnections > 0;
-  log(LOG_GROUP.AUTH, `Extension state check - ${isOpen ? "open" : "closed"}`);
+function getSessionCount() {
+  return activePopups + activePortConnections;
+}
 
-  if (isOpen) {
+function isExtensionActive() {
+  return getSessionCount() > 0;
+}
+
+function getSessionStatus() {
+  const count = getSessionCount();
+  return `Session: Active (${count})`;
+}
+
+async function checkAndHandleSessionState() {
+  const isActive = isExtensionActive();
+
+  if (isActive) {
     await browser.alarms.clear(INACTIVITY_ALARM_KEY);
     return;
   }
 
-  // No popups or ports active, start inactivity timer
   const decryptionKey = await getDecryptionKey();
-  if (!decryptionKey) return;
+  if (!decryptionKey) {
+    log(LOG_GROUP.SESSION, "Not logged in");
+    return;
+  }
 
   const isEnabled = await ExtensionStorage.get<boolean>(
     "auto_sign_out_enabled"
   );
-  if (!isEnabled) return;
+  if (!isEnabled) {
+    log(LOG_GROUP.SESSION, "Auto-lock disabled");
+    return;
+  }
 
   const timeout =
     (await ExtensionStorage.get<number>("auto_sign_out_time")) || 15;
   browser.alarms.create(INACTIVITY_ALARM_KEY, { delayInMinutes: timeout });
-
-  log(
-    LOG_GROUP.AUTH,
-    `Inactivity timer started. Signing out in ${timeout} minutes`
-  );
+  log(LOG_GROUP.SESSION, `Auto-lock in ${timeout}min`);
 }
 
 export function initInactivityTracking() {
-  // Initialize popup count
+  // Initialize session state
   browser.windows
     .getAll({ windowTypes: ["popup", "panel"] })
     .then((windows) => {
       activePopups = windows.length;
-      log(LOG_GROUP.AUTH, `Initial popups: ${activePopups}`);
-      checkAndHandleExtensionState();
+      log(LOG_GROUP.SESSION, `Initialized ${getSessionStatus()}`);
+      checkAndHandleSessionState();
     })
-    .catch(() => {});
+    .catch((error) => {
+      log(LOG_GROUP.SESSION, `Init failed: ${error.message}`);
+    });
 
-  // Track port connections
+  // Track session activity via ports
   browser.runtime.onConnect.addListener((port) => {
     if (port.name !== PORT_NAME) return;
 
     activePortConnections++;
-    log(
-      LOG_GROUP.AUTH,
-      `Port connected. Active ports: ${activePortConnections}`
-    );
-    checkAndHandleExtensionState();
+    log(LOG_GROUP.SESSION, `Connected ${getSessionStatus()}`);
+    checkAndHandleSessionState();
 
     port.onDisconnect.addListener(() => {
-      activePortConnections--;
-      if (activePortConnections < 0) activePortConnections = 0;
-      log(
-        LOG_GROUP.AUTH,
-        `Port disconnected. Active ports: ${activePortConnections}`
-      );
-      checkAndHandleExtensionState();
+      activePortConnections = Math.max(0, activePortConnections - 1);
+      log(LOG_GROUP.SESSION, `Disconnected ${getSessionStatus()}`);
+      checkAndHandleSessionState();
     });
   });
 
-  // Track window events
+  // Track session windows
   browser.windows.onCreated.addListener((window) => {
     if (window.type === "popup" || window.type === "panel") {
       activePopups++;
-      log(LOG_GROUP.AUTH, `Popup created. Active popups: ${activePopups}`);
-      checkAndHandleExtensionState();
+      log(LOG_GROUP.SESSION, `Connected ${getSessionStatus()}`);
+      checkAndHandleSessionState();
     }
   });
 
   browser.windows.onRemoved.addListener(() => {
-    // Verify actual window count after removal
     browser.windows
       .getAll({ windowTypes: ["popup", "panel"] })
       .then((windows) => {
         activePopups = windows.length;
-        log(LOG_GROUP.AUTH, `Popup removed. Active popups: ${activePopups}`);
-        checkAndHandleExtensionState();
+        log(LOG_GROUP.SESSION, `Disconnected ${getSessionStatus()}`);
+        checkAndHandleSessionState();
       })
-      .catch(() => {});
+      .catch((error) => {
+        log(LOG_GROUP.SESSION, `Window check failed: ${error.message}`);
+      });
   });
 
-  // Handle auto sign-out
+  // Handle session timeout
   browser.alarms.onAlarm.addListener(async (alarm) => {
     if (alarm.name === INACTIVITY_ALARM_KEY) {
-      // Double check state before signing out
-      if (activePopups === 0 && activePortConnections === 0) {
+      if (!isExtensionActive()) {
         const decryptionKey = await getDecryptionKey();
-        if (!decryptionKey) return;
+        if (!decryptionKey) {
+          log(LOG_GROUP.SESSION, "Already locked");
+          return;
+        }
 
-        log(LOG_GROUP.AUTH, "Signing out due to inactivity");
+        log(LOG_GROUP.SESSION, "Auto-locked due to inactivity");
         await removeDecryptionKey();
       } else {
-        // Cancel alarm if extension is actually still open
+        log(LOG_GROUP.SESSION, `Lock cancelled - ${getSessionStatus()}`);
         await browser.alarms.clear(INACTIVITY_ALARM_KEY);
       }
     }

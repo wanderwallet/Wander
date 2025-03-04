@@ -129,6 +129,7 @@ const ToggleSwitchWrapper = styled.div`
 
 const TimeInputWrapper = styled.div`
   display: flex;
+  gap: 8px;
   flex-direction: row;
   align-items: center;
   margin-top: -12px;
