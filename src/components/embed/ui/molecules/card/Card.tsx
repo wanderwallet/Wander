@@ -6,6 +6,7 @@ import { Header } from "../header";
 import { Footer } from "../footer";
 import { useTheme } from "../../../contexts/ThemeContext";
 import { MinimizeIcon } from "@iconicicons/react";
+import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 
 const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
   (
@@ -36,10 +37,17 @@ const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
       ? "var(--brand-color-neutral1)"
       : "transparent";
 
+    const closeCard = () => {
+      postEmbeddedMessage({
+        type: "embedded_close",
+        data: null
+      });
+    };
+
     const closeIcon = (
       <button
         className={styles["card__close__btn"]}
-        onClick={onCloseButtonClick}
+        onClick={onCloseButtonClick ?? closeCard}
       >
         {/* {customIcon ?? <XClose fontSize={24} color={iconColor} />} */}
         {customIcon ?? <MinimizeIcon fontSize={24} color={iconColor} />}
