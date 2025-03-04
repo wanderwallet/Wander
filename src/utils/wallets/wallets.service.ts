@@ -173,9 +173,6 @@ async function fetchFirstAvailableAuthShare(
         // TODO: Better with zk: instead of hashes or use a challenge here?
 
         if (authShare) {
-          // TODO: We need to have some date associated to the Share to force rotation. If `rotationChallenge` is ignored too many times, the share entry will be
-          // removed and the user will be forced to use the recovery share or a keyfile/seedphrase.
-
           const activatedWallet: Wallet = {
             ...wallet,
             activationStatus: "active",
