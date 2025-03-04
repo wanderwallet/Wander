@@ -1,5 +1,5 @@
 import { nanoid } from "nanoid";
-import { EMBEDDED_PARENT_ORIGIN } from "~utils/embedded/sdk/utils/url/sdk-url.utils";
+import { getEmbeddedAncestorOrigin } from "~utils/embedded/embedded.utils";
 import type {
   EmbeddedCall,
   EmbeddedMessageId,
@@ -51,5 +51,5 @@ export function postEmbeddedMessage<K extends EmbeddedMessageId>({
     return;
   }
 
-  parent.postMessage(call, EMBEDDED_PARENT_ORIGIN);
+  parent.postMessage(call, getEmbeddedAncestorOrigin());
 }

@@ -28,7 +28,7 @@ import {
 } from "~api/background/handlers/browser/tabs/tabs.handler";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { handleAuthStateChange } from "./handlers/storage/auth-state-change/auth-state-change.handler";
-import { EMBEDDED_PARENT_ORIGIN } from "~utils/embedded/sdk/utils/url/sdk-url.utils";
+import { getEmbeddedAncestorOrigin } from "~utils/embedded/embedded.utils";
 
 export function setupBackgroundService() {
   log(
@@ -48,7 +48,7 @@ export function setupBackgroundService() {
       if (
         !event.data ||
         event.data.app !== "wanderEmbedded" ||
-        event.origin !== EMBEDDED_PARENT_ORIGIN
+        event.origin !== getEmbeddedAncestorOrigin()
       )
         return;
 

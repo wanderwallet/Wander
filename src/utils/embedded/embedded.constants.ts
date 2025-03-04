@@ -1,4 +1,4 @@
-import type { AuthProviderType, DbSession } from "embed-api";
+import type { AuthProviderType } from "embed-api";
 
 export const IS_EMBEDDED_APP = import.meta.env?.VITE_IS_EMBEDDED_APP === "1";
 

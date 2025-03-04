@@ -1,9 +1,7 @@
-import { AuthProviderType, type SupabaseUser } from "embed-api";
+import { AuthProviderType } from "embed-api";
 import { supabase, trpcVanilla } from "~utils/embedded/embedded.utils";
 
 async function authenticate(authProviderType: AuthProviderType) {
-  console.log("authenticate() 2");
-
   // return trpcVanilla.authenticate.mutate({ authProviderType });
 
   if ("GOOGLE" === authProviderType) {
@@ -17,30 +15,9 @@ async function authenticate(authProviderType: AuthProviderType) {
 
     if (error) throw error;
 
-    console.log("URL =", data.url);
-
     return { url: data.url };
   }
 }
-
-async function logout() {
-  console.log("logout()");
-
-  try {
-    // setIsLoading(true);
-
-    // await logoutMutation.mutateAsync();
-    const { error } = await supabase.auth.signOut();
-
-    if (error) throw error;
-  } catch (err) {
-    console.error("logout() error =", err);
-
-    // setIsLoading(false);
-  }
-}
-
-(window as any).logout = logout;
 
 async function generateFetchRecoverableAccountsChallenge(address: string) {
   return trpcVanilla.generateFetchRecoverableAccountsChallenge.mutate({
@@ -79,8 +56,6 @@ async function recoverAccount(userId: string, challengeSolution: string) {
 
 export const AuthenticationService = {
   authenticate,
-  logout,
-
   generateFetchRecoverableAccountsChallenge,
   fetchRecoverableAccounts,
   generateAccountRecoveryChallenge,

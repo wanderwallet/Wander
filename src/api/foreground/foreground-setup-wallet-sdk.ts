@@ -8,18 +8,19 @@ import {
 import mitt from "mitt";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { version } from "../../../package.json";
+import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
+import { getEmbeddedOrigin } from "~utils/embedded/sdk/utils/url/sdk-url.utils";
 // import { version as sdkVersion } from "../../../wander-embedded-sdk/package.json";
 
 export function setupWalletSDK(targetWindow: Window = window) {
   log(LOG_GROUP.SETUP, "setupWalletSDK()");
-  const isEmbedded = import.meta.env?.VITE_IS_EMBEDDED_APP === "1";
 
   /** Init events */
   const events = mitt<InjectedEvents>();
 
   // TODO: Can we get the right type here?:
   const walletAPI = {
-    walletName: isEmbedded ? "ArConnect Embedded" : "ArConnect",
+    walletName: IS_EMBEDDED_APP ? "ArConnect Embedded" : "ArConnect",
     walletVersion: version,
     events
   } as const;
@@ -59,7 +60,7 @@ export function setupWalletSDK(targetWindow: Window = window) {
       // 3. Prepare the message & payload to send:
       const callID = nanoid();
       const data: ApiCall = {
-        app: isEmbedded ? "wanderEmbedded" : "wander",
+        app: IS_EMBEDDED_APP ? "wanderEmbedded" : "wander",
         version,
         callID,
         type: `api_${functionName}`,
@@ -70,8 +71,8 @@ export function setupWalletSDK(targetWindow: Window = window) {
 
       // 4. Send message to background script (ArConnect Extension) or to the iframe window (ArConnect Embedded):
 
-      const targetOrigin = isEmbedded
-        ? "http://localhost:5173"
+      const targetOrigin = IS_EMBEDDED_APP
+        ? getEmbeddedOrigin()
         : window.location.origin;
 
       targetWindow.postMessage(data, targetOrigin);
