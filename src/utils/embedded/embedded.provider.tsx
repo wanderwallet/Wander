@@ -113,8 +113,6 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     );
   }, [wallets, walletId]);
 
-  console.log("currentWallet =", currentWallet);
-
   const walletAddress = currentWallet?.address;
 
   // Auth props:
@@ -764,12 +762,10 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
   const lastUserIdRef = useRef<string | null>(null);
 
   const initEmbeddedWallet = useCallback(
-    async (userId: string | null, session: DbSession | null) => {
+    async (userId?: string | null, session?: DbSession | null) => {
       if (lastUserIdRef.current === userId) return;
 
       lastUserIdRef.current = userId;
-
-      console.log(`initEmbeddedWallet(${userId})`);
 
       setEmbeddedContextState(EMBEDDED_CONTEXT_INITIAL_STATE);
 
@@ -778,8 +774,6 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
         return;
       }
-
-      // await supabase.auth.refreshSession();
 
       const wallets = await WalletService.fetchWallets(userId);
 
@@ -885,17 +879,11 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
   }, []);
 
   useEffect(() => {
-    console.log("Listening for onAuthStateChange()...");
-
     const {
       data: { subscription }
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      console.log("onAuthStateChange =", session);
-
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       const accessToken = session?.access_token ?? null;
-
       const user = session?.user ?? null;
-
       const authProviderType: AuthProviderType | null =
         AUTH_PROVIDER_TYPE_BY_PROVIDER_STR[user?.identities?.[0]?.provider] ||
         null;
@@ -914,19 +902,32 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
           id: sessionId,
           userId: sub
         };
+
+        if (
+          !dbSession.countryCode ||
+          !dbSession.id ||
+          !dbSession.deviceNonce ||
+          dbSession.deviceNonce !== getDeviceNonce()
+        ) {
+          console.warn("Incomplete session. Refreshing...");
+
+          setEmbeddedContextAuth(EMBEDDED_CONTEXT_INITIAL_AUTH);
+
+          supabase.auth.refreshSession();
+
+          return;
+        }
       }
 
-      console.log("dbSession =", dbSession);
-
       // TODO: Why is the session still reported as valid after deleting it from the DB?
+
       // TODO: Make sure any tRPC call returning UNAUTHORIZED forces de-authentication.
 
-      // setToken(accessToken);
       setAuthTokenHeader(accessToken);
 
       initEmbeddedWallet(user?.id || null, dbSession);
 
-      if (accessToken && user && authProviderType) {
+      if (authProviderType && user && dbSession) {
         setEmbeddedContextAuth(({ authStatus }) => ({
           authStatus:
             authStatus === "unknown" || authStatus === "authError"

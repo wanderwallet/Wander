@@ -7,9 +7,6 @@ import { trpcVanilla } from "~utils/embedded/embedded.utils";
 import { WalletUtils } from "~utils/wallets/wallets.utils";
 import { getWallets, removeWallet } from "~wallets";
 
-// TODO: Use transformers/superjson to transform dates automatically and see how to get the right types straight from
-// the trpc calls:
-
 // TODO: Consider getting `userId` automatically
 async function fetchWallets(userId: string): Promise<Wallet[]> {
   const deviceShares = WalletUtils.getDeviceSharesForUser(userId);

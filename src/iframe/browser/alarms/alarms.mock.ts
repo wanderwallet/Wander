@@ -25,12 +25,23 @@ function invokeAlarms(name: string) {
   });
 }
 
+const MAX_32_BIT = 0x7fffffff;
+
 export const alarms = {
   create: (name: string, alarmInfo: Alarms.CreateAlarmInfoType) => {
-    const periodInMs = (alarmInfo.periodInMinutes ?? -1) * 60000;
-    const delayInMs = alarmInfo.when
-      ? alarmInfo.when - Date.now()
-      : (alarmInfo.delayInMinutes ?? -1) * 60000;
+    if (name === "track-balance") debugger;
+
+    const periodInMs = Math.min(
+      MAX_32_BIT,
+      (alarmInfo.periodInMinutes ?? -1) * 60000
+    );
+
+    const delayInMs = Math.min(
+      MAX_32_BIT,
+      alarmInfo.when
+        ? alarmInfo.when - Date.now()
+        : (alarmInfo.delayInMinutes ?? -1) * 60000
+    );
 
     const alarmWithTimer: AlarmWithTimer = {
       name,
