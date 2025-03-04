@@ -5,10 +5,18 @@
   align-items: center;
   justify-content: space-between;
   background-color: var(--color-card-background-default);
-  width: 98%;
   height: fit-content;
   transition: all 0.4s ease-in-out;
   position: relative;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Make sure all elements respect border-box */
+.card *,
+.card *::before,
+.card *::after {
+  box-sizing: inherit;
 }
 
 .card__shadow {
