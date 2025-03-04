@@ -15,6 +15,7 @@ import styled from "styled-components";
 import { Section } from "@arconnect/components-rebrand";
 import UpdateSplash from "~routes/welcome/UpdateSplash";
 import StarIcons from "~components/welcome/StarIcons";
+import { initPopupPort } from "~utils/inactivity";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -32,6 +33,11 @@ export function WanderBrowserExtensionApp() {
 
   useEffect(() => {
     handleSyncLabelsAlarm();
+
+    // initialize popup port for inactivity tracking
+    const cleanup = initPopupPort();
+
+    return () => cleanup();
   }, []);
 
   // To show update splash

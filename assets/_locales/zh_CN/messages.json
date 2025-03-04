@@ -2923,5 +2923,13 @@
     "setting_fullscreen": {
         "message": "全屏",
         "description": "Fullscreen text"
+    },
+    "auto_sign_out_settings": {
+        "message": "在一定分钟内不活动后自动退出 Wander",
+        "description": "Auto sign out settings text"
+    },
+    "minutes": {
+        "message": "分钟",
+        "description": "Minutes text"
     }
 }
