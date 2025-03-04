@@ -2,13 +2,13 @@ import { AuthProviderType } from "embed-api";
 import { supabase, trpcVanilla } from "~utils/embedded/embedded.utils";
 
 async function authenticate(authProviderType: AuthProviderType) {
+  // TODO: The authentication procedures are not needed.
   // return trpcVanilla.authenticate.mutate({ authProviderType });
 
   if ("GOOGLE" === authProviderType) {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        // redirectTo: undefined, // `${window.location.origin}/auth/callback/google`,
         // redirectTo: `${window.location.origin}#/auth/callback/google`,
       }
     });
