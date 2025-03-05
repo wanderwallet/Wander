@@ -17,6 +17,8 @@ async function authenticate(authProviderType: AuthProviderType) {
 
     return { url: data.url };
   }
+
+  throw new Error(`${authProviderType} not supported yet.`);
 }
 
 async function generateFetchRecoverableAccountsChallenge(address: string) {

@@ -47,6 +47,7 @@ import { getDeviceNonce } from "~utils/embedded/device-nonce/device-nonce.utils"
 import { jwtDecode } from "jwt-decode";
 import type { SupabaseJwtPayload } from "~utils/authentication/authentication.types";
 import { isTempWalletPromiseExpired } from "~utils/embedded/utils/wallets/embedded-wallets.utils";
+import copy from "copy-to-clipboard";
 
 export type AuthStatusCopy = AuthStatus;
 
@@ -224,17 +225,22 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
     const seedPhrase = await WalletUtils.getDecryptedSeedPhrase(walletId, jwk);
 
-    await navigator.clipboard.writeText(seedPhrase);
+    const successfulCopy = await copy(seedPhrase);
 
-    const { wallet: updatedWallet } = await WalletService.registerWalletExport({
-      walletId,
-      type: "SEEDPHRASE"
-    });
+    if (successfulCopy) {
+      const { wallet: updatedWallet } =
+        await WalletService.registerWalletExport({
+          walletId,
+          type: "SEEDPHRASE"
+        });
 
-    updateCurrentWallet((currentWallet) => ({
-      ...currentWallet,
-      ...updatedWallet
-    }));
+      updateCurrentWallet((currentWallet) => ({
+        ...currentWallet,
+        ...updatedWallet
+      }));
+    }
+
+    return successfulCopy;
   }, [walletId, updateCurrentWallet]);
 
   const generateRecoveryAndDownload = useCallback(async () => {
@@ -756,7 +762,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
           console.error("No URL returned from authenticate");
         }
       } catch (error) {
-        console.error("Google sign-in failed:", error);
+        console.error(`${authProviderType} authentication failed:`, error);
         // setIsLoading(false);
       }
     },

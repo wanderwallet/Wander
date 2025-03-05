@@ -112,6 +112,6 @@ export interface EmbeddedContextData
 
   skipBackUp: (doNotAskAgain: boolean) => void | Promise<void>;
   downloadKeyfile: () => Promise<void>;
-  copySeedphrase: () => Promise<void>;
+  copySeedphrase: () => Promise<boolean>;
   generateRecoveryAndDownload: () => Promise<void>;
 }

@@ -17,9 +17,9 @@ const SvgCheck = ({
     <path
       d="M14.6666 4.25L6.87498 12.0417L3.33331 8.5"
       stroke="currentColor"
-      stroke-width="2"
-      stroke-linecap="round"
-      stroke-linejoin="round"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     />
   </svg>
 );

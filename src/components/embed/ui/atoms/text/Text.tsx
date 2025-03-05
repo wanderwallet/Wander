@@ -1,26 +1,46 @@
-import React from "react";
+import React, { forwardRef } from "react";
+import clsx from "clsx";
 import styles from "./Text.module.css";
 import type { TextBaseProps } from "./Text.types";
+import { useTheme } from "../../../contexts/ThemeContext";
 
-const Text = React.forwardRef<HTMLSpanElement, TextBaseProps>(
+const Text = forwardRef<HTMLParagraphElement, TextBaseProps>(
   (
-    { children, className, alignment = "left", variant = "bodyMd", ...props },
+    {
+      children,
+      variant = "bodyMd",
+      alignment = "left",
+      className,
+      style,
+      ...props
+    },
     ref
   ) => {
-    const Component = "span";
+    const { isDarkMode } = useTheme();
 
-    const type = variant.slice(0, -2);
+    const isHeading = variant.startsWith("heading");
+    const textColor = isDarkMode
+      ? isHeading
+        ? "var(--color-font-heading)"
+        : "var(--color-font-body)"
+      : style?.color;
+
+    const Component = isHeading ? "h2" : "span";
+    const textStyle = {
+      ...style,
+      color: textColor
+    };
 
     return (
       <Component
         ref={ref}
-        className={`
-        ${styles["text"]}
-        ${styles[`text__${alignment}`]}
-        ${styles[`text__${type}`]}
-        ${styles[`text__variant__${variant}`]}
-        ${className}
-      `}
+        className={clsx(
+          styles.text,
+          styles[variant],
+          styles[`text__${alignment}`],
+          className
+        )}
+        style={textStyle}
         {...props}
       >
         {children}

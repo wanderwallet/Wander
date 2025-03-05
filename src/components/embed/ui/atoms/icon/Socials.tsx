@@ -1,5 +1,6 @@
 import * as React from "react";
 import type { SVGProps } from "react";
+import { withThemeAwareColor } from "./IconBase";
 const SvgSocials = (props: SVGProps<SVGSVGElement>) => (
   <svg
     width="71"
@@ -10,7 +11,7 @@ const SvgSocials = (props: SVGProps<SVGSVGElement>) => (
     {...props}
     color="currentColor"
   >
-    <g clip-path="url(#clip0_937_884)">
+    <g clipPath="url(#clip0_937_884)">
       <rect x="1.5" y="1" width="24" height="24" rx="12" fill="white" />
       <path
         d="M25.5 13C25.5 6.37258 20.1274 1 13.5 1C6.87258 1 1.5 6.37258 1.5 13C1.5 18.9895 5.8882 23.954 11.625 24.8542V16.4688H8.57812V13H11.625V10.3563C11.625 7.34875 13.4166 5.6875 16.1576 5.6875C17.4701 5.6875 18.8438 5.92188 18.8438 5.92188V8.875H17.3306C15.84 8.875 15.375 9.80008 15.375 10.75V13H18.7031L18.1711 16.4688H15.375V24.8542C21.1118 23.954 25.5 18.9895 25.5 13Z"
@@ -31,8 +32,8 @@ const SvgSocials = (props: SVGProps<SVGSVGElement>) => (
     <rect x="45" y="0.5" width="25" height="25" rx="12.5" fill="white" />
     <rect x="45" y="0.5" width="25" height="25" rx="12.5" stroke="#D0D5DD" />
     <path
-      fill-rule="evenodd"
-      clip-rule="evenodd"
+      fillRule="evenodd"
+      clipRule="evenodd"
       d="M60.3696 21L56.3337 15.2473L51.2812 21H49.1437L55.3854 13.8953L49.1437 5H54.6316L58.4355 10.4218L63.2015 5H65.339L59.387 11.7756L65.8576 21H60.3696ZM62.75 19.3782H61.3109L52.2043 6.62182H53.6436L57.2908 11.7296L57.9216 12.6159L62.75 19.3782Z"
       fill="#242E36"
     />
@@ -43,4 +44,4 @@ const SvgSocials = (props: SVGProps<SVGSVGElement>) => (
     </defs>
   </svg>
 );
-export default SvgSocials;
+export default withThemeAwareColor(SvgSocials);

@@ -17,8 +17,8 @@ const SvgChevronRight = ({
       d="M6.5 12L10.5 8L6.5 4"
       stroke="currentColor"
       stroke-width="1.33333"
-      stroke-linecap="round"
-      stroke-linejoin="round"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     />
   </svg>
 );
