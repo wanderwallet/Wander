@@ -739,7 +739,19 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
         if (url) {
           // Redirect to Google's OAuth page
-          window.location.href = url;
+          // Opening the URL on the current tab won't work when Embedded is loaded inside the iframe:
+
+          if (location.ancestorOrigins.length === 0) {
+            console.log(`Redirecting to ${url}...`);
+
+            window.location.href = url;
+          } else {
+            console.log(`Opening ${url}...`);
+
+            window.open(url, "_blank");
+
+            window.location.reload();
+          }
         } else {
           console.error("No URL returned from authenticate");
         }
@@ -878,9 +890,28 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
   }, []);
 
   useEffect(() => {
+    let gotUpdate = false;
+
+    setTimeout(() => {
+      if (!gotUpdate) {
+        setEmbeddedContextAuth({
+          authStatus: "noAuth",
+          authProviderType: null,
+          user: null,
+          session: null
+        });
+
+        initEmbeddedWallet();
+      }
+    }, 2000);
+
+    // See https://stackoverflow.com/questions/71819128/supabase-auth-onauthstatechange-not-working-when-react-app-is-in-iframe
+
     const {
       data: { subscription }
     } = supabase.auth.onAuthStateChange((_event, session) => {
+      gotUpdate = true;
+
       const accessToken = session?.access_token ?? null;
       const user = session?.user ?? null;
       const authProviderType: AuthProviderType | null =

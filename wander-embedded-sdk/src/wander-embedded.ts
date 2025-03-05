@@ -18,9 +18,9 @@ const NOOP = () => {};
 
 export class WanderEmbedded {
   private static instance: WanderEmbedded | null = null;
-  // static DEFAULT_IFRAME_SRC = "http://localhost:5173/" as const;
+  static DEFAULT_IFRAME_SRC = "http://localhost:5173/" as const;
   // static DEFAULT_IFRAME_SRC = "https://embed.wander.app/" as const;
-  static DEFAULT_IFRAME_SRC = "https://embed-dev.wander.app/" as const;
+  // static DEFAULT_IFRAME_SRC = "https://embed-dev.wander.app/" as const;
 
   // Callbacks:
   private onAuth: (userDetails: UserDetails | null) => void = NOOP;
@@ -93,7 +93,7 @@ export class WanderEmbedded {
       button: buttonOptions
     } = options;
 
-    // TODO Use PARAM_ORIGIN_KEY and PARAM_API_KEY instead of hardcoded values:
+    // TODO: Repace with getEmbeddedURL(apiKey)
     const srcWithParams = `${src}?origin=${location.origin}&api-key=123`;
 
     if (iframeOptions instanceof HTMLElement) {

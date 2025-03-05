@@ -16,6 +16,7 @@
 
 **`cd wander-embedded-sdk/`**
 
+- `yarn install`
 - `yarn dev` - This builds of the SDK itself.
 
 **Clone [kranthicodes/WE-SDK](https://github.com/kranthicodes/WE-SDK)**
@@ -34,6 +35,8 @@
         },
       },
     });
+
+    wanderInstance.open();
 
     setInstance(wanderInstance);
   }, []);

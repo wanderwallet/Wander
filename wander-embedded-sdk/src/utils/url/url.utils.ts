@@ -1,8 +1,3 @@
-import {
-  PARAM_API_KEY,
-  PARAM_ANCESTOR_ORIGIN
-} from "wallet-api/wallet-sdk.es.js";
-
 // When the Wander Embedded <iframe> is created, its URL will include the following search params:
 // - api-key
 // - origin
