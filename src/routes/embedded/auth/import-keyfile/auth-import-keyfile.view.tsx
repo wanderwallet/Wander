@@ -11,6 +11,7 @@ import {
   Copyable,
   Button
 } from "~components/embed";
+import copy from "copy-to-clipboard";
 
 export function AuthImportKeyfileEmbeddedView() {
   const [loading, setLoading] = useState(false);
@@ -80,7 +81,7 @@ export function AuthImportKeyfileEmbeddedView() {
         isFullWidth
         label="Your account address"
         onClick={() => {
-          navigator.clipboard.writeText(importedTempWalletAddress);
+          copy(importedTempWalletAddress);
         }}
         value={importedTempWalletAddress}
       />

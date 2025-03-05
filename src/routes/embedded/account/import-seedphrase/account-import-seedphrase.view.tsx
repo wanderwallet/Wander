@@ -1,3 +1,4 @@
+import copy from "copy-to-clipboard";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Button,
@@ -70,9 +71,7 @@ export function AccountImportSeedphraseEmbeddedView() {
       <SeedInput
         handleSubmit={handleImportWallet}
         seedPhrase={seedPhrase}
-        handleCopyToClipboard={() =>
-          navigator.clipboard.writeText(seedPhrase.join(" "))
-        }
+        handleCopyToClipboard={() => copy(seedPhrase.join(" "))}
         handleInputChange={handleInputChange}
       />
       <Button

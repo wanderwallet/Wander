@@ -12,6 +12,7 @@ import {
   WarningIcon,
   Text
 } from "~components/embed/ui";
+import copy from "copy-to-clipboard";
 
 export function AccountExportWalletEmbeddedView() {
   const { wallets, downloadKeyfile, copySeedphrase } = useEmbedded();
@@ -58,7 +59,7 @@ export function AccountExportWalletEmbeddedView() {
           isFullWidth
           label="Your account address"
           onClick={() => {
-            navigator.clipboard.writeText(walletAddress);
+            copy(walletAddress);
           }}
           value={walletAddress}
         />

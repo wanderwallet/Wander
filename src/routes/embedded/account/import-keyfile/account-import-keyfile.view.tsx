@@ -1,4 +1,5 @@
 import type { JWKInterface } from "arweave/web/lib/wallet";
+import copy from "copy-to-clipboard";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Button,
@@ -79,7 +80,7 @@ export function AccountImportKeyfileEmbeddedView() {
         isFullWidth
         label="Your account address"
         onClick={() => {
-          navigator.clipboard.writeText(importedTempWalletAddress);
+          copy(importedTempWalletAddress);
         }}
         value={importedTempWalletAddress}
       />

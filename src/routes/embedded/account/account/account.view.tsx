@@ -1,3 +1,4 @@
+import copy from "copy-to-clipboard";
 import {
   Card,
   Row,
@@ -37,7 +38,7 @@ export function AccountEmbeddedView() {
         isFullWidth
         label="Your account address"
         onClick={() => {
-          navigator.clipboard.writeText(JSON.stringify(address, null, 2));
+          copy(JSON.stringify(address, null, 2));
         }}
         value={JSON.stringify(address, null, 2)}
       />

@@ -1,3 +1,4 @@
+import copy from "copy-to-clipboard";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Button,
@@ -74,7 +75,7 @@ export function AuthImportSeedphraseEmbeddedView() {
         isFullWidth
         label="Your account address"
         onClick={() => {
-          navigator.clipboard.writeText(importedTempWalletAddress);
+          copy(importedTempWalletAddress);
         }}
         value={importedTempWalletAddress}
       />
@@ -118,9 +119,7 @@ export function AuthImportSeedphraseEmbeddedView() {
       <SeedInput
         seedPhrase={seedPhrase}
         handleSubmit={handleImportWallet}
-        handleCopyToClipboard={() =>
-          navigator.clipboard.writeText(seedPhrase.join(" "))
-        }
+        handleCopyToClipboard={() => copy(seedPhrase.join(" "))}
         handleInputChange={handleInputChange}
       />
       <Button
