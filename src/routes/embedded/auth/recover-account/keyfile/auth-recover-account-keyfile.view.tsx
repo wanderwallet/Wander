@@ -11,6 +11,7 @@ import {
   Copyable,
   Upload
 } from "~components/embed";
+import copy from "copy-to-clipboard";
 
 export function AuthRecoverAccountKeyfileEmbeddedView() {
   const [loading, setLoading] = useState(false);
@@ -95,7 +96,7 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
         isFullWidth
         label="Your account address"
         onClick={() => {
-          navigator.clipboard.writeText(importedTempWalletAddress);
+          copy(importedTempWalletAddress);
         }}
         value={importedTempWalletAddress}
       />

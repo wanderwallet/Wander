@@ -1,3 +1,4 @@
+import copy from "copy-to-clipboard";
 import {
   Card,
   Row,
@@ -50,7 +51,7 @@ export function AccountConfirmationEmbeddedView() {
         value={shortenAddress(lastRegisteredWallet.address)}
         tooltipValue={lastRegisteredWallet.address}
         onClick={() => {
-          navigator.clipboard.writeText(lastRegisteredWallet.address);
+          copy(lastRegisteredWallet.address);
         }}
       />
       <Button isFullWidth size="md" onClick={() => clearLastRegisteredWallet()}>

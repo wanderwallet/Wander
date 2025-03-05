@@ -13,6 +13,7 @@ import {
   SocialsIcon,
   Checkbox
 } from "~components/embed/ui";
+import copy from "copy-to-clipboard";
 
 export function AuthRecoverAccountAuthenticationEmbeddedView() {
   const { importedTempWalletAddress, recoverableAccounts, recoverAccount } =
@@ -54,7 +55,7 @@ export function AuthRecoverAccountAuthenticationEmbeddedView() {
         isFullWidth
         label="Your account address"
         onClick={() => {
-          navigator.clipboard.writeText(importedTempWalletAddress);
+          copy(importedTempWalletAddress);
         }}
         value={importedTempWalletAddress}
       />

@@ -11,6 +11,7 @@ import {
   Button,
   SeedInput
 } from "~components/embed/ui";
+import copy from "copy-to-clipboard";
 
 export function AuthRecoverAccountSeedphraseEmbeddedView() {
   const [loading, setLoading] = useState(false);
@@ -88,7 +89,7 @@ export function AuthRecoverAccountSeedphraseEmbeddedView() {
         isFullWidth
         label="Your account address"
         onClick={() => {
-          navigator.clipboard.writeText(importedTempWalletAddress);
+          copy(importedTempWalletAddress);
         }}
         value={importedTempWalletAddress}
       />
@@ -132,9 +133,7 @@ export function AuthRecoverAccountSeedphraseEmbeddedView() {
       <SeedInput
         seedPhrase={seedPhrase}
         handleSubmit={handleImportWallet}
-        handleCopyToClipboard={() =>
-          navigator.clipboard.writeText(seedPhrase.join(" "))
-        }
+        handleCopyToClipboard={() => copy(seedPhrase.join(" "))}
         handleInputChange={handleInputChange}
       />
       <Button
