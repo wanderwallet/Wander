@@ -207,8 +207,6 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       type: "KEYFILE"
     });
 
-    // TODO: Update wallet in state for all calls that return an updated wallet.
-
     updateCurrentWallet((currentWallet) => ({
       ...currentWallet,
       ...updatedWallet
@@ -256,9 +254,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       sharePublicKey: recoveryBackupSharePublicKey
     } = await WalletUtils.generateShareHashAndPublicKey(recoveryBackupShare);
 
-    const deviceNonce = getDeviceNonce();
-
-    const registerRecoveryShareResponse =
+    const { recoveryFileServerSignature, wallet: updatedWallet } =
       await WalletService.registerRecoveryShare({
         walletId,
         recoveryAuthShare,
@@ -266,11 +262,15 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         recoveryBackupSharePublicKey
       });
 
+    updateCurrentWallet((currentWallet) => ({
+      ...currentWallet,
+      ...updatedWallet
+    }));
+
     downloadRecoveryFile(walletAddress, {
       walletId,
       recoveryBackupShare,
-      recoveryFileServerSignature:
-        registerRecoveryShareResponse.recoveryFileServerSignature
+      recoveryFileServerSignature
     });
 
     // TODO: Make sure we use `freeDecryptedWallet` all over the place in the new code for Embedded:
@@ -507,7 +507,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         sharePublicKey: deviceSharePublicKey
       } = await WalletUtils.generateShareHashAndPublicKey(deviceShare);
 
-      const createWalletResponse = await WalletService.createPublicWallet({
+      const { wallet: createdWallet } = await WalletService.createPublicWallet({
         address: walletAddress,
         publicKey: jwk.n,
         authShare,
@@ -519,10 +519,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         }
       });
 
-      const dbWallet = createWalletResponse.wallet;
-
       const wallet: Wallet = {
-        ...dbWallet,
+        ...createdWallet,
         activationStatus: "active",
         authShare,
         deviceShare
@@ -531,7 +529,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       WalletUtils.storeDeviceShare(wallet, userId);
 
       if (seedPhrase && EMBEDDED_FEATURE_FLAGS.STORE_SEED_PHRASE) {
-        WalletUtils.storeEncryptedSeedPhrase(dbWallet.id, seedPhrase, jwk);
+        WalletUtils.storeEncryptedSeedPhrase(wallet.id, seedPhrase, jwk);
       }
 
       try {
@@ -540,7 +538,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         freeDecryptedWallet(jwk);
       }
 
-      return dbWallet;
+      return wallet;
     },
     [userId]
   );

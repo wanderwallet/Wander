@@ -120,6 +120,6 @@ export function downloadRecoveryFile(
       2
     ),
     "application/json",
-    `arconnect-recovery-file-${address}.json`
+    `wander-embedded-recovery-file-${address}.json`
   );
 }

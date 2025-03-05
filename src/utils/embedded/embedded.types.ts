@@ -107,7 +107,7 @@ export interface EmbeddedContextData
   ) => Promise<TempWallet>;
   deleteImportedTempWallet: () => Promise<void>;
 
-  registerWallet: (sourceType: WalletSourceType) => Promise<DbWallet>;
+  registerWallet: (sourceType: WalletSourceType) => Promise<Wallet>;
   clearLastRegisteredWallet: () => void;
 
   skipBackUp: (doNotAskAgain: boolean) => void | Promise<void>;
