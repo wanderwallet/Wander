@@ -36,35 +36,20 @@ const AUTH_STATUS_TO_OVERRIDE: Record<
   unlocked: null
 };
 
-export interface UseAuthStatusOverride {
-  location?: RoutePath;
-  authStatus: AuthStatus;
-  lastRegisteredWallet: null | Wallet;
-  currentWallet: null | Wallet;
-}
+export function useEmbeddedOverride(
+  location?: RoutePath
+): null | ExtensionRouteOverride | RouteRedirect<WanderRoutePath> {
+  const { authStatus, lastRegisteredWallet, currentWallet } = useEmbedded();
 
-export function useEmbeddedOverride({
-  location,
-  authStatus,
-  lastRegisteredWallet,
-  currentWallet
-}: UseAuthStatusOverride):
-  | null
-  | ExtensionRouteOverride
-  | RouteRedirect<WanderRoutePath> {
-  if (!location) return;
+  // TODO: Handle OAuth redirect error URL.
 
-  if (location?.startsWith("/access_token")) {
-    return null;
+  if (
+    !location ||
+    location.startsWith("/access_token") ||
+    authStatus === "unknown"
+  ) {
+    return "/__OVERRIDES/cover";
   }
-
-  // TODO: Memo all  this:
-
-  /*
-  if (authStatus === "unknown" && location !== "/__OVERRIDES/cover") {
-    return "/__REDIRECT/";
-  }
-    */
 
   if (location) {
     if (authStatus === "noAuth" || authStatus === "authLoading") {
@@ -153,15 +138,11 @@ export function useEmbeddedOverride({
   return AUTH_STATUS_TO_OVERRIDE[authStatus];
 }
 
+// TODO: Memo all this:
+
 export const useEmbeddedLocation: BaseLocationHook = withRouterRedirects(() => {
-  const { authStatus, lastRegisteredWallet, currentWallet } = useEmbedded();
   const [wocation, wavigate] = useHashLocation();
-  const override = useEmbeddedOverride({
-    location: wocation as RoutePath,
-    authStatus,
-    lastRegisteredWallet,
-    currentWallet
-  });
+  const override = useEmbeddedOverride(wocation as RoutePath);
 
   const [authRequestsLocation, authRequestsNavigate] =
     useAuthRequestsLocation();

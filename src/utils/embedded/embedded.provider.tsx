@@ -773,6 +773,11 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         return;
       }
 
+      // TODO: This is a temp dirty fix to:
+      // - Try to refresh the session when it's incomplete (missing deviceNonce and countryCode).
+      // - Try to delete the session from frontend when it has been deleted/invalidated on the backend.
+      await supabase.auth.refreshSession();
+
       const wallets = await WalletService.fetchWallets(userId);
 
       setEmbeddedContextState((prevAuthContextState) => ({
@@ -907,13 +912,9 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
           !dbSession.deviceNonce ||
           dbSession.deviceNonce !== getDeviceNonce()
         ) {
-          console.warn("Incomplete session. Refreshing...");
-
-          setEmbeddedContextAuth(EMBEDDED_CONTEXT_INITIAL_AUTH);
-
-          supabase.auth.refreshSession();
-
-          return;
+          console.warn("Incomplete session =", dbSession);
+        } else {
+          console.info("Complete session =", dbSession);
         }
       }
 
