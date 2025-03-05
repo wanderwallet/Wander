@@ -620,9 +620,6 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       });
 
       await AuthenticationService.recoverAccount(userId, challengeSolution);
-
-      // TODO: The imported wallet needs to be split and the authShare sent to the backend. Then, wallets need to be
-      // fetched...
     },
     [session]
   );
@@ -727,7 +724,6 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
   const authenticate = useCallback(
     async (authProviderType: AuthProviderType) => {
       if (user) {
-        // TODO: What to do if this is called while already authenticated?
         await supabase.auth.refreshSession();
 
         return;
