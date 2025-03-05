@@ -84,7 +84,7 @@ export {
   setApiKeyHeader
 };
 
-if (process.env.NODE_ENV) {
+if (process.env.NODE_ENV === "development") {
   (window as any).logout = () => {
     return supabase.auth.signOut();
   };

@@ -25,6 +25,9 @@ function invokeAlarms(name: string) {
   });
 }
 
+// setTimeout and setInterval delays have a max. value that if we exceed, just causes the callback to be invoked
+// immediately.
+
 const MAX_32_BIT = 0x7fffffff;
 
 export const alarms = {
