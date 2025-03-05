@@ -2,6 +2,12 @@
 
 ## Dev Setup
 
+**In the `embed-api` repo:**
+
+- `pnpm install`
+- `pnpm dev`
+- `pnpm sdk:dev`
+
 **At the root of this repo:**
 
 - `yarn install`
