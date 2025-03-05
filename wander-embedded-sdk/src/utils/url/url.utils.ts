@@ -14,6 +14,7 @@ import {
 const PARAM_API_KEY = "api-key";
 const PARAM_ANCESTOR_ORIGIN = "ancestor-origin";
 
+// Duplicated in `src/utils/embedded/utils/wallets/embedded-wallets.utils.ts`:
 export function getEmbeddedOrigin() {
   return process.env.NODE_ENV === "development"
     ? "http://localhost:5173/"

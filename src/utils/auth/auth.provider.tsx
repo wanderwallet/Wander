@@ -469,31 +469,34 @@ export function AuthRequestsProvider({ children }: PropsWithChildren) {
   useEffect(() => {
     let clearCloseAuthPopupTimeout = () => {};
 
-    async function setCloseTimers() {
+    function setCloseTimers() {
       const isEmbedded = import.meta.env?.VITE_IS_EMBEDDED_APP === "1";
-      const isLocked = !!(await getDecryptionKey());
+      const hasAuthRequests = authRequests.length > 0;
       const isDone =
-        authRequests.length > 0 &&
+        hasAuthRequests &&
         authRequests.every((authRequest) => authRequest.status !== "pending");
 
-      console.log("setCloseTimers isLocked =", isLocked);
-
-      if (!isEmbedded && isLocked) {
-        // The user has `AUTH_POPUP_UNLOCK_REQUEST_TTL_MS` (15 minutes) to unlock the wallet before we close it:
-        clearCloseAuthPopupTimeout = closeAuthPopup(
-          AUTH_POPUP_UNLOCK_REQUEST_TTL_MS
-        );
-      } else if (!isEmbedded && authRequests.length === 0) {
-        // Once the wallet is unlocked, we close the popup if an AuthRequest doesn't arrive in less than
-        // `AUTH_POPUP_REQUEST_WAIT_MS` (1 second):
-        clearCloseAuthPopupTimeout = closeAuthPopup(AUTH_POPUP_REQUEST_WAIT_MS);
-      } else if (isDone) {
+      if (isDone) {
         // Close the window if the last request has been handled:
         // TODO: Add setting to decide whether this closes automatically or stays open in a "done" state.
 
         clearCloseAuthPopupTimeout = closeAuthPopup(
           AUTH_POPUP_CLOSING_DELAY_MS
         );
+      } else if (!isEmbedded) {
+        if (hasAuthRequests) {
+          // Once there are some AuthRequest waiting, the user has `AUTH_POPUP_UNLOCK_REQUEST_TTL_MS` (15 minutes) to
+          // unlock the wallet before we close it automatically:
+          clearCloseAuthPopupTimeout = closeAuthPopup(
+            AUTH_POPUP_UNLOCK_REQUEST_TTL_MS
+          );
+        } else {
+          // Once the wallet is unlocked, we close the popup if an AuthRequest doesn't arrive in less than
+          // `AUTH_POPUP_REQUEST_WAIT_MS` (1 second):
+          clearCloseAuthPopupTimeout = closeAuthPopup(
+            AUTH_POPUP_REQUEST_WAIT_MS
+          );
+        }
       }
     }
 

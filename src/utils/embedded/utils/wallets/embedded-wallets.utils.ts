@@ -7,3 +7,10 @@ export function isTempWalletPromiseExpired(
 ) {
   return Date.now() - tempWalletPromise.createdAt >= FIVE_MINS_IN_MS;
 }
+
+// Duplicated in `wander-embedded-sdk/src/utils/url/url.utils.ts`:
+export function getEmbeddedOrigin() {
+  return process.env.NODE_ENV === "development"
+    ? "http://localhost:5173/"
+    : "https://embedded-iframe.arconnect.io/";
+}

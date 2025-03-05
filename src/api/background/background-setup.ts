@@ -28,7 +28,6 @@ import {
 } from "~api/background/handlers/browser/tabs/tabs.handler";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { handleAuthStateChange } from "./handlers/storage/auth-state-change/auth-state-change.handler";
-import { getEmbeddedAncestorOrigin } from "~utils/embedded/embedded.utils";
 
 export function setupBackgroundService() {
   log(
@@ -43,6 +42,7 @@ export function setupBackgroundService() {
   onMessage("api_call", handleApiCallMessage);
   onMessage("chunk", handleChunkMessage);
 
+  /*
   if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1") {
     window.addEventListener("message", (event: MessageEvent) => {
       if (
@@ -66,24 +66,22 @@ export function setupBackgroundService() {
 
       // Example: check if the message is from our SDK
 
-      /*
-      if (event.data.type === "FROM_SDK") {
-        const incomingMsg = event.data.payload;
-        console.log(
-          "Iframe received message from WanderEmbedded:",
-          incomingMsg
-        );
+      // if (event.data.type === "FROM_SDK") {
+      //   const incomingMsg = event.data.payload;
+      //   console.log(
+      //     "Iframe received message from WanderEmbedded:",
+      //     incomingMsg
+      //   );
 
-        // Respond back
-        event.source?.postMessage({
-          type: "FROM_IFRAME",
-          payload: `Got your message: ${incomingMsg}`
-        });
-      }
-      */
+      //   // Respond back
+      //   event.source?.postMessage({
+      //     type: "FROM_IFRAME",
+      //     payload: `Got your message: ${incomingMsg}`
+      //   });
+      // }
     });
-  } else {
   }
+  */
 
   // LIFECYCLE:
 

@@ -1,10 +1,6 @@
 import { createSupabaseClient, createTRPCClient } from "embed-api";
 import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 
-if (!IS_EMBEDDED_APP || typeof document === "undefined") {
-  throw new Error("This file should only be loaded in Wander Embedded.");
-}
-
 // Then, its tRPC client will be initialized with the following headers:
 // - authorization (getAuthTokenHeader / setAuthTokenHeader)
 // - x-device-nonce (getDeviceNonceHeader / setDeviceNonceHeader)
@@ -12,7 +8,9 @@ if (!IS_EMBEDDED_APP || typeof document === "undefined") {
 //
 // The code/functions below run in the context of Wander Embedded iframe/domain.
 
-const { search, ancestorOrigins } = document.location;
+const { search = "", ancestorOrigins = [] } = IS_EMBEDDED_APP
+  ? document.location
+  : {};
 const searchParams = new URLSearchParams(search);
 const ancestorOrigin = ancestorOrigins[ancestorOrigins.length - 1];
 
@@ -23,6 +21,7 @@ const PARAM_ANCESTOR_ORIGIN = "ancestor-origin";
 const EMBEDDED_API_KEY =
   searchParams.get(PARAM_API_KEY) ||
   (process.env.NODE_ENV === "development" ? "DEVELOPMENT_API_KEY" : "");
+
 const EMBEDDED_ANCESTOR_ORIGIN =
   ancestorOrigin || searchParams.get(PARAM_ANCESTOR_ORIGIN);
 
@@ -41,12 +40,14 @@ const {
   setDeviceNonceHeader,
   getApiKeyHeader,
   setApiKeyHeader
-} = createTRPCClient({
-  baseURL: "http://localhost:3000",
-  authToken: null,
-  deviceNonce: undefined,
-  apiKey: EMBEDDED_API_KEY
-});
+} = IS_EMBEDDED_APP
+  ? createTRPCClient({
+      baseURL: "http://localhost:3000",
+      authToken: null,
+      deviceNonce: undefined,
+      apiKey: EMBEDDED_API_KEY
+    })
+  : {};
 
 // TODO: When developers set up a new app/domain, we should probably use a mechanism like Google Search Console where
 // they need to create a file at the root of their domain, or add an HTML tag, so that we can verify it's actually theirs.
@@ -68,10 +69,12 @@ insecurelyValidateApiKey();
 // type TRPCClient = ReturnType<typeof createTRPCProxyClient<AppRouter>>;
 // const trpcVanilla = client as TRPCClient;
 
-const supabase = createSupabaseClient(
-  import.meta.env?.VITE_SUPABASE_URL || "",
-  import.meta.env?.VITE_SUPABASE_ANON_KEY || ""
-);
+const supabase = IS_EMBEDDED_APP
+  ? createSupabaseClient(
+      import.meta.env?.VITE_SUPABASE_URL || "",
+      import.meta.env?.VITE_SUPABASE_ANON_KEY || ""
+    )
+  : null;
 
 export {
   supabase,
@@ -84,7 +87,7 @@ export {
   setApiKeyHeader
 };
 
-if (process.env.NODE_ENV === "development") {
+if (IS_EMBEDDED_APP && process.env.NODE_ENV === "development") {
   (window as any).logout = () => {
     return supabase.auth.signOut();
   };

@@ -9,7 +9,7 @@ import mitt from "mitt";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { version } from "../../../package.json";
 import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
-import { getEmbeddedOrigin } from "~utils/embedded/sdk/utils/url/sdk-url.utils";
+import { getEmbeddedOrigin } from "~utils/embedded/utils/wallets/embedded-wallets.utils";
 // import { version as sdkVersion } from "../../../wander-embedded-sdk/package.json";
 
 export function setupWalletSDK(targetWindow: Window = window) {
@@ -69,7 +69,7 @@ export function setupWalletSDK(targetWindow: Window = window) {
         }
       };
 
-      // 4. Send message to background script (ArConnect Extension) or to the iframe window (ArConnect Embedded):
+      // 4. Send message to background script (Wander BE) or to the iframe window (Wander Embedded):
 
       const targetOrigin = IS_EMBEDDED_APP
         ? getEmbeddedOrigin()
