@@ -5912,9 +5912,27 @@ elliptic@6.6.1, elliptic@^6.5.3, elliptic@^6.5.5, elliptic@^6.5.7:
     minimalistic-assert "^1.0.1"
     minimalistic-crypto-utils "^1.0.1"
 
-"embed-api@link:../embed-api":
-  version "0.0.0"
-  uid ""
+"embed-api@git+ssh://git@github.com/wanderwallet/embed-api#2014517cecc1e19d076d692386409ed870652767":
+  version "0.1.0"
+  resolved "git+ssh://git@github.com/wanderwallet/embed-api#2014517cecc1e19d076d692386409ed870652767"
+  dependencies:
+    "@prisma/client" "6.2.1"
+    "@supabase/ssr" "^0.5.2"
+    "@supabase/supabase-js" "^2.48.1"
+    "@tanstack/react-query" "4.36.1"
+    "@trpc/client" "^10.45.2"
+    "@trpc/next" "10.43.6"
+    "@trpc/react-query" "10.43.6"
+    "@trpc/server" "^10.45.2"
+    arweave "^1.15.5"
+    dotenv "^16.4.7"
+    jsonwebtoken "^9.0.2"
+    jwt-decode "^4.0.0"
+    next "14.2.16"
+    react "^18"
+    react-dom "^18"
+    superjson "^2.2.2"
+    zod "^3.24.1"
 
 emoji-regex@^8.0.0:
   version "8.0.0"
@@ -11498,6 +11516,7 @@ wouter@^3.3.5:
     use-sync-external-store "^1.0.0"
 
 "wrap-ansi-cjs@npm:wrap-ansi@^7.0.0", wrap-ansi@^7.0.0:
+  name wrap-ansi-cjs
   version "7.0.0"
   resolved "https://registry.yarnpkg.com/wrap-ansi/-/wrap-ansi-7.0.0.tgz#67e145cff510a6a6984bdf1152911d69d2eb9e43"
   integrity sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q==
