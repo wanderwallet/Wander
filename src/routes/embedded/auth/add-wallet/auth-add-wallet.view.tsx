@@ -1,12 +1,25 @@
-import { DevFigmaScreen } from "~components/dev/figma-screen/figma-screen.component";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
-import { useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 
-import screenSrc from "url:/assets-beta/figma-screens/add-a-wallet.view.png";
+import {
+  Box,
+  Button,
+  Card,
+  KeyIcon,
+  QRCodeIcon,
+  Row,
+  SeedIcon,
+  Text,
+  WalletIcon,
+  WanderIcon
+} from "~components/embed";
+import type { WalletSourceType } from "embed-api";
 
 export function AuthAddWalletEmbeddedView() {
   const { authProviderType, generateTempWallet, registerWallet } =
     useEmbedded();
+
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     // Pre-generation starts on app load, but this call will re-generate it again if it has expired, as we are trying to
@@ -15,35 +28,84 @@ export function AuthAddWalletEmbeddedView() {
     generateTempWallet();
   }, []);
 
+  // TODO: Remember last selection and highlight that one / show it in the main screen (not in "More")
+
+  const handleRegisterWallet = useCallback(async (source: WalletSourceType) => {
+    setIsLoading(true);
+    await registerWallet(source);
+    setIsLoading(false);
+  }, []);
+
   return (
-    <DevFigmaScreen
-      title="Add a wallet"
-      src={screenSrc}
-      config={[
-        {
-          label: "Create New Wallet",
-          onClick: () => registerWallet("GENERATED")
-        },
-        {
-          label: "Enter Seed Phrase",
-          to: "/auth/import-seed-phrase"
-        },
-        {
-          label: "Import Private Key",
-          to: "/auth/import-keyfile"
-        },
-        authProviderType === "PASSKEYS"
-          ? {
-              label: "Add this device to an existing account",
-              to: "/auth/add-device",
-              variant: "secondary"
-            }
-          : {
-              label: `Add ${authProviderType} to an existing account`,
-              to: "/auth/add-auth-provider",
-              variant: "secondary"
-            }
-      ]}
-    />
+    <Card
+      headerText="Add a wallet"
+      subtitle="Add a wallet to your account to hold your funds. Create or add an existing wallet to continue."
+      footerElement={
+        <Row>
+          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
+            {"Secured by"}
+          </Text>
+          <WanderIcon color="#838383" />
+        </Row>
+      }
+      hasBackButton={true}
+      onBackButtonClick={() => {
+        window.location.href = "/";
+      }}
+      //   hasCloseButton={false}
+      size="auto"
+    >
+      <Box>
+        <Button
+          onClick={() => handleRegisterWallet("GENERATED")}
+          variant="outlined"
+          isFullWidth
+          icon={<SeedIcon fontSize={24} />}
+          isLoading={isLoading}
+          isDisabled={isLoading}
+        >
+          Create new wallet
+        </Button>
+        <Button
+          variant="outlined"
+          isFullWidth
+          icon={<WalletIcon fontSize={24} />}
+          href="/auth/import-seedphrase"
+          isDisabled={isLoading}
+        >
+          Enter Seed Phrase
+        </Button>
+        <Button
+          variant="outlined"
+          isFullWidth
+          icon={<KeyIcon fontSize={24} />}
+          href="/auth/import-keyfile"
+          isDisabled={isLoading}
+        >
+          Import Keyfile
+        </Button>
+        {authProviderType === "PASSKEYS" ? (
+          <Button
+            variant="outlined"
+            isFullWidth
+            icon={<QRCodeIcon fontSize={24} />}
+            href="/auth/add-device"
+            isDisabled={isLoading}
+          >
+            Add this device to an existing account
+          </Button>
+        ) : (
+          <Button
+            variant="outlined"
+            isFullWidth
+            icon={<QRCodeIcon fontSize={24} />}
+            href="/auth/add-auth-provider"
+            isDisabled={isLoading}
+          >
+            Add {authProviderType.toLocaleUpperCase()} to an existing account
+          </Button>
+        )}
+      </Box>
+    </Card>
   );
 }

@@ -1,0 +1,23 @@
+.themeToggle {
+  background-color: transparent;
+  color: var(--color-text-primary);
+  border: none;
+  cursor: pointer;
+  padding: var(--spacing-2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+  width: 40px;
+  height: 40px;
+
+  &:hover {
+    background-color: var(--color-bg-tertiary);
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--color-border-focus);
+  }
+}

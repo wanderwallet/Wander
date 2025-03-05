@@ -31,9 +31,11 @@
     const wanderInstance = new WanderEmbedded({
       iframe: {
         routeLayout: {
-          auth: "popup",
+          auth: "modal",
+          default: "popup",
         },
       },
+      button: true,
     });
 
     wanderInstance.open();

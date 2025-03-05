@@ -9,7 +9,7 @@ const SvgGDrive = (props: SVGProps<SVGSVGElement>) => (
     xmlns="http://www.w3.org/2000/svg"
     {...props}
   >
-    <g clip-path="url(#clip0_9_2081)">
+    <g clipPath="url(#clip0_9_2081)">
       <path
         d="M2.10011 21.0693L3.28472 23.1154C3.53087 23.5462 3.88472 23.8847 4.30011 24.1308L8.53087 16.8077H0.0693359C0.0693359 17.2847 0.192413 17.7616 0.438567 18.1924L2.10011 21.0693Z"
         fill="#0066DA"

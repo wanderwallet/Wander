@@ -1,35 +1,44 @@
-import React from "react";
+import React, { forwardRef } from "react";
+import clsx from "clsx";
 import styles from "./Row.module.css";
 import type { RowBaseProps } from "./Row.types";
+import { useTheme } from "../../../contexts/ThemeContext";
 
-const Row = React.forwardRef<HTMLDivElement, RowBaseProps>(
+const Row = forwardRef<HTMLDivElement, RowBaseProps>(
   (
     {
       children,
       className,
-      position = "relative",
       alignment = "center",
-      isOverlap = false,
+      justifyContent = "center",
+      style,
       ...props
     },
     ref
   ) => {
-    const Component = "div";
+    const { isDarkMode } = useTheme();
+
+    const rowStyle = {
+      ...style,
+      backgroundColor: isDarkMode
+        ? "var(--color-card-background-default)"
+        : style?.backgroundColor
+    };
 
     return (
-      <Component
+      <div
         ref={ref}
-        className={`
-        ${styles["row"]}
-        ${styles[`row__${position}`]}
-        ${styles[`row__${alignment}`]}
-        ${isOverlap ? styles["row__overlap"] : ""}
-        ${className}
-      `}
+        className={clsx(
+          styles.row,
+          styles[`row__align_${alignment}`],
+          styles[`row__justify_${justifyContent}`],
+          className
+        )}
+        style={rowStyle}
         {...props}
       >
         {children}
-      </Component>
+      </div>
     );
   }
 );

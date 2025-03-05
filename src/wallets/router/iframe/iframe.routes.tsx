@@ -42,7 +42,7 @@ export type EmbeddedRoutePath =
   | "/auth"
   | "/auth/more-providers"
   | "/auth/add-wallet"
-  | "/auth/import-seed-phrase"
+  | "/auth/import-seedphrase"
   | "/auth/import-keyfile"
   | "/auth/add-device"
   | "/auth/confirmation"
@@ -74,7 +74,7 @@ export const EmbeddedPaths = {
   Auth: "/auth",
   AuthMoreProviders: "/auth/more-providers",
   AuthAddWallet: "/auth/add-wallet",
-  AuthImportSeedPhrase: "/auth/import-seed-phrase",
+  AuthImportSeedPhrase: "/auth/import-seedphrase",
   AuthImportKeyfile: "/auth/import-keyfile",
 
   // Authentication Linking:

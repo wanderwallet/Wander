@@ -1,12 +1,26 @@
-import { DevFigmaScreen } from "~components/dev/figma-screen/figma-screen.component";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation } from "~wallets/router/router.utils";
 
-import screenSrc from "url:/assets-beta/figma-screens/recover-account-keyfile.view.png";
-import confirmScreenSrc from "url:/assets-beta/figma-screens/recover-account-keyfile-confirmation.view.png";
+import {
+  Card,
+  Row,
+  Text,
+  Button,
+  WanderIcon,
+  Copyable,
+  Upload
+} from "~components/embed";
+import copy from "copy-to-clipboard";
 
 export function AuthRecoverAccountKeyfileEmbeddedView() {
+  const [loading, setLoading] = useState(false);
+  const [jsonData, setJsonData] = useState<any>(null);
+
+  const handleJsonParse = (parsedData: any) => {
+    setJsonData(parsedData);
+  };
+
   const {
     importTempWallet,
     importedTempWalletAddress,
@@ -15,23 +29,38 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
     clearRecoverableAccounts
   } = useEmbedded();
 
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const handleImportWallet = useCallback(async () => {
+    try {
+      setLoading(true);
+      if (jsonData) {
+        const tempWallet = await importTempWallet(jsonData);
 
-  const handleImportWallet = () => {
-    const textareaElement = textareaRef.current;
-
-    // TODO: Throw error with error message for `DevFigmaScreen` to display it:
-    if (!textareaElement) return;
-
-    return importTempWallet(textareaRef.current.value);
-  };
+        if (!tempWallet) {
+          setLoading(false);
+          return alert(`Something isn't right`);
+        }
+        setLoading(false);
+        return tempWallet;
+      }
+    } catch (error) {
+      alert(error);
+    } finally {
+      setLoading(false);
+    }
+  }, [jsonData]);
 
   const { navigate } = useLocation();
 
   const handleRecover = async () => {
-    await fetchRecoverableAccounts();
-
-    navigate("/auth/recover-account/authentication");
+    try {
+      setLoading(true);
+      await fetchRecoverableAccounts();
+      setLoading(false);
+      navigate("/auth/recover-account/authentication");
+    } catch (error) {
+      alert(error);
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -40,44 +69,88 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
   }, []);
 
   return importedTempWalletAddress ? (
-    <DevFigmaScreen
-      title="Recover your account"
-      description="Import private key"
-      src={confirmScreenSrc}
-      config={[
-        {
-          label: importedTempWalletAddress,
-          isDisabled: true
-        },
-        {
-          label: "No, upload again",
-          onClick: deleteImportedTempWallet,
-          variant: "secondary"
-        },
-        {
-          label: "Yes, recover",
-          onClick: handleRecover
-        }
-      ]}
-    />
-  ) : (
-    <DevFigmaScreen
-      title="Recover your account"
-      description="Import private key"
-      src={screenSrc}
-      config={[
-        {
-          label: "Recover",
-          onClick: handleImportWallet
-        },
-        {
-          label: "Back",
-          to: "/auth/recover-account",
-          variant: "secondary"
-        }
-      ]}
+    <Card
+      headerText="Recover your account"
+      subtitle="Import private key"
+      footerElement={
+        <Row>
+          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
+            {"Secured by"}
+          </Text>
+          <WanderIcon color="#838383" />
+        </Row>
+      }
+      hasBackButton={true}
+      onBackButtonClick={() => {
+        window.history.back();
+      }}
+      hasCloseButton={true}
+      onCloseButtonClick={() => {
+        window.location.href = "/auth";
+      }}
+      size="auto"
     >
-      <textarea ref={textareaRef} placeholder="Upload keyfile"></textarea>
-    </DevFigmaScreen>
+      <Copyable
+        isFullWidth
+        label="Your account address"
+        onClick={() => {
+          copy(importedTempWalletAddress);
+        }}
+        value={importedTempWalletAddress}
+      />
+      <Row>
+        <Button
+          variant="secondary"
+          size="md"
+          onClick={deleteImportedTempWallet}
+        >
+          No, try again
+        </Button>
+        <Button
+          variant="primary"
+          size="md"
+          onClick={() => handleRecover()}
+          isLoading={loading}
+        >
+          Yes, recover
+        </Button>
+      </Row>
+    </Card>
+  ) : (
+    <Card
+      headerText="Import private key"
+      subtitle="Upload your private key to connect your wallet to your account."
+      footerElement={
+        <Row>
+          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
+            {"Secured by"}
+          </Text>
+          <WanderIcon color="#838383" />
+        </Row>
+      }
+      hasBackButton={true}
+      onBackButtonClick={() => {
+        window.history.back();
+      }}
+      //   hasCloseButton={false}
+      size="auto"
+    >
+      <Upload
+        isFullWidth
+        title={"Click to upload"}
+        description={"or drag and drop your private key"}
+        isLoading={loading}
+        loadingText={"Recovering account..."}
+        onFileParse={handleJsonParse}
+      />
+      <Button
+        isFullWidth
+        size="md"
+        isLoading={loading}
+        onClick={handleImportWallet}
+      >
+        Import
+      </Button>
+    </Card>
   );
 }

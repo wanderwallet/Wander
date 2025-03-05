@@ -17,8 +17,8 @@ const SvgConnectWander = ({
     <rect x="0.5" y="0.5" width="55" height="55" rx="27.5" fill="#F9F9F9" />
     <rect x="0.5" y="0.5" width="55" height="55" rx="27.5" stroke="#D6D6DD" />
     <path
-      fill-rule="evenodd"
-      clip-rule="evenodd"
+      fillRule="evenodd"
+      clipRule="evenodd"
       d="M35.5267 28.5091L28.6659 19.8095C28.3769 19.4345 28.0934 19.3732 27.783 19.7761L20.9116 28.4949L27.5623 34.506L28.2081 20.7342L28.854 34.506L35.5267 28.5091Z"
       fill="#248DEF"
     />

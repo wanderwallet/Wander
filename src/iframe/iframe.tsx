@@ -9,6 +9,7 @@ import { handleSyncLabelsAlarm } from "~api/background/handlers/alarms/sync-labe
 import { useEmbeddedLocation } from "~wallets/router/iframe/iframe-router.hook";
 import { EmbeddedProvider } from "~utils/embedded/embedded.provider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ThemeProvider } from "~components/embed/contexts/ThemeContext";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -37,15 +38,17 @@ export function ArConnectEmbeddedApp() {
 export function ArConnectEmbeddedAppRoot() {
   return (
     <WanderThemeProvider>
-      <EmbeddedProvider>
-        <AuthRequestsProvider>
-          <QueryClientProvider client={queryClient}>
-            <Wouter hook={useEmbeddedLocation}>
-              <ArConnectEmbeddedApp />
-            </Wouter>
-          </QueryClientProvider>
-        </AuthRequestsProvider>
-      </EmbeddedProvider>
+      <ThemeProvider>
+        <EmbeddedProvider>
+          <AuthRequestsProvider>
+            <QueryClientProvider client={queryClient}>
+              <Wouter hook={useEmbeddedLocation}>
+                <ArConnectEmbeddedApp />
+              </Wouter>
+            </QueryClientProvider>
+          </AuthRequestsProvider>
+        </EmbeddedProvider>
+      </ThemeProvider>
     </WanderThemeProvider>
   );
 }

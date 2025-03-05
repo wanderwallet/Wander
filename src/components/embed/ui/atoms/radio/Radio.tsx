@@ -1,48 +1,57 @@
-import React from "react";
+import React, { forwardRef } from "react";
+import clsx from "clsx";
 import styles from "./Radio.module.css";
 import type { RadioBaseProps } from "./Radio.types";
-import { CheckIcon } from "../icon";
+import { Text } from "..";
 
-const Radio = React.forwardRef<HTMLDivElement, RadioBaseProps>(
-  ({
-    id,
-    label,
-    className,
-    isChecked,
-    isDisabled,
-    isRequired,
-    isBlurry,
-    handleChange,
-    ...props
-  }) => {
-    const Component = "label";
-
+const Radio = forwardRef<HTMLDivElement, RadioBaseProps>(
+  (
+    {
+      id,
+      name,
+      label,
+      description,
+      className,
+      isChecked,
+      isDisabled,
+      isRequired,
+      isBlurry,
+      onChange,
+      ...props
+    },
+    ref
+  ) => {
     return (
-      <Component
-        id="radio"
-        htmlFor="r1"
-        className={`
-        ${styles["wrapper"]}
-        ${className}
-        ${isBlurry && styles["radio__blurry"]}
-      `}
+      <div
+        className={clsx(
+          styles.radio,
+          isBlurry && styles.radio__blurry,
+          className
+        )}
+        ref={ref}
         {...props}
       >
-        <input
-          className={`${styles["radio"]}
-             ${isChecked && styles["radio__checked"]}
-             `}
-          type="radio"
-          name="rGroup"
-          id="r1"
-          checked={true}
-          onClick={handleChange}
-        />
-        {label}
-        {isChecked && (
-          <CheckIcon width={20} height={20} className={styles["radio__icon"]} />
-        )}
-      </Component>
+        <label className={styles.radio__label} htmlFor={id}>
+          <input
+            id={id}
+            name={name}
+            type="radio"
+            className={styles.radio__input}
+            checked={isChecked}
+            disabled={isDisabled}
+            required={isRequired}
+            onChange={onChange}
+          />
+          <div className={styles.radio__content}>
+            <span className={styles.radio__text}>{label}</span>
+            {description && (
+              <Text variant="bodyXs" className={styles.radio__description}>
+                {description}
+              </Text>
+            )}
+          </div>
+        </label>
+      </div>
     );
   }
 );

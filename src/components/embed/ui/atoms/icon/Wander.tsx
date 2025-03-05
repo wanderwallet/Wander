@@ -11,8 +11,8 @@ const SvgWander = (props: SVGProps<SVGSVGElement>) => (
     {...props}
   >
     <path
-      fill-rule="evenodd"
-      clip-rule="evenodd"
+      fillRule="evenodd"
+      clipRule="evenodd"
       d="M16.6005 5.50544L12.465 0.261653C12.2908 0.0355703 12.12 -0.00135233 11.9328 0.241474L7.79098 5.49691L11.7998 9.12018L12.1891 0.818998L12.5784 9.12018L16.6005 5.50544Z"
       fill="#838383"
     />

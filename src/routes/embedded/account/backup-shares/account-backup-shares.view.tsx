@@ -1,12 +1,34 @@
+import { useCallback, useState } from "react";
+import {
+  Box,
+  Button,
+  Card,
+  Row,
+  WanderIcon,
+  Text,
+  AppleIcon,
+  DropboxIcon,
+  GDriveIcon,
+  KeyIcon,
+  SeedIcon
+} from "~components/embed/ui";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
-import { DevFigmaScreen } from "~components/dev/figma-screen/figma-screen.component";
-
-import screenSrc from "url:/assets-beta/figma-screens/backup-options.view.png";
+import { Link } from "~wallets/router/components/link/Link";
 
 export function AccountBackupSharesEmbeddedView() {
+  const [loading, setLoading] = useState(false);
   const { currentWallet, generateRecoveryAndDownload } = useEmbedded();
-  const isMandatoryReminder =
-    currentWallet.totalBackups === 0 && !currentWallet.doNotAskAgainSetting;
+
+  const handleGenerateRecoveryAndDownload = useCallback(() => {
+    try {
+      setLoading(true);
+      generateRecoveryAndDownload();
+      setLoading(false);
+    } catch (error) {
+      alert(error);
+      setLoading(false);
+    }
+  }, [generateRecoveryAndDownload]);
 
   // TODO: What if the user already has more than 3 backup shares?
 
@@ -20,43 +42,65 @@ export function AccountBackupSharesEmbeddedView() {
   // TODO: Redirect user to backup confirmation next or show some kind of confirmation or just redirect home?
 
   return (
-    <DevFigmaScreen
-      title="Account backup"
-      src={screenSrc}
-      config={[
-        {
-          // TODO: This should be a selector / dropdown and we might want to include a bulk / download all option
-          label: currentWallet.address,
-          isDisabled: true
-        },
-        {
-          label: "Google Drive",
-          onClick: () => alert("Not implemented.")
-        },
-        {
-          label: "iCloud",
-          onClick: () => alert("Not implemented.")
-        },
-        {
-          label: "Dropbox",
-          onClick: () => alert("Not implemented.")
-        },
-        {
-          label: "Download Account Recovery File",
-          onClick: () => generateRecoveryAndDownload()
-        },
-        isMandatoryReminder
-          ? {
-              label: "Back",
-              to: "/account/backup-shares/reminder",
-              variant: "secondary"
-            }
-          : {
-              label: "Cancel",
-              to: "/account",
-              variant: "secondary"
-            }
-      ]}
-    />
+    <Card
+      headerText="Account backup"
+      footerElement={
+        <Row>
+          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
+            {"Secured by"}
+          </Text>
+          <WanderIcon color="#838383" />
+        </Row>
+      }
+      hasBackButton={true}
+      onBackButtonClick={() => {
+        window.history.back();
+      }}
+      hasCloseButton={true}
+      onCloseButtonClick={() => {
+        <Link to="/account" />;
+      }}
+      size="auto"
+    >
+      <Box>
+        <Button
+          variant="outlined"
+          isFullWidth
+          icon={<GDriveIcon fontSize={24} />}
+          isDisabled={loading}
+        >
+          Backup to Google Drive
+        </Button>
+        <Button
+          variant="outlined"
+          isFullWidth
+          icon={<AppleIcon fontSize={24} />}
+          isDisabled={loading}
+        >
+          Backup to iCloud
+        </Button>
+        <Button
+          variant="outlined"
+          isFullWidth
+          icon={<DropboxIcon fontSize={24} />}
+          isDisabled={loading}
+        >
+          Backup to Dropbox
+        </Button>
+        <Button
+          variant="outlined"
+          isFullWidth
+          icon={<KeyIcon fontSize={24} />}
+          isLoading={loading}
+          isDisabled={loading}
+          onClick={handleGenerateRecoveryAndDownload}
+        >
+          Export Recovery File
+        </Button>
+        <Button variant="link" isFullWidth>
+          Why should I back up my account?
+        </Button>
+      </Box>
+    </Card>
   );
 }
