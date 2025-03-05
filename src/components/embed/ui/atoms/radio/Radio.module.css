@@ -1,44 +1,72 @@
 @import "../../../tokens/index.css";
 
-.wrapper {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: flex-start;
-  gap: var(--spacing-2);
-
-  font-size: var(--font-size-sm);
-  font-family: var(--font-family-serif);
-  font-weight: var(--font-weight-medium);
-  color: var(--color-copyable-text-value);
+.radio {
+  margin: var(--spacing-2);
 }
 
-.radio {
+.radio__label {
+  display: flex;
+  align-items: flex-start;
+  cursor: pointer;
+}
+
+.radio__input {
   -webkit-appearance: none;
   appearance: none;
-  margin: 0;
-
   background-color: var(--color-non-checked-background-radio);
-
-  width: var(--checkbox-width);
-  height: var(--checkbox-height);
-
-  color: var(--color-border-radio);
-  border: 2.25px solid var(--color-border-radio);
+  margin: 0;
+  width: var(--radio-size, 16px);
+  height: var(--radio-size, 16px);
+  border: 1.25px solid var(--color-border-radio);
   border-radius: 50%;
-  transform: translateY(-0.075em);
+  transform: translateY(2px);
+  margin-right: var(--spacing-3);
+  display: grid;
+  place-content: center;
 }
 
-.radio__checked {
+.radio__input::before {
+  content: "";
+  width: calc(var(--radio-size, 16px) * 0.5);
+  height: calc(var(--radio-size, 16px) * 0.5);
+  border-radius: 50%;
+  transform: scale(0);
+  transition: transform var(--transition-base);
+  background-color: var(--color-background-default);
+}
+
+.radio__input:checked {
   background-color: var(--color-border-radio);
 }
 
-.radio__icon {
-  width: 14px;
-  height: 14px;
-  position: absolute;
-  color: var(--color-background-default);
-  margin-left: 1px;
+.radio__input:checked::before {
+  transform: scale(1);
+}
+
+.radio__input:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: not-allowed;
+}
+
+.radio__input:disabled + .radio__content {
+  opacity: var(--opacity-disabled);
+  cursor: not-allowed;
+}
+
+.radio__content {
+  display: flex;
+  flex-direction: column;
+}
+
+.radio__text {
+  font-size: var(--font-size-sm);
+  font-family: var(--font-family-serif);
+  font-weight: var(--font-weight-semi);
+  color: var(--color-copyable-text-value);
+}
+
+.radio__description {
+  color: var(--color-copyable-text-label);
 }
 
 .radio__blurry {

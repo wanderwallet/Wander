@@ -1,12 +1,26 @@
-import { DevFigmaScreen } from "~components/dev/figma-screen/figma-screen.component";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
-import { useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { Link } from "~wallets/router/components/link/Link";
 
-import screenSrc from "url:/assets-beta/figma-screens/add-a-wallet.view.png";
+import {
+  Box,
+  Button,
+  Card,
+  KeyIcon,
+  QRCodeIcon,
+  Row,
+  SeedIcon,
+  Text,
+  WalletIcon,
+  WanderIcon
+} from "~components/embed";
 
 export function AuthAddWalletEmbeddedView() {
   const { authMethod, generateTempWallet, registerWallet } = useEmbedded();
-
+  const [isLoading, setIsLoading] = useState({
+    calledId: "",
+    status: false
+  });
   useEffect(() => {
     // Pre-generation starts on app load, but this call will re-generate it again if it has expired, as we are trying to
     // prevent a user accessing a site with ArConnect Embedded, not creating an account, and coming back way later after
@@ -14,35 +28,89 @@ export function AuthAddWalletEmbeddedView() {
     generateTempWallet();
   }, []);
 
+  // TODO: Remember last selection and highlight that one / show it in the main screen (not in "More")
+
+  const handleRegisterWallet = useCallback(
+    async (source: "generated" | "imported") => {
+      setIsLoading({ calledId: source, status: true });
+      await registerWallet(source);
+      setIsLoading({ calledId: "", status: false });
+    },
+    []
+  );
+
   return (
-    <DevFigmaScreen
-      title="Add a wallet"
-      src={screenSrc}
-      config={[
-        {
-          label: "Create New Wallet",
-          onClick: () => registerWallet("generated")
-        },
-        {
-          label: "Enter Seed Phrase",
-          to: "/auth/import-seed-phrase"
-        },
-        {
-          label: "Import Private Key",
-          to: "/auth/import-keyfile"
-        },
-        authMethod === "passkey"
-          ? {
-              label: "Add this device to an existing account",
-              to: "/auth/add-device",
-              variant: "secondary"
-            }
-          : {
-              label: `Add ${authMethod} to an existing account`,
-              to: "/auth/add-auth-provider",
-              variant: "secondary"
-            }
-      ]}
-    />
+    <Card
+      headerText="Add a wallet"
+      subtitle="Add a wallet to your account to hold your funds. Create or add an existing wallet to continue."
+      footerElement={
+        <Row>
+          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
+            {"Secured by"}
+          </Text>
+          <WanderIcon color="#838383" />
+        </Row>
+      }
+      hasBackButton={true}
+      onBackButtonClick={() => {
+        window.location.href = "/";
+      }}
+      //   hasCloseButton={false}
+      size="auto"
+    >
+      <Box>
+        <Button
+          onClick={() => handleRegisterWallet("generated")}
+          variant="outlined"
+          isFullWidth
+          icon={<SeedIcon fontSize={24} />}
+          isLoading={
+            isLoading.calledId === "generated" && isLoading.status === true
+          }
+          isDisabled={isLoading.status}
+        >
+          Create new wallet
+        </Button>
+        <Button
+          variant="outlined"
+          isFullWidth
+          icon={<WalletIcon fontSize={24} />}
+          href="/auth/import-seedphrase"
+          isDisabled={isLoading.status}
+        >
+          Enter Seed Phrase
+        </Button>
+        <Button
+          variant="outlined"
+          isFullWidth
+          icon={<KeyIcon fontSize={24} />}
+          href="/auth/import-keyfile"
+          isDisabled={isLoading.status}
+        >
+          Import Keyfile
+        </Button>
+        {authMethod === "passkey" ? (
+          <Button
+            variant="outlined"
+            isFullWidth
+            icon={<QRCodeIcon fontSize={24} />}
+            href="/auth/add-device"
+            isDisabled={isLoading.status}
+          >
+            Add this device to an existing account
+          </Button>
+        ) : (
+          <Button
+            variant="outlined"
+            isFullWidth
+            icon={<QRCodeIcon fontSize={24} />}
+            href="/auth/add-auth-provider"
+            isDisabled={isLoading.status}
+          >
+            Add {authMethod.toLocaleUpperCase()} to an existing account
+          </Button>
+        )}
+      </Box>
+    </Card>
   );
 }

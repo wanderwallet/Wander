@@ -4,14 +4,12 @@
   all: unset;
   border-radius: var(--border-radius-lg);
   border: 1px solid var(--color-copyable-border);
-
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: var(--font-family-serif);
-
   overflow: hidden;
-  transition: all 0.2s;
+  transition: all var(--transition-base);
   padding: var(--spacing-2);
 }
 
@@ -23,9 +21,20 @@
   border: none;
   justify-content: flex-start;
   align-items: center;
-  width: 200px;
-
+  width: auto;
   padding-left: 0;
+  cursor: pointer;
+  transition: background-color var(--transition-base);
+}
+
+.copyable__button:hover:not(:disabled) {
+  background-color: var(--brand-color-gray-100);
+  border-radius: var(--border-radius-sm);
+}
+
+.copyable__button:disabled {
+  cursor: not-allowed;
+  opacity: var(--opacity-disabled);
 }
 
 .text__label {
@@ -33,62 +42,88 @@
   font-size: var(--font-size-sm);
 }
 
-.copyable__blurry {
-  filter: blur(2px);
-}
-
-.copyable__full__width {
-  width: 96%;
-  font-size: var(--font-size-md);
-  font-family: var(--font-family-serif);
-}
-
+/* Size variants */
 .copyable__xs {
   min-width: var(--copyable-xs-width);
   font-size: var(--font-size-xs);
-  font-family: var(--font-family-serif);
 }
 
 .copyable__sm {
   width: var(--copyable-sm-width);
   font-size: var(--font-size-sm);
-  font-family: var(--font-family-serif);
 }
 
 .copyable__md {
   width: var(--copyable-default-width);
   font-size: var(--font-size-base);
-  font-family: var(--font-family-serif);
 }
 
 .copyable__lg {
   width: var(--copyable-lg-width);
   font-size: var(--font-size-lg);
-  font-family: var(--font-family-serif);
 }
 
 .copyable__xl {
   width: var(--copyable-xl-width);
   font-size: var(--font-size-xl);
-  font-family: var(--font-family-serif);
 }
 
 .copyable__xxl {
   width: var(--copyable-xxl-width);
   font-size: var(--font-size-2xl);
-  font-family: var(--font-family-serif);
 }
 
-copyable:disabled {
-  opacity: 0.5;
+.copyable__full__width {
+  width: 98.6%;
+  font-size: var(--font-size-md);
+}
+
+.copyable__disabled {
+  opacity: var(--opacity-disabled);
   cursor: not-allowed;
 }
 
-copyable:active {
-  transform: scale(0.95);
-  opacity: 0.8;
+.copyable__blurry {
+  filter: blur(2px);
 }
 
-copyable:hover {
-  opacity: 0.8;
+/* Tooltip styles */
+.tooltip {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: auto;
+  background-color: var(--color-tooltip-bg, #555);
+  color: var(--color-tooltip-text, #fff);
+  text-align: center;
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-2);
+  position: absolute;
+  z-index: var(--z-index-tooltip, 1);
+  bottom: 150%;
+  left: 50%;
+  margin-left: -75px;
+  opacity: 0;
+  transition: opacity var(--transition-base);
+}
+
+.tooltip .tooltiptext::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: var(--color-tooltip-bg, #555) transparent transparent
+    transparent;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+  opacity: 1;
 }

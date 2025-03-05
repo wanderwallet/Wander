@@ -3,6 +3,18 @@ import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useState } from "react";
 
 import screenSrc from "url:/assets-beta/figma-screens/recover-account-more-authentication.view.png";
+import {
+  AppleIcon,
+  Box,
+  Button,
+  Card,
+  FacebookIcon,
+  Row,
+  TwitterIcon,
+  WanderIcon,
+  Text,
+  Checkbox
+} from "~components/embed/ui";
 
 export function AuthRecoverAccountMoreAuthenticationEmbeddedView() {
   const { importedTempWalletAddress, recoverableAccounts, recoverAccount } =
@@ -17,58 +29,80 @@ export function AuthRecoverAccountMoreAuthenticationEmbeddedView() {
     setCheckboxChecked((prevValue) => !prevValue);
 
   return (
-    <DevFigmaScreen
-      title="Recover your account"
-      description="More options"
-      src={screenSrc}
-      isLoading={!accountToRecover}
-      config={[
-        {
-          label: importedTempWalletAddress,
-          isDisabled: true
-        },
-        {
-          label: accountToRecover ? accountToRecover.name : "-",
-          isDisabled: true
-        },
-        {
-          label: "Email & Password",
-          onClick: () => recoverAccount("emailPassword", accountToRecoverId),
-          isDisabled: !checkboxChecked
-        },
-        {
-          label: "Facebook",
-          onClick: () => recoverAccount("facebook", accountToRecoverId),
-          isDisabled: !checkboxChecked
-        },
-        {
-          label: "Apple",
-          onClick: () => recoverAccount("apple", accountToRecoverId),
-          isDisabled: !checkboxChecked
-        },
-        {
-          label: "X",
-          onClick: () => recoverAccount("x", accountToRecoverId),
-          isDisabled: !checkboxChecked
-        },
-        {
-          label: "Back",
-          to: "/auth/recover-account/authentication",
-          variant: "secondary"
-        }
-      ]}
+    <Card
+      headerText="Recover your account"
+      subtitle="More options"
+      footerElement={
+        <Row>
+          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
+            {"Secured by"}
+          </Text>
+          <WanderIcon color="#838383" />
+        </Row>
+      }
+      hasBackButton={true}
+      onBackButtonClick={() => {
+        window.history.back();
+      }}
+      hasCloseButton={true}
+      onCloseButtonClick={() => {
+        window.location.href = "/auth/recover-account/authentication";
+      }}
+      size="auto"
     >
-      <div>
-        <label>
-          <input
-            type="checkbox"
-            checked={checkboxChecked}
-            onChange={toggleCheckboxChecked}
-          />
-          After recovery, all your devices are logged out and your account
-          recovery files are invalided. You'll have to download a new one.
-        </label>
-      </div>
-    </DevFigmaScreen>
+      <Box>
+        {/* <Button
+          variant="outlined"
+          isFullWidth
+          icon={<EmailIcon fontSize={24} />}
+          onClick={() => recoverAccount("emailPassword", accountToRecoverId)}
+          isDisabled={!checkboxChecked}
+        >
+          Email & Password
+        </Button> */}
+        <Button
+          variant="outlined"
+          isFullWidth
+          icon={<FacebookIcon fontSize={24} />}
+          onClick={() => recoverAccount("facebook", accountToRecoverId)}
+          isDisabled={!checkboxChecked}
+        >
+          Facebook
+        </Button>
+        <Button
+          variant="outlined"
+          isFullWidth
+          icon={<AppleIcon fontSize={24} />}
+          isDisabled={!checkboxChecked}
+          onClick={() => recoverAccount("apple", accountToRecoverId)}
+        >
+          Apple
+        </Button>
+        <Button
+          variant="outlined"
+          isFullWidth
+          icon={<TwitterIcon fontSize={24} />}
+          isDisabled={!checkboxChecked}
+          onClick={() => recoverAccount("x", accountToRecoverId)}
+        >
+          X
+        </Button>
+        <Checkbox
+          label="After recovery, all your devices are logged out and your account recovery files are invalided. You'll have to download a new one."
+          handleChange={toggleCheckboxChecked}
+          isChecked={checkboxChecked}
+        />
+      </Box>
+    </Card>
   );
+
+  //     config={[
+  //       {
+  //         label: importedTempWalletAddress,
+  //         isDisabled: true
+  //       },
+  //       {
+  //         label: accountToRecover ? accountToRecover.name : "-",
+  //         isDisabled: true
+  //       },
 }

@@ -1,20 +1,15 @@
-import React from "react";
+import React, { forwardRef } from "react";
+import clsx from "clsx";
 import styles from "./Loading.module.css";
 import type { LoadingBaseProps } from "./Loading.types";
 
-const Loading = React.forwardRef<HTMLDivElement, LoadingBaseProps>(
-  ({ size = "medium", className, isAnchor, ...props }, ref) => {
-    const Component = "div";
-
+const Loading = forwardRef<HTMLDivElement, LoadingBaseProps>(
+  ({ size = "md", color, className, ...props }, ref) => {
     return (
-      <Component
+      <div
+        className={clsx(styles.loading, styles[`loading__${size}`], className)}
+        style={{ borderTopColor: color }}
         ref={ref}
-        className={`
-        ${styles["loading"]}
-        ${styles[`.loading--${size}`]}
-        ${isAnchor && styles["button__load__link"]}
-        ${className}
-      `}
         {...props}
       />
     );

@@ -1,17 +1,88 @@
-import { Link } from "~wallets/router/components/link/Link";
+import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  Button,
+  Card,
+  Row,
+  SeedInput,
+  WanderIcon,
+  Text
+} from "~components/embed/ui";
+import { useEmbedded } from "~utils/embedded/embedded.hooks";
 
 export function AccountImportSeedphraseEmbeddedView() {
-  return (
-    <div>
-      <h3>Import Seed Phrase</h3>
-      <p>
-        TODO: Copy implementation from AuthImportSeedPhraseEmbeddedView once
-        finished.
-      </p>
+  const [loading, setLoading] = useState(false);
+  const [seedPhrase, setSeedPhrase] = useState<string[]>([]);
+  const {
+    importTempWallet,
+    importedTempWalletAddress,
+    deleteImportedTempWallet,
+    registerWallet
+  } = useEmbedded();
 
-      <Link to="/account">
-        <button>Back</button>
-      </Link>
-    </div>
+  const handleInputChange = useCallback((index: number, value: string) => {
+    setSeedPhrase((prevSeedPhrase) => {
+      const newSeedPhrase = [...prevSeedPhrase];
+      newSeedPhrase[index] = value;
+      return newSeedPhrase;
+    });
+  }, []);
+
+  const handleImportWallet = useCallback(async () => {
+    try {
+      setLoading(true);
+      if (!seedPhrase.length) return;
+      await importTempWallet(seedPhrase.join(" "));
+      await registerWallet("imported");
+    } catch (error) {
+      alert(error);
+    } finally {
+      setLoading(false);
+    }
+  }, [seedPhrase]);
+
+  useEffect(() => {
+    return () => {
+      // Remove the imported keyfile from memory as soon as we leave this view. Note at this point it will already have
+      // been passed to `importTempWallet()`, if the user confirmed:
+      deleteImportedTempWallet();
+    };
+  }, []);
+
+  return (
+    <Card
+      headerText="Enter Seedphrase"
+      subtitle="Enter your seedphrase to connect your wallet to your account."
+      footerElement={
+        <Row>
+          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
+            {"Secured by"}
+          </Text>
+          <WanderIcon color="#838383" />
+        </Row>
+      }
+      hasBackButton={true}
+      onBackButtonClick={() => {
+        window.history.back();
+      }}
+      //   hasCloseButton={false}
+      size="auto"
+    >
+      <SeedInput
+        handleSubmit={handleImportWallet}
+        seedPhrase={seedPhrase}
+        handleCopyToClipboard={() =>
+          navigator.clipboard.writeText(seedPhrase.join(" "))
+        }
+        handleInputChange={handleInputChange}
+      />
+      <Button
+        isFullWidth
+        size="md"
+        onClick={handleImportWallet}
+        isLoading={loading}
+      >
+        Recover
+      </Button>
+    </Card>
   );
 }
