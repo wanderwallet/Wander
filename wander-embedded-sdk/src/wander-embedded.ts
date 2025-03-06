@@ -64,6 +64,14 @@ export class WanderEmbedded {
 
     // TODO: Merge options properly:
 
+    if (!options.clientId) {
+      throw new Error("clientId is required");
+    }
+
+    if (!options.applicationId) {
+      throw new Error("applicationId is required");
+    }
+
     const optionsWithDefaults = merge(options, {
       iframe: {
         clickOutsideBehavior: "auto"
@@ -93,8 +101,8 @@ export class WanderEmbedded {
       button: buttonOptions
     } = options;
 
-    // TODO: Repace with getEmbeddedURL(apiKey)
-    const srcWithParams = `${src}?origin=${location.origin}&api-key=123`;
+    // TODO Use PARAM_ORIGIN_KEY and PARAM_CLIENT_ID instead of hardcoded values:
+    const srcWithParams = `${src}?ancestor-origin=${location.origin}&client-id=${options.clientId}&application-id=${options.applicationId}`;
 
     if (iframeOptions instanceof HTMLElement) {
       if (

@@ -86,6 +86,9 @@ export interface WanderEmbeddedOptions {
   onResize?: (routeConfig: RouteConfig) => void;
   onBalance?: (balanceInfo: BalanceInfo) => void;
   onRequest?: (pendingRequests: number) => void;
+
+  clientId?: string;
+  applicationId?: string;
 }
 
 // Common:
