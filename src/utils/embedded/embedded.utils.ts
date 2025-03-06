@@ -129,9 +129,16 @@ async function insecurelyValidateApplication() {
       return;
     }
 
-    // Clear and replace the entire document
-    const html = `<!DOCTYPE html><html><head><style>body{margin:0;font-family:system-ui;background:#1a1a1a;color:white;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:16px}.error-container{max-width:400px;text-align:center}.error-title{color:#ff5757;margin:0 0 8px 0;font-size:16px;line-height:1.4}.error-message{margin:0;font-size:14px;line-height:1.5;opacity:.9}</style></head><body><div class="error-container"><h1 class="error-title">Invalid Wander Embedded configuration</h1><p class="error-message">${errorMessage}</p></div></body></html>`;
-    document.write(html);
+    // Replace the entire document content and prevent any further execution
+    const html = `<!DOCTYPE html><html lang="en" style="height:100%;overflow:hidden"><head><style>html,body{margin:0;padding:0;height:100%;overflow:hidden}body{font-family:system-ui;background:#1a1a1a;color:white;display:flex;align-items:center;justify-content:center}.error-container{max-width:400px;text-align:center;padding:16px}.error-title{color:#ff5757;margin:0 0 8px 0;font-size:16px;line-height:1.4}.error-message{margin:0;font-size:14px;line-height:1.5;opacity:.9}</style></head><body><div class="error-container"><h1 class="error-title">Invalid Wander Embedded configuration</h1><p class="error-message">${errorMessage}</p></div><script>window.onbeforeunload=()=>false;</script></body></html>`;
+
+    // Stop any ongoing resource loading
+    window.stop();
+
+    // Replace the entire document content
+    location.replace(
+      `data:text/html;charset=utf-8,${encodeURIComponent(html)}`
+    );
 
     throw new Error("Application validation failed");
   }
