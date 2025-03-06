@@ -1,4 +1,5 @@
 import { createSupabaseClient, createTRPCClient } from "embed-api";
+import { jwtDecode } from "jwt-decode";
 import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 
 // Then, its tRPC client will be initialized with the following headers:
@@ -69,12 +70,40 @@ function isInsideIframe(): boolean {
 // TODO: When developers set up a new app/domain, we should probably use a mechanism like Google Search Console where
 // they need to create a file at the root of their domain, or add an HTML tag, so that we can verify it's actually theirs.
 
-async function validateClientApplication() {
+// Exporting the router from one repo to another might, in some scenarios, return incorrect types, but it can be fixed
+// by also importing the right AppRouter type and overriding the `client` type:
+// type TRPCClient = ReturnType<typeof createTRPCProxyClient<AppRouter>>;
+// const trpcVanilla = client as TRPCClient;
+
+const supabase = IS_EMBEDDED_APP
+  ? createSupabaseClient(
+      import.meta.env?.VITE_SUPABASE_URL || "",
+      import.meta.env?.VITE_SUPABASE_ANON_KEY || ""
+    )
+  : null;
+
+async function getSessionId() {
   try {
+    const {
+      data: { session }
+    } = await supabase.auth.getSession();
+    const jwtDecoded = jwtDecode(session?.access_token) as {
+      session_id: string;
+    };
+    return jwtDecoded.session_id;
+  } catch (err) {
+    return undefined;
+  }
+}
+
+async function insecurelyValidateApplication() {
+  try {
+    const sessionId = await getSessionId();
     const result = await trpcVanilla.validateApplication.query({
       clientId: EMBEDDED_CLIENT_ID,
       applicationId: EMBEDDED_APPLICATION_ID,
-      applicationOrigin: EMBEDDED_ANCESTOR_ORIGIN
+      applicationOrigin: EMBEDDED_ANCESTOR_ORIGIN,
+      sessionId
     });
 
     return result;
@@ -137,19 +166,7 @@ async function validateClientApplication() {
 }
 
 // Validate immediately on load
-validateClientApplication();
-
-// Exporting the router from one repo to another might, in some scenarios, return incorrect types, but it can be fixed
-// by also importing the right AppRouter type and overriding the `client` type:
-// type TRPCClient = ReturnType<typeof createTRPCProxyClient<AppRouter>>;
-// const trpcVanilla = client as TRPCClient;
-
-const supabase = IS_EMBEDDED_APP
-  ? createSupabaseClient(
-      import.meta.env?.VITE_SUPABASE_URL || "",
-      import.meta.env?.VITE_SUPABASE_ANON_KEY || ""
-    )
-  : null;
+insecurelyValidateApplication();
 
 export {
   supabase,
