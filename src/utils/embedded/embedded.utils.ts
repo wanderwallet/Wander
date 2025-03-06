@@ -107,11 +107,37 @@ async function insecurelyValidateApplication() {
     });
 
     return result;
-  } catch (err) {
+  } catch (err: any) {
+    // Only show errors if we're inside an iframe.
+    // TODO:Should we show different errors or instructions if we are not inside an iframe?
+    if (!isInsideIframe()) return;
+
     // Check if error message already exists
     const existingError = document.querySelector("[data-wander-error]");
-    // Error already shown
     if (existingError) {
+      return;
+    }
+
+    // Only show errors for validation failures
+    // TRPC errors will have data.code property
+    if (
+      !err.data?.code ||
+      !["NOT_FOUND", "BAD_REQUEST", "FORBIDDEN"].includes(err.data.code)
+    ) {
+      console.error("Unexpected error during validation:", err);
+      return;
+    }
+
+    const errorMessages = {
+      NOT_FOUND:
+        "Invalid application configuration. Please verify your applicationId and clientId.",
+      BAD_REQUEST: `Invalid origin URL provided`,
+      FORBIDDEN:
+        err.message || "This domain is not authorized to use this application."
+    };
+
+    const errorMessage = errorMessages[err.data.code];
+    if (!errorMessage) {
       return;
     }
 
@@ -156,7 +182,7 @@ async function insecurelyValidateApplication() {
         font-size: 14px;
         line-height: 1.5;
         opacity: 0.9;
-      ">Please provide valid applicationId and clientId</p>
+      ">${errorMessage}</p>
     `;
 
     document.body.appendChild(overlay);
