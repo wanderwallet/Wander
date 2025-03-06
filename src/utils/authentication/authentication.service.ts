@@ -5,20 +5,23 @@ async function authenticate(authProviderType: AuthProviderType) {
   // TODO: The authentication procedures are not needed.
   // return trpcVanilla.authenticate.mutate({ authProviderType });
 
-  if ("GOOGLE" === authProviderType) {
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        // redirectTo: `${window.location.origin}#/auth/callback/google`,
-      }
-    });
-
-    if (error) throw error;
-
-    return { url: data.url };
+  if (
+    authProviderType === "PASSKEYS" ||
+    authProviderType === "EMAIL_N_PASSWORD"
+  ) {
+    throw new Error(`${authProviderType} not supported yet.`);
   }
 
-  throw new Error(`${authProviderType} not supported yet.`);
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      // redirectTo: `${window.location.origin}#/auth/callback/google`,
+    }
+  });
+
+  if (error) throw error;
+
+  return { url: data.url };
 }
 
 async function generateFetchRecoverableAccountsChallenge(address: string) {
