@@ -88,7 +88,6 @@ export interface WanderEmbeddedOptions {
   onRequest?: (pendingRequests: number) => void;
 
   clientId: string;
-  applicationId: string;
 }
 
 // Common:

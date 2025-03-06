@@ -29,7 +29,6 @@
 
   useEffect(() => {
     const wanderInstance = new WanderEmbedded({
-      applicationId: "<applicationId>",
       clientId: "<clientId>",
       iframe: {
         routeLayout: {
@@ -51,7 +50,7 @@
   };
 ```
 
-- Get the applicationId and clientId from the Wander Dashboard by creating a team and an application.
+- Get the clientId from the Wander Dashboard by creating a team and an application.
 - Replace `wander-embedded-sdk` in `package.json` with: `"wander-embedded-sdk": "link:./../wander/Wander/wander-embedded-sdk/"`
 - `pnpm install`
 - `pnpm dev`

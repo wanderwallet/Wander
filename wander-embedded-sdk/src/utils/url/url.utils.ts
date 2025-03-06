@@ -7,7 +7,6 @@
 
 // Duplicated in `src/utils/embedded/embedded.utils.ts`:
 const PARAM_CLIENT_ID = "client-id";
-const PARAM_APPLICATION_ID = "application-id";
 const PARAM_ANCESTOR_ORIGIN = "ancestor-origin";
 
 // Duplicated in `src/utils/embedded/utils/wallets/embedded-wallets.utils.ts`:
@@ -17,12 +16,11 @@ export function getEmbeddedOrigin() {
     : "https://embedded-iframe.arconnect.io/";
 }
 
-export function getEmbeddedURL(applicationId: string, clientId: string) {
+export function getEmbeddedURL(clientId: string) {
   const base = getEmbeddedOrigin();
   const searchParams = new URLSearchParams();
 
   searchParams.set(PARAM_CLIENT_ID, clientId);
-  searchParams.set(PARAM_APPLICATION_ID, applicationId);
   searchParams.set(PARAM_ANCESTOR_ORIGIN, window.location.origin);
 
   return `${base}?${searchParams.toString()}`;

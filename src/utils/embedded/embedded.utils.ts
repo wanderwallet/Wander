@@ -19,18 +19,13 @@ const ancestorOrigin = ancestorOrigins[ancestorOrigins.length - 1];
 // Duplicated in `wander-embedded-sdk/src/utils/url/url.utils.ts`:
 const PARAM_CLIENT_ID = "client-id";
 const PARAM_ANCESTOR_ORIGIN = "ancestor-origin";
-const PARAM_APPLICATION_ID = "application-id";
 
 const EMBEDDED_CLIENT_ID =
   searchParams.get(PARAM_CLIENT_ID) ||
   (process.env.NODE_ENV === "development"
     ? import.meta.env.VITE_EMBEDDED_CLIENT_ID
     : "");
-const EMBEDDED_APPLICATION_ID =
-  searchParams.get(PARAM_APPLICATION_ID) ||
-  (process.env.NODE_ENV === "development"
-    ? import.meta.env.VITE_EMBEDDED_APPLICATION_ID
-    : "");
+
 const EMBEDDED_ANCESTOR_ORIGIN =
   ancestorOrigin || searchParams.get(PARAM_ANCESTOR_ORIGIN);
 
@@ -48,16 +43,17 @@ const {
   getDeviceNonceHeader,
   setDeviceNonceHeader,
   getClientIdHeader,
-  setClientIdHeader
+  setClientIdHeader,
+  setApplicationIdHeader
 } = createTRPCClient({
   baseURL: "http://localhost:3000",
   authToken: null,
   deviceNonce: undefined,
   clientId: EMBEDDED_CLIENT_ID,
-  applicationId: EMBEDDED_APPLICATION_ID
+  applicationId: ""
 });
 
-function isInsideIframe(): boolean {
+export function isInsideIframe(): boolean {
   try {
     return window.self !== window.top;
   } catch (e) {
@@ -99,24 +95,16 @@ async function getSessionId() {
 async function insecurelyValidateApplication() {
   try {
     const sessionId = await getSessionId();
-    const result = await trpcVanilla.validateApplication.query({
+    const applicationId = await trpcVanilla.validateApplication.query({
       clientId: EMBEDDED_CLIENT_ID,
-      applicationId: EMBEDDED_APPLICATION_ID,
       applicationOrigin: EMBEDDED_ANCESTOR_ORIGIN,
       sessionId
     });
 
-    return result;
+    setApplicationIdHeader(applicationId);
   } catch (err: any) {
-    // Only show errors if we're inside an iframe.
-    // TODO:Should we show different errors or instructions if we are not inside an iframe?
+    // Only show errors if we're inside an iframe
     if (!isInsideIframe()) return;
-
-    // Check if error message already exists
-    const existingError = document.querySelector("[data-wander-error]");
-    if (existingError) {
-      return;
-    }
 
     // Only show errors for validation failures
     // TRPC errors will have data.code property
@@ -130,7 +118,7 @@ async function insecurelyValidateApplication() {
 
     const errorMessages = {
       NOT_FOUND:
-        "Invalid application configuration. Please verify your applicationId and clientId.",
+        "Invalid application configuration. Please verify your clientId.",
       BAD_REQUEST: `Invalid origin URL provided`,
       FORBIDDEN:
         err.message || "This domain is not authorized to use this application."
@@ -141,52 +129,10 @@ async function insecurelyValidateApplication() {
       return;
     }
 
-    const overlay = document.createElement("div");
-    overlay.setAttribute("data-wander-error", "overlay");
-    overlay.style.cssText = `
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.5);
-      backdrop-filter: blur(2px);
-      z-index: 99998;
-    `;
+    // Clear and replace the entire document
+    const html = `<!DOCTYPE html><html><head><style>body{margin:0;font-family:system-ui;background:#1a1a1a;color:white;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:16px}.error-container{max-width:400px;text-align:center}.error-title{color:#ff5757;margin:0 0 8px 0;font-size:16px;line-height:1.4}.error-message{margin:0;font-size:14px;line-height:1.5;opacity:.9}</style></head><body><div class="error-container"><h1 class="error-title">Invalid Wander Embedded configuration</h1><p class="error-message">${errorMessage}</p></div></body></html>`;
+    document.write(html);
 
-    const errorPopover = document.createElement("div");
-    errorPopover.setAttribute("data-wander-error", "popover");
-    errorPopover.style.cssText = `
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: #1a1a1a;
-      color: white;
-      font-family: system-ui;
-      text-align: center;
-      padding: 16px 24px;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      z-index: 99999;
-      max-width: 400px;
-      width: calc(100% - 32px);
-    `;
-
-    errorPopover.innerHTML = `
-      <h1 style="
-        color: #ff5757;
-        margin: 0 0 8px 0;
-        font-size: 16px;
-        line-height: 1.4;
-      ">Invalid Wander Embedded configuration</h1>
-      <p style="
-        margin: 0;
-        font-size: 14px;
-        line-height: 1.5;
-        opacity: 0.9;
-      ">${errorMessage}</p>
-    `;
-
-    document.body.appendChild(overlay);
-    document.body.appendChild(errorPopover);
     throw new Error("Application validation failed");
   }
 }

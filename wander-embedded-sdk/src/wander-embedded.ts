@@ -52,8 +52,7 @@ export class WanderEmbedded {
 
   constructor(
     options: WanderEmbeddedOptions = {
-      clientId: "",
-      applicationId: ""
+      clientId: ""
     }
   ) {
     if (WanderEmbedded.instance) {
@@ -74,12 +73,7 @@ export class WanderEmbedded {
       throw new Error("clientId is required");
     }
 
-    if (!options.applicationId) {
-      throw new Error("applicationId is required");
-    }
-
     const optionsWithDefaults = merge(options, {
-      applicationId: options.applicationId,
       clientId: options.clientId,
       iframe: {
         clickOutsideBehavior: "auto"
@@ -109,10 +103,7 @@ export class WanderEmbedded {
       button: buttonOptions
     } = options;
 
-    const srcWithParams = getEmbeddedURL(
-      options.applicationId,
-      options.clientId
-    );
+    const srcWithParams = getEmbeddedURL(options.clientId);
 
     if (iframeOptions instanceof HTMLElement) {
       if (
