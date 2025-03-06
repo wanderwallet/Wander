@@ -13,6 +13,7 @@ import {
   UserDetails
 } from "./utils/message/message.types";
 import { isIncomingMessage } from "./utils/message/message.utils";
+import { getEmbeddedURL } from "./utils/url/url.utils";
 
 const NOOP = () => {};
 
@@ -49,7 +50,11 @@ export class WanderEmbedded {
   public balanceInfo: BalanceInfo | null = null;
   public pendingRequests: number = 0;
 
-  constructor(options: WanderEmbeddedOptions = {}) {
+  constructor(
+    options: WanderEmbeddedOptions = {
+      clientId: ""
+    }
+  ) {
     if (WanderEmbedded.instance) {
       throw new Error("WanderEmbedded instance already exists.");
     }
@@ -64,7 +69,12 @@ export class WanderEmbedded {
 
     // TODO: Merge options properly:
 
+    if (!options.clientId) {
+      throw new Error("clientId is required");
+    }
+
     const optionsWithDefaults = merge(options, {
+      clientId: options.clientId,
       iframe: {
         clickOutsideBehavior: "auto"
       }
@@ -93,8 +103,7 @@ export class WanderEmbedded {
       button: buttonOptions
     } = options;
 
-    // TODO: Repace with getEmbeddedURL(apiKey)
-    const srcWithParams = `${src}?origin=${location.origin}&api-key=123`;
+    const srcWithParams = getEmbeddedURL(options.clientId);
 
     if (iframeOptions instanceof HTMLElement) {
       if (
