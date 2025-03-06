@@ -30,13 +30,6 @@
   useEffect(() => {
     const wanderInstance = new WanderEmbedded({
       clientId: "ALPHA",
-      iframe: {
-        routeLayout: {
-          auth: "modal",
-          default: "popup",
-        },
-      },
-      button: true,
     });
 
     wanderInstance.open();

@@ -12,7 +12,7 @@ export function isTempWalletPromiseExpired(
 export function getEmbeddedOrigin() {
   return process.env.NODE_ENV === "development"
     ? "http://localhost:5173/"
-    : "https://embedded-iframe.arconnect.io/";
+    : "https://embed-dev.wander.app/";
 }
 
 export function throttle<T extends (...args: any[]) => any>(
