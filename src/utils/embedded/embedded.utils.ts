@@ -33,12 +33,6 @@ const EMBEDDED_APPLICATION_ID =
 const EMBEDDED_ANCESTOR_ORIGIN =
   ancestorOrigin || searchParams.get(PARAM_ANCESTOR_ORIGIN);
 
-console.log({
-  clientId: EMBEDDED_CLIENT_ID,
-  applicationId: EMBEDDED_APPLICATION_ID,
-  ancestorOrigin: EMBEDDED_ANCESTOR_ORIGIN
-});
-
 // Note: DO NOT use document.referrer here as that will return the "incorrect" value when the user is redirected from
 // an auth provider domain to back to Wander Embedded.
 
