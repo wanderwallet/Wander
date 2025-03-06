@@ -167,7 +167,6 @@ export class WanderIframe {
       WanderIframe.DEFAULT_ROUTE_LAYOUT[routeConfig.preferredLayoutType];
 
     const layoutType: LayoutType = layoutConfig.type;
-    const resetLayout = layoutType !== this.currentLayoutType;
 
     this.currentLayoutType = layoutType;
 
@@ -237,10 +236,6 @@ export class WanderIframe {
 
     // Every time we change the layout type (e.g. going from the auth routes "modal" to the default routes "popup"), the
     // style attribute must be reset to avoid conflicts with leftover properties from the previous layout
-    if (resetLayout) {
-      this.backdrop.removeAttribute("style");
-      this.wrapper.removeAttribute("style");
-    }
 
     addCSSVariables(this.backdrop, cssVars);
     addCSSVariables(this.wrapper, cssVars);
