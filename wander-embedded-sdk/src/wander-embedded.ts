@@ -13,6 +13,7 @@ import {
   UserDetails
 } from "./utils/message/message.types";
 import { isIncomingMessage } from "./utils/message/message.utils";
+import { getEmbeddedURL } from "./utils/url/url.utils";
 
 const NOOP = () => {};
 
@@ -49,7 +50,12 @@ export class WanderEmbedded {
   public balanceInfo: BalanceInfo | null = null;
   public pendingRequests: number = 0;
 
-  constructor(options: WanderEmbeddedOptions = {}) {
+  constructor(
+    options: WanderEmbeddedOptions = {
+      clientId: "",
+      applicationId: ""
+    }
+  ) {
     if (WanderEmbedded.instance) {
       throw new Error("WanderEmbedded instance already exists.");
     }
@@ -73,6 +79,8 @@ export class WanderEmbedded {
     }
 
     const optionsWithDefaults = merge(options, {
+      applicationId: options.applicationId,
+      clientId: options.clientId,
       iframe: {
         clickOutsideBehavior: "auto"
       }
@@ -101,8 +109,10 @@ export class WanderEmbedded {
       button: buttonOptions
     } = options;
 
-    // TODO Use PARAM_ORIGIN_KEY and PARAM_CLIENT_ID instead of hardcoded values:
-    const srcWithParams = `${src}?ancestor-origin=${location.origin}&client-id=${options.clientId}&application-id=${options.applicationId}`;
+    const srcWithParams = getEmbeddedURL(
+      options.applicationId,
+      options.clientId
+    );
 
     if (iframeOptions instanceof HTMLElement) {
       if (

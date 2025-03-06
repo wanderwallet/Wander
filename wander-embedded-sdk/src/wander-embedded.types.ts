@@ -87,8 +87,8 @@ export interface WanderEmbeddedOptions {
   onBalance?: (balanceInfo: BalanceInfo) => void;
   onRequest?: (pendingRequests: number) => void;
 
-  clientId?: string;
-  applicationId?: string;
+  clientId: string;
+  applicationId: string;
 }
 
 // Common:
