@@ -6,6 +6,7 @@ interface ImportMetaEnv {
   readonly VITE_IS_EMBEDDED_APP: "1" | "0";
   readonly VITE_SUPABASE_URL: string;
   readonly VITE_SUPABASE_ANON_KEY: string;
+  readonly VITE_EMBEDDED_CLIENT_ID: string;
 }
 
 interface ImportMeta {

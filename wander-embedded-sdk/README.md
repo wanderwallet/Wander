@@ -29,7 +29,7 @@
 
   useEffect(() => {
     const wanderInstance = new WanderEmbedded({
-      clientId: "<clientId>",
+      clientId: "ALPHA",
       iframe: {
         routeLayout: {
           auth: "modal",
