@@ -2,6 +2,9 @@ import { createSupabaseClient, createTRPCClient } from "embed-api";
 import { jwtDecode } from "jwt-decode";
 import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 
+// Create a singleton instance of the Supabase client
+let supabaseInstance: ReturnType<typeof createSupabaseClient> | null = null;
+
 // Then, its tRPC client will be initialized with the following headers:
 // - authorization (getAuthTokenHeader / setAuthTokenHeader)
 // - x-device-nonce (getDeviceNonceHeader / setDeviceNonceHeader)
@@ -71,12 +74,20 @@ export function isInsideIframe(): boolean {
 // type TRPCClient = ReturnType<typeof createTRPCProxyClient<AppRouter>>;
 // const trpcVanilla = client as TRPCClient;
 
-const supabase = IS_EMBEDDED_APP
-  ? createSupabaseClient(
+function getSupabaseClient() {
+  if (!IS_EMBEDDED_APP) return null;
+
+  if (!supabaseInstance) {
+    supabaseInstance = createSupabaseClient(
       import.meta.env?.VITE_SUPABASE_URL || "",
       import.meta.env?.VITE_SUPABASE_ANON_KEY || ""
-    )
-  : null;
+    );
+  }
+
+  return supabaseInstance;
+}
+
+const supabase = getSupabaseClient();
 
 async function getSessionId() {
   try {
