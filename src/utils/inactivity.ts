@@ -47,7 +47,7 @@ async function checkAndHandleSessionState() {
   }
 
   const timeout =
-    (await ExtensionStorage.get<number>("auto_sign_out_time")) || 15;
+    (await ExtensionStorage.get<number>("auto_sign_out_time")) ?? 15;
   browser.alarms.create(INACTIVITY_ALARM_KEY, { delayInMinutes: timeout });
   log(LOG_GROUP.SESSION, `Auto-lock in ${timeout}min`);
 }
