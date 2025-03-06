@@ -11,6 +11,13 @@ const PORT_NAME = "popup-port";
 let activePopups = 0;
 let activePortConnections = 0;
 
+// Exact extension popup dimensions
+const POPUP_WIDTH = 385;
+const POPUP_HEIGHT = 720;
+
+// Allow small variance in size
+const SIZE_TOLERANCE = 20;
+
 function getSessionCount() {
   return activePopups + activePortConnections;
 }
@@ -43,13 +50,26 @@ async function startInactivityTimer(timeout: number) {
 
 async function checkAndHandleSessionState() {
   try {
-    // Always check real window count first
+    // Get all popup/panel windows
     const windows = await browser.windows.getAll({
       windowTypes: ["popup", "panel"]
     });
-    activePopups = windows.length;
 
+    // Filter for our specific extension popup size
+    const extensionWindows = windows.filter((window) => {
+      // Check if dimensions match our popup (with tolerance)
+      const matchesWidth =
+        window.width && Math.abs(window.width - POPUP_WIDTH) <= SIZE_TOLERANCE;
+      const matchesHeight =
+        window.height &&
+        Math.abs(window.height - POPUP_HEIGHT) <= SIZE_TOLERANCE;
+
+      return matchesWidth && matchesHeight;
+    });
+
+    activePopups = extensionWindows.length;
     const isActive = isExtensionActive();
+
     log(LOG_GROUP.SESSION, getSessionStatus());
 
     if (isActive) {
