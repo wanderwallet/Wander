@@ -79,37 +79,60 @@ async function validateClientApplication() {
 
     return result;
   } catch (err) {
-    if (isInsideIframe()) {
-      document.body.innerHTML = `
-      <div style="
-        position: fixed;
-        inset: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: #1a1a1a;
-        color: white;
-        font-family: system-ui;
-        text-align: center;
-        padding: 24px;
-      ">
-        <div style="max-width: 400px">
-          <h1 style="
-            color: #ff5757;
-            margin: 0 0 16px 0;
-            font-size: 20px;
-            line-height: 1.4;
-          ">Invalid Wander Embedded configuration</h1>
-          <p style="
-            margin: 0;
-            line-height: 1.5;
-            opacity: 0.9;
-          ">Please provide valid applicationId and clientId</p>
-        </div>
-      </div>
-      `;
-      throw new Error("Application validation failed");
+    // Check if error message already exists
+    const existingError = document.querySelector("[data-wander-error]");
+    // Error already shown
+    if (existingError) {
+      return;
     }
+
+    const overlay = document.createElement("div");
+    overlay.setAttribute("data-wander-error", "overlay");
+    overlay.style.cssText = `
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(2px);
+      z-index: 99998;
+    `;
+
+    const errorPopover = document.createElement("div");
+    errorPopover.setAttribute("data-wander-error", "popover");
+    errorPopover.style.cssText = `
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #1a1a1a;
+      color: white;
+      font-family: system-ui;
+      text-align: center;
+      padding: 16px 24px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      z-index: 99999;
+      max-width: 400px;
+      width: calc(100% - 32px);
+    `;
+
+    errorPopover.innerHTML = `
+      <h1 style="
+        color: #ff5757;
+        margin: 0 0 8px 0;
+        font-size: 16px;
+        line-height: 1.4;
+      ">Invalid Wander Embedded configuration</h1>
+      <p style="
+        margin: 0;
+        font-size: 14px;
+        line-height: 1.5;
+        opacity: 0.9;
+      ">Please provide valid applicationId and clientId</p>
+    `;
+
+    document.body.appendChild(overlay);
+    document.body.appendChild(errorPopover);
+    throw new Error("Application validation failed");
   }
 }
 
