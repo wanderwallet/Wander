@@ -24,87 +24,108 @@ function getSessionStatus() {
   return `Session: Active (${count})`;
 }
 
-async function checkAndHandleSessionState() {
-  const isActive = isExtensionActive();
-
-  if (isActive) {
+async function clearInactivityAlarm() {
+  try {
     await browser.alarms.clear(INACTIVITY_ALARM_KEY);
-    return;
+  } catch (error) {
+    log(LOG_GROUP.SESSION, `Failed to clear alarm: ${error.message}`);
   }
+}
 
-  const decryptionKey = await getDecryptionKey();
-  if (!decryptionKey) {
-    log(LOG_GROUP.SESSION, "Not logged in");
-    return;
+async function startInactivityTimer(timeout: number) {
+  try {
+    browser.alarms.create(INACTIVITY_ALARM_KEY, { delayInMinutes: timeout });
+    log(LOG_GROUP.SESSION, `Auto-lock in ${timeout}min`);
+  } catch (error) {
+    log(LOG_GROUP.SESSION, `Failed to start timer: ${error.message}`);
   }
+}
 
-  const isEnabled = await ExtensionStorage.get<boolean>(
-    "auto_sign_out_enabled"
-  );
-  if (!isEnabled) {
-    log(LOG_GROUP.SESSION, "Auto-lock disabled");
-    return;
+async function checkAndHandleSessionState() {
+  try {
+    // Always check real window count first
+    const windows = await browser.windows.getAll({
+      windowTypes: ["popup", "panel"]
+    });
+    activePopups = windows.length;
+
+    const isActive = isExtensionActive();
+    log(LOG_GROUP.SESSION, getSessionStatus());
+
+    if (isActive) {
+      await clearInactivityAlarm();
+      return;
+    }
+
+    // Session is inactive, check if we should start timer
+    const decryptionKey = await getDecryptionKey();
+    if (!decryptionKey) {
+      log(LOG_GROUP.SESSION, "Not logged in");
+      return;
+    }
+
+    const isEnabled = await ExtensionStorage.get<boolean>(
+      "auto_sign_out_enabled"
+    );
+    if (!isEnabled) {
+      log(LOG_GROUP.SESSION, "Auto-lock disabled");
+      return;
+    }
+
+    const timeout =
+      (await ExtensionStorage.get<number>("auto_sign_out_time")) ?? 15;
+    await startInactivityTimer(timeout);
+  } catch (error) {
+    log(LOG_GROUP.SESSION, `Session check failed: ${error.message}`);
+    // Ensure we don't leave session in bad state
+    await clearInactivityAlarm();
   }
-
-  const timeout =
-    (await ExtensionStorage.get<number>("auto_sign_out_time")) ?? 15;
-  browser.alarms.create(INACTIVITY_ALARM_KEY, { delayInMinutes: timeout });
-  log(LOG_GROUP.SESSION, `Auto-lock in ${timeout}min`);
 }
 
 export function initInactivityTracking() {
-  // Initialize session state
-  browser.windows
-    .getAll({ windowTypes: ["popup", "panel"] })
-    .then((windows) => {
-      activePopups = windows.length;
-      log(LOG_GROUP.SESSION, `Initialized ${getSessionStatus()}`);
-      checkAndHandleSessionState();
-    })
-    .catch((error) => {
-      log(LOG_GROUP.SESSION, `Init failed: ${error.message}`);
-    });
+  // Initialize state
+  checkAndHandleSessionState().catch((error) => {
+    log(LOG_GROUP.SESSION, `Init failed: ${error.message}`);
+  });
 
-  // Track session activity via ports
+  // Track port connections
   browser.runtime.onConnect.addListener((port) => {
     if (port.name !== PORT_NAME) return;
 
-    activePortConnections++;
-    log(LOG_GROUP.SESSION, `Connected ${getSessionStatus()}`);
-    checkAndHandleSessionState();
-
-    port.onDisconnect.addListener(() => {
-      activePortConnections = Math.max(0, activePortConnections - 1);
-      log(LOG_GROUP.SESSION, `Disconnected ${getSessionStatus()}`);
+    try {
+      activePortConnections++;
+      log(LOG_GROUP.SESSION, `Connected ${getSessionStatus()}`);
       checkAndHandleSessionState();
-    });
+
+      port.onDisconnect.addListener(() => {
+        activePortConnections = Math.max(0, activePortConnections - 1);
+        checkAndHandleSessionState();
+      });
+    } catch (error) {
+      log(LOG_GROUP.SESSION, `Port handling failed: ${error.message}`);
+      checkAndHandleSessionState();
+    }
   });
 
-  // Track session windows
+  // Track window events
   browser.windows.onCreated.addListener((window) => {
     if (window.type === "popup" || window.type === "panel") {
-      activePopups++;
-      log(LOG_GROUP.SESSION, `Connected ${getSessionStatus()}`);
       checkAndHandleSessionState();
     }
   });
 
   browser.windows.onRemoved.addListener(() => {
-    browser.windows
-      .getAll({ windowTypes: ["popup", "panel"] })
-      .then((windows) => {
-        activePopups = windows.length;
-        log(LOG_GROUP.SESSION, `Disconnected ${getSessionStatus()}`);
-        checkAndHandleSessionState();
-      })
-      .catch((error) => {
-        log(LOG_GROUP.SESSION, `Window check failed: ${error.message}`);
-      });
+    checkAndHandleSessionState();
   });
 
-  // Handle session timeout
+  // Handle auto sign-out
   browser.alarms.onAlarm.addListener(async (alarm) => {
-    if (alarm.name === INACTIVITY_ALARM_KEY) {
+    if (alarm.name !== INACTIVITY_ALARM_KEY) return;
+
+    try {
+      // Double check real state before signing out
+      await checkAndHandleSessionState();
+
       if (!isExtensionActive()) {
         const decryptionKey = await getDecryptionKey();
         if (!decryptionKey) {
@@ -114,10 +135,11 @@ export function initInactivityTracking() {
 
         log(LOG_GROUP.SESSION, "Auto-locked due to inactivity");
         await removeDecryptionKey();
-      } else {
-        log(LOG_GROUP.SESSION, `Lock cancelled - ${getSessionStatus()}`);
-        await browser.alarms.clear(INACTIVITY_ALARM_KEY);
       }
+    } catch (error) {
+      log(LOG_GROUP.SESSION, `Auto-lock failed: ${error.message}`);
+      // Ensure we don't leave session in bad state
+      await clearInactivityAlarm();
     }
   });
 }
@@ -125,6 +147,17 @@ export function initInactivityTracking() {
 export function initPopupPort() {
   if (IS_EMBEDDED_APP) return () => {};
 
-  const port = browser.runtime.connect({ name: PORT_NAME });
-  return () => port.disconnect();
+  try {
+    const port = browser.runtime.connect({ name: PORT_NAME });
+    return () => {
+      try {
+        port.disconnect();
+      } catch (error) {
+        log(LOG_GROUP.SESSION, `Port disconnect failed: ${error.message}`);
+      }
+    };
+  } catch (error) {
+    log(LOG_GROUP.SESSION, `Port connect failed: ${error.message}`);
+    return () => {};
+  }
 }
