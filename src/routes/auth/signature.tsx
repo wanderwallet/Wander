@@ -1,4 +1,10 @@
-import { Section, Text } from "@arconnect/components-rebrand";
+import {
+  Input,
+  Section,
+  Text,
+  useInput,
+  useToasts
+} from "@arconnect/components-rebrand";
 import Message from "~components/auth/Message";
 import Wrapper from "~components/auth/Wrapper";
 import browser from "webextension-polyfill";
@@ -6,12 +12,44 @@ import { useEffect } from "react";
 import { useCurrentAuthRequest } from "~utils/auth/auth.hooks";
 import { HeadAuth } from "~components/HeadAuth";
 import { AuthButtons } from "~components/auth/AuthButtons";
+import styled from "styled-components";
+import { useAskPassword } from "~wallets/hooks";
+import { ExtensionStorage, useStorage } from "~utils/storage";
+import { checkPassword } from "~wallets/auth";
 
 export function SignatureAuthRequestView() {
   const { authRequest, acceptRequest, rejectRequest } =
     useCurrentAuthRequest("signature");
 
+  const { setToast } = useToasts();
+
+  const [transferRequirePassword] = useStorage<boolean>(
+    {
+      key: "transfer_require_password",
+      instance: ExtensionStorage
+    },
+    false
+  );
+
+  const askPassword = useAskPassword();
+  const passwordInput = useInput();
+
   const { authID, url, message } = authRequest;
+
+  async function sign() {
+    if (transferRequirePassword && askPassword) {
+      const checkPw = await checkPassword(passwordInput.state);
+      if (!checkPw) {
+        setToast({
+          type: "error",
+          content: browser.i18n.getMessage("invalidPassword"),
+          duration: 2400
+        });
+        return;
+      }
+    }
+    await acceptRequest();
+  }
 
   // listen for enter to reset
   useEffect(() => {
@@ -40,13 +78,32 @@ export function SignatureAuthRequestView() {
           </div>
         </Section>
       </div>
-
-      <Section>
+      <Section style={{ paddingTop: 0, paddingBottom: 0 }}>
+        {transferRequirePassword && askPassword && (
+          <>
+            <PasswordWrapper>
+              <Input
+                placeholder="Enter your password"
+                sizeVariant="small"
+                {...passwordInput.bindings}
+                label={"Password"}
+                type="password"
+                onKeyDown={async (e) => {
+                  if (e.key !== "Enter") return;
+                  await sign();
+                }}
+                fullWidth
+              />
+            </PasswordWrapper>
+          </>
+        )}
+      </Section>
+      <Section style={{ paddingTop: 12 }}>
         <AuthButtons
           authRequest={authRequest}
           primaryButtonProps={{
             label: browser.i18n.getMessage("signature_authorize"),
-            onClick: () => acceptRequest()
+            onClick: sign
           }}
           secondaryButtonProps={{
             onClick: () => rejectRequest()
@@ -56,3 +113,12 @@ export function SignatureAuthRequestView() {
     </Wrapper>
   );
 }
+
+const PasswordWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+
+  p {
+    text-transform: capitalize;
+  }
+`;
