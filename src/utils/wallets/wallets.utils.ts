@@ -12,7 +12,6 @@ import Arweave from "arweave";
 import { setDecryptionKey } from "~wallets/auth";
 import { INVALID_DEVICE_SHARES_INFO_ERR_MSG } from "~utils/wallets/wallets.constants";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
-// import { random, pki, asn1 } from "node-forge";
 import type NodeForge from "node-forge";
 import {
   pemToBase64,
@@ -22,6 +21,8 @@ import {
 import type { Wallet } from "~utils/embedded/embedded.types";
 import { EMBEDDED_FEATURE_FLAGS } from "~utils/embedded/embedded.constants";
 
+// import { random, pki, asn1 } from "node-forge";
+//
 // There's 3 different ways to load `node-forge`:
 //
 // 1. Script tags (currently used):
