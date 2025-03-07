@@ -1,8 +1,8 @@
 {
-  "name": "wander-embedded-sdk",
-  "version": "0.0.5",
+  "name": "@wanderapp/embed-sdk",
+  "version": "0.0.1",
   "description": "Wander Embedded SDK.",
-  "author": "kranthicodes",
+  "author": "wanderapp",
   "license": "MIT",
   "files": [
     "sdk-dist/",
