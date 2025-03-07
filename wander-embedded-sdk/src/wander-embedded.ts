@@ -19,7 +19,12 @@ const NOOP = () => {};
 
 export class WanderEmbedded {
   private static instance: WanderEmbedded | null = null;
-  static DEFAULT_IFRAME_SRC = "http://localhost:5173/" as const;
+
+  static DEFAULT_IFRAME_SRC =
+    process.env.NODE_ENV === "development"
+      ? ("http://localhost:5173/" as const)
+      : ("https://embed-dev.wander.app/" as const);
+
   // static DEFAULT_IFRAME_SRC = "https://embed.wander.app/" as const;
   // static DEFAULT_IFRAME_SRC = "https://embed-dev.wander.app/" as const;
 
@@ -50,11 +55,7 @@ export class WanderEmbedded {
   public balanceInfo: BalanceInfo | null = null;
   public pendingRequests: number = 0;
 
-  constructor(
-    options: WanderEmbeddedOptions = {
-      clientId: ""
-    }
-  ) {
+  constructor(options: WanderEmbeddedOptions) {
     if (WanderEmbedded.instance) {
       throw new Error("WanderEmbedded instance already exists.");
     }
@@ -69,16 +70,18 @@ export class WanderEmbedded {
 
     // TODO: Merge options properly:
 
-    if (!options.clientId) {
-      throw new Error("clientId is required");
-    }
+    const optionsWithDefaults = merge(
+      {
+        clientId: "",
+        iframe: {
+          clickOutsideBehavior: "auto"
+        },
+        button: true
+      } satisfies WanderEmbeddedOptions,
+      options
+    );
 
-    const optionsWithDefaults = merge(options, {
-      clientId: options.clientId,
-      iframe: {
-        clickOutsideBehavior: "auto"
-      }
-    } satisfies WanderEmbeddedOptions);
+    if (!optionsWithDefaults.clientId) throw new Error("clientId is required");
 
     // Create or get references to iframe and, maybe, button:
     this.initializeComponents(optionsWithDefaults);
@@ -103,15 +106,12 @@ export class WanderEmbedded {
       button: buttonOptions
     } = options;
 
-    const srcWithParams = getEmbeddedURL(options.clientId);
+    const srcWithParams = getEmbeddedURL(src, options.clientId);
 
     if (iframeOptions instanceof HTMLElement) {
-      if (
-        iframeOptions.src &&
-        iframeOptions.src !== WanderEmbedded.DEFAULT_IFRAME_SRC
-      ) {
+      if (iframeOptions.src && iframeOptions.src !== srcWithParams) {
         console.warn(
-          `Replacing iframe.src ("${iframeOptions.src}") with ${WanderEmbedded.DEFAULT_IFRAME_SRC}`
+          `Replacing iframe.src ("${iframeOptions.src}") with ${srcWithParams}`
         );
       }
 

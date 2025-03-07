@@ -11,17 +11,23 @@ const PARAM_ANCESTOR_ORIGIN = "ancestor-origin";
 
 // Duplicated in `src/utils/embedded/utils/wallets/embedded-wallets.utils.ts`:
 export function getEmbeddedOrigin() {
+  // return "https://wander-embed-8sdlixush-community-labs.vercel.app/";
+  // return "https://embed-dev.wander.app/";
+
   return process.env.NODE_ENV === "development"
     ? "http://localhost:5173/"
-    : "https://embedded-iframe.arconnect.io/";
+    : "https://embed-dev.wander.app/";
 }
 
-export function getEmbeddedURL(clientId: string) {
-  const base = getEmbeddedOrigin();
+export function getEmbeddedURL(src: string, clientId: string) {
+  // TODO: `src` option now working. The code in `src/utils/embedded/utils/wallets/embedded-wallets.utils.ts` also needs
+  // to account for that...
+  // const url = new URL(src);
+  const url = getEmbeddedOrigin();
   const searchParams = new URLSearchParams();
 
   searchParams.set(PARAM_CLIENT_ID, clientId);
   searchParams.set(PARAM_ANCESTOR_ORIGIN, window.location.origin);
 
-  return `${base}?${searchParams.toString()}`;
+  return `${url}?${searchParams.toString()}`;
 }

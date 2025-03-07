@@ -16,6 +16,7 @@ let supabaseInstance: ReturnType<typeof createSupabaseClient> | null = null;
 const { search = "", ancestorOrigins = [] } = IS_EMBEDDED_APP
   ? document.location
   : {};
+
 const searchParams = new URLSearchParams(search);
 const ancestorOrigin = ancestorOrigins[ancestorOrigins.length - 1];
 
@@ -103,6 +104,9 @@ async function getSessionId() {
   }
 }
 
+// TODO: Move to embedded.provider and make sure it's called once deviceNonce has been loaded, and that a loader/spinner
+// is shown until this validation has happened.
+
 async function insecurelyValidateApplication() {
   try {
     const sessionId = await getSessionId();
@@ -156,7 +160,7 @@ async function insecurelyValidateApplication() {
 }
 
 // Validate immediately on load
-insecurelyValidateApplication();
+// insecurelyValidateApplication();
 
 export {
   supabase,
