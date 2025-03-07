@@ -11207,7 +11207,7 @@
                         u = n.workers,
                         l = n.workLoad || 100,
                         p = (30 * l) / 8,
-                        f = n.workerScript || "forge/prime.worker.js";
+                        f = n.workerScript || "assets/forge/prime.worker.js";
                       if (-1 === u)
                         return a.util.estimateCores(function (e, t) {
                           e && (t = 2), (u = t - 1), h();

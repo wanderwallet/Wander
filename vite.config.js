@@ -29,6 +29,10 @@ export default defineConfig({
       "~tokens": path.resolve(__dirname, "./src/tokens"),
       "~utils": path.resolve(__dirname, "./src/utils"),
       "~wallets": path.resolve(__dirname, "./src/wallets"),
+
+      // Prisma Enum Fix:
+      // See https://github.com/prisma/prisma/issues/12504#issuecomment-1136126199
+      // See https://github.com/sveltejs/kit/issues/4444
       ".prisma/client/index-browser":
         "./node_modules/.prisma/client/index-browser.js",
 
