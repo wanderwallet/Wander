@@ -949,7 +949,17 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       window.clearTimeout(forceInitTimeoutID);
 
       // Comment this line to run Wander Embedded as a standalone page:
-      if (!isInsideIframe()) window.close();
+      if (!isInsideIframe()) {
+        if (window.location.origin === "https://embed.wander.app") {
+          window.close();
+        } else {
+          const wantToClose = confirm(
+            "In production (https://embed.wander.app), the app would close right now. Do you still want to close it?"
+          );
+
+          if (wantToClose) window.close();
+        }
+      }
 
       const accessToken = session?.access_token ?? null;
       const user = session?.user ?? null;
