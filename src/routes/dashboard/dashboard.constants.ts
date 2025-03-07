@@ -168,6 +168,16 @@ export const quickSettingsMenuItems: Omit<
     component: AboutDashboardView,
     externalLink: "tabs/dashboard.html#/about"
   },
+  ...(location.pathname !== "/popup.html" || IS_EMBEDDED_APP
+    ? []
+    : [
+        {
+          name: "fullscreen",
+          displayName: "setting_fullscreen",
+          icon: Maximize01,
+          externalLink: "tabs/fullscreen.html"
+        }
+      ]),
   {
     name: "All Settings",
     displayName: "setting_all_settings",
@@ -175,12 +185,3 @@ export const quickSettingsMenuItems: Omit<
     externalLink: "tabs/dashboard.html"
   }
 ];
-
-if (process.env.NODE_ENV === "development" && !IS_EMBEDDED_APP) {
-  quickSettingsMenuItems.splice(5, 0, {
-    name: "fullscreen",
-    displayName: "setting_fullscreen",
-    icon: Maximize01,
-    externalLink: "tabs/fullscreen.html"
-  });
-}
