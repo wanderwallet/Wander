@@ -791,12 +791,20 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         return;
       }
 
-      // TODO: This is a temp dirty fix to:
-      // - Try to refresh the session when it's incomplete (missing deviceNonce and countryCode).
-      // - Try to delete the session from frontend when it has been deleted/invalidated on the backend.
-      console.log("Refreshing session...");
-      await supabase.auth.refreshSession();
-      console.log("Session refreshed...");
+      if (
+        !session.countryCode ||
+        !session.id ||
+        !session.deviceNonce ||
+        session.deviceNonce !== getDeviceNonce()
+      ) {
+        console.warn(
+          "❌  The current session is incomplete. Refreshing...",
+          session
+        );
+        await supabase.auth.refreshSession();
+      } else {
+        console.log("✅  The current session is complete!", session);
+      }
 
       const wallets = await WalletService.fetchWallets(userId);
 
@@ -820,7 +828,11 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         // TODO: Add try-catch. If the initialization process fails, show an error...
 
         const { activatedWallet, rotationChallenge } =
-          await WalletService.fetchFirstAvailableAuthShare(wallets, session);
+          await WalletService.fetchFirstAvailableAuthShare(
+            wallets,
+            session,
+            userId
+          );
 
         if (activatedWallet) {
           const { id: walletId, address: walletAddress } = activatedWallet;
@@ -902,6 +914,22 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
   }, []);
 
   useEffect(() => {
+    /*
+    KNOWN AUTHENTICATION ISSUES:
+
+    - The decoded JWT token sometimes is missing some properties (`countryCode` and `deviceNonce`). Refreshing the
+      sessions seems to fix the issue, but not immediately. The `The current session is incomplete. Refreshing...` block
+      in `initEmbeddedWallet` is a dirty/temp fix for that.
+
+    - The `onAuthStateChange` callback below is never invoked when running the app inside an iframe on a different
+      origin. The `setTimeout` below is a dirty/tem fix for that.
+
+      See https://stackoverflow.com/questions/71819128/supabase-auth-onauthstatechange-not-working-when-react-app-is-in-iframe
+
+    - When a sessions is deleted from the DB, it's still reported as valid, even thought tRPC endpoints will return
+      UNAUTHORIZED errors. When that happens, we should force de-authentication of the frontend.
+    */
+
     const forceInitTimeoutID = setTimeout(() => {
       console.warn("Forcing initialization...");
 
@@ -914,8 +942,6 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
       initEmbeddedWallet();
     }, 2000);
-
-    // See https://stackoverflow.com/questions/71819128/supabase-auth-onauthstatechange-not-working-when-react-app-is-in-iframe
 
     const {
       data: { subscription }
@@ -945,22 +971,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
           id: sessionId,
           userId: sub
         };
-
-        if (
-          !dbSession.countryCode ||
-          !dbSession.id ||
-          !dbSession.deviceNonce ||
-          dbSession.deviceNonce !== getDeviceNonce()
-        ) {
-          console.warn("Incomplete session =", dbSession);
-        } else {
-          console.log("Complete session =", dbSession);
-        }
       }
-
-      // TODO: Why is the session still reported as valid after deleting it from the DB?
-
-      // TODO: Make sure any tRPC call returning UNAUTHORIZED forces de-authentication.
 
       setAuthTokenHeader(accessToken);
 

@@ -4,6 +4,7 @@ import type {
   WalletActivationStatus
 } from "~utils/embedded/embedded.types";
 import { trpcVanilla } from "~utils/embedded/embedded.utils";
+import { isTRPCClientError } from "~utils/embedded/utils/trpc/trpc.utils";
 import { WalletUtils } from "~utils/wallets/wallets.utils";
 import { getWallets, removeWallet } from "~wallets";
 
@@ -140,9 +141,10 @@ export interface FetchFirstAvailableAuthShareReturn {
 
 async function fetchFirstAvailableAuthShare(
   wallets: Wallet[],
-  session: DbSession
+  session: DbSession,
+  userId: string
 ): Promise<FetchFirstAvailableAuthShareReturn> {
-  return new Promise(async (resolve, reject) => {
+  return new Promise(async (resolve) => {
     for (const wallet of wallets) {
       const { id: walletId, deviceShare } = wallet;
 
@@ -165,10 +167,26 @@ async function fetchFirstAvailableAuthShare(
         });
 
         const { authShare, rotationChallenge } =
-          await trpcVanilla.activateWallet.mutate({
-            walletId,
-            challengeSolution
-          });
+          await trpcVanilla.activateWallet
+            .mutate({
+              walletId,
+              challengeSolution
+            })
+            .catch((err: unknown) => {
+              if (!isTRPCClientError(err) || err.data.httpStatus !== 404)
+                throw err;
+
+              console.warn(
+                `The corresponding auth share for the device share stored for walletId = ${walletId} was not found. Deleting device share from this device...`
+              );
+
+              WalletUtils.removeDeviceShare(deviceShare, userId);
+
+              return {
+                authShare: null,
+                rotationChallenge: null
+              };
+            });
 
         // TODO: Better with zk: instead of hashes or use a challenge here?
 
@@ -187,7 +205,10 @@ async function fetchFirstAvailableAuthShare(
           return;
         }
       } catch (err) {
-        console.warn(`Wallet ${walletId} activation error =`, err);
+        console.warn(
+          `Unexpected wallet activation error (walletId = "${walletId}") =`,
+          err
+        );
       }
     }
 

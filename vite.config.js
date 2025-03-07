@@ -29,6 +29,8 @@ export default defineConfig({
       "~tokens": path.resolve(__dirname, "./src/tokens"),
       "~utils": path.resolve(__dirname, "./src/utils"),
       "~wallets": path.resolve(__dirname, "./src/wallets"),
+      ".prisma/client/index-browser":
+        "./node_modules/.prisma/client/index-browser.js",
 
       // Assets:
       "assets/lotties": path.resolve(__dirname, "./assets/lotties"),
