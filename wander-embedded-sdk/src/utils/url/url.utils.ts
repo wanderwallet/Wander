@@ -14,6 +14,9 @@ export function getEmbeddedOrigin() {
   // return "https://wander-embed-323765jaf-community-labs.vercel.app/";
   // return "https://embed-dev.wander.app/";
 
+  // vite preview:
+  // return "http://localhost:4173/";
+
   return process.env.NODE_ENV === "development"
     ? "http://localhost:5173/"
     : "https://embed-dev.wander.app/";
