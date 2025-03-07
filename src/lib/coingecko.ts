@@ -43,7 +43,7 @@ export async function getArPrice(currency: string) {
 
     const rate = await getConversionRate(currency);
 
-    return BigNumber(res.source.coingecko).multipliedBy(rate).toFixed();
+    return BigNumber(res.value).multipliedBy(rate).toFixed();
   }
 }
 
