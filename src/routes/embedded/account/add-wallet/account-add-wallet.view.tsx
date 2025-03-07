@@ -1,3 +1,4 @@
+import type { WalletSourceType } from "embed-api";
 import { useCallback, useEffect, useState } from "react";
 import {
   Box,
@@ -14,7 +15,8 @@ import {
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 
 export function AccountAddWalletEmbeddedView() {
-  const { authMethod, generateTempWallet, registerWallet } = useEmbedded();
+  const { authProviderType, generateTempWallet, registerWallet } =
+    useEmbedded();
   const [isLoading, setIsLoading] = useState({
     calledId: "",
     status: false
@@ -29,14 +31,11 @@ export function AccountAddWalletEmbeddedView() {
 
   // TODO: Remember last selection and highlight that one / show it in the main screen (not in "More")
 
-  const handleRegisterWallet = useCallback(
-    async (source: "generated" | "imported") => {
-      setIsLoading({ calledId: source, status: true });
-      await registerWallet(source);
-      setIsLoading({ calledId: "", status: false });
-    },
-    []
-  );
+  const handleRegisterWallet = useCallback(async (source: WalletSourceType) => {
+    setIsLoading({ calledId: source, status: true });
+    await registerWallet(source);
+    setIsLoading({ calledId: "", status: false });
+  }, []);
 
   return (
     <Card
@@ -59,7 +58,7 @@ export function AccountAddWalletEmbeddedView() {
     >
       <Box>
         <Button
-          onClick={() => handleRegisterWallet("generated")}
+          onClick={() => handleRegisterWallet("GENERATED")}
           variant="outlined"
           isFullWidth
           icon={<SeedIcon fontSize={24} />}
@@ -85,7 +84,7 @@ export function AccountAddWalletEmbeddedView() {
         >
           Import Keyfile
         </Button>
-        {authMethod === "passkey" ? (
+        {authProviderType === "PASSKEYS" ? (
           <Button
             variant="outlined"
             isFullWidth
@@ -101,7 +100,7 @@ export function AccountAddWalletEmbeddedView() {
             icon={<QRCodeIcon fontSize={24} />}
             href="/auth/add-auth-provider"
           >
-            Add {authMethod.toLocaleUpperCase()} to an existing account
+            Add {authProviderType.toLocaleUpperCase()} to an existing account
           </Button>
         )}
       </Box>
