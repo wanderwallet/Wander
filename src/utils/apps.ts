@@ -78,6 +78,15 @@ import CtrlPlayIcon from "url:/assets/ecosystem/ctrlplay.png";
 import DecentraMindIcon from "url:/assets/ecosystem/decentramind.png";
 import PetOrRektIcon from "url:/assets/ecosystem/pet-or-rekt.png";
 import AolottoIcon from "url:/assets/ecosystem/aolotto.png";
+import ElyssiumIcon from "url:/assets/ecosystem/elyssium.png";
+import AoStoreIcon from "url:/assets/ecosystem/aostore.png";
+import ArbitStudioIcon from "url:/assets/ecosystem/arbit.png";
+import Tiny4VRIcon from "url:/assets/ecosystem/tiny4vr.png";
+import RimboxIcon from "url:/assets/ecosystem/rimbox.png";
+import MetaLinksIcon from "url:/assets/ecosystem/metalinks.png";
+import ArLinkIcon from "url:/assets/ecosystem/arlink.svg";
+import TrackiIcon from "url:/assets/ecosystem/tracki.png";
+import VelocityIcon from "url:/assets/ecosystem/velocity.svg";
 
 export interface App {
   name: string;
@@ -98,9 +107,9 @@ export interface App {
   icon: string;
   useAppIconWrapper?: boolean;
   backgroundColor?: string;
-  showBorder?: boolean;
   objectFit?: "contain" | "cover";
   imageSize?: string;
+  padding?: string;
 }
 
 export const apps: App[] = [
@@ -171,6 +180,12 @@ export const apps: App[] = [
     category: "DeFi",
     url: "https://trunkao.xyz",
     icon: TrunkIcon
+  },
+  {
+    name: "tracki.io",
+    category: "DeFi",
+    url: "https://www.tracki.io/",
+    icon: TrackiIcon
   },
 
   // Bridges
@@ -295,11 +310,18 @@ export const apps: App[] = [
     backgroundColor: "#000000"
   },
   {
+    name: "Rimbox",
+    category: "Games",
+    url: "https://rimbox.vercel.app/",
+    icon: RimboxIcon,
+    backgroundColor: "#fff"
+  },
+  {
     name: "Aolotto",
     category: "Games",
     url: "https://aolotto.com",
     icon: AolottoIcon,
-    showBorder: true,
+
     imageSize: "32px",
     backgroundColor: "#FFF"
   },
@@ -384,6 +406,40 @@ export const apps: App[] = [
     icon: DecentraMindIcon,
     useAppIconWrapper: true,
     backgroundColor: "#fff"
+  },
+  {
+    name: "Elyssium",
+    category: "Social",
+    url: "https://elyssium.live/",
+    icon: ElyssiumIcon,
+    backgroundColor: "#000"
+  },
+  {
+    name: "Arbit Studio",
+    category: "Social",
+    url: "https://arbitstudio.ar.io",
+    icon: ArbitStudioIcon
+  },
+  {
+    name: "AO Store",
+    category: "Social",
+    url: "https://arstore_arlink.arweave.net/",
+    icon: AoStoreIcon,
+    backgroundColor: "#000"
+  },
+  {
+    name: "Velocity",
+    category: "Social",
+    url: "https://velocity.ar.io/",
+    icon: VelocityIcon
+  },
+  {
+    name: "MetaLinks",
+    category: "Social",
+    url: "https://metalinks.ar.io/",
+    icon: MetaLinksIcon,
+    backgroundColor: "black",
+    padding: "4px"
   },
 
   // Storage
@@ -501,6 +557,18 @@ export const apps: App[] = [
     url: "https://stamps.live/",
     icon: StampProtocolIcon,
     useAppIconWrapper: true
+  },
+  {
+    name: "tiny4VR",
+    category: "Dev Tools",
+    url: "https://tiny4vr.ar.io/",
+    icon: Tiny4VRIcon
+  },
+  {
+    name: "ArLink",
+    category: "Dev Tools",
+    url: "https://arlink.arweave.net/",
+    icon: ArLinkIcon
   },
 
   // Community

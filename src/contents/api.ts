@@ -34,31 +34,28 @@ container.removeChild(script);
 //
 //    iframeElement.contentWindow.postMessage(...);
 
-window.addEventListener(
-  "message",
-  async ({ data }: MessageEvent<ApiCall & { ext: "wander" }>) => {
-    // verify that the call is meant for the extension
-    if (data.ext !== "wander") {
-      return;
-    }
-
-    // verify that the call has an ID
-    if (!data.callID) {
-      throw new Error("The call does not have a callID");
-    }
-
-    log(LOG_GROUP.API, `${data.type} (${data.callID})...`);
-
-    // send call to the background
-    const res = await sendMessage(
-      data.type === "chunk" ? "chunk" : "api_call",
-      data,
-      "background"
-    );
-
-    log(LOG_GROUP.API, `${data.type} (${data.callID}) =`, res);
-
-    // send the response to the injected script
-    window.postMessage(res, window.location.origin);
+window.addEventListener("message", async ({ data }: MessageEvent<ApiCall>) => {
+  // verify that the call is meant for the extension
+  if (data.app !== "wander") {
+    return;
   }
-);
+
+  // verify that the call has an ID
+  if (!data.callID) {
+    throw new Error("The call does not have a callID");
+  }
+
+  log(LOG_GROUP.API, `${data.type} (${data.callID})...`);
+
+  // send call to the background
+  const res = await sendMessage(
+    data.type === "chunk" ? "chunk" : "api_call",
+    data,
+    "background"
+  );
+
+  log(LOG_GROUP.API, `${data.type} (${data.callID}) =`, res);
+
+  // send the response to the injected script
+  window.postMessage(res, window.location.origin);
+});

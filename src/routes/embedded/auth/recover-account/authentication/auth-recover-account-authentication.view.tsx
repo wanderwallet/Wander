@@ -1,9 +1,19 @@
-import { DevFigmaScreen } from "~components/dev/figma-screen/figma-screen.component";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useLocation } from "~wallets/router/router.utils";
 import { useState } from "react";
-
-import screenSrc from "url:/assets-beta/figma-screens/recover-account-authentication.view.png";
+import {
+  Card,
+  Row,
+  WanderIcon,
+  Text,
+  Copyable,
+  Button,
+  KeyIcon,
+  GoogleIcon,
+  SocialsIcon,
+  Checkbox
+} from "~components/embed/ui";
+import copy from "copy-to-clipboard";
 
 export function AuthRecoverAccountAuthenticationEmbeddedView() {
   const { importedTempWalletAddress, recoverableAccounts, recoverAccount } =
@@ -20,53 +30,68 @@ export function AuthRecoverAccountAuthenticationEmbeddedView() {
     setCheckboxChecked((prevValue) => !prevValue);
 
   return (
-    <DevFigmaScreen
-      title="Recover your account"
-      description="Sign Up or Sign In"
-      src={screenSrc}
-      isLoading={!accountToRecover}
-      config={[
-        {
-          label: importedTempWalletAddress,
-          isDisabled: true
-        },
-        {
-          label: accountToRecover ? accountToRecover.name : "-",
-          isDisabled: true
-        },
-        {
-          label: "Passkey",
-          onClick: () => recoverAccount("passkey", accountToRecoverId),
-          isDisabled: !checkboxChecked
-        },
-        {
-          label: "Google",
-          onClick: () => recoverAccount("google", accountToRecoverId),
-          isDisabled: !checkboxChecked
-        },
-        {
-          label: "More Options",
-          to: "/auth/recover-account/more-authentication",
-          variant: "secondary"
-        },
-        {
-          label: "Back",
-          onClick: back,
-          variant: "secondary"
-        }
-      ]}
+    <Card
+      headerText={"Recover your account"}
+      footerElement={
+        <Row>
+          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
+            {"Secured by"}
+          </Text>
+          <WanderIcon color="#838383" />
+        </Row>
+      }
+      hasBackButton={true}
+      onBackButtonClick={() => {
+        window.history.back();
+      }}
+      //   hasCloseButton={false}
+      onCloseButtonClick={() => {
+        window.history.back();
+      }}
+      size="auto"
     >
-      <div>
-        <label>
-          <input
-            type="checkbox"
-            checked={checkboxChecked}
-            onChange={toggleCheckboxChecked}
-          />
-          After recovery, all your devices are logged out and your account
-          recovery files are invalided. You'll have to download a new one.
-        </label>
-      </div>
-    </DevFigmaScreen>
+      <Copyable
+        style={{ margin: "32px 0" }}
+        isFullWidth
+        label="Your account address"
+        onClick={() => {
+          copy(importedTempWalletAddress);
+        }}
+        value={importedTempWalletAddress}
+      />
+      <Button
+        onClick={() => recoverAccount("passkey", accountToRecoverId)}
+        variant="outlined"
+        isFullWidth
+        isDisabled={!checkboxChecked}
+        icon={<KeyIcon fontSize={24} />}
+      >
+        Passkey
+      </Button>
+      <Button
+        onClick={() => recoverAccount("google", accountToRecoverId)}
+        variant="outlined"
+        isFullWidth
+        isDisabled={!checkboxChecked}
+        icon={<GoogleIcon fontSize={24} />}
+      >
+        Google
+      </Button>
+      <Button
+        variant="outlined"
+        isFullWidth
+        icon={<SocialsIcon fontSize={24} />}
+        href="/auth/recover-account/more-authentication"
+      >
+        More options
+      </Button>
+      <Checkbox
+        label="After recovery, all your devices are logged out and your account recovery files are invalided. You'll have to download a new one."
+        isChecked={checkboxChecked}
+        handleChange={toggleCheckboxChecked}
+      />
+    </Card>
   );
+  //         label: accountToRecover ? accountToRecover.name : "-",
+  //         isDisabled: true
 }

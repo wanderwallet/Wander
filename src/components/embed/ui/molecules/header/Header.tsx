@@ -1,6 +1,6 @@
 import React from "react";
 import styles from "./Header.module.css";
-import { HeaderBaseProps } from "./Header.types";
+import type { HeaderBaseProps } from "./Header.types";
 
 import { Box, Text, Row, XClose, ChevronLeft } from "../../atoms";
 

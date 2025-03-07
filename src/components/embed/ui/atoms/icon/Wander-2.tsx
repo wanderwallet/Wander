@@ -10,8 +10,8 @@ const SvgWander2 = (props: SVGProps<SVGSVGElement>) => (
     {...props}
   >
     <path
-      fill-rule="evenodd"
-      clip-rule="evenodd"
+      fillRule="evenodd"
+      clipRule="evenodd"
       d="M24.2597 8.50805L18.1612 0.775146C17.9043 0.441746 17.6523 0.387297 17.3764 0.745388L11.2684 8.49547L17.1802 13.8386L17.7543 1.59705L18.3284 13.8386L24.2597 8.50805Z"
       fill="url(#paint0_linear_4_413)"
     />
@@ -32,8 +32,8 @@ const SvgWander2 = (props: SVGProps<SVGSVGElement>) => (
         y2="0.5"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#6B57F9" />
-        <stop offset="1" stop-color="#9787FF" />
+        <stop stopColor="#6B57F9" />
+        <stop offset="1" stopColor="#9787FF" />
       </linearGradient>
       <linearGradient
         id="paint1_linear_4_413"
@@ -43,8 +43,8 @@ const SvgWander2 = (props: SVGProps<SVGSVGElement>) => (
         y2="15.8456"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#6B57F9" />
-        <stop offset="1" stop-color="#9787FF" />
+        <stop stopColor="#6B57F9" />
+        <stop offset="1" stopColor="#9787FF" />
       </linearGradient>
       <linearGradient
         id="paint2_linear_4_413"
@@ -54,8 +54,8 @@ const SvgWander2 = (props: SVGProps<SVGSVGElement>) => (
         y2="15.8456"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#6B57F9" />
-        <stop offset="1" stop-color="#9787FF" />
+        <stop stopColor="#6B57F9" />
+        <stop offset="1" stopColor="#9787FF" />
       </linearGradient>
     </defs>
   </svg>

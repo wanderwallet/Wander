@@ -1,5 +1,5 @@
 # dependencies
-/node_modules
+node_modules
 /.pnp
 .pnp.js
 
@@ -28,7 +28,8 @@ yarn-error.log*
 out/
 build/
 dist/
-
+sdk-dist
+wander-embedded-sdk/wallet-api-dist/
 # plasmo - https://www.plasmo.com
 .plasmo
 

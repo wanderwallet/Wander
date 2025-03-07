@@ -3,10 +3,10 @@ import type { SVGProps } from "react";
 const SvgXClose = (props: SVGProps<SVGSVGElement>) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    width="1em"
-    height="1em"
+    width="0.9em"
+    height="0.9em"
     fill="none"
-    viewBox="0 0 25 25"
+    viewBox="0 0 24 24"
     color="currentColor"
     {...props}
   >

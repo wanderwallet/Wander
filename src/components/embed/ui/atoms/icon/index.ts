@@ -18,6 +18,7 @@ export { default as GoogleIcon } from "./Google";
 export { default as KeyIcon } from "./Key";
 export { default as InfoIcon } from "./Info";
 export { default as QRCodeIcon } from "./QRCode";
+export { default as RecoverHeaderIcon } from "./RecoverHeader";
 export { default as SeedIcon } from "./SeedPhrase";
 export { default as SocialsIcon } from "./Socials";
 export { default as SuccessIcon } from "./Success";

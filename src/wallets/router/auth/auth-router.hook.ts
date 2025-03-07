@@ -16,7 +16,7 @@ export const useAuthRequestsLocation: BaseLocationHook = () => {
   // The authID has been added to the URL so that the auto-scroll and view transition effect work when switching
   // between different `AuthRequest`s of the same type:
   const location =
-    `/${currentAuthRequest.type}/${currentAuthRequest.authID}` satisfies AuthRoutePath;
+    `/auth-request/${currentAuthRequest.type}/${currentAuthRequest.authID}` satisfies AuthRoutePath;
 
   // TODO: Implement a navigate function that selects a different AuthRequest and also use <Link> whenever possible:
   return [location, (authID: string) => {}];

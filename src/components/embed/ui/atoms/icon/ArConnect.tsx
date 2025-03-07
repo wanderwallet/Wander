@@ -1,5 +1,6 @@
 import * as React from "react";
 import type { SVGProps } from "react";
+import { withThemeAwareColor } from "./IconBase";
 const SvgArconnect = (props: SVGProps<SVGSVGElement>) => (
   <svg
     width="25"
@@ -16,4 +17,4 @@ const SvgArconnect = (props: SVGProps<SVGSVGElement>) => (
     />
   </svg>
 );
-export default SvgArconnect;
+export default withThemeAwareColor(SvgArconnect);

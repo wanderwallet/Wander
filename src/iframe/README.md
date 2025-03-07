@@ -1,8 +1,6 @@
-# ArConnect Embedded
+# Wander Embedded
 
 ## Testing
-
-### Embedded
 
 Scenarios to test:
 
