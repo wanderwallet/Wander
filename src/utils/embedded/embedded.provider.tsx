@@ -748,9 +748,6 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         );
 
         if (url) {
-          window.location.href = url;
-
-          return;
           // Redirect to Google's OAuth page
           // Opening the URL on the current tab won't work when Embedded is loaded inside the iframe:
 
@@ -949,6 +946,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     const {
       data: { subscription }
     } = supabase.auth.onAuthStateChange((_event, session) => {
+      // console.log("onAuthStateChange =", session);
+
       window.clearTimeout(forceInitTimeoutID);
 
       // Comment this line to run Wander Embedded as a standalone page:

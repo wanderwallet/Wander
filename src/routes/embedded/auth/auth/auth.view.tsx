@@ -13,8 +13,9 @@ import {
   Wander2Icon,
   WanderIcon
 } from "~components/embed";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import type { AuthProviderType } from "embed-api";
+import { supabase } from "~utils/embedded/embedded.utils";
 
 export function AuthEmbeddedView() {
   const { authenticate, authStatus } = useEmbedded();
@@ -30,14 +31,39 @@ export function AuthEmbeddedView() {
 
   // TODO: Remember last selection and highlight that one / show it in the main screen (not in "More")
 
+  const emailInputRef = useRef<HTMLInputElement>();
+  const passwordInputRef = useRef<HTMLInputElement>();
+
   const handleAuthenticate = useCallback(
     async (authProviderType: AuthProviderType) => {
       setSelectedAuthProviderType(authProviderType);
-      await authenticate(authProviderType);
+      await authenticate(
+        authProviderType,
+        emailInputRef.current?.value || "",
+        passwordInputRef.current?.value || ""
+      );
       setSelectedAuthProviderType(null);
     },
     []
   );
+
+  const handleEmailSignup = useCallback(async () => {
+    const { error, data } = await supabase.auth.signUp({
+      email: emailInputRef.current?.value || "",
+      password: passwordInputRef.current?.value || ""
+    });
+
+    console.log({ error, data });
+  }, []);
+
+  const handleEmailSignIn = useCallback(async () => {
+    const { error, data } = await supabase.auth.signInWithPassword({
+      email: emailInputRef.current?.value || "",
+      password: passwordInputRef.current?.value || ""
+    });
+
+    console.log({ error, data });
+  }, []);
 
   return (
     <Card
@@ -55,14 +81,24 @@ export function AuthEmbeddedView() {
       size="auto"
     >
       <Box>
+        <input type="text" placeholder="E-Mail" ref={emailInputRef} />
+        <input type="password" placeholder="Password" ref={passwordInputRef} />
+
         <Button
           isFullWidth
-          onClick={() => handleAuthenticate("PASSKEYS")}
+          onClick={() => handleEmailSignup()}
           icon={<KeyIcon fontSize={24} />}
-          isLoading={selectedAuthProviderType === "PASSKEYS"}
           isDisabled={areButtonsDisabled}
         >
-          Create new wallet
+          Email Sign Up
+        </Button>
+        <Button
+          isFullWidth
+          onClick={() => handleEmailSignIn()}
+          icon={<KeyIcon fontSize={24} />}
+          isDisabled={areButtonsDisabled}
+        >
+          Email Sign In
         </Button>
         <Divider text={"OR"} />
         <Row>
