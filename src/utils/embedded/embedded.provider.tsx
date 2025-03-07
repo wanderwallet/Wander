@@ -748,6 +748,9 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         );
 
         if (url) {
+          window.location.href = url;
+
+          return;
           // Redirect to Google's OAuth page
           // Opening the URL on the current tab won't work when Embedded is loaded inside the iframe:
 
@@ -953,11 +956,9 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         if (window.location.origin === "https://embed.wander.app") {
           window.close();
         } else {
-          const wantToClose = confirm(
-            "In production (https://embed.wander.app), the app would close right now. Do you still want to close it?"
+          console.warn(
+            "In production (https://embed.wander.app), the app would close right now."
           );
-
-          if (wantToClose) window.close();
         }
       }
 

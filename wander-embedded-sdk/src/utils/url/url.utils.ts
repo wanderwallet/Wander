@@ -11,7 +11,7 @@ const PARAM_ANCESTOR_ORIGIN = "ancestor-origin";
 
 // Duplicated in `src/utils/embedded/utils/wallets/embedded-wallets.utils.ts`:
 export function getEmbeddedOrigin() {
-  return "https://wander-embed-n6j5gq6fj-community-labs.vercel.app/";
+  // return "https://wander-embed-o8xzi1061-community-labs.vercel.app/";
   // return "https://embed-dev.wander.app/";
 
   // vite preview:
