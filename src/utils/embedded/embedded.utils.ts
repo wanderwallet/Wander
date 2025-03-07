@@ -40,6 +40,17 @@ export function getEmbeddedAncestorOrigin() {
   return EMBEDDED_ANCESTOR_ORIGIN;
 }
 
+// Note: This is run when trpc detects UNAUTHORIZED error.
+async function handleAuthError() {
+  try {
+    await supabase.auth.signOut();
+    window.location.href = "#/";
+    window.location.reload();
+  } catch (err) {
+    console.error("Error signing out:", err);
+  }
+}
+
 const {
   client: trpcVanilla,
   getAuthTokenHeader,
@@ -54,7 +65,8 @@ const {
   authToken: null,
   deviceNonce: undefined,
   clientId: EMBEDDED_CLIENT_ID,
-  applicationId: ""
+  applicationId: "",
+  onAuthError: handleAuthError
 });
 
 export function isInsideIframe(): boolean {
