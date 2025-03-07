@@ -37,6 +37,16 @@ export function getEmbeddedAncestorOrigin() {
   return EMBEDDED_ANCESTOR_ORIGIN;
 }
 
+export function isInsideIframe(): boolean {
+  try {
+    return window.self !== window.top || !!ancestorOrigin;
+  } catch (e) {
+    // If we can't access window.top due to cross-origin restrictions,
+    // we're definitely in an iframe
+    return true;
+  }
+}
+
 const {
   client: trpcVanilla,
   getAuthTokenHeader,
@@ -53,16 +63,6 @@ const {
   clientId: EMBEDDED_CLIENT_ID,
   applicationId: ""
 });
-
-export function isInsideIframe(): boolean {
-  try {
-    return window.self !== window.top;
-  } catch (e) {
-    // If we can't access window.top due to cross-origin restrictions,
-    // we're definitely in an iframe
-    return true;
-  }
-}
 
 // TODO: When developers set up a new app/domain, we should probably use a mechanism like Google Search Console where
 // they need to create a file at the root of their domain, or add an HTML tag, so that we can verify it's actually theirs.

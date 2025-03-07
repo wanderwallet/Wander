@@ -30,7 +30,11 @@ import type {
   EmbeddedContextAuth,
   Wallet
 } from "~utils/embedded/embedded.types";
-import { setAuthTokenHeader, supabase } from "~utils/embedded/embedded.utils";
+import {
+  isInsideIframe,
+  setAuthTokenHeader,
+  supabase
+} from "~utils/embedded/embedded.utils";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import {
   AuthProviderType,
@@ -790,7 +794,9 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       // TODO: This is a temp dirty fix to:
       // - Try to refresh the session when it's incomplete (missing deviceNonce and countryCode).
       // - Try to delete the session from frontend when it has been deleted/invalidated on the backend.
+      console.log("Refreshing session...");
       await supabase.auth.refreshSession();
+      console.log("Session refreshed...");
 
       const wallets = await WalletService.fetchWallets(userId);
 
@@ -896,19 +902,17 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
   }, []);
 
   useEffect(() => {
-    let gotUpdate = false;
+    const forceInitTimeoutID = setTimeout(() => {
+      console.warn("Forcing initialization...");
 
-    setTimeout(() => {
-      if (!gotUpdate) {
-        setEmbeddedContextAuth({
-          authStatus: "noAuth",
-          authProviderType: null,
-          user: null,
-          session: null
-        });
+      setEmbeddedContextAuth({
+        authStatus: "noAuth",
+        authProviderType: null,
+        user: null,
+        session: null
+      });
 
-        initEmbeddedWallet();
-      }
+      initEmbeddedWallet();
     }, 2000);
 
     // See https://stackoverflow.com/questions/71819128/supabase-auth-onauthstatechange-not-working-when-react-app-is-in-iframe
@@ -916,7 +920,10 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     const {
       data: { subscription }
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      gotUpdate = true;
+      window.clearTimeout(forceInitTimeoutID);
+
+      // Comment this line to run Wander Embedded as a standalone page:
+      if (!isInsideIframe()) window.close();
 
       const accessToken = session?.access_token ?? null;
       const user = session?.user ?? null;
@@ -947,7 +954,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         ) {
           console.warn("Incomplete session =", dbSession);
         } else {
-          console.info("Complete session =", dbSession);
+          console.log("Complete session =", dbSession);
         }
       }
 
@@ -981,7 +988,10 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      window.clearTimeout(forceInitTimeoutID);
+      subscription.unsubscribe();
+    };
   }, [initEmbeddedWallet]);
 
   return (
