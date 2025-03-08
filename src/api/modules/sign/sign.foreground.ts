@@ -105,7 +105,7 @@ export const finalizer: TransformFinalizer<
   // back, we need to add them back manually
   const decodeTransaction = arweave.transactions.fromRaw({
     ...result.transaction,
-    // some arconnect tags are sent back, so we need to concat them
+    // some wander tags are sent back, so we need to concat them
     tags: [
       ...(originalTransaction.tags || []),
       ...(result.transaction.tags || [])

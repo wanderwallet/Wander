@@ -105,7 +105,7 @@ const Wrapper = styled.div`
   position: relative;
   width: 1rem;
   height: 1rem;
-  color: rgb(${(props) => props.theme.theme});
+  color: ${(props) => props.theme.theme};
 `;
 
 const SquircleSvg = styled.svg`

@@ -43,7 +43,7 @@ export async function uploadUserAvatar(avatar: File) {
     const data = new Uint8Array(arrayBuffer);
     const dataSigner = new ArweaveSigner(keyfile);
     const tags = [
-      { name: "App-Name", value: "ArConnect.io" },
+      { name: "App-Name", value: "Wander" },
       { name: "Content-Type", value: avatar.type },
       { name: "Type", value: "avatar-update" }
     ];

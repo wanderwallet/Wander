@@ -123,7 +123,7 @@ export function balanceToFractioned(
 export function fractionedToBalance(
   balance: string,
   cfg: DivisibilityOrDecimals,
-  tokenType: "WARP" | "AO" | "AR"
+  tokenType: "AO" | "AR"
 ) {
   if (!balance) return "0";
 
@@ -132,9 +132,7 @@ export function fractionedToBalance(
 
   const balanceBigNum = BigNumber(balance).shiftedBy(decimals);
 
-  return tokenType === "WARP"
-    ? balanceBigNum.toFixed()
-    : balanceBigNum.toFixed(0, BigNumber.ROUND_FLOOR);
+  return balanceBigNum.toFixed(0, BigNumber.ROUND_FLOOR);
 }
 
 export interface DivisibilityOrDecimals {

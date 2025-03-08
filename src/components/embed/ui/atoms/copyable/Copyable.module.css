@@ -1,0 +1,129 @@
+@import "../../../tokens/index.css";
+
+.copyable {
+  all: unset;
+  border-radius: var(--border-radius-lg);
+  border: 1px solid var(--color-copyable-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-family-serif);
+  overflow: hidden;
+  transition: all var(--transition-base);
+  padding: var(--spacing-2);
+}
+
+.copyable__button {
+  display: flex;
+  gap: var(--spacing-2);
+  background-color: inherit;
+  color: var(--color-copyable-text-value);
+  border: none;
+  justify-content: flex-start;
+  align-items: center;
+  width: auto;
+  padding-left: 0;
+  cursor: pointer;
+  transition: background-color var(--transition-base);
+}
+
+.copyable__button:hover:not(:disabled) {
+  background-color: var(--brand-color-gray-100);
+  border-radius: var(--border-radius-sm);
+}
+
+.copyable__button:disabled {
+  cursor: not-allowed;
+  opacity: var(--opacity-disabled);
+}
+
+.text__label {
+  color: var(--color-copyable-text-label);
+  font-size: var(--font-size-sm);
+}
+
+/* Size variants */
+.copyable__xs {
+  min-width: var(--copyable-xs-width);
+  font-size: var(--font-size-xs);
+}
+
+.copyable__sm {
+  width: var(--copyable-sm-width);
+  font-size: var(--font-size-sm);
+}
+
+.copyable__md {
+  width: var(--copyable-default-width);
+  font-size: var(--font-size-base);
+}
+
+.copyable__lg {
+  width: var(--copyable-lg-width);
+  font-size: var(--font-size-lg);
+}
+
+.copyable__xl {
+  width: var(--copyable-xl-width);
+  font-size: var(--font-size-xl);
+}
+
+.copyable__xxl {
+  width: var(--copyable-xxl-width);
+  font-size: var(--font-size-2xl);
+}
+
+.copyable__full__width {
+  width: 98.6%;
+  font-size: var(--font-size-md);
+}
+
+.copyable__disabled {
+  opacity: var(--opacity-disabled);
+  cursor: not-allowed;
+}
+
+.copyable__blurry {
+  filter: blur(2px);
+}
+
+/* Tooltip styles */
+.tooltip {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: auto;
+  background-color: var(--color-tooltip-bg, #555);
+  color: var(--color-tooltip-text, #fff);
+  text-align: center;
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-2);
+  position: absolute;
+  z-index: var(--z-index-tooltip, 1);
+  bottom: 150%;
+  left: 50%;
+  margin-left: -75px;
+  opacity: 0;
+  transition: opacity var(--transition-base);
+}
+
+.tooltip .tooltiptext::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: var(--color-tooltip-bg, #555) transparent transparent
+    transparent;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+  opacity: 1;
+}

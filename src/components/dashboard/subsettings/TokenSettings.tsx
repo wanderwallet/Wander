@@ -1,32 +1,31 @@
 import {
-  ButtonV2,
-  Loading,
-  SelectV2,
+  Button,
+  Select,
   Spacer,
   Text,
-  TooltipV2,
+  Tooltip,
   useToasts
-} from "@arconnect/components";
-import type { Token, TokenType } from "~tokens/token";
+} from "@arconnect/components-rebrand";
+import type { TokenType } from "~tokens/token";
 import { Token as aoToken } from "ao-tokens";
-import { useStorage } from "@plasmohq/storage/hook";
+import { useStorage } from "~utils/storage";
 import { ExtensionStorage } from "~utils/storage";
-import { AnimatePresence } from "framer-motion";
-import { TrashIcon } from "@iconicicons/react";
 import { removeToken } from "~tokens";
-import { useMemo, useState } from "react";
-import CustomGatewayWarning from "~components/auth/CustomGatewayWarning";
+import { useEffect, useMemo, useState } from "react";
 import { CopyButton } from "./WalletSettings";
-import browser from "webextension-polyfill";
+import browser, { theme } from "webextension-polyfill";
 import styled from "styled-components";
 import copy from "copy-to-clipboard";
-import aoLogo from "url:/assets/ecosystem/ao-logo.svg";
 import { formatAddress } from "~utils/format";
-import { ResetButton } from "../Reset";
-import { RefreshCcw01 } from "@untitled-ui/icons-react";
-import { defaultAoTokens, type TokenInfo } from "~tokens/aoTokens/ao";
-import TokenLoading from "~components/popup/asset/Loading";
+import { defaultTokens, type TokenInfo } from "~tokens/aoTokens/ao";
 import type { CommonRouteProps } from "~wallets/router/router.types";
+import { Flex } from "~components/common/Flex";
+import { RemoveButton } from "~routes/popup/settings/wallets/[address]";
+import arLogoDark from "url:/assets/ar/logo_dark.png";
+import { concatGatewayURL } from "~gateways/utils";
+import { getUserAvatar } from "~lib/avatar";
+import { defaultGateway } from "~gateways/gateway";
+import { TokenLogo } from "../list/TokenListItem";
 
 export interface TokenSettingsDashboardViewParams {
   id: string;
@@ -38,15 +37,6 @@ export type TokenSettingsDashboardViewProps =
 export function TokenSettingsDashboardView({
   params: { id }
 }: TokenSettingsDashboardViewProps) {
-  // tokens
-  const [tokens, setTokens] = useStorage<Token[]>(
-    {
-      key: "tokens",
-      instance: ExtensionStorage
-    },
-    []
-  );
-
   // ao tokens
   const [aoTokens, setAoTokens] = useStorage<TokenInfo[] | any[]>(
     {
@@ -58,32 +48,27 @@ export function TokenSettingsDashboardView({
 
   const { setToast } = useToasts();
 
+  // token logo
+  const [image, setImage] = useState(arLogoDark);
+
   const [loading, setLoading] = useState(false);
 
-  const { token, isAoToken } = useMemo(() => {
+  const token = useMemo(() => {
     const aoToken = aoTokens.find((ao) => ao.processId === id);
-    if (aoToken) {
-      return {
-        token: {
-          ...aoToken,
-          id: aoToken.processId,
-          name: aoToken.Name,
-          ticker: aoToken.Ticker
-        },
-        isAoToken: true
-      };
-    }
-    const regularToken = tokens.find((t) => t.id === id);
+    if (!aoToken) return;
+
     return {
-      token: regularToken,
-      isAoToken: false
+      ...aoToken,
+      id: aoToken.processId,
+      name: aoToken.Name,
+      ticker: aoToken.Ticker
     };
-  }, [tokens, aoTokens, id]);
+  }, [aoTokens, id]);
 
   // update token type
   function updateType(type: TokenType) {
-    setTokens((allTokens) => {
-      const tokenIndex = allTokens.findIndex((t) => t.id === id);
+    setAoTokens((allTokens) => {
+      const tokenIndex = allTokens.findIndex((t) => t.processId === id);
       if (tokenIndex !== -1) {
         allTokens[tokenIndex].type = type;
       }
@@ -93,7 +78,7 @@ export function TokenSettingsDashboardView({
 
   const refreshToken = async () => {
     setLoading(true);
-    const defaultToken = defaultAoTokens.find((t) => t.processId === token.id);
+    const defaultToken = defaultTokens.find((t) => t.processId === token.id);
     if (!defaultToken) {
       try {
         const tokenInfo = (await aoToken(token.id)).info;
@@ -124,56 +109,77 @@ export function TokenSettingsDashboardView({
     }
   };
 
+  useEffect(() => {
+    (async () => {
+      try {
+        // if it is a collectible, we don't need to determinate the logo
+        if (token.type === "collectible") {
+          return setImage(`${concatGatewayURL(defaultGateway)}/${token.id}`);
+        }
+
+        if (token.Logo) {
+          const logo = await getUserAvatar(token.Logo);
+          return setImage(logo);
+        } else {
+          return setImage(arLogoDark);
+        }
+      } catch {
+        setImage(arLogoDark);
+      }
+    })();
+  }, [token, theme]);
+
   if (!token) return null;
 
   return (
     <Wrapper>
-      {isAoToken ? (
-        <Inner>
-          <TokenName>
-            {token.name} <Image src={aoLogo} />
-          </TokenName>
-          <div>
-            <Title>Symbol:</Title>
-            <Text title noMargin>
-              {token.ticker}
-            </Text>
-          </div>
-          <div>
-            <Title>Address:</Title>
-            <div style={{ display: "flex" }}>
-              <Text title noMargin>
-                {formatAddress(token.id, 10)}
-              </Text>
-              <TooltipV2 content={browser.i18n.getMessage("copy_address")}>
-                <CopyButton
-                  onClick={() => {
-                    copy(token.id);
-                    setToast({
-                      type: "info",
-                      content: browser.i18n.getMessage("copied_address", [
-                        formatAddress(token.id, 8)
-                      ]),
-                      duration: 2200
-                    });
-                  }}
-                />
-              </TooltipV2>
-            </div>
-          </div>
-          <div>
-            <Title>Denomination:</Title>
-            <Text title noMargin>
-              {token?.Denomination}
-            </Text>
-          </div>
-        </Inner>
-      ) : (
-        <div>
+      <Inner>
+        <Flex gap={8} align="center">
+          <TokenLogo src={image} />
           <TokenName>{token.name}</TokenName>
+        </Flex>
+        <div>
+          <Title>Symbol:</Title>
           <Spacer y={0.5} />
-          <SelectV2
-            label={browser.i18n.getMessage("token_type")}
+          <Text weight="medium" noMargin>
+            {token.ticker}
+          </Text>
+        </div>
+        <div>
+          <Title>Address:</Title>
+          <Spacer y={0.5} />
+          <Flex gap={4} align="center">
+            <Text weight="medium" noMargin>
+              {token.id}
+            </Text>
+            <Tooltip content={browser.i18n.getMessage("copy_address")}>
+              <CopyButton
+                onClick={() => {
+                  copy(token.id);
+                  setToast({
+                    type: "info",
+                    content: browser.i18n.getMessage("copied_address", [
+                      formatAddress(token.id, 8)
+                    ]),
+                    duration: 2200
+                  });
+                }}
+              />
+            </Tooltip>
+          </Flex>
+        </div>
+        <div>
+          <Title>Denomination:</Title>
+          <Spacer y={0.5} />
+          <Text weight="medium" noMargin>
+            {token?.Denomination}
+          </Text>
+        </div>
+        <div>
+          <Title>{browser.i18n.getMessage("token_type")}</Title>
+          <Spacer y={0.5} />
+          <Select
+            style={{ paddingLeft: "0px" }}
             onChange={(e) => {
               // @ts-expect-error
               updateType(e.target.value as TokenType);
@@ -186,42 +192,30 @@ export function TokenSettingsDashboardView({
             <option value="collectible" selected={token.type === "collectible"}>
               {browser.i18n.getMessage("token_type_collectible")}
             </option>
-          </SelectV2>
-          <AnimatePresence>
-            {token?.gateway && <CustomGatewayWarning />}
-          </AnimatePresence>
+          </Select>
         </div>
-      )}
+      </Inner>
       <ButtonWrapper>
-        {isAoToken && (
-          <ButtonV2
-            fullWidth
-            onClick={async () => {
-              await refreshToken();
-            }}
-          >
-            {!loading ? (
-              <>
-                <RefreshCcw01 style={{ marginRight: "5px", height: "18px" }} />
-                {browser.i18n.getMessage("refresh_token")}
-              </>
-            ) : (
-              <Loading />
-            )}
-          </ButtonV2>
-        )}
+        <Button
+          fullWidth
+          onClick={async () => {
+            await refreshToken();
+          }}
+          loading={loading}
+        >
+          {browser.i18n.getMessage("refresh_token")}
+        </Button>
 
-        <ResetButton fullWidth onClick={() => removeToken(id)}>
-          <TrashIcon style={{ marginRight: "5px" }} />
+        <RemoveButton fullWidth onClick={() => removeToken(id)}>
           {browser.i18n.getMessage("remove_token")}
-        </ResetButton>
+        </RemoveButton>
       </ButtonWrapper>
     </Wrapper>
   );
 }
 
 const Inner = styled.div`
-  gap: 8px;
+  gap: 24px;
   display: flex;
   flex-direction: column;
 `;
@@ -229,7 +223,7 @@ const Inner = styled.div`
 const ButtonWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 12px;
 `;
 
 const Wrapper = styled.div`
@@ -247,33 +241,15 @@ const Image = styled.img`
 `;
 
 const TokenName = styled(Text).attrs({
-  title: true,
+  size: "3xl",
+  weight: "bold",
   noMargin: true
 })`
   font-weight: 600;
 `;
 
-const TokenAddress = styled(Text).attrs({
-  margin: true
-})`
-  font-weight: 500;
-  margin-top: 8px;
-  font-size: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.37rem;
-`;
-
-const Symbol = styled(Text).attrs({
-  margin: true
-})`
-  font-weight: 500;
-  font-size: 1rem;
-  margin-top: 8px;
-`;
-
 const Title = styled(Text).attrs({
-  noMargin: true
-})`
-  color: ${(props) => props.theme.primaryTextv2};
-`;
+  noMargin: true,
+  variant: "secondary",
+  weight: "medium"
+})``;

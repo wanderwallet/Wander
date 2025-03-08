@@ -79,6 +79,13 @@ export interface TokenAuthRequestData {
   dre?: string;
 }
 
+// DECRYPT
+
+export interface DecryptAuthRequestData {
+  type: "decrypt";
+  message: number[];
+}
+
 // SIGN:
 
 export interface SignAuthRequestData {
@@ -86,12 +93,6 @@ export interface SignAuthRequestData {
   address: string;
   transaction: SplitTransaction;
   collectionID: string;
-}
-
-// SUBSCRIPTION:
-
-export interface SubscriptionAuthRequestData extends SubscriptionData {
-  type: "subscription";
 }
 
 // SIGN KEYSTONE:
@@ -123,6 +124,12 @@ export interface BatchSignDataItemAuthRequestData {
   data: RawDataItem;
 }
 
+// SUBSCRIPTION:
+
+export interface SubscriptionAuthRequestData extends SubscriptionData {
+  type: "subscription";
+}
+
 // AuthRequestMessageData:
 
 export type ConnectAuthRequestMessageData = ConnectAuthRequestData &
@@ -131,9 +138,9 @@ export type AllowanceAuthRequestMessageData = AllowanceAuthRequestData &
   CommonAuthRequestProps;
 export type TokenAuthRequestMessageData = TokenAuthRequestData &
   CommonAuthRequestProps;
-export type SignAuthRequestMessageData = SignAuthRequestData &
+export type DecryptAuthRequestMessageData = DecryptAuthRequestData &
   CommonAuthRequestProps;
-export type SubscriptionAuthRequestMessageData = SubscriptionAuthRequestData &
+export type SignAuthRequestMessageData = SignAuthRequestData &
   CommonAuthRequestProps;
 export type SignKeystoneAuthRequestMessageData = SignKeystoneAuthRequestData &
   CommonAuthRequestProps;
@@ -143,19 +150,20 @@ export type SignDataItemAuthRequestMessageData = SignDataItemAuthRequestData &
   CommonAuthRequestProps;
 export type BatchSignDataItemAuthRequestMessageData =
   BatchSignDataItemAuthRequestData & CommonAuthRequestProps;
+export type SubscriptionAuthRequestMessageData = SubscriptionAuthRequestData &
+  CommonAuthRequestProps;
 
 // AuthRequest:
 
 export type ConnectAuthRequest = ConnectAuthRequestMessageData;
 export type AllowanceAuthRequest = AllowanceAuthRequestMessageData;
 export type TokenAuthRequest = TokenAuthRequestMessageData;
+export type DecryptAuthRequest = DecryptAuthRequestMessageData;
 
 export interface SignAuthRequest
   extends Omit<SignAuthRequestMessageData, "transaction"> {
   transaction: SplitTransaction | Transaction;
 }
-
-export type SubscriptionAuthRequest = SubscriptionAuthRequestMessageData;
 
 export interface SignKeystoneAuthRequest
   extends SignKeystoneAuthRequestMessageData {
@@ -167,6 +175,8 @@ export type SignDataItemAuthRequest = SignDataItemAuthRequestMessageData;
 export type BatchSignDataItemAuthRequest =
   BatchSignDataItemAuthRequestMessageData;
 
+export type SubscriptionAuthRequest = SubscriptionAuthRequestMessageData;
+
 // Unions & Misc:
 
 export type AuthType = AuthRequestData["type"];
@@ -175,43 +185,47 @@ export type AuthRequestData =
   | ConnectAuthRequestData
   | AllowanceAuthRequestData
   | TokenAuthRequestData
+  | DecryptAuthRequestData
   | SignAuthRequestData
-  | SubscriptionAuthRequestData
   | SignKeystoneAuthRequestData
   | SignatureAuthRequestData
   | SignDataItemAuthRequestData
-  | BatchSignDataItemAuthRequestData;
+  | BatchSignDataItemAuthRequestData
+  | SubscriptionAuthRequestData;
 
 export type AuthRequestMessageData =
   | ConnectAuthRequestMessageData
   | AllowanceAuthRequestMessageData
   | TokenAuthRequestMessageData
+  | DecryptAuthRequestMessageData
   | SignAuthRequestMessageData
-  | SubscriptionAuthRequestMessageData
   | SignKeystoneAuthRequestMessageData
   | SignatureAuthRequestMessageData
   | SignDataItemAuthRequestMessageData
-  | BatchSignDataItemAuthRequestMessageData;
+  | BatchSignDataItemAuthRequestMessageData
+  | SubscriptionAuthRequestMessageData;
 
 export type AuthRequest =
   | ConnectAuthRequest
   | AllowanceAuthRequest
   | TokenAuthRequest
+  | DecryptAuthRequest
   | SignAuthRequest
-  | SubscriptionAuthRequest
   | SignKeystoneAuthRequest
   | SignatureAuthRequest
   | SignDataItemAuthRequest
-  | BatchSignDataItemAuthRequest;
+  | BatchSignDataItemAuthRequest
+  | SubscriptionAuthRequest;
 
 export type AuthRequestByType = {
   connect: ConnectAuthRequest;
   allowance: AllowanceAuthRequest;
   token: TokenAuthRequest;
+  decrypt: DecryptAuthRequest;
   sign: SignAuthRequest;
-  subscription: SubscriptionAuthRequest;
   signKeystone: SignKeystoneAuthRequest;
   signature: SignatureAuthRequest;
   signDataItem: SignDataItemAuthRequest;
   batchSignDataItem: BatchSignDataItemAuthRequest;
+  subscription: SubscriptionAuthRequest;
 };

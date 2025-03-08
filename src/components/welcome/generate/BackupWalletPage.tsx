@@ -22,7 +22,6 @@ export default function BackupWalletPage({ seed }: Props) {
 
   return (
     <>
-      <Text heading>{browser.i18n.getMessage("backup_wallet_title")}</Text>
       <Paragraph>{browser.i18n.getMessage("backup_wallet_content")}</Paragraph>
       <SeedContainer onClick={() => setShown((val) => !val)}>
         <Seed shown={shown}>{seed}</Seed>
@@ -53,12 +52,12 @@ const SeedShownIcon = styled(EyeIcon)`
   font-size: 1.1rem;
   width: 1em;
   height: 1em;
-  color: rgb(${(props) => props.theme.primaryText});
+  color: ${(props) => props.theme.primaryText};
 `;
 
 const Seed = styled.p<{ shown: boolean }>`
   margin: 0;
-  color: rgb(${(props) => props.theme.primaryText});
+  color: ${(props) => props.theme.primaryText};
   font-weight: 500;
   font-size: 0.92rem;
   line-height: 1.5em;

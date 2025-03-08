@@ -4,7 +4,7 @@ import { useTheme } from "~utils/theme";
 import styled from "styled-components";
 import { useState } from "react";
 
-export default function Thumbnail({ src }: Props) {
+export default function Thumbnail({ src, fallback }: Props) {
   // display theme
   const theme = useTheme();
 
@@ -14,6 +14,7 @@ export default function Thumbnail({ src }: Props) {
   return (
     <ThumbnailImage
       src={src}
+      fallback={fallback}
       displayTheme={theme}
       onClick={() => setFullView((v) => !v)}
       fullView={fullView}
@@ -33,6 +34,7 @@ export default function Thumbnail({ src }: Props) {
 const ThumbnailImage = styled.div<{
   displayTheme: DisplayTheme;
   src: string;
+  fallback?: string;
   fullView: boolean;
 }>`
   position: relative;
@@ -43,7 +45,8 @@ const ThumbnailImage = styled.div<{
       props.displayTheme === "light" ? "0, 0, 0" : props.theme.cardBackground}
   );
   background-size: ${(props) => (props.fullView ? "contain" : "cover")};
-  background-image: url(${(props) => props.src});
+  background-image: url(${(props) => props.src}),
+    ${(props) => (props.fallback ? `url(${props.fallback})` : "")};
   background-position: center;
   background-repeat: no-repeat;
   overflow: hidden;
@@ -81,4 +84,5 @@ const FullScreenButton = styled.a`
 
 interface Props {
   src: string;
+  fallback?: string;
 }

@@ -1,7 +1,7 @@
 import browser from "webextension-polyfill";
 
 browser.devtools.panels.create(
-  "ArConnect",
+  "Wander",
   browser.runtime.getManifest().icons["128"],
   "tabs/devtools.html"
 );

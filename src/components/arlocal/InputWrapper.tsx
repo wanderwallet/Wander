@@ -1,5 +1,5 @@
 import { IconButton } from "~components/IconButton";
-import { ButtonV2 } from "@arconnect/components";
+import { Button } from "@arconnect/components-rebrand";
 import styled from "styled-components";
 
 export const InputWithBtn = styled.div`
@@ -7,7 +7,7 @@ export const InputWithBtn = styled.div`
   align-items: flex-end;
   gap: 0.8rem;
 
-  ${ButtonV2} {
+  ${Button} {
     padding-top: 0.9rem;
     padding-bottom: 0.9rem;
   }

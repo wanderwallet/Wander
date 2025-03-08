@@ -1,8 +1,7 @@
 import { concatGatewayURL } from "~gateways/utils";
-import { ButtonV2, Spacer, useInput } from "@arconnect/components";
+import { Button, Spacer, useInput } from "@arconnect/components-rebrand";
 import { useEffect, useMemo, useState } from "react";
-import { useStorage } from "@plasmohq/storage/hook";
-import { type AnsUser, getAnsProfile } from "~lib/ans";
+import { useStorage } from "~utils/storage";
 import { ExtensionStorage } from "~utils/storage";
 import { useRoute } from "wouter";
 import type { StoredWallet } from "~wallets";
@@ -11,8 +10,10 @@ import WalletListItem from "./list/WalletListItem";
 import browser from "webextension-polyfill";
 import SearchInput from "./SearchInput";
 import styled from "styled-components";
-import { useGateway } from "~gateways/wayfinder";
+import { FULL_HISTORY, useGateway } from "~gateways/wayfinder";
 import { useLocation } from "~wallets/router/router.utils";
+import { getNameServiceProfiles } from "~lib/nameservice";
+import type { NameServiceProfile } from "~lib/types";
 
 export function WalletsDashboardView() {
   const { navigate } = useLocation();
@@ -57,38 +58,39 @@ export function WalletsDashboardView() {
   }, [wallets, activeWalletSetting]);
 
   // ans data
-  const [ansProfiles, setAnsProfiles] = useState<AnsUser[]>([]);
+  const [nameServiceProfiles, setNameServiceProfiles] = useState<
+    NameServiceProfile[]
+  >([]);
 
   useEffect(() => {
     (async () => {
       if (!wallets) return;
 
       // fetch profiles
-      const profiles = await getAnsProfile(wallets.map((w) => w.address));
+      const profiles = await getNameServiceProfiles(
+        wallets.map((w) => w.address)
+      );
 
-      setAnsProfiles(profiles as AnsUser[]);
+      setNameServiceProfiles(profiles);
     })();
   }, [wallets]);
 
   // ans shortcuts
   const findProfile = (address: string) =>
-    ansProfiles.find((profile) => profile.user === address);
+    nameServiceProfiles.find((profile) => profile.address === address);
 
-  const gateway = useGateway({ startBlock: 0 });
+  const gateway = useGateway(FULL_HISTORY);
 
   function findAvatar(address: string) {
-    const avatar = findProfile(address)?.avatar;
-    const gatewayUrl = concatGatewayURL(gateway);
-
+    const avatar = findProfile(address)?.logo;
     if (!avatar) return undefined;
+
+    const gatewayUrl = concatGatewayURL(gateway);
     return gatewayUrl + "/" + avatar;
   }
 
   function findLabel(address: string) {
-    const label = findProfile(address)?.currentLabel;
-
-    if (!label) return undefined;
-    return label + ".ar";
+    return findProfile(address)?.name;
   }
 
   // search
@@ -114,11 +116,11 @@ export function WalletsDashboardView() {
       <Wrapper>
         <SearchWrapper>
           <SearchInput
-            placeholder={browser.i18n.getMessage("search_wallets")}
+            placeholder={browser.i18n.getMessage("search_accounts")}
             {...searchInput.bindings}
           />
           <AddWalletButton onClick={() => navigate("/wallets/new")}>
-            {browser.i18n.getMessage("add_wallet")}
+            {browser.i18n.getMessage("add_account")}
           </AddWalletButton>
         </SearchWrapper>
         <Spacer y={1} />
@@ -164,7 +166,7 @@ const SearchWrapper = styled.div`
   background-color: rgb(${(props) => props.theme.cardBackground});
 `;
 
-const AddWalletButton = styled(ButtonV2).attrs({
+const AddWalletButton = styled(Button).attrs({
   secondary: false
 })`
   width: 100%;

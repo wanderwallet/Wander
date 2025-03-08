@@ -1,0 +1,28 @@
+:root {
+  --button-min-width: 100px; /* Smallest baseline width */
+  --button-default-width: 250px; /* Default button width */
+
+  /* Smaller Sizes */
+  --button-sm-width: 80px; /* 20px smaller than min */
+  --button-xs-width: 60px; /* 20px smaller than sm */
+
+  /* Larger Sizes */
+  --button-lg-width: 300px; /* 50px larger than default */
+  --button-xl-width: 400px; /* 100px larger than lg */
+  --button-xxl-width: 500px; /* 100px larger than xl */
+
+  --card-min-width: 203px; /* Smallest baseline width */
+  --card-default-width: 407px; /* Default card width */
+
+  /* Smaller Sizes */
+  --card-sm-width: 408px; /* 20px smaller than min */
+  --card-xs-width: 60px; /* 20px smaller than sm */
+
+  /* Larger Sizes */
+  --card-lg-width: 300px; /* 50px larger than default */
+  --card-xl-width: 452px; /* 100px larger than lg */
+  --card-xxl-width: 500px; /* 100px larger than xl */
+  --full-width: 100%;
+
+  --checkbox-width: 16px; /* Default checkbox width */
+}

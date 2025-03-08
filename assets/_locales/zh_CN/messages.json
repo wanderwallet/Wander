@@ -1,4 +1,20 @@
 {
+  "fallback": {
+    "message": "哎呀，有些不对劲，稍后再试。",
+    "description": "Fallback error message"
+  },
+  "reload": {
+    "message": "重新加载",
+    "description": "Reload button text"
+  },
+  "commonErrorInfo": {
+    "message": "错误信息",
+    "description": "Additional Fallback error message"
+  },
+  "loading": {
+    "message": "加载中...",
+    "description": "Loading text"
+  },
   "extensionDescription": {
       "message": "Arweave 的安全钱包管理",
       "description": "Extension description"
@@ -64,10 +80,6 @@
   "generate": {
     "message": "产生",
     "description": "Generate button text"
-  },
-  "add_wallet": {
-      "message": "添加钱包",
-      "description": "Add a wallet text"
   },
   "analytics_description": {
       "message": "我们现在使用分析工具。",
@@ -292,7 +304,7 @@
       "description": "Description for the \"SIGNATURE\" permission"
   },
   "permissionDescriptionArweaveConfig": {
-      "message": "允许读取 ArConnect 配置文件",
+      "message": "允许读取 Wander 配置文件",
       "description": "Description for the \"ACCESS_ARWEAVE_CONFIG\" permission"
   },
   "permissionDescriptionDispatch": {
@@ -372,7 +384,7 @@
       "description": "Remove app button"
   },
   "removeAppNote": {
-      "message": "移除所有权限并断开与 ArConnect 的应用连接。",
+      "message": "移除所有权限并断开与 Wander 的应用连接。",
       "description": "Remove app note paragraph"
   },
   "remove": {
@@ -400,12 +412,12 @@
     "description": "Quick Settings title"
   },
   "setting_apps": {
-      "message": "应用程序",
-      "description": "Apps settings title"
+      "message": "已连接应用",
+      "description": "Connected apps settings title"
   },
-  "setting_wallets": {
-      "message": "钱包",
-      "description": "Wallets settings title"
+  "setting_accounts": {
+      "message": "账户",
+      "description": "Accounts settings title"
   },
   "setting_config": {
       "message": "下载配置",
@@ -416,12 +428,12 @@
       "description": "About settings title"
   },
   "setting_reset": {
-      "message": "重置",
+      "message": "重置 Wander",
       "description": "Reset settings title"
   },
   "setting_analytic": {
       "message": "分析",
-      "description": "Analytics to help make ArConnect better"
+      "description": "Analytics to help make Wander better"
   },
   "setting_fee_multiplier": {
       "message": "费用倍数",
@@ -432,12 +444,8 @@
       "description": "Reset settings title"
   },
   "currency": {
-    "message": "货币",
+    "message": "选择法定货币",
     "description": "Select currency"
-  },
-  "setting_dre_node": {
-      "message": "Warp DRE 节点",
-      "description": "Warp DRE node setting title"
   },
   "setting_arverify": {
       "message": "ArVerify 阈值",
@@ -451,24 +459,36 @@
       "message": "签署通知",
       "description": "Sign notification settings title"
   },
-  "setting_sign_settings": {
-      "message": "签名设置",
-      "description": "Sign settings title"
+  "setting_password_settings": {
+      "message": "密码设置",
+      "description": "Password settings title"
+  },
+  "setting_password_settings_description": {
+    "message": "需要密码的操作",
+    "description": "Password settings description"
+  },
+  "enable_transfer_settings": {
+    "message": "签署交易时需要密码",
+    "description": "Enable transfer settings title"
+  },
+  "enable_connect_settings": {
+    "message": "连接应用时需要密码",
+    "description": "Enable connect settings title"
   },
   "setting_display_theme": {
       "message": "主题",
       "description": "Theme settings title"
   },
-  "setting_wayfinder": {
-      "message": "Wayfinder",
-      "description": "Wayfinder settings title"
+  "setting_gateways": {
+      "message": "网关",
+      "description": "Gateways settings title"
   },
   "setting_notifications": {
       "message": "通知",
       "description": "Notifications settings title"
   },
   "setting_notifications_description": {
-      "message": "管理钱包活动警报",
+      "message": "管理账户活动警报",
       "description": "Notifications settings description"
   },
   "setting_all_settings": {
@@ -483,16 +503,16 @@
       "message": "查看所有已连接的应用程序和设置",
       "description": "App settings description"
   },
-  "setting_wallets_description": {
-      "message": "管理您的钱包",
-      "description": "Wallet settings description"
+  "setting_accounts_description": {
+      "message": "管理您的账户",
+      "description": "Accounts settings description"
   },
   "setting_config_description": {
-      "message": "下载 ArConnect 配置",
+      "message": "下载 Wander 配置",
       "description": "Config settings description"
   },
   "setting_about_description": {
-      "message": "关于 ArConnect 的信息",
+      "message": "关于 Wander 的信息",
       "description": "Config settings description"
   },
   "setting_reset_description": {
@@ -500,8 +520,8 @@
       "description": "Reset settings description"
   },
   "setting_analytics_description": {
-      "message": "向 ArConnect 团队提供有用的匿名数据以改进项目",
-      "description": "ArConnect Analytics description"
+      "message": "向 Wander 团队提供有用的匿名数据以改进项目",
+      "description": "Wander Analytics description"
   },
   "setting_fee_multiplier_description": {
       "message": "控制交易后的费用",
@@ -523,17 +543,13 @@
       "message": "在使用钱包时显示动画",
       "description": "ArConfetti settings description"
   },
-  "setting_sign_notification_description": {
-      "message": "签署交易时通知",
-      "description": "Sign notification settings description"
-  },
   "setting_display_theme_description": {
       "message": "扩展 UI 的主题",
       "description": "Display theme settings description"
   },
-  "setting_wayfinder_description": {
-      "message": "针对 ar.io 网关的实验性系统范围导航器",
-      "description": "Wayfinder settings description"
+  "setting_gateways_description": {
+      "message": "Arweave 网关简化了数据访问。",
+      "description": "Gateways settings description"
   },
   "search_pick_option": {
       "message": "搜索选项...",
@@ -543,8 +559,8 @@
       "message": "搜索应用...",
       "description": "Search input placeholder for apps"
   },
-  "search_wallets": {
-      "message": "搜索钱包...",
+  "search_accounts": {
+      "message": "搜索账户",
       "description": "Search input placeholder for wallets"
   },
   "search_tokens": {
@@ -558,10 +574,6 @@
   "export_keyfile_description": {
     "message": "输入密码导出钱包密钥文件",
     "description": "Export keyfile description"
-  },
-  "edit_wallet": {
-    "message": "编辑钱包",
-    "description": "Edit wallet button"
   },
   "remove_wallet": {
       "message": "移除钱包",
@@ -597,9 +609,9 @@
       "message": "地址已复制",
       "description": "Address copy notification 2"
   },
-  "cannot_edit_with_ans": {
-      "message": "无法编辑昵称。钱包已经有 ANS 标签。",
-      "description": "Explainer for disabled edits for wallets with ANS profiles"
+  "cannot_edit_with_name_service": {
+      "message": "无法编辑昵称。钱包已经有 Name Service 标签。",
+      "description": "Explainer for disabled edits for wallets with name service names"
   },
   "add_wallet_subtitle": {
       "message": "您可以添加任意数量",
@@ -618,11 +630,11 @@
       "description": "Re-enter input placeholder"
   },
   "enter_password": {
-      "message": "输入您的密码...",
-      "description": "Password input placeholder"
+      "message": "输入密码",
+      "description": "Enter password placeholder"
   },
   "enter_password_again": {
-      "message": "重新输入您的密码...",
+      "message": "确认您的密码",
       "description": "Re-enter password input placeholder"
   },
   "passwords_match": {
@@ -702,7 +714,7 @@
     "description": "Key Length Too Short error"
   },
   "import_wallet_key_length_short_error": {
-    "message": "您导入的钱包的密钥长度小于在 AO 网络上进行交易所需的长度。建议您创建一个新的ArConnect钱包，并将您的资产转移到新钱包中。",
+    "message": "您导入的钱包的密钥长度小于在 AO 网络上进行交易所需的长度。建议您创建一个新的Wander钱包，并将您的资产转移到新钱包中。",
     "description": "Key Length Too Short error"
   },
   "generate_wallet_in_progress": {
@@ -718,15 +730,15 @@
       "description": "Used permissions label"
   },
   "reset_warning": {
-      "message": "重置 ArConnect 将删除您所有的数据。这包括您的钱包、设置和缓存数据。",
-      "description": "Warning about resetting ArConnect"
+      "message": "重置 Wander 将删除您所有的数据。这包括您的钱包、设置和缓存数据。",
+      "description": "Warning about resetting Wander"
   },
   "irreversible_action": {
       "message": "此操作是不可逆的！",
       "description": "Warning about an irreversible action"
   },
   "reset_error": {
-      "message": "无法重置 ArConnect",
+      "message": "无法重置 Wander",
       "description": "Error message on reset"
   },
   "welcome_to": {
@@ -765,13 +777,13 @@
       "message": "Arweave 上的永久网络是网络的下一次进化，使开发者和用户能够共享一个在全球范围内大量复制的有韧性的知识库，永久存在。除了数据，Arweave 还托管许多完全去中心化的永久应用程序。",
       "description": "A short paragraph explaining the permaweb"
   },
-  "what_is_arconnect": {
-      "message": "什么是 ArConnect？",
-      "description": "What is arconnect title"
+  "what_is_wander": {
+      "message": "什么是 Wander？",
+      "description": "What is wander title"
   },
-  "about_arconnect": {
-      "message": "ArConnect 是一个加密钱包扩展，允许您安全地与永久网络应用程序互动。它还让您可以轻松存储和管理资金。使用 ArConnect，您可以简单无缝地进入 Arweave 生态系统。",
-      "description": "A short paragraph explaining arconnect"
+  "about_wander": {
+      "message": "Wander 是一个加密钱包扩展，允许您安全地与永久网络应用程序互动。它还让您可以轻松存储和管理资金。使用 Wander，您可以简单无缝地进入 Arweave 生态系统。",
+      "description": "A short paragraph explaining wander"
   },
   "read_more_arwiki": {
       "message": "阅读更多在",
@@ -781,18 +793,18 @@
       "message": "备份",
       "description": "Backup title"
   },
-  "backup_wallet_title": {
-      "message": "备份您的钱包",
-      "description": "Backup wallet title"
-  },
   "backup_wallet_content": {
-      "message": "将这 12 个字的助记词保存到密码管理器，或将其写在纸上。永远不要与任何人分享。",
-      "description": "Backup wallet paragraph"
+    "message": "将此12个单词的恢复短语保存到密码管理器，或将其写下来。",
+    "description": "Backup wallet paragraph"
   },
-  "copySeed": {
-      "message": "复制助记词",
-      "description": "Copy seedphrase text"
+  "backup_wallet_warning": {
+    "message": "不要与任何人分享此内容。",
+    "description": "Backup wallet warning"
   },
+    "copySeed": {
+        "message": "复制",
+        "description": "Copy seedphrase text"
+    },
   "done": {
       "message": "完成",
       "description": "Done button text"
@@ -831,12 +843,8 @@
       "message": "密钥文件",
       "description": "Keyfile text"
   },
-  "confirm_seed": {
-      "message": "确认您的助记词",
-      "description": "Confirm seedphrase title"
-  },
   "confirm_seed_paragraph": {
-      "message": "通过在以下部分中完成缺失的助记词单词来验证您的助记词。",
+      "message": "通过填写缺失的单词验证您的恢复短语。",
       "description": "Confirm seedphrase explainer paragraph"
   },
   "correct": {
@@ -852,7 +860,7 @@
       "description": "Create password title"
   },
   "create_password_paragraph": {
-      "message": "输入一个密码以保护 ArConnect。我们将使用此密码加密您的钱包。",
+      "message": "输入密码以保护您的Wander账户。我们将使用此密码加密您的钱包。",
       "description": "Create password explainer paragraph"
   },
   "password_not_strong": {
@@ -864,20 +872,16 @@
       "description": "Level 1 strength password text"
   },
   "password_strength_2": {
-      "message": "弱密码",
+      "message": "中等密码",
       "description": "Level 2 strength password text"
   },
   "password_strength_3": {
-      "message": "还行的密码",
+      "message": "强密码",
       "description": "Level 3 strength password text"
   },
   "password_strength_4": {
-      "message": "强密码",
+      "message": "非常强密码",
       "description": "Level 4 strength password text"
-  },
-  "password_strength_5": {
-      "message": "非常强的密码",
-      "description": "Level 5 strength password text"
   },
   "password_strength_checklist_case": {
       "message": "使用小写和大写字母",
@@ -950,7 +954,11 @@
       "description": "Provide seedphrase for title in load wallet setup"
   },
   "provide_seedphrase_paragraph": {
-      "message": "拖放您的密钥文件或输入您生成钱包时保存的 12 个字的助记词。确保其顺序正确。",
+      "message": "输入为您的钱包生成的恢复短语。请确保顺序正确。",
+      "description": "Explainer about the seedphrase loading"
+  },
+  "provide_keyfile_seedphrase_paragraph": {
+      "message": "拖放您的密钥文件或输入为您的钱包生成的恢复短语。请确保顺序正确。",
       "description": "Explainer about the seedphrase loading"
   },
   "sign_in": {
@@ -966,7 +974,7 @@
       "description": "Wallet label"
   },
   "enter_your_password": {
-      "message": "输入您的密码...",
+      "message": "输入您的密码",
       "description": "Enter password placeholder"
   },
   "connect": {
@@ -1043,10 +1051,6 @@
     "message": "预计",
     "description": "estimated"
   },
-  "invalid_amount": {
-      "message": "金额必须大于 0",
-      "description": "Invalid tx amount message"
-  },
   "invalid_address": {
       "message": "目标地址无效",
       "description": "Invalid address message"
@@ -1056,7 +1060,11 @@
       "description": "Transaction sent successfully notification"
   },
   "failed_tx": {
-      "message": "无法发送交易",
+      "message": "无法发送交易，请重试。",
+      "description": "Transfer error notification"
+  },
+  "failed_tx_with_gateway": {
+      "message": "无法发送交易。请重试或使用不同的网关。",
       "description": "Transfer error notification"
   },
   "assets": {
@@ -1080,7 +1088,7 @@
       "description": "Tokens setting title"
   },
   "setting_tokens_description": {
-      "message": "管理由去中心化应用程序或用户添加的代币",
+      "message": "管理由应用程序或用户添加的代币",
       "description": "Tokens setting description"
   },
   "setting_contacts": {
@@ -1126,7 +1134,7 @@
       "description": "All set title"
   },
   "all_set_paragraph": {
-      "message": "ArConnect 已使用您的密码和钱包设置完成。您现在可以关闭窗口。",
+      "message": "Wander 已使用您的密码和钱包设置完成。您现在可以关闭窗口。",
       "description": "Paragraph indicating setup"
   },
   "token_add_failure": {
@@ -1186,7 +1194,7 @@
       "description": "Dark theme"
   },
   "system_theme": {
-      "message": "系统",
+      "message": "系统（默认）",
       "description": "System theme"
   },
   "migration_available": {
@@ -1194,7 +1202,7 @@
       "description": "Migration available title"
   },
   "migration_available_paragraph": {
-      "message": "看来您之前已经使用过旧版本的 ArConnect。我们可以迁移您之前版本中的钱包供使用。您仍需完成设置过程。",
+      "message": "看来您之前已经使用过旧版本的 Wander。我们可以迁移您之前版本中的钱包供使用。您仍需完成设置过程。",
       "description": "Migration available paragraph"
   },
   "migrate": {
@@ -1218,7 +1226,7 @@
       "description": "Migrate anyway button text"
   },
   "migration_available_welcome": {
-      "message": "您可以通过点击“我有一个钱包”来从旧的 ArConnect 迁移您的钱包。",
+      "message": "您可以通过点击“我有一个钱包”来从旧的 Wander 迁移您的钱包。",
       "description": "Migration available banner text"
   },
   "click_and_drag": {
@@ -1311,7 +1319,7 @@
   },
   "transaction_data_binary_warning": {
       "message": "无法显示二进制交易数据...",
-      "description": "Warning about ArConnect not being able to display a transaction's data"
+      "description": "Warning about Wander not being able to display a transaction's data"
   },
   "transaction_not_on_viewblock": {
       "message": "在 Viewblock 上不可用",
@@ -1321,6 +1329,10 @@
       "message": "点击查看您最近签署的交易",
       "description": "View last tx prompt content"
   },
+  "view_transaction_details": {
+    "message": "查看交易详情",
+    "description": "View transaction details link text"
+  },
   "sign_item": {
       "message": "签署项目",
       "description": "Sign message popup title"
@@ -1328,6 +1340,24 @@
   "batch_sign_items": {
       "message": "批量签署项目",
       "description": "批量签署消息弹出标题"
+  },
+  "titles_decrypt": {
+    "message": "Decrypt",
+    "description": "Request decrypt authorization password"
+  },
+  "decrypt_description": {
+    "message": "$APPNAME$ wants to decrypt and access the following data:",
+    "description": "Description for decrypting some data",
+    "placeholders": {
+      "appname": {
+        "content": "$1",
+        "example": "permafacts.arweave.dev"
+      }
+    }
+  },
+  "decrypt_authorize": {
+    "message": "授权",
+    "description": "Authorize button label"
   },
   "titles_signature": {
       "message": "签署消息",
@@ -1557,7 +1587,7 @@
       "description": "Not connected indicator"
   },
   "not_connected_text": {
-      "message": "“连接/断开连接”是指示您的 ArConnect 钱包是否已连接到 Arweave 或 AO 应用程序的指示器。对于发送、接收、检查余额等常规使用，ArConnect 将始终显示断开连接。",
+      "message": "“连接/断开连接”是指示您的 Wander 钱包是否已连接到 Arweave 或 AO 应用程序的指示器。对于发送、接收、检查余额等常规使用，Wander 将始终显示断开连接。",
       "description": "Not connected indicator explainer"
   },
   "disconnect": {
@@ -1631,11 +1661,11 @@
       "description": "Installation complete title"
   },
   "installation_complete_paragraph": {
-      "message": "将 ArConnect 固定到您的浏览器，使其易于访问并连接到您喜欢的 dApps。",
+      "message": "将 Wander 固定到您的浏览器，使其易于访问并连接到您喜欢的 dApps。",
       "description": "Installation complete paragraph"
   },
   "enable_notifications_title": {
-      "message": "在 ArConnect 中启用通知",
+      "message": "在 Wander 中启用通知",
       "description": "Enable Notification title"
   },
   "no_notifications": {
@@ -1671,7 +1701,7 @@
       "description": "Get started title"
   },
   "get_started_description": {
-      "message": "通过 ArConnect 探索 Arweave 和 aoComputer 的无限可能",
+      "message": "通过 Wander 探索 Arweave 和 aoComputer 的无限可能",
       "description": "Get started description"
   },
   "example_astro_description": {
@@ -1699,7 +1729,7 @@
       "description": "Connect with us description"
   },
   "connect_paragraph_2": {
-      "message": "有问题吗？加入 Discord 服务器与开发人员聊天。",
+      "message": "加入我们的Discord服务器，与开发者交流或提交工单。",
       "description": "Connect with us description"
   },
   "buy_ar_button": {
@@ -1711,11 +1741,11 @@
       "description": "Buy AR with Onramper button text"
   },
   "buy_screen_pay": {
-      "message": "您支付",
+      "message": "你花费",
       "description": "Payment input label title"
   },
   "buy_screen_receive": {
-      "message": "您接收",
+      "message": "你得到",
       "description": "Receive input label title"
   },
   "buy_screen_switch": {
@@ -1723,8 +1753,12 @@
       "description": "Switch button"
   },
   "buy_screen_payment_method": {
-      "message": "支付方式",
-      "description": "Select payment method title"
+    "message": "选择付款方式",
+    "description": "Select payment method title"
+  },
+  "buy_screen_payment_method_label": {
+    "message": "支付方式",
+    "description": "Select payment method input title"
   },
   "buy_screen_enter": {
       "message": "输入金额",
@@ -1783,7 +1817,7 @@
       "description": "Info message text on purchase in progress page"
   },
   "order_id_purchase_pending": {
-      "message": "报价 ID：",
+      "message": "订单 ID：",
       "description": "Order ID text on purchase in progress page"
   },
   "choose_payment_method": {
@@ -1914,10 +1948,6 @@
       "message": "地址已在使用中。",
       "description": "Contacts error message if address is already in use"
   },
-  "password_allowance": {
-      "message": "需要密码额度",
-      "description": "Input title for the password allowance label"
-  },
   "add": {
       "message": "添加",
       "description": "Add button text"
@@ -1954,10 +1984,6 @@
           }
       }
   },
-  "setting_ao_support": {
-      "message": "ao 支持",
-      "description": "ao support settings title"
-  },
   "setting_ao_support_description": {
       "message": "在您的钱包中显示 ao 代币（测试版）",
       "description": "ao support settings description"
@@ -1967,7 +1993,7 @@
       "description": "Got it button text"
   },
   "display_ao_tokens": {
-      "message": "在 ArConnect 中显示 AO 代币（测试版）",
+      "message": "在 Wander 中显示 AO 代币（测试版）",
       "description": "Display AO tokens description"
   },
   "ao_computer": {
@@ -1990,8 +2016,22 @@
     "message": "恭喜您通过持有 AR 获得 AO 代币！🥳",
     "description": "ao token announcement title text"
   },
-  "ao_token_send_popup": {
-    "message": "AO 代币在 2025 年 2 月 8 日之前不可转让，届时 AO 的 15% 已被铸造。",
+  "token_send_popup_title": {
+    "message": "$TOKEN$ 代币转账提示",
+    "description": "Popup description about token transfer",
+    "placeholders": {
+      "token": {
+        "content": "$1",
+        "example": "AO"
+      }
+    }
+  },
+  "AO_token_send_popup": {
+    "message": "在2025年2月8日前，当AO代币铸造量达到15%之前，AO代币无法转账。",
+    "description": "Popup description about ao token transfer"
+  },
+  "EXP_token_send_popup": {
+    "message": "EXP代币无法转账",
     "description": "Popup description about ao token transfer"
   },
   "ao_token_send_popup_title": {
@@ -2007,7 +2047,7 @@
       "description": "ao degraded title text"
   },
   "ao_degraded_description": {
-      "message": "ArConnect 无法获取您的代币余额。这只是一个用户界面问题。请稍后重试。",
+      "message": "Wander 无法获取您的代币余额。这只是一个用户界面问题。请稍后重试。",
       "description": "ao degraded description text"
   },
   "network_issue": {
@@ -2189,11 +2229,11 @@
     "description": "recommended"
   },
  "add_wallet_error_message": {
-    "message": "请输入恢复短语或密钥文件，并输入 ArConnect 的密码后再继续。",
+    "message": "请输入恢复短语或密钥文件，并输入 Wander 的密码后再继续。",
     "description": "Error message if recovery section is left blank"
   },
   "empty_password_error_message": {
-    "message": "请输入 ArConnect 的密码，而不是您正在导入的钱包密码。",
+    "message": "请输入 Wander 的密码，而不是您正在导入的钱包密码。",
     "description": "Error message if password section is left blank"
   },
   "missing_recovery_error_message": {
@@ -2201,7 +2241,7 @@
     "description": "Error message if recovery phrase or key file is left blank"
   },
   "incorrect_password_error_message": {
-    "message": "密码错误。请输入 ArConnect 的密码后再试，而不是您正在导入的钱包密码。",
+    "message": "密码错误。请输入 Wander 的密码后再试，而不是您正在导入的钱包密码。",
     "description": "Error message if password is incorrect"
   },
   "mismatch_warning_title": {
@@ -2292,6 +2332,10 @@
       "message": "Adding token...",
       "description": "Loading message for AuthRequest of type token"
     },
+    "decryptRequestLoading": {
+      "message": "Decrypting...",
+      "description": "Loading message for AuthRequest of type decrypt"
+    },
     "signRequestLoading": {
       "message": "Signing...",
       "description": "Loading message for AuthRequest of type sign"
@@ -2365,5 +2409,519 @@
           "example": "10"
         }
       }
+    },
+    "connect_to_app": {
+      "message": "连接到 $APPNAME$",
+      "description": "连接到应用标题",
+      "placeholders": {
+        "appname": {
+          "content": "$1",
+          "example": "Wander"
+        }
+      }
+    },
+    "always_ask": {
+        "message": "始终询问",
+        "description": "Always ask"
+    },
+    "always_ask_description": {
+        "message": "审核并确认每笔交易和消息。",
+        "description": "Always ask description"
+    },
+    "ask_when_spending": {
+        "message": "花费时询问",
+        "description": "Ask when spending"
+    },
+    "ask_when_spending_description": {
+        "message": "仅在资产被转移时审核并确认交易。",
+        "description": "Ask when spending description"
+    },
+    "auto_confirm": {
+        "message": "自动确认",
+        "description": "Auto-confirm"
+    },
+    "auto_confirm_description": {
+        "message": "自动签署每笔交易和消息。",
+        "description": "Auto-confirm description"
+    },
+    "custom_permissions": {
+        "message": "自定义权限",
+        "description": "Custom permissions"
+    },
+    "set_custom_permissions": {
+        "message": "设置自定义权限",
+        "description": "Set custom permissions"
+    },
+    "custom_permissions_set": {
+        "message": "自定义权限设置",
+        "description": "Custom permissions set"
+    },
+    "permission_settings": {
+        "message": "权限设置",
+        "description": "Permission settings title"
+    },
+    "select_account": {
+        "message": "选择一个账户连接到 $APPNAME$",
+        "description": "Select account title",
+        "placeholders": {
+            "appname": {
+                "content": "$1",
+                "example": "Wander"
+            }
+        }
+    },
+    "review": {
+      "message": "审核",
+      "description": "Review title"
+    },
+    "connect_request_1": {
+      "message": "$APPNAME$ 想要连接到",
+      "description": "Connect request 1",
+      "placeholders": {
+        "appname": {
+          "content": "$1",
+          "example": "Wander"
+        }
+      }
+    },
+    "connect_request_2": {
+      "message": "以下权限",
+      "description": "Connect request 2"
+    },
+    "confirm_permissions": {
+      "message": "确认 $APPNAME$ 的权限",
+      "description": "Confirm permissions for app",
+      "placeholders": {
+        "appname": {
+          "content": "$1",
+          "example": "Wander"
+        }
+      }
+    },
+    "change": {
+      "message": "更换",
+      "description": "Change text"
+    },
+    "create_a_new_account": {
+        "message": "创建新账户",
+        "description": "Create a new account button text"
+    },
+    "create_a_new_account_description": {
+        "message": "您的账户名称存储在本地，仅您可见。",
+        "description": "Create a new account description"
+    },
+    "import_an_account": {
+        "message": "导入账户",
+        "description": "Import an account button text"
+    },
+    "name_your_account": {
+        "message": "命名您的账户",
+        "description": "Name your account input placeholder"
+    },
+    "backup_your_account": {
+        "message": "备份您的账户",
+        "description": "Backup your account button text"
+    },
+    "confirm_your_recovery_phrase": {
+        "message": "确认您的恢复短语",
+        "description": "Confirm your recovery phrase button text"
+    },
+    "create_a_password": {
+        "message": "创建密码",
+        "description": "Create a password button text"
+    },
+    "step": {
+        "message": "步骤",
+        "description": "Step text"
+    },
+    "import_an_existing_account": {
+        "message": "导入现有账户",
+        "description": "Import an existing account button text"
+    },
+    "need_help": {
+        "message": "需要帮助？",
+        "description": "Need help button text"
+    },
+    "complete_recover_phrase": {
+        "message": "完成恢复短语",
+        "description": "Complete recovery phrase button text"
+    },
+    "word_mismatch_error": {
+        "message": "错误：单词不匹配",
+        "description": "Word mismatch error message"
+    },
+    "enable_permissions": {
+        "message": "启用权限",
+        "description": "Enable permissions button text"
+    },
+    "enable_permissions_description": {
+        "message": "为获得最佳体验，请启用以下权限。您随时可以更改这些设置。",
+        "description": "Enable permissions description"
+    },
+    "enable_notifications_description": {
+        "message": "接收新钱包活动和其他重要事件的通知。",
+        "description": "Enable notifications description"
+    },
+    "enable_analytics_description": {
+        "message": "启用分析功能，帮助我们为您提供最佳的Wander体验。",
+        "description": "Enable analytics description"
+    },
+    "go_to_dashboard": {
+        "message": "前往仪表板",
+        "description": "Go to dashboard button text"
+    },
+    "congratulations": {
+        "message": "恭喜！",
+        "description": "Congratulations title"
+    },
+    "congratulations_description": {
+        "message": "您已完成$TYPE$您的Wander账户。",
+        "description": "Congratulations description",
+        "placeholders": {
+            "type": {
+                "content": "$1",
+                "example": "导入"
+            }
+        }
+    },
+    "copied": {
+        "message": "已复制",
+        "description": "Copied text"
+    },
+    "copy_failed": {
+        "message": "复制失败",
+        "description": "Failed to copy text"
+    },
+    "your_wallet_address_is": {
+        "message": "您的钱包地址是",
+        "description": "Your wallet address is"
+    },
+    "choose_how_to_add_your_account": {
+        "message": "选择如何添加您的账户",
+        "description": "Choose how you want to add your account."
+    },
+    "enter_recovery_phrase": {
+        "message": "输入恢复短语",
+        "description": "Enter recovery phrase title"
+    },
+    "recovery_phrase_length_selector": {
+        "message": "我有一个 $LENGTH$-word 恢复短语",
+        "description": "Recovery phrase length selector",
+        "placeholders": {
+            "length": {
+                "content": "$1",
+                "example": "24"
+            }
+        }
+    },
+    "yes_import": {
+        "message": "是的，导入",
+        "description": "Yes, import button text"
+    },
+    "no_import": {
+        "message": "不，重试",
+        "description": "No, try again button text"
+    },
+    "found_account_with_phrase": {
+        "message": "我们找到了这个账户，与匹配的恢复短语。",
+        "description": "Found account with phrase"
+    },
+    "upload_key_file": {
+        "message": "上传密钥文件",
+        "description": "Upload key file button text"
+    },
+    "upload_key_file_description": {
+        "message": "上传为您的钱包生成的密钥文件/私钥。",
+        "description": "Upload key file description"
+    },
+    "click_to_upload": {
+        "message": "点击上传",
+        "description": "Click to upload text"
+    },
+    "or_drag_and_drop_your_keyfile": {
+        "message": "或拖放您的密钥文件",
+        "description": "or drag and drop your keyfile text"
+    },
+    "scan_qr_code": {
+        "message": "扫描二维码",
+        "description": "Scan QR code text"
+    },
+    "scan_qr_code_description": {
+        "message": "您可以在Wander手机应用上找到您的二维码。",
+        "description": "Scan QR code description"
+    },
+    "scan_qr_code_instruction": {
+        "message": "设置 -> 账户 -> 生成二维码",
+        "description": "Instruction to find QR code"
+    },
+    "open_webcam": {
+        "message": "打开摄像头",
+        "description": "Open webcam button text"
+    },
+    "camera_permission_denied": {
+        "message": "摄像头权限被拒绝",
+        "description": "Camera permission denied"
+    },
+    "progress": {
+        "message": "进度",
+        "description": "Progress text"
+    },
+    "invalid_qr_code": {
+        "message": "无效的二维码",
+        "description": "Invalid QR code text"
+    },
+    "scan_error": {
+        "message": "扫描错误",
+        "description": "Scan error text"
+    },
+    "choose_ui_theme": {
+        "message": "选择UI主题",
+        "description": "Choose UI theme text"
+    },
+    "choose_ui_theme_description": {
+        "message": "选择应用的UI主题。",
+        "description": "Select the theme of the app UI description"
+    },
+    "take_a_tour": {
+        "message": "开始使用",
+        "description": "Take a tour button text"
+    },
+    "getting_started": {
+        "message": "开始使用",
+        "description": "Getting started title"
+    },
+    "welcome_to_wander": {
+        "message": "欢迎使用Wander",
+        "description": "Welcome to Wander title"
+    },
+    "welcome_to_wander_description": {
+        "message": "通过Wander探索Arweave和AO的无限可能。",
+        "description": "Welcome to Wander description"
+    },
+    "getting_started_tokens_title": {
+        "message": "轻松发送和接收AR和AO资产。",
+        "description": "Getting started tokens title"
+    },
+    "getting_started_onramp_title": {
+        "message": "通过Transak的便捷法币-加密货币购买AR。",
+        "description": "Getting started onramp title"
+    },
+    "getting_started_explore_title": {
+        "message": "在Wander上直接探索和连接应用。",
+        "description": "Getting started explore title"
+    },
+    "finish": {
+        "message": "完成",
+        "description": "Finish button text"
+    },
+    "importing": {
+        "message": "导入",
+        "description": "Importing text"
+    },
+    "creating": {
+        "message": "创建",
+        "description": "Creating text"
+    },
+    "sign_into_wander": {
+        "message": "登录Wander",
+        "description": "Sign into Wander text"
+    },
+    "copy": {
+        "message": "复制",
+        "description": "Copy text"
+    },
+    "menu": {
+        "message": "菜单",
+        "description": "Menu text"
+    },
+    "accounts": {
+        "message": "账户",
+        "description": "Accounts text"
+    },
+    "buy": {
+        "message": "购买",
+        "description": "Buy text"
+    },
+    "add_account": {
+        "message": "添加账户",
+        "description": "Add account text"
+    },
+    "edit_account": {
+        "message": "编辑账户",
+        "description": "Edit account text"
+    },
+    "your_other_accounts": {
+        "message": "您的其他账户",
+        "description": "Your other accounts text"
+    },
+    "activity": {
+        "message": "活动",
+        "description": "Activity text"
+    },
+    "manage_asset_list": {
+        "message": "管理资产列表",
+        "description": "Manage asset list text"
+    },
+    "import_assets": {
+        "message": "导入资产",
+        "description": "Import assets text"
+    },
+    "transaction_details": {
+        "message": "交易详情",
+        "description": "Transaction details text"
+    },
+    "connected_apps": {
+        "message": "已连接的应用",
+        "description": "Connected apps text"
+    },
+    "manage_accounts": {
+        "message": "管理账户",
+        "description": "Manage accounts text"
+    },
+    "sign_out": {
+        "message": "登出",
+        "description": "Sign out text"
+    },
+    "sign_out_description": {
+        "message": "确定要登出Wander吗？",
+        "description": "Sign out description"
+    },
+    "add_an_account": {
+        "message": "添加一个账户",
+        "description": "Add an account text"
+    },
+    "remove_account": {
+        "message": "移除账户",
+        "description": "Remove account text"
+    },
+    "remove_account_description": {
+        "message": "确定要继续吗？这无法撤销。",
+        "description": "Remove account description"
+    },
+    "wallet_actions": {
+        "message": "钱包操作",
+        "description": "Wallet actions text"
+    },
+    "contacts": {
+        "message": "联系人",
+        "description": "Contacts text"
+    },
+    "verify_full_address": {
+        "message": "验证完整地址",
+        "description": "Verify the full address text"
+    },
+    "verify_full_address_description": {
+        "message": "您最近没有与这个地址互动。请确保整个地址正确。",
+        "description": "Verify the full address description"
+    },
+    "select_token": {
+        "message": "选择代币",
+        "description": "Select token text"
+    },
+    "select_amount": {
+        "message": "选择数量",
+        "description": "Select amount text"
+    },
+    "insufficient_balance": {
+        "message": "余额不足",
+        "description": "Insufficient balance text"
+    },
+    "invalid_amount": {
+        "message": "金额无效",
+        "description": "Invalid amount text"
+    },
+    "add_a_note": {
+        "message": "添加备注",
+        "description": "Add a note text"
+    },
+    "edit_note": {
+        "message": "编辑备注",
+        "description": "Edit note text"
+    },
+    "enter_amount": {
+        "message": "输入金额",
+        "description": "Enter amount text"
+    },
+    "address_or_arns_name": {
+        "message": "地址或ArNS名称",
+        "description": "Address or ArNS name text"
+    },
+    "cannot_send_to_self": {
+        "message": "不能发送给自己",
+        "description": "Cannot send to self text"
+    },
+    "more_settings": {
+        "message": "更多设置",
+        "description": "More settings text"
+    },
+    "less_settings": {
+        "message": "更少设置",
+        "description": "Less settings text"
+    },
+    "seedphrase": {
+        "message": "恢复短语",
+        "description": "Seedphrase text"
+    },
+    "i_have_a_import_type": {
+        "message": "我有一个 $TYPE$",
+        "description": "I have a import type text",
+        "placeholders": {
+            "type": {
+                "content": "$1",
+                "example": "seedphrase"
+            }
+        }
+    },
+    "search_currency": {
+        "message": "搜索货币",
+        "description": "Search currency text"
+    },
+    "enable_disable": {
+        "message": "启用/禁用",
+        "description": "Enable/disable text"
+    },
+    "privacy_policy": {
+        "message": "隐私政策",
+        "description": "Privacy policy text"
+    },
+    "exchange_rate": {
+        "message": "汇率",
+        "description": "Exchange rate text"
+    },
+    "max_buy_amount": {
+        "message": "AR 最高购买金额为 $AMOUNT$ $CURRENCY$",
+        "description": "Max buy amount text",
+        "placeholders": {
+        "amount": {
+            "content": "$1",
+            "example": "1"
+        },
+        "currency": {
+            "content": "$2",
+            "example": "USD"
+        }
+        }
+    },
+    "min_buy_amount": {
+        "message": "最低 AR 购买金额为 $AMOUNT$ $CURRENCY$",
+        "description": "Min buy amount text",
+        "placeholders": {
+        "amount": {
+            "content": "$1",
+            "example": "1"
+        },
+        "currency": {
+            "content": "$2",
+            "example": "USD"
+        }
+        }
+    },
+    "switch_gateway": {
+        "message": "切换网关",
+        "description": "Switch gateway text"
+    },
+    "setting_fullscreen": {
+        "message": "全屏",
+        "description": "Fullscreen text"
     }
 }

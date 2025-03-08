@@ -1,0 +1,41 @@
+.root {
+  position: relative;
+  margin: 0 auto;
+  border-radius: 4px;
+  font-family: monospace;
+}
+
+.title {
+  margin: 0;
+  padding: 16px;
+  font-size: 20px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.25);
+}
+
+.p {
+  margin: 16px;
+}
+
+.img {
+  width: 100%;
+  border-top: 2px solid rgba(255, 255, 255, 0.25);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.25);
+
+  .title + & {
+    border-top: none;
+  }
+}
+
+.children {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+}
+
+.errorMessage {
+  color: red;
+  border: 2px solid red;
+  border-radius: 4px;
+  padding: 8px;
+}

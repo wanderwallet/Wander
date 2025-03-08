@@ -1,25 +1,15 @@
 import PasswordStrength from "../../../components/welcome/PasswordStrength";
 import PasswordMatch from "~components/welcome/PasswordMatch";
-import { checkPasswordValid } from "~wallets/generator";
-import { ArrowRightIcon } from "@iconicicons/react";
 import Paragraph from "~components/Paragraph";
-import { useContext, useMemo, useEffect } from "react";
+import { useContext, useMemo, useEffect, useState } from "react";
 import browser from "webextension-polyfill";
 import { PasswordContext, type SetupWelcomeViewParams } from "../setup";
-import {
-  ButtonV2,
-  InputV2,
-  Spacer,
-  Text,
-  useInput,
-  useModal,
-  useToasts
-} from "@arconnect/components";
+import { useInput, useModal, useToasts } from "@arconnect/components";
 import { PageType, trackPage } from "~utils/analytics";
-import { PasswordWarningModal } from "~routes/popup/passwordPopup";
-import { passwordStrength } from "check-password-strength";
 import { useLocation } from "~wallets/router/router.utils";
 import type { CommonRouteProps } from "~wallets/router/router.types";
+import styled from "styled-components";
+import { Button, Input, Spacer } from "@arconnect/components-rebrand";
 
 export type PasswordWelcomeViewProps = CommonRouteProps<SetupWelcomeViewParams>;
 
@@ -36,9 +26,7 @@ export function PasswordWelcomeView({ params }: PasswordWelcomeViewProps) {
   // password context
   const { setPassword } = useContext(PasswordContext);
 
-  const passwordModal = useModal();
-
-  const passwordStatus = passwordStrength(passwordInput.state);
+  const [passwordType, setPasswordType] = useState("password");
 
   // handle done button
   function done(skip: boolean = false) {
@@ -60,10 +48,10 @@ export function PasswordWelcomeView({ params }: PasswordWelcomeViewProps) {
       });
     }
 
-    if (!checkPasswordValid(passwordInput.state) && !skip) {
-      passwordModal.setOpen(true);
-      return;
-    }
+    // if (!checkPasswordValid(passwordInput.state) && !skip) {
+    //   passwordModal.setOpen(true);
+    //   return;
+    // }
 
     // set password in global context
     setPassword(passwordInput.state);
@@ -87,49 +75,68 @@ export function PasswordWelcomeView({ params }: PasswordWelcomeViewProps) {
   }, []);
 
   return (
-    <>
-      <Text heading>{browser.i18n.getMessage("create_password")}</Text>
-      <Paragraph>
-        {browser.i18n.getMessage("create_password_paragraph")}
-      </Paragraph>
-      <InputV2
-        type="password"
-        {...passwordInput.bindings}
-        placeholder={browser.i18n.getMessage("enter_password")}
-        fullWidth
-        onKeyDown={(e) => {
-          if (e.key !== "Enter") return;
-          done();
-        }}
-        autoFocus
-      />
-      <Spacer y={1} />
-      <InputV2
-        type="password"
-        {...validPasswordInput.bindings}
-        placeholder={browser.i18n.getMessage("enter_password_again")}
-        fullWidth
-        onKeyDown={(e) => {
-          if (e.key !== "Enter") return;
-          done();
-        }}
-      />
-      <PasswordMatch matches={matches} />
-      <Spacer y={(matches && 1.15) || 1.55} />
-      <PasswordStrength password={passwordInput.state} />
-      <Spacer y={1} />
-      <ButtonV2 fullWidth onClick={() => done()}>
-        {browser.i18n.getMessage("next")}
-        <ArrowRightIcon style={{ marginLeft: "5px" }} />
-      </ButtonV2>
-      <PasswordWarningModal
+    <Container>
+      <Content>
+        <Paragraph>
+          {browser.i18n.getMessage("create_password_paragraph")}
+        </Paragraph>
+        <div>
+          <Input
+            type="password"
+            {...passwordInput.bindings}
+            placeholder={browser.i18n.getMessage("enter_your_password")}
+            fullWidth
+            onKeyDown={(e) => {
+              if (e.key !== "Enter") return;
+              done();
+            }}
+            autoFocus
+          />
+          <Spacer y={0.75} />
+          <Input
+            type={passwordType}
+            {...validPasswordInput.bindings}
+            placeholder={browser.i18n.getMessage("enter_password_again")}
+            fullWidth
+            onKeyDown={(e) => {
+              if (e.key !== "Enter") return;
+              done();
+            }}
+          />
+          <PasswordMatch matches={matches} />
+        </div>
+        <div>
+          <PasswordStrength password={passwordInput.state} />
+        </div>
+      </Content>
+      <Button fullWidth onClick={() => done()} disabled={!matches}>
+        {browser.i18n.getMessage(matches ? "next" : "enter_password")}
+      </Button>
+      {/* <PasswordWarningModal
         done={done}
         {...passwordModal.bindings}
         passwordStatus={{
           contains: passwordStatus.contains,
           length: passwordStatus.length
         }}
-      />
-    </>
+      /> */}
+    </Container>
   );
 }
+
+const Container = styled.div`
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+  gap: 24px;
+`;
+
+const Content = styled.div`
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 24px;
+`;

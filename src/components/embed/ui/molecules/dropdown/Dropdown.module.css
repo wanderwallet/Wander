@@ -1,0 +1,26 @@
+@import "../../../tokens/index.css";
+
+.dropdown-button {
+  display: flex;
+  flex-direction: row;
+  min-width: 100px;
+  padding: var(--spacing-4);
+  margin: var(--spacing-6);
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-6);
+  border-radius: var(--border-radius-lg);
+  border: 1px solid var(--color-border-popover);
+  background: inherit;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.dropdown-icon {
+  justify-self: flex-end;
+}
+
+.dropdown {
+  display: flex;
+  position: absolute;
+  z-index: 1000;
+}

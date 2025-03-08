@@ -1,4 +1,4 @@
-import { useStorage } from "@plasmohq/storage/hook";
+import { useStorage } from "~utils/storage";
 import styled from "styled-components";
 import { ExtensionStorage } from "~utils/storage";
 import { Spacer, Text, TooltipV2 } from "@arconnect/components";
@@ -147,7 +147,7 @@ const ToggleSwitchWrapper = styled.div`
 `;
 
 const Title = styled(Text)`
-  color: rgb(${(props) => props.theme.primaryText});
+  color: ${(props) => props.theme.primaryText};
 `;
 
 const TitleWrapper = styled.div`
@@ -157,7 +157,7 @@ const TitleWrapper = styled.div`
 
 const RadioText = styled(Text)`
   font-size: 0.75rem;
-  color: rgb(${(props) => props.theme.primaryText});
+  color: ${(props) => props.theme.primaryText};
 `;
 
 const InfoIcon = styled(InformationIcon)`

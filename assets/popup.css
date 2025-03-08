@@ -1,98 +1,105 @@
 @font-face {
-    font-family: "ManropeLocal";
+    font-family: "Plus Jakarta Sans";
+    font-style: normal;
+    font-weight: 200;
+    src: url(/assets/fonts/PlusJakartaSans-ExtraLight.ttf) format('ttf');
+}
+
+@font-face {
+    font-family: "Plus Jakarta Sans";
     font-style: normal;
     font-weight: 300;
-    src: url(/assets/fonts/Manrope-Light.woff2) format('woff2');
+    src: url(/assets/fonts/PlusJakartaSans-Light.ttf) format('ttf');
 }
 
 @font-face {
-    font-family: "ManropeLocal";
+    font-family: "Plus Jakarta Sans";
     font-style: normal;
     font-weight: 400;
-    src: url(/assets/fonts/Manrope-Regular.woff2) format('woff2');
+    src: url(/assets/fonts/PlusJakartaSans-Regular.ttf) format('ttf');
 }
 
 @font-face {
-    font-family: "ManropeLocal";
+    font-family: "Plus Jakarta Sans";
     font-style: normal;
     font-weight: 500;
-    src: url(/assets/fonts/Manrope-Medium.woff2) format('woff2');
+    src: url(/assets/fonts/PlusJakartaSans-Medium.ttf) format('ttf');
 }
 
 @font-face {
-    font-family: "ManropeLocal";
+    font-family: "Plus Jakarta Sans";
     font-style: normal;
     font-weight: 600;
-    src: url(/assets/fonts/Manrope-SemiBold.woff2) format('woff2');
+    src: url(/assets/fonts/PlusJakartaSans-SemiBold.ttf) format('ttf');
 }
 
 @font-face {
-    font-family: "ManropeLocal";
-    font-style: normal;
-    font-weight: 600;
-    src: url(/assets/fonts/Manrope-Bold.woff2) format('woff2');
-}
-
-@font-face {
-    font-family: "ManropeLocal";
+    font-family: "Plus Jakarta Sans";
     font-style: normal;
     font-weight: 700;
-    src: url(/assets/fonts/Manrope-ExtraBold.woff2) format('woff2');
+    src: url(/assets/fonts/PlusJakartaSans-Bold.ttf) format('ttf');
+}
+
+@font-face {
+    font-family: "Plus Jakarta Sans";
+    font-style: normal;
+    font-weight: 800;
+    src: url(/assets/fonts/PlusJakartaSans-ExtraBold.ttf) format('ttf');
 }
 
 * {
-    scrollbar-width: none;
+  scrollbar-width: none;
 }
 
 *::-webkit-scrollbar {
-    display: none
+  display: none
 }
 
 ::selection {
-    background-color: rgba(171, 154, 255, .6);
-    color: #fff;
+  background-color: rgba(171, 154, 255, .6);
+  color: #fff;
 }
 
 :root {
-    --defaultBackgroundColor: white;
-    --defaultTextColor: black;
+  --defaultBackgroundColor: white;
+  --defaultTextColor: black;
 }
 
 @media (prefers-color-scheme: dark) {
-    :root {
-        --defaultBackgroundColor: black;
-        --defaultTextColor: white;
-    }
+  :root {
+    --defaultBackgroundColor: black;
+    --defaultTextColor: white;
+  }
 }
 
 body {
-    margin: 0;
-    padding: 0;
-    background-color: var(--backgroundColor, var(--defaultBackgroundColor, white));
-    color: var(--textColor, var(--defaultTextColor, black));
+  margin: 0;
+  padding: 0;
+  background-color: var(--backgroundColor, var(--defaultBackgroundColor, white));
+  color: var(--textColor, var(--defaultTextColor, black));
 }
 
 body#popup {
-    width: 377px;
-    height: 600px;
+  width: 377px;
+  height: 600px;
 }
 
 body.fullscreen {
-    width: 377px;
-    height: 100vh;
-    margin: 0 auto;
+  width: 377px;
+  height: 100vh;
+  margin: 0 auto;
 }
 
 body.fullscreen::before {
-    content: "";
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    width: 377px;
-    height: 100vh;
-    transform: translate(-50%, -50%);
-    pointer-events: none;
-    box-shadow: 0 0 128px 0 rgba(171, 154, 255, .4);
+  content: "";
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 377px;
+  height: 100vh;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  box-shadow: 0 0 128px 0 rgba(171, 154, 255, .4);
 }
 
 body,
@@ -100,28 +107,29 @@ button,
 input,
 select,
 textarea {
-    font-family: "ManropeLocal", "Manrope VF", "Manrope", sans-serif !important;
+    font-family: "Plus Jakarta Sans", sans-serif !important;
     letter-spacing: .5px;
 }
 
 button {
-    background: transparent;
-    border: 0;
-    padding: 0;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  color: inherit;
 }
 
 #cover {
-    position: fixed;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    z-index: 99999999;
-    background-color: var(--backgroundColor, var(--defaultBackgroundColor, white));
-    transition: background-color linear 230ms;
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 99999999;
+  background-color: var(--backgroundColor, var(--defaultBackgroundColor, white));
+  transition: background-color linear 230ms;
 }
 
 #cover[aria-hidden] {
-    background: transparent;
-    pointer-events: none;
+  background: transparent;
+  pointer-events: none;
 }

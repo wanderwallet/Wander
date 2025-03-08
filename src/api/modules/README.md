@@ -1,6 +1,6 @@
-# ArConnect modules
+# Wander modules
 
-ArConnect modules construct the individual functions the injected API provides to dApps. A module consists of 3 parts:
+Wander modules construct the individual functions the injected API provides to dApps. A module consists of 3 parts:
 
 - The module declaration file: provides basic info about the module, such as name and required permissions
 - The foreground script file:
@@ -16,7 +16,7 @@ For basic examples on how to create a module, refer to the [example module](exam
 
 ## Message Passing
 
-### ArConnect Browser Extension
+### Wander Browser Extension
 
 There are 3 contexts here:
 
@@ -24,6 +24,6 @@ There are 3 contexts here:
 - Content scripts (injected into the page but with its own isolated context).
 - Injected scripts (injected into the page in a `<script>` tag to have the same context).
 
-### ArConnect Embedded
+### Wander Embedded
 
 TODO: Document `isomorphicSendMessage()` and `@arconnect/webext-bridge`'s `sendMessage()`.

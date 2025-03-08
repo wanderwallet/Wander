@@ -1,9 +1,9 @@
 import {
-  InputV2 as Input,
+  Input,
   type InputStatus,
   Spacer,
   Text
-} from "@arconnect/components";
+} from "@arconnect/components-rebrand";
 import { InputWithBtn, InputWrapper } from "./InputWrapper";
 import { IconButton } from "~components/IconButton";
 import { CopyIcon } from "@iconicicons/react";
@@ -18,7 +18,9 @@ export default function Tutorial() {
 
   return (
     <>
-      <Text noMargin>{browser.i18n.getMessage("arlocalCommandTutorial")}</Text>
+      <Text size="lg" weight="medium" noMargin>
+        {browser.i18n.getMessage("arlocalCommandTutorial")}
+      </Text>
       <Spacer y={0.4} />
       <InputWithBtn>
         <InputWrapper>
@@ -31,7 +33,7 @@ export default function Tutorial() {
           />
         </InputWrapper>
         <IconButton
-          secondary
+          variant="secondary"
           onClick={() => {
             copy("npx arlocal");
             setArLocalCommandStatus("success");

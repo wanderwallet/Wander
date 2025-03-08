@@ -32,7 +32,12 @@ export async function handleGatewayUpdateAlarm(alarm?: Alarms.Alarm) {
     const gatewaysResult = await ArIO.read<
       PaginatedResult<GatewayAddressRegistryItemData>
     >({
-      tags: [{ name: "Action", value: "Gateways" }]
+      tags: [
+        { name: "Action", value: "Paginated-Gateways" },
+        { name: "Sort-By", value: "operatorStake" },
+        { name: "Sort-Order", value: "desc" },
+        { name: "Limit", value: "5" }
+      ]
     });
 
     const garItems = extractGarItems(gatewaysResult.items);

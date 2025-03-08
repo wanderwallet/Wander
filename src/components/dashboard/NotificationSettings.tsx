@@ -1,10 +1,10 @@
-import { useStorage } from "@plasmohq/storage/hook";
+import { useStorage } from "~utils/storage";
 import styled from "styled-components";
-import PermissionCheckbox from "~components/auth/PermissionCheckbox";
 import { ExtensionStorage } from "~utils/storage";
-import { Spacer, Text } from "@arconnect/components";
+import { Checkbox, Spacer, Text } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
-import { Radio, RadioInner, RadioItem, RadioWrapper } from "./Setting";
+import { RadioWrapper } from "./Setting";
+import { ToggleSwitch } from "~routes/popup/subscriptions/subscriptionDetails";
 
 export function NotificationSettingsDashboardView() {
   const [notificationSettings, setNotificationSettings] = useStorage(
@@ -34,54 +34,53 @@ export function NotificationSettingsDashboardView() {
   return (
     <>
       <Wrapper>
-        <PermissionCheckbox
-          onChange={toggleNotificationSetting}
-          checked={notificationSettings}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center"
+          }}
         >
-          {browser.i18n.getMessage(
-            !!notificationSettings ? "enabled" : "disabled"
-          )}
-          <br />
-          <Text noMargin>
-            {browser.i18n.getMessage("setting_notifications_description")}
+          <Text size="lg" weight="medium" noMargin>
+            {browser.i18n.getMessage("setting_notifications")}
           </Text>
-        </PermissionCheckbox>
-        <Spacer y={1.7} />
+          <ToggleSwitch
+            width={51}
+            height={31}
+            checked={notificationSettings}
+            setChecked={toggleNotificationSetting}
+          />
+        </div>
         <RadioWrapper>
           {/* AR AND AO TRANSFER NOTIFICATIONS  */}
-          <RadioItem onClick={() => handleRadioChange("default")}>
-            <Radio>
-              {notificationCustomizeSettings &&
-                notificationCustomizeSettings.includes("default") && (
-                  <RadioInner />
-                )}
-            </Radio>
-            <Text noMargin>
-              Enable Arweave and ao Transaction Notifications
-            </Text>
-          </RadioItem>
+          <Checkbox
+            label="Enable Arweave and ao Transaction Notifications"
+            checked={
+              notificationCustomizeSettings &&
+              notificationCustomizeSettings.includes("default")
+            }
+            onChange={() => handleRadioChange("default")}
+          />
+
           {/* JUST AR TRANSFER NOTIFICATIONS  */}
-          <RadioItem
-            onClick={() => handleRadioChange("arTransferNotifications")}
-          >
-            <Radio>
-              {notificationCustomizeSettings &&
-                notificationCustomizeSettings.includes(
-                  "arTransferNotifications"
-                ) && <RadioInner />}
-            </Radio>
-            <Text noMargin>Enable Arweave Transaction Notifications</Text>
-          </RadioItem>
+          <Checkbox
+            label="Enable Arweave Transaction Notifications"
+            checked={
+              notificationCustomizeSettings &&
+              notificationCustomizeSettings.includes("arTransferNotifications")
+            }
+            onChange={() => handleRadioChange("arTransferNotifications")}
+          />
+
           {/* ALL NOTIFICATIONS */}
-          <RadioItem onClick={() => handleRadioChange("allTxns")}>
-            <Radio>
-              {notificationCustomizeSettings &&
-                notificationCustomizeSettings.includes("allTxns") && (
-                  <RadioInner />
-                )}
-            </Radio>
-            <Text noMargin>Enable all Arweave and ao Notifications</Text>
-          </RadioItem>
+          <Checkbox
+            checked={
+              notificationCustomizeSettings &&
+              notificationCustomizeSettings.includes("allTxns")
+            }
+            onChange={() => handleRadioChange("allTxns")}
+            label="Enable all Arweave and ao Notifications"
+          />
         </RadioWrapper>
       </Wrapper>
     </>

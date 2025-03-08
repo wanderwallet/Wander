@@ -1,16 +1,16 @@
 import type { WalletInterface } from "~components/welcome/load/Migrate";
 import type { JWKInterface } from "arweave/web/lib/wallet";
-import { type AnsUser, getAnsProfile } from "~lib/ans";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useStorage } from "@plasmohq/storage/hook";
+import { useStorage } from "~utils/storage";
 import { defaultGateway } from "~gateways/gateway";
 import { ExtensionStorage } from "~utils/storage";
 import { findGateway } from "~gateways/wayfinder";
 import type { HardwareApi } from "./hardware";
 import type { StoredWallet } from "~wallets";
 import Arweave from "arweave";
-import BigNumber from "bignumber.js";
-import { retryWithDelayAndTimeout } from "~utils/promises/retry";
+import { isPasswordFresh } from "./auth";
+import { useQuery } from "@tanstack/react-query";
+import { getNameServiceProfiles } from "~lib/nameservice";
 
 /**
  * Wallets with details hook
@@ -37,15 +37,15 @@ export function useWalletsDetails(wallets: JWKInterface[]) {
 
       // load ans labels
       try {
-        const profiles = (await getAnsProfile(
+        const profiles = await getNameServiceProfiles(
           details.map((w) => w.address)
-        )) as AnsUser[];
+        );
 
         for (const wallet of details) {
-          const profile = profiles.find((p) => p.user === wallet.address);
+          const profile = profiles.find((p) => p.address === wallet.address);
 
-          if (!profile?.currentLabel) continue;
-          wallet.label = profile.currentLabel + ".ar";
+          if (!profile?.name) continue;
+          wallet.label = profile.name;
         }
       } catch {}
 
@@ -78,7 +78,12 @@ export function useActiveWallet() {
 
   // active wallet
   const wallet = useMemo(
-    () => wallets?.find(({ address }) => address === activeAddress),
+    () =>
+      wallets?.find(({ address }) => address === activeAddress) || {
+        address: activeAddress,
+        nickname: "",
+        type: "local"
+      },
     [activeAddress, wallets]
   );
 
@@ -111,16 +116,10 @@ export function useBalance() {
     instance: ExtensionStorage
   });
 
-  // balance in AR
-  const [balance, setBalance] = useState(BigNumber("0"));
-
   const fetchBalance = useCallback(async () => {
-    if (!activeAddress) {
-      setBalance(BigNumber("0"));
-      return;
-    }
+    if (!activeAddress) return "0";
 
-    const gateway = await findGateway({});
+    const gateway = await findGateway({ random: true });
     const arweave = new Arweave(gateway);
 
     // fetch balance
@@ -128,19 +127,25 @@ export function useBalance() {
     if (isNaN(+winstonBalance)) {
       throw new Error("Invalid balance returned");
     }
-    const arBalance = BigNumber(arweave.ar.winstonToAr(winstonBalance));
-    setBalance(arBalance);
+    const arBalance = arweave.ar.winstonToAr(winstonBalance);
+    return arBalance;
   }, [activeAddress]);
 
-  useEffect(() => {
-    if (!activeAddress) return;
-
-    retryWithDelayAndTimeout(fetchBalance).catch((error) => {
-      console.log(`Error fetching balance: ${error}`);
-    });
-  }, [activeAddress, fetchBalance]);
-
-  return balance;
+  return useQuery({
+    queryKey: ["arBalance", activeAddress],
+    queryFn: async () => {
+      const balance = await fetchBalance();
+      return balance || "0";
+    },
+    refetchInterval: 300_000,
+    staleTime: 300_000,
+    gcTime: 300_000,
+    retry: 3,
+    select: (data) => data || "0",
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    refetchOnWindowFocus: true,
+    enabled: !!activeAddress
+  });
 }
 
 export function useDebounce<T>(value: T, delay: number): T {
@@ -161,3 +166,20 @@ export function useDebounce<T>(value: T, delay: number): T {
 
   return debouncedValue;
 }
+
+/**
+ * Hook to determine if a password prompt should be shown to the user
+ *
+ * @description Returns true when the stored password has expired and user needs to re-enter it.
+ *
+ * @returns {boolean} True if password prompt should be shown, false otherwise
+ */
+export const useAskPassword = (): boolean => {
+  const [askPassword, setAskPassword] = useState(false);
+
+  useEffect(() => {
+    isPasswordFresh().then((isFresh) => setAskPassword(!isFresh));
+  }, []);
+
+  return askPassword;
+};

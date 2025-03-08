@@ -1,6 +1,6 @@
 import { ButtonV2, Checkbox, Spacer, Text } from "@arconnect/components";
 import { PageType, isUserInGDPRCountry, trackPage } from "~utils/analytics";
-import { useStorage } from "@plasmohq/storage/hook";
+import { useStorage } from "~utils/storage";
 import { ExtensionStorage } from "~utils/storage";
 import Paragraph from "~components/Paragraph";
 import browser from "webextension-polyfill";

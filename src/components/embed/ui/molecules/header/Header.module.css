@@ -1,0 +1,25 @@
+@import "../../../tokens/index.css";
+
+.header {
+  padding: var(--spacing-1);
+  align-items: flex-start;
+}
+
+.header__title__container {
+  padding: 0 var(--spacing-2);
+  text-align: center;
+  gap: var(--spacing-4);
+  flex: 1;
+}
+
+.header__title__container__center {
+  text-align: center;
+}
+
+.header__title__container__left {
+  text-align: left;
+}
+
+.header__title__container__right {
+  text-align: right;
+}

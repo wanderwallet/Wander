@@ -22,12 +22,13 @@ jobs:
       - name: Install dependencies
         run: yarn install
       - name: Create .env file
-        run: echo "PLASMO_PUBLIC_TRANSAK_API_KEY=${{ secrets.TRANSAK_API_KEY }}" >> .env
+        run: |
+          echo "PLASMO_PUBLIC_TRANSAK_API_KEY=${{ secrets.TRANSAK_API_KEY }}" >> .env
 
       - name: Modify package.json and icons for BETA
         if: github.ref == 'refs/heads/staging'
         run: |
-          jq '.displayName = "ArConnect BETA"' package.json > temp.json && \
+          jq '.displayName = "Wander BETA"' package.json > temp.json && \
           mv temp.json package.json && \
           jq --arg version "${{ secrets.VERSION }}" '.version = $version' package.json > temp.json && \
           mv temp.json package.json && \

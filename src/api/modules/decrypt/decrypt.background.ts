@@ -10,6 +10,7 @@ import {
   isLocalWallet,
   isRawArrayBuffer
 } from "~utils/assertions";
+import { requestUserAuthorization } from "~utils/auth/auth.utils";
 
 const background: BackgroundModuleFunction<string | Uint8Array> = async (
   appData,
@@ -41,11 +42,13 @@ const background: BackgroundModuleFunction<string | Uint8Array> = async (
   // remove wallet from memory
   freeDecryptedWallet(decryptedWallet.keyfile);
 
+  let decryptedData: Uint8Array<ArrayBufferLike>;
+
   if (options.algorithm) {
     // validate
     isLegacyEncryptionOptions(options);
 
-    // old ArConnect algorithm
+    // old Wander algorithm
     const key = await crypto.subtle.importKey(
       "jwk",
       privateKey,
@@ -78,7 +81,7 @@ const background: BackgroundModuleFunction<string | Uint8Array> = async (
     );
 
     // decrypt data
-    const res = await arweave.crypto.decrypt(
+    decryptedData = await arweave.crypto.decrypt(
       encryptedData,
       new Uint8Array(decryptedKey),
       options.salt
@@ -91,10 +94,11 @@ const background: BackgroundModuleFunction<string | Uint8Array> = async (
     if (options.salt) {
       const rawSalt = new TextEncoder().encode(options.salt);
 
-      return res.slice(0, res.length - rawSalt.length);
+      decryptedData = decryptedData.slice(
+        0,
+        decryptedData.length - rawSalt.length
+      );
     }
-
-    return res;
   } else if (options.name) {
     // validate
     isEncryptionAlgorithm(options);
@@ -110,18 +114,30 @@ const background: BackgroundModuleFunction<string | Uint8Array> = async (
       false,
       ["decrypt"]
     );
+
     const decrypted = await crypto.subtle.decrypt(options, key, data);
 
     // remove wallet from memory
     freeDecryptedWallet(privateKey);
 
-    return new Uint8Array(decrypted);
+    decryptedData = new Uint8Array(decrypted);
   } else {
     // remove wallet from memory
     freeDecryptedWallet(privateKey);
 
     throw new Error("Invalid options passed", options);
   }
+
+  // request "decrypt" popup
+  await requestUserAuthorization(
+    {
+      type: "decrypt",
+      message: Object.values(decryptedData)
+    },
+    appData
+  );
+
+  return decryptedData;
 };
 
 export default background;

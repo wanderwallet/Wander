@@ -2,7 +2,7 @@ import HeadV2 from "~components/popup/HeadV2";
 import browser from "webextension-polyfill";
 import { useEffect, useMemo, useState } from "react";
 import { ExtensionStorage } from "~utils/storage";
-import { useStorage } from "@plasmohq/storage/hook";
+import { useStorage } from "~utils/storage";
 import { gql } from "~gateways/api";
 import styled from "styled-components";
 import { Empty, TitleMessage } from "../notifications";
@@ -13,36 +13,32 @@ import {
   AR_SENT_QUERY_WITH_CURSOR,
   PRINT_ARWEAVE_QUERY_WITH_CURSOR
 } from "~notifications/utils";
-import { useLocation } from "~wallets/router/router.utils";
-import { getArPrice } from "~lib/coingecko";
-import useSetting from "~settings/hook";
 import { printTxWorkingGateways, txHistoryGateways } from "~gateways/gateway";
-import { ButtonV2, Loading } from "@arconnect/components";
+import { Button, Loading } from "@arconnect/components-rebrand";
 import type GQLResultInterface from "ar-gql/dist/faces";
 import {
   sortFn,
   processTransactions,
   type GroupedTransactions,
   type ExtendedTransaction,
-  getFormattedAmount,
-  getFormattedFiatAmount,
-  getFullMonthName,
-  getTransactionDescription
+  getFullMonthNameWithYear
 } from "~lib/transactions";
 import BigNumber from "bignumber.js";
 import { retryWithDelay } from "~utils/promises/retry";
+import {
+  TransactionItemComponent,
+  SectionTitle,
+  SectionList
+} from "~components/popup/home/Transactions";
 
 const defaultCursors = ["", "", "", "", ""];
 const defaultHasNextPages = [true, true, true, true, true];
 
 export function TransactionsView() {
-  const { navigate } = useLocation();
   const [cursors, setCursors] = useState(defaultCursors);
   const [hasNextPages, setHasNextPages] = useState(defaultHasNextPages);
   const [transactions, setTransactions] = useState<GroupedTransactions>({});
-  const [arPrice, setArPrice] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [currency] = useSetting<string>("currency");
 
   const [activeAddress] = useStorage<string>({
     key: "active_address",
@@ -206,57 +202,30 @@ export function TransactionsView() {
   };
 
   useEffect(() => {
-    getArPrice(currency).then(setArPrice).catch();
-  }, [currency]);
-
-  useEffect(() => {
     setCursors(defaultCursors);
     setHasNextPages(defaultHasNextPages);
     fetchTransactions();
   }, [activeAddress]);
 
-  const handleClick = (id: string) => {
-    navigate(`/transaction/${id}?back=${encodeURIComponent("/transactions")}`);
-  };
-
   return (
     <>
-      <HeadV2 title={browser.i18n.getMessage("transaction_history_title")} />
+      <HeadV2 title={browser.i18n.getMessage("activity")} />
       <TransactionsWrapper>
         {Object.keys(transactions).length > 0
           ? Object.keys(transactions).map((monthYear) => (
-              <div key={monthYear}>
-                <Month>{getFullMonthName(monthYear)}</Month>{" "}
+              <SectionList key={monthYear}>
+                <SectionTitle>
+                  {getFullMonthNameWithYear(monthYear)}
+                </SectionTitle>
                 <TransactionItem>
                   {transactions[monthYear].map((transaction) => (
-                    <Transaction
+                    <TransactionItemComponent
                       key={transaction.node.id}
-                      onClick={() => handleClick(transaction.node.id)}
-                    >
-                      <Section>
-                        <Main>{getTransactionDescription(transaction)}</Main>
-                        <Secondary>
-                          {transaction.date
-                            ? `${getFullMonthName(monthYear)} ${
-                                transaction.day
-                              }`
-                            : "Pending"}
-                        </Secondary>
-                      </Section>
-                      <Section alignRight>
-                        <Main>{getFormattedAmount(transaction)}</Main>
-                        <Secondary>
-                          {getFormattedFiatAmount(
-                            transaction,
-                            arPrice,
-                            currency
-                          )}
-                        </Secondary>
-                      </Section>
-                    </Transaction>
+                      transaction={transaction}
+                    />
                   ))}
                 </TransactionItem>
-              </div>
+              </SectionList>
             ))
           : !loading && (
               <Empty>
@@ -266,7 +235,8 @@ export function TransactionsView() {
               </Empty>
             )}
         {hasNextPage && (
-          <ButtonV2
+          <Button
+            fullWidth
             disabled={!hasNextPage || loading}
             style={{ alignSelf: "center", marginTop: "5px" }}
             onClick={fetchTransactions}
@@ -278,64 +248,23 @@ export function TransactionsView() {
             ) : (
               "Load more..."
             )}
-          </ButtonV2>
+          </Button>
         )}
       </TransactionsWrapper>
     </>
   );
 }
 
-const Selector = styled.span<{ active?: string }>``;
-
-const Month = styled.p`
-  margin: 0;
-  padding-bottom: 12px;
-  font-size: 10px;
-  font-weight: 500;
-`;
-
 const TransactionsWrapper = styled.div`
-  padding: 0 15px 15px 15px;
+  padding: 0px 24px 24px 24px;
   display: flex;
   flex-direction: column;
   gap: 12px;
 `;
 
-const Main = styled.h4`
-  font-weight: 500;
-  font-size: 14px;
-  margin: 0;
-`;
-
-const Secondary = styled.h6`
-  margin: 0;
-  font-weight: 500;
-  color: ${(props) => props.theme.secondaryTextv2};
-  font-size: 10px;
-`;
-
-const Transaction = styled.div`
-  display: flex;
-  cursor: pointer;
-  justify-content: space-between;
-  border-bottom: 1px solid ${(props) => props.theme.backgroundSecondary};
-  padding-bottom: 8px;
-
-  &:last-child {
-    padding-bottom: 0;
-    border-bottom: none;
-  }
-`;
-
-const Section = styled.div<{ alignRight?: boolean }>`
-  text-align: ${({ alignRight }) => (alignRight ? "right" : "left")};
-`;
-
 const TransactionItem = styled.div`
-  border: 1px solid ${(props) => props.theme.backgroundSecondary};
   gap: 8px;
   display: flex;
   flex-direction: column;
-  padding: 8px 10px;
   border-radius: 10px;
 `;

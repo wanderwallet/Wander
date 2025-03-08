@@ -4,7 +4,7 @@ import type { ModuleFunction } from "~api/module";
 const foreground: ModuleFunction<unknown> = (data, options) => {
   if (options.algorithm) {
     console.warn(
-      '[ArConnect] YOU\'RE USING DEPRECATED PARAMS FOR "encrypt()". Please check the documentation.\nhttps://github.com/arconnectio/ArConnect#encryptdata-options-promiseuint8array'
+      '[Wander] YOU\'RE USING DEPRECATED PARAMS FOR "encrypt()". Please check the documentation.\nhttps://github.com/arconnectio/Wander#encryptdata-options-promiseuint8array'
     );
   }
 

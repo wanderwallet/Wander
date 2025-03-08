@@ -28,7 +28,7 @@ export const handleApiCallMessage: OnMessageCallback<
     isExactly(
       sender.context,
       "content-script",
-      "Chunk calls are only accepted from the injected-script -> content-script"
+      "API call messages are only accepted from the injected-script -> content-script"
     );
     isApiCall(data);
 
@@ -70,7 +70,7 @@ export const handleApiCallMessage: OnMessageCallback<
       });
 
       // update app value with the app belonging to the frame
-      if (frame.url) {
+      if (frame?.url) {
         app = new Application(getAppURL(frame.url));
       }
     }
@@ -88,7 +88,7 @@ export const handleApiCallMessage: OnMessageCallback<
 
     // check if site is blocked
     if (await app.isBlocked()) {
-      throw new Error(`${app.url} is blocked from interacting with ArConnect`);
+      throw new Error(`${app.url} is blocked from interacting with Wander`);
     }
 
     // update events
@@ -114,7 +114,7 @@ export const handleApiCallMessage: OnMessageCallback<
       data: functionResult
     };
   } catch (e) {
-    console.error(`[ArConnect API] (${data.type})`, e?.message || e);
+    console.error(`[Wander API] (${data.type})`, e?.message || e);
 
     // return error
     return {

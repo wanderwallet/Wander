@@ -1,0 +1,28 @@
+@import "../../../tokens/index.css";
+
+.avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--border-radius-lg);
+  width: var(--avatar-size-default, 40px);
+  height: var(--avatar-size-default, 40px);
+  background-color: var(--avatar-background, transparent);
+  color: var(--avatar-color, inherit);
+  transition: var(--transition-base);
+}
+
+.avatar__blurry {
+  filter: blur(2px);
+}
+
+/* Size variants */
+.avatar__sm {
+  width: var(--avatar-size-sm, 32px);
+  height: var(--avatar-size-sm, 32px);
+}
+
+.avatar__lg {
+  width: var(--avatar-size-lg, 48px);
+  height: var(--avatar-size-lg, 48px);
+}

@@ -1,0 +1,36 @@
+// When the Wander Embedded <iframe> is created, its URL will include the following search params:
+// - client-id
+// - origin
+//
+// The code/functions below run in the context of the SKD, that is, in the domain of the dApp that integrates Wander
+// Embedded.
+
+// Duplicated in `src/utils/embedded/embedded.utils.ts`:
+const PARAM_CLIENT_ID = "client-id";
+const PARAM_ANCESTOR_ORIGIN = "ancestor-origin";
+
+// Duplicated in `src/utils/embedded/utils/wallets/embedded-wallets.utils.ts`:
+export function getEmbeddedOrigin() {
+  // return "https://wander-embed-ksffekbvd-community-labs.vercel.app/";
+  // return "https://embed-dev.wander.app/";
+
+  // vite preview:
+  // return "http://localhost:4173/";
+
+  return process.env.NODE_ENV === "development"
+    ? "http://localhost:5173/"
+    : "https://embed-dev.wander.app/";
+}
+
+export function getEmbeddedURL(src: string, clientId: string) {
+  // TODO: `src` option now working. The code in `src/utils/embedded/utils/wallets/embedded-wallets.utils.ts` also needs
+  // to account for that...
+  // const url = new URL(src);
+  const url = getEmbeddedOrigin();
+  const searchParams = new URLSearchParams();
+
+  searchParams.set(PARAM_CLIENT_ID, clientId);
+  searchParams.set(PARAM_ANCESTOR_ORIGIN, window.location.origin);
+
+  return `${url}?${searchParams.toString()}`;
+}

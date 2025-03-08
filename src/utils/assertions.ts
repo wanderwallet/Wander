@@ -5,7 +5,7 @@ import type { SignMessageOptions } from "~api/modules/sign_message/types";
 import type { SignatureAlgorithm } from "~api/modules/signature/types";
 import type { RawDataItem } from "~api/modules/sign_data_item/types";
 import type { DecryptedWallet, LocalWallet } from "~wallets";
-import type { TokenState, TokenType } from "~tokens/token";
+import type { TokenType } from "~tokens/token";
 import type { JWKInterface } from "arweave/web/lib/wallet";
 import type Transaction from "arweave/web/lib/transaction";
 import type { DecodedTag } from "~api/modules/sign/tags";
@@ -165,7 +165,7 @@ export function isSplitTransaction(
     isString(input[key], `"${key}" of transaction has to be a string.`);
   }
 
-  isNumber(input.format, '"format" of transaction has to be a number.');
+  isNumber(input.format, "format of transaction has to be a number.");
   isRecordWithKeys(
     input.chunks,
     ["data_root", "chunks", "proofs"],
@@ -333,17 +333,6 @@ export function isUndefined(
 
 export function isValidBalance(input: unknown): asserts input is number {
   isOneOfType(input, [isNumber, isNull, isUndefined], "Invalid balance.");
-}
-
-export function isTokenState(input: unknown): asserts input is TokenState {
-  isRecord(input, "Invalid or no token state.");
-  isString(input.ticker, "Invalid token ticker: not a string.");
-  isRecord(input.balances, "Invalid balances object: not a record.");
-
-  for (const address in input.balances) {
-    isString(address);
-    isValidBalance(input.balances[address]);
-  }
 }
 
 export function isNotEmptyArray(input: unknown): asserts input is unknown[] {

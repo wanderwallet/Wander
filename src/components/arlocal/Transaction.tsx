@@ -9,14 +9,14 @@ import { readFileBinary } from "~utils/file";
 import { useRef, useState } from "react";
 import { unlock } from "~wallets/auth";
 import {
-  ButtonV2 as Button,
-  InputV2 as Input,
+  Button,
+  Input,
   Spacer,
   useInput,
   Text,
   FileInput,
   useToasts
-} from "@arconnect/components";
+} from "@arconnect/components-rebrand";
 import type Arweave from "arweave";
 import browser from "webextension-polyfill";
 import styled from "styled-components";
@@ -214,7 +214,7 @@ export function ArLocalTransaction({ arweave }: Props) {
 
   return (
     <>
-      <Text heading noMargin>
+      <Text size="xl" weight="semibold" noMargin>
         {browser.i18n.getMessage("createTransaction")}
       </Text>
       <Text>{browser.i18n.getMessage("createTransactionSubtitle")}</Text>
@@ -288,7 +288,7 @@ export function ArLocalTransaction({ arweave }: Props) {
               />
             </InputWrapper>
             <IconButton
-              secondary
+              variant="secondary"
               onClick={() => setTags((val) => val.filter((_, j) => j !== i))}
             >
               <TrashIcon /> Trash
@@ -299,7 +299,7 @@ export function ArLocalTransaction({ arweave }: Props) {
       ))}
       <Button
         fullWidth
-        secondary
+        variant="secondary"
         onClick={() => setTags((val) => [...val, { name: "", value: "" }])}
       >
         <PlusIcon /> {browser.i18n.getMessage("addTag")}

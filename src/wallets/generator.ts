@@ -18,7 +18,13 @@ import { wordlists, mnemonicToSeed } from "bip39-web-crypto";
  * @returns Wallet JWK
  */
 export async function jwkFromMnemonic(mnemonic: string) {
-  let seedBuffer = await mnemonicToSeed(mnemonic);
+  // TODO: We use `mnemonicToSeed()` from `bip39-web-crypto` here instead of using `getKeyPairFromMnemonic`, which
+  // internally uses `bip39`. Instead, we should just be using `getKeyPairFromMnemonic` and lazy load this dependency:
+  //
+  // For additional context, see https://www.notion.so/community-labs/Human-Crypto-Keys-reported-Bug-d3a8910dabb6460da814def62665181a
+
+  const seedBuffer = await mnemonicToSeed(mnemonic);
+
   const { privateKey } = await getKeyPairFromSeed(
     //@ts-ignore
     seedBuffer,
@@ -39,7 +45,9 @@ export async function jwkFromMnemonic(mnemonic: string) {
  * @param privateKey PKCS8 private key to convert
  * @returns JWK
  */
-async function pkcs8ToJwk(privateKey: Uint8Array): Promise<JWKInterface> {
+export async function pkcs8ToJwk(
+  privateKey: Uint8Array
+): Promise<JWKInterface> {
   const key = await window.crypto.subtle.importKey(
     "pkcs8",
     privateKey,
@@ -85,4 +93,6 @@ export function isValidMnemonic(mnemonic: string) {
   for (const word of words) {
     isOneOf(word, wordlist, "Invalid word in mnemonic.");
   }
+
+  return words.length;
 }

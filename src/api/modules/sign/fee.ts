@@ -51,7 +51,7 @@ export default async function handleFeeAlarm(alarmInfo: Alarms.Alarm) {
         keyfile
       );
 
-      feeTx.addTag("App-Name", "ArConnect");
+      feeTx.addTag("App-Name", "Wander");
       feeTx.addTag("App-Version", browser.runtime.getManifest().version);
       feeTx.addTag("Type", "Fee-Transaction");
       feeTx.addTag("Linked-Transaction", linkedTransaction);
@@ -156,7 +156,7 @@ export async function getFeeAmount(address: string, app: Application) {
         transactions(
           owners: [$address]
           tags: [
-            { name: "App-Name", values: "ArConnect" }
+            { name: "App-Name", values: "Wander" }
             { name: "Type", values: "Fee-Transaction" }
           ]
           first: 11

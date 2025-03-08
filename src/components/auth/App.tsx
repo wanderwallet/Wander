@@ -4,7 +4,7 @@ import {
   Spacer,
   Text,
   ListItem
-} from "@arconnect/components";
+} from "@arconnect/components-rebrand";
 import { defaultGateway, type Gateway } from "~gateways/gateway";
 import { useTheme as useDisplayTheme } from "~utils/theme";
 import type { Allowance } from "~applications/allowance";
@@ -26,29 +26,29 @@ export default function App({
   allowance,
   showTitle = true
 }: Props) {
-  // allowance spent in AR
-  const spent = useMemo(() => {
-    if (!allowance) return new Quantity("0");
+  // // allowance spent in AR
+  // const spent = useMemo(() => {
+  //   if (!allowance) return new Quantity("0");
 
-    return winstonToArFormatted(allowance.spent);
-  }, [allowance]);
+  //   return winstonToArFormatted(allowance.spent);
+  // }, [allowance]);
 
-  // allowance limit in AR
-  const limit = useMemo(() => {
-    if (!allowance) return new Quantity("0");
+  // // allowance limit in AR
+  // const limit = useMemo(() => {
+  //   if (!allowance) return new Quantity("0");
 
-    return winstonToArFormatted(allowance.limit);
-  }, [allowance]);
+  //   return winstonToArFormatted(allowance.limit);
+  // }, [allowance]);
 
-  function winstonToArFormatted(val: string) {
-    const arweave = new Arweave(defaultGateway);
-    const arVal = arweave.ar.winstonToAr(val.toString());
+  // function winstonToArFormatted(val: string) {
+  //   const arweave = new Arweave(defaultGateway);
+  //   const arVal = arweave.ar.winstonToAr(val.toString());
 
-    return new Quantity("0", 20n).fromString(arVal);
-  }
+  //   return new Quantity("0", 20n).fromString(arVal);
+  // }
 
-  // display theme
-  const theme = useDisplayTheme();
+  // // display theme
+  // const theme = useDisplayTheme();
 
   return (
     <>
@@ -64,13 +64,15 @@ export default function App({
           <Spacer y={0.4} />
         </>
       )}
-      <SidePaddingSection size="slim">
+      <SidePaddingSection>
         <ListItem
-          title={appName || appUrl}
+          title={<PrimaryText>{appName || appUrl}</PrimaryText>}
           img={appIcon}
-          description={`${browser.i18n.getMessage("gateway")}: ${
-            gateway?.host || ""
-          }`}
+          subtitle={
+            <SecondaryText>{`${browser.i18n.getMessage("gateway")}: ${
+              gateway?.host || ""
+            }`}</SecondaryText>
+          }
           style={{ pointerEvents: "none" }}
         />
         {/* <Wrapper displayTheme={theme}>
@@ -111,10 +113,7 @@ export default function App({
   );
 }
 
-const SidePaddingSection = styled(Section)`
-  padding-top: 0;
-  padding-bottom: 0;
-`;
+const SidePaddingSection = styled(Section)``;
 
 const Wrapper = styled.div<{ displayTheme: DisplayTheme }>`
   border-radius: 10px;
@@ -167,6 +166,18 @@ const AppUrl = styled(Text).attrs({
 const AllowanceSpent = styled(AppName)`
   font-size: 1.4rem;
   color: #ffb800;
+`;
+
+const PrimaryText = styled.span`
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: ${(props) => props.theme.primaryTextv2};
+`;
+
+const SecondaryText = styled.span`
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: ${(props) => props.theme.secondaryTextv2};
 `;
 
 interface Props {

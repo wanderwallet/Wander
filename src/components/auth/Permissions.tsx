@@ -1,4 +1,4 @@
-import { ButtonV2, Section, Text } from "@arconnect/components";
+import { Section, Text } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
 import styled from "styled-components";
 import { permissionData, type PermissionType } from "~applications/permissions";
@@ -21,19 +21,13 @@ export default function Permissions({
   closeEdit
 }: PermissionsProps) {
   const [permissions, setPermissions] = useState<Map<PermissionType, boolean>>(
-    new Map()
+    new Map(requestedPermissions.map((permission) => [permission, true]))
   );
-
-  useEffect(() => {
-    setPermissions(
-      new Map(requestedPermissions.map((permission) => [permission, true]))
-    );
-  }, []);
 
   return (
     <Wrapper>
       <div>
-        <Section>
+        <Section showPaddingVertical={false}>
           <Title noMargin>{browser.i18n.getMessage("permissions")}</Title>
           <PermissionsWrapper>
             {Object.keys(permissionData).map(
@@ -51,13 +45,14 @@ export default function Permissions({
                   <div key={i}>
                     <Permission>
                       <Checkbox
-                        size={16}
+                        size={20}
+                        key={permissionName}
                         onChange={(checked) => {
                           const updated = new Map(permissions);
                           updated.set(permissionName, checked);
                           setPermissions(updated);
                         }}
-                        checked={requestedPermissions.includes(permissionName)}
+                        checked={permissions.get(permissionName) ?? false}
                       />
                       <div>
                         <PermissionTitle>
@@ -80,6 +75,7 @@ export default function Permissions({
 
       <Section>
         <AuthButtons
+          showAuthStatus={false}
           authRequest={connectAuthRequest}
           primaryButtonProps={{
             label: browser.i18n.getMessage("save"),
@@ -125,16 +121,12 @@ const Permission = styled.div`
 `;
 
 export const PermissionDescription = styled(Text).attrs({
-  noMargin: true
-})`
-  font-size: 0.625rem;
-  font-weight: 500;
-`;
+  noMargin: true,
+  size: "sm",
+  weight: "medium"
+})``;
 
 export const PermissionTitle = styled(Text).attrs({
   noMargin: true,
-  heading: true
-})`
-  font-size: 0.875rem;
-  font-weight: 500;
-`;
+  weight: "medium"
+})``;

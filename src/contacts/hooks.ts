@@ -7,9 +7,14 @@ import { multiSort } from "~utils/multi_sort";
 import { ExtensionStorage } from "~utils/storage";
 import { svgie } from "~utils/svgies";
 
+export type Recipient = {
+  address: string;
+  timestamp?: number;
+};
+
 export const useContacts = (activeAddress: string) => {
   const [storedContacts, setContacts] = useState<Contacts>([]);
-  const [lastRecipients, setLastRecipients] = useState<string[]>([]);
+  const [lastRecipients, setLastRecipients] = useState<Recipient[]>([]);
 
   useEffect(() => {
     const getContacts = async () => {
@@ -55,6 +60,7 @@ export const useContacts = (activeAddress: string) => {
               edges {
                 node {
                   recipient
+                  block { timestamp }
                 }
               }
             }
@@ -67,9 +73,17 @@ export const useContacts = (activeAddress: string) => {
       // filter addresses
       const recipients = data.transactions.edges
         .filter((tx) => tx.node.recipient !== "")
-        .map((tx) => tx.node.recipient);
+        .map((tx) => ({
+          address: tx.node.recipient,
+          timestamp: tx.node.block?.timestamp
+        }));
 
-      setLastRecipients([...new Set(recipients)]);
+      const uniqueRecipients = recipients.filter(
+        (recipient, index, self) =>
+          index === self.findIndex((t) => t.address === recipient.address)
+      );
+
+      setLastRecipients(uniqueRecipients);
     };
     getContacts();
     getRecentAddresses();

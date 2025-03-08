@@ -1,18 +1,14 @@
-import { CompassIcon } from "~components/popup/home/Balance";
-import { currencies } from "~lib/coingecko";
-import { NODES } from "@arconnect/warp-dre";
-import {
-  ChartIcon,
-  CloudIcon,
-  DollarIcon,
-  InformationIcon,
-  LayersIcon,
-  PercentageIcon,
-  StarIcon,
-  SunIcon
-} from "@iconicicons/react";
+import { currencies } from "~utils/currency";
 import Setting from "./setting";
-import { CreditCard02 } from "@untitled-ui/icons-react";
+import {
+  BarChart07,
+  Compass01,
+  CurrencyDollarCircle,
+  Percent02,
+  Star01,
+  Sun
+} from "@untitled-ui/icons-react";
+import { ExtensionStorage } from "~utils/storage";
 
 export const PREFIX = "setting_";
 
@@ -29,7 +25,7 @@ const settings: Setting[] = [
   new Setting({
     name: "fee_multiplier",
     displayName: "setting_fee_multiplier",
-    icon: PercentageIcon,
+    icon: Percent02,
     description: "setting_fee_multiplier_description",
     type: "number",
     defaultValue: 1
@@ -37,20 +33,12 @@ const settings: Setting[] = [
   new Setting({
     name: "currency",
     displayName: "setting_currency",
-    icon: DollarIcon,
+    icon: CurrencyDollarCircle,
     description: "setting_setting_currency_description",
     type: "pick",
     options: currencies,
-    defaultValue: "USD"
-  }),
-  new Setting({
-    name: "dre_node",
-    displayName: "setting_dre_node",
-    icon: CloudIcon,
-    description: "setting_setting_dre_node_description",
-    type: "pick",
-    options: Object.keys(NODES),
-    defaultValue: Object.keys(NODES)[0]
+    defaultValue: "USD",
+    inputPlaceholder: "search_currency"
   }),
   /*new Setting({
     name: "arverify",
@@ -63,33 +51,34 @@ const settings: Setting[] = [
   new Setting({
     name: "display_theme",
     displayName: "setting_display_theme",
-    icon: SunIcon,
+    icon: Sun,
     description: "setting_display_theme_description",
     type: "pick",
-    options: ["light", "dark", "system"],
+    options: ["system", "light", "dark"],
     defaultValue: "system"
   }),
   new Setting({
     name: "arconfetti",
     displayName: "setting_arconfetti",
-    icon: StarIcon,
+    icon: Star01,
     description: "setting_setting_arconfetti_description",
     type: "pick",
     options: [false, "arweave", "hedgehog", "usd"],
     defaultValue: "arweave"
   }),
   new Setting({
-    name: "wayfinder",
-    displayName: "setting_wayfinder",
-    icon: CompassIcon,
-    description: "setting_wayfinder_description",
-    type: "boolean",
-    defaultValue: true
+    name: "gateways",
+    displayName: "setting_gateways",
+    icon: Compass01,
+    description: "setting_gateways_description",
+    type: "pick",
+    options: [],
+    defaultValue: { host: "arweave.net", port: 443, protocol: "https" }
   }),
   new Setting({
     name: "analytics",
     displayName: "setting_analytic",
-    icon: ChartIcon,
+    icon: BarChart07,
     description: "setting_analytics_description",
     type: "boolean",
     defaultValue: false

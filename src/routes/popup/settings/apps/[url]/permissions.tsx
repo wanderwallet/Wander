@@ -7,6 +7,8 @@ import { permissionData, type PermissionType } from "~applications/permissions";
 import Checkbox from "~components/Checkbox";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { useLocation } from "~wallets/router/router.utils";
+import { ErrorTypes } from "~utils/error/error.utils";
+import { LoadingView } from "~components/page/common/loading/loading.view";
 
 export interface AppPermissionsViewParams {
   url: string;
@@ -24,8 +26,9 @@ export function AppPermissionsView({
   const app = new Application(decodeURIComponent(url));
   const [settings, updateSettings] = app.hook();
 
-  // TODO: Should this be a redirect?
-  if (!settings) return <></>;
+  if (!settings) {
+    return <LoadingView />;
+  }
 
   return (
     <>

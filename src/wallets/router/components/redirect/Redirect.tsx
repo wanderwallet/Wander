@@ -1,8 +1,8 @@
 import { Redirect as Wedirect } from "wouter";
-import type { ArConnectRoutePath } from "~wallets/router/router.types";
+import type { WanderRoutePath } from "~wallets/router/router.types";
 
 export interface RedirectProps {
-  to: ArConnectRoutePath;
+  to: WanderRoutePath;
   state?: unknown;
 }
 

@@ -1,0 +1,113 @@
+import React from "react";
+import styles from "./Card.module.css";
+import type { CardBaseProps } from "./Card.types";
+import { Box, XClose, ChevronLeft } from "../../atoms";
+import { Header } from "../header";
+import { Footer } from "../footer";
+import { useTheme } from "../../../contexts/ThemeContext";
+import { MinimizeIcon } from "@iconicicons/react";
+import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
+
+const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
+  (
+    {
+      headerText,
+      headerIcon,
+      subtitle,
+      children,
+      footerElement,
+      className,
+      hasShadow = false,
+      isBlurry,
+      size = "md",
+      hasBackButton = true,
+      hasCloseButton = true,
+      onBackButtonClick,
+      onCloseButtonClick,
+      customIcon,
+      ...props
+    },
+    ref
+  ) => {
+    const { isDarkMode } = useTheme();
+    const [isMinimized, setIsMinimized] = React.useState(false);
+
+    const iconColor = isDarkMode ? "var(--color-font-body)" : "#757575";
+    const cardBackground = isDarkMode
+      ? "var(--brand-color-neutral1)"
+      : "transparent";
+
+    const closeCard = () => {
+      postEmbeddedMessage({
+        type: "embedded_close",
+        data: null
+      });
+    };
+
+    const closeIcon = (
+      <button
+        className={styles["card__close__btn"]}
+        onClick={onCloseButtonClick ?? closeCard}
+      >
+        {/* {customIcon ?? <XClose fontSize={24} color={iconColor} />} */}
+        {customIcon ?? <MinimizeIcon fontSize={24} color={iconColor} />}
+      </button>
+    );
+
+    return (
+      <Box
+        ref={ref}
+        className={`
+        ${styles["card"]}
+        ${hasShadow && styles["card__shadow"]}
+        ${isBlurry && styles["card__blury"]}
+        ${size && styles[`card__${size}`]}
+        ${isMinimized && styles[`card_minimized__active`]}
+        ${className}
+      `}
+        style={{
+          backgroundColor: cardBackground
+        }}
+        {...props}
+      >
+        {!isMinimized ? (
+          <>
+            {hasBackButton && (
+              <button
+                className={styles["card__back__btn"]}
+                onClick={onBackButtonClick}
+              >
+                <ChevronLeft fontSize={24} color={iconColor} />
+              </button>
+            )}
+            {hasCloseButton && closeIcon}
+            {headerText && (
+              <Header
+                icon={headerIcon}
+                title={headerText}
+                subtitle={subtitle}
+              />
+            )}
+            {children}
+            {footerElement && <Footer children={footerElement} />}
+          </>
+        ) : (
+          <button
+            id="toggleBtn"
+            onClick={() => setIsMinimized(!isMinimized)}
+            style={{
+              width: "100%",
+              height: "100%",
+              zIndex: 100,
+              cursor: "pointer"
+            }}
+          />
+        )}
+      </Box>
+    );
+  }
+);
+
+Card.displayName = "Card";
+
+export { Card };

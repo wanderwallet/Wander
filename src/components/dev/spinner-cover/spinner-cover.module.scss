@@ -1,0 +1,32 @@
+.root {
+  position: absolute;
+  inset: 0;
+  background: red;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &.solid {
+    background-color: var(
+      --backgroundColor,
+      var(--defaultBackgroundColor, white)
+    );
+  }
+
+  &.semitransparent {
+  }
+
+  &.blurred {
+    // TODO: The --backgroundColor variable must contain only RGB components to apply transparency here.
+    background-color: rgba(0, 0, 0, 0.9);
+    backdrop-filter: blur(8px);
+  }
+
+  &.none {
+  }
+}
+
+.label {
+  padding: 16px;
+  text-wrap: balance;
+}

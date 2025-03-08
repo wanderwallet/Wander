@@ -9,10 +9,10 @@ import {
   useInput,
   Spacer,
   useToasts,
-  ButtonV2,
-  InputV2,
+  Button,
+  Input,
   useModal
-} from "@arconnect/components";
+} from "@arconnect/components-rebrand";
 import BackupWalletPage from "~components/welcome/generate/BackupWalletPage";
 import KeystoneButton from "~components/hardware/KeystoneButton";
 import SeedInput from "~components/SeedInput";
@@ -23,6 +23,7 @@ import styled from "styled-components";
 import { defaultGateway } from "~gateways/gateway";
 import { WalletKeySizeErrorModal } from "~components/modals/WalletKeySizeErrorModal";
 import { useLocation } from "~wallets/router/router.utils";
+import { Flex } from "~components/common/Flex";
 
 export function AddWalletDashboardView() {
   const { navigate } = useLocation();
@@ -35,6 +36,10 @@ export function AddWalletDashboardView() {
 
   // wallet generation taking longer
   const [showLongWaitMessage, setShowLongWaitMessage] = useState(false);
+
+  const [inputType, setInputType] = useState<"seedphrase" | "keyfile">(
+    "seedphrase"
+  );
 
   // toasts
   const { setToast } = useToasts();
@@ -107,7 +112,7 @@ export function AddWalletDashboardView() {
     setLoading(true);
 
     // prevent user from closing the window
-    // while ArConnect is loading the wallet
+    // while Wander is loading the wallet
     window.onbeforeunload = () =>
       browser.i18n.getMessage("close_tab_load_wallet_message");
 
@@ -232,7 +237,7 @@ export function AddWalletDashboardView() {
     window.onbeforeunload = null;
   }, [isAddGeneratedWallet, generating]);
 
-  // add the generated wallet to ArConnect
+  // add the generated wallet to Wander
   async function addGeneratedWallet() {
     // check if jwk was properly generated from seedphrase
     if (!generatedWallet?.jwk) {
@@ -304,15 +309,36 @@ export function AddWalletDashboardView() {
           )) || (
           <>
             <Spacer y={0.45} />
-            <Title>{browser.i18n.getMessage("add_wallet")}</Title>
+            <Title>{browser.i18n.getMessage("add_account")}</Title>
             <Text>
-              {browser.i18n.getMessage("provide_seedphrase_paragraph")}
+              {browser.i18n.getMessage("provide_keyfile_seedphrase_paragraph")}
             </Text>
-            <SeedInput onChange={(val) => setProvidedWallet(val)} />
+            <Flex
+              justify="end"
+              cursor="pointer"
+              onClick={() =>
+                setInputType((prev) =>
+                  prev === "seedphrase" ? "keyfile" : "seedphrase"
+                )
+              }
+            >
+              <Text weight="medium" noMargin style={{ color: "#9787ff" }}>
+                {browser.i18n.getMessage("i_have_a_import_type", [
+                  inputType === "seedphrase"
+                    ? browser.i18n.getMessage("keyfile")
+                    : browser.i18n.getMessage("seedphrase")
+                ])}
+              </Text>
+            </Flex>
+            <Spacer y={0.5} />
+            <SeedInput
+              onChange={(val) => setProvidedWallet(val)}
+              inputType={inputType}
+            />
           </>
         )}
         <Spacer y={1} />
-        <InputV2
+        <Input
           type="password"
           {...passwordInput.bindings}
           placeholder={browser.i18n.getMessage("enter_password")}
@@ -324,15 +350,15 @@ export function AddWalletDashboardView() {
           }}
         />
         <Spacer y={1} />
-        <ButtonV2
+        <Button
           fullWidth
           onClick={handleAddButton}
           loading={loading}
           disabled={generating && isAddGeneratedWallet}
         >
           <PlusIcon />
-          {browser.i18n.getMessage("add_wallet")}
-        </ButtonV2>
+          {browser.i18n.getMessage("add_account")}
+        </Button>
         <Spacer y={0.5} />
         <Error>{getErrorMessage()}</Error>
         <Spacer y={1.3} />
@@ -340,9 +366,9 @@ export function AddWalletDashboardView() {
         <Spacer y={1.3} />
         <KeystoneButton />
         <Spacer y={1} />
-        <ButtonV2
+        <Button
           fullWidth
-          secondary
+          variant="secondary"
           onClick={() => {
             if (!generating && isAddGeneratedWallet) return;
 
@@ -358,7 +384,7 @@ export function AddWalletDashboardView() {
         >
           <SettingsIcon />
           {browser.i18n.getMessage("generate_wallet")}
-        </ButtonV2>
+        </Button>
         {(generating || loading) && showLongWaitMessage && (
           <Text style={{ textAlign: "center", marginTop: "0.3rem" }}>
             {browser.i18n.getMessage("longer_than_usual")}
@@ -379,7 +405,8 @@ const Wrapper = styled.div`
 `;
 
 const Title = styled(Text).attrs({
-  title: true,
+  size: "xl",
+  weight: "semibold",
   noMargin: true
 })`
   font-weight: 600;

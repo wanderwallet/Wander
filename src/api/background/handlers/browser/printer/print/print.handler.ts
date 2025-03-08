@@ -1,4 +1,4 @@
-import { ARCONNECT_PRINTER_ID } from "~api/background/handlers/browser/printer/printer.constants";
+import { WANDER_PRINTER_ID } from "~api/background/handlers/browser/printer/printer.constants";
 import { uploadDataToTurbo } from "~api/modules/dispatch/uploader";
 import { getActiveKeyfile, type DecryptedWallet } from "~wallets";
 import { freeDecryptedWallet } from "~wallets/encryption";
@@ -23,8 +23,8 @@ export async function handlePrint(
   printJob: chrome.printerProvider.PrintJob,
   resultCallback: PrintCallback
 ) {
-  // only print for the ArConnect printer
-  if (printJob.printerId !== ARCONNECT_PRINTER_ID) return;
+  // only print for the Wander printer
+  if (printJob.printerId !== WANDER_PRINTER_ID) return;
 
   // wallet
   let decryptedWallet: DecryptedWallet;

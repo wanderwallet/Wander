@@ -7,7 +7,12 @@ import { useEffect, useState } from "react";
 import { useScanner } from "@arconnect/keystone-sdk";
 import { useActiveWallet } from "~wallets/hooks";
 import type { UR } from "@ngraveio/bc-ur";
-import { Section, Spacer, Text, useToasts } from "@arconnect/components";
+import {
+  Section,
+  Spacer,
+  Text,
+  useToasts
+} from "@arconnect/components-rebrand";
 import AnimatedQRScanner from "~components/hardware/AnimatedQRScanner";
 import AnimatedQRPlayer from "~components/hardware/AnimatedQRPlayer";
 import Wrapper from "~components/auth/Wrapper";
@@ -83,7 +88,7 @@ export function SignKeystoneAuthRequestView() {
     } catch (e) {
       // log error
       console.error(
-        `[ArConnect] Error decoding signature from keystone\n${e?.message || e}`
+        `[Wander] Error decoding signature from keystone\n${e?.message || e}`
       );
 
       // reply to request

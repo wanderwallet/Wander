@@ -1,23 +1,26 @@
 import type React from "react";
 import { useEffect, useState } from "react";
-import styled from "styled-components";
-import type { AppInfo } from "~applications/application";
+import styled, { type DefaultTheme } from "styled-components";
+import type { AppInfo, AppLogoInfo } from "~applications/application";
 import Application from "~applications/application";
 import HeadV2 from "~components/popup/HeadV2";
 import { useAuthRequests } from "~utils/auth/auth.hooks";
 import type { AuthRequestStatus } from "~utils/auth/auth.types";
 import browser from "webextension-polyfill";
+import { generateLogoPlaceholder } from "~utils/urls/getAppIconPlaceholder";
 
 export interface HeadAuthProps {
   title?: string;
   back?: () => void;
   appInfo?: AppInfo;
+  showHead?: boolean;
 }
 
 export const HeadAuth: React.FC<HeadAuthProps> = ({
   title,
   back,
-  appInfo: appInfoProp = { name: "ArConnect" }
+  appInfo: appInfoProp = { name: "Wander" },
+  showHead = true
 }) => {
   const [areLogsExpanded, setAreLogsExpanded] = useState(false);
   const { authRequests, currentAuthRequestIndex, setCurrentAuthRequestIndex } =
@@ -28,32 +31,35 @@ export const HeadAuth: React.FC<HeadAuthProps> = ({
   // fallback value:
 
   const { name: fallbackName, logo: fallbackLogo } = appInfoProp;
-  const { tabID = null, url = "" } =
-    authRequests[currentAuthRequestIndex] || {};
-  const [appInfo, setAppInfo] = useState<AppInfo>(appInfoProp);
+  const {
+    tabID = null,
+    url = "",
+    type
+  } = authRequests[currentAuthRequestIndex] || {};
+  const isConnectType = type === "connect";
+  const [appLogoInfo, setAppLogoInfo] = useState<AppLogoInfo>(appInfoProp);
 
   useEffect(() => {
     async function loadAppInfo() {
-      if (!url) return;
+      if (!url || isConnectType) return;
 
       const app = new Application(url);
       const appInfo = await app.getAppData();
+      const appLogoPlaceholder = await generateLogoPlaceholder(url);
 
-      // TODO: The fallback to get the name from the URL might not work properly as it might be the name of a gateway.
-      // It might be better to just show a lock icon as fallback. Also, this logic might be better placed inside the
-      // `Application` class.
-
-      setAppInfo({
+      setAppLogoInfo({
         name:
           appInfo.name ||
           fallbackName ||
           new URL(url).hostname.split(".").slice(-2).join("."),
-        logo: appInfo.logo || fallbackLogo
+        logo: appInfo.logo || fallbackLogo,
+        type: appLogoPlaceholder?.type,
+        placeholder: appLogoPlaceholder?.placeholder
       });
     }
 
     loadAppInfo();
-  }, [url, fallbackName, fallbackLogo]);
+  }, [url, fallbackName, fallbackLogo, isConnectType]);
 
   const handleAppInfoClicked = tabID
     ? () => {
@@ -67,14 +73,16 @@ export const HeadAuth: React.FC<HeadAuthProps> = ({
 
   return (
     <>
-      <HeadV2
-        title={title}
-        showOptions={false}
-        showBack={!!back}
-        back={back}
-        appInfo={appInfo}
-        onAppInfoClick={handleAppInfoClicked}
-      />
+      {showHead && (
+        <HeadV2
+          title={title}
+          showOptions={isConnectType}
+          showBack={!!back}
+          back={back}
+          appInfo={!isConnectType && appLogoInfo}
+          onAppInfoClick={!isConnectType && handleAppInfoClicked}
+        />
+      )}
 
       {process.env.NODE_ENV === "development" && authRequests.length > 0 ? (
         <DivTransactionTracker>
@@ -137,34 +145,48 @@ const DivTransactionsList = styled.div`
   display: flex;
   gap: 8px;
   padding: 16px;
-  border-bottom: 1px solid rgb(31, 30, 47);
+  border-bottom: 1px solid
+    ${({ theme }) =>
+      theme.displayTheme === "dark" ? "rgb(31, 30, 47)" : "rgb(224, 225, 208)"};
   height: 12px;
 `;
 
 interface AuthRequestIndicatorProps {
   isCurrent: boolean;
   status: AuthRequestStatus;
+  theme: DefaultTheme;
 }
 
-const colorsByStatus: Record<AuthRequestStatus, string> = {
-  pending: "white",
-  accepted: "green",
-  rejected: "red",
-  aborted: "grey",
-  error: "red"
+const colorsByStatus: Record<
+  AuthRequestStatus,
+  { light: string; dark: string }
+> = {
+  pending: { light: "black", dark: "white" },
+  accepted: { light: "green", dark: "green" },
+  rejected: { light: "red", dark: "red" },
+  aborted: { light: "grey", dark: "grey" },
+  error: { light: "red", dark: "red" }
 };
 
 function getAuthRequestButtonIndicatorBorderColor({
-  status
+  status,
+  theme
 }: AuthRequestIndicatorProps) {
-  return colorsByStatus[status];
+  return theme.displayTheme === "dark"
+    ? colorsByStatus[status].dark
+    : colorsByStatus[status].light;
 }
 
 function getAuthRequestButtonIndicatorBackgroundColor({
   isCurrent,
-  status
+  status,
+  theme
 }: AuthRequestIndicatorProps) {
-  return isCurrent ? colorsByStatus[status] : "transparent";
+  return isCurrent
+    ? theme.displayTheme === "dark"
+      ? colorsByStatus[status].dark
+      : colorsByStatus[status].light
+    : "transparent";
 }
 
 const ButtonTransactionButton = styled.button<AuthRequestIndicatorProps>`
@@ -177,27 +199,34 @@ const ButtonTransactionButton = styled.button<AuthRequestIndicatorProps>`
 `;
 
 const DivTransactionButtonSpacer = styled.button`
-  background: rgba(255, 255, 255, 0.125);
+  background: ${({ theme }) =>
+    theme.displayTheme === "dark"
+      ? "rgba(255, 255, 255, 0.125)"
+      : "rgba(0, 0, 0, 0.125)"};
   border-radius: 128px;
   flex: 1 0 auto;
 `;
 
 const ButtonExpandLogs = styled.button`
-  border: 2px solid white;
+  border: 2px solid
+    ${({ theme }) => (theme.displayTheme === "dark" ? "white" : "black")};
   border-radius: 128px;
   width: 12px;
 `;
 
 const DivLogWrapper = styled.div`
   position: absolute;
-  background: black;
+  background: ${({ theme }) =>
+    theme.displayTheme === "dark" ? "black" : "white"};
   top: 100%;
   left: 0;
   right: 0;
   height: 50vh;
   overflow: scroll;
   z-index: 1;
-  border-bottom: 1px solid rgb(31, 30, 47);
+  border-bottom: 1px solid
+    ${({ theme }) =>
+      theme.displayTheme === "dark" ? "rgb(31, 30, 47)" : "rgb(224, 225, 208)"};
 `;
 
 function getAuthRequestLogIndicatorStyles(props: AuthRequestIndicatorProps) {
@@ -213,6 +242,7 @@ function getAuthRequestLogIndicatorStyles(props: AuthRequestIndicatorProps) {
 const PreLogItem = styled.pre<AuthRequestIndicatorProps>`
   position: relative;
   padding: 16px 16px 16px 32px;
+  color: ${(props) => props.theme.primaryText};
 
   &::before {
     content: "";

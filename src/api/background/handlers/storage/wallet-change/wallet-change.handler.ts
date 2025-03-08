@@ -46,14 +46,14 @@ export async function handleWalletsChange({
   // add or remove ANS label change listener
   if (wallets.length > 0 && previousWallets.length === 0) {
     // add scheduled label refresh if
-    // ArConnect has just been set up
+    // Wander has just been set up
     browser.alarms.create("sync_labels", {
       delayInMinutes: 1,
       periodInMinutes: 60
     });
   } else if (wallets.length === 0 && previousWallets.length > 0) {
     // remove scheduled label refresh if
-    // ArConnect has just been reset
+    // Wander has just been reset
     await browser.alarms.clear("sync_labels");
   }
 

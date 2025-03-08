@@ -26,6 +26,10 @@ import HeadV2 from "~components/popup/HeadV2";
 import { ToggleSwitch } from "~routes/popup/subscriptions/subscriptionDetails";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { useLocation } from "~wallets/router/router.utils";
+import Checkbox from "~components/Checkbox";
+import { ErrorTypes } from "~utils/error/error.utils";
+import { LoadingView } from "~components/page/common/loading/loading.view";
+import { signPolicyOptions } from "~applications/permissions";
 
 export interface AppSettingsViewParams {
   url: string;
@@ -42,24 +46,8 @@ export function AppSettingsView({ params: { url } }: AppSettingsViewProps) {
   const arweave = new Arweave(defaultGateway);
 
   // allowance spent qty
-  const spent = useMemo(() => {
-    const val = settings?.allowance?.spent;
-
-    if (!val) return "0";
-    return val.toString();
-  }, [settings]);
-
-  const isAllowanceDisabled = useMemo(() => {
-    return !settings?.allowance?.enabled;
-  }, [settings?.allowance?.enabled]);
 
   // allowance limit
-  const limit = useMemo(() => {
-    const val = settings?.allowance?.limit;
-
-    if (!val) return arweave.ar.arToWinston("0.1");
-    return val.toString();
-  }, [settings]);
 
   // active gateway
   const gateway = useMemo(() => {
@@ -87,8 +75,6 @@ export function AppSettingsView({ params: { url } }: AppSettingsViewProps) {
   // custom gateway input
   const customGatewayInput = useInput();
 
-  const limitInput = useInput();
-
   useEffect(() => {
     if (!isCustom || !settings.gateway) return;
 
@@ -102,8 +88,9 @@ export function AppSettingsView({ params: { url } }: AppSettingsViewProps) {
   // remove modal
   const removeModal = useModal();
 
-  // TODO: Should this be a redirect?
-  if (!settings) return <></>;
+  if (!settings) {
+    return <LoadingView />;
+  }
 
   return (
     <>
@@ -134,7 +121,7 @@ export function AppSettingsView({ params: { url } }: AppSettingsViewProps) {
             </ResetButton>
           </Flex>
           <Spacer y={1} />
-          <Flex alignItems="center" justifyContent="space-between">
+          {/* <Flex alignItems="center" justifyContent="space-between">
             <Flex alignItems="center" justifyContent="center">
               <TitleV1>{browser.i18n.getMessage("allowance")}</TitleV1>
               <TooltipV2
@@ -244,6 +231,33 @@ export function AppSettingsView({ params: { url } }: AppSettingsViewProps) {
               </ResetButton>
             </TooltipV2>
           </Flex>
+          <Spacer y={1} /> */}
+          <TitleV2>{browser.i18n.getMessage("permission_settings")}</TitleV2>
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "16px" }}
+          >
+            {signPolicyOptions.map((option) => (
+              <PolicyOption
+                key={option}
+                onClick={() =>
+                  updateSettings((val) => ({ ...val, signPolicy: option }))
+                }
+              >
+                <Checkbox
+                  size={16}
+                  onChange={() =>
+                    updateSettings((val) => ({ ...val, signPolicy: option }))
+                  }
+                  checked={settings?.signPolicy === option}
+                />
+                <div>
+                  <PrimaryText fontSize={16}>
+                    {browser.i18n.getMessage(option)}
+                  </PrimaryText>
+                </div>
+              </PolicyOption>
+            ))}
+          </div>
           <Spacer y={1} />
           <TitleV2>{browser.i18n.getMessage("gateway")}</TitleV2>
           <SelectV2
@@ -388,10 +402,6 @@ const Wrapper = styled.div`
   height: calc(100vh - 80px);
 `;
 
-const InfoIcon = styled(InformationIcon)`
-  color: ${(props) => props.theme.secondaryTextv2};
-`;
-
 const TitleV1 = styled(Text).attrs({
   heading: true
 })`
@@ -406,20 +416,6 @@ const TitleV2 = styled(Text).attrs({
   margin-bottom: 0.6em;
   font-size: 1rem;
   font-weight: 500;
-`;
-
-const NumberInputV2 = styled(InputV2)`
-  /* Chrome, Safari, Edge, Opera */
-  &::-webkit-outer-spin-button,
-  &::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-  }
-
-  /* Firefox */
-  &[type="number"] {
-    -moz-appearance: textfield;
-  }
 `;
 
 const ResetButton = styled.span`
@@ -442,4 +438,20 @@ export const Flex = styled.div<{ alignItems: string; justifyContent: string }>`
   display: flex;
   align-items: ${(props) => props.alignItems};
   justify-content: ${(props) => props.justifyContent};
+`;
+
+const PolicyOption = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+`;
+
+const PrimaryText = styled(Text).attrs({
+  noMargin: true
+})<{ fontSize?: number; fontWeight?: number; textAlign?: string }>`
+  color: ${(props) => props.theme.primaryTextv2};
+  font-size: ${(props) => props.fontSize || 14}px;
+  font-weight: ${(props) => props.fontWeight || 500};
+  text-align: ${(props) => props.textAlign || "left"};
 `;

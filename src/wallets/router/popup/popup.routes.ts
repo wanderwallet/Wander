@@ -10,9 +10,10 @@ import { PendingPurchaseView } from "~routes/popup/pending";
 import { PurchaseView } from "~routes/popup/purchase";
 import { ReceiveView } from "~routes/popup/receive";
 import { SendView } from "~routes/popup/send";
+import { AmountView } from "~routes/popup/send/amount";
 import { SendAuthView } from "~routes/popup/send/auth";
+import { TransactionCompletedView } from "~routes/popup/send/completed";
 import { ConfirmView } from "~routes/popup/send/confirm";
-import { RecipientView } from "~routes/popup/send/recipient";
 import { ApplicationsView } from "~routes/popup/settings/apps";
 import { AppSettingsView } from "~routes/popup/settings/apps/[url]";
 import { AppPermissionsView } from "~routes/popup/settings/apps/[url]/permissions";
@@ -20,7 +21,7 @@ import { ContactsView } from "~routes/popup/settings/contacts";
 import { ContactSettingsView } from "~routes/popup/settings/contacts/[address]";
 import { NewContactView } from "~routes/popup/settings/contacts/new";
 import { NotificationSettingsView } from "~routes/popup/settings/notifications";
-import { QuickSettingsView } from "~routes/popup/settings/quickSettings";
+import { MenuView } from "~routes/popup/settings";
 import { TokensSettingsView } from "~routes/popup/settings/tokens";
 import { TokenSettingsView } from "~routes/popup/settings/tokens/[id]";
 import { NewTokenSettingsView } from "~routes/popup/settings/tokens/new";
@@ -32,13 +33,13 @@ import { SubscriptionDetailsView } from "~routes/popup/subscriptions/subscriptio
 import { SubscriptionManagementView } from "~routes/popup/subscriptions/subscriptionManagement";
 import { SubscriptionPaymentView } from "~routes/popup/subscriptions/subscriptionPayment";
 import { SubscriptionsView } from "~routes/popup/subscriptions/subscriptions";
-import { AssetView } from "~routes/popup/token/[id]";
 import { TokensView } from "~routes/popup/tokens";
 import { TransactionView } from "~routes/popup/transaction/[id]";
 import { TransactionsView } from "~routes/popup/transaction/transactions";
 import { UnlockView } from "~routes/popup/unlock";
 import { getExtensionOverrides } from "~wallets/router/extension/extension.routes";
 import type { RouteConfig } from "~wallets/router/router.types";
+import { NoteView } from "~routes/popup/send/note";
 
 export type PopupRoutePath =
   | "/"
@@ -48,7 +49,9 @@ export type PopupRoutePath =
   | `/receive`
   | `/send/transfer`
   | `/send/transfer/${string}`
+  | `/send/amount/${string}/${string}`
   | `/send/auth/${string}`
+  | `/send/note`
   | `/explore`
   | `/subscriptions`
   | `/subscriptions/${string}`
@@ -65,7 +68,7 @@ export type PopupRoutePath =
   | `/transaction/${string}/${string}`
   | `/send/confirm/${string}/${string}/${string}`
   | `/send/confirm/${string}/${string}/${string}/${string}`
-  | `/send/recipient/${string}/${string}/${string}`
+  | `/send/completed/${string}`
   | `/quick-settings`
   | `/quick-settings/wallets`
   | `/quick-settings/wallets/${string}`
@@ -89,6 +92,8 @@ export const PopupPaths = {
   PendingPurchase: "/purchase-pending",
   Receive: "/receive",
   Send: "/send/transfer/:id?",
+  Amount: "/send/amount/:recipient/:id?",
+  Note: "/send/note",
   SendAuth: "/send/auth/:tokenID?",
   Explore: "/explore",
   Subscriptions: "/subscriptions",
@@ -104,7 +109,7 @@ export const PopupPaths = {
   Collectible: "/collectible/:id",
   Transaction: "/transaction/:id/:gateway?",
   Confirm: "/send/confirm/:token/:qty/:recipient/:message?",
-  Recipient: "/send/recipient/:token/:qty/:message?",
+  TransactionCompleted: "/send/completed/:id",
   QuickSettings: "/quick-settings",
   Wallets: "/quick-settings/wallets",
   Wallet: "/quick-settings/wallets/:address",
@@ -152,6 +157,14 @@ export const POPUP_ROUTES = [
     component: SendView
   },
   {
+    path: PopupPaths.Amount,
+    component: AmountView
+  },
+  {
+    path: PopupPaths.Note,
+    component: NoteView
+  },
+  {
     path: PopupPaths.SendAuth,
     component: SendAuthView
   },
@@ -192,10 +205,6 @@ export const POPUP_ROUTES = [
     component: TokensView
   },
   {
-    path: PopupPaths.Asset,
-    component: AssetView
-  },
-  {
     path: PopupPaths.Collectibles,
     component: CollectiblesView
   },
@@ -208,16 +217,18 @@ export const POPUP_ROUTES = [
     component: TransactionView
   },
   {
+    // TODO: This route is incorrect/misleading as a lot of its params are actually ignored and loaded from a temp tx
+    // stored in the temp storage:
     path: PopupPaths.Confirm,
     component: ConfirmView
   },
   {
-    path: PopupPaths.Recipient,
-    component: RecipientView
+    path: PopupPaths.TransactionCompleted,
+    component: TransactionCompletedView
   },
   {
     path: PopupPaths.QuickSettings,
-    component: QuickSettingsView
+    component: MenuView
   },
   {
     path: PopupPaths.Wallets,

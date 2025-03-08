@@ -1,57 +1,61 @@
-import { Spacer, Text } from "@arconnect/components";
+import { Spacer, Text } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
-import logo from "url:/assets/icon512.png";
 import styled from "styled-components";
 import { getPreReleaseVersionLabel, getVersionLabel } from "~utils/runtime";
+import { Flex } from "~components/common/Flex";
+import WanderIcon from "url:assets/icon.svg";
+import IconText from "~components/IconText";
+import Image from "~components/common/Image";
+import { Check } from "@untitled-ui/icons-react";
 
 export function AboutDashboardView() {
   const preReleaseVersionLabel = getPreReleaseVersionLabel();
 
   return (
-    <>
-      <Logo />
-      <Spacer y={0.85} />
-      <Name>ArConnect</Name>
-      <Version>
-        {getVersionLabel()}
-        {preReleaseVersionLabel ? (
-          <DevelopmentVersion>{preReleaseVersionLabel}</DevelopmentVersion>
-        ) : null}
-      </Version>
-      <Version>{process.env.PLASMO_TARGET}</Version>
-      <Spacer y={1.1} />
-      <Text>
+    <Flex direction="column" justify="center" align="center" padding="2rem 0">
+      <Flex direction="column" gap={32} justify="center" align="center">
+        <Image
+          src={WanderIcon}
+          alt="Wander Icon"
+          width={126.314}
+          height={59.199}
+        />
+        <IconText width={256} height={52.866} />
+      </Flex>
+      <Spacer y={2} />
+      <Flex direction="column" gap={4}>
+        <Version>
+          {getVersionLabel()}
+          {preReleaseVersionLabel ? (
+            <DevelopmentVersion>{preReleaseVersionLabel}</DevelopmentVersion>
+          ) : null}
+        </Version>
+        <Version variant="secondary">{process.env.PLASMO_TARGET}</Version>
+      </Flex>
+      <Spacer y={2} />
+      <Text noMargin>
         {browser.i18n.getMessage("permissions_used")}
-        <PermissionsList>
+        <Flex
+          direction="column"
+          justify="center"
+          gap={8}
+          style={{ paddingTop: 16 }}
+        >
           {(browser.runtime.getManifest().permissions || []).map(
             (permission, i) => (
-              <PermissionLi key={i}>{permission}</PermissionLi>
+              <Flex gap={8} align="center">
+                <CheckIcon />
+                <Text noMargin key={i}>
+                  {permission}
+                </Text>
+              </Flex>
             )
           )}
-        </PermissionsList>
+        </Flex>
       </Text>
-    </>
+    </Flex>
   );
 }
-
-const Logo = styled.img.attrs({
-  draggable: false,
-  alt: "ArConnect",
-  src: logo
-})`
-  width: 220px;
-  margin: 0 auto;
-  display: block;
-  user-select: none;
-`;
-
-const Name = styled(Text).attrs({
-  subtitle: true,
-  noMargin: true
-})`
-  font-weight: 600;
-  text-align: center;
-`;
 
 const Version = styled(Text).attrs({
   noMargin: true
@@ -59,7 +63,6 @@ const Version = styled(Text).attrs({
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.8rem;
   font-weight: 500;
   text-align: center;
   gap: 0.37rem;
@@ -74,11 +77,8 @@ const DevelopmentVersion = styled.span`
   color: #fff;
 `;
 
-const PermissionsList = styled.ul`
-  padding-left: 0.5rem;
-`;
-
-const PermissionLi = styled.li`
-  list-style-type: "-";
-  padding-left: 0.5rem;
+const CheckIcon = styled(Check)`
+  width: 17px;
+  height: 17px;
+  color: ${({ theme }) => theme.success};
 `;

@@ -11,7 +11,7 @@ import {
 import browser from "webextension-polyfill";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { formatAddress } from "~utils/format";
-import { useStorage } from "@plasmohq/storage/hook";
+import { useStorage } from "~utils/storage";
 import { ExtensionStorage } from "~utils/storage";
 import { Quantity, Token } from "ao-tokens";
 import prettyBytes from "pretty-bytes";

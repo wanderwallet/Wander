@@ -1,24 +1,15 @@
 import { useLocation } from "~wallets/router/router.utils";
 import { ButtonV2, Section, useToasts, Loading } from "@arconnect/components";
 import { EditIcon } from "@iconicicons/react";
-import {
-  getAoTokens,
-  getAoTokensAutoImportRestrictedIds,
-  useTokens
-} from "~tokens";
-import { useEffect, useMemo, useState } from "react";
+import { getAoTokens, getAoTokensAutoImportRestrictedIds } from "~tokens";
+import { useEffect, useState } from "react";
 import browser from "webextension-polyfill";
 import Token from "~components/popup/Token";
 import styled from "styled-components";
 import HeadV2 from "~components/popup/HeadV2";
-import {
-  useAoTokens,
-  useAoTokensCache,
-  type TokenInfoWithBalance
-} from "~tokens/aoTokens/ao";
+import { useAoTokens, type TokenInfoWithBalance } from "~tokens/aoTokens/ao";
 import { ExtensionStorage } from "~utils/storage";
 import { syncAoTokens } from "~tokens/aoTokens/sync";
-import { useStorage } from "@plasmohq/storage/hook";
 
 export function TokensView() {
   const { navigate } = useLocation();
@@ -27,29 +18,11 @@ export function TokensView() {
   const [hasNextPage, setHasNextPage] = useState<boolean | undefined>(
     undefined
   );
-  // all tokens
-  const tokens = useTokens();
-  // ao Tokens
-  const [aoTokens] = useAoTokens();
 
-  // ao Tokens Cache
-  const [aoTokensCache] = useAoTokensCache();
+  // ao Tokens
+  const { tokens: aoTokens } = useAoTokens({ type: "asset" });
 
   const { setToast } = useToasts();
-
-  const [aoSupport] = useStorage<boolean>(
-    {
-      key: "setting_ao_support",
-      instance: ExtensionStorage
-    },
-    false
-  );
-
-  // assets
-  const assets = useMemo(
-    () => tokens.filter((token) => token.type === "asset"),
-    [tokens]
-  );
 
   function handleTokenClick(tokenId: string) {
     navigate(`/send/transfer/${tokenId}`);
@@ -73,7 +46,8 @@ export function TokensView() {
         Ticker: token.Ticker,
         Denomination: token.Denomination,
         Logo: token.Logo,
-        processId: token.id
+        processId: token.id,
+        type: token.type || "asset"
       });
       await ExtensionStorage.set("ao_tokens", aoTokens);
       setToast({
@@ -122,7 +96,6 @@ export function TokensView() {
   };
 
   async function searchAoTokens() {
-    if (!aoSupport) return;
     try {
       setIsLoading(true);
       const { hasNextPage } = await syncAoTokens();
@@ -133,10 +106,8 @@ export function TokensView() {
   }
 
   useEffect(() => {
-    if (aoSupport) {
-      searchAoTokens();
-    }
-  }, [aoSupport]);
+    searchAoTokens();
+  }, []);
 
   return (
     <>
@@ -149,8 +120,7 @@ export function TokensView() {
             type={"asset"}
             defaultLogo={token?.Logo}
             id={token.id}
-            ticker={token.Ticker}
-            balance={token.balance || "0"}
+            ticker={token.type === "collectible" ? token.Name : token.Ticker}
             onClick={(e) => {
               e.preventDefault();
               handleTokenClick(token.id);
@@ -161,38 +131,8 @@ export function TokensView() {
             }}
           />
         ))}
-        {assets.map((token, i) => (
-          <Token
-            {...token}
-            onClick={() => navigate(`/token/${token.id}`)}
-            onSettingsClick={(e) => {
-              e.preventDefault();
-              navigate(`/quick-settings/tokens/${token.id}`);
-            }}
-            key={i}
-          />
-        ))}
-        {aoTokensCache.map((token) => (
-          <Token
-            key={token.id}
-            ao={true}
-            type={"asset"}
-            defaultLogo={token?.Logo}
-            id={token.id}
-            ticker={token.Ticker}
-            balance={token.balance || "0"}
-            onClick={(e) => {
-              e.preventDefault();
-              handleTokenClick(token.id);
-            }}
-            onAddClick={(e) => {
-              e.preventDefault();
-              addAoToken(token);
-            }}
-          />
-        ))}
 
-        {aoSupport && hasNextPage && (
+        {hasNextPage && (
           <ButtonV2
             disabled={isLoading}
             style={{ alignSelf: "center", marginTop: "5px" }}
@@ -227,7 +167,7 @@ export function TokensView() {
 const TokensList = styled(Section)`
   display: flex;
   flex-direction: column;
-  gap: 0.82rem;
+  gap: 1rem;
 `;
 
 const ManageButton = styled.a.attrs({

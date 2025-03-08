@@ -1,17 +1,16 @@
-import { unlock } from "~wallets/auth";
+import { setPasswordFreshness, unlock } from "~wallets/auth";
 import {
-  InputV2,
+  Input,
   Section,
   Spacer,
   Text,
   useInput,
   useToasts
-} from "@arconnect/components";
+} from "@arconnect/components-rebrand";
 import Wrapper from "~components/auth/Wrapper";
 import browser from "webextension-polyfill";
 import { HeadAuth } from "~components/HeadAuth";
 import { AuthButtons } from "~components/auth/AuthButtons";
-import { withPage } from "~components/page/page.utils";
 
 export function UnlockAuthRequestView() {
   // password input
@@ -20,7 +19,7 @@ export function UnlockAuthRequestView() {
   // toasts
   const { setToast } = useToasts();
 
-  // unlock ArConnect
+  // unlock Wander
   async function unlockWallet() {
     // unlock using password
     const res = await unlock(passwordInput.state);
@@ -33,6 +32,8 @@ export function UnlockAuthRequestView() {
         content: browser.i18n.getMessage("invalidPassword"),
         duration: 2200
       });
+    } else {
+      await setPasswordFreshness();
     }
   }
 
@@ -48,10 +49,9 @@ export function UnlockAuthRequestView() {
             {browser.i18n.getMessage("unlock_wallet_to_use")}
           </Text>
           <Spacer y={1.5} />
-          <InputV2
+          <Input
             type="password"
             {...passwordInput.bindings}
-            label={browser.i18n.getMessage("password")}
             placeholder={browser.i18n.getMessage("enter_password")}
             fullWidth
             autoFocus

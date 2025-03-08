@@ -1,6 +1,6 @@
-import { Card, Spacer, Text } from "@arconnect/components";
+import { Card, Spacer, Text } from "@arconnect/components-rebrand";
 import { useEffect, useMemo, useState } from "react";
-import { useStorage } from "@plasmohq/storage/hook";
+import { useStorage } from "~utils/storage";
 import { ExtensionStorage } from "~utils/storage";
 import { getTab } from "~applications/tab";
 import { getAppURL } from "~utils/format";
@@ -10,11 +10,12 @@ import NoWallets from "~components/devtools/NoWallets";
 import Application from "~applications/application";
 import browser from "webextension-polyfill";
 import styled from "styled-components";
-import { ArConnectThemeProvider } from "~components/hardware/HardwareWalletTheme";
+import { WanderThemeProvider } from "~components/hardware/HardwareWalletTheme";
 import { useRemoveCover } from "~wallets/setup/non/non-wallet-setup.hook";
 import { useWallets } from "~utils/wallets/wallets.hooks";
+import { WalletsProvider } from "~utils/wallets/wallets.provider";
 
-export default function DevTools() {
+function DevTools() {
   useRemoveCover();
 
   // fetch app data
@@ -50,25 +51,33 @@ export default function DevTools() {
   const { walletStatus } = useWallets();
 
   return (
-    <ArConnectThemeProvider>
-      <Wrapper>
-        {walletStatus === "noWallets" && <NoWallets />}
-        <CardBody>
-          <Title>ArConnect {browser.i18n.getMessage("devtools")}</Title>
-          <ConnectionText>
-            {browser.i18n.getMessage(
-              connected ? "appConnected" : "appNotConnected"
-            )}
-            <ConnectionStatus connected={connected} />
-          </ConnectionText>
-          <Spacer y={1.5} />
-          {(!connected && app && <Connector appUrl={app.url} />) ||
-            (connected && app && (
-              <AppSettingsDashboardView noTitle params={{ url: app.url }} />
-            ))}
-        </CardBody>
-      </Wrapper>
-    </ArConnectThemeProvider>
+    <Wrapper>
+      {walletStatus === "noWallets" && <NoWallets />}
+      <CardBody>
+        <Title>Wander {browser.i18n.getMessage("devtools")}</Title>
+        <ConnectionText>
+          {browser.i18n.getMessage(
+            connected ? "appConnected" : "appNotConnected"
+          )}
+          <ConnectionStatus connected={connected} />
+        </ConnectionText>
+        <Spacer y={1.5} />
+        {(!connected && app && <Connector appUrl={app.url} />) ||
+          (connected && app && (
+            <AppSettingsDashboardView noTitle params={{ url: app.url }} />
+          ))}
+      </CardBody>
+    </Wrapper>
+  );
+}
+
+export default function DevToolsRoot() {
+  return (
+    <WanderThemeProvider>
+      <WalletsProvider>
+        <DevTools />
+      </WalletsProvider>
+    </WanderThemeProvider>
   );
 }
 

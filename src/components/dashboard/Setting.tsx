@@ -1,15 +1,15 @@
-import { InputV2, Spacer, Text, useInput } from "@arconnect/components";
+import { Checkbox, Input, Text, useInput } from "@arconnect/components-rebrand";
 import { setting_element_padding } from "./list/BaseElement";
-import PermissionCheckbox from "~components/auth/PermissionCheckbox";
 import type SettingType from "~settings/setting";
 import browser from "webextension-polyfill";
 import Squircle from "~components/Squircle";
 import SearchInput from "./SearchInput";
 import useSetting from "~settings/hook";
-import styled from "styled-components";
+import styled, { useTheme } from "styled-components";
 import { createCoinWithAnimation } from "~api/modules/sign/animation";
 import { arconfettiIcon } from "~api/modules/sign/utils";
-import { EventType, trackEvent } from "~utils/analytics";
+import { ErrorTypes } from "~utils/error/error.utils";
+import { ToggleSwitch } from "~routes/popup/subscriptions/subscriptionDetails";
 
 export interface SettingDashboardViewProps {
   setting: SettingType;
@@ -18,6 +18,8 @@ export interface SettingDashboardViewProps {
 export function SettingDashboardView({ setting }: SettingDashboardViewProps) {
   // setting state
   const [settingState, updateSetting] = useSetting(setting.name);
+
+  const theme = useTheme();
 
   // fixup displayed option
   const fixupBooleanDisplay = (val: string) => {
@@ -52,38 +54,46 @@ export function SettingDashboardView({ setting }: SettingDashboardViewProps) {
     return option.toLowerCase().includes(query.toLowerCase());
   }
 
-  // track experimental Wayfinder opt-in
-  const trackWayfinder = async (properties: { tracking: boolean }) => {
-    try {
-      await trackEvent(EventType.WAYFINDER_ACTIVATED, properties);
-    } catch (err) {
-      console.log("err tracking", err);
-    }
-  };
-
   switch (setting.type) {
     case "boolean":
       return (
-        <PermissionCheckbox
-          checked={!!settingState}
-          onChange={() => {
-            updateSetting((val) => !val);
-            if (setting.name === "wayfinder") {
-              trackWayfinder({ tracking: !settingState });
-            }
-          }}
-        >
-          {browser.i18n.getMessage(!!settingState ? "enabled" : "disabled")}
-          <br />
-          <Text noMargin>{browser.i18n.getMessage(setting.description)}</Text>
-        </PermissionCheckbox>
+        <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+          {/* <Text variant="secondary" weight="medium" noMargin>
+            {browser.i18n.getMessage(setting.description)}
+          </Text> */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center"
+            }}
+          >
+            <Text size="md" weight="medium" noMargin>
+              {browser.i18n.getMessage(!!settingState ? "enabled" : "disabled")}
+            </Text>
+
+            <ToggleSwitch
+              width={51}
+              height={31}
+              checked={!!settingState}
+              setChecked={() => {
+                updateSetting((val) => !val);
+              }}
+            />
+          </div>
+        </div>
       );
 
     case "number":
     case "string":
       return (
-        <InputV2
+        <Input
           label={browser.i18n.getMessage(setting.displayName)}
+          labelStyle={{
+            fontSize: 16,
+            fontWeight: 500,
+            color: theme.primaryText
+          }}
           type={setting.type === "string" ? "text" : "number"}
           value={settingState}
           onChange={(e) => {
@@ -101,50 +111,72 @@ export function SettingDashboardView({ setting }: SettingDashboardViewProps) {
       );
 
     case "pick":
+      const showSearchInput =
+        setting.name !== "gateways" &&
+        setting?.options &&
+        setting.options.length > 6;
+
       return (
         <>
           {/** search for "pick" settings with more than 6 options */}
-          {setting?.options && setting.options.length > 6 && (
+          {showSearchInput && (
             <>
               <SearchWrapper>
                 <SearchInput
-                  placeholder={browser.i18n.getMessage("search_pick_option")}
+                  placeholder={browser.i18n.getMessage(
+                    setting?.inputPlaceholder || "search_pick_option"
+                  )}
                   {...searchInput.bindings}
                 />
               </SearchWrapper>
-              <Spacer y={1} />
             </>
           )}
-          <RadioWrapper>
+          <RadioWrapper hidePadding={!showSearchInput}>
             {setting?.options &&
-              setting.options.filter(filterSearchResults).map((option, i) => (
-                <RadioItem
-                  onClick={() => {
-                    updateSetting(option);
-                    if (setting.name === "arconfetti") {
-                      confetti();
-                    }
-                  }}
-                  key={i}
-                >
-                  <Radio>{settingState === option && <RadioInner />}</Radio>
-                  <Text noMargin>{fixupBooleanDisplay(option.toString())}</Text>
-                </RadioItem>
-              ))}
+              setting.options.filter(filterSearchResults).map((option, i) => {
+                if (setting.name === "gateways") {
+                  return (
+                    <Checkbox
+                      label={option.host}
+                      checked={settingState.host === option.host}
+                      onChange={() => updateSetting(option)}
+                      key={i}
+                    />
+                  );
+                } else {
+                  return (
+                    <Checkbox
+                      label={fixupBooleanDisplay(option.toString())}
+                      checked={settingState === option}
+                      onChange={() => {
+                        updateSetting(option);
+                        if (setting.name === "arconfetti") {
+                          confetti();
+                        }
+                      }}
+                      key={i}
+                    />
+                  );
+                }
+              })}
           </RadioWrapper>
         </>
       );
 
     default:
-      // TODO: Should this be a redirect?
-      return <></>;
+      throw new Error(
+        setting.type
+          ? ErrorTypes.MissingSettingsType
+          : ErrorTypes.UnexpectedSettingsType
+      );
   }
 }
 
-export const RadioWrapper = styled.div`
+export const RadioWrapper = styled.div<{ hidePadding?: boolean }>`
   display: flex;
   flex-direction: column;
-  gap: 0.05rem;
+  gap: 1.5rem;
+  ${(props) => !props.hidePadding && `padding: 1.5rem 0;`}
 `;
 
 export const Radio = styled(Squircle).attrs((props) => ({
@@ -191,5 +223,5 @@ const SearchWrapper = styled.div`
   left: 0;
   right: 0;
   z-index: 20;
-  background-color: rgb(${(props) => props.theme.cardBackground});
+  background-color: ${(props) => props.theme.cardBackground};
 `;

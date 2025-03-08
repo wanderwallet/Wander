@@ -1,12 +1,12 @@
 import {
-  ButtonV2 as Button,
-  InputV2 as Input,
+  Button,
+  Input,
   Text,
   useInput,
   useToasts
-} from "@arconnect/components";
+} from "@arconnect/components-rebrand";
 import { InputWithBtn, InputWrapper } from "./InputWrapper";
-import { useStorage } from "@plasmohq/storage/hook";
+import { useStorage } from "~utils/storage";
 import { ExtensionStorage } from "~utils/storage";
 import { formatAddress } from "~utils/format";
 import browser from "webextension-polyfill";
@@ -57,7 +57,7 @@ export default function Mint({ arweave }: Props) {
 
   return (
     <>
-      <Text heading noMargin>
+      <Text size="xl" weight="semibold" noMargin>
         {browser.i18n.getMessage("mintAr")}
       </Text>
       <Text>{browser.i18n.getMessage("addTestnetTokensSubtitle")}</Text>
@@ -70,7 +70,7 @@ export default function Mint({ arweave }: Props) {
             fullWidth
           />
         </InputWrapper>
-        <Button secondary onClick={mint} style={{ height: "52px" }}>
+        <Button variant="secondary" onClick={mint} style={{ height: "52px" }}>
           {browser.i18n.getMessage("mint")}
         </Button>
       </InputWithBtn>

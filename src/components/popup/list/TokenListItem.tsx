@@ -1,11 +1,7 @@
 import styled from "styled-components";
-import { DREContract, DRENode } from "@arconnect/warp-dre";
-import { loadTokenLogo } from "~tokens/token";
 import { formatAddress } from "~utils/format";
-import { getDreForToken } from "~tokens";
 import { useTheme } from "~utils/theme";
-import * as viewblock from "~lib/viewblock";
-import { useGateway } from "~gateways/wayfinder";
+import { FULL_HISTORY, useGateway } from "~gateways/wayfinder";
 import { concatGatewayURL } from "~gateways/utils";
 import aoLogo from "url:/assets/ecosystem/ao-logo.svg";
 import arLogoDark from "url:/assets/ar/logo_dark.png";
@@ -16,12 +12,11 @@ import { useEffect, useMemo, useState } from "react";
 
 export interface TokenListItemProps {
   token: Token;
-  ao?: boolean;
   active: boolean;
   onClick?: () => void;
 }
 
-export function TokenListItem({ token, ao, onClick }: TokenListItemProps) {
+export function TokenListItem({ token, onClick }: TokenListItemProps) {
   const { navigate } = useLocation();
 
   // format address
@@ -34,42 +29,30 @@ export function TokenListItem({ token, ao, onClick }: TokenListItemProps) {
   const theme = useTheme();
 
   // token logo
-  const [image, setImage] = useState(viewblock.getTokenLogo(token.id));
+  const [image, setImage] = useState(arLogoDark);
 
   // gateway
-  const gateway = useGateway({ startBlock: 0 });
+  const gateway = useGateway(FULL_HISTORY);
 
   useEffect(() => {
     (async () => {
       try {
         // if it is a collectible, we don't need to determinate the logo
         if (token.type === "collectible") {
-          return setImage(
-            `${concatGatewayURL(token.gateway || gateway)}/${token.id}`
-          );
-        }
-        if (ao) {
-          if (token.defaultLogo) {
-            const logo = await getUserAvatar(token.defaultLogo);
-            return setImage(logo);
-          } else {
-            return setImage(arLogoDark);
-          }
+          return setImage(`${concatGatewayURL(gateway)}/${token.id}`);
         }
 
-        // query community logo using Warp DRE
-        const node = new DRENode(await getDreForToken(token.id));
-        const contract = new DREContract(token.id, node);
-        const result = await contract.query<[string]>(
-          "$.settings.[?(@[0] === 'communityLogo')][1]"
-        );
-
-        setImage(await loadTokenLogo(token.id, result[0], theme));
+        if (token.defaultLogo) {
+          const logo = await getUserAvatar(token.defaultLogo);
+          return setImage(logo);
+        } else {
+          return setImage(arLogoDark);
+        }
       } catch {
-        setImage(viewblock.getTokenLogo(token.id));
+        setImage(arLogoDark);
       }
     })();
-  }, [token, theme, gateway, ao]);
+  }, [token, theme, gateway]);
 
   const handleClick = () => {
     if (onClick) {
@@ -86,8 +69,8 @@ export function TokenListItem({ token, ao, onClick }: TokenListItemProps) {
         <DivTitleWrapper>{token.name}</DivTitleWrapper>
         <DivDescriptionWrapper>
           {formattedAddress}
-          {ao && <ImgAoLogo src={aoLogo} alt="ao logo" />}
-          {!ao && <SpanTokenType>{token.type}</SpanTokenType>}
+          <ImgAoLogo src={aoLogo} alt="ao logo" />
+          <SpanTokenType>{token.type}</SpanTokenType>
         </DivDescriptionWrapper>
       </div>
     </DivListItem>
@@ -111,6 +94,7 @@ const DivDescriptionWrapper = styled.div`
 const DivTitleWrapper = styled.div`
   font-size: 1rem;
   font-weight: 600;
+  color: ${(props) => props.theme.primaryText};
 `;
 
 const DivListItem = styled.div`
@@ -139,7 +123,7 @@ const ImgTokenLogo = styled.img.attrs({
 const SpanTokenType = styled.span`
   padding: 0.08rem 0.2rem;
   background-color: rgb(${(props) => props.theme.theme});
-  color: #fff;
+  color: ${(props) => props.theme.primaryText};
   font-weight: 500;
   font-size: 0.5rem;
   text-transform: uppercase;

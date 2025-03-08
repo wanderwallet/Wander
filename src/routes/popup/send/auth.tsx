@@ -34,20 +34,12 @@ import browser from "webextension-polyfill";
 import Head from "~components/popup/Head";
 import styled from "styled-components";
 import Arweave from "arweave";
-import {
-  defaultGateway,
-  fallbackGateway,
-  type Gateway
-} from "~gateways/gateway";
-import {
-  getWarpGatewayUrl,
-  isUrlOnline,
-  isUToken,
-  sendRequest
-} from "~utils/send";
+import { defaultGateway, type Gateway } from "~gateways/gateway";
 import { EventType, trackEvent } from "~utils/analytics";
 import BigNumber from "bignumber.js";
 import type { CommonRouteProps } from "~wallets/router/router.types";
+import { useStorage } from "@plasmohq/storage/hook";
+import { findGateway } from "~gateways/wayfinder";
 
 export interface SendAuthViewParams {
   tokenID?: string;
@@ -61,15 +53,13 @@ export function SendAuthView({ params: { tokenID } }: SendAuthViewProps) {
   // loading
   const [loading, setLoading] = useState(false);
 
-  const [signAllowance, setSignAllowance] = useState<number>(10);
-
-  useEffect(() => {
-    const fetchSignAllowance = async () => {
-      const allowance = await ExtensionStorage.get("signatureAllowance");
-      setSignAllowance(Number(allowance));
-    };
-    fetchSignAllowance();
-  }, []);
+  const [transferRequirePassword] = useStorage(
+    {
+      key: "transfer_require_password",
+      instance: ExtensionStorage
+    },
+    false
+  );
 
   // password input
   const passwordInput = useInput();
@@ -93,8 +83,6 @@ export function SendAuthView({ params: { tokenID } }: SendAuthViewProps) {
       transaction: arweave.transactions.fromRaw(raw.transaction)
     };
   }
-
-  const uToken = isUToken(tokenID);
 
   /**
    * Submit transaction to the network
@@ -146,34 +134,15 @@ export function SendAuthView({ params: { tokenID } }: SendAuthViewProps) {
       }, 10000);
     });
 
-    if (uToken) {
-      try {
-        const isOnline = await isUrlOnline(getWarpGatewayUrl("gw"));
-        const config = {
-          url: getWarpGatewayUrl(isOnline ? "gw" : "gateway", "sequencer"),
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json"
-          },
-          body: JSON.stringify(transaction)
-        };
-        await sendRequest(config);
-      } catch (err) {
-        console.log("err", err);
-        throw new Error("Unknown error occurred");
-      }
-    } else {
-      try {
-        await Promise.race([
-          arweave.transactions.post(transaction),
-          timeoutPromise
-        ]);
-      } catch (err) {
-        // SEGMENT
-        await trackEvent(EventType.TRANSACTION_INCOMPLETE, {});
-        throw new Error("Error with posting to Arweave");
-      }
+    try {
+      await Promise.race([
+        arweave.transactions.post(transaction),
+        timeoutPromise
+      ]);
+    } catch (err) {
+      // SEGMENT
+      await trackEvent(EventType.TRANSACTION_INCOMPLETE, {});
+      throw new Error("Error with posting to Arweave");
     }
   }
 
@@ -211,16 +180,8 @@ export function SendAuthView({ params: { tokenID } }: SendAuthViewProps) {
       return setLoading(false);
     }
 
-    console.log(
-      "transaction amount:",
-      transactionAmount.toFixed(),
-      "vs.",
-      "sign allowance:",
-      signAllowance
-    );
-
-    // Check if the transaction amount is less than the signature allowance
-    if (transactionAmount.lte(signAllowance)) {
+    // If password is not required, process transaction without user signing
+    if (!transferRequirePassword) {
       // Process transaction without user signing
       try {
         // Decrypt wallet without user input
@@ -236,14 +197,12 @@ export function SendAuthView({ params: { tokenID } }: SendAuthViewProps) {
           // Post the transaction
           await submitTx(transaction, arweave, type);
         } catch (e) {
-          if (!uToken) {
-            // FALLBACK IF ISP BLOCKS ARWEAVE.NET OR IF WAYFINDER FAILS
-            gateway = fallbackGateway;
-            const fallbackArweave = new Arweave(gateway);
-            await fallbackArweave.transactions.sign(transaction, keyfile);
-            await submitTx(transaction, fallbackArweave, type);
-            await trackEvent(EventType.FALLBACK, {});
-          }
+          // FALLBACK IF ISP BLOCKS the gateway or if the gateway fails
+          gateway = await findGateway({ random: true });
+          const fallbackArweave = new Arweave(gateway);
+          await fallbackArweave.transactions.sign(transaction, keyfile);
+          await submitTx(transaction, fallbackArweave, type);
+          await trackEvent(EventType.FALLBACK, {});
         }
 
         // Success toast
@@ -254,11 +213,9 @@ export function SendAuthView({ params: { tokenID } }: SendAuthViewProps) {
         });
 
         // Redirect
-        uToken
-          ? navigate("/")
-          : navigate(
-              `/transaction/${transaction.id}?back=${encodeURIComponent("/")}`
-            );
+        navigate(
+          `/transaction/${transaction.id}?back=${encodeURIComponent("/")}`
+        );
 
         // remove wallet from memory
         freeDecryptedWallet(keyfile);
@@ -305,14 +262,12 @@ export function SendAuthView({ params: { tokenID } }: SendAuthViewProps) {
           // post tx
           await submitTx(transaction, arweave, type);
         } catch (e) {
-          if (!uToken) {
-            // FALLBACK IF ISP BLOCKS ARWEAVE.NET OR IF WAYFINDER FAILS
-            gateway = fallbackGateway;
-            const fallbackArweave = new Arweave(gateway);
-            await fallbackArweave.transactions.sign(transaction, keyfile);
-            await submitTx(transaction, fallbackArweave, type);
-            await trackEvent(EventType.FALLBACK, {});
-          }
+          // FALLBACK IF ISP BLOCKS the gateway or if the gateway fails
+          gateway = await findGateway({ random: true });
+          const fallbackArweave = new Arweave(gateway);
+          await fallbackArweave.transactions.sign(transaction, keyfile);
+          await submitTx(transaction, fallbackArweave, type);
+          await trackEvent(EventType.FALLBACK, {});
         }
 
         setToast({
@@ -320,11 +275,10 @@ export function SendAuthView({ params: { tokenID } }: SendAuthViewProps) {
           content: browser.i18n.getMessage("sent_tx"),
           duration: 2000
         });
-        uToken
-          ? navigate("/")
-          : navigate(
-              `/transaction/${transaction.id}?back=${encodeURIComponent("/")}`
-            );
+
+        navigate(
+          `/transaction/${transaction.id}?back=${encodeURIComponent("/")}`
+        );
 
         // remove wallet from memory
         freeDecryptedWallet(keyfile);
@@ -423,11 +377,10 @@ export function SendAuthView({ params: { tokenID } }: SendAuthViewProps) {
           content: browser.i18n.getMessage("sent_tx"),
           duration: 2000
         });
-        uToken
-          ? navigate("/")
-          : navigate(
-              `/transaction/${transaction.id}?back=${encodeURIComponent("/")}`
-            );
+
+        navigate(
+          `/transaction/${transaction.id}?back=${encodeURIComponent("/")}`
+        );
       } catch (e) {
         console.log(e);
         setToast({

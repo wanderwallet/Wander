@@ -1,6 +1,6 @@
-import { Spacer, Text, useInput } from "@arconnect/components";
+import { Spacer, Text, useInput } from "@arconnect/components-rebrand";
 import { useEffect, useMemo, useState } from "react";
-import { useStorage } from "@plasmohq/storage/hook";
+import { useStorage } from "~utils/storage";
 import { ExtensionStorage } from "~utils/storage";
 import { SettingsList } from "./list/BaseElement";
 import { useRoute } from "wouter";
@@ -106,6 +106,9 @@ export function ApplicationsDashboardView() {
             icon={app.icon}
             active={activeApp === app.url}
             onClick={() => navigate(`/apps/${encodeURIComponent(app.url)}`)}
+            squircleSize={40}
+            style={{ height: 64 }}
+            showArrow
             key={i}
           />
         ))}

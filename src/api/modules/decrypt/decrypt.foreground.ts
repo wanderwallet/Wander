@@ -4,7 +4,7 @@ import type { ModuleFunction } from "~api/module";
 const foreground: ModuleFunction<unknown> = (data, options) => {
   if (options.algorithm) {
     console.warn(
-      '[ArConnect] YOU\'RE USING DEPRECATED PARAMS FOR "decrypt()". Please check the documentation.\nhttps://github.com/arconnectio/ArConnect#decryptdata-options-promisestring'
+      '[Wander] YOU\'RE USING DEPRECATED PARAMS FOR "decrypt()". Please check the documentation.\nhttps://github.com/arconnectio/Wander#decryptdata-options-promisestring'
     );
   }
 

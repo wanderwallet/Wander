@@ -2,14 +2,13 @@ import {
   type DisplayTheme,
   Section,
   Text,
-  TooltipV2
-} from "@arconnect/components";
-import { Avatar, CloseLayer, NoAvatarIcon } from "./WalletHeader";
+  Tooltip
+} from "@arconnect/components-rebrand";
+import browser from "webextension-polyfill";
+import { Action, Avatar, CloseLayer, NoAvatarIcon } from "./WalletHeader";
 import { AnimatePresence } from "framer-motion";
 import { useTheme } from "~utils/theme";
-import { useStorage } from "@plasmohq/storage/hook";
-import { ArrowLeftIcon } from "@iconicicons/react";
-import { useAnsProfile } from "~lib/ans";
+import { useStorage } from "~utils/storage";
 import { ExtensionStorage } from "~utils/storage";
 import HardwareWalletIcon, {
   hwIconAnimateProps
@@ -20,9 +19,15 @@ import keystoneLogo from "url:/assets/hardware/keystone.png";
 import WalletSwitcher from "./WalletSwitcher";
 import styled from "styled-components";
 import { svgie } from "~utils/svgies";
-import type { AppInfo } from "~applications/application";
+import type { AppLogoInfo } from "~applications/application";
 import Squircle from "~components/Squircle";
 import { useLocation } from "~wallets/router/router.utils";
+import { ArrowNarrowLeft } from "@untitled-ui/icons-react";
+import { MinimizeIcon } from "@iconicicons/react";
+import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
+import { useNameServiceProfile } from "~lib/nameservice";
+import { concatGatewayURL } from "~gateways/utils";
+import { FULL_HISTORY, useGateway } from "~gateways/wayfinder";
 
 export interface HeadV2Props {
   title: string;
@@ -31,7 +36,7 @@ export interface HeadV2Props {
   showBack?: boolean;
   padding?: string;
   back?: (...args) => any;
-  appInfo?: AppInfo;
+  appInfo?: AppLogoInfo;
   onAppInfoClick?: () => void;
 }
 
@@ -50,6 +55,7 @@ export default function HeadV2({
   // scroll position
   const [scrollDirection, setScrollDirection] = useState<"up" | "down">("up");
   const [scrolled, setScrolled] = useState(false);
+  const isEmbedded = import.meta.env?.VITE_IS_EMBEDDED_APP === "1";
 
   // TODO: figure out if this will still be used
   useEffect(() => {
@@ -86,7 +92,7 @@ export default function HeadV2({
     instance: ExtensionStorage
   });
 
-  const ans = useAnsProfile(activeAddress);
+  const nameServiceProfile = useNameServiceProfile(activeAddress);
 
   const svgieAvatar = useMemo(
     () => svgie(activeAddress, { asDataURI: true }),
@@ -100,9 +106,10 @@ export default function HeadV2({
   const hardwareApi = useHardwareApi();
 
   const appName = appInfo?.name;
-  const appIconPlaceholderText = appName?.slice(0, 2).toUpperCase();
+  const appIconPlaceholderText = appInfo?.placeholder;
 
   const SquircleWrapper = onAppInfoClick ? ButtonSquircle : React.Fragment;
+  const gateway = useGateway(FULL_HISTORY);
 
   return (
     <HeadWrapper
@@ -123,11 +130,11 @@ export default function HeadV2({
           <BackButtonIcon />
         </BackButton>
       ) : null}
-
-      <PageTitle>{title}</PageTitle>
-
-      {appName ? (
-        <TooltipV2 content={appName} position="bottomEnd">
+      <PageTitle showLeftMargin={showBack && !showOptions && !!appName}>
+        {title}
+      </PageTitle>
+      {!showOptions && appName ? (
+        <Tooltip content={appName} position="bottomEnd">
           <SquircleWrapper>
             <SquircleImg
               img={appInfo?.logo}
@@ -135,41 +142,61 @@ export default function HeadV2({
               onClick={onAppInfoClick}
             />
           </SquircleWrapper>
-        </TooltipV2>
+        </Tooltip>
       ) : null}
-
-      {showOptions ? (
+      {(showOptions || isEmbedded) && (
         <>
           <AvatarButton>
-            <ButtonAvatar
-              img={ans?.avatar || svgieAvatar}
-              onClick={() => {
-                setOpen(true);
-              }}
-            >
-              {!ans?.avatar && !svgieAvatar && <NoAvatarIcon />}
-              <AnimatePresence initial={false}>
-                {hardwareApi === "keystone" && (
-                  <HardwareWalletIcon
-                    icon={keystoneLogo}
-                    color="#2161FF"
-                    {...hwIconAnimateProps}
-                  />
-                )}
-              </AnimatePresence>
-            </ButtonAvatar>
+            {showOptions && (
+              <ButtonAvatar
+                img={
+                  nameServiceProfile?.logo
+                    ? concatGatewayURL(gateway) + "/" + nameServiceProfile.logo
+                    : svgieAvatar
+                }
+                onClick={() => {
+                  setOpen(true);
+                }}
+              >
+                {!nameServiceProfile?.logo && !svgieAvatar && <NoAvatarIcon />}
+                <AnimatePresence initial={false}>
+                  {hardwareApi === "keystone" && (
+                    <HardwareWalletIcon
+                      icon={keystoneLogo}
+                      color="#2161FF"
+                      {...hwIconAnimateProps}
+                    />
+                  )}
+                </AnimatePresence>
+              </ButtonAvatar>
+            )}
+            {isEmbedded && (
+              <Tooltip
+                content={browser.i18n.getMessage("close")}
+                position="bottomEnd"
+              >
+                <Action
+                  as={MinimizeIcon}
+                  onClick={() => {
+                    postEmbeddedMessage({
+                      type: "embedded_close",
+                      data: null
+                    });
+                  }}
+                  style={{ width: "24px", height: "24px" }}
+                />
+              </Tooltip>
+            )}
           </AvatarButton>
 
-          <WalletSwitcher
-            open={isOpen}
-            close={() => setOpen(false)}
-            exactTop={true}
-            showOptions={showOptions}
-          />
-
-          {isOpen && <CloseLayer onClick={() => setOpen(false)} />}
+          {showOptions && (
+            <>
+              <WalletSwitcher open={isOpen} close={() => setOpen(false)} />
+              {isOpen && <CloseLayer onClick={() => setOpen(false)} />}
+            </>
+          )}
         </>
-      ) : null}
+      )}
     </HeadWrapper>
   );
 }
@@ -191,9 +218,7 @@ const HeadWrapper = styled(Section)<{
   flex-direction: row;
   width: full;
   transition: padding 0.07s ease-in-out, border-color 0.23s ease-in-out;
-  padding: ${(props) => (props.padding ? props.padding : "15px")};
-  padding-left: ${(props) =>
-    props.hasBackButton ? "32px" : props.padding || "15px"};
+  padding: ${(props) => (props.padding ? props.padding : "24px")};
   justify-content: ${(props) => (props.center ? "center" : "space-between")};
   align-items: center;
   background-color: rgba(${(props) => props.theme.background}, 0.75);
@@ -210,10 +235,10 @@ const HeadWrapper = styled(Section)<{
 
 const BackButton = styled.button`
   position: absolute;
-  width: 32px;
-  height: 32px;
+  width: 24px;
+  height: 24px;
   top: 50%;
-  left: 0;
+  left: 24px;
   transform: translate(0, -50%);
   display: flex;
   align-items: center;
@@ -241,24 +266,24 @@ const BackButton = styled.button`
   }
 `;
 
-const BackButtonIcon = styled(ArrowLeftIcon)`
+const BackButtonIcon = styled(ArrowNarrowLeft)`
   font-size: 1rem;
-  width: 1em;
-  height: 1em;
-  color: rgb(${(props) => props.theme.primaryText});
+  width: 1.5em;
+  height: 1.5em;
+  color: ${(props) => props.theme.primaryText};
   z-index: 2;
 
   path {
-    stroke-width: 1.75 !important;
+    stroke-width: 2 !important;
   }
 `;
 
 const PageTitle = styled(Text).attrs({
-  subtitle: true,
   noMargin: true
-})`
-  font-size: 1.3rem;
+})<{ showLeftMargin: boolean }>`
+  font-size: 1.375rem;
   font-weight: 500;
+  ${(props) => props.showLeftMargin && `margin-left: 28px;`}
 `;
 
 const AvatarButton = styled.button`
@@ -266,8 +291,12 @@ const AvatarButton = styled.button`
   top: 0;
   bottom: 0;
   right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
   cursor: pointer;
-  padding: 0 15px;
+  padding: 0 24px;
   height: 100%;
   background: transparent;
   border: 0;
@@ -320,6 +349,6 @@ const ButtonSquircle = styled.button`
 `;
 
 const SquircleImg = styled(Squircle)`
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
 `;

@@ -15,6 +15,9 @@ import Arweave from "arweave";
 import { ensureAllowanceDispatch } from "./allowance";
 import { updateAllowance } from "../sign/allowance";
 import BigNumber from "bignumber.js";
+import { isError } from "~utils/error/error.utils";
+import { ERR_MSG_USER_CANCELLED_AUTH } from "~utils/auth/auth.constants";
+import { checkIfUserNeedsToSign } from "../sign/sign_policy";
 
 type ReturnType = {
   arConfetti: string | false;
@@ -63,14 +66,20 @@ const background: BackgroundModuleFunction<ReturnType> = async (
     value: tag.get("value", { decode: true, string: true })
   }));
 
-  // add ArConnect tags to the tag list
+  // add Wander tags to the tag list
   tags.push(...signedTxTags);
 
   // get allowance
   const allowance = await app.getAllowance();
 
   // always ask
-  const alwaysAsk = allowance.enabled && allowance.limit.eq(BigNumber("0"));
+  // const alwaysAsk = allowance.enabled && allowance.limit.eq(BigNumber("0"));
+  const signPolicy = await app.getSignPolicy();
+  const alwaysAsk = checkIfUserNeedsToSign(
+    signPolicy,
+    transaction,
+    decryptedWallet?.type
+  );
 
   // attempt to create a bundle
   try {
@@ -95,10 +104,10 @@ const background: BackgroundModuleFunction<ReturnType> = async (
     await uploadDataToTurbo(dataEntry, await app.getBundler());
 
     // update allowance spent amount (in winstons)
-    await updateAllowance(appData.url, price);
+    // await updateAllowance(appData.url, price);
 
     // show notification
-    await signNotification(0, dataEntry.id, appData.url, "dispatch");
+    // await signNotification(0, dataEntry.id, appData.url, "dispatch");
 
     // remove wallet from memory
     freeDecryptedWallet(keyfile);
@@ -110,9 +119,16 @@ const background: BackgroundModuleFunction<ReturnType> = async (
         type: "BUNDLED"
       }
     };
-  } catch {
+  } catch (err) {
+    if (isError(err) && err.message === ERR_MSG_USER_CANCELLED_AUTH) {
+      throw err;
+    }
+
+    // TODO: If there's an error in the first request, the previous (already accepted) AuthRequest's UI should probably
+    // reflect that. Maybe we could even reuse the same AuthRequest item instead of creating a separated one.
+
     // sign & post if there is something wrong with turbo
-    // add ArConnect tags to the tx object
+    // add Wander tags to the tx object
     for (const arcTag of signedTxTags) {
       transaction.addTag(arcTag.name, arcTag.value);
     }
@@ -138,10 +154,10 @@ const background: BackgroundModuleFunction<ReturnType> = async (
     }
 
     // update allowance spent amount (in winstons)
-    await updateAllowance(appData.url, price);
+    // await updateAllowance(appData.url, price);
 
     // show notification
-    await signNotification(price, transaction.id, appData.url);
+    // await signNotification(price, transaction.id, appData.url);
 
     // remove wallet from memory
     freeDecryptedWallet(keyfile);

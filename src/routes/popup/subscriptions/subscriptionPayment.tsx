@@ -17,7 +17,7 @@ import {
   type SubscriptionData
 } from "~subscriptions/subscription";
 import { ArrowRightIcon } from "@iconicicons/react";
-import { useStorage } from "@plasmohq/storage/hook";
+import { useStorage } from "~utils/storage";
 import { ExtensionStorage } from "~utils/storage";
 import { ButtonV2, useToasts } from "@arconnect/components";
 import { useLocation } from "~wallets/router/router.utils";

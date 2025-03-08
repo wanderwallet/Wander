@@ -11,7 +11,8 @@ import {
   AO_TOKENS_AUTO_IMPORT_RESTRICTED_IDS,
   AO_TOKENS_IMPORT_TIMESTAMP,
   gateway,
-  getNoticeTransactions
+  getNoticeTransactions,
+  verifyCollectiblesType
 } from "~tokens/aoTokens/sync";
 import { withRetry } from "~utils/promises/retry";
 import { timeoutPromise } from "~utils/promises/timeout";
@@ -95,10 +96,13 @@ export async function handleAoTokensImportAlarm(alarm: Alarms.Alarm) {
       );
     }
 
-    const newTokens = updatedTokens.filter(
+    let newTokens = updatedTokens.filter(
       (token) => !tokenIdstoExclude.has(token.processId)
     );
     if (newTokens.length === 0) return;
+
+    // Verify collectibles type
+    newTokens = await verifyCollectiblesType(newTokens, arweave);
 
     newTokens.forEach((token) => aoTokens.push(token));
     await ExtensionStorage.set(AO_TOKENS, aoTokens);

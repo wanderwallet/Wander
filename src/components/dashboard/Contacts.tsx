@@ -1,6 +1,6 @@
-import { ButtonV2, Spacer, Text, useInput } from "@arconnect/components";
+import { Button, Spacer, Text, useInput } from "@arconnect/components-rebrand";
 import React, { useState, useEffect, useMemo } from "react";
-import { useStorage } from "@plasmohq/storage/hook";
+import { useStorage } from "~utils/storage";
 import { ExtensionStorage } from "~utils/storage";
 import { SettingsList } from "./list/BaseElement";
 import ContactListItem from "./list/ContactListItem";
@@ -232,7 +232,7 @@ const SearchWrapper = styled.div<{ small?: boolean }>`
     !props.small && `background-color: rgb(${props.theme.cardBackground})`}
 `;
 
-const AddContactButton = styled(ButtonV2)`
+const AddContactButton = styled(Button)`
   width: 100%;
   height: 100%;
 `;

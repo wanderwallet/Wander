@@ -1,13 +1,13 @@
 import { useCurrentAuthRequest } from "~utils/auth/auth.hooks";
 import {
-  InputV2,
+  Input,
   ListItem,
   Section,
   Spacer,
   Text,
   useInput,
   useToasts
-} from "@arconnect/components";
+} from "@arconnect/components-rebrand";
 import Wrapper from "~components/auth/Wrapper";
 import browser from "webextension-polyfill";
 import { useEffect, useState } from "react";
@@ -15,12 +15,13 @@ import styled from "styled-components";
 
 import SignDataItemDetails from "~components/signDataItem";
 import { Quantity, Token } from "ao-tokens";
-import { ExtensionStorage } from "~utils/storage";
-import { useStorage } from "@plasmohq/storage/hook";
 import { checkPassword } from "~wallets/auth";
 import { timeoutPromise } from "~utils/promises/timeout";
 import { HeadAuth } from "~components/HeadAuth";
 import { AuthButtons } from "~components/auth/AuthButtons";
+import { useAskPassword } from "~wallets/hooks";
+import { ExtensionStorage } from "~utils/storage";
+import { useStorage } from "~utils/storage";
 
 export function BatchSignDataItemAuthRequestView() {
   const { authRequest, acceptRequest, rejectRequest } =
@@ -30,11 +31,19 @@ export function BatchSignDataItemAuthRequestView() {
   const [loading, setLoading] = useState<boolean>(false);
   const [transaction, setTransaction] = useState<any | null>(null);
   const [transactionList, setTransactionList] = useState<any | null>(null);
-  const [password, setPassword] = useState<boolean>(false);
   const passwordInput = useInput();
+  const askPassword = useAskPassword();
+
+  const [transferRequirePassword] = useStorage<boolean>(
+    {
+      key: "transfer_require_password",
+      instance: ExtensionStorage
+    },
+    false
+  );
 
   async function sign() {
-    if (password) {
+    if (transferRequirePassword && askPassword) {
       const checkPw = await checkPassword(passwordInput.state);
 
       if (!checkPw) {
@@ -50,14 +59,6 @@ export function BatchSignDataItemAuthRequestView() {
 
     acceptRequest();
   }
-
-  const [signatureAllowance] = useStorage(
-    {
-      key: "signatureAllowance",
-      instance: ExtensionStorage
-    },
-    10
-  );
 
   useEffect(() => {
     const fetchTransactionList = async () => {
@@ -90,10 +91,6 @@ export function BatchSignDataItemAuthRequestView() {
                   );
                   amount = tokenAmount.toLocaleString();
                   name = tokenInfo.Name;
-                  console.log(signatureAllowance, Number(amount));
-                  if (signatureAllowance > Number(amount)) {
-                    setPassword(true);
-                  }
                 } catch (error) {
                   console.error("Token fetch timed out or failed", error);
                   amount = quantity;
@@ -104,7 +101,7 @@ export function BatchSignDataItemAuthRequestView() {
                 <ListItem
                   key={index}
                   title={`Transaction ${index + 1}`}
-                  description={formatTransactionDescription(amount, name)}
+                  subtitle={formatTransactionDescription(amount, name)}
                   small
                   onClick={() => setTransaction(item)}
                 />
@@ -147,12 +144,12 @@ export function BatchSignDataItemAuthRequestView() {
       <Section>
         {!transaction ? (
           <>
-            {password && (
+            {transferRequirePassword && askPassword && (
               <>
                 <PasswordWrapper>
-                  <InputV2
+                  <Input
                     placeholder="Enter your password"
-                    small
+                    sizeVariant="small"
                     {...passwordInput.bindings}
                     label={"Password"}
                     type="password"
@@ -171,7 +168,11 @@ export function BatchSignDataItemAuthRequestView() {
               authRequest={authRequest}
               primaryButtonProps={{
                 label: browser.i18n.getMessage("sign_authorize_all"),
-                disabled: (password && !passwordInput.state) || loading,
+                disabled:
+                  (transferRequirePassword &&
+                    askPassword &&
+                    !passwordInput.state) ||
+                  loading,
                 onClick: sign
               }}
               secondaryButtonProps={{

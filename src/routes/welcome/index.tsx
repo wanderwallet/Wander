@@ -1,10 +1,7 @@
-import { ExtensionStorage, OLD_STORAGE_NAME } from "~utils/storage";
-import { ButtonV2, Spacer, Text } from "@arconnect/components";
-import { ArrowRightIcon, KeyIcon } from "@iconicicons/react";
-import Screenshots from "~components/welcome/Screenshots";
+import { Spacer } from "@arconnect/components";
+import { Button } from "@arconnect/components-rebrand";
 import { AnimatePresence, motion } from "framer-motion";
-import styled, { keyframes } from "styled-components";
-import { useStorage } from "@plasmohq/storage/hook";
+import styled from "styled-components";
 import browser from "webextension-polyfill";
 import {
   type MutableRefObject,
@@ -13,9 +10,11 @@ import {
   useRef,
   useState
 } from "react";
-import { popoverAnimation } from "~components/popup/WalletSwitcher";
 import { PageType, trackPage } from "~utils/analytics";
 import { useLocation } from "~wallets/router/router.utils";
+import WanderIcon from "url:assets/icon.svg";
+import StarIcons from "~components/welcome/StarIcons";
+import IconText from "~components/IconText";
 
 export function HomeWelcomeView() {
   const { navigate } = useLocation();
@@ -54,14 +53,6 @@ export function HomeWelcomeView() {
     [windowDimensions]
   );
 
-  // migration available
-  const [oldState] = useStorage({
-    key: OLD_STORAGE_NAME,
-    instance: ExtensionStorage
-  });
-
-  const migrationAvailable = useMemo(() => !!oldState, [oldState]);
-
   // Segment
   useEffect(() => {
     trackPage(PageType.ONBOARD_START);
@@ -69,53 +60,42 @@ export function HomeWelcomeView() {
 
   return (
     <Wrapper>
+      <StarIcons />
       <Panel>
         <WelcomeContent>
-          <LargeTitle>{browser.i18n.getMessage("welcome_to")}</LargeTitle>
-          <RotatingName>
-            <RotatingNameSpan>ArConnect</RotatingNameSpan>
-          </RotatingName>
-          <Spacer y={1.35} />
+          <ImagesWrapper>
+            <Image
+              width="126.314px"
+              height="59.199px"
+              src={WanderIcon}
+              alt="Wander Icon"
+            />
+            <IconText width={280} height={52.866} />
+          </ImagesWrapper>
+          <Spacer y={3.5} />
           <ButtonsWrapper>
             <WelcomeButton
               ref={startButton}
               onClick={async () => {
                 await animate(startButton);
-                navigate("/start/1");
+                navigate("/generate/1");
               }}
             >
-              {browser.i18n.getMessage("get_me_started")}
-              <ArrowRightIcon style={{ marginLeft: "5px" }} />
+              {browser.i18n.getMessage("create_a_new_account")}
             </WelcomeButton>
             <WelcomeButton
-              secondary
+              variant="secondaryAlt"
               ref={walletButton}
               onClick={async () => {
                 await animate(walletButton);
                 navigate("/load/1");
               }}
             >
-              {browser.i18n.getMessage("have_wallet")}
-              <KeyIcon style={{ marginLeft: "5px" }} />
+              {browser.i18n.getMessage("import_an_existing_account")}
             </WelcomeButton>
-            <AnimatePresence>
-              {migrationAvailable && (
-                <MigrationBanner
-                  initial="closed"
-                  animate="open"
-                  exit="closed"
-                  variants={popoverAnimation}
-                >
-                  {browser.i18n.getMessage("migration_available_welcome")}
-                </MigrationBanner>
-              )}
-            </AnimatePresence>
           </ButtonsWrapper>
         </WelcomeContent>
       </Panel>
-      <ArConnectPanel>
-        <ScreenshotsWelcome />
-      </ArConnectPanel>
       <AnimatePresence>
         {expandPos && (
           <ExpandAnimationElement pos={expandPos} circleSize={circleSize} />
@@ -126,111 +106,36 @@ export function HomeWelcomeView() {
 }
 
 const Wrapper = styled.div`
-  position: relative;
   display: flex;
   align-items: stretch;
   width: 100vw;
   height: 100vh;
+  background-color: ${(props) =>
+    props.theme.displayTheme === "dark" ? "#1e1b4b" : "#f0e8ff"};
 `;
 
 const Panel = styled.div`
-  position: relative;
-  width: 50%;
+  display: flex;
+  width: 100%;
   height: 100%;
+  justify-content: center;
+  align-items: center;
+  background: transparent;
 `;
 
-const ArConnectPanel = styled(Panel)`
-  background-color: #000;
-`;
-
-const ScreenshotsWelcome = styled(Screenshots)`
-  left: 5%;
-  right: 5%;
-  z-index: 1;
-`;
-
-const WelcomeContent = styled.div`
-  position: absolute;
-  top: 50%;
-  left: 14%;
-  transform: translateY(-50%);
-`;
-
-const LargeTitle = styled(Text).attrs({
-  title: true,
-  noMargin: true
-})`
-  line-height: 1.05em;
-  font-size: 4rem;
-`;
-
-const RotatingName = styled(LargeTitle)`
-  color: rgb(${(props) => props.theme.theme});
-  perspective: 3000px;
-  overflow: hidden;
-`;
-
-const rotate = keyframes`
-  0% {
-    transform: rotateX(0) translateY(0);
-  }
-  5% {
-    transform: rotateX(90deg) translateY(-22px);
-  }
-  50% {
-    transform: rotateX(90deg) translateY(-20px);
-  }
-  55% {
-    transform: rotateX(0) translateY(0);
-  }
-`;
-
-const RotatingNameSpan = styled.span`
-  display: block;
-  position: relative;
-  transform-origin: 50% 0;
-  transform-style: preserve-3d;
-  animation: ${rotate} 4s linear infinite;
-
-  &::before {
-    content: "Arweave";
-    position: absolute;
-    left: 1%;
-    top: 102%;
-    width: 100%;
-    height: 100%;
-    transform: rotateX(-90deg) translateY(2px);
-    transform-origin: 50% 0;
-  }
-`;
+const WelcomeContent = styled.div``;
 
 const ButtonsWrapper = styled.div`
-  position: relative;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 0.75rem;
+  gap: 1rem;
 `;
 
-const WelcomeButton = styled(ButtonV2)`
+const WelcomeButton = styled(Button)`
   padding-left: 0;
   padding-right: 0;
   width: calc(100% - 0.75rem * 1);
-`;
-
-const MigrationBanner = styled(motion.div)`
-  position: absolute;
-  top: 130%;
-  left: 0;
-  right: 0;
-  background-color: rgba(${(props) => props.theme.theme}, 0.35);
-  backdrop-filter: blur(14px);
-  color: rgb(${(props) => props.theme.theme});
-  z-index: 100;
-  width: calc(100% - 2 * 1.25em);
-  font-size: 1.05rem;
-  font-weight: 600;
-  padding: 1.1rem 1.25rem;
-  border-radius: 25px;
 `;
 
 // in ms
@@ -271,6 +176,16 @@ const ExpandAnimationElement = styled(motion.div).attrs<{
   right: 0;
   background-color: rgb(${(props) => props.theme.background});
   z-index: 1000;
+`;
+
+const Image = styled.img``;
+
+const ImagesWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 31.447px;
 `;
 
 function getWindowDimensions() {

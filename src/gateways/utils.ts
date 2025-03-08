@@ -1,4 +1,5 @@
-import { type Gateway } from "~gateways/gateway";
+import { defaultGateway, type Gateway } from "~gateways/gateway";
+import { findGateway } from "./wayfinder";
 
 /**
  * Get the full gateway URL string, from the
@@ -48,3 +49,14 @@ export function compareGateways(
 
   return true;
 }
+
+export const getArweaveLink = async (txId: string) => {
+  let gateway: Gateway;
+  try {
+    gateway = await findGateway({});
+  } catch {
+    gateway = defaultGateway;
+  }
+  const url = concatGatewayURL(gateway);
+  return `${url}/${txId}`;
+};

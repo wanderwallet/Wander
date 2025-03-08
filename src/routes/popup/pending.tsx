@@ -6,7 +6,7 @@ import { useTheme } from "~utils/theme";
 import { ButtonV2, Section } from "@arconnect/components";
 import type { DisplayTheme } from "@arconnect/components";
 import { PageType, trackPage } from "~utils/analytics";
-import { useStorage } from "@plasmohq/storage/hook";
+import { useStorage } from "~utils/storage";
 import type { Quote } from "~lib/onramper";
 import { useLocation } from "~wallets/router/router.utils";
 
@@ -45,7 +45,7 @@ export function PendingPurchaseView() {
       </MainContent>
       <Section>
         <ButtonV2 fullWidth onClick={() => navigate("/")}>
-          Home
+          Close
         </ButtonV2>
       </Section>
     </Wrapper>

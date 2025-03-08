@@ -1,8 +1,6 @@
 import type { JWKInterface } from "arweave/node/lib/wallet";
-import { useStorage } from "@plasmohq/storage/hook";
 import { ExtensionStorage } from "~utils/storage";
 import type { HardwareWallet } from "./hardware";
-import { useEffect, useState } from "react";
 import browser from "webextension-polyfill";
 import Arweave from "arweave/web/common";
 import {
@@ -24,6 +22,7 @@ import {
 import type { ModuleAppData } from "~api/background/background-modules";
 import { isNotCancelError } from "~utils/assertions";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
+import { resetStorage } from "~utils/storage.utils";
 
 /**
  * Locally stored wallet
@@ -102,26 +101,23 @@ export async function setActiveWallet(address?: string) {
 export type DecryptedWallet = StoredWallet<JWKInterface>;
 
 export async function openOrSelectWelcomePage(force = false) {
-  if (process.env.PLASMO_PUBLIC_APP_TYPE !== "extension") {
+  if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1") {
     log(LOG_GROUP.AUTH, `PREVENTED openOrSelectWelcomePage(${force})`);
 
     return;
   }
 
+  // ONLY BROWSER EXTENSION BELOW THIS LINE:
+
   log(LOG_GROUP.AUTH, `openOrSelectWelcomePage(${force})`);
 
   // Make sure we clear any stored value from previous installations before
   // opening the welcome page to onboard the user:
-
-  // get all keys
-  const allStoredKeys = Object.keys(
-    (await browser.storage.local.get(null)) || {}
-  );
-
-  // remove all keys
-  await Promise.allSettled(
-    allStoredKeys.map((key) => ExtensionStorage.remove(key))
-  );
+  // Skip reset for test environment
+  const manifest = browser.runtime.getManifest();
+  if (manifest["__TEST_MODE__"] !== true) {
+    await resetStorage();
+  }
 
   const url = browser.runtime.getURL("tabs/welcome.html");
   const welcomePageTabs = await browser.tabs.query({ url });
@@ -166,7 +162,7 @@ export async function getActiveKeyfile(
       return activeWallet;
     }
 
-    // Get the `decryptionKey` if ArConnect is already unlocked, or unlock ArConnect if needed. This means the auth popup
+    // Get the `decryptionKey` if Wander is already unlocked, or unlock Wander if needed. This means the auth popup
     // will be displayed, prompting the user to enter their password:
     const decryptionKey = await getDecryptionKeyOrRequestUnlock(appData);
 
@@ -219,7 +215,7 @@ export async function getKeyfile(address: string): Promise<DecryptedWallet> {
     return wallet;
   }
 
-  // Get the `decryptionKey` if ArConnect is already unlocked, or unlock ArConnect if needed. This means the auth popup
+  // Get the `decryptionKey` if Wander is already unlocked, or unlock Wander if needed. This means the auth popup
   // will be displayed, prompting the user to enter their password:
   const decryptionKey = await getDecryptionKeyOrRequestUnlock(
     DEFAULT_MODULE_APP_DATA
@@ -295,7 +291,11 @@ export async function addWallet(
     port: 443,
     protocol: "https"
   });
-  const walletsToAdd = Array.isArray(wallet) ? wallet : [{ wallet }];
+
+  const walletsToAdd = Array.isArray(wallet)
+    ? wallet
+    : // @ts-expect-error
+      [wallet?.wallet ? wallet : { wallet }];
 
   // wallets
   const wallets = await getWallets();
@@ -423,9 +423,18 @@ interface WalletWithNickname {
   nickname?: string;
 }
 
-export async function getWalletKeyLength(jwk: JWKInterface) {
+export interface WalletKeyLengths {
+  actualLength: number;
+  expectedLength: number;
+  match: boolean;
+}
+
+export async function getWalletKeyLength(
+  jwk: JWKInterface
+): Promise<WalletKeyLengths> {
   const signer = new ArweaveSigner(jwk);
   const expectedLength = signer.ownerLength;
   const actualLength = signer.publicKey.byteLength;
-  return { actualLength, expectedLength };
+  const match = actualLength === expectedLength;
+  return { actualLength, expectedLength, match };
 }

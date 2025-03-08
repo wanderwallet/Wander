@@ -1,0 +1,89 @@
+@import "../../../tokens/index.css";
+
+.row {
+  display: flex;
+  flex-direction: row;
+  gap: var(--spacing-3);
+  width: 100%;
+}
+
+/* Width variants */
+.row__full_width {
+  width: 100%;
+}
+
+/* Wrap variants */
+.row__wrap {
+  flex-wrap: wrap;
+}
+
+/* Spacing variants */
+.row__spacing_none {
+  gap: 0;
+}
+
+.row__spacing_xs {
+  gap: var(--spacing-1);
+}
+
+.row__spacing_sm {
+  gap: var(--spacing-2);
+}
+
+.row__spacing_md {
+  gap: var(--spacing-3);
+}
+
+.row__spacing_lg {
+  gap: var(--spacing-4);
+}
+
+.row__spacing_xl {
+  gap: var(--spacing-6);
+}
+
+/* Justify content variants */
+.row__justify_start {
+  justify-content: flex-start;
+}
+
+.row__justify_center {
+  justify-content: center;
+}
+
+.row__justify_end {
+  justify-content: flex-end;
+}
+
+.row__justify_between {
+  justify-content: space-between;
+}
+
+.row__justify_around {
+  justify-content: space-around;
+}
+
+.row__justify_evenly {
+  justify-content: space-evenly;
+}
+
+/* Align items variants */
+.row__align_start {
+  align-items: flex-start;
+}
+
+.row__align_center {
+  align-items: center;
+}
+
+.row__align_end {
+  align-items: flex-end;
+}
+
+.row__align_stretch {
+  align-items: stretch;
+}
+
+.row__align_baseline {
+  align-items: baseline;
+}

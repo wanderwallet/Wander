@@ -1,26 +1,20 @@
-import {
-  ButtonV2,
-  SelectV2,
-  Spacer,
-  Text,
-  TooltipV2,
-  useToasts
-} from "@arconnect/components";
-import type { Token, TokenType } from "~tokens/token";
-import { useStorage } from "@plasmohq/storage/hook";
+import { ButtonV2, Spacer, Text, TooltipV2 } from "@arconnect/components";
+import { Select as SelectV2, useToasts } from "@arconnect/components-rebrand";
+import type { TokenType } from "~tokens/token";
+import { useStorage } from "~utils/storage";
 import { ExtensionStorage } from "~utils/storage";
 import { TrashIcon } from "@iconicicons/react";
 import { removeToken } from "~tokens";
 import { useMemo } from "react";
 import browser from "webextension-polyfill";
-import styled from "styled-components";
+import styled, { useTheme } from "styled-components";
 import copy from "copy-to-clipboard";
 import { formatAddress } from "~utils/format";
 import { CopyButton } from "~components/dashboard/subsettings/WalletSettings";
 import HeadV2 from "~components/popup/HeadV2";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { useLocation } from "~wallets/router/router.utils";
-
+import { LoadingView } from "~components/page/common/loading/loading.view";
 export interface TokenSettingsParams {
   id: string;
 }
@@ -29,18 +23,10 @@ export type TokenSettingsProps = CommonRouteProps<TokenSettingsParams>;
 
 export function TokenSettingsView({ params: { id } }: TokenSettingsProps) {
   const { navigate } = useLocation();
-
-  // tokens
-  const [tokens, setTokens] = useStorage<Token[]>(
-    {
-      key: "tokens",
-      instance: ExtensionStorage
-    },
-    []
-  );
+  const theme = useTheme();
 
   // ao tokens
-  const [aoTokens] = useStorage<any[]>(
+  const [aoTokens, setAoTokens] = useStorage<any[]>(
     {
       key: "ao_tokens",
       instance: ExtensionStorage
@@ -50,31 +36,23 @@ export function TokenSettingsView({ params: { id } }: TokenSettingsProps) {
 
   const { setToast } = useToasts();
 
-  const { token, isAoToken } = useMemo(() => {
+  const token = useMemo(() => {
     const aoToken = aoTokens.find((ao) => ao.processId === id);
-    if (aoToken) {
-      return {
-        token: {
-          ...aoToken,
-          id: aoToken.processId,
-          name: aoToken.Name,
-          ticker: aoToken.Ticker
-          // Map additional AO token properties as needed
-        },
-        isAoToken: true
-      };
-    }
-    const regularToken = tokens.find((t) => t.id === id);
+    if (!aoToken) return;
+
     return {
-      token: regularToken,
-      isAoToken: false
+      ...aoToken,
+      id: aoToken.processId,
+      name: aoToken.Name,
+      ticker: aoToken.Ticker
+      // Map additional AO token properties as needed
     };
-  }, [tokens, aoTokens, id]);
+  }, [aoTokens, id]);
 
   // update token type
   function updateType(type: TokenType) {
-    setTokens((allTokens) => {
-      const tokenIndex = allTokens.findIndex((t) => t.id === id);
+    setAoTokens((allTokens) => {
+      const tokenIndex = allTokens.findIndex((t) => t.processId === id);
       if (tokenIndex !== -1) {
         allTokens[tokenIndex].type = type;
       }
@@ -82,8 +60,9 @@ export function TokenSettingsView({ params: { id } }: TokenSettingsProps) {
     });
   }
 
-  // TODO: Should this be a redirect?
-  if (!token) return null;
+  if (!token) {
+    return <LoadingView />;
+  }
 
   return (
     <>
@@ -110,6 +89,7 @@ export function TokenSettingsView({ params: { id } }: TokenSettingsProps) {
                   setToast({
                     type: "info",
                     content: browser.i18n.getMessage("copied_address", [
+                      token.ticker,
                       formatAddress(token.id, 8)
                     ]),
                     duration: 2200
@@ -118,27 +98,23 @@ export function TokenSettingsView({ params: { id } }: TokenSettingsProps) {
               />
             </TooltipV2>
           </TokenAddress>
-          {!isAoToken && (
-            <SelectV2
-              small
-              label={browser.i18n.getMessage("token_type")}
-              onChange={(e) => {
-                // @ts-expect-error
-                updateType(e.target.value as TokenType);
-              }}
-              fullWidth
-            >
-              <option value="asset" selected={token.type === "asset"}>
-                {browser.i18n.getMessage("token_type_asset")}
-              </option>
-              <option
-                value="collectible"
-                selected={token.type === "collectible"}
-              >
-                {browser.i18n.getMessage("token_type_collectible")}
-              </option>
-            </SelectV2>
-          )}
+          <SelectV2
+            small
+            style={{ color: theme.primaryText, paddingLeft: "0px" }}
+            label={browser.i18n.getMessage("token_type")}
+            onChange={(e) => {
+              // @ts-expect-error
+              updateType(e.target.value as TokenType);
+            }}
+            fullWidth
+          >
+            <option value="asset" selected={token.type === "asset"}>
+              {browser.i18n.getMessage("token_type_asset")}
+            </option>
+            <option value="collectible" selected={token.type === "collectible"}>
+              {browser.i18n.getMessage("token_type_collectible")}
+            </option>
+          </SelectV2>
         </div>
         <ButtonV2
           fullWidth
@@ -186,8 +162,10 @@ const BasePropertyText = styled(Text).attrs({
   font-weight: 500;
 `;
 
-const PropertyName = styled(BasePropertyText)``;
+const PropertyName = styled(BasePropertyText)`
+  color: ${(props) => props.theme.primaryText};
+`;
 
 const PropertyValue = styled(BasePropertyText)`
-  color: rgb(${(props) => props.theme.primaryText});
+  color: ${(props) => props.theme.secondaryText};
 `;

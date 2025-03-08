@@ -1,26 +1,25 @@
-import { DREContract, DRENode, NODES } from "@arconnect/warp-dre";
-import { loadTokenLogo, type Token } from "~tokens/token";
+import { type Token } from "~tokens/token";
 import { Reorder, useDragControls } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
-import { ListItem } from "@arconnect/components";
+import { ListItem } from "@arconnect/components-rebrand";
 import { formatAddress } from "~utils/format";
-import { getDreForToken } from "~tokens";
 import { useTheme } from "~utils/theme";
-import * as viewblock from "~lib/viewblock";
 import styled from "styled-components";
-import { useGateway } from "~gateways/wayfinder";
+import { FULL_HISTORY, useGateway } from "~gateways/wayfinder";
 import { concatGatewayURL } from "~gateways/utils";
 import aoLogo from "url:/assets/ecosystem/ao-logo.svg";
+import arLogo from "url:/assets/ecosystem/ar-logo.svg";
 import arLogoDark from "url:/assets/ar/logo_dark.png";
 import { getUserAvatar } from "~lib/avatar";
 import { useLocation } from "~wallets/router/router.utils";
+import CommonImage from "~components/common/Image";
 
-export default function TokenListItem({ token, active, ao, onClick }: Props) {
+export default function TokenListItem({ token, active, onClick }: Props) {
   const { navigate } = useLocation();
 
   // format address
   const formattedAddress = useMemo(
-    () => formatAddress(token.id, 8),
+    () => (token.id === "AR" ? "AR" : formatAddress(token.id, 8)),
     [token.id]
   );
 
@@ -31,42 +30,30 @@ export default function TokenListItem({ token, active, ao, onClick }: Props) {
   const theme = useTheme();
 
   // token logo
-  const [image, setImage] = useState(viewblock.getTokenLogo(token.id));
+  const [image, setImage] = useState(arLogoDark);
 
   // gateway
-  const gateway = useGateway({ startBlock: 0 });
+  const gateway = useGateway(FULL_HISTORY);
 
   useEffect(() => {
     (async () => {
       try {
         // if it is a collectible, we don't need to determinate the logo
         if (token.type === "collectible") {
-          return setImage(
-            `${concatGatewayURL(token.gateway || gateway)}/${token.id}`
-          );
-        }
-        if (ao) {
-          if (token.defaultLogo) {
-            const logo = await getUserAvatar(token.defaultLogo);
-            return setImage(logo);
-          } else {
-            return setImage(arLogoDark);
-          }
+          return setImage(`${concatGatewayURL(gateway)}/${token.id}`);
         }
 
-        // query community logo using Warp DRE
-        const node = new DRENode(await getDreForToken(token.id));
-        const contract = new DREContract(token.id, node);
-        const result = await contract.query<[string]>(
-          "$.settings.[?(@[0] === 'communityLogo')][1]"
-        );
-
-        setImage(await loadTokenLogo(token.id, result[0], theme));
+        if (token.defaultLogo) {
+          const logo = await getUserAvatar(token.defaultLogo);
+          return setImage(logo);
+        } else {
+          return setImage(arLogoDark);
+        }
       } catch {
-        setImage(viewblock.getTokenLogo(token.id));
+        setImage(arLogoDark);
       }
     })();
-  }, [token, theme, gateway, ao]);
+  }, [token, theme, gateway]);
 
   const handleClick = () => {
     if (onClick) {
@@ -87,18 +74,18 @@ export default function TokenListItem({ token, active, ao, onClick }: Props) {
     >
       <ListItem
         title={`${token.name} (${token.ticker})`}
-        description={
+        subtitle={
           <DescriptionWrapper>
             {formattedAddress}
-            {ao && <Image src={aoLogo} alt="ao logo" />}
-            {!ao && <TokenType>{token.type}</TokenType>}
+            <Image src={token.id === "AR" ? arLogo : aoLogo} alt="ao logo" />
           </DescriptionWrapper>
         }
+        hideSquircle
         active={active}
-        dragControls={!ao ? dragControls : null}
-      >
-        <TokenLogo src={image} />
-      </ListItem>
+        dragControls={null}
+        icon={<TokenLogo src={image} />}
+        height={64}
+      />
     </Reorder.Item>
   );
 }
@@ -115,29 +102,14 @@ const DescriptionWrapper = styled.div`
   gap: 8px;
 `;
 
-const TokenLogo = styled.img.attrs({
+export const TokenLogo = styled(CommonImage).attrs({
   alt: "token-logo",
-  draggable: false
+  draggable: false,
+  backgroundColor: "#fffefc"
 })`
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 1.7rem;
-  height: 1.7rem;
-  user-select: none;
-  transform: translate(-50%, -50%);
-`;
-
-const TokenType = styled.span`
-  padding: 0.08rem 0.2rem;
-  background-color: rgb(${(props) => props.theme.theme});
-  color: #fff;
-  font-weight: 500;
-  font-size: 0.62rem;
-  text-transform: uppercase;
-  margin-left: 0.45rem;
-  width: max-content;
-  border-radius: 5px;
+  height: 40px;
+  width: 40px;
+  border-radius: 50%;
 `;
 
 interface Props {

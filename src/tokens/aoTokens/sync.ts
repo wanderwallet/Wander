@@ -4,7 +4,8 @@ import { getAoTokensCache } from "~tokens";
 import type { GQLTransactionsResultInterface } from "ar-gql/dist/faces";
 import { ExtensionStorage } from "~utils/storage";
 import { getActiveAddress } from "~wallets";
-import { getTagValue, type Message, type TokenInfo, Id, Owner } from "./ao";
+import { getTokenInfoFromData } from "./router";
+import { type TokenInfo, Id, Owner } from "./ao";
 import { withRetry } from "~utils/promises/retry";
 import { timeoutPromise } from "~utils/promises/timeout";
 
@@ -50,25 +51,7 @@ async function getTokenInfo(id: string): Promise<TokenInfo> {
     })
   ).json();
 
-  // find message with token info
-  for (const msg of res.Messages as Message[]) {
-    const Ticker = getTagValue("Ticker", msg.Tags);
-    const Name = getTagValue("Name", msg.Tags);
-    const Denomination = getTagValue("Denomination", msg.Tags);
-    const Logo = getTagValue("Logo", msg.Tags);
-
-    if (!Ticker && !Name) continue;
-
-    // if the message was found, return the token details
-    return {
-      Name,
-      Ticker,
-      Denomination: Number(Denomination || 0),
-      Logo
-    };
-  }
-
-  throw new Error("Could not load token info.");
+  return getTokenInfoFromData(res, id);
 }
 
 function getNoticeTransactionsQuery(
@@ -105,6 +88,99 @@ function getNoticeTransactionsQuery(
       }
     }
   }`;
+}
+
+function getCollectiblesQuery() {
+  return `query ($ids: [ID!]!) {
+    transactions(
+      ids: $ids
+      tags: [
+        { name: "Data-Protocol", values: ["ao"] },
+        { name: "Type", values: ["Process"] },
+        { name: "Implements", values: ["ANS-110"] },
+        { name: "Content-Type" }
+      ]
+      first: 100
+    ) {
+      pageInfo {
+        hasNextPage
+      }
+      edges {
+        node {
+          id
+          tags {
+            name,
+            value
+          }
+        }
+      }
+    }
+  }`;
+}
+
+export async function verifyCollectiblesType(
+  tokens: TokenInfo[],
+  arweave: Arweave
+) {
+  const batchSize = 100;
+
+  // Get IDs of tokens that are already marked as collectibles
+  const idsToCheck = tokens
+    .filter((token) => token.type === "collectible")
+    .map((token) => token.processId);
+
+  const collectibleIds = new Set<string>();
+  const verifiedIds = new Set<string>();
+
+  if (idsToCheck.length === 0) return tokens;
+
+  const totalBatches = Math.ceil(idsToCheck.length / batchSize);
+
+  // Process IDs in batches
+  for (let batch = 0; batch < totalBatches; batch++) {
+    try {
+      const startIndex = batch * batchSize;
+      const currentBatch = idsToCheck.slice(startIndex, startIndex + batchSize);
+
+      const query = getCollectiblesQuery();
+      const transactions = await withRetry(async () => {
+        const response = await arweave.api.post("/graphql", {
+          query,
+          variables: { ids: currentBatch }
+        });
+
+        return response.data.data
+          .transactions as GQLTransactionsResultInterface;
+      }, 2);
+
+      // Mark all IDs in this batch as verified
+      currentBatch.forEach((id) => verifiedIds.add(id));
+
+      if (transactions.edges.length > 0) {
+        const processIds = transactions.edges.map((edge) => edge.node.id);
+        processIds.forEach((processId) => collectibleIds.add(processId));
+      }
+    } catch (error) {
+      console.error(
+        `Failed to get transactions for batch ${batch}, error:`,
+        error
+      );
+      continue;
+    }
+  }
+
+  tokens = tokens.map((token) => {
+    // Only modify tokens we've successfully verified
+    if (token.type === "collectible" && verifiedIds.has(token.processId)) {
+      if (collectibleIds.has(token.processId)) {
+        return { ...token, type: "collectible" };
+      }
+      return { ...token, type: "asset" };
+    }
+    return token;
+  });
+
+  return tokens;
 }
 
 export async function getNoticeTransactions(
@@ -170,12 +246,9 @@ export async function syncAoTokens() {
   isSyncInProgress = true;
 
   try {
-    const [activeAddress, aoSupport] = await Promise.all([
-      getActiveAddress(),
-      ExtensionStorage.get<boolean>("setting_ao_support")
-    ]);
+    const activeAddress = await getActiveAddress();
 
-    if (!activeAddress || !aoSupport) {
+    if (!activeAddress) {
       lastHasNextPage = false;
       return { hasNextPage: false, syncCount: 0 };
     }
@@ -218,7 +291,7 @@ export async function syncAoTokens() {
       );
     const results = await Promise.allSettled(promises);
 
-    const tokens = [];
+    let tokens = [];
     const tokensWithoutTicker = [];
     results.forEach((result) => {
       if (result.status === "fulfilled") {
@@ -230,6 +303,9 @@ export async function syncAoTokens() {
         }
       }
     });
+
+    // Verify collectibles type
+    tokens = await verifyCollectiblesType(tokens, arweave);
 
     const updatedTokens = [...aoTokensCache, ...tokens];
     const updatedProcessIds = newProcessIds.filter((processId) =>
@@ -274,9 +350,6 @@ export async function scheduleImportAoTokens() {
 
   const activeAddress = await getActiveAddress();
   if (!activeAddress) return;
-
-  const aoSupport = await ExtensionStorage.get<boolean>("setting_ao_support");
-  if (!aoSupport) return;
 
   await ExtensionStorage.set(AO_TOKENS_IMPORT_TIMESTAMP, Date.now());
 

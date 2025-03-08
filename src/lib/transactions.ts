@@ -34,12 +34,18 @@ export type ExtendedTransaction = RawTransaction & {
     tickerName: string;
     denomination?: number;
     quantity: string;
+    logo?: string;
   };
 };
 
 export type GroupedTransactions = {
   [key: string]: ExtendedTransaction[];
 };
+
+export interface GroupedTransactionsByMonth {
+  title: string;
+  data: ExtendedTransaction[];
+}
 
 export function sortFn(a: ExtendedTransaction, b: ExtendedTransaction) {
   const timestampA = a.node?.block?.timestamp || Number.MAX_SAFE_INTEGER;
@@ -135,6 +141,8 @@ const processAoTransaction = async (
   const quantityTag = transaction.node.tags.find(
     (tag) => tag.name === "Quantity"
   );
+  const isCollectible = tokenData?.type === "collectible";
+
   return {
     ...transaction,
     transactionType: type,
@@ -145,8 +153,12 @@ const processAoTransaction = async (
     aoInfo: {
       quantity: quantityTag ? quantityTag.value : undefined,
       tickerName:
-        tokenData?.Ticker || formatAddress(transaction.node.recipient, 4),
-      denomination: tokenData?.Denomination || 0
+        (isCollectible
+          ? tokenData?.Name! || tokenData?.Ticker!
+          : tokenData?.Ticker! || tokenData?.Name!) ||
+        formatAddress(transaction.node.recipient, 4),
+      denomination: tokenData?.Denomination || 0,
+      logo: tokenData?.Logo
     }
   };
 };
@@ -174,13 +186,17 @@ export const getFormattedAmount = (transaction: ExtendedTransaction) => {
   switch (transaction.transactionType) {
     case "sent":
     case "received":
-      return `${parseFloat(transaction.node.quantity.ar).toFixed(3)} AR`;
+      return `${parseFloat(transaction.node.quantity.ar)
+        .toFixed(3)
+        .replace(/\.?0+$/, "")} AR`;
     case "aoSent":
     case "aoReceived":
       if (transaction.aoInfo) {
         return `${balanceToFractioned(transaction.aoInfo.quantity, {
           divisibility: transaction.aoInfo.denomination
-        }).toFixed()} ${transaction.aoInfo.tickerName}`;
+        })
+          .toFixed(3)
+          .replace(/\.?0+$/, "")} ${transaction.aoInfo.tickerName}`;
       }
       return "";
     case "printArchive":
@@ -238,8 +254,50 @@ export const getTransactionDescription = (transaction: ExtendedTransaction) => {
   }
 };
 
-export const getFullMonthName = (monthYear: string) => {
+type DateFormatOptions = { month: "long"; year?: "numeric" };
+
+const formatMonthYear = (
+  monthYear: string,
+  options: DateFormatOptions
+): string => {
   const [month, year] = monthYear.split("-").map(Number);
   const date = new Date(year, month - 1);
-  return date.toLocaleString("default", { month: "long" });
+  return date.toLocaleString("default", options);
+};
+
+export const getFullMonthName = (monthYear: string) => {
+  return formatMonthYear(monthYear, { month: "long" });
+};
+
+export const getFullMonthNameWithYear = (monthYear: string) => {
+  return formatMonthYear(monthYear, { month: "long", year: "numeric" });
+};
+
+export const groupTransactionsByMonth = (
+  transactions: ExtendedTransaction[]
+): GroupedTransactionsByMonth[] => {
+  const groups = transactions.reduce((acc, transaction) => {
+    const monthYear = `${transaction.month}-${transaction.year}`;
+    if (!acc[monthYear]) {
+      acc[monthYear] = [];
+    }
+    acc[monthYear].push(transaction);
+    return acc;
+  }, {} as Record<string, ExtendedTransaction[]>);
+
+  return Object.entries(groups)
+    .map(([monthYear, transactions]) => {
+      const [month, year] = monthYear.split("-").map(Number);
+      return {
+        title: getFullMonthNameWithYear(monthYear),
+        data: transactions,
+        month,
+        year
+      };
+    })
+    .sort((a, b) => {
+      if (a.year !== b.year) return b.year - a.year;
+      return b.month - a.month;
+    })
+    .map(({ title, data }) => ({ title, data }));
 };

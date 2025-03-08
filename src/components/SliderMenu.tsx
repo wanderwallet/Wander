@@ -1,27 +1,32 @@
-import { type DisplayTheme } from "@arconnect/components";
 import { CloseIcon } from "@iconicicons/react";
 import { AnimatePresence, motion, type Variants } from "framer-motion";
 import type React from "react";
 import { useRef } from "react";
-import styled, { useTheme } from "styled-components";
+import { createPortal } from "react-dom";
+import styled from "styled-components";
 
 interface SliderMenuProps {
-  title: string;
-  hasNav?: boolean;
+  title?: string;
+  hasHeader?: boolean;
   isOpen: boolean;
   onClose?: () => void;
+  paddingHorizontal?: number;
+  paddingVertical?: number;
   children?: React.ReactNode;
+  height?: number | string;
 }
 
 export default function SliderMenu({
   title,
-  hasNav,
+  hasHeader = true,
   isOpen,
   onClose,
+  paddingHorizontal,
+  paddingVertical,
+  height,
   children
 }: SliderMenuProps) {
   const wrapperElementRef = useRef<HTMLDivElement | null>(null);
-  const theme = useTheme();
 
   const contentElement = isOpen ? (
     <>
@@ -38,8 +43,10 @@ export default function SliderMenu({
       />
 
       <Wrapper
-        displayTheme={theme.displayTheme}
-        hasNav={hasNav}
+        height={height}
+        hasHeader={hasHeader && !!title}
+        paddingHorizontal={paddingHorizontal}
+        paddingVertical={paddingVertical}
         ref={wrapperElementRef}
         variants={animationSlideFromBottom}
         initial="hidden"
@@ -47,45 +54,52 @@ export default function SliderMenu({
         exit="hidden"
       >
         <Body>
-          <Header>
-            <Title>{title}</Title>
-            <ExitButton onClick={onClose} />
-          </Header>
+          {hasHeader && title && (
+            <Header>
+              <Title>{title}</Title>
+              <ExitButton onClick={onClose} />
+            </Header>
+          )}
           {children}
         </Body>
       </Wrapper>
     </>
   ) : null;
 
-  return <AnimatePresence>{contentElement}</AnimatePresence>;
+  return createPortal(
+    <AnimatePresence>{contentElement}</AnimatePresence>,
+    document.body
+  );
 }
 
 const ExitButton = styled(CloseIcon)`
   cursor: pointer;
+  color: ${({ theme }) =>
+    `${theme.displayTheme === "light" ? "#000000" : "#FFFFFF"}`};
 `;
 
 const Wrapper = styled(motion.div)<{
-  displayTheme: DisplayTheme;
-  hasNav: boolean;
+  paddingHorizontal?: number;
+  paddingVertical?: number;
+  hasHeader?: boolean;
+  height?: number | string;
 }>`
   position: fixed;
   bottom: 0;
   left: 0;
-  height: auto;
+  height: ${({ height }) => height || "auto"};
   max-height: calc(100% - 66px);
-  border-top: ${(props) =>
-    props.displayTheme === "light"
-      ? `1px solid ${props.theme.primary}`
-      : "none"};
   display: flex;
   flex-direction: column;
   width: 100%;
   z-index: 1000;
   overflow: scroll;
-  background-color: ${(props) =>
-    props.displayTheme === "light" ? "#ffffff" : "#191919"};
-  border-radius: 10px 10px 0 0;
-  padding-bottom: ${(props) => (props.hasNav ? "66px" : "0")};
+  background-color: ${({ theme }) =>
+    theme.displayTheme === "light" ? "#ffffff" : "#1B1B1B"};
+  border-radius: 24px 24px 0px 0px;
+  padding: ${({ paddingVertical = 24, paddingHorizontal = 24 }) =>
+    `${paddingVertical}px ${paddingHorizontal}px`};
+  ${({ hasHeader }) => hasHeader && "padding-top: 0;"}
   box-sizing: border-box;
 `;
 
@@ -107,25 +121,45 @@ export const animationSlideFromBottom: Variants = {
 };
 
 const Body = styled.div`
-  padding: 1.0925rem;
   display: flex;
-  gap: 15px;
   flex-direction: column;
+  position: relative;
 `;
 
 const Header = styled.div`
+  position: sticky;
+  top: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  background-color: ${({ theme }) =>
+    theme.displayTheme === "light" ? "#ffffff" : "#1B1B1B"};
+  z-index: 2;
+  padding-bottom: 24px;
+  padding-top: 32px;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: inherit;
+    z-index: -1;
+  }
 `;
 
 const Title = styled.h2`
   margin: 0;
   padding: 0;
+  color: ${(props) => props.theme.primaryText};
   font-size: 20px;
   font-style: normal;
   font-weight: 500;
   line-height: normal;
+  color: ${({ theme }) =>
+    `${theme.displayTheme === "light" ? "#000000" : "#FFFFFF"}`};
 `;
 
 export const CloseLayer = styled(motion.div)`
@@ -138,5 +172,6 @@ export const CloseLayer = styled(motion.div)`
   width: 100vw;
   height: 100vh;
   cursor: default;
-  background-color: rgba(${(props) => props.theme.background}, 0.85);
+  background-color: ${({ theme }) =>
+    `rgba(0, 0, 0, ${theme.displayTheme === "light" ? 0.3 : 0.7})`};
 `;

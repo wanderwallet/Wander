@@ -1,6 +1,13 @@
 import { ExtensionStorage } from "~utils/storage";
 import type { Storage } from "@plasmohq/storage";
 import { PREFIX } from "~settings";
+import { getGatewayCache } from "~gateways/cache";
+import {
+  clGateway,
+  defaultGateway,
+  defaultGateways,
+  type Gateway
+} from "~gateways/gateway";
 
 export default class Setting {
   /** Name of the setting */
@@ -24,6 +31,9 @@ export default class Setting {
   /** Name in extension storage */
   public storageName: string;
 
+  /** Input placeholder */
+  public inputPlaceholder?: string;
+
   /** Setting display icon */
   public icon: Icon;
 
@@ -37,7 +47,8 @@ export default class Setting {
     type,
     defaultValue,
     options,
-    icon
+    icon,
+    inputPlaceholder
   }: InitParams) {
     this.name = name;
     this.displayName = displayName;
@@ -45,7 +56,7 @@ export default class Setting {
     this.type = type;
     this.defaultValue = defaultValue;
     this.icon = icon;
-
+    this.inputPlaceholder = inputPlaceholder;
     // set storage name
     this.storageName = `${PREFIX}${name}`;
 
@@ -56,7 +67,39 @@ export default class Setting {
     if (type === "pick") {
       if (!options) throw new Error("Options not defined");
 
-      this.options = options;
+      if (name === "gateways") {
+        getGatewayCache().then(async (gateways = []) => {
+          let gatewayOptions: Gateway[] = defaultGateways;
+          if (gateways.length > 0) {
+            gatewayOptions = gateways.map((gateway) => ({
+              port: gateway.settings.port,
+              protocol: gateway.settings.protocol,
+              host: gateway.settings.fqdn
+            }));
+          }
+          const gateway = (await this.getValue()) as Gateway;
+
+          const otherHosts = Array.from(
+            new Set([
+              gateway.host,
+              defaultGateway.host,
+              clGateway.host,
+              "aoweave.tech",
+              "defi.ao"
+            ])
+          );
+
+          const uniqueHosts = otherHosts
+            .filter(
+              (host) => !gatewayOptions.some((option) => option.host === host)
+            )
+            .map((host) => ({ port: 443, protocol: "https", host }));
+
+          this.options = [...gatewayOptions, ...uniqueHosts];
+        });
+      } else {
+        this.options = options;
+      }
     }
   }
 
@@ -100,7 +143,7 @@ export default class Setting {
  * pick - Pick from a list
  */
 type SettingType = "string" | "number" | "boolean" | "pick";
-export type ValueType = string | number | boolean;
+export type ValueType = string | number | boolean | Gateway;
 
 export type Icon = (props: React.ComponentProps<"svg">) => JSX.Element;
 
@@ -112,4 +155,5 @@ interface InitParams {
   type: SettingType;
   defaultValue: ValueType;
   options?: ValueType[];
+  inputPlaceholder?: string;
 }

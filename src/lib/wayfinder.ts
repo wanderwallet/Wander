@@ -34,7 +34,7 @@ async function pingUpdater(
     .sort((a, b) => b.operatorStake - a.operatorStake)
     .slice(0, 5);
 
-  if (CLabsGateway && !newData.some((item) => item.id === CLabsGateway)) {
+  if (CLabsGateway && !newData.some((item) => item.id === CLabs)) {
     newData.push(CLabsGateway);
   }
 
@@ -149,10 +149,10 @@ const fetchGatewayProperties = async (txn) => {
 };
 
 const isValidGateway = (gateway: any, requirements: Requirements): boolean => {
-  if (requirements.graphql && !gateway.properties.GRAPHQL) {
+  if (requirements.graphql && !gateway?.properties?.GRAPHQL) {
     return false;
   }
-  if (requirements.arns && !gateway.properties.ARNS) {
+  if (requirements.arns && !gateway?.properties?.ARNS) {
     return false;
   }
   if (

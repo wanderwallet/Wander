@@ -1,6 +1,6 @@
 import { Spacer, Text, useInput } from "@arconnect/components";
 import { useEffect, useMemo, useState } from "react";
-import { useStorage } from "@plasmohq/storage/hook";
+import { useStorage } from "~utils/storage";
 import { ExtensionStorage } from "~utils/storage";
 import Application from "~applications/application";
 import browser from "webextension-polyfill";

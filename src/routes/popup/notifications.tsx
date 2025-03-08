@@ -7,7 +7,7 @@ import {
 } from "~utils/notifications";
 import aoLogo from "url:/assets/ecosystem/ao-logo.svg";
 import { useLocation } from "~wallets/router/router.utils";
-import { Loading } from "@arconnect/components";
+import { Text, Loading } from "@arconnect/components-rebrand";
 import { formatAddress } from "~utils/format";
 import HeadV2 from "~components/popup/HeadV2";
 import browser from "webextension-polyfill";
@@ -23,6 +23,8 @@ import {
 } from "~subscriptions/subscription";
 import { checkTransactionError } from "~lib/transactions";
 import type { Transaction } from "~api/background/handlers/alarms/notifications/notifications-alarm.utils";
+import { MessageDotsCircle, Wallet02 } from "@untitled-ui/icons-react";
+import { HorizontalLine } from "~components/HorizontalLine";
 
 export function NotificationsView() {
   const { navigate } = useLocation();
@@ -110,7 +112,10 @@ export function NotificationsView() {
                 ticker = formatAddress(notification.tokenId, 4);
                 quantityTransfered = notification.quantity;
               } else {
-                ticker = token.Ticker;
+                ticker =
+                  token?.type === "collectible"
+                    ? token.Name! || token.Ticker!
+                    : token.Ticker! || token.Name!;
                 quantityTransfered = balanceToFractioned(
                   notification.quantity,
                   {
@@ -258,7 +263,7 @@ export function NotificationsView() {
           </Empty>
         )}
         {subscriptions.map((subscription) => (
-          <NotificationItem>
+          <NotificationItem showPaddingTop={true}>
             <Description>{"Subscription"}</Description>
             <TitleMessage>{`${subscription.applicationName} Awaiting Payment`}</TitleMessage>
             <Link
@@ -273,31 +278,44 @@ export function NotificationsView() {
         {!loading &&
           !empty &&
           notifications.map((notification, index) => (
-            <NotificationItem key={notification.node.id}>
-              <Description>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "4px"
-                  }}
-                >
-                  <div>
-                    {notification.transactionType === "Message"
-                      ? "Message"
-                      : "Transaction"}
+            <NotificationWrapper key={notification.node.id}>
+              <NotificationItem
+                key={notification.node.id}
+                onClick={() => handleLink(notification)}
+                showPaddingTop={index !== 0}
+              >
+                <Description>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "4px"
+                    }}
+                  >
+                    {notification.transactionType === "Message" ? (
+                      <MessageDotsCircle height={19} width={19} />
+                    ) : (
+                      <Wallet02 height={19} width={19} />
+                    )}
+                    <div>
+                      {notification.transactionType === "Message"
+                        ? "Message"
+                        : "Transaction"}
+                    </div>
+                    {!!notification.isAo && (
+                      <Image src={aoLogo} alt="ao logo" />
+                    )}
                   </div>
-                  {!!notification.isAo && <Image src={aoLogo} alt="ao logo" />}
-                </div>
-                <div>{formatDate(notification.node.block.timestamp)}</div>
-              </Description>
-              <TitleMessage>{formattedTxMsgs[index]}</TitleMessage>
-              <Link onClick={() => handleLink(notification)}>
-                {notification.transactionType === "Message"
-                  ? "See message"
-                  : "See transaction"}
-              </Link>
-            </NotificationItem>
+                  <div style={{ fontSize: "14px" }}>
+                    {formatDate(notification.node.block.timestamp)}
+                  </div>
+                </Description>
+                <TitleMessage>{formattedTxMsgs[index]}</TitleMessage>
+              </NotificationItem>
+              {index !== notifications.length - 1 && (
+                <HorizontalLine marginVertical={16} />
+              )}
+            </NotificationWrapper>
           ))}
       </Wrapper>
     </>
@@ -336,31 +354,43 @@ const Link = styled.a`
   cursor: pointer;
 `;
 
-export const TitleMessage = styled.div`
-  color: ${(props) => props.theme.primaryTextv2};
-  font-size: 14px;
-`;
+export const TitleMessage = styled(Text).attrs({
+  size: "md",
+  weight: "medium",
+  noMargin: true
+})``;
 
 const Description = styled.div`
-  color: ${(props) => props.theme.secondaryTextv2};
-  font-size: 12px;
-  width: calc(100% - 30px);
+  color: ${(props) => props.theme.secondaryText};
+  font-size: 16px;
+  font-weight: 500;
   display: flex;
   justify-content: space-between;
 `;
 
-export const NotificationItem = styled.div`
+export const NotificationItem = styled.div<{ showPaddingTop: boolean }>`
   width 100%;
-  gap: 4px;
+  gap: 8px;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+
+  &:active {
+    transform: scale(0.98);
+    opacity: 0.8;
+  }
+`;
+
+const NotificationWrapper = styled.div`
+  width: 100%;
   display: flex;
   flex-direction: column;
 `;
 
 const Wrapper = styled.div`
   width: 100%;
-  margin-top: 3px;
-  padding: 0px 15px 15px 15px;
+  padding: 0px 24px 24px 24px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  box-sizing: border-box;
 `;

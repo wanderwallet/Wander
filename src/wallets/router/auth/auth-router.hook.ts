@@ -1,9 +1,9 @@
-import type { BaseLocationHook } from "wouter";
 import { useCurrentAuthRequest } from "~utils/auth/auth.hooks";
 import { NOOP } from "~utils/misc";
 import type { AuthRoutePath } from "~wallets/router/auth/auth.routes";
 import { useExtensionStatusOverride } from "~wallets/router/extension/extension-router.hook";
 import { ExtensionOverrides } from "~wallets/router/extension/extension.routes";
+import type { BaseLocationHook } from "~wallets/router/router.types";
 
 export const useAuthRequestsLocation: BaseLocationHook = () => {
   const override = useExtensionStatusOverride();
@@ -16,7 +16,7 @@ export const useAuthRequestsLocation: BaseLocationHook = () => {
   // The authID has been added to the URL so that the auto-scroll and view transition effect work when switching
   // between different `AuthRequest`s of the same type:
   const location =
-    `/${currentAuthRequest.type}/${currentAuthRequest.authID}` satisfies AuthRoutePath;
+    `/auth-request/${currentAuthRequest.type}/${currentAuthRequest.authID}` satisfies AuthRoutePath;
 
   // TODO: Implement a navigate function that selects a different AuthRequest and also use <Link> whenever possible:
   return [location, (authID: string) => {}];

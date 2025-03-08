@@ -1,5 +1,5 @@
-import { ArConnectBrowserExtensionAppRoot } from "~popup";
+import { WanderBrowserExtensionAppRoot } from "~popup";
 
 export default function () {
-  return <ArConnectBrowserExtensionAppRoot />;
+  return <WanderBrowserExtensionAppRoot />;
 }

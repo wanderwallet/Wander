@@ -1,6 +1,6 @@
 import { getSetting } from "~settings";
 import { ExtensionStorage, TempTransactionStorage } from "./storage";
-import { AnalyticsBrowser } from "@segment/analytics-next";
+// import { AnalyticsBrowser } from "@segment/analytics-next";
 import {
   getActiveKeyfile,
   getActiveAddress,
@@ -15,17 +15,16 @@ import { ERR_MSG_NO_WALLETS_ADDED } from "~utils/auth/auth.constants";
 
 const PUBLIC_SEGMENT_WRITEKEY = "J97E4cvSZqmpeEdiUQNC2IxS1Kw4Cwxm";
 
-const analytics = AnalyticsBrowser.load({
-  writeKey: PUBLIC_SEGMENT_WRITEKEY
-});
+// TODO: uncomment this once we have a fix for the analytics
+// const analytics = AnalyticsBrowser.load({
+//   writeKey: PUBLIC_SEGMENT_WRITEKEY
+// });
 
 export enum EventType {
   FUNDED = "FUNDED",
   CONNECTED_APP = "CONNECTED_APP",
   LOGIN = "LOGIN",
   ONBOARDED = "ONBOARDED",
-  WAYFINDER_ACTIVATED = "WAYFINDER_ACTIVATED",
-  WAYFINDER_GATEWAY_SELECTED = "WAYFINDER_GATEWAY_SELECTED",
   BALANCE = "BALANCE",
   SIGNED = "SIGNED",
   TRANSACTION_INCOMPLETE = "TRANSACTION_INCOMPLETE",
@@ -50,17 +49,23 @@ export enum PageType {
   RECEIVE = "RECEIVE",
   SETTINGS = "SETTINGS",
   SEND = "SEND",
+  SEND_AMOUNT = "SEND_AMOUNT",
+  SEND_NOTE = "SEND_NOTE",
   CONFIRM_SEND = "CONFIRM_SEND",
   SEND_COMPLETE = "SEND_COMPLETE",
   ONBOARD_START = "ONBOARD_START",
+  ONBOARD_NEW_ACCOUNT = "ONBOARD_NEW_ACCOUNT",
   ONBOARD_PASSWORD = "ONBOARD_PASSWORD",
   ONBOARD_BACKUP = "ONBOARD_BACKUP",
   ONBOARD_SEEDPHRASE = "ONBOARD_SEEDPHRASE",
+  ONBOARD_PERMISSIONS = "ONBOARD_PERMISSIONS",
   ONBOARD_THEME = "ONBOARD_THEME",
   ONBOARD_COMPLETE = "ONBOARD_COMPLETE",
-  SETUP_PIN = "SETUP_PIN",
-  SETUP_EXPLORE = "SETUP_EXPLORE",
-  SETUP_CONNECT = "SETUP_CONNECT",
+  GETTING_STARTED_WELCOME = "GETTING_STARTED_WELCOME",
+  GETTING_STARTED_TOKENS = "GETTING_STARTED_TOKENS",
+  GETTING_STARTED_ONRAMP = "GETTING_STARTED_ONRAMP",
+  GETTING_STARTED_EXPLORE = "GETTING_STARTED_EXPLORE",
+  GETTING_STARTED_CONNECT = "GETTING_STARTED_CONNECT",
   SUBSCRIPTIONS_MANAGEMENT = "SUBSCRIPTIONS_MANAGEMENT",
   TRANSAK_PURCHASE = "TRANSAK_PURCHASE",
   TRANSAK_CONFIRM_PURCHASE = "TRANSAK_CONFIRM_PURCHASE",
@@ -69,6 +74,8 @@ export enum PageType {
 }
 
 export const trackPage = async (title: PageType) => {
+  // TODO: remove this once we have a fix for the analytics
+  return;
   const enabled = await getSetting("analytics").getValue();
 
   if (!enabled) return;
@@ -77,9 +84,9 @@ export const trackPage = async (title: PageType) => {
   if (process.env.NODE_ENV === "development") return;
 
   try {
-    await analytics.page("ArConnect Extension", {
-      title
-    });
+    // await analytics.page("Wander Extension", {
+    //   title
+    // });
   } catch (err) {
     console.log("err", err);
   }
@@ -118,6 +125,8 @@ export const trackDirect = async (
 };
 
 export const trackEvent = async (eventName: EventType, properties: any) => {
+  // TODO: remove this once we have a fix for the analytics
+  return;
   // first we check if we are allowed to collect data
   const enabled = await getSetting("analytics").getValue();
 
@@ -151,7 +160,7 @@ export const trackEvent = async (eventName: EventType, properties: any) => {
   try {
     const time = Date.now();
 
-    await analytics.track(eventName, { ...properties });
+    // await analytics.track(eventName, { ...properties });
 
     // POST TRACK EVENTS
     // only log login once every hour

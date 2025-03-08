@@ -1,37 +1,46 @@
 import { AnimatePresence, type Variants, motion } from "framer-motion";
 import { useCallback, useState } from "react";
-import { ButtonV2, Card } from "@arconnect/components";
-import { CheckIcon } from "@iconicicons/react";
+import { Button, Text } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
-
 import styled from "styled-components";
 
-import { CompletedWelcomeView } from "./gettingStarted/completed";
-import { EnableNotificationsWelcomeView } from "./gettingStarted/enableNotifications";
-import { ConnectWelcomeView } from "./gettingStarted/connect";
-import { ExploreWelcomeView } from "./gettingStarted/explore";
 import { useLocation } from "~wallets/router/router.utils";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { Redirect } from "~wallets/router/components/redirect/Redirect";
+import {
+  SetupCard,
+  HeaderContainer,
+  Content,
+  CardHeader,
+  BackButton,
+  Wrapper
+} from "./setup";
+import StarIcons from "~components/welcome/StarIcons";
+import { GettingStartedWelcomeView } from "./gettingStarted/welcome";
+import { GettingStartedTokensView } from "./gettingStarted/tokens";
+import { GettingStartedOnrampView } from "./gettingStarted/onramp";
+import { GettingStartedConnectView } from "./gettingStarted/connect";
+import { GettingStartedExploreView } from "./gettingStarted/explore";
 
 const Views = [
-  CompletedWelcomeView,
-  EnableNotificationsWelcomeView,
-  ExploreWelcomeView,
-  ConnectWelcomeView
+  GettingStartedWelcomeView,
+  GettingStartedTokensView,
+  GettingStartedOnrampView,
+  GettingStartedExploreView,
+  GettingStartedConnectView
 ];
 
-export interface GettingStartedWelcomeViewParams {
+export interface GettingStartedSetupWelcomeViewParams {
   // TODO: Use a nested router instead:
   page: string;
 }
 
-export type GettingStartedWelcomeViewProps =
-  CommonRouteProps<GettingStartedWelcomeViewParams>;
+export type GettingStartedSetupWelcomeViewProps =
+  CommonRouteProps<GettingStartedSetupWelcomeViewParams>;
 
-export function GettingStartedWelcomeView({
+export function GettingStartedSetupWelcomeView({
   params: { page: pageParam }
-}: GettingStartedWelcomeViewProps) {
+}: GettingStartedSetupWelcomeViewProps) {
   const { navigate } = useLocation();
   const page = Number(pageParam);
 
@@ -52,28 +61,36 @@ export function GettingStartedWelcomeView({
     return <Redirect to="/getting-started/1" />;
   }
 
+  const handleClose = () => {
+    // reset before unload
+    window.onbeforeunload = null;
+    window.top.close();
+  };
+
   const navigateToPage = (pageNum: number) => {
-    if (pageNum < 5) {
+    if (pageNum < 1) {
+      navigate("/getting-started/1");
+    } else if (pageNum < 6) {
       navigate(`/getting-started/${pageNum}`);
     } else {
-      // reset before unload
-      window.onbeforeunload = null;
-      window.top.close();
+      handleClose();
     }
   };
 
   const View = Views[page - 1];
 
   return (
-    <Wrapper>
-      <SetupCard>
+    <Wrapper linearBackground>
+      <SetupCard transparentBackground>
         <HeaderContainer>
-          <Header>
-            <CheckWrapper>
-              <CheckIcon />
-            </CheckWrapper>
-            Setup Complete!
-          </Header>
+          {page > 1 && (
+            <CardHeader>
+              <BackButton onClick={() => navigateToPage(page - 1)} />
+              <Text style={{ fontSize: 22, margin: "auto" }} weight="bold">
+                {browser.i18n.getMessage("getting_started")}
+              </Text>
+            </CardHeader>
+          )}
         </HeaderContainer>
         <Content>
           <PageWrapper style={{ height: contentSize }}>
@@ -85,20 +102,17 @@ export function GettingStartedWelcomeView({
           </PageWrapper>
         </Content>
         <Footer>
-          <PageIndicatorContainer>
-            {Views.map((_, i) => (
-              <PageIndicator
-                key={i}
-                active={page === i + 1}
-                onClick={() => navigateToPage(i + 1)}
-              />
-            ))}
-          </PageIndicatorContainer>
-          <ButtonV2 fullWidth onClick={() => navigateToPage(page + 1)}>
-            {browser.i18n.getMessage(page + 1 < 4 ? "next" : "done")}
-          </ButtonV2>
+          <Button fullWidth onClick={() => navigateToPage(page + 1)}>
+            {browser.i18n.getMessage(page < 5 ? "next" : "finish")}
+          </Button>
+          {page < 5 && (
+            <Button variant="secondary" fullWidth onClick={handleClose}>
+              {browser.i18n.getMessage("close")}
+            </Button>
+          )}
         </Footer>
       </SetupCard>
+      <StarIcons screen="setup" />
     </Wrapper>
   );
 }
@@ -115,27 +129,7 @@ const pageAnimation: Variants = {
 const Footer = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
-`;
-
-const PageIndicatorContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 1.25rem;
-`;
-
-const PageIndicator = styled.button<{ active?: boolean }>`
-  width: 0.75rem;
-  height: 0.75rem;
-  border-radius: 50%;
-  margin: 0 0.625rem;
-  background-color: ${(props) =>
-    props.active ? "#AB9AFF" : `rgba(${props.theme.theme}, 0.3)`};
-
-  border: none;
-  cursor: pointer;
-  outline: none;
+  gap: 1rem;
 `;
 
 const Page = styled(motion.div).attrs({
@@ -143,67 +137,15 @@ const Page = styled(motion.div).attrs({
   initial: "exit",
   animate: "init"
 })`
-  position: absolute;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
   width: 100%;
-  height: max-content;
-  left: 0;
-  top: 0;
 `;
 
 const PageWrapper = styled.div`
-  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
   transition: height 0.17s ease;
-`;
-
-const Content = styled.div`
-  overflow: hidden;
-  height: 100%;
-`;
-const CheckWrapper = styled.div`
-  width: 0.9375rem;
-  height: 0.9375rem;
-  border-radius: 50%;
-  color: #ffffff;
-
-  background-color: rgba(20, 209, 16, 0.3);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-`;
-
-const HeaderContainer = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
-
-const Header = styled.div`
-  color: #14d110;
-  background-color: rgba(20, 209, 16, 0.05);
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  border: 1px solid #14d110;
-  border-radius: 25px;
-  font-size: 0.625rem;
-  padding: 0.625rem;
-`;
-
-const Wrapper = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100vw;
-  min-height: 100vh;
-  flex-direction: column;
-`;
-
-const SetupCard = styled(Card)`
-  padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: 2rem;
-  height: 36.375rem;
-  width: 26rem;
 `;

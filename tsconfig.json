@@ -1,17 +1,20 @@
 {
   "extends": "plasmo/templates/tsconfig.base",
-  "exclude": ["node_modules"],
+  "exclude": ["node_modules", "wander-embedded-sdk"],
   "include": [
     ".plasmo/index.d.ts",
     ".plasmo/**/*",
     "./**/*.ts",
     "./**/*.tsx",
-    "./shim.d.ts"
+    "./shim.d.ts",
+    "vite.config.js",
+    "vite.config.js"
   ],
   "compilerOptions": {
     "paths": {
       "~*": ["./src/*"]
     },
+    "resolveJsonModule": true,
     "baseUrl": ".",
     "jsx": "react-jsx"
   }

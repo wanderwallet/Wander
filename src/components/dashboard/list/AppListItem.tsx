@@ -1,6 +1,7 @@
-import { ListItem, ListItemIcon, ListItemImg } from "@arconnect/components";
+import { ListItem } from "@arconnect/components-rebrand";
 import { GridIcon } from "@iconicicons/react";
 import type { HTMLProps } from "react";
+import Image from "~components/common/Image";
 
 export default function AppListItem({
   name,
@@ -10,8 +11,16 @@ export default function AppListItem({
   ...props
 }: Props & HTMLProps<HTMLDivElement>) {
   return (
-    <ListItem title={name} description={url} active={active} {...props}>
-      {(icon && <ListItemImg src={icon} />) || <ListItemIcon as={GridIcon} />}
+    <ListItem
+      title={name}
+      subtitle={url}
+      active={active}
+      icon={icon && <Image height={40} width={40} src={icon} />}
+      height={64}
+      hideSquircle={!!icon}
+      {...props}
+    >
+      {!icon && <GridIcon />}
     </ListItem>
   );
 }
@@ -22,4 +31,6 @@ interface Props {
   url: React.ReactNode;
   active: boolean;
   small?: boolean;
+  squircleSize?: number;
+  showArrow?: boolean;
 }

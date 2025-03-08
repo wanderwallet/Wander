@@ -1,13 +1,12 @@
 import {
-  ButtonV2,
-  InputV2,
+  Input,
   Loading,
   Section,
   Spacer,
   Text,
   useInput,
   useToasts
-} from "@arconnect/components";
+} from "@arconnect/components-rebrand";
 import {
   FiatAmount,
   AmountTitle,
@@ -23,7 +22,7 @@ import browser from "webextension-polyfill";
 import { useEffect, useMemo, useRef, useState } from "react";
 import styled from "styled-components";
 import { formatAddress } from "~utils/format";
-import { useStorage } from "@plasmohq/storage/hook";
+import { useStorage } from "~utils/storage";
 import { ExtensionStorage } from "~utils/storage";
 import { checkPassword } from "~wallets/auth";
 import { Quantity, Token } from "ao-tokens";
@@ -31,7 +30,11 @@ import prettyBytes from "pretty-bytes";
 import { formatFiatBalance } from "~tokens/currency";
 import useSetting from "~settings/hook";
 import { getPrice } from "~lib/coingecko";
-import type { TokenInfo, TokenInfoWithProcessId } from "~tokens/aoTokens/ao";
+import {
+  getTagValue,
+  type TokenInfo,
+  type TokenInfoWithProcessId
+} from "~tokens/aoTokens/ao";
 import { ChevronUpIcon, ChevronDownIcon } from "@iconicicons/react";
 import { getUserAvatar } from "~lib/avatar";
 import { LogoWrapper, Logo, WarningIcon } from "~components/popup/Token";
@@ -43,6 +46,8 @@ import { Degraded, WarningWrapper } from "~routes/popup/send";
 import { useCurrentAuthRequest } from "~utils/auth/auth.hooks";
 import { HeadAuth } from "~components/HeadAuth";
 import { AuthButtons } from "~components/auth/AuthButtons";
+import { useAskPassword } from "~wallets/hooks";
+import { humanizeTimestampTags } from "~utils/timestamp";
 
 export function SignDataItemAuthRequestView() {
   const { authRequest, acceptRequest, rejectRequest } =
@@ -50,7 +55,6 @@ export function SignDataItemAuthRequestView() {
 
   const { authID, data, url } = authRequest;
 
-  const [password, setPassword] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [tokenName, setTokenName] = useState<string>("");
   const [logo, setLogo] = useState<string>("");
@@ -58,13 +62,22 @@ export function SignDataItemAuthRequestView() {
   const [showTags, setShowTags] = useState<boolean>(false);
   const [mismatch, setMismatch] = useState<boolean>(false);
   const { setToast } = useToasts();
+  const askPassword = useAskPassword();
 
-  const recipient =
-    data?.tags?.find((tag) => tag.name === "Recipient")?.value || "";
-  const quantity =
-    data?.tags?.find((tag) => tag.name === "Quantity")?.value || "0";
-  const transfer = data?.tags?.some(
-    (tag) => tag.name === "Action" && tag.value === "Transfer"
+  const tags = useMemo(() => humanizeTimestampTags(data?.tags || []), [data]);
+  const recipient = useMemo(() => getTagValue("Recipient", tags) || "", [tags]);
+  const quantity = useMemo(() => getTagValue("Quantity", tags) || "0", [tags]);
+  const transfer = useMemo(
+    () => tags.some((tag) => tag.name === "Action" && tag.value === "Transfer"),
+    [tags]
+  );
+
+  const [transferRequirePassword] = useStorage<boolean>(
+    {
+      key: "transfer_require_password",
+      instance: ExtensionStorage
+    },
+    false
   );
 
   const process = data?.target;
@@ -78,14 +91,6 @@ export function SignDataItemAuthRequestView() {
   const parentRef = useRef(null);
   const childRef = useRef(null);
   useAdjustAmountTitleWidth(parentRef, childRef, formattedAmount);
-
-  const [signatureAllowance] = useStorage(
-    {
-      key: "signatureAllowance",
-      instance: ExtensionStorage
-    },
-    10
-  );
 
   // active address
   const [activeAddress] = useStorage<string>(
@@ -114,9 +119,24 @@ export function SignDataItemAuthRequestView() {
 
   const passwordInput = useInput();
 
+  const headerTitle = useMemo(() => {
+    if (!tags?.length) return browser.i18n.getMessage("sign_item");
+
+    const actionValue = getTagValue("Action", tags);
+    const isAOTransaction = tags.some(
+      (tag) => tag.name === "Data-Protocol" && tag.value === "ao"
+    );
+
+    if (isAOTransaction && actionValue) {
+      return actionValue.replace(/-/g, " ");
+    }
+
+    return browser.i18n.getMessage("sign_item");
+  }, [tags]);
+
   // sign message
   async function sign() {
-    if (password) {
+    if (transferRequirePassword && askPassword) {
       const checkPw = await checkPassword(passwordInput.state);
       if (!checkPw) {
         setToast({
@@ -130,16 +150,6 @@ export function SignDataItemAuthRequestView() {
 
     await acceptRequest();
   }
-
-  useEffect(() => {
-    if (amount === null) return;
-
-    if (signatureAllowance < amount?.toNumber()) {
-      setPassword(true);
-    } else {
-      setPassword(false);
-    }
-  }, [signatureAllowance, amount]);
 
   useEffect(() => {
     if (!tokenName) return;
@@ -205,7 +215,7 @@ export function SignDataItemAuthRequestView() {
   // listen for enter to reset
   useEffect(() => {
     const listener = async (e: KeyboardEvent) => {
-      if (password) return;
+      if (transferRequirePassword && askPassword) return;
       if (e.key !== "Enter") return;
       await sign();
     };
@@ -213,7 +223,7 @@ export function SignDataItemAuthRequestView() {
     window.addEventListener("keydown", listener);
 
     return () => window.removeEventListener("keydown", listener);
-  }, [authID, password]);
+  }, [authID, transferRequirePassword, askPassword]);
 
   useEffect(() => {
     if (tokenName && !logo) {
@@ -252,7 +262,7 @@ export function SignDataItemAuthRequestView() {
   return (
     <Wrapper ref={parentRef}>
       <div>
-        <HeadAuth title={browser.i18n.getMessage("sign_item")} />
+        <HeadAuth title={headerTitle} />
         {mismatch && transfer && (
           <Degraded>
             <WarningWrapper>
@@ -294,7 +304,11 @@ export function SignDataItemAuthRequestView() {
           </div>
           {transfer && (
             <>
-              <FiatAmount>{formatFiatBalance(fiatPrice, currency)}</FiatAmount>
+              {+fiatPrice > 0 && (
+                <FiatAmount>
+                  {formatFiatBalance(fiatPrice, currency)}
+                </FiatAmount>
+              )}
               <AmountTitle
                 ref={childRef}
                 style={{
@@ -371,12 +385,12 @@ export function SignDataItemAuthRequestView() {
         </Section>
       </div>
       <Section>
-        {password && (
+        {transferRequirePassword && askPassword && (
           <>
             <PasswordWrapper>
-              <InputV2
+              <Input
                 placeholder="Enter your password"
-                small
+                sizeVariant="small"
                 {...passwordInput.bindings}
                 label={"Password"}
                 type="password"

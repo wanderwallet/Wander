@@ -31,3 +31,32 @@ export const Page = styled.div<{ active?: boolean }>`
   );
   transition: all 0.23s ease-in-out;
 `;
+
+export const Container = styled.div<{
+  justifyContent?: React.CSSProperties["justifyContent"];
+  alignItems?: React.CSSProperties["alignItems"];
+}>`
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  height: 100%;
+  gap: 24px;
+  ${({ alignItems }) => alignItems && `align-items: ${alignItems}`};
+  ${({ justifyContent }) =>
+    justifyContent && `justify-content: ${justifyContent}`};
+`;
+
+export const Content = styled.div<{
+  justifyContent?: React.CSSProperties["justifyContent"];
+  alignItems?: React.CSSProperties["alignItems"];
+  textAlign?: React.CSSProperties["textAlign"];
+}>`
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  ${({ justifyContent }) =>
+    justifyContent && `justify-content: ${justifyContent}`};
+  ${({ alignItems }) => alignItems && `align-items: ${alignItems}`};
+  ${({ textAlign }) => textAlign && `text-align: ${textAlign}`};
+  gap: 24px;
+`;

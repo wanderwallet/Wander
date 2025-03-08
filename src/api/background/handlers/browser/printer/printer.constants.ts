@@ -1,1 +1,1 @@
-export const ARCONNECT_PRINTER_ID = "arconnect-permaweb-printer";
+export const WANDER_PRINTER_ID = "wander-permaweb-printer";

@@ -1,4 +1,4 @@
-import { InputV2 } from "@arconnect/components";
+import { Input } from "@arconnect/components-rebrand";
 import type { HTMLProps } from "react";
 import styled from "styled-components";
 
@@ -7,7 +7,7 @@ export default function SearchInput(
 ) {
   return (
     <Wrapper sticky={props.sticky}>
-      <InputV2 {...(props as any)} search={true} fullWidth />
+      <Input variant="search" {...(props as any)} search={true} fullWidth />
     </Wrapper>
   );
 }

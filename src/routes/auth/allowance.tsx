@@ -7,13 +7,12 @@ import Application, { type AppInfo } from "~applications/application";
 import { checkPassword } from "~wallets/auth";
 import { useEffect, useState } from "react";
 import {
-  ButtonV2,
-  InputV2,
+  Input,
   Section,
   Spacer,
   useInput,
   useToasts
-} from "@arconnect/components";
+} from "@arconnect/components-rebrand";
 import Wrapper from "~components/auth/Wrapper";
 import browser from "webextension-polyfill";
 import App from "~components/auth/App";
@@ -151,11 +150,11 @@ export function AllowanceAuthRequestView() {
             {...limitInput.bindings}
             label={browser.i18n.getMessage("limit")}
             placeholder={"0.1"}
-            icon="AR"
+            iconRight="AR"
             fullWidth
           />
           <Spacer y={1} />
-          <InputV2
+          <Input
             type="password"
             {...passwordInput.bindings}
             label={browser.i18n.getMessage("password")}
@@ -185,7 +184,7 @@ export function AllowanceAuthRequestView() {
   );
 }
 
-const NumberInput = styled(InputV2)`
+const NumberInput = styled(Input)`
   &::-webkit-outer-spin-button,
   &::-webkit-inner-spin-button {
     -webkit-appearance: none;

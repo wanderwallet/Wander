@@ -1,4 +1,4 @@
-import type { DisplayTheme } from "@arconnect/components";
+import type { DisplayTheme } from "@arconnect/components-rebrand";
 import type { PropsWithChildren } from "react";
 import { useTheme } from "~utils/theme";
 import styled from "styled-components";

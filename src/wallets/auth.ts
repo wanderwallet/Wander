@@ -11,6 +11,9 @@ import {
 } from "~utils/auth/auth.constants";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 
+export const PASSWORD_FRESHNESS = "password_freshness";
+export const FRESHNESS_DURATION = 3 * 60 * 1000;
+
 /**
  * Unlock wallets and save decryption key
  *
@@ -43,7 +46,9 @@ export async function checkPassword(password: string) {
   let decryptionKey = await getDecryptionKey();
 
   if (!!decryptionKey) {
-    return decryptionKey === password;
+    const isPasswordValid = decryptionKey === password;
+    if (isPasswordValid) await setPasswordFreshness();
+    return isPasswordValid;
   }
 
   // try decrypting
@@ -198,4 +203,17 @@ async function scheduleKeyRemoval() {
   browser.alarms.create("remove_decryption_key_scheduled", {
     periodInMinutes: 60 * 24
   });
+}
+
+export async function isPasswordFresh(): Promise<boolean> {
+  const freshness = Number(await ExtensionStorage.get(PASSWORD_FRESHNESS));
+  return !!freshness && Date.now() - freshness < FRESHNESS_DURATION;
+}
+
+export async function setPasswordFreshness(): Promise<void> {
+  await ExtensionStorage.set(PASSWORD_FRESHNESS, Date.now());
+}
+
+export async function clearPasswordFreshness(): Promise<void> {
+  await ExtensionStorage.remove(PASSWORD_FRESHNESS);
 }

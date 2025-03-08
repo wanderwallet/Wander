@@ -1,7 +1,6 @@
 import { HomeWelcomeView } from "~routes/welcome";
-import { GettingStartedWelcomeView } from "~routes/welcome/gettingStarted";
+import { GettingStartedSetupWelcomeView } from "~routes/welcome/gettingStarted";
 import { SetupWelcomeView, type WelcomeSetupMode } from "~routes/welcome/setup";
-import { StartWelcomeView } from "~routes/welcome/start";
 import type { RouteConfig } from "~wallets/router/router.types";
 
 export type WelcomeRoutePath =
@@ -12,7 +11,6 @@ export type WelcomeRoutePath =
 
 export const WelcomePaths = {
   Home: "/",
-  Start: "/start/:page",
   GettingStarted: "/getting-started/:page",
   Setup: "/:setupMode/:page"
 } as const;
@@ -23,12 +21,8 @@ export const WELCOME_ROUTES = [
     component: HomeWelcomeView
   },
   {
-    path: WelcomePaths.Start,
-    component: StartWelcomeView
-  },
-  {
     path: WelcomePaths.GettingStarted,
-    component: GettingStartedWelcomeView
+    component: GettingStartedSetupWelcomeView
   },
   {
     path: WelcomePaths.Setup,

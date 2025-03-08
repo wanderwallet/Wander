@@ -40,6 +40,7 @@ import useSetting from "~settings/hook";
 import { PageType, trackPage } from "~utils/analytics";
 import BigNumber from "bignumber.js";
 import type { CommonRouteProps } from "~wallets/router/router.types";
+import { Flex } from "~components/common/Flex";
 
 export interface SubscriptionDetailsViewParams {
   id?: string;
@@ -348,7 +349,7 @@ export function SubscriptionDetailsView({
 export const InfoText: React.ReactNode = (
   <div style={{ fontSize: "10px", lineHeight: "14px", textAlign: "center" }}>
     Enable if you'd like <br />
-    ArConnect to <br />
+    Wander to <br />
     automatically transfer <br />
     to due payments
   </div>
@@ -442,55 +443,88 @@ export const SubscriptionListItem = styled.div`
   display: flex;
 `;
 
-export const ToggleSwitch = ({
-  checked,
-  setChecked
-}: {
+interface ToggleSwitchProps {
   checked: boolean;
   setChecked: Dispatch<SetStateAction<boolean>>;
-}) => {
-  // const [checked, setChecked] = useState(false);
+  width?: number;
+  height?: number;
+  children?: React.ReactNode;
+}
+
+export const ToggleSwitch = ({
+  checked,
+  setChecked,
+  width = 44,
+  height = 22,
+  children
+}: ToggleSwitchProps) => {
+  const [state, setState] = useState(checked);
 
   const handleChange = () => {
-    setChecked(!checked);
+    const newState = !state;
+    setState(newState);
+    setChecked(newState);
   };
 
+  useEffect(() => {
+    setState(checked);
+  }, [checked]);
+
   return (
-    <SwitchWrapper>
-      <Checkbox type="checkbox" checked={checked} onChange={handleChange} />
-      <Slider />
-    </SwitchWrapper>
+    <Flex gap={8}>
+      <SwitchWrapper width={width} height={height}>
+        <Checkbox
+          width={width}
+          height={height}
+          type="checkbox"
+          onChange={handleChange}
+        />
+        <Slider width={width} height={height} checked={state} />
+      </SwitchWrapper>
+      {children}
+    </Flex>
   );
 };
 
-const SwitchWrapper = styled.label`
+const SwitchWrapper = styled.label<{ width: number; height: number }>`
   position: relative;
   display: inline-block;
-  width: 44px; // Total width of the switch
-  height: 22px; // Total height of the switch
+  width: ${(props) => props.width}px;
+  height: ${(props) => props.height}px;
 `;
 
-const Slider = styled.span`
+const Slider = styled.span<{ width: number; height: number; checked: boolean }>`
   position: absolute;
   cursor: pointer;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #ccc;
-  transition: 0.4s;
-  border-radius: 22px;
+  background: ${(props) =>
+    props.checked
+      ? "linear-gradient(47deg, #5842F8 5.41%, #6B57F9 96%)"
+      : "#E5E7EB"};
+  transition: all 0.3s ease-in-out;
+  border-radius: ${(props) => props.height / 2}px;
+  will-change: transform, background;
 
   &:before {
     position: absolute;
     content: "";
-    height: 18px;
-    width: 18px;
-    left: 2px;
-    bottom: 2px;
+    height: ${(props) => props.height - 5}px;
+    width: ${(props) => props.height - 5}px;
+    left: 2.5px;
+    bottom: 2.5px;
     background-color: white;
-    transition: 0.4s;
     border-radius: 50%;
+    box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.15);
+    transform: translate3d(
+      ${(props) => (props.checked ? props.width - props.height : 0)}px,
+      0,
+      0
+    );
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
   }
 `;
 
@@ -498,15 +532,6 @@ const Checkbox = styled.input`
   opacity: 0;
   width: 0;
   height: 0;
-
-  &:checked + ${Slider} {
-    background-color: #8e7bea;
-  }
-
-  &:checked + ${Slider}:before {
-    // The translateX value should match the width of the switch minus the circle diameter and margins
-    transform: translateX(22px); // Adjusted to fit the new size
-  }
 `;
 
 export const InfoCircle = () => (

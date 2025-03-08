@@ -34,7 +34,8 @@ import { isomorphicOnMessage } from "~utils/messaging/messaging.utils";
 import type { IBridgeMessage } from "@arconnect/webext-bridge";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { isError } from "~utils/error/error.utils";
-import type { RouteOverride } from "~wallets/router/router.types";
+import { getDecryptionKey } from "~wallets/auth";
+import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 
 interface AuthRequestsContextState {
   authRequests: AuthRequest[];
@@ -59,14 +60,7 @@ export const AuthRequestsContext = createContext<AuthRequestsContextData>({
   completeAuthRequest: async () => {}
 });
 
-interface AuthRequestProviderProps extends PropsWithChildren {
-  useStatusOverride: () => RouteOverride;
-}
-
-export function AuthRequestsProvider({
-  children,
-  useStatusOverride
-}: AuthRequestProviderProps) {
+export function AuthRequestsProvider({ children }: PropsWithChildren) {
   const [
     { authRequests, currentAuthRequestIndex, lastCompletedAuthRequest },
     setAuthRequestContextState
@@ -85,13 +79,26 @@ export function AuthRequestsProvider({
   );
 
   const closeAuthPopup = useCallback((delay: number = 0) => {
-    // TODO: In the embedded wallet, maybe we need to store (but not show) unlock requests so that this doesn't
-    // clear automatically.
-
     function closeOrClear() {
-      if (process.env.PLASMO_PUBLIC_APP_TYPE !== "extension") {
+      if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1") {
         // TODO: This might cause an infinite loop in the embedded wallet:
-        setAuthRequestContextState(AUTH_REQUESTS_CONTEXT_INITIAL_STATE);
+        // setAuthRequestContextState(AUTH_REQUESTS_CONTEXT_INITIAL_STATE);
+
+        // TODO: We could improve this to detect if we opened the wallet to show an AuthRequest, or if it was already
+        // open. In the former case, when all AuthRequests are handled, we close it. In the latter, we just clear the
+        // AuthRequests from the state but leave it open.
+
+        postEmbeddedMessage({
+          type: "embedded_request",
+          data: {
+            pendingRequests: 0
+          }
+        });
+
+        postEmbeddedMessage({
+          type: "embedded_close",
+          data: null
+        });
       } else {
         window.top.close();
       }
@@ -125,6 +132,19 @@ export function AuthRequestsProvider({
             compareConnectAuthRequests(authRequest, completedAuthRequest)
           ) {
             completedAuthRequests.push(authRequest);
+          }
+        });
+      }
+
+      if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1") {
+        const pendingRequests =
+          authRequests.filter((authRequest) => authRequest.status === "pending")
+            .length - completedAuthRequests.length;
+
+        postEmbeddedMessage({
+          type: "embedded_request",
+          data: {
+            pendingRequests
           }
         });
       }
@@ -271,6 +291,19 @@ export function AuthRequestsProvider({
           ...authRequests,
           { ...authRequest, status: "pending" }
         ] satisfies AuthRequest[];
+
+        if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1") {
+          const pendingRequests = nextAuthRequests.filter(
+            (authRequest) => authRequest.status === "pending"
+          ).length;
+
+          postEmbeddedMessage({
+            type: "embedded_request",
+            data: {
+              pendingRequests
+            }
+          });
+        }
 
         // TODO: Add setting to decide whether we automatically jump to a new pending request when they arrive or stay
         // in the one currently selected.
@@ -433,33 +466,41 @@ export function AuthRequestsProvider({
     });
   }, []);
 
-  const statusOverride = useStatusOverride();
-
   useEffect(() => {
     let clearCloseAuthPopupTimeout = () => {};
 
-    const isDone =
-      authRequests.length > 0 &&
-      authRequests.every((authRequest) => authRequest.status !== "pending");
+    function setCloseTimers() {
+      const isEmbedded = import.meta.env?.VITE_IS_EMBEDDED_APP === "1";
+      const hasAuthRequests = authRequests.length > 0;
+      const isDone =
+        hasAuthRequests &&
+        authRequests.every((authRequest) => authRequest.status !== "pending");
 
-    if (statusOverride === null && authRequests.length === 0) {
-      // TODO: Maybe move to the app entry point?
-      // Close the popup if an AuthRequest doesn't arrive in less than `AUTH_POPUP_REQUEST_WAIT_MS` (1s), unless the
-      // wallet is locked (no timeout in that case):
-      clearCloseAuthPopupTimeout = closeAuthPopup(AUTH_POPUP_REQUEST_WAIT_MS);
-    } else if (statusOverride) {
-      // If the user doesn't unlock the wallet in 15 minutes, or somehow the popup gets stuck into any other state for
-      // more than that, we close it:
-      clearCloseAuthPopupTimeout = closeAuthPopup(
-        AUTH_POPUP_UNLOCK_REQUEST_TTL_MS
-      );
-    } else if (isDone) {
-      // Close the window if the last request has been handled:
+      if (isDone) {
+        // Close the window if the last request has been handled:
+        // TODO: Add setting to decide whether this closes automatically or stays open in a "done" state.
 
-      // TODO: Add setting to decide whether this closes automatically or stays open in a "done" state.
-
-      clearCloseAuthPopupTimeout = closeAuthPopup(AUTH_POPUP_CLOSING_DELAY_MS);
+        clearCloseAuthPopupTimeout = closeAuthPopup(
+          AUTH_POPUP_CLOSING_DELAY_MS
+        );
+      } else if (!isEmbedded) {
+        if (hasAuthRequests) {
+          // Once there are some AuthRequest waiting, the user has `AUTH_POPUP_UNLOCK_REQUEST_TTL_MS` (15 minutes) to
+          // unlock the wallet before we close it automatically:
+          clearCloseAuthPopupTimeout = closeAuthPopup(
+            AUTH_POPUP_UNLOCK_REQUEST_TTL_MS
+          );
+        } else {
+          // Once the wallet is unlocked, we close the popup if an AuthRequest doesn't arrive in less than
+          // `AUTH_POPUP_REQUEST_WAIT_MS` (1 second):
+          clearCloseAuthPopupTimeout = closeAuthPopup(
+            AUTH_POPUP_REQUEST_WAIT_MS
+          );
+        }
+      }
     }
+
+    setCloseTimers();
 
     // Not needed in the embedded wallet, but can be left alone. It won't do anything:
     function handleBeforeUnload() {
@@ -482,7 +523,7 @@ export function AuthRequestsProvider({
 
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
-  }, [statusOverride, authRequests, currentAuthRequestIndex, closeAuthPopup]);
+  }, [authRequests, currentAuthRequestIndex, closeAuthPopup]);
 
   return (
     <AuthRequestsContext.Provider

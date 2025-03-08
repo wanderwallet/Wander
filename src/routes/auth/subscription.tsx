@@ -1,9 +1,4 @@
-import {
-  ButtonV2,
-  TooltipV2,
-  useInput,
-  useToasts
-} from "@arconnect/components";
+import { Tooltip, useToasts } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
 import styled from "styled-components";
 import {
@@ -220,9 +215,9 @@ export function SubscriptionAuthRequestView() {
           <Body>
             <SubscriptionText color={theme === "light" ? "#191919" : "#ffffff"}>
               {browser.i18n.getMessage("auto_pay")}
-              <TooltipV2 content={InfoText} position="bottom">
+              <Tooltip content={InfoText} position="bottom">
                 <InfoCircle />
-              </TooltipV2>
+              </Tooltip>
             </SubscriptionText>
             <ToggleSwitch
               checked={autopayChecked}

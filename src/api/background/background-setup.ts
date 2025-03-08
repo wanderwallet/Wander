@@ -28,17 +28,61 @@ import {
 } from "~api/background/handlers/browser/tabs/tabs.handler";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { isomorphicOnMessage } from "~utils/messaging/messaging.utils";
+import { handleAuthStateChange } from "./handlers/storage/auth-state-change/auth-state-change.handler";
 
 export function setupBackgroundService() {
   log(
     LOG_GROUP.SETUP,
-    `background-setup.ts > setupBackgroundService(PLASMO_PUBLIC_APP_TYPE = "${process.env.PLASMO_PUBLIC_APP_TYPE}")`
+    `background-setup.ts > setupBackgroundService(VITE_IS_EMBEDDED_APP = "${
+      import.meta.env?.VITE_IS_EMBEDDED_APP
+    }")`
   );
 
   // MESSAGES:
   // Watch for API call and chunk messages:
   isomorphicOnMessage("api_call", handleApiCallMessage);
   isomorphicOnMessage("chunk", handleChunkMessage);
+
+  /*
+  if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1") {
+    window.addEventListener("message", (event: MessageEvent) => {
+      if (
+        !event.data ||
+        event.data.app !== "wanderEmbedded" ||
+        event.origin !== getEmbeddedAncestorOrigin()
+      )
+        return;
+
+      console.log("MESSAGE FROM PARENT =", event.data);
+
+      handleApiCallMessage({
+        id: "",
+        timestamp: Date.now(),
+        data: event.data,
+        sender: {
+          tabId: 0,
+          context: "content-script"
+        }
+      });
+
+      // Example: check if the message is from our SDK
+
+      // if (event.data.type === "FROM_SDK") {
+      //   const incomingMsg = event.data.payload;
+      //   console.log(
+      //     "Iframe received message from WanderEmbedded:",
+      //     incomingMsg
+      //   );
+
+      //   // Respond back
+      //   event.source?.postMessage({
+      //     type: "FROM_IFRAME",
+      //     payload: `Got your message: ${incomingMsg}`
+      //   });
+      // }
+    });
+  }
+  */
 
   // LIFECYCLE:
 
@@ -74,14 +118,15 @@ export function setupBackgroundService() {
   ExtensionStorage.watch({
     apps: handleAppsChange,
     active_address: handleActiveAddressChange,
-    wallets: handleWalletsChange
+    wallets: handleWalletsChange,
+    decryption_key: handleAuthStateChange
   });
 
   // listen for app config updates
   // `ExtensionStorage.watch` requires a callbackMap param, so this cannot be done using `ExtensionStorage` directly.
   browser.storage.onChanged.addListener(handleAppConfigChange);
 
-  if (process.env.PLASMO_PUBLIC_APP_TYPE !== "extension") return;
+  if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1") return;
 
   // ONLY BROWSER EXTENSION BELOW THIS LINE:
 
@@ -102,15 +147,16 @@ export function setupBackgroundService() {
   browser.webNavigation.onBeforeNavigate.addListener(handleProtocol);
 
   // print to the permaweb (only on chrome)
-  if (typeof chrome !== "undefined") {
-    chrome.printerProvider.onGetCapabilityRequested.addListener(
-      handleGetCapabilities
-    );
+  // TODO: uncomment this once we have a proper solution
+  // if (typeof chrome !== "undefined") {
+  //   chrome.printerProvider.onGetCapabilityRequested.addListener(
+  //     handleGetCapabilities
+  //   );
 
-    chrome.printerProvider.onGetPrintersRequested.addListener(
-      handleGetPrinters
-    );
+  //   chrome.printerProvider.onGetPrintersRequested.addListener(
+  //     handleGetPrinters
+  //   );
 
-    chrome.printerProvider.onPrintRequested.addListener(handlePrint);
-  }
+  //   chrome.printerProvider.onPrintRequested.addListener(handlePrint);
+  // }
 }

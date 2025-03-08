@@ -65,17 +65,17 @@ export function WalletsProvider({
 
       let walletStatus: WalletStatus = "noWallets";
 
-      if (hasWallets && decryptionKey) {
-        walletStatus = "unlocked";
-      } else if (!decryptionKey) {
-        walletStatus = "locked";
+      if (hasWallets) {
+        walletStatus = decryptionKey ? "unlocked" : "locked";
       } else if (redirectToWelcome) {
         // This should only happen when opening the regular popup, but not for the auth popup, as the
         // `createAuthPopup` will open the welcome page directly, instead of the popup, if needed:
 
-        openOrSelectWelcomePage(true);
+        await openOrSelectWelcomePage(true);
 
         window.top.close();
+
+        return;
       }
 
       setWalletsContextState({

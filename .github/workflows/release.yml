@@ -17,7 +17,7 @@ jobs:
           node-version: 20
           cache: "yarn"
       - run: yarn install --frozen-lockfile
-      - run: yarn build:chrome
+      - run: NODE_OPTIONS="--max-old-space-size=8192" yarn build:chrome
       - run: npx semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

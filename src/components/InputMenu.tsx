@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import browser, { search } from "webextension-polyfill";
 import styled from "styled-components";
 import { useTheme, hoverEffect } from "~utils/theme";
-import type { DisplayTheme } from "@arconnect/components";
+import type { DisplayTheme } from "@arconnect/components-rebrand";
 import { CloseIcon, ChevronDownIcon, SearchIcon } from "@iconicicons/react";
 import amex from "url:/assets/ecosystem/amex.svg";
 import mastercard from "url:/assets/ecosystem/mastercard.svg";

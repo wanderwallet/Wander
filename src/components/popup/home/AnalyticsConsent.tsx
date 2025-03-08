@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Button, Text } from "@arconnect/components";
-import { useStorage } from "@plasmohq/storage/hook";
+import { useStorage } from "~utils/storage";
 import { ExtensionStorage } from "~utils/storage";
 import { CloseIcon } from "@iconicicons/react";
 import type { Variants } from "framer-motion";
@@ -30,7 +30,7 @@ export default function AnalyticsConsent() {
             <ConsentText>
               {browser.i18n.getMessage("analytics_description")}{" "}
               <a
-                href="https://arconnect.io/pp"
+                href="https://www.wander.app/privacy"
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={(e) => e.stopPropagation()}

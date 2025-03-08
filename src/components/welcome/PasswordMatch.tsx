@@ -1,5 +1,5 @@
 import { AnimatePresence, motion, type Variants } from "framer-motion";
-import { Spacer, Text } from "@arconnect/components";
+import { Spacer, Text } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
 import styled from "styled-components";
 
@@ -12,7 +12,7 @@ const PasswordMatch = ({ matches }: Props) => (
         exit="hidden"
         variants={opacityAnimation}
       >
-        <Spacer y={0.65} />
+        <Spacer y={0.5} />
         <MatchIndicator>
           {browser.i18n.getMessage("passwords_match")}
         </MatchIndicator>
@@ -22,10 +22,10 @@ const PasswordMatch = ({ matches }: Props) => (
 );
 
 const MatchIndicator = styled(Text).attrs({
-  noMargin: true
+  noMargin: true,
+  size: "sm"
 })`
-  color: rgb(0, 255, 0);
-  font-size: 0.84rem;
+  color: #56c980;
 `;
 
 const opacityAnimation: Variants = {

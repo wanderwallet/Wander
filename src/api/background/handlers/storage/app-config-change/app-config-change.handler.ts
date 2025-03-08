@@ -43,10 +43,10 @@ export async function handleAppConfigChange(
     const app = new Application(appURL);
     // this was changed by atticus because values in storage are stored stringified
     const oldValue = JSON.parse(
-      storedOldValue as unknown as string
+      (storedOldValue || "{}") as unknown as string
     ) as InitAppParams;
     const newValue = JSON.parse(
-      storedNewValue as unknown as string
+      (storedNewValue || "{}") as unknown as string
     ) as InitAppParams;
 
     // check if permission event emitting is needed
@@ -89,6 +89,8 @@ export async function handleAppConfigChange(
       });
     }
   }
+
+  // TODO: Update this to work with Embedded:
 
   // send permissions to the appropriate tab
   await forEachTab(async (tab) => {

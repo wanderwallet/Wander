@@ -1,10 +1,10 @@
-# ArConnect
+# Wander
 
-ArConnect is a browser extension allowing Arweave wallet holders to interact with dApps securely and easily.
+Wander is a browser extension allowing Arweave wallet holders to interact with dApps securely and easily.
 
 ## API
 
-You can interact with basic ArConnect functionalities using [`arweave-js`](https://npmjs.com/arweave). To create a transaction, you just don't pass in the user's wallet instance:
+You can interact with basic Wander functionalities using [`arweave-js`](https://npmjs.com/arweave). To create a transaction, you just don't pass in the user's wallet instance:
 
 ```ts
 const tx = await arweave.createTransaction({
@@ -12,7 +12,7 @@ const tx = await arweave.createTransaction({
 });
 ```
 
-Than, you can use ArConnect to add the users wallet to the transaction and sign it (as before, you don't pass in the user's wallet instance, that is done by ArConnect):
+Than, you can use Wander to add the users wallet to the transaction and sign it (as before, you don't pass in the user's wallet instance, that is done by Wander):
 
 ```ts
 await arweave.transactions.sign(tx);
@@ -22,21 +22,21 @@ Done! Now you can post the transaction.
 
 ## Events
 
-ArConnect has some useful custom events.
+Wander has some useful custom events.
 
 ### `arweaveWalletLoaded`
 
-Triggers when the ArConnect global object (`window.arweaveWallet`) is injected into the page. It can be useful when executing functions on page load.
+Triggers when the Wander global object (`window.arweaveWallet`) is injected into the page. It can be useful when executing functions on page load.
 
 ```ts
 window.addEventListener("arweaveWalletLoaded", () => {
-  /** Handle ArConnect load event **/
+  /** Handle Wander load event **/
 });
 ```
 
 ### `walletSwitch`
 
-Triggers, when the user switches their wallet in the ArConnect extension popup.
+Triggers, when the user switches their wallet in the Wander extension popup.
 
 ```ts
 window.addEventListener("walletSwitch", (e) => {
@@ -49,13 +49,13 @@ Requires the `ACCESS_ADDRESS` and the `ACCESS_ALL_ADDRESSES` [permissions](#perm
 
 ## Other supported functions
 
-ArConnect supports much more with it's powerful API. These features are not integrated into arweave-js right now, but please let us know if you would like to see them added or not. You can access all of these using the global `window.arweaveWallet` object (`window.arweaveWallet.getActiveAddress()`, etc.).
+Wander supports much more with it's powerful API. These features are not integrated into arweave-js right now, but please let us know if you would like to see them added or not. You can access all of these using the global `window.arweaveWallet` object (`window.arweaveWallet.getActiveAddress()`, etc.).
 
 All of these functions are asynchronous, so you will need to `await` them. If you are using Typescript, read [this](#typescript-types) for type declarations.
 
 ### `connect(permissions, appInfo?, gateway?)`
 
-Connect to ArConnect and request permissions. This function can always be called again if you want to request more permissions for your site. See the available permissions [here](#permissions).
+Connect to Wander and request permissions. This function can always be called again if you want to request more permissions for your site. See the available permissions [here](#permissions).
 
 - `permissions`: An array of [permissions](#permissions)
 - `appInfo`: Optional information about your application (see the [format](#app-info))
@@ -82,7 +82,7 @@ Connect to ArConnect and request permissions. This function can always be called
 
 ### `disconnect()`
 
-Disconnect from ArConnect. Removes all permissions from your site.
+Disconnect from Wander. Removes all permissions from your site.
 
 ### `getActiveAddress(): Promise<string>`
 
@@ -102,7 +102,7 @@ Requires the `ACCESS_PUBLIC_KEY` [permission](#permissions).
 
 ### `getAllAddresses(): Promise<string[]>`
 
-Get all addresses added to the ArConnect extension
+Get all addresses added to the Wander extension
 
 - `returns`: A list of the added wallets' addresses.
 
@@ -163,7 +163,7 @@ Requires the `DECRYPT` [permission](#permissions).
 
 ### ~~`signature(data, options): Promise<Uint8Array>`~~
 
-> ⚠️ **Deprecation warning:** The `signature()` function is deprecated in ArConnect 1.0.0. Read about the alternatives below.
+> ⚠️ **Deprecation warning:** The `signature()` function is deprecated in Wander 1.0.0. Read about the alternatives below.
 
 #### Alternatives
 
@@ -215,7 +215,7 @@ Requires the `SIGNATURE` [permission](#permissions).
 
 #### Options
 
-ArConnect allows you to customize the hash algorithm (`SHA-256` by default):
+Wander allows you to customize the hash algorithm (`SHA-256` by default):
 
 ```ts
 export interface SignMessageOptions {
@@ -229,7 +229,7 @@ Verify validity of a cryptographic signature for a given piece of data
 
 - `data`: `ArrayBuffer` data to verify against the signature
 - `signature`: `ArrayBuffer | string` Signature to validate
-- `publicKey?`: `string` Arweave wallet `JWK.n` field, tx owner field or [public key from Arconnect](#getactivepublickey-promisestring)
+- `publicKey?`: `string` Arweave wallet `JWK.n` field, tx owner field or [public key from Wander](#getactivepublickey-promisestring)
 - `options`: [`SignMessageOptions`](#options) Configuration for the signature
   <br />
 - `returns`: `Boolean` Validity of the signature
@@ -252,7 +252,7 @@ Requires the `ACCESS_ARWEAVE_CONFIG` [permission](#permissions).
 
 ### `addToken(id, type?, gateway?)`
 
-Add a token to the user's wallet (ArConnect). The token will show up in ArConnect assets / collectibles.
+Add a token to the user's wallet (Wander). The token will show up in Wander assets / collectibles.
 
 > **Note:** You do not need to be connected in order to add a token
 
@@ -260,11 +260,11 @@ Add a token to the user's wallet (ArConnect). The token will show up in ArConnec
 - `type`: Optional token type (`asset` or `collectible`)
 - `gateway`: Optional gateway to fetch the token from (see the [format](#arweave-config))
 
-> **Warning:** If the gateway is defined, ArConnect will not use the default Warp Mainnet Gateway, but the custom one. This might slow down evaluation!
+> **Warning:** If the gateway is defined, Wander will not use the default Warp Mainnet Gateway, but the custom one. This might slow down evaluation!
 
 ### `isTokenAdded(id)`
 
-Check if a token has been added to the user's wallet (ArConnect).
+Check if a token has been added to the user's wallet (Wander).
 
 - `id`: ID of the token to add
   <br />
@@ -277,13 +277,13 @@ There are 8 permissions currently available. When calling `connect`, you need to
 The permissions:
 
 - `ACCESS_ADDRESS`:
-  Access the current address selected in ArConnect
+  Access the current address selected in Wander
 
 - `ACCESS_PUBLIC_KEY`
-  Access the public key of the current address selected in ArConnect
+  Access the public key of the current address selected in Wander
 
 - `ACCESS_ALL_ADDRESSES`:
-  Access all addresses added to ArConnect
+  Access all addresses added to Wander
 
 - `SIGN_TRANSACTION`:
   Sign a transaction
@@ -317,7 +317,7 @@ The user can set a custom Arweave config in the extension. It implements the fol
 
 ## Typescript types
 
-To support ArConnect types, you can install the npm package `arconnect`, like this:
+To support Wander types, you can install the npm package `arconnect`, like this:
 
 ```sh
 npm i -D arconnect

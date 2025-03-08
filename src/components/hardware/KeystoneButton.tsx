@@ -10,13 +10,13 @@ import {
 } from "~components/auth/CustomGatewayWarning";
 import { useState } from "react";
 import {
-  ButtonV2,
   Modal,
   Spacer,
   Text,
   useModal,
   useToasts
 } from "@arconnect/components";
+import { Button } from "@arconnect/components-rebrand";
 import AnimatedQRScanner from "./AnimatedQRScanner";
 import browser from "webextension-polyfill";
 import styled from "styled-components";
@@ -84,15 +84,15 @@ export default function KeystoneButton({ onSuccess }: Props) {
 
   return (
     <>
-      <ButtonV2
+      <Button
         fullWidth
-        secondary
+        variant="secondary"
         onClick={() => connectModal.setOpen(true)}
         style={{ gap: "5px" }}
       >
         <KeystoneIcon />
         {browser.i18n.getMessage("keystone_connect_title")}
-      </ButtonV2>
+      </Button>
       <QRModal
         {...connectModal.bindings}
         root={document.getElementById("__plasmo")}
@@ -100,33 +100,35 @@ export default function KeystoneButton({ onSuccess }: Props) {
         <ModalText heading>
           {browser.i18n.getMessage("keystone_connect_title")}
         </ModalText>
-        <AnimatedQRScanner
-          {...scanner.bindings}
-          onError={(error) =>
-            setToast({
-              type: "error",
-              duration: 2300,
-              content: browser.i18n.getMessage(`keystone_${error}`)
-            })
-          }
-        />
-        <Spacer y={1} />
-        <Text>
-          {browser.i18n.getMessage(
-            "keystone_scan_progress",
-            `${scanner.progress.toFixed(0)}%`
-          )}
-        </Text>
-        <Progress percentage={scanner.progress} />
-        <Spacer y={1.75} />
-        <FeatureAlert>
-          <WarningIcon />
-          {browser.i18n.getMessage("keystone_features_warning")}
-        </FeatureAlert>
-        <Spacer y={1} />
-        <CancelButton onClick={cancel}>
-          {browser.i18n.getMessage("cancel")}
-        </CancelButton>
+        <ModalContent>
+          <AnimatedQRScanner
+            {...scanner.bindings}
+            onError={(error) =>
+              setToast({
+                type: "error",
+                duration: 2300,
+                content: browser.i18n.getMessage(`keystone_${error}`)
+              })
+            }
+          />
+          <Spacer y={1} />
+          <Text>
+            {browser.i18n.getMessage(
+              "keystone_scan_progress",
+              `${scanner.progress.toFixed(0)}%`
+            )}
+          </Text>
+          <Progress percentage={scanner.progress} />
+          <Spacer y={1.75} />
+          <FeatureAlert>
+            <WarningIcon />
+            {browser.i18n.getMessage("keystone_features_warning")}
+          </FeatureAlert>
+          <Spacer y={1} />
+          <CancelButton onClick={cancel}>
+            {browser.i18n.getMessage("cancel")}
+          </CancelButton>
+        </ModalContent>
       </QRModal>
     </>
   );
@@ -155,6 +157,12 @@ const QRModal = styled(Modal)`
   width: max-content;
 `;
 
+const ModalContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`;
+
 const ModalText = styled(Text)`
   text-align: center;
 `;
@@ -171,8 +179,8 @@ const FeatureAlert = styled(Alert)`
   }
 `;
 
-const CancelButton = styled(ButtonV2).attrs({
-  secondary: true,
+const CancelButton = styled(Button).attrs({
+  variant: "secondary",
   fullWidth: true
 })`
   width: 100% !important;

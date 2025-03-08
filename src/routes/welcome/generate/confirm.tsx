@@ -1,6 +1,5 @@
-import { ButtonV2, Spacer, Text, useToasts } from "@arconnect/components";
-import { ArrowRightIcon } from "@iconicicons/react";
-import { useContext, useEffect, useState } from "react";
+import { useToasts } from "@arconnect/components";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { WalletContext, type SetupWelcomeViewParams } from "../setup";
 import SeedInput from "~components/SeedInput";
 import Paragraph from "~components/Paragraph";
@@ -8,6 +7,8 @@ import browser from "webextension-polyfill";
 import { PageType, trackPage } from "~utils/analytics";
 import { useLocation } from "~wallets/router/router.utils";
 import type { CommonRouteProps } from "~wallets/router/router.types";
+import styled from "styled-components";
+import { Button } from "@arconnect/components-rebrand";
 
 export type ConfirmWelcomeViewProps = CommonRouteProps<SetupWelcomeViewParams>;
 
@@ -27,7 +28,7 @@ export function ConfirmWelcomeView({ params }: ConfirmWelcomeViewProps) {
   function validateSeedphrase() {
     // check if the entered seedphrase is
     // the same as the one generated before
-    if (seedInputState !== generatedWallet.mnemonic) {
+    if (!isConfirmed) {
       return setToast({
         type: "error",
         content: browser.i18n.getMessage("invalid_seed"),
@@ -45,10 +46,16 @@ export function ConfirmWelcomeView({ params }: ConfirmWelcomeViewProps) {
   }, []);
 
   // pre filled words
-  const [preFill, setPreFill] = useState<string[]>();
+  const [verifyWords, setVerifyWords] = useState<string[]>();
+  const isConfirmed = useMemo(
+    () =>
+      verifyWords &&
+      verifyWords.join(" ").replaceAll(/\s+/g, " ").trim() === seedInputState,
+    [seedInputState, verifyWords]
+  );
 
   useEffect(() => {
-    if (!generatedWallet.mnemonic || preFill) return;
+    if (!generatedWallet.mnemonic || verifyWords) return;
     const toPreFill: {
       i: number;
       val: string;
@@ -66,7 +73,7 @@ export function ConfirmWelcomeView({ params }: ConfirmWelcomeViewProps) {
       });
     }
 
-    setPreFill(() => {
+    setVerifyWords(() => {
       const baseArray: string[] = new Array(words.length).fill("");
 
       for (const el of toPreFill) baseArray[el.i] = el.val;
@@ -76,24 +83,45 @@ export function ConfirmWelcomeView({ params }: ConfirmWelcomeViewProps) {
   }, [generatedWallet]);
 
   return (
-    <>
-      <Text heading>{browser.i18n.getMessage("confirm_seed")}</Text>
-      <Paragraph>{browser.i18n.getMessage("confirm_seed_paragraph")}</Paragraph>
-      <SeedInput
-        verifyMode
-        onChange={(val) => {
-          if (typeof val !== "string") return;
-          setSeedInputState(val);
-        }}
-        showHead={false}
-        onReady={validateSeedphrase}
-        preFill={preFill}
-      />
-      <Spacer y={1.5} />
-      <ButtonV2 fullWidth onClick={validateSeedphrase}>
-        {browser.i18n.getMessage("next")}
-        <ArrowRightIcon style={{ marginLeft: "5px" }} />
-      </ButtonV2>
-    </>
+    <Container>
+      <Content>
+        <Paragraph>
+          {browser.i18n.getMessage("confirm_seed_paragraph")}
+        </Paragraph>
+        <SeedInput
+          verifyMode
+          onChange={(val) => {
+            if (typeof val !== "string") return;
+            console.log({ val });
+            setSeedInputState(val);
+          }}
+          showHead={false}
+          onReady={validateSeedphrase}
+          verifyWords={verifyWords}
+        />
+      </Content>
+      <Button fullWidth onClick={validateSeedphrase} disabled={!isConfirmed}>
+        {browser.i18n.getMessage(
+          isConfirmed ? "continue" : "complete_recover_phrase"
+        )}
+      </Button>
+    </Container>
   );
 }
+
+const Container = styled.div`
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+  gap: 24px;
+`;
+
+const Content = styled.div`
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 24px;
+`;

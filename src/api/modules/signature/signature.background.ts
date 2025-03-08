@@ -2,9 +2,10 @@ import { isArray, isArrayOfType, isNumber, isString } from "typed-assert";
 import { freeDecryptedWallet } from "~wallets/encryption";
 import { isSignatureAlgorithm } from "~utils/assertions";
 import type { BackgroundModuleFunction } from "~api/background/background-modules";
-import { getWhitelistRegExp } from "./whitelist";
 import { getActiveKeyfile } from "~wallets";
 import { requestUserAuthorization } from "../../../utils/auth/auth.utils";
+import Application from "~applications/application";
+import { checkIfUserNeedsToSign } from "../sign/sign_policy";
 
 const background: BackgroundModuleFunction<number[]> = async (
   appData,
@@ -17,14 +18,21 @@ const background: BackgroundModuleFunction<number[]> = async (
   isArrayOfType(data, isNumber, "Data has to be an array of numbers.");
   isSignatureAlgorithm(algorithm);
 
-  // temporary whitelist
-  const whitelisted = appData.url.match(getWhitelistRegExp());
+  // grab the user's keyfile
+  const decryptedWallet = await getActiveKeyfile(appData);
 
-  //isNotNull(whitelisted, "The signature() API is deprecated.");
-  //isNotUndefined(whitelisted, "The signature() API is deprecated.");
+  const app = new Application(appData.url);
+  const signPolicy = await app.getSignPolicy();
+
+  const alwaysAsk = checkIfUserNeedsToSign(
+    signPolicy,
+    undefined,
+    decryptedWallet?.type,
+    "signature"
+  );
 
   // request user to authorize
-  if (!whitelisted) {
+  if (alwaysAsk) {
     try {
       await requestUserAuthorization(
         {
@@ -37,9 +45,6 @@ const background: BackgroundModuleFunction<number[]> = async (
       throw new Error("User rejected the signature request");
     }
   }
-
-  // grab the user's keyfile
-  const decryptedWallet = await getActiveKeyfile(appData);
 
   // check if hardware wallet
   if (decryptedWallet.type === "hardware") {

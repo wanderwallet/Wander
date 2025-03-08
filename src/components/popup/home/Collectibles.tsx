@@ -1,54 +1,45 @@
-import { Heading, TokenCount, ViewAll } from "../Title";
+import { ViewAll } from "../Title";
 import { Spacer, Text } from "@arconnect/components";
-import { useTokens } from "~tokens";
-import { useMemo } from "react";
 import browser from "webextension-polyfill";
 import Collectible from "../Collectible";
 import styled from "styled-components";
 import { useLocation } from "~wallets/router/router.utils";
+import { useAoTokens } from "~tokens/aoTokens/ao";
 
 export default function Collectibles() {
   const { navigate } = useLocation();
 
-  // all tokens
-  const tokens = useTokens();
-
-  // collectibles
-  const collectibles = useMemo(
-    () => tokens.filter((token) => token.type === "collectible"),
-    [tokens]
-  );
+  const { tokens: collectibles } = useAoTokens({ type: "collectible" });
 
   return (
     <>
-      <Heading>
+      {collectibles.length == 0 && (
+        <NoAssetsContainer>
+          <NoAssets>{browser.i18n.getMessage("no_collectibles")}</NoAssets>
+        </NoAssetsContainer>
+      )}
+      <CollectiblesList>
+        {collectibles.slice(0, 6).map((collectible, i) => (
+          <Collectible
+            id={collectible.id}
+            name={collectible.Name || collectible.Ticker}
+            divisibility={collectible.Denomination}
+            onClick={() => navigate(`/collectible/${collectible.id}`)}
+            key={i}
+          />
+        ))}
+      </CollectiblesList>
+      <Spacer y={1} />
+      {collectibles.length > 0 && (
         <ViewAll
           onClick={() => {
             if (collectibles.length === 0) return;
             navigate("/collectibles");
           }}
         >
-          {browser.i18n.getMessage("view_all")}
-          <TokenCount>({collectibles.length})</TokenCount>
+          {browser.i18n.getMessage("view_all")} ({collectibles.length})
         </ViewAll>
-      </Heading>
-      <Spacer y={1} />
-      {collectibles.length === 0 && (
-        <NoAssets>{browser.i18n.getMessage("no_collectibles")}</NoAssets>
       )}
-      <CollectiblesList>
-        {collectibles.slice(0, 6).map((collectible, i) => (
-          <Collectible
-            id={collectible.id}
-            name={collectible.name || collectible.ticker}
-            balance={collectible.balance}
-            divisibility={collectible.divisibility}
-            decimals={collectible.decimals}
-            onClick={() => navigate(`/collectible/${collectible.id}`)}
-            key={i}
-          />
-        ))}
-      </CollectiblesList>
     </>
   );
 }
@@ -63,4 +54,12 @@ const NoAssets = styled(Text).attrs({
   noMargin: true
 })`
   text-align: center;
+`;
+
+const NoAssetsContainer = styled.div`
+  height: 100px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
 `;

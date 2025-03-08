@@ -1,4 +1,8 @@
-import { ButtonV2, Spacer, type ButtonV2Props } from "@arconnect/components";
+import {
+  Button,
+  Spacer,
+  type ButtonProps
+} from "@arconnect/components-rebrand";
 import { useThrottledRequestAnimationFrame } from "@swyg/corre";
 import { useRef, type MouseEvent } from "react";
 import styled from "styled-components";
@@ -6,7 +10,7 @@ import type { AuthRequest, AuthRequestStatus } from "~utils/auth/auth.types";
 import { prettyDate } from "~utils/pretty_date";
 import browser from "webextension-polyfill";
 
-interface AuthButtonProps extends ButtonV2Props {
+interface AuthButtonProps extends ButtonProps {
   label?: string;
   onClick: (e: MouseEvent<HTMLButtonElement>) => void;
 }
@@ -15,6 +19,7 @@ export interface AuthButtonsProps {
   authRequest?: AuthRequest;
   primaryButtonProps?: AuthButtonProps;
   secondaryButtonProps?: AuthButtonProps;
+  showAuthStatus?: boolean;
 }
 
 // TODO: Consider creating a similar component without the `authRequest` to be reused everywhere where the "continue"
@@ -23,7 +28,8 @@ export interface AuthButtonsProps {
 export function AuthButtons({
   authRequest,
   primaryButtonProps,
-  secondaryButtonProps
+  secondaryButtonProps,
+  showAuthStatus = true
 }: AuthButtonsProps) {
   const showPrimaryButton = !!primaryButtonProps?.onClick;
   const showSecondaryButton = !!secondaryButtonProps?.onClick;
@@ -51,7 +57,7 @@ export function AuthButtons({
 
   return (
     <>
-      {authRequest ? (
+      {showAuthStatus && authRequest ? (
         <PStatusLabel status={authRequest.status}>
           {browser.i18n.getMessage(`${authRequest.status}TransactionStatusAt`) +
             " "}
@@ -66,9 +72,9 @@ export function AuthButtons({
           ) : null}
 
           {showPrimaryButton ? (
-            <ButtonV2 {...primaryButtonProps} fullWidth>
+            <Button {...primaryButtonProps} fullWidth>
               {primaryButtonLabel}
-            </ButtonV2>
+            </Button>
           ) : null}
 
           {showPrimaryButton && showSecondaryButton ? (
@@ -76,9 +82,9 @@ export function AuthButtons({
           ) : null}
 
           {showSecondaryButton ? (
-            <ButtonV2 {...secondaryButtonProps} secondary fullWidth>
+            <Button {...secondaryButtonProps} variant="secondary" fullWidth>
               {secondaryButtonLabel}
-            </ButtonV2>
+            </Button>
           ) : null}
         </>
       ) : null}
@@ -89,6 +95,8 @@ export function AuthButtons({
 const PStatusLabel = styled.p<{ status: AuthRequestStatus }>`
   margin: 0;
   padding: 16px;
-  background: ${({ theme }) => theme.backgroundv2};
+  background: ${(props) => props.theme.surfaceSecondary};
+  color: ${(props) => props.theme.primaryText};
   border-radius: 10px;
+  font-weight: 500;
 `;

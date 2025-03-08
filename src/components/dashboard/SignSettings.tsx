@@ -1,95 +1,65 @@
-import { useState, useEffect } from "react";
-import PermissionCheckbox from "~components/auth/PermissionCheckbox";
-import { InputV2, Spacer, Text } from "@arconnect/components";
+import { Text } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
 import styled from "styled-components";
 import { ExtensionStorage } from "~utils/storage";
-import { useStorage } from "@plasmohq/storage/hook";
-import { EventType, trackEvent } from "~utils/analytics";
+import { ToggleSwitch } from "~routes/popup/subscriptions/subscriptionDetails";
+import { useStorage } from "~utils/storage";
 
-export function SignSettingsDashboardView() {
-  const [signSettingsState, setSignSettingsState] = useState(false);
+export const SignSettingsDashboardView = () => {
+  const [transferRequirePassword, setTransferRequirePassword] = useStorage(
+    {
+      key: "transfer_require_password",
+      instance: ExtensionStorage
+    },
+    false
+  );
 
-  const [signatureAllowance, setSignatureAllowance] = useStorage({
-    key: "signatureAllowance",
-    instance: ExtensionStorage
-  });
-
-  const [editingValue, setEditingValue] = useState(null);
-
-  useEffect(() => {
-    async function initializeSettings() {
-      const currentSetting = await ExtensionStorage.get<boolean>(
-        "setting_sign_notification"
-      );
-      setSignSettingsState(currentSetting);
-
-      // Check if signatureAllowance is set, if not, initialize to 10
-      let allowance = await ExtensionStorage.get("signatureAllowance");
-      if (allowance === undefined || allowance === null) {
-        await ExtensionStorage.set("signatureAllowance", 10);
-        setEditingValue(10);
-      } else {
-        setEditingValue(allowance);
-      }
-    }
-
-    initializeSettings();
-  }, []);
-
-  const toggleSignSettings = async () => {
-    const newSetting = !signSettingsState;
-    setSignSettingsState(newSetting);
-    await ExtensionStorage.set("setting_sign_notification", newSetting);
-  };
-
-  const handleBlur = async (e) => {
-    const newAllowance = Number(e.target.value);
-    if (newAllowance !== signatureAllowance) {
-      trackEvent(EventType.SEND_ALLOWANCE_CHANGE, {
-        before: signatureAllowance,
-        after: newAllowance
-      });
-      setSignatureAllowance(newAllowance);
-
-      // Save the updated allowance to the extension storage
-      await ExtensionStorage.set("signatureAllowance", newAllowance);
-    }
-  };
-
-  const handleChange = (e) => {
-    setEditingValue(e.target.value);
-  };
+  const [connectRequirePassword, setConnectRequirePassword] = useStorage(
+    {
+      key: "connect_require_password",
+      instance: ExtensionStorage
+    },
+    false
+  );
 
   return (
-    <>
-      <Wrapper>
-        <PermissionCheckbox
-          checked={signSettingsState}
-          onChange={toggleSignSettings}
-        >
-          {browser.i18n.getMessage(
-            !!signSettingsState ? "enabled" : "disabled"
-          )}
-          <br />
-          <Text noMargin>
-            {browser.i18n.getMessage("setting_sign_notification_description")}
-          </Text>
-        </PermissionCheckbox>
-        <Spacer y={1.7} />
-        <InputV2
-          label={browser.i18n.getMessage("password_allowance")}
-          type="number"
-          value={editingValue}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          fullWidth
+    <Wrapper>
+      <ToggleSwitchWrapper>
+        <Text noMargin>
+          {browser.i18n.getMessage("enable_transfer_settings")}
+        </Text>
+        <ToggleSwitch
+          width={51}
+          height={31}
+          checked={transferRequirePassword}
+          setChecked={setTransferRequirePassword}
         />
-      </Wrapper>
-    </>
+      </ToggleSwitchWrapper>
+      <ToggleSwitchWrapper>
+        <Text noMargin>
+          {browser.i18n.getMessage("enable_connect_settings")}
+        </Text>
+        <ToggleSwitch
+          width={51}
+          height={31}
+          checked={connectRequirePassword}
+          setChecked={setConnectRequirePassword}
+        />
+      </ToggleSwitchWrapper>
+    </Wrapper>
   );
-}
+};
 
 const Wrapper = styled.div`
   position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+`;
+
+const ToggleSwitchWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
 `;

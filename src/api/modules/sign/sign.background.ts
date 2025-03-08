@@ -19,6 +19,7 @@ import browser from "webextension-polyfill";
 import Arweave from "arweave";
 import { EventType, trackDirect } from "~utils/analytics";
 import BigNumber from "bignumber.js";
+import { checkIfUserNeedsToSign } from "./sign_policy";
 
 const background: BackgroundModuleFunction<BackgroundResult> = async (
   appData,
@@ -60,7 +61,7 @@ const background: BackgroundModuleFunction<BackgroundResult> = async (
   // append fee multiplier to the transaction
   transaction.reward = await calculateReward(transaction);
 
-  // add ArConnect tags to the transaction
+  // add Wander tags to the transaction
   for (const tag of signedTxTags) {
     transaction.addTag(tag.name, tag.value);
   }
@@ -76,15 +77,23 @@ const background: BackgroundModuleFunction<BackgroundResult> = async (
   const price = BigNumber(transaction.reward).plus(transaction.quantity);
 
   // get allowance
-  const allowance = await getAllowance(appData.url);
+  // const allowance = await getAllowance(appData.url);
 
   // always ask
-  const alwaysAsk = allowance.enabled && allowance.limit.eq(BigNumber("0"));
+  // const alwaysAsk = allowance.enabled && allowance.limit.eq(BigNumber("0"));
 
-  // check if there is an allowance limit, if there is we need to check allowance
-  // if alwaysAsk is true, then we'll need to signAuth popup
-  // if allowance is disabled, proceed with signing
-  if (alwaysAsk || activeWallet.type === "hardware") {
+  const signPolicy = await app.getSignPolicy();
+
+  // check if user needs to sign
+  const userNeedsToSign = checkIfUserNeedsToSign(
+    signPolicy,
+    transaction,
+    activeWallet.type
+  );
+
+  // check if user needs to sign
+  // if userNeedsToSign is true, then we'll need to signAuth popup
+  if (userNeedsToSign) {
     // get address of keyfile
     const addr =
       activeWallet.type === "local"
@@ -109,16 +118,16 @@ const background: BackgroundModuleFunction<BackgroundResult> = async (
 
       throw new Error("User failed to sign the transaction manually");
     }
-  } else if (allowance.enabled && activeWallet.type === "local") {
-    // authenticate user if the allowance
-    // limit is reached
-    try {
-      await allowanceAuth(appData, allowance, price, alwaysAsk);
-    } catch (e) {
-      freeDecryptedWallet(keyfile);
-      throw new Error(e?.message || e);
-    }
-  }
+  } // else if (allowance.enabled && activeWallet.type === "local") {
+  //   // authenticate user if the allowance
+  //   // limit is reached
+  //   try {
+  //     await allowanceAuth(appData, allowance, price, alwaysAsk);
+  //   } catch (e) {
+  //     freeDecryptedWallet(keyfile);
+  //     throw new Error(e?.message || e);
+  //   }
+  // }
 
   // sign the transaction if local wallet
   if (activeWallet.type === "local") {
@@ -130,10 +139,10 @@ const background: BackgroundModuleFunction<BackgroundResult> = async (
   }
 
   // notify the user of the signing
-  await signNotification(price, transaction.id, appData.url);
+  // await signNotification(price, transaction.id, appData.url);
 
   // update allowance spent amount (in winstons)
-  await updateAllowance(appData.url, price);
+  // await updateAllowance(appData.url, price);
 
   // de-construct the transaction:
   // remove "tags" and "data", so we don't have to

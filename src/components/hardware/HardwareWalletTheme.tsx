@@ -1,17 +1,19 @@
 import { useEffect, type PropsWithChildren } from "react";
 import { useHardwareApi } from "~wallets/hooks";
-import { useTheme } from "~utils/theme";
+import { getFormattedColor, useTheme } from "~utils/theme";
 import { useTheme as useStyledComponentsTheme } from "styled-components";
 import { MotionGlobalConfig } from "framer-motion";
 import {
   ARCONNECT_DARK_THEME,
   ARCONNECT_LIGHT_THEME,
   Provider as ThemeProvider,
-  type ArconnectTheme
-} from "@arconnect/components";
-
-const ARCONNECT_THEME_BACKGROUND_COLOR = "ARCONNECT_THEME_BACKGROUND_COLOR";
-const ARCONNECT_THEME_TEXT_COLOR = "ARCONNECT_THEME_TEXT_COLOR";
+  type ArconnectTheme,
+  type DisplayTheme
+} from "@arconnect/components-rebrand";
+import {
+  ARCONNECT_THEME_BACKGROUND_COLOR,
+  ARCONNECT_THEME_TEXT_COLOR
+} from "~utils/storage.utils";
 
 /**
  * Modify the theme if the active wallet is a hardware wallet. We transform the
@@ -20,7 +22,7 @@ const ARCONNECT_THEME_TEXT_COLOR = "ARCONNECT_THEME_TEXT_COLOR";
 function hardwareThemeModifier(theme: ArconnectTheme): ArconnectTheme {
   return {
     ...theme,
-    theme: "154, 184, 255",
+    theme: "#9AB8FF",
     primary: "#9AB8FF",
     primaryBtnHover: "#6F93E1"
   };
@@ -30,7 +32,7 @@ function noThemeModifier(theme: ArconnectTheme): ArconnectTheme {
   return theme;
 }
 
-export function ArConnectThemeProvider({ children }: PropsWithChildren<{}>) {
+export function WanderThemeProvider({ children }: PropsWithChildren<{}>) {
   const hardwareApi = useHardwareApi();
   const theme = useTheme();
   const themeModifier = hardwareApi ? hardwareThemeModifier : noThemeModifier;
@@ -54,52 +56,56 @@ export function ArConnectThemeProvider({ children }: PropsWithChildren<{}>) {
         theme === "dark" ? ARCONNECT_DARK_THEME : ARCONNECT_LIGHT_THEME
       )}
     >
-      <ThemeBackgroundObserver />
+      <ThemeBackgroundObserver theme={theme} />
 
       {children}
     </ThemeProvider>
   );
 }
 
-export function ThemeBackgroundObserver() {
+interface ThemeBackgroundObserverProps {
+  theme?: DisplayTheme;
+}
+
+export function ThemeBackgroundObserver({
+  theme
+}: ThemeBackgroundObserverProps) {
   const styledComponentsTheme = useStyledComponentsTheme();
   const backgroundColor = styledComponentsTheme.background;
   const textColor = styledComponentsTheme.primaryText;
 
   useEffect(() => {
-    let formattedBackgroundColor = "";
+    if (!theme) return;
 
-    if (backgroundColor.length === 3 || backgroundColor.length === 6) {
-      formattedBackgroundColor = `#${backgroundColor}`;
-    } else if (/\d{1,3}, ?\d{1,3}, ?\d{1,3}/.test(backgroundColor)) {
-      formattedBackgroundColor = `rgb(${backgroundColor})`;
-    } else if (/\d{1,3}, ?\d{1,3}, ?\d{1,3}, ?.+/.test(backgroundColor)) {
-      formattedBackgroundColor = `rgba(${backgroundColor})`;
-    }
+    let formattedBackgroundColor = getFormattedColor(backgroundColor);
 
     if (formattedBackgroundColor) {
       localStorage.setItem(
         ARCONNECT_THEME_BACKGROUND_COLOR,
         formattedBackgroundColor
       );
+
+      document.documentElement.style.setProperty(
+        "--backgroundColor",
+        formattedBackgroundColor
+      );
     }
-  }, [backgroundColor]);
+  }, [theme, backgroundColor]);
 
   useEffect(() => {
-    let formattedTextColor = "";
+    if (!theme) return;
 
-    if (textColor.length === 3 || textColor.length === 6) {
-      formattedTextColor = `#${textColor}`;
-    } else if (/\d{1,3}, ?\d{1,3}, ?\d{1,3}/.test(textColor)) {
-      formattedTextColor = `rgb(${textColor})`;
-    } else if (/\d{1,3}, ?\d{1,3}, ?\d{1,3}, ?.+/.test(textColor)) {
-      formattedTextColor = `rgba(${textColor})`;
-    }
+    let formattedTextColor = getFormattedColor(textColor);
 
     if (formattedTextColor) {
       localStorage.setItem(ARCONNECT_THEME_TEXT_COLOR, formattedTextColor);
+
+      document.documentElement.style.setProperty(
+        "--textColor",
+        formattedTextColor
+      );
     }
-  }, [textColor]);
+  }, [theme, textColor]);
 
   return null;
 }

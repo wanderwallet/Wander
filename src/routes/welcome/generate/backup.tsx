@@ -1,20 +1,20 @@
-import { ButtonV2, Spacer, Text } from "@arconnect/components";
 import { useContext, useEffect, useRef, useState } from "react";
 import { WalletContext, type SetupWelcomeViewParams } from "../setup";
 import Paragraph from "~components/Paragraph";
 import browser from "webextension-polyfill";
 import styled from "styled-components";
 import copy from "copy-to-clipboard";
-import {
-  ArrowRightIcon,
-  CopyIcon,
-  CheckIcon,
-  EyeIcon,
-  EyeOffIcon
-} from "@iconicicons/react";
 import { PageType, trackPage } from "~utils/analytics";
 import { useLocation } from "~wallets/router/router.utils";
 import type { CommonRouteProps } from "~wallets/router/router.types";
+import { Button, Spacer, Text } from "@arconnect/components-rebrand";
+import {
+  AlertTriangle,
+  Check,
+  Copy01,
+  Eye,
+  EyeOff
+} from "@untitled-ui/icons-react";
 
 export type BackupWelcomeViewProps = CommonRouteProps<SetupWelcomeViewParams>;
 
@@ -50,62 +50,99 @@ export function BackupWelcomeView({ params }: BackupWelcomeViewProps) {
   }, []);
 
   return (
-    <>
-      <Text heading>{browser.i18n.getMessage("backup_wallet_title")}</Text>
-      <Paragraph>{browser.i18n.getMessage("backup_wallet_content")}</Paragraph>
-      <SeedContainer onClick={() => setShown((val) => !val)}>
-        <Seed shown={shown}>{generatedWallet.mnemonic || ""}</Seed>
-        <SeedShownIcon as={shown ? EyeIcon : EyeOffIcon} />
-      </SeedContainer>
-      <Spacer y={0.5} />
-      <CopySeed onClick={copySeed}>
-        {(copyDisplay && <CopyIcon />) || <CheckIcon />}
-        {browser.i18n.getMessage("copySeed")}
-      </CopySeed>
-      <Spacer y={1} />
-      <ButtonV2
+    <Container>
+      <Content>
+        <Paragraph>
+          {browser.i18n.getMessage("backup_wallet_content")}
+        </Paragraph>
+        <div>
+          <SeedContainer onClick={() => setShown((val) => !val)}>
+            <Seed shown={shown}>{generatedWallet.mnemonic || ""}</Seed>
+            <SeedShownIcon as={shown ? Eye : EyeOff} />
+          </SeedContainer>
+          <Spacer y={0.5} />
+          <CopySeed onClick={copySeed}>
+            {browser.i18n.getMessage("copySeed")}
+            {(copyDisplay && <CopyIcon />) || <Check color="#56C980" />}
+          </CopySeed>
+        </div>
+        <WarningContainer>
+          <AlertTriangle color="#EEBD41" />
+          <Text size="sm" weight="medium" style={{ flex: 1 }} noMargin>
+            {browser.i18n.getMessage("backup_wallet_warning")}
+          </Text>
+        </WarningContainer>
+      </Content>
+      <Button
         fullWidth
         onClick={() =>
           navigate(`/${params.setupMode}/${Number(params.page) + 1}`)
         }
       >
-        {browser.i18n.getMessage("next")}
-        <ArrowRightIcon />
-      </ButtonV2>
-    </>
+        {browser.i18n.getMessage("continue")}
+      </Button>
+    </Container>
   );
 }
 
+const Container = styled.div`
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+  gap: 24px;
+`;
+
+const Content = styled.div`
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 24px;
+`;
+
 const SeedContainer = styled.div`
   position: relative;
-  padding: 0.6rem 0.8rem;
-  border: 1px solid rgb(${(props) => props.theme.cardBorder});
-  border-radius: 6px;
+  display: flex;
+  align-items: flex-start;
+  align-content: flex-start;
+  align-self: stretch;
+  flex-wrap: wrap;
+  padding: 1rem;
+  border: 1px solid ${(props) => props.theme.input.border.dropdown.default};
+  background: ${(props) => props.theme.input.background.dropdown.default};
+  border-radius: 10px;
   cursor: pointer;
   overflow: hidden;
 `;
 
-const SeedShownIcon = styled(EyeIcon)`
+const SeedShownIcon = styled(Eye)`
   position: absolute;
   right: 0.8rem;
   bottom: 0.6rem;
   font-size: 1.1rem;
   width: 1em;
   height: 1em;
-  color: rgb(${(props) => props.theme.primaryText});
+  color: ${(props) => props.theme.input.placeholder.default};
 `;
 
-const Seed = styled.p<{ shown: boolean }>`
+const CopyIcon = styled(Copy01)`
+  color: ${(props) => props.theme.input.placeholder.default};
+`;
+
+const Seed = styled(Text).attrs({ size: "sm" })<{ shown: boolean }>`
   margin: 0;
-  color: rgb(${(props) => props.theme.primaryText});
   font-weight: 500;
-  font-size: 0.92rem;
-  line-height: 1.5em;
-  filter: blur(${(props) => (!props.shown ? "10px" : "0")});
+  line-height: 1.5rem;
+  word-spacing: 0.5rem;
+  filter: blur(${(props) => (!props.shown ? "7px" : "0")});
 `;
 
 const CopySeed = styled(Text).attrs({
-  noMargin: true
+  noMargin: true,
+  variant: "secondary",
+  weight: "medium"
 })`
   display: flex;
   align-items: center;
@@ -118,4 +155,16 @@ const CopySeed = styled(Text).attrs({
     width: 1em;
     height: 1em;
   }
+`;
+
+const WarningContainer = styled.div`
+  display: flex;
+  padding: 8px 12px;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  align-self: stretch;
+  border-radius: 8px;
+  background: ${(props) =>
+    props.theme.displayTheme === "dark" ? "#363225" : "#F5F5F5"};
 `;

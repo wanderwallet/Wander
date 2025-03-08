@@ -1,4 +1,20 @@
 {
+  "fallback": {
+    "message": "Oops, something isn't right. Try again later.",
+    "description": "Fallback error message"
+  },
+  "reload": {
+    "message": "Reload",
+    "description": "Reload button text"
+  },
+  "commonErrorInfo": {
+    "message": "Error Info",
+    "description": "Additional Fallback error message"
+  },
+  "loading": {
+    "message": "Loading...",
+    "description": "Loading text"
+  },
   "extensionDescription": {
     "message": "Secure wallet management for Arweave",
     "description": "Extension description"
@@ -64,10 +80,6 @@
   "generate": {
     "message": "Generate",
     "description": "Generate button text"
-  },
-  "add_wallet": {
-    "message": "Add wallet",
-    "description": "Add a wallet text"
   },
   "analytics_description" : {
     "message" : "We now use analytics.",
@@ -296,7 +308,7 @@
     "description": "Description for the \"SIGNATURE\" permission"
   },
   "permissionDescriptionArweaveConfig": {
-    "message": "Access read access to ArConnect configuration file",
+    "message": "Access read access to Wander configuration file",
     "description": "Description for the \"ACCESS_ARWEAVE_CONFIG\" permission"
   },
   "permissionDescriptionDispatch": {
@@ -376,7 +388,7 @@
     "description": "Remove app button"
   },
   "removeAppNote": {
-    "message": "Remove all permissions and disconnect the app from ArConnect.",
+    "message": "Remove all permissions and disconnect the app from Wander.",
     "description": "Remove app note paragraph"
   },
   "remove": {
@@ -404,12 +416,12 @@
     "description": "Quick Settings title"
   },
   "setting_apps": {
-    "message": "Applications",
+    "message": "Connected Apps",
     "description": "Apps settings title"
   },
-  "setting_wallets": {
-    "message": "Wallets",
-    "description": "Wallets settings title"
+  "setting_accounts": {
+    "message": "Accounts",
+    "description": "Accounts settings title"
   },
   "setting_config": {
     "message": "Download config",
@@ -420,12 +432,12 @@
     "description": "About settings title"
   },
   "setting_reset": {
-    "message": "Reset",
+    "message": "Reset Wander",
     "description": "Reset settings title"
   },
   "setting_analytic": {
     "message": "Analytics",
-    "description": "Analytics to help make ArConnect better"
+    "description": "Analytics to help make Wander better"
   },
   "setting_fee_multiplier": {
     "message": "Fee multiplier",
@@ -436,12 +448,8 @@
     "description": "Reset settings title"
   },
   "currency": {
-    "message": "Currency",
+    "message": "Select Fiat Currency",
     "description": "Select currency"
-  },
-  "setting_dre_node": {
-    "message": "Warp DRE node",
-    "description": "Warp DRE node setting title"
   },
   "setting_arverify": {
     "message": "ArVerify treshold",
@@ -455,24 +463,36 @@
     "message": "Sign notification",
     "description": "Sign notification settings title"
   },
-  "setting_sign_settings": {
-    "message": "Sign settings",
-    "description": "Sign settings title"
+  "setting_password_settings": {
+    "message": "Password settings",
+    "description": "Password settings title"
+  },
+  "setting_password_settings_description": {
+    "message": "Actions that require a password",
+    "description": "Password settings description"
+  },
+  "enable_transfer_settings": {
+    "message": "Require password when signing a transaction",
+    "description": "Enable transfer settings title"
+  },
+  "enable_connect_settings": {
+    "message": "Require password when connecting to an application",
+    "description": "Enable connect settings title"
   },
   "setting_display_theme": {
     "message": "Theme",
     "description": "Theme settings title"
   },
-  "setting_wayfinder": {
-    "message": "Wayfinder",
-    "description": "Wayfinder settings title"
+  "setting_gateways": {
+    "message": "Gateways",
+    "description": "Gateways settings title"
   },
   "setting_notifications": {
     "message": "Notifications",
     "description": "Notifications settings title"
   },
   "setting_notifications_description": {
-    "message": "Manage alerts for activities in your wallets",
+    "message": "Manage alerts for activities in your accounts",
     "description": "Notifications settings description"
   },
   "setting_all_settings": {
@@ -487,16 +507,16 @@
     "message": "View all connected apps & settings",
     "description": "App settings description"
   },
-  "setting_wallets_description": {
-    "message": "Manage your wallets",
-    "description": "Wallet settings description"
+  "setting_accounts_description": {
+    "message": "Manage your accounts",
+    "description": "Accounts settings description"
   },
   "setting_config_description": {
-    "message": "Download ArConnect config",
+    "message": "Download Wander config",
     "description": "Config settings description"
   },
   "setting_about_description": {
-    "message": "Information about ArConnect",
+    "message": "Information about Wander",
     "description": "Config settings description"
   },
   "setting_reset_description": {
@@ -504,8 +524,8 @@
     "description": "Reset settings description"
   },
   "setting_analytics_description": {
-    "message": "Provide the ArConnect team useful anonymous data to improve the project",
-    "description": "ArConnect Analytics description"
+    "message": "Provide the Wander team useful anonymous data to improve the project",
+    "description": "Wander Analytics description"
   },
   "setting_fee_multiplier_description": {
     "message": "Control the fees paid after transactions",
@@ -527,17 +547,13 @@
     "message": "Show animation on wallet usage",
     "description": "ArConfetti settings description"
   },
-  "setting_sign_notification_description": {
-    "message": "Notify when signing a transaction",
-    "description": "Sign notification settings description"
-  },
   "setting_display_theme_description": {
     "message": "The theme of the extension UI",
     "description": "Display theme settings description"
   },
-  "setting_wayfinder_description": {
-    "message": "Experimental system-wide wayfinder for ar.io gateways",
-    "description": "Wayfinder settings description"
+  "setting_gateways_description": {
+    "message": "Arweave gateways simplify data access.",
+    "description": "Gateways settings description"
   },
   "search_pick_option": {
     "message": "Search for an option...",
@@ -547,8 +563,8 @@
     "message": "Search for an app...",
     "description": "Search input placeholder for apps"
   },
-  "search_wallets": {
-    "message": "Search for a wallet...",
+  "search_accounts": {
+    "message": "Search accounts",
     "description": "Search input placeholder for wallets"
   },
   "search_tokens": {
@@ -562,10 +578,6 @@
   "export_keyfile_description": {
     "message": "Enter your password to export wallet keyfile",
     "description": "Export keyfile description"
-  },
-  "edit_wallet": {
-    "message": "Edit Wallet",
-    "description": "Edit wallet button"
   },
   "remove_wallet": {
     "message": "Remove wallet",
@@ -601,9 +613,9 @@
     "message": "address copied",
     "description": "Address copy notification 2"
   },
-  "cannot_edit_with_ans": {
-    "message": "Cannot edit nickname. Wallet already has an ANS label.",
-    "description": "Explainer for disabled edits for wallets with ANS profiles"
+  "cannot_edit_with_name_service": {
+    "message": "Cannot edit. It already has a name service.",
+    "description": "Explainer for disabled edits for wallets with name service names"
   },
   "add_wallet_subtitle": {
     "message": "You can add as many as you like",
@@ -622,11 +634,11 @@
     "description": "Re-enter input placeholder"
   },
   "enter_password": {
-    "message": "Enter your password...",
-    "description": "Password input placeholder"
+    "message": "Enter password",
+    "description": "Enter password placeholder"
   },
   "enter_password_again": {
-    "message": "Re-enter your password...",
+    "message": "Confirm your password",
     "description": "Re-enter password input placeholder"
   },
   "passwords_match": {
@@ -670,8 +682,8 @@
     "description": "Confirm button text"
   },
   "confirm_transaction": {
-    "message": "Confirm Transaction",
-    "description": "Confirm Transaction Header"
+    "message": "Confirm transaction",
+    "description": "Confirm transaction Header"
   },
   "subscription_payment": {
     "message": "Subscription Payment",
@@ -706,7 +718,7 @@
     "description": "Key Length Too Short error title"
   },
   "import_wallet_key_length_short_error": {
-    "message": "The key length of the wallet you are importing is less than the required length to transact on the AO network.  It is recommended you create a new ArConnect wallet and transfer your assets to your new wallet.",
+    "message": "The key length of the wallet you are importing is less than the required length to transact on the AO network.  It is recommended you create a new Wander wallet and transfer your assets to your new wallet.",
     "description": "Key Length Too Short error"
   },
   "generate_wallet_in_progress": {
@@ -722,15 +734,15 @@
     "description": "Used permissions label"
   },
   "reset_warning": {
-    "message": "Resetting ArConnect will remove all of your data from it. This includes your wallets, your settings and cached data.",
-    "description": "Warning about resetting ArConnect"
+    "message": "Resetting Wander will remove all of your data from it. This includes your wallets, your settings and cached data.",
+    "description": "Warning about resetting Wander"
   },
   "irreversible_action": {
     "message": "This action is IRREVERSIBLE!",
     "description": "Warning about an irreversible action"
   },
   "reset_error": {
-    "message": "Could not reset ArConnect",
+    "message": "Could not reset Wander",
     "description": "Error message on reset"
   },
   "welcome_to": {
@@ -769,13 +781,13 @@
     "message": "The permaweb on Arweave is the next evolution of the web, allowing developers and users to share a resilient knowledge base that is replicated in vast numbers across the world, perpetually. Besides data, Arweave also hosts a number of fully decentralized, permanent applications.",
     "description": "A short paragraph explaining the permaweb"
   },
-  "what_is_arconnect": {
-    "message": "What is ArConnect?",
-    "description": "What is arconnect title"
+  "what_is_wander": {
+    "message": "What is Wander?",
+    "description": "What is wander title"
   },
-  "about_arconnect": {
-    "message": "ArConnect is crypto wallet extension allowing you to interact with permaweb apps securely. It also lets you to store and manage your funds easily. With ArConnect, your entry to the Arweave ecosystem will be simple and seamless.",
-    "description": "A short paragraph explaining arconnect"
+  "about_wander": {
+    "message": "Wander is crypto wallet extension allowing you to interact with permaweb apps securely. It also lets you to store and manage your funds easily. With Wander, your entry to the Arweave ecosystem will be simple and seamless.",
+    "description": "A short paragraph explaining wander"
   },
   "read_more_arwiki": {
     "message": "Read more at",
@@ -785,16 +797,16 @@
     "message": "Backup",
     "description": "Backup title"
   },
-  "backup_wallet_title": {
-    "message": "Backup your wallet",
-    "description": "Backup walet title"
-  },
   "backup_wallet_content": {
-    "message": "Save this 12 word seedphrase to a password manager, or write it down to a paper. Never share it with anyone.",
+    "message": "Save this 12 word recovery phrase to a password manager, or write it down.",
     "description": "Backup wallet paragraph"
   },
+  "backup_wallet_warning": {
+    "message": "Do not share this with anyone.",
+    "description": "Backup wallet warning"
+  },
   "copySeed": {
-    "message": "Copy seedphrase",
+    "message": "Copy",
     "description": "Copy seedphrase text"
   },
   "done": {
@@ -835,12 +847,8 @@
     "message": "Keyfile",
     "description": "Keyfile text"
   },
-  "confirm_seed": {
-    "message": "Confirm your seedphrase",
-    "description": "Confirm seedphrase title"
-  },
   "confirm_seed_paragraph": {
-    "message": "Verify your seedphrase by completing the missing mnemonic words in the following section.",
+    "message": "Verify your recovery phrase by completing the missing words.",
     "description": "Confirm seedphrase explainer paragraph"
   },
   "correct": {
@@ -856,7 +864,7 @@
     "description": "Create password title"
   },
   "create_password_paragraph": {
-    "message": "Enter a password to secure ArConnect. We'll use this to encrypt your wallets.",
+    "message": "Enter a password to secure your Wander account. We will use this to encrypt your wallets.",
     "description": "Create password explainer paragraph"
   },
   "password_not_strong": {
@@ -868,20 +876,16 @@
     "description": "Level 1 strength password text"
   },
   "password_strength_2": {
-    "message": "Weak password",
+    "message": "Medium password",
     "description": "Level 2 strength password text"
   },
   "password_strength_3": {
-    "message": "Okay password",
+    "message": "Strong password",
     "description": "Level 3 strength password text"
   },
   "password_strength_4": {
-    "message": "Strong password",
-    "description": "Level 4 strength password text"
-  },
-  "password_strength_5": {
     "message": "Very strong password",
-    "description": "Level 5 strength password text"
+    "description": "Level 4 strength password text"
   },
   "password_strength_checklist_case": {
     "message": "Uses lowercase and uppercase letters",
@@ -942,7 +946,7 @@
     "description": "Select recipient when sending currency"
   },
   "send_to" : {
-    "message" : "Send To",
+    "message" : "Send to",
     "description" : "Send To for slider menu"
   },
   "no_close_window": {
@@ -958,11 +962,15 @@
     "description": "Provide seedphrase for title in load wallet setup"
   },
   "provide_seedphrase_paragraph": {
-    "message": "Drag and drop your keyfile or enter the 12 word seedphrase you saved when you generated your wallet. Make sure it is in the right order.",
+    "message": "Enter the recovery phrase generated for your wallet. Please ensure it is in the correct order.",
+    "description": "Explainer about the seedphrase loading"
+  },
+  "provide_keyfile_seedphrase_paragraph": {
+    "message": "Drag and drop your keyfile or enter the recovery phrase generated for your wallet. Please ensure it is in the correct order.",
     "description": "Explainer about the seedphrase loading"
   },
   "sign_in": {
-    "message": "Sign In",
+    "message": "Sign in",
     "description": "Sign in title"
   },
   "app_wants_to_connect": {
@@ -974,7 +982,7 @@
     "description": "Wallet label"
   },
   "enter_your_password": {
-    "message": "Enter your password...",
+    "message": "Enter your password",
     "description": "Enter password placeholder"
   },
   "connect": {
@@ -1055,10 +1063,6 @@
     "message": "estimated",
     "description": "estimated"
   },
-  "invalid_amount": {
-    "message": "Amount has to be more than 0",
-    "description": "Invalid tx amount message"
-  },
   "invalid_address": {
     "message": "Target is not a valid address",
     "description": "Invalid address message"
@@ -1068,7 +1072,11 @@
     "description": "Transaction sent successfuly notification"
   },
   "failed_tx": {
-    "message": "Could not send transaction",
+    "message": "Could not send transaction. Please try again.",
+    "description": "Transfer error notification"
+  },
+  "failed_tx_with_gateway": {
+    "message": "Could not send transaction. Please try again or use a different gateway.",
     "description": "Transfer error notification"
   },
   "assets": {
@@ -1092,7 +1100,7 @@
     "description": "Tokens setting title"
   },
   "setting_tokens_description": {
-    "message": "Manage tokens added by dApps or the user",
+    "message": "Manage tokens added by apps or the user",
     "description": "Tokens setting description"
   },
   "setting_contacts": {
@@ -1138,7 +1146,7 @@
     "description": "All set title"
   },
   "all_set_paragraph": {
-    "message": "ArConnect has been set up with your password and wallets. You can close the window now.",
+    "message": "Wander has been set up with your password and wallets. You can close the window now.",
     "description": "Paragraph indicating setup"
   },
   "token_add_failure": {
@@ -1198,7 +1206,7 @@
     "description": "Dark theme"
   },
   "system_theme": {
-    "message": "System",
+    "message": "System (Default)",
     "description": "System theme"
   },
   "migration_available": {
@@ -1206,7 +1214,7 @@
     "description": "Migration available title"
   },
   "migration_available_paragraph": {
-    "message": "It appears you have already used an older version of ArConnect before. We can migrate your wallets from this previous version to use. You'll still have to complete the setup process.",
+    "message": "It appears you have already used an older version of Wander before. We can migrate your wallets from this previous version to use. You'll still have to complete the setup process.",
     "description": "Migration available paragraph"
   },
   "migrate": {
@@ -1230,7 +1238,7 @@
     "description": "Migrate anyway button text"
   },
   "migration_available_welcome": {
-    "message": "You can migrate your wallets from the old ArConnect by clicking \"I have a wallet\".",
+    "message": "You can migrate your wallets from the old Wander by clicking \"I have a wallet\".",
     "description": "Migration available banner text"
   },
   "click_and_drag": {
@@ -1323,7 +1331,7 @@
   },
   "transaction_data_binary_warning": {
     "message": "Cannot display binary transaction data...",
-    "description": "Warning about ArConnect not being able to display a transaction's data"
+    "description": "Warning about Wander not being able to display a transaction's data"
   },
   "transaction_not_on_viewblock": {
     "message": "Not available on Viewblock",
@@ -1333,6 +1341,10 @@
     "message": "Click to view your last signed transaction",
     "description": "View last tx prompt content"
   },
+  "view_transaction_details": {
+    "message": "View transaction details",
+    "description": "View transaction details link text"
+  },
   "sign_item": {
     "message": "Sign item",
     "description": "Sign message popup title"
@@ -1341,13 +1353,31 @@
     "message": "Sign items",
     "description": "Batch sign message popup title"
   },
+  "titles_decrypt": {
+    "message": "Decrypt",
+    "description": "Request decrypt authorization password"
+  },
+  "decrypt_description": {
+    "message": "$APPNAME$ wants to decrypt and access the following data:",
+    "description": "Description for decrypting some data",
+    "placeholders": {
+      "appname": {
+        "content": "$1",
+        "example": "permafacts.arweave.dev"
+      }
+    }
+  },
+  "decrypt_authorize": {
+    "message": "Authorize",
+    "description": "Authorize button label"
+  },
   "titles_signature": {
     "message": "Sign message",
     "description": "Sign message popup title"
   },
   "sign_data_description": {
     "message": "$APPNAME$ wants to sign a transaction. Review the details below.",
-    "description": "Desription for signing an item containing a transfer",
+    "description": "Description for signing an item containing a transfer",
     "placeholders": {
       "appname": {
         "content": "$1",
@@ -1568,7 +1598,7 @@
     "description": "Not connected indicator"
   },
   "not_connected_text": {
-    "message": "\"Connect / Disconnect\" is a label for when your ArConnect wallet is connected to an Arweave or AO dapp.  For regular use like sending, receiving, checking balances, etc., ArConnect will always show disconnected.",
+    "message": "\"Connect / Disconnect\" is a label for when your Wander wallet is connected to an Arweave or AO dapp.  For regular use like sending, receiving, checking balances, etc., Wander will always show disconnected.",
     "description": "Not connected indicator explainer"
   },
   "disconnect": {
@@ -1642,11 +1672,11 @@
     "description": "Installation complete title"
   },
   "installation_complete_paragraph": {
-    "message": "Pin ArConnect to your browser so it's accessible and easy to connect to your favorite dApps.",
+    "message": "Pin Wander to your browser so it's accessible and easy to connect to your favorite dApps.",
     "description": "Installation complete paragraph"
   },
   "enable_notifications_title": {
-    "message": "Enable Notifications in ArConnect",
+    "message": "Enable Notifications in Wander",
     "description": "Enable Notification title"
   },
   "introducing_notifications": {
@@ -1682,7 +1712,7 @@
     "description": "Get started title"
   },
   "get_started_description":{
-    "message": "Explore the endless possibilities on Arweave and aoComputer through ArConnect",
+    "message": "Explore the endless possibilities on Arweave and aoComputer through Wander",
     "description": "Get started description"
   },
   "example_astro_description" : {
@@ -1710,7 +1740,7 @@
     "description": "Connect with us description"
   },
   "connect_paragraph_2": {
-    "message": "Questions? Join the Discord server to chat with the developers.",
+    "message": "Join our Discord server to chat with the developers or submit tickets.",
     "description": "Connect with us description"
   },
   "buy_ar_button": {
@@ -1722,11 +1752,11 @@
     "description": "Buy AR with Onramper button text"
   },
   "buy_screen_pay": {
-    "message": "You Pay",
+    "message": "You spend",
     "description": "Payment input label title"
   },
   "buy_screen_receive": {
-    "message": "You Receive",
+    "message": "You get",
     "description": "Receive input label title"
   },
   "buy_screen_switch": {
@@ -1734,8 +1764,12 @@
     "description": "Switch button"
   },
   "buy_screen_payment_method": {
-    "message": "Payment Method",
+    "message": "Select Payment options",
     "description": "Select payment method title"
+  },
+  "buy_screen_payment_method_label": {
+    "message": "Pay with",
+    "description": "Select payment method input title"
   },
   "buy_screen_enter": {
     "message": "Enter amount",
@@ -1794,7 +1828,7 @@
     "description": "Info message text on purchase in progress page"
   },
   "order_id_purchase_pending": {
-    "message":  "Quote ID:",
+    "message":  "Order ID:",
     "description": "Order ID text on purchase in progress page"
   },
   "choose_payment_method": {
@@ -1924,10 +1958,6 @@
   "address_in_use": {
     "message": "Address is already in use.",
     "description": "Contacts error message if address is already in use"},
-  "password_allowance": {
-    "message": "Password required allowance",
-    "description": "Input title for the password allowance label"
-  },
   "add": {
     "message": "Add",
     "description" : "add button text"
@@ -1964,10 +1994,6 @@
       }
     }
   },
-  "setting_ao_support": {
-    "message": "ao support",
-    "description": "ao support settings title"
-  },
   "setting_ao_support_description": {
     "message": "Show ao tokens in your wallet (beta)",
     "description": "ao support settings description"
@@ -1977,7 +2003,7 @@
     "description": "Got it button text"
   },
   "display_ao_tokens": {
-    "message": "Display AO tokens in ArConnect (Beta)",
+    "message": "Display AO tokens in Wander (Beta)",
     "description": "Display AO tokens description"
   },
   "ao_computer": {
@@ -2000,13 +2026,23 @@
     "message": "Congrats on earning AO Tokens for hodling AR! 🥳",
     "description": "ao token announcement title text"
   },
-  "ao_token_send_popup": {
+  "AO_token_send_popup": {
     "message": "The AO token is non transferable until February 8th, 2025 when 15% of AO has been minted.",
     "description": "Popup description about ao token transfer"
   },
-  "ao_token_send_popup_title": {
-    "message": "AO Token Transfer Notice",
+  "EXP_token_send_popup": {
+    "message": "The EXP Token is non transferable",
     "description": "Popup description about ao token transfer"
+  },
+  "token_send_popup_title": {
+    "message": "$TOKEN$ Token Transfer Notice",
+    "description": "Popup description about token transfer",
+    "placeholders": {
+      "token": {
+        "content": "$1",
+        "example": "AO"
+      }
+    }
   },
   "ao_token_send_popup_learn_more": {
     "message": "Learn More",
@@ -2017,7 +2053,7 @@
     "description": "ao degraded title text"
   },
   "ao_degraded_description": {
-    "message": "Oops, ArConnect is unable to fetch your token balance. Please try again later.",
+    "message": "Oops, Wander is unable to fetch your token balance. Please try again later.",
     "description": "ao degraded description text"
   },
   "network_issue": {
@@ -2203,11 +2239,11 @@
     "description": "required"
   },
   "add_wallet_error_message": {
-    "message": "Please enter a recovery phrase or key file and enter the password to your ArConnect before continuing.",
+    "message": "Please enter a recovery phrase or key file and enter the password to your Wander before continuing.",
     "description": "Error message if recovery section is left blank"
   },
   "empty_password_error_message": {
-    "message": "Please enter the password to your ArConnect. Not the password to the wallet you are importing.",
+    "message": "Please enter the password to your Wander. Not the password to the wallet you are importing.",
     "description": "Error message if password section is left blank"
   },
   "missing_recovery_error_message": {
@@ -2215,7 +2251,7 @@
     "description": "Error message if recovery phrase or key file is left blank"
   },
   "incorrect_password_error_message": {
-    "message": "Password incorrect. Please enter the password to your ArConnect and try again. Not the password to the wallet you are importing.",
+    "message": "Password incorrect. Please enter the password to your Wander and try again. Not the password to the wallet you are importing.",
     "description": "Error message if password is incorrect"
   },
   "mismatch_warning_title": {
@@ -2306,6 +2342,10 @@
     "message": "Adding token...",
     "description": "Loading message for AuthRequest of type token"
   },
+  "decryptRequestLoading": {
+    "message": "Decrypting...",
+    "description": "Loading message for AuthRequest of type decrypt"
+  },
   "signRequestLoading": {
     "message": "Signing...",
     "description": "Loading message for AuthRequest of type sign"
@@ -2379,5 +2419,519 @@
         "example": "10"
       }
     }
+  },
+  "connect_to_app": {
+    "message": "Connect to $APPNAME$",
+    "description": "Connect to app title",
+    "placeholders": {
+      "appname": {
+        "content": "$1",
+        "example": "Wander"
+      }
+    }
+  },
+  "always_ask": {
+    "message": "Always ask",
+    "description": "Always ask"
+  },
+  "always_ask_description": {
+    "message": "Review and confirm every transaction and message.",
+    "description": "Always ask description"
+  },
+  "ask_when_spending": {
+    "message": "Ask when spending",
+    "description": "Ask when spending"
+  },
+  "ask_when_spending_description": {
+    "message": "Review and confirm transactions only when assets are being transferred.",
+    "description": "Ask when spending description"
+  },
+  "auto_confirm": {
+    "message": "Auto-confirm",
+    "description": "Auto-confirm"
+  },
+  "auto_confirm_description": {
+    "message": "Automatically sign every transaction and message.",
+    "description": "Auto-confirm description"
+  },
+  "custom_permissions": {
+    "message": "Custom permissions",
+    "description": "Custom permissions"
+  },
+  "set_custom_permissions": {
+    "message": "Set custom permissions",
+    "description": "Set custom permissions"
+  },
+  "custom_permissions_set": {
+    "message": "Custom permissions set",
+    "description": "Custom permissions set"
+  },
+  "permission_settings": {
+    "message": "Permission Settings",
+    "description": "Permission settings title"
+  },
+  "select_account": {
+    "message": "Select an account to connect to $APPNAME$",
+    "description": "Select account title",
+    "placeholders": {
+      "appname": {
+        "content": "$1",
+        "example": "Wander"
+      }
+    }
+  },
+  "review": {
+    "message": "Review",
+    "description": "Review title"
+  },
+  "connect_request_1": {
+    "message": "$APPNAME$ wants to connect with",
+    "description": "Connect request 1",
+    "placeholders": {
+      "appname": {
+        "content": "$1",
+        "example": "Wander"
+      }
+    }
+  },
+  "connect_request_2": {
+    "message": "with the following permissions",
+    "description": "Connect request 2"
+  },
+  "confirm_permissions": {
+    "message": "Confirm permissions for $APPNAME$",
+    "description": "Confirm permissions for app",
+    "placeholders": {
+      "appname": {
+        "content": "$1",
+        "example": "Wander"
+      }
+    }
+  },
+  "change": {
+    "message": "Change",
+    "description": "Change text"
+  },
+  "create_a_new_account": {
+    "message": "Create a new account",
+    "description": "Create a new account button text"
+  },
+  "create_a_new_account_description": {
+    "message": "Your account name is stored locally and will only be visible to you.",
+    "description": "Create a new account description"
+  },
+  "import_an_account": {
+    "message": "Import an account",
+    "description": "Import an account button text"
+  },
+  "name_your_account": {
+    "message": "Name your account",
+    "description": "Name your account input placeholder"
+  },
+  "backup_your_account": {
+    "message": "Backup your account",
+    "description": "Backup your account button text"
+  },
+  "confirm_your_recovery_phrase": {
+    "message": "Confirm your recovery phrase",
+    "description": "Confirm your recovery phrase button text"
+  },
+  "create_a_password": {
+    "message": "Create a password",
+    "description": "Create a password button text"
+  },
+  "step": {
+    "message": "Step",
+    "description": "Step text"
+  },
+  "import_an_existing_account": {
+    "message": "Import an existing account",
+    "description": "Import an existing account button text"
+  },
+  "need_help": {
+    "message": "Need help?",
+    "description": "Need help button text"
+  },
+  "complete_recover_phrase": {
+    "message": "Complete recovery phrase",
+    "description": "Complete recovery phrase button text"
+  },
+  "word_mismatch_error": {
+    "message": "Error: word does not match",
+    "description": "Word mismatch error message"
+  },
+  "enable_permissions": {
+    "message": "Enable permissions",
+    "description": "Enable permissions button text"
+  },
+  "enable_permissions_description": {
+    "message": "For the best experience, please enable the following permissions. You can always change these later.",
+    "description": "Enable permissions description"
+  },
+  "enable_notifications_description": {
+    "message": "Get notified of new wallet activity and other important events.",
+    "description": "Enable notifications description"
+  },
+  "enable_analytics_description": {
+    "message": "Enable analytics to help us provide the best experience for you on Wander.",
+    "description": "Enable analytics description"
+  },
+  "go_to_dashboard": {
+    "message": "Go to dashboard",
+    "description": "Go to dashboard button text"
+  },
+  "congratulations": {
+    "message": "Congratulations!",
+    "description": "Congratulations title"
+  },
+  "congratulations_description": {
+    "message": "You have now finished $TYPE$ your Wander account",
+    "description": "Congratulations description",
+    "placeholders": {
+      "type": {
+        "content": "$1",
+        "example": "importing"
+      }
+    }
+  },
+  "copied": {
+    "message": "Copied",
+    "description": "Copied text"
+  },
+  "copy_failed": {
+    "message": "Failed to copy",
+    "description": "Failed to copy text"
+  },
+  "your_wallet_address_is": {
+    "message": "Your wallet address is",
+    "description": "Your wallet address is"
+  },
+  "choose_how_to_add_your_account": {
+    "message": "Choose how you want to add your account.",
+    "description": "Choose how you want to add your account."
+  },
+  "enter_recovery_phrase": {
+    "message": "Enter recovery phrase",
+    "description": "Enter recovery phrase title"
+  },
+  "recovery_phrase_length_selector": {
+    "message": "I have a $LENGTH$-word recovery phrase",
+    "description": "Recovery phrase length selector",
+    "placeholders": {
+      "length": {
+        "content": "$1",
+        "example": "24"
+      }
+    }
+  },
+  "yes_import": {
+    "message": "Yes, import",
+    "description": "Yes, import button text"
+  },
+  "no_import": {
+    "message": "No, try again",
+    "description": "No, try again button text"
+  },
+  "found_account_with_phrase": {
+    "message": "We found this account with the matching recovery phrase.",
+    "description": "Found account with phrase"
+  },
+  "upload_key_file": {
+    "message": "Upload key file",
+    "description": "Upload key file button text"
+  },
+  "upload_key_file_description": {
+    "message": "Upload the keyfile/private key generated for your wallet.",
+    "description": "Upload key file description"
+  },
+  "click_to_upload": {
+    "message": "Click to upload",
+    "description": "Click to upload text"
+  },
+  "or_drag_and_drop_your_keyfile": {
+    "message": "or drag and drop your keyfile",
+    "description": "or drag and drop your keyfile text"
+  },
+  "scan_qr_code": {
+    "message": "Scan QR code",
+    "description": "Scan QR code text"
+  },
+  "scan_qr_code_description": {
+    "message": "You can find your QR code on the Wander Mobile App",
+    "description": "Scan QR code description"
+  },
+  "scan_qr_code_instruction": {
+    "message": "Settings -> Accounts -> Generate QR Code",
+    "description": "Instruction to find QR code"
+  },
+  "open_webcam": {
+    "message": "Open webcam",
+    "description": "Open webcam button text"
+  },
+  "camera_permission_denied": {
+    "message": "Camera permission denied",
+    "description": "Camera permission denied"
+  },
+  "progress": {
+    "message": "Progress",
+    "description": "Progress text"
+  },
+  "invalid_qr_code": {
+    "message": "Invalid QR code",
+    "description": "Invalid QR code text"
+  },
+  "scan_error": {
+    "message": "Scan error",
+    "description": "Scan error text"
+  },
+  "choose_ui_theme": {
+    "message": "Choose UI theme",
+    "description": "Choose UI theme text"
+  },
+  "choose_ui_theme_description": {
+    "message": "Select the theme of the app UI.",
+    "description": "Select the theme of the app UI description"
+  },
+  "take_a_tour": {
+    "message": "Take a tour",
+    "description": "Take a tour button text"
+  },
+  "getting_started": {
+    "message": "Getting started",
+    "description": "Getting started title"
+  },
+  "welcome_to_wander": {
+    "message": "Welcome to Wander",
+    "description": "Welcome to Wander title"
+  },
+  "welcome_to_wander_description": {
+    "message": "Explore the endless possibilities of Arweave and AO through Wander",
+    "description": "Welcome to Wander description"
+  },
+  "getting_started_tokens_title": {
+    "message": "Send and receive AR and AO assets with ease.",
+    "description": "Getting started tokens title"
+  },
+  "getting_started_onramp_title": {
+    "message": "Buy AR with our seamless fiat-to-crypto onramp, powered by Transak.",
+    "description": "Getting started onramp title"
+  },
+  "getting_started_explore_title": {
+    "message": "Explore and connect to apps directly on Wander.",
+    "description": "Getting started explore title"
+  },
+  "finish": {
+    "message": "Finish",
+    "description": "Finish button text"
+  },
+  "importing": {
+    "message": "Importing",
+    "description": "Importing text"
+  },
+  "creating": {
+    "message": "Creating",
+    "description": "Creating text"
+  },
+  "sign_into_wander": {
+    "message": "Sign into Wander",
+    "description": "Sign into Wander text"
+  },
+  "copy": {
+    "message": "Copy",
+    "description": "Copy text"
+  },
+  "menu": {
+    "message": "Menu",
+    "description": "Menu text"
+  },
+  "accounts": {
+    "message": "Accounts",
+    "description": "Accounts text"
+  },
+  "buy": {
+    "message": "Buy",
+    "description": "Buy text"
+  },
+  "add_account": {
+    "message": "Add account",
+    "description": "Add account text"
+  },
+  "edit_account": {
+    "message": "Edit account",
+    "description": "Edit account text"
+  },
+  "your_other_accounts": {
+    "message": "Your other accounts",
+    "description": "Your other accounts text"
+  },
+  "activity": {
+    "message": "Activity",
+    "description": "Activity text"
+  },
+  "manage_asset_list": {
+    "message": "Manage asset list",
+    "description": "Manage asset list text"
+  },
+  "import_assets": {
+    "message": "Import assets",
+    "description": "Import assets text"
+  },
+  "transaction_details": {
+    "message": "Transaction details",
+    "description": "Transaction details text"
+  },
+  "connected_apps": {
+    "message": "Connected apps",
+    "description": "Connected apps text"
+  },
+  "manage_accounts": {
+    "message": "Manage accounts",
+    "description": "Manage accounts text"
+  },
+  "sign_out": {
+    "message": "Sign out",
+    "description": "Sign out text"
+  },
+  "sign_out_description": {
+    "message": "Are you sure you want to sign out of Wander?",
+    "description": "Sign out description"
+  },
+  "add_an_account": {
+    "message": "Add an account",
+    "description": "Add an account text"
+  },
+  "remove_account": {
+    "message": "Remove account",
+    "description": "Remove account text"
+  },
+  "remove_account_description": {
+    "message": "Are you sure you want to continue? This cannot be reversed.",
+    "description": "Remove account description"
+  },
+  "wallet_actions": {
+    "message": "Wallet actions",
+    "description": "Wallet actions text"
+  },
+  "contacts": {
+    "message": "Contacts",
+    "description": "Contacts text"
+  },
+  "verify_full_address": {
+    "message": "Verify the full address",
+    "description": "Verify the full address text"
+  },
+  "verify_full_address_description": {
+    "message": "You haven’t interacted with this address recently. Please ensure the entire address is correct.",
+    "description": "Verify the full address description"
+  },
+  "select_token": {
+    "message": "Select token",
+    "description": "Select token text"
+  },
+  "select_amount": {
+    "message": "Select amount",
+    "description": "Select amount text"
+  },
+  "insufficient_balance": {
+    "message": "Insufficient balance",
+    "description": "Insufficient balance text"
+  },
+  "invalid_amount": {
+    "message": "Invalid amount",
+    "description": "Invalid amount text"
+  },
+  "add_a_note": {
+    "message": "Add a note",
+    "description": "Add a note text"
+  },
+  "edit_note": {
+    "message": "Edit note",
+    "description": "Edit note text"
+  },
+  "enter_amount": {
+    "message": "Enter amount",
+    "description": "Enter amount text"
+  },
+  "address_or_arns_name": {
+    "message": "Address or ArNS name",
+    "description": "Address or ArNS name text"
+  },
+  "cannot_send_to_self": {
+    "message": "Cannot send to self",
+    "description": "Cannot send to self text"
+  },
+  "more_settings": {
+    "message": "More settings",
+    "description": "More settings text"
+  },
+  "less_settings": {
+    "message": "Less settings",
+    "description": "Less settings text"
+  },
+  "seedphrase": {
+    "message": "Seedphrase",
+    "description": "Seedphrase text"
+  },
+  "i_have_a_import_type": {
+    "message": "I have a $TYPE$",
+    "description": "I have a import type text",
+    "placeholders": {
+      "type": {
+        "content": "$1",
+        "example": "seedphrase"
+      }
+    }
+  },
+  "search_currency": {
+    "message": "Search currency",
+    "description": "Search currency text"
+  },
+  "enable_disable": {
+    "message": "Enable/disable",
+    "description": "Enable/disable text"
+  },
+  "privacy_policy": {
+    "message": "Privacy policy",
+    "description": "Privacy policy text"
+  },
+  "exchange_rate": {
+    "message": "Exchange Rate",
+    "description": "Exchange rate text"
+  },
+  "max_buy_amount": {
+    "message": "Maximum AR buy amount is $AMOUNT$ $CURRENCY$",
+    "description": "Max buy amount text",
+    "placeholders": {
+      "amount": {
+        "content": "$1",
+        "example": "1"
+      },
+      "currency": {
+        "content": "$2",
+        "example": "USD"
+      }
+    }
+  },
+  "min_buy_amount": {
+    "message": "Minimum AR buy amount is $AMOUNT$ $CURRENCY$",
+    "description": "Min buy amount text",
+    "placeholders": {
+      "amount": {
+        "content": "$1",
+        "example": "1"
+      },
+      "currency": {
+        "content": "$2",
+        "example": "USD"
+      }
+    }
+  },
+  "switch_gateway": {
+    "message": "Switch Gateway",
+    "description": "Switch gateway text"
+  },
+  "setting_fullscreen": {
+    "message": "Fullscreen",
+    "description": "Fullscreen text"
   }
 }

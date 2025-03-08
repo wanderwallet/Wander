@@ -1,6 +1,6 @@
-import { ListItem, ListItemIcon } from "@arconnect/components";
+import { ListItem } from "@arconnect/components-rebrand";
 import type { Icon } from "~settings/setting";
-import type { HTMLProps, ReactNode } from "react";
+import type { HTMLProps } from "react";
 import { LinkExternal02 } from "@untitled-ui/icons-react";
 import browser from "webextension-polyfill";
 import styled from "styled-components";
@@ -8,31 +8,23 @@ import styled from "styled-components";
 export interface SettingItemData {
   icon: Icon;
   displayName: string;
-  description: string;
   active: boolean;
-  isExternalLink?: boolean;
 }
 
 export function SettingListItem({
   displayName,
-  description,
   icon,
   active,
   ...props
 }: SettingItemData & HTMLProps<HTMLDivElement>) {
   return (
     <ListItem
-      title={
-        (
-          <Title>
-            {browser.i18n.getMessage(displayName)}{" "}
-            {props.isExternalLink && <ExternalLinkIcon />}
-          </Title>
-        ) as ReactNode & string
-      }
-      description={browser.i18n.getMessage(description)}
+      height={40}
+      title={browser.i18n.getMessage(displayName)}
+      titleStyle={{ fontWeight: 500 }}
+      hideSquircle
       active={active}
-      small={true}
+      rightIcon={<ExternalLinkIcon />}
       {...props}
     >
       <ListItemIcon as={icon} />
@@ -40,15 +32,14 @@ export function SettingListItem({
   );
 }
 
-const ExternalLinkIcon = styled(LinkExternal02)`
-  height: 1rem;
-  width: 1rem;
-  color: ${(props) => props.theme.secondaryTextv2};
+const ListItemIcon = styled.div`
+  height: 24px;
+  width: 24px;
+  color: ${(props) => props.theme.primaryText};
 `;
 
-const Title = styled.div`
-  display: flex;
-  align-items: center;
-  justify-items: center;
-  gap: 8px;
+const ExternalLinkIcon = styled(LinkExternal02)`
+  height: 1.5rem;
+  width: 1.5rem;
+  color: ${(props) => props.theme.tertiaryText};
 `;

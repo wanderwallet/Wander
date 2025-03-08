@@ -1,34 +1,22 @@
 import {
   useToasts,
   Section,
-  TooltipV2,
   useInput,
-  ButtonV2,
-  InputV2,
-  Spacer,
+  Button,
+  Input,
   Text
-} from "@arconnect/components";
-import { CheckIcon, CopyIcon } from "@iconicicons/react";
-import copy from "copy-to-clipboard";
+} from "@arconnect/components-rebrand";
 import { QRCodeSVG } from "qrcode.react";
-import {
-  useEffect,
-  useRef,
-  useState,
-  type Key,
-  type MouseEventHandler
-} from "react";
+import { useEffect, useRef, useState, type Key } from "react";
 import HeadV2 from "~components/popup/HeadV2";
 import { WarningIcon } from "~components/popup/Token";
 import browser from "webextension-polyfill";
 import { Degraded, WarningWrapper } from "~routes/popup/send";
-import { formatAddress } from "~utils/format";
 import { getKeyfile, type DecryptedWallet } from "~wallets";
 import { freeDecryptedWallet } from "~wallets/encryption";
 import {
   AddressField,
   ContentWrapper,
-  CopyAction,
   QRCodeWrapper,
   Wrapper
 } from "~routes/popup/receive";
@@ -36,6 +24,7 @@ import { dataToFrames } from "qrloop";
 import { checkPassword } from "~wallets/auth";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { useLocation } from "~wallets/router/router.utils";
+import { CopyToClipboard } from "~components/CopyToClipboard";
 
 export interface GenerateQRViewParams {
   address: string;
@@ -53,20 +42,6 @@ export function GenerateQRView({ params: { address } }: GenerateQRViewProps) {
   const passwordInput = useInput();
 
   const isHardware = wallet?.type === "hardware";
-
-  const copyAddress: MouseEventHandler = (e) => {
-    e.stopPropagation();
-    copy(address);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1000);
-    setToast({
-      type: "success",
-      duration: 2000,
-      content: `${formatAddress(address, 3)} ${browser.i18n.getMessage(
-        "copied_address_2"
-      )}`
-    });
-  };
 
   async function generateQr() {
     try {
@@ -101,85 +76,107 @@ export function GenerateQRView({ params: { address } }: GenerateQRViewProps) {
   }, []);
 
   return (
-    <Wrapper>
-      <div>
-        <HeadV2
-          title={
-            wallet
-              ? wallet?.nickname ?? "Account"
-              : browser.i18n.getMessage("generate_qr_code")
-          }
-          back={() => {
-            if (address) {
-              navigate(`/quick-settings/wallets/${address}`);
-            } else {
-              navigate("/");
-            }
-          }}
-        />
-      </div>
-      {wallet ? (
-        <div>
-          {isHardware ? (
-            <Degraded
-              style={{
-                justifyContent: "center",
-                alignItems: "center"
-              }}
-            >
-              <WarningWrapper>
-                <WarningIcon color="#fff" />
-              </WarningWrapper>
-              <div>
-                <span>
-                  {browser.i18n.getMessage("cannot_generate_qr_code")}
-                </span>
-              </div>
-            </Degraded>
-          ) : (
-            <ContentWrapper>
-              <Section style={{ padding: "8px 15px 0 15px" }}>
-                <QRCodeWrapper>
-                  <QRCodeLoop frames={frames} fps={5} size={275} />
-                </QRCodeWrapper>
-              </Section>
-              <Section style={{ padding: "8px 15px 0 15px" }}>
-                <AddressField fullWidth onClick={copyAddress}>
-                  {formatAddress(address ?? "", 6)}
-                  <TooltipV2
-                    content={browser.i18n.getMessage("copy_address")}
-                    position="bottom"
-                  >
-                    <CopyAction as={copied ? CheckIcon : CopyIcon} />
-                  </TooltipV2>
-                </AddressField>
-              </Section>
-            </ContentWrapper>
-          )}
-        </div>
-      ) : (
-        <Section style={{ paddingLeft: "1rem", paddingRight: "1rem" }}>
-          <Text style={{ fontSize: "0.98rem" }}>
-            {browser.i18n.getMessage("generate_qr_code_title")}
-          </Text>
-          <InputV2
-            small
-            type="password"
-            placeholder={browser.i18n.getMessage("password")}
-            {...passwordInput.bindings}
-            fullWidth
-            onKeyDown={(e) => {
-              if (e.key !== "Enter") return;
-              generateQr();
-            }}
-          />
-          <Spacer y={1} />
-          <ButtonV2 fullWidth onClick={generateQr} loading={loading}>
-            {browser.i18n.getMessage("generate")}
-          </ButtonV2>
-        </Section>
-      )}
-    </Wrapper>
+    <>
+      <HeadV2
+        title={
+          wallet
+            ? wallet?.nickname ?? "Account"
+            : browser.i18n.getMessage("generate_qr_code")
+        }
+        showOptions={false}
+      />
+      <Wrapper style={{ height: "calc(100vh - 100px)" }}>
+        {wallet ? (
+          <div>
+            {isHardware ? (
+              <Degraded
+                style={{
+                  justifyContent: "center",
+                  alignItems: "center"
+                }}
+              >
+                <WarningWrapper>
+                  <WarningIcon color="#fff" />
+                </WarningWrapper>
+                <div>
+                  <span>
+                    {browser.i18n.getMessage("cannot_generate_qr_code")}
+                  </span>
+                </div>
+              </Degraded>
+            ) : (
+              <ContentWrapper>
+                <Section>
+                  <QRCodeWrapper size={297}>
+                    <div
+                      style={{
+                        backgroundColor: "#fff",
+                        padding: "12px",
+                        borderRadius: "12px"
+                      }}
+                    >
+                      <QRCodeLoop frames={frames} fps={5} size={275} />
+                    </div>
+                  </QRCodeWrapper>
+                </Section>
+                <Section showPaddingVertical={false}>
+                  <AddressField>
+                    <Text size="sm" weight="medium" noMargin>
+                      {wallet.address}
+                    </Text>
+
+                    <CopyToClipboard
+                      onCopy={setCopied}
+                      showToast={false}
+                      label={browser.i18n.getMessage(
+                        copied ? "copied" : "copy"
+                      )}
+                      labelAs={({ children }) => (
+                        <Text
+                          variant="secondary"
+                          size="sm"
+                          weight="semibold"
+                          noMargin
+                        >
+                          {children}
+                        </Text>
+                      )}
+                      text={wallet.address}
+                    />
+                  </AddressField>
+                </Section>
+              </ContentWrapper>
+            )}
+          </div>
+        ) : (
+          <Section
+            style={{ justifyContent: "space-between", flex: 1 }}
+            showPaddingVertical={false}
+          >
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              <Text noMargin>
+                {browser.i18n.getMessage("generate_qr_code_title")}
+              </Text>
+              <Input
+                sizeVariant="small"
+                type="password"
+                placeholder={browser.i18n.getMessage("password")}
+                {...passwordInput.bindings}
+                fullWidth
+                onKeyDown={(e) => {
+                  if (e.key !== "Enter") return;
+                  generateQr();
+                }}
+              />
+            </div>
+
+            <Button fullWidth onClick={generateQr} loading={loading}>
+              {browser.i18n.getMessage("generate")}
+            </Button>
+          </Section>
+        )}
+      </Wrapper>
+    </>
   );
 }
 
@@ -217,7 +214,14 @@ const QRCodeLoop = ({
   }, [frames, fps]);
 
   return (
-    <div style={{ position: "relative", width: size, height: size }}>
+    <div
+      style={{
+        position: "relative",
+        width: size,
+        height: size,
+        backgroundColor: "#000"
+      }}
+    >
       {frames.map((chunk: any, i: Key) => (
         <div
           key={i}

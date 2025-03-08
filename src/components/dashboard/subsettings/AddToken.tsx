@@ -1,26 +1,26 @@
 import {
-  ButtonV2,
-  InputV2,
-  SelectV2 as Select,
+  Button,
+  Input,
+  Select,
   Spacer,
   Text,
   useInput,
   useToasts
-} from "@arconnect/components";
+} from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
 import { useEffect, useState } from "react";
-import { type TokenInfo } from "~tokens/aoTokens/ao";
-import { Token } from "ao-tokens";
+import { defaultTokens, type TokenInfo } from "~tokens/aoTokens/ao";
 import styled from "styled-components";
 import { isAddress } from "~utils/assertions";
-import { addToken, getAoTokens, getDreForToken, useTokens } from "~tokens";
+import { getAoTokens } from "~tokens";
 import { ExtensionStorage } from "~utils/storage";
 import { SubTitle } from "./ContactSettings";
-import { DREContract, DRENode } from "@arconnect/warp-dre";
-import type { TokenState, TokenType } from "~tokens/token";
+import type { TokenType } from "~tokens/token";
 import { concatGatewayURL } from "~gateways/utils";
-import { useGateway } from "~gateways/wayfinder";
+import { FULL_HISTORY, useGateway } from "~gateways/wayfinder";
 import type { CommonRouteProps } from "~wallets/router/router.types";
+import { getTokenInfo } from "~tokens/aoTokens/router";
+import { AO_NATIVE_TOKEN } from "~utils/ao_import";
 
 export interface AddTokenDashboardViewProps extends CommonRouteProps {
   isQuickSetting?: boolean;
@@ -30,53 +30,42 @@ export function AddTokenDashboardView({
   isQuickSetting
 }: AddTokenDashboardViewProps) {
   const targetInput = useInput();
-  const gateway = useGateway({ startBlock: 0 });
+  const gateway = useGateway(FULL_HISTORY);
   const [tokenType, setTokenType] = useState<TokenType>("asset");
   const [token, setToken] = useState<TokenInfo>();
-  const [type, setType] = useState<string>("ao");
   const [loading, setLoading] = useState<boolean>(false);
-  const [warp, setWarp] = useState<string | null>(null);
-  const tokens = useTokens();
   const { setToast } = useToasts();
 
   const onImportToken = async () => {
     try {
-      if (type === "ao") {
-        const aoTokens = await getAoTokens();
+      const aoTokens = await getAoTokens();
 
-        if (aoTokens.find((token) => token.processId === targetInput.state)) {
-          setToast({
-            type: "error",
-            content: browser.i18n.getMessage("token_already_added"),
-            duration: 3000
-          });
-          throw new Error("Token already added");
-        }
-
-        aoTokens.push({ ...token, processId: targetInput.state });
-        await ExtensionStorage.set("ao_tokens", aoTokens);
+      if (aoTokens.find((token) => token.processId === targetInput.state)) {
         setToast({
-          type: "success",
-          content: browser.i18n.getMessage("token_imported"),
+          type: "error",
+          content: browser.i18n.getMessage("token_already_added"),
           duration: 3000
         });
-      } else if (warp && type === "warp") {
-        const existingToken = tokens.find((t) => t.id === targetInput.state);
-        if (existingToken) {
-          setToast({
-            type: "error",
-            content: browser.i18n.getMessage("token_already_added"),
-            duration: 3000
-          });
-          throw new Error("Token already added");
-        }
-        await addToken(targetInput.state, tokenType, warp);
-        setToast({
-          type: "success",
-          content: browser.i18n.getMessage("token_imported"),
-          duration: 3000
-        });
+        throw new Error("Token already added");
       }
+
+      const tokenToImport = {
+        ...token,
+        processId: targetInput.state,
+        type: tokenType
+      };
+
+      if (tokenToImport.processId === AO_NATIVE_TOKEN) {
+        aoTokens.unshift(tokenToImport);
+      } else {
+        aoTokens.push(tokenToImport);
+      }
+      await ExtensionStorage.set("ao_tokens", aoTokens);
+      setToast({
+        type: "success",
+        content: browser.i18n.getMessage("token_imported"),
+        duration: 3000
+      });
     } catch (err) {
       console.log("err", err);
     }
@@ -87,26 +76,15 @@ export function AddTokenDashboardView({
       try {
         setLoading(true);
         //TODO double check
-        isAddress(targetInput.state);
-        if (type === "ao") {
-          const token = (await Token(targetInput.state)).info;
-          const denomination = Number(token.Denomination.toString());
-          const tokenInfo: TokenInfo = { ...token, Denomination: denomination };
-          setToken(tokenInfo);
-          setLoading(false);
-        } else {
-          let dre = await getDreForToken(targetInput.state);
-          const contract = new DREContract(targetInput.state, new DRENode(dre));
-          const { state } = await contract.getState<TokenState>();
-          const values: TokenInfo = {
-            Name: state.name,
-            Ticker: state.ticker,
-            Denomination: 0
-          };
-          setWarp(dre);
-          setToken(values);
-          setLoading(false);
-        }
+        targetInput.state !== "AR" && isAddress(targetInput.state);
+
+        const foundToken = defaultTokens.find(
+          (t) => t.processId === targetInput.state
+        );
+
+        const token = foundToken || (await getTokenInfo(targetInput.state));
+        setToken(token);
+        setLoading(false);
       } catch (err) {
         setToken(null);
         setLoading(false);
@@ -115,7 +93,7 @@ export function AddTokenDashboardView({
       setLoading(false);
     };
     fetchTokenInfo();
-  }, [targetInput.state, tokenType, type]);
+  }, [targetInput.state, tokenType]);
 
   return (
     <Wrapper>
@@ -126,56 +104,35 @@ export function AddTokenDashboardView({
             <Title>{browser.i18n.getMessage("import_token")}</Title>
           </>
         )}
-        <Select
-          small={isQuickSetting}
-          label={browser.i18n.getMessage("token_type")}
-          onChange={(e) => {
-            // @ts-expect-error
-            setType(e.target.value);
-            setTokenType("asset");
-          }}
-          fullWidth
-        >
-          <option value="ao" selected={type === "ao"}>
-            ao Token
-          </option>
-          <option value="warp" selected={type === "warp"}>
-            Warp Token
-          </option>
-        </Select>
-        {type === "warp" && (
-          <>
-            <Spacer y={0.5} />
-            <Select
-              small={isQuickSetting}
-              label="Asset/Collectible"
-              onChange={(e) => {
-                // @ts-expect-error
-                setTokenType(e.target.value);
-              }}
-              fullWidth
-            >
-              <option selected={tokenType === "asset"} value="asset">
-                {browser.i18n.getMessage("token_type_asset")}
-              </option>
-              <option
-                selected={tokenType === "collectible"}
-                value="collectible"
-              >
-                {browser.i18n.getMessage("token_type_collectible")}
-              </option>
-            </Select>
-          </>
-        )}
 
-        <Spacer y={0.5} />
-        <InputV2
-          small={isQuickSetting}
+        <>
+          <Spacer y={0.5} />
+          <Select
+            small={isQuickSetting}
+            label="Asset/Collectible"
+            onChange={(e) => {
+              // @ts-expect-error
+              setTokenType(e.target.value);
+            }}
+            fullWidth
+          >
+            <option selected={tokenType === "asset"} value="asset">
+              {browser.i18n.getMessage("token_type_asset")}
+            </option>
+            <option selected={tokenType === "collectible"} value="collectible">
+              {browser.i18n.getMessage("token_type_collectible")}
+            </option>
+          </Select>
+        </>
+
+        <Spacer y={1.5} />
+        <Input
+          sizeVariant={isQuickSetting ? "small" : "normal"}
           {...targetInput.bindings}
           type="string"
           fullWidth
           placeholder="HineOJKYihQiIcZEWxFtgTyxD_dhDNqGvoBlWj55yDs"
-          label={type === "ao" ? "ao process id" : "Warp Address"}
+          label={"ao process id"}
         />
 
         {token && (
@@ -192,9 +149,9 @@ export function AddTokenDashboardView({
           </TokenWrapper>
         )}
       </div>
-      <ButtonV2 fullWidth disabled={!token || loading} onClick={onImportToken}>
+      <Button fullWidth disabled={!token || loading} onClick={onImportToken}>
         Add Token
-      </ButtonV2>
+      </Button>
     </Wrapper>
   );
 }
@@ -209,7 +166,8 @@ const Image = styled.div<{ src: string }>`
 `;
 
 const Title = styled(Text).attrs({
-  title: true,
+  size: "3xl",
+  weight: "bold",
   noMargin: true
 })`
   font-weight: 600;

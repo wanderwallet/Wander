@@ -202,14 +202,14 @@ export function constructTransaction(
 }
 
 /**
- * Remove data and non-arconnect tags from a signed transaction
+ * Remove data and non-wander tags from a signed transaction
  *
  * @param transaction Transaction to deconstruct
  *
- * @returns Transaction without data and non-arconnect tags
+ * @returns Transaction without data and non-wander tags
  */
 export function deconstructSignedTransaction(transaction: Transaction) {
-  // filter tags (don't send back each tag, just the ones added by arconnect)
+  // filter tags (don't send back each tag, just the ones added by wander)
   // @ts-expect-error
   const tags = transaction.get("tags").filter((tag: Tag) => {
     const tagName = tag.get("name", { string: true, decode: true });

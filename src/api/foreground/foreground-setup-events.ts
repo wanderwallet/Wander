@@ -5,8 +5,8 @@ import { isomorphicOnMessage } from "~utils/messaging/messaging.utils";
 // `event.ts` content script, which in turn calls `postMessage()`, dispatches events or performs certain actions in the
 // content script's context.
 //
-// In ArConnect Embedded, instead of using `onMessage`, we should listen for messages coming from the iframe itself.
-// This also means that the background scripts, which in ArConnect Embedded run directly inside the iframe, need to be
+// In Wander Embedded, instead of using `onMessage`, we should listen for messages coming from the iframe itself.
+// This also means that the background scripts, which in Wander Embedded run directly inside the iframe, need to be
 // updated to send messages using `postMessage`.
 //
 // See https://stackoverflow.com/questions/16266474/javascript-listen-for-postmessage-events-from-specific-iframe
@@ -18,7 +18,7 @@ export function setupEventListeners() {
 
     // send to mitt instance
     postMessage({
-      type: "arconnect_event",
+      type: "wander_event",
       event: data
     });
   });

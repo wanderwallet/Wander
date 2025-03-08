@@ -1,345 +1,640 @@
-import alexLogo from "url:/assets/ecosystem/alex.svg";
-import ardriveLogo from "url:/assets/ecosystem/ardrive.svg";
-import aftrmarketLogo from "url:/assets/ecosystem/aftrmarket.png";
-import arwikiLogo from "url:/assets/ecosystem/arwiki.png";
-import bazarLogo from "url:/assets/ecosystem/bazar.png";
-import protocollandLogo from "url:/assets/ecosystem/protocolland.svg";
-import permaswapLogo from "url:/assets/ecosystem/permaswap.svg";
-import botegaLogo from "url:/assets/ecosystem/botega.svg";
-import arnsLogo from "url:/assets/ecosystem/arns.svg";
-import astroLogo from "url:/assets/ecosystem/astro.png";
-import permapagesLogo from "url:/assets/ecosystem/permapages.svg";
-import dexiLogo from "url:/assets/ecosystem/dexi.svg";
-import dcaAgentLogo from "url:/assets/ecosystem/autonomous-dca-agent.png";
-import aoLinkLogo from "url:/assets/ecosystem/aolink.svg";
-import llamaLogo from "url:/assets/ecosystem/llama.png";
-import arswapLogo from "url:/assets/ecosystem/arswap.png";
-import liquidopsLogo from "url:/assets/ecosystem/liquidops.svg";
-import quantumLogo from "url:/assets/ecosystem/quantum-logo.svg";
-import betterideaLogo from "url:/assets/ecosystem/betteridea.png";
+import {
+  BankNote01,
+  BarChartSquare01,
+  CodeBrowser,
+  GamingPad01,
+  Globe02,
+  Grid01,
+  Image03,
+  ImageUser,
+  MessageSmileCircle,
+  Scales02,
+  Server04,
+  Users03
+} from "@untitled-ui/icons-react";
+import BotegaIcon from "url:/assets/ecosystem/botega.svg";
+import CoinMakerIcon from "url:/assets/ecosystem/coinmaker.svg";
+import LongviewLabsIcon from "url:/assets/ecosystem/longview.svg";
+import LiquidOpsIcon from "url:/assets/ecosystem/liquidops.svg";
+import AstroIcon from "url:/assets/ecosystem/astro.svg";
+import BazarIcon from "url:/assets/ecosystem/bazar.svg";
+import ProtocolLandIcon from "url:/assets/ecosystem/protocolland.svg";
+import ViewblockIcon from "url:/assets/ecosystem/viewblock.svg";
+import AoxIcon from "url:/assets/ecosystem/aox.png";
+import PerplexIcon from "url:/assets/ecosystem/perplex.svg";
+import PermaswapIcon from "url:/assets/ecosystem/permaswap.svg";
+import OutcomeIcon from "url:/assets/ecosystem/outcome.svg";
+import EverpayIcon from "url:/assets/ecosystem/everpay.svg";
+import QuantumIcon from "url:/assets/ecosystem/quantum.svg";
+import AoIcon from "url:/assets/ecosystem/aomint.svg";
+import AoCraftIcon from "url:/assets/ecosystem/aocraft.png";
+import ArweavePIIcon from "url:/assets/ecosystem/arweavephilippines.png";
+import ArweaveAfricaIcon from "url:/assets/ecosystem/arweaveafrica.png";
+import ArweaveOasisIcon from "url:/assets/ecosystem/arweaveoasis.png";
+import DexiIcon from "url:/assets/ecosystem/dexi.svg";
+import LlamaLandIcon from "url:/assets/ecosystem/llamaland.png";
+import AosLlamaIcon from "url:/assets/ecosystem/aosllama.png";
+import TyprIcon from "url:/assets/ecosystem/typr.png";
+import ArDriveIcon from "url:/assets/ecosystem/ardrive.png";
+import AoWarIcon from "url:/assets/ecosystem/aowar.png";
+import BazarmashIcon from "url:/assets/ecosystem/bazarmash.png";
+import CasinaoIcon from "url:/assets/ecosystem/casinao.svg";
+import CyberweaversIcon from "url:/assets/ecosystem/cyberweavers.png";
+import DimensionlifeIcon from "url:/assets/ecosystem/dimensionlife.png";
+import DumDumUpIcon from "url:/assets/ecosystem/dumdumup.png";
+import DumverseIcon from "url:/assets/ecosystem/dumverse.png";
+import HangoutIcon from "url:/assets/ecosystem/hangout.svg";
+import HappyfarmIcon from "url:/assets/ecosystem/happyfarm.png";
+import DumdumDumIcon from "url:/assets/ecosystem/dumdumdum.png";
+import AolinkIcon from "url:/assets/ecosystem/aolink.svg";
+import AlexIcon from "url:/assets/ecosystem/alex.svg";
+import ArfleetIcon from "url:/assets/ecosystem/arfleet.png";
+import PermapagesIcon from "url:/assets/ecosystem/permapages.svg";
+import AoTrendsIcon from "url:/assets/ecosystem/aotrends.png";
+import GatherchatIcon from "url:/assets/ecosystem/gatherchat.png";
+import WeavechatIcon from "url:/assets/ecosystem/weavechat.png";
+import BodhiIcon from "url:/assets/ecosystem/bodhi.svg";
+import ApusIcon from "url:/assets/ecosystem/apus.png";
+import ArweaveCommunityIcon from "url:/assets/ecosystem/arweavecommunity.svg";
+import BetterIdeaIcon from "url:/assets/ecosystem/betteridea.svg";
+import ArweaveWalletKitIcon from "url:/assets/ecosystem/arweavewalletkit.svg";
+import WeaveDBIcon from "url:/assets/ecosystem/weavedb.svg";
+import AoClassicBlackJackIcon from "url:/assets/ecosystem/aoclassicblackjack.png";
+import WeaveEVMIcon from "url:/assets/ecosystem/weaveevm.png";
+import TauOracleIcon from "url:/assets/ecosystem/tauoracle.png";
+import OrbitIcon from "url:/assets/ecosystem/orbit.svg";
+import RedstoneIcon from "url:/assets/ecosystem/redstone.svg";
+import ArioIcon from "url:/assets/ecosystem/ario.svg";
+import PermaDAOIcon from "url:/assets/ecosystem/permadao.svg";
+import WeaversIcon from "url:/assets/ecosystem/weavers.png";
+import DataOSIcon from "url:/assets/ecosystem/dataos.svg";
+import AoVestIcon from "url:/assets/ecosystem/aovest.svg";
+import BasejumpIcon from "url:/assets/ecosystem/basejump.svg";
+import StampProtocolIcon from "url:/assets/ecosystem/stampprotocol.png";
+import VouchDAOIcon from "url:/assets/ecosystem/vouchdao.png";
+import TrunkIcon from "url:/assets/ecosystem/trunk.png";
+import AoctionHouseIcon from "url:/assets/ecosystem/aoctionhouse.png";
+import CtrlPlayIcon from "url:/assets/ecosystem/ctrlplay.png";
+import DecentraMindIcon from "url:/assets/ecosystem/decentramind.png";
+import PetOrRektIcon from "url:/assets/ecosystem/pet-or-rekt.png";
+import AolottoIcon from "url:/assets/ecosystem/aolotto.png";
+import ElyssiumIcon from "url:/assets/ecosystem/elyssium.png";
+import AoStoreIcon from "url:/assets/ecosystem/aostore.png";
+import ArbitStudioIcon from "url:/assets/ecosystem/arbit.png";
+import Tiny4VRIcon from "url:/assets/ecosystem/tiny4vr.png";
+import RimboxIcon from "url:/assets/ecosystem/rimbox.png";
+import MetaLinksIcon from "url:/assets/ecosystem/metalinks.png";
+import ArLinkIcon from "url:/assets/ecosystem/arlink.svg";
+import TrackiIcon from "url:/assets/ecosystem/tracki.png";
+import VelocityIcon from "url:/assets/ecosystem/velocity.svg";
 
 export interface App {
   name: string;
-  category: string;
-  description: string;
-  assets: {
-    logo: string;
-    thumbnail: string;
-    lightBackground?: string;
-    darkBackground?: string;
-  };
-  links: {
-    website: string;
-    twitter?: string;
-    discord?: string;
-    github?: string;
-  };
+  category:
+    | ""
+    | "DeFi"
+    | "Bridge"
+    | "Games"
+    | "Decentralized AI"
+    | "NFTs"
+    | "Social"
+    | "Storage"
+    | "Explorers"
+    | "Dev Tools"
+    | "Community"
+    | "Analytics";
+  url: string;
+  icon: string;
+  useAppIconWrapper?: boolean;
+  backgroundColor?: string;
+  objectFit?: "contain" | "cover";
+  imageSize?: string;
+  padding?: string;
 }
 
 export const apps: App[] = [
-  {
-    name: "Botega",
-    category: "Exchange",
-    description: "Botega is the AO Computer's first decentralized exchange.",
-    assets: {
-      logo: botegaLogo,
-      thumbnail: "",
-      lightBackground: "rgba(230, 235, 240, 1)",
-      darkBackground: "rgba(19, 28, 37, 1)"
-    },
-    links: {
-      website: "https://botega.arweave.dev/#/swap"
-    }
-  },
-  {
-    name: "Protocol.Land",
-    category: "Storage",
-    description:
-      "Protocol.Land is a decentralized home for decentralized codebases.",
-    assets: {
-      logo: protocollandLogo,
-      thumbnail: "/apps/protocolland/thumbnail.png",
-      lightBackground: "rgba(230, 235, 240, 1)",
-      darkBackground: "rgba(19, 28, 37, 1)"
-    },
-    links: {
-      website: "https://protocol.land",
-      twitter: "https://twitter.com/ProtocolLand",
-      discord: "https://discord.com/invite/GqxX2vtwRj",
-      github: "https://github.com/labscommunity/protocol-land"
-    }
-  },
-  {
-    name: "Astro",
-    category: "Defi",
-    description:
-      "Astro introduces USDA as the first overcollateralized stablecoin on AO.",
-    assets: {
-      logo: astroLogo,
-      thumbnail: "/apps/astro/thumbnail.png",
-      lightBackground: "rgba(230, 235, 240, 1)",
-      darkBackground: "rgba(19, 28, 37, 1)"
-    },
-    links: {
-      website: "https://astrousd.com",
-      twitter: "https://twitter.com/AstroUSD",
-      discord: "https://discord.gg/NpNRtNE6PN"
-    }
-  },
+  // DeFi
   {
     name: "LiquidOps",
-    category: "Defi",
-    description:
-      "A simple, secure lending & borrowing platform for AR & AO assets.",
-    assets: {
-      logo: liquidopsLogo,
-      thumbnail: "/apps/astro/thumbnail.png",
-      lightBackground: "rgba(230, 235, 240, 1)",
-      darkBackground: "rgba(19, 28, 37, 1)"
-    },
-    links: {
-      website: "https://www.liquidops.io",
-      twitter: "https://x.com/Liquid_Ops"
-    }
+    category: "DeFi",
+    url: "https://liquidops.io/",
+    icon: LiquidOpsIcon
   },
   {
-    name: "Quantum",
-    category: "Defi",
-    description: "Bridge. Earn and Explore the AO ecosystem with Quantum.",
-    assets: {
-      logo: quantumLogo,
-      thumbnail: "",
-      lightBackground: "rgba(25, 25, 25, 1)",
-      darkBackground: "rgba(25, 25, 25, 1)"
-    },
-    links: {
-      website: "https://bridge.astrousd.com",
-      twitter: "https://x.com/astrousd"
-    }
+    name: "Astro Labs",
+    category: "DeFi",
+    url: "https://www.astrousd.com/",
+    icon: AstroIcon,
+    objectFit: "cover"
   },
   {
-    name: "Bazar",
-    category: "Exchange",
-    description:
-      "The first fully decentralized atomic asset exchange built on the permaweb. Through the power of the Universal Content Marketplace (UCM) protocol and the Universal Data License (UDL) content creators can trade digital assets with real world rights.",
-    assets: {
-      logo: bazarLogo,
-      thumbnail: "/apps/bazar/thumbnail.gif",
-      lightBackground: "rgba(230, 235, 240, 1)"
-    },
-    links: {
-      website: "https://bazar.arweave.net",
-      twitter: "https://twitter.com/OurBazAR",
-      discord: "https://discord.gg/weavers"
-    }
-  },
-  {
-    name: "AFTR Market",
-    category: "Infrastructure",
-    description:
-      "AFTR Market provides asset management and governance on-chain for Arweave assets.",
-    assets: {
-      logo: aftrmarketLogo,
-      thumbnail: "/apps/aftr/thumbnail.png"
-    },
-    links: {
-      website: "https://www.aftr.market/",
-      twitter: "https://twitter.com/AftrMarket",
-      discord: "https://discord.gg/YEy8VpuNXR"
-    }
+    name: "Botega",
+    category: "DeFi",
+    url: "https://botega.arweave.net/",
+    icon: BotegaIcon
   },
   {
     name: "Dexi",
-    category: "Defi",
-    description:
-      "Dexi autonomously identifies, collects, and aggregates financial data from events within the AO network, including asset prices, token swaps, liquidity fluctuations, and token asset characteristics.",
-    assets: {
-      logo: dexiLogo,
-      thumbnail: "/apps/dexi/thumbnail.png",
-      lightBackground: "rgba(230, 235, 240, 1)"
-    },
-    links: {
-      website: "https://dexi.arweave.dev/",
-      twitter: "https://x.com/autonomous_af"
-    }
+    category: "DeFi",
+    url: "https://dexi.arweave.net/",
+    icon: DexiIcon
   },
   {
-    name: "Autonomous DCA Agent",
-    category: "Agent",
-    description:
-      "The Autonomous DCA Agent executes a dynamic dollar-cost-average (DCA) investment strategy across various liquidity pools within the AO ecosystem.",
-    assets: {
-      logo: dcaAgentLogo,
-      thumbnail: "/apps/autonomousdca/thumbnail.png",
-      lightBackground: "rgba(230, 235, 240, 1)"
-    },
-    links: {
-      website: "https://dca_agent.arweave.dev/",
-      twitter: "https://x.com/autonomous_af"
-    }
+    name: "CoinMaker",
+    category: "DeFi",
+    url: "https://coin.arweave.net/",
+    icon: CoinMakerIcon
   },
   {
-    name: "ao Link",
-    category: "Developer Tooling",
-    description:
-      "ao.link serves as a message explorer for the ao Network, offering functionalities similar to block explorers in conventional blockchain systems.",
-    assets: {
-      logo: aoLinkLogo,
-      thumbnail: "/apps/aolink/logo.png",
-      lightBackground: "rgba(230, 235, 240, 1)"
-    },
-    links: {
-      website: "https://www.ao.link/",
-      twitter: "https://x.com/TheDataOS"
-    }
+    name: "Perplex",
+    category: "DeFi",
+    url: "https://perplex.finance/",
+    icon: PerplexIcon
+  },
+  {
+    name: "EverPay",
+    category: "DeFi",
+    url: "https://www.everpay.io/",
+    icon: EverpayIcon
+  },
+  {
+    name: "PermaSwap",
+    category: "DeFi",
+    url: "https://aopsn.com/",
+    icon: PermaswapIcon
+  },
+  {
+    name: "Outcome",
+    category: "DeFi",
+    url: "https://www.outcome.gg/",
+    icon: OutcomeIcon
+  },
+  {
+    name: "aoVest",
+    category: "DeFi",
+    url: "https://aovest.stream/",
+    icon: AoVestIcon
+  },
+  {
+    name: "Trunk",
+    category: "DeFi",
+    url: "https://trunkao.xyz",
+    icon: TrunkIcon
+  },
+  {
+    name: "tracki.io",
+    category: "DeFi",
+    url: "https://www.tracki.io/",
+    icon: TrackiIcon
+  },
+
+  // Bridges
+  {
+    name: "Quantum",
+    category: "Bridge",
+    url: "https://bridge.astrousd.com/",
+    icon: QuantumIcon
+  },
+  {
+    name: "AOX",
+    category: "Bridge",
+    url: "https://aox.xyz/",
+    icon: AoxIcon
+  },
+  {
+    name: "AO Mint",
+    category: "Bridge",
+    url: "https://ao.arweave.net/#/mint",
+    icon: AoIcon
+  },
+
+  // Games
+  {
+    name: "Basejump",
+    category: "Games",
+    url: "https://www.basejump.xyz",
+    icon: BasejumpIcon
   },
   {
     name: "Llama Land",
-    category: "Social",
-    description:
-      "AI powered MMO game built on AO. Petition the Llama King for Llama Coin! 100% onchain.",
-    assets: {
-      logo: llamaLogo,
-      thumbnail: "/apps/llamaland/logo.png",
-      lightBackground: "rgba(230, 235, 240, 1)",
-      darkBackground: "rgba(19, 28, 37, 1)"
-    },
-    links: {
-      website: "https://llamaland.g8way.io/#/",
-      twitter: "https://x.com/LlamaLandAO"
-    }
+    category: "Games",
+    url: "https://llamaland.arweave.net/",
+    icon: LlamaLandIcon
   },
   {
-    name: "ArSwap",
-    category: "Exchange",
-    description:
-      "Unlocking DeFi on AO. Swap tokens, provide liquidity, and earn fees.",
-    assets: {
-      logo: arswapLogo,
-      thumbnail: "/apps/arswap/logo.png",
-      lightBackground: "rgba(230, 235, 240, 1)",
-      darkBackground: "rgba(19, 28, 37, 1)"
-    },
-    links: {
-      website: "https://arswap.org/",
-      twitter: "https://x.com/ar_swap"
-    }
+    name: "Dumverse",
+    category: "Games",
+    url: "https://udatfq2ef3xeb7dgk2tw3ibgoelokcht4wuwirgocolve66xyfua.arweave.net/oMEyw0Qu7kD8ZlanbaAmcRblCPPlqWREzhOXUnvXwWg/",
+    icon: DumverseIcon
   },
   {
-    name: "Arweave Name System",
+    name: "Cyberbeavers",
+    category: "Games",
+    url: "https://beavers.warp.cc/",
+    icon: CyberweaversIcon
+  },
+  {
+    name: "DumDumUp!",
+    category: "Games",
+    url: "https://dumdumup.vercel.app/",
+    icon: DumDumUpIcon
+  },
+  {
+    name: "Hang Out",
+    category: "Games",
+    url: "https://hangout.aogames.org/",
+    icon: HangoutIcon
+  },
+  {
+    name: "AO Craft",
+    category: "Games",
+    url: "https://ao-craft.vercel.app/",
+    icon: AoCraftIcon
+  },
+  {
+    name: "AO War",
+    category: "Games",
+    url: "https://aowar.arweave.net/",
+    icon: AoWarIcon
+  },
+  {
+    name: "BazARmash",
+    category: "Games",
+    url: "https://bazarmash.vercel.app/",
+    icon: BazarmashIcon
+  },
+  {
+    name: "CasinAO",
+    category: "Games",
+    url: "https://agcpzmllwtabfgpx6szogbps2b2qcxpqolkzvpq7zu2rwpx5oosq.arweave.net/AYT8sWu0wBKZ9_Sy4wXy0HUBXfBy1Zq-H801Gz79c6U/",
+    icon: CasinaoIcon
+  },
+  {
+    name: "Happy Farm",
+    category: "Games",
+    url: "https://happytown.ar-io.net/",
+    icon: HappyfarmIcon
+  },
+  {
+    name: "DimensionLife",
+    category: "Games",
+    url: "https://ar.dimension-life.rootmud.xyz/",
+    icon: DimensionlifeIcon
+  },
+  {
+    name: "AO Classic Blackjack",
+    category: "Games",
+    url: "https://blackjack.arweave.net/",
+    icon: AoClassicBlackJackIcon
+  },
+  {
+    name: "Dum Dum Dum",
+    category: "Games",
+    url: "https://qtvgmiqdhqmjzpeajspzovhopa56egwi2e6njkdkrc44pyooqquq.arweave.net/hOpmIgM8GJy8gEyfl1TueDviGsjRPNSoaoi5x-HOhCk/",
+    icon: DumdumDumIcon
+  },
+  {
+    name: "Ctrl Play",
+    category: "Games",
+    url: "https://ctrlplayfrontend_arlink.arweave.net",
+    icon: CtrlPlayIcon,
+    useAppIconWrapper: true,
+    backgroundColor: "#000000"
+  },
+  {
+    name: "Pet or Rekt",
+    category: "Games",
+    url: "https://dumdum.arweave.net/",
+    icon: PetOrRektIcon,
+    useAppIconWrapper: true,
+    backgroundColor: "#000000"
+  },
+  {
+    name: "Rimbox",
+    category: "Games",
+    url: "https://rimbox.vercel.app/",
+    icon: RimboxIcon,
+    backgroundColor: "#fff"
+  },
+  {
+    name: "Aolotto",
+    category: "Games",
+    url: "https://aolotto.com",
+    icon: AolottoIcon,
+
+    imageSize: "32px",
+    backgroundColor: "#FFF"
+  },
+
+  // DeAI
+  {
+    name: "AOS-Llama",
+    category: "Decentralized AI",
+    url: "https://github.com/samcamwilliams/aos-llama",
+    icon: AosLlamaIcon
+  },
+  {
+    name: "Apus Network",
+    category: "Decentralized AI",
+    url: "https://www.apus.network/",
+    icon: ApusIcon
+  },
+
+  // NFTs
+  {
+    name: "BazAR",
+    category: "NFTs",
+    url: "https://bazar.arweave.net/",
+    icon: BazarIcon
+  },
+  {
+    name: "AOction House",
+    category: "NFTs",
+    url: "https://1of1_aoction-house.arweave.net",
+    icon: AoctionHouseIcon,
+    imageSize: "32px",
+    useAppIconWrapper: true
+  },
+
+  // Social
+  // {
+  //   name: "Odysee",
+  //   category: "Social",
+  //   url: "https://odysee.com/",
+  //   icon: <OdyseeIcon />,
+  // },
+  {
+    name: "Typr",
     category: "Social",
-    description:
-      "The Arweave Name System (ArNS) works similarly to traditional Domain Name Services - but with ArNS, the registry is decentralized, permanent, and stored on Arweave. It's a simple way to name and help you - and your users - find your data, apps, or websites on Arweave.",
-    assets: {
-      logo: arnsLogo,
-      thumbnail: "/apps/arns/thumbnail.jpeg",
-      lightBackground: "rgba(230, 235, 240, 1)"
-    },
-    links: {
-      website: "https://arns.app",
-      twitter: "https://twitter.com/ar_io_network",
-      discord: "https://discord.com/invite/HGG52EtTc2",
-      github: "https://github.com/ar-io"
-    }
+    url: "https://iamgamelover.arweave.net/",
+    icon: TyprIcon
+  },
+  {
+    name: "Bodhi",
+    category: "Social",
+    url: "https://bodhi.wtf/",
+    icon: BodhiIcon
+  },
+  {
+    name: "WeaveChat",
+    category: "Social",
+    url: "https://weavechat.vercel.app/",
+    icon: WeavechatIcon
+  },
+  {
+    name: "GatherChat",
+    category: "Social",
+    url: "https://gatherchat.ar-io.net/#/",
+    icon: GatherchatIcon
   },
   {
     name: "Permapages",
-    category: "Publishing",
-    description:
-      "Create and manage your own permanent web3 profile and permaweb pages built on Arweave.",
-    assets: {
-      logo: permapagesLogo,
-      thumbnail: "/apps/permapages/thumbnail.png",
-      lightBackground: "rgba(230, 235, 240, 1)",
-      darkBackground: "rgba(19, 28, 37, 1)"
-    },
-    links: {
-      website: "https://permapages.app",
-      twitter: "https://twitter.com/permapages"
-    }
+    category: "Social",
+    url: "https://permapages.app/",
+    icon: PermapagesIcon
   },
+  {
+    name: "AO Trends",
+    category: "Social",
+    url: "https://trends_arlink.arweave.net/",
+    icon: AoTrendsIcon
+  },
+  {
+    name: "DecentraMind",
+    category: "Social",
+    url: "https://decentramind.club/",
+    icon: DecentraMindIcon,
+    useAppIconWrapper: true,
+    backgroundColor: "#fff"
+  },
+  {
+    name: "Elyssium",
+    category: "Social",
+    url: "https://elyssium.live/",
+    icon: ElyssiumIcon,
+    backgroundColor: "#000"
+  },
+  {
+    name: "Arbit Studio",
+    category: "Social",
+    url: "https://arbitstudio.ar.io",
+    icon: ArbitStudioIcon
+  },
+  {
+    name: "AO Store",
+    category: "Social",
+    url: "https://arstore_arlink.arweave.net/",
+    icon: AoStoreIcon,
+    backgroundColor: "#000"
+  },
+  {
+    name: "Velocity",
+    category: "Social",
+    url: "https://velocity.ar.io/",
+    icon: VelocityIcon
+  },
+  {
+    name: "MetaLinks",
+    category: "Social",
+    url: "https://metalinks.ar.io/",
+    icon: MetaLinksIcon,
+    backgroundColor: "black",
+    padding: "4px"
+  },
+
+  // Storage
   {
     name: "ArDrive",
     category: "Storage",
-    description:
-      "ArDrive offers never-ending storage of your most valuable files. Pay once and save your memories forever.",
-    assets: {
-      logo: ardriveLogo,
-      thumbnail: permaswapLogo,
-      lightBackground: "rgba(230, 235, 240, 1)",
-      darkBackground: "rgba(19, 28, 37, 1)"
-    },
-    links: {
-      website: "https://ardrive.io",
-      twitter: "https://twitter.com/ardriveapp",
-      discord: "https://discord.com/invite/ya4hf2H",
-      github: "https://github.com/ardriveapp"
-    }
+    url: "https://ardrive.io/",
+    icon: ArDriveIcon,
+    objectFit: "cover"
   },
   {
-    name: "BetterIDEa",
-    category: "Developer Tooling",
-    description: "Feature rich web IDE for building on AO",
-    assets: {
-      logo: betterideaLogo,
-      thumbnail: "/apps/betteridea/thumbnail.png",
-      lightBackground: "rgba(240, 240, 240, 1)",
-      darkBackground: "rgba(20, 34, 19, 1)"
-    },
-    links: {
-      website: "https://betteridea.arweave.net/",
-      twitter: "https://twitter.com/betteridea_dev",
-      discord: "https://discord.gg/nm6VKUQBrA",
-      github: "https://github.com/betteridea-dev"
-    }
-  },
-  {
-    name: "Arwiki",
-    category: "Social",
-    description:
-      "As MediaWiki is the software that powers Wikipedia, ArWiki is the software that powers the Arweave Wiki. However, ArWiki is a Web3 platform -- it is completely decentralized, and is hosted on and served from the Arweave permaweb itself.",
-    assets: {
-      logo: arwikiLogo,
-      thumbnail: "/apps/arwiki/thumbnail.jpeg",
-      lightBackground: "rgba(230, 235, 240, 1)"
-    },
-    links: {
-      website: "https://arwiki.wiki",
-      twitter: "https://x.com/TheArWiki"
-    }
+    name: "ArFleet",
+    category: "Storage",
+    url: "https://arfleet.arweave.net/#/",
+    icon: ArfleetIcon
   },
   {
     name: "Alex",
     category: "Storage",
-    description:
-      "A decentralized archival platform that preserves human history and culture digitally.",
-    assets: {
-      logo: alexLogo,
-      thumbnail: "/apps/alex/thumbnail.png",
-      lightBackground: "rgba(230, 235, 240, 1)"
-    },
-    links: {
-      website: "https://alex.arweave.net/",
-      twitter: "https://twitter.com/thealexarchive",
-      discord: "http://discord.gg/2uZsWuTNvN"
-    }
+    url: "https://alex.arweave.net/",
+    icon: AlexIcon
+  },
+
+  // Explorers
+  {
+    name: "AO Link",
+    category: "Explorers",
+    url: "https://www.ao.link/",
+    icon: AolinkIcon
   },
   {
-    name: "Permaswap",
-    category: "Exchange",
-    description:
-      "Permaswap is an engineering innovation to refactor AMM. Inspired by Arweave's SmartWeave, we've proposed the SCP theory. By exploring SCP, we're certain that the approach to building decentralized applications is not limited to the on-chain VM model and that the future of Dapp development will be diverse. The Permaswap Network will prove with a new architecture that decentralization should break the impossible triangle and provide users with a perfect experience.",
-    assets: {
-      logo: permaswapLogo,
-      thumbnail: permaswapLogo,
-      // lightBackground: "rgba(230, 235, 240, 1)",
-      darkBackground: "rgba(19, 28, 37, 1)"
-    },
-    links: {
-      website: "https://permaswap.network/",
-      twitter: "https://twitter.com/permaswap",
-      discord: "https://discord.gg/WM5MQZGVPF",
-      github: "https://github.com/permaswap"
-    }
+    name: "ViewBlock",
+    category: "Explorers",
+    url: "https://viewblock.io/arweave",
+    icon: ViewblockIcon
+  },
+
+  // Dev Tools
+  {
+    name: "Protocol.Land",
+    category: "Dev Tools",
+    url: "https://protocol.land/",
+    icon: ProtocolLandIcon
+  },
+  {
+    name: "Ar.io",
+    category: "Dev Tools",
+    url: "https://ar.io/",
+    icon: ArioIcon
+  },
+  {
+    name: "ArNS",
+    category: "Dev Tools",
+    url: "https://ar.io/arns",
+    icon: ArioIcon
+  },
+  {
+    name: "Redstone",
+    category: "Dev Tools",
+    url: "https://redstone.finance/",
+    icon: RedstoneIcon
+  },
+  {
+    name: "Orbit",
+    category: "Dev Tools",
+    url: "https://0rbit.co/",
+    icon: OrbitIcon
+  },
+  {
+    name: "Tau Oracle",
+    category: "Dev Tools",
+    url: "https://tauoracle.com/",
+    icon: TauOracleIcon
+  },
+  {
+    name: "WeavEVM",
+    category: "Dev Tools",
+    url: "https://www.wvm.dev/",
+    icon: WeaveEVMIcon
+  },
+  {
+    name: "WeaveDB",
+    category: "Dev Tools",
+    url: "https://weavedb.dev/",
+    icon: WeaveDBIcon
+  },
+  {
+    name: "Arweave Wallet Kit",
+    category: "Dev Tools",
+    url: "https://docs.arweavekit.com/wallets/wallet-kit",
+    icon: ArweaveWalletKitIcon
+  },
+  {
+    name: "BetterIDEa",
+    category: "Dev Tools",
+    url: "https://betteridea.dev/",
+    icon: BetterIdeaIcon
+  },
+  {
+    name: "ArWiki",
+    category: "Dev Tools",
+    url: "https://arwiki.wiki",
+    icon: ArweaveCommunityIcon
+  },
+  {
+    name: "VouchDAO",
+    category: "Dev Tools",
+    url: "https://vouch-dao.arweave.net",
+    icon: VouchDAOIcon,
+    useAppIconWrapper: true
+  },
+  {
+    name: "Stamp Protocol",
+    category: "Dev Tools",
+    url: "https://stamps.live/",
+    icon: StampProtocolIcon,
+    useAppIconWrapper: true
+  },
+  {
+    name: "tiny4VR",
+    category: "Dev Tools",
+    url: "https://tiny4vr.ar.io/",
+    icon: Tiny4VRIcon
+  },
+  {
+    name: "ArLink",
+    category: "Dev Tools",
+    url: "https://arlink.arweave.net/",
+    icon: ArLinkIcon
+  },
+
+  // Community
+  {
+    name: "Weavers",
+    category: "Community",
+    url: "https://www.weaversofficial.com/",
+    icon: WeaversIcon
+  },
+  {
+    name: "Longview Labs",
+    category: "Community",
+    url: "https://www.longviewlabs.co/",
+    icon: LongviewLabsIcon
+  },
+  {
+    name: "PermaDAO",
+    category: "Community",
+    url: "https://permadao.com/",
+    icon: PermaDAOIcon
+  },
+  {
+    name: "Arweave Oasis",
+    category: "Community",
+    url: "https://arweaveoasis.com/",
+    icon: ArweaveOasisIcon
+  },
+  {
+    name: "Arweave India",
+    category: "Community",
+    url: "https://www.arweaveindia.com/",
+    icon: ArweaveCommunityIcon
+  },
+  {
+    name: "Arweave Philippines",
+    category: "Community",
+    url: "https://linktr.ee/arweaveph",
+    icon: ArweavePIIcon
+  },
+  {
+    name: "Arweave Africa",
+    category: "Community",
+    url: "https://x.com/ArweaveAfrica",
+    icon: ArweaveAfricaIcon
+  },
+
+  // Analytics
+  {
+    name: "DataOS",
+    category: "Analytics",
+    url: "https://stats.dataos.so/",
+    icon: DataOSIcon
   }
+];
+
+export const categories = [
+  { title: "All", icon: Grid01 },
+  { title: "DeFi", icon: BankNote01 },
+  { title: "Bridge", icon: Scales02 },
+  { title: "Games", icon: GamingPad01 },
+  { title: "Decentralized AI", icon: MessageSmileCircle },
+  { title: "NFTs", icon: Image03 },
+  { title: "Social", icon: ImageUser },
+  { title: "Storage", icon: Server04 },
+  { title: "Explorers", icon: Globe02 },
+  { title: "Dev Tools", icon: CodeBrowser },
+  { title: "Community", icon: Users03 },
+  { title: "Analytics", icon: BarChartSquare01 }
 ];

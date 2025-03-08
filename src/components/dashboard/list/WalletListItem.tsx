@@ -1,5 +1,3 @@
-import { WalletIcon } from "@iconicicons/react";
-import { Reorder, useDragControls } from "framer-motion";
 import { type HTMLProps, useMemo } from "react";
 import styled from "styled-components";
 import { formatAddress } from "~utils/format";
@@ -7,7 +5,8 @@ import type { StoredWallet } from "~wallets";
 import HardwareWalletIcon from "~components/hardware/HardwareWalletIcon";
 import keystoneLogo from "url:/assets/hardware/keystone.png";
 import { svgie } from "~utils/svgies";
-import { ListItem, ListItemIcon } from "@arconnect/components";
+import { ListItem, ListItemIcon, Text } from "@arconnect/components-rebrand";
+import Online from "~components/Online";
 
 export default function WalletListItem({
   wallet,
@@ -15,6 +14,7 @@ export default function WalletListItem({
   address,
   avatar,
   active,
+  activeWallet,
   ...props
 }: Props & HTMLProps<HTMLDivElement>) {
   // format address
@@ -25,31 +25,38 @@ export default function WalletListItem({
     [address]
   );
 
-  // allow dragging with the drag icon
-  const dragControls = useDragControls();
-
   return (
-    <Reorder.Item
-      as="div"
-      value={wallet}
-      id={address}
-      dragListener={false}
-      dragControls={dragControls}
+    <ListItem
+      title={
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          {name}
+          {activeWallet && <Online />}
+        </div>
+      }
+      subtitle={formattedAddress}
+      active={active}
+      img={avatar || svgieAvatar}
+      squircleSize={40}
+      height={56}
+      showArrow
+      {...props}
     >
-      <ListItem
-        title={name}
-        description={formattedAddress}
-        active={active}
-        img={avatar || svgieAvatar}
-        dragControls={dragControls}
-        {...props}
-      >
-        {!avatar && !svgieAvatar && <ListItemIcon as={WalletIcon} />}
-        {wallet.type === "hardware" && wallet.api === "keystone" && (
-          <HardwareIcon icon={keystoneLogo} color="#2161FF" />
-        )}
-      </ListItem>
-    </Reorder.Item>
+      {!avatar && !svgieAvatar && (
+        <ListItemIcon>
+          <Text
+            size="lg"
+            weight="medium"
+            noMargin
+            style={{ textAlign: "center" }}
+          >
+            {wallet?.nickname?.charAt(0)?.toUpperCase() || "A"}
+          </Text>
+        </ListItemIcon>
+      )}
+      {wallet.type === "hardware" && wallet.api === "keystone" && (
+        <HardwareIcon icon={keystoneLogo} color="#2161FF" />
+      )}
+    </ListItem>
   );
 }
 
@@ -60,6 +67,7 @@ interface Props {
   address: string;
   active: boolean;
   small?: boolean;
+  activeWallet?: boolean;
 }
 
 const HardwareIcon = styled(HardwareWalletIcon)`

@@ -1,13 +1,13 @@
 import { permissionData, type PermissionType } from "~applications/permissions";
-import { Button, Spacer, useToasts } from "@arconnect/components";
+import { Button, Spacer, useToasts, Text } from "@arconnect/components-rebrand";
 import type { AppInfo } from "~applications/application";
-import PermissionCheckbox, {
-  PermissionDescription
-} from "~components/auth/PermissionCheckbox";
+import { PermissionDescription } from "~components/auth/PermissionCheckbox";
 import { useEffect, useState } from "react";
 import { getTab } from "~applications/tab";
 import { addApp } from "~applications";
 import browser from "webextension-polyfill";
+import { ToggleSwitch } from "~routes/popup/subscriptions/subscriptionDetails";
+import { Flex } from "~components/common/Flex";
 
 export default function Connector({ appUrl }: Props) {
   // permissions to "force-connect" the app with
@@ -57,8 +57,8 @@ export default function Connector({ appUrl }: Props) {
     <>
       {Object.keys(permissionData).map((permissionName: PermissionType, i) => (
         <div key={i}>
-          <PermissionCheckbox
-            onChange={(checked) =>
+          <ToggleSwitch
+            setChecked={(checked) =>
               setPermsToConnect((val) => {
                 // toggle permission
                 if (checked && !val.includes(permissionName)) {
@@ -72,12 +72,15 @@ export default function Connector({ appUrl }: Props) {
             }
             checked={permsToConnect.includes(permissionName)}
           >
-            {permissionName}
-            <br />
-            <PermissionDescription>
-              {browser.i18n.getMessage(permissionData[permissionName])}
-            </PermissionDescription>
-          </PermissionCheckbox>
+            <Flex direction="column">
+              <Text size="md" weight="medium" noMargin>
+                {permissionName}
+              </Text>
+              <PermissionDescription>
+                {browser.i18n.getMessage(permissionData[permissionName])}
+              </PermissionDescription>
+            </Flex>
+          </ToggleSwitch>
           <Spacer y={0.8} />
         </div>
       ))}

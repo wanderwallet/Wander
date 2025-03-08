@@ -8,7 +8,7 @@ import { type Quote } from "~lib/onramper";
 import { PageType, trackPage } from "~utils/analytics";
 import HeadV2 from "~components/popup/HeadV2";
 import { Line } from "./purchase";
-import { useStorage } from "@plasmohq/storage/hook";
+import { useStorage } from "~utils/storage";
 import { formatAddress } from "~utils/format";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 

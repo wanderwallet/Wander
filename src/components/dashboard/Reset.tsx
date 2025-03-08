@@ -1,17 +1,17 @@
 import {
   Text,
   Spacer,
-  ButtonV2,
+  Button,
   useModal,
-  ModalV2,
+  Modal,
   useToasts,
   type DisplayTheme
-} from "@arconnect/components";
-import { ExtensionStorage } from "~utils/storage";
+} from "@arconnect/components-rebrand";
 import { TrashIcon } from "@iconicicons/react";
 import browser from "webextension-polyfill";
 import styled from "styled-components";
-import { useTheme } from "~utils/theme";
+import { resetStorage } from "~utils/storage.utils";
+import { RemoveButton } from "~routes/popup/settings/wallets/[address]";
 
 export function ResetDashboardView() {
   // reset modal
@@ -20,25 +20,15 @@ export function ResetDashboardView() {
   // toasts
   const { setToast } = useToasts();
 
-  const theme = useTheme();
-
-  // reset ArConnect
+  // reset Wander
   async function reset() {
     try {
-      // get all keys
-      const allStoredKeys = Object.keys(
-        (await browser.storage.local.get(null)) || {}
-      );
-
-      // remove all keys
-      await Promise.allSettled(
-        allStoredKeys.map((key) => ExtensionStorage.remove(key))
-      );
+      await resetStorage();
 
       // close window
       window.top.close();
     } catch (e) {
-      console.log("Error resetting ArConnect", e);
+      console.log("Error resetting Wander", e);
       setToast({
         type: "error",
         content: browser.i18n.getMessage("reset_error"),
@@ -51,39 +41,34 @@ export function ResetDashboardView() {
 
   return (
     <>
-      <Text heading noMargin>
-        {browser.i18n.getMessage("reset")}
-      </Text>
-      <Text>{browser.i18n.getMessage("setting_reset_description")}</Text>
       <Warning>
         {browser.i18n.getMessage("reset_warning")}
         <br />
         <Spacer y={0.35} />
         <b>{browser.i18n.getMessage("irreversible_action")}</b>
       </Warning>
-      <Spacer y={4} />
-      <ResetButton
-        displayTheme={theme}
-        onClick={() => resetModal.setOpen(true)}
-      >
+      <Spacer y={1.5} />
+      <RemoveButton fullWidth onClick={() => resetModal.setOpen(true)}>
         <TrashIcon style={{ marginRight: "5px" }} />
         {browser.i18n.getMessage("reset")}
-      </ResetButton>
-      <ModalV2
+      </RemoveButton>
+      <Modal
         {...resetModal.bindings}
         root={document.getElementById("__plasmo")}
         actions={
-          <ResetButton displayTheme={theme} onClick={reset}>
+          <RemoveButton fullWidth onClick={reset}>
             {browser.i18n.getMessage("confirm")}
-          </ResetButton>
+          </RemoveButton>
         }
       >
-        <ModalText heading>{browser.i18n.getMessage("reset")}</ModalText>
+        <ModalText size="xl" weight="medium">
+          {browser.i18n.getMessage("reset")}
+        </ModalText>
         <ModalText>
           {browser.i18n.getMessage("setting_reset_description")}
         </ModalText>
         <Spacer y={0.75} />
-      </ModalV2>
+      </Modal>
     </>
   );
 }
@@ -92,7 +77,7 @@ const Warning = styled(Text)`
   color: #ff0000;
 `;
 
-export const ResetButton = styled(ButtonV2).attrs({
+export const ResetButton = styled(Button).attrs({
   secondary: true,
   fullWidth: true
 })<{ displayTheme?: DisplayTheme }>`

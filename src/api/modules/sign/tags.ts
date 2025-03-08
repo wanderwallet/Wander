@@ -6,7 +6,7 @@ export interface DecodedTag {
 }
 
 export const signedTxTags = [
-  { name: "Signing-Client", value: "ArConnect" },
+  { name: "Signing-Client", value: "Wander" },
   {
     name: "Signing-Client-Version",
     value: version

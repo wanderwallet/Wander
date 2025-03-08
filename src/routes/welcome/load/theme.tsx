@@ -1,10 +1,4 @@
-import { ButtonV2, Spacer, Text } from "@arconnect/components";
-import {
-  ArrowRightIcon,
-  DashboardIcon,
-  MoonIcon,
-  SunIcon
-} from "@iconicicons/react";
+import { ArrowRightIcon, DashboardIcon, MoonIcon } from "@iconicicons/react";
 import browser from "webextension-polyfill";
 import useSetting from "~settings/hook";
 import styled from "styled-components";
@@ -13,6 +7,9 @@ import { PageType, trackPage } from "~utils/analytics";
 import { useLocation } from "~wallets/router/router.utils";
 import type { SetupWelcomeViewParams } from "~routes/welcome/setup";
 import type { CommonRouteProps } from "~wallets/router/router.types";
+import { Button } from "@arconnect/components-rebrand";
+import Paragraph from "~components/Paragraph";
+import Checkbox from "~components/Checkbox";
 
 export type ThemeWelcomeViewProps = CommonRouteProps<SetupWelcomeViewParams>;
 
@@ -29,57 +26,51 @@ export function ThemeWelcomeView({ params }: ThemeWelcomeViewProps) {
   }, []);
 
   return (
-    <>
-      <Text heading>{browser.i18n.getMessage("choose_theme")}</Text>
-      <ThemeOption active={theme === "light"} onClick={() => setTheme("light")}>
-        <SunIcon />
-        {browser.i18n.getMessage("light_theme")}
-      </ThemeOption>
-      <Spacer y={0.5} />
-      <ThemeOption active={theme === "dark"} onClick={() => setTheme("dark")}>
-        <MoonIcon />
-        {browser.i18n.getMessage("dark_theme")}
-      </ThemeOption>
-      <Spacer y={0.5} />
-      <ThemeOption
-        active={theme === "system"}
-        onClick={() => setTheme("system")}
-      >
-        <DashboardIcon />
-        {browser.i18n.getMessage("system_theme")}
-      </ThemeOption>
-      <Spacer y={2.5} />
-      <ButtonV2
+    <Container>
+      <Content>
+        <Paragraph>
+          {browser.i18n.getMessage("choose_ui_theme_description")}
+        </Paragraph>
+        <Checkbox
+          checked={theme === "system"}
+          onChange={() => setTheme("system")}
+          label={browser.i18n.getMessage("system_theme")}
+        />
+        <Checkbox
+          checked={theme === "light"}
+          onChange={() => setTheme("light")}
+          label={browser.i18n.getMessage("light_theme")}
+        />
+        <Checkbox
+          checked={theme === "dark"}
+          onChange={() => setTheme("dark")}
+          label={browser.i18n.getMessage("dark_theme")}
+        />
+      </Content>
+      <Button
         fullWidth
         onClick={() =>
           navigate(`/${params.setupMode}/${Number(params.page) + 1}`)
         }
       >
-        {browser.i18n.getMessage("next")}
-        <ArrowRightIcon style={{ marginLeft: "5px" }} />
-      </ButtonV2>
-    </>
+        {browser.i18n.getMessage("continue")}
+      </Button>
+    </Container>
   );
 }
 
-const ThemeOption = styled.div<{ active: boolean }>`
+const Container = styled.div`
   display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  font-size: 1rem;
-  font-weight: 500;
-  padding: 1.35rem 1.45rem;
-  color: rgb(${(props) => props.theme.theme});
-  background-color: ${(props) =>
-    props.active ? "rgba(" + props.theme.theme + ", .2)" : "transparent"};
-  border-radius: 25px;
-  cursor: pointer;
-  transition: all 0.23s ease-in-out;
+  flex: 1;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  gap: 24px;
+`;
 
-  &:hover {
-    background-color: rgba(
-      ${(props) => props.theme.theme},
-      ${(props) => (props.active ? ".2" : ".1")}
-    );
-  }
+const Content = styled.div`
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 24px;
 `;

@@ -1,6 +1,6 @@
 import { WarningTriangleIcon } from "@iconicicons/react";
 import { motion, type Variants } from "framer-motion";
-import { Section } from "@arconnect/components";
+import { Section } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
 import styled from "styled-components";
 
@@ -12,7 +12,7 @@ export default function CustomGatewayWarning({ simple = false }: Props) {
       animate="shown"
       exit="hidden"
     >
-      <Section>
+      <Section showPaddingVertical={false}>
         <Alert>
           <Icon />
           {browser.i18n.getMessage(

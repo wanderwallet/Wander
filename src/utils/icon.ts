@@ -8,6 +8,10 @@ import online64 from "url:/assets/icons/online/logo64.png";
 import online128 from "url:/assets/icons/online/logo128.png";
 import online256 from "url:/assets/icons/online/logo256.png";
 
+import locked64 from "url:/assets/icons/locked/logo64.png";
+import locked128 from "url:/assets/icons/locked/logo128.png";
+import locked256 from "url:/assets/icons/locked/logo256.png";
+
 // Development:
 
 // Same as production ones, then:
@@ -26,7 +30,12 @@ import devOnline64 from "url:/assets/icons/online/logo64.development.png";
 import devOnline128 from "url:/assets/icons/online/logo128.development.png";
 import devOnline256 from "url:/assets/icons/online/logo256.development.png";
 
+import devLocked64 from "url:/assets/icons/locked/logo64.development.png";
+import devLocked128 from "url:/assets/icons/locked/logo128.development.png";
+import devLocked256 from "url:/assets/icons/locked/logo256.development.png";
+
 import browser from "webextension-polyfill";
+import { ExtensionStorage } from "./storage";
 
 interface LogosBySize {
   64: string;
@@ -65,14 +74,33 @@ const onlineLogos: LogosByEnvironment = {
   }
 };
 
+const lockedLogos: LogosByEnvironment = {
+  default: {
+    64: locked64,
+    128: locked128,
+    256: locked256
+  },
+  development: {
+    64: devLocked64,
+    128: devLocked128,
+    256: devLocked256
+  }
+};
+
 /**
  * Update the popup icon
  *
  * @param hasPerms Does the site have any permissions?
  */
 export async function updateIcon(hasPerms: boolean) {
+  const val = await ExtensionStorage.get("decryption_key");
+
   // Set logos if connected / if not connected:
-  const logosByEnvironment = hasPerms ? onlineLogos : offlineLogos;
+  const logosByEnvironment = val
+    ? hasPerms
+      ? onlineLogos
+      : offlineLogos
+    : lockedLogos;
 
   // Use the "gold" version for development:
   const logosBySize =

@@ -2,18 +2,17 @@ import { InputWithBtn, InputWrapper } from "~components/arlocal/InputWrapper";
 import { RefreshButton } from "~components/IconButton";
 import { useEffect, useMemo, useState } from "react";
 import { urlToGateway } from "~gateways/utils";
-import { useStorage } from "@plasmohq/storage/hook";
+import { useStorage } from "~utils/storage";
 import { ExtensionStorage } from "~utils/storage";
 import { RefreshIcon } from "@iconicicons/react";
 import {
-  ButtonV2 as Button,
-  InputV2 as Input,
-  Provider,
+  Button,
+  Input,
   Spacer,
   useInput,
   Text,
   useToasts
-} from "@arconnect/components";
+} from "@arconnect/components-rebrand";
 import {
   CardBody,
   ConnectionStatus,
@@ -28,11 +27,12 @@ import Mint from "~components/arlocal/Mint";
 import browser from "webextension-polyfill";
 import Arweave from "arweave";
 import axios from "axios";
-import { ArConnectThemeProvider } from "~components/hardware/HardwareWalletTheme";
+import { WanderThemeProvider } from "~components/hardware/HardwareWalletTheme";
 import { useRemoveCover } from "~wallets/setup/non/non-wallet-setup.hook";
 import { useWallets } from "~utils/wallets/wallets.hooks";
+import { WalletsProvider } from "~utils/wallets/wallets.provider";
 
-export default function ArLocal() {
+function ArLocal() {
   useRemoveCover();
 
   // testnet data
@@ -158,52 +158,65 @@ export default function ArLocal() {
   const { walletStatus } = useWallets();
 
   return (
-    <ArConnectThemeProvider>
-      <Wrapper>
-        {walletStatus === "noWallets" && <NoWallets />}
-        <CardBody>
-          <Title>
-            ArLocal {browser.i18n.getMessage("devtools")}
-            <Spacer x={0.2} />
-            <Text noMargin>by ArConnect</Text>
-          </Title>
-          <ConnectionText>
-            {browser.i18n.getMessage(online ? "testnetLive" : "testnetDown")}
-            <ConnectionStatus connected={online} />
-          </ConnectionText>
-          <Spacer y={1.5} />
-          <InputWithBtn>
-            <InputWrapper>
-              <Input
-                {...testnetInput.bindings}
-                type="text"
-                label={browser.i18n.getMessage("testnetGatewayUrlLabel")}
-                placeholder="http://localhost:1984"
-                fullWidth
-              />
-            </InputWrapper>
-            <RefreshButton
-              secondary
-              onClick={() => loadTestnet()}
-              refreshing={loadingTestnet}
+    <Wrapper>
+      {walletStatus === "noWallets" && <NoWallets />}
+      <CardBody>
+        <Title>
+          ArLocal {browser.i18n.getMessage("devtools")}
+          <Spacer x={0.2} />
+          <Text noMargin>by Wander</Text>
+        </Title>
+        <ConnectionText>
+          {browser.i18n.getMessage(online ? "testnetLive" : "testnetDown")}
+          <ConnectionStatus connected={online} />
+        </ConnectionText>
+        <Spacer y={1.5} />
+        <InputWithBtn>
+          <InputWrapper>
+            <Input
+              {...testnetInput.bindings}
+              type="text"
+              label={browser.i18n.getMessage("testnetGatewayUrlLabel")}
+              placeholder="http://localhost:1984"
+              fullWidth
+            />
+          </InputWrapper>
+          <RefreshButton
+            variant="secondary"
+            onClick={() => loadTestnet()}
+            refreshing={loadingTestnet}
+          >
+            <RefreshIcon />
+          </RefreshButton>
+        </InputWithBtn>
+        <Spacer y={1} />
+        {(!online && <Tutorial />) || (
+          <>
+            <Mint arweave={arweave} />
+            <Spacer y={1} />
+            <ArLocalTransaction arweave={arweave} />
+            <Spacer y={1} />
+            <Button
+              fullWidth
+              variant="secondary"
+              loading={mining}
+              onClick={mine}
             >
-              <RefreshIcon />
-            </RefreshButton>
-          </InputWithBtn>
-          <Spacer y={1} />
-          {(!online && <Tutorial />) || (
-            <>
-              <Mint arweave={arweave} />
-              <Spacer y={1} />
-              <ArLocalTransaction arweave={arweave} />
-              <Spacer y={1} />
-              <Button fullWidth secondary loading={mining} onClick={mine}>
-                {browser.i18n.getMessage("mine")}
-              </Button>
-            </>
-          )}
-        </CardBody>
-      </Wrapper>
-    </ArConnectThemeProvider>
+              {browser.i18n.getMessage("mine")}
+            </Button>
+          </>
+        )}
+      </CardBody>
+    </Wrapper>
+  );
+}
+
+export default function ArLocalRoot() {
+  return (
+    <WanderThemeProvider>
+      <WalletsProvider>
+        <ArLocal />
+      </WalletsProvider>
+    </WanderThemeProvider>
   );
 }

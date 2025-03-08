@@ -3,7 +3,7 @@ import { ExtensionStorage } from "~utils/storage";
 import { useEffect, useRef, useState } from "react";
 import browser from "webextension-polyfill";
 import aoLogo from "url:/assets/ecosystem/ao-token-logo.png";
-import { useStorage } from "@plasmohq/storage/hook";
+import { useStorage } from "~utils/storage";
 import {
   ContentWrapper,
   Content,

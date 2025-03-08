@@ -5,24 +5,22 @@ import {
   CenterText,
   PicWrapper,
   UploadIcon,
-  RemoveContact,
   AutoContactPic,
   ContactPic,
   InputWrapper,
-  SelectInput,
   ContactInput,
   ContactNotes,
   SubTitle,
   Title
 } from "./ContactSettings";
 import {
-  ButtonV2,
-  ModalV2,
+  Button,
+  Modal,
   Spacer,
   useModal,
   useToasts
-} from "@arconnect/components";
-import { useStorage } from "@plasmohq/storage/hook";
+} from "@arconnect/components-rebrand";
+import { useStorage } from "~utils/storage";
 import { ExtensionStorage } from "~utils/storage";
 import { useEffect, useState } from "react";
 import browser from "webextension-polyfill";
@@ -35,6 +33,7 @@ import { gql } from "~gateways/api";
 import { useTheme } from "~utils/theme";
 import { useLocation, useSearchParams } from "~wallets/router/router.utils";
 import type { CommonRouteProps } from "~wallets/router/router.types";
+import { RemoveButton } from "~routes/popup/settings/wallets/[address]";
 // import { isAddressFormat } from "~utils/format";
 
 export interface AddContactDashboardViewProps extends CommonRouteProps {
@@ -299,6 +298,7 @@ export function AddContactDashboardView({
         <InputWrapper>
           <ContactInput
             fullWidth
+            style={{ paddingLeft: "0px" }}
             small={isQuickSetting}
             name="name"
             placeholder={browser.i18n.getMessage("first_last_name")}
@@ -311,6 +311,7 @@ export function AddContactDashboardView({
         </SubTitle>
         <InputWrapper>
           <AddressInput
+            style={{ paddingLeft: "0px" }}
             type="text"
             list="addressOptions"
             fullWidth
@@ -369,7 +370,7 @@ export function AddContactDashboardView({
       </div>
       <>
         <Footer>
-          <ButtonV2
+          <Button
             fullWidth
             onClick={saveNewContact}
             disabled={areFieldsEmpty()}
@@ -377,43 +378,41 @@ export function AddContactDashboardView({
             {browser.i18n.getMessage(
               isQuickSetting ? "save_contact" : "save_new_contact"
             )}
-          </ButtonV2>
-          <RemoveContact
+          </Button>
+          <RemoveButton
             fullWidth
-            secondary
             onClick={() => removeContactModal.setOpen(true)}
-            displayTheme={theme}
           >
             {browser.i18n.getMessage("remove_contact")}
-          </RemoveContact>
+          </RemoveButton>
         </Footer>
-        <ModalV2
+        <Modal
           {...removeContactModal.bindings}
           root={document.getElementById("__plasmo")}
           actions={
             <>
-              <ButtonV2
+              <Button
                 fullWidth
-                secondary
+                variant="secondary"
                 onClick={() => removeContactModal.setOpen(false)}
               >
                 {browser.i18n.getMessage("no")}
-              </ButtonV2>
-              <ButtonV2 fullWidth onClick={confirmRemoveContact}>
+              </Button>
+              <Button fullWidth onClick={confirmRemoveContact}>
                 {browser.i18n.getMessage("yes")}
-              </ButtonV2>
+              </Button>
             </>
           }
         >
-          <CenterText heading>
+          <CenterText size="xl" weight="semibold">
             {browser.i18n.getMessage("remove_contact")}
           </CenterText>
-          <Spacer y={0.55} />
+          <Spacer y={0.75} />
           <CenterText noMargin>
             {browser.i18n.getMessage("remove_contact_question")}
           </CenterText>
           <Spacer y={1} />
-        </ModalV2>
+        </Modal>
       </>
     </Wrapper>
   );

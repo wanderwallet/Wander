@@ -1,24 +1,29 @@
 import { concatGatewayURL } from "~gateways/utils";
-import { ButtonV2, Spacer, useInput } from "@arconnect/components";
+import { Button, Section } from "@arconnect/components-rebrand";
 import { useEffect, useState } from "react";
-import { useStorage } from "@plasmohq/storage/hook";
-import { type AnsUser, getAnsProfile } from "~lib/ans";
-import { ExtensionStorage } from "~utils/storage";
-import type { StoredWallet } from "~wallets";
-import { Reorder } from "framer-motion";
+import { useStorage } from "~utils/storage";
 import browser from "webextension-polyfill";
 import styled from "styled-components";
-import { useGateway } from "~gateways/wayfinder";
+import { FULL_HISTORY, useGateway } from "~gateways/wayfinder";
 import WalletListItem from "~components/dashboard/list/WalletListItem";
-import SearchInput from "~components/dashboard/SearchInput";
 import HeadV2 from "~components/popup/HeadV2";
 import { useLocation } from "~wallets/router/router.utils";
+import { ExtensionStorage } from "~utils/storage";
+import type { StoredWallet } from "~wallets";
+import { getNameServiceProfiles } from "~lib/nameservice";
+import type { NameServiceProfile } from "~lib/types";
 
 export function WalletsView() {
   const { navigate } = useLocation();
 
-  // wallets
-  const [wallets, setWallets] = useStorage<StoredWallet[]>(
+  // current address
+  const [activeAddress] = useStorage<string>({
+    key: "active_address",
+    instance: ExtensionStorage
+  });
+
+  // all wallets added
+  const [wallets] = useStorage<StoredWallet[]>(
     {
       key: "wallets",
       instance: ExtensionStorage
@@ -27,27 +32,31 @@ export function WalletsView() {
   );
 
   // ans data
-  const [ansProfiles, setAnsProfiles] = useState<AnsUser[]>([]);
+  const [nameServiceProfiles, setNameServiceProfiles] = useState<
+    NameServiceProfile[]
+  >([]);
 
   useEffect(() => {
     (async () => {
       if (!wallets) return;
 
       // fetch profiles
-      const profiles = await getAnsProfile(wallets.map((w) => w.address));
+      const profiles = await getNameServiceProfiles(
+        wallets.map((w) => w.address)
+      );
 
-      setAnsProfiles(profiles as AnsUser[]);
+      setNameServiceProfiles(profiles);
     })();
   }, [wallets]);
 
   // ans shortcuts
   const findProfile = (address: string) =>
-    ansProfiles.find((profile) => profile.user === address);
+    nameServiceProfiles.find((profile) => profile.address === address);
 
-  const gateway = useGateway({ startBlock: 0 });
+  const gateway = useGateway(FULL_HISTORY);
 
   function findAvatar(address: string) {
-    const avatar = findProfile(address)?.avatar;
+    const avatar = findProfile(address)?.logo;
     const gatewayUrl = concatGatewayURL(gateway);
 
     if (!avatar) return undefined;
@@ -55,78 +64,46 @@ export function WalletsView() {
   }
 
   function findLabel(address: string) {
-    const label = findProfile(address)?.currentLabel;
+    const label = findProfile(address)?.name;
 
     if (!label) return undefined;
-    return label + ".ar";
-  }
-
-  // search
-  const searchInput = useInput();
-
-  // search filter function
-  function filterSearchResults(wallet: StoredWallet) {
-    const query = searchInput.state;
-
-    if (query === "" || !query) {
-      return true;
-    }
-
-    return (
-      wallet.address.toLowerCase().includes(query.toLowerCase()) ||
-      wallet.nickname.toLowerCase().includes(query.toLowerCase()) ||
-      findLabel(wallet.address)?.includes(query.toLowerCase())
-    );
+    return label;
   }
 
   return (
     <>
       <HeadV2
-        title={browser.i18n.getMessage("setting_wallets")}
-        back={() => navigate("/quick-settings")}
+        title={browser.i18n.getMessage("manage_accounts")}
+        showOptions={false}
       />
-      <Wrapper>
-        <div style={{ height: "100%" }}>
-          <SearchInput
-            small
-            placeholder={browser.i18n.getMessage("search_wallets")}
-            {...searchInput.bindings}
-          />
-          <Spacer y={1} />
-          {wallets && (
-            <WalletsWrapper>
-              <Reorder.Group
-                as="div"
-                axis="y"
-                onReorder={setWallets}
-                values={wallets}
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "0.4rem"
-                }}
-              >
-                {wallets.filter(filterSearchResults).map((wallet) => (
-                  <WalletListItem
-                    small={true}
-                    wallet={wallet}
-                    name={findLabel(wallet.address) || wallet.nickname}
-                    address={wallet.address}
-                    avatar={findAvatar(wallet.address)}
-                    active={false}
-                    onClick={() =>
-                      navigate(`/quick-settings/wallets/${wallet.address}`)
-                    }
-                    key={wallet.address}
-                  />
-                ))}
-              </Reorder.Group>
-            </WalletsWrapper>
-          )}
-        </div>
+      <Wrapper showPaddingVertical={false}>
+        <WalletsWrapper>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "0.5rem"
+            }}
+          >
+            {wallets.map((wallet) => (
+              <WalletListItem
+                wallet={wallet}
+                name={findLabel(wallet.address) || wallet.nickname}
+                address={wallet.address}
+                avatar={findAvatar(wallet.address)}
+                active={false}
+                activeWallet={activeAddress === wallet.address}
+                onClick={() =>
+                  navigate(`/quick-settings/wallets/${wallet.address}`)
+                }
+                key={wallet.address}
+              />
+            ))}
+          </div>
+        </WalletsWrapper>
 
         <ActionBar>
-          <ButtonV2
+          <Button
             fullWidth
             onClick={() =>
               browser.tabs.create({
@@ -134,20 +111,19 @@ export function WalletsView() {
               })
             }
           >
-            {browser.i18n.getMessage("add_wallet")}
-          </ButtonV2>
+            {browser.i18n.getMessage("add_an_account")}
+          </Button>
         </ActionBar>
       </Wrapper>
     </>
   );
 }
 
-const Wrapper = styled.div`
+const Wrapper = styled(Section)`
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 0 1rem;
-  height: calc(100vh - 10px);
+  height: calc(100vh - 24px);
 `;
 
 const WalletsWrapper = styled.div`
@@ -171,6 +147,6 @@ const ActionBar = styled.div`
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 0.75rem 0;
+  padding: 1.5rem 0;
   background-color: rgb(${(props) => props.theme.background});
 `;

@@ -1,31 +1,39 @@
 import {
-  ButtonV2,
-  InputV2,
-  ModalV2,
-  Spacer,
+  Button,
+  Input,
+  ListItem,
+  Section,
   Text,
-  TooltipV2,
+  Tooltip,
   useInput,
-  useModal,
   useToasts
-} from "@arconnect/components";
-import { QrCode02 } from "@untitled-ui/icons-react";
-import { CopyIcon, DownloadIcon, TrashIcon } from "@iconicicons/react";
-import { InputWithBtn, InputWrapper } from "~components/arlocal/InputWrapper";
+} from "@arconnect/components-rebrand";
+import { CopyIcon } from "@iconicicons/react";
 import { removeWallet, type StoredWallet } from "~wallets";
 import { useEffect, useMemo, useState } from "react";
-import { useStorage } from "@plasmohq/storage/hook";
-import { IconButton } from "~components/IconButton";
-import { type AnsUser, getAnsProfile } from "~lib/ans";
+import { useStorage } from "~utils/storage";
 import { ExtensionStorage } from "~utils/storage";
 import keystoneLogo from "url:/assets/hardware/keystone.png";
 import browser from "webextension-polyfill";
-import styled from "styled-components";
-import copy from "copy-to-clipboard";
-import { formatAddress } from "~utils/format";
+import styled, { useTheme } from "styled-components";
+import { formatAddress, truncateMiddle } from "~utils/format";
 import HeadV2 from "~components/popup/HeadV2";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { useLocation } from "~wallets/router/router.utils";
+import { LoadingView } from "~components/page/common/loading/loading.view";
+import { CopyToClipboard } from "~components/CopyToClipboard";
+import {
+  AlertCircle,
+  ArrowUpRight,
+  Cube01,
+  Download01,
+  Edit02,
+  QrCode02,
+  Share03
+} from "@untitled-ui/icons-react";
+import { HorizontalLine } from "~components/HorizontalLine";
+import SliderMenu from "~components/SliderMenu";
+import { getNameServiceProfile } from "~lib/nameservice";
 
 export interface WalletViewParams {
   address: string;
@@ -35,6 +43,11 @@ export type WalletViewProps = CommonRouteProps<WalletViewParams>;
 
 export function WalletView({ params: { address } }: WalletViewProps) {
   const { navigate } = useLocation();
+
+  const [editName, setEditName] = useState(false);
+  const [open, setOpen] = useState(false);
+
+  const theme = useTheme();
 
   // wallets
   const [wallets, setWallets] = useStorage<StoredWallet[]>(
@@ -54,19 +67,15 @@ export function WalletView({ params: { address } }: WalletViewProps) {
   // toasts
   const { setToast } = useToasts();
 
-  // ans
-  const [ansLabel, setAnsLabel] = useState<string>();
+  // name service name
+  const [nameServiceName, setNameServiceName] = useState<string>();
 
   useEffect(() => {
     (async () => {
       if (!wallet) return;
 
-      // get ans profile
-      const profile = (await getAnsProfile(wallet.address)) as AnsUser;
-
-      if (!profile?.currentLabel) return;
-
-      setAnsLabel(profile.currentLabel + ".ar");
+      const arnsProfile = await getNameServiceProfile(wallet.address);
+      setNameServiceName(arnsProfile?.name);
     })();
   }, [wallet?.address]);
 
@@ -75,12 +84,12 @@ export function WalletView({ params: { address } }: WalletViewProps) {
 
   useEffect(() => {
     if (!wallet) return;
-    walletNameInput.setState(ansLabel || wallet.nickname);
-  }, [wallet, ansLabel]);
+    walletNameInput.setState(nameServiceName || wallet.nickname);
+  }, [wallet, nameServiceName]);
 
   // update nickname function
   async function updateNickname() {
-    if (!!ansLabel) return;
+    if (!!nameServiceName) return;
 
     // check name
     const newName = walletNameInput.state;
@@ -124,125 +133,228 @@ export function WalletView({ params: { address } }: WalletViewProps) {
   }
 
   // wallet remove modal
-  const removeModal = useModal();
 
-  // TODO: Should this be a redirect?
-  if (!wallet) return <></>;
+  if (!wallet) {
+    return <LoadingView />;
+  }
 
   return (
     <>
       <HeadV2
-        title={browser.i18n.getMessage("edit_wallet")}
-        back={() => navigate("/quick-settings/wallets")}
+        title={browser.i18n.getMessage("edit_account")}
+        showOptions={false}
       />
       <Wrapper>
-        <div>
-          <div>
-            <WalletName>
-              {ansLabel || wallet.nickname}
-              {wallet.type === "hardware" && (
-                <TooltipV2
-                  content={
-                    wallet.api.slice(0, 1).toUpperCase() + wallet.api.slice(1)
-                  }
-                  position="bottom"
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "1.5rem"
+          }}
+        >
+          {!editName ? (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                gap: "1rem"
+              }}
+            >
+              <WalletName>
+                {nameServiceName || wallet.nickname}
+                {wallet.type === "hardware" && (
+                  <Tooltip
+                    content={
+                      wallet.api.slice(0, 1).toUpperCase() + wallet.api.slice(1)
+                    }
+                    position="bottom"
+                  >
+                    <HardwareWalletIcon
+                      src={wallet.api === "keystone" ? keystoneLogo : undefined}
+                    />
+                  </Tooltip>
+                )}
+              </WalletName>
+              {nameServiceName ? (
+                <Tooltip
+                  position="bottomEnd"
+                  content={browser.i18n.getMessage(
+                    "cannot_edit_with_name_service"
+                  )}
                 >
-                  <HardwareWalletIcon
-                    src={wallet.api === "keystone" ? keystoneLogo : undefined}
+                  <Edit02
+                    style={{ cursor: "not-allowed" }}
+                    height={20}
+                    width={20}
                   />
-                </TooltipV2>
-              )}
-            </WalletName>
-            <WalletAddress>
-              {formatAddress(wallet.address, 8)}
-              <TooltipV2
-                content={browser.i18n.getMessage("copy_address")}
-                position="bottom"
-              >
-                <CopyButton
-                  onClick={() => {
-                    copy(wallet.address);
-                    setToast({
-                      type: "info",
-                      content: browser.i18n.getMessage("copied_address", [
-                        wallet.nickname,
-                        formatAddress(wallet.address, 3)
-                      ]),
-                      duration: 2200
-                    });
-                  }}
+                </Tooltip>
+              ) : (
+                <Edit02
+                  style={{ cursor: "pointer" }}
+                  height={20}
+                  width={20}
+                  onClick={() => setEditName(true)}
                 />
-              </TooltipV2>
-            </WalletAddress>
-          </div>
-
-          <Title>{browser.i18n.getMessage("edit_wallet_name")}</Title>
-          {!!ansLabel && (
-            <Warning>{browser.i18n.getMessage("cannot_edit_with_ans")}</Warning>
-          )}
-          <InputWithBtn>
-            <InputWrapper>
-              <InputV2
-                small
+              )}
+            </div>
+          ) : (
+            <div style={{ display: "flex", gap: "0.8rem" }}>
+              <Input
+                sizeVariant="small"
                 {...walletNameInput.bindings}
                 type="text"
                 placeholder={browser.i18n.getMessage("edit_wallet_name")}
                 fullWidth
-                disabled={!!ansLabel}
+                disabled={!!nameServiceName}
               />
-            </InputWrapper>
-            <IconButton
-              style={{ height: "2.625rem" }}
-              onClick={updateNickname}
-              disabled={!!ansLabel}
+              <Button
+                style={{ width: "100px" }}
+                onClick={() => {
+                  if (walletNameInput.state !== wallet.nickname) {
+                    updateNickname();
+                  }
+                  setEditName(false);
+                }}
+                disabled={!!nameServiceName}
+              >
+                {browser.i18n.getMessage(
+                  walletNameInput.state === wallet.nickname ? "cancel" : "save"
+                )}
+              </Button>
+            </div>
+          )}
+          <CopyToClipboard
+            copySuccess={browser.i18n.getMessage("copied_address", [
+              wallet.nickname,
+              formatAddress(wallet.address, 3)
+            ])}
+            label={truncateMiddle(wallet.address, 38)}
+            labelAs={WalletAddress}
+            text={wallet.address}
+            iconSize={24}
+          />
+          <HorizontalLine />
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
+          >
+            <Text size="lg" weight="medium" noMargin>
+              {browser.i18n.getMessage("wallet_actions")}
+            </Text>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "0.5rem"
+              }}
             >
-              Save
-            </IconButton>
-          </InputWithBtn>
+              <ListItem
+                title={"Viewblock"}
+                titleStyle={{ fontSize: 18, fontWeight: 500 }}
+                icon={<Icon color="primary" as={Cube01} />}
+                rightIcon={<Icon color="tertiary" as={Share03} />}
+                onClick={() =>
+                  browser.tabs.create({
+                    url: `https://viewblock.io/arweave/address/${wallet.address}`
+                  })
+                }
+                hideSquircle
+              />
+              <ListItem
+                title={"AO Link"}
+                titleStyle={{ fontSize: 18, fontWeight: 500 }}
+                icon={<Icon color="primary" as={ArrowUpRight} />}
+                rightIcon={<Icon color="tertiary" as={Share03} />}
+                hideSquircle
+                onClick={() =>
+                  browser.tabs.create({
+                    url: `https://www.ao.link/#/entity/${wallet.address}`
+                  })
+                }
+              />
+              <ListItem
+                title={browser.i18n.getMessage("generate_qr_code")}
+                titleStyle={{ fontSize: 18, fontWeight: 500 }}
+                icon={<Icon color="primary" as={QrCode02} />}
+                hideSquircle
+                showArrow
+                onClick={() =>
+                  navigate(`/quick-settings/wallets/${address}/qr`)
+                }
+              />
+              <ListItem
+                title={browser.i18n.getMessage("export_keyfile")}
+                titleStyle={{ fontSize: 18, fontWeight: 500 }}
+                icon={<Icon color="primary" as={Download01} />}
+                hideSquircle
+                showArrow
+                onClick={() =>
+                  navigate(`/quick-settings/wallets/${address}/export`)
+                }
+              />
+            </div>
+          </div>
         </div>
         <div>
-          <ButtonV2
-            fullWidth
-            onClick={() => navigate(`/quick-settings/wallets/${address}/qr`)}
-          >
-            {browser.i18n.getMessage("generate_qr_code")}
-            <QrCode02 style={{ marginLeft: "2px" }} />
-          </ButtonV2>
-          <Spacer y={0.625} />
-          <ButtonV2
-            fullWidth
-            secondary
-            onClick={() =>
-              navigate(`/quick-settings/wallets/${address}/export`)
-            }
-            disabled={wallet.type === "hardware"}
-          >
-            {browser.i18n.getMessage("export_keyfile")}
-            <DownloadIcon style={{ marginLeft: "2px" }} />
-          </ButtonV2>
-          <Spacer y={0.625} />
-          <ButtonV2
-            fullWidth
-            style={{ backgroundColor: "#8C1A1A" }}
-            onClick={() => removeModal.setOpen(true)}
-          >
-            {browser.i18n.getMessage("remove_wallet")}
-            <TrashIcon style={{ marginLeft: "2px" }} />
-          </ButtonV2>
+          <RemoveButton fullWidth onClick={() => setOpen(true)}>
+            {browser.i18n.getMessage("remove_account")}
+          </RemoveButton>
         </div>
-        <ModalV2
-          {...removeModal.bindings}
-          root={document.getElementById("__plasmo")}
-          actions={
-            <>
-              <ButtonV2
+        <SliderMenu
+          hasHeader={false}
+          isOpen={open}
+          onClose={() => setOpen(false)}
+        >
+          <Section
+            showPaddingHorizontal={false}
+            showPaddingVertical={false}
+            style={{
+              alignItems: "center",
+              gap: 24,
+              height: "60vh",
+              justifyContent: "space-between",
+              textAlign: "center"
+            }}
+          >
+            <div
+              style={{
+                flex: 1,
+                display: "flex",
+                flexDirection: "column",
+                gap: 16,
+                alignItems: "center",
+                justifyContent: "center"
+              }}
+            >
+              <AlertCircle height={48} width={48} color={theme.fail} />
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "0.5rem"
+                }}
+              >
+                <Text size="xl" weight="semibold" lineHeight={1.3} noMargin>
+                  {browser.i18n.getMessage("remove_account")}?
+                </Text>
+                <Text
+                  variant="secondary"
+                  weight="medium"
+                  lineHeight={1.3}
+                  noMargin
+                >
+                  {browser.i18n.getMessage("remove_account_description")}
+                </Text>
+              </div>
+            </div>
+            <div style={{ display: "flex", gap: 8, width: "100%" }}>
+              <Button
                 fullWidth
-                secondary
-                onClick={() => removeModal.setOpen(false)}
+                variant="secondary"
+                onClick={() => setOpen(false)}
               >
                 {browser.i18n.getMessage("cancel")}
-              </ButtonV2>
-              <ButtonV2
+              </Button>
+              <RemoveButton
                 fullWidth
                 onClick={async () => {
                   try {
@@ -267,46 +379,33 @@ export function WalletView({ params: { address } }: WalletViewProps) {
                   }
                 }}
               >
-                {browser.i18n.getMessage("confirm")}
-              </ButtonV2>
-            </>
-          }
-        >
-          <CenterText heading noMargin>
-            {browser.i18n.getMessage("remove_wallet_modal_title")}
-          </CenterText>
-          <Spacer y={0.55} />
-          <CenterText noMargin>
-            {browser.i18n.getMessage("remove_wallet_modal_content")}
-          </CenterText>
-          <Spacer y={0.75} />
-        </ModalV2>
+                {browser.i18n.getMessage("remove")}
+              </RemoveButton>
+            </div>
+          </Section>
+        </SliderMenu>
       </Wrapper>
     </>
   );
 }
 
-const CenterText = styled(Text)`
-  text-align: center;
-`;
-
-const Wrapper = styled.div`
+const Wrapper = styled(Section).attrs({
+  showPaddingVertical: false
+})`
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 0 1rem;
-  height: calc(100vh - 80px);
+  height: calc(100vh - 100px);
 `;
 
 const WalletName = styled(Text).attrs({
-  title: true,
-  noMargin: true
+  noMargin: true,
+  size: "xl",
+  weight: "semibold"
 })`
   display: flex;
   align-items: center;
   gap: 0.45rem;
-  font-size: 1.25rem;
-  font-weight: 600;
 `;
 
 const HardwareWalletIcon = styled.img.attrs({
@@ -318,12 +417,11 @@ const HardwareWalletIcon = styled.img.attrs({
   user-select: none;
 `;
 
-const WalletAddress = styled(Text)`
-  display: flex;
-  align-items: center;
-  gap: 0.37rem;
-  font-size: 0.875rem;
-`;
+const WalletAddress = styled(Text).attrs({
+  size: "sm",
+  weight: "medium",
+  variant: "secondary"
+})``;
 
 export const CopyButton = styled(CopyIcon)`
   font-size: 1em;
@@ -342,17 +440,24 @@ export const CopyButton = styled(CopyIcon)`
   }
 `;
 
-const Title = styled(Text).attrs({
-  heading: true
+export const RemoveButton = styled(Button).attrs({
+  variant: "secondary"
 })`
-  margin-bottom: 0.6em;
-  font-size: 1rem;
+  background: ${({ theme }) =>
+    theme.displayTheme === "dark" ? "#372323" : "#ffeeed"};
+  color: ${({ theme }) =>
+    theme.displayTheme === "dark" ? "#F1655B" : "#D22B1F"};
+
+  &:hover {
+    background: ${({ theme }) =>
+      theme.displayTheme === "dark" ? "#372323" : "#ffeeed"};
+    opacity: 0.8;
+  }
 `;
 
-const Warning = styled(Text)`
-  color: rgb(255, 0, 0, 0.6);
+const Icon = styled(Cube01)<{ color?: "primary" | "secondary" | "tertiary" }>`
+  height: 24px;
+  width: 24px;
+  color: ${({ theme, color }) =>
+    color ? theme[`${color}Text`] : theme.primaryText};
 `;
-
-interface Props {
-  address: string;
-}

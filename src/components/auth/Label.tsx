@@ -1,4 +1,4 @@
-import { Text } from "@arconnect/components";
+import { Text } from "@arconnect/components-rebrand";
 import styled from "styled-components";
 
 const Label = styled(Text).attrs({

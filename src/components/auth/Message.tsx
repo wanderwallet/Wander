@@ -1,4 +1,4 @@
-import { Card, Spacer, Text } from "@arconnect/components";
+import { Card, Spacer, Text } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
 import { useMemo, useState } from "react";
 import styled from "styled-components";
@@ -69,7 +69,7 @@ const MessageHeader = styled.div`
 
 const EncodingSelect = styled.select`
   font-weight: 500;
-  color: rgb(${(props) => props.theme.secondaryText});
+  color: ${(props) => props.theme.secondaryText};
   outline: none;
   border: none;
   padding: 0;
@@ -77,8 +77,10 @@ const EncodingSelect = styled.select`
   background-color: transparent;
 `;
 
-const MessageText = styled(Text).attrs({
-  noMargin: true
-})`
+const MessageText = styled.div`
   font-size: 0.9rem;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  height: 200px;
+  overflow-y: auto;
 `;
