@@ -44,6 +44,7 @@ import { humanizeTimestampTags } from "~utils/timestamp";
 import styled from "styled-components";
 import { ChevronDownIcon, ChevronUpIcon } from "@iconicicons/react";
 import { checkPassword } from "~wallets/auth";
+import { ExtensionStorage, useStorage } from "~utils/storage";
 
 export function SignAuthRequestView() {
   const { authRequest, acceptRequest, rejectRequest } =
@@ -71,6 +72,14 @@ export function SignAuthRequestView() {
   // askPassword
   const askPassword = useAskPassword();
   const passwordInput = useInput();
+
+  const [transferRequirePassword] = useStorage<boolean>(
+    {
+      key: "transfer_require_password",
+      instance: ExtensionStorage
+    },
+    false
+  );
 
   // arweave price
   const { data: arPrice = "0" } = useArPrice(currency);
@@ -218,7 +227,7 @@ export function SignAuthRequestView() {
 
   const sign = async () => {
     if (!transaction) return;
-    if (askPassword) {
+    if (askPassword && transferRequirePassword) {
       const checkPw = await checkPassword(passwordInput.state);
       if (!checkPw) {
         setToast({
@@ -367,7 +376,7 @@ export function SignAuthRequestView() {
       </div>
 
       <Section>
-        {askPassword && (
+        {askPassword && transferRequirePassword && (
           <>
             <PasswordWrapper>
               <Input
