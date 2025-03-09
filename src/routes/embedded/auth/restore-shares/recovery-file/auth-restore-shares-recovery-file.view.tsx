@@ -9,8 +9,10 @@ import {
   Text,
   Button
 } from "~components/embed/ui";
+import { useLocation } from "~wallets/router/router.utils";
 
 export function AuthRestoreSharesRecoveryFileEmbeddedView() {
+  const { navigate, back } = useLocation();
   const [loading, setLoading] = useState(false);
   const { wallets, restoreWallet } = useEmbedded();
   const walletAddress = wallets[0].address;
@@ -61,13 +63,9 @@ export function AuthRestoreSharesRecoveryFileEmbeddedView() {
         </Row>
       }
       hasBackButton={true}
-      onBackButtonClick={() => {
-        window.history.back();
-      }}
+      onBackButtonClick={back}
       hasCloseButton={true}
-      onCloseButtonClick={() => {
-        window.location.href = "/auth/restore-shares";
-      }}
+      onCloseButtonClick={() => navigate("/auth/restore-shares")}
       size="auto"
     >
       <Upload

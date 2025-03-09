@@ -13,9 +13,11 @@ import {
   Text
 } from "~components/embed/ui";
 import copy from "copy-to-clipboard";
+import { useLocation } from "~wallets/router/router.utils";
 
 export function AccountExportWalletEmbeddedView() {
   const { wallets, downloadKeyfile, copySeedphrase } = useEmbedded();
+  const { back } = useLocation();
   const walletAddress = wallets[0].address;
 
   // TODO: Register the "export" event on the server.
@@ -24,8 +26,8 @@ export function AccountExportWalletEmbeddedView() {
 
   return (
     <Card
-      headerText="Export your private key"
-      subtitle="Upload your private key to connect your wallet to your account."
+      headerText="Export your wallet"
+      subtitle="Download your keyfile or copy your seedphrase to export your wallet."
       footerElement={
         <Row>
           <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
@@ -35,9 +37,7 @@ export function AccountExportWalletEmbeddedView() {
         </Row>
       }
       hasBackButton={true}
-      onBackButtonClick={() => {
-        window.history.back();
-      }}
+      onBackButtonClick={back}
       hasCloseButton={true}
       onCloseButtonClick={() => {
         window.history.back();
@@ -57,7 +57,7 @@ export function AccountExportWalletEmbeddedView() {
         <Copyable
           style={{ margin: "32px 0" }}
           isFullWidth
-          label="Your account address"
+          label="Your wallet address"
           onClick={() => {
             copy(walletAddress);
           }}

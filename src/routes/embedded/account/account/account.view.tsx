@@ -8,10 +8,11 @@ import {
   Copyable
 } from "~components/embed/ui";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
+import { useLocation } from "~wallets/router/router.utils";
 
 export function AccountEmbeddedView() {
   const { wallets } = useEmbedded();
-
+  const { back } = useLocation();
   const { address } = wallets[0];
 
   return (
@@ -27,16 +28,13 @@ export function AccountEmbeddedView() {
         </Row>
       }
       hasBackButton={true}
-      onBackButtonClick={() => {
-        window.history.back();
-      }}
-      //   hasCloseButton={false}
+      onBackButtonClick={back}
       size="auto"
     >
       <Copyable
         style={{ margin: "32px 0" }}
         isFullWidth
-        label="Your account address"
+        label="Your wallet address"
         onClick={() => {
           copy(JSON.stringify(address, null, 2));
         }}

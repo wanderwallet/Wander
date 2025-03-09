@@ -51,7 +51,7 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
     }
   }, [jsonData]);
 
-  const { navigate } = useLocation();
+  const { navigate, back } = useLocation();
 
   const handleRecover = async () => {
     try {
@@ -83,18 +83,14 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
         </Row>
       }
       hasBackButton={true}
-      onBackButtonClick={() => {
-        window.history.back();
-      }}
+      onBackButtonClick={back}
       hasCloseButton={true}
-      onCloseButtonClick={() => {
-        window.location.href = "/auth";
-      }}
+      onCloseButtonClick={() => navigate(`/auth`)}
       size="auto"
     >
       <Copyable
         isFullWidth
-        label="Your account address"
+        label="Your wallet address"
         onClick={() => {
           copy(importedTempWalletAddress);
         }}
@@ -131,10 +127,7 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
         </Row>
       }
       hasBackButton={true}
-      onBackButtonClick={() => {
-        window.history.back();
-      }}
-      //   hasCloseButton={false}
+      onBackButtonClick={back}
       size="auto"
     >
       <Upload

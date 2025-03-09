@@ -11,9 +11,11 @@ import {
   Text
 } from "~components/embed/ui";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
+import { useLocation } from "~wallets/router/router.utils";
 
 export function AccountImportKeyfileEmbeddedView() {
   const [loading, setLoading] = useState(false);
+  const { back } = useLocation();
   const [jsonData, setJsonData] = useState<any>(null);
 
   const handleJsonParse = (parsedData: any) => {
@@ -70,15 +72,12 @@ export function AccountImportKeyfileEmbeddedView() {
         </Row>
       }
       hasBackButton={true}
-      onBackButtonClick={() => {
-        window.history.back();
-      }}
-      //   hasCloseButton={false}
+      onBackButtonClick={back}
       size="auto"
     >
       <Copyable
         isFullWidth
-        label="Your account address"
+        label="Your wallet address"
         onClick={() => {
           copy(importedTempWalletAddress);
         }}
@@ -114,10 +113,7 @@ export function AccountImportKeyfileEmbeddedView() {
         </Row>
       }
       hasBackButton={true}
-      onBackButtonClick={() => {
-        window.history.back();
-      }}
-      //   hasCloseButton={false}
+      onBackButtonClick={back}
       size="auto"
     >
       <Upload

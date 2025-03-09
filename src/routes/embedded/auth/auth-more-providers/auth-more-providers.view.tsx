@@ -13,9 +13,12 @@ import {
 } from "~components/embed";
 import { useCallback, useState } from "react";
 import type { AuthMethod } from "~utils/authentication/fakeDB";
+import { useLocation } from "~wallets/router/router.utils";
 
 export function AuthMoreProvidersEmbeddedView() {
   const { authenticate } = useEmbedded();
+  const { back } = useLocation();
+
   const [isLoading, setIsLoading] = useState({
     calledId: "",
     status: false
@@ -42,10 +45,7 @@ export function AuthMoreProvidersEmbeddedView() {
         </Row>
       }
       hasBackButton={true}
-      onBackButtonClick={() => {
-        window.history.back();
-      }}
-      //   hasCloseButton={false}
+      onBackButtonClick={back}
       size="auto"
     >
       <Box>

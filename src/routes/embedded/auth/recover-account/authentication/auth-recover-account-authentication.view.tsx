@@ -41,10 +41,7 @@ export function AuthRecoverAccountAuthenticationEmbeddedView() {
         </Row>
       }
       hasBackButton={true}
-      onBackButtonClick={() => {
-        window.history.back();
-      }}
-      //   hasCloseButton={false}
+      onBackButtonClick={back}
       onCloseButtonClick={() => {
         window.history.back();
       }}
@@ -53,7 +50,7 @@ export function AuthRecoverAccountAuthenticationEmbeddedView() {
       <Copyable
         style={{ margin: "32px 0" }}
         isFullWidth
-        label="Your account address"
+        label="Your wallet address"
         onClick={() => {
           copy(importedTempWalletAddress);
         }}

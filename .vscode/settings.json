@@ -1,3 +1,17 @@
 {
-  "cSpell.words": ["blury", "tooltiptext", "xlight"]
+  "window.commandCenter": 1,
+  "explorer.confirmDelete": false,
+  "workbench.colorTheme": "GitHub Dark",
+  "files.autoSave": "onFocusChange",
+  "files.autoSaveWhenNoErrors": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "always",
+    "source.fixAll.eslint": "always"
+  },
+  "eslint.rules.customizations": [
+    { "rule": "*", "fixable": true, "severity": "off" }
+  ],
+  "cSpell.words": ["arconnect", "tooltiptext", "webextension"]
 }

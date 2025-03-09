@@ -10,9 +10,11 @@ import {
   Copyable
 } from "~components/embed/ui";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
+import { useLocation } from "~wallets/router/router.utils";
 
 export function AuthImportSeedphraseEmbeddedView() {
   const [loading, setLoading] = useState(false);
+  const { navigate, back } = useLocation();
   const [seedPhrase, setSeedPhrase] = useState<string[]>([]);
   const {
     importTempWallet,
@@ -62,18 +64,14 @@ export function AuthImportSeedphraseEmbeddedView() {
         </Row>
       }
       hasBackButton={true}
-      onBackButtonClick={() => {
-        window.history.back();
-      }}
+      onBackButtonClick={back}
       hasCloseButton={true}
-      onCloseButtonClick={() => {
-        window.location.href = "/auth/recover-account";
-      }}
+      onCloseButtonClick={() => navigate(`/auth/recover-account`)}
       size="auto"
     >
       <Copyable
         isFullWidth
-        label="Your account address"
+        label="Your wallet address"
         onClick={() => {
           copy(importedTempWalletAddress);
         }}
@@ -110,10 +108,7 @@ export function AuthImportSeedphraseEmbeddedView() {
         </Row>
       }
       hasBackButton={true}
-      onBackButtonClick={() => {
-        window.history.back();
-      }}
-      //   hasCloseButton={false}
+      onBackButtonClick={back}
       size="auto"
     >
       <SeedInput

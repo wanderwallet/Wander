@@ -51,4 +51,5 @@
 
   --color-background-switch-enabled: var(--brand-color-primary3);
   --color-background-button-disabled: var(--brand-color-neutral3);
+  --avatar-background: #0d6ce9;
 }

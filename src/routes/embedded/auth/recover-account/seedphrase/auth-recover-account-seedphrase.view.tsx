@@ -16,6 +16,7 @@ import copy from "copy-to-clipboard";
 export function AuthRecoverAccountSeedphraseEmbeddedView() {
   const [loading, setLoading] = useState(false);
   const [seedPhrase, setSeedPhrase] = useState<string[]>([]);
+  const { navigate, back } = useLocation();
   const {
     importTempWallet,
     importedTempWalletAddress,
@@ -43,8 +44,6 @@ export function AuthRecoverAccountSeedphraseEmbeddedView() {
       return newSeedPhrase;
     });
   }, []);
-
-  const { navigate } = useLocation();
 
   const handleRecover = async () => {
     try {
@@ -76,18 +75,14 @@ export function AuthRecoverAccountSeedphraseEmbeddedView() {
         </Row>
       }
       hasBackButton={true}
-      onBackButtonClick={() => {
-        window.history.back();
-      }}
+      onBackButtonClick={back}
       hasCloseButton={true}
-      onCloseButtonClick={() => {
-        window.location.href = "/auth/recover-account";
-      }}
+      onCloseButtonClick={() => navigate(`/auth/recover-account`)}
       size="auto"
     >
       <Copyable
         isFullWidth
-        label="Your account address"
+        label="Your wallet address"
         onClick={() => {
           copy(importedTempWalletAddress);
         }}
@@ -124,10 +119,7 @@ export function AuthRecoverAccountSeedphraseEmbeddedView() {
         </Row>
       }
       hasBackButton={true}
-      onBackButtonClick={() => {
-        window.history.back();
-      }}
-      //   hasCloseButton={false}
+      onBackButtonClick={back}
       size="auto"
     >
       <SeedInput

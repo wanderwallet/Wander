@@ -14,9 +14,11 @@ import {
   WalletIcon,
   WanderIcon
 } from "~components/embed";
+import { useLocation } from "~wallets/router/router.utils";
 
 export function AuthAddWalletEmbeddedView() {
   const { authMethod, generateTempWallet, registerWallet } = useEmbedded();
+  const { navigate } = useLocation();
   const [isLoading, setIsLoading] = useState({
     calledId: "",
     status: false
@@ -52,10 +54,7 @@ export function AuthAddWalletEmbeddedView() {
         </Row>
       }
       hasBackButton={true}
-      onBackButtonClick={() => {
-        window.location.href = "/";
-      }}
-      //   hasCloseButton={false}
+      onBackButtonClick={() => navigate(`/`)}
       size="auto"
     >
       <Box>

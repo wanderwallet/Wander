@@ -12,8 +12,10 @@ import {
   Text
 } from "~components/embed/ui";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
+import { useLocation } from "~wallets/router/router.utils";
 
 export function AccountAddWalletEmbeddedView() {
+  const { back } = useLocation();
   const { authMethod, generateTempWallet, registerWallet } = useEmbedded();
   const [isLoading, setIsLoading] = useState({
     calledId: "",
@@ -51,10 +53,7 @@ export function AccountAddWalletEmbeddedView() {
         </Row>
       }
       hasBackButton={true}
-      onBackButtonClick={() => {
-        window.history.back();
-      }}
-      //   hasCloseButton={false}
+      onBackButtonClick={back}
       size="auto"
     >
       <Box>

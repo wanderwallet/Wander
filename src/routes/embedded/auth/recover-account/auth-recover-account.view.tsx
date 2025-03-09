@@ -9,8 +9,10 @@ import {
   Text,
   WanderIcon
 } from "~components/embed/ui";
+import { useLocation } from "~wallets/router/router.utils";
 
 export function AuthRecoverAccountEmbeddedView() {
+  const { navigate, back } = useLocation();
   return (
     <Card
       headerIcon={<RecoverHeaderIcon />}
@@ -25,13 +27,9 @@ export function AuthRecoverAccountEmbeddedView() {
         </Row>
       }
       hasBackButton={true}
-      onBackButtonClick={() => {
-        window.history.back();
-      }}
+      onBackButtonClick={back}
       hasCloseButton={true}
-      onCloseButtonClick={() => {
-        window.location.href = "/auth";
-      }}
+      onCloseButtonClick={() => navigate(`/auth`)}
       size="auto"
     >
       <Box>

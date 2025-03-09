@@ -12,8 +12,10 @@ import {
   SeedIcon,
   KeyIcon
 } from "~components/embed/ui";
+import { useLocation } from "~wallets/router/router.utils";
 
 export function AuthRestoreSharesEmbeddedView() {
+  const { navigate, back } = useLocation();
   return (
     <Card
       headerText="Restore shares / wallet"
@@ -26,13 +28,9 @@ export function AuthRestoreSharesEmbeddedView() {
         </Row>
       }
       hasBackButton={true}
-      onBackButtonClick={() => {
-        window.history.back();
-      }}
+      onBackButtonClick={back}
       hasCloseButton={true}
-      onCloseButtonClick={() => {
-        window.location.href = "/auth";
-      }}
+      onCloseButtonClick={() => navigate(`/auth`)}
       size="auto"
     >
       <Box>

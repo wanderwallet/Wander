@@ -9,13 +9,14 @@ import {
   Button
 } from "~components/embed/ui";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
-
+import { useLocation } from "~wallets/router/router.utils";
 const shortenAddress = (address: string): string =>
   `${address.slice(0, 8)}...${address.slice(-6)}`;
 
 export function AccountConfirmationEmbeddedView() {
   const { wallets, lastRegisteredWallet, clearLastRegisteredWallet } =
     useEmbedded();
+  const { navigate } = useLocation();
 
   return (
     <Card
@@ -38,16 +39,13 @@ export function AccountConfirmationEmbeddedView() {
         </Row>
       }
       hasBackButton={true}
-      onBackButtonClick={() => {
-        window.location.href = "/auth";
-      }}
-      //   hasCloseButton={false}
+      onBackButtonClick={() => navigate(`/auth`)}
       size="auto"
     >
       <br />
       <Copyable
         isFullWidth
-        label="Your account address"
+        label="Your wallet address"
         value={shortenAddress(lastRegisteredWallet.address)}
         tooltipValue={lastRegisteredWallet.address}
         onClick={() => {

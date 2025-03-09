@@ -1,5 +1,5 @@
 import React from "react";
-import { Alignments, Positions } from "../../../types";
+import type { Alignments, Positions } from "../../../types";
 
 export type BoxBaseProps = {
   children?: React.ReactNode;

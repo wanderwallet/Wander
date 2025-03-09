@@ -2,24 +2,29 @@
 
 .copyable {
   all: unset;
-  border-radius: var(--border-radius-lg);
-  border: 1px solid var(--color-copyable-border);
+
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: var(--font-family-serif);
   overflow: hidden;
   transition: all var(--transition-base);
+}
+
+.copyable__border {
+  border-radius: var(--border-radius-lg);
+  border: 1px solid var(--color-copyable-border);
   padding: var(--spacing-2);
 }
 
 .copyable__button {
   display: flex;
+  flex-direction: row;
   gap: var(--spacing-2);
   background-color: inherit;
   color: var(--color-copyable-text-value);
   border: none;
-  justify-content: flex-start;
+  justify-content: space-between;
   align-items: center;
   width: auto;
   padding-left: 0;
@@ -74,7 +79,7 @@
 }
 
 .copyable__full__width {
-  width: 98.6%;
+  width: 100%;
   font-size: var(--font-size-md);
 }
 

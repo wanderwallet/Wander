@@ -15,8 +15,10 @@ import {
   Text,
   Checkbox
 } from "~components/embed/ui";
+import { useLocation } from "~wallets/router/router.utils";
 
 export function AuthRecoverAccountMoreAuthenticationEmbeddedView() {
+  const { navigate, back } = useLocation();
   const { importedTempWalletAddress, recoverableAccounts, recoverAccount } =
     useEmbedded();
 
@@ -41,25 +43,14 @@ export function AuthRecoverAccountMoreAuthenticationEmbeddedView() {
         </Row>
       }
       hasBackButton={true}
-      onBackButtonClick={() => {
-        window.history.back();
-      }}
+      onBackButtonClick={back}
       hasCloseButton={true}
-      onCloseButtonClick={() => {
-        window.location.href = "/auth/recover-account/authentication";
-      }}
+      onCloseButtonClick={() =>
+        navigate(`/auth/recover-account/authentication`)
+      }
       size="auto"
     >
       <Box>
-        {/* <Button
-          variant="outlined"
-          isFullWidth
-          icon={<EmailIcon fontSize={24} />}
-          onClick={() => recoverAccount("emailPassword", accountToRecoverId)}
-          isDisabled={!checkboxChecked}
-        >
-          Email & Password
-        </Button> */}
         <Button
           variant="outlined"
           isFullWidth

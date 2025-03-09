@@ -11,6 +11,8 @@ const Copyable = forwardRef<HTMLDivElement, CopyableBaseProps>(
     {
       label,
       value,
+      hasBorder = true,
+      isShortened = true,
       className,
       size = "md",
       isFullWidth,
@@ -28,10 +30,10 @@ const Copyable = forwardRef<HTMLDivElement, CopyableBaseProps>(
 
     const textColor = isDarkMode
       ? "var(--color-copyable-text-value)"
-      : "#191919";
+      : "#666666";
     const iconColor = isDarkMode
       ? "var(--color-copyable-text-label)"
-      : "#757575";
+      : "#666666";
 
     return (
       <div
@@ -42,7 +44,7 @@ const Copyable = forwardRef<HTMLDivElement, CopyableBaseProps>(
           isFullWidth && styles.copyable__full__width,
           isBlurry && styles.copyable__blurry,
           isDisabled && styles.copyable__disabled,
-          isDarkMode ? styles.copyable__dark : styles.copyable__light,
+          hasBorder && styles.copyable__border,
           className
         )}
         style={style}
@@ -76,7 +78,9 @@ const Copyable = forwardRef<HTMLDivElement, CopyableBaseProps>(
                   variant="bodyLg"
                   style={{ color: textColor }}
                 >
-                  {value}
+                  {isShortened
+                    ? value.slice(0, 4) + "..." + value.slice(-4)
+                    : value}
                 </Text>
                 <CopyableIcon color={iconColor} />
               </button>

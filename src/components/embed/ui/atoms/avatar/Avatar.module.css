@@ -5,8 +5,8 @@
   align-items: center;
   justify-content: center;
   border-radius: var(--border-radius-lg);
-  width: var(--avatar-size-default, 40px);
-  height: var(--avatar-size-default, 40px);
+  min-width: var(--avatar-size-default, 24px);
+  min-height: var(--avatar-size-default, 24px);
   background-color: var(--avatar-background, transparent);
   color: var(--avatar-color, inherit);
   transition: var(--transition-base);
@@ -18,8 +18,8 @@
 
 /* Size variants */
 .avatar__sm {
-  width: var(--avatar-size-sm, 32px);
-  height: var(--avatar-size-sm, 32px);
+  width: var(--avatar-size-sm, 16px);
+  height: var(--avatar-size-sm, 16px);
 }
 
 .avatar__lg {
