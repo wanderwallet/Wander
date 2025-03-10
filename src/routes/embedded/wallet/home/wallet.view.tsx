@@ -11,12 +11,22 @@ import {
 } from "~utils/analytics";
 import { useActiveWallet } from "~wallets/hooks";
 import { scheduleImportAoTokens } from "~tokens/aoTokens/sync";
-import { Card, Divider, AccountSelector } from "~components/embed/ui";
+import {
+  Card,
+  Divider,
+  AccountSelector,
+  Row,
+  CoinsIcon,
+  Text,
+  ReceiptIcon,
+  OpenTabIcon,
+  Box
+} from "~components/embed/ui";
+import { Link } from "~wallets/router/components/link/Link";
 import Balance from "~components/popup/home/Balance";
-import WalletActions from "~components/popup/home/WalletActions";
 import type { StoredWallet } from "~wallets";
 
-export function HomeView() {
+export function WalletHomeEmbeddedView() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [isOpen, setOpen] = useState(false);
 
@@ -74,11 +84,65 @@ export function HomeView() {
   }, [wallet, announcement]);
 
   return (
-    <Card size="auto" hasBackButton={false} style={{ padding: "32px" }}>
+    <Card size="auto" style={{ padding: "32px" }} hasBackButton={false}>
       <AccountSelector wallets={wallets} activeWallet={wallet} />
       <Balance />
       <Divider />
-      <WalletActions />
+      <Box alignment="left">
+        <Link
+          to="/wallet/receive"
+          style={{ textDecoration: "none", width: "100%" }}
+        >
+          <Row
+            alignment="center"
+            justifyContent="start"
+            style={{
+              cursor: "pointer"
+            }}
+          >
+            <CoinsIcon color="#121212" />
+            <Text variant="bodyMd" style={{ color: "#121212" }}>
+              Receive tokens
+            </Text>
+          </Row>
+        </Link>
+        <br />
+        <Link
+          to="/wallet/transactions"
+          style={{ textDecoration: "none", width: "100%" }}
+        >
+          <Row
+            alignment="center"
+            justifyContent="start"
+            style={{
+              cursor: "pointer"
+            }}
+          >
+            <ReceiptIcon />
+            <Text variant="bodyMd" style={{ color: "#121212" }}>
+              Transaction history
+            </Text>
+          </Row>
+        </Link>
+        <br />
+        <Link
+          to="/wallet/dashboard"
+          style={{ textDecoration: "none", width: "100%" }}
+        >
+          <Row
+            alignment="center"
+            justifyContent="start"
+            style={{
+              cursor: "pointer"
+            }}
+          >
+            <OpenTabIcon />
+            <Text variant="bodyMd" style={{ color: "#121212" }}>
+              View wallet dashboard
+            </Text>
+          </Row>
+        </Link>
+      </Box>
     </Card>
   );
 }

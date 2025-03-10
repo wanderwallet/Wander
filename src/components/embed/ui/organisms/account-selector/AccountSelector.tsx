@@ -1,4 +1,3 @@
-import styled from "styled-components";
 import {
   Avatar,
   Box,
@@ -12,6 +11,7 @@ import DropdownItem from "~components/embed/ui/molecules/dropdown/DropdownItem/D
 
 import type { LocalWallet, StoredWallet } from "~wallets";
 import type { HardwareWallet } from "~wallets/hardware";
+import { Link } from "~wallets/router/components/link/Link";
 
 export function AccountSelector({
   wallets,
@@ -31,17 +31,22 @@ export function AccountSelector({
     <Box alignment="left">
       <Dropdown
         backupReminder={
-          <Row
-            alignment="center"
-            justifyContent="start"
-            isFullWidth
-            style={{ backgroundColor: "#E7F0FD" }}
+          <Link
+            to="/account/backup-shares"
+            style={{ textDecoration: "none", width: "100%" }}
           >
-            <Text variant="bodySm" style={{ fontWeight: 500 }}>
-              Secure your account by backing it up.
-            </Text>
-            <DownloadIcon />
-          </Row>
+            <Row
+              alignment="center"
+              justifyContent="center"
+              isFullWidth
+              style={{ backgroundColor: "#E7F0FD", padding: "8px 16px" }}
+            >
+              <Text variant="bodySm" style={{ fontWeight: 500 }}>
+                Secure your account by backing it up.
+              </Text>
+              <DownloadIcon />
+            </Row>
+          </Link>
         }
         buttonAvatar={
           <Avatar fontColor={"#FFF"}>{activeWallet.nickname}</Avatar>
@@ -55,6 +60,7 @@ export function AccountSelector({
                   key={wallet.address}
                   alignment="center"
                   justifyContent="start"
+                  style={{ padding: "8px 16px" }}
                 >
                   <Avatar fontColor={"#FFF"}>{wallet.nickname}</Avatar>
                   <Text
@@ -74,7 +80,6 @@ export function AccountSelector({
                     style={{
                       marginBottom: -16,
                       marginTop: -16
-                      // marginRight: -48
                     }}
                   />
                 </Row>

@@ -39,6 +39,10 @@ import { AccountBackupSharesReminderEmbeddedView } from "~routes/embedded/accoun
 import { AccountBackupSharesEmbeddedView } from "~routes/embedded/account/backup-shares/account-backup-shares.view";
 import { AccountExportWalletEmbeddedView } from "~routes/embedded/account/export-wallet/account-export-wallet.view";
 
+import { WalletHomeEmbeddedView } from "~routes/embedded/wallet/home/wallet.view";
+import { WalletReceiveEmbeddedView } from "~routes/embedded/wallet/receive/receive.view";
+import { WalletTransactionsEmbeddedView } from "~routes/embedded/wallet/transactions/transactions.view";
+
 export type EmbeddedRoutePath =
   | "/auth"
   | "/auth/more-providers"
@@ -68,6 +72,9 @@ export type EmbeddedRoutePath =
   | "/account/backup-shares/reminder"
   | "/account/export-wallet"
   | "/auth/error";
+  | "/wallet"
+  | "/wallet/receive"
+  | "/wallet/transactions";
 
 export const EmbeddedPaths = {
   // TODO: Consider nesting these instead:
@@ -109,6 +116,9 @@ export const EmbeddedPaths = {
 
   // OAuth Error:
   AuthError: "/auth/error"
+  WalletHomeEmbeddedView: "/wallet",
+  WalletReceiveEmbeddedView: "/wallet/receive",
+  WalletTransactionsEmbeddedView: "/wallet/transactions"
 
   // TODO: Add pages to add/link additional auth methods or devices post-auth (under /account)
 } as const satisfies Record<string, EmbeddedRoutePath>;
@@ -218,6 +228,20 @@ const IFRAME_OWN_ROUTES = [
   {
     path: EmbeddedPaths.AccountExportWallet,
     component: AccountExportWalletEmbeddedView
+  },
+
+  // Wallet:
+  {
+    path: EmbeddedPaths.WalletHomeEmbeddedView,
+    component: WalletHomeEmbeddedView
+  },
+  {
+    path: EmbeddedPaths.WalletReceiveEmbeddedView,
+    component: WalletReceiveEmbeddedView
+  },
+  {
+    path: EmbeddedPaths.WalletTransactionsEmbeddedView,
+    component: WalletTransactionsEmbeddedView
   }
 ] as const satisfies RouteConfig<EmbeddedRoutePath>[];
 

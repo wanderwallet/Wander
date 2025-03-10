@@ -59,6 +59,7 @@ const Dropdown = ({
       <DropdownButton ref={buttonRef} toggle={toggleDropdown} open={open}>
         {buttonAvatar} {buttonText}
       </DropdownButton>
+
       {
         <DropdownContent top={dropdownTop} ref={contentRef} open={open}>
           {backupReminder}

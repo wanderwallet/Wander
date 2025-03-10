@@ -40,7 +40,7 @@ export function AccountEmbeddedView() {
         }}
         value={JSON.stringify(address, null, 2)}
       />
-      <Button isFullWidth size="md" href="#/">
+      <Button isFullWidth size="md" href="/wallet">
         Home
       </Button>
       <Button isFullWidth size="md" href="#/account/add-wallet">
