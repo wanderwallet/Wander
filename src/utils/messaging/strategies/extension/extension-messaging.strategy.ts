@@ -3,7 +3,9 @@ import {
   sendMessage as webExtBridgeSendMessage,
   type IBridgeMessage
 } from "@arconnect/webext-bridge";
+import type { ApiCall } from "shim";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
+import { isApiErrorResponse } from "~utils/messaging/common/messaging.utils";
 import type {
   MessageData,
   MessageID,
@@ -20,23 +22,21 @@ function getSendMessageWithBridgeFunction<K extends MessageID>({
   data
 }: MessageData<K>) {
   return async function sendMessageWithBridge() {
-    const result = await webExtBridgeSendMessage(
+    console.log("webExtBridgeSendMessage =", messageId, destination, data);
+
+    const result = await webExtBridgeSendMessage<any, K>(
       messageId,
       data as any,
-      destination
+      destination.replace("popup", "web_accessible")
     );
 
+    console.log("webExtBridgeSendMessage RESULT =", result);
+
+    debugger;
+
     // check the result
-    if (
-      result &&
-      typeof result === "object" &&
-      result.hasOwnProperty("error")
-    ) {
-      throw new Error(
-        result.hasOwnProperty("data")
-          ? (result as any).data
-          : "Unknown webExtBridge error."
-      );
+    if (isApiErrorResponse(result)) {
+      throw new Error(result.data || "Unknown webExtBridge error.");
     }
 
     return result;
@@ -62,9 +62,6 @@ export async function extensionIsomorphicSendMessage<K extends MessageID>(
   }
 
   const currentMessage = messageCounter++;
-
-  // TODO: Check if removing this broke anything:
-  // const destination = tabId ? `web_accessible@${tabId}` : "background";
 
   const sendMessageFunction = getSendMessageWithBridgeFunction(messageData);
 
@@ -98,6 +95,8 @@ export async function extensionIsomorphicSendMessage<K extends MessageID>(
         resolveAndClearTimeouts(result);
       })
       .catch((err) => {
+        debugger;
+
         const errorMessage = `${err.message || ""}`;
 
         // TODO: This won't work with the embedded wallet/postMessage, but it might not be an issue... Maybe it's better
@@ -122,7 +121,7 @@ export async function extensionIsomorphicSendMessage<K extends MessageID>(
           `[${currentMessage}] Waiting for ${messageId}${READY_MESSAGE_SUFFIX}`
         );
 
-        timeoutTimeoutID = window.setTimeout(() => {
+        timeoutTimeoutID = setTimeout(() => {
           reject(
             new Error(
               `Timed out waiting for ${messageId}${READY_MESSAGE_SUFFIX} from ${destination}`
@@ -171,27 +170,17 @@ export async function extensionIsomorphicSendMessage<K extends MessageID>(
   });
 }
 
-// TODO: Type tabId as `web_accessible@${number}` | `content-script@${tab.id}`
-
-// TODO: In the embedded wallet, there are no ready messages, so the API/SDK must make sure the iframe is ready before
-// accepting method calls...
-
 export function extensionIsomorphicOnMessage<K extends MessageID>(
   messageId: K,
   callback: OnMessageCallback<K>
 ): void {
-  // TODO: In embedded, verify that:
-  // - The messages come from iframeWindow if we are in the app domain.
-  // - The messages come from window.parent if we are in the iframe.
-
   webExtBridgeOnMessage(messageId, callback as any);
 
-  // TODO: In the embedded, there are no ready messages (I suppose?). We need to sync opening the "auth popup" someone.
-
-  // TODO: Is this needed for all messages or only for some?
-  extensionIsomorphicSendMessage({
-    destination: "background",
-    messageId: `${messageId}${READY_MESSAGE_SUFFIX}` as any,
-    data: null
-  });
+  if (messageId === "auth_request") {
+    extensionIsomorphicSendMessage({
+      destination: "background",
+      messageId: `${messageId}${READY_MESSAGE_SUFFIX}` as any,
+      data: null
+    });
+  }
 }

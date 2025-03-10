@@ -35,9 +35,8 @@ export function setupEventListeners() {
     );
   });
 
-  // TODO: This will never be used for the embedded wallet, so there's no need to change it to `isomorphicSendMessage()`:
-  // copy address in the content script
-  // (not possible in the background)
+  // This will never be used for the embedded wallet anyway:
+  // Copy address in the content script (not possible in the background)
   isomorphicOnMessage("copy_address", async ({ sender, data: addr }) => {
     if (sender.context !== "background") return;
 

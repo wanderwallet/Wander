@@ -45,7 +45,7 @@ export async function handleActiveAddressChange({
 
     if (popupTabID) {
       isomorphicSendMessage({
-        destination: `popup@${popupTabID}`,
+        destination: `web_accessible@${popupTabID}`,
         messageId: "auth_active_wallet_change",
         // tabId: popupTabID,
         data: tab.id

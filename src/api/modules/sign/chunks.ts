@@ -35,12 +35,18 @@ const chunks: {
 export const sendChunk = (chunk: Chunk) =>
   new Promise<void>((resolve, reject) => {
     const callID = nanoid();
+
     // construct message
     const message: ApiCall = {
+      app:
+        import.meta.env?.VITE_IS_EMBEDDED_APP === "1"
+          ? "wanderEmbedded"
+          : "wander",
+      // TODO: Add Wallet API version:
+      version: "",
+      callID,
       type: "chunk",
-      app: "wander",
-      data: chunk,
-      callID
+      data: chunk
     };
 
     // send message

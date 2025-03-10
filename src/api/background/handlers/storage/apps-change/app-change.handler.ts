@@ -44,13 +44,15 @@ export async function handleAppsChange({
 
       if (popupTabID) {
         isomorphicSendMessage({
-          destination: `popup@${popupTabID}`,
+          destination: `web_accessible@${popupTabID}`,
           messageId: "auth_app_disconnected",
           data: tab.id
         });
       }
 
-      return await triggerEvent(tab.id, "disconnect");
+      await triggerEvent(tab.id, "disconnect");
+
+      return;
     } else if (!newValue) {
       // if the new value is undefined
       // and the old value was also
@@ -72,7 +74,7 @@ export async function handleAppsChange({
 
       if (popupTabID) {
         isomorphicSendMessage({
-          destination: `popup@${popupTabID}`,
+          destination: `web_accessible@${popupTabID}`,
           messageId: "auth_app_disconnected",
           data: tab.id
         });

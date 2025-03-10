@@ -38,9 +38,6 @@ export async function iframeIsomorphicSendMessage<K extends MessageID>(
 
   const currentMessage = messageCounter++;
 
-  // TODO: Check if removing this broke anything:
-  // const destination = tabId ? `web_accessible@${tabId}` : "background";
-
   const sendMessageFunction = getPostMessageFunction(messageData);
 
   return new Promise(async (resolve, reject) => {
@@ -154,13 +151,8 @@ export function iframeIsomorphicOnMessage<K extends MessageID>(
   // - The messages come from iframeWindow if we are in the app domain.
   // - The messages come from window.parent if we are in the iframe.
 
+  // TODO: In the embedded wallet, there are no ready messages, so the API/SDK must make sure the iframe is ready before
+  // accepting method calls...
+
   webExtBridgeOnMessage(messageId, callback as any);
-
-  // TODO: In the embedded, there are no ready messages (I suppose?). We need to sync opening the "auth popup" someone.
-
-  isomorphicSendMessage({
-    // destination: "background", // Default
-    messageId: `${messageId}${READY_MESSAGE_SUFFIX}` as any,
-    data: null
-  });
 }

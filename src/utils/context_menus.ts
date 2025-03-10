@@ -4,6 +4,7 @@ import { getActiveTab, removeApp } from "~applications";
 import { sendMessage } from "@arconnect/webext-bridge";
 import { isManifestv3 } from "./runtime";
 import { getAppURL } from "./format";
+import { isomorphicSendMessage } from "~utils/messaging/messaging.utils";
 
 /**
  * Create context menus (right click actions)
@@ -86,12 +87,12 @@ async function onCopyAddressClicked() {
 
   const activeTab = await getActiveTab();
 
-  // This will never be used for the embedded wallet, so there's no need to change it to `isomorphicSendMessage()`:
-  await sendMessage(
-    "copy_address",
-    activeAddress,
-    `content-script@${activeTab.id}`
-  );
+  // This will never be used for the embedded wallet anyway:
+  await isomorphicSendMessage({
+    destination: `content-script@${activeTab.id}`,
+    messageId: "copy_address",
+    data: activeAddress
+  });
 }
 
 /**

@@ -1,4 +1,3 @@
-import type { ProtocolWithReturn } from "@arconnect/webext-bridge";
 import type { DisplayTheme } from "@arconnect/components-rebrand";
 import type { Chunk } from "~api/modules/sign/chunks";
 import type { InjectedEvents } from "~utils/events";
@@ -14,12 +13,18 @@ declare module "@arconnect/webext-bridge" {
      * `api/foreground/foreground-setup-wallet-sdk.ts` use `postMessage()` to send `arweaveWallet.*` calls that are
      * received in `contents/api.ts`, which then sends them to the background using `sendMessage()`.
      */
-    api_call: ProtocolWithReturn<ApiCall, ApiResponse>;
+    api_call: {
+      data: ApiCall<any>;
+      return: ApiResponse<any>;
+    };
 
     /**
      * `dispatch.foreground.ts` and `sign.foreground.ts` use `sendChunk()` to send chunks to the background.
      */
-    chunk: ProtocolWithReturn<ApiCall<Chunk>, ApiResponse<number>>;
+    chunk: {
+      data: ApiCall<Chunk>;
+      return: ApiResponse<number>;
+    };
 
     // AUTH POPUP:
 
@@ -27,51 +32,98 @@ declare module "@arconnect/webext-bridge" {
      * `createAuthPopup()` in `auth.utils.ts` sends `auth_request` messages from the background to the auth popup, which
      * are received in `auth.provider.ts`.
      */
-    auth_request: AuthRequestMessageData;
+    auth_request: {
+      data: AuthRequestMessageData;
+      return: void;
+    };
 
     /**
      * `auth.hook.ts` uses `auth_result` messages (calling `replyToAuthRequest()`) to reply to the `AuthRequest`s.
      */
-    auth_result: AuthResult<any>;
+    auth_result: {
+      data: AuthResult<any>;
+      return: void;
+    };
 
     /**
      * `signAuth()` in `sign_auth.ts` uses `auth_chunk` to send chunked transactions or binary data from the background
      * to the auth popup.
      */
-    auth_chunk: Chunk;
+    auth_chunk: {
+      data: Chunk;
+      return: void;
+    };
 
     /**
      * The background sends `auth_tab_closed` messages to notify the auth popup of closed tabs.
      */
-    auth_tab_closed: number;
+    auth_tab_closed: {
+      data: number;
+      return: void;
+    };
 
     /**
      * The background sends `auth_tab_reloaded` messages to notify the auth popup of reloaded tabs.
      */
-    auth_tab_reloaded: number;
+    auth_tab_reloaded: {
+      data: number;
+      return: void;
+    };
 
     /**
      * The background sends `auth_active_wallet_change` messages to notify the auth popup of active wallet changes.
      */
-    auth_active_wallet_change: number;
+    auth_active_wallet_change: {
+      data: number;
+      return: void;
+    };
 
     /**
      * The background sends `auth_app_disconnected` messages to notify the auth popup of disconnected apps.
      */
-    auth_app_disconnected: number;
+    auth_app_disconnected: {
+      data: number;
+      return: void;
+    };
 
     // EMBEDDED:
 
-    embedded_auth: EmbeddedAuthMessageData;
-    embedded_balance: EmbeddedBalanceMessageData;
-    embedded_resize: EmbeddedResizeMessageData;
-    embedded_close: void;
+    embedded_auth: {
+      data: EmbeddedAuthMessageData;
+      return: void;
+    };
+
+    embedded_balance: {
+      data: EmbeddedBalanceMessageData;
+      return: void;
+    };
+
+    embedded_resize: {
+      data: EmbeddedResizeMessageData;
+      return: void;
+    };
+
+    embedded_close: {
+      data: void;
+      return: void;
+    };
 
     // OTHER:
 
-    switch_wallet_event: string | null;
-    copy_address: string;
-    event: Event;
+    switch_wallet_event: {
+      data: string;
+      return: void;
+    };
+
+    copy_address: {
+      data: string;
+      return: void;
+    };
+
+    event: {
+      data: Event;
+      return: void;
+    };
   }
 }
 
@@ -80,11 +132,15 @@ interface ApiCall<DataType = any> extends JsonValue {
   version: string;
   callID: number | string;
   type: string;
-  data?: DataType;
+  data: DataType;
 }
 
 interface ApiResponse<DataType = any> extends ApiCall<DataType> {
   error?: boolean;
+}
+
+interface ApiErrorResponse extends ApiCall<DataType<string>> {
+  error: true;
 }
 
 interface Event {

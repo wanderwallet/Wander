@@ -74,7 +74,7 @@ export function signAuth(
 
         for (const chunk of dataChunks.concat(tagChunks)) {
           await isomorphicSendMessage({
-            destination: `popup@${popupWindowTabID}`,
+            destination: `web_accessible@${popupWindowTabID}`,
             messageId: "auth_chunk",
             data: chunk
           });
@@ -95,7 +95,7 @@ export function signAuth(
         };
 
         await isomorphicSendMessage({
-          destination: `popup@${popupWindowTabID}`,
+          destination: `web_accessible@${popupWindowTabID}`,
           messageId: "auth_chunk",
           data: endChunk
         });
@@ -164,7 +164,7 @@ export function signAuthKeystone(
 
         for (const chunk of dataChunks) {
           await isomorphicSendMessage({
-            destination: `popup@${popupWindowTabID}`,
+            destination: `web_accessible@${popupWindowTabID}`,
             messageId: "auth_chunk",
             data: chunk
           });
@@ -185,7 +185,7 @@ export function signAuthKeystone(
         };
 
         await isomorphicSendMessage({
-          destination: `popup@${popupWindowTabID}`,
+          destination: `web_accessible@${popupWindowTabID}`,
           messageId: "auth_chunk",
           data: endChunk
         });

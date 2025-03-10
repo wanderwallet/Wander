@@ -6,19 +6,20 @@ export type MessageID = keyof ProtocolMap;
 
 export type MessageDestination =
   | "background"
-  | `popup@${number}`
+  | `web_accessible@${number}`
   | `content-script@${number}`;
 
+// TODO: Check if refactoring tabId => destination broke anything.
+// Before: const destination = tabId ? `web_accessible@${tabId}` : "background";
+
 export interface MessageData<K extends MessageID> {
-  // TODO: Check if removing this broke anything:
-  // tabId?: number;
   destination: MessageDestination;
   messageId: K;
-  data: ProtocolMap[K];
+  data: ProtocolMap[K]["data"];
 }
 
 // onMessage():
 
 export type OnMessageCallback<K extends MessageID> = (
-  message: Omit<IBridgeMessage<any>, "data"> & { data: ProtocolMap[K] }
-) => void;
+  message: Omit<IBridgeMessage<any>, "data"> & { data: ProtocolMap[K]["data"] }
+) => ProtocolMap[K]["return"] | Promise<ProtocolMap[K]["return"]>;

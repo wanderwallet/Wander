@@ -1,21 +1,28 @@
 import { isExactly, isString } from "typed-assert";
-import type { OnMessageCallback } from "@arconnect/webext-bridge";
 import { type Chunk, handleChunk } from "../../../../modules/sign/chunks";
 import { isChunk } from "~utils/assertions";
-import type { ApiCall, ApiResponse } from "shim";
+import type { ApiCall, ApiErrorResponse, ApiResponse } from "shim";
 import browser from "webextension-polyfill";
 import { getTab } from "~applications/tab";
 import { getAppURL } from "~utils/format";
+import type { OnMessageCallback } from "~utils/messaging/messaging.types";
 
-export const handleChunkMessage: OnMessageCallback<
-  // @ts-expect-error
-  ApiCall<Chunk>,
-  ApiResponse<number>
-> = async ({ data, sender }) => {
+export const handleChunkMessage: OnMessageCallback<"chunk"> = async ({
+  data,
+  sender
+}): Promise<ApiResponse<number>> => {
   // construct base message to extend and return
   const baseMessage: ApiResponse = {
+    app:
+      import.meta.env?.VITE_IS_EMBEDDED_APP === "1"
+        ? "wanderEmbedded"
+        : "wander",
+    // TODO: Add Wallet API version:
+    version: "",
+    callID: data.callID,
     type: "chunk_result",
-    callID: data.callID
+    data: undefined,
+    error: false
   };
 
   try {
@@ -58,13 +65,13 @@ export const handleChunkMessage: OnMessageCallback<
     return {
       ...baseMessage,
       data: index
-    };
+    } satisfies ApiResponse<number>;
   } catch (e) {
     // return error
     return {
       ...baseMessage,
       error: true,
       data: e?.message || e
-    };
+    } satisfies ApiErrorResponse;
   }
 };

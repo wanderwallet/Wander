@@ -1,8 +1,7 @@
 import { isExactly, isNotUndefined, isString } from "typed-assert";
-import type { OnMessageCallback } from "@arconnect/webext-bridge";
 import { isApiCall } from "~utils/assertions";
 import Application from "~applications/application";
-import type { ApiCall, ApiResponse } from "shim";
+import type { ApiErrorResponse, ApiResponse } from "shim";
 import browser from "webextension-polyfill";
 import { getTab } from "~applications/tab";
 import { pushEvent } from "~utils/events";
@@ -11,16 +10,23 @@ import {
   backgroundModules,
   type ModuleAppData
 } from "~api/background/background-modules";
+import type { OnMessageCallback } from "~utils/messaging/messaging.types";
 
-export const handleApiCallMessage: OnMessageCallback<
-  // @ts-expect-error
-  ApiCall,
-  ApiResponse
-> = async ({ data, sender }) => {
+export const handleApiCallMessage: OnMessageCallback<"api_call"> = async ({
+  data,
+  sender
+}): Promise<ApiResponse> => {
   // construct base message to extend and return
   const baseMessage: ApiResponse = {
-    type: data.type + "_result",
-    callID: data.callID
+    app:
+      import.meta.env?.VITE_IS_EMBEDDED_APP === "1"
+        ? "wanderEmbedded"
+        : "wander",
+    // TODO: Add Wallet API version:
+    version: "",
+    callID: data.callID,
+    type: `${data.type}_result`,
+    data: undefined
   };
 
   try {
@@ -112,7 +118,7 @@ export const handleApiCallMessage: OnMessageCallback<
     return {
       ...baseMessage,
       data: functionResult
-    };
+    } satisfies ApiResponse;
   } catch (e) {
     console.error(`[Wander API] (${data.type})`, e?.message || e);
 
@@ -121,6 +127,6 @@ export const handleApiCallMessage: OnMessageCallback<
       ...baseMessage,
       error: true,
       data: e?.message || e
-    };
+    } satisfies ApiErrorResponse;
   }
 };
