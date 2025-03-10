@@ -1,4 +1,3 @@
-import { sendMessage } from "@arconnect/webext-bridge";
 import type { PlasmoCSConfig } from "plasmo";
 import type { ApiCall } from "shim";
 import injectedScript from "url:./injected/setup-wallet-sdk.injected-script.ts";

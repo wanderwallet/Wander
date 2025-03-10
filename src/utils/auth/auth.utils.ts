@@ -202,9 +202,8 @@ export async function createAuthPopup(
       );
 
       await isomorphicSendMessage({
-        // destination: `popup@${POPUP_TAB_ID}`,
+        destination: `popup@${POPUP_TAB_ID}`,
         messageId: "auth_request",
-        tabId: POPUP_TAB_ID,
         data: {
           ...authRequestData,
           url: moduleAppData.url,

@@ -1,4 +1,3 @@
-import { onMessage } from "@arconnect/webext-bridge";
 import handleFeeAlarm from "~api/modules/sign/fee";
 import { ExtensionStorage } from "~utils/storage";
 import browser from "webextension-polyfill";

@@ -1,4 +1,3 @@
-import { sendMessage } from "@arconnect/webext-bridge";
 import type { StorageChange } from "~utils/runtime";
 import Application from "~applications/application";
 import { forEachTab } from "~applications/tab";

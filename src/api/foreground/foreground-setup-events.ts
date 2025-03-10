@@ -1,4 +1,3 @@
-import { onMessage } from "@arconnect/webext-bridge";
 import { isomorphicOnMessage } from "~utils/messaging/messaging.utils";
 
 // Some backend handlers (`src/api/background/handlers/*`) will use `sendMessage(...)` to communicate with the

@@ -72,9 +72,6 @@ declare module "@arconnect/webext-bridge" {
     switch_wallet_event: string | null;
     copy_address: string;
     event: Event;
-
-    // TODO: This doesn't seem to be doing anything. Get rid of `replaceArProtocolLinks`
-    ar_protocol: ProtocolWithReturn<{ url: string }, { url: sting }>;
   }
 }
 

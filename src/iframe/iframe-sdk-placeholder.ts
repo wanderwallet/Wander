@@ -2,7 +2,6 @@
 // that's loaded in the consumer site's context.
 
 import type { IframeHTMLAttributes } from "react";
-import { replaceArProtocolLinks } from "~api/foreground/foreground-setup-ar-protocol-links";
 import { setupEventListeners } from "~api/foreground/foreground-setup-events";
 import { setupWalletSDK } from "~api/foreground/foreground-setup-wallet-sdk";
 import { isomorphicOnMessage } from "~utils/messaging/messaging.utils";
@@ -48,9 +47,6 @@ export interface CommonArConnectEmbeddedOptions {
   onAuth?: (userDetails: UserDetails) => boolean;
   onBalance?: (balances: Record<string, number>) => boolean;
   onInfo?: (data: AuthRequest | Notification) => boolean;
-
-  // Other:
-  replaceArProtocolLinks?: boolean;
 }
 
 export interface ArConnectEmbeddedOptionsWithURL
@@ -137,14 +133,6 @@ export function initArConnectEmbedded(options: ArConnectEmbeddedOptions) {
   // In ArConnect Embedded, we need to listen for messages coming from the iframe itself, so we pass a reference to it to
   // `setupEventListeners()` to check that:
   setupEventListeners(iframeElement);
-
-  // ar_protocol.ts:
-
-  if (options.replaceArProtocolLinks) {
-    document.addEventListener("DOMContentLoaded", async () => {
-      replaceArProtocolLinks();
-    });
-  }
 
   // UI-related functions and event listeners:
 

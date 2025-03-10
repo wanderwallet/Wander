@@ -185,7 +185,7 @@ export function signAuthKeystone(
         };
 
         await isomorphicSendMessage({
-          tabId: `popup@${popupWindowTabID}`,
+          destination: `popup@${popupWindowTabID}`,
           messageId: "auth_chunk",
           data: endChunk
         });

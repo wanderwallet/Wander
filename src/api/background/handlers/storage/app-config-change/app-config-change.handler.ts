@@ -1,4 +1,3 @@
-import { sendMessage } from "@arconnect/webext-bridge";
 import type { StorageChange } from "~utils/runtime";
 import { getStoredApps } from "~applications";
 import { getAppURL } from "~utils/format";

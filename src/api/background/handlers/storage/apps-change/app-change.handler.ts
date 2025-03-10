@@ -1,5 +1,4 @@
 import { createContextMenus } from "~utils/context_menus";
-import { sendMessage } from "@arconnect/webext-bridge";
 import type { StorageChange } from "~utils/runtime";
 import { getAppURL } from "~utils/format";
 import { updateIcon } from "~utils/icon";
