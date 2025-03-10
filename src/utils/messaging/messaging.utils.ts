@@ -10,13 +10,13 @@ import {
 // sendMessage():
 
 export const isomorphicSendMessage =
-  process.env.PLASMO_PUBLIC_APP_TYPE === "iframe"
+  import.meta.env?.VITE_IS_EMBEDDED_APP === "1"
     ? (iframeIsomorphicSendMessage satisfies typeof extensionIsomorphicSendMessage)
     : (extensionIsomorphicSendMessage satisfies typeof iframeIsomorphicSendMessage);
 
 // onMessage():
 
 export const isomorphicOnMessage =
-  process.env.PLASMO_PUBLIC_APP_TYPE === "iframe"
+  import.meta.env?.VITE_IS_EMBEDDED_APP === "1"
     ? (iframeIsomorphicOnMessage satisfies typeof extensionIsomorphicOnMessage)
     : (extensionIsomorphicOnMessage satisfies typeof iframeIsomorphicOnMessage);

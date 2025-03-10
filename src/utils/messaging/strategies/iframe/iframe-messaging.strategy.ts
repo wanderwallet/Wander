@@ -1,10 +1,5 @@
-import {
-  onMessage as webExtBridgeOnMessage,
-  sendMessage as webExtBridgeSendMessage,
-  type IBridgeMessage
-} from "@arconnect/webext-bridge";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
-import type { MessageID } from "~utils/messaging/messaging.types";
+import type { MessageData, MessageID } from "~utils/messaging/messaging.types";
 
 const READY_MESSAGE_SUFFIX = "_ready" as const;
 
@@ -15,7 +10,7 @@ function getPostMessageFunction<K extends MessageID>({
   messageId,
   data
 }: MessageData<K>) {
-  let targetWindow = window;
+  let targetWindow: Window = window;
 
   if (destination.startsWith("content-script")) targetWindow = window.parent;
   else if (destination === "background") targetWindow = getIFrameWindow();

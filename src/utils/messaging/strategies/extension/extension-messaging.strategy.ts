@@ -4,6 +4,11 @@ import {
   type IBridgeMessage
 } from "@arconnect/webext-bridge";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
+import type {
+  MessageData,
+  MessageID,
+  OnMessageCallback
+} from "~utils/messaging/messaging.types";
 
 const READY_MESSAGE_SUFFIX = "_ready" as const;
 
@@ -86,7 +91,7 @@ export async function extensionIsomorphicSendMessage<K extends MessageID>(
       `[${currentMessage}] Sending ${messageId} to ${destination}`
     );
 
-    sendMessage()
+    sendMessageFunction()
       .then((result) => {
         log(LOG_GROUP.MSG, `[${currentMessage}] ${messageId} sent`);
 
@@ -117,7 +122,7 @@ export async function extensionIsomorphicSendMessage<K extends MessageID>(
           `[${currentMessage}] Waiting for ${messageId}${READY_MESSAGE_SUFFIX}`
         );
 
-        timeoutTimeoutID = setTimeout(() => {
+        timeoutTimeoutID = window.setTimeout(() => {
           reject(
             new Error(
               `Timed out waiting for ${messageId}${READY_MESSAGE_SUFFIX} from ${destination}`
@@ -141,7 +146,7 @@ export async function extensionIsomorphicSendMessage<K extends MessageID>(
             `[${currentMessage}] Sending ${messageId} to ${destination} again`
           );
 
-          await sendMessage()
+          await sendMessageFunction()
             .then((result) => {
               log(LOG_GROUP.MSG, `[${currentMessage}] ${messageId} resent`);
 
@@ -168,7 +173,7 @@ export async function extensionIsomorphicSendMessage<K extends MessageID>(
 
 // TODO: Type tabId as `web_accessible@${number}` | `content-script@${tab.id}`
 
-// TODO: In the embedde wallet, there are no ready messages, so the API/SDK must make sure the iframe is ready before
+// TODO: In the embedded wallet, there are no ready messages, so the API/SDK must make sure the iframe is ready before
 // accepting method calls...
 
 export function extensionIsomorphicOnMessage<K extends MessageID>(
@@ -183,8 +188,9 @@ export function extensionIsomorphicOnMessage<K extends MessageID>(
 
   // TODO: In the embedded, there are no ready messages (I suppose?). We need to sync opening the "auth popup" someone.
 
-  isomorphicSendMessage({
-    // destination: "background", // Default
+  // TODO: Is this needed for all messages or only for some?
+  extensionIsomorphicSendMessage({
+    destination: "background",
     messageId: `${messageId}${READY_MESSAGE_SUFFIX}` as any,
     data: null
   });

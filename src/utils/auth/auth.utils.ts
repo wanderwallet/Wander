@@ -1,4 +1,3 @@
-import { onMessage, sendMessage } from "@arconnect/webext-bridge";
 import { nanoid } from "nanoid";
 import browser from "webextension-polyfill";
 import { Mutex } from "~utils/mutex";
@@ -377,7 +376,7 @@ export async function startKeepAlive(authID: string) {
     if (activePopups > 0 && keepAliveInterval === null) {
       log(LOG_GROUP.AUTH, `startKeepAlive(${authID}) =`, activeAuthRequests);
 
-      keepAliveInterval = setInterval(
+      keepAliveInterval = window.setInterval(
         () => browser.alarms.create("keep-alive", { when: Date.now() + 1 }),
         20000
       );

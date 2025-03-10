@@ -24,7 +24,7 @@ const PARAM_ANCESTOR_ORIGIN = "ancestor-origin";
 const EMBEDDED_CLIENT_ID =
   searchParams.get(PARAM_CLIENT_ID) ||
   (process.env.NODE_ENV === "development"
-    ? import.meta.env.VITE_EMBEDDED_CLIENT_ID
+    ? import.meta.env?.VITE_EMBEDDED_CLIENT_ID
     : "");
 
 const EMBEDDED_ANCESTOR_ORIGIN =
