@@ -30,7 +30,11 @@ import type {
   EmbeddedContextAuth,
   Wallet
 } from "~utils/embedded/embedded.types";
-import { setAuthTokenHeader, supabase } from "~utils/embedded/embedded.utils";
+import {
+  isInsideIframe,
+  setAuthTokenHeader,
+  supabase
+} from "~utils/embedded/embedded.utils";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import {
   AuthProviderType,
@@ -787,10 +791,20 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         return;
       }
 
-      // TODO: This is a temp dirty fix to:
-      // - Try to refresh the session when it's incomplete (missing deviceNonce and countryCode).
-      // - Try to delete the session from frontend when it has been deleted/invalidated on the backend.
-      await supabase.auth.refreshSession();
+      if (
+        !session.countryCode ||
+        !session.id ||
+        !session.deviceNonce ||
+        session.deviceNonce !== getDeviceNonce()
+      ) {
+        console.warn(
+          "❌  The current session is incomplete. Refreshing...",
+          session
+        );
+        await supabase.auth.refreshSession();
+      } else {
+        console.log("✅  The current session is complete!", session);
+      }
 
       const wallets = await WalletService.fetchWallets(userId);
 
@@ -814,7 +828,11 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         // TODO: Add try-catch. If the initialization process fails, show an error...
 
         const { activatedWallet, rotationChallenge } =
-          await WalletService.fetchFirstAvailableAuthShare(wallets, session);
+          await WalletService.fetchFirstAvailableAuthShare(
+            wallets,
+            session,
+            userId
+          );
 
         if (activatedWallet) {
           const { id: walletId, address: walletAddress } = activatedWallet;
@@ -896,27 +914,52 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
   }, []);
 
   useEffect(() => {
-    let gotUpdate = false;
+    /*
+    KNOWN AUTHENTICATION ISSUES:
 
-    setTimeout(() => {
-      if (!gotUpdate) {
-        setEmbeddedContextAuth({
-          authStatus: "noAuth",
-          authProviderType: null,
-          user: null,
-          session: null
-        });
+    - The decoded JWT token sometimes is missing some properties (`countryCode` and `deviceNonce`). Refreshing the
+      sessions seems to fix the issue, but not immediately. The `The current session is incomplete. Refreshing...` block
+      in `initEmbeddedWallet` is a dirty/temp fix for that.
 
-        initEmbeddedWallet();
-      }
+    - The `onAuthStateChange` callback below is never invoked when running the app inside an iframe on a different
+      origin. The `setTimeout` below is a dirty/tem fix for that.
+
+      See https://stackoverflow.com/questions/71819128/supabase-auth-onauthstatechange-not-working-when-react-app-is-in-iframe
+
+    - When a sessions is deleted from the DB, it's still reported as valid, even thought tRPC endpoints will return
+      UNAUTHORIZED errors. When that happens, we should force de-authentication of the frontend.
+    */
+
+    const forceInitTimeoutID = setTimeout(() => {
+      console.warn("Forcing initialization...");
+
+      setEmbeddedContextAuth({
+        authStatus: "noAuth",
+        authProviderType: null,
+        user: null,
+        session: null
+      });
+
+      initEmbeddedWallet();
     }, 2000);
-
-    // See https://stackoverflow.com/questions/71819128/supabase-auth-onauthstatechange-not-working-when-react-app-is-in-iframe
 
     const {
       data: { subscription }
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      gotUpdate = true;
+      // console.log("onAuthStateChange =", session);
+
+      window.clearTimeout(forceInitTimeoutID);
+
+      // Comment this line to run Wander Embedded as a standalone page:
+      if (!isInsideIframe()) {
+        if (window.location.origin === "https://embed.wander.app") {
+          window.close();
+        } else {
+          console.warn(
+            "In production (https://embed.wander.app), the app would close right now."
+          );
+        }
+      }
 
       const accessToken = session?.access_token ?? null;
       const user = session?.user ?? null;
@@ -938,22 +981,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
           id: sessionId,
           userId: sub
         };
-
-        if (
-          !dbSession.countryCode ||
-          !dbSession.id ||
-          !dbSession.deviceNonce ||
-          dbSession.deviceNonce !== getDeviceNonce()
-        ) {
-          console.warn("Incomplete session =", dbSession);
-        } else {
-          console.info("Complete session =", dbSession);
-        }
       }
-
-      // TODO: Why is the session still reported as valid after deleting it from the DB?
-
-      // TODO: Make sure any tRPC call returning UNAUTHORIZED forces de-authentication.
 
       setAuthTokenHeader(accessToken);
 
@@ -981,7 +1009,10 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      window.clearTimeout(forceInitTimeoutID);
+      subscription.unsubscribe();
+    };
   }, [initEmbeddedWallet]);
 
   return (

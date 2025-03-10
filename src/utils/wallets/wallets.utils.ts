@@ -12,7 +12,7 @@ import Arweave from "arweave";
 import { setDecryptionKey } from "~wallets/auth";
 import { INVALID_DEVICE_SHARES_INFO_ERR_MSG } from "~utils/wallets/wallets.constants";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
-import { random, pki, asn1 } from "node-forge";
+import type NodeForge from "node-forge";
 import {
   pemToBase64,
   pemToJWK,
@@ -20,6 +20,33 @@ import {
 } from "~utils/crypto/crypto.utils";
 import type { Wallet } from "~utils/embedded/embedded.types";
 import { EMBEDDED_FEATURE_FLAGS } from "~utils/embedded/embedded.constants";
+
+// import { random, pki, asn1 } from "node-forge";
+//
+// There's 3 different ways to load `node-forge`:
+//
+// 1. Script tags (currently used):
+//
+//     <script src="/assets/forge/forge.js"></script>
+//     <script src="/assets/forge/prime.worker.js"></script>
+//
+//   Create a global object window.forge and can be modified (e.g. to change the hardcoded location of `prime.worker.js`
+//   inside `forge.js`):
+//
+// 2. From NPC (commented out import above). The issue with this approach is that it works great for `forge.js`, but
+//    it will assume the location of `primer.worker.js` is `forge/prime.worker.js` (cannot be changed), and we seem to
+//    have issues adding assets to the root of the project in production.
+//
+// 3. Using Vite.
+//
+//    - Add an alas in `vite.config.js`: "assets/forge": path.resolve(__dirname, "./assets/forge"),
+//    - Then import like so: `import forge from 'assets/forge/forge.js?url'`
+//
+//   Could be better than the first approach but `window.forge` won't be immediately available.
+//
+//   We should look into this option later.
+
+const { random, pki, asn1 } = (window as any).forge as typeof NodeForge;
 
 async function generateSeedPhrase() {
   log(LOG_GROUP.WALLET_GENERATION, "generateSeedPhrase()");

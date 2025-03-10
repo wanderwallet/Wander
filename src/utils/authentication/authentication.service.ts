@@ -1,5 +1,18 @@
-import { AuthProviderType } from "embed-api";
+import type { AuthProviderType } from "embed-api";
 import { supabase, trpcVanilla } from "~utils/embedded/embedded.utils";
+import type { Provider } from "@supabase/supabase-js";
+
+const SUPABASE_PROVIDER_BY_AUTH_PROVIDER_TYPE: Record<
+  AuthProviderType,
+  Provider | null
+> = {
+  PASSKEYS: null,
+  EMAIL_N_PASSWORD: null,
+  GOOGLE: "google",
+  FACEBOOK: "facebook",
+  X: "twitter",
+  APPLE: "apple"
+};
 
 async function authenticate(authProviderType: AuthProviderType) {
   // TODO: The authentication procedures are not needed.
@@ -12,10 +25,13 @@ async function authenticate(authProviderType: AuthProviderType) {
     throw new Error(`${authProviderType} not supported yet.`);
   }
 
+  const provider = SUPABASE_PROVIDER_BY_AUTH_PROVIDER_TYPE[authProviderType];
+
   const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: "google",
+    provider,
     options: {
       // redirectTo: `${window.location.origin}#/auth/callback/google`,
+      redirectTo: window.location.origin
     }
   });
 

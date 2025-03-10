@@ -88,7 +88,11 @@ export interface EmbeddedContextData
     EmbeddedContextAuth {
   currentWallet: Wallet | null;
 
-  authenticate: (authProviderType: AuthProviderType) => Promise<void>;
+  authenticate: (
+    authProviderType: AuthProviderType,
+    email?: string,
+    password?: string
+  ) => Promise<void>;
   fetchRecoverableAccounts: () => Promise<RecoverableAccount[]>;
   clearRecoverableAccounts: () => void;
   recoverAccount: (

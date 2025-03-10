@@ -14,6 +14,7 @@
     "dev:iframe": "vite",
     "build:iframe": "vite build",
     "preview:iframe": "vite preview",
+    "build:forge": "cp -r assets/forge dist/assets/forge",
     "build:wallet-api": "vite build --config vite.wallet-config.js",
     "nuke": "rm -rf node_modules build .plasmo",
     "fmt": "prettier --write .",

@@ -1,5 +1,8 @@
 import { nanoid } from "nanoid";
-import { getEmbeddedAncestorOrigin } from "~utils/embedded/embedded.utils";
+import {
+  getEmbeddedAncestorOrigin,
+  isInsideIframe
+} from "~utils/embedded/embedded.utils";
 import type {
   EmbeddedCall,
   EmbeddedMessageId,
@@ -30,9 +33,7 @@ export function postEmbeddedMessage<K extends EmbeddedMessageId>({
       )}.`
     );
 
-  const parent = window.parent;
-
-  if (parent === null) {
+  if (window.parent === null) {
     throw new Error("Unexpected `null` parent Window.");
   }
 
@@ -42,7 +43,7 @@ export function postEmbeddedMessage<K extends EmbeddedMessageId>({
     data
   };
 
-  if (parent === window) {
+  if (!isInsideIframe()) {
     console.warn(
       "ArConnect Embedded running as a standalone page. There's no parent Window to send this to =",
       call
