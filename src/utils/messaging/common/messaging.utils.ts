@@ -1,12 +1,17 @@
-import type { ApiErrorResponse } from "shim";
+import type { ApiErrorResponse, ApiResponse } from "shim";
+
+export function isApiResponse<T>(input: unknown): input is ApiResponse<T> {
+  return (
+    !!input &&
+    typeof input === "object" &&
+    input.hasOwnProperty("callID") &&
+    input.hasOwnProperty("type") &&
+    input.hasOwnProperty("data")
+  );
+}
 
 export function isApiErrorResponse<T>(
   input: unknown
 ): input is ApiErrorResponse {
-  return (
-    !!input &&
-    typeof input === "object" &&
-    /^wander(Embedded)?$/.test((input as ApiErrorResponse).app) &&
-    !!(input as ApiErrorResponse).error
-  );
+  return isApiResponse(input) && !!(input as ApiErrorResponse).error;
 }

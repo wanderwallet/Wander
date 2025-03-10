@@ -1,7 +1,12 @@
 import { isExactly, isNotUndefined, isString } from "typed-assert";
 import { isApiCall } from "~utils/assertions";
 import Application from "~applications/application";
-import type { ApiErrorResponse, ApiResponse } from "shim";
+import type {
+  ApiErrorResponse,
+  ApiResponse,
+  ApiSuccessResponse,
+  BaseApiMessage
+} from "shim";
 import browser from "webextension-polyfill";
 import { getTab } from "~applications/tab";
 import { pushEvent } from "~utils/events";
@@ -19,13 +24,7 @@ export const handleApiCallMessage: OnMessageCallback<"api_call"> = async ({
   console.log("handleApiCallMessage", data.type);
 
   // construct base message to extend and return
-  const baseMessage: ApiResponse = {
-    app:
-      import.meta.env?.VITE_IS_EMBEDDED_APP === "1"
-        ? "wanderEmbedded"
-        : "wander",
-    // TODO: Add Wallet API version:
-    version: "",
+  const baseMessage: BaseApiMessage = {
     callID: data.callID,
     type: `${data.type}_result`,
     data: undefined
@@ -120,7 +119,7 @@ export const handleApiCallMessage: OnMessageCallback<"api_call"> = async ({
     return {
       ...baseMessage,
       data: functionResult
-    } satisfies ApiResponse;
+    } satisfies ApiSuccessResponse;
   } catch (e) {
     console.error(
       `[Wander API] (${baseMessage.type} / ${data.type})`,

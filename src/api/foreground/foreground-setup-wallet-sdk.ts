@@ -10,6 +10,7 @@ import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { version } from "../../../package.json";
 import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 import { getEmbeddedOrigin } from "~utils/embedded/utils/wallets/embedded-wallets.utils";
+import { isApiErrorResponse } from "~utils/messaging/common/messaging.utils";
 // import { version as sdkVersion } from "../../../wander-embedded-sdk/package.json";
 
 export function setupWalletSDK(targetWindow: Window = window) {
@@ -114,7 +115,7 @@ export function setupWalletSDK(targetWindow: Window = window) {
         window.removeEventListener("message", callback);
 
         // check for errors
-        if (res.error) {
+        if (isApiErrorResponse(res)) {
           return reject(res.data);
         }
 
@@ -125,26 +126,27 @@ export function setupWalletSDK(targetWindow: Window = window) {
 
         // call the finalizer function if it exists
         if (finalizerFn) {
-          const finalizerResult = await finalizerFn(
-            res.data,
-            functionParams,
-            params
-          );
+          try {
+            const finalizerResult = await finalizerFn(
+              res.data,
+              functionParams,
+              params
+            );
 
-          // if the finalizer transforms data
-          // update the result
-          if (finalizerResult) {
-            res.data = finalizerResult;
+            // TODO: This is a bad check because the result could be falsy:
+            // if the finalizer transforms data
+            // update the result
+            if (finalizerResult) {
+              res.data = finalizerResult;
+            }
+          } catch (err) {
+            reject(err);
+
+            return;
           }
         }
 
-        // check for errors after the finalizer
-        if (res.error) {
-          return reject(res.data);
-        }
-
-        // resolve promise
-        return resolve(res.data);
+        resolve(res.data);
       }
     });
   }

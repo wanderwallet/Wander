@@ -127,21 +127,26 @@ declare module "@arconnect/webext-bridge" {
   }
 }
 
-interface ApiCall<DataType = any> extends JsonValue {
-  app: "wander" | "wanderEmbedded";
-  version: string;
+interface BaseApiMessage<DataType = any> extends JsonValue {
   callID: number | string;
   type: string;
   data: DataType;
 }
 
-interface ApiResponse<DataType = any> extends ApiCall<DataType> {
-  error?: boolean;
+interface ApiCall<DataType = any> extends BaseApiMessage<DataType> {
+  app: "wander" | "wanderEmbedded";
+  version: string;
 }
 
-interface ApiErrorResponse extends ApiCall<DataType<string>> {
+type ApiSuccessResponse<DataType = any> = BaseApiMessage<DataType>;
+
+interface ApiErrorResponse extends BaseApiMessage<string> {
   error: true;
 }
+
+export type ApiResponse<DataType = any> =
+  | ApiSuccessResponse<DataType>
+  | ApiErrorResponse;
 
 interface Event {
   name: keyof InjectedEvents;

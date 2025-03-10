@@ -1,6 +1,7 @@
 import type { Tag } from "arweave/web/lib/transaction";
 import type { ApiCall, ApiResponse } from "shim";
 import { nanoid } from "nanoid";
+import { isApiErrorResponse } from "~utils/messaging/common/messaging.utils";
 
 /**
  * The chunk of the transaction signing
@@ -56,8 +57,9 @@ export const sendChunk = (chunk: Chunk) =>
     window.addEventListener("message", callback);
 
     // callback for the message
-    function callback(e: MessageEvent<ApiResponse<number | string>>) {
+    function callback(e: MessageEvent<ApiResponse<number>>) {
       const { data: res } = e;
+
       // returned chunk index
       const index = res.data;
 
@@ -66,7 +68,7 @@ export const sendChunk = (chunk: Chunk) =>
       if (res.callID !== callID) return;
 
       // check for errors in the background
-      if (res.error || typeof index === "string") {
+      if (isApiErrorResponse(res) || typeof index === "string") {
         reject(res.data);
       } else {
         resolve();

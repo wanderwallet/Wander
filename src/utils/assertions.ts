@@ -311,6 +311,16 @@ export function isRawDataItem(input: unknown): asserts input is RawDataItem {
   if (input.tags) isArrayOfType(input.tags, isTag, "Invalid tags array.");
 }
 
+export function isBatchOfRawDataItem(
+  input: unknown
+): asserts input is RawDataItem[] {
+  isArray(input, "dataItems has to be an array.");
+
+  input.forEach((dataItem) => {
+    return isRawDataItem(dataItem);
+  });
+}
+
 export function isSignatureAlgorithm(
   input: unknown
 ): asserts input is SignatureAlgorithm {

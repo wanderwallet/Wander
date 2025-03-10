@@ -42,10 +42,12 @@ window.addEventListener("message", async ({ data }: MessageEvent<ApiCall>) => {
   }
 
   // validate return message
+  /*
   if (data.type.endsWith("_result")) {
     console.warn("MESSAGE IGNORED =", data);
     return;
   }
+    */
 
   // verify that the call has an ID
   if (!data.callID) {
@@ -61,11 +63,11 @@ window.addEventListener("message", async ({ data }: MessageEvent<ApiCall>) => {
     destination: "background",
     messageId: data.type === "chunk" ? "chunk" : "api_call",
     data
-  });
+  }).catch((err) => err);
 
   log(LOG_GROUP.API, `${data.type} (${data.callID}) =`, res);
 
-  console.log("FORWARD RESPONDE");
+  console.log("FORWARD RESPONDE", res);
   // send the response to the injected script
   window.postMessage(res, window.location.origin);
 });

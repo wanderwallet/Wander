@@ -294,6 +294,8 @@ export function getPopupResponse<T>(authID: string, popupWindowTabID: number) {
         clearTimeout(timeoutID);
         removeAuthResultListener(authID);
 
+        console.log("AUTH RESULT =", data);
+
         if (!data) {
           log(LOG_GROUP.AUTH, `auth_result for authID = "${authID}" = Empty)`);
 
@@ -378,7 +380,7 @@ export async function startKeepAlive(authID: string) {
       keepAliveInterval = setInterval(
         () => browser.alarms.create("keep-alive", { when: Date.now() + 1 }),
         20000
-      );
+      ) as unknown as number;
     }
   } finally {
     unlock();

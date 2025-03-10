@@ -3,7 +3,6 @@ import {
   sendMessage as webExtBridgeSendMessage,
   type IBridgeMessage
 } from "@arconnect/webext-bridge";
-import type { ApiCall } from "shim";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { isApiErrorResponse } from "~utils/messaging/common/messaging.utils";
 import type {
@@ -99,9 +98,9 @@ export async function extensionIsomorphicSendMessage<K extends MessageID>(
         resolveAndClearTimeouts(result);
       })
       .catch((err) => {
-        debugger;
-
         const errorMessage = `${err.message || ""}`;
+
+        console.warn("CATCH ERROR =", errorMessage);
 
         // TODO: This won't work with the embedded wallet/postMessage, but it might not be an issue... Maybe it's better
         // to just create 2 different versions of isomorphicSendMessage?
@@ -111,6 +110,8 @@ export async function extensionIsomorphicSendMessage<K extends MessageID>(
           ) ||
           messageId.endsWith(READY_MESSAGE_SUFFIX)
         ) {
+          console.log("REJECT");
+
           log(LOG_GROUP.MSG, `[${currentMessage}] ${messageId} error =`, err);
 
           rejectAndClearTimeouts(err);
