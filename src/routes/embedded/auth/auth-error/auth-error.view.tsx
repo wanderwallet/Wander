@@ -7,7 +7,6 @@ import {
   Row,
   ErrorIcon
 } from "~components/embed";
-import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 import { useSearchParams } from "~wallets/router/router.utils";
 import { useEffect, useState } from "react";
 
@@ -84,16 +83,8 @@ export default function AuthErrorEmbeddedView() {
   };
 
   const handleRetry = () => {
-    // Remove error params from the URL
-    const url = new URL(window.location.href);
-    url.searchParams.delete("error");
-    url.searchParams.delete("error_description");
-
-    // Keep the hash part but change it to auth path
-    url.hash = EmbeddedPaths.Auth;
-
-    // Update the URL and reload
-    window.location.href = url.toString();
+    // go back to the previous page
+    window.history.back();
   };
 
   if (!errorState) return null;
@@ -133,7 +124,7 @@ export default function AuthErrorEmbeddedView() {
           isFullWidth
           variant="primary"
           onClick={handleRetry}
-          style={{ marginBottom: 16 }}
+          style={{ marginBottom: 8 }}
         >
           Try Again
         </Button>
