@@ -294,8 +294,6 @@ export function getPopupResponse<T>(authID: string, popupWindowTabID: number) {
         clearTimeout(timeoutID);
         removeAuthResultListener(authID);
 
-        console.log("AUTH RESULT =", data);
-
         if (!data) {
           log(LOG_GROUP.AUTH, `auth_result for authID = "${authID}" = Empty)`);
 

@@ -21,8 +21,6 @@ export const handleApiCallMessage: OnMessageCallback<"api_call"> = async ({
   data,
   sender
 }): Promise<ApiResponse> => {
-  console.log("handleApiCallMessage", data.type);
-
   // construct base message to extend and return
   const baseMessage: BaseApiMessage = {
     callID: data.callID,

@@ -3,6 +3,7 @@ import {
   sendMessage as webExtBridgeSendMessage,
   type IBridgeMessage
 } from "@arconnect/webext-bridge";
+import type { ApiCall } from "shim";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { isApiErrorResponse } from "~utils/messaging/common/messaging.utils";
 import type {
@@ -23,26 +24,7 @@ function getSendMessageWithBridgeFunction<K extends MessageID>({
   return async function sendMessageWithBridge() {
     console.log("webExtBridgeSendMessage =", messageId, destination, data);
 
-    const result = await webExtBridgeSendMessage<any, K>(
-      messageId,
-      data as any,
-      destination
-    );
-
-    console.log(
-      "webExtBridgeSendMessage RESULT =",
-      result,
-      isApiErrorResponse(result)
-    );
-
-    // check the result
-    if (isApiErrorResponse(result)) {
-      console.log("INSIDE");
-
-      throw new Error(result.data || "Unknown webExtBridge error.");
-    }
-
-    return result;
+    return webExtBridgeSendMessage<any, K>(messageId, data as any, destination);
   };
 }
 
@@ -95,12 +77,12 @@ export async function extensionIsomorphicSendMessage<K extends MessageID>(
       .then((result) => {
         log(LOG_GROUP.MSG, `[${currentMessage}] ${messageId} sent`);
 
+        // The result could be both ApiResponseSuccess or ApiResponseError. The catch block below is used for other type
+        // of errors coming from `@arconnect/webext-bridge` (e.g. sending a message before there's a listener for it).
         resolveAndClearTimeouts(result);
       })
       .catch((err) => {
         const errorMessage = `${err.message || ""}`;
-
-        console.warn("CATCH ERROR =", errorMessage);
 
         // TODO: This won't work with the embedded wallet/postMessage, but it might not be an issue... Maybe it's better
         // to just create 2 different versions of isomorphicSendMessage?
@@ -110,8 +92,6 @@ export async function extensionIsomorphicSendMessage<K extends MessageID>(
           ) ||
           messageId.endsWith(READY_MESSAGE_SUFFIX)
         ) {
-          console.log("REJECT");
-
           log(LOG_GROUP.MSG, `[${currentMessage}] ${messageId} error =`, err);
 
           rejectAndClearTimeouts(err);

@@ -56,18 +56,17 @@ window.addEventListener("message", async ({ data }: MessageEvent<ApiCall>) => {
 
   log(LOG_GROUP.API, `${data.type} (${data.callID})...`);
 
-  console.log("SENDING");
-
   // send call to the background
   const res = await isomorphicSendMessage({
     destination: "background",
     messageId: data.type === "chunk" ? "chunk" : "api_call",
     data
-  }).catch((err) => err);
+  });
+
+  // TODO: If the call above fails, this API call never gets a response. Add timeout?
 
   log(LOG_GROUP.API, `${data.type} (${data.callID}) =`, res);
 
-  console.log("FORWARD RESPONDE", res);
   // send the response to the injected script
   window.postMessage(res, window.location.origin);
 });
