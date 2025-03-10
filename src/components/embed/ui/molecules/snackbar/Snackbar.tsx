@@ -1,8 +1,8 @@
 import React from "react";
 import styles from "./Snackbar.module.css";
-import { SnackbarBaseProps } from "./Snackbar.types";
-
+import type { SnackbarBaseProps } from "./Snackbar.types";
 import { Text, Row } from "../../atoms";
+import { useTheme } from "../../../contexts/ThemeContext";
 
 const Snackbar = React.forwardRef<HTMLDivElement, SnackbarBaseProps>(
   (
@@ -19,29 +19,48 @@ const Snackbar = React.forwardRef<HTMLDivElement, SnackbarBaseProps>(
     },
     ref
   ) => {
+    const { isDarkMode } = useTheme();
+
+    const defaultBorderColor = isDarkMode
+      ? "var(--color-border-box)"
+      : borderColor || "var(--color-border-box)";
+
+    const defaultBackgroundColor = isDarkMode
+      ? "var(--color-card-background-default)"
+      : backgroundColor || "var(--color-background-default)";
+
+    const defaultIconColor = isDarkMode ? "var(--color-font-body)" : iconColor;
+
+    const defaultTextColor = isDarkMode ? "var(--color-font-body)" : textColor;
+
     return (
       <Row
         ref={ref}
         alignment="center"
         className={`
-        ${styles["snackbar"]}
-        ${isFullWidth && styles["snackbar__isFullWidth"]}
-        ${className}`}
+          ${styles["snackbar"]}
+          ${isFullWidth && styles["snackbar__isFullWidth"]}
+          ${className}
+        `}
         style={{
-          borderColor: borderColor,
-          backgroundColor: backgroundColor
+          borderColor: defaultBorderColor,
+          backgroundColor: defaultBackgroundColor
         }}
         {...props}
       >
         {icon && (
           <div
             className={styles["snackbar__icon"]}
-            style={{ color: iconColor }}
+            style={{ color: defaultIconColor }}
           >
             {icon}
           </div>
         )}
-        <Text variant="bodySm" alignment="left">
+        <Text
+          variant="bodySm"
+          alignment="left"
+          style={{ color: defaultTextColor }}
+        >
           {text}
         </Text>
       </Row>

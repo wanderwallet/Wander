@@ -1,5 +1,5 @@
 import React from "react";
-import { Sizes } from "../../../types";
+import type { Sizes } from "../../../types";
 
 export interface CardBaseProps {
   headerText?: string;
