@@ -10,6 +10,7 @@ import { AuthMoreProvidersEmbeddedView } from "~routes/embedded/auth/auth-more-p
 import { AuthAddWalletEmbeddedView } from "~routes/embedded/auth/add-wallet/auth-add-wallet.view";
 import { AuthImportSeedphraseEmbeddedView } from "~routes/embedded/auth/import-seedphrase/auth-import-seedphrase.view";
 import { AuthImportKeyfileEmbeddedView } from "~routes/embedded/auth/import-keyfile/auth-import-keyfile.view";
+import AuthErrorEmbeddedView from "~routes/embedded/auth/auth-error/auth-error.view";
 
 // Authentication Linking Views:
 import { AuthAddDeviceEmbeddedView } from "~routes/embedded/auth/add-device/auth-add-device.view";
@@ -65,7 +66,8 @@ export type EmbeddedRoutePath =
   | "/account/backup-shares"
   // | "/account/backup-shares/<backupProvider>"
   | "/account/backup-shares/reminder"
-  | "/account/export-wallet";
+  | "/account/export-wallet"
+  | "/auth/error";
 
 export const EmbeddedPaths = {
   // TODO: Consider nesting these instead:
@@ -103,7 +105,10 @@ export const EmbeddedPaths = {
   // Backup:
   AccountBackupShares: "/account/backup-shares",
   AccountBackupSharesReminder: "/account/backup-shares/reminder",
-  AccountExportWallet: "/account/export-wallet"
+  AccountExportWallet: "/account/export-wallet",
+
+  // OAuth Error:
+  AuthError: "/auth/error"
 
   // TODO: Add pages to add/link additional auth methods or devices post-auth (under /account)
 } as const satisfies Record<string, EmbeddedRoutePath>;
@@ -232,6 +237,12 @@ export const IFRAME_ROUTES = [
     "/auth-request",
     AUTH_ROUTES.filter((route) => !isRouteOverride(route.path))
   ),
+
+  // OAuth Error:
+  {
+    path: EmbeddedPaths.AuthError,
+    component: AuthErrorEmbeddedView
+  },
 
   // Embedded wallet only:
   ...IFRAME_OWN_ROUTES
