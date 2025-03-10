@@ -11,6 +11,7 @@ import { handleSyncLabelsAlarm } from "~api/background/handlers/alarms/sync-labe
 import { ErrorBoundary } from "~utils/error/ErrorBoundary/errorBoundary";
 import { FallbackView } from "~components/page/common/Fallback/fallback.view";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useActivityTracking } from "~utils/inactivity";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -24,6 +25,8 @@ const queryClient = new QueryClient({
 });
 
 export function AuthApp() {
+  useActivityTracking();
+
   useEffect(() => {
     handleSyncLabelsAlarm();
   }, []);

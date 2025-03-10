@@ -36,7 +36,7 @@ export const SignSettingsDashboardView = () => {
       key: "auto_sign_out_time",
       instance: ExtensionStorage
     },
-    15
+    5
   );
 
   const [timeInput, setTimeInput] = useState(autoSignOutTime.toString());
