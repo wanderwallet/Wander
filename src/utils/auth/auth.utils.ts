@@ -375,7 +375,7 @@ export async function startKeepAlive(authID: string) {
     if (activePopups > 0 && keepAliveInterval === null) {
       log(LOG_GROUP.AUTH, `startKeepAlive(${authID}) =`, activeAuthRequests);
 
-      keepAliveInterval = window.setInterval(
+      keepAliveInterval = setInterval(
         () => browser.alarms.create("keep-alive", { when: Date.now() + 1 }),
         20000
       );

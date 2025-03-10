@@ -27,15 +27,19 @@ function getSendMessageWithBridgeFunction<K extends MessageID>({
     const result = await webExtBridgeSendMessage<any, K>(
       messageId,
       data as any,
-      destination.replace("popup", "web_accessible")
+      destination
     );
 
-    console.log("webExtBridgeSendMessage RESULT =", result);
-
-    debugger;
+    console.log(
+      "webExtBridgeSendMessage RESULT =",
+      result,
+      isApiErrorResponse(result)
+    );
 
     // check the result
     if (isApiErrorResponse(result)) {
+      console.log("INSIDE");
+
       throw new Error(result.data || "Unknown webExtBridge error.");
     }
 

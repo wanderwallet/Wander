@@ -16,6 +16,8 @@ export const handleApiCallMessage: OnMessageCallback<"api_call"> = async ({
   data,
   sender
 }): Promise<ApiResponse> => {
+  console.log("handleApiCallMessage", data.type);
+
   // construct base message to extend and return
   const baseMessage: ApiResponse = {
     app:
@@ -120,7 +122,10 @@ export const handleApiCallMessage: OnMessageCallback<"api_call"> = async ({
       data: functionResult
     } satisfies ApiResponse;
   } catch (e) {
-    console.error(`[Wander API] (${data.type})`, e?.message || e);
+    console.error(
+      `[Wander API] (${baseMessage.type} / ${data.type})`,
+      e?.message || e
+    );
 
     // return error
     return {

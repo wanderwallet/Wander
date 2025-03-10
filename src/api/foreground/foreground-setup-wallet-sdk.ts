@@ -75,6 +75,7 @@ export function setupWalletSDK(targetWindow: Window = window) {
         ? getEmbeddedOrigin()
         : window.location.origin;
 
+      console.log("POSTING");
       targetWindow.postMessage(data, targetOrigin);
 
       // TODO: Note this is replacing the following from `api.content-script.ts`, so the logic to await and get the response is missing with just the
@@ -104,6 +105,8 @@ export function setupWalletSDK(targetWindow: Window = window) {
 
         // validate return message
         if (`${data.type}_result` !== res.type) return;
+
+        console.log("CALLBACK", res);
 
         // only resolve when the result matching our callID is deleivered
         if (data.callID !== res.callID) return;

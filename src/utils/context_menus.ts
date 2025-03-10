@@ -1,7 +1,6 @@
 import browser, { type Menus, type Tabs } from "webextension-polyfill";
 import { getActiveAddress, getWallets } from "~wallets";
 import { getActiveTab, removeApp } from "~applications";
-import { sendMessage } from "@arconnect/webext-bridge";
 import { isManifestv3 } from "./runtime";
 import { getAppURL } from "./format";
 import { isomorphicSendMessage } from "~utils/messaging/messaging.utils";
