@@ -29,7 +29,7 @@ import {
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { handleAuthStateChange } from "./handlers/storage/auth-state-change/auth-state-change.handler";
 import { EMBEDDED_PARENT_ORIGIN } from "~utils/embedded/sdk/utils/url/sdk-url.utils";
-import { initInactivityTracking } from "~utils/inactivity";
+import { initInactivityTracking } from "~utils/inactivity/inactivity.utils";
 
 export function setupBackgroundService() {
   log(

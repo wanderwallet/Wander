@@ -15,7 +15,7 @@ import styled from "styled-components";
 import { Section } from "@arconnect/components-rebrand";
 import UpdateSplash from "~routes/welcome/UpdateSplash";
 import StarIcons from "~components/welcome/StarIcons";
-import { useActivityTracking } from "~utils/inactivity";
+import { useActivityTracking } from "~utils/inactivity/inactivity.hooks";
 
 const queryClient = new QueryClient({
   defaultOptions: {
