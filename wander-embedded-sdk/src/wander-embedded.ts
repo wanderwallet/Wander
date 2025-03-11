@@ -1,4 +1,4 @@
-import { setupWalletSDK } from "wallet-api/wallet-sdk.es.js";
+import { setupEmbeddedWalletSDK } from "wallet-api/wallet-sdk.es.js";
 import { WanderButton } from "./components/button/wander-button.component";
 import { WanderIframe } from "./components/iframe/wander-iframe.component";
 import { merge } from "ts-deepmerge";
@@ -96,7 +96,7 @@ export class WanderEmbedded {
     window.addEventListener("message", this.handleMessage);
 
     // ...and set `window.arweaveWallet`:
-    setupWalletSDK(this.iframeRef.contentWindow as Window);
+    setupEmbeddedWalletSDK(this.iframeRef.contentWindow as Window);
   }
 
   private initializeComponents(options: WanderEmbeddedOptions): void {

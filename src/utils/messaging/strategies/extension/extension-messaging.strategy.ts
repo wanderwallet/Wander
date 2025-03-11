@@ -3,9 +3,7 @@ import {
   sendMessage as webExtBridgeSendMessage,
   type IBridgeMessage
 } from "@arconnect/webext-bridge";
-import type { ApiCall } from "shim";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
-import { isApiErrorResponse } from "~utils/messaging/common/messaging.utils";
 import type {
   MessageData,
   MessageID,
@@ -112,7 +110,7 @@ export async function extensionIsomorphicSendMessage<K extends MessageID>(
               `Timed out waiting for ${messageId}${READY_MESSAGE_SUFFIX} from ${destination}`
             )
           );
-        }, 6000);
+        }, 6000) as unknown as number;
 
         // TODO: Implement retry in case the initial call to `sendMessage()` above fails and the "ready" event is never
         // received (e.g. popup opens, `sendMessage()` fails, background sends "ready" event, popup starts listening for

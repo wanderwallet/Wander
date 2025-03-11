@@ -13,10 +13,7 @@ export default defineConfig({
   ],
   build: {
     lib: {
-      entry: path.resolve(
-        __dirname,
-        "src/api/foreground/foreground-setup-wallet-sdk.ts"
-      ),
+      entry: path.resolve(__dirname, "src/sdk-entrypoint/sdk-entrypoint.ts"),
       name: "WalletSDK",
       formats: ["es", "umd"],
       fileName: (format) => `wallet-sdk.${format}.js`

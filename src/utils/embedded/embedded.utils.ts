@@ -19,6 +19,7 @@ const ancestorOrigin = ancestorOrigins[ancestorOrigins.length - 1];
 
 // Duplicated in `wander-embedded-sdk/src/utils/url/url.utils.ts`:
 const PARAM_CLIENT_ID = "client-id";
+const PARAM_SERVER_BASE_URL = "server-base-url";
 const PARAM_ANCESTOR_ORIGIN = "ancestor-origin";
 
 const EMBEDDED_CLIENT_ID =
@@ -26,6 +27,10 @@ const EMBEDDED_CLIENT_ID =
   (process.env.NODE_ENV === "development"
     ? import.meta.env?.VITE_EMBEDDED_CLIENT_ID
     : "");
+
+const EMBEDDED_SERVER_BASE_URL =
+  searchParams.get(PARAM_SERVER_BASE_URL) ||
+  (process.env.NODE_ENV === "development" ? "http://localhost:3001" : "");
 
 const EMBEDDED_ANCESTOR_ORIGIN =
   ancestorOrigin || searchParams.get(PARAM_ANCESTOR_ORIGIN);
@@ -57,7 +62,7 @@ const {
   setClientIdHeader,
   setApplicationIdHeader
 } = createTRPCClient({
-  baseURL: "http://localhost:3000",
+  baseURL: EMBEDDED_SERVER_BASE_URL,
   authToken: null,
   deviceNonce: undefined,
   clientId: EMBEDDED_CLIENT_ID,
