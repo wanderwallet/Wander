@@ -4,35 +4,21 @@ import { getDecryptionKey, removeDecryptionKey } from "~wallets/auth";
 import { log, LOG_GROUP } from "../log/log.utils";
 import { INACTIVITY } from "./inactivity.constants";
 import throttle from "lodash.throttle";
-import type { CacheEntry, AutoLockSettings } from "./inactivity.types";
+import type { AutoLockSettings } from "./inactivity.types";
+import type { StorageChange } from "~utils/runtime";
 
 export class InactivityManager {
   private lastActivityCheckTime = 0;
-  private settingsCache: CacheEntry<AutoLockSettings> = {
-    value: null,
-    timestamp: 0
-  };
-
-  private isCacheValid(timestamp: number): boolean {
-    return Date.now() - timestamp < INACTIVITY.CACHE_TTL;
-  }
+  private settingsCache: AutoLockSettings | null = null;
 
   private async getSettings(): Promise<AutoLockSettings> {
-    if (
-      this.settingsCache.value &&
-      this.isCacheValid(this.settingsCache.timestamp)
-    ) {
-      return this.settingsCache.value;
-    }
+    if (this.settingsCache) return this.settingsCache;
 
     const settings = (await ExtensionStorage.get<AutoLockSettings>(
       INACTIVITY.STORAGE.AUTO_LOCK
     )) ?? { enabled: false, timeout: INACTIVITY.DEFAULT_TIMEOUT_MINUTES };
 
-    this.settingsCache = {
-      value: settings,
-      timestamp: Date.now()
-    };
+    this.settingsCache = settings;
 
     return settings;
   }
@@ -45,6 +31,38 @@ export class InactivityManager {
   private async getTimeout(): Promise<number> {
     const settings = await this.getSettings();
     return settings.timeout;
+  }
+
+  private async clearAllInactivityAlarms(): Promise<void> {
+    try {
+      await Promise.all([
+        browser.alarms.clear(INACTIVITY.ALARM.TIMER),
+        browser.alarms.clear(INACTIVITY.ALARM.CHECK)
+      ]);
+      log(LOG_GROUP.SESSION, "Cleared all inactivity alarms");
+    } catch (error) {
+      log(LOG_GROUP.SESSION, `Failed to clear alarms: ${error.message}`);
+    }
+  }
+
+  private setupPeriodicCheck(enabled: boolean): void {
+    if (enabled) {
+      browser.alarms.create(INACTIVITY.ALARM.CHECK, { periodInMinutes: 1 });
+      log(LOG_GROUP.SESSION, "Created periodic check alarm");
+    } else {
+      this.clearAllInactivityAlarms();
+    }
+  }
+
+  private async handleSettingsChange(
+    newValue: AutoLockSettings
+  ): Promise<void> {
+    this.settingsCache = newValue;
+    this.setupPeriodicCheck(newValue.enabled);
+
+    if (newValue.enabled) {
+      await this.checkAndHandleSessionState();
+    }
   }
 
   private async clearInactivityAlarm(): Promise<void> {
@@ -187,6 +205,15 @@ export class InactivityManager {
       log(LOG_GROUP.SESSION, `Init failed: ${error.message}`);
     });
 
+    // Watch for settings changes
+    ExtensionStorage.watch({
+      [INACTIVITY.STORAGE.AUTO_LOCK]: ({
+        newValue
+      }: StorageChange<AutoLockSettings>) => {
+        this.handleSettingsChange(newValue);
+      }
+    });
+
     this.setupListeners();
   }
 
@@ -203,6 +230,10 @@ export class InactivityManager {
 
     // Alarm listeners
     browser.alarms.onAlarm.addListener(async (alarm) => {
+      if (!(await this.isEnabled())) {
+        return;
+      }
+
       if (alarm.name === INACTIVITY.ALARM.TIMER) {
         await this.handleAutoSignOut(alarm);
       } else if (alarm.name === INACTIVITY.ALARM.CHECK) {
@@ -210,8 +241,10 @@ export class InactivityManager {
       }
     });
 
-    // Setup periodic check
-    browser.alarms.create(INACTIVITY.ALARM.CHECK, { periodInMinutes: 1 });
+    // Setup initial periodic check based on current settings
+    this.isEnabled().then((enabled) => {
+      this.setupPeriodicCheck(enabled);
+    });
   }
 }
 
