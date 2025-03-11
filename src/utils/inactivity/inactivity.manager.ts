@@ -5,7 +5,61 @@ import { log, LOG_GROUP } from "../log/log.utils";
 import { INACTIVITY } from "./inactivity.constants";
 import throttle from "lodash.throttle";
 
+interface CacheEntry<T> {
+  value: T | null;
+  timestamp: number;
+}
+
 export class InactivityManager {
+  private timeoutCache: CacheEntry<number> = { value: null, timestamp: 0 };
+  private isEnabledCache: CacheEntry<boolean> = { value: null, timestamp: 0 };
+  private lastActivityCheckTime = 0;
+
+  private isCacheValid(timestamp: number): boolean {
+    return Date.now() - timestamp < INACTIVITY.CACHE_TTL;
+  }
+
+  private async getTimeout(): Promise<number> {
+    if (
+      this.timeoutCache.value !== null &&
+      this.isCacheValid(this.timeoutCache.timestamp)
+    ) {
+      return this.timeoutCache.value;
+    }
+
+    const value =
+      (await ExtensionStorage.get<number>(
+        INACTIVITY.STORAGE.AUTO_SIGN_OUT_TIME
+      )) ?? INACTIVITY.DEFAULT_TIMEOUT_MINUTES;
+
+    this.timeoutCache = {
+      value,
+      timestamp: Date.now()
+    };
+
+    return value;
+  }
+
+  private async isEnabled(): Promise<boolean> {
+    if (
+      this.isEnabledCache.value !== null &&
+      this.isCacheValid(this.isEnabledCache.timestamp)
+    ) {
+      return this.isEnabledCache.value;
+    }
+
+    const value = await ExtensionStorage.get<boolean>(
+      INACTIVITY.STORAGE.AUTO_SIGN_OUT_ENABLED
+    );
+
+    this.isEnabledCache = {
+      value: value ?? false,
+      timestamp: Date.now()
+    };
+
+    return value ?? false;
+  }
+
   private async clearInactivityAlarm(): Promise<void> {
     try {
       await browser.alarms.clear(INACTIVITY.ALARM.TIMER);
@@ -15,6 +69,11 @@ export class InactivityManager {
   }
 
   private async startInactivityTimer(timeout: number): Promise<void> {
+    if (timeout <= 0) {
+      await this.handleAutoSignOut();
+      return;
+    }
+
     try {
       browser.alarms.create(INACTIVITY.ALARM.TIMER, {
         delayInMinutes: timeout
@@ -25,34 +84,35 @@ export class InactivityManager {
     }
   }
 
-  private isPopupWindow(window: browser.Windows.Window): boolean {
-    const matchesWidth =
-      window.width &&
+  private isPopupWindow = (window: browser.Windows.Window): boolean => {
+    if (!window.width || !window.height || !window.focused) return false;
+
+    return (
       Math.abs(window.width - INACTIVITY.POPUP.WIDTH) <=
-        INACTIVITY.POPUP.SIZE_TOLERANCE;
-    const matchesHeight =
-      window.height &&
+        INACTIVITY.POPUP.SIZE_TOLERANCE &&
       Math.abs(window.height - INACTIVITY.POPUP.HEIGHT) <=
-        INACTIVITY.POPUP.SIZE_TOLERANCE;
-    return matchesWidth && matchesHeight && window.focused;
-  }
+        INACTIVITY.POPUP.SIZE_TOLERANCE
+    );
+  };
 
   private async handleInactivityCheck(): Promise<void> {
-    const lastActivity = await ExtensionStorage.get<number>(
-      INACTIVITY.STORAGE.LAST_ACTIVITY
-    );
     const now = Date.now();
-    const timeout =
-      (await ExtensionStorage.get<number>(
-        INACTIVITY.STORAGE.AUTO_SIGN_OUT_TIME
-      )) ?? INACTIVITY.DEFAULT_TIMEOUT_MINUTES;
+
+    // Throttle checks to once per second
+    if (now - this.lastActivityCheckTime < 1000) {
+      return;
+    }
+    this.lastActivityCheckTime = now;
+
+    const [lastActivity, timeout] = await Promise.all([
+      ExtensionStorage.get<number>(INACTIVITY.STORAGE.LAST_ACTIVITY),
+      this.getTimeout()
+    ]);
+
     const timeoutMs = timeout * 60 * 1000;
 
     if (lastActivity && now - lastActivity < timeoutMs) {
-      log(
-        LOG_GROUP.SESSION,
-        "Recent activity detected, skipping inactivity check"
-      );
+      log(LOG_GROUP.SESSION, "Recent activity detected, skipping check");
       return;
     }
 
@@ -67,23 +127,42 @@ export class InactivityManager {
     await this.startInactivityTimer(finalTimeout);
   }
 
-  private async checkAndHandleSessionState(): Promise<void> {
+  public recordActivity = throttle(
+    async () => {
+      if (!(await this.isEnabled())) return;
+
+      try {
+        log(LOG_GROUP.SESSION, "Recording activity");
+        await Promise.all([
+          ExtensionStorage.set(INACTIVITY.STORAGE.LAST_ACTIVITY, Date.now()),
+          this.clearInactivityAlarm()
+        ]);
+      } catch (error) {
+        log(LOG_GROUP.SESSION, `Failed to record activity: ${error.message}`);
+      }
+    },
+    INACTIVITY.THROTTLE_TIME,
+    { leading: true, trailing: false }
+  );
+
+  async checkAndHandleSessionState(
+    popupWindow: boolean = false
+  ): Promise<void> {
     try {
-      const isEnabled = await ExtensionStorage.get<boolean>(
-        INACTIVITY.STORAGE.AUTO_SIGN_OUT_ENABLED
-      );
-      if (!isEnabled) {
+      if (!(await this.isEnabled())) {
         log(LOG_GROUP.SESSION, "Auto-lock disabled");
         return;
       }
 
-      const windows = await browser.windows.getAll({
-        windowTypes: ["popup", "panel"]
-      });
+      if (popupWindow) {
+        const windows = await browser.windows.getAll({
+          windowTypes: ["popup", "panel"]
+        });
 
-      if (windows.some(this.isPopupWindow)) {
-        await this.recordActivity();
-        return;
+        if (windows.some(this.isPopupWindow)) {
+          await this.recordActivity();
+          return;
+        }
       }
 
       await this.handleInactivityCheck();
@@ -93,22 +172,19 @@ export class InactivityManager {
     }
   }
 
-  private async handleAutoSignOut(alarm: browser.Alarms.Alarm): Promise<void> {
-    if (alarm.name !== INACTIVITY.ALARM.TIMER) return;
+  private async handleAutoSignOut(alarm?: browser.Alarms.Alarm): Promise<void> {
+    if (alarm && alarm.name !== INACTIVITY.ALARM.TIMER) return;
 
     try {
       const decryptionKey = await getDecryptionKey();
       if (!decryptionKey) return;
 
-      const lastActivity = await ExtensionStorage.get<number>(
-        INACTIVITY.STORAGE.LAST_ACTIVITY
-      );
-      const now = Date.now();
-      const timeout =
-        (await ExtensionStorage.get<number>(
-          INACTIVITY.STORAGE.AUTO_SIGN_OUT_TIME
-        )) ?? INACTIVITY.DEFAULT_TIMEOUT_MINUTES;
+      const [lastActivity, timeout] = await Promise.all([
+        ExtensionStorage.get<number>(INACTIVITY.STORAGE.LAST_ACTIVITY),
+        this.getTimeout()
+      ]);
 
+      const now = Date.now();
       if (lastActivity && now - lastActivity < timeout * 60 * 1000) return;
 
       log(LOG_GROUP.SESSION, "Auto-locked due to inactivity");
@@ -119,19 +195,26 @@ export class InactivityManager {
     }
   }
 
-  private setupWindowListeners(): void {
-    browser.windows.onCreated.addListener((window) => {
-      if (window.type === "popup" || window.type === "panel") {
-        this.checkAndHandleSessionState();
-      }
+  public initialize(): void {
+    this.checkAndHandleSessionState().catch((error) => {
+      log(LOG_GROUP.SESSION, `Init failed: ${error.message}`);
     });
 
-    browser.windows.onRemoved.addListener(() =>
-      this.checkAndHandleSessionState()
-    );
+    this.setupListeners();
   }
 
-  private setupAlarmListeners(): void {
+  private setupListeners(): void {
+    // Window listeners
+    browser.windows.onCreated.addListener((window) => {
+      if (window.type === "popup" || window.type === "panel") {
+        this.checkAndHandleSessionState(true);
+      }
+    });
+    browser.windows.onRemoved.addListener(() =>
+      this.checkAndHandleSessionState(true)
+    );
+
+    // Alarm listeners
     browser.alarms.onAlarm.addListener(async (alarm) => {
       if (alarm.name === INACTIVITY.ALARM.TIMER) {
         await this.handleAutoSignOut(alarm);
@@ -139,38 +222,10 @@ export class InactivityManager {
         await this.checkAndHandleSessionState();
       }
     });
-  }
 
-  private setupPeriodicCheck(): void {
+    // Setup periodic check
     browser.alarms.create(INACTIVITY.ALARM.CHECK, { periodInMinutes: 1 });
   }
-
-  public initialize(): void {
-    this.checkAndHandleSessionState().catch((error) => {
-      log(LOG_GROUP.SESSION, `Init failed: ${error.message}`);
-    });
-
-    this.setupWindowListeners();
-    this.setupAlarmListeners();
-    this.setupPeriodicCheck();
-  }
-
-  public recordActivity = throttle(
-    async () => {
-      try {
-        log(LOG_GROUP.SESSION, "Recording activity");
-        await ExtensionStorage.set(
-          INACTIVITY.STORAGE.LAST_ACTIVITY,
-          Date.now()
-        );
-        await this.clearInactivityAlarm();
-      } catch (error) {
-        log(LOG_GROUP.SESSION, `Failed to record activity: ${error.message}`);
-      }
-    },
-    5000,
-    { leading: true, trailing: false }
-  );
 }
 
 export const inactivityManager = new InactivityManager();

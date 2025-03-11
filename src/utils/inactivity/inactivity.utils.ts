@@ -4,6 +4,6 @@ export function initInactivityTracking(): void {
   inactivityManager.initialize();
 }
 
-export function recordActivity(): void {
-  inactivityManager.recordActivity();
+export async function recordActivity(): Promise<void> {
+  await inactivityManager.recordActivity();
 }

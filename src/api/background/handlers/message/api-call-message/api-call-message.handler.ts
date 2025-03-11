@@ -100,7 +100,7 @@ export const handleApiCallMessage: OnMessageCallback<
     });
 
     // Record user activity for inactivity tracking
-    await recordActivity();
+    recordActivity();
 
     // handle function
     const functionResult = await mod.function(
