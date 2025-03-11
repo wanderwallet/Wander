@@ -18,7 +18,7 @@ import {
   pemToJWK,
   privateKeyDerToJWK
 } from "~utils/crypto/crypto.utils";
-import type { Wallet } from "~utils/embedded/embedded.types";
+import type { RecoveryJSON, Wallet } from "~utils/embedded/embedded.types";
 import { EMBEDDED_FEATURE_FLAGS } from "~utils/embedded/embedded.constants";
 
 // import { random, pki, asn1 } from "node-forge";
@@ -376,6 +376,7 @@ function getDeviceSharesForUser(userId: string): DeviceShares {
 // Storage:
 
 const ENCRYPTED_SEED_PHRASE_KEY = "ENCRYPTED_SEED_PHRASE";
+const ENCRYPTED_RECOVERY_SHARE_KEY = "ENCRYPTED_RECOVERY_SHARE";
 
 async function storeEncryptedSeedPhrase(
   walletId: string,
@@ -479,6 +480,138 @@ async function getDecryptedSeedPhrase(walletId: string, jwk: JWKInterface) {
   return decryptedSeedPhrase;
 }
 
+/**
+ * Store an encrypted recovery share in local storage
+ * @param walletId - Wallet ID
+ * @param recoveryData - Recovery share data to encrypt
+ * @param jwk - JWK to use for encryption
+ */
+async function storeEncryptedRecoveryShare(
+  walletId: string,
+  recoveryData: RecoveryJSON,
+  jwk: JWKInterface
+) {
+  log(LOG_GROUP.WALLET_GENERATION, "storeEncryptedRecoveryShare()");
+
+  if (!jwk) {
+    throw new Error("Do not store unencrypted recovery shares!");
+  }
+
+  const publicKey = {
+    kty: "RSA",
+    e: "AQAB",
+    n: jwk.n,
+    alg: "RSA-OAEP-256",
+    ext: true
+  };
+
+  const importedKey = await crypto.subtle.importKey(
+    "jwk",
+    publicKey,
+    {
+      name: "RSA-OAEP",
+      hash: "SHA-256"
+    },
+    false,
+    ["encrypt"]
+  );
+
+  // Stringify the recovery data
+  const recoveryDataString = JSON.stringify(recoveryData);
+
+  // Make sure the recovery data is shorter than the maximum data we can safely encrypt
+  const maxLength = 4096 / 8 - (2 * 256) / 8 - 2;
+
+  if (recoveryDataString.length > maxLength) {
+    throw new Error(`Recovery data is too long to be encrypted with RSA-OAEP`);
+  }
+
+  const encryptedRecoveryDataBuffer = await crypto.subtle.encrypt(
+    {
+      name: "RSA-OAEP"
+    },
+    importedKey,
+    Buffer.from(recoveryDataString)
+  );
+
+  const encryptedRecoveryData = Buffer.from(
+    encryptedRecoveryDataBuffer
+  ).toString("base64");
+
+  localStorage.setItem(
+    `${ENCRYPTED_RECOVERY_SHARE_KEY}-${walletId}`,
+    encryptedRecoveryData
+  );
+
+  return true;
+}
+
+/**
+ * Check if a wallet has an encrypted recovery share
+ * @param walletId - Wallet ID
+ */
+function hasEncryptedRecoveryShare(walletId: string) {
+  return !!localStorage.getItem(`${ENCRYPTED_RECOVERY_SHARE_KEY}-${walletId}`);
+}
+
+/**
+ * Get and decrypt a wallet recovery share
+ * @param walletId - Wallet ID
+ * @param jwk - JWK for decryption
+ */
+async function getDecryptedRecoveryShare(
+  walletId: string,
+  jwk: JWKInterface
+): Promise<RecoveryJSON> {
+  log(LOG_GROUP.WALLET_GENERATION, "getDecryptedRecoveryShare()");
+
+  if (!jwk) {
+    throw new Error("Cannot decrypt recovery share without JWK!");
+  }
+
+  const privateKey = {
+    ...jwk,
+    alg: "RSA-OAEP-256",
+    ext: true
+  };
+
+  const importedKey = await crypto.subtle.importKey(
+    "jwk",
+    privateKey,
+    {
+      name: "RSA-OAEP",
+      hash: "SHA-256"
+    },
+    false,
+    ["decrypt"]
+  );
+
+  const encryptedRecoveryShare = localStorage.getItem(
+    `${ENCRYPTED_RECOVERY_SHARE_KEY}-${walletId}`
+  );
+
+  if (!encryptedRecoveryShare) {
+    throw new Error(`No recovery share found for wallet ${walletId}`);
+  }
+
+  const decryptedRecoveryShareBuffer = await crypto.subtle.decrypt(
+    {
+      name: "RSA-OAEP"
+    },
+    importedKey,
+    Buffer.from(encryptedRecoveryShare, "base64")
+  );
+
+  const decryptedRecoveryShareString = Buffer.from(
+    decryptedRecoveryShareBuffer
+  ).toString();
+  const recoveryShare = JSON.parse(
+    decryptedRecoveryShareString
+  ) as RecoveryJSON;
+
+  return recoveryShare;
+}
+
 function storeDeviceShare(wallet: Wallet, userId: string) {
   log(LOG_GROUP.WALLET_GENERATION, "storeDeviceShare()");
 
@@ -546,13 +679,25 @@ export const WalletUtils = {
   storeEncryptedSeedPhrase,
   hasEncryptedSeedPhrase,
   getDecryptedSeedPhrase,
+  storeEncryptedRecoveryShare,
+  hasEncryptedRecoveryShare,
+  getDecryptedRecoveryShare,
   storeEncryptedWalletJWK
 };
 
-// Stored seedphrase are removed if the `STORE_SEED_PHRASE` flag becomes false:
+// Stored seedphrases and recovery shares are removed if the feature flags are disabled:
 if (!EMBEDDED_FEATURE_FLAGS.STORE_SEED_PHRASE) {
   Object.keys(localStorage).forEach((key) => {
     if (key.startsWith(ENCRYPTED_SEED_PHRASE_KEY)) {
+      localStorage.removeItem(key);
+    }
+  });
+}
+
+// Cleanup for recovery shares if feature is disabled
+if (!EMBEDDED_FEATURE_FLAGS.STORE_RECOVERY_SHARES) {
+  Object.keys(localStorage).forEach((key) => {
+    if (key.startsWith(ENCRYPTED_RECOVERY_SHARE_KEY)) {
       localStorage.removeItem(key);
     }
   });
