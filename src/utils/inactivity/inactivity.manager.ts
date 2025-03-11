@@ -4,60 +4,47 @@ import { getDecryptionKey, removeDecryptionKey } from "~wallets/auth";
 import { log, LOG_GROUP } from "../log/log.utils";
 import { INACTIVITY } from "./inactivity.constants";
 import throttle from "lodash.throttle";
-
-interface CacheEntry<T> {
-  value: T | null;
-  timestamp: number;
-}
+import type { CacheEntry, AutoLockSettings } from "./inactivity.types";
 
 export class InactivityManager {
-  private timeoutCache: CacheEntry<number> = { value: null, timestamp: 0 };
-  private isEnabledCache: CacheEntry<boolean> = { value: null, timestamp: 0 };
   private lastActivityCheckTime = 0;
+  private settingsCache: CacheEntry<AutoLockSettings> = {
+    value: null,
+    timestamp: 0
+  };
 
   private isCacheValid(timestamp: number): boolean {
     return Date.now() - timestamp < INACTIVITY.CACHE_TTL;
   }
 
-  private async getTimeout(): Promise<number> {
+  private async getSettings(): Promise<AutoLockSettings> {
     if (
-      this.timeoutCache.value !== null &&
-      this.isCacheValid(this.timeoutCache.timestamp)
+      this.settingsCache.value &&
+      this.isCacheValid(this.settingsCache.timestamp)
     ) {
-      return this.timeoutCache.value;
+      return this.settingsCache.value;
     }
 
-    const value =
-      (await ExtensionStorage.get<number>(
-        INACTIVITY.STORAGE.AUTO_SIGN_OUT_TIME
-      )) ?? INACTIVITY.DEFAULT_TIMEOUT_MINUTES;
+    const settings = (await ExtensionStorage.get<AutoLockSettings>(
+      INACTIVITY.STORAGE.AUTO_LOCK
+    )) ?? { enabled: false, timeout: INACTIVITY.DEFAULT_TIMEOUT_MINUTES };
 
-    this.timeoutCache = {
-      value,
+    this.settingsCache = {
+      value: settings,
       timestamp: Date.now()
     };
 
-    return value;
+    return settings;
   }
 
   private async isEnabled(): Promise<boolean> {
-    if (
-      this.isEnabledCache.value !== null &&
-      this.isCacheValid(this.isEnabledCache.timestamp)
-    ) {
-      return this.isEnabledCache.value;
-    }
+    const settings = await this.getSettings();
+    return settings.enabled;
+  }
 
-    const value = await ExtensionStorage.get<boolean>(
-      INACTIVITY.STORAGE.AUTO_SIGN_OUT_ENABLED
-    );
-
-    this.isEnabledCache = {
-      value: value ?? false,
-      timestamp: Date.now()
-    };
-
-    return value ?? false;
+  private async getTimeout(): Promise<number> {
+    const settings = await this.getSettings();
+    return settings.timeout;
   }
 
   private async clearInactivityAlarm(): Promise<void> {

@@ -2,16 +2,17 @@ import { useEffect } from "react";
 import { ExtensionStorage } from "../storage";
 import { INACTIVITY } from "./inactivity.constants";
 import { inactivityManager } from "./inactivity.manager";
+import type { AutoLockSettings } from "./inactivity.types";
 
 export function useActivityTracking() {
   useEffect(() => {
     const setup = async () => {
       const events = ["click", "submit", "change"];
 
-      const isEnabled = await ExtensionStorage.get<boolean>(
-        INACTIVITY.STORAGE.AUTO_SIGN_OUT_ENABLED
+      const settings = await ExtensionStorage.get<AutoLockSettings>(
+        INACTIVITY.STORAGE.AUTO_LOCK
       );
-      if (!isEnabled) return;
+      if (!settings?.enabled) return;
 
       inactivityManager.recordActivity();
 

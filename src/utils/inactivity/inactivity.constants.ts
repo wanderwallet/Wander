@@ -5,8 +5,7 @@ export const INACTIVITY = {
   },
   STORAGE: {
     LAST_ACTIVITY: "last_activity_timestamp",
-    AUTO_SIGN_OUT_ENABLED: "auto_sign_out_enabled",
-    AUTO_SIGN_OUT_TIME: "auto_sign_out_time"
+    AUTO_LOCK: "auto_lock"
   },
   POPUP: {
     WIDTH: 385,

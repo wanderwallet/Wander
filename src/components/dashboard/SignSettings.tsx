@@ -23,27 +23,22 @@ export const SignSettingsDashboardView = () => {
     false
   );
 
-  const [autoSignOut, setAutoSignOut] = useStorage(
+  const [autoLock, setAutoLock] = useStorage(
     {
-      key: "auto_sign_out_enabled",
+      key: "auto_lock",
       instance: ExtensionStorage
     },
-    false
-  );
-
-  const [autoSignOutTime, setAutoSignOutTime] = useStorage(
     {
-      key: "auto_sign_out_time",
-      instance: ExtensionStorage
-    },
-    5
+      enabled: false,
+      timeout: 5
+    }
   );
 
-  const [timeInput, setTimeInput] = useState(autoSignOutTime.toString());
+  const [timeInput, setTimeInput] = useState(autoLock.timeout.toString());
 
   useEffect(() => {
-    setTimeInput(autoSignOutTime.toString());
-  }, [autoSignOutTime]);
+    setTimeInput(autoLock.timeout.toString());
+  }, [autoLock.timeout]);
 
   const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/[^0-9]/g, "");
@@ -53,9 +48,9 @@ export const SignSettingsDashboardView = () => {
   const handleTimeBlur = () => {
     const time = parseInt(timeInput, 10);
     if (!isNaN(time) && time > 0) {
-      setAutoSignOutTime(time);
+      setAutoLock((prev) => ({ ...prev, timeout: time }));
     } else {
-      setTimeInput(autoSignOutTime.toString());
+      setTimeInput(autoLock.timeout.toString());
     }
   };
 
@@ -90,11 +85,13 @@ export const SignSettingsDashboardView = () => {
         <ToggleSwitch
           width={51}
           height={31}
-          checked={autoSignOut}
-          setChecked={setAutoSignOut}
+          checked={autoLock.enabled}
+          setChecked={(value: boolean) =>
+            setAutoLock((prev) => ({ ...prev, enabled: value }))
+          }
         />
       </ToggleSwitchWrapper>
-      {autoSignOut && (
+      {autoLock.enabled && (
         <TimeInputWrapper>
           <Input
             type="number"
