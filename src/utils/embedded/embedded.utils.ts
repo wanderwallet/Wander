@@ -2,6 +2,9 @@ import { createSupabaseClient, createTRPCClient } from "embed-api";
 import { jwtDecode } from "jwt-decode";
 import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 
+// Create a singleton instance of the Supabase client
+let supabaseInstance: ReturnType<typeof createSupabaseClient> | null = null;
+
 // Then, its tRPC client will be initialized with the following headers:
 // - authorization (getAuthTokenHeader / setAuthTokenHeader)
 // - x-device-nonce (getDeviceNonceHeader / setDeviceNonceHeader)
@@ -37,6 +40,17 @@ export function getEmbeddedAncestorOrigin() {
   return EMBEDDED_ANCESTOR_ORIGIN;
 }
 
+// Note: This is run when trpc detects UNAUTHORIZED error.
+async function handleAuthError() {
+  try {
+    await supabase.auth.signOut();
+    window.location.href = "#/";
+    window.location.reload();
+  } catch (err) {
+    console.error("Error signing out:", err);
+  }
+}
+
 export function isInsideIframe(): boolean {
   try {
     return window.self !== window.top || !!ancestorOrigin;
@@ -61,7 +75,8 @@ const {
   authToken: null,
   deviceNonce: undefined,
   clientId: EMBEDDED_CLIENT_ID,
-  applicationId: ""
+  applicationId: "",
+  onAuthError: handleAuthError
 });
 
 // TODO: When developers set up a new app/domain, we should probably use a mechanism like Google Search Console where
@@ -72,21 +87,20 @@ const {
 // type TRPCClient = ReturnType<typeof createTRPCProxyClient<AppRouter>>;
 // const trpcVanilla = client as TRPCClient;
 
-const supabase = IS_EMBEDDED_APP
-  ? createSupabaseClient(
+function getSupabaseClient() {
+  if (!IS_EMBEDDED_APP) return null;
+
+  if (!supabaseInstance) {
+    supabaseInstance = createSupabaseClient(
       import.meta.env?.VITE_SUPABASE_URL || "",
       import.meta.env?.VITE_SUPABASE_ANON_KEY || ""
-      /*
-      {
-        auth: {
-          storage: {
+    );
+  }
 
-          },
-        }
-      }
-        */
-    )
-  : null;
+  return supabaseInstance;
+}
+
+const supabase = getSupabaseClient();
 
 async function getSessionId() {
   try {

@@ -31,7 +31,8 @@ async function authenticate(authProviderType: AuthProviderType) {
     provider,
     options: {
       // redirectTo: `${window.location.origin}#/auth/callback/google`,
-      redirectTo: window.location.origin
+      redirectTo: window.location.origin,
+      skipBrowserRedirect: true
     }
   });
 

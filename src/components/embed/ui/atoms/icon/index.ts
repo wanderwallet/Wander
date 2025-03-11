@@ -34,3 +34,4 @@ export { default as Wander2Icon } from "./Wander-2";
 export { default as WanderIcon } from "./Wander";
 export { default as WebcamIcon } from "./Webcam";
 export { default as XClose } from "./XClose";
+export { default as ErrorIcon } from "./Error";
