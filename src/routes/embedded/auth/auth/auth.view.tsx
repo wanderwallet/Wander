@@ -7,6 +7,7 @@ import {
   Divider,
   GoogleIcon,
   KeyIcon,
+  TextInput,
   Row,
   SocialsIcon,
   Text,
@@ -81,8 +82,8 @@ export function AuthEmbeddedView() {
       size="auto"
     >
       <Box>
-        <input type="text" placeholder="E-Mail" ref={emailInputRef} />
-        <input type="password" placeholder="Password" ref={passwordInputRef} />
+        <TextInput placeholder="E-Mail" ref={emailInputRef} />
+        <TextInput placeholder="Password" ref={passwordInputRef} isSecure />
 
         <Button
           isFullWidth
