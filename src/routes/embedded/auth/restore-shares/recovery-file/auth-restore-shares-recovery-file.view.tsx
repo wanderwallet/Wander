@@ -21,8 +21,6 @@ export function AuthRestoreSharesRecoveryFileEmbeddedView() {
   };
 
   const handleRestore = useCallback(async () => {
-    debugger;
-
     try {
       setLoading(true);
       if (jsonData) {

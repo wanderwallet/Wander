@@ -1,7 +1,5 @@
 export const windows = {
   create: async ({ url }) => {
-    debugger;
-
     if (process.env.NODE_ENV === "development")
       console.log(`tabs.create({ ${url} })`);
 
