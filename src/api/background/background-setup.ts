@@ -28,6 +28,7 @@ import {
 } from "~api/background/handlers/browser/tabs/tabs.handler";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { handleAuthStateChange } from "./handlers/storage/auth-state-change/auth-state-change.handler";
+import { initInactivityTracking } from "~utils/inactivity/inactivity.utils";
 
 export function setupBackgroundService() {
   log(
@@ -144,6 +145,9 @@ export function setupBackgroundService() {
 
   // handle ar:// protocol
   browser.webNavigation.onBeforeNavigate.addListener(handleProtocol);
+
+  // Initialize inactivity tracking
+  initInactivityTracking();
 
   // print to the permaweb (only on chrome)
   // TODO: uncomment this once we have a proper solution

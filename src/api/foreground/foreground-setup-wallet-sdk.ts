@@ -9,10 +9,12 @@ import mitt from "mitt";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { version } from "../../../package.json";
 import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
-import { getEmbeddedOrigin } from "~utils/embedded/utils/wallets/embedded-wallets.utils";
 // import { version as sdkVersion } from "../../../wander-embedded-sdk/package.json";
 
-export function setupWalletSDK(targetWindow: Window = window) {
+export function setupWalletSDK(
+  targetWindow: Window = window,
+  embeddedOrigin?: string
+) {
   log(LOG_GROUP.SETUP, "setupWalletSDK()");
 
   /** Init events */
@@ -20,7 +22,7 @@ export function setupWalletSDK(targetWindow: Window = window) {
 
   // TODO: Can we get the right type here?:
   const walletAPI = {
-    walletName: IS_EMBEDDED_APP ? "ArConnect Embedded" : "ArConnect",
+    walletName: IS_EMBEDDED_APP ? "Wander Embedded" : "ArConnect",
     walletVersion: version,
     events
   } as const;
@@ -72,7 +74,7 @@ export function setupWalletSDK(targetWindow: Window = window) {
       // 4. Send message to background script (Wander BE) or to the iframe window (Wander Embedded):
 
       const targetOrigin = IS_EMBEDDED_APP
-        ? getEmbeddedOrigin()
+        ? embeddedOrigin
         : window.location.origin;
 
       targetWindow.postMessage(data, targetOrigin);
