@@ -37,7 +37,7 @@ export const storage = {
         areaName: string
       ) => void
     ) => {
-      // Note from the docs (meaning, this is probably not working / not needed in ArConnect Embedded):
+      // Note from the docs (meaning, this is probably not working / not needed in Wander Embedded):
       //
       // Note: This won't work on the same browsing context that is making the changes — it is really a way for other
       // browsing contexts on the domain using the storage to sync any changes that are made. Browsing contexts on other

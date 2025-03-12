@@ -23,7 +23,7 @@ export function AuthAddWalletEmbeddedView() {
 
   useEffect(() => {
     // Pre-generation starts on app load, but this call will re-generate it again if it has expired, as we are trying to
-    // prevent a user accessing a site with ArConnect Embedded, not creating an account, and coming back way later after
+    // prevent a user accessing a site with Wander Embedded, not creating an account, and coming back way later after
     // the pregenerated wallet has been sitting in memory for long:
     generateTempWallet();
   }, []);
