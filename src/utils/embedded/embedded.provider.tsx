@@ -815,17 +815,17 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         return;
       }
 
-      if (
-        !session.countryCode ||
-        !session.id ||
-        !session.deviceNonce ||
-        session.deviceNonce !== getDeviceNonce()
-      ) {
+      if (!session.countryCode || !session.id || !session.deviceNonce) {
         console.warn(
           "❌  The current session is incomplete. Refreshing...",
           session
         );
         await supabase.auth.refreshSession();
+      } else if (session.deviceNonce !== getDeviceNonce()) {
+        console.warn(
+          "⚠️  The current session is complete, but the device nonce doesn't match!",
+          session
+        );
       } else {
         console.log("✅  The current session is complete!", session);
       }
