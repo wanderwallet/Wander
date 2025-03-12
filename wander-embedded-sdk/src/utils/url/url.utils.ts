@@ -21,9 +21,6 @@ export function getEmbeddedURL({
   baseURL,
   baseServerURL = ""
 }: GetEmbeddedURLOptions) {
-  // TODO: `src` option now working. The code in `src/utils/embedded/utils/wallets/embedded-wallets.utils.ts` also needs
-  // to account for that...
-
   const url = new URL(baseURL);
   const { searchParams } = url;
 

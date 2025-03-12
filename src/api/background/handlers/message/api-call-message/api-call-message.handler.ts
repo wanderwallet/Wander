@@ -16,6 +16,7 @@ import {
   type ModuleAppData
 } from "~api/background/background-modules";
 import type { OnMessageCallback } from "~utils/messaging/messaging.types";
+import { recordActivity } from "~utils/inactivity/inactivity.utils";
 
 export const handleApiCallMessage: OnMessageCallback<"api_call"> = async ({
   data,
@@ -102,6 +103,9 @@ export const handleApiCallMessage: OnMessageCallback<"api_call"> = async ({
       app: app.url,
       date: Date.now()
     });
+
+    // Record user activity for inactivity tracking
+    recordActivity();
 
     // handle function
     const functionResult = await mod.function(

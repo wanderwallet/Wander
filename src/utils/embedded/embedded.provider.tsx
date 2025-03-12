@@ -735,32 +735,56 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     async (authProviderType: AuthProviderType) => {
       if (user) {
         await supabase.auth.refreshSession();
-
         return;
       }
 
-      // TODO: Handle errors and authentication redirects here:
       try {
-        // setIsLoading(true);
-
         const { url } = await AuthenticationService.authenticate(
           authProviderType
         );
 
         if (url) {
-          // Redirect to Google's OAuth page
-          // Opening the URL on the current tab won't work when Embedded is loaded inside the iframe:
+          // Calculate center position for the popup
+          const width = 500;
+          const height = 600;
+          const left = window.screenX + (window.outerWidth - width) / 2;
+          const top = window.screenY + (window.outerHeight - height) / 2;
 
-          if (location.ancestorOrigins.length === 0) {
-            console.log(`Redirecting to ${url}...`);
+          const popup = window.open(
+            url,
+            "Auth",
+            [
+              `width=${width}`,
+              `height=${height}`,
+              `left=${left}`,
+              `top=${top}`,
+              "popup=1",
+              "location=1",
+              "status=1",
+              "resizable=no",
+              "toolbar=no",
+              "menubar=no"
+            ].join(",")
+          );
 
-            window.location.href = url;
-          } else {
-            console.log(`Opening ${url}...`);
+          if (!popup) {
+            console.error("Popup blocked. Please allow popups for this site.");
+            // Redirect to Google's OAuth page
+            // Opening the URL on the current tab won't work when Embedded is loaded inside the iframe:
 
-            window.open(url, "_blank");
+            if (location.ancestorOrigins.length === 0) {
+              console.log(`Redirecting to ${url}...`);
 
-            window.location.reload();
+              window.location.href = url;
+            } else {
+              console.log(`Opening ${url}...`);
+
+              window.open(url, "_blank");
+
+              window.location.reload();
+            }
+
+            return;
           }
         } else {
           console.error("No URL returned from authenticate");
@@ -791,17 +815,17 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         return;
       }
 
-      if (
-        !session.countryCode ||
-        !session.id ||
-        !session.deviceNonce ||
-        session.deviceNonce !== getDeviceNonce()
-      ) {
+      if (!session.countryCode || !session.id || !session.deviceNonce) {
         console.warn(
           "❌  The current session is incomplete. Refreshing...",
           session
         );
         await supabase.auth.refreshSession();
+      } else if (session.deviceNonce !== getDeviceNonce()) {
+        console.warn(
+          "⚠️  The current session is complete, but the device nonce doesn't match!",
+          session
+        );
       } else {
         console.log("✅  The current session is complete!", session);
       }
@@ -954,10 +978,18 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       if (!isInsideIframe()) {
         if (window.location.origin === "https://embed.wander.app") {
           window.close();
+          return;
         } else {
           console.warn(
             "In production (https://embed.wander.app), the app would close right now."
           );
+        }
+
+        // Close popup window immediately if we have a session and we're in a popup
+        if (session?.access_token && window.opener) {
+          log(LOG_GROUP.EMBEDDED_FLOWS, "Closing popup window...");
+          window.close();
+          return;
         }
       }
 
