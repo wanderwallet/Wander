@@ -2933,5 +2933,13 @@
   "setting_fullscreen": {
     "message": "Fullscreen",
     "description": "Fullscreen text"
+  },
+  "auto_sign_out_settings": {
+    "message": "Auto sign out of Wander after being inactive for a set amount minutes",
+    "description": "Auto sign out settings text"
+  },
+  "minutes": {
+    "message": "Minutes",
+    "description": "Minutes text"
   }
 }

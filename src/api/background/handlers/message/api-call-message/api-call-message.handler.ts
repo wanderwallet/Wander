@@ -11,6 +11,7 @@ import {
   backgroundModules,
   type ModuleAppData
 } from "~api/background/background-modules";
+import { recordActivity } from "~utils/inactivity/inactivity.utils";
 
 export const handleApiCallMessage: OnMessageCallback<
   // @ts-expect-error
@@ -97,6 +98,9 @@ export const handleApiCallMessage: OnMessageCallback<
       app: app.url,
       date: Date.now()
     });
+
+    // Record user activity for inactivity tracking
+    recordActivity();
 
     // handle function
     const functionResult = await mod.function(
