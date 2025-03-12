@@ -71,7 +71,8 @@ export function useTokenPrice(id?: string, currency = "USD") {
 
   const priceQuery = useQuery({
     queryKey: ["tokenPrice", id],
-    queryFn: () => getBotegaPrice(id!),
+    // queryFn: () => getBotegaPrice(id!),
+    queryFn: () => null,
     enabled: !!id && !isArToken,
     ...defaultOptions
   });
@@ -102,7 +103,8 @@ export function useTokenPrices(ids?: string[]) {
 
   const pricesQuery = useQuery({
     queryKey: ["tokenPrices", ids?.slice().sort().join(",")],
-    queryFn: () => getBotegaPrices(ids!),
+    // queryFn: () => getBotegaPrices(ids!),
+    queryFn: () => null,
     enabled: !!ids?.length,
     ...defaultOptions
   });
