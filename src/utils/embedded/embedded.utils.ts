@@ -93,7 +93,7 @@ export function isInsideIframe(): boolean {
 // Create a singleton instance of `TRPCClient`
 let trpcInstance: ReturnType<typeof createTRPCClient> | null = null;
 
-function getTRPCInstance() {
+function getTRPCClientAndUtils() {
   if (!IS_EMBEDDED_APP) return null;
 
   if (!trpcInstance) {
@@ -110,6 +110,8 @@ function getTRPCInstance() {
   return trpcInstance;
 }
 
+const trpcClientAndUtils = getTRPCClientAndUtils();
+
 const {
   client: trpcVanilla,
   getAuthTokenHeader,
@@ -119,7 +121,7 @@ const {
   getClientIdHeader,
   setClientIdHeader,
   setApplicationIdHeader
-} = trpcInstance || {};
+} = trpcClientAndUtils || {};
 
 // Exporting the router from one repo to another might, in some scenarios, return incorrect types, but it can be fixed
 // by also importing the right AppRouter type and overriding the `client` type:
