@@ -1,5 +1,6 @@
 // When the Wander Embedded <iframe> is created, its URL will include the following search params:
 // - client-id
+// - server-base-url
 // - origin
 //
 // The code/functions below run in the context of the SKD, that is, in the domain of the dApp that integrates Wander

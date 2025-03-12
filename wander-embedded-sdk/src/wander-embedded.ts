@@ -67,16 +67,13 @@ export class WanderEmbedded {
 
     // TODO: Merge options properly:
 
-    const optionsWithDefaults = merge(
-      {
-        clientId: "",
-        iframe: {
-          clickOutsideBehavior: "auto"
-        },
-        button: true
-      } satisfies WanderEmbeddedOptions,
-      options
-    );
+    const optionsWithDefaults = merge(options || {}, {
+      clientId: "",
+      iframe: {
+        clickOutsideBehavior: "auto"
+      },
+      button: true
+    } satisfies WanderEmbeddedOptions);
 
     if (!optionsWithDefaults.clientId) throw new Error("clientId is required");
 
