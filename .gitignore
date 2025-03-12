@@ -23,8 +23,11 @@ yarn-error.log*
 .pnpm-debug.log*
 
 
-# local env files
+# Exclude all .env files
+.env
 .env*
+# Except for .env.example
+!.env.example
 
 out/
 build/
