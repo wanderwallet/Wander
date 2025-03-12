@@ -12,7 +12,7 @@
     "dev:firefox": "plasmo dev --target=firefox-mv2",
     "build:firefox": "plasmo build --target=firefox-mv2 --no-hoist",
     "dev:iframe": "vite",
-    "build:iframe": "vite build",
+    "build:iframe": "vite build yarn build:forge",
     "preview:iframe": "vite preview",
     "build:forge": "cp -r assets/forge dist/assets/forge",
     "build:wallet-api": "vite build --config vite.wallet-config.js",

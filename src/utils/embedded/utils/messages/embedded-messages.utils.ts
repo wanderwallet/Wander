@@ -45,7 +45,7 @@ export function postEmbeddedMessage<K extends EmbeddedMessageId>({
 
   if (!isInsideIframe()) {
     console.warn(
-      "ArConnect Embedded running as a standalone page. There's no parent Window to send this to =",
+      "Wander Embedded running as a standalone page. There's no parent Window to send this to =",
       call
     );
 
