@@ -76,6 +76,11 @@ export interface BalanceInfo {
 
 export interface WanderEmbeddedOptions {
   /**
+   * Client ID for your App, registered on the Wander Dashboard.
+   */
+  clientId: string;
+
+  /**
    * Base URL for the Wander Embed client app.
    */
   baseURL?: string;
@@ -95,8 +100,6 @@ export interface WanderEmbeddedOptions {
   onResize?: (routeConfig: RouteConfig) => void;
   onBalance?: (balanceInfo: BalanceInfo) => void;
   onRequest?: (pendingRequests: number) => void;
-
-  clientId: string;
 }
 
 // Common:

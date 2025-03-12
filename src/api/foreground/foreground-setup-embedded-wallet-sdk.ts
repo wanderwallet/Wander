@@ -13,7 +13,10 @@ import { isApiErrorResponse } from "~utils/messaging/common/messaging.utils";
 import { isomorphicSendMessage } from "~utils/messaging/messaging.utils";
 // import { version as sdkVersion } from "../../../wander-embedded-sdk/package.json";
 
-export function setupEmbeddedWalletSDK(targetWindow: Window = window) {
+export function setupEmbeddedWalletSDK(
+  targetWindow: Window = window,
+  embeddedOrigin?: string
+) {
   log(LOG_GROUP.SETUP, "setupEmbeddedWalletSDK()");
 
   /** Init events */
@@ -21,7 +24,7 @@ export function setupEmbeddedWalletSDK(targetWindow: Window = window) {
 
   // TODO: Can we get the right type here?:
   const walletAPI = {
-    walletName: IS_EMBEDDED_APP ? "ArConnect Embedded" : "ArConnect",
+    walletName: IS_EMBEDDED_APP ? "Wander Embedded" : "ArConnect",
     walletVersion: version,
     events
   } as const;

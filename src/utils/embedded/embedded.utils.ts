@@ -10,6 +10,33 @@ import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 //
 // The code/functions below run in the context of Wander Embedded iframe/domain.
 
+const NODE_ENV = process.env.NODE_ENV || "development";
+
+const EMBEDDED_ENV_VARS_BY_ENV = {
+  development: {
+    DEFAULT_EMBEDDED_CLIENT_ID: import.meta.env
+      ?.VITE_DEV_DEFAULT_EMBEDDED_CLIENT_ID,
+    DEFAULT_EMBEDDED_SERVER_BASE_URL: import.meta.env
+      ?.VITE_DEV_DEFAULT_EMBEDDED_SERVER_BASE_URL
+  },
+  production: {
+    DEFAULT_EMBEDDED_CLIENT_ID: import.meta.env
+      ?.VITE_PROD_DEFAULT_EMBEDDED_CLIENT_ID,
+    DEFAULT_EMBEDDED_SERVER_BASE_URL: import.meta.env
+      ?.VITE_PROD_EMBEDDED_SERVER_BASE_URL
+  }
+} as const;
+
+const EMBEDDED_ENV_VARS = EMBEDDED_ENV_VARS_BY_ENV[NODE_ENV];
+
+if (!EMBEDDED_ENV_VARS)
+  throw new Error(`Missing ENV vars for NODE_ENV = "${NODE_ENV}"`);
+
+// Duplicated in `wander-embedded-sdk/src/utils/url/url.utils.ts`:
+const PARAM_CLIENT_ID = "client-id";
+const PARAM_SERVER_BASE_URL = "server-base-url";
+const PARAM_ANCESTOR_ORIGIN = "ancestor-origin";
+
 const { search = "", ancestorOrigins = [] } = IS_EMBEDDED_APP
   ? document.location
   : {};
@@ -17,23 +44,23 @@ const { search = "", ancestorOrigins = [] } = IS_EMBEDDED_APP
 const searchParams = new URLSearchParams(search);
 const ancestorOrigin = ancestorOrigins[ancestorOrigins.length - 1];
 
-// Duplicated in `wander-embedded-sdk/src/utils/url/url.utils.ts`:
-const PARAM_CLIENT_ID = "client-id";
-const PARAM_SERVER_BASE_URL = "server-base-url";
-const PARAM_ANCESTOR_ORIGIN = "ancestor-origin";
-
 const EMBEDDED_CLIENT_ID =
   searchParams.get(PARAM_CLIENT_ID) ||
-  (process.env.NODE_ENV === "development"
-    ? import.meta.env?.VITE_EMBEDDED_CLIENT_ID
-    : "");
+  EMBEDDED_ENV_VARS.DEFAULT_EMBEDDED_CLIENT_ID;
 
 const EMBEDDED_SERVER_BASE_URL =
   searchParams.get(PARAM_SERVER_BASE_URL) ||
-  (process.env.NODE_ENV === "development" ? "http://localhost:3001" : "");
+  EMBEDDED_ENV_VARS.DEFAULT_EMBEDDED_SERVER_BASE_URL;
 
 const EMBEDDED_ANCESTOR_ORIGIN =
   ancestorOrigin || searchParams.get(PARAM_ANCESTOR_ORIGIN);
+
+console.log("Wander Embedded URL params =", {
+  NODE_ENV,
+  EMBEDDED_CLIENT_ID,
+  EMBEDDED_SERVER_BASE_URL,
+  EMBEDDED_ANCESTOR_ORIGIN
+});
 
 // Note: DO NOT use document.referrer here as that will return the "incorrect" value when the user is redirected from
 // an auth provider domain to back to Wander Embedded.

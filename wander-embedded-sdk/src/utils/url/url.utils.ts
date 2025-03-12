@@ -13,13 +13,13 @@ const PARAM_ANCESTOR_ORIGIN = "ancestor-origin";
 export interface GetEmbeddedURLOptions {
   clientId: string;
   baseURL: string;
-  baseServerURL: string;
+  baseServerURL?: string;
 }
 
 export function getEmbeddedURL({
   clientId,
   baseURL,
-  baseServerURL
+  baseServerURL = ""
 }: GetEmbeddedURLOptions) {
   // TODO: `src` option now working. The code in `src/utils/embedded/utils/wallets/embedded-wallets.utils.ts` also needs
   // to account for that...

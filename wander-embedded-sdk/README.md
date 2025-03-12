@@ -29,6 +29,8 @@ After this, you can use the Wander Embedded App in 2 different ways:
   Wander Embedded SDK to load the app inside an iframe. The section below explains different ways to
   do that.
 
+<br />
+
 ### Using the Wander Embedded SDK:
 
 The minimum setup you must do to get Wander Embedded to work on a project looks like this:
@@ -74,31 +76,35 @@ You can play around with Wander Embedded at https://playground.othent.io/, which
 Most likely you need that playground to load your local version of the app, SDK, and/or server. See
 below the different options available.
 
+<br />
+
 #### Local Playground + Local App + Latest SDK + Local/Latest Server
 
-After running `yarn dev:iframe`, the Wander Embedded App should be running at `http://localhost:5173`.
+**App:**
 
-Next, clone https://github.com/Othent/KMS-test-repo/ and run `pnpm install && pnpm start`. The
-playground should be running at `http://localhost:3000`, using the published version of
-`@wanderapp/embed-sdk` and the latest version of the server (https://embed-api.wander.app/).
+After running `yarn dev:iframe`, the Wander Embedded App should be running at
+`http://localhost:5173`.
 
 By default, the app will point its tRPC client to http://localhost:3001 when running in development
-mode, or to https://embed-api.wander.app/ when running in production mode.
-
-See:
+mode, or to https://embed-api.wander.app/ when running in production mode. See:
 
 - `createTRPCClient` call in `src/utils/embedded/embedded.utils.ts` for the setup logic.
 - `.env` / `.env.example` for the development values.
 - Vercel's Environment variables, for the production values.
 
-Also, the SDK will point to http://localhost:5173
+**Playground & SDK:**
 
-See `wander-embedded-sdk/src/wander-embedded.ts`.
+Next, clone https://github.com/Othent/KMS-test-repo/ and run `pnpm install && pnpm start`. The
+playground should be running at `http://localhost:3000`, using the published version of
+`@wanderapp/embed-sdk`.
 
-TODO: Add values to ENV file. Add URLs for both prod and dev so that we can now point the dev ones to prod as well.
+By default, the published version of `@wanderapp/embed-sdk` will point to the latest version of the
+Wander Embedded app, which in turn will point its tRPC client to the latest version of the server
+(https://embed-api.wander.app/).
 
-If you'd like to use an app or a server hosted elsewhere, you can use the `baseURL` and
-`baseServerURL` options on the SDK:
+You now need to make the SDK load `http://localhost:5173`, which you can do using the `baseURL`
+option. If you also need to connect to a server hosted elsewhere, you can use the `baseServerURL`
+options:
 
 ```
 const wander = new WanderEmbedded({
@@ -107,6 +113,28 @@ const wander = new WanderEmbedded({
   baseServerURL: "http://localhost:3001",
 });
 ```
+
+> [!TIP]
+> You can get an actual clientId from the Wander Dashboard by creating a Team and an Application.
+
+**Server:**
+
+Go to the `embed-api` repo and run:
+
+- `pnpm install`
+
+- `pnpm dev` - The server & tRPC API will run at `http://localhost:3001` (if the Playground was
+  already running on port `3000`).
+
+- `pnpm sdk:dev` - Only if you want to use a local instance of `embed-api`:
+
+  - If local, then the `package.json` a the root of this project should say:
+    "embed-api": "link:../embed-api/",
+
+  - If you want to use the currently published version of `embed-api`, then it should say:
+    "embed-api": "https://github.com/wanderwallet/embed-api#<SOME_HASH>",
+
+<br />
 
 #### Local Playground + Local App + Local SDK + Local/Latest Server
 
@@ -126,28 +154,12 @@ dependency back to:
 
 Then, go into `wander-embedded-sdk` in this repo and run `pnpm install` and `pnpm dev`.
 
-**`cd wander-embedded-sdk/`**
+When running in development mode, the SDK will use `http://localhost:5173` as the default value for
+`baseURL`, instead of `https://embed.wander.app/`. See
+`wander-embedded-sdk/src/wander-embedded.ts`.
 
-- `yarn install`
-- `yarn dev` - This builds of the SDK itself.
+> [!WARNING]
+> Temporarily, the https://embed.wander.app/ URLs are actually https://embed-dev.wander.app/. This
+> should be replaced before launch.
 
-Or clone it locally.
-
-- Update `App.tsx` with:
-
-- Get the clientId from the Wander Dashboard by creating a team and an application.
-- Replace `wander-embedded-sdk` in `package.json` with: `"wander-embedded-sdk": "link:./../wander/Wander/wander-embedded-sdk/"`
-- `pnpm install`
-- `pnpm dev`
-
-**In the `embed-api` repo:**
-
-- `pnpm install`
-- `pnpm dev` - The server & tRPC API will run at `http://localhost:3000`
-- `pnpm sdk:dev` - Only if you want to use a local instance of `embed-api`:
-
-  - If local, then the `package.json` a the root of this project should say:
-    "embed-api": "link:../embed-api/",
-
-  - If you want to use the currently published version of `embed-api`, then it should say:
-    "embed-api": "https://github.com/wanderwallet/embed-api#<SOME_HASH>",
+<br />

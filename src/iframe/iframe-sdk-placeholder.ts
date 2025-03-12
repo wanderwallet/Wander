@@ -1,4 +1,4 @@
-// This file is just a placeholder with some pseudo-code for the injected code on ArConnect Embedded. That is, the code
+// This file is just a placeholder with some pseudo-code for the injected code on Wander Embedded. That is, the code
 // that's loaded in the consumer site's context.
 
 import type { IframeHTMLAttributes } from "react";
@@ -77,7 +77,7 @@ export function isIFrameElement(
 
 export function initArConnectEmbedded(options: ArConnectEmbeddedOptions) {
   if (isWalletInitialized) {
-    throw new Error("ArConnect Embedded has already been initialized");
+    throw new Error("Wander Embedded has already been initialized");
   }
 
   const src = isArConnectEmbeddedOptionsWithURL(options)
@@ -124,13 +124,13 @@ export function initArConnectEmbedded(options: ArConnectEmbeddedOptions) {
 
   // api.ts:
 
-  // Because in ArConnect Embedded the injected code is not sandboxed, we can simply call `injectWalletSDK()` instead of
+  // Because in Wander Embedded the injected code is not sandboxed, we can simply call `injectWalletSDK()` instead of
   // having to inject `injected.ts` with a `<script>` tag to call it outside the sandbox:
   setupWalletSDK(iframeWindow);
 
   // events.ts:
 
-  // In ArConnect Embedded, we need to listen for messages coming from the iframe itself, so we pass a reference to it to
+  // In Wander Embedded, we need to listen for messages coming from the iframe itself, so we pass a reference to it to
   // `setupEventListeners()` to check that:
   setupEventListeners(iframeElement);
 
