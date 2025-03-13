@@ -784,11 +784,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
               console.log(`Opening ${url}...`);
 
               popup = window.open(url, "_blank");
-
-              window.location.reload();
             }
-
-            return;
           }
 
           if (popup) {
