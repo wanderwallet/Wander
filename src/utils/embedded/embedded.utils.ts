@@ -1,6 +1,7 @@
 import { createSupabaseClient, createTRPCClient } from "embed-api";
 import { jwtDecode } from "jwt-decode";
 import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
+import { LocalStorage } from "~iframe/local-storage/local-storage";
 
 // Then, its tRPC client will be initialized with the following headers:
 // - authorization (getAuthTokenHeader / setAuthTokenHeader)
@@ -72,6 +73,7 @@ export function getEmbeddedAncestorOrigin() {
 // Note: This is run when trpc detects UNAUTHORIZED error.
 async function handleAuthError() {
   try {
+    const supabase = await getSupabaseClient();
     await supabase.auth.signOut();
     window.location.href = "#/";
     window.location.reload();
@@ -128,16 +130,60 @@ const {
 // type TRPCClient = ReturnType<typeof createTRPCProxyClient<AppRouter>>;
 // const trpcVanilla = client as TRPCClient;
 
-// Create a singleton instance of `SupabaseClient`
+// Create a singleton instance of `SupabaseClient` & `LocalStorage`
 let supabaseInstance: ReturnType<typeof createSupabaseClient> | null = null;
+let storage: LocalStorage | null = null;
 
-function getSupabaseClient() {
+export async function getStorage() {
+  if (!storage) {
+    storage = new LocalStorage();
+    const hasAccess = await storage.requestStorageAccess();
+
+    // If we couldn't get immediate access, we'll need to set up a user interaction handler
+    if (!hasAccess) {
+      console.log(
+        "Storage access requires user interaction. Authentication may be limited until user interacts."
+      );
+
+      // Set up one-time event handler for any user interaction
+      document.addEventListener(
+        "click",
+        async () => {
+          if (
+            !document.documentElement.hasAttribute("data-tried-storage-access")
+          ) {
+            document.documentElement.setAttribute(
+              "data-tried-storage-access",
+              "true"
+            );
+            await storage.requestAccessOnUserInteraction();
+          }
+        },
+        { once: true }
+      );
+    }
+  }
+
+  return storage;
+}
+
+export async function getSupabaseClient() {
   if (!IS_EMBEDDED_APP) return null;
 
   if (!supabaseInstance) {
+    const storage = await getStorage();
+
     supabaseInstance = createSupabaseClient(
       import.meta.env?.VITE_SUPABASE_URL || "",
-      import.meta.env?.VITE_SUPABASE_ANON_KEY || ""
+      import.meta.env?.VITE_SUPABASE_ANON_KEY || "",
+      {
+        auth: {
+          autoRefreshToken: true,
+          persistSession: true,
+          detectSessionInUrl: true,
+          storage
+        }
+      }
     );
   }
 
@@ -165,6 +211,7 @@ export {
 
 async function getSessionId() {
   try {
+    const supabase = await getSupabaseClient();
     const {
       data: { session }
     } = await supabase.auth.getSession();
@@ -233,7 +280,8 @@ async function insecurelyValidateApplication() {
 // insecurelyValidateApplication();
 
 if (IS_EMBEDDED_APP && process.env.NODE_ENV === "development") {
-  (window as any).logout = () => {
+  (window as any).logout = async () => {
+    const supabase = await getSupabaseClient();
     return supabase.auth.signOut();
   };
 }
