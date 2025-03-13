@@ -1,5 +1,6 @@
 import * as React from "react";
 import type { SVGProps } from "react";
+import { withThemeAwareColor } from "./IconBase";
 
 const SvgBackupComplete = ({
   width = 74,
@@ -23,10 +24,7 @@ const SvgBackupComplete = ({
       transform="rotate(-15 13.3726 11.7869)"
       fill="#26126F"
     />
-    <g
-      clip-path="url(#bgblur_0_10_4113_clip_path)"
-      data-figma-skip-parse="true"
-    >
+    <g clipPath="url(#bgblur_0_10_4113_clip_path)" data-figma-skip-parse="true">
       <foreignObject x="11.1047" y="0.807562" width="54.3174" height="46.5782">
         <div xmlns="http://www.w3.org/1999/xhtml"></div>
       </foreignObject>
@@ -91,11 +89,11 @@ const SvgBackupComplete = ({
         y2="14.6346"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#6B57F9" />
-        <stop offset="1" stop-color="#9787FF" />
+        <stop stopColor="#6B57F9" />
+        <stop offset="1" stopColor="#9787FF" />
       </linearGradient>
     </defs>
   </svg>
 );
 
-export default SvgBackupComplete;
+export default withThemeAwareColor(SvgBackupComplete);

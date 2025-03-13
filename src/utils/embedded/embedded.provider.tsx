@@ -28,10 +28,9 @@ import type {
   TempWalletPromise,
   RecoveryJSON
 } from "~utils/embedded/embedded.types";
-import { isTempWalletPromiseExpired } from "~utils/embedded/embedded.utils";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
-
-export type AuthStatusCopy = AuthStatus;
+import { isTempWalletPromiseExpired } from "~utils/embedded/utils/wallets/embedded-wallets.utils";
+import copy from "copy-to-clipboard";
 
 const EMBEDDED_CONTEXT_INITIAL_STATE: EmbeddedContextState = {
   authStatus: "unknown",
@@ -136,7 +135,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       {} as any
     );
 
-    await navigator.clipboard.writeText(seedPhrase);
+    await copy(seedPhrase);
   }, []);
 
   const generateRecoveryAndDownload = useCallback(

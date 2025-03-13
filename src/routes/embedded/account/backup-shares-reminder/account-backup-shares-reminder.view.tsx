@@ -1,47 +1,71 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
-import { DevFigmaScreen } from "~components/dev/figma-screen/figma-screen.component";
 
-import screenSrc from "url:/assets-beta/figma-screens/backup-shares.view.png";
+import {
+  Box,
+  Button,
+  Card,
+  Checkbox,
+  Row,
+  WanderIcon,
+  Text
+} from "~components/embed/ui";
 
 export function AccountBackupSharesReminderEmbeddedView() {
   const { promptToBackUp, skipBackUp } = useEmbedded();
-
+  const [isChecked, setIsChecked] = useState(false);
   const checkboxRef = useRef<HTMLInputElement>();
 
   const handleSkipClicked = () => {
-    return skipBackUp(checkboxRef?.current.checked);
+    return skipBackUp(isChecked);
   };
 
   return (
-    <DevFigmaScreen
-      title="Account backup"
-      src={screenSrc}
-      config={[
-        {
-          label: "Back up now",
-          to: "/account/backup-shares"
-        },
-        promptToBackUp
-          ? {
-              label: "Back up later",
-              to: "/account",
-              onClick: () => handleSkipClicked(),
-              variant: "secondary"
-            }
-          : {
-              label: "Cancel",
-              to: "/account",
-              variant: "secondary"
-            }
-      ]}
+    <Card
+      headerText="Account backup"
+      subtitle="Secure your account by backing it up."
+      footerElement={
+        <Row>
+          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
+            {"Secured by"}
+          </Text>
+          <WanderIcon color="#838383" />
+        </Row>
+      }
+      hasBackButton={true}
+      onBackButtonClick={() => {
+        window.history.back();
+      }}
+      hasCloseButton={true}
+      size="auto"
     >
-      {promptToBackUp ? (
-        <label>
-          <input type="checkbox" ref={checkboxRef} />
-          Do not ask again
-        </label>
-      ) : null}
-    </DevFigmaScreen>
+      <Box>
+        <Button variant="primary" isFullWidth href="/account/backup-shares">
+          Backup now
+        </Button>
+        {promptToBackUp ? (
+          <Button
+            variant="secondary"
+            isFullWidth
+            href="/account"
+            onClick={() => handleSkipClicked()}
+          >
+            Backup later
+          </Button>
+        ) : (
+          <Button variant="secondary" isFullWidth href="/account">
+            Cancel
+          </Button>
+        )}
+        {promptToBackUp && (
+          <Checkbox
+            label="Don't show this again"
+            description="Note: you can set this up on the settings page"
+            handleChange={() => setIsChecked(!isChecked)}
+            isChecked={isChecked}
+          />
+        )}
+      </Box>
+    </Card>
   );
 }

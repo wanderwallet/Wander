@@ -2,7 +2,13 @@ import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import browser from "webextension-polyfill";
 import { PageType, trackPage } from "~utils/analytics";
 import styled from "styled-components";
-import { Input, Section, useInput, Text } from "@arconnect/components-rebrand";
+import {
+  Input,
+  Section,
+  useInput,
+  Text,
+  Tooltip
+} from "@arconnect/components-rebrand";
 import { apps, categories, type App } from "~utils/apps";
 import {
   ArrowLeft,
@@ -11,12 +17,16 @@ import {
 } from "@untitled-ui/icons-react";
 import { getAppURL, truncateMiddle } from "~utils/format";
 import WanderIcon from "url:assets/icon.svg";
+import { MinimizeIcon } from "@iconicicons/react";
+import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
+import { Action } from "~components/popup/WalletHeader";
 import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 
 export function ExploreView() {
   const [filteredApps, setFilteredApps] = useState(apps);
   const searchInput = useInput();
   const categoriesRef = useRef<HTMLDivElement>(null);
+  const isEmbedded = import.meta.env?.VITE_IS_EMBEDDED_APP === "1";
 
   const scroll = useCallback((direction: "left" | "right") => {
     if (categoriesRef.current) {
@@ -62,6 +72,23 @@ export function ExploreView() {
           <ScrollButton direction="right" onClick={() => scroll("right")}>
             <ArrowRight height={20} width={20} />
           </ScrollButton>
+          {isEmbedded && (
+            <Tooltip
+              content={browser.i18n.getMessage("close")}
+              position="bottomEnd"
+            >
+              <Action
+                as={MinimizeIcon}
+                onClick={() => {
+                  postEmbeddedMessage({
+                    type: "embedded_close",
+                    data: null
+                  });
+                }}
+                style={{ width: "24px", height: "24px" }}
+              />
+            </Tooltip>
+          )}
         </Header>
         <Input
           {...searchInput.bindings}
@@ -85,8 +112,8 @@ export function ExploreView() {
                   source={app.icon}
                   alt={app.name}
                   objectFit={app.objectFit}
-                  showBorder={app.showBorder}
                   imageSize={app.imageSize}
+                  padding={app.padding}
                 />
               ) : (
                 <AppIconWrapper
@@ -94,8 +121,8 @@ export function ExploreView() {
                   alt={app.name}
                   backgroundColor={app.backgroundColor}
                   objectFit={app.objectFit}
-                  showBorder={app.showBorder}
                   imageSize={app.imageSize}
+                  padding={app.padding}
                 />
               )}
               <Description>
@@ -136,18 +163,19 @@ const filterApps = (
 
 const IconWrapper = styled.div<{
   backgroundColor?: string;
-  showBorder?: boolean;
+  padding?: string;
 }>`
-  background-color: ${(props) => props.backgroundColor || "white"};
+  background-color: ${(props) => props.backgroundColor || "transparent"};
   border-radius: 12px;
-  ${(props) =>
-    props.showBorder && `border: 1px solid ${props.theme.borderDefault};`}
+  ${(props) => `border: 1px solid ${props.theme.borderDefault};`}
   overflow: hidden;
   height: 40px;
   width: 40px;
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: ${(props) => props.padding || "0"};
+  box-sizing: border-box;
 `;
 
 const IconImage = styled.img<{
@@ -159,7 +187,10 @@ const IconImage = styled.img<{
   object-fit: ${(props) => props.objectFit || "contain"};
 `;
 
-const GradientWrapper = styled.div<{ colors?: string[]; showBorder?: boolean }>`
+const GradientWrapper = styled.div<{
+  colors?: string[];
+  padding?: string;
+}>`
   border-radius: 12px;
   overflow: hidden;
   height: 40px;
@@ -168,11 +199,12 @@ const GradientWrapper = styled.div<{ colors?: string[]; showBorder?: boolean }>`
     props.colors
       ? `linear-gradient(135deg, ${props.colors[0]} 0%, ${props.colors[1]} 100%)`
       : "linear-gradient(135deg, #8B57FE 0%, #886DFB 100%)"};
-  ${(props) =>
-    props.showBorder && `border: 1px solid ${props.theme.borderDefault};`}
+  ${(props) => `border: 1px solid ${props.theme.borderDefault};`}
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: ${(props) => props.padding || "0"};
+  box-sizing: border-box;
 `;
 
 interface AppIconProps {
@@ -180,20 +212,20 @@ interface AppIconProps {
   alt?: string;
   backgroundColor?: string;
   objectFit?: "contain" | "cover";
-  showBorder?: boolean;
   imageSize?: string;
+  padding?: string;
 }
 
 function AppIconWrapper({
   source,
   alt,
-  showBorder,
   backgroundColor,
   objectFit,
-  imageSize
+  imageSize,
+  padding
 }: AppIconProps) {
   return (
-    <IconWrapper backgroundColor={backgroundColor} showBorder={showBorder}>
+    <IconWrapper backgroundColor={backgroundColor} padding={padding}>
       <IconImage
         src={source}
         alt={alt || ""}
@@ -209,20 +241,20 @@ interface AppGradientIconProps {
   alt?: string;
   colors?: string[];
   objectFit?: "contain" | "cover";
-  showBorder?: boolean;
   imageSize?: string;
+  padding?: string;
 }
 
 function AppLinearGradientIconWrapper({
   source,
   alt,
   colors,
-  showBorder,
   objectFit,
-  imageSize
+  imageSize,
+  padding
 }: AppGradientIconProps) {
   return (
-    <GradientWrapper colors={colors} showBorder={showBorder}>
+    <GradientWrapper colors={colors} padding={padding}>
       <IconImage
         objectFit={objectFit}
         src={source}

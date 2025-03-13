@@ -7,32 +7,29 @@
   width: var(--full-width);
   border-top: 1px solid var(--color-divider-default);
   margin: var(--spacing-6) 0;
+  position: relative;
 }
 
 .divider__text {
   position: absolute;
-  padding: 0 10px;
+  padding: 0 var(--spacing-3);
   background-color: var(--color-background-default);
   font-size: var(--font-size-sm);
   color: var(--color-divider-default);
   text-align: center;
-  font-family: var(--font-family-serif);
 }
 
 .divider--text-left .divider__text {
   left: 0;
-  margin-left: 10px;
-  text-align: left;
+  margin-left: var(--spacing-3);
 }
 
 .divider--text-center .divider__text {
   left: 50%;
   transform: translateX(-50%);
-  text-align: center;
 }
 
 .divider--text-right .divider__text {
   right: 0;
-  margin-right: 10px;
-  text-align: right;
+  margin-right: var(--spacing-3);
 }

@@ -38,6 +38,7 @@ import type {
   RouteOverride,
   RouteRedirect
 } from "~wallets/router/router.types";
+import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 
 interface AuthRequestsContextState {
   authRequests: AuthRequest[];
@@ -88,13 +89,26 @@ export function AuthRequestsProvider({
   );
 
   const closeAuthPopup = useCallback((delay: number = 0) => {
-    // TODO: In the embedded wallet, maybe we need to store (but not show) unlock requests so that this doesn't
-    // clear automatically.
-
     function closeOrClear() {
       if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1") {
         // TODO: This might cause an infinite loop in the embedded wallet:
-        setAuthRequestContextState(AUTH_REQUESTS_CONTEXT_INITIAL_STATE);
+        // setAuthRequestContextState(AUTH_REQUESTS_CONTEXT_INITIAL_STATE);
+
+        // TODO: We could improve this to detect if we opened the wallet to show an AuthRequest, or if it was already
+        // open. In the former case, when all AuthRequests are handled, we close it. In the latter, we just clear the
+        // AuthRequests from the state but leave it open.
+
+        postEmbeddedMessage({
+          type: "embedded_request",
+          data: {
+            pendingRequests: 0
+          }
+        });
+
+        postEmbeddedMessage({
+          type: "embedded_close",
+          data: null
+        });
       } else {
         window.top.close();
       }
@@ -128,6 +142,19 @@ export function AuthRequestsProvider({
             compareConnectAuthRequests(authRequest, completedAuthRequest)
           ) {
             completedAuthRequests.push(authRequest);
+          }
+        });
+      }
+
+      if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1") {
+        const pendingRequests =
+          authRequests.filter((authRequest) => authRequest.status === "pending")
+            .length - completedAuthRequests.length;
+
+        postEmbeddedMessage({
+          type: "embedded_request",
+          data: {
+            pendingRequests
           }
         });
       }
@@ -274,6 +301,19 @@ export function AuthRequestsProvider({
           ...authRequests,
           { ...authRequest, status: "pending" }
         ] satisfies AuthRequest[];
+
+        if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1") {
+          const pendingRequests = nextAuthRequests.filter(
+            (authRequest) => authRequest.status === "pending"
+          ).length;
+
+          postEmbeddedMessage({
+            type: "embedded_request",
+            data: {
+              pendingRequests
+            }
+          });
+        }
 
         // TODO: Add setting to decide whether we automatically jump to a new pending request when they arrive or stay
         // in the one currently selected.
@@ -445,7 +485,11 @@ export function AuthRequestsProvider({
       authRequests.length > 0 &&
       authRequests.every((authRequest) => authRequest.status !== "pending");
 
-    if (statusOverride === null && authRequests.length === 0) {
+    if (
+      import.meta.env?.VITE_IS_EMBEDDED_APP !== "1" &&
+      statusOverride === null &&
+      authRequests.length === 0
+    ) {
       // TODO: Maybe move to the app entry point?
       // Close the popup if an AuthRequest doesn't arrive in less than `AUTH_POPUP_REQUEST_WAIT_MS` (1s), unless the
       // wallet is locked (no timeout in that case):

@@ -60,13 +60,10 @@ declare module "@arconnect/webext-bridge" {
 
     // EMBEDDED:
 
-    embedded_open: any;
-    embedded_close: any;
-    embedded_resize: any;
-    // TODO: Maybe yes, maybe not (we should not drift too far away from the BE wallet API)
-    // embedded_auth: any;
-    // embedded_balance: any;
-    // embedded_info: any;
+    embedded_auth: EmbeddedAuthMessageData;
+    embedded_balance: EmbeddedBalanceMessageData;
+    embedded_resize: EmbeddedResizeMessageData;
+    embedded_close: void;
 
     // OTHER:
 
@@ -78,9 +75,11 @@ declare module "@arconnect/webext-bridge" {
 }
 
 interface ApiCall<DataType = any> extends JsonValue {
+  app: "wander" | "wanderEmbedded";
+  version: string;
+  callID: number | string;
   type: string;
   data?: DataType;
-  callID: number | string;
 }
 
 interface ApiResponse<DataType = any> extends ApiCall<DataType> {

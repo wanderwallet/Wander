@@ -1,3 +1,5 @@
+import { EMBEDDED_PARENT_ORIGIN } from "~utils/embedded/sdk/utils/url/sdk-url.utils";
+
 export const tabs = {
   create: async ({ url }) => {
     if (process.env.NODE_ENV === "development")
@@ -31,13 +33,17 @@ export const tabs = {
     }
   },
 
-  query: async () => {
-    const parentURL =
-      window.location.href === window.parent.location.href
-        ? document.location.href
-        : document.referrer;
+  get: async () => {
+    return null;
+  },
 
-    return [{ url: parentURL }]; // satisfies browser.Tabs.Tab
+  query: async () => {
+    return [
+      {
+        id: 0,
+        url: EMBEDDED_PARENT_ORIGIN
+      }
+    ]; // satisfies browser.Tabs.Tab
   },
 
   onConnect: {

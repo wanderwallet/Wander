@@ -1,9 +1,18 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
-import { DevFigmaScreen } from "~components/dev/figma-screen/figma-screen.component";
-import { MockedFeatureFlags } from "~utils/authentication/fakeDB";
-import { WalletUtils } from "~utils/wallets/wallets.utils";
-
-import screenSrc from "url:/assets-beta/figma-screens/export-wallet.view.png";
+import {
+  Box,
+  Button,
+  Card,
+  Copyable,
+  KeyIcon,
+  Row,
+  SeedIcon,
+  Snackbar,
+  WanderIcon,
+  WarningIcon,
+  Text
+} from "~components/embed/ui";
+import copy from "copy-to-clipboard";
 
 export function AccountExportWalletEmbeddedView() {
   const { wallets, downloadKeyfile, copySeedphrase } = useEmbedded();
@@ -14,34 +23,63 @@ export function AccountExportWalletEmbeddedView() {
   // TODO: Add an option to encrypt with a password
 
   return (
-    <DevFigmaScreen
-      title="Export your private key"
-      src={screenSrc}
-      config={[
-        {
-          // TODO: This should be a selector / dropdown and we might want to include a bulk / download all option
-          label: walletAddress,
-          isDisabled: true
-        },
-        {
-          label: "Download Private Key",
-          onClick: () => downloadKeyfile(walletAddress)
-        },
-        {
-          label: "Copy Seedphrase",
-          onClick: () => copySeedphrase(walletAddress),
-          // TODO: if the feature flag is enabled but there's no seedphrase, show a tooltip/explanation on hover,
-          // mentioning the seedPhrase might be gone and that it's only available in the device where the wallet was
-          // created (we can show that browser that was used from the wallet metadata):
-          isDisabled:
-            !MockedFeatureFlags.maintainSeedPhrase ||
-            !WalletUtils.hasEncryptedSeedPhrase(walletAddress)
-        },
-        {
-          label: "Cancel",
-          to: "/account"
-        }
-      ]}
-    />
+    <Card
+      headerText="Export your private key"
+      subtitle="Upload your private key to connect your wallet to your account."
+      footerElement={
+        <Row>
+          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
+            {"Secured by"}
+          </Text>
+          <WanderIcon color="#838383" />
+        </Row>
+      }
+      hasBackButton={true}
+      onBackButtonClick={() => {
+        window.history.back();
+      }}
+      hasCloseButton={true}
+      onCloseButtonClick={() => {
+        window.history.back();
+      }}
+      size="auto"
+    >
+      <Box>
+        <Snackbar
+          isFullWidth
+          icon={<WarningIcon />}
+          text="Do not share this with anyone."
+          backgroundColor="#F2DC1320"
+          borderColor="#F2DC1320"
+          textColor="#757575"
+          iconColor="#BD8802"
+        />
+        <Copyable
+          style={{ margin: "32px 0" }}
+          isFullWidth
+          label="Your account address"
+          onClick={() => {
+            copy(walletAddress);
+          }}
+          value={walletAddress}
+        />
+        <Button
+          onClick={() => downloadKeyfile(walletAddress)}
+          variant="outlined"
+          isFullWidth
+          icon={<KeyIcon fontSize={24} />}
+        >
+          Export keyfile
+        </Button>
+        <Button
+          onClick={() => copySeedphrase(walletAddress)}
+          variant="outlined"
+          isFullWidth
+          icon={<SeedIcon fontSize={24} />}
+        >
+          Copy seedphrase
+        </Button>
+      </Box>
+    </Card>
   );
 }

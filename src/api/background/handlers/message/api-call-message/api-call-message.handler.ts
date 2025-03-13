@@ -11,6 +11,7 @@ import {
   backgroundModules,
   type ModuleAppData
 } from "~api/background/background-modules";
+import { recordActivity } from "~utils/inactivity/inactivity.utils";
 
 export const handleApiCallMessage: OnMessageCallback<
   // @ts-expect-error
@@ -28,7 +29,7 @@ export const handleApiCallMessage: OnMessageCallback<
     isExactly(
       sender.context,
       "content-script",
-      "Chunk calls are only accepted from the injected-script -> content-script"
+      "API call messages are only accepted from the injected-script -> content-script"
     );
     isApiCall(data);
 
@@ -97,6 +98,9 @@ export const handleApiCallMessage: OnMessageCallback<
       app: app.url,
       date: Date.now()
     });
+
+    // Record user activity for inactivity tracking
+    recordActivity();
 
     // handle function
     const functionResult = await mod.function(

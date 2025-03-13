@@ -1,6 +1,6 @@
 import React from "react";
 import styles from "./Footer.module.css";
-import { FooterBaseProps } from "./Footer.types";
+import type { FooterBaseProps } from "./Footer.types";
 
 import { Box, Row, Text } from "../../atoms";
 

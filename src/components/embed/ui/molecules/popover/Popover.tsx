@@ -1,22 +1,34 @@
 import React, { useState } from "react";
 import styles from "./Popover.module.css";
-import { PopoverBaseProps } from "./Popover.types";
+import type { PopoverBaseProps } from "./Popover.types";
 import { ExpandItIcon, ProtocolLandIcon, Row, Text } from "../../atoms";
+import { useTheme } from "../../../contexts/ThemeContext";
 
 const Popover = React.forwardRef<HTMLDivElement, PopoverBaseProps>(
   ({ id, icon, label, className, children, ...props }, ref) => {
     const Component = "div";
-
+    const { isDarkMode } = useTheme();
     const [showPopover, setShowPopover] = useState(false);
+
+    const textColor = isDarkMode ? "var(--color-font-heading)" : "#121212";
+    const borderColor = isDarkMode ? "var(--color-border-popover)" : undefined;
+    const backgroundColor = isDarkMode
+      ? "var(--color-card-background-default)"
+      : undefined;
 
     return (
       <Component
         id={id}
         ref={ref}
         className={`
-      ${styles["popover-button"]}
-      ${showPopover ? styles["popover-button--expanded"] : ""}
-      ${className}`}
+          ${styles["popover-button"]}
+          ${showPopover ? styles["popover-button--expanded"] : ""}
+          ${className}
+        `}
+        style={{
+          borderColor: borderColor,
+          backgroundColor: backgroundColor
+        }}
         {...props}
       >
         {!showPopover ? (
@@ -28,7 +40,7 @@ const Popover = React.forwardRef<HTMLDivElement, PopoverBaseProps>(
                 variant="bodyMd"
                 style={{
                   fontWeight: 600,
-                  color: "#121212",
+                  color: textColor,
                   marginBottom: "0px"
                 }}
               >
@@ -39,7 +51,9 @@ const Popover = React.forwardRef<HTMLDivElement, PopoverBaseProps>(
               onClick={() => setShowPopover(!showPopover)}
               className={styles["popover-icon"]}
             >
-              <ExpandItIcon />
+              <ExpandItIcon
+                color={isDarkMode ? "var(--color-font-body)" : undefined}
+              />
             </button>
           </>
         ) : (

@@ -1,6 +1,6 @@
 import React from "react";
 import styles from "./TabBar.module.css";
-import { TabBarBaseProps } from "./TabBar.types";
+import type { TabBarBaseProps } from "./TabBar.types";
 
 import { Text } from "../../atoms";
 
