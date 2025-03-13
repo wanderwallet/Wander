@@ -3,6 +3,24 @@ import { log, LOG_GROUP } from "~utils/log/log.utils";
 export class LocalStorage implements Storage {
   private storage: Storage = globalThis.localStorage;
 
+  private async getStorageHandle(): Promise<Storage> {
+    // @ts-expect-error - requestStorageAccess should return a handle
+    const handle = (await document.requestStorageAccess({
+      localStorage: true
+    })) as { localStorage: Storage };
+    return handle.localStorage;
+  }
+
+  private setupUserInteractionHandler() {
+    document.addEventListener(
+      "click",
+      async () => {
+        await this.requestAccessOnUserInteraction();
+      },
+      { once: true }
+    );
+  }
+
   async requestStorageAccess(): Promise<boolean> {
     try {
       // Check if API is supported
@@ -18,72 +36,39 @@ export class LocalStorage implements Storage {
       const hasAccess = await document.hasStorageAccess();
       if (hasAccess) {
         log(LOG_GROUP.STORAGE, "Already has storage access");
-        try {
-          // @ts-expect-error - requestStorageAccess should return a handle
-          const handle = (await document.requestStorageAccess({
-            localStorage: true
-          })) as { localStorage: Storage };
-
-          this.storage = handle.localStorage;
-          return true;
-        } catch (error) {
-          // API might not support handle yet, continue with regular localStorage
-          log(
-            LOG_GROUP.STORAGE,
-            "Storage access granted but couldn't get handle:",
-            error
-          );
-          return true;
-        }
+        this.storage = await this.getStorageHandle();
+        return true;
       }
 
       // Check permission state
-      try {
-        const permission = await navigator.permissions.query({
-          name: "storage-access"
-        });
+      const permission = await navigator.permissions.query({
+        name: "storage-access"
+      });
 
-        if (permission.state === "granted") {
-          // If permission granted, call requestStorageAccess without user interaction
-          // @ts-expect-error - requestStorageAccess should return a handle
-          const handle = (await document.requestStorageAccess({
-            localStorage: true
-          })) as { localStorage: Storage };
-
-          this.storage = handle.localStorage;
-          log(LOG_GROUP.STORAGE, "Storage access granted via permission");
-          return true;
-        } else if (permission.state === "prompt") {
-          log(LOG_GROUP.STORAGE, "Storage access requires user interaction");
-          // Will need to be called after user interaction
-          return false;
-        } else if (permission.state === "denied") {
-          log(LOG_GROUP.STORAGE, "Storage access denied by user");
-          return false;
-        }
-      } catch (error) {
-        // Some browsers don't support permissions query for storage-access
-        log(LOG_GROUP.STORAGE, "Couldn't query permission:", error);
+      if (permission.state === "granted") {
+        this.storage = await this.getStorageHandle();
+        log(LOG_GROUP.STORAGE, "Storage access granted via permission");
+        return true;
+      } else if (permission.state === "prompt") {
+        log(LOG_GROUP.STORAGE, "Storage access requires user interaction");
+        this.setupUserInteractionHandler();
+        return false;
+      } else if (permission.state === "denied") {
+        log(LOG_GROUP.STORAGE, "Storage access denied by user");
+        return false;
       }
-
-      return false;
     } catch (error) {
       log(LOG_GROUP.STORAGE, "Error requesting storage access:", error);
-      return false;
     }
+
+    return false;
   }
 
   async requestAccessOnUserInteraction(): Promise<boolean> {
     try {
       if (!document.hasStorageAccess) return true;
 
-      // @ts-expect-error - requestStorageAccess should return a handle
-      const handle = (await document.requestStorageAccess({
-        localStorage: true
-      })) as { localStorage: Storage };
-
-      this.storage = handle.localStorage;
-
+      this.storage = await this.getStorageHandle();
       log(LOG_GROUP.STORAGE, "Storage access granted after user interaction");
       return true;
     } catch (error) {

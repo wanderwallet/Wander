@@ -13,14 +13,6 @@ export default defineConfig({
       "process.env.NODE_ENV": process.env.NODE_ENV || "development"
     }
   },
-  server: {
-    allowedHosts: [
-      "localhost",
-      "127.0.0.1",
-      "0.0.0.0",
-      "missouri-regard-sizes-taylor.trycloudflare.com"
-    ]
-  },
   resolve: {
     alias: {
       "~": path.resolve(__dirname, "./src"),

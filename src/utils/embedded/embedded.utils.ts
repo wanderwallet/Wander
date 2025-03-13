@@ -137,31 +137,7 @@ let storage: LocalStorage | null = null;
 export async function getStorage() {
   if (!storage) {
     storage = new LocalStorage();
-    const hasAccess = await storage.requestStorageAccess();
-
-    // If we couldn't get immediate access, we'll need to set up a user interaction handler
-    if (!hasAccess) {
-      console.log(
-        "Storage access requires user interaction. Authentication may be limited until user interacts."
-      );
-
-      // Set up one-time event handler for any user interaction
-      document.addEventListener(
-        "click",
-        async () => {
-          if (
-            !document.documentElement.hasAttribute("data-tried-storage-access")
-          ) {
-            document.documentElement.setAttribute(
-              "data-tried-storage-access",
-              "true"
-            );
-            await storage.requestAccessOnUserInteraction();
-          }
-        },
-        { once: true }
-      );
-    }
+    await storage.requestStorageAccess();
   }
 
   return storage;
