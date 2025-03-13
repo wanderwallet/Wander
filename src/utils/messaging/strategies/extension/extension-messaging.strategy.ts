@@ -18,13 +18,15 @@ function getSendMessageWithBridgeFunction<K extends MessageID>({
   destination,
   messageId,
   data
-}: MessageData<K>) {
+}: MessageData<K>): () => Promise<ReturnType<OnMessageCallback<K>>> {
   return async function sendMessageWithBridge() {
     console.log("webExtBridgeSendMessage =", messageId, destination, data);
 
     return webExtBridgeSendMessage<any, K>(messageId, data as any, destination);
   };
 }
+
+console.error(`THIS FILE WAS LOADED ${import.meta.env?.VITE_IS_EMBEDDED_APP}`);
 
 /**
  * Send a message of `<messageId>` type to the specific `tabId` or background straight away. If that message fails
@@ -48,109 +50,113 @@ export async function extensionIsomorphicSendMessage<K extends MessageID>(
 
   const sendMessageFunction = getSendMessageWithBridgeFunction(messageData);
 
-  return new Promise(async (resolve, reject) => {
-    let timeoutTimeoutID = 0;
-    let retryIntervalID = 0;
+  return new Promise<ReturnType<OnMessageCallback<K>>>(
+    async (resolve, reject) => {
+      let timeoutTimeoutID = 0;
+      let retryIntervalID = 0;
 
-    function resolveAndClearTimeouts(value: unknown) {
-      clearTimeout(timeoutTimeoutID);
-      clearInterval(retryIntervalID);
+      function resolveAndClearTimeouts(
+        value: ReturnType<OnMessageCallback<K>>
+      ) {
+        clearTimeout(timeoutTimeoutID);
+        clearInterval(retryIntervalID);
 
-      resolve(value);
-    }
+        resolve(value);
+      }
 
-    function rejectAndClearTimeouts(reason?: any) {
-      clearTimeout(timeoutTimeoutID);
-      clearInterval(retryIntervalID);
+      function rejectAndClearTimeouts(reason?: any) {
+        clearTimeout(timeoutTimeoutID);
+        clearInterval(retryIntervalID);
 
-      reject(reason);
-    }
+        reject(reason);
+      }
 
-    log(
-      LOG_GROUP.MSG,
-      `[${currentMessage}] Sending ${messageId} to ${destination}`
-    );
+      log(
+        LOG_GROUP.MSG,
+        `[${currentMessage}] Sending ${messageId} to ${destination}`
+      );
 
-    sendMessageFunction()
-      .then((result) => {
-        log(LOG_GROUP.MSG, `[${currentMessage}] ${messageId} sent`);
+      sendMessageFunction()
+        .then((result) => {
+          log(LOG_GROUP.MSG, `[${currentMessage}] ${messageId} sent`);
 
-        // The result could be both ApiResponseSuccess or ApiResponseError. The catch block below is used for other type
-        // of errors coming from `@arconnect/webext-bridge` (e.g. sending a message before there's a listener for it).
-        resolveAndClearTimeouts(result);
-      })
-      .catch((err) => {
-        const errorMessage = `${err.message || ""}`;
+          // The result could be both ApiResponseSuccess or ApiResponseError. The catch block below is used for other type
+          // of errors coming from `@arconnect/webext-bridge` (e.g. sending a message before there's a listener for it).
+          resolveAndClearTimeouts(result);
+        })
+        .catch((err) => {
+          const errorMessage = `${err.message || ""}`;
 
-        // TODO: This won't work with the embedded wallet/postMessage, but it might not be an issue... Maybe it's better
-        // to just create 2 different versions of isomorphicSendMessage?
-        if (
-          !/No handler registered in '.+' to accept messages with id '.+'/.test(
-            errorMessage
-          ) ||
-          messageId.endsWith(READY_MESSAGE_SUFFIX)
-        ) {
-          log(LOG_GROUP.MSG, `[${currentMessage}] ${messageId} error =`, err);
+          // TODO: This won't work with the embedded wallet/postMessage, but it might not be an issue... Maybe it's better
+          // to just create 2 different versions of isomorphicSendMessage?
+          if (
+            !/No handler registered in '.+' to accept messages with id '.+'/.test(
+              errorMessage
+            ) ||
+            messageId.endsWith(READY_MESSAGE_SUFFIX)
+          ) {
+            log(LOG_GROUP.MSG, `[${currentMessage}] ${messageId} error =`, err);
 
-          rejectAndClearTimeouts(err);
+            rejectAndClearTimeouts(err);
 
-          return;
-        }
-
-        // The retry after ready logic below will NOT run if `messageId` already ends in `READY_MESSAGE_SUFFIX`:
-
-        log(
-          LOG_GROUP.MSG,
-          `[${currentMessage}] Waiting for ${messageId}${READY_MESSAGE_SUFFIX}`
-        );
-
-        timeoutTimeoutID = setTimeout(() => {
-          reject(
-            new Error(
-              `Timed out waiting for ${messageId}${READY_MESSAGE_SUFFIX} from ${destination}`
-            )
-          );
-        }, 6000) as unknown as number;
-
-        // TODO: Implement retry in case the initial call to `sendMessage()` above fails and the "ready" event is never
-        // received (e.g. popup opens, `sendMessage()` fails, background sends "ready" event, popup starts listening for
-        // ready event).
-        // retryIntervalID = setInterval(() => {}, 2000);
-
-        async function handleTabReady({ sender }: IBridgeMessage<any>) {
-          // validate sender by it's tabId
-          if (sender.tabId !== tabId) {
             return;
           }
 
+          // The retry after ready logic below will NOT run if `messageId` already ends in `READY_MESSAGE_SUFFIX`:
+
           log(
             LOG_GROUP.MSG,
-            `[${currentMessage}] Sending ${messageId} to ${destination} again`
+            `[${currentMessage}] Waiting for ${messageId}${READY_MESSAGE_SUFFIX}`
           );
 
-          await sendMessageFunction()
-            .then((result) => {
-              log(LOG_GROUP.MSG, `[${currentMessage}] ${messageId} resent`);
+          timeoutTimeoutID = setTimeout(() => {
+            reject(
+              new Error(
+                `Timed out waiting for ${messageId}${READY_MESSAGE_SUFFIX} from ${destination}`
+              )
+            );
+          }, 6000) as unknown as number;
 
-              resolveAndClearTimeouts(result);
-            })
-            .catch((err) => {
-              log(
-                LOG_GROUP.MSG,
-                `[${currentMessage}] ${messageId} error again =`,
-                err
-              );
+          // TODO: Implement retry in case the initial call to `sendMessage()` above fails and the "ready" event is never
+          // received (e.g. popup opens, `sendMessage()` fails, background sends "ready" event, popup starts listening for
+          // ready event).
+          // retryIntervalID = setInterval(() => {}, 2000);
 
-              rejectAndClearTimeouts(err);
-            });
-        }
+          async function handleTabReady({ sender }: IBridgeMessage<any>) {
+            // validate sender by it's tabId
+            if (sender.tabId !== tabId) {
+              return;
+            }
 
-        webExtBridgeOnMessage(
-          `${messageId}${READY_MESSAGE_SUFFIX}`,
-          handleTabReady as any
-        );
-      });
-  });
+            log(
+              LOG_GROUP.MSG,
+              `[${currentMessage}] Sending ${messageId} to ${destination} again`
+            );
+
+            await sendMessageFunction()
+              .then((result) => {
+                log(LOG_GROUP.MSG, `[${currentMessage}] ${messageId} resent`);
+
+                resolveAndClearTimeouts(result);
+              })
+              .catch((err) => {
+                log(
+                  LOG_GROUP.MSG,
+                  `[${currentMessage}] ${messageId} error again =`,
+                  err
+                );
+
+                rejectAndClearTimeouts(err);
+              });
+          }
+
+          webExtBridgeOnMessage(
+            `${messageId}${READY_MESSAGE_SUFFIX}`,
+            handleTabReady as any
+          );
+        });
+    }
+  );
 }
 
 export function extensionIsomorphicOnMessage<K extends MessageID>(

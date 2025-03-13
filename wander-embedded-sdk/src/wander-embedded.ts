@@ -92,6 +92,8 @@ export class WanderEmbedded {
     this.handleMessage = this.handleMessage.bind(this);
     window.addEventListener("message", this.handleMessage);
 
+    console.log("setupEmbeddedWalletSDK()");
+
     // ...and set `window.arweaveWallet`:
     setupEmbeddedWalletSDK(
       this.iframeRef.contentWindow as Window,

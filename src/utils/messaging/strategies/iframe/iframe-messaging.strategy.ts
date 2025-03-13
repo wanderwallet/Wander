@@ -1,19 +1,116 @@
+import {
+  getEmbeddedAncestorOrigin,
+  isInsideIframe
+} from "~utils/embedded/embedded.utils";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
-import type { MessageData, MessageID } from "~utils/messaging/messaging.types";
+import type {
+  MessageData,
+  MessageID,
+  OnMessageCallback
+} from "~utils/messaging/messaging.types";
+
+const messageHandlersByMessageID: Partial<
+  Record<MessageID, Set<OnMessageCallback<MessageID>>>
+> = {};
 
 let messageCounter = 0;
 
-function getPostMessageFunction<K extends MessageID>({
-  destination,
-  messageId,
-  data
-}: MessageData<K>) {
-  let targetWindow: Window = window;
+function getPostMessageFunction<K extends MessageID>(
+  messageData: MessageData<K>
+): () => Promise<ReturnType<OnMessageCallback<K>>> {
+  let postMessageTargetOrigin = "";
 
-  if (destination.startsWith("content-script")) targetWindow = window.parent;
-  else if (destination === "background") targetWindow = getIFrameWindow();
+  const { destination, messageId, data } = messageData;
 
-  return async function postMessage() {};
+  // TODO: isInsideIframe is an incorrect check because we might be running the app standalone.
+
+  if (destination === "background") {
+    if (!isInsideIframe())
+      postMessageTargetOrigin = getEmbeddedAncestorOrigin();
+  } else if (destination.startsWith("content-script")) {
+    if (!isInsideIframe())
+      throw new Error(
+        `Can only send messages to the "content-script" (SDK) from the "background" (iframe context).`
+      );
+    postMessageTargetOrigin = getEmbeddedAncestorOrigin();
+  } else if (destination.startsWith("web_accessible")) {
+    if (!isInsideIframe())
+      throw new Error(
+        `Can only send messages to "web_accessible" (auth popup) from the "background" (iframe context).`
+      );
+    postMessageTargetOrigin = "";
+  }
+
+  if (postMessageTargetOrigin) {
+    return async function postMessage() {
+      console.log(`postMessage to ${window.location.origin}`);
+
+      return new Promise(async (resolve) => {
+        window.postMessage(messageData, window.location.origin);
+
+        // TODO: Wait for response and return, but use the callbacks stored above.
+
+        /*
+        window.addEventListener("message", (event: MessageEvent) => {
+          if (
+            !event.data ||
+            event.data.app !== "wanderEmbedded" ||
+            event.origin !== getEmbeddedAncestorOrigin()
+          )
+            return;
+
+          console.log("MESSAGE FROM PARENT =", event.data);
+
+          handleApiCallMessage({
+            id: "",
+            timestamp: Date.now(),
+            data: event.data,
+            sender: {
+              tabId: 0,
+              context: "content-script"
+            }
+          });
+
+          // Example: check if the message is from our SDK
+
+          // if (event.data.type === "FROM_SDK") {
+          //   const incomingMsg = event.data.payload;
+          //   console.log(
+          //     "Iframe received message from WanderEmbedded:",
+          //     incomingMsg
+          //   );
+
+          //   // Respond back
+          //   event.source?.postMessage({
+          //     type: "FROM_IFRAME",
+          //     payload: `Got your message: ${incomingMsg}`
+          //   });
+          // }
+        });
+        */
+
+        return Promise.resolve(null);
+      });
+    };
+  }
+
+  return async function sendMessageToCallback() {
+    console.log("sendMessageToCallback");
+
+    const messageHandlers = messageHandlersByMessageID[messageId];
+
+    if (messageHandlers.size > 1) {
+      console.warn(
+        `${messageHandlers.size} handlers found for ${messageId}. Only the first response will be returned.`
+      );
+    }
+
+    const resultPromises = Array.from(messageHandlers).map((messageHandler) => {
+      return messageHandler(data);
+    });
+
+    return await Promise.race(resultPromises);
+  };
 }
 
 /**
@@ -38,7 +135,7 @@ export async function iframeIsomorphicSendMessage<K extends MessageID>(
 
   const sendMessageFunction = getPostMessageFunction(messageData);
 
-  return new Promise(async (resolve) => {
+  return new Promise<ReturnType<OnMessageCallback<K>>>(async (resolve) => {
     log(
       LOG_GROUP.MSG,
       `[${currentMessage}] Sending ${messageId} to ${destination}`
@@ -56,12 +153,63 @@ export function iframeIsomorphicOnMessage<K extends MessageID>(
   messageId: K,
   callback: OnMessageCallback<K>
 ): void {
-  // TODO: In embedded, verify that:
-  // - The messages come from iframeWindow if we are in the app domain.
-  // - The messages come from window.parent if we are in the iframe.
+  messageHandlersByMessageID[messageId] ??= new Set();
+  messageHandlersByMessageID[messageId].add(callback);
 
-  // TODO: In the embedded wallet, there are no ready messages, so the API/SDK must make sure the iframe is ready before
-  // accepting method calls...
+  if (messageHandlersByMessageID[messageId].size > 1) {
+    // TODO: Are we adding the same listener multiple times?
+    console.warn(
+      "iframeIsomorphicOnMessage",
+      messageId,
+      messageHandlersByMessageID
+    );
+  }
 
-  webExtBridgeOnMessage(messageId, callback as any);
+  // Note that in Wander Embed, there are no ready messages, so the API/SDK must
+  // make sure the iframe is ready before accepting method calls...
+}
+
+if (isInsideIframe()) {
+  // TODO: Set this up after first call to `iframeIsomorphicOnMessage`?
+
+  console.log("Listening for messages...");
+
+  window.addEventListener("message", (event: MessageEvent) => {
+    if (
+      !event.data ||
+      event.data.app !== "wanderEmbedded" ||
+      event.origin !== getEmbeddedAncestorOrigin()
+    )
+      return;
+
+    console.log("MESSAGE FROM PARENT =", event.data);
+
+    /*
+    handleApiCallMessage({
+      id: "",
+      timestamp: Date.now(),
+      data: event.data,
+      sender: {
+        tabId: 0,
+        context: "content-script"
+      }
+    });
+    */
+
+    // Example: check if the message is from our SDK
+
+    // if (event.data.type === "FROM_SDK") {
+    //   const incomingMsg = event.data.payload;
+    //   console.log(
+    //     "Iframe received message from WanderEmbedded:",
+    //     incomingMsg
+    //   );
+
+    //   // Respond back
+    //   event.source?.postMessage({
+    //     type: "FROM_IFRAME",
+    //     payload: `Got your message: ${incomingMsg}`
+    //   });
+    // }
+  });
 }
