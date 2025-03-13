@@ -17,4 +17,5 @@ export type CopyableBaseProps = {
   style?: React.CSSProperties;
   isShortened?: boolean;
   hasBorder?: boolean;
+  isButtonOnly?: boolean;
 };

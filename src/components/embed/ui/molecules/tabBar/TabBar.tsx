@@ -5,17 +5,15 @@ import type { TabBarBaseProps } from "./TabBar.types";
 import { Text } from "../../atoms";
 
 const TabBar = React.forwardRef<HTMLDivElement, TabBarBaseProps>(
-  ({ tabs, className, ...props }, ref) => {
+  ({ tabs, className, setActiveTab, activeTab, ...props }, ref) => {
     const Component = "div";
-
-    const [activeTab, setActiveTab] = React.useState(0);
 
     return (
       <Component
         ref={ref}
         className={`
-      ${styles["tabs"]}
-      ${className}`}
+        ${styles["tabs"]}
+        ${className}`}
         {...props}
       >
         <div

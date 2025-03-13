@@ -1,25 +1,13 @@
 import { QRCodeSVG } from "qrcode.react";
 import { useMemo } from "react";
-import {
-  Card,
-  Divider,
-  AccountSelector,
-  Row,
-  CoinsIcon,
-  Text,
-  ReceiptIcon,
-  OpenTabIcon,
-  Box,
-  Link,
-  Copyable
-} from "~components/embed/ui";
-import { QRCodeWrapper } from "~routes/popup/receive";
+import "./receive.view.css";
+import { Card, Text, Copyable } from "~components/embed/ui";
 import { useActiveWallet } from "~wallets/hooks";
 import { useLocation } from "~wallets/router/router.utils";
 
 export function WalletReceiveEmbeddedView() {
   const wallet = useActiveWallet();
-  const { back } = useLocation();
+  const { navigate, back } = useLocation();
 
   const effectiveAddress = useMemo(() => wallet?.address, [wallet]);
 
@@ -30,20 +18,20 @@ export function WalletReceiveEmbeddedView() {
       size="auto"
       headerText="Receive"
       hasBackButton={true}
-      onBackButtonClick={back}
+      onBackButtonClick={() => navigate("/wallet")}
       style={{ padding: "32px" }}
     >
       <Text variant="bodyMd" style={{ margin: "1rem" }}>
         {effectiveWalletName}
       </Text>
-      <QRCodeWrapper>
+      <div className="wrapper">
         <QRCodeSVG
-          fgColor="#fff"
+          fgColor="#503ece"
           bgColor="transparent"
           size={224}
           value={effectiveAddress ?? ""}
         />
-      </QRCodeWrapper>
+      </div>
       <Copyable value={effectiveAddress ?? ""} hasBorder={false} />
     </Card>
   );

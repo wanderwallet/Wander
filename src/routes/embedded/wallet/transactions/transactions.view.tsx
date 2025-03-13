@@ -7,14 +7,14 @@ export function WalletTransactionsEmbeddedView() {
   const { address } = useActiveWallet();
 
   const { transactions, loading } = useTransactions(address);
-  const { back } = useLocation();
+  const { navigate } = useLocation();
 
   return (
     <Card
       size="auto"
       headerText="Transaction History"
       hasBackButton={true}
-      onBackButtonClick={back}
+      onBackButtonClick={() => navigate("/wallet")}
       style={{ padding: "2rem" }}
     >
       {Object.values(transactions).map((tx) => (

@@ -20,13 +20,12 @@
 .copyable__button {
   display: flex;
   flex-direction: row;
-  gap: var(--spacing-2);
+  margin-left: var(--spacing-2);
   background-color: inherit;
   color: var(--color-copyable-text-value);
   border: none;
   justify-content: space-between;
   align-items: center;
-  width: auto;
   padding-left: 0;
   cursor: pointer;
   transition: background-color var(--transition-base);
@@ -34,7 +33,7 @@
 
 .copyable__button:hover:not(:disabled) {
   background-color: var(--brand-color-gray-100);
-  border-radius: var(--border-radius-sm);
+  border-radius: var(--border-radius-md);
 }
 
 .copyable__button:disabled {
@@ -45,6 +44,10 @@
 .text__label {
   color: var(--color-copyable-text-label);
   font-size: var(--font-size-sm);
+  margin-right: var(--spacing-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Size variants */

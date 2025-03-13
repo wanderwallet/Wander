@@ -1,5 +1,5 @@
 import type { WalletSourceType } from "embed-api";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Box,
   Button,
@@ -38,6 +38,11 @@ export function AccountAddWalletEmbeddedView() {
     setIsLoading({ calledId: "", status: false });
   }, []);
 
+  const isDisabled = useMemo(
+    () => isLoading.status === true,
+    [isLoading.status]
+  );
+
   return (
     <Card
       headerText="Add a wallet"
@@ -59,6 +64,7 @@ export function AccountAddWalletEmbeddedView() {
           onClick={() => handleRegisterWallet("GENERATED")}
           variant="outlined"
           isFullWidth
+          isDisabled={isDisabled}
           icon={<SeedIcon fontSize={24} />}
           isLoading={
             isLoading.calledId === "generated" && isLoading.status === true
@@ -69,6 +75,7 @@ export function AccountAddWalletEmbeddedView() {
         <Button
           variant="outlined"
           isFullWidth
+          isDisabled={isDisabled}
           icon={<WalletIcon fontSize={24} />}
           href="#/auth/import-seedphrase"
         >
@@ -77,6 +84,7 @@ export function AccountAddWalletEmbeddedView() {
         <Button
           variant="outlined"
           isFullWidth
+          isDisabled={isDisabled}
           icon={<KeyIcon fontSize={24} />}
           href="#/auth/import-keyfile"
         >
@@ -86,6 +94,7 @@ export function AccountAddWalletEmbeddedView() {
           <Button
             variant="outlined"
             isFullWidth
+            isDisabled={isDisabled}
             icon={<QRCodeIcon fontSize={24} />}
             href="#/auth/add-device"
           >
@@ -95,6 +104,7 @@ export function AccountAddWalletEmbeddedView() {
           <Button
             variant="outlined"
             isFullWidth
+            isDisabled={isDisabled}
             icon={<QRCodeIcon fontSize={24} />}
             href="#/auth/add-auth-provider"
           >

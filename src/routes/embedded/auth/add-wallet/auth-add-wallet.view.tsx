@@ -1,5 +1,6 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useLocation } from "~wallets/router/router.utils";
 
 import {
   Box,
@@ -18,7 +19,7 @@ import type { WalletSourceType } from "embed-api";
 export function AuthAddWalletEmbeddedView() {
   const { authProviderType, generateTempWallet, registerWallet } =
     useEmbedded();
-
+  const { navigate } = useLocation();
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {

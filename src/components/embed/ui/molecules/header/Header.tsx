@@ -25,7 +25,11 @@ const Header = React.forwardRef<HTMLDivElement, HeaderBaseProps>(
         >
           {icon}
           {title && (
-            <Text variant="headingLg" alignment="center">
+            <Text
+              variant="headingLg"
+              alignment="center"
+              style={{ marginInline: 8 }}
+            >
               {title}
             </Text>
           )}

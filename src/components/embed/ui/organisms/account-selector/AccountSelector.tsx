@@ -68,18 +68,17 @@ export function AccountSelector({
                     style={{
                       fontWeight: 500,
                       color: "#121212",
-                      width: 140
+                      width: "max-content"
                     }}
                   >
                     {wallet.nickname ?? wallet.address}
                   </Text>
                   <Copyable
+                    isButtonOnly
                     hasBorder={false}
-                    isFullWidth
                     value={wallet.address}
                     style={{
-                      marginBottom: -16,
-                      marginTop: -16
+                      maxWidth: 140
                     }}
                   />
                 </Row>

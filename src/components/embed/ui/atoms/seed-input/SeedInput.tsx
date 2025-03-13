@@ -68,7 +68,6 @@ const SeedInput = forwardRef<HTMLDivElement, SeedInputBaseProps>(
       <Component
         className={`
           ${styles["seed-phrase-container"]}
-          ${styles[`seed__${numInputs}`]}
           ${className}
         `}
         ref={ref}

@@ -13,6 +13,7 @@ const Copyable = forwardRef<HTMLDivElement, CopyableBaseProps>(
       value,
       hasBorder = true,
       isShortened = true,
+      isButtonOnly = false,
       className,
       size = "md",
       isFullWidth,
@@ -73,16 +74,25 @@ const Copyable = forwardRef<HTMLDivElement, CopyableBaseProps>(
                 {tooltipValue && (
                   <span className={styles.tooltiptext}>{tooltipValue}</span>
                 )}
-                <Text
-                  className={styles.text__label}
-                  variant="bodyLg"
-                  style={{ color: textColor }}
-                >
-                  {isShortened
-                    ? value.slice(0, 4) + "..." + value.slice(-4)
-                    : value}
-                </Text>
-                <CopyableIcon color={iconColor} />
+                {!isButtonOnly && (
+                  <Text
+                    className={styles.text__label}
+                    variant="bodyLg"
+                    style={{ color: textColor }}
+                  >
+                    {isShortened
+                      ? value.slice(0, 4).toLocaleLowerCase() +
+                        "..." +
+                        value.slice(-4).toLocaleLowerCase()
+                      : value.toLocaleLowerCase()}
+                  </Text>
+                )}
+                <CopyableIcon
+                  color={iconColor}
+                  width={16}
+                  height={16}
+                  style={{ justifySelf: "flex-end" }}
+                />
               </button>
             </div>
           </Box>

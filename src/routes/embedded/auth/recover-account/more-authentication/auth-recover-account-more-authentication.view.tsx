@@ -95,14 +95,4 @@ export function AuthRecoverAccountMoreAuthenticationEmbeddedView() {
       </Box>
     </Card>
   );
-
-  //     config={[
-  //       {
-  //         label: importedTempWalletAddress,
-  //         isDisabled: true
-  //       },
-  //       {
-  //         label: accountToRecover ? accountToRecover.name : "-",
-  //         isDisabled: true
-  //       },
 }

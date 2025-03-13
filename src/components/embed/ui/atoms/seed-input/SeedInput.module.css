@@ -1,14 +1,5 @@
 @import "../../../tokens/index.css";
 
-.seed-phrase-container {
-  font-family: var(--font-family-mono);
-  font-size: var(--font-size-sm);
-  padding: var(--spacing-4);
-  border: 1px solid var(--color-seed-input-border);
-  border-radius: var(--border-radius-lg);
-  width: 98%;
-}
-
 .header {
   display: flex;
   justify-content: space-between;
@@ -16,6 +7,16 @@
   margin-bottom: var(--spacing-4);
   padding-bottom: var(--spacing-4);
   border-bottom: 1px solid var(--color-divider-default);
+}
+
+.seed-phrase-container {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-sm);
+  padding: var(--spacing-4);
+  border: 1px solid var(--color-seed-input-border);
+  border-radius: var(--border-radius-lg);
+  align-content: stretch;
+  width: 100%;
 }
 
 .input-options {
@@ -62,12 +63,19 @@
   gap: 10px;
 }
 
+@media (max-width: 440px) {
+  .input-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 .input-grid input {
   border: 1px solid transparent;
   border-radius: var(--border-radius-lg);
   padding: var(--spacing-2);
   text-align: left;
   background-color: var(--color-seed-input-background);
+  width: 100%;
 }
 
 .input-grid input:focus {
