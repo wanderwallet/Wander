@@ -2,9 +2,6 @@ import { createSupabaseClient, createTRPCClient } from "embed-api";
 import { jwtDecode } from "jwt-decode";
 import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 
-// Create a singleton instance of the Supabase client
-let supabaseInstance: ReturnType<typeof createSupabaseClient> | null = null;
-
 // Then, its tRPC client will be initialized with the following headers:
 // - authorization (getAuthTokenHeader / setAuthTokenHeader)
 // - x-device-nonce (getDeviceNonceHeader / setDeviceNonceHeader)
@@ -93,6 +90,28 @@ export function isInsideIframe(): boolean {
   }
 }
 
+// Create a singleton instance of `TRPCClient`
+let trpcInstance: ReturnType<typeof createTRPCClient> | null = null;
+
+function getTRPCClientAndUtils() {
+  if (!IS_EMBEDDED_APP) return null;
+
+  if (!trpcInstance) {
+    trpcInstance = createTRPCClient({
+      baseURL: EMBEDDED_SERVER_BASE_URL,
+      authToken: null,
+      deviceNonce: undefined,
+      clientId: EMBEDDED_CLIENT_ID,
+      applicationId: "",
+      onAuthError: handleAuthError
+    });
+  }
+
+  return trpcInstance;
+}
+
+const trpcClientAndUtils = getTRPCClientAndUtils();
+
 const {
   client: trpcVanilla,
   getAuthTokenHeader,
@@ -102,22 +121,15 @@ const {
   getClientIdHeader,
   setClientIdHeader,
   setApplicationIdHeader
-} = createTRPCClient({
-  baseURL: EMBEDDED_SERVER_BASE_URL,
-  authToken: null,
-  deviceNonce: undefined,
-  clientId: EMBEDDED_CLIENT_ID,
-  applicationId: "",
-  onAuthError: handleAuthError
-});
-
-// TODO: When developers set up a new app/domain, we should probably use a mechanism like Google Search Console where
-// they need to create a file at the root of their domain, or add an HTML tag, so that we can verify it's actually theirs.
+} = trpcClientAndUtils || {};
 
 // Exporting the router from one repo to another might, in some scenarios, return incorrect types, but it can be fixed
 // by also importing the right AppRouter type and overriding the `client` type:
 // type TRPCClient = ReturnType<typeof createTRPCProxyClient<AppRouter>>;
 // const trpcVanilla = client as TRPCClient;
+
+// Create a singleton instance of `SupabaseClient`
+let supabaseInstance: ReturnType<typeof createSupabaseClient> | null = null;
 
 function getSupabaseClient() {
   if (!IS_EMBEDDED_APP) return null;
@@ -134,6 +146,23 @@ function getSupabaseClient() {
 
 const supabase = getSupabaseClient();
 
+export {
+  supabase,
+  trpcVanilla,
+  getAuthTokenHeader,
+  setAuthTokenHeader,
+  getDeviceNonceHeader,
+  setDeviceNonceHeader,
+  getClientIdHeader,
+  setClientIdHeader
+};
+
+// TODO: When developers set up a new app/domain, we should probably use a mechanism like Google Search Console where
+// they need to create a file at the root of their domain, or add an HTML tag, so that we can verify it's actually theirs.
+
+// TODO: Move to embedded.provider and make sure it's called once deviceNonce has been loaded, and that a loader/spinner
+// is shown until this validation has happened.
+
 async function getSessionId() {
   try {
     const {
@@ -147,9 +176,6 @@ async function getSessionId() {
     return undefined;
   }
 }
-
-// TODO: Move to embedded.provider and make sure it's called once deviceNonce has been loaded, and that a loader/spinner
-// is shown until this validation has happened.
 
 async function insecurelyValidateApplication() {
   try {
@@ -205,17 +231,6 @@ async function insecurelyValidateApplication() {
 
 // Validate immediately on load
 // insecurelyValidateApplication();
-
-export {
-  supabase,
-  trpcVanilla,
-  getAuthTokenHeader,
-  setAuthTokenHeader,
-  getDeviceNonceHeader,
-  setDeviceNonceHeader,
-  getClientIdHeader,
-  setClientIdHeader
-};
 
 if (IS_EMBEDDED_APP && process.env.NODE_ENV === "development") {
   (window as any).logout = () => {

@@ -75,7 +75,7 @@ export class WanderEmbedded {
         },
         button: true
       } satisfies WanderEmbeddedOptions,
-      options
+      options || {}
     );
 
     if (!optionsWithDefaults.clientId) throw new Error("clientId is required");
