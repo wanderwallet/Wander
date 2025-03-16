@@ -11,12 +11,19 @@ import {
 } from "~utils/analytics";
 import { useActiveWallet } from "~wallets/hooks";
 import { scheduleImportAoTokens } from "~tokens/aoTokens/sync";
-import { Card, Divider, AccountSelector, TabBar } from "~components/embed/ui";
+import {
+  Card,
+  Divider,
+  AccountSelector,
+  TabBar,
+  Text
+} from "~components/embed/ui";
 
-import Balance from "~components/popup/home/Balance";
 import type { StoredWallet } from "~wallets";
 import { WalletHomeActions } from "./actions.container";
 import { WalletHomeAssets } from "./assets.container";
+import { WalletHomeBalance } from "./balance.container";
+import { useBalanceSortedTokens } from "~tokens/aoTokens/ao";
 
 export function WalletHomeEmbeddedView() {
   const [loggedIn, setLoggedIn] = useState(false);
@@ -27,6 +34,10 @@ export function WalletHomeEmbeddedView() {
     instance: ExtensionStorage
   });
 
+  const { tokens, prices } = useBalanceSortedTokens({
+    type: "asset",
+    hidden: false
+  });
   // checking to see if it's a hardware wallet
   const wallet = useActiveWallet();
   const [wallets] = useStorage<StoredWallet[]>(
@@ -78,15 +89,18 @@ export function WalletHomeEmbeddedView() {
   return (
     <Card size="auto" style={{ padding: "32px" }} hasBackButton={false}>
       <AccountSelector wallets={wallets} activeWallet={wallet} />
-      <Balance />
+      <WalletHomeBalance />
       <Divider />
-
       <TabBar
         tabs={[{ label: "Assets" }, { label: "Actions" }]}
         setActiveTab={setActiveTab}
         activeTab={activeTab}
       />
-      {activeTab === 1 ? <WalletHomeActions /> : <WalletHomeAssets />}
+      {activeTab === 1 ? (
+        <WalletHomeActions />
+      ) : (
+        <WalletHomeAssets tokens={tokens} prices={prices} />
+      )}
     </Card>
   );
 }
