@@ -31,7 +31,7 @@ const background: BackgroundModuleFunction<Uint8Array> = async (
     alg: "RSA-OAEP-256",
     ext: true
   };
-
+  if (options.publicKey) publicKey.n = options.publicKey as string;
   // remove wallet from memory
   freeDecryptedWallet(keyfile);
 
