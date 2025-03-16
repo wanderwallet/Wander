@@ -20,6 +20,8 @@ import { timeoutPromise } from "~utils/promises/timeout";
 import { HeadAuth } from "~components/HeadAuth";
 import { AuthButtons } from "~components/auth/AuthButtons";
 import { useAskPassword } from "~wallets/hooks";
+import { ExtensionStorage } from "~utils/storage";
+import { useStorage } from "~utils/storage";
 
 export function BatchSignDataItemAuthRequestView() {
   const { authRequest, acceptRequest, rejectRequest } =
@@ -32,8 +34,16 @@ export function BatchSignDataItemAuthRequestView() {
   const passwordInput = useInput();
   const askPassword = useAskPassword();
 
+  const [transferRequirePassword] = useStorage<boolean>(
+    {
+      key: "transfer_require_password",
+      instance: ExtensionStorage
+    },
+    false
+  );
+
   async function sign() {
-    if (askPassword) {
+    if (transferRequirePassword && askPassword) {
       const checkPw = await checkPassword(passwordInput.state);
 
       if (!checkPw) {
@@ -134,7 +144,7 @@ export function BatchSignDataItemAuthRequestView() {
       <Section>
         {!transaction ? (
           <>
-            {askPassword && (
+            {transferRequirePassword && askPassword && (
               <>
                 <PasswordWrapper>
                   <Input
@@ -158,7 +168,11 @@ export function BatchSignDataItemAuthRequestView() {
               authRequest={authRequest}
               primaryButtonProps={{
                 label: browser.i18n.getMessage("sign_authorize_all"),
-                disabled: (askPassword && !passwordInput.state) || loading,
+                disabled:
+                  (transferRequirePassword &&
+                    askPassword &&
+                    !passwordInput.state) ||
+                  loading,
                 onClick: sign
               }}
               secondaryButtonProps={{

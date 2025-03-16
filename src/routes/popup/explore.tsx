@@ -112,8 +112,8 @@ export function ExploreView() {
                   source={app.icon}
                   alt={app.name}
                   objectFit={app.objectFit}
-                  showBorder={app.showBorder}
                   imageSize={app.imageSize}
+                  padding={app.padding}
                 />
               ) : (
                 <AppIconWrapper
@@ -121,8 +121,8 @@ export function ExploreView() {
                   alt={app.name}
                   backgroundColor={app.backgroundColor}
                   objectFit={app.objectFit}
-                  showBorder={app.showBorder}
                   imageSize={app.imageSize}
+                  padding={app.padding}
                 />
               )}
               <Description>
@@ -163,18 +163,19 @@ const filterApps = (
 
 const IconWrapper = styled.div<{
   backgroundColor?: string;
-  showBorder?: boolean;
+  padding?: string;
 }>`
-  background-color: ${(props) => props.backgroundColor || "white"};
+  background-color: ${(props) => props.backgroundColor || "transparent"};
   border-radius: 12px;
-  ${(props) =>
-    props.showBorder && `border: 1px solid ${props.theme.borderDefault};`}
+  ${(props) => `border: 1px solid ${props.theme.borderDefault};`}
   overflow: hidden;
   height: 40px;
   width: 40px;
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: ${(props) => props.padding || "0"};
+  box-sizing: border-box;
 `;
 
 const IconImage = styled.img<{
@@ -186,7 +187,10 @@ const IconImage = styled.img<{
   object-fit: ${(props) => props.objectFit || "contain"};
 `;
 
-const GradientWrapper = styled.div<{ colors?: string[]; showBorder?: boolean }>`
+const GradientWrapper = styled.div<{
+  colors?: string[];
+  padding?: string;
+}>`
   border-radius: 12px;
   overflow: hidden;
   height: 40px;
@@ -195,11 +199,12 @@ const GradientWrapper = styled.div<{ colors?: string[]; showBorder?: boolean }>`
     props.colors
       ? `linear-gradient(135deg, ${props.colors[0]} 0%, ${props.colors[1]} 100%)`
       : "linear-gradient(135deg, #8B57FE 0%, #886DFB 100%)"};
-  ${(props) =>
-    props.showBorder && `border: 1px solid ${props.theme.borderDefault};`}
+  ${(props) => `border: 1px solid ${props.theme.borderDefault};`}
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: ${(props) => props.padding || "0"};
+  box-sizing: border-box;
 `;
 
 interface AppIconProps {
@@ -207,20 +212,20 @@ interface AppIconProps {
   alt?: string;
   backgroundColor?: string;
   objectFit?: "contain" | "cover";
-  showBorder?: boolean;
   imageSize?: string;
+  padding?: string;
 }
 
 function AppIconWrapper({
   source,
   alt,
-  showBorder,
   backgroundColor,
   objectFit,
-  imageSize
+  imageSize,
+  padding
 }: AppIconProps) {
   return (
-    <IconWrapper backgroundColor={backgroundColor} showBorder={showBorder}>
+    <IconWrapper backgroundColor={backgroundColor} padding={padding}>
       <IconImage
         src={source}
         alt={alt || ""}
@@ -236,20 +241,20 @@ interface AppGradientIconProps {
   alt?: string;
   colors?: string[];
   objectFit?: "contain" | "cover";
-  showBorder?: boolean;
   imageSize?: string;
+  padding?: string;
 }
 
 function AppLinearGradientIconWrapper({
   source,
   alt,
   colors,
-  showBorder,
   objectFit,
-  imageSize
+  imageSize,
+  padding
 }: AppGradientIconProps) {
   return (
-    <GradientWrapper colors={colors} showBorder={showBorder}>
+    <GradientWrapper colors={colors} padding={padding}>
       <IconImage
         objectFit={objectFit}
         src={source}

@@ -72,6 +72,14 @@ export function SignDataItemAuthRequestView() {
     [tags]
   );
 
+  const [transferRequirePassword] = useStorage<boolean>(
+    {
+      key: "transfer_require_password",
+      instance: ExtensionStorage
+    },
+    false
+  );
+
   const process = data?.target;
 
   const formattedAmount = useMemo(
@@ -128,7 +136,7 @@ export function SignDataItemAuthRequestView() {
 
   // sign message
   async function sign() {
-    if (askPassword) {
+    if (transferRequirePassword && askPassword) {
       const checkPw = await checkPassword(passwordInput.state);
       if (!checkPw) {
         setToast({
@@ -207,7 +215,7 @@ export function SignDataItemAuthRequestView() {
   // listen for enter to reset
   useEffect(() => {
     const listener = async (e: KeyboardEvent) => {
-      if (askPassword) return;
+      if (transferRequirePassword && askPassword) return;
       if (e.key !== "Enter") return;
       await sign();
     };
@@ -215,7 +223,7 @@ export function SignDataItemAuthRequestView() {
     window.addEventListener("keydown", listener);
 
     return () => window.removeEventListener("keydown", listener);
-  }, [authID, askPassword]);
+  }, [authID, transferRequirePassword, askPassword]);
 
   useEffect(() => {
     if (tokenName && !logo) {
@@ -377,7 +385,7 @@ export function SignDataItemAuthRequestView() {
         </Section>
       </div>
       <Section>
-        {askPassword && (
+        {transferRequirePassword && askPassword && (
           <>
             <PasswordWrapper>
               <Input

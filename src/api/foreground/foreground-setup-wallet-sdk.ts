@@ -145,31 +145,8 @@ export function setupWalletSDK(targetWindow: Window = window) {
     });
   }
 
-  /**
-   * Create the Proxy object.
-   */
-  const proxyWallet = new Proxy<Record<string, any>>(walletAPI, {
-    get(target, propKey: string) {
-      // If the property is a symbol or some internal property:
-      if (typeof propKey !== "string") {
-        return Reflect.get(target, propKey);
-      }
-
-      // Get value from target if it exists
-      const value = Reflect.get(target, propKey);
-      if (value !== undefined) {
-        return value;
-      }
-
-      // Forward generically or throw:
-      return (...args: any[]) => {
-        return callForegroundThenBackground(propKey, args);
-      };
-    }
-  });
-
   // @ts-expect-error
-  window.arweaveWallet = proxyWallet;
+  window.arweaveWallet = walletAPI;
 
   // at the end of the injected script,
   // we dispatch the wallet loaded event
