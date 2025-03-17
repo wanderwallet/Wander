@@ -1,7 +1,8 @@
+import { isInsideIframe } from "~utils/embedded/embedded.utils";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 
 export class LocalStorage implements Storage {
-  private storage: Storage = globalThis.localStorage;
+  public storage: Storage = globalThis.localStorage;
 
   private async getStorageHandle(): Promise<Storage> {
     // @ts-expect-error - requestStorageAccess should return a handle
@@ -22,6 +23,8 @@ export class LocalStorage implements Storage {
   }
 
   async requestStorageAccess(): Promise<boolean> {
+    if (!isInsideIframe()) return true;
+
     try {
       // Check if API is supported
       if (!document.hasStorageAccess) {
@@ -103,5 +106,9 @@ export class LocalStorage implements Storage {
 
   get length(): number {
     return this.storage.length;
+  }
+
+  keys(): string[] {
+    return Object.keys(this.storage);
   }
 }

@@ -20,6 +20,7 @@ import {
 } from "~utils/crypto/crypto.utils";
 import type { Wallet } from "~utils/embedded/embedded.types";
 import { EMBEDDED_FEATURE_FLAGS } from "~utils/embedded/embedded.constants";
+import { getStorage } from "~utils/embedded/embedded.utils";
 
 // import { random, pki, asn1 } from "node-forge";
 //
@@ -343,11 +344,12 @@ export type DeviceShares = Record<string, string>;
 // userId - DeviceShares
 export type DeviceSharesByUser = Record<string, DeviceShares>;
 
-function loadDeviceSharesByUser(): DeviceSharesByUser {
+let _deviceSharesByUser: DeviceSharesByUser | null = null;
+
+async function loadDeviceSharesByUser(): Promise<DeviceSharesByUser> {
   try {
-    let deviceSharesInfo = JSON.parse(
-      localStorage.getItem(DEVICE_SHARES_INFO_KEY)
-    );
+    const storage = await getStorage();
+    let deviceSharesInfo = JSON.parse(storage.getItem(DEVICE_SHARES_INFO_KEY));
 
     // TODO: Add additional validation...
 
@@ -365,11 +367,18 @@ function loadDeviceSharesByUser(): DeviceSharesByUser {
   }
 }
 
-let _deviceSharesByUser: DeviceSharesByUser = loadDeviceSharesByUser();
+export async function initializeDeviceShares() {
+  _deviceSharesByUser = await loadDeviceSharesByUser();
+  return _deviceSharesByUser;
+}
 
 // Getters:
 
-function getDeviceSharesForUser(userId: string): DeviceShares {
+async function getDeviceSharesForUser(userId: string): Promise<DeviceShares> {
+  if (!_deviceSharesByUser) {
+    await initializeDeviceShares();
+  }
+
   return _deviceSharesByUser[userId] || {};
 }
 
@@ -428,14 +437,16 @@ async function storeEncryptedSeedPhrase(
     "base64"
   );
 
-  localStorage.setItem(
+  const storage = await getStorage();
+  storage.setItem(
     `${ENCRYPTED_SEED_PHRASE_KEY}-${walletId}`,
     encryptedSeedPhrase
   );
 }
 
-function hasEncryptedSeedPhrase(walletId: string) {
-  return !!localStorage.getItem(`${ENCRYPTED_SEED_PHRASE_KEY}-${walletId}`);
+async function hasEncryptedSeedPhrase(walletId: string) {
+  const storage = await getStorage();
+  return !!storage.getItem(`${ENCRYPTED_SEED_PHRASE_KEY}-${walletId}`);
 }
 
 async function getDecryptedSeedPhrase(walletId: string, jwk: JWKInterface) {
@@ -462,7 +473,8 @@ async function getDecryptedSeedPhrase(walletId: string, jwk: JWKInterface) {
     ["decrypt"]
   );
 
-  const encryptedSeedPhrase = localStorage.getItem(
+  const storage = await getStorage();
+  const encryptedSeedPhrase = storage.getItem(
     `${ENCRYPTED_SEED_PHRASE_KEY}-${walletId}`
   );
 
@@ -479,30 +491,34 @@ async function getDecryptedSeedPhrase(walletId: string, jwk: JWKInterface) {
   return decryptedSeedPhrase;
 }
 
-function storeDeviceShare(wallet: Wallet, userId: string) {
+async function storeDeviceShare(wallet: Wallet, userId: string) {
   log(LOG_GROUP.WALLET_GENERATION, "storeDeviceShare()");
+
+  if (!_deviceSharesByUser) {
+    await initializeDeviceShares();
+  }
 
   if (!_deviceSharesByUser[userId]) _deviceSharesByUser[userId] = {};
 
   _deviceSharesByUser[userId][wallet.id] = wallet.deviceShare;
 
-  localStorage.setItem(
-    DEVICE_SHARES_INFO_KEY,
-    JSON.stringify(_deviceSharesByUser)
-  );
+  const storage = await getStorage();
+  storage.setItem(DEVICE_SHARES_INFO_KEY, JSON.stringify(_deviceSharesByUser));
 }
 
-function removeDeviceShare(walletId: string, userId: string) {
+async function removeDeviceShare(walletId: string, userId: string) {
   log(LOG_GROUP.WALLET_GENERATION, "storeDeviceShare()");
+
+  if (!_deviceSharesByUser) {
+    await initializeDeviceShares();
+  }
 
   if (!_deviceSharesByUser[userId]) _deviceSharesByUser[userId] = {};
 
   delete _deviceSharesByUser[userId][walletId];
 
-  localStorage.setItem(
-    DEVICE_SHARES_INFO_KEY,
-    JSON.stringify(_deviceSharesByUser)
-  );
+  const storage = await getStorage();
+  storage.setItem(DEVICE_SHARES_INFO_KEY, JSON.stringify(_deviceSharesByUser));
 }
 
 async function storeEncryptedWalletJWK(jwk: JWKInterface): Promise<void> {
@@ -551,9 +567,13 @@ export const WalletUtils = {
 
 // Stored seedphrase are removed if the `STORE_SEED_PHRASE` flag becomes false:
 if (!EMBEDDED_FEATURE_FLAGS.STORE_SEED_PHRASE) {
-  Object.keys(localStorage).forEach((key) => {
-    if (key.startsWith(ENCRYPTED_SEED_PHRASE_KEY)) {
-      localStorage.removeItem(key);
+  (async () => {
+    const storage = await getStorage();
+    const keys = storage.keys();
+    for (const key of keys) {
+      if (key.startsWith(ENCRYPTED_SEED_PHRASE_KEY)) {
+        storage.removeItem(key);
+      }
     }
-  });
+  })();
 }

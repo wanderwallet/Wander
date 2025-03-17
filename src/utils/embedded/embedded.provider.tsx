@@ -539,10 +539,10 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         deviceShare
       };
 
-      WalletUtils.storeDeviceShare(wallet, userId);
+      await WalletUtils.storeDeviceShare(wallet, userId);
 
       if (seedPhrase && EMBEDDED_FEATURE_FLAGS.STORE_SEED_PHRASE) {
-        WalletUtils.storeEncryptedSeedPhrase(wallet.id, seedPhrase, jwk);
+        await WalletUtils.storeEncryptedSeedPhrase(wallet.id, seedPhrase, jwk);
       }
 
       try {
@@ -721,7 +721,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         deviceShare
       };
 
-      WalletUtils.storeDeviceShare(wallet, userId);
+      await WalletUtils.storeDeviceShare(wallet, userId);
 
       try {
         await addWallet(jwk, wallet);
@@ -884,7 +884,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         );
         const supabase = await getSupabaseClient();
         await supabase.auth.refreshSession();
-      } else if (session.deviceNonce !== getDeviceNonce()) {
+      } else if (session.deviceNonce !== (await getDeviceNonce())) {
         console.warn(
           "⚠️  The current session is complete, but the device nonce doesn't match!",
           session
@@ -957,7 +957,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
             });
           }
 
-          WalletUtils.storeDeviceShare(activatedWallet, userId);
+          await WalletUtils.storeDeviceShare(activatedWallet, userId);
 
           try {
             await addWallet(jwk, activatedWallet);
