@@ -59,7 +59,7 @@ export function AccountBackupSharesEmbeddedView() {
       onBackButtonClick={back}
       hasCloseButton={true}
       onCloseButtonClick={() => {
-        <Link to="/account" />;
+        <Link to="/wallet" />;
       }}
       size="auto"
     >

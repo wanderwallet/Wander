@@ -1,4 +1,3 @@
-import { Box } from "~components/embed/ui";
 import { AssetItem } from "./asset-item";
 import type { TokenInfoWithBalance } from "~tokens/aoTokens/ao";
 export function WalletHomeAssets({
@@ -9,7 +8,7 @@ export function WalletHomeAssets({
   prices: Record<string, number>;
 }) {
   return (
-    <Box>
+    <>
       {tokens.map((token) => (
         <AssetItem
           key={token.id}
@@ -21,6 +20,6 @@ export function WalletHomeAssets({
           divisibility={token.Denomination}
         />
       ))}
-    </Box>
+    </>
   );
 }

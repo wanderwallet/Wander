@@ -28,7 +28,7 @@ export function AccountSelector({
       };
 }) {
   return (
-    <Box alignment="left">
+    <div style={{ alignSelf: "flex-start" }}>
       <Dropdown
         backupReminder={
           <Link
@@ -87,6 +87,6 @@ export function AccountSelector({
           </>
         }
       />
-    </Box>
+    </div>
   );
 }

@@ -94,8 +94,7 @@ export function AssetItem({
       alignment="center"
       justifyContent="between"
       style={{
-        cursor: "pointer",
-        marginBottom: "-10px"
+        cursor: "pointer"
       }}
     >
       <Logo src={logo || ""} alt="" key={key} />
