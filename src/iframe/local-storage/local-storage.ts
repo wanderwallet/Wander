@@ -22,8 +22,8 @@ export class LocalStorage implements Storage {
     );
   }
 
-  async requestStorageAccess(): Promise<boolean> {
-    if (!isInsideIframe()) return true;
+  async requestStorageAccess() {
+    if (!isInsideIframe()) return;
 
     try {
       // Check if API is supported
@@ -32,7 +32,7 @@ export class LocalStorage implements Storage {
           LOG_GROUP.STORAGE,
           "Storage Access API not supported, using default localStorage"
         );
-        return true;
+        return;
       }
 
       // Check if we already have access
@@ -40,7 +40,7 @@ export class LocalStorage implements Storage {
       if (hasAccess) {
         log(LOG_GROUP.STORAGE, "Already has storage access");
         this.storage = await this.getStorageHandle();
-        return true;
+        return;
       }
 
       // Check permission state
@@ -51,36 +51,29 @@ export class LocalStorage implements Storage {
       if (permission.state === "granted") {
         this.storage = await this.getStorageHandle();
         log(LOG_GROUP.STORAGE, "Storage access granted via permission");
-        return true;
       } else if (permission.state === "prompt") {
         log(LOG_GROUP.STORAGE, "Storage access requires user interaction");
         this.setupUserInteractionHandler();
-        return false;
       } else if (permission.state === "denied") {
         log(LOG_GROUP.STORAGE, "Storage access denied by user");
-        return false;
       }
     } catch (error) {
       log(LOG_GROUP.STORAGE, "Error requesting storage access:", error);
     }
-
-    return false;
   }
 
-  async requestAccessOnUserInteraction(): Promise<boolean> {
+  async requestAccessOnUserInteraction() {
     try {
-      if (!document.hasStorageAccess) return true;
+      if (!document.hasStorageAccess) return;
 
       this.storage = await this.getStorageHandle();
       log(LOG_GROUP.STORAGE, "Storage access granted after user interaction");
-      return true;
     } catch (error) {
       log(
         LOG_GROUP.STORAGE,
         "Error requesting storage access after interaction:",
         error
       );
-      return false;
     }
   }
 
