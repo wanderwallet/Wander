@@ -38,6 +38,7 @@ export type IncomingAuthMessage = BaseIncomingMessage<
   "embedded_auth",
   IncomingAuthMessageData
 >;
+export type IncomingOpenMessage = BaseIncomingMessage<"embedded_open", void>;
 export type IncomingCloseMessage = BaseIncomingMessage<"embedded_close", void>;
 export type IncomingResizeMessage = BaseIncomingMessage<
   "embedded_resize",
@@ -54,6 +55,7 @@ export type IncomingRequestMessage = BaseIncomingMessage<
 
 export type IncomingMessage =
   | IncomingAuthMessage
+  | IncomingOpenMessage
   | IncomingCloseMessage
   | IncomingResizeMessage
   | IncomingBalanceMessage

@@ -108,7 +108,7 @@ export function setupWalletSDK(
         // validate return message
         if (`${data.type}_result` !== res.type) return;
 
-        // only resolve when the result matching our callID is deleivered
+        // only resolve when the result matching our callID is delivered
         if (data.callID !== res.callID) return;
 
         window.removeEventListener("message", callback);

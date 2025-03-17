@@ -1,8 +1,12 @@
+import type { ProtocolMap } from "@arconnect/webext-bridge";
+import { nanoid } from "nanoid";
+import type { ApiCall, ApiResponse } from "shim";
 import {
   getEmbeddedAncestorOrigin,
   isInsideIframe
 } from "~utils/embedded/embedded.utils";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
+import { isApiErrorResponse } from "~utils/messaging/common/messaging.utils";
 import type {
   MessageData,
   MessageID,
@@ -17,8 +21,6 @@ let targetIframe: HTMLIFrameElement = null;
 let targetOrigin = "";
 
 export function setEmbeddedTargetIframe(iframeElement: HTMLIFrameElement) {
-  console.log(iframeElement, iframeElement.src);
-
   targetIframe = iframeElement;
   targetOrigin = new URL(iframeElement.src).origin;
 }
@@ -61,54 +63,32 @@ function getPostMessageFunction<K extends MessageID>(
     return async function postMessage() {
       console.log(`postMessage to ${postMessageTargetOrigin}`);
 
-      return new Promise(async (resolve) => {
-        targetIframe.contentWindow.postMessage(
-          messageData,
-          postMessageTargetOrigin
-        );
+      return new Promise<ApiResponse>(async (resolve) => {
+        targetIframe.contentWindow.postMessage(data, postMessageTargetOrigin);
 
         // TODO: Wait for response and return, but use the callbacks stored above.
 
-        /*
-        window.addEventListener("message", (event: MessageEvent) => {
-          if (
-            !event.data ||
-            event.data.app !== "wanderEmbedded" ||
-            event.origin !== getEmbeddedAncestorOrigin()
-          )
-            return;
+        window.addEventListener("message", callback);
 
-          console.log("MESSAGE FROM PARENT =", event.data);
+        // TODO: Declare outside (factory) to facilitate testing?
+        async function callback(e: MessageEvent<ApiResponse>) {
+          // TODO: Make sure the response comes from targetWindow.
+          // See https://stackoverflow.com/questions/16266474/javascript-listen-for-postmessage-events-from-specific-iframe.
 
-          handleApiCallMessage({
-            id: "",
-            timestamp: Date.now(),
-            data: event.data,
-            sender: {
-              tabId: 0,
-              context: "content-script"
-            }
-          });
+          let { data: res } = e;
 
-          // Example: check if the message is from our SDK
+          // validate return message
+          if (`${data.type}_result` !== res.type) return;
 
-          // if (event.data.type === "FROM_SDK") {
-          //   const incomingMsg = event.data.payload;
-          //   console.log(
-          //     "Iframe received message from WanderEmbedded:",
-          //     incomingMsg
-          //   );
+          // only resolve when the result matching our callID is delivered
+          if (data.callID !== res.callID) return;
 
-          //   // Respond back
-          //   event.source?.postMessage({
-          //     type: "FROM_IFRAME",
-          //     payload: `Got your message: ${incomingMsg}`
-          //   });
-          // }
-        });
-        */
+          console.log("RESPONSE =", res);
 
-        return Promise.resolve(null);
+          window.removeEventListener("message", callback);
+
+          resolve(res);
+        }
       });
     };
   }
@@ -192,47 +172,94 @@ export function iframeIsomorphicOnMessage<K extends MessageID>(
   // make sure the iframe is ready before accepting method calls...
 }
 
-/*
 if (isInsideIframe()) {
   // TODO: Set this up after first call to `iframeIsomorphicOnMessage`?
 
   console.log("Listening for messages...");
 
-  window.addEventListener("message", (event: MessageEvent) => {
-    if (
-      !event.data ||
-      event.data.app !== "wanderEmbedded" ||
-      event.origin !== getEmbeddedAncestorOrigin()
-    )
-      return;
+  window.addEventListener(
+    "message",
+    async ({ origin, data }: MessageEvent<ApiCall>) => {
+      // if (origin === getEmbeddedAncestorOrigin()) console.log("DEBUG MESSAGE FROM PARENT =", data);
 
-    console.log("MESSAGE FROM PARENT =", event.data);
+      if (
+        !data ||
+        origin !== getEmbeddedAncestorOrigin() ||
+        data.app !== "wanderEmbedded"
+      )
+        return;
 
-    // handleApiCallMessage({
-    //   id: "",
-    //   timestamp: Date.now(),
-    //   data: event.data,
-    //   sender: {
-    //     tabId: 0,
-    //     context: "content-script"
-    //   }
-    // });
+      const messageId = data.type === "chunk" ? "chunk" : "api_call";
+      const messageHandlers =
+        messageHandlersByMessageID[messageId as keyof ProtocolMap];
 
-    // Example: check if the message is from our SDK
+      if (!messageHandlers) {
+        console.warn(`No listeners registered for ${messageId}.`);
 
-    // if (event.data.type === "FROM_SDK") {
-    //   const incomingMsg = event.data.payload;
-    //   console.log(
-    //     "Iframe received message from WanderEmbedded:",
-    //     incomingMsg
-    //   );
+        return;
+      }
 
-    //   // Respond back
-    //   event.source?.postMessage({
-    //     type: "FROM_IFRAME",
-    //     payload: `Got your message: ${incomingMsg}`
-    //   });
-    // }
-  });
+      if (messageHandlers.size > 1) {
+        console.warn(
+          `${messageHandlers.size} handlers found for ${messageId}. Only the first response will be returned.`
+        );
+      }
+
+      console.log("MESSAGE FROM PARENT =", data, messageHandlers.size);
+
+      const resultPromises = Array.from(messageHandlers).map(
+        (messageHandler) => {
+          return messageHandler({
+            id: nanoid(),
+            timestamp: Date.now(),
+            data,
+            sender: {
+              tabId: 0,
+              context: "content-script"
+            }
+          });
+        }
+      );
+
+      const result = await Promise.race(resultPromises);
+
+      console.log("result =", result);
+
+      if (window.parent === null) {
+        throw new Error("Unexpected `null` parent Window.");
+      }
+
+      // const responseMessage = {};
+
+      window.parent.postMessage(result, getEmbeddedAncestorOrigin());
+
+      // parentWindow.postMessage(result);
+
+      // handleApiCallMessage({
+      //   id: "",
+      //   timestamp: Date.now(),
+      //   data: event.data,
+      //   sender: {
+      //     tabId: 0,
+      //     context: "content-script"
+      //   }
+      // });
+
+      // Example: check if the message is from our SDK
+
+      // if (event.data.type === "FROM_SDK") {
+      //   const incomingMsg = event.data.payload;
+      //   console.log(
+      //     "Iframe received message from WanderEmbedded:",
+      //     incomingMsg
+      //   );
+
+      //   // Respond back
+      //   event.source?.postMessage({
+      //     type: "FROM_IFRAME",
+      //     payload: `Got your message: ${incomingMsg}`
+      //   });
+      // }
+    }
+  );
 }
-*/

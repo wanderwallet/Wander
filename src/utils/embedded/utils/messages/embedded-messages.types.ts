@@ -5,6 +5,7 @@ import type {
 
 export type EmbeddedMessageId =
   | "embedded_auth"
+  | "embedded_open"
   | "embedded_close"
   | "embedded_resize"
   | "embedded_balance"
@@ -32,6 +33,7 @@ export interface EmbeddedRequestMessageData {
 
 export interface EmbeddedMessageMap {
   embedded_auth: EmbeddedAuthMessageData;
+  embedded_open: void;
   embedded_close: void;
   embedded_resize: EmbeddedResizeMessageData;
   embedded_balance: EmbeddedBalanceMessageData;

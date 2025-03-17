@@ -213,6 +213,16 @@ export class WanderEmbedded {
         this.onAuth(message.data);
         break;
 
+      case "embedded_open":
+        if (!this.isOpen) {
+          this.isOpen = true;
+
+          this.buttonComponent?.setStatus("isOpen");
+          this.iframeComponent?.show();
+          this.onOpen();
+        }
+        break;
+
       case "embedded_close":
         if (this.isOpen) {
           this.isOpen = false;

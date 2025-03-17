@@ -27,6 +27,7 @@ import {
 } from "~utils/auth/auth.constants";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { isError } from "~utils/error/error.utils";
+import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 
 const popupMutex = new Mutex();
 
@@ -138,7 +139,14 @@ export async function createAuthPopup(
     const hasWallets = activeAddress && wallets.length > 0;
 
     if (!hasWallets) {
-      openOrSelectWelcomePage(true);
+      if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1") {
+        postEmbeddedMessage({
+          type: "embedded_open",
+          data: null
+        });
+      } else {
+        openOrSelectWelcomePage(true);
+      }
 
       unlock();
 
