@@ -11,13 +11,21 @@ import { version } from "../../../package.json";
 import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 import { isApiErrorResponse } from "~utils/messaging/common/messaging.utils";
 import { isomorphicSendMessage } from "~utils/messaging/messaging.utils";
+import { setEmbeddedTargetIframe } from "~utils/messaging/strategies/iframe/iframe-messaging.strategy";
 // import { version as sdkVersion } from "../../../wander-embedded-sdk/package.json";
 
 export function setupEmbeddedWalletSDK(
-  targetWindow: Window = window,
-  embeddedOrigin?: string
+  targetWindowOrIframe: Window | HTMLIFrameElement = window
 ) {
-  log(LOG_GROUP.SETUP, "setupEmbeddedWalletSDK()");
+  log(LOG_GROUP.SETUP, "setupEmbeddedWalletSDK() IN 2");
+
+  if (!(targetWindowOrIframe instanceof HTMLIFrameElement)) {
+    throw new Error("Target for Wander Embedded must be an IFRAME element.");
+  }
+
+  setEmbeddedTargetIframe(targetWindowOrIframe);
+
+  console.log("setupEmbeddedWalletSDK()", new Date().toISOString());
 
   /** Init events */
   const events = mitt<InjectedEvents>();

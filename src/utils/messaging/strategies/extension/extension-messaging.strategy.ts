@@ -26,8 +26,6 @@ function getSendMessageWithBridgeFunction<K extends MessageID>({
   };
 }
 
-console.error(`THIS FILE WAS LOADED ${import.meta.env?.VITE_IS_EMBEDDED_APP}`);
-
 /**
  * Send a message of `<messageId>` type to the specific `tabId` or background straight away. If that message fails
  * because no one is listening, listen for `<messageId>${ READY_MESSAGE_SUFFIX }` messages for 6 seconds, and try to send the message again

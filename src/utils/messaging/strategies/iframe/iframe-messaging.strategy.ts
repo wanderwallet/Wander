@@ -13,6 +13,16 @@ const messageHandlersByMessageID: Partial<
   Record<MessageID, Set<OnMessageCallback<MessageID>>>
 > = {};
 
+let targetIframe: HTMLIFrameElement = null;
+let targetOrigin = "";
+
+export function setEmbeddedTargetIframe(iframeElement: HTMLIFrameElement) {
+  console.log(iframeElement, iframeElement.src);
+
+  targetIframe = iframeElement;
+  targetOrigin = new URL(iframeElement.src).origin;
+}
+
 let messageCounter = 0;
 
 function getPostMessageFunction<K extends MessageID>(
@@ -25,8 +35,7 @@ function getPostMessageFunction<K extends MessageID>(
   // TODO: isInsideIframe is an incorrect check because we might be running the app standalone.
 
   if (destination === "background") {
-    if (!isInsideIframe())
-      postMessageTargetOrigin = getEmbeddedAncestorOrigin();
+    if (!isInsideIframe()) postMessageTargetOrigin = targetOrigin;
   } else if (destination.startsWith("content-script")) {
     if (!isInsideIframe())
       throw new Error(
@@ -41,12 +50,22 @@ function getPostMessageFunction<K extends MessageID>(
     postMessageTargetOrigin = "";
   }
 
+  console.log(
+    "DEBUG DATA = ",
+    messageData,
+    isInsideIframe(),
+    postMessageTargetOrigin
+  );
+
   if (postMessageTargetOrigin) {
     return async function postMessage() {
-      console.log(`postMessage to ${window.location.origin}`);
+      console.log(`postMessage to ${postMessageTargetOrigin}`);
 
       return new Promise(async (resolve) => {
-        window.postMessage(messageData, window.location.origin);
+        targetIframe.contentWindow.postMessage(
+          messageData,
+          postMessageTargetOrigin
+        );
 
         // TODO: Wait for response and return, but use the callbacks stored above.
 
@@ -95,9 +114,13 @@ function getPostMessageFunction<K extends MessageID>(
   }
 
   return async function sendMessageToCallback() {
-    console.log("sendMessageToCallback");
-
     const messageHandlers = messageHandlersByMessageID[messageId];
+
+    if (!messageHandlers) {
+      console.warn(`No listeners registered for ${messageId}.`);
+
+      return;
+    }
 
     if (messageHandlers.size > 1) {
       console.warn(
@@ -169,6 +192,7 @@ export function iframeIsomorphicOnMessage<K extends MessageID>(
   // make sure the iframe is ready before accepting method calls...
 }
 
+/*
 if (isInsideIframe()) {
   // TODO: Set this up after first call to `iframeIsomorphicOnMessage`?
 
@@ -184,17 +208,15 @@ if (isInsideIframe()) {
 
     console.log("MESSAGE FROM PARENT =", event.data);
 
-    /*
-    handleApiCallMessage({
-      id: "",
-      timestamp: Date.now(),
-      data: event.data,
-      sender: {
-        tabId: 0,
-        context: "content-script"
-      }
-    });
-    */
+    // handleApiCallMessage({
+    //   id: "",
+    //   timestamp: Date.now(),
+    //   data: event.data,
+    //   sender: {
+    //     tabId: 0,
+    //     context: "content-script"
+    //   }
+    // });
 
     // Example: check if the message is from our SDK
 
@@ -213,3 +235,4 @@ if (isInsideIframe()) {
     // }
   });
 }
+*/

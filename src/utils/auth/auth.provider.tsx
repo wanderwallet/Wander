@@ -35,6 +35,7 @@ import type { IBridgeMessage } from "@arconnect/webext-bridge";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { isError } from "~utils/error/error.utils";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
+import { getDecryptionKey } from "~wallets/auth";
 
 interface AuthRequestsContextState {
   authRequests: AuthRequest[];

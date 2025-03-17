@@ -81,7 +81,7 @@ export class WanderEmbedded {
     if (!optionsWithDefaults.clientId) throw new Error("clientId is required");
 
     // Create or get references to iframe and, maybe, button:
-    const embeddedOrigin = this.initializeComponents(optionsWithDefaults);
+    this.initializeComponents(optionsWithDefaults);
 
     if (!this.iframeRef) throw new Error("Error creating iframe");
 
@@ -92,16 +92,13 @@ export class WanderEmbedded {
     this.handleMessage = this.handleMessage.bind(this);
     window.addEventListener("message", this.handleMessage);
 
-    console.log("setupEmbeddedWalletSDK()");
+    console.log("setupEmbeddedWalletSDK() OUT 2");
 
     // ...and set `window.arweaveWallet`:
-    setupEmbeddedWalletSDK(
-      this.iframeRef.contentWindow as Window,
-      embeddedOrigin
-    );
+    setupEmbeddedWalletSDK(this.iframeRef);
   }
 
-  private initializeComponents(options: WanderEmbeddedOptions): string {
+  private initializeComponents(options: WanderEmbeddedOptions): void {
     const {
       clientId,
       baseURL = WanderEmbedded.DEFAULT_IFRAME_SRC,
@@ -181,8 +178,6 @@ export class WanderEmbedded {
     if (this.iframeComponent) {
       document.body.appendChild(this.iframeComponent.getElements().host);
     }
-
-    return new URL(srcWithParams).origin;
   }
 
   private handleMessage(event: MessageEvent): void {
