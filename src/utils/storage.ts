@@ -3,7 +3,7 @@ import { type Gateway } from "~gateways/gateway";
 import { Storage } from "@plasmohq/storage";
 import { useStorage as usePlasmoStorage } from "@plasmohq/storage/hook";
 import { useMemo } from "react";
-import { StorageMock } from "~iframe/plasmo-storage/plasmo-storage.mock";
+import { StorageMock } from "~iframe/storage/plasmo-storage/plasmo-storage.mock";
 
 /**
  * Default extension storage:

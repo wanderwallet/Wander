@@ -31,10 +31,10 @@ import type {
   Wallet
 } from "~utils/embedded/embedded.types";
 import {
-  isInsideIframe,
   setAuthTokenHeader,
   getSupabaseClient
 } from "~utils/embedded/embedded.utils";
+import { isInsideIframe } from "~utils/embedded/iframe.utils";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import {
   AuthProviderType,

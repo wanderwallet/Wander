@@ -1,18 +1,29 @@
-import { isInsideIframe } from "~utils/embedded/embedded.utils";
+import { isInsideIframe } from "~utils/embedded/iframe.utils";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 
-export class LocalStorage implements Storage {
-  public storage: Storage = globalThis.localStorage;
+type StorageType = "localStorage" | "sessionStorage";
+interface UnpartitionedStorageOptions {
+  area?: "local" | "session";
+}
 
-  private async getStorageHandle(): Promise<Storage> {
-    // @ts-expect-error - requestStorageAccess should return a handle
-    const handle = (await document.requestStorageAccess({
-      localStorage: true
-    })) as { localStorage: Storage };
-    return handle.localStorage;
+export class UnpartitionedStorage implements Storage {
+  protected storage: Storage;
+  protected storageType: StorageType;
+
+  constructor({ area = "local" }: UnpartitionedStorageOptions = {}) {
+    this.storageType = area === "local" ? "localStorage" : "sessionStorage";
+    this.storage = globalThis[this.storageType];
   }
 
-  private setupUserInteractionHandler() {
+  protected async getStorageHandle(): Promise<Storage> {
+    // @ts-expect-error - requestStorageAccess should return a handle
+    const handle = await document.requestStorageAccess({
+      [this.storageType]: true
+    });
+    return handle[this.storageType];
+  }
+
+  protected setupUserInteractionHandler() {
     document.addEventListener(
       "click",
       async () => {
