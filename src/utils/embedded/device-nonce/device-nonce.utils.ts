@@ -45,6 +45,8 @@ export async function storeDeviceNonce(
 ): Promise<DeviceNonce> {
   log(LOG_GROUP.WALLET_GENERATION, "storeDeviceNonce()");
 
+  setDeviceNonceHeader(deviceNonce);
+
   const storage = await getStorage();
   storage.setItem(DEVICE_NONCE_KEY, deviceNonce);
 
