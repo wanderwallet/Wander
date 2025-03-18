@@ -1,8 +1,6 @@
 import { nanoid } from "nanoid";
-import {
-  getStorage,
-  setDeviceNonceHeader
-} from "~utils/embedded/embedded.utils";
+import { LocalStorage } from "~iframe/storage/unpartitioned-storage/local-storage";
+import { setDeviceNonceHeader } from "~utils/embedded/embedded.utils";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 
 const DEVICE_NONCE_KEY = "DEVICE_NONCE";
@@ -15,7 +13,7 @@ export type DeviceNonce =
 let _deviceNonce: DeviceNonce | null = null;
 
 export async function loadDeviceNonce(): Promise<DeviceNonce | null> {
-  const storage = await getStorage();
+  const storage = await LocalStorage.getInstance();
   let deviceNonce = storage.getItem(DEVICE_NONCE_KEY) || null;
 
   if (
@@ -47,7 +45,7 @@ export async function storeDeviceNonce(
 
   setDeviceNonceHeader(deviceNonce);
 
-  const storage = await getStorage();
+  const storage = await LocalStorage.getInstance();
   storage.setItem(DEVICE_NONCE_KEY, deviceNonce);
 
   return (_deviceNonce = deviceNonce);
@@ -75,7 +73,7 @@ export async function getDeviceNonce(): Promise<DeviceNonce> {
     throw new Error(MISSING_DEVICE_NONCE_ERR_MSG);
   }
 
-  const storage = await getStorage();
+  const storage = await LocalStorage.getInstance();
   let storedDeviceNonce = storage.getItem(DEVICE_NONCE_KEY) || null;
 
   if (storedDeviceNonce === _deviceNonce) return _deviceNonce;

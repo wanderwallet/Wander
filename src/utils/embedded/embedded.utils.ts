@@ -116,22 +116,12 @@ const {
 
 // Create a singleton instance of `SupabaseClient` & `LocalStorage`
 let supabaseInstance: ReturnType<typeof createSupabaseClient> | null = null;
-let storage: LocalStorage | null = null;
-
-export async function getStorage() {
-  if (!storage) {
-    storage = new LocalStorage();
-    await storage.requestStorageAccess();
-  }
-
-  return storage;
-}
 
 export async function getSupabaseClient() {
   if (!IS_EMBEDDED_APP) return null;
 
   if (!supabaseInstance) {
-    const storage = await getStorage();
+    const storage = await LocalStorage.getInstance();
 
     supabaseInstance = createSupabaseClient(
       import.meta.env?.VITE_SUPABASE_URL || "",
@@ -141,7 +131,11 @@ export async function getSupabaseClient() {
           autoRefreshToken: true,
           persistSession: true,
           detectSessionInUrl: true,
-          storage
+          storage: {
+            getItem: (key: string) => storage.getRaw(key),
+            setItem: (key: string, value: string) => storage.setRaw(key, value),
+            removeItem: (key: string) => storage.removeItem(key)
+          }
         }
       }
     );

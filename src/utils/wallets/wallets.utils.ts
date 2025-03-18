@@ -20,7 +20,7 @@ import {
 } from "~utils/crypto/crypto.utils";
 import type { Wallet } from "~utils/embedded/embedded.types";
 import { EMBEDDED_FEATURE_FLAGS } from "~utils/embedded/embedded.constants";
-import { getStorage } from "~utils/embedded/embedded.utils";
+import { LocalStorage } from "~iframe/storage/unpartitioned-storage/local-storage";
 
 // import { random, pki, asn1 } from "node-forge";
 //
@@ -348,8 +348,10 @@ let _deviceSharesByUser: DeviceSharesByUser | null = null;
 
 async function loadDeviceSharesByUser(): Promise<DeviceSharesByUser> {
   try {
-    const storage = await getStorage();
-    let deviceSharesInfo = JSON.parse(storage.getItem(DEVICE_SHARES_INFO_KEY));
+    const storage = await LocalStorage.getInstance();
+    let deviceSharesInfo = storage.getItem<DeviceSharesByUser>(
+      DEVICE_SHARES_INFO_KEY
+    );
 
     // TODO: Add additional validation...
 
@@ -437,7 +439,7 @@ async function storeEncryptedSeedPhrase(
     "base64"
   );
 
-  const storage = await getStorage();
+  const storage = await LocalStorage.getInstance();
   storage.setItem(
     `${ENCRYPTED_SEED_PHRASE_KEY}-${walletId}`,
     encryptedSeedPhrase
@@ -445,7 +447,7 @@ async function storeEncryptedSeedPhrase(
 }
 
 async function hasEncryptedSeedPhrase(walletId: string) {
-  const storage = await getStorage();
+  const storage = await LocalStorage.getInstance();
   return !!storage.getItem(`${ENCRYPTED_SEED_PHRASE_KEY}-${walletId}`);
 }
 
@@ -473,7 +475,7 @@ async function getDecryptedSeedPhrase(walletId: string, jwk: JWKInterface) {
     ["decrypt"]
   );
 
-  const storage = await getStorage();
+  const storage = await LocalStorage.getInstance();
   const encryptedSeedPhrase = storage.getItem(
     `${ENCRYPTED_SEED_PHRASE_KEY}-${walletId}`
   );
@@ -502,8 +504,8 @@ async function storeDeviceShare(wallet: Wallet, userId: string) {
 
   _deviceSharesByUser[userId][wallet.id] = wallet.deviceShare;
 
-  const storage = await getStorage();
-  storage.setItem(DEVICE_SHARES_INFO_KEY, JSON.stringify(_deviceSharesByUser));
+  const storage = await LocalStorage.getInstance();
+  storage.setItem(DEVICE_SHARES_INFO_KEY, _deviceSharesByUser);
 }
 
 async function removeDeviceShare(walletId: string, userId: string) {
@@ -517,8 +519,8 @@ async function removeDeviceShare(walletId: string, userId: string) {
 
   delete _deviceSharesByUser[userId][walletId];
 
-  const storage = await getStorage();
-  storage.setItem(DEVICE_SHARES_INFO_KEY, JSON.stringify(_deviceSharesByUser));
+  const storage = await LocalStorage.getInstance();
+  storage.setItem(DEVICE_SHARES_INFO_KEY, _deviceSharesByUser);
 }
 
 async function storeEncryptedWalletJWK(jwk: JWKInterface): Promise<void> {
@@ -568,7 +570,7 @@ export const WalletUtils = {
 // Stored seedphrase are removed if the `STORE_SEED_PHRASE` flag becomes false:
 if (!EMBEDDED_FEATURE_FLAGS.STORE_SEED_PHRASE) {
   (async () => {
-    const storage = await getStorage();
+    const storage = await LocalStorage.getInstance();
     const keys = storage.keys();
     for (const key of keys) {
       if (key.startsWith(ENCRYPTED_SEED_PHRASE_KEY)) {
