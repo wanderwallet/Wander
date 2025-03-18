@@ -44,16 +44,6 @@ export class StorageManager {
     TEMPORARY: 1 // Short-lived or disposable data
   };
 
-  // Storage usage cache to avoid recalculating on every call
-  public static usageCache: Map<
-    Storage,
-    {
-      size: number;
-      itemCount: number;
-      timestamp: number;
-    }
-  > = new Map();
-
   private static readonly CACHE_TTL = 10000; // 10 seconds
 
   // Add a last cleanup timestamp to avoid too frequent cleanups
@@ -67,11 +57,11 @@ export class StorageManager {
    * @param options Eviction options
    * @returns True if eviction was successful or not needed
    */
-  static async evictItems(
+  static evictItems(
     storage: Storage,
     bytesNeeded: number = 0,
     options: { bufferSize?: number; aggressive?: boolean } = {}
-  ): Promise<boolean> {
+  ): boolean {
     // Setup options with defaults
     const bufferSize = options.bufferSize ?? 1024;
     const aggressive = options.aggressive ?? false;
@@ -118,14 +108,10 @@ export class StorageManager {
       if (evictedCount % 10 === 0) {
         if (usage.currentSize - evictedSize <= targetSize) {
           // We've reached our target, clear cache and return success
-          this.usageCache.delete(storage);
           return true;
         }
       }
     }
-
-    // Clear usage cache after operations
-    this.usageCache.delete(storage);
 
     // Check if we've succeeded in creating enough space
     return (
@@ -174,54 +160,56 @@ export class StorageManager {
       }
     }
 
-    // Clear usage cache if we removed items
-    if (clearedCount > 0) {
-      this.usageCache.delete(storage);
-    }
-
     this.lastCleanupTime = now;
     return clearedCount;
   }
 
   /**
-   * Calculate current storage usage with caching
+   * Efficiently calculates storage usage (in bytes) and item count for the given Storage object.
+   * Uses TextEncoder to correctly handle multi-byte characters.
+   *
+   * @param storage The Storage object (localStorage or sessionStorage)
+   * @returns An object with the total size in bytes and the item count.
    */
-  public static calculateStorageUsage(storage: Storage): {
+  static calculateStorageUsage(storage: Storage): {
     currentSize: number;
     itemCount: number;
   } {
-    const now = Date.now();
-    const cached = this.usageCache.get(storage);
+    // Create encoder once and reuse
+    const encoder = new TextEncoder();
+    let totalBytes = 0;
+    const count = storage.length;
 
-    // Use cached value if available and recent
-    if (cached && now - cached.timestamp < this.CACHE_TTL) {
-      return { currentSize: cached.size, itemCount: cached.itemCount };
-    }
+    // Use a single array to store concatenated strings
+    const buffer = new Array<string>(2);
 
-    let size = 0;
-    const keys = Object.keys(storage);
-
-    for (const key of keys) {
-      const value = storage.getItem(key);
-      if (value) {
-        // 2 bytes per character for UTF-16 encoding
-        size += (key.length + value.length) * 2;
+    for (let i = 0; i < count; i++) {
+      const key = storage.key(i);
+      if (key !== null) {
+        // Avoid string concatenation, use array positions instead
+        buffer[0] = key;
+        buffer[1] = storage.getItem(key) ?? "";
+        // Join only when encoding to reduce string operations
+        totalBytes += encoder.encode(buffer.join("")).length;
       }
     }
 
-    const result = {
-      currentSize: size,
-      itemCount: keys.length
-    };
+    return { currentSize: totalBytes, itemCount: count };
+  }
 
-    // Cache the result
-    this.usageCache.set(storage, {
-      size: result.currentSize,
-      itemCount: result.itemCount,
-      timestamp: now
-    });
+  static calculateStorageUsageByKey(storage: Storage, key: string): number {
+    const encoder = new TextEncoder();
+    const buffer = new Array<string>(2);
+    buffer[0] = key;
+    buffer[1] = storage.getItem(key) ?? "";
+    return encoder.encode(buffer.join("")).length;
+  }
 
-    return result;
+  static calculateStorageUsageByKeys(storage: Storage, keys: string[]): number {
+    return keys.reduce(
+      (acc, key) => acc + this.calculateStorageUsageByKey(storage, key),
+      0
+    );
   }
 
   /**
@@ -340,11 +328,11 @@ export class StorageManager {
   /**
    * Get the current storage usage percentage
    */
-  static async getStorageUsage(storage: Storage): Promise<{
+  static getStorageUsage(storage: Storage): {
     bytes: number;
     percentage: number;
     items: number;
-  }> {
+  } {
     const usage = this.calculateStorageUsage(storage);
     return {
       bytes: usage.currentSize,
@@ -669,7 +657,7 @@ export class EnhancedStorage implements Storage {
    * @param bytesNeeded Bytes needed for new items
    * @returns True if sufficient space is available
    */
-  async hasAvailableSpace(bytesNeeded: number): Promise<boolean> {
+  hasAvailableSpace(bytesNeeded: number): boolean {
     // Clear expired items as this is always safe to do
     StorageManager.clearExpiredItems(this.storage);
 
@@ -686,13 +674,13 @@ export class EnhancedStorage implements Storage {
    * @param options Configuration options
    * @returns True if space was ensured, false if impossible
    */
-  async ensureSpace(
+  ensureSpace(
     bytesNeeded: number,
     options: { skipCheck?: boolean; forceEviction?: boolean } = {}
-  ): Promise<boolean> {
+  ): boolean {
     // Skip availability check if requested
     if (!options.skipCheck) {
-      const hasSpace = await this.hasAvailableSpace(bytesNeeded);
+      const hasSpace = this.hasAvailableSpace(bytesNeeded);
       if (hasSpace) return true;
     }
 
@@ -706,10 +694,7 @@ export class EnhancedStorage implements Storage {
    * @param aggressive If true, uses more aggressive eviction strategy
    * @returns True if eviction was successful, false if impossible
    */
-  async evictIfNeeded(
-    bytesNeeded: number,
-    aggressive: boolean = false
-  ): Promise<boolean> {
+  evictIfNeeded(bytesNeeded: number, aggressive: boolean = false): boolean {
     // Calculate target eviction size with different buffer strategies
     const limit = StorageManager.getStorageLimit();
     const bufferSize = aggressive ? 1024 : Math.max(limit * 0.1, 5120); // 5KB or 10%
@@ -722,19 +707,13 @@ export class EnhancedStorage implements Storage {
 
   /**
    * Get current storage usage information
-   * @param forceRefresh Whether to bypass the cache and perform a fresh calculation
    */
-  getUsageInfo(forceRefresh: boolean = false): {
+  getUsageInfo(): {
     bytes: number;
     percentage: number;
     items: number;
     available: number;
   } {
-    // Clear cache if requested
-    if (forceRefresh) {
-      StorageManager.usageCache.delete(this.storage);
-    }
-
     const usage = StorageManager.calculateStorageUsage(this.storage);
     const limit = StorageManager.getStorageLimit();
 

@@ -139,8 +139,9 @@ export class StorageMock extends PlasmoStorage implements StorageMockInterface {
   // REMOVE  CLEAR
 
   removeItem(key: string): Promise<void> {
-    return new Promise<void>(() => {
+    return new Promise<void>((resolve) => {
       this.storage.removeItem(key);
+      resolve();
     });
   }
 
