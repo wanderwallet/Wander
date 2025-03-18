@@ -35,7 +35,7 @@ export async function handleInstall(details: Runtime.OnInstalledDetailsType) {
   await initializeARBalanceMonitor();
 
   // initialize alarm to fetch notifications
-  browser.alarms.create("notifications", { periodInMinutes: 1 });
+  browser.alarms.create("notifications", { periodInMinutes: 10 });
 
   // reset notifications
   // await ExtensionStorage.set("show_announcement", true);
