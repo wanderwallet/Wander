@@ -290,7 +290,9 @@ export async function syncAoTokens() {
       await Promise.all([
         getAoTokensCache(),
         ExtensionStorage.get<Record<string, string[]>>(AO_TOKENS_IDS),
-        ExtensionStorage.get<number>(AO_TOKENS_LAST_BLOCK_HEIGHT)
+        ExtensionStorage.get<number>(
+          `${AO_TOKENS_LAST_BLOCK_HEIGHT}_${activeAddress}`
+        )
       ]);
     const walletTokenIds = aoTokensIds[activeAddress] || [];
 
@@ -305,7 +307,10 @@ export async function syncAoTokens() {
       );
 
     if (maxBlockHeight && maxBlockHeight > 0) {
-      await ExtensionStorage.set(AO_TOKENS_LAST_BLOCK_HEIGHT, maxBlockHeight);
+      await ExtensionStorage.set(
+        `${AO_TOKENS_LAST_BLOCK_HEIGHT}_${activeAddress}`,
+        maxBlockHeight
+      );
     }
 
     const newProcessIds = Array.from(new Set(processIds)).filter(

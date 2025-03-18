@@ -34,7 +34,9 @@ export async function handleAoTokensImportAlarm(alarm: Alarms.Alarm) {
         getAoTokens(),
         getAoTokensCache(),
         getAoTokensAutoImportRestrictedIds(),
-        ExtensionStorage.get<number>(AO_TOKENS_LAST_BLOCK_HEIGHT)
+        ExtensionStorage.get<number>(
+          `${AO_TOKENS_LAST_BLOCK_HEIGHT}_${activeAddress}`
+        )
       ]);
 
     let aoTokensIds = new Set(aoTokens.map(({ processId }) => processId));
@@ -54,7 +56,10 @@ export async function handleAoTokensImportAlarm(alarm: Alarms.Alarm) {
     );
 
     if (maxBlockHeight && maxBlockHeight > 0) {
-      await ExtensionStorage.set(AO_TOKENS_LAST_BLOCK_HEIGHT, maxBlockHeight);
+      await ExtensionStorage.set(
+        `${AO_TOKENS_LAST_BLOCK_HEIGHT}_${activeAddress}`,
+        maxBlockHeight
+      );
     }
 
     const newProcessIds = Array.from(
