@@ -14,6 +14,7 @@ export const AO_TOKENS = "ao_tokens";
 export const AO_TOKENS_CACHE = "ao_tokens_cache";
 export const AO_TOKENS_IDS = "ao_tokens_ids";
 export const AO_TOKENS_IMPORT_TIMESTAMP = "ao_tokens_import_timestamp";
+export const AO_TOKENS_LAST_BLOCK_HEIGHT = "ao_tokens_last_block_height";
 export const AO_TOKENS_AUTO_IMPORT_RESTRICTED_IDS =
   "ao_tokens_auto_import_restricted_ids";
 
@@ -54,14 +55,19 @@ async function getTokenInfo(id: string): Promise<TokenInfo> {
   return getTokenInfoFromData(res, id);
 }
 
+// Get transactions for AO token discovery
 function getNoticeTransactionsQuery(
   address: string,
-  filterProcesses: string[]
+  filterProcesses: string[],
+  minBlockHeight?: number
 ) {
+  const effectiveMinHeight = minBlockHeight || 1;
+
   return `query {
     transactions(
       recipients: ["${address}"]
       first: 100
+      block: { min: ${effectiveMinHeight} }
       tags: [
         { name: "Data-Protocol", values: ["ao"] },
         ${
@@ -80,6 +86,9 @@ function getNoticeTransactionsQuery(
       }
       edges {
         node {
+          block {
+            height
+          }
           tags {
             name,
             value
@@ -187,16 +196,22 @@ export async function getNoticeTransactions(
   arweave: Arweave,
   address: string,
   filterProcesses: string[] = [],
-  fetchCountLimit = 5
+  fetchCountLimit = 5,
+  minBlockHeight?: number
 ) {
   let fetchCount = 0;
   let hasNextPage = true;
   let ids = new Set<string>();
+  let maxBlockHeight = minBlockHeight || 0;
 
   // Fetch atmost 500 transactions
   while (hasNextPage && fetchCount <= fetchCountLimit) {
     try {
-      const query = getNoticeTransactionsQuery(address, filterProcesses);
+      const query = getNoticeTransactionsQuery(
+        address,
+        filterProcesses,
+        minBlockHeight
+      );
       const transactions = await withRetry(async () => {
         const response = await arweave.api.post("/graphql", { query });
         return response.data.data
@@ -205,6 +220,14 @@ export async function getNoticeTransactions(
       hasNextPage = transactions.pageInfo.hasNextPage;
 
       if (transactions.edges.length === 0) break;
+
+      const blockHeights = transactions.edges
+        .map((edge) => edge.node?.block?.height)
+        .filter((height) => height !== undefined && height > 0) as number[];
+
+      if (blockHeights.length > 0) {
+        maxBlockHeight = Math.max(maxBlockHeight || 0, ...blockHeights);
+      }
 
       const processIds = transactions.edges
         .map(
@@ -223,7 +246,15 @@ export async function getNoticeTransactions(
       fetchCount += 1;
     }
   }
-  return { processIds: Array.from(ids) as string[], hasNextPage };
+  if (maxBlockHeight === minBlockHeight && minBlockHeight) {
+    maxBlockHeight = minBlockHeight + 1;
+  }
+
+  return {
+    processIds: Array.from(ids) as string[],
+    hasNextPage,
+    maxBlockHeight
+  };
 }
 
 /**
@@ -255,18 +286,27 @@ export async function syncAoTokens() {
 
     console.log("Synchronizing AO tokens...");
 
-    const [aoTokensCache, aoTokensIds = {}] = await Promise.all([
-      getAoTokensCache(),
-      ExtensionStorage.get<Record<string, string[]>>(AO_TOKENS_IDS)
-    ]);
+    const [aoTokensCache, aoTokensIds = {}, lastBlockHeight] =
+      await Promise.all([
+        getAoTokensCache(),
+        ExtensionStorage.get<Record<string, string[]>>(AO_TOKENS_IDS),
+        ExtensionStorage.get<number>(AO_TOKENS_LAST_BLOCK_HEIGHT)
+      ]);
     const walletTokenIds = aoTokensIds[activeAddress] || [];
 
     const arweave = new Arweave(gateway);
-    const { processIds, hasNextPage } = await getNoticeTransactions(
-      arweave,
-      activeAddress,
-      walletTokenIds
-    );
+    const { processIds, hasNextPage, maxBlockHeight } =
+      await getNoticeTransactions(
+        arweave,
+        activeAddress,
+        walletTokenIds,
+        5,
+        lastBlockHeight
+      );
+
+    if (maxBlockHeight && maxBlockHeight > 0) {
+      await ExtensionStorage.set(AO_TOKENS_LAST_BLOCK_HEIGHT, maxBlockHeight);
+    }
 
     const newProcessIds = Array.from(new Set(processIds)).filter(
       (processId) => !walletTokenIds.includes(processId)
@@ -275,7 +315,7 @@ export async function syncAoTokens() {
     if (newProcessIds.length === 0) {
       console.log("No new ao tokens found!");
       lastHasNextPage = hasNextPage;
-      return { hasNextPage, syncCount: 0 };
+      return { hasNextPage, syncCount: 0, maxBlockHeight };
     }
 
     const promises = newProcessIds
@@ -329,11 +369,11 @@ export async function syncAoTokens() {
 
     console.log("Synchronized ao tokens!");
     lastHasNextPage = hasNextPage;
-    return { hasNextPage, syncCount: tokens.length };
+    return { hasNextPage, syncCount: tokens.length, maxBlockHeight };
   } catch (error: any) {
     console.log("Error syncing tokens: ", error?.message);
     lastHasNextPage = false;
-    return { hasNextPage: false, syncCount: 0 };
+    return { hasNextPage: false, syncCount: 0, maxBlockHeight: 0 };
   } finally {
     isSyncInProgress = false;
   }
