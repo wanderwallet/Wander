@@ -1,123 +1,382 @@
 import type { Alarms } from "webextension-polyfill";
+import { LocalStorage } from "~iframe/storage/unpartitioned-storage/local-storage";
+import { log, LOG_GROUP } from "~utils/log/log.utils";
 
 interface AlarmWithTimer extends Alarms.Alarm {
   timeoutID?: number;
   intervalID?: number;
+  // Track if this alarm was created by background script after a page load
+  sourceTracking?: {
+    loadedFromStorage: boolean;
+    recreatedByScript: boolean;
+  };
+  // Store original creation time for more accurate periodic timer calculation
+  createdAt?: number;
 }
 
-const alarmsByName: Record<string, AlarmWithTimer> = {};
-
 type AlarmCallback = (alarm?: Alarms.Alarm) => void;
+type AlarmInfoSetup = {
+  name: string;
+  scheduledTime: number;
+  periodInMinutes?: number;
+  delayInMs: number;
+  periodInMs: number;
+};
 
-const alarmCallbacks: AlarmCallback[] = [];
+let alarmsByName: Record<string, AlarmWithTimer> = {};
+let alarmCallbacks: AlarmCallback[] = [];
+const loadedFromStorageAlarms = new Set<string>();
+const MAX_32_BIT = 0x7fffffff;
+const STORAGE_KEY = "WANDER_ALARMS";
 
+// Helper function to invoke all registered callbacks for an alarm
 function invokeAlarms(name: string) {
-  const alarmWithTimer = alarmsByName[name];
+  const alarm = alarmsByName[name];
+  if (!alarm) return;
 
-  if (!alarmWithTimer) return;
+  const callbackAlarm = {
+    name: alarm.name,
+    scheduledTime: alarm.scheduledTime,
+    periodInMinutes: alarm.periodInMinutes
+  };
 
-  alarmCallbacks.forEach((alarmCallback) => {
-    alarmCallback({
-      name: alarmWithTimer.name,
-      scheduledTime: alarmWithTimer.scheduledTime,
-      periodInMinutes: alarmWithTimer.periodInMinutes
-    });
+  alarmCallbacks.forEach((callback) => {
+    try {
+      callback(callbackAlarm);
+    } catch (error) {
+      log(LOG_GROUP.ALARMS, `Error in alarm callback: ${error}`);
+    }
   });
 }
 
-// setTimeout and setInterval delays have a max. value that if we exceed, just causes the callback to be invoked
-// immediately.
+// Helper function to set up alarm timers based on delay and period
+function setupAlarmTimers(
+  alarm: AlarmWithTimer,
+  delayInMs: number,
+  periodInMs: number
+) {
+  try {
+    // Save original creation time for periodic alarms to ensure consistent timing
+    if (!alarm.createdAt) {
+      alarm.createdAt = Date.now();
+    }
 
-const MAX_32_BIT = 0x7fffffff;
+    if (delayInMs <= 0) {
+      if (delayInMs === 0) {
+        invokeAlarms(alarm.name);
+      }
 
-export const alarms = {
-  create: (name: string, alarmInfo: Alarms.CreateAlarmInfoType) => {
-    const periodInMs = Math.min(
-      MAX_32_BIT,
-      (alarmInfo.periodInMinutes ?? -1) * 60000
+      if (periodInMs > 0) {
+        setupRecurringInterval(alarm, periodInMs);
+      }
+    } else {
+      alarm.timeoutID = window.setTimeout(() => {
+        delete alarm.timeoutID;
+        invokeAlarms(alarm.name);
+
+        if (periodInMs > 0) {
+          setupRecurringInterval(alarm, periodInMs);
+        }
+      }, delayInMs);
+    }
+  } catch (error) {
+    log(LOG_GROUP.ALARMS, `Error setting up alarm timers: ${error}`);
+    // Clean up any partially set up timers
+    clearAlarmTimers(alarm);
+  }
+}
+
+// Helper function to setup a recurring interval for an alarm
+function setupRecurringInterval(alarm: AlarmWithTimer, periodInMs: number) {
+  // Calculate next scheduled time based on the original pattern
+  const now = Date.now();
+  const timeSinceCreation = now - (alarm.createdAt || now);
+  const periodsElapsed = Math.floor(timeSinceCreation / periodInMs);
+  const nextScheduledTime =
+    (alarm.createdAt || now) + (periodsElapsed + 1) * periodInMs;
+
+  alarm.scheduledTime = nextScheduledTime;
+
+  alarm.intervalID = window.setInterval(() => {
+    // Update based on a consistent pattern to avoid drift
+    alarm.scheduledTime = alarm.scheduledTime + periodInMs;
+    invokeAlarms(alarm.name);
+  }, periodInMs);
+}
+
+// Helper function to clear timers for an alarm
+function clearAlarmTimers(alarm: AlarmWithTimer) {
+  if (alarm.timeoutID) {
+    window.clearTimeout(alarm.timeoutID);
+    delete alarm.timeoutID;
+  }
+  if (alarm.intervalID) {
+    window.clearInterval(alarm.intervalID);
+    delete alarm.intervalID;
+  }
+}
+
+// Calculate timing values from alarm info
+function calculateTimingValues(
+  alarmInfo: Alarms.CreateAlarmInfoType,
+  name: string
+): AlarmInfoSetup {
+  const periodInMs = Math.min(
+    MAX_32_BIT,
+    (alarmInfo.periodInMinutes ?? -1) * 60000
+  );
+
+  const delayInMs = Math.min(
+    MAX_32_BIT,
+    alarmInfo.when
+      ? alarmInfo.when - Date.now()
+      : (alarmInfo.delayInMinutes ?? -1) * 60000
+  );
+
+  return {
+    name,
+    scheduledTime: alarmInfo.when || Date.now() + delayInMs,
+    periodInMinutes: alarmInfo.periodInMinutes,
+    delayInMs,
+    periodInMs
+  };
+}
+
+// Load alarms from localStorage
+export async function loadAlarms() {
+  try {
+    const storage = await LocalStorage.getInstance();
+    const storedAlarms =
+      storage.getItem<Array<Alarms.Alarm & { createdAt?: number }>>(
+        STORAGE_KEY
+      );
+
+    if (!storedAlarms?.length) return;
+
+    const now = Date.now();
+    let alarmsLoaded = 0;
+
+    for (const storedAlarm of storedAlarms) {
+      // Skip one-time alarms that have already fired
+      if (!storedAlarm.periodInMinutes && storedAlarm.scheduledTime <= now) {
+        continue;
+      }
+
+      // For periodic alarms, calculate next occurrence according to Chrome's behavior
+      if (storedAlarm.periodInMinutes && storedAlarm.scheduledTime <= now) {
+        const periodMs = storedAlarm.periodInMinutes * 60000;
+
+        // If we have the original creation time, use it for more accurate time alignment
+        if (storedAlarm.createdAt) {
+          // Calculate how many periods have elapsed since creation
+          const timeSinceCreation = now - storedAlarm.createdAt;
+          const periodsElapsed = Math.floor(timeSinceCreation / periodMs);
+
+          // Schedule for the next period boundary aligned with original creation
+          storedAlarm.scheduledTime =
+            storedAlarm.createdAt + (periodsElapsed + 1) * periodMs;
+        } else {
+          // Without original creation time, simply schedule next occurrence from now
+          // This matches Chrome's behavior of "starting from when the device wakes"
+          storedAlarm.scheduledTime = now + periodMs;
+        }
+
+        // Ensure the time is in the future (should always be, but for safety)
+        if (storedAlarm.scheduledTime <= now) {
+          storedAlarm.scheduledTime = now + periodMs;
+        }
+      }
+
+      // Create alarm and mark it as loaded from storage
+      const alarm = await createAlarmInternal(
+        storedAlarm.name,
+        {
+          when: storedAlarm.scheduledTime,
+          periodInMinutes: storedAlarm.periodInMinutes
+        },
+        false
+      );
+
+      // Preserve createdAt if available
+      if (storedAlarm.createdAt) {
+        alarm.createdAt = storedAlarm.createdAt;
+      }
+
+      alarm.sourceTracking = {
+        loadedFromStorage: true,
+        recreatedByScript: false
+      };
+
+      loadedFromStorageAlarms.add(storedAlarm.name);
+      alarmsLoaded++;
+    }
+
+    log(LOG_GROUP.ALARMS, `Loaded ${alarmsLoaded} alarms from localStorage`);
+  } catch (error) {
+    log(LOG_GROUP.ALARMS, `Error loading alarms: ${error}`);
+  }
+}
+
+// Simpler persistence function that preserves createdAt
+async function persistAlarms() {
+  try {
+    const storage = await LocalStorage.getInstance();
+
+    const alarmsToStore = Object.values(alarmsByName).map((alarm) => ({
+      name: alarm.name,
+      scheduledTime: alarm.scheduledTime,
+      periodInMinutes: alarm.periodInMinutes,
+      createdAt: alarm.createdAt
+    }));
+
+    storage.setItem(STORAGE_KEY, alarmsToStore);
+
+    log(
+      LOG_GROUP.ALARMS,
+      `Saved ${alarmsToStore.length} alarms to localStorage`
     );
+  } catch (error) {
+    log(LOG_GROUP.ALARMS, `Error persisting alarms: ${error}`);
+  }
+}
 
-    const delayInMs = Math.min(
-      MAX_32_BIT,
-      alarmInfo.when
-        ? alarmInfo.when - Date.now()
-        : (alarmInfo.delayInMinutes ?? -1) * 60000
-    );
+async function createAlarmInternal(
+  name: string,
+  alarmInfo: Alarms.CreateAlarmInfoType,
+  shouldSave: boolean = true
+) {
+  try {
+    // Check if this alarm already exists and was loaded from storage
+    const existingAlarm = alarmsByName[name];
+    const isRecreatingSameAlarm =
+      existingAlarm &&
+      existingAlarm?.sourceTracking?.loadedFromStorage &&
+      !existingAlarm?.sourceTracking.recreatedByScript;
 
+    if (isRecreatingSameAlarm) {
+      // This is the background script trying to create an alarm we already loaded
+      existingAlarm.sourceTracking.recreatedByScript = true;
+
+      // Check if we need to update the existing alarm properties
+      const needsUpdate =
+        existingAlarm.periodInMinutes !== alarmInfo.periodInMinutes ||
+        (alarmInfo.when &&
+          Math.abs(existingAlarm.scheduledTime - alarmInfo.when) > 10000);
+
+      if (needsUpdate) {
+        // Update the alarm properties
+        if (alarmInfo.periodInMinutes !== undefined) {
+          existingAlarm.periodInMinutes = alarmInfo.periodInMinutes;
+        }
+
+        if (alarmInfo.when) {
+          existingAlarm.scheduledTime = alarmInfo.when;
+        }
+
+        clearAlarmTimers(existingAlarm);
+
+        // Calculate timing values and set up new timers
+        const { delayInMs, periodInMs } = calculateTimingValues(
+          alarmInfo,
+          name
+        );
+        setupAlarmTimers(existingAlarm, delayInMs, periodInMs);
+
+        if (shouldSave) {
+          await persistAlarms();
+        }
+      }
+
+      return existingAlarm;
+    }
+
+    // Clear any existing alarm with this name
+    if (existingAlarm) {
+      clearAlarmTimers(existingAlarm);
+    }
+
+    // Calculate timing values
+    const { scheduledTime, periodInMinutes, delayInMs, periodInMs } =
+      calculateTimingValues(alarmInfo, name);
+
+    // Create the new alarm
     const alarmWithTimer: AlarmWithTimer = {
       name,
-      scheduledTime: 0,
-      periodInMinutes: alarmInfo.periodInMinutes
+      scheduledTime,
+      periodInMinutes,
+      createdAt: Date.now()
     };
 
     alarmsByName[name] = alarmWithTimer;
 
-    // TODO: Record last alarm run in localStorage to continue the alarm when reloading...
+    // Set up timers for the alarm
+    setupAlarmTimers(alarmWithTimer, delayInMs, periodInMs);
 
-    if (delayInMs === 0) {
-      alarmWithTimer.scheduledTime = Date.now();
-      invokeAlarms(name);
-    } else if (delayInMs > 0) {
-      alarmWithTimer.scheduledTime = Date.now() + delayInMs;
-
-      alarmWithTimer.timeoutID = window.setTimeout(() => {
-        delete alarmWithTimer.timeoutID;
-
-        invokeAlarms(name);
-
-        if (periodInMs <= 0) return;
-
-        alarmWithTimer.scheduledTime = Date.now() + periodInMs;
-
-        alarmWithTimer.intervalID = window.setInterval(() => {
-          alarmWithTimer.scheduledTime = Date.now() + periodInMs;
-
-          invokeAlarms(name);
-        }, periodInMs);
-      }, delayInMs);
+    // Save to localStorage if requested
+    if (shouldSave) {
+      await persistAlarms();
     }
 
-    if (delayInMs <= 0 && periodInMs > 0) {
-      alarmWithTimer.scheduledTime = Date.now() + periodInMs;
+    return alarmWithTimer;
+  } catch (error) {
+    log(LOG_GROUP.ALARMS, `Error creating alarm ${name}: ${error}`);
+    throw error; // Rethrow so callers know something went wrong
+  }
+}
 
-      alarmWithTimer.intervalID = window.setInterval(() => {
-        alarmWithTimer.scheduledTime = Date.now() + periodInMs;
-
-        invokeAlarms(name);
-      }, periodInMs);
-    }
+export const alarms = {
+  create: async (name: string, alarmInfo: Alarms.CreateAlarmInfoType) => {
+    await createAlarmInternal(name, alarmInfo, true);
   },
 
-  clear: (name: string) => {
-    const alarmWithTimer = alarmsByName[name];
+  clear: async (name: string) => {
+    const alarm = alarmsByName[name];
+    if (!alarm) return;
 
-    if (!alarmWithTimer) return;
-
-    if (alarmWithTimer.timeoutID) clearTimeout(alarmWithTimer.timeoutID);
-    if (alarmWithTimer.intervalID) clearTimeout(alarmWithTimer.intervalID);
+    clearAlarmTimers(alarm);
+    delete alarmsByName[name];
+    loadedFromStorageAlarms.delete(name);
+    await persistAlarms();
   },
 
-  getAll: () => {
-    return Promise.resolve(
-      Object.values(alarmsByName) satisfies Alarms.Alarm[]
-    );
+  clearAll: async () => {
+    Object.values(alarmsByName).forEach((alarm) => {
+      clearAlarmTimers(alarm);
+    });
+    alarmsByName = {};
+    loadedFromStorageAlarms.clear();
   },
 
-  get: (name: string) => {
-    const alarmWithTimer = alarmsByName[name];
+  getAll: async () => {
+    return Object.values(alarmsByName).map((alarm) => ({
+      name: alarm.name,
+      scheduledTime: alarm.scheduledTime,
+      periodInMinutes: alarm.periodInMinutes
+    }));
+  },
 
-    if (!alarmWithTimer) return;
+  get: async (name: string) => {
+    const alarm = alarmsByName[name];
+    if (!alarm) return undefined;
 
     return {
-      name: alarmWithTimer.name,
-      scheduledTime: alarmWithTimer.scheduledTime,
-      periodInMinutes: alarmWithTimer.periodInMinutes
+      name: alarm.name,
+      scheduledTime: alarm.scheduledTime,
+      periodInMinutes: alarm.periodInMinutes
     };
   },
 
   onAlarm: {
     addListener: (alarmCallback: AlarmCallback) => {
       alarmCallbacks.push(alarmCallback);
+    },
+    removeListener: (alarmCallback: AlarmCallback) => {
+      alarmCallbacks = alarmCallbacks.filter(
+        (callback) => callback !== alarmCallback
+      );
     }
   }
 };
+
+// Initialize by loading alarms from localStorage
+loadAlarms();
