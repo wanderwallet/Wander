@@ -62,6 +62,7 @@ export class StorageManager {
     bytesNeeded: number = 0,
     options: { bufferSize?: number; aggressive?: boolean } = {}
   ): boolean {
+    const initialLength = storage.length;
     // Setup options with defaults
     const bufferSize = options.bufferSize ?? 1024;
     const aggressive = options.aggressive ?? false;
@@ -80,11 +81,16 @@ export class StorageManager {
     // Sort items by priority and expiration
     const sortedItems = this.getSortedStorageItems(storage);
 
+    // Early exit if no items are available for eviction
+    if (sortedItems.length === 0) {
+      return false;
+    }
+
     // Calculate target size - how much space we want to have after eviction
     const targetSize = this.MAX_STORAGE_SIZE - bytesNeeded - bufferSize;
 
-    // Track eviction progress
-    let evictedSize = 0;
+    // Track current size instead of using initial usage
+    let currentSize = usage.currentSize;
     let evictedCount = 0;
 
     // Determine the eviction threshold based on aggressiveness
@@ -94,29 +100,36 @@ export class StorageManager {
 
     // Evict items until we have enough space
     for (const item of sortedItems) {
-      // Skip items above our eviction threshold (critical items, or high items if not aggressive)
       if (item.priority >= evictionThreshold) {
         continue;
       }
 
-      // Remove the item
-      storage.removeItem(item.key);
-      evictedSize += item.size;
-      evictedCount++;
+      try {
+        storage.removeItem(item.key);
+        currentSize -= item.size;
+        evictedCount++;
+      } catch (error) {
+        // Log error but continue with other items
+        console.error(`Failed to evict item ${item.key}:`, error);
+        continue;
+      }
 
       // Check progress periodically for performance
       if (evictedCount % 10 === 0) {
-        if (usage.currentSize - evictedSize <= targetSize) {
-          // We've reached our target, clear cache and return success
+        if (currentSize <= targetSize) {
           return true;
         }
       }
     }
 
-    // Check if we've succeeded in creating enough space
-    return (
-      usage.currentSize - evictedSize + bytesNeeded <= this.MAX_STORAGE_SIZE
-    );
+    // Verify storage wasn't modified during eviction
+    if (storage.length !== initialLength - evictedCount) {
+      // Storage was modified during eviction, recalculate
+      const finalUsage = this.calculateStorageUsage(storage);
+      return finalUsage.currentSize + bytesNeeded <= this.MAX_STORAGE_SIZE;
+    }
+
+    return currentSize + bytesNeeded <= this.MAX_STORAGE_SIZE;
   }
 
   /**
@@ -221,6 +234,7 @@ export class StorageManager {
     priority: number;
     expiresAt: number;
   }> {
+    const encoder = new TextEncoder();
     const now = Date.now();
     const items: Array<{
       key: string;
@@ -234,7 +248,7 @@ export class StorageManager {
       const rawValue = storage.getItem(key);
       if (!rawValue) return;
 
-      const size = (key.length + rawValue.length) * 2;
+      const size = encoder.encode(key + rawValue).length;
 
       try {
         const parsed = JSON.parse(rawValue);

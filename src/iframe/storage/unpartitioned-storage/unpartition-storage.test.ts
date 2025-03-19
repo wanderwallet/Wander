@@ -175,9 +175,6 @@ describe("StorageManager", () => {
 
       const usage = StorageManager.calculateStorageUsage(sessionStorage);
 
-      // key1 (4) + value1 (6) = 10 chars
-      // key2 (4) + {"complex":"value"} (19) = 23 chars
-      // Total: 33 chars * 2 bytes per char = 66 bytes
       expect(usage.currentSize).toBe(
         StorageManager.calculateStorageUsageByKeys(sessionStorage, [
           "key1",
@@ -348,7 +345,7 @@ describe("Storage Eviction", () => {
 
     try {
       // Try to store data until we hit the browser limit
-      for (let i = 0; i < 1000 && !storageError; i++) {
+      for (let i = 0; i < 10000 && !storageError; i++) {
         try {
           storage.setItem(`test${i}`, smallData);
         } catch (e) {
@@ -586,9 +583,6 @@ describe("Storage Eviction", () => {
 
     // Force aggressive eviction 1MB
     storage.evictIfNeeded(1024 * 1024, true);
-
-    // Add a small delay to ensure usage is recalculated
-    await new Promise((resolve) => setTimeout(resolve, 100));
 
     const afterUsage = storage.getUsageInfo();
 
