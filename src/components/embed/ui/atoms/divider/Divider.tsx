@@ -8,7 +8,6 @@ import { useTheme } from "../../../contexts/ThemeContext";
 const Divider = forwardRef<HTMLDivElement, DividerBaseProps>(
   ({ text, textPosition = "center", className, ...props }, ref) => {
     const { isDarkMode } = useTheme();
-
     const cardBackground = isDarkMode
       ? "var(--brand-color-neutral1)"
       : "var(--brand-color-neutral6)";

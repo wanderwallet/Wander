@@ -13,6 +13,10 @@
   flex: 1;
 }
 
+.header__title__container__dark {
+  color: var(--color-gray-50);
+}
+
 .header__title__container__center {
   text-align: center;
 }

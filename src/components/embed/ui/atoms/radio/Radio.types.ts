@@ -2,6 +2,8 @@ import React from "react";
 
 export type RadioBaseProps = {
   label: string;
+  name?: string;
+  description?: string;
   id?: string;
   className?: string;
   isDisabled?: boolean;

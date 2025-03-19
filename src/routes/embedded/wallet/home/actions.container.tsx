@@ -48,7 +48,7 @@ export function WalletHomeActions() {
       </Link>
       <br />
       <Link
-        to="/wallet/dashboard"
+        to="/wallet/settings"
         style={{ textDecoration: "none", width: "100%" }}
       >
         <Row
