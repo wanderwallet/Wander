@@ -121,21 +121,39 @@ function calculateTimingValues(
   alarmInfo: Alarms.CreateAlarmInfoType,
   name: string
 ): AlarmInfoSetup {
-  const periodInMs = Math.min(
-    MAX_32_BIT,
-    (alarmInfo.periodInMinutes ?? -1) * 60000
-  );
+  const now = Date.now();
 
-  const delayInMs = Math.min(
-    MAX_32_BIT,
-    alarmInfo.when
-      ? alarmInfo.when - Date.now()
-      : (alarmInfo.delayInMinutes ?? -1) * 60000
-  );
+  // Determine scheduledTime and delayInMs based on provided parameters
+  let scheduledTime: number;
+  let delayInMs: number;
+
+  if (alarmInfo.when !== undefined) {
+    // When parameter takes precedence
+    scheduledTime = alarmInfo.when;
+    delayInMs = Math.max(0, Math.min(MAX_32_BIT, scheduledTime - now));
+  } else if (alarmInfo.delayInMinutes !== undefined) {
+    // Next is delayInMinutes
+    delayInMs = Math.min(MAX_32_BIT, alarmInfo.delayInMinutes * 60000);
+    scheduledTime = now + delayInMs;
+  } else if (alarmInfo.periodInMinutes !== undefined) {
+    // If only periodInMinutes is provided, first alarm fires after that period
+    delayInMs = Math.min(MAX_32_BIT, alarmInfo.periodInMinutes * 60000);
+    scheduledTime = now + delayInMs;
+  } else {
+    // This should be unreachable due to the validation above
+    delayInMs = 0;
+    scheduledTime = now;
+  }
+
+  // Calculate periodInMs (0 means non-repeating)
+  const periodInMs =
+    alarmInfo.periodInMinutes !== undefined
+      ? Math.min(MAX_32_BIT, alarmInfo.periodInMinutes * 60000)
+      : 0;
 
   return {
     name,
-    scheduledTime: alarmInfo.when || Date.now() + delayInMs,
+    scheduledTime,
     periodInMinutes: alarmInfo.periodInMinutes,
     delayInMs,
     periodInMs
@@ -246,6 +264,24 @@ async function createAlarmInternal(
   shouldSave: boolean = true
 ) {
   try {
+    // Validate parameters according to API spec
+    if (
+      alarmInfo.when !== undefined &&
+      alarmInfo.delayInMinutes !== undefined
+    ) {
+      throw new Error("Cannot specify both 'when' and 'delayInMinutes'");
+    }
+
+    if (
+      alarmInfo.when === undefined &&
+      alarmInfo.delayInMinutes === undefined &&
+      alarmInfo.periodInMinutes === undefined
+    ) {
+      throw new Error(
+        "Either 'when', 'delayInMinutes', or 'periodInMinutes' must be specified"
+      );
+    }
+
     // Check if this alarm already exists and was loaded from storage
     const existingAlarm = alarmsByName[name];
     const isRecreatingSameAlarm =
