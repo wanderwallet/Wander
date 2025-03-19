@@ -293,29 +293,25 @@ async function createAlarmInternal(
       // This is the background script trying to create an alarm we already loaded
       existingAlarm.sourceTracking.recreatedByScript = true;
 
-      // Check if we need to update the existing alarm properties
+      // Calculate what the new timing would be
+      const {
+        scheduledTime,
+        periodInMinutes: newPeriodInMinutes,
+        delayInMs,
+        periodInMs
+      } = calculateTimingValues(alarmInfo, name);
+
+      // Needs update if period has changed or scheduled time differs significantly (more than 10 seconds)
       const needsUpdate =
-        existingAlarm.periodInMinutes !== alarmInfo.periodInMinutes ||
-        (alarmInfo.when &&
-          Math.abs(existingAlarm.scheduledTime - alarmInfo.when) > 10000);
+        newPeriodInMinutes !== existingAlarm.periodInMinutes ||
+        Math.abs(existingAlarm.scheduledTime - scheduledTime) > 10000;
 
       if (needsUpdate) {
-        // Update the alarm properties
-        if (alarmInfo.periodInMinutes !== undefined) {
-          existingAlarm.periodInMinutes = alarmInfo.periodInMinutes;
-        }
+        existingAlarm.periodInMinutes = newPeriodInMinutes;
+        existingAlarm.scheduledTime = scheduledTime;
 
-        if (alarmInfo.when) {
-          existingAlarm.scheduledTime = alarmInfo.when;
-        }
-
+        // clear and set up new timers
         clearAlarmTimers(existingAlarm);
-
-        // Calculate timing values and set up new timers
-        const { delayInMs, periodInMs } = calculateTimingValues(
-          alarmInfo,
-          name
-        );
         setupAlarmTimers(existingAlarm, delayInMs, periodInMs);
 
         if (shouldSave) {
@@ -356,7 +352,7 @@ async function createAlarmInternal(
     return alarmWithTimer;
   } catch (error) {
     log(LOG_GROUP.ALARMS, `Error creating alarm ${name}: ${error}`);
-    throw error; // Rethrow so callers know something went wrong
+    throw error;
   }
 }
 
