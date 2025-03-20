@@ -1,19 +1,15 @@
-import { DevFigmaScreen } from "~components/dev/figma-screen/figma-screen.component";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useState } from "react";
 
-import screenSrc from "url:/assets-beta/figma-screens/recover-account-more-authentication.view.png";
 import {
   AppleIcon,
   Box,
   Button,
   Card,
   FacebookIcon,
-  Row,
   TwitterIcon,
-  WanderIcon,
-  Text,
-  Checkbox
+  Checkbox,
+  WanderFooter
 } from "~components/embed/ui";
 import { useLocation } from "~wallets/router/router.utils";
 
@@ -34,14 +30,7 @@ export function AuthRecoverAccountMoreAuthenticationEmbeddedView() {
     <Card
       headerText="Recover your account"
       subtitle="More options"
-      footerElement={
-        <Row>
-          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
-            {"Secured by"}
-          </Text>
-          <WanderIcon color="#838383" />
-        </Row>
-      }
+      footerElement={<WanderFooter />}
       hasBackButton={true}
       onBackButtonClick={back}
       hasCloseButton={true}

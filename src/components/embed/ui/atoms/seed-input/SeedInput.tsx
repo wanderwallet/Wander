@@ -1,7 +1,6 @@
 import React, { forwardRef, useState, useEffect, type FormEvent } from "react";
 import styles from "./SeedInput.module.css";
 import type { SeedInputBaseProps } from "./SeedInput.types";
-import { CopyableIcon } from "../icon";
 
 const SeedInput = forwardRef<HTMLDivElement, SeedInputBaseProps>(
   (
@@ -9,7 +8,6 @@ const SeedInput = forwardRef<HTMLDivElement, SeedInputBaseProps>(
       className = "",
       size = 12,
       handleSubmit,
-      handleCopyToClipboard,
       handleInputChange,
       seedPhrase = [],
       ...props
@@ -57,13 +55,6 @@ const SeedInput = forwardRef<HTMLDivElement, SeedInputBaseProps>(
       }
     };
 
-    const onCopy = () => {
-      if (handleCopyToClipboard) {
-        const completeSeedPhrase = seedPhrase.join(" ");
-        handleCopyToClipboard(completeSeedPhrase);
-      }
-    };
-
     return (
       <Component
         className={`
@@ -89,13 +80,6 @@ const SeedInput = forwardRef<HTMLDivElement, SeedInputBaseProps>(
               </button>
             ))}
           </div>
-          <button
-            type="button"
-            className={styles["copy-button"]}
-            onClick={onCopy}
-          >
-            <CopyableIcon />
-          </button>
         </div>
 
         <form onSubmit={onSubmit}>

@@ -39,14 +39,7 @@ export function AccountBackupSharesReminderEmbeddedView() {
           ? "Your browser does not support unpartitioned state. Back up your wallet to access it on new apps."
           : "Secure your wallet by backing it up"
       }
-      footerElement={
-        <Row>
-          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
-            {"Secured by"}
-          </Text>
-          <WanderIcon color="#838383" />
-        </Row>
-      }
+      footerElement={<WanderFooter />}
       hasBackButton={true}
       onBackButtonClick={back}
       hasCloseButton={true}

@@ -4,10 +4,8 @@ import {
   Card,
   KeyIcon,
   RecoverHeaderIcon,
-  Row,
   SeedIcon,
-  Text,
-  WanderIcon
+  WanderFooter
 } from "~components/embed/ui";
 import { useLocation } from "~wallets/router/router.utils";
 
@@ -18,14 +16,7 @@ export function AuthRecoverAccountEmbeddedView() {
       headerIcon={<RecoverHeaderIcon />}
       headerText="Recover your account"
       subtitle="After recovery, all your devices are logged out and your account recovery files are invalided. You'll have to download a new one."
-      footerElement={
-        <Row>
-          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
-            {"Secured by"}
-          </Text>
-          <WanderIcon color="#838383" />
-        </Row>
-      }
+      footerElement={<WanderFooter />}
       hasBackButton={true}
       onBackButtonClick={back}
       hasCloseButton={true}

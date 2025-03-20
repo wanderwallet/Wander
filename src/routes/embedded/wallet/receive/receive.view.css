@@ -4,7 +4,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: var(--button-color-primary);
+  background-color: #0d6ce9;
   border-radius: 24px;
   padding: 16px;
   width: auto;

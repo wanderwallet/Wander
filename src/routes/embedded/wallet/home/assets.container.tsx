@@ -1,5 +1,8 @@
+import { useState } from "react";
+import { Button } from "~components/embed/ui";
 import { AssetItem } from "./asset-item";
 import type { TokenInfoWithBalance } from "~tokens/aoTokens/ao";
+
 export function WalletHomeAssets({
   tokens,
   prices
@@ -7,9 +10,23 @@ export function WalletHomeAssets({
   tokens: TokenInfoWithBalance[];
   prices: Record<string, number>;
 }) {
+  const [showAllTokens, setShowAllTokens] = useState(false);
+
+  const hasMoreTokens = tokens.length > 3;
+
+  const displayedTokens = showAllTokens ? tokens : tokens.slice(0, 3);
+
+  const handleLoadMore = () => {
+    setShowAllTokens(true);
+  };
+
+  const handleShowLess = () => {
+    setShowAllTokens(false);
+  };
+
   return (
     <>
-      {tokens.map((token) => (
+      {displayedTokens.map((token) => (
         <AssetItem
           key={token.id}
           defaultLogo={token.Logo}
@@ -20,6 +37,23 @@ export function WalletHomeAssets({
           divisibility={token.Denomination}
         />
       ))}
+
+      {hasMoreTokens && (
+        <Button
+          variant="link"
+          style={{
+            color: "var(--color-copyable-text-value)",
+            cursor: "pointer",
+            padding: "12px 0",
+            textAlign: "center"
+          }}
+          onClick={showAllTokens ? handleShowLess : handleLoadMore}
+        >
+          {showAllTokens
+            ? "Show less"
+            : `Load more (${tokens.length - 3} more)`}
+        </Button>
+      )}
     </>
   );
 }

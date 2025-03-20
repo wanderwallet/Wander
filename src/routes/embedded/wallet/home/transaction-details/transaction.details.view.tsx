@@ -1,4 +1,3 @@
-import { useMemo, useState } from "react";
 import { Card, Row, Text, Box, Button } from "~components/embed/ui";
 import { useLocation } from "~wallets/router/router.utils";
 

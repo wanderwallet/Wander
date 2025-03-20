@@ -12,7 +12,7 @@ import {
   SocialsIcon,
   Text,
   Wander2Icon,
-  WanderIcon
+  WanderFooter
 } from "~components/embed";
 import { useCallback, useRef, useState } from "react";
 import type { AuthProviderType } from "embed-api";
@@ -71,14 +71,7 @@ export function AuthEmbeddedView() {
   return (
     <Card
       headerText="Sign Up or Sign In"
-      footerElement={
-        <Row>
-          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
-            {"Secured by"}
-          </Text>
-          <WanderIcon color="#838383" />
-        </Row>
-      }
+      footerElement={<WanderFooter />}
       hasBackButton={false}
       size="auto"
     >
@@ -136,7 +129,7 @@ export function AuthEmbeddedView() {
         >
           More options
         </Button>
-        <Row alignment="center" justifyContent="center">
+        <Row style={{ gap: "4px" }}>
           <Text variant={"bodySm"}>{"Can’t sign in?"}</Text>
           <Button variant="link" href="#/auth/recover-account" size="sm">
             Recover account

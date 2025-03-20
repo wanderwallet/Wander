@@ -6,11 +6,9 @@ import {
   Card,
   KeyIcon,
   QRCodeIcon,
-  Row,
   SeedIcon,
   WalletIcon,
-  WanderIcon,
-  Text
+  WanderFooter
 } from "~components/embed/ui";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useLocation } from "~wallets/router/router.utils";
@@ -47,14 +45,7 @@ export function AccountAddWalletEmbeddedView() {
     <Card
       headerText="Add a wallet"
       subtitle="Add a wallet to your account to hold your funds. Create or add an existing wallet to continue."
-      footerElement={
-        <Row>
-          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
-            {"Secured by"}
-          </Text>
-          <WanderIcon color="#838383" />
-        </Row>
-      }
+      footerElement={<WanderFooter />}
       hasBackButton={true}
       onBackButtonClick={back}
       size="auto"

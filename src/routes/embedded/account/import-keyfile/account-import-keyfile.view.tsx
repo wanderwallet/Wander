@@ -1,6 +1,6 @@
 import type { JWKInterface } from "arweave/web/lib/wallet";
 import copy from "copy-to-clipboard";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Button,
   Card,
@@ -8,7 +8,8 @@ import {
   Row,
   Upload,
   WanderIcon,
-  Text
+  Text,
+  WanderFooter
 } from "~components/embed/ui";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useLocation } from "~wallets/router/router.utils";
@@ -104,14 +105,7 @@ export function AccountImportKeyfileEmbeddedView() {
     <Card
       headerText="Import private key"
       subtitle="Upload your private key to connect your wallet to your account."
-      footerElement={
-        <Row>
-          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
-            {"Secured by"}
-          </Text>
-          <WanderIcon color="#838383" />
-        </Row>
-      }
+      footerElement={<WanderFooter />}
       hasBackButton={true}
       onBackButtonClick={back}
       size="auto"

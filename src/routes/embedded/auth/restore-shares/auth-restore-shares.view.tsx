@@ -3,14 +3,12 @@ import {
   Box,
   Button,
   Card,
-  Row,
   WalletIcon,
-  WanderIcon,
-  Text,
   GDriveIcon,
   DropboxIcon,
   SeedIcon,
-  KeyIcon
+  KeyIcon,
+  WanderFooter
 } from "~components/embed/ui";
 import { useLocation } from "~wallets/router/router.utils";
 
@@ -19,14 +17,7 @@ export function AuthRestoreSharesEmbeddedView() {
   return (
     <Card
       headerText="Restore shares / wallet"
-      footerElement={
-        <Row>
-          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
-            {"Secured by"}
-          </Text>
-          <WanderIcon color="#838383" />
-        </Row>
-      }
+      footerElement={<WanderFooter />}
       hasBackButton={true}
       onBackButtonClick={back}
       hasCloseButton={true}

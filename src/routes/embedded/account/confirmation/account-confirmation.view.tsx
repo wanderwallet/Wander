@@ -1,13 +1,5 @@
 import copy from "copy-to-clipboard";
-import {
-  Card,
-  Row,
-  WanderIcon,
-  Text,
-  Box,
-  Copyable,
-  Button
-} from "~components/embed/ui";
+import { Card, Copyable, Button, WanderFooter } from "~components/embed/ui";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useLocation } from "~wallets/router/router.utils";
 const shortenAddress = (address: string): string =>
@@ -29,15 +21,7 @@ export function AccountConfirmationEmbeddedView() {
                 : "created"
             }!`
       }
-      subtitle="A confirmation email has been sent with recovery instructions."
-      footerElement={
-        <Row>
-          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
-            {"Secured by"}
-          </Text>
-          <WanderIcon color="#838383" />
-        </Row>
-      }
+      footerElement={<WanderFooter />}
       hasBackButton={true}
       onBackButtonClick={() => navigate(`/auth`)}
       size="auto"
@@ -46,8 +30,7 @@ export function AccountConfirmationEmbeddedView() {
       <Copyable
         isFullWidth
         label="Your wallet address"
-        value={shortenAddress(lastRegisteredWallet.address)}
-        tooltipValue={lastRegisteredWallet.address}
+        value={lastRegisteredWallet.address}
         onClick={() => {
           copy(lastRegisteredWallet.address);
         }}

@@ -12,7 +12,7 @@ export function WalletHomeActions() {
   return (
     <Box alignment="left" style={{ marginLeft: "20px" }}>
       <Link
-        to="/wallet/receive"
+        to="/wallet/receive/options"
         style={{ textDecoration: "none", width: "100%" }}
       >
         <Row

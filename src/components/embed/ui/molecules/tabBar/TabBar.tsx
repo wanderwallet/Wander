@@ -18,7 +18,7 @@ const TabBar = React.forwardRef<HTMLDivElement, TabBarBaseProps>(
       >
         <div
           className={`${styles["active"]}`}
-          style={{ left: activeTab === 1 ? `${49}%` : 0 }}
+          style={{ left: activeTab === 1 ? `${47}%` : 0 }}
         ></div>
         {tabs.map((tab, index) => (
           <button

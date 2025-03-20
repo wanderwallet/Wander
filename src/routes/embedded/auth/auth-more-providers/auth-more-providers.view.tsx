@@ -6,10 +6,8 @@ import {
   Button,
   Card,
   FacebookIcon,
-  Row,
-  Text,
   TwitterIcon,
-  WanderIcon
+  WanderFooter
 } from "~components/embed";
 import { useCallback, useState } from "react";
 import type { AuthProviderType } from "embed-api";
@@ -41,14 +39,7 @@ export function AuthMoreProvidersEmbeddedView() {
     <Card
       headerText="Sign Up or Sign In"
       subtitle="Select a method to authenticate"
-      footerElement={
-        <Row>
-          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
-            {"Secured by"}
-          </Text>
-          <WanderIcon color="#838383" />
-        </Row>
-      }
+      footerElement={<WanderFooter />}
       hasBackButton={true}
       onBackButtonClick={back}
       size="auto"

@@ -2,52 +2,73 @@
 
 .copyable {
   all: unset;
-
   display: flex;
-  align-items: center;
-  justify-content: center;
   font-family: var(--font-family-serif);
   overflow: hidden;
   transition: all var(--transition-base);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .copyable__border {
   border-radius: var(--border-radius-lg);
   border: 1px solid var(--color-copyable-border);
-  padding: var(--spacing-2);
+  padding: var(--spacing-3) var(--spacing-2);
+}
+
+.copyable__container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.copyable__label {
+  color: var(--color-copyable-text-label);
+  font-size: var(--font-size-sm);
+  width: 100%;
+}
+
+.copyable__content {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.copyable__value {
+  color: var(--color-copyable-text-value);
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: var(--spacing-2);
 }
 
 .copyable__button {
   display: flex;
-  flex-direction: row;
-  margin-left: var(--spacing-2);
+  align-items: center;
+  gap: var(--spacing-1);
+  justify-content: center;
   background-color: inherit;
   color: var(--color-copyable-text-value);
   border: none;
-  justify-content: space-between;
-  align-items: center;
-  padding-left: 0;
   cursor: pointer;
   transition: background-color var(--transition-base);
+  padding: var(--spacing-1);
+  min-width: 24px;
+  min-height: 24px;
+  border-radius: var(--border-radius-md);
+  flex-shrink: 0;
 }
 
 .copyable__button:hover:not(:disabled) {
   background-color: var(--brand-color-gray-100);
-  border-radius: var(--border-radius-md);
 }
 
 .copyable__button:disabled {
   cursor: not-allowed;
   opacity: var(--opacity-disabled);
-}
-
-.text__label {
-  color: var(--color-copyable-text-label);
-  font-size: var(--font-size-sm);
-  margin-right: var(--spacing-1);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 /* Size variants */

@@ -3,15 +3,13 @@ import { useLocation } from "~wallets/router/router.utils";
 import { useState } from "react";
 import {
   Card,
-  Row,
-  WanderIcon,
-  Text,
   Copyable,
   Button,
   KeyIcon,
   GoogleIcon,
   SocialsIcon,
-  Checkbox
+  Checkbox,
+  WanderFooter
 } from "~components/embed/ui";
 import copy from "copy-to-clipboard";
 
@@ -30,14 +28,7 @@ export function AuthRecoverAccountAuthenticationEmbeddedView() {
   return (
     <Card
       headerText={"Recover your account"}
-      footerElement={
-        <Row>
-          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
-            {"Secured by"}
-          </Text>
-          <WanderIcon color="#838383" />
-        </Row>
-      }
+      footerElement={<WanderFooter />}
       hasBackButton={true}
       onBackButtonClick={back}
       onCloseButtonClick={() => {

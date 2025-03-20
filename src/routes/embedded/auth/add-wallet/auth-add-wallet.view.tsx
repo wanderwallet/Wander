@@ -8,11 +8,9 @@ import {
   Card,
   KeyIcon,
   QRCodeIcon,
-  Row,
   SeedIcon,
-  Text,
   WalletIcon,
-  WanderIcon
+  WanderFooter
 } from "~components/embed";
 import type { WalletSourceType } from "embed-api";
 
@@ -41,16 +39,9 @@ export function AuthAddWalletEmbeddedView() {
     <Card
       headerText="Add a wallet"
       subtitle="Add a wallet to your account to hold your funds. Create or add an existing wallet to continue."
-      footerElement={
-        <Row>
-          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
-            {"Secured by"}
-          </Text>
-          <WanderIcon color="#838383" />
-        </Row>
-      }
+      footerElement={<WanderFooter />}
       hasBackButton={true}
-      onBackButtonClick={() => navigate(`/`)}
+      onBackButtonClick={() => navigate(`/account`)}
       size="auto"
     >
       <Box>
@@ -90,7 +81,7 @@ export function AuthAddWalletEmbeddedView() {
             href="#/auth/add-device"
             isDisabled={isLoading}
           >
-            Add this device to an existing account
+            Scan QR Code
           </Button>
         ) : (
           <Button

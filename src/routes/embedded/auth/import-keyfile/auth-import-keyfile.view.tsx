@@ -6,10 +6,9 @@ import {
   Card,
   Row,
   Upload,
-  WanderIcon,
-  Text,
   Copyable,
-  Button
+  Button,
+  WanderFooter
 } from "~components/embed";
 import copy from "copy-to-clipboard";
 import { useLocation } from "~wallets/router/router.utils";
@@ -61,14 +60,7 @@ export function AuthImportKeyfileEmbeddedView() {
     <Card
       headerText="Enter Seedphrase"
       subtitle="Would you like to add this wallet to your account?"
-      footerElement={
-        <Row>
-          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
-            {"Secured by"}
-          </Text>
-          <WanderIcon color="#838383" />
-        </Row>
-      }
+      footerElement={<WanderFooter />}
       hasBackButton={true}
       onBackButtonClick={back}
       size="auto"
@@ -102,14 +94,7 @@ export function AuthImportKeyfileEmbeddedView() {
     <Card
       headerText="Import private key"
       subtitle="Upload your private key to connect your wallet to your account."
-      footerElement={
-        <Row>
-          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
-            {"Secured by"}
-          </Text>
-          <WanderIcon color="#838383" />
-        </Row>
-      }
+      footerElement={<WanderFooter />}
       hasBackButton={true}
       onBackButtonClick={back}
       size="auto"

@@ -42,10 +42,13 @@ import { AccountExportWalletEmbeddedView } from "~routes/embedded/account/export
 import { WalletHomeEmbeddedView } from "~routes/embedded/wallet/home/wallet.view";
 import { WalletReceiveEmbeddedView } from "~routes/embedded/wallet/receive/receive.view";
 import { WalletTransactionsEmbeddedView } from "~routes/embedded/wallet/transactions/transactions.view";
-import { WalletSettingsEmbeddedView } from "~routes/embedded/wallet/settings/settings.view";
 import { WalletSettingsCustomEmbeddedView } from "~routes/embedded/wallet/settings/settings.custom.view";
 import { WalletTransactionSignEmbeddedView } from "~routes/embedded/wallet/home/transaction-sign/transaction.sign.view";
 import { WalletTransactionDetailsEmbeddedView } from "~routes/embedded/wallet/home/transaction-details/transaction.details.view";
+import { WalletBuyEmbeddedView } from "~routes/embedded/wallet/buy/buy.container.view";
+import { WalletBuyCashEmbeddedView } from "~routes/embedded/wallet/buy/buy.cash.view";
+import { WalletReceiveOptionsEmbeddedView } from "~routes/embedded/wallet/receive/options/receive.options.view";
+import { WalletDepositTokensEmbeddedView } from "~routes/embedded/wallet/deposit/deposit.container.view";
 export type EmbeddedRoutePath =
   | "/auth"
   | "/auth/more-providers"
@@ -77,11 +80,16 @@ export type EmbeddedRoutePath =
   | "/auth/error";
   | "/wallet"
   | "/wallet/receive"
+  | "/wallet/receive/options"
   | "/wallet/transactions"
   | "/wallet/settings"
   | "/wallet/settings/custom"
   | "/wallet/transaction"
-  | "/wallet/transaction-details";
+  | "/wallet/transaction-details"
+  | "/wallet/buy"
+  | "/wallet/buy/cash"
+  | "/wallet/buy/crypto"
+  | "/wallet/deposit";
 
 export const EmbeddedPaths = {
   // TODO: Consider nesting these instead:
@@ -125,11 +133,15 @@ export const EmbeddedPaths = {
   AuthError: "/auth/error"
   WalletHomeEmbeddedView: "/wallet",
   WalletReceiveEmbeddedView: "/wallet/receive",
+  WalletReceiveOptionsEmbeddedView: "/wallet/receive/options",
   WalletTransactionsEmbeddedView: "/wallet/transactions",
   WalletSettingsEmbeddedView: "/wallet/settings",
   WalletSettingsCustomEmbeddedView: "/wallet/settings/custom",
   WalletTransactionSignEmbeddedView: "/wallet/transaction",
-  WalletTransactionDetailsEmbeddedView: "/wallet/transaction-details"
+  WalletTransactionDetailsEmbeddedView: "/wallet/transaction-details",
+  WalletBuyEmbeddedView: "/wallet/buy",
+  WalletBuyCashEmbeddedView: "/wallet/buy/cash",
+  WalletDepositTokensEmbeddedView: "/wallet/deposit"
 
   // TODO: Add pages to add/link additional auth methods or devices post-auth (under /account)
 } as const satisfies Record<string, EmbeddedRoutePath>;
@@ -256,7 +268,7 @@ const IFRAME_OWN_ROUTES = [
   },
   {
     path: EmbeddedPaths.WalletSettingsEmbeddedView,
-    component: WalletSettingsEmbeddedView
+    component: WalletBuyEmbeddedView
   },
   {
     path: EmbeddedPaths.WalletSettingsCustomEmbeddedView,
@@ -269,6 +281,22 @@ const IFRAME_OWN_ROUTES = [
   {
     path: EmbeddedPaths.WalletTransactionDetailsEmbeddedView,
     component: WalletTransactionDetailsEmbeddedView
+  },
+  {
+    path: EmbeddedPaths.WalletBuyEmbeddedView,
+    component: WalletBuyEmbeddedView
+  },
+  {
+    path: EmbeddedPaths.WalletBuyCashEmbeddedView,
+    component: WalletBuyCashEmbeddedView
+  },
+  {
+    path: EmbeddedPaths.WalletReceiveOptionsEmbeddedView,
+    component: WalletReceiveOptionsEmbeddedView
+  },
+  {
+    path: EmbeddedPaths.WalletDepositTokensEmbeddedView,
+    component: WalletDepositTokensEmbeddedView
   }
 ] as const satisfies RouteConfig<EmbeddedRoutePath>[];
 

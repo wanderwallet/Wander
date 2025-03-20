@@ -13,9 +13,9 @@ export type CopyableBaseProps = {
   onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
   testId?: string;
   accessibilityLabel?: string;
-  tooltipValue?: string;
   style?: React.CSSProperties;
   isShortened?: boolean;
   hasBorder?: boolean;
   isButtonOnly?: boolean;
+  buttonText?: string;
 };

@@ -5,12 +5,10 @@ import {
   Card,
   Copyable,
   KeyIcon,
-  Row,
   SeedIcon,
   Snackbar,
-  WanderIcon,
   WarningIcon,
-  Text
+  WanderFooter
 } from "~components/embed/ui";
 import copy from "copy-to-clipboard";
 import { WalletUtils } from "~utils/wallets/wallets.utils";
@@ -36,14 +34,7 @@ export function AccountExportWalletEmbeddedView() {
     <Card
       headerText="Export your wallet"
       subtitle="Download your keyfile or copy your seedphrase to export your wallet."
-      footerElement={
-        <Row>
-          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
-            {"Secured by"}
-          </Text>
-          <WanderIcon color="#838383" />
-        </Row>
-      }
+      footerElement={<WanderFooter />}
       hasBackButton={true}
       onBackButtonClick={back}
       hasCloseButton={true}

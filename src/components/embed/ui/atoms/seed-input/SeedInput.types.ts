@@ -5,7 +5,6 @@ export type SeedInputBaseProps = {
   className?: string;
   style?: React.CSSProperties;
   handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
-  handleCopyToClipboard: (value: string) => void;
   handleInputChange: (index: number, value: string) => void;
   seedPhrase: string[];
 };

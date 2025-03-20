@@ -1,14 +1,7 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useCallback, useRef, useState } from "react";
 
-import {
-  Card,
-  Row,
-  Upload,
-  WanderIcon,
-  Text,
-  Button
-} from "~components/embed/ui";
+import { Card, Upload, Button, WanderFooter } from "~components/embed/ui";
 import { useLocation } from "~wallets/router/router.utils";
 
 export function AuthRestoreSharesRecoveryFileEmbeddedView() {
@@ -51,14 +44,7 @@ export function AuthRestoreSharesRecoveryFileEmbeddedView() {
   return (
     <Card
       headerText="Restore shares / wallet"
-      footerElement={
-        <Row>
-          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
-            {"Secured by"}
-          </Text>
-          <WanderIcon color="#838383" />
-        </Row>
-      }
+      footerElement={<WanderFooter />}
       hasBackButton={true}
       onBackButtonClick={back}
       hasCloseButton={true}

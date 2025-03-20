@@ -6,10 +6,9 @@ import {
   Card,
   Copyable,
   Row,
-  WanderIcon,
-  Text,
   Button,
-  SeedInput
+  SeedInput,
+  WanderFooter
 } from "~components/embed/ui";
 import copy from "copy-to-clipboard";
 
@@ -66,14 +65,7 @@ export function AuthRecoverAccountSeedphraseEmbeddedView() {
     <Card
       headerText="Recover your account"
       subtitle="Enter seedphrase"
-      footerElement={
-        <Row>
-          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
-            {"Secured by"}
-          </Text>
-          <WanderIcon color="#838383" />
-        </Row>
-      }
+      footerElement={<WanderFooter />}
       hasBackButton={true}
       onBackButtonClick={back}
       hasCloseButton={true}
@@ -110,14 +102,7 @@ export function AuthRecoverAccountSeedphraseEmbeddedView() {
     <Card
       headerText="Recover your account"
       subtitle="Enter seedphrase"
-      footerElement={
-        <Row>
-          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
-            {"Secured by"}
-          </Text>
-          <WanderIcon color="#838383" />
-        </Row>
-      }
+      footerElement={<WanderFooter />}
       hasBackButton={true}
       onBackButtonClick={back}
       size="auto"
@@ -125,7 +110,6 @@ export function AuthRecoverAccountSeedphraseEmbeddedView() {
       <SeedInput
         seedPhrase={seedPhrase}
         handleSubmit={handleImportWallet}
-        handleCopyToClipboard={() => copy(seedPhrase.join(" "))}
         handleInputChange={handleInputChange}
       />
       <Button

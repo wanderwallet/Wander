@@ -3,6 +3,8 @@ export { default as ArConnectIcon } from "./ArConnect";
 export { default as ArrowDownIcon } from "./ArrowDown";
 export { default as ArrowUpIcon } from "./ArrowUp";
 export { default as BackupCompleteIcon } from "./BackupComplete";
+export { default as BuyWithCashIcon } from "./BuyWithCash";
+export { default as BuyWithCryptoIcon } from "./BuyWithCrypto";
 export { default as ChevronLeft } from "./ChevronLeft";
 export { default as ChevronRight } from "./ChevronRight";
 export { default as CheckIcon } from "./Check";

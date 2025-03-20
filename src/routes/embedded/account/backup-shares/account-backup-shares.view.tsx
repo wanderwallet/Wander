@@ -3,9 +3,6 @@ import {
   Box,
   Button,
   Card,
-  Row,
-  WanderIcon,
-  Text,
   AppleIcon,
   DropboxIcon,
   GDriveIcon,
@@ -47,14 +44,7 @@ export function AccountBackupSharesEmbeddedView() {
     <Card
       headerText="Wallet backup"
       subtitle="Select a method to back up your wallet which can be used to sign in on a new device or recover your wallet"
-      footerElement={
-        <Row>
-          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
-            {"Secured by"}
-          </Text>
-          <WanderIcon color="#838383" />
-        </Row>
-      }
+      footerElement={<WanderFooter />}
       hasBackButton={true}
       onBackButtonClick={back}
       hasCloseButton={true}

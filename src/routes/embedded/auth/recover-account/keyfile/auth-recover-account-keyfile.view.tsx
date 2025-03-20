@@ -1,15 +1,14 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useLocation } from "~wallets/router/router.utils";
 
 import {
   Card,
   Row,
-  Text,
   Button,
-  WanderIcon,
   Copyable,
-  Upload
+  Upload,
+  WanderFooter
 } from "~components/embed";
 import copy from "copy-to-clipboard";
 
@@ -72,14 +71,7 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
     <Card
       headerText="Recover your account"
       subtitle="Import private key"
-      footerElement={
-        <Row>
-          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
-            {"Secured by"}
-          </Text>
-          <WanderIcon color="#838383" />
-        </Row>
-      }
+      footerElement={<WanderFooter />}
       hasBackButton={true}
       onBackButtonClick={back}
       hasCloseButton={true}
@@ -116,14 +108,7 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
     <Card
       headerText="Import private key"
       subtitle="Upload your private key to connect your wallet to your account."
-      footerElement={
-        <Row>
-          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
-            {"Secured by"}
-          </Text>
-          <WanderIcon color="#838383" />
-        </Row>
-      }
+      footerElement={<WanderFooter />}
       hasBackButton={true}
       onBackButtonClick={back}
       size="auto"
