@@ -1,7 +1,8 @@
 import { createSupabaseClient, createTRPCClient } from "embed-api";
 import { jwtDecode } from "jwt-decode";
 import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
-import { LocalStorage } from "~iframe/local-storage/local-storage";
+import { LocalStorage } from "~iframe/storage/unpartitioned-storage/local-storage";
+import { searchParams, ancestorOrigin, isInsideIframe } from "./iframe.utils";
 
 // Then, its tRPC client will be initialized with the following headers:
 // - authorization (getAuthTokenHeader / setAuthTokenHeader)
@@ -38,13 +39,6 @@ const PARAM_CLIENT_ID = "client-id";
 const PARAM_SERVER_BASE_URL = "server-base-url";
 const PARAM_ANCESTOR_ORIGIN = "ancestor-origin";
 
-const { search = "", ancestorOrigins = [] } = IS_EMBEDDED_APP
-  ? document.location
-  : {};
-
-const searchParams = new URLSearchParams(search);
-const ancestorOrigin = ancestorOrigins[ancestorOrigins.length - 1];
-
 const EMBEDDED_CLIENT_ID =
   searchParams.get(PARAM_CLIENT_ID) ||
   EMBEDDED_ENV_VARS.DEFAULT_EMBEDDED_CLIENT_ID;
@@ -79,16 +73,6 @@ async function handleAuthError() {
     window.location.reload();
   } catch (err) {
     console.error("Error signing out:", err);
-  }
-}
-
-export function isInsideIframe(): boolean {
-  try {
-    return window.self !== window.top || !!ancestorOrigin;
-  } catch (e) {
-    // If we can't access window.top due to cross-origin restrictions,
-    // we're definitely in an iframe
-    return true;
   }
 }
 
@@ -132,22 +116,12 @@ const {
 
 // Create a singleton instance of `SupabaseClient` & `LocalStorage`
 let supabaseInstance: ReturnType<typeof createSupabaseClient> | null = null;
-let storage: LocalStorage | null = null;
-
-export async function getStorage() {
-  if (!storage) {
-    storage = new LocalStorage();
-    await storage.requestStorageAccess();
-  }
-
-  return storage;
-}
 
 export async function getSupabaseClient() {
   if (!IS_EMBEDDED_APP) return null;
 
   if (!supabaseInstance) {
-    const storage = await getStorage();
+    const storage = await LocalStorage.getInstance();
 
     supabaseInstance = createSupabaseClient(
       import.meta.env?.VITE_SUPABASE_URL || "",
@@ -157,7 +131,11 @@ export async function getSupabaseClient() {
           autoRefreshToken: true,
           persistSession: true,
           detectSessionInUrl: true,
-          storage
+          storage: {
+            getItem: (key: string) => storage.getRaw(key),
+            setItem: (key: string, value: string) => storage.setRaw(key, value),
+            removeItem: (key: string) => storage.removeItem(key)
+          }
         }
       }
     );
