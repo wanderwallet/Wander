@@ -110,7 +110,9 @@ export function useEmbeddedOverride(
         // TODO: Do we allow simply generating a new wallet? EmbeddedPaths.AuthAddWallet
         [
           EmbeddedPaths.AuthRestoreShares,
-          EmbeddedPaths.AuthRestoreSharesRecoveryFile
+          EmbeddedPaths.AuthRestoreSharesRecoveryFile,
+          EmbeddedPaths.AuthImportSeedPhrase,
+          EmbeddedPaths.AuthImportKeyfile
         ],
         EmbeddedPaths.AuthRestoreShares
       );
