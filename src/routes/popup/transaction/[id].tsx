@@ -1,4 +1,4 @@
-import { balanceToFractioned, formatFiatBalance } from "~tokens/currency";
+import { formatFiatBalance } from "~tokens/currency";
 import { AnimatePresence, type Variants, motion } from "framer-motion";
 import { Button, Section, Spacer, Text } from "@arconnect/components-rebrand";
 import type { GQLNodeInterface, GQLTagInterface } from "ar-gql/dist/faces";
@@ -22,11 +22,7 @@ import {
   DownloadIcon
 } from "@iconicicons/react";
 import { formatAddress } from "~utils/format";
-import {
-  concatGatewayURL,
-  getArweaveLink,
-  urlToGateway
-} from "~gateways/utils";
+import { concatGatewayURL, urlToGateway } from "~gateways/utils";
 import { gql } from "~gateways/api";
 import CustomGatewayWarning from "~components/auth/CustomGatewayWarning";
 import Skeleton from "~components/Skeleton";
@@ -47,7 +43,6 @@ import { ExtensionStorage, TempTransactionStorage } from "~utils/storage";
 import { useContact } from "~contacts/hooks";
 import { EventType, PageType, trackEvent, trackPage } from "~utils/analytics";
 import BigNumber from "bignumber.js";
-import { fetchTokenByProcessId } from "~lib/transactions";
 import { useStorage } from "~utils/storage";
 import type { StoredWallet } from "~wallets";
 import type {
@@ -59,6 +54,10 @@ import { LinkExternal02 } from "@untitled-ui/icons-react";
 import { AdaptiveBalanceDisplay } from "~components/AdaptiveBalanceDisplay";
 import arweaveLogo from "url:/assets/ar/logo_light.png";
 import { useTokenPrice } from "~tokens/hooks";
+import {
+  processAoTransaction,
+  TRANSACTION_DETAILS_QUERY
+} from "~utils/transactions";
 
 // pull contacts and check if to address is in contacts
 
@@ -177,140 +176,43 @@ export function TransactionView({
     const fetchTx = async () => {
       const cachedTx = JSON.parse(localStorage.getItem("latest_tx") || "{}");
       if (cachedTx.id === id) {
-        setTransaction(cachedTx);
+        const result = await processAoTransaction(cachedTx, true);
+        setTransaction(result.transaction);
 
-        // AO transaction
-        if (
-          cachedTx.tags.some(
-            (tag) => tag.name === "Data-Protocol" && tag.value === "ao"
-          )
-        ) {
-          setAo({ isAo: true, tokenId: cachedTx.recipient });
-          const tokenIdTag = cachedTx.tags.find(
-            (tag) => tag.name === "Token-Address" || tag.name === "Token"
-          );
-          const tickerTag = cachedTx.tags.find((tag) => tag.name === "Ticker");
-
-          if (tickerTag) {
-            setTicker(tickerTag.value);
-          } else {
-            setTicker(formatAddress(tokenIdTag.value, 4));
-          }
-
-          try {
-            const tokenInfo = await fetchTokenByProcessId(tokenIdTag.value);
-            if (tokenInfo?.Logo) {
-              const tokenLogo = await getArweaveLink(tokenInfo.Logo);
-              setLogo(tokenLogo);
-            } else {
-              setLogo(arweaveLogo);
-            }
-          } catch {
-            setLogo(arweaveLogo);
-          }
+        if (result.aoInfo) {
+          setAo({ isAo: result.aoInfo.isAo, tokenId: result.aoInfo.tokenId });
+          setTicker(result.aoInfo.ticker);
+          setLogo(result.aoInfo.logo);
         }
         return;
       }
 
       const gateway = graphqlGateways[fetchCount % graphqlGateways.length];
 
-      const { data } = await gql(
-        `
-          query($id: ID!) {
-            transaction(id: $id) {
-              owner {
-                address
-              }
-              recipient
-              fee {
-                ar
-              }
-              data {
-                size
-                type
-              }
-              quantity {
-                ar
-              }
-              tags {
-                name
-                value
-              }
-              block {
-                height
-                timestamp
-              }
-            }
-          }
-        `,
-        { id },
-        gateway
-      );
+      const { data } = await gql(TRANSACTION_DETAILS_QUERY, { id }, gateway);
 
       if (!data.transaction) {
         fetchCount++;
         timeoutID = setTimeout(fetchTx, 5000);
       } else {
         timeoutID = undefined;
-        try {
-          const dataProtocolTag = data.transaction.tags.find(
-            (tag) => tag.name === "Data-Protocol"
-          );
-          if (dataProtocolTag && dataProtocolTag.value === "ao") {
-            setAo({ isAo: true, tokenId: data.transaction.recipient });
-            const aoRecipient = data.transaction.tags.find(
-              (tag) => tag.name === "Recipient"
-            );
-            const aoQuantity = data.transaction.tags.find(
-              (tag) => tag.name === "Quantity"
-            );
 
-            if (aoQuantity) {
-              const tokenInfo = await fetchTokenByProcessId(
-                data.transaction.recipient
-              );
-              if (tokenInfo) {
-                const amount = balanceToFractioned(aoQuantity.value, {
-                  id: data.transaction.recipient,
-                  decimals: Number(tokenInfo.Denomination)
-                });
-                setTicker(
-                  tokenInfo?.type === "collectible"
-                    ? tokenInfo.Name!
-                    : tokenInfo.Ticker!
-                );
-                if (tokenInfo?.Logo) {
-                  const tokenLogo = await getArweaveLink(tokenInfo.Logo);
-                  setLogo(tokenLogo);
-                } else {
-                  setLogo(arweaveLogo);
-                }
-                data.transaction.quantity = {
-                  ar: amount.toFixed(),
-                  winston: ""
-                };
-                data.transaction.recipient = aoRecipient.value;
-              } else {
-                setLogo(arweaveLogo);
-                setTicker(formatAddress(data.transaction.recipient, 4));
-                const amount = balanceToFractioned(aoQuantity.value, {
-                  id: data.transaction.recipient,
-                  decimals: 0
-                });
-                data.transaction.quantity = {
-                  ar: amount.toFixed(),
-                  winston: ""
-                };
-              }
-            }
+        try {
+          const result = await processAoTransaction(data.transaction);
+
+          if (result.aoInfo) {
+            setAo({ isAo: result.aoInfo.isAo, tokenId: result.aoInfo.tokenId });
+            setTicker(result.aoInfo.ticker);
+            setLogo(result.aoInfo.logo);
+            setTransaction(result.transaction);
           } else {
             setLogo(arweaveLogo);
+            setTransaction(data.transaction);
           }
         } catch {
-          //
+          setLogo(arweaveLogo);
+          setTransaction(data.transaction);
         }
-
-        setTransaction(data.transaction);
       }
     };
 
