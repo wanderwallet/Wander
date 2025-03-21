@@ -144,10 +144,10 @@ export async function getSupabaseClient() {
   return supabaseInstance;
 }
 
-const supabase = getSupabaseClient();
+// Initialize the supabase client
+getSupabaseClient();
 
 export {
-  supabase,
   trpcVanilla,
   getAuthTokenHeader,
   setAuthTokenHeader,
