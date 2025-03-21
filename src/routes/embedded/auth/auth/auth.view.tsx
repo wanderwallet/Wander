@@ -123,13 +123,13 @@ export function AuthEmbeddedView() {
           isFullWidth
           isDisabled={areButtonsDisabled}
           icon={<SocialsIcon fontSize={24} />}
-          href="/auth/more-providers"
+          href="#/auth/more-providers"
         >
           More options
         </Button>
         <Row alignment="center" justifyContent="center">
           <Text variant={"bodySm"}>{"Can’t sign in?"}</Text>
-          <Button variant="link" href="/auth/recover-account" size="sm">
+          <Button variant="link" href="#/auth/recover-account" size="sm">
             Recover account
           </Button>
         </Row>

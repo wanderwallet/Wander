@@ -44,20 +44,20 @@ export function AccountBackupSharesReminderEmbeddedView() {
       size="auto"
     >
       <Box>
-        <Button variant="primary" isFullWidth href="/account/backup-shares">
+        <Button variant="primary" isFullWidth href="#/account/backup-shares">
           Backup now
         </Button>
         {isMandatoryReminder ? (
           <Button
             variant="secondary"
             isFullWidth
-            href="/account"
+            href="#/account"
             onClick={() => handleSkipClicked()}
           >
             Backup later
           </Button>
         ) : (
-          <Button variant="secondary" isFullWidth href="/account">
+          <Button variant="secondary" isFullWidth href="#/account">
             Cancel
           </Button>
         )}
