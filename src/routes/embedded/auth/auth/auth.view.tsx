@@ -84,8 +84,18 @@ export function AuthEmbeddedView() {
       size="auto"
     >
       <Box>
-        <TextInput placeholder="E-Mail" ref={emailInputRef} />
-        <TextInput placeholder="Password" ref={passwordInputRef} isSecure />
+        <TextInput
+          ref={emailInputRef}
+          placeholder="E-Mail"
+          isDisabled={areButtonsDisabled}
+        />
+
+        <TextInput
+          ref={passwordInputRef}
+          placeholder="Password"
+          isDisabled={areButtonsDisabled}
+          isSecure
+        />
 
         <Button
           isFullWidth
