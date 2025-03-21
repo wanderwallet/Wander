@@ -1,5 +1,5 @@
 import type { AuthProviderType } from "embed-api";
-import { supabase, trpcVanilla } from "~utils/embedded/embedded.utils";
+import { getSupabaseClient, trpcVanilla } from "~utils/embedded/embedded.utils";
 import type { Provider } from "@supabase/supabase-js";
 
 const SUPABASE_PROVIDER_BY_AUTH_PROVIDER_TYPE: Record<
@@ -27,6 +27,7 @@ async function authenticate(authProviderType: AuthProviderType) {
 
   const provider = SUPABASE_PROVIDER_BY_AUTH_PROVIDER_TYPE[authProviderType];
 
+  const supabase = await getSupabaseClient();
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider,
     options: {

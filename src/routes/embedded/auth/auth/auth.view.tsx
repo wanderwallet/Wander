@@ -16,7 +16,7 @@ import {
 } from "~components/embed";
 import { useCallback, useRef, useState } from "react";
 import type { AuthProviderType } from "embed-api";
-import { supabase } from "~utils/embedded/embedded.utils";
+import { getSupabaseClient } from "~utils/embedded/embedded.utils";
 
 export function AuthEmbeddedView() {
   const { authenticate, authStatus } = useEmbedded();
@@ -49,6 +49,7 @@ export function AuthEmbeddedView() {
   );
 
   const handleEmailSignup = useCallback(async () => {
+    const supabase = await getSupabaseClient();
     const { error, data } = await supabase.auth.signUp({
       email: emailInputRef.current?.value || "",
       password: passwordInputRef.current?.value || ""
@@ -58,6 +59,7 @@ export function AuthEmbeddedView() {
   }, []);
 
   const handleEmailSignIn = useCallback(async () => {
+    const supabase = await getSupabaseClient();
     const { error, data } = await supabase.auth.signInWithPassword({
       email: emailInputRef.current?.value || "",
       password: passwordInputRef.current?.value || ""
