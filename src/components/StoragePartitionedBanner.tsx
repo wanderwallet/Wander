@@ -65,7 +65,7 @@ const bannerAnimations = {
 };
 
 // Props interface
-interface StoragePartitioningBannerProps {
+interface StoragePartitionedBannerProps {
   /**
    * Initial state of the banner (visible or hidden)
    * @default false
@@ -79,7 +79,7 @@ interface StoragePartitioningBannerProps {
 
   /**
    * Local storage key for remembering banner dismissal
-   * @default "storage-partitioning-banner-dismissed"
+   * @default "PARTITIONED_STORAGE_BANNER_DISMISSED"
    */
   dismissStorageKey?: string;
 
@@ -107,7 +107,7 @@ export default function StoragePartitionedBanner({
   dismissStorageKey = PARTITIONED_STORAGE_BANNER_DISMISSAL_KEY,
   onDismiss,
   dismissible = true
-}: StoragePartitioningBannerProps) {
+}: StoragePartitionedBannerProps) {
   const { wallets } = useEmbedded();
 
   // State to track visibility
