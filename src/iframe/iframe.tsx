@@ -10,6 +10,7 @@ import { useEmbeddedLocation } from "~wallets/router/iframe/iframe-router.hook";
 import { EmbeddedProvider } from "~utils/embedded/embedded.provider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "~components/embed/contexts/ThemeContext";
+import StoragePartitionedBanner from "~components/StoragePartitionedBanner";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -31,6 +32,7 @@ export function ArConnectEmbeddedApp() {
     <>
       <Routes routes={IFRAME_ROUTES} diffLocation />
       <NavigationBar />
+      <StoragePartitionedBanner />
     </>
   );
 }
