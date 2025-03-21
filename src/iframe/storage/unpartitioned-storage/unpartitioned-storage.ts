@@ -31,11 +31,51 @@ export interface ItemStorageOptions {
 }
 
 /**
+ * Helper method to determine if a parsed item is a complex StorageItem with metadata
+ */
+function isComplexStorageItem<T>(
+  item: any,
+  requiredMetadata: {
+    expiresAt?: boolean;
+    priority?: boolean;
+  } = {}
+): item is { value: T; expiresAt?: number; priority?: number } {
+  // Early bailout checks for non-objects
+  if (!item || typeof item !== "object" || item === null) {
+    return false;
+  }
+
+  // Check for required value property
+  if (!("value" in item)) {
+    return false;
+  }
+
+  // Check for at least one metadata property
+  const hasExpiresAt = "expiresAt" in item;
+  const hasPriority = "priority" in item;
+
+  if (!hasExpiresAt && !hasPriority) {
+    return false;
+  }
+
+  // Check specific required options if provided
+  if (requiredMetadata.expiresAt && !hasExpiresAt) {
+    return false;
+  }
+
+  if (requiredMetadata.priority && !hasPriority) {
+    return false;
+  }
+
+  return true;
+}
+
+/**
  * Storage Manager for handling localStorage and sessionStorage eviction policies
  */
 export class StorageManager {
   public static readonly MAX_STORAGE_SIZE = 5 * 1024 * 1024; // 5MB default limit
-  public static readonly DEFAULT_PRIORITY = 5; // Medium priority (scale of 1-10)
+  public static readonly DEFAULT_PRIORITY = 10; // Critical priority (scale of 1-10)
   public static readonly PRIORITY_LEVELS = {
     CRITICAL: 10, // System-critical data that should never be evicted
     HIGH: 8, // Important user preferences/settings
@@ -43,8 +83,6 @@ export class StorageManager {
     LOW: 3, // Cache data that can be regenerated
     TEMPORARY: 1 // Short-lived or disposable data
   };
-
-  private static readonly CACHE_TTL = 10000; // 10 seconds
 
   // Add a last cleanup timestamp to avoid too frequent cleanups
   private static lastCleanupTime = 0;
@@ -158,11 +196,7 @@ export class StorageManager {
         const parsed = JSON.parse(rawValue);
 
         if (
-          parsed &&
-          typeof parsed === "object" &&
-          parsed !== null &&
-          "value" in parsed &&
-          "expiresAt" in parsed &&
+          isComplexStorageItem(parsed, { expiresAt: true }) &&
           parsed.expiresAt < now
         ) {
           storage.removeItem(key);
@@ -228,7 +262,7 @@ export class StorageManager {
   /**
    * Get all storage items sorted by eviction criteria
    */
-  private static getSortedStorageItems(storage: Storage): Array<{
+  static getSortedStorageItems(storage: Storage): Array<{
     key: string;
     size: number;
     priority: number;
@@ -254,12 +288,7 @@ export class StorageManager {
         const parsed = JSON.parse(rawValue);
 
         // Check if it's a complex item with metadata
-        if (
-          parsed &&
-          typeof parsed === "object" &&
-          parsed !== null &&
-          "value" in parsed
-        ) {
+        if (isComplexStorageItem(parsed)) {
           items.push({
             key,
             size,
@@ -280,7 +309,7 @@ export class StorageManager {
         items.push({
           key,
           size,
-          priority: 0,
+          priority: this.DEFAULT_PRIORITY,
           expiresAt: Number.MAX_SAFE_INTEGER
         });
       }
@@ -440,21 +469,6 @@ export class EnhancedStorage implements Storage {
   }
 
   /**
-   * Helper method to determine if a parsed item is a complex StorageItem with metadata
-   */
-  private isComplexStorageItem<T>(
-    item: any
-  ): item is { value: T; expiresAt?: number; priority?: number } {
-    return (
-      item &&
-      typeof item === "object" &&
-      item !== null &&
-      "value" in item &&
-      ("expiresAt" in item || "priority" in item)
-    );
-  }
-
-  /**
    * Get raw value directly from storage without parsing or expiration checks
    *
    * @param key The key to retrieve
@@ -477,7 +491,7 @@ export class EnhancedStorage implements Storage {
       const parsed = JSON.parse(rawValue) as StorageItem<T>;
 
       // Check if it's a complex storage item
-      if (this.isComplexStorageItem<T>(parsed)) {
+      if (isComplexStorageItem<T>(parsed)) {
         // Check for expiration
         if (parsed.expiresAt && Date.now() > parsed.expiresAt) {
           // Item has expired, remove it
@@ -519,7 +533,7 @@ export class EnhancedStorage implements Storage {
       item.priority = options.priority;
     }
 
-    this.storage.setItem(key, JSON.stringify(item));
+    this.setRaw(key, JSON.stringify(item));
   }
 
   /**

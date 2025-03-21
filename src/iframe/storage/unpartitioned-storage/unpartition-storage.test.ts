@@ -217,6 +217,27 @@ describe("StorageManager", () => {
       expect(sessionStorage.getItem("item2")).not.toBeNull();
       expect(sessionStorage.getItem("item3")).not.toBeNull();
     });
+
+    test("should assign CRITICAL priority to simple items by default", () => {
+      // Store a simple item
+      sessionStorage.setItem("simpleItem", JSON.stringify("simple value"));
+
+      // Store a non-JSON item
+      sessionStorage.setItem("nonJsonItem", "invalid-json");
+
+      // Get sorted items
+      const items = StorageManager.getSortedStorageItems(sessionStorage);
+
+      // Find our test items
+      const simpleItem = items.find((item) => item.key === "simpleItem");
+      const nonJsonItem = items.find((item) => item.key === "nonJsonItem");
+
+      // Verify priorities
+      expect(simpleItem.priority).toBe(StorageManager.PRIORITY_LEVELS.CRITICAL);
+      expect(nonJsonItem.priority).toBe(
+        StorageManager.PRIORITY_LEVELS.CRITICAL
+      );
+    });
   });
 });
 
@@ -576,7 +597,7 @@ describe("Storage Eviction", () => {
     // Store enough data to trigger eviction
     const testData = "x".repeat(10000);
     for (let i = 0; i < 450; i++) {
-      storage.setItem(`test${i}`, testData);
+      storage.setItem(`test${i}`, testData, { priority: 1 });
     }
 
     const beforeUsage = storage.getUsageInfo();
