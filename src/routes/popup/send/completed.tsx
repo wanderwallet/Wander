@@ -65,9 +65,9 @@ export function TransactionCompletedView({
             <LinkText
               onClick={() =>
                 navigate(
-                  `/transaction/${id}${
-                    backPath ? `?back=${encodeURIComponent(backPath)}` : ""
-                  }&fromSend=true` as WanderRoutePath
+                  `/transaction/${id}?fromSend=true${
+                    backPath ? `&back=${encodeURIComponent(backPath)}` : ""
+                  }` as WanderRoutePath
                 )
               }
             >
