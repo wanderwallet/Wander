@@ -10,6 +10,7 @@ import {
   AO_TOKENS,
   AO_TOKENS_AUTO_IMPORT_RESTRICTED_IDS,
   AO_TOKENS_IMPORT_TIMESTAMP,
+  AO_TOKENS_LAST_BLOCK_HEIGHT,
   gateway,
   getNoticeTransactions,
   verifyCollectiblesType
@@ -28,11 +29,15 @@ export async function handleAoTokensImportAlarm(alarm: Alarms.Alarm) {
   try {
     const activeAddress = await getActiveAddress();
 
-    let [aoTokens, aoTokensCache, removedTokenIds = []] = await Promise.all([
-      getAoTokens(),
-      getAoTokensCache(),
-      getAoTokensAutoImportRestrictedIds()
-    ]);
+    let [aoTokens, aoTokensCache, removedTokenIds = [], lastBlockHeight] =
+      await Promise.all([
+        getAoTokens(),
+        getAoTokensCache(),
+        getAoTokensAutoImportRestrictedIds(),
+        ExtensionStorage.get<number>(
+          `${AO_TOKENS_LAST_BLOCK_HEIGHT}_${activeAddress}`
+        )
+      ]);
 
     let aoTokensIds = new Set(aoTokens.map(({ processId }) => processId));
     const aoTokensCacheIds = new Set(
@@ -42,11 +47,20 @@ export async function handleAoTokensImportAlarm(alarm: Alarms.Alarm) {
     const walletTokenIds = new Set([...tokenIdstoExclude, ...aoTokensCacheIds]);
 
     const arweave = new Arweave(gateway);
-    const { processIds } = await getNoticeTransactions(
+    const { processIds, maxBlockHeight } = await getNoticeTransactions(
       arweave,
       activeAddress,
-      Array.from(walletTokenIds)
+      Array.from(walletTokenIds),
+      5,
+      lastBlockHeight
     );
+
+    if (maxBlockHeight && maxBlockHeight > 0) {
+      await ExtensionStorage.set(
+        `${AO_TOKENS_LAST_BLOCK_HEIGHT}_${activeAddress}`,
+        maxBlockHeight
+      );
+    }
 
     const newProcessIds = Array.from(
       new Set([...processIds, ...aoTokensCacheIds])
