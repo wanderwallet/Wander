@@ -106,22 +106,6 @@ export async function updateIcon(hasPerms: boolean) {
   const logosBySize =
     logosByEnvironment[process.env.NODE_ENV] || logosByEnvironment.default;
 
-  // DONE:
-  // - [x] $APPNAME$ and $SECONDS$ not changed (i18n mocks missing vars)?
-
-  // Errors / bugs:
-  // - [] add app logo if there isn't one (review updateIcon calls)
-  // - [] Unexpected error in `createAuthPopup` = Error: No wallets added
-  // - [] Completed request are not cleared
-  // - [] Goes to /auth-request after the last one is completed, but should go to home.
-  // - [] Should closing and opening go to Home automatically?
-  // - [] Button always says Sign in.
-  // - [] Before the auth screen is not shown, the API methods can be called and work. Even sign message, getActiveAddress... (while in the recovery screen)
-  // - [] connect logs "void" in the playground
-  // - [] Sometimes sign returns automatically and says "No wallets added" instead of requesting permission.
-  // - [] embed_resize triggered constantly (e.g. connect screen)
-  // -
-
   if (browser.runtime.getManifest().manifest_version === 3) {
     await browser.action.setIcon({
       path: logosBySize
