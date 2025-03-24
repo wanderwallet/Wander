@@ -305,7 +305,7 @@ const AoLinkIcon = () => (
       <path
         d="M30.3032 1.93941L31.7578 0.484863M31.7578 0.484863H30.511M31.7578 0.484863V1.73162"
         stroke="black"
-        stroke-width="0.484848"
+        strokeWidth="0.484848"
       />
     </g>
     <defs>

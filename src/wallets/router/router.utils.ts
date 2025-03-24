@@ -37,6 +37,8 @@ export function isNavigateAction(
   return typeof to === "number" || !to.startsWith("/");
 }
 
+// TODO: How to add this prefix to routes to when using push(), etc? ENV variable in the enum?
+
 export function prefixRoutes(
   prefix: RoutePath,
   routes: RouteConfig[]

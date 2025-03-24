@@ -23,13 +23,21 @@ export const windows = {
       console.warn("Trying to open `tabs/auth.html`");
 
       // const paramsAndHash = url.split("tabs/auth.html")[1];
-      // location.hash = `/auth-requests${paramsAndHash}`;
+      // location.hash = `/auth-request${paramsAndHash}`;
 
-      location.hash = `/auth-requests`;
+      location.hash = `/auth-request`;
     } else if (url.includes("assets")) {
       throw new Error(`Cannot create tab for URL = ${url}`);
     } else {
       throw new Error(`Cannot create tab for URL = ${url}`);
     }
+
+    return {
+      tabs: [
+        {
+          id: 1
+        }
+      ]
+    };
   }
 };

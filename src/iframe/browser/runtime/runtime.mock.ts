@@ -10,9 +10,16 @@ export const runtime = {
   getManifest: () => {
     return {
       browser_action: {
-        default_popup: "popup.html"
+        default_popup: "popup.html",
+        manifest_version: 3
       }
     };
+  },
+
+  action: {
+    setIcon: (options: any) => {
+      console.warn(`browser.action.setIcon(${JSON.stringify(options)}) called`);
+    }
   },
 
   onInstalled: {

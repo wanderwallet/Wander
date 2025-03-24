@@ -25,7 +25,7 @@ export const tabs = {
       console.warn("Trying to open `tabs/auth.html`");
 
       const paramsAndHash = url.replace("tabs/auth.html", "");
-      location.hash = `/auth${paramsAndHash}`;
+      location.hash = `/auth-request${paramsAndHash}`;
     } else if (url.startsWith("assets")) {
       throw new Error(`Cannot create tab for URL = ${url}`);
     } else {

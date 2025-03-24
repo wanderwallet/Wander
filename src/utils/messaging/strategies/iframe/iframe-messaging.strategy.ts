@@ -1,10 +1,8 @@
 import type { ProtocolMap } from "@arconnect/webext-bridge";
 import { nanoid } from "nanoid";
 import type { ApiCall, ApiResponse } from "shim";
-import {
-  getEmbeddedAncestorOrigin,
-  isInsideIframe
-} from "~utils/embedded/embedded.utils";
+import { getEmbeddedAncestorOrigin } from "~utils/embedded/embedded.utils";
+import { isInsideIframe } from "~utils/embedded/iframe.utils";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { isApiErrorResponse } from "~utils/messaging/common/messaging.utils";
 import type {
@@ -109,7 +107,17 @@ function getPostMessageFunction<K extends MessageID>(
     }
 
     const resultPromises = Array.from(messageHandlers).map((messageHandler) => {
-      return messageHandler(data);
+      // return messageHandler(data);
+
+      return messageHandler({
+        id: "0",
+        timestamp: Date.now(),
+        sender: {
+          tabId: 1,
+          context: null
+        },
+        data
+      });
     });
 
     return await Promise.race(resultPromises);

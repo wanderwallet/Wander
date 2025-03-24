@@ -55,7 +55,7 @@ export class WanderIframe {
     const { routeLayout } = options;
 
     if (typeof routeLayout === "string" || isRouteConfig(routeLayout)) {
-      // If a single value is passed, we use it for default and auth-requests. Anything else fallbacks to the default
+      // If a single value is passed, we use it for default and auth-request. Anything else fallbacks to the default
       // (currently modal):
 
       const defaultLayoutConfig = WanderIframe.getLayoutConfig(routeLayout);

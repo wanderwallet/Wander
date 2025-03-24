@@ -110,7 +110,9 @@ export function useEmbeddedOverride(
         // TODO: Do we allow simply generating a new wallet? EmbeddedPaths.AuthAddWallet
         [
           EmbeddedPaths.AuthRestoreShares,
-          EmbeddedPaths.AuthRestoreSharesRecoveryFile
+          EmbeddedPaths.AuthRestoreSharesRecoveryFile,
+          EmbeddedPaths.AuthImportSeedPhrase,
+          EmbeddedPaths.AuthImportKeyfile
         ],
         EmbeddedPaths.AuthRestoreShares
       );
@@ -161,6 +163,12 @@ export const useEmbeddedLocation: BaseLocationHook = withRouterRedirects(() => {
 
   const [authRequestsLocation, authRequestsNavigate] =
     useAuthRequestsLocation();
+
+  console.log({
+    wocation,
+    override,
+    authRequestsLocation
+  });
 
   if (override) {
     return [override, isRouteRedirect(override) ? wavigate : NOOP];

@@ -16,7 +16,7 @@ const SvgChevronRight = ({
     <path
       d="M6.5 12L10.5 8L6.5 4"
       stroke="currentColor"
-      stroke-width="1.33333"
+      strokeWidth="1.33333"
       strokeLinecap="round"
       strokeLinejoin="round"
     />

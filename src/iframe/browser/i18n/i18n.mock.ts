@@ -13,19 +13,30 @@ const dictionaries = {
 } as const;
 
 export const i18n = {
-  getMessage: (key: string) => {
+  getMessage: (key: string, paramValues: string[] = []) => {
     const dictionaryLanguage =
       navigator.languages.find((language) => {
         return dictionaries.hasOwnProperty(language);
       }) || "en";
 
     const dictionary = dictionaries[dictionaryLanguage];
-    const value = dictionary[key]?.message;
+
+    let value = dictionary[key]?.message;
 
     if (!value) {
       console.warn(`Missing "${dictionaryLanguage}" translation for "${key}".`);
+
+      value = dictionary.en?.message || `<${key}>`;
     }
 
-    return value || dictionary.en?.message || `<${key}>`;
+    const paramKeys = value.match(/\$([A-Z_]+)\$/g);
+
+    if (paramKeys) {
+      paramValues.forEach((paramValue, i) => {
+        value = value.replace(paramKeys[i], paramValue);
+      });
+    }
+
+    return value;
   }
 };

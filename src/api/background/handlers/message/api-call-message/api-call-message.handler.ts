@@ -60,7 +60,7 @@ export const handleApiCallMessage: OnMessageCallback<"api_call"> = async ({
     // if we cannot find the module, we return with an error
     isNotUndefined(mod, `API function "${functionName}" not found`);
 
-    // grab app info
+    // grab app info:
     let app = new Application(getAppURL(tab.url));
 
     // if the frame ID is defined, the API

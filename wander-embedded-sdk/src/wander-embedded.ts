@@ -52,6 +52,9 @@ export class WanderEmbedded {
   public balanceInfo: BalanceInfo | null = null;
   public pendingRequests: number = 0;
 
+  // Misc.:
+  private windowArweaveWallet: any = null;
+
   constructor(options: WanderEmbeddedOptions) {
     if (WanderEmbedded.instance) {
       throw new Error("WanderEmbedded instance already exists.");
@@ -94,7 +97,10 @@ export class WanderEmbedded {
 
     console.log("setupEmbeddedWalletSDK() OUT 2");
 
-    // ...and set `window.arweaveWallet`:
+    // ...we get a reference to any other `window.arweaveWallet` (most likely our BE)...:
+    this.windowArweaveWallet = window.arweaveWallet;
+
+    // ...and (re)set `window.arweaveWallet`:
     setupEmbeddedWalletSDK(this.iframeRef);
   }
 
@@ -326,7 +332,14 @@ export class WanderEmbedded {
       this.buttonHostRef?.remove();
       this.buttonRef?.remove();
     }
+
     WanderEmbedded.instance = null;
+
+    delete window.arweaveWallet;
+
+    if (this.windowArweaveWallet) {
+      window.arweaveWallet = this.windowArweaveWallet;
+    }
   }
 
   get isAuthenticated() {

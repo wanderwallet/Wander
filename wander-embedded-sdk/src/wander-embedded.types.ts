@@ -136,7 +136,7 @@ export type WanderEmbeddedClickOutsideBehavior = "auto" | boolean;
 
 export interface WanderEmbeddedIframeOptions
   extends WanderEmbeddedComponentOptions<WanderEmbeddedModalCSSVars> {
-  // TODO: Default should automatically be used for auth-requests, and auth for account and settings?
+  // TODO: Default should automatically be used for auth-request, and auth for account and settings?
   routeLayout?:
     | LayoutType
     | LayoutConfig
