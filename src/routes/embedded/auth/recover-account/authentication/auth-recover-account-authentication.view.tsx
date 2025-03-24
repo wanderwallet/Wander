@@ -78,6 +78,4 @@ export function AuthRecoverAccountAuthenticationEmbeddedView() {
       />
     </Card>
   );
-  //         label: accountToRecover ? accountToRecover.name : "-",
-  //         isDisabled: true
 }

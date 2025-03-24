@@ -49,6 +49,8 @@ import { WalletBuyEmbeddedView } from "~routes/embedded/wallet/buy/buy.container
 import { WalletBuyCashEmbeddedView } from "~routes/embedded/wallet/buy/buy.cash.view";
 import { WalletReceiveOptionsEmbeddedView } from "~routes/embedded/wallet/receive/options/receive.options.view";
 import { WalletDepositTokensEmbeddedView } from "~routes/embedded/wallet/deposit/deposit.container.view";
+import { AuthAddWithQRCodeEmbeddedView } from "~routes/embedded/auth/add-with-qr-code/add-with-qr-code.view";
+
 export type EmbeddedRoutePath =
   | "/auth"
   | "/auth/more-providers"
@@ -60,6 +62,7 @@ export type EmbeddedRoutePath =
   | "/auth/add-auth-provider"
   | "/auth/restore-shares"
   | "/auth/restore-shares/recovery-file"
+  | "/auth/add-with-qr-code"
   // | "/auth/restore-shares/<backupProvider>"
   | "/auth/recover-account"
   | "/auth/recover-account/seedphrase"
@@ -141,7 +144,8 @@ export const EmbeddedPaths = {
   WalletTransactionDetailsEmbeddedView: "/wallet/transaction-details",
   WalletBuyEmbeddedView: "/wallet/buy",
   WalletBuyCashEmbeddedView: "/wallet/buy/cash",
-  WalletDepositTokensEmbeddedView: "/wallet/deposit"
+  WalletDepositTokensEmbeddedView: "/wallet/deposit",
+  AuthAddWithQRCodeEmbeddedView: "/auth/add-with-qr-code"
 
   // TODO: Add pages to add/link additional auth methods or devices post-auth (under /account)
 } as const satisfies Record<string, EmbeddedRoutePath>;
@@ -297,6 +301,10 @@ const IFRAME_OWN_ROUTES = [
   {
     path: EmbeddedPaths.WalletDepositTokensEmbeddedView,
     component: WalletDepositTokensEmbeddedView
+  },
+  {
+    path: EmbeddedPaths.AuthAddWithQRCodeEmbeddedView,
+    component: AuthAddWithQRCodeEmbeddedView
   }
 ] as const satisfies RouteConfig<EmbeddedRoutePath>[];
 

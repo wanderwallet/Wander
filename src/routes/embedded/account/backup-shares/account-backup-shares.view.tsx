@@ -3,9 +3,6 @@ import {
   Box,
   Button,
   Card,
-  AppleIcon,
-  DropboxIcon,
-  GDriveIcon,
   SeedIcon,
   KeyShareIcon,
   KeyIcon
@@ -46,7 +43,7 @@ export function AccountBackupSharesEmbeddedView() {
       subtitle="Select a method to back up your wallet which can be used to sign in on a new device or recover your wallet"
       footerElement={<WanderFooter />}
       hasBackButton={true}
-      onBackButtonClick={back}
+      onBackButtonClick={() => navigate("/wallet")}
       hasCloseButton={true}
       onCloseButtonClick={() => {
         <Link to="/wallet" />;

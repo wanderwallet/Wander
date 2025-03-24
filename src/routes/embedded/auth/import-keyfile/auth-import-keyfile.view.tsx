@@ -1,6 +1,5 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { JWKInterface } from "arweave/web/lib/wallet";
 
 import {
   Card,

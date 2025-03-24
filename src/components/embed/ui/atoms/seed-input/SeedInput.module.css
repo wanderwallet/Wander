@@ -12,8 +12,6 @@
   font-family: var(--font-family-mono);
   font-size: var(--font-size-sm);
   padding: var(--spacing-4);
-  border: 1px solid var(--color-seed-input-border);
-  border-radius: var(--border-radius-lg);
   align-content: stretch;
   width: 100%;
 }

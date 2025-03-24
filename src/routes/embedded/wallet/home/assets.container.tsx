@@ -49,9 +49,7 @@ export function WalletHomeAssets({
           }}
           onClick={showAllTokens ? handleShowLess : handleLoadMore}
         >
-          {showAllTokens
-            ? "Show less"
-            : `Load more (${tokens.length - 3} more)`}
+          {showAllTokens ? "Show less" : `View More (${tokens.length - 3})`}
         </Button>
       )}
     </>
