@@ -64,7 +64,7 @@ export function AuthRecoverAccountSeedphraseEmbeddedView() {
   return importedTempWalletAddress ? (
     <Card
       headerText="Recover your account"
-      subtitle="Enter seedphrase"
+      subtitle="Would you like recover and add this wallet to your account?"
       footerElement={<WanderFooter />}
       hasBackButton={true}
       onBackButtonClick={back}

@@ -20,26 +20,33 @@ export function WalletBuyCashEmbeddedView() {
       style={{ padding: "32px" }}
     >
       <Box hasBorder style={{ marginTop: "16px" }}>
-        <Row alignment="left">
+        <Row justifyContent="between">
           <Text variant="bodyMd" style={{ color: "#666666" }}>
             Currency
           </Text>
+          <Row justifyContent="end">
+            <Text variant="bodyMd" style={{ color: "#121212" }}>
+              USD
+            </Text>
+            <ChevronRight fontSize={24} color={"#121212"} />
+          </Row>
         </Row>
       </Box>
-
+      {/* <Button variant="link" onClick={() => navigate("/wallet/receive")}> */}
       <Box hasBorder style={{ marginTop: "16px" }}>
-        <Row alignment="between">
-          <Button variant="link" onClick={() => navigate("/wallet/receive")}>
-            <Text variant="bodyMd" style={{ color: "#666666" }}>
-              Payment
-            </Text>
+        <Row justifyContent="between">
+          <Text variant="bodyMd" style={{ color: "#666666" }}>
+            Payment
+          </Text>
+          <Row justifyContent="end">
             <Text variant="bodyMd" style={{ color: "#121212" }}>
               Credit or Debit Card
             </Text>
             <ChevronRight fontSize={24} color={"#121212"} />
-          </Button>
+          </Row>
         </Row>
       </Box>
+      {/* </Button> */}
 
       <Button variant="primary" onClick={() => navigate("/wallet/buy/crypto")}>
         Enter an amount

@@ -72,6 +72,7 @@ export function useEmbeddedOverride(
         [
           EmbeddedPaths.Auth,
           EmbeddedPaths.AuthMoreProviders,
+          EmbeddedPaths.AuthAddWithQRCode,
           // TODO: These could be simply "anything under  AuthRecoverAccount"
           EmbeddedPaths.AuthRecoverAccount,
           EmbeddedPaths.AuthRecoverAccountSeedphrase,
@@ -94,6 +95,8 @@ export function useEmbeddedOverride(
         [
           EmbeddedPaths.AuthAddWallet,
           EmbeddedPaths.AuthImportSeedPhrase,
+          EmbeddedPaths.AuthAddWithQRCode,
+          EmbeddedPaths.AuthQRCodeScanner,
           EmbeddedPaths.AuthImportKeyfile,
           EmbeddedPaths.AuthAddDevice,
           EmbeddedPaths.AuthAddAuthProvider

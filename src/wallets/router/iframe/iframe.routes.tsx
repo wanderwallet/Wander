@@ -11,6 +11,8 @@ import { AuthAddWalletEmbeddedView } from "~routes/embedded/auth/add-wallet/auth
 import { AuthImportSeedphraseEmbeddedView } from "~routes/embedded/auth/import-seedphrase/auth-import-seedphrase.view";
 import { AuthImportKeyfileEmbeddedView } from "~routes/embedded/auth/import-keyfile/auth-import-keyfile.view";
 import AuthErrorEmbeddedView from "~routes/embedded/auth/auth-error/auth-error.view";
+import { AuthAddWithQRCodeEmbeddedView } from "~routes/embedded/auth/add-qrcode/add-qrcode.view";
+import { AuthQRCodeScannerEmbeddedView } from "~routes/embedded/auth/qrcode-scanner/auth-qrcode-scanner.view";
 
 // Authentication Linking Views:
 import { AuthAddDeviceEmbeddedView } from "~routes/embedded/auth/add-device/auth-add-device.view";
@@ -49,7 +51,6 @@ import { WalletBuyEmbeddedView } from "~routes/embedded/wallet/buy/buy.container
 import { WalletBuyCashEmbeddedView } from "~routes/embedded/wallet/buy/buy.cash.view";
 import { WalletReceiveOptionsEmbeddedView } from "~routes/embedded/wallet/receive/options/receive.options.view";
 import { WalletDepositTokensEmbeddedView } from "~routes/embedded/wallet/deposit/deposit.container.view";
-import { AuthAddWithQRCodeEmbeddedView } from "~routes/embedded/auth/add-with-qr-code/add-with-qr-code.view";
 
 export type EmbeddedRoutePath =
   | "/auth"
@@ -62,7 +63,8 @@ export type EmbeddedRoutePath =
   | "/auth/add-auth-provider"
   | "/auth/restore-shares"
   | "/auth/restore-shares/recovery-file"
-  | "/auth/add-with-qr-code"
+  | "/auth/add-qrcode"
+  | "/auth/qrcode-scanner"
   // | "/auth/restore-shares/<backupProvider>"
   | "/auth/recover-account"
   | "/auth/recover-account/seedphrase"
@@ -80,7 +82,7 @@ export type EmbeddedRoutePath =
   // | "/account/backup-shares/<backupProvider>"
   | "/account/backup-shares/reminder"
   | "/account/export-wallet"
-  | "/auth/error";
+  | "/auth/error"
   | "/wallet"
   | "/wallet/receive"
   | "/wallet/receive/options"
@@ -107,7 +109,8 @@ export const EmbeddedPaths = {
   // Authentication Linking:
   AuthAddDevice: "/auth/add-device",
   AuthAddAuthProvider: "/auth/add-auth-provider",
-
+  AuthAddWithQRCode: "/auth/add-qrcode",
+  AuthQRCodeScanner: "/auth/qrcode-scanner",
   // Shares Recovery:
   AuthRestoreShares: "/auth/restore-shares",
   AuthRestoreSharesRecoveryFile: "/auth/restore-shares/recovery-file",
@@ -133,7 +136,7 @@ export const EmbeddedPaths = {
   AccountExportWallet: "/account/export-wallet",
 
   // OAuth Error:
-  AuthError: "/auth/error"
+  AuthError: "/auth/error",
   WalletHomeEmbeddedView: "/wallet",
   WalletReceiveEmbeddedView: "/wallet/receive",
   WalletReceiveOptionsEmbeddedView: "/wallet/receive/options",
@@ -144,8 +147,7 @@ export const EmbeddedPaths = {
   WalletTransactionDetailsEmbeddedView: "/wallet/transaction-details",
   WalletBuyEmbeddedView: "/wallet/buy",
   WalletBuyCashEmbeddedView: "/wallet/buy/cash",
-  WalletDepositTokensEmbeddedView: "/wallet/deposit",
-  AuthAddWithQRCodeEmbeddedView: "/auth/add-with-qr-code"
+  WalletDepositTokensEmbeddedView: "/wallet/deposit"
 
   // TODO: Add pages to add/link additional auth methods or devices post-auth (under /account)
 } as const satisfies Record<string, EmbeddedRoutePath>;
@@ -183,6 +185,14 @@ const IFRAME_OWN_ROUTES = [
   {
     path: EmbeddedPaths.AuthAddAuthProvider,
     component: AuthAddAuthProviderEmbeddedView
+  },
+  {
+    path: EmbeddedPaths.AuthAddWithQRCode,
+    component: AuthAddWithQRCodeEmbeddedView
+  },
+  {
+    path: EmbeddedPaths.AuthQRCodeScanner,
+    component: AuthQRCodeScannerEmbeddedView
   },
 
   // Shares Recovery:
@@ -301,10 +311,6 @@ const IFRAME_OWN_ROUTES = [
   {
     path: EmbeddedPaths.WalletDepositTokensEmbeddedView,
     component: WalletDepositTokensEmbeddedView
-  },
-  {
-    path: EmbeddedPaths.AuthAddWithQRCodeEmbeddedView,
-    component: AuthAddWithQRCodeEmbeddedView
   }
 ] as const satisfies RouteConfig<EmbeddedRoutePath>[];
 
