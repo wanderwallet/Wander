@@ -9,9 +9,9 @@ export const runtime = {
 
   getManifest: () => {
     return {
+      manifest_version: 3,
       browser_action: {
-        default_popup: "popup.html",
-        manifest_version: 3
+        default_popup: "popup.html"
       }
     };
   },
