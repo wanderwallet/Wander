@@ -7,10 +7,13 @@ import { useTheme } from "../../../contexts/ThemeContext";
 
 const Divider = forwardRef<HTMLDivElement, DividerBaseProps>(
   ({ text, textPosition = "center", className, ...props }, ref) => {
-    const { isDarkMode } = useTheme();
-    const cardBackground = isDarkMode
-      ? "var(--brand-color-neutral1)"
-      : "var(--brand-color-neutral6)";
+    const { tokens } = useTheme();
+
+    const dividerStyles = {
+      borderColor: tokens.divider
+    };
+
+    const cardBackground = tokens.background.default;
 
     return (
       <div
@@ -20,9 +23,7 @@ const Divider = forwardRef<HTMLDivElement, DividerBaseProps>(
           text && styles[`divider--text-${textPosition}`],
           className
         )}
-        style={{
-          borderColor: isDarkMode ? "var(--color-divider-default)" : undefined
-        }}
+        style={dividerStyles}
         {...props}
       >
         {text && (

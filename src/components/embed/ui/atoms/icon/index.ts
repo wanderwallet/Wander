@@ -44,3 +44,6 @@ export { default as WanderIcon } from "./Wander";
 export { default as WebcamIcon } from "./Webcam";
 export { default as XClose } from "./XClose";
 export { default as ErrorIcon } from "./Error";
+export { default as EyeIcon } from "./Eye";
+export { default as EyeOffIcon } from "./EyeOff";
+export { default as EUAFlagIcon } from "./EUAFlag";

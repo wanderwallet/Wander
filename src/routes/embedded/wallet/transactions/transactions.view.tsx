@@ -17,7 +17,22 @@ export function WalletTransactionsEmbeddedView() {
       onBackButtonClick={() => navigate("/wallet")}
       style={{ padding: "2rem" }}
     >
-      {Object.values(transactions).map((tx) => (
+      <Box hasBorder style={{ margin: "1rem" }}>
+        <Row isFullWidth justifyContent="between">
+          <Text variant="bodyMd" style={{ color: "#121212" }}>
+            Created a Repo
+          </Text>
+          <Text variant="bodyMd" style={{ color: "#121212" }}>
+            -2.0010
+          </Text>
+        </Row>
+        <Row isFullWidth justifyContent="between">
+          <Text variant="bodySm">January 3</Text>
+          <Text variant="bodySm">Balance: 5.9980</Text>
+        </Row>
+      </Box>
+
+      {/* {Object.values(transactions).map((tx) => (
         <Box hasBorder style={{ margin: "1rem" }}>
           <Row isFullWidth justifyContent="between">
             <Text variant="bodyMd" style={{ color: "#121212" }}>
@@ -30,9 +45,9 @@ export function WalletTransactionsEmbeddedView() {
           <Row isFullWidth justifyContent="between">
             <Text variant="bodySm">{tx.date}</Text>
             {/* <Text variant="bodySm">Balance: 5.9980</Text> */}
-          </Row>
-        </Box>
-      ))}
+      {/* </Row>
+        </Box> */}
+      {/* ))} */}
       <Button variant="link" href="/wallet/transactions-history">
         View all transactions
       </Button>

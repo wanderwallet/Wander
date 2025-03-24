@@ -1,22 +1,22 @@
 import { Card, Text, Box, SuccessCheckIcon } from "~components/embed/ui";
 import { useLocation } from "~wallets/router/router.utils";
 
-export function WalletBuyCashEmbeddedView() {
-  const { navigate } = useLocation();
+export function WalletBuySuccessEmbeddedView() {
+  const { navigate, back } = useLocation();
 
   return (
     <Card
       size="auto"
       headerText="Buy Tokens"
       hasBackButton={true}
-      onBackButtonClick={() => navigate("/wallet")}
+      onBackButtonClick={() => navigate("/wallet/buy/cash")}
       hasCloseButton={true}
-      onCloseButtonClick={() => navigate("/wallet")}
+      onCloseButtonClick={back}
       style={{ padding: "32px" }}
     >
       <SuccessCheckIcon />
 
-      <Box hasBorder style={{ marginTop: "16px" }}>
+      <Box style={{ marginTop: "16px" }}>
         <Text variant="bodyLg" style={{ color: "#121212" }}>
           Congrats!
         </Text>

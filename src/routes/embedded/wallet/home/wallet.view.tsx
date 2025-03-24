@@ -28,7 +28,13 @@ import { useBalanceSortedTokens } from "~tokens/aoTokens/ao";
 export function WalletHomeEmbeddedView() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [isOpen, setOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState(0);
+  const [activeTab, setActiveTab] = useStorage<number>(
+    {
+      key: "wallet_home_active_tab",
+      instance: ExtensionStorage
+    },
+    0
+  );
   const [announcement, _] = useStorage<boolean>({
     key: "show_announcement",
     instance: ExtensionStorage
@@ -38,7 +44,6 @@ export function WalletHomeEmbeddedView() {
     type: "asset",
     hidden: false
   });
-  // checking to see if it's a hardware wallet
   const wallet = useActiveWallet();
   const [wallets] = useStorage<StoredWallet[]>(
     {
@@ -54,7 +59,6 @@ export function WalletHomeEmbeddedView() {
     };
     trackEventAndPage();
 
-    // schedule import ao tokens
     scheduleImportAoTokens();
   }, []);
 
@@ -69,15 +73,12 @@ export function WalletHomeEmbeddedView() {
   }, [loggedIn]);
 
   useEffect(() => {
-    // check whether to show announcement
     (async () => {
-      // reset announcements if setting_notifications is uninitialized
       const decryptionKey = await getDecryptionKey();
       if (decryptionKey) {
         setLoggedIn(true);
       }
 
-      // WALLET.TYPE JUST FOR KEYSTONE POPUP
       if (announcement && wallet?.type === "hardware") {
         setOpen(true);
       } else {

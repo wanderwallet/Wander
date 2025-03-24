@@ -4,5 +4,5 @@ export function CameraView() {
   const { permissionStatus, isLoading, error, requestPermission } =
     useWebcamPermission();
 
-  return <Box hasBorder style={{ width: "100%", height: "100%" }} />;
+  return <Box hasBorder style={{ width: "320px", height: "320px" }} />;
 }
