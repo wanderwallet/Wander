@@ -734,6 +734,31 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
   // AUTHENTICATION:
 
+  const refreshSession = async (session?: DbSession) => {
+    const supabase = await getSupabaseClient();
+    const {
+      data: { session: refreshedSession }
+    } = await supabase.auth.refreshSession();
+
+    const accessToken = refreshedSession?.access_token;
+    if (accessToken) {
+      setAuthTokenHeader(accessToken);
+      const {
+        sub,
+        session_id: sessionId,
+        sessionData
+      } = jwtDecode<SupabaseJwtPayload>(accessToken);
+
+      session = {
+        ...sessionData,
+        id: sessionId,
+        userId: sub
+      };
+    }
+
+    return session;
+  };
+
   const authenticate = useCallback(
     async (authProviderType: AuthProviderType) => {
       if (user) {
@@ -882,13 +907,13 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
           "❌  The current session is incomplete. Refreshing...",
           session
         );
-        const supabase = await getSupabaseClient();
-        await supabase.auth.refreshSession();
+        session = await refreshSession(session);
       } else if (session.deviceNonce !== (await getDeviceNonce())) {
         console.warn(
-          "⚠️  The current session is complete, but the device nonce doesn't match!",
+          "⚠️  The current session is complete, but the device nonce doesn't match!. Refreshing...",
           session
         );
+        session = await refreshSession(session);
       } else {
         console.log("✅  The current session is complete!", session);
       }
@@ -898,7 +923,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       setEmbeddedContextState((prevAuthContextState) => ({
         ...prevAuthContextState,
         currentWalletId: wallets?.[0]?.id || null,
-        wallets
+        wallets,
+        session
       }));
 
       let authStatus = "noAuth" as AuthStatus;
@@ -981,7 +1007,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     []
   );
 
-  const completeAuth = useCallback((session: any) => {
+  const completeAuth = useCallback(async (session: any) => {
     window.opener.postMessage(
       {
         type: "AUTH_COMPLETE",
@@ -990,6 +1016,9 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       },
       window.location.origin
     );
+
+    // waiting sometime before closing the popup
+    await sleep(500);
 
     log(LOG_GROUP.EMBEDDED_FLOWS, "Closing popup window...");
 
@@ -1050,7 +1079,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       const supabase = await getSupabaseClient();
       const {
         data: { subscription }
-      } = supabase.auth.onAuthStateChange((_event, session) => {
+      } = supabase.auth.onAuthStateChange(async (_event, session) => {
         // console.log("onAuthStateChange =", session);
 
         window.clearTimeout(forceInitTimeoutID);
@@ -1058,7 +1087,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         // Comment this line to run Wander Embedded as a standalone page:
         if (!isInsideIframe()) {
           if (session?.access_token && window.opener) {
-            completeAuth(session);
+            await completeAuth(session);
           }
 
           if (window.location.origin === "https://embed.wander.app") {

@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
+import { useLocation } from "~wallets/router/router.utils";
 
 import {
   Box,
@@ -13,6 +14,7 @@ import {
 
 export function AccountBackupSharesReminderEmbeddedView() {
   const { currentWallet, skipBackUp } = useEmbedded();
+  const { navigate } = useLocation();
   const isMandatoryReminder =
     currentWallet.totalExports === 0 &&
     currentWallet.totalBackups === 0 &&
@@ -20,8 +22,9 @@ export function AccountBackupSharesReminderEmbeddedView() {
 
   const [isChecked, setIsChecked] = useState(false);
 
-  const handleSkipClicked = () => {
-    return skipBackUp(isChecked);
+  const handleSkipClicked = async () => {
+    await skipBackUp(isChecked);
+    navigate(isChecked ? "/" : "/account");
   };
 
   return (
@@ -52,7 +55,7 @@ export function AccountBackupSharesReminderEmbeddedView() {
             variant="secondary"
             isFullWidth
             href="#/account"
-            onClick={() => handleSkipClicked()}
+            onClick={handleSkipClicked}
           >
             Backup later
           </Button>
