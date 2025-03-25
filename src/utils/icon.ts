@@ -106,8 +106,6 @@ export async function updateIcon(hasPerms: boolean) {
   const logosBySize =
     logosByEnvironment[process.env.NODE_ENV] || logosByEnvironment.default;
 
-  debugger;
-
   if (browser.runtime.getManifest().manifest_version === 3) {
     await browser.action.setIcon({
       path: logosBySize

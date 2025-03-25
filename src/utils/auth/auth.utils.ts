@@ -138,6 +138,8 @@ export async function createAuthPopup(
 
     const hasWallets = activeAddress && wallets.length > 0;
 
+    debugger;
+
     if (!hasWallets) {
       if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1") {
         postEmbeddedMessage({
@@ -229,6 +231,8 @@ export async function createAuthPopup(
     };
   } catch (err) {
     console.warn("Unexpected error in `createAuthPopup` =", err);
+
+    throw err;
   } finally {
     unlock();
   }

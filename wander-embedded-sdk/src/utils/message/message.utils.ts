@@ -28,6 +28,7 @@ export function isIncomingMessage(
       return !!(data && typeof data === "object" && "userDetails" in data);
     }
 
+    case "embedded_open":
     case "embedded_close":
       return true;
 

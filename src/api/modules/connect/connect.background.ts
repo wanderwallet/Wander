@@ -65,11 +65,12 @@ const background: BackgroundModuleFunction<void> = async (
     // add features available after connection
     await updateIcon(true);
     createContextMenus(true);
-  } catch (e: any) {
+  } catch (err) {
     await updateIcon(false);
     createContextMenus(false);
 
-    throw new Error(e);
+    // TODO: Update this in all API methods to get proper stack traces in errors? Maybe only in development?
+    throw err;
   }
 };
 
