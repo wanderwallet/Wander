@@ -1,5 +1,6 @@
 import enDic from "url:/assets/_locales/en/messages.json";
 import zhCnDic from "url:/assets/_locales/zh_CN/messages.json";
+import { asArray } from "~utils/array";
 
 const dictionaries = {
   en: enDic as unknown as Record<
@@ -13,7 +14,7 @@ const dictionaries = {
 } as const;
 
 export const i18n = {
-  getMessage: (key: string, paramValues: string[] = []) => {
+  getMessage: (key: string, paramValues: string | string[] = []) => {
     const dictionaryLanguage =
       navigator.languages.find((language) => {
         return dictionaries.hasOwnProperty(language);
@@ -32,7 +33,7 @@ export const i18n = {
     const paramKeys = value.match(/\$([A-Z_]+)\$/g);
 
     if (paramKeys) {
-      paramValues.forEach((paramValue, i) => {
+      asArray(paramValues).forEach((paramValue, i) => {
         value = value.replace(paramKeys[i], paramValue);
       });
     }
