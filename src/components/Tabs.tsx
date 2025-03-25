@@ -61,6 +61,7 @@ export default function Tabs({
             )}
           </TabWrapper>
         ))}
+        <ActiveTabIndicator activeTabId={activeTab} tabs={tabs} />
       </TabsWrapper>
       <ContentWrapper>
         <ActiveComponent />
@@ -94,6 +95,44 @@ const TabsWrapper = styled.div`
   box-sizing: border-box;
   background: ${(props) => props.theme.surfaceSecondary};
   box-shadow: 0px 2px 3.3px 0px rgba(0, 0, 0, 0.07) inset;
+  position: relative;
+`;
+
+const ActiveTabIndicator = ({
+  activeTabId,
+  tabs
+}: {
+  activeTabId: number;
+  tabs: readonly TabType[];
+}) => {
+  const activeIndex = tabs.findIndex((tab) => tab.id === activeTabId);
+  const tabWidth = 100 / tabs.length;
+
+  const insetPercentage = 0.01;
+
+  return (
+    <SlideIndicator
+      style={{
+        left: `${tabWidth * activeIndex + tabWidth * insetPercentage}%`,
+        width: `${tabWidth * (1 - 2 * insetPercentage)}%`
+      }}
+    />
+  );
+};
+
+const SlideIndicator = styled.div`
+  position: absolute;
+  height: 32px;
+  border-radius: 8px;
+  background: ${(props) =>
+    props.theme.displayTheme === "dark"
+      ? "linear-gradient(47deg, #5842f8 5.41%, #6b57f9 96%)"
+      : "#FFF"};
+  box-shadow: 0px 3px 1px 0px rgba(0, 0, 0, 0.04),
+    0px 3px 8px 0px rgba(0, 0, 0, 0.16);
+  border: 0.5px solid rgba(0, 0, 0, 0.12);
+  transition: left 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), width 0.3s ease;
+  z-index: 1;
 `;
 
 const StyledTab = styled.button<{ active?: boolean; tabId: number }>`
@@ -107,7 +146,11 @@ const StyledTab = styled.button<{ active?: boolean; tabId: number }>`
   color: ${(props) => props.theme.secondaryText};
   box-sizing: border-box;
   cursor: pointer;
-  transition: background 0.15s ease;
+  transition: background 0.15s ease, color 0.15s ease;
+  position: relative;
+  z-index: 2;
+  background: transparent;
+  border: none;
 
   &:hover:not([data-active="true"]) {
     background: ${(props) =>
@@ -120,13 +163,6 @@ const StyledTab = styled.button<{ active?: boolean; tabId: number }>`
     props.active &&
     `
       color: ${props.theme.primaryText};
-      border: 0.5px solid rgba(0, 0, 0, 0.12);
-      background: ${
-        props.theme.displayTheme === "dark"
-          ? "linear-gradient(47deg, #5842f8 5.41%, #6b57f9 96%)"
-          : "#FFF"
-      };
-      box-shadow: 0px 3px 1px 0px rgba(0, 0, 0, 0.04), 0px 3px 8px 0px rgba(0, 0, 0, 0.16);
   `}
 `;
 
