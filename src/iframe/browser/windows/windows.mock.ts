@@ -20,12 +20,12 @@ export const windows = {
       // const hash = url.split("#").pop();
       // location.hash = `/quick-settings${hash}`;
     } else if (url.includes("tabs/auth.html")) {
-      console.warn("Trying to open `tabs/auth.html`");
+      console.warn("Opening a `tabs/auth.html` window prevented.");
 
       // const paramsAndHash = url.split("tabs/auth.html")[1];
       // location.hash = `/auth-request${paramsAndHash}`;
 
-      location.hash = `/auth-request`;
+      // location.hash = `/auth-request`;
     } else if (url.includes("assets")) {
       throw new Error(`Cannot create tab for URL = ${url}`);
     } else {
