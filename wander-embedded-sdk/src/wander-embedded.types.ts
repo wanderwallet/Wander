@@ -65,8 +65,9 @@ export function isRouteConfig(obj: unknown): obj is LayoutConfig {
 export interface RouteConfig {
   routeType: RouteType;
   preferredLayoutType: LayoutType;
-  width?: number;
   height: number;
+  width?: number;
+  imgSrc?: string;
 }
 
 export interface BalanceInfo {

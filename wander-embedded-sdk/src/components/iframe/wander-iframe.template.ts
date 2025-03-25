@@ -58,6 +58,34 @@ export const getWanderIframeTemplateContent = ({
       height: 100%;
       display: block;
     }
+    
+    /* Half layout image styles */
+    .half-image {
+      position: fixed;
+      z-index: calc(var(--zIndex, 9999) + 1);
+      opacity: 0;
+      transition: opacity 300ms ease-in-out;
+      pointer-events: none;
+      top: 50%;
+      transform: translateY(-50%);
+      display: none;
+    }
+    
+    .half-image.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    
+    /* Position-specific styles for half-image */
+    .half-image[data-position="left"] {
+      left: 0;
+      width: 50vw;
+    }
+    
+    .half-image[data-position="right"] {
+      right: 0;
+      width: 50vw;
+    }
 
     /* Mobile styles */
     @media (max-width: 540px) {
@@ -78,6 +106,10 @@ export const getWanderIframeTemplateContent = ({
         border-radius: var(--mobileBorderRadius, 0);
         box-shadow: var(--mobileBoxShadow, none);
         transform: none;
+      }
+      
+      .half-image {
+        display: none;
       }
       
       .iframe-wrapper[data-expand-on-mobile="true"] {
@@ -127,35 +159,58 @@ export const getWanderIframeTemplateContent = ({
       transition: opacity linear 150ms;
     }
     
-    /* Sidebar and Half specific styles */
-    .iframe-wrapper[data-layout="sidebar"],
-    .iframe-wrapper[data-layout="half"] {
+    /* Sidebar specific styles */
+    .iframe-wrapper[data-layout="sidebar"] {
       transition: opacity linear 150ms, transform linear 150ms;
     }
-    
-    /* Right position */
-    .iframe-wrapper[data-layout="sidebar"][data-position="right"],
+
+    /* Half specific styles */
+    .iframe-wrapper[data-layout="half"] {
+        transition: opacity 300ms ease-in-out, transform 300ms ease-in-out;
+    }
+
+    /* Right position - Sidebar */
+    .iframe-wrapper[data-layout="sidebar"][data-position="right"] {
+      top: var(--backdropPadding, 0);
+      right: var(--backdropPadding, 0);
+      border-width: 0 0 0 var(--borderWidth, 2px);
+    }
+
+    /* Right position - Half */
     .iframe-wrapper[data-layout="half"][data-position="right"] {
       top: var(--backdropPadding, 0);
       right: var(--backdropPadding, 0);
       border-width: 0 0 0 var(--borderWidth, 2px);
     }
-    
-    /* Left position */
-    .iframe-wrapper[data-layout="sidebar"][data-position="left"],
+
+    /* Left position - Sidebar */
+    .iframe-wrapper[data-layout="sidebar"][data-position="left"] {
+      top: var(--backdropPadding, 0);
+      left: var(--backdropPadding, 0);
+      border-width: 0 var(--borderWidth, 2px) 0 0;
+    }
+
+    /* Left position - Half */
     .iframe-wrapper[data-layout="half"][data-position="left"] {
       top: var(--backdropPadding, 0);
       left: var(--backdropPadding, 0);
       border-width: 0 var(--borderWidth, 2px) 0 0;
     }
-    
-    /* Hide transform states */
-    .iframe-wrapper[data-layout="sidebar"][data-position="right"]:not(.show),
+
+    /* Hide transform states - Sidebar */
+    .iframe-wrapper[data-layout="sidebar"][data-position="right"]:not(.show) {
+      transform: translate(calc(100% + var(--backdropPadding, 32px)), 0);
+    }
+
+    /* Hide transform states - Half */
     .iframe-wrapper[data-layout="half"][data-position="right"]:not(.show) {
       transform: translate(calc(100% + var(--backdropPadding, 32px)), 0);
     }
-    
-    .iframe-wrapper[data-layout="sidebar"][data-position="left"]:not(.show),
+
+    .iframe-wrapper[data-layout="sidebar"][data-position="left"]:not(.show) {
+      transform: translate(calc(-100% - var(--backdropPadding, 32px)), 0);
+    }
+
     .iframe-wrapper[data-layout="half"][data-position="left"]:not(.show) {
       transform: translate(calc(-100% - var(--backdropPadding, 32px)), 0);
     }
@@ -185,9 +240,5 @@ export const getWanderIframeTemplateContent = ({
       left: 0;
     }
   </style>
-  <div class="backdrop" id="wanderEmbeddedBackdrop"></div>
-  <div class="iframe-wrapper">
-    <iframe class="iframe" src="${src}"></iframe>
-  </div>
 `;
 };
