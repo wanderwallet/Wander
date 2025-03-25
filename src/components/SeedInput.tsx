@@ -421,6 +421,7 @@ const LengthSelector = styled(Text).attrs({
   weight: "semibold"
 })`
   color: #9787ff;
+  padding-bottom: 1rem;
   cursor: pointer;
 `;
 
