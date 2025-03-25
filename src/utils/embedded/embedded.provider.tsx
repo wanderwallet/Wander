@@ -902,7 +902,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         return;
       }
 
-      if (!session.countryCode || !session.id || !session.deviceNonce) {
+      if (!session.id || !session.deviceNonce) {
         console.warn(
           "❌  The current session is incomplete. Refreshing...",
           session
@@ -1050,7 +1050,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       /*
     KNOWN AUTHENTICATION ISSUES:
 
-    - The decoded JWT token sometimes is missing some properties (`countryCode` and `deviceNonce`). Refreshing the
+    - The decoded JWT token sometimes is missing some properties (`deviceNonce`). Refreshing the
       sessions seems to fix the issue, but not immediately. The `The current session is incomplete. Refreshing...` block
       in `initEmbeddedWallet` is a dirty/temp fix for that.
 
