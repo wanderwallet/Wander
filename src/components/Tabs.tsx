@@ -50,10 +50,14 @@ export default function Tabs({
               active={tab.id === activeTab}
               setActiveTab={setActiveTab}
             />
-            {/* Show separator between tabs except when current or next tab is active */}
-            {index < tabs.length - 1 &&
-              tab.id !== activeTab &&
-              tabs[index + 1].id !== activeTab && <Seperator />}
+            {/* Seperator always visible, but transparent when current or next tab is active */}
+            {index < tabs.length - 1 && (
+              <Seperator
+                transparent={
+                  tab.id === activeTab || tabs[index + 1].id === activeTab
+                }
+              />
+            )}
           </TabWrapper>
         ))}
       </TabsWrapper>
@@ -71,11 +75,12 @@ const TabWrapper = styled.div`
   align-items: center;
 `;
 
-const Seperator = styled.div`
+const Seperator = styled.div<{ transparent?: boolean }>`
   width: 1px;
   height: 23px;
   border-radius: 0.5px;
-  background: rgba(142, 142, 147, 0.2);
+  background: ${(props) =>
+    props.transparent ? "transparent" : "rgba(142, 142, 147, 0.2)"};
 `;
 
 const TabsWrapper = styled.div`
