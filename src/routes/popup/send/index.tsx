@@ -242,8 +242,9 @@ export function SendView({ params: { id } }: SendViewProps) {
       setRecipient(recipient);
       setIsManualAddress(false);
       addressInput.setState(recipient.address);
+      submit(recipient.address);
     },
-    [recipient]
+    [addressInput]
   );
 
   const tabs = useMemo(
@@ -281,10 +282,11 @@ export function SendView({ params: { id } }: SendViewProps) {
     ]
   );
 
-  const submit = async () => {
+  const submit = async (directAddress?: string) => {
     try {
       setLoading(true);
-      const input = addressInput.state?.trim() || recipient?.address || "";
+      const input =
+        directAddress || addressInput.state?.trim() || recipient?.address || "";
       let recipientAddress = "";
       if (isAddressFormat(input)) {
         if (input === activeAddress) {
@@ -387,7 +389,7 @@ export function SendView({ params: { id } }: SendViewProps) {
               style={{ padding: "12px 24px", width: "max-content", height: 42 }}
               disabled={loading}
               loading={loading}
-              onClick={submit}
+              onClick={() => submit()}
             >
               {browser.i18n.getMessage("next")}
             </Button>
