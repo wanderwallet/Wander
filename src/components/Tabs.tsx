@@ -27,6 +27,7 @@ const Tab = ({ tab, active, setActiveTab }: TabProps) => (
     active={active}
     tabId={tab.id}
     onClick={() => setActiveTab(tab.id)}
+    data-active={active ? "true" : "false"}
   >
     {browser.i18n.getMessage(tab.name)}
   </StyledTab>
@@ -106,13 +107,25 @@ const StyledTab = styled.button<{ active?: boolean; tabId: number }>`
   color: ${(props) => props.theme.secondaryText};
   box-sizing: border-box;
   cursor: pointer;
+  transition: background 0.15s ease;
+
+  &:hover:not([data-active="true"]) {
+    background: ${(props) =>
+      props.theme.displayTheme === "dark"
+        ? "#403785"
+        : "rgba(255, 255, 255, 0.8)"};
+  }
 
   ${(props) =>
     props.active &&
     `
       color: ${props.theme.primaryText};
       border: 0.5px solid rgba(0, 0, 0, 0.12);
-      background: ${props.theme.displayTheme === "dark" ? "#403785" : "#FFF"};
+      background: ${
+        props.theme.displayTheme === "dark"
+          ? "linear-gradient(47deg, #5842f8 5.41%, #6b57f9 96%)"
+          : "#FFF"
+      };
       box-shadow: 0px 3px 1px 0px rgba(0, 0, 0, 0.04), 0px 3px 8px 0px rgba(0, 0, 0, 0.16);
   `}
 `;
