@@ -81,8 +81,7 @@ export function AuthRequestsProvider({ children }: PropsWithChildren) {
   const closeAuthPopup = useCallback((delay: number = 0) => {
     function closeOrClear() {
       if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1") {
-        // TODO: This might cause an infinite loop in the embedded wallet:
-        // setAuthRequestContextState(AUTH_REQUESTS_CONTEXT_INITIAL_STATE);
+        setAuthRequestContextState(AUTH_REQUESTS_CONTEXT_INITIAL_STATE);
 
         // TODO: We could improve this to detect if we opened the wallet to show an AuthRequest, or if it was already
         // open. In the former case, when all AuthRequests are handled, we close it. In the latter, we just clear the
