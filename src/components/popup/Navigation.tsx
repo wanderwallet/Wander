@@ -92,6 +92,7 @@ export const NavigationBar = () => {
         return (
           <NavigationButton
             active={active}
+            data-active={active ? "true" : "false"}
             key={index}
             onClick={() => navigate(button.route)}
           >
@@ -152,7 +153,7 @@ const IconWrapper = styled.div<{ size: string }>`
   align-items: center;
   transition: transform 0.2s ease;
 
-  ${NavigationButton}:hover & {
+  ${NavigationButton}:not([data-active="true"]):hover & {
     transform: scale(1.1);
   }
 `;
