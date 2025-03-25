@@ -55,6 +55,10 @@ export default function SeedInput({
 
   const handleMnemonicLengthChange = () => {
     const newLength = activeLength === 12 ? 24 : 12;
+    if (words.length > 12) {
+      const trimmedWords = [...words.slice(0, 12), ...Array(12).fill("")];
+      setWords(trimmedWords);
+    }
     setActiveLength(newLength);
     onMnemonicLengthChange?.(newLength);
   };
@@ -307,10 +311,15 @@ export default function SeedInput({
                       // check length
                       if (pastedWords.length <= 1) return;
 
+                      // switch to 24 words if a 24-word phrase is pasted
+                      if (pastedWords.length > 12 && activeLength === 12) {
+                        setActiveLength(24);
+                        onMnemonicLengthChange?.(24);
+                      }
+
                       // update words
                       for (let j = i; j < pastedWords.length + i; j++) {
-                        if (j > activeLength) break;
-
+                        if (j >= 24) break;
                         words[j] = pastedWords[j - i];
                       }
 
