@@ -20,30 +20,14 @@ export default function WalletActions() {
   );
 }
 
-const SendIcon = () => (
-  <svg
-    width="57"
-    height="59"
-    viewBox="0 0 57 59"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path
-      fillRule="evenodd"
-      clipRule="evenodd"
-      d="M31.8038 46.5175L40.7908 17.0111C41.1288 15.6894 40.7821 15.0717 39.3626 15.4347L9.79538 24.4465L23.2284 30.8178L37.9663 18.2779L25.4263 33.0157L31.8038 46.5175Z"
-      fill="#FFFEFC"
-    />
-  </svg>
-);
-
-const ReceiveIcon = () => (
+const ReceiveIcon = ({ flipped = false }: { flipped?: boolean }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width="57"
     height="56"
     viewBox="0 0 57 56"
     fill="none"
+    style={flipped ? { transform: "rotate(180deg)" } : undefined}
   >
     <path
       fillRule="evenodd"
@@ -75,7 +59,7 @@ const actions = [
   {
     name: "send",
     label: "send",
-    icon: <SendIcon />,
+    icon: <ReceiveIcon flipped={true} />,
     route: "/send/transfer"
   },
   {
@@ -108,11 +92,20 @@ const CircleButton = styled.div`
   width: 56px;
   height: 56px;
   border-radius: 50%;
-
+  transition: transform 0.2s ease-in-out;
   background: linear-gradient(47deg, #5842f8 5.41%, #6b57f9 96%);
+
+  svg {
+    transition: transform 0.2s ease-in-out;
+  }
 
   &:hover {
     background: #503ece;
+    transform: scale(1.1);
+
+    svg {
+      transform: scale(1.1);
+    }
   }
 
   &:active {
