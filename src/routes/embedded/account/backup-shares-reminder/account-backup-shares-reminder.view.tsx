@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
+import { useLocation } from "~wallets/router/router.utils";
 
 import {
   Box,
@@ -12,12 +13,18 @@ import {
 } from "~components/embed/ui";
 
 export function AccountBackupSharesReminderEmbeddedView() {
-  const { promptToBackUp, skipBackUp } = useEmbedded();
-  const [isChecked, setIsChecked] = useState(false);
-  const checkboxRef = useRef<HTMLInputElement>();
+  const { currentWallet, skipBackUp } = useEmbedded();
+  const { navigate } = useLocation();
+  const isMandatoryReminder =
+    currentWallet.totalExports === 0 &&
+    currentWallet.totalBackups === 0 &&
+    !currentWallet.doNotAskAgainSetting;
 
-  const handleSkipClicked = () => {
-    return skipBackUp(isChecked);
+  const [isChecked, setIsChecked] = useState(false);
+
+  const handleSkipClicked = async () => {
+    await skipBackUp(isChecked);
+    navigate(isChecked ? "/" : "/account");
   };
 
   return (
@@ -40,24 +47,24 @@ export function AccountBackupSharesReminderEmbeddedView() {
       size="auto"
     >
       <Box>
-        <Button variant="primary" isFullWidth href="/account/backup-shares">
+        <Button variant="primary" isFullWidth href="#/account/backup-shares">
           Backup now
         </Button>
-        {promptToBackUp ? (
+        {isMandatoryReminder ? (
           <Button
             variant="secondary"
             isFullWidth
-            href="/account"
-            onClick={() => handleSkipClicked()}
+            href="#/account"
+            onClick={handleSkipClicked}
           >
             Backup later
           </Button>
         ) : (
-          <Button variant="secondary" isFullWidth href="/account">
+          <Button variant="secondary" isFullWidth href="#/account">
             Cancel
           </Button>
         )}
-        {promptToBackUp && (
+        {isMandatoryReminder && (
           <Checkbox
             label="Don't show this again"
             description="Note: you can set this up on the settings page"

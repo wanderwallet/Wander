@@ -14,6 +14,7 @@ node_modules
 # misc
 .DS_Store
 *.pem
+.vscode
 
 # debug
 npm-debug.log*
@@ -22,8 +23,11 @@ yarn-error.log*
 .pnpm-debug.log*
 
 
-# local env files
+# Exclude all .env files
+.env
 .env*
+# Except for .env.example
+!.env.example
 
 out/
 build/

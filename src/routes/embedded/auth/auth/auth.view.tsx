@@ -7,28 +7,65 @@ import {
   Divider,
   GoogleIcon,
   KeyIcon,
+  TextInput,
   Row,
   SocialsIcon,
   Text,
   Wander2Icon,
   WanderIcon
 } from "~components/embed";
-import { useCallback, useState } from "react";
-import type { AuthMethod } from "~utils/authentication/fakeDB";
+import { useCallback, useRef, useState } from "react";
+import type { AuthProviderType } from "embed-api";
+import { getSupabaseClient } from "~utils/embedded/embedded.utils";
 
 export function AuthEmbeddedView() {
   const { authenticate, authStatus } = useEmbedded();
-  const [isLoading, setIsLoading] = useState({
-    calledId: "",
-    status: false
-  });
+
+  const [selectedAuthProviderType, setSelectedAuthProviderType] =
+    useState<AuthProviderType | null>(null);
+
+  const areButtonsDisabled =
+    authStatus === "unknown" ||
+    authStatus === "loading" ||
+    authStatus === "authLoading" ||
+    !!selectedAuthProviderType;
 
   // TODO: Remember last selection and highlight that one / show it in the main screen (not in "More")
 
-  const handleAuthenticate = useCallback(async (authMethod: AuthMethod) => {
-    setIsLoading({ calledId: authMethod, status: true });
-    await authenticate(authMethod);
-    setIsLoading({ calledId: "", status: false });
+  const emailInputRef = useRef<HTMLInputElement>();
+  const passwordInputRef = useRef<HTMLInputElement>();
+
+  const handleAuthenticate = useCallback(
+    async (authProviderType: AuthProviderType) => {
+      setSelectedAuthProviderType(authProviderType);
+      await authenticate(
+        authProviderType,
+        emailInputRef.current?.value || "",
+        passwordInputRef.current?.value || ""
+      );
+      setSelectedAuthProviderType(null);
+    },
+    []
+  );
+
+  const handleEmailSignup = useCallback(async () => {
+    const supabase = await getSupabaseClient();
+    const { error, data } = await supabase.auth.signUp({
+      email: emailInputRef.current?.value || "",
+      password: passwordInputRef.current?.value || ""
+    });
+
+    console.log({ error, data });
+  }, []);
+
+  const handleEmailSignIn = useCallback(async () => {
+    const supabase = await getSupabaseClient();
+    const { error, data } = await supabase.auth.signInWithPassword({
+      email: emailInputRef.current?.value || "",
+      password: passwordInputRef.current?.value || ""
+    });
+
+    console.log({ error, data });
   }, []);
 
   return (
@@ -47,25 +84,43 @@ export function AuthEmbeddedView() {
       size="auto"
     >
       <Box>
+        <TextInput
+          ref={emailInputRef}
+          placeholder="E-Mail"
+          isDisabled={areButtonsDisabled}
+        />
+
+        <TextInput
+          ref={passwordInputRef}
+          placeholder="Password"
+          isDisabled={areButtonsDisabled}
+          isSecure
+        />
+
         <Button
           isFullWidth
-          onClick={() => handleAuthenticate("passkey")}
+          onClick={() => handleEmailSignup()}
           icon={<KeyIcon fontSize={24} />}
-          isLoading={
-            isLoading.calledId === "passkey" && isLoading.status === true
-          }
+          isDisabled={areButtonsDisabled}
         >
-          Create new wallet
+          Email Sign Up
+        </Button>
+        <Button
+          isFullWidth
+          onClick={() => handleEmailSignIn()}
+          icon={<KeyIcon fontSize={24} />}
+          isDisabled={areButtonsDisabled}
+        >
+          Email Sign In
         </Button>
         <Divider text={"OR"} />
         <Row>
           <Button
             variant="outlined"
             size="md"
-            isLoading={
-              isLoading.calledId === "google" && isLoading.status === true
-            }
-            onClick={() => handleAuthenticate("google")}
+            isLoading={selectedAuthProviderType === "GOOGLE"}
+            isDisabled={areButtonsDisabled}
+            onClick={() => handleAuthenticate("GOOGLE")}
           >
             <GoogleIcon fontSize={24} />
           </Button>
@@ -76,15 +131,15 @@ export function AuthEmbeddedView() {
         <Button
           variant="outlined"
           isFullWidth
-          isLoading={isLoading.calledId === "more" && isLoading.status === true}
+          isDisabled={areButtonsDisabled}
           icon={<SocialsIcon fontSize={24} />}
-          href="/auth/more-providers"
+          href="#/auth/more-providers"
         >
           More options
         </Button>
         <Row alignment="center" justifyContent="center">
           <Text variant={"bodySm"}>{"Can’t sign in?"}</Text>
-          <Button variant="link" href="/auth/recover-account" size="sm">
+          <Button variant="link" href="#/auth/recover-account" size="sm">
             Recover account
           </Button>
         </Row>

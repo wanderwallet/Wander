@@ -69,6 +69,7 @@ export default class Setting {
 
       if (name === "gateways") {
         getGatewayCache().then(async (gateways = []) => {
+          gateways = gateways || [];
           let gatewayOptions: Gateway[] = defaultGateways;
           if (gateways.length > 0) {
             gatewayOptions = gateways.map((gateway) => ({
@@ -81,7 +82,7 @@ export default class Setting {
 
           const otherHosts = Array.from(
             new Set([
-              gateway.host,
+              gateway?.host || defaultGateway.host,
               defaultGateway.host,
               clGateway.host,
               "aoweave.tech",

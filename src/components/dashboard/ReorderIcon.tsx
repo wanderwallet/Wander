@@ -25,7 +25,7 @@ export default function ReorderIcon({ dragControls }: Props) {
         <path
           d="M4.25 8.75H19.25"
           stroke="currentColor"
-          stroke-width="1.5"
+          strokeWidth="1.5"
           strokeLinecap="round"
           strokeLinejoin="round"
         />

@@ -12,8 +12,8 @@ import {
 
 export function AuthRestoreSharesRecoveryFileEmbeddedView() {
   const [loading, setLoading] = useState(false);
-  const { wallets, restoreWallet } = useEmbedded();
-  const walletAddress = wallets[0].address;
+  const { currentWallet, recoverWallet } = useEmbedded();
+  const walletAddress = currentWallet.address;
   const [jsonData, setJsonData] = useState<any>(null);
 
   const handleJsonParse = (parsedData: any) => {
@@ -24,10 +24,7 @@ export function AuthRestoreSharesRecoveryFileEmbeddedView() {
     try {
       setLoading(true);
       if (jsonData) {
-        const restoredWallet = restoreWallet(
-          walletAddress,
-          JSON.stringify(jsonData, null, 2)
-        );
+        const restoredWallet = recoverWallet(jsonData);
 
         if (!restoredWallet) {
           setLoading(false);

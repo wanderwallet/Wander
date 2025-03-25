@@ -90,7 +90,7 @@ export function AuthImportSeedphraseEmbeddedView() {
         <Button
           variant="primary"
           size="md"
-          onClick={() => registerWallet("imported")}
+          onClick={() => registerWallet("IMPORTED")}
           isLoading={loading}
         >
           Yes, recover
