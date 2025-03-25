@@ -13,14 +13,22 @@ import {
   Text
 } from "~components/embed/ui";
 import copy from "copy-to-clipboard";
-import { useLocation } from "~wallets/router/router.utils";
+import { WalletUtils } from "~utils/wallets/wallets.utils";
+import { useEffect, useState } from "react";
 
 export function AccountExportWalletEmbeddedView() {
-  const { wallets, downloadKeyfile, copySeedphrase } = useEmbedded();
-  const { back } = useLocation();
-  const walletAddress = wallets[0].address;
+  const { currentWallet, downloadKeyfile, copySeedphrase } = useEmbedded();
+  const walletAddress = currentWallet.address;
 
-  // TODO: Register the "export" event on the server.
+  const [hasEncryptedSeedPhrase, setHasEncryptedSeedPhrase] = useState(false);
+
+  useEffect(() => {
+    WalletUtils.hasEncryptedSeedPhrase(currentWallet.id).then(
+      (hasEncryptedSeedPhrase) => {
+        setHasEncryptedSeedPhrase(hasEncryptedSeedPhrase);
+      }
+    );
+  }, [currentWallet.id]);
 
   // TODO: Add an option to encrypt with a password
 
@@ -59,12 +67,12 @@ export function AccountExportWalletEmbeddedView() {
           isFullWidth
           label="Your wallet address"
           onClick={() => {
-            copy(walletAddress);
+            return copy(walletAddress);
           }}
           value={walletAddress}
         />
         <Button
-          onClick={() => downloadKeyfile(walletAddress)}
+          onClick={() => downloadKeyfile()}
           variant="outlined"
           isFullWidth
           icon={<KeyIcon fontSize={24} />}
@@ -72,9 +80,10 @@ export function AccountExportWalletEmbeddedView() {
           Export keyfile
         </Button>
         <Button
-          onClick={() => copySeedphrase(walletAddress)}
+          onClick={() => copySeedphrase()}
           variant="outlined"
           isFullWidth
+          isDisabled={!hasEncryptedSeedPhrase}
           icon={<SeedIcon fontSize={24} />}
         >
           Copy seedphrase

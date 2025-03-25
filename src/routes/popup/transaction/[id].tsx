@@ -138,6 +138,8 @@ export function TransactionView({
   const arweave = useMemo(() => new Arweave(gateway), [gateway]);
 
   const transactionDirection = useMemo(() => {
+    if (fromSend) return "Sent";
+
     if (!transaction || !activeAddress) return;
 
     const isAoTransaction = transaction.tags.some(
@@ -160,7 +162,7 @@ export function TransactionView({
     if (!transaction.recipient) return;
 
     return transaction.owner.address === activeAddress ? "Sent" : "Received";
-  }, [transaction, wallets]);
+  }, [transaction, activeAddress, fromSend]);
 
   function handleDone() {
     navigate((backPath as WanderRoutePath) || "/");
@@ -174,9 +176,41 @@ export function TransactionView({
 
     const fetchTx = async () => {
       const cachedTx = JSON.parse(localStorage.getItem("latest_tx") || "{}");
+      if (cachedTx.id === id) {
+        setTransaction(cachedTx);
 
-      // load cached tx
-      if (cachedTx?.id === id) setTransaction(cachedTx);
+        // AO transaction
+        if (
+          cachedTx.tags.some(
+            (tag) => tag.name === "Data-Protocol" && tag.value === "ao"
+          )
+        ) {
+          setAo({ isAo: true, tokenId: cachedTx.recipient });
+          const tokenIdTag = cachedTx.tags.find(
+            (tag) => tag.name === "Token-Address" || tag.name === "Token"
+          );
+          const tickerTag = cachedTx.tags.find((tag) => tag.name === "Ticker");
+
+          if (tickerTag) {
+            setTicker(tickerTag.value);
+          } else {
+            setTicker(formatAddress(tokenIdTag.value, 4));
+          }
+
+          try {
+            const tokenInfo = await fetchTokenByProcessId(tokenIdTag.value);
+            if (tokenInfo?.Logo) {
+              const tokenLogo = await getArweaveLink(tokenInfo.Logo);
+              setLogo(tokenLogo);
+            } else {
+              setLogo(arweaveLogo);
+            }
+          } catch {
+            setLogo(arweaveLogo);
+          }
+        }
+        return;
+      }
 
       const gateway = graphqlGateways[fetchCount % graphqlGateways.length];
 

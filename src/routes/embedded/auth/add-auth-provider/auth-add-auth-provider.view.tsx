@@ -4,15 +4,15 @@ import { DevFigmaScreen } from "~components/dev/figma-screen/figma-screen.compon
 import screenSrc from "url:/assets-beta/figma-screens/add-auth-provider.view.png";
 
 export function AuthAddAuthProviderEmbeddedView() {
-  const { authMethod } = useEmbedded();
+  const { authProviderType } = useEmbedded();
 
   return (
     <DevFigmaScreen
-      title={`Add ${authMethod}`}
+      title={`Add ${authProviderType}`}
       src={screenSrc}
       config={[
         {
-          label: `Add ${authMethod}`,
+          label: `Add ${authProviderType}`,
           onClick: () => alert("Not implemented.")
         },
         {

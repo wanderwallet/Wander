@@ -5,12 +5,12 @@ import { useAuthRequestsLocation } from "~wallets/router/auth/auth-router.hook";
 import { AUTH_ROUTES } from "~wallets/router/auth/auth.routes";
 import { Router as Wouter } from "wouter";
 import { WalletsProvider } from "~utils/wallets/wallets.provider";
-import { useExtensionStatusOverride } from "~wallets/router/extension/extension-router.hook";
 import { useEffect } from "react";
 import { handleSyncLabelsAlarm } from "~api/background/handlers/alarms/sync-labels/sync-labels-alarm.handler";
 import { ErrorBoundary } from "~utils/error/ErrorBoundary/errorBoundary";
 import { FallbackView } from "~components/page/common/Fallback/fallback.view";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useActivityTracking } from "~utils/inactivity/inactivity.hooks";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -24,6 +24,8 @@ const queryClient = new QueryClient({
 });
 
 export function AuthApp() {
+  useActivityTracking();
+
   useEffect(() => {
     handleSyncLabelsAlarm();
   }, []);
@@ -36,7 +38,7 @@ export function AuthAppRoot() {
     <WanderThemeProvider>
       <ErrorBoundary fallback={FallbackView}>
         <WalletsProvider redirectToWelcome>
-          <AuthRequestsProvider useStatusOverride={useExtensionStatusOverride}>
+          <AuthRequestsProvider>
             <QueryClientProvider client={queryClient}>
               <Wouter hook={useAuthRequestsLocation}>
                 <AuthApp />

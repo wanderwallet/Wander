@@ -20,9 +20,7 @@ export function AuthRecoverAccountAuthenticationEmbeddedView() {
     useEmbedded();
 
   const accountToRecover = recoverableAccounts?.[0];
-  const accountToRecoverId = accountToRecover?.id;
-
-  const { back } = useLocation();
+  const accountToRecoverId = accountToRecover?.userId;
 
   const [checkboxChecked, setCheckboxChecked] = useState<boolean>(false);
 
@@ -57,7 +55,7 @@ export function AuthRecoverAccountAuthenticationEmbeddedView() {
         value={importedTempWalletAddress}
       />
       <Button
-        onClick={() => recoverAccount("passkey", accountToRecoverId)}
+        onClick={() => recoverAccount("PASSKEYS", accountToRecoverId)}
         variant="outlined"
         isFullWidth
         isDisabled={!checkboxChecked}
@@ -66,7 +64,7 @@ export function AuthRecoverAccountAuthenticationEmbeddedView() {
         Passkey
       </Button>
       <Button
-        onClick={() => recoverAccount("google", accountToRecoverId)}
+        onClick={() => recoverAccount("GOOGLE", accountToRecoverId)}
         variant="outlined"
         isFullWidth
         isDisabled={!checkboxChecked}
@@ -78,7 +76,7 @@ export function AuthRecoverAccountAuthenticationEmbeddedView() {
         variant="outlined"
         isFullWidth
         icon={<SocialsIcon fontSize={24} />}
-        href="/auth/recover-account/more-authentication"
+        href="#/auth/recover-account/more-authentication"
       >
         More options
       </Button>

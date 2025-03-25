@@ -12,25 +12,30 @@ import {
   WanderIcon
 } from "~components/embed";
 import { useCallback, useState } from "react";
-import type { AuthMethod } from "~utils/authentication/fakeDB";
-import { useLocation } from "~wallets/router/router.utils";
+import type { AuthProviderType } from "embed-api";
 
 export function AuthMoreProvidersEmbeddedView() {
-  const { authenticate } = useEmbedded();
-  const { back } = useLocation();
+  const { authenticate, authStatus } = useEmbedded();
 
-  const [isLoading, setIsLoading] = useState({
-    calledId: "",
-    status: false
-  });
+  const [selectedAuthProviderType, setSelectedAuthProviderType] =
+    useState<AuthProviderType | null>(null);
+
+  const areButtonsDisabled =
+    authStatus === "unknown" ||
+    authStatus === "loading" ||
+    authStatus === "authLoading" ||
+    !!selectedAuthProviderType;
 
   // TODO: Remember last selection and highlight that one / show it in the main screen (not in "More")
 
-  const handleAuthenticate = useCallback(async (authMethod: AuthMethod) => {
-    setIsLoading({ calledId: authMethod, status: true });
-    await authenticate(authMethod);
-    setIsLoading({ calledId: "", status: false });
-  }, []);
+  const handleAuthenticate = useCallback(
+    async (authProviderType: AuthProviderType) => {
+      setSelectedAuthProviderType(authProviderType);
+      await authenticate(authProviderType);
+      setSelectedAuthProviderType(null);
+    },
+    []
+  );
 
   return (
     <Card
@@ -53,10 +58,9 @@ export function AuthMoreProvidersEmbeddedView() {
           variant="outlined"
           isFullWidth
           icon={<FacebookIcon fontSize={24} />}
-          onClick={() => handleAuthenticate("facebook")}
-          isLoading={
-            isLoading.calledId === "facebook" && isLoading.status === true
-          }
+          onClick={() => handleAuthenticate("FACEBOOK")}
+          isLoading={selectedAuthProviderType === "FACEBOOK"}
+          isDisabled={areButtonsDisabled}
         >
           Continue with Facebook
         </Button>
@@ -64,10 +68,9 @@ export function AuthMoreProvidersEmbeddedView() {
           variant="outlined"
           isFullWidth
           icon={<AppleIcon fontSize={24} />}
-          onClick={() => handleAuthenticate("apple")}
-          isLoading={
-            isLoading.calledId === "apple" && isLoading.status === true
-          }
+          onClick={() => handleAuthenticate("APPLE")}
+          isLoading={selectedAuthProviderType === "APPLE"}
+          isDisabled={areButtonsDisabled}
         >
           Continue with Apple
         </Button>
@@ -75,8 +78,9 @@ export function AuthMoreProvidersEmbeddedView() {
           variant="outlined"
           isFullWidth
           icon={<TwitterIcon fontSize={24} />}
-          onClick={() => handleAuthenticate("x")}
-          isLoading={isLoading.calledId === "x" && isLoading.status === true}
+          onClick={() => handleAuthenticate("X")}
+          isLoading={selectedAuthProviderType === "X"}
+          isDisabled={areButtonsDisabled}
         >
           Continue with X
         </Button>

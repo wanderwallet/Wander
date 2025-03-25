@@ -1,6 +1,5 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useCallback, useEffect, useState } from "react";
-import { Link } from "~wallets/router/components/link/Link";
 
 import {
   Box,
@@ -14,32 +13,28 @@ import {
   WalletIcon,
   WanderIcon
 } from "~components/embed";
-import { useLocation } from "~wallets/router/router.utils";
+import type { WalletSourceType } from "embed-api";
 
 export function AuthAddWalletEmbeddedView() {
-  const { authMethod, generateTempWallet, registerWallet } = useEmbedded();
-  const { navigate } = useLocation();
-  const [isLoading, setIsLoading] = useState({
-    calledId: "",
-    status: false
-  });
+  const { authProviderType, generateTempWallet, registerWallet } =
+    useEmbedded();
+
+  const [isLoading, setIsLoading] = useState(false);
+
   useEffect(() => {
     // Pre-generation starts on app load, but this call will re-generate it again if it has expired, as we are trying to
-    // prevent a user accessing a site with ArConnect Embedded, not creating an account, and coming back way later after
+    // prevent a user accessing a site with Wander Embedded, not creating an account, and coming back way later after
     // the pregenerated wallet has been sitting in memory for long:
     generateTempWallet();
   }, []);
 
   // TODO: Remember last selection and highlight that one / show it in the main screen (not in "More")
 
-  const handleRegisterWallet = useCallback(
-    async (source: "generated" | "imported") => {
-      setIsLoading({ calledId: source, status: true });
-      await registerWallet(source);
-      setIsLoading({ calledId: "", status: false });
-    },
-    []
-  );
+  const handleRegisterWallet = useCallback(async (source: WalletSourceType) => {
+    setIsLoading(true);
+    await registerWallet(source);
+    setIsLoading(false);
+  }, []);
 
   return (
     <Card
@@ -59,14 +54,12 @@ export function AuthAddWalletEmbeddedView() {
     >
       <Box>
         <Button
-          onClick={() => handleRegisterWallet("generated")}
+          onClick={() => handleRegisterWallet("GENERATED")}
           variant="outlined"
           isFullWidth
           icon={<SeedIcon fontSize={24} />}
-          isLoading={
-            isLoading.calledId === "generated" && isLoading.status === true
-          }
-          isDisabled={isLoading.status}
+          isLoading={isLoading}
+          isDisabled={isLoading}
         >
           Create new wallet
         </Button>
@@ -74,8 +67,8 @@ export function AuthAddWalletEmbeddedView() {
           variant="outlined"
           isFullWidth
           icon={<WalletIcon fontSize={24} />}
-          href="/auth/import-seedphrase"
-          isDisabled={isLoading.status}
+          href="#/auth/import-seedphrase"
+          isDisabled={isLoading}
         >
           Enter Seed Phrase
         </Button>
@@ -83,18 +76,18 @@ export function AuthAddWalletEmbeddedView() {
           variant="outlined"
           isFullWidth
           icon={<KeyIcon fontSize={24} />}
-          href="/auth/import-keyfile"
-          isDisabled={isLoading.status}
+          href="#/auth/import-keyfile"
+          isDisabled={isLoading}
         >
           Import Keyfile
         </Button>
-        {authMethod === "passkey" ? (
+        {authProviderType === "PASSKEYS" ? (
           <Button
             variant="outlined"
             isFullWidth
             icon={<QRCodeIcon fontSize={24} />}
-            href="/auth/add-device"
-            isDisabled={isLoading.status}
+            href="#/auth/add-device"
+            isDisabled={isLoading}
           >
             Add this device to an existing account
           </Button>
@@ -103,10 +96,10 @@ export function AuthAddWalletEmbeddedView() {
             variant="outlined"
             isFullWidth
             icon={<QRCodeIcon fontSize={24} />}
-            href="/auth/add-auth-provider"
-            isDisabled={isLoading.status}
+            href="#/auth/add-auth-provider"
+            isDisabled={isLoading}
           >
-            Add {authMethod.toLocaleUpperCase()} to an existing account
+            Add {authProviderType.toLocaleUpperCase()} to an existing account
           </Button>
         )}
       </Box>

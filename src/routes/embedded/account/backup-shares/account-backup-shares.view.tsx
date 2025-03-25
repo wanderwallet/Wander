@@ -10,58 +10,27 @@ import {
   DropboxIcon,
   GDriveIcon,
   SeedIcon,
-  KeyShareIcon
+  KeyShareIcon,
+  KeyIcon
 } from "~components/embed/ui";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { Link } from "~wallets/router/components/link/Link";
 import { useLocation } from "~wallets/router/router.utils";
 
 export function AccountBackupSharesEmbeddedView() {
-  const { back } = useLocation();
-  const [isLoading, setIsLoading] = useState({
-    calledId: "",
-    status: false
-  });
-  const { wallets, generateRecoveryAndDownload, copySeedphrase } =
-    useEmbedded();
-  const walletAddress = wallets[0].address;
+  const [loading, setLoading] = useState(false);
+  const { currentWallet, generateRecoveryAndDownload } = useEmbedded();
 
-  const handleOnClick = useCallback(
-    async (
-      method: "GDrive" | "Apple" | "Dropbox" | "PrivateKey" | "Seedphrase"
-    ) => {
-      const setLoadingState = (status: boolean) =>
-        setIsLoading({ calledId: method, status });
-
-      try {
-        setLoadingState(true);
-
-        switch (method) {
-          case "PrivateKey":
-            await generateRecoveryAndDownload(walletAddress);
-            break;
-
-          case "Seedphrase":
-            await copySeedphrase(walletAddress);
-            break;
-
-          case "GDrive":
-          case "Apple":
-          case "Dropbox":
-            console.log("Not implemented yet");
-            break;
-
-          default:
-            console.log("Method doesn't exist");
-        }
-      } catch (error) {
-        alert(error);
-      } finally {
-        setLoadingState(false);
-      }
-    },
-    [generateRecoveryAndDownload, copySeedphrase, walletAddress]
-  );
+  const handleGenerateRecoveryAndDownload = useCallback(() => {
+    try {
+      setLoading(true);
+      generateRecoveryAndDownload();
+      setLoading(false);
+    } catch (error) {
+      alert(error);
+      setLoading(false);
+    }
+  }, [generateRecoveryAndDownload]);
 
   // TODO: What if the user already has more than 3 backup shares?
 
@@ -150,7 +119,16 @@ export function AccountBackupSharesEmbeddedView() {
         >
           Backup to Dropbox
         </Button>
-
+        <Button
+          variant="outlined"
+          isFullWidth
+          icon={<KeyIcon fontSize={24} />}
+          isLoading={loading}
+          isDisabled={loading}
+          onClick={handleGenerateRecoveryAndDownload}
+        >
+          Export Recovery File
+        </Button>
         <Button variant="link" isFullWidth>
           Why should I back up my account?
         </Button>

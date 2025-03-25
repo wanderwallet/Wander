@@ -33,9 +33,7 @@ export function AuthImportKeyfileEmbeddedView() {
     try {
       setLoading(true);
       if (jsonData) {
-        const tempWallet = await importTempWallet(
-          JSON.parse(JSON.stringify(jsonData, null, 2))
-        );
+        const tempWallet = await importTempWallet(jsonData);
 
         if (!tempWallet) {
           setLoading(false);
@@ -94,7 +92,7 @@ export function AuthImportKeyfileEmbeddedView() {
         <Button
           variant="primary"
           size="md"
-          onClick={() => registerWallet("imported")}
+          onClick={() => registerWallet("IMPORTED")}
         >
           Yes, add
         </Button>

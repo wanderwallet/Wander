@@ -1,13 +1,10 @@
 import { useHashLocation } from "wouter/use-hash-location";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
-import type { AuthStatus } from "~utils/embedded/embedded.types";
+import type { AuthStatus, Wallet } from "~utils/embedded/embedded.types";
 import { NOOP } from "~utils/misc";
 import { useAuthRequestsLocation } from "~wallets/router/auth/auth-router.hook";
 import type { ExtensionRouteOverride } from "~wallets/router/extension/extension.routes";
-import {
-  EmbeddedPaths,
-  type EmbeddedRoutePath
-} from "~wallets/router/iframe/iframe.routes";
+import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import type {
   WanderRoutePath,
@@ -18,9 +15,9 @@ import type {
 import {
   isRouteOverride,
   isRouteRedirect,
-  routeTrapInside,
   routeTrapMatches,
   routeTrapOutside,
+  useSearchParams,
   withRouterRedirects
 } from "~wallets/router/router.utils";
 
@@ -40,15 +37,32 @@ const AUTH_STATUS_TO_OVERRIDE: Record<
   unlocked: null
 };
 
-export function useAuthStatusOverride(
+export function useEmbeddedOverride(
   location?: RoutePath
 ): null | ExtensionRouteOverride | RouteRedirect<WanderRoutePath> {
-  const { authStatus, lastRegisteredWallet, promptToBackUp } = useEmbedded();
+  const { authStatus, lastRegisteredWallet, currentWallet } = useEmbedded();
+  const searchParams = useSearchParams<{
+    error?: string;
+    error_description?: string;
+  }>();
 
-  // TODO: Memo all  this:
+  // Handle OAuth redirect error URL from Supabase
+  if (searchParams.error && searchParams.error_description) {
+    // Supabase redirects with error parameters in the URL when OAuth fails
+    // Example: #error=server_error&error_description=OAuth+provider+error
+    return routeTrapMatches(
+      location,
+      [EmbeddedPaths.AuthError],
+      EmbeddedPaths.AuthError
+    );
+  }
 
-  if (authStatus === "unknown" && location !== "/__OVERRIDES/cover") {
-    return "/__REDIRECT/";
+  if (
+    !location ||
+    location.startsWith("/access_token") ||
+    authStatus === "unknown"
+  ) {
+    return "/__OVERRIDES/cover";
   }
 
   if (location) {
@@ -96,7 +110,9 @@ export function useAuthStatusOverride(
         // TODO: Do we allow simply generating a new wallet? EmbeddedPaths.AuthAddWallet
         [
           EmbeddedPaths.AuthRestoreShares,
-          EmbeddedPaths.AuthRestoreSharesRecoveryFile
+          EmbeddedPaths.AuthRestoreSharesRecoveryFile,
+          EmbeddedPaths.AuthImportSeedPhrase,
+          EmbeddedPaths.AuthImportKeyfile
         ],
         EmbeddedPaths.AuthRestoreShares
       );
@@ -112,7 +128,11 @@ export function useAuthStatusOverride(
         );
       }
 
-      if (promptToBackUp) {
+      if (
+        currentWallet.totalExports === 0 &&
+        currentWallet.totalBackups === 0 &&
+        !currentWallet.doNotAskAgainSetting
+      ) {
         return routeTrapMatches(
           location,
           [
@@ -125,7 +145,7 @@ export function useAuthStatusOverride(
       }
 
       // TODO: What if we are here but the wallet, for whatever reason, is not in the wallet provider / ExtensionStore?
-      // TODO: We need a routeOffLimits to keep users away from /auth after they authenticate (except for confirmation screen while it has location state data)
+      // if (!currentWallet.isActive)
 
       return routeTrapOutside(location, EmbeddedPaths.Auth, PopupPaths.Home);
     }
@@ -134,10 +154,13 @@ export function useAuthStatusOverride(
   return AUTH_STATUS_TO_OVERRIDE[authStatus];
 }
 
+// TODO: Memo all this:
+
 export const useEmbeddedLocation: BaseLocationHook = withRouterRedirects(() => {
   const [wocation, wavigate] = useHashLocation();
-  const override = useAuthStatusOverride(wocation as RoutePath);
-  // const override = useAuthStatusOverride();
+
+  const override = useEmbeddedOverride(wocation as RoutePath);
+
   const [authRequestsLocation, authRequestsNavigate] =
     useAuthRequestsLocation();
 

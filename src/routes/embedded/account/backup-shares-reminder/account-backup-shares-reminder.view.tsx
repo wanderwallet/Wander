@@ -1,6 +1,6 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
-import copy from "copy-to-clipboard";
+
 import {
   Box,
   Button,
@@ -9,22 +9,23 @@ import {
   Row,
   WanderIcon,
   Text,
-  Copyable,
-  WarningIcon,
   WarningCircledIcon
 } from "~components/embed/ui";
-import { useUnpartitionedStateCheck } from "~utils/embedded/utils/useUnpartitionedStateCheck";
 import { useLocation } from "~wallets/router/router.utils";
 
 export function AccountBackupSharesReminderEmbeddedView() {
-  const { promptToBackUp, skipBackUp, wallets } = useEmbedded();
-  const [isChecked, setIsChecked] = useState(false);
-  const { back } = useLocation();
-  const hasUnpartitionedState = useUnpartitionedStateCheck();
-  const checkboxRef = useRef<HTMLInputElement>();
+  const { currentWallet, skipBackUp } = useEmbedded();
+  const { navigate } = useLocation();
+  const isMandatoryReminder =
+    currentWallet.totalExports === 0 &&
+    currentWallet.totalBackups === 0 &&
+    !currentWallet.doNotAskAgainSetting;
 
-  const handleSkipClicked = () => {
-    return skipBackUp(isChecked);
+  const [isChecked, setIsChecked] = useState(false);
+
+  const handleSkipClicked = async () => {
+    await skipBackUp(isChecked);
+    navigate(isChecked ? "/" : "/account");
   };
 
   const address = wallets[0].address;
@@ -52,33 +53,24 @@ export function AccountBackupSharesReminderEmbeddedView() {
       size="auto"
     >
       <Box>
-        {!hasUnpartitionedState && (
-          <Button variant="link" isFullWidth style={{ marginTop: "-16px" }}>
-            Why should I back up my wallet?
-          </Button>
-        )}
-        <br />
-        <Copyable
-          style={{ margin: "32px 0" }}
-          isFullWidth
-          label="Your wallet address"
-          onClick={() => {
-            copy(JSON.stringify(address, null, 2));
-          }}
-          value={JSON.stringify(address, null, 2)}
-        />
-        <Button variant="primary" isFullWidth href="/account/backup-shares">
+        <Button variant="primary" isFullWidth href="#/account/backup-shares">
           Backup now
         </Button>
-        <Button
-          variant="secondary"
-          isFullWidth
-          href="/account"
-          onClick={() => handleSkipClicked()}
-        >
-          Backup later
-        </Button>
-        {promptToBackUp && (
+        {isMandatoryReminder ? (
+          <Button
+            variant="secondary"
+            isFullWidth
+            href="#/account"
+            onClick={handleSkipClicked}
+          >
+            Backup later
+          </Button>
+        ) : (
+          <Button variant="secondary" isFullWidth href="#/account">
+            Cancel
+          </Button>
+        )}
+        {isMandatoryReminder && (
           <Checkbox
             label="Don't show this again"
             description="Note: you can set this up on the settings page"

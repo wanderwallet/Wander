@@ -95,20 +95,31 @@ export function downloadKeyfile(address: string, jwk: JWKInterface) {
   );
 }
 
+export interface DownloadRecoveryFileData {
+  walletId: string;
+  recoveryBackupShare: string;
+  recoveryFileServerSignature: string;
+}
+
 export function downloadRecoveryFile(
   address: string,
-  recoveryBackupShare: string
+  downloadRecoveryFileData: DownloadRecoveryFileData
 ) {
+  const { walletId, recoveryBackupShare, recoveryFileServerSignature } =
+    downloadRecoveryFileData;
+
   downloadFile(
     JSON.stringify(
       {
         version: "1",
-        recoveryBackupShare
+        walletId,
+        recoveryBackupShare,
+        recoveryFileServerSignature
       } satisfies RecoveryJSON,
       null,
       2
     ),
     "application/json",
-    `arconnect-recovery-file-${address}.json`
+    `wander-embedded-recovery-file-${address}.json`
   );
 }
