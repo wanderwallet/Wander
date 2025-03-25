@@ -150,4 +150,9 @@ const IconWrapper = styled.div<{ size: string }>`
   display: flex;
   justify-content: center;
   align-items: center;
+  transition: transform 0.2s ease;
+
+  ${NavigationButton}:hover & {
+    transform: scale(1.1);
+  }
 `;
