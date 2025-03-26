@@ -1598,7 +1598,7 @@
     "description": "Not connected indicator"
   },
   "not_connected_text": {
-    "message": "\"Connect / Disconnect\" is a label for when your Wander wallet is connected to an Arweave or AO dapp.  For regular use like sending, receiving, checking balances, etc., Wander will always show disconnected.",
+    "message": "\"Connect/Disconnect\" describes when an application on the web is connected to your Wander Account. For actions inside of the extension (send, receive, etc.), Wander will always show disconnected.",
     "description": "Not connected indicator explainer"
   },
   "disconnect": {

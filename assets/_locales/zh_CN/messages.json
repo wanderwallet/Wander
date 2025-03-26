@@ -1587,8 +1587,8 @@
       "description": "Not connected indicator"
   },
   "not_connected_text": {
-      "message": "“连接/断开连接”是指示您的 Wander 钱包是否已连接到 Arweave 或 AO 应用程序的指示器。对于发送、接收、检查余额等常规使用，Wander 将始终显示断开连接。",
-      "description": "Not connected indicator explainer"
+    "message": "“连接/断开连接”表示网页应用程序是否已连接到您的 Wander 账户。对于扩展程序内的操作 (发送、接收等), Wander 将始终显示为未连接状态。",
+    "description": "Not connected indicator explainer"
   },
   "disconnect": {
       "message": "断开连接",
