@@ -9,7 +9,10 @@ export const useAuthRequestsLocation: BaseLocationHook = () => {
   const override = useExtensionStatusOverride();
   const { authRequest: currentAuthRequest } = useCurrentAuthRequest("any");
 
-  console.log("currentAuthRequest =", currentAuthRequest);
+  console.log("useAuthRequestsLocation =", {
+    override,
+    currentAuthRequest
+  });
 
   // if (override) return [override, NOOP];
 

@@ -36,7 +36,7 @@ export function AuthAddWalletEmbeddedView() {
     setIsLoading(false);
   }, []);
 
-  if (!authProviderType) console.warn("authProviderType =", authProviderType);
+  if (!authProviderType) alert(`authProviderType = ${authProviderType}`);
 
   return (
     <Card

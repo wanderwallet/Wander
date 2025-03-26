@@ -1,6 +1,7 @@
 import type { ProtocolMap } from "@arconnect/webext-bridge";
 import { nanoid } from "nanoid";
 import type { ApiCall, ApiResponse } from "shim";
+import { EMBEDDED_ANCESTOR_TAB_ID } from "~utils/embedded/embedded.constants";
 import { getEmbeddedAncestorOrigin } from "~utils/embedded/embedded.utils";
 import { isInsideIframe } from "~utils/embedded/iframe.utils";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
@@ -222,7 +223,7 @@ if (isInsideIframe()) {
             timestamp: Date.now(),
             data,
             sender: {
-              tabId: 0,
+              tabId: EMBEDDED_ANCESTOR_TAB_ID,
               context: "content-script"
             }
           });

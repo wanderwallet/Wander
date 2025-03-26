@@ -12,8 +12,6 @@ import { isomorphicSendMessage } from "~utils/messaging/messaging.utils";
  */
 export async function createContextMenus(hasPerms: boolean) {
   if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1") {
-    console.warn(`createContextMenus(${hasPerms}) called.`);
-
     return;
   }
 

@@ -1,3 +1,4 @@
+import { EMBEDDED_ANCESTOR_TAB_ID } from "~utils/embedded/embedded.constants";
 import { getEmbeddedAncestorOrigin } from "~utils/embedded/embedded.utils";
 
 export const tabs = {
@@ -14,18 +15,10 @@ export const tabs = {
 
     if (url === "tabs/welcome.html") {
       throw new Error("Welcome routes not added to Wander Embedded");
-
-      // location.hash = "/welcome";
     } else if (url.startsWith("tabs/dashboard.html#")) {
       throw new Error("Dashboard not added to Wander Embedded");
-
-      // const hash = url.split("#").pop();
-      // location.hash = `/quick-settings${hash}`;
     } else if (url.startsWith("tabs/auth.html")) {
       console.warn("Opening a `tabs/auth.html` tab prevented.");
-
-      // const paramsAndHash = url.replace("tabs/auth.html", "");
-      // location.hash = `/auth-request${paramsAndHash}`;
     } else if (url.startsWith("assets")) {
       throw new Error(`Cannot create tab for URL = ${url}`);
     } else {
@@ -40,7 +33,7 @@ export const tabs = {
   query: async () => {
     return [
       {
-        id: 0,
+        id: EMBEDDED_ANCESTOR_TAB_ID,
         url: getEmbeddedAncestorOrigin()
       }
     ]; // satisfies browser.Tabs.Tab

@@ -47,7 +47,6 @@ export async function handleActiveAddressChange({
       isomorphicSendMessage({
         destination: `web_accessible@${popupTabID}`,
         messageId: "auth_active_wallet_change",
-        // tabId: popupTabID,
         data: tab.id
       });
     }

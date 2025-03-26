@@ -1,3 +1,5 @@
+import { EMBEDDED_IFRAME_TAB_ID } from "~utils/embedded/embedded.constants";
+
 export const windows = {
   create: async ({ url }) => {
     if (process.env.NODE_ENV === "development")
@@ -12,20 +14,10 @@ export const windows = {
 
     if (url.includes("tabs/welcome.html")) {
       throw new Error("Welcome routes not added to Wander Embedded");
-
-      // location.hash = "/welcome";
     } else if (url.includes("tabs/dashboard.html#")) {
       throw new Error("Dashboard not added to Wander Embedded");
-
-      // const hash = url.split("#").pop();
-      // location.hash = `/quick-settings${hash}`;
     } else if (url.includes("tabs/auth.html")) {
       console.warn("Opening a `tabs/auth.html` window prevented.");
-
-      // const paramsAndHash = url.split("tabs/auth.html")[1];
-      // location.hash = `/auth-request${paramsAndHash}`;
-
-      // location.hash = `/auth-request`;
     } else if (url.includes("assets")) {
       throw new Error(`Cannot create tab for URL = ${url}`);
     } else {
@@ -35,7 +27,7 @@ export const windows = {
     return {
       tabs: [
         {
-          id: 1
+          id: EMBEDDED_IFRAME_TAB_ID
         }
       ]
     };

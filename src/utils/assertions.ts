@@ -16,7 +16,7 @@ import type {
   EncryptionAlgorithm,
   LegacyEncryptionOptions
 } from "~api/modules/encrypt/types";
-import type { ApiCall, ApiErrorResponse } from "shim";
+import type { ApiCall } from "shim";
 import {
   assert,
   isNumber,

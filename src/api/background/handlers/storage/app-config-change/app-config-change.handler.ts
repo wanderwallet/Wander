@@ -89,10 +89,10 @@ export async function handleAppConfigChange(
     }
   }
 
-  // TODO: Update this to work with Embedded:
+  const messagePromises: Promise<void>[] = [];
 
   // send permissions to the appropriate tab
-  await forEachTab(async (tab) => {
+  await forEachTab((tab) => {
     // return if no tab url is present
     if (!tab?.url || !tab?.id) return;
 
@@ -100,16 +100,18 @@ export async function handleAppConfigChange(
     const eventsForTab = events
       .filter(({ appURL }) => getAppURL(tab.url) === appURL)
       .map((e) => e.event);
-
     // send the events
     for (const event of eventsForTab) {
       // trigger emiter
-      // TODO: Remove this await here
-      await isomorphicSendMessage({
+      const messagePromise = isomorphicSendMessage({
         destination: `content-script@${tab.id}`,
         messageId: "event",
         data: event
       });
+
+      messagePromises.push(messagePromise);
     }
   });
+
+  await Promise.allSettled(messagePromises);
 }

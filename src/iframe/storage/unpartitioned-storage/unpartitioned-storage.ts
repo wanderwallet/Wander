@@ -394,12 +394,8 @@ export class EnhancedStorage implements Storage {
     this.storage = globalThis[this.storageType];
 
     if (area === "session") {
+      // We want to start fresh each time the app loads:
       this.storage.clear();
-
-      console.log(
-        `Initial value for sessionStorage =`,
-        globalThis[this.storageType]
-      );
     }
   }
 

@@ -9,9 +9,6 @@ export type MessageDestination =
   | `web_accessible@${number}`
   | `content-script@${number}`;
 
-// TODO: Check if refactoring tabId => destination broke anything.
-// Before: const destination = tabId ? `web_accessible@${tabId}` : "background";
-
 export interface MessageData<K extends MessageID> {
   destination: MessageDestination;
   messageId: K;

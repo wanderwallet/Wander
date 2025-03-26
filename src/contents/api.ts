@@ -1,7 +1,6 @@
 import type { PlasmoCSConfig } from "plasmo";
 import type { ApiCall } from "shim";
 import injectedScript from "url:./injected/setup-wallet-sdk.injected-script.ts";
-import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { isomorphicSendMessage } from "~utils/messaging/messaging.utils";
 
@@ -37,17 +36,9 @@ container.removeChild(script);
 
 window.addEventListener("message", async ({ data }: MessageEvent<ApiCall>) => {
   // verify that the call is meant for the extension
-  if (data.app !== (IS_EMBEDDED_APP ? "wanderEmbedded" : "wander")) {
+  if (data.app !== "wander") {
     return;
   }
-
-  // validate return message
-  /*
-  if (data.type.endsWith("_result")) {
-    console.warn("MESSAGE IGNORED =", data);
-    return;
-  }
-    */
 
   // verify that the call has an ID
   if (!data.callID) {

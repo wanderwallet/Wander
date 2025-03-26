@@ -1,7 +1,5 @@
 import browser from "webextension-polyfill";
 
-// TODO: Mock all these for the embedded wallet...
-
 /**
  * Get a browser tab by id
  *
