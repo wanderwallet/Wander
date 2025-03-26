@@ -221,14 +221,16 @@ export class WanderButton {
     )
       throw new Error("Missing elements");
 
-    const [y, x] = config.position.split("-") as [
-      "top" | "bottom",
-      "left" | "right"
-    ];
-
     host.style.position = "fixed";
-    host.style[y] = "var(--gapY)";
-    host.style[x] = "var(--gapX)";
+    if (config.position !== "static") {
+      const [y, x] = config.position.split("-") as [
+        "top" | "bottom",
+        "left" | "right"
+      ];
+
+      host.style[y] = "var(--gapY)";
+      host.style[x] = "var(--gapX)";
+    }
     host.style.transition = "opacity linear 150ms";
     host.style.opacity = "0";
 

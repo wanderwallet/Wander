@@ -74,7 +74,7 @@ export default WalletConnect;
 const wander = new WanderEmbedded({
   // Button configuration
   button: {
-    position: "bottom-right", // "bottom-right", "bottom-left", "top-right", "top-left"
+    position: "bottom-right", // "bottom-right", "bottom-left", "top-right", "top-left", "static"
     theme: "system",
     wanderLogo: "default", // 'none', 'default', or 'text-color'
     label: true
@@ -91,7 +91,9 @@ const wander = new WanderEmbedded({
 
 ## Advanced Configuration
 
-### Custom Button Styling
+### Button Configuration
+
+#### Custom Button Styling
 
 ```javascript
 const wander = new WanderEmbedded({
@@ -117,7 +119,168 @@ const wander = new WanderEmbedded({
 });
 ```
 
-### Custom Modal Layouts
+#### Custom CSS Styles
+
+You can add custom CSS styles to the button using `customStyles` option. When using this option, you must use CSS selectors to target specific elements.
+
+Available selectors:
+
+- `:host` - Targets the button container
+- `.button` - Targets the button element
+- `.wanderLogo` - Targets the Wander logo SVG
+- `.label` - Targets the button text label
+- `.balance` - Targets the balance display
+- `.indicator` - Targets the connection status indicator
+- `.dappLogo` - Targets the dApp logo image
+- `.notifications` - Targets the notifications badge
+
+Example usage:
+
+```javascript
+const wander = new WanderEmbedded({
+  button: {
+    customStyles: `
+      /* Position the button container */
+      :host {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+      }
+
+      /* Target the button element */
+      .button {
+        width: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      /* Target the Wander logo */
+      .wanderLogo {
+        width: 24px;
+        height: 24px;
+      }
+
+      /* Target the button label */
+      .label {
+        font-size: 14px;
+        font-weight: 500;
+      }
+
+      /* Target the balance display */
+      .balance {
+        font-size: 12px;
+        opacity: 0.8;
+      }
+
+      /* Target the connection indicator */
+      .indicator {
+        width: 6px;
+        height: 6px;
+      }
+
+      /* Target the dApp logo */
+      .dappLogo {
+        width: 18px;
+        height: 18px;
+      }
+
+      /* Target the notifications badge */
+      .notifications {
+        font-size: 10px;
+        padding: 2px 6px;
+      }
+    `
+  }
+});
+```
+
+The button element has several CSS classes that are added based on its state:
+
+- `.isAuthenticated` - Added when the user is authenticated
+- `.isConnected` - Added when the wallet is connected
+- `.isOpen` - Added when the wallet interface is open
+
+You can use these classes in your `customStyles` to style different states:
+
+```javascript
+customStyles: `
+  .button.isAuthenticated {
+    border-color: green;
+  }
+
+  .button.isConnected {
+    background: rgba(0, 255, 0, 0.1);
+  }
+
+  .button.isOpen {
+    transform: scale(0.95);
+  }
+`;
+```
+
+#### Custom Button Positioning
+
+The button can be positioned in two ways:
+
+1. Using predefined positions:
+
+```javascript
+const wander = new WanderEmbedded({
+  button: {
+    position: "bottom-right" // "bottom-right" | "bottom-left" | "top-right" | "top-left"
+  }
+});
+```
+
+1. Using custom positioning with `"static"`:
+
+```javascript
+const wander = new WanderEmbedded({
+  button: {
+    position: "static",
+    // Using customStyles (recommended for styling button internals)
+    customStyles: `
+      /* Position the button container */
+      :host {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+      }
+
+      /* Optional: Style the button itself */
+      .button {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(8px);
+      }
+    `
+  }
+});
+```
+
+Or using external CSS (useful for positioning the container):
+
+```javascript
+const wander = new WanderEmbedded({
+  button: {
+    position: "static",
+    id: "my-wander-button" // Default is "wanderEmbeddedButtonHost"
+  }
+});
+```
+
+```css
+/* Position the button container */
+#my-wander-button {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+}
+```
+
+### Iframe Configuration
+
+#### Custom Modal Layouts
 
 ```javascript
 const wander = new WanderEmbedded({
