@@ -392,6 +392,15 @@ export class EnhancedStorage implements Storage {
   constructor({ area = "local" }: UnpartitionedStorageOptions = {}) {
     this.storageType = area === "local" ? "localStorage" : "sessionStorage";
     this.storage = globalThis[this.storageType];
+
+    if (area === "session") {
+      this.storage.clear();
+
+      console.log(
+        `Initial value for sessionStorage =`,
+        globalThis[this.storageType]
+      );
+    }
   }
 
   protected async getStorageHandle(): Promise<Storage> {
