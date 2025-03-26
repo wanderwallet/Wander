@@ -1,6 +1,6 @@
 # Wander Embedded SDK
 
-[![npm version](https://img.shields.io/npm/v/wander-embedded-sdk.svg)](https://www.npmjs.com/package/@wanderapp/embed-sdk)
+[![npm version](https://img.shields.io/npm/v/@wanderapp/embed-sdk.svg)](https://www.npmjs.com/package/@wanderapp/embed-sdk)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 A lightweight, customizable SDK for integrating Wander wallet functionality into your web applications.
@@ -214,7 +214,7 @@ After this, you can use the Wander Embedded App in 2 different ways:
 The minimum setup you must do to get Wander Embedded to work on a project looks like this:
 
 ```javascript
-  import { WanderEmbedded } from "wander-embedded-sdk";
+  import { WanderEmbedded } from "@wanderapp/embed-sdk";
 
   // ...
 
@@ -323,7 +323,7 @@ changes the `@wanderapp/embed-sdk` dependency to:
   "@wanderapp/embed-sdk": "link:./../wander/Wander/wander-embedded-sdk/"`
 ```
 
-You can revert this change running `pnpm link-embed`, which changes the `wander-embedded-sdk`
+You can revert this change running `pnpm link-embed`, which changes the `@wanderapp/embed-sdk`
 dependency back to:
 
 ```json
