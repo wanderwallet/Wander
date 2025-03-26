@@ -30,7 +30,8 @@ export function ManageAssets({ open, close }: Props) {
   // ao Tokens
   const { tokens, changeTokenVisibility } = useAoTokens({
     type: "asset",
-    sortFn
+    sortFn,
+    skipSort: true
   });
 
   const filteredTokens = useMemo(() => {
