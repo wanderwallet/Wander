@@ -151,7 +151,7 @@ export class WanderButton {
       wanderLogo: options.wanderLogo || WanderButton.DEFAULT_CONFIG.wanderLogo,
       dappLogoSrc:
         options.dappLogoSrc || WanderButton.DEFAULT_CONFIG.dappLogoSrc,
-      label: options.label || WanderButton.DEFAULT_CONFIG.label,
+      label: options.label ?? WanderButton.DEFAULT_CONFIG.label,
       balance:
         options.balance === false
           ? false
