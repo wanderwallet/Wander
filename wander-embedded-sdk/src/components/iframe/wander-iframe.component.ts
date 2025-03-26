@@ -71,9 +71,12 @@ export class WanderIframe {
       // auth is used for auth, account and settings:
 
       const defaultLayoutConfig = WanderIframe.getLayoutConfig(
-        routeLayout?.default
+        routeLayout?.default || "popup"
       );
-      const authLayoutConfig = WanderIframe.getLayoutConfig(routeLayout?.auth);
+
+      const authLayoutConfig = WanderIframe.getLayoutConfig(
+        routeLayout?.auth || "modal"
+      );
 
       this.routeLayout = {
         default: defaultLayoutConfig,

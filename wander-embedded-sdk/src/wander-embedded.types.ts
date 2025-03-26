@@ -76,7 +76,21 @@ export interface BalanceInfo {
 }
 
 export interface WanderEmbeddedOptions {
-  src?: string;
+  /**
+   * Client ID for your App, registered on the Wander Dashboard.
+   */
+  clientId: string;
+
+  /**
+   * Base URL for the Wander Embed client app.
+   */
+  baseURL?: string;
+
+  /**
+   * Base URL for the Wander Embed tRPC server.
+   */
+  baseServerURL?: string;
+
   iframe?: WanderEmbeddedIframeOptions | HTMLIFrameElement;
   button?: WanderEmbeddedButtonOptions | boolean;
 

@@ -34,10 +34,7 @@ import { isomorphicOnMessage } from "~utils/messaging/messaging.utils";
 import type { IBridgeMessage } from "@arconnect/webext-bridge";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { isError } from "~utils/error/error.utils";
-import type {
-  RouteOverride,
-  RouteRedirect
-} from "~wallets/router/router.types";
+import { getDecryptionKey } from "~wallets/auth";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 
 interface AuthRequestsContextState {
@@ -63,14 +60,7 @@ export const AuthRequestsContext = createContext<AuthRequestsContextData>({
   completeAuthRequest: async () => {}
 });
 
-interface AuthRequestProviderProps extends PropsWithChildren {
-  useStatusOverride: () => RouteOverride | RouteRedirect;
-}
-
-export function AuthRequestsProvider({
-  children,
-  useStatusOverride
-}: AuthRequestProviderProps) {
+export function AuthRequestsProvider({ children }: PropsWithChildren) {
   const [
     { authRequests, currentAuthRequestIndex, lastCompletedAuthRequest },
     setAuthRequestContextState
@@ -476,37 +466,44 @@ export function AuthRequestsProvider({
     });
   }, []);
 
-  const statusOverride = useStatusOverride();
-
   useEffect(() => {
     let clearCloseAuthPopupTimeout = () => {};
 
-    const isDone =
-      authRequests.length > 0 &&
-      authRequests.every((authRequest) => authRequest.status !== "pending");
+    async function setCloseTimers() {
+      const isEmbedded = import.meta.env?.VITE_IS_EMBEDDED_APP === "1";
+      const hasAuthRequests = authRequests.length > 0;
+      const isDone =
+        hasAuthRequests &&
+        authRequests.every((authRequest) => authRequest.status !== "pending");
 
-    if (
-      import.meta.env?.VITE_IS_EMBEDDED_APP !== "1" &&
-      statusOverride === null &&
-      authRequests.length === 0
-    ) {
-      // TODO: Maybe move to the app entry point?
-      // Close the popup if an AuthRequest doesn't arrive in less than `AUTH_POPUP_REQUEST_WAIT_MS` (1s), unless the
-      // wallet is locked (no timeout in that case):
-      clearCloseAuthPopupTimeout = closeAuthPopup(AUTH_POPUP_REQUEST_WAIT_MS);
-    } else if (statusOverride) {
-      // If the user doesn't unlock the wallet in 15 minutes, or somehow the popup gets stuck into any other state for
-      // more than that, we close it:
-      clearCloseAuthPopupTimeout = closeAuthPopup(
-        AUTH_POPUP_UNLOCK_REQUEST_TTL_MS
-      );
-    } else if (isDone) {
-      // Close the window if the last request has been handled:
+      if (isDone) {
+        // Close the window if the last request has been handled:
+        // TODO: Add setting to decide whether this closes automatically or stays open in a "done" state.
 
-      // TODO: Add setting to decide whether this closes automatically or stays open in a "done" state.
+        clearCloseAuthPopupTimeout = closeAuthPopup(
+          AUTH_POPUP_CLOSING_DELAY_MS
+        );
+      } else if (!isEmbedded) {
+        const isLocked = !(await getDecryptionKey());
 
-      clearCloseAuthPopupTimeout = closeAuthPopup(AUTH_POPUP_CLOSING_DELAY_MS);
+        if (isLocked) {
+          // If the wallet is locked, the user has `AUTH_POPUP_UNLOCK_REQUEST_TTL_MS` (15 minutes) to unlock it before
+          // we close it automatically. While that's happening, AuthRequest might or might not be in this provide
+          // already:
+          clearCloseAuthPopupTimeout = closeAuthPopup(
+            AUTH_POPUP_UNLOCK_REQUEST_TTL_MS
+          );
+        } else if (!hasAuthRequests) {
+          // Once the wallet is unlocked, we close the popup if an AuthRequest doesn't arrive in less than
+          // `AUTH_POPUP_REQUEST_WAIT_MS` (1 second):
+          clearCloseAuthPopupTimeout = closeAuthPopup(
+            AUTH_POPUP_REQUEST_WAIT_MS
+          );
+        }
+      }
     }
+
+    setCloseTimers();
 
     // Not needed in the embedded wallet, but can be left alone. It won't do anything:
     function handleBeforeUnload() {
@@ -529,7 +526,7 @@ export function AuthRequestsProvider({
 
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
-  }, [statusOverride, authRequests, currentAuthRequestIndex, closeAuthPopup]);
+  }, [authRequests, currentAuthRequestIndex, closeAuthPopup]);
 
   return (
     <AuthRequestsContext.Provider

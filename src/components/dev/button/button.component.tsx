@@ -3,6 +3,8 @@ import { Link } from "~wallets/router/components/link/Link";
 import { DevSpinner } from "~components/dev/spinner/spinner.component";
 
 import styles from "./button.module.scss";
+import React, { useMemo } from "react";
+import { useLocation } from "~wallets/router/router.utils";
 
 export interface DevButtonProps {
   label: string;
@@ -16,12 +18,26 @@ export interface DevButtonProps {
 export function DevButton({
   label,
   to,
-  onClick,
+  onClick: onClickProp,
   variant = "primary",
   isLoading,
   isDisabled
 }: DevButtonProps) {
-  // TODO: Throw an error if both `to` and `onClick` are set, or add code to handle that properly.
+  const { navigate } = useLocation();
+
+  const onClick = useMemo(() => {
+    if (to && onClickProp) {
+      return async (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault();
+
+        await onClickProp(e);
+
+        navigate(to);
+      };
+    }
+
+    return onClickProp;
+  }, [to, onClickProp]);
 
   const buttonElement = (
     <button
