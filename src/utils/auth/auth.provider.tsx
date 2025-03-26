@@ -83,21 +83,31 @@ export function AuthRequestsProvider({ children }: PropsWithChildren) {
       if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1") {
         setAuthRequestContextState(AUTH_REQUESTS_CONTEXT_INITIAL_STATE);
 
-        // TODO: We could improve this to detect if we opened the wallet to show an AuthRequest, or if it was already
-        // open. In the former case, when all AuthRequests are handled, we close it. In the latter, we just clear the
-        // AuthRequests from the state but leave it open.
+        /*
+
+        // This message below is already sent when the last request is handled / completed:
 
         postEmbeddedMessage({
           type: "embedded_request",
           data: {
-            pendingRequests: 0
+            pendingRequests: 0,
+            hasNewConnectRequest: false,
           }
         });
+
+        // And this other one is not needed as the SDK will close the modal when receiving a "embedded_request" message
+        // with pendingRequests === 0.
 
         postEmbeddedMessage({
           type: "embedded_close",
           data: null
         });
+
+        // However, note the wait-before-closing functionality won't work for Embed with this implementation. One
+        // possible fix would be to add a shouldClose = true property to the "embedded_request" message being sent from
+        // here.
+
+        */
       } else {
         window.top.close();
       }
@@ -143,7 +153,8 @@ export function AuthRequestsProvider({ children }: PropsWithChildren) {
         postEmbeddedMessage({
           type: "embedded_request",
           data: {
-            pendingRequests
+            pendingRequests,
+            hasNewConnectRequest: false
           }
         });
       }
@@ -299,7 +310,8 @@ export function AuthRequestsProvider({ children }: PropsWithChildren) {
           postEmbeddedMessage({
             type: "embedded_request",
             data: {
-              pendingRequests
+              pendingRequests,
+              hasNewConnectRequest: authRequest.type === "connect"
             }
           });
         }

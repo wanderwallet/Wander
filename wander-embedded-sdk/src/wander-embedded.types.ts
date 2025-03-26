@@ -74,6 +74,11 @@ export interface BalanceInfo {
   currency: "USD" | "EUR"; // TODO: Replace with a type that includes all options in the settings?
 }
 
+export interface RequestsInfo {
+  pendingRequests: number;
+  hasNewConnectRequest: boolean;
+}
+
 export interface WanderEmbeddedOptions {
   /**
    * Client ID for your App, registered on the Wander Dashboard.
@@ -99,7 +104,7 @@ export interface WanderEmbeddedOptions {
   onClose?: () => void;
   onResize?: (routeConfig: RouteConfig) => void;
   onBalance?: (balanceInfo: BalanceInfo) => void;
-  onRequest?: (pendingRequests: number) => void;
+  onRequest?: (requestsInfo: RequestsInfo) => void;
 }
 
 // Common:

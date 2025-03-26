@@ -29,6 +29,7 @@ export interface EmbeddedBalanceMessageData {
 
 export interface EmbeddedRequestMessageData {
   pendingRequests: number;
+  hasNewConnectRequest: boolean;
 }
 
 export interface EmbeddedMessageMap {

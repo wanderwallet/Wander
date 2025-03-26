@@ -9,6 +9,7 @@ import {
 } from "./wander-embedded.types";
 import {
   IncomingBalanceMessageData,
+  IncomingRequestMessageData,
   IncomingResizeMessageData,
   UserDetails
 } from "./utils/message/message.types";
@@ -16,6 +17,8 @@ import { isIncomingMessage } from "./utils/message/message.utils";
 import { getEmbeddedURL } from "./utils/url/url.utils";
 
 const NOOP = () => {};
+
+type OpenReason = "manually" | "embedded_open" | "embedded_request";
 
 export class WanderEmbedded {
   private static instance: WanderEmbedded | null = null;
@@ -31,7 +34,7 @@ export class WanderEmbedded {
   private onClose: () => void = NOOP;
   private onResize: (data: IncomingResizeMessageData) => void = NOOP;
   private onBalance: (data: IncomingBalanceMessageData) => void = NOOP;
-  private onRequest: (pendingRequests: number) => void = NOOP;
+  private onRequest: (data: IncomingRequestMessageData) => void = NOOP;
 
   // Components:
   private buttonComponent: null | WanderButton = null;
@@ -44,9 +47,9 @@ export class WanderEmbedded {
   private iframeRef: null | HTMLIFrameElement = null;
 
   // State:
-  private shouldOpenAutomatically = true;
+  private openReason: OpenReason | null = null;
+  private allowOpeningAutomatically = true;
 
-  public isOpen = false;
   public userDetails: UserDetails | null = null; // TODO: Should we expose this?
   public routeConfig: RouteConfig | null = null;
   public balanceInfo: BalanceInfo | null = null;
@@ -220,23 +223,11 @@ export class WanderEmbedded {
         break;
 
       case "embedded_open":
-        if (!this.isOpen) {
-          this.isOpen = true;
-
-          this.buttonComponent?.setStatus("isOpen");
-          this.iframeComponent?.show();
-          this.onOpen();
-        }
+        this._open("embedded_open");
         break;
 
       case "embedded_close":
-        if (this.isOpen) {
-          this.isOpen = false;
-
-          this.buttonComponent?.unsetStatus("isOpen");
-          this.iframeComponent?.hide();
-          this.onClose();
-        }
+        this._close();
         break;
 
       case "embedded_resize":
@@ -245,17 +236,6 @@ export class WanderEmbedded {
         this.iframeComponent?.resize(routeConfig);
 
         this.onResize(routeConfig);
-
-        if (
-          routeConfig.routeType === "auth-request" &&
-          this.shouldOpenAutomatically &&
-          !this.isOpen
-        ) {
-          this.isOpen = true;
-          this.buttonComponent?.setStatus("isOpen");
-          this.iframeComponent?.show();
-          this.onOpen();
-        }
 
         break;
 
@@ -269,12 +249,32 @@ export class WanderEmbedded {
         break;
 
       case "embedded_request":
-        const { pendingRequests } = message.data;
+        // Scenarios to test:
+        //
+        // - App closed. New request comes in. It opens. It closes when handled.
+        // - App opened. New request comes in. Already opened. It doesn't close when handled.
+        // - App opened, then closed. New request comes in. It opens. It closes when handled.
+        // - App opened. New request comes in. Already opened. App closed. New request comes in. App doesn't open. It doesn't close when handled.
+        // - Same as above but with Connect request, App opens automatically.
+        // - App closed. New request comes in. It opens. App closed. New request comes in. App doesn't open. It closes when handled.
+
+        const { pendingRequests, hasNewConnectRequest } = message.data;
+
         this.pendingRequests = pendingRequests;
+
+        if (
+          pendingRequests > 0 &&
+          (this.shouldOpenAutomatically || hasNewConnectRequest)
+        ) {
+          this._open("embedded_request");
+        } else if (pendingRequests === 0 && this.shouldCloseAutomatically) {
+          // TODO: Re-implement the wait-before-closing feature for both BE and Embed and also use it here:
+          this._close(true);
+        }
 
         this.buttonComponent?.setNotifications(pendingRequests);
 
-        this.onRequest(pendingRequests);
+        this.onRequest(message.data);
         break;
     }
   }
@@ -284,37 +284,47 @@ export class WanderEmbedded {
     else this.open();
   }
 
-  public open(): void {
+  private _open(openReason: OpenReason): void {
     if (!this.iframeComponent && !this.buttonComponent) {
-      throw new Error(
+      console.warn(
         "Wander Embedded's iframe and button has been created manually"
       );
     }
 
-    if (this.iframeComponent && !this.isOpen) {
-      this.isOpen = true;
+    if (!this.isOpen) {
+      // We only keep the first non-null value and don't updated it until it is reset back to null:
+      this.openReason ??= openReason;
       this.buttonComponent?.setStatus("isOpen");
-      this.iframeComponent.show();
+      this.iframeComponent?.show();
     }
+
+    this.onOpen();
+  }
+
+  public open(): void {
+    this._open("manually");
+  }
+
+  private _close(allowOpeningAutomatically = false): void {
+    if (!this.iframeComponent && !this.buttonComponent) {
+      console.warn(
+        "Wander Embedded's iframe and button has been created manually"
+      );
+    }
+
+    if (this.isOpen) {
+      this.openReason = null;
+      this.allowOpeningAutomatically =
+        this.pendingRequests === 0 ? true : allowOpeningAutomatically;
+      this.buttonComponent?.unsetStatus("isOpen");
+      this.iframeComponent?.hide();
+    }
+
+    this.onClose();
   }
 
   public close(): void {
-    if (!this.iframeComponent && !this.buttonComponent) {
-      throw new Error(
-        "Wander Embedded's iframe and button has been created manually"
-      );
-    }
-
-    if (this.iframeComponent && this.isOpen) {
-      this.isOpen = false;
-      this.buttonComponent?.unsetStatus("isOpen");
-      this.iframeComponent.hide();
-
-      // Manually closing the popup while there are pending requests will prevent it from automatically opening again:
-      if (this.pendingRequests > 0) {
-        this.shouldOpenAutomatically = false;
-      }
-    }
+    this._close();
   }
 
   public destroy(): void {
@@ -344,6 +354,21 @@ export class WanderEmbedded {
 
   get isAuthenticated() {
     return !!this.userDetails;
+  }
+
+  get isOpen() {
+    return this.openReason !== null;
+  }
+
+  private get shouldOpenAutomatically() {
+    // If the modal is closed and a new AuthRequest comes in, it should also close automatically:
+    return this.openReason === null && this.allowOpeningAutomatically;
+  }
+
+  private get shouldCloseAutomatically() {
+    // If the modal was opened by an AuthRequest, it should close automatically when they are all handled. Otherwise, if
+    // it was opened by the user, it should not close automatically:
+    return this.openReason === "embedded_request";
   }
 
   get width() {
