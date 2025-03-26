@@ -1,11 +1,13 @@
 import type { ProtocolMap } from "@arconnect/webext-bridge";
 import { nanoid } from "nanoid";
 import type { ApiCall, ApiResponse } from "shim";
-import { EMBEDDED_ANCESTOR_TAB_ID } from "~utils/embedded/embedded.constants";
+import {
+  EMBEDDED_ANCESTOR_TAB_ID,
+  EMBEDDED_IFRAME_TAB_ID
+} from "~utils/embedded/embedded.constants";
 import { getEmbeddedAncestorOrigin } from "~utils/embedded/embedded.utils";
 import { isInsideIframe } from "~utils/embedded/iframe.utils";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
-import { isApiErrorResponse } from "~utils/messaging/common/messaging.utils";
 import type {
   MessageData,
   MessageID,
@@ -114,7 +116,7 @@ function getPostMessageFunction<K extends MessageID>(
         id: "0",
         timestamp: Date.now(),
         sender: {
-          tabId: 1,
+          tabId: EMBEDDED_IFRAME_TAB_ID,
           context: null
         },
         data

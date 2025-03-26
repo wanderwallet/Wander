@@ -164,12 +164,6 @@ export const useEmbeddedLocation: BaseLocationHook = withRouterRedirects(() => {
   const [authRequestsLocation, authRequestsNavigate] =
     useAuthRequestsLocation();
 
-  console.log({
-    wocation,
-    override,
-    authRequestsLocation
-  });
-
   if (override) {
     return [override, isRouteRedirect(override) ? wavigate : NOOP];
   }

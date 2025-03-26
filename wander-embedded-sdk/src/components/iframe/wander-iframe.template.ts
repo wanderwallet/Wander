@@ -34,9 +34,9 @@ export const getWanderIframeTemplateContent = ({
       border-radius: var(--borderRadius, 10px);
       box-shadow: var(--boxShadow, 0 0 16px 0 rgba(0, 0, 0, 0.125));
       width: calc(var(--preferredWidth, 400px) - 2 * var(--borderWidth, 2px));
-      height: calc(var(--preferredHeight, 600px) - 2 * var(--borderWidth, 2px));
-      min-width: 400px;
-      min-height: 400px;
+      height: calc(var(--preferredHeight, 800px) - 2 * var(--borderWidth, 2px));
+      min-width: calc(400px - 2 * var(--borderWidth, 2px));
+      min-height: calc(400px - 2 * var(--borderWidth, 2px));
       max-width: calc(100dvw - 2 * var(--backdropPadding, 32px) - 2 * var(--borderWidth, 2px));
       max-height: calc(100dvh - 2 * var(--backdropPadding, 32px) - 2 * var(--borderWidth, 2px));
       box-sizing: content-box;
@@ -70,7 +70,7 @@ export const getWanderIframeTemplateContent = ({
         box-shadow: var(--mobileBoxShadow, none);
         transform: none;
       }
-      
+
       .iframe[data-expand-on-mobile="true"] {
         inset: 0;
         width: 100dvw;
@@ -117,13 +117,13 @@ export const getWanderIframeTemplateContent = ({
       transform: translate(-50%, -50%);
       transition: opacity linear 150ms;
     }
-    
+
     /* Sidebar and Half specific styles */
     .iframe[data-layout="sidebar"],
     .iframe[data-layout="half"] {
       transition: opacity linear 150ms, transform linear 150ms;
     }
-    
+
     /* Right position */
     .iframe[data-layout="sidebar"][data-position="right"],
     .iframe[data-layout="half"][data-position="right"] {
@@ -131,7 +131,7 @@ export const getWanderIframeTemplateContent = ({
       right: var(--backdropPadding, 0);
       border-width: 0 0 0 var(--borderWidth, 2px);
     }
-    
+
     /* Left position */
     .iframe[data-layout="sidebar"][data-position="left"],
     .iframe[data-layout="half"][data-position="left"] {
@@ -139,24 +139,24 @@ export const getWanderIframeTemplateContent = ({
       left: var(--backdropPadding, 0);
       border-width: 0 var(--borderWidth, 2px) 0 0;
     }
-    
+
     /* Hide transform states */
     .iframe[data-layout="sidebar"][data-position="right"]:not(.show),
     .iframe[data-layout="half"][data-position="right"]:not(.show) {
       transform: translate(calc(100% + var(--backdropPadding, 32px)), 0);
     }
-    
+
     .iframe[data-layout="sidebar"][data-position="left"]:not(.show),
     .iframe[data-layout="half"][data-position="left"]:not(.show) {
       transform: translate(calc(-100% - var(--backdropPadding, 32px)), 0);
     }
-    
+
     /* Show transform state */
     .iframe[data-layout="sidebar"].show,
     .iframe[data-layout="half"].show {
       transform: translate(0, 0);
     }
-    
+
     /* Expanded styles */
     .iframe[data-layout="sidebar"][data-expanded="true"],
     .iframe[data-layout="half"][data-expanded="true"] {
@@ -165,12 +165,12 @@ export const getWanderIframeTemplateContent = ({
       max-height: var(--preferredHeight, 100dvh);
       border-radius: 0;
     }
-    
+
     .iframe[data-layout="sidebar"][data-expanded="true"][data-position="right"],
     .iframe[data-layout="half"][data-expanded="true"][data-position="right"] {
       right: 0;
     }
-    
+
     .iframe[data-layout="sidebar"][data-expanded="true"][data-position="left"],
     .iframe[data-layout="half"][data-expanded="true"][data-position="left"] {
       left: 0;
