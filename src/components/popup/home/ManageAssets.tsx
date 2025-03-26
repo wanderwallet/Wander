@@ -61,6 +61,7 @@ export function ManageAssets({ open, close }: Props) {
         <TokensList>
           {filteredTokens.map((token) => (
             <Token
+              showId={true}
               key={token.id}
               ao={true}
               type={"asset"}

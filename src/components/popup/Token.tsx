@@ -18,7 +18,7 @@ import Squircle from "~components/Squircle";
 import useSetting from "~settings/hook";
 import styled from "styled-components";
 import { getUserAvatar } from "~lib/avatar";
-import { formatBalance } from "~utils/format";
+import { formatAddress, formatBalance } from "~utils/format";
 import Skeleton from "~components/Skeleton";
 import { TrashIcon, PlusIcon, SettingsIcon } from "@iconicicons/react";
 import BigNumber from "bignumber.js";
@@ -154,7 +154,14 @@ export default function Token({
         <LogoAndDetails>
           <Logo src={logo || ""} alt="" key={props.id} />
           <div>
-            <TokenName>{props.name || props.ticker || "???"}</TokenName>
+            <div style={{ display: "flex", gap: "0.5rem" }}>
+              <TokenName>{props.name || props.ticker || "???"}</TokenName>
+              {props.showId && (
+                <Address>{formatAddress(props.id, 3)}</Address>
+                // <Tooltip content={props.id} position="top">
+                // </Tooltip>
+              )}
+            </div>
             {hasActionButton ? (
               <FiatBalance>{balance}</FiatBalance>
             ) : (
@@ -445,6 +452,14 @@ export const TokenName = styled(Text).attrs({
   lineHeight: 1.4
 })``;
 
+const Address = styled(Text).attrs({
+  noMargin: true,
+  weight: "light",
+  lineHeight: 1.4
+})`
+  color: ${(props) => props.theme.secondaryTextv2};
+`;
+
 const NativeBalance = styled(Text).attrs({
   noMargin: true,
   weight: "semibold",
@@ -480,6 +495,7 @@ const Canvas = styled.canvas`
 `;
 
 interface Props extends Omit<Token, "balance"> {
+  showId?: boolean;
   ao?: boolean;
   fiatPrice?: number;
   onAddClick?: MouseEventHandler<HTMLButtonElement>;
