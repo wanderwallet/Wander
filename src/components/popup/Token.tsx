@@ -408,14 +408,28 @@ export const LogoWrapper = styled(Squircle)<{ small?: boolean }>`
 `;
 
 export const Logo = styled(Image).attrs({
-  draggable: false,
-  backgroundColor: "#fffefc"
+  draggable: false
 })`
+  position: relative;
   width: 40px;
   height: 40px;
   flex-shrink: 0;
   border-radius: 29px;
   object-fit: cover;
+  overflow: hidden;
+  z-index: 1;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 1px;
+    left: 1px;
+    right: 1px;
+    bottom: 1px;
+    background-color: #fffefc;
+    border-radius: 28px;
+    z-index: -1;
+  }
 
   ${(props) =>
     props.theme.displayTheme === "light" &&
