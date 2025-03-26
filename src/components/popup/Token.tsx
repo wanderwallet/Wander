@@ -34,6 +34,7 @@ import Image from "~components/common/Image";
 export default function Token({
   onClick,
   disableClickEffect,
+  disableCursor,
   ...props
 }: Props) {
   const ref = useRef(null);
@@ -146,7 +147,10 @@ export default function Token({
   }, [aoConfettiShown, activeAddress, fractBalance, isLoading]);
 
   return (
-    <Wrapper disableClickEffect={disableClickEffect}>
+    <Wrapper
+      disableClickEffect={disableClickEffect}
+      disableCursor={disableCursor}
+    >
       {(!aoConfettiShown || ref.current) &&
         AO_NATIVE_TOKEN === props.id &&
         +fractBalance > 0 && <Canvas ref={ref} />}
@@ -358,13 +362,16 @@ l-364 0 -47 141 c-82 245 -168 430 -282 607 -30 45 -54 85 -54 88 0 8 34 -4
   );
 };
 
-const Wrapper = styled.div<{ disableClickEffect?: boolean }>`
+const Wrapper = styled.div<{
+  disableClickEffect?: boolean;
+  disableCursor?: boolean;
+}>`
   position: relative;
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  cursor: pointer;
+  cursor: ${({ disableCursor }) => (disableCursor ? "default" : "pointer")};
   transition: all 0.07s ease-in-out;
 
   ${({ disableClickEffect }) =>
@@ -504,11 +511,14 @@ interface Props extends Omit<Token, "balance"> {
   onHideClick?: (hidden: boolean) => void;
   onClick?: MouseEventHandler<HTMLDivElement>;
   disableClickEffect?: boolean;
+  disableCursor?: boolean;
 }
 
+// TODO: can this component be removed?
 export function ArToken({
   onClick,
   disableClickEffect,
+  disableCursor,
   ...props
 }: ArTokenProps) {
   // currency setting
@@ -560,7 +570,11 @@ export function ArToken({
   }, [balance, price, currency]);
 
   return (
-    <Wrapper onClick={onClick} disableClickEffect={disableClickEffect}>
+    <Wrapper
+      onClick={onClick}
+      disableClickEffect={disableClickEffect}
+      disableCursor={disableCursor}
+    >
       <InnerWrapper width={hasActionButton ? "86%" : "100%"} onClick={onClick}>
         <LogoAndDetails>
           <Logo src={arLogoLight} />

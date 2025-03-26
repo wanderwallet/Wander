@@ -62,6 +62,7 @@ export function ManageAssets({ open, close }: Props) {
         <TokensList>
           {filteredTokens.map((token) => (
             <Token
+              disableCursor={true}
               showId={true}
               key={token.id}
               ao={true}
