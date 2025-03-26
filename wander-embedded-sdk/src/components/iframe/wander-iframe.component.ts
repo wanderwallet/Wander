@@ -185,6 +185,7 @@ export class WanderIframe {
 
     switch (layoutConfig.type) {
       case "modal": {
+        // Modal resizes to fit content:
         cssVars.preferredWidth ??= layoutConfig.fixedWidth || routeConfig.width;
         cssVars.preferredHeight ??=
           layoutConfig.fixedHeight || routeConfig.height;
@@ -194,11 +195,6 @@ export class WanderIframe {
       case "popup": {
         const position = layoutConfig.position || "bottom-right";
         this.iframe.dataset.position = position;
-
-        // We don't actually want the popup to resize, only the modal:
-        // cssVars.preferredWidth ??= layoutConfig.fixedWidth || routeConfig.width;
-        // cssVars.preferredHeight ??= layoutConfig.fixedHeight || routeConfig.height;
-
         // Popup should not resize to fit content:
         cssVars.preferredWidth ??= layoutConfig.fixedWidth;
         cssVars.preferredHeight ??= layoutConfig.fixedHeight;
