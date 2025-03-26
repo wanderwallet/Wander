@@ -198,6 +198,12 @@ export class WanderIframe {
 
     this.currentLayoutType = layoutType;
 
+    // Reset image visibility when switching layouts
+    if (layoutType !== "half") {
+      this.halfImage.style.display = "none";
+      this.halfImage.classList.remove("show");
+    }
+
     this.wrapper.dataset.layout = layoutType;
 
     // Default to true, unless explicitly set to false, false is WIP
@@ -265,14 +271,10 @@ export class WanderIframe {
           // Check for imgSrc in routeConfig first (from iframe message), then fall back to layoutConfig
           const imgSrc = routeConfig.imgSrc || layoutConfig.imgSrc;
 
-          if (imgSrc) {
-            if (typeof imgSrc === "string") {
-              this.halfImage.src = imgSrc;
-              this.halfImage.style.display = "block";
-            } else {
-              this.halfImage.style.display = "none";
-              this.halfImage.classList.remove("show");
-            }
+          if (imgSrc && typeof imgSrc === "string") {
+            this.halfImage.src = imgSrc;
+            this.halfImage.style.display = "block";
+            this.halfImage.classList.add("show");
           } else {
             this.halfImage.style.display = "none";
             this.halfImage.classList.remove("show");
