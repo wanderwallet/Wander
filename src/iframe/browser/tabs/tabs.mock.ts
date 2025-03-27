@@ -13,11 +13,11 @@ export const tabs = {
     // `tabs/dashboard.html#/apps/${activeApp.url}`
 
     if (url === "tabs/welcome.html") {
-      throw new Error("Welcome routes not added to ArConnect Embedded");
+      throw new Error("Welcome routes not added to Wander Embedded");
 
       // location.hash = "/welcome";
     } else if (url.startsWith("tabs/dashboard.html#")) {
-      throw new Error("Dashboard not added to ArConnect Embedded");
+      throw new Error("Dashboard not added to Wander Embedded");
 
       // const hash = url.split("#").pop();
       // location.hash = `/quick-settings${hash}`;

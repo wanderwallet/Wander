@@ -14,10 +14,21 @@ import {
 } from "~components/embed/ui";
 import copy from "copy-to-clipboard";
 import { WalletUtils } from "~utils/wallets/wallets.utils";
+import { useEffect, useState } from "react";
 
 export function AccountExportWalletEmbeddedView() {
   const { currentWallet, downloadKeyfile, copySeedphrase } = useEmbedded();
   const walletAddress = currentWallet.address;
+
+  const [hasEncryptedSeedPhrase, setHasEncryptedSeedPhrase] = useState(false);
+
+  useEffect(() => {
+    WalletUtils.hasEncryptedSeedPhrase(currentWallet.id).then(
+      (hasEncryptedSeedPhrase) => {
+        setHasEncryptedSeedPhrase(hasEncryptedSeedPhrase);
+      }
+    );
+  }, [currentWallet.id]);
 
   // TODO: Add an option to encrypt with a password
 
@@ -74,7 +85,7 @@ export function AccountExportWalletEmbeddedView() {
           onClick={() => copySeedphrase()}
           variant="outlined"
           isFullWidth
-          isDisabled={!WalletUtils.hasEncryptedSeedPhrase(currentWallet.id)}
+          isDisabled={!hasEncryptedSeedPhrase}
           icon={<SeedIcon fontSize={24} />}
         >
           Copy seedphrase

@@ -23,7 +23,7 @@ export function AuthAddWalletEmbeddedView() {
 
   useEffect(() => {
     // Pre-generation starts on app load, but this call will re-generate it again if it has expired, as we are trying to
-    // prevent a user accessing a site with ArConnect Embedded, not creating an account, and coming back way later after
+    // prevent a user accessing a site with Wander Embedded, not creating an account, and coming back way later after
     // the pregenerated wallet has been sitting in memory for long:
     generateTempWallet();
   }, []);
@@ -70,7 +70,7 @@ export function AuthAddWalletEmbeddedView() {
           variant="outlined"
           isFullWidth
           icon={<WalletIcon fontSize={24} />}
-          href="/auth/import-seedphrase"
+          href="#/auth/import-seedphrase"
           isDisabled={isLoading}
         >
           Enter Seed Phrase
@@ -79,7 +79,7 @@ export function AuthAddWalletEmbeddedView() {
           variant="outlined"
           isFullWidth
           icon={<KeyIcon fontSize={24} />}
-          href="/auth/import-keyfile"
+          href="#/auth/import-keyfile"
           isDisabled={isLoading}
         >
           Import Keyfile
@@ -89,7 +89,7 @@ export function AuthAddWalletEmbeddedView() {
             variant="outlined"
             isFullWidth
             icon={<QRCodeIcon fontSize={24} />}
-            href="/auth/add-device"
+            href="#/auth/add-device"
             isDisabled={isLoading}
           >
             Add this device to an existing account
@@ -99,7 +99,7 @@ export function AuthAddWalletEmbeddedView() {
             variant="outlined"
             isFullWidth
             icon={<QRCodeIcon fontSize={24} />}
-            href="/auth/add-auth-provider"
+            href="#/auth/add-auth-provider"
             isDisabled={isLoading}
           >
             Add {authProviderType.toLocaleUpperCase()} to an existing account

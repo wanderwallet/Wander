@@ -469,7 +469,7 @@ export function AuthRequestsProvider({ children }: PropsWithChildren) {
   useEffect(() => {
     let clearCloseAuthPopupTimeout = () => {};
 
-    function setCloseTimers() {
+    async function setCloseTimers() {
       const isEmbedded = import.meta.env?.VITE_IS_EMBEDDED_APP === "1";
       const hasAuthRequests = authRequests.length > 0;
       const isDone =
@@ -484,13 +484,16 @@ export function AuthRequestsProvider({ children }: PropsWithChildren) {
           AUTH_POPUP_CLOSING_DELAY_MS
         );
       } else if (!isEmbedded) {
-        if (hasAuthRequests) {
-          // Once there are some AuthRequest waiting, the user has `AUTH_POPUP_UNLOCK_REQUEST_TTL_MS` (15 minutes) to
-          // unlock the wallet before we close it automatically:
+        const isLocked = !(await getDecryptionKey());
+
+        if (isLocked) {
+          // If the wallet is locked, the user has `AUTH_POPUP_UNLOCK_REQUEST_TTL_MS` (15 minutes) to unlock it before
+          // we close it automatically. While that's happening, AuthRequest might or might not be in this provide
+          // already:
           clearCloseAuthPopupTimeout = closeAuthPopup(
             AUTH_POPUP_UNLOCK_REQUEST_TTL_MS
           );
-        } else {
+        } else if (!hasAuthRequests) {
           // Once the wallet is unlocked, we close the popup if an AuthRequest doesn't arrive in less than
           // `AUTH_POPUP_REQUEST_WAIT_MS` (1 second):
           clearCloseAuthPopupTimeout = closeAuthPopup(

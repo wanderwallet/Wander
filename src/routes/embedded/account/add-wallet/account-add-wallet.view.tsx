@@ -24,7 +24,7 @@ export function AccountAddWalletEmbeddedView() {
 
   useEffect(() => {
     // Pre-generation starts on app load, but this call will re-generate it again if it has expired, as we are trying to
-    // prevent a user accessing a site with ArConnect Embedded, not creating an account, and coming back way later after
+    // prevent a user accessing a site with Wander Embedded, not creating an account, and coming back way later after
     // the pregenerated wallet has been sitting in memory for long:
     generateTempWallet();
   }, []);
@@ -72,7 +72,7 @@ export function AccountAddWalletEmbeddedView() {
           variant="outlined"
           isFullWidth
           icon={<WalletIcon fontSize={24} />}
-          href="/auth/import-seedphrase"
+          href="#/auth/import-seedphrase"
         >
           Enter Seed Phrase
         </Button>
@@ -80,7 +80,7 @@ export function AccountAddWalletEmbeddedView() {
           variant="outlined"
           isFullWidth
           icon={<KeyIcon fontSize={24} />}
-          href="/auth/import-keyfile"
+          href="#/auth/import-keyfile"
         >
           Import Keyfile
         </Button>
@@ -89,7 +89,7 @@ export function AccountAddWalletEmbeddedView() {
             variant="outlined"
             isFullWidth
             icon={<QRCodeIcon fontSize={24} />}
-            href="/auth/add-device"
+            href="#/auth/add-device"
           >
             Add this device to an existing account
           </Button>
@@ -98,7 +98,7 @@ export function AccountAddWalletEmbeddedView() {
             variant="outlined"
             isFullWidth
             icon={<QRCodeIcon fontSize={24} />}
-            href="/auth/add-auth-provider"
+            href="#/auth/add-auth-provider"
           >
             Add {authProviderType.toLocaleUpperCase()} to an existing account
           </Button>

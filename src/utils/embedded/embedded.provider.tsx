@@ -31,10 +31,10 @@ import type {
   Wallet
 } from "~utils/embedded/embedded.types";
 import {
-  isInsideIframe,
   setAuthTokenHeader,
-  supabase
+  getSupabaseClient
 } from "~utils/embedded/embedded.utils";
+import { isInsideIframe } from "~utils/embedded/iframe.utils";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import {
   AuthProviderType,
@@ -52,6 +52,7 @@ import { jwtDecode } from "jwt-decode";
 import type { SupabaseJwtPayload } from "~utils/authentication/authentication.types";
 import { isTempWalletPromiseExpired } from "~utils/embedded/utils/wallets/embedded-wallets.utils";
 import copy from "copy-to-clipboard";
+import { useHashLocation } from "wouter/use-hash-location";
 
 export type AuthStatusCopy = AuthStatus;
 
@@ -107,6 +108,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
   const [embeddedContextAuth, setEmbeddedContextAuth] =
     useState<EmbeddedContextAuth>(EMBEDDED_CONTEXT_INITIAL_AUTH);
+
+  const [wocation] = useHashLocation();
 
   // Wallet props:
 
@@ -609,10 +612,10 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         deviceShare
       };
 
-      WalletUtils.storeDeviceShare(wallet, userId);
+      await WalletUtils.storeDeviceShare(wallet, userId);
 
       if (seedPhrase && EMBEDDED_FEATURE_FLAGS.STORE_SEED_PHRASE) {
-        WalletUtils.storeEncryptedSeedPhrase(wallet.id, seedPhrase, jwk);
+        await WalletUtils.storeEncryptedSeedPhrase(wallet.id, seedPhrase, jwk);
       }
 
       try {
@@ -791,7 +794,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         deviceShare
       };
 
-      WalletUtils.storeDeviceShare(wallet, userId);
+      await WalletUtils.storeDeviceShare(wallet, userId);
 
       try {
         await addWallet(jwk, wallet);
@@ -804,36 +807,144 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
   // AUTHENTICATION:
 
+  const refreshSession = async (session?: DbSession) => {
+    const supabase = await getSupabaseClient();
+    const {
+      data: { session: refreshedSession }
+    } = await supabase.auth.refreshSession();
+
+    const accessToken = refreshedSession?.access_token;
+    if (accessToken) {
+      setAuthTokenHeader(accessToken);
+      const {
+        sub,
+        session_id: sessionId,
+        sessionData
+      } = jwtDecode<SupabaseJwtPayload>(accessToken);
+
+      session = {
+        ...sessionData,
+        id: sessionId,
+        userId: sub
+      };
+    }
+
+    return session;
+  };
+
   const authenticate = useCallback(
     async (authProviderType: AuthProviderType) => {
       if (user) {
+        const supabase = await getSupabaseClient();
         await supabase.auth.refreshSession();
-
         return;
       }
 
-      // TODO: Handle errors and authentication redirects here:
       try {
-        // setIsLoading(true);
-
         const { url } = await AuthenticationService.authenticate(
           authProviderType
         );
 
         if (url) {
-          // Redirect to Google's OAuth page
-          // Opening the URL on the current tab won't work when Embedded is loaded inside the iframe:
+          // Calculate center position for the popup
+          const width = 500;
+          const height = 600;
+          const left = window.screenX + (window.outerWidth - width) / 2;
+          const top = window.screenY + (window.outerHeight - height) / 2;
 
-          if (location.ancestorOrigins.length === 0) {
-            console.log(`Redirecting to ${url}...`);
+          let popup = window.open(
+            url,
+            "Auth",
+            [
+              `width=${width}`,
+              `height=${height}`,
+              `left=${left}`,
+              `top=${top}`,
+              "popup=1",
+              "location=1",
+              "status=1",
+              "resizable=no",
+              "toolbar=no",
+              "menubar=no"
+            ].join(",")
+          );
 
-            window.location.href = url;
-          } else {
-            console.log(`Opening ${url}...`);
+          if (!popup) {
+            console.error("Popup blocked. Please allow popups for this site.");
+            // Redirect to Google's OAuth page
+            // Opening the URL on the current tab won't work when Embedded is loaded inside the iframe:
 
-            window.open(url, "_blank");
+            if (location.ancestorOrigins.length === 0) {
+              console.log(`Redirecting to ${url}...`);
 
-            window.location.reload();
+              window.location.href = url;
+            } else {
+              console.log(`Opening ${url}...`);
+
+              popup = window.open(url, "_blank");
+            }
+          }
+
+          if (popup) {
+            try {
+              // Set up message listener and popup close checker
+              await Promise.race([
+                // Auth completion promise
+                new Promise<void>((resolve, reject) => {
+                  const messageHandler = async (event: MessageEvent) => {
+                    // Since same origin, we can check it exactly
+                    if (event.origin !== window.location.origin) return;
+
+                    if (event.data?.type === "AUTH_COMPLETE") {
+                      console.log("Auth message received:", event.data);
+                      cleanup();
+                      if (event.data?.success) {
+                        const supabase = await getSupabaseClient();
+                        if (event.data?.data) {
+                          const { data } = event.data;
+                          await supabase.auth.refreshSession({
+                            refresh_token: data.refresh_token
+                          });
+                        } else {
+                          await supabase.auth.refreshSession();
+                        }
+
+                        resolve();
+                      } else {
+                        reject(new Error("Authentication failed"));
+                      }
+                    }
+                  };
+
+                  // Check for popup closure
+                  const popupCheckInterval = setInterval(() => {
+                    if (popup.closed) {
+                      cleanup();
+                      reject(
+                        new Error("Authentication cancelled - popup closed")
+                      );
+                    }
+                  }, 1000);
+
+                  // Timeout after 5 minutes
+                  const timeoutId = setTimeout(() => {
+                    cleanup();
+                    reject(new Error("Authentication timeout"));
+                  }, 5 * 60 * 1000);
+
+                  // Cleanup function
+                  const cleanup = () => {
+                    window.removeEventListener("message", messageHandler);
+                    clearInterval(popupCheckInterval);
+                    clearTimeout(timeoutId);
+                  };
+
+                  window.addEventListener("message", messageHandler);
+                })
+              ]);
+            } catch (error) {
+              console.error("Authentication process failed:", error);
+            }
           }
         } else {
           console.error("No URL returned from authenticate");
@@ -864,17 +975,18 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         return;
       }
 
-      if (
-        !session.countryCode ||
-        !session.id ||
-        !session.deviceNonce ||
-        session.deviceNonce !== getDeviceNonce()
-      ) {
+      if (!session.id || !session.deviceNonce) {
         console.warn(
           "❌  The current session is incomplete. Refreshing...",
           session
         );
-        await supabase.auth.refreshSession();
+        session = await refreshSession(session);
+      } else if (session.deviceNonce !== (await getDeviceNonce())) {
+        console.warn(
+          "⚠️  The current session is complete, but the device nonce doesn't match!. Refreshing...",
+          session
+        );
+        session = await refreshSession(session);
       } else {
         console.log("✅  The current session is complete!", session);
       }
@@ -884,7 +996,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       setEmbeddedContextState((prevAuthContextState) => ({
         ...prevAuthContextState,
         currentWalletId: wallets?.[0]?.id || null,
-        wallets
+        wallets,
+        session
       }));
 
       let authStatus = "noAuth" as AuthStatus;
@@ -943,7 +1056,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
             });
           }
 
-          WalletUtils.storeDeviceShare(activatedWallet, userId);
+          await WalletUtils.storeDeviceShare(activatedWallet, userId);
 
           try {
             await addWallet(jwk, activatedWallet);
@@ -967,6 +1080,25 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     []
   );
 
+  const completeAuth = useCallback(async (session: any) => {
+    window.opener.postMessage(
+      {
+        type: "AUTH_COMPLETE",
+        success: true,
+        data: session
+      },
+      window.location.origin
+    );
+
+    // waiting sometime before closing the popup
+    await sleep(500);
+
+    log(LOG_GROUP.EMBEDDED_FLOWS, "Closing popup window...");
+
+    // Close the popup after sending the message
+    window.close();
+  }, []);
+
   const areBackgroundServicesInitialized = useRef(false);
 
   useEffect(() => {
@@ -987,10 +1119,11 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
   }, []);
 
   useEffect(() => {
-    /*
+    async function init() {
+      /*
     KNOWN AUTHENTICATION ISSUES:
 
-    - The decoded JWT token sometimes is missing some properties (`countryCode` and `deviceNonce`). Refreshing the
+    - The decoded JWT token sometimes is missing some properties (`deviceNonce`). Refreshing the
       sessions seems to fix the issue, but not immediately. The `The current session is incomplete. Refreshing...` block
       in `initEmbeddedWallet` is a dirty/temp fix for that.
 
@@ -1003,75 +1136,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       UNAUTHORIZED errors. When that happens, we should force de-authentication of the frontend.
     */
 
-    const forceInitTimeoutID = setTimeout(() => {
-      console.warn("Forcing initialization...");
-
-      setEmbeddedContextAuth({
-        authStatus: "noAuth",
-        authProviderType: null,
-        user: null,
-        session: null
-      });
-
-      initEmbeddedWallet();
-    }, 2000);
-
-    const {
-      data: { subscription }
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      // console.log("onAuthStateChange =", session);
-
-      window.clearTimeout(forceInitTimeoutID);
-
-      // Comment this line to run Wander Embedded as a standalone page:
-      if (!isInsideIframe()) {
-        if (window.location.origin === "https://embed.wander.app") {
-          window.close();
-        } else {
-          console.warn(
-            "In production (https://embed.wander.app), the app would close right now."
-          );
-        }
-      }
-
-      const accessToken = session?.access_token ?? null;
-      const user = session?.user ?? null;
-      const authProviderType: AuthProviderType | null =
-        AUTH_PROVIDER_TYPE_BY_PROVIDER_STR[user?.identities?.[0]?.provider] ||
-        null;
-
-      let dbSession: DbSession | null = null;
-
-      if (accessToken) {
-        const {
-          sub,
-          session_id: sessionId,
-          sessionData
-        } = jwtDecode<SupabaseJwtPayload>(accessToken);
-
-        dbSession = {
-          ...sessionData,
-          id: sessionId,
-          userId: sub
-        };
-      }
-
-      setAuthTokenHeader(accessToken);
-
-      initEmbeddedWallet(user?.id || null, dbSession);
-
-      if (authProviderType && user && dbSession) {
-        setEmbeddedContextAuth(({ authStatus }) => ({
-          authStatus:
-            authStatus === "unknown" || authStatus === "authError"
-              ? "authLoading"
-              : authStatus,
-          authProviderType,
-          user,
-          session: dbSession
-        }));
-      } else {
-        setEmbeddedContextState(EMBEDDED_CONTEXT_INITIAL_STATE);
+      const forceInitTimeoutID = setTimeout(() => {
+        console.warn("Forcing initialization...");
 
         setEmbeddedContextAuth({
           authStatus: "noAuth",
@@ -1079,14 +1145,102 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
           user: null,
           session: null
         });
-      }
-    });
 
-    return () => {
-      window.clearTimeout(forceInitTimeoutID);
-      subscription.unsubscribe();
-    };
+        initEmbeddedWallet();
+      }, 2000);
+
+      const supabase = await getSupabaseClient();
+      const {
+        data: { subscription }
+      } = supabase.auth.onAuthStateChange(async (_event, session) => {
+        // console.log("onAuthStateChange =", session);
+
+        window.clearTimeout(forceInitTimeoutID);
+
+        // Comment this line to run Wander Embedded as a standalone page:
+        if (!isInsideIframe()) {
+          if (session?.access_token && window.opener) {
+            await completeAuth(session);
+          }
+
+          if (window.location.origin === "https://embed.wander.app") {
+            window.close();
+            return;
+          } else {
+            console.warn(
+              "In production (https://embed.wander.app), the app would close right now."
+            );
+          }
+        }
+
+        const accessToken = session?.access_token ?? null;
+        const user = session?.user ?? null;
+        const authProviderType: AuthProviderType | null =
+          AUTH_PROVIDER_TYPE_BY_PROVIDER_STR[user?.identities?.[0]?.provider] ||
+          null;
+
+        let dbSession: DbSession | null = null;
+
+        if (accessToken) {
+          const {
+            sub,
+            session_id: sessionId,
+            sessionData
+          } = jwtDecode<SupabaseJwtPayload>(accessToken);
+
+          dbSession = {
+            ...sessionData,
+            id: sessionId,
+            userId: sub
+          };
+        }
+
+        setAuthTokenHeader(accessToken);
+
+        initEmbeddedWallet(user?.id || null, dbSession);
+
+        if (authProviderType && user && dbSession) {
+          setEmbeddedContextAuth(({ authStatus }) => ({
+            authStatus:
+              authStatus === "unknown" || authStatus === "authError"
+                ? "authLoading"
+                : authStatus,
+            authProviderType,
+            user,
+            session: dbSession
+          }));
+        } else {
+          setEmbeddedContextState(EMBEDDED_CONTEXT_INITIAL_STATE);
+
+          setEmbeddedContextAuth({
+            authStatus: "noAuth",
+            authProviderType: null,
+            user: null,
+            session: null
+          });
+        }
+      });
+
+      return () => {
+        window.clearTimeout(forceInitTimeoutID);
+        subscription.unsubscribe();
+      };
+    }
+
+    init();
   }, [initEmbeddedWallet]);
+
+  useEffect(() => {
+    if (wocation.startsWith("/access_token") && window.opener) {
+      // Get the hash fragment without the leading '#'
+      const hashParams = window.location.hash.substring(1);
+      // Create URLSearchParams from the hash fragment
+      const params = new URLSearchParams(hashParams);
+      const searchParams = Object.fromEntries(params.entries());
+
+      completeAuth(searchParams);
+    }
+  }, [wocation]);
 
   return (
     <EmbeddedContext.Provider

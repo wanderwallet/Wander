@@ -1,8 +1,6 @@
 import { nanoid } from "nanoid";
-import {
-  getEmbeddedAncestorOrigin,
-  isInsideIframe
-} from "~utils/embedded/embedded.utils";
+import { getEmbeddedAncestorOrigin } from "~utils/embedded/embedded.utils";
+import { isInsideIframe } from "~utils/embedded/iframe.utils";
 import type {
   EmbeddedCall,
   EmbeddedMessageId,
@@ -45,7 +43,7 @@ export function postEmbeddedMessage<K extends EmbeddedMessageId>({
 
   if (!isInsideIframe()) {
     console.warn(
-      "ArConnect Embedded running as a standalone page. There's no parent Window to send this to =",
+      "Wander Embedded running as a standalone page. There's no parent Window to send this to =",
       call
     );
 

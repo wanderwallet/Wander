@@ -10,7 +10,7 @@ import { getWallets, removeWallet } from "~wallets";
 
 // TODO: Consider getting `userId` automatically
 async function fetchWallets(userId: string): Promise<Wallet[]> {
-  const deviceShares = WalletUtils.getDeviceSharesForUser(userId);
+  const deviceShares = await WalletUtils.getDeviceSharesForUser(userId);
   const unusedDeviceSharesWalletIDs = new Set(Object.keys(deviceShares));
 
   const storageWallets = await getWallets();
@@ -64,8 +64,8 @@ async function fetchWallets(userId: string): Promise<Wallet[]> {
       ).join(", ")}`
     );
 
-    unusedDeviceSharesWalletIDs.forEach((unusedDeviceSharesWalletID) => {
-      WalletUtils.removeDeviceShare(unusedDeviceSharesWalletID, userId);
+    unusedDeviceSharesWalletIDs.forEach(async (unusedDeviceSharesWalletID) => {
+      await WalletUtils.removeDeviceShare(unusedDeviceSharesWalletID, userId);
     });
   }
 
@@ -172,7 +172,7 @@ async function fetchFirstAvailableAuthShare(
               walletId,
               challengeSolution
             })
-            .catch((err: unknown) => {
+            .catch(async (err: unknown) => {
               if (!isTRPCClientError(err) || err.data.httpStatus !== 404)
                 throw err;
 
@@ -180,7 +180,7 @@ async function fetchFirstAvailableAuthShare(
                 `The corresponding auth share for the device share stored for walletId = ${walletId} was not found. Deleting device share from this device...`
               );
 
-              WalletUtils.removeDeviceShare(deviceShare, userId);
+              await WalletUtils.removeDeviceShare(deviceShare, userId);
 
               return {
                 authShare: null,

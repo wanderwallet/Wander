@@ -1,6 +1,8 @@
 import { createSupabaseClient, createTRPCClient } from "embed-api";
 import { jwtDecode } from "jwt-decode";
 import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
+import { LocalStorage } from "~iframe/storage/unpartitioned-storage/local-storage";
+import { searchParams, ancestorOrigin, isInsideIframe } from "./iframe.utils";
 
 // Then, its tRPC client will be initialized with the following headers:
 // - authorization (getAuthTokenHeader / setAuthTokenHeader)
@@ -10,25 +12,50 @@ import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 //
 // The code/functions below run in the context of Wander Embedded iframe/domain.
 
-const { search = "", ancestorOrigins = [] } = IS_EMBEDDED_APP
-  ? document.location
-  : {};
+const NODE_ENV = process.env.NODE_ENV || "development";
 
-const searchParams = new URLSearchParams(search);
-const ancestorOrigin = ancestorOrigins[ancestorOrigins.length - 1];
+const EMBEDDED_ENV_VARS_BY_ENV = {
+  development: {
+    DEFAULT_EMBEDDED_CLIENT_ID: import.meta.env
+      ?.VITE_DEV_DEFAULT_EMBEDDED_CLIENT_ID,
+    DEFAULT_EMBEDDED_SERVER_BASE_URL: import.meta.env
+      ?.VITE_DEV_DEFAULT_EMBEDDED_SERVER_BASE_URL
+  },
+  production: {
+    DEFAULT_EMBEDDED_CLIENT_ID: import.meta.env
+      ?.VITE_PROD_DEFAULT_EMBEDDED_CLIENT_ID,
+    DEFAULT_EMBEDDED_SERVER_BASE_URL: import.meta.env
+      ?.VITE_PROD_EMBEDDED_SERVER_BASE_URL
+  }
+} as const;
+
+const EMBEDDED_ENV_VARS = EMBEDDED_ENV_VARS_BY_ENV[NODE_ENV];
+
+if (!EMBEDDED_ENV_VARS)
+  throw new Error(`Missing ENV vars for NODE_ENV = "${NODE_ENV}"`);
 
 // Duplicated in `wander-embedded-sdk/src/utils/url/url.utils.ts`:
 const PARAM_CLIENT_ID = "client-id";
+const PARAM_SERVER_BASE_URL = "server-base-url";
 const PARAM_ANCESTOR_ORIGIN = "ancestor-origin";
 
 const EMBEDDED_CLIENT_ID =
   searchParams.get(PARAM_CLIENT_ID) ||
-  (process.env.NODE_ENV === "development"
-    ? import.meta.env.VITE_EMBEDDED_CLIENT_ID
-    : "");
+  EMBEDDED_ENV_VARS.DEFAULT_EMBEDDED_CLIENT_ID;
+
+const EMBEDDED_SERVER_BASE_URL =
+  searchParams.get(PARAM_SERVER_BASE_URL) ||
+  EMBEDDED_ENV_VARS.DEFAULT_EMBEDDED_SERVER_BASE_URL;
 
 const EMBEDDED_ANCESTOR_ORIGIN =
   ancestorOrigin || searchParams.get(PARAM_ANCESTOR_ORIGIN);
+
+console.log("Wander Embedded URL params =", {
+  NODE_ENV,
+  EMBEDDED_CLIENT_ID,
+  EMBEDDED_SERVER_BASE_URL,
+  EMBEDDED_ANCESTOR_ORIGIN
+});
 
 // Note: DO NOT use document.referrer here as that will return the "incorrect" value when the user is redirected from
 // an auth provider domain to back to Wander Embedded.
@@ -37,15 +64,39 @@ export function getEmbeddedAncestorOrigin() {
   return EMBEDDED_ANCESTOR_ORIGIN;
 }
 
-export function isInsideIframe(): boolean {
+// Note: This is run when trpc detects UNAUTHORIZED error.
+async function handleAuthError() {
   try {
-    return window.self !== window.top || !!ancestorOrigin;
-  } catch (e) {
-    // If we can't access window.top due to cross-origin restrictions,
-    // we're definitely in an iframe
-    return true;
+    const supabase = await getSupabaseClient();
+    await supabase.auth.signOut();
+    window.location.href = "#/";
+    window.location.reload();
+  } catch (err) {
+    console.error("Error signing out:", err);
   }
 }
+
+// Create a singleton instance of `TRPCClient`
+let trpcInstance: ReturnType<typeof createTRPCClient> | null = null;
+
+function getTRPCClientAndUtils() {
+  if (!IS_EMBEDDED_APP) return null;
+
+  if (!trpcInstance) {
+    trpcInstance = createTRPCClient({
+      baseURL: EMBEDDED_SERVER_BASE_URL,
+      authToken: null,
+      deviceNonce: undefined,
+      clientId: EMBEDDED_CLIENT_ID,
+      applicationId: "",
+      onAuthError: handleAuthError
+    });
+  }
+
+  return trpcInstance;
+}
+
+const trpcClientAndUtils = getTRPCClientAndUtils();
 
 const {
   client: trpcVanilla,
@@ -56,40 +107,65 @@ const {
   getClientIdHeader,
   setClientIdHeader,
   setApplicationIdHeader
-} = createTRPCClient({
-  baseURL: "http://localhost:3000",
-  authToken: null,
-  deviceNonce: undefined,
-  clientId: EMBEDDED_CLIENT_ID,
-  applicationId: ""
-});
-
-// TODO: When developers set up a new app/domain, we should probably use a mechanism like Google Search Console where
-// they need to create a file at the root of their domain, or add an HTML tag, so that we can verify it's actually theirs.
+} = trpcClientAndUtils || {};
 
 // Exporting the router from one repo to another might, in some scenarios, return incorrect types, but it can be fixed
 // by also importing the right AppRouter type and overriding the `client` type:
 // type TRPCClient = ReturnType<typeof createTRPCProxyClient<AppRouter>>;
 // const trpcVanilla = client as TRPCClient;
 
-const supabase = IS_EMBEDDED_APP
-  ? createSupabaseClient(
+// Create a singleton instance of `SupabaseClient` & `LocalStorage`
+let supabaseInstance: ReturnType<typeof createSupabaseClient> | null = null;
+
+export async function getSupabaseClient() {
+  if (!IS_EMBEDDED_APP) return null;
+
+  if (!supabaseInstance) {
+    const storage = await LocalStorage.getInstance();
+
+    supabaseInstance = createSupabaseClient(
       import.meta.env?.VITE_SUPABASE_URL || "",
-      import.meta.env?.VITE_SUPABASE_ANON_KEY || ""
-      /*
+      import.meta.env?.VITE_SUPABASE_ANON_KEY || "",
       {
         auth: {
+          autoRefreshToken: true,
+          persistSession: true,
+          detectSessionInUrl: true,
           storage: {
-
-          },
+            getItem: (key: string) => storage.getRaw(key),
+            setItem: (key: string, value: string) => storage.setRaw(key, value),
+            removeItem: (key: string) => storage.removeItem(key)
+          }
         }
       }
-        */
-    )
-  : null;
+    );
+  }
+
+  return supabaseInstance;
+}
+
+// Initialize the supabase client
+getSupabaseClient();
+
+export {
+  trpcVanilla,
+  getAuthTokenHeader,
+  setAuthTokenHeader,
+  getDeviceNonceHeader,
+  setDeviceNonceHeader,
+  getClientIdHeader,
+  setClientIdHeader
+};
+
+// TODO: When developers set up a new app/domain, we should probably use a mechanism like Google Search Console where
+// they need to create a file at the root of their domain, or add an HTML tag, so that we can verify it's actually theirs.
+
+// TODO: Move to embedded.provider and make sure it's called once deviceNonce has been loaded, and that a loader/spinner
+// is shown until this validation has happened.
 
 async function getSessionId() {
   try {
+    const supabase = await getSupabaseClient();
     const {
       data: { session }
     } = await supabase.auth.getSession();
@@ -101,9 +177,6 @@ async function getSessionId() {
     return undefined;
   }
 }
-
-// TODO: Move to embedded.provider and make sure it's called once deviceNonce has been loaded, and that a loader/spinner
-// is shown until this validation has happened.
 
 async function insecurelyValidateApplication() {
   try {
@@ -160,19 +233,9 @@ async function insecurelyValidateApplication() {
 // Validate immediately on load
 // insecurelyValidateApplication();
 
-export {
-  supabase,
-  trpcVanilla,
-  getAuthTokenHeader,
-  setAuthTokenHeader,
-  getDeviceNonceHeader,
-  setDeviceNonceHeader,
-  getClientIdHeader,
-  setClientIdHeader
-};
-
 if (IS_EMBEDDED_APP && process.env.NODE_ENV === "development") {
-  (window as any).logout = () => {
+  (window as any).logout = async () => {
+    const supabase = await getSupabaseClient();
     return supabase.auth.signOut();
   };
 }

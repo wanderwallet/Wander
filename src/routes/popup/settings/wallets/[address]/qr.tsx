@@ -219,7 +219,7 @@ const QRCodeLoop = ({
         position: "relative",
         width: size,
         height: size,
-        backgroundColor: "#000"
+        backgroundColor: "#fff"
       }}
     >
       {frames.map((chunk: any, i: Key) => (
@@ -227,12 +227,7 @@ const QRCodeLoop = ({
           key={i}
           style={{ position: "absolute", opacity: i === frame ? 1 : 0 }}
         >
-          <QRCodeSVG
-            fgColor="#fff"
-            bgColor="transparent"
-            size={size}
-            value={chunk}
-          />
+          <QRCodeSVG fgColor="#000" bgColor="#fff" size={size} value={chunk} />
         </div>
       ))}
     </div>

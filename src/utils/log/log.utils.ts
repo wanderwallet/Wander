@@ -7,7 +7,9 @@ export enum LOG_GROUP {
   MSG = "MSG",
   ROUTING = "ROUTING",
   SETUP = "SETUP",
-  WALLET_GENERATION = "WALLET_GENERATION"
+  WALLET_GENERATION = "WALLET_GENERATION",
+  SESSION = "SESSION",
+  STORAGE = "STORAGE"
 }
 
 const LOG_GROUPS_ENABLED: Record<LOG_GROUP, boolean> = {
@@ -19,7 +21,9 @@ const LOG_GROUPS_ENABLED: Record<LOG_GROUP, boolean> = {
   [LOG_GROUP.MSG]: false,
   [LOG_GROUP.ROUTING]: false,
   [LOG_GROUP.SETUP]: process.env.NODE_ENV === "development",
-  [LOG_GROUP.WALLET_GENERATION]: process.env.NODE_ENV === "development"
+  [LOG_GROUP.WALLET_GENERATION]: process.env.NODE_ENV === "development",
+  [LOG_GROUP.SESSION]: process.env.NODE_ENV === "development",
+  [LOG_GROUP.STORAGE]: process.env.NODE_ENV === "development"
 };
 
 function getColor() {

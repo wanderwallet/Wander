@@ -17,6 +17,7 @@ import {
   isRouteRedirect,
   routeTrapMatches,
   routeTrapOutside,
+  useSearchParams,
   withRouterRedirects
 } from "~wallets/router/router.utils";
 
@@ -40,8 +41,21 @@ export function useEmbeddedOverride(
   location?: RoutePath
 ): null | ExtensionRouteOverride | RouteRedirect<WanderRoutePath> {
   const { authStatus, lastRegisteredWallet, currentWallet } = useEmbedded();
+  const searchParams = useSearchParams<{
+    error?: string;
+    error_description?: string;
+  }>();
 
-  // TODO: Handle OAuth redirect error URL.
+  // Handle OAuth redirect error URL from Supabase
+  if (searchParams.error && searchParams.error_description) {
+    // Supabase redirects with error parameters in the URL when OAuth fails
+    // Example: #error=server_error&error_description=OAuth+provider+error
+    return routeTrapMatches(
+      location,
+      [EmbeddedPaths.AuthError],
+      EmbeddedPaths.AuthError
+    );
+  }
 
   if (
     !location ||
@@ -96,7 +110,9 @@ export function useEmbeddedOverride(
         // TODO: Do we allow simply generating a new wallet? EmbeddedPaths.AuthAddWallet
         [
           EmbeddedPaths.AuthRestoreShares,
-          EmbeddedPaths.AuthRestoreSharesRecoveryFile
+          EmbeddedPaths.AuthRestoreSharesRecoveryFile,
+          EmbeddedPaths.AuthImportSeedPhrase,
+          EmbeddedPaths.AuthImportKeyfile
         ],
         EmbeddedPaths.AuthRestoreShares
       );
@@ -142,6 +158,7 @@ export function useEmbeddedOverride(
 
 export const useEmbeddedLocation: BaseLocationHook = withRouterRedirects(() => {
   const [wocation, wavigate] = useHashLocation();
+
   const override = useEmbeddedOverride(wocation as RoutePath);
 
   const [authRequestsLocation, authRequestsNavigate] =

@@ -7,6 +7,7 @@ import {
   Divider,
   GoogleIcon,
   KeyIcon,
+  TextInput,
   Row,
   SocialsIcon,
   Text,
@@ -15,7 +16,7 @@ import {
 } from "~components/embed";
 import { useCallback, useRef, useState } from "react";
 import type { AuthProviderType } from "embed-api";
-import { supabase } from "~utils/embedded/embedded.utils";
+import { getSupabaseClient } from "~utils/embedded/embedded.utils";
 
 export function AuthEmbeddedView() {
   const { authenticate, authStatus } = useEmbedded();
@@ -48,6 +49,7 @@ export function AuthEmbeddedView() {
   );
 
   const handleEmailSignup = useCallback(async () => {
+    const supabase = await getSupabaseClient();
     const { error, data } = await supabase.auth.signUp({
       email: emailInputRef.current?.value || "",
       password: passwordInputRef.current?.value || ""
@@ -57,6 +59,7 @@ export function AuthEmbeddedView() {
   }, []);
 
   const handleEmailSignIn = useCallback(async () => {
+    const supabase = await getSupabaseClient();
     const { error, data } = await supabase.auth.signInWithPassword({
       email: emailInputRef.current?.value || "",
       password: passwordInputRef.current?.value || ""
@@ -81,8 +84,18 @@ export function AuthEmbeddedView() {
       size="auto"
     >
       <Box>
-        <input type="text" placeholder="E-Mail" ref={emailInputRef} />
-        <input type="password" placeholder="Password" ref={passwordInputRef} />
+        <TextInput
+          ref={emailInputRef}
+          placeholder="E-Mail"
+          isDisabled={areButtonsDisabled}
+        />
+
+        <TextInput
+          ref={passwordInputRef}
+          placeholder="Password"
+          isDisabled={areButtonsDisabled}
+          isSecure
+        />
 
         <Button
           isFullWidth
@@ -120,13 +133,13 @@ export function AuthEmbeddedView() {
           isFullWidth
           isDisabled={areButtonsDisabled}
           icon={<SocialsIcon fontSize={24} />}
-          href="/auth/more-providers"
+          href="#/auth/more-providers"
         >
           More options
         </Button>
         <Row alignment="center" justifyContent="center">
           <Text variant={"bodySm"}>{"Can’t sign in?"}</Text>
-          <Button variant="link" href="/auth/recover-account" size="sm">
+          <Button variant="link" href="#/auth/recover-account" size="sm">
             Recover account
           </Button>
         </Row>
