@@ -125,7 +125,6 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
   }, [wallets, walletId]);
 
   const walletAddress = currentWallet?.address;
-  console.log("walletAddress =", walletAddress);
 
   // Auth props:
 
@@ -140,8 +139,6 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       if (coverElement) {
         coverElement.setAttribute("aria-hidden", "true");
       }
-
-      console.log("[EmbeddedProvider] authStatus changed:", authStatus);
     }
   }, [authStatus]);
 
