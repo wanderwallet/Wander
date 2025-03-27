@@ -511,6 +511,34 @@ async function storeEncryptedRecoveryShare(
     throw new Error("Do not store unencrypted recovery shares!");
   }
 
+  // Generate random AES key
+  const aesKey = await crypto.subtle.generateKey(
+    {
+      name: "AES-GCM",
+      length: 256
+    },
+    true,
+    ["encrypt", "decrypt"]
+  );
+
+  // Generate random IV
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+
+  // Encrypt recovery data with AES
+  const recoveryDataString = JSON.stringify(recoveryData);
+  const encryptedData = await crypto.subtle.encrypt(
+    {
+      name: "AES-GCM",
+      iv
+    },
+    aesKey,
+    new TextEncoder().encode(recoveryDataString)
+  );
+
+  // Export AES key
+  const rawAesKey = await crypto.subtle.exportKey("raw", aesKey);
+
+  // Encrypt AES key with RSA
   const publicKey = {
     kty: "RSA",
     e: "AQAB",
@@ -519,7 +547,7 @@ async function storeEncryptedRecoveryShare(
     ext: true
   };
 
-  const importedKey = await crypto.subtle.importKey(
+  const importedRsaKey = await crypto.subtle.importKey(
     "jwk",
     publicKey,
     {
@@ -530,32 +558,23 @@ async function storeEncryptedRecoveryShare(
     ["encrypt"]
   );
 
-  // Stringify the recovery data
-  const recoveryDataString = JSON.stringify(recoveryData);
-
-  // Make sure the recovery data is shorter than the maximum data we can safely encrypt
-  const maxLength = 4096 / 8 - (2 * 256) / 8 - 2;
-
-  if (recoveryDataString.length > maxLength) {
-    throw new Error(`Recovery data is too long to be encrypted with RSA-OAEP`);
-  }
-
-  const encryptedRecoveryDataBuffer = await crypto.subtle.encrypt(
+  const encryptedAesKey = await crypto.subtle.encrypt(
     {
       name: "RSA-OAEP"
     },
-    importedKey,
-    Buffer.from(recoveryDataString)
+    importedRsaKey,
+    rawAesKey
   );
 
-  const encryptedRecoveryData = Buffer.from(
-    encryptedRecoveryDataBuffer
-  ).toString("base64");
+  // Combine everything into a single object
+  const finalData = {
+    iv: Buffer.from(iv).toString("base64"),
+    encryptedKey: Buffer.from(encryptedAesKey).toString("base64"),
+    encryptedData: Buffer.from(encryptedData).toString("base64")
+  };
 
-  localStorage.setItem(
-    `${ENCRYPTED_RECOVERY_SHARE_KEY}-${walletId}`,
-    encryptedRecoveryData
-  );
+  const storage = await LocalStorage.getInstance();
+  storage.setItem(`${ENCRYPTED_RECOVERY_SHARE_KEY}-${walletId}`, finalData);
 
   return true;
 }
@@ -564,8 +583,9 @@ async function storeEncryptedRecoveryShare(
  * Check if a wallet has an encrypted recovery share
  * @param walletId - Wallet ID
  */
-function hasEncryptedRecoveryShare(walletId: string) {
-  return !!localStorage.getItem(`${ENCRYPTED_RECOVERY_SHARE_KEY}-${walletId}`);
+async function hasEncryptedRecoveryShare(walletId: string) {
+  const storage = await LocalStorage.getInstance();
+  return !!storage.getItem(`${ENCRYPTED_RECOVERY_SHARE_KEY}-${walletId}`);
 }
 
 /**
@@ -583,13 +603,14 @@ async function getDecryptedRecoveryShare(
     throw new Error("Cannot decrypt recovery share without JWK!");
   }
 
+  // Import RSA private key
   const privateKey = {
     ...jwk,
     alg: "RSA-OAEP-256",
     ext: true
   };
 
-  const importedKey = await crypto.subtle.importKey(
+  const importedRsaKey = await crypto.subtle.importKey(
     "jwk",
     privateKey,
     {
@@ -600,28 +621,59 @@ async function getDecryptedRecoveryShare(
     ["decrypt"]
   );
 
-  const encryptedRecoveryShare = localStorage.getItem(
-    `${ENCRYPTED_RECOVERY_SHARE_KEY}-${walletId}`
-  );
+  // Get encrypted data from storage
+  const storage = await LocalStorage.getInstance();
+  const encryptedData = storage.getItem<{
+    iv: string;
+    encryptedKey: string;
+    encryptedData: string;
+  }>(`${ENCRYPTED_RECOVERY_SHARE_KEY}-${walletId}`);
 
-  if (!encryptedRecoveryShare) {
+  if (!encryptedData) {
     throw new Error(`No recovery share found for wallet ${walletId}`);
   }
 
-  const decryptedRecoveryShareBuffer = await crypto.subtle.decrypt(
+  // Parse the stored data
+  const {
+    iv,
+    encryptedKey,
+    encryptedData: encryptedRecoveryData
+  } = encryptedData;
+
+  // Decrypt the AES key
+  const decryptedAesKeyBuffer = await crypto.subtle.decrypt(
     {
       name: "RSA-OAEP"
     },
-    importedKey,
-    Buffer.from(encryptedRecoveryShare, "base64")
+    importedRsaKey,
+    Buffer.from(encryptedKey, "base64")
   );
 
-  const decryptedRecoveryShareString = Buffer.from(
-    decryptedRecoveryShareBuffer
-  ).toString();
-  const recoveryShare = JSON.parse(
-    decryptedRecoveryShareString
-  ) as RecoveryJSON;
+  // Import the decrypted AES key
+  const aesKey = await crypto.subtle.importKey(
+    "raw",
+    decryptedAesKeyBuffer,
+    {
+      name: "AES-GCM",
+      length: 256
+    },
+    false,
+    ["decrypt"]
+  );
+
+  // Decrypt the actual data
+  const decryptedDataBuffer = await crypto.subtle.decrypt(
+    {
+      name: "AES-GCM",
+      iv: Buffer.from(iv, "base64")
+    },
+    aesKey,
+    Buffer.from(encryptedRecoveryData, "base64")
+  );
+
+  // Parse the decrypted data
+  const decryptedDataString = new TextDecoder().decode(decryptedDataBuffer);
+  const recoveryShare = JSON.parse(decryptedDataString) as RecoveryJSON;
 
   return recoveryShare;
 }
@@ -718,9 +770,13 @@ if (!EMBEDDED_FEATURE_FLAGS.STORE_SEED_PHRASE) {
 
 // Cleanup for recovery shares if feature is disabled
 if (!EMBEDDED_FEATURE_FLAGS.STORE_RECOVERY_SHARES) {
-  Object.keys(localStorage).forEach((key) => {
-    if (key.startsWith(ENCRYPTED_RECOVERY_SHARE_KEY)) {
-      localStorage.removeItem(key);
+  (async () => {
+    const storage = await LocalStorage.getInstance();
+    const keys = storage.keys();
+    for (const key of keys) {
+      if (key.startsWith(ENCRYPTED_RECOVERY_SHARE_KEY)) {
+        storage.removeItem(key);
+      }
     }
-  });
+  })();
 }

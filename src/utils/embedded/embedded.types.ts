@@ -118,6 +118,6 @@ export interface EmbeddedContextData
   downloadKeyfile: () => Promise<void>;
   copySeedphrase: () => Promise<boolean>;
   generateRecoveryAndDownload: () => Promise<void>;
-  hasStoredRecoveryShare: () => boolean;
+  hasStoredRecoveryShare: () => Promise<boolean>;
   retrieveStoredRecoveryShare: () => Promise<RecoveryJSON | null>;
 }
