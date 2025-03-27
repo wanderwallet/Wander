@@ -318,4 +318,8 @@ export class WanderButton {
       this.label.textContent = this.config.label ? this.config.i18n.signIn : "";
     }
   }
+
+  destroy() {
+    this.host?.remove();
+  }
 }

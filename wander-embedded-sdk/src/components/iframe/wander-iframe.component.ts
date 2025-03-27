@@ -318,4 +318,8 @@ export class WanderIframe {
     addCSSVariables(this.backdrop, cssVars);
     addCSSVariables(this.wrapper, cssVars);
   }
+
+  destroy() {
+    this.host?.remove();
+  }
 }

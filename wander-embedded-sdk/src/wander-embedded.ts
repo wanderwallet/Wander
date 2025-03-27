@@ -390,13 +390,11 @@ export class WanderEmbedded {
     // Remove the elements we crated:
 
     if (this.iframeComponent) {
-      this.backdropRef?.remove();
-      this.iframeRef?.remove();
+      this.iframeComponent.destroy();
     }
 
     if (this.buttonComponent) {
-      this.buttonHostRef?.remove();
-      this.buttonRef?.remove();
+      this.buttonComponent.destroy();
     }
 
     WanderEmbedded.instance = null;
