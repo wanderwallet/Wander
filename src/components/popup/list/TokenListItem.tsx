@@ -68,9 +68,7 @@ export function TokenListItem({ token, onClick }: TokenListItemProps) {
       <div style={{ display: "flex", flexDirection: "column" }}>
         <DivTitleWrapper>{token.name}</DivTitleWrapper>
         <DivDescriptionWrapper>
-          {formattedAddress}
-          <ImgAoLogo src={aoLogo} alt="ao logo" />
-          <SpanTokenType>{token.type}</SpanTokenType>
+          {token.id !== "AR" && formattedAddress}
         </DivDescriptionWrapper>
       </div>
     </DivListItem>

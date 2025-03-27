@@ -22,15 +22,29 @@ export function TokensSettingsView() {
     []
   );
 
-  const enhancedAoTokens = useMemo(() => {
-    return aoTokens.map((token) => ({
-      id: token.processId,
-      defaultLogo: token.Logo,
-      balance: "0",
-      ticker: token.Ticker,
-      type: token.type || "asset",
-      name: token.Name
-    }));
+  const { assets, collectibles } = useMemo(() => {
+    const processed = aoTokens.reduce(
+      (acc, token) => {
+        const enhancedToken = {
+          id: token.processId,
+          defaultLogo: token.Logo,
+          balance: "0",
+          ticker: token.Ticker,
+          type: token.type || "asset",
+          name: token.Name
+        };
+
+        if (enhancedToken.type === "collectible") {
+          acc.collectibles.push(enhancedToken);
+        } else {
+          acc.assets.push(enhancedToken);
+        }
+        return acc;
+      },
+      { assets: [], collectibles: [] }
+    );
+
+    return processed;
   }, [aoTokens]);
 
   // search
@@ -82,12 +96,34 @@ export function TokensSettingsView() {
           <div
             style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
           >
-            {enhancedAoTokens.length > 0 &&
-              enhancedAoTokens.filter(filterSearchResults).map((token) => (
-                <div onClick={() => handleTokenClick(token)} key={token.id}>
-                  <TokenListItem token={token} active={false} key={token.id} />
-                </div>
-              ))}
+            {assets.length > 0 && (
+              <>
+                <Label>{browser.i18n.getMessage("assets")}</Label>
+                {assets.filter(filterSearchResults).map((token) => (
+                  <div onClick={() => handleTokenClick(token)} key={token.id}>
+                    <TokenListItem
+                      token={token}
+                      active={false}
+                      key={token.id}
+                    />
+                  </div>
+                ))}
+              </>
+            )}
+            {collectibles.length > 0 && (
+              <>
+                <Label>{browser.i18n.getMessage("collectibles")}</Label>
+                {collectibles.filter(filterSearchResults).map((token) => (
+                  <div onClick={() => handleTokenClick(token)} key={token.id}>
+                    <TokenListItem
+                      token={token}
+                      active={false}
+                      key={token.id}
+                    />
+                  </div>
+                ))}
+              </>
+            )}
           </div>
         </div>
         <ActionBar>
@@ -109,14 +145,13 @@ const Wrapper = styled.div`
 `;
 
 const Label = styled.p`
-  font-size: 0.7rem;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: 400;
   color: ${(props) => props.theme.primaryText};
   margin: 0;
-  margin-bottom: 0.8em;
 `;
 
-const ActionBar = styled.div`
+export const ActionBar = styled.div`
   position: sticky;
   bottom: 0;
   left: 0;

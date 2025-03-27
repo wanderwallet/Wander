@@ -21,6 +21,7 @@ import { FULL_HISTORY, useGateway } from "~gateways/wayfinder";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { getTokenInfo } from "~tokens/aoTokens/router";
 import { AO_NATIVE_TOKEN } from "~utils/ao_import";
+import { ActionBar } from "~routes/popup/settings/tokens";
 
 export interface AddTokenDashboardViewProps extends CommonRouteProps {
   isQuickSetting?: boolean;
@@ -132,7 +133,7 @@ export function AddTokenDashboardView({
           type="string"
           fullWidth
           placeholder="HineOJKYihQiIcZEWxFtgTyxD_dhDNqGvoBlWj55yDs"
-          label={"ao process id"}
+          label={"ao Process ID"}
         />
 
         {token && (
@@ -149,9 +150,11 @@ export function AddTokenDashboardView({
           </TokenWrapper>
         )}
       </div>
-      <Button fullWidth disabled={!token || loading} onClick={onImportToken}>
-        Add Token
-      </Button>
+      <ActionBar>
+        <Button fullWidth disabled={!token || loading} onClick={onImportToken}>
+          Add Token
+        </Button>
+      </ActionBar>
     </Wrapper>
   );
 }
