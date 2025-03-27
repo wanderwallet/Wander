@@ -10,7 +10,7 @@ export type RouteType =
   | "auth"
   /** Account management screen */
   | "account"
-  /* Settings and preferences screen */
+  /** Settings and preferences screen */
   | "settings"
   /** Authorization request screen for approving transactions. */
   | "auth-request";
@@ -223,13 +223,12 @@ export interface WanderEmbeddedOptions {
    * Base URL for the Wander Embed tRPC server.
    * The URL where the Wander Embed API server is hosted.
    * Only change this if you're using a custom or self-hosted version of the embed API.
-   * @default "https://embed-api.wander.app"
+   * @default "https://embed-api-dev.wander.app"
    */
   baseServerURL?: string;
 
   /**
    * Configuration options for the iframe component or an existing iframe element.
-
    */
   iframe?: WanderEmbeddedIframeOptions | HTMLIFrameElement;
 
@@ -377,6 +376,7 @@ export interface WanderEmbeddedIframeOptions
    * - "auto": Will close if `backdropBackground` is not transparent or if `backdropBackdropFilter` is used.
    * - false: Will never close. The user must click the close icon.
    * - true: Will always close when clicking outside, even if the backdrop is not visible.
+   * @default "auto"
    */
   clickOutsideBehavior?: WanderEmbeddedClickOutsideBehavior;
 }
@@ -437,6 +437,7 @@ export interface WanderEmbeddedBalanceOptions {
    * Determines which token or total balance is shown.
    * @param "total" Show total balance across all tokens
    * @param string Token ID to show specific token balance
+   * @default "total"
    */
   balanceOf: "total" | string;
 
@@ -484,6 +485,7 @@ export interface WanderEmbeddedButtonOptions
   /**
    * Position of the button on the screen.
    * Use "static" for custom positioning via CSS.
+   * @default "bottom-right"
    */
   position?: WanderEmbeddedButtonPosition;
 
@@ -492,16 +494,19 @@ export interface WanderEmbeddedButtonOptions
    * - "none": No logo is displayed
    * - "default": Standard Wander logo is displayed
    * - "text-color": Logo with colored text is displayed
+   * @default "default"
    */
   wanderLogo?: WanderEmbeddedLogoVariant;
 
   /**
    * URL of the dApp logo that will be displayed next to the Wander logo when connected.
+   * @default ""
    */
   dappLogoSrc?: string;
 
   /**
    * Whether to show the button label.
+   * @default true
    */
   label?: boolean;
 
@@ -510,16 +515,19 @@ export interface WanderEmbeddedButtonOptions
    * - false: No balance is displayed
    * - true: Balance is displayed
    * - WanderEmbeddedBalanceOptions: Customized balance display
+   * @default { balanceOf: "total", currency: "auto" }
    */
   balance?: boolean | WanderEmbeddedBalanceOptions;
 
   /**
    * Type of notifications to display.
+   * @default "counter"
    */
   notifications?: WanderEmbeddedButtonNotifications;
 
   /**
    * Custom labels for button text.
+   * @default { signIn: "Sign in", reviewRequests: "Review requests" }
    */
   i18n?: WanderEmbeddedButtonLabels;
 }
@@ -655,10 +663,10 @@ export interface WanderEmbeddedModalCSSVars {
    */
   backdropPadding: number | string;
 
-  // TODO: If `backdropBackground` is transparent and `backdropBackdropFilter` is not set, this will be set to "none", unless
-  // a different value is specified. In any other case, this is ignored.
   /**
    * Pointer events setting for the backdrop.
+   * If `backdropBackground` is transparent and `backdropBackdropFilter` is not set, this will be set to "none", unless
+   * a different value is specified. In any other case, this is ignored.
    */
   backdropPointerEvents: string;
 
@@ -702,73 +710,87 @@ export interface WanderEmbeddedButtonCSSVars {
   /**
    * Horizontal gap from the edge of the screen.
    * Not used when position is "static".
+   * @default 16
    */
   gapX: number | string;
 
   /**
    * Vertical gap from the edge of the screen.
    * Not used when position is "static".
+   * @default 16
    */
   gapY: number | string;
 
   /**
    * Gap between elements inside the button.
+   * @default 12
    */
   gapInside: number | string;
 
   /**
    * Minimum width of the button.
+   * @default 0
    */
   minWidth: number | string;
 
   /**
    * Minimum height of the button.
+   * @default 0
    */
   minHeight: number | string;
 
   /**
    * Z-index of the button.
+   * @default "9999"
    */
   zIndex: string;
 
   /**
    * Padding of the button.
+   * @default "12px 20px 12px 16px"
    */
   padding: number | string;
 
   /**
    * Font style of the button.
+   * @default "16px monospace"
    */
   font: string;
 
   // Button (button, affected by :hover & :focus):
   /**
    * Background color of the button.
+   * @default "white" in light mode, "black" in dark mode
    */
   background: string;
 
   /**
    * Text color of the button.
+   * @default "black" in light mode, "white" in dark mode
    */
   color: string;
 
   /**
    * Border width of the button.
+   * @default 2
    */
   borderWidth: number | string;
 
   /**
    * Border color of the button.
+   * @default "white" in light mode, "black" in dark mode
    */
   borderColor: string;
 
   /**
    * Border radius of the button.
+   * @default 128
    */
   borderRadius: number | string;
 
   /**
    * Box shadow of the button.
+   * @default "0 0 32px 0px rgba(0, 0, 0, 0.25)"
    */
   boxShadow: string;
 
@@ -777,52 +799,62 @@ export interface WanderEmbeddedButtonCSSVars {
   // Logo (img / svg):
   /**
    * Background color of the logo.
+   * @default ""
    */
   logoBackground: string;
 
   /**
    * Border width of the logo.
+   * @default ""
    */
   logoBorderWidth: number | string;
 
   /**
    * Border color of the logo.
+   * @default ""
    */
   logoBorderColor: string;
 
   /**
    * Border radius of the logo.
+   * @default ""
    */
   logoBorderRadius: number | string;
 
   // Notifications (span):
   /**
    * Background color of the notifications badge.
+   * @default ""
    */
   notificationsBackground: string;
 
   /**
    * Border width of the notifications badge.
+   * @default ""
    */
   notificationsBorderWidth: number | string;
 
   /**
    * Border color of the notifications badge.
+   * @default ""
    */
   notificationsBorderColor: string;
 
   /**
    * Border radius of the notifications badge.
+   * @default ""
    */
   notificationsBorderRadius: number | string;
 
   /**
    * Box shadow of the notifications badge.
+   * @default ""
    */
   notificationsBoxShadow: string;
 
   /**
    * Padding of the notifications badge.
+   * @default ""
    */
   notificationsPadding: number | string;
 }
