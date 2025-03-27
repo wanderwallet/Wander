@@ -271,7 +271,7 @@ export class WanderIframe {
           // Check for imgSrc in routeConfig first (from iframe message), then fall back to layoutConfig
           const imgSrc = routeConfig.imgSrc || layoutConfig.imgSrc;
 
-          if (imgSrc && typeof imgSrc === "string") {
+          if (this.isOpen && imgSrc && typeof imgSrc === "string") {
             this.halfImage.src = imgSrc;
             this.halfImage.style.display = "block";
             this.halfImage.classList.add("show");
