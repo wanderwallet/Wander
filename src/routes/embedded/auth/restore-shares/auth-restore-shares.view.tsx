@@ -64,7 +64,7 @@ export function AuthRestoreSharesEmbeddedView() {
           variant="outlined"
           isFullWidth
           icon={<WalletIcon fontSize={24} />}
-          href="/auth/restore-shares/recovery-file"
+          href="#/auth/restore-shares/recovery-file"
         >
           Upload Account Recovery File
         </Button>
@@ -72,7 +72,7 @@ export function AuthRestoreSharesEmbeddedView() {
           variant="outlined"
           isFullWidth
           icon={<SeedIcon fontSize={24} />}
-          href="/auth/import-seedphrase"
+          href="#/auth/import-seedphrase"
         >
           Enter Seed Phrase
         </Button>
@@ -80,7 +80,7 @@ export function AuthRestoreSharesEmbeddedView() {
           variant="outlined"
           isFullWidth
           icon={<KeyIcon fontSize={24} />}
-          href="/auth/import-keyfile"
+          href="#/auth/import-keyfile"
         >
           Import Private Key
         </Button>

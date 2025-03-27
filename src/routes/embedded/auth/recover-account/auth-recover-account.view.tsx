@@ -36,7 +36,7 @@ export function AuthRecoverAccountEmbeddedView() {
     >
       <Box>
         <Button
-          href="/auth/recover-account/keyfile"
+          href="#/auth/recover-account/keyfile"
           variant="outlined"
           isFullWidth
           icon={<KeyIcon fontSize={24} />}
@@ -44,7 +44,7 @@ export function AuthRecoverAccountEmbeddedView() {
           Import Private Key
         </Button>
         <Button
-          href="/auth/recover-account/seedphrase"
+          href="#/auth/recover-account/seedphrase"
           variant="outlined"
           isFullWidth
           icon={<SeedIcon fontSize={24} />}

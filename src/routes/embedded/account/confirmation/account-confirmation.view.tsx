@@ -23,7 +23,7 @@ export function AccountConfirmationEmbeddedView() {
         wallets.length === 1
           ? `Congratulations, your account\n has been created!`
           : `Congratulations, your wallet has been ${
-              lastRegisteredWallet.source.type === "imported"
+              lastRegisteredWallet.source.type === "IMPORTED"
                 ? "imported"
                 : "created"
             }!`

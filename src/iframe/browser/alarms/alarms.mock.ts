@@ -25,12 +25,24 @@ function invokeAlarms(name: string) {
   });
 }
 
+// setTimeout and setInterval delays have a max. value that if we exceed, just causes the callback to be invoked
+// immediately.
+
+const MAX_32_BIT = 0x7fffffff;
+
 export const alarms = {
   create: (name: string, alarmInfo: Alarms.CreateAlarmInfoType) => {
-    const periodInMs = (alarmInfo.periodInMinutes ?? -1) * 60000;
-    const delayInMs = alarmInfo.when
-      ? alarmInfo.when - Date.now()
-      : (alarmInfo.delayInMinutes ?? -1) * 60000;
+    const periodInMs = Math.min(
+      MAX_32_BIT,
+      (alarmInfo.periodInMinutes ?? -1) * 60000
+    );
+
+    const delayInMs = Math.min(
+      MAX_32_BIT,
+      alarmInfo.when
+        ? alarmInfo.when - Date.now()
+        : (alarmInfo.delayInMinutes ?? -1) * 60000
+    );
 
     const alarmWithTimer: AlarmWithTimer = {
       name,
@@ -48,7 +60,7 @@ export const alarms = {
     } else if (delayInMs > 0) {
       alarmWithTimer.scheduledTime = Date.now() + delayInMs;
 
-      alarmWithTimer.timeoutID = setTimeout(() => {
+      alarmWithTimer.timeoutID = window.setTimeout(() => {
         delete alarmWithTimer.timeoutID;
 
         invokeAlarms(name);
@@ -57,7 +69,7 @@ export const alarms = {
 
         alarmWithTimer.scheduledTime = Date.now() + periodInMs;
 
-        alarmWithTimer.intervalID = setInterval(() => {
+        alarmWithTimer.intervalID = window.setInterval(() => {
           alarmWithTimer.scheduledTime = Date.now() + periodInMs;
 
           invokeAlarms(name);
@@ -68,7 +80,7 @@ export const alarms = {
     if (delayInMs <= 0 && periodInMs > 0) {
       alarmWithTimer.scheduledTime = Date.now() + periodInMs;
 
-      alarmWithTimer.intervalID = setInterval(() => {
+      alarmWithTimer.intervalID = window.setInterval(() => {
         alarmWithTimer.scheduledTime = Date.now() + periodInMs;
 
         invokeAlarms(name);
