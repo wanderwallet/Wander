@@ -309,6 +309,127 @@ const wander = new WanderEmbedded({
 });
 ```
 
+#### Custom CSS Styles
+
+You can add custom CSS styles to the iframe using `customStyles` option. When using this option, you must use CSS selectors to target specific elements.
+
+Available selectors:
+
+- `.backdrop` - Targets the backdrop overlay behind the iframe
+  - `.backdrop.show` - Applied when the backdrop is visible
+- `.iframe-wrapper` - Targets the container that wraps the iframe
+  - `.iframe-wrapper.show` - Applied when the iframe is visible
+- `.iframe` - Targets the actual iframe element
+- `.half-image` - Targets the image element used in half layout mode
+  - `.half-image.show` - Applied when the half-image is visible
+
+Example usage:
+
+```javascript
+const wander = new WanderEmbedded({
+  iframe: {
+    customStyles: `
+      /* Style the backdrop */
+      .backdrop {
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(8px);
+        transition: opacity 200ms ease;
+      }
+
+      .backdrop.show {
+        opacity: 1;
+      }
+
+      /* Style the iframe wrapper */
+      .iframe-wrapper {
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        transition: transform 200ms ease, opacity 200ms ease;
+      }
+
+      .iframe-wrapper.show {
+        opacity: 1;
+        transform: none;
+      }
+
+      /* Style the iframe itself */
+      .iframe {
+        border-radius: inherit;
+        background: white;
+      }
+
+      /* Style the half-image */
+      .half-image {
+        object-fit: cover;
+        transition: opacity 300ms ease;
+      }
+
+      .half-image.show {
+        opacity: 1;
+      }
+
+      /* Mobile-specific styles */
+      @media (max-width: 540px) {
+        .backdrop {
+          backdrop-filter: none;
+        }
+
+        .iframe-wrapper {
+          border-radius: 0;
+        }
+      }
+    `
+  }
+});
+```
+
+The iframe elements have several data attributes that you can use for conditional styling:
+
+- `[data-layout="popup|modal|sidebar|half"]` - Current layout type
+- `[data-position="left|right|top-left|top-right|bottom-left|bottom-right"]` - Position of the iframe
+- `[data-expanded="true|false"]` - Whether the iframe is in expanded mode
+- `[data-expand-on-mobile="true|false"]` - Whether the iframe expands on mobile devices
+
+You can use these attributes in your `customStyles` to style different states:
+
+```javascript
+customStyles: `
+  /* Style popup layout */
+  .iframe-wrapper[data-layout="popup"] {
+    transform: scale(0.95);
+  }
+
+  .iframe-wrapper[data-layout="popup"].show {
+    transform: scale(1);
+  }
+
+  /* Style expanded sidebar */
+  .iframe-wrapper[data-layout="sidebar"][data-expanded="true"] {
+    border: none;
+    border-radius: 0;
+  }
+
+  /* Style right-positioned half layout */
+  .iframe-wrapper[data-layout="half"][data-position="right"] {
+    border-left: 2px solid rgba(0, 0, 0, 0.1);
+  }
+
+  /* Style mobile expanded state */
+  .iframe-wrapper[data-expand-on-mobile="true"] {
+    width: 100vw;
+    height: 100vh;
+    border: none;
+    border-radius: 0;
+  }
+
+  /* Combine attributes for specific cases */
+  .iframe-wrapper[data-layout="sidebar"][data-position="right"][data-expanded="true"] {
+    box-shadow: -8px 0 32px rgba(0, 0, 0, 0.1);
+  }
+`;
+```
+
 ## API Reference
 
 ### Methods

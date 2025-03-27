@@ -1,10 +1,10 @@
 export interface WanderIframeTemplateContentOptions {
-  src?: string;
+  customStyles: string;
 }
 
 export const getWanderIframeTemplateContent = ({
-  src = ""
-}: WanderIframeTemplateContentOptions = {}) => {
+  customStyles
+}: WanderIframeTemplateContentOptions) => {
   return `
   <style>
     /* Base backdrop styles */
@@ -239,6 +239,8 @@ export const getWanderIframeTemplateContent = ({
     .iframe-wrapper[data-layout="half"][data-expanded="true"][data-position="left"] {
       left: 0;
     }
+
+    ${customStyles}
   </style>
 `;
 };
