@@ -1,6 +1,7 @@
 import { CSSProperties } from "react";
 import {
   HalfLayoutConfig,
+  ImgPath,
   isRouteConfig,
   isThemeRecord,
   LayoutConfig,
@@ -34,6 +35,19 @@ export class WanderIframe {
       type: "half"
     } as HalfLayoutConfig
   };
+  static readonly IMAGE_EXTENSIONS = ["png", "webp"] as const;
+  static readonly DEFAULT_ROUTE_TYPES: readonly RouteType[] = [
+    "default",
+    "auth",
+    "account",
+    "auth-request",
+    "settings"
+  ];
+  static readonly ALLOWED_IMG_PATHS: ReadonlySet<ImgPath> = new Set(
+    WanderIframe.DEFAULT_ROUTE_TYPES.flatMap((route) =>
+      WanderIframe.IMAGE_EXTENSIONS.map((ext) => `${route}.${ext}` as ImgPath)
+    )
+  );
 
   // Elements:
   private host: HTMLDivElement;
@@ -50,6 +64,8 @@ export class WanderIframe {
   // State:
   private currentLayoutType: LayoutType | null = null;
   private isOpen = false;
+
+  private imageBaseUrl: string | null = null;
 
   constructor(src: string, options: WanderEmbeddedIframeOptions = {}) {
     this.options = options;
@@ -93,6 +109,7 @@ export class WanderIframe {
       };
     }
 
+    this.imageBaseUrl = new URL(src).origin;
     const elements = WanderIframe.initializeIframe(src, options);
 
     this.host = elements.host;
@@ -108,6 +125,14 @@ export class WanderIframe {
       preferredLayoutType: this.routeLayout.auth?.type || "modal",
       height: 0
     });
+  }
+
+  private getRouteImageUrl(imgPath: string): string | null {
+    if (!imgPath || !WanderIframe.ALLOWED_IMG_PATHS.has(imgPath as ImgPath)) {
+      return null;
+    }
+
+    return `${this.imageBaseUrl}/assets/routes/${imgPath}`;
   }
 
   static getLayoutConfig(
@@ -270,10 +295,10 @@ export class WanderIframe {
             ? "true"
             : "false";
 
-          // Check for imgSrc in routeConfig first (from iframe message), then fall back to layoutConfig
-          const imgSrc = routeConfig.imgSrc || layoutConfig.imgSrc;
+          // Get the image url based on the route type
+          const imgSrc = this.getRouteImageUrl(`${routeConfig.routeType}.png`);
 
-          if (this.isOpen && imgSrc && typeof imgSrc === "string") {
+          if (this.isOpen && imgSrc) {
             this.halfImage.src = imgSrc;
             this.halfImage.style.display = "block";
             this.halfImage.classList.add("show");

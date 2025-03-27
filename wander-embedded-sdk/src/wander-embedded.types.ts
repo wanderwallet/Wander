@@ -15,6 +15,12 @@ export type RouteType =
   /** Authorization request screen for approving transactions. */
   | "auth-request";
 
+/** Supported image extensions */
+export type ImageExtension = "webp" | "png";
+
+/** Supported Image Path */
+export type ImgPath = `${RouteType}.${ImageExtension}`;
+
 /** Modal layout configuration */
 export interface ModalLayoutConfig {
   /**
@@ -120,7 +126,7 @@ export interface HalfLayoutConfig {
   expanded?: boolean;
 
   /** Background image URL */
-  imgSrc?: string;
+  // imgSrc?: string;
 
   /** Expand to full screen on mobile
    * @default true */
@@ -187,7 +193,7 @@ export interface RouteConfig {
   width?: number;
 
   /** Background image URL (optional) */
-  imgSrc?: string;
+  // imgSrc?: string;
 }
 
 /** User's wallet balance information */
