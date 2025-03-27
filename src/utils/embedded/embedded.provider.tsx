@@ -98,9 +98,7 @@ export const EmbeddedContext = createContext<EmbeddedContextData>({
   skipBackUp: () => null,
   downloadKeyfile: async () => null,
   copySeedphrase: async () => null,
-  generateRecoveryAndDownload: async () => null,
-  hasStoredRecoveryShare: async () => false,
-  retrieveStoredRecoveryShare: async () => null
+  generateRecoveryAndDownload: async () => null
 });
 
 export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
@@ -1285,9 +1283,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         skipBackUp,
         downloadKeyfile,
         copySeedphrase,
-        generateRecoveryAndDownload,
-        hasStoredRecoveryShare,
-        retrieveStoredRecoveryShare
+        generateRecoveryAndDownload
       }}
     >
       {children}
