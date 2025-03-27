@@ -74,7 +74,7 @@ export default WalletConnect;
 const wander = new WanderEmbedded({
   // Button configuration
   button: {
-    position: "bottom-right", // "bottom-right", "bottom-left", "top-right", "top-left"
+    position: "bottom-right", // "bottom-right", "bottom-left", "top-right", "top-left", "static"
     theme: "system",
     wanderLogo: "default", // 'none', 'default', or 'text-color'
     label: true
@@ -91,7 +91,9 @@ const wander = new WanderEmbedded({
 
 ## Advanced Configuration
 
-### Custom Button Styling
+### Button Configuration
+
+#### Custom Button Styling
 
 ```javascript
 const wander = new WanderEmbedded({
@@ -117,7 +119,168 @@ const wander = new WanderEmbedded({
 });
 ```
 
-### Custom Modal Layouts
+#### Custom CSS Styles
+
+You can add custom CSS styles to the button using `customStyles` option. When using this option, you must use CSS selectors to target specific elements.
+
+Available selectors:
+
+- `:host` - Targets the button container
+- `.button` - Targets the button element
+- `.wanderLogo` - Targets the Wander logo SVG
+- `.label` - Targets the button text label
+- `.balance` - Targets the balance display
+- `.indicator` - Targets the connection status indicator
+- `.dappLogo` - Targets the dApp logo image
+- `.notifications` - Targets the notifications badge
+
+Example usage:
+
+```javascript
+const wander = new WanderEmbedded({
+  button: {
+    customStyles: `
+      /* Position the button container */
+      :host {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+      }
+
+      /* Target the button element */
+      .button {
+        width: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      /* Target the Wander logo */
+      .wanderLogo {
+        width: 24px;
+        height: 24px;
+      }
+
+      /* Target the button label */
+      .label {
+        font-size: 14px;
+        font-weight: 500;
+      }
+
+      /* Target the balance display */
+      .balance {
+        font-size: 12px;
+        opacity: 0.8;
+      }
+
+      /* Target the connection indicator */
+      .indicator {
+        width: 6px;
+        height: 6px;
+      }
+
+      /* Target the dApp logo */
+      .dappLogo {
+        width: 18px;
+        height: 18px;
+      }
+
+      /* Target the notifications badge */
+      .notifications {
+        font-size: 10px;
+        padding: 2px 6px;
+      }
+    `
+  }
+});
+```
+
+The button element has several CSS classes that are added based on its state:
+
+- `.isAuthenticated` - Added when the user is authenticated
+- `.isConnected` - Added when the wallet is connected
+- `.isOpen` - Added when the wallet interface is open
+
+You can use these classes in your `customStyles` to style different states:
+
+```javascript
+customStyles: `
+  .button.isAuthenticated {
+    border-color: green;
+  }
+
+  .button.isConnected {
+    background: rgba(0, 255, 0, 0.1);
+  }
+
+  .button.isOpen {
+    transform: scale(0.95);
+  }
+`;
+```
+
+#### Custom Button Positioning
+
+The button can be positioned in two ways:
+
+1. Using predefined positions:
+
+```javascript
+const wander = new WanderEmbedded({
+  button: {
+    position: "bottom-right" // "bottom-right" | "bottom-left" | "top-right" | "top-left"
+  }
+});
+```
+
+1. Using custom positioning with `"static"`:
+
+```javascript
+const wander = new WanderEmbedded({
+  button: {
+    position: "static",
+    // Using customStyles (recommended for styling button internals)
+    customStyles: `
+      /* Position the button container */
+      :host {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+      }
+
+      /* Optional: Style the button itself */
+      .button {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(8px);
+      }
+    `
+  }
+});
+```
+
+Or using external CSS (useful for positioning the container):
+
+```javascript
+const wander = new WanderEmbedded({
+  button: {
+    position: "static",
+    id: "my-wander-button" // Default is "wanderEmbeddedButtonHost"
+  }
+});
+```
+
+```css
+/* Position the button container */
+#my-wander-button {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+}
+```
+
+### Iframe Configuration
+
+#### Custom Modal Layouts
 
 ```javascript
 const wander = new WanderEmbedded({
@@ -144,6 +307,127 @@ const wander = new WanderEmbedded({
     }
   }
 });
+```
+
+#### Custom CSS Styles
+
+You can add custom CSS styles to the iframe using `customStyles` option. When using this option, you must use CSS selectors to target specific elements.
+
+Available selectors:
+
+- `.backdrop` - Targets the backdrop overlay behind the iframe
+  - `.backdrop.show` - Applied when the backdrop is visible
+- `.iframe-wrapper` - Targets the container that wraps the iframe
+  - `.iframe-wrapper.show` - Applied when the iframe is visible
+- `.iframe` - Targets the actual iframe element
+- `.half-image` - Targets the image element used in half layout mode
+  - `.half-image.show` - Applied when the half-image is visible
+
+Example usage:
+
+```javascript
+const wander = new WanderEmbedded({
+  iframe: {
+    customStyles: `
+      /* Style the backdrop */
+      .backdrop {
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(8px);
+        transition: opacity 200ms ease;
+      }
+
+      .backdrop.show {
+        opacity: 1;
+      }
+
+      /* Style the iframe wrapper */
+      .iframe-wrapper {
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        transition: transform 200ms ease, opacity 200ms ease;
+      }
+
+      .iframe-wrapper.show {
+        opacity: 1;
+        transform: none;
+      }
+
+      /* Style the iframe itself */
+      .iframe {
+        border-radius: inherit;
+        background: white;
+      }
+
+      /* Style the half-image */
+      .half-image {
+        object-fit: cover;
+        transition: opacity 300ms ease;
+      }
+
+      .half-image.show {
+        opacity: 1;
+      }
+
+      /* Mobile-specific styles */
+      @media (max-width: 540px) {
+        .backdrop {
+          backdrop-filter: none;
+        }
+
+        .iframe-wrapper {
+          border-radius: 0;
+        }
+      }
+    `
+  }
+});
+```
+
+The iframe elements have several data attributes that you can use for conditional styling:
+
+- `[data-layout="popup|modal|sidebar|half"]` - Current layout type
+- `[data-position="left|right|top-left|top-right|bottom-left|bottom-right"]` - Position of the iframe
+- `[data-expanded="true|false"]` - Whether the iframe is in expanded mode
+- `[data-expand-on-mobile="true|false"]` - Whether the iframe expands on mobile devices
+
+You can use these attributes in your `customStyles` to style different states:
+
+```javascript
+customStyles: `
+  /* Style popup layout */
+  .iframe-wrapper[data-layout="popup"] {
+    transform: scale(0.95);
+  }
+
+  .iframe-wrapper[data-layout="popup"].show {
+    transform: scale(1);
+  }
+
+  /* Style expanded sidebar */
+  .iframe-wrapper[data-layout="sidebar"][data-expanded="true"] {
+    border: none;
+    border-radius: 0;
+  }
+
+  /* Style right-positioned half layout */
+  .iframe-wrapper[data-layout="half"][data-position="right"] {
+    border-left: 2px solid rgba(0, 0, 0, 0.1);
+  }
+
+  /* Style mobile expanded state */
+  .iframe-wrapper[data-expand-on-mobile="true"] {
+    width: 100vw;
+    height: 100vh;
+    border: none;
+    border-radius: 0;
+  }
+
+  /* Combine attributes for specific cases */
+  .iframe-wrapper[data-layout="sidebar"][data-position="right"][data-expanded="true"] {
+    box-shadow: -8px 0 32px rgba(0, 0, 0, 0.1);
+  }
+`;
 ```
 
 ## API Reference

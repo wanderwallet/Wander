@@ -128,7 +128,9 @@ export class WanderIframe {
     const shadow = host.attachShadow({ mode: "open" });
     const template = document.createElement("template");
 
-    template.innerHTML = getWanderIframeTemplateContent({ src });
+    const customStyles =
+      typeof options.customStyles === "string" ? options.customStyles : "";
+    template.innerHTML = getWanderIframeTemplateContent({ customStyles });
 
     shadow.appendChild(template.content);
 
