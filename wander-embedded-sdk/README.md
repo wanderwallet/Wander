@@ -238,6 +238,7 @@ const wander = new WanderEmbedded({
 ```javascript
 const wander = new WanderEmbedded({
   button: {
+    parent: document.getElementById("wanderButtonContainer"),
     position: "static",
     // Using customStyles (recommended for styling button internals)
     customStyles: `
