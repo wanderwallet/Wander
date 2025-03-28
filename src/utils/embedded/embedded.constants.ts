@@ -8,7 +8,8 @@ export const EMBEDDED_IFRAME_TAB_ID = -420;
 
 // TODO: Should these be loaded from the backend or using Vercel's flags?
 export const EMBEDDED_FEATURE_FLAGS = {
-  STORE_SEED_PHRASE: true
+  STORE_SEED_PHRASE: true,
+  STORE_RECOVERY_SHARES: true
 } as const;
 
 export const AUTH_PROVIDER_TYPE_BY_PROVIDER_STR = {

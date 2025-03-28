@@ -1,6 +1,7 @@
 import { CSSProperties } from "react";
 import {
   HalfLayoutConfig,
+  ImgPath,
   isRouteConfig,
   isThemeRecord,
   LayoutConfig,
@@ -34,11 +35,26 @@ export class WanderIframe {
       type: "half"
     } as HalfLayoutConfig
   };
+  static readonly IMAGE_EXTENSIONS = ["png", "webp"] as const;
+  static readonly DEFAULT_ROUTE_TYPES: readonly RouteType[] = [
+    "default",
+    "auth",
+    "account",
+    "auth-request",
+    "settings"
+  ];
+  static readonly ALLOWED_IMG_PATHS: ReadonlySet<ImgPath> = new Set(
+    WanderIframe.DEFAULT_ROUTE_TYPES.flatMap((route) =>
+      WanderIframe.IMAGE_EXTENSIONS.map((ext) => `${route}.${ext}` as ImgPath)
+    )
+  );
 
   // Elements:
   private host: HTMLDivElement;
   private backdrop: HTMLDivElement;
+  private wrapper: HTMLDivElement;
   private iframe: HTMLIFrameElement;
+  private halfImage: HTMLImageElement;
 
   // Config (options):
   // private config: WanderEmbeddedIframeConfig;
@@ -48,6 +64,8 @@ export class WanderIframe {
   // State:
   private currentLayoutType: LayoutType | null = null;
   private isOpen = false;
+
+  private imageBaseUrl: string | null = null;
 
   constructor(src: string, options: WanderEmbeddedIframeOptions = {}) {
     this.options = options;
@@ -91,11 +109,14 @@ export class WanderIframe {
       };
     }
 
+    this.imageBaseUrl = new URL(src).origin;
     const elements = WanderIframe.initializeIframe(src, options);
 
     this.host = elements.host;
     this.backdrop = elements.backdrop;
+    this.wrapper = elements.wrapper;
     this.iframe = elements.iframe;
+    this.halfImage = elements.halfImage;
 
     // Apply initial styling:
 
@@ -104,6 +125,14 @@ export class WanderIframe {
       preferredLayoutType: this.routeLayout.auth?.type || "modal",
       height: 0
     });
+  }
+
+  private getRouteImageUrl(imgPath: string): string | null {
+    if (!imgPath || !WanderIframe.ALLOWED_IMG_PATHS.has(imgPath as ImgPath)) {
+      return null;
+    }
+
+    return `${this.imageBaseUrl}/assets/routes/${imgPath}`;
   }
 
   static getLayoutConfig(
@@ -124,18 +153,39 @@ export class WanderIframe {
     const shadow = host.attachShadow({ mode: "open" });
     const template = document.createElement("template");
 
-    template.innerHTML = getWanderIframeTemplateContent({ src });
+    const customStyles =
+      typeof options.customStyles === "string" ? options.customStyles : "";
+    template.innerHTML = getWanderIframeTemplateContent({ customStyles });
 
     shadow.appendChild(template.content);
 
-    // Elements from the shadow DOM
-    const backdrop = shadow.querySelector(".backdrop") as HTMLDivElement;
-    const iframe = shadow.querySelector(".iframe") as HTMLIFrameElement;
+    const backdrop = document.createElement("div");
+    backdrop.className = "backdrop";
+    backdrop.id = WanderIframe.DEFAULT_BACKDROP_ID;
+
+    const wrapper = document.createElement("div");
+    wrapper.className = "iframe-wrapper";
+
+    const iframe = document.createElement("iframe");
+    iframe.className = "iframe";
+    iframe.src = src;
+
+    wrapper.appendChild(iframe);
+
+    const halfImage = document.createElement("img");
+    halfImage.className = "half-image";
+
+    // We don't add the iframe as a child of backdrop to have more control over the hide/show transitions:
+    shadow.appendChild(backdrop);
+    shadow.appendChild(halfImage);
+    shadow.appendChild(wrapper);
 
     return {
       iframe,
       host,
-      backdrop
+      backdrop,
+      wrapper,
+      halfImage
     };
   }
 
@@ -143,20 +193,27 @@ export class WanderIframe {
     return {
       host: this.host,
       backdrop: this.backdrop,
-      iframe: this.iframe
+      wrapper: this.wrapper,
+      iframe: this.iframe,
+      halfImage: this.halfImage
     };
   }
 
   show(): void {
     this.isOpen = true;
     this.backdrop.classList.add("show");
-    this.iframe.classList.add("show");
+    this.wrapper.classList.add("show");
+
+    if (this.currentLayoutType === "half" && this.halfImage.src) {
+      this.halfImage.classList.add("show");
+    }
   }
 
   hide(): void {
     this.isOpen = false;
     this.backdrop.classList.remove("show");
-    this.iframe.classList.remove("show");
+    this.wrapper.classList.remove("show");
+    this.halfImage.classList.remove("show");
   }
 
   resize(routeConfig: RouteConfig): void {
@@ -165,14 +222,19 @@ export class WanderIframe {
       WanderIframe.DEFAULT_ROUTE_LAYOUT[routeConfig.preferredLayoutType];
 
     const layoutType: LayoutType = layoutConfig.type;
-    const resetLayout = layoutType !== this.currentLayoutType;
 
     this.currentLayoutType = layoutType;
 
-    this.iframe.dataset.layout = layoutType;
+    // Reset image visibility when switching layouts
+    if (layoutType !== "half") {
+      this.halfImage.style.display = "none";
+      this.halfImage.classList.remove("show");
+    }
+
+    this.wrapper.dataset.layout = layoutType;
 
     // Default to true, unless explicitly set to false, false is WIP
-    this.iframe.dataset.expandOnMobile =
+    this.wrapper.dataset.expandOnMobile =
       layoutConfig.expandOnMobile !== false ? "true" : "false";
 
     if (this.options.cssVars && isThemeRecord(this.options.cssVars)) {
@@ -204,14 +266,14 @@ export class WanderIframe {
       case "sidebar":
       case "half": {
         const position = layoutConfig.position || "right";
-        this.iframe.dataset.position = position;
+        this.wrapper.dataset.position = position;
 
         if (layoutConfig.expanded) {
-          this.iframe.dataset.expanded = "true";
+          this.wrapper.dataset.expanded = "true";
           cssVars.backdropPadding = 0;
           cssVars.borderRadius ??= 0;
         } else {
-          this.iframe.dataset.expanded = "false";
+          this.wrapper.dataset.expanded = "false";
           cssVars.backdropPadding ??= 8;
         }
 
@@ -226,7 +288,24 @@ export class WanderIframe {
           cssVars.preferredHeight ??=
             "calc(100dvh - 2 * var(--backdropPadding, 0))";
 
-          // TODO Set imgSrc
+          // Handle imgSrc for half layout
+          this.halfImage.dataset.position =
+            position === "left" ? "right" : "left";
+          this.halfImage.dataset.expanded = layoutConfig.expanded
+            ? "true"
+            : "false";
+
+          // Get the image url based on the route type
+          const imgSrc = this.getRouteImageUrl(`${routeConfig.routeType}.png`);
+
+          if (this.isOpen && imgSrc) {
+            this.halfImage.src = imgSrc;
+            this.halfImage.style.display = "block";
+            this.halfImage.classList.add("show");
+          } else {
+            this.halfImage.style.display = "none";
+            this.halfImage.classList.remove("show");
+          }
         }
 
         break;
@@ -235,12 +314,12 @@ export class WanderIframe {
 
     // Every time we change the layout type (e.g. going from the auth routes "modal" to the default routes "popup"), the
     // style attribute must be reset to avoid conflicts with leftover properties from the previous layout
-    if (resetLayout) {
-      this.backdrop.removeAttribute("style");
-      this.iframe.removeAttribute("style");
-    }
 
     addCSSVariables(this.backdrop, cssVars);
-    addCSSVariables(this.iframe, cssVars);
+    addCSSVariables(this.wrapper, cssVars);
+  }
+
+  destroy() {
+    this.host?.remove();
   }
 }

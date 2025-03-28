@@ -31,6 +31,12 @@ import arLogoLight from "url:/assets/ar/logo_light.png";
 import { Logo } from "../Token";
 import { getUserAvatar } from "~lib/avatar";
 
+interface TransactionsCache {
+  transactions: ExtendedTransaction[];
+  timestamp: number;
+  address: string;
+}
+
 export default function Transactions() {
   const { navigate } = useLocation();
   const [transactions, setTransactions] = useState<ExtendedTransaction[]>([]);
@@ -41,11 +47,30 @@ export default function Transactions() {
     instance: ExtensionStorage
   });
 
+  const [transactionsCache, setTransactionsCache] =
+    useStorage<TransactionsCache | null>({
+      key: "transactions_cache",
+      instance: ExtensionStorage
+    });
+
   useEffect(() => {
     const fetchTransactions = async () => {
       setLoading(true);
       try {
         if (activeAddress) {
+          const now = Date.now();
+          const CACHE_FRESHNESS_TIME = 5 * 60 * 1000; // 5 minutes freshness
+
+          if (
+            transactionsCache &&
+            transactionsCache.address === activeAddress &&
+            now - transactionsCache.timestamp < CACHE_FRESHNESS_TIME
+          ) {
+            setTransactions(transactionsCache.transactions);
+            setLoading(false);
+            return;
+          }
+
           const queries = [
             AR_RECEIVER_QUERY,
             AR_SENT_QUERY,
@@ -145,6 +170,14 @@ export default function Transactions() {
           });
 
           setTransactions(combinedTransactions);
+
+          const cacheData: TransactionsCache = {
+            transactions: combinedTransactions,
+            timestamp: now,
+            address: activeAddress
+          };
+
+          setTransactionsCache(cacheData);
         }
       } catch (error) {
         console.error("Error fetching transactions", error);

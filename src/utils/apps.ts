@@ -68,7 +68,7 @@ import ArioIcon from "url:/assets/ecosystem/ario.svg";
 import PermaDAOIcon from "url:/assets/ecosystem/permadao.svg";
 import WeaversIcon from "url:/assets/ecosystem/weavers.png";
 import DataOSIcon from "url:/assets/ecosystem/dataos.svg";
-import AoVestIcon from "url:/assets/ecosystem/aovest.svg";
+import TesserIcon from "url:/assets/ecosystem/tesser.svg";
 import BasejumpIcon from "url:/assets/ecosystem/basejump.svg";
 import StampProtocolIcon from "url:/assets/ecosystem/stampprotocol.png";
 import VouchDAOIcon from "url:/assets/ecosystem/vouchdao.png";
@@ -170,10 +170,10 @@ export const apps: App[] = [
     icon: OutcomeIcon
   },
   {
-    name: "aoVest",
+    name: "Tesser",
     category: "DeFi",
-    url: "https://aovest.stream/",
-    icon: AoVestIcon
+    url: "https://tesser.pro/",
+    icon: TesserIcon
   },
   {
     name: "Trunk",

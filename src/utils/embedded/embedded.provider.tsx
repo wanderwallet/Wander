@@ -16,7 +16,8 @@ import { defaultGateway } from "~gateways/gateway";
 import { freeDecryptedWallet } from "~wallets/encryption";
 import {
   downloadKeyfile as downloadKeyfileUtil,
-  downloadRecoveryFile
+  downloadRecoveryFile,
+  type DownloadRecoveryFileData
 } from "~utils/file";
 import { sleep } from "~utils/promises/sleep";
 import type {
@@ -133,7 +134,9 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     if (authStatus !== "unknown") {
       const coverElement = document.getElementById("cover");
 
-      coverElement.setAttribute("aria-hidden", "true");
+      if (coverElement) {
+        coverElement.setAttribute("aria-hidden", "true");
+      }
     }
   }, [authStatus]);
 
@@ -259,35 +262,120 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
     const jwk = decryptedWallet.keyfile;
 
-    const { recoveryAuthShare, recoveryBackupShare } =
-      await WalletUtils.generateWalletRecoveryShares(jwk);
-
-    const {
-      shareHash: recoveryBackupShareHash,
-      sharePublicKey: recoveryBackupSharePublicKey
-    } = await WalletUtils.generateShareHashAndPublicKey(recoveryBackupShare);
-
-    const { recoveryFileServerSignature, wallet: updatedWallet } =
-      await WalletService.registerRecoveryShare({
-        walletId,
-        recoveryAuthShare,
-        recoveryBackupShareHash,
-        recoveryBackupSharePublicKey
-      });
-
-    updateCurrentWallet((currentWallet) => ({
-      ...currentWallet,
-      ...updatedWallet
-    }));
-
-    downloadRecoveryFile(walletAddress, {
+    let recoveryFileData: DownloadRecoveryFileData = {
       walletId,
-      recoveryBackupShare,
-      recoveryFileServerSignature
-    });
+      recoveryBackupShare: "",
+      recoveryFileServerSignature: ""
+    };
+
+    const hasRecoveryShareLocally = await hasStoredRecoveryShare();
+    if (hasRecoveryShareLocally) {
+      const storedRecovery = await retrieveStoredRecoveryShare();
+      if (storedRecovery) {
+        recoveryFileData = storedRecovery;
+      }
+    }
+
+    if (
+      !recoveryFileData.recoveryBackupShare &&
+      !recoveryFileData.recoveryFileServerSignature
+    ) {
+      const { recoveryAuthShare, recoveryBackupShare } =
+        await WalletUtils.generateWalletRecoveryShares(jwk);
+
+      const {
+        shareHash: recoveryBackupShareHash,
+        sharePublicKey: recoveryBackupSharePublicKey
+      } = await WalletUtils.generateShareHashAndPublicKey(recoveryBackupShare);
+
+      const { recoveryFileServerSignature, wallet: updatedWallet } =
+        await WalletService.registerRecoveryShare({
+          walletId,
+          recoveryAuthShare,
+          recoveryBackupShareHash,
+          recoveryBackupSharePublicKey
+        });
+
+      updateCurrentWallet((currentWallet) => ({
+        ...currentWallet,
+        ...updatedWallet
+      }));
+
+      recoveryFileData = {
+        ...recoveryFileData,
+        recoveryBackupShare,
+        recoveryFileServerSignature
+      };
+
+      // Store encrypted recovery share in local storage if feature flag is enabled
+      if (EMBEDDED_FEATURE_FLAGS.STORE_RECOVERY_SHARES) {
+        try {
+          // Create the recovery file data
+          const recoveryData = {
+            version: "1",
+            ...recoveryFileData
+          } as RecoveryJSON;
+
+          await WalletUtils.storeEncryptedRecoveryShare(
+            walletId,
+            recoveryData,
+            jwk
+          );
+          console.log("Recovery share stored successfully");
+        } catch (error) {
+          console.error("Failed to store recovery share:", error);
+        }
+      }
+    }
+
+    // Download the recovery file for the user
+    downloadRecoveryFile(walletAddress, recoveryFileData);
 
     // TODO: Make sure we use `freeDecryptedWallet` all over the place in the new code for Embedded:
     freeDecryptedWallet(jwk);
+  }, [walletId, walletAddress]);
+
+  // Check if a wallet has a stored recovery share
+  const hasStoredRecoveryShare = useCallback(async (): Promise<boolean> => {
+    if (!walletId || !EMBEDDED_FEATURE_FLAGS.STORE_RECOVERY_SHARES) {
+      return false;
+    }
+
+    return await WalletUtils.hasEncryptedRecoveryShare(walletId);
+  }, [walletId]);
+
+  // Retrieve a stored recovery share
+  const retrieveStoredRecoveryShare = useCallback(async () => {
+    log(LOG_GROUP.EMBEDDED_FLOWS, `retrieveStoredRecoveryShare()`);
+
+    if (!walletId || !EMBEDDED_FEATURE_FLAGS.STORE_RECOVERY_SHARES) {
+      return null;
+    }
+
+    if (!(await WalletUtils.hasEncryptedRecoveryShare(walletId))) {
+      return null;
+    }
+
+    try {
+      const decryptedWallet = (await getKeyfile(
+        walletAddress
+      )) as LocalWallet<JWKInterface>;
+
+      const jwk = decryptedWallet.keyfile;
+
+      const recoveryShare = await WalletUtils.getDecryptedRecoveryShare(
+        walletId,
+        jwk
+      );
+
+      // TODO: Make sure we use `freeDecryptedWallet` all over the place in the new code for Embedded:
+      freeDecryptedWallet(jwk);
+
+      return recoveryShare;
+    } catch (error) {
+      console.error("Failed to retrieve stored recovery share:", error);
+      return null;
+    }
   }, [walletId, walletAddress]);
 
   // TODO: Need to observe storage to keep track of new wallets, removed wallets or active wallet changes... Or just
