@@ -5,6 +5,7 @@ import { FULL_HISTORY, useGateway } from "~gateways/wayfinder";
 import { concatGatewayURL } from "~gateways/utils";
 import aoLogo from "url:/assets/ecosystem/ao-logo.svg";
 import arLogoDark from "url:/assets/ar/logo_dark.png";
+import arLogoLight from "url:/assets/ar/logo_light.png";
 import { getUserAvatar } from "~lib/avatar";
 import type { Token } from "~tokens/token";
 import { useLocation } from "~wallets/router/router.utils";
@@ -28,8 +29,13 @@ export function TokenListItem({ token, onClick }: TokenListItemProps) {
   // display theme
   const theme = useTheme();
 
+  const arweaveLogo = useMemo(
+    () => (theme === "dark" ? arLogoDark : arLogoLight),
+    [theme]
+  );
+
   // token logo
-  const [image, setImage] = useState(arLogoDark);
+  const [image, setImage] = useState(arweaveLogo);
 
   // gateway
   const gateway = useGateway(FULL_HISTORY);
@@ -64,7 +70,9 @@ export function TokenListItem({ token, onClick }: TokenListItemProps) {
 
   return (
     <DivListItem id={token.id} onClick={handleClick}>
-      <ImgTokenLogo src={image} />
+      <DivTokenLogoWrapper>
+        <ImgTokenLogo src={image} />
+      </DivTokenLogoWrapper>
       <div style={{ display: "flex", flexDirection: "column" }}>
         <DivTitleWrapper>{token.name}</DivTitleWrapper>
         <DivDescriptionWrapper>
@@ -74,13 +82,6 @@ export function TokenListItem({ token, onClick }: TokenListItemProps) {
     </DivListItem>
   );
 }
-
-const ImgAoLogo = styled.img`
-  width: 12px;
-  padding: 0 8px;
-  border: 1px solid rgb(${(props) => props.theme.cardBorder});
-  border-radius: 2px;
-`;
 
 const DivDescriptionWrapper = styled.div`
   display: flex;
@@ -107,6 +108,26 @@ const DivListItem = styled.div`
 
   &:hover {
     background-color: ${(props) => props.theme.secondaryItemHover};
+    z-index: 0;
+  }
+`;
+
+const DivTokenLogoWrapper = styled.div`
+  position: relative;
+  width: 2rem;
+  height: 2rem;
+  z-index: 1;
+
+  &::before {
+    background-color: white;
+    content: "";
+    position: absolute;
+    top: 1px;
+    left: 1px;
+    right: 1px;
+    bottom: 1px;
+    border-radius: 28px;
+    z-index: -1;
   }
 `;
 
@@ -115,6 +136,7 @@ const ImgTokenLogo = styled.img.attrs({
   draggable: false
 })`
   width: 2rem;
+  border-radius: 29px;
   height: 2rem;
 `;
 

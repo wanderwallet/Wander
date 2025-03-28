@@ -153,6 +153,7 @@ const Label = styled.p`
 
 export const ActionBar = styled.div`
   position: sticky;
+  z-index: 3;
   bottom: 0;
   left: 0;
   right: 0;
