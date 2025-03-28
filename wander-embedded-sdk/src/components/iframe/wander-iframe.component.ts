@@ -256,7 +256,7 @@ export class WanderIframe {
 
       case "popup": {
         const position = layoutConfig.position || "bottom-right";
-        this.iframe.dataset.position = position;
+        this.wrapper.dataset.position = position;
         // Popup should not resize to fit content:
         cssVars.preferredWidth ??= layoutConfig.fixedWidth;
         cssVars.preferredHeight ??= layoutConfig.fixedHeight;
