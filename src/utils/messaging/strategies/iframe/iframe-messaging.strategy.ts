@@ -183,7 +183,7 @@ export function iframeIsomorphicOnMessage<K extends MessageID>(
   // make sure the iframe is ready before accepting method calls...
 }
 
-if (isInsideIframe()) {
+if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1" && isInsideIframe()) {
   // TODO: Set this up after first call to `iframeIsomorphicOnMessage`?
 
   console.log("Listening for messages...");
