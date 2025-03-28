@@ -75,6 +75,9 @@ export class WanderEmbedded {
   // State:
   private shouldOpenAutomatically = true;
 
+  // Timestamp of when open was called
+  private _openClickTimestamp = 0;
+
   /**
    * Indicates whether the wallet interface is currently open/visible
    */
@@ -238,7 +241,11 @@ export class WanderEmbedded {
               // TODO: This is not a good way to check if it's totally transparent:
               getComputedStyle(this.backdropRef).background !== "transparent"));
 
-        if (shouldClose) this.close();
+        if (shouldClose) {
+          // If we just opened within the last 50ms, ignore this click
+          if (Date.now() - this._openClickTimestamp < 50) return;
+          this.close();
+        }
       });
     }
 
@@ -343,6 +350,9 @@ export class WanderEmbedded {
    * @throws Error if Wander Embedded's iframe and button has been created manually
    */
   public open(): void {
+    // Record the timestamp for when open was called
+    this._openClickTimestamp = Date.now();
+
     if (!this.iframeComponent && !this.buttonComponent) {
       throw new Error(
         "Wander Embedded's iframe and button has been created manually"
