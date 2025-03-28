@@ -221,26 +221,48 @@ customStyles: `
 
 #### Custom Button Positioning
 
-The button can be positioned in two ways:
+There are two approaches to positioning the Wander button:
 
-1. Using predefined positions:
+##### 1. Using Predefined Positions
 
 ```javascript
 const wander = new WanderEmbedded({
   button: {
-    position: "bottom-right" // "bottom-right" | "bottom-left" | "top-right" | "top-left"
+    position: "bottom-right" // Options: "bottom-right", "bottom-left", "top-right", "top-left"
   }
 });
 ```
 
-1. Using custom positioning with `"static"`:
+##### 2. Using Custom Positioning with "static"
+
+You have three methods for custom positioning:
+
+###### 2.1. Using a Parent Element
+
+First, create a container element:
+
+```html
+<div id="wanderButtonContainer"></div>
+```
+
+Then reference it in your configuration:
 
 ```javascript
 const wander = new WanderEmbedded({
   button: {
-    parent: document.getElementById("wanderButtonContainer"),
     position: "static",
-    // Using customStyles (recommended for styling button internals)
+    parent: document.getElementById("wanderButtonContainer")
+  }
+});
+```
+
+###### 2.2. Using Custom Styles
+
+```javascript
+const wander = new WanderEmbedded({
+  button: {
+    position: "static",
+    // Using customStyles for precise control over button appearance and position
     customStyles: `
       /* Position the button container */
       :host {
@@ -249,7 +271,7 @@ const wander = new WanderEmbedded({
         right: 20px;
       }
 
-      /* Optional: Style the button itself */
+      /* Style the button itself */
       .button {
         background: rgba(255, 255, 255, 0.9);
         backdrop-filter: blur(8px);
@@ -259,7 +281,9 @@ const wander = new WanderEmbedded({
 });
 ```
 
-Or using external CSS (useful for positioning the container):
+###### 2.3. Using External CSS
+
+Define the button with a custom ID:
 
 ```javascript
 const wander = new WanderEmbedded({
@@ -269,6 +293,8 @@ const wander = new WanderEmbedded({
   }
 });
 ```
+
+Then style it with external CSS:
 
 ```css
 /* Position the button container */
