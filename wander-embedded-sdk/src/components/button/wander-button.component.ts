@@ -151,7 +151,7 @@ export class WanderButton {
       wanderLogo: options.wanderLogo || WanderButton.DEFAULT_CONFIG.wanderLogo,
       dappLogoSrc:
         options.dappLogoSrc || WanderButton.DEFAULT_CONFIG.dappLogoSrc,
-      label: options.label || WanderButton.DEFAULT_CONFIG.label,
+      label: options.label ?? WanderButton.DEFAULT_CONFIG.label,
       balance:
         options.balance === false
           ? false
@@ -221,14 +221,16 @@ export class WanderButton {
     )
       throw new Error("Missing elements");
 
-    const [y, x] = config.position.split("-") as [
-      "top" | "bottom",
-      "left" | "right"
-    ];
-
     host.style.position = "fixed";
-    host.style[y] = "var(--gapY)";
-    host.style[x] = "var(--gapX)";
+    if (config.position !== "static") {
+      const [y, x] = config.position.split("-") as [
+        "top" | "bottom",
+        "left" | "right"
+      ];
+
+      host.style[y] = "var(--gapY)";
+      host.style[x] = "var(--gapX)";
+    }
     host.style.transition = "opacity linear 150ms";
     host.style.opacity = "0";
 
@@ -315,5 +317,9 @@ export class WanderButton {
     if (status === "isAuthenticated") {
       this.label.textContent = this.config.label ? this.config.i18n.signIn : "";
     }
+  }
+
+  destroy() {
+    this.host?.remove();
   }
 }
