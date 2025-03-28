@@ -18,7 +18,7 @@ import {
   pemToJWK,
   privateKeyDerToJWK
 } from "~utils/crypto/crypto.utils";
-import type { Wallet } from "~utils/embedded/embedded.types";
+import type { RecoveryJSON, Wallet } from "~utils/embedded/embedded.types";
 import { EMBEDDED_FEATURE_FLAGS } from "~utils/embedded/embedded.constants";
 import { LocalStorage } from "~iframe/storage/unpartitioned-storage/local-storage";
 
@@ -387,6 +387,7 @@ async function getDeviceSharesForUser(userId: string): Promise<DeviceShares> {
 // Storage:
 
 const ENCRYPTED_SEED_PHRASE_KEY = "ENCRYPTED_SEED_PHRASE";
+const ENCRYPTED_RECOVERY_SHARE_KEY = "ENCRYPTED_RECOVERY_SHARE";
 
 async function storeEncryptedSeedPhrase(
   walletId: string,
@@ -493,6 +494,190 @@ async function getDecryptedSeedPhrase(walletId: string, jwk: JWKInterface) {
   return decryptedSeedPhrase;
 }
 
+/**
+ * Store an encrypted recovery share in local storage
+ * @param walletId - Wallet ID
+ * @param recoveryData - Recovery share data to encrypt
+ * @param jwk - JWK to use for encryption
+ */
+async function storeEncryptedRecoveryShare(
+  walletId: string,
+  recoveryData: RecoveryJSON,
+  jwk: JWKInterface
+) {
+  log(LOG_GROUP.WALLET_GENERATION, "storeEncryptedRecoveryShare()");
+
+  if (!jwk) {
+    throw new Error("Do not store unencrypted recovery shares!");
+  }
+
+  // Generate random AES key
+  const aesKey = await crypto.subtle.generateKey(
+    {
+      name: "AES-GCM",
+      length: 256
+    },
+    true,
+    ["encrypt", "decrypt"]
+  );
+
+  // Generate random IV
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+
+  // Encrypt recovery data with AES
+  const recoveryDataString = JSON.stringify(recoveryData);
+  const encryptedData = await crypto.subtle.encrypt(
+    {
+      name: "AES-GCM",
+      iv
+    },
+    aesKey,
+    new TextEncoder().encode(recoveryDataString)
+  );
+
+  // Export AES key
+  const rawAesKey = await crypto.subtle.exportKey("raw", aesKey);
+
+  // Encrypt AES key with RSA
+  const publicKey = {
+    kty: "RSA",
+    e: "AQAB",
+    n: jwk.n,
+    alg: "RSA-OAEP-256",
+    ext: true
+  };
+
+  const importedRsaKey = await crypto.subtle.importKey(
+    "jwk",
+    publicKey,
+    {
+      name: "RSA-OAEP",
+      hash: "SHA-256"
+    },
+    false,
+    ["encrypt"]
+  );
+
+  const encryptedAesKey = await crypto.subtle.encrypt(
+    {
+      name: "RSA-OAEP"
+    },
+    importedRsaKey,
+    rawAesKey
+  );
+
+  // Combine everything into a single object
+  const finalData = {
+    iv: Buffer.from(iv).toString("base64"),
+    encryptedKey: Buffer.from(encryptedAesKey).toString("base64"),
+    encryptedData: Buffer.from(encryptedData).toString("base64")
+  };
+
+  const storage = await LocalStorage.getInstance();
+  storage.setItem(`${ENCRYPTED_RECOVERY_SHARE_KEY}-${walletId}`, finalData);
+
+  return true;
+}
+
+/**
+ * Check if a wallet has an encrypted recovery share
+ * @param walletId - Wallet ID
+ */
+async function hasEncryptedRecoveryShare(walletId: string) {
+  const storage = await LocalStorage.getInstance();
+  return !!storage.getItem(`${ENCRYPTED_RECOVERY_SHARE_KEY}-${walletId}`);
+}
+
+/**
+ * Get and decrypt a wallet recovery share
+ * @param walletId - Wallet ID
+ * @param jwk - JWK for decryption
+ */
+async function getDecryptedRecoveryShare(
+  walletId: string,
+  jwk: JWKInterface
+): Promise<RecoveryJSON> {
+  log(LOG_GROUP.WALLET_GENERATION, "getDecryptedRecoveryShare()");
+
+  if (!jwk) {
+    throw new Error("Cannot decrypt recovery share without JWK!");
+  }
+
+  // Import RSA private key
+  const privateKey = {
+    ...jwk,
+    alg: "RSA-OAEP-256",
+    ext: true
+  };
+
+  const importedRsaKey = await crypto.subtle.importKey(
+    "jwk",
+    privateKey,
+    {
+      name: "RSA-OAEP",
+      hash: "SHA-256"
+    },
+    false,
+    ["decrypt"]
+  );
+
+  // Get encrypted data from storage
+  const storage = await LocalStorage.getInstance();
+  const encryptedData = storage.getItem<{
+    iv: string;
+    encryptedKey: string;
+    encryptedData: string;
+  }>(`${ENCRYPTED_RECOVERY_SHARE_KEY}-${walletId}`);
+
+  if (!encryptedData) {
+    throw new Error(`No recovery share found for wallet ${walletId}`);
+  }
+
+  // Parse the stored data
+  const {
+    iv,
+    encryptedKey,
+    encryptedData: encryptedRecoveryData
+  } = encryptedData;
+
+  // Decrypt the AES key
+  const decryptedAesKeyBuffer = await crypto.subtle.decrypt(
+    {
+      name: "RSA-OAEP"
+    },
+    importedRsaKey,
+    Buffer.from(encryptedKey, "base64")
+  );
+
+  // Import the decrypted AES key
+  const aesKey = await crypto.subtle.importKey(
+    "raw",
+    decryptedAesKeyBuffer,
+    {
+      name: "AES-GCM",
+      length: 256
+    },
+    false,
+    ["decrypt"]
+  );
+
+  // Decrypt the actual data
+  const decryptedDataBuffer = await crypto.subtle.decrypt(
+    {
+      name: "AES-GCM",
+      iv: Buffer.from(iv, "base64")
+    },
+    aesKey,
+    Buffer.from(encryptedRecoveryData, "base64")
+  );
+
+  // Parse the decrypted data
+  const decryptedDataString = new TextDecoder().decode(decryptedDataBuffer);
+  const recoveryShare = JSON.parse(decryptedDataString) as RecoveryJSON;
+
+  return recoveryShare;
+}
+
 async function storeDeviceShare(wallet: Wallet, userId: string) {
   log(LOG_GROUP.WALLET_GENERATION, "storeDeviceShare()");
 
@@ -564,16 +749,32 @@ export const WalletUtils = {
   storeEncryptedSeedPhrase,
   hasEncryptedSeedPhrase,
   getDecryptedSeedPhrase,
+  storeEncryptedRecoveryShare,
+  hasEncryptedRecoveryShare,
+  getDecryptedRecoveryShare,
   storeEncryptedWalletJWK
 };
 
-// Stored seedphrase are removed if the `STORE_SEED_PHRASE` flag becomes false:
+// Stored seedphrases and recovery shares are removed if the feature flags are disabled:
 if (!EMBEDDED_FEATURE_FLAGS.STORE_SEED_PHRASE) {
   (async () => {
     const storage = await LocalStorage.getInstance();
     const keys = storage.keys();
     for (const key of keys) {
       if (key.startsWith(ENCRYPTED_SEED_PHRASE_KEY)) {
+        storage.removeItem(key);
+      }
+    }
+  })();
+}
+
+// Cleanup for recovery shares if feature is disabled
+if (!EMBEDDED_FEATURE_FLAGS.STORE_RECOVERY_SHARES) {
+  (async () => {
+    const storage = await LocalStorage.getInstance();
+    const keys = storage.keys();
+    for (const key of keys) {
+      if (key.startsWith(ENCRYPTED_RECOVERY_SHARE_KEY)) {
         storage.removeItem(key);
       }
     }
