@@ -50,12 +50,14 @@ const EMBEDDED_SERVER_BASE_URL =
 const EMBEDDED_ANCESTOR_ORIGIN =
   ancestorOrigin || searchParams.get(PARAM_ANCESTOR_ORIGIN);
 
-console.log("Wander Embedded URL params =", {
-  NODE_ENV,
-  EMBEDDED_CLIENT_ID,
-  EMBEDDED_SERVER_BASE_URL,
-  EMBEDDED_ANCESTOR_ORIGIN
-});
+if (IS_EMBEDDED_APP) {
+  console.log("Wander Embedded URL params =", {
+    NODE_ENV,
+    EMBEDDED_CLIENT_ID,
+    EMBEDDED_SERVER_BASE_URL,
+    EMBEDDED_ANCESTOR_ORIGIN
+  });
+}
 
 // Note: DO NOT use document.referrer here as that will return the "incorrect" value when the user is redirected from
 // an auth provider domain to back to Wander Embedded.

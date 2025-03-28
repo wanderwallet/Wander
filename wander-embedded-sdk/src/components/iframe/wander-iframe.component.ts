@@ -248,9 +248,10 @@ export class WanderIframe {
     switch (layoutConfig.type) {
       case "modal": {
         // Modal resizes to fit content:
-        cssVars.preferredWidth ??= layoutConfig.fixedWidth || routeConfig.width;
-        cssVars.preferredHeight ??=
-          layoutConfig.fixedHeight || routeConfig.height;
+        cssVars.preferredWidth =
+          layoutConfig.fixedWidth || routeConfig.width || "";
+        cssVars.preferredHeight =
+          layoutConfig.fixedHeight || routeConfig.height || "";
         break;
       }
 
@@ -258,8 +259,8 @@ export class WanderIframe {
         const position = layoutConfig.position || "bottom-right";
         this.wrapper.dataset.position = position;
         // Popup should not resize to fit content:
-        cssVars.preferredWidth ??= layoutConfig.fixedWidth;
-        cssVars.preferredHeight ??= layoutConfig.fixedHeight;
+        cssVars.preferredWidth = layoutConfig.fixedWidth || "";
+        cssVars.preferredHeight = layoutConfig.fixedHeight || "";
         break;
       }
 
@@ -271,21 +272,20 @@ export class WanderIframe {
         if (layoutConfig.expanded) {
           this.wrapper.dataset.expanded = "true";
           cssVars.backdropPadding = 0;
-          cssVars.borderRadius ??= 0;
+          cssVars.borderRadius = 0;
         } else {
           this.wrapper.dataset.expanded = "false";
-          cssVars.backdropPadding ??= 8;
+          cssVars.backdropPadding = 8;
         }
 
         if (layoutConfig.type === "sidebar") {
-          cssVars.preferredWidth ??=
-            layoutConfig.fixedWidth || routeConfig.width;
-          cssVars.preferredHeight ??=
+          cssVars.preferredWidth =
+            layoutConfig.fixedWidth || routeConfig.width || "";
+          cssVars.preferredHeight =
             "calc(100dvh - 2 * var(--backdropPadding, 0))";
         } else {
-          cssVars.preferredWidth ??=
-            "calc(50vw - 2 * var(--backdropPadding, 0))";
-          cssVars.preferredHeight ??=
+          cssVars.preferredWidth = "calc(50vw - 2 * var(--backdropPadding, 0))";
+          cssVars.preferredHeight =
             "calc(100dvh - 2 * var(--backdropPadding, 0))";
 
           // Handle imgSrc for half layout

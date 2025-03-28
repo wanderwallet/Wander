@@ -161,10 +161,22 @@ export function AuthRequestsProvider({ children }: PropsWithChildren) {
 
       // TODO: Consider automatically rejecting (expiring) AuthRequest if there are more than 100.
 
+      // TODO: I left it here trying to see why `replyToAuthRequest` is being called twice:
+      console.log(
+        "Completing auth requests",
+        authRequests,
+        completeAuthRequest
+      );
+
       const status: AuthRequestStatus = isError(data) ? "rejected" : "accepted";
 
       const authRequestRepliesPromises: Promise<AuthRequestStatus>[] =
         completedAuthRequests.map((completedAuthRequest) => {
+          console.log(
+            "replyToAuthRequest called for",
+            completedAuthRequest.authID
+          );
+
           return replyToAuthRequest(
             completedAuthRequest.type,
             completedAuthRequest.authID,
@@ -520,6 +532,8 @@ export function AuthRequestsProvider({ children }: PropsWithChildren) {
     function handleBeforeUnload() {
       authRequests.forEach((authRequest) => {
         if (authRequest.status !== "pending") return;
+
+        console.log("replyToAuthRequest called from unload");
 
         // Send cancel event for all pending requests if the popup is closed by the user:
         replyToAuthRequest(

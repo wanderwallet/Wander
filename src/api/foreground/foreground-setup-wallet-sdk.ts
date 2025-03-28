@@ -106,7 +106,7 @@ export function setupWalletSDK(
         let { data: res } = e;
 
         // validate return message
-        if (`${data.type}_result` !== res.type) return;
+        if (!data || `${data.type}_result` !== res.type) return;
 
         // only resolve when the result matching our callID is delivered
         if (data.callID !== res.callID) return;
@@ -117,6 +117,8 @@ export function setupWalletSDK(
         if (isApiErrorResponse(res)) {
           return reject(res.data);
         }
+
+        console.log("FOREGROUND RESULT =", res.data);
 
         const finalizerFn =
           typeof foregroundModule === "string"

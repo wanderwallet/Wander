@@ -25,8 +25,6 @@ export function setupEmbeddedWalletSDK(
 
   setEmbeddedTargetIframe(targetWindowOrIframe);
 
-  console.log("setupEmbeddedWalletSDK()", new Date().toISOString());
-
   /** Init events */
   const events = mitt<InjectedEvents>();
 
@@ -167,7 +165,7 @@ export function setupEmbeddedWalletSDK(
         event: Event;
       }>
     ) => {
-      if (e.data.type !== "wander_event") return;
+      if (e.data?.type !== "wander_event") return;
 
       events.emit(e.data.event.name, e.data.event.value);
     }

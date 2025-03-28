@@ -20,7 +20,10 @@ function getSendMessageWithBridgeFunction<K extends MessageID>({
   data
 }: MessageData<K>): () => Promise<ReturnType<OnMessageCallback<K>>> {
   return async function sendMessageWithBridge() {
-    console.log("webExtBridgeSendMessage =", messageId, destination, data);
+    console.log(
+      `SEND (webExtBridgeSendMessage) ${messageId} to ${destination}, data =`,
+      data
+    );
 
     return webExtBridgeSendMessage<any, K>(messageId, data as any, destination);
   };

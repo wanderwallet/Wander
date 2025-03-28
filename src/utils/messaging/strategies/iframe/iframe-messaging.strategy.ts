@@ -53,16 +53,21 @@ function getPostMessageFunction<K extends MessageID>(
     postMessageTargetOrigin = "";
   }
 
+  /*
   console.log(
     "DEBUG DATA = ",
     messageData,
     isInsideIframe(),
     postMessageTargetOrigin
   );
+  */
 
   if (postMessageTargetOrigin) {
     return async function postMessage() {
-      console.log(`postMessage to ${postMessageTargetOrigin}`);
+      console.log(
+        `SEND (postMessage) ${messageId} to ${destination} (${postMessageTargetOrigin}), data =`,
+        data
+      );
 
       return new Promise<ApiResponse>(async (resolve) => {
         targetIframe.contentWindow.postMessage(data, postMessageTargetOrigin);
@@ -79,7 +84,7 @@ function getPostMessageFunction<K extends MessageID>(
           let { data: res } = e;
 
           // validate return message
-          if (`${data.type}_result` !== res.type) return;
+          if (!data || `${data.type}_result` !== res.type) return;
 
           // only resolve when the result matching our callID is delivered
           if (data.callID !== res.callID) return;
@@ -95,6 +100,11 @@ function getPostMessageFunction<K extends MessageID>(
   }
 
   return async function sendMessageToCallback() {
+    console.log(
+      `SEND (sendMessageToCallback) ${messageId} to ${destination}, data =`,
+      data
+    );
+
     const messageHandlers = messageHandlersByMessageID[messageId];
 
     if (!messageHandlers) {
@@ -173,10 +183,10 @@ export function iframeIsomorphicOnMessage<K extends MessageID>(
   if (messageHandlersByMessageID[messageId].size > 1) {
     // TODO: Are we adding the same listener multiple times?
     console.warn(
-      "iframeIsomorphicOnMessage",
-      messageId,
-      messageHandlersByMessageID
+      `${messageHandlersByMessageID[messageId].size} handlers for ${messageId}`
     );
+  } else {
+    console.warn(`Handler added for ${messageId}`);
   }
 
   // Note that in Wander Embed, there are no ready messages, so the API/SDK must
@@ -216,7 +226,32 @@ if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1" && isInsideIframe()) {
         );
       }
 
-      console.log("MESSAGE FROM PARENT =", data, messageHandlers.size);
+      console.log("MESSAGE FROM PARENT =", data);
+
+      /*
+      const [messageHandler] = messageHandlers;
+
+      let result: any = null;
+
+      if (messageHandler) {
+        console.warn(`There are ${messageHandlers.size} handlers for ${ messageId }`);
+
+        result = await messageHandler({
+          id: nanoid(),
+          timestamp: Date.now(),
+          data,
+          sender: {
+            tabId: EMBEDDED_ANCESTOR_TAB_ID,
+            context: "content-script"
+          }
+        });
+
+        messageHandlers.delete(messageHandler);
+        console.warn(`One handler deleted for ${ messageId }. ${messageHandlers.size} left.`);
+      } else {
+        console.warn(`No handler for ${ messageId }`);
+      }
+      */
 
       const resultPromises = Array.from(messageHandlers).map(
         (messageHandler) => {

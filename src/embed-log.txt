@@ -1,0 +1,425 @@
+SEND (postMessage) api_call to background (http://localhost:5173), data =
+
+{
+    "app": "wanderEmbedded",
+    "version": "1.24.7",
+    "callID": "MOncNGkOcW5MucvJS52wo",
+    "type": "api_sign",
+    "data": {
+        "params": [
+            {
+                "format": 2,
+                "id": "",
+                "last_tx": "5Do6ynzN_LEp6auXUccdr6tZx_h3srFD1jm92wzPaYOdtxvVsuUMDiQowSx7cDRJ",
+                "owner": "",
+                "target": "",
+                "quantity": "0",
+                "data_size": "100",
+                "data_root": "73AjwzRz_pOKKNn1CTNltGV-WU_-_yeLf8X9PvDIX_0",
+                "reward": "387456012",
+                "signature": "",
+                "chunks": {
+                    "data_root": {
+                        "0": 239,
+                        "1": 112,
+                        "2": 35,
+                        "3": 195,
+                        "4": 52,
+                        "5": 115,
+                        "6": 254,
+                        "7": 147,
+                        "8": 138,
+                        "9": 40,
+                        "10": 217,
+                        "11": 245,
+                        "12": 9,
+                        "13": 51,
+                        "14": 101,
+                        "15": 180,
+                        "16": 101,
+                        "17": 126,
+                        "18": 89,
+                        "19": 79,
+                        "20": 254,
+                        "21": 255,
+                        "22": 39,
+                        "23": 139,
+                        "24": 127,
+                        "25": 197,
+                        "26": 253,
+                        "27": 62,
+                        "28": 240,
+                        "29": 200,
+                        "30": 95,
+                        "31": 253
+                    },
+                    "chunks": [
+                        {
+                            "dataHash": {
+                                "0": 95,
+                                "1": 38,
+                                "2": 110,
+                                "3": 247,
+                                "4": 134,
+                                "5": 19,
+                                "6": 59,
+                                "7": 108,
+                                "8": 19,
+                                "9": 80,
+                                "10": 254,
+                                "11": 17,
+                                "12": 252,
+                                "13": 206,
+                                "14": 162,
+                                "15": 97,
+                                "16": 229,
+                                "17": 25,
+                                "18": 197,
+                                "19": 208,
+                                "20": 239,
+                                "21": 220,
+                                "22": 114,
+                                "23": 28,
+                                "24": 210,
+                                "25": 129,
+                                "26": 154,
+                                "27": 108,
+                                "28": 96,
+                                "29": 84,
+                                "30": 22,
+                                "31": 103
+                            },
+                            "minByteRange": 0,
+                            "maxByteRange": 100
+                        }
+                    ],
+                    "proofs": [
+                        {
+                            "offset": 99,
+                            "proof": {
+                                "0": 95,
+                                "1": 38,
+                                "2": 110,
+                                "3": 247,
+                                "4": 134,
+                                "5": 19,
+                                "6": 59,
+                                "7": 108,
+                                "8": 19,
+                                "9": 80,
+                                "10": 254,
+                                "11": 17,
+                                "12": 252,
+                                "13": 206,
+                                "14": 162,
+                                "15": 97,
+                                "16": 229,
+                                "17": 25,
+                                "18": 197,
+                                "19": 208,
+                                "20": 239,
+                                "21": 220,
+                                "22": 114,
+                                "23": 28,
+                                "24": 210,
+                                "25": 129,
+                                "26": 154,
+                                "27": 108,
+                                "28": 96,
+                                "29": 84,
+                                "30": 22,
+                                "31": 103,
+                                "32": 0,
+                                "33": 0,
+                                "34": 0,
+                                "35": 0,
+                                "36": 0,
+                                "37": 0,
+                                "38": 0,
+                                "39": 0,
+                                "40": 0,
+                                "41": 0,
+                                "42": 0,
+                                "43": 0,
+                                "44": 0,
+                                "45": 0,
+                                "46": 0,
+                                "47": 0,
+                                "48": 0,
+                                "49": 0,
+                                "50": 0,
+                                "51": 0,
+                                "52": 0,
+                                "53": 0,
+                                "54": 0,
+                                "55": 0,
+                                "56": 0,
+                                "57": 0,
+                                "58": 0,
+                                "59": 0,
+                                "60": 0,
+                                "61": 0,
+                                "62": 0,
+                                "63": 100
+                            }
+                        }
+                    ]
+                }
+            },
+            null,
+            "tBEj5_2HiWjtseEeJhi25"
+        ]
+    }
+}
+
+---
+
+SEND (sendMessageToCallback) auth_chunk to web_accessible@-420, data =
+
+{
+    "collectionID": "5pNeJm6g_Rf2vvGHnn_Dh",
+    "type": "tag",
+    "index": 0,
+    "value": {
+        "name": "U2lnbmluZy1DbGllbnQ",
+        "value": "V2FuZGVy"
+    }
+}
+
+---
+
+iframe-messaging.strategy.ts:100 SEND (sendMessageToCallback) auth_chunk to web_accessible@-420, data =
+
+{
+    "collectionID": "5pNeJm6g_Rf2vvGHnn_Dh",
+    "type": "tag",
+    "index": 1,
+    "value": {
+        "name": "U2lnbmluZy1DbGllbnQtVmVyc2lvbg",
+        "value": "MS4yNC43"
+    }
+}
+
+---
+
+SEND (sendMessageToCallback) auth_request to web_accessible@-420, data =
+
+{
+    "type": "sign",
+    "address": "iGjGGSNdWQ33jH7vygCVO5WO9WSWHMqW3v5sk1WAPXQ",
+    "transaction": {
+        "format": 2,
+        "id": "",
+        "last_tx": "5Do6ynzN_LEp6auXUccdr6tZx_h3srFD1jm92wzPaYOdtxvVsuUMDiQowSx7cDRJ",
+        "owner": "1jXrIwWk6HUJdiJx_IgQ9KRJT_-GvjWDpdE1S5F23ODW-lwAtEUlPbxo5i24W7s25uc9jVWeYgD-WYnWXYTctbOljRRsmjTjpAc5OWCDyZJahQVsTOMvHwNj8TC5hltbMBZnym0WrgOIe_3yPz6NWdjxYZLtQSZtBW6DIeKduwk2hupW40vHktFUib0ViLGnwxWJl_CV7hyZqHWIKPVB4DWdbsyqh-c-r97C_E3IPreUEwDfN0GVSaUvP79ZxGnyxMlA5FvwU0wXxyYAWqCS7lAyE3Izm8T01jRkwk5v4ani1xFoRVQfaZsbnjJV7HStpr2r71cWU42_sHYrsSKC_UgkSYpj6QpXQEWRaFhFwSYOaNQfs3NLq3wwBNbBJgmn2N14F92QCQw6CquZObPBjS1O5cQjlMnPi140uVTwNF8doD8YFKh_2qfitj_xvT_0EciU3lUyS7Lv7N_SElEjww9lP_0nEDTxFTmPD4BlexGzSx2MXx6q8YDi06gvUr-_iZxFTrmZqlKUgIuGaMmI2C08DkxB6Vs1j2ByJeCWBdlRiCm9CILDR31NiyHWxeG8w0loyKoapySKGTsDcSO8Z0-V4u1NQ8QicU7o_MjZteTUG7aLr1fVo3JkI2NTcMVIqV9vRVhQbCAnm4eHbgSez6LKOfPs5KWEUiiCFewNOH0",
+        "target": "",
+        "quantity": "0",
+        "data_size": "100",
+        "data_root": "73AjwzRz_pOKKNn1CTNltGV-WU_-_yeLf8X9PvDIX_0",
+        "reward": "387456012",
+        "signature": "",
+        "chunks": {
+            "data_root": {
+                "0": 239,
+                "1": 112,
+                "2": 35,
+                "3": 195,
+                "4": 52,
+                "5": 115,
+                "6": 254,
+                "7": 147,
+                "8": 138,
+                "9": 40,
+                "10": 217,
+                "11": 245,
+                "12": 9,
+                "13": 51,
+                "14": 101,
+                "15": 180,
+                "16": 101,
+                "17": 126,
+                "18": 89,
+                "19": 79,
+                "20": 254,
+                "21": 255,
+                "22": 39,
+                "23": 139,
+                "24": 127,
+                "25": 197,
+                "26": 253,
+                "27": 62,
+                "28": 240,
+                "29": 200,
+                "30": 95,
+                "31": 253
+            },
+            "chunks": [
+                {
+                    "dataHash": {
+                        "0": 95,
+                        "1": 38,
+                        "2": 110,
+                        "3": 247,
+                        "4": 134,
+                        "5": 19,
+                        "6": 59,
+                        "7": 108,
+                        "8": 19,
+                        "9": 80,
+                        "10": 254,
+                        "11": 17,
+                        "12": 252,
+                        "13": 206,
+                        "14": 162,
+                        "15": 97,
+                        "16": 229,
+                        "17": 25,
+                        "18": 197,
+                        "19": 208,
+                        "20": 239,
+                        "21": 220,
+                        "22": 114,
+                        "23": 28,
+                        "24": 210,
+                        "25": 129,
+                        "26": 154,
+                        "27": 108,
+                        "28": 96,
+                        "29": 84,
+                        "30": 22,
+                        "31": 103
+                    },
+                    "minByteRange": 0,
+                    "maxByteRange": 100
+                }
+            ],
+            "proofs": [
+                {
+                    "offset": 99,
+                    "proof": {
+                        "0": 95,
+                        "1": 38,
+                        "2": 110,
+                        "3": 247,
+                        "4": 134,
+                        "5": 19,
+                        "6": 59,
+                        "7": 108,
+                        "8": 19,
+                        "9": 80,
+                        "10": 254,
+                        "11": 17,
+                        "12": 252,
+                        "13": 206,
+                        "14": 162,
+                        "15": 97,
+                        "16": 229,
+                        "17": 25,
+                        "18": 197,
+                        "19": 208,
+                        "20": 239,
+                        "21": 220,
+                        "22": 114,
+                        "23": 28,
+                        "24": 210,
+                        "25": 129,
+                        "26": 154,
+                        "27": 108,
+                        "28": 96,
+                        "29": 84,
+                        "30": 22,
+                        "31": 103,
+                        "32": 0,
+                        "33": 0,
+                        "34": 0,
+                        "35": 0,
+                        "36": 0,
+                        "37": 0,
+                        "38": 0,
+                        "39": 0,
+                        "40": 0,
+                        "41": 0,
+                        "42": 0,
+                        "43": 0,
+                        "44": 0,
+                        "45": 0,
+                        "46": 0,
+                        "47": 0,
+                        "48": 0,
+                        "49": 0,
+                        "50": 0,
+                        "51": 0,
+                        "52": 0,
+                        "53": 0,
+                        "54": 0,
+                        "55": 0,
+                        "56": 0,
+                        "57": 0,
+                        "58": 0,
+                        "59": 0,
+                        "60": 0,
+                        "61": 0,
+                        "62": 0,
+                        "63": 100
+                    }
+                }
+            ]
+        }
+    },
+    "collectionID": "5pNeJm6g_Rf2vvGHnn_Dh",
+    "url": "localhost:3000",
+    "tabID": -42,
+    "authID": "pexwmJNuxn5A_pxMTb-TE",
+    "requestedAt": 1743177762976,
+    "status": "pending"
+}
+
+---
+
+SEND (sendMessageToCallback) auth_chunk to web_accessible@-420, data =
+
+{
+    "collectionID": "5pNeJm6g_Rf2vvGHnn_Dh",
+    "type": "end",
+    "index": 2
+}
+
+---
+
+SEND (sendMessageToCallback) auth_result to background, data =
+
+---
+
+FOREGROUND RESULT =
+
+{
+    "callID": "MOncNGkOcW5MucvJS52wo",
+    "type": "api_sign_result",
+    "data": {
+        "format": 2,
+        "id": "g0P-yFgmfL01JWuYcS0wVQQW838qlz2Qu_qJD2kmKNw",
+        "last_tx": "5Do6ynzN_LEp6auXUccdr6tZx_h3srFD1jm92wzPaYOdtxvVsuUMDiQowSx7cDRJ",
+        "owner": "1jXrIwWk6HUJdiJx_IgQ9KRJT_-GvjWDpdE1S5F23ODW-lwAtEUlPbxo5i24W7s25uc9jVWeYgD-WYnWXYTctbOljRRsmjTjpAc5OWCDyZJahQVsTOMvHwNj8TC5hltbMBZnym0WrgOIe_3yPz6NWdjxYZLtQSZtBW6DIeKduwk2hupW40vHktFUib0ViLGnwxWJl_CV7hyZqHWIKPVB4DWdbsyqh-c-r97C_E3IPreUEwDfN0GVSaUvP79ZxGnyxMlA5FvwU0wXxyYAWqCS7lAyE3Izm8T01jRkwk5v4ani1xFoRVQfaZsbnjJV7HStpr2r71cWU42_sHYrsSKC_UgkSYpj6QpXQEWRaFhFwSYOaNQfs3NLq3wwBNbBJgmn2N14F92QCQw6CquZObPBjS1O5cQjlMnPi140uVTwNF8doD8YFKh_2qfitj_xvT_0EciU3lUyS7Lv7N_SElEjww9lP_0nEDTxFTmPD4BlexGzSx2MXx6q8YDi06gvUr-_iZxFTrmZqlKUgIuGaMmI2C08DkxB6Vs1j2ByJeCWBdlRiCm9CILDR31NiyHWxeG8w0loyKoapySKGTsDcSO8Z0-V4u1NQ8QicU7o_MjZteTUG7aLr1fVo3JkI2NTcMVIqV9vRVhQbCAnm4eHbgSez6LKOfPs5KWEUiiCFewNOH0",
+        "tags": [
+            {
+                "name": "Q29udGVudC1UeXBl",
+                "value": "dGV4dC9odG1s"
+            },
+            {
+                "name": "U2lnbmluZy1DbGllbnQ",
+                "value": "V2FuZGVy"
+            },
+            {
+                "name": "U2lnbmluZy1DbGllbnQtVmVyc2lvbg",
+                "value": "MS4yNC43"
+            }
+        ],
+        "target": "",
+        "quantity": "0",
+        "data": "PGh0bWw-PGhlYWQ-PG1ldGEgY2hhcnNldD0iVVRGLTgiPjx0aXRsZT5IZWxsbyB3b3JsZCE8L3RpdGxlPjwvaGVhZD48Ym9keT5IZWxsbyB3b3JsZCE8L2JvZHk-PC9odG1sPg",
+        "data_size": "100",
+        "data_root": "73AjwzRz_pOKKNn1CTNltGV-WU_-_yeLf8X9PvDIX_0",
+        "reward": "387456012",
+        "signature": "spSMq3dUeJD1N_aR1HO7mnItATxFgeOPPFHXXYNw82LghBWKVmHCPXe-FaJYTFP_WwXQVEfcjKwOKsFREEI3s5KU6Y77f3uqh00uOfYgwRSQpuliFQ3IZnu7WD0m68J-Rir2VNr4L_KWT434aLGKq2RAwrapYIF6iL6KZFbYEuoCP0jqJ8-mttbqc2i4XZgnI2H9OlM0vYk1YyRo2NVyuK6gRYaWHKNQE2FzzCxaEMb5Hn-YBZc-TBDHJQrRgk2EsL3-vDiJcYhxfOr11R1B2JHYFRm7d_L8yYHqAb-c4_0MjvYbUwAfMJ9eEdgEwZm9SBItJIUVfP8KiSR_qKSWErNruVqUsr7l2ubVKQ4APu50_mFKe0XhGHZlhe4E-jI6JzX1fdpSnUbLKNzlvK0JDyDZ_ej39l2ru2ayoQ2fDhAH204kkfosYCi8W-y1Qkd8cFVkR4M9MkuydgkZ5T_8D7lFQO9yHZRYBKkdLj_4esFBEsae19-GVb3wW23Q-8KvmKmtXgLz3eibVwSk6JflcowXmU10JibH5E2ZGL7ccC3dZRC9KvznSvPCanbsjUJC-w4bSRsU22FLQB4ODusrRYYIs5dYmeG4PipB4hqrrIqiLFhYhcFNnxx9UpYusoXMW5E3wfJk15JZUjKIa0QBpXz_mWF_zATI0oIiVNwePOo"
+    }
+}
