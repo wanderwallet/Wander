@@ -1,5 +1,6 @@
 import copy from "copy-to-clipboard";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "react-toastify";
 import {
   Button,
   Card,
@@ -28,11 +29,22 @@ export function AuthImportSeedphraseEmbeddedView() {
       if (!seedPhrase.length) return;
       await importTempWallet(seedPhrase.join(" "));
     } catch (error) {
-      alert(error);
+      toast.error(error);
     } finally {
       setLoading(false);
     }
   }, [seedPhrase]);
+
+  const handleRegisterWallet = useCallback(async () => {
+    try {
+      setLoading(true);
+      await registerWallet("IMPORTED");
+    } catch (error) {
+      toast.error(error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   const handleInputChange = useCallback((index: number, value: string) => {
     setSeedPhrase((prevSeedPhrase) => {
@@ -80,7 +92,7 @@ export function AuthImportSeedphraseEmbeddedView() {
         <Button
           variant="primary"
           size="md"
-          onClick={() => registerWallet("IMPORTED")}
+          onClick={handleRegisterWallet}
           isLoading={loading}
         >
           Yes, recover

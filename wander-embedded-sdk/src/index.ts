@@ -1,3 +1,3 @@
-export { WanderEmbedded } from "./wander-embedded";
+export { WanderEmbedded } from "@wanderapp/embed-sdk";
 
 export type * from "./wander-embedded.types";

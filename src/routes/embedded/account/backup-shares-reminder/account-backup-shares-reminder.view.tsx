@@ -6,16 +6,14 @@ import {
   Button,
   Card,
   Checkbox,
-  Row,
-  WanderIcon,
-  Text,
-  WarningCircledIcon
+  WarningCircledIcon,
+  WanderFooter
 } from "~components/embed/ui";
 import { useLocation } from "~wallets/router/router.utils";
 
 export function AccountBackupSharesReminderEmbeddedView() {
   const { currentWallet, skipBackUp } = useEmbedded();
-  const { navigate } = useLocation();
+  const { navigate, back } = useLocation();
   const isMandatoryReminder =
     currentWallet.totalExports === 0 &&
     currentWallet.totalBackups === 0 &&
@@ -28,17 +26,11 @@ export function AccountBackupSharesReminderEmbeddedView() {
     navigate(isChecked ? "/" : "/account");
   };
 
-  const address = wallets[0].address;
-
   return (
     <Card
-      headerIcon={!hasUnpartitionedState && <WarningCircledIcon />}
+      headerIcon={<WarningCircledIcon />}
       headerText="Wallet backup"
-      subtitle={
-        !hasUnpartitionedState
-          ? "Your browser does not support unpartitioned state. Back up your wallet to access it on new apps."
-          : "Secure your wallet by backing it up"
-      }
+      subtitle={"Secure your wallet by backing it up"}
       footerElement={<WanderFooter />}
       hasBackButton={true}
       onBackButtonClick={back}

@@ -5,24 +5,80 @@ import {
   Card,
   SeedIcon,
   KeyShareIcon,
-  KeyIcon
+  KeyIcon,
+  WanderFooter,
+  GDriveIcon,
+  AppleIcon,
+  DropboxIcon
 } from "~components/embed/ui";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { Link } from "~wallets/router/components/link/Link";
 import { useLocation } from "~wallets/router/router.utils";
 
 export function AccountBackupSharesEmbeddedView() {
-  const [loading, setLoading] = useState(false);
-  const { currentWallet, generateRecoveryAndDownload } = useEmbedded();
+  const [isLoading, setIsLoading] = useState({
+    calledId: "",
+    status: false
+  });
+  const { navigate } = useLocation();
+  const { currentWallet, generateRecoveryAndDownload, copySeedphrase } =
+    useEmbedded();
+  const walletAddress = currentWallet.address;
+
+  const handleOnClick = useCallback(
+    async (
+      method: "GDrive" | "Apple" | "Dropbox" | "PrivateKey" | "Seedphrase"
+    ) => {
+      const setLoadingState = (status: boolean) =>
+        setIsLoading({ calledId: method, status });
+
+      try {
+        setLoadingState(true);
+
+        switch (method) {
+          case "PrivateKey":
+            await generateRecoveryAndDownload();
+            break;
+
+          case "Seedphrase":
+            await copySeedphrase();
+            break;
+
+          case "GDrive":
+          case "Apple":
+          case "Dropbox":
+            console.log("Not implemented yet");
+            break;
+
+          default:
+            console.log("Method doesn't exist");
+        }
+      } catch (error) {
+        alert(error);
+      } finally {
+        setLoadingState(false);
+      }
+    },
+    [generateRecoveryAndDownload, copySeedphrase, walletAddress]
+  );
 
   const handleGenerateRecoveryAndDownload = useCallback(() => {
     try {
-      setLoading(true);
+      setIsLoading({
+        calledId: "RecoveryFile",
+        status: true
+      });
       generateRecoveryAndDownload();
-      setLoading(false);
+      setIsLoading({
+        calledId: "RecoveryFile",
+        status: false
+      });
     } catch (error) {
       alert(error);
-      setLoading(false);
+      setIsLoading({
+        calledId: "RecoveryFile",
+        status: false
+      });
     }
   }, [generateRecoveryAndDownload]);
 
@@ -110,8 +166,8 @@ export function AccountBackupSharesEmbeddedView() {
           variant="outlined"
           isFullWidth
           icon={<KeyIcon fontSize={24} />}
-          isLoading={loading}
-          isDisabled={loading}
+          isLoading={isLoading.calledId === "RecoveryFile" && isLoading.status}
+          isDisabled={isLoading.calledId === "RecoveryFile" && isLoading.status}
           onClick={handleGenerateRecoveryAndDownload}
         >
           Export Recovery File

@@ -1,9 +1,8 @@
-import copy from "copy-to-clipboard";
 import { useCallback, useEffect, useState } from "react";
 import { Button, Card, SeedInput, WanderFooter } from "~components/embed/ui";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useLocation } from "~wallets/router/router.utils";
-
+import { toast } from "react-toastify";
 export function AccountImportSeedphraseEmbeddedView() {
   const [loading, setLoading] = useState(false);
   const { back } = useLocation();
@@ -29,9 +28,9 @@ export function AccountImportSeedphraseEmbeddedView() {
       setLoading(true);
       if (!seedPhrase.length) return;
       await importTempWallet(seedPhrase.join(" "));
-      await registerWallet("imported");
+      await registerWallet("IMPORTED");
     } catch (error) {
-      alert(error);
+      toast.error(error);
     } finally {
       setLoading(false);
     }

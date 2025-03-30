@@ -2,25 +2,25 @@ import { useCallback, useState } from "react";
 import { Box, Button, CameraIcon, Card, WanderFooter } from "~components/embed";
 import { useLocation } from "~wallets/router/router.utils";
 import { useWebcamPermission } from "./hooks/useWebcamPermission";
+import { toast } from "react-toastify";
 
 export function AuthAddWithQRCodeEmbeddedView() {
-  const [showScanner, setShowScanner] = useState(false);
-
   const { navigate, back } = useLocation();
-  const { permissionStatus, isLoading, error, requestPermission } =
-    useWebcamPermission();
+  const { isLoading, error, requestPermission } = useWebcamPermission();
 
   const handleOpenWebcam = useCallback(async () => {
-    // const permissionGranted = await requestPermission();
+    try {
+      const permissionGranted = await requestPermission();
 
-    if (true) {
-      setShowScanner(true);
-      navigate("/auth/qrcode-scanner");
-    } else {
-      // Could show an error message to the user here
-      // For example, using an alert or a toast notification
+      if (permissionGranted) {
+        navigate("/auth/qrcode-scanner");
+      } else {
+        toast.error("Permission denied");
+      }
+    } catch (error) {
+      toast.error(error);
     }
-  }, [navigate, requestPermission, error]);
+  }, [navigate, requestPermission]);
 
   return (
     <Card
@@ -37,6 +37,7 @@ export function AuthAddWithQRCodeEmbeddedView() {
           isFullWidth
           icon={<CameraIcon />}
           onClick={handleOpenWebcam}
+          isLoading={isLoading}
         >
           Open webcam
         </Button>

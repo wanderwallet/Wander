@@ -2,8 +2,6 @@ import copy from "copy-to-clipboard";
 import { Card, Copyable, Button, WanderFooter } from "~components/embed/ui";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useLocation } from "~wallets/router/router.utils";
-const shortenAddress = (address: string): string =>
-  `${address.slice(0, 8)}...${address.slice(-6)}`;
 
 export function AccountConfirmationEmbeddedView() {
   const { wallets, lastRegisteredWallet, clearLastRegisteredWallet } =

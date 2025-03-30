@@ -1,4 +1,6 @@
 import { useEffect } from "react";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { WanderThemeProvider } from "~components/hardware/HardwareWalletTheme";
 import { NavigationBar } from "~components/popup/Navigation";
 import { AuthRequestsProvider } from "~utils/auth/auth.provider";
@@ -47,6 +49,12 @@ export function ArConnectEmbeddedAppRoot() {
             <QueryClientProvider client={queryClient}>
               <Wouter hook={useEmbeddedLocation}>
                 <ArConnectEmbeddedApp />
+                <ToastContainer
+                  position="top-center"
+                  autoClose={2000}
+                  hideProgressBar={false}
+                  pauseOnFocusLoss={false}
+                />
               </Wouter>
             </QueryClientProvider>
           </AuthRequestsProvider>

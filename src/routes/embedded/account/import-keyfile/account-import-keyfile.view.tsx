@@ -1,4 +1,3 @@
-import type { JWKInterface } from "arweave/web/lib/wallet";
 import copy from "copy-to-clipboard";
 import { useCallback, useEffect, useState } from "react";
 import {
@@ -95,7 +94,7 @@ export function AccountImportKeyfileEmbeddedView() {
         <Button
           variant="primary"
           size="md"
-          onClick={() => registerWallet("imported")}
+          onClick={() => registerWallet("IMPORTED")}
         >
           Yes, add
         </Button>

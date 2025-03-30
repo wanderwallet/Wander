@@ -11,10 +11,11 @@ import {
   WanderFooter
 } from "~components/embed";
 import copy from "copy-to-clipboard";
-
+import { toast } from "react-toastify";
 export function AuthRecoverAccountKeyfileEmbeddedView() {
   const [loading, setLoading] = useState(false);
   const [jsonData, setJsonData] = useState<any>(null);
+  const { navigate, back } = useLocation();
 
   const handleJsonParse = (parsedData: any) => {
     setJsonData(parsedData);
@@ -36,19 +37,17 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
 
         if (!tempWallet) {
           setLoading(false);
-          return alert(`Something isn't right`);
+          return toast.error(`Something isn't right`);
         }
         setLoading(false);
         return tempWallet;
       }
     } catch (error) {
-      alert(error);
+      toast.error(error);
     } finally {
       setLoading(false);
     }
   }, [jsonData]);
-
-  const { navigate, back } = useLocation();
 
   const handleRecover = async () => {
     try {
@@ -57,7 +56,7 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
       setLoading(false);
       navigate("/auth/recover-account/authentication");
     } catch (error) {
-      alert(error);
+      toast.error(error);
       setLoading(false);
     }
   };

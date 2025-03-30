@@ -1,5 +1,5 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
-
+import { toast } from "react-toastify";
 import {
   Box,
   Button,
@@ -38,34 +38,49 @@ export function AuthEmbeddedView() {
   const handleAuthenticate = useCallback(
     async (authProviderType: AuthProviderType) => {
       setSelectedAuthProviderType(authProviderType);
-      await authenticate(
-        authProviderType,
-        emailInputRef.current?.value || "",
-        passwordInputRef.current?.value || ""
-      );
-      setSelectedAuthProviderType(null);
+      try {
+        await authenticate(
+          authProviderType,
+          emailInputRef.current?.value || "",
+          passwordInputRef.current?.value || ""
+        );
+        setSelectedAuthProviderType(null);
+      } catch (error) {
+        toast.error(`Error signing in with ${authProviderType}`);
+      } finally {
+        setSelectedAuthProviderType(null);
+      }
     },
     []
   );
 
   const handleEmailSignup = useCallback(async () => {
-    const supabase = await getSupabaseClient();
-    const { error, data } = await supabase.auth.signUp({
-      email: emailInputRef.current?.value || "",
-      password: passwordInputRef.current?.value || ""
-    });
+    try {
+      const supabase = await getSupabaseClient();
 
-    console.log({ error, data });
+      const { error, data } = await supabase.auth.signUp({
+        email: emailInputRef.current?.value || "",
+        password: passwordInputRef.current?.value || ""
+      });
+
+      console.log({ error, data });
+    } catch (error) {
+      toast.error("Error signing up");
+    }
   }, []);
 
   const handleEmailSignIn = useCallback(async () => {
-    const supabase = await getSupabaseClient();
-    const { error, data } = await supabase.auth.signInWithPassword({
-      email: emailInputRef.current?.value || "",
-      password: passwordInputRef.current?.value || ""
-    });
+    try {
+      const supabase = await getSupabaseClient();
+      const { error, data } = await supabase.auth.signInWithPassword({
+        email: emailInputRef.current?.value || "",
+        password: passwordInputRef.current?.value || ""
+      });
 
-    console.log({ error, data });
+      console.log({ error, data });
+    } catch (error) {
+      toast.error("Error signing in");
+    }
   }, []);
 
   return (
@@ -81,14 +96,14 @@ export function AuthEmbeddedView() {
           placeholder="E-Mail"
           isDisabled={areButtonsDisabled}
         />
-
+        <br />
         <TextInput
           ref={passwordInputRef}
           placeholder="Password"
           isDisabled={areButtonsDisabled}
           isSecure
         />
-
+        <br />
         <Button
           isFullWidth
           onClick={() => handleEmailSignup()}

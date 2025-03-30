@@ -1,12 +1,9 @@
-import { useCallback } from "react";
 import { Card, WanderFooter } from "~components/embed";
 import { useLocation } from "~wallets/router/router.utils";
-import { CameraView } from "./camera-view";
+import { QrReader } from "~components/embed/ui/organisms";
 
 export function AuthQRCodeScannerEmbeddedView() {
   const { back } = useLocation();
-
-  const handleReadQRCode = useCallback(async () => {}, []);
 
   return (
     <Card
@@ -17,7 +14,7 @@ export function AuthQRCodeScannerEmbeddedView() {
       onBackButtonClick={back}
       size="sm"
     >
-      <CameraView />
+      <QrReader />
     </Card>
   );
 }

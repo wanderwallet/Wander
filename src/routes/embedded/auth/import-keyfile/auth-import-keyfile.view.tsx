@@ -11,7 +11,7 @@ import {
 } from "~components/embed";
 import copy from "copy-to-clipboard";
 import { useLocation } from "~wallets/router/router.utils";
-
+import { toast } from "react-toastify";
 export function AuthImportKeyfileEmbeddedView() {
   const [loading, setLoading] = useState(false);
   const [jsonData, setJsonData] = useState<any>(null);
@@ -35,17 +35,28 @@ export function AuthImportKeyfileEmbeddedView() {
 
         if (!tempWallet) {
           setLoading(false);
-          return alert(`Something isn't right`);
+          return toast.error(`Something isn't right`);
         }
         setLoading(false);
         return tempWallet;
       }
     } catch (error) {
-      alert(error);
+      toast.error(error);
     } finally {
       setLoading(false);
     }
   }, [jsonData]);
+
+  const handleRegisterWallet = useCallback(async () => {
+    try {
+      setLoading(true);
+      await registerWallet("IMPORTED");
+    } catch (error) {
+      toast.error(error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -83,7 +94,8 @@ export function AuthImportKeyfileEmbeddedView() {
         <Button
           variant="primary"
           size="md"
-          onClick={() => registerWallet("IMPORTED")}
+          onClick={handleRegisterWallet}
+          isLoading={loading}
         >
           Yes, add
         </Button>

@@ -11,7 +11,7 @@ import {
   WanderFooter
 } from "~components/embed/ui";
 import copy from "copy-to-clipboard";
-
+import { toast } from "react-toastify";
 export function AuthRecoverAccountSeedphraseEmbeddedView() {
   const [loading, setLoading] = useState(false);
   const [seedPhrase, setSeedPhrase] = useState<string[]>([]);
@@ -30,7 +30,7 @@ export function AuthRecoverAccountSeedphraseEmbeddedView() {
       if (!seedPhrase.length) return;
       await importTempWallet(seedPhrase.join(" "));
     } catch (error) {
-      alert(error);
+      toast.error(error);
     } finally {
       setLoading(false);
     }
@@ -51,7 +51,7 @@ export function AuthRecoverAccountSeedphraseEmbeddedView() {
       setLoading(false);
       navigate("/auth/recover-account/authentication");
     } catch (error) {
-      alert(error);
+      toast.error(error);
       setLoading(false);
     }
   };

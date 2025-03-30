@@ -8,16 +8,10 @@ import {
   Row,
   Box
 } from "~components/embed/ui";
-import { useActiveWallet } from "~wallets/hooks";
 import { useLocation } from "~wallets/router/router.utils";
 
 export function WalletBuyEmbeddedView() {
-  const wallet = useActiveWallet();
-  const { navigate, back } = useLocation();
-
-  const effectiveAddress = useMemo(() => wallet?.address, [wallet]);
-
-  const effectiveWalletName = useMemo(() => wallet?.nickname, [wallet]);
+  const { navigate } = useLocation();
 
   return (
     <Card

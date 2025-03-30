@@ -1,6 +1,6 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useCallback, useRef, useState } from "react";
-
+import { toast } from "react-toastify";
 import { Card, Upload, Button, WanderFooter } from "~components/embed/ui";
 import { useLocation } from "~wallets/router/router.utils";
 
@@ -23,13 +23,13 @@ export function AuthRestoreSharesRecoveryFileEmbeddedView() {
 
         if (!restoredWallet) {
           setLoading(false);
-          return alert(`Something isn't right`);
+          return toast.error(`Something isn't right`);
         }
         setLoading(false);
         return restoredWallet;
       }
     } catch (error) {
-      alert(error);
+      toast.error(error);
     } finally {
       setLoading(false);
     }

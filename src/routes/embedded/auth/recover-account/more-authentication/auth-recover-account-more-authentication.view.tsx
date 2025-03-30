@@ -1,5 +1,5 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 import {
   AppleIcon,
@@ -12,14 +12,25 @@ import {
   WanderFooter
 } from "~components/embed/ui";
 import { useLocation } from "~wallets/router/router.utils";
-
+import { toast } from "react-toastify";
+import type { AuthProviderType } from "embed-api";
 export function AuthRecoverAccountMoreAuthenticationEmbeddedView() {
   const { navigate, back } = useLocation();
-  const { importedTempWalletAddress, recoverableAccounts, recoverAccount } =
-    useEmbedded();
+  const { recoverableAccounts, recoverAccount } = useEmbedded();
 
   const accountToRecover = recoverableAccounts?.[0];
   const accountToRecoverId = accountToRecover?.userId;
+
+  const handleRecoverAccount = useCallback(
+    async (authProviderType: AuthProviderType) => {
+      try {
+        await recoverAccount(authProviderType, accountToRecoverId);
+      } catch (error) {
+        toast.error(error);
+      }
+    },
+    [recoverAccount, accountToRecoverId]
+  );
 
   const [checkboxChecked, setCheckboxChecked] = useState<boolean>(false);
 
@@ -40,20 +51,11 @@ export function AuthRecoverAccountMoreAuthenticationEmbeddedView() {
       size="auto"
     >
       <Box>
-        {/* <Button
-          variant="outlined"
-          isFullWidth
-          icon={<EmailIcon fontSize={24} />}
-          onClick={() => recoverAccount("EMAIL_N_PASSWORD", accountToRecoverId)}
-          isDisabled={!checkboxChecked}
-        >
-          Email & Password
-        </Button> */}
         <Button
           variant="outlined"
           isFullWidth
           icon={<FacebookIcon fontSize={24} />}
-          onClick={() => recoverAccount("FACEBOOK", accountToRecoverId)}
+          onClick={() => handleRecoverAccount("FACEBOOK")}
           isDisabled={!checkboxChecked}
         >
           Facebook
@@ -63,7 +65,7 @@ export function AuthRecoverAccountMoreAuthenticationEmbeddedView() {
           isFullWidth
           icon={<AppleIcon fontSize={24} />}
           isDisabled={!checkboxChecked}
-          onClick={() => recoverAccount("APPLE", accountToRecoverId)}
+          onClick={() => handleRecoverAccount("APPLE")}
         >
           Apple
         </Button>
@@ -72,7 +74,7 @@ export function AuthRecoverAccountMoreAuthenticationEmbeddedView() {
           isFullWidth
           icon={<TwitterIcon fontSize={24} />}
           isDisabled={!checkboxChecked}
-          onClick={() => recoverAccount("X", accountToRecoverId)}
+          onClick={() => handleRecoverAccount("X")}
         >
           X
         </Button>

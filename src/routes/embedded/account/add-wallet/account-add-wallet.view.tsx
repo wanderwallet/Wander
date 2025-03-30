@@ -14,6 +14,7 @@ import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useLocation } from "~wallets/router/router.utils";
 
 export function AccountAddWalletEmbeddedView() {
+  const { back } = useLocation();
   const { authProviderType, generateTempWallet, registerWallet } =
     useEmbedded();
   const [isLoading, setIsLoading] = useState({

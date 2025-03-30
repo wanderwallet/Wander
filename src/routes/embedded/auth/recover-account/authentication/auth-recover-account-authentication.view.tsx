@@ -1,6 +1,6 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useLocation } from "~wallets/router/router.utils";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import {
   Card,
   Copyable,
@@ -12,8 +12,10 @@ import {
   WanderFooter
 } from "~components/embed/ui";
 import copy from "copy-to-clipboard";
-
+import type { AuthProviderType } from "embed-api";
+import { toast } from "react-toastify";
 export function AuthRecoverAccountAuthenticationEmbeddedView() {
+  const { back } = useLocation();
   const { importedTempWalletAddress, recoverableAccounts, recoverAccount } =
     useEmbedded();
 
@@ -24,6 +26,17 @@ export function AuthRecoverAccountAuthenticationEmbeddedView() {
 
   const toggleCheckboxChecked = () =>
     setCheckboxChecked((prevValue) => !prevValue);
+
+  const handleRecoverAccount = useCallback(
+    async (authProviderType: AuthProviderType) => {
+      try {
+        await recoverAccount(authProviderType, accountToRecoverId);
+      } catch (error) {
+        toast.error(error);
+      }
+    },
+    [recoverAccount, accountToRecoverId]
+  );
 
   return (
     <Card
@@ -46,7 +59,7 @@ export function AuthRecoverAccountAuthenticationEmbeddedView() {
         value={importedTempWalletAddress}
       />
       <Button
-        onClick={() => recoverAccount("PASSKEYS", accountToRecoverId)}
+        onClick={() => handleRecoverAccount("PASSKEYS")}
         variant="outlined"
         isFullWidth
         isDisabled={!checkboxChecked}
@@ -55,7 +68,7 @@ export function AuthRecoverAccountAuthenticationEmbeddedView() {
         Passkey
       </Button>
       <Button
-        onClick={() => recoverAccount("GOOGLE", accountToRecoverId)}
+        onClick={() => handleRecoverAccount("GOOGLE")}
         variant="outlined"
         isFullWidth
         isDisabled={!checkboxChecked}

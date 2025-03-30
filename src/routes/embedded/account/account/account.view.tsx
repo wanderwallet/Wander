@@ -5,7 +5,7 @@ import { useLocation } from "~wallets/router/router.utils";
 
 export function AccountEmbeddedView() {
   const { wallets } = useEmbedded();
-  const { back, navigate } = useLocation();
+  const { back } = useLocation();
   const { address } = wallets[0];
 
   return (
@@ -25,7 +25,6 @@ export function AccountEmbeddedView() {
         }}
         value={address}
       />
-<<<<<<< HEAD
       <Button isFullWidth size="md" href="/wallet">
         Home
       </Button>
@@ -37,10 +36,6 @@ export function AccountEmbeddedView() {
       </Button>
       <Button isFullWidth size="md" href="#/account/export-wallet">
         Export Wallet
-=======
-      <Button isFullWidth size="md" onClick={() => navigate("/wallet")}>
-        Continue
->>>>>>> 2abe84b8 (chore: various changes based on 3rd round of review)
       </Button>
     </Card>
   );
