@@ -1,5 +1,6 @@
 import { isValidMnemonic, jwkFromMnemonic } from "~wallets/generator";
 import { PlusIcon, SettingsIcon } from "@iconicicons/react";
+
 import type { JWKInterface } from "arweave/web/lib/wallet";
 import { checkPassword } from "~wallets/auth";
 import { useEffect, useState } from "react";
@@ -11,7 +12,8 @@ import {
   useToasts,
   Button,
   Input,
-  useModal
+  useModal,
+  Tooltip
 } from "@arconnect/components-rebrand";
 import BackupWalletPage from "~components/welcome/generate/BackupWalletPage";
 import KeystoneButton from "~components/hardware/KeystoneButton";
@@ -24,6 +26,7 @@ import { defaultGateway } from "~gateways/gateway";
 import { WalletKeySizeErrorModal } from "~components/modals/WalletKeySizeErrorModal";
 import { useLocation } from "~wallets/router/router.utils";
 import { Flex } from "~components/common/Flex";
+import { InfoCircle } from "@untitled-ui/icons-react";
 
 export function AddWalletDashboardView() {
   const { navigate } = useLocation();
@@ -325,10 +328,25 @@ export function AddWalletDashboardView() {
               <Text weight="medium" noMargin style={{ color: "#9787ff" }}>
                 {browser.i18n.getMessage("i_have_a_import_type", [
                   inputType === "seedphrase"
-                    ? browser.i18n.getMessage("keyfile")
-                    : browser.i18n.getMessage("seedphrase")
+                    ? browser.i18n.getMessage("keyfile").toLowerCase()
+                    : browser.i18n.getMessage("seedphrase").toLowerCase()
                 ])}
               </Text>
+              {inputType === "seedphrase" && (
+                <Tooltip
+                  content={browser.i18n.getMessage("keyfile_info_tooltip")}
+                  position="left"
+                >
+                  <InfoCircle
+                    style={{
+                      marginLeft: "4px",
+                      color: "#9787ff",
+                      width: "20px",
+                      height: "20px"
+                    }}
+                  />
+                </Tooltip>
+              )}
             </Flex>
             <Spacer y={0.5} />
             <SeedInput

@@ -2931,5 +2931,9 @@
     "minutes": {
         "message": "分钟",
         "description": "Minutes text"
-    }
+    },
+    "keyfile_info_tooltip": {
+        "message": "密钥文件是一个包含加密私钥的JSON文件",
+        "description": "Tooltip explaining what a keyfile is"
+      }
 }

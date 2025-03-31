@@ -2941,5 +2941,9 @@
   "minutes": {
     "message": "Minutes",
     "description": "Minutes text"
-  }
+  },
+  "keyfile_info_tooltip": {
+    "message": "A keyfile is a JSON file containing your encrypted private key.",
+    "description": "Tooltip explaining what a keyfile is"
+  }  
 }
