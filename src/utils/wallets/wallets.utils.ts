@@ -13,11 +13,6 @@ import { setDecryptionKey } from "~wallets/auth";
 import { INVALID_DEVICE_SHARES_INFO_ERR_MSG } from "~utils/wallets/wallets.constants";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import type NodeForge from "node-forge";
-import {
-  pemToBase64,
-  pemToJWK,
-  privateKeyDerToJWK
-} from "~utils/crypto/crypto.utils";
 import type { RecoveryJSON, Wallet } from "~utils/embedded/embedded.types";
 import { EMBEDDED_FEATURE_FLAGS } from "~utils/embedded/embedded.constants";
 import { LocalStorage } from "~iframe/storage/unpartitioned-storage/local-storage";
@@ -272,8 +267,7 @@ async function generateShareHashAndPublicKey(
         } else {
           const shareHash = await generateShareHash(share);
           const publicKey = result.publicKey;
-          const publicKeyPEM = pki.publicKeyToPem(publicKey);
-          const sharePublicKey = pemToBase64(publicKeyPEM);
+          const sharePublicKey = bigintToBase64Url(publicKey.n);
 
           resolve({
             shareHash,
