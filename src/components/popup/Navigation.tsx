@@ -62,24 +62,15 @@ const buttons = [
     iconActive: <Grid01 color="#6B57F9" fill="#6B57F9" />,
     size: "24px",
     route: "/quick-settings"
-  },
-  {
-    title: "Accounts",
-    dictionaryKey: "accounts",
-    icon: <Users01 />,
-    iconActive: <Users01 color="#6B57F9" fill="#6B57F9" />,
-    size: "24px",
-    route: "/quick-settings/wallets"
   }
 ] as const;
 
 export const NavigationBar = () => {
   const { location, navigate } = useLocation();
 
-  const shouldShowNavigationBar = buttons.some((button) => {
-    if (button.route === "/quick-settings/wallets") return false;
-    return location === button.route;
-  });
+  const shouldShowNavigationBar = buttons.some(
+    (button) => location === button.route
+  );
 
   if (!shouldShowNavigationBar) {
     return null;
