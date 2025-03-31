@@ -337,7 +337,6 @@ export function AddWalletDashboardView() {
             />
           </>
         )}
-        <Spacer y={1} />
         <Input
           type="password"
           {...passwordInput.bindings}
