@@ -413,12 +413,16 @@ export const LogoAndDetails = styled.div`
   gap: 0.8rem;
 `;
 
+// TODO: this could be removed to the components it's being used in
 export const LogoWrapper = styled(Squircle)<{ small?: boolean }>`
   position: relative;
   width: ${(props) => (props.small ? "2.1875rem" : "2.8rem;")};
   height: ${(props) => (props.small ? "2.1875rem" : "2.8rem;")};
   flex-shrink: 0;
   color: rgba(${(props) => props.theme.theme}, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
 
 export const Logo = styled(Image).attrs({
