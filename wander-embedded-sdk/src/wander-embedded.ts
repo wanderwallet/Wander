@@ -166,8 +166,6 @@ export class WanderEmbedded {
   }
 
   private initializeComponents(options: WanderEmbeddedOptions): string {
-    let iframeHostRef: null | HTMLDivElement = null;
-
     const {
       clientId,
       baseURL = WanderEmbedded.DEFAULT_IFRAME_SRC,
@@ -199,7 +197,6 @@ export class WanderEmbedded {
 
       this.backdropRef = elements.backdrop;
       this.iframeRef = elements.iframe;
-      iframeHostRef = elements.host;
 
       // document.body.appendChild(elements.backdrop);
       // document.body.appendChild(elements.iframe);
@@ -227,16 +224,10 @@ export class WanderEmbedded {
         : iframeOptions?.clickOutsideBehavior;
 
     if (clickOutsideBehavior) {
-      iframeHostRef?.addEventListener("click", ({ target }) => {
-        // Do not check if `target` is the backdrop <div> as it might have pointer-events: none.
-
+      this.backdropRef?.addEventListener("click", () => {
         const shouldClose =
           clickOutsideBehavior === true ||
-          (this.iframeRef !== target &&
-            this.buttonHostRef !== target &&
-            !this.iframeRef?.contains(target as HTMLElement) &&
-            !this.buttonHostRef?.contains(target as HTMLElement) &&
-            this.backdropRef &&
+          (this.backdropRef &&
             (getComputedStyle(this.backdropRef).backdropFilter !== "none" ||
               // TODO: This is not a good way to check if it's totally transparent:
               getComputedStyle(this.backdropRef).background !== "transparent"));
