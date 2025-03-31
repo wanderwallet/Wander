@@ -77,12 +77,12 @@ export default function Balance() {
   }, [balance, currency]);
 
   useEffect(() => {
-    if (hideBalance) {
+    if (hideBalance || isLoading) {
       setFiatBalance(0);
     } else {
       setFiatBalance(totalFiatBalance.toNumber());
     }
-  }, [totalFiatBalance, hideBalance]);
+  }, [totalFiatBalance, hideBalance, isLoading]);
 
   // balance history
   const [historicalBalance, setHistoricalBalance] = useStorage<number[]>(
