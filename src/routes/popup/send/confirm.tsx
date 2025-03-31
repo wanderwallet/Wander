@@ -15,6 +15,7 @@ import { SendButton, type RecipientType, type TransactionData } from ".";
 import { formatAddress } from "~utils/format";
 import type Transaction from "arweave/web/lib/transaction";
 import { useStorage } from "~utils/storage";
+import { saveAoTransactionToLocalStorage } from "~utils/transactions";
 import {
   ExtensionStorage,
   TempTransactionStorage,
@@ -289,6 +290,7 @@ export function ConfirmView({
     localStorage.setItem(
       "latest_tx",
       JSON.stringify({
+        id: transaction.id,
         quantity: { ar: arweave.ar.winstonToAr(transaction.quantity) },
         owner: {
           address: await arweave.wallets.ownerToAddress(transaction.owner)
@@ -368,6 +370,17 @@ export function ConfirmView({
           fractionedToBalance(amount, { decimals: token.Denomination }, "AO")
         );
         if (res) {
+          saveAoTransactionToLocalStorage(
+            res,
+            tokenID,
+            recipient.address,
+            activeAddress,
+            amount,
+            token.Ticker,
+            networkFee,
+            message
+          );
+
           setToast({
             type: "success",
             content: browser.i18n.getMessage("sent_tx"),
@@ -580,6 +593,17 @@ export function ConfirmView({
             keystoneSigner
           );
           if (res) {
+            saveAoTransactionToLocalStorage(
+              res,
+              tokenID,
+              recipient.address,
+              activeAddress,
+              amount,
+              token.Ticker,
+              networkFee,
+              message
+            );
+
             setToast({
               type: "success",
               content: browser.i18n.getMessage("sent_tx"),
