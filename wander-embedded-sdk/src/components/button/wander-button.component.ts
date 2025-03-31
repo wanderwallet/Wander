@@ -69,6 +69,7 @@ export class WanderButton {
   };
 
   static DEFAULT_CONFIG = {
+    parent: document.body,
     id: "wanderEmbeddedButtonHost",
     theme: "system",
     cssVars: {
@@ -92,6 +93,7 @@ export class WanderButton {
   } as const satisfies WanderEmbeddedButtonConfig;
 
   // Elements:
+  private parent: HTMLElement;
   private host: HTMLDivElement;
   private button: HTMLButtonElement;
   private wanderLogo: SVGElement;
@@ -139,6 +141,7 @@ export class WanderButton {
     }
 
     this.config = {
+      parent: options.parent || WanderButton.DEFAULT_CONFIG.parent,
       id: options.id || WanderButton.DEFAULT_CONFIG.id,
       theme: options.theme || WanderButton.DEFAULT_CONFIG.theme,
       cssVars: {
@@ -172,6 +175,7 @@ export class WanderButton {
 
     const elements = WanderButton.initializeButton(this.config);
 
+    this.parent = this.config.parent;
     this.host = elements.host;
     this.button = elements.button;
     this.wanderLogo = elements.wanderLogo;
@@ -263,6 +267,7 @@ export class WanderButton {
 
   getElements() {
     return {
+      parent: this.parent,
       host: this.host,
       button: this.button,
       wanderLogo: this.wanderLogo,

@@ -208,12 +208,12 @@ export class WanderEmbedded {
         buttonOptions === true ? {} : buttonOptions
       );
 
-      const { host, button } = this.buttonComponent.getElements();
+      const { parent, host, button } = this.buttonComponent.getElements();
 
       this.buttonHostRef = host;
       this.buttonRef = button;
 
-      document.body.appendChild(host);
+      parent.appendChild(host);
 
       this.handleButtonClick = this.handleButtonClick.bind(this);
       this.buttonRef.addEventListener("click", this.handleButtonClick);

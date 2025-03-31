@@ -1,6 +1,6 @@
 {
   "name": "@wanderapp/embed-sdk",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "description": "Wander Embedded SDK.",
   "author": "wanderapp",
   "license": "MIT",

@@ -494,6 +494,12 @@ export interface WanderEmbeddedButtonLabels {
 export interface WanderEmbeddedButtonOptions
   extends WanderEmbeddedComponentOptions<WanderEmbeddedButtonCSSVars> {
   /**
+   * Element the button will be appended to.
+   * @default document.body
+   */
+  parent?: HTMLElement;
+
+  /**
    * Position of the button on the screen.
    * Use "static" for custom positioning via CSS.
    * @default "bottom-right"
@@ -548,6 +554,11 @@ export interface WanderEmbeddedButtonOptions
  */
 export interface WanderEmbeddedButtonConfig
   extends WanderEmbeddedComponentConfig<WanderEmbeddedButtonCSSVars> {
+  /**
+   * Element the button will be appended to.
+   */
+  parent: HTMLElement;
+
   /**
    * Position of the button on the screen.
    */
