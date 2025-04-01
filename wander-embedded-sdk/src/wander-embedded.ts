@@ -137,7 +137,7 @@ export class WanderEmbedded {
       {
         clientId: "",
         iframe: {
-          clickOutsideBehavior: "auto"
+          clickOutsideBehavior: true
         },
         button: true
       } satisfies WanderEmbeddedOptions,
@@ -223,18 +223,9 @@ export class WanderEmbedded {
         ? false
         : iframeOptions?.clickOutsideBehavior;
 
-    if (clickOutsideBehavior) {
-      this.backdropRef?.addEventListener("click", () => {
-        const shouldClose =
-          clickOutsideBehavior === true ||
-          (this.backdropRef &&
-            (getComputedStyle(this.backdropRef).backdropFilter !== "none" ||
-              // TODO: This is not a good way to check if it's totally transparent:
-              getComputedStyle(this.backdropRef).background !== "transparent"));
-
-        if (shouldClose) {
-          this.close();
-        }
+    if (clickOutsideBehavior && this.backdropRef) {
+      this.backdropRef.addEventListener("click", () => {
+        this.close();
       });
     }
 
