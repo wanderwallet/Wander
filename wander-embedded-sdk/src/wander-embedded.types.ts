@@ -201,12 +201,17 @@ export interface BalanceInfo {
   /**
    * Amount in the specified currency.
    */
-  amount: number;
+  amount: number | null;
 
   /**
    * Currency code.
    */
-  currency: Currency;
+  currency: Currency | null;
+
+  /**
+   * Formatted amount in the specified currency;
+   */
+  formattedBalance: string;
 }
 
 export interface RequestsInfo {

@@ -73,18 +73,19 @@ export class WanderIframe {
     const { routeLayout } = options;
 
     if (typeof routeLayout === "string" || isRouteConfig(routeLayout)) {
-      // If a single value is passed, we use it for default and auth-request. Anything else fallbacks to the default
-      // (currently modal):
+      // If a single value is passed, we use it for default, settings and auth-request. auth and account fallbacks to
+      // the default (currently modal):
 
       const defaultLayoutConfig = WanderIframe.getLayoutConfig(routeLayout);
 
       this.routeLayout = {
         default: defaultLayoutConfig,
+        settings: defaultLayoutConfig,
         "auth-request": defaultLayoutConfig
       };
     } else {
-      // If only default and auth are defined by the developer, default is used for both default and auth-request, and
-      // auth is used for auth, account and settings:
+      // If only default and auth are defined by the developer, default is used for default, settings and auth-request,
+      // while auth is used for auth and account:
 
       const defaultLayoutConfig = WanderIframe.getLayoutConfig(
         routeLayout?.default || "popup"
@@ -102,7 +103,7 @@ export class WanderIframe {
           authLayoutConfig,
         settings:
           WanderIframe.getLayoutConfig(routeLayout?.settings) ||
-          authLayoutConfig,
+          defaultLayoutConfig,
         "auth-request":
           WanderIframe.getLayoutConfig(routeLayout?.["auth-request"]) ||
           defaultLayoutConfig

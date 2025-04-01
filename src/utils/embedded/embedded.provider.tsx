@@ -55,6 +55,7 @@ import { isTempWalletPromiseExpired } from "~utils/embedded/utils/wallets/embedd
 import copy from "copy-to-clipboard";
 import { useHashLocation } from "wouter/use-hash-location";
 import { getIPAddress } from "~utils/ip_address";
+import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 
 export type AuthStatusCopy = AuthStatus;
 
@@ -1004,6 +1005,13 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       lastUserIdRef.current = userId;
 
       setEmbeddedContextState(EMBEDDED_CONTEXT_INITIAL_STATE);
+
+      postEmbeddedMessage({
+        type: "embedded_auth",
+        data: {
+          userDetails: !userId || !session ? null : {}
+        }
+      });
 
       if (!userId || !session) {
         generateTempWallet();

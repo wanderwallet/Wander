@@ -11,6 +11,7 @@ import { Text } from "@arconnect/components-rebrand";
 import BigNumber from "bignumber.js";
 import { useTotalFiatBalance } from "~tokens/hooks";
 import NumberFlow from "@number-flow/react";
+import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 
 export default function Balance() {
   // balance in AR
@@ -26,7 +27,7 @@ export default function Balance() {
   );
   const totalFiatBalance = useTotalFiatBalance();
 
-  const [fiatBalance, setFiatBalance] = useState(0);
+  // const [fiatBalance, setFiatBalance] = useState(0);
 
   // balance display
   const [hideBalance, setHideBalance] = useStorage<boolean>(
@@ -36,6 +37,45 @@ export default function Balance() {
     },
     false
   );
+
+  useEffect(() => {
+    // TODO: The balance and fiat balance should be loaded and calculated from a provider / background service. Relying
+    // on a comment, that might or might not render, to update the SDK balance, is a rather poor implementation.
+
+    if (hideBalance) {
+      const fakeAmount = 111.11;
+      const formattedFakeBalance = Intl.NumberFormat(undefined, {
+        style: "currency",
+        currency
+      }).format(fakeAmount);
+
+      postEmbeddedMessage({
+        type: "embedded_balance",
+        data: {
+          amount: null,
+          currency: null,
+          formattedBalance: formattedFakeBalance
+        }
+      });
+
+      return;
+    }
+
+    const amount = totalFiatBalance.toNumber();
+    const formattedBalance = Intl.NumberFormat(undefined, {
+      style: "currency",
+      currency
+    }).format(amount);
+
+    postEmbeddedMessage({
+      type: "embedded_balance",
+      data: {
+        amount,
+        currency: currency as "USD",
+        formattedBalance
+      }
+    });
+  }, [hideBalance, totalFiatBalance, currency]);
 
   const [savedAr24hChange, setSavedAr24hChange] = useStorage<{
     value: number;
@@ -76,14 +116,6 @@ export default function Balance() {
     })();
   }, [balance, currency]);
 
-  useEffect(() => {
-    if (hideBalance || isLoading) {
-      setFiatBalance(0);
-    } else {
-      setFiatBalance(totalFiatBalance.toNumber());
-    }
-  }, [totalFiatBalance, hideBalance, isLoading]);
-
   // balance history
   const [historicalBalance, setHistoricalBalance] = useStorage<number[]>(
     {
@@ -93,39 +125,34 @@ export default function Balance() {
     []
   );
 
-  return (
-    <BalanceHead>
-      {isLoading && <Loading style={{ width: "20px", height: "20px" }} />}
-      {!isLoading && (
-        <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-          <BalanceText onClick={() => setHideBalance((val) => !val)} noMargin>
-            {hideBalance ? (
-              <>{"*".repeat(totalFiatBalance.toFixed(2).length)}</>
-            ) : (
-              <NumberFlow
-                value={fiatBalance}
-                format={{
-                  style: "currency",
-                  currency: currency
-                }}
-              />
-            )}
-          </BalanceText>
-          <PriceChangeIndicator
-            percentageChange={percentage}
-            fiatChange={fiat.multipliedBy(percentage.dividedBy(100))}
-            hideBalance={hideBalance}
-          />
-        </div>
-      )}
-    </BalanceHead>
+  const balanceHeaderContent = isLoading ? (
+    <Loading style={{ width: "20px", height: "20px" }} />
+  ) : (
+    <BalanceWrapper $hideBalance={hideBalance}>
+      <BalanceText onClick={() => setHideBalance((val) => !val)} noMargin>
+        <NumberFlow
+          value={totalFiatBalance}
+          format={{
+            style: "currency",
+            currency: currency
+          }}
+        />
+      </BalanceText>
+
+      <PriceChangeIndicator
+        percentageChange={percentage}
+        fiatChange={fiat.multipliedBy(percentage.dividedBy(100))}
+        hideBalance={hideBalance}
+      />
+    </BalanceWrapper>
   );
+
+  return <BalanceHead>{balanceHeaderContent}</BalanceHead>;
 }
 
 function PriceChangeIndicator({
   percentageChange,
-  fiatChange,
-  hideBalance
+  fiatChange
 }: {
   percentageChange: BigNumber;
   fiatChange: BigNumber;
@@ -135,36 +162,17 @@ function PriceChangeIndicator({
   const [currency] = useSetting<string>("currency");
   const isPositive = percentageChange.isGreaterThanOrEqualTo(0);
   const isZeroChange = percentageChange.isEqualTo(0);
-  const absoluteFiatChange = formatFiatBalance(
-    fiatChange.multipliedBy(percentageChange.dividedBy(100)),
-    currency.toLowerCase()
-  );
-
-  const [fiatChangeNumber, setFiatChangeNumber] = useState(0);
-
-  useEffect(() => {
-    if (!hideBalance) {
-      setFiatChangeNumber(fiatChange.toNumber());
-    } else {
-      setFiatChangeNumber(0);
-    }
-  }, [fiatChange, hideBalance]);
 
   return (
     <PercentageChangeContainer>
       <Text variant="secondary" weight="medium" noMargin>
-        {!hideBalance ? (
-          <NumberFlow
-            value={fiatChangeNumber}
-            format={{
-              style: "currency",
-              currency: currency
-            }}
-          />
-        ) : (
-          absoluteFiatChange.charAt(0) +
-          "*".repeat(absoluteFiatChange.length - 1)
-        )}
+        <NumberFlow
+          value={fiatChange}
+          format={{
+            style: "currency",
+            currency: currency
+          }}
+        />
       </Text>
       <Text variant="secondary" weight="medium" noMargin>
         (
@@ -216,6 +224,15 @@ const TriangleIcon: React.FC<TriangleIconProps> = ({
     </svg>
   );
 };
+
+const BalanceWrapper = styled.div<{ $hideBalance?: boolean }>`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: filter linear 300ms;
+  filter: ${({ $hideBalance }) => ($hideBalance ? "blur(8px)" : "blur(0px)")};
+  user-select: ${({ $hideBalance }) => ($hideBalance ? "none" : "auto")};
+`;
 
 const PercentageChangeContainer = styled.div`
   display: flex;

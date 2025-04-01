@@ -36,6 +36,7 @@ import devLocked256 from "url:/assets/icons/locked/logo256.development.png";
 
 import browser from "webextension-polyfill";
 import { ExtensionStorage } from "./storage";
+import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 
 interface LogosBySize {
   64: string;
@@ -94,6 +95,13 @@ const lockedLogos: LogosByEnvironment = {
  */
 export async function updateIcon(hasPerms: boolean) {
   const val = await ExtensionStorage.get("decryption_key");
+
+  if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1") {
+    postEmbeddedMessage({
+      type: val && hasPerms ? "embedded_connect" : "embedded_disconnect",
+      data: null
+    });
+  }
 
   // Set logos if connected / if not connected:
   const logosByEnvironment = val

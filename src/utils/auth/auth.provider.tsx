@@ -129,6 +129,8 @@ export function AuthRequestsProvider({ children }: PropsWithChildren) {
       const completedAuthRequest = authRequests.find(
         (authRequest) => authRequest.authID === authID
       );
+
+      // TODO: Sometimes the same completed auth request is pushed twice to completedAuthRequests
       const completedAuthRequests = [completedAuthRequest];
       const completedAuthRequestType = completedAuthRequest.type;
 
@@ -165,7 +167,7 @@ export function AuthRequestsProvider({ children }: PropsWithChildren) {
       console.log(
         "Completing auth requests",
         authRequests,
-        completeAuthRequest
+        completedAuthRequests
       );
 
       const status: AuthRequestStatus = isError(data) ? "rejected" : "accepted";

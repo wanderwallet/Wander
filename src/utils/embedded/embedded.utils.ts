@@ -3,6 +3,9 @@ import { jwtDecode } from "jwt-decode";
 import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 import { LocalStorage } from "~iframe/storage/unpartitioned-storage/local-storage";
 import { searchParams, ancestorOrigin, isInsideIframe } from "./iframe.utils";
+import { removeDecryptionKey } from "~wallets/auth";
+import { ExtensionStorage } from "~utils/storage";
+import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 
 // Then, its tRPC client will be initialized with the following headers:
 // - authorization (getAuthTokenHeader / setAuthTokenHeader)
@@ -67,14 +70,31 @@ export function getEmbeddedAncestorOrigin() {
 }
 
 // Note: This is run when trpc detects UNAUTHORIZED error.
-async function handleAuthError() {
+export async function signOut() {
+  try {
+    postEmbeddedMessage({
+      type: "embedded_close",
+      data: null
+    });
+
+    postEmbeddedMessage({
+      type: "embedded_disconnect",
+      data: null
+    });
+
+    ExtensionStorage.removeAll();
+  } catch (err) {
+    console.error("Error clearing extension storage:", err);
+  }
+
   try {
     const supabase = await getSupabaseClient();
     await supabase.auth.signOut();
-    window.location.href = "#/";
-    window.location.reload();
   } catch (err) {
     console.error("Error signing out:", err);
+
+    window.location.href = "#/";
+    window.location.reload();
   }
 }
 
@@ -91,7 +111,7 @@ function getTRPCClientAndUtils() {
       deviceNonce: undefined,
       clientId: EMBEDDED_CLIENT_ID,
       applicationId: "",
-      onAuthError: handleAuthError
+      onAuthError: signOut
     });
   }
 
@@ -236,8 +256,6 @@ async function insecurelyValidateApplication() {
 // insecurelyValidateApplication();
 
 if (IS_EMBEDDED_APP && process.env.NODE_ENV === "development") {
-  (window as any).logout = async () => {
-    const supabase = await getSupabaseClient();
-    return supabase.auth.signOut();
-  };
+  (window as any).signOut = signOut;
+  (window as any).logOut = signOut;
 }

@@ -43,7 +43,7 @@ export const getWanderButtonTemplateContent = ({
     cursor: pointer;
     min-width: var(--minWidth);
     min-height: var(--minHeight);
-    z-index: var(--zIndex);
+    z-index: 0;
     padding: var(--padding);
     font: var(--font);
     color: var(--color);
@@ -84,6 +84,15 @@ export const getWanderButtonTemplateContent = ({
 
   .label:not(:empty) + .balance {
     display: none;
+  }
+
+  .balance {
+    filter: blur(0px);
+    transition: filter linear 300ms;
+  }
+
+  .balance.isHidden {
+    filter: blur(6px);
   }
 
   .indicator,
@@ -129,7 +138,7 @@ export const getWanderButtonTemplateContent = ({
   }
 
   .isConnected + .indicator {
-    background: green;
+    background: #56C980;
   }
 
   .isConnected ~ .dappLogo[src] {

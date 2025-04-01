@@ -268,6 +268,14 @@ export class WanderEmbedded {
         this.onAuth(message.data);
         break;
 
+      case "embedded_connect":
+        this.buttonComponent?.setStatus("isConnected");
+        break;
+
+      case "embedded_disconnect":
+        this.buttonComponent?.unsetStatus("isConnected");
+        break;
+
       case "embedded_open":
         this._open("embedded_open");
         break;
