@@ -141,6 +141,20 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     }
   }, [authStatus]);
 
+  const getLatestSession = useCallback(async (session: DbSession) => {
+    const userAgent = navigator.userAgent;
+    const deviceNonce = await getDeviceNonce();
+    // NOTE: We use ipv4 address here as in Vercel backend we get ipv4 address from the request headers.
+    const ip = await getIPAddress().catch(() => session.ip);
+
+    return {
+      ...session,
+      ip,
+      userAgent,
+      deviceNonce
+    };
+  }, []);
+
   const updateCurrentWallet = useCallback(
     (walletUpdater: Wallet | ((currentWallet: Wallet) => Wallet)) => {
       setEmbeddedContextState((prevEmbeddedContextState) => {
@@ -665,6 +679,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     const { jwk, walletAddress } = await importedTempWalletPromiseRef.current
       ?.promise;
 
+    const latestSession = await getLatestSession(session);
+
     const { fetchRecoverableWalletsChallenge } =
       await AuthenticationService.generateFetchRecoverableAccountsChallenge(
         walletAddress
@@ -672,7 +688,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
     const challengeSolution = await ChallengeClientV1.solveChallenge({
       challenge: fetchRecoverableWalletsChallenge,
-      session,
+      session: latestSession,
       shareHash: null,
       jwk
     });
@@ -708,6 +724,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       const { jwk, walletAddress } = await importedTempWalletPromiseRef.current
         ?.promise;
 
+      const latestSession = await getLatestSession(session);
+
       const { accountRecoveryChallenge } =
         await AuthenticationService.generateAccountRecoveryChallenge(
           accountToRecoverId,
@@ -716,7 +734,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
       const challengeSolution = await ChallengeClientV1.solveChallenge({
         challenge: accountRecoveryChallenge,
-        session,
+        session: latestSession,
         shareHash: null,
         jwk
       });
@@ -747,12 +765,14 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         sharePrivateKeyJWK: recoveryBackupSharePrivateKeyJWK
       } = await WalletUtils.generateShareHashAndPrivateKey(recoveryBackupShare);
 
+      const latestSession = await getLatestSession(session);
+
       const { shareRecoveryChallenge } =
         await WalletService.generateWalletRecoveryChallenge({ walletId });
 
       const challengeSolution = await ChallengeClientV1.solveChallenge({
         challenge: shareRecoveryChallenge,
-        session,
+        session: latestSession,
         shareHash: recoveryBackupShareHash,
         jwk: recoveryBackupSharePrivateKeyJWK
       });
@@ -783,7 +803,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
       const rotateChallengeSignature = await ChallengeClientV1.solveChallenge({
         challenge: rotationChallenge,
-        session,
+        session: latestSession,
         shareHash: null,
         jwk
       });
@@ -991,14 +1011,13 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         return;
       }
 
-      const deviceNonce = await getDeviceNonce();
       if (!session.id || !session.deviceNonce) {
         console.warn(
           "❌  The current session is incomplete. Refreshing...",
           session
         );
         session = await refreshSession(session);
-      } else if (session.deviceNonce !== deviceNonce) {
+      } else if (session.deviceNonce !== (await getDeviceNonce())) {
         console.warn(
           "⚠️  The current session is complete, but the device nonce doesn't match!. Refreshing...",
           session
@@ -1008,13 +1027,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         console.log("✅  The current session is complete!", session);
       }
 
-      session = {
-        ...session,
-        deviceNonce,
-        userAgent: navigator.userAgent,
-        // NOTE: We use ipv4 address here as in Vercel we get ipv4 address from the request headers.
-        ip: await getIPAddress().catch(() => session.ip)
-      };
+      session = await getLatestSession(session);
 
       const wallets = await WalletService.fetchWallets(userId);
 

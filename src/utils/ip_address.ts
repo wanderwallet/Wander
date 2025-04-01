@@ -1,8 +1,8 @@
-// IPv4 validation regex - more strict pattern
+// IPv4 validation regex
 const ipv4Regex =
   /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
 
-// Optimized helper function to validate IPv4
+// Helper function to validate IPv4
 const isValidIPv4 = (ip: string): boolean => ipv4Regex.test(ip.trim());
 
 /**
