@@ -54,6 +54,7 @@ import type { SupabaseJwtPayload } from "~utils/authentication/authentication.ty
 import { isTempWalletPromiseExpired } from "~utils/embedded/utils/wallets/embedded-wallets.utils";
 import copy from "copy-to-clipboard";
 import { useHashLocation } from "wouter/use-hash-location";
+import { getIPAddress } from "~utils/ip_address";
 
 export type AuthStatusCopy = AuthStatus;
 
@@ -990,13 +991,14 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         return;
       }
 
+      const deviceNonce = await getDeviceNonce();
       if (!session.id || !session.deviceNonce) {
         console.warn(
           "❌  The current session is incomplete. Refreshing...",
           session
         );
         session = await refreshSession(session);
-      } else if (session.deviceNonce !== (await getDeviceNonce())) {
+      } else if (session.deviceNonce !== deviceNonce) {
         console.warn(
           "⚠️  The current session is complete, but the device nonce doesn't match!. Refreshing...",
           session
@@ -1005,6 +1007,14 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       } else {
         console.log("✅  The current session is complete!", session);
       }
+
+      session = {
+        ...session,
+        deviceNonce,
+        userAgent: navigator.userAgent,
+        // NOTE: We use ipv4 address here as in Vercel we get ipv4 address from the request headers.
+        ip: await getIPAddress().catch(() => session.ip)
+      };
 
       const wallets = await WalletService.fetchWallets(userId);
 
@@ -1253,7 +1263,11 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       const params = new URLSearchParams(hashParams);
       const searchParams = Object.fromEntries(params.entries());
 
-      completeAuth(searchParams);
+      // We have completeAuth() in the onAuthStateChange callback, but if it didn't work,
+      // we'll use a timeout to call it after a delay.
+      setTimeout(() => {
+        completeAuth(searchParams);
+      }, 5000);
     }
   }, [wocation]);
 
