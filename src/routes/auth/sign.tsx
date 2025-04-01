@@ -42,9 +42,10 @@ import { AuthButtons } from "~components/auth/AuthButtons";
 import { getTagValue } from "~tokens/aoTokens/ao";
 import { humanizeTimestampTags } from "~utils/timestamp";
 import styled from "styled-components";
-import { ChevronDownIcon, ChevronUpIcon } from "@iconicicons/react";
+import { ChevronRightIcon } from "@iconicicons/react";
 import { checkPassword } from "~wallets/auth";
 import { ExtensionStorage, useStorage } from "~utils/storage";
+import { AnimatedChevron } from "./signDataItem";
 
 export function SignAuthRequestView() {
   const { authRequest, acceptRequest, rejectRequest } =
@@ -331,7 +332,9 @@ export function SignAuthRequestView() {
                 onClick={() => setShowTags(!showTags)}
               >
                 {browser.i18n.getMessage("transaction_tags")}
-                {showTags ? <ChevronUpIcon /> : <ChevronDownIcon />}
+                <AnimatedChevron $open={showTags}>
+                  <ChevronRightIcon />
+                </AnimatedChevron>
               </PropertyName>
 
               <Spacer y={0.05} />
