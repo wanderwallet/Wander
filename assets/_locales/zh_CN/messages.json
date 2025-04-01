@@ -2441,7 +2441,7 @@
         "description": "Auto-confirm"
     },
     "auto_confirm_description": {
-        "message": "自动签署每笔交易和消息。",
+        "message": "所有交易和消息都会自动签名，无需手动确认",
         "description": "Auto-confirm description"
     },
     "custom_permissions": {

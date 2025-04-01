@@ -2451,7 +2451,7 @@
     "description": "Auto-confirm"
   },
   "auto_confirm_description": {
-    "message": "Automatically sign every transaction and message.",
+    "message": "Every transaction and message is auto-signed without a manual confirmation",
     "description": "Auto-confirm description"
   },
   "custom_permissions": {
