@@ -5,7 +5,7 @@ import type { SubscriptionData } from "~subscriptions/subscription";
 import type { TokenType } from "~tokens/token";
 import type { SplitTransaction } from "~api/modules/sign/transaction_builder";
 import type { RawDataItem } from "~api/modules/sign_data_item/types";
-import type { Transaction } from "arbundles";
+import type { Transaction } from "@dha-team/arbundles";
 
 // COMMON:
 

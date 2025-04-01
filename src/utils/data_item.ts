@@ -4,7 +4,7 @@ import {
   Signer,
   createData,
   type DataItemCreateOptions
-} from "arbundles";
+} from "@dha-team/arbundles";
 
 export interface SignerConfig {
   signatureType: number;
