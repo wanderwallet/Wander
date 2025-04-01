@@ -30,7 +30,8 @@ export function ManageAssets({ open, close }: Props) {
   // ao Tokens
   const { tokens, changeTokenVisibility } = useAoTokens({
     type: "asset",
-    sortFn
+    sortFn,
+    skipSort: true
   });
 
   const filteredTokens = useMemo(() => {
@@ -61,6 +62,8 @@ export function ManageAssets({ open, close }: Props) {
         <TokensList>
           {filteredTokens.map((token) => (
             <Token
+              disableCursor={true}
+              showId={true}
               key={token.id}
               ao={true}
               type={"asset"}
