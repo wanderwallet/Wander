@@ -53,8 +53,13 @@ async function fetchWallets(userId: string): Promise<Wallet[]> {
       } satisfies Wallet;
     })
     .sort((a, b) => {
+      // If `lastActivatedAt`, the wallet has just been created but the user closed the tab before the share public key
+      // was generated, so the newly created wallet was never activated, but we consider that the most recent one.
+      const lastActivationA = a.lastActivatedAt || new Date();
+      const lastActivationB = b.lastActivatedAt || new Date();
+
       // Most recently activated first:
-      return b.lastActivatedAt.getTime() - a.lastActivatedAt.getTime();
+      return lastActivationB.getTime() - lastActivationA.getTime();
     });
 
   if (unusedDeviceSharesWalletIDs.size > 0) {
