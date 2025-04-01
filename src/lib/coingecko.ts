@@ -12,13 +12,23 @@ import { ExtensionStorage } from "~utils/storage";
  * @param currency What to return the price in
  */
 export async function getPrice(symbol: string, currency: string) {
-  const data: CoinGeckoPriceResult = await (
-    await fetch(
-      `https://api.coingecko.com/api/v3/simple/price?ids=${symbol.toLowerCase()}&vs_currencies=${currency.toLowerCase()}`
-    )
-  ).json();
+  try {
+    const wanderData = await (
+      await fetch(
+        `https://wander-cache-ruddy.vercel.app/api/price?symbol=${symbol.toLowerCase()}&currency=${currency.toLowerCase()}`
+      )
+    ).json();
 
-  return data[symbol.toLowerCase()][currency.toLowerCase()];
+    return wanderData.price;
+  } catch {
+    const data: CoinGeckoPriceResult = await (
+      await fetch(
+        `https://api.coingecko.com/api/v3/simple/price?ids=${symbol.toLowerCase()}&vs_currencies=${currency.toLowerCase()}`
+      )
+    ).json();
+
+    return data[symbol.toLowerCase()][currency.toLowerCase()];
+  }
 }
 
 /**

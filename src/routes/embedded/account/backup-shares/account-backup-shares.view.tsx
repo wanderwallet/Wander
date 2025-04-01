@@ -17,20 +17,18 @@ import { Link } from "~wallets/router/components/link/Link";
 
 export function AccountBackupSharesEmbeddedView() {
   const [loading, setLoading] = useState(false);
-  const { wallets, generateRecoveryAndDownload, copySeedphrase } =
-    useEmbedded();
-  const walletAddress = wallets[0].address;
+  const { currentWallet, generateRecoveryAndDownload } = useEmbedded();
 
   const handleGenerateRecoveryAndDownload = useCallback(() => {
     try {
       setLoading(true);
-      generateRecoveryAndDownload(walletAddress);
+      generateRecoveryAndDownload();
       setLoading(false);
     } catch (error) {
       alert(error);
       setLoading(false);
     }
-  }, [generateRecoveryAndDownload, walletAddress]);
+  }, [generateRecoveryAndDownload]);
 
   // TODO: What if the user already has more than 3 backup shares?
 
@@ -97,16 +95,7 @@ export function AccountBackupSharesEmbeddedView() {
           isDisabled={loading}
           onClick={handleGenerateRecoveryAndDownload}
         >
-          Export Private Key
-        </Button>
-        <Button
-          variant="outlined"
-          isFullWidth
-          icon={<SeedIcon fontSize={24} />}
-          isDisabled={loading}
-          onClick={() => copySeedphrase(walletAddress)}
-        >
-          Copy Seedphrase
+          Export Recovery File
         </Button>
         <Button variant="link" isFullWidth>
           Why should I back up my account?

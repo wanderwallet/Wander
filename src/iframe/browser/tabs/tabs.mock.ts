@@ -1,4 +1,4 @@
-import { EMBEDDED_PARENT_ORIGIN } from "~utils/embedded/sdk/utils/url/sdk-url.utils";
+import { getEmbeddedAncestorOrigin } from "~utils/embedded/embedded.utils";
 
 export const tabs = {
   create: async ({ url }) => {
@@ -13,11 +13,11 @@ export const tabs = {
     // `tabs/dashboard.html#/apps/${activeApp.url}`
 
     if (url === "tabs/welcome.html") {
-      throw new Error("Welcome routes not added to ArConnect Embedded");
+      throw new Error("Welcome routes not added to Wander Embedded");
 
       // location.hash = "/welcome";
     } else if (url.startsWith("tabs/dashboard.html#")) {
-      throw new Error("Dashboard not added to ArConnect Embedded");
+      throw new Error("Dashboard not added to Wander Embedded");
 
       // const hash = url.split("#").pop();
       // location.hash = `/quick-settings${hash}`;
@@ -41,7 +41,7 @@ export const tabs = {
     return [
       {
         id: 0,
-        url: EMBEDDED_PARENT_ORIGIN
+        url: getEmbeddedAncestorOrigin()
       }
     ]; // satisfies browser.Tabs.Tab
   },

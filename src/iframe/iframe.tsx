@@ -6,13 +6,10 @@ import { Routes } from "~wallets/router/routes.component";
 import { Router as Wouter } from "wouter";
 import { IFRAME_ROUTES } from "~wallets/router/iframe/iframe.routes";
 import { handleSyncLabelsAlarm } from "~api/background/handlers/alarms/sync-labels/sync-labels-alarm.handler";
-import { ThemeProvider } from "~/components/embed/contexts/ThemeContext";
-import {
-  useAuthStatusOverride,
-  useEmbeddedLocation
-} from "~wallets/router/iframe/iframe-router.hook";
+import { useEmbeddedLocation } from "~wallets/router/iframe/iframe-router.hook";
 import { EmbeddedProvider } from "~utils/embedded/embedded.provider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ThemeProvider } from "~components/embed/contexts/ThemeContext";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -43,7 +40,7 @@ export function ArConnectEmbeddedAppRoot() {
     <WanderThemeProvider>
       <ThemeProvider>
         <EmbeddedProvider>
-          <AuthRequestsProvider useStatusOverride={useAuthStatusOverride}>
+          <AuthRequestsProvider>
             <QueryClientProvider client={queryClient}>
               <Wouter hook={useEmbeddedLocation}>
                 <ArConnectEmbeddedApp />

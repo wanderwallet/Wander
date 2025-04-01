@@ -1,64 +1,86 @@
-import {
-  FakeDB,
-  type AuthMethod,
-  type DbAuthenticateData,
-  type DbUser
-} from "~utils/authentication/fakeDB";
+import type { AuthProviderType } from "embed-api";
+import { getSupabaseClient, trpcVanilla } from "~utils/embedded/embedded.utils";
+import type { Provider } from "@supabase/supabase-js";
 
-async function refreshSession(): Promise<DbAuthenticateData | null> {
-  return FakeDB.refreshSession();
+const SUPABASE_PROVIDER_BY_AUTH_PROVIDER_TYPE: Record<
+  AuthProviderType,
+  Provider | null
+> = {
+  PASSKEYS: null,
+  EMAIL_N_PASSWORD: null,
+  GOOGLE: "google",
+  FACEBOOK: "facebook",
+  X: "twitter",
+  APPLE: "apple"
+};
+
+async function authenticate(authProviderType: AuthProviderType) {
+  // TODO: The authentication procedures are not needed.
+  // return trpcVanilla.authenticate.mutate({ authProviderType });
+
+  if (
+    authProviderType === "PASSKEYS" ||
+    authProviderType === "EMAIL_N_PASSWORD"
+  ) {
+    throw new Error(`${authProviderType} not supported yet.`);
+  }
+
+  const provider = SUPABASE_PROVIDER_BY_AUTH_PROVIDER_TYPE[authProviderType];
+
+  const supabase = await getSupabaseClient();
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider,
+    options: {
+      // redirectTo: `${window.location.origin}#/auth/callback/google`,
+      redirectTo: window.location.origin,
+      skipBrowserRedirect: true
+    }
+  });
+
+  if (error) throw error;
+
+  return { url: data.url };
 }
 
-async function authenticate(
-  authMethod: AuthMethod
-): Promise<DbAuthenticateData | null> {
-  return FakeDB.authenticate(authMethod);
-}
-
-async function signOut(): Promise<void> {
-  // TODO
-}
-
-async function fetchWalletRecoveryChallenge(
-  walletAddress: string
-): Promise<string> {
-  return FakeDB.fetchWalletRecoveryChallenge(walletAddress);
+async function generateFetchRecoverableAccountsChallenge(address: string) {
+  return trpcVanilla.generateFetchRecoverableAccountsChallenge.mutate({
+    chain: "ARWEAVE",
+    address
+  });
 }
 
 async function fetchRecoverableAccounts(
-  walletAddress: string,
-  challengeSignature: string
-): Promise<DbUser[]> {
-  return FakeDB.fetchRecoverableAccounts(walletAddress, challengeSignature);
+  challengeId: string,
+  challengeSolution: string
+) {
+  return trpcVanilla.fetchRecoverableAccounts.mutate({
+    challengeId,
+    challengeSolution
+  });
 }
 
-async function fetchAccountRecoveryChallenge(
-  userId: string,
-  walletAddress: string
-): Promise<string> {
-  return FakeDB.fetchAccountRecoveryChallenge(userId, walletAddress);
+async function generateAccountRecoveryChallenge(
+  address: string,
+  userId: string
+) {
+  return trpcVanilla.generateAccountRecoveryChallenge.mutate({
+    chain: "ARWEAVE",
+    address,
+    userId
+  });
 }
 
-async function recoverAccount(
-  authMethod: AuthMethod,
-  userId: string,
-  walletAddress: string,
-  challengeSignature: string
-): Promise<DbAuthenticateData> {
-  return FakeDB.recoverAccount(
-    authMethod,
+async function recoverAccount(userId: string, challengeSolution: string) {
+  return trpcVanilla.recoverAccount.mutate({
     userId,
-    walletAddress,
-    challengeSignature
-  );
+    challengeSolution
+  });
 }
 
 export const AuthenticationService = {
-  refreshSession,
   authenticate,
-  signOut,
-  fetchWalletRecoveryChallenge,
+  generateFetchRecoverableAccountsChallenge,
   fetchRecoverableAccounts,
-  fetchAccountRecoveryChallenge,
+  generateAccountRecoveryChallenge,
   recoverAccount
 } as const;

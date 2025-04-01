@@ -15,6 +15,7 @@ import HeadV2 from "~components/popup/HeadV2";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { useLocation } from "~wallets/router/router.utils";
 import { LoadingView } from "~components/page/common/loading/loading.view";
+import { ActionBar } from "..";
 export interface TokenSettingsParams {
   id: string;
 }
@@ -116,17 +117,19 @@ export function TokenSettingsView({ params: { id } }: TokenSettingsProps) {
             </option>
           </SelectV2>
         </div>
-        <ButtonV2
-          fullWidth
-          onClick={async () => {
-            await removeToken(id);
-            navigate(`/quick-settings/tokens`);
-          }}
-          style={{ backgroundColor: "#8C1A1A" }}
-        >
-          <TrashIcon style={{ marginRight: "5px" }} />
-          {browser.i18n.getMessage("remove_token")}
-        </ButtonV2>
+        <ActionBar>
+          <ButtonV2
+            fullWidth
+            onClick={async () => {
+              await removeToken(id);
+              navigate(`/quick-settings/tokens`);
+            }}
+            style={{ backgroundColor: "#8C1A1A" }}
+          >
+            <TrashIcon style={{ marginRight: "5px" }} />
+            {browser.i18n.getMessage("remove_token")}
+          </ButtonV2>
+        </ActionBar>
       </Wrapper>
     </>
   );

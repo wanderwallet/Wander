@@ -13,14 +13,46 @@ import {
   UserDetails
 } from "./utils/message/message.types";
 import { isIncomingMessage } from "./utils/message/message.utils";
+import { getEmbeddedURL } from "./utils/url/url.utils";
 
 const NOOP = () => {};
 
+/**
+ * WanderEmbedded provides a wallet interface for Arweave applications
+ *
+ * This SDK creates and manages:
+ * - An iframe that loads the Wander wallet interface
+ * - An optional button component for user interaction
+ * - Communication between the hosting application and the wallet
+ *
+ * When initialized, it automatically sets up `window.arweaveWallet` to enable
+ * interaction with Arweave applications.
+ *
+ * @example
+ * ```typescript
+ * const wallet = new WanderEmbedded({
+ *   clientId: 'your-client-id',
+ *   onAuth: (user) => console.log('User authenticated:', user)
+ * });
+ *
+ * // Open the wallet interface
+ * wallet.open();
+ *
+ * // You can also use window.arweaveWallet which is automatically set up
+ * async function connectWallet() {
+ *   await window.arweaveWallet.connect(["ACCESS_ADDRESS", "SIGN_TRANSACTION"]);
+ *   const address = await window.arweaveWallet.getActiveAddress();
+ *   console.log("Connected to wallet address:", address);
+ * }
+ * ```
+ */
 export class WanderEmbedded {
   private static instance: WanderEmbedded | null = null;
-  // static DEFAULT_IFRAME_SRC = "http://localhost:5173/" as const;
-  // static DEFAULT_IFRAME_SRC = "https://embed.wander.app/" as const;
-  static DEFAULT_IFRAME_SRC = "https://embed-dev.wander.app/" as const;
+
+  static DEFAULT_IFRAME_SRC =
+    process.env.NODE_ENV === "development"
+      ? ("http://localhost:5173/" as const)
+      : ("https://embed-dev.wander.app/" as const);
 
   // Callbacks:
   private onAuth: (userDetails: UserDetails | null) => void = NOOP;
@@ -43,13 +75,50 @@ export class WanderEmbedded {
   // State:
   private shouldOpenAutomatically = true;
 
+  /**
+   * Indicates whether the wallet interface is currently open/visible
+   */
   public isOpen = false;
+
+  /**
+   * Contains details about the authenticated user, or null if not authenticated
+   */
   public userDetails: UserDetails | null = null; // TODO: Should we expose this?
+
+  /**
+   * Current route configuration including dimensions and layout preferences
+   */
   public routeConfig: RouteConfig | null = null;
+
+  /**
+   * User's current balance information
+   */
   public balanceInfo: BalanceInfo | null = null;
+
+  /**
+   * Number of pending requests awaiting user action
+   */
   public pendingRequests: number = 0;
 
-  constructor(options: WanderEmbeddedOptions = {}) {
+  // Misc.:
+  private windowArweaveWallet: any = null;
+
+  /**
+   * Creates a new instance of the WanderEmbedded SDK
+   *
+   * Initializes the wallet interface with the provided configuration options.
+   * Only one instance of WanderEmbedded can exist at a time.
+   *
+   * @param options Configuration options for the SDK including:
+   *   - clientId: Required identifier for your application
+   *   - baseURL: Optional custom URL for the embedded iframe
+   *   - baseServerURL: Optional custom URL for the API server
+   *   - iframe: Configuration for the iframe (layout, styling, behavior)
+   *   - button: Configuration for the button (position, styling, behavior)
+   *   - callbacks: onAuth, onOpen, onClose, onResize, onBalance, onRequest
+   * @throws Error if an instance already exists or if clientId is not provided
+   */
+  constructor(options: WanderEmbeddedOptions) {
     if (WanderEmbedded.instance) {
       throw new Error("WanderEmbedded instance already exists.");
     }
@@ -64,14 +133,21 @@ export class WanderEmbedded {
 
     // TODO: Merge options properly:
 
-    const optionsWithDefaults = merge(options, {
-      iframe: {
-        clickOutsideBehavior: "auto"
-      }
-    } satisfies WanderEmbeddedOptions);
+    const optionsWithDefaults = merge(
+      {
+        clientId: "",
+        iframe: {
+          clickOutsideBehavior: "auto"
+        },
+        button: true
+      } satisfies WanderEmbeddedOptions,
+      options || {}
+    );
+
+    if (!optionsWithDefaults.clientId) throw new Error("clientId is required");
 
     // Create or get references to iframe and, maybe, button:
-    this.initializeComponents(optionsWithDefaults);
+    const embeddedOrigin = this.initializeComponents(optionsWithDefaults);
 
     if (!this.iframeRef) throw new Error("Error creating iframe");
 
@@ -82,27 +158,32 @@ export class WanderEmbedded {
     this.handleMessage = this.handleMessage.bind(this);
     window.addEventListener("message", this.handleMessage);
 
-    // ...and set `window.arweaveWallet`:
-    setupWalletSDK(this.iframeRef.contentWindow as Window);
+    // ...we get a reference to any other `window.arweaveWallet` (most likely our BE)...:
+    this.windowArweaveWallet = window.arweaveWallet;
+
+    // ...and (re)set `window.arweaveWallet`:
+    setupWalletSDK(this.iframeRef.contentWindow as Window, embeddedOrigin);
   }
 
-  private initializeComponents(options: WanderEmbeddedOptions): void {
+  private initializeComponents(options: WanderEmbeddedOptions): string {
     const {
-      src = WanderEmbedded.DEFAULT_IFRAME_SRC,
+      clientId,
+      baseURL = WanderEmbedded.DEFAULT_IFRAME_SRC,
+      baseServerURL,
       iframe: iframeOptions,
       button: buttonOptions
     } = options;
 
-    // TODO Use PARAM_ORIGIN_KEY and PARAM_API_KEY instead of hardcoded values:
-    const srcWithParams = `${src}?origin=${location.origin}&api-key=123`;
+    const srcWithParams = getEmbeddedURL({
+      clientId,
+      baseURL,
+      baseServerURL
+    });
 
     if (iframeOptions instanceof HTMLElement) {
-      if (
-        iframeOptions.src &&
-        iframeOptions.src !== WanderEmbedded.DEFAULT_IFRAME_SRC
-      ) {
+      if (iframeOptions.src && iframeOptions.src !== srcWithParams) {
         console.warn(
-          `Replacing iframe.src ("${iframeOptions.src}") with ${WanderEmbedded.DEFAULT_IFRAME_SRC}`
+          `Replacing iframe.src ("${iframeOptions.src}") with ${srcWithParams}`
         );
       }
 
@@ -126,12 +207,12 @@ export class WanderEmbedded {
         buttonOptions === true ? {} : buttonOptions
       );
 
-      const { host, button } = this.buttonComponent.getElements();
+      const { parent, host, button } = this.buttonComponent.getElements();
 
       this.buttonHostRef = host;
       this.buttonRef = button;
 
-      document.body.appendChild(host);
+      parent.appendChild(host);
 
       this.handleButtonClick = this.handleButtonClick.bind(this);
       this.buttonRef.addEventListener("click", this.handleButtonClick);
@@ -164,6 +245,8 @@ export class WanderEmbedded {
     if (this.iframeComponent) {
       document.body.appendChild(this.iframeComponent.getElements().host);
     }
+
+    return new URL(srcWithParams).origin;
   }
 
   private handleMessage(event: MessageEvent): void {
@@ -254,6 +337,11 @@ export class WanderEmbedded {
     else this.open();
   }
 
+  /**
+   * Opens the wallet interface
+   *
+   * @throws Error if Wander Embedded's iframe and button has been created manually
+   */
   public open(): void {
     if (!this.iframeComponent && !this.buttonComponent) {
       throw new Error(
@@ -268,6 +356,11 @@ export class WanderEmbedded {
     }
   }
 
+  /**
+   * Closes the wallet interface
+   *
+   * @throws Error if Wander Embedded's iframe and button has been created manually
+   */
   public close(): void {
     if (!this.iframeComponent && !this.buttonComponent) {
       throw new Error(
@@ -287,6 +380,9 @@ export class WanderEmbedded {
     }
   }
 
+  /**
+   * Removes all elements and event listeners
+   */
   public destroy(): void {
     window.removeEventListener("message", this.handleMessage);
     window.removeEventListener("click", this.handleButtonClick);
@@ -294,26 +390,43 @@ export class WanderEmbedded {
     // Remove the elements we crated:
 
     if (this.iframeComponent) {
-      this.backdropRef?.remove();
-      this.iframeRef?.remove();
+      this.iframeComponent.destroy();
     }
 
     if (this.buttonComponent) {
-      this.buttonHostRef?.remove();
-      this.buttonRef?.remove();
+      this.buttonComponent.destroy();
     }
+
     WanderEmbedded.instance = null;
+
+    delete window.arweaveWallet;
+
+    if (this.windowArweaveWallet) {
+      window.arweaveWallet = this.windowArweaveWallet;
+    }
   }
 
-  get isAuthenticated() {
+  /**
+   * Whether a user is currently authenticated
+   * @returns True if authenticated, false otherwise
+   */
+  get isAuthenticated(): boolean {
     return !!this.userDetails;
   }
 
-  get width() {
+  /**
+   * Current width of the wallet interface in pixels
+   * @returns Width if available
+   */
+  get width(): number | undefined {
     return this.routeConfig?.width;
   }
 
-  get height() {
+  /**
+   * Current height of the wallet interface in pixels
+   * @returns Height if available
+   */
+  get height(): number | undefined {
     return this.routeConfig?.height;
   }
 }

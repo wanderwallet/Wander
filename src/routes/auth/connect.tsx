@@ -34,7 +34,12 @@ import { AuthButtons } from "~components/auth/AuthButtons";
 import Squircle from "~components/Squircle";
 import { useActiveWallet } from "~wallets/hooks";
 import Checkbox from "~components/Checkbox";
-import { ChevronRight, Edit02, InfoCircle } from "@untitled-ui/icons-react";
+import {
+  ChevronRight,
+  Edit02,
+  InfoCircle,
+  RefreshCcw01
+} from "@untitled-ui/icons-react";
 import WanderIcon from "url:assets/icon.svg";
 import Image from "~components/common/Image";
 import { Flex } from "~components/common/Flex";
@@ -301,6 +306,8 @@ export function ConnectAuthRequestView() {
                 isCustomPermissions={isCustomPermissions}
                 setPage={setPage}
                 theme={theme}
+                setRequestedPermissions={setRequestedPermissions}
+                requestedPermCopy={requestedPermCopy}
               />
             )}
             {page === "unlock" && (
@@ -507,7 +514,9 @@ const ConfirmPage = ({
   setSignPolicy,
   isCustomPermissions,
   setPage,
-  theme
+  theme,
+  setRequestedPermissions,
+  requestedPermCopy
 }: {
   appInfo: any;
   url: string;
@@ -516,6 +525,8 @@ const ConfirmPage = ({
   isCustomPermissions: boolean;
   setPage: (page: Page) => void;
   theme: DefaultTheme;
+  setRequestedPermissions: (perms: PermissionType[]) => void;
+  requestedPermCopy: PermissionType[];
 }) => (
   <ConnectPageContent>
     <Section
@@ -554,11 +565,24 @@ const ConfirmPage = ({
               : "set_custom_permissions"
           )}
         </PrimaryText>
-        {isCustomPermissions ? (
-          <Edit02 height={24} width={24} color={theme.tertiaryText} />
-        ) : (
-          <ChevronRight height={24} width={24} color={theme.tertiaryText} />
-        )}
+        <div style={{ display: "flex", gap: "8px" }}>
+          {isCustomPermissions ? (
+            <>
+              <Edit02 height={24} width={24} color={theme.tertiaryText} />
+              <RefreshCcw01
+                height={24}
+                width={24}
+                color={theme.tertiaryText}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setRequestedPermissions(requestedPermCopy);
+                }}
+              />
+            </>
+          ) : (
+            <ChevronRight height={24} width={24} color={theme.tertiaryText} />
+          )}
+        </div>
       </CustomPermissionsButton>
       <CustomPermissionsInfo>
         <div>

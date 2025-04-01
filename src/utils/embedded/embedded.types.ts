@@ -1,10 +1,13 @@
 import type { PropsWithChildren } from "react";
+import type { JWKInterface } from "arweave/web/lib/wallet";
 import type {
   DbWallet,
-  AuthMethod,
-  DbUser
-} from "~utils/authentication/fakeDB";
-import type { JWKInterface } from "arweave/web/lib/wallet";
+  AuthProviderType,
+  SupabaseUser,
+  RecoverableAccount,
+  WalletSourceType,
+  DbSession
+} from "embed-api";
 
 export type AuthStatus =
   | "unknown"
@@ -18,9 +21,28 @@ export type AuthStatus =
   | "locked"
   | "unlocked";
 
-export interface WalletInfo extends DbWallet {
-  isActive: boolean;
-  isReady: boolean;
+export type WalletActivationStatus =
+  // The wallet is DISABLED, READONLY or LOST.
+  | "disabled"
+  // The wallet deviceShare is not available and no export/backup was made.
+  | "lost"
+  // The wallet deviceShare is not available, but the wallet can be recovered.
+  | "recoveryNeeded"
+  // The wallet deviceShare is available, but its authShare hasn't been loaded.
+  | "authNeeded"
+  // The wallet private key is not in memory, but its authShare and deviceShare are.
+  | "ready"
+  // The wallet private key is currently in memory.
+  | "active";
+
+export interface Wallet extends DbWallet {
+  activationStatus: WalletActivationStatus;
+
+  // Added by the client (from localStorage).
+  deviceShare: null | string;
+
+  // Added by the client when activated.
+  authShare: null | string;
 }
 
 export interface TempWallet {
@@ -38,34 +60,46 @@ export interface TempWalletPromise {
 export interface EmbeddedProviderProps extends PropsWithChildren {}
 
 export interface EmbeddedContextState {
-  authStatus: AuthStatus;
-  authMethod: null | AuthMethod;
-  userId: null | string;
-  wallets: WalletInfo[];
+  currentWalletId: string;
+  wallets: Wallet[];
   generatedTempWalletAddress: null | string;
   importedTempWalletAddress: null | string;
-  lastRegisteredWallet: null | DbWallet;
-  recoverableAccounts: null | DbUser[];
-  // TODO: This needs to reference which wallet needs to be backed up (assuming each one is backed up individually)
-  promptToBackUp: boolean;
-  backedUp: boolean;
+  lastRegisteredWallet: null | Wallet;
+  recoverableAccounts: null | RecoverableAccount[];
+}
+
+export interface EmbeddedContextAuth {
+  authStatus: AuthStatus;
+  authProviderType: null | AuthProviderType;
+  user: null | SupabaseUser;
+  session: null | DbSession;
+  // accessToken?
 }
 
 export interface RecoveryJSON {
   version: string;
+  walletId: string;
   recoveryBackupShare: string;
+  recoveryFileServerSignature: string;
 }
 
-export interface EmbeddedContextData extends EmbeddedContextState {
-  authenticate: (authMethod: AuthMethod) => Promise<void>;
-  fetchRecoverableAccounts: () => Promise<DbUser[]>;
+export interface EmbeddedContextData
+  extends EmbeddedContextState,
+    EmbeddedContextAuth {
+  currentWallet: Wallet | null;
+
+  authenticate: (
+    authProviderType: AuthProviderType,
+    email?: string,
+    password?: string
+  ) => Promise<void>;
+  fetchRecoverableAccounts: () => Promise<RecoverableAccount[]>;
   clearRecoverableAccounts: () => void;
   recoverAccount: (
-    authMethod: AuthMethod,
+    authProviderType: AuthProviderType,
     accountToRecoverId: string
   ) => Promise<void>;
-  restoreWallet: (
-    walletAddress: string,
+  recoverWallet: (
     recoveryData: RecoveryJSON | JWKInterface | string
   ) => Promise<void>;
 
@@ -77,12 +111,11 @@ export interface EmbeddedContextData extends EmbeddedContextState {
   ) => Promise<TempWallet>;
   deleteImportedTempWallet: () => Promise<void>;
 
-  registerWallet: (source: "generated" | "imported") => Promise<DbWallet>;
+  registerWallet: (sourceType: WalletSourceType) => Promise<Wallet>;
   clearLastRegisteredWallet: () => void;
 
   skipBackUp: (doNotAskAgain: boolean) => void | Promise<void>;
-  registerBackUp: () => Promise<void>;
-  downloadKeyfile: (walletAddress: string) => Promise<void>;
-  copySeedphrase: (walletAddress: string) => Promise<void>;
-  generateRecoveryAndDownload: (walletAddress: string) => Promise<void>;
+  downloadKeyfile: () => Promise<void>;
+  copySeedphrase: () => Promise<boolean>;
+  generateRecoveryAndDownload: () => Promise<void>;
 }

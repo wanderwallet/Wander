@@ -6,6 +6,7 @@ export * from "./checkbox";
 export * from "./row";
 export * from "./radio";
 export * from "./text";
+export * from "./text-input";
 export * from "./icon";
 export * from "./divider";
 export * from "./link";
