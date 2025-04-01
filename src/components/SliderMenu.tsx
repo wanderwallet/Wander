@@ -76,6 +76,15 @@ const ExitButton = styled(CloseIcon)`
   cursor: pointer;
   color: ${({ theme }) =>
     `${theme.displayTheme === "light" ? "#000000" : "#FFFFFF"}`};
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: scale(1.15);
+  }
+
+  & path {
+    stroke-width: 2;
+  }
 `;
 
 const Wrapper = styled(motion.div)<{

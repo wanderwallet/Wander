@@ -62,24 +62,15 @@ const buttons = [
     iconActive: <Grid01 color="#6B57F9" fill="#6B57F9" />,
     size: "24px",
     route: "/quick-settings"
-  },
-  {
-    title: "Accounts",
-    dictionaryKey: "accounts",
-    icon: <Users01 />,
-    iconActive: <Users01 color="#6B57F9" fill="#6B57F9" />,
-    size: "24px",
-    route: "/quick-settings/wallets"
   }
 ] as const;
 
 export const NavigationBar = () => {
   const { location, navigate } = useLocation();
 
-  const shouldShowNavigationBar = buttons.some((button) => {
-    if (button.route === "/quick-settings/wallets") return false;
-    return location === button.route;
-  });
+  const shouldShowNavigationBar = buttons.some(
+    (button) => location === button.route
+  );
 
   if (!shouldShowNavigationBar) {
     return null;
@@ -92,6 +83,7 @@ export const NavigationBar = () => {
         return (
           <NavigationButton
             active={active}
+            data-active={active ? "true" : "false"}
             key={index}
             onClick={() => navigate(button.route)}
           >
@@ -150,4 +142,9 @@ const IconWrapper = styled.div<{ size: string }>`
   display: flex;
   justify-content: center;
   align-items: center;
+  transition: transform 0.2s ease;
+
+  ${NavigationButton}:not([data-active="true"]):hover & {
+    transform: scale(1.1);
+  }
 `;

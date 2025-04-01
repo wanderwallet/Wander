@@ -105,7 +105,7 @@ export function useAo() {
   return ao;
 }
 
-function moveTokenToTop(tokens: Token[], tokenId: string) {
+function moveTokenToTop(tokens: TokenInfoWithBalance[], tokenId: string) {
   const tokenIndex = tokens.findIndex((t) => t.id === tokenId);
   if (tokenIndex !== -1) {
     const token = tokens.splice(tokenIndex, 1)[0];
@@ -116,11 +116,13 @@ function moveTokenToTop(tokens: Token[], tokenId: string) {
 export function useAoTokens({
   type,
   hidden,
-  sortFn
+  sortFn,
+  skipSort = false
 }: {
   type?: "asset" | "collectible";
   hidden?: boolean;
   sortFn?: (a: TokenInfo, b: TokenInfo) => number;
+  skipSort?: boolean;
 } = {}): {
   tokens: TokenInfoWithBalance[];
   loading: boolean;
@@ -165,15 +167,17 @@ export function useAoTokens({
         hidden: aoToken?.hidden ?? false
       }));
 
-    moveTokenToTop(filteredTokens, AO_NATIVE_TOKEN);
-    moveTokenToTop(filteredTokens, "AR");
+    if (!skipSort) {
+      moveTokenToTop(filteredTokens, AO_NATIVE_TOKEN);
+      moveTokenToTop(filteredTokens, "AR");
 
-    if (sortFn) {
-      filteredTokens.sort(sortFn);
+      if (sortFn) {
+        filteredTokens.sort(sortFn);
+      }
     }
 
     return filteredTokens;
-  }, [aoTokens, type, hidden, sortFn]);
+  }, [aoTokens, type, hidden, sortFn, skipSort]);
 
   return { tokens, loading: false, changeTokenVisibility };
 }
