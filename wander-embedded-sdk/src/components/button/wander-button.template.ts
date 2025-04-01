@@ -34,38 +34,48 @@ export const getWanderButtonTemplateContent = ({
   }
 
   .button {
+    position: relative;
     display: flex;
     align-items: center;
     gap: var(--gapInside);
     outline: none;
     user-select: none;
     cursor: pointer;
-    transition: transform linear 50ms;
-
     min-width: var(--minWidth);
     min-height: var(--minHeight);
     z-index: var(--zIndex);
     padding: var(--padding);
     font: var(--font);
-
-    background: var(--background);
     color: var(--color);
+    background: transparent;
+    border: none;
+    border-radius: var(--borderRadius);
+  }
+
+  .button::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--background);
     border: var(--borderWidth) solid var(--borderColor);
     border-radius: var(--borderRadius);
     box-shadow: var(--boxShadow);
+    z-index: -1;
+    transition: transform linear 50ms;
   }
 
   .button:hover .wanderLogo {
     animation: sail 3s infinite;
   }
 
-  .button:active {
+  .button:active::before {
     transform: scale(0.95);
   }
 
   .wanderLogo {
     width: 32px;
     aspect-ratio: 1;
+    transition: transform linear 50ms;
   }
 
   .label:empty {
