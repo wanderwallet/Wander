@@ -1,9 +1,12 @@
 import { getEmbeddedAncestorOrigin } from "~utils/embedded/embedded.utils";
+import { isExternalURL } from "~utils/urls/isExternalURL";
 
 export const tabs = {
   create: async ({ url }) => {
     if (process.env.NODE_ENV === "development")
       console.log(`tabs.create({ ${url} })`);
+
+    const externalUrl = isExternalURL(url);
 
     // URL =
     // browser.runtime.getURL("tabs/welcome.html")
@@ -12,7 +15,9 @@ export const tabs = {
     // browser.runtime.getURL("tabs/auth.html")}?${objectToUrlParams(...)}
     // `tabs/dashboard.html#/apps/${activeApp.url}`
 
-    if (url === "tabs/welcome.html") {
+    if (externalUrl) {
+      window.open(url, "_blank");
+    } else if (url === "tabs/welcome.html") {
       throw new Error("Welcome routes not added to Wander Embedded");
 
       // location.hash = "/welcome";
