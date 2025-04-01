@@ -54,12 +54,12 @@ const KeystoneViews = [
 // TODO: Use a nested router instead:
 const ViewsBySetupMode = {
   generate: [
-    AccountWelcomeView,
     BackupWelcomeView,
     ConfirmWelcomeView,
     PasswordWelcomeView,
-    ThemeWelcomeView,
     PermissionsWelcomeView,
+    AccountWelcomeView,
+    ThemeWelcomeView,
     GenerateDoneWelcomeView
   ],
   load: [OptionsWelcomView],
@@ -95,12 +95,12 @@ const remainingKeystoneSubtitles = [
 
 const VIEW_SUBTITLES_BY_SETUP_MODE = {
   generate: [
-    "name_your_account",
     "backup_your_account",
     "confirm_your_recovery_phrase",
     "create_a_password",
-    "choose_ui_theme",
     "enable_permissions",
+    "name_your_account",
+    "choose_ui_theme",
     "congratulations"
   ],
   load: [""],
@@ -142,8 +142,10 @@ export function SetupWelcomeView({ params }: SetupWelcomeViewProps) {
   // toasts
   const { setToast } = useToasts();
 
-  // generate wallet in the background
-  const [generatedWallet, setGeneratedWallet] = useState<GeneratedWallet>({});
+  // generate wallet in the background - default nickname
+  const [generatedWallet, setGeneratedWallet] = useState<GeneratedWallet>({
+    nickname: "Account 1"
+  });
 
   const navigateToPreviousPage = () => {
     if (setupMode !== "generate" && setupMode !== "load" && page === 1) {
@@ -234,7 +236,7 @@ export function SetupWelcomeView({ params }: SetupWelcomeViewProps) {
     isNaN(page) ||
     page < 1 ||
     page > pageCount ||
-    (setupMode === "generate" && page > 4 && password === "") ||
+    (setupMode === "generate" && page > 3 && password === "") ||
     (setupMode !== "generate" && page > 3 && password === "")
   ) {
     return <Redirect to={`/${setupMode}/1`} />;

@@ -1,5 +1,9 @@
 import { Button, Text } from "@arconnect/components-rebrand";
-import { WalletContext, type SetupWelcomeViewParams } from "../setup";
+import {
+  PasswordContext,
+  WalletContext,
+  type SetupWelcomeViewParams
+} from "../setup";
 import browser from "webextension-polyfill";
 import { useContext, useEffect, useState } from "react";
 import { PageType, trackPage } from "~utils/analytics";
@@ -12,6 +16,8 @@ import Squircle from "~components/Squircle";
 import { useLocation } from "~wallets/router/router.utils";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { useActiveWallet } from "~wallets/hooks";
+import { addWallet } from "~wallets";
+import { loadTokens } from "~tokens/token";
 
 export type GenerateDoneWelcomeViewProps =
   CommonRouteProps<SetupWelcomeViewParams>;
@@ -21,17 +27,46 @@ export function GenerateDoneWelcomeView({
 }: GenerateDoneWelcomeViewProps) {
   // wallet context
   const { wallet } = useContext(WalletContext);
+  const { password } = useContext(PasswordContext);
   const activeWallet = useActiveWallet();
   const { navigate } = useLocation();
   const { setupMode } = params;
 
-  // add generated wallet
+  // add generated wallet and go to dashboard
   async function goToDashboard() {
+    // Add the wallet if we're in generate mode
+    if (setupMode === "generate" && wallet.jwk) {
+      await addWallet(
+        {
+          nickname: wallet?.nickname || "Account 1",
+          wallet: wallet.jwk
+        },
+        password
+      );
+
+      // load tokens
+      await loadTokens();
+    }
+
     window.onbeforeunload = null;
     window.top.close();
   }
 
   async function takeTour() {
+    // Add the wallet if we're in generate mode
+    if (setupMode === "generate" && wallet.jwk) {
+      await addWallet(
+        {
+          nickname: wallet?.nickname || "Account 1",
+          wallet: wallet.jwk
+        },
+        password
+      );
+
+      // load tokens
+      await loadTokens();
+    }
+
     navigate("/getting-started/1");
   }
 

@@ -107,27 +107,12 @@ export function PermissionsWelcomeView({
       });
     }
 
-    // add the wallet
-    await addWallet(
-      {
-        nickname: walletRef.current?.nickname || "Account 1",
-        wallet: walletRef.current.jwk
-      },
-      password
-    );
-
-    // load tokens
-    await loadTokens();
-
-    // log user onboarded
-    await trackEvent(EventType.ONBOARDED, {});
-
     if (!analyticSetting && !answered) {
       await setAnswered(true);
       await setAnalyticSetting(false);
     }
 
-    // redirect to getting started pages
+    // redirect to account naming step
     navigate(`/${params.setupMode}/${Number(params.page) + 1}`);
 
     setShowLongWaitMessage(false);

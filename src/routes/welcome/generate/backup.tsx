@@ -32,12 +32,17 @@ export function BackupWelcomeView({ params }: BackupWelcomeViewProps) {
 
   // icon displayed for "copy seedphrase"
   const [copyDisplay, setCopyDisplay] = useState(true);
+  const [copied, setCopied] = useState(false);
 
   // copy the seedphrase
   function copySeed() {
     copy(generatedWallet.mnemonic || "");
     setCopyDisplay(false);
-    setTimeout(() => setCopyDisplay(true), 1050);
+    setCopied(true);
+    setTimeout(() => {
+      setCopyDisplay(true);
+      setCopied(false);
+    }, 1050);
   }
 
   useEffect(() => {
@@ -62,7 +67,9 @@ export function BackupWelcomeView({ params }: BackupWelcomeViewProps) {
           </SeedContainer>
           <Spacer y={0.5} />
           <CopySeed onClick={copySeed}>
-            {browser.i18n.getMessage("copySeed")}
+            {copied
+              ? browser.i18n.getMessage("copied")
+              : browser.i18n.getMessage("copySeed")}
             {(copyDisplay && <CopyIcon />) || <Check color="#56C980" />}
           </CopySeed>
         </div>
