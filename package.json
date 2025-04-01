@@ -82,7 +82,7 @@
     "copy-to-clipboard": "^3.3.2",
     "currency-symbol-map": "^5.1.0",
     "dayjs": "^1.11.6",
-    "embed-api": "https://github.com/wanderwallet/embed-api#d31f92296e1077f66031ffa268f8e5c5702147f2",
+    "embed-api": "https://github.com/wanderwallet/embed-api#ec14eb31e3d7ae1e132d14ef1b27c894de135f82",
     "framer-motion": "^11.11.7",
     "human-crypto-keys": "^0.1.4",
     "js-confetti": "^0.11.0",
