@@ -4,7 +4,7 @@ import { arconfettiIcon, signNotification } from "../sign/utils";
 import { cleanUpChunks, getChunks } from "../sign/chunks";
 import { freeDecryptedWallet } from "~wallets/encryption";
 import type { BackgroundModuleFunction } from "~api/background/background-modules";
-import { createData, ArweaveSigner } from "arbundles";
+import { createData, ArweaveSigner } from "@dha-team/arbundles";
 import { getPrice, uploadDataToTurbo } from "./uploader";
 import type { DispatchResult } from "./index";
 import { signedTxTags } from "../sign/tags";

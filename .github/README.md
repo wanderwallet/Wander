@@ -182,11 +182,12 @@ There are quite a few cases where you might need to generate a cryptographic sig
 
 ~~Requires the `SIGNATURE` [permission](#permissions).~~
 
-### `signDataItem(dataItem): Promise<RawDataItem>`
+### `signDataItem(dataItem, options): Promise<RawDataItem>`
 
 Generate a signed data item, than can later be submitted to an [ANS-104](https://github.com/ArweaveTeam/arweave-standards/blob/master/ans/ANS-104.md) compatible bundler
 
 - dataItem: `DataItem` type object with the data to sign
+- `options`: `SignatureOptions` Signature options
 
 The `DataItem` type should conform to:
 
@@ -199,6 +200,16 @@ export interface DataItem {
     name: string;
     value: string;
   }[];
+}
+```
+
+#### SignatureOptions
+
+Wander allows you to customize the saltLength to use when signing the data item:
+
+```ts
+export interface SignatureOptions {
+  saltLength?: number;
 }
 ```
 

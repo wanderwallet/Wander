@@ -2,7 +2,8 @@ import { isBatchOfRawDataItem } from "~utils/assertions";
 import { requestUserAuthorization } from "../../../utils/auth/auth.utils";
 import { getActiveKeyfile } from "~wallets";
 import { freeDecryptedWallet } from "~wallets/encryption";
-import { ArweaveSigner, createData } from "arbundles";
+import { ArweaveSigner, createData } from "@dha-team/arbundles";
+
 import type { BackgroundModuleFunction } from "~api/background/background-modules";
 
 const background: BackgroundModuleFunction<number[][]> = async (

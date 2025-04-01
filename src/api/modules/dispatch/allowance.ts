@@ -4,7 +4,7 @@ import type { ModuleAppData } from "~api/background/background-modules";
 import { defaultGateway } from "~gateways/gateway";
 import { signAuth } from "../sign/sign_auth";
 import Arweave from "arweave";
-import type { DataItem } from "arbundles";
+import type { DataItem } from "@dha-team/arbundles";
 import type Transaction from "arweave/web/lib/transaction";
 import type BigNumber from "bignumber.js";
 import type { JWKInterface } from "arweave/web/lib/wallet";
