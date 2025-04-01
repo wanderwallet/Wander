@@ -34,7 +34,7 @@ import useActiveTab from "~applications/useActiveTab";
 import AppIcon, { NoAppIcon } from "./home/AppIcon";
 import Squircle from "~components/Squircle";
 import browser from "webextension-polyfill";
-import styled from "styled-components";
+import styled, { type StyledComponent } from "styled-components";
 import copy from "copy-to-clipboard";
 import { type Gateway } from "~gateways/gateway";
 import { Bell03 } from "@untitled-ui/icons-react";
@@ -526,13 +526,13 @@ const AppAction = styled.div`
   display: flex;
 `;
 
-export const Action = styled(CopyIcon)<{ active?: boolean }>`
+const StyledIcon = styled(CopyIcon)<{ $active?: boolean }>`
   cursor: pointer;
   font-size: 1.25rem;
   width: 1.5em;
   height: 1.5em;
   color: ${(props) =>
-    props.active ? props.theme.success : props.theme.primaryText};
+    props.$active ? props.theme.success : props.theme.primaryText};
   transition: all 0.23s ease-in-out;
 
   &:hover {
@@ -543,6 +543,17 @@ export const Action = styled(CopyIcon)<{ active?: boolean }>`
     transform: scale(0.92);
   }
 `;
+
+export const Action = ({
+  active,
+  as,
+  ...props
+}: {
+  active?: boolean;
+  as?: (props: React.ComponentProps<"svg">) => JSX.Element;
+} & React.ComponentProps<"svg">) => (
+  <StyledIcon as={as} $active={active} {...props} />
+);
 
 const AppInfoWrapper = styled(motion.div).attrs({
   initial: "closed",
