@@ -1157,4 +1157,3 @@
       });
   }
 ]);
-//# sourceMappingURL=prime.worker.min.js.map

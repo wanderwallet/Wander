@@ -78,7 +78,6 @@ export function HomeView() {
       <HomeContent>
         <Balance />
         <WalletActions />
-        <HorizontalLine />
         <Tabs />
       </HomeContent>
     </HomeWrapper>

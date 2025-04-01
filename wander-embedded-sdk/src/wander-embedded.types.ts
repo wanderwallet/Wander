@@ -358,12 +358,6 @@ export function isThemeRecord<T>(
 // Modal (iframe):
 
 /**
- * Behavior when clicking outside the iframe.
- * Controls how the iframe responds when users click outside of it.
- */
-export type WanderEmbeddedClickOutsideBehavior = "auto" | boolean;
-
-/**
  * Configuration options for the iframe.
  * Customizes the appearance and behavior of the Wander Embedded iframe,
  * which displays the wallet UI.
@@ -384,12 +378,11 @@ export interface WanderEmbeddedIframeOptions
   /**
    * Close Wander Embedded when clicking outside of it.
    * Controls the behavior when a user clicks outside the iframe:
-   * - "auto": Will close if `backdropBackground` is not transparent or if `backdropBackdropFilter` is used.
    * - false: Will never close. The user must click the close icon.
-   * - true: Will always close when clicking outside, even if the backdrop is not visible.
+   * - true: Will always close when clicking outside.
    * @default "auto"
    */
-  clickOutsideBehavior?: WanderEmbeddedClickOutsideBehavior;
+  clickOutsideBehavior?: boolean;
 }
 
 /**
@@ -407,7 +400,7 @@ export interface WanderEmbeddedIframeConfig
    * Behavior when clicking outside the iframe.
    * How the component responds to clicks outside its boundaries.
    */
-  clickOutsideBehavior: WanderEmbeddedClickOutsideBehavior;
+  clickOutsideBehavior: boolean;
 }
 
 // Button:
