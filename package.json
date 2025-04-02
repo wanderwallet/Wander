@@ -103,6 +103,7 @@
     "react-lottie": "^1.2.10",
     "react-qr-reader": "^2.2.1",
     "react-ssr-prepass": "^1.6.0",
+    "react-toastify": "^11.0.5",
     "redstone-api": "^0.4.13",
     "rss-parser": "^3.12.0",
     "shamir-secret-sharing": "^0.0.3",

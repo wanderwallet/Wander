@@ -1,4 +1,5 @@
 export type DropdownBaseProps = {
-  className: string;
+  className?: string;
+  label?: string;
   children: React.ReactNode;
 };

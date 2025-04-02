@@ -11,6 +11,10 @@ const Copyable = forwardRef<HTMLDivElement, CopyableBaseProps>(
     {
       label,
       value,
+      hasBorder = true,
+      isShortened = false,
+      isButtonOnly = false,
+      buttonText,
       className,
       size = "md",
       isFullWidth,
@@ -18,7 +22,6 @@ const Copyable = forwardRef<HTMLDivElement, CopyableBaseProps>(
       isLoading,
       isDisabled,
       onClick,
-      tooltipValue,
       style,
       ...props
     },
@@ -28,10 +31,16 @@ const Copyable = forwardRef<HTMLDivElement, CopyableBaseProps>(
 
     const textColor = isDarkMode
       ? "var(--color-copyable-text-value)"
-      : "#191919";
+      : "#666666";
     const iconColor = isDarkMode
       ? "var(--color-copyable-text-label)"
-      : "#757575";
+      : "#666666";
+
+    const displayValue = isShortened
+      ? value.slice(0, 4).toLocaleLowerCase() +
+        "..." +
+        value.slice(-4).toLocaleLowerCase()
+      : value.toLocaleLowerCase();
 
     return (
       <div
@@ -42,7 +51,7 @@ const Copyable = forwardRef<HTMLDivElement, CopyableBaseProps>(
           isFullWidth && styles.copyable__full__width,
           isBlurry && styles.copyable__blurry,
           isDisabled && styles.copyable__disabled,
-          isDarkMode ? styles.copyable__dark : styles.copyable__light,
+          hasBorder && styles.copyable__border,
           className
         )}
         style={style}
@@ -51,34 +60,36 @@ const Copyable = forwardRef<HTMLDivElement, CopyableBaseProps>(
         {isLoading ? (
           <Loading />
         ) : (
-          <Box alignment="left">
-            <div className={styles.tooltip}>
-              <Text
-                variant="bodyMd"
-                style={{
-                  color: isDarkMode
-                    ? "var(--color-copyable-text-label)"
-                    : undefined
-                }}
-              >
-                {label}
-              </Text>
+          <Box alignment="left" className={styles.copyable__container}>
+            <Text
+              variant="bodyMd"
+              className={styles.copyable__label}
+              style={{
+                color: isDarkMode
+                  ? "var(--color-copyable-text-label)"
+                  : undefined
+              }}
+            >
+              {label}
+            </Text>
+            <div className={styles.copyable__content}>
+              {!isButtonOnly && (
+                <Text
+                  className={styles.copyable__value}
+                  variant="bodyLg"
+                  style={{ color: textColor }}
+                >
+                  {displayValue}
+                </Text>
+              )}
               <button
                 className={styles.copyable__button}
                 onClick={onClick}
                 disabled={isDisabled}
+                aria-label="Copy to clipboard"
               >
-                {tooltipValue && (
-                  <span className={styles.tooltiptext}>{tooltipValue}</span>
-                )}
-                <Text
-                  className={styles.text__label}
-                  variant="bodyLg"
-                  style={{ color: textColor }}
-                >
-                  {value}
-                </Text>
-                <CopyableIcon color={iconColor} />
+                {buttonText}
+                <CopyableIcon color={iconColor} width={16} height={16} />
               </button>
             </div>
           </Box>

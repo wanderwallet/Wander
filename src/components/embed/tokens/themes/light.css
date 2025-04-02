@@ -6,7 +6,8 @@
 .light {
   --color-background-default: var(--brand-color-neutral6);
   --color-background-button-primary: var(--brand-color-primary3);
-  --color-background-button-secondary: var(--brand-color-secondary6);
+  --color-background-button-secondary: var(--brand-color-neutral7);
+
   --color-button-primary-active: var(--brand-color-neutral6);
   --color-button-primary-success: var(--brand-color-success1);
   --color-button-primary-error: var(--brand-color-error1);
@@ -51,4 +52,5 @@
 
   --color-background-switch-enabled: var(--brand-color-primary3);
   --color-background-button-disabled: var(--brand-color-neutral3);
+  --avatar-background: #0d6ce9;
 }

@@ -17,4 +17,5 @@ export interface CardBaseProps {
   setShowPopover?: () => void;
   size?: Sizes;
   customIcon?: React.ReactNode;
+  style?: React.CSSProperties;
 }

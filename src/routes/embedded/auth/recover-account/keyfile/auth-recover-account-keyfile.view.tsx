@@ -1,21 +1,21 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useLocation } from "~wallets/router/router.utils";
 
 import {
   Card,
   Row,
-  Text,
   Button,
-  WanderIcon,
   Copyable,
-  Upload
+  Upload,
+  WanderFooter
 } from "~components/embed";
 import copy from "copy-to-clipboard";
-
+import { toast } from "react-toastify";
 export function AuthRecoverAccountKeyfileEmbeddedView() {
   const [loading, setLoading] = useState(false);
   const [jsonData, setJsonData] = useState<any>(null);
+  const { navigate, back } = useLocation();
 
   const handleJsonParse = (parsedData: any) => {
     setJsonData(parsedData);
@@ -37,19 +37,17 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
 
         if (!tempWallet) {
           setLoading(false);
-          return alert(`Something isn't right`);
+          return toast.error(`Something isn't right`);
         }
         setLoading(false);
         return tempWallet;
       }
     } catch (error) {
-      alert(error);
+      toast.error(error);
     } finally {
       setLoading(false);
     }
   }, [jsonData]);
-
-  const { navigate } = useLocation();
 
   const handleRecover = async () => {
     try {
@@ -58,7 +56,7 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
       setLoading(false);
       navigate("/auth/recover-account/authentication");
     } catch (error) {
-      alert(error);
+      toast.error(error);
       setLoading(false);
     }
   };
@@ -72,27 +70,16 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
     <Card
       headerText="Recover your account"
       subtitle="Import private key"
-      footerElement={
-        <Row>
-          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
-            {"Secured by"}
-          </Text>
-          <WanderIcon color="#838383" />
-        </Row>
-      }
+      footerElement={<WanderFooter />}
       hasBackButton={true}
-      onBackButtonClick={() => {
-        window.history.back();
-      }}
+      onBackButtonClick={back}
       hasCloseButton={true}
-      onCloseButtonClick={() => {
-        window.location.href = "/auth";
-      }}
+      onCloseButtonClick={() => navigate(`/auth`)}
       size="auto"
     >
       <Copyable
         isFullWidth
-        label="Your account address"
+        label="Your wallet address"
         onClick={() => {
           copy(importedTempWalletAddress);
         }}
@@ -120,19 +107,9 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
     <Card
       headerText="Import private key"
       subtitle="Upload your private key to connect your wallet to your account."
-      footerElement={
-        <Row>
-          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
-            {"Secured by"}
-          </Text>
-          <WanderIcon color="#838383" />
-        </Row>
-      }
+      footerElement={<WanderFooter />}
       hasBackButton={true}
-      onBackButtonClick={() => {
-        window.history.back();
-      }}
-      //   hasCloseButton={false}
+      onBackButtonClick={back}
       size="auto"
     >
       <Upload

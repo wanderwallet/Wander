@@ -10,9 +10,6 @@
   align-self: stretch;
   border-radius: var(--border-radius-xl);
   background: #f2f2f7;
-
-  /* Surface inner shadow */
-  box-shadow: 0px 2px 3.3px 0px rgba(0, 0, 0, 0.07) inset;
 }
 
 .input {
