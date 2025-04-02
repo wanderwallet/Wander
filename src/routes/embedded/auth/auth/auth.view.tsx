@@ -24,6 +24,9 @@ export function AuthEmbeddedView() {
   const [selectedAuthProviderType, setSelectedAuthProviderType] =
     useState<AuthProviderType | null>(null);
 
+  console.log({ authStatus });
+  console.log({ selectedAuthProviderType });
+
   const areButtonsDisabled =
     authStatus === "unknown" ||
     authStatus === "loading" ||
@@ -80,7 +83,6 @@ export function AuthEmbeddedView() {
         </Row>
       }
       hasBackButton={false}
-      //   hasCloseButton={false}
       size="auto"
     >
       <Box>
@@ -89,14 +91,14 @@ export function AuthEmbeddedView() {
           placeholder="E-Mail"
           isDisabled={areButtonsDisabled}
         />
-
+        <br />
         <TextInput
           ref={passwordInputRef}
           placeholder="Password"
           isDisabled={areButtonsDisabled}
           isSecure
         />
-
+        <br />
         <Button
           isFullWidth
           onClick={() => handleEmailSignup()}

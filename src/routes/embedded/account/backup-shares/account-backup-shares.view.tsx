@@ -9,8 +9,7 @@ import {
   AppleIcon,
   DropboxIcon,
   GDriveIcon,
-  KeyIcon,
-  SeedIcon
+  KeyIcon
 } from "~components/embed/ui";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { Link } from "~wallets/router/components/link/Link";
@@ -29,6 +28,10 @@ export function AccountBackupSharesEmbeddedView() {
       setLoading(false);
     }
   }, [generateRecoveryAndDownload]);
+
+  const handleUnimplementedFeature = useCallback(() => {
+    alert("Feature not implemented yet.");
+  }, []);
 
   // TODO: What if the user already has more than 3 backup shares?
 
@@ -63,11 +66,12 @@ export function AccountBackupSharesEmbeddedView() {
       size="auto"
     >
       <Box>
-        <Button
+        {/* <Button
           variant="outlined"
           isFullWidth
           icon={<GDriveIcon fontSize={24} />}
           isDisabled={loading}
+          onClick={handleUnimplementedFeature}
         >
           Backup to Google Drive
         </Button>
@@ -76,6 +80,7 @@ export function AccountBackupSharesEmbeddedView() {
           isFullWidth
           icon={<AppleIcon fontSize={24} />}
           isDisabled={loading}
+          onClick={handleUnimplementedFeature}
         >
           Backup to iCloud
         </Button>
@@ -84,9 +89,10 @@ export function AccountBackupSharesEmbeddedView() {
           isFullWidth
           icon={<DropboxIcon fontSize={24} />}
           isDisabled={loading}
+          onClick={handleUnimplementedFeature}
         >
           Backup to Dropbox
-        </Button>
+        </Button> */}
         <Button
           variant="outlined"
           isFullWidth
@@ -97,7 +103,7 @@ export function AccountBackupSharesEmbeddedView() {
         >
           Export Recovery File
         </Button>
-        <Button variant="link" isFullWidth>
+        <Button variant="link" isFullWidth onClick={handleUnimplementedFeature}>
           Why should I back up my account?
         </Button>
       </Box>

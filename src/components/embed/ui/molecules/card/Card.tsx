@@ -49,7 +49,6 @@ const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
         className={styles["card__close__btn"]}
         onClick={onCloseButtonClick ?? closeCard}
       >
-        {/* {customIcon ?? <XClose fontSize={24} color={iconColor} />} */}
         {customIcon ?? <MinimizeIcon fontSize={24} color={iconColor} />}
       </button>
     );

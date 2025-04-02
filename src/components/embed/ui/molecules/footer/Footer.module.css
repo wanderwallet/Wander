@@ -1,9 +1,11 @@
 @import "../../../tokens/index.css";
 
 .footer {
+  position: sticky;
+  bottom: 0;
   padding: var(--spacing-1);
   background-color: inherit;
-  bottom: -10px !important;
+  width: 100%;
 }
 
 .footer__title__container {
