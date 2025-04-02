@@ -64,6 +64,24 @@ This function sends the message to the "background" script using `isomorphicSend
 > `setupWalletSDK` should also use `isomorphicSendMessage`. Its usage of `postMessage(...)` and the `message` "proxy"
 > implemented in `api.ts` should be an implementation detail abstracted away by `isomorphicSendMessage`.
 
+The following diagram illustrates the flow in Embed:
+
+```mermaid
+sequenceDiagram
+    participant dApp
+    participant SDK as SDK/injected object
+    participant iframe
+
+    dApp->>SDK: calls
+    SDK->>iframe: postMessage
+    iframe->>iframe: request user confirmation
+    iframe->>iframe: performs operation (acts as background script)
+    iframe->>SDK: postMessage (response)
+    SDK->>dApp: resolved promise
+```
+
+This diagram represents the interaction between the dApp, SDK and the iframe.
+
 ## Testing
 
 Scenarios to test:

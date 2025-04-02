@@ -53,15 +53,6 @@ function getPostMessageFunction<K extends MessageID>(
     postMessageTargetOrigin = "";
   }
 
-  /*
-  console.log(
-    "DEBUG DATA = ",
-    messageData,
-    isInsideIframe(),
-    postMessageTargetOrigin
-  );
-  */
-
   if (postMessageTargetOrigin) {
     return async function postMessage() {
       console.log(
@@ -189,7 +180,7 @@ export function iframeIsomorphicOnMessage<K extends MessageID>(
     console.warn(`Handler added for ${messageId}`);
   }
 
-  // Note that in Wander Embed, there are no ready messages, so the API/SDK must
+  // TODO: Note that in Wander Embed, there are no ready messages, so the API/SDK must
   // make sure the iframe is ready before accepting method calls...
 }
 

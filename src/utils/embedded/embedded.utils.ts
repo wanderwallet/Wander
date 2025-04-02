@@ -53,6 +53,7 @@ const EMBEDDED_ANCESTOR_ORIGIN =
   ancestorOrigin || searchParams.get(PARAM_ANCESTOR_ORIGIN);
 
 if (IS_EMBEDDED_APP) {
+  // TODO: It looks like this is also being loaded from http://localhost:3000/home/gmzcodes/projects/clabs/wander/Wander/wander-embedded-sdk/src/wander-embedded.ts
   console.log("Wander Embedded URL params =", {
     NODE_ENV,
     EMBEDDED_CLIENT_ID,
