@@ -34,6 +34,7 @@ import getSymbolFromCurrency from "currency-symbol-map";
 import { useStorage } from "@plasmohq/storage/hook";
 import { WarningIcon } from "~components/popup/Token";
 import { Flex } from "~components/common/Flex";
+import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 
 const BASE_URL = "https://api.transak.com";
 const TRANSAK_API_KEY =
@@ -675,7 +676,14 @@ const CurrencySelectorScreen = ({
               squircleSize={40}
               title={currency.symbol}
               subtitle={currency.name}
-              img={currency.logo}
+              hideSquircle
+              icon={
+                <TokenLogo
+                  src={currency.logo}
+                  style={{ height: 40, width: 40 }}
+                  backgroundColor="transparent"
+                />
+              }
               onClick={() => {
                 updateCurrency(currency);
                 onClose();
@@ -790,11 +798,11 @@ export const Line = styled.div<{ margin?: string }>`
   background-color: ${(props) => props.theme.borderDefault};
 `;
 
-export const TokenLogo = styled(CommonImage).attrs({
+export const TokenLogo = styled(CommonImage).attrs((props) => ({
   alt: "token-logo",
   draggable: false,
-  backgroundColor: "#fffefc"
-})`
+  backgroundColor: props.backgroundColor || "#fffefc"
+}))<{ backgroundColor?: string }>`
   height: 24px;
   width: 24px;
   border-radius: 50%;
