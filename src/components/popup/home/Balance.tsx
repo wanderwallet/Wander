@@ -41,7 +41,7 @@ export default function Balance() {
     // on a comment, that might or might not render, to update the SDK balance, is a rather poor implementation.
 
     if (hideBalance) {
-      const fakeAmount = 111.11;
+      const fakeAmount = 888.88;
       const formattedFakeBalance = Intl.NumberFormat(undefined, {
         style: "currency",
         currency
