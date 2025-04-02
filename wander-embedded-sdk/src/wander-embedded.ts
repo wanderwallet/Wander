@@ -157,8 +157,6 @@ export class WanderEmbedded {
     this.handleMessage = this.handleMessage.bind(this);
     window.addEventListener("message", this.handleMessage);
 
-    console.log("setupEmbeddedWalletSDK() OUT 2");
-
     // ...we get a reference to any other `window.arweaveWallet` (most likely our BE)...:
     this.windowArweaveWallet = window.arweaveWallet;
 

@@ -17,7 +17,7 @@ import { setEmbeddedTargetIframe } from "~utils/messaging/strategies/iframe/ifra
 export function setupEmbeddedWalletSDK(
   targetWindowOrIframe: Window | HTMLIFrameElement = window
 ) {
-  log(LOG_GROUP.SETUP, "setupEmbeddedWalletSDK() IN 2");
+  log(LOG_GROUP.SETUP, "setupEmbeddedWalletSDK()");
 
   if (!(targetWindowOrIframe instanceof HTMLIFrameElement)) {
     throw new Error("Target for Wander Embedded must be an IFRAME element.");
