@@ -24,8 +24,8 @@ export async function handleTabUpdate(
 
   if (popupTabID !== -1 && changeInfo?.status === "loading") {
     isomorphicSendMessage({
+      destination: `web_accessible@${popupTabID}`,
       messageId: "auth_tab_reloaded",
-      tabId: popupTabID,
       data: tabID
     });
   }
@@ -82,8 +82,8 @@ export async function handleTabClosed(closedTabID: number) {
 
   // If some other tab was closed and there's a popup, notify the popup in case it has AuthRequest from the closed tab:
   isomorphicSendMessage({
+    destination: `web_accessible@${popupTabID}`,
     messageId: "auth_tab_closed",
-    tabId: popupTabID,
     data: closedTabID
   });
 }

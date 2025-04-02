@@ -3,6 +3,8 @@ import { jwtDecode } from "jwt-decode";
 import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 import { LocalStorage } from "~iframe/storage/unpartitioned-storage/local-storage";
 import { searchParams, ancestorOrigin, isInsideIframe } from "./iframe.utils";
+import { ExtensionStorage } from "~utils/storage";
+import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 
 // Then, its tRPC client will be initialized with the following headers:
 // - authorization (getAuthTokenHeader / setAuthTokenHeader)
@@ -50,12 +52,15 @@ const EMBEDDED_SERVER_BASE_URL =
 const EMBEDDED_ANCESTOR_ORIGIN =
   ancestorOrigin || searchParams.get(PARAM_ANCESTOR_ORIGIN);
 
-console.log("Wander Embedded URL params =", {
-  NODE_ENV,
-  EMBEDDED_CLIENT_ID,
-  EMBEDDED_SERVER_BASE_URL,
-  EMBEDDED_ANCESTOR_ORIGIN
-});
+if (IS_EMBEDDED_APP) {
+  // TODO: It looks like this is also being loaded from http://localhost:3000/home/gmzcodes/projects/clabs/wander/Wander/wander-embedded-sdk/src/wander-embedded.ts
+  console.log("Wander Embedded URL params =", {
+    NODE_ENV,
+    EMBEDDED_CLIENT_ID,
+    EMBEDDED_SERVER_BASE_URL,
+    EMBEDDED_ANCESTOR_ORIGIN
+  });
+}
 
 // Note: DO NOT use document.referrer here as that will return the "incorrect" value when the user is redirected from
 // an auth provider domain to back to Wander Embedded.
@@ -65,14 +70,31 @@ export function getEmbeddedAncestorOrigin() {
 }
 
 // Note: This is run when trpc detects UNAUTHORIZED error.
-async function handleAuthError() {
+export async function signOut() {
+  try {
+    postEmbeddedMessage({
+      type: "embedded_close",
+      data: null
+    });
+
+    postEmbeddedMessage({
+      type: "embedded_disconnect",
+      data: null
+    });
+
+    ExtensionStorage.removeAll();
+  } catch (err) {
+    console.error("Error clearing extension storage:", err);
+  }
+
   try {
     const supabase = await getSupabaseClient();
     await supabase.auth.signOut();
-    window.location.href = "#/";
-    window.location.reload();
   } catch (err) {
     console.error("Error signing out:", err);
+
+    window.location.href = "#/";
+    window.location.reload();
   }
 }
 
@@ -89,7 +111,7 @@ function getTRPCClientAndUtils() {
       deviceNonce: undefined,
       clientId: EMBEDDED_CLIENT_ID,
       applicationId: "",
-      onAuthError: handleAuthError
+      onAuthError: signOut
     });
   }
 
@@ -234,8 +256,6 @@ async function insecurelyValidateApplication() {
 // insecurelyValidateApplication();
 
 if (IS_EMBEDDED_APP && process.env.NODE_ENV === "development") {
-  (window as any).logout = async () => {
-    const supabase = await getSupabaseClient();
-    return supabase.auth.signOut();
-  };
+  (window as any).signOut = signOut;
+  (window as any).logOut = signOut;
 }

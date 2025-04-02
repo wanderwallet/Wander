@@ -9,6 +9,9 @@ import type {
 
 const EMBEDDED_MESSAGE_IDS = [
   "embedded_auth",
+  "embedded_connect",
+  "embedded_disconnect",
+  "embedded_open",
   "embedded_close",
   "embedded_resize",
   "embedded_balance",
@@ -50,5 +53,5 @@ export function postEmbeddedMessage<K extends EmbeddedMessageId>({
     return;
   }
 
-  parent.postMessage(call, getEmbeddedAncestorOrigin());
+  window.parent.postMessage(call, getEmbeddedAncestorOrigin());
 }

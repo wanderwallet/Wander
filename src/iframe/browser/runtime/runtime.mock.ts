@@ -9,6 +9,7 @@ export const runtime = {
 
   getManifest: () => {
     return {
+      manifest_version: 3,
       browser_action: {
         default_popup: "popup.html"
       }
@@ -21,6 +22,12 @@ export const runtime = {
         reason: "install",
         temporary: false
       } satisfies Runtime.OnInstalledDetailsType);
+    }
+  },
+
+  onConnect: {
+    addListener: (fn) => {
+      console.trace("onConnect.addEventListener", fn);
     }
   }
 };

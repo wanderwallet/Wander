@@ -245,7 +245,7 @@ export default function WalletHeader() {
           <Action
             as={copied ? CheckIcon : CopyIcon}
             onClick={copyAddress}
-            active={copied}
+            $active={copied}
             style={{ width: "24px", height: "24px" }}
           />
         </Tooltip>
@@ -526,13 +526,13 @@ const AppAction = styled.div`
   display: flex;
 `;
 
-export const Action = styled(CopyIcon)<{ active?: boolean }>`
+export const Action = styled(CopyIcon)<{ $active?: boolean }>`
   cursor: pointer;
   font-size: 1.25rem;
   width: 1.5em;
   height: 1.5em;
   color: ${(props) =>
-    props.active ? props.theme.success : props.theme.primaryText};
+    props.$active ? props.theme.success : props.theme.primaryText};
   transition: all 0.23s ease-in-out;
 
   &:hover {

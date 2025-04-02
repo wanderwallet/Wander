@@ -3,6 +3,7 @@ import { getAppURL } from "~utils/format";
 import { updateIcon } from "~utils/icon";
 import { getActiveTab } from "~applications";
 import Application from "~applications/application";
+import { createContextMenus } from "~utils/context_menus";
 
 /**
  * App disconnected listener. Sends a message
@@ -18,4 +19,5 @@ export async function handleAuthStateChange({
   const connected = await app.isConnected();
 
   await updateIcon(connected);
+  createContextMenus(connected);
 }

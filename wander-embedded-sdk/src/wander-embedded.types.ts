@@ -201,12 +201,22 @@ export interface BalanceInfo {
   /**
    * Amount in the specified currency.
    */
-  amount: number;
+  amount: number | null;
 
   /**
    * Currency code.
    */
-  currency: Currency;
+  currency: Currency | null;
+
+  /**
+   * Formatted amount in the specified currency;
+   */
+  formattedBalance: string;
+}
+
+export interface RequestsInfo {
+  pendingRequests: number;
+  hasNewConnectRequest: boolean;
 }
 
 /** Main configuration options for the Wander Embedded SDK */
@@ -277,7 +287,7 @@ export interface WanderEmbeddedOptions {
    * Callback function called when wallet receives a request.
    * @param pendingRequests Number of pending requests
    */
-  onRequest?: (pendingRequests: number) => void;
+  onRequest?: (requestsInfo: RequestsInfo) => void;
 }
 
 // Common:

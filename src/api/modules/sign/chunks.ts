@@ -1,6 +1,8 @@
 import type { Tag } from "arweave/web/lib/transaction";
 import type { ApiCall, ApiResponse } from "shim";
 import { nanoid } from "nanoid";
+import { isApiErrorResponse } from "~utils/messaging/common/messaging.utils";
+import { isomorphicSendMessage } from "~utils/messaging/messaging.utils";
 
 /**
  * The chunk of the transaction signing
@@ -33,41 +35,64 @@ const chunks: {
  * @returns Response from the background
  */
 export const sendChunk = (chunk: Chunk) =>
-  new Promise<void>((resolve, reject) => {
+  new Promise<void>(async (resolve, reject) => {
     const callID = nanoid();
+
     // construct message
     const message: ApiCall = {
+      app:
+        import.meta.env?.VITE_IS_EMBEDDED_APP === "1"
+          ? "wanderEmbedded"
+          : "wander",
+      // TODO: Add Wallet API version:
+      version: "",
+      callID,
       type: "chunk",
-      app: "wander",
-      data: chunk,
-      callID
+      data: chunk
     };
 
-    // send message
-    window.postMessage(message, window.location.origin);
+    if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1") {
+      const res = await isomorphicSendMessage({
+        destination: "background",
+        messageId: "chunk",
+        data: message
+      });
 
-    // wait for the background to accept the chunk
-    window.addEventListener("message", callback);
-
-    // callback for the message
-    function callback(e: MessageEvent<ApiResponse<number | string>>) {
-      const { data: res } = e;
-      // returned chunk index
-      const index = res.data;
-
-      // ensure we are getting the result of the chunk sent
-      // in this instance / call of the function
-      if (res.callID !== callID) return;
-
-      // check for errors in the background
-      if (res.error || typeof index === "string") {
-        reject(res.data);
-      } else {
-        resolve();
+      if (isApiErrorResponse(res)) {
+        return reject(res.data);
       }
 
-      // remove listener
-      window.removeEventListener("message", callback);
+      resolve();
+    } else {
+      // send message
+      window.postMessage(message, window.location.origin);
+
+      // wait for the background to accept the chunk
+      window.addEventListener("message", callback);
+
+      // callback for the message
+      function callback(e: MessageEvent<ApiResponse<number>>) {
+        const { data: res } = e;
+
+        if (!res) return;
+
+        // returned chunk index
+        const index = res.data;
+
+        // ensure we are getting the result of the chunk sent
+        // in this instance / call of the function
+        if (res.callID !== callID) return;
+
+        // check for errors in the background
+        if (isApiErrorResponse(res) || typeof index === "string") {
+          reject(res.data);
+        } else {
+          resolve();
+        }
+
+        // remove listener
+        window.removeEventListener("message", callback);
+      }
     }
   });
 

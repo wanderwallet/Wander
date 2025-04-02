@@ -2,7 +2,7 @@ import { AUTH_ROUTES } from "~wallets/router/auth/auth.routes";
 import { getExtensionOverrides } from "~wallets/router/extension/extension.routes";
 import { POPUP_ROUTES } from "~wallets/router/popup/popup.routes";
 import type { RouteConfig } from "~wallets/router/router.types";
-import { isRouteOverride, prefixRoutes } from "~wallets/router/router.utils";
+import { isRouteOverride } from "~wallets/router/router.utils";
 
 // Authentication Views:
 import { AuthEmbeddedView } from "~routes/embedded/auth/auth/auth.view";
@@ -339,11 +339,7 @@ export const IFRAME_ROUTES = [
   ...POPUP_ROUTES.filter((route) => !isRouteOverride(route.path)),
 
   // auth.tsx:
-  // TODO: How to add this prefix to routes to when using push(), etc? ENV variable in the enum?
-  ...prefixRoutes(
-    "/auth-request",
-    AUTH_ROUTES.filter((route) => !isRouteOverride(route.path))
-  ),
+  ...AUTH_ROUTES.filter((route) => !isRouteOverride(route.path)),
 
   // OAuth Error:
   {
