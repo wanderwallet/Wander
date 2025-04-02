@@ -69,8 +69,8 @@ const background: BackgroundModuleFunction<void> = async (
     await updateIcon(false);
     createContextMenus(false);
 
-    // TODO: Update this in all API methods to get proper stack traces in errors? Maybe only in development?
-    throw err;
+    // TODO: Replacing this with `throw err` produces better stack traces:
+    throw new Error(err);
   }
 };
 

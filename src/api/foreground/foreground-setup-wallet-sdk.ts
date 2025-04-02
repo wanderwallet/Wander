@@ -118,8 +118,6 @@ export function setupWalletSDK(
           return reject(res.data);
         }
 
-        console.log("FOREGROUND RESULT =", res.data);
-
         const finalizerFn =
           typeof foregroundModule === "string"
             ? null
@@ -165,8 +163,6 @@ export function setupWalletSDK(
     dispatchEvent(new CustomEvent("arweaveWalletLoaded", { detail: {} }));
   });
 
-  // TODO: Remove it before to make sure there's no duplicate listener?
-
   /** Handle events */
   window.addEventListener(
     "message",
@@ -176,7 +172,7 @@ export function setupWalletSDK(
         event: Event;
       }>
     ) => {
-      if (e.data.type !== "wander_event") return;
+      if (!e.data || !e.data.event || e.data.type !== "wander_event") return;
 
       events.emit(e.data.event.name, e.data.event.value);
     }

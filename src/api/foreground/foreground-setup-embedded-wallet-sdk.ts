@@ -90,20 +90,9 @@ export function setupEmbeddedWalletSDK(
         data
       });
 
-      console.log("FOREGROUND RESULT =", res);
-
       // TODO: If the call above fails, this API call never gets a response. Add timeout?
 
       log(LOG_GROUP.API, `${data.type} (${data.callID}) =`, res);
-
-      // TODO: Make sure the response comes from targetWindow.
-      // See https://stackoverflow.com/questions/16266474/javascript-listen-for-postmessage-events-from-specific-iframe.
-
-      // validate return message
-      //if (`${data.type}_result` !== res.type) return;
-
-      // only resolve when the result matching our callID is delivered
-      //if (data.callID !== res.callID) return;
 
       // check for errors
       if (isApiErrorResponse(res)) {
@@ -154,8 +143,6 @@ export function setupEmbeddedWalletSDK(
     dispatchEvent(new CustomEvent("arweaveWalletLoaded", { detail: {} }));
   });
 
-  // TODO: Remove it before to make sure there's no duplicate listener?
-
   /** Handle events */
   window.addEventListener(
     "message",
@@ -165,7 +152,7 @@ export function setupEmbeddedWalletSDK(
         event: Event;
       }>
     ) => {
-      if (e.data?.type !== "wander_event") return;
+      if (!e.data || !e.data.event || e.data.type !== "wander_event") return;
 
       events.emit(e.data.event.name, e.data.event.value);
     }
