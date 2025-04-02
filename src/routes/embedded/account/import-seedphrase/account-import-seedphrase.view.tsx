@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button, Card, SeedInput, WanderFooter } from "~components/embed/ui";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useLocation } from "~wallets/router/router.utils";
@@ -44,6 +44,11 @@ export function AccountImportSeedphraseEmbeddedView() {
     };
   }, []);
 
+  const isSeedPhraseIncomplete = useMemo(() => {
+    if (seedPhrase.length !== 12) return true;
+    return seedPhrase.some((word) => word.trim() === "");
+  }, [seedPhrase]);
+
   return (
     <Card
       headerText="Enter Seedphrase"
@@ -63,6 +68,7 @@ export function AccountImportSeedphraseEmbeddedView() {
         size="md"
         onClick={handleImportWallet}
         isLoading={loading}
+        isDisabled={isSeedPhraseIncomplete}
       >
         Recover
       </Button>
