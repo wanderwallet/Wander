@@ -82,6 +82,10 @@ export function AccountBackupSharesEmbeddedView() {
     }
   }, [generateRecoveryAndDownload]);
 
+  const handleUnimplementedFeature = useCallback(() => {
+    alert("Feature not implemented yet.");
+  }, []);
+
   // TODO: What if the user already has more than 3 backup shares?
 
   // TODO: Do we download one file for the whole account or a file per wallet?
@@ -107,7 +111,7 @@ export function AccountBackupSharesEmbeddedView() {
       size="auto"
     >
       <Box>
-        <Button
+        {/* <Button
           variant="outlined"
           isFullWidth
           icon={<KeyShareIcon fontSize={24} />}
@@ -161,7 +165,7 @@ export function AccountBackupSharesEmbeddedView() {
           }
         >
           Backup to Dropbox
-        </Button>
+        </Button> */}
         <Button
           variant="outlined"
           isFullWidth
@@ -172,7 +176,7 @@ export function AccountBackupSharesEmbeddedView() {
         >
           Export Recovery File
         </Button>
-        <Button variant="link" isFullWidth>
+        <Button variant="link" isFullWidth onClick={handleUnimplementedFeature}>
           Why should I back up my account?
         </Button>
       </Box>

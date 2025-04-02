@@ -25,7 +25,7 @@ export function AuthRestoreSharesEmbeddedView() {
       size="auto"
     >
       <Box>
-        <Button
+        {/* <Button
           variant="outlined"
           isFullWidth
           icon={<GDriveIcon fontSize={24} />}
@@ -40,15 +40,15 @@ export function AuthRestoreSharesEmbeddedView() {
           onClick={() => alert("Not implemented.")}
         >
           iCloud
-        </Button>
-        <Button
+        </Button> */}
+        {/* <Button
           variant="outlined"
           isFullWidth
           icon={<DropboxIcon fontSize={24} />}
           onClick={() => alert("Not implemented.")}
         >
           Dropbox
-        </Button>
+        </Button> */}
         <Button
           variant="outlined"
           isFullWidth

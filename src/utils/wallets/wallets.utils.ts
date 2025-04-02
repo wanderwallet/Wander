@@ -13,11 +13,6 @@ import { setDecryptionKey } from "~wallets/auth";
 import { INVALID_DEVICE_SHARES_INFO_ERR_MSG } from "~utils/wallets/wallets.constants";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import type NodeForge from "node-forge";
-import {
-  pemToBase64,
-  pemToJWK,
-  privateKeyDerToJWK
-} from "~utils/crypto/crypto.utils";
 import type { RecoveryJSON, Wallet } from "~utils/embedded/embedded.types";
 import { EMBEDDED_FEATURE_FLAGS } from "~utils/embedded/embedded.constants";
 import { LocalStorage } from "~iframe/storage/unpartitioned-storage/local-storage";
@@ -47,7 +42,28 @@ import { LocalStorage } from "~iframe/storage/unpartitioned-storage/local-storag
 //
 //   We should look into this option later.
 
-const { random, pki, asn1 } = (window as any).forge as typeof NodeForge;
+const { random, pki, util } = (window as any).forge as typeof NodeForge;
+
+// Convert BigInt values to hex strings and encode to Base64
+function bigintToBase64Url(bigint: NodeForge.jsbn.BigInteger): string {
+  let hex = bigint.toString(16);
+  if (hex.length % 2 !== 0) {
+    // Ensure even length hex
+    hex = "0" + hex;
+  }
+
+  // Convert hex to bytes
+  const bytes = util.hexToBytes(hex);
+
+  // Encode bytes to Base64
+  let base64 = util.encode64(bytes);
+
+  // Convert Base64 to Base64 URL encoding
+  // Replace '+' with '-', '/' with '_', and remove '=' padding
+  base64 = base64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+
+  return base64;
+}
 
 async function generateSeedPhrase() {
   log(LOG_GROUP.WALLET_GENERATION, "generateSeedPhrase()");
@@ -251,8 +267,7 @@ async function generateShareHashAndPublicKey(
         } else {
           const shareHash = await generateShareHash(share);
           const publicKey = result.publicKey;
-          const publicKeyPEM = pki.publicKeyToPem(publicKey);
-          const sharePublicKey = pemToBase64(publicKeyPEM);
+          const sharePublicKey = bigintToBase64Url(publicKey.n);
 
           resolve({
             shareHash,
@@ -306,23 +321,19 @@ async function generateShareHashAndPrivateKey(
         } else {
           const shareHash = await generateShareHash(share);
           const privateKey = result.privateKey;
-          //const privateKeyPEM = pki.privateKeyToPem(privateKey);
-          //const sharePrivateKeyJWK = await pemToJWK(privateKeyPEM);
 
-          // Convert a Forge private key to an ASN.1 RSAPrivateKey:
-          const rsaPrivateKey = pki.privateKeyToAsn1(privateKey);
-          const der = asn1.toDer(rsaPrivateKey).getBytes();
-          const sharePrivateKeyJWK = await privateKeyDerToJWK(der).catch(
-            (err) => {
-              console.warn(`Error generating private key JWK from share:`, err);
-
-              return null;
-            }
-          );
-
-          // See https://github.com/digitalbazaar/forge/issues/256
-
-          // TODO: Test signatures work:
+          // Extract and encode the RSA parameters into JWK format
+          const sharePrivateKeyJWK = {
+            kty: "RSA",
+            n: bigintToBase64Url(privateKey.n),
+            e: bigintToBase64Url(privateKey.e),
+            d: bigintToBase64Url(privateKey.d),
+            p: bigintToBase64Url(privateKey.p),
+            q: bigintToBase64Url(privateKey.q),
+            dp: bigintToBase64Url(privateKey.dP),
+            dq: bigintToBase64Url(privateKey.dQ),
+            qi: bigintToBase64Url(privateKey.qInv)
+          };
 
           resolve({
             shareHash,

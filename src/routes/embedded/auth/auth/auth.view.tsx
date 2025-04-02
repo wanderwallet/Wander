@@ -24,6 +24,9 @@ export function AuthEmbeddedView() {
   const [selectedAuthProviderType, setSelectedAuthProviderType] =
     useState<AuthProviderType | null>(null);
 
+  console.log({ authStatus });
+  console.log({ selectedAuthProviderType });
+
   const areButtonsDisabled =
     authStatus === "unknown" ||
     authStatus === "loading" ||
