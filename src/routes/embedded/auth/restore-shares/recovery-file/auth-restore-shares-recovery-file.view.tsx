@@ -1,16 +1,11 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useCallback, useRef, useState } from "react";
-
-import {
-  Card,
-  Row,
-  Upload,
-  WanderIcon,
-  Text,
-  Button
-} from "~components/embed/ui";
+import { toast } from "react-toastify";
+import { Card, Upload, Button, WanderFooter } from "~components/embed/ui";
+import { useLocation } from "~wallets/router/router.utils";
 
 export function AuthRestoreSharesRecoveryFileEmbeddedView() {
+  const { navigate, back } = useLocation();
   const [loading, setLoading] = useState(false);
   const { currentWallet, recoverWallet } = useEmbedded();
   const walletAddress = currentWallet.address;
@@ -28,13 +23,13 @@ export function AuthRestoreSharesRecoveryFileEmbeddedView() {
 
         if (!restoredWallet) {
           setLoading(false);
-          return alert(`Something isn't right`);
+          return toast.error(`Something isn't right`);
         }
         setLoading(false);
         return restoredWallet;
       }
     } catch (error) {
-      alert(error);
+      toast.error(error);
     } finally {
       setLoading(false);
     }
@@ -49,22 +44,11 @@ export function AuthRestoreSharesRecoveryFileEmbeddedView() {
   return (
     <Card
       headerText="Restore shares / wallet"
-      footerElement={
-        <Row>
-          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
-            {"Secured by"}
-          </Text>
-          <WanderIcon color="#838383" />
-        </Row>
-      }
+      footerElement={<WanderFooter />}
       hasBackButton={true}
-      onBackButtonClick={() => {
-        window.history.back();
-      }}
+      onBackButtonClick={back}
       hasCloseButton={true}
-      onCloseButtonClick={() => {
-        window.location.href = "/auth/restore-shares";
-      }}
+      onCloseButtonClick={() => navigate("/auth/restore-shares")}
       size="auto"
     >
       <Upload

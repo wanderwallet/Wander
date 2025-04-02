@@ -28,4 +28,6 @@
   --divider-default-height: 2px; /* Default divider height */
 
   --checkbox-height: 16px; /* Default checkbox height */
+
+  --avatar-size-default: 24px; /* Default avatar size */
 }

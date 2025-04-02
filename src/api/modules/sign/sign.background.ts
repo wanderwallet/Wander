@@ -1,5 +1,4 @@
-import { arconfettiIcon, calculateReward, signNotification } from "./utils";
-import { allowanceAuth, getAllowance, updateAllowance } from "./allowance";
+import { arconfettiIcon, calculateReward } from "./utils";
 import { freeDecryptedWallet } from "~wallets/encryption";
 import type { BackgroundModuleFunction } from "~api/background/background-modules";
 import { type JWKInterface } from "arweave/web/lib/wallet";

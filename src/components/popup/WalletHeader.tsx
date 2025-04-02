@@ -245,7 +245,7 @@ export default function WalletHeader() {
           <Action
             as={copied ? CheckIcon : CopyIcon}
             onClick={copyAddress}
-            active={copied}
+            $active={copied}
             style={{ width: "24px", height: "24px" }}
           />
         </Tooltip>

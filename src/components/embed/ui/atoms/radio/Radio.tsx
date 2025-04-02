@@ -16,7 +16,7 @@ const Radio = forwardRef<HTMLDivElement, RadioBaseProps>(
       isDisabled,
       isRequired,
       isBlurry,
-      onChange,
+      handleChange,
       ...props
     },
     ref
@@ -40,7 +40,7 @@ const Radio = forwardRef<HTMLDivElement, RadioBaseProps>(
             checked={isChecked}
             disabled={isDisabled}
             required={isRequired}
-            onChange={onChange}
+            onChange={handleChange}
           />
           <div className={styles.radio__content}>
             <span className={styles.radio__text}>{label}</span>

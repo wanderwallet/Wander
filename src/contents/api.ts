@@ -1,8 +1,8 @@
-import { sendMessage } from "@arconnect/webext-bridge";
 import type { PlasmoCSConfig } from "plasmo";
 import type { ApiCall } from "shim";
 import injectedScript from "url:./injected/setup-wallet-sdk.injected-script.ts";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
+import { isomorphicSendMessage } from "~utils/messaging/messaging.utils";
 
 log(LOG_GROUP.SETUP, "api.content-script.ts");
 
@@ -48,11 +48,13 @@ window.addEventListener("message", async ({ data }: MessageEvent<ApiCall>) => {
   log(LOG_GROUP.API, `${data.type} (${data.callID})...`);
 
   // send call to the background
-  const res = await sendMessage(
-    data.type === "chunk" ? "chunk" : "api_call",
-    data,
-    "background"
-  );
+  const res = await isomorphicSendMessage({
+    destination: "background",
+    messageId: data.type === "chunk" ? "chunk" : "api_call",
+    data
+  });
+
+  // TODO: If the call above fails, this API call never gets a response. Add timeout?
 
   log(LOG_GROUP.API, `${data.type} (${data.callID}) =`, res);
 

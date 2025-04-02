@@ -5,6 +5,9 @@ import type {
 
 export type EmbeddedMessageId =
   | "embedded_auth"
+  | "embedded_connect"
+  | "embedded_disconnect"
+  | "embedded_open"
   | "embedded_close"
   | "embedded_resize"
   | "embedded_balance"
@@ -24,14 +27,19 @@ export interface EmbeddedResizeMessageData {
 export interface EmbeddedBalanceMessageData {
   amount: number;
   currency: "USD" | "EUR"; // TODO: Replace with a type that includes all options in the settings?
+  formattedBalance: string;
 }
 
 export interface EmbeddedRequestMessageData {
   pendingRequests: number;
+  hasNewConnectRequest: boolean;
 }
 
 export interface EmbeddedMessageMap {
   embedded_auth: EmbeddedAuthMessageData;
+  embedded_connect: void;
+  embedded_disconnect: void;
+  embedded_open: void;
   embedded_close: void;
   embedded_resize: EmbeddedResizeMessageData;
   embedded_balance: EmbeddedBalanceMessageData;

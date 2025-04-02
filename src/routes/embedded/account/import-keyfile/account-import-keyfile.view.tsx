@@ -1,6 +1,5 @@
-import type { JWKInterface } from "arweave/web/lib/wallet";
 import copy from "copy-to-clipboard";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Button,
   Card,
@@ -8,12 +7,15 @@ import {
   Row,
   Upload,
   WanderIcon,
-  Text
+  Text,
+  WanderFooter
 } from "~components/embed/ui";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
+import { useLocation } from "~wallets/router/router.utils";
 
 export function AccountImportKeyfileEmbeddedView() {
   const [loading, setLoading] = useState(false);
+  const { back } = useLocation();
   const [jsonData, setJsonData] = useState<any>(null);
 
   const handleJsonParse = (parsedData: any) => {
@@ -70,15 +72,12 @@ export function AccountImportKeyfileEmbeddedView() {
         </Row>
       }
       hasBackButton={true}
-      onBackButtonClick={() => {
-        window.history.back();
-      }}
-      //   hasCloseButton={false}
+      onBackButtonClick={back}
       size="auto"
     >
       <Copyable
         isFullWidth
-        label="Your account address"
+        label="Your wallet address"
         onClick={() => {
           copy(importedTempWalletAddress);
         }}
@@ -95,7 +94,7 @@ export function AccountImportKeyfileEmbeddedView() {
         <Button
           variant="primary"
           size="md"
-          onClick={() => registerWallet("imported")}
+          onClick={() => registerWallet("IMPORTED")}
         >
           Yes, add
         </Button>
@@ -105,19 +104,9 @@ export function AccountImportKeyfileEmbeddedView() {
     <Card
       headerText="Import private key"
       subtitle="Upload your private key to connect your wallet to your account."
-      footerElement={
-        <Row>
-          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
-            {"Secured by"}
-          </Text>
-          <WanderIcon color="#838383" />
-        </Row>
-      }
+      footerElement={<WanderFooter />}
       hasBackButton={true}
-      onBackButtonClick={() => {
-        window.history.back();
-      }}
-      //   hasCloseButton={false}
+      onBackButtonClick={back}
       size="auto"
     >
       <Upload

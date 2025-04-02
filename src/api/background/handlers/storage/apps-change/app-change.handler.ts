@@ -1,5 +1,4 @@
 import { createContextMenus } from "~utils/context_menus";
-import { sendMessage } from "@arconnect/webext-bridge";
 import type { StorageChange } from "~utils/runtime";
 import { getAppURL } from "~utils/format";
 import { updateIcon } from "~utils/icon";
@@ -19,14 +18,14 @@ export async function handleAppsChange({
 }: StorageChange<string[]>) {
   // message to send the event
   const triggerEvent = (tabID: number, type: "connect" | "disconnect") =>
-    sendMessage(
-      "event",
-      {
+    isomorphicSendMessage({
+      destination: `content-script@${tabID}`,
+      messageId: "event",
+      data: {
         name: type,
         value: null
-      },
-      `content-script@${tabID}`
-    );
+      }
+    });
 
   // trigger events
   forEachTab(async (tab) => {
@@ -45,13 +44,15 @@ export async function handleAppsChange({
 
       if (popupTabID) {
         isomorphicSendMessage({
+          destination: `web_accessible@${popupTabID}`,
           messageId: "auth_app_disconnected",
-          tabId: popupTabID,
           data: tab.id
         });
       }
 
-      return await triggerEvent(tab.id, "disconnect");
+      await triggerEvent(tab.id, "disconnect");
+
+      return;
     } else if (!newValue) {
       // if the new value is undefined
       // and the old value was also
@@ -73,8 +74,8 @@ export async function handleAppsChange({
 
       if (popupTabID) {
         isomorphicSendMessage({
+          destination: `web_accessible@${popupTabID}`,
           messageId: "auth_app_disconnected",
-          tabId: popupTabID,
           data: tab.id
         });
       }

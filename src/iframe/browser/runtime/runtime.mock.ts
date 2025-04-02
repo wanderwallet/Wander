@@ -25,5 +25,11 @@ export const runtime = {
         temporary: false
       } satisfies Runtime.OnInstalledDetailsType);
     }
+  },
+
+  onConnect: {
+    addListener: (fn) => {
+      console.trace("onConnect.addEventListener", fn);
+    }
   }
 };

@@ -63,9 +63,9 @@ const Button = React.forwardRef<
           styles[`button--icon-${iconPosition}`],
           hasSize && styles[`button__${size}`],
           styles[`button__variant__${variant}`],
-          isBlurry && styles.button__blurry,
-          isFullWidth && styles.button__full__width,
-          isDarkMode && styles.button__dark,
+          isBlurry && styles["button__blurry"],
+          isFullWidth && styles["button__full__width"],
+          isDarkMode && styles["button__dark"],
           className
         )}
         style={color ? { borderColor: color, color } : undefined}
