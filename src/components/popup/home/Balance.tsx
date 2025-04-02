@@ -27,8 +27,6 @@ export default function Balance() {
   );
   const totalFiatBalance = useTotalFiatBalance();
 
-  // const [fiatBalance, setFiatBalance] = useState(0);
-
   // balance display
   const [hideBalance, setHideBalance] = useStorage<boolean>(
     {
