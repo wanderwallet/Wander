@@ -43,6 +43,11 @@ export function formatAddress(
   if (!addressOrWallet) return "-";
 
   if (typeof addressOrWallet === "string") {
+    // Return the full address if it's shorter than count
+    if (addressOrWallet.length <= count) {
+      return addressOrWallet;
+    }
+
     return (
       addressOrWallet.substring(0, count) +
       "..." +

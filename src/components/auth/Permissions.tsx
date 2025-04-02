@@ -43,7 +43,16 @@ export default function Permissions({
 
                 return (
                   <div key={i}>
-                    <Permission>
+                    <Permission
+                      onClick={() => {
+                        const updated = new Map(permissions);
+                        updated.set(
+                          permissionName,
+                          !permissions.get(permissionName)
+                        );
+                        setPermissions(updated);
+                      }}
+                    >
                       <Checkbox
                         size={20}
                         key={permissionName}
@@ -114,10 +123,16 @@ const PermissionsWrapper = styled.div`
   gap: 10px;
 `;
 
-const Permission = styled.div`
+const Permission = styled.button`
   display: flex;
   align-items: center;
   gap: 8px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  padding: 0;
 `;
 
 export const PermissionDescription = styled(Text).attrs({

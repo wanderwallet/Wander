@@ -54,6 +54,7 @@ import type { SupabaseJwtPayload } from "~utils/authentication/authentication.ty
 import { isTempWalletPromiseExpired } from "~utils/embedded/utils/wallets/embedded-wallets.utils";
 import copy from "copy-to-clipboard";
 import { useHashLocation } from "wouter/use-hash-location";
+import { getIPAddress } from "~utils/ip_address";
 
 export type AuthStatusCopy = AuthStatus;
 
@@ -139,6 +140,20 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       }
     }
   }, [authStatus]);
+
+  const getLatestSession = useCallback(async (session: DbSession) => {
+    const userAgent = navigator.userAgent;
+    const deviceNonce = await getDeviceNonce();
+    // NOTE: We use ipv4 address here as in Vercel backend we get ipv4 address from the request headers.
+    const ip = await getIPAddress().catch(() => session.ip);
+
+    return {
+      ...session,
+      ip,
+      userAgent,
+      deviceNonce
+    };
+  }, []);
 
   const updateCurrentWallet = useCallback(
     (walletUpdater: Wallet | ((currentWallet: Wallet) => Wallet)) => {
@@ -664,6 +679,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     const { jwk, walletAddress } = await importedTempWalletPromiseRef.current
       ?.promise;
 
+    const latestSession = await getLatestSession(session);
+
     const { fetchRecoverableWalletsChallenge } =
       await AuthenticationService.generateFetchRecoverableAccountsChallenge(
         walletAddress
@@ -671,7 +688,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
     const challengeSolution = await ChallengeClientV1.solveChallenge({
       challenge: fetchRecoverableWalletsChallenge,
-      session,
+      session: latestSession,
       shareHash: null,
       jwk
     });
@@ -707,6 +724,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       const { jwk, walletAddress } = await importedTempWalletPromiseRef.current
         ?.promise;
 
+      const latestSession = await getLatestSession(session);
+
       const { accountRecoveryChallenge } =
         await AuthenticationService.generateAccountRecoveryChallenge(
           accountToRecoverId,
@@ -715,7 +734,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
       const challengeSolution = await ChallengeClientV1.solveChallenge({
         challenge: accountRecoveryChallenge,
-        session,
+        session: latestSession,
         shareHash: null,
         jwk
       });
@@ -746,12 +765,14 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         sharePrivateKeyJWK: recoveryBackupSharePrivateKeyJWK
       } = await WalletUtils.generateShareHashAndPrivateKey(recoveryBackupShare);
 
+      const latestSession = await getLatestSession(session);
+
       const { shareRecoveryChallenge } =
         await WalletService.generateWalletRecoveryChallenge({ walletId });
 
       const challengeSolution = await ChallengeClientV1.solveChallenge({
         challenge: shareRecoveryChallenge,
-        session,
+        session: latestSession,
         shareHash: recoveryBackupShareHash,
         jwk: recoveryBackupSharePrivateKeyJWK
       });
@@ -782,7 +803,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
       const rotateChallengeSignature = await ChallengeClientV1.solveChallenge({
         challenge: rotationChallenge,
-        session,
+        session: latestSession,
         shareHash: null,
         jwk
       });
@@ -1005,6 +1026,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       } else {
         console.log("✅  The current session is complete!", session);
       }
+
+      session = await getLatestSession(session);
 
       const wallets = await WalletService.fetchWallets(userId);
 
@@ -1253,7 +1276,11 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       const params = new URLSearchParams(hashParams);
       const searchParams = Object.fromEntries(params.entries());
 
-      completeAuth(searchParams);
+      // We have completeAuth() in the onAuthStateChange callback, but if it didn't work,
+      // we'll use a timeout to call it after a delay.
+      setTimeout(() => {
+        completeAuth(searchParams);
+      }, 5000);
     }
   }, [wocation]);
 
