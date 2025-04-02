@@ -1,16 +1,5 @@
 import { useCallback, useState } from "react";
-import {
-  Box,
-  Button,
-  Card,
-  SeedIcon,
-  KeyShareIcon,
-  KeyIcon,
-  WanderFooter,
-  GDriveIcon,
-  AppleIcon,
-  DropboxIcon
-} from "~components/embed/ui";
+import { Box, Button, Card, KeyIcon, WanderFooter } from "~components/embed/ui";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { Link } from "~wallets/router/components/link/Link";
 import { useLocation } from "~wallets/router/router.utils";

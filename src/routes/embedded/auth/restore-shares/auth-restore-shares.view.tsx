@@ -1,11 +1,8 @@
 import {
-  AppleIcon,
   Box,
   Button,
   Card,
   WalletIcon,
-  GDriveIcon,
-  DropboxIcon,
   SeedIcon,
   KeyIcon,
   WanderFooter
