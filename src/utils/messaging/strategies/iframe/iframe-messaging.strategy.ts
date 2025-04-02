@@ -55,10 +55,12 @@ function getPostMessageFunction<K extends MessageID>(
 
   if (postMessageTargetOrigin) {
     return async function postMessage() {
+      /*
       console.log(
         `SEND (postMessage) ${messageId} to ${destination} (${postMessageTargetOrigin}), data =`,
         data
       );
+      */
 
       return new Promise<ApiResponse>(async (resolve) => {
         targetIframe.contentWindow.postMessage(data, postMessageTargetOrigin);
@@ -80,8 +82,6 @@ function getPostMessageFunction<K extends MessageID>(
           // only resolve when the result matching our callID is delivered
           if (data.callID !== res.callID) return;
 
-          console.log("RESPONSE =", res);
-
           window.removeEventListener("message", callback);
 
           resolve(res);
@@ -91,10 +91,12 @@ function getPostMessageFunction<K extends MessageID>(
   }
 
   return async function sendMessageToCallback() {
+    /*
     console.log(
       `SEND (sendMessageToCallback) ${messageId} to ${destination}, data =`,
       data
     );
+    */
 
     const messageHandlers = messageHandlersByMessageID[messageId];
 
@@ -171,14 +173,15 @@ export function iframeIsomorphicOnMessage<K extends MessageID>(
   messageHandlersByMessageID[messageId] ??= new Set();
   messageHandlersByMessageID[messageId].add(callback);
 
+  /*
   if (messageHandlersByMessageID[messageId].size > 1) {
-    // TODO: Are we adding the same listener multiple times?
     console.warn(
       `${messageHandlersByMessageID[messageId].size} handlers for ${messageId}`
     );
   } else {
-    console.warn(`Handler added for ${messageId}`);
+    console.log(`Handler added for ${messageId}`);
   }
+  */
 
   // TODO: Note that in Wander Embed, there are no ready messages, so the API/SDK must
   // make sure the iframe is ready before accepting method calls...
@@ -187,13 +190,9 @@ export function iframeIsomorphicOnMessage<K extends MessageID>(
 if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1" && isInsideIframe()) {
   // TODO: Set this up after first call to `iframeIsomorphicOnMessage`?
 
-  console.log("Listening for messages...");
-
   window.addEventListener(
     "message",
     async ({ origin, data }: MessageEvent<ApiCall>) => {
-      // if (origin === getEmbeddedAncestorOrigin()) console.log("DEBUG MESSAGE FROM PARENT =", data);
-
       if (
         !data ||
         origin !== getEmbeddedAncestorOrigin() ||
@@ -216,8 +215,6 @@ if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1" && isInsideIframe()) {
           `${messageHandlers.size} handlers found for ${messageId}. Only the first response will be returned.`
         );
       }
-
-      console.log("MESSAGE FROM PARENT =", data);
 
       /*
       const [messageHandler] = messageHandlers;
@@ -260,43 +257,11 @@ if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1" && isInsideIframe()) {
 
       const result = await Promise.race(resultPromises);
 
-      console.log("result =", result);
-
       if (window.parent === null) {
         throw new Error("Unexpected `null` parent Window.");
       }
 
-      // const responseMessage = {};
-
       window.parent.postMessage(result, getEmbeddedAncestorOrigin());
-
-      // parentWindow.postMessage(result);
-
-      // handleApiCallMessage({
-      //   id: "",
-      //   timestamp: Date.now(),
-      //   data: event.data,
-      //   sender: {
-      //     tabId: 0,
-      //     context: "content-script"
-      //   }
-      // });
-
-      // Example: check if the message is from our SDK
-
-      // if (event.data.type === "FROM_SDK") {
-      //   const incomingMsg = event.data.payload;
-      //   console.log(
-      //     "Iframe received message from WanderEmbedded:",
-      //     incomingMsg
-      //   );
-
-      //   // Respond back
-      //   event.source?.postMessage({
-      //     type: "FROM_IFRAME",
-      //     payload: `Got your message: ${incomingMsg}`
-      //   });
-      // }
     }
   );
 }

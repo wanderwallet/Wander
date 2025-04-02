@@ -2,9 +2,6 @@ import { EMBEDDED_IFRAME_TAB_ID } from "~utils/embedded/embedded.constants";
 
 export const windows = {
   create: async ({ url }) => {
-    if (process.env.NODE_ENV === "development")
-      console.log(`tabs.create({ ${url} })`);
-
     // URL =
     // browser.runtime.getURL("tabs/welcome.html")
     // browser.runtime.getURL("tabs/dashboard.html#/contacts")

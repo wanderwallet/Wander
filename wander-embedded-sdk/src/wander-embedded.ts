@@ -238,8 +238,6 @@ export class WanderEmbedded {
 
     if (!isIncomingMessage(message)) return;
 
-    console.log("SDK GOT MESSAGE", message);
-
     switch (message.type) {
       case "embedded_auth":
         const { userDetails } = message.data;
