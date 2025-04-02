@@ -2939,5 +2939,9 @@
     "pending": {
         "message": "待定",
         "description": "Pending text"
+    },
+    "exchange_message": {
+        "message": "汇率",
+        "description": "Exchange rate text"
     }
 }

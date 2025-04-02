@@ -2949,5 +2949,9 @@
   "pending": {
     "message": "Pending",
     "description": "Pending text"
+  },
+  "exchange_message": {
+    "message": "Exchange rate",
+    "description": "Exchange rate text"
   }
 }

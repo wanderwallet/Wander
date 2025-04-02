@@ -36,6 +36,9 @@ import { WarningIcon } from "~components/popup/Token";
 import { Flex } from "~components/common/Flex";
 
 const BASE_URL = "https://api.transak.com";
+const TRANSAK_API_KEY =
+  process.env.PLASMO_PUBLIC_TRANSAK_API_KEY ||
+  import.meta.env.VITE_TRANSAK_API_KEY;
 
 export function PurchaseView() {
   const { navigate } = useLocation();
@@ -110,7 +113,7 @@ export function PurchaseView() {
 
   useEffect(() => {
     const fetchCurrencies = async () => {
-      const url = `${BASE_URL}/api/v2/currencies/fiat-currencies?apiKey=${process.env.PLASMO_PUBLIC_TRANSAK_API_KEY}`;
+      const url = `${BASE_URL}/api/v2/currencies/fiat-currencies?apiKey=${TRANSAK_API_KEY}`;
       try {
         const response = await fetch(url);
         if (!response.ok) {
@@ -186,7 +189,7 @@ export function PurchaseView() {
       }
       const baseUrl = `${BASE_URL}/api/v1/pricing/public/quotes`;
       const params = new URLSearchParams({
-        partnerApiKey: process.env.PLASMO_PUBLIC_TRANSAK_API_KEY,
+        partnerApiKey: TRANSAK_API_KEY,
         fiatCurrency: selectedCurrency?.symbol,
         cryptoCurrency: "AR",
         isBuyOrSell: "BUY",
@@ -282,7 +285,7 @@ export function PurchaseView() {
     try {
       const baseUrl = "https://global.transak.com/";
       const params = new URLSearchParams({
-        apiKey: process.env.PLASMO_PUBLIC_TRANSAK_API_KEY,
+        apiKey: TRANSAK_API_KEY,
         defaultCryptoCurrency: "AR",
         defaultFiatAmount: quote.fiatAmount.toString(),
         defaultFiatCurrency: quote.fiatCurrency,
