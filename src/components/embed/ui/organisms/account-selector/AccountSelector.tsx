@@ -1,6 +1,5 @@
 import {
   Avatar,
-  Box,
   Copyable,
   DownloadIcon,
   Row,
@@ -39,7 +38,9 @@ export function AccountSelector({
               alignment="center"
               justifyContent="center"
               isFullWidth
-              style={{ backgroundColor: "#E7F0FD", padding: "8px 16px" }}
+              style={{
+                padding: "8px 16px"
+              }}
             >
               <Text variant="bodySm" style={{ fontWeight: 500 }}>
                 Secure your account by backing it up.

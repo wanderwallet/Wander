@@ -1,5 +1,5 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation } from "~wallets/router/router.utils";
 
 import {
@@ -14,7 +14,7 @@ import copy from "copy-to-clipboard";
 import { toast } from "react-toastify";
 export function AuthRecoverAccountSeedphraseEmbeddedView() {
   const [loading, setLoading] = useState(false);
-  const [seedPhrase, setSeedPhrase] = useState<string[]>([]);
+  const [seedPhrase, setSeedPhrase] = useState<string[]>(Array(12).fill(""));
   const { navigate, back } = useLocation();
   const {
     importTempWallet,
@@ -60,6 +60,11 @@ export function AuthRecoverAccountSeedphraseEmbeddedView() {
     deleteImportedTempWallet();
     clearRecoverableAccounts();
   }, []);
+
+  const isSeedPhraseIncomplete = useMemo(() => {
+    if (seedPhrase.length !== 12) return true;
+    return seedPhrase.some((word) => word.trim() === "");
+  }, [seedPhrase]);
 
   return importedTempWalletAddress ? (
     <Card
@@ -117,6 +122,7 @@ export function AuthRecoverAccountSeedphraseEmbeddedView() {
         size="md"
         onClick={handleImportWallet}
         isLoading={loading}
+        isDisabled={isSeedPhraseIncomplete}
       >
         Recover
       </Button>

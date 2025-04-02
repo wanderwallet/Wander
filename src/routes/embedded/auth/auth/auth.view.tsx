@@ -138,7 +138,7 @@ export function AuthEmbeddedView() {
         <Button
           variant="outlined"
           isFullWidth
-          isDisabled={areButtonsDisabled}
+          isDisabled
           icon={<SocialsIcon fontSize={24} />}
           href="#/auth/more-providers"
         >

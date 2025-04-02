@@ -1,5 +1,5 @@
 import copy from "copy-to-clipboard";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "react-toastify";
 import {
   Button,
@@ -62,6 +62,11 @@ export function AuthImportSeedphraseEmbeddedView() {
     };
   }, []);
 
+  const isSeedPhraseIncomplete = useMemo(() => {
+    if (seedPhrase.length !== 12) return true;
+    return seedPhrase.some((word) => word.trim() === "");
+  }, [seedPhrase]);
+
   return importedTempWalletAddress ? (
     <Card
       headerText="Recover your account"
@@ -118,6 +123,7 @@ export function AuthImportSeedphraseEmbeddedView() {
         size="md"
         onClick={handleImportWallet}
         isLoading={loading}
+        isDisabled={isSeedPhraseIncomplete}
       >
         Import
       </Button>

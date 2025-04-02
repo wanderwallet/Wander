@@ -37,10 +37,8 @@ const Copyable = forwardRef<HTMLDivElement, CopyableBaseProps>(
       : "#666666";
 
     const displayValue = isShortened
-      ? value.slice(0, 4).toLocaleLowerCase() +
-        "..." +
-        value.slice(-4).toLocaleLowerCase()
-      : value.toLocaleLowerCase();
+      ? value.slice(0, 4) + "..." + value.slice(-4)
+      : value;
 
     return (
       <div
