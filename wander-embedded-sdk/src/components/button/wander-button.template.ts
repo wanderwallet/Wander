@@ -64,6 +64,15 @@ export const getWanderButtonTemplateContent = ({
     transition: transform linear 50ms;
   }
 
+  .button::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: var(--borderRadius);
+    border-bottom-right-radius: 0;
+    z-index: -1;
+  }
+
   .button:hover .wanderLogo {
     animation: sail 3s infinite;
   }
@@ -104,6 +113,7 @@ export const getWanderButtonTemplateContent = ({
     border-radius: 32px;
     border: var(--borderWidth) solid var(--borderColor);
     transition: transform linear 150ms, background linear 150ms;
+    pointer-events: none;
   }
 
   .indicator {
