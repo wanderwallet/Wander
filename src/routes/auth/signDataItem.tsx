@@ -22,7 +22,7 @@ import browser from "webextension-polyfill";
 import { useEffect, useMemo, useRef, useState } from "react";
 import styled from "styled-components";
 import { formatAddress } from "~utils/format";
-import { useStorage } from "~utils/storage";
+import { PersistentStorage, useStorage } from "~utils/storage";
 import { ExtensionStorage } from "~utils/storage";
 import { checkPassword } from "~wallets/auth";
 import { Quantity, Token } from "ao-tokens";
@@ -175,11 +175,11 @@ export function SignDataItemAuthRequestView() {
         console.log("err", err);
         try {
           const aoTokens =
-            (await ExtensionStorage.get<TokenInfoWithProcessId[]>(
+            (await PersistentStorage.get<TokenInfoWithProcessId[]>(
               "ao_tokens"
             )) || [];
           const aoTokensCache =
-            (await ExtensionStorage.get<TokenInfoWithProcessId[]>(
+            (await PersistentStorage.get<TokenInfoWithProcessId[]>(
               "ao_tokens_cache"
             )) || [];
           const aoTokensCombined = [...aoTokens, ...aoTokensCache];

@@ -51,9 +51,9 @@ export interface StorageMockInterface extends PlasmoStorage {
 export class StorageMock extends PlasmoStorage implements StorageMockInterface {
   private storage: EnhancedStorage;
 
-  constructor() {
-    super({ area: "session" });
-    this.storage = new EnhancedStorage({ area: "session" });
+  constructor(area: "session" | "local" = "session") {
+    super({ area });
+    this.storage = new EnhancedStorage({ area });
 
     // This browser doesn't support the Storage Access API
     // so let's just hope we have access!

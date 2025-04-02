@@ -1,7 +1,7 @@
 import { ButtonV2, Spacer, Text, TooltipV2 } from "@arconnect/components";
 import { Select as SelectV2, useToasts } from "@arconnect/components-rebrand";
 import type { TokenType } from "~tokens/token";
-import { useStorage } from "~utils/storage";
+import { PersistentStorage, useStorage } from "~utils/storage";
 import { ExtensionStorage } from "~utils/storage";
 import { TrashIcon } from "@iconicicons/react";
 import { removeToken } from "~tokens";
@@ -30,7 +30,7 @@ export function TokenSettingsView({ params: { id } }: TokenSettingsProps) {
   const [aoTokens, setAoTokens] = useStorage<any[]>(
     {
       key: "ao_tokens",
-      instance: ExtensionStorage
+      instance: PersistentStorage
     },
     []
   );

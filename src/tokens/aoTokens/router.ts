@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { getTagValue, Id, Owner, type Message, type TokenInfo } from "./ao";
 import { getAoTokens } from "~tokens";
-import { useStorage } from "~utils/storage";
+import { PersistentStorage, useStorage } from "~utils/storage";
 import { ExtensionStorage } from "~utils/storage";
 import { dryrun } from "@permaweb/aoconnect/browser";
 
@@ -76,7 +76,7 @@ export function useTokenIDs(): [string[], boolean] {
 
   const [aoTokens] = useStorage<any[]>({
     key: "ao_tokens",
-    instance: ExtensionStorage
+    instance: PersistentStorage
   });
 
   useEffect(() => {

@@ -17,17 +17,19 @@ import { IS_EMBEDDED_APP } from "./embedded/embedded.constants";
  */
 
 export const ExtensionStorage = IS_EMBEDDED_APP
-  ? new StorageMock()
+  ? new StorageMock("session")
   : new Storage({ area: "local" });
 
-export const EmbeddedStorage = ExtensionStorage as StorageMockInterface;
+export const PersistentStorage = IS_EMBEDDED_APP
+  ? new StorageMock("local")
+  : ExtensionStorage;
 
 /**
  * Temporary storage for submitted transfers, with values
  * that are NOT copied to window.sessionStorage
  */
 export const TempTransactionStorage = IS_EMBEDDED_APP
-  ? new StorageMock()
+  ? ExtensionStorage
   : new Storage({
       area: "session"
       // This copies the data to localStorage, NOT to sessionStorage:
