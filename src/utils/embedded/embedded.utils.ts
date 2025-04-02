@@ -3,7 +3,6 @@ import { jwtDecode } from "jwt-decode";
 import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 import { LocalStorage } from "~iframe/storage/unpartitioned-storage/local-storage";
 import { searchParams, ancestorOrigin, isInsideIframe } from "./iframe.utils";
-import { removeDecryptionKey } from "~wallets/auth";
 import { ExtensionStorage } from "~utils/storage";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 

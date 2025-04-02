@@ -440,7 +440,7 @@ export async function resetKeepAlive() {
 }
 
 /**
- * Returns true if both ConnectAuthRequest are the same.
+ * Returns true if both ConnectAuthRequest are equivalent (same app requesting the same permissions).
  */
 export function compareConnectAuthRequests(
   authRequest1: ConnectAuthRequest,
