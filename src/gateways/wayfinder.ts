@@ -47,15 +47,12 @@ export async function findGateway(
       });
       const sortedGateways = sortGatewaysByOperatorStake(filteredGateways);
       const otherHosts = [
+        gateway.host,
         defaultGateway.host,
         clGateway.host,
         "aoweave.tech",
         "defi.ao"
       ];
-
-      if (gateway?.host) {
-        otherHosts.unshift(gateway.host);
-      }
 
       const additionalGateways = otherHosts
         .filter((host) => !sortedGateways.some((g) => g.settings.fqdn === host))

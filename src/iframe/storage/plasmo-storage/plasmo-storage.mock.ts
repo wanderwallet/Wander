@@ -99,11 +99,11 @@ export class StorageMock extends PlasmoStorage implements StorageMockInterface {
   // GET:
 
   getItem<T = string>(key: string): Promise<T | undefined> {
-    return Promise.resolve(this.storage.getItem(key));
+    return Promise.resolve(this.storage.getItem(key, undefined));
   }
 
   getItems<T = string>(keys: string[]): Promise<Record<string, T | undefined>> {
-    return Promise.resolve(this.storage.getItems(keys));
+    return Promise.resolve(this.storage.getItems(keys, undefined));
   }
 
   get: <T = string>(key: string) => Promise<T | undefined> = this.getItem;
