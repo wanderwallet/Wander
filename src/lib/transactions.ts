@@ -2,7 +2,7 @@ import type GQLResultInterface from "ar-gql/dist/faces";
 import type { GQLEdgeInterface } from "ar-gql/dist/faces";
 import { type TokenInfo } from "~tokens/aoTokens/ao";
 import { formatAddress } from "~utils/format";
-import { ExtensionStorage } from "~utils/storage";
+import { ExtensionStorage, PersistentStorage } from "~utils/storage";
 import { getTokenInfo } from "~tokens/aoTokens/router";
 import type { Token } from "~tokens/token";
 import BigNumber from "bignumber.js";
@@ -76,8 +76,8 @@ export const fetchTokenByProcessId = async (
 
   if (!tokens) {
     const [aoTokens, aoTokensCache] = await Promise.all([
-      ExtensionStorage.get<TokenInfo[]>("ao_tokens"),
-      ExtensionStorage.get<TokenInfo[]>("ao_tokens_cache")
+      PersistentStorage.get<TokenInfo[]>("ao_tokens"),
+      PersistentStorage.get<TokenInfo[]>("ao_tokens_cache")
     ]);
 
     tokens = [...(aoTokens || []), ...(aoTokensCache || [])];
