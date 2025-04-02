@@ -123,29 +123,40 @@ export default function Balance() {
     []
   );
 
-  const balanceHeaderContent = isLoading ? (
-    <Loading style={{ width: "20px", height: "20px" }} />
-  ) : (
-    <BalanceWrapper $hideBalance={hideBalance}>
-      <BalanceText onClick={() => setHideBalance((val) => !val)} noMargin>
-        <NumberFlow
-          value={totalFiatBalance}
-          format={{
-            style: "currency",
-            currency: currency
+  return (
+    <BalanceHead>
+      {isLoading ? (
+        <Loading
+          style={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: "20px",
+            height: "20px"
           }}
         />
-      </BalanceText>
+      ) : null}
 
-      <PriceChangeIndicator
-        percentageChange={percentage}
-        fiatChange={fiat.multipliedBy(percentage.dividedBy(100))}
-        hideBalance={hideBalance}
-      />
-    </BalanceWrapper>
+      <BalanceWrapper $hideBalance={hideBalance || isLoading}>
+        <BalanceText onClick={() => setHideBalance((val) => !val)} noMargin>
+          <NumberFlow
+            value={totalFiatBalance}
+            format={{
+              style: "currency",
+              currency: currency
+            }}
+          />
+        </BalanceText>
+
+        <PriceChangeIndicator
+          percentageChange={percentage}
+          fiatChange={fiat.multipliedBy(percentage.dividedBy(100))}
+          hideBalance={hideBalance}
+        />
+      </BalanceWrapper>
+    </BalanceHead>
   );
-
-  return <BalanceHead>{balanceHeaderContent}</BalanceHead>;
 }
 
 function PriceChangeIndicator({
@@ -240,6 +251,7 @@ const PercentageChangeContainer = styled.div`
 `;
 
 const BalanceHead = styled.div`
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
