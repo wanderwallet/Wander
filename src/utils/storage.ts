@@ -26,11 +26,13 @@ export const EmbeddedStorage = ExtensionStorage as StorageMockInterface;
  * Temporary storage for submitted transfers, with values
  * that are NOT copied to window.sessionStorage
  */
-export const TempTransactionStorage = new Storage({
-  area: "session"
-  // This copies the data to localStorage, NOT to sessionStorage:
-  // allCopied: true,
-});
+export const TempTransactionStorage = IS_EMBEDDED_APP
+  ? new StorageMock()
+  : new Storage({
+      area: "session"
+      // This copies the data to localStorage, NOT to sessionStorage:
+      // allCopied: true,
+    });
 
 /**
  * Session storage raw transfer tx. This will

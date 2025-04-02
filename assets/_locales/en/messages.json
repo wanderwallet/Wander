@@ -2945,5 +2945,9 @@
   "keyfile_info_tooltip": {
     "message": "A keyfile is a JSON file containing your encrypted private key.",
     "description": "Tooltip explaining what a keyfile is"
-  }  
+  },
+  "pending": {
+    "message": "Pending",
+    "description": "Pending text"
+  }
 }
