@@ -68,7 +68,7 @@ export function AuthImportKeyfileEmbeddedView() {
 
   return importedTempWalletAddress ? (
     <Card
-      headerText="Enter Seedphrase"
+      headerText="Enter Keyfile"
       subtitle="Would you like to add this wallet to your account?"
       footerElement={<WanderFooter />}
       hasBackButton={true}

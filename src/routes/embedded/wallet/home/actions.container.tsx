@@ -47,7 +47,7 @@ export function WalletHomeActions() {
         </Row>
       </Link>
       <br />
-      <Link
+      {/* <Link
         to="/wallet/settings"
         style={{ textDecoration: "none", width: "100%" }}
       >
@@ -63,7 +63,7 @@ export function WalletHomeActions() {
             View wallet dashboard
           </Text>
         </Row>
-      </Link>
+      </Link> */}
     </Box>
   );
 }

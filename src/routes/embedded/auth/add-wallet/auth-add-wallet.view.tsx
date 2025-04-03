@@ -41,7 +41,7 @@ export function AuthAddWalletEmbeddedView() {
       subtitle="Add a wallet to your account to hold your funds. Create or add an existing wallet to continue."
       footerElement={<WanderFooter />}
       hasBackButton={true}
-      onBackButtonClick={() => navigate(`/account`)}
+      onBackButtonClick={() => navigate(`/wallet`)}
       size="auto"
     >
       <Box>

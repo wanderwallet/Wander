@@ -15,6 +15,7 @@ import copy from "copy-to-clipboard";
 import type { AuthProviderType } from "embed-api";
 import { toast } from "react-toastify";
 export function AuthRecoverAccountAuthenticationEmbeddedView() {
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const { back } = useLocation();
   const { importedTempWalletAddress, recoverableAccounts, recoverAccount } =
     useEmbedded();
@@ -30,9 +31,12 @@ export function AuthRecoverAccountAuthenticationEmbeddedView() {
   const handleRecoverAccount = useCallback(
     async (authProviderType: AuthProviderType) => {
       try {
+        setIsLoading(true);
         await recoverAccount(authProviderType, accountToRecoverId);
       } catch (error) {
         toast.error(error);
+      } finally {
+        setIsLoading(false);
       }
     },
     [recoverAccount, accountToRecoverId]
@@ -62,7 +66,7 @@ export function AuthRecoverAccountAuthenticationEmbeddedView() {
         onClick={() => handleRecoverAccount("PASSKEYS")}
         variant="outlined"
         isFullWidth
-        isDisabled={!checkboxChecked}
+        isDisabled={!checkboxChecked || isLoading}
         icon={<KeyIcon fontSize={24} />}
       >
         Passkey
@@ -71,7 +75,7 @@ export function AuthRecoverAccountAuthenticationEmbeddedView() {
         onClick={() => handleRecoverAccount("GOOGLE")}
         variant="outlined"
         isFullWidth
-        isDisabled={!checkboxChecked}
+        isDisabled={!checkboxChecked || isLoading}
         icon={<GoogleIcon fontSize={24} />}
       >
         Google
@@ -79,6 +83,8 @@ export function AuthRecoverAccountAuthenticationEmbeddedView() {
       <Button
         variant="outlined"
         isFullWidth
+        isDisabled
+        // isDisabled={!checkboxChecked || isLoading}
         icon={<SocialsIcon fontSize={24} />}
         href="#/auth/recover-account/more-authentication"
       >
