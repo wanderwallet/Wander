@@ -8,7 +8,7 @@ import {
 import { createContextMenus } from "~utils/context_menus";
 import { getAppURL } from "~utils/format";
 import { updateIcon } from "~utils/icon";
-import { isomorphicSendMessage } from "~utils/messaging/messaging.utils";
+import { isomorphicSendMessage } from "~isomorphic-messaging";
 import browser from "webextension-polyfill";
 
 /**

@@ -10,7 +10,7 @@ import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { version } from "../../../package.json";
 import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 import { isApiErrorResponse } from "~utils/messaging/common/messaging.utils";
-import { isomorphicSendMessage } from "~utils/messaging/messaging.utils";
+import { isomorphicSendMessage } from "~isomorphic-messaging";
 import { setEmbeddedTargetIframe } from "~utils/messaging/strategies/iframe/iframe-messaging.strategy";
 // import { version as sdkVersion } from "../../../wander-embedded-sdk/package.json";
 

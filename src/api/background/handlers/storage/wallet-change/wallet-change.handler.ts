@@ -4,7 +4,7 @@ import Application from "~applications/application";
 import { forEachTab } from "~applications/tab";
 import { getAppURL } from "~utils/format";
 import browser from "webextension-polyfill";
-import { isomorphicSendMessage } from "~utils/messaging/messaging.utils";
+import { isomorphicSendMessage } from "~isomorphic-messaging";
 
 /**
  * Added wallets change listener.

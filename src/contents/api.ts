@@ -2,9 +2,9 @@ import type { PlasmoCSConfig } from "plasmo";
 import type { ApiCall } from "shim";
 import injectedScript from "url:./injected/setup-wallet-sdk.injected-script.ts";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
-import { isomorphicSendMessage } from "~utils/messaging/messaging.utils";
+import { isomorphicSendMessage } from "~isomorphic-messaging";
 
-log(LOG_GROUP.SETUP, "api.content-script.ts");
+log(LOG_GROUP.SETUP, "api.ts");
 
 export const config: PlasmoCSConfig = {
   matches: ["file://*/*", "http://*/*", "https://*/*"],

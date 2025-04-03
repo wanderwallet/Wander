@@ -4,7 +4,7 @@ import { Mutex } from "~utils/mutex";
 import {
   isomorphicOnMessage,
   isomorphicSendMessage
-} from "~utils/messaging/messaging.utils";
+} from "~isomorphic-messaging";
 import {
   isAuthErrorResult,
   type AuthErrorResult,

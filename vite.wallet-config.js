@@ -22,13 +22,13 @@ export default defineConfig({
     sourcemap: true,
     rollupOptions: {
       external: [
-        "webextension-polyfill",
+        //"webextension-polyfill",
         "~subscriptions/subscription",
         "~iframe/plasmo-storage/plasmo-storage.mock"
       ],
       output: {
         globals: {
-          "webextension-polyfill": "browser",
+          //"webextension-polyfill": "browser",
           "~subscriptions/subscription": "ArConnectSubscription",
           "~iframe/plasmo-storage/plasmo-storage.mock": "PlasmoStorageMock"
         }
@@ -55,6 +55,17 @@ export default defineConfig({
       "~applications": path.resolve(__dirname, "./src/applications"),
       "~subscriptions": path.resolve(__dirname, "./src/subscriptions"),
       "~iframe": path.resolve(__dirname, "./src/iframe"),
+
+      // BE or Embed (iframe) strategies for messaging and chunking:
+      "~isomorphic-messaging": path.resolve(
+        __dirname,
+        "./src/utils/messaging/strategies/iframe/iframe-messaging.strategy.ts"
+      ),
+      "~isomorphic-chunking": path.resolve(
+        __dirname,
+        "./src/utils/messaging/strategies/iframe/iframe-chunking.strategy.ts"
+      ),
+
       // Polyfill `webextension-polyfill` for embedded, as that's not a BE but a regular SPA:
       "webextension-polyfill": path.resolve(__dirname, "./src/iframe/browser")
     }

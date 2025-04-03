@@ -2,7 +2,7 @@ import type { StorageChange } from "~utils/runtime";
 import Application from "~applications/application";
 import { forEachTab } from "~applications/tab";
 import { getAppURL } from "~utils/format";
-import { isomorphicSendMessage } from "~utils/messaging/messaging.utils";
+import { isomorphicSendMessage } from "~isomorphic-messaging";
 import { getCachedAuthPopupWindowTabID } from "~utils/auth/auth.utils";
 
 /**

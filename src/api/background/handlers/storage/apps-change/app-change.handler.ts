@@ -5,7 +5,7 @@ import { updateIcon } from "~utils/icon";
 import { forEachTab } from "~applications/tab";
 import { getActiveTab } from "~applications";
 import Application from "~applications/application";
-import { isomorphicSendMessage } from "~utils/messaging/messaging.utils";
+import { isomorphicSendMessage } from "~isomorphic-messaging";
 import { getCachedAuthPopupWindowTabID } from "~utils/auth/auth.utils";
 
 /**
