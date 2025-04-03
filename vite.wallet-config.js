@@ -22,13 +22,13 @@ export default defineConfig({
     sourcemap: true,
     rollupOptions: {
       external: [
-        //"webextension-polyfill",
+        "webextension-polyfill",
         "~subscriptions/subscription",
         "~iframe/plasmo-storage/plasmo-storage.mock"
       ],
       output: {
         globals: {
-          //"webextension-polyfill": "browser",
+          "webextension-polyfill": "browser",
           "~subscriptions/subscription": "ArConnectSubscription",
           "~iframe/plasmo-storage/plasmo-storage.mock": "PlasmoStorageMock"
         }
