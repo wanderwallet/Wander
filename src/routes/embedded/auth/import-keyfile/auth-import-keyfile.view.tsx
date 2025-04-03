@@ -123,6 +123,7 @@ export function AuthImportKeyfileEmbeddedView() {
         size="md"
         isLoading={loading}
         onClick={handleImportWallet}
+        isDisabled={!jsonData || loading}
       >
         Import
       </Button>
