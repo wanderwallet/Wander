@@ -82,7 +82,7 @@ export function AccountAddWalletEmbeddedView() {
         >
           Import Keyfile
         </Button>
-        {authProviderType === "PASSKEYS" ? (
+        {/* {authProviderType === "PASSKEYS" ? (
           <Button
             variant="outlined"
             isFullWidth
@@ -102,7 +102,7 @@ export function AccountAddWalletEmbeddedView() {
           >
             Add {authProviderType.toLocaleUpperCase()} to an existing account
           </Button>
-        )}
+        )} */}
       </Box>
     </Card>
   );

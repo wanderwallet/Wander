@@ -45,13 +45,13 @@ export function AccountBackupSharesReminderEmbeddedView() {
           <Button
             variant="secondary"
             isFullWidth
-            href="#/account"
+            href="#/wallet"
             onClick={handleSkipClicked}
           >
             Backup later
           </Button>
         ) : (
-          <Button variant="secondary" isFullWidth href="#/account">
+          <Button variant="secondary" isFullWidth href="#/wallet">
             Cancel
           </Button>
         )}
