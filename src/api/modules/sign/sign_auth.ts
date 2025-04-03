@@ -6,7 +6,7 @@ import {
 } from "../../../utils/auth/auth.utils";
 import { nanoid } from "nanoid";
 import type { ModuleAppData } from "~api/background/background-modules";
-import { isomorphicSendMessage } from "~utils/messaging/messaging.utils";
+import { isomorphicSendMessage } from "~isomorphic-messaging";
 import type { Chunk } from "~api/modules/sign/chunks";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import type { AuthSuccessResult } from "~utils/auth/auth.types";

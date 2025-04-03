@@ -26,7 +26,7 @@ import {
   handleTabUpdate
 } from "~api/background/handlers/browser/tabs/tabs.handler";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
-import { isomorphicOnMessage } from "~utils/messaging/messaging.utils";
+import { isomorphicOnMessage } from "~isomorphic-messaging";
 import { handleAuthStateChange } from "./handlers/storage/auth-state-change/auth-state-change.handler";
 import { initInactivityTracking } from "~utils/inactivity/inactivity.utils";
 

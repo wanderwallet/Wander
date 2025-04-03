@@ -36,7 +36,7 @@ function getSendMessageWithBridgeFunction<K extends MessageID>({
  * because no one is listening, listen for `<messageId>${ READY_MESSAGE_SUFFIX }` messages for 6 seconds, and try to send the message again
  * once that's received, or throw a time out error otherwise.
  */
-export async function extensionIsomorphicSendMessage<K extends MessageID>(
+export async function isomorphicSendMessage<K extends MessageID>(
   messageData: MessageData<K>
 ) {
   // See the "Receive API calls" comment in `ArConnect/src/contents/api.ts` for more on message passing.
@@ -162,14 +162,14 @@ export async function extensionIsomorphicSendMessage<K extends MessageID>(
   );
 }
 
-export function extensionIsomorphicOnMessage<K extends MessageID>(
+export function isomorphicOnMessage<K extends MessageID>(
   messageId: K,
   callback: OnMessageCallback<K>
 ): void {
   webExtBridgeOnMessage(messageId, callback as any);
 
   if (messageId === "auth_request") {
-    extensionIsomorphicSendMessage({
+    isomorphicSendMessage({
       destination: "background",
       messageId: `${messageId}${READY_MESSAGE_SUFFIX}` as any,
       data: null

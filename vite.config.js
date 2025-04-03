@@ -31,6 +31,16 @@ export default defineConfig({
       "~utils": path.resolve(__dirname, "./src/utils"),
       "~wallets": path.resolve(__dirname, "./src/wallets"),
 
+      // BE or Embed (iframe) strategies for messaging and chunking:
+      "~isomorphic-messaging": path.resolve(
+        __dirname,
+        "./src/utils/messaging/strategies/iframe/iframe-messaging.strategy.ts"
+      ),
+      "~isomorphic-chunking": path.resolve(
+        __dirname,
+        "./src/utils/messaging/strategies/iframe/iframe-chunking.strategy.ts"
+      ),
+
       // Prisma Enum Fix:
       // See https://github.com/prisma/prisma/issues/12504#issuecomment-1136126199
       // See https://github.com/sveltejs/kit/issues/4444

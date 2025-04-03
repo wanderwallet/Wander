@@ -3,7 +3,7 @@ import { getActiveAddress, getWallets } from "~wallets";
 import { getActiveTab, removeApp } from "~applications";
 import { isManifestv3 } from "./runtime";
 import { getAppURL } from "./format";
-import { isomorphicSendMessage } from "~utils/messaging/messaging.utils";
+import { isomorphicSendMessage } from "~isomorphic-messaging";
 
 /**
  * Create context menus (right click actions)

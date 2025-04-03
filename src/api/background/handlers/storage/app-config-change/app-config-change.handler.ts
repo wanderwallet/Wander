@@ -7,7 +7,7 @@ import { forEachTab } from "~applications/tab";
 import { compareGateways } from "~gateways/utils";
 import type { InitAppParams } from "~applications/application";
 import Application, { PREFIX } from "~applications/application";
-import { isomorphicSendMessage } from "~utils/messaging/messaging.utils";
+import { isomorphicSendMessage } from "~isomorphic-messaging";
 
 export async function handleAppConfigChange(
   changes: Record<string, StorageChange<InitAppParams>>,

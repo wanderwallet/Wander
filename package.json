@@ -7,8 +7,8 @@
   "packageManager": "yarn@1.22.18",
   "homepage": "https://www.wander.app",
   "scripts": {
-    "dev:chrome": "plasmo dev --verbose",
-    "build:chrome": "plasmo build --no-hoist",
+    "dev:chrome": "cross-env PARCEL_WORKER_BACKEND=process plasmo dev --verbose",
+    "build:chrome": "cross-env PARCEL_WORKER_BACKEND=process plasmo build --no-hoist",
     "dev:firefox": "plasmo dev --target=firefox-mv2",
     "build:firefox": "plasmo build --target=firefox-mv2 --no-hoist",
     "dev:iframe": "vite",
@@ -131,6 +131,7 @@
     "@types/webextension-polyfill": "^0.9.0",
     "browserify-zlib": "^0.2.0",
     "constants-browserify": "^1.0.0",
+    "cross-env": "^7.0.3",
     "crypto-browserify": "^3.12.0",
     "https-browserify": "^1.0.0",
     "husky": "^8.0.0",

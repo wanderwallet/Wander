@@ -1,4 +1,4 @@
-import { isomorphicOnMessage } from "~utils/messaging/messaging.utils";
+import { isomorphicOnMessage } from "~isomorphic-messaging";
 
 // Some backend handlers (`src/api/background/handlers/*`) will use `sendMessage(...)` to communicate with the
 // `event.ts` content script, which in turn calls `postMessage()`, dispatches events or performs certain actions in the

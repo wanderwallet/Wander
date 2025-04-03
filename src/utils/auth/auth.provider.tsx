@@ -30,7 +30,7 @@ import {
   constructTransaction,
   type SplitTransaction
 } from "~api/modules/sign/transaction_builder";
-import { isomorphicOnMessage } from "~utils/messaging/messaging.utils";
+import { isomorphicOnMessage } from "~isomorphic-messaging";
 import type { IBridgeMessage } from "@arconnect/webext-bridge";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { isError } from "~utils/error/error.utils";
