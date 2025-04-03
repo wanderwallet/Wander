@@ -39,7 +39,7 @@ import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 const BASE_URL = "https://api.transak.com";
 const TRANSAK_API_KEY =
   process.env.PLASMO_PUBLIC_TRANSAK_API_KEY ||
-  import.meta.env.VITE_TRANSAK_API_KEY;
+  import.meta.env?.VITE_TRANSAK_API_KEY;
 
 export function PurchaseView() {
   const { navigate } = useLocation();
