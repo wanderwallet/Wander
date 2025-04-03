@@ -1,4 +1,4 @@
-import { PersistentStorage } from "~utils/storage";
+import { ExtensionStorage } from "~utils/storage";
 import type { Storage } from "@plasmohq/storage";
 import { PREFIX } from "~settings";
 import { getGatewayCache } from "~gateways/cache";
@@ -61,7 +61,7 @@ export default class Setting {
     this.storageName = `${PREFIX}${name}`;
 
     // init storage
-    this.#storage = PersistentStorage;
+    this.#storage = ExtensionStorage;
 
     // add options
     if (type === "pick") {

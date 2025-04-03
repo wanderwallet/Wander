@@ -1,7 +1,6 @@
 import { Card, Spacer, Text } from "@arconnect/components-rebrand";
 import { useEffect, useMemo, useState } from "react";
-import { useStorage } from "~utils/storage";
-import { PersistentStorage } from "~utils/storage";
+import { ExtensionStorage, useStorage } from "~utils/storage";
 import { getTab } from "~applications/tab";
 import { getAppURL } from "~utils/format";
 import { AppSettingsDashboardView } from "~components/dashboard/subsettings/AppSettings";
@@ -36,7 +35,7 @@ function DevTools() {
   const [connectedApps] = useStorage<string[]>(
     {
       key: "apps",
-      instance: PersistentStorage
+      instance: ExtensionStorage
     },
     []
   );

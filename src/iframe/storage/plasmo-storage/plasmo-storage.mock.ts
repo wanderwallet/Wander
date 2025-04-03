@@ -61,9 +61,7 @@ export class StorageMock extends PlasmoStorage implements StorageMockInterface {
 
     // TODO: Can this be postponed until authentication to avoid requesting permissions too soon?
     // unpartitioned sessionStorage cannot be accessed from iframe as it is partitioned by both origin and browser tabs unlike localStorage.
-    if (area === "local") {
-      this.storage.requestStorageAccess();
-    }
+    this.storage.requestStorageAccess();
   }
 
   get primaryClient(): chrome.storage.StorageArea {
