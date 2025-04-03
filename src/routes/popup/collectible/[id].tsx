@@ -13,9 +13,8 @@ import { FULL_HISTORY, useGateway } from "~gateways/wayfinder";
 import HeadV2 from "~components/popup/HeadV2";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import placeholderUrl from "url:/assets/placeholder.png";
-import { useStorage } from "~utils/storage";
+import { PersistentStorage, useStorage } from "~utils/storage";
 import { getTagValue, type TokenInfoWithBalance } from "~tokens/aoTokens/ao";
-import { ExtensionStorage } from "~utils/storage";
 import { gql } from "~gateways/api";
 
 export interface CollectibleViewParams {
@@ -30,7 +29,7 @@ export function CollectibleView({ params: { id } }: CollectibleViewProps) {
   const [aoTokens] = useStorage<TokenInfoWithBalance[]>(
     {
       key: "ao_tokens",
-      instance: ExtensionStorage
+      instance: PersistentStorage
     },
     []
   );

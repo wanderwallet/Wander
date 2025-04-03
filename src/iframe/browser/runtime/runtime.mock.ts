@@ -9,6 +9,8 @@ export const runtime = {
 
   getManifest: () => {
     return {
+      name: "Wander Connect",
+      version: "1.0.0",
       manifest_version: 3,
       browser_action: {
         default_popup: "popup.html"
