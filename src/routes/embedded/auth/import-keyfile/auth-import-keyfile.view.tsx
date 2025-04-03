@@ -122,6 +122,7 @@ export function AuthImportKeyfileEmbeddedView() {
         isFullWidth
         size="md"
         isLoading={loading}
+        isDisabled={!jsonData || loading}
         onClick={handleImportWallet}
       >
         Import
