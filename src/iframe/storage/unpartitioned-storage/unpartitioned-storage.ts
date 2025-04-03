@@ -392,6 +392,11 @@ export class EnhancedStorage implements Storage {
   constructor({ area = "local" }: UnpartitionedStorageOptions = {}) {
     this.storageType = area === "local" ? "localStorage" : "sessionStorage";
     this.storage = globalThis[this.storageType];
+
+    if (area === "session") {
+      // We want to start fresh each time the app loads:
+      this.storage.clear();
+    }
   }
 
   protected async getStorageHandle(): Promise<Storage> {

@@ -1,4 +1,5 @@
 import type { Runtime } from "webextension-polyfill";
+import { version } from "../../../../package.json";
 
 export const runtime = {
   // This should address lines like this:
@@ -10,7 +11,7 @@ export const runtime = {
   getManifest: () => {
     return {
       name: "Wander Connect",
-      version: "1.0.0",
+      version,
       manifest_version: 3,
       browser_action: {
         default_popup: "popup.html"
@@ -24,6 +25,12 @@ export const runtime = {
         reason: "install",
         temporary: false
       } satisfies Runtime.OnInstalledDetailsType);
+    }
+  },
+
+  onConnect: {
+    addListener: (fn) => {
+      console.trace("onConnect.addEventListener", fn);
     }
   }
 };

@@ -1,4 +1,4 @@
-import type { ApiCall, ApiResponse, Event } from "shim";
+import type { ApiCall, Event } from "shim";
 import type { InjectedEvents } from "~utils/events";
 import { nanoid } from "nanoid";
 import {
@@ -10,13 +10,20 @@ import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { version } from "../../../package.json";
 import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 import { isApiErrorResponse } from "~utils/messaging/common/messaging.utils";
+import { isomorphicSendMessage } from "~isomorphic-messaging";
+import { setEmbeddedTargetIframe } from "~utils/messaging/strategies/iframe/iframe-messaging.strategy";
 // import { version as sdkVersion } from "../../../wander-embedded-sdk/package.json";
 
-export function setupWalletSDK(
-  targetWindow: Window = window,
-  embeddedOrigin?: string
+export function setupEmbeddedWalletSDK(
+  targetWindowOrIframe: Window | HTMLIFrameElement = window
 ) {
-  log(LOG_GROUP.SETUP, "setupWalletSDK()");
+  log(LOG_GROUP.SETUP, "setupEmbeddedWalletSDK()");
+
+  if (!(targetWindowOrIframe instanceof HTMLIFrameElement)) {
+    throw new Error("Target for Wander Embedded must be an IFRAME element.");
+  }
+
+  setEmbeddedTargetIframe(targetWindowOrIframe);
 
   /** Init events */
   const events = mitt<InjectedEvents>();
@@ -74,79 +81,52 @@ export function setupWalletSDK(
 
       // 4. Send message to background script (Wander BE) or to the iframe window (Wander Embedded):
 
-      const targetOrigin = IS_EMBEDDED_APP
-        ? embeddedOrigin
-        : window.location.origin;
+      log(LOG_GROUP.API, `${data.type} (${data.callID})...`);
 
-      targetWindow.postMessage(data, targetOrigin);
+      // send call to the background
+      const res = await isomorphicSendMessage({
+        destination: "background",
+        messageId: data.type === "chunk" ? "chunk" : "api_call",
+        data
+      });
 
-      // TODO: Note this is replacing the following from `api.content-script.ts`, so the logic to await and get the response is missing with just the
-      // one-line change above.
-      //
-      // const res = await sendMessage(
-      //   data.type === "chunk" ? "chunk" : "api_call",
-      //   data,
-      //   "background"
-      // );
-      //
-      // window.postMessage(res, window.location.origin);
+      // TODO: If the call above fails, this API call never gets a response. Add timeout?
 
-      // TODO: Replace `postMessage` with `isomorphicSendMessage`, which should be updated to handle
-      // chunking automatically based on data size, rather than relying on `sendChunk` to be called from
-      // the foreground scripts manually.
+      log(LOG_GROUP.API, `${data.type} (${data.callID}) =`, res);
 
-      // 5. Wait for result from background:
-      window.addEventListener("message", callback);
-
-      // TODO: Declare outside (factory) to facilitate testing?
-      async function callback(e: MessageEvent<ApiResponse>) {
-        // TODO: Make sure the response comes from targetWindow.
-        // See https://stackoverflow.com/questions/16266474/javascript-listen-for-postmessage-events-from-specific-iframe.
-
-        let { data: res } = e;
-
-        // validate return message
-        if (!data || `${data.type}_result` !== res.type) return;
-
-        // only resolve when the result matching our callID is delivered
-        if (data.callID !== res.callID) return;
-
-        window.removeEventListener("message", callback);
-
-        // check for errors
-        if (isApiErrorResponse(res)) {
-          return reject(res.data);
-        }
-
-        const finalizerFn =
-          typeof foregroundModule === "string"
-            ? null
-            : foregroundModule.finalizer;
-
-        // call the finalizer function if it exists
-        if (finalizerFn) {
-          try {
-            const finalizerResult = await finalizerFn(
-              res.data,
-              functionParams,
-              params
-            );
-
-            // TODO: This is a bad check because the result could be falsy:
-            // if the finalizer transforms data
-            // update the result
-            if (finalizerResult) {
-              res.data = finalizerResult;
-            }
-          } catch (err) {
-            reject(err);
-
-            return;
-          }
-        }
-
-        resolve(res.data);
+      // check for errors
+      if (isApiErrorResponse(res)) {
+        return reject(res.data);
       }
+
+      const finalizerFn =
+        typeof foregroundModule === "string"
+          ? null
+          : foregroundModule.finalizer;
+
+      // call the finalizer function if it exists
+      if (finalizerFn) {
+        try {
+          const finalizerResult = await finalizerFn(
+            res.data,
+            functionParams,
+            params
+          );
+
+          // TODO: This is a bad check because the result could be falsy:
+          // if the finalizer transforms data
+          // update the result
+          if (finalizerResult) {
+            res.data = finalizerResult;
+          }
+        } catch (err) {
+          reject(err);
+
+          return;
+        }
+      }
+
+      resolve(res.data);
     });
   }
 

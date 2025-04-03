@@ -47,7 +47,8 @@ export async function arconfettiIcon(): Promise<string | false> {
  */
 export async function calculateReward({ reward }: Transaction) {
   // fetch fee multiplier
-  const multiplier = await getSetting("fee_multiplier").getValue<number>();
+  const multiplier =
+    (await getSetting("fee_multiplier").getValue<number>()) || 1;
 
   // if the multiplier is 1, we don't do anything
   if (multiplier === 1) return reward;
