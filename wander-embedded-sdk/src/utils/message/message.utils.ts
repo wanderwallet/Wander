@@ -28,6 +28,9 @@ export function isIncomingMessage(
       return !!(data && typeof data === "object" && "userDetails" in data);
     }
 
+    case "embedded_connect":
+    case "embedded_disconnect":
+    case "embedded_open":
     case "embedded_close":
       return true;
 
@@ -49,8 +52,9 @@ export function isIncomingMessage(
       return !!(
         data &&
         typeof data === "object" &&
-        typeof data.amount === "number" &&
-        typeof data.currency === "string"
+        (data.amount === null || typeof data.amount === "number") &&
+        (data.currency === null || typeof data.currency === "string") &&
+        typeof data.formattedBalance == "string"
       );
     }
 
