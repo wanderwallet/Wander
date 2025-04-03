@@ -9,12 +9,14 @@ export interface SettingItemData {
   icon: Icon;
   displayName: string;
   active: boolean;
+  isExternalLink?: boolean;
 }
 
 export function SettingListItem({
   displayName,
   icon,
   active,
+  isExternalLink,
   ...props
 }: SettingItemData & HTMLProps<HTMLDivElement>) {
   return (
@@ -24,7 +26,8 @@ export function SettingListItem({
       titleStyle={{ fontWeight: 500 }}
       hideSquircle
       active={active}
-      rightIcon={<ExternalLinkIcon />}
+      rightIcon={isExternalLink && <ExternalLinkIcon />}
+      showArrow={!isExternalLink}
       {...props}
     >
       <ListItemIcon as={icon} />

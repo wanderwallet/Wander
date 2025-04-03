@@ -145,6 +145,7 @@ export function MenuView({ params }: QuickSettingsViewProps) {
             displayName={setting.displayName}
             icon={setting.icon}
             active={activeSetting === setting.name}
+            isExternalLink={!!setting.externalLink}
             onClick={() => {
               if (setting.externalLink) {
                 browser.tabs.create({

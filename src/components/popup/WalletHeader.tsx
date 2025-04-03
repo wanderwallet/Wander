@@ -34,7 +34,7 @@ import useActiveTab from "~applications/useActiveTab";
 import AppIcon, { NoAppIcon } from "./home/AppIcon";
 import Squircle from "~components/Squircle";
 import browser from "webextension-polyfill";
-import styled from "styled-components";
+import styled, { type StyledComponent } from "styled-components";
 import copy from "copy-to-clipboard";
 import { type Gateway } from "~gateways/gateway";
 import { Bell03 } from "@untitled-ui/icons-react";
