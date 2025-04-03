@@ -1,4 +1,4 @@
-import { ExtensionStorage } from "~utils/storage";
+import { ExtensionStorage, PersistentStorage } from "~utils/storage";
 import Application from "./application";
 
 /**
@@ -71,7 +71,7 @@ export const resetAllPermissions = async (): Promise<void> => {
     isResetInProgress = true;
 
     // Get and validate connected apps
-    const connectedApps = (await ExtensionStorage.get("apps")) || [];
+    const connectedApps = (await PersistentStorage.get("apps")) || [];
     if (!Array.isArray(connectedApps) || connectedApps.length === 0) {
       await ExtensionStorage.set(IS_PERMISSIONS_RESET, true);
       return;
