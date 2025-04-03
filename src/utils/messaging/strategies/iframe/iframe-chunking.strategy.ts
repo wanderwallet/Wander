@@ -2,7 +2,7 @@ import { nanoid } from "nanoid";
 import type { ApiCall } from "shim";
 import type { Chunk } from "~api/modules/sign/chunks";
 import { isApiErrorResponse } from "~utils/messaging/common/messaging.utils";
-import { isomorphicSendMessage } from "~utils/messaging/strategies/extension/extension-messaging.strategy";
+import { isomorphicSendMessage } from "~isomorphic-messaging";
 
 /**
  * Send a chunk to the background script
