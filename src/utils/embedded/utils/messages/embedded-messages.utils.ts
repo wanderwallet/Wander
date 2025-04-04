@@ -1,7 +1,7 @@
 import { nanoid } from "nanoid";
 import {
-  isInsideIframe,
-  getEmbeddedAncestorOrigin
+  getEmbeddedAncestorOrigin,
+  isInsideIframe
 } from "~utils/embedded/iframe.utils";
 import type {
   EmbeddedCall,
