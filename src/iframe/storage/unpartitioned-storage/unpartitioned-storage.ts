@@ -447,7 +447,7 @@ export class EnhancedStorage implements Storage {
     }
   }
 
-  protected async requestStorageAccess(): Promise<void> {
+  async requestStorageAccess(): Promise<void> {
     if (!isInsideIframe()) return;
 
     // Check if Storage Access API is supported
