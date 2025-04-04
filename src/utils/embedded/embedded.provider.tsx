@@ -16,7 +16,8 @@ import { defaultGateway } from "~gateways/gateway";
 import { freeDecryptedWallet } from "~wallets/encryption";
 import {
   downloadKeyfile as downloadKeyfileUtil,
-  downloadRecoveryFile
+  downloadRecoveryFile,
+  type DownloadRecoveryFileData
 } from "~utils/file";
 import { sleep } from "~utils/promises/sleep";
 import type {
@@ -53,6 +54,8 @@ import type { SupabaseJwtPayload } from "~utils/authentication/authentication.ty
 import { isTempWalletPromiseExpired } from "~utils/embedded/utils/wallets/embedded-wallets.utils";
 import copy from "copy-to-clipboard";
 import { useHashLocation } from "wouter/use-hash-location";
+import { getIPAddress } from "~utils/ip_address";
+import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 
 export type AuthStatusCopy = AuthStatus;
 
@@ -133,9 +136,25 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     if (authStatus !== "unknown") {
       const coverElement = document.getElementById("cover");
 
-      coverElement.setAttribute("aria-hidden", "true");
+      if (coverElement) {
+        coverElement.setAttribute("aria-hidden", "true");
+      }
     }
   }, [authStatus]);
+
+  const getLatestSession = useCallback(async (session: DbSession) => {
+    const userAgent = navigator.userAgent;
+    const deviceNonce = await getDeviceNonce();
+    // NOTE: We use ipv4 address here as in Vercel backend we get ipv4 address from the request headers.
+    const ip = await getIPAddress().catch(() => session.ip);
+
+    return {
+      ...session,
+      ip,
+      userAgent,
+      deviceNonce
+    };
+  }, []);
 
   const updateCurrentWallet = useCallback(
     (walletUpdater: Wallet | ((currentWallet: Wallet) => Wallet)) => {
@@ -259,35 +278,120 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
     const jwk = decryptedWallet.keyfile;
 
-    const { recoveryAuthShare, recoveryBackupShare } =
-      await WalletUtils.generateWalletRecoveryShares(jwk);
-
-    const {
-      shareHash: recoveryBackupShareHash,
-      sharePublicKey: recoveryBackupSharePublicKey
-    } = await WalletUtils.generateShareHashAndPublicKey(recoveryBackupShare);
-
-    const { recoveryFileServerSignature, wallet: updatedWallet } =
-      await WalletService.registerRecoveryShare({
-        walletId,
-        recoveryAuthShare,
-        recoveryBackupShareHash,
-        recoveryBackupSharePublicKey
-      });
-
-    updateCurrentWallet((currentWallet) => ({
-      ...currentWallet,
-      ...updatedWallet
-    }));
-
-    downloadRecoveryFile(walletAddress, {
+    let recoveryFileData: DownloadRecoveryFileData = {
       walletId,
-      recoveryBackupShare,
-      recoveryFileServerSignature
-    });
+      recoveryBackupShare: "",
+      recoveryFileServerSignature: ""
+    };
+
+    const hasRecoveryShareLocally = await hasStoredRecoveryShare();
+    if (hasRecoveryShareLocally) {
+      const storedRecovery = await retrieveStoredRecoveryShare();
+      if (storedRecovery) {
+        recoveryFileData = storedRecovery;
+      }
+    }
+
+    if (
+      !recoveryFileData.recoveryBackupShare &&
+      !recoveryFileData.recoveryFileServerSignature
+    ) {
+      const { recoveryAuthShare, recoveryBackupShare } =
+        await WalletUtils.generateWalletRecoveryShares(jwk);
+
+      const {
+        shareHash: recoveryBackupShareHash,
+        sharePublicKey: recoveryBackupSharePublicKey
+      } = await WalletUtils.generateShareHashAndPublicKey(recoveryBackupShare);
+
+      const { recoveryFileServerSignature, wallet: updatedWallet } =
+        await WalletService.registerRecoveryShare({
+          walletId,
+          recoveryAuthShare,
+          recoveryBackupShareHash,
+          recoveryBackupSharePublicKey
+        });
+
+      updateCurrentWallet((currentWallet) => ({
+        ...currentWallet,
+        ...updatedWallet
+      }));
+
+      recoveryFileData = {
+        ...recoveryFileData,
+        recoveryBackupShare,
+        recoveryFileServerSignature
+      };
+
+      // Store encrypted recovery share in local storage if feature flag is enabled
+      if (EMBEDDED_FEATURE_FLAGS.STORE_RECOVERY_SHARES) {
+        try {
+          // Create the recovery file data
+          const recoveryData = {
+            version: "1",
+            ...recoveryFileData
+          } as RecoveryJSON;
+
+          await WalletUtils.storeEncryptedRecoveryShare(
+            walletId,
+            recoveryData,
+            jwk
+          );
+          console.log("Recovery share stored successfully");
+        } catch (error) {
+          console.error("Failed to store recovery share:", error);
+        }
+      }
+    }
+
+    // Download the recovery file for the user
+    downloadRecoveryFile(walletAddress, recoveryFileData);
 
     // TODO: Make sure we use `freeDecryptedWallet` all over the place in the new code for Embedded:
     freeDecryptedWallet(jwk);
+  }, [walletId, walletAddress]);
+
+  // Check if a wallet has a stored recovery share
+  const hasStoredRecoveryShare = useCallback(async (): Promise<boolean> => {
+    if (!walletId || !EMBEDDED_FEATURE_FLAGS.STORE_RECOVERY_SHARES) {
+      return false;
+    }
+
+    return await WalletUtils.hasEncryptedRecoveryShare(walletId);
+  }, [walletId]);
+
+  // Retrieve a stored recovery share
+  const retrieveStoredRecoveryShare = useCallback(async () => {
+    log(LOG_GROUP.EMBEDDED_FLOWS, `retrieveStoredRecoveryShare()`);
+
+    if (!walletId || !EMBEDDED_FEATURE_FLAGS.STORE_RECOVERY_SHARES) {
+      return null;
+    }
+
+    if (!(await WalletUtils.hasEncryptedRecoveryShare(walletId))) {
+      return null;
+    }
+
+    try {
+      const decryptedWallet = (await getKeyfile(
+        walletAddress
+      )) as LocalWallet<JWKInterface>;
+
+      const jwk = decryptedWallet.keyfile;
+
+      const recoveryShare = await WalletUtils.getDecryptedRecoveryShare(
+        walletId,
+        jwk
+      );
+
+      // TODO: Make sure we use `freeDecryptedWallet` all over the place in the new code for Embedded:
+      freeDecryptedWallet(jwk);
+
+      return recoveryShare;
+    } catch (error) {
+      console.error("Failed to retrieve stored recovery share:", error);
+      return null;
+    }
   }, [walletId, walletAddress]);
 
   // TODO: Need to observe storage to keep track of new wallets, removed wallets or active wallet changes... Or just
@@ -576,6 +680,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     const { jwk, walletAddress } = await importedTempWalletPromiseRef.current
       ?.promise;
 
+    const latestSession = await getLatestSession(session);
+
     const { fetchRecoverableWalletsChallenge } =
       await AuthenticationService.generateFetchRecoverableAccountsChallenge(
         walletAddress
@@ -583,7 +689,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
     const challengeSolution = await ChallengeClientV1.solveChallenge({
       challenge: fetchRecoverableWalletsChallenge,
-      session,
+      session: latestSession,
       shareHash: null,
       jwk
     });
@@ -619,6 +725,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       const { jwk, walletAddress } = await importedTempWalletPromiseRef.current
         ?.promise;
 
+      const latestSession = await getLatestSession(session);
+
       const { accountRecoveryChallenge } =
         await AuthenticationService.generateAccountRecoveryChallenge(
           accountToRecoverId,
@@ -627,7 +735,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
       const challengeSolution = await ChallengeClientV1.solveChallenge({
         challenge: accountRecoveryChallenge,
-        session,
+        session: latestSession,
         shareHash: null,
         jwk
       });
@@ -658,12 +766,14 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         sharePrivateKeyJWK: recoveryBackupSharePrivateKeyJWK
       } = await WalletUtils.generateShareHashAndPrivateKey(recoveryBackupShare);
 
+      const latestSession = await getLatestSession(session);
+
       const { shareRecoveryChallenge } =
         await WalletService.generateWalletRecoveryChallenge({ walletId });
 
       const challengeSolution = await ChallengeClientV1.solveChallenge({
         challenge: shareRecoveryChallenge,
-        session,
+        session: latestSession,
         shareHash: recoveryBackupShareHash,
         jwk: recoveryBackupSharePrivateKeyJWK
       });
@@ -694,7 +804,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
       const rotateChallengeSignature = await ChallengeClientV1.solveChallenge({
         challenge: rotationChallenge,
-        session,
+        session: latestSession,
         shareHash: null,
         jwk
       });
@@ -733,6 +843,31 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
   );
 
   // AUTHENTICATION:
+
+  const refreshSession = async (session?: DbSession) => {
+    const supabase = await getSupabaseClient();
+    const {
+      data: { session: refreshedSession }
+    } = await supabase.auth.refreshSession();
+
+    const accessToken = refreshedSession?.access_token;
+    if (accessToken) {
+      setAuthTokenHeader(accessToken);
+      const {
+        sub,
+        session_id: sessionId,
+        sessionData
+      } = jwtDecode<SupabaseJwtPayload>(accessToken);
+
+      session = {
+        ...sessionData,
+        id: sessionId,
+        userId: sub
+      };
+    }
+
+    return session;
+  };
 
   const authenticate = useCallback(
     async (authProviderType: AuthProviderType) => {
@@ -871,34 +1006,44 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
       setEmbeddedContextState(EMBEDDED_CONTEXT_INITIAL_STATE);
 
+      postEmbeddedMessage({
+        type: "embedded_auth",
+        data: {
+          userDetails: !userId || !session ? null : {}
+        }
+      });
+
       if (!userId || !session) {
         generateTempWallet();
 
         return;
       }
 
-      if (!session.countryCode || !session.id || !session.deviceNonce) {
+      if (!session.id || !session.deviceNonce) {
         console.warn(
           "❌  The current session is incomplete. Refreshing...",
           session
         );
-        const supabase = await getSupabaseClient();
-        await supabase.auth.refreshSession();
+        session = await refreshSession(session);
       } else if (session.deviceNonce !== (await getDeviceNonce())) {
         console.warn(
-          "⚠️  The current session is complete, but the device nonce doesn't match!",
+          "⚠️  The current session is complete, but the device nonce doesn't match!. Refreshing...",
           session
         );
+        session = await refreshSession(session);
       } else {
         console.log("✅  The current session is complete!", session);
       }
+
+      session = await getLatestSession(session);
 
       const wallets = await WalletService.fetchWallets(userId);
 
       setEmbeddedContextState((prevAuthContextState) => ({
         ...prevAuthContextState,
         currentWalletId: wallets?.[0]?.id || null,
-        wallets
+        wallets,
+        session
       }));
 
       let authStatus = "noAuth" as AuthStatus;
@@ -981,7 +1126,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     []
   );
 
-  const completeAuth = useCallback((session: any) => {
+  const completeAuth = useCallback(async (session: any) => {
     window.opener.postMessage(
       {
         type: "AUTH_COMPLETE",
@@ -990,6 +1135,9 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       },
       window.location.origin
     );
+
+    // waiting sometime before closing the popup
+    await sleep(500);
 
     log(LOG_GROUP.EMBEDDED_FLOWS, "Closing popup window...");
 
@@ -1021,7 +1169,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       /*
     KNOWN AUTHENTICATION ISSUES:
 
-    - The decoded JWT token sometimes is missing some properties (`countryCode` and `deviceNonce`). Refreshing the
+    - The decoded JWT token sometimes is missing some properties (`deviceNonce`). Refreshing the
       sessions seems to fix the issue, but not immediately. The `The current session is incomplete. Refreshing...` block
       in `initEmbeddedWallet` is a dirty/temp fix for that.
 
@@ -1050,7 +1198,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       const supabase = await getSupabaseClient();
       const {
         data: { subscription }
-      } = supabase.auth.onAuthStateChange((_event, session) => {
+      } = supabase.auth.onAuthStateChange(async (_event, session) => {
         // console.log("onAuthStateChange =", session);
 
         window.clearTimeout(forceInitTimeoutID);
@@ -1058,7 +1206,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         // Comment this line to run Wander Embedded as a standalone page:
         if (!isInsideIframe()) {
           if (session?.access_token && window.opener) {
-            completeAuth(session);
+            await completeAuth(session);
           }
 
           if (window.location.origin === "https://embed.wander.app") {
@@ -1136,7 +1284,11 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       const params = new URLSearchParams(hashParams);
       const searchParams = Object.fromEntries(params.entries());
 
-      completeAuth(searchParams);
+      // We have completeAuth() in the onAuthStateChange callback, but if it didn't work,
+      // we'll use a timeout to call it after a delay.
+      setTimeout(() => {
+        completeAuth(searchParams);
+      }, 5000);
     }
   }, [wocation]);
 

@@ -9,6 +9,7 @@ const TextInput = forwardRef<HTMLInputElement, TextInputBaseProps>(
       placeholder,
       hasButton = false,
       buttonLabel,
+      isDisabled,
       isSecure,
       buttonOnClick,
       className,
@@ -26,6 +27,7 @@ const TextInput = forwardRef<HTMLInputElement, TextInputBaseProps>(
           type={type}
           placeholder={placeholder}
           className={styles["input"]}
+          disabled={isDisabled}
         />
         {hasButton && buttonLabel && (
           <button

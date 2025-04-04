@@ -9,6 +9,7 @@ import mitt from "mitt";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { version } from "../../../package.json";
 import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
+import { isApiErrorResponse } from "~utils/messaging/common/messaging.utils";
 // import { version as sdkVersion } from "../../../wander-embedded-sdk/package.json";
 
 export function setupWalletSDK(
@@ -105,15 +106,15 @@ export function setupWalletSDK(
         let { data: res } = e;
 
         // validate return message
-        if (`${data.type}_result` !== res.type) return;
+        if (!data || `${data.type}_result` !== res.type) return;
 
-        // only resolve when the result matching our callID is deleivered
+        // only resolve when the result matching our callID is delivered
         if (data.callID !== res.callID) return;
 
         window.removeEventListener("message", callback);
 
         // check for errors
-        if (res.error) {
+        if (isApiErrorResponse(res)) {
           return reject(res.data);
         }
 
@@ -124,26 +125,27 @@ export function setupWalletSDK(
 
         // call the finalizer function if it exists
         if (finalizerFn) {
-          const finalizerResult = await finalizerFn(
-            res.data,
-            functionParams,
-            params
-          );
+          try {
+            const finalizerResult = await finalizerFn(
+              res.data,
+              functionParams,
+              params
+            );
 
-          // if the finalizer transforms data
-          // update the result
-          if (finalizerResult) {
-            res.data = finalizerResult;
+            // TODO: This is a bad check because the result could be falsy:
+            // if the finalizer transforms data
+            // update the result
+            if (finalizerResult) {
+              res.data = finalizerResult;
+            }
+          } catch (err) {
+            reject(err);
+
+            return;
           }
         }
 
-        // check for errors after the finalizer
-        if (res.error) {
-          return reject(res.data);
-        }
-
-        // resolve promise
-        return resolve(res.data);
+        resolve(res.data);
       }
     });
   }
@@ -161,8 +163,6 @@ export function setupWalletSDK(
     dispatchEvent(new CustomEvent("arweaveWalletLoaded", { detail: {} }));
   });
 
-  // TODO: Remove it before to make sure there's no duplicate listener?
-
   /** Handle events */
   window.addEventListener(
     "message",
@@ -172,7 +172,7 @@ export function setupWalletSDK(
         event: Event;
       }>
     ) => {
-      if (e.data.type !== "wander_event") return;
+      if (!e.data || !e.data.event || e.data.type !== "wander_event") return;
 
       events.emit(e.data.event.name, e.data.event.value);
     }

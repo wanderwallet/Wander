@@ -34,38 +34,57 @@ export const getWanderButtonTemplateContent = ({
   }
 
   .button {
+    position: relative;
     display: flex;
     align-items: center;
     gap: var(--gapInside);
     outline: none;
     user-select: none;
     cursor: pointer;
-    transition: transform linear 50ms;
-
     min-width: var(--minWidth);
     min-height: var(--minHeight);
-    z-index: var(--zIndex);
+    z-index: 0;
     padding: var(--padding);
     font: var(--font);
-
-    background: var(--background);
     color: var(--color);
+    background: transparent;
+    border: none;
+    border-radius: var(--borderRadius);
+  }
+
+  .button::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--background);
     border: var(--borderWidth) solid var(--borderColor);
     border-radius: var(--borderRadius);
     box-shadow: var(--boxShadow);
+    z-index: -1;
+    transition: transform linear 50ms;
+  }
+
+  .button::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: var(--borderRadius);
+    border-bottom-right-radius: 0;
+    z-index: -1;
   }
 
   .button:hover .wanderLogo {
     animation: sail 3s infinite;
   }
 
-  .button:active {
+  .button:active::before {
     transform: scale(0.95);
   }
 
   .wanderLogo {
     width: 32px;
     aspect-ratio: 1;
+    transition: transform linear 50ms;
   }
 
   .label:empty {
@@ -74,6 +93,15 @@ export const getWanderButtonTemplateContent = ({
 
   .label:not(:empty) + .balance {
     display: none;
+  }
+
+  .balance {
+    filter: blur(0px);
+    transition: filter linear 300ms;
+  }
+
+  .balance.isHidden {
+    filter: blur(6px);
   }
 
   .indicator,
@@ -85,6 +113,7 @@ export const getWanderButtonTemplateContent = ({
     border-radius: 32px;
     border: var(--borderWidth) solid var(--borderColor);
     transition: transform linear 150ms, background linear 150ms;
+    pointer-events: none;
   }
 
   .indicator {
@@ -119,7 +148,7 @@ export const getWanderButtonTemplateContent = ({
   }
 
   .isConnected + .indicator {
-    background: green;
+    background: #56C980;
   }
 
   .isConnected ~ .dappLogo[src] {

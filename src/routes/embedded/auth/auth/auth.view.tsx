@@ -84,8 +84,18 @@ export function AuthEmbeddedView() {
       size="auto"
     >
       <Box>
-        <TextInput placeholder="E-Mail" ref={emailInputRef} />
-        <TextInput placeholder="Password" ref={passwordInputRef} isSecure />
+        <TextInput
+          ref={emailInputRef}
+          placeholder="E-Mail"
+          isDisabled={areButtonsDisabled}
+        />
+
+        <TextInput
+          ref={passwordInputRef}
+          placeholder="Password"
+          isDisabled={areButtonsDisabled}
+          isSecure
+        />
 
         <Button
           isFullWidth
@@ -123,13 +133,13 @@ export function AuthEmbeddedView() {
           isFullWidth
           isDisabled={areButtonsDisabled}
           icon={<SocialsIcon fontSize={24} />}
-          href="/auth/more-providers"
+          href="#/auth/more-providers"
         >
           More options
         </Button>
         <Row alignment="center" justifyContent="center">
           <Text variant={"bodySm"}>{"Can’t sign in?"}</Text>
-          <Button variant="link" href="/auth/recover-account" size="sm">
+          <Button variant="link" href="#/auth/recover-account" size="sm">
             Recover account
           </Button>
         </Row>

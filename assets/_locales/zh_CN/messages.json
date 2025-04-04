@@ -1587,8 +1587,8 @@
       "description": "Not connected indicator"
   },
   "not_connected_text": {
-      "message": "“连接/断开连接”是指示您的 Wander 钱包是否已连接到 Arweave 或 AO 应用程序的指示器。对于发送、接收、检查余额等常规使用，Wander 将始终显示断开连接。",
-      "description": "Not connected indicator explainer"
+    "message": "“连接/断开连接”表示网页应用程序是否已连接到您的 Wander 账户。对于扩展程序内的操作 (发送、接收等), Wander 将始终显示为未连接状态。",
+    "description": "Not connected indicator explainer"
   },
   "disconnect": {
       "message": "断开连接",
@@ -2441,7 +2441,7 @@
         "description": "Auto-confirm"
     },
     "auto_confirm_description": {
-        "message": "自动签署每笔交易和消息。",
+        "message": "所有交易和消息都会自动签名，无需手动确认",
         "description": "Auto-confirm description"
     },
     "custom_permissions": {
@@ -2931,5 +2931,17 @@
     "minutes": {
         "message": "分钟",
         "description": "Minutes text"
+    },
+    "keyfile_info_tooltip": {
+        "message": "密钥文件是一个包含加密私钥的JSON文件",
+        "description": "Tooltip explaining what a keyfile is"
+    },
+    "pending": {
+        "message": "待定",
+        "description": "Pending text"
+    },
+    "exchange_message": {
+        "message": "汇率",
+        "description": "Exchange rate text"
     }
 }

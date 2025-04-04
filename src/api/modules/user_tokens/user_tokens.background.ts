@@ -1,5 +1,5 @@
 import type { BackgroundModuleFunction } from "~api/background/background-modules";
-import { ExtensionStorage } from "~utils/storage";
+import { ExtensionStorage, PersistentStorage } from "~utils/storage";
 import {
   getAoTokenBalance,
   type TokenInfo,
@@ -11,7 +11,7 @@ const background: BackgroundModuleFunction<
 > = async (_, options?: { fetchBalance?: boolean }) => {
   const address = await ExtensionStorage.get("active_address");
   const tokens = (
-    (await ExtensionStorage.get<TokenInfo[]>("ao_tokens")) || []
+    (await PersistentStorage.get<TokenInfo[]>("ao_tokens")) || []
   ).filter((token) => token.processId !== "AR");
 
   if (!options?.fetchBalance) {

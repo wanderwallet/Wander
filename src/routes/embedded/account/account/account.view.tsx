@@ -42,16 +42,16 @@ export function AccountEmbeddedView() {
         }}
         value={JSON.stringify(address, null, 2)}
       />
-      <Button isFullWidth size="md" href="/">
+      <Button isFullWidth size="md" href="#/">
         Home
       </Button>
-      <Button isFullWidth size="md" href="/account/add-wallet">
+      <Button isFullWidth size="md" href="#/account/add-wallet">
         Add Wallet
       </Button>
-      <Button isFullWidth size="md" href="/account/backup-shares">
+      <Button isFullWidth size="md" href="#/account/backup-shares">
         Backup Shares
       </Button>
-      <Button isFullWidth size="md" href="/account/export-wallet">
+      <Button isFullWidth size="md" href="#/account/export-wallet">
         Export Wallet
       </Button>
     </Card>

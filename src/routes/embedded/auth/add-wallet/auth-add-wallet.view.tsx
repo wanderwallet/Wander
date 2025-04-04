@@ -36,6 +36,8 @@ export function AuthAddWalletEmbeddedView() {
     setIsLoading(false);
   }, []);
 
+  if (!authProviderType) alert(`authProviderType = ${authProviderType}`);
+
   return (
     <Card
       headerText="Add a wallet"
@@ -70,7 +72,7 @@ export function AuthAddWalletEmbeddedView() {
           variant="outlined"
           isFullWidth
           icon={<WalletIcon fontSize={24} />}
-          href="/auth/import-seedphrase"
+          href="#/auth/import-seedphrase"
           isDisabled={isLoading}
         >
           Enter Seed Phrase
@@ -79,7 +81,7 @@ export function AuthAddWalletEmbeddedView() {
           variant="outlined"
           isFullWidth
           icon={<KeyIcon fontSize={24} />}
-          href="/auth/import-keyfile"
+          href="#/auth/import-keyfile"
           isDisabled={isLoading}
         >
           Import Keyfile
@@ -89,7 +91,7 @@ export function AuthAddWalletEmbeddedView() {
             variant="outlined"
             isFullWidth
             icon={<QRCodeIcon fontSize={24} />}
-            href="/auth/add-device"
+            href="#/auth/add-device"
             isDisabled={isLoading}
           >
             Add this device to an existing account
@@ -99,10 +101,11 @@ export function AuthAddWalletEmbeddedView() {
             variant="outlined"
             isFullWidth
             icon={<QRCodeIcon fontSize={24} />}
-            href="/auth/add-auth-provider"
+            href="#/auth/add-auth-provider"
             isDisabled={isLoading}
           >
-            Add {authProviderType.toLocaleUpperCase()} to an existing account
+            Add {(authProviderType || "UNKNOWN").toLocaleUpperCase()} to an
+            existing account
           </Button>
         )}
       </Box>

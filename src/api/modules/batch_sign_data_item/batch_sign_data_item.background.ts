@@ -1,23 +1,16 @@
-import { isRawDataItem } from "~utils/assertions";
+import { isBatchOfRawDataItem } from "~utils/assertions";
 import { requestUserAuthorization } from "../../../utils/auth/auth.utils";
 import { getActiveKeyfile } from "~wallets";
 import { freeDecryptedWallet } from "~wallets/encryption";
 import { ArweaveSigner, createData } from "arbundles";
-import type { RawDataItem } from "../sign_data_item/types";
 import type { BackgroundModuleFunction } from "~api/background/background-modules";
 
 const background: BackgroundModuleFunction<number[][]> = async (
   appData,
-  dataItems: unknown[]
+  dataItems: unknown
 ) => {
   // validate
-  if (!Array.isArray(dataItems)) {
-    throw new Error("Input must be an array of data items");
-  }
-
-  for (const dataItem of dataItems) {
-    isRawDataItem(dataItem);
-  }
+  isBatchOfRawDataItem(dataItems);
 
   const results: number[][] = [];
 
@@ -41,7 +34,7 @@ const background: BackgroundModuleFunction<number[][]> = async (
 
     const dataSigner = new ArweaveSigner(decryptedWallet.keyfile);
 
-    for (const dataItem of dataItems as RawDataItem[]) {
+    for (const dataItem of dataItems) {
       const { data, ...options } = dataItem;
       const binaryData = new Uint8Array(data);
 

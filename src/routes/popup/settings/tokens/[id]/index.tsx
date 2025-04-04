@@ -1,7 +1,7 @@
 import { ButtonV2, Spacer, Text, TooltipV2 } from "@arconnect/components";
 import { Select as SelectV2, useToasts } from "@arconnect/components-rebrand";
 import type { TokenType } from "~tokens/token";
-import { useStorage } from "~utils/storage";
+import { PersistentStorage, useStorage } from "~utils/storage";
 import { ExtensionStorage } from "~utils/storage";
 import { TrashIcon } from "@iconicicons/react";
 import { removeToken } from "~tokens";
@@ -15,6 +15,7 @@ import HeadV2 from "~components/popup/HeadV2";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { useLocation } from "~wallets/router/router.utils";
 import { LoadingView } from "~components/page/common/loading/loading.view";
+import { ActionBar } from "..";
 export interface TokenSettingsParams {
   id: string;
 }
@@ -29,7 +30,7 @@ export function TokenSettingsView({ params: { id } }: TokenSettingsProps) {
   const [aoTokens, setAoTokens] = useStorage<any[]>(
     {
       key: "ao_tokens",
-      instance: ExtensionStorage
+      instance: PersistentStorage
     },
     []
   );
@@ -116,17 +117,19 @@ export function TokenSettingsView({ params: { id } }: TokenSettingsProps) {
             </option>
           </SelectV2>
         </div>
-        <ButtonV2
-          fullWidth
-          onClick={async () => {
-            await removeToken(id);
-            navigate(`/quick-settings/tokens`);
-          }}
-          style={{ backgroundColor: "#8C1A1A" }}
-        >
-          <TrashIcon style={{ marginRight: "5px" }} />
-          {browser.i18n.getMessage("remove_token")}
-        </ButtonV2>
+        <ActionBar>
+          <ButtonV2
+            fullWidth
+            onClick={async () => {
+              await removeToken(id);
+              navigate(`/quick-settings/tokens`);
+            }}
+            style={{ backgroundColor: "#8C1A1A" }}
+          >
+            <TrashIcon style={{ marginRight: "5px" }} />
+            {browser.i18n.getMessage("remove_token")}
+          </ButtonV2>
+        </ActionBar>
       </Wrapper>
     </>
   );

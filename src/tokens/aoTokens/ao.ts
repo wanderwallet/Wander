@@ -2,10 +2,11 @@ import { useMemo } from "react";
 import { defaultConfig } from "./config";
 import { connect, dryrun } from "@permaweb/aoconnect";
 import { type Tag } from "arweave/web/lib/transaction";
-import { useStorage } from "~utils/storage";
+import { PersistentStorage, useStorage } from "~utils/storage";
 import { ExtensionStorage } from "~utils/storage";
 import { Quantity } from "ao-tokens";
-import { Arweave, ArweaveSigner, createData } from "arbundles";
+import Arweave from "arweave";
+import { ArweaveSigner, createData } from "arbundles";
 import { getActiveKeyfile } from "~wallets";
 import { isLocalWallet } from "~utils/assertions";
 import { freeDecryptedWallet } from "~wallets/encryption";
@@ -105,7 +106,7 @@ export function useAo() {
   return ao;
 }
 
-function moveTokenToTop(tokens: Token[], tokenId: string) {
+function moveTokenToTop(tokens: TokenInfoWithBalance[], tokenId: string) {
   const tokenIndex = tokens.findIndex((t) => t.id === tokenId);
   if (tokenIndex !== -1) {
     const token = tokens.splice(tokenIndex, 1)[0];
@@ -116,11 +117,13 @@ function moveTokenToTop(tokens: Token[], tokenId: string) {
 export function useAoTokens({
   type,
   hidden,
-  sortFn
+  sortFn,
+  skipSort = false
 }: {
   type?: "asset" | "collectible";
   hidden?: boolean;
   sortFn?: (a: TokenInfo, b: TokenInfo) => number;
+  skipSort?: boolean;
 } = {}): {
   tokens: TokenInfoWithBalance[];
   loading: boolean;
@@ -129,7 +132,7 @@ export function useAoTokens({
   const [aoTokens, setAoTokens] = useStorage<TokenInfo[]>(
     {
       key: "ao_tokens",
-      instance: ExtensionStorage
+      instance: PersistentStorage
     },
     []
   );
@@ -165,15 +168,17 @@ export function useAoTokens({
         hidden: aoToken?.hidden ?? false
       }));
 
-    moveTokenToTop(filteredTokens, AO_NATIVE_TOKEN);
-    moveTokenToTop(filteredTokens, "AR");
+    if (!skipSort) {
+      moveTokenToTop(filteredTokens, AO_NATIVE_TOKEN);
+      moveTokenToTop(filteredTokens, "AR");
 
-    if (sortFn) {
-      filteredTokens.sort(sortFn);
+      if (sortFn) {
+        filteredTokens.sort(sortFn);
+      }
     }
 
     return filteredTokens;
-  }, [aoTokens, type, hidden, sortFn]);
+  }, [aoTokens, type, hidden, sortFn, skipSort]);
 
   return { tokens, loading: false, changeTokenVisibility };
 }
@@ -197,7 +202,7 @@ export function useBalanceSortedTokens({
   const [aoTokens] = useStorage<TokenInfo[]>(
     {
       key: "ao_tokens",
-      instance: ExtensionStorage
+      instance: PersistentStorage
     },
     []
   );
@@ -289,7 +294,7 @@ export async function getAoTokenBalance(
 ): Promise<Quantity> {
   if (!aoToken) {
     const aoTokens =
-      (await ExtensionStorage.get<TokenInfo[]>("ao_tokens")) || [];
+      (await PersistentStorage.get<TokenInfo[]>("ao_tokens")) || [];
 
     aoToken = aoTokens.find((token) => token.processId === process);
   }
@@ -524,30 +529,16 @@ export async function fetchTokenBalance(
 
 export async function getBotegaPrice(tokenId: string): Promise<number | null> {
   try {
-    const res = await dryrun({
-      process: "Meb6GwY5I9QN77F0c5Ku2GpCFxtYyG1mfJus2GWYtII",
-      data: "",
-      tags: [
-        {
-          name: "Action",
-          value: "Get-Price-For-Token"
-        },
-        {
-          name: "Base-Token-Process",
-          value: tokenId
-        },
-        {
-          name: "Quote-Token-Process",
-          value: "USD"
-        }
-      ]
-    });
+    const response = await fetch(
+      `https://wander-cache-ruddy.vercel.app/api/botega/prices?tokenIds=${tokenId}`
+    );
 
-    const price = res.Messages[0].Tags.find(
-      (tag: any) => tag.name === "Price"
-    )?.value;
+    if (!response.ok) {
+      throw new Error("Failed to fetch price");
+    }
 
-    return price ? Number(price) : null;
+    const data = await response.json();
+    return data.prices?.[tokenId] ?? null;
   } catch (error) {
     console.error("Error fetching Botega price:", error);
     return null;
@@ -558,33 +549,16 @@ export async function getBotegaPrices(
   tokenIds: string[]
 ): Promise<Record<string, number | null>> {
   try {
-    const res = await dryrun({
-      process: "Meb6GwY5I9QN77F0c5Ku2GpCFxtYyG1mfJus2GWYtII",
-      data: "",
-      tags: [
-        {
-          name: "Action",
-          value: "Get-Price-For-Tokens"
-        },
-        {
-          name: "Tokens",
-          value: JSON.stringify(tokenIds)
-        }
-      ]
-    });
-
-    const pricesTag = res.Messages[0].Tags.find((tag) => tag.name === "Prices");
-    if (!pricesTag?.value)
-      return Object.fromEntries(tokenIds.map((id) => [id, null]));
-
-    const prices: Record<string, number | null> = {};
-    Object.entries(pricesTag.value).forEach(
-      ([tokenId, data]: [string, any]) => {
-        prices[tokenId] = data.price || null;
-      }
+    const queryString = tokenIds.join(",");
+    const response = await fetch(
+      `https://wander-cache-ruddy.vercel.app/api/botega/prices?tokenIds=${queryString}`
     );
+    if (!response.ok) {
+      throw new Error("Failed to fetch prices");
+    }
 
-    return prices;
+    const data = await response.json();
+    return data.prices || Object.fromEntries(tokenIds.map((id) => [id, null]));
   } catch (error) {
     console.error("Error fetching Botega prices:", error);
     return Object.fromEntries(tokenIds.map((id) => [id, null]));

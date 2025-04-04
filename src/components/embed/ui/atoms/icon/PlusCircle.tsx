@@ -19,7 +19,7 @@ const SvgPlusCircle = ({
       <path
         d="M9.99984 6.66669V13.3334M6.6665 10H13.3332M18.3332 10C18.3332 14.6024 14.6022 18.3334 9.99984 18.3334C5.39746 18.3334 1.6665 14.6024 1.6665 10C1.6665 5.39765 5.39746 1.66669 9.99984 1.66669C14.6022 1.66669 18.3332 5.39765 18.3332 10Z"
         stroke="currentColor"
-        stroke-width="1.66667"
+        strokeWidth="1.66667"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
