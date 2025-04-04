@@ -5,9 +5,9 @@ import { InfoCircle, X as XClose } from "@untitled-ui/icons-react";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import {
   PARTITIONED_STORAGE_BANNER_DISMISSAL_KEY,
-  PARTITIONED_STORAGE_BANNER_EVENT,
-  PARTITIONED_STORAGE_BANNER_MESSAGE
+  PARTITIONED_STORAGE_BANNER_EVENT
 } from "~iframe/storage/unpartitioned-storage/unpartitioned-storage.utils";
+import browser from "webextension-polyfill";
 
 // Styled components for the banner
 const BannerWrapper = styled(motion.div)`
@@ -103,7 +103,7 @@ interface StoragePartitionedBannerProps {
  */
 export default function StoragePartitionedBanner({
   initiallyVisible = false,
-  message = PARTITIONED_STORAGE_BANNER_MESSAGE,
+  message = browser.i18n.getMessage("partitioned_storage_banner"),
   dismissStorageKey = PARTITIONED_STORAGE_BANNER_DISMISSAL_KEY,
   onDismiss,
   dismissible = true
