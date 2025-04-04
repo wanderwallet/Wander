@@ -18,12 +18,16 @@ const messageHandlersByMessageID: Partial<
   Record<MessageID, Set<OnMessageCallback<MessageID>>>
 > = {};
 
-let targetIframe: HTMLIFrameElement = null;
-let targetOrigin = "";
+let embedWIndow: Window = null;
+let embedOrigin = "";
 
+/**
+ * Stores a reference to the Embed iframe and its origin. This function is only called from the SDK.
+ * @param iframeElement
+ */
 export function setEmbeddedTargetIframe(iframeElement: HTMLIFrameElement) {
-  targetIframe = iframeElement;
-  targetOrigin = new URL(iframeElement.src).origin;
+  embedWIndow = iframeElement.contentWindow;
+  embedOrigin = new URL(iframeElement.src).origin;
 }
 
 let messageCounter = 0;
@@ -31,6 +35,7 @@ let messageCounter = 0;
 function getPostMessageFunction<K extends MessageID>(
   messageData: MessageData<K>
 ): () => Promise<ReturnType<OnMessageCallback<K>>> {
+  let postMessageTargetWindow: Window | null = null;
   let postMessageTargetOrigin = "";
 
   const { destination, messageId, data } = messageData;
@@ -38,23 +43,29 @@ function getPostMessageFunction<K extends MessageID>(
   // TODO: isInsideIframe is an incorrect check because we might be running the app standalone.
 
   if (destination === "background") {
-    if (!isInsideIframe()) postMessageTargetOrigin = targetOrigin;
+    if (!isInsideIframe()) {
+      postMessageTargetWindow = embedWIndow;
+      postMessageTargetOrigin = embedOrigin;
+    }
   } else if (destination.startsWith("content-script")) {
     if (!isInsideIframe())
       throw new Error(
         `Can only send messages to the "content-script" (SDK) from the "background" (iframe context).`
       );
+
+    postMessageTargetWindow = window.parent;
     postMessageTargetOrigin = getEmbeddedAncestorOrigin();
   } else if (destination.startsWith("web_accessible")) {
     if (!isInsideIframe())
       throw new Error(
         `Can only send messages to "web_accessible" (auth popup) from the "background" (iframe context).`
       );
-    postMessageTargetOrigin = "";
   }
 
-  if (postMessageTargetOrigin) {
+  if (postMessageTargetWindow && postMessageTargetOrigin) {
     return async function postMessage() {
+      console.log("POST MESSAGE CALLED", messageData, postMessageTargetOrigin);
+
       /*
       console.log(
         `SEND (postMessage) ${messageId} to ${destination} (${postMessageTargetOrigin}), data =`,
@@ -63,7 +74,22 @@ function getPostMessageFunction<K extends MessageID>(
       */
 
       return new Promise<ApiResponse>(async (resolve) => {
-        targetIframe.contentWindow.postMessage(data, postMessageTargetOrigin);
+        // These have no response, so there's no need to set another `message` listener.
+        // TODO: Why is switch_wallet_event not just another "event type"?
+        if (messageId === "event" || messageId === "switch_wallet_event") {
+          postMessageTargetWindow.postMessage(
+            {
+              id: nanoid(),
+              type: messageId,
+              data
+            },
+            postMessageTargetOrigin
+          );
+
+          return;
+        }
+
+        postMessageTargetWindow.postMessage(data, postMessageTargetOrigin);
 
         // TODO: Wait for response and return, but use the callbacks stored above.
 

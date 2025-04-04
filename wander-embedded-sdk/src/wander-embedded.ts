@@ -13,7 +13,11 @@ import {
   IncomingResizeMessageData,
   UserDetails
 } from "./utils/message/message.types";
-import { isIncomingMessage } from "./utils/message/message.utils";
+import {
+  isEventMessage,
+  isIncomingMessage,
+  isWalletSwitchMessage
+} from "./utils/message/message.utils";
 import { getEmbeddedURL } from "./utils/url/url.utils";
 
 const NOOP = () => {};
@@ -235,6 +239,32 @@ export class WanderEmbedded {
 
   private handleMessage(event: MessageEvent): void {
     const message = event.data;
+
+    if (!this.iframeRef || event.origin !== new URL(this.iframeRef.src).origin)
+      return;
+
+    console.log("MESSAGE =", event);
+
+    if (isEventMessage(message)) {
+      const events = window.arweaveWallet?.events;
+
+      if (events) events.emit(message.data.name, message.data.value);
+
+      return;
+    }
+
+    if (isWalletSwitchMessage(message)) {
+      // dispatch custom event
+      dispatchEvent(
+        new CustomEvent("walletSwitch", {
+          detail: { address: message.data }
+        })
+      );
+
+      return;
+    }
+
+    // TODO: Handle switch_wallet_event
 
     if (!isIncomingMessage(message)) return;
 

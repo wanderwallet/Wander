@@ -1,4 +1,6 @@
 import {
+  EventMessage,
+  EventMessageData,
   IncomingAuthMessageData,
   IncomingBalanceMessageData,
   IncomingMessage,
@@ -6,8 +8,43 @@ import {
   IncomingRequestMessageData,
   IncomingResizeMessage,
   IncomingResizeMessageData,
-  OutgoingMessage
+  OutgoingMessage,
+  WalletSwitchMessage
 } from "./message.types";
+
+export function isEventMessage(message: unknown): message is EventMessage {
+  if (
+    !message ||
+    typeof message !== "object" ||
+    !("id" in message && "type" in message && "data" in message) ||
+    message.type !== "event"
+  ) {
+    return false;
+  }
+
+  const data = message.data as EventMessageData;
+
+  // TODO: Validate the different value types/formats:
+  return typeof data.name === "string";
+}
+
+export function isWalletSwitchMessage(
+  message: unknown
+): message is WalletSwitchMessage {
+  if (
+    !message ||
+    typeof message !== "object" ||
+    !("id" in message && "type" in message && "data" in message) ||
+    message.type !== "switch_wallet_event"
+  ) {
+    return false;
+  }
+
+  const data = message.data as string | null;
+
+  // TODO: Validate address format:
+  return data === null || typeof data === "string";
+}
 
 // Type guard for incoming messages
 export function isIncomingMessage(
@@ -74,6 +111,7 @@ export function isIncomingMessage(
 }
 
 // Type guard for outgoing messages
+// TODO: Is this needed?
 export function isOutgoingMessage(message: any): message is OutgoingMessage {
   if (!message || typeof message !== "object" || !message.type) return false;
 

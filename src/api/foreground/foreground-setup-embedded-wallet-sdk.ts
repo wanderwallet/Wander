@@ -142,19 +142,4 @@ export function setupEmbeddedWalletSDK(
     if (!window.arweaveWallet) return;
     dispatchEvent(new CustomEvent("arweaveWalletLoaded", { detail: {} }));
   });
-
-  /** Handle events */
-  window.addEventListener(
-    "message",
-    (
-      e: MessageEvent<{
-        type: "wander_event";
-        event: Event;
-      }>
-    ) => {
-      if (!e.data || !e.data.event || e.data.type !== "wander_event") return;
-
-      events.emit(e.data.event.name, e.data.event.value);
-    }
-  );
 }

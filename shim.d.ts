@@ -6,6 +6,7 @@ import type {
   AuthRequestMessageData,
   AuthResult
 } from "~utils/auth/auth.types";
+import { EmbeddedCall } from "~utils/embedded/utils/messages/embedded-messages.types.ts";
 
 declare module "@arconnect/webext-bridge" {
   export interface ProtocolMap {
@@ -89,22 +90,22 @@ declare module "@arconnect/webext-bridge" {
     // EMBEDDED:
 
     embedded_auth: {
-      data: EmbeddedAuthMessageData;
+      data: EmbeddedCall<EmbeddedAuthMessageData>;
       return: void;
     };
 
     embedded_balance: {
-      data: EmbeddedBalanceMessageData;
+      data: EmbeddedCall<EmbeddedBalanceMessageData>;
       return: void;
     };
 
     embedded_resize: {
-      data: EmbeddedResizeMessageData;
+      data: EmbeddedCall<EmbeddedResizeMessageData>;
       return: void;
     };
 
     embedded_close: {
-      data: void;
+      data: EmbeddedCall<void>;
       return: void;
     };
 

@@ -1,4 +1,8 @@
-import { Storage as PlasmoStorage } from "@plasmohq/storage";
+import {
+  Storage as PlasmoStorage,
+  type StorageCallbackMap,
+  type StorageWatchCallback
+} from "@plasmohq/storage";
 import {
   EnhancedStorage,
   type ItemStorageOptions,
@@ -19,6 +23,9 @@ export interface StorageMockInterface extends PlasmoStorage {
     items: Record<string, any>,
     options?: ItemStorageOptions
   ): Promise<void>;
+  watch(callbackMap: StorageCallbackMap): boolean;
+  unwatch(callbackMap: StorageCallbackMap): null;
+  unwatchAll(): void;
   setCache<T>(key: string, value: T, maxAge?: number): Promise<void>;
   setPreference<T>(key: string, value: T): Promise<void>;
   setTemporary<T>(key: string, value: T, maxAge?: number): Promise<void>;
@@ -117,8 +124,10 @@ export class StorageMock extends PlasmoStorage implements StorageMockInterface {
     rawValue: any,
     options?: ItemStorageOptions
   ): Promise<void> {
-    return new Promise((resolve) => {
+    return new Promise(async (resolve) => {
+      await this.storePrevValue(key);
       this.storage.setItem(key, rawValue, options);
+      this.callWatchers(key, rawValue);
       resolve();
     });
   }
@@ -140,7 +149,9 @@ export class StorageMock extends PlasmoStorage implements StorageMockInterface {
 
   removeItem(key: string): Promise<void> {
     return new Promise<void>((resolve) => {
+      this.storePrevValue(key);
       this.storage.removeItem(key);
+      this.callWatchers(key, undefined);
       resolve();
     });
   }
@@ -159,6 +170,59 @@ export class StorageMock extends PlasmoStorage implements StorageMockInterface {
     return new Promise<void>(() => {
       this.storage.clear();
     });
+  };
+
+  // WATCH:
+
+  watchers: Record<string, StorageWatchCallback[]> = {};
+  oldValues: Record<string, any> = {};
+
+  async storePrevValue(key: string) {
+    this.oldValues[key] = await this.get(key);
+  }
+
+  callWatchers(key: string, newValue: any) {
+    const oldValue = this.oldValues[key];
+
+    this.watchers[key]?.forEach((callback) => {
+      try {
+        callback(
+          {
+            newValue,
+            oldValue
+          },
+          this.area
+        );
+      } catch (err) {
+        console.warn("Error calling watcher:", err);
+      }
+    });
+  }
+
+  watch = (callbackMap: StorageCallbackMap) => {
+    Object.entries(callbackMap).forEach(([key, callback]) => {
+      this.watchers[key] ??= [];
+      this.watchers[key].push(callback);
+    });
+
+    return true;
+  };
+
+  unwatch = (callbackMap: StorageCallbackMap) => {
+    Object.entries(callbackMap).forEach(([key, callback]) => {
+      const watchers = this.watchers[key] || [];
+      const indexToDelete = watchers.indexOf(callback);
+
+      if (indexToDelete !== -1) {
+        watchers.splice(indexToDelete, 1);
+      }
+    });
+
+    return null;
+  };
+
+  unwatchAll = () => {
+    this.watchers = {};
   };
 
   // unpartitioned storage:

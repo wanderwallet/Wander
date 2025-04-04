@@ -1,5 +1,6 @@
 // INCOMING MESSAGES (iframe => SDK):
 
+import { InjectedEvents } from "wallet-api/src/utils/events";
 import { BalanceInfo, RouteConfig } from "../../wander-embedded.types";
 
 // embedded_auth:
@@ -80,6 +81,26 @@ export type IncomingMessage =
   | IncomingRequestMessage;
 
 export type IncomingMessageId = IncomingMessage["type"];
+
+// INCOMING EVENT MESSAGES (iframe => SDK => dApp (mitt)):
+
+export interface EventMessageData<
+  K extends keyof InjectedEvents = keyof InjectedEvents
+> {
+  name: K;
+  value: InjectedEvents[K];
+}
+
+export type EventMessage<
+  K extends keyof InjectedEvents = keyof InjectedEvents
+> = BaseIncomingMessage<"event", EventMessageData<K>>;
+
+// INCOMING WALLET SWITCH MESSAGE
+
+export type WalletSwitchMessage = BaseIncomingMessage<
+  "switch_wallet_event",
+  string | null
+>;
 
 // OUTGOING MESSAGES (SDK => iframe):
 
