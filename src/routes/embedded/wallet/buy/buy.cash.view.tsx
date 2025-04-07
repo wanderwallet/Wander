@@ -79,6 +79,7 @@ export function WalletBuyCashEmbeddedView() {
 
   // Function to get display amount for USD/fiat equivalent
   const getDisplayAmount = () => {
+    console.log({ arConversion, quote, purchaseAmount });
     if (arConversion) {
       const symbol = getSymbolFromCurrency(selectedCurrency?.symbol || "USD");
       // If arConversion is true, show the fiat equivalent
@@ -547,7 +548,7 @@ const PaymentSelector = ({
               <SelectorItem
                 key={payment.id}
                 icon={paymentIcon}
-                title={paymentMethods(payment) || payment.name}
+                title={paymentMethods(payment)}
                 subtitle={`Processing time ${
                   payment.processingTime || "standard"
                 }`}

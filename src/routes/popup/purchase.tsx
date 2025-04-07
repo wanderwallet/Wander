@@ -31,6 +31,7 @@ import { useStorage } from "@plasmohq/storage/hook";
 import { WarningIcon } from "~components/popup/Token";
 import { Flex } from "~components/common/Flex";
 import { useTransak } from "~utils/transak/transak.hooks";
+import { paymentMethods } from "~utils/ramps";
 
 export function PurchaseView() {
   const { navigate } = useLocation();
@@ -278,7 +279,7 @@ export function PurchaseView() {
             label={browser.i18n.getMessage("buy_screen_payment_method_label")}
             onClick={() => setShowPaymentSelector(true)}
             disabled={!paymentMethod}
-            body={paymentMethod?.name}
+            body={paymentMethods(paymentMethod)}
             icon={
               <div
                 style={{
@@ -402,7 +403,7 @@ const PaymentSelectorScreen = ({
               <ListItem
                 key={index}
                 small
-                title={payment.name}
+                title={paymentMethods(payment)}
                 subtitle={`processing time ${payment.processingTime}`}
                 img={!isWireTransfer && !isCashApp && payment.icon}
                 onClick={() => {
