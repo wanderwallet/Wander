@@ -18,15 +18,11 @@ import {
 } from "@untitled-ui/icons-react";
 import styled from "styled-components";
 import HeadV2 from "~components/popup/HeadV2";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { PageType, trackPage } from "~utils/analytics";
-import type { PaymentType, Quote } from "~lib/onramper";
 import { useLocation } from "~wallets/router/router.utils";
 import { ExtensionStorage } from "~utils/storage";
-import { useDebounce } from "~wallets/hooks";
-import { retryWithDelay } from "~utils/promises/retry";
 import SliderMenu from "~components/SliderMenu";
-import { paymentMethods } from "~utils/ramps";
 import { useTheme } from "styled-components";
 import arLogo from "url:/assets/ecosystem/ar-logo.svg";
 import CommonImage from "~components/common/Image";
@@ -34,34 +30,41 @@ import getSymbolFromCurrency from "currency-symbol-map";
 import { useStorage } from "@plasmohq/storage/hook";
 import { WarningIcon } from "~components/popup/Token";
 import { Flex } from "~components/common/Flex";
-
-const BASE_URL = "https://api.transak.com";
+import { useTransak } from "~utils/transak/transak.hooks";
 
 export function PurchaseView() {
   const { navigate } = useLocation();
+  const theme = useTheme();
 
-  const youPayInput = useInput();
-  const debouncedYouPayInput = useDebounce(youPayInput.state, 300);
-  const [arConversion, setArConversion] = useState<boolean>(false);
-  const [loading, setLoading] = useState(false);
-  const [invalidFiatAmount, setInvalidFiatAmount] = useState(false);
-  const [countryCode, setCountryCode] = useState("");
-  const [currencies, setCurrencies] = useState<any[]>([]);
-  const [selectedCurrency, setSelectedCurrency] = useState<any | null>();
-  const [paymentMethod, setPaymentMethod] = useState<PaymentType | null>();
   const [showPaymentSelector, setShowPaymentSelector] = useState(false);
   const [showCurrencySelector, setShowCurrencySelector] = useState(false);
-  const [quote, setQuote] = useState<Quote | null>();
-  const [exchangeRate, setExchangeRate] = useState<number>(0);
-  const [unavailableQuote, setUnavailableQuote] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-  const { setToast } = useToasts();
-  const theme = useTheme();
 
   const [activeAddress] = useStorage<string>({
     key: "active_address",
     instance: ExtensionStorage
   });
+
+  const {
+    purchaseAmount,
+    arConversion,
+    loading,
+    invalidFiatAmount,
+    currencies,
+    selectedCurrency,
+    paymentMethod,
+    quote,
+    exchangeRate,
+    unavailableQuote,
+    error,
+
+    setPurchaseAmount,
+    setArConversion,
+    setPaymentMethod,
+
+    handleUpdateCurrency,
+    createPurchaseUrl,
+    handleAmountChange
+  } = useTransak(process.env.PLASMO_PUBLIC_TRANSAK_API_KEY, false);
 
   const handlePaymentClose = () => {
     setShowPaymentSelector(false);
@@ -71,229 +74,18 @@ export function PurchaseView() {
     setShowCurrencySelector(false);
   };
 
-  const showTransakErrorToast = () => {
-    setToast({
-      type: "error",
-      content: browser.i18n.getMessage("transak_unavailable"),
-      duration: 2400
-    });
-  };
-
-  const finishUp = (quote: Quote | null) => {
-    if (quote) {
-      const rate = (quote.fiatAmount - quote.totalFee) / quote.cryptoAmount;
-      setExchangeRate(rate);
-      setUnavailableQuote(false);
-    } else {
-      setExchangeRate(0);
-      setUnavailableQuote(true);
-    }
-    setQuote(quote);
-    setLoading(false);
-  };
-
-  const handleUpdateCurrency = useCallback((currency: any) => {
-    if (currency) {
-      setSelectedCurrency(currency);
-    }
-
-    const activePaymentOptions = (currency?.paymentOptions ?? []).filter(
-      (payment: any) => payment.isActive
-    );
-    setPaymentMethod(activePaymentOptions[0] || null);
-  }, []);
-
   //segment
   useEffect(() => {
     trackPage(PageType.TRANSAK_PURCHASE);
   }, []);
 
-  useEffect(() => {
-    const fetchCurrencies = async () => {
-      const url = `${BASE_URL}/api/v2/currencies/fiat-currencies?apiKey=${process.env.PLASMO_PUBLIC_TRANSAK_API_KEY}`;
-      try {
-        const response = await fetch(url);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        const currencyInfo = data.response
-          .filter((currency) => currency.isAllowed)
-          .map((currency) => ({
-            symbol: currency.symbol,
-            logo: ["DZD", "CVE"].includes(currency.symbol)
-              ? `https://kapowaz.github.io/square-flags/flags/${currency.logoSymbol.toLowerCase()}.svg`
-              : `https://cdn.onramper.com/icons/tokens/${currency.symbol.toLowerCase()}.svg`,
-            name: currency.name,
-            paymentOptions: currency.paymentOptions
-          }));
-        setCurrencies(currencyInfo || []);
-        setSelectedCurrency(currencyInfo[0]);
-        setPaymentMethod(currencyInfo[0].paymentOptions[0]);
-      } catch (error) {
-        console.error("Failed to fetch currencies:", error);
-      }
-    };
-
-    async function fetchCountryCode() {
-      if (countryCode) return;
-      try {
-        const responseJson = await (
-          await fetch(`${BASE_URL}/fiat/public/v1/get/country`)
-        ).json();
-        setCountryCode(responseJson.ipCountryCode);
-      } catch {}
-    }
-
-    fetchCurrencies();
-    fetchCountryCode();
-  }, []);
-
-  useEffect(() => {
-    const fetchQuote = async () => {
-      setLoading(true);
-      setQuote(null);
-      if (
-        Number(debouncedYouPayInput) <= 0 ||
-        debouncedYouPayInput === "" ||
-        !selectedCurrency ||
-        !paymentMethod
-      ) {
-        finishUp(null);
-        return;
-      }
-      if (
-        !arConversion &&
-        (+debouncedYouPayInput > paymentMethod.maxAmount ||
-          +debouncedYouPayInput < paymentMethod.minAmount)
-      ) {
-        const isExceedMaxAmount =
-          +debouncedYouPayInput > paymentMethod.maxAmount;
-        setError(
-          browser.i18n.getMessage(
-            isExceedMaxAmount ? "max_buy_amount" : "min_buy_amount",
-            [
-              isExceedMaxAmount
-                ? paymentMethod.maxAmount
-                : paymentMethod.minAmount,
-              selectedCurrency?.symbol
-            ]
-          )
-        );
-        finishUp(null);
-        return;
-      }
-      const baseUrl = `${BASE_URL}/api/v1/pricing/public/quotes`;
-      const params = new URLSearchParams({
-        partnerApiKey: process.env.PLASMO_PUBLIC_TRANSAK_API_KEY,
-        fiatCurrency: selectedCurrency?.symbol,
-        cryptoCurrency: "AR",
-        isBuyOrSell: "BUY",
-        network: "mainnet",
-        paymentMethod: paymentMethod.id
-      });
-      if (arConversion) {
-        params.append("cryptoAmount", debouncedYouPayInput);
-      } else {
-        params.append("fiatAmount", debouncedYouPayInput);
-      }
-
-      if (countryCode) {
-        params.append("quoteCountryCode", countryCode);
-      }
-
-      const url = `${baseUrl}?${params.toString()}`;
-
-      try {
-        const response = await retryWithDelay(() => fetch(url));
-        if (!response.ok) {
-          try {
-            const resJson = await response.json();
-            if (resJson?.error?.message) {
-              // TODO: decide whether to notify errors by toast or warning styled component
-              // to make it consistent with mobile app
-              // setToast({
-              //   type: "error",
-              //   content: resJson?.error?.message,
-              //   duration: 2400
-              // });
-              setError(resJson?.error?.message);
-            } else {
-              throw new Error("Network response was not ok");
-            }
-          } catch {
-            showTransakErrorToast();
-          }
-          finishUp(null);
-          return;
-        }
-        const data = await response.json();
-        const updatedQuote = data.response as Quote;
-        finishUp(updatedQuote);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        showTransakErrorToast();
-        finishUp(null);
-      }
-      setLoading(false);
-    };
-
-    if (debouncedYouPayInput) {
-      fetchQuote();
-    } else {
-      setQuote(null);
-      setExchangeRate(0);
-      setUnavailableQuote(false);
-    }
-  }, [debouncedYouPayInput, selectedCurrency, paymentMethod, arConversion]);
-
-  useEffect(() => {
-    setExchangeRate(0);
-  }, [selectedCurrency]);
-
-  useEffect(() => {
-    if (
-      arConversion &&
-      quote &&
-      paymentMethod &&
-      (quote.fiatAmount > paymentMethod.maxAmount ||
-        quote.fiatAmount < paymentMethod.minAmount)
-    ) {
-      const isExceedMaxAmount = quote.fiatAmount > paymentMethod.maxAmount;
-      setError(
-        browser.i18n.getMessage(
-          isExceedMaxAmount ? "max_buy_amount" : "min_buy_amount",
-          [
-            isExceedMaxAmount
-              ? paymentMethod.maxAmount
-              : paymentMethod.minAmount,
-            selectedCurrency?.symbol
-          ]
-        )
-      );
-      setInvalidFiatAmount(true);
-    } else {
-      setInvalidFiatAmount(false);
-    }
-  }, [quote, arConversion, paymentMethod, selectedCurrency]);
-
   const buyAR = async () => {
     try {
-      const baseUrl = "https://global.transak.com/";
-      const params = new URLSearchParams({
-        apiKey: process.env.PLASMO_PUBLIC_TRANSAK_API_KEY,
-        defaultCryptoCurrency: "AR",
-        defaultFiatAmount: quote.fiatAmount.toString(),
-        defaultFiatCurrency: quote.fiatCurrency,
-        walletAddress: activeAddress,
-        defaultPaymentMethod: quote.paymentMethod
-      });
-      const url = `${baseUrl}?${params.toString()}`;
-      browser.tabs.create({
-        url: url
-      });
-      navigate("/purchase-pending");
+      const url = createPurchaseUrl(activeAddress);
+      if (url) {
+        browser.tabs.create({ url: url });
+        navigate("/purchase-pending");
+      }
     } catch (error) {
       console.error("Error buying AR:", error);
     }
@@ -309,7 +101,7 @@ export function PurchaseView() {
       <HeadV2 title="Buy" />
       <Wrapper>
         <Top>
-          {(unavailableQuote || invalidFiatAmount) && (
+          {(unavailableQuote || invalidFiatAmount) && error && (
             <WarningWrapper>
               <WarningContent>
                 <WarningIcon /> {error}
@@ -319,14 +111,15 @@ export function PurchaseView() {
           <Input
             stacked
             sizeVariant="large"
+            value={purchaseAmount}
             onInput={handleInputChange}
+            onChange={(e) => handleAmountChange(e.target.value)}
             inputMode="numeric"
             placeholder={
               arConversion
                 ? "0"
                 : `${getSymbolFromCurrency(selectedCurrency?.symbol) || ""}0`
             }
-            {...youPayInput.bindings}
             fullWidth
             hasRightIcon
             iconLeft={
@@ -386,9 +179,9 @@ export function PurchaseView() {
             onClick={() => {
               if (quote) {
                 if (arConversion) {
-                  youPayInput.setState(quote.fiatAmount.toString());
+                  setPurchaseAmount(quote.fiatAmount.toString());
                 } else {
-                  youPayInput.setState(quote.cryptoAmount.toString());
+                  setPurchaseAmount(quote.cryptoAmount.toString());
                 }
               }
               setArConversion(!arConversion);
@@ -420,7 +213,6 @@ export function PurchaseView() {
                 ? browser.i18n.getMessage("buy_screen_pay")
                 : browser.i18n.getMessage("buy_screen_receive")
             }
-            // label={arConversion ? "You Pay" : "You Receive"}
             onClick={() => setShowCurrencySelector(true)}
             body={
               loading ? (
@@ -446,7 +238,7 @@ export function PurchaseView() {
               )
             }
           />
-          {exchangeRate && youPayInput.bindings.value ? (
+          {exchangeRate && purchaseAmount ? (
             <div
               style={{
                 display: "flex",
@@ -486,7 +278,7 @@ export function PurchaseView() {
             label={browser.i18n.getMessage("buy_screen_payment_method_label")}
             onClick={() => setShowPaymentSelector(true)}
             disabled={!paymentMethod}
-            body={paymentMethods(paymentMethod)}
+            body={paymentMethod?.name}
             icon={
               <div
                 style={{
@@ -602,7 +394,7 @@ const PaymentSelectorScreen = ({
   return (
     <SelectorWrapper>
       <Flex direction="column" gap={8}>
-        {payments.map((payment, index) => {
+        {payments?.map((payment, index) => {
           if (payment.isActive) {
             const isWireTransfer = payment.id === "pm_us_wire_bank_transfer";
             const isCashApp = payment.id === "pm_cash_app";
@@ -610,7 +402,7 @@ const PaymentSelectorScreen = ({
               <ListItem
                 key={index}
                 small
-                title={paymentMethods(payment)}
+                title={payment.name}
                 subtitle={`processing time ${payment.processingTime}`}
                 img={!isWireTransfer && !isCashApp && payment.icon}
                 onClick={() => {
@@ -632,8 +424,8 @@ const PaymentSelectorScreen = ({
 
 const CurrencySelectorScreen = ({
   onClose,
-  updateCurrency,
-  currencies
+  currencies,
+  updateCurrency
 }: {
   onClose: () => void;
   currencies: any[];
