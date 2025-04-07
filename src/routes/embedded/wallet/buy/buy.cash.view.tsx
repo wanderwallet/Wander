@@ -22,6 +22,8 @@ import {
 import { paymentMethods } from "~utils/ramps";
 import browser from "webextension-polyfill";
 import { useInput } from "@arconnect/components-rebrand";
+import AutosizeInput from "react-input-autosize";
+import arLogo from "url:/assets/ecosystem/ar-logo.svg";
 
 const TRANSAK_API_KEY = import.meta.env?.VITE_TRANSAK_API_KEY;
 
@@ -113,24 +115,29 @@ export function WalletBuyCashEmbeddedView() {
       onBackButtonClick={() => navigate("/wallet")}
       style={{ padding: "32px" }}
     >
-      <Input
-        value={purchaseAmount}
-        onChange={(e) => handleAmountChange(e.target.value)}
-        placeholder="0.00"
-        isCentered={true}
-        autoSize={true}
-        style={{
-          fontSize: "32px",
-          fontWeight: "500",
-          color: "#121212",
-          border: "none",
-          padding: "8px 0",
-          background: "transparent"
-        }}
-      />
-      <Text variant="bodyLg" style={{ fontWeight: "500" }}>
-        {arConversion ? "AR" : selectedCurrency?.symbol || "USD"}
-      </Text>
+      <div style={{ display: "flex", alignItems: "baseline" }}>
+        <AutosizeInput
+          value={purchaseAmount}
+          onChange={(e) => handleAmountChange(e.target.value)}
+          placeholder="0"
+          inputStyle={{
+            fontSize: "40px",
+            fontWeight: "500",
+            color: "#121212",
+            border: "none",
+            background: "transparent"
+          }}
+        />
+        <Text variant="bodyLg" style={{ fontWeight: "500" }}>
+          {arConversion ? "AR" : selectedCurrency?.symbol || "USD"}
+        </Text>
+        <img
+          src={arLogo}
+          alt="AR"
+          style={{ width: "16px", height: "16px", marginLeft: "4px" }}
+        />
+      </div>
+
       <Text variant="bodySm" style={{ color: "#666666", marginTop: "4px" }}>
         {getDisplayAmount()}
       </Text>
