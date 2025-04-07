@@ -226,18 +226,24 @@ export const useAskPassword = (): boolean => {
   return askPassword;
 };
 
-export const useTransactions = (activeAddress: string) => {
+export const useTransactions = (activeAddress: string, limit?: number) => {
   const defaultCursors = ["", "", "", "", ""];
   const defaultHasNextPages = [true, true, true, true, true];
 
+  const [count, setCount] = useState({ current: 0, actual: 0 });
   const [cursors, setCursors] = useState(defaultCursors);
   const [hasNextPages, setHasNextPages] = useState(defaultHasNextPages);
   const [transactions, setTransactions] = useState<GroupedTransactions>({});
   const [loading, setLoading] = useState(false);
 
+  const hasNextPage = useMemo(
+    () => hasNextPages.some((v) => v === true),
+    [hasNextPages]
+  );
+
   const fetchTransactions = useCallback(async () => {
     try {
-      if (!activeAddress) return;
+      if (!activeAddress || !hasNextPage) return;
 
       setLoading(true);
 
@@ -348,6 +354,17 @@ export const useTransactions = (activeAddress: string) => {
         }
       });
 
+      const actualCount = combinedTransactions.length;
+
+      if (limit) {
+        combinedTransactions = combinedTransactions.slice(0, limit);
+      }
+
+      setCount((prev) => ({
+        current: prev.current + combinedTransactions.length,
+        actual: prev.actual + actualCount
+      }));
+
       const groupedTransactions = combinedTransactions.reduce(
         (acc, transaction) => {
           const monthYear = `${transaction.month}-${transaction.year}`;
@@ -384,14 +401,21 @@ export const useTransactions = (activeAddress: string) => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [activeAddress, hasNextPage, transactions, limit]);
 
   useEffect(() => {
+    setCursors(defaultCursors);
+    setHasNextPages(defaultHasNextPages);
+    setCount({ current: 0, actual: 0 });
+    setTransactions({});
     fetchTransactions();
-  }, []);
+  }, [activeAddress]);
 
   return {
     transactions,
-    loading
+    loading,
+    hasNextPage,
+    count,
+    fetchTransactions
   };
 };

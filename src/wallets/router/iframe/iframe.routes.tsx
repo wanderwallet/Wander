@@ -44,6 +44,7 @@ import { AccountExportWalletEmbeddedView } from "~routes/embedded/account/export
 import { WalletHomeEmbeddedView } from "~routes/embedded/wallet/home/wallet.view";
 import { WalletReceiveEmbeddedView } from "~routes/embedded/wallet/receive/receive.view";
 import { WalletTransactionsEmbeddedView } from "~routes/embedded/wallet/transactions/transactions.view";
+import { WalletTransactionsHistoryEmbeddedView } from "~routes/embedded/wallet/transactions-history/transactions-history.view";
 import { WalletSettingsCustomEmbeddedView } from "~routes/embedded/wallet/settings/settings.custom.view";
 import { WalletTransactionSignEmbeddedView } from "~routes/embedded/wallet/home/transaction-sign/transaction.sign.view";
 import { WalletTransactionDetailsEmbeddedView } from "~routes/embedded/wallet/home/transaction-details/transaction.details.view";
@@ -89,6 +90,7 @@ export type EmbeddedRoutePath =
   | "/wallet/receive"
   | "/wallet/receive/options"
   | "/wallet/transactions"
+  | "/wallet/transactions-history"
   | "/wallet/settings"
   | "/wallet/settings/custom"
   | "/wallet/transaction"
@@ -145,6 +147,7 @@ export const EmbeddedPaths = {
   WalletReceiveEmbeddedView: "/wallet/receive",
   WalletReceiveOptionsEmbeddedView: "/wallet/receive/options",
   WalletTransactionsEmbeddedView: "/wallet/transactions",
+  WalletTransactionsHistoryEmbeddedView: "/wallet/transactions-history",
   WalletSettingsEmbeddedView: "/wallet/settings",
   WalletSettingsCustomEmbeddedView: "/wallet/settings/custom",
   WalletTransactionSignEmbeddedView: "/wallet/transaction",
@@ -285,6 +288,10 @@ const IFRAME_OWN_ROUTES = [
   {
     path: EmbeddedPaths.WalletTransactionsEmbeddedView,
     component: WalletTransactionsEmbeddedView
+  },
+  {
+    path: EmbeddedPaths.WalletTransactionsHistoryEmbeddedView,
+    component: WalletTransactionsHistoryEmbeddedView
   },
   {
     path: EmbeddedPaths.WalletSettingsEmbeddedView,
