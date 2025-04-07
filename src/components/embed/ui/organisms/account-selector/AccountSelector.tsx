@@ -1,3 +1,4 @@
+import copy from "copy-to-clipboard";
 import {
   Avatar,
   Copyable,
@@ -7,9 +8,12 @@ import {
 } from "~components/embed/ui";
 import Dropdown from "~components/embed/ui/molecules/dropdown/Dropdown/Dropdown";
 import DropdownItem from "~components/embed/ui/molecules/dropdown/DropdownItem/DropdownItem";
+import { useEmbedded } from "~utils/embedded/embedded.hooks";
+import type { Wallet } from "~utils/embedded/embedded.types";
 
 import type { LocalWallet, StoredWallet } from "~wallets";
 import type { HardwareWallet } from "~wallets/hardware";
+import { setActiveWallet, useActiveWallet } from "~wallets/hooks";
 import { Link } from "~wallets/router/components/link/Link";
 
 export function AccountSelector({
@@ -26,6 +30,10 @@ export function AccountSelector({
         type: string;
       };
 }) {
+  const handleAccountClick = (wallet: Wallet) => {
+    setActiveWallet(wallet.address);
+  };
+
   return (
     <div style={{ alignSelf: "flex-start" }}>
       <Dropdown
@@ -56,7 +64,7 @@ export function AccountSelector({
         content={
           <>
             {wallets.map((wallet, id) => (
-              <DropdownItem key={id} onClick={() => console.log("clicked")}>
+              <DropdownItem key={id} onClick={handleAccountClick}>
                 <Row
                   key={wallet.address}
                   alignment="center"
@@ -80,6 +88,9 @@ export function AccountSelector({
                     value={wallet.address}
                     style={{
                       maxWidth: 140
+                    }}
+                    onClick={() => {
+                      copy(wallet.address);
                     }}
                   />
                 </Row>
