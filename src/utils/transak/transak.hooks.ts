@@ -3,10 +3,16 @@ import type { PaymentType, Quote } from "~lib/onramper";
 import { useDebounce } from "~wallets/hooks";
 import { retryWithDelay } from "~utils/promises/retry";
 import browser from "webextension-polyfill";
+import { useStorage, ExtensionStorage } from "~utils/storage";
+import { useLocation } from "~wallets/router/router.utils";
+import type { WanderRoutePath } from "~wallets/router/router.types";
+import getSymbolFromCurrency from "currency-symbol-map";
+import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 
 export const BASE_URL = "https://api.transak.com";
 
 export const useTransak = (apiKey: string, initialConversion = false) => {
+  const { navigate } = useLocation();
   const [purchaseAmount, setPurchaseAmount] = useState<string>("");
   const debouncedAmount = useDebounce(purchaseAmount, 300);
   const [arConversion, setArConversion] = useState<boolean>(initialConversion);
@@ -20,6 +26,13 @@ export const useTransak = (apiKey: string, initialConversion = false) => {
   const [exchangeRate, setExchangeRate] = useState<number>(0);
   const [unavailableQuote, setUnavailableQuote] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPaymentSelector, setShowPaymentSelector] = useState(false);
+  const [showCurrencySelector, setShowCurrencySelector] = useState(false);
+
+  const [activeAddress] = useStorage<string>({
+    key: "active_address",
+    instance: ExtensionStorage
+  });
 
   // Handle amount input change
   const handleAmountChange = (value: string) => {
@@ -53,6 +66,20 @@ export const useTransak = (apiKey: string, initialConversion = false) => {
     );
     setPaymentMethod(activePaymentOptions[0] || null);
   }, []);
+
+  // Function to get display amount for USD/fiat equivalent
+  const getDisplayAmount = () => {
+    if (arConversion) {
+      const symbol = getSymbolFromCurrency(selectedCurrency?.symbol || "USD");
+      // If arConversion is true, show the fiat equivalent
+      return `${symbol}${quote?.fiatAmount.toFixed(2) || "0.00"} ${
+        selectedCurrency?.symbol || "USD"
+      }`;
+    } else {
+      // If arConversion is false, show the AR equivalent
+      return `${quote?.cryptoAmount.toFixed(6) || "0.00"} AR`;
+    }
+  };
 
   // Fetch available currencies
   useEffect(() => {
@@ -237,8 +264,45 @@ export const useTransak = (apiKey: string, initialConversion = false) => {
     return `${baseUrl}?${params.toString()}`;
   };
 
+  const openCurrencySelector = (e?: React.MouseEvent) => {
+    if (e) e.preventDefault();
+    setShowCurrencySelector(true);
+  };
+
+  const openPaymentSelector = (e?: React.MouseEvent) => {
+    if (e) e.preventDefault();
+    setShowPaymentSelector(true);
+  };
+
+  const closeCurrencySelector = (e?: React.MouseEvent) => {
+    if (e) e.preventDefault();
+    setShowCurrencySelector(false);
+  };
+
+  const closePaymentSelector = (e?: React.MouseEvent) => {
+    if (e) e.preventDefault();
+    setShowPaymentSelector(false);
+  };
+
+  const openTransak = async (navigateTo: string) => {
+    try {
+      const url = createPurchaseUrl(activeAddress);
+      if (url) {
+        if (IS_EMBEDDED_APP) {
+          window.open(url, "_blank");
+        } else {
+          browser.tabs.create({ url });
+        }
+        navigate(navigateTo as WanderRoutePath);
+      }
+    } catch (error) {
+      console.error("Error buying AR:", error);
+    }
+  };
+
   return {
     // State
+    activeAddress,
     purchaseAmount,
     arConversion,
     loading,
@@ -250,15 +314,25 @@ export const useTransak = (apiKey: string, initialConversion = false) => {
     exchangeRate,
     unavailableQuote,
     error,
+    showCurrencySelector,
+    showPaymentSelector,
 
     // Setters
     setPurchaseAmount,
     setArConversion,
     setPaymentMethod,
+    setShowCurrencySelector,
+    setShowPaymentSelector,
 
     // Actions
     handleAmountChange,
     handleUpdateCurrency,
-    createPurchaseUrl
+    createPurchaseUrl,
+    openCurrencySelector,
+    openPaymentSelector,
+    closeCurrencySelector,
+    closePaymentSelector,
+    openTransak,
+    getDisplayAmount
   };
 };

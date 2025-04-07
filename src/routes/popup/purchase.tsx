@@ -2,7 +2,6 @@ import {
   Text,
   Input,
   useInput,
-  useToasts,
   Section,
   Button,
   Loading,
@@ -18,32 +17,23 @@ import {
 } from "@untitled-ui/icons-react";
 import styled from "styled-components";
 import HeadV2 from "~components/popup/HeadV2";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { PageType, trackPage } from "~utils/analytics";
-import { useLocation } from "~wallets/router/router.utils";
 import { ExtensionStorage } from "~utils/storage";
 import SliderMenu from "~components/SliderMenu";
 import { useTheme } from "styled-components";
 import arLogo from "url:/assets/ecosystem/ar-logo.svg";
 import CommonImage from "~components/common/Image";
 import getSymbolFromCurrency from "currency-symbol-map";
-import { useStorage } from "@plasmohq/storage/hook";
 import { WarningIcon } from "~components/popup/Token";
 import { Flex } from "~components/common/Flex";
 import { useTransak } from "~utils/transak/transak.hooks";
 import { paymentMethods } from "~utils/ramps";
 
+const TRANSAK_API_KEY = process.env.PLASMO_PUBLIC_TRANSAK_API_KEY;
+
 export function PurchaseView() {
-  const { navigate } = useLocation();
   const theme = useTheme();
-
-  const [showPaymentSelector, setShowPaymentSelector] = useState(false);
-  const [showCurrencySelector, setShowCurrencySelector] = useState(false);
-
-  const [activeAddress] = useStorage<string>({
-    key: "active_address",
-    instance: ExtensionStorage
-  });
 
   const {
     purchaseAmount,
@@ -57,45 +47,29 @@ export function PurchaseView() {
     exchangeRate,
     unavailableQuote,
     error,
-
     setPurchaseAmount,
     setArConversion,
     setPaymentMethod,
-
     handleUpdateCurrency,
-    createPurchaseUrl,
-    handleAmountChange
-  } = useTransak(process.env.PLASMO_PUBLIC_TRANSAK_API_KEY, false);
+    handleAmountChange,
+    openCurrencySelector,
+    openPaymentSelector,
+    closeCurrencySelector,
+    closePaymentSelector,
+    showCurrencySelector,
+    showPaymentSelector,
+    openTransak
+  } = useTransak(TRANSAK_API_KEY, false);
 
-  const handlePaymentClose = () => {
-    setShowPaymentSelector(false);
-  };
-
-  const handleCurrencyClose = () => {
-    setShowCurrencySelector(false);
+  const handleInputChange = (event: React.FormEvent<HTMLInputElement>) => {
+    const input = event.currentTarget;
+    input.value = input.value.replace(/[^0-9.]/g, "");
   };
 
   //segment
   useEffect(() => {
     trackPage(PageType.TRANSAK_PURCHASE);
   }, []);
-
-  const buyAR = async () => {
-    try {
-      const url = createPurchaseUrl(activeAddress);
-      if (url) {
-        browser.tabs.create({ url: url });
-        navigate("/purchase-pending");
-      }
-    } catch (error) {
-      console.error("Error buying AR:", error);
-    }
-  };
-
-  const handleInputChange = (event: React.FormEvent<HTMLInputElement>) => {
-    const input = event.currentTarget;
-    input.value = input.value.replace(/[^0-9.]/g, "");
-  };
 
   return (
     <>
@@ -146,7 +120,7 @@ export function PurchaseView() {
                   <AR />
                 ) : (
                   <Tag
-                    onClick={() => setShowCurrencySelector(true)}
+                    onClick={openCurrencySelector}
                     currency={selectedCurrency?.symbol || ""}
                     currencyLogo={selectedCurrency?.logo || ""}
                     iconColor={theme.secondaryText}
@@ -214,7 +188,7 @@ export function PurchaseView() {
                 ? browser.i18n.getMessage("buy_screen_pay")
                 : browser.i18n.getMessage("buy_screen_receive")
             }
-            onClick={() => setShowCurrencySelector(true)}
+            onClick={openCurrencySelector}
             body={
               loading ? (
                 <Loading />
@@ -233,7 +207,7 @@ export function PurchaseView() {
                 <Tag
                   currency={selectedCurrency?.symbol || ""}
                   currencyLogo={selectedCurrency?.logo || ""}
-                  onClick={() => setShowCurrencySelector(true)}
+                  onClick={openCurrencySelector}
                   iconColor={theme.secondaryText}
                 />
               )
@@ -277,7 +251,7 @@ export function PurchaseView() {
           <InputButton
             style={{ background: theme.surfaceTertiary }}
             label={browser.i18n.getMessage("buy_screen_payment_method_label")}
-            onClick={() => setShowPaymentSelector(true)}
+            onClick={openPaymentSelector}
             disabled={!paymentMethod}
             body={paymentMethods(paymentMethod)}
             icon={
@@ -288,7 +262,7 @@ export function PurchaseView() {
                   justifyContent: "center"
                 }}
               >
-                <ChevronDown onClick={() => setShowPaymentSelector(true)} />
+                <ChevronDown onClick={openPaymentSelector} />
               </div>
             }
             outerLabel
@@ -297,12 +271,10 @@ export function PurchaseView() {
           <SliderMenu
             title={browser.i18n.getMessage("currency")}
             isOpen={showCurrencySelector}
-            onClose={() => {
-              setShowCurrencySelector(false);
-            }}
+            onClose={closeCurrencySelector}
           >
             <CurrencySelectorScreen
-              onClose={handleCurrencyClose}
+              onClose={closeCurrencySelector}
               updateCurrency={handleUpdateCurrency}
               currencies={currencies}
             />
@@ -311,14 +283,12 @@ export function PurchaseView() {
           <SliderMenu
             title={browser.i18n.getMessage("buy_screen_payment_method")}
             isOpen={showPaymentSelector}
-            onClose={() => {
-              setShowPaymentSelector(false);
-            }}
+            onClose={closePaymentSelector}
           >
             <PaymentSelectorScreen
               payments={selectedCurrency?.paymentOptions}
               updatePayment={setPaymentMethod}
-              onClose={handlePaymentClose}
+              onClose={closePaymentSelector}
             />
           </SliderMenu>
         </Top>
@@ -327,7 +297,7 @@ export function PurchaseView() {
           fullWidth
           onClick={async () => {
             await ExtensionStorage.set("transak_quote", quote);
-            await buyAR();
+            await openTransak("/wallet/buy/success");
           }}
         >
           {!quote ? "Enter amount" : "Review"}
