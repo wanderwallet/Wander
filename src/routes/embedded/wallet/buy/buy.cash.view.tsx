@@ -79,17 +79,12 @@ export function WalletBuyCashEmbeddedView() {
 
   // Function to get display amount for USD/fiat equivalent
   const getDisplayAmount = () => {
-    console.log({ arConversion, quote, purchaseAmount });
     if (arConversion) {
       const symbol = getSymbolFromCurrency(selectedCurrency?.symbol || "USD");
       // If arConversion is true, show the fiat equivalent
-      return quote?.fiatAmount
-        ? `${symbol}${quote.fiatAmount.toFixed(2)} ${
-            selectedCurrency?.symbol || "USD"
-          }`
-        : `${symbol}${
-            purchaseAmount ? Number(purchaseAmount).toFixed(2) : "0.00"
-          } ${selectedCurrency?.symbol || "USD"}`;
+      return `${symbol}${quote?.fiatAmount.toFixed(2) || "0.00"} ${
+        selectedCurrency?.symbol || "USD"
+      }`;
     } else {
       // If arConversion is false, show the AR equivalent
       return quote?.cryptoAmount
