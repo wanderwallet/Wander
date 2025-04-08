@@ -54,11 +54,12 @@ const TransactionItem = ({ transaction }: TransactionItemProps) => {
       style={{ margin: "1rem 0", cursor: "pointer" }}
       onClick={handleTransactionClick}
     >
-      <Row isFullWidth style={{ width: "100%", gap: "0px" }}>
+      <Row isFullWidth style={{ width: "100%" }}>
         <Logo
           src={logoSource}
           alt={transaction.aoInfo?.tickerName}
-          style={{ flexShrink: 0, width: "24px", height: "24px" }}
+          height={24}
+          width={24}
         />
         <Box
           style={{
@@ -66,7 +67,8 @@ const TransactionItem = ({ transaction }: TransactionItemProps) => {
             minWidth: 0,
             width: "100%",
             display: "flex",
-            gap: "0px"
+            gap: "0px",
+            padding: "0px"
           }}
         >
           <Row isFullWidth justifyContent="between" alignment="center">
@@ -94,9 +96,12 @@ const TransactionItem = ({ transaction }: TransactionItemProps) => {
               variant="bodyMd"
               style={{
                 color: "#121212",
-                overflow: "hidden",
                 textOverflow: "ellipsis",
-                whiteSpace: "nowrap"
+                overflowWrap: "break-word",
+                display: "-webkit-box",
+                WebkitBoxOrient: "vertical",
+                WebkitLineClamp: 2,
+                overflow: "hidden"
               }}
             >
               {getFormattedAmount(transaction)}
