@@ -40,7 +40,8 @@ export function WalletHomeAssets({
 
       {hasMoreTokens && (
         <Button
-          variant="link"
+          variant="outlined"
+          hasBorder={false}
           style={{
             color: "var(--color-copyable-text-value)",
             cursor: "pointer",

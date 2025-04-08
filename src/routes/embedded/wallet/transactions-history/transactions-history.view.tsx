@@ -29,7 +29,7 @@ export function WalletTransactionsHistoryEmbeddedView() {
           <Text variant="bodySm">Balance: 5.9980</Text>
         </Row>
       </Box>
-      <Button variant="link" href="/wallet/transactions-history">
+      <Button variant="link" href="#/wallet/transactions-history">
         View all transactions
       </Button>
     </Card>
