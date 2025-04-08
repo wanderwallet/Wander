@@ -30,6 +30,7 @@ import { svgie } from "~utils/svgies";
 import { Action } from "~components/popup/WalletHeader";
 import { MinimizeIcon } from "@iconicicons/react";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
+import { signOut } from "~utils/embedded/embedded.utils";
 
 export interface QuickSettingsViewParams {
   setting?: string;
@@ -144,6 +145,7 @@ export function MenuView({ params }: QuickSettingsViewProps) {
             displayName={setting.displayName}
             icon={setting.icon}
             active={activeSetting === setting.name}
+            isExternalLink={!!setting.externalLink}
             onClick={() => {
               if (setting.externalLink) {
                 browser.tabs.create({
@@ -208,7 +210,14 @@ export function MenuView({ params }: QuickSettingsViewProps) {
             >
               {browser.i18n.getMessage("cancel")}
             </Button>
-            <Button fullWidth onClick={removeDecryptionKey}>
+            <Button
+              fullWidth
+              onClick={
+                import.meta.env?.VITE_IS_EMBEDDED_APP === "1"
+                  ? signOut
+                  : removeDecryptionKey
+              }
+            >
               {browser.i18n.getMessage("sign_out")}
             </Button>
           </div>

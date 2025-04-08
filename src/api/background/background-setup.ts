@@ -1,4 +1,3 @@
-import { onMessage } from "@arconnect/webext-bridge";
 import handleFeeAlarm from "~api/modules/sign/fee";
 import { ExtensionStorage } from "~utils/storage";
 import browser from "webextension-polyfill";
@@ -27,6 +26,7 @@ import {
   handleTabUpdate
 } from "~api/background/handlers/browser/tabs/tabs.handler";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
+import { isomorphicOnMessage } from "~isomorphic-messaging";
 import { handleAuthStateChange } from "./handlers/storage/auth-state-change/auth-state-change.handler";
 import { initInactivityTracking } from "~utils/inactivity/inactivity.utils";
 
@@ -40,8 +40,8 @@ export function setupBackgroundService() {
 
   // MESSAGES:
   // Watch for API call and chunk messages:
-  onMessage("api_call", handleApiCallMessage);
-  onMessage("chunk", handleChunkMessage);
+  isomorphicOnMessage("api_call", handleApiCallMessage);
+  isomorphicOnMessage("chunk", handleChunkMessage);
 
   /*
   if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1") {

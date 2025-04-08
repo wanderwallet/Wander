@@ -151,12 +151,7 @@ export default function WalletSwitcher({ open, close }: Props) {
   const { setToast } = useToasts();
 
   return (
-    <SliderMenu
-      hasHeader={false}
-      title={browser.i18n.getMessage("wallets")}
-      isOpen={open}
-      onClose={close}
-    >
+    <SliderMenu hasHeader={false} isOpen={open} onClose={close}>
       <CloseIcon
         onClick={(e) => {
           e.stopPropagation();

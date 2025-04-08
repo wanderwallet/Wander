@@ -8,7 +8,7 @@ import {
 } from "@arconnect/components-rebrand";
 import type { TokenType } from "~tokens/token";
 import { Token as aoToken } from "ao-tokens";
-import { useStorage } from "~utils/storage";
+import { PersistentStorage, useStorage } from "~utils/storage";
 import { ExtensionStorage } from "~utils/storage";
 import { removeToken } from "~tokens";
 import { useEffect, useMemo, useState } from "react";
@@ -41,7 +41,7 @@ export function TokenSettingsDashboardView({
   const [aoTokens, setAoTokens] = useStorage<TokenInfo[] | any[]>(
     {
       key: "ao_tokens",
-      instance: ExtensionStorage
+      instance: PersistentStorage
     },
     []
   );

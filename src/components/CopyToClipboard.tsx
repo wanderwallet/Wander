@@ -92,15 +92,15 @@ export function CopyToClipboard({
         as={isCopied ? Check : Copy02}
         height={iconSize}
         width={iconSize}
-        success={isCopied}
+        $success={isCopied}
       />
     </CopyButton>
   );
 }
 
-const Icon = styled.div<{ height: number; width: number; success: boolean }>`
+const Icon = styled.div<{ height: number; width: number; $success: boolean }>`
   height: ${(props) => props.height}px;
   width: ${(props) => props.width}px;
   color: ${(props) =>
-    props.success ? props.theme.success : props.theme.tertiaryText};
+    props.$success ? props.theme.success : props.theme.tertiaryText};
 `;

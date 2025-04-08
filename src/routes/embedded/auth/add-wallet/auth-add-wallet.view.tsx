@@ -35,6 +35,8 @@ export function AuthAddWalletEmbeddedView() {
     setIsLoading(false);
   }, []);
 
+  if (!authProviderType) alert(`authProviderType = ${authProviderType}`);
+
   return (
     <Card
       headerText="Add a wallet"
@@ -91,7 +93,8 @@ export function AuthAddWalletEmbeddedView() {
             href="#/auth/add-auth-provider"
             isDisabled={isLoading}
           >
-            Add {authProviderType.toLocaleUpperCase()} to an existing account
+            Add {(authProviderType || "UNKNOWN").toLocaleUpperCase()} to an
+            existing account
           </Button>
         )} */}
       </Box>

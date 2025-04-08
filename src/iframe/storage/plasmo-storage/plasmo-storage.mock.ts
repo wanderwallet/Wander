@@ -51,9 +51,9 @@ export interface StorageMockInterface extends PlasmoStorage {
 export class StorageMock extends PlasmoStorage implements StorageMockInterface {
   private storage: EnhancedStorage;
 
-  constructor() {
-    super({ area: "session" });
-    this.storage = new EnhancedStorage({ area: "session" });
+  constructor(area: "session" | "local" = "session") {
+    super({ area });
+    this.storage = new EnhancedStorage({ area });
 
     // This browser doesn't support the Storage Access API
     // so let's just hope we have access!
@@ -61,7 +61,7 @@ export class StorageMock extends PlasmoStorage implements StorageMockInterface {
 
     // TODO: Can this be postponed until authentication to avoid requesting permissions too soon?
     // unpartitioned sessionStorage cannot be accessed from iframe as it is partitioned by both origin and browser tabs unlike localStorage.
-    // this.storage.requestStorageAccess();
+    this.storage.requestStorageAccess();
   }
 
   get primaryClient(): chrome.storage.StorageArea {
@@ -99,11 +99,11 @@ export class StorageMock extends PlasmoStorage implements StorageMockInterface {
   // GET:
 
   getItem<T = string>(key: string): Promise<T | undefined> {
-    return Promise.resolve(this.storage.getItem(key));
+    return Promise.resolve(this.storage.getItem(key, undefined));
   }
 
   getItems<T = string>(keys: string[]): Promise<Record<string, T | undefined>> {
-    return Promise.resolve(this.storage.getItems(keys));
+    return Promise.resolve(this.storage.getItems(keys, undefined));
   }
 
   get: <T = string>(key: string) => Promise<T | undefined> = this.getItem;

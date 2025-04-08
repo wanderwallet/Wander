@@ -9,7 +9,8 @@ export const useAuthRequestsLocation: BaseLocationHook = () => {
   const override = useExtensionStatusOverride();
   const { authRequest: currentAuthRequest } = useCurrentAuthRequest("any");
 
-  if (override) return [override, NOOP];
+  if (override && import.meta.env?.VITE_IS_EMBEDDED_APP !== "1")
+    return [override, NOOP];
 
   if (!currentAuthRequest) return [ExtensionOverrides.Loading, NOOP];
 

@@ -1,4 +1,3 @@
-import { sendMessage } from "@arconnect/webext-bridge";
 import type { StorageChange } from "~utils/runtime";
 import { getStoredApps } from "~applications";
 import { getAppURL } from "~utils/format";
@@ -8,6 +7,7 @@ import { forEachTab } from "~applications/tab";
 import { compareGateways } from "~gateways/utils";
 import type { InitAppParams } from "~applications/application";
 import Application, { PREFIX } from "~applications/application";
+import { isomorphicSendMessage } from "~isomorphic-messaging";
 
 export async function handleAppConfigChange(
   changes: Record<string, StorageChange<InitAppParams>>,
@@ -89,10 +89,10 @@ export async function handleAppConfigChange(
     }
   }
 
-  // TODO: Update this to work with Embedded:
+  const messagePromises: Promise<void>[] = [];
 
   // send permissions to the appropriate tab
-  await forEachTab(async (tab) => {
+  await forEachTab((tab) => {
     // return if no tab url is present
     if (!tab?.url || !tab?.id) return;
 
@@ -103,7 +103,15 @@ export async function handleAppConfigChange(
     // send the events
     for (const event of eventsForTab) {
       // trigger emiter
-      await sendMessage("event", event, `content-script@${tab.id}`);
+      const messagePromise = isomorphicSendMessage({
+        destination: `content-script@${tab.id}`,
+        messageId: "event",
+        data: event
+      });
+
+      messagePromises.push(messagePromise);
     }
   });
+
+  await Promise.allSettled(messagePromises);
 }
