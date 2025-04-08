@@ -58,7 +58,12 @@ export function getTokenInfoFromData(res: any, id: string): TokenInfo {
 
 export async function getTokenInfo(id: string): Promise<TokenInfo> {
   try {
-    const response = await fetch(`${CACHE_API}/api/token-info?tokenId=${id}`);
+    const response = await fetch(`${CACHE_API}/api/token-info?tokenId=${id}`, {
+      cache: "force-cache",
+      headers: {
+        "Cache-Control": "public, max-age=300" // 5 minutes
+      }
+    });
     const data = await response.json();
 
     return { ...data.tokenInfo, processId: id };
