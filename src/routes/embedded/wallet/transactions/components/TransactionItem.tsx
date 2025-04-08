@@ -54,19 +54,53 @@ const TransactionItem = ({ transaction }: TransactionItemProps) => {
       style={{ margin: "1rem 0", cursor: "pointer" }}
       onClick={handleTransactionClick}
     >
-      <Row isFullWidth>
-        <Logo src={logoSource} alt="" />
-        <Box>
-          <Row isFullWidth justifyContent="between">
-            <Text variant="bodyMd" style={{ color: "#121212" }}>
-              {getTransactionDescription(transaction)}
-            </Text>
-            <Text variant="bodyMd" style={{ color: "#121212" }}>
+      <Row isFullWidth style={{ width: "100%", gap: "0px" }}>
+        <Logo
+          src={logoSource}
+          alt={transaction.aoInfo?.tickerName}
+          style={{ flexShrink: 0, width: "24px", height: "24px" }}
+        />
+        <Box
+          style={{
+            flex: 1,
+            minWidth: 0,
+            width: "100%",
+            display: "flex",
+            gap: "0px"
+          }}
+        >
+          <Row isFullWidth justifyContent="between" alignment="center">
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                maxWidth: "60%"
+              }}
+            >
+              <Text
+                variant="bodyMd"
+                style={{
+                  color: "#121212",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap"
+                }}
+              >
+                {getTransactionDescription(transaction)}
+              </Text>
+              <Text variant="bodySm">{formattedDate}</Text>
+            </div>
+            <Text
+              variant="bodyMd"
+              style={{
+                color: "#121212",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap"
+              }}
+            >
               {getFormattedAmount(transaction)}
             </Text>
-          </Row>
-          <Row isFullWidth justifyContent="between" alignment="center">
-            <Text variant="bodySm">{formattedDate}</Text>
           </Row>
         </Box>
       </Row>

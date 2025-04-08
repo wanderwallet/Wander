@@ -4,6 +4,7 @@ import { getAoTokens } from "~tokens";
 import { useStorage } from "~utils/storage";
 import { ExtensionStorage } from "~utils/storage";
 import { dryrun } from "@permaweb/aoconnect/browser";
+import { CACHE_API } from "~constants/api";
 
 export function getTokenInfoFromData(res: any, id: string): TokenInfo {
   // find message with token info
@@ -56,15 +57,22 @@ export function getTokenInfoFromData(res: any, id: string): TokenInfo {
 }
 
 export async function getTokenInfo(id: string): Promise<TokenInfo> {
-  // query ao
-  const res = await dryrun({
-    Id,
-    Owner,
-    process: id,
-    tags: [{ name: "Action", value: "Info" }]
-  });
+  try {
+    const response = await fetch(`${CACHE_API}/api/token-info?tokenId=${id}`);
+    const data = await response.json();
 
-  return getTokenInfoFromData(res, id);
+    return { ...data.tokenInfo, processId: id };
+  } catch {
+    // query ao
+    const res = await dryrun({
+      Id,
+      Owner,
+      process: id,
+      tags: [{ name: "Action", value: "Info" }]
+    });
+
+    return getTokenInfoFromData(res, id);
+  }
 }
 
 export function useTokenIDs(): [string[], boolean] {

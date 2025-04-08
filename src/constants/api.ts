@@ -1,1 +1,2 @@
-export const CACHE_API = "https://wander-cache-ruddy.vercel.app";
+export const CACHE_API =
+  "https://wander-cache-algfqujtw-community-labs.vercel.app";
