@@ -13,7 +13,7 @@ import { defaultTokens, type TokenInfo } from "~tokens/aoTokens/ao";
 import styled from "styled-components";
 import { isAddress } from "~utils/assertions";
 import { getAoTokens } from "~tokens";
-import { ExtensionStorage } from "~utils/storage";
+import { ExtensionStorage, PersistentStorage } from "~utils/storage";
 import { SubTitle } from "./ContactSettings";
 import type { TokenType } from "~tokens/token";
 import { concatGatewayURL } from "~gateways/utils";
@@ -61,7 +61,7 @@ export function AddTokenDashboardView({
       } else {
         aoTokens.push(tokenToImport);
       }
-      await ExtensionStorage.set("ao_tokens", aoTokens);
+      await PersistentStorage.set("ao_tokens", aoTokens);
       setToast({
         type: "success",
         content: browser.i18n.getMessage("token_imported"),

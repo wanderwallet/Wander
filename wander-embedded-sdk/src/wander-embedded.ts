@@ -1,4 +1,4 @@
-import { setupWalletSDK } from "wallet-api/wallet-sdk.es.js";
+import { setupEmbeddedWalletSDK } from "wallet-api/wallet-sdk.es.js";
 import { WanderButton } from "./components/button/wander-button.component";
 import { WanderIframe } from "./components/iframe/wander-iframe.component";
 import { merge } from "ts-deepmerge";
@@ -9,6 +9,7 @@ import {
 } from "./wander-embedded.types";
 import {
   IncomingBalanceMessageData,
+  IncomingRequestMessageData,
   IncomingResizeMessageData,
   UserDetails
 } from "./utils/message/message.types";
@@ -16,6 +17,8 @@ import { isIncomingMessage } from "./utils/message/message.utils";
 import { getEmbeddedURL } from "./utils/url/url.utils";
 
 const NOOP = () => {};
+
+type OpenReason = "manually" | "embedded_open" | "embedded_request";
 
 /**
  * WanderEmbedded provides a wallet interface for Arweave applications
@@ -60,7 +63,7 @@ export class WanderEmbedded {
   private onClose: () => void = NOOP;
   private onResize: (data: IncomingResizeMessageData) => void = NOOP;
   private onBalance: (data: IncomingBalanceMessageData) => void = NOOP;
-  private onRequest: (pendingRequests: number) => void = NOOP;
+  private onRequest: (data: IncomingRequestMessageData) => void = NOOP;
 
   // Components:
   private buttonComponent: null | WanderButton = null;
@@ -73,12 +76,8 @@ export class WanderEmbedded {
   private iframeRef: null | HTMLIFrameElement = null;
 
   // State:
-  private shouldOpenAutomatically = true;
-
-  /**
-   * Indicates whether the wallet interface is currently open/visible
-   */
-  public isOpen = false;
+  private openReason: OpenReason | null = null;
+  private allowOpeningAutomatically = true;
 
   /**
    * Contains details about the authenticated user, or null if not authenticated
@@ -147,7 +146,7 @@ export class WanderEmbedded {
     if (!optionsWithDefaults.clientId) throw new Error("clientId is required");
 
     // Create or get references to iframe and, maybe, button:
-    const embeddedOrigin = this.initializeComponents(optionsWithDefaults);
+    this.initializeComponents(optionsWithDefaults);
 
     if (!this.iframeRef) throw new Error("Error creating iframe");
 
@@ -162,10 +161,10 @@ export class WanderEmbedded {
     this.windowArweaveWallet = window.arweaveWallet;
 
     // ...and (re)set `window.arweaveWallet`:
-    setupWalletSDK(this.iframeRef.contentWindow as Window, embeddedOrigin);
+    setupEmbeddedWalletSDK(this.iframeRef);
   }
 
-  private initializeComponents(options: WanderEmbeddedOptions): string {
+  private initializeComponents(options: WanderEmbeddedOptions): void {
     const {
       clientId,
       baseURL = WanderEmbedded.DEFAULT_IFRAME_SRC,
@@ -232,16 +231,12 @@ export class WanderEmbedded {
     if (this.iframeComponent) {
       document.body.appendChild(this.iframeComponent.getElements().host);
     }
-
-    return new URL(srcWithParams).origin;
   }
 
   private handleMessage(event: MessageEvent): void {
     const message = event.data;
 
     if (!isIncomingMessage(message)) return;
-
-    console.log("MESSAGE", message);
 
     switch (message.type) {
       case "embedded_auth":
@@ -269,14 +264,20 @@ export class WanderEmbedded {
         this.onAuth(message.data);
         break;
 
-      case "embedded_close":
-        if (this.isOpen) {
-          this.isOpen = false;
+      case "embedded_connect":
+        this.buttonComponent?.setStatus("isConnected");
+        break;
 
-          this.buttonComponent?.unsetStatus("isOpen");
-          this.iframeComponent?.hide();
-          this.onClose();
-        }
+      case "embedded_disconnect":
+        this.buttonComponent?.unsetStatus("isConnected");
+        break;
+
+      case "embedded_open":
+        this._open("embedded_open");
+        break;
+
+      case "embedded_close":
+        this._close();
         break;
 
       case "embedded_resize":
@@ -285,17 +286,6 @@ export class WanderEmbedded {
         this.iframeComponent?.resize(routeConfig);
 
         this.onResize(routeConfig);
-
-        if (
-          routeConfig.routeType === "auth-request" &&
-          this.shouldOpenAutomatically &&
-          !this.isOpen
-        ) {
-          this.isOpen = true;
-          this.buttonComponent?.setStatus("isOpen");
-          this.iframeComponent?.show();
-          this.onOpen();
-        }
 
         break;
 
@@ -309,12 +299,32 @@ export class WanderEmbedded {
         break;
 
       case "embedded_request":
-        const { pendingRequests } = message.data;
+        // Scenarios to test:
+        //
+        // - App closed. New request comes in. It opens. It closes when handled.
+        // - App opened. New request comes in. Already opened. It doesn't close when handled.
+        // - App opened, then closed. New request comes in. It opens. It closes when handled.
+        // - App opened. New request comes in. Already opened. App closed. New request comes in. App doesn't open. It doesn't close when handled.
+        // - Same as above but with Connect request, App opens automatically.
+        // - App closed. New request comes in. It opens. App closed. New request comes in. App doesn't open. It closes when handled.
+
+        const { pendingRequests, hasNewConnectRequest } = message.data;
+
         this.pendingRequests = pendingRequests;
+
+        if (
+          pendingRequests > 0 &&
+          (this.shouldOpenAutomatically || hasNewConnectRequest)
+        ) {
+          this._open("embedded_request");
+        } else if (pendingRequests === 0 && this.shouldCloseAutomatically) {
+          // TODO: Re-implement the wait-before-closing feature for both BE and Embed and also use it here:
+          this._close(true);
+        }
 
         this.buttonComponent?.setNotifications(pendingRequests);
 
-        this.onRequest(pendingRequests);
+        this.onRequest(message.data);
         break;
     }
   }
@@ -324,23 +334,48 @@ export class WanderEmbedded {
     else this.open();
   }
 
+  private _open(openReason: OpenReason): void {
+    if (!this.iframeComponent && !this.buttonComponent) {
+      console.warn(
+        "Wander Embedded's iframe and button has been created manually"
+      );
+    }
+
+    if (!this.isOpen) {
+      // We only keep the first non-null value and don't updated it until it is reset back to null:
+      this.openReason ??= openReason;
+      this.buttonComponent?.setStatus("isOpen");
+      this.iframeComponent?.show();
+    }
+
+    this.onOpen();
+  }
+
   /**
    * Opens the wallet interface
    *
    * @throws Error if Wander Embedded's iframe and button has been created manually
    */
   public open(): void {
+    this._open("manually");
+  }
+
+  private _close(allowOpeningAutomatically = false): void {
     if (!this.iframeComponent && !this.buttonComponent) {
-      throw new Error(
+      console.warn(
         "Wander Embedded's iframe and button has been created manually"
       );
     }
 
-    if (this.iframeComponent && !this.isOpen) {
-      this.isOpen = true;
-      this.buttonComponent?.setStatus("isOpen");
-      this.iframeComponent.show();
+    if (this.isOpen) {
+      this.openReason = null;
+      this.allowOpeningAutomatically =
+        this.pendingRequests === 0 ? true : allowOpeningAutomatically;
+      this.buttonComponent?.unsetStatus("isOpen");
+      this.iframeComponent?.hide();
     }
+
+    this.onClose();
   }
 
   /**
@@ -349,22 +384,7 @@ export class WanderEmbedded {
    * @throws Error if Wander Embedded's iframe and button has been created manually
    */
   public close(): void {
-    if (!this.iframeComponent && !this.buttonComponent) {
-      throw new Error(
-        "Wander Embedded's iframe and button has been created manually"
-      );
-    }
-
-    if (this.iframeComponent && this.isOpen) {
-      this.isOpen = false;
-      this.buttonComponent?.unsetStatus("isOpen");
-      this.iframeComponent.hide();
-
-      // Manually closing the popup while there are pending requests will prevent it from automatically opening again:
-      if (this.pendingRequests > 0) {
-        this.shouldOpenAutomatically = false;
-      }
-    }
+    this._close();
   }
 
   /**
@@ -399,6 +419,24 @@ export class WanderEmbedded {
    */
   get isAuthenticated(): boolean {
     return !!this.userDetails;
+  }
+
+  /**
+   * Indicates whether the wallet interface is currently open/visible
+   */
+  get isOpen() {
+    return this.openReason !== null;
+  }
+
+  private get shouldOpenAutomatically() {
+    // If the modal is closed and a new AuthRequest comes in, it should also close automatically:
+    return this.openReason === null && this.allowOpeningAutomatically;
+  }
+
+  private get shouldCloseAutomatically() {
+    // If the modal was opened by an AuthRequest, it should close automatically when they are all handled. Otherwise, if
+    // it was opened by the user, it should not close automatically:
+    return this.openReason === "embedded_request";
   }
 
   /**

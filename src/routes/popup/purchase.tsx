@@ -34,8 +34,12 @@ import getSymbolFromCurrency from "currency-symbol-map";
 import { useStorage } from "@plasmohq/storage/hook";
 import { WarningIcon } from "~components/popup/Token";
 import { Flex } from "~components/common/Flex";
+import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 
 const BASE_URL = "https://api.transak.com";
+const TRANSAK_API_KEY =
+  process.env.PLASMO_PUBLIC_TRANSAK_API_KEY ||
+  import.meta.env?.VITE_TRANSAK_API_KEY;
 
 export function PurchaseView() {
   const { navigate } = useLocation();
@@ -110,7 +114,7 @@ export function PurchaseView() {
 
   useEffect(() => {
     const fetchCurrencies = async () => {
-      const url = `${BASE_URL}/api/v2/currencies/fiat-currencies?apiKey=${process.env.PLASMO_PUBLIC_TRANSAK_API_KEY}`;
+      const url = `${BASE_URL}/api/v2/currencies/fiat-currencies?apiKey=${TRANSAK_API_KEY}`;
       try {
         const response = await fetch(url);
         if (!response.ok) {
@@ -186,7 +190,7 @@ export function PurchaseView() {
       }
       const baseUrl = `${BASE_URL}/api/v1/pricing/public/quotes`;
       const params = new URLSearchParams({
-        partnerApiKey: process.env.PLASMO_PUBLIC_TRANSAK_API_KEY,
+        partnerApiKey: TRANSAK_API_KEY,
         fiatCurrency: selectedCurrency?.symbol,
         cryptoCurrency: "AR",
         isBuyOrSell: "BUY",
@@ -282,7 +286,7 @@ export function PurchaseView() {
     try {
       const baseUrl = "https://global.transak.com/";
       const params = new URLSearchParams({
-        apiKey: process.env.PLASMO_PUBLIC_TRANSAK_API_KEY,
+        apiKey: TRANSAK_API_KEY,
         defaultCryptoCurrency: "AR",
         defaultFiatAmount: quote.fiatAmount.toString(),
         defaultFiatCurrency: quote.fiatCurrency,
@@ -672,7 +676,14 @@ const CurrencySelectorScreen = ({
               squircleSize={40}
               title={currency.symbol}
               subtitle={currency.name}
-              img={currency.logo}
+              hideSquircle
+              icon={
+                <TokenLogo
+                  src={currency.logo}
+                  style={{ height: 40, width: 40 }}
+                  backgroundColor="transparent"
+                />
+              }
               onClick={() => {
                 updateCurrency(currency);
                 onClose();
@@ -787,11 +798,11 @@ export const Line = styled.div<{ margin?: string }>`
   background-color: ${(props) => props.theme.borderDefault};
 `;
 
-export const TokenLogo = styled(CommonImage).attrs({
+export const TokenLogo = styled(CommonImage).attrs((props) => ({
   alt: "token-logo",
   draggable: false,
-  backgroundColor: "#fffefc"
-})`
+  backgroundColor: props.backgroundColor || "#fffefc"
+}))<{ backgroundColor?: string }>`
   height: 24px;
   width: 24px;
   border-radius: 50%;

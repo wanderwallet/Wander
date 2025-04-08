@@ -24,6 +24,7 @@ export type IncomingBalanceMessageData = BalanceInfo;
 
 export interface IncomingRequestMessageData {
   pendingRequests: number;
+  hasNewConnectRequest: boolean;
 }
 
 // IncomingMessage:
@@ -38,15 +39,31 @@ export type IncomingAuthMessage = BaseIncomingMessage<
   "embedded_auth",
   IncomingAuthMessageData
 >;
+
+export type IncomingConnectMessage = BaseIncomingMessage<
+  "embedded_connect",
+  void
+>;
+
+export type IncomingDisconnectMessage = BaseIncomingMessage<
+  "embedded_disconnect",
+  void
+>;
+
+export type IncomingOpenMessage = BaseIncomingMessage<"embedded_open", void>;
+
 export type IncomingCloseMessage = BaseIncomingMessage<"embedded_close", void>;
+
 export type IncomingResizeMessage = BaseIncomingMessage<
   "embedded_resize",
   IncomingResizeMessageData
 >;
+
 export type IncomingBalanceMessage = BaseIncomingMessage<
   "embedded_balance",
   IncomingBalanceMessageData
 >;
+
 export type IncomingRequestMessage = BaseIncomingMessage<
   "embedded_request",
   IncomingRequestMessageData
@@ -54,6 +71,9 @@ export type IncomingRequestMessage = BaseIncomingMessage<
 
 export type IncomingMessage =
   | IncomingAuthMessage
+  | IncomingConnectMessage
+  | IncomingDisconnectMessage
+  | IncomingOpenMessage
   | IncomingCloseMessage
   | IncomingResizeMessage
   | IncomingBalanceMessage
