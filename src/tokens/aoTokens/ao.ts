@@ -30,6 +30,7 @@ import { defaultQueryCache, useTokenPrices } from "~tokens/hooks";
 import { useQueries } from "@tanstack/react-query";
 import BigNumber from "bignumber.js";
 import type { Token } from "~tokens/token";
+import { CACHE_API } from "~constants/api";
 
 export type AoInstance = ReturnType<typeof connect>;
 
@@ -529,7 +530,7 @@ export async function fetchTokenBalance(
 export async function getBotegaPrice(tokenId: string): Promise<number | null> {
   try {
     const response = await fetch(
-      `https://wander-cache-ruddy.vercel.app/api/botega/prices?tokenIds=${tokenId}`
+      `${CACHE_API}/api/botega/prices?tokenIds=${tokenId}`
     );
 
     if (!response.ok) {
@@ -550,7 +551,7 @@ export async function getBotegaPrices(
   try {
     const queryString = tokenIds.join(",");
     const response = await fetch(
-      `https://wander-cache-ruddy.vercel.app/api/botega/prices?tokenIds=${queryString}`
+      `${CACHE_API}/api/botega/prices?tokenIds=${queryString}`
     );
     if (!response.ok) {
       throw new Error("Failed to fetch prices");
