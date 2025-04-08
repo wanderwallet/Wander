@@ -11,7 +11,7 @@ import {
 import browser from "webextension-polyfill";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { formatAddress } from "~utils/format";
-import { useStorage } from "~utils/storage";
+import { PersistentStorage, useStorage } from "~utils/storage";
 import { ExtensionStorage } from "~utils/storage";
 import { Quantity, Token } from "ao-tokens";
 import prettyBytes from "pretty-bytes";
@@ -65,11 +65,11 @@ export default function SignDataItemDetails({ params }) {
 
         try {
           const aoTokens =
-            (await ExtensionStorage.get<TokenInfoWithProcessId[]>(
+            (await PersistentStorage.get<TokenInfoWithProcessId[]>(
               "ao_tokens"
             )) || [];
           const aoTokensCache =
-            (await ExtensionStorage.get<TokenInfoWithProcessId[]>(
+            (await PersistentStorage.get<TokenInfoWithProcessId[]>(
               "ao_tokens_cache"
             )) || [];
           const aoTokensCombined = [...aoTokens, ...aoTokensCache];

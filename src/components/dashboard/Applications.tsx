@@ -1,7 +1,6 @@
 import { Spacer, Text, useInput } from "@arconnect/components-rebrand";
 import { useEffect, useMemo, useState } from "react";
-import { useStorage } from "~utils/storage";
-import { ExtensionStorage } from "~utils/storage";
+import { ExtensionStorage, useStorage } from "~utils/storage";
 import { SettingsList } from "./list/BaseElement";
 import { useRoute } from "wouter";
 import Application from "~applications/application";
