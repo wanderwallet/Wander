@@ -53,6 +53,7 @@ import { WalletReceiveOptionsEmbeddedView } from "~routes/embedded/wallet/receiv
 import { WalletDepositTokensEmbeddedView } from "~routes/embedded/wallet/deposit/deposit.container.view";
 import { WalletBuyInputEmbeddedView } from "~routes/embedded/wallet/buy/buy.input.view";
 import { WalletBuySuccessEmbeddedView } from "~routes/embedded/wallet/buy/buy.success.view";
+import { WalletTransactionsHistoryEmbeddedView } from "~routes/embedded/wallet/transactions-history/transactions-history.view";
 
 export type EmbeddedRoutePath =
   | "/auth"
@@ -89,6 +90,7 @@ export type EmbeddedRoutePath =
   | "/wallet/receive"
   | "/wallet/receive/options"
   | "/wallet/transactions"
+  | "/wallet/transactions-history"
   | "/wallet/settings"
   | "/wallet/settings/custom"
   | "/wallet/transaction"
@@ -145,6 +147,7 @@ export const EmbeddedPaths = {
   WalletReceiveEmbeddedView: "/wallet/receive",
   WalletReceiveOptionsEmbeddedView: "/wallet/receive/options",
   WalletTransactionsEmbeddedView: "/wallet/transactions",
+  WalletTransactionsHistoryEmbeddedView: "/wallet/transactions-history",
   WalletSettingsEmbeddedView: "/wallet/settings",
   WalletSettingsCustomEmbeddedView: "/wallet/settings/custom",
   WalletTransactionSignEmbeddedView: "/wallet/transaction",
@@ -325,6 +328,10 @@ const IFRAME_OWN_ROUTES = [
   {
     path: EmbeddedPaths.WalletBuySuccessEmbeddedView,
     component: WalletBuySuccessEmbeddedView
+  },
+  {
+    path: EmbeddedPaths.WalletTransactionsHistoryEmbeddedView,
+    component: WalletTransactionsHistoryEmbeddedView
   }
 ] as const satisfies RouteConfig<EmbeddedRoutePath>[];
 

@@ -20,12 +20,12 @@ const Dropdown = ({
   const [open, setOpen] = useState(false);
   const [dropdownTop, setDropdownTop] = useState(0);
 
-  const dropdownRef = useRef();
-  const buttonRef = useRef();
-  const contentRef = useRef();
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const toggleDropdown = () => {
-    if (!open) {
+    if (!open && buttonRef.current && contentRef.current) {
       const spaceRemaining =
         window.innerHeight - buttonRef.current.getBoundingClientRect().bottom;
       const contentHeight = contentRef.current.clientHeight;
@@ -41,8 +41,11 @@ const Dropdown = ({
   };
 
   useEffect(() => {
-    const handler = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+    const handler = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setOpen(false);
       }
     };

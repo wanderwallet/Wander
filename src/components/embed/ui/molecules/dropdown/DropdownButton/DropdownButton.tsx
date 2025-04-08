@@ -20,7 +20,13 @@ const DropdownButton = forwardRef<HTMLDivElement, DropdownButtonProps>(
         ref={ref}
       >
         {children}
-        <span className="toggle-icon">
+        <span
+          className="toggle-icon"
+          onClick={(e) => {
+            e.stopPropagation();
+            toggle();
+          }}
+        >
           {open ? <ArrowUpIcon /> : <ArrowDownIcon />}
         </span>
       </div>

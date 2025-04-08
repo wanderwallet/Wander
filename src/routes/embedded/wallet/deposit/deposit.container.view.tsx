@@ -1,12 +1,12 @@
 import copy from "copy-to-clipboard";
 import { Card, Copyable, Button, WanderFooter } from "~components/embed/ui";
-import { useEmbedded } from "~utils/embedded/embedded.hooks";
+import { useActiveWallet } from "~wallets/hooks";
 import { useLocation } from "~wallets/router/router.utils";
 
 export function WalletDepositTokensEmbeddedView() {
-  const { wallets } = useEmbedded();
+  const wallet = useActiveWallet();
   const { navigate } = useLocation();
-  const walletAddress = wallets[0].address;
+  const walletAddress = wallet.address;
   return (
     <Card
       headerText={"Deposit Tokens"}

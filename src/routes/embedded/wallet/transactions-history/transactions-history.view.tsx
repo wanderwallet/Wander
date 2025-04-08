@@ -5,14 +5,14 @@ import { useLocation } from "~wallets/router/router.utils";
 
 export function WalletTransactionsHistoryEmbeddedView() {
   const wallet = useActiveWallet();
-  const { back } = useLocation();
+  const { navigate } = useLocation();
 
   return (
     <Card
       size="auto"
       headerText="Transaction History"
       hasBackButton={true}
-      onBackButtonClick={back}
+      onBackButtonClick={() => navigate("/wallet/transactions")}
       style={{ padding: "2rem" }}
     >
       <Box hasBorder style={{ margin: "1rem" }}>
@@ -29,9 +29,34 @@ export function WalletTransactionsHistoryEmbeddedView() {
           <Text variant="bodySm">Balance: 5.9980</Text>
         </Row>
       </Box>
-      <Button variant="link" href="#/wallet/transactions-history">
-        View all transactions
-      </Button>
+      <Box hasBorder style={{ margin: "1rem" }}>
+        <Row isFullWidth justifyContent="between">
+          <Text variant="bodyMd" style={{ color: "#121212" }}>
+            Created a Repo
+          </Text>
+          <Text variant="bodyMd" style={{ color: "#121212" }}>
+            -2.0010
+          </Text>
+        </Row>
+        <Row isFullWidth justifyContent="between">
+          <Text variant="bodySm">January 3</Text>
+          <Text variant="bodySm">Balance: 5.9980</Text>
+        </Row>
+      </Box>
+      <Box hasBorder style={{ margin: "1rem" }}>
+        <Row isFullWidth justifyContent="between">
+          <Text variant="bodyMd" style={{ color: "#121212" }}>
+            Created a Repo
+          </Text>
+          <Text variant="bodyMd" style={{ color: "#121212" }}>
+            -2.0010
+          </Text>
+        </Row>
+        <Row isFullWidth justifyContent="between">
+          <Text variant="bodySm">January 3</Text>
+          <Text variant="bodySm">Balance: 5.9980</Text>
+        </Row>
+      </Box>
     </Card>
   );
 }
