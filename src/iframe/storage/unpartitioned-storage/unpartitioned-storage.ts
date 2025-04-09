@@ -392,6 +392,11 @@ export class EnhancedStorage implements Storage {
   constructor({ area = "local" }: UnpartitionedStorageOptions = {}) {
     this.storageType = area === "local" ? "localStorage" : "sessionStorage";
     this.storage = globalThis[this.storageType];
+
+    if (area === "session") {
+      // We want to start fresh each time the app loads:
+      this.storage.clear();
+    }
   }
 
   protected async getStorageHandle(): Promise<Storage> {
@@ -483,9 +488,11 @@ export class EnhancedStorage implements Storage {
    * @param key The key to retrieve
    * @returns The value or null if not found or expired
    */
-  getItem<T = string>(key: string): T | null {
+  getItem<T = string>(key: string, defaultValue?: T): T | null {
     const rawValue = this.getRaw(key);
-    if (!rawValue) return null;
+    defaultValue =
+      defaultValue === undefined && arguments.length < 2 ? null : defaultValue;
+    if (!rawValue) return defaultValue;
 
     try {
       const parsed = JSON.parse(rawValue) as StorageItem<T>;
@@ -496,7 +503,7 @@ export class EnhancedStorage implements Storage {
         if (parsed.expiresAt && Date.now() > parsed.expiresAt) {
           // Item has expired, remove it
           this.removeItem(key);
-          return null;
+          return defaultValue;
         }
         return parsed.value;
       }
@@ -592,11 +599,16 @@ export class EnhancedStorage implements Storage {
    * @param keys The keys to retrieve
    * @returns An object with the keys and their values
    */
-  getItems<T = string>(keys: string[]): Record<string, T | null> {
+  getItems<T = string>(
+    keys: string[],
+    defaultValue?: T
+  ): Record<string, T | null> {
     const result: Record<string, T | null> = {};
+    defaultValue =
+      defaultValue === undefined && arguments.length < 2 ? null : defaultValue;
 
     for (const key of keys) {
-      result[key] = this.getItem<T>(key);
+      result[key] = this.getItem<T>(key, defaultValue);
     }
 
     return result;

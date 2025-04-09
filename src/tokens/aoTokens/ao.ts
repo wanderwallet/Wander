@@ -2,10 +2,11 @@ import { useMemo } from "react";
 import { defaultConfig } from "./config";
 import { connect, dryrun } from "@permaweb/aoconnect";
 import { type Tag } from "arweave/web/lib/transaction";
-import { useStorage } from "~utils/storage";
+import { PersistentStorage, useStorage } from "~utils/storage";
 import { ExtensionStorage } from "~utils/storage";
 import { Quantity } from "ao-tokens";
-import { Arweave, ArweaveSigner, createData } from "arbundles";
+import Arweave from "arweave";
+import { ArweaveSigner, createData } from "arbundles";
 import { getActiveKeyfile } from "~wallets";
 import { isLocalWallet } from "~utils/assertions";
 import { freeDecryptedWallet } from "~wallets/encryption";
@@ -131,7 +132,7 @@ export function useAoTokens({
   const [aoTokens, setAoTokens] = useStorage<TokenInfo[]>(
     {
       key: "ao_tokens",
-      instance: ExtensionStorage
+      instance: PersistentStorage
     },
     []
   );
@@ -201,7 +202,7 @@ export function useBalanceSortedTokens({
   const [aoTokens] = useStorage<TokenInfo[]>(
     {
       key: "ao_tokens",
-      instance: ExtensionStorage
+      instance: PersistentStorage
     },
     []
   );
@@ -293,7 +294,7 @@ export async function getAoTokenBalance(
 ): Promise<Quantity> {
   if (!aoToken) {
     const aoTokens =
-      (await ExtensionStorage.get<TokenInfo[]>("ao_tokens")) || [];
+      (await PersistentStorage.get<TokenInfo[]>("ao_tokens")) || [];
 
     aoToken = aoTokens.find((token) => token.processId === process);
   }

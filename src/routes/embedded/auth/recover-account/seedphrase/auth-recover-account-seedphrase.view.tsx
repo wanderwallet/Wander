@@ -26,7 +26,9 @@ export function AuthRecoverAccountSeedphraseEmbeddedView() {
 
   const handleImportWallet = useCallback(async () => {
     try {
+      console.log("importing wallet");
       setLoading(true);
+      console.log("seedPhrase", seedPhrase);
       if (!seedPhrase.length) return;
       await importTempWallet(seedPhrase.join(" "));
     } catch (error) {

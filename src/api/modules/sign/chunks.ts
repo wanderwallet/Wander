@@ -1,6 +1,4 @@
 import type { Tag } from "arweave/web/lib/transaction";
-import type { ApiCall, ApiResponse } from "shim";
-import { nanoid } from "nanoid";
 
 /**
  * The chunk of the transaction signing
@@ -24,52 +22,6 @@ const chunks: {
   origin: string; // tabID for verification
   rawChunks: Chunk[]; // raw chunks to be reconstructed
 }[] = [];
-
-/**
- * Send a chunk to the background script
- *
- * @param chunk Chunk to send
- *
- * @returns Response from the background
- */
-export const sendChunk = (chunk: Chunk) =>
-  new Promise<void>((resolve, reject) => {
-    const callID = nanoid();
-    // construct message
-    const message: ApiCall = {
-      type: "chunk",
-      app: "wander",
-      data: chunk,
-      callID
-    };
-
-    // send message
-    window.postMessage(message, window.location.origin);
-
-    // wait for the background to accept the chunk
-    window.addEventListener("message", callback);
-
-    // callback for the message
-    function callback(e: MessageEvent<ApiResponse<number | string>>) {
-      const { data: res } = e;
-      // returned chunk index
-      const index = res.data;
-
-      // ensure we are getting the result of the chunk sent
-      // in this instance / call of the function
-      if (res.callID !== callID) return;
-
-      // check for errors in the background
-      if (res.error || typeof index === "string") {
-        reject(res.data);
-      } else {
-        resolve();
-      }
-
-      // remove listener
-      window.removeEventListener("message", callback);
-    }
-  });
 
 /**
  * Handle incoming chunks and add them to the chunk storage

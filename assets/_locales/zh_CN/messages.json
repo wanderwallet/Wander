@@ -2939,5 +2939,13 @@
     "enter_an_amount": {
         "message": "输入金额",
         "description": "Enter an amount text"
+    },
+    "pending": {
+        "message": "待定",
+        "description": "Pending text"
+    },
+    "exchange_message": {
+        "message": "汇率",
+        "description": "Exchange rate text"
     }
 }

@@ -1,6 +1,6 @@
 import React from "react";
-import { Alignments, ButtonVariants, Sizes } from "../../../types";
-import { ButtonIconPositionVariants } from "../../../types/variants";
+import type { Alignments, ButtonVariants, Sizes } from "../../../types";
+import type { ButtonIconPositionVariants } from "../../../types/variants";
 
 export type ButtonBaseProps = {
   /**

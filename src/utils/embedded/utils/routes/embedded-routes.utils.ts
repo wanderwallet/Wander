@@ -26,7 +26,7 @@ export type EmbeddedLayout = "modal" | "popup" | "sidebar" | "half";
 const preferredLayoutByRouteType: Record<RouteType, EmbeddedLayout> = {
   auth: "modal",
   account: "modal",
-  settings: "modal",
+  settings: "popup",
   "auth-request": "popup",
   default: "popup"
 };

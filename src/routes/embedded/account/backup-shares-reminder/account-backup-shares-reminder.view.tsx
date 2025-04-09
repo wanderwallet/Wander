@@ -23,7 +23,7 @@ export function AccountBackupSharesReminderEmbeddedView() {
 
   const handleSkipClicked = async () => {
     await skipBackUp(isChecked);
-    navigate(isChecked ? "/" : "/wallet");
+    // navigate("/wallet");
   };
 
   return (

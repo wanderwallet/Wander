@@ -1,4 +1,4 @@
-import { useStorage } from "~utils/storage";
+import { PersistentStorage, useStorage } from "~utils/storage";
 import { ExtensionStorage } from "~utils/storage";
 import { useMemo } from "react";
 import type { Token, TokenType } from "~tokens/token";
@@ -17,7 +17,7 @@ export function TokensSettingsView() {
   const [aoTokens] = useStorage<TokenInfoWithBalance[]>(
     {
       key: "ao_tokens",
-      instance: ExtensionStorage
+      instance: PersistentStorage
     },
     []
   );

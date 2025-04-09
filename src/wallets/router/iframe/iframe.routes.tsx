@@ -2,7 +2,7 @@ import { AUTH_ROUTES } from "~wallets/router/auth/auth.routes";
 import { getExtensionOverrides } from "~wallets/router/extension/extension.routes";
 import { POPUP_ROUTES } from "~wallets/router/popup/popup.routes";
 import type { RouteConfig } from "~wallets/router/router.types";
-import { isRouteOverride, prefixRoutes } from "~wallets/router/router.utils";
+import { isRouteOverride } from "~wallets/router/router.utils";
 
 // Authentication Views:
 import { AuthEmbeddedView } from "~routes/embedded/auth/auth/auth.view";
@@ -53,6 +53,7 @@ import { WalletReceiveOptionsEmbeddedView } from "~routes/embedded/wallet/receiv
 import { WalletDepositTokensEmbeddedView } from "~routes/embedded/wallet/deposit/deposit.container.view";
 import { WalletBuyInputEmbeddedView } from "~routes/embedded/wallet/buy/buy.input.view";
 import { WalletBuySuccessEmbeddedView } from "~routes/embedded/wallet/buy/buy.success.view";
+import { WalletTransactionsHistoryEmbeddedView } from "~routes/embedded/wallet/transactions-history/transactions-history.view";
 
 export type EmbeddedRoutePath =
   | "/auth"
@@ -89,6 +90,7 @@ export type EmbeddedRoutePath =
   | "/wallet/receive"
   | "/wallet/receive/options"
   | "/wallet/transactions"
+  | "/wallet/transactions-history"
   | "/wallet/settings"
   | "/wallet/settings/custom"
   | "/wallet/transaction"
@@ -145,6 +147,7 @@ export const EmbeddedPaths = {
   WalletReceiveEmbeddedView: "/wallet/receive",
   WalletReceiveOptionsEmbeddedView: "/wallet/receive/options",
   WalletTransactionsEmbeddedView: "/wallet/transactions",
+  WalletTransactionsHistoryEmbeddedView: "/wallet/transactions-history",
   WalletSettingsEmbeddedView: "/wallet/settings",
   WalletSettingsCustomEmbeddedView: "/wallet/settings/custom",
   WalletTransactionSignEmbeddedView: "/wallet/transaction",
@@ -325,6 +328,10 @@ const IFRAME_OWN_ROUTES = [
   {
     path: EmbeddedPaths.WalletBuySuccessEmbeddedView,
     component: WalletBuySuccessEmbeddedView
+  },
+  {
+    path: EmbeddedPaths.WalletTransactionsHistoryEmbeddedView,
+    component: WalletTransactionsHistoryEmbeddedView
   }
 ] as const satisfies RouteConfig<EmbeddedRoutePath>[];
 
@@ -339,11 +346,7 @@ export const IFRAME_ROUTES = [
   ...POPUP_ROUTES.filter((route) => !isRouteOverride(route.path)),
 
   // auth.tsx:
-  // TODO: How to add this prefix to routes to when using push(), etc? ENV variable in the enum?
-  ...prefixRoutes(
-    "/auth-request",
-    AUTH_ROUTES.filter((route) => !isRouteOverride(route.path))
-  ),
+  ...AUTH_ROUTES.filter((route) => !isRouteOverride(route.path)),
 
   // OAuth Error:
   {

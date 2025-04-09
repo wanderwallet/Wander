@@ -13,9 +13,8 @@ import { FULL_HISTORY, useGateway } from "~gateways/wayfinder";
 import HeadV2 from "~components/popup/HeadV2";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import placeholderUrl from "url:/assets/placeholder.png";
-import { useStorage } from "~utils/storage";
+import { PersistentStorage, useStorage } from "~utils/storage";
 import { getTagValue, type TokenInfoWithBalance } from "~tokens/aoTokens/ao";
-import { ExtensionStorage } from "~utils/storage";
 import { gql } from "~gateways/api";
 
 export interface CollectibleViewParams {
@@ -30,7 +29,7 @@ export function CollectibleView({ params: { id } }: CollectibleViewProps) {
   const [aoTokens] = useStorage<TokenInfoWithBalance[]>(
     {
       key: "ao_tokens",
-      instance: ExtensionStorage
+      instance: PersistentStorage
     },
     []
   );
@@ -281,8 +280,8 @@ const AoLinkIcon = () => (
         fill="black"
       />
       <path
-        fill-rule="evenodd"
-        clip-rule="evenodd"
+        fillRule="evenodd"
+        clipRule="evenodd"
         d="M8.73385 6.28947C10.3368 6.28947 11.6361 4.99008 11.6361 3.38717C11.6361 1.78427 10.3368 0.484863 8.73385 0.484863C7.13094 0.484863 5.83154 1.78427 5.83154 3.38717C5.83154 4.99008 7.13094 6.28947 8.73385 6.28947ZM8.73385 5.15027C9.70757 5.15027 10.4969 4.3609 10.4969 3.38717C10.4969 2.41345 9.70757 1.62409 8.73385 1.62409C7.76012 1.62409 6.97074 2.41345 6.97074 3.38717C6.97074 4.3609 7.76012 5.15027 8.73385 5.15027Z"
         fill="black"
       />

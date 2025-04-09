@@ -108,6 +108,30 @@ export function useActiveWallet() {
   return wallet;
 }
 
+export async function setActiveWallet(address?: string) {
+  // verify address
+
+  const [wallets] = useStorage<StoredWallet[]>(
+    {
+      key: "wallets",
+      instance: ExtensionStorage
+    },
+    []
+  );
+
+  // remove if the address is undefined
+  if (!address) {
+    return await ExtensionStorage.remove("active_address");
+  }
+
+  if (!wallets.find((wallet) => wallet.address === address)) {
+    return;
+  }
+
+  // save new active address
+  await ExtensionStorage.set("active_address", address);
+}
+
 /**
  * Type of the current wallet (local/hardware => what type of API for the hardware)
  */

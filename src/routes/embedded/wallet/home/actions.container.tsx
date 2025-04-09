@@ -11,6 +11,7 @@ import { Link } from "~wallets/router/components/link/Link";
 export function WalletHomeActions() {
   return (
     <Box alignment="left" style={{ marginLeft: "20px" }}>
+      <br />
       <Link
         to="/wallet/receive/options"
         style={{ textDecoration: "none", width: "100%" }}

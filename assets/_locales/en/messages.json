@@ -2949,5 +2949,13 @@
   "enter_an_amount": {
     "message": "Enter an amount",
     "description": "Enter an amount text"
+  },
+  "pending": {
+    "message": "Pending",
+    "description": "Pending text"
+  },
+  "exchange_message": {
+    "message": "Exchange rate",
+    "description": "Exchange rate text"
   }
 }
