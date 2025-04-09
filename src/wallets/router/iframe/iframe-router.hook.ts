@@ -150,7 +150,11 @@ export function useEmbeddedOverride(
       // TODO: What if we are here but the wallet, for whatever reason, is not in the wallet provider / ExtensionStore?
       // if (!currentWallet.isActive)
 
-      return routeTrapOutside(location, EmbeddedPaths.Auth, PopupPaths.Home);
+      return routeTrapOutside(
+        location,
+        EmbeddedPaths.Auth,
+        EmbeddedPaths.WalletHomeEmbeddedView
+      );
     }
   }
 

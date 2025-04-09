@@ -23,7 +23,7 @@ const Button = React.forwardRef<
       isBlurry,
       loadingChildren,
       icon,
-      hasBorder,
+      hasBorder = true,
       color,
       ...props
     },
@@ -65,6 +65,7 @@ const Button = React.forwardRef<
           isBlurry && styles["button__blurry"],
           isFullWidth && styles["button__full__width"],
           isDisabled && isAnchor && styles["link__disabled"],
+          !hasBorder && styles["button__borderless"],
           className
         )}
         style={color ? { borderColor: color, color } : undefined}

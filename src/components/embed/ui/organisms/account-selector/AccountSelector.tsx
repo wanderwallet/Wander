@@ -8,12 +8,11 @@ import {
 } from "~components/embed/ui";
 import Dropdown from "~components/embed/ui/molecules/dropdown/Dropdown/Dropdown";
 import DropdownItem from "~components/embed/ui/molecules/dropdown/DropdownItem/DropdownItem";
-import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import type { Wallet } from "~utils/embedded/embedded.types";
 
 import type { LocalWallet, StoredWallet } from "~wallets";
 import type { HardwareWallet } from "~wallets/hardware";
-import { setActiveWallet, useActiveWallet } from "~wallets/hooks";
+import { setActiveWallet } from "~wallets/hooks";
 import { Link } from "~wallets/router/components/link/Link";
 
 export function AccountSelector({
@@ -30,8 +29,8 @@ export function AccountSelector({
         type: string;
       };
 }) {
-  const handleAccountClick = (wallet: Wallet) => {
-    setActiveWallet(wallet.address);
+  const handleAccountClick = async (wallet: Wallet) => {
+    return await setActiveWallet(wallet.address);
   };
 
   return (
