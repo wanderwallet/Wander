@@ -747,24 +747,37 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
   const recoverWallet = useCallback(
     async (recoveryData: RecoveryJSON | JWKInterface | string) => {
+      let jwk: JWKInterface;
+      let walletAddress: string;
+      let walletId: string;
+      let recoveryBackupShare: string | null = null;
+      let recoveryFileServerSignature: string | null = null;
+      let recoveryBackupShareHash: string | null = null;
+      let recoveryBackupSharePrivateKeyJWK: JWKInterface | null = null;
+      let isRecoveryJSON = true;
+
       if (
         typeof recoveryData === "string" ||
         recoveryData.hasOwnProperty("kty")
       ) {
-        throw new Error("Keyfile sand seedphrases not supported yet.");
+        const promise = importedTempWalletPromiseRef.current?.promise;
+        ({ jwk, walletAddress } = await promise);
+        walletId = wallets.find(({ address }) => address === walletAddress)?.id;
+        isRecoveryJSON = false;
+      } else {
+        ({ walletId, recoveryBackupShare, recoveryFileServerSignature } =
+          recoveryData as RecoveryJSON);
+        ({
+          shareHash: recoveryBackupShareHash,
+          sharePrivateKeyJWK: recoveryBackupSharePrivateKeyJWK
+        } = await WalletUtils.generateShareHashAndPrivateKey(
+          recoveryBackupShare
+        ));
       }
 
-      const {
-        version,
-        walletId,
-        recoveryBackupShare,
-        recoveryFileServerSignature
-      } = recoveryData as RecoveryJSON;
-
-      const {
-        shareHash: recoveryBackupShareHash,
-        sharePrivateKeyJWK: recoveryBackupSharePrivateKeyJWK
-      } = await WalletUtils.generateShareHashAndPrivateKey(recoveryBackupShare);
+      if (!walletId) {
+        throw new Error("Wallet not found.");
+      }
 
       const latestSession = await getLatestSession(session);
 
@@ -775,17 +788,28 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         challenge: shareRecoveryChallenge,
         session: latestSession,
         shareHash: recoveryBackupShareHash,
-        jwk: recoveryBackupSharePrivateKeyJWK
+        jwk: recoveryBackupSharePrivateKeyJWK || jwk
       });
 
-      const authRecoveryShareResponse = await WalletService.recoverWallet({
-        walletId,
-        recoveryBackupShareHash,
-        recoveryFileServerSignature,
-        challengeSolution
-      });
+      let recoverWalletParams = { walletId, challengeSolution };
+      if (isRecoveryJSON) {
+        recoverWalletParams = {
+          ...recoverWalletParams,
+          ...(recoveryBackupShareHash ? { recoveryBackupShareHash } : {}),
+          ...(recoveryFileServerSignature
+            ? { recoveryFileServerSignature }
+            : {})
+        };
+      }
 
-      if (!("recoveryAuthShare" in authRecoveryShareResponse)) {
+      const authRecoveryShareResponse = await WalletService.recoverWallet(
+        recoverWalletParams
+      );
+
+      if (
+        isRecoveryJSON &&
+        !("recoveryAuthShare" in authRecoveryShareResponse)
+      ) {
         throw new Error("Recovery share not found.");
 
         // TODO: Validate file signature and show a proper error message...
@@ -794,10 +818,12 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       const { recoveryAuthShare, rotationChallenge } =
         authRecoveryShareResponse;
 
-      const jwk = await WalletUtils.generateWalletJWKFromShares(walletAddress, [
-        recoveryAuthShare,
-        recoveryBackupShare
-      ]);
+      if (isRecoveryJSON) {
+        jwk = await WalletUtils.generateWalletJWKFromShares(walletAddress, [
+          recoveryAuthShare,
+          recoveryBackupShare
+        ]);
+      }
 
       const { authShare, deviceShare } =
         await WalletUtils.generateWalletWorkShares(jwk);
