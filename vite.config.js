@@ -7,7 +7,11 @@ import circleDependency from "vite-plugin-circular-dependency";
 // https://vite.dev/config/
 export default defineConfig({
   // root: "./src/iframe/index.html",
-  plugins: [react(), nodePolyfills(), circleDependency()],
+  plugins: [
+    react(),
+    nodePolyfills()
+    // ,circleDependency() // uncomment this to see circular dependencies in the console
+  ],
   define: {
     "process.env": {
       ...(process?.env || {}),
