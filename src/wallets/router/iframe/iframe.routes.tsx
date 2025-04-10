@@ -54,7 +54,7 @@ import { WalletDepositTokensEmbeddedView } from "~routes/embedded/wallet/deposit
 import { WalletBuyInputEmbeddedView } from "~routes/embedded/wallet/buy/buy.input.view";
 import { WalletBuySuccessEmbeddedView } from "~routes/embedded/wallet/buy/buy.success.view";
 import { WalletTransactionsHistoryEmbeddedView } from "~routes/embedded/wallet/transactions-history/transactions-history.view";
-
+import { EmbeddedConnectAuthRequestView } from "~routes/embedded/wallet/connect/dapp-connect.view";
 export type EmbeddedRoutePath =
   | "/auth"
   | "/auth/more-providers"
@@ -100,7 +100,8 @@ export type EmbeddedRoutePath =
   | "/wallet/buy/crypto"
   | "/wallet/buy/input"
   | "/wallet/deposit"
-  | "/wallet/buy/success";
+  | "/wallet/buy/success"
+  | "/wallet/connect";
 
 export const EmbeddedPaths = {
   // TODO: Consider nesting these instead:
@@ -156,7 +157,8 @@ export const EmbeddedPaths = {
   WalletBuyCashEmbeddedView: "/wallet/buy/cash",
   WalletDepositTokensEmbeddedView: "/wallet/deposit",
   WalletBuyInputEmbeddedView: "/wallet/buy/crypto",
-  WalletBuySuccessEmbeddedView: "/wallet/buy/success"
+  WalletBuySuccessEmbeddedView: "/wallet/buy/success",
+  ConnectEmbeddedView: "/wallet/connect"
 
   // TODO: Add pages to add/link additional auth methods or devices post-auth (under /account)
 } as const satisfies Record<string, EmbeddedRoutePath>;
@@ -183,6 +185,10 @@ const IFRAME_OWN_ROUTES = [
   {
     path: EmbeddedPaths.AuthImportKeyfile,
     component: AuthImportKeyfileEmbeddedView
+  },
+  {
+    path: EmbeddedPaths.ConnectEmbeddedView,
+    component: EmbeddedConnectAuthRequestView
   },
 
   // Authentication Linking:
