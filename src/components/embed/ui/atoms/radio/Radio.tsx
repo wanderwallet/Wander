@@ -2,7 +2,7 @@ import React, { forwardRef } from "react";
 import clsx from "clsx";
 import styles from "./Radio.module.css";
 import type { RadioBaseProps } from "./Radio.types";
-import { Text } from "..";
+import { Text } from "../text";
 
 const Radio = forwardRef<HTMLDivElement, RadioBaseProps>(
   (

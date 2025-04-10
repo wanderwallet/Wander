@@ -4,7 +4,7 @@ import browser from "webextension-polyfill";
 import Collectible from "../Collectible";
 import styled from "styled-components";
 import { useLocation } from "~wallets/router/router.utils";
-import { useAoTokens } from "~tokens/aoTokens/ao";
+import { useAoTokens } from "~tokens/hooks";
 
 export default function Collectibles() {
   const { navigate } = useLocation();
