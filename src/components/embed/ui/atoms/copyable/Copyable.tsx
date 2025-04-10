@@ -3,7 +3,9 @@ import clsx from "clsx";
 import styles from "./Copyable.module.css";
 import type { CopyableBaseProps } from "./Copyable.types";
 import { Loading } from "../loading";
-import { Box, Text, CopyableIcon } from "..";
+import { Box } from "../box";
+import { Text } from "../text";
+import { CopyableIcon } from "../icon";
 import { useTheme } from "../../../contexts/ThemeContext";
 
 const Copyable = forwardRef<HTMLDivElement, CopyableBaseProps>(
