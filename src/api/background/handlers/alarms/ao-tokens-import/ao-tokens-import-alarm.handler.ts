@@ -5,7 +5,7 @@ import {
   getAoTokensCache,
   getAoTokensAutoImportRestrictedIds
 } from "~tokens";
-import { getTokenInfo } from "~tokens/aoTokens/router";
+import { getTokenInfo } from "~tokens/aoTokens/ao";
 import {
   AO_TOKENS,
   AO_TOKENS_AUTO_IMPORT_RESTRICTED_IDS,

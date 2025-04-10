@@ -2,16 +2,18 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
 import nodePolyfills from "vite-plugin-node-stdlib-browser";
+import circleDependency from "vite-plugin-circular-dependency";
 
 // https://vite.dev/config/
 export default defineConfig({
   // root: "./src/iframe/index.html",
-  plugins: [react(), nodePolyfills()],
+  plugins: [react(), nodePolyfills(), circleDependency()],
   define: {
     "process.env": {
       ...(process?.env || {}),
       "process.env.NODE_ENV": process.env.NODE_ENV || "development"
-    }
+    },
+    "process.browser": true
   },
   resolve: {
     alias: {

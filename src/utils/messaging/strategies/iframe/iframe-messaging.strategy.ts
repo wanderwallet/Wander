@@ -5,8 +5,10 @@ import {
   EMBEDDED_ANCESTOR_TAB_ID,
   EMBEDDED_IFRAME_TAB_ID
 } from "~utils/embedded/embedded.constants";
-import { getEmbeddedAncestorOrigin } from "~utils/embedded/embedded.utils";
-import { isInsideIframe } from "~utils/embedded/iframe.utils";
+import {
+  getEmbeddedAncestorOrigin,
+  isInsideIframe
+} from "~utils/embedded/iframe.utils";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import type {
   MessageData,

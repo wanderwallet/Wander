@@ -19,7 +19,7 @@ import {
   getActiveAddress,
   getWallets,
   openOrSelectWelcomePage
-} from "~wallets";
+} from "~wallets/wallets.utils";
 import {
   AUTH_POPUP_UNLOCK_REQUEST_TTL_MS,
   ERR_MSG_NO_WALLETS_ADDED,
