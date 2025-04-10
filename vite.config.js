@@ -2,7 +2,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
 import nodePolyfills from "vite-plugin-node-stdlib-browser";
-import circleDependency from "vite-plugin-circular-dependency";
+// import circleDependency from "vite-plugin-circular-dependency";
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -10,14 +10,13 @@ export default defineConfig({
   plugins: [
     react(),
     nodePolyfills()
-    // ,circleDependency() // uncomment this to see circular dependencies in the console
+    // ,circleDependency() // uncomment this to see circular dependencies while building in the console
   ],
   define: {
     "process.env": {
       ...(process?.env || {}),
       "process.env.NODE_ENV": process.env.NODE_ENV || "development"
-    },
-    "process.browser": true
+    }
   },
   resolve: {
     alias: {
