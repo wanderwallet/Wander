@@ -1,5 +1,5 @@
 import { EMBEDDED_ANCESTOR_TAB_ID } from "~utils/embedded/embedded.constants";
-import { getEmbeddedAncestorOrigin } from "~utils/embedded/embedded.utils";
+import { getEmbeddedAncestorOrigin } from "~utils/embedded/iframe.utils";
 import { isExternalURL } from "~utils/urls/isExternalURL";
 
 export const tabs = {

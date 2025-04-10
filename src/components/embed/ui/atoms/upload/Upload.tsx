@@ -1,6 +1,9 @@
 import React, { useState, useRef, forwardRef } from "react";
 import styles from "./Upload.module.css";
-import { Box, Text, UploadIcon, CheckIcon } from "..";
+import { Box } from "../box";
+import { Text } from "../text";
+import { UploadIcon } from "../icon";
+import { CheckIcon } from "../icon";
 import { Loading } from "../loading";
 import type { FileUploadProps } from "./Upload.types";
 

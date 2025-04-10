@@ -1,7 +1,5 @@
 import type { JWKInterface } from "arweave/node/lib/wallet";
 import { ExtensionStorage } from "~utils/storage";
-import type { HardwareWallet } from "./hardware";
-import browser from "webextension-polyfill";
 import Arweave from "arweave/web/common";
 import {
   decryptWallet,
@@ -21,47 +19,12 @@ import {
 } from "~utils/auth/auth.constants";
 import type { ModuleAppData } from "~api/background/background-modules";
 import { isNotCancelError } from "~utils/assertions";
-import { log, LOG_GROUP } from "~utils/log/log.utils";
-import { resetStorage } from "~utils/storage.utils";
-
-/**
- * Locally stored wallet
- *
- * KeyfileFormat - string(encrypted) / JWKInterface(decrypted)
- */
-export interface LocalWallet<KeyfileFormat = string> {
-  type: "local";
-  nickname: string;
-  address: string;
-  keyfile: KeyfileFormat;
-}
-
-/**
- * KeyfileFormat - string(encrypted) / JWKInterface(decrypted)
- */
-export type StoredWallet<KeyfileFormat = string> =
-  | LocalWallet<KeyfileFormat>
-  | HardwareWallet;
-
-/**
- * Get wallets from storage
- *
- * @returns Wallets in storage
- */
-export async function getWallets() {
-  let wallets: StoredWallet[] = await ExtensionStorage.get("wallets");
-
-  return wallets || [];
-}
-
-/**
- * Get the active address
- */
-export async function getActiveAddress() {
-  const activeAddress = await ExtensionStorage.get("active_address");
-
-  return activeAddress;
-}
+import type { StoredWallet, LocalWallet } from "./wallets.types";
+import {
+  getWallets,
+  getActiveAddress,
+  openOrSelectWelcomePage
+} from "./wallets.utils";
 
 /**
  * Get active wallet
@@ -99,42 +62,6 @@ export async function setActiveWallet(address?: string) {
 }
 
 export type DecryptedWallet = StoredWallet<JWKInterface>;
-
-export async function openOrSelectWelcomePage(force = false) {
-  if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1") {
-    log(LOG_GROUP.AUTH, `PREVENTED openOrSelectWelcomePage(${force})`);
-
-    return;
-  }
-
-  // ONLY BROWSER EXTENSION BELOW THIS LINE:
-
-  log(LOG_GROUP.AUTH, `openOrSelectWelcomePage(${force})`);
-
-  // Make sure we clear any stored value from previous installations before
-  // opening the welcome page to onboard the user:
-  // Skip reset for test environment
-  const manifest = browser.runtime.getManifest();
-  if (manifest["__TEST_MODE__"] !== true) {
-    await resetStorage();
-  }
-
-  const url = browser.runtime.getURL("tabs/welcome.html");
-  const welcomePageTabs = await browser.tabs.query({ url });
-  const welcomePageTabID = welcomePageTabs[0]?.id;
-
-  if (welcomePageTabID) {
-    if (force) {
-      // More aggressive version, just select the existing tab:
-      browser.tabs.update(welcomePageTabID, { active: true });
-    } else {
-      // Less aggressive version, just highlight the existing tab but do not select it:
-      browser.tabs.highlight({ tabs: welcomePageTabID });
-    }
-  } else {
-    browser.tabs.create({ url });
-  }
-}
 
 /**
  * Get the active wallet with decrypted JWK
@@ -438,3 +365,10 @@ export async function getWalletKeyLength(
   const match = actualLength === expectedLength;
   return { actualLength, expectedLength, match };
 }
+
+export type { StoredWallet, LocalWallet };
+export {
+  getWallets,
+  getActiveAddress,
+  openOrSelectWelcomePage
+} from "./wallets.utils";

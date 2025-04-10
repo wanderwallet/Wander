@@ -10,8 +10,6 @@ import {
 } from "@untitled-ui/icons-react";
 import { ExtensionStorage } from "~utils/storage";
 
-export const PREFIX = "setting_";
-
 /** All settings */
 const settings: Setting[] = [
   // new Setting({

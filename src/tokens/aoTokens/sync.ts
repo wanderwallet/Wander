@@ -4,8 +4,7 @@ import { getAoTokensCache } from "~tokens";
 import type { GQLTransactionsResultInterface } from "ar-gql/dist/faces";
 import { ExtensionStorage } from "~utils/storage";
 import { getActiveAddress } from "~wallets";
-import { getTokenInfoFromData } from "./router";
-import { type TokenInfo, Id, Owner } from "./ao";
+import { type TokenInfo, Id, Owner, getTokenInfoFromData } from "./ao";
 import { withRetry } from "~utils/promises/retry";
 import { timeoutPromise } from "~utils/promises/timeout";
 
