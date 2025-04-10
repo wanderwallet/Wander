@@ -7,7 +7,8 @@ import browser from "webextension-polyfill";
 import Token from "~components/popup/Token";
 import styled from "styled-components";
 import HeadV2 from "~components/popup/HeadV2";
-import { useAoTokens, type TokenInfoWithBalance } from "~tokens/aoTokens/ao";
+import { type TokenInfoWithBalance } from "~tokens/aoTokens/ao";
+import { useAoTokens } from "~tokens/hooks";
 import { ExtensionStorage, PersistentStorage } from "~utils/storage";
 import { syncAoTokens } from "~tokens/aoTokens/sync";
 

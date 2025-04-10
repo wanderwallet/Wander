@@ -5,7 +5,7 @@ import Collectible from "~components/popup/Collectible";
 import browser from "webextension-polyfill";
 import styled from "styled-components";
 import HeadV2 from "~components/popup/HeadV2";
-import { useAoTokens } from "~tokens/aoTokens/ao";
+import { useAoTokens } from "~tokens/hooks";
 
 export function CollectiblesView() {
   const { navigate } = useLocation();
