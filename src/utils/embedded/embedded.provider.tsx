@@ -757,8 +757,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       let isRecoveryJSON = true;
 
       if (
-        typeof recoveryData === "string" ||
-        recoveryData.hasOwnProperty("kty")
+        WalletUtils.isJWK(recoveryData) ||
+        WalletUtils.isSeedPhrase(recoveryData)
       ) {
         const promise = importedTempWalletPromiseRef.current?.promise;
         ({ jwk, walletAddress } = await promise);
