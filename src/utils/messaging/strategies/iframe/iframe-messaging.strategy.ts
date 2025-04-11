@@ -1,4 +1,4 @@
-import type { ProtocolMap } from "@arconnect/webext-bridge";
+import type { ProtocolMap, RuntimeContext } from "@arconnect/webext-bridge";
 import { nanoid } from "nanoid";
 import type { ApiCall, ApiResponse } from "shim";
 import {
@@ -22,6 +22,13 @@ const messageHandlersByMessageID: Partial<
 
 let targetIframe: HTMLIFrameElement = null;
 let targetOrigin = "";
+
+const contextByMessageId: Partial<Record<MessageID, RuntimeContext>> = {
+  auth_chunk: "background",
+  event: "background",
+  switch_wallet_event: "background",
+  copy_address: "background"
+};
 
 export function setEmbeddedTargetIframe(iframeElement: HTMLIFrameElement) {
   targetIframe = iframeElement;
@@ -122,7 +129,7 @@ function getPostMessageFunction<K extends MessageID>(
         timestamp: Date.now(),
         sender: {
           tabId: EMBEDDED_IFRAME_TAB_ID,
-          context: null
+          context: contextByMessageId[messageId] || null
         },
         data
       });
