@@ -3,7 +3,7 @@ import { Card, Box, Button, Radio } from "~components/embed/ui";
 import { useLocation } from "~wallets/router/router.utils";
 
 export function WalletSettingsEmbeddedView() {
-  const { navigate } = useLocation();
+  const { navigate, back } = useLocation();
   const [selectedPermission, setSelectedPermission] = useState<string>("");
 
   const handlePermissionChange = (permission: string) => {
@@ -17,6 +17,7 @@ export function WalletSettingsEmbeddedView() {
       navigate("/wallet/settings/custom");
     } else {
       //TODO: update the permission in the wallet
+      //TODO: navigate to the wallet page
       navigate("/wallet");
     }
   };
@@ -26,7 +27,7 @@ export function WalletSettingsEmbeddedView() {
       size="auto"
       headerText="Confirm permissions"
       hasBackButton={true}
-      onBackButtonClick={() => navigate("/wallet")}
+      onBackButtonClick={back}
       style={{ padding: "2rem" }}
     >
       <Box alignment="left">
@@ -36,9 +37,9 @@ export function WalletSettingsEmbeddedView() {
           handleChange={() => handlePermissionChange("always-ask")}
         />
         <Radio
-          label="Allow access to your walletAsk when spending"
-          isChecked={selectedPermission === "allow-access"}
-          handleChange={() => handlePermissionChange("allow-access")}
+          label="Ask when spending"
+          isChecked={selectedPermission === "when-spending"}
+          handleChange={() => handlePermissionChange("when-spending")}
         />
         <Radio
           label="Auto-confirm"

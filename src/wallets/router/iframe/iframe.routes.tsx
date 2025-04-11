@@ -1,4 +1,4 @@
-import { AUTH_ROUTES } from "~wallets/router/auth/auth.routes";
+import { AUTH_ROUTES } from "~wallets/router/auth/auth.embed.routes";
 import { getExtensionOverrides } from "~wallets/router/extension/extension.routes";
 import { POPUP_ROUTES } from "~wallets/router/popup/popup.routes";
 import type { RouteConfig } from "~wallets/router/router.types";

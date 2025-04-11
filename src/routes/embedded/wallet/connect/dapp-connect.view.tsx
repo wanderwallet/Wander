@@ -1,5 +1,6 @@
 import { Card, Button, Text, Row, Box, Avatar } from "~components/embed/ui";
 import type { Wallet } from "~utils/embedded/embedded.types";
+import { formatAddress } from "~utils/format";
 import { setActiveWallet, useActiveWallet } from "~wallets/hooks";
 import { useLocation } from "~wallets/router/router.utils";
 
@@ -19,38 +20,32 @@ export function EmbeddedConnectAuthRequestView() {
     <Card
       size="auto"
       headerText={`${appInfo.name} would like to connect to your wallet`}
-      hasBackButton={true}
-      onBackButtonClick={() => navigate("/wallet")}
-      style={{ padding: "32px" }}
+      style={{ paddingTop: "32px" }}
     >
       <Box alignment="left">
         <Text variant="bodyMd">Select an account to connect:</Text>
         <Box
+          alignment="left"
           style={{
             margin: "8px 0 32px 0",
-            width: "92%",
+            width: "100%",
             backgroundColor: "#EBEBF0",
             borderRadius: "16px"
           }}
         >
-          <Row alignment="between">
-            <Row alignment="left">
-              <Avatar fontColor="#EBEBF0" backgroundColor="#0D6CE9">
+          <Row>
+            <Row alignment="center" justifyContent="start">
+              <Avatar fontColor="#EBEBF0" backgroundColor="#0D6CE9" size="lg">
                 {wallet.nickname}
               </Avatar>
-              <Box isAutoWidth>
+              <Box isAutoWidth alignment="left">
                 <Text variant="bodyLg" style={{ color: "#121212" }}>
                   {wallet.nickname}
                 </Text>
-                <Text variant="bodySm">{wallet.address}</Text>
+                <Text variant="bodySm">{formatAddress(wallet.address, 4)}</Text>
               </Box>
             </Row>
-
-            <Button
-              variant="icon"
-              alignment="right"
-              onClick={() => navigate("/wallet/account-list")}
-            >
+            <Button variant="link" style={{ paddingInline: "12px" }}>
               <Text
                 alignment="right"
                 variant="bodySm"
@@ -61,10 +56,15 @@ export function EmbeddedConnectAuthRequestView() {
             </Button>
           </Row>
         </Box>
-        <Button variant="primary" isFullWidth>
+        <Button
+          variant="primary"
+          isFullWidth
+          href="#/wallet/settings"
+          // onClick={() => navigate("/wallet/settings")}
+        >
           Next
         </Button>
-        <Button variant="secondary" isFullWidth>
+        <Button variant="secondary" isFullWidth href="#/auth-request/connect">
           Cancel
         </Button>
       </Box>

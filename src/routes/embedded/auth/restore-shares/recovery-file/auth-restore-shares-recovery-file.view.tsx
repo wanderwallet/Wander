@@ -59,7 +59,13 @@ export function AuthRestoreSharesRecoveryFileEmbeddedView() {
         loadingText={"Restoring account..."}
         onFileParse={handleJsonParse}
       />
-      <Button isFullWidth size="md" isLoading={loading} onClick={handleRestore}>
+      <Button
+        isFullWidth
+        size="md"
+        isLoading={loading}
+        isDisabled={!jsonData}
+        onClick={handleRestore}
+      >
         Restore
       </Button>
     </Card>

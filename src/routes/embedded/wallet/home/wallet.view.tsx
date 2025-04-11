@@ -23,7 +23,7 @@ import type { StoredWallet } from "~wallets";
 import { WalletHomeActions } from "./actions.container";
 import { WalletHomeAssets } from "./assets.container";
 import { WalletHomeBalance } from "./balance.container";
-import { useBalanceSortedTokens } from "~tokens/aoTokens/ao";
+import { useBalanceSortedTokens } from "~/tokens/hooks";
 
 export function WalletHomeEmbeddedView() {
   const [loggedIn, setLoggedIn] = useState(false);
