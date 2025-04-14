@@ -3,24 +3,30 @@ import type { Wallet } from "~utils/embedded/embedded.types";
 import { formatAddress } from "~utils/format";
 import { setActiveWallet, useActiveWallet } from "~wallets/hooks";
 import { useLocation } from "~wallets/router/router.utils";
+import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
+import { useCurrentAuthRequest } from "~utils/auth/auth.hooks";
 
 export function EmbeddedConnectAuthRequestView() {
   const { navigate } = useLocation();
   const wallet = useActiveWallet();
+  const { authRequest } = useCurrentAuthRequest("connect");
 
   const handleClick = async (wallet: Wallet) => {
     return await setActiveWallet(wallet.address);
   };
 
-  const appInfo = {
-    name: "Dapp Name" //TODO: get from the auth request
-  };
+  // Create encoded URL for href navigation
+  const settingsUrl = (() => {
+    const encodedPayload = encodeURIComponent(JSON.stringify(authRequest));
+    return `#/wallet/settings?requestPayload=${encodedPayload}`;
+  })();
 
   return (
     <Card
       size="auto"
-      headerText={`${appInfo.name} would like to connect to your wallet`}
+      headerText={`${authRequest.appInfo.name} would like to connect to your wallet`}
       style={{ paddingTop: "32px" }}
+      hasCloseButton={false}
     >
       <Box alignment="left">
         <Text variant="bodyMd">Select an account to connect:</Text>
@@ -56,15 +62,19 @@ export function EmbeddedConnectAuthRequestView() {
             </Button>
           </Row>
         </Box>
-        <Button
-          variant="primary"
-          isFullWidth
-          href="#/wallet/settings"
-          // onClick={() => navigate("/wallet/settings")}
-        >
+        <Button variant="primary" isFullWidth href={settingsUrl}>
           Next
         </Button>
-        <Button variant="secondary" isFullWidth href="#/auth-request/connect">
+        <Button
+          variant="secondary"
+          isFullWidth
+          onClick={() => {
+            postEmbeddedMessage({
+              type: "embedded_close",
+              data: null
+            });
+          }}
+        >
           Cancel
         </Button>
       </Box>

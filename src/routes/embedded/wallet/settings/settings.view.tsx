@@ -1,26 +1,37 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, Box, Button, Radio } from "~components/embed/ui";
-import { useLocation } from "~wallets/router/router.utils";
+import type { ConnectAuthRequestMessageData } from "~utils/auth/auth.types";
+import { useLocation, useSearchParams } from "~wallets/router/router.utils";
 
 export function WalletSettingsEmbeddedView() {
-  const { navigate, back } = useLocation();
+  const { navigate, back, location } = useLocation();
+  const searchParams = useSearchParams<{
+    requestPayload?: string;
+  }>();
   const [selectedPermission, setSelectedPermission] = useState<string>("");
+
+  // Log component mount and params for debugging
+  useEffect(() => {
+    console.log("Settings view mounted", { searchParams, location });
+    console.log("URL hash:", window.location.hash);
+    console.log("Search params:", window.location.search);
+  }, []);
 
   const handlePermissionChange = (permission: string) => {
     setSelectedPermission(permission);
+    console.log("Permission selected:", permission);
   };
 
-  const handleConfirm = () => {
-    if (!selectedPermission) return;
+  // Create URL for custom permissions navigation
+  const customPermissionsUrl = (() => {
+    if (!searchParams.requestPayload) return "#/wallet/settings/custom";
+    return `#/wallet/settings/custom?requestPayload=${encodeURIComponent(
+      searchParams.requestPayload
+    )}`;
+  })();
 
-    if (selectedPermission === "custom-permissions") {
-      navigate("/wallet/settings/custom");
-    } else {
-      //TODO: update the permission in the wallet
-      //TODO: navigate to the wallet page
-      navigate("/wallet");
-    }
-  };
+  // Create URL for wallet navigation
+  const walletUrl = "#/wallet";
 
   return (
     <Card
@@ -53,19 +64,26 @@ export function WalletSettingsEmbeddedView() {
         />
       </Box>
 
-      <Button
-        variant="primary"
-        isFullWidth
-        onClick={handleConfirm}
-        isDisabled={!selectedPermission}
-      >
-        Confirm
-      </Button>
-      <Button
-        variant="outlined"
-        isFullWidth
-        onClick={() => navigate("/wallet")}
-      >
+      {selectedPermission === "custom-permissions" ? (
+        <Button
+          variant="primary"
+          isFullWidth
+          href={customPermissionsUrl}
+          isDisabled={!selectedPermission}
+        >
+          Confirm
+        </Button>
+      ) : (
+        <Button
+          variant="primary"
+          isFullWidth
+          href={walletUrl}
+          isDisabled={!selectedPermission}
+        >
+          Confirm
+        </Button>
+      )}
+      <Button variant="outlined" isFullWidth href={walletUrl}>
         Cancel
       </Button>
     </Card>

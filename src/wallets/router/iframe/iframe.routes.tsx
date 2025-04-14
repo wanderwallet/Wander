@@ -44,6 +44,7 @@ import { AccountExportWalletEmbeddedView } from "~routes/embedded/account/export
 import { WalletHomeEmbeddedView } from "~routes/embedded/wallet/home/wallet.view";
 import { WalletReceiveEmbeddedView } from "~routes/embedded/wallet/receive/receive.view";
 import { WalletTransactionsEmbeddedView } from "~routes/embedded/wallet/transactions/transactions.view";
+import { WalletSettingsEmbeddedView } from "~routes/embedded/wallet/settings/settings.view";
 import { WalletSettingsCustomEmbeddedView } from "~routes/embedded/wallet/settings/settings.custom.view";
 import { WalletTransactionSignEmbeddedView } from "~routes/embedded/wallet/home/transaction-sign/transaction.sign.view";
 import { WalletTransactionDetailsEmbeddedView } from "~routes/embedded/wallet/home/transaction-details/transaction.details.view";
@@ -297,7 +298,7 @@ const IFRAME_OWN_ROUTES = [
   },
   {
     path: EmbeddedPaths.WalletSettingsEmbeddedView,
-    component: WalletBuyEmbeddedView
+    component: WalletSettingsEmbeddedView
   },
   {
     path: EmbeddedPaths.WalletSettingsCustomEmbeddedView,
@@ -351,8 +352,11 @@ export const IFRAME_ROUTES = [
   // popup.tsx:
   ...POPUP_ROUTES.filter((route) => !isRouteOverride(route.path)),
 
-  // auth.tsx:
-  ...AUTH_ROUTES.filter((route) => !isRouteOverride(route.path)),
+  // auth.tsx: filter out the settings path as it's defined in IFRAME_OWN_ROUTES
+  ...AUTH_ROUTES.filter(
+    (route) =>
+      !isRouteOverride(route.path) && !route.path.includes("/wallet/settings/")
+  ),
 
   // OAuth Error:
   {

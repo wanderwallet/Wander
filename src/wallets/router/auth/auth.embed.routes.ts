@@ -25,7 +25,8 @@ export type AuthRoutePath =
   | `/auth-request/signature/${string}`
   | `/auth-request/signDataItem/${string}`
   | `/auth-request/batchSignDataItem/${string}`
-  | `/auth-request/subscription/${string}`;
+  | `/auth-request/subscription/${string}`
+  | `/wallet/settings/${string}`;
 
 export const AuthPaths = {
   Connect: "/auth-request/connect/:authID",
@@ -37,7 +38,8 @@ export const AuthPaths = {
   Signature: "/auth-request/signature/:authID",
   SignDataItem: "/auth-request/signDataItem/:authID",
   BatchSignDataItem: "/auth-request/batchSignDataItem/:authID",
-  Subscription: "/auth-request/subscription/:authID"
+  Subscription: "/auth-request/subscription/:authID",
+  Settings: "/wallet/settings/:authID"
 } as const satisfies Record<string, AuthRoutePath>;
 
 export const AUTH_ROUTES = [

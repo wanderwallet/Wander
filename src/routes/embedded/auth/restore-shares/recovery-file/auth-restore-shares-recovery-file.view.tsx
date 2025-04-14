@@ -16,8 +16,8 @@ export function AuthRestoreSharesRecoveryFileEmbeddedView() {
   };
 
   const handleRestore = useCallback(async () => {
+    setLoading(true);
     try {
-      setLoading(true);
       if (jsonData) {
         const restoredWallet = recoverWallet(jsonData);
 
@@ -33,7 +33,7 @@ export function AuthRestoreSharesRecoveryFileEmbeddedView() {
     } finally {
       setLoading(false);
     }
-  }, [jsonData]);
+  }, []);
 
   // TODO: The recovery file should probably include the wallet address or a hash so that we can
   // request the recovery of the right one from the backend without asking the user to manually select
