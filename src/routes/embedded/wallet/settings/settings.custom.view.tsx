@@ -1,100 +1,93 @@
-import { useState, useEffect } from "react";
-import { Card, Box, Button, Radio } from "~components/embed/ui";
-import { useLocation, useSearchParams } from "~wallets/router/router.utils";
-
-type PermissionsProps = {
-  name: string;
-  description: string;
-  isChecked: boolean;
-  handleChange: (e: React.MouseEvent<HTMLInputElement>) => void;
-};
-
-// Maps permission keys to user-friendly display values
-function getPermissionDisplay(permissionKey: string): string {
-  const permissionMap: Record<string, string> = {
-    ACCESS_ADDRESS: "Access Address",
-    ACCESS_PUBLIC_KEY: "Access Public Key",
-    ACCESS_ALL_ADDRESSES: "Access All Addresses",
-    SIGN_TRANSACTION: "Sign Transaction",
-    ENCRYPT: "Encrypt",
-    DECRYPT: "Decrypt",
-    SIGNATURE: "Signature",
-    ACCESS_ARWEAVE_CONFIG: "Access Arweave Config",
-    DISPATCH: "Dispatch",
-    ACCESS_TOKENS: "Access Tokens"
-  };
-
-  return permissionMap[permissionKey] || permissionKey;
-}
+import { useCallback, useMemo, useRef } from "react";
+import { permissionData, type PermissionType } from "~applications/permissions";
+import { Card, Box, Radio } from "~components/embed/ui";
+import browser from "~iframe/browser";
+import { useCurrentAuthRequest } from "~utils/auth/auth.hooks";
+import { useStorage, ExtensionStorage } from "~utils/storage";
+import { useLocation } from "~wallets/router/router.utils";
 
 export function WalletSettingsCustomEmbeddedView() {
-  const searchParams = useSearchParams<{ requestPayload?: string }>();
-  const { navigate, location } = useLocation();
-  const { requestPayload } = searchParams;
+  const { navigate } = useLocation();
+  const { authRequest } = useCurrentAuthRequest("connect");
 
-  // Log component mount and request payload
-  useEffect(() => {
-    console.log("Custom Settings view mounted", { requestPayload, location });
-    console.log("URL hash:", window.location.hash);
-    console.log("Search params:", window.location.search);
-  }, []);
+  const { url = "" } = authRequest;
 
-  // Create URLs for navigation
-  const backUrl = "#/wallet/settings";
-  const walletUrl = "#/wallet";
+  const [requestedPermissions, setRequestedPermissions] = useStorage<
+    PermissionType[]
+  >(
+    {
+      key: `requested_permissions_${url}`,
+      instance: ExtensionStorage
+    },
+    []
+  );
 
-  // Parse the permissions from the request payload
-  const permissions = (() => {
-    try {
-      if (!requestPayload) {
-        console.error("No request payload provided");
-        return [];
-      }
-      const parsed = JSON.parse(requestPayload);
-      console.log("Parsed payload:", parsed);
-      return parsed.permissions || [];
-    } catch (error) {
-      console.error("Failed to parse request payload:", error);
-      return [];
-    }
-  })();
+  const permissions = useMemo(() => {
+    return new Map(
+      requestedPermissions.map((permission) => [permission, true])
+    );
+  }, [requestedPermissions]);
+
+  const handlePermissionChange = useCallback(
+    (permission: PermissionType) => {
+      const updated = new Map(permissions);
+      updated.set(permission, !permissions.get(permission));
+
+      const newPermissions = Array.from(updated.entries())
+        .filter(([_, value]) => value)
+        .map(([key]) => key);
+
+      setRequestedPermissions(newPermissions);
+    },
+    [permissions, setRequestedPermissions]
+  );
 
   return (
     <Card
       size="auto"
       headerText="Custom Permissions"
       hasBackButton={true}
-      onBackButtonClick={() => (window.location.hash = backUrl)}
-      style={{ padding: "2rem" }}
+      onBackButtonClick={() => navigate("/wallet/settings")}
+      style={{ padding: "2rem 1rem" }}
     >
-      <Box>
-        {Array.isArray(permissions) &&
-          permissions.map((permission, index) => (
-            <Radio
-              key={index}
-              label={getPermissionDisplay(
-                typeof permission === "string" ? permission : permission.name
-              )}
-              description={
-                typeof permission === "string" ? "" : permission.description
-              }
-              isChecked={
-                typeof permission === "string" ? false : permission.isChecked
-              }
-              handleChange={
-                typeof permission === "string"
-                  ? () => {}
-                  : permission.handleChange
-              }
-            />
-          ))}
+      <Box alignment="left" style={{ padding: 0 }}>
+        {Object.keys(permissionData).map(
+          (permissionName: PermissionType, i) => {
+            let formattedPermissionName = permissionName
+              .split("_")
+              .map((word) => word.charAt(0) + word.slice(1).toLowerCase())
+              .join(" ");
+
+            if (permissionName === "SIGNATURE") {
+              formattedPermissionName = "Sign Data";
+            }
+
+            return (
+              <Box
+                style={{ padding: 0 }}
+                alignment="left"
+                key={i}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  handlePermissionChange(permissionName);
+                }}
+              >
+                <Radio
+                  key={i}
+                  size={24}
+                  label={formattedPermissionName}
+                  description={browser.i18n.getMessage(
+                    permissionData[permissionName]
+                  )}
+                  handleChange={() => {}}
+                  isChecked={permissions.get(permissionName) ?? false}
+                />
+              </Box>
+            );
+          }
+        )}
       </Box>
-      <Button variant="primary" isFullWidth href={walletUrl}>
-        Confirm
-      </Button>
-      <Button variant="outlined" isFullWidth href={walletUrl}>
-        Cancel
-      </Button>
     </Card>
   );
 }

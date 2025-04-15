@@ -44,7 +44,7 @@ import { AccountExportWalletEmbeddedView } from "~routes/embedded/account/export
 import { WalletHomeEmbeddedView } from "~routes/embedded/wallet/home/wallet.view";
 import { WalletReceiveEmbeddedView } from "~routes/embedded/wallet/receive/receive.view";
 import { WalletTransactionsEmbeddedView } from "~routes/embedded/wallet/transactions/transactions.view";
-import { WalletSettingsEmbeddedView } from "~routes/embedded/wallet/settings/settings.view";
+import { WalletPermissionsRequestEmbeddedView } from "~routes/embedded/wallet/settings/settings.request.view";
 import { WalletSettingsCustomEmbeddedView } from "~routes/embedded/wallet/settings/settings.custom.view";
 import { WalletTransactionSignEmbeddedView } from "~routes/embedded/wallet/home/transaction-sign/transaction.sign.view";
 import { WalletTransactionDetailsEmbeddedView } from "~routes/embedded/wallet/home/transaction-details/transaction.details.view";
@@ -150,7 +150,7 @@ export const EmbeddedPaths = {
   WalletReceiveOptionsEmbeddedView: "/wallet/receive/options",
   WalletTransactionsEmbeddedView: "/wallet/transactions",
   WalletTransactionsHistoryEmbeddedView: "/wallet/transactions-history",
-  WalletSettingsEmbeddedView: "/wallet/settings",
+  WalletPermissionsRequestEmbeddedView: "/wallet/settings",
   WalletSettingsCustomEmbeddedView: "/wallet/settings/custom",
   WalletTransactionSignEmbeddedView: "/wallet/transaction",
   WalletTransactionDetailsEmbeddedView: "/wallet/transaction-details",
@@ -297,8 +297,8 @@ const IFRAME_OWN_ROUTES = [
     component: WalletTransactionsEmbeddedView
   },
   {
-    path: EmbeddedPaths.WalletSettingsEmbeddedView,
-    component: WalletSettingsEmbeddedView
+    path: EmbeddedPaths.WalletPermissionsRequestEmbeddedView,
+    component: WalletPermissionsRequestEmbeddedView
   },
   {
     path: EmbeddedPaths.WalletSettingsCustomEmbeddedView,

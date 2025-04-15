@@ -12,4 +12,5 @@ export type RadioBaseProps = {
   isBlurry?: boolean;
   handleChange: (e: React.MouseEvent<HTMLInputElement>) => void;
   style?: React.CSSProperties;
+  size?: number;
 };

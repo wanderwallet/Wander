@@ -17,6 +17,7 @@ const Radio = forwardRef<HTMLDivElement, RadioBaseProps>(
       isRequired,
       isBlurry,
       handleChange,
+      size,
       ...props
     },
     ref
@@ -32,16 +33,19 @@ const Radio = forwardRef<HTMLDivElement, RadioBaseProps>(
         {...props}
       >
         <label className={styles.radio__label} htmlFor={id}>
-          <input
-            id={id}
-            name={name}
-            type="radio"
-            className={styles.radio__input}
-            checked={isChecked}
-            disabled={isDisabled}
-            required={isRequired}
-            onChange={handleChange}
-          />
+          <div>
+            <input
+              id={id}
+              name={name}
+              type="radio"
+              style={size && { width: size, height: size }}
+              className={styles.radio__input}
+              checked={isChecked}
+              disabled={isDisabled}
+              required={isRequired}
+              onChange={handleChange}
+            />
+          </div>
           <div className={styles.radio__content}>
             <span className={styles.radio__text}>{label}</span>
             {description && (
