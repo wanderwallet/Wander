@@ -1,6 +1,5 @@
 import { AllowanceAuthRequestView } from "~routes/auth/allowance";
 import { BatchSignDataItemAuthRequestView } from "~routes/auth/batchSignDataItem";
-import { ConnectAuthRequestView } from "~routes/auth/connect";
 import { DecryptAuthRequestView } from "~routes/auth/decrypt";
 import { LoadingAuthRequestView } from "~routes/auth/loading";
 import { SignAuthRequestView } from "~routes/auth/sign";
@@ -12,7 +11,6 @@ import { UnlockAuthRequestView } from "~routes/auth/unlock";
 import { getExtensionOverrides } from "~wallets/router/extension/extension.routes";
 import type { RouteConfig } from "~wallets/router/router.types";
 import { EmbeddedConnectAuthRequestView } from "~routes/embedded/wallet/connect/dapp-connect.view";
-import { WalletSettingsEmbeddedView } from "~routes/embedded/wallet/settings/settings.view";
 
 export type AuthRoutePath =
   | "/auth-request"
@@ -25,8 +23,7 @@ export type AuthRoutePath =
   | `/auth-request/signature/${string}`
   | `/auth-request/signDataItem/${string}`
   | `/auth-request/batchSignDataItem/${string}`
-  | `/auth-request/subscription/${string}`
-  | `/wallet/settings/${string}`;
+  | `/auth-request/subscription/${string}`;
 
 export const AuthPaths = {
   Connect: "/auth-request/connect/:authID",
@@ -38,8 +35,7 @@ export const AuthPaths = {
   Signature: "/auth-request/signature/:authID",
   SignDataItem: "/auth-request/signDataItem/:authID",
   BatchSignDataItem: "/auth-request/batchSignDataItem/:authID",
-  Subscription: "/auth-request/subscription/:authID",
-  Settings: "/wallet/settings/:authID"
+  Subscription: "/auth-request/subscription/:authID"
 } as const satisfies Record<string, AuthRoutePath>;
 
 export const AUTH_ROUTES = [

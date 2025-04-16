@@ -1,96 +1,68 @@
 import { Card, Button, Text, Row, Box, Avatar } from "~components/embed/ui";
-import { useState } from "react";
 import type { Wallet } from "~utils/embedded/embedded.types";
 import { formatAddress } from "~utils/format";
 import { setActiveWallet, useActiveWallet } from "~wallets/hooks";
 import { useLocation } from "~wallets/router/router.utils";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 import { useCurrentAuthRequest } from "~utils/auth/auth.hooks";
-
-// Mock wallets for demo purposes
-const mockWallets: Partial<Wallet>[] = [
-  {
-    address: "0x123456789abcdef",
-    activationStatus: "active",
-    deviceShare: null,
-    authShare: null
-  },
-  {
-    address: "0xabcdef123456789",
-    activationStatus: "active",
-    deviceShare: null,
-    authShare: null
-  },
-  {
-    address: "0x987654321fedcba",
-    activationStatus: "active",
-    deviceShare: null,
-    authShare: null
-  },
-  {
-    address: "0x456789abcdef123",
-    activationStatus: "active",
-    deviceShare: null,
-    authShare: null
-  },
-  {
-    address: "0xfedcba987654321",
-    activationStatus: "active",
-    deviceShare: null,
-    authShare: null
-  },
-  {
-    address: "0x13579acegi24680",
-    activationStatus: "active",
-    deviceShare: null,
-    authShare: null
-  },
-  {
-    address: "0x24680bdfhj13579",
-    activationStatus: "active",
-    deviceShare: null,
-    authShare: null
-  }
-];
+import { useEffect, useState } from "react";
+import { concatGatewayURL } from "~gateways/utils";
+import { useGateway, FULL_HISTORY } from "~gateways/wayfinder";
+import { useNameServiceProfile } from "~lib/nameservice";
+import { svgie } from "~utils/svgies";
+import { ExtensionStorage } from "~utils/storage";
+import AppIcons from "./components/AppIcons";
+import { useAllWallets } from "~wallets/hooks";
 
 export function EmbeddedConnectAuthRequestView() {
   const { navigate } = useLocation();
-  const wallet = useActiveWallet();
-  const { authRequest } = useCurrentAuthRequest("connect");
+  const activeWallet = useActiveWallet();
+  const wallets = useAllWallets();
+  const { authRequest, rejectRequest } = useCurrentAuthRequest("connect");
+
+  const [avatar, setAvatar] = useState("");
+
+  const nameServiceProfile = useNameServiceProfile(activeWallet?.address);
+  const nsGateway = useGateway(FULL_HISTORY);
+
+  const { appInfo = {}, url = "" } = authRequest;
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  const handleClick = async (selectedWallet: Partial<Wallet>) => {
-    if (selectedWallet.address) {
+  const handleWalletSelect = (wallet: Partial<Wallet>) => () => {
+    if (wallet.address) {
       setIsDropdownOpen(false);
-      return await setActiveWallet(selectedWallet.address);
+      setActiveWallet(wallet.address);
     }
   };
 
-  // Create encoded URL for href navigation
-  const settingsUrl = (() => {
-    const encodedPayload = encodeURIComponent(JSON.stringify(authRequest));
-    return `#/wallet/settings?requestPayload=${encodedPayload}`;
-  })();
+  useEffect(() => {
+    if (!activeWallet?.address) return;
 
-  // Custom onClick handler for Box component
-  const handleWalletSelect = (mockWallet: Partial<Wallet>) => () => {
-    if (mockWallet.address) {
-      handleClick(mockWallet);
+    if (nameServiceProfile?.logo && nsGateway?.protocol && nsGateway?.host) {
+      setAvatar(concatGatewayURL(nsGateway) + "/" + nameServiceProfile.logo);
+    } else {
+      setAvatar(svgie(activeWallet?.address, { asDataURI: true }));
     }
-  };
+  }, [activeWallet, nameServiceProfile, nsGateway]);
 
   return (
     <>
       <Card
         size="auto"
-        headerText={`${authRequest.appInfo.name} would like to connect to your wallet`}
         style={{
           paddingTop: "24px",
           paddingInline: "16px",
           paddingBottom: "24px"
         }}
         hasCloseButton={false}
+        hasBackButton={false}
       >
+        <AppIcons appInfo={appInfo} />
+        <Box>
+          <Text variant="headingMd">
+            {appInfo.name} would like to connect to your wallet
+          </Text>
+        </Box>
         <Box alignment="left">
           <Text variant="bodyMd">Select an account to connect:</Text>
           <Box
@@ -107,17 +79,17 @@ export function EmbeddedConnectAuthRequestView() {
               <Row
                 alignment="center"
                 justifyContent="start"
-                style={{ padding: "12px 8px", flex: 1 }}
+                style={{ padding: 0, flex: 1 }}
               >
                 <Avatar fontColor="#EBEBF0" backgroundColor="#0D6CE9" size="lg">
-                  {wallet.nickname.charAt(0)}
+                  {activeWallet.nickname.charAt(0)}
                 </Avatar>
-                <Box isAutoWidth alignment="left">
+                <Box isAutoWidth alignment="left" style={{ padding: 0 }}>
                   <Text variant="bodyLg" style={{ color: "#121212" }}>
-                    {wallet.nickname}
+                    {activeWallet.nickname}
                   </Text>
                   <Text variant="bodySm">
-                    {formatAddress(wallet.address, 4)}
+                    {formatAddress(activeWallet.address, 4)}
                   </Text>
                 </Box>
               </Row>
@@ -136,7 +108,17 @@ export function EmbeddedConnectAuthRequestView() {
               </Button>
             </Row>
           </Box>
-          <Button variant="primary" isFullWidth href={settingsUrl}>
+        </Box>
+        <Box alignment="left" style={{ paddingTop: 0 }}>
+          <Button
+            variant="primary"
+            isFullWidth
+            onClick={() => {
+              ExtensionStorage.remove(`requested_permissions_${url}`);
+              ExtensionStorage.remove("sign_policy");
+              navigate("/wallet/settings");
+            }}
+          >
             Next
           </Button>
           <Button
@@ -147,6 +129,8 @@ export function EmbeddedConnectAuthRequestView() {
                 type: "embedded_close",
                 data: null
               });
+              navigate("/wallet");
+              rejectRequest();
             }}
           >
             Cancel
@@ -190,27 +174,28 @@ export function EmbeddedConnectAuthRequestView() {
             overflowY: "auto"
           }}
         >
-          {mockWallets.map((mockWallet, index) => (
+          {wallets.map((wallet, index) => (
             <div
-              key={mockWallet.address}
-              onClick={handleWalletSelect(mockWallet)}
+              key={wallet.address}
+              onClick={handleWalletSelect(wallet)}
               style={{
                 cursor: "pointer",
                 backgroundColor:
-                  mockWallet.address === wallet.address
+                  wallet.address === activeWallet.address
                     ? "#F5F5FA"
                     : "transparent",
                 margin: "0",
                 padding: "0",
-                transition: "background-color 0.2s ease"
+                transition: "background-color 0.2s ease",
+                width: "100%"
               }}
               onMouseEnter={(e) => {
-                if (mockWallet.address !== wallet.address) {
+                if (wallet.address !== activeWallet.address) {
                   e.currentTarget.style.backgroundColor = "#F9F9FC";
                 }
               }}
               onMouseLeave={(e) => {
-                if (mockWallet.address !== wallet.address) {
+                if (wallet.address !== activeWallet.address) {
                   e.currentTarget.style.backgroundColor = "transparent";
                 }
               }}
@@ -221,16 +206,14 @@ export function EmbeddedConnectAuthRequestView() {
                 style={{ paddingInline: "22px", marginTop: "4px" }}
               >
                 <Avatar fontColor="#EBEBF0" backgroundColor="#0D6CE9" size="lg">
-                  {mockWallet.address?.slice(0, 2).toUpperCase()}
+                  {wallet.nickname?.charAt(0)}
                 </Avatar>
                 <Box isAutoWidth alignment="left">
                   <Text variant="bodyLg" style={{ color: "#121212" }}>
-                    {`Account ${mockWallets.indexOf(mockWallet) + 1}`}
+                    {wallet.nickname}
                   </Text>
                   <Text variant="bodySm">
-                    {mockWallet.address
-                      ? formatAddress(mockWallet.address, 4)
-                      : ""}
+                    {wallet.address ? formatAddress(wallet.address, 4) : ""}
                   </Text>
                 </Box>
               </Row>

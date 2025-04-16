@@ -10,6 +10,7 @@ export type RadioBaseProps = {
   isRequired?: boolean;
   isChecked?: boolean;
   isBlurry?: boolean;
-  handleChange: (e: React.MouseEvent<HTMLInputElement>) => void;
+  handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   style?: React.CSSProperties;
+  size?: number;
 };
