@@ -15,8 +15,6 @@ import { useEffect, useMemo, useState } from "react";
 import Application, { type AppInfo } from "~applications/application";
 import { defaultGateway, type Gateway } from "~gateways/gateway";
 import Arweave from "arweave";
-import type { DecodedTag } from "~api/modules/sign/tags";
-import useSetting from "~settings/hook";
 import BigNumber from "bignumber.js";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 import { useBalance } from "~wallets/hooks";
@@ -25,11 +23,20 @@ import { AlertTriangle } from "@untitled-ui/icons-react";
 
 export function WalletTransactionSignEmbeddedView() {
   const { navigate } = useLocation();
-  const { authRequest, rejectRequest } = useCurrentAuthRequest("sign");
+  const { authRequest, rejectRequest, acceptRequest } =
+    useCurrentAuthRequest("sign");
 
   const { url = "", transaction } = authRequest;
 
   const [appInfo, setAppInfo] = useState<AppInfo & { gateway: Gateway }>();
+
+  // current message
+  const message = useMemo(() => {
+    if (typeof transaction?.data === "undefined") return "";
+    const messageBytes = new Uint8Array(transaction.data);
+
+    return new TextDecoder().decode(messageBytes);
+  }, [transaction]);
 
   // quantity
   const quantity = useMemo(() => {
@@ -62,6 +69,16 @@ export function WalletTransactionSignEmbeddedView() {
     });
     navigate("/wallet");
     rejectRequest();
+  };
+
+  const sign = async () => {
+    if (!transaction) return;
+    postEmbeddedMessage({
+      type: "embedded_close",
+      data: null
+    });
+    navigate("/wallet");
+    await acceptRequest();
   };
 
   const isTransferTx = useMemo(
@@ -171,12 +188,16 @@ export function WalletTransactionSignEmbeddedView() {
       )}
 
       <Box hasBorder alignment="left" style={{ margin: "1rem" }}>
-        <Text variant="bodySm" style={{ color: "#666666" }}>
-          Message
-        </Text>
-        <Text variant="bodySm" style={{ color: "#121212" }}>
-          This transaction is a test transaction.
-        </Text>
+        {message && (
+          <>
+            <Text variant="bodySm" style={{ color: "#666666" }}>
+              Message
+            </Text>
+            <Text variant="bodySm" style={{ color: "#121212" }}>
+              {message}
+            </Text>
+          </>
+        )}
         <Row
           isFullWidth
           justifyContent="between"
@@ -193,7 +214,7 @@ export function WalletTransactionSignEmbeddedView() {
         <Button variant="secondary" onClick={handleCancel}>
           Cancel
         </Button>
-        <Button variant="primary" href="/wallet/transaction-details">
+        <Button variant="primary" onClick={sign}>
           Confirm
         </Button>
       </Row>

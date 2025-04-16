@@ -1,4 +1,3 @@
-import { Spacer } from "@arconnect/components-rebrand";
 import Arweave from "arweave";
 import BigNumber from "bignumber.js";
 import { useMemo, useState } from "react";
@@ -12,14 +11,11 @@ import {
   ChevronRight
 } from "~components/embed/ui";
 import { defaultGateway } from "~gateways/gateway";
-import useSetting from "~settings/hook";
 import { useCurrentAuthRequest } from "~utils/auth/auth.hooks";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 import { humanizeTimestampTags } from "~utils/timestamp";
 import { useLocation } from "~wallets/router/router.utils";
-import browser from "webextension-polyfill";
 import { isSplitTransaction } from "~api/modules/sign/transaction_builder";
-import { getTagValue } from "~tokens/aoTokens/ao";
 import { formatAddress } from "~utils/format";
 import prettyBytes from "pretty-bytes";
 
@@ -30,9 +26,7 @@ export function WalletTransactionDetailsEmbeddedView() {
 
   // quantity
   const quantity = useMemo(() => {
-    if (!transaction?.quantity) {
-      return BigNumber("0");
-    }
+    if (!transaction?.quantity) return BigNumber("0");
 
     const arweave = new Arweave(defaultGateway);
     const ar = arweave.ar.winstonToAr(transaction.quantity);
@@ -40,10 +34,15 @@ export function WalletTransactionDetailsEmbeddedView() {
     return BigNumber(ar);
   }, [transaction]);
 
-  // currency setting
-  const [currency] = useSetting<string>("currency");
-
   const [showTags, setShowTags] = useState(false);
+
+  // current message
+  const message = useMemo(() => {
+    if (typeof transaction?.data === "undefined") return "";
+    const messageBytes = new Uint8Array(transaction.data);
+
+    return new TextDecoder().decode(messageBytes);
+  }, [transaction]);
 
   // transaction fee
   const fee = useMemo(() => {
@@ -76,21 +75,6 @@ export function WalletTransactionDetailsEmbeddedView() {
 
     return humanizeTimestampTags(decodedTags);
   }, [transaction]);
-
-  const headerTitle = useMemo(() => {
-    if (!tags.length) return browser.i18n.getMessage("titles_sign");
-
-    const actionValue = getTagValue("Action", tags);
-    const isAOTransaction = tags.some(
-      (tag) => tag.name === "Data-Protocol" && tag.value === "ao"
-    );
-
-    if (isAOTransaction && actionValue) {
-      return actionValue.replace(/-/g, " ");
-    }
-
-    return browser.i18n.getMessage("titles_sign");
-  }, [tags]);
 
   const recipient = useMemo(() => {
     if (tags.length === 0) return transaction?.target || "";
@@ -135,9 +119,11 @@ export function WalletTransactionDetailsEmbeddedView() {
         {recipient && (
           <TransactionTag name="To" value={formatAddress(recipient, 6)} />
         )}
+        {!quantity.isZero() && (
+          <TransactionTag name="Quantity" value={`${quantity} AR`} />
+        )}
         <TransactionTag name="Network Fee" value={`${fee} AR`} />
         <TransactionTag name="Size" value={prettyBytes(size)} />
-        <Spacer y={0.1} />
         <Row
           alignment="center"
           justifyContent="start"
@@ -156,30 +142,30 @@ export function WalletTransactionDetailsEmbeddedView() {
           >
             <ChevronRight fontSize={24} color={"#666666"} />
           </div>
-          {showTags && (
-            <Box style={{ gap: "0.5rem" }} alignment="left">
-              {tags.map((tag) => (
-                <TransactionTag
-                  key={tag.name}
-                  name={tag.name}
-                  value={tag.value}
-                />
-              ))}
-            </Box>
-          )}
         </Row>
+        {showTags && (
+          <Box style={{ gap: "0.5rem", padding: 0 }} alignment="left">
+            {tags.map((tag, index) => (
+              <TransactionTag
+                key={`${tag.name}-${index}`}
+                name={tag.name}
+                value={tag.value}
+              />
+            ))}
+          </Box>
+        )}
       </Box>
 
-      <Box hasBorder alignment="left" style={{ margin: "1rem" }}>
-        <Text variant="bodySm" style={{ color: "#666666" }}>
-          Message
-        </Text>
-        <Text variant="bodySm" style={{ color: "#121212" }}>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse
-          varius enim in eros elementum tristique. Duis cursus, mi quis viverra
-          ornare, eros dolor interdum nulla, ut commodo diam libero vitae erat.
-        </Text>
-      </Box>
+      {message && (
+        <Box hasBorder alignment="left" style={{ margin: "1rem" }}>
+          <Text variant="bodySm" style={{ color: "#666666" }}>
+            Message
+          </Text>
+          <Text variant="bodySm" style={{ color: "#121212" }}>
+            {message}
+          </Text>
+        </Box>
+      )}
     </Card>
   );
 }
