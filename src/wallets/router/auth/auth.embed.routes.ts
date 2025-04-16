@@ -12,6 +12,7 @@ import { getExtensionOverrides } from "~wallets/router/extension/extension.route
 import type { RouteConfig } from "~wallets/router/router.types";
 import { EmbeddedConnectAuthRequestView } from "~routes/embedded/wallet/connect/dapp-connect.view";
 import { WalletTransactionSignEmbeddedView } from "~routes/embedded/wallet/home/transaction-sign/transaction.sign.view";
+import { WalletTransactionSignDataEmbeddedView } from "~routes/embedded/wallet/home/transaction-sign/transaction-signdata.view";
 
 export type AuthRoutePath =
   | "/auth-request"
@@ -70,7 +71,7 @@ export const AUTH_ROUTES = [
   },
   {
     path: AuthPaths.SignDataItem,
-    component: SignDataItemAuthRequestView
+    component: WalletTransactionSignDataEmbeddedView
   },
   {
     path: AuthPaths.BatchSignDataItem,

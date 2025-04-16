@@ -46,7 +46,6 @@ import { WalletReceiveEmbeddedView } from "~routes/embedded/wallet/receive/recei
 import { WalletTransactionsEmbeddedView } from "~routes/embedded/wallet/transactions/transactions.view";
 import { WalletPermissionsRequestEmbeddedView } from "~routes/embedded/wallet/settings/settings.request.view";
 import { WalletSettingsCustomEmbeddedView } from "~routes/embedded/wallet/settings/settings.custom.view";
-import { WalletTransactionSignEmbeddedView } from "~routes/embedded/wallet/home/transaction-sign/transaction.sign.view";
 import { WalletTransactionCompleteEmbeddedView } from "~routes/embedded/wallet/home/transaction-sign/transaction-complete.view";
 import { WalletTransactionDetailsEmbeddedView } from "~routes/embedded/wallet/home/transaction-details/transaction.details.view";
 import { WalletBuyEmbeddedView } from "~routes/embedded/wallet/buy/buy.container.view";
@@ -57,6 +56,7 @@ import { WalletBuyInputEmbeddedView } from "~routes/embedded/wallet/buy/buy.inpu
 import { WalletBuySuccessEmbeddedView } from "~routes/embedded/wallet/buy/buy.success.view";
 import { WalletTransactionsHistoryEmbeddedView } from "~routes/embedded/wallet/transactions-history/transactions-history.view";
 import { EmbeddedConnectAuthRequestView } from "~routes/embedded/wallet/connect/dapp-connect.view";
+
 export type EmbeddedRoutePath =
   | "/auth"
   | "/auth/more-providers"
@@ -154,7 +154,6 @@ export const EmbeddedPaths = {
   WalletTransactionsHistoryEmbeddedView: "/wallet/transactions-history",
   WalletPermissionsRequestEmbeddedView: "/wallet/settings",
   WalletSettingsCustomEmbeddedView: "/wallet/settings/custom",
-  WalletTransactionSignEmbeddedView: "/wallet/transaction",
   WalletTransactionDetailsEmbeddedView: "/wallet/transaction-details",
   WalletTransactionCompleteEmbeddedView: "/wallet/transaction-complete/:id",
   WalletBuyEmbeddedView: "/wallet/buy",
@@ -306,10 +305,6 @@ const IFRAME_OWN_ROUTES = [
   {
     path: EmbeddedPaths.WalletSettingsCustomEmbeddedView,
     component: WalletSettingsCustomEmbeddedView
-  },
-  {
-    path: EmbeddedPaths.WalletTransactionSignEmbeddedView,
-    component: WalletTransactionSignEmbeddedView
   },
   {
     path: EmbeddedPaths.WalletTransactionDetailsEmbeddedView,

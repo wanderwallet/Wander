@@ -15,14 +15,23 @@ import { useCurrentAuthRequest } from "~utils/auth/auth.hooks";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 import { humanizeTimestampTags } from "~utils/timestamp";
 import { useLocation } from "~wallets/router/router.utils";
-import { isSplitTransaction } from "~api/modules/sign/transaction_builder";
-import { formatAddress } from "~utils/format";
+import { formatAddress, isAddressFormat } from "~utils/format";
 import prettyBytes from "pretty-bytes";
+import { useStorage, ExtensionStorage } from "~utils/storage";
 
 export function WalletTransactionDetailsEmbeddedView() {
   const { navigate } = useLocation();
-  const { authRequest, rejectRequest } = useCurrentAuthRequest("sign");
-  const { url = "", address, transaction } = authRequest;
+  const { authRequest, rejectRequest } = useCurrentAuthRequest("any");
+  const transaction =
+    (authRequest as any)?.transaction || (authRequest as any)?.data;
+
+  const [activeAddress] = useStorage<string>(
+    {
+      key: "active_address",
+      instance: ExtensionStorage
+    },
+    ""
+  );
 
   // quantity
   const quantity = useMemo(() => {
@@ -57,14 +66,16 @@ export function WalletTransactionDetailsEmbeddedView() {
 
   // transaction size
   const size = useMemo(() => {
-    if (!transaction || isSplitTransaction(transaction)) return 0;
+    if (!transaction) return 0;
 
     return transaction?.sizeInBytes ?? transaction?.data?.length ?? 0;
   }, [transaction]);
 
   // tags
   const tags = useMemo<DecodedTag[]>(() => {
-    if (!transaction || isSplitTransaction(transaction)) return [];
+    if (!transaction) return [];
+
+    if (transaction?.tags && !transaction?.get) return transaction.tags;
 
     // @ts-expect-error
     const tags = transaction.get("tags") as Tag[];
@@ -115,7 +126,7 @@ export function WalletTransactionDetailsEmbeddedView() {
         {transaction?.id && (
           <TransactionTag name="Transaction ID" value={transaction.id} />
         )}
-        <TransactionTag name="From" value={formatAddress(address, 6)} />
+        <TransactionTag name="From" value={formatAddress(activeAddress, 6)} />
         {recipient && (
           <TransactionTag name="To" value={formatAddress(recipient, 6)} />
         )}
@@ -171,13 +182,14 @@ export function WalletTransactionDetailsEmbeddedView() {
 }
 
 function TransactionTag({ name, value }: DecodedTag) {
+  const isAddress = isAddressFormat(value);
   return (
     <Row isFullWidth justifyContent="between">
       <Text variant="bodySm" style={{ color: "#666666" }}>
         {name}
       </Text>
-      <Text variant="bodySm" style={{ color: "#121212" }}>
-        {value}
+      <Text variant="bodySm">
+        {isAddress ? formatAddress(value, 6) : value}
       </Text>
     </Row>
   );

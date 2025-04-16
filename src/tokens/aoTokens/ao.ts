@@ -427,7 +427,7 @@ export async function fetchTokenBalance(
     if (token.processId === "AR") {
       return await getArTokenBalance(address);
     } else {
-      if (refresh) token = await getTokenInfo(token.processId);
+      if (refresh) token = await fetchTokenByProcessId(token.processId);
       if (token.type === "collectible") {
         return (await getAoCollectibleBalance(token, address)).toString();
       } else {
