@@ -1,6 +1,6 @@
-import { useCallback, useMemo, useRef } from "react";
+import { useCallback, useMemo } from "react";
 import { permissionData, type PermissionType } from "~applications/permissions";
-import { Card, Box, Radio } from "~components/embed/ui";
+import { Card, Box, Checkbox } from "~components/embed/ui";
 import browser from "~iframe/browser";
 import { useCurrentAuthRequest } from "~utils/auth/auth.hooks";
 import { useStorage, ExtensionStorage } from "~utils/storage";
@@ -22,11 +22,10 @@ export function WalletSettingsCustomEmbeddedView() {
     []
   );
 
-  const permissions = useMemo(() => {
-    return new Map(
-      requestedPermissions.map((permission) => [permission, true])
-    );
-  }, [requestedPermissions]);
+  const permissions = useMemo(
+    () => new Map(requestedPermissions.map((permission) => [permission, true])),
+    [requestedPermissions]
+  );
 
   const handlePermissionChange = useCallback(
     (permission: PermissionType) => {
@@ -42,6 +41,24 @@ export function WalletSettingsCustomEmbeddedView() {
     [permissions, setRequestedPermissions]
   );
 
+  const formatPermissionName = useCallback((permissionName: PermissionType) => {
+    if (permissionName === "SIGNATURE") return "Sign Data";
+
+    return permissionName
+      .split("_")
+      .map((word) => word.charAt(0) + word.slice(1).toLowerCase())
+      .join(" ");
+  }, []);
+
+  const handleClick = useCallback(
+    (e: React.MouseEvent, permission: PermissionType) => {
+      e.stopPropagation();
+      e.preventDefault();
+      handlePermissionChange(permission);
+    },
+    [handlePermissionChange]
+  );
+
   return (
     <Card
       size="auto"
@@ -51,42 +68,24 @@ export function WalletSettingsCustomEmbeddedView() {
       style={{ padding: "2rem 1rem" }}
     >
       <Box alignment="left" style={{ padding: 0 }}>
-        {Object.keys(permissionData).map(
-          (permissionName: PermissionType, i) => {
-            let formattedPermissionName = permissionName
-              .split("_")
-              .map((word) => word.charAt(0) + word.slice(1).toLowerCase())
-              .join(" ");
-
-            if (permissionName === "SIGNATURE") {
-              formattedPermissionName = "Sign Data";
-            }
-
-            return (
-              <Box
-                style={{ padding: 0 }}
-                alignment="left"
-                key={i}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-                  handlePermissionChange(permissionName);
-                }}
-              >
-                <Radio
-                  key={i}
-                  size={24}
-                  label={formattedPermissionName}
-                  description={browser.i18n.getMessage(
-                    permissionData[permissionName]
-                  )}
-                  handleChange={() => {}}
-                  isChecked={permissions.get(permissionName) ?? false}
-                />
-              </Box>
-            );
-          }
-        )}
+        {Object.keys(permissionData).map((permissionName: PermissionType) => (
+          <Box
+            style={{ padding: 0 }}
+            alignment="left"
+            key={permissionName}
+            onClick={(e) => handleClick(e, permissionName)}
+          >
+            <Checkbox
+              id={`checkbox-${permissionName}`}
+              label={formatPermissionName(permissionName)}
+              description={browser.i18n.getMessage(
+                permissionData[permissionName]
+              )}
+              handleChange={(e) => {}}
+              isChecked={permissions.get(permissionName) ?? false}
+            />
+          </Box>
+        ))}
       </Box>
     </Card>
   );
