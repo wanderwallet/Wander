@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from "react";
 import { permissionData, type PermissionType } from "~applications/permissions";
-import { Card, Box, Checkbox } from "~components/embed/ui";
+import { Card, Box, Switch } from "~components/embed/ui";
 import browser from "~iframe/browser";
 import { useCurrentAuthRequest } from "~utils/auth/auth.hooks";
 import { useStorage, ExtensionStorage } from "~utils/storage";
@@ -67,7 +67,7 @@ export function WalletSettingsCustomEmbeddedView() {
       onBackButtonClick={() => navigate("/wallet/settings")}
       style={{ padding: "2rem 1rem" }}
     >
-      <Box alignment="left" style={{ padding: 0 }}>
+      <Box alignment="left" style={{ padding: 0, gap: 16 }}>
         {Object.keys(permissionData).map((permissionName: PermissionType) => (
           <Box
             style={{ padding: 0 }}
@@ -75,7 +75,9 @@ export function WalletSettingsCustomEmbeddedView() {
             key={permissionName}
             onClick={(e) => handleClick(e, permissionName)}
           >
-            <Checkbox
+            <Switch
+              size={28}
+              labelPosition="left"
               id={`checkbox-${permissionName}`}
               label={formatPermissionName(permissionName)}
               description={browser.i18n.getMessage(

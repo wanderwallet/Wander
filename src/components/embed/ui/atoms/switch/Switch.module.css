@@ -1,59 +1,74 @@
 @import "../../../tokens/index.css";
 
-.switch__container {
+.switchContainer {
   display: flex;
-  align-items: flex-start;
+  flex-direction: row;
+  align-items: center;
+  cursor: pointer;
+  width: 100%;
   gap: var(--spacing-3);
 }
 
-.switch {
-  position: relative;
-  display: inline-block;
-  width: var(--switch-width, 44px);
-  height: var(--switch-height, 24px);
+.switchContainer__left {
+  flex-direction: row-reverse;
 }
 
-.switch__input {
-  opacity: 0;
+.switchContainer__right {
+  flex-direction: row;
+}
+
+.switch__wrapper {
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.switch {
+  visibility: hidden;
   width: 0;
   height: 0;
 }
 
-.switch__slider {
+.switch__checked + .slider {
+  background-color: var(--color-background-switch-enabled);
+}
+
+.switch__disabled + .slider {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.slider {
+  box-sizing: border-box;
   position: absolute;
   cursor: pointer;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: var(--color-switch-background-off);
-  border-radius: var(--border-radius-pill);
-  transition: var(--transition-base);
+  background-color: var(--color-button-secondary-background);
+  border-radius: calc(var(--knob-size, 16px) / 2 + var(--knob-offset, 4px));
+  transition: all 0.2s ease;
 }
 
-.switch__slider:before {
+.slider:before {
   position: absolute;
   content: "";
-  height: calc(var(--switch-height, 24px) - 8px);
-  width: calc(var(--switch-height, 24px) - 8px);
-  left: 4px;
-  bottom: 4px;
-  background-color: var(--color-switch-handle);
+  height: var(--knob-size, 16px);
+  width: var(--knob-size, 16px);
+  left: var(--knob-offset, 4px);
+  bottom: var(--knob-offset, 4px);
+  background-color: white;
   border-radius: 50%;
-  transition: var(--transition-base);
+  transition: all 0.2s ease;
+  box-shadow: 0 3px 0.5px rgba(0, 0, 0, 0.06), 0 3px 4px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(0, 0, 0, 0.04);
 }
 
-.switch__input:checked + .switch__slider {
-  background-color: var(--color-switch-background-on);
-}
-
-.switch__input:checked + .switch__slider:before {
-  transform: translateX(var(--switch-travel-distance, 20px));
-}
-
-.switch__input:disabled + .switch__slider {
-  opacity: var(--opacity-disabled);
-  cursor: not-allowed;
+.switch__checked + .slider:before {
+  transform: translateX(var(--translate-x, 20px));
 }
 
 .switch__text {
@@ -62,16 +77,25 @@
 }
 
 .switch__label {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-base);
   font-family: var(--font-family-serif);
-  font-weight: var(--font-weight-semi);
+  font-weight: var(--font-weight-medium);
   color: var(--color-copyable-text-value);
 }
 
 .switch__description {
+  font-size: var(--font-size-sm);
+  font-family: var(--font-family-serif);
+  font-weight: var(--font-weight-medium);
   color: var(--color-copyable-text-label);
 }
 
 .switch__blurry {
   filter: blur(2px);
+}
+
+.switch__content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
