@@ -11,6 +11,7 @@ import { UnlockAuthRequestView } from "~routes/auth/unlock";
 import { getExtensionOverrides } from "~wallets/router/extension/extension.routes";
 import type { RouteConfig } from "~wallets/router/router.types";
 import { EmbeddedConnectAuthRequestView } from "~routes/embedded/wallet/connect/dapp-connect.view";
+import { WalletTransactionSignEmbeddedView } from "~routes/embedded/wallet/home/transaction-sign/transaction.sign.view";
 
 export type AuthRoutePath =
   | "/auth-request"
@@ -57,7 +58,7 @@ export const AUTH_ROUTES = [
   },
   {
     path: AuthPaths.Sign,
-    component: SignAuthRequestView
+    component: WalletTransactionSignEmbeddedView
   },
   {
     path: AuthPaths.SignKeystone,
