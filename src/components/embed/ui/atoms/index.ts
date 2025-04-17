@@ -15,3 +15,4 @@ export * from "./switch";
 export * from "./upload";
 export * from "./text-input";
 export * from "./input";
+export * from "./spacer";

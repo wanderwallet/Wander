@@ -21,7 +21,7 @@ import { useBalance } from "~wallets/hooks";
 import { formatBalance } from "~utils/format";
 import { AlertTriangle } from "@untitled-ui/icons-react";
 
-export function WalletTransactionSignEmbeddedView() {
+export function EmbeddedSignAuthRequestView() {
   const { navigate } = useLocation();
   const { authRequest, rejectRequest, acceptRequest } =
     useCurrentAuthRequest("sign");

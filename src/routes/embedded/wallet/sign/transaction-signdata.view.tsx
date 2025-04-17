@@ -32,7 +32,7 @@ import arLogoLight from "url:/assets/ar/logo_light.png";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 import { useTokenBalance } from "~tokens/hooks";
 
-export function WalletTransactionSignDataEmbeddedView() {
+export function EmbeddedSignDataAuthRequestView() {
   const { navigate } = useLocation();
   const { authRequest, rejectRequest, acceptRequest } =
     useCurrentAuthRequest("signDataItem");

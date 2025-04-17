@@ -46,8 +46,8 @@ import { WalletReceiveEmbeddedView } from "~routes/embedded/wallet/receive/recei
 import { WalletTransactionsEmbeddedView } from "~routes/embedded/wallet/transactions/transactions.view";
 import { WalletPermissionsRequestEmbeddedView } from "~routes/embedded/wallet/settings/settings.request.view";
 import { WalletSettingsCustomEmbeddedView } from "~routes/embedded/wallet/settings/settings.custom.view";
-import { WalletTransactionCompleteEmbeddedView } from "~routes/embedded/wallet/home/transaction-sign/transaction-complete.view";
-import { WalletTransactionDetailsEmbeddedView } from "~routes/embedded/wallet/home/transaction-details/transaction.details.view";
+import { WalletTransactionCompleteEmbeddedView } from "~routes/embedded/wallet/sign/transaction-complete.view";
+import { WalletTransactionDetailsEmbeddedView } from "~routes/embedded/wallet/sign/transaction.details.view";
 import { WalletBuyEmbeddedView } from "~routes/embedded/wallet/buy/buy.container.view";
 import { WalletBuyCashEmbeddedView } from "~routes/embedded/wallet/buy/buy.cash.view";
 import { WalletReceiveOptionsEmbeddedView } from "~routes/embedded/wallet/receive/options/receive.options.view";
