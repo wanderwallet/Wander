@@ -168,7 +168,7 @@ export function EmbeddedConnectAuthRequestView() {
           alignment="left"
           style={{
             position: "fixed",
-            top: "50%",
+            top: "42%",
             left: "50%",
             transform: "translate(-50%, -50%)",
             width: "90%",
