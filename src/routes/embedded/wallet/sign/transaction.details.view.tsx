@@ -15,9 +15,10 @@ import { useCurrentAuthRequest } from "~utils/auth/auth.hooks";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 import { humanizeTimestampTags } from "~utils/timestamp";
 import { useLocation } from "~wallets/router/router.utils";
-import { formatAddress, isAddressFormat } from "~utils/format";
+import { formatAddress } from "~utils/format";
 import prettyBytes from "pretty-bytes";
 import { useStorage, ExtensionStorage } from "~utils/storage";
+import TransactionTag from "~components/embed/auth/TransactionTag";
 
 export function WalletTransactionDetailsEmbeddedView() {
   const { navigate } = useLocation();
@@ -178,19 +179,5 @@ export function WalletTransactionDetailsEmbeddedView() {
         </Box>
       )}
     </Card>
-  );
-}
-
-function TransactionTag({ name, value }: DecodedTag) {
-  const isAddress = isAddressFormat(value);
-  return (
-    <Row isFullWidth justifyContent="between">
-      <Text variant="bodySm" style={{ color: "#666666" }}>
-        {name}
-      </Text>
-      <Text variant="bodySm">
-        {isAddress ? formatAddress(value, 6) : value}
-      </Text>
-    </Row>
   );
 }

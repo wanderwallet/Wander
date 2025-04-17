@@ -1,5 +1,4 @@
 import { AllowanceAuthRequestView } from "~routes/auth/allowance";
-import { BatchSignDataItemAuthRequestView } from "~routes/auth/batchSignDataItem";
 import { LoadingAuthRequestView } from "~routes/auth/loading";
 import { SignKeystoneAuthRequestView } from "~routes/auth/signKeystone";
 import { SubscriptionAuthRequestView } from "~routes/auth/subscription";
@@ -10,6 +9,8 @@ import { EmbeddedConnectAuthRequestView } from "~routes/embedded/wallet/connect/
 import { EmbeddedSignDataAuthRequestView } from "~routes/embedded/wallet/sign/transaction-signdata.view";
 import { EmbeddedDecryptAuthRequestView } from "~routes/embedded/wallet/decrypt/decrypt.view";
 import { EmbeddedSignatureAuthRequestView } from "~routes/embedded/wallet/signature/signature.view";
+import { EmbeddedSignAuthRequestView } from "~routes/embedded/wallet/sign/transaction.sign.view";
+import { EmbeddedBatchSignDataItemAuthRequestView } from "~routes/embedded/wallet/sign/transaction-batch-signdata.view";
 
 export type AuthRoutePath =
   | "/auth-request"
@@ -56,7 +57,7 @@ export const AUTH_ROUTES = [
   },
   {
     path: AuthPaths.Sign,
-    component: EmbeddedSignDataAuthRequestView
+    component: EmbeddedSignAuthRequestView
   },
   {
     path: AuthPaths.SignKeystone,
@@ -72,7 +73,7 @@ export const AUTH_ROUTES = [
   },
   {
     path: AuthPaths.BatchSignDataItem,
-    component: BatchSignDataItemAuthRequestView
+    component: EmbeddedBatchSignDataItemAuthRequestView
   },
   {
     path: AuthPaths.Subscription,

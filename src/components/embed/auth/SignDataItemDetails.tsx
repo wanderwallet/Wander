@@ -1,29 +1,20 @@
-import { Loading, Section, Spacer } from "@arconnect/components";
-import {
-  FiatAmount,
-  AmountTitle,
-  Properties,
-  TransactionProperty,
-  PropertyName,
-  PropertyValue,
-  TagValue
-} from "~routes/popup/transaction/[id]";
+import { Loading } from "@arconnect/components";
+import { FiatAmount, AmountTitle } from "~routes/popup/transaction/[id]";
 import browser from "webextension-polyfill";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { formatAddress } from "~utils/format";
 import { PersistentStorage, useStorage } from "~utils/storage";
 import { ExtensionStorage } from "~utils/storage";
-import { Quantity, Token } from "ao-tokens";
+import { Quantity } from "ao-tokens";
 import prettyBytes from "pretty-bytes";
 import { formatFiatBalance } from "~tokens/currency";
 import useSetting from "~settings/hook";
-import type { TokenInfo, TokenInfoWithProcessId } from "~tokens/aoTokens/ao";
-import { ChevronUpIcon, ChevronDownIcon } from "@iconicicons/react";
+import { fetchTokenByProcessId, type TokenInfo } from "~tokens/aoTokens/ao";
 import { getUserAvatar } from "~lib/avatar";
 import { LogoWrapper, Logo } from "~components/popup/Token";
 import arLogoLight from "url:/assets/ar/logo_light.png";
-import arLogoDark from "url:/assets/ar/logo_dark.png";
-import { useTheme } from "~utils/theme";
+import { Box, ChevronRight, Spacer, Text, Row } from "../ui";
+import TransactionTag from "./TransactionTag";
 
 export default function SignDataItemDetails({ params }) {
   const [loading, setLoading] = useState<boolean>(false);
@@ -40,11 +31,7 @@ export default function SignDataItemDetails({ params }) {
     (tag) => tag.name === "Action" && tag.value === "Transfer"
   );
 
-  const theme = useTheme();
-  const arweaveLogo = useMemo(
-    () => (theme === "dark" ? arLogoDark : arLogoLight),
-    [theme]
-  );
+  const arweaveLogo = arLogoLight;
 
   useEffect(() => {
     const fetchTokenInfo = async () => {
@@ -54,24 +41,19 @@ export default function SignDataItemDetails({ params }) {
 
       try {
         setLoading(true);
-        const token = await Token(params.target);
-        tokenInfo = {
-          ...token.info,
-          Denomination: Number(token.info.Denomination)
-        };
+        tokenInfo = await fetchTokenByProcessId(params.target);
+        if (!tokenInfo) {
+          throw new Error("Token not found");
+        }
       } catch (err) {
         // fallback
         console.log("err", err);
 
         try {
-          const aoTokens =
-            (await PersistentStorage.get<TokenInfoWithProcessId[]>(
-              "ao_tokens"
-            )) || [];
-          const aoTokensCache =
-            (await PersistentStorage.get<TokenInfoWithProcessId[]>(
-              "ao_tokens_cache"
-            )) || [];
+          const [aoTokens = [], aoTokensCache = []] = await Promise.all([
+            PersistentStorage.get<TokenInfo[]>("ao_tokens"),
+            PersistentStorage.get<TokenInfo[]>("ao_tokens_cache")
+          ]);
           const aoTokensCombined = [...aoTokens, ...aoTokensCache];
           const token = aoTokensCombined.find(
             ({ processId }) => params.target === processId
@@ -109,7 +91,7 @@ export default function SignDataItemDetails({ params }) {
   const [price, setPrice] = useState(0);
 
   // transaction price
-  const fiatPrice = useMemo(() => +(amount || 0) * price, [amount]);
+  const fiatPrice = useMemo(() => +(amount || 0) * price, [amount, price]);
 
   const process = params?.target;
 
@@ -127,14 +109,10 @@ export default function SignDataItemDetails({ params }) {
     ""
   );
 
-  // adjust amount title font sizes
-  const parentRef = useRef(null);
-  const childRef = useRef(null);
-
   return (
     <>
       {params ? (
-        <Section>
+        <Box style={{ paddingLeft: 0, paddingRight: 0 }}>
           <div
             style={{
               display: "flex",
@@ -153,13 +131,13 @@ export default function SignDataItemDetails({ params }) {
             <>
               <FiatAmount>{formatFiatBalance(fiatPrice, currency)}</FiatAmount>
               <AmountTitle
-                ref={childRef}
                 style={{
                   display: "flex",
                   flexWrap: "wrap",
                   justifyContent: "center",
                   alignItems: "flex-end",
-                  marginBottom: "16px"
+                  marginBottom: "16px",
+                  color: "#666666"
                 }}
               >
                 {formattedAmount}
@@ -168,66 +146,70 @@ export default function SignDataItemDetails({ params }) {
             </>
           )}
 
-          <Properties>
+          <Box
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "0.5rem",
+              padding: 0,
+              margin: 0,
+              width: "100%"
+            }}
+            alignment="left"
+            isAutoWidth
+          >
             {params?.target && (
-              <TransactionProperty>
-                <PropertyName>
-                  {browser.i18n.getMessage("process_id")}
-                </PropertyName>
-                <PropertyValue>
-                  {formatAddress(params?.target, 6)}
-                </PropertyValue>
-              </TransactionProperty>
+              <TransactionTag
+                name={browser.i18n.getMessage("process_id")}
+                value={formatAddress(params?.target, 6)}
+              />
             )}
-            <TransactionProperty>
-              <PropertyName>
-                {browser.i18n.getMessage("transaction_from")}
-              </PropertyName>
-              <PropertyValue>{formatAddress(activeAddress, 6)}</PropertyValue>
-            </TransactionProperty>
+            <TransactionTag
+              name={browser.i18n.getMessage("transaction_from")}
+              value={formatAddress(activeAddress, 6)}
+            />
             {recipient && (
-              <TransactionProperty>
-                <PropertyName>
-                  {browser.i18n.getMessage("transaction_to")}
-                </PropertyName>
-                <PropertyValue>{formatAddress(recipient, 6)}</PropertyValue>
-              </TransactionProperty>
+              <TransactionTag
+                name={browser.i18n.getMessage("transaction_to")}
+                value={formatAddress(recipient, 6)}
+              />
             )}
 
-            <TransactionProperty>
-              <PropertyName>
-                {browser.i18n.getMessage("transaction_fee")}
-              </PropertyName>
-              <PropertyValue>0 AR</PropertyValue>
-            </TransactionProperty>
-            <TransactionProperty>
-              <PropertyName>
-                {browser.i18n.getMessage("transaction_size")}
-              </PropertyName>
-              <PropertyValue>{prettyBytes(params?.data.length)}</PropertyValue>
-            </TransactionProperty>
+            <TransactionTag
+              name={browser.i18n.getMessage("transaction_fee")}
+              value={`0 AR`}
+            />
+            <TransactionTag
+              name={browser.i18n.getMessage("transaction_size")}
+              value={prettyBytes(params?.data.length)}
+            />
             <Spacer y={0.1} />
-            <PropertyName
-              style={{
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center"
-              }}
-              onClick={() => setShowTags(!showTags)}
+            <Row
+              alignment="center"
+              justifyContent="start"
+              style={{ gap: "0.3rem", cursor: "pointer" }}
+              onClick={() => setShowTags((prev) => !prev)}
             >
-              {browser.i18n.getMessage("transaction_tags")}
-              {showTags ? <ChevronUpIcon /> : <ChevronDownIcon />}
-            </PropertyName>
+              <Text variant="bodySm" style={{ color: "#666666" }}>
+                Tags
+              </Text>
+              <div
+                style={{
+                  display: "inline-flex",
+                  transition: "transform 0.2s ease",
+                  transform: showTags ? "rotate(90deg)" : "rotate(0deg)"
+                }}
+              >
+                <ChevronRight fontSize={24} color={"#666666"} />
+              </div>
+            </Row>
             <Spacer y={0.05} />
             {showTags &&
               params?.tags?.map((tag, i) => (
-                <TransactionProperty key={i}>
-                  <PropertyName>{tag.name}</PropertyName>
-                  <TagValue>{tag.value}</TagValue>
-                </TransactionProperty>
+                <TransactionTag key={i} name={tag.name} value={tag.value} />
               ))}
-          </Properties>
-        </Section>
+          </Box>
+        </Box>
       ) : (
         <Loading />
       )}

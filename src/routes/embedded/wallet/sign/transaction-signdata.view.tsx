@@ -131,7 +131,7 @@ export function EmbeddedSignDataAuthRequestView() {
         // fallback
         console.log("err", err);
         try {
-          const [aoTokens, aoTokensCache] = await Promise.all([
+          const [aoTokens = [], aoTokensCache = []] = await Promise.all([
             PersistentStorage.get<TokenInfo[]>("ao_tokens"),
             PersistentStorage.get<TokenInfo[]>("ao_tokens_cache")
           ]);
