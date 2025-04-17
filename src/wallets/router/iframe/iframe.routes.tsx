@@ -1,4 +1,4 @@
-import { AUTH_ROUTES } from "~wallets/router/auth/auth.routes";
+import { AUTH_ROUTES } from "~wallets/router/auth/auth.embed.routes";
 import { getExtensionOverrides } from "~wallets/router/extension/extension.routes";
 import { POPUP_ROUTES } from "~wallets/router/popup/popup.routes";
 import type { RouteConfig } from "~wallets/router/router.types";
@@ -45,6 +45,7 @@ import { WalletHomeEmbeddedView } from "~routes/embedded/wallet/home/wallet.view
 import { WalletReceiveEmbeddedView } from "~routes/embedded/wallet/receive/receive.view";
 import { WalletTransactionsEmbeddedView } from "~routes/embedded/wallet/transactions/transactions.view";
 import { WalletTransactionsHistoryEmbeddedView } from "~routes/embedded/wallet/transactions-history/transactions-history.view";
+import { WalletPermissionsRequestEmbeddedView } from "~routes/embedded/wallet/settings/settings.request.view";
 import { WalletSettingsCustomEmbeddedView } from "~routes/embedded/wallet/settings/settings.custom.view";
 import { WalletTransactionSignEmbeddedView } from "~routes/embedded/wallet/home/transaction-sign/transaction.sign.view";
 import { WalletTransactionDetailsEmbeddedView } from "~routes/embedded/wallet/home/transaction-details/transaction.details.view";
@@ -54,7 +55,7 @@ import { WalletReceiveOptionsEmbeddedView } from "~routes/embedded/wallet/receiv
 import { WalletDepositTokensEmbeddedView } from "~routes/embedded/wallet/deposit/deposit.container.view";
 import { WalletBuyInputEmbeddedView } from "~routes/embedded/wallet/buy/buy.input.view";
 import { WalletBuySuccessEmbeddedView } from "~routes/embedded/wallet/buy/buy.success.view";
-import { WalletTransactionsHistoryEmbeddedView } from "~routes/embedded/wallet/transactions-history/transactions-history.view";
+import { EmbeddedConnectAuthRequestView } from "~routes/embedded/wallet/connect/dapp-connect.view";
 
 export type EmbeddedRoutePath =
   | "/auth"
@@ -101,7 +102,8 @@ export type EmbeddedRoutePath =
   | "/wallet/buy/crypto"
   | "/wallet/buy/input"
   | "/wallet/deposit"
-  | "/wallet/buy/success";
+  | "/wallet/buy/success"
+  | "/wallet/connect";
 
 export const EmbeddedPaths = {
   // TODO: Consider nesting these instead:
@@ -149,7 +151,7 @@ export const EmbeddedPaths = {
   WalletReceiveOptionsEmbeddedView: "/wallet/receive/options",
   WalletTransactionsEmbeddedView: "/wallet/transactions",
   WalletTransactionsHistoryEmbeddedView: "/wallet/transactions-history",
-  WalletSettingsEmbeddedView: "/wallet/settings",
+  WalletPermissionsRequestEmbeddedView: "/wallet/settings",
   WalletSettingsCustomEmbeddedView: "/wallet/settings/custom",
   WalletTransactionSignEmbeddedView: "/wallet/transaction",
   WalletTransactionDetailsEmbeddedView: "/wallet/transaction-details",
@@ -157,7 +159,8 @@ export const EmbeddedPaths = {
   WalletBuyCashEmbeddedView: "/wallet/buy/cash",
   WalletDepositTokensEmbeddedView: "/wallet/deposit",
   WalletBuyInputEmbeddedView: "/wallet/buy/crypto",
-  WalletBuySuccessEmbeddedView: "/wallet/buy/success"
+  WalletBuySuccessEmbeddedView: "/wallet/buy/success",
+  ConnectEmbeddedView: "/wallet/connect"
 
   // TODO: Add pages to add/link additional auth methods or devices post-auth (under /account)
 } as const satisfies Record<string, EmbeddedRoutePath>;
@@ -184,6 +187,10 @@ const IFRAME_OWN_ROUTES = [
   {
     path: EmbeddedPaths.AuthImportKeyfile,
     component: AuthImportKeyfileEmbeddedView
+  },
+  {
+    path: EmbeddedPaths.ConnectEmbeddedView,
+    component: EmbeddedConnectAuthRequestView
   },
 
   // Authentication Linking:
@@ -295,8 +302,8 @@ const IFRAME_OWN_ROUTES = [
     component: WalletTransactionsHistoryEmbeddedView
   },
   {
-    path: EmbeddedPaths.WalletSettingsEmbeddedView,
-    component: WalletBuyEmbeddedView
+    path: EmbeddedPaths.WalletPermissionsRequestEmbeddedView,
+    component: WalletPermissionsRequestEmbeddedView
   },
   {
     path: EmbeddedPaths.WalletSettingsCustomEmbeddedView,
@@ -333,10 +340,6 @@ const IFRAME_OWN_ROUTES = [
   {
     path: EmbeddedPaths.WalletBuySuccessEmbeddedView,
     component: WalletBuySuccessEmbeddedView
-  },
-  {
-    path: EmbeddedPaths.WalletTransactionsHistoryEmbeddedView,
-    component: WalletTransactionsHistoryEmbeddedView
   }
 ] as const satisfies RouteConfig<EmbeddedRoutePath>[];
 
@@ -350,8 +353,11 @@ export const IFRAME_ROUTES = [
   // popup.tsx:
   ...POPUP_ROUTES.filter((route) => !isRouteOverride(route.path)),
 
-  // auth.tsx:
-  ...AUTH_ROUTES.filter((route) => !isRouteOverride(route.path)),
+  // auth.tsx: filter out the settings path as it's defined in IFRAME_OWN_ROUTES
+  ...AUTH_ROUTES.filter(
+    (route) =>
+      !isRouteOverride(route.path) && !route.path.includes("/wallet/settings/")
+  ),
 
   // OAuth Error:
   {

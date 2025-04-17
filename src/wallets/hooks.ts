@@ -29,6 +29,7 @@ import {
 } from "~notifications/utils";
 import { gql } from "~gateways/api";
 import BigNumber from "bignumber.js";
+import { storage } from "~iframe/browser/storage/storage.mock";
 
 /**
  * Wallets with details hook
@@ -106,6 +107,18 @@ export function useActiveWallet() {
   );
 
   return wallet;
+}
+
+export function useAllWallets() {
+  const [wallets = [] as StoredWallet[]] = useStorage<StoredWallet[]>(
+    {
+      key: "wallets",
+      instance: ExtensionStorage
+    },
+    []
+  );
+
+  return wallets;
 }
 
 export async function setActiveWallet(address?: string) {

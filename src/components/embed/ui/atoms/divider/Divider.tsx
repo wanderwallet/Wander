@@ -2,7 +2,7 @@ import React, { forwardRef } from "react";
 import clsx from "clsx";
 import styles from "./Divider.module.css";
 import type { DividerBaseProps } from "./Divider.types";
-import { Text } from "..";
+import { Text } from "../text";
 import { useTheme } from "../../../contexts/ThemeContext";
 
 const Divider = forwardRef<HTMLDivElement, DividerBaseProps>(

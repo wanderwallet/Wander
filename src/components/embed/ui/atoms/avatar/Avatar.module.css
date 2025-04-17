@@ -23,6 +23,7 @@
 }
 
 .avatar__lg {
-  width: var(--avatar-size-lg, 48px);
-  height: var(--avatar-size-lg, 48px);
+  width: var(--avatar-size-lg, 40px);
+  height: var(--avatar-size-lg, 40px);
+  border-radius: 14px;
 }

@@ -10,5 +10,5 @@ export type BoxBaseProps = {
   style?: React.CSSProperties;
   isBlurry?: boolean;
   isAutoWidth?: boolean;
-  onClick?: () => void;
+  onClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
 };
