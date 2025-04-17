@@ -2936,6 +2936,10 @@
         "message": "密钥文件是一个包含加密私钥的JSON文件",
         "description": "Tooltip explaining what a keyfile is"
     },
+    "enter_an_amount": {
+        "message": "输入金额",
+        "description": "Enter an amount text"
+    },
     "pending": {
         "message": "待定",
         "description": "Pending text"
