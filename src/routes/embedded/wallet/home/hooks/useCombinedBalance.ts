@@ -1,5 +1,5 @@
 import BigNumber from "bignumber.js";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { getAr24hChange, useArPrice } from "~lib/coingecko";
 import { ExtensionStorage } from "~utils/storage";
 import useSetting from "~settings/hook";
@@ -31,6 +31,12 @@ export function useCombinedBalance() {
     instance: ExtensionStorage
   });
 
+  const savedAr24hChangeRef = useRef(savedAr24hChange);
+
+  useEffect(() => {
+    savedAr24hChangeRef.current = savedAr24hChange;
+  }, [savedAr24hChange]);
+
   useEffect(() => {
     if (!currency) return;
 
@@ -51,10 +57,9 @@ export function useCombinedBalance() {
       } catch (error) {
         console.error("Error fetching AR 24h change:", error);
 
-        // Check if we have a saved value
-        if (savedAr24hChange) {
-          const fallbackPercentage = BigNumber(savedAr24hChange.value);
-          setPercentage(fallbackPercentage);
+        const latestSavedValue = savedAr24hChangeRef.current;
+        if (latestSavedValue && latestSavedValue.value !== undefined) {
+          setPercentage(BigNumber(latestSavedValue.value));
         } else {
           setPercentage(BigNumber(0));
         }
@@ -62,7 +67,7 @@ export function useCombinedBalance() {
     };
 
     fetchAr24hChange();
-  }, [balance, currency, savedAr24hChange, setSavedAr24hChange]);
+  }, [balance, currency, setSavedAr24hChange]);
 
   useEffect(() => {
     setFiatBalance(totalFiatBalance.toNumber());

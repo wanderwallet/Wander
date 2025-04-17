@@ -31,6 +31,7 @@ import { humanizeTimestampTags } from "~utils/timestamp";
 import arLogoLight from "url:/assets/ar/logo_light.png";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 import { useTokenBalance } from "~tokens/hooks";
+import { Loading } from "@arconnect/components-rebrand";
 
 export function EmbeddedSignDataAuthRequestView() {
   const { navigate } = useLocation();
@@ -70,7 +71,10 @@ export function EmbeddedSignDataAuthRequestView() {
     [process, denomination]
   );
 
-  const { data: balance = "0" } = useTokenBalance(tokenInfo, activeAddress);
+  const { data: balance = "0", isLoading: balanceLoading } = useTokenBalance(
+    tokenInfo,
+    activeAddress
+  );
 
   const formattedAmount = useMemo(
     () => (amount || 0).toLocaleString(),
@@ -226,9 +230,13 @@ export function EmbeddedSignDataAuthRequestView() {
                 Balance
               </Text>
 
-              <Text variant="bodyMd" style={{ color: "#121212" }}>
-                {balance} {tokenName}
-              </Text>
+              {balanceLoading ? (
+                <Loading style={{ width: 24, height: 24 }} />
+              ) : (
+                <Text variant="bodyMd" style={{ color: "#121212" }}>
+                  {balance} {tokenName}
+                </Text>
+              )}
             </Row>
           </Box>
           <Row isFullWidth justifyContent="between">
