@@ -1,13 +1,17 @@
-import { useMemo, useState } from "react";
-import { Card, Row, Text, Box, Button } from "~components/embed/ui";
+import { Card, Text, Box, Button } from "~components/embed/ui";
 import { useActiveWallet, useTransactions } from "~wallets/hooks";
 import { useLocation } from "~wallets/router/router.utils";
+import browser from "webextension-polyfill";
+import { Loading } from "@arconnect/components-rebrand";
+import TransactionGroup from "./components/TransactionGroup";
 
 export function WalletTransactionsEmbeddedView() {
   const { address } = useActiveWallet();
-
-  const { transactions, loading } = useTransactions(address);
   const { navigate } = useLocation();
+  const { transactions, loading, hasNextPage, count } = useTransactions(
+    address,
+    3
+  );
 
   return (
     <Card
@@ -15,42 +19,31 @@ export function WalletTransactionsEmbeddedView() {
       headerText="Transaction History"
       hasBackButton={true}
       onBackButtonClick={() => navigate("/wallet")}
-      style={{ padding: "2rem" }}
+      style={{ padding: "2rem", overflowY: "auto" }}
     >
-      <Box hasBorder style={{ margin: "1rem" }}>
-        <Row isFullWidth justifyContent="between">
-          <Text variant="bodyMd" style={{ color: "#121212" }}>
-            Created a Repo
-          </Text>
-          <Text variant="bodyMd" style={{ color: "#121212" }}>
-            -2.0010
-          </Text>
-        </Row>
-        <Row isFullWidth justifyContent="between">
-          <Text variant="bodySm">January 3</Text>
-          <Text variant="bodySm">Balance: 5.9980</Text>
-        </Row>
-      </Box>
+      {count.current > 0 ? (
+        Object.entries(transactions).map(([monthYear, transactions]) => (
+          <TransactionGroup
+            key={monthYear}
+            monthYear={monthYear}
+            transactions={transactions}
+          />
+        ))
+      ) : (
+        <Box>
+          {loading ? (
+            <Loading style={{ width: "20px", height: "20px" }} />
+          ) : (
+            <Text>{browser.i18n.getMessage("no_transactions")}</Text>
+          )}
+        </Box>
+      )}
 
-      {/* {Object.values(transactions).map((tx) => (
-        <Box hasBorder style={{ margin: "1rem" }}>
-          <Row isFullWidth justifyContent="between">
-            <Text variant="bodyMd" style={{ color: "#121212" }}>
-              {tx.aoInfo.tickerName}
-            </Text>
-            <Text variant="bodyMd" style={{ color: "#121212" }}>
-              {tx.aoInfo.quantity}
-            </Text>
-          </Row>
-          <Row isFullWidth justifyContent="between">
-            <Text variant="bodySm">{tx.date}</Text>
-            {/* <Text variant="bodySm">Balance: 5.9980</Text> */}
-      {/* </Row>
-        </Box> */}
-      {/* ))} */}
-      <Button variant="link" href="#/wallet/transactions-history">
-        View all transactions
-      </Button>
+      {!loading && (count.actual > 3 || hasNextPage) && (
+        <Button variant="link" href="/wallet/transactions-history">
+          View all transactions
+        </Button>
+      )}
     </Card>
   );
 }

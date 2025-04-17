@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import BigNumber from "bignumber.js";
 import redstone from "redstone-api";
 import { getConversionRate } from "~utils/currency";
+import { CACHE_API } from "~constants/api";
 import { withRetry } from "~utils/promises/retry";
 import { ExtensionStorage } from "~utils/storage";
 
@@ -15,7 +16,7 @@ export async function getPrice(symbol: string, currency: string) {
   try {
     const wanderData = await (
       await fetch(
-        `https://wander-cache-ruddy.vercel.app/api/price?symbol=${symbol.toLowerCase()}&currency=${currency.toLowerCase()}`
+        `${CACHE_API}/api/price?symbol=${symbol.toLowerCase()}&currency=${currency.toLowerCase()}`
       )
     ).json();
 

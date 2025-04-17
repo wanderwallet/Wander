@@ -21,6 +21,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "~": path.resolve(__dirname, "./src"),
+      "~constants": path.resolve(__dirname, "./src/constants"),
       "~api": path.resolve(__dirname, "./src/api"),
       "~applications": path.resolve(__dirname, "./src/applications"),
       "~components": path.resolve(__dirname, "./src/components"),
