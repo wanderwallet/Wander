@@ -231,7 +231,7 @@ export function EmbeddedSignDataAuthRequestView() {
               </Text>
 
               {balanceLoading ? (
-                <Loading style={{ width: 24, height: 24 }} />
+                <Loading style={{ width: 16, height: 16, color: "#666666" }} />
               ) : (
                 <Text variant="bodyMd" style={{ color: "#121212" }}>
                   {balance} {tokenName}
@@ -243,9 +243,13 @@ export function EmbeddedSignDataAuthRequestView() {
             <Text variant="bodySm" style={{ color: "#666666" }}>
               Amount
             </Text>
-            <Text variant="bodySm" style={{ color: "#121212" }}>
-              {formattedAmount} {tokenName}
-            </Text>
+            {loading ? (
+              <Loading style={{ width: 16, height: 16, color: "#666666" }} />
+            ) : (
+              <Text variant="bodySm" style={{ color: "#121212" }}>
+                {formattedAmount} {tokenName}
+              </Text>
+            )}
           </Row>
           <Row isFullWidth justifyContent="between">
             <Text variant="bodySm" style={{ color: "#666666" }}>
