@@ -44,6 +44,7 @@ import { AccountExportWalletEmbeddedView } from "~routes/embedded/account/export
 import { WalletHomeEmbeddedView } from "~routes/embedded/wallet/home/wallet.view";
 import { WalletReceiveEmbeddedView } from "~routes/embedded/wallet/receive/receive.view";
 import { WalletTransactionsEmbeddedView } from "~routes/embedded/wallet/transactions/transactions.view";
+import { WalletTransactionsHistoryEmbeddedView } from "~routes/embedded/wallet/transactions-history/transactions-history.view";
 import { WalletPermissionsRequestEmbeddedView } from "~routes/embedded/wallet/settings/settings.request.view";
 import { WalletSettingsCustomEmbeddedView } from "~routes/embedded/wallet/settings/settings.custom.view";
 import { WalletTransactionCompleteEmbeddedView } from "~routes/embedded/wallet/sign/transaction-complete.view";
@@ -54,7 +55,6 @@ import { WalletReceiveOptionsEmbeddedView } from "~routes/embedded/wallet/receiv
 import { WalletDepositTokensEmbeddedView } from "~routes/embedded/wallet/deposit/deposit.container.view";
 import { WalletBuyInputEmbeddedView } from "~routes/embedded/wallet/buy/buy.input.view";
 import { WalletBuySuccessEmbeddedView } from "~routes/embedded/wallet/buy/buy.success.view";
-import { WalletTransactionsHistoryEmbeddedView } from "~routes/embedded/wallet/transactions-history/transactions-history.view";
 import { EmbeddedConnectAuthRequestView } from "~routes/embedded/wallet/connect/dapp-connect.view";
 
 export type EmbeddedRoutePath =
@@ -299,6 +299,10 @@ const IFRAME_OWN_ROUTES = [
     component: WalletTransactionsEmbeddedView
   },
   {
+    path: EmbeddedPaths.WalletTransactionsHistoryEmbeddedView,
+    component: WalletTransactionsHistoryEmbeddedView
+  },
+  {
     path: EmbeddedPaths.WalletPermissionsRequestEmbeddedView,
     component: WalletPermissionsRequestEmbeddedView
   },
@@ -337,10 +341,6 @@ const IFRAME_OWN_ROUTES = [
   {
     path: EmbeddedPaths.WalletBuySuccessEmbeddedView,
     component: WalletBuySuccessEmbeddedView
-  },
-  {
-    path: EmbeddedPaths.WalletTransactionsHistoryEmbeddedView,
-    component: WalletTransactionsHistoryEmbeddedView
   }
 ] as const satisfies RouteConfig<EmbeddedRoutePath>[];
 
