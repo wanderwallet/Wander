@@ -6,7 +6,8 @@
 .light {
   --color-background-default: var(--brand-color-neutral6);
   --color-background-button-primary: var(--brand-color-primary3);
-  --color-background-button-secondary: var(--brand-color-secondary6);
+  --color-background-button-secondary: var(--brand-color-neutral7);
+
   --color-button-primary-active: var(--brand-color-neutral6);
   --color-button-primary-success: var(--brand-color-success1);
   --color-button-primary-error: var(--brand-color-error1);
@@ -19,6 +20,7 @@
   --color-button-secondary-background: var(--brand-color-gray-100);
 
   --color-divider-default: var(--brand-color-gray-200);
+
   --color-link-primary: var(--brand-color-primary3);
   --color-link-secondary: var(--brand-color-secondary5);
   --color-link-disabled: var(--brand-color-gray-300);
@@ -51,4 +53,8 @@
 
   --color-background-switch-enabled: var(--brand-color-primary3);
   --color-background-button-disabled: var(--brand-color-neutral3);
+  --avatar-background: #0d6ce9;
+
+  --text-input-background: var(--brand-color-neutral8);
+  --text-input-color: var(--brand-color-neutral1);
 }

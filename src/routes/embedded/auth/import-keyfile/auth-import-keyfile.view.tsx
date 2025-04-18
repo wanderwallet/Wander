@@ -1,22 +1,21 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { JWKInterface } from "arweave/web/lib/wallet";
 
 import {
   Card,
   Row,
   Upload,
-  WanderIcon,
-  Text,
   Copyable,
-  Button
+  Button,
+  WanderFooter
 } from "~components/embed";
 import copy from "copy-to-clipboard";
-
+import { useLocation } from "~wallets/router/router.utils";
+import { toast } from "react-toastify";
 export function AuthImportKeyfileEmbeddedView() {
   const [loading, setLoading] = useState(false);
   const [jsonData, setJsonData] = useState<any>(null);
-
+  const { back } = useLocation();
   const handleJsonParse = (parsedData: any) => {
     setJsonData(parsedData);
   };
@@ -38,13 +37,13 @@ export function AuthImportKeyfileEmbeddedView() {
 
         if (!tempWallet) {
           setLoading(false);
-          return alert(`Something isn't right`);
+          return toast.error(`Something isn't right`);
         }
         setLoading(false);
         return tempWallet;
       }
     } catch (error) {
-      alert(error);
+      toast.error(error);
     } finally {
       setLoading(false);
     }
@@ -78,26 +77,16 @@ export function AuthImportKeyfileEmbeddedView() {
 
   return importedTempWalletAddress ? (
     <Card
-      headerText="Enter Seedphrase"
+      headerText="Enter Keyfile"
       subtitle="Would you like to add this wallet to your account?"
-      footerElement={
-        <Row>
-          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
-            {"Secured by"}
-          </Text>
-          <WanderIcon color="#838383" />
-        </Row>
-      }
+      footerElement={<WanderFooter />}
       hasBackButton={true}
-      onBackButtonClick={() => {
-        window.history.back();
-      }}
-      //   hasCloseButton={false}
+      onBackButtonClick={back}
       size="auto"
     >
       <Copyable
         isFullWidth
-        label="Your account address"
+        label="Your wallet address"
         onClick={() => {
           copy(importedTempWalletAddress);
         }}
@@ -125,19 +114,9 @@ export function AuthImportKeyfileEmbeddedView() {
     <Card
       headerText="Import private key"
       subtitle="Upload your private key to connect your wallet to your account."
-      footerElement={
-        <Row>
-          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
-            {"Secured by"}
-          </Text>
-          <WanderIcon color="#838383" />
-        </Row>
-      }
+      footerElement={<WanderFooter />}
       hasBackButton={true}
-      onBackButtonClick={() => {
-        window.history.back();
-      }}
-      //   hasCloseButton={false}
+      onBackButtonClick={back}
       size="auto"
     >
       <Upload
@@ -152,6 +131,7 @@ export function AuthImportKeyfileEmbeddedView() {
         isFullWidth
         size="md"
         isLoading={loading}
+        isDisabled={!jsonData || loading}
         onClick={handleImportWallet}
       >
         Import

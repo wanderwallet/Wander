@@ -1,48 +1,31 @@
 import copy from "copy-to-clipboard";
-import {
-  Card,
-  Row,
-  WanderIcon,
-  Text,
-  Button,
-  Copyable
-} from "~components/embed/ui";
+import { Card, Button, Copyable, WanderFooter } from "~components/embed/ui";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
+import { useLocation } from "~wallets/router/router.utils";
 
 export function AccountEmbeddedView() {
   const { wallets } = useEmbedded();
-
+  const { back } = useLocation();
   const { address } = wallets[0];
 
   return (
     <Card
       headerText={"Account"}
-      subtitle="A confirmation email has been sent with recovery instructions."
-      footerElement={
-        <Row>
-          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
-            {"Secured by"}
-          </Text>
-          <WanderIcon color="#838383" />
-        </Row>
-      }
+      footerElement={<WanderFooter />}
       hasBackButton={true}
-      onBackButtonClick={() => {
-        window.history.back();
-      }}
-      //   hasCloseButton={false}
+      onBackButtonClick={back}
       size="auto"
     >
       <Copyable
         style={{ margin: "32px 0" }}
         isFullWidth
-        label="Your account address"
+        label="Your wallet address"
         onClick={() => {
-          copy(JSON.stringify(address, null, 2));
+          copy(address);
         }}
-        value={JSON.stringify(address, null, 2)}
+        value={address}
       />
-      <Button isFullWidth size="md" href="#/">
+      <Button isFullWidth size="md" href="/wallet">
         Home
       </Button>
       <Button isFullWidth size="md" href="#/account/add-wallet">

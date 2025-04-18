@@ -65,7 +65,6 @@ export default defineConfig({
         __dirname,
         "./src/utils/messaging/strategies/iframe/iframe-chunking.strategy.ts"
       ),
-
       // Polyfill `webextension-polyfill` for embedded, as that's not a BE but a regular SPA:
       "webextension-polyfill": path.resolve(__dirname, "./src/iframe/browser")
     }

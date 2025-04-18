@@ -1,9 +1,13 @@
 import * as React from "react";
 import type { SVGProps } from "react";
-const SvgCopyable = (props: SVGProps<SVGSVGElement>) => (
+const SvgCopyable = ({
+  width = 17,
+  height = 17,
+  ...props
+}: SVGProps<SVGSVGElement>) => (
   <svg
-    width="17"
-    height="17"
+    width={width}
+    height={height}
     viewBox="0 0 17 17"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"

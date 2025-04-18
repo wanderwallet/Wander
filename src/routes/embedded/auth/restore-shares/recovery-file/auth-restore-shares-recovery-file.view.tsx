@@ -1,16 +1,11 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useCallback, useRef, useState } from "react";
-
-import {
-  Card,
-  Row,
-  Upload,
-  WanderIcon,
-  Text,
-  Button
-} from "~components/embed/ui";
+import { toast } from "react-toastify";
+import { Card, Upload, Button, WanderFooter } from "~components/embed/ui";
+import { useLocation } from "~wallets/router/router.utils";
 
 export function AuthRestoreSharesRecoveryFileEmbeddedView() {
+  const { navigate, back } = useLocation();
   const [loading, setLoading] = useState(false);
   const { currentWallet, recoverWallet } = useEmbedded();
   const walletAddress = currentWallet.address;
@@ -21,24 +16,24 @@ export function AuthRestoreSharesRecoveryFileEmbeddedView() {
   };
 
   const handleRestore = useCallback(async () => {
+    setLoading(true);
     try {
-      setLoading(true);
       if (jsonData) {
         const restoredWallet = recoverWallet(jsonData);
 
         if (!restoredWallet) {
           setLoading(false);
-          return alert(`Something isn't right`);
+          return toast.error(`Something isn't right`);
         }
         setLoading(false);
         return restoredWallet;
       }
     } catch (error) {
-      alert(error);
+      toast.error(error);
     } finally {
       setLoading(false);
     }
-  }, [jsonData]);
+  }, []);
 
   // TODO: The recovery file should probably include the wallet address or a hash so that we can
   // request the recovery of the right one from the backend without asking the user to manually select
@@ -49,22 +44,11 @@ export function AuthRestoreSharesRecoveryFileEmbeddedView() {
   return (
     <Card
       headerText="Restore shares / wallet"
-      footerElement={
-        <Row>
-          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
-            {"Secured by"}
-          </Text>
-          <WanderIcon color="#838383" />
-        </Row>
-      }
+      footerElement={<WanderFooter />}
       hasBackButton={true}
-      onBackButtonClick={() => {
-        window.history.back();
-      }}
+      onBackButtonClick={back}
       hasCloseButton={true}
-      onCloseButtonClick={() => {
-        window.location.href = "/auth/restore-shares";
-      }}
+      onCloseButtonClick={() => navigate("/auth/restore-shares")}
       size="auto"
     >
       <Upload
@@ -75,7 +59,13 @@ export function AuthRestoreSharesRecoveryFileEmbeddedView() {
         loadingText={"Restoring account..."}
         onFileParse={handleJsonParse}
       />
-      <Button isFullWidth size="md" isLoading={loading} onClick={handleRestore}>
+      <Button
+        isFullWidth
+        size="md"
+        isLoading={loading}
+        isDisabled={!jsonData}
+        onClick={handleRestore}
+      >
         Restore
       </Button>
     </Card>

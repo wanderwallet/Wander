@@ -1340,7 +1340,6 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
         registerWallet,
         clearLastRegisteredWallet,
-
         skipBackUp,
         downloadKeyfile,
         copySeedphrase,

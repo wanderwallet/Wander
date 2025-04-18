@@ -6,15 +6,16 @@ import {
   Button,
   Card,
   FacebookIcon,
-  Row,
-  Text,
   TwitterIcon,
-  WanderIcon
+  WanderFooter
 } from "~components/embed";
 import { useCallback, useState } from "react";
 import type { AuthProviderType } from "embed-api";
+import { useLocation } from "~wallets/router/router.utils";
+import { toast } from "react-toastify";
 
 export function AuthMoreProvidersEmbeddedView() {
+  const { back } = useLocation();
   const { authenticate, authStatus } = useEmbedded();
 
   const [selectedAuthProviderType, setSelectedAuthProviderType] =
@@ -30,9 +31,13 @@ export function AuthMoreProvidersEmbeddedView() {
 
   const handleAuthenticate = useCallback(
     async (authProviderType: AuthProviderType) => {
-      setSelectedAuthProviderType(authProviderType);
-      await authenticate(authProviderType);
-      setSelectedAuthProviderType(null);
+      try {
+        setSelectedAuthProviderType(authProviderType);
+        await authenticate(authProviderType);
+        setSelectedAuthProviderType(null);
+      } catch (error) {
+        toast.error(`Error signing in with ${authProviderType}`);
+      }
     },
     []
   );
@@ -41,19 +46,9 @@ export function AuthMoreProvidersEmbeddedView() {
     <Card
       headerText="Sign Up or Sign In"
       subtitle="Select a method to authenticate"
-      footerElement={
-        <Row>
-          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
-            {"Secured by"}
-          </Text>
-          <WanderIcon color="#838383" />
-        </Row>
-      }
+      footerElement={<WanderFooter />}
       hasBackButton={true}
-      onBackButtonClick={() => {
-        window.history.back();
-      }}
-      //   hasCloseButton={false}
+      onBackButtonClick={back}
       size="auto"
     >
       <Box>
