@@ -60,13 +60,13 @@ export function WalletSettingsCustomEmbeddedView() {
     [handlePermissionChange]
   );
 
-  const handleCancel = () => {
+  const handleCancel = async () => {
     postEmbeddedMessage({
       type: "embedded_close",
       data: null
     });
     navigate("/wallet");
-    rejectRequest();
+    await rejectRequest();
   };
 
   return (
@@ -79,7 +79,7 @@ export function WalletSettingsCustomEmbeddedView() {
       onCloseButtonClick={handleCancel}
       style={{ padding: "2rem 1rem" }}
     >
-      <Box alignment="left" style={{ padding: 0, gap: 16 }}>
+      <Box alignment="left" style={{ gap: 16 }}>
         {Object.keys(permissionData).map((permissionName: PermissionType) => (
           <Box
             style={{ padding: 0 }}

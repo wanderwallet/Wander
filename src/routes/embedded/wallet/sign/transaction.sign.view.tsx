@@ -5,7 +5,6 @@ import {
   Box,
   Button,
   Divider,
-  ChevronRight,
   XClose
 } from "~components/embed/ui";
 import { useLocation } from "~wallets/router/router.utils";
@@ -20,6 +19,7 @@ import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-mes
 import { useBalance } from "~wallets/hooks";
 import { formatBalance } from "~utils/format";
 import { AlertTriangle } from "@untitled-ui/icons-react";
+import TransactionMessage from "~components/embed/auth/TransactionMessage";
 
 export function EmbeddedSignAuthRequestView() {
   const { navigate } = useLocation();
@@ -29,14 +29,6 @@ export function EmbeddedSignAuthRequestView() {
   const { url = "", transaction } = authRequest;
 
   const [appInfo, setAppInfo] = useState<AppInfo & { gateway: Gateway }>();
-
-  // current message
-  const message = useMemo(() => {
-    if (typeof transaction?.data === "undefined") return "";
-    const messageBytes = new Uint8Array(transaction.data);
-
-    return new TextDecoder().decode(messageBytes);
-  }, [transaction]);
 
   // quantity
   const quantity = useMemo(() => {
@@ -62,13 +54,13 @@ export function EmbeddedSignAuthRequestView() {
     return arweave.ar.winstonToAr(transaction.reward);
   }, [transaction]);
 
-  const handleCancel = () => {
+  const handleCancel = async () => {
     postEmbeddedMessage({
       type: "embedded_close",
       data: null
     });
     navigate("/wallet");
-    rejectRequest();
+    await rejectRequest();
   };
 
   const sign = async () => {
@@ -187,29 +179,7 @@ export function EmbeddedSignAuthRequestView() {
         </Row>
       )}
 
-      <Box hasBorder alignment="left" style={{ margin: "1rem" }}>
-        {message && (
-          <>
-            <Text variant="bodySm" style={{ color: "#666666" }}>
-              Message
-            </Text>
-            <Text variant="bodySm" style={{ color: "#121212" }}>
-              {message}
-            </Text>
-          </>
-        )}
-        <Row
-          isFullWidth
-          justifyContent="between"
-          style={{ marginTop: "0.5rem", cursor: "pointer" }}
-          onClick={() => navigate("/wallet/transaction-details")}
-        >
-          <Text variant="bodySm" style={{ color: "#666666" }}>
-            Transaction details
-          </Text>
-          <ChevronRight fontSize={24} color={"#121212"} />
-        </Row>
-      </Box>
+      <TransactionMessage transaction={transaction} />
       <Row>
         <Button variant="secondary" onClick={handleCancel}>
           Cancel

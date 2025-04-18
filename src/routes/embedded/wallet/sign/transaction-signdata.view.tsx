@@ -5,7 +5,6 @@ import {
   Box,
   Button,
   Divider,
-  ChevronRight,
   XClose
 } from "~components/embed/ui";
 import { useLocation } from "~wallets/router/router.utils";
@@ -32,6 +31,7 @@ import arLogoLight from "url:/assets/ar/logo_light.png";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 import { useTokenBalance } from "~tokens/hooks";
 import { Loading } from "@arconnect/components-rebrand";
+import TransactionMessage from "~components/embed/auth/TransactionMessage";
 
 export function EmbeddedSignDataAuthRequestView() {
   const { navigate } = useLocation();
@@ -93,21 +93,13 @@ export function EmbeddedSignDataAuthRequestView() {
     await acceptRequest();
   }
 
-  // current message
-  const message = useMemo(() => {
-    if (typeof data?.data === "undefined") return "";
-    const messageBytes = new Uint8Array(data.data);
-
-    return new TextDecoder().decode(messageBytes);
-  }, [data]);
-
-  const handleCancel = () => {
+  const handleCancel = async () => {
     postEmbeddedMessage({
       type: "embedded_close",
       data: null
     });
     navigate("/wallet");
-    rejectRequest();
+    await rejectRequest();
   };
 
   useEffect(() => {
@@ -285,29 +277,7 @@ export function EmbeddedSignDataAuthRequestView() {
         </Row>
       )}
 
-      <Box hasBorder alignment="left" style={{ margin: "1rem" }}>
-        {message && (
-          <>
-            <Text variant="bodySm" style={{ color: "#666666" }}>
-              Message
-            </Text>
-            <Text variant="bodySm" style={{ color: "#121212" }}>
-              {message}
-            </Text>
-          </>
-        )}
-        <Row
-          isFullWidth
-          justifyContent="between"
-          style={{ marginTop: "0.5rem", cursor: "pointer" }}
-          onClick={() => navigate("/wallet/transaction-details")}
-        >
-          <Text variant="bodySm" style={{ color: "#666666" }}>
-            Transaction details
-          </Text>
-          <ChevronRight fontSize={24} color={"#121212"} />
-        </Row>
-      </Box>
+      <TransactionMessage transaction={data} />
       <Row>
         <Button variant="secondary" onClick={handleCancel}>
           Cancel

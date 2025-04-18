@@ -19,6 +19,7 @@ import { formatAddress } from "~utils/format";
 import prettyBytes from "pretty-bytes";
 import { useStorage, ExtensionStorage } from "~utils/storage";
 import TransactionTag from "~components/embed/auth/TransactionTag";
+import TransactionMessage from "~components/embed/auth/TransactionMessage";
 
 export function WalletTransactionDetailsEmbeddedView() {
   const { navigate } = useLocation();
@@ -168,16 +169,7 @@ export function WalletTransactionDetailsEmbeddedView() {
         )}
       </Box>
 
-      {message && (
-        <Box hasBorder alignment="left" style={{ margin: "1rem" }}>
-          <Text variant="bodySm" style={{ color: "#666666" }}>
-            Message
-          </Text>
-          <Text variant="bodySm" style={{ color: "#121212" }}>
-            {message}
-          </Text>
-        </Box>
-      )}
+      <TransactionMessage transaction={transaction} showLink={false} />
     </Card>
   );
 }
