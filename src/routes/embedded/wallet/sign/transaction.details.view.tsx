@@ -47,14 +47,6 @@ export function WalletTransactionDetailsEmbeddedView() {
 
   const [showTags, setShowTags] = useState(false);
 
-  // current message
-  const message = useMemo(() => {
-    if (typeof transaction?.data === "undefined") return "";
-    const messageBytes = new Uint8Array(transaction.data);
-
-    return new TextDecoder().decode(messageBytes);
-  }, [transaction]);
-
   // transaction fee
   const fee = useMemo(() => {
     if (!transaction?.reward) {

@@ -47,22 +47,9 @@ export default function TransactionMessage({
     [transaction, tags]
   );
 
-  const isTextContent = useMemo(() => {
-    const type = getContentType();
-
-    if (!type) return false;
-
-    return type.startsWith("text/") || type === "application/json";
-  }, [getContentType]);
-
   useEffect(() => {
     const processTransactionData = async () => {
       if (!transaction?.data) return;
-
-      const type = getContentType();
-      if (!type) return;
-
-      const arweave = new Arweave(defaultGateway);
 
       try {
         // if too large, show a message
@@ -71,23 +58,42 @@ export default function TransactionMessage({
           return;
         }
 
-        // Only process text-based content
-        if (isTextContent) {
-          let txData = arweave.utils.bufferToString(
-            transaction.data instanceof Uint8Array
-              ? transaction.data
-              : new Uint8Array(transaction.data)
-          );
+        const type = getContentType();
+        const arweave = new Arweave(defaultGateway);
 
-          if (type === "application/json") {
-            try {
-              txData = JSON.stringify(JSON.parse(txData), null, 2);
-              setMessage(txData);
-            } catch (jsonError) {
-              console.log("Error parsing JSON:", jsonError);
-            }
-          } else if (type.startsWith("text/")) {
+        let txData = arweave.utils.bufferToString(
+          transaction.data instanceof Uint8Array
+            ? transaction.data
+            : new Uint8Array(transaction.data)
+        );
+
+        if (type === "application/json") {
+          try {
+            txData = JSON.stringify(JSON.parse(txData), null, 2);
+            setMessage(txData);
+          } catch (jsonError) {
+            console.log("Error parsing JSON:", jsonError);
             setMessage(txData.trim());
+          }
+        } else if (type?.startsWith("text/") || !type) {
+          // Simple heuristic to detect if content is binary
+          // Sample only the first 100 characters for performance
+          const sampleSize = Math.min(100, txData.length);
+          const sample = txData.substring(0, sampleSize);
+          const nonPrintableChars = sample.match(
+            /[\x00-\x08\x0B\x0C\x0E-\x1F]/g
+          );
+          const isProbablyText =
+            !nonPrintableChars || nonPrintableChars.length / sampleSize < 0.05;
+
+          if (isProbablyText) {
+            setMessage(txData.trim());
+          } else {
+            setMessage(
+              browser.i18n.getMessage("data_content_type_not_supported", [
+                type || "binary"
+              ])
+            );
           }
         } else {
           setMessage(
@@ -100,7 +106,7 @@ export default function TransactionMessage({
     };
 
     processTransactionData();
-  }, [transaction, isTextContent]);
+  }, [transaction, getContentType]);
 
   if (!message && !showLink) return null;
 
@@ -111,9 +117,19 @@ export default function TransactionMessage({
           <Text variant="bodySm" style={{ color: "#666666" }}>
             Message
           </Text>
-          <Text variant="bodySm" style={{ color: "#121212" }}>
-            {message}
-          </Text>
+          <Box
+            alignment="left"
+            style={{
+              maxHeight: "100px",
+              overflowY: "auto",
+              padding: 0,
+              margin: 0
+            }}
+          >
+            <Text variant="bodySm" style={{ color: "#121212" }}>
+              {message}
+            </Text>
+          </Box>
         </Box>
       )}
       {showLink && (
