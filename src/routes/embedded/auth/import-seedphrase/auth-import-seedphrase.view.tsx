@@ -20,7 +20,9 @@ export function AuthImportSeedphraseEmbeddedView() {
     importTempWallet,
     importedTempWalletAddress,
     deleteImportedTempWallet,
-    registerWallet
+    registerWallet,
+    wallets,
+    recoverWallet
   } = useEmbedded();
 
   const handleImportWallet = useCallback(async () => {
@@ -35,16 +37,27 @@ export function AuthImportSeedphraseEmbeddedView() {
     }
   }, [seedPhrase]);
 
-  const handleRegisterWallet = useCallback(async () => {
+  const handleAddWallet = useCallback(async () => {
     try {
       setLoading(true);
-      await registerWallet("IMPORTED");
+      const isWalletPresent = wallets.some(
+        ({ address }) => address === importedTempWalletAddress
+      );
+      if (isWalletPresent) {
+        await recoverWallet(seedPhrase.join(" "));
+      } else {
+        if (wallets.length === 0) {
+          await registerWallet("IMPORTED");
+        } else {
+          toast.error("Wallet not found!");
+        }
+      }
     } catch (error) {
-      toast.error(error);
+      alert(error);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [registerWallet, seedPhrase, wallets, importedTempWalletAddress]);
 
   const handleInputChange = useCallback((index: number, value: string) => {
     setSeedPhrase((prevSeedPhrase) => {
@@ -97,7 +110,7 @@ export function AuthImportSeedphraseEmbeddedView() {
         <Button
           variant="primary"
           size="md"
-          onClick={handleRegisterWallet}
+          onClick={handleAddWallet}
           isLoading={loading}
         >
           Yes, recover

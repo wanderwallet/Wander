@@ -51,13 +51,13 @@ export function AccountBackupSharesEmbeddedView() {
     [generateRecoveryAndDownload, copySeedphrase, walletAddress]
   );
 
-  const handleGenerateRecoveryAndDownload = useCallback(() => {
+  const handleGenerateRecoveryAndDownload = useCallback(async () => {
     try {
       setIsLoading({
         calledId: "RecoveryFile",
         status: true
       });
-      generateRecoveryAndDownload();
+      await generateRecoveryAndDownload();
       setIsLoading({
         calledId: "RecoveryFile",
         status: false

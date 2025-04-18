@@ -24,7 +24,9 @@ export function AuthImportKeyfileEmbeddedView() {
     importTempWallet,
     importedTempWalletAddress,
     deleteImportedTempWallet,
-    registerWallet
+    registerWallet,
+    wallets,
+    recoverWallet
   } = useEmbedded();
 
   const handleImportWallet = useCallback(async () => {
@@ -47,16 +49,27 @@ export function AuthImportKeyfileEmbeddedView() {
     }
   }, [jsonData]);
 
-  const handleRegisterWallet = useCallback(async () => {
+  const handleAddWallet = useCallback(async () => {
     try {
       setLoading(true);
-      await registerWallet("IMPORTED");
+      const isWalletPresent = wallets.some(
+        ({ address }) => address === importedTempWalletAddress
+      );
+      if (isWalletPresent) {
+        await recoverWallet(jsonData);
+      } else {
+        if (wallets.length === 0) {
+          await registerWallet("IMPORTED");
+        } else {
+          toast.error("Wallet not found!");
+        }
+      }
     } catch (error) {
-      toast.error(error);
+      alert(error);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [registerWallet, jsonData, wallets, importedTempWalletAddress]);
 
   useEffect(() => {
     return () => {
@@ -94,7 +107,7 @@ export function AuthImportKeyfileEmbeddedView() {
         <Button
           variant="primary"
           size="md"
-          onClick={handleRegisterWallet}
+          onClick={handleAddWallet}
           isLoading={loading}
         >
           Yes, add
