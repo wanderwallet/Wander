@@ -59,6 +59,7 @@ export default function Message({ message }: Props) {
       </Row>
       <Spacer y={0.3} />
       <Box
+        alignment="left"
         style={{
           paddingLeft: 0,
           paddingRight: 0,
