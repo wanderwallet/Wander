@@ -46,7 +46,11 @@ export function AuthImportSeedphraseEmbeddedView() {
       if (isWalletPresent) {
         await recoverWallet(seedPhrase.join(" "));
       } else {
-        await registerWallet("IMPORTED");
+        if (wallets.length === 0) {
+          await registerWallet("IMPORTED");
+        } else {
+          toast.error("Wallet not found!");
+        }
       }
     } catch (error) {
       alert(error);

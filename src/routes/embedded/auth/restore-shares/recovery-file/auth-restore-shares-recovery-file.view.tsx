@@ -21,7 +21,7 @@ export function AuthRestoreSharesRecoveryFileEmbeddedView() {
       setLoading(true);
       await recoverWallet(jsonData);
     } catch (error) {
-      toast.error(error);
+      toast.error(error?.message || "Something went wrong");
     } finally {
       setLoading(false);
     }

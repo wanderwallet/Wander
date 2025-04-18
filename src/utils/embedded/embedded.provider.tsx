@@ -777,7 +777,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       }
 
       if (!walletId || !walletAddress) {
-        throw new Error("Wallet not found.");
+        throw new Error("Wallet not found!");
       }
 
       const latestSession = await getLatestSession(session);

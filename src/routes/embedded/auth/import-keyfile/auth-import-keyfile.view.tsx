@@ -58,7 +58,11 @@ export function AuthImportKeyfileEmbeddedView() {
       if (isWalletPresent) {
         await recoverWallet(jsonData);
       } else {
-        await registerWallet("IMPORTED");
+        if (wallets.length === 0) {
+          await registerWallet("IMPORTED");
+        } else {
+          toast.error("Wallet not found!");
+        }
       }
     } catch (error) {
       alert(error);
