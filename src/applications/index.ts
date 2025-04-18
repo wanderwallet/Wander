@@ -1,12 +1,12 @@
 import Application, { type InitAppParams, PREFIX } from "./application";
-import { ExtensionStorage } from "~utils/storage";
+import { PersistentStorage } from "~utils/storage";
 import browser from "webextension-polyfill";
 
 /**
  * Get all connected app keys
  */
 export async function getStoredApps(): Promise<string[]> {
-  return (await ExtensionStorage.get("apps")) || [];
+  return (await PersistentStorage.get("apps")) || [];
 }
 
 /**
@@ -37,10 +37,10 @@ export async function addApp({ url, ...rest }: InitAppParams) {
   if (storedApps.includes(url)) return;
 
   // add app url
-  await ExtensionStorage.set("apps", [...storedApps, url]);
+  await PersistentStorage.set("apps", [...storedApps, url]);
 
   // save app settings
-  await ExtensionStorage.set(`${PREFIX}${url}`, {
+  await PersistentStorage.set(`${PREFIX}${url}`, {
     url,
     ...rest
   });
@@ -55,13 +55,13 @@ export async function removeApp(url: string) {
   const storedApps = await getStoredApps();
 
   // remove app key
-  await ExtensionStorage.set(
+  await PersistentStorage.set(
     "apps",
     storedApps.filter((val) => val !== url)
   );
 
   // remove app settings
-  await ExtensionStorage.remove(`${PREFIX}${url}`);
+  await PersistentStorage.remove(`${PREFIX}${url}`);
 }
 
 /**

@@ -1,19 +1,13 @@
 import { Text, Box } from "~components/embed/ui";
-import { useCombinedBalance } from "./hooks/useCombinedBalance";
+import Balance from "~components/popup/home/Balance";
 
 export function WalletHomeBalance() {
-  const { fiatBalance, balance } = useCombinedBalance();
   return (
-    <Box alignment="center" style={{ marginLeft: "20px" }}>
-      <Text variant="bodySm" style={{ color: "#666666" }}>
-        {"Your Balance"}
+    <Box alignment="center" style={{ marginLeft: "20px", gap: "0.5rem" }}>
+      <Text variant="bodySm" style={{ color: "var(--text-color-secondary)" }}>
+        Your Balance
       </Text>
-      <Text variant="headingXl" style={{ color: "#121212" }}>
-        {Number(balance).toFixed(2)}
-      </Text>
-      <Text variant="bodySm" style={{ color: "#666666" }}>
-        {fiatBalance}
-      </Text>
+      <Balance />
     </Box>
   );
 }
