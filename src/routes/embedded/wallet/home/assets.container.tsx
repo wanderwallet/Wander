@@ -29,6 +29,7 @@ export function WalletHomeAssets({
       {displayedTokens.map((token) => (
         <AssetItem
           key={token.id}
+          id={token.id}
           defaultLogo={token.Logo}
           tokenName={token.Name}
           ticker={token.Ticker}

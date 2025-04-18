@@ -17,7 +17,7 @@ import {
 } from "~tokens/aoTokens/sync";
 import { withRetry } from "~utils/promises/retry";
 import { timeoutPromise } from "~utils/promises/timeout";
-import { ExtensionStorage } from "~utils/storage";
+import { PersistentStorage } from "~utils/storage";
 import { getActiveAddress } from "~wallets";
 
 /**
@@ -34,7 +34,7 @@ export async function handleAoTokensImportAlarm(alarm: Alarms.Alarm) {
         getAoTokens(),
         getAoTokensCache(),
         getAoTokensAutoImportRestrictedIds(),
-        ExtensionStorage.get<number>(
+        PersistentStorage.get<number>(
           `${AO_TOKENS_LAST_BLOCK_HEIGHT}_${activeAddress}`
         )
       ]);
@@ -56,7 +56,7 @@ export async function handleAoTokensImportAlarm(alarm: Alarms.Alarm) {
     );
 
     if (maxBlockHeight && maxBlockHeight > 0) {
-      await ExtensionStorage.set(
+      await PersistentStorage.set(
         `${AO_TOKENS_LAST_BLOCK_HEIGHT}_${activeAddress}`,
         maxBlockHeight
       );
@@ -104,7 +104,7 @@ export async function handleAoTokensImportAlarm(alarm: Alarms.Alarm) {
       removedTokenIds.push(
         ...tokensToRestrict.map(({ processId }) => processId)
       );
-      await ExtensionStorage.set(
+      await PersistentStorage.set(
         AO_TOKENS_AUTO_IMPORT_RESTRICTED_IDS,
         removedTokenIds
       );
@@ -119,12 +119,12 @@ export async function handleAoTokensImportAlarm(alarm: Alarms.Alarm) {
     newTokens = await verifyCollectiblesType(newTokens, arweave);
 
     newTokens.forEach((token) => aoTokens.push(token));
-    await ExtensionStorage.set(AO_TOKENS, aoTokens);
+    await PersistentStorage.set(AO_TOKENS, aoTokens);
 
     console.log("Imported ao tokens!");
   } catch (error: any) {
     console.log("Error importing tokens: ", error?.message);
   } finally {
-    await ExtensionStorage.set(AO_TOKENS_IMPORT_TIMESTAMP, 0);
+    await PersistentStorage.set(AO_TOKENS_IMPORT_TIMESTAMP, 0);
   }
 }

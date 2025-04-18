@@ -1,16 +1,16 @@
 import { AllowanceAuthRequestView } from "~routes/auth/allowance";
-import { BatchSignDataItemAuthRequestView } from "~routes/auth/batchSignDataItem";
-import { DecryptAuthRequestView } from "~routes/auth/decrypt";
 import { LoadingAuthRequestView } from "~routes/auth/loading";
-import { SignAuthRequestView } from "~routes/auth/sign";
-import { SignatureAuthRequestView } from "~routes/auth/signature";
-import { SignDataItemAuthRequestView } from "~routes/auth/signDataItem";
 import { SignKeystoneAuthRequestView } from "~routes/auth/signKeystone";
 import { SubscriptionAuthRequestView } from "~routes/auth/subscription";
 import { UnlockAuthRequestView } from "~routes/auth/unlock";
 import { getExtensionOverrides } from "~wallets/router/extension/extension.routes";
 import type { RouteConfig } from "~wallets/router/router.types";
 import { EmbeddedConnectAuthRequestView } from "~routes/embedded/wallet/connect/dapp-connect.view";
+import { EmbeddedSignDataAuthRequestView } from "~routes/embedded/wallet/sign/transaction-signdata.view";
+import { EmbeddedDecryptAuthRequestView } from "~routes/embedded/wallet/decrypt/decrypt.view";
+import { EmbeddedSignatureAuthRequestView } from "~routes/embedded/wallet/signature/signature.view";
+import { EmbeddedSignAuthRequestView } from "~routes/embedded/wallet/sign/transaction.sign.view";
+import { EmbeddedBatchSignDataItemAuthRequestView } from "~routes/embedded/wallet/sign/transaction-batch-signdata.view";
 
 export type AuthRoutePath =
   | "/auth-request"
@@ -53,11 +53,11 @@ export const AUTH_ROUTES = [
   },
   {
     path: AuthPaths.Decrypt,
-    component: DecryptAuthRequestView
+    component: EmbeddedDecryptAuthRequestView
   },
   {
     path: AuthPaths.Sign,
-    component: SignAuthRequestView
+    component: EmbeddedSignAuthRequestView
   },
   {
     path: AuthPaths.SignKeystone,
@@ -65,15 +65,15 @@ export const AUTH_ROUTES = [
   },
   {
     path: AuthPaths.Signature,
-    component: SignatureAuthRequestView
+    component: EmbeddedSignatureAuthRequestView
   },
   {
     path: AuthPaths.SignDataItem,
-    component: SignDataItemAuthRequestView
+    component: EmbeddedSignDataAuthRequestView
   },
   {
     path: AuthPaths.BatchSignDataItem,
-    component: BatchSignDataItemAuthRequestView
+    component: EmbeddedBatchSignDataItemAuthRequestView
   },
   {
     path: AuthPaths.Subscription,

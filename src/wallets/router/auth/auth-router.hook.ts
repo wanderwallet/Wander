@@ -11,7 +11,8 @@ import { routeTrapMatches } from "../router.utils";
 
 const AuthRelatedScreenRoutes = [
   EmbeddedPaths.WalletPermissionsRequestEmbeddedView,
-  EmbeddedPaths.WalletSettingsCustomEmbeddedView
+  EmbeddedPaths.WalletSettingsCustomEmbeddedView,
+  EmbeddedPaths.WalletTransactionDetailsEmbeddedView
 ];
 
 export const useAuthRequestsLocation: BaseLocationHook = () => {

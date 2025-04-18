@@ -1,4 +1,12 @@
-import { Card, Button, Text, Row, Box, Avatar } from "~components/embed/ui";
+import {
+  Card,
+  Button,
+  Text,
+  Row,
+  Box,
+  Avatar,
+  XClose
+} from "~components/embed/ui";
 import type { Wallet } from "~utils/embedded/embedded.types";
 import { formatAddress } from "~utils/format";
 import { setActiveWallet, useActiveWallet } from "~wallets/hooks";
@@ -35,6 +43,15 @@ export function EmbeddedConnectAuthRequestView() {
     }
   };
 
+  const handleCancel = () => {
+    postEmbeddedMessage({
+      type: "embedded_close",
+      data: null
+    });
+    navigate("/wallet");
+    rejectRequest();
+  };
+
   useEffect(() => {
     if (!activeWallet?.address) return;
 
@@ -54,8 +71,10 @@ export function EmbeddedConnectAuthRequestView() {
           paddingInline: "16px",
           paddingBottom: "24px"
         }}
-        hasCloseButton={false}
+        hasCloseButton={true}
         hasBackButton={false}
+        customIcon={<XClose fontSize={24} color={"#666666"} />}
+        onCloseButtonClick={handleCancel}
       >
         <AppIcons appInfo={appInfo} />
         <Box>
@@ -121,18 +140,7 @@ export function EmbeddedConnectAuthRequestView() {
           >
             Next
           </Button>
-          <Button
-            variant="secondary"
-            isFullWidth
-            onClick={() => {
-              postEmbeddedMessage({
-                type: "embedded_close",
-                data: null
-              });
-              navigate("/wallet");
-              rejectRequest();
-            }}
-          >
+          <Button variant="secondary" isFullWidth onClick={handleCancel}>
             Cancel
           </Button>
         </Box>
@@ -160,7 +168,7 @@ export function EmbeddedConnectAuthRequestView() {
           alignment="left"
           style={{
             position: "fixed",
-            top: "50%",
+            top: "42%",
             left: "50%",
             transform: "translate(-50%, -50%)",
             width: "90%",

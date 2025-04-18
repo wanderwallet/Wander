@@ -47,8 +47,8 @@ import { WalletTransactionsEmbeddedView } from "~routes/embedded/wallet/transact
 import { WalletTransactionsHistoryEmbeddedView } from "~routes/embedded/wallet/transactions-history/transactions-history.view";
 import { WalletPermissionsRequestEmbeddedView } from "~routes/embedded/wallet/settings/settings.request.view";
 import { WalletSettingsCustomEmbeddedView } from "~routes/embedded/wallet/settings/settings.custom.view";
-import { WalletTransactionSignEmbeddedView } from "~routes/embedded/wallet/home/transaction-sign/transaction.sign.view";
-import { WalletTransactionDetailsEmbeddedView } from "~routes/embedded/wallet/home/transaction-details/transaction.details.view";
+import { WalletTransactionCompleteEmbeddedView } from "~routes/embedded/wallet/sign/transaction-complete.view";
+import { WalletTransactionDetailsEmbeddedView } from "~routes/embedded/wallet/sign/transaction.details.view";
 import { WalletBuyEmbeddedView } from "~routes/embedded/wallet/buy/buy.container.view";
 import { WalletBuyCashEmbeddedView } from "~routes/embedded/wallet/buy/buy.cash.view";
 import { WalletReceiveOptionsEmbeddedView } from "~routes/embedded/wallet/receive/options/receive.options.view";
@@ -97,6 +97,7 @@ export type EmbeddedRoutePath =
   | "/wallet/settings/custom"
   | "/wallet/transaction"
   | "/wallet/transaction-details"
+  | `/wallet/transaction-complete/${string}`
   | "/wallet/buy"
   | "/wallet/buy/cash"
   | "/wallet/buy/crypto"
@@ -153,8 +154,8 @@ export const EmbeddedPaths = {
   WalletTransactionsHistoryEmbeddedView: "/wallet/transactions-history",
   WalletPermissionsRequestEmbeddedView: "/wallet/settings",
   WalletSettingsCustomEmbeddedView: "/wallet/settings/custom",
-  WalletTransactionSignEmbeddedView: "/wallet/transaction",
   WalletTransactionDetailsEmbeddedView: "/wallet/transaction-details",
+  WalletTransactionCompleteEmbeddedView: "/wallet/transaction-complete/:id",
   WalletBuyEmbeddedView: "/wallet/buy",
   WalletBuyCashEmbeddedView: "/wallet/buy/cash",
   WalletDepositTokensEmbeddedView: "/wallet/deposit",
@@ -310,12 +311,12 @@ const IFRAME_OWN_ROUTES = [
     component: WalletSettingsCustomEmbeddedView
   },
   {
-    path: EmbeddedPaths.WalletTransactionSignEmbeddedView,
-    component: WalletTransactionSignEmbeddedView
-  },
-  {
     path: EmbeddedPaths.WalletTransactionDetailsEmbeddedView,
     component: WalletTransactionDetailsEmbeddedView
+  },
+  {
+    path: EmbeddedPaths.WalletTransactionCompleteEmbeddedView,
+    component: WalletTransactionCompleteEmbeddedView
   },
   {
     path: EmbeddedPaths.WalletBuyEmbeddedView,

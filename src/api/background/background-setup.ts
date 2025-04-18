@@ -1,5 +1,5 @@
 import handleFeeAlarm from "~api/modules/sign/fee";
-import { ExtensionStorage } from "~utils/storage";
+import { ExtensionStorage, PersistentStorage } from "~utils/storage";
 import browser from "webextension-polyfill";
 import { handleApiCallMessage } from "~api/background/handlers/message/api-call-message/api-call-message.handler";
 import { handleChunkMessage } from "~api/background/handlers/message/chunk-message/chunk-message.handler";
@@ -116,11 +116,11 @@ export function setupBackgroundService() {
   // and send them to the content script to
   // fire the wallet switch event
   ExtensionStorage.watch({
-    apps: handleAppsChange,
     active_address: handleActiveAddressChange,
     wallets: handleWalletsChange,
     decryption_key: handleAuthStateChange
   });
+  PersistentStorage.watch({ apps: handleAppsChange });
 
   // listen for app config updates
   // `ExtensionStorage.watch` requires a callbackMap param, so this cannot be done using `ExtensionStorage` directly.

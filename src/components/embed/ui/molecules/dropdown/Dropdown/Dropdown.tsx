@@ -7,7 +7,7 @@ import "./Dropdown.css";
 
 interface DropdownProps {
   buttonAvatar?: React.ReactNode;
-  buttonText: string;
+  buttonText: React.ReactNode;
   backupReminder?: React.ReactNode;
   content: React.ReactNode;
 }

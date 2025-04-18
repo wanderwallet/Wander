@@ -9,11 +9,11 @@ import { ExtensionStorage, useStorage } from "~utils/storage";
 import arLogoLight from "../../../../../assets/ar/logo_light.png";
 import arLogoDark from "../../../../../assets/ar/logo_dark.png";
 import { useTheme } from "~utils/theme";
-import { getUserAvatar } from "~lib/avatar";
 import { Logo } from "~components/popup/Token";
+import { getArweaveLink } from "~gateways/utils";
 
 interface AssetItemProps {
-  key: string;
+  id: string;
   defaultLogo: string;
   tokenName: string;
   ticker: string;
@@ -23,7 +23,7 @@ interface AssetItemProps {
 }
 
 export function AssetItem({
-  key,
+  id,
   defaultLogo,
   tokenName,
   ticker,
@@ -43,14 +43,14 @@ export function AssetItem({
 
   const tokenInfo = useMemo(() => {
     return {
-      id: key,
-      processId: key,
+      id,
+      processId: id,
       Ticker: ticker,
       Name: tokenName,
       Denomination: divisibility,
       Logo: defaultLogo
     };
-  }, [key, ticker, tokenName, divisibility, defaultLogo]);
+  }, [id, ticker, tokenName, divisibility, defaultLogo]);
 
   const {
     data: fractBalance = "0",
@@ -78,16 +78,17 @@ export function AssetItem({
 
   useEffect(() => {
     const fetchLogo = async () => {
-      if (!key || logo) return;
+      if (!id || logo) return;
       if (defaultLogo) {
-        const logo = await getUserAvatar(defaultLogo);
+        const logo = await getArweaveLink(defaultLogo);
         setLogo(logo);
       } else {
         setLogo(arweaveLogo);
       }
     };
+
     fetchLogo();
-  }, [key, defaultLogo, arweaveLogo, logo]);
+  }, [id, defaultLogo, arweaveLogo, logo]);
 
   return (
     <Row
@@ -98,15 +99,15 @@ export function AssetItem({
         height: "62px"
       }}
     >
-      <Logo src={logo || ""} alt="" key={key} />
+      <Logo src={logo || ""} alt="" key={`logo-${id}`} />
       <Text variant="bodyMd" style={{ color: "#121212", minWidth: "100px" }}>
         {tokenName}
       </Text>
-      <Box alignment="right" style={{ marginLeft: "20px" }}>
-        <Text variant="bodyMd" style={{ color: "#121212" }}>
+      <Box alignment="right">
+        <Text alignment="right" variant="bodyMd" style={{ color: "#121212" }}>
           {balance + " " + ticker}
         </Text>
-        <Text variant="bodySm" style={{ color: "#666666" }}>
+        <Text alignment="right" variant="bodySm" style={{ color: "#666666" }}>
           {formattedFiatPrice}
         </Text>
       </Box>

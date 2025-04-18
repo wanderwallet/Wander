@@ -1,5 +1,5 @@
 import { dryrun } from "@permaweb/aoconnect";
-import { ExtensionStorage, PersistentStorage } from "~utils/storage";
+import { PersistentStorage } from "~utils/storage";
 import type { Alarms } from "webextension-polyfill";
 import {
   Id,

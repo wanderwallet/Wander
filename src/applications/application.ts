@@ -4,8 +4,7 @@ import {
   type AllowanceBigNumber,
   defaultAllowance
 } from "./allowance";
-import { useStorage } from "~utils/storage";
-import { ExtensionStorage } from "~utils/storage";
+import { PersistentStorage, useStorage } from "~utils/storage";
 import type { Storage } from "@plasmohq/storage";
 import { defaultGateway, type Gateway } from "~gateways/gateway";
 import BigNumber from "bignumber.js";
@@ -22,7 +21,7 @@ export default class Application {
 
   constructor(url: string) {
     this.url = url;
-    this.#storage = ExtensionStorage;
+    this.#storage = PersistentStorage;
   }
 
   /**
@@ -186,7 +185,7 @@ export default class Application {
     return useStorage<InitAppParams>(
       {
         key: `${PREFIX}${this.url}`,
-        instance: ExtensionStorage
+        instance: PersistentStorage
       },
       (val) => {
         if (typeof val === "undefined") return val;
