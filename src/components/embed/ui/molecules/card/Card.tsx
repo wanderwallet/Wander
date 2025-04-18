@@ -23,6 +23,7 @@ const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
       hasCloseButton = true,
       onBackButtonClick,
       onCloseButtonClick,
+      closeButtonStyles,
       customIcon,
       ...props
     },
@@ -45,6 +46,7 @@ const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
 
     const closeIcon = (
       <button
+        style={closeButtonStyles}
         className={styles["card__close__btn"]}
         onClick={onCloseButtonClick ?? closeCard}
       >

@@ -18,4 +18,5 @@ export interface CardBaseProps {
   size?: Sizes;
   customIcon?: React.ReactNode;
   style?: React.CSSProperties;
+  closeButtonStyles?: React.CSSProperties;
 }

@@ -1,14 +1,15 @@
 import { useCallback, useMemo } from "react";
 import { permissionData, type PermissionType } from "~applications/permissions";
-import { Card, Box, Switch } from "~components/embed/ui";
+import { Card, Box, Switch, XClose } from "~components/embed/ui";
 import browser from "~iframe/browser";
 import { useCurrentAuthRequest } from "~utils/auth/auth.hooks";
+import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 import { useStorage, ExtensionStorage } from "~utils/storage";
 import { useLocation } from "~wallets/router/router.utils";
 
 export function WalletSettingsCustomEmbeddedView() {
   const { navigate } = useLocation();
-  const { authRequest } = useCurrentAuthRequest("connect");
+  const { authRequest, rejectRequest } = useCurrentAuthRequest("connect");
 
   const { url = "" } = authRequest;
 
@@ -59,15 +60,26 @@ export function WalletSettingsCustomEmbeddedView() {
     [handlePermissionChange]
   );
 
+  const handleCancel = async () => {
+    postEmbeddedMessage({
+      type: "embedded_close",
+      data: null
+    });
+    navigate("/wallet");
+    await rejectRequest();
+  };
+
   return (
     <Card
       size="auto"
       headerText="Custom Permissions"
       hasBackButton={true}
+      customIcon={<XClose fontSize={24} color={"#666666"} />}
       onBackButtonClick={() => navigate("/wallet/settings")}
+      onCloseButtonClick={handleCancel}
       style={{ padding: "2rem 1rem" }}
     >
-      <Box alignment="left" style={{ padding: 0, gap: 16 }}>
+      <Box alignment="left" style={{ gap: 16 }}>
         {Object.keys(permissionData).map((permissionName: PermissionType) => (
           <Box
             style={{ padding: 0 }}

@@ -30,14 +30,18 @@ export default function Squircle({
         return setImageData(img);
       }
 
-      const { data, headers } = await axios.get(img, {
-        responseType: "arraybuffer"
-      });
-      const base64 = Buffer.from(data, "binary").toString("base64");
-      const prefix = "data:" + headers["content-type"] + ";base64, ";
+      try {
+        const { data, headers } = await axios.get(img, {
+          responseType: "arraybuffer"
+        });
+        const base64 = Buffer.from(data, "binary").toString("base64");
+        const prefix = "data:" + headers["content-type"] + ";base64, ";
 
-      // append the base64 image string
-      setImageData(prefix + base64);
+        // append the base64 image string
+        setImageData(prefix + base64);
+      } catch (error) {
+        setImageData(img);
+      }
     })();
   }, [img]);
 

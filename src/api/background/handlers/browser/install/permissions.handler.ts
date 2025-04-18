@@ -1,4 +1,4 @@
-import { ExtensionStorage } from "~utils/storage";
+import { PersistentStorage } from "~utils/storage";
 import Application from "~applications/application";
 
 const IS_PERMISSIONS_RESET = "is_permissions_reset";
@@ -11,7 +11,9 @@ let isResetInProgress = false;
  */
 export const resetAllPermissions = async (): Promise<void> => {
   try {
-    const isPermissionsReset = await ExtensionStorage.get(IS_PERMISSIONS_RESET);
+    const isPermissionsReset = await PersistentStorage.get(
+      IS_PERMISSIONS_RESET
+    );
     // Check both storage and memory flags
     if (isPermissionsReset || isResetInProgress) {
       return;
@@ -21,9 +23,9 @@ export const resetAllPermissions = async (): Promise<void> => {
     isResetInProgress = true;
 
     // Get and validate connected apps
-    const connectedApps = (await ExtensionStorage.get("apps")) || [];
+    const connectedApps = (await PersistentStorage.get("apps")) || [];
     if (!Array.isArray(connectedApps) || connectedApps.length === 0) {
-      await ExtensionStorage.set(IS_PERMISSIONS_RESET, true);
+      await PersistentStorage.set(IS_PERMISSIONS_RESET, true);
       return;
     }
 
@@ -60,7 +62,7 @@ export const resetAllPermissions = async (): Promise<void> => {
     }
 
     // Mark as complete
-    await ExtensionStorage.set(IS_PERMISSIONS_RESET, true);
+    await PersistentStorage.set(IS_PERMISSIONS_RESET, true);
   } catch (error) {
     console.error("Error in resetAllPermissions:", error);
   } finally {

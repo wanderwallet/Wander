@@ -2947,5 +2947,19 @@
     "exchange_message": {
         "message": "汇率",
         "description": "Exchange rate text"
+    },
+    "data_content_type_not_supported": {
+        "message": "无法显示数据：内容类型 $TYPE$ 不支持预览。",
+        "description": "Data content type not supported text",
+        "placeholders": {
+        "type": {
+            "content": "$1",
+            "example": "image/png"
+        }
+        }
+    },
+    "data_too_large": {
+        "message": "无法显示数据：数据太大，无法显示。",
+        "description": "Data too large text"
     }
 }

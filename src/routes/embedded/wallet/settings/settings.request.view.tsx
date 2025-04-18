@@ -12,7 +12,8 @@ import {
   InfoIcon,
   Text,
   Row,
-  ChevronRight
+  ChevronRight,
+  XClose
 } from "~components/embed/ui";
 import { useLocation } from "~wallets/router/router.utils";
 import browser from "webextension-polyfill";
@@ -126,6 +127,15 @@ export function WalletPermissionsRequestEmbeddedView() {
     acceptRequest();
   }, [url, requestedPermissions, appInfo, signPolicy, gateway, acceptRequest]);
 
+  const handleCancel = () => {
+    postEmbeddedMessage({
+      type: "embedded_close",
+      data: null
+    });
+    navigate("/wallet");
+    rejectRequest();
+  };
+
   useEffect(() => {
     (async () => {
       const requested: PermissionType[] = authRequestPermissions;
@@ -161,7 +171,9 @@ export function WalletPermissionsRequestEmbeddedView() {
     <Card
       size="auto"
       hasBackButton={false}
-      hasCloseButton={false}
+      hasCloseButton={true}
+      customIcon={<XClose fontSize={24} color={"#666666"} />}
+      onCloseButtonClick={handleCancel}
       style={{ padding: "2rem" }}
     >
       <AppIcons appInfo={appInfo} />
@@ -223,19 +235,7 @@ export function WalletPermissionsRequestEmbeddedView() {
       >
         Confirm
       </Button>
-      <Button
-        variant="outlined"
-        isFullWidth
-        onClick={() => {
-          postEmbeddedMessage({
-            type: "embedded_close",
-            data: null
-          });
-          navigate("/wallet");
-
-          rejectRequest();
-        }}
-      >
+      <Button variant="outlined" isFullWidth onClick={handleCancel}>
         Cancel
       </Button>
     </Card>

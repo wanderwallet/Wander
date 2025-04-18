@@ -62,7 +62,7 @@ export function useTokenBalance(
     },
     ...defaultOptions,
     select: (data) => data || "0",
-    enabled: !!address
+    enabled: !!address && !!token.processId && isFinite(token?.Denomination)
   });
 }
 
