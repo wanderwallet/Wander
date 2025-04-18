@@ -773,9 +773,10 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         } = await WalletUtils.generateShareHashAndPrivateKey(
           recoveryBackupShare
         ));
+        walletAddress = wallets.find(({ id }) => id === walletId)?.address;
       }
 
-      if (!walletId) {
+      if (!walletId || !walletAddress) {
         throw new Error("Wallet not found.");
       }
 

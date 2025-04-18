@@ -16,24 +16,16 @@ export function AuthRestoreSharesRecoveryFileEmbeddedView() {
   };
 
   const handleRestore = useCallback(async () => {
-    setLoading(true);
+    if (!jsonData) return;
     try {
-      if (jsonData) {
-        const restoredWallet = recoverWallet(jsonData);
-
-        if (!restoredWallet) {
-          setLoading(false);
-          return toast.error(`Something isn't right`);
-        }
-        setLoading(false);
-        return restoredWallet;
-      }
+      setLoading(true);
+      await recoverWallet(jsonData);
     } catch (error) {
       toast.error(error);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [jsonData, recoverWallet]);
 
   // TODO: The recovery file should probably include the wallet address or a hash so that we can
   // request the recovery of the right one from the backend without asking the user to manually select
@@ -55,8 +47,6 @@ export function AuthRestoreSharesRecoveryFileEmbeddedView() {
         isFullWidth
         title={"Upload recovery file"}
         description={"or drag and drop your private key"}
-        isLoading={loading}
-        loadingText={"Restoring account..."}
         onFileParse={handleJsonParse}
       />
       <Button

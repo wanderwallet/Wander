@@ -86,7 +86,7 @@ export function isValidMnemonic(mnemonic: string) {
 
   const words = mnemonic.split(" ");
 
-  isOneOf(words.length, [12, 24], "Invalid mnemonic length.");
+  isOneOf(words.length, [12, 18, 24], "Invalid mnemonic length.");
 
   const wordlist = wordlists.english;
 
