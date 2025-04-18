@@ -32,6 +32,8 @@ import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-mes
 import { useTokenBalance } from "~tokens/hooks";
 import { Loading } from "@arconnect/components-rebrand";
 import TransactionMessage from "~components/embed/auth/TransactionMessage";
+import { formatFiatBalance } from "~tokens/currency";
+import { formatBalance } from "~utils/format";
 
 export function EmbeddedSignDataAuthRequestView() {
   const { navigate } = useLocation();
@@ -75,6 +77,10 @@ export function EmbeddedSignDataAuthRequestView() {
     tokenInfo,
     activeAddress
   );
+
+  const formattedBalance = useMemo(() => {
+    return formatBalance(balance).displayBalance;
+  }, [balance]);
 
   const formattedAmount = useMemo(
     () => (amount || 0).toLocaleString(),
@@ -226,7 +232,7 @@ export function EmbeddedSignDataAuthRequestView() {
                 <Loading style={{ width: 16, height: 16, color: "#666666" }} />
               ) : (
                 <Text variant="bodyMd" style={{ color: "#121212" }}>
-                  {balance} {tokenName}
+                  {formattedBalance} {tokenName}
                 </Text>
               )}
             </Row>
