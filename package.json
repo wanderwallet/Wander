@@ -82,7 +82,7 @@
     "copy-to-clipboard": "^3.3.2",
     "currency-symbol-map": "^5.1.0",
     "dayjs": "^1.11.6",
-    "embed-api": "https://github.com/wanderwallet/embed-api#arc-1218/recover-wallet",
+    "embed-api": "https://github.com/wanderwallet/embed-api#a73cea4223196decfdd0c62330f025b6c6f17984",
     "framer-motion": "^11.11.7",
     "human-crypto-keys": "^0.1.4",
     "js-confetti": "^0.11.0",
