@@ -11,19 +11,13 @@ import {
 } from "~utils/analytics";
 import { useActiveWallet } from "~wallets/hooks";
 import { scheduleImportAoTokens } from "~tokens/aoTokens/sync";
-import {
-  Card,
-  Divider,
-  AccountSelector,
-  TabBar,
-  Text
-} from "~components/embed/ui";
+import { Card, Divider, AccountSelector, TabBar } from "~components/embed/ui";
 
 import type { StoredWallet } from "~wallets";
 import { WalletHomeActions } from "./actions.container";
 import { WalletHomeAssets } from "./assets.container";
-import { WalletHomeBalance } from "./balance.container";
 import { useBalanceSortedTokens } from "~/tokens/hooks";
+import { WalletHomeBalance } from "./balance.container";
 
 export function WalletHomeEmbeddedView() {
   const [loggedIn, setLoggedIn] = useState(false);
@@ -89,7 +83,12 @@ export function WalletHomeEmbeddedView() {
   }, [wallet, announcement]);
 
   return (
-    <Card size="auto" style={{ padding: "32px" }} hasBackButton={false}>
+    <Card
+      size="auto"
+      style={{ padding: "32px" }}
+      hasBackButton={false}
+      closeButtonStyles={{ right: "2rem" }}
+    >
       <AccountSelector wallets={wallets} activeWallet={wallet} />
       <WalletHomeBalance />
       <Divider />
