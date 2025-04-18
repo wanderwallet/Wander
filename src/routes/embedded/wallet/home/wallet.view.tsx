@@ -44,6 +44,7 @@ export function WalletHomeEmbeddedView() {
     type: "asset",
     hidden: false
   });
+
   const wallet = useActiveWallet();
   const [wallets] = useStorage<StoredWallet[]>(
     {

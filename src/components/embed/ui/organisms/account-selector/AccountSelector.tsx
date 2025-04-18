@@ -59,7 +59,11 @@ export function AccountSelector({
         buttonAvatar={
           <Avatar fontColor={"#FFF"}>{activeWallet.nickname}</Avatar>
         }
-        buttonText={activeWallet.nickname ?? activeWallet.address}
+        buttonText={
+          <Text variant="bodyMd" style={{ color: "#121212" }}>
+            {activeWallet.nickname ?? activeWallet.address}
+          </Text>
+        }
         content={
           <>
             {wallets.map((wallet, id) => (
