@@ -9,11 +9,12 @@
   align-items: center;
   justify-content: center;
   font-family: var(--font-family-serif);
-
   overflow: hidden;
   transition: all 0.2s;
   padding: var(--spacing-12) var(--spacing-6);
   cursor: pointer;
+  width: auto;
+  box-sizing: border-box;
 }
 
 .upload__blurry {
@@ -21,21 +22,46 @@
 }
 
 .upload__full__width {
-  width: 94.6%;
+  width: 100%;
+  max-width: 100%;
   font-size: var(--font-size-md);
   font-family: var(--font-family-serif);
 }
 
-upload:disabled {
+.upload__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.upload__filename {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.upload__description {
+  text-align: center;
+  word-wrap: break-word;
+  max-width: 100%;
+}
+
+.upload:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-upload:active {
+.upload:active {
   transform: scale(0.95);
   opacity: 0.8;
 }
 
-upload:hover {
+.upload:hover {
   opacity: 0.8;
 }

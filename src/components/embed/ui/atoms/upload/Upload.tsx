@@ -138,7 +138,7 @@ const Upload = forwardRef<HTMLDivElement, FileUploadProps>(
     const renderContent = () => {
       if (isLoading) {
         return (
-          <Box alignment="center">
+          <Box alignment="center" className={styles.upload__content}>
             <Loading />
             <Text variant="bodyMd">{loadingText}</Text>
           </Box>
@@ -147,21 +147,24 @@ const Upload = forwardRef<HTMLDivElement, FileUploadProps>(
 
       if (fileError) {
         return (
-          <Box alignment="center">
+          <Box alignment="center" className={styles.upload__content}>
             <Text variant="bodyMd" style={{ color: "#E53935" }}>
               {fileError}
             </Text>
-            <Text variant="bodyMd">{description}</Text>
           </Box>
         );
       }
 
       return (
-        <Box alignment="center">
+        <Box alignment="center" className={styles.upload__content}>
           {file && !isLoading ? (
             <>
               <CheckIcon style={{ color: "#0D6CE9" }} width={54} height={54} />
-              <Text variant="bodyMd" style={{ color: "#0D6CE9" }}>
+              <Text
+                variant="bodyMd"
+                style={{ color: "#0D6CE9" }}
+                className={styles.upload__filename}
+              >
                 {file.name}
               </Text>
               <Text variant="bodyMd">
@@ -174,10 +177,11 @@ const Upload = forwardRef<HTMLDivElement, FileUploadProps>(
               <Text variant="bodyMd" style={{ color: "#0D6CE9" }}>
                 {title}
               </Text>
+              <Text variant="bodyMd" className={styles.upload__description}>
+                {description}
+              </Text>
             </>
           )}
-
-          <Text variant="bodyMd">{description}</Text>
         </Box>
       );
     };

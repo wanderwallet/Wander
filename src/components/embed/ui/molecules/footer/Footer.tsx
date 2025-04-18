@@ -17,11 +17,7 @@ const Footer = React.forwardRef<HTMLDivElement, FooterBaseProps>(
         ${className}`}
         {...props}
       >
-        <Box
-          className={`
-            ${styles["footer__title__container"]}
-            `}
-        >
+        <Box className={styles["footer__title__container"]}>
           {children}
           {subtext && (
             <Text

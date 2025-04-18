@@ -24,11 +24,10 @@ const Avatar = forwardRef<HTMLDivElement, AvatarBaseProps>(
       if (typeof children === "string") {
         return (
           <Text
-            variant="headingMd"
+            variant="bodySm"
             style={{
               color:
-                fontColor ||
-                (isDarkMode ? "var(--color-font-heading)" : undefined)
+                fontColor || (isDarkMode ? "var(--color-font-heading)" : "#FFF")
             }}
           >
             {children.substring(0, 1).toUpperCase()}

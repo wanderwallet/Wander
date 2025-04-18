@@ -1,21 +1,22 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useLocation } from "~wallets/router/router.utils";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import {
   Card,
-  Row,
-  WanderIcon,
-  Text,
   Copyable,
   Button,
   KeyIcon,
   GoogleIcon,
   SocialsIcon,
-  Checkbox
+  Checkbox,
+  WanderFooter
 } from "~components/embed/ui";
 import copy from "copy-to-clipboard";
-
+import type { AuthProviderType } from "embed-api";
+import { toast } from "react-toastify";
 export function AuthRecoverAccountAuthenticationEmbeddedView() {
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const { back } = useLocation();
   const { importedTempWalletAddress, recoverableAccounts, recoverAccount } =
     useEmbedded();
 
@@ -27,22 +28,26 @@ export function AuthRecoverAccountAuthenticationEmbeddedView() {
   const toggleCheckboxChecked = () =>
     setCheckboxChecked((prevValue) => !prevValue);
 
+  const handleRecoverAccount = useCallback(
+    async (authProviderType: AuthProviderType) => {
+      try {
+        setIsLoading(true);
+        await recoverAccount(authProviderType, accountToRecoverId);
+      } catch (error) {
+        toast.error(error);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [recoverAccount, accountToRecoverId]
+  );
+
   return (
     <Card
       headerText={"Recover your account"}
-      footerElement={
-        <Row>
-          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
-            {"Secured by"}
-          </Text>
-          <WanderIcon color="#838383" />
-        </Row>
-      }
+      footerElement={<WanderFooter />}
       hasBackButton={true}
-      onBackButtonClick={() => {
-        window.history.back();
-      }}
-      //   hasCloseButton={false}
+      onBackButtonClick={back}
       onCloseButtonClick={() => {
         window.history.back();
       }}
@@ -51,26 +56,26 @@ export function AuthRecoverAccountAuthenticationEmbeddedView() {
       <Copyable
         style={{ margin: "32px 0" }}
         isFullWidth
-        label="Your account address"
+        label="Your wallet address"
         onClick={() => {
           copy(importedTempWalletAddress);
         }}
         value={importedTempWalletAddress}
       />
       <Button
-        onClick={() => recoverAccount("PASSKEYS", accountToRecoverId)}
+        onClick={() => handleRecoverAccount("PASSKEYS")}
         variant="outlined"
         isFullWidth
-        isDisabled={!checkboxChecked}
+        isDisabled={!checkboxChecked || isLoading}
         icon={<KeyIcon fontSize={24} />}
       >
         Passkey
       </Button>
       <Button
-        onClick={() => recoverAccount("GOOGLE", accountToRecoverId)}
+        onClick={() => handleRecoverAccount("GOOGLE")}
         variant="outlined"
         isFullWidth
-        isDisabled={!checkboxChecked}
+        isDisabled={!checkboxChecked || isLoading}
         icon={<GoogleIcon fontSize={24} />}
       >
         Google
@@ -78,6 +83,8 @@ export function AuthRecoverAccountAuthenticationEmbeddedView() {
       <Button
         variant="outlined"
         isFullWidth
+        isDisabled
+        // isDisabled={!checkboxChecked || isLoading}
         icon={<SocialsIcon fontSize={24} />}
         href="#/auth/recover-account/more-authentication"
       >
@@ -90,6 +97,4 @@ export function AuthRecoverAccountAuthenticationEmbeddedView() {
       />
     </Card>
   );
-  //         label: accountToRecover ? accountToRecover.name : "-",
-  //         isDisabled: true
 }
