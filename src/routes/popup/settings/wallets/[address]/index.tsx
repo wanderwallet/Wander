@@ -34,6 +34,7 @@ import {
 import { HorizontalLine } from "~components/HorizontalLine";
 import SliderMenu from "~components/SliderMenu";
 import { getNameServiceProfile } from "~lib/nameservice";
+import { PasskeySettings } from "~components/popup/PasskeySettings";
 
 export interface WalletViewParams {
   address: string;
@@ -229,7 +230,11 @@ export function WalletView({ params: { address } }: WalletViewProps) {
               formatAddress(wallet.address, 3)
             ])}
             label={truncateMiddle(wallet.address, 38)}
-            labelAs={WalletAddress}
+            labelStyle={{
+              fontSize: "14px",
+              fontWeight: 500,
+              color: `rgb(${theme.secondaryText})`
+            }}
             text={wallet.address}
             iconSize={24}
           />
@@ -293,6 +298,8 @@ export function WalletView({ params: { address } }: WalletViewProps) {
               />
             </div>
           </div>
+          <HorizontalLine />
+          <PasskeySettings walletAddress={address} />
         </div>
         <div>
           <RemoveButton fullWidth onClick={() => setOpen(true)}>
@@ -416,12 +423,6 @@ const HardwareWalletIcon = styled.img.attrs({
   object-fit: contain;
   user-select: none;
 `;
-
-const WalletAddress = styled(Text).attrs({
-  size: "sm",
-  weight: "medium",
-  variant: "secondary"
-})``;
 
 export const CopyButton = styled(CopyIcon)`
   font-size: 1em;

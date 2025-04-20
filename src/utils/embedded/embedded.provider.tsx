@@ -1243,7 +1243,66 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
         setAuthTokenHeader(accessToken);
 
-        initEmbeddedWallet(user?.id || null, dbSession);
+        // Check for passkey authentication with our custom session
+        const needsWalletActivation =
+          localStorage.getItem("needsWalletActivation") === "true";
+        const customSessionId = localStorage.getItem("sessionId");
+        const customUserId = localStorage.getItem("userId");
+
+        // If we have passkey auth with custom session, set it up
+        if (
+          needsWalletActivation &&
+          customSessionId &&
+          customUserId &&
+          !dbSession
+        ) {
+          console.log("Detected passkey authentication with custom session");
+
+          // Build a minimal session object for wallet activation
+          dbSession = {
+            id: customSessionId,
+            userId: customUserId,
+            deviceNonce: localStorage.getItem("deviceNonce") || undefined,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            ip: "127.0.0.1",
+            userAgent: navigator.userAgent
+          };
+
+          // Clear the flag
+          localStorage.removeItem("needsWalletActivation");
+
+          // Important: Generate and set an authentication token for API requests
+          const deviceNonce =
+            localStorage.getItem("deviceNonce") || crypto.randomUUID();
+
+          // Store this nonce for future requests
+          localStorage.setItem("deviceNonce", deviceNonce);
+
+          // Create a custom auth token to use for API requests
+          // Instead of creating a malformed JWT that won't pass validation,
+          // we create a clearly distinct base64-encoded JSON token that will be sent
+          // in a separate header and processed differently by the backend
+          const temporaryAuthToken = btoa(
+            JSON.stringify({
+              user_id: customUserId,
+              session_id: customSessionId,
+              device_nonce: deviceNonce,
+              exp: Math.floor(Date.now() / 1000) + 60 * 60, // 1 hour expiry
+              iat: Math.floor(Date.now() / 1000)
+            })
+          );
+
+          // Set the auth token header for API requests
+          setAuthTokenHeader(temporaryAuthToken);
+
+          // Also store this token to be picked up by the API client
+          localStorage.setItem("authToken", temporaryAuthToken);
+
+          console.log("Set temporary auth token for API requests");
+        }
+
+        initEmbeddedWallet(user?.id || customUserId || null, dbSession);
 
         if (authProviderType && user && dbSession) {
           setEmbeddedContextAuth(({ authStatus }) => ({

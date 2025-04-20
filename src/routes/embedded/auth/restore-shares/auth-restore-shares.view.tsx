@@ -12,8 +12,47 @@ import {
   SeedIcon,
   KeyIcon
 } from "~components/embed/ui";
+import { useEmbedded } from "~utils/embedded/embedded.hooks";
+import { useEffect } from "react";
+
+// Import a redirect helper function similar to the one used in Google auth
+const redirectToHash = (path: string, params?: Record<string, string>) => {
+  const baseUrl = window.location.origin;
+  let url = `${baseUrl}/#${path}`;
+
+  // Add query params if provided
+  if (params) {
+    const queryString = Object.entries(params)
+      .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+      .join("&");
+    url += `?${queryString}`;
+  }
+
+  console.log("Redirecting to:", url);
+  // Force a complete page refresh to the target URL
+  window.location.replace(url);
+};
 
 export function AuthRestoreSharesEmbeddedView() {
+  const { recoverWallet } = useEmbedded();
+
+  // Check for passkey authentication with auto wallet activation
+  useEffect(() => {
+    const needsWalletActivation =
+      localStorage.getItem("needsWalletActivation") === "true";
+    const sessionId = localStorage.getItem("sessionId");
+    const userId = localStorage.getItem("userId");
+
+    if (needsWalletActivation && sessionId && userId) {
+      console.log("Automatic wallet activation from passkey authentication");
+      // Clear the flag to prevent repeated activations
+      localStorage.removeItem("needsWalletActivation");
+
+      // Use the consistent redirect approach
+      redirectToHash("/dashboard");
+    }
+  }, []);
+
   return (
     <Card
       headerText="Restore shares / wallet"
@@ -31,7 +70,7 @@ export function AuthRestoreSharesEmbeddedView() {
       }}
       hasCloseButton={true}
       onCloseButtonClick={() => {
-        window.location.href = "/auth";
+        redirectToHash("/auth");
       }}
       size="auto"
     >

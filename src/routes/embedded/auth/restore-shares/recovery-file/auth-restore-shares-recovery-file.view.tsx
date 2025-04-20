@@ -10,6 +10,68 @@ import {
   Button
 } from "~components/embed/ui";
 
+const handleRedirect = (path: string) => {
+  window.location.hash = path;
+
+  console.log(`Redirected to: ${path}`);
+};
+
+const navigateToHashRoute = (path: string) => {
+  console.log("Navigating to hash route:", path);
+
+  try {
+    // Force a clean reload with the new hash route
+    // This pattern ensures Wouter picks up the new route properly
+    const baseUrl = window.location.origin;
+    const hash = path.startsWith("/") ? path : `/${path}`;
+
+    // Important: Wouter uses a "#" prefix for hash routes
+    window.location.href = `${baseUrl}/#${hash}`;
+
+    // Add event logging to debug navigation
+    console.log("Navigation initiated to:", `${baseUrl}/#${hash}`);
+  } catch (error) {
+    console.error("Navigation error:", error);
+  }
+};
+
+// Simplify the navigation function to avoid overlay issues
+function directNavigate(targetPath) {
+  console.log("Performing direct navigation to:", targetPath);
+
+  // Clean up the path and create the target URL
+  const cleanPath = targetPath.startsWith("/") ? targetPath : `/${targetPath}`;
+  const targetUrl = `${window.location.origin}/#${cleanPath}`;
+
+  console.log("Navigation target URL:", targetUrl);
+
+  try {
+    // Use the most direct approach - just set the href
+    console.log("Directly setting window.location.href");
+    window.location.href = targetUrl;
+  } catch (error) {
+    console.error("Navigation error:", error);
+  }
+}
+
+// Import a redirect helper function similar to the one used in Google auth
+const redirectToHash = (path: string, params?: Record<string, string>) => {
+  const baseUrl = window.location.origin;
+  let url = `${baseUrl}/#${path}`;
+
+  // Add query params if provided
+  if (params) {
+    const queryString = Object.entries(params)
+      .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+      .join("&");
+    url += `?${queryString}`;
+  }
+
+  console.log("Redirecting to:", url);
+  // Force a complete page refresh to the target URL
+  window.location.replace(url);
+};
+
 export function AuthRestoreSharesRecoveryFileEmbeddedView() {
   const [loading, setLoading] = useState(false);
   const { currentWallet, recoverWallet } = useEmbedded();
@@ -63,7 +125,7 @@ export function AuthRestoreSharesRecoveryFileEmbeddedView() {
       }}
       hasCloseButton={true}
       onCloseButtonClick={() => {
-        window.location.href = "/auth/restore-shares";
+        redirectToHash("/auth/restore-shares");
       }}
       size="auto"
     >
