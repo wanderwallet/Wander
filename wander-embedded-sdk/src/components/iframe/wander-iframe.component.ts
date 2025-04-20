@@ -233,6 +233,7 @@ export class WanderIframe {
     }
 
     this.wrapper.dataset.layout = layoutType;
+    this.backdrop.dataset.layout = layoutType;
 
     // Default to true, unless explicitly set to false, false is WIP
     this.wrapper.dataset.expandOnMobile =

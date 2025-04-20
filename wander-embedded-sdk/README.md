@@ -413,7 +413,7 @@ const wander = new WanderEmbedded({
 
 The iframe elements have several data attributes that you can use for conditional styling:
 
-- `[data-layout="popup|modal|sidebar|half"]` - Current layout type
+- `[data-layout="popup|modal|sidebar|half|backdrop"]` - Current layout type
 - `[data-position="left|right|top-left|top-right|bottom-left|bottom-right"]` - Position of the iframe
 - `[data-expanded="true|false"]` - Whether the iframe is in expanded mode
 - `[data-expand-on-mobile="true|false"]` - Whether the iframe expands on mobile devices

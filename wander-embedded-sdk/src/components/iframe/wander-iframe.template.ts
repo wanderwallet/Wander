@@ -93,6 +93,11 @@ export const getWanderIframeTemplateContent = ({
         padding: var(--mobilePadding, 0);
       }
 
+      /* Backdrop layout-specific styles */
+      .backdrop[data-layout="backdrop"] {
+        padding: var(--mobilePadding, 0);
+      }
+
       .iframe-wrapper {
         inset: var(--mobilePadding, 0);
         width: calc(100dvw - 2 * var(--mobilePadding, 0));
