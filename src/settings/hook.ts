@@ -1,5 +1,4 @@
-import { useStorage } from "~utils/storage";
-import { ExtensionStorage } from "~utils/storage";
+import { PersistentStorage, useStorage } from "~utils/storage";
 import { getSetting } from "~settings";
 import { PREFIX } from "~settings/setting";
 
@@ -8,7 +7,7 @@ const useSetting = <T = any>(name: string) => {
   const hook = useStorage<T>(
     {
       key: `${PREFIX}${name}`,
-      instance: ExtensionStorage
+      instance: PersistentStorage
     },
     (val) => (!isSettingUnset(val) ? val : (setting.defaultValue as T))
   );

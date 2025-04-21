@@ -3,6 +3,8 @@ import type { AppInfo } from "~applications/application";
 import type { ModuleFunction } from "~api/module";
 import { type Gateway } from "~gateways/gateway";
 import { getAppURL } from "~utils/format";
+import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
+import { getAppLogo } from "~utils/embedded/embedded.utils";
 
 const foreground: ModuleFunction<any[]> = async (
   permissions: PermissionType[],
@@ -22,6 +24,10 @@ const foreground: ModuleFunction<any[]> = async (
 
     // use site title if it is < than 11 chars
     appInfo.name = siteTitle.length < 11 ? siteTitle : tabURL;
+  }
+
+  if (IS_EMBEDDED_APP && !appInfo.logo) {
+    appInfo.logo = getAppLogo();
   }
 
   return [permissions, appInfo, gateway];
