@@ -49,7 +49,7 @@ export function AuthRestoreSharesEmbeddedView() {
       localStorage.removeItem("needsWalletActivation");
 
       // Use the consistent redirect approach
-      redirectToHash("/dashboard");
+      redirectToHash("/");
     }
   }, []);
 

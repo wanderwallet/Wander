@@ -120,7 +120,9 @@ export function PasskeySignIn({ onAuthSuccess, email }: PasskeySignInProps) {
 
           // Set a flag to indicate that we need to initialize wallet shares
           localStorage.setItem("needsWalletActivation", "true");
-          console.log("Set needsWalletActivation flag");
+          // Set flag for custom auth to help with provider detection
+          localStorage.setItem("isCustomAuth", "true");
+          console.log("Set isCustomAuth flag for passkey authentication");
         }
 
         setToast({

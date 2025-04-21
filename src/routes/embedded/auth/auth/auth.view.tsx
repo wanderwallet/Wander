@@ -236,6 +236,9 @@ export function AuthEmbeddedView() {
           localStorage.setItem("sessionId", verificationResult.sessionId);
           localStorage.setItem("userId", verificationResult.userId);
           localStorage.setItem("needsWalletActivation", "true");
+          // Set flag for custom auth to help with provider detection
+          localStorage.setItem("isCustomAuth", "true");
+          console.log("Set isCustomAuth flag for passkey authentication");
         }
 
         // Show success message
