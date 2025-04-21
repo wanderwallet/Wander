@@ -154,6 +154,13 @@ async function fetchFirstAvailableAuthShare(
       const { id: walletId, deviceShare } = wallet;
 
       try {
+        if (!deviceShare) {
+          console.warn(
+            `Missing device share for wallet ${walletId}. Wallet needs recovery.`
+          );
+          continue;
+        }
+
         const {
           shareHash: deviceShareHash,
           sharePrivateKeyJWK: deviceSharePrivateKeyJWK
