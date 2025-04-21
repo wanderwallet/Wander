@@ -2,7 +2,6 @@ import {
   extractQuantityTransferred,
   fetchNotifications,
   fetchTokenById,
-  fetchTokenByProcessId,
   mergeAndSortNotifications
 } from "~utils/notifications";
 import aoLogo from "url:/assets/ecosystem/ao-logo.svg";
@@ -12,7 +11,7 @@ import { formatAddress } from "~utils/format";
 import HeadV2 from "~components/popup/HeadV2";
 import browser from "webextension-polyfill";
 import { useEffect, useState } from "react";
-import { useAo } from "~tokens/aoTokens/ao";
+import { fetchTokenByProcessId } from "~tokens/aoTokens/ao";
 import styled from "styled-components";
 import { balanceToFractioned, formatTokenBalance } from "~tokens/currency";
 import { ExtensionStorage } from "~utils/storage";
@@ -25,6 +24,7 @@ import { checkTransactionError } from "~lib/transactions";
 import type { Transaction } from "~api/background/handlers/alarms/notifications/notifications-alarm.utils";
 import { MessageDotsCircle, Wallet02 } from "@untitled-ui/icons-react";
 import { HorizontalLine } from "~components/HorizontalLine";
+import { useAo } from "~tokens/hooks";
 
 export function NotificationsView() {
   const { navigate } = useLocation();

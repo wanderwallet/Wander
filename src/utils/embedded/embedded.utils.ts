@@ -4,8 +4,8 @@ import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 import { LocalStorage } from "~iframe/storage/unpartitioned-storage/local-storage";
 import {
   isInsideIframe,
-  EMBEDDED_CLIENT_ID,
   EMBEDDED_ANCESTOR_ORIGIN,
+  EMBEDDED_CLIENT_ID,
   EMBEDDED_SERVER_BASE_URL
 } from "./iframe.utils";
 import { ExtensionStorage } from "~utils/storage";

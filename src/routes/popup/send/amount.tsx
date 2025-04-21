@@ -37,11 +37,8 @@ import SliderMenu from "~components/SliderMenu";
 import { type Contact } from "~components/Recipient";
 import { formatAddress } from "~utils/format";
 import { useContact } from "~contacts/hooks";
-import {
-  defaultTokens,
-  useAoTokens,
-  type TokenInfo
-} from "~tokens/aoTokens/ao";
+import { defaultTokens, type TokenInfo } from "~tokens/aoTokens/ao";
+import { useAoTokens } from "~tokens/hooks";
 import BigNumber from "bignumber.js";
 import { EXP_TOKEN } from "~utils/ao_import";
 import { AnnouncementPopup } from "./announcement";

@@ -25,4 +25,6 @@
   --full-width: 100%;
 
   --checkbox-width: 16px; /* Default checkbox width */
+
+  --avatar-size-default: 24px; /* Default avatar size */
 }

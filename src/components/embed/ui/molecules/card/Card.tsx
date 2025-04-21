@@ -1,11 +1,10 @@
 import React from "react";
 import styles from "./Card.module.css";
 import type { CardBaseProps } from "./Card.types";
-import { Box, XClose, ChevronLeft } from "../../atoms";
+import { Box, MinimizeIcon, ChevronLeft } from "../../atoms";
 import { Header } from "../header";
 import { Footer } from "../footer";
 import { useTheme } from "../../../contexts/ThemeContext";
-import { MinimizeIcon } from "@iconicicons/react";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 
 const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
@@ -24,6 +23,7 @@ const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
       hasCloseButton = true,
       onBackButtonClick,
       onCloseButtonClick,
+      closeButtonStyles,
       customIcon,
       ...props
     },
@@ -46,10 +46,10 @@ const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
 
     const closeIcon = (
       <button
+        style={closeButtonStyles}
         className={styles["card__close__btn"]}
         onClick={onCloseButtonClick ?? closeCard}
       >
-        {/* {customIcon ?? <XClose fontSize={24} color={iconColor} />} */}
         {customIcon ?? <MinimizeIcon fontSize={24} color={iconColor} />}
       </button>
     );

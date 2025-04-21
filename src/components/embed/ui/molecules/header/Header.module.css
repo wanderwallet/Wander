@@ -1,15 +1,20 @@
 @import "../../../tokens/index.css";
 
 .header {
-  padding: var(--spacing-1);
+  padding: var(--spacing-2) var(--spacing-4);
   align-items: flex-start;
 }
 
 .header__title__container {
   padding: 0 var(--spacing-2);
+  text-wrap: wrap;
   text-align: center;
   gap: var(--spacing-4);
   flex: 1;
+}
+
+.header__title__container__dark {
+  color: var(--color-gray-50);
 }
 
 .header__title__container__center {
