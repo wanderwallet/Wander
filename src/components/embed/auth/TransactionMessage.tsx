@@ -51,10 +51,10 @@ export default function TransactionMessage({
     const processTransactionData = async () => {
       if (!transaction?.data) return;
 
-      const type = getContentType() || "binary";
+      const type = getContentType();
       const contentNotSupportedMessage = browser.i18n.getMessage(
         "data_content_type_not_supported",
-        [type]
+        [type || "binary"]
       );
 
       try {
