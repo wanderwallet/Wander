@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
 import { motion, AnimatePresence } from "framer-motion";
 import { InfoCircle, X as XClose } from "@untitled-ui/icons-react";
-import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import {
   PARTITIONED_STORAGE_BANNER_DISMISSAL_KEY,
   PARTITIONED_STORAGE_BANNER_EVENT
@@ -97,8 +96,6 @@ export default function StoragePartitionedBanner({
   dismissStorageKey = PARTITIONED_STORAGE_BANNER_DISMISSAL_KEY,
   onDismiss
 }: StoragePartitionedBannerProps) {
-  const { wallets } = useEmbedded();
-
   const [isVisible, setIsVisible] = useState(initiallyVisible);
   const [actionButtonType, setActionButtonType] = useState<
     "dismiss" | "re-request"
@@ -182,7 +179,7 @@ export default function StoragePartitionedBanner({
 
   return (
     <AnimatePresence>
-      {isVisible && wallets.length > 0 && (
+      {isVisible && (
         <BannerWrapper
           variants={bannerAnimations}
           initial="hidden"
