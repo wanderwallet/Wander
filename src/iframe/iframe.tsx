@@ -14,7 +14,6 @@ import { EmbeddedProvider } from "~utils/embedded/embedded.provider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "~components/embed/contexts/ThemeContext";
 import { ThemeSetup } from "~components/embed/ui/atoms/theme-setup/ThemeSetup";
-import StoragePartitionedBanner from "~components/StoragePartitionedBanner";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -37,7 +36,6 @@ export function ArConnectEmbeddedApp() {
       <Routes routes={IFRAME_ROUTES} diffLocation />
       <NavigationBar />
       <ThemeSetup />
-      <StoragePartitionedBanner />
     </>
   );
 }
