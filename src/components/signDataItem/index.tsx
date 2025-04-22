@@ -144,11 +144,7 @@ export default function SignDataItemDetails({ params }) {
             }}
           >
             {!loading ? (
-              logo && (
-                <LogoWrapper>
-                  <Logo src={logo} alt={`${tokenName} logo`} />
-                </LogoWrapper>
-              )
+              logo && <LogoWrapper img={logo} alt={`${tokenName} logo`} />
             ) : (
               <Loading style={{ width: "16px", height: "16px" }} />
             )}
@@ -222,7 +218,6 @@ export default function SignDataItemDetails({ params }) {
               {browser.i18n.getMessage("transaction_tags")}
               {showTags ? <ChevronUpIcon /> : <ChevronDownIcon />}
             </PropertyName>
-            {console.log(params)}
             <Spacer y={0.05} />
             {showTags &&
               params?.tags?.map((tag, i) => (

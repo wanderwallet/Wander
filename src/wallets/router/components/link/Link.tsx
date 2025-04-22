@@ -7,6 +7,7 @@ export interface LinkProps extends PropsWithChildren {
   to: WanderRoutePath;
   state?: unknown;
   onClick?: React.MouseEventHandler<HTMLLinkElement>;
+  style?: React.CSSProperties;
 }
 
 export function Link(props: LinkProps) {

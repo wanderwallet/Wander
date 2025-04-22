@@ -1,9 +1,13 @@
 import { dryrun } from "@permaweb/aoconnect";
-import { ExtensionStorage, PersistentStorage } from "~utils/storage";
+import { PersistentStorage } from "~utils/storage";
 import type { Alarms } from "webextension-polyfill";
-import { Id, Owner, type TokenInfo } from "~tokens/aoTokens/ao";
+import {
+  Id,
+  Owner,
+  type TokenInfo,
+  getTokenInfoFromData
+} from "~tokens/aoTokens/ao";
 import { timeoutPromise } from "~utils/promises/timeout";
-import { getTokenInfoFromData } from "~tokens/aoTokens/router";
 
 /**
  * Alarm handler for syncing ao tokens

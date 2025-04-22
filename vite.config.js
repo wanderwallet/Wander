@@ -2,11 +2,16 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
 import nodePolyfills from "vite-plugin-node-stdlib-browser";
+// import circleDependency from "vite-plugin-circular-dependency";
 
 // https://vite.dev/config/
 export default defineConfig({
   // root: "./src/iframe/index.html",
-  plugins: [react(), nodePolyfills()],
+  plugins: [
+    react(),
+    nodePolyfills()
+    // ,circleDependency() // uncomment this to see circular dependencies while building in the console
+  ],
   define: {
     "process.env": {
       ...(process?.env || {}),
@@ -16,6 +21,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "~": path.resolve(__dirname, "./src"),
+      "~constants": path.resolve(__dirname, "./src/constants"),
       "~api": path.resolve(__dirname, "./src/api"),
       "~applications": path.resolve(__dirname, "./src/applications"),
       "~components": path.resolve(__dirname, "./src/components"),
@@ -40,7 +46,6 @@ export default defineConfig({
         __dirname,
         "./src/utils/messaging/strategies/iframe/iframe-chunking.strategy.ts"
       ),
-
       // Prisma Enum Fix:
       // See https://github.com/prisma/prisma/issues/12504#issuecomment-1136126199
       // See https://github.com/sveltejs/kit/issues/4444

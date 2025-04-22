@@ -1,10 +1,6 @@
 import type GQLResultInterface from "ar-gql/dist/faces";
 import type { GQLEdgeInterface } from "ar-gql/dist/faces";
-import { type TokenInfo } from "~tokens/aoTokens/ao";
 import { formatAddress } from "~utils/format";
-import { ExtensionStorage, PersistentStorage } from "~utils/storage";
-import { getTokenInfo } from "~tokens/aoTokens/router";
-import type { Token } from "~tokens/token";
 import BigNumber from "bignumber.js";
 import browser from "webextension-polyfill";
 import { balanceToFractioned, formatFiatBalance } from "~tokens/currency";
@@ -17,9 +13,7 @@ import type {
   RawTransaction,
   Transaction
 } from "~api/background/handlers/alarms/notifications/notifications-alarm.utils";
-
-let tokens: TokenInfo[] = null;
-export let tokenInfoMap = new Map<string, TokenInfo | Token>();
+import { fetchTokenByProcessId } from "~tokens/aoTokens/ao";
 
 const AGENT_TOKEN_ADDRESS = "8rbAftv7RaPxFjFk5FGUVAVCSjGQB4JHDcb9P9wCVhQ";
 
@@ -52,47 +46,6 @@ export function sortFn(a: ExtendedTransaction, b: ExtendedTransaction) {
   const timestampB = b.node?.block?.timestamp || Number.MAX_SAFE_INTEGER;
   return timestampB - timestampA;
 }
-
-async function fetchTokenInfo(processId: string) {
-  try {
-    if (tokenInfoMap.has(processId)) {
-      return tokenInfoMap.get(processId) as TokenInfo;
-    }
-
-    const tokenInfo = await getTokenInfo(processId);
-    tokenInfoMap.set(processId, tokenInfo);
-    return tokenInfo;
-  } catch {
-    return null;
-  }
-}
-
-export const fetchTokenByProcessId = async (
-  processId: string
-): Promise<TokenInfo | null> => {
-  if (tokenInfoMap.has(processId)) {
-    return tokenInfoMap.get(processId) as TokenInfo;
-  }
-
-  if (!tokens) {
-    const [aoTokens, aoTokensCache] = await Promise.all([
-      PersistentStorage.get<TokenInfo[]>("ao_tokens"),
-      PersistentStorage.get<TokenInfo[]>("ao_tokens_cache")
-    ]);
-
-    tokens = [...(aoTokens || []), ...(aoTokensCache || [])];
-  }
-
-  if (!processId) return null;
-
-  const tokenInfo = tokens.find((token) => token.processId === processId);
-  if (tokenInfo) {
-    tokenInfoMap.set(processId, tokenInfo);
-    return tokenInfo;
-  }
-
-  return fetchTokenInfo(processId);
-};
 
 const processTransaction = (transaction: GQLEdgeInterface, type: string) => ({
   ...transaction,

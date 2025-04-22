@@ -11,6 +11,7 @@ const Row = forwardRef<HTMLDivElement, RowBaseProps>(
       className,
       alignment = "center",
       justifyContent = "center",
+      isFullWidth = false,
       style,
       ...props
     },
@@ -32,6 +33,7 @@ const Row = forwardRef<HTMLDivElement, RowBaseProps>(
           styles.row,
           styles[`row__align_${alignment}`],
           styles[`row__justify_${justifyContent}`],
+          isFullWidth && styles.row__full_width,
           className
         )}
         style={rowStyle}

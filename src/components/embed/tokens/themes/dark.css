@@ -6,14 +6,14 @@
   --color-button-primary-success: var(--brand-color-success1);
   --color-button-primary-error: var(--brand-color-error1);
 
-  --color-button-outlined-active: var(--brand-color-neutral6);
+  --color-button-outlined-active: var(--brand-color-neutral7);
   --color-button-outlined-border: var(--brand-color-gray-600);
 
   --color-button-secondary-active: var(--brand-color-neutral6);
   --color-button-secondary-border: var(--brand-color-gray-600);
   --color-button-secondary-background: var(--brand-color-gray-800);
 
-  --color-divider-default: var(--brand-color-gray-700);
+  --color-divider-default: var(--brand-color-gray-800);
   --color-link-primary: var(--brand-color-primary4);
   --color-link-secondary: var(--brand-color-secondary4);
   --color-link-disabled: var(--brand-color-gray-500);
@@ -39,11 +39,15 @@
 
   --color-seed-input-border: var(--brand-color-neutral4);
   --color-seed-input-active: var(--brand-color-primary3);
-  --color-seed-input-background: var(--brand-color-gray-800);
+  --color-seed-input-background: var(--brand-color-neutral6);
 
   --color-border-radio: var(--brand-color-primary4);
   --color-non-checked-background-radio: var(--brand-color-secondary1);
 
   --color-background-switch-enabled: var(--brand-color-primary3);
   --color-background-button-disabled: var(--brand-color-neutral2);
+  --avatar-background: #0d6ce9;
+
+  --text-input-background: var(--brand-color-neutral2);
+  --text-input-color: var(--brand-color-neutral7);
 }

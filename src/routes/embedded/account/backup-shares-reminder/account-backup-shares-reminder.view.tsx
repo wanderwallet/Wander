@@ -1,20 +1,19 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
-import { useLocation } from "~wallets/router/router.utils";
 
 import {
   Box,
   Button,
   Card,
   Checkbox,
-  Row,
-  WanderIcon,
-  Text
+  WarningCircledIcon,
+  WanderFooter
 } from "~components/embed/ui";
+import { useLocation } from "~wallets/router/router.utils";
 
 export function AccountBackupSharesReminderEmbeddedView() {
   const { currentWallet, skipBackUp } = useEmbedded();
-  const { navigate } = useLocation();
+  const { navigate, back } = useLocation();
   const isMandatoryReminder =
     currentWallet.totalExports === 0 &&
     currentWallet.totalBackups === 0 &&
@@ -24,25 +23,17 @@ export function AccountBackupSharesReminderEmbeddedView() {
 
   const handleSkipClicked = async () => {
     await skipBackUp(isChecked);
-    navigate(isChecked ? "/" : "/account");
+    // navigate("/wallet");
   };
 
   return (
     <Card
-      headerText="Account backup"
-      subtitle="Secure your account by backing it up."
-      footerElement={
-        <Row>
-          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
-            {"Secured by"}
-          </Text>
-          <WanderIcon color="#838383" />
-        </Row>
-      }
+      headerIcon={<WarningCircledIcon />}
+      headerText="Wallet backup"
+      subtitle={"Secure your wallet by backing it up"}
+      footerElement={<WanderFooter />}
       hasBackButton={true}
-      onBackButtonClick={() => {
-        window.history.back();
-      }}
+      onBackButtonClick={back}
       hasCloseButton={true}
       size="auto"
     >
@@ -54,13 +45,13 @@ export function AccountBackupSharesReminderEmbeddedView() {
           <Button
             variant="secondary"
             isFullWidth
-            href="#/account"
+            href="#/wallet"
             onClick={handleSkipClicked}
           >
             Backup later
           </Button>
         ) : (
-          <Button variant="secondary" isFullWidth href="#/account">
+          <Button variant="secondary" isFullWidth href="#/wallet">
             Cancel
           </Button>
         )}

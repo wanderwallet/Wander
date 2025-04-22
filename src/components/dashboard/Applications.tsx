@@ -1,6 +1,6 @@
 import { Spacer, Text, useInput } from "@arconnect/components-rebrand";
 import { useEffect, useMemo, useState } from "react";
-import { ExtensionStorage, useStorage } from "~utils/storage";
+import { PersistentStorage, useStorage } from "~utils/storage";
 import { SettingsList } from "./list/BaseElement";
 import { useRoute } from "wouter";
 import Application from "~applications/application";
@@ -27,7 +27,7 @@ export function ApplicationsDashboardView() {
   const [connectedApps] = useStorage<string[]>(
     {
       key: "apps",
-      instance: ExtensionStorage
+      instance: PersistentStorage
     },
     []
   );

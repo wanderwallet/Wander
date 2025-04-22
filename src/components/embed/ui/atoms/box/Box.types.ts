@@ -1,5 +1,5 @@
 import React from "react";
-import { Alignments, Positions } from "../../../types";
+import type { Alignments, Positions } from "../../../types";
 
 export type BoxBaseProps = {
   children?: React.ReactNode;
@@ -10,4 +10,5 @@ export type BoxBaseProps = {
   style?: React.CSSProperties;
   isBlurry?: boolean;
   isAutoWidth?: boolean;
+  onClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
 };

@@ -5,8 +5,8 @@ import { initializeARBalanceMonitor } from "~utils/analytics";
 import { updateAoToken } from "~utils/ao_import";
 import { handleGatewayUpdateAlarm } from "~api/background/handlers/alarms/gateway-update/gateway-update-alarm.handler";
 import { openOrSelectWelcomePage } from "~wallets";
-import { resetAllPermissions } from "~applications/permissions";
 import { ExtensionStorage } from "~utils/storage";
+import { resetAllPermissions } from "./permissions.handler";
 
 /**
  * On extension installed event handler
