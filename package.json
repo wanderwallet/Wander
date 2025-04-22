@@ -58,7 +58,7 @@
     "@arconnect/components-rebrand": "https://github.com/arconnectio/components-rebrand.git#master",
     "@arconnect/keystone-sdk": "^0.0.5",
     "@arconnect/webext-bridge": "^5.0.6",
-    "@dha-team/arbundles": "^1.0.1",
+    "@dha-team/arbundles": "^1.0.2",
     "@iconicicons/react": "^1.5.0",
     "@keystonehq/arweave-keyring": "^0.1.1-alpha.0",
     "@keystonehq/bc-ur-registry-arweave": "^0.1.1-alpha.0",

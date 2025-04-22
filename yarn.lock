@@ -466,10 +466,10 @@
   resolved "https://registry.npmjs.org/@csstools/css-tokenizer/-/css-tokenizer-3.0.3.tgz#a5502c8539265fecbd873c1e395a890339f119c2"
   integrity sha512-UJnjoFsmxfKUdNYdWgOB0mWUypuLvAfQPH1+pyvRJs6euowbFkFC6P13w1l8mJyi3vxYMxc9kld5jZEGRQs6bw==
 
-"@dha-team/arbundles@^1.0.1":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@dha-team/arbundles/-/arbundles-1.0.1.tgz#5e81039b74da241cf0e2b074ae77e489eec7887d"
-  integrity sha512-cgVxhZJLK1HG2+vcRBZ0CYGpxz7mA2QvLaspcw2gOzb2V/ZUxlifUu1aufBK3iz63Ww2OhgO0j9DstRJqrG1uA==
+"@dha-team/arbundles@^1.0.2":
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/@dha-team/arbundles/-/arbundles-1.0.3.tgz#4080514945a830e7d61f3d079401f28e8bd198d2"
+  integrity sha512-/XelOo5V/1o1M8VchCQ+F7N5kxwirWh5jD5zg1KECaV80Qld6aKBSgG19VLlBsRUXbRUfjM+LDRPJm9Hjfmycg==
   dependencies:
     "@ethersproject/bytes" "^5.7.0"
     "@ethersproject/hash" "^5.7.0"
@@ -478,7 +478,7 @@
     "@ethersproject/transactions" "^5.7.0"
     "@ethersproject/wallet" "^5.7.0"
     "@noble/ed25519" "^1.6.1"
-    arweave "^1.15.1"
+    arweave "^1.15.7"
     base64url "^3.0.1"
     bs58 "^4.0.1"
     keccak "^3.0.2"
@@ -4664,7 +4664,7 @@ arweave@^1.10.13, arweave@^1.10.15, arweave@^1.10.16, arweave@^1.13.7, arweave@^
     base64-js "^1.5.1"
     bignumber.js "^9.0.2"
 
-arweave@^1.15.1, arweave@^1.15.7:
+arweave@^1.15.7:
   version "1.15.7"
   resolved "https://registry.yarnpkg.com/arweave/-/arweave-1.15.7.tgz#d09265d128e93a471203649de083ba7fec52cb29"
   integrity sha512-F+Y4iWU1qea9IsKQ/YNmLsY4DHQVsaJBuhEbFxQn9cfGHOmtXE+bwo14oY8xqymsqSNf/e1PeIfLk7G7qN/hVA==
