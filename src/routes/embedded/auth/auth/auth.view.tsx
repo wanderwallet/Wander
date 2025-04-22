@@ -14,7 +14,7 @@ import {
   Wander2Icon,
   WanderIcon
 } from "~components/embed";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { AuthProviderType } from "embed-api";
 import { getSupabaseClient } from "~utils/embedded/embedded.utils";
 import { AuthenticationService } from "~utils/authentication/authentication.service";
@@ -138,6 +138,8 @@ export function AuthEmbeddedView() {
     useState<AuthProviderType | null>(null);
   const [isAuthenticatingWithPasskey, setIsAuthenticatingWithPasskey] =
     useState(false);
+  const [isInIframe, setIsInIframe] = useState(false);
+  const [passkeysSupported, setPasskeysSupported] = useState(true);
 
   const areButtonsDisabled =
     authStatus === "unknown" ||
@@ -161,7 +163,7 @@ export function AuthEmbeddedView() {
       );
       setSelectedAuthProviderType(null);
     },
-    []
+    [authenticate]
   );
 
   const handleEmailSignup = useCallback(async () => {
@@ -185,6 +187,15 @@ export function AuthEmbeddedView() {
   }, []);
 
   const handlePasskeySignIn = useCallback(async () => {
+    if (!passkeysSupported) {
+      setToast({
+        type: "error",
+        content: "Passkeys are not supported in your browser",
+        duration: 3000
+      });
+      return;
+    }
+
     try {
       setIsAuthenticatingWithPasskey(true);
 
@@ -204,72 +215,90 @@ export function AuthEmbeddedView() {
       const authenticationResult =
         await AuthenticationService.startPasskeyAuthentication(email);
 
-      // Request the browser to perform the passkey authentication
-      const assertionResponse = await startAuthentication({
-        optionsJSON: authenticationResult.options
-      });
-
-      // Get the stored device nonce if available
-      const deviceNonce = localStorage.getItem("deviceNonce") || undefined;
-
-      // Verify the authentication with the server
-      const verificationResult =
-        await AuthenticationService.verifyPasskeyAuthentication({
-          credentialId: assertionResponse.id,
-          authenticatorData: assertionResponse.response.authenticatorData,
-          clientDataJSON: assertionResponse.response.clientDataJSON,
-          signature: assertionResponse.response.signature,
-          userHandle: assertionResponse.response.userHandle,
-          challenge: authenticationResult.options.challenge,
-          challengeId: authenticationResult.challengeId, // Pass the challenge ID
-          deviceNonce
+      try {
+        // Request the browser to perform the passkey authentication
+        const assertionResponse = await startAuthentication({
+          optionsJSON: authenticationResult.options
         });
 
-      // Authentication successful
-      if (verificationResult.verified) {
-        // Store data in localStorage
-        if (verificationResult.deviceNonce) {
-          localStorage.setItem("deviceNonce", verificationResult.deviceNonce);
+        // Get the stored device nonce if available
+        const deviceNonce = localStorage.getItem("deviceNonce") || undefined;
+
+        // Verify the authentication with the server
+        const verificationResult =
+          await AuthenticationService.verifyPasskeyAuthentication({
+            credentialId: assertionResponse.id,
+            authenticatorData: assertionResponse.response.authenticatorData,
+            clientDataJSON: assertionResponse.response.clientDataJSON,
+            signature: assertionResponse.response.signature,
+            userHandle: assertionResponse.response.userHandle,
+            challenge: authenticationResult.options.challenge,
+            challengeId: authenticationResult.challengeId, // Pass the challenge ID
+            deviceNonce
+          });
+
+        // Authentication successful
+        if (verificationResult.verified) {
+          // Store data in localStorage
+          if (verificationResult.deviceNonce) {
+            localStorage.setItem("deviceNonce", verificationResult.deviceNonce);
+          }
+
+          if (verificationResult.sessionId) {
+            localStorage.setItem("sessionId", verificationResult.sessionId);
+            localStorage.setItem("userId", verificationResult.userId);
+            localStorage.setItem("needsWalletActivation", "true");
+            // Set flag for custom auth to help with provider detection
+            localStorage.setItem("isCustomAuth", "true");
+            console.log("Set isCustomAuth flag for passkey authentication");
+          }
+
+          // Show success message
+          setToast({
+            type: "success",
+            content: "Authentication successful! Redirecting...",
+            duration: 2000
+          });
+
+          // Give a short delay, then do the redirect
+          setTimeout(() => {
+            forceRedirect("/auth/restore-shares");
+          }, 500);
+        } else {
+          setToast({
+            type: "error",
+            content: "Passkey authentication failed",
+            duration: 3000
+          });
         }
+      } catch (error: any) {
+        console.error("Error authenticating with passkey:", error);
 
-        if (verificationResult.sessionId) {
-          localStorage.setItem("sessionId", verificationResult.sessionId);
-          localStorage.setItem("userId", verificationResult.userId);
-          localStorage.setItem("needsWalletActivation", "true");
-          // Set flag for custom auth to help with provider detection
-          localStorage.setItem("isCustomAuth", "true");
-          console.log("Set isCustomAuth flag for passkey authentication");
+        // Handle specific WebAuthn iframe error
+        if (
+          error.name === "NotAllowedError" &&
+          error.message?.includes("publickey-credentials-get")
+        ) {
+          setToast({
+            type: "error",
+            content:
+              "Passkey authentication is not allowed in this iframe. The parent page must enable it using Permissions-Policy.",
+            duration: 5000
+          });
+        } else {
+          setToast({
+            type: "error",
+            content: `Error authenticating with passkey: ${
+              error.message || "Unknown error"
+            }`,
+            duration: 3000
+          });
         }
-
-        // Show success message
-        setToast({
-          type: "success",
-          content: "Authentication successful! Redirecting...",
-          duration: 2000
-        });
-
-        // Give a short delay, then do the redirect
-        setTimeout(() => {
-          forceRedirect("/auth/restore-shares");
-        }, 500);
-      } else {
-        setToast({
-          type: "error",
-          content: "Passkey authentication failed",
-          duration: 3000
-        });
       }
-    } catch (error) {
-      console.error("Error authenticating with passkey:", error);
-      setToast({
-        type: "error",
-        content: "Error authenticating with passkey",
-        duration: 3000
-      });
     } finally {
       setIsAuthenticatingWithPasskey(false);
     }
-  }, []);
+  }, [passkeysSupported, setToast]);
 
   return (
     <Card
@@ -323,10 +352,20 @@ export function AuthEmbeddedView() {
           onClick={handlePasskeySignIn}
           icon={<KeyIcon fontSize={24} />}
           isLoading={isAuthenticatingWithPasskey}
-          isDisabled={areButtonsDisabled}
+          isDisabled={areButtonsDisabled || !passkeysSupported}
         >
           Sign in with Passkey
+          {isInIframe && " (Requires permission from parent frame)"}
         </Button>
+
+        {isInIframe && (
+          <Text
+            variant="bodyXs"
+            style={{ color: "#FF9800", textAlign: "center", marginTop: 4 }}
+          >
+            Note: Using passkeys in an iframe requires parent frame permission
+          </Text>
+        )}
 
         <Divider text={"OR"} />
         <Row>
