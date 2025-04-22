@@ -4,16 +4,19 @@ import { NOOP } from "~utils/misc";
 import type { AuthRoutePath } from "~wallets/router/auth/auth.routes";
 import { useExtensionStatusOverride } from "~wallets/router/extension/extension-router.hook";
 import { ExtensionOverrides } from "~wallets/router/extension/extension.routes";
-import type { BaseLocationHook } from "~wallets/router/router.types";
+import type { BaseLocationHook, RoutePath } from "~wallets/router/router.types";
 import { useHashLocation } from "wouter/use-hash-location";
-import { EmbeddedPaths } from "../iframe/iframe.routes";
 import { routeTrapMatches } from "../router.utils";
+import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 
 const AuthRelatedScreenRoutes = [
-  EmbeddedPaths.WalletPermissionsRequestEmbeddedView,
-  EmbeddedPaths.WalletSettingsCustomEmbeddedView,
-  EmbeddedPaths.WalletTransactionDetailsEmbeddedView
-];
+  // EmbeddedPaths.WalletPermissionsRequestEmbeddedView,
+  "/wallet/settings",
+  // EmbeddedPaths.WalletSettingsCustomEmbeddedView,
+  "/wallet/settings/custom",
+  // EmbeddedPaths.WalletTransactionDetailsEmbeddedView,
+  "/wallet/transaction-details"
+] as RoutePath[];
 
 export const useAuthRequestsLocation: BaseLocationHook = () => {
   const override = useExtensionStatusOverride();
@@ -54,11 +57,13 @@ export const useAuthRequestsLocation: BaseLocationHook = () => {
     wavigate(to, options);
   };
 
-  const matchedLocation = routeTrapMatches(
-    wocation as AuthRoutePath,
-    AuthRelatedScreenRoutes,
-    location
-  );
+  const matchedLocation = IS_EMBEDDED_APP
+    ? routeTrapMatches(
+        wocation as AuthRoutePath,
+        AuthRelatedScreenRoutes,
+        location
+      )
+    : location;
 
   return [matchedLocation, navigate];
 };
