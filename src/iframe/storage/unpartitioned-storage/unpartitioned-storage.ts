@@ -501,6 +501,7 @@ export class EnhancedStorage implements Storage {
       } else if (permissionState === "prompt") {
         // Need user interaction to request
         this.setupUserInteractionHandler();
+        this.handlePartitionedStorage("open", "re-request");
       } else if (permissionState === "denied") {
         // User has denied access
         log(LOG_GROUP.STORAGE, "Storage access permanently denied");
@@ -569,19 +570,23 @@ export class EnhancedStorage implements Storage {
       localStorage.getItem(PARTITIONED_STORAGE_BANNER_DISMISSAL_KEY) === "true";
     if (isDismissed) return;
 
-    document.dispatchEvent(
-      new CustomEvent(PARTITIONED_STORAGE_BANNER_EVENT, {
-        detail: {
-          type: eventType,
-          message: browser.i18n.getMessage("partitioned_storage_banner"),
-          actionButtonType
-        },
-        bubbles: true
-      })
+    setTimeout(
+      () =>
+        document.dispatchEvent(
+          new CustomEvent(PARTITIONED_STORAGE_BANNER_EVENT, {
+            detail: {
+              type: eventType,
+              message: browser.i18n.getMessage("partitioned_storage_banner"),
+              actionButtonType
+            },
+            bubbles: true
+          })
+        ),
+      0
     );
 
     if (actionButtonType === "re-request") {
-      this.setupUserInteractionHandler.bind(this)();
+      this.setupUserInteractionHandler();
     }
   }
 
