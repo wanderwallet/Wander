@@ -408,39 +408,29 @@ export class EnhancedStorage implements Storage {
     try {
       if (!document.requestStorageAccess) return;
 
-      // First try the newer API with types parameter for explicit localStorage/sessionStorage
-      try {
+      log(
+        LOG_GROUP.STORAGE,
+        `Requesting ${this.storageType} access with typed API`
+      );
+
+      // @ts-expect-error - Newer API with types may not be recognized by TypeScript
+      const handle = await document.requestStorageAccess({
+        [this.storageType]: true
+      });
+
+      // @ts-expect-error - Newer API may not be recognized by TypeScript
+      if (handle && handle[this.storageType]) {
+        this.storage = handle[this.storageType];
         log(
           LOG_GROUP.STORAGE,
-          `Requesting ${this.storageType} access with typed API`
+          `Unpartitioned ${this.storageType} access granted with handle`
         );
-
-        // @ts-expect-error - Newer API with types may not be recognized by TypeScript
-        const handle = await document.requestStorageAccess({
-          [this.storageType]: true
-        });
-
-        // @ts-expect-error - Newer API may not be recognized by TypeScript
-        if (handle && handle[this.storageType]) {
-          this.storage = handle[this.storageType];
-          log(
-            LOG_GROUP.STORAGE,
-            `Unpartitioned ${this.storageType} access granted with handle`
-          );
-          return;
-        }
-      } catch (e) {
-        log(
-          LOG_GROUP.STORAGE,
-          "Typed API failed, falling back to standard API"
+        return;
+      } else {
+        throw new Error(
+          `Unpartitioned ${this.storageType} access not granted with handle`
         );
       }
-
-      // Fall back to the standard requestStorageAccess API (primarily for cookies, but helps in some browsers)
-      await document.requestStorageAccess();
-      log(LOG_GROUP.STORAGE, "Standard storage access granted");
-
-      // Continue using the regular storage object, which should now be unpartitioned
     } catch (error) {
       log(LOG_GROUP.STORAGE, "Failed to get storage access:", error);
       throw error;
@@ -453,7 +443,7 @@ export class EnhancedStorage implements Storage {
     // Check if Storage Access API is supported
     if (!document.hasStorageAccess && !document.requestStorageAccess) {
       log(LOG_GROUP.STORAGE, "Storage Access API not supported");
-      this.handlePartitionedStorage();
+      this.handlePartitionedStorage("open", "dismiss");
       return;
     }
 
@@ -514,11 +504,11 @@ export class EnhancedStorage implements Storage {
       } else if (permissionState === "denied") {
         // User has denied access
         log(LOG_GROUP.STORAGE, "Storage access permanently denied");
-        this.handlePartitionedStorage();
+        this.handlePartitionedStorage("open", "re-request");
       }
     } catch (error) {
       log(LOG_GROUP.STORAGE, "Error in storage access flow:", error);
-      this.handlePartitionedStorage();
+      this.handlePartitionedStorage("open", "re-request");
     }
   }
 
@@ -540,13 +530,15 @@ export class EnhancedStorage implements Storage {
 
         // Clean up event listeners after successful request
         cleanupListeners();
+
+        this.handlePartitionedStorage("close", "dismiss");
       } catch (error) {
         log(
           LOG_GROUP.STORAGE,
           "Storage access denied after user interaction:",
           error
         );
-        this.handlePartitionedStorage();
+        this.handlePartitionedStorage("open", "dismiss");
       }
     };
 
@@ -569,22 +561,28 @@ export class EnhancedStorage implements Storage {
   /**
    * Handle the case when unpartitioned storage access is denied or unavailable
    */
-  protected handlePartitionedStorage(): void {
+  protected handlePartitionedStorage(
+    eventType: "open" | "close" = "open",
+    actionButtonType: "dismiss" | "re-request" = "dismiss"
+  ): void {
     const isDismissed =
       localStorage.getItem(PARTITIONED_STORAGE_BANNER_DISMISSAL_KEY) === "true";
     if (isDismissed) return;
 
-    // Show banner with short delay
-    setTimeout(() => {
-      document.dispatchEvent(
-        new CustomEvent(PARTITIONED_STORAGE_BANNER_EVENT, {
-          detail: {
-            message: browser.i18n.getMessage("partitioned_storage_banner")
-          },
-          bubbles: true
-        })
-      );
-    }, 5000);
+    document.dispatchEvent(
+      new CustomEvent(PARTITIONED_STORAGE_BANNER_EVENT, {
+        detail: {
+          type: eventType,
+          message: browser.i18n.getMessage("partitioned_storage_banner"),
+          actionButtonType
+        },
+        bubbles: true
+      })
+    );
+
+    if (actionButtonType === "re-request") {
+      this.setupUserInteractionHandler.bind(this)();
+    }
   }
 
   /**

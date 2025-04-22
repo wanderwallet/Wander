@@ -2975,5 +2975,9 @@
   "partitioned_storage_banner": {
     "message": "Your wallets will not be automatically available on other sites. You may need to manually import them when visiting other sites.",
     "description": "Partitioned storage banner message"
+  },
+  "re_request_access": {
+    "message": "Re-request access",
+    "description": "Re-request access text"
   }
 }

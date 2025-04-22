@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
 import { motion, AnimatePresence } from "framer-motion";
 import { InfoCircle, X as XClose } from "@untitled-ui/icons-react";
@@ -8,13 +8,9 @@ import {
   PARTITIONED_STORAGE_BANNER_EVENT
 } from "~iframe/storage/unpartitioned-storage/unpartitioned-storage.utils";
 import browser from "webextension-polyfill";
+import { Button } from "./embed";
 
-// Styled components for the banner
 const BannerWrapper = styled(motion.div)`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
   background-color: #ffe3ba;
   color: #663c00;
   z-index: 9999;
@@ -59,9 +55,9 @@ const DismissButton = styled.button`
 
 // Animation variants
 const bannerAnimations = {
-  hidden: { y: -100 },
+  hidden: { y: 100 },
   visible: { y: 0 },
-  exit: { y: -100 }
+  exit: { y: 100 }
 };
 
 // Props interface
@@ -87,12 +83,6 @@ interface StoragePartitionedBannerProps {
    * Function called when banner is dismissed
    */
   onDismiss?: () => void;
-
-  /**
-   * Whether to enable the dismiss button
-   * @default true
-   */
-  dismissible?: boolean;
 }
 
 /**
@@ -105,13 +95,14 @@ export default function StoragePartitionedBanner({
   initiallyVisible = false,
   message = browser.i18n.getMessage("partitioned_storage_banner"),
   dismissStorageKey = PARTITIONED_STORAGE_BANNER_DISMISSAL_KEY,
-  onDismiss,
-  dismissible = true
+  onDismiss
 }: StoragePartitionedBannerProps) {
   const { wallets } = useEmbedded();
 
-  // State to track visibility
   const [isVisible, setIsVisible] = useState(initiallyVisible);
+  const [actionButtonType, setActionButtonType] = useState<
+    "dismiss" | "re-request"
+  >("dismiss");
 
   // State for custom message that may come from events
   const [customMessage, setCustomMessage] = useState(message);
@@ -136,32 +127,39 @@ export default function StoragePartitionedBanner({
     }
 
     // Listen for custom event to show the banner
-    const handleShowBanner = (event: CustomEvent) => {
+    const handleBanner = (event: CustomEvent) => {
       // Don't show if manually dismissed during this session
       if (isDismissedRef.current) return;
 
       // Get message from event if provided
-      const eventMessage = event.detail?.message;
-      if (eventMessage) {
-        setCustomMessage(eventMessage);
-      }
+      const {
+        type = "open",
+        actionButtonType = "dismiss",
+        message = ""
+      } = event.detail;
+      if (message) setCustomMessage(message);
 
-      // Force banner to be visible
-      setIsVisible(true);
+      const isOpen = type === "open";
+      localStorage.setItem(dismissStorageKey, String(!isOpen));
+      setActionButtonType(actionButtonType);
+      setIsVisible(isOpen);
+      isDismissedRef.current = !isOpen;
+      if (!isOpen) clearListener();
+    };
+
+    const clearListener = () => {
+      document.removeEventListener(
+        PARTITIONED_STORAGE_BANNER_EVENT,
+        handleBanner
+      );
     };
 
     // Add event listener with type casting
-    document.addEventListener(
-      PARTITIONED_STORAGE_BANNER_EVENT,
-      handleShowBanner as EventListener
-    );
+    document.addEventListener(PARTITIONED_STORAGE_BANNER_EVENT, handleBanner);
 
     // Clean up event listener when component unmounts
     return () => {
-      document.removeEventListener(
-        PARTITIONED_STORAGE_BANNER_EVENT,
-        handleShowBanner as EventListener
-      );
+      clearListener();
     };
   }, [initiallyVisible, dismissStorageKey]);
 
@@ -173,7 +171,7 @@ export default function StoragePartitionedBanner({
     // Hide the banner
     setIsVisible(false);
 
-    // Remember dismissal in session storage
+    // Remember dismissal in localStorage
     localStorage.setItem(dismissStorageKey, "true");
 
     // Call onDismiss callback if provided
@@ -197,12 +195,17 @@ export default function StoragePartitionedBanner({
               <InfoCircle width={20} height={20} />
             </IconWrapper>
             <MessageText>{customMessage}</MessageText>
-            {dismissible && (
+            {actionButtonType === "dismiss" && (
               <DismissButton onClick={handleDismiss} aria-label="Close banner">
                 <XClose width={20} height={20} />
               </DismissButton>
             )}
           </BannerContent>
+          {actionButtonType === "re-request" && (
+            <Button isFullWidth>
+              {browser.i18n.getMessage("re_request_access")}
+            </Button>
+          )}
         </BannerWrapper>
       )}
     </AnimatePresence>
