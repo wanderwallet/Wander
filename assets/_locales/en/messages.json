@@ -2975,5 +2975,9 @@
   "data_too_large": {
     "message": "Unable to display data: Data is too large to display.",
     "description": "Data too large text"
+  },
+  "re_request_access": {
+    "message": "Re-request access",
+    "description": "Re-request access text"
   }
 }

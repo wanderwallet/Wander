@@ -2965,5 +2965,9 @@
     "data_too_large": {
         "message": "无法显示数据：数据太大，无法显示。",
         "description": "Data too large text"
+    },
+    "re_request_access": {
+        "message": "重新请求访问",
+        "description": "Re-request access text"
     }
 }
