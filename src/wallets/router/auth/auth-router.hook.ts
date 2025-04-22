@@ -8,7 +8,10 @@ import type { BaseLocationHook, RoutePath } from "~wallets/router/router.types";
 import { useHashLocation } from "wouter/use-hash-location";
 import { routeTrapMatches } from "../router.utils";
 import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
+import { useEffect } from "react";
+import { AUTH_POPUP_REQUEST_WAIT_MS } from "~utils/auth/auth.constants";
 
+// TODO: Use the EmbeddedPaths instead but should we create the same hook for wander connect?
 const AuthRelatedScreenRoutes = [
   // EmbeddedPaths.WalletPermissionsRequestEmbeddedView,
   "/wallet/settings",
@@ -20,9 +23,16 @@ const AuthRelatedScreenRoutes = [
 
 export const useAuthRequestsLocation: BaseLocationHook = () => {
   const override = useExtensionStatusOverride();
-  const { authRequest: currentAuthRequest } = useCurrentAuthRequest("any");
+  const { authRequest: currentAuthRequest, closeAuthPopup } =
+    useCurrentAuthRequest("any");
   const { authRequests, setCurrentAuthRequestIndex } = useAuthRequests();
   const [wocation, wavigate] = useHashLocation();
+
+  useEffect(() => {
+    if (IS_EMBEDDED_APP || currentAuthRequest || override) return;
+
+    return closeAuthPopup(AUTH_POPUP_REQUEST_WAIT_MS);
+  }, [currentAuthRequest, override]);
 
   if (override && import.meta.env?.VITE_IS_EMBEDDED_APP !== "1")
     return [override, NOOP];
