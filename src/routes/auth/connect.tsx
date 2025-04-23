@@ -480,7 +480,7 @@ const ConnectPage = ({
           <div style={{ display: "flex", flexDirection: "row", gap: "12px" }}>
             <Avatar img={avatar}>
               {!avatar && (
-                <NoAvatarIcon style={{ height: "1.5em", width: "1.5em" }} />
+                <NoAvatarIcon style={{ height: "1.8em", width: "1.8em" }} />
               )}
             </Avatar>
             <div>
