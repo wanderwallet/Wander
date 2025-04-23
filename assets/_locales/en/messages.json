@@ -2661,7 +2661,7 @@
     "description": "Scan QR code description"
   },
   "scan_qr_code_instruction": {
-    "message": "Settings -> Accounts -> Generate QR Code",
+    "message": "Settings -> Manage accounts -> Select Account to import -> Generate QR Code",
     "description": "Instruction to find QR code"
   },
   "open_webcam": {

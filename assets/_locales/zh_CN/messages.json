@@ -2651,7 +2651,7 @@
         "description": "Scan QR code description"
     },
     "scan_qr_code_instruction": {
-        "message": "设置 -> 账户 -> 生成二维码",
+        "message": "设置 -> 管理账户 -> 选择要导入的账户 -> 生成二维码",
         "description": "Instruction to find QR code"
     },
     "open_webcam": {
