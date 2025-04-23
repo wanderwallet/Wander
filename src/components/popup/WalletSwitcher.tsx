@@ -1,4 +1,3 @@
-import { WalletIcon } from "@iconicicons/react";
 import {
   Button,
   ListItem,
@@ -31,6 +30,7 @@ import { fetchWalletBalances } from "~utils/balances";
 import useSetting from "~settings/hook";
 import QRModal from "~components/modals/QRModal";
 import { useArPrice } from "~lib/coingecko";
+import { NoAvatarIcon } from "./WalletHeader";
 
 export default function WalletSwitcher({ open, close }: Props) {
   const theme = useTheme();
@@ -158,9 +158,7 @@ export default function WalletSwitcher({ open, close }: Props) {
       <Wrapper>
         <CurrentWallet>
           <Avatar img={activeWallet?.avatar}>
-            {!activeWallet?.avatar && (
-              <NoAvatarIcon style={{ height: "1.5em", width: "1.5em" }} />
-            )}
+            {!activeWallet?.avatar && <NoAvatarIcon size="1.5em" />}
             {activeWallet?.api === "keystone" && (
               <HardwareWalletIcon icon={keystoneLogo} color="#2161FF" />
             )}
@@ -264,7 +262,7 @@ export default function WalletSwitcher({ open, close }: Props) {
                   }}
                 >
                   <Avatar img={wallet.avatar}>
-                    {!wallet.avatar && <NoAvatarIcon />}
+                    {!wallet.avatar && <NoAvatarIcon size="1.5em" />}
                     {wallet.api === "keystone" && (
                       <HardwareWalletIcon icon={keystoneLogo} color="#2161FF" />
                     )}
@@ -444,17 +442,6 @@ const Avatar = styled(Squircle)`
     right: -5px;
     bottom: -5px;
   }
-`;
-
-const NoAvatarIcon = styled(WalletIcon)`
-  position: absolute;
-  font-size: 1.2rem;
-  width: 1em;
-  height: 1em;
-  color: #fff;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
 `;
 
 interface Props {

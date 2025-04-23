@@ -478,11 +478,11 @@ export const Avatar = styled(Squircle)`
   }
 `;
 
-export const NoAvatarIcon = styled(WalletIcon)`
+export const NoAvatarIcon = styled(WalletIcon)<{ size?: string }>`
   position: absolute;
   font-size: 1rem;
-  width: 1em;
-  height: 1em;
+  width: ${(props) => props.size || "1em"};
+  height: ${(props) => props.size || "1em"};
   color: #fff;
   top: 50%;
   left: 50%;

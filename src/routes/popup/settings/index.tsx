@@ -87,7 +87,7 @@ export function MenuView({ params }: QuickSettingsViewProps) {
         >
           {!avatar && (
             <ListItemIcon>
-              <NoAvatarIcon style={{ height: "1.8em", width: "1.8em" }} />
+              <NoAvatarIcon size="1.8em" />
             </ListItemIcon>
           )}
         </ListItem>

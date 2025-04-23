@@ -38,7 +38,7 @@ export default function WalletListItem({
     >
       {!avatar && (
         <ListItemIcon>
-          <NoAvatarIcon style={{ height: "1.8em", width: "1.8em" }} />
+          <NoAvatarIcon size="1.8em" />
         </ListItemIcon>
       )}
       {wallet.type === "hardware" && wallet.api === "keystone" && (

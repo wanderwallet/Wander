@@ -479,9 +479,7 @@ const ConnectPage = ({
         <ConnectWalletWrapper onClick={() => setSwitcherOpen(true)}>
           <div style={{ display: "flex", flexDirection: "row", gap: "12px" }}>
             <Avatar img={avatar}>
-              {!avatar && (
-                <NoAvatarIcon style={{ height: "1.8em", width: "1.8em" }} />
-              )}
+              {!avatar && <NoAvatarIcon size="1.8em" />}
             </Avatar>
             <div>
               <WalletName>{wallet?.nickname}</WalletName>
