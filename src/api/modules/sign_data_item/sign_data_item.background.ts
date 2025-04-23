@@ -24,7 +24,7 @@ const background: BackgroundModuleFunction<number[]> = async (
   // validate
   try {
     isRawDataItem(dataItem);
-    isSignatureOptions(signatureOptions);
+    if (signatureOptions) isSignatureOptions(signatureOptions);
   } catch (err) {
     throw new Error(err);
   }
