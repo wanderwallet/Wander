@@ -1,5 +1,5 @@
 import type { SplitTransaction } from "~api/modules/sign/transaction_builder";
-import { type Transaction } from "arbundles";
+import { type Transaction } from "@dha-team/arbundles";
 import { useState, useMemo, useCallback, useEffect } from "react";
 import type { DecodedTag } from "~api/modules/sign/tags";
 import { defaultGateway } from "~gateways/gateway";
