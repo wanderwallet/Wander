@@ -19,18 +19,18 @@ import { formatAddress } from "~utils/format";
 import { Users01 } from "@untitled-ui/icons-react";
 import { HorizontalLine } from "~components/HorizontalLine";
 import SliderMenu from "~components/SliderMenu";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import WanderIcon from "url:assets/icon.svg";
 import { removeDecryptionKey } from "~wallets/auth";
 import Online from "~components/Online";
 import type { StoredWallet } from "~wallets";
 import { useStorage } from "@plasmohq/storage/hook";
 import { ExtensionStorage } from "~utils/storage";
-import { svgie } from "~utils/svgies";
-import { Action } from "~components/popup/WalletHeader";
+import { Action, NoAvatarIcon } from "~components/popup/WalletHeader";
 import { MinimizeIcon } from "@iconicicons/react";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 import { signOut } from "~utils/embedded/embedded.utils";
+import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 
 export interface QuickSettingsViewParams {
   setting?: string;
@@ -55,14 +55,6 @@ export function MenuView({ params }: QuickSettingsViewProps) {
     },
     []
   );
-
-  const isEmbedded = import.meta.env?.VITE_IS_EMBEDDED_APP === "1";
-
-  useEffect(() => {
-    if (!wallet?.address) return;
-
-    setAvatar(svgie(wallet.address, { asDataURI: true }));
-  }, [wallet]);
 
   return (
     <Section style={{ paddingBottom: 100 }}>
@@ -95,18 +87,11 @@ export function MenuView({ params }: QuickSettingsViewProps) {
         >
           {!avatar && (
             <ListItemIcon>
-              <Text
-                size="lg"
-                weight="medium"
-                noMargin
-                style={{ textAlign: "center", color: "white" }}
-              >
-                {wallet?.nickname?.charAt(0)?.toUpperCase() || "A"}
-              </Text>
+              <NoAvatarIcon style={{ height: "1.5em", width: "1.5em" }} />
             </ListItemIcon>
           )}
         </ListItem>
-        {isEmbedded && (
+        {IS_EMBEDDED_APP && (
           <Tooltip
             content={browser.i18n.getMessage("close")}
             position="bottomEnd"

@@ -10,8 +10,8 @@ import {
   useModal,
   useToasts
 } from "@arconnect/components-rebrand";
-import { useState, useEffect, type MouseEventHandler, useMemo } from "react";
-import { Edit02, Share04, Upload01 } from "@untitled-ui/icons-react";
+import { useState, useEffect, type MouseEventHandler } from "react";
+import { Share04, Upload01 } from "@untitled-ui/icons-react";
 import { uploadUserAvatar, getUserAvatar } from "~lib/avatar";
 import { CheckIcon, CopyIcon } from "@iconicicons/react";
 import { EventType, trackEvent } from "~utils/analytics";
@@ -19,9 +19,7 @@ import { useStorage } from "~utils/storage";
 import { ExtensionStorage } from "~utils/storage";
 import browser from "webextension-polyfill";
 // import { getAllArNSNames } from "~lib/arns";
-import { useTheme } from "~utils/theme";
 import styled from "styled-components";
-import { svgie } from "~utils/svgies";
 import copy from "copy-to-clipboard";
 import { formatAddress } from "~utils/format";
 import { useLocation } from "~wallets/router/router.utils";
@@ -70,13 +68,6 @@ export function ContactSettingsDashboardView({
   const [avatarLoading, setAvatarLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [originalContact, setOriginalContact] = useState(null);
-
-  const svgieAvatar = useMemo(() => {
-    if (!contact.address || contact.avatarId) {
-      return "";
-    }
-    return svgie(contact.address, { asDataURI: true });
-  }, [contact.address, contact.avatarId]);
 
   useEffect(() => {
     const loadedContact = storedContacts.find((c) => c.address === address);
@@ -360,10 +351,7 @@ export function ContactSettingsDashboardView({
               </AutoContactPic>
             )
           )}
-          {!contact.profileIcon && svgieAvatar && (
-            <ContactPic small={isQuickSetting} src={svgieAvatar} />
-          )}
-          {!contact.profileIcon && !svgieAvatar && (
+          {!contact.profileIcon && (
             <AutoContactPic small={isQuickSetting}>
               {generateProfileIcon(contact.name, contact.address)}
             </AutoContactPic>

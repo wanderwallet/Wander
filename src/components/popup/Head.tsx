@@ -14,11 +14,10 @@ import HardwareWalletIcon, {
   hwIconAnimateProps
 } from "~components/hardware/HardwareWalletIcon";
 import { useHardwareApi } from "~wallets/hooks";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import keystoneLogo from "url:/assets/hardware/keystone.png";
 import WalletSwitcher from "./WalletSwitcher";
 import styled from "styled-components";
-import { svgie } from "~utils/svgies";
 import { useLocation } from "~wallets/router/router.utils";
 import { useNameServiceProfile } from "~lib/nameservice";
 import { FULL_HISTORY, useGateway } from "~gateways/wayfinder";
@@ -74,11 +73,6 @@ export default function Head({
 
   const nameServiceProfile = useNameServiceProfile(activeAddress);
 
-  const svgieAvatar = useMemo(
-    () => svgie(activeAddress, { asDataURI: true }),
-    [activeAddress]
-  );
-
   // first render for animation
   const [firstRender, setFirstRender] = useState(true);
 
@@ -118,16 +112,15 @@ export default function Head({
         <PageTitle>{title}</PageTitle>
         <ClickableAvatar
           img={
-            nameServiceProfile?.logo
-              ? concatGatewayURL(gateway) + "/" + nameServiceProfile.logo
-              : svgieAvatar
+            nameServiceProfile?.logo &&
+            concatGatewayURL(gateway) + "/" + nameServiceProfile.logo
           }
           onClick={() => {
             if (!allowOpen) return;
             setOpen(true);
           }}
         >
-          {!nameServiceProfile?.logo && !svgieAvatar && <NoAvatarIcon />}
+          {!nameServiceProfile?.logo && <NoAvatarIcon />}
           <AnimatePresence initial={false}>
             {hardwareApi === "keystone" && (
               <HardwareWalletIcon

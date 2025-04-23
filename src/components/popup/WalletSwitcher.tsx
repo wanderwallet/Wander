@@ -21,7 +21,6 @@ import { findGateway } from "~gateways/wayfinder";
 import browser from "webextension-polyfill";
 import Squircle from "~components/Squircle";
 import styled, { useTheme } from "styled-components";
-import { svgie } from "~utils/svgies";
 import { useLocation } from "~wallets/router/router.utils";
 import { getNameServiceProfiles } from "~lib/nameservice";
 import SliderMenu from "~components/SliderMenu";
@@ -111,14 +110,12 @@ export default function WalletSwitcher({ open, close }: Props) {
           const profile = profiles.find(
             ({ address }) => address === wallet.address
           );
-          const svgieAvatar = svgie(wallet.address, { asDataURI: true });
 
           return {
             ...wallet,
             name: profile?.name || wallet.name,
-            avatar: profile?.logo
-              ? concatGatewayURL(gateway) + "/" + profile.logo
-              : svgieAvatar,
+            avatar:
+              profile?.logo && concatGatewayURL(gateway) + "/" + profile.logo,
             hasAns: !!profile
           };
         })
@@ -161,7 +158,9 @@ export default function WalletSwitcher({ open, close }: Props) {
       <Wrapper>
         <CurrentWallet>
           <Avatar img={activeWallet?.avatar}>
-            {!activeWallet?.avatar && <NoAvatarIcon />}
+            {!activeWallet?.avatar && (
+              <NoAvatarIcon style={{ height: "1.5em", width: "1.5em" }} />
+            )}
             {activeWallet?.api === "keystone" && (
               <HardwareWalletIcon icon={keystoneLogo} color="#2161FF" />
             )}

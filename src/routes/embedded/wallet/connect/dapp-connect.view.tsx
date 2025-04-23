@@ -17,7 +17,6 @@ import { useEffect, useState } from "react";
 import { concatGatewayURL } from "~gateways/utils";
 import { useGateway, FULL_HISTORY } from "~gateways/wayfinder";
 import { useNameServiceProfile } from "~lib/nameservice";
-import { svgie } from "~utils/svgies";
 import { ExtensionStorage } from "~utils/storage";
 import AppIcons from "./components/AppIcons";
 import { useAllWallets } from "~wallets/hooks";
@@ -57,8 +56,6 @@ export function EmbeddedConnectAuthRequestView() {
 
     if (nameServiceProfile?.logo && nsGateway?.protocol && nsGateway?.host) {
       setAvatar(concatGatewayURL(nsGateway) + "/" + nameServiceProfile.logo);
-    } else {
-      setAvatar(svgie(activeWallet?.address, { asDataURI: true }));
     }
   }, [activeWallet, nameServiceProfile, nsGateway]);
 
