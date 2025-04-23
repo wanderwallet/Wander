@@ -5,7 +5,8 @@ import {
   Row,
   Box,
   Avatar,
-  XClose
+  XClose,
+  WalletIcon
 } from "~components/embed/ui";
 import type { Wallet } from "~utils/embedded/embedded.types";
 import { formatAddress } from "~utils/format";
@@ -98,7 +99,7 @@ export function EmbeddedConnectAuthRequestView() {
                 style={{ padding: 0, flex: 1 }}
               >
                 <Avatar fontColor="#EBEBF0" backgroundColor="#0D6CE9" size="lg">
-                  {activeWallet.nickname.charAt(0)}
+                  <WalletIcon />
                 </Avatar>
                 <Box isAutoWidth alignment="left" style={{ padding: 0 }}>
                   <Text variant="bodyLg" style={{ color: "#121212" }}>
@@ -211,7 +212,7 @@ export function EmbeddedConnectAuthRequestView() {
                 style={{ paddingInline: "22px", marginTop: "4px" }}
               >
                 <Avatar fontColor="#EBEBF0" backgroundColor="#0D6CE9" size="lg">
-                  {wallet.nickname?.charAt(0)}
+                  <WalletIcon />
                 </Avatar>
                 <Box isAutoWidth alignment="left">
                   <Text variant="bodyLg" style={{ color: "#121212" }}>
