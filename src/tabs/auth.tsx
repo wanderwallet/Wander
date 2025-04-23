@@ -2,7 +2,7 @@ import { WanderThemeProvider } from "~components/hardware/HardwareWalletTheme";
 import { AuthRequestsProvider } from "~utils/auth/auth.provider";
 import { Routes } from "~wallets/router/routes.component";
 import { useAuthRequestsLocation } from "~wallets/router/auth/auth-router.hook";
-import { AUTH_ROUTES } from "~wallets/router/auth/auth.routes";
+import { BE_AUTH_ROUTES } from "~wallets/router/auth/auth.routes";
 import { Router as Wouter } from "wouter";
 import { WalletsProvider } from "~utils/wallets/wallets.provider";
 import { useEffect } from "react";
@@ -30,7 +30,7 @@ export function AuthApp() {
     handleSyncLabelsAlarm();
   }, []);
 
-  return <Routes routes={AUTH_ROUTES} diffLocation />;
+  return <Routes routes={BE_AUTH_ROUTES} diffLocation />;
 }
 
 export function AuthAppRoot() {

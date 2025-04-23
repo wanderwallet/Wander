@@ -283,7 +283,11 @@ export function EmbeddedSignDataAuthRequestView() {
         </Row>
       )}
 
-      <TransactionMessage transaction={data} />
+      <TransactionMessage
+        transaction={data}
+        txDetailsPath={`/auth-request/${authRequest.type}/${authRequest.authID}/tx`}
+      />
+
       <Row>
         <Button variant="secondary" onClick={handleCancel}>
           Cancel

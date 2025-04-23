@@ -135,7 +135,7 @@ export function EmbeddedConnectAuthRequestView() {
             onClick={() => {
               ExtensionStorage.remove(`requested_permissions_${url}`);
               ExtensionStorage.remove("sign_policy");
-              navigate("/wallet/settings");
+              navigate(`/auth-request/connect/${authRequest.authID}/settings`);
             }}
           >
             Next

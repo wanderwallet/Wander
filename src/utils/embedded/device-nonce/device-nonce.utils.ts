@@ -81,6 +81,10 @@ export async function getDeviceNonce(): Promise<DeviceNonce> {
   return storeDeviceNonce(_deviceNonce);
 }
 
-initializeDeviceNonce().catch((err) => {
-  log(LOG_GROUP.WALLET_GENERATION, "initializeDeviceNonce() error: ", { err });
-});
+if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1") {
+  initializeDeviceNonce().catch((err) => {
+    log(LOG_GROUP.WALLET_GENERATION, "initializeDeviceNonce() error: ", {
+      err
+    });
+  });
+}

@@ -196,7 +196,11 @@ export function WalletPermissionsRequestEmbeddedView() {
           alignment="left"
           justifyContent="between"
           style={{ cursor: "pointer" }}
-          onClick={() => navigate("/wallet/settings/custom")}
+          onClick={() =>
+            navigate(
+              `/auth-request/connect/${authRequest.authID}/settings/custom`
+            )
+          }
         >
           <Text
             variant="headingMd"

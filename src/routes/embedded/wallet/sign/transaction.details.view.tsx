@@ -161,7 +161,7 @@ export function WalletTransactionDetailsEmbeddedView() {
         )}
       </Box>
 
-      <TransactionMessage transaction={transaction} showLink={false} />
+      <TransactionMessage transaction={transaction} />
     </Card>
   );
 }

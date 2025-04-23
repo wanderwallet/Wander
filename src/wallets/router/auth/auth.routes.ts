@@ -38,7 +38,7 @@ export const AuthPaths = {
   Subscription: "/auth-request/subscription/:authID"
 } as const satisfies Record<string, AuthRoutePath>;
 
-export const AUTH_ROUTES = [
+export const BE_AUTH_ROUTES = [
   ...getExtensionOverrides({
     unlockView: UnlockAuthRequestView,
     loadingView: LoadingAuthRequestView

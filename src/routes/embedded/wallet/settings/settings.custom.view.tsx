@@ -75,7 +75,9 @@ export function WalletSettingsCustomEmbeddedView() {
       headerText="Custom Permissions"
       hasBackButton={true}
       customIcon={<XClose fontSize={24} color={"#666666"} />}
-      onBackButtonClick={() => navigate("/wallet/settings")}
+      onBackButtonClick={() =>
+        navigate(`/auth-request/connect/${authRequest.authID}/settings`)
+      }
       onCloseButtonClick={handleCancel}
       style={{ padding: "2rem 1rem" }}
     >

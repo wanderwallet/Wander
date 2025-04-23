@@ -8,16 +8,17 @@ import { useLocation } from "~wallets/router/router.utils";
 import browser from "webextension-polyfill";
 import Arweave from "arweave";
 import type { RawDataItem } from "~api/modules/sign_data_item/types";
+import type { ConTxDetailsRoutePath } from "~wallets/router/auth/auth.embed.routes";
 
-interface TransactionMessaageProps {
+interface TransactionMessageProps {
   transaction: SplitTransaction | Transaction | RawDataItem;
-  showLink?: boolean;
+  txDetailsPath?: ConTxDetailsRoutePath;
 }
 
 export default function TransactionMessage({
   transaction,
-  showLink = true
-}: TransactionMessaageProps) {
+  txDetailsPath
+}: TransactionMessageProps) {
   const { navigate } = useLocation();
   const [message, setMessage] = useState<string>("");
 
@@ -108,7 +109,7 @@ export default function TransactionMessage({
     processTransactionData();
   }, [transaction, getContentType]);
 
-  if (!message && !showLink) return null;
+  if (!message && !txDetailsPath) return null;
 
   return (
     <Box hasBorder alignment="left" style={{ margin: "1rem" }}>
@@ -132,12 +133,13 @@ export default function TransactionMessage({
           </Box>
         </Box>
       )}
-      {showLink && (
+
+      {txDetailsPath && (
         <Row
           isFullWidth
           justifyContent="between"
           style={{ marginTop: "0.5rem", cursor: "pointer" }}
-          onClick={() => navigate("/wallet/transaction-details")}
+          onClick={() => navigate(txDetailsPath)}
         >
           <Text variant="bodySm" style={{ color: "#666666" }}>
             Transaction details
