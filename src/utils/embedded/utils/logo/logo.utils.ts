@@ -21,11 +21,14 @@ interface WebAppManifest {
 /**
  * Converts a relative URL to an absolute URL
  */
-const getAbsoluteUrl = (url: string): string | undefined => {
+const getAbsoluteUrl = (
+  url: string,
+  origin = window.location.origin
+): string | undefined => {
   if (!url) return;
 
   try {
-    return new URL(url, window.location.origin).href;
+    return new URL(url, origin).href;
   } catch {}
 };
 
@@ -104,7 +107,7 @@ const getLogoFromManifest = async (): Promise<string | undefined> => {
       return sizeB - sizeA;
     });
 
-    return getAbsoluteUrl(sortedIcons[0].src);
+    return getAbsoluteUrl(sortedIcons[0].src, manifestUrl);
   } catch (err) {
     console.error("Error fetching web app manifest:", err);
   }
