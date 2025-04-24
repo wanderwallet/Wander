@@ -19,7 +19,8 @@ export function useCurrentAuthRequest<T extends AuthType>(
     authRequests,
     currentAuthRequestIndex,
     lastCompletedAuthRequest,
-    completeAuthRequest
+    completeAuthRequest,
+    closeAuthPopup
   } = useContext(AuthRequestsContext);
 
   const authRequest = authRequests[
@@ -60,6 +61,7 @@ export function useCurrentAuthRequest<T extends AuthType>(
     authRequest,
     lastCompletedAuthRequest,
     acceptRequest,
-    rejectRequest
+    rejectRequest,
+    closeAuthPopup
   };
 }

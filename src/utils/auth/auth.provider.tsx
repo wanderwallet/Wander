@@ -46,6 +46,7 @@ interface AuthRequestsContextState {
 interface AuthRequestsContextData extends AuthRequestsContextState {
   setCurrentAuthRequestIndex: (currentAuthRequestIndex: number) => void;
   completeAuthRequest: (authID: string, data: any) => Promise<void>;
+  closeAuthPopup: (delay?: number) => () => void;
 }
 
 const AUTH_REQUESTS_CONTEXT_INITIAL_STATE: AuthRequestsContextState = {
@@ -57,7 +58,8 @@ const AUTH_REQUESTS_CONTEXT_INITIAL_STATE: AuthRequestsContextState = {
 export const AuthRequestsContext = createContext<AuthRequestsContextData>({
   ...AUTH_REQUESTS_CONTEXT_INITIAL_STATE,
   setCurrentAuthRequestIndex: () => {},
-  completeAuthRequest: async () => {}
+  completeAuthRequest: async () => {},
+  closeAuthPopup: (delay?: number) => () => {}
 });
 
 export function AuthRequestsProvider({ children }: PropsWithChildren) {
@@ -547,7 +549,8 @@ export function AuthRequestsProvider({ children }: PropsWithChildren) {
         currentAuthRequestIndex,
         lastCompletedAuthRequest,
         setCurrentAuthRequestIndex,
-        completeAuthRequest
+        completeAuthRequest,
+        closeAuthPopup
       }}
     >
       {children}
