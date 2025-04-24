@@ -25,7 +25,7 @@ import {
   LogOutIcon,
   SettingsIcon,
   MinimizeIcon,
-  UserIcon
+  WalletIcon
 } from "@iconicicons/react";
 import WalletSwitcher, { popoverAnimation } from "./WalletSwitcher";
 import Application, { type AppInfo } from "~applications/application";
@@ -34,16 +34,16 @@ import useActiveTab from "~applications/useActiveTab";
 import AppIcon, { NoAppIcon } from "./home/AppIcon";
 import Squircle from "~components/Squircle";
 import browser from "webextension-polyfill";
-import styled, { type StyledComponent } from "styled-components";
+import styled from "styled-components";
 import copy from "copy-to-clipboard";
 import { type Gateway } from "~gateways/gateway";
 import { Bell03 } from "@untitled-ui/icons-react";
-import { svgie } from "~utils/svgies";
 import { useLocation } from "~wallets/router/router.utils";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 import { useNameServiceProfile } from "~lib/nameservice";
 import { concatGatewayURL } from "~gateways/utils";
 import { FULL_HISTORY, useGateway } from "~gateways/wayfinder";
+import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 
 export default function WalletHeader() {
   const theme = useTheme();
@@ -89,12 +89,6 @@ export default function WalletHeader() {
   // profile picture
   const nameServiceProfile = useNameServiceProfile(activeAddress);
   const gateway = useGateway(FULL_HISTORY);
-
-  // fallback svgie for profile picture
-  const svgieAvatar = useMemo(
-    () => svgie(activeAddress, { asDataURI: true }),
-    [activeAddress]
-  );
 
   // wallet nickname for copy
   const [displayName, setDisplayName] = useState("");
@@ -185,8 +179,6 @@ export default function WalletHeader() {
   // copied address
   const [copied, setCopied] = useState(false);
 
-  const isEmbedded = import.meta.env?.VITE_IS_EMBEDDED_APP === "1";
-
   return (
     <Wrapper displayTheme={theme} scrolled={scrollY > 14}>
       <AppAction
@@ -214,12 +206,11 @@ export default function WalletHeader() {
         >
           <Avatar
             img={
-              nameServiceProfile?.logo
-                ? concatGatewayURL(gateway) + "/" + nameServiceProfile.logo
-                : svgieAvatar
+              nameServiceProfile?.logo &&
+              concatGatewayURL(gateway) + "/" + nameServiceProfile.logo
             }
           >
-            {!nameServiceProfile?.logo && !svgieAvatar && <NoAvatarIcon />}
+            {!nameServiceProfile?.logo && <NoAvatarIcon />}
             <AnimatePresence initial={false}>
               {hardwareApi === "keystone" && (
                 <HardwareWalletIcon
@@ -265,7 +256,7 @@ export default function WalletHeader() {
           />
           {newNotifications && <Notifier />}
         </Tooltip>
-        {isEmbedded && (
+        {IS_EMBEDDED_APP && (
           <Tooltip
             content={browser.i18n.getMessage("close")}
             position="bottomEnd"
@@ -487,11 +478,11 @@ export const Avatar = styled(Squircle)`
   }
 `;
 
-export const NoAvatarIcon = styled(UserIcon)`
+export const NoAvatarIcon = styled(WalletIcon)<{ size?: string }>`
   position: absolute;
   font-size: 1rem;
-  width: 1em;
-  height: 1em;
+  width: ${(props) => props.size || "1em"};
+  height: ${(props) => props.size || "1em"};
   color: #fff;
   top: 50%;
   left: 50%;

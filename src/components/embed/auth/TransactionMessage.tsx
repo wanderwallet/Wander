@@ -52,6 +52,12 @@ export default function TransactionMessage({
     const processTransactionData = async () => {
       if (!transaction?.data) return;
 
+      const type = getContentType();
+      const contentNotSupportedMessage = browser.i18n.getMessage(
+        "data_content_type_not_supported",
+        [type || "binary"]
+      );
+
       try {
         // if too large, show a message
         if (transaction.data.length > 1000000) {
@@ -59,7 +65,6 @@ export default function TransactionMessage({
           return;
         }
 
-        const type = getContentType();
         const arweave = new Arweave(defaultGateway);
 
         let txData = arweave.utils.bufferToString(
@@ -90,19 +95,14 @@ export default function TransactionMessage({
           if (isProbablyText) {
             setMessage(txData.trim());
           } else {
-            setMessage(
-              browser.i18n.getMessage("data_content_type_not_supported", [
-                type || "binary"
-              ])
-            );
+            setMessage(contentNotSupportedMessage);
           }
         } else {
-          setMessage(
-            browser.i18n.getMessage("data_content_type_not_supported", [type])
-          );
+          setMessage(contentNotSupportedMessage);
         }
       } catch (error) {
         console.log("Error processing transaction data:", error);
+        setMessage(contentNotSupportedMessage);
       }
     };
 

@@ -106,6 +106,7 @@ export function EmbeddedSignAuthRequestView() {
             width={48}
             borderRadius={10}
             objectFit="contain"
+            style={{ border: "1px solid #D6D6DD", flexShrink: 0 }}
             src={appInfo?.logo}
           />
           <Box alignment="left" style={{ padding: 0 }}>

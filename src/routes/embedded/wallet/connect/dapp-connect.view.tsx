@@ -5,7 +5,8 @@ import {
   Row,
   Box,
   Avatar,
-  XClose
+  XClose,
+  WalletIcon
 } from "~components/embed/ui";
 import type { Wallet } from "~utils/embedded/embedded.types";
 import { formatAddress } from "~utils/format";
@@ -17,7 +18,6 @@ import { useEffect, useState } from "react";
 import { concatGatewayURL } from "~gateways/utils";
 import { useGateway, FULL_HISTORY } from "~gateways/wayfinder";
 import { useNameServiceProfile } from "~lib/nameservice";
-import { svgie } from "~utils/svgies";
 import { ExtensionStorage } from "~utils/storage";
 import AppIcons from "./components/AppIcons";
 import { useAllWallets } from "~wallets/hooks";
@@ -57,8 +57,6 @@ export function EmbeddedConnectAuthRequestView() {
 
     if (nameServiceProfile?.logo && nsGateway?.protocol && nsGateway?.host) {
       setAvatar(concatGatewayURL(nsGateway) + "/" + nameServiceProfile.logo);
-    } else {
-      setAvatar(svgie(activeWallet?.address, { asDataURI: true }));
     }
   }, [activeWallet, nameServiceProfile, nsGateway]);
 
@@ -101,7 +99,7 @@ export function EmbeddedConnectAuthRequestView() {
                 style={{ padding: 0, flex: 1 }}
               >
                 <Avatar fontColor="#EBEBF0" backgroundColor="#0D6CE9" size="lg">
-                  {activeWallet.nickname.charAt(0)}
+                  <WalletIcon />
                 </Avatar>
                 <Box isAutoWidth alignment="left" style={{ padding: 0 }}>
                   <Text variant="bodyLg" style={{ color: "#121212" }}>
@@ -214,7 +212,7 @@ export function EmbeddedConnectAuthRequestView() {
                 style={{ paddingInline: "22px", marginTop: "4px" }}
               >
                 <Avatar fontColor="#EBEBF0" backgroundColor="#0D6CE9" size="lg">
-                  {wallet.nickname?.charAt(0)}
+                  <WalletIcon />
                 </Avatar>
                 <Box isAutoWidth alignment="left">
                   <Text variant="bodyLg" style={{ color: "#121212" }}>
