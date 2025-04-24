@@ -2948,6 +2948,10 @@
         "message": "汇率",
         "description": "Exchange rate text"
     },
+    "partitioned_storage_banner": {
+        "message": "您的钱包不会自动在其他网站上可用。当您访问其他网站时，可能需要手动导入它们。",
+        "description": "Partitioned storage banner message"
+    },
     "data_content_type_not_supported": {
         "message": "无法显示数据：内容类型 $TYPE$ 不支持预览。",
         "description": "Data content type not supported text",
@@ -2961,5 +2965,9 @@
     "data_too_large": {
         "message": "无法显示数据：数据太大，无法显示。",
         "description": "Data too large text"
+    },
+    "re_request_access": {
+        "message": "重新请求访问",
+        "description": "Re-request access text"
     }
 }

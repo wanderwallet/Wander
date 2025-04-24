@@ -2,6 +2,8 @@ import { AnimatePresence } from "framer-motion";
 import React, { useEffect, useMemo, type PropsWithChildren } from "react";
 import { Switch, Route as Woute } from "wouter";
 import { Page } from "~components/page/page.component";
+import StoragePartitionedBanner from "~components/StoragePartitionedBanner";
+import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 import type {
   CommonRouteProps,
   RouteConfig
@@ -56,6 +58,7 @@ export function Routes({
             return (
               <PageComponent>
                 <Component {...props} />
+                {IS_EMBEDDED_APP && <StoragePartitionedBanner />}
               </PageComponent>
             );
           };
