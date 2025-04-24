@@ -350,6 +350,16 @@ Available selectors:
 - `.half-image` - Targets the image element used in half layout mode
   - `.half-image.show` - Applied when the half-image is visible
 
+The HTML structure is follows:
+
+```html
+<div class="wrapper">
+  <iframe class="iframe"></iframe>
+</div>
+<div class="backdrop"></div>
+<div class="half-image"></div>
+```
+
 Example usage:
 
 ```javascript
@@ -411,12 +421,28 @@ const wander = new WanderEmbedded({
 });
 ```
 
-The iframe elements have several data attributes that you can use for conditional styling:
+The iframe wrapper element (`.iframe-wrapper`) has several data attributes that you can use for conditional styling:
 
 - `[data-layout="popup|modal|sidebar|half"]` - Current layout type
 - `[data-position="left|right|top-left|top-right|bottom-left|bottom-right"]` - Position of the iframe
 - `[data-expanded="true|false"]` - Whether the iframe is in expanded mode
 - `[data-expand-on-mobile="true|false"]` - Whether the iframe expands on mobile devices
+
+You can also use these when targeting the iframe element (`.iframe`):
+
+```css
+.iframe-wrapper[data-layout="popup"] > .iframe {
+  ...;
+}
+```
+
+Or the backdrop element (`.backdrop`):
+
+```css
+.iframe-wrapper[data-layout="popup"] + .backdrop {
+  ...;
+}
+```
 
 You can use these attributes in your `customStyles` to style different states:
 

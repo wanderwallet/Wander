@@ -548,7 +548,7 @@
       "description": "Display theme settings description"
   },
   "setting_gateways_description": {
-      "message": "Arweave 网关简化了数据访问。",
+      "message": "网关是基础设施组件，可实现对 Arweave 和 AO 网络上数据的高效快速访问。根据地理位置或网络环境，不同的网关可能会提供不同程度的使用体验。",
       "description": "Gateways settings description"
   },
   "search_pick_option": {
@@ -2651,7 +2651,7 @@
         "description": "Scan QR code description"
     },
     "scan_qr_code_instruction": {
-        "message": "设置 -> 账户 -> 生成二维码",
+        "message": "设置 -> 管理账户 -> 选择要导入的账户 -> 生成二维码",
         "description": "Instruction to find QR code"
     },
     "open_webcam": {
