@@ -15,6 +15,7 @@ const Box = forwardRef<HTMLDivElement, BoxBaseProps>(
       isBlurry = false,
       isAutoWidth = false,
       style,
+      onClick,
       ...props
     },
     ref
@@ -43,6 +44,7 @@ const Box = forwardRef<HTMLDivElement, BoxBaseProps>(
         )}
         style={themeStyles}
         ref={ref}
+        onClick={onClick}
         {...props}
       >
         {children}

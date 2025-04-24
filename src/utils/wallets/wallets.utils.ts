@@ -2,6 +2,7 @@ import * as bip39 from "bip39-web-crypto";
 import { addWallet, getWalletKeyLength, type WalletKeyLengths } from "~wallets";
 import {
   checkPasswordValid,
+  isValidMnemonic,
   jwkFromMnemonic,
   pkcs8ToJwk
 } from "~wallets/generator";
@@ -13,41 +14,34 @@ import { setDecryptionKey } from "~wallets/auth";
 import { INVALID_DEVICE_SHARES_INFO_ERR_MSG } from "~utils/wallets/wallets.constants";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import type NodeForge from "node-forge";
-import {
-  pemToBase64,
-  pemToJWK,
-  privateKeyDerToJWK
-} from "~utils/crypto/crypto.utils";
 import type { RecoveryJSON, Wallet } from "~utils/embedded/embedded.types";
 import { EMBEDDED_FEATURE_FLAGS } from "~utils/embedded/embedded.constants";
 import { LocalStorage } from "~iframe/storage/unpartitioned-storage/local-storage";
+import { random, pki, util } from "node-forge";
 
-// import { random, pki, asn1 } from "node-forge";
-//
-// There's 3 different ways to load `node-forge`:
-//
-// 1. Script tags (currently used):
-//
-//     <script src="/assets/forge/forge.js"></script>
-//     <script src="/assets/forge/prime.worker.js"></script>
-//
-//   Create a global object window.forge and can be modified (e.g. to change the hardcoded location of `prime.worker.js`
-//   inside `forge.js`):
-//
-// 2. From NPC (commented out import above). The issue with this approach is that it works great for `forge.js`, but
-//    it will assume the location of `primer.worker.js` is `forge/prime.worker.js` (cannot be changed), and we seem to
-//    have issues adding assets to the root of the project in production.
-//
-// 3. Using Vite.
-//
-//    - Add an alas in `vite.config.js`: "assets/forge": path.resolve(__dirname, "./assets/forge"),
-//    - Then import like so: `import forge from 'assets/forge/forge.js?url'`
-//
-//   Could be better than the first approach but `window.forge` won't be immediately available.
-//
-//   We should look into this option later.
+// Node forge worker script location
+const workerScript = `/assets/forge/prime.worker.min.js`;
 
-const { random, pki, asn1 } = (window as any).forge as typeof NodeForge;
+// Convert BigInt values to hex strings and encode to Base64
+function bigintToBase64Url(bigint: NodeForge.jsbn.BigInteger): string {
+  let hex = bigint.toString(16);
+  if (hex.length % 2 !== 0) {
+    // Ensure even length hex
+    hex = "0" + hex;
+  }
+
+  // Convert hex to bytes
+  const bytes = util.hexToBytes(hex);
+
+  // Encode bytes to Base64
+  let base64 = util.encode64(bytes);
+
+  // Convert Base64 to Base64 URL encoding
+  // Replace '+' with '-', '/' with '_', and remove '=' padding
+  base64 = base64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+
+  return base64;
+}
 
 async function generateSeedPhrase() {
   log(LOG_GROUP.WALLET_GENERATION, "generateSeedPhrase()");
@@ -243,7 +237,8 @@ async function generateShareHashAndPublicKey(
     pki.rsa.generateKeyPair(
       {
         bits: 4096,
-        prng: sharePrng
+        prng: sharePrng,
+        workerScript
       },
       async (err, result) => {
         if (err) {
@@ -251,8 +246,7 @@ async function generateShareHashAndPublicKey(
         } else {
           const shareHash = await generateShareHash(share);
           const publicKey = result.publicKey;
-          const publicKeyPEM = pki.publicKeyToPem(publicKey);
-          const sharePublicKey = pemToBase64(publicKeyPEM);
+          const sharePublicKey = bigintToBase64Url(publicKey.n);
 
           resolve({
             shareHash,
@@ -298,7 +292,8 @@ async function generateShareHashAndPrivateKey(
     pki.rsa.generateKeyPair(
       {
         bits: 4096,
-        prng: sharePrng
+        prng: sharePrng,
+        workerScript
       },
       async (err, result) => {
         if (err) {
@@ -306,23 +301,19 @@ async function generateShareHashAndPrivateKey(
         } else {
           const shareHash = await generateShareHash(share);
           const privateKey = result.privateKey;
-          //const privateKeyPEM = pki.privateKeyToPem(privateKey);
-          //const sharePrivateKeyJWK = await pemToJWK(privateKeyPEM);
 
-          // Convert a Forge private key to an ASN.1 RSAPrivateKey:
-          const rsaPrivateKey = pki.privateKeyToAsn1(privateKey);
-          const der = asn1.toDer(rsaPrivateKey).getBytes();
-          const sharePrivateKeyJWK = await privateKeyDerToJWK(der).catch(
-            (err) => {
-              console.warn(`Error generating private key JWK from share:`, err);
-
-              return null;
-            }
-          );
-
-          // See https://github.com/digitalbazaar/forge/issues/256
-
-          // TODO: Test signatures work:
+          // Extract and encode the RSA parameters into JWK format
+          const sharePrivateKeyJWK = {
+            kty: "RSA",
+            n: bigintToBase64Url(privateKey.n),
+            e: bigintToBase64Url(privateKey.e),
+            d: bigintToBase64Url(privateKey.d),
+            p: bigintToBase64Url(privateKey.p),
+            q: bigintToBase64Url(privateKey.q),
+            dp: bigintToBase64Url(privateKey.dP),
+            dq: bigintToBase64Url(privateKey.dQ),
+            qi: bigintToBase64Url(privateKey.qInv)
+          };
 
           resolve({
             shareHash,
@@ -729,6 +720,23 @@ async function storeEncryptedWalletJWK(jwk: JWKInterface): Promise<void> {
   return addWallet(jwk, randomPassword);
 }
 
+function isJWK(obj: unknown): boolean {
+  if (typeof obj !== "object" || obj === null) {
+    return false;
+  }
+  const requiredKeys = ["n", "e", "d", "p", "q", "dp", "dq", "qi"];
+  return requiredKeys.every((key) => key in obj);
+}
+
+function isSeedPhrase(obj: unknown): boolean {
+  try {
+    isValidMnemonic(obj as string);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
 export const WalletUtils = {
   // Generation:
   generateSeedPhrase,
@@ -752,7 +760,11 @@ export const WalletUtils = {
   storeEncryptedRecoveryShare,
   hasEncryptedRecoveryShare,
   getDecryptedRecoveryShare,
-  storeEncryptedWalletJWK
+  storeEncryptedWalletJWK,
+
+  // Validation:
+  isJWK,
+  isSeedPhrase
 };
 
 // Stored seedphrases and recovery shares are removed if the feature flags are disabled:

@@ -30,12 +30,12 @@ import {
   constructTransaction,
   type SplitTransaction
 } from "~api/modules/sign/transaction_builder";
-import { isomorphicOnMessage } from "~utils/messaging/messaging.utils";
+import { isomorphicOnMessage } from "~isomorphic-messaging";
 import type { IBridgeMessage } from "@arconnect/webext-bridge";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { isError } from "~utils/error/error.utils";
-import { getDecryptionKey } from "~wallets/auth";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
+import { getDecryptionKey } from "~wallets/auth";
 
 interface AuthRequestsContextState {
   authRequests: AuthRequest[];
@@ -46,6 +46,7 @@ interface AuthRequestsContextState {
 interface AuthRequestsContextData extends AuthRequestsContextState {
   setCurrentAuthRequestIndex: (currentAuthRequestIndex: number) => void;
   completeAuthRequest: (authID: string, data: any) => Promise<void>;
+  closeAuthPopup: (delay?: number) => () => void;
 }
 
 const AUTH_REQUESTS_CONTEXT_INITIAL_STATE: AuthRequestsContextState = {
@@ -57,7 +58,8 @@ const AUTH_REQUESTS_CONTEXT_INITIAL_STATE: AuthRequestsContextState = {
 export const AuthRequestsContext = createContext<AuthRequestsContextData>({
   ...AUTH_REQUESTS_CONTEXT_INITIAL_STATE,
   setCurrentAuthRequestIndex: () => {},
-  completeAuthRequest: async () => {}
+  completeAuthRequest: async () => {},
+  closeAuthPopup: (delay?: number) => () => {}
 });
 
 export function AuthRequestsProvider({ children }: PropsWithChildren) {
@@ -81,24 +83,33 @@ export function AuthRequestsProvider({ children }: PropsWithChildren) {
   const closeAuthPopup = useCallback((delay: number = 0) => {
     function closeOrClear() {
       if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1") {
-        // TODO: This might cause an infinite loop in the embedded wallet:
-        // setAuthRequestContextState(AUTH_REQUESTS_CONTEXT_INITIAL_STATE);
+        setAuthRequestContextState(AUTH_REQUESTS_CONTEXT_INITIAL_STATE);
 
-        // TODO: We could improve this to detect if we opened the wallet to show an AuthRequest, or if it was already
-        // open. In the former case, when all AuthRequests are handled, we close it. In the latter, we just clear the
-        // AuthRequests from the state but leave it open.
+        /*
+
+        // This message below is already sent when the last request is handled / completed:
 
         postEmbeddedMessage({
           type: "embedded_request",
           data: {
-            pendingRequests: 0
+            pendingRequests: 0,
+            hasNewConnectRequest: false,
           }
         });
+
+        // And this other one is not needed as the SDK will close the modal when receiving a "embedded_request" message
+        // with pendingRequests === 0.
 
         postEmbeddedMessage({
           type: "embedded_close",
           data: null
         });
+
+        // However, note the wait-before-closing functionality won't work for Embed with this implementation. One
+        // possible fix would be to add a shouldClose = true property to the "embedded_request" message being sent from
+        // here.
+
+        */
       } else {
         window.top.close();
       }
@@ -120,15 +131,16 @@ export function AuthRequestsProvider({ children }: PropsWithChildren) {
       const completedAuthRequest = authRequests.find(
         (authRequest) => authRequest.authID === authID
       );
+
       const completedAuthRequests = [completedAuthRequest];
       const completedAuthRequestType = completedAuthRequest.type;
 
       if (completedAuthRequestType === "connect") {
         // Find equivalent ConnectAuthRequest to also accept/reject those:
-
         authRequests.forEach((authRequest) => {
           if (
             authRequest.type === "connect" &&
+            authRequest !== completedAuthRequest &&
             compareConnectAuthRequests(authRequest, completedAuthRequest)
           ) {
             completedAuthRequests.push(authRequest);
@@ -144,7 +156,8 @@ export function AuthRequestsProvider({ children }: PropsWithChildren) {
         postEmbeddedMessage({
           type: "embedded_request",
           data: {
-            pendingRequests
+            pendingRequests,
+            hasNewConnectRequest: false
           }
         });
       }
@@ -300,7 +313,8 @@ export function AuthRequestsProvider({ children }: PropsWithChildren) {
           postEmbeddedMessage({
             type: "embedded_request",
             data: {
-              pendingRequests
+              pendingRequests,
+              hasNewConnectRequest: authRequest.type === "connect"
             }
           });
         }
@@ -535,7 +549,8 @@ export function AuthRequestsProvider({ children }: PropsWithChildren) {
         currentAuthRequestIndex,
         lastCompletedAuthRequest,
         setCurrentAuthRequestIndex,
-        completeAuthRequest
+        completeAuthRequest,
+        closeAuthPopup
       }}
     >
       {children}

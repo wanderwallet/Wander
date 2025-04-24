@@ -1,11 +1,18 @@
 :root {
-  --brand-color-primary1: #5647a0;
+  --text-color-primary: #121212;
+  --text-color-secondary: #666666;
+  --text-color-tertiary: #838383;
+  --text-color-highlighted: #6b57f9;
+  --text-color-inactive: #e4e4eb;
+  --icon-color-inactive: ##e4e4eb;
+
+  --brand-color-primary1: #503ece;
   --brand-color-primary2: #6751d0;
   --brand-color-primary3: #0d6ce9;
   --brand-color-primary4: #8e7bea;
   --brand-color-secondary1: #2b2838;
   --brand-color-secondary2: #36324d;
-  --brand-color-secondary3: #544a81;
+  --brand-color-secondary3: #26126f;
   --brand-color-secondary4: #a9a4c0;
   --brand-color-secondary5: #bcb3e9;
   --brand-color-secondary6: #ddd9f4;
@@ -17,11 +24,22 @@
   --brand-color-neutral4: #847f90;
   --brand-color-neutral5: #a3a3a3;
   --brand-color-neutral6: #ffffff;
-  --brand-color-success1: #17a815;
-  --brand-color-success2: #14d110;
-  --brand-color-error1: #eb0000;
-  --brand-color-error2: #ff1a1a;
+  --brand-color-neutral7: #f2f2f7;
+  --brand-color-neutral8: #f5f4ff;
+
+  --brand-color-success1: #007229;
+  --brand-color-success2: #04aa3e;
+  --brand-color-success3: #e9fcec;
+
+  --brand-color-error1: #d22b1f;
+  --brand-color-error2: #ee5a4f;
+  --brand-color-error3: #ffeeed;
+
+  --brand-color-pending1: #7c4c00;
+  --brand-color-pending2: #fff9ea;
+
   --brand-color-white: #ffffff;
+
   --brand-color-gray-100: #ebebf0;
   --brand-color-gray-200: #d6d6dd;
   --brand-color-gray-300: #8d8d99;

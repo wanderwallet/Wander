@@ -73,18 +73,19 @@ export class WanderIframe {
     const { routeLayout } = options;
 
     if (typeof routeLayout === "string" || isRouteConfig(routeLayout)) {
-      // If a single value is passed, we use it for default and auth-requests. Anything else fallbacks to the default
-      // (currently modal):
+      // If a single value is passed, we use it for default, settings and auth-request. auth and account fallbacks to
+      // the default (currently modal):
 
       const defaultLayoutConfig = WanderIframe.getLayoutConfig(routeLayout);
 
       this.routeLayout = {
         default: defaultLayoutConfig,
+        settings: defaultLayoutConfig,
         "auth-request": defaultLayoutConfig
       };
     } else {
-      // If only default and auth are defined by the developer, default is used for both default and auth-request, and
-      // auth is used for auth, account and settings:
+      // If only default and auth are defined by the developer, default is used for default, settings and auth-request,
+      // while auth is used for auth and account:
 
       const defaultLayoutConfig = WanderIframe.getLayoutConfig(
         routeLayout?.default || "popup"
@@ -102,7 +103,7 @@ export class WanderIframe {
           authLayoutConfig,
         settings:
           WanderIframe.getLayoutConfig(routeLayout?.settings) ||
-          authLayoutConfig,
+          defaultLayoutConfig,
         "auth-request":
           WanderIframe.getLayoutConfig(routeLayout?.["auth-request"]) ||
           defaultLayoutConfig
@@ -176,9 +177,9 @@ export class WanderIframe {
     halfImage.className = "half-image";
 
     // We don't add the iframe as a child of backdrop to have more control over the hide/show transitions:
+    shadow.appendChild(wrapper);
     shadow.appendChild(backdrop);
     shadow.appendChild(halfImage);
-    shadow.appendChild(wrapper);
 
     return {
       iframe,
@@ -247,19 +248,20 @@ export class WanderIframe {
 
     switch (layoutConfig.type) {
       case "modal": {
-        cssVars.preferredWidth ??= layoutConfig.fixedWidth || routeConfig.width;
-        cssVars.preferredHeight ??=
-          layoutConfig.fixedHeight || routeConfig.height;
+        // Modal resizes to fit content:
+        cssVars.preferredWidth =
+          layoutConfig.fixedWidth || routeConfig.width || "";
+        cssVars.preferredHeight =
+          layoutConfig.fixedHeight || routeConfig.height || "";
         break;
       }
 
       case "popup": {
         const position = layoutConfig.position || "bottom-right";
         this.wrapper.dataset.position = position;
-
-        cssVars.preferredWidth ??= layoutConfig.fixedWidth || routeConfig.width;
-        cssVars.preferredHeight ??=
-          layoutConfig.fixedHeight || routeConfig.height;
+        // Popup should not resize to fit content:
+        cssVars.preferredWidth = layoutConfig.fixedWidth || "";
+        cssVars.preferredHeight = layoutConfig.fixedHeight || "";
         break;
       }
 
@@ -271,21 +273,20 @@ export class WanderIframe {
         if (layoutConfig.expanded) {
           this.wrapper.dataset.expanded = "true";
           cssVars.backdropPadding = 0;
-          cssVars.borderRadius ??= 0;
+          cssVars.borderRadius = 0;
         } else {
           this.wrapper.dataset.expanded = "false";
-          cssVars.backdropPadding ??= 8;
+          cssVars.backdropPadding = 8;
         }
 
         if (layoutConfig.type === "sidebar") {
-          cssVars.preferredWidth ??=
-            layoutConfig.fixedWidth || routeConfig.width;
-          cssVars.preferredHeight ??=
+          cssVars.preferredWidth =
+            layoutConfig.fixedWidth || routeConfig.width || "";
+          cssVars.preferredHeight =
             "calc(100dvh - 2 * var(--backdropPadding, 0))";
         } else {
-          cssVars.preferredWidth ??=
-            "calc(50vw - 2 * var(--backdropPadding, 0))";
-          cssVars.preferredHeight ??=
+          cssVars.preferredWidth = "calc(50vw - 2 * var(--backdropPadding, 0))";
+          cssVars.preferredHeight =
             "calc(100dvh - 2 * var(--backdropPadding, 0))";
 
           // Handle imgSrc for half layout

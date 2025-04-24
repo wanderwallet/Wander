@@ -18,7 +18,6 @@ import React, { useEffect, useMemo, useState } from "react";
 import keystoneLogo from "url:/assets/hardware/keystone.png";
 import WalletSwitcher from "./WalletSwitcher";
 import styled from "styled-components";
-import { svgie } from "~utils/svgies";
 import type { AppLogoInfo } from "~applications/application";
 import Squircle from "~components/Squircle";
 import { useLocation } from "~wallets/router/router.utils";
@@ -94,11 +93,6 @@ export default function HeadV2({
 
   const nameServiceProfile = useNameServiceProfile(activeAddress);
 
-  const svgieAvatar = useMemo(
-    () => svgie(activeAddress, { asDataURI: true }),
-    [activeAddress]
-  );
-
   // wallet switcher open
   const [isOpen, setOpen] = useState(false);
 
@@ -150,15 +144,14 @@ export default function HeadV2({
             {showOptions && (
               <ButtonAvatar
                 img={
-                  nameServiceProfile?.logo
-                    ? concatGatewayURL(gateway) + "/" + nameServiceProfile.logo
-                    : svgieAvatar
+                  nameServiceProfile?.logo &&
+                  concatGatewayURL(gateway) + "/" + nameServiceProfile.logo
                 }
                 onClick={() => {
                   setOpen(true);
                 }}
               >
-                {!nameServiceProfile?.logo && !svgieAvatar && <NoAvatarIcon />}
+                {!nameServiceProfile?.logo && <NoAvatarIcon />}
                 <AnimatePresence initial={false}>
                   {hardwareApi === "keystone" && (
                     <HardwareWalletIcon
@@ -306,22 +299,19 @@ const ButtonAvatar = styled(Avatar)`
   width: 2.1rem;
   height: 2.1rem;
 
-  & svg {
+  ${NoAvatarIcon} {
+    font-size: 1.4rem;
     transition: transform 0.07s ease-in-out;
   }
 
-  &:active svg {
-    transform: scale(0.93);
+  &:active ${NoAvatarIcon} {
+    transform: translate(-50%, -50%) scale(0.93);
   }
 
   ${HardwareWalletIcon} {
     position: absolute;
     right: -5px;
     bottom: -5px;
-  }
-
-  ${NoAvatarIcon} {
-    font-size: 1.4rem;
   }
 `;
 

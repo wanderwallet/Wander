@@ -1,4 +1,3 @@
-import { WalletIcon } from "@iconicicons/react";
 import {
   Button,
   ListItem,
@@ -21,7 +20,6 @@ import { findGateway } from "~gateways/wayfinder";
 import browser from "webextension-polyfill";
 import Squircle from "~components/Squircle";
 import styled, { useTheme } from "styled-components";
-import { svgie } from "~utils/svgies";
 import { useLocation } from "~wallets/router/router.utils";
 import { getNameServiceProfiles } from "~lib/nameservice";
 import SliderMenu from "~components/SliderMenu";
@@ -32,6 +30,7 @@ import { fetchWalletBalances } from "~utils/balances";
 import useSetting from "~settings/hook";
 import QRModal from "~components/modals/QRModal";
 import { useArPrice } from "~lib/coingecko";
+import { NoAvatarIcon } from "./WalletHeader";
 
 export default function WalletSwitcher({ open, close }: Props) {
   const theme = useTheme();
@@ -111,14 +110,12 @@ export default function WalletSwitcher({ open, close }: Props) {
           const profile = profiles.find(
             ({ address }) => address === wallet.address
           );
-          const svgieAvatar = svgie(wallet.address, { asDataURI: true });
 
           return {
             ...wallet,
             name: profile?.name || wallet.name,
-            avatar: profile?.logo
-              ? concatGatewayURL(gateway) + "/" + profile.logo
-              : svgieAvatar,
+            avatar:
+              profile?.logo && concatGatewayURL(gateway) + "/" + profile.logo,
             hasAns: !!profile
           };
         })
@@ -151,12 +148,7 @@ export default function WalletSwitcher({ open, close }: Props) {
   const { setToast } = useToasts();
 
   return (
-    <SliderMenu
-      hasHeader={false}
-      title={browser.i18n.getMessage("wallets")}
-      isOpen={open}
-      onClose={close}
-    >
+    <SliderMenu hasHeader={false} isOpen={open} onClose={close}>
       <CloseIcon
         onClick={(e) => {
           e.stopPropagation();
@@ -166,7 +158,7 @@ export default function WalletSwitcher({ open, close }: Props) {
       <Wrapper>
         <CurrentWallet>
           <Avatar img={activeWallet?.avatar}>
-            {!activeWallet?.avatar && <NoAvatarIcon />}
+            {!activeWallet?.avatar && <NoAvatarIcon size="1.5em" />}
             {activeWallet?.api === "keystone" && (
               <HardwareWalletIcon icon={keystoneLogo} color="#2161FF" />
             )}
@@ -270,7 +262,7 @@ export default function WalletSwitcher({ open, close }: Props) {
                   }}
                 >
                   <Avatar img={wallet.avatar}>
-                    {!wallet.avatar && <NoAvatarIcon />}
+                    {!wallet.avatar && <NoAvatarIcon size="1.5em" />}
                     {wallet.api === "keystone" && (
                       <HardwareWalletIcon icon={keystoneLogo} color="#2161FF" />
                     )}
@@ -450,17 +442,6 @@ const Avatar = styled(Squircle)`
     right: -5px;
     bottom: -5px;
   }
-`;
-
-const NoAvatarIcon = styled(WalletIcon)`
-  position: absolute;
-  font-size: 1.2rem;
-  width: 1em;
-  height: 1em;
-  color: #fff;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
 `;
 
 interface Props {

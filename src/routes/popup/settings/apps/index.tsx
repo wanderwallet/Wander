@@ -1,7 +1,6 @@
 import { Spacer, Text, useInput } from "@arconnect/components";
 import { useEffect, useMemo, useState } from "react";
-import { useStorage } from "~utils/storage";
-import { ExtensionStorage } from "~utils/storage";
+import { PersistentStorage, useStorage } from "~utils/storage";
 import Application from "~applications/application";
 import browser from "webextension-polyfill";
 import styled from "styled-components";
@@ -26,7 +25,7 @@ export function ApplicationsView() {
   const [connectedApps] = useStorage<string[]>(
     {
       key: "apps",
-      instance: ExtensionStorage
+      instance: PersistentStorage
     },
     []
   );

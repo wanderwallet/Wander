@@ -226,6 +226,8 @@ export class WanderButton {
       throw new Error("Missing elements");
 
     host.style.position = "fixed";
+    host.style.zIndex = "var(--zIndex)";
+
     if (config.position !== "static") {
       const [y, x] = config.position.split("-") as [
         "top" | "bottom",
@@ -280,11 +282,13 @@ export class WanderButton {
   }
 
   setBalance(balanceInfo: BalanceInfo) {
-    const formattedBalance = new Intl.NumberFormat(undefined, {
-      currency: balanceInfo.currency
-    }).format(balanceInfo.amount);
+    if (balanceInfo.amount === null) {
+      this.balance.classList.add("isHidden");
+    } else {
+      this.balance.classList.remove("isHidden");
+    }
 
-    this.balance.textContent = `${formattedBalance}`;
+    this.balance.textContent = balanceInfo.formattedBalance;
   }
 
   setNotifications(pendingRequests: number) {
@@ -317,7 +321,7 @@ export class WanderButton {
 
   unsetStatus(status: WanderEmbeddedButtonStatus) {
     this.status[status] = false;
-    this.button.classList.add(status);
+    this.button.classList.remove(status);
 
     if (status === "isAuthenticated") {
       this.label.textContent = this.config.label ? this.config.i18n.signIn : "";

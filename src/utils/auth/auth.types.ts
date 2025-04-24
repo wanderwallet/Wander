@@ -121,7 +121,7 @@ export interface SignDataItemAuthRequestData {
 
 export interface BatchSignDataItemAuthRequestData {
   type: "batchSignDataItem";
-  data: RawDataItem;
+  data: RawDataItem[];
 }
 
 // SUBSCRIPTION:

@@ -4,6 +4,10 @@ import type { Tag } from "arweave/web/lib/transaction";
 import { type Chunk, CHUNK_SIZE } from "./chunks";
 import { signedTxTags } from "./tags";
 import { nanoid } from "nanoid";
+import Arweave from "arweave";
+import { defaultGateway } from "~gateways/gateway";
+
+const arweave = new Arweave(defaultGateway);
 
 /**
  * Transaction object **without** it's data or tags
@@ -89,6 +93,14 @@ export function deconstructTransaction(transaction: Transaction) {
 
   // the data array is split into chunks of 0.5 mb
   const dataChunks: Chunk[] = [];
+
+  if (typeof transaction.data === "string") {
+    try {
+      transaction.data = arweave.utils.b64UrlToBuffer(transaction.data);
+    } catch {
+      // do nothing
+    }
+  }
 
   // map data into chunks of 0.5 mb = 500000 bytes
   for (let i = 0; i < Math.ceil(transaction.data.length / CHUNK_SIZE); i++) {

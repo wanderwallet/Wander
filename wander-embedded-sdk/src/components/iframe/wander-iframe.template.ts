@@ -34,9 +34,9 @@ export const getWanderIframeTemplateContent = ({
       border-radius: var(--borderRadius, 10px);
       box-shadow: var(--boxShadow, 0 0 16px 0 rgba(0, 0, 0, 0.125));
       width: calc(var(--preferredWidth, 400px) - 2 * var(--borderWidth, 2px));
-      height: calc(var(--preferredHeight, 600px) - 2 * var(--borderWidth, 2px));
-      min-width: 400px;
-      min-height: 400px;
+      height: calc(var(--preferredHeight, 800px) - 2 * var(--borderWidth, 2px));
+      min-width: calc(400px - 2 * var(--borderWidth, 2px));
+      min-height: calc(400px - 2 * var(--borderWidth, 2px));
       max-width: calc(100dvw - 2 * var(--backdropPadding, 32px) - 2 * var(--borderWidth, 2px));
       max-height: calc(100dvh - 2 * var(--backdropPadding, 32px) - 2 * var(--borderWidth, 2px));
       box-sizing: content-box;
@@ -58,7 +58,7 @@ export const getWanderIframeTemplateContent = ({
       height: 100%;
       display: block;
     }
-    
+
     /* Half layout image styles */
     .half-image {
       position: fixed;
@@ -70,18 +70,18 @@ export const getWanderIframeTemplateContent = ({
       transform: translateY(-50%);
       display: none;
     }
-    
+
     .half-image.show {
       opacity: 1;
       pointer-events: auto;
     }
-    
+
     /* Position-specific styles for half-image */
     .half-image[data-position="left"] {
       left: 0;
       width: 50vw;
     }
-    
+
     .half-image[data-position="right"] {
       right: 0;
       width: 50vw;
@@ -107,11 +107,11 @@ export const getWanderIframeTemplateContent = ({
         box-shadow: var(--mobileBoxShadow, none);
         transform: none;
       }
-      
+
       .half-image {
         display: none;
       }
-      
+
       .iframe-wrapper[data-expand-on-mobile="true"] {
         inset: 0;
         width: 100dvw;
@@ -158,7 +158,7 @@ export const getWanderIframeTemplateContent = ({
       transform: translate(-50%, -50%);
       transition: opacity linear 150ms;
     }
-    
+
     /* Sidebar specific styles */
     .iframe-wrapper[data-layout="sidebar"] {
       transition: opacity linear 150ms, transform linear 150ms;
@@ -214,13 +214,13 @@ export const getWanderIframeTemplateContent = ({
     .iframe-wrapper[data-layout="half"][data-position="left"]:not(.show) {
       transform: translate(calc(-100% - var(--backdropPadding, 32px)), 0);
     }
-    
+
     /* Show transform state */
     .iframe-wrapper[data-layout="sidebar"].show,
     .iframe-wrapper[data-layout="half"].show {
       transform: translate(0, 0);
     }
-    
+
     /* Expanded styles */
     .iframe-wrapper[data-layout="sidebar"][data-expanded="true"],
     .iframe-wrapper[data-layout="half"][data-expanded="true"] {
@@ -229,12 +229,12 @@ export const getWanderIframeTemplateContent = ({
       max-height: var(--preferredHeight, 100dvh);
       border-radius: 0;
     }
-    
+
     .iframe-wrapper[data-layout="sidebar"][data-expanded="true"][data-position="right"],
     .iframe-wrapper[data-layout="half"][data-expanded="true"][data-position="right"] {
       right: 0;
     }
-    
+
     .iframe-wrapper[data-layout="sidebar"][data-expanded="true"][data-position="left"],
     .iframe-wrapper[data-layout="half"][data-expanded="true"][data-position="left"] {
       left: 0;

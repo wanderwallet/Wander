@@ -54,6 +54,8 @@ import type { SupabaseJwtPayload } from "~utils/authentication/authentication.ty
 import { isTempWalletPromiseExpired } from "~utils/embedded/utils/wallets/embedded-wallets.utils";
 import copy from "copy-to-clipboard";
 import { useHashLocation } from "wouter/use-hash-location";
+import { getIPAddress } from "~utils/ip_address";
+import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 
 export type AuthStatusCopy = AuthStatus;
 
@@ -139,6 +141,20 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       }
     }
   }, [authStatus]);
+
+  const getLatestSession = useCallback(async (session: DbSession) => {
+    const userAgent = navigator.userAgent;
+    const deviceNonce = await getDeviceNonce();
+    // NOTE: We use ipv4 address here as in Vercel backend we get ipv4 address from the request headers.
+    const ip = await getIPAddress().catch(() => session.ip);
+
+    return {
+      ...session,
+      ip,
+      userAgent,
+      deviceNonce
+    };
+  }, []);
 
   const updateCurrentWallet = useCallback(
     (walletUpdater: Wallet | ((currentWallet: Wallet) => Wallet)) => {
@@ -664,6 +680,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     const { jwk, walletAddress } = await importedTempWalletPromiseRef.current
       ?.promise;
 
+    const latestSession = await getLatestSession(session);
+
     const { fetchRecoverableWalletsChallenge } =
       await AuthenticationService.generateFetchRecoverableAccountsChallenge(
         walletAddress
@@ -671,7 +689,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
     const challengeSolution = await ChallengeClientV1.solveChallenge({
       challenge: fetchRecoverableWalletsChallenge,
-      session,
+      session: latestSession,
       shareHash: null,
       jwk
     });
@@ -707,6 +725,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       const { jwk, walletAddress } = await importedTempWalletPromiseRef.current
         ?.promise;
 
+      const latestSession = await getLatestSession(session);
+
       const { accountRecoveryChallenge } =
         await AuthenticationService.generateAccountRecoveryChallenge(
           accountToRecoverId,
@@ -715,7 +735,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
       const challengeSolution = await ChallengeClientV1.solveChallenge({
         challenge: accountRecoveryChallenge,
-        session,
+        session: latestSession,
         shareHash: null,
         jwk
       });
@@ -727,43 +747,70 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
   const recoverWallet = useCallback(
     async (recoveryData: RecoveryJSON | JWKInterface | string) => {
+      let jwk: JWKInterface;
+      let walletAddress: string;
+      let walletId: string;
+      let recoveryBackupShare: string | null = null;
+      let recoveryFileServerSignature: string | null = null;
+      let recoveryBackupShareHash: string | null = null;
+      let recoveryBackupSharePrivateKeyJWK: JWKInterface | null = null;
+      let isRecoveryJSON = true;
+
       if (
-        typeof recoveryData === "string" ||
-        recoveryData.hasOwnProperty("kty")
+        WalletUtils.isJWK(recoveryData) ||
+        WalletUtils.isSeedPhrase(recoveryData)
       ) {
-        throw new Error("Keyfile sand seedphrases not supported yet.");
+        const promise = importedTempWalletPromiseRef.current?.promise;
+        ({ jwk, walletAddress } = await promise);
+        walletId = wallets.find(({ address }) => address === walletAddress)?.id;
+        isRecoveryJSON = false;
+      } else {
+        ({ walletId, recoveryBackupShare, recoveryFileServerSignature } =
+          recoveryData as RecoveryJSON);
+        ({
+          shareHash: recoveryBackupShareHash,
+          sharePrivateKeyJWK: recoveryBackupSharePrivateKeyJWK
+        } = await WalletUtils.generateShareHashAndPrivateKey(
+          recoveryBackupShare
+        ));
+        walletAddress = wallets.find(({ id }) => id === walletId)?.address;
       }
 
-      const {
-        version,
-        walletId,
-        recoveryBackupShare,
-        recoveryFileServerSignature
-      } = recoveryData as RecoveryJSON;
+      if (!walletId || !walletAddress) {
+        throw new Error("Wallet not found!");
+      }
 
-      const {
-        shareHash: recoveryBackupShareHash,
-        sharePrivateKeyJWK: recoveryBackupSharePrivateKeyJWK
-      } = await WalletUtils.generateShareHashAndPrivateKey(recoveryBackupShare);
+      const latestSession = await getLatestSession(session);
 
       const { shareRecoveryChallenge } =
         await WalletService.generateWalletRecoveryChallenge({ walletId });
 
       const challengeSolution = await ChallengeClientV1.solveChallenge({
         challenge: shareRecoveryChallenge,
-        session,
+        session: latestSession,
         shareHash: recoveryBackupShareHash,
-        jwk: recoveryBackupSharePrivateKeyJWK
+        jwk: recoveryBackupSharePrivateKeyJWK || jwk
       });
 
-      const authRecoveryShareResponse = await WalletService.recoverWallet({
-        walletId,
-        recoveryBackupShareHash,
-        recoveryFileServerSignature,
-        challengeSolution
-      });
+      let recoverWalletParams = { walletId, challengeSolution };
+      if (isRecoveryJSON) {
+        recoverWalletParams = {
+          ...recoverWalletParams,
+          ...(recoveryBackupShareHash ? { recoveryBackupShareHash } : {}),
+          ...(recoveryFileServerSignature
+            ? { recoveryFileServerSignature }
+            : {})
+        };
+      }
 
-      if (!("recoveryAuthShare" in authRecoveryShareResponse)) {
+      const authRecoveryShareResponse = await WalletService.recoverWallet(
+        recoverWalletParams
+      );
+
+      if (
+        isRecoveryJSON &&
+        !("recoveryAuthShare" in authRecoveryShareResponse)
+      ) {
         throw new Error("Recovery share not found.");
 
         // TODO: Validate file signature and show a proper error message...
@@ -772,17 +819,19 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       const { recoveryAuthShare, rotationChallenge } =
         authRecoveryShareResponse;
 
-      const jwk = await WalletUtils.generateWalletJWKFromShares(walletAddress, [
-        recoveryAuthShare,
-        recoveryBackupShare
-      ]);
+      if (isRecoveryJSON) {
+        jwk = await WalletUtils.generateWalletJWKFromShares(walletAddress, [
+          recoveryAuthShare,
+          recoveryBackupShare
+        ]);
+      }
 
       const { authShare, deviceShare } =
         await WalletUtils.generateWalletWorkShares(jwk);
 
       const rotateChallengeSignature = await ChallengeClientV1.solveChallenge({
         challenge: rotationChallenge,
-        session,
+        session: latestSession,
         shareHash: null,
         jwk
       });
@@ -984,6 +1033,13 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
       setEmbeddedContextState(EMBEDDED_CONTEXT_INITIAL_STATE);
 
+      postEmbeddedMessage({
+        type: "embedded_auth",
+        data: {
+          userDetails: !userId || !session ? null : {}
+        }
+      });
+
       if (!userId || !session) {
         generateTempWallet();
 
@@ -1005,6 +1061,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       } else {
         console.log("✅  The current session is complete!", session);
       }
+
+      session = await getLatestSession(session);
 
       const wallets = await WalletService.fetchWallets(userId);
 
@@ -1253,7 +1311,11 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       const params = new URLSearchParams(hashParams);
       const searchParams = Object.fromEntries(params.entries());
 
-      completeAuth(searchParams);
+      // We have completeAuth() in the onAuthStateChange callback, but if it didn't work,
+      // we'll use a timeout to call it after a delay.
+      setTimeout(() => {
+        completeAuth(searchParams);
+      }, 5000);
     }
   }, [wocation]);
 
@@ -1279,7 +1341,6 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
         registerWallet,
         clearLastRegisteredWallet,
-
         skipBackUp,
         downloadKeyfile,
         copySeedphrase,

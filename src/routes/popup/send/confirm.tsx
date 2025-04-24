@@ -44,9 +44,9 @@ import { useContact } from "~contacts/hooks";
 import {
   sendAoTransfer,
   sendAoTransferKeystone,
-  useAo,
   type TokenInfo
 } from "~tokens/aoTokens/ao";
+import { useAo } from "~tokens/hooks";
 import { useActiveWallet } from "~wallets/hooks";
 import { UR } from "@ngraveio/bc-ur";
 import {

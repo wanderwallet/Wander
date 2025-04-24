@@ -570,7 +570,12 @@ export function WalletsWelcomeView({ params }: WalletsWelcomeViewProps) {
               gap: 24
             }}
           >
-            <Text size="sm" weight="medium" noMargin>
+            <Text
+              size="sm"
+              weight="medium"
+              noMargin
+              style={{ lineHeight: "1.4", textAlign: "center" }}
+            >
               {browser.i18n.getMessage("scan_qr_code_instruction")}
             </Text>
             {scanMode ? (

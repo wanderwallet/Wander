@@ -11,7 +11,7 @@ import {
 import browser from "webextension-polyfill";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { formatAddress } from "~utils/format";
-import { useStorage } from "~utils/storage";
+import { PersistentStorage, useStorage } from "~utils/storage";
 import { ExtensionStorage } from "~utils/storage";
 import { Quantity, Token } from "ao-tokens";
 import prettyBytes from "pretty-bytes";
@@ -65,11 +65,11 @@ export default function SignDataItemDetails({ params }) {
 
         try {
           const aoTokens =
-            (await ExtensionStorage.get<TokenInfoWithProcessId[]>(
+            (await PersistentStorage.get<TokenInfoWithProcessId[]>(
               "ao_tokens"
             )) || [];
           const aoTokensCache =
-            (await ExtensionStorage.get<TokenInfoWithProcessId[]>(
+            (await PersistentStorage.get<TokenInfoWithProcessId[]>(
               "ao_tokens_cache"
             )) || [];
           const aoTokensCombined = [...aoTokens, ...aoTokensCache];
@@ -144,11 +144,7 @@ export default function SignDataItemDetails({ params }) {
             }}
           >
             {!loading ? (
-              logo && (
-                <LogoWrapper>
-                  <Logo src={logo} alt={`${tokenName} logo`} />
-                </LogoWrapper>
-              )
+              logo && <LogoWrapper img={logo} alt={`${tokenName} logo`} />
             ) : (
               <Loading style={{ width: "16px", height: "16px" }} />
             )}
@@ -222,7 +218,6 @@ export default function SignDataItemDetails({ params }) {
               {browser.i18n.getMessage("transaction_tags")}
               {showTags ? <ChevronUpIcon /> : <ChevronDownIcon />}
             </PropertyName>
-            {console.log(params)}
             <Spacer y={0.05} />
             {showTags &&
               params?.tags?.map((tag, i) => (

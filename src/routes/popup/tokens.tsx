@@ -7,8 +7,9 @@ import browser from "webextension-polyfill";
 import Token from "~components/popup/Token";
 import styled from "styled-components";
 import HeadV2 from "~components/popup/HeadV2";
-import { useAoTokens, type TokenInfoWithBalance } from "~tokens/aoTokens/ao";
-import { ExtensionStorage } from "~utils/storage";
+import { type TokenInfoWithBalance } from "~tokens/aoTokens/ao";
+import { useAoTokens } from "~tokens/hooks";
+import { ExtensionStorage, PersistentStorage } from "~utils/storage";
 import { syncAoTokens } from "~tokens/aoTokens/sync";
 
 export function TokensView() {
@@ -49,7 +50,7 @@ export function TokensView() {
         processId: token.id,
         type: token.type || "asset"
       });
-      await ExtensionStorage.set("ao_tokens", aoTokens);
+      await PersistentStorage.set("ao_tokens", aoTokens);
       setToast({
         type: "success",
         content: browser.i18n.getMessage("token_imported"),
@@ -79,12 +80,12 @@ export function TokensView() {
       );
       if (!restrictedTokenIds.includes(token.id)) {
         restrictedTokenIds.push(token.id);
-        await ExtensionStorage.set(
+        await PersistentStorage.set(
           "ao_tokens_auto_import_restricted_ids",
           restrictedTokenIds
         );
       }
-      await ExtensionStorage.set("ao_tokens", updatedTokens);
+      await PersistentStorage.set("ao_tokens", updatedTokens);
       setToast({
         type: "success",
         content: browser.i18n.getMessage("token_removed"),

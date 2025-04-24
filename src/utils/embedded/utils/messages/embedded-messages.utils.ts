@@ -1,6 +1,8 @@
 import { nanoid } from "nanoid";
-import { getEmbeddedAncestorOrigin } from "~utils/embedded/embedded.utils";
-import { isInsideIframe } from "~utils/embedded/iframe.utils";
+import {
+  isInsideIframe,
+  getEmbeddedAncestorOrigin
+} from "~utils/embedded/iframe.utils";
 import type {
   EmbeddedCall,
   EmbeddedMessageId,
@@ -9,6 +11,9 @@ import type {
 
 const EMBEDDED_MESSAGE_IDS = [
   "embedded_auth",
+  "embedded_connect",
+  "embedded_disconnect",
+  "embedded_open",
   "embedded_close",
   "embedded_resize",
   "embedded_balance",
@@ -50,5 +55,5 @@ export function postEmbeddedMessage<K extends EmbeddedMessageId>({
     return;
   }
 
-  parent.postMessage(call, getEmbeddedAncestorOrigin());
+  window.parent.postMessage(call, getEmbeddedAncestorOrigin());
 }

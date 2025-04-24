@@ -1,6 +1,6 @@
 import { decryptWallet, freeDecryptedWallet } from "./encryption";
 import browser from "webextension-polyfill";
-import { getWallets, type LocalWallet } from "./index";
+import { type LocalWallet, type StoredWallet } from "./wallets.types";
 import { ExtensionStorage } from "~utils/storage";
 import { createAuthPopup, onPopupClosed } from "~utils/auth/auth.utils";
 import type { ModuleAppData } from "~api/background/background-modules";
@@ -13,6 +13,17 @@ import { log, LOG_GROUP } from "~utils/log/log.utils";
 
 export const PASSWORD_FRESHNESS = "password_freshness";
 export const FRESHNESS_DURATION = 3 * 60 * 1000;
+
+/**
+ * Get wallets from storage
+ *
+ * @returns Wallets in storage
+ */
+async function getWallets() {
+  let wallets: StoredWallet[] = await ExtensionStorage.get("wallets");
+
+  return wallets || [];
+}
 
 /**
  * Unlock wallets and save decryption key

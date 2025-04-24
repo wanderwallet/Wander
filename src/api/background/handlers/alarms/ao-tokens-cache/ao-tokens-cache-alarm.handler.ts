@@ -1,9 +1,13 @@
 import { dryrun } from "@permaweb/aoconnect";
-import { ExtensionStorage } from "~utils/storage";
+import { PersistentStorage } from "~utils/storage";
 import type { Alarms } from "webextension-polyfill";
-import { Id, Owner, type TokenInfo } from "~tokens/aoTokens/ao";
+import {
+  Id,
+  Owner,
+  type TokenInfo,
+  getTokenInfoFromData
+} from "~tokens/aoTokens/ao";
 import { timeoutPromise } from "~utils/promises/timeout";
-import { getTokenInfoFromData } from "~tokens/aoTokens/router";
 
 /**
  * Alarm handler for syncing ao tokens
@@ -11,7 +15,8 @@ import { getTokenInfoFromData } from "~tokens/aoTokens/router";
 export const handleAoTokenCacheAlarm = async (alarmInfo?: Alarms.Alarm) => {
   if (alarmInfo && !alarmInfo.name.startsWith("update_ao_tokens")) return;
 
-  const aoTokens = (await ExtensionStorage.get<TokenInfo[]>("ao_tokens")) || [];
+  const aoTokens =
+    (await PersistentStorage.get<TokenInfo[]>("ao_tokens")) || [];
 
   const updatedTokens = [...aoTokens];
 
@@ -49,5 +54,5 @@ export const handleAoTokenCacheAlarm = async (alarmInfo?: Alarms.Alarm) => {
       console.error(`Failed to update token with id ${token.processId}:`, err);
     }
   }
-  await ExtensionStorage.set("ao_tokens", updatedTokens);
+  await PersistentStorage.set("ao_tokens", updatedTokens);
 };

@@ -1,5 +1,5 @@
 import { getAoTokens } from "~tokens";
-import { ExtensionStorage } from "./storage";
+import { ExtensionStorage, PersistentStorage } from "./storage";
 
 // export const AO_NATIVE_TOKEN = "m3PaWzK4PTG9lAaqYQPaPdOcXdO8hYqi5Fe9NWqXd0w";
 export const AO_NATIVE_TOKEN = "0syT13r0s0tgPmIed95bJnuSqaD29HQNN8D3ElLSrsc";
@@ -31,7 +31,7 @@ export async function updateAoToken() {
     if (!isAoTokenPresent) {
       updatedAoTokens.unshift(AO_NATIVE_TOKEN_INFO);
     }
-    await ExtensionStorage.set("ao_tokens", updatedAoTokens);
+    await PersistentStorage.set("ao_tokens", updatedAoTokens);
   } catch (e) {
     console.log(`Error updating old ao token with new ao token: ${e}`);
   }

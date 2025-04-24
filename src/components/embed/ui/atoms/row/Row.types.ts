@@ -12,4 +12,5 @@ export type RowBaseProps = {
   wrap?: boolean;
   justifyContent?: "center" | "end" | "start" | "between" | "around" | "evenly";
   isFullWidth?: boolean;
+  onClick?: () => void;
 };

@@ -1,35 +1,29 @@
-import { useMemo } from "react";
-import { defaultConfig } from "./config";
 import { connect, dryrun } from "@permaweb/aoconnect";
 import { type Tag } from "arweave/web/lib/transaction";
-import { useStorage } from "~utils/storage";
-import { ExtensionStorage } from "~utils/storage";
+import { PersistentStorage } from "~utils/storage";
 import { Quantity } from "ao-tokens";
-import { Arweave, ArweaveSigner, createData } from "arbundles";
+import Arweave from "arweave";
+import { ArweaveSigner, createData } from "arbundles";
 import { getActiveKeyfile } from "~wallets";
 import { isLocalWallet } from "~utils/assertions";
 import { freeDecryptedWallet } from "~wallets/encryption";
-import {
-  AO_NATIVE_TOKEN,
-  AO_NATIVE_TOKEN_BALANCE_MIRROR,
-  EXP_TOKEN
-} from "~utils/ao_import";
+import { AO_NATIVE_TOKEN_BALANCE_MIRROR } from "~utils/ao_import";
 import type { KeystoneSigner } from "~wallets/hardware/keystone";
 import browser from "webextension-polyfill";
-import { fetchTokenByProcessId } from "~lib/transactions";
 import type { DecodedTag } from "~api/modules/sign/tags";
 import {
   isNetworkError,
   NetworkError,
   BalanceFetchError
 } from "~utils/error/error.utils";
-import { getTokenInfo } from "./router";
 import activeAddress from "~api/modules/active_address";
 import { findGateway } from "~gateways/wayfinder";
-import { defaultQueryCache, useTokenPrices } from "~tokens/hooks";
-import { useQueries } from "@tanstack/react-query";
 import BigNumber from "bignumber.js";
 import type { Token } from "~tokens/token";
+import { CACHE_API } from "~constants/api";
+
+let tokens: TokenInfo[] = null;
+export let tokenInfoMap = new Map<string, TokenInfo | Token>();
 
 export type AoInstance = ReturnType<typeof connect>;
 
@@ -98,179 +92,120 @@ type CreateDataItemSigner = (
   wallet: any
 ) => (args: CreateDataItemArgs) => Promise<DataItemResult>;
 
-export function useAo() {
-  // ao instance
-  const ao = useMemo(() => connect(defaultConfig), []);
+export function getTokenInfoFromData(res: any, id: string): TokenInfo {
+  // find message with token info
+  for (const msg of res.Messages as Message[]) {
+    if (msg?.Data) {
+      try {
+        const data = JSON.parse(msg.Data);
+        const Ticker = data.Ticker || data.ticker;
+        const Name = data.Name || data.name;
+        const Denomination = data.Denomination || data.denomination;
+        const Logo = data.Logo || data.logo || id;
+        const type =
+          typeof data?.transferable === "boolean" ||
+          typeof data?.Transferable === "boolean" ||
+          Ticker === "ATOMIC"
+            ? "collectible"
+            : "asset";
 
-  return ao;
+        if (Ticker && Name) {
+          return {
+            processId: id,
+            Ticker,
+            Name,
+            Denomination: Number(Denomination || 0),
+            Logo,
+            type
+          } as TokenInfo;
+        }
+      } catch {}
+    }
+    const Ticker = getTagValue("Ticker", msg.Tags);
+    const Name = getTagValue("Name", msg.Tags);
+    const Denomination = getTagValue("Denomination", msg.Tags);
+    const Logo = getTagValue("Logo", msg.Tags);
+    const Transferable = getTagValue("Transferable", msg.Tags);
+
+    if (!Ticker && !Name) continue;
+
+    return {
+      processId: id,
+      Name,
+      Ticker,
+      Denomination: Number(Denomination || 0),
+      Logo,
+      type: Transferable || Ticker === "ATOMIC" ? "collectible" : "asset"
+    };
+  }
+
+  throw new Error("Could not load token info.");
 }
 
-function moveTokenToTop(tokens: TokenInfoWithBalance[], tokenId: string) {
-  const tokenIndex = tokens.findIndex((t) => t.id === tokenId);
-  if (tokenIndex !== -1) {
-    const token = tokens.splice(tokenIndex, 1)[0];
-    tokens.unshift(token);
+export async function getTokenInfo(id: string): Promise<TokenInfo> {
+  try {
+    const response = await fetch(`${CACHE_API}/api/token-info?tokenId=${id}`, {
+      cache: "force-cache",
+      headers: {
+        "Cache-Control": "public, max-age=300" // 5 minutes
+      }
+    });
+    const data = await response.json();
+
+    return { ...data.tokenInfo, processId: id };
+  } catch {
+    // query ao
+    const res = await dryrun({
+      Id,
+      Owner,
+      process: id,
+      tags: [{ name: "Action", value: "Info" }]
+    });
+
+    return getTokenInfoFromData(res, id);
   }
 }
 
-export function useAoTokens({
-  type,
-  hidden,
-  sortFn,
-  skipSort = false
-}: {
-  type?: "asset" | "collectible";
-  hidden?: boolean;
-  sortFn?: (a: TokenInfo, b: TokenInfo) => number;
-  skipSort?: boolean;
-} = {}): {
-  tokens: TokenInfoWithBalance[];
-  loading: boolean;
-  changeTokenVisibility: (tokenId: string, hidden: boolean) => void;
-} {
-  const [aoTokens, setAoTokens] = useStorage<TokenInfo[]>(
-    {
-      key: "ao_tokens",
-      instance: ExtensionStorage
-    },
-    []
-  );
-
-  const changeTokenVisibility = (tokenId: string, hidden: boolean) => {
-    setAoTokens((tokens) =>
-      tokens.map((t) => (t.processId === tokenId ? { ...t, hidden } : t))
-    );
-  };
-
-  // fetch token infos
-  const tokens = useMemo(() => {
-    const filteredTokens = aoTokens
-      .filter((t) => {
-        const typeMatch =
-          !type ||
-          (type === "asset" && (t.type === "asset" || !t.type)) ||
-          (type === "collectible" && t.type === "collectible");
-
-        const hiddenMatch =
-          hidden === undefined || (t.hidden ?? false) === hidden;
-
-        return typeMatch && hiddenMatch;
-      })
-      .map((aoToken) => ({
-        id: aoToken.processId,
-        balance: "0",
-        Ticker: aoToken.Ticker,
-        Name: aoToken.Name,
-        Denomination: Number(aoToken.Denomination || 0),
-        Logo: aoToken?.Logo,
-        type: aoToken.type || "asset",
-        hidden: aoToken?.hidden ?? false
-      }));
-
-    if (!skipSort) {
-      moveTokenToTop(filteredTokens, AO_NATIVE_TOKEN);
-      moveTokenToTop(filteredTokens, "AR");
-
-      if (sortFn) {
-        filteredTokens.sort(sortFn);
-      }
+async function fetchTokenInfo(processId: string) {
+  try {
+    if (tokenInfoMap.has(processId)) {
+      return tokenInfoMap.get(processId) as TokenInfo;
     }
 
-    return filteredTokens;
-  }, [aoTokens, type, hidden, sortFn, skipSort]);
-
-  return { tokens, loading: false, changeTokenVisibility };
+    const tokenInfo = await getTokenInfo(processId);
+    tokenInfoMap.set(processId, tokenInfo);
+    return tokenInfo;
+  } catch {
+    return null;
+  }
 }
 
-export function useBalanceSortedTokens({
-  type,
-  hidden
-}: {
-  type?: "asset" | "collectible";
-  hidden?: boolean;
-} = {}): {
-  tokens: TokenInfoWithBalance[];
-  loading: boolean;
-  prices: Record<string, number | null>;
-} {
-  const [activeAddress] = useStorage<string>({
-    key: "active_address",
-    instance: ExtensionStorage
-  });
+export const fetchTokenByProcessId = async (
+  processId: string
+): Promise<TokenInfo | null> => {
+  if (tokenInfoMap.has(processId)) {
+    return tokenInfoMap.get(processId) as TokenInfo;
+  }
 
-  const [aoTokens] = useStorage<TokenInfo[]>(
-    {
-      key: "ao_tokens",
-      instance: ExtensionStorage
-    },
-    []
-  );
+  if (!tokens) {
+    const [aoTokens, aoTokensCache] = await Promise.all([
+      PersistentStorage.get<TokenInfo[]>("ao_tokens"),
+      PersistentStorage.get<TokenInfo[]>("ao_tokens_cache")
+    ]);
 
-  const tokensByHidden = useMemo(
-    () =>
-      aoTokens.filter((t) => {
-        const typeMatch =
-          !type ||
-          (type === "asset" && (t.type === "asset" || !t.type)) ||
-          (type === "collectible" && t.type === "collectible");
+    tokens = [...(aoTokens || []), ...(aoTokensCache || [])];
+  }
 
-        const hiddenMatch =
-          hidden === undefined || (t.hidden ?? false) === hidden;
+  if (!processId) return null;
 
-        return typeMatch && hiddenMatch;
-      }),
-    [aoTokens, type, hidden]
-  );
+  const tokenInfo = tokens.find((token) => token.processId === processId);
+  if (tokenInfo) {
+    tokenInfoMap.set(processId, tokenInfo);
+    return tokenInfo;
+  }
 
-  const { prices } = useTokenPrices(
-    tokensByHidden
-      .map((t) => t.processId)
-      .filter((id) => id !== "AR" && id !== EXP_TOKEN)
-  );
-
-  const tokenBalanceQueries = useQueries({
-    queries: tokensByHidden.map((token) => ({
-      queryKey: ["tokenBalance", token.processId, activeAddress],
-      ...defaultQueryCache
-    }))
-  });
-
-  // fetch token infos
-  const tokens = useMemo(() => {
-    const filteredTokens = tokensByHidden.map((aoToken, index) => ({
-      id: aoToken.processId,
-      balance: tokenBalanceQueries[index].data || "0",
-      Ticker: aoToken.Ticker,
-      Name: aoToken.Name,
-      Denomination: Number(aoToken.Denomination || 0),
-      Logo: aoToken?.Logo,
-      type: aoToken.type || "asset",
-      hidden: aoToken?.hidden ?? false,
-      fiatBalance: BigNumber(tokenBalanceQueries[index].data || "0")
-        .times(prices[aoToken.processId] || 0)
-        .toString()
-    }));
-
-    const sortedTokens = filteredTokens.sort((a, b) => {
-      // If both tokens have fiat balance, compare those
-      if (+a.fiatBalance && +b.fiatBalance) {
-        return +b.fiatBalance - +a.fiatBalance;
-      }
-      // If only one has fiat balance, prioritize it
-      if (+a.fiatBalance) return -1;
-      if (+b.fiatBalance) return 1;
-      // If neither has fiat balance, compare token balances
-      return +b.balance - +a.balance;
-    });
-
-    moveTokenToTop(sortedTokens, AO_NATIVE_TOKEN);
-    moveTokenToTop(sortedTokens, "AR");
-
-    return sortedTokens;
-  }, [tokensByHidden, prices, tokenBalanceQueries]);
-
-  return { tokens, loading: false, prices };
-}
+  return fetchTokenInfo(processId);
+};
 
 export async function getArTokenBalance(address: string) {
   if (!activeAddress) return "0";
@@ -293,7 +228,7 @@ export async function getAoTokenBalance(
 ): Promise<Quantity> {
   if (!aoToken) {
     const aoTokens =
-      (await ExtensionStorage.get<TokenInfo[]>("ao_tokens")) || [];
+      (await PersistentStorage.get<TokenInfo[]>("ao_tokens")) || [];
 
     aoToken = aoTokens.find((token) => token.processId === process);
   }
@@ -505,7 +440,7 @@ export async function fetchTokenBalance(
     if (token.processId === "AR") {
       return await getArTokenBalance(address);
     } else {
-      if (refresh) token = await getTokenInfo(token.processId);
+      if (refresh) token = await fetchTokenByProcessId(token.processId);
       if (token.type === "collectible") {
         return (await getAoCollectibleBalance(token, address)).toString();
       } else {
@@ -529,7 +464,7 @@ export async function fetchTokenBalance(
 export async function getBotegaPrice(tokenId: string): Promise<number | null> {
   try {
     const response = await fetch(
-      `https://wander-cache-ruddy.vercel.app/api/botega/prices?tokenIds=${tokenId}`
+      `${CACHE_API}/api/botega/prices?tokenIds=${tokenId}`
     );
 
     if (!response.ok) {
@@ -550,7 +485,7 @@ export async function getBotegaPrices(
   try {
     const queryString = tokenIds.join(",");
     const response = await fetch(
-      `https://wander-cache-ruddy.vercel.app/api/botega/prices?tokenIds=${queryString}`
+      `${CACHE_API}/api/botega/prices?tokenIds=${queryString}`
     );
     if (!response.ok) {
       throw new Error("Failed to fetch prices");

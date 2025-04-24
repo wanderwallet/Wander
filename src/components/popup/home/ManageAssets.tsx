@@ -9,7 +9,8 @@ import {
 } from "@arconnect/components-rebrand";
 import Token from "~components/popup/Token";
 import styled from "styled-components";
-import { useAoTokens, type TokenInfo } from "~tokens/aoTokens/ao";
+import { type TokenInfo } from "~tokens/aoTokens/ao";
+import { useAoTokens } from "~tokens/hooks";
 import { useCallback, useMemo } from "react";
 
 interface Props {

@@ -5,7 +5,6 @@ import { findGateway } from "~gateways/wayfinder";
 import { getUserAvatar } from "~lib/avatar";
 import { multiSort } from "~utils/multi_sort";
 import { ExtensionStorage } from "~utils/storage";
-import { svgie } from "~utils/svgies";
 
 export type Recipient = {
   address: string;
@@ -134,14 +133,6 @@ export const enrichContact = async (contact: Contact) => {
         `Failed to fetch profile image for avatarId ${contact.avatarId}:`,
         error
       );
-    }
-  } else {
-    const svgieAvatar = svgie(contact.address, { asDataURI: true });
-    if (svgieAvatar) {
-      updatedContact = {
-        ...updatedContact,
-        profileIcon: svgieAvatar
-      };
     }
   }
 
