@@ -4,7 +4,8 @@ import {
   Copyable,
   DownloadIcon,
   Row,
-  Text
+  Text,
+  WalletIcon
 } from "~components/embed/ui";
 import Dropdown from "~components/embed/ui/molecules/dropdown/Dropdown/Dropdown";
 import DropdownItem from "~components/embed/ui/molecules/dropdown/DropdownItem/DropdownItem";
@@ -57,7 +58,9 @@ export function AccountSelector({
           </Link>
         }
         buttonAvatar={
-          <Avatar fontColor={"#FFF"}>{activeWallet.nickname}</Avatar>
+          <Avatar fontColor={"#FFF"}>
+            <WalletIcon style={{ height: 16, width: 16 }} />
+          </Avatar>
         }
         buttonText={
           <Text variant="bodyMd" style={{ color: "#121212" }}>
@@ -74,7 +77,9 @@ export function AccountSelector({
                   justifyContent="start"
                   style={{ padding: "8px 16px" }}
                 >
-                  <Avatar fontColor={"#FFF"}>{wallet.nickname}</Avatar>
+                  <Avatar fontColor={"#FFF"}>
+                    <WalletIcon style={{ height: 16, width: 16 }} />
+                  </Avatar>
                   <Text
                     variant="bodyMd"
                     style={{
