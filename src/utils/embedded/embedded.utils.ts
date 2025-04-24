@@ -205,50 +205,6 @@ async function insecurelyValidateApplication() {
 // Validate immediately on load
 // insecurelyValidateApplication();
 
-const getAbsoluteUrl = (url: string): string | null => {
-  if (!url) {
-    return null;
-  }
-  try {
-    return new URL(url, window.location.origin).href;
-  } catch {
-    return null;
-  }
-};
-
-export function getAppLogo(): string | null {
-  try {
-    const faviconSelectors = [
-      "link[rel='icon'][type='image/svg+xml']",
-      "link[rel='icon'][sizes='32x32']",
-      "link[rel='icon'][sizes='48x48']",
-      "link[rel='icon'][sizes='96x96']",
-      "link[rel='icon']",
-      "link[rel='shortcut icon']",
-      "link[rel='apple-touch-icon'][sizes='180x180']",
-      "link[rel='apple-touch-icon']",
-      "link[rel='apple-touch-icon-precomposed']",
-      "meta[property='og:image']",
-      "img[alt*='logo']",
-      "img[src*='logo']"
-    ];
-
-    for (const selector of faviconSelectors) {
-      const element = document.querySelector(selector);
-      const url =
-        element instanceof HTMLLinkElement
-          ? getAbsoluteUrl(element.href)
-          : null;
-      if (url) {
-        return url;
-      }
-    }
-  } catch {}
-
-  const defaultFavicon = `${window.location.origin}/favicon.ico`;
-  return defaultFavicon;
-}
-
 if (IS_EMBEDDED_APP && process.env.NODE_ENV === "development") {
   (window as any).signOut = signOut;
   (window as any).logOut = signOut;

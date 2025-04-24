@@ -4,7 +4,7 @@ import type { ModuleFunction } from "~api/module";
 import { type Gateway } from "~gateways/gateway";
 import { getAppURL } from "~utils/format";
 import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
-import { getAppLogo } from "~utils/embedded/embedded.utils";
+import { getAppLogo } from "~utils/embedded/utils/logo/logo.utils";
 
 const foreground: ModuleFunction<any[]> = async (
   permissions: PermissionType[],
@@ -27,7 +27,7 @@ const foreground: ModuleFunction<any[]> = async (
   }
 
   if (IS_EMBEDDED_APP && !appInfo.logo) {
-    appInfo.logo = getAppLogo();
+    appInfo.logo = await getAppLogo();
   }
 
   return [permissions, appInfo, gateway];
