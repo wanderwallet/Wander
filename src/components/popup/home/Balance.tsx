@@ -169,7 +169,7 @@ function PriceChangeIndicator({
         variant="secondary"
         weight="medium"
         noMargin
-        style={IS_EMBEDDED_APP && { color: "var(--text-color-secondary)" }}
+        style={IS_EMBEDDED_APP ? { color: "var(--text-color-secondary)" } : {}}
       >
         <NumberFlow
           value={fiatChange}
@@ -183,7 +183,7 @@ function PriceChangeIndicator({
         variant="secondary"
         weight="medium"
         noMargin
-        style={IS_EMBEDDED_APP && { color: "var(--text-color-secondary)" }}
+        style={IS_EMBEDDED_APP ? { color: "var(--text-color-secondary)" } : {}}
       >
         (
         <NumberFlow

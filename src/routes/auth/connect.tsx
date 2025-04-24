@@ -43,10 +43,10 @@ import {
 import WanderIcon from "url:assets/icon.svg";
 import Image from "~components/common/Image";
 import { Flex } from "~components/common/Flex";
-import { svgie } from "~utils/svgies";
 import { useNameServiceProfile } from "~lib/nameservice";
 import { FULL_HISTORY, useGateway } from "~gateways/wayfinder";
 import { concatGatewayURL } from "~gateways/utils";
+import { NoAvatarIcon } from "~components/popup/WalletHeader";
 
 type Page = "unlock" | "connect" | "permissions" | "confirm";
 
@@ -86,8 +86,6 @@ export function ConnectAuthRequestView() {
 
     if (nameServiceProfile?.logo && nsGateway?.protocol && nsGateway?.host) {
       setAvatar(concatGatewayURL(nsGateway) + "/" + nameServiceProfile.logo);
-    } else {
-      setAvatar(svgie(wallet?.address, { asDataURI: true }));
     }
   }, [wallet, nameServiceProfile, nsGateway]);
 
@@ -480,15 +478,9 @@ const ConnectPage = ({
         <Spacer y={0.5} />
         <ConnectWalletWrapper onClick={() => setSwitcherOpen(true)}>
           <div style={{ display: "flex", flexDirection: "row", gap: "12px" }}>
-            {avatar ? (
-              <Avatar img={avatar} />
-            ) : (
-              <AccountSquircle>
-                <AccountInitial>
-                  {wallet?.nickname?.charAt(0) || "A"}
-                </AccountInitial>
-              </AccountSquircle>
-            )}
+            <Avatar img={avatar}>
+              {!avatar && <NoAvatarIcon size="1.8em" />}
+            </Avatar>
             <div>
               <WalletName>{wallet?.nickname}</WalletName>
               <SecondaryText>

@@ -16,7 +16,11 @@ vi.setConfig({ testTimeout: 20000 });
 
 // Mock the modules directly instead of using path aliases
 vi.mock("~utils/embedded/iframe.utils", () => ({
-  isInsideIframe: vi.fn().mockReturnValue(true)
+  isInsideIframe: vi.fn().mockReturnValue(true),
+  ancestorOrigin: vi.fn().mockReturnValue("https://test.com"),
+  searchParams: new URLSearchParams({
+    PARAM_CLIENT_ID: "test-client-id"
+  })
 }));
 
 vi.mock("~utils/log/log.utils", () => ({
@@ -294,7 +298,7 @@ describe("StorageMock", () => {
 
     // Verify it's gone from both the API and storage
     const result = await storageMock.getItem("toRemove");
-    expect(result).toBeNull();
+    expect(result).toBeUndefined();
     expect(sessionStorage.getItem("toRemove")).toBeNull();
   });
 

@@ -552,7 +552,7 @@
     "description": "Display theme settings description"
   },
   "setting_gateways_description": {
-    "message": "Arweave gateways simplify data access.",
+    "message": "Gateways are infrastructure components that allow efficient and speedy access to data on the Arweave and AO networks.  Depending on location or networks, specific gateways might provide a better experience than others.",
     "description": "Gateways settings description"
   },
   "search_pick_option": {
@@ -2661,7 +2661,7 @@
     "description": "Scan QR code description"
   },
   "scan_qr_code_instruction": {
-    "message": "Settings -> Accounts -> Generate QR Code",
+    "message": "Settings -> Manage accounts -> Select Account to import -> Generate QR Code",
     "description": "Instruction to find QR code"
   },
   "open_webcam": {
@@ -2958,6 +2958,10 @@
     "message": "Exchange rate",
     "description": "Exchange rate text"
   },
+  "partitioned_storage_banner": {
+    "message": "Your wallets will not be automatically available on other sites. You may need to manually import them when visiting other sites.",
+    "description": "Partitioned storage banner message"
+  },
   "data_content_type_not_supported": {
     "message": "Unable to display data: The content type $TYPE$ is not supported for preview.",
     "description": "Data content type not supported text",
@@ -2971,5 +2975,9 @@
   "data_too_large": {
     "message": "Unable to display data: Data is too large to display.",
     "description": "Data too large text"
+  },
+  "re_request_access": {
+    "message": "Re-request access",
+    "description": "Re-request access text"
   }
 }

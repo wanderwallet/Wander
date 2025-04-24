@@ -1,5 +1,10 @@
 import { isInsideIframe } from "~utils/embedded/iframe.utils";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
+import {
+  PARTITIONED_STORAGE_BANNER_DISMISSAL_KEY,
+  PARTITIONED_STORAGE_BANNER_EVENT
+} from "./unpartitioned-storage.utils";
+import browser from "webextension-polyfill";
 
 type StorageType = "localStorage" | "sessionStorage";
 interface UnpartitionedStorageOptions {
@@ -400,77 +405,189 @@ export class EnhancedStorage implements Storage {
     }
   }
 
-  protected async getStorageHandle(): Promise<Storage> {
-    // @ts-expect-error - requestStorageAccess should return a handle
-    const handle = await document.requestStorageAccess({
-      [this.storageType]: true
-    });
-
-    return handle[this.storageType];
-  }
-
-  protected setupUserInteractionHandler() {
-    document.addEventListener(
-      "click",
-      async () => {
-        await this.requestAccessOnUserInteraction();
-      },
-      { once: true }
-    );
-  }
-
-  async requestStorageAccess() {
-    if (!isInsideIframe()) return;
-
+  protected async getStorageHandle(): Promise<void> {
     try {
-      // Check if API is supported
-      if (!document.hasStorageAccess) {
-        log(
-          LOG_GROUP.STORAGE,
-          "Storage Access API not supported, using default localStorage"
-        );
-        return;
-      }
+      if (!document.requestStorageAccess) return;
 
-      // Check if we already have access
-      const hasAccess = await document.hasStorageAccess();
-      if (hasAccess) {
-        log(LOG_GROUP.STORAGE, "Already has storage access");
-        this.storage = await this.getStorageHandle();
-        return;
-      }
+      log(
+        LOG_GROUP.STORAGE,
+        `Requesting ${this.storageType} access with typed API`
+      );
 
-      // Check permission state
-      const permission = await navigator.permissions.query({
-        name: "storage-access"
+      // @ts-expect-error - Newer API with types may not be recognized by TypeScript
+      const handle = await document.requestStorageAccess({
+        [this.storageType]: true
       });
 
-      if (permission.state === "granted") {
-        this.storage = await this.getStorageHandle();
-        log(LOG_GROUP.STORAGE, "Storage access granted via permission");
-      } else if (permission.state === "prompt") {
-        log(LOG_GROUP.STORAGE, "Storage access requires user interaction");
-        this.setupUserInteractionHandler();
-      } else if (permission.state === "denied") {
-        log(LOG_GROUP.STORAGE, "Storage access denied by user");
+      // @ts-expect-error - Newer API may not be recognized by TypeScript
+      if (handle && handle[this.storageType]) {
+        this.storage = handle[this.storageType];
+        log(
+          LOG_GROUP.STORAGE,
+          `Unpartitioned ${this.storageType} access granted with handle`
+        );
+        return;
+      } else {
+        throw new Error(
+          `Unpartitioned ${this.storageType} access not granted with handle`
+        );
       }
     } catch (error) {
-      log(LOG_GROUP.STORAGE, "Error requesting storage access:", error);
+      log(LOG_GROUP.STORAGE, "Failed to get storage access:", error);
+      throw error;
     }
   }
 
-  async requestAccessOnUserInteraction() {
-    try {
-      if (!document.hasStorageAccess) return;
+  async requestStorageAccess(): Promise<void> {
+    if (!isInsideIframe()) return;
 
-      this.storage = await this.getStorageHandle();
-      log(LOG_GROUP.STORAGE, "Storage access granted after user interaction");
+    // Check if Storage Access API is supported
+    if (!document.hasStorageAccess && !document.requestStorageAccess) {
+      log(LOG_GROUP.STORAGE, "Storage Access API not supported");
+      this.handlePartitionedStorage("open", "dismiss");
+      return;
+    }
+
+    try {
+      // Check if we already have access
+      let hasAccess = false;
+      if (document.hasStorageAccess) {
+        hasAccess = await document.hasStorageAccess();
+      }
+
+      if (hasAccess) {
+        log(LOG_GROUP.STORAGE, "Already has storage access");
+        await this.getStorageHandle();
+        return;
+      }
+
+      // If no access, check permission state
+      let permissionState = "prompt"; // Default
+      try {
+        if (navigator.permissions) {
+          const permission = await navigator.permissions.query({
+            name: "storage-access" as PermissionName
+          });
+          permissionState = permission.state;
+
+          // Listen for permission changes
+          permission.addEventListener("change", () => {
+            if (permission.state === "granted") {
+              this.getStorageHandle()
+                .then(() => {
+                  log(
+                    LOG_GROUP.STORAGE,
+                    "Storage access granted via permission change"
+                  );
+                })
+                .catch((error) => {
+                  log(
+                    LOG_GROUP.STORAGE,
+                    "Error getting storage after permission change:",
+                    error
+                  );
+                });
+            }
+          });
+        }
+      } catch (e) {
+        log(LOG_GROUP.STORAGE, "Error checking permission:", e);
+      }
+
+      // Handle based on permission state
+      if (permissionState === "granted") {
+        // Already granted to another same-site embed, can request directly
+        await this.getStorageHandle();
+        log(LOG_GROUP.STORAGE, "Storage access granted via permission");
+      } else if (permissionState === "prompt") {
+        // Need user interaction to request
+        this.setupUserInteractionHandler();
+        this.handlePartitionedStorage("open", "re-request");
+      } else if (permissionState === "denied") {
+        // User has denied access
+        log(LOG_GROUP.STORAGE, "Storage access permanently denied");
+        this.handlePartitionedStorage("open", "re-request");
+      }
     } catch (error) {
-      log(
-        LOG_GROUP.STORAGE,
-        "Error requesting storage access after interaction:",
-        error
-      );
+      log(LOG_GROUP.STORAGE, "Error in storage access flow:", error);
+      this.handlePartitionedStorage("open", "re-request");
+    }
+  }
+
+  /**
+   * Set up a handler to request storage access on user interaction
+   * This is required by the Storage Access API for security
+   */
+  protected setupUserInteractionHandler(): void {
+    log(
+      LOG_GROUP.STORAGE,
+      "Waiting for user interaction to request storage access"
+    );
+
+    // Create a reusable handler function
+    const handleUserInteraction = async () => {
+      try {
+        await this.getStorageHandle();
+        log(LOG_GROUP.STORAGE, "Storage access granted after user interaction");
+
+        // Clean up event listeners after successful request
+        cleanupListeners();
+
+        this.handlePartitionedStorage("close", "dismiss");
+      } catch (error) {
+        log(
+          LOG_GROUP.STORAGE,
+          "Storage access denied after user interaction:",
+          error
+        );
+        this.handlePartitionedStorage("open", "dismiss");
+      }
+    };
+
+    // Function to clean up event listeners
+    const cleanupListeners = () => {
+      document.removeEventListener("click", handleUserInteraction);
+      document.removeEventListener("pointerdown", handleUserInteraction);
+    };
+
+    // Add event listeners with once:true to auto-remove after firing
+    document.addEventListener("click", handleUserInteraction, { once: true });
+    document.addEventListener("pointerdown", handleUserInteraction, {
+      once: true
+    });
+
+    // Also clean up after a timeout if user never interacts
+    setTimeout(cleanupListeners, 300000); // 5 minutes
+  }
+
+  /**
+   * Handle the case when unpartitioned storage access is denied or unavailable
+   */
+  protected handlePartitionedStorage(
+    eventType: "open" | "close" = "open",
+    actionButtonType: "dismiss" | "re-request" = "dismiss"
+  ): void {
+    const isDismissed =
+      localStorage.getItem(PARTITIONED_STORAGE_BANNER_DISMISSAL_KEY) === "true";
+    if (isDismissed) return;
+
+    setTimeout(
+      () =>
+        document.dispatchEvent(
+          new CustomEvent(PARTITIONED_STORAGE_BANNER_EVENT, {
+            detail: {
+              type: eventType,
+              message: browser.i18n.getMessage("partitioned_storage_banner"),
+              actionButtonType
+            },
+            bubbles: true
+          })
+        ),
+      0
+    );
+
+    if (actionButtonType === "re-request") {
+      this.setupUserInteractionHandler();
     }
   }
 
