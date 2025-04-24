@@ -4,7 +4,7 @@ import redstone from "redstone-api";
 import { getConversionRate } from "~utils/currency";
 import { CACHE_API } from "~constants/api";
 import { withRetry } from "~utils/promises/retry";
-import { ExtensionStorage } from "~utils/storage";
+import { PersistentStorage } from "~utils/storage";
 
 /**
  * Compare two currencies
@@ -72,11 +72,11 @@ export function useArPrice(currency: string) {
       try {
         const result = await withRetry(() => getArPrice(currency), 3, 1000);
         if (result) {
-          await ExtensionStorage.set("last_saved_price", String(result));
+          await PersistentStorage.set("last_saved_price", String(result));
           return String(result);
         }
       } catch (error) {
-        const lastPrice = await ExtensionStorage.get<string>(
+        const lastPrice = await PersistentStorage.get<string>(
           "last_saved_price"
         );
         if (lastPrice) return lastPrice;
