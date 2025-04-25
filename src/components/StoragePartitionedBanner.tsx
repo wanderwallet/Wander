@@ -129,12 +129,7 @@ export default function StoragePartitionedBanner({
       if (isDismissedRef.current) return;
 
       // Get message from event if provided
-      const {
-        type = "open",
-        actionButtonType = "dismiss",
-        message = ""
-      } = event.detail;
-      if (message) setCustomMessage(message);
+      const { type = "open", actionButtonType = "dismiss" } = event.detail;
 
       const isOpen = type === "open";
       localStorage.setItem(dismissStorageKey, String(!isOpen));

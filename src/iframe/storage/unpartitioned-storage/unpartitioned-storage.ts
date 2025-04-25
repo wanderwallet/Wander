@@ -4,7 +4,6 @@ import {
   PARTITIONED_STORAGE_BANNER_DISMISSAL_KEY,
   PARTITIONED_STORAGE_BANNER_EVENT
 } from "./unpartitioned-storage.utils";
-import browser from "webextension-polyfill";
 
 type StorageType = "localStorage" | "sessionStorage";
 interface UnpartitionedStorageOptions {
@@ -575,7 +574,6 @@ export class EnhancedStorage implements Storage {
         new CustomEvent(PARTITIONED_STORAGE_BANNER_EVENT, {
           detail: {
             type: eventType,
-            message: browser.i18n.getMessage("partitioned_storage_banner"),
             actionButtonType
           },
           bubbles: true
