@@ -129,15 +129,26 @@ Requires the `SIGN_TRANSACTION` [permission](#permissions).
 
 > Note: if you are trying to sign a larger chunk of data (5 MB <), make sure to notify the user to not switch / close browser tabs. Signing large datas takes longer and the browser won't send the chunks to the signer in the background.
 
-### `dispatch(transaction): Promise<DispatchResult>`
+### `dispatch(transaction, options): Promise<DispatchResult>`
 
 Dispatches (signs and sends) a transaction to the network, preferably by bundling it. Best for smaller interactions (< 120 Kbs).
 
 - `transaction`: A valid Arweave transaction without a wallet keyfile added to it
   <br />
+- `options`: `SignatureOptions` Signature options
 - `returns`: Dispatch result (id and submit type)
 
 Requires the `DISPATCH` [permission](#permissions).
+
+#### SignatureOptions
+
+Wander allows you to customize the saltLength to use when signing the data item:
+
+```ts
+export interface SignatureOptions {
+  saltLength?: number;
+}
+```
 
 ### `encrypt(data, algorithm): Promise<Uint8Array>`
 
