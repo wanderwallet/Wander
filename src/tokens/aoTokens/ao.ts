@@ -2,7 +2,7 @@ import { connect, dryrun } from "@permaweb/aoconnect";
 import { type Tag } from "arweave/web/lib/transaction";
 import { PersistentStorage } from "~utils/storage";
 import { Quantity } from "ao-tokens";
-import { Arweave, ArweaveSigner, createData } from "@dha-team/arbundles";
+import { ArweaveSigner, createData } from "@dha-team/arbundles";
 import { getActiveKeyfile } from "~wallets";
 import { isLocalWallet } from "~utils/assertions";
 import { freeDecryptedWallet } from "~wallets/encryption";
@@ -20,6 +20,7 @@ import { findGateway } from "~gateways/wayfinder";
 import BigNumber from "bignumber.js";
 import type { Token } from "~tokens/token";
 import { CACHE_API } from "~constants/api";
+import Arweave from "arweave";
 
 let tokens: TokenInfo[] = null;
 export let tokenInfoMap = new Map<string, TokenInfo | Token>();

@@ -1,11 +1,7 @@
 import { isRawDataItem, isSignatureOptions } from "~utils/assertions";
 import { freeDecryptedWallet } from "~wallets/encryption";
 import type { BackgroundModuleFunction } from "~api/background/background-modules";
-import {
-  ArweaveSigner,
-  createData,
-  getCryptoDriver
-} from "@dha-team/arbundles";
+import { createData } from "@dha-team/arbundles";
 import Application from "~applications/application";
 import { getActiveKeyfile, getActiveWallet } from "~wallets";
 import { signAuthKeystone, type AuthKeystoneData } from "../sign/sign_auth";
@@ -15,6 +11,7 @@ import BigNumber from "bignumber.js";
 import { createDataItem } from "~utils/data_item";
 import { EventType, trackDirect } from "~utils/analytics";
 import { checkIfUserNeedsToSign } from "../sign/sign_policy";
+import { createArweaveSignerWithOptions } from "~utils/signer.utils";
 
 const background: BackgroundModuleFunction<number[]> = async (
   appData,
@@ -80,16 +77,10 @@ const background: BackgroundModuleFunction<number[]> = async (
 
   if (decryptedWallet.type == "local") {
     // create bundlr tx as a data entry
-    const dataSigner = new ArweaveSigner(decryptedWallet.keyfile);
-    if (signatureOptions) {
-      dataSigner.sign = function (message) {
-        return getCryptoDriver().sign(
-          this.jwk,
-          message,
-          signatureOptions
-        ) as any;
-      };
-    }
+    const dataSigner = createArweaveSignerWithOptions(
+      decryptedWallet.keyfile,
+      signatureOptions
+    );
     const dataEntry = createData(binaryData, dataSigner, options);
 
     // check allowance

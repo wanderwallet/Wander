@@ -1,4 +1,8 @@
-import { isLocalWallet, isSplitTransaction } from "~utils/assertions";
+import {
+  isLocalWallet,
+  isSignatureOptions,
+  isSplitTransaction
+} from "~utils/assertions";
 import { constructTransaction } from "../sign/transaction_builder";
 import { arconfettiIcon, signNotification } from "../sign/utils";
 import { cleanUpChunks, getChunks } from "../sign/chunks";
@@ -13,11 +17,11 @@ import { isString } from "typed-assert";
 import Application from "~applications/application";
 import Arweave from "arweave";
 import { ensureAllowanceDispatch } from "./allowance";
-import { updateAllowance } from "../sign/allowance";
 import BigNumber from "bignumber.js";
 import { isError } from "~utils/error/error.utils";
 import { ERR_MSG_USER_CANCELLED_AUTH } from "~utils/auth/auth.constants";
 import { checkIfUserNeedsToSign } from "../sign/sign_policy";
+import { createArweaveSignerWithOptions } from "~utils/signer.utils";
 
 type ReturnType = {
   arConfetti: string | false;
@@ -27,11 +31,13 @@ type ReturnType = {
 const background: BackgroundModuleFunction<ReturnType> = async (
   appData,
   tx: unknown,
-  chunkCollectionID: unknown
+  chunkCollectionID: unknown,
+  signatureOptions?: unknown
 ) => {
   // validate input
   isSplitTransaction(tx);
   isString(chunkCollectionID);
+  if (signatureOptions) isSignatureOptions(signatureOptions);
 
   // create client
   const app = new Application(appData.url);
@@ -84,7 +90,10 @@ const background: BackgroundModuleFunction<ReturnType> = async (
   // attempt to create a bundle
   try {
     // create bundlr tx as a data entry
-    const dataSigner = new ArweaveSigner(keyfile);
+    const dataSigner = createArweaveSignerWithOptions(
+      decryptedWallet.keyfile,
+      signatureOptions
+    );
     const dataEntry = createData(data, dataSigner, { tags });
 
     // check allowance

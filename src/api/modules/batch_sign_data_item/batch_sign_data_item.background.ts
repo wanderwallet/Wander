@@ -1,17 +1,19 @@
-import { isBatchOfRawDataItem } from "~utils/assertions";
+import { isBatchOfRawDataItem, isSignatureOptions } from "~utils/assertions";
 import { requestUserAuthorization } from "../../../utils/auth/auth.utils";
 import { getActiveKeyfile } from "~wallets";
 import { freeDecryptedWallet } from "~wallets/encryption";
-import { ArweaveSigner, createData } from "@dha-team/arbundles";
-
+import { createData } from "@dha-team/arbundles";
 import type { BackgroundModuleFunction } from "~api/background/background-modules";
+import { createArweaveSignerWithOptions } from "~utils/signer.utils";
 
 const background: BackgroundModuleFunction<number[][]> = async (
   appData,
-  dataItems: unknown
+  dataItems: unknown,
+  signatureOptions?: unknown
 ) => {
   // validate
   isBatchOfRawDataItem(dataItems);
+  if (signatureOptions) isSignatureOptions(signatureOptions);
 
   const results: number[][] = [];
 
@@ -33,7 +35,10 @@ const background: BackgroundModuleFunction<number[][]> = async (
       );
     }
 
-    const dataSigner = new ArweaveSigner(decryptedWallet.keyfile);
+    const dataSigner = createArweaveSignerWithOptions(
+      decryptedWallet.keyfile,
+      signatureOptions
+    );
 
     for (const dataItem of dataItems) {
       const { data, ...options } = dataItem;

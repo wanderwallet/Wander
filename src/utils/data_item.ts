@@ -1,5 +1,4 @@
 import {
-  ArweaveSigner,
   DataItem,
   Signer,
   createData,
