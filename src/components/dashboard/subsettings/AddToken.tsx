@@ -9,18 +9,22 @@ import {
 } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
 import { useEffect, useState } from "react";
-import { defaultTokens, type TokenInfo } from "~tokens/aoTokens/ao";
+import {
+  defaultTokens,
+  getTokenInfo,
+  type TokenInfo
+} from "~tokens/aoTokens/ao";
 import styled from "styled-components";
 import { isAddress } from "~utils/assertions";
 import { getAoTokens } from "~tokens";
-import { ExtensionStorage } from "~utils/storage";
+import { ExtensionStorage, PersistentStorage } from "~utils/storage";
 import { SubTitle } from "./ContactSettings";
 import type { TokenType } from "~tokens/token";
 import { concatGatewayURL } from "~gateways/utils";
 import { FULL_HISTORY, useGateway } from "~gateways/wayfinder";
 import type { CommonRouteProps } from "~wallets/router/router.types";
-import { getTokenInfo } from "~tokens/aoTokens/router";
 import { AO_NATIVE_TOKEN } from "~utils/ao_import";
+import { ActionBar } from "~routes/popup/settings/tokens";
 
 export interface AddTokenDashboardViewProps extends CommonRouteProps {
   isQuickSetting?: boolean;
@@ -60,7 +64,7 @@ export function AddTokenDashboardView({
       } else {
         aoTokens.push(tokenToImport);
       }
-      await ExtensionStorage.set("ao_tokens", aoTokens);
+      await PersistentStorage.set("ao_tokens", aoTokens);
       setToast({
         type: "success",
         content: browser.i18n.getMessage("token_imported"),
@@ -132,7 +136,7 @@ export function AddTokenDashboardView({
           type="string"
           fullWidth
           placeholder="HineOJKYihQiIcZEWxFtgTyxD_dhDNqGvoBlWj55yDs"
-          label={"ao process id"}
+          label={"ao Process ID"}
         />
 
         {token && (
@@ -149,9 +153,11 @@ export function AddTokenDashboardView({
           </TokenWrapper>
         )}
       </div>
-      <Button fullWidth disabled={!token || loading} onClick={onImportToken}>
-        Add Token
-      </Button>
+      <ActionBar>
+        <Button fullWidth disabled={!token || loading} onClick={onImportToken}>
+          Add Token
+        </Button>
+      </ActionBar>
     </Wrapper>
   );
 }

@@ -37,18 +37,6 @@ export function isNavigateAction(
   return typeof to === "number" || !to.startsWith("/");
 }
 
-export function prefixRoutes(
-  prefix: RoutePath,
-  routes: RouteConfig[]
-): RouteConfig[] {
-  return routes.map((route) => ({
-    ...route,
-    path: isRouteOverride(route.path)
-      ? (route.path satisfies RouteOverride)
-      : (`${prefix}${route.path}` satisfies RoutePath)
-  }));
-}
-
 export function parseRouteRedirect<T extends RoutePath>(
   routeRedirect: RouteRedirect<T>
 ): T {
@@ -178,8 +166,6 @@ export function useLocation() {
 
     // ...and read the last one where we want to navigate to:
     const lastRoute = customHistory[customHistory.length - 1];
-
-    console.log("lastRoute =", lastRoute);
 
     // Navigate to the previous route (if available):
     if (lastRoute) wavigate(lastRoute.to, lastRoute.options);

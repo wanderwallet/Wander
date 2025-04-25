@@ -1,8 +1,12 @@
 import { isExactly, isNotUndefined, isString } from "typed-assert";
-import type { OnMessageCallback } from "@arconnect/webext-bridge";
 import { isApiCall } from "~utils/assertions";
 import Application from "~applications/application";
-import type { ApiCall, ApiResponse } from "shim";
+import type {
+  ApiErrorResponse,
+  ApiResponse,
+  ApiSuccessResponse,
+  BaseApiMessage
+} from "shim";
 import browser from "webextension-polyfill";
 import { getTab } from "~applications/tab";
 import { pushEvent } from "~utils/events";
@@ -11,17 +15,18 @@ import {
   backgroundModules,
   type ModuleAppData
 } from "~api/background/background-modules";
+import type { OnMessageCallback } from "~utils/messaging/messaging.types";
 import { recordActivity } from "~utils/inactivity/inactivity.utils";
 
-export const handleApiCallMessage: OnMessageCallback<
-  // @ts-expect-error
-  ApiCall,
-  ApiResponse
-> = async ({ data, sender }) => {
+export const handleApiCallMessage: OnMessageCallback<"api_call"> = async ({
+  data,
+  sender
+}): Promise<ApiResponse> => {
   // construct base message to extend and return
-  const baseMessage: ApiResponse = {
-    type: data.type + "_result",
-    callID: data.callID
+  const baseMessage: BaseApiMessage = {
+    callID: data.callID,
+    type: `${data.type}_result`,
+    data: undefined
   };
 
   try {
@@ -55,7 +60,7 @@ export const handleApiCallMessage: OnMessageCallback<
     // if we cannot find the module, we return with an error
     isNotUndefined(mod, `API function "${functionName}" not found`);
 
-    // grab app info
+    // grab app info:
     let app = new Application(getAppURL(tab.url));
 
     // if the frame ID is defined, the API
@@ -116,15 +121,18 @@ export const handleApiCallMessage: OnMessageCallback<
     return {
       ...baseMessage,
       data: functionResult
-    };
+    } satisfies ApiSuccessResponse;
   } catch (e) {
-    console.error(`[Wander API] (${data.type})`, e?.message || e);
+    console.error(
+      `[Wander API] (${baseMessage.type} / ${data.type})`,
+      e?.message || e
+    );
 
     // return error
     return {
       ...baseMessage,
       error: true,
       data: e?.message || e
-    };
+    } satisfies ApiErrorResponse;
   }
 };

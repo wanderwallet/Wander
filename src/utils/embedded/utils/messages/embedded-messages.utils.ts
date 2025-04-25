@@ -1,5 +1,8 @@
 import { nanoid } from "nanoid";
-import { EMBEDDED_PARENT_ORIGIN } from "~utils/embedded/sdk/utils/url/sdk-url.utils";
+import {
+  isInsideIframe,
+  getEmbeddedAncestorOrigin
+} from "~utils/embedded/iframe.utils";
 import type {
   EmbeddedCall,
   EmbeddedMessageId,
@@ -8,6 +11,9 @@ import type {
 
 const EMBEDDED_MESSAGE_IDS = [
   "embedded_auth",
+  "embedded_connect",
+  "embedded_disconnect",
+  "embedded_open",
   "embedded_close",
   "embedded_resize",
   "embedded_balance",
@@ -30,9 +36,7 @@ export function postEmbeddedMessage<K extends EmbeddedMessageId>({
       )}.`
     );
 
-  const parent = window.parent;
-
-  if (parent === null) {
+  if (window.parent === null) {
     throw new Error("Unexpected `null` parent Window.");
   }
 
@@ -42,14 +46,14 @@ export function postEmbeddedMessage<K extends EmbeddedMessageId>({
     data
   };
 
-  if (parent === window) {
+  if (!isInsideIframe()) {
     console.warn(
-      "ArConnect Embedded running as a standalone page. There's no parent Window to send this to =",
+      "Wander Embedded running as a standalone page. There's no parent Window to send this to =",
       call
     );
 
     return;
   }
 
-  parent.postMessage(call, EMBEDDED_PARENT_ORIGIN);
+  window.parent.postMessage(call, getEmbeddedAncestorOrigin());
 }

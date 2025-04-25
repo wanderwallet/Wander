@@ -8,18 +8,22 @@ import {
 import mitt from "mitt";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { version } from "../../../package.json";
+import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
+import { isApiErrorResponse } from "~utils/messaging/common/messaging.utils";
 // import { version as sdkVersion } from "../../../wander-embedded-sdk/package.json";
 
-export function setupWalletSDK(targetWindow: Window = window) {
+export function setupWalletSDK(
+  targetWindow: Window = window,
+  embeddedOrigin?: string
+) {
   log(LOG_GROUP.SETUP, "setupWalletSDK()");
-  const isEmbedded = import.meta.env?.VITE_IS_EMBEDDED_APP === "1";
 
   /** Init events */
   const events = mitt<InjectedEvents>();
 
   // TODO: Can we get the right type here?:
   const walletAPI = {
-    walletName: isEmbedded ? "ArConnect Embedded" : "ArConnect",
+    walletName: IS_EMBEDDED_APP ? "Wander Embedded" : "ArConnect",
     walletVersion: version,
     events
   } as const;
@@ -59,7 +63,7 @@ export function setupWalletSDK(targetWindow: Window = window) {
       // 3. Prepare the message & payload to send:
       const callID = nanoid();
       const data: ApiCall = {
-        app: isEmbedded ? "wanderEmbedded" : "wander",
+        app: IS_EMBEDDED_APP ? "wanderEmbedded" : "wander",
         version,
         callID,
         type: `api_${functionName}`,
@@ -68,10 +72,10 @@ export function setupWalletSDK(targetWindow: Window = window) {
         }
       };
 
-      // 4. Send message to background script (ArConnect Extension) or to the iframe window (ArConnect Embedded):
+      // 4. Send message to background script (Wander BE) or to the iframe window (Wander Embedded):
 
-      const targetOrigin = isEmbedded
-        ? "http://localhost:5173"
+      const targetOrigin = IS_EMBEDDED_APP
+        ? embeddedOrigin
         : window.location.origin;
 
       targetWindow.postMessage(data, targetOrigin);
@@ -102,15 +106,15 @@ export function setupWalletSDK(targetWindow: Window = window) {
         let { data: res } = e;
 
         // validate return message
-        if (`${data.type}_result` !== res.type) return;
+        if (!data || `${data.type}_result` !== res.type) return;
 
-        // only resolve when the result matching our callID is deleivered
+        // only resolve when the result matching our callID is delivered
         if (data.callID !== res.callID) return;
 
         window.removeEventListener("message", callback);
 
         // check for errors
-        if (res.error) {
+        if (isApiErrorResponse(res)) {
           return reject(res.data);
         }
 
@@ -121,26 +125,27 @@ export function setupWalletSDK(targetWindow: Window = window) {
 
         // call the finalizer function if it exists
         if (finalizerFn) {
-          const finalizerResult = await finalizerFn(
-            res.data,
-            functionParams,
-            params
-          );
+          try {
+            const finalizerResult = await finalizerFn(
+              res.data,
+              functionParams,
+              params
+            );
 
-          // if the finalizer transforms data
-          // update the result
-          if (finalizerResult) {
-            res.data = finalizerResult;
+            // TODO: This is a bad check because the result could be falsy:
+            // if the finalizer transforms data
+            // update the result
+            if (finalizerResult) {
+              res.data = finalizerResult;
+            }
+          } catch (err) {
+            reject(err);
+
+            return;
           }
         }
 
-        // check for errors after the finalizer
-        if (res.error) {
-          return reject(res.data);
-        }
-
-        // resolve promise
-        return resolve(res.data);
+        resolve(res.data);
       }
     });
   }
@@ -158,8 +163,6 @@ export function setupWalletSDK(targetWindow: Window = window) {
     dispatchEvent(new CustomEvent("arweaveWalletLoaded", { detail: {} }));
   });
 
-  // TODO: Remove it before to make sure there's no duplicate listener?
-
   /** Handle events */
   window.addEventListener(
     "message",
@@ -169,7 +172,7 @@ export function setupWalletSDK(targetWindow: Window = window) {
         event: Event;
       }>
     ) => {
-      if (e.data.type !== "wander_event") return;
+      if (!e.data || !e.data.event || e.data.type !== "wander_event") return;
 
       events.emit(e.data.event.name, e.data.event.value);
     }

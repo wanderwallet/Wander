@@ -1,0 +1,49 @@
+@import "../../../tokens/index.css";
+
+.wrapper {
+  display: flex;
+  flex-direction: row;
+  height: 42px;
+  padding: 4px 6px;
+  justify-content: center;
+  align-items: center;
+  align-self: stretch;
+  border-radius: var(--border-radius-xl);
+  background-color: var(--text-input-background);
+}
+
+.input {
+  flex: 1;
+  font-family: var(--font-family-serif);
+  color: var(--color-neutral-300);
+  border: none;
+
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-snug);
+  background-color: var(--text-input-background);
+}
+
+*:focus {
+  outline: none;
+}
+
+.button {
+  all: unset;
+  display: flex;
+  padding: 8px 12px;
+  justify-content: center;
+  align-items: center;
+
+  border-radius: 8px;
+}
+
+.button__text {
+  color: var(--color-black);
+
+  font-family: var(--font-family-serif);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semi);
+  line-height: var(--line-height-snug);
+  letter-spacing: var(--letter-spacing-wide);
+}

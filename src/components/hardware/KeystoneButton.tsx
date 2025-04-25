@@ -88,9 +88,9 @@ export default function KeystoneButton({ onSuccess }: Props) {
         fullWidth
         variant="secondary"
         onClick={() => connectModal.setOpen(true)}
-        style={{ gap: "5px" }}
+        style={{ gap: "3px" }}
       >
-        <KeystoneIcon />
+        <KeystoneIcon size={16} />
         {browser.i18n.getMessage("keystone_connect_title")}
       </Button>
       <QRModal
@@ -134,10 +134,10 @@ export default function KeystoneButton({ onSuccess }: Props) {
   );
 }
 
-const KeystoneIcon = () => (
+const KeystoneIcon = ({ size = 20 }: { size?: number }) => (
   <svg
-    width="24"
-    height="25"
+    width={size}
+    height={size}
     viewBox="0 0 24 25"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"

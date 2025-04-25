@@ -9,7 +9,8 @@ import {
 } from "@arconnect/components-rebrand";
 import Token from "~components/popup/Token";
 import styled from "styled-components";
-import { useAoTokens, type TokenInfo } from "~tokens/aoTokens/ao";
+import { type TokenInfo } from "~tokens/aoTokens/ao";
+import { useAoTokens } from "~tokens/hooks";
 import { useCallback, useMemo } from "react";
 
 interface Props {
@@ -30,7 +31,8 @@ export function ManageAssets({ open, close }: Props) {
   // ao Tokens
   const { tokens, changeTokenVisibility } = useAoTokens({
     type: "asset",
-    sortFn
+    sortFn,
+    skipSort: true
   });
 
   const filteredTokens = useMemo(() => {
@@ -61,6 +63,8 @@ export function ManageAssets({ open, close }: Props) {
         <TokensList>
           {filteredTokens.map((token) => (
             <Token
+              disableCursor={true}
+              showId={true}
               key={token.id}
               ao={true}
               type={"asset"}

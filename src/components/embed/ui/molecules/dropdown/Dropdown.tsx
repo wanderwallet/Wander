@@ -1,16 +1,11 @@
 import React, { useState } from "react";
 import styles from "./Dropdown.module.css";
 import type { DropdownBaseProps } from "./Dropdown.types";
-import {
-  ArrowDownIcon,
-  ExpandItIcon,
-  ProtocolLandIcon,
-  Text
-} from "../../atoms";
+import { ArrowDownIcon, Avatar, Text } from "../../atoms";
 import { useTheme } from "../../../contexts/ThemeContext";
 
 const Dropdown = React.forwardRef<HTMLDivElement, DropdownBaseProps>(
-  ({ className, children, ...props }, ref) => {
+  ({ className, children, label, ...props }, ref) => {
     const Component = "button";
     const { isDarkMode } = useTheme();
     const [showDropdown, setShowDropdown] = useState(false);
@@ -34,9 +29,9 @@ const Dropdown = React.forwardRef<HTMLDivElement, DropdownBaseProps>(
           }}
           {...props}
         >
-          <ProtocolLandIcon color={iconColor} />
+          <Avatar>{label}</Avatar>
           <Text variant="bodyMd" style={{ fontWeight: 600, color: textColor }}>
-            Account 1
+            {label}
           </Text>
           <ArrowDownIcon
             className={styles["dropdown-icon"]}

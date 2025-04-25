@@ -18,7 +18,7 @@ import Squircle from "~components/Squircle";
 import useSetting from "~settings/hook";
 import styled from "styled-components";
 import { getUserAvatar } from "~lib/avatar";
-import { formatBalance } from "~utils/format";
+import { formatAddress, formatBalance } from "~utils/format";
 import Skeleton from "~components/Skeleton";
 import { TrashIcon, PlusIcon, SettingsIcon } from "@iconicicons/react";
 import BigNumber from "bignumber.js";
@@ -34,6 +34,7 @@ import Image from "~components/common/Image";
 export default function Token({
   onClick,
   disableClickEffect,
+  disableCursor,
   ...props
 }: Props) {
   const ref = useRef(null);
@@ -146,7 +147,10 @@ export default function Token({
   }, [aoConfettiShown, activeAddress, fractBalance, isLoading]);
 
   return (
-    <Wrapper disableClickEffect={disableClickEffect}>
+    <Wrapper
+      disableClickEffect={disableClickEffect}
+      disableCursor={disableCursor}
+    >
       {(!aoConfettiShown || ref.current) &&
         AO_NATIVE_TOKEN === props.id &&
         +fractBalance > 0 && <Canvas ref={ref} />}
@@ -154,7 +158,14 @@ export default function Token({
         <LogoAndDetails>
           <Logo src={logo || ""} alt="" key={props.id} />
           <div>
-            <TokenName>{props.name || props.ticker || "???"}</TokenName>
+            <div style={{ display: "flex", gap: "0.5rem" }}>
+              <TokenName>{props.name || props.ticker || "???"}</TokenName>
+              {props.showId && (
+                <Address>{formatAddress(props.id, 3)}</Address>
+                // <Tooltip content={props.id} position="top">
+                // </Tooltip>
+              )}
+            </div>
             {hasActionButton ? (
               <FiatBalance>{balance}</FiatBalance>
             ) : (
@@ -351,13 +362,16 @@ l-364 0 -47 141 c-82 245 -168 430 -282 607 -30 45 -54 85 -54 88 0 8 34 -4
   );
 };
 
-const Wrapper = styled.div<{ disableClickEffect?: boolean }>`
+const Wrapper = styled.div<{
+  disableClickEffect?: boolean;
+  disableCursor?: boolean;
+}>`
   position: relative;
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  cursor: pointer;
+  cursor: ${({ disableCursor }) => (disableCursor ? "default" : "pointer")};
   transition: all 0.07s ease-in-out;
 
   ${({ disableClickEffect }) =>
@@ -399,23 +413,41 @@ export const LogoAndDetails = styled.div`
   gap: 0.8rem;
 `;
 
+// TODO: this could be removed to the components it's being used in
 export const LogoWrapper = styled(Squircle)<{ small?: boolean }>`
   position: relative;
   width: ${(props) => (props.small ? "2.1875rem" : "2.8rem;")};
   height: ${(props) => (props.small ? "2.1875rem" : "2.8rem;")};
   flex-shrink: 0;
   color: rgba(${(props) => props.theme.theme}, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
 
 export const Logo = styled(Image).attrs({
-  draggable: false,
-  backgroundColor: "#fffefc"
+  draggable: false
 })`
+  position: relative;
   width: 40px;
   height: 40px;
   flex-shrink: 0;
   border-radius: 29px;
   object-fit: cover;
+  overflow: hidden;
+  z-index: 1;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 1px;
+    left: 1px;
+    right: 1px;
+    bottom: 1px;
+    background-color: #fffefc;
+    border-radius: 28px;
+    z-index: -1;
+  }
 
   ${(props) =>
     props.theme.displayTheme === "light" &&
@@ -430,6 +462,14 @@ export const TokenName = styled(Text).attrs({
   weight: "semibold",
   lineHeight: 1.4
 })``;
+
+const Address = styled(Text).attrs({
+  noMargin: true,
+  weight: "light",
+  lineHeight: 1.4
+})`
+  color: ${(props) => props.theme.secondaryTextv2};
+`;
 
 const NativeBalance = styled(Text).attrs({
   noMargin: true,
@@ -466,6 +506,7 @@ const Canvas = styled.canvas`
 `;
 
 interface Props extends Omit<Token, "balance"> {
+  showId?: boolean;
   ao?: boolean;
   fiatPrice?: number;
   onAddClick?: MouseEventHandler<HTMLButtonElement>;
@@ -474,11 +515,14 @@ interface Props extends Omit<Token, "balance"> {
   onHideClick?: (hidden: boolean) => void;
   onClick?: MouseEventHandler<HTMLDivElement>;
   disableClickEffect?: boolean;
+  disableCursor?: boolean;
 }
 
+// TODO: can this component be removed?
 export function ArToken({
   onClick,
   disableClickEffect,
+  disableCursor,
   ...props
 }: ArTokenProps) {
   // currency setting
@@ -530,7 +574,11 @@ export function ArToken({
   }, [balance, price, currency]);
 
   return (
-    <Wrapper onClick={onClick} disableClickEffect={disableClickEffect}>
+    <Wrapper
+      onClick={onClick}
+      disableClickEffect={disableClickEffect}
+      disableCursor={disableCursor}
+    >
       <InnerWrapper width={hasActionButton ? "86%" : "100%"} onClick={onClick}>
         <LogoAndDetails>
           <Logo src={arLogoLight} />

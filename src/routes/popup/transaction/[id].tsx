@@ -47,7 +47,6 @@ import { ExtensionStorage, TempTransactionStorage } from "~utils/storage";
 import { useContact } from "~contacts/hooks";
 import { EventType, PageType, trackEvent, trackPage } from "~utils/analytics";
 import BigNumber from "bignumber.js";
-import { fetchTokenByProcessId } from "~lib/transactions";
 import { useStorage } from "~utils/storage";
 import type { StoredWallet } from "~wallets";
 import type {
@@ -59,6 +58,7 @@ import { LinkExternal02 } from "@untitled-ui/icons-react";
 import { AdaptiveBalanceDisplay } from "~components/AdaptiveBalanceDisplay";
 import arweaveLogo from "url:/assets/ar/logo_light.png";
 import { useTokenPrice } from "~tokens/hooks";
+import { fetchTokenByProcessId } from "~tokens/aoTokens/ao";
 
 // pull contacts and check if to address is in contacts
 

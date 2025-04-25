@@ -10,6 +10,7 @@ export type ButtonVariants =
   | "link";
 
 export type TextVariants =
+  | "headingXl" // xlarge
   | "headingLg" // large
   | "headingMd" // medium
   | "headingSm" // small

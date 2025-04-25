@@ -69,6 +69,7 @@ export class WanderButton {
   };
 
   static DEFAULT_CONFIG = {
+    parent: document.body,
     id: "wanderEmbeddedButtonHost",
     theme: "system",
     cssVars: {
@@ -92,6 +93,7 @@ export class WanderButton {
   } as const satisfies WanderEmbeddedButtonConfig;
 
   // Elements:
+  private parent: HTMLElement;
   private host: HTMLDivElement;
   private button: HTMLButtonElement;
   private wanderLogo: SVGElement;
@@ -139,6 +141,7 @@ export class WanderButton {
     }
 
     this.config = {
+      parent: options.parent || WanderButton.DEFAULT_CONFIG.parent,
       id: options.id || WanderButton.DEFAULT_CONFIG.id,
       theme: options.theme || WanderButton.DEFAULT_CONFIG.theme,
       cssVars: {
@@ -151,7 +154,7 @@ export class WanderButton {
       wanderLogo: options.wanderLogo || WanderButton.DEFAULT_CONFIG.wanderLogo,
       dappLogoSrc:
         options.dappLogoSrc || WanderButton.DEFAULT_CONFIG.dappLogoSrc,
-      label: options.label || WanderButton.DEFAULT_CONFIG.label,
+      label: options.label ?? WanderButton.DEFAULT_CONFIG.label,
       balance:
         options.balance === false
           ? false
@@ -172,6 +175,7 @@ export class WanderButton {
 
     const elements = WanderButton.initializeButton(this.config);
 
+    this.parent = this.config.parent;
     this.host = elements.host;
     this.button = elements.button;
     this.wanderLogo = elements.wanderLogo;
@@ -221,14 +225,18 @@ export class WanderButton {
     )
       throw new Error("Missing elements");
 
-    const [y, x] = config.position.split("-") as [
-      "top" | "bottom",
-      "left" | "right"
-    ];
-
     host.style.position = "fixed";
-    host.style[y] = "var(--gapY)";
-    host.style[x] = "var(--gapX)";
+    host.style.zIndex = "var(--zIndex)";
+
+    if (config.position !== "static") {
+      const [y, x] = config.position.split("-") as [
+        "top" | "bottom",
+        "left" | "right"
+      ];
+
+      host.style[y] = "var(--gapY)";
+      host.style[x] = "var(--gapX)";
+    }
     host.style.transition = "opacity linear 150ms";
     host.style.opacity = "0";
 
@@ -261,6 +269,7 @@ export class WanderButton {
 
   getElements() {
     return {
+      parent: this.parent,
       host: this.host,
       button: this.button,
       wanderLogo: this.wanderLogo,
@@ -273,11 +282,13 @@ export class WanderButton {
   }
 
   setBalance(balanceInfo: BalanceInfo) {
-    const formattedBalance = new Intl.NumberFormat(undefined, {
-      currency: balanceInfo.currency
-    }).format(balanceInfo.amount);
+    if (balanceInfo.amount === null) {
+      this.balance.classList.add("isHidden");
+    } else {
+      this.balance.classList.remove("isHidden");
+    }
 
-    this.balance.textContent = `${formattedBalance}`;
+    this.balance.textContent = balanceInfo.formattedBalance;
   }
 
   setNotifications(pendingRequests: number) {
@@ -310,10 +321,14 @@ export class WanderButton {
 
   unsetStatus(status: WanderEmbeddedButtonStatus) {
     this.status[status] = false;
-    this.button.classList.add(status);
+    this.button.classList.remove(status);
 
     if (status === "isAuthenticated") {
       this.label.textContent = this.config.label ? this.config.i18n.signIn : "";
     }
+  }
+
+  destroy() {
+    this.host?.remove();
   }
 }

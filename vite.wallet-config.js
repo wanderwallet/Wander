@@ -13,10 +13,7 @@ export default defineConfig({
   ],
   build: {
     lib: {
-      entry: path.resolve(
-        __dirname,
-        "src/api/foreground/foreground-setup-wallet-sdk.ts"
-      ),
+      entry: path.resolve(__dirname, "src/sdk-entrypoint/sdk-entrypoint.ts"),
       name: "WalletSDK",
       formats: ["es", "umd"],
       fileName: (format) => `wallet-sdk.${format}.js`
@@ -58,6 +55,16 @@ export default defineConfig({
       "~applications": path.resolve(__dirname, "./src/applications"),
       "~subscriptions": path.resolve(__dirname, "./src/subscriptions"),
       "~iframe": path.resolve(__dirname, "./src/iframe"),
+
+      // BE or Embed (iframe) strategies for messaging and chunking:
+      "~isomorphic-messaging": path.resolve(
+        __dirname,
+        "./src/utils/messaging/strategies/iframe/iframe-messaging.strategy.ts"
+      ),
+      "~isomorphic-chunking": path.resolve(
+        __dirname,
+        "./src/utils/messaging/strategies/iframe/iframe-chunking.strategy.ts"
+      ),
       // Polyfill `webextension-polyfill` for embedded, as that's not a BE but a regular SPA:
       "webextension-polyfill": path.resolve(__dirname, "./src/iframe/browser")
     }

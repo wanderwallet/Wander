@@ -1,6 +1,5 @@
-import { onMessage } from "@arconnect/webext-bridge";
 import handleFeeAlarm from "~api/modules/sign/fee";
-import { ExtensionStorage } from "~utils/storage";
+import { ExtensionStorage, PersistentStorage } from "~utils/storage";
 import browser from "webextension-polyfill";
 import { handleApiCallMessage } from "~api/background/handlers/message/api-call-message/api-call-message.handler";
 import { handleChunkMessage } from "~api/background/handlers/message/chunk-message/chunk-message.handler";
@@ -27,8 +26,8 @@ import {
   handleTabUpdate
 } from "~api/background/handlers/browser/tabs/tabs.handler";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
+import { isomorphicOnMessage } from "~isomorphic-messaging";
 import { handleAuthStateChange } from "./handlers/storage/auth-state-change/auth-state-change.handler";
-import { EMBEDDED_PARENT_ORIGIN } from "~utils/embedded/sdk/utils/url/sdk-url.utils";
 import { initInactivityTracking } from "~utils/inactivity/inactivity.utils";
 
 export function setupBackgroundService() {
@@ -41,15 +40,16 @@ export function setupBackgroundService() {
 
   // MESSAGES:
   // Watch for API call and chunk messages:
-  onMessage("api_call", handleApiCallMessage);
-  onMessage("chunk", handleChunkMessage);
+  isomorphicOnMessage("api_call", handleApiCallMessage);
+  isomorphicOnMessage("chunk", handleChunkMessage);
 
+  /*
   if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1") {
     window.addEventListener("message", (event: MessageEvent) => {
       if (
         !event.data ||
         event.data.app !== "wanderEmbedded" ||
-        event.origin !== EMBEDDED_PARENT_ORIGIN
+        event.origin !== getEmbeddedAncestorOrigin()
       )
         return;
 
@@ -67,24 +67,22 @@ export function setupBackgroundService() {
 
       // Example: check if the message is from our SDK
 
-      /*
-      if (event.data.type === "FROM_SDK") {
-        const incomingMsg = event.data.payload;
-        console.log(
-          "Iframe received message from WanderEmbedded:",
-          incomingMsg
-        );
+      // if (event.data.type === "FROM_SDK") {
+      //   const incomingMsg = event.data.payload;
+      //   console.log(
+      //     "Iframe received message from WanderEmbedded:",
+      //     incomingMsg
+      //   );
 
-        // Respond back
-        event.source?.postMessage({
-          type: "FROM_IFRAME",
-          payload: `Got your message: ${incomingMsg}`
-        });
-      }
-      */
+      //   // Respond back
+      //   event.source?.postMessage({
+      //     type: "FROM_IFRAME",
+      //     payload: `Got your message: ${incomingMsg}`
+      //   });
+      // }
     });
-  } else {
   }
+  */
 
   // LIFECYCLE:
 
@@ -118,11 +116,11 @@ export function setupBackgroundService() {
   // and send them to the content script to
   // fire the wallet switch event
   ExtensionStorage.watch({
-    apps: handleAppsChange,
     active_address: handleActiveAddressChange,
     wallets: handleWalletsChange,
     decryption_key: handleAuthStateChange
   });
+  PersistentStorage.watch({ apps: handleAppsChange });
 
   // listen for app config updates
   // `ExtensionStorage.watch` requires a callbackMap param, so this cannot be done using `ExtensionStorage` directly.

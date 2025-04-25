@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 
 import {
@@ -6,58 +6,56 @@ import {
   Button,
   Card,
   Checkbox,
-  Row,
-  WanderIcon,
-  Text
+  WarningCircledIcon,
+  WanderFooter
 } from "~components/embed/ui";
+import { useLocation } from "~wallets/router/router.utils";
 
 export function AccountBackupSharesReminderEmbeddedView() {
-  const { promptToBackUp, skipBackUp } = useEmbedded();
-  const [isChecked, setIsChecked] = useState(false);
-  const checkboxRef = useRef<HTMLInputElement>();
+  const { currentWallet, skipBackUp } = useEmbedded();
+  const { navigate, back } = useLocation();
+  const isMandatoryReminder =
+    currentWallet.totalExports === 0 &&
+    currentWallet.totalBackups === 0 &&
+    !currentWallet.doNotAskAgainSetting;
 
-  const handleSkipClicked = () => {
-    return skipBackUp(isChecked);
+  const [isChecked, setIsChecked] = useState(false);
+
+  const handleSkipClicked = async () => {
+    await skipBackUp(isChecked);
+    // navigate("/wallet");
   };
 
   return (
     <Card
-      headerText="Account backup"
-      subtitle="Secure your account by backing it up."
-      footerElement={
-        <Row>
-          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
-            {"Secured by"}
-          </Text>
-          <WanderIcon color="#838383" />
-        </Row>
-      }
+      headerIcon={<WarningCircledIcon />}
+      headerText="Wallet backup"
+      subtitle={"Secure your wallet by backing it up"}
+      footerElement={<WanderFooter />}
       hasBackButton={true}
-      onBackButtonClick={() => {
-        window.history.back();
-      }}
+      onBackButtonClick={back}
       hasCloseButton={true}
       size="auto"
     >
       <Box>
-        <Button variant="primary" isFullWidth href="/account/backup-shares">
+        <Button variant="primary" isFullWidth href="#/account/backup-shares">
           Backup now
         </Button>
-        {promptToBackUp ? (
+        {isMandatoryReminder ? (
           <Button
             variant="secondary"
             isFullWidth
-            href="/account"
-            onClick={() => handleSkipClicked()}
+            href="#/wallet"
+            onClick={handleSkipClicked}
           >
             Backup later
           </Button>
         ) : (
-          <Button variant="secondary" isFullWidth href="/account">
+          <Button variant="secondary" isFullWidth href="#/wallet">
             Cancel
           </Button>
         )}
-        {promptToBackUp && (
+        {isMandatoryReminder && (
           <Checkbox
             label="Don't show this again"
             description="Note: you can set this up on the settings page"

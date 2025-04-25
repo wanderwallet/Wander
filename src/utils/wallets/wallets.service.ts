@@ -1,145 +1,277 @@
-import { FakeDB, type DbWallet } from "~utils/authentication/fakeDB";
-import {
-  WalletUtils,
-  type DeviceNonce,
-  type DeviceShareInfo
-} from "~utils/wallets/wallets.utils";
+import { ChallengeClientV1, type DbChallenge, type DbSession } from "embed-api";
+import type {
+  Wallet,
+  WalletActivationStatus
+} from "~utils/embedded/embedded.types";
+import { trpcVanilla } from "~utils/embedded/embedded.utils";
+import { isTRPCClientError } from "~utils/embedded/utils/trpc/trpc.utils";
+import { WalletUtils } from "~utils/wallets/wallets.utils";
+import { getWallets, removeWallet } from "~wallets";
 
-async function fetchWallets(userId: string): Promise<DbWallet[]> {
-  return FakeDB.fetchWallets(userId);
+// TODO: Consider getting `userId` automatically
+async function fetchWallets(userId: string): Promise<Wallet[]> {
+  const deviceShares = await WalletUtils.getDeviceSharesForUser(userId);
+  const unusedDeviceSharesWalletIDs = new Set(Object.keys(deviceShares));
+
+  const storageWallets = await getWallets();
+  const unusedStorageWalletsAddresses = new Set(
+    storageWallets.map((storageWallet) => storageWallet.address)
+  );
+
+  const { wallets: dbWallets } = await trpcVanilla.fetchWallets.query();
+
+  const wallets = dbWallets
+    .map((dbWallet) => {
+      const walletId = dbWallet.id;
+      const walletStatus = dbWallet.status;
+      const deviceShare = deviceShares[walletId] || null;
+
+      if (deviceShare) unusedDeviceSharesWalletIDs.delete(walletId);
+      unusedStorageWalletsAddresses.delete(dbWallet.address);
+
+      let activationStatus: WalletActivationStatus = "authNeeded";
+
+      if (walletStatus !== "ENABLED") {
+        activationStatus = "disabled";
+      } else if (!deviceShare) {
+        if (
+          dbWallet.totalExports === 0 &&
+          dbWallet.totalBackups === 0 &&
+          dbWallet.source.type === "GENERATED"
+        ) {
+          activationStatus = "lost";
+        } else {
+          activationStatus = "recoveryNeeded";
+        }
+      }
+
+      return {
+        ...dbWallet,
+        activationStatus,
+        authShare: null,
+        deviceShare
+      } satisfies Wallet;
+    })
+    .sort((a, b) => {
+      // If `lastActivatedAt`, the wallet has just been created but the user closed the tab before the share public key
+      // was generated, so the newly created wallet was never activated, but we consider that the most recent one.
+      const lastActivationA = a.lastActivatedAt || new Date();
+      const lastActivationB = b.lastActivatedAt || new Date();
+
+      // Most recently activated first:
+      return lastActivationB.getTime() - lastActivationA.getTime();
+    });
+
+  if (unusedDeviceSharesWalletIDs.size > 0) {
+    console.warn(
+      `Orphan deviceShares stored in localStorage with IDs = ${Array.from(
+        unusedDeviceSharesWalletIDs
+      ).join(", ")}`
+    );
+
+    unusedDeviceSharesWalletIDs.forEach(async (unusedDeviceSharesWalletID) => {
+      await WalletUtils.removeDeviceShare(unusedDeviceSharesWalletID, userId);
+    });
+  }
+
+  if (unusedStorageWalletsAddresses.size > 0) {
+    // TODO: These should actually be stored in memory. Clean up should not be necessary.
+
+    console.warn(
+      `Left over wallets stored in sessionStorage with addresses = ${Array.from(
+        unusedStorageWalletsAddresses
+      ).join(", ")}`
+    );
+
+    for (const unusedStorageWalletsAddress of unusedStorageWalletsAddresses) {
+      await removeWallet(unusedStorageWalletsAddress);
+    }
+  }
+
+  return wallets;
 }
 
-export interface CreateWalletParams {
-  // TODO: Bring in the B64 utils and types from Othent
+export type CreatePublicWalletParams = Omit<
+  Exclude<Parameters<typeof trpcVanilla.createPublicWallet.mutate>[0], void>,
+  "status" | "chain" | "walletPrivacySetting" | "canRecoverAccountSetting"
+>;
 
-  // TODO: Local wallets for those that do not want anything to do with our server/db:
-  address: string;
-  publicKey: string;
-  walletType: "secret" | "private" | "public"; // TODO: Add "local"?
-  deviceNonce: string;
-  authShare: string;
-  deviceShareHash: string;
-  canBeUsedToRecoverAccount: boolean;
-  deviceInfo: any; // TODO: Add type
-
-  source: {
-    type: "imported" | "generated";
-    from: "seedPhrase" | "binary" | "keyFile" | "shareFile";
-  };
+async function createPublicWallet(wallet: CreatePublicWalletParams) {
+  return trpcVanilla.createPublicWallet.mutate({
+    ...wallet,
+    status: "ENABLED",
+    chain: "ARWEAVE",
+    walletPrivacySetting: "PUBLIC",
+    canRecoverAccountSetting: true
+  });
 }
 
-async function createWallet(wallet: CreateWalletParams): Promise<DbWallet> {
-  return FakeDB.addWallet(wallet);
+export type DoNotAskAgainForBackupData = Exclude<
+  Parameters<typeof trpcVanilla.doNotAskAgainForBackup.mutate>[0],
+  void
+>;
+
+async function doNotAskAgainForBackup(
+  doNotAskAgainForBackupData: DoNotAskAgainForBackupData
+) {
+  return trpcVanilla.doNotAskAgainForBackup.mutate(doNotAskAgainForBackupData);
 }
 
-export interface CreateRecoverySharePrams {
-  walletId: string;
-  walletAddress: string;
-  deviceNonce: string;
-  recoveryAuthShare: string;
-  recoveryBackupShareHash: string;
-  deviceInfo: any;
+export type RegisterRecoveryShareData = Exclude<
+  Parameters<typeof trpcVanilla.registerRecoveryShare.mutate>[0],
+  void
+>;
+
+async function registerRecoveryShare(
+  recoveryShareData: RegisterRecoveryShareData
+) {
+  return trpcVanilla.registerRecoveryShare.mutate(recoveryShareData);
 }
 
-async function createRecoveryShare(
-  recoveryData: CreateRecoverySharePrams
-): Promise<void> {
-  return FakeDB.addRecoveryShare(recoveryData);
-}
+export type RegisterWalletExportData = Exclude<
+  Parameters<typeof trpcVanilla.registerWalletExport.mutate>[0],
+  void
+>;
 
-export interface FetchFirstAvailableAuthShareParams {
-  deviceNonce: DeviceNonce;
-  deviceSharesInfo: DeviceShareInfo[];
+async function registerWalletExport(
+  walletExportData: RegisterWalletExportData
+) {
+  return trpcVanilla.registerWalletExport.mutate(walletExportData);
 }
 
 export interface FetchFirstAvailableAuthShareReturn {
-  walletAddress: string;
-  authShare: string;
-  deviceShare: string;
-  rotateChallenge?: string;
+  activatedWallet: null | Wallet;
+  rotationChallenge?: DbChallenge;
 }
 
-async function fetchFirstAvailableAuthShare({
-  deviceNonce,
-  deviceSharesInfo
-}: FetchFirstAvailableAuthShareParams): Promise<null | FetchFirstAvailableAuthShareReturn> {
-  return new Promise(async (resolve, reject) => {
-    for (const deviceSharesInfoItem of deviceSharesInfo) {
-      const { walletAddress, deviceShare } = deviceSharesInfoItem;
-      const deviceShareHash = await WalletUtils.generateShareHash(deviceShare);
+async function fetchFirstAvailableAuthShare(
+  wallets: Wallet[],
+  session: DbSession,
+  userId: string
+): Promise<FetchFirstAvailableAuthShareReturn> {
+  return new Promise(async (resolve) => {
+    for (const wallet of wallets) {
+      const { id: walletId, deviceShare } = wallet;
 
-      // TODO: Better with zk: instead of hashes or use a challenge here?
+      try {
+        const {
+          shareHash: deviceShareHash,
+          sharePrivateKeyJWK: deviceSharePrivateKeyJWK
+        } = await WalletUtils.generateShareHashAndPrivateKey(deviceShare);
 
-      const { authShare, rotateChallenge } = await FakeDB.getKeyShareForDevice({
-        deviceNonce,
-        walletAddress,
-        deviceShareHash
-      }).catch(() => ({
-        authShare: null,
-        rotateChallenge: null
-      }));
+        const { activationChallenge } =
+          await trpcVanilla.generateWalletActivationChallenge.mutate({
+            walletId
+          });
 
-      if (authShare) {
-        // TODO: We need to have some date associated to the Share to force rotation. If `rotateChallenge` is ignored too many times, the share entry will be
-        // removed and the user will be forced to use the recovery share or a keyfile/seedphrase.
-
-        resolve({
-          walletAddress,
-          authShare,
-          deviceShare,
-          rotateChallenge
+        const challengeSolution = await ChallengeClientV1.solveChallenge({
+          challenge: activationChallenge,
+          session,
+          shareHash: deviceShareHash,
+          jwk: deviceSharePrivateKeyJWK
         });
 
-        return;
+        const { authShare, rotationChallenge } =
+          await trpcVanilla.activateWallet
+            .mutate({
+              walletId,
+              challengeSolution
+            })
+            .catch(async (err: unknown) => {
+              if (!isTRPCClientError(err) || err.data.httpStatus !== 404)
+                throw err;
+
+              console.warn(
+                `The corresponding auth share for the device share stored for walletId = ${walletId} was not found. Deleting device share from this device...`
+              );
+
+              await WalletUtils.removeDeviceShare(deviceShare, userId);
+
+              return {
+                authShare: null,
+                rotationChallenge: null
+              };
+            });
+
+        // TODO: Better with zk: instead of hashes or use a challenge here?
+
+        if (authShare) {
+          const activatedWallet: Wallet = {
+            ...wallet,
+            activationStatus: "active",
+            authShare
+          };
+
+          resolve({
+            activatedWallet,
+            rotationChallenge
+          } satisfies FetchFirstAvailableAuthShareReturn);
+
+          return;
+        }
+      } catch (err) {
+        console.warn(
+          `Unexpected wallet activation error (walletId = "${walletId}") =`,
+          err
+        );
       }
     }
 
-    resolve(null);
+    resolve({
+      activatedWallet: null
+    } satisfies FetchFirstAvailableAuthShareReturn);
   });
 }
 
-export interface RotateDeviceShareParams {
-  walletAddress: string;
-  oldDeviceNonce?: DeviceNonce;
-  newDeviceNonce: DeviceNonce;
-  authShare: string;
-  newDeviceShareHash: string;
-  challengeSignature: string;
+export type RotateAuthShareData = Exclude<
+  Parameters<typeof trpcVanilla.rotateAuthShare.mutate>[0],
+  void
+>;
+
+async function rotateAuthShare(rotateAuthShareData: RotateAuthShareData) {
+  return trpcVanilla.rotateAuthShare.mutate(rotateAuthShareData);
 }
 
-async function rotateAuthShare({}: RotateDeviceShareParams) {
-  // TODO: Take into account challengeSignature needs to be used as key too. Also, `oldDeviceNonce` might be `undefined`
-  // but only when `initiateWalletRecovery` has been called before...
+export type GenerateWalletRecoveryChallengeData = Exclude<
+  Parameters<typeof trpcVanilla.generateWalletRecoveryChallenge.mutate>[0],
+  void
+>;
+
+async function generateWalletRecoveryChallenge(
+  generateWalletRecoveryChallengeData: GenerateWalletRecoveryChallengeData
+) {
+  return trpcVanilla.generateWalletRecoveryChallenge.mutate(
+    generateWalletRecoveryChallengeData
+  );
 }
 
-export interface InitiateWalletRecoveryReturn {
-  recoveryChallenge: string;
-  rotateChallenge: string;
+export type RecoverWalletData = Exclude<
+  Parameters<typeof trpcVanilla.recoverWallet.mutate>[0],
+  void
+>;
+
+async function recoverWallet(recoverWalletData: RecoverWalletData) {
+  return trpcVanilla.recoverWallet.mutate(recoverWalletData);
 }
 
-async function fetchWalletRecoveryChallenge(
-  walletAddress: string,
-  recoverySharePublicKey: string
-): Promise<InitiateWalletRecoveryReturn> {
-  return Promise.resolve({
-    recoveryChallenge: "",
-    rotateChallenge: ""
-  });
-}
+export type RegisterAuthShareData = Exclude<
+  Parameters<typeof trpcVanilla.registerAuthShare.mutate>[0],
+  void
+>;
 
-async function recoverWallet(
-  walletAddress: string,
-  challengeSignature: string
-): Promise<string> {
-  return FakeDB.recoverWallet(walletAddress, challengeSignature);
+async function registerAuthShare(registerAuthShareData: RegisterAuthShareData) {
+  return trpcVanilla.registerAuthShare.mutate(registerAuthShareData);
 }
 
 export const WalletService = {
   fetchWallets,
-  createWallet,
-  createRecoveryShare,
+  doNotAskAgainForBackup,
+  createPublicWallet,
+  registerRecoveryShare,
+  registerWalletExport,
   fetchFirstAvailableAuthShare,
   rotateAuthShare,
-  fetchWalletRecoveryChallenge,
-  recoverWallet
+  generateWalletRecoveryChallenge,
+  recoverWallet,
+  registerAuthShare
 };

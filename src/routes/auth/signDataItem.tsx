@@ -22,7 +22,7 @@ import browser from "webextension-polyfill";
 import { useEffect, useMemo, useRef, useState } from "react";
 import styled from "styled-components";
 import { formatAddress } from "~utils/format";
-import { useStorage } from "~utils/storage";
+import { PersistentStorage, useStorage } from "~utils/storage";
 import { ExtensionStorage } from "~utils/storage";
 import { checkPassword } from "~wallets/auth";
 import { Quantity, Token } from "ao-tokens";
@@ -35,7 +35,7 @@ import {
   type TokenInfo,
   type TokenInfoWithProcessId
 } from "~tokens/aoTokens/ao";
-import { ChevronUpIcon, ChevronDownIcon } from "@iconicicons/react";
+import { ChevronRightIcon } from "@iconicicons/react";
 import { getUserAvatar } from "~lib/avatar";
 import { LogoWrapper, Logo, WarningIcon } from "~components/popup/Token";
 import arLogoLight from "url:/assets/ar/logo_light.png";
@@ -175,11 +175,11 @@ export function SignDataItemAuthRequestView() {
         console.log("err", err);
         try {
           const aoTokens =
-            (await ExtensionStorage.get<TokenInfoWithProcessId[]>(
+            (await PersistentStorage.get<TokenInfoWithProcessId[]>(
               "ao_tokens"
             )) || [];
           const aoTokensCache =
-            (await ExtensionStorage.get<TokenInfoWithProcessId[]>(
+            (await PersistentStorage.get<TokenInfoWithProcessId[]>(
               "ao_tokens_cache"
             )) || [];
           const aoTokensCombined = [...aoTokens, ...aoTokensCache];
@@ -371,7 +371,9 @@ export function SignDataItemAuthRequestView() {
               onClick={() => setShowTags(!showTags)}
             >
               {browser.i18n.getMessage("transaction_tags")}
-              {showTags ? <ChevronUpIcon /> : <ChevronDownIcon />}
+              <AnimatedChevron $open={showTags}>
+                <ChevronRightIcon />
+              </AnimatedChevron>
             </PropertyName>
             <Spacer y={0.05} />
             {showTags &&
@@ -433,4 +435,10 @@ const PasswordWrapper = styled.div`
   p {
     text-transform: capitalize;
   }
+`;
+
+export const AnimatedChevron = styled.div<{ $open: boolean }>`
+  display: inline-flex;
+  transition: transform 0.2s ease;
+  transform: rotate(${(props) => (props.$open ? "90deg" : "0deg")});
 `;

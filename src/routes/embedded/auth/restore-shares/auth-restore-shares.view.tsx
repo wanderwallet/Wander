@@ -1,42 +1,28 @@
 import {
-  AppleIcon,
   Box,
   Button,
   Card,
-  Row,
   WalletIcon,
-  WanderIcon,
-  Text,
-  GDriveIcon,
-  DropboxIcon,
   SeedIcon,
-  KeyIcon
+  KeyIcon,
+  WanderFooter
 } from "~components/embed/ui";
+import { useLocation } from "~wallets/router/router.utils";
 
 export function AuthRestoreSharesEmbeddedView() {
+  const { navigate, back } = useLocation();
   return (
     <Card
       headerText="Restore shares / wallet"
-      footerElement={
-        <Row>
-          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
-            {"Secured by"}
-          </Text>
-          <WanderIcon color="#838383" />
-        </Row>
-      }
+      footerElement={<WanderFooter />}
       hasBackButton={true}
-      onBackButtonClick={() => {
-        window.history.back();
-      }}
+      onBackButtonClick={back}
       hasCloseButton={true}
-      onCloseButtonClick={() => {
-        window.location.href = "/auth";
-      }}
+      onCloseButtonClick={() => navigate(`/auth`)}
       size="auto"
     >
       <Box>
-        <Button
+        {/* <Button
           variant="outlined"
           isFullWidth
           icon={<GDriveIcon fontSize={24} />}
@@ -51,20 +37,20 @@ export function AuthRestoreSharesEmbeddedView() {
           onClick={() => alert("Not implemented.")}
         >
           iCloud
-        </Button>
-        <Button
+        </Button> */}
+        {/* <Button
           variant="outlined"
           isFullWidth
           icon={<DropboxIcon fontSize={24} />}
           onClick={() => alert("Not implemented.")}
         >
           Dropbox
-        </Button>
+        </Button> */}
         <Button
           variant="outlined"
           isFullWidth
           icon={<WalletIcon fontSize={24} />}
-          href="/auth/restore-shares/recovery-file"
+          href="#/auth/restore-shares/recovery-file"
         >
           Upload Account Recovery File
         </Button>
@@ -72,7 +58,7 @@ export function AuthRestoreSharesEmbeddedView() {
           variant="outlined"
           isFullWidth
           icon={<SeedIcon fontSize={24} />}
-          href="/auth/import-seedphrase"
+          href="#/auth/import-seedphrase"
         >
           Enter Seed Phrase
         </Button>
@@ -80,7 +66,7 @@ export function AuthRestoreSharesEmbeddedView() {
           variant="outlined"
           isFullWidth
           icon={<KeyIcon fontSize={24} />}
-          href="/auth/import-keyfile"
+          href="#/auth/import-keyfile"
         >
           Import Private Key
         </Button>

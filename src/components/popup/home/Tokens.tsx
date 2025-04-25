@@ -2,7 +2,7 @@ import { Text } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
 import styled, { useTheme } from "styled-components";
 import Token from "../Token";
-import { useBalanceSortedTokens } from "~tokens/aoTokens/ao";
+import { useBalanceSortedTokens } from "~tokens/hooks";
 import { useLocation } from "~wallets/router/router.utils";
 import { Settings04 } from "@untitled-ui/icons-react";
 import { ManageAssets } from "./ManageAssets";

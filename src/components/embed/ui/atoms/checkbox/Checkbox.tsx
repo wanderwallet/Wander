@@ -2,7 +2,8 @@ import React, { forwardRef } from "react";
 import clsx from "clsx";
 import styles from "./Checkbox.module.css";
 import type { CheckboxBaseProps } from "./Checkbox.types";
-import { CheckIcon, Text } from "..";
+import { CheckIcon } from "../icon";
+import { Text } from "../text";
 import { useTheme } from "../../../contexts/ThemeContext";
 
 const Checkbox = forwardRef<HTMLDivElement, CheckboxBaseProps>(

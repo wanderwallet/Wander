@@ -30,15 +30,12 @@ import {
   constructTransaction,
   type SplitTransaction
 } from "~api/modules/sign/transaction_builder";
-import { isomorphicOnMessage } from "~utils/messaging/messaging.utils";
+import { isomorphicOnMessage } from "~isomorphic-messaging";
 import type { IBridgeMessage } from "@arconnect/webext-bridge";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { isError } from "~utils/error/error.utils";
-import type {
-  RouteOverride,
-  RouteRedirect
-} from "~wallets/router/router.types";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
+import { getDecryptionKey } from "~wallets/auth";
 
 interface AuthRequestsContextState {
   authRequests: AuthRequest[];
@@ -49,6 +46,7 @@ interface AuthRequestsContextState {
 interface AuthRequestsContextData extends AuthRequestsContextState {
   setCurrentAuthRequestIndex: (currentAuthRequestIndex: number) => void;
   completeAuthRequest: (authID: string, data: any) => Promise<void>;
+  closeAuthPopup: (delay?: number) => () => void;
 }
 
 const AUTH_REQUESTS_CONTEXT_INITIAL_STATE: AuthRequestsContextState = {
@@ -60,17 +58,11 @@ const AUTH_REQUESTS_CONTEXT_INITIAL_STATE: AuthRequestsContextState = {
 export const AuthRequestsContext = createContext<AuthRequestsContextData>({
   ...AUTH_REQUESTS_CONTEXT_INITIAL_STATE,
   setCurrentAuthRequestIndex: () => {},
-  completeAuthRequest: async () => {}
+  completeAuthRequest: async () => {},
+  closeAuthPopup: (delay?: number) => () => {}
 });
 
-interface AuthRequestProviderProps extends PropsWithChildren {
-  useStatusOverride: () => RouteOverride | RouteRedirect;
-}
-
-export function AuthRequestsProvider({
-  children,
-  useStatusOverride
-}: AuthRequestProviderProps) {
+export function AuthRequestsProvider({ children }: PropsWithChildren) {
   const [
     { authRequests, currentAuthRequestIndex, lastCompletedAuthRequest },
     setAuthRequestContextState
@@ -91,24 +83,33 @@ export function AuthRequestsProvider({
   const closeAuthPopup = useCallback((delay: number = 0) => {
     function closeOrClear() {
       if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1") {
-        // TODO: This might cause an infinite loop in the embedded wallet:
-        // setAuthRequestContextState(AUTH_REQUESTS_CONTEXT_INITIAL_STATE);
+        setAuthRequestContextState(AUTH_REQUESTS_CONTEXT_INITIAL_STATE);
 
-        // TODO: We could improve this to detect if we opened the wallet to show an AuthRequest, or if it was already
-        // open. In the former case, when all AuthRequests are handled, we close it. In the latter, we just clear the
-        // AuthRequests from the state but leave it open.
+        /*
+
+        // This message below is already sent when the last request is handled / completed:
 
         postEmbeddedMessage({
           type: "embedded_request",
           data: {
-            pendingRequests: 0
+            pendingRequests: 0,
+            hasNewConnectRequest: false,
           }
         });
+
+        // And this other one is not needed as the SDK will close the modal when receiving a "embedded_request" message
+        // with pendingRequests === 0.
 
         postEmbeddedMessage({
           type: "embedded_close",
           data: null
         });
+
+        // However, note the wait-before-closing functionality won't work for Embed with this implementation. One
+        // possible fix would be to add a shouldClose = true property to the "embedded_request" message being sent from
+        // here.
+
+        */
       } else {
         window.top.close();
       }
@@ -130,15 +131,16 @@ export function AuthRequestsProvider({
       const completedAuthRequest = authRequests.find(
         (authRequest) => authRequest.authID === authID
       );
+
       const completedAuthRequests = [completedAuthRequest];
       const completedAuthRequestType = completedAuthRequest.type;
 
       if (completedAuthRequestType === "connect") {
         // Find equivalent ConnectAuthRequest to also accept/reject those:
-
         authRequests.forEach((authRequest) => {
           if (
             authRequest.type === "connect" &&
+            authRequest !== completedAuthRequest &&
             compareConnectAuthRequests(authRequest, completedAuthRequest)
           ) {
             completedAuthRequests.push(authRequest);
@@ -154,7 +156,8 @@ export function AuthRequestsProvider({
         postEmbeddedMessage({
           type: "embedded_request",
           data: {
-            pendingRequests
+            pendingRequests,
+            hasNewConnectRequest: false
           }
         });
       }
@@ -310,7 +313,8 @@ export function AuthRequestsProvider({
           postEmbeddedMessage({
             type: "embedded_request",
             data: {
-              pendingRequests
+              pendingRequests,
+              hasNewConnectRequest: authRequest.type === "connect"
             }
           });
         }
@@ -476,37 +480,44 @@ export function AuthRequestsProvider({
     });
   }, []);
 
-  const statusOverride = useStatusOverride();
-
   useEffect(() => {
     let clearCloseAuthPopupTimeout = () => {};
 
-    const isDone =
-      authRequests.length > 0 &&
-      authRequests.every((authRequest) => authRequest.status !== "pending");
+    async function setCloseTimers() {
+      const isEmbedded = import.meta.env?.VITE_IS_EMBEDDED_APP === "1";
+      const hasAuthRequests = authRequests.length > 0;
+      const isDone =
+        hasAuthRequests &&
+        authRequests.every((authRequest) => authRequest.status !== "pending");
 
-    if (
-      import.meta.env?.VITE_IS_EMBEDDED_APP !== "1" &&
-      statusOverride === null &&
-      authRequests.length === 0
-    ) {
-      // TODO: Maybe move to the app entry point?
-      // Close the popup if an AuthRequest doesn't arrive in less than `AUTH_POPUP_REQUEST_WAIT_MS` (1s), unless the
-      // wallet is locked (no timeout in that case):
-      clearCloseAuthPopupTimeout = closeAuthPopup(AUTH_POPUP_REQUEST_WAIT_MS);
-    } else if (statusOverride) {
-      // If the user doesn't unlock the wallet in 15 minutes, or somehow the popup gets stuck into any other state for
-      // more than that, we close it:
-      clearCloseAuthPopupTimeout = closeAuthPopup(
-        AUTH_POPUP_UNLOCK_REQUEST_TTL_MS
-      );
-    } else if (isDone) {
-      // Close the window if the last request has been handled:
+      if (isDone) {
+        // Close the window if the last request has been handled:
+        // TODO: Add setting to decide whether this closes automatically or stays open in a "done" state.
 
-      // TODO: Add setting to decide whether this closes automatically or stays open in a "done" state.
+        clearCloseAuthPopupTimeout = closeAuthPopup(
+          AUTH_POPUP_CLOSING_DELAY_MS
+        );
+      } else if (!isEmbedded) {
+        const isLocked = !(await getDecryptionKey());
 
-      clearCloseAuthPopupTimeout = closeAuthPopup(AUTH_POPUP_CLOSING_DELAY_MS);
+        if (isLocked) {
+          // If the wallet is locked, the user has `AUTH_POPUP_UNLOCK_REQUEST_TTL_MS` (15 minutes) to unlock it before
+          // we close it automatically. While that's happening, AuthRequest might or might not be in this provide
+          // already:
+          clearCloseAuthPopupTimeout = closeAuthPopup(
+            AUTH_POPUP_UNLOCK_REQUEST_TTL_MS
+          );
+        } else if (!hasAuthRequests) {
+          // Once the wallet is unlocked, we close the popup if an AuthRequest doesn't arrive in less than
+          // `AUTH_POPUP_REQUEST_WAIT_MS` (1 second):
+          clearCloseAuthPopupTimeout = closeAuthPopup(
+            AUTH_POPUP_REQUEST_WAIT_MS
+          );
+        }
+      }
     }
+
+    setCloseTimers();
 
     // Not needed in the embedded wallet, but can be left alone. It won't do anything:
     function handleBeforeUnload() {
@@ -529,7 +540,7 @@ export function AuthRequestsProvider({
 
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
-  }, [statusOverride, authRequests, currentAuthRequestIndex, closeAuthPopup]);
+  }, [authRequests, currentAuthRequestIndex, closeAuthPopup]);
 
   return (
     <AuthRequestsContext.Provider
@@ -538,7 +549,8 @@ export function AuthRequestsProvider({
         currentAuthRequestIndex,
         lastCompletedAuthRequest,
         setCurrentAuthRequestIndex,
-        completeAuthRequest
+        completeAuthRequest,
+        closeAuthPopup
       }}
     >
       {children}

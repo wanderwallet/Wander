@@ -3,17 +3,19 @@ import {
   fetchTokenBalance,
   getBotegaPrice,
   getBotegaPrices,
-  useAoTokens,
-  type TokenInfo
+  type TokenInfo,
+  type TokenInfoWithBalance
 } from "./aoTokens/ao";
 import { useMemo } from "react";
 import useSetting from "~settings/hook";
 import { getConversionRate } from "~utils/currency";
 import BigNumber from "bignumber.js";
-import { ExtensionStorage } from "~utils/storage";
+import { ExtensionStorage, PersistentStorage } from "~utils/storage";
 import { useStorage } from "@plasmohq/storage/hook";
-import { EXP_TOKEN } from "~utils/ao_import";
+import { AO_NATIVE_TOKEN, EXP_TOKEN } from "~utils/ao_import";
 import { useArPrice } from "~lib/coingecko";
+import { defaultConfig } from "./aoTokens/config";
+import { connect } from "@permaweb/aoconnect";
 
 const defaultOptions = {
   refetchInterval: 300_000,
@@ -60,7 +62,7 @@ export function useTokenBalance(
     },
     ...defaultOptions,
     select: (data) => data || "0",
-    enabled: !!address
+    enabled: !!address && !!token.processId && isFinite(token?.Denomination)
   });
 }
 
@@ -71,8 +73,8 @@ export function useTokenPrice(id?: string, currency = "USD") {
 
   const priceQuery = useQuery({
     queryKey: ["tokenPrice", id],
-    // queryFn: () => getBotegaPrice(id!),
-    queryFn: () => null,
+    queryFn: () => getBotegaPrice(id!),
+    // queryFn: () => null,
     enabled: !!id && !isArToken,
     ...defaultOptions
   });
@@ -103,8 +105,8 @@ export function useTokenPrices(ids?: string[]) {
 
   const pricesQuery = useQuery({
     queryKey: ["tokenPrices", ids?.slice().sort().join(",")],
-    // queryFn: () => getBotegaPrices(ids!),
-    queryFn: () => null,
+    queryFn: () => getBotegaPrices(ids!),
+    // queryFn: () => null,
     enabled: !!ids?.length,
     ...defaultOptions
   });
@@ -190,4 +192,178 @@ export function useTotalFiatBalance() {
     tokenBalanceQueries,
     arPrice
   ]);
+}
+
+export function useAo() {
+  // ao instance
+  const ao = useMemo(() => connect(defaultConfig), []);
+
+  return ao;
+}
+
+function moveTokenToTop(tokens: TokenInfoWithBalance[], tokenId: string) {
+  const tokenIndex = tokens.findIndex((t) => t.id === tokenId);
+  if (tokenIndex !== -1) {
+    const token = tokens.splice(tokenIndex, 1)[0];
+    tokens.unshift(token);
+  }
+}
+
+export function useAoTokens({
+  type,
+  hidden,
+  sortFn,
+  skipSort = false
+}: {
+  type?: "asset" | "collectible";
+  hidden?: boolean;
+  sortFn?: (a: TokenInfo, b: TokenInfo) => number;
+  skipSort?: boolean;
+} = {}): {
+  tokens: TokenInfoWithBalance[];
+  loading: boolean;
+  changeTokenVisibility: (tokenId: string, hidden: boolean) => void;
+} {
+  const [aoTokens, setAoTokens] = useStorage<TokenInfo[]>(
+    {
+      key: "ao_tokens",
+      instance: PersistentStorage
+    },
+    []
+  );
+
+  const changeTokenVisibility = (tokenId: string, hidden: boolean) => {
+    setAoTokens((tokens) =>
+      tokens.map((t) => (t.processId === tokenId ? { ...t, hidden } : t))
+    );
+  };
+
+  // fetch token infos
+  const tokens = useMemo(() => {
+    const filteredTokens = aoTokens
+      .filter((t) => {
+        const typeMatch =
+          !type ||
+          (type === "asset" && (t.type === "asset" || !t.type)) ||
+          (type === "collectible" && t.type === "collectible");
+
+        const hiddenMatch =
+          hidden === undefined || (t.hidden ?? false) === hidden;
+
+        return typeMatch && hiddenMatch;
+      })
+      .map((aoToken) => ({
+        id: aoToken.processId,
+        balance: "0",
+        Ticker: aoToken.Ticker,
+        Name: aoToken.Name,
+        Denomination: Number(aoToken.Denomination || 0),
+        Logo: aoToken?.Logo,
+        type: aoToken.type || "asset",
+        hidden: aoToken?.hidden ?? false
+      }));
+
+    if (!skipSort) {
+      moveTokenToTop(filteredTokens, AO_NATIVE_TOKEN);
+      moveTokenToTop(filteredTokens, "AR");
+
+      if (sortFn) {
+        filteredTokens.sort(sortFn);
+      }
+    }
+
+    return filteredTokens;
+  }, [aoTokens, type, hidden, sortFn, skipSort]);
+
+  return { tokens, loading: false, changeTokenVisibility };
+}
+
+export function useBalanceSortedTokens({
+  type,
+  hidden
+}: {
+  type?: "asset" | "collectible";
+  hidden?: boolean;
+} = {}): {
+  tokens: TokenInfoWithBalance[];
+  loading: boolean;
+  prices: Record<string, number | null>;
+} {
+  const [activeAddress] = useStorage<string>({
+    key: "active_address",
+    instance: ExtensionStorage
+  });
+
+  const [aoTokens] = useStorage<TokenInfo[]>(
+    {
+      key: "ao_tokens",
+      instance: PersistentStorage
+    },
+    []
+  );
+
+  const tokensByHidden = useMemo(
+    () =>
+      aoTokens.filter((t) => {
+        const typeMatch =
+          !type ||
+          (type === "asset" && (t.type === "asset" || !t.type)) ||
+          (type === "collectible" && t.type === "collectible");
+
+        const hiddenMatch =
+          hidden === undefined || (t.hidden ?? false) === hidden;
+
+        return typeMatch && hiddenMatch;
+      }),
+    [aoTokens, type, hidden]
+  );
+
+  const { prices } = useTokenPrices(
+    tokensByHidden
+      .map((t) => t.processId)
+      .filter((id) => id !== "AR" && id !== EXP_TOKEN)
+  );
+
+  const tokenBalanceQueries = useQueries({
+    queries: tokensByHidden.map((token) => ({
+      queryKey: ["tokenBalance", token.processId, activeAddress],
+      ...defaultQueryCache
+    }))
+  });
+
+  // fetch token infos
+  const tokens = useMemo(() => {
+    const filteredTokens = tokensByHidden.map((aoToken, index) => ({
+      id: aoToken.processId,
+      balance: tokenBalanceQueries[index].data || "0",
+      Ticker: aoToken.Ticker,
+      Name: aoToken.Name,
+      Denomination: Number(aoToken.Denomination || 0),
+      Logo: aoToken?.Logo,
+      type: aoToken.type || "asset",
+      hidden: aoToken?.hidden ?? false,
+      fiatBalance: BigNumber(tokenBalanceQueries[index].data || "0")
+        .times(prices[aoToken.processId] || 0)
+        .toString()
+    }));
+
+    const sortedTokens = filteredTokens.sort((a, b) => {
+      // If both tokens have fiat balance, compare those
+      if (+a.fiatBalance && +b.fiatBalance) {
+        return +b.fiatBalance - +a.fiatBalance;
+      }
+      // If only one has fiat balance, prioritize it
+      if (+a.fiatBalance) return -1;
+      if (+b.fiatBalance) return 1;
+      // If neither has fiat balance, compare token balances
+      return +b.balance - +a.balance;
+    });
+
+    moveTokenToTop(sortedTokens, AO_NATIVE_TOKEN);
+    moveTokenToTop(sortedTokens, "AR");
+
+    return sortedTokens;
+  }, [tokensByHidden, prices, tokenBalanceQueries]);
+
+  return { tokens, loading: false, prices };
 }

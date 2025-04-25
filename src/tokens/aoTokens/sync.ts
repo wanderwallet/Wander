@@ -2,10 +2,9 @@ import Arweave from "arweave";
 import browser from "webextension-polyfill";
 import { getAoTokensCache } from "~tokens";
 import type { GQLTransactionsResultInterface } from "ar-gql/dist/faces";
-import { ExtensionStorage } from "~utils/storage";
+import { PersistentStorage } from "~utils/storage";
 import { getActiveAddress } from "~wallets";
-import { getTokenInfoFromData } from "./router";
-import { type TokenInfo, Id, Owner } from "./ao";
+import { type TokenInfo, Id, Owner, getTokenInfoFromData } from "./ao";
 import { withRetry } from "~utils/promises/retry";
 import { timeoutPromise } from "~utils/promises/timeout";
 
@@ -289,8 +288,8 @@ export async function syncAoTokens() {
     const [aoTokensCache, aoTokensIds = {}, lastBlockHeight] =
       await Promise.all([
         getAoTokensCache(),
-        ExtensionStorage.get<Record<string, string[]>>(AO_TOKENS_IDS),
-        ExtensionStorage.get<number>(
+        PersistentStorage.get<Record<string, string[]>>(AO_TOKENS_IDS),
+        PersistentStorage.get<number>(
           `${AO_TOKENS_LAST_BLOCK_HEIGHT}_${activeAddress}`
         )
       ]);
@@ -307,7 +306,7 @@ export async function syncAoTokens() {
       );
 
     if (maxBlockHeight && maxBlockHeight > 0) {
-      await ExtensionStorage.set(
+      await PersistentStorage.set(
         `${AO_TOKENS_LAST_BLOCK_HEIGHT}_${activeAddress}`,
         maxBlockHeight
       );
@@ -368,8 +367,8 @@ export async function syncAoTokens() {
 
     // Set all the tokens storage
     await Promise.all([
-      ExtensionStorage.set(AO_TOKENS_CACHE, updatedTokens),
-      ExtensionStorage.set(AO_TOKENS_IDS, aoTokensIds)
+      PersistentStorage.set(AO_TOKENS_CACHE, updatedTokens),
+      PersistentStorage.set(AO_TOKENS_IDS, aoTokensIds)
     ]);
 
     console.log("Synchronized ao tokens!");
@@ -385,7 +384,7 @@ export async function syncAoTokens() {
 }
 
 export async function scheduleImportAoTokens() {
-  const timestamp = await ExtensionStorage.get<number>(
+  const timestamp = await PersistentStorage.get<number>(
     AO_TOKENS_IMPORT_TIMESTAMP
   );
   if (timestamp && Date.now() - timestamp < 5 * 60 * 1000) {
@@ -396,7 +395,7 @@ export async function scheduleImportAoTokens() {
   const activeAddress = await getActiveAddress();
   if (!activeAddress) return;
 
-  await ExtensionStorage.set(AO_TOKENS_IMPORT_TIMESTAMP, Date.now());
+  await PersistentStorage.set(AO_TOKENS_IMPORT_TIMESTAMP, Date.now());
 
   browser.alarms.create("import_ao_tokens", { when: Date.now() + 2000 });
 }

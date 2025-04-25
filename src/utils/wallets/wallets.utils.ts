@@ -1,12 +1,8 @@
 import * as bip39 from "bip39-web-crypto";
-import {
-  addWallet,
-  getWalletKeyLength,
-  updatePassword,
-  type WalletKeyLengths
-} from "~wallets";
+import { addWallet, getWalletKeyLength, type WalletKeyLengths } from "~wallets";
 import {
   checkPasswordValid,
+  isValidMnemonic,
   jwkFromMnemonic,
   pkcs8ToJwk
 } from "~wallets/generator";
@@ -14,14 +10,38 @@ import * as SSS from "shamir-secret-sharing";
 import type { JWKInterface } from "arweave/web/lib/wallet";
 import { defaultGateway } from "~gateways/gateway";
 import Arweave from "arweave";
-import { nanoid } from "nanoid";
 import { setDecryptionKey } from "~wallets/auth";
-import {
-  INVALID_DEVICE_NONCE_ERR_MSG,
-  INVALID_DEVICE_SHARES_INFO_ERR_MSG
-} from "~utils/wallets/wallets.constants";
-import { ExtensionStorage } from "~utils/storage";
+import { INVALID_DEVICE_SHARES_INFO_ERR_MSG } from "~utils/wallets/wallets.constants";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
+import type NodeForge from "node-forge";
+import type { RecoveryJSON, Wallet } from "~utils/embedded/embedded.types";
+import { EMBEDDED_FEATURE_FLAGS } from "~utils/embedded/embedded.constants";
+import { LocalStorage } from "~iframe/storage/unpartitioned-storage/local-storage";
+import { random, pki, util } from "node-forge";
+
+// Node forge worker script location
+const workerScript = `/assets/forge/prime.worker.min.js`;
+
+// Convert BigInt values to hex strings and encode to Base64
+function bigintToBase64Url(bigint: NodeForge.jsbn.BigInteger): string {
+  let hex = bigint.toString(16);
+  if (hex.length % 2 !== 0) {
+    // Ensure even length hex
+    hex = "0" + hex;
+  }
+
+  // Convert hex to bytes
+  const bytes = util.hexToBytes(hex);
+
+  // Encode bytes to Base64
+  let base64 = util.encode64(bytes);
+
+  // Convert Base64 to Base64 URL encoding
+  // Replace '+' with '-', '/' with '_', and remove '=' padding
+  base64 = base64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+
+  return base64;
+}
 
 async function generateSeedPhrase() {
   log(LOG_GROUP.WALLET_GENERATION, "generateSeedPhrase()");
@@ -137,12 +157,6 @@ async function generateWalletRecoveryShares(
   };
 }
 
-function generateDeviceNonce(): DeviceNonce {
-  log(LOG_GROUP.WALLET_GENERATION, "generateDeviceNonce()");
-
-  return `${new Date().toISOString()}-${nanoid()}` as DeviceNonce;
-}
-
 function generateRandomPassword(): string {
   log(LOG_GROUP.WALLET_GENERATION, "generateRandomPassword()");
 
@@ -152,7 +166,6 @@ function generateRandomPassword(): string {
 }
 
 async function generateWalletJWKFromShares(
-  // TODO: Do we want to use the walletAddress or maybe better a hash?
   walletAddress: string,
   shares: string[]
 ): Promise<JWKInterface> {
@@ -185,80 +198,150 @@ async function generateWalletJWKFromShares(
 async function generateShareHash(share: string): Promise<string> {
   log(LOG_GROUP.WALLET_GENERATION, "generateShareHash()");
 
-  /*
-
-  TODO: Instead of using a share as a private key to sign, we can simply send a hash of it, the challange and some
-  additional data that the server already has. The server should also verify the IP / IP location.
-
-  hash(share + challenge + userAgent)
-
-  In any case, using signatures or zk would still be superior.
-
-  */
-
-  const hashBuffer = await crypto.subtle.digest("SHA-512", Buffer.from(share));
+  const hashBuffer = await crypto.subtle.digest("SHA-256", Buffer.from(share));
 
   return Buffer.from(new Uint8Array(hashBuffer)).toString("base64");
 }
 
-async function generateChallengeSignature(
-  challenge: string,
-  jwk: JWKInterface
-): Promise<string> {
-  log(LOG_GROUP.WALLET_GENERATION, "generateChallengeSignature()");
+export interface GenerateShareHashAndPublicKeyReturn {
+  shareHash: string;
+  sharePublicKey: string;
+}
 
-  // TODO
+/**
+ * See:
+ * - https://github.com/framp/zero-knowledge-node/blob/master/keypair-auth/crypto-utils.js
+ * - https://www.youtube.com/watch?v=cMoD0wIxIpQ
+ */
+async function generateShareHashAndPublicKey(
+  share: string
+): Promise<GenerateShareHashAndPublicKeyReturn> {
+  log(LOG_GROUP.WALLET_GENERATION, "generateShareHashAndPublicKey()");
 
-  return Promise.resolve("");
+  const sharePrng = random.createInstance();
+
+  sharePrng.seedFileSync = (needed) => {
+    let r = "",
+      i = 0,
+      j = 0;
+
+    while (i++ < needed) {
+      r += share[j++];
+      if (j === share.length) j = 0;
+    }
+
+    return r;
+  };
+
+  return new Promise((resolve, reject) => {
+    pki.rsa.generateKeyPair(
+      {
+        bits: 4096,
+        prng: sharePrng,
+        workerScript
+      },
+      async (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          const shareHash = await generateShareHash(share);
+          const publicKey = result.publicKey;
+          const sharePublicKey = bigintToBase64Url(publicKey.n);
+
+          resolve({
+            shareHash,
+            sharePublicKey
+          });
+        }
+      }
+    );
+  });
+}
+
+export interface GenerateShareHashAndPrivateKeyReturn {
+  shareHash: string;
+  sharePrivateKeyJWK: JWKInterface;
+}
+
+/**
+ * See:
+ * - https://github.com/framp/zero-knowledge-node/blob/master/keypair-auth/crypto-utils.js
+ * - https://www.youtube.com/watch?v=cMoD0wIxIpQ
+ */
+async function generateShareHashAndPrivateKey(
+  share: string
+): Promise<GenerateShareHashAndPrivateKeyReturn> {
+  log(LOG_GROUP.WALLET_GENERATION, "generateShareHashAndPrivateKey()");
+
+  const sharePrng = random.createInstance();
+
+  sharePrng.seedFileSync = (needed) => {
+    let r = "",
+      i = 0,
+      j = 0;
+
+    while (i++ < needed) {
+      r += share[j++];
+      if (j === share.length) j = 0;
+    }
+
+    return r;
+  };
+
+  return new Promise((resolve, reject) => {
+    pki.rsa.generateKeyPair(
+      {
+        bits: 4096,
+        prng: sharePrng,
+        workerScript
+      },
+      async (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          const shareHash = await generateShareHash(share);
+          const privateKey = result.privateKey;
+
+          // Extract and encode the RSA parameters into JWK format
+          const sharePrivateKeyJWK = {
+            kty: "RSA",
+            n: bigintToBase64Url(privateKey.n),
+            e: bigintToBase64Url(privateKey.e),
+            d: bigintToBase64Url(privateKey.d),
+            p: bigintToBase64Url(privateKey.p),
+            q: bigintToBase64Url(privateKey.q),
+            dp: bigintToBase64Url(privateKey.dP),
+            dq: bigintToBase64Url(privateKey.dQ),
+            qi: bigintToBase64Url(privateKey.qInv)
+          };
+
+          resolve({
+            shareHash,
+            sharePrivateKeyJWK
+          });
+        }
+      }
+    );
+  });
 }
 
 // Data (localStorage):
 
-// Device Nonce:
-
-const DEVICE_NONCE_KEY = "DEVICE_NONCE";
-
-export type DeviceNonce =
-  `${number}-${number}-${number}T${number}:${number}:${number}.${number}Z-${string}`;
-
-function loadDeviceNonce(): DeviceNonce | null {
-  let deviceNonce = localStorage.getItem(DEVICE_NONCE_KEY) || null;
-
-  if (
-    deviceNonce === null ||
-    /\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z)\-[\w_-]{21}/.test(
-      deviceNonce
-    )
-  )
-    return deviceNonce as DeviceNonce;
-
-  if (process.env.NODE_ENV === "development") {
-    throw new Error(INVALID_DEVICE_NONCE_ERR_MSG);
-  } else {
-    console.warn(INVALID_DEVICE_NONCE_ERR_MSG);
-  }
-}
-
-let _deviceNonce: DeviceNonce | null = loadDeviceNonce();
-
-// Device Shares:
-
 const DEVICE_SHARES_INFO_KEY = "DEVICE_SHARES_INFO";
 
-export interface DeviceShareInfo {
-  deviceShare: string;
-  // TODO: Do we want to use the walletAddress or maybe better a hash?
-  walletAddress: string;
-  createdAt: number;
-}
+// walletId - deviceShare
+export type DeviceShares = Record<string, string>;
 
-function loadDeviceSharesInfo(): Record<
-  string,
-  Record<string, DeviceShareInfo>
-> {
+// userId - DeviceShares
+export type DeviceSharesByUser = Record<string, DeviceShares>;
+
+let _deviceSharesByUser: DeviceSharesByUser | null = null;
+
+async function loadDeviceSharesByUser(): Promise<DeviceSharesByUser> {
   try {
-    let deviceSharesInfo = JSON.parse(
-      localStorage.getItem(DEVICE_SHARES_INFO_KEY)
+    const storage = await LocalStorage.getInstance();
+    let deviceSharesInfo = storage.getItem<DeviceSharesByUser>(
+      DEVICE_SHARES_INFO_KEY
     );
 
     // TODO: Add additional validation...
@@ -267,7 +350,7 @@ function loadDeviceSharesInfo(): Record<
       deviceSharesInfo = {};
     }
 
-    return deviceSharesInfo as Record<string, Record<string, DeviceShareInfo>>;
+    return deviceSharesInfo as DeviceSharesByUser;
   } catch (err) {
     if (process.env.NODE_ENV === "development") {
       throw new Error(`${INVALID_DEVICE_SHARES_INFO_ERR_MSG}: ${err?.message}`);
@@ -277,88 +360,343 @@ function loadDeviceSharesInfo(): Record<
   }
 }
 
-let _deviceSharesInfo: Record<
-  string,
-  Record<string, DeviceShareInfo>
-> = loadDeviceSharesInfo();
+export async function initializeDeviceShares() {
+  _deviceSharesByUser = await loadDeviceSharesByUser();
+  return _deviceSharesByUser;
+}
 
 // Getters:
 
-function getDeviceNonce(): DeviceNonce {
-  return _deviceNonce;
-}
+async function getDeviceSharesForUser(userId: string): Promise<DeviceShares> {
+  if (!_deviceSharesByUser) {
+    await initializeDeviceShares();
+  }
 
-function getDeviceSharesInfo(userId: string): DeviceShareInfo[] {
-  return Object.values(_deviceSharesInfo[userId] || {}).sort(
-    (a, b) => b.createdAt - a.createdAt
-  );
+  return _deviceSharesByUser[userId] || {};
 }
 
 // Storage:
 
 const ENCRYPTED_SEED_PHRASE_KEY = "ENCRYPTED_SEED_PHRASE";
+const ENCRYPTED_RECOVERY_SHARE_KEY = "ENCRYPTED_RECOVERY_SHARE";
 
-function storeEncryptedSeedPhrase(
-  walletAddress: string,
+async function storeEncryptedSeedPhrase(
+  walletId: string,
   seedPhrase: string,
   jwk: JWKInterface
 ) {
   log(LOG_GROUP.WALLET_GENERATION, "storeEncryptedSeedPhrase()");
 
-  // TODO: Encrypt it...
-  const encryptedSeedPhrase = seedPhrase;
+  if (!jwk) {
+    throw new Error("Do not store unencrypted seed phrases!");
+  }
 
-  localStorage.setItem(
-    `${ENCRYPTED_SEED_PHRASE_KEY}-${walletAddress}`,
+  const publicKey = {
+    kty: "RSA",
+    e: "AQAB",
+    n: jwk.n,
+    alg: "RSA-OAEP-256",
+    ext: true
+  };
+
+  const importedKey = await crypto.subtle.importKey(
+    "jwk",
+    publicKey,
+    {
+      name: "RSA-OAEP",
+      hash: "SHA-256"
+    },
+    false,
+    ["encrypt"]
+  );
+
+  // Make sure the seedPhrase is shorter than the maximum data we can safely
+  // encrypt with RSA-OAEM without using hybrid encryption:
+  // See https://crypto.stackexchange.com/questions/42097/what-is-the-maximum-size-of-the-plaintext-message-for-rsa-oaep
+  const maxLength = 4096 / 8 - (2 * 256) / 8 - 2;
+
+  if (seedPhrase.length > maxLength) {
+    throw new Error(`Seedphrase is too long to be encrypted with RSA-OAEP`);
+  }
+
+  const encryptedSeedPhraseBuffer = await crypto.subtle.encrypt(
+    {
+      name: "RSA-OAEP"
+    },
+    importedKey,
+    Buffer.from(seedPhrase)
+  );
+
+  const encryptedSeedPhrase = Buffer.from(encryptedSeedPhraseBuffer).toString(
+    "base64"
+  );
+
+  const storage = await LocalStorage.getInstance();
+  storage.setItem(
+    `${ENCRYPTED_SEED_PHRASE_KEY}-${walletId}`,
     encryptedSeedPhrase
   );
 }
 
-function hasEncryptedSeedPhrase(walletAddress: string) {
-  return !!localStorage.getItem(
-    `${ENCRYPTED_SEED_PHRASE_KEY}-${walletAddress}`
-  );
+async function hasEncryptedSeedPhrase(walletId: string) {
+  const storage = await LocalStorage.getInstance();
+  return !!storage.getItem(`${ENCRYPTED_SEED_PHRASE_KEY}-${walletId}`);
 }
 
-function getDecryptedSeedPhrase(walletAddress: string, jwk: JWKInterface) {
-  const encryptedSeedPhrase = localStorage.getItem(
-    `${ENCRYPTED_SEED_PHRASE_KEY}-${walletAddress}`
-  );
+async function getDecryptedSeedPhrase(walletId: string, jwk: JWKInterface) {
+  log(LOG_GROUP.WALLET_GENERATION, "getDecryptedSeedPhrase()");
 
-  // TODO: Decrypt it...
-  return encryptedSeedPhrase;
-}
+  if (!jwk) {
+    throw new Error("Do not store unencrypted seed phrases!");
+  }
 
-function storeDeviceNonce(deviceNonce: DeviceNonce) {
-  log(LOG_GROUP.WALLET_GENERATION, "storeDeviceNonce()");
-
-  _deviceNonce = deviceNonce;
-
-  localStorage.setItem(DEVICE_NONCE_KEY, _deviceNonce);
-}
-
-function storeDeviceShare(
-  deviceShare: string,
-  userId: string,
-  // TODO: Do we want to use the walletAddress or maybe better a hash?
-  walletAddress: string
-) {
-  log(LOG_GROUP.WALLET_GENERATION, "storeDeviceShare()");
-
-  const deviceShareInfo: DeviceShareInfo = {
-    deviceShare,
-    walletAddress,
-    createdAt: Date.now()
+  const privateKey = {
+    ...jwk,
+    alg: "RSA-OAEP-256",
+    ext: true
   };
 
-  if (!_deviceSharesInfo[userId]) _deviceSharesInfo[userId] = {};
-
-  _deviceSharesInfo[userId][walletAddress] = deviceShareInfo;
-
-  localStorage.setItem(
-    DEVICE_SHARES_INFO_KEY,
-    JSON.stringify(_deviceSharesInfo)
+  const importedKey = await crypto.subtle.importKey(
+    "jwk",
+    privateKey,
+    {
+      name: "RSA-OAEP",
+      hash: "SHA-256"
+    },
+    false,
+    ["decrypt"]
   );
+
+  const storage = await LocalStorage.getInstance();
+  const encryptedSeedPhrase = storage.getItem(
+    `${ENCRYPTED_SEED_PHRASE_KEY}-${walletId}`
+  );
+
+  const decryptedSeedPhraseBuffer = await crypto.subtle.decrypt(
+    {
+      name: "RSA-OAEP"
+    },
+    importedKey,
+    Buffer.from(encryptedSeedPhrase, "base64")
+  );
+
+  const decryptedSeedPhrase = Buffer.from(decryptedSeedPhraseBuffer).toString();
+
+  return decryptedSeedPhrase;
+}
+
+/**
+ * Store an encrypted recovery share in local storage
+ * @param walletId - Wallet ID
+ * @param recoveryData - Recovery share data to encrypt
+ * @param jwk - JWK to use for encryption
+ */
+async function storeEncryptedRecoveryShare(
+  walletId: string,
+  recoveryData: RecoveryJSON,
+  jwk: JWKInterface
+) {
+  log(LOG_GROUP.WALLET_GENERATION, "storeEncryptedRecoveryShare()");
+
+  if (!jwk) {
+    throw new Error("Do not store unencrypted recovery shares!");
+  }
+
+  // Generate random AES key
+  const aesKey = await crypto.subtle.generateKey(
+    {
+      name: "AES-GCM",
+      length: 256
+    },
+    true,
+    ["encrypt", "decrypt"]
+  );
+
+  // Generate random IV
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+
+  // Encrypt recovery data with AES
+  const recoveryDataString = JSON.stringify(recoveryData);
+  const encryptedData = await crypto.subtle.encrypt(
+    {
+      name: "AES-GCM",
+      iv
+    },
+    aesKey,
+    new TextEncoder().encode(recoveryDataString)
+  );
+
+  // Export AES key
+  const rawAesKey = await crypto.subtle.exportKey("raw", aesKey);
+
+  // Encrypt AES key with RSA
+  const publicKey = {
+    kty: "RSA",
+    e: "AQAB",
+    n: jwk.n,
+    alg: "RSA-OAEP-256",
+    ext: true
+  };
+
+  const importedRsaKey = await crypto.subtle.importKey(
+    "jwk",
+    publicKey,
+    {
+      name: "RSA-OAEP",
+      hash: "SHA-256"
+    },
+    false,
+    ["encrypt"]
+  );
+
+  const encryptedAesKey = await crypto.subtle.encrypt(
+    {
+      name: "RSA-OAEP"
+    },
+    importedRsaKey,
+    rawAesKey
+  );
+
+  // Combine everything into a single object
+  const finalData = {
+    iv: Buffer.from(iv).toString("base64"),
+    encryptedKey: Buffer.from(encryptedAesKey).toString("base64"),
+    encryptedData: Buffer.from(encryptedData).toString("base64")
+  };
+
+  const storage = await LocalStorage.getInstance();
+  storage.setItem(`${ENCRYPTED_RECOVERY_SHARE_KEY}-${walletId}`, finalData);
+
+  return true;
+}
+
+/**
+ * Check if a wallet has an encrypted recovery share
+ * @param walletId - Wallet ID
+ */
+async function hasEncryptedRecoveryShare(walletId: string) {
+  const storage = await LocalStorage.getInstance();
+  return !!storage.getItem(`${ENCRYPTED_RECOVERY_SHARE_KEY}-${walletId}`);
+}
+
+/**
+ * Get and decrypt a wallet recovery share
+ * @param walletId - Wallet ID
+ * @param jwk - JWK for decryption
+ */
+async function getDecryptedRecoveryShare(
+  walletId: string,
+  jwk: JWKInterface
+): Promise<RecoveryJSON> {
+  log(LOG_GROUP.WALLET_GENERATION, "getDecryptedRecoveryShare()");
+
+  if (!jwk) {
+    throw new Error("Cannot decrypt recovery share without JWK!");
+  }
+
+  // Import RSA private key
+  const privateKey = {
+    ...jwk,
+    alg: "RSA-OAEP-256",
+    ext: true
+  };
+
+  const importedRsaKey = await crypto.subtle.importKey(
+    "jwk",
+    privateKey,
+    {
+      name: "RSA-OAEP",
+      hash: "SHA-256"
+    },
+    false,
+    ["decrypt"]
+  );
+
+  // Get encrypted data from storage
+  const storage = await LocalStorage.getInstance();
+  const encryptedData = storage.getItem<{
+    iv: string;
+    encryptedKey: string;
+    encryptedData: string;
+  }>(`${ENCRYPTED_RECOVERY_SHARE_KEY}-${walletId}`);
+
+  if (!encryptedData) {
+    throw new Error(`No recovery share found for wallet ${walletId}`);
+  }
+
+  // Parse the stored data
+  const {
+    iv,
+    encryptedKey,
+    encryptedData: encryptedRecoveryData
+  } = encryptedData;
+
+  // Decrypt the AES key
+  const decryptedAesKeyBuffer = await crypto.subtle.decrypt(
+    {
+      name: "RSA-OAEP"
+    },
+    importedRsaKey,
+    Buffer.from(encryptedKey, "base64")
+  );
+
+  // Import the decrypted AES key
+  const aesKey = await crypto.subtle.importKey(
+    "raw",
+    decryptedAesKeyBuffer,
+    {
+      name: "AES-GCM",
+      length: 256
+    },
+    false,
+    ["decrypt"]
+  );
+
+  // Decrypt the actual data
+  const decryptedDataBuffer = await crypto.subtle.decrypt(
+    {
+      name: "AES-GCM",
+      iv: Buffer.from(iv, "base64")
+    },
+    aesKey,
+    Buffer.from(encryptedRecoveryData, "base64")
+  );
+
+  // Parse the decrypted data
+  const decryptedDataString = new TextDecoder().decode(decryptedDataBuffer);
+  const recoveryShare = JSON.parse(decryptedDataString) as RecoveryJSON;
+
+  return recoveryShare;
+}
+
+async function storeDeviceShare(wallet: Wallet, userId: string) {
+  log(LOG_GROUP.WALLET_GENERATION, "storeDeviceShare()");
+
+  if (!_deviceSharesByUser) {
+    await initializeDeviceShares();
+  }
+
+  if (!_deviceSharesByUser[userId]) _deviceSharesByUser[userId] = {};
+
+  _deviceSharesByUser[userId][wallet.id] = wallet.deviceShare;
+
+  const storage = await LocalStorage.getInstance();
+  storage.setItem(DEVICE_SHARES_INFO_KEY, _deviceSharesByUser);
+}
+
+async function removeDeviceShare(walletId: string, userId: string) {
+  log(LOG_GROUP.WALLET_GENERATION, "storeDeviceShare()");
+
+  if (!_deviceSharesByUser) {
+    await initializeDeviceShares();
+  }
+
+  if (!_deviceSharesByUser[userId]) _deviceSharesByUser[userId] = {};
+
+  delete _deviceSharesByUser[userId][walletId];
+
+  const storage = await LocalStorage.getInstance();
+  storage.setItem(DEVICE_SHARES_INFO_KEY, _deviceSharesByUser);
 }
 
 async function storeEncryptedWalletJWK(jwk: JWKInterface): Promise<void> {
@@ -382,26 +720,75 @@ async function storeEncryptedWalletJWK(jwk: JWKInterface): Promise<void> {
   return addWallet(jwk, randomPassword);
 }
 
+function isJWK(obj: unknown): boolean {
+  if (typeof obj !== "object" || obj === null) {
+    return false;
+  }
+  const requiredKeys = ["n", "e", "d", "p", "q", "dp", "dq", "qi"];
+  return requiredKeys.every((key) => key in obj);
+}
+
+function isSeedPhrase(obj: unknown): boolean {
+  try {
+    isValidMnemonic(obj as string);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
 export const WalletUtils = {
   // Generation:
   generateSeedPhrase,
-  generateWalletJWK, // TODO: Rename to generateWalletKeyfile
+  generateWalletJWK,
   generateWalletWorkShares,
   generateWalletRecoveryShares,
-  generateDeviceNonce,
   generateWalletJWKFromShares,
   generateShareHash,
-  generateChallengeSignature,
+  generateShareHashAndPublicKey,
+  generateShareHashAndPrivateKey,
 
   // Getters:
-  getDeviceNonce,
-  getDeviceSharesInfo,
+  getDeviceSharesForUser,
 
   // Storage:
-  storeDeviceNonce,
   storeDeviceShare,
+  removeDeviceShare,
   storeEncryptedSeedPhrase,
   hasEncryptedSeedPhrase,
   getDecryptedSeedPhrase,
-  storeEncryptedWalletJWK
+  storeEncryptedRecoveryShare,
+  hasEncryptedRecoveryShare,
+  getDecryptedRecoveryShare,
+  storeEncryptedWalletJWK,
+
+  // Validation:
+  isJWK,
+  isSeedPhrase
 };
+
+// Stored seedphrases and recovery shares are removed if the feature flags are disabled:
+if (!EMBEDDED_FEATURE_FLAGS.STORE_SEED_PHRASE) {
+  (async () => {
+    const storage = await LocalStorage.getInstance();
+    const keys = storage.keys();
+    for (const key of keys) {
+      if (key.startsWith(ENCRYPTED_SEED_PHRASE_KEY)) {
+        storage.removeItem(key);
+      }
+    }
+  })();
+}
+
+// Cleanup for recovery shares if feature is disabled
+if (!EMBEDDED_FEATURE_FLAGS.STORE_RECOVERY_SHARES) {
+  (async () => {
+    const storage = await LocalStorage.getInstance();
+    const keys = storage.keys();
+    for (const key of keys) {
+      if (key.startsWith(ENCRYPTED_RECOVERY_SHARE_KEY)) {
+        storage.removeItem(key);
+      }
+    }
+  })();
+}

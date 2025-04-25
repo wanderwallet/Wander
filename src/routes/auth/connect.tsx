@@ -34,14 +34,19 @@ import { AuthButtons } from "~components/auth/AuthButtons";
 import Squircle from "~components/Squircle";
 import { useActiveWallet } from "~wallets/hooks";
 import Checkbox from "~components/Checkbox";
-import { ChevronRight, Edit02, InfoCircle } from "@untitled-ui/icons-react";
+import {
+  ChevronRight,
+  Edit02,
+  InfoCircle,
+  RefreshCcw01
+} from "@untitled-ui/icons-react";
 import WanderIcon from "url:assets/icon.svg";
 import Image from "~components/common/Image";
 import { Flex } from "~components/common/Flex";
-import { svgie } from "~utils/svgies";
 import { useNameServiceProfile } from "~lib/nameservice";
 import { FULL_HISTORY, useGateway } from "~gateways/wayfinder";
 import { concatGatewayURL } from "~gateways/utils";
+import { NoAvatarIcon } from "~components/popup/WalletHeader";
 
 type Page = "unlock" | "connect" | "permissions" | "confirm";
 
@@ -81,8 +86,6 @@ export function ConnectAuthRequestView() {
 
     if (nameServiceProfile?.logo && nsGateway?.protocol && nsGateway?.host) {
       setAvatar(concatGatewayURL(nsGateway) + "/" + nameServiceProfile.logo);
-    } else {
-      setAvatar(svgie(wallet?.address, { asDataURI: true }));
     }
   }, [wallet, nameServiceProfile, nsGateway]);
 
@@ -301,6 +304,8 @@ export function ConnectAuthRequestView() {
                 isCustomPermissions={isCustomPermissions}
                 setPage={setPage}
                 theme={theme}
+                setRequestedPermissions={setRequestedPermissions}
+                requestedPermCopy={requestedPermCopy}
               />
             )}
             {page === "unlock" && (
@@ -473,15 +478,9 @@ const ConnectPage = ({
         <Spacer y={0.5} />
         <ConnectWalletWrapper onClick={() => setSwitcherOpen(true)}>
           <div style={{ display: "flex", flexDirection: "row", gap: "12px" }}>
-            {avatar ? (
-              <Avatar img={avatar} />
-            ) : (
-              <AccountSquircle>
-                <AccountInitial>
-                  {wallet?.nickname?.charAt(0) || "A"}
-                </AccountInitial>
-              </AccountSquircle>
-            )}
+            <Avatar img={avatar}>
+              {!avatar && <NoAvatarIcon size="1.8em" />}
+            </Avatar>
             <div>
               <WalletName>{wallet?.nickname}</WalletName>
               <SecondaryText>
@@ -507,7 +506,9 @@ const ConfirmPage = ({
   setSignPolicy,
   isCustomPermissions,
   setPage,
-  theme
+  theme,
+  setRequestedPermissions,
+  requestedPermCopy
 }: {
   appInfo: any;
   url: string;
@@ -516,6 +517,8 @@ const ConfirmPage = ({
   isCustomPermissions: boolean;
   setPage: (page: Page) => void;
   theme: DefaultTheme;
+  setRequestedPermissions: (perms: PermissionType[]) => void;
+  requestedPermCopy: PermissionType[];
 }) => (
   <ConnectPageContent>
     <Section
@@ -554,11 +557,24 @@ const ConfirmPage = ({
               : "set_custom_permissions"
           )}
         </PrimaryText>
-        {isCustomPermissions ? (
-          <Edit02 height={24} width={24} color={theme.tertiaryText} />
-        ) : (
-          <ChevronRight height={24} width={24} color={theme.tertiaryText} />
-        )}
+        <div style={{ display: "flex", gap: "8px" }}>
+          {isCustomPermissions ? (
+            <>
+              <Edit02 height={24} width={24} color={theme.tertiaryText} />
+              <RefreshCcw01
+                height={24}
+                width={24}
+                color={theme.tertiaryText}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setRequestedPermissions(requestedPermCopy);
+                }}
+              />
+            </>
+          ) : (
+            <ChevronRight height={24} width={24} color={theme.tertiaryText} />
+          )}
+        </div>
       </CustomPermissionsButton>
       <CustomPermissionsInfo>
         <div>
