@@ -570,20 +570,18 @@ export class EnhancedStorage implements Storage {
       localStorage.getItem(PARTITIONED_STORAGE_BANNER_DISMISSAL_KEY) === "true";
     if (isDismissed) return;
 
-    setTimeout(
-      () =>
-        document.dispatchEvent(
-          new CustomEvent(PARTITIONED_STORAGE_BANNER_EVENT, {
-            detail: {
-              type: eventType,
-              message: browser.i18n.getMessage("partitioned_storage_banner"),
-              actionButtonType
-            },
-            bubbles: true
-          })
-        ),
-      0
-    );
+    setTimeout(() => {
+      document.dispatchEvent(
+        new CustomEvent(PARTITIONED_STORAGE_BANNER_EVENT, {
+          detail: {
+            type: eventType,
+            message: browser.i18n.getMessage("partitioned_storage_banner"),
+            actionButtonType
+          },
+          bubbles: true
+        })
+      );
+    }, 500);
 
     if (actionButtonType === "re-request") {
       this.setupUserInteractionHandler();

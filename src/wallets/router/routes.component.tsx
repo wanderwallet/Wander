@@ -1,9 +1,12 @@
 import { AnimatePresence } from "framer-motion";
-import React, { useEffect, useMemo, type PropsWithChildren } from "react";
+import React, {
+  useEffect,
+  useMemo,
+  useRef,
+  type PropsWithChildren
+} from "react";
 import { Switch, Route as Woute } from "wouter";
 import { Page } from "~components/page/page.component";
-import StoragePartitionedBanner from "~components/StoragePartitionedBanner";
-import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 import type {
   CommonRouteProps,
   RouteConfig
@@ -14,6 +17,7 @@ export interface RoutesProps {
   routes: RouteConfig[];
   diffLocation?: boolean;
   pageComponent?: React.ComponentType<PropsWithChildren>;
+  bottomBanner?: React.ReactNode;
 }
 
 // TODO: Consider adding a prop to `RouteConfig.parseParams` to parse
@@ -23,9 +27,11 @@ export interface RoutesProps {
 export function Routes({
   routes,
   diffLocation = false,
-  pageComponent
+  pageComponent,
+  bottomBanner
 }: RoutesProps) {
   const { location } = useLocation();
+  const mainRef = useRef<HTMLDivElement>(null);
 
   // In development, check there are no duplicate routes (paths):
 
@@ -44,36 +50,38 @@ export function Routes({
 
   const memoizedRoutes = useMemo(() => {
     return (
-      <Switch>
-        {routes.map((route) => {
-          const Component = route.component;
-          const PageComponent =
-            pageComponent === null ? React.Fragment : pageComponent || Page;
+      <div ref={mainRef}>
+        <Switch>
+          {routes.map((route) => {
+            const Component = route.component;
+            const PageComponent =
+              pageComponent === null ? React.Fragment : pageComponent || Page;
 
-          // TODO: Async-loaded components?
+            // TODO: Async-loaded components?
 
-          const PageWithComponent: React.ComponentType<CommonRouteProps> = (
-            props
-          ) => {
+            const PageWithComponent: React.ComponentType<CommonRouteProps> = (
+              props
+            ) => {
+              return (
+                <PageComponent mainRef={mainRef}>
+                  <Component {...props} />
+                </PageComponent>
+              );
+            };
+
             return (
-              <PageComponent>
-                <Component {...props} />
-                {IS_EMBEDDED_APP && <StoragePartitionedBanner />}
-              </PageComponent>
+              <Woute
+                key={route.key || route.path}
+                path={route.path}
+                component={PageWithComponent}
+              />
             );
-          };
-
-          return (
-            <Woute
-              key={route.key || route.path}
-              path={route.path}
-              component={PageWithComponent}
-            />
-          );
-        })}
-      </Switch>
+          })}
+        </Switch>
+        {bottomBanner}
+      </div>
     );
-  }, [routes, diffLocation ? location : undefined]);
+  }, [routes, diffLocation ? location : undefined, bottomBanner]);
 
   return (
     <>

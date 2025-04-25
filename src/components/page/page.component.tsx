@@ -1,5 +1,5 @@
 import { type Variants, motion } from "framer-motion";
-import { useEffect, useRef, useState, type PropsWithChildren } from "react";
+import { useEffect, useState, type PropsWithChildren } from "react";
 import styled from "styled-components";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 import {
@@ -8,11 +8,11 @@ import {
 } from "~utils/embedded/utils/routes/embedded-routes.utils";
 import type { WanderRoutePath } from "~wallets/router/router.types";
 
-export interface PageProps extends PropsWithChildren {}
+export interface PageProps extends PropsWithChildren {
+  mainRef?: React.RefObject<HTMLDivElement>;
+}
 
-export function Page({ children }: PageProps) {
-  const mainRef = useRef<HTMLDivElement>(null);
-
+export function Page({ children, mainRef }: PageProps) {
   const opacityAnimation: Variants = {
     initial: { opacity: 0 },
     enter: { opacity: 1 },
@@ -22,7 +22,7 @@ export function Page({ children }: PageProps) {
   const [height, setHeight] = useState(0);
 
   useEffect(() => {
-    const mainElement = mainRef.current;
+    const mainElement = mainRef?.current;
 
     if (!mainElement || import.meta.env?.VITE_IS_EMBEDDED_APP !== "1") return;
 
@@ -65,7 +65,6 @@ export function Page({ children }: PageProps) {
 
   return (
     <Main
-      ref={mainRef}
       initial="initial"
       animate="enter"
       exit="exit"

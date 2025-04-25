@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { WanderThemeProvider } from "~components/hardware/HardwareWalletTheme";
@@ -14,6 +14,7 @@ import { EmbeddedProvider } from "~utils/embedded/embedded.provider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "~components/embed/contexts/ThemeContext";
 import { ThemeSetup } from "~components/embed/ui/atoms/theme-setup/ThemeSetup";
+import StoragePartitionedBanner from "~components/StoragePartitionedBanner";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -31,9 +32,11 @@ export function ArConnectEmbeddedApp() {
     handleSyncLabelsAlarm();
   }, []);
 
+  const bottomBanner = useMemo(() => <StoragePartitionedBanner />, []);
+
   return (
     <>
-      <Routes routes={IFRAME_ROUTES} diffLocation />
+      <Routes routes={IFRAME_ROUTES} diffLocation bottomBanner={bottomBanner} />
       <NavigationBar />
       <ThemeSetup />
     </>

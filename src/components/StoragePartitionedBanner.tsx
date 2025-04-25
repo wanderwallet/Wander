@@ -155,9 +155,7 @@ export default function StoragePartitionedBanner({
     document.addEventListener(PARTITIONED_STORAGE_BANNER_EVENT, handleBanner);
 
     // Clean up event listener when component unmounts
-    return () => {
-      clearListener();
-    };
+    return () => clearListener();
   }, [initiallyVisible, dismissStorageKey]);
 
   // Handle banner dismissal
