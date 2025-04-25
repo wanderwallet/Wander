@@ -24,7 +24,8 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "clean": "rm -rf sdk-dist"
+    "clean": "rm -rf sdk-dist",
+    "prepare": "yarn build"
   },
   "devDependencies": {
     "tsup": "^8.3.5",
