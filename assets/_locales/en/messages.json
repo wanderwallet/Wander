@@ -2584,10 +2584,6 @@
     "message": "Enable analytics to help us provide the best experience for you on Wander.",
     "description": "Enable analytics description"
   },
-  "go_to_dashboard": {
-    "message": "Go to dashboard",
-    "description": "Go to dashboard button text"
-  },
   "congratulations": {
     "message": "Congratulations!",
     "description": "Congratulations title"

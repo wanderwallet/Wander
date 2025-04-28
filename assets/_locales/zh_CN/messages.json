@@ -2574,10 +2574,6 @@
         "message": "启用分析功能，帮助我们为您提供最佳的Wander体验。",
         "description": "Enable analytics description"
     },
-    "go_to_dashboard": {
-        "message": "前往仪表板",
-        "description": "Go to dashboard button text"
-    },
     "congratulations": {
         "message": "恭喜！",
         "description": "Congratulations title"

@@ -276,7 +276,7 @@ export function SetupWelcomeView({ params }: SetupWelcomeViewProps) {
         </HeaderIconWrapper>
         {!transparentBackground && (
           <Link href="https://www.wander.app/help#browser-extension">
-            <Text variant="secondary" size="base" weight="medium">
+            <Text variant="secondary" size="base" weight="medium" noMargin>
               {browser.i18n.getMessage("need_help")}
             </Text>
           </Link>
@@ -284,7 +284,15 @@ export function SetupWelcomeView({ params }: SetupWelcomeViewProps) {
       </Header>
       <StarIcons screen="setup" />
       <Spacer y={2} />
-      <SetupCard transparentBackground={transparentBackground}>
+      <SetupCard
+        transparentBackground={transparentBackground}
+        style={{
+          height:
+            transparentBackground && setupMode === "generate" && page === 5
+              ? "800px"
+              : "auto"
+        }}
+      >
         {!transparentBackground && (
           <HeaderContainer>
             <CardHeader>
@@ -326,7 +334,6 @@ export function SetupWelcomeView({ params }: SetupWelcomeViewProps) {
           </WalletContext.Provider>
         </PasswordContext.Provider>
       </SetupCard>
-      <Spacer y={2} />
     </Wrapper>
   );
 }
@@ -337,7 +344,7 @@ const PaginationContainer = styled.div`
   align-items: center;
 `;
 
-const Header = styled.div`
+export const Header = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -348,7 +355,7 @@ const Header = styled.div`
   right: 0;
 `;
 
-const HeaderIconWrapper = styled.div`
+export const HeaderIconWrapper = styled.div`
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -363,7 +370,7 @@ export const Content = styled.div`
   flex-direction: column;
 `;
 
-const PageWrapper = styled.div`
+export const PageWrapper = styled.div`
   position: relative;
   transition: height 0.17s ease;
   height: 100%;
@@ -380,7 +387,7 @@ const pageAnimation: Variants = {
   }
 };
 
-const Page = styled(motion.div).attrs({
+export const Page = styled(motion.div).attrs({
   variants: pageAnimation,
   initial: "exit",
   animate: "init"
@@ -435,7 +442,7 @@ export const Wrapper = styled.div<{ linearBackground?: boolean }>`
         } 0%, ${theme.displayTheme === "dark" ? "#1c1c1d" : "#F8F9FC"} 86.5%)`}
 `;
 
-const Image = styled.img`
+export const Image = styled.img`
   color: ${(props) => props.theme.primaryText};
 `;
 
@@ -446,8 +453,6 @@ export const SetupCard = styled(Card)<{ transparentBackground?: boolean }>`
   padding: 24px;
   width: 377.5px;
   min-height: 600px;
-  height: ${({ transparentBackground }) =>
-    transparentBackground ? "800px" : "auto"};
   ${({ transparentBackground }) =>
     transparentBackground && `background: transparent; border: none;`}
 `;

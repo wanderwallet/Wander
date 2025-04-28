@@ -16,7 +16,7 @@ export function GettingStartedExploreView() {
     <Container>
       <Content justifyContent="center" alignItems="center" textAlign="center">
         <Image src={ExploreImage} alt="Explore Image" />
-        <Text size="lg" weight="medium" noMargin>
+        <Text size="md" weight="medium" noMargin>
           {browser.i18n.getMessage("getting_started_explore_title")}
         </Text>
       </Content>

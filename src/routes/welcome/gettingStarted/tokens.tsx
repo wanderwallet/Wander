@@ -30,10 +30,10 @@ export function GettingStartedTokensView() {
               />
             ))}
           </DotsContainer>
+          <Text size="md" weight="medium" noMargin>
+            {browser.i18n.getMessage("getting_started_tokens_title")}
+          </Text>
         </CarouselContainer>
-        <Text size="lg" weight="medium" noMargin>
-          {browser.i18n.getMessage("getting_started_tokens_title")}
-        </Text>
       </Content>
     </Container>
   );
@@ -50,6 +50,7 @@ const DotsContainer = styled.div`
   justify-content: center;
   gap: 4px;
   margin-top: 12px;
+  margin-bottom: 12px;
 `;
 
 const Dot = styled.button<{ active: boolean }>`
@@ -65,5 +66,4 @@ const Dot = styled.button<{ active: boolean }>`
 
 const Image = styled.img`
   width: 100%;
-  flex: 1;
 `;

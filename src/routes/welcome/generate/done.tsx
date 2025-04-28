@@ -105,7 +105,7 @@ export function GenerateDoneWelcomeView({
           onClick={goToDashboard}
           style={{ marginTop: "auto" }}
         >
-          {browser.i18n.getMessage("go_to_dashboard")}
+          {browser.i18n.getMessage("close")}
         </Button>
       </Actions>
       <Link

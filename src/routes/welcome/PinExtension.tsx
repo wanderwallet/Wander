@@ -23,7 +23,7 @@ export function PinExtension() {
           />
           <Text size="xs" noMargin style={{ color: "#EEE" }}>
             <span style={{ fontWeight: 700 }}>
-              {browser.i18n.getMessage("pin_wander")}
+              {browser.i18n.getMessage("pin_wander")}{" "}
             </span>
             {browser.i18n.getMessage("pin_wander_rest")}
           </Text>
