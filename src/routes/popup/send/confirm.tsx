@@ -33,7 +33,7 @@ import { isLocalWallet } from "~utils/assertions";
 import { decryptWallet, freeDecryptedWallet } from "~wallets/encryption";
 import { EventType, PageType, trackEvent, trackPage } from "~utils/analytics";
 import { concatGatewayURL, getArweaveLink } from "~gateways/utils";
-import type { JWKInterface } from "arbundles";
+import type { JWKInterface } from "@dha-team/arbundles";
 import {
   AutoContactPic,
   generateProfileIcon,
