@@ -2999,5 +2999,13 @@
   "pin_wander_rest": {
     "message": "in your extension menu for quick and seamless access.",
     "description": "Pin Wander rest"
+  },
+  "personalize_your_experience": {
+    "message": "Personalize your experience",
+    "description": "Personalize your experience text"
+  },
+  "account_name_save_description": {
+    "message": "Your account name is stored locally and will only be visible to you.",
+    "description": "Account name save description"
   }
 }

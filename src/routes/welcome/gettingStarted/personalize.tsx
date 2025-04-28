@@ -22,7 +22,7 @@ export function GettingStartedPersonalizeView() {
   const { setToast } = useToasts();
   const [theme, setTheme] = useSetting("display_theme");
   const activeWallet = useActiveWallet();
-  const [wallets, setWallets] = useStorage<StoredWallet[]>(
+  const [_, setWallets] = useStorage<StoredWallet[]>(
     {
       key: "wallets",
       instance: ExtensionStorage
@@ -93,7 +93,7 @@ export function GettingStartedPersonalizeView() {
         textAlign="center"
       >
         <Text size="xl" weight="bold" noMargin>
-          Personalize your experience
+          {browser.i18n.getMessage("personalize_your_experience")}
         </Text>
         <Flex direction="column" gap={8} width="100%" align="start">
           <Text weight="medium" noMargin>
@@ -111,7 +111,7 @@ export function GettingStartedPersonalizeView() {
             onBlur={updateNickname}
           />
           <Text variant="secondary" size="2xs" weight="medium" noMargin>
-            Your account name is stored locally and will only be visible to you.
+            {browser.i18n.getMessage("account_name_save_description")}
           </Text>
         </Flex>
         <Divider />

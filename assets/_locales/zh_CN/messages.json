@@ -2989,5 +2989,13 @@
     "pin_wander_rest": {
         "message": "在您的扩展菜单中，以便快速无缝访问。",
         "description": "Pin Wander rest"
+    },
+    "personalize_your_experience": {
+        "message": "个性化您的体验",
+        "description": "Personalize your experience text"
+    },
+    "account_name_save_description": {
+        "message": "您的账户名称存储在本地，仅您可见。",
+        "description": "Account name save description"
     }
 }
