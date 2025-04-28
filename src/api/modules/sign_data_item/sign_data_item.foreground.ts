@@ -2,9 +2,11 @@ import type { TransformFinalizer } from "~api/foreground/foreground-modules";
 import type { ModuleFunction } from "~api/module";
 import type { RawDataItem, SignDataItemParams } from "./types";
 import { isArrayBuffer } from "~utils/assertions";
+import type { SignatureOptions } from "arweave/web/lib/crypto/crypto-interface";
 
 const foreground: ModuleFunction<Record<any, any>> = async (
-  dataItem: SignDataItemParams
+  dataItem: SignDataItemParams,
+  signatureOptions?: SignatureOptions
 ) => {
   let rawDataItem: RawDataItem;
 
@@ -23,7 +25,7 @@ const foreground: ModuleFunction<Record<any, any>> = async (
     };
   }
 
-  return [rawDataItem];
+  return [rawDataItem, signatureOptions];
 };
 
 export const finalizer: TransformFinalizer<number[]> = (result) => {
