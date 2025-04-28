@@ -59,7 +59,7 @@ export function AccountSelector({
         }
         buttonAvatar={
           <Avatar fontColor={"#FFF"}>
-            <WalletIcon style={{ height: 16, width: 16 }} />
+            <WalletIcon color="#FFF" style={{ height: 16, width: 16 }} />
           </Avatar>
         }
         buttonText={
@@ -78,7 +78,10 @@ export function AccountSelector({
                   style={{ padding: "8px 16px" }}
                 >
                   <Avatar fontColor={"#FFF"}>
-                    <WalletIcon style={{ height: 16, width: 16 }} />
+                    <WalletIcon
+                      color="#FFF"
+                      style={{ height: 16, width: 16 }}
+                    />
                   </Avatar>
                   <Text
                     variant="bodyMd"
