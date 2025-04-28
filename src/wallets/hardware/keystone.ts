@@ -10,7 +10,7 @@ import type { UR } from "@ngraveio/bc-ur";
 import { v4 as uuid } from "uuid";
 import Arweave from "arweave";
 import { defaultGateway } from "~gateways/gateway";
-import { Signer } from "arbundles";
+import { Signer } from "@dha-team/arbundles";
 import { EventEmitter } from "events";
 
 export interface KeystoneInteraction {

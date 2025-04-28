@@ -11,7 +11,7 @@ import {
   getDecryptionKeyOrRequestUnlock,
   setDecryptionKey
 } from "./auth";
-import { ArweaveSigner } from "arbundles";
+import { ArweaveSigner } from "@dha-team/arbundles";
 import {
   DEFAULT_MODULE_APP_DATA,
   ERR_MSG_NO_ACTIVE_WALLET,

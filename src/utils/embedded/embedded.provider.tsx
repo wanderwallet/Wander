@@ -1036,7 +1036,12 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       postEmbeddedMessage({
         type: "embedded_auth",
         data: {
-          userDetails: !userId || !session ? null : {}
+          userDetails:
+            !userId || !session
+              ? null
+              : {
+                  userId
+                }
         }
       });
 
