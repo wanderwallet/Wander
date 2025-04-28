@@ -5,7 +5,7 @@ import { BalanceInfo, RouteConfig } from "../../wander-embedded.types";
 // embedded_auth:
 
 export interface UserDetails {
-  // TODO: Add props
+  userId: string;
 }
 
 export interface IncomingAuthMessageData {

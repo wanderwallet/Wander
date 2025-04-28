@@ -14,7 +14,9 @@ export type EmbeddedMessageId =
   | "embedded_request";
 
 export interface EmbeddedAuthMessageData {
-  userDetails: any; // TODO: TBD
+  userDetails: {
+    userId: string;
+  };
 }
 
 export interface EmbeddedResizeMessageData {
