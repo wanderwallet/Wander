@@ -195,11 +195,20 @@ const wander = new WanderEmbedded({
 });
 ```
 
-The button element has several CSS classes that are added based on its state:
+The button element has a `data-variant` HTML attribute you can use for styling:
 
-- `.isAuthenticated` - Added when the user is authenticated
+- `[data-variant="loading|onboarding|authenticated|not-authenticated"]`
+
+As well as some CSS classes that are added based on its state:
+
 - `.isConnected` - Added when the wallet is connected
 - `.isOpen` - Added when the wallet interface is open
+
+Additionally, the button's `.label` and `.balance` elements also have some modifiers:
+
+- `.label.isLoading`
+- `.balance.isLoading`
+- `.balance.isHidden`
 
 You can use these classes in your `customStyles` to style different states:
 

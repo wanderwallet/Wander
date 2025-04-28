@@ -5,12 +5,15 @@ import { BalanceInfo, RouteConfig } from "../../wander-embedded.types";
 
 // embedded_auth:
 
-export interface UserDetails {
-  userId: string;
-}
+export type EmbeddedAuthStatus =
+  | "loading"
+  | "onboarding"
+  | "authenticated"
+  | "not-authenticated";
 
 export interface IncomingAuthMessageData {
-  userDetails: null | UserDetails;
+  authStatus: EmbeddedAuthStatus;
+  userId: null | string;
 }
 
 // embedded_resize

@@ -6,7 +6,6 @@ import {
   IncomingMessage,
   IncomingMessageId,
   IncomingRequestMessageData,
-  IncomingResizeMessage,
   IncomingResizeMessageData,
   OutgoingMessage,
   WalletSwitchMessage
@@ -62,7 +61,18 @@ export function isIncomingMessage(
     case "embedded_auth": {
       const data = message.data as IncomingAuthMessageData;
 
-      return !!(data && typeof data === "object" && "userDetails" in data);
+      return !!(
+        data &&
+        typeof data === "object" &&
+        typeof [
+          "loading",
+          "onboarding",
+          "authenticated",
+          "not-authenticated"
+        ].includes(data.authStatus) &&
+        (data.userId === null ||
+          (!!data.userId && typeof data.userId === "string"))
+      );
     }
 
     case "embedded_connect":

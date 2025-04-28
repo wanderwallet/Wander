@@ -9,6 +9,7 @@ import {
 import { getWanderButtonTemplateContent } from "./wander-button.template";
 import { addCSSVariables } from "../../utils/styles/styles.utils";
 import { merge } from "ts-deepmerge";
+import { EmbeddedAuthStatus } from "../../utils/message/message.types";
 
 export class WanderButton {
   static DEFAULT_LIGHT_CSS_VARS: WanderEmbeddedButtonCSSVars = {
@@ -87,6 +88,9 @@ export class WanderButton {
     },
     notifications: "counter",
     i18n: {
+      loading: "Loading",
+      loadingBalance: "Loading Balance",
+      completeSignUp: "Complete Sign Up",
       signIn: "Sign in",
       reviewRequests: "Review requests"
     }
@@ -107,6 +111,7 @@ export class WanderButton {
   private config: WanderEmbeddedButtonConfig;
 
   // State:
+  private variant: null | EmbeddedAuthStatus = null;
   private status: Partial<Record<WanderEmbeddedButtonStatus, boolean>> = {};
 
   constructor(options: WanderEmbeddedButtonOptions = {}) {
@@ -197,6 +202,8 @@ export class WanderButton {
 
     template.innerHTML = getWanderButtonTemplateContent({
       wanderLogo: config.wanderLogo,
+      showLabel: config.label,
+      showBalance: !!config.balance,
       customStyles: config.customStyles,
       // TODO: It would be better to create an interface with the subset of vars that we can override when changing themes:
       cssVariableKeys: Object.keys(WanderButton.DEFAULT_LIGHT_CSS_VARS)
@@ -282,50 +289,79 @@ export class WanderButton {
   }
 
   setBalance(balanceInfo: BalanceInfo) {
+    if (this.balance.getAttribute("hidden")) return;
+
+    this.balance.classList.remove("isLoading");
+    this.balance.textContent = balanceInfo.formattedBalance;
+    this.balance.title = "";
+
     if (balanceInfo.amount === null) {
       this.balance.classList.add("isHidden");
     } else {
       this.balance.classList.remove("isHidden");
     }
-
-    this.balance.textContent = balanceInfo.formattedBalance;
   }
 
   setNotifications(pendingRequests: number) {
-    const { label, notifications, i18n } = this.config;
+    const { notifications, i18n } = this.config;
 
     if (notifications === "off") return;
 
     if (pendingRequests > 0) {
       this.notifications.textContent =
         notifications === "counter" ? `${pendingRequests}` : "!";
-      this.label.textContent = label ? i18n.reviewRequests : "";
+      this.label.textContent = i18n.reviewRequests;
     } else {
       this.notifications.textContent = "";
-      this.label.textContent = label
-        ? this.status.isAuthenticated
-          ? ""
-          : i18n.signIn
-        : "";
+      this.label.textContent = "";
+    }
+  }
+
+  // TODO: Why is noAuth being received and the auth UI re-enabled before
+  // the initial loading finishes? Probably the forced initialization!
+
+  setVariant(variant: EmbeddedAuthStatus) {
+    console.log("setVariant =", variant);
+
+    this.variant = variant;
+    this.button.setAttribute("data-variant", variant);
+
+    if (variant === "loading") {
+      this.indicator.classList.add("isLoading");
+      this.label.classList.add("isLoading");
+      this.label.textContent = "";
+      this.label.title = this.config.i18n.loading;
+    } else {
+      this.indicator.classList.remove("isLoading");
+      this.label.classList.remove("isLoading");
+
+      if (variant === "onboarding") {
+        this.label.textContent = "Wander";
+        this.label.title = this.config.i18n.completeSignUp;
+      } else if (variant === "authenticated") {
+        this.label.textContent = "";
+        this.label.title = "";
+        this.balance.classList.add("isLoading");
+        this.balance.textContent = "";
+        this.balance.title = this.config.i18n.loadingBalance;
+      } else {
+        this.label.textContent = this.config.i18n.signIn;
+        this.label.title = "";
+        this.balance.classList.remove("isLoading");
+        this.balance.textContent = "";
+        this.balance.title = "";
+      }
     }
   }
 
   setStatus(status: WanderEmbeddedButtonStatus) {
     this.status[status] = true;
     this.button.classList.add(status);
-
-    if (status === "isAuthenticated") {
-      this.label.textContent = "";
-    }
   }
 
   unsetStatus(status: WanderEmbeddedButtonStatus) {
     this.status[status] = false;
     this.button.classList.remove(status);
-
-    if (status === "isAuthenticated") {
-      this.label.textContent = this.config.label ? this.config.i18n.signIn : "";
-    }
   }
 
   destroy() {

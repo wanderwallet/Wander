@@ -13,10 +13,15 @@ export type EmbeddedMessageId =
   | "embedded_balance"
   | "embedded_request";
 
+export type EmbeddedAuthStatus =
+  | "loading"
+  | "onboarding"
+  | "authenticated"
+  | "not-authenticated";
+
 export interface EmbeddedAuthMessageData {
-  userDetails: {
-    userId: string;
-  };
+  authStatus: EmbeddedAuthStatus;
+  userId: null | string;
 }
 
 export interface EmbeddedResizeMessageData {

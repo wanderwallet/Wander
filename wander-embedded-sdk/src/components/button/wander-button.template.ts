@@ -2,6 +2,8 @@ import { WanderEmbeddedLogoVariant } from "../../wander-embedded.types";
 
 export interface WanderButtonTemplateContentOptions {
   wanderLogo: WanderEmbeddedLogoVariant;
+  showLabel: boolean;
+  showBalance: boolean;
   customStyles: string;
   cssVariableKeys: string[];
 }
@@ -10,6 +12,8 @@ export interface WanderButtonTemplateContentOptions {
 
 export const getWanderButtonTemplateContent = ({
   wanderLogo,
+  showLabel,
+  showBalance,
   customStyles,
   cssVariableKeys = []
 }: WanderButtonTemplateContentOptions) => `
@@ -87,17 +91,38 @@ export const getWanderButtonTemplateContent = ({
     transition: transform linear 50ms;
   }
 
-  .label:empty {
+  .label {
+  }
+
+  .label[hidden],
+  .label:empty:not(.isLoading) {
     display: none;
   }
 
-  .label:not(:empty) + .balance {
-    display: none;
+  .label.isLoading {
+    background: currentColor;
+    width: 64px;
+    height: 12px;
+    border-radius: 6px;
+    animation: blink-opacity 3s infinite;
   }
 
   .balance {
     filter: blur(0px);
     transition: filter linear 300ms;
+  }
+
+  .balance[hidden],
+  .balance:empty:not(.isLoading) {
+    display: none;
+  }
+
+  .balance.isLoading {
+    background: currentColor;
+    width: 64px;
+    height: 12px;
+    border-radius: 6px;
+    animation: blink-opacity 3s infinite;
   }
 
   .balance.isHidden {
@@ -124,6 +149,10 @@ export const getWanderButtonTemplateContent = ({
     transform: translate(50%, 50%);
   }
 
+  .indicator.isLoading {
+    animation: blink-indicator 3s infinite;
+  }
+
   .dappLogo {
     width: 22px;
     height: 22px;
@@ -148,6 +177,7 @@ export const getWanderButtonTemplateContent = ({
   }
 
   .isConnected + .indicator {
+    /* TODO: Add CSS var */
     background: #56C980;
   }
 
@@ -168,6 +198,24 @@ export const getWanderButtonTemplateContent = ({
     }
     100% {
       transform: rotate(-10deg) translate(0, 1px);
+    }
+  }
+
+  @keyframes blink-opacity {
+    0%, 100% {
+      opacity: 0.5;
+    }
+    50% {
+      opacity: 0.25;
+    }
+  }
+
+  @keyframes blink-indicator {
+    0%, 100% {
+      background: #CCC;
+    }
+    50% {
+      background: #56C980;
     }
   }
 
@@ -232,8 +280,8 @@ export const getWanderButtonTemplateContent = ({
     </defs>
   </svg>
 
-  <span class="label"></span>
-  <span class="balance"></span>
+  <span class="label" ${showLabel ? "" : "hidden"}></span>
+  <span class="balance" ${showBalance ? "" : "hidden"}></span>
 </button>
 
 <span class="indicator"></span>

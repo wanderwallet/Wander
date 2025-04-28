@@ -56,6 +56,7 @@ import copy from "copy-to-clipboard";
 import { useHashLocation } from "wouter/use-hash-location";
 import { getIPAddress } from "~utils/ip_address";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
+import type { EmbeddedAuthStatus } from "~utils/embedded/utils/messages/embedded-messages.types";
 
 export type AuthStatusCopy = AuthStatus;
 
@@ -141,6 +142,31 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       }
     }
   }, [authStatus]);
+
+  useEffect(() => {
+    if (!userId) return;
+
+    console.log("authStatus =", authStatus);
+
+    const sdkAuthStatusByAppAuthStatus = {
+      unlocked: "authenticated",
+      authLoading: "loading",
+      noShares: "onboarding",
+      noWallets: "onboarding"
+    } as const satisfies Partial<Record<AuthStatus, EmbeddedAuthStatus>>;
+
+    const sdkAuthStatus = sdkAuthStatusByAppAuthStatus[authStatus];
+
+    if (sdkAuthStatus) {
+      postEmbeddedMessage({
+        type: "embedded_auth",
+        data: {
+          authStatus: sdkAuthStatus,
+          userId
+        }
+      });
+    }
+  }, [authStatus, userId]);
 
   const getLatestSession = useCallback(async (session: DbSession) => {
     const userAgent = navigator.userAgent;
@@ -1033,19 +1059,15 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
       setEmbeddedContextState(EMBEDDED_CONTEXT_INITIAL_STATE);
 
-      postEmbeddedMessage({
-        type: "embedded_auth",
-        data: {
-          userDetails:
-            !userId || !session
-              ? null
-              : {
-                  userId
-                }
-        }
-      });
-
       if (!userId || !session) {
+        postEmbeddedMessage({
+          type: "embedded_auth",
+          data: {
+            authStatus: "not-authenticated",
+            userId: null
+          }
+        });
+
         generateTempWallet();
 
         return;
@@ -1199,20 +1221,20 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
   useEffect(() => {
     async function init() {
       /*
-    KNOWN AUTHENTICATION ISSUES:
+      KNOWN AUTHENTICATION ISSUES:
 
-    - The decoded JWT token sometimes is missing some properties (`deviceNonce`). Refreshing the
-      sessions seems to fix the issue, but not immediately. The `The current session is incomplete. Refreshing...` block
-      in `initEmbeddedWallet` is a dirty/temp fix for that.
+      - The decoded JWT token sometimes is missing some properties (`deviceNonce`). Refreshing the
+        sessions seems to fix the issue, but not immediately. The `The current session is incomplete. Refreshing...` block
+        in `initEmbeddedWallet` is a dirty/temp fix for that.
 
-    - The `onAuthStateChange` callback below is never invoked when running the app inside an iframe on a different
-      origin. The `setTimeout` below is a dirty/tem fix for that.
+      - The `onAuthStateChange` callback below is never invoked when running the app inside an iframe on a different
+        origin. The `setTimeout` below is a dirty/tem fix for that.
 
-      See https://stackoverflow.com/questions/71819128/supabase-auth-onauthstatechange-not-working-when-react-app-is-in-iframe
+        See https://stackoverflow.com/questions/71819128/supabase-auth-onauthstatechange-not-working-when-react-app-is-in-iframe
 
-    - When a sessions is deleted from the DB, it's still reported as valid, even thought tRPC endpoints will return
-      UNAUTHORIZED errors. When that happens, we should force de-authentication of the frontend.
-    */
+      - When a sessions is deleted from the DB, it's still reported as valid, even thought tRPC endpoints will return
+        UNAUTHORIZED errors. When that happens, we should force de-authentication of the frontend.
+      */
 
       const forceInitTimeoutID = setTimeout(() => {
         console.warn("Forcing initialization...");
@@ -1228,6 +1250,25 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       }, 2000);
 
       const supabase = await getSupabaseClient();
+
+      // Retrieves the current LOCAL session:
+      const { data, error } = await supabase.auth.getSession();
+
+      // Send the initial state for the SDK button ASAP:
+      postEmbeddedMessage({
+        type: "embedded_auth",
+        data:
+          !error && !!data?.session?.access_token
+            ? {
+                authStatus: "loading",
+                userId: null
+              }
+            : {
+                authStatus: "not-authenticated",
+                userId: null
+              }
+      });
+
       const {
         data: { subscription }
       } = supabase.auth.onAuthStateChange(async (_event, session) => {

@@ -1,5 +1,3 @@
-import { UserDetails } from "./utils/message/message.types";
-
 /**
  * Types of routes available in the Wander Embedded SDK.
  */
@@ -196,6 +194,17 @@ export interface RouteConfig {
   // imgSrc?: string;
 }
 
+export type AuthStatus =
+  | "loading"
+  | "onboarding"
+  | "authenticated"
+  | "not-authenticated";
+
+export interface AuthInfo {
+  authStatus: AuthStatus;
+  userId: null | string;
+}
+
 /** User's wallet balance information */
 export interface BalanceInfo {
   /**
@@ -259,7 +268,7 @@ export interface WanderEmbeddedOptions {
    * Callback function called when authentication state changes.
    * @param userDetails User details object when signed in, or null when signed out
    */
-  onAuth?: (userDetails: UserDetails | null) => void;
+  onAuth?: (authInfo: AuthInfo) => void;
 
   /**
    * Callback function called when the wallet interface is opened.
@@ -473,13 +482,32 @@ export type WanderEmbeddedButtonNotifications =
  */
 export interface WanderEmbeddedButtonLabels {
   /**
-   * Text to display for the sign in button.
+   * Title/tooltip to display when the button is loading.
+   * @default "Loading"
+   */
+  loading: string;
+
+  /**
+   * Title/tooltip to display when the balance is loading.
+   * @default "Loading Balance"
+   */
+  loadingBalance: string;
+
+  /**
+   * Title/tooltip to display when the user is authenticated, but the onboarding
+   * hasn't been completed.
+   * @default "Complete Sign Up"
+   */
+  completeSignUp: string;
+
+  /**
+   * Text to display when the user is not authenticated.
    * @default "Sign In"
    */
   signIn: string;
 
   /**
-   * Text to display for reviewing requests button.
+   * Text to display when the user has request to review.
    * @default "Review Requests"
    */
   reviewRequests: string;
@@ -597,8 +625,6 @@ export interface WanderEmbeddedButtonConfig
  * Button status properties that can be observed.
  */
 export type WanderEmbeddedButtonStatus =
-  /** Whether the user is authenticated. */
-  | "isAuthenticated"
   /** Whether the user's wallet is connected to the application. */
   | "isConnected"
   /** Whether the wallet UI is currently open. */

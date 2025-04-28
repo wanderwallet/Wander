@@ -8,10 +8,11 @@ import {
   WanderEmbeddedOptions
 } from "./wander-embedded.types";
 import {
+  EmbeddedAuthStatus,
+  IncomingAuthMessageData,
   IncomingBalanceMessageData,
   IncomingRequestMessageData,
-  IncomingResizeMessageData,
-  UserDetails
+  IncomingResizeMessageData
 } from "./utils/message/message.types";
 import {
   isEventMessage,
@@ -56,13 +57,16 @@ type OpenReason = "manually" | "embedded_open" | "embedded_request";
 export class WanderEmbedded {
   private static instance: WanderEmbedded | null = null;
 
+  static INITIAL_STATE_IS_LOADING_LS_KEY =
+    "LOCAL_STORAGE_WAS_AUTHENTICATED" as const;
+
   static DEFAULT_IFRAME_SRC =
     process.env.NODE_ENV === "development"
       ? ("http://localhost:5173/" as const)
       : ("https://embed-dev.wander.app/" as const);
 
   // Callbacks:
-  private onAuth: (userDetails: UserDetails | null) => void = NOOP;
+  private onAuth: (data: IncomingAuthMessageData) => void = NOOP;
   private onOpen: () => void = NOOP;
   private onClose: () => void = NOOP;
   private onResize: (data: IncomingResizeMessageData) => void = NOOP;
@@ -84,9 +88,18 @@ export class WanderEmbedded {
   private allowOpeningAutomatically = true;
 
   /**
+   * Contains the current authentication state of the SDK.
+   */
+  public authStatus: EmbeddedAuthStatus = !!localStorage.getItem(
+    WanderEmbedded.INITIAL_STATE_IS_LOADING_LS_KEY
+  )
+    ? "loading"
+    : "not-authenticated";
+
+  /**
    * Contains details about the authenticated user, or null if not authenticated
    */
-  public userDetails: UserDetails | null = null; // TODO: Should we expose this?
+  public userId: string | null = null;
 
   /**
    * Current route configuration including dimensions and layout preferences
@@ -210,6 +223,8 @@ export class WanderEmbedded {
         buttonOptions === true ? {} : buttonOptions
       );
 
+      this.buttonComponent.setVariant(this.authStatus);
+
       const { parent, host, button } = this.buttonComponent.getElements();
 
       this.buttonHostRef = host;
@@ -270,20 +285,41 @@ export class WanderEmbedded {
 
     switch (message.type) {
       case "embedded_auth":
-        const { userDetails } = message.data;
-        this.userDetails = userDetails;
+        const { authStatus, userId } = message.data;
 
-        if (userDetails) {
-          this.buttonComponent?.setStatus("isAuthenticated");
+        console.log("embedded_auth =", authStatus);
 
+        this.authStatus = authStatus;
+        this.userId = userId;
+
+        if (authStatus === "not-authenticated") {
+          localStorage.removeItem(
+            WanderEmbedded.INITIAL_STATE_IS_LOADING_LS_KEY
+          );
+        } else {
+          localStorage.setItem(
+            WanderEmbedded.INITIAL_STATE_IS_LOADING_LS_KEY,
+            "1"
+          );
+        }
+
+        this.buttonComponent?.setVariant(authStatus);
+
+        if (authStatus === "loading") {
+          // TODO: Show spinner instead of iframe.
+        } else {
+          // TODO: Show iframe
+        }
+
+        if (authStatus === "authenticated" && !!userId) {
+          // TODO: This might not work if we need to create a wallet still or we get
+          // the backup prompt:
           this.iframeComponent?.resize({
             routeType: "default",
             preferredLayoutType: "popup",
             height: 0
           });
         } else {
-          this.buttonComponent?.unsetStatus("isAuthenticated");
-
           this.iframeComponent?.resize({
             routeType: "auth",
             preferredLayoutType: "modal",
@@ -291,7 +327,8 @@ export class WanderEmbedded {
           });
         }
 
-        this.onAuth(message.data.userDetails);
+        this.onAuth(message.data);
+
         break;
 
       case "embedded_connect":
@@ -448,7 +485,7 @@ export class WanderEmbedded {
    * @returns True if authenticated, false otherwise
    */
   get isAuthenticated(): boolean {
-    return !!this.userDetails;
+    return this.authStatus === "authenticated" && !!this.userId;
   }
 
   /**
