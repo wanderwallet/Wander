@@ -261,7 +261,7 @@ export class WanderEmbedded {
           });
         }
 
-        this.onAuth(message.data);
+        this.onAuth(message.data.userDetails);
         break;
 
       case "embedded_connect":
