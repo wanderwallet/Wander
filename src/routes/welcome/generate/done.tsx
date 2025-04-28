@@ -1,17 +1,23 @@
-import { Button, Text } from "@arconnect/components-rebrand";
+import { Button, Spacer, Text } from "@arconnect/components-rebrand";
 import { WalletContext, type SetupWelcomeViewParams } from "../setup";
 import browser from "webextension-polyfill";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect } from "react";
 import { PageType, trackPage } from "~utils/analytics";
 import JSConfetti from "js-confetti";
 import WalletIconSvg from "url:~assets/setup/wallet.svg";
 import styled from "styled-components";
 import { CopyToClipboard } from "~components/CopyToClipboard";
 import { formatAddress } from "~utils/format";
-import Squircle from "~components/Squircle";
 import { useLocation } from "~wallets/router/router.utils";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { useActiveWallet } from "~wallets/hooks";
+import { Link } from "~routes/popup/token/[id]";
+import { useTheme } from "styled-components";
+import { Avatar, NoAvatarIcon } from "~components/popup/WalletHeader";
+import { QRCodeSVG } from "qrcode.react";
+import { QRCodeWrapper } from "~routes/popup/receive";
+import { Flex } from "~components/common/Flex";
+import { PinExtension } from "../PinExtension";
 
 export type GenerateDoneWelcomeViewProps =
   CommonRouteProps<SetupWelcomeViewParams>;
@@ -19,7 +25,7 @@ export type GenerateDoneWelcomeViewProps =
 export function GenerateDoneWelcomeView({
   params
 }: GenerateDoneWelcomeViewProps) {
-  // wallet context
+  const theme = useTheme();
   const { wallet } = useContext(WalletContext);
   const activeWallet = useActiveWallet();
   const { navigate } = useLocation();
@@ -64,21 +70,29 @@ export function GenerateDoneWelcomeView({
         </InnerContent>
         <InnerContent>
           <AccountContainer>
-            <AccountIcon
-              placeholderText={wallet?.nickname?.slice(0, 1) || "A"}
+            <Avatar>
+              <NoAvatarIcon />
+            </Avatar>
+            <CopyToClipboard
+              label={formatAddress(wallet.address || activeWallet?.address, 16)}
+              labelAs={Label}
+              text={wallet.address}
             />
-            <Text size="base" weight="medium" noMargin>
-              {wallet?.nickname || "Account 1"}
-            </Text>
           </AccountContainer>
-          <Text size="base" weight="medium" noMargin>
-            {browser.i18n.getMessage("your_wallet_address_is")}
-          </Text>
-          <CopyToClipboard
-            label={formatAddress(wallet.address || activeWallet?.address, 16)}
-            labelAs={Label}
-            text={wallet.address}
-          />
+          <Spacer y={2} />
+          <Flex gap={16} justify="center" direction="column" align="center">
+            <QRCodeWrapper size={155}>
+              <QRCodeSVG
+                fgColor="#fff"
+                bgColor="transparent"
+                size={142}
+                value={wallet.address}
+              />
+            </QRCodeWrapper>
+            <Text variant="secondary" weight="medium" noMargin>
+              Scan the QR code or copy the address for a seamless transfer
+            </Text>
+          </Flex>
         </InnerContent>
       </Content>
       <Actions>
@@ -94,6 +108,18 @@ export function GenerateDoneWelcomeView({
           {browser.i18n.getMessage("go_to_dashboard")}
         </Button>
       </Actions>
+      <Link
+        style={{
+          padding: 24,
+          color: theme.primary,
+          fontSize: 16,
+          fontWeight: 500
+        }}
+        href="https://www.wander.app/help#browser-extension"
+      >
+        {browser.i18n.getMessage("need_help")}
+      </Link>
+      <PinExtension />
     </Container>
   );
 }
@@ -155,9 +181,3 @@ const Label = styled(Text).attrs({
   weight: "medium",
   noMargin: true
 })``;
-
-const AccountIcon = styled(Squircle)`
-  width: 24px;
-  height: 24px;
-  color: ${(props) => props.theme.theme};
-`;

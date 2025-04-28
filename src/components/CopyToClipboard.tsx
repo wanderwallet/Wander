@@ -11,7 +11,7 @@ interface CopyToClipboardProps {
   iconSize?: number;
   label?: string;
   labelStyle?: React.CSSProperties;
-  labelAs?: React.ElementType;
+  labelAs?: typeof Label;
   showToast?: boolean;
   onCopy?: (isCopied: boolean) => void;
 }

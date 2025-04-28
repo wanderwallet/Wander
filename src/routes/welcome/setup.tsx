@@ -21,8 +21,6 @@ import { ThemeWelcomeView } from "./load/theme";
 
 // Generate:
 import { AccountWelcomeView } from "./generate/account";
-import { BackupWelcomeView } from "./generate/backup";
-import { ConfirmWelcomeView } from "./generate/confirm";
 import { GenerateDoneWelcomeView } from "./generate/done";
 
 // Load:
@@ -34,8 +32,10 @@ import { PermissionsWelcomeView } from "./generate/permissions";
 import { OptionsWelcomView } from "./load/options";
 import IconText from "~components/IconText";
 import { Link } from "~routes/popup/token/[id]";
-// Wallet generate pages:
+import { SecureWelcomeView } from "./generate/secure";
+import { LoadingWelcomeView } from "./generate/loading";
 
+// Wallet generate pages:
 const LoadViews = [
   WalletsWelcomeView,
   AccountWelcomeView,
@@ -55,12 +55,14 @@ const KeystoneViews = [
 // TODO: Use a nested router instead:
 const ViewsBySetupMode = {
   generate: [
-    AccountWelcomeView,
-    BackupWelcomeView,
-    ConfirmWelcomeView,
+    SecureWelcomeView,
+    // AccountWelcomeView,
+    // BackupWelcomeView,
+    // ConfirmWelcomeView,
     PasswordWelcomeView,
-    ThemeWelcomeView,
+    // ThemeWelcomeView,
     PermissionsWelcomeView,
+    LoadingWelcomeView,
     GenerateDoneWelcomeView
   ],
   load: [OptionsWelcomView],
@@ -96,12 +98,14 @@ const remainingKeystoneSubtitles = [
 
 const VIEW_SUBTITLES_BY_SETUP_MODE = {
   generate: [
-    "name_your_account",
-    "backup_your_account",
-    "confirm_your_recovery_phrase",
+    "secure_your_account",
+    // "name_your_account",
+    // "backup_your_account",
+    // "confirm_your_recovery_phrase",
     "create_a_password",
-    "choose_ui_theme",
+    // "choose_ui_theme",
     "enable_permissions",
+    "loading_wallet",
     "congratulations"
   ],
   load: [""],
@@ -134,8 +138,12 @@ export function SetupWelcomeView({ params }: SetupWelcomeViewProps) {
   const pageTitle = VIEW_TITLES_BY_SETUP_MODE[setupMode];
   const pageSubtitle = VIEW_SUBTITLES_BY_SETUP_MODE[setupMode][page - 1];
   const pageCount = ViewsBySetupMode[setupMode].length;
-  const transparentBackground = setupMode !== "load" && pageCount === page;
-  const hidePagination = setupMode === "load" && page === 1;
+  const transparentBackground =
+    (setupMode !== "load" && pageCount === page) ||
+    (setupMode === "generate" && page > 3);
+  const hidePagination =
+    (setupMode === "load" && page === 1) ||
+    (setupMode === "generate" && page > 3);
 
   // temporarily stored password
   const [password, setPassword] = useState("");
@@ -266,11 +274,13 @@ export function SetupWelcomeView({ params }: SetupWelcomeViewProps) {
           />
           <IconText width={116.759} height={24.111} />
         </HeaderIconWrapper>
-        <Link href="https://www.wander.app/help#browser-extension">
-          <Text variant="secondary" size="base" weight="medium">
-            {browser.i18n.getMessage("need_help")}
-          </Text>
-        </Link>
+        {!transparentBackground && (
+          <Link href="https://www.wander.app/help#browser-extension">
+            <Text variant="secondary" size="base" weight="medium">
+              {browser.i18n.getMessage("need_help")}
+            </Text>
+          </Link>
+        )}
       </Header>
       <StarIcons screen="setup" />
       <Spacer y={2} />
@@ -288,7 +298,7 @@ export function SetupWelcomeView({ params }: SetupWelcomeViewProps) {
               <PaginationContainer>
                 <Pagination
                   currentPage={page}
-                  totalPages={pageCount}
+                  totalPages={setupMode === "generate" ? 3 : pageCount}
                   subtitle={pageSubtitle}
                 />
               </PaginationContainer>
@@ -436,6 +446,8 @@ export const SetupCard = styled(Card)<{ transparentBackground?: boolean }>`
   padding: 24px;
   width: 377.5px;
   min-height: 600px;
+  height: ${({ transparentBackground }) =>
+    transparentBackground ? "800px" : "auto"};
   ${({ transparentBackground }) =>
     transparentBackground && `background: transparent; border: none;`}
 `;

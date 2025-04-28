@@ -72,6 +72,11 @@ export function PermissionsWelcomeView({
 
   // add generated wallet
   async function done() {
+    if (params.setupMode === "generate") {
+      navigate(`/${params.setupMode}/${Number(params.page) + 1}`);
+      return;
+    }
+
     if (loading) return;
 
     const startTime = Date.now();
@@ -211,7 +216,9 @@ export function PermissionsWelcomeView({
         </div>
       </Content>
       <Button fullWidth onClick={done} loading={loading}>
-        {browser.i18n.getMessage("continue")}
+        {params.setupMode === "generate"
+          ? browser.i18n.getMessage("finish")
+          : browser.i18n.getMessage("continue")}
       </Button>
     </Container>
   );

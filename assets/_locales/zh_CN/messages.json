@@ -2518,6 +2518,14 @@
         "message": "命名您的账户",
         "description": "Name your account input placeholder"
     },
+    "secure_your_account": {
+        "message": "保护您的账户",
+        "description": "Secure your account button text"
+    },
+    "secure_your_account_description": {
+        "message": "使用密码或密码短语保护您的账户。这将用于确认活动和交易在Wander中。",
+        "description": "Secure your account description"
+    },
     "backup_your_account": {
         "message": "备份您的账户",
         "description": "Backup your account button text"
@@ -2591,10 +2599,6 @@
     "copy_failed": {
         "message": "复制失败",
         "description": "Failed to copy text"
-    },
-    "your_wallet_address_is": {
-        "message": "您的钱包地址是",
-        "description": "Your wallet address is"
     },
     "choose_how_to_add_your_account": {
         "message": "选择如何添加您的账户",
@@ -2961,5 +2965,33 @@
     "data_too_large": {
         "message": "无法显示数据：数据太大，无法显示。",
         "description": "Data too large text"
+    },
+    "use_a_passkey": {
+        "message": "使用通行密钥",
+        "description": "Use a passkey text"
+    },
+    "set_up_a_password": {
+        "message": "设置密码",
+        "description": "Set up a password text"
+    },
+    "passkey_not_available_yet": {
+        "message": "通行密钥暂不可用",
+        "description": "Passkey not available yet text"
+    },
+    "generating_your_account": {
+        "message": "正在生成您的账户！",
+        "description": "Generating your account text"
+    },
+    "generating_your_account_description": {
+        "message": "此过程可能需要一到两分钟。",
+        "description": "Generating your account description"
+    },
+    "pin_wander": {
+        "message": "固定Wander",
+        "description": "Pin Wander text"
+    },
+    "pin_wander_rest": {
+        "message": "在您的扩展菜单中，以便快速无缝访问。",
+        "description": "Pin Wander rest"
     }
 }
