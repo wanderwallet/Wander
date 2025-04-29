@@ -213,9 +213,6 @@ export class WanderEmbedded {
 
       this.backdropRef = elements.backdrop;
       this.iframeRef = elements.iframe;
-
-      // document.body.appendChild(elements.backdrop);
-      // document.body.appendChild(elements.iframe);
     }
 
     if (typeof buttonOptions === "object" || buttonOptions === true) {

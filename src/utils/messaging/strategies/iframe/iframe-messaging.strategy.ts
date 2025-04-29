@@ -20,7 +20,7 @@ const messageHandlersByMessageID: Partial<
   Record<MessageID, Set<OnMessageCallback<MessageID>>>
 > = {};
 
-let embedWIndow: Window = null;
+let embedWindow: Window = null;
 let embedOrigin = "";
 
 const contextByMessageId: Partial<Record<MessageID, RuntimeContext>> = {
@@ -35,7 +35,7 @@ const contextByMessageId: Partial<Record<MessageID, RuntimeContext>> = {
  * @param iframeElement
  */
 export function setEmbeddedTargetIframe(iframeElement: HTMLIFrameElement) {
-  embedWIndow = iframeElement.contentWindow;
+  embedWindow = iframeElement.contentWindow;
   embedOrigin = new URL(iframeElement.src).origin;
 }
 
@@ -53,7 +53,7 @@ function getPostMessageFunction<K extends MessageID>(
 
   if (destination === "background") {
     if (!isInsideIframe()) {
-      postMessageTargetWindow = embedWIndow;
+      postMessageTargetWindow = embedWindow;
       postMessageTargetOrigin = embedOrigin;
     }
   } else if (destination.startsWith("content-script")) {
