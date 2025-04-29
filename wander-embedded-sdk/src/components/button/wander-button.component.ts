@@ -80,7 +80,6 @@ export class WanderButton {
     parent: document.body,
     position: "bottom-right",
     wanderLogo: "default",
-    dappLogoSrc: "",
     label: true,
     balance: {
       balanceOf: "total",
@@ -104,7 +103,6 @@ export class WanderButton {
   private label: HTMLSpanElement;
   private balance: HTMLSpanElement;
   private indicator: HTMLSpanElement;
-  private dappLogo: HTMLImageElement;
   private notifications: HTMLSpanElement;
 
   // Config (options):
@@ -131,8 +129,6 @@ export class WanderButton {
         options.customStyles || WanderButton.DEFAULT_CONFIG.customStyles,
       position: options.position || WanderButton.DEFAULT_CONFIG.position,
       wanderLogo: options.wanderLogo || WanderButton.DEFAULT_CONFIG.wanderLogo,
-      dappLogoSrc:
-        options.dappLogoSrc || WanderButton.DEFAULT_CONFIG.dappLogoSrc,
       label: options.label ?? WanderButton.DEFAULT_CONFIG.label,
       balance:
         options.balance === false
@@ -161,7 +157,6 @@ export class WanderButton {
     this.label = elements.label;
     this.balance = elements.balance;
     this.indicator = elements.indicator;
-    this.dappLogo = elements.dappLogo;
     this.notifications = elements.notifications;
   }
 
@@ -189,7 +184,6 @@ export class WanderButton {
     const label = shadow.querySelector(".label") as HTMLSpanElement;
     const balance = shadow.querySelector(".balance") as HTMLSpanElement;
     const indicator = shadow.querySelector(".indicator") as HTMLSpanElement;
-    const dappLogo = shadow.querySelector(".dappLogo") as HTMLImageElement;
     const notifications = shadow.querySelector(
       ".notifications"
     ) as HTMLSpanElement;
@@ -200,7 +194,6 @@ export class WanderButton {
       !label ||
       !balance ||
       !indicator ||
-      !dappLogo ||
       !notifications
     )
       throw new Error("Missing elements");
@@ -234,8 +227,6 @@ export class WanderButton {
       balance.setAttribute("hidden", "true");
     }
 
-    dappLogo.src = config.dappLogoSrc;
-
     return {
       host,
       button,
@@ -243,7 +234,6 @@ export class WanderButton {
       label,
       balance,
       indicator,
-      dappLogo,
       notifications
     };
   }
@@ -257,7 +247,6 @@ export class WanderButton {
       label: this.label,
       balance: this.balance,
       indicator: this.indicator,
-      dappLogo: this.dappLogo,
       notifications: this.notifications
     };
   }

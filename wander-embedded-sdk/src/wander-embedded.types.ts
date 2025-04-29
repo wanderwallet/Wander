@@ -542,12 +542,6 @@ export interface WanderEmbeddedButtonOptions
   wanderLogo?: WanderEmbeddedLogoVariant;
 
   /**
-   * URL of the dApp logo that will be displayed next to the Wander logo when connected.
-   * @default ""
-   */
-  dappLogoSrc?: string;
-
-  /**
    * Whether to show the button label.
    * @default true
    */
@@ -594,11 +588,6 @@ export interface WanderEmbeddedButtonConfig
    * Variant of the Wander logo to display.
    */
   wanderLogo: WanderEmbeddedLogoVariant;
-
-  /**
-   * URL of the dApp logo.
-   */
-  dappLogoSrc: string;
 
   /**
    * Whether to show the button label.

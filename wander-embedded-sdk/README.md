@@ -131,7 +131,6 @@ Available selectors:
 - `.label` - Targets the button text label
 - `.balance` - Targets the balance display
 - `.indicator` - Targets the connection status indicator
-- `.dappLogo` - Targets the dApp logo image
 - `.notifications` - Targets the notifications badge
 
 Example usage:
@@ -177,12 +176,6 @@ const wander = new WanderEmbedded({
       .indicator {
         width: 6px;
         height: 6px;
-      }
-
-      /* Target the dApp logo */
-      .dappLogo {
-        width: 18px;
-        height: 18px;
       }
 
       /* Target the notifications badge */

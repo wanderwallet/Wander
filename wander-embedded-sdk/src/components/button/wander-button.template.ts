@@ -132,7 +132,6 @@ export const getWanderButtonTemplateContent = ({
   }
 
   .indicator,
-  .dappLogo,
   .notifications {
     position: absolute;
     right: calc(4px + var(--borderWidth));
@@ -155,15 +154,6 @@ export const getWanderButtonTemplateContent = ({
     animation: blink-indicator 3s infinite;
   }
 
-  .dappLogo {
-    width: 22px;
-    height: 22px;
-    z-index: 9;
-    background: var(--background);
-    transform: translate(50%, 50%) scale(0);
-    padding: 3px;
-  }
-
   .notifications {
     background: red;
     font-size: 12px;
@@ -181,10 +171,6 @@ export const getWanderButtonTemplateContent = ({
   .isConnected + .indicator {
     /* TODO: Add CSS var */
     background: #56C980;
-  }
-
-  .isConnected ~ .dappLogo[src] {
-    transform: translate(50%, 50%) scale(1);
   }
 
   .notifications:empty {
@@ -287,6 +273,5 @@ export const getWanderButtonTemplateContent = ({
 </button>
 
 <span class="indicator"></span>
-<img hidden class="dappLogo" />
 <span class="notifications"></span>
 `;
