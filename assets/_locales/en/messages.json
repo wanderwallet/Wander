@@ -2696,6 +2696,10 @@
     "message": "Take a tour",
     "description": "Take a tour button text"
   },
+  "take_the_tour": {
+    "message": "Take the tour",
+    "description": "Take the tour button text"
+  },
   "getting_started": {
     "message": "Getting started",
     "description": "Getting started title"
@@ -2719,6 +2723,10 @@
   "getting_started_explore_title": {
     "message": "Explore and connect to apps directly on Wander.",
     "description": "Getting started explore title"
+  },
+  "getting_started_pin_title": {
+    "message": "Pin the Wander extension on your browser.",
+    "description": "Getting started pin title"
   },
   "finish": {
     "message": "Finish",

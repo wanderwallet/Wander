@@ -15,11 +15,13 @@ import { Flex } from "~components/common/Flex";
 import { Divider } from "~components/Divider";
 import useSetting from "~settings/hook";
 import { useActiveWallet } from "~wallets/hooks";
+import { useSearchParams } from "~wallets/router/router.utils";
 
 const themes = ["system", "light", "dark"] as const;
 
 export function GettingStartedPersonalizeView() {
   const { setToast } = useToasts();
+  const { isPopup } = useSearchParams() as { isPopup: string };
   const [theme, setTheme] = useSetting("display_theme");
   const activeWallet = useActiveWallet();
   const [_, setWallets] = useStorage<StoredWallet[]>(
@@ -92,7 +94,7 @@ export function GettingStartedPersonalizeView() {
         alignItems="center"
         textAlign="center"
       >
-        <Text size="xl" weight="bold" noMargin>
+        <Text size={isPopup ? "lg" : "xl"} weight="bold" noMargin>
           {browser.i18n.getMessage("personalize_your_experience")}
         </Text>
         <Flex direction="column" gap={8} width="100%" align="start">

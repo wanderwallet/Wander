@@ -4,12 +4,12 @@ import { PageType, trackPage } from "~utils/analytics";
 import { Container, Content } from "~components/welcome/Wrapper";
 import { Text } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
-import ExploreImage from "url:/assets/setup/explore_tour.png";
+import PinExtension from "url:/assets/setup/pin-extension.png";
 
-export function GettingStartedExploreView() {
+export function GettingStartedPinView() {
   // Segment
   useEffect(() => {
-    trackPage(PageType.GETTING_STARTED_EXPLORE);
+    trackPage(PageType.GETTING_STARTED_PIN_EXTENSION);
   }, []);
 
   return (
@@ -19,9 +19,9 @@ export function GettingStartedExploreView() {
         alignItems="center"
         textAlign="center"
       >
-        <Image src={ExploreImage} alt="Explore Image" />
+        <Image src={PinExtension} alt="Pin Extension" />
         <Text size="md" weight="medium" noMargin>
-          {browser.i18n.getMessage("getting_started_explore_title")}
+          {browser.i18n.getMessage("getting_started_pin_title")}
         </Text>
       </Content>
     </Container>
@@ -30,5 +30,4 @@ export function GettingStartedExploreView() {
 
 const Image = styled.img`
   width: 100%;
-  max-height: 335.602px;
 `;

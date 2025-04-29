@@ -2686,6 +2686,10 @@
         "message": "开始使用",
         "description": "Take a tour button text"
     },
+    "take_the_tour": {
+        "message": "开始使用",
+        "description": "Take the tour button text"
+    },
     "getting_started": {
         "message": "开始使用",
         "description": "Getting started title"
@@ -2709,6 +2713,10 @@
     "getting_started_explore_title": {
         "message": "在Wander上直接探索和连接应用。",
         "description": "Getting started explore title"
+    },
+    "getting_started_pin_title": {
+        "message": "将Wander扩展固定到您的浏览器。",
+        "description": "Getting started pin title"
     },
     "finish": {
         "message": "完成",

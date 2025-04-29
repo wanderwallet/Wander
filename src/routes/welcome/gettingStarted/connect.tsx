@@ -6,8 +6,11 @@ import styled from "styled-components";
 import { useEffect } from "react";
 import { PageType, trackPage } from "~utils/analytics";
 import { Container, Content } from "~components/welcome/Wrapper";
+import { useSearchParams } from "~wallets/router/router.utils";
 
 export function GettingStartedConnectView() {
+  const { isPopup } = useSearchParams() as { isPopup: string };
+
   // Segment
   useEffect(() => {
     trackPage(PageType.GETTING_STARTED_CONNECT);
@@ -28,8 +31,7 @@ export function GettingStartedConnectView() {
             style={{
               display: "flex",
               flexDirection: "column",
-              alignItems: "center",
-              gap: "1rem"
+              alignItems: "center"
             }}
           >
             <ImageWrapper>
@@ -51,6 +53,7 @@ export function GettingStartedConnectView() {
           href="https://discord.com/invite/YGXJbuz44K"
           target="_blank"
           rel="noopener noreferrer"
+          style={{ gap: "1rem" }}
         >
           <ImageWrapper>
             <Image
@@ -98,7 +101,6 @@ const ImageWrapper = styled.div`
 `;
 
 const Image = styled.img<{ width: string; height: string }>`
-  padding: 0.625rem;
   width: ${(props) => props.width};
   height: ${(props) => props.height};
   filter: brightness(0) saturate(100%)

@@ -40,6 +40,8 @@ import { UnlockView } from "~routes/popup/unlock";
 import { getExtensionOverrides } from "~wallets/router/extension/extension.routes";
 import type { RouteConfig } from "~wallets/router/router.types";
 import { NoteView } from "~routes/popup/send/note";
+import { WelcomePaths } from "../welcome/welcome.routes";
+import { GettingStartedSetupWelcomeView } from "~routes/popup/gettingStarted";
 
 export type PopupRoutePath =
   | "/"
@@ -83,7 +85,8 @@ export type PopupRoutePath =
   | `/quick-settings/contacts`
   | `/quick-settings/contacts/new`
   | `/quick-settings/contacts/${string}`
-  | `/quick-settings/notifications`;
+  | `/quick-settings/notifications`
+  | `/getting-started/${string}`;
 
 export const PopupPaths = {
   Home: "/",
@@ -285,5 +288,9 @@ export const POPUP_ROUTES = [
   {
     path: PopupPaths.NotificationSettings,
     component: NotificationSettingsView
+  },
+  {
+    path: WelcomePaths.GettingStarted,
+    component: GettingStartedSetupWelcomeView
   }
 ] as const satisfies RouteConfig[];
