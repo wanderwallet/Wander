@@ -7,8 +7,10 @@ import {
   WanderEmbeddedButtonStatus
 } from "../../wander-embedded.types";
 import { getWanderButtonTemplateContent } from "./wander-button.template";
-import { addCSSVariables } from "../../utils/styles/styles.utils";
-import { merge } from "ts-deepmerge";
+import {
+  addCSSVariables,
+  mergeCSSVariablesOption
+} from "../../utils/styles/styles.utils";
 import { EmbeddedAuthStatus } from "../../utils/message/message.types";
 
 export class WanderButton {
@@ -22,8 +24,6 @@ export class WanderButton {
     zIndex: "9999",
     padding: "12px 20px 12px 16px",
     font: "16px monospace",
-
-    // Button (button, affected by :hover & :focus):
     background: "white",
     color: "black",
     borderWidth: 2,
@@ -70,7 +70,6 @@ export class WanderButton {
   };
 
   static DEFAULT_CONFIG = {
-    parent: document.body,
     id: "wanderEmbeddedButtonHost",
     theme: "system",
     cssVars: {
@@ -78,6 +77,7 @@ export class WanderButton {
       dark: WanderButton.DEFAULT_DARK_CSS_VARS
     },
     customStyles: "",
+    parent: document.body,
     position: "bottom-right",
     wanderLogo: "default",
     dappLogoSrc: "",
@@ -115,45 +115,18 @@ export class WanderButton {
   private status: Partial<Record<WanderEmbeddedButtonStatus, boolean>> = {};
 
   constructor(options: WanderEmbeddedButtonOptions = {}) {
-    const cssVars = options.cssVars || {};
-
-    let cssVarsLight: WanderEmbeddedButtonCSSVars =
-      WanderButton.DEFAULT_LIGHT_CSS_VARS;
-
-    let cssVarsDark: WanderEmbeddedButtonCSSVars =
-      WanderButton.DEFAULT_DARK_CSS_VARS;
-
-    if (Object.keys(cssVars).length > 0) {
-      if (isThemeRecord(cssVars)) {
-        cssVarsLight = merge(
-          cssVars?.light || {},
-          WanderButton.DEFAULT_LIGHT_CSS_VARS
-        ) as WanderEmbeddedButtonCSSVars;
-        cssVarsDark = merge(
-          cssVars?.dark || {},
-          WanderButton.DEFAULT_DARK_CSS_VARS
-        ) as WanderEmbeddedButtonCSSVars;
-      } else if (options.theme !== "dark") {
-        cssVarsLight = merge(
-          cssVars || {},
-          WanderButton.DEFAULT_LIGHT_CSS_VARS
-        ) as WanderEmbeddedButtonCSSVars;
-      } else {
-        cssVarsDark = merge(
-          cssVars || {},
-          WanderButton.DEFAULT_DARK_CSS_VARS
-        ) as WanderEmbeddedButtonCSSVars;
-      }
-    }
+    const cssVars = mergeCSSVariablesOption(
+      options.cssVars,
+      options.theme,
+      WanderButton.DEFAULT_LIGHT_CSS_VARS,
+      WanderButton.DEFAULT_DARK_CSS_VARS
+    );
 
     this.config = {
       parent: options.parent || WanderButton.DEFAULT_CONFIG.parent,
       id: options.id || WanderButton.DEFAULT_CONFIG.id,
       theme: options.theme || WanderButton.DEFAULT_CONFIG.theme,
-      cssVars: {
-        light: cssVarsLight,
-        dark: cssVarsDark
-      },
+      cssVars,
       customStyles:
         options.customStyles || WanderButton.DEFAULT_CONFIG.customStyles,
       position: options.position || WanderButton.DEFAULT_CONFIG.position,
@@ -196,7 +169,6 @@ export class WanderButton {
     const host = document.createElement("div");
 
     host.id = config.id;
-    host.setAttribute("data-theme", config.theme);
 
     const shadow = host.attachShadow({ mode: "open" });
     const template = document.createElement("template");
@@ -253,7 +225,7 @@ export class WanderButton {
       host.style.opacity = "1";
     });
 
-    addCSSVariables(host, config.cssVars.light);
+    addCSSVariables(host, config.cssVars.light, "Light");
     addCSSVariables(host, config.cssVars.dark, "Dark");
 
     label.textContent = config.i18n.signIn;
@@ -323,7 +295,7 @@ export class WanderButton {
     console.log("setVariant =", variant);
 
     this.variant = variant;
-    this.button.setAttribute("data-variant", variant);
+    this.button.dataset.variant = variant;
 
     if (variant === "loading") {
       this.indicator.classList.add("isLoading");

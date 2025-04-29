@@ -19,16 +19,18 @@ export const getWanderButtonTemplateContent = ({
 }: WanderButtonTemplateContentOptions) => `
 <style>
 
-  :root[data-theme="dark"] {
-    ${cssVariableKeys
-      .map((cssVariableKey) => {
-        return `--${cssVariableKey}: var(--${cssVariableKey}Dark);`;
-      })
-      .join("\n")}
+  @media (prefers-color-scheme: light) {
+    :host {
+      ${cssVariableKeys
+        .map((cssVariableKey) => {
+          return `--${cssVariableKey}: var(--${cssVariableKey}Light);`;
+        })
+        .join("\n")}
+    }
   }
 
   @media (prefers-color-scheme: dark) {
-    :root[data-theme="system"] {
+    :host {
       ${cssVariableKeys
         .map((cssVariableKey) => {
           return `--${cssVariableKey}: var(--${cssVariableKey}Dark);`;

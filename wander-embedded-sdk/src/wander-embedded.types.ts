@@ -377,7 +377,7 @@ export function isThemeRecord<T>(
  * which displays the wallet UI.
  */
 export interface WanderEmbeddedIframeOptions
-  extends WanderEmbeddedComponentOptions<WanderEmbeddedModalCSSVars> {
+  extends WanderEmbeddedComponentOptions<WanderEmbeddedIframeCSSVars> {
   // TODO: Default should automatically be used for auth-requests, and auth for account and settings?
   /**
    * Layout configuration for different routes.
@@ -403,7 +403,7 @@ export interface WanderEmbeddedIframeOptions
  * Configuration for the iframe component.
  */
 export interface WanderEmbeddedIframeConfig
-  extends WanderEmbeddedComponentConfig<WanderEmbeddedModalCSSVars> {
+  extends WanderEmbeddedComponentConfig<WanderEmbeddedIframeCSSVars> {
   /**
    * Layout configuration for all route types.
    * Complete mapping of route types to their layout configuration.
@@ -635,7 +635,7 @@ export type WanderEmbeddedButtonStatus =
 /**
  * CSS variables for styling the modal/iframe component.
  */
-export interface WanderEmbeddedModalCSSVars {
+export interface WanderEmbeddedIframeCSSVars {
   // Modal (iframe):
   /**
    * Background color of the modal.
@@ -677,23 +677,25 @@ export interface WanderEmbeddedModalCSSVars {
    */
   preferredHeight: number | string;
 
-  // App wrapper (inside iframe):
+  // App wrapper (content inside iframe):
+
   /**
    * Padding inside the iframe.
    */
-  iframePadding: number;
+  contentPadding: number;
 
   /**
    * Maximum width of the iframe content.
    */
-  iframeMaxWidth: number;
+  contentMaxWidth: number | string;
 
   /**
    * Maximum height of the iframe content.
    */
-  iframeMaxHeight: number;
+  contentMaxHeight: number | string;
 
   // Backdrop (div):
+
   /**
    * Background color of the backdrop.
    */
@@ -708,13 +710,6 @@ export interface WanderEmbeddedModalCSSVars {
    * Padding around the modal within the backdrop.
    */
   backdropPadding: number | string;
-
-  /**
-   * Pointer events setting for the backdrop.
-   * If `backdropBackground` is transparent and `backdropBackdropFilter` is not set, this will be set to "none", unless
-   * a different value is specified. In any other case, this is ignored.
-   */
-  backdropPointerEvents: string;
 
   // Mobile specific styles
   /**
