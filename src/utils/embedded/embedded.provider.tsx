@@ -146,8 +146,6 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
   useEffect(() => {
     if (!userId) return;
 
-    console.log("authStatus =", authStatus);
-
     const sdkAuthStatusByAppAuthStatus = {
       unlocked: "authenticated",
       authLoading: "loading",

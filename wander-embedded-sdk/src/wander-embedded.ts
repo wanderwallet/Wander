@@ -255,7 +255,7 @@ export class WanderEmbedded {
     if (!this.iframeRef || event.origin !== new URL(this.iframeRef.src).origin)
       return;
 
-    console.log("MESSAGE =", event);
+    console.log("MESSAGE =", event.data.type, event.data);
 
     if (isEventMessage(message)) {
       const events = window.arweaveWallet?.events;
@@ -283,8 +283,6 @@ export class WanderEmbedded {
     switch (message.type) {
       case "embedded_auth":
         const { authStatus, userId } = message.data;
-
-        console.log("embedded_auth =", authStatus);
 
         this.authStatus = authStatus;
         this.userId = userId;

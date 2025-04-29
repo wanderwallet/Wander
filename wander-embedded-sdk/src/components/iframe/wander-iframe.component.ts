@@ -47,7 +47,8 @@ export class WanderIframe {
   } as const;
 
   static DEFAULT_DARK_CSS_VARS: WanderEmbeddedIframeCSSVars = {
-    ...WanderIframe.DEFAULT_LIGHT_CSS_VARS
+    ...WanderIframe.DEFAULT_LIGHT_CSS_VARS,
+    background: "black"
   } as const;
 
   static DEFAULT_CONFIG = {

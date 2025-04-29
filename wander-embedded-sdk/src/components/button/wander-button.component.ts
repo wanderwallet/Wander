@@ -1,6 +1,5 @@
 import {
   BalanceInfo,
-  isThemeRecord,
   WanderEmbeddedButtonConfig,
   WanderEmbeddedButtonCSSVars,
   WanderEmbeddedButtonOptions,
@@ -281,8 +280,6 @@ export class WanderButton {
   }
 
   setVariant(variant: EmbeddedAuthStatus) {
-    console.log("setVariant =", variant);
-
     this.variant = variant;
     this.button.dataset.variant = variant;
 

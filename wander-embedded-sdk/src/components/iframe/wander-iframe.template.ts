@@ -58,13 +58,13 @@ export const getWanderIframeTemplateContent = ({
       border: var(--borderWidth) solid var(--borderColor);
       border-radius: var(--borderRadius);
       box-shadow: var(--boxShadow);
-      width: calc(var(--preferredWidth) - 2 * var(--borderWidth));
-      height: calc(var(--preferredHeight) - 2 * var(--borderWidth));
+      width: calc(var(--preferredWidth) + 2 * var(--borderWidth));
+      height: calc(var(--preferredHeight) + 2 * var(--borderWidth));
       min-width: calc(400px - 2 * var(--borderWidth));
       min-height: calc(400px - 2 * var(--borderWidth));
       max-width: calc(100dvw - 2 * var(--backdropPadding) - 2 * var(--borderWidth));
       max-height: calc(100dvh - 2 * var(--backdropPadding) - 2 * var(--borderWidth));
-      box-sizing: content-box;
+      box-sizing: border-box;
       pointer-events: none;
       opacity: 0;
       overflow: hidden;

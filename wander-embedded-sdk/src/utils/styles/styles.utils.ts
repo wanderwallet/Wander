@@ -28,21 +28,15 @@ export function mergeCSSVariablesOption<T extends Object>(
   let cssVarsLight = defaultLightCssVars;
   let cssVarsDark = defaultDarkCssVars;
 
-  if (!cssVarsOption || Object.keys(cssVarsOption).length === 0) {
-    return {
-      light: cssVarsLight,
-      dark: cssVarsDark
-    };
-  }
-
-  if (isThemeRecord(cssVarsOption)) {
-    cssVarsLight = merge(cssVarsLight, cssVarsOption?.light || {}) as T;
-
-    cssVarsDark = merge(defaultDarkCssVars, cssVarsOption?.dark || {}) as T;
-  } else if (themeOption === "dark") {
-    cssVarsDark = merge(defaultDarkCssVars, cssVarsOption || {}) as T;
-  } else {
-    cssVarsLight = merge(cssVarsLight, cssVarsOption || {}) as T;
+  if (cssVarsOption && Object.keys(cssVarsOption).length > 0) {
+    if (isThemeRecord(cssVarsOption)) {
+      cssVarsLight = merge(cssVarsLight, cssVarsOption?.light || {}) as T;
+      cssVarsDark = merge(defaultDarkCssVars, cssVarsOption?.dark || {}) as T;
+    } else if (themeOption === "dark") {
+      cssVarsDark = merge(defaultDarkCssVars, cssVarsOption || {}) as T;
+    } else {
+      cssVarsLight = merge(cssVarsLight, cssVarsOption || {}) as T;
+    }
   }
 
   if (themeOption === "light") cssVarsDark = cssVarsLight;

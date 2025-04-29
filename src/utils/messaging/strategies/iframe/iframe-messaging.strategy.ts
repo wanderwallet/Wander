@@ -49,8 +49,6 @@ function getPostMessageFunction<K extends MessageID>(
 
   const { destination, messageId, data } = messageData;
 
-  // TODO: isInsideIframe is an incorrect check because we might be running the app standalone.
-
   if (destination === "background") {
     if (!isInsideIframe()) {
       postMessageTargetWindow = embedWindow;
