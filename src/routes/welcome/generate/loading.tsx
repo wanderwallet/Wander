@@ -11,16 +11,15 @@ import type { CommonRouteProps } from "~wallets/router/router.types";
 import styled from "styled-components";
 import { Flex } from "~components/common/Flex";
 import { Text } from "@arconnect/components-rebrand";
-import WanderBoat from "~assets/setup/boat.svg";
 import { addWallet } from "~wallets";
 import { useHardwareApi } from "~wallets/hooks";
 import { loadTokens } from "~tokens/token";
+import { WanderLoading } from "../WanderLoading";
 
 export type LoadingWelcomeViewProps = CommonRouteProps<SetupWelcomeViewParams>;
 
 export function LoadingWelcomeView({ params }: LoadingWelcomeViewProps) {
   const { navigate } = useLocation();
-
   const hardwareApi = useHardwareApi();
 
   const { wallet } = useContext(WalletContext);
@@ -78,15 +77,15 @@ export function LoadingWelcomeView({ params }: LoadingWelcomeViewProps) {
   }, [wallet]);
 
   useEffect(() => {
-    setTimeout(() => {
-      handleAddWallet();
-    }, 1000);
+    const timeout = setTimeout(() => handleAddWallet(), 1000);
+
+    return () => clearTimeout(timeout);
   }, []);
 
   return (
     <Container>
       <Content>
-        <Image src={WanderBoat} alt="Wander Boat" />
+        <WanderLoading />
         <Flex direction="column" gap={8} width="100%" align="center">
           <Text style={{ fontSize: "22px" }} weight="bold" noMargin>
             {browser.i18n.getMessage("generating_your_account")}
@@ -117,9 +116,4 @@ const Content = styled.div`
   justify-content: center;
   align-items: center;
   gap: 24px;
-`;
-
-const Image = styled.img`
-  width: 219.328px;
-  height: 111.219px;
 `;
