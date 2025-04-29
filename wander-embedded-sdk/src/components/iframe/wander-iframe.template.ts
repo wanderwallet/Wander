@@ -34,13 +34,12 @@ export const getWanderIframeTemplateContent = ({
       border-radius: var(--borderRadius, 10px);
       box-shadow: var(--boxShadow, 0 0 16px 0 rgba(0, 0, 0, 0.125));
       width: calc(var(--preferredWidth, 400px) - 2 * var(--borderWidth, 2px));
-      height: calc(var(--preferredHeight, 800px) - 2 * var(--borderWidth, 2px));
+      height: calc(var(--preferredHeight, 400px) - 2 * var(--borderWidth, 2px));
       min-width: calc(400px - 2 * var(--borderWidth, 2px));
       min-height: calc(400px - 2 * var(--borderWidth, 2px));
       max-width: calc(100dvw - 2 * var(--backdropPadding, 32px) - 2 * var(--borderWidth, 2px));
       max-height: calc(100dvh - 2 * var(--backdropPadding, 32px) - 2 * var(--borderWidth, 2px));
       box-sizing: content-box;
-      transition: transform linear 150ms, opacity linear 150ms;
       pointer-events: none;
       opacity: 0;
       overflow: hidden;
@@ -62,6 +61,7 @@ export const getWanderIframeTemplateContent = ({
     /* Half layout image styles */
     .half-image {
       position: fixed;
+      width: calc(50vw - 2 * var(--backdropPadding, 0px));
       z-index: calc(var(--zIndex, 9999) + 1);
       opacity: 0;
       transition: opacity 300ms ease-in-out;
@@ -79,12 +79,10 @@ export const getWanderIframeTemplateContent = ({
     /* Position-specific styles for half-image */
     .half-image[data-position="left"] {
       left: 0;
-      width: 50vw;
     }
 
     .half-image[data-position="right"] {
       right: 0;
-      width: 50vw;
     }
 
     /* Mobile styles */
@@ -127,8 +125,9 @@ export const getWanderIframeTemplateContent = ({
     }
 
     /* Popup specific styles */
+
     .iframe-wrapper[data-layout="popup"] {
-      transition: opacity linear 150ms;
+      transition: opacity linear 150ms, height ease-in-out 150ms;
     }
 
     .iframe-wrapper[data-layout="popup"][data-position="top-left"] {
@@ -152,21 +151,24 @@ export const getWanderIframeTemplateContent = ({
     }
 
     /* Modal specific styles */
+
     .iframe-wrapper[data-layout="modal"] {
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      transition: opacity linear 150ms;
+      transition: opacity linear 150ms, height ease-in-out 150ms;
     }
 
     /* Sidebar specific styles */
+
     .iframe-wrapper[data-layout="sidebar"] {
       transition: opacity linear 150ms, transform linear 150ms;
     }
 
     /* Half specific styles */
+
     .iframe-wrapper[data-layout="half"] {
-        transition: opacity 300ms ease-in-out, transform 300ms ease-in-out;
+      transition: opacity 300ms ease-in-out;
     }
 
     /* Right position - Sidebar */

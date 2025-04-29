@@ -119,6 +119,7 @@ export class WanderButton {
 
     let cssVarsLight: WanderEmbeddedButtonCSSVars =
       WanderButton.DEFAULT_LIGHT_CSS_VARS;
+
     let cssVarsDark: WanderEmbeddedButtonCSSVars =
       WanderButton.DEFAULT_DARK_CSS_VARS;
 
@@ -244,6 +245,7 @@ export class WanderButton {
       host.style[y] = "var(--gapY)";
       host.style[x] = "var(--gapX)";
     }
+
     host.style.transition = "opacity linear 150ms";
     host.style.opacity = "0";
 
@@ -316,9 +318,6 @@ export class WanderButton {
       this.label.textContent = "";
     }
   }
-
-  // TODO: Why is noAuth being received and the auth UI re-enabled before
-  // the initial loading finishes? Probably the forced initialization!
 
   setVariant(variant: EmbeddedAuthStatus) {
     console.log("setVariant =", variant);

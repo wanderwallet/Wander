@@ -311,22 +311,6 @@ export class WanderEmbedded {
           // TODO: Show iframe
         }
 
-        if (authStatus === "authenticated" && !!userId) {
-          // TODO: This might not work if we need to create a wallet still or we get
-          // the backup prompt:
-          this.iframeComponent?.resize({
-            routeType: "default",
-            preferredLayoutType: "popup",
-            height: 0
-          });
-        } else {
-          this.iframeComponent?.resize({
-            routeType: "auth",
-            preferredLayoutType: "modal",
-            height: 0
-          });
-        }
-
         this.onAuth(message.data);
 
         break;

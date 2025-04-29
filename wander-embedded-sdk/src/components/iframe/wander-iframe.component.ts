@@ -259,9 +259,16 @@ export class WanderIframe {
       case "popup": {
         const position = layoutConfig.position || "bottom-right";
         this.wrapper.dataset.position = position;
-        // Popup should not resize to fit content:
-        cssVars.preferredWidth = layoutConfig.fixedWidth || "";
-        cssVars.preferredHeight = layoutConfig.fixedHeight || "";
+
+        // Popup resizes to fit content:
+        cssVars.preferredWidth =
+          layoutConfig.fixedWidth || routeConfig.width || "";
+        cssVars.preferredHeight =
+          layoutConfig.fixedHeight || routeConfig.height || "";
+
+        // (Old UI) Popup should not resize to fit content:
+        // cssVars.preferredWidth = layoutConfig.fixedWidth || "";
+        // cssVars.preferredHeight = layoutConfig.fixedHeight || "";
         break;
       }
 
