@@ -18,6 +18,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { QRCodeWrapper } from "~routes/popup/receive";
 import { Flex } from "~components/common/Flex";
 import { PinExtension } from "../PinExtension";
+import { TempTransactionStorage } from "~utils/storage";
 
 export type GenerateDoneWelcomeViewProps =
   CommonRouteProps<SetupWelcomeViewParams>;
@@ -38,6 +39,7 @@ export function GenerateDoneWelcomeView({
   }
 
   async function takeTour() {
+    await TempTransactionStorage.set("setupMode", setupMode);
     navigate("/getting-started/1");
   }
 

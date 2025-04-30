@@ -279,10 +279,7 @@ export function SetupWelcomeView({ params }: SetupWelcomeViewProps) {
       <SetupCard
         transparentBackground={transparentBackground}
         style={{
-          height:
-            transparentBackground && setupMode === "generate" && page === 5
-              ? "800px"
-              : "auto"
+          height: transparentBackground && page === pageCount ? "800px" : "auto"
         }}
       >
         {!transparentBackground && (

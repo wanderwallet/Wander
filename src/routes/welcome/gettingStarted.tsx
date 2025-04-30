@@ -18,7 +18,8 @@ import {
   Image,
   HeaderIconWrapper,
   PageWrapper,
-  Page
+  Page,
+  type WelcomeSetupMode
 } from "./setup";
 import StarIcons from "~components/welcome/StarIcons";
 import { GettingStartedWelcomeView } from "./gettingStarted/welcome";
@@ -30,15 +31,26 @@ import { GettingStartedPersonalizeView } from "./gettingStarted/personalize";
 import { Link } from "~routes/popup/token/[id]";
 import IconText from "~components/IconText";
 import WanderIcon from "url:assets/icon.svg";
+import { TempTransactionStorage, useStorage } from "~utils/storage";
 
-const Views = [
+const BASE_VIEWS = [
   GettingStartedWelcomeView,
   GettingStartedTokensView,
   GettingStartedOnrampView,
   GettingStartedExploreView,
-  GettingStartedPersonalizeView,
   GettingStartedConnectView
 ];
+
+const GENERATE_VIEWS = [
+  ...BASE_VIEWS.slice(0, 4),
+  GettingStartedPersonalizeView,
+  ...BASE_VIEWS.slice(4)
+];
+
+const getViews = (setupMode: WelcomeSetupMode) => {
+  if (setupMode === "generate") return GENERATE_VIEWS;
+  return BASE_VIEWS;
+};
 
 export interface GettingStartedSetupWelcomeViewParams {
   // TODO: Use a nested router instead:
@@ -52,7 +64,14 @@ export function GettingStartedSetupWelcomeView({
   params: { page: pageParam }
 }: GettingStartedSetupWelcomeViewProps) {
   const { navigate } = useLocation();
+  const [setupMode] = useStorage<WelcomeSetupMode>({
+    key: "setupMode",
+    instance: TempTransactionStorage
+  });
+
   const page = Number(pageParam);
+  const Views = getViews(setupMode);
+  const viewsLength = Views.length;
 
   // animate content size
   const [contentSize, setContentSize] = useState<number>(0);
@@ -65,6 +84,8 @@ export function GettingStartedSetupWelcomeView({
     });
 
     obs.observe(el);
+
+    return () => obs.disconnect();
   }, []);
 
   if (isNaN(page) || page < 1 || page > 6) {
@@ -77,15 +98,18 @@ export function GettingStartedSetupWelcomeView({
     window.top.close();
   };
 
-  const navigateToPage = (pageNum: number) => {
-    if (pageNum < 1) {
-      navigate("/getting-started/1");
-    } else if (pageNum < 7) {
-      navigate(`/getting-started/${pageNum}`);
-    } else {
-      handleClose();
-    }
-  };
+  const navigateToPage = useCallback(
+    (pageNum: number) => {
+      if (pageNum < 1) {
+        navigate("/getting-started/1");
+      } else if (pageNum < viewsLength + 1) {
+        navigate(`/getting-started/${pageNum}`);
+      } else {
+        handleClose();
+      }
+    },
+    [navigate, viewsLength]
+  );
 
   const View = Views[page - 1];
 
@@ -131,7 +155,7 @@ export function GettingStartedSetupWelcomeView({
         </Content>
         <Footer>
           <Button fullWidth onClick={() => navigateToPage(page + 1)}>
-            {browser.i18n.getMessage(page < 6 ? "next" : "finish")}
+            {browser.i18n.getMessage(page < viewsLength ? "next" : "finish")}
           </Button>
         </Footer>
       </SetupCard>
