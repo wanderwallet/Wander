@@ -314,7 +314,8 @@ export function WalletView({ params: { address } }: WalletViewProps) {
                     style={{
                       cursor: "pointer",
                       position: "absolute",
-                      right: "46%"
+                      right: "46%",
+                      marginTop: "5px"
                     }}
                   >
                     <Tooltip
