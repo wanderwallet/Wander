@@ -3031,5 +3031,9 @@
   "recovery_phrase": {
     "message": "Recovery phrase",
     "description": "Recovery phrase text"
+  },
+  "export_keyfile_tooltip": {
+    "message": "Your wallet's encrypted keyfile is used to securely sign transactions and access your Arweave account.",
+    "description": "Export keyfile tooltip"
   }
 }

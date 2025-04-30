@@ -3021,5 +3021,9 @@
     "recovery_phrase": {
         "message": "恢复短语",
         "description": "Recovery phrase text"
+    },
+    "export_keyfile_tooltip": {
+        "message": "您的钱包的加密密钥文件用于安全地签署交易并访问您的Arweave账户。",
+        "description": "Export keyfile tooltip"
     }
 }
