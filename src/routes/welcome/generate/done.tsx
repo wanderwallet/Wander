@@ -4,7 +4,7 @@ import browser from "webextension-polyfill";
 import { useContext, useEffect } from "react";
 import { PageType, trackPage } from "~utils/analytics";
 import JSConfetti from "js-confetti";
-import WalletIconSvg from "url:~assets/setup/wallet.svg";
+import WalletIconSvg from "url:/assets/setup/wallet.svg";
 import styled from "styled-components";
 import { CopyToClipboard } from "~components/CopyToClipboard";
 import { formatAddress } from "~utils/format";

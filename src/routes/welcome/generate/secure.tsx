@@ -31,7 +31,7 @@ export function SecureWelcomeView({ params }: SecureWelcomeViewProps) {
         </Paragraph>
       </Content>
       <Flex direction="column" gap={16} width="100%">
-        <Button variant="secondary" fullWidth onClick={handleSetUpPassword}>
+        <Button fullWidth onClick={handleSetUpPassword}>
           {browser.i18n.getMessage("set_up_a_password")}
         </Button>
       </Flex>

@@ -2,8 +2,8 @@ import styled from "styled-components";
 import { Text } from "@arconnect/components-rebrand";
 import { Pin02 } from "@untitled-ui/icons-react";
 import { Flex } from "~components/common/Flex";
-import Arrow from "url:~assets/setup/arrow.svg";
-import BrowserExtension from "url:~assets/setup/browser-extension.png";
+import Arrow from "url:/assets/setup/arrow.svg";
+import BrowserExtension from "url:/assets/setup/browser-extension.png";
 import browser from "webextension-polyfill";
 
 export function PinExtension() {
