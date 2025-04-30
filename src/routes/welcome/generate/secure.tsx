@@ -6,9 +6,8 @@ import { PageType, trackPage } from "~utils/analytics";
 import { useLocation } from "~wallets/router/router.utils";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import styled from "styled-components";
-import { Button, Tooltip } from "@arconnect/components-rebrand";
+import { Button } from "@arconnect/components-rebrand";
 import { Flex } from "~components/common/Flex";
-import { Fingerprint04 } from "@untitled-ui/icons-react";
 
 export type SecureWelcomeViewProps = CommonRouteProps<SetupWelcomeViewParams>;
 
@@ -32,11 +31,6 @@ export function SecureWelcomeView({ params }: SecureWelcomeViewProps) {
         </Paragraph>
       </Content>
       <Flex direction="column" gap={16} width="100%">
-        <Tooltip content={browser.i18n.getMessage("passkey_not_available_yet")}>
-          <Button fullWidth icon={<Fingerprint04 />} disabled>
-            {browser.i18n.getMessage("use_a_passkey")}
-          </Button>
-        </Tooltip>
         <Button variant="secondary" fullWidth onClick={handleSetUpPassword}>
           {browser.i18n.getMessage("set_up_a_password")}
         </Button>

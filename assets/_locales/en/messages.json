@@ -2521,7 +2521,7 @@
     "description": "Create a new account description"
   },
   "secure_your_account_description": {
-    "message": "Secure your account with a passkey or a password. This will be used to confirm activity and transactions in Wander.",
+    "message": "Secure your account with a password. This will be used to confirm activity and transactions in Wander.",
     "description": "Secure your account description"
   },
   "import_an_account": {
@@ -2980,17 +2980,9 @@
     "message": "Unable to display data: Data is too large to display.",
     "description": "Data too large text"
   },
-  "use_a_passkey": {
-    "message": "Use a passkey",
-    "description": "Use a passkey text"
-  },
   "set_up_a_password": {
     "message": "Set up a password",
     "description": "Set up a password text"
-  },
-  "passkey_not_available_yet": {
-    "message": "Passkey not available yet",
-    "description": "Passkey not available yet text"
   },
   "generating_your_account": {
     "message": "Generating your account!",

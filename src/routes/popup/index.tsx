@@ -44,7 +44,7 @@ export function HomeView() {
         type: "info",
         content: ({ close }) => (
           <Flex gap={4}>
-            <Text weight="medium" noMargin>
+            <Text style={{ color: "#fff" }} weight="medium" noMargin>
               {browser.i18n.getMessage("welcome_to_wander")}!
             </Text>
             <Text
