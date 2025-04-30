@@ -36,7 +36,6 @@ import { HorizontalLine } from "~components/HorizontalLine";
 import SliderMenu from "~components/SliderMenu";
 import { getNameServiceProfile } from "~lib/nameservice";
 import { BackupSeedphraseWarning } from "~components/popup/settings/BackupSeedphraseWarning";
-import RevealRecoveryPhraseModal from "~components/popup/settings/RevealRecoveryPhraseModal";
 
 export interface WalletViewParams {
   address: string;
@@ -246,18 +245,7 @@ export function WalletView({ params: { address } }: WalletViewProps) {
             iconSize={24}
           />
           <HorizontalLine />
-          {!isSeedphraseBackedUp && (
-            <>
-              <BackupSeedphraseWarning
-                showArrow
-                onClick={() => setIsRecoveryModalOpen(true)}
-              />
-              <RevealRecoveryPhraseModal
-                open={isRecoveryModalOpen}
-                close={() => setIsRecoveryModalOpen(false)}
-              />
-            </>
-          )}
+          {!isSeedphraseBackedUp && <BackupSeedphraseWarning />}
           <div
             style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
           >
