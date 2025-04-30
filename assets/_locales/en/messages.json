@@ -2733,7 +2733,7 @@
     "description": "Finish button text"
   },
   "importing": {
-    "message": "Importing",
+    "message": "importing",
     "description": "Importing text"
   },
   "creating": {
@@ -2997,7 +2997,7 @@
     "description": "Generating your account text"
   },
   "generating_your_account_description": {
-    "message": "This process may take up to a minute.",
+    "message": "This process typically takes 1-2 minutes.",
     "description": "Generating your account description"
   },
   "pin_wander": {

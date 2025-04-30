@@ -2987,7 +2987,7 @@
         "description": "Generating your account text"
     },
     "generating_your_account_description": {
-        "message": "此过程可能需要一到两分钟。",
+        "message": "此过程通常需要1-2分钟。",
         "description": "Generating your account description"
     },
     "pin_wander": {

@@ -67,9 +67,9 @@ export function RecoveryPhraseView({}: RecoveryPhraseViewProps) {
     setIsFinishEnabled(true);
   }
 
-  function finish() {
-    ExtensionStorage.removeItem(`recovery_phrase_${activeAddress}`);
-    ExtensionStorage.removeItem(`recovery_phrase_backedup_${activeAddress}`);
+  async function finish() {
+    await ExtensionStorage.remove(`recovery_phrase_${activeAddress}`);
+    await ExtensionStorage.remove(`recovery_phrase_backedup_${activeAddress}`);
     navigate("/");
   }
 

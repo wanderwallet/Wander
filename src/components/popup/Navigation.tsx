@@ -76,7 +76,7 @@ export const NavigationBar = () => {
     ""
   );
 
-  const [isSeedphraseBackedUp] = useStorage(
+  const [isSeedphraseBackedUp = true] = useStorage(
     {
       key: `recovery_phrase_backedup_${activeAddress}`,
       instance: ExtensionStorage
