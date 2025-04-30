@@ -1,15 +1,21 @@
-import styled from "styled-components";
-import { useEffect, useState } from "react";
+import styled, { useTheme } from "styled-components";
+import { useEffect, useMemo, useState } from "react";
 import { PageType, trackPage } from "~utils/analytics";
 import { Container, Content } from "~components/welcome/Wrapper";
 import { Text } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
 import SendTourImage from "url:/assets/setup/send_tour.png";
 import SendTourImage2 from "url:/assets/setup/send_tour_2.png";
+import SendTourImageLight from "url:/assets/setup/send_tour_light.png";
 
 export function GettingStartedTokensView() {
+  const theme = useTheme();
   const [currentImage, setCurrentImage] = useState(0);
-  const images = [SendTourImage, SendTourImage2];
+
+  const images =
+    theme.displayTheme === "dark"
+      ? [SendTourImage, SendTourImage2]
+      : [SendTourImageLight, SendTourImage2];
 
   // Segment
   useEffect(() => {
