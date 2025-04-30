@@ -37,6 +37,39 @@ export function HomeView() {
   // checking to see if it's a hardware wallet
   const wallet = useActiveWallet();
 
+  async function checkTourTaken() {
+    const tourTaken = (await ExtensionStorage.get(`tour_taken`)) ?? true;
+    if (!tourTaken) {
+      toast.setToast({
+        type: "info",
+        content: ({ close }) => (
+          <Flex gap={4}>
+            <Text weight="medium" noMargin>
+              {browser.i18n.getMessage("welcome_to_wander")}!
+            </Text>
+            <Text
+              weight="medium"
+              noMargin
+              style={{ color: theme.primary, cursor: "pointer" }}
+              onClick={() => {
+                navigate("/getting-started/1");
+                close();
+              }}
+            >
+              {browser.i18n.getMessage("take_the_tour")}
+            </Text>
+          </Flex>
+        ),
+        position: "top",
+        duration: 5000,
+        showIcon: false,
+        showProgress: true,
+        progressColor: "linear-gradient(47deg, #5842F8 5.41%, #6B57F9 96%)"
+      });
+      await ExtensionStorage.set(`tour_taken`, true);
+    }
+  }
+
   useEffect(() => {
     const trackEventAndPage = async () => {
       await trackEvent(EventType.LOGIN, {});
@@ -44,32 +77,7 @@ export function HomeView() {
     };
     trackEventAndPage();
 
-    toast.setToast({
-      type: "success",
-      content: ({ close }) => (
-        <Flex gap={4}>
-          <Text weight="medium" noMargin>
-            {browser.i18n.getMessage("welcome_to_wander")}!
-          </Text>
-          <Text
-            weight="medium"
-            noMargin
-            style={{ color: theme.primary, cursor: "pointer" }}
-            onClick={() => {
-              navigate("/getting-started/1");
-              close();
-            }}
-          >
-            {browser.i18n.getMessage("take_the_tour")}
-          </Text>
-        </Flex>
-      ),
-      position: "top",
-      duration: 5000,
-      showIcon: false,
-      showProgress: true,
-      progressColor: "linear-gradient(47deg, #5842F8 5.41%, #6B57F9 96%)"
-    });
+    checkTourTaken();
 
     // schedule import ao tokens
     scheduleImportAoTokens();
