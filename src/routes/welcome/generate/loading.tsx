@@ -15,6 +15,8 @@ import { addWallet } from "~wallets";
 import { useHardwareApi } from "~wallets/hooks";
 import { loadTokens } from "~tokens/token";
 import { WanderLoading } from "../WanderLoading";
+import { encryptRecoveryPhrase } from "~wallets/encryption";
+import { ExtensionStorage } from "~utils/storage";
 
 export type LoadingWelcomeViewProps = CommonRouteProps<SetupWelcomeViewParams>;
 
@@ -59,6 +61,8 @@ export function LoadingWelcomeView({ params }: LoadingWelcomeViewProps) {
       password
     );
 
+    await handleSaveRecoveryPhrase();
+
     // load tokens
     await loadTokens();
 
@@ -70,6 +74,25 @@ export function LoadingWelcomeView({ params }: LoadingWelcomeViewProps) {
 
     // reset before unload
     window.onbeforeunload = null;
+  }
+
+  async function handleSaveRecoveryPhrase() {
+    if (!walletRef.current.mnemonic) return;
+
+    const encryptedRecoveryPhrase = await encryptRecoveryPhrase(
+      walletRef.current.mnemonic,
+      password
+    );
+
+    await ExtensionStorage.set(
+      `recovery_phrase_${walletRef.current.address}`,
+      encryptedRecoveryPhrase
+    );
+
+    await ExtensionStorage.set(
+      `recovery_phrase_backedup_${walletRef.current.address}`,
+      false
+    );
   }
 
   useEffect(() => {

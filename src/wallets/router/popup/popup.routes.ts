@@ -42,6 +42,7 @@ import type { RouteConfig } from "~wallets/router/router.types";
 import { NoteView } from "~routes/popup/send/note";
 import { WelcomePaths } from "../welcome/welcome.routes";
 import { GettingStartedSetupWelcomeView } from "~routes/popup/gettingStarted";
+import { RecoveryPhraseView } from "~routes/popup/settings/wallets/[address]/recovery-phrase";
 
 export type PopupRoutePath =
   | "/"
@@ -118,6 +119,7 @@ export const PopupPaths = {
   Wallet: "/quick-settings/wallets/:address",
   ExportWallet: "/quick-settings/wallets/:address/export",
   GenerateQR: "/quick-settings/wallets/:address/qr",
+  RecoveryPhrase: "/quick-settings/wallets/:address/recovery-phrase",
   Applications: "/quick-settings/apps",
   AppSettings: "/quick-settings/apps/:url",
   AppPermissions: "/quick-settings/apps/:url/permissions",
@@ -248,6 +250,10 @@ export const POPUP_ROUTES = [
   {
     path: PopupPaths.GenerateQR,
     component: GenerateQRView
+  },
+  {
+    path: PopupPaths.RecoveryPhrase,
+    component: RecoveryPhraseView
   },
   {
     path: PopupPaths.Applications,

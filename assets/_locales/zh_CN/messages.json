@@ -3005,5 +3005,21 @@
     "account_name_save_description": {
         "message": "您的账户名称存储在本地，仅您可见。",
         "description": "Account name save description"
+    },
+    "back_recovery_phrase": {
+        "message": "备份恢复短语",
+        "description": "Back recovery phrase text"
+    },
+    "reveal_recovery_phrase": {
+        "message": "显示恢复短语？",
+        "description": "Reveal recovery phrase text"
+    },
+    "you_can_only_see_your_recovery_phrase_once": {
+        "message": "您只能看到您的恢复短语一次。请将其写下来并妥善保管，不要与任何人分享。",
+        "description": "You can only see your recovery phrase once text"
+    },
+    "recovery_phrase": {
+        "message": "恢复短语",
+        "description": "Recovery phrase text"
     }
 }

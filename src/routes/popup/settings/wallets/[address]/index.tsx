@@ -34,6 +34,8 @@ import {
 import { HorizontalLine } from "~components/HorizontalLine";
 import SliderMenu from "~components/SliderMenu";
 import { getNameServiceProfile } from "~lib/nameservice";
+import { BackupSeedphraseWarning } from "~components/popup/settings/BackupSeedphraseWarning";
+import RevealRecoveryPhraseModal from "~components/popup/settings/RevealRecoveryPhraseModal";
 
 export interface WalletViewParams {
   address: string;
@@ -44,6 +46,7 @@ export type WalletViewProps = CommonRouteProps<WalletViewParams>;
 export function WalletView({ params: { address } }: WalletViewProps) {
   const { navigate } = useLocation();
 
+  const [isRecoveryModalOpen, setIsRecoveryModalOpen] = useState(false);
   const [editName, setEditName] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -62,6 +65,14 @@ export function WalletView({ params: { address } }: WalletViewProps) {
   const wallet = useMemo(
     () => wallets?.find((w) => w.address === address),
     [wallets, address]
+  );
+
+  const [isSeedphraseBackedUp] = useStorage(
+    {
+      key: `recovery_phrase_backedup_${wallet?.address}`,
+      instance: ExtensionStorage
+    },
+    true
   );
 
   // toasts
@@ -234,6 +245,18 @@ export function WalletView({ params: { address } }: WalletViewProps) {
             iconSize={24}
           />
           <HorizontalLine />
+          {!isSeedphraseBackedUp && (
+            <>
+              <BackupSeedphraseWarning
+                showArrow
+                onClick={() => setIsRecoveryModalOpen(true)}
+              />
+              <RevealRecoveryPhraseModal
+                open={isRecoveryModalOpen}
+                close={() => setIsRecoveryModalOpen(false)}
+              />
+            </>
+          )}
           <div
             style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
           >

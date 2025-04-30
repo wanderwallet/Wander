@@ -3015,5 +3015,21 @@
   "account_name_save_description": {
     "message": "Your account name is stored locally and will only be visible to you.",
     "description": "Account name save description"
+  },
+  "back_recovery_phrase": {
+    "message": "Back recovery phrase",
+    "description": "Back recovery phrase text"
+  },
+  "reveal_recovery_phrase": {
+    "message": "Reveal recovery phrase?",
+    "description": "Reveal recovery phrase text"
+  },
+  "you_can_only_see_your_recovery_phrase_once": {
+    "message": "You can only see your recovery phrase once. Please write it down in a secure place and do not share it with anyone.",
+    "description": "You can only see your recovery phrase once text"
+  },
+  "recovery_phrase": {
+    "message": "Recovery phrase",
+    "description": "Recovery phrase text"
   }
 }
