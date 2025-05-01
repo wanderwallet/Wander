@@ -936,6 +936,13 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       }
 
       try {
+        setEmbeddedContextAuth({
+          authStatus: "authLoading",
+          authProviderType,
+          user: null,
+          session: null
+        });
+
         const { url } = await AuthenticationService.authenticate(
           authProviderType
         );
@@ -1046,7 +1053,6 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         }
       } catch (error) {
         console.error(`${authProviderType} authentication failed:`, error);
-        // setIsLoading(false);
       }
     },
     [user]
