@@ -20,6 +20,7 @@ import { getSupabaseClient } from "~utils/embedded/embedded.utils";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 import { useAllWallets } from "~wallets/hooks";
 import { sleep } from "~utils/promises/sleep";
+import { EMBEDDED_HIDE_BE } from "~utils/embedded/iframe.utils";
 
 export function AuthEmbeddedView() {
   const { authenticate, authStatus } = useEmbedded();
@@ -154,14 +155,17 @@ export function AuthEmbeddedView() {
           >
             <GoogleIcon fontSize={24} />
           </Button>
-          <Button
-            variant="outlined"
-            size="md"
-            isLoading={selectedAuthProviderType === "NATIVE_WALLET"}
-            onClick={handleNativeWallet}
-          >
-            <Wander2Icon fontSize={24} />
-          </Button>
+          {EMBEDDED_HIDE_BE ||
+          window.arweaveWallet?.walletName !== "ArConnect" ? null : (
+            <Button
+              variant="outlined"
+              size="md"
+              isLoading={selectedAuthProviderType === "NATIVE_WALLET"}
+              onClick={handleNativeWallet}
+            >
+              <Wander2Icon fontSize={24} />
+            </Button>
+          )}
         </Row>
         <Button
           variant="outlined"

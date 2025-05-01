@@ -230,6 +230,20 @@ export interface WanderEmbeddedOptions {
   clientId: string;
 
   /**
+   * Theme setting for the Wander Connect UI. It will also be used as the default value for `iframe.theme` and
+   * `button.theme`.
+   * Controls whether the component uses light, dark, or system-based theming.
+   */
+  theme?: ThemeSetting;
+
+  /**
+   * `true` to hide the Wander button on the authentication screen, which allow users that have the Wander browser
+   * extension installed to use that instead of Wander Connect. This implies no authentication information will be
+   * available from users who use the browser extension.
+   */
+  hideBE?: boolean;
+
+  /**
    * Base URL for the Wander Embed client app.
    * The URL where the Wander Embed client is hosted.
    * Only change this if you're using a custom or self-hosted version of the embed client.

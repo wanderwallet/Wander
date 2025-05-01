@@ -13,8 +13,7 @@ import { Link } from "~wallets/router/components/link/Link";
 
 export function WalletHomeActions() {
   return (
-    <Box alignment="left" style={{ marginLeft: "20px" }}>
-      <br />
+    <Box>
       <Link
         to="/wallet/receive/options"
         style={{ textDecoration: "none", width: "100%" }}
@@ -23,17 +22,14 @@ export function WalletHomeActions() {
           alignment="center"
           justifyContent="start"
           style={{
-            cursor: "pointer"
+            cursor: "pointer",
+            padding: "var(--spacing-2) 0"
           }}
         >
-          <CoinsIcon color="#121212" />
-          <Text variant="bodyMd" style={{ color: "#121212" }}>
-            Receive tokens
-          </Text>
+          <CoinsIcon style={{ color: "var(--color-font-body)" }} />
+          <Text variant="bodyMd">Receive tokens</Text>
         </Row>
       </Link>
-
-      <br />
 
       <Link
         to="/wallet/transactions"
@@ -43,17 +39,14 @@ export function WalletHomeActions() {
           alignment="center"
           justifyContent="start"
           style={{
-            cursor: "pointer"
+            cursor: "pointer",
+            padding: "var(--spacing-2) 0"
           }}
         >
-          <ReceiptIcon color="#121212" />
-          <Text variant="bodyMd" style={{ color: "#121212" }}>
-            Transaction history
-          </Text>
+          <ReceiptIcon style={{ color: "var(--color-font-body)" }} />
+          <Text variant="bodyMd">Transaction history</Text>
         </Row>
       </Link>
-
-      <br />
 
       <button
         onClick={signOut}
@@ -63,17 +56,14 @@ export function WalletHomeActions() {
           alignment="center"
           justifyContent="start"
           style={{
-            cursor: "pointer"
+            cursor: "pointer",
+            padding: "var(--spacing-2) 0"
           }}
         >
-          <XClose color="#121212" />
-          <Text variant="bodyMd" style={{ color: "#121212" }}>
-            {browser.i18n.getMessage("sign_out")}
-          </Text>
+          <XClose style={{ color: "var(--color-font-body)" }} />
+          <Text variant="bodyMd">{browser.i18n.getMessage("sign_out")}</Text>
         </Row>
       </button>
-
-      <br />
 
       {/* <Link
         to="/wallet/settings"
@@ -83,11 +73,12 @@ export function WalletHomeActions() {
           alignment="center"
           justifyContent="start"
           style={{
-            cursor: "pointer"
+            cursor: "pointer",
+            padding: "var(--spacing-2) 0",
           }}
         >
-          <OpenTabIcon />
-          <Text variant="bodyMd" style={{ color: "#121212" }}>
+          <OpenTabIcon style={{ color: "var(--color-font-body)" }} />
+          <Text variant="bodyMd">
             View wallet dashboard
           </Text>
         </Row>

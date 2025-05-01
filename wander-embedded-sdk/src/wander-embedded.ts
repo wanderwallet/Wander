@@ -6,6 +6,7 @@ import {
   AuthState,
   BalanceInfo,
   RouteConfig,
+  ThemeSetting,
   WanderEmbeddedOptions
 } from "./wander-embedded.types";
 import {
@@ -63,6 +64,8 @@ export class WanderEmbedded {
     process.env.NODE_ENV === "development"
       ? ("http://localhost:5173/" as const)
       : ("https://embed-dev.wander.app/" as const);
+
+  static DEFAULT_THEME = "system" as const satisfies ThemeSetting;
 
   // Callbacks:
   private onAuth: (authState: AuthState) => void = NOOP;
@@ -183,8 +186,10 @@ export class WanderEmbedded {
     this.handleMessage = this.handleMessage.bind(this);
     window.addEventListener("message", this.handleMessage);
 
-    // ...we get a reference to any other `window.arweaveWallet` (most likely our BE)...:
-    this.windowArweaveWallet = window.arweaveWallet;
+    if (window.arweaveWallet.walletName !== "Wander Embedded") {
+      // ...we get a reference to any other `window.arweaveWallet` (most likely our BE)...:
+      this.windowArweaveWallet = window.arweaveWallet;
+    }
 
     if (this.authenticationState.authType !== "NATIVE_WALLET") {
       // ...and (re)set `window.arweaveWallet`, unless the user has previously selected using the native wallet:
@@ -196,14 +201,18 @@ export class WanderEmbedded {
     const {
       clientId,
       baseURL = WanderEmbedded.DEFAULT_IFRAME_SRC,
+      theme = WanderEmbedded.DEFAULT_THEME,
+      hideBE,
       baseServerURL,
       iframe: iframeOptions,
       button: buttonOptions
     } = options;
 
     const srcWithParams = getEmbeddedURL({
-      clientId,
       baseURL,
+      clientId,
+      theme,
+      hideBE,
       baseServerURL
     });
 
@@ -490,12 +499,16 @@ export class WanderEmbedded {
     }
   }
 
+  // TODO: Remove, as authenticationState is public?
   /**
    * Whether a user is currently authenticated
    * @returns True if authenticated, false otherwise
    */
   get isAuthenticated(): boolean {
-    return this.authStatus === "authenticated" && !!this.userId;
+    return (
+      this.authenticationState.authStatus === "authenticated" &&
+      !!this.authenticationState.userDetails
+    );
   }
 
   /**

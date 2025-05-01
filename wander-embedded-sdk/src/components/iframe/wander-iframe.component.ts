@@ -384,6 +384,7 @@ export class WanderIframe {
       { ...config.cssVars.light, ...layoutCssVarsUpdates },
       "Light"
     );
+
     addCSSVariables(
       this.host,
       { ...config.cssVars.dark, ...layoutCssVarsUpdates },
