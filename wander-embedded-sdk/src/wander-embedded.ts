@@ -65,11 +65,11 @@ export class WanderEmbedded {
       : ("https://embed-dev.wander.app/" as const);
 
   // Callbacks:
-  private onAuth: (data: IncomingAuthMessageData) => void = NOOP;
+  private onAuth: (authState: AuthState) => void = NOOP;
   private onOpen: () => void = NOOP;
   private onClose: () => void = NOOP;
-  private onResize: (data: IncomingResizeMessageData) => void = NOOP;
-  private onBalance: (data: IncomingBalanceMessageData) => void = NOOP;
+  private onResize: (routeConfig: RouteConfig) => void = NOOP;
+  private onBalance: (balanceInfo: BalanceInfo) => void = NOOP;
   private onRequest: (data: IncomingRequestMessageData) => void = NOOP;
 
   // Components:
@@ -295,7 +295,9 @@ export class WanderEmbedded {
 
     switch (message.type) {
       case "embedded_auth":
-        if (message.data.authStatus === "not-authenticated") {
+        const { authType, authStatus } = message.data;
+
+        if (authStatus === "not-authenticated") {
           localStorage.removeItem(WanderEmbedded.AUTH_STATE_LS_KEY);
         } else {
           try {
@@ -310,33 +312,29 @@ export class WanderEmbedded {
           this.authenticationState = message.data;
         }
 
-        if (message.data.authType === "NATIVE_WALLET") {
+        if (authType === "NATIVE_WALLET") {
           this._close();
 
           if (window.arweaveWallet.walletName === "Wander Embedded") {
             // If the user selected using the native wallet, we swap the injected API back to what it was:
             window.arweaveWallet = this.windowArweaveWallet;
           }
-
-          return;
-        }
-
-        if (
-          message.data.authStatus !== "not-authenticated" &&
-          window.arweaveWallet.walletName !== "Wander Embedded"
-        ) {
-          // If the user authenticates and the injected wallet API is not Wander Connect yet, we inject it now:
-          setupEmbeddedWalletSDK(this.iframeRef);
-        }
-
-        const authStatus = message.data.authStatus;
-
-        this.buttonComponent?.setVariant(authStatus);
-
-        if (authStatus === "loading") {
-          // TODO: Show spinner instead of iframe.
         } else {
-          // TODO: Show iframe
+          if (
+            authStatus !== "not-authenticated" &&
+            window.arweaveWallet.walletName !== "Wander Embedded"
+          ) {
+            // If the user authenticates and the injected wallet API is not Wander Connect yet, we inject it now:
+            setupEmbeddedWalletSDK(this.iframeRef);
+          }
+
+          this.buttonComponent?.setVariant(authStatus);
+
+          if (authStatus === "loading") {
+            // TODO: Show spinner instead of iframe.
+          } else {
+            // TODO: Show iframe
+          }
         }
 
         this.onAuth(message.data);

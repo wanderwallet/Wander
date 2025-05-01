@@ -261,7 +261,7 @@ export interface WanderEmbeddedOptions {
    * Callback function called when authentication state changes.
    * @param userDetails User details object when signed in, or null when signed out
    */
-  onAuth?: (authInfo: AuthInfo) => void;
+  onAuth?: (authState: AuthState) => void;
 
   /**
    * Callback function called when the wallet interface is opened.
