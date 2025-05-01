@@ -100,6 +100,7 @@ export const EmbeddedContext = createContext<EmbeddedContextData>({
   skipBackUp: () => null,
   downloadKeyfile: async () => null,
   copySeedphrase: async () => null,
+  getSeedphrase: async () => null,
   generateRecoveryAndDownload: async () => null
 });
 
@@ -240,34 +241,54 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     }));
   }, [walletId, walletAddress, updateCurrentWallet]);
 
+  const getSeedphrase = useCallback(
+    async (callbackFn?: (seedPhrase: string) => Promise<boolean>) => {
+      log(LOG_GROUP.EMBEDDED_FLOWS, `getSeedphrase()`);
+
+      const decryptedWallet = (await getKeyfile(
+        walletAddress
+      )) as LocalWallet<JWKInterface>;
+
+      const jwk = decryptedWallet.keyfile;
+
+      const seedPhrase = await WalletUtils.getDecryptedSeedPhrase(
+        walletId,
+        jwk
+      );
+
+      const success = callbackFn ? await callbackFn(seedPhrase) : true;
+
+      if (success) {
+        const { wallet: updatedWallet } =
+          await WalletService.registerWalletExport({
+            walletId,
+            type: "SEEDPHRASE"
+          });
+
+        updateCurrentWallet((currentWallet) => ({
+          ...currentWallet,
+          ...updatedWallet
+        }));
+      }
+
+      return seedPhrase;
+    },
+    [walletId, walletAddress]
+  );
+
   const copySeedphrase = useCallback(async () => {
     log(LOG_GROUP.EMBEDDED_FLOWS, `copySeedphrase()`);
 
-    const decryptedWallet = (await getKeyfile(
-      walletAddress
-    )) as LocalWallet<JWKInterface>;
+    let successfulCopy = false;
 
-    const jwk = decryptedWallet.keyfile;
+    await getSeedphrase(async (seedPhrase) => {
+      successfulCopy = await copy(seedPhrase);
 
-    const seedPhrase = await WalletUtils.getDecryptedSeedPhrase(walletId, jwk);
-
-    const successfulCopy = await copy(seedPhrase);
-
-    if (successfulCopy) {
-      const { wallet: updatedWallet } =
-        await WalletService.registerWalletExport({
-          walletId,
-          type: "SEEDPHRASE"
-        });
-
-      updateCurrentWallet((currentWallet) => ({
-        ...currentWallet,
-        ...updatedWallet
-      }));
-    }
+      return successfulCopy;
+    });
 
     return successfulCopy;
-  }, [walletId, updateCurrentWallet]);
+  }, [getSeedphrase]);
 
   const generateRecoveryAndDownload = useCallback(async () => {
     log(LOG_GROUP.EMBEDDED_FLOWS, `generateRecoveryAndDownload()`);
@@ -1349,6 +1370,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         skipBackUp,
         downloadKeyfile,
         copySeedphrase,
+        getSeedphrase,
         generateRecoveryAndDownload
       }}
     >

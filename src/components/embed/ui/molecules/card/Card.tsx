@@ -6,6 +6,7 @@ import { Header } from "../header";
 import { Footer } from "../footer";
 import { useTheme } from "../../../contexts/ThemeContext";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
+import { useLocation } from "~wallets/router/router.utils";
 
 const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
   (
@@ -31,6 +32,7 @@ const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
   ) => {
     const { isDarkMode } = useTheme();
     const [isMinimized, setIsMinimized] = React.useState(false);
+    const { back } = useLocation();
 
     const iconColor = isDarkMode ? "var(--color-font-body)" : "#757575";
     const cardBackground = isDarkMode
@@ -75,7 +77,7 @@ const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
             {hasBackButton && (
               <button
                 className={styles["card__back__btn"]}
-                onClick={onBackButtonClick}
+                onClick={onBackButtonClick ?? back}
               >
                 <ChevronLeft fontSize={24} color={iconColor} />
               </button>

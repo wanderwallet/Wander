@@ -9,7 +9,6 @@ import {
   WanderFooter
 } from "~components/embed/ui";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
-import { Link } from "~wallets/router/components/link/Link";
 import { useLocation } from "~wallets/router/router.utils";
 
 export function AccountBackupSharesEmbeddedView() {
@@ -94,9 +93,6 @@ export function AccountBackupSharesEmbeddedView() {
       hasBackButton={true}
       onBackButtonClick={() => navigate("/wallet")}
       hasCloseButton={true}
-      onCloseButtonClick={() => {
-        <Link to="/wallet" />;
-      }}
       size="auto"
     >
       <Box>
