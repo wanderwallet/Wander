@@ -70,6 +70,17 @@ const passkeyClient = {
         throw err;
       }
     }
+  },
+  finalizePasskey: {
+    mutate: async (data: any) => {
+      try {
+        // Direct call to the route without any namespace
+        return (trpcVanilla as any).finalizePasskey.mutate(data);
+      } catch (err) {
+        console.error("Error in finalizePasskey:", err);
+        throw err;
+      }
+    }
   }
 };
 
@@ -88,19 +99,37 @@ async function authenticate(authProviderType: AuthProviderType) {
 
   const provider = SUPABASE_PROVIDER_BY_AUTH_PROVIDER_TYPE[authProviderType];
 
-  const supabase = await getSupabaseClient();
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider,
-    options: {
-      // redirectTo: `${window.location.origin}#/auth/callback/google`,
-      redirectTo: window.location.origin,
-      skipBrowserRedirect: true
+  if (!provider) {
+    throw new Error(`Provider ${authProviderType} is not configured properly`);
+  }
+
+  try {
+    const supabase = await getSupabaseClient();
+
+    // Improve OAuth flow with detailed params
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: window.location.origin,
+        skipBrowserRedirect: true,
+        scopes: provider === "google" ? "email profile" : undefined
+      }
+    });
+
+    if (error) {
+      console.error("OAuth error:", error);
+      throw error;
     }
-  });
 
-  if (error) throw error;
+    if (!data?.url) {
+      throw new Error("No OAuth URL returned from Supabase");
+    }
 
-  return { url: data.url };
+    return { url: data.url };
+  } catch (error) {
+    console.error(`Error during ${provider} authentication:`, error);
+    throw error;
+  }
 }
 
 async function startPasskeyRegistration() {
@@ -133,6 +162,46 @@ async function verifyPasskeyRegistration(
 }
 
 /**
+ * Finalizes a passkey registration by processing the verification response
+ * @param params Verification parameters
+ * @returns Verification result
+ */
+async function finalizePasskeyRegistration(params: {
+  verificationId: string;
+  email: string;
+  sessionToken: string;
+  deviceNonce?: string;
+}) {
+  const result = await passkeyClient.finalizePasskey.mutate(params);
+
+  // Check if we received Supabase-compatible tokens
+  if (result.access_token && result.refresh_token) {
+    try {
+      console.log("Received auth tokens, setting up Supabase session");
+
+      // Get the Supabase client
+      const supabase = await getSupabaseClient();
+
+      // Set the session in Supabase with our custom tokens
+      const { data, error } = await supabase.auth.setSession({
+        access_token: result.access_token,
+        refresh_token: result.refresh_token
+      });
+
+      if (error) {
+        console.error("Error setting Supabase session:", error);
+      } else {
+        console.log("Successfully set up Supabase session with passkey tokens");
+      }
+    } catch (error) {
+      console.error("Error during Supabase session setup:", error);
+    }
+  }
+
+  return result;
+}
+
+/**
  * Initiates passkey authentication process with the server
  * @param email Optional email of the user trying to authenticate. If not provided, uses discoverable credentials flow.
  * @returns Authentication options from the server
@@ -147,7 +216,7 @@ async function startPasskeyAuthentication(email?: string) {
 }
 
 /**
- * Verifies the passkey authentication response from the browser
+ * Verifies the passkey authentication response from the browser and sets up the Supabase session
  * @param params Authentication response parameters
  * @returns Verification result from the server
  * @returns {Object} result
@@ -155,6 +224,8 @@ async function startPasskeyAuthentication(email?: string) {
  * @returns {string} result.userId - ID of the authenticated user
  * @returns {string} result.sessionId - ID of the created session
  * @returns {string} result.deviceNonce - Device nonce for future authentication
+ * @returns {string} result.access_token - Supabase-compatible access token
+ * @returns {string} result.refresh_token - Supabase-compatible refresh token
  */
 async function verifyPasskeyAuthentication(params: {
   credentialId: string;
@@ -166,7 +237,36 @@ async function verifyPasskeyAuthentication(params: {
   challengeId?: string;
   deviceNonce?: string;
 }) {
-  return passkeyClient.verifyAuthentication.mutate(params);
+  // Get the authentication result from the API
+  const authResult = await passkeyClient.verifyAuthentication.mutate(params);
+
+  // Check if we received Supabase-compatible tokens
+  if (authResult.access_token && authResult.refresh_token) {
+    try {
+      console.log("Received auth tokens, setting up Supabase session");
+
+      // Get the Supabase client
+      const supabase = await getSupabaseClient();
+
+      // Set the session in Supabase with our custom tokens
+      const { data, error } = await supabase.auth.setSession({
+        access_token: authResult.access_token,
+        refresh_token: authResult.refresh_token
+      });
+
+      if (error) {
+        console.error("Error setting Supabase session:", error);
+      } else {
+        console.log("Successfully set up Supabase session with passkey tokens");
+      }
+    } catch (error) {
+      console.error("Error during Supabase session setup:", error);
+    }
+  } else {
+    console.warn("No authentication tokens received from server");
+  }
+
+  return authResult;
 }
 
 async function checkUserPasskeys() {
@@ -228,15 +328,78 @@ async function recoverAccount(userId: string, challengeSolution: string) {
   });
 }
 
+/**
+ * Handles OAuth callback processing after redirect
+ * @returns Result of the OAuth callback processing
+ */
+async function handleOAuthCallback() {
+  try {
+    const supabase = await getSupabaseClient();
+
+    // Check if we already have a session from the hash parameters
+    const { data, error } = await supabase.auth.getSession();
+
+    if (error) {
+      console.error("Error getting session:", error);
+      return { success: false, error: error.message };
+    }
+
+    if (data.session) {
+      console.log("Session already exists, OAuth flow successful");
+      return { success: true };
+    }
+
+    // If no session, try to extract tokens from URL hash
+    const hashParams = window.location.hash.substring(1);
+    const searchParams = window.location.search.substring(1);
+    const params = new URLSearchParams(hashParams || searchParams);
+
+    // Check for errors in the URL
+    const errorDescription =
+      params.get("error_description") || params.get("error");
+    if (errorDescription) {
+      console.error("OAuth error from URL:", errorDescription);
+      return { success: false, error: errorDescription };
+    }
+
+    // Extract tokens if available
+    const accessToken = params.get("access_token");
+    const refreshToken = params.get("refresh_token");
+
+    if (accessToken && refreshToken) {
+      console.log("Found tokens in URL, setting session");
+
+      const sessionResult = await supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: refreshToken
+      });
+
+      if (sessionResult.error) {
+        console.error("Failed to set session:", sessionResult.error);
+        return { success: false, error: sessionResult.error.message };
+      }
+
+      return { success: true };
+    }
+
+    return { success: false, error: "No authentication data found" };
+  } catch (error) {
+    console.error("Error handling OAuth callback:", error);
+    return { success: false, error: error.message };
+  }
+}
+
 export const AuthenticationService = {
   authenticate,
   startPasskeyRegistration,
   verifyPasskeyRegistration,
+  finalizePasskeyRegistration,
   startPasskeyAuthentication,
   verifyPasskeyAuthentication,
   checkUserPasskeys,
   generateFetchRecoverableAccountsChallenge,
   fetchRecoverableAccounts,
   generateAccountRecoveryChallenge,
-  recoverAccount
+  recoverAccount,
+  handleOAuthCallback
 } as const;
