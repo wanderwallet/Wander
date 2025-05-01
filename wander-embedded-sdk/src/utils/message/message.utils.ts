@@ -1,3 +1,4 @@
+import { EMBEDDED_AUTH_STATUS, EMBEDDED_AUTH_TYPE } from "./message.constants";
 import {
   EventMessage,
   EventMessageData,
@@ -61,17 +62,21 @@ export function isIncomingMessage(
     case "embedded_auth": {
       const data = message.data as IncomingAuthMessageData;
 
-      return !!(
-        data &&
-        typeof data === "object" &&
-        typeof [
-          "loading",
-          "onboarding",
-          "authenticated",
-          "not-authenticated"
-        ].includes(data.authStatus) &&
-        (data.userId === null ||
-          (!!data.userId && typeof data.userId === "string"))
+      if (!data || typeof data !== "object") return false;
+
+      if (data.authType === "NATIVE_WALLET") {
+        return data.authStatus === null && data.userDetails === null;
+      }
+
+      if (data.authStatus === "not-authenticated") {
+        return data.authType === null && data.userDetails === null;
+      }
+
+      return (
+        EMBEDDED_AUTH_STATUS.includes(data.authStatus) &&
+        EMBEDDED_AUTH_TYPE.includes(data.authType) &&
+        !!data.userDetails &&
+        typeof data.userDetails === "object"
       );
     }
 

@@ -5,16 +5,56 @@ import { BalanceInfo, RouteConfig } from "../../wander-embedded.types";
 
 // embedded_auth:
 
+export type EmbeddedAuthProviderType =
+  | "PASSKEYS"
+  | "EMAIL_N_PASSWORD"
+  | "GOOGLE"
+  | "FACEBOOK"
+  | "X"
+  | "APPLE";
+
 export type EmbeddedAuthStatus =
   | "loading"
   | "onboarding"
   | "authenticated"
   | "not-authenticated";
 
-export interface IncomingAuthMessageData {
-  authStatus: EmbeddedAuthStatus;
-  userId: null | string;
+export interface EmbeddedUserDetails {
+  id: string;
+  email?: string;
+  phone?: string;
+  updated_at?: string;
+  created_at: string;
 }
+
+export interface IncomingAuthNativeMessageData {
+  authType: "NATIVE_WALLET";
+  authStatus: null;
+  userDetails: null;
+}
+
+export interface IncomingAuthNoAuthMessageData {
+  authType: null;
+  authStatus: "not-authenticated";
+  userDetails: null;
+}
+
+export interface IncomingAuthLoadingMessageData {
+  authType: EmbeddedAuthProviderType;
+  authStatus: "loading";
+  userDetails: EmbeddedUserDetails;
+}
+export interface IncomingAuthCompletedMessageData {
+  authType: EmbeddedAuthProviderType;
+  authStatus: "onboarding" | "authenticated";
+  userDetails: EmbeddedUserDetails;
+}
+
+export type IncomingAuthMessageData =
+  | IncomingAuthNativeMessageData
+  | IncomingAuthNoAuthMessageData
+  | IncomingAuthLoadingMessageData
+  | IncomingAuthCompletedMessageData;
 
 // embedded_resize
 

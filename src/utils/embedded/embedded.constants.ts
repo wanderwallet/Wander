@@ -17,6 +17,6 @@ export const AUTH_PROVIDER_TYPE_BY_PROVIDER_STR = {
   email: "EMAIL_N_PASSWORD",
   google: "GOOGLE",
   facebook: "FACEBOOK",
-  x: "X",
+  twitter: "X",
   apple: "APPLE"
 } as const satisfies Record<string, AuthProviderType>;

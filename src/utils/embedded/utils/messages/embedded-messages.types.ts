@@ -1,3 +1,4 @@
+import type { AuthProviderType, SupabaseUser } from "embed-api";
 import type {
   EmbeddedLayout,
   RouteType
@@ -13,16 +14,39 @@ export type EmbeddedMessageId =
   | "embedded_balance"
   | "embedded_request";
 
-export type EmbeddedAuthStatus =
-  | "loading"
-  | "onboarding"
-  | "authenticated"
-  | "not-authenticated";
+export type EmbeddedUserDetails = Pick<
+  SupabaseUser,
+  "id" | "email" | "phone" | "updated_at" | "created_at"
+>;
 
-export interface EmbeddedAuthMessageData {
-  authStatus: EmbeddedAuthStatus;
-  userId: null | string;
+export interface EmbeddedAuthNativeMessageData {
+  authType: "NATIVE_WALLET";
+  authStatus: null;
+  userDetails: null;
 }
+
+export interface EmbeddedAuthNoAuthMessageData {
+  authType: null;
+  authStatus: "not-authenticated";
+  userDetails: null;
+}
+
+export interface EmbeddedAuthLoadingMessageData {
+  authType?: AuthProviderType;
+  authStatus: "loading";
+  userDetails: EmbeddedUserDetails;
+}
+export interface EmbeddedAuthCompletedMessageData {
+  authType: AuthProviderType;
+  authStatus: "onboarding" | "authenticated";
+  userDetails: EmbeddedUserDetails;
+}
+
+export type EmbeddedAuthMessageData =
+  | EmbeddedAuthNativeMessageData
+  | EmbeddedAuthNoAuthMessageData
+  | EmbeddedAuthLoadingMessageData
+  | EmbeddedAuthCompletedMessageData;
 
 export interface EmbeddedResizeMessageData {
   routeType: RouteType;

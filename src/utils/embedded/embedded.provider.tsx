@@ -55,8 +55,11 @@ import { isTempWalletPromiseExpired } from "~utils/embedded/utils/wallets/embedd
 import copy from "copy-to-clipboard";
 import { useHashLocation } from "wouter/use-hash-location";
 import { getIPAddress } from "~utils/ip_address";
-import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
-import type { EmbeddedAuthStatus } from "~utils/embedded/utils/messages/embedded-messages.types";
+import {
+  getAuthProviderTypeFromSupabaseUser,
+  getUserDetailsFromSupabaseUser,
+  postEmbeddedMessage
+} from "~utils/embedded/utils/messages/embedded-messages.utils";
 
 export type AuthStatusCopy = AuthStatus;
 
@@ -129,7 +132,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
   // Auth props:
 
-  const { authStatus, user, session } = embeddedContextAuth;
+  const { authProviderType, authStatus, user, session } = embeddedContextAuth;
 
   const userId = user?.id || null;
 
@@ -144,27 +147,31 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
   }, [authStatus]);
 
   useEffect(() => {
-    if (!userId) return;
+    if (!authProviderType || !authStatus || !user) return;
 
     const sdkAuthStatusByAppAuthStatus = {
       unlocked: "authenticated",
       authLoading: "loading",
       noShares: "onboarding",
       noWallets: "onboarding"
-    } as const satisfies Partial<Record<AuthStatus, EmbeddedAuthStatus>>;
+    } as const;
 
-    const sdkAuthStatus = sdkAuthStatusByAppAuthStatus[authStatus];
+    const sdkAuthStatus = sdkAuthStatusByAppAuthStatus[authStatus] as
+      | "loading"
+      | "onboarding"
+      | "authenticated";
 
     if (sdkAuthStatus) {
       postEmbeddedMessage({
         type: "embedded_auth",
         data: {
+          authType: authProviderType,
           authStatus: sdkAuthStatus,
-          userId
+          userDetails: getUserDetailsFromSupabaseUser(user)
         }
       });
     }
-  }, [authStatus, userId]);
+  }, [authProviderType, authStatus, user]);
 
   const getLatestSession = useCallback(async (session: DbSession) => {
     const userAgent = navigator.userAgent;
@@ -1061,8 +1068,9 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         postEmbeddedMessage({
           type: "embedded_auth",
           data: {
+            authType: null,
             authStatus: "not-authenticated",
-            userId: null
+            userDetails: null
           }
         });
 
@@ -1251,27 +1259,28 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
       // Retrieves the current LOCAL session:
       const { data, error } = await supabase.auth.getSession();
+      const cachedUser = data?.session?.user;
 
       // Send the initial state for the SDK button ASAP:
       postEmbeddedMessage({
         type: "embedded_auth",
         data:
-          !error && !!data?.session?.access_token
+          !error && cachedUser
             ? {
+                authType: getAuthProviderTypeFromSupabaseUser(cachedUser),
                 authStatus: "loading",
-                userId: null
+                userDetails: getUserDetailsFromSupabaseUser(cachedUser)
               }
             : {
+                authType: null,
                 authStatus: "not-authenticated",
-                userId: null
+                userDetails: null
               }
       });
 
       const {
         data: { subscription }
       } = supabase.auth.onAuthStateChange(async (_event, session) => {
-        // console.log("onAuthStateChange =", session);
-
         window.clearTimeout(forceInitTimeoutID);
 
         // Comment this line to run Wander Embedded as a standalone page:
@@ -1292,9 +1301,17 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
         const accessToken = session?.access_token ?? null;
         const user = session?.user ?? null;
-        const authProviderType: AuthProviderType | null =
-          AUTH_PROVIDER_TYPE_BY_PROVIDER_STR[user?.identities?.[0]?.provider] ||
-          null;
+        const authProviderType = getAuthProviderTypeFromSupabaseUser(user);
+
+        if (
+          process.env.NODE_ENV === "development" &&
+          user &&
+          authProviderType === null
+        ) {
+          alert(
+            `authProviderType = ${authProviderType}. Something wasn't properly mapped in AUTH_PROVIDER_TYPE_BY_PROVIDER_STR.`
+          );
+        }
 
         let dbSession: DbSession | null = null;
 

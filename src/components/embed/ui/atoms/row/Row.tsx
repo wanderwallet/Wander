@@ -12,20 +12,10 @@ const Row = forwardRef<HTMLDivElement, RowBaseProps>(
       alignment = "center",
       justifyContent = "center",
       isFullWidth = false,
-      style,
       ...props
     },
     ref
   ) => {
-    const { isDarkMode } = useTheme();
-
-    const rowStyle = {
-      ...style,
-      backgroundColor: isDarkMode
-        ? "var(--color-card-background-default)"
-        : style?.backgroundColor
-    };
-
     return (
       <div
         ref={ref}
@@ -36,7 +26,6 @@ const Row = forwardRef<HTMLDivElement, RowBaseProps>(
           isFullWidth && styles.row__full_width,
           className
         )}
-        style={rowStyle}
         {...props}
       >
         {children}

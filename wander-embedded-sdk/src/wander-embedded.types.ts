@@ -1,3 +1,5 @@
+import { IncomingAuthMessageData } from "./utils/message/message.types";
+
 /**
  * Types of routes available in the Wander Embedded SDK.
  */
@@ -194,16 +196,7 @@ export interface RouteConfig {
   // imgSrc?: string;
 }
 
-export type AuthStatus =
-  | "loading"
-  | "onboarding"
-  | "authenticated"
-  | "not-authenticated";
-
-export interface AuthInfo {
-  authStatus: AuthStatus;
-  userId: null | string;
-}
+export type AuthState = IncomingAuthMessageData;
 
 /** User's wallet balance information */
 export interface BalanceInfo {

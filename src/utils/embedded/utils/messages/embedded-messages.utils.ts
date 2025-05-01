@@ -1,4 +1,6 @@
+import type { AuthProviderType, SupabaseUser } from "embed-api";
 import { nanoid } from "nanoid";
+import { AUTH_PROVIDER_TYPE_BY_PROVIDER_STR } from "~utils/embedded/embedded.constants";
 import {
   isInsideIframe,
   getEmbeddedAncestorOrigin
@@ -6,7 +8,8 @@ import {
 import type {
   EmbeddedCall,
   EmbeddedMessageId,
-  EmbeddedMessageMap
+  EmbeddedMessageMap,
+  EmbeddedUserDetails
 } from "~utils/embedded/utils/messages/embedded-messages.types";
 
 const EMBEDDED_MESSAGE_IDS = [
@@ -56,4 +59,26 @@ export function postEmbeddedMessage<K extends EmbeddedMessageId>({
   }
 
   window.parent.postMessage(call, getEmbeddedAncestorOrigin());
+}
+
+export function getUserDetailsFromSupabaseUser(
+  user: SupabaseUser
+): EmbeddedUserDetails {
+  console.log("getUserDetailsFromSupabaseUser", user);
+
+  return {
+    id: user.id,
+    email: user.email,
+    phone: user.phone,
+    updated_at: user.updated_at,
+    created_at: user.created_at
+  };
+}
+
+export function getAuthProviderTypeFromSupabaseUser(
+  user: SupabaseUser
+): AuthProviderType | null {
+  return (
+    AUTH_PROVIDER_TYPE_BY_PROVIDER_STR[user?.identities?.[0]?.provider] || null
+  );
 }

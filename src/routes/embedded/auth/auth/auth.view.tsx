@@ -17,12 +17,16 @@ import {
 import { useCallback, useRef, useState } from "react";
 import type { AuthProviderType } from "embed-api";
 import { getSupabaseClient } from "~utils/embedded/embedded.utils";
+import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
+import { useAllWallets } from "~wallets/hooks";
+import { sleep } from "~utils/promises/sleep";
 
 export function AuthEmbeddedView() {
   const { authenticate, authStatus } = useEmbedded();
 
-  const [selectedAuthProviderType, setSelectedAuthProviderType] =
-    useState<AuthProviderType | null>(null);
+  const [selectedAuthProviderType, setSelectedAuthProviderType] = useState<
+    AuthProviderType | "NATIVE_WALLET" | null
+  >(null);
 
   const areButtonsDisabled =
     authStatus === "unknown" ||
@@ -53,6 +57,25 @@ export function AuthEmbeddedView() {
     },
     []
   );
+
+  const handleNativeWallet = useCallback(async () => {
+    setSelectedAuthProviderType("NATIVE_WALLET");
+
+    postEmbeddedMessage({
+      type: "embedded_auth",
+      data: {
+        authType: "NATIVE_WALLET",
+        authStatus: null,
+        userDetails: null
+      }
+    });
+
+    await sleep(500);
+
+    // Reset this shortly after the modal is closed so that if the user opens
+    // it again, they can pick a different option:
+    setSelectedAuthProviderType(null);
+  }, []);
 
   const handleEmailSignup = useCallback(async () => {
     try {
@@ -131,14 +154,18 @@ export function AuthEmbeddedView() {
           >
             <GoogleIcon fontSize={24} />
           </Button>
-          <Button variant="outlined" size="md" isDisabled>
+          <Button
+            variant="outlined"
+            size="md"
+            isLoading={selectedAuthProviderType === "NATIVE_WALLET"}
+            onClick={handleNativeWallet}
+          >
             <Wander2Icon fontSize={24} />
           </Button>
         </Row>
         <Button
           variant="outlined"
           isFullWidth
-          isDisabled
           icon={<SocialsIcon fontSize={24} />}
           href="#/auth/more-providers"
         >
