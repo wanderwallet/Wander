@@ -169,6 +169,7 @@ export class WanderButton {
 
     template.innerHTML = getWanderButtonTemplateContent({
       wanderLogo: config.wanderLogo,
+      i18n: config.i18n,
       showLabel: config.label,
       showBalance: !!config.balance,
       customStyles: config.customStyles,
@@ -253,7 +254,6 @@ export class WanderButton {
   setBalance(balanceInfo: BalanceInfo) {
     if (this.balance.getAttribute("hidden")) return;
 
-    this.balance.classList.remove("isLoading");
     this.balance.textContent = balanceInfo.formattedBalance;
     this.balance.title = "";
 
@@ -298,15 +298,10 @@ export class WanderButton {
       } else if (variant === "authenticated") {
         this.label.textContent = "";
         this.label.title = "";
-        this.balance.classList.add("isLoading");
-        this.balance.textContent = "";
-        this.balance.title = this.config.i18n.loadingBalance;
       } else {
         this.label.textContent = this.config.i18n.signIn;
         this.label.title = "";
-        this.balance.classList.remove("isLoading");
         this.balance.textContent = "";
-        this.balance.title = "";
       }
     }
   }

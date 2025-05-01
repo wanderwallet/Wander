@@ -1,7 +1,11 @@
-import { WanderEmbeddedLogoVariant } from "../../wander-embedded.types";
+import {
+  WanderEmbeddedButtonLabels,
+  WanderEmbeddedLogoVariant
+} from "../../wander-embedded.types";
 
 export interface WanderButtonTemplateContentOptions {
   wanderLogo: WanderEmbeddedLogoVariant;
+  i18n: WanderEmbeddedButtonLabels;
   showLabel: boolean;
   showBalance: boolean;
   customStyles: string;
@@ -12,6 +16,7 @@ export interface WanderButtonTemplateContentOptions {
 
 export const getWanderButtonTemplateContent = ({
   wanderLogo,
+  i18n,
   showLabel,
   showBalance,
   customStyles,
@@ -112,14 +117,14 @@ export const getWanderButtonTemplateContent = ({
   .balance {
     filter: blur(0px);
     transition: filter linear 300ms;
-  }
-
-  .balance[hidden],
-  .balance:empty:not(.isLoading) {
     display: none;
   }
 
-  .balance.isLoading {
+  .label:empty:not(.isLoading) + .balance:not([hidden]) {
+    display: block;
+  }
+
+  .balance:empty {
     background: currentColor;
     width: 64px;
     height: 12px;
@@ -269,7 +274,9 @@ export const getWanderButtonTemplateContent = ({
   </svg>
 
   <span class="label" ${showLabel ? "" : "hidden"}></span>
-  <span class="balance" ${showBalance ? "" : "hidden"}></span>
+  <span class="balance" ${showBalance ? "" : "hidden"} title="${
+  i18n.loadingBalance
+}"></span>
 </button>
 
 <span class="indicator"></span>
