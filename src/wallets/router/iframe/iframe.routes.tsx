@@ -56,6 +56,8 @@ import { WalletDepositTokensEmbeddedView } from "~routes/embedded/wallet/deposit
 import { WalletBuyInputEmbeddedView } from "~routes/embedded/wallet/buy/buy.input.view";
 import { WalletBuySuccessEmbeddedView } from "~routes/embedded/wallet/buy/buy.success.view";
 import { EmbeddedConnectAuthRequestView } from "~routes/embedded/wallet/connect/dapp-connect.view";
+import { AccountBackupFullWalletEmbeddedView } from "~routes/embedded/account/backup-full-wallet/backup-full-wallet.view";
+import { AccountBackupCopySeedphraseEmbeddedView } from "~routes/embedded/account/backup-full-wallet/copy-seedphrase.view";
 
 export type EmbeddedRoutePath =
   | "/auth"
@@ -84,6 +86,8 @@ export type EmbeddedRoutePath =
   | "/account/import-seedphrase"
   | "/account/import-keyfile"
   | "/account/backup-shares"
+  | "/account/backup-full-wallet"
+  | "/account/backup-full-wallet/copy-seedphrase"
   // | "/account/backup-shares/<backupProvider>"
   | "/account/backup-shares/reminder"
   | "/account/export-wallet"
@@ -142,6 +146,8 @@ export const EmbeddedPaths = {
 
   // Backup:
   AccountBackupShares: "/account/backup-shares",
+  AccountBackupFullWallet: "/account/backup-full-wallet",
+  AccountBackupCopySeedphrase: "/account/backup-full-wallet/copy-seedphrase",
   AccountBackupSharesReminder: "/account/backup-shares/reminder",
   AccountExportWallet: "/account/export-wallet",
 
@@ -279,6 +285,14 @@ const IFRAME_OWN_ROUTES = [
   {
     path: EmbeddedPaths.AccountBackupShares,
     component: AccountBackupSharesEmbeddedView
+  },
+  {
+    path: EmbeddedPaths.AccountBackupFullWallet,
+    component: AccountBackupFullWalletEmbeddedView
+  },
+  {
+    path: EmbeddedPaths.AccountBackupCopySeedphrase,
+    component: AccountBackupCopySeedphraseEmbeddedView
   },
   {
     path: EmbeddedPaths.AccountExportWallet,

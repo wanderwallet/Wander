@@ -1,5 +1,13 @@
+import { Wallet03 } from "@untitled-ui/icons-react";
 import { useCallback, useState } from "react";
-import { Box, Button, Card, KeyIcon, WanderFooter } from "~components/embed/ui";
+import {
+  Box,
+  Button,
+  Card,
+  KeyIcon,
+  Spacer,
+  WanderFooter
+} from "~components/embed/ui";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { Link } from "~wallets/router/components/link/Link";
 import { useLocation } from "~wallets/router/router.utils";
@@ -10,14 +18,10 @@ export function AccountBackupSharesEmbeddedView() {
     status: false
   });
   const { navigate } = useLocation();
-  const { currentWallet, generateRecoveryAndDownload, copySeedphrase } =
-    useEmbedded();
-  const walletAddress = currentWallet.address;
+  const { generateRecoveryAndDownload } = useEmbedded();
 
   const handleOnClick = useCallback(
-    async (
-      method: "GDrive" | "Apple" | "Dropbox" | "PrivateKey" | "Seedphrase"
-    ) => {
+    async (method: "GDrive" | "Apple" | "Dropbox" | "FullWallet") => {
       const setLoadingState = (status: boolean) =>
         setIsLoading({ calledId: method, status });
 
@@ -25,12 +29,8 @@ export function AccountBackupSharesEmbeddedView() {
         setLoadingState(true);
 
         switch (method) {
-          case "PrivateKey":
-            await generateRecoveryAndDownload();
-            break;
-
-          case "Seedphrase":
-            await copySeedphrase();
+          case "FullWallet":
+            navigate("/account/backup-full-wallet");
             break;
 
           case "GDrive":
@@ -48,7 +48,7 @@ export function AccountBackupSharesEmbeddedView() {
         setLoadingState(false);
       }
     },
-    [generateRecoveryAndDownload, copySeedphrase, walletAddress]
+    []
   );
 
   const handleGenerateRecoveryAndDownload = useCallback(async () => {
@@ -100,28 +100,28 @@ export function AccountBackupSharesEmbeddedView() {
       size="auto"
     >
       <Box>
-        {/* <Button
+        <Button
           variant="outlined"
           isFullWidth
-          icon={<KeyShareIcon fontSize={24} />}
-          isLoading={
-            isLoading.calledId === "PrivateKey" && isLoading.status === true
-          }
-          onClick={() => handleOnClick("PrivateKey")}
+          icon={<KeyIcon fontSize={24} />}
+          isLoading={isLoading.calledId === "RecoveryFile" && isLoading.status}
+          isDisabled={isLoading.calledId === "RecoveryFile" && isLoading.status}
+          onClick={handleGenerateRecoveryAndDownload}
         >
-          Export Private Key Share
+          Export Recovery File
         </Button>
         <Button
           variant="outlined"
           isFullWidth
-          icon={<SeedIcon fontSize={24} />}
+          icon={<Wallet03 fontSize={24} />}
           isLoading={
-            isLoading.calledId === "Seedphrase" && isLoading.status === true
+            isLoading.calledId === "FullWallet" && isLoading.status === true
           }
-          onClick={() => handleOnClick("Seedphrase")}
+          onClick={() => handleOnClick("FullWallet")}
         >
-          Copy Seedphrase
+          Backup full wallet
         </Button>
+        {/*
         <Button
           variant="outlined"
           isFullWidth
@@ -155,16 +155,7 @@ export function AccountBackupSharesEmbeddedView() {
         >
           Backup to Dropbox
         </Button> */}
-        <Button
-          variant="outlined"
-          isFullWidth
-          icon={<KeyIcon fontSize={24} />}
-          isLoading={isLoading.calledId === "RecoveryFile" && isLoading.status}
-          isDisabled={isLoading.calledId === "RecoveryFile" && isLoading.status}
-          onClick={handleGenerateRecoveryAndDownload}
-        >
-          Export Recovery File
-        </Button>
+        <Spacer y={1} />
         <Button variant="link" isFullWidth onClick={handleUnimplementedFeature}>
           Why should I back up my account?
         </Button>

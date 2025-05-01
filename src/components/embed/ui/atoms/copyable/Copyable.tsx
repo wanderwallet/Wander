@@ -1,11 +1,11 @@
-import React, { forwardRef } from "react";
+import { forwardRef, useMemo, useState } from "react";
 import clsx from "clsx";
 import styles from "./Copyable.module.css";
 import type { CopyableBaseProps } from "./Copyable.types";
 import { Loading } from "../loading";
 import { Box } from "../box";
 import { Text } from "../text";
-import { CopyableIcon } from "../icon";
+import { CopyableIcon, CheckIcon } from "../icon";
 import { useTheme } from "../../../contexts/ThemeContext";
 
 const Copyable = forwardRef<HTMLDivElement, CopyableBaseProps>(
@@ -30,13 +30,21 @@ const Copyable = forwardRef<HTMLDivElement, CopyableBaseProps>(
     ref
   ) => {
     const { isDarkMode } = useTheme();
+    const [isCopied, setIsCopied] = useState(false);
 
     const textColor = isDarkMode
       ? "var(--color-copyable-text-value)"
       : "#666666";
-    const iconColor = isDarkMode
-      ? "var(--color-copyable-text-label)"
-      : "#666666";
+
+    const iconColor = useMemo(() => {
+      return isDarkMode
+        ? isCopied
+          ? "#4ade80"
+          : "var(--color-copyable-text-label)"
+        : isCopied
+        ? "#22c55e"
+        : "#666666";
+    }, [isDarkMode, isCopied]);
 
     const displayValue = isShortened
       ? value.slice(0, 4) + "..." + value.slice(-4)
@@ -84,12 +92,30 @@ const Copyable = forwardRef<HTMLDivElement, CopyableBaseProps>(
               )}
               <button
                 className={styles.copyable__button}
-                onClick={onClick}
+                onClick={(e) => {
+                  onClick(e);
+                  setIsCopied(true);
+                  setTimeout(() => {
+                    setIsCopied(false);
+                  }, 1000);
+                }}
                 disabled={isDisabled}
                 aria-label="Copy to clipboard"
               >
                 {buttonText}
-                <CopyableIcon color={iconColor} width={16} height={16} />
+                {isCopied ? (
+                  <CheckIcon
+                    style={{ color: iconColor }}
+                    width={16}
+                    height={16}
+                  />
+                ) : (
+                  <CopyableIcon
+                    style={{ color: iconColor }}
+                    width={16}
+                    height={16}
+                  />
+                )}
               </button>
             </div>
           </Box>

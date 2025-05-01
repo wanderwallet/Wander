@@ -140,7 +140,9 @@ export function useEmbeddedOverride(
           location,
           [
             EmbeddedPaths.AccountBackupSharesReminder,
-            EmbeddedPaths.AccountBackupShares
+            EmbeddedPaths.AccountBackupShares,
+            EmbeddedPaths.AccountBackupFullWallet,
+            EmbeddedPaths.AccountBackupCopySeedphrase
             // TODO: Missing EmbeddedPaths.AccountBackupShares/<PROVIDER>
           ],
           EmbeddedPaths.AccountBackupSharesReminder

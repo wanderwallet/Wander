@@ -57,7 +57,7 @@ const Snackbar = React.forwardRef<HTMLDivElement, SnackbarBaseProps>(
           </div>
         )}
         <Text
-          variant="bodySm"
+          variant="bodyMd"
           alignment="left"
           style={{ color: defaultTextColor }}
         >

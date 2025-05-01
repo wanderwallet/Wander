@@ -7,9 +7,11 @@ import {
   Card,
   Checkbox,
   WarningCircledIcon,
-  WanderFooter
+  WanderFooter,
+  Copyable
 } from "~components/embed/ui";
 import { useLocation } from "~wallets/router/router.utils";
+import copy from "copy-to-clipboard";
 
 export function AccountBackupSharesReminderEmbeddedView() {
   const { currentWallet, skipBackUp } = useEmbedded();
@@ -38,6 +40,15 @@ export function AccountBackupSharesReminderEmbeddedView() {
       size="auto"
     >
       <Box>
+        <Copyable
+          style={{ padding: "0", marginBottom: 24, marginTop: 8 }}
+          isFullWidth
+          label="Your wallet address"
+          value={currentWallet.address}
+          onClick={() => {
+            copy(currentWallet.address);
+          }}
+        />
         <Button variant="primary" isFullWidth href="#/account/backup-shares">
           Backup now
         </Button>
@@ -57,6 +68,7 @@ export function AccountBackupSharesReminderEmbeddedView() {
         )}
         {isMandatoryReminder && (
           <Checkbox
+            style={{ padding: 0, margin: 0, marginTop: 24 }}
             label="Don't show this again"
             description="Note: you can set this up on the settings page"
             handleChange={() => setIsChecked(!isChecked)}
