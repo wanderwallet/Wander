@@ -21,9 +21,8 @@ export function AuthRecoverAccountSeedphraseEmbeddedView() {
     importTempWallet,
     importedTempWalletAddress,
     deleteImportedTempWallet,
-    registerWallet,
-    wallets,
-    recoverWallet
+    fetchRecoverableAccounts,
+    clearRecoverableAccounts
   } = useEmbedded();
 
   const handleImportWallet = useCallback(async () => {
@@ -46,26 +45,21 @@ export function AuthRecoverAccountSeedphraseEmbeddedView() {
     });
   }, []);
 
-  const handleRecover = useCallback(async () => {
+  const handleRecover = async () => {
     try {
       setLoading(true);
-      const isWalletPresent = wallets.some(
-        ({ address }) => address === importedTempWalletAddress
-      );
-      if (isWalletPresent) {
-        await recoverWallet(seedPhrase.join(" "));
-      } else {
-        toast.error("Wallet not found!");
-      }
+      await fetchRecoverableAccounts();
+      setLoading(false);
+      navigate("/auth/recover-account/authentication");
     } catch (error) {
-      alert(error);
-    } finally {
+      toast.error(error);
       setLoading(false);
     }
-  }, [registerWallet, seedPhrase, wallets, importedTempWalletAddress]);
+  };
 
   useEffect(() => {
     deleteImportedTempWallet();
+    clearRecoverableAccounts();
   }, []);
 
   const isSeedPhraseIncomplete = useMemo(() => {

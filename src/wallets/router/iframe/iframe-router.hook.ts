@@ -114,8 +114,8 @@ export function useEmbeddedOverride(
         [
           EmbeddedPaths.AuthRestoreShares,
           EmbeddedPaths.AuthRestoreSharesRecoveryFile,
-          EmbeddedPaths.AuthRecoverAccountSeedphrase,
-          EmbeddedPaths.AuthRecoverAccountKeyfile
+          EmbeddedPaths.AuthImportSeedPhrase,
+          EmbeddedPaths.AuthImportKeyfile
         ],
         EmbeddedPaths.AuthRestoreShares
       );

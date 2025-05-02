@@ -1,5 +1,5 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "~wallets/router/router.utils";
 
 import {
@@ -18,12 +18,18 @@ import { WalletUtils } from "~utils/wallets/wallets.utils";
 export function AuthRecoverAccountKeyfileEmbeddedView() {
   const [loading, setLoading] = useState(false);
   const [fileError, setFileError] = useState(false);
-  const [jsonData, setJsonData] = useState<any>(null);
   const { navigate, back } = useLocation();
+
+  const {
+    importTempWallet,
+    importedTempWalletAddress,
+    deleteImportedTempWallet,
+    fetchRecoverableAccounts,
+    clearRecoverableAccounts
+  } = useEmbedded();
 
   const handleJsonParse = async (jsonData: any) => {
     try {
-      setJsonData(jsonData);
       setLoading(true);
       if (jsonData) {
         setFileError(false);
@@ -50,37 +56,21 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
     }
   };
 
-  const {
-    importTempWallet,
-    importedTempWalletAddress,
-    deleteImportedTempWallet,
-    wallets,
-    recoverWallet,
-    registerWallet
-  } = useEmbedded();
-
-  const handleImportWallet = useCallback(async () => {}, [jsonData]);
-
-  const handleRecover = useCallback(async () => {
+  const handleRecover = async () => {
     try {
       setLoading(true);
-      const isWalletPresent = wallets.some(
-        ({ address }) => address === importedTempWalletAddress
-      );
-      if (isWalletPresent) {
-        await recoverWallet(jsonData);
-      } else {
-        toast.error("Wallet not found!");
-      }
+      await fetchRecoverableAccounts();
+      setLoading(false);
+      navigate("/auth/recover-account/authentication");
     } catch (error) {
-      alert(error);
-    } finally {
+      toast.error(error);
       setLoading(false);
     }
-  }, [registerWallet, jsonData, wallets, importedTempWalletAddress]);
+  };
 
   useEffect(() => {
     deleteImportedTempWallet();
+    clearRecoverableAccounts();
   }, []);
 
   return importedTempWalletAddress ? (

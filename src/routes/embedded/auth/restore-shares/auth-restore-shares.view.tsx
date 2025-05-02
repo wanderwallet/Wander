@@ -5,18 +5,15 @@ import {
   WalletIcon,
   SeedIcon,
   KeyIcon,
-  WanderFooter,
-  Text
+  WanderFooter
 } from "~components/embed/ui";
 import { useLocation } from "~wallets/router/router.utils";
-import Wallet from "url:/assets/embed/wallet.svg";
-import { Flex } from "~components/common/Flex";
 
 export function AuthRestoreSharesEmbeddedView() {
   const { navigate, back } = useLocation();
   return (
     <Card
-      headerText=""
+      headerText="Restore shares / wallet"
       footerElement={<WanderFooter />}
       hasBackButton={true}
       onBackButtonClick={back}
@@ -25,25 +22,6 @@ export function AuthRestoreSharesEmbeddedView() {
       size="auto"
     >
       <Box>
-        <Flex
-          padding="16px 0px"
-          direction="column"
-          align="center"
-          justify="center"
-          gap={16}
-        >
-          <img src={Wallet} alt="Wallet" width={73} height={48} />
-          <Text
-            variant="headingMd"
-            style={{ color: "var(--text-color-primary)" }}
-          >
-            Recover your account
-          </Text>
-          <Text alignment="center" variant="bodyMd">
-            Select a method for logging in on new devices and recovering your
-            account.
-          </Text>
-        </Flex>
         {/* <Button
           variant="outlined"
           isFullWidth
@@ -80,7 +58,7 @@ export function AuthRestoreSharesEmbeddedView() {
           variant="outlined"
           isFullWidth
           icon={<SeedIcon fontSize={24} />}
-          href="#/auth/recover-account/seedphrase"
+          href="#/auth/import-seedphrase"
         >
           Enter Seedphrase
         </Button>
@@ -88,7 +66,7 @@ export function AuthRestoreSharesEmbeddedView() {
           variant="outlined"
           isFullWidth
           icon={<KeyIcon fontSize={24} />}
-          href="#/auth/recover-account/keyfile"
+          href="#/auth/import-keyfile"
         >
           Import keyfile
         </Button>
