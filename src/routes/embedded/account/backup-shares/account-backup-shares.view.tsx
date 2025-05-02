@@ -1,4 +1,4 @@
-import { Wallet03 } from "@untitled-ui/icons-react";
+import { PasscodeLock, Wallet03 } from "@untitled-ui/icons-react";
 import { useCallback, useState } from "react";
 import {
   Box,
@@ -99,7 +99,7 @@ export function AccountBackupSharesEmbeddedView() {
         <Button
           variant="outlined"
           isFullWidth
-          icon={<KeyIcon fontSize={24} />}
+          icon={<PasscodeLock fontSize={24} />}
           isLoading={isLoading.calledId === "RecoveryFile" && isLoading.status}
           isDisabled={isLoading.calledId === "RecoveryFile" && isLoading.status}
           onClick={handleGenerateRecoveryAndDownload}
