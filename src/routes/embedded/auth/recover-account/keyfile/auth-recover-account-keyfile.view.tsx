@@ -13,14 +13,41 @@ import {
 } from "~components/embed";
 import copy from "copy-to-clipboard";
 import { toast } from "react-toastify";
+import { WalletUtils } from "~utils/wallets/wallets.utils";
 
 export function AuthRecoverAccountKeyfileEmbeddedView() {
   const [loading, setLoading] = useState(false);
+  const [fileError, setFileError] = useState(false);
   const [jsonData, setJsonData] = useState<any>(null);
   const { navigate, back } = useLocation();
 
-  const handleJsonParse = (parsedData: any) => {
-    setJsonData(parsedData);
+  const handleJsonParse = async (jsonData: any) => {
+    try {
+      setJsonData(jsonData);
+      setLoading(true);
+      if (jsonData) {
+        setFileError(false);
+        if (!WalletUtils.isJWK(jsonData)) {
+          setFileError(true);
+          setLoading(false);
+          return;
+        }
+        const tempWallet = await importTempWallet(jsonData);
+
+        if (!tempWallet) {
+          setLoading(false);
+          return toast.error(`Something isn't right`);
+        }
+        setLoading(false);
+        return tempWallet;
+      } else {
+        setFileError(true);
+      }
+    } catch (error) {
+      toast.error(error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const {
@@ -32,25 +59,7 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
     registerWallet
   } = useEmbedded();
 
-  const handleImportWallet = useCallback(async () => {
-    try {
-      setLoading(true);
-      if (jsonData) {
-        const tempWallet = await importTempWallet(jsonData);
-
-        if (!tempWallet) {
-          setLoading(false);
-          return toast.error(`Something isn't right`);
-        }
-        setLoading(false);
-        return tempWallet;
-      }
-    } catch (error) {
-      toast.error(error);
-    } finally {
-      setLoading(false);
-    }
-  }, [jsonData]);
+  const handleImportWallet = useCallback(async () => {}, [jsonData]);
 
   const handleRecover = useCallback(async () => {
     try {
@@ -132,15 +141,15 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
         loadingText={"Recovering account..."}
         onFileParse={handleJsonParse}
       />
-      <Button
-        isFullWidth
-        size="md"
-        isLoading={loading}
-        isDisabled={!jsonData || loading}
-        onClick={handleImportWallet}
-      >
-        Import
-      </Button>
+      {fileError && (
+        <Text
+          alignment="left"
+          variant="bodySm"
+          style={{ color: "#D22B1F", alignSelf: "flex-start", marginTop: -20 }}
+        >
+          Error: incorrect file format
+        </Text>
+      )}
     </Card>
   );
 }
