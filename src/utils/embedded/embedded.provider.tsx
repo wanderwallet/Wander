@@ -259,16 +259,20 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       const success = callbackFn ? await callbackFn(seedPhrase) : true;
 
       if (success) {
-        const { wallet: updatedWallet } =
-          await WalletService.registerWalletExport({
-            walletId,
-            type: "SEEDPHRASE"
-          });
+        try {
+          const { wallet: updatedWallet } =
+            await WalletService.registerWalletExport({
+              walletId,
+              type: "SEEDPHRASE"
+            });
 
-        updateCurrentWallet((currentWallet) => ({
-          ...currentWallet,
-          ...updatedWallet
-        }));
+          updateCurrentWallet((currentWallet) => ({
+            ...currentWallet,
+            ...updatedWallet
+          }));
+        } catch (error) {
+          console.error("Failed to register wallet export:", error);
+        }
       }
 
       return seedPhrase;

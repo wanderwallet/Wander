@@ -2,7 +2,6 @@ import { Copy01, Eye, EyeOff } from "@untitled-ui/icons-react";
 import copy from "copy-to-clipboard";
 import { useState, useEffect } from "react";
 import { Flex } from "~components/common/Flex";
-import { useTheme } from "~components/embed/contexts/ThemeContext";
 import {
   Box,
   Button,
@@ -19,7 +18,6 @@ import { useLocation } from "~wallets/router/router.utils";
 
 export function AccountBackupCopySeedphraseEmbeddedView() {
   const { navigate } = useLocation();
-  const { isDarkMode } = useTheme();
   const { getSeedphrase } = useEmbedded();
   const [isLoading, setIsLoading] = useState(true);
   const [seedphrase, setSeedphrase] = useState("");
@@ -104,7 +102,7 @@ export function AccountBackupCopySeedphraseEmbeddedView() {
                 style={{
                   height: 16,
                   width: 16,
-                  color: isDarkMode ? "#000" : "#fff"
+                  color: "#000"
                 }}
               />
             ) : (
@@ -112,7 +110,7 @@ export function AccountBackupCopySeedphraseEmbeddedView() {
                 style={{
                   height: 16,
                   width: 16,
-                  color: isDarkMode ? "#000" : "#fff"
+                  color: "#000"
                 }}
               />
             )}

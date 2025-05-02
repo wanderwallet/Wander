@@ -6,16 +6,14 @@ import {
   Button,
   Card,
   Checkbox,
-  WarningCircledIcon,
   WanderFooter,
-  Copyable
+  Copyable,
+  Text
 } from "~components/embed/ui";
-import { useLocation } from "~wallets/router/router.utils";
 import copy from "copy-to-clipboard";
 
 export function AccountBackupSharesReminderEmbeddedView() {
   const { currentWallet, skipBackUp } = useEmbedded();
-  const { navigate, back } = useLocation();
   const isMandatoryReminder =
     currentWallet.totalExports === 0 &&
     currentWallet.totalBackups === 0 &&
@@ -30,7 +28,6 @@ export function AccountBackupSharesReminderEmbeddedView() {
 
   return (
     <Card
-      // headerIcon={<WarningCircledIcon />}
       headerText="Wallet backup"
       subtitle={"Secure your wallet by backing it up"}
       footerElement={<WanderFooter />}
@@ -39,6 +36,17 @@ export function AccountBackupSharesReminderEmbeddedView() {
       size="auto"
     >
       <Box>
+        <Text
+          variant="bodySm"
+          style={{
+            marginBottom: 24,
+            marginTop: -16,
+            color: "#0D6CE9",
+            cursor: "pointer"
+          }}
+        >
+          Why should I back up my wallet?
+        </Text>
         <Copyable
           style={{ padding: "0", marginBottom: 24, marginTop: 8 }}
           isFullWidth
