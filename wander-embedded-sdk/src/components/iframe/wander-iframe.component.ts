@@ -109,8 +109,8 @@ export class WanderIframe {
       typeof routeLayoutOption === "string" ||
       isRouteConfig(routeLayoutOption)
     ) {
-      // If a single value is passed, we use it for default, settings and auth-request. auth and account fallbacks to
-      // the default (currently modal):
+      // If a single value is passed, we use it for "default", "settings" and "auth-request" routes. "auth" and
+      // "account" routes fall back to the default layout type (currently "modal"):
 
       const defaultLayoutConfig =
         WanderIframe.getLayoutConfig(routeLayoutOption);
@@ -124,8 +124,9 @@ export class WanderIframe {
         "auth-request": defaultLayoutConfig
       };
     } else {
-      // If only default and auth are defined by the developer, default is used for default, settings and auth-request,
-      // while auth is used for auth and account:
+      // If more than one value is set, the "default" option will be used for "default" routes as well as as fallback
+      // for "settings" and "auth-request" routes; the "auth" option will be used for "auth" routes as well as as
+      // fallback for "account" routes:
 
       // TODO: Move these default values to static props:
 

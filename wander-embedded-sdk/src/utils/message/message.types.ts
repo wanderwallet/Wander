@@ -21,10 +21,16 @@ export type EmbeddedAuthStatus =
 
 export interface EmbeddedUserDetails {
   id: string;
-  email?: string;
-  phone?: string;
-  updated_at?: string;
-  created_at: string;
+  email: null | string;
+  phone: null | string;
+  username: null | string;
+  name: null | string;
+  fullName: null | string;
+  picture: null | string;
+  confirmed: boolean;
+  emailConfirmed: boolean;
+  phoneConfirmed: boolean;
+  createdAt: Date;
 }
 
 export interface IncomingAuthNativeMessageData {
@@ -42,8 +48,9 @@ export interface IncomingAuthNoAuthMessageData {
 export interface IncomingAuthLoadingMessageData {
   authType: EmbeddedAuthProviderType;
   authStatus: "loading";
-  userDetails: EmbeddedUserDetails;
+  userDetails?: EmbeddedUserDetails;
 }
+
 export interface IncomingAuthCompletedMessageData {
   authType: EmbeddedAuthProviderType;
   authStatus: "onboarding" | "authenticated";
@@ -84,16 +91,6 @@ export type IncomingAuthMessage = BaseIncomingMessage<
   IncomingAuthMessageData
 >;
 
-export type IncomingConnectMessage = BaseIncomingMessage<
-  "embedded_connect",
-  void
->;
-
-export type IncomingDisconnectMessage = BaseIncomingMessage<
-  "embedded_disconnect",
-  void
->;
-
 export type IncomingOpenMessage = BaseIncomingMessage<"embedded_open", void>;
 
 export type IncomingCloseMessage = BaseIncomingMessage<"embedded_close", void>;
@@ -115,8 +112,6 @@ export type IncomingRequestMessage = BaseIncomingMessage<
 
 export type IncomingMessage =
   | IncomingAuthMessage
-  | IncomingConnectMessage
-  | IncomingDisconnectMessage
   | IncomingOpenMessage
   | IncomingCloseMessage
   | IncomingResizeMessage

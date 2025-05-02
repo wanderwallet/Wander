@@ -49,4 +49,6 @@ export function setupEventListeners() {
     document.execCommand("Copy");
     document.body.removeChild(input);
   });
+
+  dispatchEvent(new CustomEvent("arweaveWalletLoaded", { detail: {} }));
 }

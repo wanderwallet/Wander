@@ -12,7 +12,7 @@ import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 import { isApiErrorResponse } from "~utils/messaging/common/messaging.utils";
 // import { version as sdkVersion } from "../../../wander-embedded-sdk/package.json";
 
-export function setupWalletSDK(
+export async function setupWalletSDK(
   targetWindow: Window = window,
   embeddedOrigin?: string
 ) {
@@ -153,16 +153,6 @@ export function setupWalletSDK(
   // @ts-expect-error
   window.arweaveWallet = walletAPI;
 
-  // at the end of the injected script,
-  // we dispatch the wallet loaded event
-  dispatchEvent(new CustomEvent("arweaveWalletLoaded", { detail: {} }));
-
-  // send wallet loaded event again if page loaded
-  window.addEventListener("load", () => {
-    if (!window.arweaveWallet) return;
-    dispatchEvent(new CustomEvent("arweaveWalletLoaded", { detail: {} }));
-  });
-
   /** Handle events */
   window.addEventListener(
     "message",
@@ -177,4 +167,68 @@ export function setupWalletSDK(
       events.emit(e.data.event.name, e.data.event.value);
     }
   );
+
+  // at the end of the injected script,
+  // we dispatch the wallet loaded event
+
+  async function dispatchArweaveWalletLoaded() {
+    console.log("DISPATCH");
+
+    if (!window.arweaveWallet) return;
+
+    const permissions = await window.arweaveWallet
+      .getPermissions()
+      .catch(() => []);
+
+    // Note that for Wander Connect we just need to dispatch this once, no need to subscribe to the window load event to re-dispatch it:
+    dispatchEvent(
+      new CustomEvent("arweaveWalletLoaded", {
+        detail: {
+          permissions
+        }
+      })
+    );
+
+    if (permissions.length > 0) {
+      events.emit("connect", { permissions });
+
+      const [activeAddress, addresses] = await Promise.all([
+        window.arweaveWallet.getActiveAddress().catch(() => ""),
+        window.arweaveWallet.getAllAddresses().catch(() => [])
+      ]);
+
+      events.emit("activeAddress", activeAddress);
+      events.emit("addresses", addresses);
+    }
+  }
+
+  // Not sure there's a point in this, as the dApp will never be able to listen for it, but I'm maintaining the same structure we had before:
+  dispatchArweaveWalletLoaded();
+
+  // This doesn't work on page reload unless it's a hard load, as the event is dispatched earlier on reload, before the dApp can start listening, so...
+  // window.addEventListener("load", dispatchArweaveWalletLoaded);
+
+  // ...we can instead monkey patch `window.addEventListener` and re-dispatch the "arweaveWalletLoaded" event as soon as a new listener is added:
+
+  let addEventListener_ = Window.prototype.addEventListener;
+
+  Window.prototype.addEventListener = function (eventName: string, ...args) {
+    if (eventName === "arweaveWalletLoaded") {
+      dispatchArweaveWalletLoaded();
+    }
+
+    addEventListener_.call(this, eventName, ...args);
+  };
+
+  /*
+  setTimeout(async () => {
+    const isAlreadyConnected = await window.arweaveWallet.getActiveAddress();
+
+    console.log("isAlreadyConnected =", isAlreadyConnected);
+
+    if (isAlreadyConnected) {
+      events.emit("connect", null);
+    }
+  }, 100);
+  */
 }

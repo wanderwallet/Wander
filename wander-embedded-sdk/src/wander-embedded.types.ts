@@ -388,8 +388,12 @@ export interface WanderEmbeddedIframeOptions
   // TODO: Default should automatically be used for auth-requests, and auth for account and settings?
   /**
    * Layout configuration for different routes.
-   * Controls how the iframe is displayed for each route type.
-   * Can be a single layout type/config applied to all routes or a map of specific layouts per route type.
+   * Controls how the iframe is displayed for each route type:
+   * - If a single value is passed, we use it for "default", "settings" and "auth-request" routes. "auth" and "account"
+   *   routes fall back to the default layout type (currently "modal").
+   * - If more than one value is set, the "default" option will be used for "default" routes as well as as fallback for
+   *   "settings" and "auth-request" routes; the "auth" option will be used for "auth" routes as well as as fallback for
+   *   "account" routes.
    */
   routeLayout?:
     | LayoutType

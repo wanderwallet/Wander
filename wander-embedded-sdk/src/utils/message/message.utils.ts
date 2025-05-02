@@ -75,13 +75,11 @@ export function isIncomingMessage(
       return (
         EMBEDDED_AUTH_STATUS.includes(data.authStatus) &&
         EMBEDDED_AUTH_TYPE.includes(data.authType) &&
-        !!data.userDetails &&
-        typeof data.userDetails === "object"
+        (data.userDetails === null ||
+          (!!data.userDetails && typeof data.userDetails === "object"))
       );
     }
 
-    case "embedded_connect":
-    case "embedded_disconnect":
     case "embedded_open":
     case "embedded_close":
       return true;

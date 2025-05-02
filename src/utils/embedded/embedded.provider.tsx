@@ -46,7 +46,8 @@ import {
 import { AuthenticationService } from "~utils/authentication/authentication.service";
 import {
   AUTH_PROVIDER_TYPE_BY_PROVIDER_STR,
-  EMBEDDED_FEATURE_FLAGS
+  EMBEDDED_FEATURE_FLAGS,
+  EMBEDDED_SDK_AUTH_STATUS_BY_AUTH_STATUS
 } from "~utils/embedded/embedded.constants";
 import { getDeviceNonce } from "~utils/embedded/device-nonce/device-nonce.utils";
 import { jwtDecode } from "jwt-decode";
@@ -147,30 +148,20 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
   }, [authStatus]);
 
   useEffect(() => {
-    if (!authProviderType || !authStatus || !user) return;
+    const sdkAuthStatus = EMBEDDED_SDK_AUTH_STATUS_BY_AUTH_STATUS[authStatus];
 
-    const sdkAuthStatusByAppAuthStatus = {
-      unlocked: "authenticated",
-      authLoading: "loading",
-      noShares: "onboarding",
-      noWallets: "onboarding"
-    } as const;
+    if (!authProviderType || !sdkAuthStatus) return;
 
-    const sdkAuthStatus = sdkAuthStatusByAppAuthStatus[authStatus] as
-      | "loading"
-      | "onboarding"
-      | "authenticated";
+    const userDetails = getUserDetailsFromSupabaseUser(user);
 
-    if (sdkAuthStatus) {
-      postEmbeddedMessage({
-        type: "embedded_auth",
-        data: {
-          authType: authProviderType,
-          authStatus: sdkAuthStatus,
-          userDetails: getUserDetailsFromSupabaseUser(user)
-        }
-      });
-    }
+    postEmbeddedMessage({
+      type: "embedded_auth",
+      data: {
+        authType: authProviderType,
+        authStatus: sdkAuthStatus,
+        userDetails
+      }
+    });
   }, [authProviderType, authStatus, user]);
 
   const getLatestSession = useCallback(async (session: DbSession) => {
@@ -1268,6 +1259,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       const cachedUser = data?.session?.user;
 
       // Send the initial state for the SDK button ASAP:
+
       postEmbeddedMessage({
         type: "embedded_auth",
         data:

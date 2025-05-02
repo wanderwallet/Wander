@@ -31,13 +31,6 @@ export async function signOut() {
       data: null
     });
 
-    // TODO: This should be handled by a embedded_auth event instead!
-
-    postEmbeddedMessage({
-      type: "embedded_disconnect",
-      data: null
-    });
-
     ExtensionStorage.removeAll();
   } catch (err) {
     console.error("Error clearing extension storage:", err);
