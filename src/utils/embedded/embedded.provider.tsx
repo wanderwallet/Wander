@@ -747,52 +747,118 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
   const recoverWallet = useCallback(
     async (recoveryData: RecoveryJSON | JWKInterface | string) => {
+      let jwk: JWKInterface;
+      let walletAddress: string;
+      let walletId: string;
+      let recoveryBackupShare: string | null = null;
+      let recoveryFileServerSignature: string | null = null;
+      let recoveryBackupShareHash: string | null = null;
+      let recoveryBackupSharePrivateKeyJWK: JWKInterface | null = null;
+      let isRecoveryJSON = true;
+
       if (
-        typeof recoveryData === "string" ||
-        recoveryData.hasOwnProperty("kty")
+        WalletUtils.isJWK(recoveryData) ||
+        WalletUtils.isSeedPhrase(recoveryData)
       ) {
-        throw new Error("Keyfile sand seedphrases not supported yet.");
+        const promise = importedTempWalletPromiseRef.current?.promise;
+        ({ jwk, walletAddress } = await promise);
+        walletId = wallets.find(({ address }) => address === walletAddress)?.id;
+        isRecoveryJSON = false;
+      } else {
+        ({ walletId, recoveryBackupShare, recoveryFileServerSignature } =
+          recoveryData as RecoveryJSON);
+        ({
+          shareHash: recoveryBackupShareHash,
+          sharePrivateKeyJWK: recoveryBackupSharePrivateKeyJWK
+        } = await WalletUtils.generateShareHashAndPrivateKey(
+          recoveryBackupShare
+        ));
+        walletAddress = wallets.find(({ id }) => id === walletId)?.address;
       }
 
-      // Check if we have custom options for cross-auth recovery
-      const isCrossAuthRecovery = !!(recoveryData as any).crossAuthRecovery;
-      const shouldIgnoreSessionValidation = !!(recoveryData as any)
-        .ignoreSessionValidation;
-      const isRetryAttempt = !!(recoveryData as any).retryAsAlternateAuth;
-
-      // If this is cross-auth recovery, log it
-      if (isCrossAuthRecovery) {
-        console.log(
-          "Recovery attempted with cross-authentication method support"
-        );
-        console.log(
-          "Auth provider type:",
-          embeddedContextAuth.authProviderType
-        );
-        console.log(
-          "Is passkey auth:",
-          embeddedContextAuth.authProviderType === "PASSKEYS"
-        );
-
-        // Verify that we're actually using passkey auth
-        if (embeddedContextAuth.authProviderType !== "PASSKEYS") {
-          console.log(
-            "Cross-auth recovery requested but not using passkey auth - flag will be ignored"
-          );
-        }
+      if (!walletId || !walletAddress) {
+        throw new Error("Wallet not found!");
       }
 
-      const {
-        version,
-        walletId,
-        recoveryBackupShare,
-        recoveryFileServerSignature
-      } = recoveryData as RecoveryJSON;
+      const latestSession = await getLatestSession(session);
 
-      const {
+      const { shareRecoveryChallenge } =
+        await WalletService.generateWalletRecoveryChallenge({ walletId });
+
+      const challengeSolution = await ChallengeClientV1.solveChallenge({
+        challenge: shareRecoveryChallenge,
+        session: latestSession,
         shareHash: recoveryBackupShareHash,
-        sharePrivateKeyJWK: recoveryBackupSharePrivateKeyJWK
-      } = await WalletUtils.generateShareHashAndPrivateKey(recoveryBackupShare);
+        jwk: recoveryBackupSharePrivateKeyJWK || jwk
+      });
+
+      let recoverWalletParams = { walletId, challengeSolution };
+      if (isRecoveryJSON) {
+        recoverWalletParams = {
+          ...recoverWalletParams,
+          ...(recoveryBackupShareHash ? { recoveryBackupShareHash } : {}),
+          ...(recoveryFileServerSignature
+            ? { recoveryFileServerSignature }
+            : {})
+        };
+      }
+
+      const authRecoveryShareResponse = await WalletService.recoverWallet(
+        recoverWalletParams
+      );
+
+      if (
+        isRecoveryJSON &&
+        !("recoveryAuthShare" in authRecoveryShareResponse)
+      ) {
+        throw new Error("Recovery share not found.");
+
+        // TODO: Validate file signature and show a proper error message...
+      }
+
+      const { recoveryAuthShare, rotationChallenge } =
+        authRecoveryShareResponse;
+
+      if (isRecoveryJSON) {
+        jwk = await WalletUtils.generateWalletJWKFromShares(walletAddress, [
+          recoveryAuthShare,
+          recoveryBackupShare
+        ]);
+      }
+
+      const { authShare, deviceShare } =
+        await WalletUtils.generateWalletWorkShares(jwk);
+
+      const rotateChallengeSignature = await ChallengeClientV1.solveChallenge({
+        challenge: rotationChallenge,
+        session: latestSession,
+        shareHash: null,
+        jwk
+      });
+
+      const {
+        shareHash: deviceShareHash,
+        sharePublicKey: deviceSharePublicKey
+      } = await WalletUtils.generateShareHashAndPublicKey(deviceShare);
+
+      const registerAuthShareResponse = await WalletService.registerAuthShare({
+        walletId,
+        authShare,
+        deviceShareHash,
+        deviceSharePublicKey,
+        challengeSolution: rotateChallengeSignature
+      });
+
+      const dbWallet = registerAuthShareResponse.wallet;
+
+      const wallet: Wallet = {
+        ...dbWallet,
+        activationStatus: "active",
+        authShare,
+        deviceShare
+      };
+
+      await WalletUtils.storeDeviceShare(wallet, userId);
 
       try {
         // Get the latest session - important for challenge validation
@@ -1126,7 +1192,12 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       postEmbeddedMessage({
         type: "embedded_auth",
         data: {
-          userDetails: !userId || !session ? null : {}
+          userDetails:
+            !userId || !session
+              ? null
+              : {
+                  userId
+                }
         }
       });
 
@@ -1519,7 +1590,6 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
         registerWallet,
         clearLastRegisteredWallet,
-
         skipBackUp,
         downloadKeyfile,
         copySeedphrase,

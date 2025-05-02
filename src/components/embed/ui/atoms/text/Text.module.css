@@ -10,7 +10,7 @@
 /* Typography variants */
 .headingXl {
   font-size: var(--font-size-3xl);
-  font-weight: var(--font-weight-bold);
+  font-weight: var(--font-weight-medium);
   line-height: var(--line-height-tight);
   color: #121212;
 }

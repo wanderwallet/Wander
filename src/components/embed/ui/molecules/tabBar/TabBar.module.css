@@ -7,6 +7,10 @@
   background-color: #eee;
   border-radius: 10px;
   position: relative;
+  height: 50px;
+  padding: 2px;
+  align-items: center;
+  align-self: stretch;
 }
 
 .tabs button {

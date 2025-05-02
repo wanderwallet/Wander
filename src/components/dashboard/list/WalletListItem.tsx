@@ -4,9 +4,9 @@ import { formatAddress } from "~utils/format";
 import type { StoredWallet } from "~wallets";
 import HardwareWalletIcon from "~components/hardware/HardwareWalletIcon";
 import keystoneLogo from "url:/assets/hardware/keystone.png";
-import { svgie } from "~utils/svgies";
-import { ListItem, ListItemIcon, Text } from "@arconnect/components-rebrand";
+import { ListItem, ListItemIcon } from "@arconnect/components-rebrand";
 import Online from "~components/Online";
+import { NoAvatarIcon } from "~components/popup/WalletHeader";
 
 export default function WalletListItem({
   wallet,
@@ -20,11 +20,6 @@ export default function WalletListItem({
   // format address
   const formattedAddress = useMemo(() => formatAddress(address, 8), [address]);
 
-  const svgieAvatar = useMemo(
-    () => svgie(address, { asDataURI: true }),
-    [address]
-  );
-
   return (
     <ListItem
       title={
@@ -35,22 +30,15 @@ export default function WalletListItem({
       }
       subtitle={formattedAddress}
       active={active}
-      img={avatar || svgieAvatar}
+      img={avatar}
       squircleSize={40}
       height={56}
       showArrow
       {...props}
     >
-      {!avatar && !svgieAvatar && (
+      {!avatar && (
         <ListItemIcon>
-          <Text
-            size="lg"
-            weight="medium"
-            noMargin
-            style={{ textAlign: "center" }}
-          >
-            {wallet?.nickname?.charAt(0)?.toUpperCase() || "A"}
-          </Text>
+          <NoAvatarIcon size="1.8em" />
         </ListItemIcon>
       )}
       {wallet.type === "hardware" && wallet.api === "keystone" && (

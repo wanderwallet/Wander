@@ -552,7 +552,7 @@
     "description": "Display theme settings description"
   },
   "setting_gateways_description": {
-    "message": "Arweave gateways simplify data access.",
+    "message": "Gateways are infrastructure components that allow efficient and speedy access to data on the Arweave and AO networks.  Depending on location or networks, specific gateways might provide a better experience than others.",
     "description": "Gateways settings description"
   },
   "search_pick_option": {
@@ -2661,7 +2661,7 @@
     "description": "Scan QR code description"
   },
   "scan_qr_code_instruction": {
-    "message": "Settings -> Accounts -> Generate QR Code",
+    "message": "Settings -> Manage accounts -> Select Account to import -> Generate QR Code",
     "description": "Instruction to find QR code"
   },
   "open_webcam": {
@@ -2946,6 +2946,10 @@
     "message": "A keyfile is a JSON file containing your encrypted private key.",
     "description": "Tooltip explaining what a keyfile is"
   },
+  "enter_an_amount": {
+    "message": "Enter an amount",
+    "description": "Enter an amount text"
+  },
   "pending": {
     "message": "Pending",
     "description": "Pending text"
@@ -2953,5 +2957,19 @@
   "exchange_message": {
     "message": "Exchange rate",
     "description": "Exchange rate text"
+  },
+  "data_content_type_not_supported": {
+    "message": "Unable to display data: The content type $TYPE$ is not supported for preview.",
+    "description": "Data content type not supported text",
+    "placeholders": {
+      "type": {
+        "content": "$1",
+        "example": "image/png"
+      }
+    }
+  },
+  "data_too_large": {
+    "message": "Unable to display data: Data is too large to display.",
+    "description": "Data too large text"
   }
 }

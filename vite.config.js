@@ -21,6 +21,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "~": path.resolve(__dirname, "./src"),
+      "~constants": path.resolve(__dirname, "./src/constants"),
       "~api": path.resolve(__dirname, "./src/api"),
       "~applications": path.resolve(__dirname, "./src/applications"),
       "~components": path.resolve(__dirname, "./src/components"),
@@ -45,7 +46,6 @@ export default defineConfig({
         __dirname,
         "./src/utils/messaging/strategies/iframe/iframe-chunking.strategy.ts"
       ),
-
       // Prisma Enum Fix:
       // See https://github.com/prisma/prisma/issues/12504#issuecomment-1136126199
       // See https://github.com/sveltejs/kit/issues/4444

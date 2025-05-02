@@ -1,8 +1,7 @@
-import { formatFiatBalance } from "~tokens/currency";
 import { Loading } from "@arconnect/components-rebrand";
 import { useEffect, useMemo, useState, type HTMLProps } from "react";
 import { useStorage } from "~utils/storage";
-import { ExtensionStorage } from "~utils/storage";
+import { PersistentStorage } from "~utils/storage";
 import { useBalance } from "~wallets/hooks";
 import { getAr24hChange, useArPrice } from "~lib/coingecko";
 import useSetting from "~settings/hook";
@@ -12,6 +11,7 @@ import BigNumber from "bignumber.js";
 import { useTotalFiatBalance } from "~tokens/hooks";
 import NumberFlow from "@number-flow/react";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
+import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 
 export default function Balance() {
   // balance in AR
@@ -31,7 +31,7 @@ export default function Balance() {
   const [hideBalance, setHideBalance] = useStorage<boolean>(
     {
       key: "hide_balance",
-      instance: ExtensionStorage
+      instance: PersistentStorage
     },
     false
   );
@@ -80,7 +80,7 @@ export default function Balance() {
     timestamp: string;
   }>({
     key: "saved_ar_24h_change",
-    instance: ExtensionStorage
+    instance: PersistentStorage
   });
 
   useEffect(() => {
@@ -113,15 +113,6 @@ export default function Balance() {
       }
     })();
   }, [balance, currency]);
-
-  // balance history
-  const [historicalBalance, setHistoricalBalance] = useStorage<number[]>(
-    {
-      key: "historical_balance",
-      instance: ExtensionStorage
-    },
-    []
-  );
 
   return (
     <BalanceHead>
@@ -174,7 +165,12 @@ function PriceChangeIndicator({
 
   return (
     <PercentageChangeContainer>
-      <Text variant="secondary" weight="medium" noMargin>
+      <Text
+        variant="secondary"
+        weight="medium"
+        noMargin
+        style={IS_EMBEDDED_APP ? { color: "var(--text-color-secondary)" } : {}}
+      >
         <NumberFlow
           value={fiatChange}
           format={{
@@ -183,7 +179,12 @@ function PriceChangeIndicator({
           }}
         />
       </Text>
-      <Text variant="secondary" weight="medium" noMargin>
+      <Text
+        variant="secondary"
+        weight="medium"
+        noMargin
+        style={IS_EMBEDDED_APP ? { color: "var(--text-color-secondary)" } : {}}
+      >
         (
         <NumberFlow
           value={Math.abs(Number(percentageChange.toFixed(2)) / 100)}
@@ -266,6 +267,7 @@ const BalanceText = styled(Text).attrs({
 })`
   cursor: pointer;
   text-align: center;
+  ${IS_EMBEDDED_APP && "color: var(--text-color-primary)"}
 `;
 
 export const CompassIcon = (props: HTMLProps<SVGElement>) => (

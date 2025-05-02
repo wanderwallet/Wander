@@ -33,6 +33,7 @@ import { ArrowNarrowLeft } from "@untitled-ui/icons-react";
 import { PermissionsWelcomeView } from "./generate/permissions";
 import { OptionsWelcomView } from "./load/options";
 import IconText from "~components/IconText";
+import { Link } from "~routes/popup/token/[id]";
 // Wallet generate pages:
 
 const LoadViews = [
@@ -265,9 +266,11 @@ export function SetupWelcomeView({ params }: SetupWelcomeViewProps) {
           />
           <IconText width={116.759} height={24.111} />
         </HeaderIconWrapper>
-        <Text variant="secondary" size="base" weight="medium">
-          {browser.i18n.getMessage("need_help")}
-        </Text>
+        <Link href="https://www.wander.app/help#browser-extension">
+          <Text variant="secondary" size="base" weight="medium">
+            {browser.i18n.getMessage("need_help")}
+          </Text>
+        </Link>
       </Header>
       <StarIcons screen="setup" />
       <Spacer y={2} />

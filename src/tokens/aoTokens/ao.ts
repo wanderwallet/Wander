@@ -2,8 +2,7 @@ import { connect, dryrun } from "@permaweb/aoconnect";
 import { type Tag } from "arweave/web/lib/transaction";
 import { PersistentStorage } from "~utils/storage";
 import { Quantity } from "ao-tokens";
-import Arweave from "arweave";
-import { ArweaveSigner, createData } from "arbundles";
+import { ArweaveSigner, createData } from "@dha-team/arbundles";
 import { getActiveKeyfile } from "~wallets";
 import { isLocalWallet } from "~utils/assertions";
 import { freeDecryptedWallet } from "~wallets/encryption";
@@ -20,6 +19,8 @@ import activeAddress from "~api/modules/active_address";
 import { findGateway } from "~gateways/wayfinder";
 import BigNumber from "bignumber.js";
 import type { Token } from "~tokens/token";
+import { CACHE_API } from "~constants/api";
+import Arweave from "arweave";
 
 let tokens: TokenInfo[] = null;
 export let tokenInfoMap = new Map<string, TokenInfo | Token>();
@@ -142,15 +143,27 @@ export function getTokenInfoFromData(res: any, id: string): TokenInfo {
 }
 
 export async function getTokenInfo(id: string): Promise<TokenInfo> {
-  // query ao
-  const res = await dryrun({
-    Id,
-    Owner,
-    process: id,
-    tags: [{ name: "Action", value: "Info" }]
-  });
+  try {
+    const response = await fetch(`${CACHE_API}/api/token-info?tokenId=${id}`, {
+      cache: "force-cache",
+      headers: {
+        "Cache-Control": "public, max-age=300" // 5 minutes
+      }
+    });
+    const data = await response.json();
 
-  return getTokenInfoFromData(res, id);
+    return { ...data.tokenInfo, processId: id };
+  } catch {
+    // query ao
+    const res = await dryrun({
+      Id,
+      Owner,
+      process: id,
+      tags: [{ name: "Action", value: "Info" }]
+    });
+
+    return getTokenInfoFromData(res, id);
+  }
 }
 
 async function fetchTokenInfo(processId: string) {
@@ -427,7 +440,7 @@ export async function fetchTokenBalance(
     if (token.processId === "AR") {
       return await getArTokenBalance(address);
     } else {
-      if (refresh) token = await getTokenInfo(token.processId);
+      if (refresh) token = await fetchTokenByProcessId(token.processId);
       if (token.type === "collectible") {
         return (await getAoCollectibleBalance(token, address)).toString();
       } else {
@@ -451,7 +464,7 @@ export async function fetchTokenBalance(
 export async function getBotegaPrice(tokenId: string): Promise<number | null> {
   try {
     const response = await fetch(
-      `https://wander-cache-ruddy.vercel.app/api/botega/prices?tokenIds=${tokenId}`
+      `${CACHE_API}/api/botega/prices?tokenIds=${tokenId}`
     );
 
     if (!response.ok) {
@@ -472,7 +485,7 @@ export async function getBotegaPrices(
   try {
     const queryString = tokenIds.join(",");
     const response = await fetch(
-      `https://wander-cache-ruddy.vercel.app/api/botega/prices?tokenIds=${queryString}`
+      `${CACHE_API}/api/botega/prices?tokenIds=${queryString}`
     );
     if (!response.ok) {
       throw new Error("Failed to fetch prices");

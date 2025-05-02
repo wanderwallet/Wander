@@ -2,7 +2,7 @@ import React from "react";
 import styles from "./Header.module.css";
 import type { HeaderBaseProps } from "./Header.types";
 
-import { Box, Text, Row, XClose, ChevronLeft } from "../../atoms";
+import { Box, Text, Row } from "../../atoms";
 
 const Header = React.forwardRef<HTMLDivElement, HeaderBaseProps>(
   (
@@ -21,11 +21,18 @@ const Header = React.forwardRef<HTMLDivElement, HeaderBaseProps>(
           className={`
             ${styles["header__title__container"]}
             ${styles[`header__title__container__${titlePosition}`]}
+            
             `}
         >
           {icon}
           {title && (
-            <Text variant="headingLg" alignment="center">
+            <Text
+              variant="headingLg"
+              alignment="center"
+              style={{
+                marginInline: 8
+              }}
+            >
               {title}
             </Text>
           )}

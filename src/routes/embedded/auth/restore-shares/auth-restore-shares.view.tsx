@@ -1,40 +1,16 @@
 import {
-  AppleIcon,
   Box,
   Button,
   Card,
-  Row,
   WalletIcon,
-  WanderIcon,
-  Text,
-  GDriveIcon,
-  DropboxIcon,
   SeedIcon,
-  KeyIcon
+  KeyIcon,
+  WanderFooter
 } from "~components/embed/ui";
-import { useEmbedded } from "~utils/embedded/embedded.hooks";
-import { useEffect } from "react";
-
-// Import a redirect helper function similar to the one used in Google auth
-const redirectToHash = (path: string, params?: Record<string, string>) => {
-  const baseUrl = window.location.origin;
-  let url = `${baseUrl}/#${path}`;
-
-  // Add query params if provided
-  if (params) {
-    const queryString = Object.entries(params)
-      .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
-      .join("&");
-    url += `?${queryString}`;
-  }
-
-  console.log("Redirecting to:", url);
-  // Force a complete page refresh to the target URL
-  window.location.replace(url);
-};
+import { useLocation } from "~wallets/router/router.utils";
 
 export function AuthRestoreSharesEmbeddedView() {
-  const { recoverWallet } = useEmbedded();
+  const { navigate, back } = useLocation();
 
   // Check for passkey authentication with auto wallet activation
   useEffect(() => {
@@ -56,26 +32,15 @@ export function AuthRestoreSharesEmbeddedView() {
   return (
     <Card
       headerText="Restore shares / wallet"
-      footerElement={
-        <Row>
-          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
-            {"Secured by"}
-          </Text>
-          <WanderIcon color="#838383" />
-        </Row>
-      }
+      footerElement={<WanderFooter />}
       hasBackButton={true}
-      onBackButtonClick={() => {
-        window.history.back();
-      }}
+      onBackButtonClick={back}
       hasCloseButton={true}
-      onCloseButtonClick={() => {
-        redirectToHash("/auth");
-      }}
+      onCloseButtonClick={() => navigate(`/auth`)}
       size="auto"
     >
       <Box>
-        <Button
+        {/* <Button
           variant="outlined"
           isFullWidth
           icon={<GDriveIcon fontSize={24} />}
@@ -90,15 +55,15 @@ export function AuthRestoreSharesEmbeddedView() {
           onClick={() => alert("Not implemented.")}
         >
           iCloud
-        </Button>
-        <Button
+        </Button> */}
+        {/* <Button
           variant="outlined"
           isFullWidth
           icon={<DropboxIcon fontSize={24} />}
           onClick={() => alert("Not implemented.")}
         >
           Dropbox
-        </Button>
+        </Button> */}
         <Button
           variant="outlined"
           isFullWidth

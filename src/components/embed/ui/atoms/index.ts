@@ -13,3 +13,6 @@ export * from "./link";
 export * from "./seed-input";
 export * from "./switch";
 export * from "./upload";
+export * from "./text-input";
+export * from "./input";
+export * from "./spacer";

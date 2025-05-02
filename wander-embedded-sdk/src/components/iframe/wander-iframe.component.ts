@@ -186,9 +186,9 @@ export class WanderIframe {
     halfImage.className = "half-image";
 
     // We don't add the iframe as a child of backdrop to have more control over the hide/show transitions:
+    shadow.appendChild(wrapper);
     shadow.appendChild(backdrop);
     shadow.appendChild(halfImage);
-    shadow.appendChild(wrapper);
 
     return {
       iframe,

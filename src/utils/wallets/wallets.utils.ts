@@ -2,6 +2,7 @@ import * as bip39 from "bip39-web-crypto";
 import { addWallet, getWalletKeyLength, type WalletKeyLengths } from "~wallets";
 import {
   checkPasswordValid,
+  isValidMnemonic,
   jwkFromMnemonic,
   pkcs8ToJwk
 } from "~wallets/generator";
@@ -719,6 +720,23 @@ async function storeEncryptedWalletJWK(jwk: JWKInterface): Promise<void> {
   return addWallet(jwk, randomPassword);
 }
 
+function isJWK(obj: unknown): boolean {
+  if (typeof obj !== "object" || obj === null) {
+    return false;
+  }
+  const requiredKeys = ["n", "e", "d", "p", "q", "dp", "dq", "qi"];
+  return requiredKeys.every((key) => key in obj);
+}
+
+function isSeedPhrase(obj: unknown): boolean {
+  try {
+    isValidMnemonic(obj as string);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
 export const WalletUtils = {
   // Generation:
   generateSeedPhrase,
@@ -742,7 +760,11 @@ export const WalletUtils = {
   storeEncryptedRecoveryShare,
   hasEncryptedRecoveryShare,
   getDecryptedRecoveryShare,
-  storeEncryptedWalletJWK
+  storeEncryptedWalletJWK,
+
+  // Validation:
+  isJWK,
+  isSeedPhrase
 };
 
 // Stored seedphrases and recovery shares are removed if the feature flags are disabled:

@@ -5,9 +5,11 @@ import type { TransformFinalizer } from "~api/foreground/foreground-modules";
 import type { ModuleFunction } from "~api/module";
 import type { DispatchResult } from "./index";
 import { sendChunk } from "~isomorphic-chunking";
+import type { SignatureOptions } from "arweave/web/lib/crypto/crypto-interface";
 
 const foreground: ModuleFunction<Record<any, any>> = async (
-  transaction: Transaction
+  transaction: Transaction,
+  signatureOptions?: SignatureOptions
 ) => {
   // create chunks
   const {
@@ -55,7 +57,7 @@ const foreground: ModuleFunction<Record<any, any>> = async (
     }
   }
 
-  return [tx, chunkCollectionID];
+  return [tx, chunkCollectionID, signatureOptions];
 };
 
 export const finalizer: TransformFinalizer<{

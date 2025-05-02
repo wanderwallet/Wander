@@ -1,5 +1,5 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
-
+import { toast } from "react-toastify";
 import {
   Box,
   Button,
@@ -12,7 +12,7 @@ import {
   SocialsIcon,
   Text,
   Wander2Icon,
-  WanderIcon
+  WanderFooter
 } from "~components/embed";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { AuthProviderType } from "embed-api";
@@ -156,34 +156,49 @@ export function AuthEmbeddedView() {
   const handleAuthenticate = useCallback(
     async (authProviderType: AuthProviderType) => {
       setSelectedAuthProviderType(authProviderType);
-      await authenticate(
-        authProviderType,
-        emailInputRef.current?.value || "",
-        passwordInputRef.current?.value || ""
-      );
-      setSelectedAuthProviderType(null);
+      try {
+        await authenticate(
+          authProviderType,
+          emailInputRef.current?.value || "",
+          passwordInputRef.current?.value || ""
+        );
+        setSelectedAuthProviderType(null);
+      } catch (error) {
+        toast.error(`Error signing in with ${authProviderType}`);
+      } finally {
+        setSelectedAuthProviderType(null);
+      }
     },
     [authenticate]
   );
 
   const handleEmailSignup = useCallback(async () => {
-    const supabase = await getSupabaseClient();
-    const { error, data } = await supabase.auth.signUp({
-      email: emailInputRef.current?.value || "",
-      password: passwordInputRef.current?.value || ""
-    });
+    try {
+      const supabase = await getSupabaseClient();
 
-    console.log({ error, data });
+      const { error, data } = await supabase.auth.signUp({
+        email: emailInputRef.current?.value || "",
+        password: passwordInputRef.current?.value || ""
+      });
+
+      console.log({ error, data });
+    } catch (error) {
+      toast.error("Error signing up");
+    }
   }, []);
 
   const handleEmailSignIn = useCallback(async () => {
-    const supabase = await getSupabaseClient();
-    const { error, data } = await supabase.auth.signInWithPassword({
-      email: emailInputRef.current?.value || "",
-      password: passwordInputRef.current?.value || ""
-    });
+    try {
+      const supabase = await getSupabaseClient();
+      const { error, data } = await supabase.auth.signInWithPassword({
+        email: emailInputRef.current?.value || "",
+        password: passwordInputRef.current?.value || ""
+      });
 
-    console.log({ error, data });
+      console.log({ error, data });
+    } catch (error) {
+      toast.error("Error signing in");
+    }
   }, []);
 
   const handlePasskeySignIn = useCallback(async () => {
@@ -303,16 +318,8 @@ export function AuthEmbeddedView() {
   return (
     <Card
       headerText="Sign Up or Sign In"
-      footerElement={
-        <Row>
-          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
-            {"Secured by"}
-          </Text>
-          <WanderIcon color="#838383" />
-        </Row>
-      }
+      footerElement={<WanderFooter />}
       hasBackButton={false}
-      //   hasCloseButton={false}
       size="auto"
     >
       <Box>
@@ -321,14 +328,14 @@ export function AuthEmbeddedView() {
           placeholder="E-Mail"
           isDisabled={areButtonsDisabled}
         />
-
+        <br />
         <TextInput
           ref={passwordInputRef}
           placeholder="Password"
           isDisabled={areButtonsDisabled}
           isSecure
         />
-
+        <br />
         <Button
           isFullWidth
           onClick={() => handleEmailSignup()}
@@ -385,14 +392,14 @@ export function AuthEmbeddedView() {
         <Button
           variant="outlined"
           isFullWidth
-          isDisabled={areButtonsDisabled}
+          isDisabled
           icon={<SocialsIcon fontSize={24} />}
           href="#/auth/more-providers"
         >
           More options
         </Button>
-        <Row alignment="center" justifyContent="center">
-          <Text variant={"bodySm"}>{"Can't sign in?"}</Text>
+        <Row style={{ gap: "4px" }}>
+          <Text variant={"bodySm"}>{"Can’t sign in?"}</Text>
           <Button variant="link" href="#/auth/recover-account" size="sm">
             Recover account
           </Button>
