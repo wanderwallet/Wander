@@ -2,6 +2,7 @@ import { Copy01, Eye, EyeOff } from "@untitled-ui/icons-react";
 import copy from "copy-to-clipboard";
 import { useState, useEffect } from "react";
 import { Flex } from "~components/common/Flex";
+import { useTheme } from "~components/embed/contexts/ThemeContext";
 import {
   Box,
   Button,
@@ -18,6 +19,7 @@ import { useLocation } from "~wallets/router/router.utils";
 
 export function AccountBackupCopySeedphraseEmbeddedView() {
   const { navigate } = useLocation();
+  const { isDarkMode } = useTheme();
   const { getSeedphrase } = useEmbedded();
   const [isLoading, setIsLoading] = useState(true);
   const [seedphrase, setSeedphrase] = useState("");
@@ -59,7 +61,7 @@ export function AccountBackupCopySeedphraseEmbeddedView() {
           isFullWidth
           icon={<WarningIcon />}
           text="Do not share this with anyone."
-          backgroundColor="#F2DC1320"
+          backgroundColor="#FFF9EA"
           borderColor="#F2DC1320"
           textColor="#121212"
           iconColor="#BD8802"
@@ -87,22 +89,34 @@ export function AccountBackupCopySeedphraseEmbeddedView() {
               {seedphrase}
             </Text>
           </Box>
-          <Button
+          <div
             style={{
+              cursor: "pointer",
               position: "absolute",
-              right: 0,
-              bottom: 0,
+              right: 8,
+              bottom: 8,
               maxWidth: "fit-content"
             }}
-            variant="icon"
             onClick={() => setIsVisible(!isVisible)}
           >
             {isVisible ? (
-              <EyeOff style={{ height: 16, width: 16 }} />
+              <EyeOff
+                style={{
+                  height: 16,
+                  width: 16,
+                  color: isDarkMode ? "#000" : "#fff"
+                }}
+              />
             ) : (
-              <Eye style={{ height: 16, width: 16 }} />
+              <Eye
+                style={{
+                  height: 16,
+                  width: 16,
+                  color: isDarkMode ? "#000" : "#fff"
+                }}
+              />
             )}
-          </Button>
+          </div>
           {isLoading && (
             <div
               style={{
@@ -116,7 +130,7 @@ export function AccountBackupCopySeedphraseEmbeddedView() {
                 justifyContent: "center"
               }}
             >
-              <Loading />
+              <Loading color={"#000"} />
             </div>
           )}
         </Box>

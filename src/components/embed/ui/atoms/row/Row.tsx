@@ -21,9 +21,11 @@ const Row = forwardRef<HTMLDivElement, RowBaseProps>(
 
     const rowStyle = {
       ...style,
-      backgroundColor: isDarkMode
-        ? "var(--color-card-background-default)"
-        : style?.backgroundColor
+      backgroundColor:
+        style?.backgroundColor ||
+        (isDarkMode
+          ? "var(--color-card-background-default)"
+          : style?.backgroundColor)
     };
 
     return (

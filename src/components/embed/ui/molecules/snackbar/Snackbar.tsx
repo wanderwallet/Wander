@@ -25,11 +25,14 @@ const Snackbar = React.forwardRef<HTMLDivElement, SnackbarBaseProps>(
       ? "var(--color-border-box)"
       : borderColor || "var(--color-border-box)";
 
-    const defaultBackgroundColor = isDarkMode
-      ? "var(--color-card-background-default)"
-      : backgroundColor || "var(--color-background-default)";
+    const defaultBackgroundColor =
+      backgroundColor ||
+      (isDarkMode
+        ? "var(--color-card-background-default)"
+        : "var(--color-background-default)");
 
-    const defaultIconColor = isDarkMode ? "var(--color-font-body)" : iconColor;
+    const defaultIconColor =
+      iconColor || (isDarkMode ? "var(--color-font-body)" : iconColor);
 
     const defaultTextColor = isDarkMode ? "var(--color-font-body)" : textColor;
 

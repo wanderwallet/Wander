@@ -42,7 +42,7 @@ export function AccountBackupFullWalletEmbeddedView() {
           isFullWidth
           icon={<WarningIcon />}
           text="Do not share this with anyone."
-          backgroundColor="#F2DC1320"
+          backgroundColor="#FFF9EA"
           borderColor="#F2DC1320"
           textColor="#121212"
           iconColor="#BD8802"
