@@ -860,166 +860,16 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
       await WalletUtils.storeDeviceShare(wallet, userId);
 
+      // Set isCustomAuth flag for future sessions if using passkey auth
+      if (embeddedContextAuth.authProviderType === "PASSKEYS") {
+        localStorage.setItem("isCustomAuth", "true");
+        console.log("Set isCustomAuth flag for future session handling");
+      }
+
       try {
-        // Get the latest session - important for challenge validation
-        const latestSession = await getLatestSession(session);
-
-        // Generate a wallet recovery challenge
-        const { shareRecoveryChallenge } =
-          await WalletService.generateWalletRecoveryChallenge({ walletId });
-
-        // Try to solve the challenge with the recovery data
-        let challengeSolution;
-
-        // If this is a cross-auth recovery with Passkeys, use the file signature approach from the start
-        if (
-          isCrossAuthRecovery &&
-          embeddedContextAuth.authProviderType === "PASSKEYS"
-        ) {
-          try {
-            console.log(
-              "Using cross-auth recovery approach with file signature for Passkey auth"
-            );
-
-            // Create a solution using the file signature format that the server will recognize
-            challengeSolution = `v1.${recoveryFileServerSignature}`;
-
-            console.log(
-              "Created cross-auth challenge solution based on file signature"
-            );
-          } catch (crossAuthError) {
-            console.error(
-              "Error creating cross-auth challenge solution:",
-              crossAuthError
-            );
-            // Fall back to standard approach if cross-auth fails
-            challengeSolution = await ChallengeClientV1.solveChallenge({
-              challenge: shareRecoveryChallenge,
-              session: latestSession,
-              shareHash: recoveryBackupShareHash,
-              jwk: recoveryBackupSharePrivateKeyJWK
-            });
-          }
-        } else {
-          // Regular challenge solution process
-          console.log("Attempting standard challenge solution");
-          try {
-            challengeSolution = await ChallengeClientV1.solveChallenge({
-              challenge: shareRecoveryChallenge,
-              session: latestSession,
-              shareHash: recoveryBackupShareHash,
-              jwk: recoveryBackupSharePrivateKeyJWK
-            });
-          } catch (challengeError) {
-            // If we're retrying or the regular approach fails
-            if (isRetryAttempt) {
-              console.warn(
-                "Standard challenge validation failed during retry attempt."
-              );
-              console.warn("Error details:", challengeError);
-
-              // For cross-auth recovery, we try a direct approach with the server signature
-              console.log("Attempting alternative challenge solution");
-
-              // Instead of trying to solve the challenge locally, we'll rely on the server-side
-              // verification of the recovery file signature, which doesn't depend on the auth method
-              try {
-                // Create a simplified challenge response using the recovery file signature
-                // This allows the server to verify the authenticity without relying on auth-specific info
-                challengeSolution = `v1.${recoveryFileServerSignature}`;
-
-                console.log(
-                  "Created alternative challenge solution based on file signature"
-                );
-              } catch (fallbackError) {
-                console.error(
-                  "Alternative challenge solution creation failed:",
-                  fallbackError
-                );
-                throw new Error(
-                  "Cross-authentication method recovery failed: unable to create challenge solution"
-                );
-              }
-            } else {
-              // If not a retry attempt, just throw the original error
-              throw challengeError;
-            }
-          }
-        }
-
-        // Once we have a challenge solution, try to recover the wallet with crossAuthRecovery flag
-        const authRecoveryShareResponse = await WalletService.recoverWallet({
-          walletId,
-          recoveryBackupShareHash,
-          recoveryFileServerSignature,
-          challengeSolution,
-          crossAuthRecovery: isCrossAuthRecovery
-        } as any); // Cast to any to bypass TypeScript interface constraints
-
-        if (!("recoveryAuthShare" in authRecoveryShareResponse)) {
-          throw new Error("Recovery share not found.");
-        }
-
-        const { recoveryAuthShare, rotationChallenge } =
-          authRecoveryShareResponse;
-
-        const jwk = await WalletUtils.generateWalletJWKFromShares(
-          walletAddress,
-          [recoveryAuthShare, recoveryBackupShare]
-        );
-
-        const { authShare, deviceShare } =
-          await WalletUtils.generateWalletWorkShares(jwk);
-
-        const rotateChallengeSignature = await ChallengeClientV1.solveChallenge(
-          {
-            challenge: rotationChallenge,
-            session: latestSession,
-            shareHash: null,
-            jwk
-          }
-        );
-
-        const {
-          shareHash: deviceShareHash,
-          sharePublicKey: deviceSharePublicKey
-        } = await WalletUtils.generateShareHashAndPublicKey(deviceShare);
-
-        const registerAuthShareResponse = await WalletService.registerAuthShare(
-          {
-            walletId,
-            authShare,
-            deviceShareHash,
-            deviceSharePublicKey,
-            challengeSolution: rotateChallengeSignature
-          }
-        );
-
-        const dbWallet = registerAuthShareResponse.wallet;
-
-        const wallet: Wallet = {
-          ...dbWallet,
-          activationStatus: "active",
-          authShare,
-          deviceShare
-        };
-
-        await WalletUtils.storeDeviceShare(wallet, userId);
-
-        // Set isCustomAuth flag for future sessions if using passkey auth
-        if (embeddedContextAuth.authProviderType === "PASSKEYS") {
-          localStorage.setItem("isCustomAuth", "true");
-          console.log("Set isCustomAuth flag for future session handling");
-        }
-
-        try {
-          await addWallet(jwk, wallet);
-        } finally {
-          freeDecryptedWallet(jwk);
-        }
-      } catch (error) {
-        console.error("Error recovering wallet:", error);
-        throw error;
+        await addWallet(jwk, wallet);
+      } finally {
+        freeDecryptedWallet(jwk);
       }
     },
     [session, userId, wallets, walletAddress]
@@ -1236,6 +1086,17 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
       let authStatus = "noAuth" as AuthStatus;
 
+      // Check for passkey authentication (should be flagged in localStorage)
+      const isPasskeyAuth = embeddedContextAuth.authProviderType === "PASSKEYS";
+      const isCustomAuth = localStorage.getItem("isCustomAuth") === "true";
+
+      console.log("Wallet activation - auth details:", {
+        isPasskeyAuth,
+        isCustomAuth,
+        walletCount: wallets.length,
+        authProviderType: embeddedContextAuth.authProviderType
+      });
+
       if (wallets.length > 0) {
         // TODO: The wallet activation can be deferred until the wallet is going to be used:
 
@@ -1257,48 +1118,66 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         if (activatedWallet) {
           const { id: walletId, address: walletAddress } = activatedWallet;
 
-          const jwk = await WalletUtils.generateWalletJWKFromShares(
-            walletAddress,
-            [activatedWallet.authShare, activatedWallet.deviceShare]
-          );
+          // Check if device share exists for passkey auth
+          const deviceShares = await WalletUtils.getDeviceSharesForUser(userId);
+          const hasDeviceShare = !!deviceShares[walletId];
 
-          if (rotationChallenge) {
-            const { authShare, deviceShare } =
-              await WalletUtils.generateWalletWorkShares(jwk);
+          console.log("Wallet activation - device share status:", {
+            walletId,
+            hasDeviceShare,
+            deviceShareCount: Object.keys(deviceShares).length
+          });
 
-            activatedWallet.authShare = authShare;
-            activatedWallet.deviceShare = deviceShare;
+          // For passkey auth or when device share is missing, we need to process differently
+          if ((isPasskeyAuth || isCustomAuth) && !hasDeviceShare) {
+            console.log(
+              "Passkey authentication with missing device share - recovery needed"
+            );
+            authStatus = "noShares";
+          } else {
+            const jwk = await WalletUtils.generateWalletJWKFromShares(
+              walletAddress,
+              [activatedWallet.authShare, activatedWallet.deviceShare]
+            );
 
-            const {
-              shareHash: deviceShareHash,
-              sharePublicKey: deviceSharePublicKey
-            } = await WalletUtils.generateShareHashAndPublicKey(deviceShare);
+            if (rotationChallenge) {
+              const { authShare, deviceShare } =
+                await WalletUtils.generateWalletWorkShares(jwk);
 
-            const challengeSolution = await ChallengeClientV1.solveChallenge({
-              challenge: rotationChallenge,
-              session,
-              shareHash: null,
-              jwk
-            });
+              activatedWallet.authShare = authShare;
+              activatedWallet.deviceShare = deviceShare;
 
-            await WalletService.rotateAuthShare({
-              walletId,
-              authShare,
-              deviceShareHash,
-              deviceSharePublicKey,
-              challengeSolution
-            });
+              const {
+                shareHash: deviceShareHash,
+                sharePublicKey: deviceSharePublicKey
+              } = await WalletUtils.generateShareHashAndPublicKey(deviceShare);
+
+              const challengeSolution = await ChallengeClientV1.solveChallenge({
+                challenge: rotationChallenge,
+                session,
+                shareHash: null,
+                jwk
+              });
+
+              await WalletService.rotateAuthShare({
+                walletId,
+                authShare,
+                deviceShareHash,
+                deviceSharePublicKey,
+                challengeSolution
+              });
+            }
+
+            await WalletUtils.storeDeviceShare(activatedWallet, userId);
+
+            try {
+              await addWallet(jwk, activatedWallet);
+            } finally {
+              freeDecryptedWallet(jwk);
+            }
+
+            authStatus = "unlocked";
           }
-
-          await WalletUtils.storeDeviceShare(activatedWallet, userId);
-
-          try {
-            await addWallet(jwk, activatedWallet);
-          } finally {
-            freeDecryptedWallet(jwk);
-          }
-
-          authStatus = "unlocked";
         } else {
           authStatus = "noShares";
         }
@@ -1369,6 +1248,69 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     - When a sessions is deleted from the DB, it's still reported as valid, even thought tRPC endpoints will return
       UNAUTHORIZED errors. When that happens, we should force de-authentication of the frontend.
     */
+
+      // Check for passkey auth data in localStorage immediately on startup
+      const customSessionId = localStorage.getItem("sessionId");
+      const customUserId = localStorage.getItem("userId");
+      const isCustomAuth = localStorage.getItem("isCustomAuth") === "true";
+
+      // If we have passkey auth data, initialize immediately without waiting
+      if (isCustomAuth && customSessionId && customUserId) {
+        console.log(
+          "Found passkey authentication data in localStorage, initializing immediately"
+        );
+
+        // Build a minimal session object for wallet activation
+        const dbSession = {
+          id: customSessionId,
+          userId: customUserId,
+          deviceNonce: localStorage.getItem("deviceNonce") || undefined,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          ip: "127.0.0.1",
+          userAgent: navigator.userAgent
+        };
+
+        // Create a custom auth token for API requests
+        const deviceNonce =
+          localStorage.getItem("deviceNonce") || crypto.randomUUID();
+        localStorage.setItem("deviceNonce", deviceNonce);
+
+        const temporaryAuthToken = btoa(
+          JSON.stringify({
+            user_id: customUserId,
+            session_id: customSessionId,
+            device_nonce: deviceNonce,
+            exp: Math.floor(Date.now() / 1000) + 60 * 60, // 1 hour expiry
+            iat: Math.floor(Date.now() / 1000)
+          })
+        );
+
+        // Set the auth token header for API requests
+        setAuthTokenHeader(temporaryAuthToken);
+        localStorage.setItem("authToken", temporaryAuthToken);
+
+        // Create a custom user object
+        const customUser = {
+          id: customUserId,
+          email: null,
+          app_metadata: {},
+          user_metadata: {},
+          aud: "",
+          created_at: ""
+        };
+
+        // Set auth context with PASSKEYS auth type
+        setEmbeddedContextAuth(({ authStatus }) => ({
+          authStatus: "authLoading",
+          authProviderType: "PASSKEYS",
+          user: customUser as any,
+          session: dbSession
+        }));
+
+        // Initialize wallet with custom session
+        initEmbeddedWallet(customUserId, dbSession);
+      }
 
       const forceInitTimeoutID = setTimeout(() => {
         console.warn("Forcing initialization...");
@@ -1444,7 +1386,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
         // If we have passkey auth with custom session, set it up
         if (
-          needsWalletActivation &&
+          (needsWalletActivation || isCustomAuth) &&
           customSessionId &&
           customUserId &&
           !dbSession

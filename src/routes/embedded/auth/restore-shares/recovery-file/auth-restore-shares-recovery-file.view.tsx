@@ -1,8 +1,9 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
-import { Card, Upload, Button, WanderFooter } from "~components/embed/ui";
+import { Card, Upload, Button, WanderFooter, Text } from "~components/embed/ui";
 import { useLocation } from "~wallets/router/router.utils";
+import { useToasts } from "@arconnect/components-rebrand";
 
 export function AuthRestoreSharesRecoveryFileEmbeddedView() {
   const { navigate, back } = useLocation();

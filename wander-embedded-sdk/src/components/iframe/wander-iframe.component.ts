@@ -172,10 +172,10 @@ export class WanderIframe {
     iframe.src = src;
 
     // Add the allow attribute for WebAuthn (passkey) support
-    iframe.allow = "publickey-credentials-get";
+    iframe.allow = "publickey-credentials-get; publickey-credentials-create";
     iframe.setAttribute(
       "sandbox",
-      "allow-scripts allow-forms allow-popups allow-storage-access-by-user-activation"
+      "allow-scripts allow-forms allow-popups allow-storage-access-by-user-activation allow-same-origin allow-modals allow-downloads"
     );
     // Due to the server and iframe origins being different, we need to set the crossorigin attribute to anonymous
     iframe.setAttribute("crossorigin", "anonymous");

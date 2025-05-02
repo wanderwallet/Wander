@@ -20,6 +20,18 @@ import { getSupabaseClient } from "~utils/embedded/embedded.utils";
 import { AuthenticationService } from "~utils/authentication/authentication.service";
 import { startAuthentication } from "@simplewebauthn/browser";
 import { useToasts } from "@arconnect/components-rebrand";
+import { isInsideIframe } from "~utils/embedded/iframe.utils";
+import { getDeviceNonce } from "~utils/embedded/device-nonce/device-nonce.utils";
+
+// Base64 utility functions
+const base64ToBuffer = (base64: string): ArrayBuffer => {
+  const binaryString = atob(base64.replace(/-/g, "+").replace(/_/g, "/"));
+  const bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  return bytes.buffer;
+};
 
 // Add a monitor to debug redirect issues
 const injectRedirectMonitor = () => {
@@ -140,6 +152,7 @@ export function AuthEmbeddedView() {
     useState(false);
   const [isInIframe, setIsInIframe] = useState(false);
   const [passkeysSupported, setPasskeysSupported] = useState(true);
+  const [authError, setAuthError] = useState("");
 
   const areButtonsDisabled =
     authStatus === "unknown" ||
@@ -275,10 +288,13 @@ export function AuthEmbeddedView() {
             duration: 2000
           });
 
-          // Give a short delay, then do the redirect
+          // Use direct location change instead of forceRedirect
           setTimeout(() => {
-            forceRedirect("/auth/restore-shares");
-          }, 500);
+            console.log("Redirecting to restore-shares page");
+            // Use direct URL assignment for most reliable navigation
+            window.location.href =
+              window.location.origin + "/#/auth/restore-shares";
+          }, 1000);
         } else {
           setToast({
             type: "error",
@@ -399,7 +415,7 @@ export function AuthEmbeddedView() {
           More options
         </Button>
         <Row style={{ gap: "4px" }}>
-          <Text variant={"bodySm"}>{"Can’t sign in?"}</Text>
+          <Text variant={"bodySm"}>{"Can't sign in?"}</Text>
           <Button variant="link" href="#/auth/recover-account" size="sm">
             Recover account
           </Button>
