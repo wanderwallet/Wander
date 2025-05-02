@@ -12,6 +12,7 @@ import {
 import copy from "copy-to-clipboard";
 import { useLocation } from "~wallets/router/router.utils";
 import { toast } from "react-toastify";
+
 export function AuthImportKeyfileEmbeddedView() {
   const [loading, setLoading] = useState(false);
   const [jsonData, setJsonData] = useState<any>(null);
@@ -86,10 +87,12 @@ export function AuthImportKeyfileEmbeddedView() {
       footerElement={<WanderFooter />}
       hasBackButton={true}
       onBackButtonClick={back}
+      style={{ gap: 24 }}
       size="auto"
     >
       <Copyable
         isFullWidth
+        style={{ padding: 0 }}
         label="Your wallet address"
         onClick={() => {
           copy(importedTempWalletAddress);
@@ -116,11 +119,12 @@ export function AuthImportKeyfileEmbeddedView() {
     </Card>
   ) : (
     <Card
-      headerText="Import private key"
+      headerText="Import Keyfile"
       subtitle="Upload your private key to connect your wallet to your account."
       footerElement={<WanderFooter />}
       hasBackButton={true}
       onBackButtonClick={back}
+      style={{ gap: 24 }}
       size="auto"
     >
       <Upload

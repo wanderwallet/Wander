@@ -1,5 +1,6 @@
 import { FolderShield, Key01 } from "@untitled-ui/icons-react";
 import copy from "copy-to-clipboard";
+import { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -10,11 +11,22 @@ import {
   Snackbar
 } from "~components/embed/ui";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
+import { WalletUtils } from "~utils/wallets/wallets.utils";
 import { useLocation } from "~wallets/router/router.utils";
 
 export function AccountBackupFullWalletEmbeddedView() {
   const { navigate } = useLocation();
   const { currentWallet, downloadKeyfile } = useEmbedded();
+
+  const [hasEncryptedSeedPhrase, setHasEncryptedSeedPhrase] = useState(false);
+
+  useEffect(() => {
+    WalletUtils.hasEncryptedSeedPhrase(currentWallet.id).then(
+      (hasEncryptedSeedPhrase) => {
+        setHasEncryptedSeedPhrase(hasEncryptedSeedPhrase);
+      }
+    );
+  }, [currentWallet.id]);
 
   return (
     <Card
@@ -53,16 +65,18 @@ export function AccountBackupFullWalletEmbeddedView() {
           >
             Export Keyfile
           </Button>
-          <Button
-            variant="outlined"
-            isFullWidth
-            icon={<FolderShield fontSize={24} />}
-            onClick={() =>
-              navigate("/account/backup-full-wallet/copy-seedphrase")
-            }
-          >
-            Copy Seedphrase
-          </Button>
+          {hasEncryptedSeedPhrase && (
+            <Button
+              variant="outlined"
+              isFullWidth
+              icon={<FolderShield fontSize={24} />}
+              onClick={() =>
+                navigate("/account/backup-full-wallet/copy-seedphrase")
+              }
+            >
+              Copy Seedphrase
+            </Button>
+          )}
         </Box>
       </Box>
     </Card>

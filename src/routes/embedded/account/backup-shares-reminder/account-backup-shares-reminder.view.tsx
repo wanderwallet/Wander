@@ -30,12 +30,11 @@ export function AccountBackupSharesReminderEmbeddedView() {
 
   return (
     <Card
-      headerIcon={<WarningCircledIcon />}
+      // headerIcon={<WarningCircledIcon />}
       headerText="Wallet backup"
       subtitle={"Secure your wallet by backing it up"}
       footerElement={<WanderFooter />}
-      hasBackButton={true}
-      onBackButtonClick={back}
+      hasBackButton={false}
       hasCloseButton={true}
       size="auto"
     >

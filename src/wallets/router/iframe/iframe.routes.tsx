@@ -92,6 +92,7 @@ export type EmbeddedRoutePath =
   | "/account/backup-shares/reminder"
   | "/account/export-wallet"
   | "/auth/error"
+  | "/"
   | "/wallet"
   | "/wallet/receive"
   | "/wallet/receive/options"
@@ -153,6 +154,7 @@ export const EmbeddedPaths = {
 
   // OAuth Error:
   AuthError: "/auth/error",
+  WalletDefaultHomeEmbeddedView: "/",
   WalletHomeEmbeddedView: "/wallet",
   WalletReceiveEmbeddedView: "/wallet/receive",
   WalletReceiveOptionsEmbeddedView: "/wallet/receive/options",
@@ -301,6 +303,10 @@ const IFRAME_OWN_ROUTES = [
 
   // Wallet:
   {
+    path: EmbeddedPaths.WalletDefaultHomeEmbeddedView,
+    component: WalletHomeEmbeddedView
+  },
+  {
     path: EmbeddedPaths.WalletHomeEmbeddedView,
     component: WalletHomeEmbeddedView
   },
@@ -366,7 +372,7 @@ export const IFRAME_ROUTES = [
   }),
 
   // popup.tsx:
-  ...POPUP_ROUTES.filter((route) => !isRouteOverride(route.path)),
+  // ...POPUP_ROUTES.filter((route) => !isRouteOverride(route.path)),
 
   // auth.tsx: filter out the settings path as it's defined in IFRAME_OWN_ROUTES
   ...AUTH_ROUTES.filter(

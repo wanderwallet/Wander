@@ -82,17 +82,19 @@ export function AuthImportSeedphraseEmbeddedView() {
 
   return importedTempWalletAddress ? (
     <Card
-      headerText="Recover your account"
-      subtitle="Enter seedphrase"
+      headerText="Enter Seedphrase"
+      subtitle="Would you like to add this wallet to your account?"
       footerElement={<WanderFooter />}
       hasBackButton={true}
       onBackButtonClick={back}
       hasCloseButton={true}
       onCloseButtonClick={() => navigate(`/auth/recover-account`)}
+      style={{ gap: 24 }}
       size="auto"
     >
       <Copyable
         isFullWidth
+        style={{ padding: 0 }}
         label="Your wallet address"
         onClick={() => {
           copy(importedTempWalletAddress);
@@ -113,7 +115,7 @@ export function AuthImportSeedphraseEmbeddedView() {
           onClick={handleAddWallet}
           isLoading={loading}
         >
-          Yes, recover
+          Yes, add
         </Button>
       </Row>
     </Card>
@@ -138,7 +140,7 @@ export function AuthImportSeedphraseEmbeddedView() {
         isLoading={loading}
         isDisabled={isSeedPhraseIncomplete}
       >
-        Import
+        {isSeedPhraseIncomplete ? "Complete seedphrase" : "Next"}
       </Button>
     </Card>
   );

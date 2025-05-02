@@ -8,10 +8,12 @@ import {
   Button,
   Copyable,
   Upload,
+  Text,
   WanderFooter
 } from "~components/embed";
 import copy from "copy-to-clipboard";
 import { toast } from "react-toastify";
+
 export function AuthRecoverAccountKeyfileEmbeddedView() {
   const [loading, setLoading] = useState(false);
   const [jsonData, setJsonData] = useState<any>(null);
@@ -25,8 +27,9 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
     importTempWallet,
     importedTempWalletAddress,
     deleteImportedTempWallet,
-    fetchRecoverableAccounts,
-    clearRecoverableAccounts
+    wallets,
+    recoverWallet,
+    registerWallet
   } = useEmbedded();
 
   const handleImportWallet = useCallback(async () => {
@@ -49,36 +52,44 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
     }
   }, [jsonData]);
 
-  const handleRecover = async () => {
+  const handleRecover = useCallback(async () => {
     try {
       setLoading(true);
-      await fetchRecoverableAccounts();
-      setLoading(false);
-      navigate("/auth/recover-account/authentication");
+      const isWalletPresent = wallets.some(
+        ({ address }) => address === importedTempWalletAddress
+      );
+      if (isWalletPresent) {
+        await recoverWallet(jsonData);
+      } else {
+        toast.error("Wallet not found!");
+      }
     } catch (error) {
-      toast.error(error);
+      alert(error);
+    } finally {
       setLoading(false);
     }
-  };
+  }, [registerWallet, jsonData, wallets, importedTempWalletAddress]);
 
   useEffect(() => {
     deleteImportedTempWallet();
-    clearRecoverableAccounts();
   }, []);
 
   return importedTempWalletAddress ? (
     <Card
-      headerText="Recover your account"
-      subtitle="Import private key"
+      headerText="Import Keyfile"
+      subtitle="Upload your private key to recover your account."
       footerElement={<WanderFooter />}
       hasBackButton={true}
       onBackButtonClick={back}
       hasCloseButton={true}
       onCloseButtonClick={() => navigate(`/auth`)}
+      style={{ gap: 24 }}
       size="auto"
     >
+      <Text>Would you like to recover this account?</Text>
       <Copyable
         isFullWidth
+        style={{ padding: 0 }}
         label="Your wallet address"
         onClick={() => {
           copy(importedTempWalletAddress);
@@ -105,12 +116,13 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
     </Card>
   ) : (
     <Card
-      headerText="Import private key"
-      subtitle="Upload your private key to connect your wallet to your account."
+      headerText="Import Keyfile"
+      subtitle="Upload your private key to recover your account."
       footerElement={<WanderFooter />}
       hasBackButton={true}
       onBackButtonClick={back}
       size="auto"
+      style={{ gap: 24 }}
     >
       <Upload
         isFullWidth
