@@ -26,7 +26,7 @@ export async function pushEvent(event: SecurityEvent) {
 
 /** Injected wallet events */
 export interface InjectedEvents extends Record<EventType, unknown> {
-  connect: null;
+  connect: { permissions: PermissionType[] };
   disconnect: null;
   activeAddress: string;
   addresses: string[];

@@ -38,12 +38,12 @@ export class WanderIframe {
     backdropPadding: 8,
 
     // Mobile-specific:
-    mobilePadding: "",
-    mobileHeight: "",
-    mobileBorderRadius: "",
-    mobileBorderWidth: "",
-    mobileBorderColor: "",
-    mobileBoxShadow: ""
+    mobilePadding: 0,
+    mobileHeight: 0,
+    mobileBorderRadius: 0,
+    mobileBorderWidth: 0,
+    mobileBorderColor: "transparent",
+    mobileBoxShadow: "none"
   } as const;
 
   static DEFAULT_DARK_CSS_VARS: WanderEmbeddedIframeCSSVars = {
@@ -59,7 +59,13 @@ export class WanderIframe {
       dark: WanderIframe.DEFAULT_DARK_CSS_VARS
     },
     customStyles: "",
-    routeLayout: {},
+    routeLayout: {
+      default: WanderIframe.getLayoutConfig("popup"),
+      auth: WanderIframe.getLayoutConfig("modal"),
+      account: WanderIframe.getLayoutConfig("modal"),
+      settings: WanderIframe.getLayoutConfig("popup"),
+      "auth-request": WanderIframe.getLayoutConfig("popup")
+    },
     clickOutsideBehavior: true
   } as const satisfies WanderEmbeddedIframeConfig;
 
@@ -114,12 +120,11 @@ export class WanderIframe {
 
       const defaultLayoutConfig =
         WanderIframe.getLayoutConfig(routeLayoutOption);
-      const authLayoutConfig = WanderIframe.getLayoutConfig("modal");
 
       routeLayout = {
         default: defaultLayoutConfig,
-        auth: authLayoutConfig,
-        account: authLayoutConfig,
+        auth: WanderIframe.DEFAULT_CONFIG.routeLayout.auth,
+        account: WanderIframe.DEFAULT_CONFIG.routeLayout.auth,
         settings: defaultLayoutConfig,
         "auth-request": defaultLayoutConfig
       };
@@ -128,15 +133,13 @@ export class WanderIframe {
       // for "settings" and "auth-request" routes; the "auth" option will be used for "auth" routes as well as as
       // fallback for "account" routes:
 
-      // TODO: Move these default values to static props:
+      const defaultLayoutConfig = routeLayoutOption?.default
+        ? WanderIframe.getLayoutConfig(routeLayoutOption?.default)
+        : WanderIframe.DEFAULT_CONFIG.routeLayout.default;
 
-      const defaultLayoutConfig = WanderIframe.getLayoutConfig(
-        routeLayoutOption?.default || "popup"
-      );
-
-      const authLayoutConfig = WanderIframe.getLayoutConfig(
-        routeLayoutOption?.auth || "modal"
-      );
+      const authLayoutConfig = routeLayoutOption?.auth
+        ? WanderIframe.getLayoutConfig(routeLayoutOption?.auth)
+        : WanderIframe.DEFAULT_CONFIG.routeLayout.auth;
 
       routeLayout = {
         default: defaultLayoutConfig,
