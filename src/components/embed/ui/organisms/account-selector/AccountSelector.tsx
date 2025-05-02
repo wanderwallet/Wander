@@ -146,7 +146,9 @@ export function AccountSelector({
         );
 
       // Show success message
-      alert("Passkey registered successfully!");
+      alert(
+        "Passkey registered successfully. Please check your email to verify your account."
+      );
 
       // Update state to hide the option
       setHasPasskeys(true);
