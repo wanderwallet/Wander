@@ -51,6 +51,7 @@ export function AuthImportKeyfileEmbeddedView() {
   };
 
   const {
+    authStatus,
     importTempWallet,
     importedTempWalletAddress,
     deleteImportedTempWallet,
@@ -122,7 +123,7 @@ export function AuthImportKeyfileEmbeddedView() {
           onClick={handleAddWallet}
           isLoading={loading}
         >
-          Yes, add
+          Yes, {authStatus === "noShares" ? "recover" : "add"}
         </Button>
       </Row>
     </Card>

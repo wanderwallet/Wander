@@ -17,6 +17,7 @@ export function AuthImportSeedphraseEmbeddedView() {
   const { navigate, back } = useLocation();
   const [seedPhrase, setSeedPhrase] = useState<string[]>([]);
   const {
+    authStatus,
     importTempWallet,
     importedTempWalletAddress,
     deleteImportedTempWallet,
@@ -115,7 +116,7 @@ export function AuthImportSeedphraseEmbeddedView() {
           onClick={handleAddWallet}
           isLoading={loading}
         >
-          Yes, add
+          Yes, {authStatus === "noShares" ? "recover" : "add"}
         </Button>
       </Row>
     </Card>
