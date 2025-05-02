@@ -1,5 +1,5 @@
 import { connect } from "@permaweb/aoconnect";
-import { ArweaveSigner, createData } from "arbundles";
+import { ArweaveSigner, createData } from "@dha-team/arbundles";
 import type { JWKInterface } from "arweave/web/lib/wallet";
 import { defaultConfig } from "~tokens/aoTokens/config";
 

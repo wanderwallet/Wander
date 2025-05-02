@@ -58,6 +58,7 @@
     "@arconnect/components-rebrand": "https://github.com/arconnectio/components-rebrand.git#master",
     "@arconnect/keystone-sdk": "^0.0.5",
     "@arconnect/webext-bridge": "^5.0.6",
+    "@dha-team/arbundles": "^1.0.2",
     "@iconicicons/react": "^1.5.0",
     "@keystonehq/arweave-keyring": "^0.1.1-alpha.0",
     "@keystonehq/bc-ur-registry-arweave": "^0.1.1-alpha.0",
@@ -72,8 +73,7 @@
     "@vitejs/plugin-react": "^4.3.4",
     "ao-tokens": "^0.0.4",
     "ar-gql": "1.2.9",
-    "arbundles": "^0.9.5",
-    "arweave": "^1.13.0",
+    "arweave": "^1.15.7",
     "axios": "^1.7.2",
     "bignumber.js": "^9.1.2",
     "bip39-web-crypto": "^4.0.1",
@@ -156,7 +156,7 @@
     "vm-browserify": "^1.1.2"
   },
   "resolutions": {
-    "arbundles/arweave": "^1.13.0",
+    "@dha-team/arbundles/arweave": "^1.15.7",
     "**/msgpackr": ">=1.10.1",
     "human-crypto-keys/node-forge": "^1.3.1",
     "human-crypto-keys/crypto-key-composer/node-forge": "^1.3.1",

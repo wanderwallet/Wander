@@ -1,6 +1,7 @@
 import type { ModuleAppData } from "~api/background/background-modules";
 
 export const AUTH_POPUP_REQUEST_WAIT_MS = 1000 as const;
+export const AUTH_POPUP_REQUEST_ARRIVAL_WINDOW_MS = 1000 as const;
 export const AUTH_POPUP_CLOSING_DELAY_MS =
   process.env.NODE_ENV === "development" ? (5000 as const) : (0 as const);
 export const AUTH_POPUP_UNLOCK_REQUEST_TTL_MS = 900000 as const; // 15 min.
