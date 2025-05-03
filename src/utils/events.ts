@@ -25,11 +25,13 @@ export async function pushEvent(event: SecurityEvent) {
 }
 
 /** Injected wallet events */
-export interface InjectedEvents extends Record<EventType, unknown> {
-  connect: { permissions: PermissionType[] };
+export interface InjectedEvents {
+  connect: null;
   disconnect: null;
   activeAddress: string;
   addresses: string[];
   permissions: PermissionType[];
   gateway: Gateway;
 }
+
+export type MittInjectedEvents = InjectedEvents & Record<EventType, unknown>;

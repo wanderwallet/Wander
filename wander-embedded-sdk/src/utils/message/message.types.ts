@@ -122,16 +122,11 @@ export type IncomingMessageId = IncomingMessage["type"];
 
 // INCOMING EVENT MESSAGES (iframe => SDK => dApp (mitt)):
 
-export interface EventMessageData<
-  K extends keyof InjectedEvents = keyof InjectedEvents
-> {
-  name: K;
-  value: InjectedEvents[K];
-}
+export type EventMessageData = {
+  [K in keyof InjectedEvents]: { name: K; value: InjectedEvents[K] };
+}[keyof InjectedEvents];
 
-export type EventMessage<
-  K extends keyof InjectedEvents = keyof InjectedEvents
-> = BaseIncomingMessage<"event", EventMessageData<K>>;
+export type EventMessage = BaseIncomingMessage<"event", EventMessageData>;
 
 // INCOMING WALLET SWITCH MESSAGE
 

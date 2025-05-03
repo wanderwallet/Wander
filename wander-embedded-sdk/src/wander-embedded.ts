@@ -205,7 +205,7 @@ export class WanderEmbedded {
     authenticationState: IncomingAuthMessageData
   ) {
     // This block only runs if
-    // - The currently injected wallet is NOT Wander Connect.
+    // - The currently injected wallet is NOT Wander Connect already.
     // - The current/last selected auth type was NOT the native wallet.
 
     if (
@@ -241,10 +241,16 @@ export class WanderEmbedded {
         })
       );
 
+      if (permissions.length > 0) {
+        this.buttonComponent?.setStatus("isConnected");
+      } else {
+        this.buttonComponent?.unsetStatus("isConnected");
+      }
+
       const events = window.arweaveWallet?.events;
 
       if (events && permissions.length > 0) {
-        events.emit("connect", { permissions });
+        events.emit("connect", null);
 
         const [activeAddress, addresses] = await Promise.all([
           window.arweaveWallet.getActiveAddress().catch(() => ""),
@@ -349,23 +355,29 @@ export class WanderEmbedded {
     console.log("MESSAGE =", event.data.type, event.data);
 
     if (isEventMessage(message) && this.isWalletReady) {
-      // Note we cannot handle this by doing `window.arweaveWallet.events.on("connect" | "disconnect", ...)` as that API
-      // is available to the dApp, which might do `window.arweaveWallet.events.off("connect" | "disconnect", ...)` and
-      // break the SDK functionality:
+      // Note we cannot handle this by doing `window.arweaveWallet.events.on("connect" | "disconnect" | "permissions", ...)`
+      // as that API is available to the dApp, which might do `window.arweaveWallet.events.off("connect" | "disconnect" | "permissions", ...)`
+      // and break the SDK functionality:
 
-      const { name, value } = message.data;
+      // "permissions" won't be dispatched when the app is disconnected, so we also need to listen to "disconnect":
 
-      console.log("EVENT", name, value);
-
-      if (name === "connect") {
+      if (
+        (message.data.name === "permissions" &&
+          message.data.value.length > 0) ||
+        message.data.name === "connect"
+      ) {
         this.buttonComponent?.setStatus("isConnected");
-      } else if (name === "disconnect") {
+      } else if (
+        (message.data.name === "permissions" &&
+          message.data.value.length === 0) ||
+        message.data.name === "disconnect"
+      ) {
         this.buttonComponent?.unsetStatus("isConnected");
       }
 
       const events = window.arweaveWallet?.events;
 
-      if (events) events.emit(name, value);
+      if (events) events.emit(message.data.name, message.data.value);
 
       return;
     }
@@ -411,6 +423,11 @@ export class WanderEmbedded {
 
           // Update button for all authentication changes:
           this.buttonComponent?.setVariant(authStatus);
+
+          if (authStatus === "not-authenticated") {
+            this.isWalletReady = false;
+            this.buttonComponent?.unsetStatus("isConnected");
+          }
 
           if (authStatus === "loading") {
             // TODO: Show spinner instead of iframe.

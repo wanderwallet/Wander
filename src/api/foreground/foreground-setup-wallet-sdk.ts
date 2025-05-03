@@ -1,5 +1,5 @@
 import type { ApiCall, ApiResponse, Event } from "shim";
-import type { InjectedEvents } from "~utils/events";
+import type { MittInjectedEvents } from "~utils/events";
 import { nanoid } from "nanoid";
 import {
   foregroundModules,
@@ -19,7 +19,7 @@ export async function setupWalletSDK(
   log(LOG_GROUP.SETUP, "setupWalletSDK()");
 
   /** Init events */
-  const events = mitt<InjectedEvents>();
+  const events = mitt<MittInjectedEvents>();
 
   // TODO: Can we get the right type here?:
   const walletAPI = {
@@ -172,8 +172,6 @@ export async function setupWalletSDK(
   // we dispatch the wallet loaded event
 
   async function dispatchArweaveWalletLoaded() {
-    console.log("DISPATCH");
-
     if (!window.arweaveWallet) return;
 
     const permissions = await window.arweaveWallet
@@ -190,7 +188,7 @@ export async function setupWalletSDK(
     );
 
     if (permissions.length > 0) {
-      events.emit("connect", { permissions });
+      events.emit("connect", null);
 
       const [activeAddress, addresses] = await Promise.all([
         window.arweaveWallet.getActiveAddress().catch(() => ""),

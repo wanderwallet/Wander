@@ -142,7 +142,6 @@ export const getWanderButtonTemplateContent = ({
     right: calc(4px + var(--borderWidth));
     bottom: calc(4px + var(--borderWidth));
     border-radius: 32px;
-    border: var(--borderWidth) solid var(--borderColor);
     transition: transform linear 150ms, background linear 150ms;
     pointer-events: none;
   }
@@ -161,6 +160,7 @@ export const getWanderButtonTemplateContent = ({
 
   .notifications {
     background: red;
+    color: white;
     font-size: 12px;
     font-weight: bold;
     min-height: 22px;

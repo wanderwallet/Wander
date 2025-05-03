@@ -149,10 +149,9 @@ export type ApiResponse<DataType = any> =
   | ApiSuccessResponse<DataType>
   | ApiErrorResponse;
 
-interface Event {
-  name: keyof InjectedEvents;
-  value: unknown;
-}
+type Event = {
+  [K in keyof InjectedEvents]: { name: K; value: InjectedEvents[K] };
+}[keyof InjectedEvents];
 
 declare module "styled-components" {
   export interface DefaultTheme {

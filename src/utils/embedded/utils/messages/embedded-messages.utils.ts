@@ -6,6 +6,7 @@ import {
   getEmbeddedAncestorOrigin
 } from "~utils/embedded/iframe.utils";
 import type {
+  EmbeddedAuthMessageData,
   EmbeddedCall,
   EmbeddedMessageId,
   EmbeddedMessageMap,
@@ -51,7 +52,7 @@ const messageKeyFnByType: {
   }
 };
 
-const lastMessageKeyByType: Partial<Record<EmbeddedMessageId, string>> = {};
+let lastMessageKeyByType: Partial<Record<EmbeddedMessageId, string>> = {};
 
 export interface PostEmbeddedMessageData<K extends EmbeddedMessageId> {
   type: K;
@@ -71,6 +72,13 @@ export function postEmbeddedMessage<K extends EmbeddedMessageId>({
 
   if (window.parent === null) {
     throw new Error("Unexpected `null` parent Window.");
+  }
+
+  if (
+    type === "embedded_auth" &&
+    (data as EmbeddedAuthMessageData).authStatus === "not-authenticated"
+  ) {
+    lastMessageKeyByType = {};
   }
 
   const messageKeyFn = messageKeyFnByType[type];

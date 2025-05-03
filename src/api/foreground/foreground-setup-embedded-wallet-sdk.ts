@@ -1,5 +1,5 @@
 import type { ApiCall, Event } from "shim";
-import type { InjectedEvents } from "~utils/events";
+import type { MittInjectedEvents } from "~utils/events";
 import { nanoid } from "nanoid";
 import {
   foregroundModules,
@@ -26,7 +26,7 @@ export function setupEmbeddedWalletSDK(
   setEmbeddedTargetIframe(targetWindowOrIframe);
 
   /** Init events */
-  const events = mitt<InjectedEvents>();
+  const events = mitt<MittInjectedEvents>();
 
   // TODO: Can we get the right type here?:
   const walletAPI = {
