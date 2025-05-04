@@ -217,16 +217,4 @@ export async function setupWalletSDK(
 
     addEventListener_.call(this, eventName, ...args);
   };
-
-  /*
-  setTimeout(async () => {
-    const isAlreadyConnected = await window.arweaveWallet.getActiveAddress();
-
-    console.log("isAlreadyConnected =", isAlreadyConnected);
-
-    if (isAlreadyConnected) {
-      events.emit("connect", null);
-    }
-  }, 100);
-  */
 }
