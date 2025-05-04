@@ -144,6 +144,6 @@ export function getAuthProviderTypeFromSupabaseUser(
   user: SupabaseUser
 ): AuthProviderType | null {
   return (
-    AUTH_PROVIDER_TYPE_BY_PROVIDER_STR[user?.identities?.[0]?.provider] || null
+    AUTH_PROVIDER_TYPE_BY_PROVIDER_STR[user?.app_metadata?.provider] || null
   );
 }
