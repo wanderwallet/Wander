@@ -1,4 +1,4 @@
-import { UserDetails } from "./utils/message/message.types";
+import { IncomingAuthMessageData } from "./utils/message/message.types";
 
 /**
  * Types of routes available in the Wander Embedded SDK.
@@ -196,6 +196,8 @@ export interface RouteConfig {
   // imgSrc?: string;
 }
 
+export type AuthState = IncomingAuthMessageData;
+
 /** User's wallet balance information */
 export interface BalanceInfo {
   /**
@@ -226,6 +228,20 @@ export interface WanderEmbeddedOptions {
    * @required
    */
   clientId: string;
+
+  /**
+   * Theme setting for the Wander Connect UI. It will also be used as the default value for `iframe.theme` and
+   * `button.theme`.
+   * Controls whether the component uses light, dark, or system-based theming.
+   */
+  theme?: ThemeSetting;
+
+  /**
+   * `true` to hide the Wander button on the authentication screen, which allow users that have the Wander browser
+   * extension installed to use that instead of Wander Connect. This implies no authentication information will be
+   * available from users who use the browser extension.
+   */
+  hideBE?: boolean;
 
   /**
    * Base URL for the Wander Embed client app.
@@ -259,7 +275,7 @@ export interface WanderEmbeddedOptions {
    * Callback function called when authentication state changes.
    * @param userDetails User details object when signed in, or null when signed out
    */
-  onAuth?: (userDetails: UserDetails | null) => void;
+  onAuth?: (authState: AuthState) => void;
 
   /**
    * Callback function called when the wallet interface is opened.
@@ -368,12 +384,16 @@ export function isThemeRecord<T>(
  * which displays the wallet UI.
  */
 export interface WanderEmbeddedIframeOptions
-  extends WanderEmbeddedComponentOptions<WanderEmbeddedModalCSSVars> {
+  extends WanderEmbeddedComponentOptions<WanderEmbeddedIframeCSSVars> {
   // TODO: Default should automatically be used for auth-requests, and auth for account and settings?
   /**
    * Layout configuration for different routes.
-   * Controls how the iframe is displayed for each route type.
-   * Can be a single layout type/config applied to all routes or a map of specific layouts per route type.
+   * Controls how the iframe is displayed for each route type:
+   * - If a single value is passed, we use it for "default", "settings" and "auth-request" routes. "auth" and "account"
+   *   routes fall back to the default layout type (currently "modal").
+   * - If more than one value is set, the "default" option will be used for "default" routes as well as as fallback for
+   *   "settings" and "auth-request" routes; the "auth" option will be used for "auth" routes as well as as fallback for
+   *   "account" routes.
    */
   routeLayout?:
     | LayoutType
@@ -394,7 +414,7 @@ export interface WanderEmbeddedIframeOptions
  * Configuration for the iframe component.
  */
 export interface WanderEmbeddedIframeConfig
-  extends WanderEmbeddedComponentConfig<WanderEmbeddedModalCSSVars> {
+  extends WanderEmbeddedComponentConfig<WanderEmbeddedIframeCSSVars> {
   /**
    * Layout configuration for all route types.
    * Complete mapping of route types to their layout configuration.
@@ -473,13 +493,32 @@ export type WanderEmbeddedButtonNotifications =
  */
 export interface WanderEmbeddedButtonLabels {
   /**
-   * Text to display for the sign in button.
+   * Title/tooltip to display when the button is loading.
+   * @default "Loading"
+   */
+  loading: string;
+
+  /**
+   * Title/tooltip to display when the balance is loading.
+   * @default "Loading Balance"
+   */
+  loadingBalance: string;
+
+  /**
+   * Title/tooltip to display when the user is authenticated, but the onboarding
+   * hasn't been completed.
+   * @default "Complete Sign Up"
+   */
+  completeSignUp: string;
+
+  /**
+   * Text to display when the user is not authenticated.
    * @default "Sign In"
    */
   signIn: string;
 
   /**
-   * Text to display for reviewing requests button.
+   * Text to display when the user has request to review.
    * @default "Review Requests"
    */
   reviewRequests: string;
@@ -512,12 +551,6 @@ export interface WanderEmbeddedButtonOptions
    * @default "default"
    */
   wanderLogo?: WanderEmbeddedLogoVariant;
-
-  /**
-   * URL of the dApp logo that will be displayed next to the Wander logo when connected.
-   * @default ""
-   */
-  dappLogoSrc?: string;
 
   /**
    * Whether to show the button label.
@@ -568,11 +601,6 @@ export interface WanderEmbeddedButtonConfig
   wanderLogo: WanderEmbeddedLogoVariant;
 
   /**
-   * URL of the dApp logo.
-   */
-  dappLogoSrc: string;
-
-  /**
    * Whether to show the button label.
    */
   label: boolean;
@@ -597,8 +625,6 @@ export interface WanderEmbeddedButtonConfig
  * Button status properties that can be observed.
  */
 export type WanderEmbeddedButtonStatus =
-  /** Whether the user is authenticated. */
-  | "isAuthenticated"
   /** Whether the user's wallet is connected to the application. */
   | "isConnected"
   /** Whether the wallet UI is currently open. */
@@ -609,7 +635,7 @@ export type WanderEmbeddedButtonStatus =
 /**
  * CSS variables for styling the modal/iframe component.
  */
-export interface WanderEmbeddedModalCSSVars {
+export interface WanderEmbeddedIframeCSSVars {
   // Modal (iframe):
   /**
    * Background color of the modal.
@@ -651,23 +677,25 @@ export interface WanderEmbeddedModalCSSVars {
    */
   preferredHeight: number | string;
 
-  // App wrapper (inside iframe):
+  // App wrapper (content inside iframe):
+
   /**
    * Padding inside the iframe.
    */
-  iframePadding: number;
+  contentPadding: number;
 
   /**
    * Maximum width of the iframe content.
    */
-  iframeMaxWidth: number;
+  contentMaxWidth: number | string;
 
   /**
    * Maximum height of the iframe content.
    */
-  iframeMaxHeight: number;
+  contentMaxHeight: number | string;
 
   // Backdrop (div):
+
   /**
    * Background color of the backdrop.
    */
@@ -682,13 +710,6 @@ export interface WanderEmbeddedModalCSSVars {
    * Padding around the modal within the backdrop.
    */
   backdropPadding: number | string;
-
-  /**
-   * Pointer events setting for the backdrop.
-   * If `backdropBackground` is transparent and `backdropBackdropFilter` is not set, this will be set to "none", unless
-   * a different value is specified. In any other case, this is ignored.
-   */
-  backdropPointerEvents: string;
 
   // Mobile specific styles
   /**

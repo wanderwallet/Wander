@@ -1,6 +1,6 @@
 import * as React from "react";
 import type { SVGProps } from "react";
-import { withThemeAwareColor } from "./IconBase";
+
 const SvgArrowDown = ({
   width = "16",
   height = "16",
@@ -13,7 +13,6 @@ const SvgArrowDown = ({
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
     {...props}
-    color="currentColor"
   >
     <path
       fillRule="evenodd"
@@ -23,4 +22,5 @@ const SvgArrowDown = ({
     />
   </svg>
 );
-export default withThemeAwareColor(SvgArrowDown);
+
+export default SvgArrowDown;

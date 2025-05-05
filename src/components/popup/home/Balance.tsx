@@ -169,7 +169,7 @@ function PriceChangeIndicator({
         variant="secondary"
         weight="medium"
         noMargin
-        style={IS_EMBEDDED_APP ? { color: "var(--text-color-secondary)" } : {}}
+        style={IS_EMBEDDED_APP ? { color: "var(--color-font-body)" } : {}}
       >
         <NumberFlow
           value={fiatChange}
@@ -183,7 +183,7 @@ function PriceChangeIndicator({
         variant="secondary"
         weight="medium"
         noMargin
-        style={IS_EMBEDDED_APP ? { color: "var(--text-color-secondary)" } : {}}
+        style={IS_EMBEDDED_APP ? { color: "var(--color-font-body)" } : {}}
       >
         (
         <NumberFlow
@@ -267,7 +267,7 @@ const BalanceText = styled(Text).attrs({
 })`
   cursor: pointer;
   text-align: center;
-  ${IS_EMBEDDED_APP && "color: var(--text-color-primary)"}
+  ${IS_EMBEDDED_APP && "color: var(--color-font-heading)"}
 `;
 
 export const CompassIcon = (props: HTMLProps<SVGElement>) => (

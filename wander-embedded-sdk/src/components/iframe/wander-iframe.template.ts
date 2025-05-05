@@ -1,20 +1,44 @@
 export interface WanderIframeTemplateContentOptions {
   customStyles: string;
+  cssVariableKeys: string[];
 }
 
 export const getWanderIframeTemplateContent = ({
-  customStyles
+  customStyles,
+  cssVariableKeys = []
 }: WanderIframeTemplateContentOptions) => {
   return `
   <style>
+
+    @media (prefers-color-scheme: light) {
+      :host {
+        ${cssVariableKeys
+          .map((cssVariableKey) => {
+            return `--${cssVariableKey}: var(--${cssVariableKey}Light);`;
+          })
+          .join("\n")}
+      }
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :host {
+        ${cssVariableKeys
+          .map((cssVariableKey) => {
+            return `--${cssVariableKey}: var(--${cssVariableKey}Dark);`;
+          })
+          .join("\n")}
+      }
+    }
+
     /* Base backdrop styles */
+
     .backdrop {
       position: fixed;
-      z-index: var(--zIndex, 9999);
+      z-index: calc(var(--zIndex) + 1);
       inset: 0;
-      background: var(--backdropBackground, rgba(255, 255, 255, .0625));
-      backdrop-filter: var(--backdropBackdropFilter, blur(12px));
-      padding: var(--backdropPadding, 32px);
+      background: var(--backdropBackground);
+      backdrop-filter: var(--backdropBackdropFilter);
+      padding: var(--backdropPadding);
       transition: opacity linear 150ms;
       pointer-events: none;
       opacity: 0;
@@ -26,21 +50,21 @@ export const getWanderIframeTemplateContent = ({
     }
 
     /* Iframe wrapper styles */
+
     .iframe-wrapper {
       position: fixed;
-      z-index: calc(var(--zIndex, 9999) + 1);
-      background: var(--background, white);
-      border: var(--borderWidth, 2px) solid var(--borderColor, rgba(0, 0, 0, .125));
-      border-radius: var(--borderRadius, 10px);
-      box-shadow: var(--boxShadow, 0 0 16px 0 rgba(0, 0, 0, 0.125));
-      width: calc(var(--preferredWidth, 400px) - 2 * var(--borderWidth, 2px));
-      height: calc(var(--preferredHeight, 800px) - 2 * var(--borderWidth, 2px));
-      min-width: calc(400px - 2 * var(--borderWidth, 2px));
-      min-height: calc(400px - 2 * var(--borderWidth, 2px));
-      max-width: calc(100dvw - 2 * var(--backdropPadding, 32px) - 2 * var(--borderWidth, 2px));
-      max-height: calc(100dvh - 2 * var(--backdropPadding, 32px) - 2 * var(--borderWidth, 2px));
-      box-sizing: content-box;
-      transition: transform linear 150ms, opacity linear 150ms;
+      z-index: calc(var(--zIndex, 9999) + 3);
+      background: var(--background);
+      border: var(--borderWidth) solid var(--borderColor);
+      border-radius: var(--borderRadius);
+      box-shadow: var(--boxShadow);
+      width: calc(var(--preferredWidth) + 2 * var(--borderWidth));
+      height: calc(var(--preferredHeight) + 2 * var(--borderWidth));
+      min-width: 400px;
+      min-height: 400px;
+      max-width: calc(100dvw - 2 * var(--backdropPadding));
+      max-height: calc(100dvh - 2 * var(--backdropPadding));
+      box-sizing: border-box;
       pointer-events: none;
       opacity: 0;
       overflow: hidden;
@@ -60,34 +84,36 @@ export const getWanderIframeTemplateContent = ({
     }
 
     /* Half layout image styles */
+
     .half-image {
       position: fixed;
-      z-index: calc(var(--zIndex, 9999) + 1);
+      width: calc(50vw - 2 * var(--backdropPadding, 0px));
+      z-index: calc(var(--zIndex) + 2);
       opacity: 0;
       transition: opacity 300ms ease-in-out;
       pointer-events: none;
       top: 50%;
       transform: translateY(-50%);
       display: none;
+
     }
 
     .half-image.show {
       opacity: 1;
-      pointer-events: auto;
     }
 
     /* Position-specific styles for half-image */
+
     .half-image[data-position="left"] {
       left: 0;
-      width: 50vw;
     }
 
     .half-image[data-position="right"] {
       right: 0;
-      width: 50vw;
     }
 
     /* Mobile styles */
+
     @media (max-width: 540px) {
       .backdrop {
         padding: var(--mobilePadding, 0);
@@ -127,117 +153,107 @@ export const getWanderIframeTemplateContent = ({
     }
 
     /* Popup specific styles */
+
     .iframe-wrapper[data-layout="popup"] {
-      transition: opacity linear 150ms;
+      transition: opacity linear 150ms, height ease-in-out 150ms;
     }
 
     .iframe-wrapper[data-layout="popup"][data-position="top-left"] {
-      top: var(--backdropPadding, 32px);
-      left: var(--backdropPadding, 32px);
+      top: var(--backdropPadding);
+      left: var(--backdropPadding);
     }
 
     .iframe-wrapper[data-layout="popup"][data-position="top-right"] {
-      top: var(--backdropPadding, 32px);
-      right: var(--backdropPadding, 32px);
+      top: var(--backdropPadding);
+      right: var(--backdropPadding);
     }
 
     .iframe-wrapper[data-layout="popup"][data-position="bottom-left"] {
-      bottom: var(--backdropPadding, 32px);
-      left: var(--backdropPadding, 32px);
+      bottom: var(--backdropPadding);
+      left: var(--backdropPadding);
     }
 
     .iframe-wrapper[data-layout="popup"][data-position="bottom-right"] {
-      bottom: var(--backdropPadding, 32px);
-      right: var(--backdropPadding, 32px);
+      bottom: var(--backdropPadding);
+      right: var(--backdropPadding);
     }
 
     /* Modal specific styles */
+
     .iframe-wrapper[data-layout="modal"] {
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      transition: opacity linear 150ms;
+      transition: opacity linear 150ms, height ease-in-out 150ms;
     }
 
     /* Sidebar specific styles */
+
     .iframe-wrapper[data-layout="sidebar"] {
-      transition: opacity linear 150ms, transform linear 150ms;
+      opacity: 1;
+      transition: transform ease-in-out 150ms;
     }
 
     /* Half specific styles */
+
     .iframe-wrapper[data-layout="half"] {
-        transition: opacity 300ms ease-in-out, transform 300ms ease-in-out;
+      transition: opacity linear 150ms;
     }
 
-    /* Right position - Sidebar */
-    .iframe-wrapper[data-layout="sidebar"][data-position="right"] {
-      top: var(--backdropPadding, 0);
-      right: var(--backdropPadding, 0);
-      border-width: 0 0 0 var(--borderWidth, 2px);
-    }
+    /* Right position - Sidebar & Half */
 
-    /* Right position - Half */
+    .iframe-wrapper[data-layout="sidebar"][data-position="right"],
     .iframe-wrapper[data-layout="half"][data-position="right"] {
       top: var(--backdropPadding, 0);
       right: var(--backdropPadding, 0);
-      border-width: 0 0 0 var(--borderWidth, 2px);
+      border-width: 0;
     }
 
-    /* Left position - Sidebar */
-    .iframe-wrapper[data-layout="sidebar"][data-position="left"] {
-      top: var(--backdropPadding, 0);
-      left: var(--backdropPadding, 0);
-      border-width: 0 var(--borderWidth, 2px) 0 0;
-    }
+    /* Left position - Sidebar & Half */
 
-    /* Left position - Half */
+    .iframe-wrapper[data-layout="sidebar"][data-position="left"],
     .iframe-wrapper[data-layout="half"][data-position="left"] {
       top: var(--backdropPadding, 0);
       left: var(--backdropPadding, 0);
-      border-width: 0 var(--borderWidth, 2px) 0 0;
+      border-width: 0;
     }
 
     /* Hide transform states - Sidebar */
-    .iframe-wrapper[data-layout="sidebar"][data-position="right"]:not(.show) {
-      transform: translate(calc(100% + var(--backdropPadding, 32px)), 0);
-    }
 
-    /* Hide transform states - Half */
-    .iframe-wrapper[data-layout="half"][data-position="right"]:not(.show) {
-      transform: translate(calc(100% + var(--backdropPadding, 32px)), 0);
+    .iframe-wrapper[data-layout="sidebar"][data-position="right"]:not(.show) {
+      transform: translate(calc(100% + var(--backdropPadding) + 32px), 0);
     }
 
     .iframe-wrapper[data-layout="sidebar"][data-position="left"]:not(.show) {
-      transform: translate(calc(-100% - var(--backdropPadding, 32px)), 0);
+      transform: translate(calc(-100% - var(--backdropPadding) - 32px), 0);
     }
 
-    .iframe-wrapper[data-layout="half"][data-position="left"]:not(.show) {
-      transform: translate(calc(-100% - var(--backdropPadding, 32px)), 0);
-    }
+    /* Show transform state - Sidebar */
 
-    /* Show transform state */
-    .iframe-wrapper[data-layout="sidebar"].show,
-    .iframe-wrapper[data-layout="half"].show {
+    .iframe-wrapper[data-layout="sidebar"].show {
       transform: translate(0, 0);
     }
 
     /* Expanded styles */
+
     .iframe-wrapper[data-layout="sidebar"][data-expanded="true"],
     .iframe-wrapper[data-layout="half"][data-expanded="true"] {
       top: 0;
-      height: var(--preferredHeight, 100dvh);
-      max-height: var(--preferredHeight, 100dvh);
+      height: var(--preferredHeight);
+      max-height: var(--preferredHeight);
       border-radius: 0;
     }
 
     .iframe-wrapper[data-layout="sidebar"][data-expanded="true"][data-position="right"],
     .iframe-wrapper[data-layout="half"][data-expanded="true"][data-position="right"] {
       right: 0;
+      border-width: 0 0 0 var(--borderWidth);
     }
 
     .iframe-wrapper[data-layout="sidebar"][data-expanded="true"][data-position="left"],
     .iframe-wrapper[data-layout="half"][data-expanded="true"][data-position="left"] {
       left: 0;
+      border-width: 0 var(--borderWidth) 0 0;
     }
 
     ${customStyles}

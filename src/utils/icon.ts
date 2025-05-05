@@ -94,14 +94,11 @@ const lockedLogos: LogosByEnvironment = {
  * @param hasPerms Does the site have any permissions?
  */
 export async function updateIcon(hasPerms: boolean) {
-  const val = await ExtensionStorage.get("decryption_key");
-
   if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1") {
-    postEmbeddedMessage({
-      type: val && hasPerms ? "embedded_connect" : "embedded_disconnect",
-      data: null
-    });
+    return;
   }
+
+  const val = await ExtensionStorage.get("decryption_key");
 
   // Set logos if connected / if not connected:
   const logosByEnvironment = val

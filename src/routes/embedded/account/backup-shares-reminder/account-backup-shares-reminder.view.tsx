@@ -10,6 +10,7 @@ import {
   WanderFooter
 } from "~components/embed/ui";
 import { useLocation } from "~wallets/router/router.utils";
+import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 
 export function AccountBackupSharesReminderEmbeddedView() {
   const { currentWallet, skipBackUp } = useEmbedded();
@@ -19,11 +20,16 @@ export function AccountBackupSharesReminderEmbeddedView() {
     currentWallet.totalBackups === 0 &&
     !currentWallet.doNotAskAgainSetting;
 
+  const [isLoading, setIsLoading] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
 
   const handleSkipClicked = async () => {
+    setIsLoading(true);
+
     await skipBackUp(isChecked);
-    // navigate("/wallet");
+
+    // TODO: Temp fix until the button can handle onClick + href automatically:
+    navigate(EmbeddedPaths.WalletHomeEmbeddedView);
   };
 
   return (
@@ -38,12 +44,18 @@ export function AccountBackupSharesReminderEmbeddedView() {
       size="auto"
     >
       <Box>
-        <Button variant="primary" isFullWidth href="#/account/backup-shares">
+        <Button
+          variant="primary"
+          isDisabled={isLoading}
+          isFullWidth
+          href="#/account/backup-shares"
+        >
           Backup now
         </Button>
         {isMandatoryReminder ? (
           <Button
             variant="secondary"
+            isDisabled={isLoading}
             isFullWidth
             href="#/wallet"
             onClick={handleSkipClicked}
@@ -59,6 +71,7 @@ export function AccountBackupSharesReminderEmbeddedView() {
           <Checkbox
             label="Don't show this again"
             description="Note: you can set this up on the settings page"
+            isDisabled={isLoading}
             handleChange={() => setIsChecked(!isChecked)}
             isChecked={isChecked}
           />

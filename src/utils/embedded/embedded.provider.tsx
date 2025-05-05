@@ -46,7 +46,8 @@ import {
 import { AuthenticationService } from "~utils/authentication/authentication.service";
 import {
   AUTH_PROVIDER_TYPE_BY_PROVIDER_STR,
-  EMBEDDED_FEATURE_FLAGS
+  EMBEDDED_FEATURE_FLAGS,
+  EMBEDDED_SDK_AUTH_STATUS_BY_AUTH_STATUS
 } from "~utils/embedded/embedded.constants";
 import { getDeviceNonce } from "~utils/embedded/device-nonce/device-nonce.utils";
 import { jwtDecode } from "jwt-decode";
@@ -55,7 +56,11 @@ import { isTempWalletPromiseExpired } from "~utils/embedded/utils/wallets/embedd
 import copy from "copy-to-clipboard";
 import { useHashLocation } from "wouter/use-hash-location";
 import { getIPAddress } from "~utils/ip_address";
-import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
+import {
+  getAuthProviderTypeFromSupabaseUser,
+  getUserDetailsFromSupabaseUser,
+  postEmbeddedMessage
+} from "~utils/embedded/utils/messages/embedded-messages.utils";
 
 export type AuthStatusCopy = AuthStatus;
 
@@ -128,7 +133,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
   // Auth props:
 
-  const { authStatus, user, session } = embeddedContextAuth;
+  const { authProviderType, authStatus, user, session } = embeddedContextAuth;
 
   const userId = user?.id || null;
 
@@ -141,6 +146,23 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       }
     }
   }, [authStatus]);
+
+  useEffect(() => {
+    const sdkAuthStatus = EMBEDDED_SDK_AUTH_STATUS_BY_AUTH_STATUS[authStatus];
+
+    if (!authProviderType || !sdkAuthStatus) return;
+
+    const userDetails = getUserDetailsFromSupabaseUser(user);
+
+    postEmbeddedMessage({
+      type: "embedded_auth",
+      data: {
+        authType: authProviderType,
+        authStatus: sdkAuthStatus,
+        userDetails
+      }
+    });
+  }, [authProviderType, authStatus, user]);
 
   const getLatestSession = useCallback(async (session: DbSession) => {
     const userAgent = navigator.userAgent;
@@ -905,6 +927,13 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       }
 
       try {
+        setEmbeddedContextAuth({
+          authStatus: "authLoading",
+          authProviderType,
+          user: null,
+          session: null
+        });
+
         const { url } = await AuthenticationService.authenticate(
           authProviderType
         );
@@ -1015,7 +1044,6 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         }
       } catch (error) {
         console.error(`${authProviderType} authentication failed:`, error);
-        // setIsLoading(false);
       }
     },
     [user]
@@ -1033,19 +1061,16 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
       setEmbeddedContextState(EMBEDDED_CONTEXT_INITIAL_STATE);
 
-      postEmbeddedMessage({
-        type: "embedded_auth",
-        data: {
-          userDetails:
-            !userId || !session
-              ? null
-              : {
-                  userId
-                }
-        }
-      });
-
       if (!userId || !session) {
+        postEmbeddedMessage({
+          type: "embedded_auth",
+          data: {
+            authType: null,
+            authStatus: "not-authenticated",
+            userDetails: null
+          }
+        });
+
         generateTempWallet();
 
         return;
@@ -1199,20 +1224,20 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
   useEffect(() => {
     async function init() {
       /*
-    KNOWN AUTHENTICATION ISSUES:
+      KNOWN AUTHENTICATION ISSUES:
 
-    - The decoded JWT token sometimes is missing some properties (`deviceNonce`). Refreshing the
-      sessions seems to fix the issue, but not immediately. The `The current session is incomplete. Refreshing...` block
-      in `initEmbeddedWallet` is a dirty/temp fix for that.
+      - The decoded JWT token sometimes is missing some properties (`deviceNonce`). Refreshing the
+        sessions seems to fix the issue, but not immediately. The `The current session is incomplete. Refreshing...` block
+        in `initEmbeddedWallet` is a dirty/temp fix for that.
 
-    - The `onAuthStateChange` callback below is never invoked when running the app inside an iframe on a different
-      origin. The `setTimeout` below is a dirty/tem fix for that.
+      - The `onAuthStateChange` callback below is never invoked when running the app inside an iframe on a different
+        origin. The `setTimeout` below is a dirty/tem fix for that.
 
-      See https://stackoverflow.com/questions/71819128/supabase-auth-onauthstatechange-not-working-when-react-app-is-in-iframe
+        See https://stackoverflow.com/questions/71819128/supabase-auth-onauthstatechange-not-working-when-react-app-is-in-iframe
 
-    - When a sessions is deleted from the DB, it's still reported as valid, even thought tRPC endpoints will return
-      UNAUTHORIZED errors. When that happens, we should force de-authentication of the frontend.
-    */
+      - When a sessions is deleted from the DB, it's still reported as valid, even thought tRPC endpoints will return
+        UNAUTHORIZED errors. When that happens, we should force de-authentication of the frontend.
+      */
 
       const forceInitTimeoutID = setTimeout(() => {
         console.warn("Forcing initialization...");
@@ -1228,11 +1253,32 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       }, 2000);
 
       const supabase = await getSupabaseClient();
+
+      // Retrieves the current LOCAL session:
+      const { data, error } = await supabase.auth.getSession();
+      const cachedUser = data?.session?.user;
+
+      // Send the initial state for the SDK button ASAP:
+
+      postEmbeddedMessage({
+        type: "embedded_auth",
+        data:
+          !error && cachedUser
+            ? {
+                authType: getAuthProviderTypeFromSupabaseUser(cachedUser),
+                authStatus: "loading",
+                userDetails: getUserDetailsFromSupabaseUser(cachedUser)
+              }
+            : {
+                authType: null,
+                authStatus: "not-authenticated",
+                userDetails: null
+              }
+      });
+
       const {
         data: { subscription }
       } = supabase.auth.onAuthStateChange(async (_event, session) => {
-        // console.log("onAuthStateChange =", session);
-
         window.clearTimeout(forceInitTimeoutID);
 
         // Comment this line to run Wander Embedded as a standalone page:
@@ -1253,9 +1299,17 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
         const accessToken = session?.access_token ?? null;
         const user = session?.user ?? null;
-        const authProviderType: AuthProviderType | null =
-          AUTH_PROVIDER_TYPE_BY_PROVIDER_STR[user?.identities?.[0]?.provider] ||
-          null;
+        const authProviderType = getAuthProviderTypeFromSupabaseUser(user);
+
+        if (
+          process.env.NODE_ENV === "development" &&
+          user &&
+          authProviderType === null
+        ) {
+          alert(
+            `authProviderType = ${authProviderType}. Something wasn't properly mapped in AUTH_PROVIDER_TYPE_BY_PROVIDER_STR.`
+          );
+        }
 
         let dbSession: DbSession | null = null;
 

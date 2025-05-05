@@ -1,40 +1,74 @@
-import { CSSProperties } from "react";
 import {
-  HalfLayoutConfig,
   ImgPath,
   isRouteConfig,
-  isThemeRecord,
   LayoutConfig,
   LayoutType,
-  ModalLayoutConfig,
-  PopupLayoutConfig,
   RouteConfig,
   RouteType,
-  SidebarLayoutConfig,
   WanderEmbeddedIframeConfig,
   WanderEmbeddedIframeOptions,
-  WanderEmbeddedModalCSSVars
+  WanderEmbeddedIframeCSSVars
 } from "../../wander-embedded.types";
-import { addCSSVariables } from "../../utils/styles/styles.utils";
+import {
+  addCSSVariables,
+  mergeCSSVariablesOption
+} from "../../utils/styles/styles.utils";
 import { getWanderIframeTemplateContent } from "./wander-iframe.template";
 
 export class WanderIframe {
-  static DEFAULT_BACKDROP_ID = "wanderEmbeddedBackdrop" as const;
-  static DEFAULT_IFRAME_ID = "wanderEmbeddedIframe" as const;
-  static DEFAULT_ROUTE_LAYOUT = {
-    modal: {
-      type: "modal"
-    } as ModalLayoutConfig,
-    popup: {
-      type: "popup"
-    } as PopupLayoutConfig,
-    sidebar: {
-      type: "sidebar"
-    } as SidebarLayoutConfig,
-    half: {
-      type: "half"
-    } as HalfLayoutConfig
-  };
+  static DEFAULT_LIGHT_CSS_VARS: WanderEmbeddedIframeCSSVars = {
+    // Iframe Wrapper (div.iframe-wrapper)
+    background: "white",
+    borderWidth: 2,
+    borderColor: "rgba(0, 0, 0, .125)",
+    borderRadius: 10,
+    boxShadow: "0 0 16px 0 rgba(0, 0, 0, 0.125)",
+    zIndex: "9999",
+    preferredWidth: 400,
+    preferredHeight: 400,
+
+    // Iframe Content:
+    contentPadding: 0,
+    contentMaxWidth: 600,
+    contentMaxHeight: "100dvh",
+
+    // Backdrop (div):
+    backdropBackground: "rgba(255, 255, 255, .0625)",
+    backdropBackdropFilter: "blur(12px)",
+    backdropPadding: 8,
+
+    // Mobile-specific:
+    mobilePadding: 0,
+    mobileHeight: 0,
+    mobileBorderRadius: 0,
+    mobileBorderWidth: 0,
+    mobileBorderColor: "transparent",
+    mobileBoxShadow: "none"
+  } as const;
+
+  static DEFAULT_DARK_CSS_VARS: WanderEmbeddedIframeCSSVars = {
+    ...WanderIframe.DEFAULT_LIGHT_CSS_VARS,
+    background: "black"
+  } as const;
+
+  static DEFAULT_CONFIG = {
+    id: "wanderEmbeddedIframeHost",
+    theme: "system",
+    cssVars: {
+      light: WanderIframe.DEFAULT_LIGHT_CSS_VARS,
+      dark: WanderIframe.DEFAULT_DARK_CSS_VARS
+    },
+    customStyles: "",
+    routeLayout: {
+      default: WanderIframe.getLayoutConfig("popup"),
+      auth: WanderIframe.getLayoutConfig("modal"),
+      account: WanderIframe.getLayoutConfig("modal"),
+      settings: WanderIframe.getLayoutConfig("popup"),
+      "auth-request": WanderIframe.getLayoutConfig("popup")
+    },
+    clickOutsideBehavior: true
+  } as const satisfies WanderEmbeddedIframeConfig;
+
   static readonly IMAGE_EXTENSIONS = ["png", "webp"] as const;
   static readonly DEFAULT_ROUTE_TYPES: readonly RouteType[] = [
     "default",
@@ -57,9 +91,7 @@ export class WanderIframe {
   private halfImage: HTMLImageElement;
 
   // Config (options):
-  // private config: WanderEmbeddedIframeConfig;
-  private options: WanderEmbeddedIframeOptions;
-  private routeLayout: Partial<Record<RouteType, LayoutConfig>>;
+  private config: WanderEmbeddedIframeConfig;
 
   // State:
   private currentLayoutType: LayoutType | null = null;
@@ -68,50 +100,77 @@ export class WanderIframe {
   private imageBaseUrl: string | null = null;
 
   constructor(src: string, options: WanderEmbeddedIframeOptions = {}) {
-    this.options = options;
+    const cssVars = mergeCSSVariablesOption(
+      options.cssVars,
+      options.theme,
+      WanderIframe.DEFAULT_LIGHT_CSS_VARS,
+      WanderIframe.DEFAULT_DARK_CSS_VARS
+    );
 
-    const { routeLayout } = options;
+    const routeLayoutOption = options.routeLayout;
 
-    if (typeof routeLayout === "string" || isRouteConfig(routeLayout)) {
-      // If a single value is passed, we use it for default, settings and auth-request. auth and account fallbacks to
-      // the default (currently modal):
+    let routeLayout: null | Record<RouteType, LayoutConfig> = null;
 
-      const defaultLayoutConfig = WanderIframe.getLayoutConfig(routeLayout);
+    if (
+      typeof routeLayoutOption === "string" ||
+      isRouteConfig(routeLayoutOption)
+    ) {
+      // If a single value is passed, we use it for "default", "settings" and "auth-request" routes. "auth" and
+      // "account" routes fall back to the default layout type (currently "modal"):
 
-      this.routeLayout = {
+      const defaultLayoutConfig =
+        WanderIframe.getLayoutConfig(routeLayoutOption);
+
+      routeLayout = {
         default: defaultLayoutConfig,
+        auth: WanderIframe.DEFAULT_CONFIG.routeLayout.auth,
+        account: WanderIframe.DEFAULT_CONFIG.routeLayout.auth,
         settings: defaultLayoutConfig,
         "auth-request": defaultLayoutConfig
       };
     } else {
-      // If only default and auth are defined by the developer, default is used for default, settings and auth-request,
-      // while auth is used for auth and account:
+      // If more than one value is set, the "default" option will be used for "default" routes as well as as fallback
+      // for "settings" and "auth-request" routes; the "auth" option will be used for "auth" routes as well as as
+      // fallback for "account" routes:
 
-      const defaultLayoutConfig = WanderIframe.getLayoutConfig(
-        routeLayout?.default || "popup"
-      );
+      const defaultLayoutConfig = routeLayoutOption?.default
+        ? WanderIframe.getLayoutConfig(routeLayoutOption?.default)
+        : WanderIframe.DEFAULT_CONFIG.routeLayout.default;
 
-      const authLayoutConfig = WanderIframe.getLayoutConfig(
-        routeLayout?.auth || "modal"
-      );
+      const authLayoutConfig = routeLayoutOption?.auth
+        ? WanderIframe.getLayoutConfig(routeLayoutOption?.auth)
+        : WanderIframe.DEFAULT_CONFIG.routeLayout.auth;
 
-      this.routeLayout = {
+      routeLayout = {
         default: defaultLayoutConfig,
         auth: authLayoutConfig,
-        account:
-          WanderIframe.getLayoutConfig(routeLayout?.account) ||
-          authLayoutConfig,
-        settings:
-          WanderIframe.getLayoutConfig(routeLayout?.settings) ||
-          defaultLayoutConfig,
-        "auth-request":
-          WanderIframe.getLayoutConfig(routeLayout?.["auth-request"]) ||
-          defaultLayoutConfig
+        account: routeLayoutOption?.account
+          ? WanderIframe.getLayoutConfig(routeLayoutOption.account)
+          : authLayoutConfig,
+        settings: routeLayoutOption?.settings
+          ? WanderIframe.getLayoutConfig(routeLayoutOption.settings)
+          : defaultLayoutConfig,
+        "auth-request": routeLayoutOption?.["auth-request"]
+          ? WanderIframe.getLayoutConfig(routeLayoutOption["auth-request"])
+          : defaultLayoutConfig
       };
     }
 
+    this.config = {
+      id: options.id || WanderIframe.DEFAULT_CONFIG.id,
+      theme: options.theme || WanderIframe.DEFAULT_CONFIG.theme,
+      cssVars,
+      customStyles:
+        options.customStyles || WanderIframe.DEFAULT_CONFIG.customStyles,
+      routeLayout,
+      clickOutsideBehavior:
+        options.clickOutsideBehavior ||
+        WanderIframe.DEFAULT_CONFIG.clickOutsideBehavior
+    };
+
     this.imageBaseUrl = new URL(src).origin;
-    const elements = WanderIframe.initializeIframe(src, options);
+
+    const elements = WanderIframe.initializeIframe(src, this.config);
 
     this.host = elements.host;
     this.backdrop = elements.backdrop;
@@ -123,7 +182,7 @@ export class WanderIframe {
 
     this.resize({
       routeType: "auth",
-      preferredLayoutType: this.routeLayout.auth?.type || "modal",
+      preferredLayoutType: routeLayout.auth.type,
       height: 0
     });
   }
@@ -137,32 +196,34 @@ export class WanderIframe {
   }
 
   static getLayoutConfig(
-    layoutConfig?: LayoutConfig | LayoutType
-  ): LayoutConfig | undefined {
-    if (!layoutConfig) return undefined;
-
+    layoutConfig: LayoutConfig | LayoutType
+  ): LayoutConfig {
     return typeof layoutConfig === "object"
       ? layoutConfig
-      : WanderIframe.DEFAULT_ROUTE_LAYOUT[layoutConfig];
+      : ({
+          type: layoutConfig
+        } satisfies LayoutConfig);
   }
 
-  static initializeIframe(src: string, options: WanderEmbeddedIframeOptions) {
+  static initializeIframe(src: string, config: WanderEmbeddedIframeConfig) {
     // TODO: Considering using a `<dialog>` element or adding proper aria- tags.
     const host = document.createElement("div");
-    host.id = options.id || WanderIframe.DEFAULT_IFRAME_ID;
+
+    host.id = config.id;
 
     const shadow = host.attachShadow({ mode: "open" });
     const template = document.createElement("template");
 
-    const customStyles =
-      typeof options.customStyles === "string" ? options.customStyles : "";
-    template.innerHTML = getWanderIframeTemplateContent({ customStyles });
+    template.innerHTML = getWanderIframeTemplateContent({
+      customStyles: config.customStyles,
+      // TODO: It would be better to create an interface with the subset of vars that we can override when changing themes:
+      cssVariableKeys: Object.keys(WanderIframe.DEFAULT_LIGHT_CSS_VARS)
+    });
 
     shadow.appendChild(template.content);
 
     const backdrop = document.createElement("div");
     backdrop.className = "backdrop";
-    backdrop.id = WanderIframe.DEFAULT_BACKDROP_ID;
 
     const wrapper = document.createElement("div");
     wrapper.className = "iframe-wrapper";
@@ -218,11 +279,9 @@ export class WanderIframe {
   }
 
   resize(routeConfig: RouteConfig): void {
-    const layoutConfig =
-      this.routeLayout[routeConfig.routeType] ||
-      WanderIframe.DEFAULT_ROUTE_LAYOUT[routeConfig.preferredLayoutType];
-
-    const layoutType: LayoutType = layoutConfig.type;
+    const { config, wrapper } = this;
+    const layoutConfig = config.routeLayout[routeConfig.routeType];
+    const layoutType = layoutConfig.type;
 
     this.currentLayoutType = layoutType;
 
@@ -232,81 +291,87 @@ export class WanderIframe {
       this.halfImage.classList.remove("show");
     }
 
-    this.wrapper.dataset.layout = layoutType;
+    // TODO: if (this.currentLayoutType !== layoutType) { ... }
 
-    // Default to true, unless explicitly set to false, false is WIP
-    this.wrapper.dataset.expandOnMobile =
+    wrapper.dataset.layout = layoutType;
+    wrapper.dataset.position = "";
+    wrapper.dataset.expanded = "";
+
+    // TODO: Default to true, unless explicitly set to false, false is WIP
+    wrapper.dataset.expandOnMobile =
       layoutConfig.expandOnMobile !== false ? "true" : "false";
 
-    if (this.options.cssVars && isThemeRecord(this.options.cssVars)) {
-      throw new Error("Not implemented yet");
-    }
-
-    const cssVars: Partial<WanderEmbeddedModalCSSVars> = {
-      ...this.options.cssVars
-    };
+    const layoutCssVarsUpdates: Partial<WanderEmbeddedIframeCSSVars> = {};
 
     switch (layoutConfig.type) {
       case "modal": {
-        // Modal resizes to fit content:
-        cssVars.preferredWidth =
+        // Modal resizes to fit content (unless fixed-size provided):
+        layoutCssVarsUpdates.preferredWidth =
           layoutConfig.fixedWidth || routeConfig.width || "";
-        cssVars.preferredHeight =
+        layoutCssVarsUpdates.preferredHeight =
           layoutConfig.fixedHeight || routeConfig.height || "";
         break;
       }
 
       case "popup": {
-        const position = layoutConfig.position || "bottom-right";
-        this.wrapper.dataset.position = position;
-        // Popup should not resize to fit content:
-        cssVars.preferredWidth = layoutConfig.fixedWidth || "";
-        cssVars.preferredHeight = layoutConfig.fixedHeight || "";
+        wrapper.dataset.position = layoutConfig.position || "bottom-right";
+
+        // Popup resizes to fit content (unless fixed-size provided):
+        layoutCssVarsUpdates.preferredWidth =
+          layoutConfig.fixedWidth || routeConfig.width || "";
+        layoutCssVarsUpdates.preferredHeight =
+          layoutConfig.fixedHeight || routeConfig.height || "";
         break;
       }
 
-      case "sidebar":
+      case "sidebar": {
+        wrapper.dataset.position = layoutConfig.position || "right";
+        wrapper.dataset.expanded = layoutConfig.expanded ? "true" : "false";
+
+        if (layoutConfig.expanded) layoutCssVarsUpdates.backdropPadding = 0;
+
+        layoutCssVarsUpdates.preferredWidth =
+          layoutConfig.fixedWidth || routeConfig.width || "";
+        layoutCssVarsUpdates.preferredHeight =
+          "calc(100dvh - 2 * var(--backdropPadding, 0))";
+
+        break;
+      }
+
       case "half": {
-        const position = layoutConfig.position || "right";
-        this.wrapper.dataset.position = position;
+        const position = (wrapper.dataset.position =
+          layoutConfig.position || "right");
+        wrapper.dataset.expanded = layoutConfig.expanded ? "true" : "false";
 
-        if (layoutConfig.expanded) {
-          this.wrapper.dataset.expanded = "true";
-          cssVars.backdropPadding = 0;
-          cssVars.borderRadius = 0;
+        if (layoutConfig.expanded) layoutCssVarsUpdates.backdropPadding = 0;
+
+        layoutCssVarsUpdates.preferredWidth =
+          "calc(50vw - 2 * var(--backdropPadding, 0))";
+        layoutCssVarsUpdates.preferredHeight =
+          "calc(100dvh - 2 * var(--backdropPadding, 0))";
+
+        // TODO: Fix sidebar flying over the screen when initialized.
+        // TODO: Make the image work for the sidebar too?
+        // TODO: iframe.show + backdrop
+        // TODO: iframe.show ~ .half-image
+        // TODO: Do this with selectors alone:
+        // Handle imgSrc for half layout
+        this.halfImage.dataset.position =
+          position === "left" ? "right" : "left";
+        this.halfImage.dataset.expanded = layoutConfig.expanded
+          ? "true"
+          : "false";
+
+        // Get the image url based on the route type
+        const imgSrc = this.getRouteImageUrl(`${routeConfig.routeType}.png`);
+
+        if (this.isOpen && imgSrc) {
+          this.halfImage.src = imgSrc;
+          this.halfImage.style.display = "block";
+          this.halfImage.classList.add("show");
         } else {
-          this.wrapper.dataset.expanded = "false";
-          cssVars.backdropPadding = 8;
-        }
-
-        if (layoutConfig.type === "sidebar") {
-          cssVars.preferredWidth =
-            layoutConfig.fixedWidth || routeConfig.width || "";
-          cssVars.preferredHeight =
-            "calc(100dvh - 2 * var(--backdropPadding, 0))";
-        } else {
-          cssVars.preferredWidth = "calc(50vw - 2 * var(--backdropPadding, 0))";
-          cssVars.preferredHeight =
-            "calc(100dvh - 2 * var(--backdropPadding, 0))";
-
-          // Handle imgSrc for half layout
-          this.halfImage.dataset.position =
-            position === "left" ? "right" : "left";
-          this.halfImage.dataset.expanded = layoutConfig.expanded
-            ? "true"
-            : "false";
-
-          // Get the image url based on the route type
-          const imgSrc = this.getRouteImageUrl(`${routeConfig.routeType}.png`);
-
-          if (this.isOpen && imgSrc) {
-            this.halfImage.src = imgSrc;
-            this.halfImage.style.display = "block";
-            this.halfImage.classList.add("show");
-          } else {
-            this.halfImage.style.display = "none";
-            this.halfImage.classList.remove("show");
-          }
+          this.halfImage.style.display = "none";
+          this.halfImage.classList.remove("show");
         }
 
         break;
@@ -316,8 +381,19 @@ export class WanderIframe {
     // Every time we change the layout type (e.g. going from the auth routes "modal" to the default routes "popup"), the
     // style attribute must be reset to avoid conflicts with leftover properties from the previous layout
 
-    addCSSVariables(this.backdrop, cssVars);
-    addCSSVariables(this.wrapper, cssVars);
+    this.host.removeAttribute("style");
+
+    addCSSVariables(
+      this.host,
+      { ...config.cssVars.light, ...layoutCssVarsUpdates },
+      "Light"
+    );
+
+    addCSSVariables(
+      this.host,
+      { ...config.cssVars.dark, ...layoutCssVarsUpdates },
+      "Dark"
+    );
   }
 
   destroy() {

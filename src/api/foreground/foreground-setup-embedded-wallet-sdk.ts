@@ -1,5 +1,5 @@
 import type { ApiCall, Event } from "shim";
-import type { InjectedEvents } from "~utils/events";
+import type { MittInjectedEvents } from "~utils/events";
 import { nanoid } from "nanoid";
 import {
   foregroundModules,
@@ -26,7 +26,7 @@ export function setupEmbeddedWalletSDK(
   setEmbeddedTargetIframe(targetWindowOrIframe);
 
   /** Init events */
-  const events = mitt<InjectedEvents>();
+  const events = mitt<MittInjectedEvents>();
 
   // TODO: Can we get the right type here?:
   const walletAPI = {
@@ -132,29 +132,4 @@ export function setupEmbeddedWalletSDK(
 
   // @ts-expect-error
   window.arweaveWallet = walletAPI;
-
-  // at the end of the injected script,
-  // we dispatch the wallet loaded event
-  dispatchEvent(new CustomEvent("arweaveWalletLoaded", { detail: {} }));
-
-  // send wallet loaded event again if page loaded
-  window.addEventListener("load", () => {
-    if (!window.arweaveWallet) return;
-    dispatchEvent(new CustomEvent("arweaveWalletLoaded", { detail: {} }));
-  });
-
-  /** Handle events */
-  window.addEventListener(
-    "message",
-    (
-      e: MessageEvent<{
-        type: "wander_event";
-        event: Event;
-      }>
-    ) => {
-      if (!e.data || !e.data.event || e.data.type !== "wander_event") return;
-
-      events.emit(e.data.event.name, e.data.event.value);
-    }
-  );
 }
