@@ -14,6 +14,7 @@ import {
 import { useLocation } from "~wallets/router/router.utils";
 import { toast } from "react-toastify";
 import type { AuthProviderType } from "embed-api";
+
 export function AuthRecoverAccountMoreAuthenticationEmbeddedView() {
   const { navigate, back } = useLocation();
   const { recoverableAccounts, recoverAccount } = useEmbedded();

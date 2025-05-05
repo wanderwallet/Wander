@@ -66,6 +66,7 @@ export interface EmbeddedContextState {
   importedTempWalletAddress: null | string;
   lastRegisteredWallet: null | Wallet;
   recoverableAccounts: null | RecoverableAccount[];
+  accountToRecover: null | RecoverableAccount;
 }
 
 export interface EmbeddedContextAuth {
@@ -95,6 +96,7 @@ export interface EmbeddedContextData
   ) => Promise<void>;
   fetchRecoverableAccounts: () => Promise<RecoverableAccount[]>;
   clearRecoverableAccounts: () => void;
+  setAccountToRecover: (accountToRecover: RecoverableAccount) => void;
   recoverAccount: (
     authProviderType: AuthProviderType,
     accountToRecoverId: string

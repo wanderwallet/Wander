@@ -41,7 +41,8 @@ import {
   AuthProviderType,
   ChallengeClientV1,
   WalletSourceType,
-  type DbSession
+  type DbSession,
+  type RecoverableAccount
 } from "embed-api";
 import { AuthenticationService } from "~utils/authentication/authentication.service";
 import {
@@ -65,7 +66,8 @@ const EMBEDDED_CONTEXT_INITIAL_STATE = {
   generatedTempWalletAddress: null,
   importedTempWalletAddress: null,
   lastRegisteredWallet: null,
-  recoverableAccounts: null
+  recoverableAccounts: null,
+  accountToRecover: null
 } as const satisfies EmbeddedContextState;
 
 const EMBEDDED_CONTEXT_INITIAL_AUTH = {
@@ -84,6 +86,7 @@ export const EmbeddedContext = createContext<EmbeddedContextData>({
   authenticate: async () => null,
   fetchRecoverableAccounts: async () => null,
   clearRecoverableAccounts: async () => null,
+  setAccountToRecover: async () => null,
   recoverAccount: async () => null,
   recoverWallet: async () => null,
 
@@ -144,6 +147,18 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
   }, [authStatus]);
 
   const getLatestSession = useCallback(async (session: DbSession) => {
+    if (!session) {
+      return {
+        id: "",
+        deviceNonce: "",
+        ip: "",
+        userAgent: "",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        userId: ""
+      };
+    }
+
     const userAgent = navigator.userAgent;
     const deviceNonce = await getDeviceNonce();
     // NOTE: We use ipv4 address here as in Vercel backend we get ipv4 address from the request headers.
@@ -455,7 +470,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
           generatedTempWalletAddress: null,
           importedTempWalletAddress: null,
           lastRegisteredWallet: isNewWallet ? wallet : null,
-          recoverableAccounts: null
+          recoverableAccounts: null,
+          accountToRecover: null
         } satisfies EmbeddedContextState;
       });
 
@@ -733,10 +749,21 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     return recoverableAccounts;
   }, [session]);
 
+  const setAccountToRecover = useCallback(
+    (accountToRecover: RecoverableAccount) => {
+      setEmbeddedContextState((prevAuthContextState) => ({
+        ...prevAuthContextState,
+        accountToRecover
+      }));
+    },
+    []
+  );
+
   const clearRecoverableAccounts = useCallback(() => {
     setEmbeddedContextState((prevAuthContextState) => ({
       ...prevAuthContextState,
-      recoverableAccounts: null
+      recoverableAccounts: null,
+      accountToRecover: null
     }));
   }, []);
 
@@ -1360,6 +1387,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         authenticate,
         fetchRecoverableAccounts,
         clearRecoverableAccounts,
+        setAccountToRecover,
         recoverAccount,
         recoverWallet,
 

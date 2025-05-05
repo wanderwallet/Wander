@@ -78,7 +78,8 @@ export function useEmbeddedOverride(
           EmbeddedPaths.AuthRecoverAccountSeedphrase,
           EmbeddedPaths.AuthRecoverAccountKeyfile,
           EmbeddedPaths.AuthRecoverAccountAuthentication,
-          EmbeddedPaths.AuthRecoverAccountMoreAuthentication
+          EmbeddedPaths.AuthRecoverAccountMoreAuthentication,
+          EmbeddedPaths.AuthRecoverAccountSelect
         ],
         EmbeddedPaths.Auth
       );

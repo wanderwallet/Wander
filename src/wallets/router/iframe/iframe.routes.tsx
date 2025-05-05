@@ -28,6 +28,7 @@ import { AuthRecoverAccountSeedphraseEmbeddedView } from "~routes/embedded/auth/
 import { AuthRecoverAccountKeyfileEmbeddedView } from "~routes/embedded/auth/recover-account/keyfile/auth-recover-account-keyfile.view";
 import { AuthRecoverAccountAuthenticationEmbeddedView } from "~routes/embedded/auth/recover-account/authentication/auth-recover-account-authentication.view";
 import { AuthRecoverAccountMoreAuthenticationEmbeddedView } from "~routes/embedded/auth/recover-account/more-authentication/auth-recover-account-more-authentication.view";
+import { AuthRecoverAccountSelectEmbeddedView } from "~routes/embedded/auth/recover-account/select-account/auth-recover-account-select.view";
 
 // Account Management Views:
 import { AccountEmbeddedView } from "~routes/embedded/account/account/account.view";
@@ -76,6 +77,7 @@ export type EmbeddedRoutePath =
   | "/auth/recover-account"
   | "/auth/recover-account/seedphrase"
   | "/auth/recover-account/keyfile"
+  | "/auth/recover-account/select"
   | "/auth/recover-account/authentication"
   | "/auth/recover-account/more-authentication"
   | "/account"
@@ -137,7 +139,7 @@ export const EmbeddedPaths = {
   AuthRecoverAccountAuthentication: "/auth/recover-account/authentication",
   AuthRecoverAccountMoreAuthentication:
     "/auth/recover-account/more-authentication",
-
+  AuthRecoverAccountSelect: "/auth/recover-account/select",
   // Account Management:
   Account: "/account",
   AccountConfirmation: "/account/confirmation",
@@ -253,6 +255,10 @@ const IFRAME_OWN_ROUTES = [
   {
     path: EmbeddedPaths.AuthRecoverAccountMoreAuthentication,
     component: AuthRecoverAccountMoreAuthenticationEmbeddedView
+  },
+  {
+    path: EmbeddedPaths.AuthRecoverAccountSelect,
+    component: AuthRecoverAccountSelectEmbeddedView
   },
 
   // Account Management:
