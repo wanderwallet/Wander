@@ -140,6 +140,7 @@
     "https-browserify": "^1.0.0",
     "husky": "^9.1.7",
     "jsdom": "^26.0.0",
+    "lint-staged": ">=10",
     "path-browserify": "^1.0.1",
     "plasmo": "0.90.3",
     "prettier": "^3.5.3",
@@ -162,5 +163,8 @@
     "human-crypto-keys/node-forge": "^1.3.1",
     "human-crypto-keys/crypto-key-composer/node-forge": "^1.3.1",
     "axios": "^1.7.2"
+  },
+  "lint-staged": {
+    "*.{js,ts,html,css,md,json}": "prettier --write"
   }
 }
