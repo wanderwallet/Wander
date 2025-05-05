@@ -24,7 +24,8 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "clean": "rm -rf sdk-dist",
+    "clean": "rm -rf sdk-dist wallet-api-dist",
+    "nuke": "pnpm clean && rm -rf pnpm-lock.yaml node_modules",
     "prepare": "yarn build"
   },
   "devDependencies": {
