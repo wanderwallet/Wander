@@ -89,8 +89,9 @@ const Main = styled(motion.main)`
   position: relative;
   top: 0;
   width: 100%;
+  display: ${import.meta.env?.VITE_IS_EMBEDDED_APP === "1" ? "flex" : "block"};
   min-height: ${import.meta.env?.VITE_IS_EMBEDDED_APP === "1"
-    ? "none"
+    ? "400px"
     : "100vh"};
   max-height: ${import.meta.env?.VITE_IS_EMBEDDED_APP === "1"
     ? "none"
@@ -114,6 +115,7 @@ const DivLine = styled(motion.div)`
     transform: translate(0, -100%);
     padding: 4px 8px;
     background: red;
+    color: white;
     font: bold 11px monospace;
     border-radius: 4px 4px 0 0;
   }

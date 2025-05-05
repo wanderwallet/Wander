@@ -131,7 +131,6 @@ Available selectors:
 - `.label` - Targets the button text label
 - `.balance` - Targets the balance display
 - `.indicator` - Targets the connection status indicator
-- `.dappLogo` - Targets the dApp logo image
 - `.notifications` - Targets the notifications badge
 
 Example usage:
@@ -179,12 +178,6 @@ const wander = new WanderEmbedded({
         height: 6px;
       }
 
-      /* Target the dApp logo */
-      .dappLogo {
-        width: 18px;
-        height: 18px;
-      }
-
       /* Target the notifications badge */
       .notifications {
         font-size: 10px;
@@ -195,11 +188,20 @@ const wander = new WanderEmbedded({
 });
 ```
 
-The button element has several CSS classes that are added based on its state:
+The button element has a `data-variant` HTML attribute you can use for styling:
 
-- `.isAuthenticated` - Added when the user is authenticated
+- `[data-variant="loading|onboarding|authenticated|not-authenticated"]`
+
+As well as some CSS classes that are added based on its state:
+
 - `.isConnected` - Added when the wallet is connected
 - `.isOpen` - Added when the wallet interface is open
+
+Additionally, the button's `.label` and `.balance` elements also have some modifiers:
+
+- `.label.isLoading`
+- `.balance.isLoading`
+- `.balance.isHidden`
 
 You can use these classes in your `customStyles` to style different states:
 

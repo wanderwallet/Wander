@@ -7,7 +7,6 @@ const SvgChevronLeft = (props: SVGProps<SVGSVGElement>) => (
     height="0.9em"
     fill="none"
     viewBox="0 0 24 24"
-    color="currentColor"
     {...props}
   >
     <path

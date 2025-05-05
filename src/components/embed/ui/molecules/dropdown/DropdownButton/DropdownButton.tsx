@@ -1,6 +1,6 @@
 import React, { forwardRef } from "react";
 
-import { ArrowDownIcon, ArrowUpIcon } from "../../../atoms";
+import { ArrowDownIcon } from "../../../atoms";
 import "./DropdownButton.css";
 
 interface DropdownButtonProps {
@@ -22,12 +22,18 @@ const DropdownButton = forwardRef<HTMLDivElement, DropdownButtonProps>(
         {children}
         <span
           className="toggle-icon"
+          style={{ color: "var(--color-font-body)" }}
           onClick={(e) => {
             e.stopPropagation();
             toggle();
           }}
         >
-          {open ? <ArrowUpIcon /> : <ArrowDownIcon />}
+          <ArrowDownIcon
+            style={{
+              transition: "transform linear 150ms",
+              transform: open ? "rotate(-180deg)" : "rotate(0)"
+            }}
+          />
         </span>
       </div>
     );

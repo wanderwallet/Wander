@@ -4,7 +4,6 @@ import type { CardBaseProps } from "./Card.types";
 import { Box, MinimizeIcon, ChevronLeft } from "../../atoms";
 import { Header } from "../header";
 import { Footer } from "../footer";
-import { useTheme } from "../../../contexts/ThemeContext";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 import { useLocation } from "~wallets/router/router.utils";
 
@@ -30,14 +29,8 @@ const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
     },
     ref
   ) => {
-    const { isDarkMode } = useTheme();
     const [isMinimized, setIsMinimized] = React.useState(false);
     const { back } = useLocation();
-
-    const iconColor = isDarkMode ? "var(--color-font-body)" : "#757575";
-    const cardBackground = isDarkMode
-      ? "var(--brand-color-neutral1)"
-      : "transparent";
 
     const closeCard = () => {
       postEmbeddedMessage({
@@ -52,7 +45,12 @@ const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
         className={styles["card__close__btn"]}
         onClick={onCloseButtonClick ?? closeCard}
       >
-        {customIcon ?? <MinimizeIcon fontSize={24} color={iconColor} />}
+        {customIcon ?? (
+          <MinimizeIcon
+            fontSize={24}
+            style={{ color: "var(--color-font-body)" }}
+          />
+        )}
       </button>
     );
 
@@ -62,14 +60,11 @@ const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
         className={`
         ${styles["card"]}
         ${hasShadow && styles["card__shadow"]}
-        ${isBlurry && styles["card__blury"]}
+        ${isBlurry && styles["card__blurry"]}
         ${size && styles[`card__${size}`]}
         ${isMinimized && styles[`card_minimized__active`]}
         ${className}
       `}
-        style={{
-          backgroundColor: cardBackground
-        }}
         {...props}
       >
         {!isMinimized ? (
@@ -79,7 +74,10 @@ const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
                 className={styles["card__back__btn"]}
                 onClick={onBackButtonClick ?? back}
               >
-                <ChevronLeft fontSize={24} color={iconColor} />
+                <ChevronLeft
+                  fontSize={24}
+                  style={{ color: "var(--color-font-body)" }}
+                />
               </button>
             )}
             {hasCloseButton && closeIcon}
@@ -91,6 +89,7 @@ const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
               />
             )}
             {children}
+            <div style={{ marginTop: "auto" }}></div>
             {footerElement && <Footer children={footerElement} />}
           </>
         ) : (

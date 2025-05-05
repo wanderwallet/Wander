@@ -387,7 +387,8 @@ export class StorageManager {
 
 export class EnhancedStorage implements Storage {
   protected storage: Storage;
-  protected storageType: StorageType;
+
+  public storageType: StorageType;
 
   constructor({ area = "local" }: UnpartitionedStorageOptions = {}) {
     this.storageType = area === "local" ? "localStorage" : "sessionStorage";
