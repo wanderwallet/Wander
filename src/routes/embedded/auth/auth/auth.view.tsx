@@ -162,6 +162,7 @@ export function AuthEmbeddedView() {
               variant="outlined"
               size="md"
               isLoading={selectedAuthProviderType === "NATIVE_WALLET"}
+              isDisabled={areButtonsDisabled}
               onClick={handleNativeWallet}
             >
               <Wander2Icon fontSize={24} />
