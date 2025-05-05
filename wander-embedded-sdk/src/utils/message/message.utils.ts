@@ -1,13 +1,50 @@
+import { EMBEDDED_AUTH_STATUS, EMBEDDED_AUTH_TYPE } from "./message.constants";
 import {
+  EventMessage,
+  EventMessageData,
   IncomingAuthMessageData,
   IncomingBalanceMessageData,
   IncomingMessage,
   IncomingMessageId,
   IncomingRequestMessageData,
-  IncomingResizeMessage,
   IncomingResizeMessageData,
-  OutgoingMessage
+  OutgoingMessage,
+  WalletSwitchMessage
 } from "./message.types";
+
+export function isEventMessage(message: unknown): message is EventMessage {
+  if (
+    !message ||
+    typeof message !== "object" ||
+    !("id" in message && "type" in message && "data" in message) ||
+    message.type !== "event"
+  ) {
+    return false;
+  }
+
+  const data = message.data as EventMessageData;
+
+  // TODO: Validate the different value types/formats:
+  return typeof data.name === "string";
+}
+
+export function isWalletSwitchMessage(
+  message: unknown
+): message is WalletSwitchMessage {
+  if (
+    !message ||
+    typeof message !== "object" ||
+    !("id" in message && "type" in message && "data" in message) ||
+    message.type !== "switch_wallet_event"
+  ) {
+    return false;
+  }
+
+  const data = message.data as string | null;
+
+  // TODO: Validate address format:
+  return data === null || typeof data === "string";
+}
 
 // Type guard for incoming messages
 export function isIncomingMessage(
@@ -25,11 +62,24 @@ export function isIncomingMessage(
     case "embedded_auth": {
       const data = message.data as IncomingAuthMessageData;
 
-      return !!(data && typeof data === "object" && "userDetails" in data);
+      if (!data || typeof data !== "object") return false;
+
+      if (data.authType === "NATIVE_WALLET") {
+        return data.authStatus === null && data.userDetails === null;
+      }
+
+      if (data.authStatus === "not-authenticated") {
+        return data.authType === null && data.userDetails === null;
+      }
+
+      return (
+        EMBEDDED_AUTH_STATUS.includes(data.authStatus) &&
+        EMBEDDED_AUTH_TYPE.includes(data.authType) &&
+        (data.userDetails === null ||
+          (!!data.userDetails && typeof data.userDetails === "object"))
+      );
     }
 
-    case "embedded_connect":
-    case "embedded_disconnect":
     case "embedded_open":
     case "embedded_close":
       return true;
@@ -74,6 +124,7 @@ export function isIncomingMessage(
 }
 
 // Type guard for outgoing messages
+// TODO: Is this needed?
 export function isOutgoingMessage(message: any): message is OutgoingMessage {
   if (!message || typeof message !== "object" || !message.type) return false;
 

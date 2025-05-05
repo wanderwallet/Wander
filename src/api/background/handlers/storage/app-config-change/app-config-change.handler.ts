@@ -67,7 +67,6 @@ export async function handleAppConfigChange(
         }
       });
     }
-
     // check if gateway event emiting is needed
     const { result: hasGwPermission } = await app.hasPermissions([
       "ACCESS_ARWEAVE_CONFIG"
@@ -100,6 +99,7 @@ export async function handleAppConfigChange(
     const eventsForTab = events
       .filter(({ appURL }) => getAppURL(tab.url) === appURL)
       .map((e) => e.event);
+
     // send the events
     for (const event of eventsForTab) {
       // trigger emiter

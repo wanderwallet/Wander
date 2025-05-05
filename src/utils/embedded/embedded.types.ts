@@ -21,6 +21,12 @@ export type AuthStatus =
   | "locked"
   | "unlocked";
 
+export type EmbeddedSdkAuthStatus =
+  | "loading"
+  | "onboarding"
+  | "authenticated"
+  | "not-authenticated";
+
 export type WalletActivationStatus =
   // The wallet is DISABLED, READONLY or LOST.
   | "disabled"

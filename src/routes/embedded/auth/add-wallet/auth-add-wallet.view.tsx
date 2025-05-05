@@ -35,8 +35,6 @@ export function AuthAddWalletEmbeddedView() {
     setIsLoading(false);
   }, []);
 
-  if (!authProviderType) alert(`authProviderType = ${authProviderType}`);
-
   return (
     <Card
       headerText="Add a wallet"

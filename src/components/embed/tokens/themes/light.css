@@ -4,6 +4,13 @@
 :root,
 [data-theme="light"],
 .light {
+  --color-overlay-rgb: 0, 0, 0;
+  --shadow-small: 0 0 8px rgba(var(--color-overlay-rgb), 0.25);
+  --shadow-blurred: 0 0 32px rgba(var(--color-overlay-rgb), 0.25);
+
+  --color-font-heading: var(--brand-color-gray-950);
+  --color-font-body: var(--brand-color-neutral3);
+
   --color-background-default: var(--brand-color-neutral6);
   --color-background-button-primary: var(--brand-color-primary3);
   --color-background-button-secondary: var(--brand-color-neutral7);
@@ -26,9 +33,6 @@
   --color-link-disabled: var(--brand-color-gray-300);
   --color-loading-primary: var(--brand-color-neutral6);
   --color-loading-secondary: var(--brand-color-neutral5);
-
-  --color-font-heading: var(--brand-color-gray-950);
-  --color-font-body: var(--brand-color-neutral3);
 
   --color-card-background-default: var(--brand-color-neutral6);
   --color-card-shadow-default: var(--brand-color-gray-200);

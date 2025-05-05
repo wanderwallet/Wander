@@ -41,26 +41,35 @@ if (!EMBEDDED_ENV_VARS)
 
 // Duplicated in `wander-embedded-sdk/src/utils/url/url.utils.ts`:
 const PARAM_CLIENT_ID = "client-id";
-const PARAM_SERVER_BASE_URL = "server-base-url";
+const PARAM_THEME = "theme";
 const PARAM_ANCESTOR_ORIGIN = "ancestor-origin";
+const PARAM_HIDE_BE = "hide-be";
+const PARAM_SERVER_BASE_URL = "server-base-url";
 
 export const EMBEDDED_CLIENT_ID =
   searchParams.get(PARAM_CLIENT_ID) ||
   EMBEDDED_ENV_VARS.DEFAULT_EMBEDDED_CLIENT_ID;
 
-export const EMBEDDED_SERVER_BASE_URL =
-  searchParams.get(PARAM_SERVER_BASE_URL) ||
-  EMBEDDED_ENV_VARS.DEFAULT_EMBEDDED_SERVER_BASE_URL;
+export const EMBEDDED_THEME = searchParams.get(PARAM_THEME) || "system";
 
 export const EMBEDDED_ANCESTOR_ORIGIN =
   ancestorOrigin || searchParams.get(PARAM_ANCESTOR_ORIGIN);
+
+export const EMBEDDED_HIDE_BE =
+  searchParams.get(PARAM_HIDE_BE) === "1" || false;
+
+export const EMBEDDED_SERVER_BASE_URL =
+  searchParams.get(PARAM_SERVER_BASE_URL) ||
+  EMBEDDED_ENV_VARS.DEFAULT_EMBEDDED_SERVER_BASE_URL;
 
 if (IS_EMBEDDED_APP) {
   console.log("Wander Embedded URL params =", {
     NODE_ENV,
     EMBEDDED_CLIENT_ID,
-    EMBEDDED_SERVER_BASE_URL,
-    EMBEDDED_ANCESTOR_ORIGIN
+    EMBEDDED_THEME,
+    EMBEDDED_ANCESTOR_ORIGIN,
+    EMBEDDED_HIDE_BE,
+    EMBEDDED_SERVER_BASE_URL
   });
 }
 

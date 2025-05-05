@@ -22,13 +22,12 @@ import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-mes
 // Note: This is run when trpc detects UNAUTHORIZED error.
 export async function signOut() {
   try {
-    postEmbeddedMessage({
-      type: "embedded_close",
-      data: null
-    });
+    // We send "embedded_close", instead of just closing the modal on "embedded_auth" (log out), because log out can be
+    // triggered by the user clicking the sign out button (which should close the modal) or also automatically by
+    // Supabase Auth callback, which should not close it.
 
     postEmbeddedMessage({
-      type: "embedded_disconnect",
+      type: "embedded_close",
       data: null
     });
 
