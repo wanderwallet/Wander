@@ -142,7 +142,7 @@
     "jsdom": "^26.0.0",
     "path-browserify": "^1.0.1",
     "plasmo": "0.90.3",
-    "prettier": "^2.2.1",
+    "prettier": "^3.5.3",
     "querystring-es3": "^0.2.1",
     "semantic-release": "^23.0.0",
     "stream-browserify": "^3.0.0",
