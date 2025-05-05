@@ -8,7 +8,7 @@ import {
   Text,
   WanderFooter
 } from "~components/embed";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { getSupabaseClient } from "~utils/embedded/embedded.utils";
 import { useLocation } from "~wallets/router/router.utils";
 import { Flex } from "~components/common/Flex";
@@ -29,6 +29,8 @@ export function AuthEmailSigninEmbeddedView() {
     authStatus === "authLoading" ||
     !authEmail ||
     !passwordInput.state;
+
+  const authStatusRef = useRef(authStatus);
 
   const handleEmailSignin = useCallback(async () => {
     try {
@@ -51,7 +53,22 @@ export function AuthEmailSigninEmbeddedView() {
         return;
       }
 
-      navigate(EmbeddedPaths.Auth);
+      const interval = setInterval(() => {
+        if (authStatusRef.current === "unlocked") {
+          navigate(EmbeddedPaths.WalletHomeEmbeddedView);
+        }
+      }, 1000);
+
+      await new Promise((resolve) => {
+        const interval = setInterval(() => {
+          if (authStatusRef.current === "unlocked") {
+            clearInterval(interval);
+            resolve(true);
+          }
+        }, 1000);
+      });
+
+      return () => clearInterval(interval);
     } catch (error) {
       toast.error("Error signing up");
     } finally {
@@ -62,6 +79,10 @@ export function AuthEmailSigninEmbeddedView() {
   const handleTogglePasswordVisibility = useCallback(() => {
     setPasswordType(passwordType === "password" ? "text" : "password");
   }, [passwordType]);
+
+  useEffect(() => {
+    authStatusRef.current = authStatus;
+  }, [authStatus]);
 
   return (
     <Card

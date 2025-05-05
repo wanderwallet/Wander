@@ -15,6 +15,7 @@ import { useLocation } from "~wallets/router/router.utils";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 
 export function AccountBackupSharesReminderEmbeddedView() {
+  const { navigate } = useLocation();
   const { currentWallet, skipBackUp } = useEmbedded();
   const isMandatoryReminder =
     currentWallet.totalExports === 0 &&
