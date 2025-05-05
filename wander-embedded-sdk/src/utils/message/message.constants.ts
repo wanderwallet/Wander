@@ -6,12 +6,12 @@ export const EMBEDDED_AUTH_TYPE = [
   "GOOGLE",
   "FACEBOOK",
   "X",
-  "APPLE"
+  "APPLE",
 ] as const satisfies EmbeddedAuthProviderType[];
 
 export const EMBEDDED_AUTH_STATUS = [
   "loading",
   "onboarding",
   "authenticated",
-  "not-authenticated"
+  "not-authenticated",
 ] as const satisfies EmbeddedAuthStatus[];

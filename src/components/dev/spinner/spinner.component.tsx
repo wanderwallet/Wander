@@ -5,15 +5,9 @@ export interface DevSpinnerProps {
   size?: number;
 }
 
-export function DevSpinner({
-  position = "absolute",
-  size = 24
-}: DevSpinnerProps) {
+export function DevSpinner({ position = "absolute", size = 24 }: DevSpinnerProps) {
   return (
-    <span
-      className={`${styles.root} ${styles[position]}`}
-      style={{ ["--size"]: `${size}px` } as any}
-    >
+    <span className={`${styles.root} ${styles[position]}`} style={{ ["--size"]: `${size}px` } as any}>
       <span className={styles.icon}>💿</span>
     </span>
   );

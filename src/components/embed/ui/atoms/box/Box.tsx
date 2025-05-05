@@ -17,7 +17,7 @@ const Box = forwardRef<HTMLDivElement, BoxBaseProps>(
       onClick,
       ...props
     },
-    ref
+    ref,
   ) => {
     return (
       <div
@@ -28,17 +28,16 @@ const Box = forwardRef<HTMLDivElement, BoxBaseProps>(
           hasBorder && styles.box__border,
           isBlurry && styles.box__blurry,
           isAutoWidth && styles.box__width_auto,
-          className
+          className,
         )}
         style={style}
         ref={ref}
         onClick={onClick}
-        {...props}
-      >
+        {...props}>
         {children}
       </div>
     );
-  }
+  },
 );
 
 Box.displayName = "Box";

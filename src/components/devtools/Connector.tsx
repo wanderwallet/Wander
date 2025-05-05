@@ -24,7 +24,7 @@ export default function Connector({ appUrl }: Props) {
 
       setAppData({
         name: tab?.title?.slice(0, 14),
-        logo: tab?.favIconUrl
+        logo: tab?.favIconUrl,
       });
     })();
   }, []);
@@ -39,14 +39,14 @@ export default function Connector({ appUrl }: Props) {
       await addApp({
         ...appData,
         url: appUrl,
-        permissions: permsToConnect
+        permissions: permsToConnect,
       });
     } catch (e) {
       console.log("Failed to connect to app", e);
       setToast({
         type: "error",
         content: browser.i18n.getMessage("connectionFailure"),
-        duration: 2300
+        duration: 2300,
       });
     }
 
@@ -70,27 +70,19 @@ export default function Connector({ appUrl }: Props) {
                 return val;
               })
             }
-            checked={permsToConnect.includes(permissionName)}
-          >
+            checked={permsToConnect.includes(permissionName)}>
             <Flex direction="column">
               <Text size="md" weight="medium" noMargin>
                 {permissionName}
               </Text>
-              <PermissionDescription>
-                {browser.i18n.getMessage(permissionData[permissionName])}
-              </PermissionDescription>
+              <PermissionDescription>{browser.i18n.getMessage(permissionData[permissionName])}</PermissionDescription>
             </Flex>
           </ToggleSwitch>
           <Spacer y={0.8} />
         </div>
       ))}
       <Spacer y={1.15} />
-      <Button
-        fullWidth
-        disabled={permsToConnect.length === 0}
-        onClick={forceConnect}
-        loading={loading}
-      >
+      <Button fullWidth disabled={permsToConnect.length === 0} onClick={forceConnect} loading={loading}>
         {browser.i18n.getMessage("forceConnect")}
       </Button>
     </>

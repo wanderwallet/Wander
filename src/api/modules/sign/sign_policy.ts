@@ -9,7 +9,7 @@ export function checkIfUserNeedsToSign(
   signPolicy: SignPolicy,
   transaction?: Transaction | DataItem | RawDataItem,
   walletType: "local" | "hardware" = "local",
-  apiName?: AuthRequestData["type"]
+  apiName?: AuthRequestData["type"],
 ) {
   try {
     // Hardware wallets always need manual signing
@@ -48,15 +48,9 @@ export function checkIfUserNeedsToSign(
         }
 
         // Require auth if transaction spends AR (quantity > 0) or has network fees
-        const quantity =
-          "quantity" in transaction
-            ? new BigNumber(transaction.quantity)
-            : new BigNumber(0);
+        const quantity = "quantity" in transaction ? new BigNumber(transaction.quantity) : new BigNumber(0);
 
-        const reward =
-          "reward" in transaction
-            ? new BigNumber(transaction.reward)
-            : new BigNumber(0);
+        const reward = "reward" in transaction ? new BigNumber(transaction.reward) : new BigNumber(0);
 
         return !quantity.isZero() || !reward.isZero();
 

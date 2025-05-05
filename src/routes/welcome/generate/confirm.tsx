@@ -32,7 +32,7 @@ export function ConfirmWelcomeView({ params }: ConfirmWelcomeViewProps) {
       return setToast({
         type: "error",
         content: browser.i18n.getMessage("invalid_seed"),
-        duration: 2200
+        duration: 2200,
       });
     }
 
@@ -48,10 +48,8 @@ export function ConfirmWelcomeView({ params }: ConfirmWelcomeViewProps) {
   // pre filled words
   const [verifyWords, setVerifyWords] = useState<string[]>();
   const isConfirmed = useMemo(
-    () =>
-      verifyWords &&
-      verifyWords.join(" ").replaceAll(/\s+/g, " ").trim() === seedInputState,
-    [seedInputState, verifyWords]
+    () => verifyWords && verifyWords.join(" ").replaceAll(/\s+/g, " ").trim() === seedInputState,
+    [seedInputState, verifyWords],
   );
 
   useEffect(() => {
@@ -69,7 +67,7 @@ export function ConfirmWelcomeView({ params }: ConfirmWelcomeViewProps) {
       if (toPreFill.find((v) => v.i === index)) continue;
       toPreFill.push({
         i: index,
-        val: words[index]
+        val: words[index],
       });
     }
 
@@ -85,9 +83,7 @@ export function ConfirmWelcomeView({ params }: ConfirmWelcomeViewProps) {
   return (
     <Container>
       <Content>
-        <Paragraph>
-          {browser.i18n.getMessage("confirm_seed_paragraph")}
-        </Paragraph>
+        <Paragraph>{browser.i18n.getMessage("confirm_seed_paragraph")}</Paragraph>
         <SeedInput
           verifyMode
           onChange={(val) => {
@@ -101,9 +97,7 @@ export function ConfirmWelcomeView({ params }: ConfirmWelcomeViewProps) {
         />
       </Content>
       <Button fullWidth onClick={validateSeedphrase} disabled={!isConfirmed}>
-        {browser.i18n.getMessage(
-          isConfirmed ? "continue" : "complete_recover_phrase"
-        )}
+        {browser.i18n.getMessage(isConfirmed ? "continue" : "complete_recover_phrase")}
       </Button>
     </Container>
   );

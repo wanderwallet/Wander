@@ -6,9 +6,7 @@
 export function createCoinWithAnimation(elementSrc: string) {
   const arCoin = document.createElement("img"),
     pos = { x: 0, y: 0 },
-    id = `ar-coin-animation-${
-      document.querySelectorAll(".ar-coing-animation").length
-    }`;
+    id = `ar-coin-animation-${document.querySelectorAll(".ar-coing-animation").length}`;
   let visibility = 100;
 
   arCoin.setAttribute("src", elementSrc);

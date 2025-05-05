@@ -65,9 +65,8 @@ export function SettingDashboardView({ setting }: SettingDashboardViewProps) {
             style={{
               display: "flex",
               justifyContent: "space-between",
-              alignItems: "center"
-            }}
-          >
+              alignItems: "center",
+            }}>
             <Text size="md" weight="medium" noMargin>
               {browser.i18n.getMessage(!!settingState ? "enabled" : "disabled")}
             </Text>
@@ -92,7 +91,7 @@ export function SettingDashboardView({ setting }: SettingDashboardViewProps) {
           labelStyle={{
             fontSize: 16,
             fontWeight: 500,
-            color: theme.primaryText
+            color: theme.primaryText,
           }}
           type={setting.type === "string" ? "text" : "number"}
           value={settingState}
@@ -111,10 +110,7 @@ export function SettingDashboardView({ setting }: SettingDashboardViewProps) {
       );
 
     case "pick":
-      const showSearchInput =
-        setting.name !== "gateways" &&
-        setting?.options &&
-        setting.options.length > 6;
+      const showSearchInput = setting.name !== "gateways" && setting?.options && setting.options.length > 6;
 
       return (
         <>
@@ -123,9 +119,7 @@ export function SettingDashboardView({ setting }: SettingDashboardViewProps) {
             <>
               <SearchWrapper>
                 <SearchInput
-                  placeholder={browser.i18n.getMessage(
-                    setting?.inputPlaceholder || "search_pick_option"
-                  )}
+                  placeholder={browser.i18n.getMessage(setting?.inputPlaceholder || "search_pick_option")}
                   {...searchInput.bindings}
                 />
               </SearchWrapper>
@@ -164,11 +158,7 @@ export function SettingDashboardView({ setting }: SettingDashboardViewProps) {
       );
 
     default:
-      throw new Error(
-        setting.type
-          ? ErrorTypes.MissingSettingsType
-          : ErrorTypes.UnexpectedSettingsType
-      );
+      throw new Error(setting.type ? ErrorTypes.MissingSettingsType : ErrorTypes.UnexpectedSettingsType);
   }
 }
 
@@ -180,7 +170,7 @@ export const RadioWrapper = styled.div<{ hidePadding?: boolean }>`
 `;
 
 export const Radio = styled(Squircle).attrs((props) => ({
-  outline: `rgba(${props.theme.theme}, .7)`
+  outline: `rgba(${props.theme.theme}, .7)`,
 }))`
   position: relative;
   color: rgb(${(props) => props.theme.background});

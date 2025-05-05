@@ -11,12 +11,7 @@ interface DropdownProps {
   backupReminder?: React.ReactNode;
   content: React.ReactNode;
 }
-const Dropdown = ({
-  buttonAvatar,
-  buttonText,
-  backupReminder,
-  content
-}: DropdownProps) => {
+const Dropdown = ({ buttonAvatar, buttonText, backupReminder, content }: DropdownProps) => {
   const [open, setOpen] = useState(false);
   const [dropdownTop, setDropdownTop] = useState(0);
 
@@ -26,14 +21,10 @@ const Dropdown = ({
 
   const toggleDropdown = () => {
     if (!open && buttonRef.current && contentRef.current) {
-      const spaceRemaining =
-        window.innerHeight - buttonRef.current.getBoundingClientRect().bottom;
+      const spaceRemaining = window.innerHeight - buttonRef.current.getBoundingClientRect().bottom;
       const contentHeight = contentRef.current.clientHeight;
 
-      const topPosition =
-        spaceRemaining > contentHeight
-          ? null
-          : -(contentHeight - spaceRemaining);
+      const topPosition = spaceRemaining > contentHeight ? null : -(contentHeight - spaceRemaining);
       setDropdownTop(topPosition);
     }
 
@@ -42,10 +33,7 @@ const Dropdown = ({
 
   useEffect(() => {
     const handler = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setOpen(false);
       }
     };

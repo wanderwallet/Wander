@@ -7,11 +7,7 @@ interface SelectorContainerProps {
   children: React.ReactNode;
 }
 
-export const SelectorContainer = ({
-  title,
-  onClose,
-  children
-}: SelectorContainerProps) => (
+export const SelectorContainer = ({ title, onClose, children }: SelectorContainerProps) => (
   <div
     style={{
       position: "fixed",
@@ -20,9 +16,8 @@ export const SelectorContainer = ({
       right: 0,
       bottom: 0,
       zIndex: 1000,
-      backgroundColor: "var(--color-card-background-default)"
-    }}
-  >
+      backgroundColor: "var(--color-card-background-default)",
+    }}>
     <Card
       size="auto"
       headerText={title}
@@ -33,9 +28,8 @@ export const SelectorContainer = ({
         width: "100%",
         padding: "32px",
         display: "flex",
-        flexDirection: "column"
-      }}
-    >
+        flexDirection: "column",
+      }}>
       {children}
     </Card>
   </div>

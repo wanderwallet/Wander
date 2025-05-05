@@ -8,15 +8,14 @@ import Message from "~components/embed/auth/Message";
 
 export function EmbeddedDecryptAuthRequestView() {
   const { navigate } = useLocation();
-  const { authRequest, rejectRequest, acceptRequest } =
-    useCurrentAuthRequest("decrypt");
+  const { authRequest, rejectRequest, acceptRequest } = useCurrentAuthRequest("decrypt");
 
   const { url, authID, message } = authRequest;
 
   const handleDecrypt = () => {
     postEmbeddedMessage({
       type: "embedded_close",
-      data: null
+      data: null,
     });
     navigate("/wallet");
     acceptRequest();
@@ -25,7 +24,7 @@ export function EmbeddedDecryptAuthRequestView() {
   const handleCancel = () => {
     postEmbeddedMessage({
       type: "embedded_close",
-      data: null
+      data: null,
     });
     navigate("/wallet");
     rejectRequest();
@@ -51,13 +50,12 @@ export function EmbeddedDecryptAuthRequestView() {
         style={{
           paddingTop: "24px",
           paddingInline: "16px",
-          paddingBottom: "24px"
+          paddingBottom: "24px",
         }}
         hasCloseButton={true}
         hasBackButton={false}
         customIcon={<XClose fontSize={24} color={"#666666"} />}
-        onCloseButtonClick={handleCancel}
-      >
+        onCloseButtonClick={handleCancel}>
         <Box>
           <Text variant="bodyMd" style={{ color: "#666666" }}>
             {browser.i18n.getMessage("decrypt_description", url)}

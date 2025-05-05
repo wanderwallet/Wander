@@ -13,11 +13,7 @@ import { type Gateway } from "./gateway";
  * @returns Query result
  */
 
-export async function gql(
-  query: string,
-  variables?: Record<string, unknown>,
-  gateway?: Gateway
-) {
+export async function gql(query: string, variables?: Record<string, unknown>, gateway?: Gateway) {
   if (!gateway) {
     gateway = await findGateway({ graphql: true });
   }
@@ -25,7 +21,7 @@ export async function gql(
   const gatewayUrl = concatGatewayURL(gateway);
   const graphql = JSON.stringify({
     query,
-    variables
+    variables,
   });
 
   // execute the query
@@ -35,8 +31,8 @@ export async function gql(
       body: graphql,
       headers: {
         accept: "application/json",
-        "content-type": "application/json"
-      }
+        "content-type": "application/json",
+      },
     })
   ).json();
 

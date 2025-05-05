@@ -12,17 +12,14 @@ export default function AnimatedQRScanner({ className, ...props }: Props) {
   // camera allowed
   const [cameraAllowed, setCameraAllowed] = useState(true);
 
-  const isWebWorkerAvailable = useMemo(
-    () => typeof Worker !== "undefined",
-    [Worker]
-  );
+  const isWebWorkerAvailable = useMemo(() => typeof Worker !== "undefined", [Worker]);
 
   useEffect(() => {
     (async () => {
       // get if camera permission is granted
       const cameraPerms = await navigator.permissions.query({
         // @ts-expect-error
-        name: "camera"
+        name: "camera",
       });
       const listener = () => {
         setCameraAllowed(cameraPerms.state === "granted");
@@ -34,7 +31,7 @@ export default function AnimatedQRScanner({ className, ...props }: Props) {
         setToast({
           type: "info",
           duration: 4500,
-          content: browser.i18n.getMessage("keystone_allowed_camera")
+          content: browser.i18n.getMessage("keystone_allowed_camera"),
         });
       };
 
@@ -54,17 +51,13 @@ export default function AnimatedQRScanner({ className, ...props }: Props) {
           <>
             <LoadingCamera />
             <Spacer y={0.85} />
-            <ModalText>
-              {browser.i18n.getMessage("keystone_loading_camera")}
-            </ModalText>
+            <ModalText>{browser.i18n.getMessage("keystone_loading_camera")}</ModalText>
           </>
         )) || (
           <>
             <DeniedCamera />
             <Spacer y={0.85} />
-            <ModalText>
-              {browser.i18n.getMessage("keystone_disabled_camera")}
-            </ModalText>
+            <ModalText>{browser.i18n.getMessage("keystone_disabled_camera")}</ModalText>
           </>
         )}
       </LoadingSection>
@@ -94,7 +87,7 @@ const LoadingSection = styled.div`
 `;
 
 const ModalText = styled(Text).attrs({
-  noMargin: true
+  noMargin: true,
 })`
   text-align: center;
 `;

@@ -5,45 +5,22 @@ import type { TextInputBaseProps } from "./TextInput.types";
 
 const TextInput = forwardRef<HTMLInputElement, TextInputBaseProps>(
   (
-    {
-      placeholder,
-      hasButton = false,
-      buttonLabel,
-      isDisabled,
-      isSecure,
-      buttonOnClick,
-      className,
-      style,
-      ...props
-    },
-    ref
+    { placeholder, hasButton = false, buttonLabel, isDisabled, isSecure, buttonOnClick, className, style, ...props },
+    ref,
   ) => {
     const Component = "div";
     const type = isSecure ? "password" : "text";
     return (
       <Component className={clsx(styles["wrapper"], className)} {...props}>
-        <input
-          ref={ref}
-          type={type}
-          placeholder={placeholder}
-          className={styles["input"]}
-          disabled={isDisabled}
-        />
+        <input ref={ref} type={type} placeholder={placeholder} className={styles["input"]} disabled={isDisabled} />
         {hasButton && buttonLabel && (
-          <button
-            className={clsx(
-              styles["button"],
-              styles["button__text"],
-              className
-            )}
-            onClick={buttonOnClick}
-          >
+          <button className={clsx(styles["button"], styles["button__text"], className)} onClick={buttonOnClick}>
             {buttonLabel}
           </button>
         )}
       </Component>
     );
-  }
+  },
 );
 
 TextInput.displayName = "TextInput";

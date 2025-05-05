@@ -14,29 +14,18 @@ const TabBar = React.forwardRef<HTMLDivElement, TabBarBaseProps>(
         className={`
         ${styles["tabs"]}
         ${className}`}
-        {...props}
-      >
-        <div
-          className={`${styles["active"]}`}
-          style={{ left: activeTab === 1 ? `${47}%` : 0 }}
-        ></div>
+        {...props}>
+        <div className={`${styles["active"]}`} style={{ left: activeTab === 1 ? `${47}%` : 0 }}></div>
         {tabs.map((tab, index) => (
-          <button
-            key={index}
-            data-tab={tab.label}
-            onClick={() => setActiveTab(index)}
-          >
-            <Text
-              variant="bodySm"
-              style={{ color: "#121212", fontWeight: "bold" }}
-            >
+          <button key={index} data-tab={tab.label} onClick={() => setActiveTab(index)}>
+            <Text variant="bodySm" style={{ color: "#121212", fontWeight: "bold" }}>
               {tab.label}
             </Text>
           </button>
         ))}
       </Component>
     );
-  }
+  },
 );
 
 TabBar.displayName = "TabBar";

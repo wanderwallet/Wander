@@ -29,11 +29,7 @@ export type TokenType = "asset" | "collectible";
  * @param defaultLogo Default logo tx ID in the contract state
  * @param theme UI theme to match the logo with
  */
-export async function loadTokenLogo(
-  id: string,
-  defaultLogo?: string,
-  theme?: DisplayTheme
-) {
+export async function loadTokenLogo(id: string, defaultLogo?: string, theme?: DisplayTheme) {
   // find gateway with wayfinder
   const gateway = await findGateway({ startBlock: 0 });
 
@@ -60,9 +56,7 @@ export async function loadTokenLogo(
 }
 
 export async function loadTokens() {
-  const aoTokens: TokenInfo[] | undefined = await PersistentStorage.get(
-    "ao_tokens"
-  );
+  const aoTokens: TokenInfo[] | undefined = await PersistentStorage.get("ao_tokens");
 
   // TODO: should this only be if it's undefined?
   if (!aoTokens || aoTokens.length === 0) {

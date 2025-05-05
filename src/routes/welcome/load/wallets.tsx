@@ -1,31 +1,12 @@
 import { isValidMnemonic, jwkFromMnemonic } from "~wallets/generator";
 import { ExtensionStorage, OLD_STORAGE_NAME } from "~utils/storage";
-import {
-  addWallet,
-  getWalletKeyLength,
-  getWallets,
-  setActiveWallet
-} from "~wallets";
-import {
-  decodeAccount,
-  type KeystoneAccount
-} from "~wallets/hardware/keystone";
+import { addWallet, getWalletKeyLength, getWallets, setActiveWallet } from "~wallets";
+import { decodeAccount, type KeystoneAccount } from "~wallets/hardware/keystone";
 import type { JWKInterface } from "arweave/web/lib/wallet";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { useStorage } from "~utils/storage";
-import {
-  PasswordContext,
-  WalletContext,
-  type SetupWelcomeViewParams
-} from "../setup";
-import {
-  Button,
-  Modal,
-  Spacer,
-  Text,
-  useModal,
-  useToasts
-} from "@arconnect/components-rebrand";
+import { PasswordContext, WalletContext, type SetupWelcomeViewParams } from "../setup";
+import { Button, Modal, Spacer, Text, useModal, useToasts } from "@arconnect/components-rebrand";
 import Migrate from "~components/welcome/load/Migrate";
 import SeedInput from "~components/SeedInput";
 import Paragraph from "~components/Paragraph";
@@ -38,16 +19,10 @@ import { loadTokens } from "~tokens/token";
 import { defaultGateway } from "~gateways/gateway";
 import Arweave from "arweave";
 import { Webcam01 } from "@untitled-ui/icons-react";
-import QRLoopScanner, {
-  ScannerContainer,
-  VideoContainer
-} from "~components/welcome/load/QRLoopScanner";
+import QRLoopScanner, { ScannerContainer, VideoContainer } from "~components/welcome/load/QRLoopScanner";
 import { useScanner, AnimatedQRScanner } from "@arconnect/keystone-sdk";
 import { addHardwareWallet } from "~wallets/hardware";
-import {
-  Alert,
-  Icon as WarningIcon
-} from "~components/auth/CustomGatewayWarning";
+import { Alert, Icon as WarningIcon } from "~components/auth/CustomGatewayWarning";
 import { useActiveWallet } from "~wallets/hooks";
 
 export type WalletsWelcomeViewProps = CommonRouteProps<SetupWelcomeViewParams>;
@@ -71,7 +46,7 @@ export function WalletsWelcomeView({ params }: WalletsWelcomeViewProps) {
   // migration available
   const [oldState] = useStorage({
     key: OLD_STORAGE_NAME,
-    instance: ExtensionStorage
+    instance: ExtensionStorage,
   });
 
   // migration modal
@@ -148,8 +123,7 @@ export function WalletsWelcomeView({ params }: WalletsWelcomeViewProps) {
 
     // prevent user from closing the window
     // while Wander is loading the wallet
-    window.onbeforeunload = () =>
-      browser.i18n.getMessage("close_tab_load_wallet_message");
+    window.onbeforeunload = () => browser.i18n.getMessage("close_tab_load_wallet_message");
 
     const finishUp = () => {
       // reset before unload
@@ -169,7 +143,7 @@ export function WalletsWelcomeView({ params }: WalletsWelcomeViewProps) {
         setToast({
           type: "error",
           content: browser.i18n.getMessage("invalid_mnemonic"),
-          duration: 2000
+          duration: 2000,
         });
         finishUp();
       }
@@ -184,10 +158,7 @@ export function WalletsWelcomeView({ params }: WalletsWelcomeViewProps) {
         // load jwk from seedphrase input state
         const startTime = Date.now();
 
-        let jwk =
-          typeof walletToLoad === "string"
-            ? await jwkFromMnemonic(walletToLoad)
-            : walletToLoad;
+        let jwk = typeof walletToLoad === "string" ? await jwkFromMnemonic(walletToLoad) : walletToLoad;
 
         let { actualLength, expectedLength } = await getWalletKeyLength(jwk);
         if (expectedLength !== actualLength) {
@@ -199,9 +170,7 @@ export function WalletsWelcomeView({ params }: WalletsWelcomeViewProps) {
             while (expectedLength !== actualLength) {
               setShowLongWaitMessage(Date.now() - startTime > 30000);
               jwk = await jwkFromMnemonic(walletToLoad);
-              ({ actualLength, expectedLength } = await getWalletKeyLength(
-                jwk
-              ));
+              ({ actualLength, expectedLength } = await getWalletKeyLength(jwk));
             }
           }
         }
@@ -227,7 +196,7 @@ export function WalletsWelcomeView({ params }: WalletsWelcomeViewProps) {
       setToast({
         type: "error",
         content: browser.i18n.getMessage("error_adding_wallet"),
-        duration: 2000
+        duration: 2000,
       });
     }
 
@@ -254,10 +223,7 @@ export function WalletsWelcomeView({ params }: WalletsWelcomeViewProps) {
   }
 
   // migration available
-  const migrationAvailable = useMemo(
-    () => walletsToMigrate.length > 0,
-    [walletsToMigrate]
-  );
+  const migrationAvailable = useMemo(() => walletsToMigrate.length > 0, [walletsToMigrate]);
 
   // migration cancelled
   const [migrationCancelled, setMigrationCancelled] = useState(false);
@@ -267,14 +233,8 @@ export function WalletsWelcomeView({ params }: WalletsWelcomeViewProps) {
       <Container>
         {!wallet?.address ? (
           <Content>
-            <Paragraph>
-              {browser.i18n.getMessage("provide_seedphrase_paragraph")}
-            </Paragraph>
-            <SeedInput
-              onChange={setLoadedWallet}
-              onReady={done}
-              onMnemonicLengthChange={setMnemonicLength}
-            />
+            <Paragraph>{browser.i18n.getMessage("provide_seedphrase_paragraph")}</Paragraph>
+            <SeedInput onChange={setLoadedWallet} onReady={done} onMnemonicLengthChange={setMnemonicLength} />
             {migrationAvailable && (
               <Migrate
                 wallets={walletsToMigrate}
@@ -291,9 +251,8 @@ export function WalletsWelcomeView({ params }: WalletsWelcomeViewProps) {
             style={{
               justifyContent: "center",
               alignItems: "center",
-              textAlign: "center"
-            }}
-          >
+              textAlign: "center",
+            }}>
             <Text size="md" weight="medium" noMargin>
               {browser.i18n.getMessage("found_account_with_phrase")}
             </Text>
@@ -307,17 +266,10 @@ export function WalletsWelcomeView({ params }: WalletsWelcomeViewProps) {
         {!wallet?.address ? (
           <Actions>
             <Button fullWidth onClick={() => done()} loading={loading}>
-              {browser.i18n.getMessage(
-                isValidRecoveryPhrase ? "continue" : "complete_recover_phrase"
-              )}
+              {browser.i18n.getMessage(isValidRecoveryPhrase ? "continue" : "complete_recover_phrase")}
             </Button>
             {loading && showLongWaitMessage && (
-              <Text
-                variant="secondary"
-                size="sm"
-                noMargin
-                style={{ textAlign: "center" }}
-              >
+              <Text variant="secondary" size="sm" noMargin style={{ textAlign: "center" }}>
                 {browser.i18n.getMessage("longer_than_usual")}
               </Text>
             )}
@@ -350,10 +302,8 @@ export function WalletsWelcomeView({ params }: WalletsWelcomeViewProps) {
                     // confirmation toast
                     setToast({
                       type: "info",
-                      content: browser.i18n.getMessage(
-                        "migration_confirmation"
-                      ),
-                      duration: 2200
+                      content: browser.i18n.getMessage("migration_confirmation"),
+                      duration: 2200,
                     });
                     migrationModal.setOpen(false);
 
@@ -361,8 +311,7 @@ export function WalletsWelcomeView({ params }: WalletsWelcomeViewProps) {
                     // remove old storage
                     // await ExtensionStorage.remove(OLD_STORAGE_NAME);
                   } catch {}
-                }}
-              >
+                }}>
                 {browser.i18n.getMessage("migrate")}
               </Button>
               <Spacer y={0.75} />
@@ -372,19 +321,13 @@ export function WalletsWelcomeView({ params }: WalletsWelcomeViewProps) {
                 onClick={() => {
                   migrationModal.setOpen(false);
                   setMigrationCancelled(true);
-                }}
-              >
+                }}>
                 {browser.i18n.getMessage("cancel")}
               </Button>
             </>
-          }
-        >
-          <ModalText>
-            {browser.i18n.getMessage("migration_available")}
-          </ModalText>
-          <ModalText>
-            {browser.i18n.getMessage("migration_available_paragraph")}
-          </ModalText>
+          }>
+          <ModalText>{browser.i18n.getMessage("migration_available")}</ModalText>
+          <ModalText>{browser.i18n.getMessage("migration_available_paragraph")}</ModalText>
           <Spacer y={0.75} />
         </Modal>
         <WalletKeySizeErrorModal {...walletModal} back={() => navigate(`/`)} />
@@ -395,24 +338,16 @@ export function WalletsWelcomeView({ params }: WalletsWelcomeViewProps) {
       <Container>
         {!wallet?.address ? (
           <Content>
-            <Paragraph>
-              {browser.i18n.getMessage("upload_key_file_description")}
-            </Paragraph>
-            <SeedInput
-              inputType="keyfile"
-              onChange={setLoadedWallet}
-              onReady={done}
-              loading={loading}
-            />
+            <Paragraph>{browser.i18n.getMessage("upload_key_file_description")}</Paragraph>
+            <SeedInput inputType="keyfile" onChange={setLoadedWallet} onReady={done} loading={loading} />
           </Content>
         ) : (
           <Content
             style={{
               justifyContent: "center",
               alignItems: "center",
-              textAlign: "center"
-            }}
-          >
+              textAlign: "center",
+            }}>
             <Text size="md" weight="medium" noMargin>
               {browser.i18n.getMessage("found_account_with_phrase")}
             </Text>
@@ -429,12 +364,7 @@ export function WalletsWelcomeView({ params }: WalletsWelcomeViewProps) {
               {browser.i18n.getMessage("continue")}
             </Button>
             {loading && showLongWaitMessage && (
-              <Text
-                variant="secondary"
-                size="sm"
-                noMargin
-                style={{ textAlign: "center" }}
-              >
+              <Text variant="secondary" size="sm" noMargin style={{ textAlign: "center" }}>
                 {browser.i18n.getMessage("longer_than_usual")}
               </Text>
             )}
@@ -462,9 +392,8 @@ export function WalletsWelcomeView({ params }: WalletsWelcomeViewProps) {
                 display: "flex",
                 flexDirection: "column",
                 flex: 1,
-                gap: 24
-              }}
-            >
+                gap: 24,
+              }}>
               {scanMode ? (
                 <KeystoneScanner onSuccess={keystoneDone} />
               ) : (
@@ -472,23 +401,16 @@ export function WalletsWelcomeView({ params }: WalletsWelcomeViewProps) {
                   style={{
                     display: "flex",
                     flexDirection: "column",
-                    flex: 1
-                  }}
-                >
+                    flex: 1,
+                  }}>
                   <div
                     style={{
                       display: "flex",
                       flex: 1,
                       justifyContent: "center",
-                      alignItems: "center"
-                    }}
-                  >
-                    <Button
-                      fullWidth
-                      variant="secondary"
-                      style={{ gap: 8 }}
-                      onClick={() => setScanMode(true)}
-                    >
+                      alignItems: "center",
+                    }}>
+                    <Button fullWidth variant="secondary" style={{ gap: 8 }} onClick={() => setScanMode(true)}>
                       <Webcam01 height={24} width={24} />
                       <Text weight="bold" noMargin>
                         {browser.i18n.getMessage("open_webcam")}
@@ -509,9 +431,8 @@ export function WalletsWelcomeView({ params }: WalletsWelcomeViewProps) {
               height: "100%",
               display: "flex",
               flexDirection: "column",
-              justifyContent: "space-between"
-            }}
-          >
+              justifyContent: "space-between",
+            }}>
             <div />
             <div
               style={{
@@ -520,9 +441,8 @@ export function WalletsWelcomeView({ params }: WalletsWelcomeViewProps) {
                 textAlign: "center",
                 display: "flex",
                 flexDirection: "column",
-                gap: 24
-              }}
-            >
+                gap: 24,
+              }}>
               <Text size="md" weight="medium" noMargin>
                 {browser.i18n.getMessage("found_account_with_phrase")}
               </Text>
@@ -559,23 +479,15 @@ export function WalletsWelcomeView({ params }: WalletsWelcomeViewProps) {
     <Container>
       {!wallet?.address ? (
         <Content>
-          <Paragraph>
-            {browser.i18n.getMessage("scan_qr_code_description")}
-          </Paragraph>
+          <Paragraph>{browser.i18n.getMessage("scan_qr_code_description")}</Paragraph>
           <div
             style={{
               display: "flex",
               flexDirection: "column",
               flex: 1,
-              gap: 24
-            }}
-          >
-            <Text
-              size="sm"
-              weight="medium"
-              noMargin
-              style={{ lineHeight: "1.4", textAlign: "center" }}
-            >
+              gap: 24,
+            }}>
+            <Text size="sm" weight="medium" noMargin style={{ lineHeight: "1.4", textAlign: "center" }}>
               {browser.i18n.getMessage("scan_qr_code_instruction")}
             </Text>
             {scanMode ? (
@@ -596,15 +508,9 @@ export function WalletsWelcomeView({ params }: WalletsWelcomeViewProps) {
                   display: "flex",
                   flex: 1,
                   justifyContent: "center",
-                  alignItems: "center"
-                }}
-              >
-                <Button
-                  fullWidth
-                  variant="secondary"
-                  style={{ gap: 8 }}
-                  onClick={() => setScanMode(true)}
-                >
+                  alignItems: "center",
+                }}>
+                <Button fullWidth variant="secondary" style={{ gap: 8 }} onClick={() => setScanMode(true)}>
                   <Webcam01 height={24} width={24} />
                   <Text weight="bold" noMargin>
                     {browser.i18n.getMessage("open_webcam")}
@@ -619,9 +525,8 @@ export function WalletsWelcomeView({ params }: WalletsWelcomeViewProps) {
           style={{
             justifyContent: "center",
             alignItems: "center",
-            textAlign: "center"
-          }}
-        >
+            textAlign: "center",
+          }}>
           <Text size="md" weight="medium" noMargin>
             {browser.i18n.getMessage("found_account_with_phrase")}
           </Text>
@@ -635,12 +540,7 @@ export function WalletsWelcomeView({ params }: WalletsWelcomeViewProps) {
       {!wallet?.address ? (
         <Actions>
           {loading && showLongWaitMessage && (
-            <Text
-              variant="secondary"
-              size="sm"
-              noMargin
-              style={{ textAlign: "center" }}
-            >
+            <Text variant="secondary" size="sm" noMargin style={{ textAlign: "center" }}>
               {browser.i18n.getMessage("longer_than_usual")}
             </Text>
           )}
@@ -660,11 +560,7 @@ export function WalletsWelcomeView({ params }: WalletsWelcomeViewProps) {
   );
 }
 
-const KeystoneScanner = ({
-  onSuccess
-}: {
-  onSuccess: (account: KeystoneAccount) => Promise<void>;
-}) => {
+const KeystoneScanner = ({ onSuccess }: { onSuccess: (account: KeystoneAccount) => Promise<void> }) => {
   // toasts
   const { setToast } = useToasts();
 
@@ -698,26 +594,23 @@ const KeystoneScanner = ({
         {
           address: account.address,
           publicKey: account.owner,
-          xfp: account.xfp
+          xfp: account.xfp,
         },
-        "keystone"
+        "keystone",
       );
 
       setToast({
         type: "success",
         content: browser.i18n.getMessage("wallet_hardware_added", "Keystone"),
-        duration: 2300
+        duration: 2300,
       });
 
       if (onSuccess) await onSuccess(account);
     } catch {
       setToast({
         type: "error",
-        content: browser.i18n.getMessage(
-          "wallet_hardware_not_added",
-          "Keystone"
-        ),
-        duration: 2300
+        content: browser.i18n.getMessage("wallet_hardware_not_added", "Keystone"),
+        duration: 2300,
       });
     }
 
@@ -733,7 +626,7 @@ const KeystoneScanner = ({
             setToast({
               type: "error",
               duration: 2300,
-              content: browser.i18n.getMessage(`keystone_${error}`)
+              content: browser.i18n.getMessage(`keystone_${error}`),
             })
           }
         />

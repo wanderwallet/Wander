@@ -3,12 +3,7 @@ import QrReader from "react-qr-reader";
 import styled from "styled-components";
 import { Text, useToasts } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
-import {
-  parseFramesReducer,
-  areFramesComplete,
-  framesToData,
-  progressOfFrames
-} from "qrloop";
+import { parseFramesReducer, areFramesComplete, framesToData, progressOfFrames } from "qrloop";
 import { CameraOffIcon } from "@iconicicons/react";
 import { Loading, Spacer } from "@arconnect/components-rebrand";
 
@@ -18,11 +13,7 @@ interface QRScannerProps {
   onProgress?: (progress: number) => void;
 }
 
-export default function QRLoopScanner({
-  onResult,
-  onError,
-  onProgress
-}: QRScannerProps) {
+export default function QRLoopScanner({ onResult, onError, onProgress }: QRScannerProps) {
   const framesRef = useRef<Record<string, string> | null>(null);
   const [progress, setProgress] = useState<number>(0);
   const [cameraAllowed, setCameraAllowed] = useState(true);
@@ -34,7 +25,7 @@ export default function QRLoopScanner({
       // get if camera permission is granted
       const cameraPerms = await navigator.permissions.query({
         // @ts-expect-error
-        name: "camera"
+        name: "camera",
       });
 
       const listener = () => {
@@ -60,10 +51,7 @@ export default function QRLoopScanner({
     if (!data || progress === 1) return;
 
     try {
-      const frames = (framesRef.current = parseFramesReducer(
-        framesRef.current,
-        data
-      ));
+      const frames = (framesRef.current = parseFramesReducer(framesRef.current, data));
 
       if (areFramesComplete(frames)) {
         setProgress(1);
@@ -80,7 +68,7 @@ export default function QRLoopScanner({
       setToast({
         type: "error",
         content: browser.i18n.getMessage("invalid_qr_code"),
-        duration: 2000
+        duration: 2000,
       });
       onError?.(browser.i18n.getMessage("invalid_qr_code"));
     }
@@ -90,7 +78,7 @@ export default function QRLoopScanner({
     setToast({
       type: "error",
       content: browser.i18n.getMessage("scan_error"),
-      duration: 2000
+      duration: 2000,
     });
     onError?.(browser.i18n.getMessage("scan_error"));
   };
@@ -108,11 +96,7 @@ export default function QRLoopScanner({
               <>
                 <LoadingCamera />
                 <Spacer y={0.85} />
-                <Text
-                  size="sm"
-                  variant="secondary"
-                  style={{ textAlign: "center" }}
-                >
+                <Text size="sm" variant="secondary" style={{ textAlign: "center" }}>
                   {browser.i18n.getMessage("keystone_loading_camera")}
                 </Text>
               </>
@@ -120,11 +104,7 @@ export default function QRLoopScanner({
               <>
                 <DeniedCamera />
                 <Spacer y={0.85} />
-                <Text
-                  size="sm"
-                  variant="secondary"
-                  style={{ textAlign: "center" }}
-                >
+                <Text size="sm" variant="secondary" style={{ textAlign: "center" }}>
                   {browser.i18n.getMessage("keystone_disabled_camera")}
                 </Text>
               </>

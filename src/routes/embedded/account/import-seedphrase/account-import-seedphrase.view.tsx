@@ -8,12 +8,7 @@ export function AccountImportSeedphraseEmbeddedView() {
   const { back } = useLocation();
 
   const [seedPhrase, setSeedPhrase] = useState<string[]>([]);
-  const {
-    importTempWallet,
-    importedTempWalletAddress,
-    deleteImportedTempWallet,
-    registerWallet
-  } = useEmbedded();
+  const { importTempWallet, importedTempWalletAddress, deleteImportedTempWallet, registerWallet } = useEmbedded();
 
   const handleInputChange = useCallback((index: number, value: string) => {
     setSeedPhrase((prevSeedPhrase) => {
@@ -56,20 +51,14 @@ export function AccountImportSeedphraseEmbeddedView() {
       footerElement={<WanderFooter />}
       hasBackButton={true}
       onBackButtonClick={back}
-      size="auto"
-    >
-      <SeedInput
-        handleSubmit={handleImportWallet}
-        seedPhrase={seedPhrase}
-        handleInputChange={handleInputChange}
-      />
+      size="auto">
+      <SeedInput handleSubmit={handleImportWallet} seedPhrase={seedPhrase} handleInputChange={handleInputChange} />
       <Button
         isFullWidth
         size="md"
         onClick={handleImportWallet}
         isLoading={loading}
-        isDisabled={isSeedPhraseIncomplete}
-      >
+        isDisabled={isSeedPhraseIncomplete}>
         Recover
       </Button>
     </Card>

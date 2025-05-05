@@ -35,7 +35,7 @@ export function PasswordWelcomeView({ params }: PasswordWelcomeViewProps) {
       return setToast({
         type: "error",
         content: browser.i18n.getMessage("passwords_not_match"),
-        duration: 2300
+        duration: 2300,
       });
     }
 
@@ -44,7 +44,7 @@ export function PasswordWelcomeView({ params }: PasswordWelcomeViewProps) {
       return setToast({
         type: "error",
         content: browser.i18n.getMessage("password_not_strong"),
-        duration: 2300
+        duration: 2300,
       });
     }
 
@@ -62,10 +62,8 @@ export function PasswordWelcomeView({ params }: PasswordWelcomeViewProps) {
 
   // passwords match
   const matches = useMemo(
-    () =>
-      passwordInput.state === validPasswordInput.state &&
-      passwordInput.state?.length >= 5,
-    [passwordInput, validPasswordInput]
+    () => passwordInput.state === validPasswordInput.state && passwordInput.state?.length >= 5,
+    [passwordInput, validPasswordInput],
   );
 
   // Segment
@@ -77,9 +75,7 @@ export function PasswordWelcomeView({ params }: PasswordWelcomeViewProps) {
   return (
     <Container>
       <Content>
-        <Paragraph>
-          {browser.i18n.getMessage("create_password_paragraph")}
-        </Paragraph>
+        <Paragraph>{browser.i18n.getMessage("create_password_paragraph")}</Paragraph>
         <div>
           <Input
             type="password"

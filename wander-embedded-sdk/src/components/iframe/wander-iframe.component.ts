@@ -7,12 +7,9 @@ import {
   RouteType,
   WanderEmbeddedIframeConfig,
   WanderEmbeddedIframeOptions,
-  WanderEmbeddedIframeCSSVars
+  WanderEmbeddedIframeCSSVars,
 } from "../../wander-embedded.types";
-import {
-  addCSSVariables,
-  mergeCSSVariablesOption
-} from "../../utils/styles/styles.utils";
+import { addCSSVariables, mergeCSSVariablesOption } from "../../utils/styles/styles.utils";
 import { getWanderIframeTemplateContent } from "./wander-iframe.template";
 
 export class WanderIframe {
@@ -43,12 +40,12 @@ export class WanderIframe {
     mobileBorderRadius: 0,
     mobileBorderWidth: 0,
     mobileBorderColor: "transparent",
-    mobileBoxShadow: "none"
+    mobileBoxShadow: "none",
   } as const;
 
   static DEFAULT_DARK_CSS_VARS: WanderEmbeddedIframeCSSVars = {
     ...WanderIframe.DEFAULT_LIGHT_CSS_VARS,
-    background: "black"
+    background: "black",
   } as const;
 
   static DEFAULT_CONFIG = {
@@ -56,7 +53,7 @@ export class WanderIframe {
     theme: "system",
     cssVars: {
       light: WanderIframe.DEFAULT_LIGHT_CSS_VARS,
-      dark: WanderIframe.DEFAULT_DARK_CSS_VARS
+      dark: WanderIframe.DEFAULT_DARK_CSS_VARS,
     },
     customStyles: "",
     routeLayout: {
@@ -64,9 +61,9 @@ export class WanderIframe {
       auth: WanderIframe.getLayoutConfig("modal"),
       account: WanderIframe.getLayoutConfig("modal"),
       settings: WanderIframe.getLayoutConfig("popup"),
-      "auth-request": WanderIframe.getLayoutConfig("popup")
+      "auth-request": WanderIframe.getLayoutConfig("popup"),
     },
-    clickOutsideBehavior: true
+    clickOutsideBehavior: true,
   } as const satisfies WanderEmbeddedIframeConfig;
 
   static readonly IMAGE_EXTENSIONS = ["png", "webp"] as const;
@@ -75,12 +72,12 @@ export class WanderIframe {
     "auth",
     "account",
     "auth-request",
-    "settings"
+    "settings",
   ];
   static readonly ALLOWED_IMG_PATHS: ReadonlySet<ImgPath> = new Set(
     WanderIframe.DEFAULT_ROUTE_TYPES.flatMap((route) =>
-      WanderIframe.IMAGE_EXTENSIONS.map((ext) => `${route}.${ext}` as ImgPath)
-    )
+      WanderIframe.IMAGE_EXTENSIONS.map((ext) => `${route}.${ext}` as ImgPath),
+    ),
   );
 
   // Elements:
@@ -104,29 +101,25 @@ export class WanderIframe {
       options.cssVars,
       options.theme,
       WanderIframe.DEFAULT_LIGHT_CSS_VARS,
-      WanderIframe.DEFAULT_DARK_CSS_VARS
+      WanderIframe.DEFAULT_DARK_CSS_VARS,
     );
 
     const routeLayoutOption = options.routeLayout;
 
     let routeLayout: null | Record<RouteType, LayoutConfig> = null;
 
-    if (
-      typeof routeLayoutOption === "string" ||
-      isRouteConfig(routeLayoutOption)
-    ) {
+    if (typeof routeLayoutOption === "string" || isRouteConfig(routeLayoutOption)) {
       // If a single value is passed, we use it for "default", "settings" and "auth-request" routes. "auth" and
       // "account" routes fall back to the default layout type (currently "modal"):
 
-      const defaultLayoutConfig =
-        WanderIframe.getLayoutConfig(routeLayoutOption);
+      const defaultLayoutConfig = WanderIframe.getLayoutConfig(routeLayoutOption);
 
       routeLayout = {
         default: defaultLayoutConfig,
         auth: WanderIframe.DEFAULT_CONFIG.routeLayout.auth,
         account: WanderIframe.DEFAULT_CONFIG.routeLayout.auth,
         settings: defaultLayoutConfig,
-        "auth-request": defaultLayoutConfig
+        "auth-request": defaultLayoutConfig,
       };
     } else {
       // If more than one value is set, the "default" option will be used for "default" routes as well as as fallback
@@ -152,7 +145,7 @@ export class WanderIframe {
           : defaultLayoutConfig,
         "auth-request": routeLayoutOption?.["auth-request"]
           ? WanderIframe.getLayoutConfig(routeLayoutOption["auth-request"])
-          : defaultLayoutConfig
+          : defaultLayoutConfig,
       };
     }
 
@@ -160,12 +153,9 @@ export class WanderIframe {
       id: options.id || WanderIframe.DEFAULT_CONFIG.id,
       theme: options.theme || WanderIframe.DEFAULT_CONFIG.theme,
       cssVars,
-      customStyles:
-        options.customStyles || WanderIframe.DEFAULT_CONFIG.customStyles,
+      customStyles: options.customStyles || WanderIframe.DEFAULT_CONFIG.customStyles,
       routeLayout,
-      clickOutsideBehavior:
-        options.clickOutsideBehavior ||
-        WanderIframe.DEFAULT_CONFIG.clickOutsideBehavior
+      clickOutsideBehavior: options.clickOutsideBehavior || WanderIframe.DEFAULT_CONFIG.clickOutsideBehavior,
     };
 
     this.imageBaseUrl = new URL(src).origin;
@@ -183,7 +173,7 @@ export class WanderIframe {
     this.resize({
       routeType: "auth",
       preferredLayoutType: routeLayout.auth.type,
-      height: 0
+      height: 0,
     });
   }
 
@@ -195,13 +185,11 @@ export class WanderIframe {
     return `${this.imageBaseUrl}/assets/routes/${imgPath}`;
   }
 
-  static getLayoutConfig(
-    layoutConfig: LayoutConfig | LayoutType
-  ): LayoutConfig {
+  static getLayoutConfig(layoutConfig: LayoutConfig | LayoutType): LayoutConfig {
     return typeof layoutConfig === "object"
       ? layoutConfig
       : ({
-          type: layoutConfig
+          type: layoutConfig,
         } satisfies LayoutConfig);
   }
 
@@ -217,7 +205,7 @@ export class WanderIframe {
     template.innerHTML = getWanderIframeTemplateContent({
       customStyles: config.customStyles,
       // TODO: It would be better to create an interface with the subset of vars that we can override when changing themes:
-      cssVariableKeys: Object.keys(WanderIframe.DEFAULT_LIGHT_CSS_VARS)
+      cssVariableKeys: Object.keys(WanderIframe.DEFAULT_LIGHT_CSS_VARS),
     });
 
     shadow.appendChild(template.content);
@@ -247,7 +235,7 @@ export class WanderIframe {
       host,
       backdrop,
       wrapper,
-      halfImage
+      halfImage,
     };
   }
 
@@ -257,7 +245,7 @@ export class WanderIframe {
       backdrop: this.backdrop,
       wrapper: this.wrapper,
       iframe: this.iframe,
-      halfImage: this.halfImage
+      halfImage: this.halfImage,
     };
   }
 
@@ -298,18 +286,15 @@ export class WanderIframe {
     wrapper.dataset.expanded = "";
 
     // TODO: Default to true, unless explicitly set to false, false is WIP
-    wrapper.dataset.expandOnMobile =
-      layoutConfig.expandOnMobile !== false ? "true" : "false";
+    wrapper.dataset.expandOnMobile = layoutConfig.expandOnMobile !== false ? "true" : "false";
 
     const layoutCssVarsUpdates: Partial<WanderEmbeddedIframeCSSVars> = {};
 
     switch (layoutConfig.type) {
       case "modal": {
         // Modal resizes to fit content (unless fixed-size provided):
-        layoutCssVarsUpdates.preferredWidth =
-          layoutConfig.fixedWidth || routeConfig.width || "";
-        layoutCssVarsUpdates.preferredHeight =
-          layoutConfig.fixedHeight || routeConfig.height || "";
+        layoutCssVarsUpdates.preferredWidth = layoutConfig.fixedWidth || routeConfig.width || "";
+        layoutCssVarsUpdates.preferredHeight = layoutConfig.fixedHeight || routeConfig.height || "";
         break;
       }
 
@@ -317,10 +302,8 @@ export class WanderIframe {
         wrapper.dataset.position = layoutConfig.position || "bottom-right";
 
         // Popup resizes to fit content (unless fixed-size provided):
-        layoutCssVarsUpdates.preferredWidth =
-          layoutConfig.fixedWidth || routeConfig.width || "";
-        layoutCssVarsUpdates.preferredHeight =
-          layoutConfig.fixedHeight || routeConfig.height || "";
+        layoutCssVarsUpdates.preferredWidth = layoutConfig.fixedWidth || routeConfig.width || "";
+        layoutCssVarsUpdates.preferredHeight = layoutConfig.fixedHeight || routeConfig.height || "";
         break;
       }
 
@@ -330,25 +313,20 @@ export class WanderIframe {
 
         if (layoutConfig.expanded) layoutCssVarsUpdates.backdropPadding = 0;
 
-        layoutCssVarsUpdates.preferredWidth =
-          layoutConfig.fixedWidth || routeConfig.width || "";
-        layoutCssVarsUpdates.preferredHeight =
-          "calc(100dvh - 2 * var(--backdropPadding, 0))";
+        layoutCssVarsUpdates.preferredWidth = layoutConfig.fixedWidth || routeConfig.width || "";
+        layoutCssVarsUpdates.preferredHeight = "calc(100dvh - 2 * var(--backdropPadding, 0))";
 
         break;
       }
 
       case "half": {
-        const position = (wrapper.dataset.position =
-          layoutConfig.position || "right");
+        const position = (wrapper.dataset.position = layoutConfig.position || "right");
         wrapper.dataset.expanded = layoutConfig.expanded ? "true" : "false";
 
         if (layoutConfig.expanded) layoutCssVarsUpdates.backdropPadding = 0;
 
-        layoutCssVarsUpdates.preferredWidth =
-          "calc(50vw - 2 * var(--backdropPadding, 0))";
-        layoutCssVarsUpdates.preferredHeight =
-          "calc(100dvh - 2 * var(--backdropPadding, 0))";
+        layoutCssVarsUpdates.preferredWidth = "calc(50vw - 2 * var(--backdropPadding, 0))";
+        layoutCssVarsUpdates.preferredHeight = "calc(100dvh - 2 * var(--backdropPadding, 0))";
 
         // TODO: Fix sidebar flying over the screen when initialized.
         // TODO: Make the image work for the sidebar too?
@@ -356,11 +334,8 @@ export class WanderIframe {
         // TODO: iframe.show ~ .half-image
         // TODO: Do this with selectors alone:
         // Handle imgSrc for half layout
-        this.halfImage.dataset.position =
-          position === "left" ? "right" : "left";
-        this.halfImage.dataset.expanded = layoutConfig.expanded
-          ? "true"
-          : "false";
+        this.halfImage.dataset.position = position === "left" ? "right" : "left";
+        this.halfImage.dataset.expanded = layoutConfig.expanded ? "true" : "false";
 
         // Get the image url based on the route type
         const imgSrc = this.getRouteImageUrl(`${routeConfig.routeType}.png`);
@@ -383,17 +358,9 @@ export class WanderIframe {
 
     this.host.removeAttribute("style");
 
-    addCSSVariables(
-      this.host,
-      { ...config.cssVars.light, ...layoutCssVarsUpdates },
-      "Light"
-    );
+    addCSSVariables(this.host, { ...config.cssVars.light, ...layoutCssVarsUpdates }, "Light");
 
-    addCSSVariables(
-      this.host,
-      { ...config.cssVars.dark, ...layoutCssVarsUpdates },
-      "Dark"
-    );
+    addCSSVariables(this.host, { ...config.cssVars.dark, ...layoutCssVarsUpdates }, "Dark");
   }
 
   destroy() {

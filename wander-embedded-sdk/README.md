@@ -77,15 +77,15 @@ const wander = new WanderEmbedded({
     position: "bottom-right", // "bottom-right", "bottom-left", "top-right", "top-left", "static"
     theme: "system",
     wanderLogo: "default", // 'none', 'default', or 'text-color'
-    label: true
+    label: true,
   },
 
   // Iframe configuration
   iframe: {
     routeLayout: {
-      auth: "popup" // "popup" | "modal" | "half" | "sidebar";
-    }
-  }
+      auth: "popup", // "popup" | "modal" | "half" | "sidebar";
+    },
+  },
 });
 ```
 
@@ -105,23 +105,24 @@ const wander = new WanderEmbedded({
         background: "#ffffff",
         color: "#000000",
         borderRadius: 16,
-        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)"
+        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
       },
       // Dark theme variables
       dark: {
         background: "#1a1a1a",
         color: "#ffffff",
         borderRadius: 16,
-        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)"
-      }
-    }
-  }
+        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)",
+      },
+    },
+  },
 });
 ```
 
 #### Custom CSS Styles
 
-You can add custom CSS styles to the button using `customStyles` option. When using this option, you must use CSS selectors to target specific elements.
+You can add custom CSS styles to the button using `customStyles` option. When using this option, you must use CSS
+selectors to target specific elements.
 
 Available selectors:
 
@@ -183,8 +184,8 @@ const wander = new WanderEmbedded({
         font-size: 10px;
         padding: 2px 6px;
       }
-    `
-  }
+    `,
+  },
 });
 ```
 
@@ -230,8 +231,8 @@ There are two approaches to positioning the Wander button:
 ```javascript
 const wander = new WanderEmbedded({
   button: {
-    position: "bottom-right" // Options: "bottom-right", "bottom-left", "top-right", "top-left"
-  }
+    position: "bottom-right", // Options: "bottom-right", "bottom-left", "top-right", "top-left"
+  },
 });
 ```
 
@@ -253,8 +254,8 @@ Then reference it in your configuration:
 const wander = new WanderEmbedded({
   button: {
     position: "static",
-    parent: document.getElementById("wanderButtonContainer")
-  }
+    parent: document.getElementById("wanderButtonContainer"),
+  },
 });
 ```
 
@@ -278,8 +279,8 @@ const wander = new WanderEmbedded({
         background: rgba(255, 255, 255, 0.9);
         backdrop-filter: blur(8px);
       }
-    `
-  }
+    `,
+  },
 });
 ```
 
@@ -291,8 +292,8 @@ Define the button with a custom ID:
 const wander = new WanderEmbedded({
   button: {
     position: "static",
-    id: "my-wander-button" // Default is "wanderEmbeddedButtonHost"
-  }
+    id: "my-wander-button", // Default is "wanderEmbeddedButtonHost"
+  },
 });
 ```
 
@@ -318,29 +319,30 @@ const wander = new WanderEmbedded({
       // Different layouts for different routes
       default: {
         type: "popup",
-        position: "bottom-right"
+        position: "bottom-right",
       },
       auth: {
-        type: "modal"
+        type: "modal",
       },
       "auth-request": {
         type: "sidebar",
         position: "right",
-        expanded: true
-      }
+        expanded: true,
+      },
     },
     cssVars: {
       background: "#f5f5f5",
       borderRadius: 12,
-      boxShadow: "0 8px 32px rgba(0, 0, 0, 0.12)"
-    }
-  }
+      boxShadow: "0 8px 32px rgba(0, 0, 0, 0.12)",
+    },
+  },
 });
 ```
 
 #### Custom CSS Styles
 
-You can add custom CSS styles to the iframe using `customStyles` option. When using this option, you must use CSS selectors to target specific elements.
+You can add custom CSS styles to the iframe using `customStyles` option. When using this option, you must use CSS
+selectors to target specific elements.
 
 Available selectors:
 
@@ -418,8 +420,8 @@ const wander = new WanderEmbedded({
           border-radius: 0;
         }
       }
-    `
-  }
+    `,
+  },
 });
 ```
 
@@ -525,8 +527,7 @@ The SDK supports all modern browsers (Chrome, Firefox, Safari, Edge).
 
 2. `yarn build:wallet-api`
 
-   The TS/JS SDK imports some shared dependencies (`setupWalletSDK()`) from an already built
-   version of the main repo.
+   The TS/JS SDK imports some shared dependencies (`setupWalletSDK()`) from an already built version of the main repo.
 
    Until we have a monorepo, this command builds the bundle with this shared dependency under
    `wander-embedded-sdk/sdk-dist`.
@@ -537,14 +538,12 @@ The SDK supports all modern browsers (Chrome, Firefox, Safari, Edge).
 
 After this, you can use the Wander Embedded App in 2 different ways:
 
-- As a standalone app, you can just access `http://localhost:5173` and start using it. Note,
-  however, that this is not how developers will be using it, so you might find some differences
-  when testing some features (e.g. when running inside an iframe, we must use unpartitioned state
-  for some features, like authentication, to work properly).
+- As a standalone app, you can just access `http://localhost:5173` and start using it. Note, however, that this is not
+  how developers will be using it, so you might find some differences when testing some features (e.g. when running
+  inside an iframe, we must use unpartitioned state for some features, like authentication, to work properly).
 
-- Embedded inside an iframe (**recommended**). In this case, you need a "test app" that install the
-  Wander Embedded SDK to load the app inside an iframe. The section below explains different ways to
-  do that.
+- Embedded inside an iframe (**recommended**). In this case, you need a "test app" that install the Wander Embedded SDK
+  to load the app inside an iframe. The section below explains different ways to do that.
 
 <br />
 
@@ -590,8 +589,8 @@ You can play around with Wander Embedded at <https://playground.othent.io/>, whi
 - The latest version of `@wanderapp/embed-sdk`: <https://www.npmjs.com/package/@wanderapp/embed-sdk>
 - The latest version of the server & tRPC API: <https://embed-api.wander.app/>
 
-Most likely you need that playground to load your local version of the app, SDK, and/or server. See
-below the different options available.
+Most likely you need that playground to load your local version of the app, SDK, and/or server. See below the different
+options available.
 
 <br />
 
@@ -599,11 +598,10 @@ below the different options available.
 
 **App:**
 
-After running `yarn dev:iframe`, the Wander Embedded App should be running at
-`http://localhost:5173`.
+After running `yarn dev:iframe`, the Wander Embedded App should be running at `http://localhost:5173`.
 
-By default, the app will point its tRPC client to <http://localhost:3001> when running in development
-mode, or to <https://embed-api.wander.app/> when running in production mode. See:
+By default, the app will point its tRPC client to <http://localhost:3001> when running in development mode, or to
+<https://embed-api.wander.app/> when running in production mode. See:
 
 - `createTRPCClient` call in `src/utils/embedded/embedded.utils.ts` for the setup logic.
 - `.env` / `.env.example` for the development values.
@@ -611,28 +609,24 @@ mode, or to <https://embed-api.wander.app/> when running in production mode. See
 
 **Playground & SDK:**
 
-Next, clone <https://github.com/Othent/KMS-test-repo/> and run `pnpm install && pnpm start`. The
-playground should be running at `http://localhost:3000`, using the published version of
-`@wanderapp/embed-sdk`.
+Next, clone <https://github.com/Othent/KMS-test-repo/> and run `pnpm install && pnpm start`. The playground should be
+running at `http://localhost:3000`, using the published version of `@wanderapp/embed-sdk`.
 
-By default, the published version of `@wanderapp/embed-sdk` will point to the latest version of the
-Wander Embedded app, which in turn will point its tRPC client to the latest version of the server
-(<https://embed-api.wander.app/>).
+By default, the published version of `@wanderapp/embed-sdk` will point to the latest version of the Wander Embedded app,
+which in turn will point its tRPC client to the latest version of the server (<https://embed-api.wander.app/>).
 
-You now need to make the SDK load `http://localhost:5173`, which you can do using the `baseURL`
-option. If you also need to connect to a server hosted elsewhere, you can use the `baseServerURL`
-options:
+You now need to make the SDK load `http://localhost:5173`, which you can do using the `baseURL` option. If you also need
+to connect to a server hosted elsewhere, you can use the `baseServerURL` options:
 
 ```javascript
 const wander = new WanderEmbedded({
   clientId: "ALPHA",
   baseURL: "http://localhost:5173",
-  baseServerURL: "http://localhost:3001"
+  baseServerURL: "http://localhost:3001",
 });
 ```
 
-> [!TIP]
-> You can get an actual clientId from the Wander Dashboard by creating a Team and an Application.
+> [!TIP] You can get an actual clientId from the Wander Dashboard by creating a Team and an Application.
 
 **Server:**
 
@@ -640,30 +634,28 @@ Go to the `embed-api` repo and run:
 
 - `pnpm install`
 
-- `pnpm dev` - The server & tRPC API will run at `http://localhost:3001` (if the Playground was
-  already running on port `3000`).
+- `pnpm dev` - The server & tRPC API will run at `http://localhost:3001` (if the Playground was already running on port
+  `3000`).
 
 - `pnpm sdk:dev` - Only if you want to use a local instance of `embed-api`:
 
-  - If local, then the `package.json` a the root of this project should say:
-    "embed-api": "link:../embed-api/",
+  - If local, then the `package.json` a the root of this project should say: "embed-api": "link:../embed-api/",
 
-  - If you want to use the currently published version of `embed-api`, then it should say:
-    "embed-api": "<https://github.com/wanderwallet/embed-api#><SOME_HASH>",
+  - If you want to use the currently published version of `embed-api`, then it should say: "embed-api":
+    "<https://github.com/wanderwallet/embed-api#><SOME_HASH>",
 
 <br />
 
 #### Local Playground + Local App + Local SDK + Local/Latest Server
 
-To use a local `@wanderapp/embed-sdk`, go to the playground repo and run `pnpm link-embed`, which
-changes the `@wanderapp/embed-sdk` dependency to:
+To use a local `@wanderapp/embed-sdk`, go to the playground repo and run `pnpm link-embed`, which changes the
+`@wanderapp/embed-sdk` dependency to:
 
 ```json
   "@wanderapp/embed-sdk": "link:./../wander/Wander/wander-embedded-sdk/"`
 ```
 
-You can revert this change running `pnpm link-embed`, which changes the `@wanderapp/embed-sdk`
-dependency back to:
+You can revert this change running `pnpm link-embed`, which changes the `@wanderapp/embed-sdk` dependency back to:
 
 ```json
   "@wanderapp/embed-sdk": "^0.0.1"`
@@ -671,12 +663,10 @@ dependency back to:
 
 Then, go into `wander-embedded-sdk` in this repo and run `pnpm install` and `pnpm dev`.
 
-When running in development mode, the SDK will use `http://localhost:5173` as the default value for
-`baseURL`, instead of `https://embed.wander.app/`. See
-`wander-embedded-sdk/src/wander-embedded.ts`.
+When running in development mode, the SDK will use `http://localhost:5173` as the default value for `baseURL`, instead
+of `https://embed.wander.app/`. See `wander-embedded-sdk/src/wander-embedded.ts`.
 
-> [!WARNING]
-> Temporarily, the <https://embed.wander.app/> URLs are actually <https://embed-dev.wander.app/>. This
-> should be replaced before launch.
+> [!WARNING] Temporarily, the <https://embed.wander.app/> URLs are actually <https://embed-dev.wander.app/>. This should
+> be replaced before launch.
 
 <br />

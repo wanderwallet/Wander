@@ -30,10 +30,7 @@ interface InitHardwareWallet {
  * @param init Hardware wallet data
  * @param api API type
  */
-export async function addHardwareWallet(
-  { address, publicKey, xfp }: InitHardwareWallet,
-  api: HardwareApi
-) {
+export async function addHardwareWallet({ address, publicKey, xfp }: InitHardwareWallet, api: HardwareApi) {
   // get wallets
   const wallets = await getWallets();
 
@@ -43,9 +40,7 @@ export async function addHardwareWallet(
   }
 
   // keystone wallet count
-  const keystoneCount = wallets.filter(
-    (wallet) => wallet?.type === "hardware" && wallet?.api === "keystone"
-  ).length;
+  const keystoneCount = wallets.filter((wallet) => wallet?.type === "hardware" && wallet?.api === "keystone").length;
 
   // push
   wallets.push({
@@ -54,7 +49,7 @@ export async function addHardwareWallet(
     nickname: `Keystone ${keystoneCount + 1}`,
     address,
     publicKey,
-    xfp
+    xfp,
   });
 
   // save data

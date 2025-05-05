@@ -1,11 +1,6 @@
 import * as bip39 from "bip39-web-crypto";
 import { addWallet, getWalletKeyLength, type WalletKeyLengths } from "~wallets";
-import {
-  checkPasswordValid,
-  isValidMnemonic,
-  jwkFromMnemonic,
-  pkcs8ToJwk
-} from "~wallets/generator";
+import { checkPasswordValid, isValidMnemonic, jwkFromMnemonic, pkcs8ToJwk } from "~wallets/generator";
 import * as SSS from "shamir-secret-sharing";
 import type { JWKInterface } from "arweave/web/lib/wallet";
 import { defaultGateway } from "~gateways/gateway";
@@ -71,9 +66,7 @@ async function generateWalletJWK(seedPhrase: string): Promise<JWKInterface> {
 
   if (attempts > 1) {
     // TODO: Send this to Sentry or whatever...
-    console.warn(
-      "Took multiple attempts to generate a wallet with the right length!"
-    );
+    console.warn("Took multiple attempts to generate a wallet with the right length!");
   }
 
   return generatedKeyfile;
@@ -84,36 +77,23 @@ export interface WorkShares {
   deviceShare: string;
 }
 
-async function generateWalletWorkShares(
-  jwk: JWKInterface
-): Promise<WorkShares> {
+async function generateWalletWorkShares(jwk: JWKInterface): Promise<WorkShares> {
   log(LOG_GROUP.WALLET_GENERATION, "generateWalletWorkShares()");
 
-  const privateKeyJWK = await window.crypto.subtle.importKey(
-    "jwk",
-    jwk,
-    { name: "RSA-PSS", hash: "SHA-256" },
-    true,
-    ["sign"]
-  );
+  const privateKeyJWK = await window.crypto.subtle.importKey("jwk", jwk, { name: "RSA-PSS", hash: "SHA-256" }, true, [
+    "sign",
+  ]);
 
-  const privateKeyPKCS8 = await window.crypto.subtle.exportKey(
-    "pkcs8",
-    privateKeyJWK
-  );
+  const privateKeyPKCS8 = await window.crypto.subtle.exportKey("pkcs8", privateKeyJWK);
 
   // Wanna know why these are called "shares" and not shards?
   // See https://discuss.hashicorp.com/t/is-it-shards-or-shares-in-shamir-secret-sharing/38978/3
 
-  const [authShareBuffer, deviceShareBuffer] = await SSS.split(
-    new Uint8Array(privateKeyPKCS8),
-    2,
-    2
-  );
+  const [authShareBuffer, deviceShareBuffer] = await SSS.split(new Uint8Array(privateKeyPKCS8), 2, 2);
 
   return {
     authShare: Buffer.from(authShareBuffer).toString("base64"),
-    deviceShare: Buffer.from(deviceShareBuffer).toString("base64")
+    deviceShare: Buffer.from(deviceShareBuffer).toString("base64"),
   };
 }
 
@@ -122,58 +102,36 @@ export interface RecoverShares {
   recoveryBackupShare: string;
 }
 
-async function generateWalletRecoveryShares(
-  jwk: JWKInterface
-): Promise<RecoverShares> {
+async function generateWalletRecoveryShares(jwk: JWKInterface): Promise<RecoverShares> {
   log(LOG_GROUP.WALLET_GENERATION, "generateWalletRecoveryShares()");
 
-  const privateKeyJWK = await window.crypto.subtle.importKey(
-    "jwk",
-    jwk,
-    { name: "RSA-PSS", hash: "SHA-256" },
-    true,
-    ["sign"]
-  );
+  const privateKeyJWK = await window.crypto.subtle.importKey("jwk", jwk, { name: "RSA-PSS", hash: "SHA-256" }, true, [
+    "sign",
+  ]);
 
-  const privateKeyPKCS8 = await window.crypto.subtle.exportKey(
-    "pkcs8",
-    privateKeyJWK
-  );
+  const privateKeyPKCS8 = await window.crypto.subtle.exportKey("pkcs8", privateKeyJWK);
 
   // Wanna know why these are called "shares" and not shards?
   // See https://discuss.hashicorp.com/t/is-it-shards-or-shares-in-shamir-secret-sharing/38978/3
 
-  const [recoveryAuthShareBuffer, recoveryBackupShareBuffer] = await SSS.split(
-    new Uint8Array(privateKeyPKCS8),
-    2,
-    2
-  );
+  const [recoveryAuthShareBuffer, recoveryBackupShareBuffer] = await SSS.split(new Uint8Array(privateKeyPKCS8), 2, 2);
 
   return {
     recoveryAuthShare: Buffer.from(recoveryAuthShareBuffer).toString("base64"),
-    recoveryBackupShare: Buffer.from(recoveryBackupShareBuffer).toString(
-      "base64"
-    )
+    recoveryBackupShare: Buffer.from(recoveryBackupShareBuffer).toString("base64"),
   };
 }
 
 function generateRandomPassword(): string {
   log(LOG_GROUP.WALLET_GENERATION, "generateRandomPassword()");
 
-  return Buffer.from(crypto.getRandomValues(new Uint8Array(512))).toString(
-    "base64"
-  );
+  return Buffer.from(crypto.getRandomValues(new Uint8Array(512))).toString("base64");
 }
 
-async function generateWalletJWKFromShares(
-  walletAddress: string,
-  shares: string[]
-): Promise<JWKInterface> {
+async function generateWalletJWKFromShares(walletAddress: string, shares: string[]): Promise<JWKInterface> {
   log(LOG_GROUP.WALLET_GENERATION, "generateWalletJWKFromShares()");
 
-  const privateKeyPKCS8 = await SSS.combine(
-    shares.map((share) => new Uint8Array(Buffer.from(share, "base64")))
-  );
+  const privateKeyPKCS8 = await SSS.combine(shares.map((share) => new Uint8Array(Buffer.from(share, "base64"))));
 
   // This functions throws a DataError if integrity fails:
   const privateKeyJWK = await pkcs8ToJwk(privateKeyPKCS8);
@@ -181,9 +139,7 @@ async function generateWalletJWKFromShares(
   const arweave = new Arweave(defaultGateway);
 
   // Most likely nothing below this line will run anyway:
-  const addressCandidate = await arweave.wallets
-    .jwkToAddress(privateKeyJWK)
-    .catch(() => null);
+  const addressCandidate = await arweave.wallets.jwkToAddress(privateKeyJWK).catch(() => null);
 
   // From SSS' docs:
   // > Thus, it is the responsibility of users of this library to verify the integrity of the reconstructed secret.
@@ -213,9 +169,7 @@ export interface GenerateShareHashAndPublicKeyReturn {
  * - https://github.com/framp/zero-knowledge-node/blob/master/keypair-auth/crypto-utils.js
  * - https://www.youtube.com/watch?v=cMoD0wIxIpQ
  */
-async function generateShareHashAndPublicKey(
-  share: string
-): Promise<GenerateShareHashAndPublicKeyReturn> {
+async function generateShareHashAndPublicKey(share: string): Promise<GenerateShareHashAndPublicKeyReturn> {
   log(LOG_GROUP.WALLET_GENERATION, "generateShareHashAndPublicKey()");
 
   const sharePrng = random.createInstance();
@@ -238,7 +192,7 @@ async function generateShareHashAndPublicKey(
       {
         bits: 4096,
         prng: sharePrng,
-        workerScript
+        workerScript,
       },
       async (err, result) => {
         if (err) {
@@ -250,10 +204,10 @@ async function generateShareHashAndPublicKey(
 
           resolve({
             shareHash,
-            sharePublicKey
+            sharePublicKey,
           });
         }
-      }
+      },
     );
   });
 }
@@ -268,9 +222,7 @@ export interface GenerateShareHashAndPrivateKeyReturn {
  * - https://github.com/framp/zero-knowledge-node/blob/master/keypair-auth/crypto-utils.js
  * - https://www.youtube.com/watch?v=cMoD0wIxIpQ
  */
-async function generateShareHashAndPrivateKey(
-  share: string
-): Promise<GenerateShareHashAndPrivateKeyReturn> {
+async function generateShareHashAndPrivateKey(share: string): Promise<GenerateShareHashAndPrivateKeyReturn> {
   log(LOG_GROUP.WALLET_GENERATION, "generateShareHashAndPrivateKey()");
 
   const sharePrng = random.createInstance();
@@ -293,7 +245,7 @@ async function generateShareHashAndPrivateKey(
       {
         bits: 4096,
         prng: sharePrng,
-        workerScript
+        workerScript,
       },
       async (err, result) => {
         if (err) {
@@ -312,15 +264,15 @@ async function generateShareHashAndPrivateKey(
             q: bigintToBase64Url(privateKey.q),
             dp: bigintToBase64Url(privateKey.dP),
             dq: bigintToBase64Url(privateKey.dQ),
-            qi: bigintToBase64Url(privateKey.qInv)
+            qi: bigintToBase64Url(privateKey.qInv),
           };
 
           resolve({
             shareHash,
-            sharePrivateKeyJWK
+            sharePrivateKeyJWK,
           });
         }
-      }
+      },
     );
   });
 }
@@ -340,9 +292,7 @@ let _deviceSharesByUser: DeviceSharesByUser | null = null;
 async function loadDeviceSharesByUser(): Promise<DeviceSharesByUser> {
   try {
     const storage = await LocalStorage.getInstance();
-    let deviceSharesInfo = storage.getItem<DeviceSharesByUser>(
-      DEVICE_SHARES_INFO_KEY
-    );
+    let deviceSharesInfo = storage.getItem<DeviceSharesByUser>(DEVICE_SHARES_INFO_KEY);
 
     // TODO: Add additional validation...
 
@@ -380,11 +330,7 @@ async function getDeviceSharesForUser(userId: string): Promise<DeviceShares> {
 const ENCRYPTED_SEED_PHRASE_KEY = "ENCRYPTED_SEED_PHRASE";
 const ENCRYPTED_RECOVERY_SHARE_KEY = "ENCRYPTED_RECOVERY_SHARE";
 
-async function storeEncryptedSeedPhrase(
-  walletId: string,
-  seedPhrase: string,
-  jwk: JWKInterface
-) {
+async function storeEncryptedSeedPhrase(walletId: string, seedPhrase: string, jwk: JWKInterface) {
   log(LOG_GROUP.WALLET_GENERATION, "storeEncryptedSeedPhrase()");
 
   if (!jwk) {
@@ -396,7 +342,7 @@ async function storeEncryptedSeedPhrase(
     e: "AQAB",
     n: jwk.n,
     alg: "RSA-OAEP-256",
-    ext: true
+    ext: true,
   };
 
   const importedKey = await crypto.subtle.importKey(
@@ -404,10 +350,10 @@ async function storeEncryptedSeedPhrase(
     publicKey,
     {
       name: "RSA-OAEP",
-      hash: "SHA-256"
+      hash: "SHA-256",
     },
     false,
-    ["encrypt"]
+    ["encrypt"],
   );
 
   // Make sure the seedPhrase is shorter than the maximum data we can safely
@@ -421,21 +367,16 @@ async function storeEncryptedSeedPhrase(
 
   const encryptedSeedPhraseBuffer = await crypto.subtle.encrypt(
     {
-      name: "RSA-OAEP"
+      name: "RSA-OAEP",
     },
     importedKey,
-    Buffer.from(seedPhrase)
+    Buffer.from(seedPhrase),
   );
 
-  const encryptedSeedPhrase = Buffer.from(encryptedSeedPhraseBuffer).toString(
-    "base64"
-  );
+  const encryptedSeedPhrase = Buffer.from(encryptedSeedPhraseBuffer).toString("base64");
 
   const storage = await LocalStorage.getInstance();
-  storage.setItem(
-    `${ENCRYPTED_SEED_PHRASE_KEY}-${walletId}`,
-    encryptedSeedPhrase
-  );
+  storage.setItem(`${ENCRYPTED_SEED_PHRASE_KEY}-${walletId}`, encryptedSeedPhrase);
 }
 
 async function hasEncryptedSeedPhrase(walletId: string) {
@@ -453,7 +394,7 @@ async function getDecryptedSeedPhrase(walletId: string, jwk: JWKInterface) {
   const privateKey = {
     ...jwk,
     alg: "RSA-OAEP-256",
-    ext: true
+    ext: true,
   };
 
   const importedKey = await crypto.subtle.importKey(
@@ -461,23 +402,21 @@ async function getDecryptedSeedPhrase(walletId: string, jwk: JWKInterface) {
     privateKey,
     {
       name: "RSA-OAEP",
-      hash: "SHA-256"
+      hash: "SHA-256",
     },
     false,
-    ["decrypt"]
+    ["decrypt"],
   );
 
   const storage = await LocalStorage.getInstance();
-  const encryptedSeedPhrase = storage.getItem(
-    `${ENCRYPTED_SEED_PHRASE_KEY}-${walletId}`
-  );
+  const encryptedSeedPhrase = storage.getItem(`${ENCRYPTED_SEED_PHRASE_KEY}-${walletId}`);
 
   const decryptedSeedPhraseBuffer = await crypto.subtle.decrypt(
     {
-      name: "RSA-OAEP"
+      name: "RSA-OAEP",
     },
     importedKey,
-    Buffer.from(encryptedSeedPhrase, "base64")
+    Buffer.from(encryptedSeedPhrase, "base64"),
   );
 
   const decryptedSeedPhrase = Buffer.from(decryptedSeedPhraseBuffer).toString();
@@ -491,11 +430,7 @@ async function getDecryptedSeedPhrase(walletId: string, jwk: JWKInterface) {
  * @param recoveryData - Recovery share data to encrypt
  * @param jwk - JWK to use for encryption
  */
-async function storeEncryptedRecoveryShare(
-  walletId: string,
-  recoveryData: RecoveryJSON,
-  jwk: JWKInterface
-) {
+async function storeEncryptedRecoveryShare(walletId: string, recoveryData: RecoveryJSON, jwk: JWKInterface) {
   log(LOG_GROUP.WALLET_GENERATION, "storeEncryptedRecoveryShare()");
 
   if (!jwk) {
@@ -506,10 +441,10 @@ async function storeEncryptedRecoveryShare(
   const aesKey = await crypto.subtle.generateKey(
     {
       name: "AES-GCM",
-      length: 256
+      length: 256,
     },
     true,
-    ["encrypt", "decrypt"]
+    ["encrypt", "decrypt"],
   );
 
   // Generate random IV
@@ -520,10 +455,10 @@ async function storeEncryptedRecoveryShare(
   const encryptedData = await crypto.subtle.encrypt(
     {
       name: "AES-GCM",
-      iv
+      iv,
     },
     aesKey,
-    new TextEncoder().encode(recoveryDataString)
+    new TextEncoder().encode(recoveryDataString),
   );
 
   // Export AES key
@@ -535,7 +470,7 @@ async function storeEncryptedRecoveryShare(
     e: "AQAB",
     n: jwk.n,
     alg: "RSA-OAEP-256",
-    ext: true
+    ext: true,
   };
 
   const importedRsaKey = await crypto.subtle.importKey(
@@ -543,25 +478,25 @@ async function storeEncryptedRecoveryShare(
     publicKey,
     {
       name: "RSA-OAEP",
-      hash: "SHA-256"
+      hash: "SHA-256",
     },
     false,
-    ["encrypt"]
+    ["encrypt"],
   );
 
   const encryptedAesKey = await crypto.subtle.encrypt(
     {
-      name: "RSA-OAEP"
+      name: "RSA-OAEP",
     },
     importedRsaKey,
-    rawAesKey
+    rawAesKey,
   );
 
   // Combine everything into a single object
   const finalData = {
     iv: Buffer.from(iv).toString("base64"),
     encryptedKey: Buffer.from(encryptedAesKey).toString("base64"),
-    encryptedData: Buffer.from(encryptedData).toString("base64")
+    encryptedData: Buffer.from(encryptedData).toString("base64"),
   };
 
   const storage = await LocalStorage.getInstance();
@@ -584,10 +519,7 @@ async function hasEncryptedRecoveryShare(walletId: string) {
  * @param walletId - Wallet ID
  * @param jwk - JWK for decryption
  */
-async function getDecryptedRecoveryShare(
-  walletId: string,
-  jwk: JWKInterface
-): Promise<RecoveryJSON> {
+async function getDecryptedRecoveryShare(walletId: string, jwk: JWKInterface): Promise<RecoveryJSON> {
   log(LOG_GROUP.WALLET_GENERATION, "getDecryptedRecoveryShare()");
 
   if (!jwk) {
@@ -598,7 +530,7 @@ async function getDecryptedRecoveryShare(
   const privateKey = {
     ...jwk,
     alg: "RSA-OAEP-256",
-    ext: true
+    ext: true,
   };
 
   const importedRsaKey = await crypto.subtle.importKey(
@@ -606,10 +538,10 @@ async function getDecryptedRecoveryShare(
     privateKey,
     {
       name: "RSA-OAEP",
-      hash: "SHA-256"
+      hash: "SHA-256",
     },
     false,
-    ["decrypt"]
+    ["decrypt"],
   );
 
   // Get encrypted data from storage
@@ -625,19 +557,15 @@ async function getDecryptedRecoveryShare(
   }
 
   // Parse the stored data
-  const {
-    iv,
-    encryptedKey,
-    encryptedData: encryptedRecoveryData
-  } = encryptedData;
+  const { iv, encryptedKey, encryptedData: encryptedRecoveryData } = encryptedData;
 
   // Decrypt the AES key
   const decryptedAesKeyBuffer = await crypto.subtle.decrypt(
     {
-      name: "RSA-OAEP"
+      name: "RSA-OAEP",
     },
     importedRsaKey,
-    Buffer.from(encryptedKey, "base64")
+    Buffer.from(encryptedKey, "base64"),
   );
 
   // Import the decrypted AES key
@@ -646,20 +574,20 @@ async function getDecryptedRecoveryShare(
     decryptedAesKeyBuffer,
     {
       name: "AES-GCM",
-      length: 256
+      length: 256,
     },
     false,
-    ["decrypt"]
+    ["decrypt"],
   );
 
   // Decrypt the actual data
   const decryptedDataBuffer = await crypto.subtle.decrypt(
     {
       name: "AES-GCM",
-      iv: Buffer.from(iv, "base64")
+      iv: Buffer.from(iv, "base64"),
     },
     aesKey,
-    Buffer.from(encryptedRecoveryData, "base64")
+    Buffer.from(encryptedRecoveryData, "base64"),
   );
 
   // Parse the decrypted data
@@ -764,7 +692,7 @@ export const WalletUtils = {
 
   // Validation:
   isJWK,
-  isSeedPhrase
+  isSeedPhrase,
 };
 
 // Stored seedphrases and recovery shares are removed if the feature flags are disabled:

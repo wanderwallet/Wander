@@ -27,7 +27,7 @@ export async function handleSyncLabelsAlarm(alarm?: Alarms.Alarm) {
     "wallets",
     wallets.map((wallet) => ({
       ...wallet,
-      nickname: find(wallet.address) || wallet.nickname
-    }))
+      nickname: find(wallet.address) || wallet.nickname,
+    })),
   );
 }

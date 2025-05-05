@@ -5,7 +5,7 @@ const permissions: PermissionType[] = [];
 
 const addTokenModule: ModuleProperties = {
   functionName: "addToken",
-  permissions
+  permissions,
 };
 
 export default addTokenModule;

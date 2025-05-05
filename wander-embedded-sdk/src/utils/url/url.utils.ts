@@ -23,13 +23,7 @@ export interface GetEmbeddedURLOptions {
   baseServerURL?: string;
 }
 
-export function getEmbeddedURL({
-  baseURL,
-  clientId,
-  theme,
-  hideBE,
-  baseServerURL
-}: GetEmbeddedURLOptions) {
+export function getEmbeddedURL({ baseURL, clientId, theme, hideBE, baseServerURL }: GetEmbeddedURLOptions) {
   const url = new URL(baseURL);
   const { searchParams } = url;
 

@@ -32,7 +32,7 @@ export default function Squircle({
 
       try {
         const { data, headers } = await axios.get(img, {
-          responseType: "arraybuffer"
+          responseType: "arraybuffer",
         });
         const base64 = Buffer.from(data, "binary").toString("base64");
         const prefix = "data:" + headers["content-type"] + ";base64, ";
@@ -52,29 +52,11 @@ export default function Squircle({
 
   return (
     <Wrapper {...(props as any)}>
-      <SquircleSvg
-        width="60"
-        height="60"
-        viewBox="0 0 60 60"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
+      <SquircleSvg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
         {imageData && (
           <defs>
-            <pattern
-              id={svgPathId}
-              patternUnits="userSpaceOnUse"
-              width="60"
-              height="60"
-            >
-              <image
-                xlinkHref={imageData}
-                x="0"
-                y="0"
-                width="60"
-                height="60"
-                preserveAspectRatio="xMidYMid slice"
-              />
+            <pattern id={svgPathId} patternUnits="userSpaceOnUse" width="60" height="60">
+              <image xlinkHref={imageData} x="0" y="0" width="60" height="60" preserveAspectRatio="xMidYMid slice" />
             </pattern>
           </defs>
         )}
@@ -87,14 +69,7 @@ export default function Squircle({
         />
 
         {imageData ? null : (
-          <text
-            x="50%"
-            y="50%"
-            alignmentBaseline="central"
-            textAnchor="middle"
-            fill="white"
-            fontSize="2em"
-          >
+          <text x="50%" y="50%" alignmentBaseline="central" textAnchor="middle" fill="white" fontSize="2em">
             {placeholderText}
           </text>
         )}

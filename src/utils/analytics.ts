@@ -1,11 +1,7 @@
 import { getSetting } from "~settings";
 import { ExtensionStorage, TempTransactionStorage } from "./storage";
 import { AnalyticsBrowser } from "@segment/analytics-next";
-import {
-  getActiveKeyfile,
-  getActiveAddress,
-  getWalletKeyLength
-} from "~wallets";
+import { getActiveKeyfile, getActiveAddress, getWalletKeyLength } from "~wallets";
 import browser from "webextension-polyfill";
 import axios from "axios";
 import { isLocalWallet } from "./assertions";
@@ -16,7 +12,7 @@ import { nanoid } from "nanoid";
 const PUBLIC_SEGMENT_WRITEKEY = "J97E4cvSZqmpeEdiUQNC2IxS1Kw4Cwxm";
 
 const analytics = AnalyticsBrowser.load({
-  writeKey: PUBLIC_SEGMENT_WRITEKEY
+  writeKey: PUBLIC_SEGMENT_WRITEKEY,
 });
 
 // TODO: add analytics for signature
@@ -41,7 +37,7 @@ export enum EventType {
   SUBSCRIBED = "SUBSCRIBED",
   UNSUBSCRIBED = "UNSUBSCRIBED",
   SUBSCRIPTION_PAYMENT = "SUBSCRIPTION_PAYMENT",
-  BITS_LENGTH = "BITS_LENGTH"
+  BITS_LENGTH = "BITS_LENGTH",
 }
 
 export enum PageType {
@@ -71,16 +67,12 @@ export enum PageType {
   TRANSAK_PURCHASE = "TRANSAK_PURCHASE",
   TRANSAK_CONFIRM_PURCHASE = "TRANSAK_CONFIRM_PURCHASE",
   TRANSAK_PURCHASE_PENDING = "TRANSAK_PURCHASE_PENDING",
-  SUBSCRIPTIONS = "SUBSCRIPTIONS"
+  SUBSCRIPTIONS = "SUBSCRIPTIONS",
 }
 
 export const trackPage = async (title: PageType) => {
   // Only track BE production events:
-  if (
-    process.env.NODE_ENV === "development" ||
-    import.meta.env?.VITE_IS_EMBEDDED_APP === "1"
-  )
-    return;
+  if (process.env.NODE_ENV === "development" || import.meta.env?.VITE_IS_EMBEDDED_APP === "1") return;
 
   const enabled = await getSetting("analytics").getValue();
 
@@ -88,23 +80,16 @@ export const trackPage = async (title: PageType) => {
 
   try {
     await analytics.page("Wander Extension", {
-      title
+      title,
     });
   } catch (err) {
     console.log("err", err);
   }
 };
 
-export const trackDirect = async (
-  event: EventType,
-  properties: Record<string, unknown>
-) => {
+export const trackDirect = async (event: EventType, properties: Record<string, unknown>) => {
   // Only track BE production events:
-  if (
-    process.env.NODE_ENV === "development" ||
-    import.meta.env?.VITE_IS_EMBEDDED_APP === "1"
-  )
-    return;
+  if (process.env.NODE_ENV === "development" || import.meta.env?.VITE_IS_EMBEDDED_APP === "1") return;
 
   const enabled = await getSetting("analytics").getValue();
 
@@ -127,18 +112,14 @@ export const trackDirect = async (
       timestamp: new Date().toISOString(),
       type: "track",
       userId: userId,
-      writeKey: PUBLIC_SEGMENT_WRITEKEY
-    })
+      writeKey: PUBLIC_SEGMENT_WRITEKEY,
+    }),
   });
 };
 
 export const trackEvent = async (eventName: EventType, properties: any) => {
   // Only track BE production events:
-  if (
-    process.env.NODE_ENV === "development" ||
-    import.meta.env?.VITE_IS_EMBEDDED_APP === "1"
-  )
-    return;
+  if (process.env.NODE_ENV === "development" || import.meta.env?.VITE_IS_EMBEDDED_APP === "1") return;
 
   // first we check if we are allowed to collect data
   const enabled = await getSetting("analytics").getValue();
@@ -159,9 +140,7 @@ export const trackEvent = async (eventName: EventType, properties: any) => {
   const activeAddress = await ExtensionStorage.get<string>("active_address");
 
   if (eventName === EventType.FUNDED) {
-    const hasBeenTracked = await ExtensionStorage.get<boolean>(
-      `wallet_funded_${activeAddress}`
-    );
+    const hasBeenTracked = await ExtensionStorage.get<boolean>(`wallet_funded_${activeAddress}`);
     if (hasBeenTracked) {
       return;
     }
@@ -197,7 +176,7 @@ export const trackEvent = async (eventName: EventType, properties: any) => {
 export const initializeARBalanceMonitor = async () => {
   const timer = setToStartOfNextMonth(new Date());
   browser.alarms.create("track-balance", {
-    when: timer.getTime()
+    when: timer.getTime(),
   });
 };
 
@@ -209,17 +188,7 @@ export const initializeARBalanceMonitor = async () => {
  */
 
 export const setToStartOfNextMonth = (currentDate: Date): Date => {
-  const newDate = new Date(
-    Date.UTC(
-      currentDate.getUTCFullYear(),
-      currentDate.getUTCMonth() + 1,
-      1,
-      0,
-      0,
-      0,
-      0
-    )
-  );
+  const newDate = new Date(Date.UTC(currentDate.getUTCFullYear(), currentDate.getUTCMonth() + 1, 1, 0, 0, 0, 0));
   return newDate;
 };
 
@@ -251,9 +220,7 @@ export const checkWalletBits = async (): Promise<boolean | null> => {
 
   const storageKey = `bits_check_${activeAddress}`;
 
-  const hasBeenTracked = await ExtensionStorage.get<boolean | WalletBitsCheck>(
-    storageKey
-  );
+  const hasBeenTracked = await ExtensionStorage.get<boolean | WalletBitsCheck>(storageKey);
 
   if (typeof hasBeenTracked === "boolean") {
     await ExtensionStorage.remove(storageKey);
@@ -267,9 +234,7 @@ export const checkWalletBits = async (): Promise<boolean | null> => {
     });
     isLocalWallet(decryptedWallet);
 
-    const { actualLength, expectedLength } = await getWalletKeyLength(
-      decryptedWallet.keyfile
-    );
+    const { actualLength, expectedLength } = await getWalletKeyLength(decryptedWallet.keyfile);
 
     freeDecryptedWallet(decryptedWallet.keyfile);
 
@@ -277,7 +242,7 @@ export const checkWalletBits = async (): Promise<boolean | null> => {
 
     await ExtensionStorage.set(`bits_check_${activeAddress}`, {
       checked: true,
-      mismatch: !lengthsMatch
+      mismatch: !lengthsMatch,
     });
 
     await trackEvent(EventType.BITS_LENGTH, { mismatch: !lengthsMatch });
@@ -285,9 +250,7 @@ export const checkWalletBits = async (): Promise<boolean | null> => {
     return !lengthsMatch;
   } catch (error) {
     console.error(
-      `An error occurred during wallet integrity check: ${
-        error instanceof Error ? error.message : String(error)
-      }`
+      `An error occurred during wallet integrity check: ${error instanceof Error ? error.message : String(error)}`,
     );
     return null;
   }
@@ -338,7 +301,7 @@ const GDPR_COUNTRIES_AND_OTHERS = [
   "AR", // Argentina
   "BR", // Brazil
   "UY", // Uruguay
-  "CA" // Canada
+  "CA", // Canada
 ];
 
 // Defaults to true to

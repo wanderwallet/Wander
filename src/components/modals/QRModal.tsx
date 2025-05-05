@@ -15,23 +15,14 @@ const QRModal = ({ isOpen, setOpen, address }: Props) => {
   const modalRef = useRef(null);
 
   return (
-    <Modal
-      root={document.getElementById("__plasmo")}
-      open={isOpen}
-      setOpen={setOpen}
-    >
+    <Modal root={document.getElementById("__plasmo")} open={isOpen} setOpen={setOpen}>
       <ContentWrapper style={{ position: "relative" }} ref={modalRef}>
         <CloseButton>
           <XClose onClick={() => setOpen(false)} />
         </CloseButton>
         <Content>
           <QRCodeWrapper>
-            <QRCodeSVG
-              fgColor="#fff"
-              bgColor="transparent"
-              size={176}
-              value={address ?? ""}
-            />
+            <QRCodeSVG fgColor="#fff" bgColor="transparent" size={176} value={address ?? ""} />
           </QRCodeWrapper>
         </Content>
       </ContentWrapper>

@@ -5,13 +5,7 @@ import WalletHeader from "~components/popup/WalletHeader";
 import Balance from "~components/popup/home/Balance";
 import { AnnouncementPopup } from "./announcement";
 import { getDecryptionKey } from "~wallets/auth";
-import {
-  trackEvent,
-  EventType,
-  trackPage,
-  PageType,
-  checkWalletBits
-} from "~utils/analytics";
+import { trackEvent, EventType, trackPage, PageType, checkWalletBits } from "~utils/analytics";
 import styled from "styled-components";
 import { useActiveWallet } from "~wallets/hooks";
 import Tabs from "~components/popup/home/Tabs";
@@ -25,7 +19,7 @@ export function HomeView() {
 
   const [announcement, _] = useStorage<boolean>({
     key: "show_announcement",
-    instance: ExtensionStorage
+    instance: ExtensionStorage,
   });
 
   // checking to see if it's a hardware wallet

@@ -1,13 +1,4 @@
-import {
-  Button,
-  Input,
-  ListItem,
-  Section,
-  Text,
-  Tooltip,
-  useInput,
-  useToasts
-} from "@arconnect/components-rebrand";
+import { Button, Input, ListItem, Section, Text, Tooltip, useInput, useToasts } from "@arconnect/components-rebrand";
 import { CopyIcon } from "@iconicicons/react";
 import { removeWallet, type StoredWallet } from "~wallets";
 import { useEffect, useMemo, useState } from "react";
@@ -22,15 +13,7 @@ import type { CommonRouteProps } from "~wallets/router/router.types";
 import { useLocation } from "~wallets/router/router.utils";
 import { LoadingView } from "~components/page/common/loading/loading.view";
 import { CopyToClipboard } from "~components/CopyToClipboard";
-import {
-  AlertCircle,
-  ArrowUpRight,
-  Cube01,
-  Download01,
-  Edit02,
-  QrCode02,
-  Share03
-} from "@untitled-ui/icons-react";
+import { AlertCircle, ArrowUpRight, Cube01, Download01, Edit02, QrCode02, Share03 } from "@untitled-ui/icons-react";
 import { HorizontalLine } from "~components/HorizontalLine";
 import SliderMenu from "~components/SliderMenu";
 import { getNameServiceProfile } from "~lib/nameservice";
@@ -53,16 +36,13 @@ export function WalletView({ params: { address } }: WalletViewProps) {
   const [wallets, setWallets] = useStorage<StoredWallet[]>(
     {
       key: "wallets",
-      instance: ExtensionStorage
+      instance: ExtensionStorage,
     },
-    []
+    [],
   );
 
   // this wallet
-  const wallet = useMemo(
-    () => wallets?.find((w) => w.address === address),
-    [wallets, address]
-  );
+  const wallet = useMemo(() => wallets?.find((w) => w.address === address), [wallets, address]);
 
   // toasts
   const { setToast } = useToasts();
@@ -98,7 +78,7 @@ export function WalletView({ params: { address } }: WalletViewProps) {
       return setToast({
         type: "error",
         content: "Please enter a valid nickname",
-        duration: 2200
+        duration: 2200,
       });
     }
 
@@ -112,22 +92,22 @@ export function WalletView({ params: { address } }: WalletViewProps) {
 
           return {
             ...wallet,
-            nickname: newName
+            nickname: newName,
           };
-        })
+        }),
       );
 
       setToast({
         type: "info",
         content: browser.i18n.getMessage("updated_wallet_name"),
-        duration: 3000
+        duration: 3000,
       });
     } catch (e) {
       console.log("Could not update nickname", e);
       setToast({
         type: "error",
         content: browser.i18n.getMessage("error_updating_wallet_name"),
-        duration: 3000
+        duration: 3000,
       });
     }
   }
@@ -140,61 +120,35 @@ export function WalletView({ params: { address } }: WalletViewProps) {
 
   return (
     <>
-      <HeadV2
-        title={browser.i18n.getMessage("edit_account")}
-        showOptions={false}
-      />
+      <HeadV2 title={browser.i18n.getMessage("edit_account")} showOptions={false} />
       <Wrapper>
         <div
           style={{
             display: "flex",
             flexDirection: "column",
-            gap: "1.5rem"
-          }}
-        >
+            gap: "1.5rem",
+          }}>
           {!editName ? (
             <div
               style={{
                 display: "flex",
                 justifyContent: "space-between",
-                gap: "1rem"
-              }}
-            >
+                gap: "1rem",
+              }}>
               <WalletName>
                 {nameServiceName || wallet.nickname}
                 {wallet.type === "hardware" && (
-                  <Tooltip
-                    content={
-                      wallet.api.slice(0, 1).toUpperCase() + wallet.api.slice(1)
-                    }
-                    position="bottom"
-                  >
-                    <HardwareWalletIcon
-                      src={wallet.api === "keystone" ? keystoneLogo : undefined}
-                    />
+                  <Tooltip content={wallet.api.slice(0, 1).toUpperCase() + wallet.api.slice(1)} position="bottom">
+                    <HardwareWalletIcon src={wallet.api === "keystone" ? keystoneLogo : undefined} />
                   </Tooltip>
                 )}
               </WalletName>
               {nameServiceName ? (
-                <Tooltip
-                  position="bottomEnd"
-                  content={browser.i18n.getMessage(
-                    "cannot_edit_with_name_service"
-                  )}
-                >
-                  <Edit02
-                    style={{ cursor: "not-allowed" }}
-                    height={20}
-                    width={20}
-                  />
+                <Tooltip position="bottomEnd" content={browser.i18n.getMessage("cannot_edit_with_name_service")}>
+                  <Edit02 style={{ cursor: "not-allowed" }} height={20} width={20} />
                 </Tooltip>
               ) : (
-                <Edit02
-                  style={{ cursor: "pointer" }}
-                  height={20}
-                  width={20}
-                  onClick={() => setEditName(true)}
-                />
+                <Edit02 style={{ cursor: "pointer" }} height={20} width={20} onClick={() => setEditName(true)} />
               )}
             </div>
           ) : (
@@ -215,28 +169,20 @@ export function WalletView({ params: { address } }: WalletViewProps) {
                   }
                   setEditName(false);
                 }}
-                disabled={!!nameServiceName}
-              >
-                {browser.i18n.getMessage(
-                  walletNameInput.state === wallet.nickname ? "cancel" : "save"
-                )}
+                disabled={!!nameServiceName}>
+                {browser.i18n.getMessage(walletNameInput.state === wallet.nickname ? "cancel" : "save")}
               </Button>
             </div>
           )}
           <CopyToClipboard
-            copySuccess={browser.i18n.getMessage("copied_address", [
-              wallet.nickname,
-              formatAddress(wallet.address, 3)
-            ])}
+            copySuccess={browser.i18n.getMessage("copied_address", [wallet.nickname, formatAddress(wallet.address, 3)])}
             label={truncateMiddle(wallet.address, 38)}
             labelAs={WalletAddress}
             text={wallet.address}
             iconSize={24}
           />
           <HorizontalLine />
-          <div
-            style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
-          >
+          <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
             <Text size="lg" weight="medium" noMargin>
               {browser.i18n.getMessage("wallet_actions")}
             </Text>
@@ -244,9 +190,8 @@ export function WalletView({ params: { address } }: WalletViewProps) {
               style={{
                 display: "flex",
                 flexDirection: "column",
-                gap: "0.5rem"
-              }}
-            >
+                gap: "0.5rem",
+              }}>
               <ListItem
                 title={"Viewblock"}
                 titleStyle={{ fontSize: 18, fontWeight: 500 }}
@@ -254,7 +199,7 @@ export function WalletView({ params: { address } }: WalletViewProps) {
                 rightIcon={<Icon color="tertiary" as={Share03} />}
                 onClick={() =>
                   browser.tabs.create({
-                    url: `https://viewblock.io/arweave/address/${wallet.address}`
+                    url: `https://viewblock.io/arweave/address/${wallet.address}`,
                   })
                 }
                 hideSquircle
@@ -267,7 +212,7 @@ export function WalletView({ params: { address } }: WalletViewProps) {
                 hideSquircle
                 onClick={() =>
                   browser.tabs.create({
-                    url: `https://www.ao.link/#/entity/${wallet.address}`
+                    url: `https://www.ao.link/#/entity/${wallet.address}`,
                   })
                 }
               />
@@ -277,9 +222,7 @@ export function WalletView({ params: { address } }: WalletViewProps) {
                 icon={<Icon color="primary" as={QrCode02} />}
                 hideSquircle
                 showArrow
-                onClick={() =>
-                  navigate(`/quick-settings/wallets/${address}/qr`)
-                }
+                onClick={() => navigate(`/quick-settings/wallets/${address}/qr`)}
               />
               <ListItem
                 title={browser.i18n.getMessage("export_keyfile")}
@@ -287,9 +230,7 @@ export function WalletView({ params: { address } }: WalletViewProps) {
                 icon={<Icon color="primary" as={Download01} />}
                 hideSquircle
                 showArrow
-                onClick={() =>
-                  navigate(`/quick-settings/wallets/${address}/export`)
-                }
+                onClick={() => navigate(`/quick-settings/wallets/${address}/export`)}
               />
             </div>
           </div>
@@ -299,11 +240,7 @@ export function WalletView({ params: { address } }: WalletViewProps) {
             {browser.i18n.getMessage("remove_account")}
           </RemoveButton>
         </div>
-        <SliderMenu
-          hasHeader={false}
-          isOpen={open}
-          onClose={() => setOpen(false)}
-        >
+        <SliderMenu hasHeader={false} isOpen={open} onClose={() => setOpen(false)}>
           <Section
             showPaddingHorizontal={false}
             showPaddingVertical={false}
@@ -312,9 +249,8 @@ export function WalletView({ params: { address } }: WalletViewProps) {
               gap: 24,
               height: "60vh",
               justifyContent: "space-between",
-              textAlign: "center"
-            }}
-          >
+              textAlign: "center",
+            }}>
             <div
               style={{
                 flex: 1,
@@ -322,36 +258,25 @@ export function WalletView({ params: { address } }: WalletViewProps) {
                 flexDirection: "column",
                 gap: 16,
                 alignItems: "center",
-                justifyContent: "center"
-              }}
-            >
+                justifyContent: "center",
+              }}>
               <AlertCircle height={48} width={48} color={theme.fail} />
               <div
                 style={{
                   display: "flex",
                   flexDirection: "column",
-                  gap: "0.5rem"
-                }}
-              >
+                  gap: "0.5rem",
+                }}>
                 <Text size="xl" weight="semibold" lineHeight={1.3} noMargin>
                   {browser.i18n.getMessage("remove_account")}?
                 </Text>
-                <Text
-                  variant="secondary"
-                  weight="medium"
-                  lineHeight={1.3}
-                  noMargin
-                >
+                <Text variant="secondary" weight="medium" lineHeight={1.3} noMargin>
                   {browser.i18n.getMessage("remove_account_description")}
                 </Text>
               </div>
             </div>
             <div style={{ display: "flex", gap: 8, width: "100%" }}>
-              <Button
-                fullWidth
-                variant="secondary"
-                onClick={() => setOpen(false)}
-              >
+              <Button fullWidth variant="secondary" onClick={() => setOpen(false)}>
                 {browser.i18n.getMessage("cancel")}
               </Button>
               <RemoveButton
@@ -361,24 +286,19 @@ export function WalletView({ params: { address } }: WalletViewProps) {
                     await removeWallet(address);
                     setToast({
                       type: "success",
-                      content: browser.i18n.getMessage(
-                        "removed_wallet_notification"
-                      ),
-                      duration: 2000
+                      content: browser.i18n.getMessage("removed_wallet_notification"),
+                      duration: 2000,
                     });
                     navigate("/quick-settings/wallets");
                   } catch (e) {
                     console.log("Error removing wallet", e);
                     setToast({
                       type: "error",
-                      content: browser.i18n.getMessage(
-                        "remove_wallet_error_notification"
-                      ),
-                      duration: 2000
+                      content: browser.i18n.getMessage("remove_wallet_error_notification"),
+                      duration: 2000,
                     });
                   }
-                }}
-              >
+                }}>
                 {browser.i18n.getMessage("remove")}
               </RemoveButton>
             </div>
@@ -390,7 +310,7 @@ export function WalletView({ params: { address } }: WalletViewProps) {
 }
 
 const Wrapper = styled(Section).attrs({
-  showPaddingVertical: false
+  showPaddingVertical: false,
 })`
   display: flex;
   flex-direction: column;
@@ -401,7 +321,7 @@ const Wrapper = styled(Section).attrs({
 const WalletName = styled(Text).attrs({
   noMargin: true,
   size: "xl",
-  weight: "semibold"
+  weight: "semibold",
 })`
   display: flex;
   align-items: center;
@@ -409,7 +329,7 @@ const WalletName = styled(Text).attrs({
 `;
 
 const HardwareWalletIcon = styled.img.attrs({
-  draggable: false
+  draggable: false,
 })`
   width: 32px;
   height: 32px;
@@ -420,7 +340,7 @@ const HardwareWalletIcon = styled.img.attrs({
 const WalletAddress = styled(Text).attrs({
   size: "sm",
   weight: "medium",
-  variant: "secondary"
+  variant: "secondary",
 })``;
 
 export const CopyButton = styled(CopyIcon)`
@@ -441,16 +361,13 @@ export const CopyButton = styled(CopyIcon)`
 `;
 
 export const RemoveButton = styled(Button).attrs({
-  variant: "secondary"
+  variant: "secondary",
 })`
-  background: ${({ theme }) =>
-    theme.displayTheme === "dark" ? "#372323" : "#ffeeed"};
-  color: ${({ theme }) =>
-    theme.displayTheme === "dark" ? "#F1655B" : "#D22B1F"};
+  background: ${({ theme }) => (theme.displayTheme === "dark" ? "#372323" : "#ffeeed")};
+  color: ${({ theme }) => (theme.displayTheme === "dark" ? "#F1655B" : "#D22B1F")};
 
   &:hover {
-    background: ${({ theme }) =>
-      theme.displayTheme === "dark" ? "#372323" : "#ffeeed"};
+    background: ${({ theme }) => (theme.displayTheme === "dark" ? "#372323" : "#ffeeed")};
     opacity: 0.8;
   }
 `;
@@ -458,6 +375,5 @@ export const RemoveButton = styled(Button).attrs({
 const Icon = styled(Cube01)<{ color?: "primary" | "secondary" | "tertiary" }>`
   height: 24px;
   width: 24px;
-  color: ${({ theme, color }) =>
-    color ? theme[`${color}Text`] : theme.primaryText};
+  color: ${({ theme, color }) => (color ? theme[`${color}Text`] : theme.primaryText)};
 `;

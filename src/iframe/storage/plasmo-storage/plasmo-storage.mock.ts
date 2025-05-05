@@ -1,28 +1,17 @@
-import {
-  Storage as PlasmoStorage,
-  type StorageCallbackMap,
-  type StorageWatchCallback
-} from "@plasmohq/storage";
+import { Storage as PlasmoStorage, type StorageCallbackMap, type StorageWatchCallback } from "@plasmohq/storage";
 import {
   EnhancedStorage,
   type ItemStorageOptions,
-  StorageManager
+  StorageManager,
 } from "../unpartitioned-storage/unpartitioned-storage";
 
 export interface StorageMockInterface extends PlasmoStorage {
-  setItem<T>(
-    key: string,
-    value: T,
-    options?: ItemStorageOptions
-  ): Promise<void>;
+  setItem<T>(key: string, value: T, options?: ItemStorageOptions): Promise<void>;
   getItem<T>(key: string): Promise<T | undefined>;
   removeItem(key: string): Promise<void>;
   getItems<T>(keys: string[]): Promise<Record<string, T | undefined>>;
   removeItems(keys: string[]): Promise<void>;
-  setItems(
-    items: Record<string, any>,
-    options?: ItemStorageOptions
-  ): Promise<void>;
+  setItems(items: Record<string, any>, options?: ItemStorageOptions): Promise<void>;
   watch(callbackMap: StorageCallbackMap): boolean;
   unwatch(callbackMap: StorageCallbackMap): null;
   unwatchAll(): void;
@@ -37,15 +26,12 @@ export interface StorageMockInterface extends PlasmoStorage {
     items: number;
     available: number;
   };
-  ensureSpace(
-    bytesNeeded: number,
-    options?: { skipCheck?: boolean; forceEviction?: boolean }
-  ): Promise<boolean>;
+  ensureSpace(bytesNeeded: number, options?: { skipCheck?: boolean; forceEviction?: boolean }): Promise<boolean>;
   setPrioritizedItem<T>(
     key: string,
     value: T,
     priority: keyof typeof StorageManager.PRIORITY_LEVELS,
-    expiresIn?: number
+    expiresIn?: number,
   ): Promise<void>;
   requestStorageAccess(): Promise<void>;
   requestAccessOnUserInteraction(): Promise<void>;
@@ -114,16 +100,11 @@ export class StorageMock extends PlasmoStorage implements StorageMockInterface {
   }
 
   get: <T = string>(key: string) => Promise<T | undefined> = this.getItem;
-  getMany: <T = any>(keys: string[]) => Promise<Record<string, T | undefined>> =
-    this.getItems;
+  getMany: <T = any>(keys: string[]) => Promise<Record<string, T | undefined>> = this.getItems;
 
   // SET:
 
-  setItem(
-    key: string,
-    rawValue: any,
-    options?: ItemStorageOptions
-  ): Promise<void> {
+  setItem(key: string, rawValue: any, options?: ItemStorageOptions): Promise<void> {
     return new Promise(async (resolve) => {
       await this.storePrevValue(key);
       this.storage.setItem(key, rawValue, options);
@@ -132,10 +113,7 @@ export class StorageMock extends PlasmoStorage implements StorageMockInterface {
     });
   }
 
-  setItems(
-    items: Record<string, any>,
-    options?: ItemStorageOptions
-  ): Promise<void> {
+  setItems(items: Record<string, any>, options?: ItemStorageOptions): Promise<void> {
     return new Promise<void>((resolve) => {
       this.storage.setItems(items, options);
       resolve();
@@ -189,9 +167,9 @@ export class StorageMock extends PlasmoStorage implements StorageMockInterface {
         callback(
           {
             newValue,
-            oldValue
+            oldValue,
           },
-          this.area
+          this.area,
         );
       } catch (err) {
         console.warn("Error calling watcher:", err);
@@ -275,11 +253,7 @@ export class StorageMock extends PlasmoStorage implements StorageMockInterface {
   /**
    * Store temporary data that can be easily evicted
    */
-  setTemporary<T>(
-    key: string,
-    value: T,
-    maxAge: number = 300000
-  ): Promise<void> {
+  setTemporary<T>(key: string, value: T, maxAge: number = 300000): Promise<void> {
     return new Promise((resolve) => {
       this.storage.setTemporary(key, value, maxAge);
       resolve();
@@ -329,7 +303,7 @@ export class StorageMock extends PlasmoStorage implements StorageMockInterface {
     key: string,
     value: T,
     priority: keyof typeof StorageManager.PRIORITY_LEVELS,
-    expiresIn?: number
+    expiresIn?: number,
   ): Promise<void> {
     return new Promise((resolve) => {
       this.storage.setPrioritizedItem(key, value, priority, expiresIn);

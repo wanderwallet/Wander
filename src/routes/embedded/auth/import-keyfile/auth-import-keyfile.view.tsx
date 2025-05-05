@@ -1,14 +1,7 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import {
-  Card,
-  Row,
-  Upload,
-  Copyable,
-  Button,
-  WanderFooter
-} from "~components/embed";
+import { Card, Row, Upload, Copyable, Button, WanderFooter } from "~components/embed";
 import copy from "copy-to-clipboard";
 import { useLocation } from "~wallets/router/router.utils";
 import { toast } from "react-toastify";
@@ -26,7 +19,7 @@ export function AuthImportKeyfileEmbeddedView() {
     deleteImportedTempWallet,
     registerWallet,
     wallets,
-    recoverWallet
+    recoverWallet,
   } = useEmbedded();
 
   const handleImportWallet = useCallback(async () => {
@@ -52,9 +45,7 @@ export function AuthImportKeyfileEmbeddedView() {
   const handleAddWallet = useCallback(async () => {
     try {
       setLoading(true);
-      const isWalletPresent = wallets.some(
-        ({ address }) => address === importedTempWalletAddress
-      );
+      const isWalletPresent = wallets.some(({ address }) => address === importedTempWalletAddress);
       if (isWalletPresent) {
         await recoverWallet(jsonData);
       } else {
@@ -86,8 +77,7 @@ export function AuthImportKeyfileEmbeddedView() {
       footerElement={<WanderFooter />}
       hasBackButton={true}
       onBackButtonClick={back}
-      size="auto"
-    >
+      size="auto">
       <Copyable
         isFullWidth
         label="Your wallet address"
@@ -97,19 +87,10 @@ export function AuthImportKeyfileEmbeddedView() {
         value={importedTempWalletAddress}
       />
       <Row>
-        <Button
-          variant="secondary"
-          size="md"
-          onClick={deleteImportedTempWallet}
-        >
+        <Button variant="secondary" size="md" onClick={deleteImportedTempWallet}>
           No, try again
         </Button>
-        <Button
-          variant="primary"
-          size="md"
-          onClick={handleAddWallet}
-          isLoading={loading}
-        >
+        <Button variant="primary" size="md" onClick={handleAddWallet} isLoading={loading}>
           Yes, add
         </Button>
       </Row>
@@ -121,8 +102,7 @@ export function AuthImportKeyfileEmbeddedView() {
       footerElement={<WanderFooter />}
       hasBackButton={true}
       onBackButtonClick={back}
-      size="auto"
-    >
+      size="auto">
       <Upload
         isFullWidth
         title={"Click to upload"}
@@ -131,13 +111,7 @@ export function AuthImportKeyfileEmbeddedView() {
         loadingText={"Recovering account..."}
         onFileParse={handleJsonParse}
       />
-      <Button
-        isFullWidth
-        size="md"
-        isLoading={loading}
-        isDisabled={!jsonData || loading}
-        onClick={handleImportWallet}
-      >
+      <Button isFullWidth size="md" isLoading={loading} isDisabled={!jsonData || loading} onClick={handleImportWallet}>
         Import
       </Button>
     </Card>

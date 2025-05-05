@@ -1,20 +1,11 @@
-import {
-  isAppInfo,
-  isGateway,
-  isNotEmptyArray,
-  isPermissionsArray
-} from "~utils/assertions";
+import { isAppInfo, isGateway, isNotEmptyArray, isPermissionsArray } from "~utils/assertions";
 import { getMissingPermissions } from "~applications/permissions";
 import { createContextMenus } from "~utils/context_menus";
 import type { BackgroundModuleFunction } from "~api/background/background-modules";
 import { updateIcon } from "~utils/icon";
 import Application from "~applications/application";
 import { requestUserAuthorization } from "../../../utils/auth/auth.utils";
-import {
-  getActiveAddress,
-  getWallets,
-  openOrSelectWelcomePage
-} from "~wallets";
+import { getActiveAddress, getWallets, openOrSelectWelcomePage } from "~wallets";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 import { ERR_MSG_NO_WALLETS_ADDED } from "~utils/auth/auth.constants";
 
@@ -22,7 +13,7 @@ const background: BackgroundModuleFunction<void> = async (
   appData,
   permissions: unknown,
   appInfo: unknown = {},
-  gateway?: unknown
+  gateway?: unknown,
 ) => {
   // validate input
   isNotEmptyArray(permissions);
@@ -37,10 +28,7 @@ const background: BackgroundModuleFunction<void> = async (
   // there are no wallets or active address, but the app permissions are still stored in localStorage, so without this
   // checks here, this function will return normally in the early return a few lines below.
 
-  const [activeAddress, wallets] = await Promise.all([
-    getActiveAddress(),
-    getWallets()
-  ]);
+  const [activeAddress, wallets] = await Promise.all([getActiveAddress(), getWallets()]);
 
   const hasWallets = activeAddress && wallets.length > 0;
 
@@ -48,7 +36,7 @@ const background: BackgroundModuleFunction<void> = async (
     if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1") {
       postEmbeddedMessage({
         type: "embedded_open",
-        data: null
+        data: null,
       });
     } else {
       openOrSelectWelcomePage(true);
@@ -64,10 +52,7 @@ const background: BackgroundModuleFunction<void> = async (
   // compare existing permissions
   if (existingPermissions) {
     // the permissions the dApp does not have yet
-    const requiredPermissions = getMissingPermissions(
-      existingPermissions,
-      permissions
-    );
+    const requiredPermissions = getMissingPermissions(existingPermissions, permissions);
 
     // check if all requested permissions are available for the app
     // if yes, we don't do anything
@@ -86,9 +71,9 @@ const background: BackgroundModuleFunction<void> = async (
         type: "connect",
         permissions,
         appInfo,
-        gateway
+        gateway,
       },
-      appData
+      appData,
     );
 
     // add features available after connection

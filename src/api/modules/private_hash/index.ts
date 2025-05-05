@@ -5,7 +5,7 @@ const permissions: PermissionType[] = ["SIGNATURE"];
 
 const privateHash: ModuleProperties = {
   functionName: "privateHash",
-  permissions
+  permissions,
 };
 
 export default privateHash;

@@ -8,10 +8,7 @@ export default function WalletActions() {
   return (
     <Container>
       {actions.map((action) => (
-        <ActionItem
-          key={action.name}
-          onClick={() => navigate(action.route as NavigateAction)}
-        >
+        <ActionItem key={action.name} onClick={() => navigate(action.route as NavigateAction)}>
           <CircleButton>{action.icon}</CircleButton>
           <span>{browser.i18n.getMessage(action.label)}</span>
         </ActionItem>
@@ -27,8 +24,7 @@ const ReceiveIcon = ({ flipped = false }: { flipped?: boolean }) => (
     height="56"
     viewBox="0 0 57 56"
     fill="none"
-    style={flipped ? { transform: "rotate(180deg)" } : undefined}
-  >
+    style={flipped ? { transform: "rotate(180deg)" } : undefined}>
     <path
       fillRule="evenodd"
       clipRule="evenodd"
@@ -39,13 +35,7 @@ const ReceiveIcon = ({ flipped = false }: { flipped?: boolean }) => (
 );
 
 const BuyIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="57"
-    height="56"
-    viewBox="0 0 57 56"
-    fill="none"
-  >
+  <svg xmlns="http://www.w3.org/2000/svg" width="57" height="56" viewBox="0 0 57 56" fill="none">
     <path
       fillRule="evenodd"
       clipRule="evenodd"
@@ -60,20 +50,20 @@ const actions = [
     name: "send",
     label: "send",
     icon: <ReceiveIcon flipped={true} />,
-    route: "/send/transfer"
+    route: "/send/transfer",
   },
   {
     name: "receive",
     label: "receive",
     icon: <ReceiveIcon />,
-    route: "/receive"
+    route: "/receive",
   },
   {
     name: "buy",
     label: "buy",
     icon: <BuyIcon />,
-    route: "/purchase"
-  }
+    route: "/purchase",
+  },
 ];
 
 const Container = styled.div`
@@ -109,8 +99,7 @@ const CircleButton = styled.div`
   }
 
   &:active {
-    background: ${({ theme }) =>
-      theme.displayTheme === "dark" ? "#2A2260" : "#E3E1FA"};
+    background: ${({ theme }) => (theme.displayTheme === "dark" ? "#2A2260" : "#E3E1FA")};
   }
 `;
 
@@ -126,7 +115,6 @@ const ActionItem = styled.div`
   color: ${({ theme }) => (theme.displayTheme === "dark" ? "#AAA" : "#666")};
   &:hover,
   &:active {
-    color: ${({ theme }) =>
-      theme.displayTheme === "dark" ? "#75747D" : "#878596"};
+    color: ${({ theme }) => (theme.displayTheme === "dark" ? "#75747D" : "#878596")};
   }
 `;

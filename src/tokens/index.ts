@@ -5,9 +5,7 @@ import type { TokenInfoWithProcessId } from "./aoTokens/ao";
  * Get stored ao tokens
  */
 export async function getAoTokens() {
-  const tokens = await PersistentStorage.get<TokenInfoWithProcessId[]>(
-    "ao_tokens"
-  );
+  const tokens = await PersistentStorage.get<TokenInfoWithProcessId[]>("ao_tokens");
 
   return tokens || [];
 }
@@ -16,9 +14,7 @@ export async function getAoTokens() {
  * Get stored ao tokens cache
  */
 export async function getAoTokensCache() {
-  const tokens = await PersistentStorage.get<TokenInfoWithProcessId[]>(
-    "ao_tokens_cache"
-  );
+  const tokens = await PersistentStorage.get<TokenInfoWithProcessId[]>("ao_tokens_cache");
 
   return tokens || [];
 }
@@ -27,9 +23,7 @@ export async function getAoTokensCache() {
  * Get stored ao tokens removed ids
  */
 export async function getAoTokensAutoImportRestrictedIds() {
-  const removedIds = await PersistentStorage.get<string[]>(
-    "ao_tokens_auto_import_restricted_ids"
-  );
+  const removedIds = await PersistentStorage.get<string[]>("ao_tokens_auto_import_restricted_ids");
 
   return removedIds || [];
 }
@@ -46,14 +40,11 @@ export async function removeToken(id: string) {
     const restrictedTokenIds = await getAoTokensAutoImportRestrictedIds();
     if (!restrictedTokenIds.includes(id)) {
       restrictedTokenIds.push(id);
-      await PersistentStorage.set(
-        "ao_tokens_auto_import_restricted_ids",
-        restrictedTokenIds
-      );
+      await PersistentStorage.set("ao_tokens_auto_import_restricted_ids", restrictedTokenIds);
     }
     await PersistentStorage.set(
       "ao_tokens",
-      aoTokens.filter((token) => token.processId !== id)
+      aoTokens.filter((token) => token.processId !== id),
     );
   }
 }

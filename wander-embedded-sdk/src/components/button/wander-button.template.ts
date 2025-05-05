@@ -1,7 +1,4 @@
-import {
-  WanderEmbeddedButtonLabels,
-  WanderEmbeddedLogoVariant
-} from "../../wander-embedded.types";
+import { WanderEmbeddedButtonLabels, WanderEmbeddedLogoVariant } from "../../wander-embedded.types";
 
 export interface WanderButtonTemplateContentOptions {
   wanderLogo: WanderEmbeddedLogoVariant;
@@ -20,7 +17,7 @@ export const getWanderButtonTemplateContent = ({
   showLabel,
   showBalance,
   customStyles,
-  cssVariableKeys = []
+  cssVariableKeys = [],
 }: WanderButtonTemplateContentOptions) => `
 <style>
 
@@ -229,13 +226,9 @@ export const getWanderButtonTemplateContent = ({
       fill-rule="evenodd"
       clip-rule="evenodd" />
     <path d="M209.689 120.406L256.138 21.2852C257.135 19.114 254.755 16.9443 252.685 18.1364L183.231 58.0562L138.086 108.914L209.689 120.406Z"
-      fill="${
-        wanderLogo === "text-color" ? "currentColor" : "url(#gradient2)"
-      }" />
+      fill="${wanderLogo === "text-color" ? "currentColor" : "url(#gradient2)"}" />
     <path d="M47.211 120.406L0.762138 21.2853C-0.234245 19.1141 2.14523 16.9445 4.21552 18.1365L73.6694 58.0564L118.814 108.914L47.211 120.406Z"
-      fill="${
-        wanderLogo === "text-color" ? "currentColor" : "url(#gradient3)"
-      }" />
+      fill="${wanderLogo === "text-color" ? "currentColor" : "url(#gradient3)"}" />
 
     <defs>
       <linearGradient
@@ -274,9 +267,7 @@ export const getWanderButtonTemplateContent = ({
   </svg>
 
   <span class="label" ${showLabel ? "" : "hidden"}></span>
-  <span class="balance" ${showBalance ? "" : "hidden"} title="${
-  i18n.loadingBalance
-}"></span>
+  <span class="balance" ${showBalance ? "" : "hidden"} title="${i18n.loadingBalance}"></span>
 </button>
 
 <span class="indicator"></span>
