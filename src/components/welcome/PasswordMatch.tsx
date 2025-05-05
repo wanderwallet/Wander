@@ -2,6 +2,7 @@ import { AnimatePresence, motion, type Variants } from "framer-motion";
 import { Spacer, Text } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
 import styled from "styled-components";
+import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 
 const PasswordMatch = ({ matches }: Props) => (
   <AnimatePresence>
@@ -25,7 +26,7 @@ const MatchIndicator = styled(Text).attrs({
   noMargin: true,
   size: "sm"
 })`
-  color: #56c980;
+  color: ${IS_EMBEDDED_APP ? "#007229" : "#56c980"};
 `;
 
 const opacityAnimation: Variants = {

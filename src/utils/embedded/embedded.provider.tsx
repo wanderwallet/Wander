@@ -65,7 +65,8 @@ const EMBEDDED_CONTEXT_INITIAL_STATE = {
   generatedTempWalletAddress: null,
   importedTempWalletAddress: null,
   lastRegisteredWallet: null,
-  recoverableAccounts: null
+  recoverableAccounts: null,
+  authEmail: null
 } as const satisfies EmbeddedContextState;
 
 const EMBEDDED_CONTEXT_INITIAL_AUTH = {
@@ -101,7 +102,10 @@ export const EmbeddedContext = createContext<EmbeddedContextData>({
   downloadKeyfile: async () => null,
   copySeedphrase: async () => null,
   getSeedphrase: async () => null,
-  generateRecoveryAndDownload: async () => null
+  generateRecoveryAndDownload: async () => null,
+
+  // Supabase email auth
+  setAuthEmail: () => null
 });
 
 export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
@@ -455,7 +459,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
           generatedTempWalletAddress: null,
           importedTempWalletAddress: null,
           lastRegisteredWallet: isNewWallet ? wallet : null,
-          recoverableAccounts: null
+          recoverableAccounts: null,
+          authEmail: null
         } satisfies EmbeddedContextState;
       });
 
@@ -1046,6 +1051,13 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     [user]
   );
 
+  const setAuthEmail = useCallback((email: string) => {
+    setEmbeddedContextAuth((prevAuthContextAuth) => ({
+      ...prevAuthContextAuth,
+      authEmail: email
+    }));
+  }, []);
+
   // INITIALIZATION:
 
   const lastUserIdRef = useRef<string | null>(null);
@@ -1362,6 +1374,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         clearRecoverableAccounts,
         recoverAccount,
         recoverWallet,
+
+        setAuthEmail,
 
         generateTempWallet,
         deleteGeneratedTempWallet,
