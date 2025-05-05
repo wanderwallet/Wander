@@ -9,12 +9,7 @@ import {
   ThemeSetting,
   WanderEmbeddedOptions
 } from "./wander-embedded.types";
-import {
-  IncomingAuthMessageData,
-  IncomingBalanceMessageData,
-  IncomingRequestMessageData,
-  IncomingResizeMessageData
-} from "./utils/message/message.types";
+import { IncomingRequestMessageData } from "./utils/message/message.types";
 import {
   isEventMessage,
   isIncomingMessage,
@@ -58,7 +53,12 @@ type OpenReason = "manually" | "embedded_open" | "embedded_request";
 export class WanderEmbedded {
   private static instance: WanderEmbedded | null = null;
 
+  static WANDER_CONNECT_WALLET_NAME = "Wander Embedded" as const;
+
   static AUTH_STATE_LS_KEY = "WANDER_CONNECT_AUTH_STATE" as const;
+
+  static NATIVE_WALLET_ENABLED_KEY =
+    "WANDER_CONNECT_NATIVE_WALLET_ENABLED" as const;
 
   static DEFAULT_IFRAME_SRC =
     process.env.NODE_ENV === "development"
@@ -118,6 +118,8 @@ export class WanderEmbedded {
 
   private isWalletReady = false;
 
+  private isNativeWalletEnabled = false;
+
   private windowArweaveWallet: any = null;
 
   /**
@@ -171,13 +173,21 @@ export class WanderEmbedded {
       if (authState) {
         // We initialize it as "loading" as we cannot still trust the cached data. The session still needs to be verified:
         this.authenticationState = {
-          authType: authState.authType,
+          authType: authState.authType || null,
           authStatus: "loading",
-          userDetails: authState.userDetails
+          userDetails: authState.userDetails || null
         };
       }
     } catch (err) {
       console.warn("Error parsing last authentication state:", err);
+    }
+
+    try {
+      this.isNativeWalletEnabled =
+        localStorage.getItem(WanderEmbedded.NATIVE_WALLET_ENABLED_KEY) ===
+        "true";
+    } catch (err) {
+      console.warn("Error parsing last native wallet enabled:", err);
     }
 
     // Create or get references to iframe and, maybe, button:
@@ -192,84 +202,81 @@ export class WanderEmbedded {
     window.addEventListener("message", this.handleMessage);
 
     // We get a reference to any other `window.arweaveWallet` (most likely our BE), in case we need to swap them back:
-    if (window.arweaveWallet.walletName !== "Wander Embedded") {
+    if (
+      window.arweaveWallet.walletName !==
+      WanderEmbedded.WANDER_CONNECT_WALLET_NAME
+    ) {
       this.windowArweaveWallet = window.arweaveWallet;
     }
 
     // We inject the embedded wallet API, unless the user has previously selected using the native wallet:
-    this.injectConnectWalletSDK(this.iframeRef, this.authenticationState);
+    this.injectConnectWalletSDK(this.iframeRef);
   }
 
-  private async injectConnectWalletSDK(
-    iframeRef: HTMLIFrameElement,
-    authenticationState: IncomingAuthMessageData
-  ) {
-    // This block only runs if
-    // - The currently injected wallet is NOT Wander Connect already.
-    // - The current/last selected auth type was NOT the native wallet.
-
+  private injectConnectWalletSDK(iframeRef: HTMLIFrameElement) {
     if (
-      window.arweaveWallet?.walletName !== "Wander Embedded" &&
-      authenticationState.authType !== "NATIVE_WALLET"
-    ) {
-      this.isWalletReady = false;
+      this.isNativeWalletEnabled ||
+      window.arweaveWallet?.walletName ===
+        WanderEmbedded.WANDER_CONNECT_WALLET_NAME
+    )
+      return;
 
-      setupEmbeddedWalletSDK(iframeRef);
-    }
+    this.isWalletReady = false;
 
-    // Below, we can be sure the injected wallet is Wander Connect. Next, we need to make sure that, once authentication
-    // (and onboarding) complete:
-    // - We trigger a "arweaveWalletLoaded" event.
-    // - If the dApp was already connected, we trigger a "connect" event too.
-
-    if (
-      !this.isWalletReady &&
-      authenticationState.authStatus === "authenticated"
-    ) {
-      this.isWalletReady = true;
-
-      const permissions = await window.arweaveWallet
-        .getPermissions()
-        .catch(() => []);
-
-      // Note that for Wander Connect we just need to dispatch this once, no need to subscribe to the window load event to re-dispatch it:
-      dispatchEvent(
-        new CustomEvent("arweaveWalletLoaded", {
-          detail: {
-            permissions
-          }
-        })
-      );
-
-      if (permissions.length > 0) {
-        this.buttonComponent?.setStatus("isConnected");
-      } else {
-        this.buttonComponent?.unsetStatus("isConnected");
-      }
-
-      const events = window.arweaveWallet?.events;
-
-      if (events && permissions.length > 0) {
-        events.emit("connect", null);
-
-        const [activeAddress, addresses] = await Promise.all([
-          window.arweaveWallet.getActiveAddress().catch(() => ""),
-          window.arweaveWallet.getAllAddresses().catch(() => [])
-        ]);
-
-        events.emit("activeAddress", activeAddress);
-        events.emit("addresses", addresses);
-      }
-    }
+    setupEmbeddedWalletSDK(iframeRef);
   }
 
   private injectNativeWalletSDK() {
     // This functions only does something if the currently injected wallet IS Wander Connect:
-    if (window.arweaveWallet?.walletName !== "Wander Embedded") return;
+    if (
+      !this.isNativeWalletEnabled ||
+      window.arweaveWallet?.walletName !==
+        WanderEmbedded.WANDER_CONNECT_WALLET_NAME
+    )
+      return;
 
     this.isWalletReady = false;
 
     window.arweaveWallet = this.windowArweaveWallet;
+  }
+
+  private async dispatchWalletLoadedEvents() {
+    if (this.isNativeWalletEnabled || this.isWalletReady) return;
+
+    this.isWalletReady = true;
+
+    const permissions = await window.arweaveWallet
+      .getPermissions()
+      .catch(() => []);
+
+    // Note that for Wander Connect we just need to dispatch this once, no need to subscribe to the window load event to re-dispatch it:
+    dispatchEvent(
+      new CustomEvent("arweaveWalletLoaded", {
+        detail: {
+          permissions
+        }
+      })
+    );
+
+    if (permissions.length > 0) {
+      this.buttonComponent?.setStatus("isConnected");
+    } else {
+      this.buttonComponent?.unsetStatus("isConnected");
+    }
+
+    const events = window.arweaveWallet?.events;
+
+    if (events && permissions.length > 0) {
+      events.emit("connect", null);
+
+      const [activeAddress, addresses] = await Promise.all([
+        window.arweaveWallet.getActiveAddress().catch(() => ""),
+        window.arweaveWallet.getAllAddresses().catch(() => [])
+      ]);
+
+      events.emit("activeAddress", activeAddress);
+      events.emit("addresses", addresses);
+    }
   }
 
   private initializeComponents(options: WanderEmbeddedOptions): void {
@@ -396,8 +403,8 @@ export class WanderEmbedded {
 
     switch (message.type) {
       case "embedded_auth":
-        const { authType, authStatus } = (this.authenticationState =
-          message.data);
+        const messageData = (this.authenticationState = message.data);
+        const { authType, authStatus } = messageData;
 
         if (authStatus === "not-authenticated") {
           localStorage.removeItem(WanderEmbedded.AUTH_STATE_LS_KEY);
@@ -405,7 +412,7 @@ export class WanderEmbedded {
           try {
             localStorage.setItem(
               WanderEmbedded.AUTH_STATE_LS_KEY,
-              JSON.stringify(message.data)
+              JSON.stringify(messageData)
             );
           } catch (err) {
             console.warn("Error storing last authentication state:", err);
@@ -413,13 +420,29 @@ export class WanderEmbedded {
         }
 
         if (authType === "NATIVE_WALLET") {
+          this.isNativeWalletEnabled = true;
+          localStorage.setItem(
+            WanderEmbedded.NATIVE_WALLET_ENABLED_KEY,
+            "true"
+          );
+
           // If the user selected using the native wallet, we close the modal and swap the injected API back:
           this._close();
           this.injectNativeWalletSDK();
         } else {
-          // Check that the injected wallet is Wander Connect (as it should), or inject it again (in case the last used
-          // option was "NATIVE_WALLET"):
-          this.injectConnectWalletSDK(this.iframeRef, this.authenticationState);
+          if (authType) {
+            this.isNativeWalletEnabled = false;
+            localStorage.removeItem(WanderEmbedded.NATIVE_WALLET_ENABLED_KEY);
+          }
+
+          // Check that the injected wallet is Wander Connect (as it should), or inject it again as soon as possible.
+          // This could happen when, for example, the last used option was "NATIVE_WALLET", so the Wander Connect API
+          // wasn't injected yet, and the user now selects an authentication method to use Wander Connect.
+          this.injectConnectWalletSDK(this.iframeRef);
+
+          if (authStatus === "authenticated") {
+            this.dispatchWalletLoadedEvents();
+          }
 
           // Update button for all authentication changes:
           this.buttonComponent?.setVariant(authStatus);
@@ -436,7 +459,15 @@ export class WanderEmbedded {
           }
         }
 
-        this.onAuth(message.data);
+        if (this.isNativeWalletEnabled) {
+          this.onAuth({
+            authType: "NATIVE_WALLET",
+            authStatus: null,
+            userDetails: null
+          });
+        } else {
+          this.onAuth(messageData);
+        }
 
         break;
 

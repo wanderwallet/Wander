@@ -26,6 +26,8 @@ const messageKeyFnByType: {
   [K in EmbeddedMessageId]: (data: EmbeddedMessageMap[K]) => string | null;
 } = {
   embedded_auth: (data) => {
+    if (!data.authStatus) return null;
+
     return [
       data.authType,
       data.authStatus,

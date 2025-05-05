@@ -156,7 +156,8 @@ export function AuthEmbeddedView() {
             <GoogleIcon fontSize={24} />
           </Button>
           {EMBEDDED_HIDE_BE ||
-          window.arweaveWallet?.walletName !== "ArConnect" ? null : (
+          (!!window.arweaveWallet?.walletName &&
+            window.arweaveWallet?.walletName !== "ArConnect") ? null : (
             <Button
               variant="outlined"
               size="md"

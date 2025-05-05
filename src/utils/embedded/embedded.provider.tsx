@@ -1299,9 +1299,6 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
         const accessToken = session?.access_token ?? null;
         const user = session?.user ?? null;
-
-        console.log("session =", session);
-
         const authProviderType = getAuthProviderTypeFromSupabaseUser(user);
 
         if (
