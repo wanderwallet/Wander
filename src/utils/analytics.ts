@@ -6,12 +6,12 @@ import {
   getActiveAddress,
   getWalletKeyLength
 } from "~wallets";
-import { v4 as uuid } from "uuid";
 import browser from "webextension-polyfill";
 import axios from "axios";
 import { isLocalWallet } from "./assertions";
 import { freeDecryptedWallet } from "~wallets/encryption";
 import { ERR_MSG_NO_WALLETS_ADDED } from "~utils/auth/auth.constants";
+import { nanoid } from "nanoid";
 
 const PUBLIC_SEGMENT_WRITEKEY = "J97E4cvSZqmpeEdiUQNC2IxS1Kw4Cwxm";
 
@@ -75,12 +75,16 @@ export enum PageType {
 }
 
 export const trackPage = async (title: PageType) => {
+  // Only track BE production events:
+  if (
+    process.env.NODE_ENV === "development" ||
+    import.meta.env?.VITE_IS_EMBEDDED_APP === "1"
+  )
+    return;
+
   const enabled = await getSetting("analytics").getValue();
 
   if (!enabled) return;
-
-  // only track in prod
-  if (process.env.NODE_ENV === "development") return;
 
   try {
     await analytics.page("Wander Extension", {
@@ -95,16 +99,21 @@ export const trackDirect = async (
   event: EventType,
   properties: Record<string, unknown>
 ) => {
+  // Only track BE production events:
+  if (
+    process.env.NODE_ENV === "development" ||
+    import.meta.env?.VITE_IS_EMBEDDED_APP === "1"
+  )
+    return;
+
   const enabled = await getSetting("analytics").getValue();
 
   if (!enabled) return;
 
-  // only track in prod
-  if (process.env.NODE_ENV === "development") return;
-
+  // TODO: We probably want to update this for Connect:
   let userId = await ExtensionStorage.get("user_id");
   if (!userId) {
-    userId = uuid();
+    userId = nanoid();
     await ExtensionStorage.set("user_id", userId);
   }
 
@@ -113,7 +122,7 @@ export const trackDirect = async (
     body: JSON.stringify({
       event,
       properties,
-      messageId: uuid(),
+      messageId: nanoid(),
       sentAt: new Date().toISOString(),
       timestamp: new Date().toISOString(),
       type: "track",
@@ -124,13 +133,17 @@ export const trackDirect = async (
 };
 
 export const trackEvent = async (eventName: EventType, properties: any) => {
+  // Only track BE production events:
+  if (
+    process.env.NODE_ENV === "development" ||
+    import.meta.env?.VITE_IS_EMBEDDED_APP === "1"
+  )
+    return;
+
   // first we check if we are allowed to collect data
   const enabled = await getSetting("analytics").getValue();
 
   if (!enabled) return;
-
-  // only track in prod
-  if (process.env.NODE_ENV === "development") return;
 
   const ONE_HOUR_IN_MS = 3600000;
 

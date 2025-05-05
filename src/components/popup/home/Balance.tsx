@@ -37,6 +37,8 @@ export default function Balance() {
   );
 
   useEffect(() => {
+    if (import.meta.env?.VITE_IS_EMBEDDED_APP !== "1") return;
+
     // TODO: The balance and fiat balance should be loaded and calculated from a provider / background service. Relying
     // on a comment, that might or might not render, to update the SDK balance, is a rather poor implementation.
 

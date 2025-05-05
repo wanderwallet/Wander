@@ -1,7 +1,7 @@
 import { type HTMLProps, useEffect, useMemo, useState } from "react";
-import { v4 as uuid } from "uuid";
 import styled from "styled-components";
 import axios from "axios";
+import { nanoid } from "nanoid";
 
 export interface SquircleProps {
   img?: string;
@@ -18,7 +18,7 @@ export default function Squircle({
 }: HTMLProps<HTMLDivElement> & SquircleProps) {
   const [imageData, setImageData] = useState<string>();
 
-  const svgPathId = useMemo(() => uuid(), [img]);
+  const svgPathId = useMemo(() => nanoid(), [img]);
 
   // load the image with axios
   // we use this to have a nicer loading
