@@ -144,16 +144,16 @@ export async function searchArNSName(name: string) {
 /**
  * Generalized method to find the logo (avatar) for an ArNS name.
  * Fetches the ArNS record and ANT info to retrieve the transaction ID for the logo.
- * @param name - The ArNS name to fetch the logo for.
+ * @param primaryName - The ArNSPrimaryName to fetch the logo for.
  * @returns The transaction ID of the logo if found, otherwise undefined.
  */
-export async function findLogo(processId: string): Promise<string | undefined> {
+export async function findLogo(primaryName: ArNSPrimaryName): Promise<string | undefined> {
   try {
     // Fetch the ANT info to get the logo transaction ID
-    const antInfo = await getANTState(processId);
+    const antInfo = await getANTState(primaryName.processId);
     return antInfo?.Logo;
   } catch (error) {
-    console.error(`Failed to fetch logo for name ${name}:`, error);
+    console.error(`Failed to fetch logo for name ${primaryName.name}:`, error);
     return undefined;
   }
 }
@@ -185,7 +185,7 @@ export async function getArNSProfile(query: string): Promise<NameServiceProfile 
   try {
     // Fetch the primary name and logo
     const primaryName = await getPrimaryArNSName(query);
-    const logo = await findLogo(primaryName.processId);
+    const logo = await findLogo(primaryName);
 
     return {
       address: query,

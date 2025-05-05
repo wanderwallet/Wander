@@ -67,7 +67,7 @@
     "@keystonehq/bc-ur-registry-arweave": "^0.5.3",
     "@ngraveio/bc-ur": "^1.1.6",
     "@number-flow/react": "^0.5.5",
-    "@permaweb/aoconnect": "^0.0.82",
+    "@permaweb/aoconnect": "0.0.55",
     "@plasmohq/storage": "^1.7.2",
     "@segment/analytics-next": "^1.53.2",
     "@swyg/corre": "^1.0.4",
