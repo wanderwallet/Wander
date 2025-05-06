@@ -8,13 +8,13 @@ import {
   isEncryptionAlgorithm,
   isLegacyEncryptionOptions,
   isLocalWallet,
-  isRawArrayBuffer
+  isRawArrayBuffer,
 } from "~utils/assertions";
 
 const background: BackgroundModuleFunction<Uint8Array> = async (
   appData,
   data: unknown,
-  options: Record<string, unknown>
+  options: Record<string, unknown>,
 ) => {
   // grab the user's keyfile
   const decryptedWallet = await getActiveKeyfile(appData);
@@ -29,7 +29,7 @@ const background: BackgroundModuleFunction<Uint8Array> = async (
     e: "AQAB",
     n: keyfile.n,
     alg: "RSA-OAEP-256",
-    ext: true
+    ext: true,
   };
 
   // remove wallet from memory
@@ -46,11 +46,11 @@ const background: BackgroundModuleFunction<Uint8Array> = async (
       {
         name: options.algorithm,
         hash: {
-          name: options.hash
-        }
+          name: options.hash,
+        },
       },
       false,
-      ["encrypt"]
+      ["encrypt"],
     );
 
     // create arweave client
@@ -67,7 +67,7 @@ const background: BackgroundModuleFunction<Uint8Array> = async (
 
       dataBuff = arweave.utils.concatBuffers([
         new Uint8Array(Object.values(data)),
-        new TextEncoder().encode(options.salt || "")
+        new TextEncoder().encode(options.salt || ""),
       ]);
     }
 
@@ -77,18 +77,10 @@ const background: BackgroundModuleFunction<Uint8Array> = async (
     crypto.getRandomValues(keyBuff);
 
     // encrypt data
-    const encryptedData = await arweave.crypto.encrypt(
-      dataBuff,
-      keyBuff,
-      options.salt
-    );
+    const encryptedData = await arweave.crypto.encrypt(dataBuff, keyBuff, options.salt);
 
     // encrypt key
-    const encryptedKey = await crypto.subtle.encrypt(
-      { name: options.algorithm },
-      key,
-      keyBuff
-    );
+    const encryptedKey = await crypto.subtle.encrypt({ name: options.algorithm }, key, keyBuff);
 
     return arweave.utils.concatBuffers([encryptedKey, encryptedData]);
   } else if (options.name && typeof data !== "string") {
@@ -106,10 +98,10 @@ const background: BackgroundModuleFunction<Uint8Array> = async (
       publicKey,
       {
         name: "RSA-OAEP",
-        hash: "SHA-256"
+        hash: "SHA-256",
       },
       false,
-      ["encrypt"]
+      ["encrypt"],
     );
     const encrypted = await crypto.subtle.encrypt(options, key, data);
 

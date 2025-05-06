@@ -1,10 +1,4 @@
-import {
-  ArweaveSigner,
-  DataItem,
-  Signer,
-  createData,
-  type DataItemCreateOptions
-} from "arbundles";
+import { DataItem, Signer, createData, type DataItemCreateOptions } from "@dha-team/arbundles";
 
 export interface SignerConfig {
   signatureType: number;
@@ -33,7 +27,7 @@ class DummySigner implements Signer {
 export const createDataItem = (
   binary: Uint8Array,
   signerConfig: SignerConfig,
-  options: DataItemCreateOptions
+  options: DataItemCreateOptions,
 ): DataItem => {
   return createData(binary, new DummySigner(signerConfig), options);
 };

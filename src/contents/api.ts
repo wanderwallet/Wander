@@ -9,7 +9,7 @@ log(LOG_GROUP.SETUP, "api.ts");
 export const config: PlasmoCSConfig = {
   matches: ["file://*/*", "http://*/*", "https://*/*"],
   run_at: "document_start",
-  all_frames: true
+  all_frames: true,
 };
 
 // inject API script into the window
@@ -51,7 +51,7 @@ window.addEventListener("message", async ({ data }: MessageEvent<ApiCall>) => {
   const res = await isomorphicSendMessage({
     destination: "background",
     messageId: data.type === "chunk" ? "chunk" : "api_call",
-    data
+    data,
   });
 
   // TODO: If the call above fails, this API call never gets a response. Add timeout?

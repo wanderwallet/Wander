@@ -1,8 +1,5 @@
 import { Box, Text } from "~components/embed/ui";
-import {
-  getFullMonthNameWithYear,
-  type ExtendedTransaction
-} from "~lib/transactions";
+import { getFullMonthNameWithYear, type ExtendedTransaction } from "~lib/transactions";
 import TransactionItem from "./TransactionItem";
 
 interface TransactionGroupProps {
@@ -10,10 +7,7 @@ interface TransactionGroupProps {
   transactions: ExtendedTransaction[];
 }
 
-const TransactionGroup = ({
-  monthYear,
-  transactions
-}: TransactionGroupProps) => {
+const TransactionGroup = ({ monthYear, transactions }: TransactionGroupProps) => {
   return (
     <Box style={{ padding: 0 }}>
       <Text alignment="left" style={{ color: "#121212" }}>
@@ -21,10 +15,7 @@ const TransactionGroup = ({
       </Text>
       <Box style={{ padding: 0 }}>
         {transactions.map((transaction) => (
-          <TransactionItem
-            key={transaction.node.id}
-            transaction={transaction}
-          />
+          <TransactionItem key={transaction.node.id} transaction={transaction} />
         ))}
       </Box>
     </Box>

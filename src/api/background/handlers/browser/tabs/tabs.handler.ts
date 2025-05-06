@@ -1,10 +1,6 @@
 import Application from "~applications/application";
 import { getTab } from "~applications/tab";
-import {
-  getCachedAuthPopupWindowTabID,
-  resetKeepAlive,
-  resetPopupTabID
-} from "~utils/auth/auth.utils";
+import { getCachedAuthPopupWindowTabID, resetKeepAlive, resetPopupTabID } from "~utils/auth/auth.utils";
 import { createContextMenus } from "~utils/context_menus";
 import { getAppURL } from "~utils/format";
 import { updateIcon } from "~utils/icon";
@@ -16,17 +12,14 @@ import browser from "webextension-polyfill";
  *
  * @param tabId ID of the tab to get.
  */
-export async function handleTabUpdate(
-  tabID: number,
-  changeInfo?: browser.Tabs.OnUpdatedChangeInfoType
-) {
+export async function handleTabUpdate(tabID: number, changeInfo?: browser.Tabs.OnUpdatedChangeInfoType) {
   const popupTabID = getCachedAuthPopupWindowTabID();
 
   if (popupTabID !== -1 && changeInfo?.status === "loading") {
     isomorphicSendMessage({
       destination: `web_accessible@${popupTabID}`,
       messageId: "auth_tab_reloaded",
-      data: tabID
+      data: tabID,
     });
   }
 
@@ -84,6 +77,6 @@ export async function handleTabClosed(closedTabID: number) {
   isomorphicSendMessage({
     destination: `web_accessible@${popupTabID}`,
     messageId: "auth_tab_closed",
-    data: closedTabID
+    data: closedTabID,
   });
 }

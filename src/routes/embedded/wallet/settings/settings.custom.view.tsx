@@ -13,19 +13,17 @@ export function WalletSettingsCustomEmbeddedView() {
 
   const { url = "" } = authRequest;
 
-  const [requestedPermissions, setRequestedPermissions] = useStorage<
-    PermissionType[]
-  >(
+  const [requestedPermissions, setRequestedPermissions] = useStorage<PermissionType[]>(
     {
       key: `requested_permissions_${url}`,
-      instance: ExtensionStorage
+      instance: ExtensionStorage,
     },
-    []
+    [],
   );
 
   const permissions = useMemo(
     () => new Map(requestedPermissions.map((permission) => [permission, true])),
-    [requestedPermissions]
+    [requestedPermissions],
   );
 
   const handlePermissionChange = useCallback(
@@ -39,7 +37,7 @@ export function WalletSettingsCustomEmbeddedView() {
 
       setRequestedPermissions(newPermissions);
     },
-    [permissions, setRequestedPermissions]
+    [permissions, setRequestedPermissions],
   );
 
   const formatPermissionName = useCallback((permissionName: PermissionType) => {
@@ -57,13 +55,13 @@ export function WalletSettingsCustomEmbeddedView() {
       e.preventDefault();
       handlePermissionChange(permission);
     },
-    [handlePermissionChange]
+    [handlePermissionChange],
   );
 
   const handleCancel = async () => {
     postEmbeddedMessage({
       type: "embedded_close",
-      data: null
+      data: null,
     });
     navigate("/wallet");
     await rejectRequest();
@@ -77,24 +75,20 @@ export function WalletSettingsCustomEmbeddedView() {
       customIcon={<XClose fontSize={24} color={"#666666"} />}
       onBackButtonClick={() => navigate("/wallet/settings")}
       onCloseButtonClick={handleCancel}
-      style={{ padding: "2rem 1rem" }}
-    >
+      style={{ padding: "2rem 1rem" }}>
       <Box alignment="left" style={{ gap: 16 }}>
         {Object.keys(permissionData).map((permissionName: PermissionType) => (
           <Box
             style={{ padding: 0 }}
             alignment="left"
             key={permissionName}
-            onClick={(e) => handleClick(e, permissionName)}
-          >
+            onClick={(e) => handleClick(e, permissionName)}>
             <Switch
               size={28}
               labelPosition="left"
               id={`checkbox-${permissionName}`}
               label={formatPermissionName(permissionName)}
-              description={browser.i18n.getMessage(
-                permissionData[permissionName]
-              )}
+              description={browser.i18n.getMessage(permissionData[permissionName])}
               handleChange={(e) => {}}
               isChecked={permissions.get(permissionName) ?? false}
             />

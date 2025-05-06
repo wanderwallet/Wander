@@ -1,3 +1,6 @@
 {
-  "trailingComma": "none"
+  "printWidth": 120,
+  "trailingComma": "all",
+  "bracketSameLine": true,
+  "proseWrap": "always"
 }

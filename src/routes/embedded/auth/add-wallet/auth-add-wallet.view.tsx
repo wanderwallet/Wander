@@ -2,21 +2,11 @@ import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation } from "~wallets/router/router.utils";
 
-import {
-  Box,
-  Button,
-  Card,
-  KeyIcon,
-  QRCodeIcon,
-  SeedIcon,
-  WalletIcon,
-  WanderFooter
-} from "~components/embed";
+import { Box, Button, Card, KeyIcon, QRCodeIcon, SeedIcon, WalletIcon, WanderFooter } from "~components/embed";
 import type { WalletSourceType } from "embed-api";
 
 export function AuthAddWalletEmbeddedView() {
-  const { authProviderType, generateTempWallet, registerWallet } =
-    useEmbedded();
+  const { authProviderType, generateTempWallet, registerWallet } = useEmbedded();
   const { navigate } = useLocation();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -35,8 +25,6 @@ export function AuthAddWalletEmbeddedView() {
     setIsLoading(false);
   }, []);
 
-  if (!authProviderType) alert(`authProviderType = ${authProviderType}`);
-
   return (
     <Card
       headerText="Add a wallet"
@@ -44,8 +32,7 @@ export function AuthAddWalletEmbeddedView() {
       footerElement={<WanderFooter />}
       hasBackButton={true}
       onBackButtonClick={() => navigate(`/wallet`)}
-      size="auto"
-    >
+      size="auto">
       <Box>
         <Button
           onClick={() => handleRegisterWallet("GENERATED")}
@@ -53,8 +40,7 @@ export function AuthAddWalletEmbeddedView() {
           isFullWidth
           icon={<SeedIcon fontSize={24} />}
           isLoading={isLoading}
-          isDisabled={isLoading}
-        >
+          isDisabled={isLoading}>
           Create new wallet
         </Button>
         <Button
@@ -62,8 +48,7 @@ export function AuthAddWalletEmbeddedView() {
           isFullWidth
           icon={<WalletIcon fontSize={24} />}
           href="#/auth/import-seedphrase"
-          isDisabled={isLoading}
-        >
+          isDisabled={isLoading}>
           Enter Seed Phrase
         </Button>
         <Button
@@ -71,8 +56,7 @@ export function AuthAddWalletEmbeddedView() {
           isFullWidth
           icon={<KeyIcon fontSize={24} />}
           href="#/auth/import-keyfile"
-          isDisabled={isLoading}
-        >
+          isDisabled={isLoading}>
           Import Keyfile
         </Button>
         {/* {authProviderType === "PASSKEYS" ? (

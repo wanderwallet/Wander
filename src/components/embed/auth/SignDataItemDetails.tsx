@@ -23,13 +23,9 @@ export default function SignDataItemDetails({ params }) {
   const [amount, setAmount] = useState<Quantity | null>(null);
   const [showTags, setShowTags] = useState<boolean>(false);
 
-  const recipient =
-    params?.tags?.find((tag) => tag.name === "Recipient")?.value || "";
-  const quantity =
-    params?.tags?.find((tag) => tag.name === "Quantity")?.value || "0";
-  const transfer = params?.tags?.some(
-    (tag) => tag.name === "Action" && tag.value === "Transfer"
-  );
+  const recipient = params?.tags?.find((tag) => tag.name === "Recipient")?.value || "";
+  const quantity = params?.tags?.find((tag) => tag.name === "Quantity")?.value || "0";
+  const transfer = params?.tags?.some((tag) => tag.name === "Action" && tag.value === "Transfer");
 
   const arweaveLogo = arLogoLight;
 
@@ -52,12 +48,10 @@ export default function SignDataItemDetails({ params }) {
         try {
           const [aoTokens = [], aoTokensCache = []] = await Promise.all([
             PersistentStorage.get<TokenInfo[]>("ao_tokens"),
-            PersistentStorage.get<TokenInfo[]>("ao_tokens_cache")
+            PersistentStorage.get<TokenInfo[]>("ao_tokens_cache"),
           ]);
           const aoTokensCombined = [...aoTokens, ...aoTokensCache];
-          const token = aoTokensCombined.find(
-            ({ processId }) => params.target === processId
-          );
+          const token = aoTokensCombined.find(({ processId }) => params.target === processId);
           if (token) {
             tokenInfo = token;
           }
@@ -71,10 +65,7 @@ export default function SignDataItemDetails({ params }) {
             setLogo(arweaveLogo);
           }
 
-          const tokenAmount = new Quantity(
-            BigInt(quantity),
-            BigInt(tokenInfo.Denomination)
-          );
+          const tokenAmount = new Quantity(BigInt(quantity), BigInt(tokenInfo.Denomination));
           setTokenName(tokenInfo.Name);
           setAmount(tokenAmount);
         }
@@ -95,18 +86,15 @@ export default function SignDataItemDetails({ params }) {
 
   const process = params?.target;
 
-  const formattedAmount = useMemo(
-    () => (amount || 0).toLocaleString(),
-    [amount]
-  );
+  const formattedAmount = useMemo(() => (amount || 0).toLocaleString(), [amount]);
 
   // active address
   const [activeAddress] = useStorage<string>(
     {
       key: "active_address",
-      instance: ExtensionStorage
+      instance: ExtensionStorage,
     },
-    ""
+    "",
   );
 
   return (
@@ -118,9 +106,8 @@ export default function SignDataItemDetails({ params }) {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              marginBottom: "4px"
-            }}
-          >
+              marginBottom: "4px",
+            }}>
             {!loading ? (
               logo && <LogoWrapper img={logo} alt={`${tokenName} logo`} />
             ) : (
@@ -137,9 +124,8 @@ export default function SignDataItemDetails({ params }) {
                   justifyContent: "center",
                   alignItems: "flex-end",
                   marginBottom: "16px",
-                  color: "#666666"
-                }}
-              >
+                  color: "#666666",
+                }}>
                 {formattedAmount}
                 <span style={{ lineHeight: "1.5em" }}>{tokenName}</span>
               </AmountTitle>
@@ -153,32 +139,22 @@ export default function SignDataItemDetails({ params }) {
               gap: "0.5rem",
               padding: 0,
               margin: 0,
-              width: "100%"
+              width: "100%",
             }}
             alignment="left"
-            isAutoWidth
-          >
+            isAutoWidth>
             {params?.target && (
-              <TransactionTag
-                name={browser.i18n.getMessage("process_id")}
-                value={formatAddress(params?.target, 6)}
-              />
+              <TransactionTag name={browser.i18n.getMessage("process_id")} value={formatAddress(params?.target, 6)} />
             )}
             <TransactionTag
               name={browser.i18n.getMessage("transaction_from")}
               value={formatAddress(activeAddress, 6)}
             />
             {recipient && (
-              <TransactionTag
-                name={browser.i18n.getMessage("transaction_to")}
-                value={formatAddress(recipient, 6)}
-              />
+              <TransactionTag name={browser.i18n.getMessage("transaction_to")} value={formatAddress(recipient, 6)} />
             )}
 
-            <TransactionTag
-              name={browser.i18n.getMessage("transaction_fee")}
-              value={`0 AR`}
-            />
+            <TransactionTag name={browser.i18n.getMessage("transaction_fee")} value={`0 AR`} />
             <TransactionTag
               name={browser.i18n.getMessage("transaction_size")}
               value={prettyBytes(params?.data.length)}
@@ -188,8 +164,7 @@ export default function SignDataItemDetails({ params }) {
               alignment="center"
               justifyContent="start"
               style={{ gap: "0.3rem", cursor: "pointer" }}
-              onClick={() => setShowTags((prev) => !prev)}
-            >
+              onClick={() => setShowTags((prev) => !prev)}>
               <Text variant="bodySm" style={{ color: "#666666" }}>
                 Tags
               </Text>
@@ -197,17 +172,13 @@ export default function SignDataItemDetails({ params }) {
                 style={{
                   display: "inline-flex",
                   transition: "transform 0.2s ease",
-                  transform: showTags ? "rotate(90deg)" : "rotate(0deg)"
-                }}
-              >
+                  transform: showTags ? "rotate(90deg)" : "rotate(0deg)",
+                }}>
                 <ChevronRight fontSize={24} color={"#666666"} />
               </div>
             </Row>
             <Spacer y={0.05} />
-            {showTags &&
-              params?.tags?.map((tag, i) => (
-                <TransactionTag key={i} name={tag.name} value={tag.value} />
-              ))}
+            {showTags && params?.tags?.map((tag, i) => <TransactionTag key={i} name={tag.name} value={tag.value} />)}
           </Box>
         </Box>
       ) : (

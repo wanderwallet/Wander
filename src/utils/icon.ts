@@ -53,39 +53,39 @@ const offlineLogos: LogosByEnvironment = {
   default: {
     64: offline64,
     128: offline128,
-    256: offline256
+    256: offline256,
   },
   development: {
     64: devOffline64,
     128: devOffline128,
-    256: devOffline256
-  }
+    256: devOffline256,
+  },
 };
 
 const onlineLogos: LogosByEnvironment = {
   default: {
     64: online64,
     128: online128,
-    256: online256
+    256: online256,
   },
   development: {
     64: devOnline64,
     128: devOnline128,
-    256: devOnline256
-  }
+    256: devOnline256,
+  },
 };
 
 const lockedLogos: LogosByEnvironment = {
   default: {
     64: locked64,
     128: locked128,
-    256: locked256
+    256: locked256,
   },
   development: {
     64: devLocked64,
     128: devLocked128,
-    256: devLocked256
-  }
+    256: devLocked256,
+  },
 };
 
 /**
@@ -94,33 +94,25 @@ const lockedLogos: LogosByEnvironment = {
  * @param hasPerms Does the site have any permissions?
  */
 export async function updateIcon(hasPerms: boolean) {
-  const val = await ExtensionStorage.get("decryption_key");
-
   if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1") {
-    postEmbeddedMessage({
-      type: val && hasPerms ? "embedded_connect" : "embedded_disconnect",
-      data: null
-    });
+    return;
   }
 
+  const val = await ExtensionStorage.get("decryption_key");
+
   // Set logos if connected / if not connected:
-  const logosByEnvironment = val
-    ? hasPerms
-      ? onlineLogos
-      : offlineLogos
-    : lockedLogos;
+  const logosByEnvironment = val ? (hasPerms ? onlineLogos : offlineLogos) : lockedLogos;
 
   // Use the "gold" version for development:
-  const logosBySize =
-    logosByEnvironment[process.env.NODE_ENV] || logosByEnvironment.default;
+  const logosBySize = logosByEnvironment[process.env.NODE_ENV] || logosByEnvironment.default;
 
   if (browser.runtime.getManifest().manifest_version === 3) {
     await browser.action.setIcon({
-      path: logosBySize
+      path: logosBySize,
     });
   } else {
     await browser.browserAction.setIcon({
-      path: logosBySize
+      path: logosBySize,
     });
   }
 }

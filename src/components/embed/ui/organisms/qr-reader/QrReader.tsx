@@ -29,7 +29,7 @@ const QrReader = () => {
         preferredCamera: "environment",
         highlightScanRegion: true,
         highlightCodeOutline: true,
-        overlay: qrBoxEl?.current || undefined
+        overlay: qrBoxEl?.current || undefined,
       });
 
       scanner?.current
@@ -49,22 +49,14 @@ const QrReader = () => {
 
   useEffect(() => {
     if (!qrOn)
-      alert(
-        "Camera is blocked or not accessible. Please allow camera in your browser permissions and Reload."
-      );
+      alert("Camera is blocked or not accessible. Please allow camera in your browser permissions and Reload.");
   }, [qrOn]);
 
   return (
     <div className="qr-reader">
       <video ref={videoEl}></video>
       <div ref={qrBoxEl} className="qr-box">
-        <img
-          src={QrFrame}
-          alt="Qr Frame"
-          width={256}
-          height={256}
-          className="qr-frame"
-        />
+        <img src={QrFrame} alt="Qr Frame" width={256} height={256} className="qr-frame" />
       </div>
 
       {scannedResult && (
@@ -74,9 +66,8 @@ const QrReader = () => {
             top: 0,
             left: 0,
             zIndex: 99999,
-            color: "white"
-          }}
-        >
+            color: "white",
+          }}>
           Scanned Result: {scannedResult}
         </p>
       )}

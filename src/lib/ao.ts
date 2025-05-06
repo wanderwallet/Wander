@@ -1,5 +1,5 @@
 import { connect } from "@permaweb/aoconnect";
-import { ArweaveSigner, createData } from "arbundles";
+import { ArweaveSigner, createData } from "@dha-team/arbundles";
 import type { JWKInterface } from "arweave/web/lib/wallet";
 import { defaultConfig } from "~tokens/aoTokens/config";
 
@@ -53,7 +53,7 @@ export class AOProcess {
 
   constructor({
     processId,
-    connectionConfig
+    connectionConfig,
   }: {
     processId: string;
     connectionConfig?: {
@@ -69,16 +69,16 @@ export class AOProcess {
         connectionConfig?.GRAPHQL_URL ??
         joinUrl({
           url: connectionConfig?.GATEWAY_URL ?? defaultConfig.GATEWAY_URL,
-          path: "graphql"
+          path: "graphql",
         }),
       CU_URL: connectionConfig?.CU_URL ?? defaultConfig.CU_URL,
       MU_URL: connectionConfig?.MU_URL ?? defaultConfig.MU_URL,
-      GATEWAY_URL: connectionConfig?.GATEWAY_URL ?? defaultConfig.GATEWAY_URL
+      GATEWAY_URL: connectionConfig?.GATEWAY_URL ?? defaultConfig.GATEWAY_URL,
     });
   }
 
   static async createAoSigner(
-    wallet: JWKInterface
+    wallet: JWKInterface,
   ): Promise<
     (args: {
       data: string | Buffer;
@@ -95,7 +95,7 @@ export class AOProcess {
 
       return {
         id: dataItem.id,
-        raw: dataItem.getRaw()
+        raw: dataItem.getRaw(),
       };
     };
 
@@ -104,7 +104,7 @@ export class AOProcess {
 
   async read<K>({
     tags,
-    retries = 3
+    retries = 3,
   }: {
     tags?: Array<{ name: string; value: string }>;
     retries?: number;
@@ -114,12 +114,12 @@ export class AOProcess {
     while (attempts < retries) {
       try {
         console.debug(`Evaluating read interaction on contract`, {
-          tags
+          tags,
         });
         // map tags to inputs
         const result = await this.ao.dryrun({
           process: this.processId,
-          tags
+          tags,
         });
 
         if (result.Error !== undefined) {
@@ -131,7 +131,7 @@ export class AOProcess {
         }
 
         console.debug(`Read interaction result`, {
-          result: result.Messages[0].Data
+          result: result.Messages[0].Data,
         });
 
         const data: K = JSON.parse(result.Messages[0].Data);
@@ -140,13 +140,11 @@ export class AOProcess {
         attempts++;
         console.debug(`Read attempt ${attempts} failed`, {
           error: e,
-          tags
+          tags,
         });
         lastError = e;
         // exponential backoff
-        await new Promise((resolve) =>
-          setTimeout(resolve, 2 ** attempts * 1000)
-        );
+        await new Promise((resolve) => setTimeout(resolve, 2 ** attempts * 1000));
       }
     }
     throw lastError;
@@ -156,7 +154,7 @@ export class AOProcess {
     tags,
     data,
     wallet,
-    retries = 3
+    retries = 3,
   }: {
     tags: Array<{ name: string; value: string }>;
     data?: I;
@@ -171,7 +169,7 @@ export class AOProcess {
         console.debug(`Evaluating send interaction on contract`, {
           tags,
           data,
-          processId: this.processId
+          processId: this.processId,
         });
 
         // TODO: do a read as a dry run to check if the process supports the action
@@ -181,24 +179,24 @@ export class AOProcess {
           // TODO: any other default tags we want to add?
           tags: [...tags],
           data: typeof data !== "string" ? JSON.stringify(data) : data,
-          signer: await AOProcess.createAoSigner(wallet)
+          signer: await AOProcess.createAoSigner(wallet),
         });
 
         console.debug(`Sent message to process`, {
           messageId,
-          processId: this.processId
+          processId: this.processId,
         });
 
         // check the result of the send interaction
         const output = await this.ao.result({
           message: messageId,
-          process: this.processId
+          process: this.processId,
         });
 
         console.debug("Message result", {
           output,
           messageId,
-          processId: this.processId
+          processId: this.processId,
         });
 
         // check if there are any Messages in the output
@@ -215,9 +213,7 @@ export class AOProcess {
         }
 
         if (output.Messages.length === 0) {
-          throw new Error(
-            `Process ${this.processId} does not support provided action.`
-          );
+          throw new Error(`Process ${this.processId} does not support provided action.`);
         }
 
         if (output.Messages[0].Data === undefined) {
@@ -229,7 +225,7 @@ export class AOProcess {
         console.debug("Message result data", {
           resultData,
           messageId,
-          processId: this.processId
+          processId: this.processId,
         });
 
         return { id: messageId, result: resultData };
@@ -237,7 +233,7 @@ export class AOProcess {
         console.error("Error sending message to process", {
           error: error.message,
           processId: this.processId,
-          tags
+          tags,
         });
         // throw on write interaction errors. No point retrying write interactions, waste of gas.
         if (error.message.includes("500")) {
@@ -245,12 +241,10 @@ export class AOProcess {
             attempts,
             retries,
             error: error.message,
-            processId: this.processId
+            processId: this.processId,
           });
           // exponential backoff
-          await new Promise((resolve) =>
-            setTimeout(resolve, 2 ** attempts * 2000)
-          );
+          await new Promise((resolve) => setTimeout(resolve, 2 ** attempts * 2000));
           attempts++;
           lastError = error;
         } else throw error;

@@ -33,7 +33,7 @@ const Box: React.FC<BoxProps> = ({
   gap,
   onClick,
   style,
-  className
+  className,
 }) => {
   const boxStyle: CSSProperties = {
     padding,
@@ -47,7 +47,7 @@ const Box: React.FC<BoxProps> = ({
     alignItems,
     justifyContent,
     gap,
-    ...style
+    ...style,
   };
 
   return (

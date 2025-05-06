@@ -548,7 +548,7 @@
       "description": "Display theme settings description"
   },
   "setting_gateways_description": {
-      "message": "Arweave 网关简化了数据访问。",
+      "message": "网关是基础设施组件，可实现对 Arweave 和 AO 网络上数据的高效快速访问。根据地理位置或网络环境，不同的网关可能会提供不同程度的使用体验。",
       "description": "Gateways settings description"
   },
   "search_pick_option": {
@@ -2518,6 +2518,14 @@
         "message": "命名您的账户",
         "description": "Name your account input placeholder"
     },
+    "secure_your_account": {
+        "message": "保护您的账户",
+        "description": "Secure your account button text"
+    },
+    "secure_your_account_description": {
+        "message": "使用密码保护您的账户。这将用于确认在 Wander 中的活动和交易。",
+        "description": "Secure your account description"
+    },
     "backup_your_account": {
         "message": "备份您的账户",
         "description": "Backup your account button text"
@@ -2566,10 +2574,6 @@
         "message": "启用分析功能，帮助我们为您提供最佳的Wander体验。",
         "description": "Enable analytics description"
     },
-    "go_to_dashboard": {
-        "message": "前往仪表板",
-        "description": "Go to dashboard button text"
-    },
     "congratulations": {
         "message": "恭喜！",
         "description": "Congratulations title"
@@ -2591,10 +2595,6 @@
     "copy_failed": {
         "message": "复制失败",
         "description": "Failed to copy text"
-    },
-    "your_wallet_address_is": {
-        "message": "您的钱包地址是",
-        "description": "Your wallet address is"
     },
     "choose_how_to_add_your_account": {
         "message": "选择如何添加您的账户",
@@ -2651,7 +2651,7 @@
         "description": "Scan QR code description"
     },
     "scan_qr_code_instruction": {
-        "message": "设置 -> 账户 -> 生成二维码",
+        "message": "设置 -> 管理账户 -> 选择要导入的账户 -> 生成二维码",
         "description": "Instruction to find QR code"
     },
     "open_webcam": {
@@ -2686,6 +2686,10 @@
         "message": "开始使用",
         "description": "Take a tour button text"
     },
+    "take_the_tour": {
+        "message": "开始使用",
+        "description": "Take the tour button text"
+    },
     "getting_started": {
         "message": "开始使用",
         "description": "Getting started title"
@@ -2709,6 +2713,10 @@
     "getting_started_explore_title": {
         "message": "在Wander上直接探索和连接应用。",
         "description": "Getting started explore title"
+    },
+    "getting_started_pin_title": {
+        "message": "将Wander扩展固定到您的浏览器。",
+        "description": "Getting started pin title"
     },
     "finish": {
         "message": "完成",
@@ -2961,5 +2969,53 @@
     "data_too_large": {
         "message": "无法显示数据：数据太大，无法显示。",
         "description": "Data too large text"
+    },
+    "set_up_a_password": {
+        "message": "设置密码",
+        "description": "Set up a password text"
+    },
+    "generating_your_account": {
+        "message": "正在生成您的账户！",
+        "description": "Generating your account text"
+    },
+    "generating_your_account_description": {
+        "message": "此过程通常需要1-2分钟。",
+        "description": "Generating your account description"
+    },
+    "pin_wander": {
+        "message": "固定Wander",
+        "description": "Pin Wander text"
+    },
+    "pin_wander_rest": {
+        "message": "在您的扩展菜单中，以便快速无缝访问。",
+        "description": "Pin Wander rest"
+    },
+    "personalize_your_experience": {
+        "message": "个性化您的体验",
+        "description": "Personalize your experience text"
+    },
+    "account_name_save_description": {
+        "message": "您的账户名称存储在本地，仅您可见。",
+        "description": "Account name save description"
+    },
+    "back_recovery_phrase": {
+        "message": "备份恢复短语",
+        "description": "Back recovery phrase text"
+    },
+    "reveal_recovery_phrase": {
+        "message": "显示恢复短语？",
+        "description": "Reveal recovery phrase text"
+    },
+    "you_can_only_see_your_recovery_phrase_once": {
+        "message": "您只能看到您的恢复短语一次。请将其写下来并妥善保管，不要与任何人分享。",
+        "description": "You can only see your recovery phrase once text"
+    },
+    "recovery_phrase": {
+        "message": "恢复短语",
+        "description": "Recovery phrase text"
+    },
+    "export_keyfile_tooltip": {
+        "message": "您的钱包的加密密钥文件用于安全地签署交易并访问您的Arweave账户。",
+        "description": "Export keyfile tooltip"
     }
 }

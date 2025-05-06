@@ -12,8 +12,7 @@ export function AuthQRCodeScannerEmbeddedView() {
       footerElement={<WanderFooter />}
       hasBackButton={true}
       onBackButtonClick={back}
-      size="sm"
-    >
+      size="sm">
       <QrReader />
     </Card>
   );

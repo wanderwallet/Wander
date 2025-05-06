@@ -1,12 +1,4 @@
-import {
-  Button,
-  Input,
-  Section,
-  Spacer,
-  Text,
-  useInput,
-  useToasts
-} from "@arconnect/components-rebrand";
+import { Button, Input, Section, Spacer, Text, useInput, useToasts } from "@arconnect/components-rebrand";
 import { ArrowRightIcon } from "@iconicicons/react";
 import styled from "styled-components";
 import browser from "webextension-polyfill";
@@ -16,11 +8,7 @@ import { formatAddress } from "~utils/format";
 import type Transaction from "arweave/web/lib/transaction";
 import { useStorage } from "~utils/storage";
 import { saveAoTransactionToLocalStorage } from "~utils/transactions";
-import {
-  ExtensionStorage,
-  TempTransactionStorage,
-  type RawStoredTransfer
-} from "~utils/storage";
+import { ExtensionStorage, TempTransactionStorage, type RawStoredTransfer } from "~utils/storage";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { findGateway, retryWithGateways } from "~gateways/wayfinder";
 import Arweave from "arweave";
@@ -33,28 +21,15 @@ import { isLocalWallet } from "~utils/assertions";
 import { decryptWallet, freeDecryptedWallet } from "~wallets/encryption";
 import { EventType, PageType, trackEvent, trackPage } from "~utils/analytics";
 import { concatGatewayURL, getArweaveLink } from "~gateways/utils";
-import type { JWKInterface } from "arbundles";
-import {
-  AutoContactPic,
-  generateProfileIcon,
-  ProfilePicture
-} from "~components/Recipient";
+import type { JWKInterface } from "@dha-team/arbundles";
+import { AutoContactPic, generateProfileIcon, ProfilePicture } from "~components/Recipient";
 import { formatFiatBalance, fractionedToBalance } from "~tokens/currency";
 import { useContact } from "~contacts/hooks";
-import {
-  sendAoTransfer,
-  sendAoTransferKeystone,
-  type TokenInfo
-} from "~tokens/aoTokens/ao";
+import { sendAoTransfer, sendAoTransferKeystone, type TokenInfo } from "~tokens/aoTokens/ao";
 import { useAo } from "~tokens/hooks";
 import { useActiveWallet } from "~wallets/hooks";
 import { UR } from "@ngraveio/bc-ur";
-import {
-  KeystoneSigner,
-  decodeSignature,
-  transactionToUR,
-  type KeystoneInteraction
-} from "~wallets/hardware/keystone";
+import { KeystoneSigner, decodeSignature, transactionToUR, type KeystoneInteraction } from "~wallets/hardware/keystone";
 import { useScanner } from "@arconnect/keystone-sdk";
 import Progress from "~components/Progress";
 import { updateSubscription } from "~subscriptions";
@@ -72,7 +47,7 @@ import {
   PropertyName,
   PropertyValue,
   TransactionProperty,
-  AddContact
+  AddContact,
 } from "../transaction/[id]";
 import prettyBytes from "pretty-bytes";
 import { stringToBuffer } from "arweave/web/lib/utils";
@@ -89,9 +64,7 @@ export interface ConfirmViewParams {
 
 export type ConfirmViewProps = CommonRouteProps<ConfirmViewParams>;
 
-export function ConfirmView({
-  params: { token: tokenID, subscription }
-}: ConfirmViewProps) {
+export function ConfirmView({ params: { token: tokenID, subscription } }: ConfirmViewProps) {
   const { navigate } = useLocation();
   const queryClient = useQueryClient();
 
@@ -106,9 +79,7 @@ export function ConfirmView({
   const [estimatedFiatAmount, setEstimatedFiatAmount] = useState<string>("");
   const [networkFee, setNetworkFee] = useState<string>("");
   const [message, setMessage] = useState<string | undefined>();
-  const [recipient, setRecipient] = useState<RecipientType | undefined>(
-    undefined
-  );
+  const [recipient, setRecipient] = useState<RecipientType | undefined>(undefined);
   const [logo, setLogo] = useState<string | undefined>();
   const { setToast } = useToasts();
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -119,16 +90,16 @@ export function ConfirmView({
   // current address
   const [activeAddress] = useStorage<string>({
     key: "active_address",
-    instance: ExtensionStorage
+    instance: ExtensionStorage,
   });
 
   // all wallets added
   const [wallets] = useStorage<StoredWallet[]>(
     {
       key: "wallets",
-      instance: ExtensionStorage
+      instance: ExtensionStorage,
     },
-    []
+    [],
   );
 
   const fromAddress = activeAddress;
@@ -141,9 +112,9 @@ export function ConfirmView({
   const [transferRequirePassword] = useStorage<boolean>(
     {
       key: "transfer_require_password",
-      instance: ExtensionStorage
+      instance: ExtensionStorage,
     },
-    false
+    false,
   );
 
   useEffect(() => {
@@ -151,9 +122,7 @@ export function ConfirmView({
       try {
         const data: TransactionData = await TempTransactionStorage.get("send");
         if (data) {
-          const estimatedFiatTotal = BigNumber(data.estimatedFiat)
-            .plus(data.estimatedNetworkFee)
-            .toFixed(2);
+          const estimatedFiatTotal = BigNumber(data.estimatedFiat).plus(data.estimatedNetworkFee).toFixed(2);
           setIsAo(data.isAo);
           setRecipient(data.recipient);
           setToken(data.token);
@@ -193,33 +162,25 @@ export function ConfirmView({
     return prettyBytes(data.byteLength);
   }, [message]);
 
-  async function prepare(
-    target: string
-  ): Promise<Partial<RawStoredTransfer> | void> {
+  async function prepare(target: string): Promise<Partial<RawStoredTransfer> | void> {
     try {
       // create tx
-      const { result: tx, gateway } = await retryWithGateways(
-        async (arweave) => {
-          const transaction = await arweave.createTransaction({
-            target,
-            quantity: fractionedToBalance(
-              amount,
-              { decimals: token.Denomination },
-              "AR"
-            ),
-            data: message ? decodeURIComponent(message) : undefined
-          });
+      const { result: tx, gateway } = await retryWithGateways(async (arweave) => {
+        const transaction = await arweave.createTransaction({
+          target,
+          quantity: fractionedToBalance(amount, { decimals: token.Denomination }, "AR"),
+          data: message ? decodeURIComponent(message) : undefined,
+        });
 
-          addTransferTags(transaction);
-          return transaction;
-        }
-      );
+        addTransferTags(transaction);
+        return transaction;
+      });
 
       // save tx json into the session
       // to be signed and submitted
       const storedTx: Partial<RawStoredTransfer> = {
         type: tokenID === "AR" ? "native" : "token",
-        gateway: gateway
+        gateway: gateway,
       };
 
       storedTx.transaction = tx.toJSON();
@@ -257,29 +218,23 @@ export function ConfirmView({
             fullWidth
             onClick={() =>
               browser.tabs.create({
-                url: browser.runtime.getURL("tabs/dashboard.html#/gateways")
+                url: browser.runtime.getURL("tabs/dashboard.html#/gateways"),
               })
-            }
-          >
+            }>
             {browser.i18n.getMessage("switch_gateway")}
           </Button>
         </Flex>
       ),
-      duration: 5000
+      duration: 5000,
     });
   }
 
-  async function submitTx(
-    transaction: Transaction,
-    arweave: Arweave,
-    type: "native" | "token"
-  ) {
+  async function submitTx(transaction: Transaction, arweave: Arweave, type: "native" | "token") {
     // lorimer
     if (transaction.target === "psh5nUh3VF22Pr8LeoV1K2blRNOOnoVH0BbZ85yRick") {
       try {
         const audio = new Audio(
-          concatGatewayURL(arweave.getConfig().api as Gateway) +
-            "/xToXzqCyeh-1NXmRV0rYZa1rCtdjqESzrwDM5HbRnf0"
+          concatGatewayURL(arweave.getConfig().api as Gateway) + "/xToXzqCyeh-1NXmRV0rYZa1rCtdjqESzrwDM5HbRnf0",
         );
 
         audio.play();
@@ -293,7 +248,7 @@ export function ConfirmView({
         id: transaction.id,
         quantity: { ar: arweave.ar.winstonToAr(transaction.quantity) },
         owner: {
-          address: await arweave.wallets.ownerToAddress(transaction.owner)
+          address: await arweave.wallets.ownerToAddress(transaction.owner),
         },
         recipient: transaction.target,
         fee: { ar: transaction.reward },
@@ -301,24 +256,19 @@ export function ConfirmView({
         // @ts-expect-error
         tags: (transaction.get("tags") as Tag[]).map((tag) => ({
           name: tag.get("name", { string: true, decode: true }),
-          value: tag.get("value", { string: true, decode: true })
-        }))
-      })
+          value: tag.get("value", { string: true, decode: true }),
+        })),
+      }),
     );
 
     const timeoutPromise = new Promise((_, reject) => {
       setTimeout(() => {
-        reject(
-          new Error("Timeout: Posting to Arweave took more than 10 seconds")
-        );
+        reject(new Error("Timeout: Posting to Arweave took more than 10 seconds"));
       }, 10000);
     });
 
     try {
-      await Promise.race([
-        arweave.transactions.post(transaction),
-        timeoutPromise
-      ]);
+      await Promise.race([arweave.transactions.post(transaction), timeoutPromise]);
     } catch (err) {
       // SEGMENT
       await trackEvent(EventType.TRANSACTION_INCOMPLETE, {});
@@ -335,7 +285,7 @@ export function ConfirmView({
       return setToast({
         type: "error",
         content: "No send quantity found",
-        duration: 2000
+        duration: 2000,
       });
     }
 
@@ -346,7 +296,7 @@ export function ConfirmView({
         setToast({
           type: "error",
           content: browser.i18n.getMessage("invalidPassword"),
-          duration: 2400
+          duration: 2400,
         });
         setIsLoading(false);
         return;
@@ -354,10 +304,10 @@ export function ConfirmView({
     }
 
     queryClient.invalidateQueries({
-      queryKey: ["tokenBalance", tokenID, fromAddress]
+      queryKey: ["tokenBalance", tokenID, fromAddress],
     });
     queryClient.invalidateQueries({
-      queryKey: ["tokenBalance", tokenID, toAddress]
+      queryKey: ["tokenBalance", tokenID, toAddress],
     });
 
     // 2/21/24: Checking first if it's an ao transfer and will handle in this block
@@ -367,7 +317,7 @@ export function ConfirmView({
           ao,
           tokenID,
           recipient.address,
-          fractionedToBalance(amount, { decimals: token.Denomination }, "AO")
+          fractionedToBalance(amount, { decimals: token.Denomination }, "AO"),
         );
         if (res) {
           saveAoTransactionToLocalStorage(
@@ -378,13 +328,13 @@ export function ConfirmView({
             amount,
             token.Ticker,
             networkFee,
-            message
+            message,
           );
 
           setToast({
             type: "success",
             content: browser.i18n.getMessage("sent_tx"),
-            duration: 2000
+            duration: 2000,
           });
           navigate(`/send/completed/${res}?isAo=true`);
           setIsLoading(false);
@@ -398,7 +348,7 @@ export function ConfirmView({
         setToast({
           type: "error",
           content: browser.i18n.getMessage("failed_tx"),
-          duration: 2000
+          duration: 2000,
         });
         return;
       }
@@ -423,19 +373,11 @@ export function ConfirmView({
 
           try {
             await submitTx(convertedTransaction, arweave, type);
-            subscription &&
-              (await updateSubscription(
-                activeAddress,
-                recipient.address,
-                SubscriptionStatus.ACTIVE
-              ));
+            subscription && (await updateSubscription(activeAddress, recipient.address, SubscriptionStatus.ACTIVE));
           } catch (e) {
             gateway = await findGateway({ random: true });
             const fallbackArweave = new Arweave(gateway);
-            await fallbackArweave.transactions.sign(
-              convertedTransaction,
-              keyfile
-            );
+            await fallbackArweave.transactions.sign(convertedTransaction, keyfile);
             await submitTx(convertedTransaction, fallbackArweave, type);
             await trackEvent(EventType.FALLBACK, {});
           }
@@ -443,19 +385,15 @@ export function ConfirmView({
           setToast({
             type: "success",
             content: browser.i18n.getMessage("sent_tx"),
-            duration: 2000
+            duration: 2000,
           });
           trackEvent(EventType.TX_SENT, {
             contact: toContact ? true : false,
             amount: tokenID === "AR" ? +transactionAmount : 0,
-            fee: networkFee
+            fee: networkFee,
           });
           // Redirect
-          navigate(
-            `/send/completed/${
-              convertedTransaction.id
-            }?back=${encodeURIComponent("/")}`
-          );
+          navigate(`/send/completed/${convertedTransaction.id}?back=${encodeURIComponent("/")}`);
 
           // remove wallet from memory
           freeDecryptedWallet(keyfile);
@@ -472,17 +410,14 @@ export function ConfirmView({
         }
         let keyfile: JWKInterface;
         try {
-          keyfile = await decryptWallet(
-            activeWallet.keyfile,
-            passwordInput.state
-          );
+          keyfile = await decryptWallet(activeWallet.keyfile, passwordInput.state);
         } catch {
           freeDecryptedWallet(keyfile);
           setIsLoading(false);
           return setToast({
             type: "error",
             content: browser.i18n.getMessage("invalidPassword"),
-            duration: 2000
+            duration: 2000,
           });
         }
         convertedTransaction.setOwner(keyfile.n);
@@ -493,10 +428,7 @@ export function ConfirmView({
           } catch (e) {
             gateway = await findGateway({ random: true });
             const fallbackArweave = new Arweave(gateway);
-            await fallbackArweave.transactions.sign(
-              convertedTransaction,
-              keyfile
-            );
+            await fallbackArweave.transactions.sign(convertedTransaction, keyfile);
             await submitTx(convertedTransaction, fallbackArweave, type);
             await trackEvent(EventType.FALLBACK, {});
           }
@@ -504,18 +436,14 @@ export function ConfirmView({
           setToast({
             type: "success",
             content: browser.i18n.getMessage("sent_tx"),
-            duration: 2000
+            duration: 2000,
           });
           trackEvent(EventType.TX_SENT, {
             contact: toContact ? true : false,
             amount: tokenID === "AR" ? +transactionAmount : 0,
-            fee: networkFee
+            fee: networkFee,
           });
-          navigate(
-            `/send/completed/${
-              convertedTransaction.id
-            }?back=${encodeURIComponent("/")}`
-          );
+          navigate(`/send/completed/${convertedTransaction.id}?back=${encodeURIComponent("/")}`);
           freeDecryptedWallet(keyfile);
         } catch (e) {
           freeDecryptedWallet(keyfile);
@@ -542,7 +470,7 @@ export function ConfirmView({
       display(data) {
         setIsLoading(false);
         setTransactionUR(data);
-      }
+      },
     };
     return keystoneInteraction;
   }, [setIsLoading]);
@@ -553,7 +481,7 @@ export function ConfirmView({
       Buffer.from(Arweave.utils.b64UrlToBuffer(wallet.publicKey)),
       wallet.xfp,
       isAo ? SignType.DataItem : SignType.Transaction,
-      keystoneInteraction
+      keystoneInteraction,
     );
     return keystoneSigner;
   }, [wallet, isAo, keystoneInteraction]);
@@ -590,7 +518,7 @@ export function ConfirmView({
             tokenID,
             recipient.address,
             fractionedToBalance(amount, { decimals: token.Denomination }, "AO"),
-            keystoneSigner
+            keystoneSigner,
           );
           if (res) {
             saveAoTransactionToLocalStorage(
@@ -601,13 +529,13 @@ export function ConfirmView({
               amount,
               token.Ticker,
               networkFee,
-              message
+              message,
             );
 
             setToast({
               type: "success",
               content: browser.i18n.getMessage("sent_tx"),
-              duration: 2000
+              duration: 2000,
             });
             navigate(`/send/completed/${res}?isAo=true`);
             setIsLoading(false);
@@ -620,26 +548,18 @@ export function ConfirmView({
       }
 
       const arweave = new Arweave(prepared.gateway);
-      const convertedTransaction = arweave.transactions.fromRaw(
-        prepared.transaction
-      );
+      const convertedTransaction = arweave.transactions.fromRaw(prepared.transaction);
 
       // get tx UR
       try {
         setIsLoading(false);
-        setTransactionUR(
-          await transactionToUR(
-            convertedTransaction,
-            wallet.xfp,
-            wallet.publicKey
-          )
-        );
+        setTransactionUR(await transactionToUR(convertedTransaction, wallet.xfp, wallet.publicKey));
         setPreparedTx(prepared);
       } catch {
         setToast({
           type: "error",
           duration: 2300,
-          content: browser.i18n.getMessage("transaction_auth_ur_fail")
+          content: browser.i18n.getMessage("transaction_auth_ur_fail"),
         });
         navigate("/send/transfer");
       }
@@ -660,9 +580,7 @@ export function ConfirmView({
         // get tx
         const { gateway, type } = preparedTx;
         const arweave = new Arweave(gateway);
-        const transaction = arweave.transactions.fromRaw(
-          preparedTx.transaction
-        );
+        const transaction = arweave.transactions.fromRaw(preparedTx.transaction);
 
         // reset the prepared tx so we don't send it again
         setPreparedTx(undefined);
@@ -687,7 +605,7 @@ export function ConfirmView({
         transaction.setSignature({
           id,
           signature,
-          owner: wallet.publicKey
+          owner: wallet.publicKey,
         });
 
         // post tx
@@ -696,33 +614,27 @@ export function ConfirmView({
         setToast({
           type: "success",
           content: browser.i18n.getMessage("sent_tx"),
-          duration: 2000
+          duration: 2000,
         });
 
-        const latestTxQty = Number(
-          (await ExtensionStorage.get("last_send_qty")) || "0"
-        );
+        const latestTxQty = Number((await ExtensionStorage.get("last_send_qty")) || "0");
         trackEvent(EventType.TX_SENT, {
           contact: toContact ? true : false,
           amount: tokenID === "AR" ? latestTxQty : 0,
-          fee: networkFee
+          fee: networkFee,
         });
-        navigate(
-          `/send/completed/${transaction.id}?back=${encodeURIComponent("/")}`
-        );
+        navigate(`/send/completed/${transaction.id}?back=${encodeURIComponent("/")}`);
       } catch (e) {
         console.log(e);
         showTransferError();
       }
-    }
+    },
   );
 
   return (
     <Wrapper>
       <HeadV2
-        title={browser.i18n.getMessage(
-          !subscription ? "confirm_transaction" : "subscription_payment"
-        )}
+        title={browser.i18n.getMessage(!subscription ? "confirm_transaction" : "subscription_payment")}
         showOptions={false}
       />
       <ConfirmWrapper>
@@ -742,9 +654,7 @@ export function ConfirmView({
                 ) : (
                   toContact && (
                     <AutoContactPic size="22px">
-                      {generateProfileIcon(
-                        toContact?.name || toContact.address
-                      )}
+                      {generateProfileIcon(toContact?.name || toContact.address)}
                     </AutoContactPic>
                   )
                 )}
@@ -763,12 +673,9 @@ export function ConfirmView({
                     display: "flex",
                     paddingTop: 0,
                     flexDirection: "column",
-                    gap: 8
-                  }}
-                >
-                  <TransactionDirection>
-                    {browser.i18n.getMessage("send")}
-                  </TransactionDirection>
+                    gap: 8,
+                  }}>
+                  <TransactionDirection>{browser.i18n.getMessage("send")}</TransactionDirection>
 
                   <AdaptiveBalanceDisplay
                     balance={amount}
@@ -777,20 +684,13 @@ export function ConfirmView({
                     logo={logo}
                   />
                   {!isNaN(parseFloat(estimatedFiatAmount)) && (
-                    <FiatAmount>
-                      {formatFiatBalance(estimatedFiatAmount, currency)}
-                    </FiatAmount>
+                    <FiatAmount>{formatFiatBalance(estimatedFiatAmount, currency)}</FiatAmount>
                   )}
                 </Section>
-                <Section
-                  showPaddingVertical={false}
-                  showPaddingHorizontal={false}
-                >
+                <Section showPaddingVertical={false} showPaddingHorizontal={false}>
                   <Properties>
                     <TransactionProperty>
-                      <PropertyName>
-                        {browser.i18n.getMessage("transaction_from")}
-                      </PropertyName>
+                      <PropertyName>{browser.i18n.getMessage("transaction_from")}</PropertyName>
                       <PropertyValue>
                         <div>
                           {!fromContact ? (
@@ -799,54 +699,39 @@ export function ConfirmView({
 
                               {fromMe ? null : (
                                 <AddContact>
-                                  {browser.i18n.getMessage(
-                                    "user_not_in_contacts"
-                                  )}{" "}
+                                  {browser.i18n.getMessage("user_not_in_contacts")}{" "}
                                   <span
                                     onClick={(e) => {
                                       e.preventDefault();
 
                                       trackEvent(EventType.ADD_CONTACT, {
-                                        fromSendFlow: true
+                                        fromSendFlow: true,
                                       });
 
-                                      navigate(
-                                        `/quick-settings/contacts/new?address=${fromAddress}`
-                                      );
-                                    }}
-                                  >
+                                      navigate(`/quick-settings/contacts/new?address=${fromAddress}`);
+                                    }}>
                                     {browser.i18n.getMessage("create_contact")}
                                   </span>
                                 </AddContact>
                               )}
                             </>
                           ) : (
-                            <div
-                              style={{ display: "flex", alignItems: "center" }}
-                            >
+                            <div style={{ display: "flex", alignItems: "center" }}>
                               {fromContact.profileIcon ? (
-                                <ProfilePicture
-                                  src={fromContact.profileIcon}
-                                  size="19px"
-                                />
+                                <ProfilePicture src={fromContact.profileIcon} size="19px" />
                               ) : (
                                 <AutoContactPic size="19px">
-                                  {generateProfileIcon(
-                                    fromContact?.name || fromContact.address
-                                  )}
+                                  {generateProfileIcon(fromContact?.name || fromContact.address)}
                                 </AutoContactPic>
                               )}
-                              {fromContact?.name ||
-                                formatAddress(fromContact.address, 6)}
+                              {fromContact?.name || formatAddress(fromContact.address, 6)}
                             </div>
                           )}
                         </div>
                       </PropertyValue>
                     </TransactionProperty>
                     <TransactionProperty>
-                      <PropertyName>
-                        {browser.i18n.getMessage("transaction_to")}
-                      </PropertyName>
+                      <PropertyName>{browser.i18n.getMessage("transaction_to")}</PropertyName>
                       <PropertyValue>
                         <div>
                           {!toContact ? (
@@ -855,61 +740,44 @@ export function ConfirmView({
 
                               {toMe ? null : (
                                 <AddContact>
-                                  {browser.i18n.getMessage(
-                                    "user_not_in_contacts"
-                                  )}{" "}
+                                  {browser.i18n.getMessage("user_not_in_contacts")}{" "}
                                   <span
                                     onClick={(e) => {
                                       e.preventDefault();
 
                                       trackEvent(EventType.ADD_CONTACT, {
-                                        fromSendFlow: true
+                                        fromSendFlow: true,
                                       });
 
-                                      navigate(
-                                        `/quick-settings/contacts/new?address=${toAddress}`
-                                      );
-                                    }}
-                                  >
+                                      navigate(`/quick-settings/contacts/new?address=${toAddress}`);
+                                    }}>
                                     {browser.i18n.getMessage("create_contact")}
                                   </span>
                                 </AddContact>
                               )}
                             </>
                           ) : (
-                            <div
-                              style={{ display: "flex", alignItems: "center" }}
-                            >
+                            <div style={{ display: "flex", alignItems: "center" }}>
                               {toContact.profileIcon ? (
-                                <ProfilePicture
-                                  src={toContact.profileIcon}
-                                  size="19px"
-                                />
+                                <ProfilePicture src={toContact.profileIcon} size="19px" />
                               ) : (
                                 <AutoContactPic size="19px">
-                                  {generateProfileIcon(
-                                    toContact?.name || toContact.address
-                                  )}
+                                  {generateProfileIcon(toContact?.name || toContact.address)}
                                 </AutoContactPic>
                               )}
-                              {toContact?.name ||
-                                formatAddress(toContact.address, 6)}
+                              {toContact?.name || formatAddress(toContact.address, 6)}
                             </div>
                           )}
                         </div>
                       </PropertyValue>
                     </TransactionProperty>
                     <TransactionProperty>
-                      <PropertyName>
-                        {browser.i18n.getMessage("transaction_fee")}
-                      </PropertyName>
+                      <PropertyName>{browser.i18n.getMessage("transaction_fee")}</PropertyName>
                       <PropertyValue>{networkFee} AR</PropertyValue>
                     </TransactionProperty>
                     {!message && (
                       <TransactionProperty>
-                        <PropertyName>
-                          {browser.i18n.getMessage("transaction_size")}
-                        </PropertyName>
+                        <PropertyName>{browser.i18n.getMessage("transaction_size")}</PropertyName>
                         <PropertyValue>{dataSize}</PropertyValue>
                       </TransactionProperty>
                     )}
@@ -919,9 +787,7 @@ export function ConfirmView({
             )}
             {hardwareStatus === "play" && transactionUR && (
               <>
-                <Description>
-                  {browser.i18n.getMessage("sign_scan_qr")}
-                </Description>
+                <Description>{browser.i18n.getMessage("sign_scan_qr")}</Description>
                 <AnimatedQRPlayer data={transactionUR} />
               </>
             )}
@@ -933,17 +799,12 @@ export function ConfirmView({
                     setToast({
                       type: "error",
                       duration: 2300,
-                      content: browser.i18n.getMessage(`keystone_${error}`)
+                      content: browser.i18n.getMessage(`keystone_${error}`),
                     })
                   }
                 />
                 <Spacer y={1} />
-                <Text>
-                  {browser.i18n.getMessage(
-                    "keystone_scan_progress",
-                    `${scanner.progress.toFixed(0)}%`
-                  )}
-                </Text>
+                <Text>{browser.i18n.getMessage("keystone_scan_progress", `${scanner.progress.toFixed(0)}%`)}</Text>
                 <Progress percentage={scanner.progress} />
               </>
             )}
@@ -951,9 +812,7 @@ export function ConfirmView({
           {/* Password if Necessary */}
           {transferRequirePassword && (
             <PasswordWrapper>
-              <Description>
-                {browser.i18n.getMessage("sign_enter_password")}
-              </Description>
+              <Description>{browser.i18n.getMessage("sign_enter_password")}</Description>
               <Input
                 placeholder={browser.i18n.getMessage("enter_password")}
                 sizeVariant="small"
@@ -965,9 +824,7 @@ export function ConfirmView({
 
                   if (wallet.type === "local") await sendLocal();
                   else if (!hardwareStatus || hardwareStatus === "play") {
-                    setHardwareStatus((val) =>
-                      val === "play" ? "scan" : "play"
-                    );
+                    setHardwareStatus((val) => (val === "play" ? "scan" : "play"));
                   }
                 }}
               />
@@ -976,21 +833,14 @@ export function ConfirmView({
         </BodyWrapper>
         <SendButton
           fullWidth
-          disabled={
-            (transferRequirePassword && !passwordInput.state) ||
-            isLoading ||
-            hardwareStatus === "scan"
-          }
+          disabled={(transferRequirePassword && !passwordInput.state) || isLoading || hardwareStatus === "scan"}
           onClick={async () => {
             if (wallet.type === "local") await sendLocal();
             else if (!hardwareStatus || hardwareStatus === "play") {
               setHardwareStatus((val) => (val === "play" ? "scan" : "play"));
             }
-          }}
-        >
-          {(hardwareStatus === "play" &&
-            browser.i18n.getMessage("keystone_scan")) ||
-            browser.i18n.getMessage("next")}
+          }}>
+          {(hardwareStatus === "play" && browser.i18n.getMessage("keystone_scan")) || browser.i18n.getMessage("next")}
         </SendButton>
       </ConfirmWrapper>
     </Wrapper>
@@ -1020,14 +870,7 @@ type BodySectionProps = {
   alternate?: boolean;
 };
 
-export function BodySection({
-  title,
-  subtitle,
-  value,
-  ticker = "AR",
-  estimatedValue,
-  alternate
-}: BodySectionProps) {
+export function BodySection({ title, subtitle, value, ticker = "AR", estimatedValue, alternate }: BodySectionProps) {
   return (
     <SectionWrapper alternate={alternate}>
       <Titles>
@@ -1065,7 +908,7 @@ const Wrapper = styled.div`
 `;
 
 export const ConfirmWrapper = styled(Section).attrs({
-  showPaddingVertical: false
+  showPaddingVertical: false,
 })`
   display: flex;
   justify-content: space-between;

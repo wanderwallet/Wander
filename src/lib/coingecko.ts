@@ -4,7 +4,7 @@ import redstone from "redstone-api";
 import { getConversionRate } from "~utils/currency";
 import { CACHE_API } from "~constants/api";
 import { withRetry } from "~utils/promises/retry";
-import { ExtensionStorage } from "~utils/storage";
+import { PersistentStorage } from "~utils/storage";
 
 /**
  * Compare two currencies
@@ -15,16 +15,14 @@ import { ExtensionStorage } from "~utils/storage";
 export async function getPrice(symbol: string, currency: string) {
   try {
     const wanderData = await (
-      await fetch(
-        `${CACHE_API}/api/price?symbol=${symbol.toLowerCase()}&currency=${currency.toLowerCase()}`
-      )
+      await fetch(`${CACHE_API}/api/price?symbol=${symbol.toLowerCase()}&currency=${currency.toLowerCase()}`)
     ).json();
 
     return wanderData.price;
   } catch {
     const data: CoinGeckoPriceResult = await (
       await fetch(
-        `https://api.coingecko.com/api/v3/simple/price?ids=${symbol.toLowerCase()}&vs_currencies=${currency.toLowerCase()}`
+        `https://api.coingecko.com/api/v3/simple/price?ids=${symbol.toLowerCase()}&vs_currencies=${currency.toLowerCase()}`,
       )
     ).json();
 
@@ -72,13 +70,11 @@ export function useArPrice(currency: string) {
       try {
         const result = await withRetry(() => getArPrice(currency), 3, 1000);
         if (result) {
-          await ExtensionStorage.set("last_saved_price", String(result));
+          await PersistentStorage.set("last_saved_price", String(result));
           return String(result);
         }
       } catch (error) {
-        const lastPrice = await ExtensionStorage.get<string>(
-          "last_saved_price"
-        );
+        const lastPrice = await PersistentStorage.get<string>("last_saved_price");
         if (lastPrice) return lastPrice;
       }
       return "0";
@@ -89,7 +85,7 @@ export function useArPrice(currency: string) {
     refetchInterval: 30_000,
     staleTime: 30_000,
     gcTime: 30_000,
-    enabled: !!currency
+    enabled: !!currency,
   });
 }
 
@@ -104,9 +100,7 @@ interface CoinGeckoPriceResult {
 
 export async function getMarketChart(currency: string, days = "max") {
   const data: CoinGeckoMarketChartResult = await (
-    await fetch(
-      `https://api.coingecko.com/api/v3/coins/arweave/market_chart?vs_currency=${currency}&days=${days}`
-    )
+    await fetch(`https://api.coingecko.com/api/v3/coins/arweave/market_chart?vs_currency=${currency}&days=${days}`)
   ).json();
 
   return data;

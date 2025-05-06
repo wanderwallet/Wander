@@ -9,13 +9,7 @@ interface SelectorItemProps {
   onClick: (e: React.MouseEvent) => void;
 }
 
-const SelectorItem = ({
-  icon,
-  title,
-  subtitle,
-  isSelected,
-  onClick
-}: SelectorItemProps) => (
+const SelectorItem = ({ icon, title, subtitle, isSelected, onClick }: SelectorItemProps) => (
   <Button
     variant="link"
     onClick={onClick}
@@ -24,33 +18,29 @@ const SelectorItem = ({
       marginBottom: "8px",
       width: "100%",
       height: "auto",
-      minHeight: "64px"
-    }}
-  >
+      minHeight: "64px",
+    }}>
     <Box
       hasBorder
       style={{
         padding: "12px",
         width: "100%",
-        height: "100%"
-      }}
-    >
+        height: "100%",
+      }}>
       <Row
         justifyContent="between"
         alignment="center"
         style={{
           width: "100%",
-          height: "100%"
-        }}
-      >
+          height: "100%",
+        }}>
         <div
           style={{
             display: "flex",
             alignItems: "center",
             maxWidth: "calc(100% - 24px)",
-            height: "100%"
-          }}
-        >
+            height: "100%",
+          }}>
           <div
             style={{
               minWidth: "32px",
@@ -60,9 +50,8 @@ const SelectorItem = ({
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              flexShrink: 0
-            }}
-          >
+              flexShrink: 0,
+            }}>
             {icon}
           </div>
           <div
@@ -70,9 +59,8 @@ const SelectorItem = ({
               display: "flex",
               flexDirection: "column",
               alignItems: "flex-start",
-              overflow: "hidden"
-            }}
-          >
+              overflow: "hidden",
+            }}>
             <Text
               variant="bodyMd"
               style={{
@@ -80,9 +68,8 @@ const SelectorItem = ({
                 whiteSpace: "nowrap",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
-                maxWidth: "100%"
-              }}
-            >
+                maxWidth: "100%",
+              }}>
               {title}
             </Text>
             <Text
@@ -92,9 +79,8 @@ const SelectorItem = ({
                 whiteSpace: "nowrap",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
-                maxWidth: "100%"
-              }}
-            >
+                maxWidth: "100%",
+              }}>
               {subtitle}
             </Text>
           </div>
@@ -104,9 +90,8 @@ const SelectorItem = ({
             variant="bodyMd"
             style={{
               color: "var(--color-accent)",
-              flexShrink: 0
-            }}
-          >
+              flexShrink: 0,
+            }}>
             ✓
           </Text>
         )}

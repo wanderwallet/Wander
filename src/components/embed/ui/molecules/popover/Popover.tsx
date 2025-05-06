@@ -12,9 +12,7 @@ const Popover = React.forwardRef<HTMLDivElement, PopoverBaseProps>(
 
     const textColor = isDarkMode ? "var(--color-font-heading)" : "#121212";
     const borderColor = isDarkMode ? "var(--color-border-popover)" : undefined;
-    const backgroundColor = isDarkMode
-      ? "var(--color-card-background-default)"
-      : undefined;
+    const backgroundColor = isDarkMode ? "var(--color-card-background-default)" : undefined;
 
     return (
       <Component
@@ -27,10 +25,9 @@ const Popover = React.forwardRef<HTMLDivElement, PopoverBaseProps>(
         `}
         style={{
           borderColor: borderColor,
-          backgroundColor: backgroundColor
+          backgroundColor: backgroundColor,
         }}
-        {...props}
-      >
+        {...props}>
         {!showPopover ? (
           <>
             {icon}
@@ -41,31 +38,23 @@ const Popover = React.forwardRef<HTMLDivElement, PopoverBaseProps>(
                 style={{
                   fontWeight: 600,
                   color: textColor,
-                  marginBottom: "0px"
-                }}
-              >
+                  marginBottom: "0px",
+                }}>
                 {label}
               </Text>
             </Row>
-            <button
-              onClick={() => setShowPopover(!showPopover)}
-              className={styles["popover-icon"]}
-            >
-              <ExpandItIcon
-                color={isDarkMode ? "var(--color-font-body)" : undefined}
-              />
+            <button onClick={() => setShowPopover(!showPopover)} className={styles["popover-icon"]}>
+              <ExpandItIcon color={isDarkMode ? "var(--color-font-body)" : undefined} />
             </button>
           </>
         ) : (
           React.Children.map(children, (child) =>
-            React.isValidElement(child)
-              ? React.cloneElement(child, { setShowPopover })
-              : child
+            React.isValidElement(child) ? React.cloneElement(child, { setShowPopover }) : child,
           )
         )}
       </Component>
     );
-  }
+  },
 );
 
 Popover.displayName = "Popover";

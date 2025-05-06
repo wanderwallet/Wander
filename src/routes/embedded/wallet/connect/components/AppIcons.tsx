@@ -11,7 +11,11 @@ export default function AppIcons({ appInfo }: { appInfo: AppInfo }) {
         width={56}
         borderRadius={56}
         objectFit="contain"
-        style={{ marginRight: "-4px" }}
+        style={{
+          marginRight: "-4px",
+          borderRadius: "50%",
+          border: "1px solid #D6D6DD",
+        }}
         src={appInfo.logo}
       />
       <Image

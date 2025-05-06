@@ -16,9 +16,7 @@ export function TokensView() {
   const { navigate } = useLocation();
 
   const [isLoading, setIsLoading] = useState(false);
-  const [hasNextPage, setHasNextPage] = useState<boolean | undefined>(
-    undefined
-  );
+  const [hasNextPage, setHasNextPage] = useState<boolean | undefined>(undefined);
 
   // ao Tokens
   const { tokens: aoTokens } = useAoTokens({ type: "asset" });
@@ -37,7 +35,7 @@ export function TokensView() {
         setToast({
           type: "error",
           content: browser.i18n.getMessage("token_already_added"),
-          duration: 3000
+          duration: 3000,
         });
         throw new Error("Token already added");
       }
@@ -48,13 +46,13 @@ export function TokensView() {
         Denomination: token.Denomination,
         Logo: token.Logo,
         processId: token.id,
-        type: token.type || "asset"
+        type: token.type || "asset",
       });
       await PersistentStorage.set("ao_tokens", aoTokens);
       setToast({
         type: "success",
         content: browser.i18n.getMessage("token_imported"),
-        duration: 3000
+        duration: 3000,
       });
     } catch (err) {
       console.log("err", err);
@@ -69,27 +67,22 @@ export function TokensView() {
         setToast({
           type: "error",
           content: browser.i18n.getMessage("token_already_removed"),
-          duration: 3000
+          duration: 3000,
         });
         throw new Error("Token already removed");
       }
 
       const restrictedTokenIds = await getAoTokensAutoImportRestrictedIds();
-      const updatedTokens = aoTokens.filter(
-        ({ processId }) => processId !== token.id
-      );
+      const updatedTokens = aoTokens.filter(({ processId }) => processId !== token.id);
       if (!restrictedTokenIds.includes(token.id)) {
         restrictedTokenIds.push(token.id);
-        await PersistentStorage.set(
-          "ao_tokens_auto_import_restricted_ids",
-          restrictedTokenIds
-        );
+        await PersistentStorage.set("ao_tokens_auto_import_restricted_ids", restrictedTokenIds);
       }
       await PersistentStorage.set("ao_tokens", updatedTokens);
       setToast({
         type: "success",
         content: browser.i18n.getMessage("token_removed"),
-        duration: 3000
+        duration: 3000,
       });
     } catch (err) {
       console.log("err", err);
@@ -134,11 +127,7 @@ export function TokensView() {
         ))}
 
         {hasNextPage && (
-          <ButtonV2
-            disabled={isLoading}
-            style={{ alignSelf: "center", marginTop: "5px" }}
-            onClick={searchAoTokens}
-          >
+          <ButtonV2 disabled={isLoading} style={{ alignSelf: "center", marginTop: "5px" }} onClick={searchAoTokens}>
             {isLoading ? (
               <>
                 Searching <Loading style={{ margin: "0.18rem" }} />
@@ -155,8 +144,7 @@ export function TokensView() {
           onClick={(e) => {
             e.preventDefault();
             navigate("/quick-settings/tokens");
-          }}
-        >
+          }}>
           <EditIcon />
           {browser.i18n.getMessage("manage_assets_button")}
         </ManageButton>
@@ -173,7 +161,7 @@ const TokensList = styled(Section)`
 
 const ManageButton = styled.a.attrs({
   rel: "noopener noreferrer",
-  target: "_blank"
+  target: "_blank",
 })`
   display: flex;
   align-items: center;

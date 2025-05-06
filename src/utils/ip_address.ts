@@ -1,6 +1,5 @@
 // IPv4 validation regex
-const ipv4Regex =
-  /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+const ipv4Regex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
 
 // Helper function to validate IPv4
 const isValidIPv4 = (ip: string): boolean => ipv4Regex.test(ip.trim());
@@ -14,7 +13,7 @@ export async function getIPAddress(): Promise<string> {
   const sources = [
     {
       url: "https://ipv4.icanhazip.com/",
-      extract: async (response: Response) => (await response.text()).trim()
+      extract: async (response: Response) => (await response.text()).trim(),
     },
     {
       url: "https://1.0.0.1/cdn-cgi/trace",
@@ -22,8 +21,8 @@ export async function getIPAddress(): Promise<string> {
         const data = await response.text();
         const match = data.match(/ip=([^\n]+)/);
         return match?.[1]?.trim() ?? "";
-      }
-    }
+      },
+    },
   ];
 
   for (const source of sources) {

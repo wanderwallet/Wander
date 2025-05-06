@@ -1,11 +1,4 @@
-import {
-  useToasts,
-  Section,
-  useInput,
-  Button,
-  Input,
-  Text
-} from "@arconnect/components-rebrand";
+import { useToasts, Section, useInput, Button, Input, Text } from "@arconnect/components-rebrand";
 import { QRCodeSVG } from "qrcode.react";
 import { useEffect, useRef, useState, type Key } from "react";
 import HeadV2 from "~components/popup/HeadV2";
@@ -14,12 +7,7 @@ import browser from "webextension-polyfill";
 import { Degraded, WarningWrapper } from "~routes/popup/send";
 import { getKeyfile, type DecryptedWallet } from "~wallets";
 import { freeDecryptedWallet } from "~wallets/encryption";
-import {
-  AddressField,
-  ContentWrapper,
-  QRCodeWrapper,
-  Wrapper
-} from "~routes/popup/receive";
+import { AddressField, ContentWrapper, QRCodeWrapper, Wrapper } from "~routes/popup/receive";
 import { dataToFrames } from "qrloop";
 import { checkPassword } from "~wallets/auth";
 import type { CommonRouteProps } from "~wallets/router/router.types";
@@ -55,7 +43,7 @@ export function GenerateQRView({ params: { address } }: GenerateQRViewProps) {
         setToast({
           type: "error",
           content: browser.i18n.getMessage("invalidPassword"),
-          duration: 2200
+          duration: 2200,
         });
       }
     } catch {
@@ -78,11 +66,7 @@ export function GenerateQRView({ params: { address } }: GenerateQRViewProps) {
   return (
     <>
       <HeadV2
-        title={
-          wallet
-            ? wallet?.nickname ?? "Account"
-            : browser.i18n.getMessage("generate_qr_code")
-        }
+        title={wallet ? (wallet?.nickname ?? "Account") : browser.i18n.getMessage("generate_qr_code")}
         showOptions={false}
       />
       <Wrapper style={{ height: "calc(100vh - 100px)" }}>
@@ -92,16 +76,13 @@ export function GenerateQRView({ params: { address } }: GenerateQRViewProps) {
               <Degraded
                 style={{
                   justifyContent: "center",
-                  alignItems: "center"
-                }}
-              >
+                  alignItems: "center",
+                }}>
                 <WarningWrapper>
                   <WarningIcon color="#fff" />
                 </WarningWrapper>
                 <div>
-                  <span>
-                    {browser.i18n.getMessage("cannot_generate_qr_code")}
-                  </span>
+                  <span>{browser.i18n.getMessage("cannot_generate_qr_code")}</span>
                 </div>
               </Degraded>
             ) : (
@@ -112,9 +93,8 @@ export function GenerateQRView({ params: { address } }: GenerateQRViewProps) {
                       style={{
                         backgroundColor: "#fff",
                         padding: "12px",
-                        borderRadius: "12px"
-                      }}
-                    >
+                        borderRadius: "12px",
+                      }}>
                       <QRCodeLoop frames={frames} fps={5} size={275} />
                     </div>
                   </QRCodeWrapper>
@@ -128,16 +108,9 @@ export function GenerateQRView({ params: { address } }: GenerateQRViewProps) {
                     <CopyToClipboard
                       onCopy={setCopied}
                       showToast={false}
-                      label={browser.i18n.getMessage(
-                        copied ? "copied" : "copy"
-                      )}
+                      label={browser.i18n.getMessage(copied ? "copied" : "copy")}
                       labelAs={({ children }) => (
-                        <Text
-                          variant="secondary"
-                          size="sm"
-                          weight="semibold"
-                          noMargin
-                        >
+                        <Text variant="secondary" size="sm" weight="semibold" noMargin>
                           {children}
                         </Text>
                       )}
@@ -149,14 +122,9 @@ export function GenerateQRView({ params: { address } }: GenerateQRViewProps) {
             )}
           </div>
         ) : (
-          <Section
-            style={{ justifyContent: "space-between", flex: 1 }}
-            showPaddingVertical={false}
-          >
+          <Section style={{ justifyContent: "space-between", flex: 1 }} showPaddingVertical={false}>
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              <Text noMargin>
-                {browser.i18n.getMessage("generate_qr_code_title")}
-              </Text>
+              <Text noMargin>{browser.i18n.getMessage("generate_qr_code_title")}</Text>
               <Input
                 sizeVariant="small"
                 type="password"
@@ -180,15 +148,7 @@ export function GenerateQRView({ params: { address } }: GenerateQRViewProps) {
   );
 }
 
-const QRCodeLoop = ({
-  frames,
-  size,
-  fps
-}: {
-  frames: string[];
-  size: number;
-  fps: number;
-}) => {
+const QRCodeLoop = ({ frames, size, fps }: { frames: string[]; size: number; fps: number }) => {
   const [frame, setFrame] = useState(0);
   const rafRef = useRef(null);
 
@@ -219,14 +179,10 @@ const QRCodeLoop = ({
         position: "relative",
         width: size,
         height: size,
-        backgroundColor: "#fff"
-      }}
-    >
+        backgroundColor: "#fff",
+      }}>
       {frames.map((chunk: any, i: Key) => (
-        <div
-          key={i}
-          style={{ position: "absolute", opacity: i === frame ? 1 : 0 }}
-        >
+        <div key={i} style={{ position: "absolute", opacity: i === frame ? 1 : 0 }}>
           <QRCodeSVG fgColor="#000" bgColor="#fff" size={size} value={chunk} />
         </div>
       ))}

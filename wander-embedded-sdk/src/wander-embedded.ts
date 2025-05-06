@@ -2,18 +2,9 @@ import { setupEmbeddedWalletSDK } from "wallet-api/wallet-sdk.es.js";
 import { WanderButton } from "./components/button/wander-button.component";
 import { WanderIframe } from "./components/iframe/wander-iframe.component";
 import { merge } from "ts-deepmerge";
-import {
-  BalanceInfo,
-  RouteConfig,
-  WanderEmbeddedOptions
-} from "./wander-embedded.types";
-import {
-  IncomingBalanceMessageData,
-  IncomingRequestMessageData,
-  IncomingResizeMessageData,
-  UserDetails
-} from "./utils/message/message.types";
-import { isIncomingMessage } from "./utils/message/message.utils";
+import { AuthState, BalanceInfo, RouteConfig, ThemeSetting, WanderEmbeddedOptions } from "./wander-embedded.types";
+import { IncomingRequestMessageData } from "./utils/message/message.types";
+import { isEventMessage, isIncomingMessage, isWalletSwitchMessage } from "./utils/message/message.utils";
 import { getEmbeddedURL } from "./utils/url/url.utils";
 
 const NOOP = () => {};
@@ -52,17 +43,25 @@ type OpenReason = "manually" | "embedded_open" | "embedded_request";
 export class WanderEmbedded {
   private static instance: WanderEmbedded | null = null;
 
+  static WANDER_CONNECT_WALLET_NAME = "Wander Embedded" as const;
+
+  static AUTH_STATE_LS_KEY = "WANDER_CONNECT_AUTH_STATE" as const;
+
+  static NATIVE_WALLET_ENABLED_KEY = "WANDER_CONNECT_NATIVE_WALLET_ENABLED" as const;
+
   static DEFAULT_IFRAME_SRC =
     process.env.NODE_ENV === "development"
       ? ("http://localhost:5173/" as const)
       : ("https://embed-dev.wander.app/" as const);
 
+  static DEFAULT_THEME = "system" as const satisfies ThemeSetting;
+
   // Callbacks:
-  private onAuth: (userDetails: UserDetails | null) => void = NOOP;
+  private onAuth: (authState: AuthState) => void = NOOP;
   private onOpen: () => void = NOOP;
   private onClose: () => void = NOOP;
-  private onResize: (data: IncomingResizeMessageData) => void = NOOP;
-  private onBalance: (data: IncomingBalanceMessageData) => void = NOOP;
+  private onResize: (routeConfig: RouteConfig) => void = NOOP;
+  private onBalance: (balanceInfo: BalanceInfo) => void = NOOP;
   private onRequest: (data: IncomingRequestMessageData) => void = NOOP;
 
   // Components:
@@ -80,9 +79,14 @@ export class WanderEmbedded {
   private allowOpeningAutomatically = true;
 
   /**
-   * Contains details about the authenticated user, or null if not authenticated
+   * Contains the current authentication state of the SDK, and it is initialized with cached data in order to show as
+   * soon as possible the non-auth or the loading auth version of the SDK.
    */
-  public userDetails: UserDetails | null = null; // TODO: Should we expose this?
+  public authenticationState: AuthState = {
+    authType: null,
+    authStatus: "not-authenticated",
+    userDetails: null,
+  };
 
   /**
    * Current route configuration including dimensions and layout preferences
@@ -99,7 +103,12 @@ export class WanderEmbedded {
    */
   public pendingRequests: number = 0;
 
-  // Misc.:
+  // Injected APIs:
+
+  private isWalletReady = false;
+
+  private isNativeWalletEnabled = false;
+
   private windowArweaveWallet: any = null;
 
   /**
@@ -136,54 +145,134 @@ export class WanderEmbedded {
       {
         clientId: "",
         iframe: {
-          clickOutsideBehavior: true
+          clickOutsideBehavior: true,
         },
-        button: true
+        button: true,
       } satisfies WanderEmbeddedOptions,
-      options || {}
+      options || {},
     );
 
     if (!optionsWithDefaults.clientId) throw new Error("clientId is required");
+
+    try {
+      const authState = JSON.parse(localStorage.getItem(WanderEmbedded.AUTH_STATE_LS_KEY) || "null");
+
+      if (authState) {
+        // We initialize it as "loading" as we cannot still trust the cached data. The session still needs to be verified:
+        this.authenticationState = {
+          authType: authState.authType || null,
+          authStatus: "loading",
+          userDetails: authState.userDetails || null,
+        };
+      }
+    } catch (err) {
+      console.warn("Error parsing last authentication state:", err);
+    }
+
+    try {
+      this.isNativeWalletEnabled = localStorage.getItem(WanderEmbedded.NATIVE_WALLET_ENABLED_KEY) === "true";
+    } catch (err) {
+      console.warn("Error parsing last native wallet enabled:", err);
+    }
 
     // Create or get references to iframe and, maybe, button:
     this.initializeComponents(optionsWithDefaults);
 
     if (!this.iframeRef) throw new Error("Error creating iframe");
 
-    // TODO: Pass theme, balance config and max width/height to iframe context:
-    // this.iframeRef.contentWindow.postMessage(message, "*");
-
-    // Once we have all the elements in place, start listening for wallet messages...
+    // Bind message handler function:
     this.handleMessage = this.handleMessage.bind(this);
+
+    // Start listening for app => SDK messages:
     window.addEventListener("message", this.handleMessage);
 
-    // ...we get a reference to any other `window.arweaveWallet` (most likely our BE)...:
-    this.windowArweaveWallet = window.arweaveWallet;
+    // We get a reference to any other `window.arweaveWallet` (most likely our BE), in case we need to swap them back:
+    if (window.arweaveWallet.walletName !== WanderEmbedded.WANDER_CONNECT_WALLET_NAME) {
+      this.windowArweaveWallet = window.arweaveWallet;
+    }
 
-    // ...and (re)set `window.arweaveWallet`:
-    setupEmbeddedWalletSDK(this.iframeRef);
+    // We inject the embedded wallet API, unless the user has previously selected using the native wallet:
+    this.injectConnectWalletSDK(this.iframeRef);
+  }
+
+  private injectConnectWalletSDK(iframeRef: HTMLIFrameElement) {
+    if (this.isNativeWalletEnabled || window.arweaveWallet?.walletName === WanderEmbedded.WANDER_CONNECT_WALLET_NAME)
+      return;
+
+    this.isWalletReady = false;
+
+    setupEmbeddedWalletSDK(iframeRef);
+  }
+
+  private injectNativeWalletSDK() {
+    // This functions only does something if the currently injected wallet IS Wander Connect:
+    if (!this.isNativeWalletEnabled || window.arweaveWallet?.walletName !== WanderEmbedded.WANDER_CONNECT_WALLET_NAME)
+      return;
+
+    this.isWalletReady = false;
+
+    window.arweaveWallet = this.windowArweaveWallet;
+  }
+
+  private async dispatchWalletLoadedEvents() {
+    if (this.isNativeWalletEnabled || this.isWalletReady) return;
+
+    this.isWalletReady = true;
+
+    const permissions = await window.arweaveWallet.getPermissions().catch(() => []);
+
+    // Note that for Wander Connect we just need to dispatch this once, no need to subscribe to the window load event to re-dispatch it:
+    dispatchEvent(
+      new CustomEvent("arweaveWalletLoaded", {
+        detail: {
+          permissions,
+        },
+      }),
+    );
+
+    if (permissions.length > 0) {
+      this.buttonComponent?.setStatus("isConnected");
+    } else {
+      this.buttonComponent?.unsetStatus("isConnected");
+    }
+
+    const events = window.arweaveWallet?.events;
+
+    if (events && permissions.length > 0) {
+      events.emit("connect", null);
+
+      const [activeAddress, addresses] = await Promise.all([
+        window.arweaveWallet.getActiveAddress().catch(() => ""),
+        window.arweaveWallet.getAllAddresses().catch(() => []),
+      ]);
+
+      events.emit("activeAddress", activeAddress);
+      events.emit("addresses", addresses);
+    }
   }
 
   private initializeComponents(options: WanderEmbeddedOptions): void {
     const {
       clientId,
       baseURL = WanderEmbedded.DEFAULT_IFRAME_SRC,
+      theme = WanderEmbedded.DEFAULT_THEME,
+      hideBE,
       baseServerURL,
       iframe: iframeOptions,
-      button: buttonOptions
+      button: buttonOptions,
     } = options;
 
     const srcWithParams = getEmbeddedURL({
-      clientId,
       baseURL,
-      baseServerURL
+      clientId,
+      theme,
+      hideBE,
+      baseServerURL,
     });
 
     if (iframeOptions instanceof HTMLElement) {
       if (iframeOptions.src && iframeOptions.src !== srcWithParams) {
-        console.warn(
-          `Replacing iframe.src ("${iframeOptions.src}") with ${srcWithParams}`
-        );
+        console.warn(`Replacing iframe.src ("${iframeOptions.src}") with ${srcWithParams}`);
       }
 
       iframeOptions.src = srcWithParams;
@@ -196,15 +285,12 @@ export class WanderEmbedded {
 
       this.backdropRef = elements.backdrop;
       this.iframeRef = elements.iframe;
-
-      // document.body.appendChild(elements.backdrop);
-      // document.body.appendChild(elements.iframe);
     }
 
     if (typeof buttonOptions === "object" || buttonOptions === true) {
-      this.buttonComponent = new WanderButton(
-        buttonOptions === true ? {} : buttonOptions
-      );
+      this.buttonComponent = new WanderButton(buttonOptions === true ? {} : buttonOptions);
+
+      this.buttonComponent.setVariant(this.authenticationState.authStatus || "not-authenticated");
 
       const { parent, host, button } = this.buttonComponent.getElements();
 
@@ -217,10 +303,7 @@ export class WanderEmbedded {
       this.buttonRef.addEventListener("click", this.handleButtonClick);
     }
 
-    const clickOutsideBehavior =
-      iframeOptions instanceof HTMLElement
-        ? false
-        : iframeOptions?.clickOutsideBehavior;
+    const clickOutsideBehavior = iframeOptions instanceof HTMLElement ? false : iframeOptions?.clickOutsideBehavior;
 
     if (clickOutsideBehavior && this.backdropRef) {
       this.backdropRef.addEventListener("click", () => {
@@ -233,43 +316,110 @@ export class WanderEmbedded {
     }
   }
 
-  private handleMessage(event: MessageEvent): void {
+  private async handleMessage(event: MessageEvent): Promise<void> {
     const message = event.data;
+
+    if (!this.iframeRef || event.origin !== new URL(this.iframeRef.src).origin) return;
+
+    console.log("MESSAGE =", event.data.type, event.data);
+
+    if (isEventMessage(message) && this.isWalletReady) {
+      // Note we cannot handle this by doing `window.arweaveWallet.events.on("connect" | "disconnect" | "permissions", ...)`
+      // as that API is available to the dApp, which might do `window.arweaveWallet.events.off("connect" | "disconnect" | "permissions", ...)`
+      // and break the SDK functionality:
+
+      // "permissions" won't be dispatched when the app is disconnected, so we also need to listen to "disconnect":
+
+      if ((message.data.name === "permissions" && message.data.value.length > 0) || message.data.name === "connect") {
+        this.buttonComponent?.setStatus("isConnected");
+      } else if (
+        (message.data.name === "permissions" && message.data.value.length === 0) ||
+        message.data.name === "disconnect"
+      ) {
+        this.buttonComponent?.unsetStatus("isConnected");
+      }
+
+      const events = window.arweaveWallet?.events;
+
+      if (events) events.emit(message.data.name, message.data.value);
+
+      return;
+    }
+
+    if (isWalletSwitchMessage(message)) {
+      dispatchEvent(
+        new CustomEvent("walletSwitch", {
+          detail: { address: message.data },
+        }),
+      );
+
+      return;
+    }
 
     if (!isIncomingMessage(message)) return;
 
     switch (message.type) {
       case "embedded_auth":
-        const { userDetails } = message.data;
-        this.userDetails = userDetails;
+        const messageData = (this.authenticationState = message.data);
+        const { authType, authStatus } = messageData;
 
-        if (userDetails) {
-          this.buttonComponent?.setStatus("isAuthenticated");
-
-          this.iframeComponent?.resize({
-            routeType: "default",
-            preferredLayoutType: "popup",
-            height: 0
-          });
+        if (authStatus === "not-authenticated") {
+          localStorage.removeItem(WanderEmbedded.AUTH_STATE_LS_KEY);
         } else {
-          this.buttonComponent?.unsetStatus("isAuthenticated");
-
-          this.iframeComponent?.resize({
-            routeType: "auth",
-            preferredLayoutType: "modal",
-            height: 0
-          });
+          try {
+            localStorage.setItem(WanderEmbedded.AUTH_STATE_LS_KEY, JSON.stringify(messageData));
+          } catch (err) {
+            console.warn("Error storing last authentication state:", err);
+          }
         }
 
-        this.onAuth(message.data);
-        break;
+        if (authType === "NATIVE_WALLET") {
+          this.isNativeWalletEnabled = true;
+          localStorage.setItem(WanderEmbedded.NATIVE_WALLET_ENABLED_KEY, "true");
 
-      case "embedded_connect":
-        this.buttonComponent?.setStatus("isConnected");
-        break;
+          // If the user selected using the native wallet, we close the modal and swap the injected API back:
+          this._close();
+          this.injectNativeWalletSDK();
+        } else {
+          if (authType) {
+            this.isNativeWalletEnabled = false;
+            localStorage.removeItem(WanderEmbedded.NATIVE_WALLET_ENABLED_KEY);
+          }
 
-      case "embedded_disconnect":
-        this.buttonComponent?.unsetStatus("isConnected");
+          // Check that the injected wallet is Wander Connect (as it should), or inject it again as soon as possible.
+          // This could happen when, for example, the last used option was "NATIVE_WALLET", so the Wander Connect API
+          // wasn't injected yet, and the user now selects an authentication method to use Wander Connect.
+          this.injectConnectWalletSDK(this.iframeRef);
+
+          if (authStatus === "authenticated") {
+            this.dispatchWalletLoadedEvents();
+          }
+
+          // Update button for all authentication changes:
+          this.buttonComponent?.setVariant(authStatus);
+
+          if (authStatus === "not-authenticated") {
+            this.isWalletReady = false;
+            this.buttonComponent?.unsetStatus("isConnected");
+          }
+
+          if (authStatus === "loading") {
+            // TODO: Show spinner instead of iframe.
+          } else {
+            // TODO: Show iframe
+          }
+        }
+
+        if (this.isNativeWalletEnabled) {
+          this.onAuth({
+            authType: "NATIVE_WALLET",
+            authStatus: null,
+            userDetails: null,
+          });
+        } else {
+          this.onAuth(messageData);
+        }
+
         break;
 
       case "embedded_open":
@@ -312,10 +462,7 @@ export class WanderEmbedded {
 
         this.pendingRequests = pendingRequests;
 
-        if (
-          pendingRequests > 0 &&
-          (this.shouldOpenAutomatically || hasNewConnectRequest)
-        ) {
+        if (pendingRequests > 0 && (this.shouldOpenAutomatically || hasNewConnectRequest)) {
           this._open("embedded_request");
         } else if (pendingRequests === 0 && this.shouldCloseAutomatically) {
           // TODO: Re-implement the wait-before-closing feature for both BE and Embed and also use it here:
@@ -336,9 +483,7 @@ export class WanderEmbedded {
 
   private _open(openReason: OpenReason): void {
     if (!this.iframeComponent && !this.buttonComponent) {
-      console.warn(
-        "Wander Embedded's iframe and button has been created manually"
-      );
+      console.warn("Wander Embedded's iframe and button has been created manually");
     }
 
     if (!this.isOpen) {
@@ -362,15 +507,12 @@ export class WanderEmbedded {
 
   private _close(allowOpeningAutomatically = false): void {
     if (!this.iframeComponent && !this.buttonComponent) {
-      console.warn(
-        "Wander Embedded's iframe and button has been created manually"
-      );
+      console.warn("Wander Embedded's iframe and button has been created manually");
     }
 
     if (this.isOpen) {
       this.openReason = null;
-      this.allowOpeningAutomatically =
-        this.pendingRequests === 0 ? true : allowOpeningAutomatically;
+      this.allowOpeningAutomatically = this.pendingRequests === 0 ? true : allowOpeningAutomatically;
       this.buttonComponent?.unsetStatus("isOpen");
       this.iframeComponent?.hide();
     }
@@ -413,12 +555,13 @@ export class WanderEmbedded {
     }
   }
 
+  // TODO: Remove, as authenticationState is public?
   /**
    * Whether a user is currently authenticated
    * @returns True if authenticated, false otherwise
    */
   get isAuthenticated(): boolean {
-    return !!this.userDetails;
+    return this.authenticationState.authStatus === "authenticated" && !!this.authenticationState.userDetails;
   }
 
   /**

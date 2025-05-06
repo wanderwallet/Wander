@@ -1,10 +1,10 @@
-import { isLocalWallet, isSplitTransaction } from "~utils/assertions";
+import { isLocalWallet, isSignatureOptions, isSplitTransaction } from "~utils/assertions";
 import { constructTransaction } from "../sign/transaction_builder";
 import { arconfettiIcon, signNotification } from "../sign/utils";
 import { cleanUpChunks, getChunks } from "../sign/chunks";
 import { freeDecryptedWallet } from "~wallets/encryption";
 import type { BackgroundModuleFunction } from "~api/background/background-modules";
-import { createData, ArweaveSigner } from "arbundles";
+import { createData, ArweaveSigner } from "@dha-team/arbundles";
 import { getPrice, uploadDataToTurbo } from "./uploader";
 import type { DispatchResult } from "./index";
 import { signedTxTags } from "../sign/tags";
@@ -13,11 +13,11 @@ import { isString } from "typed-assert";
 import Application from "~applications/application";
 import Arweave from "arweave";
 import { ensureAllowanceDispatch } from "./allowance";
-import { updateAllowance } from "../sign/allowance";
 import BigNumber from "bignumber.js";
 import { isError } from "~utils/error/error.utils";
 import { ERR_MSG_USER_CANCELLED_AUTH } from "~utils/auth/auth.constants";
 import { checkIfUserNeedsToSign } from "../sign/sign_policy";
+import { createArweaveSignerWithOptions } from "~utils/signer.utils";
 
 type ReturnType = {
   arConfetti: string | false;
@@ -27,11 +27,13 @@ type ReturnType = {
 const background: BackgroundModuleFunction<ReturnType> = async (
   appData,
   tx: unknown,
-  chunkCollectionID: unknown
+  chunkCollectionID: unknown,
+  signatureOptions?: unknown,
 ) => {
   // validate input
   isSplitTransaction(tx);
   isString(chunkCollectionID);
+  if (signatureOptions) isSignatureOptions(signatureOptions);
 
   // create client
   const app = new Application(appData.url);
@@ -52,7 +54,7 @@ const background: BackgroundModuleFunction<ReturnType> = async (
   // reconstruct the transaction from the chunks
   let transaction = arweave.transactions.fromRaw({
     ...constructTransaction(tx, chunks || []),
-    owner: keyfile.n
+    owner: keyfile.n,
   });
 
   // clean up chunks
@@ -63,7 +65,7 @@ const background: BackgroundModuleFunction<ReturnType> = async (
   // @ts-expect-error
   const tags = (transaction.get("tags") as Tag[]).map((tag) => ({
     name: tag.get("name", { decode: true, string: true }),
-    value: tag.get("value", { decode: true, string: true })
+    value: tag.get("value", { decode: true, string: true }),
   }));
 
   // add Wander tags to the tag list
@@ -75,29 +77,18 @@ const background: BackgroundModuleFunction<ReturnType> = async (
   // always ask
   // const alwaysAsk = allowance.enabled && allowance.limit.eq(BigNumber("0"));
   const signPolicy = await app.getSignPolicy();
-  const alwaysAsk = checkIfUserNeedsToSign(
-    signPolicy,
-    transaction,
-    decryptedWallet?.type
-  );
+  const alwaysAsk = checkIfUserNeedsToSign(signPolicy, transaction, decryptedWallet?.type);
 
   // attempt to create a bundle
   try {
     // create bundlr tx as a data entry
-    const dataSigner = new ArweaveSigner(keyfile);
+    const dataSigner = createArweaveSignerWithOptions(decryptedWallet.keyfile, signatureOptions);
     const dataEntry = createData(data, dataSigner, { tags });
 
     // check allowance
     const price = await getPrice(dataEntry, await app.getBundler());
 
-    await ensureAllowanceDispatch(
-      dataEntry,
-      appData,
-      allowance,
-      decryptedWallet.keyfile,
-      price,
-      alwaysAsk
-    );
+    await ensureAllowanceDispatch(dataEntry, appData, allowance, decryptedWallet.keyfile, price, alwaysAsk);
 
     // sign and upload bundler tx
     await dataEntry.sign(dataSigner);
@@ -116,8 +107,8 @@ const background: BackgroundModuleFunction<ReturnType> = async (
       arConfetti: await arconfettiIcon(),
       res: {
         id: dataEntry.id,
-        type: "BUNDLED"
-      }
+        type: "BUNDLED",
+      },
     };
   } catch (err) {
     if (isError(err) && err.message === ERR_MSG_USER_CANCELLED_AUTH) {
@@ -136,14 +127,7 @@ const background: BackgroundModuleFunction<ReturnType> = async (
     const price = BigNumber(transaction.reward).plus(transaction.quantity);
 
     // ensure allowance
-    await ensureAllowanceDispatch(
-      transaction,
-      appData,
-      allowance,
-      decryptedWallet.keyfile,
-      price,
-      alwaysAsk
-    );
+    await ensureAllowanceDispatch(transaction, appData, allowance, decryptedWallet.keyfile, price, alwaysAsk);
 
     // sign and upload
     await arweave.transactions.sign(transaction, keyfile);
@@ -166,8 +150,8 @@ const background: BackgroundModuleFunction<ReturnType> = async (
       arConfetti: await arconfettiIcon(),
       res: {
         id: transaction.id,
-        type: "BASE"
-      }
+        type: "BASE",
+      },
     };
   }
 };

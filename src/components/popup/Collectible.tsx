@@ -16,7 +16,7 @@ export default function Collectible({ id, onClick, ...props }: Props) {
 
   const [activeAddress] = useStorage<string>({
     key: "active_address",
-    instance: ExtensionStorage
+    instance: ExtensionStorage,
   });
 
   const tokenInfo = useMemo(() => {
@@ -27,28 +27,18 @@ export default function Collectible({ id, onClick, ...props }: Props) {
       Name: props.name,
       Denomination: props.divisibility,
       Logo: id,
-      type: "collectible" as TokenInfo["type"]
+      type: "collectible" as TokenInfo["type"],
     };
   }, [props]);
 
-  const { data: balance, isLoading } = useTokenBalance(
-    tokenInfo,
-    activeAddress
-  );
+  const { data: balance, isLoading } = useTokenBalance(tokenInfo, activeAddress);
 
   return (
     <Wrapper onClick={onClick}>
-      <Image
-        src={concatGatewayURL(gateway) + `/${id}`}
-        fallback={placeholderUrl}
-      >
+      <Image src={concatGatewayURL(gateway) + `/${id}`} fallback={placeholderUrl}>
         <NameAndQty>
           <Name>{props.name || ""}</Name>
-          {isLoading ? (
-            <Skeleton width="24px" height="20px" />
-          ) : (
-            <Qty>{balance || "0"}</Qty>
-          )}
+          {isLoading ? <Skeleton width="24px" height="20px" /> : <Qty>{balance || "0"}</Qty>}
         </NameAndQty>
       </Image>
     </Wrapper>
@@ -75,8 +65,7 @@ const Wrapper = styled.div`
 
 const Image = styled.div<{ src: string; fallback: string }>`
   position: relative;
-  background-image: url(${(props) => props.src}),
-    url(${(props) => props.fallback});
+  background-image: url(${(props) => props.src}), url(${(props) => props.fallback});
   background-size: cover;
   background-position: center;
   padding-top: 100%;

@@ -15,8 +15,7 @@ export function handleGetPrinters(callback: PrinterInfoCallback) {
       id: WANDER_PRINTER_ID,
       // TODO: Add to i18n:
       name: "Print to Arweave",
-      description:
-        "Publish the content you want to print on Arweave, permanently."
-    }
+      description: "Publish the content you want to print on Arweave, permanently.",
+    },
   ]);
 }

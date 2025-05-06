@@ -1,11 +1,5 @@
 import copy from "copy-to-clipboard";
-import {
-  Avatar,
-  Copyable,
-  DownloadIcon,
-  Row,
-  Text
-} from "~components/embed/ui";
+import { Avatar, Copyable, DownloadIcon, Row, Text, WalletIcon } from "~components/embed/ui";
 import Dropdown from "~components/embed/ui/molecules/dropdown/Dropdown/Dropdown";
 import DropdownItem from "~components/embed/ui/molecules/dropdown/DropdownItem/DropdownItem";
 import type { Wallet } from "~utils/embedded/embedded.types";
@@ -17,7 +11,7 @@ import { Link } from "~wallets/router/components/link/Link";
 
 export function AccountSelector({
   wallets,
-  activeWallet
+  activeWallet,
 }: {
   wallets?: StoredWallet[];
   activeWallet:
@@ -37,18 +31,14 @@ export function AccountSelector({
     <div style={{ alignSelf: "flex-start" }}>
       <Dropdown
         backupReminder={
-          <Link
-            to="/account/backup-shares"
-            style={{ textDecoration: "none", width: "100%" }}
-          >
+          <Link to="/account/backup-shares" style={{ textDecoration: "none", width: "100%" }}>
             <Row
               alignment="center"
               justifyContent="center"
               isFullWidth
               style={{
-                padding: "8px 16px"
-              }}
-            >
+                padding: "8px 16px",
+              }}>
               <Text variant="bodySm" style={{ fontWeight: 500 }}>
                 Secure your account by backing it up.
               </Text>
@@ -57,7 +47,9 @@ export function AccountSelector({
           </Link>
         }
         buttonAvatar={
-          <Avatar fontColor={"#FFF"}>{activeWallet.nickname}</Avatar>
+          <Avatar fontColor={"#FFF"}>
+            <WalletIcon color="#FFF" style={{ height: 16, width: 16 }} />
+          </Avatar>
         }
         buttonText={
           <Text variant="bodyMd" style={{ color: "#121212" }}>
@@ -68,21 +60,17 @@ export function AccountSelector({
           <>
             {wallets.map((wallet, id) => (
               <DropdownItem key={id} onClick={handleAccountClick}>
-                <Row
-                  key={wallet.address}
-                  alignment="center"
-                  justifyContent="start"
-                  style={{ padding: "8px 16px" }}
-                >
-                  <Avatar fontColor={"#FFF"}>{wallet.nickname}</Avatar>
+                <Row key={wallet.address} alignment="center" justifyContent="start" style={{ padding: "8px 16px" }}>
+                  <Avatar fontColor={"#FFF"}>
+                    <WalletIcon color="#FFF" style={{ height: 16, width: 16 }} />
+                  </Avatar>
                   <Text
                     variant="bodyMd"
                     style={{
                       fontWeight: 500,
                       color: "#121212",
-                      width: "max-content"
-                    }}
-                  >
+                      width: "max-content",
+                    }}>
                     {wallet.nickname ?? wallet.address}
                   </Text>
                   <Copyable
@@ -90,7 +78,7 @@ export function AccountSelector({
                     hasBorder={false}
                     value={wallet.address}
                     style={{
-                      maxWidth: 140
+                      maxWidth: 140,
                     }}
                     onClick={() => {
                       copy(wallet.address);

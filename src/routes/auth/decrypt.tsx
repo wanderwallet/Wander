@@ -1,10 +1,4 @@
-import {
-  Input,
-  Section,
-  Text,
-  useInput,
-  useToasts
-} from "@arconnect/components-rebrand";
+import { Input, Section, Text, useInput, useToasts } from "@arconnect/components-rebrand";
 import Message from "~components/auth/Message";
 import Wrapper from "~components/auth/Wrapper";
 import browser from "webextension-polyfill";
@@ -18,8 +12,7 @@ import styled from "styled-components";
 import { checkPassword } from "~wallets/auth";
 
 export function DecryptAuthRequestView() {
-  const { authRequest, acceptRequest, rejectRequest } =
-    useCurrentAuthRequest("decrypt");
+  const { authRequest, acceptRequest, rejectRequest } = useCurrentAuthRequest("decrypt");
 
   const { authID, url, message } = authRequest;
 
@@ -30,9 +23,9 @@ export function DecryptAuthRequestView() {
   const [transferRequirePassword] = useStorage<boolean>(
     {
       key: "transfer_require_password",
-      instance: ExtensionStorage
+      instance: ExtensionStorage,
     },
-    false
+    false,
   );
 
   async function decrypt() {
@@ -42,7 +35,7 @@ export function DecryptAuthRequestView() {
         setToast({
           type: "error",
           content: browser.i18n.getMessage("invalidPassword"),
-          duration: 2400
+          duration: 2400,
         });
         return;
       }
@@ -68,9 +61,7 @@ export function DecryptAuthRequestView() {
         <HeadAuth title={browser.i18n.getMessage("titles_decrypt")} />
 
         <Section>
-          <Text noMargin>
-            {browser.i18n.getMessage("decrypt_description", url)}
-          </Text>
+          <Text noMargin>{browser.i18n.getMessage("decrypt_description", url)}</Text>
 
           <div style={{ marginTop: "16px" }}>
             <Message message={message} />
@@ -102,10 +93,10 @@ export function DecryptAuthRequestView() {
           authRequest={authRequest}
           primaryButtonProps={{
             label: browser.i18n.getMessage("decrypt_authorize"),
-            onClick: decrypt
+            onClick: decrypt,
           }}
           secondaryButtonProps={{
-            onClick: () => rejectRequest()
+            onClick: () => rejectRequest(),
           }}
         />
       </Section>
