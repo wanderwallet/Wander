@@ -527,10 +527,11 @@ The SDK supports all modern browsers (Chrome, Firefox, Safari, Edge).
 
 2. `yarn build:wallet-api`
 
-   The TS/JS SDK imports some shared dependencies (`setupWalletSDK()`) from an already built version of the main repo.
+   The TS/JS SDK imports some shared dependencies (`injectWanderWalletAPI()`) from an already built version of the main
+   repo.
 
    Until we have a monorepo, this command builds the bundle with this shared dependency under
-   `wander-embedded-sdk/sdk-dist`.
+   `wander-connect-sdk/sdk-dist`.
 
 3. `yarn dev:iframe`
 
@@ -652,7 +653,7 @@ To use a local `@wanderapp/embed-sdk`, go to the playground repo and run `pnpm l
 `@wanderapp/embed-sdk` dependency to:
 
 ```json
-  "@wanderapp/embed-sdk": "link:./../wander/Wander/wander-embedded-sdk/"`
+  "@wanderapp/embed-sdk": "link:./../wander/Wander/wander-connect-sdk/"`
 ```
 
 You can revert this change running `pnpm link-embed`, which changes the `@wanderapp/embed-sdk` dependency back to:
@@ -661,10 +662,10 @@ You can revert this change running `pnpm link-embed`, which changes the `@wander
   "@wanderapp/embed-sdk": "^0.0.1"`
 ```
 
-Then, go into `wander-embedded-sdk` in this repo and run `pnpm install` and `pnpm dev`.
+Then, go into `wander-connect-sdk` in this repo and run `pnpm install` and `pnpm dev`.
 
 When running in development mode, the SDK will use `http://localhost:5173` as the default value for `baseURL`, instead
-of `https://embed.wander.app/`. See `wander-embedded-sdk/src/wander-embedded.ts`.
+of `https://embed.wander.app/`. See `wander-connect-sdk/src/wander-connect.ts`.
 
 > [!WARNING] Temporarily, the <https://embed.wander.app/> URLs are actually <https://embed-dev.wander.app/>. This should
 > be replaced before launch.

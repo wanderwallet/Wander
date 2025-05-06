@@ -5,21 +5,21 @@ WanderEmbedded SDK provides a seamless way to integrate Wander functionality int
 ## Installation
 
 ```bash
-npm install wander-embedded-sdk
+npm install wander-connect-sdk
 # or
-yarn add wander-embedded-sdk
+yarn add wander-connect-sdk
 ```
 
 ## Quick Start
 
 ```javascript
-import { WanderEmbedded } from "wander-embedded-sdk";
+import { WanderConnect } from "wander-connect-sdk";
 
 // Initialize with default options
-const wander = new WanderEmbedded();
+const wander = new WanderConnect();
 
 // Or initialize with custom options
-const wander = new WanderEmbedded({
+const wander = new WanderConnect({
   buttonStyles: "custom",
   iframeStyles: {
     /* custom styles */
@@ -32,7 +32,7 @@ const wander = new WanderEmbedded({
 
 ### Constructor Options
 
-The `WanderEmbedded` constructor accepts an optional configuration object with the following properties:
+The `WanderConnect` constructor accepts an optional configuration object with the following properties:
 
 | **Option**     | **Type**                     | **Default** | **Description**                                                                                                     |
 | -------------- | ---------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------- |
@@ -76,13 +76,13 @@ wander.destroy();
 ### Basic Integration
 
 ```javascript
-const wander = new WanderEmbedded();
+const wander = new WanderConnect();
 ```
 
 ### Custom Styling
 
 ```javascript
-const wander = new WanderEmbedded({
+const wander = new WanderConnect({
   buttonStyles: {
     backgroundColor: "#000000",
     color: "#ffffff",
@@ -99,7 +99,7 @@ const wander = new WanderEmbedded({
 ### With Event Handlers
 
 ```javascript
-const wander = new WanderEmbedded({
+const wander = new WanderConnect({
   onOpen: () => {
     console.log("Wander iframe opened");
   },
@@ -116,7 +116,7 @@ const wander = new WanderEmbedded({
 
 ```javascript
 const customIframe = document.getElementById("my-iframe");
-const wander = new WanderEmbedded({
+const wander = new WanderConnect({
   iframeRef: customIframe,
 });
 ```
@@ -124,7 +124,7 @@ const wander = new WanderEmbedded({
 ### Button-less Integration
 
 ```javascript
-const wander = new WanderEmbedded({
+const wander = new WanderConnect({
   buttonStyles: "none",
 });
 ```

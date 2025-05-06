@@ -1,16 +1,10 @@
-import {
-  BalanceInfo,
-  WanderEmbeddedButtonConfig,
-  WanderEmbeddedButtonCSSVars,
-  WanderEmbeddedButtonOptions,
-  WanderEmbeddedButtonStatus,
-} from "../../wander-embedded.types";
-import { getWanderButtonTemplateContent } from "./wander-button.template";
+import { BalanceInfo, ButtonConfig, ButtonCSSVars, ButtonOptions, ButtonStatus } from "../../wander-connect.types";
+import { getButtonTemplateContent } from "./button.template";
 import { addCSSVariables, mergeCSSVariablesOption } from "../../utils/styles/styles.utils";
-import { EmbeddedAuthStatus } from "../../utils/message/message.types";
+import { AuthStatus } from "../../utils/message/message.types";
 
-export class WanderButton {
-  static DEFAULT_LIGHT_CSS_VARS: WanderEmbeddedButtonCSSVars = {
+export class Button {
+  static DEFAULT_LIGHT_CSS_VARS: ButtonCSSVars = {
     // Button (button):
     gapX: 16,
     gapY: 16,
@@ -42,8 +36,8 @@ export class WanderButton {
     notificationsPadding: "",
   };
 
-  static DEFAULT_DARK_CSS_VARS: WanderEmbeddedButtonCSSVars = {
-    ...WanderButton.DEFAULT_LIGHT_CSS_VARS,
+  static DEFAULT_DARK_CSS_VARS: ButtonCSSVars = {
+    ...Button.DEFAULT_LIGHT_CSS_VARS,
 
     // Button (button, affected by :hover & :focus):
     background: "black",
@@ -66,11 +60,11 @@ export class WanderButton {
   };
 
   static DEFAULT_CONFIG = {
-    id: "wanderEmbeddedButtonHost",
+    id: "wanderConnectButtonHost",
     theme: "system",
     cssVars: {
-      light: WanderButton.DEFAULT_LIGHT_CSS_VARS,
-      dark: WanderButton.DEFAULT_DARK_CSS_VARS,
+      light: Button.DEFAULT_LIGHT_CSS_VARS,
+      dark: Button.DEFAULT_DARK_CSS_VARS,
     },
     customStyles: "",
     parent: document.body,
@@ -89,7 +83,7 @@ export class WanderButton {
       signIn: "Sign in",
       reviewRequests: "Review requests",
     },
-  } as const satisfies WanderEmbeddedButtonConfig;
+  } as const satisfies ButtonConfig;
 
   // Elements:
   private parent: HTMLElement;
@@ -102,45 +96,44 @@ export class WanderButton {
   private notifications: HTMLSpanElement;
 
   // Config (options):
-  private config: WanderEmbeddedButtonConfig;
+  private config: ButtonConfig;
 
   // State:
-  private variant: null | EmbeddedAuthStatus = null;
-  private status: Partial<Record<WanderEmbeddedButtonStatus, boolean>> = {};
+  private variant: null | AuthStatus = null;
+  private status: Partial<Record<ButtonStatus, boolean>> = {};
 
-  constructor(options: WanderEmbeddedButtonOptions = {}) {
+  constructor(options: ButtonOptions = {}) {
     const cssVars = mergeCSSVariablesOption(
       options.cssVars,
       options.theme,
-      WanderButton.DEFAULT_LIGHT_CSS_VARS,
-      WanderButton.DEFAULT_DARK_CSS_VARS,
+      Button.DEFAULT_LIGHT_CSS_VARS,
+      Button.DEFAULT_DARK_CSS_VARS,
     );
 
     this.config = {
-      parent: options.parent || WanderButton.DEFAULT_CONFIG.parent,
-      id: options.id || WanderButton.DEFAULT_CONFIG.id,
-      theme: options.theme || WanderButton.DEFAULT_CONFIG.theme,
+      parent: options.parent || Button.DEFAULT_CONFIG.parent,
+      id: options.id || Button.DEFAULT_CONFIG.id,
+      theme: options.theme || Button.DEFAULT_CONFIG.theme,
       cssVars,
-      customStyles: options.customStyles || WanderButton.DEFAULT_CONFIG.customStyles,
-      position: options.position || WanderButton.DEFAULT_CONFIG.position,
-      wanderLogo: options.wanderLogo || WanderButton.DEFAULT_CONFIG.wanderLogo,
-      label: options.label ?? WanderButton.DEFAULT_CONFIG.label,
+      customStyles: options.customStyles || Button.DEFAULT_CONFIG.customStyles,
+      position: options.position || Button.DEFAULT_CONFIG.position,
+      wanderLogo: options.wanderLogo || Button.DEFAULT_CONFIG.wanderLogo,
+      label: options.label ?? Button.DEFAULT_CONFIG.label,
       balance:
         options.balance === false
           ? false
           : {
               balanceOf:
                 (options.balance === true ? null : options.balance?.balanceOf) ??
-                WanderButton.DEFAULT_CONFIG.balance.balanceOf,
+                Button.DEFAULT_CONFIG.balance.balanceOf,
               currency:
-                (options.balance === true ? null : options.balance?.currency) ??
-                WanderButton.DEFAULT_CONFIG.balance.currency,
+                (options.balance === true ? null : options.balance?.currency) ?? Button.DEFAULT_CONFIG.balance.currency,
             },
-      notifications: options.notifications || WanderButton.DEFAULT_CONFIG.notifications,
-      i18n: options.i18n || WanderButton.DEFAULT_CONFIG.i18n,
+      notifications: options.notifications || Button.DEFAULT_CONFIG.notifications,
+      i18n: options.i18n || Button.DEFAULT_CONFIG.i18n,
     };
 
-    const elements = WanderButton.initializeButton(this.config);
+    const elements = Button.initializeButton(this.config);
 
     this.parent = this.config.parent;
     this.host = elements.host;
@@ -152,7 +145,7 @@ export class WanderButton {
     this.notifications = elements.notifications;
   }
 
-  static initializeButton(config: WanderEmbeddedButtonConfig) {
+  static initializeButton(config: ButtonConfig) {
     const host = document.createElement("div");
 
     host.id = config.id;
@@ -160,14 +153,14 @@ export class WanderButton {
     const shadow = host.attachShadow({ mode: "open" });
     const template = document.createElement("template");
 
-    template.innerHTML = getWanderButtonTemplateContent({
+    template.innerHTML = getButtonTemplateContent({
       wanderLogo: config.wanderLogo,
       i18n: config.i18n,
       showLabel: config.label,
       showBalance: !!config.balance,
       customStyles: config.customStyles,
       // TODO: It would be better to create an interface with the subset of vars that we can override when changing themes:
-      cssVariableKeys: Object.keys(WanderButton.DEFAULT_LIGHT_CSS_VARS),
+      cssVariableKeys: Object.keys(Button.DEFAULT_LIGHT_CSS_VARS),
     });
 
     shadow.appendChild(template.content);
@@ -259,7 +252,7 @@ export class WanderButton {
     }
   }
 
-  setVariant(variant: EmbeddedAuthStatus) {
+  setVariant(variant: AuthStatus) {
     this.variant = variant;
     this.button.dataset.variant = variant;
 
@@ -286,12 +279,12 @@ export class WanderButton {
     }
   }
 
-  setStatus(status: WanderEmbeddedButtonStatus) {
+  setStatus(status: ButtonStatus) {
     this.status[status] = true;
     this.button.classList.add(status);
   }
 
-  unsetStatus(status: WanderEmbeddedButtonStatus) {
+  unsetStatus(status: ButtonStatus) {
     this.status[status] = false;
     this.button.classList.remove(status);
   }

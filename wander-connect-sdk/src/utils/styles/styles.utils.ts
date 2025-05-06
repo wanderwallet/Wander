@@ -1,5 +1,5 @@
 import { merge } from "ts-deepmerge";
-import { isThemeRecord, ThemeSetting, ThemeVariant } from "../../wander-embedded.types";
+import { isThemeRecord, ThemeSetting, ThemeVariant } from "../../wander-connect.types";
 
 export function addCSSVariables<T>(element: HTMLElement, vars: T, suffix = "") {
   for (const key in vars) {

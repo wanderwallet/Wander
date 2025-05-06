@@ -5,15 +5,15 @@ import {
   LayoutType,
   RouteConfig,
   RouteType,
-  WanderEmbeddedIframeConfig,
-  WanderEmbeddedIframeOptions,
-  WanderEmbeddedIframeCSSVars,
-} from "../../wander-embedded.types";
+  IframeConfig,
+  IframeOptions,
+  IframeCSSVars,
+} from "../../wander-connect.types";
 import { addCSSVariables, mergeCSSVariablesOption } from "../../utils/styles/styles.utils";
-import { getWanderIframeTemplateContent } from "./wander-iframe.template";
+import { getIframeTemplateContent } from "./iframe.template";
 
-export class WanderIframe {
-  static DEFAULT_LIGHT_CSS_VARS: WanderEmbeddedIframeCSSVars = {
+export class Iframe {
+  static DEFAULT_LIGHT_CSS_VARS: IframeCSSVars = {
     // Iframe Wrapper (div.iframe-wrapper)
     background: "white",
     borderWidth: 2,
@@ -43,28 +43,28 @@ export class WanderIframe {
     mobileBoxShadow: "none",
   } as const;
 
-  static DEFAULT_DARK_CSS_VARS: WanderEmbeddedIframeCSSVars = {
-    ...WanderIframe.DEFAULT_LIGHT_CSS_VARS,
+  static DEFAULT_DARK_CSS_VARS: IframeCSSVars = {
+    ...Iframe.DEFAULT_LIGHT_CSS_VARS,
     background: "black",
   } as const;
 
   static DEFAULT_CONFIG = {
-    id: "wanderEmbeddedIframeHost",
+    id: "wanderConnectIframeHost",
     theme: "system",
     cssVars: {
-      light: WanderIframe.DEFAULT_LIGHT_CSS_VARS,
-      dark: WanderIframe.DEFAULT_DARK_CSS_VARS,
+      light: Iframe.DEFAULT_LIGHT_CSS_VARS,
+      dark: Iframe.DEFAULT_DARK_CSS_VARS,
     },
     customStyles: "",
     routeLayout: {
-      default: WanderIframe.getLayoutConfig("popup"),
-      auth: WanderIframe.getLayoutConfig("modal"),
-      account: WanderIframe.getLayoutConfig("modal"),
-      settings: WanderIframe.getLayoutConfig("popup"),
-      "auth-request": WanderIframe.getLayoutConfig("popup"),
+      default: Iframe.getLayoutConfig("popup"),
+      auth: Iframe.getLayoutConfig("modal"),
+      account: Iframe.getLayoutConfig("modal"),
+      settings: Iframe.getLayoutConfig("popup"),
+      "auth-request": Iframe.getLayoutConfig("popup"),
     },
     clickOutsideBehavior: true,
-  } as const satisfies WanderEmbeddedIframeConfig;
+  } as const satisfies IframeConfig;
 
   static readonly IMAGE_EXTENSIONS = ["png", "webp"] as const;
   static readonly DEFAULT_ROUTE_TYPES: readonly RouteType[] = [
@@ -75,9 +75,7 @@ export class WanderIframe {
     "settings",
   ];
   static readonly ALLOWED_IMG_PATHS: ReadonlySet<ImgPath> = new Set(
-    WanderIframe.DEFAULT_ROUTE_TYPES.flatMap((route) =>
-      WanderIframe.IMAGE_EXTENSIONS.map((ext) => `${route}.${ext}` as ImgPath),
-    ),
+    Iframe.DEFAULT_ROUTE_TYPES.flatMap((route) => Iframe.IMAGE_EXTENSIONS.map((ext) => `${route}.${ext}` as ImgPath)),
   );
 
   // Elements:
@@ -88,7 +86,7 @@ export class WanderIframe {
   private halfImage: HTMLImageElement;
 
   // Config (options):
-  private config: WanderEmbeddedIframeConfig;
+  private config: IframeConfig;
 
   // State:
   private currentLayoutType: LayoutType | null = null;
@@ -96,12 +94,12 @@ export class WanderIframe {
 
   private imageBaseUrl: string | null = null;
 
-  constructor(src: string, options: WanderEmbeddedIframeOptions = {}) {
+  constructor(src: string, options: IframeOptions = {}) {
     const cssVars = mergeCSSVariablesOption(
       options.cssVars,
       options.theme,
-      WanderIframe.DEFAULT_LIGHT_CSS_VARS,
-      WanderIframe.DEFAULT_DARK_CSS_VARS,
+      Iframe.DEFAULT_LIGHT_CSS_VARS,
+      Iframe.DEFAULT_DARK_CSS_VARS,
     );
 
     const routeLayoutOption = options.routeLayout;
@@ -112,12 +110,12 @@ export class WanderIframe {
       // If a single value is passed, we use it for "default", "settings" and "auth-request" routes. "auth" and
       // "account" routes fall back to the default layout type (currently "modal"):
 
-      const defaultLayoutConfig = WanderIframe.getLayoutConfig(routeLayoutOption);
+      const defaultLayoutConfig = Iframe.getLayoutConfig(routeLayoutOption);
 
       routeLayout = {
         default: defaultLayoutConfig,
-        auth: WanderIframe.DEFAULT_CONFIG.routeLayout.auth,
-        account: WanderIframe.DEFAULT_CONFIG.routeLayout.auth,
+        auth: Iframe.DEFAULT_CONFIG.routeLayout.auth,
+        account: Iframe.DEFAULT_CONFIG.routeLayout.auth,
         settings: defaultLayoutConfig,
         "auth-request": defaultLayoutConfig,
       };
@@ -127,40 +125,38 @@ export class WanderIframe {
       // fallback for "account" routes:
 
       const defaultLayoutConfig = routeLayoutOption?.default
-        ? WanderIframe.getLayoutConfig(routeLayoutOption?.default)
-        : WanderIframe.DEFAULT_CONFIG.routeLayout.default;
+        ? Iframe.getLayoutConfig(routeLayoutOption?.default)
+        : Iframe.DEFAULT_CONFIG.routeLayout.default;
 
       const authLayoutConfig = routeLayoutOption?.auth
-        ? WanderIframe.getLayoutConfig(routeLayoutOption?.auth)
-        : WanderIframe.DEFAULT_CONFIG.routeLayout.auth;
+        ? Iframe.getLayoutConfig(routeLayoutOption?.auth)
+        : Iframe.DEFAULT_CONFIG.routeLayout.auth;
 
       routeLayout = {
         default: defaultLayoutConfig,
         auth: authLayoutConfig,
-        account: routeLayoutOption?.account
-          ? WanderIframe.getLayoutConfig(routeLayoutOption.account)
-          : authLayoutConfig,
+        account: routeLayoutOption?.account ? Iframe.getLayoutConfig(routeLayoutOption.account) : authLayoutConfig,
         settings: routeLayoutOption?.settings
-          ? WanderIframe.getLayoutConfig(routeLayoutOption.settings)
+          ? Iframe.getLayoutConfig(routeLayoutOption.settings)
           : defaultLayoutConfig,
         "auth-request": routeLayoutOption?.["auth-request"]
-          ? WanderIframe.getLayoutConfig(routeLayoutOption["auth-request"])
+          ? Iframe.getLayoutConfig(routeLayoutOption["auth-request"])
           : defaultLayoutConfig,
       };
     }
 
     this.config = {
-      id: options.id || WanderIframe.DEFAULT_CONFIG.id,
-      theme: options.theme || WanderIframe.DEFAULT_CONFIG.theme,
+      id: options.id || Iframe.DEFAULT_CONFIG.id,
+      theme: options.theme || Iframe.DEFAULT_CONFIG.theme,
       cssVars,
-      customStyles: options.customStyles || WanderIframe.DEFAULT_CONFIG.customStyles,
+      customStyles: options.customStyles || Iframe.DEFAULT_CONFIG.customStyles,
       routeLayout,
-      clickOutsideBehavior: options.clickOutsideBehavior || WanderIframe.DEFAULT_CONFIG.clickOutsideBehavior,
+      clickOutsideBehavior: options.clickOutsideBehavior || Iframe.DEFAULT_CONFIG.clickOutsideBehavior,
     };
 
     this.imageBaseUrl = new URL(src).origin;
 
-    const elements = WanderIframe.initializeIframe(src, this.config);
+    const elements = Iframe.initializeIframe(src, this.config);
 
     this.host = elements.host;
     this.backdrop = elements.backdrop;
@@ -178,7 +174,7 @@ export class WanderIframe {
   }
 
   private getRouteImageUrl(imgPath: string): string | null {
-    if (!imgPath || !WanderIframe.ALLOWED_IMG_PATHS.has(imgPath as ImgPath)) {
+    if (!imgPath || !Iframe.ALLOWED_IMG_PATHS.has(imgPath as ImgPath)) {
       return null;
     }
 
@@ -193,7 +189,7 @@ export class WanderIframe {
         } satisfies LayoutConfig);
   }
 
-  static initializeIframe(src: string, config: WanderEmbeddedIframeConfig) {
+  static initializeIframe(src: string, config: IframeConfig) {
     // TODO: Considering using a `<dialog>` element or adding proper aria- tags.
     const host = document.createElement("div");
 
@@ -202,10 +198,10 @@ export class WanderIframe {
     const shadow = host.attachShadow({ mode: "open" });
     const template = document.createElement("template");
 
-    template.innerHTML = getWanderIframeTemplateContent({
+    template.innerHTML = getIframeTemplateContent({
       customStyles: config.customStyles,
       // TODO: It would be better to create an interface with the subset of vars that we can override when changing themes:
-      cssVariableKeys: Object.keys(WanderIframe.DEFAULT_LIGHT_CSS_VARS),
+      cssVariableKeys: Object.keys(Iframe.DEFAULT_LIGHT_CSS_VARS),
     });
 
     shadow.appendChild(template.content);
@@ -288,7 +284,7 @@ export class WanderIframe {
     // TODO: Default to true, unless explicitly set to false, false is WIP
     wrapper.dataset.expandOnMobile = layoutConfig.expandOnMobile !== false ? "true" : "false";
 
-    const layoutCssVarsUpdates: Partial<WanderEmbeddedIframeCSSVars> = {};
+    const layoutCssVarsUpdates: Partial<IframeCSSVars> = {};
 
     switch (layoutConfig.type) {
       case "modal": {

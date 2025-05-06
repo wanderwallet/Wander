@@ -1,15 +1,15 @@
 // INCOMING MESSAGES (iframe => SDK):
 
 import { InjectedEvents } from "wallet-api/src/utils/events";
-import { BalanceInfo, RouteConfig } from "../../wander-embedded.types";
+import { BalanceInfo, RouteConfig } from "../../wander-connect.types";
 
 // embedded_auth:
 
-export type EmbeddedAuthProviderType = "PASSKEYS" | "EMAIL_N_PASSWORD" | "GOOGLE" | "FACEBOOK" | "X" | "APPLE";
+export type AuthProviderType = "PASSKEYS" | "EMAIL_N_PASSWORD" | "GOOGLE" | "FACEBOOK" | "X" | "APPLE";
 
-export type EmbeddedAuthStatus = "loading" | "onboarding" | "authenticated" | "not-authenticated";
+export type AuthStatus = "loading" | "onboarding" | "authenticated" | "not-authenticated";
 
-export interface EmbeddedUserDetails {
+export interface UserDetails {
   id: string;
   email: null | string;
   phone: null | string;
@@ -36,15 +36,15 @@ export interface IncomingAuthNoAuthMessageData {
 }
 
 export interface IncomingAuthLoadingMessageData {
-  authType: EmbeddedAuthProviderType;
+  authType: AuthProviderType;
   authStatus: "loading";
-  userDetails?: EmbeddedUserDetails;
+  userDetails?: UserDetails;
 }
 
 export interface IncomingAuthCompletedMessageData {
-  authType: EmbeddedAuthProviderType;
+  authType: AuthProviderType;
   authStatus: "onboarding" | "authenticated";
-  userDetails: EmbeddedUserDetails;
+  userDetails: UserDetails;
 }
 
 export type IncomingAuthMessageData =

@@ -1,4 +1,4 @@
-import { EMBEDDED_AUTH_STATUS, EMBEDDED_AUTH_TYPE } from "./message.constants";
+import { AUTH_TYPES, AUTH_STATUS } from "./message.constants";
 import {
   EventMessage,
   EventMessageData,
@@ -65,8 +65,8 @@ export function isIncomingMessage(message: unknown): message is IncomingMessage 
       }
 
       return (
-        EMBEDDED_AUTH_STATUS.includes(data.authStatus) &&
-        EMBEDDED_AUTH_TYPE.includes(data.authType) &&
+        AUTH_TYPES.includes(data.authType) &&
+        AUTH_STATUS.includes(data.authStatus) &&
         (data.userDetails === null || (!!data.userDetails && typeof data.userDetails === "object"))
       );
     }

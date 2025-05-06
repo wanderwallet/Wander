@@ -32,7 +32,7 @@ const EMBEDDED_ENV_VARS = EMBEDDED_ENV_VARS_BY_ENV[NODE_ENV];
 
 if (!EMBEDDED_ENV_VARS) throw new Error(`Missing ENV vars for NODE_ENV = "${NODE_ENV}"`);
 
-// Duplicated in `wander-embedded-sdk/src/utils/url/url.utils.ts`:
+// Duplicated in `wander-connect-sdk/src/utils/url/url.utils.ts`:
 const PARAM_CLIENT_ID = "client-id";
 const PARAM_THEME = "theme";
 const PARAM_ANCESTOR_ORIGIN = "ancestor-origin";
