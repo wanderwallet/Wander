@@ -5,15 +5,15 @@ WanderEmbedded SDK provides a seamless way to integrate Wander functionality int
 ## Installation
 
 ```bash
-npm install wander-connect-sdk
+npm install @wanderapp/connect
 # or
-yarn add wander-connect-sdk
+yarn add @wanderapp/connect
 ```
 
 ## Quick Start
 
 ```javascript
-import { WanderConnect } from "wander-connect-sdk";
+import { WanderConnect } from "@wanderapp/connect";
 
 // Initialize with default options
 const wander = new WanderConnect();
