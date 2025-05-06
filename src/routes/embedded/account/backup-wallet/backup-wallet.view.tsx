@@ -1,26 +1,29 @@
-import { PasscodeLock, Wallet03 } from "@untitled-ui/icons-react";
+import { FolderShield, Wallet03 } from "@untitled-ui/icons-react";
 import { useCallback, useState } from "react";
-import { Box, Button, Card, KeyIcon, Spacer, WanderFooter } from "~components/embed/ui";
-import { useEmbedded } from "~utils/embedded/embedded.hooks";
+import { Box, Button, Card, Spacer, WanderFooter } from "~components/embed/ui";
 import { useLocation } from "~wallets/router/router.utils";
+import browser from "webextension-polyfill";
 
-export function AccountBackupSharesEmbeddedView() {
+export function AccountBackupWalletEmbeddedView() {
   const [isLoading, setIsLoading] = useState({
     calledId: "",
     status: false,
   });
   const { navigate } = useLocation();
-  const { generateRecoveryAndDownload } = useEmbedded();
 
-  const handleOnClick = useCallback(async (method: "GDrive" | "Apple" | "Dropbox" | "FullWallet") => {
+  const handleOnClick = useCallback(async (method: "GDrive" | "Apple" | "Dropbox" | "FullWallet" | "RecoveryFile") => {
     const setLoadingState = (status: boolean) => setIsLoading({ calledId: method, status });
 
     try {
       setLoadingState(true);
 
       switch (method) {
+        case "RecoveryFile":
+          navigate("/account/backup-wallet/recovery-file");
+          break;
+
         case "FullWallet":
-          navigate("/account/backup-full-wallet");
+          navigate("/account/backup-wallet/full");
           break;
 
         case "GDrive":
@@ -37,30 +40,6 @@ export function AccountBackupSharesEmbeddedView() {
     } finally {
       setLoadingState(false);
     }
-  }, []);
-
-  const handleGenerateRecoveryAndDownload = useCallback(async () => {
-    try {
-      setIsLoading({
-        calledId: "RecoveryFile",
-        status: true,
-      });
-      await generateRecoveryAndDownload();
-      setIsLoading({
-        calledId: "RecoveryFile",
-        status: false,
-      });
-    } catch (error) {
-      alert(error);
-      setIsLoading({
-        calledId: "RecoveryFile",
-        status: false,
-      });
-    }
-  }, [generateRecoveryAndDownload]);
-
-  const handleUnimplementedFeature = useCallback(() => {
-    alert("Feature not implemented yet.");
   }, []);
 
   // TODO: What if the user already has more than 3 backup shares?
@@ -87,11 +66,11 @@ export function AccountBackupSharesEmbeddedView() {
         <Button
           variant="outlined"
           isFullWidth
-          icon={<PasscodeLock fontSize={24} />}
+          icon={<FolderShield fontSize={24} />}
           isLoading={isLoading.calledId === "RecoveryFile" && isLoading.status}
           isDisabled={isLoading.calledId === "RecoveryFile" && isLoading.status}
-          onClick={handleGenerateRecoveryAndDownload}>
-          Export Recovery File
+          onClick={() => handleOnClick("RecoveryFile")}>
+          Download recovery file
         </Button>
         <Button
           variant="outlined"
@@ -99,7 +78,7 @@ export function AccountBackupSharesEmbeddedView() {
           icon={<Wallet03 fontSize={24} />}
           isLoading={isLoading.calledId === "FullWallet" && isLoading.status === true}
           onClick={() => handleOnClick("FullWallet")}>
-          Backup full wallet
+          Export wallet
         </Button>
         {/*
         <Button
@@ -136,7 +115,13 @@ export function AccountBackupSharesEmbeddedView() {
           Backup to Dropbox
         </Button> */}
         <Spacer y={1} />
-        <Button variant="link" isFullWidth onClick={handleUnimplementedFeature}>
+        <Button
+          variant="link"
+          isFullWidth
+          onClick={(e) => {
+            e.preventDefault();
+            browser.tabs.create({ url: "https://www.wander.app/help/benefits-of-backing-up-your-wander-wallet" });
+          }}>
           Why should I back up my account?
         </Button>
       </Box>

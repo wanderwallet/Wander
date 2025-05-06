@@ -23,7 +23,9 @@ export default function TransactionMessage({ transaction, showLink = true }: Tra
     if (!transaction) return [];
 
     // @ts-expect-error
-    if (transaction?.tags && !transaction?.get) return transaction.tags;
+    if (!transaction?.get) {
+      return Array.isArray(transaction?.tags) ? transaction.tags : [];
+    }
 
     // @ts-expect-error
     const tags = transaction.get("tags") as Tag[];

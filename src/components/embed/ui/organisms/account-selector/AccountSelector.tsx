@@ -31,7 +31,7 @@ export function AccountSelector({
     <div style={{ alignSelf: "flex-start" }}>
       <Dropdown
         backupReminder={
-          <Link to="/account/backup-shares" style={{ textDecoration: "none", width: "100%" }}>
+          <Link to="/account/backup-wallet" style={{ textDecoration: "none", width: "100%" }}>
             <Row
               alignment="center"
               justifyContent="center"
