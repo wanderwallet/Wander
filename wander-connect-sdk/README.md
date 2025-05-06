@@ -574,9 +574,9 @@ The minimum setup you must do to get Wander Embedded to work on a project looks 
 You can play around with Wander Embedded at <https://playground.othent.io/>, which uses:
 
 - The latest version of the playground itself: <https://playground.othent.io/>
-- The latest version of the Wander Embedded app: <https://embed.wander.app/>
+- The latest version of the Wander Embedded app: <https://connect.wander.app/>
 - The latest version of `@wanderapp/connect`: <https://www.npmjs.com/package/@wanderapp/connect>
-- The latest version of the server & tRPC API: <https://embed-api.wander.app/>
+- The latest version of the server & tRPC API: <https://connect-api.wander.app/>
 
 Most likely you need that playground to load your local version of the app, SDK, and/or server. See below the different
 options available.
@@ -590,7 +590,7 @@ options available.
 After running `yarn dev:iframe`, the Wander Embedded App should be running at `http://localhost:5173`.
 
 By default, the app will point its tRPC client to <http://localhost:3001> when running in development mode, or to
-<https://embed-api.wander.app/> when running in production mode. See:
+<https://connect-api.wander.app/> when running in production mode. See:
 
 - `createTRPCClient` call in `src/utils/embedded/embedded.utils.ts` for the setup logic.
 - `.env` / `.env.example` for the development values.
@@ -602,7 +602,7 @@ Next, clone <https://github.com/Othent/KMS-test-repo/> and run `pnpm install && 
 running at `http://localhost:3000`, using the published version of `@wanderapp/connect`.
 
 By default, the published version of `@wanderapp/connect` will point to the latest version of the Wander Embedded app,
-which in turn will point its tRPC client to the latest version of the server (<https://embed-api.wander.app/>).
+which in turn will point its tRPC client to the latest version of the server (<https://connect-api.wander.app/>).
 
 You now need to make the SDK load `http://localhost:5173`, which you can do using the `baseURL` option. If you also need
 to connect to a server hosted elsewhere, you can use the `baseServerURL` options:
@@ -653,9 +653,6 @@ You can revert this change running `pnpm link-embed`, which changes the `@wander
 Then, go into `wander-connect-sdk` in this repo and run `pnpm install` and `pnpm dev`.
 
 When running in development mode, the SDK will use `http://localhost:5173` as the default value for `baseURL`, instead
-of `https://embed.wander.app/`. See `wander-connect-sdk/src/wander-connect.ts`.
-
-> [!WARNING] Temporarily, the <https://embed.wander.app/> URLs are actually <https://embed-dev.wander.app/>. This should
-> be replaced before launch.
+of `https://connect.wander.app/`. See `wander-connect-sdk/src/wander-connect.ts`.
 
 <br />

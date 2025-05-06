@@ -277,14 +277,14 @@ export interface WanderConnectOptions {
   /**
    * Base URL for the Wander Connect client app.
    * Only change this if you're using a custom or self-hosted version of the Wander Connect app.
-   * @default "https://embed-dev.wander.app"
+   * @default "https://connect.wander.app"
    */
   baseURL?: string;
 
   /**
    * Base URL for the Wander Connect tRPC API server.
    * Only change this if you're using a custom or self-hosted version of the Wander Connect API.
-   * @default "https://embed-api-dev.wander.app"
+   * @default "https://connect-api.wander.app"
    */
   baseServerURL?: string;
 

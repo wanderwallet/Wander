@@ -55,10 +55,7 @@ export class WanderConnect {
 
   static BROWSER_WALLET_ENABLED_KEY = "WANDER_CONNECT_BROWSER_WALLET_ENABLED" as const;
 
-  static DEFAULT_IFRAME_SRC =
-    process.env.NODE_ENV === "development"
-      ? ("http://localhost:5173/" as const)
-      : ("https://embed-dev.wander.app/" as const);
+  static DEFAULT_IFRAME_SRC = "https://connect.wander.app/" as const;
 
   static DEFAULT_THEME = "system" as const satisfies ThemeSetting;
 
