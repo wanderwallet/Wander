@@ -82,7 +82,8 @@ export function AuthImportSeedphraseEmbeddedView() {
       hasCloseButton={true}
       onCloseButtonClick={() => navigate(`/auth/recover-account`)}
       style={{ gap: 24 }}
-      size="auto">
+      size="auto"
+      isLoading={ loading }>
       <Copyable
         isFullWidth
         style={{ padding: 0 }}

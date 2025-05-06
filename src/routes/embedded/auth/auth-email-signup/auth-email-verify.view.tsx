@@ -72,7 +72,8 @@ export function AuthEmailVerifyEmbeddedView() {
       hasBackButton={false}
       hasCloseButton={true}
       onCloseButtonClick={() => navigate(EmbeddedPaths.Auth)}
-      size="auto">
+      size="auto"
+      isLoading={ isResending }>
       <Box style={{ gap: 32 }}>
         <Text style={{ color: "var(--text-color-primary, #121212)" }} variant={"bodyLg"} alignment={"center"}>
           We've sent an email to {authEmail}

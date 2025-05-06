@@ -849,113 +849,118 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
         const { url } = await AuthenticationService.authenticate(authProviderType);
 
-        if (url) {
-          // Calculate center position for the popup
-          const width = 500;
-          const height = 600;
-          const left = window.screenX + (window.outerWidth - width) / 2;
-          const top = window.screenY + (window.outerHeight - height) / 2;
+        if (!url) {
+          throw new Error(`Missing authentication URL.`)
+        }
 
-          let popup = window.open(
-            url,
-            "Auth",
-            [
-              `width=${width}`,
-              `height=${height}`,
-              `left=${left}`,
-              `top=${top}`,
-              "popup=1",
-              "location=1",
-              "status=1",
-              "resizable=no",
-              "toolbar=no",
-              "menubar=no",
-            ].join(","),
-          );
+        // Calculate center position for the popup
+        const width = 500;
+        const height = 600;
+        const left = window.screenX + (window.outerWidth - width) / 2;
+        const top = window.screenY + (window.outerHeight - height) / 2;
 
-          if (!popup) {
-            console.error("Popup blocked. Please allow popups for this site.");
-            // Redirect to Google's OAuth page
-            // Opening the URL on the current tab won't work when Embedded is loaded inside the iframe:
+        let popup = window.open(
+          url,
+          "Auth",
+          [
+            `width=${width}`,
+            `height=${height}`,
+            `left=${left}`,
+            `top=${top}`,
+            "popup=1",
+            "location=1",
+            "status=1",
+            "resizable=no",
+            "toolbar=no",
+            "menubar=no",
+          ].join(","),
+        );
 
-            if (location.ancestorOrigins.length === 0) {
-              console.log(`Redirecting to ${url}...`);
+        if (!popup) {
+          console.error("Popup blocked. Please allow popups for this site.");
+          // Redirect to Google's OAuth page
+          // Opening the URL on the current tab won't work when Embedded is loaded inside the iframe:
 
-              window.location.href = url;
-            } else {
-              console.log(`Opening ${url}...`);
+          if (location.ancestorOrigins.length === 0) {
+            console.log(`Redirecting to ${url}...`);
 
-              popup = window.open(url, "_blank");
-            }
+            window.location.href = url;
+          } else {
+            console.log(`Opening ${url}...`);
+
+            popup = window.open(url, "_blank");
           }
+        }
 
-          if (popup) {
-            try {
-              // Set up message listener and popup close checker
-              await Promise.race([
-                // Auth completion promise
-                new Promise<void>((resolve, reject) => {
-                  const messageHandler = async (event: MessageEvent) => {
-                    // Since same origin, we can check it exactly
-                    if (event.origin !== window.location.origin) return;
+        if (popup) {
+          // Set up message listener and popup close checker
+          await Promise.race([
+            // Auth completion promise
+            new Promise<void>((resolve, reject) => {
+              const messageHandler = async (event: MessageEvent) => {
+                // Since same origin, we can check it exactly
+                if (event.origin !== window.location.origin) return;
 
-                    if (event.data?.type === "AUTH_COMPLETE") {
-                      console.log("Auth message received:", event.data);
-                      cleanup();
-                      if (event.data?.success) {
-                        const supabase = await getSupabaseClient();
-                        if (event.data?.data) {
-                          const { data } = event.data;
-                          await supabase.auth.refreshSession({
-                            refresh_token: data.refresh_token,
-                          });
-                        } else {
-                          await supabase.auth.refreshSession();
-                        }
-
-                        resolve();
-                      } else {
-                        reject(new Error("Authentication failed"));
-                      }
+                if (event.data?.type === "AUTH_COMPLETE") {
+                  console.log("Auth message received:", event.data);
+                  cleanup();
+                  if (event.data?.success) {
+                    const supabase = await getSupabaseClient();
+                    if (event.data?.data) {
+                      const { data } = event.data;
+                      await supabase.auth.refreshSession({
+                        refresh_token: data.refresh_token,
+                      });
+                    } else {
+                      await supabase.auth.refreshSession();
                     }
-                  };
 
-                  // Check for popup closure
-                  const popupCheckInterval = setInterval(() => {
-                    if (popup.closed) {
-                      cleanup();
-                      reject(new Error("Authentication cancelled - popup closed"));
-                    }
-                  }, 1000);
+                    resolve();
+                  } else {
+                    reject(new Error("Authentication failed"));
+                  }
+                }
+              };
 
-                  // Timeout after 5 minutes
-                  const timeoutId = setTimeout(
-                    () => {
-                      cleanup();
-                      reject(new Error("Authentication timeout"));
-                    },
-                    5 * 60 * 1000,
-                  );
+              // Check for popup closure
+              const popupCheckInterval = setInterval(() => {
+                if (popup.closed) {
+                  cleanup();
+                  reject(new Error("Authentication cancelled - popup closed"));
+                }
+              }, 1000);
 
-                  // Cleanup function
-                  const cleanup = () => {
-                    window.removeEventListener("message", messageHandler);
-                    clearInterval(popupCheckInterval);
-                    clearTimeout(timeoutId);
-                  };
+              // Timeout after 5 minutes
+              const timeoutId = setTimeout(
+                () => {
+                  cleanup();
+                  reject(new Error("Authentication timeout"));
+                },
+                5 * 60 * 1000,
+              );
 
-                  window.addEventListener("message", messageHandler);
-                }),
-              ]);
-            } catch (error) {
-              console.error("Authentication process failed:", error);
-            }
-          }
-        } else {
-          console.error("No URL returned from authenticate");
+              // Cleanup function
+              const cleanup = () => {
+                window.removeEventListener("message", messageHandler);
+                clearInterval(popupCheckInterval);
+                clearTimeout(timeoutId);
+              };
+
+              window.addEventListener("message", messageHandler);
+            }),
+          ]);
         }
       } catch (error) {
         console.error(`${authProviderType} authentication failed:`, error);
+
+        // TODO: This should be `authStatus: "authError"` but the router will show a specific error handling route, while we might want to handle that
+        // in the same page we were.
+        setEmbeddedContextAuth({
+          authStatus: "noAuth",
+          authProviderType: null,
+          user: null,
+          session: null,
+        });
       }
     },
     [user],

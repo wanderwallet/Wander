@@ -32,7 +32,8 @@ export function AuthAddWalletEmbeddedView() {
       footerElement={<WanderFooter />}
       hasBackButton={true}
       onBackButtonClick={() => navigate(`/wallet`)}
-      size="auto">
+      size="auto"
+      isLoading={ isLoading }>
       <Box>
         <Button
           onClick={() => handleRegisterWallet("GENERATED")}

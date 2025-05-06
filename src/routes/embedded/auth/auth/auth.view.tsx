@@ -111,7 +111,12 @@ export function AuthEmbeddedView() {
   }, []);
 
   return (
-    <Card headerText="Sign up or Sign in" footerElement={<WanderFooter />} hasBackButton={false} size="auto">
+    <Card
+      headerText="Sign Up or Sign In"
+      footerElement={<WanderFooter />}
+      hasBackButton={false}
+      size="auto"
+      isLoading={ areButtonsDisabled }>
       <Box>
         <TextInput
           ref={emailInputRef}
@@ -160,7 +165,11 @@ export function AuthEmbeddedView() {
         </Button>
         <Row style={{ gap: "4px" }}>
           <Text variant={"bodySm"}>{"Can't sign in?"}</Text>
-          <Button variant="link" href="#/auth/recover-account" size="sm">
+          <Button
+            variant="link"
+            isDisabled={areButtonsDisabled}
+            href="#/auth/recover-account"
+            size="sm">
             Recover account
           </Button>
         </Row>

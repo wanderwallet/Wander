@@ -5,6 +5,7 @@ import { Box, Button, Card, Checkbox, WanderFooter, Copyable, Text } from "~comp
 import copy from "copy-to-clipboard";
 import { useLocation } from "~wallets/router/router.utils";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
+import { sleep } from "~utils/promises/sleep";
 
 export function AccountBackupSharesReminderEmbeddedView() {
   const { navigate } = useLocation();
@@ -20,6 +21,8 @@ export function AccountBackupSharesReminderEmbeddedView() {
 
     await skipBackUp(isChecked);
 
+    await sleep(100);
+
     // TODO: Temp fix until the button can handle onClick + href automatically:
     navigate(EmbeddedPaths.WalletHomeEmbeddedView);
   };
@@ -31,7 +34,8 @@ export function AccountBackupSharesReminderEmbeddedView() {
       footerElement={<WanderFooter />}
       hasBackButton={false}
       hasCloseButton={true}
-      size="auto">
+      size="auto"
+      isLoading={ isLoading }>
       <Box>
         <Text
           variant="bodySm"

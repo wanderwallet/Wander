@@ -83,7 +83,8 @@ export function AuthEmailSigninEmbeddedView() {
       footerElement={<WanderFooter />}
       hasBackButton={true}
       hasCloseButton={false}
-      size="auto">
+      size="auto"
+      isLoading={ isLoading }>
       <Box style={{ gap: 32 }}>
         <Flex direction="column" gap={12} width="100%" style={{ paddingTop: 32, gap: 24, paddingBottom: 32 }}>
           <TextInput

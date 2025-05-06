@@ -9,7 +9,8 @@ export interface CardBaseProps {
   footerElement?: React.ReactNode;
   className?: string;
   hasShadow?: boolean;
-  isBlurry?: boolean;
+  isDisabled?: boolean;
+  isLoading?: boolean;
   hasBackButton?: boolean;
   hasCloseButton?: boolean;
   onBackButtonClick?: () => void;

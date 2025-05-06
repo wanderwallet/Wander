@@ -88,7 +88,8 @@ export function AuthImportKeyfileEmbeddedView() {
       hasBackButton={true}
       onBackButtonClick={back}
       style={{ gap: 24 }}
-      size="auto">
+      size="auto"
+      isLoading={ loading }>
       <Copyable
         isFullWidth
         style={{ padding: 0 }}

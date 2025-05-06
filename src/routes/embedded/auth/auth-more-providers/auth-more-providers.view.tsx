@@ -34,7 +34,8 @@ export function AuthMoreProvidersEmbeddedView() {
       footerElement={<WanderFooter />}
       hasBackButton={true}
       onBackButtonClick={back}
-      size="auto">
+      size="auto"
+      isLoading={ areButtonsDisabled }>
       <Box>
         <Button
           variant="outlined"

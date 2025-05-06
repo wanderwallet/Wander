@@ -66,7 +66,8 @@ export function AuthEmailSignupEmbeddedView() {
       footerElement={<WanderFooter />}
       hasBackButton={true}
       hasCloseButton={false}
-      size="auto">
+      size="auto"
+      isLoading={ isLoading }>
       <Box style={{ gap: 32 }}>
         <Text variant={"bodySm"} alignment={"center"}>
           Enter a password to secure your Wander account.
