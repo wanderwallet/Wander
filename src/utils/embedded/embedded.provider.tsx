@@ -56,6 +56,7 @@ const EMBEDDED_CONTEXT_INITIAL_STATE = {
   importedTempWalletAddress: null,
   lastRegisteredWallet: null,
   recoverableAccounts: null,
+  authEmail: null,
 } as const satisfies EmbeddedContextState;
 
 const EMBEDDED_CONTEXT_INITIAL_AUTH = {
@@ -90,7 +91,11 @@ export const EmbeddedContext = createContext<EmbeddedContextData>({
   skipBackUp: () => null,
   downloadKeyfile: async () => null,
   copySeedphrase: async () => null,
+  getSeedphrase: async () => null,
   generateRecoveryAndDownload: async () => null,
+
+  // Supabase email auth
+  setAuthEmail: () => null,
 });
 
 export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
@@ -231,31 +236,52 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     }));
   }, [walletId, walletAddress, updateCurrentWallet]);
 
+  const getSeedphrase = useCallback(
+    async (callbackFn?: (seedPhrase: string) => Promise<boolean>) => {
+      log(LOG_GROUP.EMBEDDED_FLOWS, `getSeedphrase()`);
+
+      const decryptedWallet = (await getKeyfile(walletAddress)) as LocalWallet<JWKInterface>;
+
+      const jwk = decryptedWallet.keyfile;
+
+      const seedPhrase = await WalletUtils.getDecryptedSeedPhrase(walletId, jwk);
+
+      const success = callbackFn ? await callbackFn(seedPhrase) : true;
+
+      if (success) {
+        try {
+          const { wallet: updatedWallet } = await WalletService.registerWalletExport({
+            walletId,
+            type: "SEEDPHRASE",
+          });
+
+          updateCurrentWallet((currentWallet) => ({
+            ...currentWallet,
+            ...updatedWallet,
+          }));
+        } catch (error) {
+          console.error("Failed to register wallet export:", error);
+        }
+      }
+
+      return seedPhrase;
+    },
+    [walletId, walletAddress],
+  );
+
   const copySeedphrase = useCallback(async () => {
     log(LOG_GROUP.EMBEDDED_FLOWS, `copySeedphrase()`);
 
-    const decryptedWallet = (await getKeyfile(walletAddress)) as LocalWallet<JWKInterface>;
+    let successfulCopy = false;
 
-    const jwk = decryptedWallet.keyfile;
+    await getSeedphrase(async (seedPhrase) => {
+      successfulCopy = await copy(seedPhrase);
 
-    const seedPhrase = await WalletUtils.getDecryptedSeedPhrase(walletId, jwk);
-
-    const successfulCopy = await copy(seedPhrase);
-
-    if (successfulCopy) {
-      const { wallet: updatedWallet } = await WalletService.registerWalletExport({
-        walletId,
-        type: "SEEDPHRASE",
-      });
-
-      updateCurrentWallet((currentWallet) => ({
-        ...currentWallet,
-        ...updatedWallet,
-      }));
-    }
+      return successfulCopy;
+    });
 
     return successfulCopy;
-  }, [walletId, updateCurrentWallet]);
+  }, [getSeedphrase]);
 
   const generateRecoveryAndDownload = useCallback(async () => {
     log(LOG_GROUP.EMBEDDED_FLOWS, `generateRecoveryAndDownload()`);
@@ -400,6 +426,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         importedTempWalletAddress: null,
         lastRegisteredWallet: isNewWallet ? wallet : null,
         recoverableAccounts: null,
+        authEmail: null,
       } satisfies EmbeddedContextState;
     });
 
@@ -934,6 +961,13 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     [user],
   );
 
+  const setAuthEmail = useCallback((email: string) => {
+    setEmbeddedContextAuth((prevAuthContextAuth) => ({
+      ...prevAuthContextAuth,
+      authEmail: email,
+    }));
+  }, []);
+
   // INITIALIZATION:
 
   const lastUserIdRef = useRef<string | null>(null);
@@ -1248,6 +1282,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         recoverAccount,
         recoverWallet,
 
+        setAuthEmail,
+
         generateTempWallet,
         deleteGeneratedTempWallet,
 
@@ -1259,6 +1295,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         skipBackUp,
         downloadKeyfile,
         copySeedphrase,
+        getSeedphrase,
         generateRecoveryAndDownload,
       }}>
       {children}

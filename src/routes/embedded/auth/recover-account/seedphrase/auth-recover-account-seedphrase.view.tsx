@@ -5,6 +5,7 @@ import { useLocation } from "~wallets/router/router.utils";
 import { Card, Copyable, Row, Button, SeedInput, WanderFooter } from "~components/embed/ui";
 import copy from "copy-to-clipboard";
 import { toast } from "react-toastify";
+
 export function AuthRecoverAccountSeedphraseEmbeddedView() {
   const [loading, setLoading] = useState(false);
   const [seedPhrase, setSeedPhrase] = useState<string[]>(Array(12).fill(""));
@@ -19,9 +20,7 @@ export function AuthRecoverAccountSeedphraseEmbeddedView() {
 
   const handleImportWallet = useCallback(async () => {
     try {
-      console.log("importing wallet");
       setLoading(true);
-      console.log("seedPhrase", seedPhrase);
       if (!seedPhrase.length) return;
       await importTempWallet(seedPhrase.join(" "));
     } catch (error) {
@@ -63,16 +62,18 @@ export function AuthRecoverAccountSeedphraseEmbeddedView() {
 
   return importedTempWalletAddress ? (
     <Card
-      headerText="Recover your account"
-      subtitle="Would you like recover and add this wallet to your account?"
+      headerText="Enter Seedphrase"
+      subtitle="Would you like to add this wallet to your account?"
       footerElement={<WanderFooter />}
       hasBackButton={true}
       onBackButtonClick={back}
       hasCloseButton={true}
       onCloseButtonClick={() => navigate(`/auth/recover-account`)}
+      style={{ gap: 24 }}
       size="auto">
       <Copyable
         isFullWidth
+        style={{ padding: 0 }}
         label="Your wallet address"
         onClick={() => {
           copy(importedTempWalletAddress);
@@ -83,15 +84,15 @@ export function AuthRecoverAccountSeedphraseEmbeddedView() {
         <Button variant="secondary" size="md" onClick={deleteImportedTempWallet}>
           No, try again
         </Button>
-        <Button variant="primary" size="md" onClick={() => handleRecover()} isLoading={loading}>
+        <Button variant="primary" size="md" onClick={handleRecover} isLoading={loading}>
           Yes, recover
         </Button>
       </Row>
     </Card>
   ) : (
     <Card
-      headerText="Recover your account"
-      subtitle="Enter seedphrase"
+      headerText="Enter Seedphrase"
+      subtitle="Enter your seedphrase to recover your wallet."
       footerElement={<WanderFooter />}
       hasBackButton={true}
       onBackButtonClick={back}
@@ -103,7 +104,7 @@ export function AuthRecoverAccountSeedphraseEmbeddedView() {
         onClick={handleImportWallet}
         isLoading={loading}
         isDisabled={isSeedPhraseIncomplete}>
-        Recover
+        {isSeedPhraseIncomplete ? "Complete seedphrase" : "Next"}
       </Button>
     </Card>
   );

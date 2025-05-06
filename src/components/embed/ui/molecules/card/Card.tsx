@@ -5,6 +5,7 @@ import { Box, MinimizeIcon, ChevronLeft } from "../../atoms";
 import { Header } from "../header";
 import { Footer } from "../footer";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
+import { useLocation } from "~wallets/router/router.utils";
 
 const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
   (
@@ -29,6 +30,7 @@ const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
     ref,
   ) => {
     const [isMinimized, setIsMinimized] = React.useState(false);
+    const { back } = useLocation();
 
     const closeCard = () => {
       postEmbeddedMessage({
@@ -61,7 +63,7 @@ const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
         {!isMinimized ? (
           <>
             {hasBackButton && (
-              <button className={styles["card__back__btn"]} onClick={onBackButtonClick}>
+              <button className={styles["card__back__btn"]} onClick={onBackButtonClick ?? back}>
                 <ChevronLeft fontSize={24} style={{ color: "var(--color-font-body)" }} />
               </button>
             )}

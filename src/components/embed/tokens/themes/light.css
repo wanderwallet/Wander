@@ -27,6 +27,7 @@
   --color-button-secondary-background: var(--brand-color-gray-100);
 
   --color-divider-default: var(--brand-color-gray-200);
+  --color-divider-text: #666;
 
   --color-link-primary: var(--brand-color-primary3);
   --color-link-secondary: var(--brand-color-secondary5);

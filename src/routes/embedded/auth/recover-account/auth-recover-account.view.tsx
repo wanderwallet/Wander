@@ -7,7 +7,7 @@ export function AuthRecoverAccountEmbeddedView() {
     <Card
       headerIcon={<RecoverHeaderIcon />}
       headerText="Recover your account"
-      subtitle="After recovery, all your devices are logged out and your account recovery files are invalided. You'll have to download a new one."
+      subtitle="Select a method for logging in on new devices and recovering your account."
       footerElement={<WanderFooter />}
       hasBackButton={true}
       onBackButtonClick={back}
@@ -15,15 +15,15 @@ export function AuthRecoverAccountEmbeddedView() {
       onCloseButtonClick={() => navigate(`/auth`)}
       size="auto">
       <Box>
-        <Button href="#/auth/recover-account/keyfile" variant="outlined" isFullWidth icon={<KeyIcon fontSize={24} />}>
-          Import Private Key
-        </Button>
         <Button
           href="#/auth/recover-account/seedphrase"
           variant="outlined"
           isFullWidth
           icon={<SeedIcon fontSize={24} />}>
           Enter Seedphrase
+        </Button>
+        <Button href="#/auth/recover-account/keyfile" variant="outlined" isFullWidth icon={<KeyIcon fontSize={24} />}>
+          Import Keyfile
         </Button>
       </Box>
     </Card>

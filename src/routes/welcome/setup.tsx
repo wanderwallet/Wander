@@ -21,8 +21,6 @@ import { ThemeWelcomeView } from "./load/theme";
 
 // Generate:
 import { AccountWelcomeView } from "./generate/account";
-import { BackupWelcomeView } from "./generate/backup";
-import { ConfirmWelcomeView } from "./generate/confirm";
 import { GenerateDoneWelcomeView } from "./generate/done";
 
 // Load:
@@ -34,8 +32,10 @@ import { PermissionsWelcomeView } from "./generate/permissions";
 import { OptionsWelcomView } from "./load/options";
 import IconText from "~components/IconText";
 import { Link } from "~routes/popup/token/[id]";
-// Wallet generate pages:
+import { SecureWelcomeView } from "./generate/secure";
+import { LoadingWelcomeView } from "./generate/loading";
 
+// Wallet generate pages:
 const LoadViews = [
   WalletsWelcomeView,
   AccountWelcomeView,
@@ -55,12 +55,10 @@ const KeystoneViews = [
 // TODO: Use a nested router instead:
 const ViewsBySetupMode = {
   generate: [
-    AccountWelcomeView,
-    BackupWelcomeView,
-    ConfirmWelcomeView,
+    SecureWelcomeView,
     PasswordWelcomeView,
-    ThemeWelcomeView,
     PermissionsWelcomeView,
+    LoadingWelcomeView,
     GenerateDoneWelcomeView,
   ],
   load: [OptionsWelcomView],
@@ -90,15 +88,7 @@ const remainingLoadSubtitles = [
 const remainingKeystoneSubtitles = ["create_a_password", "choose_ui_theme", "enable_permissions", "congratulations"];
 
 const VIEW_SUBTITLES_BY_SETUP_MODE = {
-  generate: [
-    "name_your_account",
-    "backup_your_account",
-    "confirm_your_recovery_phrase",
-    "create_a_password",
-    "choose_ui_theme",
-    "enable_permissions",
-    "congratulations",
-  ],
+  generate: ["secure_your_account", "create_a_password", "enable_permissions", "loading_wallet", "congratulations"],
   load: [""],
   recoveryPhraseLoad: ["enter_recovery_phrase", ...remainingLoadSubtitles],
   keyfileLoad: ["upload_key_file", ...remainingLoadSubtitles],
@@ -123,8 +113,8 @@ export function SetupWelcomeView({ params }: SetupWelcomeViewProps) {
   const pageTitle = VIEW_TITLES_BY_SETUP_MODE[setupMode];
   const pageSubtitle = VIEW_SUBTITLES_BY_SETUP_MODE[setupMode][page - 1];
   const pageCount = ViewsBySetupMode[setupMode].length;
-  const transparentBackground = setupMode !== "load" && pageCount === page;
-  const hidePagination = setupMode === "load" && page === 1;
+  const transparentBackground = (setupMode !== "load" && pageCount === page) || (setupMode === "generate" && page > 3);
+  const hidePagination = (setupMode === "load" && page === 1) || (setupMode === "generate" && page > 3);
 
   // temporarily stored password
   const [password, setPassword] = useState("");
@@ -219,7 +209,7 @@ export function SetupWelcomeView({ params }: SetupWelcomeViewProps) {
     isNaN(page) ||
     page < 1 ||
     page > pageCount ||
-    (setupMode === "generate" && page > 4 && password === "") ||
+    (setupMode === "generate" && page > 2 && password === "") ||
     (setupMode !== "generate" && page > 3 && password === "")
   ) {
     return <Redirect to={`/${setupMode}/1`} />;
@@ -245,15 +235,21 @@ export function SetupWelcomeView({ params }: SetupWelcomeViewProps) {
           <Image width="57.61px" height="27px" src={WanderIcon} alt="Wander Icon" />
           <IconText width={116.759} height={24.111} />
         </HeaderIconWrapper>
-        <Link href="https://www.wander.app/help#browser-extension">
-          <Text variant="secondary" size="base" weight="medium">
-            {browser.i18n.getMessage("need_help")}
-          </Text>
-        </Link>
+        {!transparentBackground && (
+          <Link href="https://www.wander.app/help#browser-extension">
+            <Text variant="secondary" size="base" weight="medium" noMargin>
+              {browser.i18n.getMessage("need_help")}
+            </Text>
+          </Link>
+        )}
       </Header>
       <StarIcons screen="setup" />
       <Spacer y={2} />
-      <SetupCard transparentBackground={transparentBackground}>
+      <SetupCard
+        transparentBackground={transparentBackground}
+        style={{
+          height: transparentBackground && page === pageCount ? "800px" : "auto",
+        }}>
         {!transparentBackground && (
           <HeaderContainer>
             <CardHeader>
@@ -265,7 +261,11 @@ export function SetupWelcomeView({ params }: SetupWelcomeViewProps) {
             </CardHeader>
             {!hidePagination && (
               <PaginationContainer>
-                <Pagination currentPage={page} totalPages={pageCount} subtitle={pageSubtitle} />
+                <Pagination
+                  currentPage={page}
+                  totalPages={setupMode === "generate" ? 3 : pageCount}
+                  subtitle={pageSubtitle}
+                />
               </PaginationContainer>
             )}
           </HeaderContainer>
@@ -290,7 +290,6 @@ export function SetupWelcomeView({ params }: SetupWelcomeViewProps) {
           </WalletContext.Provider>
         </PasswordContext.Provider>
       </SetupCard>
-      <Spacer y={2} />
     </Wrapper>
   );
 }
@@ -301,7 +300,7 @@ const PaginationContainer = styled.div`
   align-items: center;
 `;
 
-const Header = styled.div`
+export const Header = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -312,7 +311,7 @@ const Header = styled.div`
   right: 0;
 `;
 
-const HeaderIconWrapper = styled.div`
+export const HeaderIconWrapper = styled.div`
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -327,7 +326,7 @@ export const Content = styled.div`
   flex-direction: column;
 `;
 
-const PageWrapper = styled.div`
+export const PageWrapper = styled.div`
   position: relative;
   transition: height 0.17s ease;
   height: 100%;
@@ -344,7 +343,7 @@ const pageAnimation: Variants = {
   },
 };
 
-const Page = styled(motion.div).attrs({
+export const Page = styled(motion.div).attrs({
   variants: pageAnimation,
   initial: "exit",
   animate: "init",
@@ -399,7 +398,7 @@ export const Wrapper = styled.div<{ linearBackground?: boolean }>`
         } 0%, ${theme.displayTheme === "dark" ? "#1c1c1d" : "#F8F9FC"} 86.5%)`}
 `;
 
-const Image = styled.img`
+export const Image = styled.img`
   color: ${(props) => props.theme.primaryText};
 `;
 

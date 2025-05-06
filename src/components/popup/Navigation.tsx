@@ -3,6 +3,7 @@ import browser from "webextension-polyfill";
 import styled from "styled-components";
 import { useLocation } from "~wallets/router/router.utils";
 import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
+import { useStorage, ExtensionStorage } from "~utils/storage";
 
 const Home05Active = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="25" height="24" viewBox="0 0 25 24" fill="none">
@@ -55,6 +56,21 @@ const buttons = [
 
 export const NavigationBar = () => {
   const { location, navigate } = useLocation();
+  const [activeAddress] = useStorage(
+    {
+      key: "active_address",
+      instance: ExtensionStorage,
+    },
+    "",
+  );
+
+  const [isSeedphraseBackedUp = true] = useStorage(
+    {
+      key: `recovery_phrase_backedup_${activeAddress}`,
+      instance: ExtensionStorage,
+    },
+    true,
+  );
 
   const shouldShowNavigationBar = buttons.some((button) => location === button.route);
 
@@ -72,7 +88,11 @@ export const NavigationBar = () => {
             data-active={active ? "true" : "false"}
             key={index}
             onClick={() => navigate(button.route)}>
-            <IconWrapper size={button.size}>{active ? button.iconActive : button.icon}</IconWrapper>
+            <IconWrapper size={button.size}>
+              {active ? button.iconActive : button.icon}
+              {!isSeedphraseBackedUp && button.route === "/quick-settings" && <PendingActionDot />}
+            </IconWrapper>
+
             <div>{browser.i18n.getMessage(button.dictionaryKey)}</div>
           </NavigationButton>
         );
@@ -125,8 +145,20 @@ const IconWrapper = styled.div<{ size: string }>`
   justify-content: center;
   align-items: center;
   transition: transform 0.2s ease;
+  position: relative;
 
   ${NavigationButton}:not([data-active="true"]):hover & {
     transform: scale(1.1);
   }
+`;
+
+const PendingActionDot = styled.div`
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 8px;
+  height: 8px;
+  background-color: #eebd41;
+  border-radius: 50%;
+  flex-shrink: 0;
 `;

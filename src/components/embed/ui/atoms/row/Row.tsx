@@ -1,8 +1,7 @@
-import React, { forwardRef } from "react";
+import { forwardRef } from "react";
 import clsx from "clsx";
 import styles from "./Row.module.css";
 import type { RowBaseProps } from "./Row.types";
-import { useTheme } from "../../../contexts/ThemeContext";
 
 const Row = forwardRef<HTMLDivElement, RowBaseProps>(
   ({ children, className, alignment = "center", justifyContent = "center", isFullWidth = false, ...props }, ref) => {

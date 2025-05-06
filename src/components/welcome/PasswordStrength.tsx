@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import browser from "webextension-polyfill";
 import styled from "styled-components";
 import { Check, X } from "@untitled-ui/icons-react";
+import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 
 export default function PasswordStrength({ password }: Props) {
   // get strength
@@ -33,7 +34,7 @@ export default function PasswordStrength({ password }: Props) {
       case "Strong":
         return {
           bars: 4,
-          color: "#5BF16E",
+          color: IS_EMBEDDED_APP ? "#007229" : "#5BF16E",
           text: `password_strength_${strengthIndex}`,
         };
       default:
@@ -60,7 +61,7 @@ export default function PasswordStrength({ password }: Props) {
   const { bars, color, text } = getStrengthInfo();
 
   return (
-    <>
+    <div>
       <ProgressBar>
         {new Array(4).fill("").map((_, i) => (
           <Bar active={bars >= i + 1} key={i} />
@@ -96,7 +97,7 @@ export default function PasswordStrength({ password }: Props) {
           </Text>
         </StrengthCheck>
       </StrengthChecklist>
-    </>
+    </div>
   );
 }
 
@@ -113,7 +114,14 @@ const ProgressBar = styled.div`
 const Bar = styled.div<{ active: boolean }>`
   width: 22%;
   height: 4px;
-  background-color: ${(props) => (props.active ? props.theme.theme : "rgba(107, 87, 249, 0.50)")};
+  background-color: ${(props) =>
+    props.active
+      ? IS_EMBEDDED_APP
+        ? "rgba(13, 108, 233)"
+        : props.theme.theme
+      : IS_EMBEDDED_APP
+        ? "rgba(13, 108, 233, 0.50)"
+        : "rgba(107, 87, 249, 0.50)"};
   transition: all 0.23s ease-in-out;
 `;
 
@@ -132,7 +140,8 @@ const StrengthCheck = styled.div<{ isValid?: boolean; length?: number }>`
     font-size: 1rem;
     width: 1.5em;
     height: 1.5em;
-    color: ${(props) => (props.isValid ? "#56C980" : "#F1655B")};
+    color: ${(props) =>
+      props.isValid ? (IS_EMBEDDED_APP ? "#007229" : "#56C980") : IS_EMBEDDED_APP ? "#D22B1F" : "#F1655B"};
     transition: all 0.17s ease-in-out;
   }
 `;

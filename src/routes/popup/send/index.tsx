@@ -20,6 +20,7 @@ import { useLocation } from "~wallets/router/router.utils";
 import { ExtensionStorage, TempTransactionStorage } from "~utils/storage";
 import type { TokenInfo } from "~tokens/aoTokens/ao";
 import { useStorage } from "@plasmohq/storage/hook";
+import { NoAvatarIcon } from "~components/popup/WalletHeader";
 
 // default size for the qty text
 export const arPlaceholder: TokenInterface = {
@@ -84,9 +85,8 @@ const ContactsTab = ({
                 <ListItem
                   title={contact?.name}
                   subtitle={formatAddress(contact.address, 4)}
-                  img={
-                    contact.profileIcon ? contact.profileIcon : generateProfileIcon(contact?.name || contact.address)
-                  }
+                  img={contact.profileIcon}
+                  icon={!contact.profileIcon && <NoAvatarIcon size="1.8em" />}
                   squircleSize={40}
                   height={56}
                   key={contact.address}
@@ -129,8 +129,8 @@ const RecipientsTab = ({
         <ListItem
           title={formatAddress(recipient.address, 4)}
           subtitle={recipient?.timestamp && humanizeTimestampForRecipient(recipient.timestamp)}
-          img={recipient?.contact?.profileIcon && recipient?.contact?.profileIcon}
-          icon={!recipient?.contact && <User01 height={24} width={24} />}
+          img={recipient?.contact?.profileIcon}
+          icon={!recipient?.contact?.profileIcon && <NoAvatarIcon size="1.8em" />}
           squircleSize={40}
           height={56}
           key={recipient.address}
