@@ -23,7 +23,7 @@ export default function InputMenu({
   onFiatCurrencyChange,
   isPaymentMethod,
   selectedPaymentMethod,
-  selectedFiatCurrency
+  selectedFiatCurrency,
 }: InputMenuProps) {
   const theme = useTheme();
 
@@ -34,16 +34,14 @@ export default function InputMenu({
   const defaultPaymentMethod = {
     id: "creditcard",
     logo: "https://cdn.onramper.com/icons/payments/creditcard.svg",
-    text: "Credit Card"
+    text: "Credit Card",
   };
 
   const [chosenOption, setChosenOption] = useState(defaultPaymentMethod);
 
   useEffect(() => {
     if (isPaymentMethod && onPaymentMethodChange) {
-      const selectedMethod = options.find(
-        (option) => option.id === selectedPaymentMethod
-      );
+      const selectedMethod = options.find((option) => option.id === selectedPaymentMethod);
       if (selectedMethod) {
         setChosenOption(selectedMethod);
       }
@@ -53,13 +51,11 @@ export default function InputMenu({
   useEffect(() => {
     if (!isPaymentMethod) {
       const activeCurrency =
-        supportedCurrencies.find(
-          (currency) => currency.id === selectedFiatCurrency
-        ) || supportedCurrencies[13];
+        supportedCurrencies.find((currency) => currency.id === selectedFiatCurrency) || supportedCurrencies[13];
       setChosenOption({
         id: activeCurrency.id,
         logo: `https://cdn.onramper.com/icons/tokens/${activeCurrency.id}.svg`,
-        text: activeCurrency.name
+        text: activeCurrency.name,
       });
       setChooseOption(true);
     }
@@ -69,9 +65,7 @@ export default function InputMenu({
     async function getPayments() {
       const payments = await getPaymentTypes(selectedFiatCurrency);
 
-      const isCurrentPaymentSupported = payments.some(
-        (payment) => payment.paymentTypeId === chosenOption.id
-      );
+      const isCurrentPaymentSupported = payments.some((payment) => payment.paymentTypeId === chosenOption.id);
 
       if (!isCurrentPaymentSupported && isPaymentMethod) {
         setChosenOption(defaultPaymentMethod);
@@ -86,22 +80,18 @@ export default function InputMenu({
     ? supportedPayments.map((paymentType) => ({
         id: paymentType.paymentTypeId,
         logo: paymentType.icon,
-        text: paymentType.name
+        text: paymentType.name,
       }))
     : supportedCurrencies.map((currency) => ({
         id: currency.id,
         logo: `https://cdn.onramper.com/icons/tokens/${currency.id}.svg`,
-        text: currency.name
+        text: currency.name,
       }));
 
   const OptionSelect = () => (
     <SelectInput displayTheme={theme} onClick={() => setChooseOption(true)}>
       <OptionWrapper>
-        <OptionIcon
-          src={chosenOption.logo}
-          alt={chosenOption.text}
-          draggable={false}
-        />
+        <OptionIcon src={chosenOption.logo} alt={chosenOption.text} draggable={false} />
         {chosenOption.text}
       </OptionWrapper>
       <SelectIcon displayTheme={theme} />
@@ -111,7 +101,7 @@ export default function InputMenu({
   const filteredOptions = options.filter(
     (option) =>
       option.id.toLowerCase().includes(searchInput.toLowerCase()) ||
-      option.text.toLowerCase().includes(searchInput.toLowerCase())
+      option.text.toLowerCase().includes(searchInput.toLowerCase()),
   );
 
   const OptionModal = () => (
@@ -140,9 +130,7 @@ export default function InputMenu({
             <InputSearchIcon />
             <SearchInput
               displayTheme={theme}
-              placeholder={browser.i18n.getMessage(
-                "search_currency_placeholder"
-              )}
+              placeholder={browser.i18n.getMessage("search_currency_placeholder")}
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
             />
@@ -163,13 +151,8 @@ export default function InputMenu({
                   } else {
                     onFiatCurrencyChange(option.id);
                   }
-                }}
-              >
-                <OptionIcon
-                  src={option.logo}
-                  alt={option.text}
-                  draggable={false}
-                />
+                }}>
+                <OptionIcon src={option.logo} alt={option.text} draggable={false} />
                 {isPaymentMethod && option.text}
                 {!isPaymentMethod && (
                   <OptionText>
@@ -196,13 +179,8 @@ export default function InputMenu({
                   setChosenOption(option);
                   setChooseOption(false);
                   onFiatCurrencyChange(option.id);
-                }}
-              >
-                <OptionIcon
-                  src={option.logo}
-                  alt={option.text}
-                  draggable={false}
-                />
+                }}>
+                <OptionIcon src={option.logo} alt={option.text} draggable={false} />
                 <OptionText>
                   {option.id.toLocaleUpperCase()}
                   <CurrencyName>{option.text}</CurrencyName>
@@ -220,8 +198,7 @@ export default function InputMenu({
 const SearchInput = styled.input<{ displayTheme: DisplayTheme }>`
   width: 100%;
   background-color: transparent;
-  color: ${(props) =>
-    props.displayTheme === "light" ? "#AB9AFF" : "#ffffffb2"};
+  color: ${(props) => (props.displayTheme === "light" ? "#AB9AFF" : "#ffffffb2")};
   padding: 10px 10px 10px 3px;
   outline: none;
   border: none;
@@ -229,8 +206,7 @@ const SearchInput = styled.input<{ displayTheme: DisplayTheme }>`
   font-size: 16px;
 
   &::placeholder {
-    color: ${(props) =>
-      props.displayTheme === "light" ? "#AB9AFF" : "#ffffffb2"};
+    color: ${(props) => (props.displayTheme === "light" ? "#AB9AFF" : "#ffffffb2")};
     font-size: 16px;
     /* Add any other placeholder styles you need */
   }
@@ -252,10 +228,7 @@ const SearchWrapper = styled.div<{ displayTheme: DisplayTheme }>`
   height: 37px;
   background-color: #ab9aff26;
   padding: 10px 5px;
-  border: ${(props) =>
-    props.displayTheme === "light"
-      ? "1.5px solid #AB9AFF"
-      : "1.5px solid #ab9aff26"};
+  border: ${(props) => (props.displayTheme === "light" ? "1.5px solid #AB9AFF" : "1.5px solid #ab9aff26")};
   border-radius: 15px;
   margin: 3px 15px 3px 12px;
 `;
@@ -295,8 +268,7 @@ const Option = styled.div<{ active: boolean; displayTheme: DisplayTheme }>`
 
   background-color: rgba(
     ${(props) => props.theme.theme},
-    ${(props) =>
-      props.active ? (props.theme.displayTheme === "light" ? ".2" : ".1") : "0"}
+    ${(props) => (props.active ? (props.theme.displayTheme === "light" ? ".2" : ".1") : "0")}
   );
   transition: all 0.23s ease-in-out;
 
@@ -329,10 +301,7 @@ const SelectInput = styled.div<{ displayTheme: DisplayTheme }>`
   justify-content: space-between;
   background-color: #ab9aff26;
   padding: 10px;
-  border: ${(props) =>
-    props.displayTheme === "light"
-      ? "1px solid #AB9AFF"
-      : "1px solid #ab9aff26"};
+  border: ${(props) => (props.displayTheme === "light" ? "1px solid #AB9AFF" : "1px solid #ab9aff26")};
   border-radius: 12px;
   margin-bottom: 10px;
   font-size: 15px;
@@ -406,8 +375,7 @@ const Content = styled.div<{ displayTheme: DisplayTheme }>`
   flex-direction: column;
   border-top: 1.29px solid #ab9aff;
   width: 100%;
-  background-color: ${(props) =>
-    props.displayTheme === "light" ? "#ffffff" : "#191919"};
+  background-color: ${(props) => (props.displayTheme === "light" ? "#ffffff" : "#191919")};
 `;
 
 const Wrapper = styled.div<{ displayTheme: DisplayTheme }>`
@@ -423,6 +391,5 @@ const Wrapper = styled.div<{ displayTheme: DisplayTheme }>`
   bottom: 0;
   max-height: 100%;
   padding-top: 40px;
-  background-color: ${(props) =>
-    props.displayTheme === "light" ? "#ffffff" : "#191919"};
+  background-color: ${(props) => (props.displayTheme === "light" ? "#ffffff" : "#191919")};
 `;

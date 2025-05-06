@@ -20,12 +20,11 @@ export const ContentWrapper = styled.div`
 `;
 
 export const CenterText = styled(Text).attrs({
-  noMargin: true
+  noMargin: true,
 })<{ displayTheme?: DisplayTheme }>`
   width: 245px;
   text-align: center;
-  color: ${(props) =>
-    props.theme.displayTheme === "light" ? "#191919" : "#FFFFFF"};
+  color: ${(props) => (props.theme.displayTheme === "light" ? "#191919" : "#FFFFFF")};
   font-weight: 500;
   font-size: 11px;
   line-height: 16px;
@@ -42,6 +41,5 @@ export const CenterText = styled(Text).attrs({
 export const HeaderText = styled(Text)<{ displayTheme?: DisplayTheme }>`
   font-size: 18px;
   font-weight: 500;
-  color: ${(props) =>
-    props.theme.displayTheme === "light" ? "#191919" : "#FFFFFF"};
+  color: ${(props) => (props.theme.displayTheme === "light" ? "#191919" : "#FFFFFF")};
 `;

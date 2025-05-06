@@ -1,12 +1,5 @@
 import { sortGatewaysByOperatorStake } from "~lib/wayfinder";
-import {
-  clGateway,
-  defaultGateway,
-  defaultGateways,
-  goldskyGateway,
-  suggestedGateways,
-  type Gateway
-} from "./gateway";
+import { clGateway, defaultGateway, defaultGateways, goldskyGateway, suggestedGateways, type Gateway } from "./gateway";
 import { useEffect, useState } from "react";
 import { getGatewayCache } from "./cache";
 import { getSetting } from "~settings";
@@ -17,12 +10,10 @@ export const FULL_HISTORY: Requirements = { startBlock: 0 };
 export const STAKED_GQL_FULL_HISTORY: Requirements = {
   startBlock: 0,
   graphql: true,
-  ensureStake: true
+  ensureStake: true,
 };
 
-export async function findGateway(
-  requirements: Requirements
-): Promise<Gateway> {
+export async function findGateway(requirements: Requirements): Promise<Gateway> {
   try {
     const gateway = await getSetting("gateways").getValue<Gateway>();
 
@@ -40,24 +31,15 @@ export async function findGateway(
 
       // this could probably be filtered out during the caching process
       const filteredGateways = gateways.filter((gateway) => {
-        return (
-          gateway.ping.status === "success" &&
-          gateway.health.status === "success"
-        );
+        return gateway.ping.status === "success" && gateway.health.status === "success";
       });
       const sortedGateways = sortGatewaysByOperatorStake(filteredGateways);
-      const otherHosts = [
-        gateway.host,
-        defaultGateway.host,
-        clGateway.host,
-        "aoweave.tech",
-        "defi.ao"
-      ];
+      const otherHosts = [gateway.host, defaultGateway.host, clGateway.host, "aoweave.tech", "defi.ao"];
 
       const additionalGateways = otherHosts
         .filter((host) => !sortedGateways.some((g) => g.settings.fqdn === host))
         .map((host) => ({
-          settings: { port: 443, protocol: "https", fqdn: host }
+          settings: { port: 443, protocol: "https", fqdn: host },
         }));
 
       const allGateways = [...sortedGateways, ...additionalGateways];
@@ -67,7 +49,7 @@ export async function findGateway(
       return {
         host: selectedGateway.settings.fqdn,
         port: selectedGateway.settings.port,
-        protocol: selectedGateway.settings.protocol
+        protocol: selectedGateway.settings.protocol,
       };
     }
 
@@ -95,12 +77,7 @@ export function useGateway(requirements: Requirements) {
         setActiveGateway(recommended);
       } catch {}
     })();
-  }, [
-    requirements.graphql,
-    requirements.arns,
-    requirements.startBlock,
-    requirements.ensureStake
-  ]);
+  }, [requirements.graphql, requirements.arns, requirements.startBlock, requirements.ensureStake]);
 
   return activeGateway;
 }
@@ -114,8 +91,7 @@ export async function findGraphqlGateways(count?: number) {
     }
 
     const filteredGateways = gateways.filter(
-      ({ ping, health }) =>
-        ping.status === "success" && health.status === "success"
+      ({ ping, health }) => ping.status === "success" && health.status === "success",
     );
 
     if (!filteredGateways.length) {
@@ -128,7 +104,7 @@ export async function findGraphqlGateways(count?: number) {
       .map(({ settings: { fqdn, port, protocol } }) => ({
         host: fqdn,
         port,
-        protocol
+        protocol,
       }));
   } catch {
     return suggestedGateways;
@@ -142,12 +118,8 @@ export function useGraphqlGateways(count?: number) {
     const fetchGateways = async () => {
       try {
         const gateways = await findGraphqlGateways(count);
-        const hasDefaultGateway = gateways.some(
-          (g) => g.host === defaultGateway.host
-        );
-        const hasGoldskyGateway = gateways.some(
-          (g) => g.host === goldskyGateway.host
-        );
+        const hasDefaultGateway = gateways.some((g) => g.host === defaultGateway.host);
+        const hasGoldskyGateway = gateways.some((g) => g.host === goldskyGateway.host);
 
         const finalGateways = [...gateways];
 
@@ -160,9 +132,7 @@ export function useGraphqlGateways(count?: number) {
           finalGateways.splice(insertionIndex, 0, goldskyGateway);
         }
 
-        setGraphqlGateways(
-          finalGateways.slice(0, count || finalGateways.length)
-        );
+        setGraphqlGateways(finalGateways.slice(0, count || finalGateways.length));
       } catch {
         setGraphqlGateways(suggestedGateways);
       }
@@ -181,7 +151,7 @@ export function useGraphqlGateways(count?: number) {
  */
 export async function retryWithGateways<T>(
   operation: (arweave: Arweave) => Promise<T>,
-  { maxAttempts = 3 }: RetryOptions = {}
+  { maxAttempts = 3 }: RetryOptions = {},
 ): Promise<RetryResult<T>> {
   let lastError: Error | null = null;
 
@@ -196,9 +166,7 @@ export async function retryWithGateways<T>(
       lastError = error as Error;
       // console.warn(`Gateway attempt ${attempt} failed:`, error);
       if (attempt === maxAttempts) {
-        throw new Error(
-          `Gateway operations failed after ${maxAttempts} attempts. Last error: ${lastError.message}`
-        );
+        throw new Error(`Gateway operations failed after ${maxAttempts} attempts. Last error: ${lastError.message}`);
       }
     }
   }

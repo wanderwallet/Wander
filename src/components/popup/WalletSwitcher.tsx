@@ -1,10 +1,4 @@
-import {
-  Button,
-  ListItem,
-  Spacer,
-  Text,
-  useToasts
-} from "@arconnect/components-rebrand";
+import { Button, ListItem, Spacer, Text, useToasts } from "@arconnect/components-rebrand";
 import { concatGatewayURL } from "~gateways/utils";
 import { type Variants } from "framer-motion";
 import { formatFiatBalance } from "~tokens/currency";
@@ -42,16 +36,16 @@ export default function WalletSwitcher({ open, close }: Props) {
   // current address
   const [activeAddress, setActiveAddress] = useStorage<string>({
     key: "active_address",
-    instance: ExtensionStorage
+    instance: ExtensionStorage,
   });
 
   // all wallets added
   const [storedWallets] = useStorage<StoredWallet[]>(
     {
       key: "wallets",
-      instance: ExtensionStorage
+      instance: ExtensionStorage,
     },
-    []
+    [],
   );
 
   const [currency] = useSetting<string>("currency");
@@ -61,13 +55,11 @@ export default function WalletSwitcher({ open, close }: Props) {
   // load wallet datas
   const [wallets, setWallets] = useState<DisplayedWallet[]>([]);
 
-  const [walletBalances, setWalletBalances] = useState<Record<string, string>>(
-    {}
-  );
+  const [walletBalances, setWalletBalances] = useState<Record<string, string>>({});
 
   const activeWallet = useMemo(
     () => wallets?.find(({ address }) => address === activeAddress),
-    [activeAddress, wallets]
+    [activeAddress, wallets],
   );
 
   const inactiveWallets = useMemo(() => {
@@ -82,8 +74,8 @@ export default function WalletSwitcher({ open, close }: Props) {
         address: wallet.address,
         balance: "0",
         hasAns: false,
-        api: wallet.type === "hardware" ? wallet.api : undefined
-      }))
+        api: wallet.type === "hardware" ? wallet.api : undefined,
+      })),
     );
     setUpdateAvatars(true);
   }, [storedWallets]);
@@ -99,26 +91,21 @@ export default function WalletSwitcher({ open, close }: Props) {
       if (wallets.length === 0 || !updateAvatars) return;
 
       // get ans profiles
-      const profiles = await getNameServiceProfiles(
-        wallets.map((val) => val.address)
-      );
+      const profiles = await getNameServiceProfiles(wallets.map((val) => val.address));
       const gateway = await findGateway({ startBlock: 0 });
 
       // update wallets state
       setWallets((val) =>
         val.map((wallet) => {
-          const profile = profiles.find(
-            ({ address }) => address === wallet.address
-          );
+          const profile = profiles.find(({ address }) => address === wallet.address);
 
           return {
             ...wallet,
             name: profile?.name || wallet.name,
-            avatar:
-              profile?.logo && concatGatewayURL(gateway) + "/" + profile.logo,
-            hasAns: !!profile
+            avatar: profile?.logo && concatGatewayURL(gateway) + "/" + profile.logo,
+            hasAns: !!profile,
           };
-        })
+        }),
       );
 
       setLoadedAns(true);
@@ -159,9 +146,7 @@ export default function WalletSwitcher({ open, close }: Props) {
         <CurrentWallet>
           <Avatar img={activeWallet?.avatar}>
             {!activeWallet?.avatar && <NoAvatarIcon size="1.5em" />}
-            {activeWallet?.api === "keystone" && (
-              <HardwareWalletIcon icon={keystoneLogo} color="#2161FF" />
-            )}
+            {activeWallet?.api === "keystone" && <HardwareWalletIcon icon={keystoneLogo} color="#2161FF" />}
           </Avatar>
           <Spacer y={0.75} />
           <div
@@ -170,9 +155,8 @@ export default function WalletSwitcher({ open, close }: Props) {
               alignItems: "center",
               gap: 4,
               justifyContent: "center",
-              maxWidth: "100%"
-            }}
-          >
+              maxWidth: "100%",
+            }}>
             <Text
               size="md"
               weight="semibold"
@@ -180,10 +164,9 @@ export default function WalletSwitcher({ open, close }: Props) {
                 flex: 1,
                 textAlign: "center",
                 flexWrap: "wrap",
-                wordBreak: "break-word"
+                wordBreak: "break-word",
               }}
-              noMargin
-            >
+              noMargin>
               {activeWallet?.name}
             </Text>
             {activeWallet?.address === activeAddress && <ActiveIndicator />}
@@ -194,14 +177,13 @@ export default function WalletSwitcher({ open, close }: Props) {
               display: "flex",
               gap: 8,
               alignItems: "center",
-              justifyContent: "center"
-            }}
-          >
+              justifyContent: "center",
+            }}>
             <CopyToClipboard
               labelStyle={{
                 fontSize: 14,
                 color: theme.secondaryText,
-                fontWeight: 500
+                fontWeight: 500,
               }}
               label={formatAddress(activeWallet?.address, 4)}
               text={activeWallet?.address}
@@ -220,11 +202,7 @@ export default function WalletSwitcher({ open, close }: Props) {
             />
           </div>
           <Spacer y={1} />
-          <Button
-            variant="secondary"
-            fullWidth
-            onClick={() => navigate(`/quick-settings/wallets/${activeAddress}`)}
-          >
+          <Button variant="secondary" fullWidth onClick={() => navigate(`/quick-settings/wallets/${activeAddress}`)}>
             {browser.i18n.getMessage("edit_account")}
           </Button>
         </CurrentWallet>
@@ -232,8 +210,7 @@ export default function WalletSwitcher({ open, close }: Props) {
           onClick={(e) => {
             e.stopPropagation();
             e.preventDefault();
-          }}
-        >
+          }}>
           <Text weight="semibold" noMargin>
             {browser.i18n.getMessage("your_other_accounts")}
           </Text>
@@ -245,27 +222,21 @@ export default function WalletSwitcher({ open, close }: Props) {
                   setActiveAddress(wallet.address);
                   setToast({
                     type: "success",
-                    content: browser.i18n.getMessage("switchedToWallet", [
-                      wallet.name
-                    ]),
-                    duration: 1100
+                    content: browser.i18n.getMessage("switchedToWallet", [wallet.name]),
+                    duration: 1100,
                   });
                   close();
-                }}
-              >
+                }}>
                 <div
                   style={{
                     display: "flex",
                     alignItems: "center",
                     gap: 12,
-                    flexDirection: "row"
-                  }}
-                >
+                    flexDirection: "row",
+                  }}>
                   <Avatar img={wallet.avatar}>
                     {!wallet.avatar && <NoAvatarIcon size="1.5em" />}
-                    {wallet.api === "keystone" && (
-                      <HardwareWalletIcon icon={keystoneLogo} color="#2161FF" />
-                    )}
+                    {wallet.api === "keystone" && <HardwareWalletIcon icon={keystoneLogo} color="#2161FF" />}
                   </Avatar>
 
                   <WalletTitle>
@@ -274,15 +245,9 @@ export default function WalletSwitcher({ open, close }: Props) {
                       style={{
                         display: "flex",
                         gap: 8,
-                        alignItems: "center"
-                      }}
-                    >
-                      <Text
-                        variant="secondary"
-                        size="sm"
-                        weight="medium"
-                        noMargin
-                      >
+                        alignItems: "center",
+                      }}>
+                      <Text variant="secondary" size="sm" weight="medium" noMargin>
                         {formatAddress(wallet.address, 4)}
                       </Text>
                       <CopyToClipboard text={wallet.address} />
@@ -302,10 +267,7 @@ export default function WalletSwitcher({ open, close }: Props) {
                   </WalletTitle>
                 </div>
                 <Balance>
-                  {formatFiatBalance(
-                    fiatBalances[wallet.address] || BigNumber(0),
-                    currency.toLowerCase()
-                  )}
+                  {formatFiatBalance(fiatBalances[wallet.address] || BigNumber(0), currency.toLowerCase())}
                 </Balance>
               </Wallet>
             ))}
@@ -314,22 +276,17 @@ export default function WalletSwitcher({ open, close }: Props) {
             style={{ marginLeft: "-8px", marginRight: "-8px" }}
             onClick={() =>
               browser.tabs.create({
-                url: browser.runtime.getURL("tabs/dashboard.html#/wallets/new")
+                url: browser.runtime.getURL("tabs/dashboard.html#/wallets/new"),
               })
             }
             title={browser.i18n.getMessage("add_account")}
             titleStyle={{ fontSize: 18, fontWeight: 500 }}
             hideSquircle
-            small
-          >
+            small>
             <PlusCircle height={32} width={32} color={theme.tertiaryText} />
           </ListItem>
         </WalletsContainer>
-        <QRModal
-          isOpen={qrModalOpen}
-          setOpen={setQrModalOpen}
-          address={qrModalAddress}
-        />
+        <QRModal isOpen={qrModalOpen} setOpen={setQrModalOpen} address={qrModalAddress} />
       </Wrapper>
     </SliderMenu>
   );
@@ -341,8 +298,8 @@ export const popoverAnimation: Variants = {
     opacity: 0,
     transition: {
       type: "spring",
-      duration: 0.4
-    }
+      duration: 0.4,
+    },
   },
   open: {
     scale: 1,
@@ -351,9 +308,9 @@ export const popoverAnimation: Variants = {
       type: "spring",
       duration: 0.4,
       delayChildren: 0.2,
-      staggerChildren: 0.05
-    }
-  }
+      staggerChildren: 0.05,
+    },
+  },
 };
 
 const CloseIcon = styled(XClose)`
@@ -428,7 +385,7 @@ const ActiveIndicator = styled.span`
 const Balance = styled(Text).attrs({
   noMargin: true,
   weight: "medium",
-  variant: "secondary"
+  variant: "secondary",
 })``;
 
 const Avatar = styled(Squircle)`

@@ -1,7 +1,7 @@
 import Arweave from "arweave";
 import { getActiveKeyfile } from "~wallets";
 import { freeDecryptedWallet } from "~wallets/encryption";
-import { createData, ArweaveSigner } from "arbundles";
+import { createData, ArweaveSigner } from "@dha-team/arbundles";
 import { uploadDataToTurbo } from "~api/modules/dispatch/uploader";
 
 const MAX_FILE_SIZE = 500 * 1024; // 500KB
@@ -9,7 +9,7 @@ const MAX_FILE_SIZE = 500 * 1024; // 500KB
 const arweave = new Arweave({
   host: "ar-io.net",
   port: 443,
-  protocol: "https"
+  protocol: "https",
 });
 
 function toArrayBuffer(data: any) {
@@ -45,7 +45,7 @@ export async function uploadUserAvatar(avatar: File) {
     const tags = [
       { name: "App-Name", value: "Wander" },
       { name: "Content-Type", value: avatar.type },
-      { name: "Type", value: "avatar-update" }
+      { name: "Type", value: "avatar-update" },
     ];
 
     const dataEntry = createData(data, dataSigner, { tags });

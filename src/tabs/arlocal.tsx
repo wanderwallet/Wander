@@ -5,21 +5,8 @@ import { urlToGateway } from "~gateways/utils";
 import { useStorage } from "~utils/storage";
 import { ExtensionStorage } from "~utils/storage";
 import { RefreshIcon } from "@iconicicons/react";
-import {
-  Button,
-  Input,
-  Spacer,
-  useInput,
-  Text,
-  useToasts
-} from "@arconnect/components-rebrand";
-import {
-  CardBody,
-  ConnectionStatus,
-  ConnectionText,
-  Title,
-  Wrapper
-} from "./devtools";
+import { Button, Input, Spacer, useInput, Text, useToasts } from "@arconnect/components-rebrand";
+import { CardBody, ConnectionStatus, ConnectionText, Title, Wrapper } from "./devtools";
 import { ArLocalTransaction } from "~components/arlocal/Transaction";
 import NoWallets from "~components/devtools/NoWallets";
 import Tutorial from "~components/arlocal/Tutorial";
@@ -40,9 +27,9 @@ function ArLocal() {
   const [lastUsedTestnet, setLastUsedTestnet] = useStorage<string>(
     {
       key: "last_used_testnet",
-      instance: ExtensionStorage
+      instance: ExtensionStorage,
     },
-    (val) => val || "http://localhost:1984"
+    (val) => val || "http://localhost:1984",
   );
 
   useEffect(() => {
@@ -96,12 +83,10 @@ function ArLocal() {
         setToast({
           type: "error",
           content: browser.i18n.getMessage("gatewayNotTestnet"),
-          duration: 3000
+          duration: 3000,
         });
 
-        throw new Error(
-          `Gateway not testnet. Gateway network type: ${data.network}`
-        );
+        throw new Error(`Gateway not testnet. Gateway network type: ${data.network}`);
       }
 
       setOnline(true);
@@ -141,14 +126,14 @@ function ArLocal() {
       setToast({
         type: "success",
         content: browser.i18n.getMessage("mined"),
-        duration: 2350
+        duration: 2350,
       });
     } catch (e) {
       console.log("Failed to mine", e);
       setToast({
         type: "error",
         content: browser.i18n.getMessage("miningFailed"),
-        duration: 2400
+        duration: 2400,
       });
     }
 
@@ -181,11 +166,7 @@ function ArLocal() {
               fullWidth
             />
           </InputWrapper>
-          <RefreshButton
-            variant="secondary"
-            onClick={() => loadTestnet()}
-            refreshing={loadingTestnet}
-          >
+          <RefreshButton variant="secondary" onClick={() => loadTestnet()} refreshing={loadingTestnet}>
             <RefreshIcon />
           </RefreshButton>
         </InputWithBtn>
@@ -196,12 +177,7 @@ function ArLocal() {
             <Spacer y={1} />
             <ArLocalTransaction arweave={arweave} />
             <Spacer y={1} />
-            <Button
-              fullWidth
-              variant="secondary"
-              loading={mining}
-              onClick={mine}
-            >
+            <Button fullWidth variant="secondary" loading={mining} onClick={mine}>
               {browser.i18n.getMessage("mine")}
             </Button>
           </>

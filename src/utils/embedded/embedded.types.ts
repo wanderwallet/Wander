@@ -6,7 +6,7 @@ import type {
   SupabaseUser,
   RecoverableAccount,
   WalletSourceType,
-  DbSession
+  DbSession,
 } from "embed-api";
 
 export type AuthStatus =
@@ -20,6 +20,8 @@ export type AuthStatus =
   | "loading"
   | "locked"
   | "unlocked";
+
+export type EmbeddedSdkAuthStatus = "loading" | "onboarding" | "authenticated" | "not-authenticated";
 
 export type WalletActivationStatus =
   // The wallet is DISABLED, READONLY or LOST.
@@ -66,6 +68,7 @@ export interface EmbeddedContextState {
   importedTempWalletAddress: null | string;
   lastRegisteredWallet: null | Wallet;
   recoverableAccounts: null | RecoverableAccount[];
+  authEmail: null | string;
 }
 
 export interface EmbeddedContextAuth {
@@ -83,32 +86,19 @@ export interface RecoveryJSON {
   recoveryFileServerSignature: string;
 }
 
-export interface EmbeddedContextData
-  extends EmbeddedContextState,
-    EmbeddedContextAuth {
+export interface EmbeddedContextData extends EmbeddedContextState, EmbeddedContextAuth {
   currentWallet: Wallet | null;
 
-  authenticate: (
-    authProviderType: AuthProviderType,
-    email?: string,
-    password?: string
-  ) => Promise<void>;
+  authenticate: (authProviderType: AuthProviderType, email?: string, password?: string) => Promise<void>;
   fetchRecoverableAccounts: () => Promise<RecoverableAccount[]>;
   clearRecoverableAccounts: () => void;
-  recoverAccount: (
-    authProviderType: AuthProviderType,
-    accountToRecoverId: string
-  ) => Promise<void>;
-  recoverWallet: (
-    recoveryData: RecoveryJSON | JWKInterface | string
-  ) => Promise<void>;
+  recoverAccount: (authProviderType: AuthProviderType, accountToRecoverId: string) => Promise<void>;
+  recoverWallet: (recoveryData: RecoveryJSON | JWKInterface | string) => Promise<void>;
 
   generateTempWallet: () => Promise<TempWallet>;
   deleteGeneratedTempWallet: () => Promise<void>;
 
-  importTempWallet: (
-    jwkOrSeedPhrase: JWKInterface | string
-  ) => Promise<TempWallet>;
+  importTempWallet: (jwkOrSeedPhrase: JWKInterface | string) => Promise<TempWallet>;
   deleteImportedTempWallet: () => Promise<void>;
 
   registerWallet: (sourceType: WalletSourceType) => Promise<Wallet>;
@@ -117,5 +107,7 @@ export interface EmbeddedContextData
   skipBackUp: (doNotAskAgain: boolean) => void | Promise<void>;
   downloadKeyfile: () => Promise<void>;
   copySeedphrase: () => Promise<boolean>;
+  getSeedphrase: (callbackFn?: (seedPhrase: string) => Promise<boolean>) => Promise<string>;
   generateRecoveryAndDownload: () => Promise<void>;
+  setAuthEmail: (email: string) => void;
 }

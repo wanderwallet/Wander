@@ -11,8 +11,7 @@ export default function WalletMenu({ open, close, menuItems }: Props) {
             onClick={(e) => {
               e.stopPropagation();
               e.preventDefault();
-            }}
-          >
+            }}>
             {menuItems.map((item, i) => (
               <MenuItem
                 open={open}
@@ -20,8 +19,7 @@ export default function WalletMenu({ open, close, menuItems }: Props) {
                 onClick={() => {
                   item.route();
                   close();
-                }}
-              >
+                }}>
                 {item.icon}
                 <MenuTitle>{browser.i18n.getMessage(item.title)}</MenuTitle>
               </MenuItem>
@@ -39,8 +37,8 @@ export const popoverAnimation: Variants = {
     opacity: 0,
     transition: {
       type: "spring",
-      duration: 0.4
-    }
+      duration: 0.4,
+    },
   },
   open: {
     scale: 1,
@@ -49,15 +47,15 @@ export const popoverAnimation: Variants = {
       type: "spring",
       duration: 0.4,
       delayChildren: 0.2,
-      staggerChildren: 0.05
-    }
-  }
+      staggerChildren: 0.05,
+    },
+  },
 };
 
 const MenuPopover = styled(motion.div).attrs({
   initial: "closed",
   animate: "open",
-  exit: "closed"
+  exit: "closed",
 })`
   position: absolute;
   top: calc(100% - 20px);
@@ -73,21 +71,21 @@ const walletAnimation = {
     transition: {
       type: "spring",
       stiffness: 300,
-      damping: 24
-    }
+      damping: 24,
+    },
   },
   closed: {
     opacity: 0,
     y: 20,
     transition: {
-      duration: 0.2
-    }
-  }
+      duration: 0.2,
+    },
+  },
 };
 
 const MenuItem = styled(motion.div).attrs<{ open: boolean }>((props) => ({
   variants: walletAnimation,
-  animate: props.open ? "open" : "closed"
+  animate: props.open ? "open" : "closed",
 }))<{ open: boolean }>`
   display: flex;
   align-items: flex-start;

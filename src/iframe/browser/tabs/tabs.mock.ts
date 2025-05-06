@@ -4,8 +4,7 @@ import { isExternalURL } from "~utils/urls/isExternalURL";
 
 export const tabs = {
   create: async ({ url }) => {
-    if (process.env.NODE_ENV === "development")
-      console.log(`tabs.create({ ${url} })`);
+    if (process.env.NODE_ENV === "development") console.log(`tabs.create({ ${url} })`);
 
     const externalUrl = isExternalURL(url);
 
@@ -39,18 +38,18 @@ export const tabs = {
     return [
       {
         id: EMBEDDED_ANCESTOR_TAB_ID,
-        url: getEmbeddedAncestorOrigin()
-      }
+        url: getEmbeddedAncestorOrigin(),
+      },
     ]; // satisfies browser.Tabs.Tab
   },
 
   onConnect: {
     addListener: () => {},
-    removeListener: () => {}
+    removeListener: () => {},
   },
 
   onUpdated: {
     addListener: () => {},
-    removeListener: () => {}
-  }
+    removeListener: () => {},
+  },
 };

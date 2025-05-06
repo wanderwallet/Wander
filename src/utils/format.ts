@@ -34,10 +34,7 @@ export function getCommunityUrl(link: string) {
  *
  * @returns Formatted address
  */
-export function formatAddress(
-  addressOrWallet?: string | StoredWallet,
-  count = 13
-) {
+export function formatAddress(addressOrWallet?: string | StoredWallet, count = 13) {
   // TODO: What about ANS?
 
   if (!addressOrWallet) return "-";
@@ -51,10 +48,7 @@ export function formatAddress(
     return (
       addressOrWallet.substring(0, count) +
       "..." +
-      addressOrWallet.substring(
-        addressOrWallet.length - count,
-        addressOrWallet.length
-      )
+      addressOrWallet.substring(addressOrWallet.length - count, addressOrWallet.length)
     );
   }
 
@@ -111,9 +105,7 @@ export function formatBalance(balance: BigNumber | string) {
     balance = BigNumber(balance || "0");
   }
 
-  const tooltipBalance = balance
-    .toFormat(20, BigNumber.ROUND_FLOOR)
-    .replace(/\.?0*$/, "");
+  const tooltipBalance = balance.toFormat(20, BigNumber.ROUND_FLOOR).replace(/\.?0*$/, "");
 
   if (balance.lte(1e4)) {
     displayBalance = BigNumber(balance.toPrecision(6, BigNumber.ROUND_FLOOR))
@@ -157,9 +149,7 @@ export function formatBalance(balance: BigNumber | string) {
     }
 
     displayBalance =
-      BigNumber(
-        balance.dividedBy(divisor).toPrecision(6, BigNumber.ROUND_FLOOR)
-      )
+      BigNumber(balance.dividedBy(divisor).toPrecision(6, BigNumber.ROUND_FLOOR))
         .toFixed(20, BigNumber.ROUND_FLOOR)
         .replace(/\.?0*$/, "") + suffix;
   }
@@ -173,9 +163,5 @@ export function truncateMiddle(str: string, maxLength: number): string {
   const charsToShow = maxLength - separator.length;
   const frontChars = Math.ceil(charsToShow / 2);
   const backChars = Math.floor(charsToShow / 2);
-  return (
-    str.substring(0, frontChars) +
-    separator +
-    str.substring(str.length - backChars)
-  );
+  return str.substring(0, frontChars) + separator + str.substring(str.length - backChars);
 }

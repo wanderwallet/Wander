@@ -9,10 +9,10 @@ export interface DecodedTag {
 export const signedTxTags = [
   {
     name: "Signing-Client",
-    value: IS_EMBEDDED_APP ? "Wander Connect" : "Wander"
+    value: IS_EMBEDDED_APP ? "Wander Connect" : "Wander",
   },
   {
     name: "Signing-Client-Version",
-    value: version
-  }
+    value: version,
+  },
 ];

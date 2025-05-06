@@ -4,8 +4,8 @@ export const themeTokens = {
     card: "var(--color-card-background-default)",
     box: "var(--color-background-box)",
     switch: {
-      enabled: "var(--color-background-switch-enabled)"
-    }
+      enabled: "var(--color-background-switch-enabled)",
+    },
   },
   text: {
     heading: "var(--color-font-heading)",
@@ -13,8 +13,8 @@ export const themeTokens = {
     footer: "var(--color-text-footer)",
     copyable: {
       label: "var(--color-copyable-text-label)",
-      value: "var(--color-copyable-text-value)"
-    }
+      value: "var(--color-copyable-text-value)",
+    },
   },
   border: {
     default: "var(--color-card-border-default)",
@@ -22,7 +22,7 @@ export const themeTokens = {
     popover: "var(--color-border-popover)",
     copyable: "var(--color-copyable-border)",
     radio: "var(--color-border-radio)",
-    seedInput: "var(--color-seed-input-border)"
+    seedInput: "var(--color-seed-input-border)",
   },
   button: {
     primary: {
@@ -30,43 +30,43 @@ export const themeTokens = {
       active: "var(--color-button-primary-active)",
       success: "var(--color-button-primary-success)",
       error: "var(--color-button-primary-error)",
-      disabled: "var(--color-background-button-disabled)"
+      disabled: "var(--color-background-button-disabled)",
     },
     outlined: {
       active: "var(--color-button-outlined-active)",
-      border: "var(--color-button-outlined-border)"
+      border: "var(--color-button-outlined-border)",
     },
     secondary: {
       background: "var(--color-button-secondary-background)",
       active: "var(--color-button-secondary-active)",
-      border: "var(--color-button-secondary-border)"
-    }
+      border: "var(--color-button-secondary-border)",
+    },
   },
   link: {
     primary: "var(--color-link-primary)",
     secondary: "var(--color-link-secondary)",
-    disabled: "var(--color-link-disabled)"
+    disabled: "var(--color-link-disabled)",
   },
   divider: "var(--color-divider-default)",
   loading: {
     primary: "var(--color-loading-primary)",
-    secondary: "var(--color-loading-secondary)"
+    secondary: "var(--color-loading-secondary)",
   },
   input: {
     border: "var(--color-seed-input-border)",
     active: "var(--color-seed-input-active)",
-    background: "var(--color-seed-input-background)"
+    background: "var(--color-seed-input-background)",
   },
   radio: {
     border: "var(--color-border-radio)",
-    background: "var(--color-non-checked-background-radio)"
+    background: "var(--color-non-checked-background-radio)",
   },
   avatar: {
-    background: "var(--avatar-background)"
+    background: "var(--avatar-background)",
   },
   shadow: {
-    card: "var(--color-card-shadow-default)"
-  }
+    card: "var(--color-card-shadow-default)",
+  },
 };
 
 export const commonTokens = {
@@ -81,14 +81,14 @@ export const commonTokens = {
     "8": "32px",
     "10": "40px",
     "12": "48px",
-    "16": "64px"
+    "16": "64px",
   },
   borderRadius: {
     sm: "4px",
     md: "8px",
     lg: "16px",
     xl: "24px",
-    rounded: "999px"
+    rounded: "999px",
   },
   fontSize: {
     xs: "12px",
@@ -98,17 +98,17 @@ export const commonTokens = {
     xl: "20px",
     "2xl": "24px",
     "3xl": "30px",
-    "4xl": "36px"
+    "4xl": "36px",
   },
   fontWeight: {
     regular: "400",
     medium: "500",
     semibold: "600",
-    bold: "700"
+    bold: "700",
   },
   transition: {
     fast: "0.15s ease",
     base: "0.3s ease",
-    slow: "0.5s ease"
-  }
+    slow: "0.5s ease",
+  },
 };

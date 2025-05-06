@@ -1,18 +1,12 @@
 import { type InputStatus, Text } from "@arconnect/components-rebrand";
 import { ChevronDown, AlertCircle, SearchSm } from "@untitled-ui/icons-react";
-import {
-  type HTMLProps,
-  useState,
-  useMemo,
-  type CSSProperties,
-  type ReactNode
-} from "react";
+import { type HTMLProps, useState, useMemo, type CSSProperties, type ReactNode } from "react";
 import styled from "styled-components";
 import { Flex } from "./common/Flex";
 
 const heights = {
   small: "52px",
-  normal: "62px"
+  normal: "62px",
 } as const;
 
 export function SendInput({
@@ -43,19 +37,9 @@ export function SendInput({
       iconLeft,
       iconRight,
       special,
-      ...props
+      ...props,
     }),
-    [
-      fullWidth,
-      sizeVariant,
-      variant,
-      status,
-      disabled,
-      iconLeft,
-      iconRight,
-      special,
-      props
-    ]
+    [fullWidth, sizeVariant, variant, status, disabled, iconLeft, iconRight, special, props],
   );
 
   const handleBlur = () => {
@@ -71,15 +55,14 @@ export function SendInput({
     if (blurTimeout) clearTimeout(blurTimeout);
     setIsFocused(true);
     props?.onChange?.({
-      target: { value: "" }
+      target: { value: "" },
     } as React.ChangeEvent<HTMLInputElement>);
   };
 
   const rightInputIcon = () => {
     if (iconRight) return iconRight;
     if (variant === "dropdown") return <ChevronDown height={20} width={20} />;
-    if (props.value && isFocused)
-      return <ClearIcon onClick={clearInput} height={20} width={20} />;
+    if (props.value && isFocused) return <ClearIcon onClick={clearInput} height={20} width={20} />;
     if (status === "error") {
       return <AlertCircle height={20} width={20} color={"#D22B1F"} />;
     }
@@ -106,17 +89,9 @@ export function SendInput({
         disabled={disabled}
         variant={variant}
         special={special}
-        style={inputContainerStyle}
-      >
-        {LeftIconComponent && (
-          <IconWrapperV2 position="left">{LeftIconComponent}</IconWrapperV2>
-        )}
-        <Flex
-          gap={4}
-          direction="row"
-          align="baseline"
-          style={{ minWidth: 0, flex: 1 }}
-        >
+        style={inputContainerStyle}>
+        {LeftIconComponent && <IconWrapperV2 position="left">{LeftIconComponent}</IconWrapperV2>}
+        <Flex gap={4} direction="row" align="baseline" style={{ minWidth: 0, flex: 1 }}>
           <InputV2Element
             {...inputV2Props}
             disabled={disabled}
@@ -124,16 +99,14 @@ export function SendInput({
             onBlur={handleBlur}
             style={{
               minWidth: "1ch",
-              width: `${Math.max(1, props.value?.toString().length || 0)}ch`
+              width: `${Math.max(1, props.value?.toString().length || 0)}ch`,
             }}
           />
           <Text variant="secondary" style={{ flexShrink: 0 }} noMargin>
             {ticker}
           </Text>
         </Flex>
-        {RightIconComponent && (
-          <IconWrapperV2 position="right">{RightIconComponent}</IconWrapperV2>
-        )}
+        {RightIconComponent && <IconWrapperV2 position="right">{RightIconComponent}</IconWrapperV2>}
       </InputV2Wrapper>
       {status === "error" && <ErrorMsg>{errorMessage}</ErrorMsg>}
     </>
@@ -172,8 +145,7 @@ export const InputV2Wrapper = styled.div<SharedPropsV2>`
   height: ${(props) => heights[props.sizeVariant ?? "normal"]};
   width: ${(props) => (props.fullWidth ? "100%" : "345px")};
   padding: ${(props) => (props.sizeVariant === "small" ? "12px" : "12px 14px")};
-  background: ${(props) =>
-    props.theme.input.background[props.variant ?? "default"].default};
+  background: ${(props) => props.theme.input.background[props.variant ?? "default"].default};
   border-radius: 10px;
   box-sizing: border-box;
   border: 1.5px solid transparent;
@@ -185,49 +157,34 @@ export const InputV2Wrapper = styled.div<SharedPropsV2>`
   ${(props) =>
     props.variant === "dropdown"
       ? `
-      border: 1.5px solid  ${
-        props.theme.input.border[props.variant || "default"].default
-      };
-      background: ${
-        props.theme.input.background[props.variant || "default"].default
-      };
+      border: 1.5px solid  ${props.theme.input.border[props.variant || "default"].default};
+      background: ${props.theme.input.background[props.variant || "default"].default};
       box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.10), 0px 1px 2px 0px rgba(0, 0, 0, 0.06);
     `
       : props.variant === "search" && props.special
-      ? `border: 1.5px solid ${
-          props.theme.input.border[props.variant || "default"].special
-        }; background:  ${
+      ? `border: 1.5px solid ${props.theme.input.border[props.variant || "default"].special}; background:  ${
           props.theme.input.background[props.variant || "default"].special
         };`
       : ``}
 
-  ${(props) =>
-    props.status === "error" && `border: 1.5px solid ${props.theme.fail}`};
+  ${(props) => props.status === "error" && `border: 1.5px solid ${props.theme.fail}`};
 
   &:hover {
-    ${(props) =>
-      "border: 1.5px solid " +
-      (props.status === "error" ? props.theme.fail : "")};
+    ${(props) => "border: 1.5px solid " + (props.status === "error" ? props.theme.fail : "")};
   }
 
   &:focus-within,
   &:active {
     border: 1.5px solid
       ${(props) =>
-        props.status === "error"
-          ? props.theme.fail
-          : props.theme.input.border[props.variant ?? "default"].focused};
+        props.status === "error" ? props.theme.fail : props.theme.input.border[props.variant ?? "default"].focused};
   }
 
   ${(props) =>
     props.disabled &&
     `
-    background: ${
-      props.theme.input.background[props.variant ?? "default"].disabled
-    };
-    border: 1.5px solid ${
-      props.theme.input.border[props.variant ?? "default"].disabled
-    };
+    background: ${props.theme.input.background[props.variant ?? "default"].disabled};
+    border: 1.5px solid ${props.theme.input.border[props.variant ?? "default"].disabled};
     color: #838383;
   `}
 `;
@@ -265,18 +222,15 @@ export const InputV2Element = styled.input<SharedPropsV2>`
   transition: all 0.23s ease-in-out;
 
   ::-webkit-input-placeholder {
-    color: ${(props) =>
-      props.theme.input.placeholder[props.variant || "default"]};
+    color: ${(props) => props.theme.input.placeholder[props.variant || "default"]};
   }
 
   :-ms-input-placeholder {
-    color: ${(props) =>
-      props.theme.input.placeholder[props.variant || "default"]};
+    color: ${(props) => props.theme.input.placeholder[props.variant || "default"]};
   }
 
   ::placeholder {
-    color: ${(props) =>
-      props.theme.input.placeholder[props.variant || "default"]};
+    color: ${(props) => props.theme.input.placeholder[props.variant || "default"]};
   }
 `;
 
@@ -288,8 +242,5 @@ export const IconWrapperV2 = styled.div<{ position: "left" | "right" }>`
 `;
 
 const SearchIcon = styled(SearchSm)<{ disabled?: boolean }>`
-  color: ${(props) =>
-    props.theme.input.icons[
-      props.disabled ? "searchInactive" : "searchActive"
-    ]};
+  color: ${(props) => props.theme.input.icons[props.disabled ? "searchInactive" : "searchActive"]};
 `;

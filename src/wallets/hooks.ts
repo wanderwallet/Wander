@@ -14,18 +14,13 @@ import { useQuery } from "@tanstack/react-query";
 import { getNameServiceProfiles } from "~lib/nameservice";
 import type GQLResultInterface from "ar-gql/dist/faces";
 import { printTxWorkingGateways, txHistoryGateways } from "~gateways/gateway";
-import {
-  sortFn,
-  processTransactions,
-  type GroupedTransactions,
-  type ExtendedTransaction
-} from "~lib/transactions";
+import { sortFn, processTransactions, type GroupedTransactions, type ExtendedTransaction } from "~lib/transactions";
 import {
   AO_RECEIVER_QUERY_WITH_CURSOR,
   AO_SENT_QUERY_WITH_CURSOR,
   AR_RECEIVER_QUERY_WITH_CURSOR,
   AR_SENT_QUERY_WITH_CURSOR,
-  PRINT_ARWEAVE_QUERY_WITH_CURSOR
+  PRINT_ARWEAVE_QUERY_WITH_CURSOR,
 } from "~notifications/utils";
 import { gql } from "~gateways/api";
 import BigNumber from "bignumber.js";
@@ -56,9 +51,7 @@ export function useWalletsDetails(wallets: JWKInterface[]) {
 
       // load ans labels
       try {
-        const profiles = await getNameServiceProfiles(
-          details.map((w) => w.address)
-        );
+        const profiles = await getNameServiceProfiles(details.map((w) => w.address));
 
         for (const wallet of details) {
           const profile = profiles.find((p) => p.address === wallet.address);
@@ -83,16 +76,16 @@ export function useActiveWallet() {
   // current address
   const [activeAddress] = useStorage<string>({
     key: "active_address",
-    instance: ExtensionStorage
+    instance: ExtensionStorage,
   });
 
   // all wallets added
   const [wallets] = useStorage<StoredWallet[]>(
     {
       key: "wallets",
-      instance: ExtensionStorage
+      instance: ExtensionStorage,
     },
-    []
+    [],
   );
 
   // active wallet
@@ -101,9 +94,9 @@ export function useActiveWallet() {
       wallets?.find(({ address }) => address === activeAddress) || {
         address: activeAddress,
         nickname: "",
-        type: "local"
+        type: "local",
       },
-    [activeAddress, wallets]
+    [activeAddress, wallets],
   );
 
   return wallet;
@@ -113,9 +106,9 @@ export function useAllWallets() {
   const [wallets = [] as StoredWallet[]] = useStorage<StoredWallet[]>(
     {
       key: "wallets",
-      instance: ExtensionStorage
+      instance: ExtensionStorage,
     },
-    []
+    [],
   );
 
   return wallets;
@@ -127,9 +120,9 @@ export async function setActiveWallet(address?: string) {
   const [wallets] = useStorage<StoredWallet[]>(
     {
       key: "wallets",
-      instance: ExtensionStorage
+      instance: ExtensionStorage,
     },
-    []
+    [],
   );
 
   // remove if the address is undefined
@@ -155,7 +148,7 @@ export function useHardwareApi() {
   // hardware wallet type
   const hardwareApi = useMemo<HardwareApi | false>(
     () => (wallet?.type === "hardware" && wallet.api) || false,
-    [wallet]
+    [wallet],
   );
 
   return hardwareApi;
@@ -168,7 +161,7 @@ export function useBalance() {
   // grab address
   const [activeAddress] = useStorage<string>({
     key: "active_address",
-    instance: ExtensionStorage
+    instance: ExtensionStorage,
   });
 
   const fetchBalance = useCallback(async () => {
@@ -199,7 +192,7 @@ export function useBalance() {
     select: (data) => data || "0",
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     refetchOnWindowFocus: true,
-    enabled: !!activeAddress
+    enabled: !!activeAddress,
   });
 }
 
@@ -249,10 +242,7 @@ export const useTransactions = (activeAddress: string, limit?: number) => {
   const [transactions, setTransactions] = useState<GroupedTransactions>({});
   const [loading, setLoading] = useState(false);
 
-  const hasNextPage = useMemo(
-    () => hasNextPages.some((v) => v === true),
-    [hasNextPages]
-  );
+  const hasNextPage = useMemo(() => hasNextPages.some((v) => v === true), [hasNextPages]);
 
   const fetchTransactions = useCallback(async () => {
     try {
@@ -265,61 +255,46 @@ export const useTransactions = (activeAddress: string, limit?: number) => {
         AR_SENT_QUERY_WITH_CURSOR,
         AO_SENT_QUERY_WITH_CURSOR,
         AO_RECEIVER_QUERY_WITH_CURSOR,
-        PRINT_ARWEAVE_QUERY_WITH_CURSOR
+        PRINT_ARWEAVE_QUERY_WITH_CURSOR,
       ];
 
-      const [rawReceived, rawSent, rawAoSent, rawAoReceived, rawPrintArchive] =
-        await Promise.allSettled(
-          queries.map((query, idx) => {
-            return hasNextPages[idx]
-              ? retryWithDelay(async (attempt) => {
-                  const data = await gql(
-                    query,
-                    { address: activeAddress, after: cursors[idx] },
-                    idx !== 4
-                      ? txHistoryGateways[attempt % txHistoryGateways.length]
-                      : printTxWorkingGateways[
-                          attempt % printTxWorkingGateways.length
-                        ]
-                  );
-                  if (
-                    data?.data === null &&
-                    (data as any)?.errors?.length > 0
-                  ) {
-                    throw new Error(
-                      (data as any)?.errors?.[0]?.message || "GraphQL Error"
-                    );
-                  }
-                  return data;
-                }, 2)
-              : ({
-                  data: {
-                    transactions: {
-                      pageInfo: { hasNextPage: false },
-                      edges: []
-                    }
-                  }
-                } as GQLResultInterface);
-          })
-        );
+      const [rawReceived, rawSent, rawAoSent, rawAoReceived, rawPrintArchive] = await Promise.allSettled(
+        queries.map((query, idx) => {
+          return hasNextPages[idx]
+            ? retryWithDelay(async (attempt) => {
+                const data = await gql(
+                  query,
+                  { address: activeAddress, after: cursors[idx] },
+                  idx !== 4
+                    ? txHistoryGateways[attempt % txHistoryGateways.length]
+                    : printTxWorkingGateways[attempt % printTxWorkingGateways.length],
+                );
+                if (data?.data === null && (data as any)?.errors?.length > 0) {
+                  throw new Error((data as any)?.errors?.[0]?.message || "GraphQL Error");
+                }
+                return data;
+              }, 2)
+            : ({
+                data: {
+                  transactions: {
+                    pageInfo: { hasNextPage: false },
+                    edges: [],
+                  },
+                },
+              } as GQLResultInterface);
+        }),
+      );
 
       let sent = await processTransactions(rawSent, "sent");
       let received = await processTransactions(rawReceived, "received");
       const aoSent = await processTransactions(rawAoSent, "aoSent", true);
-      const aoReceived = await processTransactions(
-        rawAoReceived,
-        "aoReceived",
-        true
-      );
-      const printArchive = await processTransactions(
-        rawPrintArchive,
-        "printArchive"
-      );
+      const aoReceived = await processTransactions(rawAoReceived, "aoReceived", true);
+      const printArchive = await processTransactions(rawPrintArchive, "printArchive");
 
       setCursors((prev) =>
         [received, sent, aoSent, aoReceived, printArchive].map(
-          (data, idx) => data[data.length - 1]?.cursor ?? prev[idx]
-        )
+          (data, idx) => data[data.length - 1]?.cursor ?? prev[idx],
+        ),
       );
 
       sent = sent.filter((tx) => BigNumber(tx.node.quantity.ar).gt(0));
@@ -328,10 +303,8 @@ export const useTransactions = (activeAddress: string, limit?: number) => {
       setHasNextPages(
         [rawReceived, rawSent, rawAoSent, rawAoReceived, rawPrintArchive].map(
           (result) =>
-            (result.status === "fulfilled" &&
-              result.value?.data?.transactions?.pageInfo?.hasNextPage) ??
-            true
-        )
+            (result.status === "fulfilled" && result.value?.data?.transactions?.pageInfo?.hasNextPage) ?? true,
+        ),
       );
 
       let combinedTransactions: ExtendedTransaction[] = [
@@ -339,7 +312,7 @@ export const useTransactions = (activeAddress: string, limit?: number) => {
         ...received,
         ...aoReceived,
         ...aoSent,
-        ...printArchive
+        ...printArchive,
       ];
 
       combinedTransactions = combinedTransactions.map((transaction) => {
@@ -353,7 +326,7 @@ export const useTransactions = (activeAddress: string, limit?: number) => {
             day,
             month,
             year,
-            date: date.toISOString()
+            date: date.toISOString(),
           };
         } else {
           const now = new Date();
@@ -362,7 +335,7 @@ export const useTransactions = (activeAddress: string, limit?: number) => {
             day: now.getDate(),
             month: now.getMonth() + 1,
             year: now.getFullYear(),
-            date: null
+            date: null,
           };
         }
       });
@@ -375,22 +348,19 @@ export const useTransactions = (activeAddress: string, limit?: number) => {
 
       setCount((prev) => ({
         current: prev.current + combinedTransactions.length,
-        actual: prev.actual + actualCount
+        actual: prev.actual + actualCount,
       }));
 
-      const groupedTransactions = combinedTransactions.reduce(
-        (acc, transaction) => {
-          const monthYear = `${transaction.month}-${transaction.year}`;
-          if (!acc[monthYear]) {
-            acc[monthYear] = [];
-          }
-          if (!acc[monthYear].some((t) => t.node.id === transaction.node.id)) {
-            acc[monthYear].push(transaction);
-          }
-          return acc;
-        },
-        transactions
-      );
+      const groupedTransactions = combinedTransactions.reduce((acc, transaction) => {
+        const monthYear = `${transaction.month}-${transaction.year}`;
+        if (!acc[monthYear]) {
+          acc[monthYear] = [];
+        }
+        if (!acc[monthYear].some((t) => t.node.id === transaction.node.id)) {
+          acc[monthYear].push(transaction);
+        }
+        return acc;
+      }, transactions);
 
       // Get the month-year keys and sort them in descending order
       const sortedMonthYears = Object.keys(groupedTransactions).sort((a, b) => {
@@ -402,11 +372,10 @@ export const useTransactions = (activeAddress: string, limit?: number) => {
       });
 
       // Create a new object with sorted keys
-      const sortedGroupedTransactions: GroupedTransactions =
-        sortedMonthYears.reduce((acc, key) => {
-          acc[key] = groupedTransactions[key].sort(sortFn);
-          return acc;
-        }, {});
+      const sortedGroupedTransactions: GroupedTransactions = sortedMonthYears.reduce((acc, key) => {
+        acc[key] = groupedTransactions[key].sort(sortFn);
+        return acc;
+      }, {});
 
       setTransactions(sortedGroupedTransactions);
     } catch (error) {
@@ -429,6 +398,6 @@ export const useTransactions = (activeAddress: string, limit?: number) => {
     loading,
     hasNextPage,
     count,
-    fetchTransactions
+    fetchTransactions,
   };
 };

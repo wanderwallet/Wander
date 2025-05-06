@@ -23,15 +23,9 @@ export function ReceiveView({ walletName, walletAddress }: ReceiveViewProps) {
 
   const [copied, setCopied] = useState(false);
 
-  const effectiveAddress = useMemo(
-    () => walletAddress || wallet?.address,
-    [walletAddress, wallet]
-  );
+  const effectiveAddress = useMemo(() => walletAddress || wallet?.address, [walletAddress, wallet]);
 
-  const effectiveWalletName = useMemo(
-    () => walletName || wallet?.nickname,
-    [walletName, wallet]
-  );
+  const effectiveWalletName = useMemo(() => walletName || wallet?.nickname, [walletName, wallet]);
 
   //segment
   useEffect(() => {
@@ -62,19 +56,13 @@ export function ReceiveView({ walletName, walletAddress }: ReceiveViewProps) {
             gap: 32,
             alignItems: "center",
             justifyContent: "center",
-            flex: 1
-          }}
-        >
+            flex: 1,
+          }}>
           <Text size="lg" weight="semibold" noMargin>
             {effectiveWalletName}
           </Text>
           <QRCodeWrapper>
-            <QRCodeSVG
-              fgColor="#fff"
-              bgColor="transparent"
-              size={176}
-              value={effectiveAddress ?? ""}
-            />
+            <QRCodeSVG fgColor="#fff" bgColor="transparent" size={176} value={effectiveAddress ?? ""} />
           </QRCodeWrapper>
           <AddressField>
             <Text size="sm" weight="medium" noMargin>

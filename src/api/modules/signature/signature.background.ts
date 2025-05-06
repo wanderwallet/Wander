@@ -7,11 +7,7 @@ import { requestUserAuthorization } from "../../../utils/auth/auth.utils";
 import Application from "~applications/application";
 import { checkIfUserNeedsToSign } from "../sign/sign_policy";
 
-const background: BackgroundModuleFunction<number[]> = async (
-  appData,
-  data: unknown,
-  algorithm: unknown
-) => {
+const background: BackgroundModuleFunction<number[]> = async (appData, data: unknown, algorithm: unknown) => {
   // validate
   isString(appData?.url, "Application URL is undefined.");
   isArray(data, "Data has to be an array.");
@@ -24,12 +20,7 @@ const background: BackgroundModuleFunction<number[]> = async (
   const app = new Application(appData.url);
   const signPolicy = await app.getSignPolicy();
 
-  const alwaysAsk = checkIfUserNeedsToSign(
-    signPolicy,
-    undefined,
-    decryptedWallet?.type,
-    "signature"
-  );
+  const alwaysAsk = checkIfUserNeedsToSign(signPolicy, undefined, decryptedWallet?.type, "signature");
 
   // request user to authorize
   if (alwaysAsk) {
@@ -37,9 +28,9 @@ const background: BackgroundModuleFunction<number[]> = async (
       await requestUserAuthorization(
         {
           type: "signature",
-          message: data
+          message: data,
         },
-        appData
+        appData,
       );
     } catch {
       throw new Error("User rejected the signature request");
@@ -48,9 +39,7 @@ const background: BackgroundModuleFunction<number[]> = async (
 
   // check if hardware wallet
   if (decryptedWallet.type === "hardware") {
-    throw new Error(
-      "Active wallet type: hardware. This does not support signature currently."
-    );
+    throw new Error("Active wallet type: hardware. This does not support signature currently.");
   }
 
   const keyfile = decryptedWallet.keyfile;
@@ -62,11 +51,11 @@ const background: BackgroundModuleFunction<number[]> = async (
     {
       name: "RSA-PSS",
       hash: {
-        name: "SHA-256"
-      }
+        name: "SHA-256",
+      },
     },
     false,
-    ["sign"]
+    ["sign"],
   );
 
   // uint8array data to sign

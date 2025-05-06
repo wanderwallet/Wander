@@ -1,10 +1,7 @@
 import type { Requirements } from "~gateways/wayfinder";
 import { defaultGateway } from "~gateways/gateway";
 import Arweave from "arweave";
-import type {
-  GatewayAddressRegistryItem,
-  GatewayAddressRegistryItemData
-} from "~gateways/types";
+import type { GatewayAddressRegistryItem, GatewayAddressRegistryItemData } from "~gateways/types";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 
 const pingStaggerDelayMs = 10; // 0.01s
@@ -14,18 +11,18 @@ const properties = {
   FH1aVetOoulPGqgYukj0VE0wIhDy90WiQoV3U2PeY44: {
     GRAPHQL: true,
     ARNS: true,
-    MAX_PAGE_SIZE: 5000
+    MAX_PAGE_SIZE: 5000,
   },
   "raJgvbFU-YAnku-WsupIdbTsqqGLQiYpGzoqk9SCVgY": {
     GRAPHQL: true,
     ARNS: true,
-    MAX_PAGE_SIZE: 1000
-  }
+    MAX_PAGE_SIZE: 1000,
+  },
 };
 
 async function pingUpdater(
   data: GatewayAddressRegistryItem[],
-  onUpdate: (garItemsWithChecks: GatewayAddressRegistryItem[]) => void
+  onUpdate: (garItemsWithChecks: GatewayAddressRegistryItem[]) => void,
 ): Promise<void> {
   const CLabs = "CDoilQgKg6Pmp4Q0LJ4d84VXRgB3Ay9pIJ_SA617cVk";
   const CLabsGateway = data.find((item) => item.id === CLabs);
@@ -54,7 +51,7 @@ async function pingUpdater(
       const fetchResult = await fetch(url, {
         method: "GET",
         signal: controller.signal,
-        cache: "no-cache"
+        cache: "no-cache",
       });
       const end = Date.now();
       const duration = end - start;
@@ -72,7 +69,7 @@ async function pingUpdater(
         const propertyTxn = newData[index].settings.properties;
 
         newData[index].health = {
-          status: "success"
+          status: "success",
         };
         // Save txn properties, hardcoded
         newData[index].properties = properties[propertyTxn];
@@ -83,7 +80,7 @@ async function pingUpdater(
 
         newData[index].health = {
           status: "error",
-          error: e?.toString() ?? JSON.stringify(e)
+          error: e?.toString() ?? JSON.stringify(e),
         };
 
         onUpdate(newData);
@@ -93,10 +90,10 @@ async function pingUpdater(
 
       newData[index].ping = {
         status: "error",
-        error: e?.toString() ?? JSON.stringify(e)
+        error: e?.toString() ?? JSON.stringify(e),
       };
       newData[index].health = {
-        status: "error"
+        status: "error",
       };
 
       onUpdate(newData);
@@ -107,9 +104,7 @@ async function pingUpdater(
 }
 
 // TODO: MAKE THIS WEIGH HTTP/HTTPS
-const sortGatewaysByOperatorStake = (
-  filteredGateways: GatewayAddressRegistryItem[]
-) => {
+const sortGatewaysByOperatorStake = (filteredGateways: GatewayAddressRegistryItem[]) => {
   const sortedGateways = filteredGateways.slice();
 
   sortedGateways.sort((gatewayA, gatewayB) => {
@@ -137,7 +132,7 @@ const fetchGatewayProperties = async (txn) => {
   const arweave = new Arweave(defaultGateway);
   const transaction = await arweave.transactions.getData(txn, {
     decode: true,
-    string: true
+    string: true,
   });
   const properties = JSON.parse(transaction as string);
 
@@ -155,41 +150,27 @@ const isValidGateway = (gateway: any, requirements: Requirements): boolean => {
   if (requirements.arns && !gateway?.properties?.ARNS) {
     return false;
   }
-  if (
-    requirements.startBlock !== undefined &&
-    gateway.start > requirements.startBlock
-  ) {
+  if (requirements.startBlock !== undefined && gateway.start > requirements.startBlock) {
     return false;
   }
   return true;
 };
 
 // FOR CACHING AND GETTING STATUS
-function extractGarItems(
-  gateways: GatewayAddressRegistryItemData[]
-): GatewayAddressRegistryItem[] {
+function extractGarItems(gateways: GatewayAddressRegistryItemData[]): GatewayAddressRegistryItem[] {
   return gateways.map((item) => {
     return {
       id: item.gatewayAddress,
       ping: { status: "unknown" },
       health: { status: "unknown" },
-      linkFull: linkFull(
-        item.settings.protocol,
-        item.settings.fqdn,
-        item.settings.port
-      ),
-      linkDisplay: linkDisplay(
-        item.settings.protocol,
-        item.settings.fqdn,
-        item.settings.port
-      ),
-      ...item
+      linkFull: linkFull(item.settings.protocol, item.settings.fqdn, item.settings.port),
+      linkDisplay: linkDisplay(item.settings.protocol, item.settings.fqdn, item.settings.port),
+      ...item,
     };
   });
 }
 
-const linkFull = (protocol: string, fqdn: string, port: number) =>
-  `${protocol}://${fqdn}:${port}`;
+const linkFull = (protocol: string, fqdn: string, port: number) => `${protocol}://${fqdn}:${port}`;
 
 const linkDisplay = (protocol: string, fqdn: string, port: number) => {
   if (protocol === "https" && port === 443) return fqdn;
@@ -204,5 +185,5 @@ export {
   linkFull,
   linkDisplay,
   sortGatewaysByOperatorStake,
-  fetchGatewayProperties
+  fetchGatewayProperties,
 };

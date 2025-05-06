@@ -2,7 +2,6 @@ import React, { forwardRef } from "react";
 import clsx from "clsx";
 import styles from "./Box.module.css";
 import type { BoxBaseProps } from "./Box.types";
-import { useTheme } from "../../../contexts/ThemeContext";
 
 const Box = forwardRef<HTMLDivElement, BoxBaseProps>(
   (
@@ -18,18 +17,8 @@ const Box = forwardRef<HTMLDivElement, BoxBaseProps>(
       onClick,
       ...props
     },
-    ref
+    ref,
   ) => {
-    const { isDarkMode } = useTheme();
-
-    const themeStyles = {
-      ...style,
-      backgroundColor:
-        isDarkMode && hasBorder
-          ? "var(--color-background-default)"
-          : style?.backgroundColor
-    };
-
     return (
       <div
         className={clsx(
@@ -39,18 +28,16 @@ const Box = forwardRef<HTMLDivElement, BoxBaseProps>(
           hasBorder && styles.box__border,
           isBlurry && styles.box__blurry,
           isAutoWidth && styles.box__width_auto,
-          isDarkMode ? styles.box__dark : styles.box__light,
-          className
+          className,
         )}
-        style={themeStyles}
+        style={style}
         ref={ref}
         onClick={onClick}
-        {...props}
-      >
+        {...props}>
         {children}
       </div>
     );
-  }
+  },
 );
 
 Box.displayName = "Box";

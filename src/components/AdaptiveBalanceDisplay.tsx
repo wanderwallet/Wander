@@ -8,8 +8,7 @@ const Container = styled.div<{ isLongBalance: boolean }>`
   display: flex;
   flex-direction: ${({ isLongBalance }) => (isLongBalance ? "column" : "row")};
   justify-content: center;
-  align-items: ${({ isLongBalance }) =>
-    isLongBalance ? "center" : "baseline"};
+  align-items: ${({ isLongBalance }) => (isLongBalance ? "center" : "baseline")};
   min-height: 48px;
 `;
 
@@ -30,7 +29,7 @@ const TokenContainer = styled.div`
 
 const Ticker = styled(Text).attrs({
   noMargin: true,
-  weight: "medium"
+  weight: "medium",
 })``;
 
 const TokenLogo = styled(Logo)`
@@ -44,9 +43,7 @@ export const AdaptiveBalanceDisplay: React.FC<{
   ticker: string | null;
   logo?: string;
 }> = ({ balance, ao, ticker, logo }) => {
-  const formattedBalance = !ao.isAo
-    ? formatTokenBalance(balance || "0")
-    : balance;
+  const formattedBalance = !ao.isAo ? formatTokenBalance(balance || "0") : balance;
 
   const isLongBalance = formattedBalance.length > 8;
 

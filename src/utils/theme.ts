@@ -5,10 +5,7 @@ import useSetting from "~settings/hook";
 
 type ThemeSetting = "light" | "dark" | "system";
 
-const darkModePreference =
-  typeof window === "undefined"
-    ? null
-    : window.matchMedia("(prefers-color-scheme: dark)");
+const darkModePreference = typeof window === "undefined" ? null : window.matchMedia("(prefers-color-scheme: dark)");
 
 function getInitialDisplayTheme(themeSetting: ThemeSetting): DisplayTheme {
   if (themeSetting !== "system") {
@@ -37,16 +34,9 @@ export function useTheme() {
       setDisplayTheme(e.matches ? "dark" : "light");
     }
 
-    darkModePreference.addEventListener(
-      "change",
-      handleDarkModePreferenceChange
-    );
+    darkModePreference.addEventListener("change", handleDarkModePreferenceChange);
 
-    return () =>
-      darkModePreference.removeEventListener(
-        "change",
-        handleDarkModePreferenceChange
-      );
+    return () => darkModePreference.removeEventListener("change", handleDarkModePreferenceChange);
   }, [themeSetting]);
 
   return displayTheme;

@@ -1,10 +1,7 @@
 import type { HTMLProps } from "react";
 import styled from "styled-components";
 
-const Progress = ({
-  percentage,
-  ...props
-}: HTMLProps<HTMLDivElement> & Props) => (
+const Progress = ({ percentage, ...props }: HTMLProps<HTMLDivElement> & Props) => (
   <Wrapper {...(props as any)}>
     <Line style={{ width: `${percentage}%` }} />
   </Wrapper>

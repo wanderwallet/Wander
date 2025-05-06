@@ -14,10 +14,7 @@ export function CollectiblesView() {
   const { tokens: aoTokens } = useAoTokens({ type: "collectible" });
 
   // collectibles
-  const collectibles = useMemo(
-    () => aoTokens.filter((token) => token.type === "collectible"),
-    [aoTokens]
-  );
+  const collectibles = useMemo(() => aoTokens.filter((token) => token.type === "collectible"), [aoTokens]);
 
   return (
     <>

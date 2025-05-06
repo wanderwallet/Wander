@@ -5,17 +5,9 @@ import { prepare, send } from "~subscriptions/payments";
 import { useEffect, useState } from "react";
 import browser from "webextension-polyfill";
 import { getActiveAddress } from "~wallets";
-import {
-  addSubscription,
-  getSubscriptionData,
-  trackCanceledSubscription,
-  updateSubscription
-} from "~subscriptions";
+import { addSubscription, getSubscriptionData, trackCanceledSubscription, updateSubscription } from "~subscriptions";
 import { formatAddress } from "~utils/format";
-import {
-  SubscriptionStatus,
-  type SubscriptionData
-} from "~subscriptions/subscription";
+import { SubscriptionStatus, type SubscriptionData } from "~subscriptions/subscription";
 import { ArrowRightIcon } from "@iconicicons/react";
 import { useStorage } from "~utils/storage";
 import { ExtensionStorage } from "~utils/storage";
@@ -30,12 +22,9 @@ export interface SubscriptionPaymentViewParams {
   id?: string;
 }
 
-export type SubscriptionPaymentViewProps =
-  CommonRouteProps<SubscriptionPaymentViewParams>;
+export type SubscriptionPaymentViewProps = CommonRouteProps<SubscriptionPaymentViewParams>;
 
-export function SubscriptionPaymentView({
-  params: { id }
-}: SubscriptionPaymentViewProps) {
+export function SubscriptionPaymentView({ params: { id } }: SubscriptionPaymentViewProps) {
   const { back } = useLocation();
   const [subData, setSubData] = useState<SubscriptionData | null>(null);
   const [price, setPrice] = useState<string>("--");
@@ -43,28 +32,24 @@ export function SubscriptionPaymentView({
   const { setToast } = useToasts();
   const [activeAddress] = useStorage<string>({
     key: "active_address",
-    instance: ExtensionStorage
+    instance: ExtensionStorage,
   });
 
   const cancel = async () => {
     try {
-      await updateSubscription(
-        activeAddress,
-        subData.arweaveAccountAddress,
-        SubscriptionStatus.CANCELED
-      );
+      await updateSubscription(activeAddress, subData.arweaveAccountAddress, SubscriptionStatus.CANCELED);
       await trackCanceledSubscription(subData, false);
       setToast({
         type: "success",
         content: browser.i18n.getMessage("subscription_cancelled"),
-        duration: 5000
+        duration: 5000,
       });
       back();
     } catch {
       setToast({
         type: "error",
         content: browser.i18n.getMessage("subscription_cancelled_error"),
-        duration: 5000
+        duration: 5000,
       });
     }
   };
@@ -78,25 +63,16 @@ export function SubscriptionPaymentView({
       if (now.getTime() > nextPaymentDue.getTime() + oneWeek) {
         throw new Error("Payment is paying for more than a week past due.");
       }
-      const prepared = await prepare(
-        subscription.arweaveAccountAddress,
-        subscription,
-        activeAddress
-      );
+      const prepared = await prepare(subscription.arweaveAccountAddress, subscription, activeAddress);
       try {
-        const submitted = await send(
-          activeAddress,
-          prepared,
-          subscription,
-          true
-        );
+        const submitted = await send(activeAddress, prepared, subscription, true);
         submitted.subscriptionStatus = SubscriptionStatus.ACTIVE;
         await addSubscription(activeAddress, submitted);
 
         setToast({
           type: "success",
           content: "Subscription paid",
-          duration: 5000
+          duration: 5000,
         });
         back();
       } catch (e) {
@@ -104,7 +80,7 @@ export function SubscriptionPaymentView({
         setToast({
           type: "error",
           content: "Issue processing payment",
-          duration: 5000
+          duration: 5000,
         });
       }
       return;
@@ -119,9 +95,7 @@ export function SubscriptionPaymentView({
         const address = await getActiveAddress();
         const data = await getSubscriptionData(address);
         // finding like this for now
-        const subscription = data.find(
-          (subscription) => subscription.arweaveAccountAddress === id
-        );
+        const subscription = data.find((subscription) => subscription.arweaveAccountAddress === id);
         setSubData(subscription);
       } catch (error) {
         console.error("Error fetching subscription data:", error);
@@ -137,11 +111,7 @@ export function SubscriptionPaymentView({
     async function fetchArPrice() {
       const arPrice = await getPrice("arweave", currency);
       if (arPrice) {
-        setPrice(
-          BigNumber(arPrice)
-            .multipliedBy(subData.subscriptionFeeAmount)
-            .toFixed(2)
-        );
+        setPrice(BigNumber(arPrice).multipliedBy(subData.subscriptionFeeAmount).toFixed(2));
       }
     }
 
@@ -152,21 +122,16 @@ export function SubscriptionPaymentView({
     <Wrapper>
       <HeadV2 title="Renew Subscription" />
 
-      {subData &&
-      subData.subscriptionStatus === SubscriptionStatus.AWAITING_PAYMENT ? (
+      {subData && subData.subscriptionStatus === SubscriptionStatus.AWAITING_PAYMENT ? (
         <Body>
           <div>
             <AddressWrapper>
               <Address>
-                <span style={{ color: "#aeadcd" }}>
-                  ({activeAddress && formatAddress(activeAddress, 5)})
-                </span>
+                <span style={{ color: "#aeadcd" }}>({activeAddress && formatAddress(activeAddress, 5)})</span>
               </Address>
               <ArrowRightIcon />
               <Address>
-                <span style={{ color: "#aeadcd" }}>
-                  ({subData && formatAddress(subData.arweaveAccountAddress, 5)})
-                </span>
+                <span style={{ color: "#aeadcd" }}>({subData && formatAddress(subData.arweaveAccountAddress, 5)})</span>
               </Address>
             </AddressWrapper>
             <div style={{ marginTop: "16px" }}>
@@ -179,18 +144,13 @@ export function SubscriptionPaymentView({
             </div>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-            <ButtonV2
-              fullWidth
-              style={{ fontWeight: "500" }}
-              onClick={async () => await handlePayment(subData)}
-            >
+            <ButtonV2 fullWidth style={{ fontWeight: "500" }} onClick={async () => await handlePayment(subData)}>
               Pay Subscription
             </ButtonV2>
             <ButtonV2
               fullWidth
               style={{ fontWeight: "500", backgroundColor: "#8C1A1A" }}
-              onClick={async () => await cancel()}
-            >
+              onClick={async () => await cancel()}>
               Cancel Subscription
             </ButtonV2>
           </div>

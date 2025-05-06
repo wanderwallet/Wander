@@ -50,7 +50,7 @@ export enum SubscriptionStatus {
   ACTIVE = "Active",
   EXPIRED = "Expired",
   CANCELED = "Canceled",
-  AWAITING_PAYMENT = "Awaiting-Payment"
+  AWAITING_PAYMENT = "Awaiting-Payment",
 }
 
 /**
@@ -64,5 +64,5 @@ export enum RecurringPaymentFrequency {
   QUARTERLY = "Quarterly",
   MONTHLY = "Monthly",
   WEEKLY = "Weekly",
-  DAILY = "Daily"
+  DAILY = "Daily",
 }

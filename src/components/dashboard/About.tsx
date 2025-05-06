@@ -14,43 +14,29 @@ export function AboutDashboardView() {
   return (
     <Flex direction="column" justify="center" align="center" padding="2rem 0">
       <Flex direction="column" gap={32} justify="center" align="center">
-        <Image
-          src={WanderIcon}
-          alt="Wander Icon"
-          width={126.314}
-          height={59.199}
-        />
+        <Image src={WanderIcon} alt="Wander Icon" width={126.314} height={59.199} />
         <IconText width={256} height={52.866} />
       </Flex>
       <Spacer y={2} />
       <Flex direction="column" gap={4}>
         <Version>
           {getVersionLabel()}
-          {preReleaseVersionLabel ? (
-            <DevelopmentVersion>{preReleaseVersionLabel}</DevelopmentVersion>
-          ) : null}
+          {preReleaseVersionLabel ? <DevelopmentVersion>{preReleaseVersionLabel}</DevelopmentVersion> : null}
         </Version>
         <Version variant="secondary">{process.env.PLASMO_TARGET}</Version>
       </Flex>
       <Spacer y={2} />
       <Text noMargin>
         {browser.i18n.getMessage("permissions_used")}
-        <Flex
-          direction="column"
-          justify="center"
-          gap={8}
-          style={{ paddingTop: 16 }}
-        >
-          {(browser.runtime.getManifest().permissions || []).map(
-            (permission, i) => (
-              <Flex gap={8} align="center">
-                <CheckIcon />
-                <Text noMargin key={i}>
-                  {permission}
-                </Text>
-              </Flex>
-            )
-          )}
+        <Flex direction="column" justify="center" gap={8} style={{ paddingTop: 16 }}>
+          {(browser.runtime.getManifest().permissions || []).map((permission, i) => (
+            <Flex gap={8} align="center">
+              <CheckIcon />
+              <Text noMargin key={i}>
+                {permission}
+              </Text>
+            </Flex>
+          ))}
         </Flex>
       </Text>
     </Flex>
@@ -58,7 +44,7 @@ export function AboutDashboardView() {
 }
 
 const Version = styled(Text).attrs({
-  noMargin: true
+  noMargin: true,
 })`
   display: flex;
   align-items: center;

@@ -2,7 +2,7 @@ import { isInsideIframe } from "~utils/embedded/iframe.utils";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import {
   PARTITIONED_STORAGE_BANNER_DISMISSAL_KEY,
-  PARTITIONED_STORAGE_BANNER_EVENT
+  PARTITIONED_STORAGE_BANNER_EVENT,
 } from "./unpartitioned-storage.utils";
 
 type StorageType = "localStorage" | "sessionStorage";
@@ -42,7 +42,7 @@ function isComplexStorageItem<T>(
   requiredMetadata: {
     expiresAt?: boolean;
     priority?: boolean;
-  } = {}
+  } = {},
 ): item is { value: T; expiresAt?: number; priority?: number } {
   // Early bailout checks for non-objects
   if (!item || typeof item !== "object" || item === null) {
@@ -85,7 +85,7 @@ export class StorageManager {
     HIGH: 8, // Important user preferences/settings
     MEDIUM: 5, // Regular application data
     LOW: 3, // Cache data that can be regenerated
-    TEMPORARY: 1 // Short-lived or disposable data
+    TEMPORARY: 1, // Short-lived or disposable data
   };
 
   // Add a last cleanup timestamp to avoid too frequent cleanups
@@ -102,7 +102,7 @@ export class StorageManager {
   static evictItems(
     storage: Storage,
     bytesNeeded: number = 0,
-    options: { bufferSize?: number; aggressive?: boolean } = {}
+    options: { bufferSize?: number; aggressive?: boolean } = {},
   ): boolean {
     const initialLength = storage.length;
     // Setup options with defaults
@@ -136,9 +136,7 @@ export class StorageManager {
     let evictedCount = 0;
 
     // Determine the eviction threshold based on aggressiveness
-    const evictionThreshold = aggressive
-      ? this.PRIORITY_LEVELS.HIGH
-      : this.PRIORITY_LEVELS.CRITICAL;
+    const evictionThreshold = aggressive ? this.PRIORITY_LEVELS.HIGH : this.PRIORITY_LEVELS.CRITICAL;
 
     // Evict items until we have enough space
     for (const item of sortedItems) {
@@ -199,10 +197,7 @@ export class StorageManager {
       try {
         const parsed = JSON.parse(rawValue);
 
-        if (
-          isComplexStorageItem(parsed, { expiresAt: true }) &&
-          parsed.expiresAt < now
-        ) {
+        if (isComplexStorageItem(parsed, { expiresAt: true }) && parsed.expiresAt < now) {
           storage.removeItem(key);
           clearedCount++;
         }
@@ -257,10 +252,7 @@ export class StorageManager {
   }
 
   static calculateStorageUsageByKeys(storage: Storage, keys: string[]): number {
-    return keys.reduce(
-      (acc, key) => acc + this.calculateStorageUsageByKey(storage, key),
-      0
-    );
+    return keys.reduce((acc, key) => acc + this.calculateStorageUsageByKey(storage, key), 0);
   }
 
   /**
@@ -297,7 +289,7 @@ export class StorageManager {
             key,
             size,
             priority: parsed.priority ?? this.DEFAULT_PRIORITY,
-            expiresAt: parsed.expiresAt ?? Number.MAX_SAFE_INTEGER
+            expiresAt: parsed.expiresAt ?? Number.MAX_SAFE_INTEGER,
           });
         } else {
           // Simple items get default priority
@@ -305,7 +297,7 @@ export class StorageManager {
             key,
             size,
             priority: this.DEFAULT_PRIORITY,
-            expiresAt: Number.MAX_SAFE_INTEGER
+            expiresAt: Number.MAX_SAFE_INTEGER,
           });
         }
       } catch (e) {
@@ -314,7 +306,7 @@ export class StorageManager {
           key,
           size,
           priority: this.DEFAULT_PRIORITY,
-          expiresAt: Number.MAX_SAFE_INTEGER
+          expiresAt: Number.MAX_SAFE_INTEGER,
         });
       }
     });
@@ -384,14 +376,15 @@ export class StorageManager {
     return {
       bytes: usage.currentSize,
       percentage: (usage.currentSize / this.MAX_STORAGE_SIZE) * 100,
-      items: usage.itemCount
+      items: usage.itemCount,
     };
   }
 }
 
 export class EnhancedStorage implements Storage {
   protected storage: Storage;
-  protected storageType: StorageType;
+
+  public storageType: StorageType;
 
   constructor({ area = "local" }: UnpartitionedStorageOptions = {}) {
     this.storageType = area === "local" ? "localStorage" : "sessionStorage";
@@ -407,28 +400,20 @@ export class EnhancedStorage implements Storage {
     try {
       if (!document.requestStorageAccess) return;
 
-      log(
-        LOG_GROUP.STORAGE,
-        `Requesting ${this.storageType} access with typed API`
-      );
+      log(LOG_GROUP.STORAGE, `Requesting ${this.storageType} access with typed API`);
 
       // @ts-expect-error - Newer API with types may not be recognized by TypeScript
       const handle = await document.requestStorageAccess({
-        [this.storageType]: true
+        [this.storageType]: true,
       });
 
       // @ts-expect-error - Newer API may not be recognized by TypeScript
       if (handle && handle[this.storageType]) {
         this.storage = handle[this.storageType];
-        log(
-          LOG_GROUP.STORAGE,
-          `Unpartitioned ${this.storageType} access granted with handle`
-        );
+        log(LOG_GROUP.STORAGE, `Unpartitioned ${this.storageType} access granted with handle`);
         return;
       } else {
-        throw new Error(
-          `Unpartitioned ${this.storageType} access not granted with handle`
-        );
+        throw new Error(`Unpartitioned ${this.storageType} access not granted with handle`);
       }
     } catch (error) {
       log(LOG_GROUP.STORAGE, "Failed to get storage access:", error);
@@ -464,7 +449,7 @@ export class EnhancedStorage implements Storage {
       try {
         if (navigator.permissions) {
           const permission = await navigator.permissions.query({
-            name: "storage-access" as PermissionName
+            name: "storage-access" as PermissionName,
           });
           permissionState = permission.state;
 
@@ -473,17 +458,10 @@ export class EnhancedStorage implements Storage {
             if (permission.state === "granted") {
               this.getStorageHandle()
                 .then(() => {
-                  log(
-                    LOG_GROUP.STORAGE,
-                    "Storage access granted via permission change"
-                  );
+                  log(LOG_GROUP.STORAGE, "Storage access granted via permission change");
                 })
                 .catch((error) => {
-                  log(
-                    LOG_GROUP.STORAGE,
-                    "Error getting storage after permission change:",
-                    error
-                  );
+                  log(LOG_GROUP.STORAGE, "Error getting storage after permission change:", error);
                 });
             }
           });
@@ -517,10 +495,7 @@ export class EnhancedStorage implements Storage {
    * This is required by the Storage Access API for security
    */
   protected setupUserInteractionHandler(): void {
-    log(
-      LOG_GROUP.STORAGE,
-      "Waiting for user interaction to request storage access"
-    );
+    log(LOG_GROUP.STORAGE, "Waiting for user interaction to request storage access");
 
     // Create a reusable handler function
     const handleUserInteraction = async () => {
@@ -533,11 +508,7 @@ export class EnhancedStorage implements Storage {
 
         this.handlePartitionedStorage("close", "dismiss");
       } catch (error) {
-        log(
-          LOG_GROUP.STORAGE,
-          "Storage access denied after user interaction:",
-          error
-        );
+        log(LOG_GROUP.STORAGE, "Storage access denied after user interaction:", error);
         this.handlePartitionedStorage("open", "dismiss");
       }
     };
@@ -551,7 +522,7 @@ export class EnhancedStorage implements Storage {
     // Add event listeners with once:true to auto-remove after firing
     document.addEventListener("click", handleUserInteraction, { once: true });
     document.addEventListener("pointerdown", handleUserInteraction, {
-      once: true
+      once: true,
     });
 
     // Also clean up after a timeout if user never interacts
@@ -563,10 +534,9 @@ export class EnhancedStorage implements Storage {
    */
   protected handlePartitionedStorage(
     eventType: "open" | "close" = "open",
-    actionButtonType: "dismiss" | "re-request" = "dismiss"
+    actionButtonType: "dismiss" | "re-request" = "dismiss",
   ): void {
-    const isDismissed =
-      localStorage.getItem(PARTITIONED_STORAGE_BANNER_DISMISSAL_KEY) === "true";
+    const isDismissed = localStorage.getItem(PARTITIONED_STORAGE_BANNER_DISMISSAL_KEY) === "true";
     if (isDismissed) return;
 
     setTimeout(() => {
@@ -574,10 +544,10 @@ export class EnhancedStorage implements Storage {
         new CustomEvent(PARTITIONED_STORAGE_BANNER_EVENT, {
           detail: {
             type: eventType,
-            actionButtonType
+            actionButtonType,
           },
-          bubbles: true
-        })
+          bubbles: true,
+        }),
       );
     }, 500);
 
@@ -603,8 +573,7 @@ export class EnhancedStorage implements Storage {
    */
   getItem<T = string>(key: string, defaultValue?: T): T | null {
     const rawValue = this.getRaw(key);
-    defaultValue =
-      defaultValue === undefined && arguments.length < 2 ? null : defaultValue;
+    defaultValue = defaultValue === undefined && arguments.length < 2 ? null : defaultValue;
     if (!rawValue) return defaultValue;
 
     try {
@@ -712,13 +681,9 @@ export class EnhancedStorage implements Storage {
    * @param keys The keys to retrieve
    * @returns An object with the keys and their values
    */
-  getItems<T = string>(
-    keys: string[],
-    defaultValue?: T
-  ): Record<string, T | null> {
+  getItems<T = string>(keys: string[], defaultValue?: T): Record<string, T | null> {
     const result: Record<string, T | null> = {};
-    defaultValue =
-      defaultValue === undefined && arguments.length < 2 ? null : defaultValue;
+    defaultValue = defaultValue === undefined && arguments.length < 2 ? null : defaultValue;
 
     for (const key of keys) {
       result[key] = this.getItem<T>(key, defaultValue);
@@ -759,11 +724,11 @@ export class EnhancedStorage implements Storage {
     key: string,
     value: T,
     priority: keyof typeof StorageManager.PRIORITY_LEVELS,
-    expiresIn?: number
+    expiresIn?: number,
   ): void {
     this.setItem(key, value, {
       priority: StorageManager.PRIORITY[priority],
-      expiresIn
+      expiresIn,
     });
   }
 
@@ -827,10 +792,7 @@ export class EnhancedStorage implements Storage {
    * @param options Configuration options
    * @returns True if space was ensured, false if impossible
    */
-  ensureSpace(
-    bytesNeeded: number,
-    options: { skipCheck?: boolean; forceEviction?: boolean } = {}
-  ): boolean {
+  ensureSpace(bytesNeeded: number, options: { skipCheck?: boolean; forceEviction?: boolean } = {}): boolean {
     // Skip availability check if requested
     if (!options.skipCheck) {
       const hasSpace = this.hasAvailableSpace(bytesNeeded);
@@ -854,7 +816,7 @@ export class EnhancedStorage implements Storage {
 
     return StorageManager.evictItems(this.storage, bytesNeeded, {
       bufferSize,
-      aggressive
+      aggressive,
     });
   }
 
@@ -874,7 +836,7 @@ export class EnhancedStorage implements Storage {
       bytes: usage.currentSize,
       percentage: (usage.currentSize / limit) * 100,
       items: usage.itemCount,
-      available: limit - usage.currentSize
+      available: limit - usage.currentSize,
     };
   }
 }

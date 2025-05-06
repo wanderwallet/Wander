@@ -1,20 +1,5 @@
-import {
-  permissionData,
-  signPolicyOptions,
-  type PermissionType
-} from "~applications/permissions";
-import {
-  Card,
-  Box,
-  Button,
-  Radio,
-  Snackbar,
-  InfoIcon,
-  Text,
-  Row,
-  ChevronRight,
-  XClose
-} from "~components/embed/ui";
+import { permissionData, signPolicyOptions, type PermissionType } from "~applications/permissions";
+import { Card, Box, Button, Radio, Snackbar, InfoIcon, Text, Row, ChevronRight, XClose } from "~components/embed/ui";
 import { useLocation } from "~wallets/router/router.utils";
 import browser from "webextension-polyfill";
 import { Spacer } from "@arconnect/components-rebrand";
@@ -34,30 +19,20 @@ export function WalletPermissionsRequestEmbeddedView() {
   const [signPolicy, setSignPolicy] = useStorage<SignPolicy>(
     {
       key: "sign_policy",
-      instance: ExtensionStorage
+      instance: ExtensionStorage,
     },
-    "ask_when_spending"
+    "ask_when_spending",
   );
 
-  const { authRequest, acceptRequest, rejectRequest } =
-    useCurrentAuthRequest("connect");
+  const { authRequest, acceptRequest, rejectRequest } = useCurrentAuthRequest("connect");
 
-  const {
-    url = "",
-    permissions: authRequestPermissions = [],
-    appInfo = {},
-    gateway
-  } = authRequest;
+  const { url = "", permissions: authRequestPermissions = [], appInfo = {}, gateway } = authRequest;
 
-  const [requestedPermissions, setRequestedPermissions] = useStorage<
-    PermissionType[]
-  >({
+  const [requestedPermissions, setRequestedPermissions] = useStorage<PermissionType[]>({
     key: `requested_permissions_${url}`,
-    instance: ExtensionStorage
+    instance: ExtensionStorage,
   });
-  const [requestedPermCopy, setRequestedPermCopy] = useState<PermissionType[]>(
-    []
-  );
+  const [requestedPermCopy, setRequestedPermCopy] = useState<PermissionType[]>([]);
 
   const isCustomPermissions = useMemo(() => {
     if (!requestedPermissions) return false;
@@ -68,9 +43,7 @@ export function WalletPermissionsRequestEmbeddedView() {
     const sortedInitial = [...requestedPermCopy].sort();
 
     // Compare each element
-    return sortedRequested.some(
-      (permission, index) => permission !== sortedInitial[index]
-    );
+    return sortedRequested.some((permission, index) => permission !== sortedInitial[index]);
   }, [requestedPermissions, requestedPermCopy]);
 
   const handlePermissionChange = (permission: SignPolicy) => {
@@ -97,10 +70,10 @@ export function WalletPermissionsRequestEmbeddedView() {
         allowance: {
           enabled: false,
           limit: "0",
-          spent: "0" // in winstons
+          spent: "0", // in winstons
         },
         // TODO: wayfinder
-        gateway: gateway || defaultGateway
+        gateway: gateway || defaultGateway,
       });
     } else {
       // update existing permissions, if the app
@@ -113,14 +86,14 @@ export function WalletPermissionsRequestEmbeddedView() {
         allowance: {
           enabled: false,
           limit: "0",
-          spent: "0" // in winstons
-        }
+          spent: "0", // in winstons
+        },
       });
     }
 
     postEmbeddedMessage({
       type: "embedded_close",
-      data: null
+      data: null,
     });
     navigate("/wallet");
 
@@ -130,7 +103,7 @@ export function WalletPermissionsRequestEmbeddedView() {
   const handleCancel = () => {
     postEmbeddedMessage({
       type: "embedded_close",
-      data: null
+      data: null,
     });
     navigate("/wallet");
     rejectRequest();
@@ -151,19 +124,13 @@ export function WalletPermissionsRequestEmbeddedView() {
         }
       }
 
-      const requestedPermissions = await ExtensionStorage.get(
-        `requested_permissions_${url}`
-      );
+      const requestedPermissions = await ExtensionStorage.get(`requested_permissions_${url}`);
 
       if (!requestedPermissions) {
-        setRequestedPermissions(
-          requested.filter((p) => Object.keys(permissionData).includes(p))
-        );
+        setRequestedPermissions(requested.filter((p) => Object.keys(permissionData).includes(p)));
       }
 
-      setRequestedPermCopy(
-        requested.filter((p) => Object.keys(permissionData).includes(p))
-      );
+      setRequestedPermCopy(requested.filter((p) => Object.keys(permissionData).includes(p)));
     })();
   }, [url, authRequestPermissions]);
 
@@ -174,8 +141,7 @@ export function WalletPermissionsRequestEmbeddedView() {
       hasCloseButton={true}
       customIcon={<XClose fontSize={24} color={"#666666"} />}
       onCloseButtonClick={handleCancel}
-      style={{ padding: "2rem" }}
-    >
+      style={{ padding: "2rem" }}>
       <AppIcons appInfo={appInfo} />
       <Box>
         <Text variant="headingMd">Confirm permissions</Text>
@@ -196,25 +162,14 @@ export function WalletPermissionsRequestEmbeddedView() {
           alignment="left"
           justifyContent="between"
           style={{ cursor: "pointer" }}
-          onClick={() => navigate("/wallet/settings/custom")}
-        >
-          <Text
-            variant="headingMd"
-            style={{ fontSize: 16, fontWeight: 500 }}
-            alignment="left"
-          >
-            {isCustomPermissions
-              ? "Custom permissions set"
-              : "Set custom permissions"}
+          onClick={() => navigate("/wallet/settings/custom")}>
+          <Text variant="headingMd" style={{ fontSize: 16, fontWeight: 500 }} alignment="left">
+            {isCustomPermissions ? "Custom permissions set" : "Set custom permissions"}
           </Text>
           {isCustomPermissions ? (
             <Edit02 height={24} width={24} color="var(--color-font-body)" />
           ) : (
-            <ChevronRight
-              height={24}
-              width={24}
-              color="var(--color-font-body)"
-            />
+            <ChevronRight height={24} width={24} color="var(--color-font-body)" />
           )}
         </Row>
         <Spacer y={1} />
@@ -227,12 +182,7 @@ export function WalletPermissionsRequestEmbeddedView() {
         />
       </Box>
 
-      <Button
-        variant="primary"
-        isFullWidth
-        onClick={connect}
-        isDisabled={!signPolicy}
-      >
+      <Button variant="primary" isFullWidth onClick={connect} isDisabled={!signPolicy}>
         Confirm
       </Button>
       <Button variant="outlined" isFullWidth onClick={handleCancel}>

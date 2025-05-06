@@ -1,5 +1,4 @@
-export interface InputBaseProps
-  extends React.InputHTMLAttributes<HTMLInputElement> {
+export interface InputBaseProps extends React.InputHTMLAttributes<HTMLInputElement> {
   /** Label displayed above the input */
   label?: string;
   /** Error message to display when input has an error */

@@ -8,7 +8,7 @@ import {
   SeedIcon,
   Snackbar,
   WarningIcon,
-  WanderFooter
+  WanderFooter,
 } from "~components/embed/ui";
 import copy from "copy-to-clipboard";
 import { WalletUtils } from "~utils/wallets/wallets.utils";
@@ -22,11 +22,9 @@ export function AccountExportWalletEmbeddedView() {
   const [hasEncryptedSeedPhrase, setHasEncryptedSeedPhrase] = useState(false);
 
   useEffect(() => {
-    WalletUtils.hasEncryptedSeedPhrase(currentWallet.id).then(
-      (hasEncryptedSeedPhrase) => {
-        setHasEncryptedSeedPhrase(hasEncryptedSeedPhrase);
-      }
-    );
+    WalletUtils.hasEncryptedSeedPhrase(currentWallet.id).then((hasEncryptedSeedPhrase) => {
+      setHasEncryptedSeedPhrase(hasEncryptedSeedPhrase);
+    });
   }, [currentWallet.id]);
 
   // TODO: Add an option to encrypt with a password
@@ -42,14 +40,13 @@ export function AccountExportWalletEmbeddedView() {
       onCloseButtonClick={() => {
         window.history.back();
       }}
-      size="auto"
-    >
+      size="auto">
       <Box>
         <Snackbar
           isFullWidth
           icon={<WarningIcon />}
           text="Do not share this with anyone."
-          backgroundColor="#F2DC1320"
+          backgroundColor="#FFF9EA"
           borderColor="#F2DC1320"
           textColor="#757575"
           iconColor="#BD8802"
@@ -63,12 +60,7 @@ export function AccountExportWalletEmbeddedView() {
           }}
           value={walletAddress}
         />
-        <Button
-          onClick={() => downloadKeyfile()}
-          variant="outlined"
-          isFullWidth
-          icon={<KeyIcon fontSize={24} />}
-        >
+        <Button onClick={() => downloadKeyfile()} variant="outlined" isFullWidth icon={<KeyIcon fontSize={24} />}>
           Export keyfile
         </Button>
         <Button
@@ -76,8 +68,7 @@ export function AccountExportWalletEmbeddedView() {
           variant="outlined"
           isFullWidth
           isDisabled={!hasEncryptedSeedPhrase}
-          icon={<SeedIcon fontSize={24} />}
-        >
+          icon={<SeedIcon fontSize={24} />}>
           Copy seedphrase
         </Button>
       </Box>

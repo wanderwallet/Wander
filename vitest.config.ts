@@ -6,7 +6,7 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     globals: true,
-    testTimeout: 10000
+    testTimeout: 10000,
   },
   resolve: {
     alias: {
@@ -15,10 +15,7 @@ export default defineConfig({
       "~gateways": path.resolve(__dirname, "./src/gateways"),
       "~iframe": path.resolve(__dirname, "./src/iframe"),
       "webextension-polyfill": path.resolve(__dirname, "./src/iframe/browser"),
-      "embed-api": path.resolve(
-        __dirname,
-        "node_modules/embed-api/dist/index.mjs"
-      )
-    }
-  }
+      "embed-api": path.resolve(__dirname, "node_modules/embed-api/dist/index.mjs"),
+    },
+  },
 });

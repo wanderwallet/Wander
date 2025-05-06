@@ -19,39 +19,34 @@ export function WalletsView() {
   // current address
   const [activeAddress] = useStorage<string>({
     key: "active_address",
-    instance: ExtensionStorage
+    instance: ExtensionStorage,
   });
 
   // all wallets added
   const [wallets] = useStorage<StoredWallet[]>(
     {
       key: "wallets",
-      instance: ExtensionStorage
+      instance: ExtensionStorage,
     },
-    []
+    [],
   );
 
   // ans data
-  const [nameServiceProfiles, setNameServiceProfiles] = useState<
-    NameServiceProfile[]
-  >([]);
+  const [nameServiceProfiles, setNameServiceProfiles] = useState<NameServiceProfile[]>([]);
 
   useEffect(() => {
     (async () => {
       if (!wallets) return;
 
       // fetch profiles
-      const profiles = await getNameServiceProfiles(
-        wallets.map((w) => w.address)
-      );
+      const profiles = await getNameServiceProfiles(wallets.map((w) => w.address));
 
       setNameServiceProfiles(profiles);
     })();
   }, [wallets]);
 
   // ans shortcuts
-  const findProfile = (address: string) =>
-    nameServiceProfiles.find((profile) => profile.address === address);
+  const findProfile = (address: string) => nameServiceProfiles.find((profile) => profile.address === address);
 
   const gateway = useGateway(FULL_HISTORY);
 
@@ -72,19 +67,15 @@ export function WalletsView() {
 
   return (
     <>
-      <HeadV2
-        title={browser.i18n.getMessage("manage_accounts")}
-        showOptions={false}
-      />
+      <HeadV2 title={browser.i18n.getMessage("manage_accounts")} showOptions={false} />
       <Wrapper showPaddingVertical={false}>
         <WalletsWrapper>
           <div
             style={{
               display: "flex",
               flexDirection: "column",
-              gap: "0.5rem"
-            }}
-          >
+              gap: "0.5rem",
+            }}>
             {wallets.map((wallet) => (
               <WalletListItem
                 wallet={wallet}
@@ -93,9 +84,7 @@ export function WalletsView() {
                 avatar={findAvatar(wallet.address)}
                 active={false}
                 activeWallet={activeAddress === wallet.address}
-                onClick={() =>
-                  navigate(`/quick-settings/wallets/${wallet.address}`)
-                }
+                onClick={() => navigate(`/quick-settings/wallets/${wallet.address}`)}
                 key={wallet.address}
               />
             ))}
@@ -107,10 +96,9 @@ export function WalletsView() {
             fullWidth
             onClick={() =>
               browser.tabs.create({
-                url: browser.runtime.getURL("tabs/dashboard.html#/wallets/new")
+                url: browser.runtime.getURL("tabs/dashboard.html#/wallets/new"),
               })
-            }
-          >
+            }>
             {browser.i18n.getMessage("add_an_account")}
           </Button>
         </ActionBar>

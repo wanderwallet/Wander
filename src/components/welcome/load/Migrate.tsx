@@ -7,29 +7,19 @@ import styled from "styled-components";
 import { useState } from "react";
 import Wallet from "./Wallet";
 
-export default function Migrate({
-  wallets,
-  noMigration,
-  onMigrateClick
-}: Props) {
+export default function Migrate({ wallets, noMigration, onMigrateClick }: Props) {
   const walletDetails = useWalletsDetails(wallets);
   const [showAll, setShowAll] = useState(false);
 
   return (
     <>
       <Spacer y={1.2} />
-      <Title>
-        {browser.i18n.getMessage(
-          noMigration ? "migrate_wallets_not_migrated" : "migrate_wallets_list"
-        )}
-      </Title>
+      <Title>{browser.i18n.getMessage(noMigration ? "migrate_wallets_not_migrated" : "migrate_wallets_list")}</Title>
       <Spacer y={0.6} />
       <Wallets>
-        {walletDetails
-          .slice(0, showAll ? walletDetails.length : 5)
-          .map((wallet, i) => (
-            <Wallet address={wallet.address} label={wallet.label} key={i} />
-          ))}
+        {walletDetails.slice(0, showAll ? walletDetails.length : 5).map((wallet, i) => (
+          <Wallet address={wallet.address} label={wallet.label} key={i} />
+        ))}
       </Wallets>
       {noMigration && (
         <>
@@ -61,7 +51,7 @@ export default function Migrate({
 }
 
 const Title = styled(Text).attrs({
-  noMargin: true
+  noMargin: true,
 })`
   color: rgb(${(props) => props.theme.theme});
 `;

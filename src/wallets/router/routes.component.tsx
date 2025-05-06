@@ -1,16 +1,8 @@
 import { AnimatePresence } from "framer-motion";
-import React, {
-  useEffect,
-  useMemo,
-  useRef,
-  type PropsWithChildren
-} from "react";
+import React, { useEffect, useMemo, useRef, type PropsWithChildren } from "react";
 import { Switch, Route as Woute } from "wouter";
 import { Page } from "~components/page/page.component";
-import type {
-  CommonRouteProps,
-  RouteConfig
-} from "~wallets/router/router.types";
+import type { CommonRouteProps, RouteConfig } from "~wallets/router/router.types";
 import { BodyScroller, useLocation } from "~wallets/router/router.utils";
 
 export interface RoutesProps {
@@ -24,12 +16,7 @@ export interface RoutesProps {
 // params globally inside `PageWithComponent` (e.g. to replace the `Number()`)
 // conversions in the Welcome views.
 
-export function Routes({
-  routes,
-  diffLocation = false,
-  pageComponent,
-  bottomBanner
-}: RoutesProps) {
+export function Routes({ routes, diffLocation = false, pageComponent, bottomBanner }: RoutesProps) {
   const { location } = useLocation();
   const mainRef = useRef<HTMLDivElement>(null);
 
@@ -40,8 +27,7 @@ export function Routes({
       const uniqueRoutes = new Set();
 
       routes.forEach(({ path }) => {
-        if (uniqueRoutes.has(path))
-          throw new Error(`Duplicate route "${path}"`);
+        if (uniqueRoutes.has(path)) throw new Error(`Duplicate route "${path}"`);
 
         uniqueRoutes.add(path);
       });
@@ -54,14 +40,11 @@ export function Routes({
         <Switch>
           {routes.map((route) => {
             const Component = route.component;
-            const PageComponent =
-              pageComponent === null ? React.Fragment : pageComponent || Page;
+            const PageComponent = pageComponent === null ? React.Fragment : pageComponent || Page;
 
             // TODO: Async-loaded components?
 
-            const PageWithComponent: React.ComponentType<CommonRouteProps> = (
-              props
-            ) => {
+            const PageWithComponent: React.ComponentType<CommonRouteProps> = (props) => {
               return (
                 <PageComponent mainRef={mainRef}>
                   <Component {...props} />
@@ -69,13 +52,7 @@ export function Routes({
               );
             };
 
-            return (
-              <Woute
-                key={route.key || route.path}
-                path={route.path}
-                component={PageWithComponent}
-              />
-            );
+            return <Woute key={route.key || route.path} path={route.path} component={PageWithComponent} />;
           })}
         </Switch>
         {bottomBanner}

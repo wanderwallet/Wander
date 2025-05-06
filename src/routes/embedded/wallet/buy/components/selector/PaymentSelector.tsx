@@ -15,7 +15,7 @@ export const PaymentSelector = ({
   selectedCurrency,
   paymentMethod,
   setPaymentMethod,
-  onClose
+  onClose,
 }: PaymentSelectorProps) => {
   return (
     <SelectorContainer title="Select Payment Method" onClose={onClose}>
@@ -29,9 +29,8 @@ export const PaymentSelector = ({
           gap: "8px",
           width: "100%",
           height: "100%",
-          maxHeight: "calc(100% - 16px)"
-        }}
-      >
+          maxHeight: "calc(100% - 16px)",
+        }}>
         {(selectedCurrency?.paymentOptions || [])
           .filter((payment: any) => payment.isActive)
           .map((payment: any) => {
@@ -51,7 +50,7 @@ export const PaymentSelector = ({
                   style={{
                     width: "24px",
                     height: "24px",
-                    objectFit: "contain"
+                    objectFit: "contain",
                   }}
                 />
               );
@@ -64,9 +63,7 @@ export const PaymentSelector = ({
                 key={payment.id}
                 icon={paymentIcon}
                 title={paymentMethods(payment)}
-                subtitle={`Processing time ${
-                  payment.processingTime || "standard"
-                }`}
+                subtitle={`Processing time ${payment.processingTime || "standard"}`}
                 isSelected={payment.id === paymentMethod?.id}
                 onClick={(e) => {
                   e.preventDefault();
