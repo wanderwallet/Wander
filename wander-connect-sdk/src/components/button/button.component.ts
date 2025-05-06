@@ -1,7 +1,13 @@
-import { BalanceInfo, ButtonConfig, ButtonCSSVars, ButtonOptions, ButtonStatus } from "../../wander-connect.types";
+import {
+  AuthStatus,
+  BalanceInfo,
+  ButtonConfig,
+  ButtonCSSVars,
+  ButtonOptions,
+  ButtonStatus,
+} from "../../wander-connect.types";
 import { getButtonTemplateContent } from "./button.template";
 import { addCSSVariables, mergeCSSVariablesOption } from "../../utils/styles/styles.utils";
-import { AuthStatus } from "../../utils/message/message.types";
 
 export class Button {
   static DEFAULT_LIGHT_CSS_VARS: ButtonCSSVars = {

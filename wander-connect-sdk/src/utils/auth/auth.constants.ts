@@ -1,4 +1,4 @@
-import { AuthProviderType, AuthStatus } from "./message.types";
+import { AuthProviderType, AuthStatus } from "../../wander-connect.types";
 
 export const AUTH_TYPES = [
   "PASSKEYS",

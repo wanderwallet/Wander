@@ -1,6 +1,10 @@
 import { IncomingAuthMessageData } from "./utils/message/message.types";
 
+// SDK state:
+
 export type OpenReason = "manually" | "embedded_open" | "embedded_request";
+
+// Routes and layouts:
 
 /**
  * Types of routes available in the Wander Connect SDK.
@@ -147,19 +151,6 @@ export type LayoutConfig = ModalLayoutConfig | PopupLayoutConfig | SidebarLayout
 export type LayoutType = LayoutConfig["type"];
 
 /**
- * Array of all supported layout types
- */
-export const LAYOUT_TYPES = ["modal", "popup", "sidebar", "half"] as const satisfies LayoutType[];
-
-/** Validates if an object is a valid layout configuration
- * @param obj Object to check
- * @returns True if object is a valid layout configuration
- */
-export function isRouteConfig(obj: unknown): obj is LayoutConfig {
-  return !!(obj && typeof obj === "object" && "type" in obj && LAYOUT_TYPES.includes(obj.type as LayoutType));
-}
-
-/**
  * Configuration for a specific route.
  * Contains layout and dimension information for a particular UI route.
  */
@@ -184,7 +175,57 @@ export interface RouteConfig {
   // imgSrc?: string;
 }
 
-export type AuthState = IncomingAuthMessageData;
+// Messages / callbacks:
+
+export type AuthProviderType = "PASSKEYS" | "EMAIL_N_PASSWORD" | "GOOGLE" | "FACEBOOK" | "X" | "APPLE";
+
+export type AuthStatus = "loading" | "onboarding" | "authenticated" | "not-authenticated";
+
+export interface UserDetails {
+  id: string;
+  email: null | string;
+  phone: null | string;
+  username: null | string;
+  name: null | string;
+  fullName: null | string;
+  picture: null | string;
+  confirmed: boolean;
+  emailConfirmed: boolean;
+  phoneConfirmed: boolean;
+  createdAt: Date;
+}
+
+export interface AuthInfoNative {
+  authType: "NATIVE_WALLET";
+  authStatus: null;
+  userDetails: null;
+}
+
+export interface AuthInfoNoAuth {
+  authType: null;
+  authStatus: "not-authenticated";
+  userDetails: null;
+}
+
+export interface AuthInfoLoading {
+  authType: AuthProviderType;
+  authStatus: "loading";
+  userDetails?: UserDetails;
+}
+
+export interface AuthInfoOnboarding {
+  authType: AuthProviderType;
+  authStatus: "onboarding" | "authenticated";
+  userDetails: UserDetails;
+}
+
+export interface AuthInfoAuthenticated {
+  authType: AuthProviderType;
+  authStatus: "onboarding" | "authenticated";
+  userDetails: UserDetails;
+}
+
+export type AuthInfo = AuthInfoNative | AuthInfoNoAuth | AuthInfoLoading | AuthInfoOnboarding | AuthInfoAuthenticated;
 
 /** User's wallet balance information */
 export interface BalanceInfo {
@@ -208,6 +249,8 @@ export interface RequestsInfo {
   pendingRequests: number;
   hasNewConnectRequest: boolean;
 }
+
+// Main WanderConnect options:
 
 /** Main configuration options for the Wander Connect SDK */
 export interface WanderConnectOptions {
@@ -261,7 +304,7 @@ export interface WanderConnectOptions {
    * Callback function called when authentication state changes.
    * @param userDetails User details object when signed in, or null when signed out
    */
-  onAuth?: (authState: AuthState) => void;
+  onAuth?: (authInfo: AuthInfo) => void;
 
   /**
    * Callback function called when the wallet interface is opened.
@@ -343,16 +386,6 @@ export interface ComponentConfig<T> extends Required<ComponentOptions<T>> {
    * CSS variables for both light and dark themes.
    */
   cssVars: Record<ThemeVariant, T>;
-}
-
-/** Checks if CSS variables contain theme-specific settings
- * @param cssVars CSS variables object
- * @returns True if theme-specific
- */
-export function isThemeRecord<T>(
-  cssVars: Partial<T> | Partial<Record<ThemeVariant, Partial<T>>>,
-): cssVars is Partial<Record<ThemeVariant, Partial<T>>> {
-  return !!(cssVars && typeof cssVars === "object" && ("light" in cssVars || "dark" in cssVars));
 }
 
 // Modal (iframe):

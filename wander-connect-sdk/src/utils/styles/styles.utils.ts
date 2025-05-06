@@ -1,5 +1,11 @@
 import { merge } from "ts-deepmerge";
-import { isThemeRecord, ThemeSetting, ThemeVariant } from "../../wander-connect.types";
+import { ThemeSetting, ThemeVariant } from "../../wander-connect.types";
+
+export function isThemeRecord<T>(
+  cssVars: Partial<T> | Partial<Record<ThemeVariant, Partial<T>>>,
+): cssVars is Partial<Record<ThemeVariant, Partial<T>>> {
+  return !!(cssVars && typeof cssVars === "object" && ("light" in cssVars || "dark" in cssVars));
+}
 
 export function addCSSVariables<T>(element: HTMLElement, vars: T, suffix = "") {
   for (const key in vars) {

@@ -3,9 +3,10 @@ import { Button } from "./components/button/button.component";
 import { Iframe } from "./components/iframe/iframe.component";
 import { merge } from "ts-deepmerge";
 import {
-  AuthState,
+  AuthInfo,
   BalanceInfo,
   OpenReason,
+  RequestsInfo,
   RouteConfig,
   ThemeSetting,
   WanderConnectOptions,
@@ -62,12 +63,12 @@ export class WanderConnect {
   static DEFAULT_THEME = "system" as const satisfies ThemeSetting;
 
   // Callbacks:
-  private onAuth: (authState: AuthState) => void = NOOP;
+  private onAuth: (authInfo: AuthInfo) => void = NOOP;
   private onOpen: () => void = NOOP;
   private onClose: () => void = NOOP;
   private onResize: (routeConfig: RouteConfig) => void = NOOP;
   private onBalance: (balanceInfo: BalanceInfo) => void = NOOP;
-  private onRequest: (data: IncomingRequestMessageData) => void = NOOP;
+  private onRequest: (data: RequestsInfo) => void = NOOP;
 
   // Components:
   private buttonComponent: null | Button = null;
@@ -87,7 +88,7 @@ export class WanderConnect {
    * Contains the current authentication state of the SDK, and it is initialized with cached data in order to show as
    * soon as possible the non-auth or the loading auth version of the SDK.
    */
-  public authenticationState: AuthState = {
+  public authInfo: AuthInfo = {
     authType: null,
     authStatus: "not-authenticated",
     userDetails: null,
@@ -133,8 +134,12 @@ export class WanderConnect {
    */
   constructor(options: WanderConnectOptions) {
     if (WanderConnect.instance) {
-      throw new Error("WanderEmbedded instance already exists.");
+      throw new Error(
+        "WanderEmbedded instance already exists. Make sure you call `instance.destroy()` before instantiating it again.",
+      );
     }
+
+    WanderConnect.instance = this;
 
     // Callbacks:
     this.onAuth = options.onAuth ?? NOOP;
@@ -157,17 +162,21 @@ export class WanderConnect {
       options || {},
     );
 
-    if (!optionsWithDefaults.clientId) throw new Error("clientId is required");
+    if (optionsWithDefaults.clientId !== "FREE_TRIAL") {
+      throw new Error(
+        `The clientId option is required and must be set to "FREE_TRIAL". This will change in the future, when you'll be required to register your app(s) to get a valid client ID.`,
+      );
+    }
 
     try {
-      const authState = JSON.parse(localStorage.getItem(WanderConnect.AUTH_STATE_LS_KEY) || "null");
+      const authInfo = JSON.parse(localStorage.getItem(WanderConnect.AUTH_STATE_LS_KEY) || "null");
 
-      if (authState) {
+      if (authInfo) {
         // We initialize it as "loading" as we cannot still trust the cached data. The session still needs to be verified:
-        this.authenticationState = {
-          authType: authState.authType || null,
+        this.authInfo = {
+          authType: authInfo.authType || null,
           authStatus: "loading",
-          userDetails: authState.userDetails || null,
+          userDetails: authInfo.userDetails || null,
         };
       }
     } catch (err) {
@@ -301,7 +310,7 @@ export class WanderConnect {
 
       this.buttonComponent = new Button(buttonOptions);
 
-      this.buttonComponent.setVariant(this.authenticationState.authStatus || "not-authenticated");
+      this.buttonComponent.setVariant(this.authInfo.authStatus || "not-authenticated");
 
       const { parent, host, button } = this.buttonComponent.getElements();
 
@@ -369,8 +378,10 @@ export class WanderConnect {
 
     switch (message.type) {
       case "embedded_auth":
-        const messageData = (this.authenticationState = message.data);
+        const messageData = message.data;
         const { authType, authStatus } = messageData;
+
+        this.authInfo = messageData;
 
         if (authStatus === "not-authenticated") {
           localStorage.removeItem(WanderConnect.AUTH_STATE_LS_KEY);
@@ -562,15 +573,6 @@ export class WanderConnect {
     if (this.windowArweaveWallet) {
       window.arweaveWallet = this.windowArweaveWallet;
     }
-  }
-
-  // TODO: Remove, as authenticationState is public?
-  /**
-   * Whether a user is currently authenticated
-   * @returns True if authenticated, false otherwise
-   */
-  get isAuthenticated(): boolean {
-    return this.authenticationState.authStatus === "authenticated" && !!this.authenticationState.userDetails;
   }
 
   /**

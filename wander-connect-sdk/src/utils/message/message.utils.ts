@@ -1,4 +1,4 @@
-import { AUTH_TYPES, AUTH_STATUS } from "./message.constants";
+import { AUTH_STATUS, AUTH_TYPES } from "../auth/auth.constants";
 import {
   EventMessage,
   EventMessageData,
@@ -8,7 +8,6 @@ import {
   IncomingMessageId,
   IncomingRequestMessageData,
   IncomingResizeMessageData,
-  OutgoingMessage,
   WalletSwitchMessage,
 } from "./message.types";
 
@@ -105,28 +104,6 @@ export function isIncomingMessage(message: unknown): message is IncomingMessage 
       return !!(data && typeof data === "object" && typeof data.pendingRequests === "number");
     }
 
-    default:
-      return false;
-  }
-}
-
-// Type guard for outgoing messages
-// TODO: Is this needed?
-export function isOutgoingMessage(message: any): message is OutgoingMessage {
-  if (!message || typeof message !== "object" || !message.type) return false;
-
-  switch (message.type) {
-    case "THEME_UPDATE":
-      return (
-        message.payload &&
-        typeof message.payload === "object" &&
-        typeof message.payload.primary === "string" &&
-        typeof message.payload.secondary === "string"
-      );
-    case "WALLET_CONNECTED":
-      return message.payload && typeof message.payload === "object" && typeof message.payload.address === "string";
-    case "WALLET_DISCONNECTED":
-      return true;
     default:
       return false;
   }

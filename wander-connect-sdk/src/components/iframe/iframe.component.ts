@@ -1,6 +1,5 @@
 import {
   ImgPath,
-  isRouteConfig,
   LayoutConfig,
   LayoutType,
   RouteConfig,
@@ -11,6 +10,7 @@ import {
 } from "../../wander-connect.types";
 import { addCSSVariables, mergeCSSVariablesOption } from "../../utils/styles/styles.utils";
 import { getIframeTemplateContent } from "./iframe.template";
+import { isRouteConfig } from "../../utils/layout/layout.utils";
 
 export class Iframe {
   static DEFAULT_LIGHT_CSS_VARS: IframeCSSVars = {
