@@ -1,31 +1,29 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
-import { Card, Row, Upload, Copyable, Button, WanderFooter } from "~components/embed";
+import { Card, Row, Upload, Copyable, Button, WanderFooter, Text } from "~components/embed";
 import copy from "copy-to-clipboard";
 import { useLocation } from "~wallets/router/router.utils";
 import { toast } from "react-toastify";
+import { WalletUtils } from "~utils/wallets/wallets.utils";
+
 export function AuthImportKeyfileEmbeddedView() {
   const [loading, setLoading] = useState(false);
+  const [fileError, setFileError] = useState(false);
   const [jsonData, setJsonData] = useState<any>(null);
   const { back } = useLocation();
-  const handleJsonParse = (parsedData: any) => {
-    setJsonData(parsedData);
-  };
 
-  const {
-    importTempWallet,
-    importedTempWalletAddress,
-    deleteImportedTempWallet,
-    registerWallet,
-    wallets,
-    recoverWallet,
-  } = useEmbedded();
-
-  const handleImportWallet = useCallback(async () => {
+  const handleJsonParse = async (jsonData: any) => {
     try {
+      setJsonData(jsonData);
       setLoading(true);
       if (jsonData) {
+        setFileError(false);
+        if (!WalletUtils.isJWK(jsonData)) {
+          setFileError(true);
+          setLoading(false);
+          return;
+        }
         const tempWallet = await importTempWallet(jsonData);
 
         if (!tempWallet) {
@@ -34,13 +32,25 @@ export function AuthImportKeyfileEmbeddedView() {
         }
         setLoading(false);
         return tempWallet;
+      } else {
+        setFileError(true);
       }
     } catch (error) {
       toast.error(error);
     } finally {
       setLoading(false);
     }
-  }, [jsonData]);
+  };
+
+  const {
+    authStatus,
+    importTempWallet,
+    importedTempWalletAddress,
+    deleteImportedTempWallet,
+    registerWallet,
+    wallets,
+    recoverWallet,
+  } = useEmbedded();
 
   const handleAddWallet = useCallback(async () => {
     try {
@@ -77,9 +87,11 @@ export function AuthImportKeyfileEmbeddedView() {
       footerElement={<WanderFooter />}
       hasBackButton={true}
       onBackButtonClick={back}
+      style={{ gap: 24 }}
       size="auto">
       <Copyable
         isFullWidth
+        style={{ padding: 0 }}
         label="Your wallet address"
         onClick={() => {
           copy(importedTempWalletAddress);
@@ -91,17 +103,18 @@ export function AuthImportKeyfileEmbeddedView() {
           No, try again
         </Button>
         <Button variant="primary" size="md" onClick={handleAddWallet} isLoading={loading}>
-          Yes, add
+          Yes, {authStatus === "noShares" ? "recover" : "add"}
         </Button>
       </Row>
     </Card>
   ) : (
     <Card
-      headerText="Import private key"
+      headerText="Import Keyfile"
       subtitle="Upload your private key to connect your wallet to your account."
       footerElement={<WanderFooter />}
       hasBackButton={true}
       onBackButtonClick={back}
+      style={{ gap: 24 }}
       size="auto">
       <Upload
         isFullWidth
@@ -111,9 +124,11 @@ export function AuthImportKeyfileEmbeddedView() {
         loadingText={"Recovering account..."}
         onFileParse={handleJsonParse}
       />
-      <Button isFullWidth size="md" isLoading={loading} isDisabled={!jsonData || loading} onClick={handleImportWallet}>
-        Import
-      </Button>
+      {fileError && (
+        <Text alignment="left" variant="bodySm" style={{ color: "#D22B1F", alignSelf: "flex-start", marginTop: -20 }}>
+          Error: incorrect file format
+        </Text>
+      )}
     </Card>
   );
 }

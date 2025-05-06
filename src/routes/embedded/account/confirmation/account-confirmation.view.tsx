@@ -1,5 +1,5 @@
 import copy from "copy-to-clipboard";
-import { Card, Copyable, Button, WanderFooter } from "~components/embed/ui";
+import { Card, Copyable, Button, WanderFooter, Spacer } from "~components/embed/ui";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useLocation } from "~wallets/router/router.utils";
 
@@ -17,18 +17,20 @@ export function AccountConfirmationEmbeddedView() {
             }!`
       }
       footerElement={<WanderFooter />}
-      hasBackButton={true}
+      hasBackButton={false}
       onBackButtonClick={() => navigate(`/auth`)}
       size="auto">
       <br />
       <Copyable
         isFullWidth
+        style={{ padding: 0 }}
         label="Your wallet address"
         value={lastRegisteredWallet.address}
         onClick={() => {
           copy(lastRegisteredWallet.address);
         }}
       />
+      <Spacer y={1.5} />
       <Button isFullWidth size="md" onClick={() => clearLastRegisteredWallet()}>
         Done
       </Button>

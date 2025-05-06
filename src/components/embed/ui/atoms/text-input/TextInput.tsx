@@ -2,21 +2,40 @@ import React, { forwardRef } from "react";
 import clsx from "clsx";
 import styles from "./TextInput.module.css";
 import type { TextInputBaseProps } from "./TextInput.types";
+import { Button } from "../button";
 
 const TextInput = forwardRef<HTMLInputElement, TextInputBaseProps>(
   (
-    { placeholder, hasButton = false, buttonLabel, isDisabled, isSecure, buttonOnClick, className, style, ...props },
+    {
+      placeholder,
+      type = "text",
+      hasButton = false,
+      buttonLabel,
+      buttonIcon,
+      isDisabled,
+      isSecure,
+      buttonOnClick,
+      isLoading,
+      className,
+      style,
+      ...props
+    },
     ref,
   ) => {
     const Component = "div";
-    const type = isSecure ? "password" : "text";
+    const inputType = isSecure ? "password" : type;
     return (
-      <Component className={clsx(styles["wrapper"], className)} {...props}>
-        <input ref={ref} type={type} placeholder={placeholder} className={styles["input"]} disabled={isDisabled} />
-        {hasButton && buttonLabel && (
-          <button className={clsx(styles["button"], styles["button__text"], className)} onClick={buttonOnClick}>
-            {buttonLabel}
-          </button>
+      <Component className={clsx(styles["wrapper"], className)} style={style} {...props}>
+        <input ref={ref} type={inputType} placeholder={placeholder} className={styles["input"]} disabled={isDisabled} />
+        {hasButton && (buttonLabel || buttonIcon) && (
+          <Button
+            variant={buttonIcon ? "icon" : "primary"}
+            className={clsx(styles["button"], buttonLabel ? styles["button__text"] : styles["button__icon"], className)}
+            onClick={buttonOnClick}
+            isLoading={isLoading}
+            isDisabled={isDisabled}>
+            {buttonIcon || buttonLabel}
+          </Button>
         )}
       </Component>
     );
