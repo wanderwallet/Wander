@@ -263,9 +263,11 @@ export class WanderConnect {
       theme = WanderConnect.DEFAULT_THEME,
       hideBE,
       baseServerURL,
-      iframe: iframeOptions,
-      button: buttonOptions,
     } = options;
+
+    // Deep clone these objects so that we don't mutate the original, developer-provider ones:
+    const iframeOptions = structuredClone(options.iframe || {});
+    const buttonOptions = options.button === true ? {} : structuredClone(options.button || {});
 
     const srcWithParams = getWanderConnectAppURL({
       baseURL,
@@ -284,6 +286,8 @@ export class WanderConnect {
 
       this.iframeRef = iframeOptions;
     } else {
+      iframeOptions.theme ||= theme;
+
       this.iframeComponent = new Iframe(srcWithParams, iframeOptions);
 
       const elements = this.iframeComponent.getElements();
@@ -292,8 +296,10 @@ export class WanderConnect {
       this.iframeRef = elements.iframe;
     }
 
-    if (typeof buttonOptions === "object" || buttonOptions === true) {
-      this.buttonComponent = new Button(buttonOptions === true ? {} : buttonOptions);
+    if (typeof buttonOptions === "object") {
+      buttonOptions.theme ||= theme;
+
+      this.buttonComponent = new Button(buttonOptions);
 
       this.buttonComponent.setVariant(this.authenticationState.authStatus || "not-authenticated");
 
@@ -325,8 +331,6 @@ export class WanderConnect {
     const message = event.data;
 
     if (!this.iframeRef || event.origin !== new URL(this.iframeRef.src).origin) return;
-
-    console.log("MESSAGE =", event.data.type, event.data);
 
     if (isEventMessage(message) && this.isWalletReady) {
       // Note we cannot handle this by doing `window.arweaveWallet.events.on("connect" | "disconnect" | "permissions", ...)`
