@@ -16,22 +16,19 @@ export interface ConfirmPurchaseViewParams {
   quoteId: string;
 }
 
-export type ConfirmPurchaseViewProps =
-  CommonRouteProps<ConfirmPurchaseViewParams>;
+export type ConfirmPurchaseViewProps = CommonRouteProps<ConfirmPurchaseViewParams>;
 
-export function ConfirmPurchaseView({
-  params: { quoteId: id }
-}: ConfirmPurchaseViewProps) {
+export function ConfirmPurchaseView({ params: { quoteId: id } }: ConfirmPurchaseViewProps) {
   const { navigate } = useLocation();
 
   const [activeAddress] = useStorage<string>({
     key: "active_address",
-    instance: ExtensionStorage
+    instance: ExtensionStorage,
   });
 
   const [quote] = useStorage<Quote>({
     key: "transak_quote",
-    instance: ExtensionStorage
+    instance: ExtensionStorage,
   });
 
   //segment
@@ -48,11 +45,11 @@ export function ConfirmPurchaseView({
         defaultFiatAmount: (quote.fiatAmount + quote.totalFee).toString(),
         defaultFiatCurrency: quote.fiatCurrency,
         walletAddress: activeAddress,
-        defaultPaymentMethod: quote.paymentMethod
+        defaultPaymentMethod: quote.paymentMethod,
       });
       const url = `${baseUrl}?${params.toString()}`;
       browser.tabs.create({
-        url: url
+        url: url,
       });
       navigate("/purchase-pending");
     } catch (error) {
@@ -80,8 +77,7 @@ export function ConfirmPurchaseView({
                   Rate
                 </CustomText>
                 <CustomText noMargin fontSize="14px">
-                  {quote.cryptoAmount} AR = {quote.fiatAmount}{" "}
-                  {quote.fiatCurrency}
+                  {quote.cryptoAmount} AR = {quote.fiatAmount} {quote.fiatCurrency}
                 </CustomText>
               </Section>
               <Line margin="8px" />
@@ -90,11 +86,7 @@ export function ConfirmPurchaseView({
                   Network Fee
                 </CustomText>
                 <CustomText noMargin fontSize="14px">
-                  {
-                    quote.feeBreakdown.find((fee) => fee.id === "network_fee")
-                      .value
-                  }{" "}
-                  {quote.fiatCurrency}
+                  {quote.feeBreakdown.find((fee) => fee.id === "network_fee").value} {quote.fiatCurrency}
                 </CustomText>
               </Section>
               <Line margin="8px" />
@@ -103,11 +95,7 @@ export function ConfirmPurchaseView({
                   Vendor fee
                 </CustomText>
                 <CustomText noMargin fontSize="14px">
-                  {
-                    quote.feeBreakdown.find((fee) => fee.id === "transak_fee")
-                      .value
-                  }{" "}
-                  {quote.fiatCurrency}
+                  {quote.feeBreakdown.find((fee) => fee.id === "transak_fee").value} {quote.fiatCurrency}
                 </CustomText>
               </Section>
               <Line margin="8px" />
@@ -156,7 +144,6 @@ const Section = styled.div`
 `;
 
 const CustomText = styled(Text)<{ alternate?: boolean; fontSize?: string }>`
-  color: ${(props) =>
-    props.alternate ? props.theme.secondaryTextv2 : props.theme.primaryTextv2};
+  color: ${(props) => (props.alternate ? props.theme.secondaryTextv2 : props.theme.primaryTextv2)};
   font-size: ${(props) => props.fontSize && props.fontSize};
 `;

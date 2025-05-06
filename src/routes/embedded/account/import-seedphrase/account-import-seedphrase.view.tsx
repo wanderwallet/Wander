@@ -1,24 +1,14 @@
-import copy from "copy-to-clipboard";
-import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  Button,
-  Card,
-  Row,
-  SeedInput,
-  WanderIcon,
-  Text
-} from "~components/embed/ui";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Button, Card, SeedInput, WanderFooter } from "~components/embed/ui";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
-
+import { useLocation } from "~wallets/router/router.utils";
+import { toast } from "react-toastify";
 export function AccountImportSeedphraseEmbeddedView() {
   const [loading, setLoading] = useState(false);
+  const { back } = useLocation();
+
   const [seedPhrase, setSeedPhrase] = useState<string[]>([]);
-  const {
-    importTempWallet,
-    importedTempWalletAddress,
-    deleteImportedTempWallet,
-    registerWallet
-  } = useEmbedded();
+  const { importTempWallet, importedTempWalletAddress, deleteImportedTempWallet, registerWallet } = useEmbedded();
 
   const handleInputChange = useCallback((index: number, value: string) => {
     setSeedPhrase((prevSeedPhrase) => {
@@ -33,9 +23,9 @@ export function AccountImportSeedphraseEmbeddedView() {
       setLoading(true);
       if (!seedPhrase.length) return;
       await importTempWallet(seedPhrase.join(" "));
-      await registerWallet("imported");
+      await registerWallet("IMPORTED");
     } catch (error) {
-      alert(error);
+      toast.error(error);
     } finally {
       setLoading(false);
     }
@@ -49,37 +39,26 @@ export function AccountImportSeedphraseEmbeddedView() {
     };
   }, []);
 
+  const isSeedPhraseIncomplete = useMemo(() => {
+    if (seedPhrase.length !== 12) return true;
+    return seedPhrase.some((word) => word.trim() === "");
+  }, [seedPhrase]);
+
   return (
     <Card
       headerText="Enter Seedphrase"
       subtitle="Enter your seedphrase to connect your wallet to your account."
-      footerElement={
-        <Row>
-          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
-            {"Secured by"}
-          </Text>
-          <WanderIcon color="#838383" />
-        </Row>
-      }
+      footerElement={<WanderFooter />}
       hasBackButton={true}
-      onBackButtonClick={() => {
-        window.history.back();
-      }}
-      //   hasCloseButton={false}
-      size="auto"
-    >
-      <SeedInput
-        handleSubmit={handleImportWallet}
-        seedPhrase={seedPhrase}
-        handleCopyToClipboard={() => copy(seedPhrase.join(" "))}
-        handleInputChange={handleInputChange}
-      />
+      onBackButtonClick={back}
+      size="auto">
+      <SeedInput handleSubmit={handleImportWallet} seedPhrase={seedPhrase} handleInputChange={handleInputChange} />
       <Button
         isFullWidth
         size="md"
         onClick={handleImportWallet}
         isLoading={loading}
-      >
+        isDisabled={isSeedPhraseIncomplete}>
         Recover
       </Button>
     </Card>

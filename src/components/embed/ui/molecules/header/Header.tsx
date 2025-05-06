@@ -2,30 +2,31 @@ import React from "react";
 import styles from "./Header.module.css";
 import type { HeaderBaseProps } from "./Header.types";
 
-import { Box, Text, Row, XClose, ChevronLeft } from "../../atoms";
+import { Box, Text, Row } from "../../atoms";
 
 const Header = React.forwardRef<HTMLDivElement, HeaderBaseProps>(
-  (
-    { className, titlePosition = "center", icon, title, subtitle, ...props },
-    ref
-  ) => {
+  ({ className, titlePosition = "center", icon, title, subtitle, ...props }, ref) => {
     return (
       <Row
         ref={ref}
         className={`
         ${styles["header"]}
         ${className}`}
-        {...props}
-      >
+        {...props}>
         <Box
           className={`
             ${styles["header__title__container"]}
             ${styles[`header__title__container__${titlePosition}`]}
-            `}
-        >
+            
+            `}>
           {icon}
           {title && (
-            <Text variant="headingLg" alignment="center">
+            <Text
+              variant="headingLg"
+              alignment="center"
+              style={{
+                marginInline: 8,
+              }}>
               {title}
             </Text>
           )}
@@ -37,7 +38,7 @@ const Header = React.forwardRef<HTMLDivElement, HeaderBaseProps>(
         </Box>
       </Row>
     );
-  }
+  },
 );
 
 Header.displayName = "Header";

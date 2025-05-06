@@ -1,24 +1,13 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useLocation } from "~wallets/router/router.utils";
 
-import {
-  Box,
-  Button,
-  Card,
-  KeyIcon,
-  QRCodeIcon,
-  Row,
-  SeedIcon,
-  Text,
-  WalletIcon,
-  WanderIcon
-} from "~components/embed";
+import { Box, Button, Card, KeyIcon, QRCodeIcon, SeedIcon, WalletIcon, WanderFooter } from "~components/embed";
 import type { WalletSourceType } from "embed-api";
 
 export function AuthAddWalletEmbeddedView() {
-  const { authProviderType, generateTempWallet, registerWallet } =
-    useEmbedded();
-
+  const { authProviderType, generateTempWallet, registerWallet } = useEmbedded();
+  const { navigate } = useLocation();
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -40,21 +29,10 @@ export function AuthAddWalletEmbeddedView() {
     <Card
       headerText="Add a wallet"
       subtitle="Add a wallet to your account to hold your funds. Create or add an existing wallet to continue."
-      footerElement={
-        <Row>
-          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
-            {"Secured by"}
-          </Text>
-          <WanderIcon color="#838383" />
-        </Row>
-      }
+      footerElement={<WanderFooter />}
       hasBackButton={true}
-      onBackButtonClick={() => {
-        window.location.href = "/";
-      }}
-      //   hasCloseButton={false}
-      size="auto"
-    >
+      onBackButtonClick={() => navigate(`/wallet`)}
+      size="auto">
       <Box>
         <Button
           onClick={() => handleRegisterWallet("GENERATED")}
@@ -62,49 +40,47 @@ export function AuthAddWalletEmbeddedView() {
           isFullWidth
           icon={<SeedIcon fontSize={24} />}
           isLoading={isLoading}
-          isDisabled={isLoading}
-        >
+          isDisabled={isLoading}>
           Create new wallet
         </Button>
         <Button
           variant="outlined"
           isFullWidth
           icon={<WalletIcon fontSize={24} />}
-          href="/auth/import-seedphrase"
-          isDisabled={isLoading}
-        >
+          href="#/auth/import-seedphrase"
+          isDisabled={isLoading}>
           Enter Seed Phrase
         </Button>
         <Button
           variant="outlined"
           isFullWidth
           icon={<KeyIcon fontSize={24} />}
-          href="/auth/import-keyfile"
-          isDisabled={isLoading}
-        >
+          href="#/auth/import-keyfile"
+          isDisabled={isLoading}>
           Import Keyfile
         </Button>
-        {authProviderType === "PASSKEYS" ? (
+        {/* {authProviderType === "PASSKEYS" ? (
           <Button
             variant="outlined"
             isFullWidth
             icon={<QRCodeIcon fontSize={24} />}
-            href="/auth/add-device"
+            href="#/auth/add-device"
             isDisabled={isLoading}
           >
-            Add this device to an existing account
+            Scan QR Code
           </Button>
         ) : (
           <Button
             variant="outlined"
             isFullWidth
             icon={<QRCodeIcon fontSize={24} />}
-            href="/auth/add-auth-provider"
+            href="#/auth/add-auth-provider"
             isDisabled={isLoading}
           >
-            Add {authProviderType.toLocaleUpperCase()} to an existing account
+            Add {(authProviderType || "UNKNOWN").toLocaleUpperCase()} to an
+            existing account
           </Button>
-        )}
+        )} */}
       </Box>
     </Card>
   );

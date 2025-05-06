@@ -2,7 +2,7 @@ import { Text } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
 import styled, { useTheme } from "styled-components";
 import Token from "../Token";
-import { useBalanceSortedTokens } from "~tokens/aoTokens/ao";
+import { useBalanceSortedTokens } from "~tokens/hooks";
 import { useLocation } from "~wallets/router/router.utils";
 import { Settings04 } from "@untitled-ui/icons-react";
 import { ManageAssets } from "./ManageAssets";
@@ -14,7 +14,7 @@ export default function Tokens() {
   const theme = useTheme();
   const { tokens, prices } = useBalanceSortedTokens({
     type: "asset",
-    hidden: false
+    hidden: false,
   });
 
   function handleTokenClick(tokenId: string) {
@@ -23,9 +23,7 @@ export default function Tokens() {
 
   return (
     <Cointainer>
-      {tokens.length === 0 && (
-        <NoTokens>{browser.i18n.getMessage("no_assets")}</NoTokens>
-      )}
+      {tokens.length === 0 && <NoTokens>{browser.i18n.getMessage("no_assets")}</NoTokens>}
       <TokensList>
         {tokens.map((token) => (
           <Token
@@ -41,11 +39,7 @@ export default function Tokens() {
         ))}
       </TokensList>
       <ManageAssetList onClick={() => setOpen(true)}>
-        <Settings04
-          style={{ color: theme.displayTheme === "light" ? "#666" : "#AAA" }}
-          height={20}
-          width={20}
-        />
+        <Settings04 style={{ color: theme.displayTheme === "light" ? "#666" : "#AAA" }} height={20} width={20} />
         <Text variant="secondary" weight="semibold" size="sm" noMargin>
           {browser.i18n.getMessage("manage_asset_list")}
         </Text>
@@ -77,7 +71,7 @@ const ManageAssetList = styled.div`
 `;
 
 const NoTokens = styled(Text).attrs({
-  noMargin: true
+  noMargin: true,
 })`
   text-align: center;
 `;

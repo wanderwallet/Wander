@@ -1,7 +1,6 @@
 import { Spacer, Text, useInput } from "@arconnect/components-rebrand";
 import { useEffect, useMemo, useState } from "react";
-import { useStorage } from "~utils/storage";
-import { ExtensionStorage } from "~utils/storage";
+import { PersistentStorage, useStorage } from "~utils/storage";
 import { SettingsList } from "./list/BaseElement";
 import { useRoute } from "wouter";
 import Application from "~applications/application";
@@ -16,8 +15,7 @@ export interface ApplicationsDashboardViewParams {
   app?: string;
 }
 
-export type ApplicationsDashboardViewProps =
-  CommonRouteProps<ApplicationsDashboardViewParams>;
+export type ApplicationsDashboardViewProps = CommonRouteProps<ApplicationsDashboardViewParams>;
 
 export function ApplicationsDashboardView() {
   const { navigate } = useLocation();
@@ -28,9 +26,9 @@ export function ApplicationsDashboardView() {
   const [connectedApps] = useStorage<string[]>(
     {
       key: "apps",
-      instance: ExtensionStorage
+      instance: PersistentStorage,
     },
-    []
+    [],
   );
 
   // apps
@@ -48,7 +46,7 @@ export function ApplicationsDashboardView() {
         appsWithData.push({
           name: appData.name || app,
           url: app,
-          icon: appData.logo
+          icon: appData.logo,
         });
       }
 
@@ -57,10 +55,7 @@ export function ApplicationsDashboardView() {
   }, [connectedApps]);
 
   // active subsetting val
-  const activeApp = useMemo(
-    () => (params?.app ? decodeURIComponent(params.app) : undefined),
-    [params]
-  );
+  const activeApp = useMemo(() => (params?.app ? decodeURIComponent(params.app) : undefined), [params]);
 
   useEffect(() => {
     const firstApp = connectedApps?.[0];
@@ -83,19 +78,13 @@ export function ApplicationsDashboardView() {
       return true;
     }
 
-    return (
-      app.name.toLowerCase().includes(query.toLowerCase()) ||
-      app.url.toLowerCase().includes(query.toLowerCase())
-    );
+    return app.name.toLowerCase().includes(query.toLowerCase()) || app.url.toLowerCase().includes(query.toLowerCase());
   }
 
   return (
     <Wrapper>
       <SearchWrapper>
-        <SearchInput
-          placeholder={browser.i18n.getMessage("search_apps")}
-          {...searchInput.bindings}
-        />
+        <SearchInput placeholder={browser.i18n.getMessage("search_apps")} {...searchInput.bindings} />
       </SearchWrapper>
       <Spacer y={1} />
       <SettingsList>

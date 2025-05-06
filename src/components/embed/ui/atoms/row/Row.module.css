@@ -68,7 +68,7 @@
 }
 
 /* Align items variants */
-.row__align_start {
+.row__align_left {
   align-items: flex-start;
 }
 
@@ -76,7 +76,7 @@
   align-items: center;
 }
 
-.row__align_end {
+.row__align_right {
   align-items: flex-end;
 }
 

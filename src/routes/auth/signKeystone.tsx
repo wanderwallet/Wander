@@ -1,18 +1,9 @@
-import {
-  dataItemToUR,
-  decodeSignature,
-  messageToUR
-} from "~wallets/hardware/keystone";
+import { dataItemToUR, decodeSignature, messageToUR } from "~wallets/hardware/keystone";
 import { useEffect, useState } from "react";
 import { useScanner } from "@arconnect/keystone-sdk";
 import { useActiveWallet } from "~wallets/hooks";
 import type { UR } from "@ngraveio/bc-ur";
-import {
-  Section,
-  Spacer,
-  Text,
-  useToasts
-} from "@arconnect/components-rebrand";
+import { Section, Spacer, Text, useToasts } from "@arconnect/components-rebrand";
 import AnimatedQRScanner from "~components/hardware/AnimatedQRScanner";
 import AnimatedQRPlayer from "~components/hardware/AnimatedQRPlayer";
 import Wrapper from "~components/auth/Wrapper";
@@ -24,8 +15,7 @@ import { HeadAuth } from "~components/HeadAuth";
 import { AuthButtons } from "~components/auth/AuthButtons";
 
 export function SignKeystoneAuthRequestView() {
-  const { authRequest, acceptRequest, rejectRequest } =
-    useCurrentAuthRequest("signKeystone");
+  const { authRequest, acceptRequest, rejectRequest } = useCurrentAuthRequest("signKeystone");
 
   const { keystoneSignType, data: dataToSign } = authRequest;
 
@@ -87,9 +77,7 @@ export function SignKeystoneAuthRequestView() {
       await acceptRequest(data);
     } catch (e) {
       // log error
-      console.error(
-        `[Wander] Error decoding signature from keystone\n${e?.message || e}`
-      );
+      console.error(`[Wander] Error decoding signature from keystone\n${e?.message || e}`);
 
       // reply to request
       await rejectRequest("Failed to decode signature from keystone");
@@ -124,17 +112,12 @@ export function SignKeystoneAuthRequestView() {
                     setToast({
                       type: "error",
                       duration: 2300,
-                      content: browser.i18n.getMessage(`keystone_${error}`)
+                      content: browser.i18n.getMessage(`keystone_${error}`),
                     });
                   }}
                 />
                 <Spacer y={1} />
-                <Text>
-                  {browser.i18n.getMessage(
-                    "keystone_scan_progress",
-                    `${scanner.progress.toFixed(0)}%`
-                  )}
-                </Text>
+                <Text>{browser.i18n.getMessage("keystone_scan_progress", `${scanner.progress.toFixed(0)}%`)}</Text>
                 <Progress percentage={scanner.progress} />
               </>
             )}
@@ -160,11 +143,11 @@ export function SignKeystoneAuthRequestView() {
                       // update page
                       setPage((val) => (!val ? "qr" : "scanner"));
                     } else await acceptRequest();
-                  }
+                  },
                 }
           }
           secondaryButtonProps={{
-            onClick: () => rejectRequest()
+            onClick: () => rejectRequest(),
           }}
         />
       </Section>

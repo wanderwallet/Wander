@@ -31,20 +31,58 @@ export interface ItemStorageOptions {
 }
 
 /**
+ * Helper method to determine if a parsed item is a complex StorageItem with metadata
+ */
+function isComplexStorageItem<T>(
+  item: any,
+  requiredMetadata: {
+    expiresAt?: boolean;
+    priority?: boolean;
+  } = {},
+): item is { value: T; expiresAt?: number; priority?: number } {
+  // Early bailout checks for non-objects
+  if (!item || typeof item !== "object" || item === null) {
+    return false;
+  }
+
+  // Check for required value property
+  if (!("value" in item)) {
+    return false;
+  }
+
+  // Check for at least one metadata property
+  const hasExpiresAt = "expiresAt" in item;
+  const hasPriority = "priority" in item;
+
+  if (!hasExpiresAt && !hasPriority) {
+    return false;
+  }
+
+  // Check specific required options if provided
+  if (requiredMetadata.expiresAt && !hasExpiresAt) {
+    return false;
+  }
+
+  if (requiredMetadata.priority && !hasPriority) {
+    return false;
+  }
+
+  return true;
+}
+
+/**
  * Storage Manager for handling localStorage and sessionStorage eviction policies
  */
 export class StorageManager {
   public static readonly MAX_STORAGE_SIZE = 5 * 1024 * 1024; // 5MB default limit
-  public static readonly DEFAULT_PRIORITY = 5; // Medium priority (scale of 1-10)
+  public static readonly DEFAULT_PRIORITY = 10; // Critical priority (scale of 1-10)
   public static readonly PRIORITY_LEVELS = {
     CRITICAL: 10, // System-critical data that should never be evicted
     HIGH: 8, // Important user preferences/settings
     MEDIUM: 5, // Regular application data
     LOW: 3, // Cache data that can be regenerated
-    TEMPORARY: 1 // Short-lived or disposable data
+    TEMPORARY: 1, // Short-lived or disposable data
   };
-
-  private static readonly CACHE_TTL = 10000; // 10 seconds
 
   // Add a last cleanup timestamp to avoid too frequent cleanups
   private static lastCleanupTime = 0;
@@ -60,7 +98,7 @@ export class StorageManager {
   static evictItems(
     storage: Storage,
     bytesNeeded: number = 0,
-    options: { bufferSize?: number; aggressive?: boolean } = {}
+    options: { bufferSize?: number; aggressive?: boolean } = {},
   ): boolean {
     const initialLength = storage.length;
     // Setup options with defaults
@@ -94,9 +132,7 @@ export class StorageManager {
     let evictedCount = 0;
 
     // Determine the eviction threshold based on aggressiveness
-    const evictionThreshold = aggressive
-      ? this.PRIORITY_LEVELS.HIGH
-      : this.PRIORITY_LEVELS.CRITICAL;
+    const evictionThreshold = aggressive ? this.PRIORITY_LEVELS.HIGH : this.PRIORITY_LEVELS.CRITICAL;
 
     // Evict items until we have enough space
     for (const item of sortedItems) {
@@ -157,14 +193,7 @@ export class StorageManager {
       try {
         const parsed = JSON.parse(rawValue);
 
-        if (
-          parsed &&
-          typeof parsed === "object" &&
-          parsed !== null &&
-          "value" in parsed &&
-          "expiresAt" in parsed &&
-          parsed.expiresAt < now
-        ) {
+        if (isComplexStorageItem(parsed, { expiresAt: true }) && parsed.expiresAt < now) {
           storage.removeItem(key);
           clearedCount++;
         }
@@ -219,16 +248,13 @@ export class StorageManager {
   }
 
   static calculateStorageUsageByKeys(storage: Storage, keys: string[]): number {
-    return keys.reduce(
-      (acc, key) => acc + this.calculateStorageUsageByKey(storage, key),
-      0
-    );
+    return keys.reduce((acc, key) => acc + this.calculateStorageUsageByKey(storage, key), 0);
   }
 
   /**
    * Get all storage items sorted by eviction criteria
    */
-  private static getSortedStorageItems(storage: Storage): Array<{
+  static getSortedStorageItems(storage: Storage): Array<{
     key: string;
     size: number;
     priority: number;
@@ -254,17 +280,12 @@ export class StorageManager {
         const parsed = JSON.parse(rawValue);
 
         // Check if it's a complex item with metadata
-        if (
-          parsed &&
-          typeof parsed === "object" &&
-          parsed !== null &&
-          "value" in parsed
-        ) {
+        if (isComplexStorageItem(parsed)) {
           items.push({
             key,
             size,
             priority: parsed.priority ?? this.DEFAULT_PRIORITY,
-            expiresAt: parsed.expiresAt ?? Number.MAX_SAFE_INTEGER
+            expiresAt: parsed.expiresAt ?? Number.MAX_SAFE_INTEGER,
           });
         } else {
           // Simple items get default priority
@@ -272,7 +293,7 @@ export class StorageManager {
             key,
             size,
             priority: this.DEFAULT_PRIORITY,
-            expiresAt: Number.MAX_SAFE_INTEGER
+            expiresAt: Number.MAX_SAFE_INTEGER,
           });
         }
       } catch (e) {
@@ -280,8 +301,8 @@ export class StorageManager {
         items.push({
           key,
           size,
-          priority: 0,
-          expiresAt: Number.MAX_SAFE_INTEGER
+          priority: this.DEFAULT_PRIORITY,
+          expiresAt: Number.MAX_SAFE_INTEGER,
         });
       }
     });
@@ -351,24 +372,30 @@ export class StorageManager {
     return {
       bytes: usage.currentSize,
       percentage: (usage.currentSize / this.MAX_STORAGE_SIZE) * 100,
-      items: usage.itemCount
+      items: usage.itemCount,
     };
   }
 }
 
 export class EnhancedStorage implements Storage {
   protected storage: Storage;
-  protected storageType: StorageType;
+
+  public storageType: StorageType;
 
   constructor({ area = "local" }: UnpartitionedStorageOptions = {}) {
     this.storageType = area === "local" ? "localStorage" : "sessionStorage";
     this.storage = globalThis[this.storageType];
+
+    if (area === "session") {
+      // We want to start fresh each time the app loads:
+      this.storage.clear();
+    }
   }
 
   protected async getStorageHandle(): Promise<Storage> {
     // @ts-expect-error - requestStorageAccess should return a handle
     const handle = await document.requestStorageAccess({
-      [this.storageType]: true
+      [this.storageType]: true,
     });
 
     return handle[this.storageType];
@@ -380,7 +407,7 @@ export class EnhancedStorage implements Storage {
       async () => {
         await this.requestAccessOnUserInteraction();
       },
-      { once: true }
+      { once: true },
     );
   }
 
@@ -390,10 +417,7 @@ export class EnhancedStorage implements Storage {
     try {
       // Check if API is supported
       if (!document.hasStorageAccess) {
-        log(
-          LOG_GROUP.STORAGE,
-          "Storage Access API not supported, using default localStorage"
-        );
+        log(LOG_GROUP.STORAGE, "Storage Access API not supported, using default localStorage");
         return;
       }
 
@@ -407,7 +431,7 @@ export class EnhancedStorage implements Storage {
 
       // Check permission state
       const permission = await navigator.permissions.query({
-        name: "storage-access"
+        name: "storage-access",
       });
 
       if (permission.state === "granted") {
@@ -431,27 +455,8 @@ export class EnhancedStorage implements Storage {
       this.storage = await this.getStorageHandle();
       log(LOG_GROUP.STORAGE, "Storage access granted after user interaction");
     } catch (error) {
-      log(
-        LOG_GROUP.STORAGE,
-        "Error requesting storage access after interaction:",
-        error
-      );
+      log(LOG_GROUP.STORAGE, "Error requesting storage access after interaction:", error);
     }
-  }
-
-  /**
-   * Helper method to determine if a parsed item is a complex StorageItem with metadata
-   */
-  private isComplexStorageItem<T>(
-    item: any
-  ): item is { value: T; expiresAt?: number; priority?: number } {
-    return (
-      item &&
-      typeof item === "object" &&
-      item !== null &&
-      "value" in item &&
-      ("expiresAt" in item || "priority" in item)
-    );
   }
 
   /**
@@ -469,20 +474,21 @@ export class EnhancedStorage implements Storage {
    * @param key The key to retrieve
    * @returns The value or null if not found or expired
    */
-  getItem<T = string>(key: string): T | null {
+  getItem<T = string>(key: string, defaultValue?: T): T | null {
     const rawValue = this.getRaw(key);
-    if (!rawValue) return null;
+    defaultValue = defaultValue === undefined && arguments.length < 2 ? null : defaultValue;
+    if (!rawValue) return defaultValue;
 
     try {
       const parsed = JSON.parse(rawValue) as StorageItem<T>;
 
       // Check if it's a complex storage item
-      if (this.isComplexStorageItem<T>(parsed)) {
+      if (isComplexStorageItem<T>(parsed)) {
         // Check for expiration
         if (parsed.expiresAt && Date.now() > parsed.expiresAt) {
           // Item has expired, remove it
           this.removeItem(key);
-          return null;
+          return defaultValue;
         }
         return parsed.value;
       }
@@ -519,7 +525,7 @@ export class EnhancedStorage implements Storage {
       item.priority = options.priority;
     }
 
-    this.storage.setItem(key, JSON.stringify(item));
+    this.setRaw(key, JSON.stringify(item));
   }
 
   /**
@@ -578,11 +584,12 @@ export class EnhancedStorage implements Storage {
    * @param keys The keys to retrieve
    * @returns An object with the keys and their values
    */
-  getItems<T = string>(keys: string[]): Record<string, T | null> {
+  getItems<T = string>(keys: string[], defaultValue?: T): Record<string, T | null> {
     const result: Record<string, T | null> = {};
+    defaultValue = defaultValue === undefined && arguments.length < 2 ? null : defaultValue;
 
     for (const key of keys) {
-      result[key] = this.getItem<T>(key);
+      result[key] = this.getItem<T>(key, defaultValue);
     }
 
     return result;
@@ -620,11 +627,11 @@ export class EnhancedStorage implements Storage {
     key: string,
     value: T,
     priority: keyof typeof StorageManager.PRIORITY_LEVELS,
-    expiresIn?: number
+    expiresIn?: number,
   ): void {
     this.setItem(key, value, {
       priority: StorageManager.PRIORITY[priority],
-      expiresIn
+      expiresIn,
     });
   }
 
@@ -688,10 +695,7 @@ export class EnhancedStorage implements Storage {
    * @param options Configuration options
    * @returns True if space was ensured, false if impossible
    */
-  ensureSpace(
-    bytesNeeded: number,
-    options: { skipCheck?: boolean; forceEviction?: boolean } = {}
-  ): boolean {
+  ensureSpace(bytesNeeded: number, options: { skipCheck?: boolean; forceEviction?: boolean } = {}): boolean {
     // Skip availability check if requested
     if (!options.skipCheck) {
       const hasSpace = this.hasAvailableSpace(bytesNeeded);
@@ -715,7 +719,7 @@ export class EnhancedStorage implements Storage {
 
     return StorageManager.evictItems(this.storage, bytesNeeded, {
       bufferSize,
-      aggressive
+      aggressive,
     });
   }
 
@@ -735,7 +739,7 @@ export class EnhancedStorage implements Storage {
       bytes: usage.currentSize,
       percentage: (usage.currentSize / limit) * 100,
       items: usage.itemCount,
-      available: limit - usage.currentSize
+      available: limit - usage.currentSize,
     };
   }
 }

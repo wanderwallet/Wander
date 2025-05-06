@@ -1,6 +1,6 @@
-import { AnimatePresence, type Variants, motion } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import { useCallback, useState } from "react";
-import { Button, Text } from "@arconnect/components-rebrand";
+import { Button, Spacer, Text } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
 import styled from "styled-components";
 
@@ -13,7 +13,13 @@ import {
   Content,
   CardHeader,
   BackButton,
-  Wrapper
+  Wrapper,
+  Header,
+  Image,
+  HeaderIconWrapper,
+  PageWrapper,
+  Page,
+  type WelcomeSetupMode,
 } from "./setup";
 import StarIcons from "~components/welcome/StarIcons";
 import { GettingStartedWelcomeView } from "./gettingStarted/welcome";
@@ -21,28 +27,44 @@ import { GettingStartedTokensView } from "./gettingStarted/tokens";
 import { GettingStartedOnrampView } from "./gettingStarted/onramp";
 import { GettingStartedConnectView } from "./gettingStarted/connect";
 import { GettingStartedExploreView } from "./gettingStarted/explore";
+import { GettingStartedPersonalizeView } from "./gettingStarted/personalize";
+import { Link } from "~routes/popup/token/[id]";
+import IconText from "~components/IconText";
+import WanderIcon from "url:assets/icon.svg";
+import { TempTransactionStorage, useStorage } from "~utils/storage";
 
-const Views = [
+const BASE_VIEWS = [
   GettingStartedWelcomeView,
   GettingStartedTokensView,
   GettingStartedOnrampView,
   GettingStartedExploreView,
-  GettingStartedConnectView
+  GettingStartedConnectView,
 ];
+
+const GENERATE_VIEWS = [...BASE_VIEWS.slice(0, 4), GettingStartedPersonalizeView, ...BASE_VIEWS.slice(4)];
+
+const getViews = (setupMode: WelcomeSetupMode) => {
+  if (setupMode === "generate") return GENERATE_VIEWS;
+  return BASE_VIEWS;
+};
 
 export interface GettingStartedSetupWelcomeViewParams {
   // TODO: Use a nested router instead:
   page: string;
 }
 
-export type GettingStartedSetupWelcomeViewProps =
-  CommonRouteProps<GettingStartedSetupWelcomeViewParams>;
+export type GettingStartedSetupWelcomeViewProps = CommonRouteProps<GettingStartedSetupWelcomeViewParams>;
 
-export function GettingStartedSetupWelcomeView({
-  params: { page: pageParam }
-}: GettingStartedSetupWelcomeViewProps) {
+export function GettingStartedSetupWelcomeView({ params: { page: pageParam } }: GettingStartedSetupWelcomeViewProps) {
   const { navigate } = useLocation();
+  const [setupMode] = useStorage<WelcomeSetupMode>({
+    key: "setupMode",
+    instance: TempTransactionStorage,
+  });
+
   const page = Number(pageParam);
+  const Views = getViews(setupMode);
+  const viewsLength = Views.length;
 
   // animate content size
   const [contentSize, setContentSize] = useState<number>(0);
@@ -55,9 +77,11 @@ export function GettingStartedSetupWelcomeView({
     });
 
     obs.observe(el);
+
+    return () => obs.disconnect();
   }, []);
 
-  if (isNaN(page) || page < 1 || page > 5) {
+  if (isNaN(page) || page < 1 || page > 6) {
     return <Redirect to="/getting-started/1" />;
   }
 
@@ -67,30 +91,44 @@ export function GettingStartedSetupWelcomeView({
     window.top.close();
   };
 
-  const navigateToPage = (pageNum: number) => {
-    if (pageNum < 1) {
-      navigate("/getting-started/1");
-    } else if (pageNum < 6) {
-      navigate(`/getting-started/${pageNum}`);
-    } else {
-      handleClose();
-    }
-  };
+  const navigateToPage = useCallback(
+    (pageNum: number) => {
+      if (pageNum < 1) {
+        navigate("/getting-started/1");
+      } else if (pageNum < viewsLength + 1) {
+        navigate(`/getting-started/${pageNum}`);
+      } else {
+        handleClose();
+      }
+    },
+    [navigate, viewsLength],
+  );
 
   const View = Views[page - 1];
 
   return (
     <Wrapper linearBackground>
+      <Header>
+        <HeaderIconWrapper>
+          <Image width="57.61px" height="27px" src={WanderIcon} alt="Wander Icon" />
+          <IconText width={116.759} height={24.111} />
+        </HeaderIconWrapper>
+        <Link href="https://www.wander.app/help#browser-extension">
+          <Text variant="secondary" size="base" weight="medium" noMargin>
+            {browser.i18n.getMessage("need_help")}
+          </Text>
+        </Link>
+      </Header>
+      <StarIcons screen="setup" />
+      <Spacer y={2} />
       <SetupCard transparentBackground>
         <HeaderContainer>
-          {page > 1 && (
-            <CardHeader>
-              <BackButton onClick={() => navigateToPage(page - 1)} />
-              <Text style={{ fontSize: 22, margin: "auto" }} weight="bold">
-                {browser.i18n.getMessage("getting_started")}
-              </Text>
-            </CardHeader>
-          )}
+          <CardHeader>
+            {page > 1 && <BackButton onClick={() => navigateToPage(page - 1)} />}
+            <Text style={{ fontSize: 22, margin: "auto" }} weight="bold">
+              {browser.i18n.getMessage("getting_started")}
+            </Text>
+          </CardHeader>
         </HeaderContainer>
         <Content>
           <PageWrapper style={{ height: contentSize }}>
@@ -103,49 +141,16 @@ export function GettingStartedSetupWelcomeView({
         </Content>
         <Footer>
           <Button fullWidth onClick={() => navigateToPage(page + 1)}>
-            {browser.i18n.getMessage(page < 5 ? "next" : "finish")}
+            {browser.i18n.getMessage(page < viewsLength ? "next" : "finish")}
           </Button>
-          {page < 5 && (
-            <Button variant="secondary" fullWidth onClick={handleClose}>
-              {browser.i18n.getMessage("close")}
-            </Button>
-          )}
         </Footer>
       </SetupCard>
-      <StarIcons screen="setup" />
     </Wrapper>
   );
 }
-
-const pageAnimation: Variants = {
-  init: {
-    opacity: 1
-  },
-  exit: {
-    opacity: 0
-  }
-};
 
 const Footer = styled.div`
   display: flex;
   flex-direction: column;
   gap: 1rem;
-`;
-
-const Page = styled(motion.div).attrs({
-  variants: pageAnimation,
-  initial: "exit",
-  animate: "init"
-})`
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  width: 100%;
-`;
-
-const PageWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  transition: height 0.17s ease;
 `;

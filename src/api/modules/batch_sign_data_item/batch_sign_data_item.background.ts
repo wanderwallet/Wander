@@ -1,32 +1,28 @@
-import { isRawDataItem } from "~utils/assertions";
+import { isBatchOfRawDataItem, isSignatureOptions } from "~utils/assertions";
 import { requestUserAuthorization } from "../../../utils/auth/auth.utils";
 import { getActiveKeyfile } from "~wallets";
 import { freeDecryptedWallet } from "~wallets/encryption";
-import { ArweaveSigner, createData } from "arbundles";
-import type { RawDataItem } from "../sign_data_item/types";
+import { createData } from "@dha-team/arbundles";
 import type { BackgroundModuleFunction } from "~api/background/background-modules";
+import { createArweaveSignerWithOptions } from "~utils/signer.utils";
 
 const background: BackgroundModuleFunction<number[][]> = async (
   appData,
-  dataItems: unknown[]
+  dataItems: unknown,
+  signatureOptions?: unknown,
 ) => {
   // validate
-  if (!Array.isArray(dataItems)) {
-    throw new Error("Input must be an array of data items");
-  }
-
-  for (const dataItem of dataItems) {
-    isRawDataItem(dataItem);
-  }
+  isBatchOfRawDataItem(dataItems);
+  if (signatureOptions) isSignatureOptions(signatureOptions);
 
   const results: number[][] = [];
 
   await requestUserAuthorization(
     {
       type: "batchSignDataItem",
-      data: dataItems
+      data: dataItems,
     },
-    appData
+    appData,
   );
 
   // grab the user's keyfile
@@ -34,14 +30,12 @@ const background: BackgroundModuleFunction<number[][]> = async (
 
   try {
     if (decryptedWallet.type !== "local") {
-      throw new Error(
-        "Only local wallets are currently supported for batch signing"
-      );
+      throw new Error("Only local wallets are currently supported for batch signing");
     }
 
-    const dataSigner = new ArweaveSigner(decryptedWallet.keyfile);
+    const dataSigner = createArweaveSignerWithOptions(decryptedWallet.keyfile, signatureOptions);
 
-    for (const dataItem of dataItems as RawDataItem[]) {
+    for (const dataItem of dataItems) {
       const { data, ...options } = dataItem;
       const binaryData = new Uint8Array(data);
 

@@ -4,12 +4,8 @@ import { Link } from "~wallets/router/components/link/Link";
 import styles from "./Button.module.css";
 import type { ButtonBaseProps } from "./Button.types";
 import { Loading } from "../loading";
-import { useTheme } from "../../../contexts/ThemeContext";
 
-const Button = React.forwardRef<
-  HTMLButtonElement | HTMLAnchorElement,
-  ButtonBaseProps
->(
+const Button = React.forwardRef<HTMLButtonElement | HTMLAnchorElement, ButtonBaseProps>(
   (
     {
       children,
@@ -24,13 +20,12 @@ const Button = React.forwardRef<
       isBlurry,
       loadingChildren,
       icon,
-      hasBorder,
+      hasBorder = true,
       color,
       ...props
     },
-    ref
+    ref,
   ) => {
-    const { isDarkMode } = useTheme();
     const isAnchor = variant === "link" || props.href;
     const Component = isAnchor ? Link : "button";
     const hasSize = !isAnchor || !isFullWidth;
@@ -54,6 +49,7 @@ const Button = React.forwardRef<
     };
     return (
       <Component
+        // @ts-ignore
         ref={ref}
         href={isAnchor ? props.href : undefined}
         rel="noopener noreferrer"
@@ -63,19 +59,19 @@ const Button = React.forwardRef<
           styles[`button--icon-${iconPosition}`],
           hasSize && styles[`button__${size}`],
           styles[`button__variant__${variant}`],
-          isBlurry && styles.button__blurry,
-          isFullWidth && styles.button__full__width,
-          isDarkMode && styles.button__dark,
-          className
+          isBlurry && styles["button__blurry"],
+          isFullWidth && styles["button__full__width"],
+          isDisabled && isAnchor && styles["link__disabled"],
+          !hasBorder && styles["button__borderless"],
+          className,
         )}
         style={color ? { borderColor: color, color } : undefined}
         disabled={isDisabled ?? isLoading}
-        {...props}
-      >
+        {...props}>
         {handleChildren()}
       </Component>
     );
-  }
+  },
 );
 
 Button.displayName = "Button";

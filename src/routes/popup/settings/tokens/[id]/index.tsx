@@ -1,7 +1,7 @@
 import { ButtonV2, Spacer, Text, TooltipV2 } from "@arconnect/components";
 import { Select as SelectV2, useToasts } from "@arconnect/components-rebrand";
 import type { TokenType } from "~tokens/token";
-import { useStorage } from "~utils/storage";
+import { PersistentStorage, useStorage } from "~utils/storage";
 import { ExtensionStorage } from "~utils/storage";
 import { TrashIcon } from "@iconicicons/react";
 import { removeToken } from "~tokens";
@@ -15,6 +15,7 @@ import HeadV2 from "~components/popup/HeadV2";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { useLocation } from "~wallets/router/router.utils";
 import { LoadingView } from "~components/page/common/loading/loading.view";
+import { ActionBar } from "..";
 export interface TokenSettingsParams {
   id: string;
 }
@@ -29,9 +30,9 @@ export function TokenSettingsView({ params: { id } }: TokenSettingsProps) {
   const [aoTokens, setAoTokens] = useStorage<any[]>(
     {
       key: "ao_tokens",
-      instance: ExtensionStorage
+      instance: PersistentStorage,
     },
-    []
+    [],
   );
 
   const { setToast } = useToasts();
@@ -44,7 +45,7 @@ export function TokenSettingsView({ params: { id } }: TokenSettingsProps) {
       ...aoToken,
       id: aoToken.processId,
       name: aoToken.Name,
-      ticker: aoToken.Ticker
+      ticker: aoToken.Ticker,
       // Map additional AO token properties as needed
     };
   }, [aoTokens, id]);
@@ -66,10 +67,7 @@ export function TokenSettingsView({ params: { id } }: TokenSettingsProps) {
 
   return (
     <>
-      <HeadV2
-        title={token.name}
-        back={() => navigate("/quick-settings/tokens")}
-      />
+      <HeadV2 title={token.name} back={() => navigate("/quick-settings/tokens")} />
       <Wrapper>
         <div>
           <Spacer y={0.45} />
@@ -88,11 +86,8 @@ export function TokenSettingsView({ params: { id } }: TokenSettingsProps) {
                   copy(token.id);
                   setToast({
                     type: "info",
-                    content: browser.i18n.getMessage("copied_address", [
-                      token.ticker,
-                      formatAddress(token.id, 8)
-                    ]),
-                    duration: 2200
+                    content: browser.i18n.getMessage("copied_address", [token.ticker, formatAddress(token.id, 8)]),
+                    duration: 2200,
                   });
                 }}
               />
@@ -106,8 +101,7 @@ export function TokenSettingsView({ params: { id } }: TokenSettingsProps) {
               // @ts-expect-error
               updateType(e.target.value as TokenType);
             }}
-            fullWidth
-          >
+            fullWidth>
             <option value="asset" selected={token.type === "asset"}>
               {browser.i18n.getMessage("token_type_asset")}
             </option>
@@ -116,17 +110,18 @@ export function TokenSettingsView({ params: { id } }: TokenSettingsProps) {
             </option>
           </SelectV2>
         </div>
-        <ButtonV2
-          fullWidth
-          onClick={async () => {
-            await removeToken(id);
-            navigate(`/quick-settings/tokens`);
-          }}
-          style={{ backgroundColor: "#8C1A1A" }}
-        >
-          <TrashIcon style={{ marginRight: "5px" }} />
-          {browser.i18n.getMessage("remove_token")}
-        </ButtonV2>
+        <ActionBar>
+          <ButtonV2
+            fullWidth
+            onClick={async () => {
+              await removeToken(id);
+              navigate(`/quick-settings/tokens`);
+            }}
+            style={{ backgroundColor: "#8C1A1A" }}>
+            <TrashIcon style={{ marginRight: "5px" }} />
+            {browser.i18n.getMessage("remove_token")}
+          </ButtonV2>
+        </ActionBar>
       </Wrapper>
     </>
   );
@@ -141,7 +136,7 @@ const Wrapper = styled.div`
 `;
 
 const TokenAddress = styled(Text).attrs({
-  margin: true
+  margin: true,
 })`
   margin-top: 12px;
   font-size: 1rem;
@@ -156,7 +151,7 @@ const Property = styled.div`
 `;
 
 const BasePropertyText = styled(Text).attrs({
-  noMargin: true
+  noMargin: true,
 })`
   font-size: 1rem;
   font-weight: 500;

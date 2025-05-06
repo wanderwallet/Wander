@@ -1,4 +1,11 @@
 [data-theme="dark"] {
+  --color-overlay-rgb: 255, 255, 255;
+  --shadow-small: 0 0 16px rgba(var(--color-overlay-rgb), 0.25);
+  --shadow-blurred: 0 0 32px rgba(var(--color-overlay-rgb), 0.25);
+
+  --color-font-heading: var(--brand-color-gray-100);
+  --color-font-body: var(--brand-color-neutral5);
+
   --color-background-default: var(--brand-color-neutral1);
   --color-background-button-primary: var(--brand-color-primary3);
   --color-background-button-secondary: var(--brand-color-secondary2);
@@ -6,24 +13,23 @@
   --color-button-primary-success: var(--brand-color-success1);
   --color-button-primary-error: var(--brand-color-error1);
 
-  --color-button-outlined-active: var(--brand-color-neutral6);
+  --color-button-outlined-active: var(--brand-color-neutral7);
   --color-button-outlined-border: var(--brand-color-gray-600);
 
   --color-button-secondary-active: var(--brand-color-neutral6);
   --color-button-secondary-border: var(--brand-color-gray-600);
   --color-button-secondary-background: var(--brand-color-gray-800);
 
-  --color-divider-default: var(--brand-color-gray-700);
+  --color-divider-default: var(--brand-color-gray-500);
+  --color-divider-text: #aaa;
+
   --color-link-primary: var(--brand-color-primary4);
   --color-link-secondary: var(--brand-color-secondary4);
   --color-link-disabled: var(--brand-color-gray-500);
   --color-loading-primary: var(--brand-color-neutral1);
   --color-loading-secondary: var(--brand-color-neutral2);
 
-  --color-font-heading: var(--brand-color-gray-100);
-  --color-font-body: var(--brand-color-neutral5);
-
-  --color-card-background-default: var(--brand-color-neutral2);
+  --color-card-background-default: var(--color-background-default);
   --color-card-shadow-default: rgba(0, 0, 0, 0.3);
   --color-card-border-default: var(--brand-color-gray-700);
 
@@ -39,11 +45,15 @@
 
   --color-seed-input-border: var(--brand-color-neutral4);
   --color-seed-input-active: var(--brand-color-primary3);
-  --color-seed-input-background: var(--brand-color-gray-800);
+  --color-seed-input-background: var(--brand-color-neutral6);
 
   --color-border-radio: var(--brand-color-primary4);
   --color-non-checked-background-radio: var(--brand-color-secondary1);
 
   --color-background-switch-enabled: var(--brand-color-primary3);
   --color-background-button-disabled: var(--brand-color-neutral2);
+  --avatar-background: #0d6ce9;
+
+  --text-input-background: var(--brand-color-neutral2);
+  --text-input-color: var(--brand-color-neutral7);
 }

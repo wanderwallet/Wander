@@ -1,8 +1,7 @@
-import { onMessage, sendMessage } from "@arconnect/webext-bridge";
 import { nanoid } from "nanoid";
 import browser from "webextension-polyfill";
 import { Mutex } from "~utils/mutex";
-import { isomorphicSendMessage } from "~utils/messaging/messaging.utils";
+import { isomorphicOnMessage, isomorphicSendMessage } from "~isomorphic-messaging";
 import {
   isAuthErrorResult,
   type AuthErrorResult,
@@ -10,21 +9,18 @@ import {
   type AuthResult,
   type AuthSuccessResult,
   type AuthType,
-  type ConnectAuthRequest
+  type ConnectAuthRequest,
 } from "~utils/auth/auth.types";
 import type { ModuleAppData } from "~api/background/background-modules";
-import {
-  getActiveAddress,
-  getWallets,
-  openOrSelectWelcomePage
-} from "~wallets";
+import { getActiveAddress, getWallets, openOrSelectWelcomePage } from "~wallets/wallets.utils";
 import {
   AUTH_POPUP_UNLOCK_REQUEST_TTL_MS,
   ERR_MSG_NO_WALLETS_ADDED,
-  ERR_MSG_UNLOCK_TIMEOUT
+  ERR_MSG_UNLOCK_TIMEOUT,
 } from "~utils/auth/auth.constants";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { isError } from "~utils/error/error.utils";
+import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 
 const popupMutex = new Mutex();
 
@@ -100,15 +96,12 @@ export function getAuthPopupWindowTabID() {
  */
 export async function requestUserAuthorization<T = any>(
   authRequestData: AuthRequestData,
-  moduleAppData: ModuleAppData
+  moduleAppData: ModuleAppData,
 ) {
   log(LOG_GROUP.AUTH, `requestUserAuthorization("${authRequestData.type}")`);
 
   // create the popup
-  const { authID, popupWindowTabID } = await createAuthPopup(
-    authRequestData,
-    moduleAppData
-  );
+  const { authID, popupWindowTabID } = await createAuthPopup(authRequestData, moduleAppData);
 
   // wait for the results from the popup
   return await getPopupResponse<T>(authID, popupWindowTabID);
@@ -121,39 +114,33 @@ export async function requestUserAuthorization<T = any>(
  *
  * @returns ID of the authentication
  */
-export async function createAuthPopup(
-  authRequestData: null | AuthRequestData,
-  moduleAppData: ModuleAppData
-) {
+export async function createAuthPopup(authRequestData: null | AuthRequestData, moduleAppData: ModuleAppData) {
   const unlock = await popupMutex.lock();
 
   try {
-    const [activeAddress, wallets] = await Promise.all([
-      getActiveAddress(),
-      getWallets()
-    ]);
+    const [activeAddress, wallets] = await Promise.all([getActiveAddress(), getWallets()]);
 
     const hasWallets = activeAddress && wallets.length > 0;
 
     if (!hasWallets) {
-      openOrSelectWelcomePage(true);
+      if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1") {
+        postEmbeddedMessage({
+          type: "embedded_open",
+          data: null,
+        });
+      } else {
+        openOrSelectWelcomePage(true);
+      }
 
       unlock();
 
       throw new Error(ERR_MSG_NO_WALLETS_ADDED);
     }
 
-    const popupWindowTab: browser.Tabs.Tab | null = await browser.tabs
-      .get(POPUP_TAB_ID)
-      .catch(() => null);
+    const popupWindowTab: browser.Tabs.Tab | null = await browser.tabs.get(POPUP_TAB_ID).catch(() => null);
 
-    if (
-      popupWindowTab &&
-      !popupWindowTab.url.startsWith(browser.runtime.getURL("tabs/auth.html"))
-    ) {
-      console.warn(
-        `Auth popup URL (${popupWindowTab.url}) doesn't match "tabs/auth.html"`
-      );
+    if (popupWindowTab && !popupWindowTab.url.startsWith(browser.runtime.getURL("tabs/auth.html"))) {
+      console.warn(`Auth popup URL (${popupWindowTab.url}) doesn't match "tabs/auth.html"`);
     }
 
     // TODO: In Embedded we are already in the right window, so no need to create one, just skip
@@ -170,7 +157,7 @@ export async function createAuthPopup(
 
           // TODO: Use these dimensions for embedded too... (pass them rather than using a hardcoded value so that we can control updates)
           width: 385,
-          height: 720
+          height: 720,
         });
 
         setPopupTabID(window.tabs[0].id);
@@ -178,14 +165,11 @@ export async function createAuthPopup(
         log(LOG_GROUP.AUTH, "reusePopupTabID =", POPUP_TAB_ID);
 
         await browser.windows.update(popupWindowTab.windowId, {
-          focused: true
+          focused: true,
         });
       }
     } catch (err) {
-      console.warn(
-        `Could not ${popupWindowTab ? "focus" : "open"} "tabs/auth.html":`,
-        err
-      );
+      console.warn(`Could not ${popupWindowTab ? "focus" : "open"} "tabs/auth.html":`, err);
     }
 
     let authID: string | undefined;
@@ -194,31 +178,30 @@ export async function createAuthPopup(
       // Generate an unique id for the authentication to be checked later:
       authID = nanoid();
 
-      log(
-        LOG_GROUP.AUTH,
-        `isomorphicSendMessage(authID = "${authID}", tabId = ${POPUP_TAB_ID})`
-      );
+      log(LOG_GROUP.AUTH, `isomorphicSendMessage(authID = "${authID}", tabId = ${POPUP_TAB_ID})`);
 
       await isomorphicSendMessage({
+        destination: `web_accessible@${POPUP_TAB_ID}`,
         messageId: "auth_request",
-        tabId: POPUP_TAB_ID,
         data: {
           ...authRequestData,
           url: moduleAppData.url,
           tabID: moduleAppData.tabID,
           authID,
           requestedAt: Date.now(),
-          status: "pending"
-        }
+          status: "pending",
+        },
       });
     }
 
     return {
       authID,
-      popupWindowTabID: POPUP_TAB_ID
+      popupWindowTabID: POPUP_TAB_ID,
     };
   } catch (err) {
     console.warn("Unexpected error in `createAuthPopup` =", err);
+
+    throw err;
   } finally {
     unlock();
   }
@@ -228,19 +211,15 @@ type AuthResultCallback<T> = (data: T) => void;
 
 const authResultCallbacks = new Map<string, AuthResultCallback<any>>();
 
-function addAuthResultListener<T>(
-  authID: string,
-  popupWindowTabID: number,
-  fn: AuthResultCallback<T>
-) {
+function addAuthResultListener<T>(authID: string, popupWindowTabID: number, fn: AuthResultCallback<T>) {
   authResultCallbacks.set(authID, fn);
 
   if (authResultCallbacks.size === 1) {
-    onMessage("auth_result", ({ sender, data }) => {
+    isomorphicOnMessage("auth_result", ({ sender, data }) => {
       // validate sender by it's tabId
       if (sender.tabId !== popupWindowTabID) {
         console.warn(
-          `auth_result for authID = ${authID} received from tabId = ${sender.tabId}, but ${popupWindowTabID} expected`
+          `auth_result for authID = ${authID} received from tabId = ${sender.tabId}, but ${popupWindowTabID} expected`,
         );
 
         return;
@@ -249,9 +228,7 @@ function addAuthResultListener<T>(
       const authResultCallback = authResultCallbacks.get(data.authID);
 
       if (!authResultCallback) {
-        console.warn(
-          `authID = ${data.authID} doesn't have an "auth_result" listener`
-        );
+        console.warn(`authID = ${data.authID} doesn't have an "auth_result" listener`);
 
         return;
       }
@@ -269,10 +246,7 @@ function removeAuthResultListener(authID: string) {
  * Await for a browser message from the popup
  */
 export function getPopupResponse<T>(authID: string, popupWindowTabID: number) {
-  log(
-    LOG_GROUP.AUTH,
-    `getPopupResponse(authID = "${authID}", popupWindowTabID = ${popupWindowTabID})`
-  );
+  log(LOG_GROUP.AUTH, `getPopupResponse(authID = "${authID}", popupWindowTabID = ${popupWindowTabID})`);
 
   return new Promise<AuthSuccessResult<T>>(async (resolve, reject) => {
     startKeepAlive(authID);
@@ -284,32 +258,25 @@ export function getPopupResponse<T>(authID: string, popupWindowTabID: number) {
       reject(ERR_MSG_UNLOCK_TIMEOUT);
     }, AUTH_POPUP_UNLOCK_REQUEST_TTL_MS);
 
-    addAuthResultListener<AuthSuccessResult<T>>(
-      authID,
-      popupWindowTabID,
-      (data) => {
-        stopKeepAlive(authID);
-        clearTimeout(timeoutID);
-        removeAuthResultListener(authID);
+    addAuthResultListener<AuthSuccessResult<T>>(authID, popupWindowTabID, (data) => {
+      stopKeepAlive(authID);
+      clearTimeout(timeoutID);
+      removeAuthResultListener(authID);
 
-        if (!data) {
-          log(LOG_GROUP.AUTH, `auth_result for authID = "${authID}" = Empty)`);
+      if (!data) {
+        log(LOG_GROUP.AUTH, `auth_result for authID = "${authID}" = Empty)`);
 
-          reject(`Missing data from authID = "${authID}"s "auth_result"`);
-        } else if (isAuthErrorResult(data)) {
-          log(
-            LOG_GROUP.AUTH,
-            `auth_result for authID = "${authID}" = Error (${data.error})`
-          );
+        reject(`Missing data from authID = "${authID}"s "auth_result"`);
+      } else if (isAuthErrorResult(data)) {
+        log(LOG_GROUP.AUTH, `auth_result for authID = "${authID}" = Error (${data.error})`);
 
-          reject(data.error);
-        } else {
-          log(LOG_GROUP.AUTH, `auth_result for authID = "${authID}" = Success`);
+        reject(data.error);
+      } else {
+        log(LOG_GROUP.AUTH, `auth_result for authID = "${authID}" = Success`);
 
-          resolve(data);
-        }
+        resolve(data);
       }
-    );
+    });
   });
 }
 
@@ -321,30 +288,27 @@ export function getPopupResponse<T>(authID: string, popupWindowTabID: number) {
  * @param errorMessage Optional error message. If defined, the auth will fail with this message
  * @param data Auth data
  */
-export async function replyToAuthRequest<T>(
-  type: AuthType,
-  authID: string,
-  data?: T | Error
-) {
-  log(
-    LOG_GROUP.AUTH,
-    `replyToAuthRequest(type = "${type}", authID="${authID}")`
-  );
+export async function replyToAuthRequest<T>(type: AuthType, authID: string, data?: T | Error) {
+  log(LOG_GROUP.AUTH, `replyToAuthRequest(type = "${type}", authID="${authID}")`);
 
   const response: AuthResult<T> = isError(data)
     ? ({
         type,
         authID,
-        error: data.message
+        error: data.message,
       } satisfies AuthErrorResult)
     : ({
         type,
         authID,
-        data
+        data,
       } satisfies AuthSuccessResult<T>);
 
   // send the response message
-  await sendMessage("auth_result", response, "background");
+  await isomorphicSendMessage({
+    destination: "background",
+    messageId: "auth_result",
+    data: response,
+  });
 }
 
 // KEEP ALIVE ALARM:
@@ -371,8 +335,8 @@ export async function startKeepAlive(authID: string) {
 
       keepAliveInterval = setInterval(
         () => browser.alarms.create("keep-alive", { when: Date.now() + 1 }),
-        20000
-      );
+        20000,
+      ) as unknown as number;
     }
   } finally {
     unlock();
@@ -424,17 +388,16 @@ export async function resetKeepAlive() {
 }
 
 /**
- * Returns true if both ConnectAuthRequest are the same.
+ * Returns true if both ConnectAuthRequest are equivalent (same app requesting the same permissions).
  */
 export function compareConnectAuthRequests(
   authRequest1: ConnectAuthRequest,
-  authRequest2: ConnectAuthRequest
+  authRequest2: ConnectAuthRequest,
 ): boolean {
   return (
     authRequest1.appInfo.name === authRequest2.appInfo.name &&
     authRequest1.appInfo.logo === authRequest2.appInfo.logo &&
     authRequest1.gateway === authRequest2.gateway &&
-    authRequest1.permissions.toSorted().join("-") ===
-      authRequest2.permissions.toSorted().join("-")
+    authRequest1.permissions.toSorted().join("-") === authRequest2.permissions.toSorted().join("-")
   );
 }

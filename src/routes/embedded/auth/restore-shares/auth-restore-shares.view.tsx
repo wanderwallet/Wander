@@ -1,42 +1,19 @@
-import {
-  AppleIcon,
-  Box,
-  Button,
-  Card,
-  Row,
-  WalletIcon,
-  WanderIcon,
-  Text,
-  GDriveIcon,
-  DropboxIcon,
-  SeedIcon,
-  KeyIcon
-} from "~components/embed/ui";
+import { Box, Button, Card, WalletIcon, SeedIcon, KeyIcon, WanderFooter } from "~components/embed/ui";
+import { useLocation } from "~wallets/router/router.utils";
 
 export function AuthRestoreSharesEmbeddedView() {
+  const { navigate, back } = useLocation();
   return (
     <Card
       headerText="Restore shares / wallet"
-      footerElement={
-        <Row>
-          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
-            {"Secured by"}
-          </Text>
-          <WanderIcon color="#838383" />
-        </Row>
-      }
+      footerElement={<WanderFooter />}
       hasBackButton={true}
-      onBackButtonClick={() => {
-        window.history.back();
-      }}
+      onBackButtonClick={back}
       hasCloseButton={true}
-      onCloseButtonClick={() => {
-        window.location.href = "/auth";
-      }}
-      size="auto"
-    >
+      onCloseButtonClick={() => navigate(`/auth`)}
+      size="auto">
       <Box>
-        <Button
+        {/* <Button
           variant="outlined"
           isFullWidth
           icon={<GDriveIcon fontSize={24} />}
@@ -51,38 +28,27 @@ export function AuthRestoreSharesEmbeddedView() {
           onClick={() => alert("Not implemented.")}
         >
           iCloud
-        </Button>
-        <Button
+        </Button> */}
+        {/* <Button
           variant="outlined"
           isFullWidth
           icon={<DropboxIcon fontSize={24} />}
           onClick={() => alert("Not implemented.")}
         >
           Dropbox
-        </Button>
+        </Button> */}
         <Button
           variant="outlined"
           isFullWidth
           icon={<WalletIcon fontSize={24} />}
-          href="/auth/restore-shares/recovery-file"
-        >
-          Upload Account Recovery File
+          href="#/auth/restore-shares/recovery-file">
+          Import Recovery File
         </Button>
-        <Button
-          variant="outlined"
-          isFullWidth
-          icon={<SeedIcon fontSize={24} />}
-          href="/auth/import-seedphrase"
-        >
-          Enter Seed Phrase
+        <Button variant="outlined" isFullWidth icon={<SeedIcon fontSize={24} />} href="#/auth/import-seedphrase">
+          Enter Seedphrase
         </Button>
-        <Button
-          variant="outlined"
-          isFullWidth
-          icon={<KeyIcon fontSize={24} />}
-          href="/auth/import-keyfile"
-        >
-          Import Private Key
+        <Button variant="outlined" isFullWidth icon={<KeyIcon fontSize={24} />} href="#/auth/import-keyfile">
+          Import keyfile
         </Button>
       </Box>
     </Card>

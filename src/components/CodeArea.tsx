@@ -16,8 +16,7 @@ export default function CodeArea({ children }: PropsWithChildren<{}>) {
 
 const Wrapper = styled.pre<{ displayTheme: DisplayTheme }>`
   padding: 0.2rem 0.3rem;
-  background-color: ${(props) =>
-    props.displayTheme === "light" ? "#FAFAFA" : "#050505"};
+  background-color: ${(props) => (props.displayTheme === "light" ? "#FAFAFA" : "#050505")};
   overflow: auto;
 `;
 

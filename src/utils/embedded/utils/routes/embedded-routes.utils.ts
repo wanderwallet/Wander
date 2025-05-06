@@ -1,17 +1,12 @@
 import type { WanderRoutePath } from "~wallets/router/router.types";
 
-export type RouteType =
-  | "auth"
-  | "account"
-  | "settings"
-  | "auth-request"
-  | "default";
+export type RouteType = "auth" | "account" | "settings" | "auth-request" | "default";
 
 const routeTypeByLocationPrefix: Record<string, RouteType> = {
   auth: "auth",
   account: "account",
   "quick-settings": "settings",
-  "auth-request": "auth-request"
+  "auth-request": "auth-request",
 };
 
 export function locationToRouteType(path: WanderRoutePath): RouteType {
@@ -26,13 +21,11 @@ export type EmbeddedLayout = "modal" | "popup" | "sidebar" | "half";
 const preferredLayoutByRouteType: Record<RouteType, EmbeddedLayout> = {
   auth: "modal",
   account: "modal",
-  settings: "modal",
+  settings: "popup",
   "auth-request": "popup",
-  default: "popup"
+  default: "popup",
 };
 
-export function routeTypeToPreferredLayout(
-  routeType: RouteType
-): EmbeddedLayout {
+export function routeTypeToPreferredLayout(routeType: RouteType): EmbeddedLayout {
   return preferredLayoutByRouteType[routeType] || "popup";
 }

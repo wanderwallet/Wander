@@ -1,14 +1,10 @@
 import Application from "~applications/application";
 import { getTab } from "~applications/tab";
-import {
-  getCachedAuthPopupWindowTabID,
-  resetKeepAlive,
-  resetPopupTabID
-} from "~utils/auth/auth.utils";
+import { getCachedAuthPopupWindowTabID, resetKeepAlive, resetPopupTabID } from "~utils/auth/auth.utils";
 import { createContextMenus } from "~utils/context_menus";
 import { getAppURL } from "~utils/format";
 import { updateIcon } from "~utils/icon";
-import { isomorphicSendMessage } from "~utils/messaging/messaging.utils";
+import { isomorphicSendMessage } from "~isomorphic-messaging";
 import browser from "webextension-polyfill";
 
 /**
@@ -16,17 +12,14 @@ import browser from "webextension-polyfill";
  *
  * @param tabId ID of the tab to get.
  */
-export async function handleTabUpdate(
-  tabID: number,
-  changeInfo?: browser.Tabs.OnUpdatedChangeInfoType
-) {
+export async function handleTabUpdate(tabID: number, changeInfo?: browser.Tabs.OnUpdatedChangeInfoType) {
   const popupTabID = getCachedAuthPopupWindowTabID();
 
   if (popupTabID !== -1 && changeInfo?.status === "loading") {
     isomorphicSendMessage({
+      destination: `web_accessible@${popupTabID}`,
       messageId: "auth_tab_reloaded",
-      tabId: popupTabID,
-      data: tabID
+      data: tabID,
     });
   }
 
@@ -82,8 +75,8 @@ export async function handleTabClosed(closedTabID: number) {
 
   // If some other tab was closed and there's a popup, notify the popup in case it has AuthRequest from the closed tab:
   isomorphicSendMessage({
+    destination: `web_accessible@${popupTabID}`,
     messageId: "auth_tab_closed",
-    tabId: popupTabID,
-    data: closedTabID
+    data: closedTabID,
   });
 }

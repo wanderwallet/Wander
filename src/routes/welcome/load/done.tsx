@@ -16,7 +16,7 @@ export function LoadDoneWelcomeView() {
   const [analytics, setAnalytics] = useSetting<boolean>("analytics");
   const [answered, setAnswered] = useStorage<boolean>({
     key: "analytics_consent_answered",
-    instance: ExtensionStorage
+    instance: ExtensionStorage,
   });
 
   // finalize
@@ -68,8 +68,7 @@ export function LoadDoneWelcomeView() {
         onChange={() => {
           setAnalytics((prev) => !prev);
           setAnswered(true);
-        }}
-      >
+        }}>
         {browser.i18n.getMessage("analytics_title")}
       </Checkbox>
       <Spacer y={1.5} />

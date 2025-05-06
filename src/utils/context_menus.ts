@@ -1,9 +1,9 @@
 import browser, { type Menus, type Tabs } from "webextension-polyfill";
 import { getActiveAddress, getWallets } from "~wallets";
 import { getActiveTab, removeApp } from "~applications";
-import { sendMessage } from "@arconnect/webext-bridge";
 import { isManifestv3 } from "./runtime";
 import { getAppURL } from "./format";
+import { isomorphicSendMessage } from "~isomorphic-messaging";
 
 /**
  * Create context menus (right click actions)
@@ -11,6 +11,10 @@ import { getAppURL } from "./format";
  * @param hasPerms Does the active site have any permissions?
  */
 export async function createContextMenus(hasPerms: boolean) {
+  if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1") {
+    return;
+  }
+
   await browser.contextMenus.removeAll();
 
   // remove previous event listener
@@ -29,9 +33,9 @@ export async function createContextMenus(hasPerms: boolean) {
         id: "copy_address_context_menu",
         title: "Copy current address",
         contexts: [actionContext],
-        onclick: !isManifestv3() ? onCopyAddressClicked : undefined
+        onclick: !isManifestv3() ? onCopyAddressClicked : undefined,
       },
-      () => browser.runtime.lastError
+      () => browser.runtime.lastError,
     );
   }
 
@@ -44,11 +48,9 @@ export async function createContextMenus(hasPerms: boolean) {
         id: "disconnect_context_menu",
         title: "Disconnect from current site",
         contexts: [actionContext, "page"],
-        onclick: !isManifestv3()
-          ? (_, tab) => onDisconnectClicked(tab)
-          : undefined
+        onclick: !isManifestv3() ? (_, tab) => onDisconnectClicked(tab) : undefined,
       },
-      () => browser.runtime.lastError
+      () => browser.runtime.lastError,
     );
   }
 
@@ -86,11 +88,12 @@ async function onCopyAddressClicked() {
 
   const activeTab = await getActiveTab();
 
-  await sendMessage(
-    "copy_address",
-    activeAddress,
-    `content-script@${activeTab.id}`
-  );
+  // This will never be used for the embedded wallet anyway:
+  await isomorphicSendMessage({
+    destination: `content-script@${activeTab.id}`,
+    messageId: "copy_address",
+    data: activeAddress,
+  });
 }
 
 /**

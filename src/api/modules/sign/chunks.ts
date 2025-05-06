@@ -1,6 +1,4 @@
 import type { Tag } from "arweave/web/lib/transaction";
-import type { ApiCall, ApiResponse } from "shim";
-import { nanoid } from "nanoid";
 
 /**
  * The chunk of the transaction signing
@@ -26,52 +24,6 @@ const chunks: {
 }[] = [];
 
 /**
- * Send a chunk to the background script
- *
- * @param chunk Chunk to send
- *
- * @returns Response from the background
- */
-export const sendChunk = (chunk: Chunk) =>
-  new Promise<void>((resolve, reject) => {
-    const callID = nanoid();
-    // construct message
-    const message: ApiCall = {
-      type: "chunk",
-      app: "wander",
-      data: chunk,
-      callID
-    };
-
-    // send message
-    window.postMessage(message, window.location.origin);
-
-    // wait for the background to accept the chunk
-    window.addEventListener("message", callback);
-
-    // callback for the message
-    function callback(e: MessageEvent<ApiResponse<number | string>>) {
-      const { data: res } = e;
-      // returned chunk index
-      const index = res.data;
-
-      // ensure we are getting the result of the chunk sent
-      // in this instance / call of the function
-      if (res.callID !== callID) return;
-
-      // check for errors in the background
-      if (res.error || typeof index === "string") {
-        reject(res.data);
-      } else {
-        resolve();
-      }
-
-      // remove listener
-      window.removeEventListener("message", callback);
-    }
-  });
-
-/**
  * Handle incoming chunks and add them to the chunk storage
  *
  * @param chunk Chunk object to handle
@@ -88,7 +40,7 @@ export function handleChunk(chunk: Chunk, appURL: string): number {
     chunks.push({
       chunkCollectionID: chunk.collectionID,
       origin: appURL,
-      rawChunks: []
+      rawChunks: [],
     });
     // handle other chunks
   } else {
@@ -97,8 +49,7 @@ export function handleChunk(chunk: Chunk, appURL: string): number {
     // also check if the origin of the chunk matches
     // the origin of the tx creation
     const collectionID = chunks.findIndex(
-      ({ chunkCollectionID, origin }) =>
-        chunkCollectionID === chunk.collectionID && origin === appURL
+      ({ chunkCollectionID, origin }) => chunkCollectionID === chunk.collectionID && origin === appURL,
     );
 
     // check if the chunk has a valid origin
@@ -125,8 +76,7 @@ export function handleChunk(chunk: Chunk, appURL: string): number {
 export function getChunks(collectionID: string, appURL: string) {
   // find collection
   const collection = chunks.find(
-    ({ chunkCollectionID, origin }) =>
-      chunkCollectionID === collectionID && origin === appURL
+    ({ chunkCollectionID, origin }) => chunkCollectionID === collectionID && origin === appURL,
   );
 
   return collection?.rawChunks;
@@ -138,8 +88,6 @@ export function getChunks(collectionID: string, appURL: string) {
  * @param collectionID ID of the chunk collection to remove
  */
 export function cleanUpChunks(collectionID: string) {
-  const index = chunks.findIndex(
-    ({ chunkCollectionID }) => chunkCollectionID === collectionID
-  );
+  const index = chunks.findIndex(({ chunkCollectionID }) => chunkCollectionID === collectionID);
   chunks.splice(index, 1);
 }

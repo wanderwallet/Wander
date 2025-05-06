@@ -76,14 +76,9 @@ export interface GatewayErrorCheck {
   error: "string";
 }
 
-export type GatewayCheck =
-  | GatewayUnknownCheck
-  | GatewayPendingCheck
-  | GatewaySuccessCheck
-  | GatewayErrorCheck;
+export type GatewayCheck = GatewayUnknownCheck | GatewayPendingCheck | GatewaySuccessCheck | GatewayErrorCheck;
 
-export interface GatewayAddressRegistryItem
-  extends GatewayAddressRegistryItemData {
+export interface GatewayAddressRegistryItem extends GatewayAddressRegistryItemData {
   id: string;
   linkFull: string;
   linkDisplay: string;

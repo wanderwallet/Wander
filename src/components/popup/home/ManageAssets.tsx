@@ -1,15 +1,11 @@
 import browser from "webextension-polyfill";
 import { useLocation } from "~wallets/router/router.utils";
 import SliderMenu from "~components/SliderMenu";
-import {
-  Button,
-  Input,
-  Section,
-  useInput
-} from "@arconnect/components-rebrand";
+import { Button, Input, Section, useInput } from "@arconnect/components-rebrand";
 import Token from "~components/popup/Token";
 import styled from "styled-components";
-import { useAoTokens, type TokenInfo } from "~tokens/aoTokens/ao";
+import { type TokenInfo } from "~tokens/aoTokens/ao";
+import { useAoTokens } from "~tokens/hooks";
 import { useCallback, useMemo } from "react";
 
 interface Props {
@@ -30,7 +26,8 @@ export function ManageAssets({ open, close }: Props) {
   // ao Tokens
   const { tokens, changeTokenVisibility } = useAoTokens({
     type: "asset",
-    sortFn
+    sortFn,
+    skipSort: true,
   });
 
   const filteredTokens = useMemo(() => {
@@ -45,22 +42,14 @@ export function ManageAssets({ open, close }: Props) {
   }, [tokens, searchInput.state]);
 
   return (
-    <SliderMenu
-      hasHeader={true}
-      title={browser.i18n.getMessage("manage_asset_list")}
-      isOpen={open}
-      onClose={close}
-    >
+    <SliderMenu hasHeader={true} title={browser.i18n.getMessage("manage_asset_list")} isOpen={open} onClose={close}>
       <Container>
-        <Input
-          fullWidth
-          variant="search"
-          placeholder="Search asset"
-          {...searchInput.bindings}
-        />
+        <Input fullWidth variant="search" placeholder="Search asset" {...searchInput.bindings} />
         <TokensList>
           {filteredTokens.map((token) => (
             <Token
+              disableCursor={true}
+              showId={true}
               key={token.id}
               ao={true}
               type={"asset"}
@@ -88,8 +77,7 @@ export function ManageAssets({ open, close }: Props) {
           onClick={(e) => {
             e.preventDefault();
             navigate("/quick-settings/tokens/new");
-          }}
-        >
+          }}>
           {browser.i18n.getMessage("import_assets")}
         </ManageButton>
       </Container>
@@ -113,5 +101,5 @@ const TokensList = styled(Section)`
 
 const ManageButton = styled.a.attrs({
   rel: "noopener noreferrer",
-  target: "_blank"
+  target: "_blank",
 })``;

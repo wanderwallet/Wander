@@ -17,14 +17,8 @@ export default function Thumbnail({ src, fallback }: Props) {
       fallback={fallback}
       displayTheme={theme}
       onClick={() => setFullView((v) => !v)}
-      fullView={fullView}
-    >
-      <FullScreenButton
-        href={src}
-        target="_blank"
-        rel="noopener noreferrer"
-        onClick={(e) => e.stopPropagation()}
-      >
+      fullView={fullView}>
+      <FullScreenButton href={src} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
         <MaximizeIcon />
       </FullScreenButton>
     </ThumbnailImage>
@@ -40,13 +34,9 @@ const ThumbnailImage = styled.div<{
   position: relative;
   width: 100%;
   padding-top: 100%;
-  background-color: rgb(
-    ${(props) =>
-      props.displayTheme === "light" ? "0, 0, 0" : props.theme.cardBackground}
-  );
+  background-color: rgb(${(props) => (props.displayTheme === "light" ? "0, 0, 0" : props.theme.cardBackground)});
   background-size: ${(props) => (props.fullView ? "contain" : "cover")};
-  background-image: url(${(props) => props.src}),
-    ${(props) => (props.fallback ? `url(${props.fallback})` : "")};
+  background-image: url(${(props) => props.src}), ${(props) => (props.fallback ? `url(${props.fallback})` : "")};
   background-position: center;
   background-repeat: no-repeat;
   overflow: hidden;

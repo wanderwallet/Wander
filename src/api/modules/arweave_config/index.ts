@@ -5,7 +5,7 @@ const permissions: PermissionType[] = ["ACCESS_ARWEAVE_CONFIG"];
 
 const arweaveConfig: ModuleProperties = {
   functionName: "getArweaveConfig",
-  permissions
+  permissions,
 };
 
 export default arweaveConfig;

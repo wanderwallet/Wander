@@ -20,7 +20,7 @@ export const tsup: Options = {
   treeshake: true,
   esbuildOptions: (options) => {
     options.alias = {
-      "wallet-api": "./wallet-api-dist"
+      "wallet-api": "./wallet-api-dist",
     };
-  }
+  },
 };

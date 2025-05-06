@@ -37,7 +37,7 @@ function invokeAlarms(name: string) {
   const callbackAlarm = {
     name: alarm.name,
     scheduledTime: alarm.scheduledTime,
-    periodInMinutes: alarm.periodInMinutes
+    periodInMinutes: alarm.periodInMinutes,
   };
 
   alarmCallbacks.forEach((callback) => {
@@ -50,11 +50,7 @@ function invokeAlarms(name: string) {
 }
 
 // Helper function to set up alarm timers based on delay and period
-function setupAlarmTimers(
-  alarm: AlarmWithTimer,
-  delayInMs: number,
-  periodInMs: number
-) {
+function setupAlarmTimers(alarm: AlarmWithTimer, delayInMs: number, periodInMs: number) {
   try {
     // Save original creation time for periodic alarms to ensure consistent timing
     if (!alarm.createdAt) {
@@ -92,8 +88,7 @@ function setupRecurringInterval(alarm: AlarmWithTimer, periodInMs: number) {
   const now = Date.now();
   const timeSinceCreation = now - (alarm.createdAt || now);
   const periodsElapsed = Math.floor(timeSinceCreation / periodInMs);
-  const nextScheduledTime =
-    (alarm.createdAt || now) + (periodsElapsed + 1) * periodInMs;
+  const nextScheduledTime = (alarm.createdAt || now) + (periodsElapsed + 1) * periodInMs;
 
   alarm.scheduledTime = nextScheduledTime;
 
@@ -117,10 +112,7 @@ function clearAlarmTimers(alarm: AlarmWithTimer) {
 }
 
 // Calculate timing values from alarm info
-function calculateTimingValues(
-  alarmInfo: Alarms.CreateAlarmInfoType,
-  name: string
-): AlarmInfoSetup {
+function calculateTimingValues(alarmInfo: Alarms.CreateAlarmInfoType, name: string): AlarmInfoSetup {
   const now = Date.now();
 
   // Determine scheduledTime and delayInMs based on provided parameters
@@ -147,16 +139,14 @@ function calculateTimingValues(
 
   // Calculate periodInMs (0 means non-repeating)
   const periodInMs =
-    alarmInfo.periodInMinutes !== undefined
-      ? Math.min(MAX_32_BIT, alarmInfo.periodInMinutes * 60000)
-      : 0;
+    alarmInfo.periodInMinutes !== undefined ? Math.min(MAX_32_BIT, alarmInfo.periodInMinutes * 60000) : 0;
 
   return {
     name,
     scheduledTime,
     periodInMinutes: alarmInfo.periodInMinutes,
     delayInMs,
-    periodInMs
+    periodInMs,
   };
 }
 
@@ -164,10 +154,7 @@ function calculateTimingValues(
 export async function loadAlarms() {
   try {
     const storage = await LocalStorage.getInstance();
-    const storedAlarms =
-      storage.getItem<Array<Alarms.Alarm & { createdAt?: number }>>(
-        STORAGE_KEY
-      );
+    const storedAlarms = storage.getItem<Array<Alarms.Alarm & { createdAt?: number }>>(STORAGE_KEY);
 
     if (!storedAlarms?.length) return;
 
@@ -191,8 +178,7 @@ export async function loadAlarms() {
           const periodsElapsed = Math.floor(timeSinceCreation / periodMs);
 
           // Schedule for the next period boundary aligned with original creation
-          storedAlarm.scheduledTime =
-            storedAlarm.createdAt + (periodsElapsed + 1) * periodMs;
+          storedAlarm.scheduledTime = storedAlarm.createdAt + (periodsElapsed + 1) * periodMs;
         } else {
           // Without original creation time, simply schedule next occurrence from now
           // This matches Chrome's behavior of "starting from when the device wakes"
@@ -210,9 +196,9 @@ export async function loadAlarms() {
         storedAlarm.name,
         {
           when: storedAlarm.scheduledTime,
-          periodInMinutes: storedAlarm.periodInMinutes
+          periodInMinutes: storedAlarm.periodInMinutes,
         },
-        false
+        false,
       );
 
       // Preserve createdAt if available
@@ -222,7 +208,7 @@ export async function loadAlarms() {
 
       alarm.sourceTracking = {
         loadedFromStorage: true,
-        recreatedByScript: false
+        recreatedByScript: false,
       };
 
       loadedFromStorageAlarms.add(storedAlarm.name);
@@ -244,31 +230,21 @@ async function persistAlarms() {
       name: alarm.name,
       scheduledTime: alarm.scheduledTime,
       periodInMinutes: alarm.periodInMinutes,
-      createdAt: alarm.createdAt
+      createdAt: alarm.createdAt,
     }));
 
     storage.setItem(STORAGE_KEY, alarmsToStore);
 
-    log(
-      LOG_GROUP.ALARMS,
-      `Saved ${alarmsToStore.length} alarms to localStorage`
-    );
+    log(LOG_GROUP.ALARMS, `Saved ${alarmsToStore.length} alarms to localStorage`);
   } catch (error) {
     log(LOG_GROUP.ALARMS, `Error persisting alarms: ${error}`);
   }
 }
 
-async function createAlarmInternal(
-  name: string,
-  alarmInfo: Alarms.CreateAlarmInfoType,
-  shouldSave: boolean = true
-) {
+async function createAlarmInternal(name: string, alarmInfo: Alarms.CreateAlarmInfoType, shouldSave: boolean = true) {
   try {
     // Validate parameters according to API spec
-    if (
-      alarmInfo.when !== undefined &&
-      alarmInfo.delayInMinutes !== undefined
-    ) {
+    if (alarmInfo.when !== undefined && alarmInfo.delayInMinutes !== undefined) {
       throw new Error("Cannot specify both 'when' and 'delayInMinutes'");
     }
 
@@ -277,9 +253,7 @@ async function createAlarmInternal(
       alarmInfo.delayInMinutes === undefined &&
       alarmInfo.periodInMinutes === undefined
     ) {
-      throw new Error(
-        "Either 'when', 'delayInMinutes', or 'periodInMinutes' must be specified"
-      );
+      throw new Error("Either 'when', 'delayInMinutes', or 'periodInMinutes' must be specified");
     }
 
     // Check if this alarm already exists and was loaded from storage
@@ -298,7 +272,7 @@ async function createAlarmInternal(
         scheduledTime,
         periodInMinutes: newPeriodInMinutes,
         delayInMs,
-        periodInMs
+        periodInMs,
       } = calculateTimingValues(alarmInfo, name);
 
       // Needs update if period has changed or scheduled time differs significantly (more than 10 seconds)
@@ -328,15 +302,14 @@ async function createAlarmInternal(
     }
 
     // Calculate timing values
-    const { scheduledTime, periodInMinutes, delayInMs, periodInMs } =
-      calculateTimingValues(alarmInfo, name);
+    const { scheduledTime, periodInMinutes, delayInMs, periodInMs } = calculateTimingValues(alarmInfo, name);
 
     // Create the new alarm
     const alarmWithTimer: AlarmWithTimer = {
       name,
       scheduledTime,
       periodInMinutes,
-      createdAt: Date.now()
+      createdAt: Date.now(),
     };
 
     alarmsByName[name] = alarmWithTimer;
@@ -383,7 +356,7 @@ export const alarms = {
     return Object.values(alarmsByName).map((alarm) => ({
       name: alarm.name,
       scheduledTime: alarm.scheduledTime,
-      periodInMinutes: alarm.periodInMinutes
+      periodInMinutes: alarm.periodInMinutes,
     }));
   },
 
@@ -394,7 +367,7 @@ export const alarms = {
     return {
       name: alarm.name,
       scheduledTime: alarm.scheduledTime,
-      periodInMinutes: alarm.periodInMinutes
+      periodInMinutes: alarm.periodInMinutes,
     };
   },
 
@@ -403,11 +376,9 @@ export const alarms = {
       alarmCallbacks.push(alarmCallback);
     },
     removeListener: (alarmCallback: AlarmCallback) => {
-      alarmCallbacks = alarmCallbacks.filter(
-        (callback) => callback !== alarmCallback
-      );
-    }
-  }
+      alarmCallbacks = alarmCallbacks.filter((callback) => callback !== alarmCallback);
+    },
+  },
 };
 
 // Initialize by loading alarms from localStorage

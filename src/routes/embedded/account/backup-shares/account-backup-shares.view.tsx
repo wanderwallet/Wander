@@ -1,34 +1,67 @@
+import { PasscodeLock, Wallet03 } from "@untitled-ui/icons-react";
 import { useCallback, useState } from "react";
-import {
-  Box,
-  Button,
-  Card,
-  Row,
-  WanderIcon,
-  Text,
-  AppleIcon,
-  DropboxIcon,
-  GDriveIcon,
-  KeyIcon,
-  SeedIcon
-} from "~components/embed/ui";
+import { Box, Button, Card, KeyIcon, Spacer, WanderFooter } from "~components/embed/ui";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
-import { Link } from "~wallets/router/components/link/Link";
+import { useLocation } from "~wallets/router/router.utils";
 
 export function AccountBackupSharesEmbeddedView() {
-  const [loading, setLoading] = useState(false);
-  const { currentWallet, generateRecoveryAndDownload } = useEmbedded();
+  const [isLoading, setIsLoading] = useState({
+    calledId: "",
+    status: false,
+  });
+  const { navigate } = useLocation();
+  const { generateRecoveryAndDownload } = useEmbedded();
 
-  const handleGenerateRecoveryAndDownload = useCallback(() => {
+  const handleOnClick = useCallback(async (method: "GDrive" | "Apple" | "Dropbox" | "FullWallet") => {
+    const setLoadingState = (status: boolean) => setIsLoading({ calledId: method, status });
+
     try {
-      setLoading(true);
-      generateRecoveryAndDownload();
-      setLoading(false);
+      setLoadingState(true);
+
+      switch (method) {
+        case "FullWallet":
+          navigate("/account/backup-full-wallet");
+          break;
+
+        case "GDrive":
+        case "Apple":
+        case "Dropbox":
+          console.log("Not implemented yet");
+          break;
+
+        default:
+          console.log("Method doesn't exist");
+      }
     } catch (error) {
       alert(error);
-      setLoading(false);
+    } finally {
+      setLoadingState(false);
+    }
+  }, []);
+
+  const handleGenerateRecoveryAndDownload = useCallback(async () => {
+    try {
+      setIsLoading({
+        calledId: "RecoveryFile",
+        status: true,
+      });
+      await generateRecoveryAndDownload();
+      setIsLoading({
+        calledId: "RecoveryFile",
+        status: false,
+      });
+    } catch (error) {
+      alert(error);
+      setIsLoading({
+        calledId: "RecoveryFile",
+        status: false,
+      });
     }
   }, [generateRecoveryAndDownload]);
+
+  const handleUnimplementedFeature = useCallback(() => {
+    alert("Feature not implemented yet.");
+  }, []);
 
   // TODO: What if the user already has more than 3 backup shares?
 
@@ -43,31 +76,40 @@ export function AccountBackupSharesEmbeddedView() {
 
   return (
     <Card
-      headerText="Account backup"
-      footerElement={
-        <Row>
-          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
-            {"Secured by"}
-          </Text>
-          <WanderIcon color="#838383" />
-        </Row>
-      }
+      headerText="Wallet backup"
+      subtitle="Select a method to back up your wallet which can be used to sign in on a new device or recover your wallet"
+      footerElement={<WanderFooter />}
       hasBackButton={true}
-      onBackButtonClick={() => {
-        window.history.back();
-      }}
+      onBackButtonClick={() => navigate("/wallet")}
       hasCloseButton={true}
-      onCloseButtonClick={() => {
-        <Link to="/account" />;
-      }}
-      size="auto"
-    >
+      size="auto">
       <Box>
         <Button
           variant="outlined"
           isFullWidth
+          icon={<PasscodeLock fontSize={24} />}
+          isLoading={isLoading.calledId === "RecoveryFile" && isLoading.status}
+          isDisabled={isLoading.calledId === "RecoveryFile" && isLoading.status}
+          onClick={handleGenerateRecoveryAndDownload}>
+          Export Recovery File
+        </Button>
+        <Button
+          variant="outlined"
+          isFullWidth
+          icon={<Wallet03 fontSize={24} />}
+          isLoading={isLoading.calledId === "FullWallet" && isLoading.status === true}
+          onClick={() => handleOnClick("FullWallet")}>
+          Backup full wallet
+        </Button>
+        {/*
+        <Button
+          variant="outlined"
+          isFullWidth
           icon={<GDriveIcon fontSize={24} />}
-          isDisabled={loading}
+          onClick={() => handleOnClick("GDrive")}
+          isLoading={
+            isLoading.calledId === "GDrive" && isLoading.status === true
+          }
         >
           Backup to Google Drive
         </Button>
@@ -75,7 +117,10 @@ export function AccountBackupSharesEmbeddedView() {
           variant="outlined"
           isFullWidth
           icon={<AppleIcon fontSize={24} />}
-          isDisabled={loading}
+          onClick={() => handleOnClick("Apple")}
+          isLoading={
+            isLoading.calledId === "Apple" && isLoading.status === true
+          }
         >
           Backup to iCloud
         </Button>
@@ -83,21 +128,15 @@ export function AccountBackupSharesEmbeddedView() {
           variant="outlined"
           isFullWidth
           icon={<DropboxIcon fontSize={24} />}
-          isDisabled={loading}
+          onClick={() => handleOnClick("Dropbox")}
+          isLoading={
+            isLoading.calledId === "Dropbox" && isLoading.status === true
+          }
         >
           Backup to Dropbox
-        </Button>
-        <Button
-          variant="outlined"
-          isFullWidth
-          icon={<KeyIcon fontSize={24} />}
-          isLoading={loading}
-          isDisabled={loading}
-          onClick={handleGenerateRecoveryAndDownload}
-        >
-          Export Recovery File
-        </Button>
-        <Button variant="link" isFullWidth>
+        </Button> */}
+        <Spacer y={1} />
+        <Button variant="link" isFullWidth onClick={handleUnimplementedFeature}>
           Why should I back up my account?
         </Button>
       </Box>

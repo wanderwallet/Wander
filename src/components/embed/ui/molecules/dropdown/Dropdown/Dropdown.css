@@ -1,0 +1,5 @@
+.dropdown {
+  position: relative;
+  z-index: 999;
+  user-select: none;
+}

@@ -16,18 +16,17 @@ export function NotificationSettingsView() {
   const [notificationSettings, setNotificationSettings] = useStorage(
     {
       key: "setting_notifications",
-      instance: ExtensionStorage
+      instance: ExtensionStorage,
     },
-    false
+    false,
   );
-  const [notificationCustomizeSettings, setNotificationCustomizeSettings] =
-    useStorage(
-      {
-        key: "setting_notifications_customize",
-        instance: ExtensionStorage
-      },
-      ["default"]
-    );
+  const [notificationCustomizeSettings, setNotificationCustomizeSettings] = useStorage(
+    {
+      key: "setting_notifications_customize",
+      instance: ExtensionStorage,
+    },
+    ["default"],
+  );
 
   const toggleNotificationSetting = () => {
     setNotificationSettings(!notificationSettings);
@@ -39,92 +38,58 @@ export function NotificationSettingsView() {
 
   return (
     <>
-      <HeadV2
-        title={browser.i18n.getMessage("setting_notifications")}
-        back={() => navigate("/quick-settings")}
-      />
+      <HeadV2 title={browser.i18n.getMessage("setting_notifications")} back={() => navigate("/quick-settings")} />
       <Wrapper>
         <ToggleSwitchWrapper>
           <TitleWrapper>
-            <Title noMargin>
-              {browser.i18n.getMessage("toggle_notifications")}
-            </Title>
+            <Title noMargin>{browser.i18n.getMessage("toggle_notifications")}</Title>
             <TooltipV2
               content={
                 <div
                   style={{
                     width: "160px",
                     textAlign: "center",
-                    fontSize: "12px"
-                  }}
-                >
+                    fontSize: "12px",
+                  }}>
                   {browser.i18n.getMessage("toggle_notifications_decription")}
                 </div>
               }
-              position="bottom"
-            >
+              position="bottom">
               <InfoIcon />
             </TooltipV2>
           </TitleWrapper>
-          <ToggleSwitch
-            checked={notificationSettings}
-            setChecked={toggleNotificationSetting}
-          />
+          <ToggleSwitch checked={notificationSettings} setChecked={toggleNotificationSetting} />
         </ToggleSwitchWrapper>
         <Spacer y={1.5} />
         <RadioWrapper style={{ gap: "12px" }}>
           {/* AR AND AO TRANSFER NOTIFICATIONS  */}
-          <RadioItem
-            style={{ padding: 0 }}
-            onClick={() => handleRadioChange("default")}
-          >
+          <RadioItem style={{ padding: 0 }} onClick={() => handleRadioChange("default")}>
             <Checkbox
               size={16}
-              checked={
-                notificationCustomizeSettings &&
-                notificationCustomizeSettings.includes("default")
-              }
+              checked={notificationCustomizeSettings && notificationCustomizeSettings.includes("default")}
               onChange={(_) => handleRadioChange("default")}
             />
-            <RadioText noMargin>
-              Enable Arweave and ao Transaction Notifications
-            </RadioText>
+            <RadioText noMargin>Enable Arweave and ao Transaction Notifications</RadioText>
           </RadioItem>
           {/* JUST AR TRANSFER NOTIFICATIONS  */}
-          <RadioItem
-            style={{ padding: 0 }}
-            onClick={(_) => handleRadioChange("arTransferNotifications")}
-          >
+          <RadioItem style={{ padding: 0 }} onClick={(_) => handleRadioChange("arTransferNotifications")}>
             <Checkbox
               size={16}
               checked={
-                notificationCustomizeSettings &&
-                notificationCustomizeSettings.includes(
-                  "arTransferNotifications"
-                )
+                notificationCustomizeSettings && notificationCustomizeSettings.includes("arTransferNotifications")
               }
               onChange={(_) => handleRadioChange("arTransferNotifications")}
             />
-            <RadioText noMargin>
-              Enable Arweave Transaction Notifications
-            </RadioText>
+            <RadioText noMargin>Enable Arweave Transaction Notifications</RadioText>
           </RadioItem>
           {/* ALL NOTIFICATIONS */}
-          <RadioItem
-            style={{ padding: 0 }}
-            onClick={(_) => handleRadioChange("allTxns")}
-          >
+          <RadioItem style={{ padding: 0 }} onClick={(_) => handleRadioChange("allTxns")}>
             <Checkbox
               size={16}
-              checked={
-                notificationCustomizeSettings &&
-                notificationCustomizeSettings.includes("allTxns")
-              }
+              checked={notificationCustomizeSettings && notificationCustomizeSettings.includes("allTxns")}
               onChange={(_) => handleRadioChange("allTxns")}
             />
-            <RadioText noMargin>
-              Enable all Arweave and ao Notifications
-            </RadioText>
+            <RadioText noMargin>Enable all Arweave and ao Notifications</RadioText>
           </RadioItem>
         </RadioWrapper>
       </Wrapper>

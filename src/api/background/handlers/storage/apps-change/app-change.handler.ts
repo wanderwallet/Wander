@@ -1,32 +1,28 @@
 import { createContextMenus } from "~utils/context_menus";
-import { sendMessage } from "@arconnect/webext-bridge";
 import type { StorageChange } from "~utils/runtime";
 import { getAppURL } from "~utils/format";
 import { updateIcon } from "~utils/icon";
 import { forEachTab } from "~applications/tab";
 import { getActiveTab } from "~applications";
 import Application from "~applications/application";
-import { isomorphicSendMessage } from "~utils/messaging/messaging.utils";
+import { isomorphicSendMessage } from "~isomorphic-messaging";
 import { getCachedAuthPopupWindowTabID } from "~utils/auth/auth.utils";
 
 /**
  * App disconnected listener. Sends a message
  * to trigger the disconnected event.
  */
-export async function handleAppsChange({
-  oldValue,
-  newValue
-}: StorageChange<string[]>) {
+export async function handleAppsChange({ oldValue, newValue }: StorageChange<string[]>) {
   // message to send the event
   const triggerEvent = (tabID: number, type: "connect" | "disconnect") =>
-    sendMessage(
-      "event",
-      {
+    isomorphicSendMessage({
+      destination: `content-script@${tabID}`,
+      messageId: "event",
+      data: {
         name: type,
-        value: null
+        value: null,
       },
-      `content-script@${tabID}`
-    );
+    });
 
   // trigger events
   forEachTab(async (tab) => {
@@ -45,13 +41,15 @@ export async function handleAppsChange({
 
       if (popupTabID) {
         isomorphicSendMessage({
+          destination: `web_accessible@${popupTabID}`,
           messageId: "auth_app_disconnected",
-          tabId: popupTabID,
-          data: tab.id
+          data: tab.id,
         });
       }
 
-      return await triggerEvent(tab.id, "disconnect");
+      await triggerEvent(tab.id, "disconnect");
+
+      return;
     } else if (!newValue) {
       // if the new value is undefined
       // and the old value was also
@@ -73,9 +71,9 @@ export async function handleAppsChange({
 
       if (popupTabID) {
         isomorphicSendMessage({
+          destination: `web_accessible@${popupTabID}`,
           messageId: "auth_app_disconnected",
-          tabId: popupTabID,
-          data: tab.id
+          data: tab.id,
         });
       }
 

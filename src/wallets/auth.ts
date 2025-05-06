@@ -1,18 +1,26 @@
 import { decryptWallet, freeDecryptedWallet } from "./encryption";
 import browser from "webextension-polyfill";
-import { getWallets, type LocalWallet } from "./index";
+import { type LocalWallet, type StoredWallet } from "./wallets.types";
 import { ExtensionStorage } from "~utils/storage";
 import { createAuthPopup, onPopupClosed } from "~utils/auth/auth.utils";
 import type { ModuleAppData } from "~api/background/background-modules";
 import type { StorageChange } from "~utils/runtime";
-import {
-  ERR_MSG_NO_KEY,
-  ERR_MSG_USER_CANCELLED_AUTH
-} from "~utils/auth/auth.constants";
+import { ERR_MSG_NO_KEY, ERR_MSG_USER_CANCELLED_AUTH } from "~utils/auth/auth.constants";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 
 export const PASSWORD_FRESHNESS = "password_freshness";
 export const FRESHNESS_DURATION = 3 * 60 * 1000;
+
+/**
+ * Get wallets from storage
+ *
+ * @returns Wallets in storage
+ */
+async function getWallets() {
+  let wallets: StoredWallet[] = await ExtensionStorage.get("wallets");
+
+  return wallets || [];
+}
 
 /**
  * Unlock wallets and save decryption key
@@ -53,9 +61,7 @@ export async function checkPassword(password: string) {
 
   // try decrypting
   const wallets = await getWallets();
-  const localWallets = wallets.filter(
-    (w) => w.type === "local"
-  ) as LocalWallet[];
+  const localWallets = wallets.filter((w) => w.type === "local") as LocalWallet[];
 
   // if there are no wallets, this is a new password
   if (localWallets.length === 0) {
@@ -85,12 +91,12 @@ function onUnlock(cb: UnlockCallback) {
   };
 
   ExtensionStorage.watch({
-    decryption_key: watchFn
+    decryption_key: watchFn,
   });
 
   return () => {
     ExtensionStorage.unwatch({
-      decryption_key: watchFn
+      decryption_key: watchFn,
     });
   };
 }
@@ -120,10 +126,7 @@ export async function getDecryptionKeyOrRequestUnlock(appData: ModuleAppData) {
     };
 
     removePopupClosedListener = onPopupClosed(() => {
-      log(
-        LOG_GROUP.AUTH,
-        `getDecryptionKeyOrRequestUnlock() rejected - Popup closed`
-      );
+      log(LOG_GROUP.AUTH, `getDecryptionKeyOrRequestUnlock() rejected - Popup closed`);
 
       removeAllListeners();
 
@@ -131,12 +134,7 @@ export async function getDecryptionKeyOrRequestUnlock(appData: ModuleAppData) {
     });
 
     removeUnlockListener = onUnlock((decryptionKey) => {
-      log(
-        LOG_GROUP.AUTH,
-        `getDecryptionKeyOrRequestUnlock() ${
-          decryptionKey ? "accepted" : "rejected"
-        }`
-      );
+      log(LOG_GROUP.AUTH, `getDecryptionKeyOrRequestUnlock() ${decryptionKey ? "accepted" : "rejected"}`);
 
       removeAllListeners();
 
@@ -201,7 +199,7 @@ export async function removeDecryptionKey() {
 async function scheduleKeyRemoval() {
   // schedule removal of the key for security reasons
   browser.alarms.create("remove_decryption_key_scheduled", {
-    periodInMinutes: 60 * 24
+    periodInMinutes: 60 * 24,
   });
 }
 

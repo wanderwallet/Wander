@@ -1,24 +1,22 @@
 import copy from "copy-to-clipboard";
-import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  Button,
-  Card,
-  Row,
-  SeedInput,
-  WanderIcon,
-  Text,
-  Copyable
-} from "~components/embed/ui";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "react-toastify";
+import { Button, Card, Row, SeedInput, Copyable, WanderFooter } from "~components/embed/ui";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
+import { useLocation } from "~wallets/router/router.utils";
 
 export function AuthImportSeedphraseEmbeddedView() {
   const [loading, setLoading] = useState(false);
+  const { navigate, back } = useLocation();
   const [seedPhrase, setSeedPhrase] = useState<string[]>([]);
   const {
+    authStatus,
     importTempWallet,
     importedTempWalletAddress,
     deleteImportedTempWallet,
-    registerWallet
+    registerWallet,
+    wallets,
+    recoverWallet,
   } = useEmbedded();
 
   const handleImportWallet = useCallback(async () => {
@@ -27,11 +25,31 @@ export function AuthImportSeedphraseEmbeddedView() {
       if (!seedPhrase.length) return;
       await importTempWallet(seedPhrase.join(" "));
     } catch (error) {
-      alert(error);
+      toast.error(error);
     } finally {
       setLoading(false);
     }
   }, [seedPhrase]);
+
+  const handleAddWallet = useCallback(async () => {
+    try {
+      setLoading(true);
+      const isWalletPresent = wallets.some(({ address }) => address === importedTempWalletAddress);
+      if (isWalletPresent) {
+        await recoverWallet(seedPhrase.join(" "));
+      } else {
+        if (wallets.length === 0) {
+          await registerWallet("IMPORTED");
+        } else {
+          toast.error("Wallet not found!");
+        }
+      }
+    } catch (error) {
+      alert(error);
+    } finally {
+      setLoading(false);
+    }
+  }, [registerWallet, seedPhrase, wallets, importedTempWalletAddress]);
 
   const handleInputChange = useCallback((index: number, value: string) => {
     setSeedPhrase((prevSeedPhrase) => {
@@ -49,51 +67,37 @@ export function AuthImportSeedphraseEmbeddedView() {
     };
   }, []);
 
+  const isSeedPhraseIncomplete = useMemo(() => {
+    if (seedPhrase.length !== 12) return true;
+    return seedPhrase.some((word) => word.trim() === "");
+  }, [seedPhrase]);
+
   return importedTempWalletAddress ? (
     <Card
-      headerText="Recover your account"
-      subtitle="Enter seedphrase"
-      footerElement={
-        <Row>
-          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
-            {"Secured by"}
-          </Text>
-          <WanderIcon color="#838383" />
-        </Row>
-      }
+      headerText="Enter Seedphrase"
+      subtitle="Would you like to add this wallet to your account?"
+      footerElement={<WanderFooter />}
       hasBackButton={true}
-      onBackButtonClick={() => {
-        window.history.back();
-      }}
+      onBackButtonClick={back}
       hasCloseButton={true}
-      onCloseButtonClick={() => {
-        window.location.href = "/auth/recover-account";
-      }}
-      size="auto"
-    >
+      onCloseButtonClick={() => navigate(`/auth/recover-account`)}
+      style={{ gap: 24 }}
+      size="auto">
       <Copyable
         isFullWidth
-        label="Your account address"
+        style={{ padding: 0 }}
+        label="Your wallet address"
         onClick={() => {
           copy(importedTempWalletAddress);
         }}
         value={importedTempWalletAddress}
       />
       <Row>
-        <Button
-          variant="secondary"
-          size="md"
-          onClick={deleteImportedTempWallet}
-        >
+        <Button variant="secondary" size="md" onClick={deleteImportedTempWallet}>
           No, try again
         </Button>
-        <Button
-          variant="primary"
-          size="md"
-          onClick={() => registerWallet("IMPORTED")}
-          isLoading={loading}
-        >
-          Yes, recover
+        <Button variant="primary" size="md" onClick={handleAddWallet} isLoading={loading}>
+          Yes, {authStatus === "noShares" ? "recover" : "add"}
         </Button>
       </Row>
     </Card>
@@ -101,34 +105,18 @@ export function AuthImportSeedphraseEmbeddedView() {
     <Card
       headerText="Enter Seedphrase"
       subtitle="Enter your seedphrase to connect your wallet to your account."
-      footerElement={
-        <Row>
-          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
-            {"Secured by"}
-          </Text>
-          <WanderIcon color="#838383" />
-        </Row>
-      }
+      footerElement={<WanderFooter />}
       hasBackButton={true}
-      onBackButtonClick={() => {
-        window.history.back();
-      }}
-      //   hasCloseButton={false}
-      size="auto"
-    >
-      <SeedInput
-        seedPhrase={seedPhrase}
-        handleSubmit={handleImportWallet}
-        handleCopyToClipboard={() => copy(seedPhrase.join(" "))}
-        handleInputChange={handleInputChange}
-      />
+      onBackButtonClick={back}
+      size="auto">
+      <SeedInput seedPhrase={seedPhrase} handleSubmit={handleImportWallet} handleInputChange={handleInputChange} />
       <Button
         isFullWidth
         size="md"
         onClick={handleImportWallet}
         isLoading={loading}
-      >
-        Import
+        isDisabled={isSeedPhraseIncomplete}>
+        {isSeedPhraseIncomplete ? "Complete seedphrase" : "Next"}
       </Button>
     </Card>
   );

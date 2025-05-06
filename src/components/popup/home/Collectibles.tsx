@@ -4,7 +4,7 @@ import browser from "webextension-polyfill";
 import Collectible from "../Collectible";
 import styled from "styled-components";
 import { useLocation } from "~wallets/router/router.utils";
-import { useAoTokens } from "~tokens/aoTokens/ao";
+import { useAoTokens } from "~tokens/hooks";
 
 export default function Collectibles() {
   const { navigate } = useLocation();
@@ -35,8 +35,7 @@ export default function Collectibles() {
           onClick={() => {
             if (collectibles.length === 0) return;
             navigate("/collectibles");
-          }}
-        >
+          }}>
           {browser.i18n.getMessage("view_all")} ({collectibles.length})
         </ViewAll>
       )}
@@ -51,7 +50,7 @@ const CollectiblesList = styled.div`
 `;
 
 const NoAssets = styled(Text).attrs({
-  noMargin: true
+  noMargin: true,
 })`
   text-align: center;
 `;

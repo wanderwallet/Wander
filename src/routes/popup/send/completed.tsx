@@ -3,10 +3,7 @@ import { Button, Section, Text } from "@arconnect/components-rebrand";
 import { useLocation, useSearchParams } from "~wallets/router/router.utils";
 import browser from "webextension-polyfill";
 import styled from "styled-components";
-import type {
-  WanderRoutePath,
-  CommonRouteProps
-} from "~wallets/router/router.types";
+import type { WanderRoutePath, CommonRouteProps } from "~wallets/router/router.types";
 import { LinkExternal02 } from "@untitled-ui/icons-react";
 import Lottie from "react-lottie";
 import checkmarkAnimationData from "assets/lotties/checkmark.json";
@@ -15,12 +12,9 @@ export interface TransactionCompletedParams {
   id: string;
 }
 
-export type TransactionCompletedViewProps =
-  CommonRouteProps<TransactionCompletedParams>;
+export type TransactionCompletedViewProps = CommonRouteProps<TransactionCompletedParams>;
 
-export function TransactionCompletedView({
-  params: { id }
-}: TransactionCompletedViewProps) {
+export function TransactionCompletedView({ params: { id } }: TransactionCompletedViewProps) {
   const { navigate } = useLocation();
   const { back: backPath, isAo } = useSearchParams<{
     back?: string;
@@ -28,9 +22,7 @@ export function TransactionCompletedView({
   }>();
 
   function handleOpen() {
-    const url = isAo
-      ? `https://www.ao.link/#/message/${id}`
-      : `https://viewblock.io/arweave/tx/${id}`;
+    const url = isAo ? `https://www.ao.link/#/message/${id}` : `https://viewblock.io/arweave/tx/${id}`;
 
     browser.tabs.create({ url });
   }
@@ -51,8 +43,8 @@ export function TransactionCompletedView({
               autoplay: true,
               animationData: checkmarkAnimationData,
               rendererSettings: {
-                preserveAspectRatio: "xMidYMid slice"
-              }
+                preserveAspectRatio: "xMidYMid slice",
+              },
             }}
             height={200}
             width={200}
@@ -65,12 +57,11 @@ export function TransactionCompletedView({
             <LinkText
               onClick={() =>
                 navigate(
-                  `/transaction/${id}${
-                    backPath ? `?back=${encodeURIComponent(backPath)}` : ""
-                  }&fromSend=true` as WanderRoutePath
+                  `/transaction/${id}?fromSend=true${
+                    backPath ? `&back=${encodeURIComponent(backPath)}` : ""
+                  }` as WanderRoutePath,
                 )
-              }
-            >
+              }>
               {browser.i18n.getMessage("view_transaction_details")}
             </LinkText>
           </TextContainer>
@@ -78,12 +69,7 @@ export function TransactionCompletedView({
       </MainWrapper>
       <AnimatePresence>
         {id && (
-          <motion.div
-            variants={opacityAnimation}
-            initial="hidden"
-            animate="shown"
-            exit="hidden"
-          >
+          <motion.div variants={opacityAnimation} initial="hidden" animate="shown" exit="hidden">
             <Section style={{ gap: 12 }}>
               <Button fullWidth onClick={handleDone}>
                 {browser.i18n.getMessage("done")}
@@ -109,7 +95,7 @@ const Wrapper = styled.div`
 
 const opacityAnimation: Variants = {
   hidden: { opacity: 0 },
-  shown: { opacity: 1 }
+  shown: { opacity: 1 },
 };
 
 const MainWrapper = styled.div`
@@ -137,7 +123,7 @@ const TextContainer = styled.div`
 
 const Title = styled(Text).attrs({
   noMargin: true,
-  weight: "bold"
+  weight: "bold",
 })`
   font-size: 22px;
   word-break: break-word;
@@ -147,7 +133,7 @@ const Title = styled(Text).attrs({
 const SubTitle = styled(Text).attrs({
   noMargin: true,
   variant: "secondary",
-  size: "sm"
+  size: "sm",
 })`
   display: flex;
   flex-wrap: wrap;
@@ -158,7 +144,7 @@ const SubTitle = styled(Text).attrs({
 
 const LinkText = styled(Text).attrs({
   noMargin: true,
-  weight: "medium"
+  weight: "medium",
 })`
   color: ${(props) => props.theme.input.icons.searchActive};
   cursor: pointer;

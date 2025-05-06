@@ -2,7 +2,6 @@ import { arPlaceholder } from "~routes/popup/send";
 import { ExtensionStorage } from "./storage";
 import type { Transaction } from "~notifications/api";
 import type { Token } from "~tokens/token";
-import { fetchTokenByProcessId } from "~lib/transactions";
 
 export const fetchNotifications = async (address: string) => {
   const n = await ExtensionStorage.get(`notifications_${address}`);
@@ -17,16 +16,11 @@ export const fetchNotifications = async (address: string) => {
   return notifications;
 };
 
-export const mergeAndSortNotifications = (
-  arNotifications,
-  aoNotifications
-): Transaction[] => {
+export const mergeAndSortNotifications = (arNotifications, aoNotifications): Transaction[] => {
   const mergedNotifications = [...arNotifications, ...aoNotifications];
 
   // filter notifications without timestamps
-  const pendingNotifications = mergedNotifications.filter(
-    (notification) => !notification.node.block?.timestamp
-  );
+  const pendingNotifications = mergedNotifications.filter((notification) => !notification.node.block?.timestamp);
 
   // set status to "pending" for notifications without timestamps
   pendingNotifications.forEach((notification) => {
@@ -35,21 +29,17 @@ export const mergeAndSortNotifications = (
 
   // remove pending notifications from the merged array
   const sortedNotifications = mergedNotifications.filter(
-    (notification) => notification.node.block.timestamp !== "pending"
+    (notification) => notification.node.block.timestamp !== "pending",
   );
 
   // sort notifications with timestamps
-  sortedNotifications.sort(
-    (a, b) => b.node.block.timestamp - a.node.block.timestamp
-  );
+  sortedNotifications.sort((a, b) => b.node.block.timestamp - a.node.block.timestamp);
 
   // place pending notifications at the most recent index
   sortedNotifications.unshift(...pendingNotifications);
 
   return sortedNotifications;
 };
-
-export { fetchTokenByProcessId };
 
 export const fetchTokenById = async (tokenId: string): Promise<Token> => {
   if (tokenId === "AR") return arPlaceholder;

@@ -4,39 +4,29 @@
   display: flex;
   flex-direction: row;
   height: 42px;
-  padding: 4px 6px;
+  padding: 12px 6px 12px 10px;
   justify-content: center;
   align-items: center;
   align-self: stretch;
   border-radius: var(--border-radius-xl);
-  background: #f2f2f7;
-
-  /* Surface inner shadow */
+  background-color: var(--text-input-background);
   box-shadow: 0px 2px 3.3px 0px rgba(0, 0, 0, 0.07) inset;
 }
 
 .input {
   flex: 1;
   font-family: var(--font-family-serif);
-  color: var(--color-neutral-300);
+  color: var(--color-input-text);
   border: none;
-  background: transparent;
+
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-medium);
   line-height: var(--line-height-snug);
+  background-color: var(--text-input-background);
 }
 
 *:focus {
   outline: none;
-}
-
-.input__dark {
-  font-family: var(--font-family-serif);
-  color: var(--color-neutral-400);
-
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-medium);
-  line-height: var(--line-height-snug);
 }
 
 .button {
@@ -45,12 +35,13 @@
   padding: 8px 12px;
   justify-content: center;
   align-items: center;
+  cursor: pointer;
+  background-color: #fff;
+  box-shadow:
+    0px 1px 3px 0px rgba(0, 0, 0, 0.1),
+    0px 1px 2px 0px rgba(0, 0, 0, 0.06);
 
   border-radius: 8px;
-  background: #fff;
-
-  box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.1),
-    0px 1px 2px 0px rgba(0, 0, 0, 0.06);
 }
 
 .button__text {
@@ -61,4 +52,12 @@
   font-weight: var(--font-weight-semi);
   line-height: var(--line-height-snug);
   letter-spacing: var(--letter-spacing-wide);
+}
+
+.button__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  box-shadow: none;
 }

@@ -7,7 +7,7 @@ import {
   Tooltip,
   useInput,
   useModal,
-  useToasts
+  useToasts,
 } from "@arconnect/components-rebrand";
 import { CopyIcon, DownloadIcon, TrashIcon } from "@iconicicons/react";
 import { InputWithBtn, InputWrapper } from "~components/arlocal/InputWrapper";
@@ -31,26 +31,20 @@ export interface WalletSettingsDashboardViewParams {
   address: string;
 }
 
-export type WalletSettingsDashboardViewProps =
-  CommonRouteProps<WalletSettingsDashboardViewParams>;
+export type WalletSettingsDashboardViewProps = CommonRouteProps<WalletSettingsDashboardViewParams>;
 
-export function WalletSettingsDashboardView({
-  params: { address }
-}: WalletSettingsDashboardViewProps) {
+export function WalletSettingsDashboardView({ params: { address } }: WalletSettingsDashboardViewProps) {
   // wallets
   const [wallets, setWallets] = useStorage<StoredWallet[]>(
     {
       key: "wallets",
-      instance: ExtensionStorage
+      instance: ExtensionStorage,
     },
-    []
+    [],
   );
 
   // this wallet
-  const wallet = useMemo(
-    () => wallets?.find((w) => w.address === address),
-    [wallets, address]
-  );
+  const wallet = useMemo(() => wallets?.find((w) => w.address === address), [wallets, address]);
 
   // toasts
   const { setToast } = useToasts();
@@ -86,7 +80,7 @@ export function WalletSettingsDashboardView({
       return setToast({
         type: "error",
         content: "Please enter a valid nickname",
-        duration: 2200
+        duration: 2200,
       });
     }
 
@@ -100,22 +94,22 @@ export function WalletSettingsDashboardView({
 
           return {
             ...wallet,
-            nickname: newName
+            nickname: newName,
           };
-        })
+        }),
       );
 
       setToast({
         type: "info",
         content: browser.i18n.getMessage("updated_wallet_name"),
-        duration: 3000
+        duration: 3000,
       });
     } catch (e) {
       console.log("Could not update nickname", e);
       setToast({
         type: "error",
         content: browser.i18n.getMessage("error_updating_wallet_name"),
-        duration: 3000
+        duration: 3000,
       });
     }
   }
@@ -137,10 +131,7 @@ export function WalletSettingsDashboardView({
 
     try {
       // decrypt keyfile
-      const decrypted = await decryptWallet(
-        wallet.keyfile,
-        passwordInput.state
-      );
+      const decrypted = await decryptWallet(wallet.keyfile, passwordInput.state);
 
       // download the file
       downloadKeyfile(address, decrypted);
@@ -155,7 +146,7 @@ export function WalletSettingsDashboardView({
       setToast({
         type: "error",
         content: browser.i18n.getMessage("export_wallet_error"),
-        duration: 2200
+        duration: 2200,
       });
     }
   }
@@ -171,24 +162,14 @@ export function WalletSettingsDashboardView({
         <WalletName>
           {nameServiceName || wallet.nickname}
           {wallet.type === "hardware" && (
-            <Tooltip
-              content={
-                wallet.api.slice(0, 1).toUpperCase() + wallet.api.slice(1)
-              }
-              position="bottom"
-            >
-              <HardwareWalletIcon
-                src={wallet.api === "keystone" ? keystoneLogo : undefined}
-              />
+            <Tooltip content={wallet.api.slice(0, 1).toUpperCase() + wallet.api.slice(1)} position="bottom">
+              <HardwareWalletIcon src={wallet.api === "keystone" ? keystoneLogo : undefined} />
             </Tooltip>
           )}
         </WalletName>
         <WalletAddress>
           {wallet.address}
-          <Tooltip
-            content={browser.i18n.getMessage("copy_address")}
-            position="bottom"
-          >
+          <Tooltip content={browser.i18n.getMessage("copy_address")} position="bottom">
             <CopyButton
               onClick={() => {
                 copy(wallet.address);
@@ -196,9 +177,9 @@ export function WalletSettingsDashboardView({
                   type: "info",
                   content: browser.i18n.getMessage("copied_address", [
                     wallet.nickname,
-                    formatAddress(wallet.address, 3)
+                    formatAddress(wallet.address, 3),
                   ]),
-                  duration: 2200
+                  duration: 2200,
                 });
               }}
             />
@@ -219,27 +200,15 @@ export function WalletSettingsDashboardView({
             Save
           </IconButton>
         </InputWithBtn>
-        {!!nameServiceName && (
-          <Warning>
-            {browser.i18n.getMessage("cannot_edit_with_name_service")}
-          </Warning>
-        )}
+        {!!nameServiceName && <Warning>{browser.i18n.getMessage("cannot_edit_with_name_service")}</Warning>}
       </div>
       <div>
-        <Button
-          fullWidth
-          onClick={() => exportModal.setOpen(true)}
-          disabled={wallet.type === "hardware"}
-        >
+        <Button fullWidth onClick={() => exportModal.setOpen(true)} disabled={wallet.type === "hardware"}>
           <DownloadIcon style={{ marginRight: "5px" }} />
           {browser.i18n.getMessage("export_keyfile")}
         </Button>
         <Spacer y={1} />
-        <Button
-          fullWidth
-          variant="secondary"
-          onClick={() => removeModal.setOpen(true)}
-        >
+        <Button fullWidth variant="secondary" onClick={() => removeModal.setOpen(true)}>
           <TrashIcon style={{ marginRight: "5px" }} />
           {browser.i18n.getMessage("remove_wallet")}
         </Button>
@@ -249,11 +218,7 @@ export function WalletSettingsDashboardView({
         root={document.getElementById("__plasmo")}
         actions={
           <>
-            <Button
-              fullWidth
-              variant="secondary"
-              onClick={() => removeModal.setOpen(false)}
-            >
+            <Button fullWidth variant="secondary" onClick={() => removeModal.setOpen(false)}>
               {browser.i18n.getMessage("cancel")}
             </Button>
             <Button
@@ -263,35 +228,27 @@ export function WalletSettingsDashboardView({
                   await removeWallet(address);
                   setToast({
                     type: "success",
-                    content: browser.i18n.getMessage(
-                      "removed_wallet_notification"
-                    ),
-                    duration: 2000
+                    content: browser.i18n.getMessage("removed_wallet_notification"),
+                    duration: 2000,
                   });
                 } catch (e) {
                   console.log("Error removing wallet", e);
                   setToast({
                     type: "error",
-                    content: browser.i18n.getMessage(
-                      "remove_wallet_error_notification"
-                    ),
-                    duration: 2000
+                    content: browser.i18n.getMessage("remove_wallet_error_notification"),
+                    duration: 2000,
                   });
                 }
-              }}
-            >
+              }}>
               {browser.i18n.getMessage("confirm")}
             </Button>
           </>
-        }
-      >
+        }>
         <CenterText size="3xl" noMargin>
           {browser.i18n.getMessage("remove_wallet_modal_title")}
         </CenterText>
         <Spacer y={0.55} />
-        <CenterText noMargin>
-          {browser.i18n.getMessage("remove_wallet_modal_content")}
-        </CenterText>
+        <CenterText noMargin>{browser.i18n.getMessage("remove_wallet_modal_content")}</CenterText>
         <Spacer y={0.75} />
       </Modal>
       <Modal
@@ -301,11 +258,8 @@ export function WalletSettingsDashboardView({
           <Button fullWidth onClick={exportWallet}>
             {browser.i18n.getMessage("export")}
           </Button>
-        }
-      >
-        <CenterText size="xl">
-          {browser.i18n.getMessage("export_wallet_modal_title")}
-        </CenterText>
+        }>
+        <CenterText size="xl">{browser.i18n.getMessage("export_wallet_modal_title")}</CenterText>
         <Input
           type="password"
           placeholder={browser.i18n.getMessage("password")}
@@ -332,7 +286,7 @@ const Wrapper = styled.div`
 const WalletName = styled(Text).attrs({
   size: "3xl",
   weight: "bold",
-  noMargin: true
+  noMargin: true,
 })`
   display: flex;
   align-items: center;
@@ -341,7 +295,7 @@ const WalletName = styled(Text).attrs({
 `;
 
 const HardwareWalletIcon = styled.img.attrs({
-  draggable: false
+  draggable: false,
 })`
   width: 32px;
   height: 32px;
@@ -373,7 +327,7 @@ export const CopyButton = styled(CopyIcon)`
 `;
 
 const Title = styled(Text).attrs({
-  heading: true
+  heading: true,
 })`
   margin-bottom: 0.6em;
 `;

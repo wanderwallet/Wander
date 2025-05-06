@@ -4,7 +4,7 @@
 .button {
   all: unset;
 
-  border-radius: var(--border-radius-lg);
+  border-radius: var(--border-radius-xl);
   text-align: center;
   box-sizing: border-box;
   width: 100%;
@@ -31,10 +31,6 @@
   &:active:not(:disabled) {
     transform: translateY(1px);
   }
-}
-
-.button__dark {
-  color: var(--color-button-primary-active);
 }
 
 /* Alignment variants */
@@ -131,4 +127,13 @@
 
 .button__blurry {
   backdrop-filter: blur(10px);
+}
+
+.link__disabled {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.button__borderless {
+  border: none;
 }

@@ -1,39 +1,25 @@
-import type { JWKInterface } from "arweave/web/lib/wallet";
 import copy from "copy-to-clipboard";
-import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  Button,
-  Card,
-  Copyable,
-  Row,
-  Upload,
-  WanderIcon,
-  Text
-} from "~components/embed/ui";
+import { useCallback, useEffect, useState } from "react";
+import { Button, Card, Copyable, Row, Upload, WanderIcon, Text, WanderFooter } from "~components/embed/ui";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
+import { useLocation } from "~wallets/router/router.utils";
 
 export function AccountImportKeyfileEmbeddedView() {
   const [loading, setLoading] = useState(false);
+  const { back } = useLocation();
   const [jsonData, setJsonData] = useState<any>(null);
 
   const handleJsonParse = (parsedData: any) => {
     setJsonData(parsedData);
   };
 
-  const {
-    importTempWallet,
-    importedTempWalletAddress,
-    deleteImportedTempWallet,
-    registerWallet
-  } = useEmbedded();
+  const { importTempWallet, importedTempWalletAddress, deleteImportedTempWallet, registerWallet } = useEmbedded();
 
   const handleImportWallet = useCallback(async () => {
     try {
       setLoading(true);
       if (jsonData) {
-        const tempWallet = await importTempWallet(
-          JSON.stringify(jsonData, null, 2)
-        );
+        const tempWallet = await importTempWallet(JSON.stringify(jsonData, null, 2));
 
         if (!tempWallet) {
           setLoading(false);
@@ -59,7 +45,7 @@ export function AccountImportKeyfileEmbeddedView() {
 
   return importedTempWalletAddress ? (
     <Card
-      headerText="Enter Seedphrase"
+      headerText="Enter Keyfile"
       subtitle="Would you like to add this wallet to your account?"
       footerElement={
         <Row>
@@ -70,33 +56,21 @@ export function AccountImportKeyfileEmbeddedView() {
         </Row>
       }
       hasBackButton={true}
-      onBackButtonClick={() => {
-        window.history.back();
-      }}
-      //   hasCloseButton={false}
-      size="auto"
-    >
+      onBackButtonClick={back}
+      size="auto">
       <Copyable
         isFullWidth
-        label="Your account address"
+        label="Your wallet address"
         onClick={() => {
           copy(importedTempWalletAddress);
         }}
         value={importedTempWalletAddress}
       />
       <Row>
-        <Button
-          variant="secondary"
-          size="md"
-          onClick={deleteImportedTempWallet}
-        >
+        <Button variant="secondary" size="md" onClick={deleteImportedTempWallet}>
           No, try again
         </Button>
-        <Button
-          variant="primary"
-          size="md"
-          onClick={() => registerWallet("imported")}
-        >
+        <Button variant="primary" size="md" onClick={() => registerWallet("IMPORTED")}>
           Yes, add
         </Button>
       </Row>
@@ -105,21 +79,10 @@ export function AccountImportKeyfileEmbeddedView() {
     <Card
       headerText="Import private key"
       subtitle="Upload your private key to connect your wallet to your account."
-      footerElement={
-        <Row>
-          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
-            {"Secured by"}
-          </Text>
-          <WanderIcon color="#838383" />
-        </Row>
-      }
+      footerElement={<WanderFooter />}
       hasBackButton={true}
-      onBackButtonClick={() => {
-        window.history.back();
-      }}
-      //   hasCloseButton={false}
-      size="auto"
-    >
+      onBackButtonClick={back}
+      size="auto">
       <Upload
         isFullWidth
         title={"Click to upload"}
@@ -128,12 +91,7 @@ export function AccountImportKeyfileEmbeddedView() {
         loadingText={"Recovering account..."}
         onFileParse={handleJsonParse}
       />
-      <Button
-        isFullWidth
-        size="md"
-        isLoading={loading}
-        onClick={handleImportWallet}
-      >
+      <Button isFullWidth size="md" isLoading={loading} isDisabled={!jsonData || loading} onClick={handleImportWallet}>
         Import
       </Button>
     </Card>

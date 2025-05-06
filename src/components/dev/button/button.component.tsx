@@ -21,7 +21,7 @@ export function DevButton({
   onClick: onClickProp,
   variant = "primary",
   isLoading,
-  isDisabled
+  isDisabled,
 }: DevButtonProps) {
   const { navigate } = useLocation();
 
@@ -40,11 +40,7 @@ export function DevButton({
   }, [to, onClickProp]);
 
   const buttonElement = (
-    <button
-      className={`${styles.root} ${styles[variant]}`}
-      onClick={onClick}
-      disabled={isDisabled || isLoading}
-    >
+    <button className={`${styles.root} ${styles[variant]}`} onClick={onClick} disabled={isDisabled || isLoading}>
       {isLoading ? <DevSpinner /> : label}
     </button>
   );

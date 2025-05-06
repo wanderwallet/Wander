@@ -1,27 +1,21 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation } from "~wallets/router/router.utils";
 
-import {
-  Card,
-  Copyable,
-  Row,
-  WanderIcon,
-  Text,
-  Button,
-  SeedInput
-} from "~components/embed/ui";
+import { Card, Copyable, Row, Button, SeedInput, WanderFooter } from "~components/embed/ui";
 import copy from "copy-to-clipboard";
+import { toast } from "react-toastify";
 
 export function AuthRecoverAccountSeedphraseEmbeddedView() {
   const [loading, setLoading] = useState(false);
-  const [seedPhrase, setSeedPhrase] = useState<string[]>([]);
+  const [seedPhrase, setSeedPhrase] = useState<string[]>(Array(12).fill(""));
+  const { navigate, back } = useLocation();
   const {
     importTempWallet,
     importedTempWalletAddress,
     deleteImportedTempWallet,
     fetchRecoverableAccounts,
-    clearRecoverableAccounts
+    clearRecoverableAccounts,
   } = useEmbedded();
 
   const handleImportWallet = useCallback(async () => {
@@ -30,7 +24,7 @@ export function AuthRecoverAccountSeedphraseEmbeddedView() {
       if (!seedPhrase.length) return;
       await importTempWallet(seedPhrase.join(" "));
     } catch (error) {
-      alert(error);
+      toast.error(error);
     } finally {
       setLoading(false);
     }
@@ -44,8 +38,6 @@ export function AuthRecoverAccountSeedphraseEmbeddedView() {
     });
   }, []);
 
-  const { navigate } = useLocation();
-
   const handleRecover = async () => {
     try {
       setLoading(true);
@@ -53,7 +45,7 @@ export function AuthRecoverAccountSeedphraseEmbeddedView() {
       setLoading(false);
       navigate("/auth/recover-account/authentication");
     } catch (error) {
-      alert(error);
+      toast.error(error);
       setLoading(false);
     }
   };
@@ -63,86 +55,56 @@ export function AuthRecoverAccountSeedphraseEmbeddedView() {
     clearRecoverableAccounts();
   }, []);
 
+  const isSeedPhraseIncomplete = useMemo(() => {
+    if (seedPhrase.length !== 12) return true;
+    return seedPhrase.some((word) => word.trim() === "");
+  }, [seedPhrase]);
+
   return importedTempWalletAddress ? (
     <Card
-      headerText="Recover your account"
-      subtitle="Enter seedphrase"
-      footerElement={
-        <Row>
-          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
-            {"Secured by"}
-          </Text>
-          <WanderIcon color="#838383" />
-        </Row>
-      }
+      headerText="Enter Seedphrase"
+      subtitle="Would you like to add this wallet to your account?"
+      footerElement={<WanderFooter />}
       hasBackButton={true}
-      onBackButtonClick={() => {
-        window.history.back();
-      }}
+      onBackButtonClick={back}
       hasCloseButton={true}
-      onCloseButtonClick={() => {
-        window.location.href = "/auth/recover-account";
-      }}
-      size="auto"
-    >
+      onCloseButtonClick={() => navigate(`/auth/recover-account`)}
+      style={{ gap: 24 }}
+      size="auto">
       <Copyable
         isFullWidth
-        label="Your account address"
+        style={{ padding: 0 }}
+        label="Your wallet address"
         onClick={() => {
           copy(importedTempWalletAddress);
         }}
         value={importedTempWalletAddress}
       />
       <Row>
-        <Button
-          variant="secondary"
-          size="md"
-          onClick={deleteImportedTempWallet}
-        >
+        <Button variant="secondary" size="md" onClick={deleteImportedTempWallet}>
           No, try again
         </Button>
-        <Button
-          variant="primary"
-          size="md"
-          onClick={() => handleRecover()}
-          isLoading={loading}
-        >
+        <Button variant="primary" size="md" onClick={handleRecover} isLoading={loading}>
           Yes, recover
         </Button>
       </Row>
     </Card>
   ) : (
     <Card
-      headerText="Recover your account"
-      subtitle="Enter seedphrase"
-      footerElement={
-        <Row>
-          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
-            {"Secured by"}
-          </Text>
-          <WanderIcon color="#838383" />
-        </Row>
-      }
+      headerText="Enter Seedphrase"
+      subtitle="Enter your seedphrase to recover your wallet."
+      footerElement={<WanderFooter />}
       hasBackButton={true}
-      onBackButtonClick={() => {
-        window.history.back();
-      }}
-      //   hasCloseButton={false}
-      size="auto"
-    >
-      <SeedInput
-        seedPhrase={seedPhrase}
-        handleSubmit={handleImportWallet}
-        handleCopyToClipboard={() => copy(seedPhrase.join(" "))}
-        handleInputChange={handleInputChange}
-      />
+      onBackButtonClick={back}
+      size="auto">
+      <SeedInput seedPhrase={seedPhrase} handleSubmit={handleImportWallet} handleInputChange={handleInputChange} />
       <Button
         isFullWidth
         size="md"
         onClick={handleImportWallet}
         isLoading={loading}
-      >
-        Recover
+        isDisabled={isSeedPhraseIncomplete}>
+        {isSeedPhraseIncomplete ? "Complete seedphrase" : "Next"}
       </Button>
     </Card>
   );

@@ -1,24 +1,16 @@
-import {
-  type DisplayTheme,
-  Section,
-  Text,
-  Tooltip
-} from "@arconnect/components-rebrand";
+import { type DisplayTheme, Section, Text, Tooltip } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
 import { Action, Avatar, CloseLayer, NoAvatarIcon } from "./WalletHeader";
 import { AnimatePresence } from "framer-motion";
 import { useTheme } from "~utils/theme";
 import { useStorage } from "~utils/storage";
 import { ExtensionStorage } from "~utils/storage";
-import HardwareWalletIcon, {
-  hwIconAnimateProps
-} from "~components/hardware/HardwareWalletIcon";
+import HardwareWalletIcon, { hwIconAnimateProps } from "~components/hardware/HardwareWalletIcon";
 import { useHardwareApi } from "~wallets/hooks";
 import React, { useEffect, useMemo, useState } from "react";
 import keystoneLogo from "url:/assets/hardware/keystone.png";
 import WalletSwitcher from "./WalletSwitcher";
 import styled from "styled-components";
-import { svgie } from "~utils/svgies";
 import type { AppLogoInfo } from "~applications/application";
 import Squircle from "~components/Squircle";
 import { useLocation } from "~wallets/router/router.utils";
@@ -47,7 +39,7 @@ export default function HeadV2({
   padding,
   showBack = true,
   appInfo,
-  onAppInfoClick
+  onAppInfoClick,
 }: HeadV2Props) {
   const theme = useTheme();
   const { back } = useLocation();
@@ -72,9 +64,7 @@ export default function HeadV2({
       // if the difference between the scroll height
       // and the client height if not enough
       // don't let the scroll direction change
-      const diff =
-        document.documentElement.scrollHeight -
-        document.documentElement.clientHeight;
+      const diff = document.documentElement.scrollHeight - document.documentElement.clientHeight;
 
       if (diff < 85) return;
 
@@ -89,15 +79,10 @@ export default function HeadV2({
   // current address
   const [activeAddress] = useStorage<string>({
     key: "active_address",
-    instance: ExtensionStorage
+    instance: ExtensionStorage,
   });
 
   const nameServiceProfile = useNameServiceProfile(activeAddress);
-
-  const svgieAvatar = useMemo(
-    () => svgie(activeAddress, { asDataURI: true }),
-    [activeAddress]
-  );
 
   // wallet switcher open
   const [isOpen, setOpen] = useState(false);
@@ -118,29 +103,21 @@ export default function HeadV2({
       scrolled={scrolled}
       padding={padding}
       center={appName === undefined}
-      hasBackButton={showBack}
-    >
+      hasBackButton={showBack}>
       {showBack ? (
         <BackButton
           onClick={async () => {
             if (onBack) await onBack();
             else back();
-          }}
-        >
+          }}>
           <BackButtonIcon />
         </BackButton>
       ) : null}
-      <PageTitle showLeftMargin={showBack && !showOptions && !!appName}>
-        {title}
-      </PageTitle>
+      <PageTitle showLeftMargin={showBack && !showOptions && !!appName}>{title}</PageTitle>
       {!showOptions && appName ? (
         <Tooltip content={appName} position="bottomEnd">
           <SquircleWrapper>
-            <SquircleImg
-              img={appInfo?.logo}
-              placeholderText={appIconPlaceholderText}
-              onClick={onAppInfoClick}
-            />
+            <SquircleImg img={appInfo?.logo} placeholderText={appIconPlaceholderText} onClick={onAppInfoClick} />
           </SquircleWrapper>
         </Tooltip>
       ) : null}
@@ -149,38 +126,26 @@ export default function HeadV2({
           <AvatarButton>
             {showOptions && (
               <ButtonAvatar
-                img={
-                  nameServiceProfile?.logo
-                    ? concatGatewayURL(gateway) + "/" + nameServiceProfile.logo
-                    : svgieAvatar
-                }
+                img={nameServiceProfile?.logo && concatGatewayURL(gateway) + "/" + nameServiceProfile.logo}
                 onClick={() => {
                   setOpen(true);
-                }}
-              >
-                {!nameServiceProfile?.logo && !svgieAvatar && <NoAvatarIcon />}
+                }}>
+                {!nameServiceProfile?.logo && <NoAvatarIcon />}
                 <AnimatePresence initial={false}>
                   {hardwareApi === "keystone" && (
-                    <HardwareWalletIcon
-                      icon={keystoneLogo}
-                      color="#2161FF"
-                      {...hwIconAnimateProps}
-                    />
+                    <HardwareWalletIcon icon={keystoneLogo} color="#2161FF" {...hwIconAnimateProps} />
                   )}
                 </AnimatePresence>
               </ButtonAvatar>
             )}
             {isEmbedded && (
-              <Tooltip
-                content={browser.i18n.getMessage("close")}
-                position="bottomEnd"
-              >
+              <Tooltip content={browser.i18n.getMessage("close")} position="bottomEnd">
                 <Action
                   as={MinimizeIcon}
                   onClick={() => {
                     postEmbeddedMessage({
                       type: "embedded_close",
-                      data: null
+                      data: null,
                     });
                   }}
                   style={{ width: "24px", height: "24px" }}
@@ -217,7 +182,9 @@ const HeadWrapper = styled(Section)<{
   display: flex;
   flex-direction: row;
   width: full;
-  transition: padding 0.07s ease-in-out, border-color 0.23s ease-in-out;
+  transition:
+    padding 0.07s ease-in-out,
+    border-color 0.23s ease-in-out;
   padding: ${(props) => (props.padding ? props.padding : "24px")};
   justify-content: ${(props) => (props.center ? "center" : "space-between")};
   align-items: center;
@@ -225,11 +192,7 @@ const HeadWrapper = styled(Section)<{
   backdrop-filter: blur(15px);
   border-bottom: 1px solid;
   border-bottom-color: ${(props) =>
-    props.scrolled
-      ? "rgba(" +
-        (props.displayTheme === "light" ? "235, 235, 241" : "31, 30, 47") +
-        ")"
-      : "transparent"};
+    props.scrolled ? "rgba(" + (props.displayTheme === "light" ? "235, 235, 241" : "31, 30, 47") + ")" : "transparent"};
   user-select: none;
 `;
 
@@ -279,7 +242,7 @@ const BackButtonIcon = styled(ArrowNarrowLeft)`
 `;
 
 const PageTitle = styled(Text).attrs({
-  noMargin: true
+  noMargin: true,
 })<{ showLeftMargin: boolean }>`
   font-size: 1.375rem;
   font-weight: 500;
@@ -306,22 +269,19 @@ const ButtonAvatar = styled(Avatar)`
   width: 2.1rem;
   height: 2.1rem;
 
-  & svg {
+  ${NoAvatarIcon} {
+    font-size: 1.4rem;
     transition: transform 0.07s ease-in-out;
   }
 
-  &:active svg {
-    transform: scale(0.93);
+  &:active ${NoAvatarIcon} {
+    transform: translate(-50%, -50%) scale(0.93);
   }
 
   ${HardwareWalletIcon} {
     position: absolute;
     right: -5px;
     bottom: -5px;
-  }
-
-  ${NoAvatarIcon} {
-    font-size: 1.4rem;
   }
 `;
 

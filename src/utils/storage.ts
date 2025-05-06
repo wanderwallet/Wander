@@ -3,10 +3,7 @@ import { type Gateway } from "~gateways/gateway";
 import { Storage } from "@plasmohq/storage";
 import { useStorage as usePlasmoStorage } from "@plasmohq/storage/hook";
 import { useMemo } from "react";
-import {
-  StorageMock,
-  type StorageMockInterface
-} from "~iframe/storage/plasmo-storage/plasmo-storage.mock";
+import { StorageMock, type StorageMockInterface } from "~iframe/storage/plasmo-storage/plasmo-storage.mock";
 import { IS_EMBEDDED_APP } from "./embedded/embedded.constants";
 
 /**
@@ -16,21 +13,21 @@ import { IS_EMBEDDED_APP } from "./embedded/embedded.constants";
  *   version needs to persist are stored manually in `localStorage` (e.g. `deviceNonce`, shares...)
  */
 
-export const ExtensionStorage = IS_EMBEDDED_APP
-  ? new StorageMock()
-  : new Storage({ area: "local" });
+export const ExtensionStorage = IS_EMBEDDED_APP ? new StorageMock("session") : new Storage({ area: "local" });
 
-export const EmbeddedStorage = ExtensionStorage as StorageMockInterface;
+export const PersistentStorage = IS_EMBEDDED_APP ? new StorageMock("local") : ExtensionStorage;
 
 /**
  * Temporary storage for submitted transfers, with values
  * that are NOT copied to window.sessionStorage
  */
-export const TempTransactionStorage = new Storage({
-  area: "session"
-  // This copies the data to localStorage, NOT to sessionStorage:
-  // allCopied: true,
-});
+export const TempTransactionStorage = IS_EMBEDDED_APP
+  ? ExtensionStorage
+  : new Storage({
+      area: "session",
+      // This copies the data to localStorage, NOT to sessionStorage:
+      // allCopied: true,
+    });
 
 /**
  * Session storage raw transfer tx. This will
@@ -60,7 +57,7 @@ export const useStorage: typeof usePlasmoStorage = IS_EMBEDDED_APP
       const [value, ...otherReturnValues] = usePlasmoStorage(rawKey, onInit);
 
       const returnValue = useMemo(() => {
-        return typeof onInit === "function" ? onInit(value) : value ?? onInit;
+        return typeof onInit === "function" ? onInit(value) : (value ?? onInit);
       }, [value]);
 
       if (returnValue === null) debugger;

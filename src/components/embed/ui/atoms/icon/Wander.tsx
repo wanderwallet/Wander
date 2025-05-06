@@ -8,8 +8,7 @@ const SvgWander = (props: SVGProps<SVGSVGElement>) => (
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
     color="currentColor"
-    {...props}
-  >
+    {...props}>
     <path
       fillRule="evenodd"
       clipRule="evenodd"

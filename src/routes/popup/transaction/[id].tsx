@@ -2,31 +2,12 @@ import { balanceToFractioned, formatFiatBalance } from "~tokens/currency";
 import { AnimatePresence, type Variants, motion } from "framer-motion";
 import { Button, Section, Spacer, Text } from "@arconnect/components-rebrand";
 import type { GQLNodeInterface, GQLTagInterface } from "ar-gql/dist/faces";
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type MutableRefObject
-} from "react";
-import {
-  STAKED_GQL_FULL_HISTORY,
-  useGateway,
-  useGraphqlGateways
-} from "~gateways/wayfinder";
+import { useCallback, useEffect, useMemo, useRef, useState, type MutableRefObject } from "react";
+import { STAKED_GQL_FULL_HISTORY, useGateway, useGraphqlGateways } from "~gateways/wayfinder";
 import { useLocation, useSearchParams } from "~wallets/router/router.utils";
-import {
-  ChevronDownIcon,
-  ChevronUpIcon,
-  DownloadIcon
-} from "@iconicicons/react";
+import { ChevronDownIcon, ChevronUpIcon, DownloadIcon } from "@iconicicons/react";
 import { formatAddress } from "~utils/format";
-import {
-  concatGatewayURL,
-  getArweaveLink,
-  urlToGateway
-} from "~gateways/utils";
+import { concatGatewayURL, getArweaveLink, urlToGateway } from "~gateways/utils";
 import { gql } from "~gateways/api";
 import CustomGatewayWarning from "~components/auth/CustomGatewayWarning";
 import Skeleton from "~components/Skeleton";
@@ -38,27 +19,20 @@ import styled from "styled-components";
 import Arweave from "arweave";
 import HeadV2 from "~components/popup/HeadV2";
 import dayjs from "dayjs";
-import {
-  AutoContactPic,
-  generateProfileIcon,
-  ProfilePicture
-} from "~components/Recipient";
+import { AutoContactPic, generateProfileIcon, ProfilePicture } from "~components/Recipient";
 import { ExtensionStorage, TempTransactionStorage } from "~utils/storage";
 import { useContact } from "~contacts/hooks";
 import { EventType, PageType, trackEvent, trackPage } from "~utils/analytics";
 import BigNumber from "bignumber.js";
-import { fetchTokenByProcessId } from "~lib/transactions";
 import { useStorage } from "~utils/storage";
 import type { StoredWallet } from "~wallets";
-import type {
-  WanderRoutePath,
-  CommonRouteProps
-} from "~wallets/router/router.types";
+import type { WanderRoutePath, CommonRouteProps } from "~wallets/router/router.types";
 import { ErrorTypes } from "~utils/error/error.utils";
 import { LinkExternal02 } from "@untitled-ui/icons-react";
 import { AdaptiveBalanceDisplay } from "~components/AdaptiveBalanceDisplay";
 import arweaveLogo from "url:/assets/ar/logo_light.png";
 import { useTokenPrice } from "~tokens/hooks";
+import { fetchTokenByProcessId } from "~tokens/aoTokens/ao";
 
 // pull contacts and check if to address is in contacts
 
@@ -77,9 +51,7 @@ export interface TransactionViewParams {
 
 export type TransactionViewProps = CommonRouteProps<TransactionViewParams>;
 
-export function TransactionView({
-  params: { id, gateway: gw, message }
-}: TransactionViewProps) {
+export function TransactionView({ params: { id, gateway: gw, message } }: TransactionViewProps) {
   const { navigate, back } = useLocation();
   const { back: backPath, fromSend } = useSearchParams<{
     back?: string;
@@ -97,14 +69,14 @@ export function TransactionView({
   const [wallets] = useStorage<StoredWallet[]>(
     {
       key: "wallets",
-      instance: ExtensionStorage
+      instance: ExtensionStorage,
     },
-    []
+    [],
   );
 
   const [activeAddress] = useStorage<string>({
     key: "active_address",
-    instance: ExtensionStorage
+    instance: ExtensionStorage,
   });
 
   const fromAddress = transaction?.owner.address;
@@ -138,19 +110,18 @@ export function TransactionView({
   const arweave = useMemo(() => new Arweave(gateway), [gateway]);
 
   const transactionDirection = useMemo(() => {
+    if (fromSend) return "Sent";
+
     if (!transaction || !activeAddress) return;
 
     const isAoTransaction = transaction.tags.some(
-      (tag: GQLTagInterface) =>
-        tag.name === "Data-Protocol" && tag.value === "ao"
+      (tag: GQLTagInterface) => tag.name === "Data-Protocol" && tag.value === "ao",
     );
 
     if (isAoTransaction) {
       const actionTag = transaction.tags.find((tag) => tag.name === "Action");
       if (actionTag?.value === "Transfer") {
-        const recipientTag = transaction.tags.find(
-          (tag) => tag.name === "Recipient"
-        );
+        const recipientTag = transaction.tags.find((tag) => tag.name === "Recipient");
         if (recipientTag) {
           return recipientTag.value === activeAddress ? "Received" : "Sent";
         }
@@ -160,7 +131,7 @@ export function TransactionView({
     if (!transaction.recipient) return;
 
     return transaction.owner.address === activeAddress ? "Sent" : "Received";
-  }, [transaction, wallets]);
+  }, [transaction, activeAddress, fromSend]);
 
   function handleDone() {
     navigate((backPath as WanderRoutePath) || "/");
@@ -174,9 +145,35 @@ export function TransactionView({
 
     const fetchTx = async () => {
       const cachedTx = JSON.parse(localStorage.getItem("latest_tx") || "{}");
+      if (cachedTx.id === id) {
+        setTransaction(cachedTx);
 
-      // load cached tx
-      if (cachedTx?.id === id) setTransaction(cachedTx);
+        // AO transaction
+        if (cachedTx.tags.some((tag) => tag.name === "Data-Protocol" && tag.value === "ao")) {
+          setAo({ isAo: true, tokenId: cachedTx.recipient });
+          const tokenIdTag = cachedTx.tags.find((tag) => tag.name === "Token-Address" || tag.name === "Token");
+          const tickerTag = cachedTx.tags.find((tag) => tag.name === "Ticker");
+
+          if (tickerTag) {
+            setTicker(tickerTag.value);
+          } else {
+            setTicker(formatAddress(tokenIdTag.value, 4));
+          }
+
+          try {
+            const tokenInfo = await fetchTokenByProcessId(tokenIdTag.value);
+            if (tokenInfo?.Logo) {
+              const tokenLogo = await getArweaveLink(tokenInfo.Logo);
+              setLogo(tokenLogo);
+            } else {
+              setLogo(arweaveLogo);
+            }
+          } catch {
+            setLogo(arweaveLogo);
+          }
+        }
+        return;
+      }
 
       const gateway = graphqlGateways[fetchCount % graphqlGateways.length];
 
@@ -210,7 +207,7 @@ export function TransactionView({
           }
         `,
         { id },
-        gateway
+        gateway,
       );
 
       if (!data.transaction) {
@@ -219,32 +216,20 @@ export function TransactionView({
       } else {
         timeoutID = undefined;
         try {
-          const dataProtocolTag = data.transaction.tags.find(
-            (tag) => tag.name === "Data-Protocol"
-          );
+          const dataProtocolTag = data.transaction.tags.find((tag) => tag.name === "Data-Protocol");
           if (dataProtocolTag && dataProtocolTag.value === "ao") {
             setAo({ isAo: true, tokenId: data.transaction.recipient });
-            const aoRecipient = data.transaction.tags.find(
-              (tag) => tag.name === "Recipient"
-            );
-            const aoQuantity = data.transaction.tags.find(
-              (tag) => tag.name === "Quantity"
-            );
+            const aoRecipient = data.transaction.tags.find((tag) => tag.name === "Recipient");
+            const aoQuantity = data.transaction.tags.find((tag) => tag.name === "Quantity");
 
             if (aoQuantity) {
-              const tokenInfo = await fetchTokenByProcessId(
-                data.transaction.recipient
-              );
+              const tokenInfo = await fetchTokenByProcessId(data.transaction.recipient);
               if (tokenInfo) {
                 const amount = balanceToFractioned(aoQuantity.value, {
                   id: data.transaction.recipient,
-                  decimals: Number(tokenInfo.Denomination)
+                  decimals: Number(tokenInfo.Denomination),
                 });
-                setTicker(
-                  tokenInfo?.type === "collectible"
-                    ? tokenInfo.Name!
-                    : tokenInfo.Ticker!
-                );
+                setTicker(tokenInfo?.type === "collectible" ? tokenInfo.Name! : tokenInfo.Ticker!);
                 if (tokenInfo?.Logo) {
                   const tokenLogo = await getArweaveLink(tokenInfo.Logo);
                   setLogo(tokenLogo);
@@ -253,7 +238,7 @@ export function TransactionView({
                 }
                 data.transaction.quantity = {
                   ar: amount.toFixed(),
-                  winston: ""
+                  winston: "",
                 };
                 data.transaction.recipient = aoRecipient.value;
               } else {
@@ -261,11 +246,11 @@ export function TransactionView({
                 setTicker(formatAddress(data.transaction.recipient, 4));
                 const amount = balanceToFractioned(aoQuantity.value, {
                   id: data.transaction.recipient,
-                  decimals: 0
+                  decimals: 0,
                 });
                 data.transaction.quantity = {
                   ar: amount.toFixed(),
-                  winston: ""
+                  winston: "",
                 };
               }
             }
@@ -302,9 +287,7 @@ export function TransactionView({
   // currency setting
   const [currency] = useSetting<string>("currency");
 
-  const { price, hasPrice, loading } = useTokenPrice(
-    ao.isAo ? ao.tokenId : "AR"
-  );
+  const { price, hasPrice, loading } = useTokenPrice(ao.isAo ? ao.tokenId : "AR");
 
   // transaction price
   const fiatPrice = useMemo(() => {
@@ -316,9 +299,7 @@ export function TransactionView({
 
   // get content type
   const getContentType = () =>
-    transaction?.data?.type ||
-    transaction?.tags?.find((t) => t.name.toLowerCase() === "content-type")
-      ?.value;
+    transaction?.data?.type || transaction?.tags?.find((t) => t.name.toLowerCase() === "content-type")?.value;
 
   // transaction data
   const [data, setData] = useState<string>("");
@@ -332,9 +313,7 @@ export function TransactionView({
   }, [transaction]);
 
   const isPrintTx = useMemo(() => {
-    return transaction?.tags?.some(
-      (tag) => tag.name === "Type" && tag.value === "Print-Archive"
-    );
+    return transaction?.tags?.some((tag) => tag.name === "Type" && tag.value === "Print-Archive");
   }, [transaction]);
 
   const isImage = useMemo(() => {
@@ -357,9 +336,7 @@ export function TransactionView({
       }
 
       // load data
-      let txData = await (
-        await fetch(`${concatGatewayURL(gateway)}/${id}`)
-      ).text();
+      let txData = await (await fetch(`${concatGatewayURL(gateway)}/${id}`)).text();
 
       // format json
       if (type === "application/json") {
@@ -390,9 +367,7 @@ export function TransactionView({
     <Wrapper>
       <div>
         <HeadV2
-          title={browser.i18n.getMessage(
-            message ? "message" : "transaction_details"
-          )}
+          title={browser.i18n.getMessage(message ? "message" : "transaction_details")}
           back={() => {
             // This is misleading and `backPath` is only used to indicate whether the back button actually navigates
             // back or goes straight to Home. This is because this page is also accessed from the Home > Transactions
@@ -415,43 +390,28 @@ export function TransactionView({
                     display: "flex",
                     paddingTop: 0,
                     flexDirection: "column",
-                    gap: 8
-                  }}
-                >
-                  {transactionDirection && (
-                    <TransactionDirection>
-                      {transactionDirection}
-                    </TransactionDirection>
-                  )}
+                    gap: 8,
+                  }}>
+                  {transactionDirection && <TransactionDirection>{transactionDirection}</TransactionDirection>}
                   <AdaptiveBalanceDisplay
                     balance={transaction.quantity.ar}
                     ticker={ticker || "AR"}
                     ao={ao}
                     logo={logo}
                   />
-                  {hasPrice && !loading && (
-                    <FiatAmount>
-                      {formatFiatBalance(fiatPrice, currency)}
-                    </FiatAmount>
-                  )}
+                  {hasPrice && !loading && <FiatAmount>{formatFiatBalance(fiatPrice, currency)}</FiatAmount>}
                 </Section>
-                <AnimatePresence>
-                  {gw && <CustomGatewayWarning simple />}
-                </AnimatePresence>
+                <AnimatePresence>{gw && <CustomGatewayWarning simple />}</AnimatePresence>
               </>
             )}
             <Section showPaddingVertical={false}>
               <Properties>
                 <TransactionProperty>
-                  <PropertyName>
-                    {browser.i18n.getMessage("transaction_id")}
-                  </PropertyName>
+                  <PropertyName>{browser.i18n.getMessage("transaction_id")}</PropertyName>
                   <PropertyValue>{formatAddress(id, 6)}</PropertyValue>
                 </TransactionProperty>
                 <TransactionProperty>
-                  <PropertyName>
-                    {browser.i18n.getMessage("transaction_from")}
-                  </PropertyName>
+                  <PropertyName>{browser.i18n.getMessage("transaction_from")}</PropertyName>
                   <PropertyValue>
                     <div>
                       {!fromContact ? (
@@ -466,14 +426,11 @@ export function TransactionView({
                                   e.preventDefault();
 
                                   trackEvent(EventType.ADD_CONTACT, {
-                                    fromSendFlow: true
+                                    fromSendFlow: true,
                                   });
 
-                                  navigate(
-                                    `/quick-settings/contacts/new?address=${fromAddress}`
-                                  );
-                                }}
-                              >
+                                  navigate(`/quick-settings/contacts/new?address=${fromAddress}`);
+                                }}>
                                 {browser.i18n.getMessage("create_contact")}
                               </span>
                             </AddContact>
@@ -482,28 +439,20 @@ export function TransactionView({
                       ) : (
                         <div style={{ display: "flex", alignItems: "center" }}>
                           {fromContact.profileIcon ? (
-                            <ProfilePicture
-                              src={fromContact.profileIcon}
-                              size="19px"
-                            />
+                            <ProfilePicture src={fromContact.profileIcon} size="19px" />
                           ) : (
                             <AutoContactPic size="19px">
-                              {generateProfileIcon(
-                                fromContact?.name || fromContact.address
-                              )}
+                              {generateProfileIcon(fromContact?.name || fromContact.address)}
                             </AutoContactPic>
                           )}
-                          {fromContact?.name ||
-                            formatAddress(fromContact.address, 6)}
+                          {fromContact?.name || formatAddress(fromContact.address, 6)}
                         </div>
                       )}
                     </div>
                   </PropertyValue>
                 </TransactionProperty>
                 <TransactionProperty>
-                  <PropertyName>
-                    {browser.i18n.getMessage("transaction_to")}
-                  </PropertyName>
+                  <PropertyName>{browser.i18n.getMessage("transaction_to")}</PropertyName>
                   <PropertyValue>
                     <div>
                       {!toContact ? (
@@ -518,14 +467,11 @@ export function TransactionView({
                                   e.preventDefault();
 
                                   trackEvent(EventType.ADD_CONTACT, {
-                                    fromSendFlow: true
+                                    fromSendFlow: true,
                                   });
 
-                                  navigate(
-                                    `/quick-settings/contacts/new?address=${toAddress}`
-                                  );
-                                }}
-                              >
+                                  navigate(`/quick-settings/contacts/new?address=${toAddress}`);
+                                }}>
                                 {browser.i18n.getMessage("create_contact")}
                               </span>
                             </AddContact>
@@ -534,56 +480,36 @@ export function TransactionView({
                       ) : (
                         <div style={{ display: "flex", alignItems: "center" }}>
                           {toContact.profileIcon ? (
-                            <ProfilePicture
-                              src={toContact.profileIcon}
-                              size="19px"
-                            />
+                            <ProfilePicture src={toContact.profileIcon} size="19px" />
                           ) : (
                             <AutoContactPic size="19px">
-                              {generateProfileIcon(
-                                toContact?.name || toContact.address
-                              )}
+                              {generateProfileIcon(toContact?.name || toContact.address)}
                             </AutoContactPic>
                           )}
-                          {toContact?.name ||
-                            formatAddress(toContact.address, 6)}
+                          {toContact?.name || formatAddress(toContact.address, 6)}
                         </div>
                       )}
                     </div>
                   </PropertyValue>
                 </TransactionProperty>
                 <TransactionProperty>
-                  <PropertyName>
-                    {browser.i18n.getMessage("transaction_fee")}
-                  </PropertyName>
+                  <PropertyName>{browser.i18n.getMessage("transaction_fee")}</PropertyName>
                   <PropertyValue>{transaction.fee.ar} AR</PropertyValue>
                 </TransactionProperty>
                 {!message && (
                   <TransactionProperty>
-                    <PropertyName>
-                      {browser.i18n.getMessage("transaction_size")}
-                    </PropertyName>
-                    <PropertyValue>
-                      {prettyBytes(Number(transaction.data.size))}
-                    </PropertyValue>
+                    <PropertyName>{browser.i18n.getMessage("transaction_size")}</PropertyName>
+                    <PropertyValue>{prettyBytes(Number(transaction.data.size))}</PropertyValue>
                   </TransactionProperty>
                 )}
                 {transaction.block && (
                   <>
                     <TransactionProperty>
-                      <PropertyName>
-                        {browser.i18n.getMessage("transaction_block_timestamp")}
-                      </PropertyName>
-                      <PropertyValue>
-                        {dayjs(transaction.block.timestamp * 1000).format(
-                          "MMM DD, YYYY"
-                        )}
-                      </PropertyValue>
+                      <PropertyName>{browser.i18n.getMessage("transaction_block_timestamp")}</PropertyName>
+                      <PropertyValue>{dayjs(transaction.block.timestamp * 1000).format("MMM DD, YYYY")}</PropertyValue>
                     </TransactionProperty>
                     <TransactionProperty>
-                      <PropertyName>
-                        {browser.i18n.getMessage("transaction_block_height")}
-                      </PropertyName>
+                      <PropertyName>{browser.i18n.getMessage("transaction_block_height")}</PropertyName>
                       <PropertyValue>
                         {"#"}
                         {transaction.block.height}
@@ -592,21 +518,16 @@ export function TransactionView({
                   </>
                 )}
                 <TransactionProperty>
-                  <PropertyName>
-                    {browser.i18n.getMessage("transaction_confirmations")}
-                  </PropertyName>
-                  <PropertyValue>
-                    {confirmations.toLocaleString()}
-                  </PropertyValue>
+                  <PropertyName>{browser.i18n.getMessage("transaction_confirmations")}</PropertyName>
+                  <PropertyValue>{confirmations.toLocaleString()}</PropertyValue>
                 </TransactionProperty>
                 <PropertyName
                   style={{
                     cursor: "pointer",
                     display: "flex",
-                    alignItems: "center"
+                    alignItems: "center",
                   }}
-                  onClick={() => setShowTags(!showTags)}
-                >
+                  onClick={() => setShowTags(!showTags)}>
                   {browser.i18n.getMessage("transaction_tags")}
                   {showTags ? <ChevronUpIcon /> : <ChevronDownIcon />}
                 </PropertyName>
@@ -618,14 +539,12 @@ export function TransactionView({
                           <PropertyName>{tag.name}</PropertyName>
                           <TagValue>{tag.value}</TagValue>
                         </TransactionProperty>
-                      )
+                      ),
                   )}
                 {input && (
                   <>
                     <Spacer y={0.1} />
-                    <PropertyName>
-                      {browser.i18n.getMessage("transaction_input")}
-                    </PropertyName>
+                    <PropertyName>{browser.i18n.getMessage("transaction_input")}</PropertyName>
                     <CodeArea>{JSON.stringify(input, undefined, 2)}</CodeArea>
                   </>
                 )}
@@ -636,36 +555,21 @@ export function TransactionView({
                       style={{
                         cursor: "pointer",
                         display: "flex",
-                        alignItems: "center"
-                      }}
-                    >
-                      <a
-                        href={`${concatGatewayURL(gateway)}/${id}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
+                        alignItems: "center",
+                      }}>
+                      <a href={`${concatGatewayURL(gateway)}/${id}`} target="_blank" rel="noopener noreferrer">
                         {!message
                           ? browser.i18n.getMessage("transaction_data")
                           : browser.i18n.getMessage("signature_message")}
-                        <DownloadIcon
-                          style={{ width: "18px", height: "18px" }}
-                        />
+                        <DownloadIcon style={{ width: "18px", height: "18px" }} />
                       </a>
                     </PropertyName>
                     {!isPrintTx &&
                       ((!isImage && (
                         <CodeArea>
-                          {(isBinary &&
-                            browser.i18n.getMessage(
-                              "transaction_data_binary_warning"
-                            )) ||
-                            data}
+                          {(isBinary && browser.i18n.getMessage("transaction_data_binary_warning")) || data}
                         </CodeArea>
-                      )) || (
-                        <ImageDisplay
-                          src={`${concatGatewayURL(gateway)}/${id}`}
-                        />
-                      ))}
+                      )) || <ImageDisplay src={`${concatGatewayURL(gateway)}/${id}`} />)}
                   </>
                 )}
               </Properties>
@@ -715,12 +619,7 @@ export function TransactionView({
       </div>
       <AnimatePresence>
         {id && transaction && (
-          <motion.div
-            variants={opacityAnimation}
-            initial="hidden"
-            animate="shown"
-            exit="hidden"
-          >
+          <motion.div variants={opacityAnimation} initial="hidden" animate="shown" exit="hidden">
             <Section style={{ gap: 12 }}>
               {fromSend && (
                 <Button fullWidth onClick={handleDone}>
@@ -731,19 +630,12 @@ export function TransactionView({
                 variant="secondary"
                 fullWidth
                 onClick={() => {
-                  const url = ao.isAo
-                    ? `https://www.ao.link/#/message/${id}`
-                    : `https://viewblock.io/arweave/tx/${id}`;
+                  const url = ao.isAo ? `https://www.ao.link/#/message/${id}` : `https://viewblock.io/arweave/tx/${id}`;
 
                   browser.tabs.create({ url });
-                }}
-              >
+                }}>
                 {ao.isAo ? "AOLink" : "Viewblock"}
-                <LinkExternal02
-                  height={24}
-                  width={24}
-                  style={{ marginLeft: "8px" }}
-                />
+                <LinkExternal02 height={24} width={24} style={{ marginLeft: "8px" }} />
               </Button>
             </Section>
           </motion.div>
@@ -756,7 +648,7 @@ export function TransactionView({
 export const useAdjustAmountTitleWidth = (
   parentRef: MutableRefObject<any>,
   childRef: MutableRefObject<any>,
-  quantity: string
+  quantity: string,
 ) => {
   const canvasRef = useRef(null);
 
@@ -810,7 +702,7 @@ export const FiatAmount = styled(Text).attrs({
   noMargin: true,
   weight: "medium",
   variant: "secondary",
-  size: "sm"
+  size: "sm",
 })`
   text-align: center;
 
@@ -835,7 +727,7 @@ export const AddContact = styled.div`
 export const TransactionDirection = styled(Text).attrs({
   weight: "medium",
   variant: "secondary",
-  noMargin: true
+  noMargin: true,
 })`
   text-align: center;
 `;
@@ -871,7 +763,7 @@ export const TransactionProperty = styled.div`
 `;
 
 const BasePropertyText = styled(Text).attrs({
-  noMargin: true
+  noMargin: true,
 })`
   display: flex;
   align-items: center;
@@ -894,7 +786,7 @@ const BasePropertyText = styled(Text).attrs({
 export const PropertyName = styled(BasePropertyText).attrs({
   size: "sm",
   weight: "medium",
-  variant: "secondary"
+  variant: "secondary",
 })`
   display: flex;
   align-items: start;
@@ -902,7 +794,7 @@ export const PropertyName = styled(BasePropertyText).attrs({
 
 export const PropertyValue = styled(BasePropertyText).attrs({
   size: "sm",
-  weight: "medium"
+  weight: "medium",
 })`
   text-align: right;
 `;
@@ -922,7 +814,7 @@ export const TagValue = styled(PropertyValue)`
 
 const ImageDisplay = styled.img.attrs({
   draggable: false,
-  alt: "Transaction data"
+  alt: "Transaction data",
 })`
   width: 100%;
   user-select: none;
@@ -930,5 +822,5 @@ const ImageDisplay = styled.img.attrs({
 
 const opacityAnimation: Variants = {
   hidden: { opacity: 0 },
-  shown: { opacity: 1 }
+  shown: { opacity: 1 },
 };

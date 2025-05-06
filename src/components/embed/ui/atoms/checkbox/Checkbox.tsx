@@ -2,7 +2,8 @@ import React, { forwardRef } from "react";
 import clsx from "clsx";
 import styles from "./Checkbox.module.css";
 import type { CheckboxBaseProps } from "./Checkbox.types";
-import { CheckIcon, Text } from "..";
+import { CheckIcon } from "../icon";
+import { Text } from "../text";
 import { useTheme } from "../../../contexts/ThemeContext";
 
 const Checkbox = forwardRef<HTMLDivElement, CheckboxBaseProps>(
@@ -20,7 +21,7 @@ const Checkbox = forwardRef<HTMLDivElement, CheckboxBaseProps>(
       handleChange,
       ...props
     },
-    ref
+    ref,
   ) => {
     const { isDarkMode } = useTheme();
 
@@ -30,22 +31,14 @@ const Checkbox = forwardRef<HTMLDivElement, CheckboxBaseProps>(
           styles.wrapper,
           isBlurry && styles.checkbox__blurry,
           isDarkMode ? styles.checkbox__dark : styles.checkbox__light,
-          className
+          className,
         )}
         ref={ref}
-        {...props}
-      >
-        <label
-          id="checkbox"
-          htmlFor={id || "r1"}
-          className={styles.checkbox__label}
-        >
+        {...props}>
+        <label id="checkbox" htmlFor={id || "r1"} className={styles.checkbox__label}>
           <div className={styles.checkbox__input_container}>
             <input
-              className={clsx(
-                styles.checkbox,
-                isChecked && styles.checkbox__checked
-              )}
+              className={clsx(styles.checkbox, isChecked && styles.checkbox__checked)}
               type="checkbox"
               name="rGroup"
               id={id || "r1"}
@@ -57,9 +50,7 @@ const Checkbox = forwardRef<HTMLDivElement, CheckboxBaseProps>(
             {isChecked && (
               <CheckIcon
                 className={styles.checkbox__icon}
-                color={
-                  isDarkMode ? "var(--color-background-default)" : undefined
-                }
+                color={isDarkMode ? "var(--color-background-default)" : undefined}
               />
             )}
           </div>
@@ -74,7 +65,7 @@ const Checkbox = forwardRef<HTMLDivElement, CheckboxBaseProps>(
         </label>
       </div>
     );
-  }
+  },
 );
 
 Checkbox.displayName = "Checkbox";

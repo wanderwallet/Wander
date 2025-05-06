@@ -1,6 +1,6 @@
 {
   "name": "@wanderapp/embed-sdk",
-  "version": "0.0.1",
+  "version": "0.0.7",
   "description": "Wander Embedded SDK.",
   "author": "wanderapp",
   "license": "MIT",
@@ -24,13 +24,15 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "clean": "rm -rf sdk-dist"
+    "clean": "rm -rf sdk-dist wallet-api-dist",
+    "nuke": "pnpm clean && rm -rf pnpm-lock.yaml node_modules",
+    "prepare": "yarn build"
   },
   "devDependencies": {
-    "tsup": "^8.3.5",
-    "typescript": "^5.2.2"
+    "tsup": "^8.4.0",
+    "typescript": "^5.8.3"
   },
   "dependencies": {
-    "ts-deepmerge": "^7.0.2"
+    "ts-deepmerge": "^7.0.3"
   }
 }

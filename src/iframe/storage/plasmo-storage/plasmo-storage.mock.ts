@@ -1,24 +1,20 @@
-import { Storage as PlasmoStorage } from "@plasmohq/storage";
+import { Storage as PlasmoStorage, type StorageCallbackMap, type StorageWatchCallback } from "@plasmohq/storage";
 import {
   EnhancedStorage,
   type ItemStorageOptions,
-  StorageManager
+  StorageManager,
 } from "../unpartitioned-storage/unpartitioned-storage";
 
 export interface StorageMockInterface extends PlasmoStorage {
-  setItem<T>(
-    key: string,
-    value: T,
-    options?: ItemStorageOptions
-  ): Promise<void>;
+  setItem<T>(key: string, value: T, options?: ItemStorageOptions): Promise<void>;
   getItem<T>(key: string): Promise<T | undefined>;
   removeItem(key: string): Promise<void>;
   getItems<T>(keys: string[]): Promise<Record<string, T | undefined>>;
   removeItems(keys: string[]): Promise<void>;
-  setItems(
-    items: Record<string, any>,
-    options?: ItemStorageOptions
-  ): Promise<void>;
+  setItems(items: Record<string, any>, options?: ItemStorageOptions): Promise<void>;
+  watch(callbackMap: StorageCallbackMap): boolean;
+  unwatch(callbackMap: StorageCallbackMap): null;
+  unwatchAll(): void;
   setCache<T>(key: string, value: T, maxAge?: number): Promise<void>;
   setPreference<T>(key: string, value: T): Promise<void>;
   setTemporary<T>(key: string, value: T, maxAge?: number): Promise<void>;
@@ -30,15 +26,12 @@ export interface StorageMockInterface extends PlasmoStorage {
     items: number;
     available: number;
   };
-  ensureSpace(
-    bytesNeeded: number,
-    options?: { skipCheck?: boolean; forceEviction?: boolean }
-  ): Promise<boolean>;
+  ensureSpace(bytesNeeded: number, options?: { skipCheck?: boolean; forceEviction?: boolean }): Promise<boolean>;
   setPrioritizedItem<T>(
     key: string,
     value: T,
     priority: keyof typeof StorageManager.PRIORITY_LEVELS,
-    expiresIn?: number
+    expiresIn?: number,
   ): Promise<void>;
   requestStorageAccess(): Promise<void>;
   requestAccessOnUserInteraction(): Promise<void>;
@@ -51,9 +44,9 @@ export interface StorageMockInterface extends PlasmoStorage {
 export class StorageMock extends PlasmoStorage implements StorageMockInterface {
   private storage: EnhancedStorage;
 
-  constructor() {
-    super({ area: "session" });
-    this.storage = new EnhancedStorage({ area: "session" });
+  constructor(area: "session" | "local" = "session") {
+    super({ area });
+    this.storage = new EnhancedStorage({ area });
 
     // This browser doesn't support the Storage Access API
     // so let's just hope we have access!
@@ -61,7 +54,7 @@ export class StorageMock extends PlasmoStorage implements StorageMockInterface {
 
     // TODO: Can this be postponed until authentication to avoid requesting permissions too soon?
     // unpartitioned sessionStorage cannot be accessed from iframe as it is partitioned by both origin and browser tabs unlike localStorage.
-    // this.storage.requestStorageAccess();
+    if (area === "local") this.storage.requestStorageAccess();
   }
 
   get primaryClient(): chrome.storage.StorageArea {
@@ -99,34 +92,28 @@ export class StorageMock extends PlasmoStorage implements StorageMockInterface {
   // GET:
 
   getItem<T = string>(key: string): Promise<T | undefined> {
-    return Promise.resolve(this.storage.getItem(key));
+    return Promise.resolve(this.storage.getItem(key, undefined));
   }
 
   getItems<T = string>(keys: string[]): Promise<Record<string, T | undefined>> {
-    return Promise.resolve(this.storage.getItems(keys));
+    return Promise.resolve(this.storage.getItems(keys, undefined));
   }
 
   get: <T = string>(key: string) => Promise<T | undefined> = this.getItem;
-  getMany: <T = any>(keys: string[]) => Promise<Record<string, T | undefined>> =
-    this.getItems;
+  getMany: <T = any>(keys: string[]) => Promise<Record<string, T | undefined>> = this.getItems;
 
   // SET:
 
-  setItem(
-    key: string,
-    rawValue: any,
-    options?: ItemStorageOptions
-  ): Promise<void> {
-    return new Promise((resolve) => {
+  setItem(key: string, rawValue: any, options?: ItemStorageOptions): Promise<void> {
+    return new Promise(async (resolve) => {
+      await this.storePrevValue(key);
       this.storage.setItem(key, rawValue, options);
+      this.callWatchers(key, rawValue);
       resolve();
     });
   }
 
-  setItems(
-    items: Record<string, any>,
-    options?: ItemStorageOptions
-  ): Promise<void> {
+  setItems(items: Record<string, any>, options?: ItemStorageOptions): Promise<void> {
     return new Promise<void>((resolve) => {
       this.storage.setItems(items, options);
       resolve();
@@ -140,7 +127,9 @@ export class StorageMock extends PlasmoStorage implements StorageMockInterface {
 
   removeItem(key: string): Promise<void> {
     return new Promise<void>((resolve) => {
+      this.storePrevValue(key);
       this.storage.removeItem(key);
+      this.callWatchers(key, undefined);
       resolve();
     });
   }
@@ -159,6 +148,59 @@ export class StorageMock extends PlasmoStorage implements StorageMockInterface {
     return new Promise<void>(() => {
       this.storage.clear();
     });
+  };
+
+  // WATCH:
+
+  watchers: Record<string, StorageWatchCallback[]> = {};
+  oldValues: Record<string, any> = {};
+
+  async storePrevValue(key: string) {
+    this.oldValues[key] = await this.get(key);
+  }
+
+  callWatchers(key: string, newValue: any) {
+    const oldValue = this.oldValues[key];
+
+    this.watchers[key]?.forEach((callback) => {
+      try {
+        callback(
+          {
+            newValue,
+            oldValue,
+          },
+          this.area,
+        );
+      } catch (err) {
+        console.warn("Error calling watcher:", err);
+      }
+    });
+  }
+
+  watch = (callbackMap: StorageCallbackMap) => {
+    Object.entries(callbackMap).forEach(([key, callback]) => {
+      this.watchers[key] ??= [];
+      this.watchers[key].push(callback);
+    });
+
+    return true;
+  };
+
+  unwatch = (callbackMap: StorageCallbackMap) => {
+    Object.entries(callbackMap).forEach(([key, callback]) => {
+      const watchers = this.watchers[key] || [];
+      const indexToDelete = watchers.indexOf(callback);
+
+      if (indexToDelete !== -1) {
+        watchers.splice(indexToDelete, 1);
+      }
+    });
+
+    return null;
+  };
+
+  unwatchAll = () => {
+    this.watchers = {};
   };
 
   // unpartitioned storage:
@@ -211,11 +253,7 @@ export class StorageMock extends PlasmoStorage implements StorageMockInterface {
   /**
    * Store temporary data that can be easily evicted
    */
-  setTemporary<T>(
-    key: string,
-    value: T,
-    maxAge: number = 300000
-  ): Promise<void> {
+  setTemporary<T>(key: string, value: T, maxAge: number = 300000): Promise<void> {
     return new Promise((resolve) => {
       this.storage.setTemporary(key, value, maxAge);
       resolve();
@@ -265,7 +303,7 @@ export class StorageMock extends PlasmoStorage implements StorageMockInterface {
     key: string,
     value: T,
     priority: keyof typeof StorageManager.PRIORITY_LEVELS,
-    expiresIn?: number
+    expiresIn?: number,
   ): Promise<void> {
     return new Promise((resolve) => {
       this.storage.setPrioritizedItem(key, value, priority, expiresIn);

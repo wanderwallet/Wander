@@ -5,7 +5,6 @@ import { findGateway } from "~gateways/wayfinder";
 import { getUserAvatar } from "~lib/avatar";
 import { multiSort } from "~utils/multi_sort";
 import { ExtensionStorage } from "~utils/storage";
-import { svgie } from "~utils/svgies";
 
 export type Recipient = {
   address: string;
@@ -22,25 +21,16 @@ export const useContacts = (activeAddress: string) => {
         const storedContacts: Contacts = await ExtensionStorage.get("contacts");
 
         if (storedContacts) {
-          const namedContacts = storedContacts.filter(
-            (contact) => contact.name
-          );
-          const addressOnlyContacts = storedContacts.filter(
-            (contact) => !contact.name
-          );
+          const namedContacts = storedContacts.filter((contact) => contact.name);
+          const addressOnlyContacts = storedContacts.filter((contact) => !contact.name);
 
           namedContacts.sort((a, b) => a.name.localeCompare(b.name));
 
           const sortedAddressOnlyContacts = multiSort(addressOnlyContacts);
 
-          const sortedContacts = [
-            ...namedContacts,
-            ...sortedAddressOnlyContacts
-          ];
+          const sortedContacts = [...namedContacts, ...sortedAddressOnlyContacts];
 
-          const contactsWithImages = await Promise.all(
-            sortedContacts.map(enrichContact)
-          );
+          const contactsWithImages = await Promise.all(sortedContacts.map(enrichContact));
           setContacts(contactsWithImages);
         }
       } catch (error) {
@@ -67,7 +57,7 @@ export const useContacts = (activeAddress: string) => {
           }
         `,
         { address: activeAddress },
-        gateway
+        gateway,
       );
 
       // filter addresses
@@ -75,12 +65,11 @@ export const useContacts = (activeAddress: string) => {
         .filter((tx) => tx.node.recipient !== "")
         .map((tx) => ({
           address: tx.node.recipient,
-          timestamp: tx.node.block?.timestamp
+          timestamp: tx.node.block?.timestamp,
         }));
 
       const uniqueRecipients = recipients.filter(
-        (recipient, index, self) =>
-          index === self.findIndex((t) => t.address === recipient.address)
+        (recipient, index, self) => index === self.findIndex((t) => t.address === recipient.address),
       );
 
       setLastRecipients(uniqueRecipients);
@@ -103,9 +92,7 @@ export const useContact = (contactAddress?: string): Contact => {
       // Fetch stored contacts
       const storedContacts: Contacts = await ExtensionStorage.get("contacts");
 
-      let foundContact = storedContacts?.find(
-        (c) => c.address === contactAddress
-      );
+      let foundContact = storedContacts?.find((c) => c.address === contactAddress);
       if (foundContact) {
         foundContact = await enrichContact(foundContact);
       }
@@ -127,21 +114,10 @@ export const enrichContact = async (contact: Contact) => {
       const profileImage = await getUserAvatar(contact.avatarId);
       updatedContact = {
         ...updatedContact,
-        profileIcon: profileImage
+        profileIcon: profileImage,
       };
     } catch (error) {
-      console.error(
-        `Failed to fetch profile image for avatarId ${contact.avatarId}:`,
-        error
-      );
-    }
-  } else {
-    const svgieAvatar = svgie(contact.address, { asDataURI: true });
-    if (svgieAvatar) {
-      updatedContact = {
-        ...updatedContact,
-        profileIcon: svgieAvatar
-      };
+      console.error(`Failed to fetch profile image for avatarId ${contact.avatarId}:`, error);
     }
   }
 

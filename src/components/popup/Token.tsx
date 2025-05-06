@@ -1,11 +1,5 @@
 import { formatFiatBalance } from "~tokens/currency";
-import {
-  type MouseEventHandler,
-  useEffect,
-  useMemo,
-  useRef,
-  useState
-} from "react";
+import { type MouseEventHandler, useEffect, useMemo, useRef, useState } from "react";
 import { hoverEffect, useTheme } from "~utils/theme";
 import { type Token } from "~tokens/token";
 import { useStorage } from "~utils/storage";
@@ -18,7 +12,7 @@ import Squircle from "~components/Squircle";
 import useSetting from "~settings/hook";
 import styled from "styled-components";
 import { getUserAvatar } from "~lib/avatar";
-import { formatBalance } from "~utils/format";
+import { formatAddress, formatBalance } from "~utils/format";
 import Skeleton from "~components/Skeleton";
 import { TrashIcon, PlusIcon, SettingsIcon } from "@iconicicons/react";
 import BigNumber from "bignumber.js";
@@ -31,11 +25,7 @@ import { BalanceFetchError, NetworkError } from "~utils/error/error.utils";
 import { ToggleSwitch } from "~routes/popup/subscriptions/subscriptionDetails";
 import Image from "~components/common/Image";
 
-export default function Token({
-  onClick,
-  disableClickEffect,
-  ...props
-}: Props) {
+export default function Token({ onClick, disableClickEffect, disableCursor, ...props }: Props) {
   const ref = useRef(null);
   const [totalBalance, setTotalBalance] = useState("");
   const [showTooltip, setShowTooltip] = useState(false);
@@ -45,7 +35,7 @@ export default function Token({
 
   const [activeAddress] = useStorage({
     key: "active_address",
-    instance: ExtensionStorage
+    instance: ExtensionStorage,
   });
 
   const [currency] = useSetting("currency");
@@ -57,21 +47,13 @@ export default function Token({
       Ticker: props.ticker,
       Name: props.name,
       Denomination: props.divisibility,
-      Logo: props.defaultLogo
+      Logo: props.defaultLogo,
     };
   }, [props]);
 
-  const {
-    data: fractBalance = "0",
-    isError,
-    error,
-    isLoading
-  } = useTokenBalance(tokenInfo, activeAddress);
+  const { data: fractBalance = "0", isError, error, isLoading } = useTokenBalance(tokenInfo, activeAddress);
 
-  const arweaveLogo = useMemo(
-    () => (theme === "dark" ? arLogoDark : arLogoLight),
-    [theme]
-  );
+  const arweaveLogo = useMemo(() => (theme === "dark" ? arLogoDark : arLogoLight), [theme]);
 
   const balance = useMemo(() => {
     if (isError) return "0";
@@ -84,10 +66,7 @@ export default function Token({
   const fiatBalance = useMemo(() => {
     if (!props.fiatPrice) return undefined;
     const tokenBalance = fractBalance! || "0";
-    return formatFiatBalance(
-      BigNumber(tokenBalance).times(props.fiatPrice),
-      currency
-    );
+    return formatFiatBalance(BigNumber(tokenBalance).times(props.fiatPrice), currency);
   }, [fractBalance, props.fiatPrice, currency]);
 
   const formattedFiatPrice = useMemo(() => {
@@ -98,11 +77,7 @@ export default function Token({
   // token logo
   const [logo, setLogo] = useState<string>();
 
-  const hasActionButton =
-    props?.onAddClick ||
-    props?.onRemoveClick ||
-    props?.onSettingsClick ||
-    props?.onHideClick;
+  const hasActionButton = props?.onAddClick || props?.onRemoveClick || props?.onSettingsClick || props?.onHideClick;
 
   const triggerConfetti = async () => {
     const jsConfetti = new JSConfetti({ canvas: ref.current });
@@ -126,9 +101,7 @@ export default function Token({
 
   useEffect(() => {
     if (activeAddress && AO_NATIVE_TOKEN === props.id) {
-      ExtensionStorage.get<boolean>(`ao_confetti_shown_${activeAddress}`).then(
-        setAoConfettiShown
-      );
+      ExtensionStorage.get<boolean>(`ao_confetti_shown_${activeAddress}`).then(setAoConfettiShown);
     }
   }, [AO_NATIVE_TOKEN, props.id, activeAddress]);
 
@@ -146,21 +119,24 @@ export default function Token({
   }, [aoConfettiShown, activeAddress, fractBalance, isLoading]);
 
   return (
-    <Wrapper disableClickEffect={disableClickEffect}>
-      {(!aoConfettiShown || ref.current) &&
-        AO_NATIVE_TOKEN === props.id &&
-        +fractBalance > 0 && <Canvas ref={ref} />}
+    <Wrapper disableClickEffect={disableClickEffect} disableCursor={disableCursor}>
+      {(!aoConfettiShown || ref.current) && AO_NATIVE_TOKEN === props.id && +fractBalance > 0 && <Canvas ref={ref} />}
       <InnerWrapper width={hasActionButton ? "86%" : "100%"} onClick={onClick}>
         <LogoAndDetails>
           <Logo src={logo || ""} alt="" key={props.id} />
           <div>
-            <TokenName>{props.name || props.ticker || "???"}</TokenName>
+            <div style={{ display: "flex", gap: "0.5rem" }}>
+              <TokenName>{props.name || props.ticker || "???"}</TokenName>
+              {props.showId && (
+                <Address>{formatAddress(props.id, 3)}</Address>
+                // <Tooltip content={props.id} position="top">
+                // </Tooltip>
+              )}
+            </div>
             {hasActionButton ? (
               <FiatBalance>{balance}</FiatBalance>
             ) : (
-              formattedFiatPrice && (
-                <FiatBalance>{formattedFiatPrice}</FiatBalance>
-              )
+              formattedFiatPrice && <FiatBalance>{formattedFiatPrice}</FiatBalance>
             )}
           </div>
         </LogoAndDetails>
@@ -196,19 +172,11 @@ export default function Token({
       {hasActionButton && (
         <div style={{ zIndex: 1 }}>
           {props?.onAddClick ? (
-            <Button
-              fullWidth
-              onClick={props.onAddClick}
-              style={{ padding: 0, minWidth: 40, maxWidth: 40 }}
-            >
+            <Button fullWidth onClick={props.onAddClick} style={{ padding: 0, minWidth: 40, maxWidth: 40 }}>
               <PlusIcon />
             </Button>
           ) : props?.onSettingsClick ? (
-            <Button
-              fullWidth
-              onClick={props.onSettingsClick}
-              style={{ padding: 0, minWidth: 40, maxWidth: 40 }}
-            >
+            <Button fullWidth onClick={props.onSettingsClick} style={{ padding: 0, minWidth: 40, maxWidth: 40 }}>
               <SettingsIcon />
             </Button>
           ) : props?.onHideClick ? (
@@ -220,11 +188,7 @@ export default function Token({
             />
           ) : (
             props?.onRemoveClick && (
-              <Button
-                fullWidth
-                onClick={props.onRemoveClick}
-                style={{ padding: 0, minWidth: 40, maxWidth: 40 }}
-              >
+              <Button fullWidth onClick={props.onRemoveClick} style={{ padding: 0, minWidth: 40, maxWidth: 40 }}>
                 <TrashIcon />
               </Button>
             )
@@ -237,9 +201,7 @@ export default function Token({
 
 const DegradedMessage: React.ReactNode = (
   <div style={{ textAlign: "center" }}>
-    <div style={{ fontSize: "14px" }}>
-      {browser.i18n.getMessage("ao_degraded")}
-    </div>
+    <div style={{ fontSize: "14px" }}>{browser.i18n.getMessage("ao_degraded")}</div>
     <div style={{ fontSize: "12px", color: "#a3a3a3" }}>
       {browser.i18n
         .getMessage("ao_degraded_description")
@@ -253,9 +215,7 @@ const DegradedMessage: React.ReactNode = (
 
 const NetworkErrorMessage: React.ReactNode = (
   <div style={{ textAlign: "center" }}>
-    <div style={{ fontSize: "14px" }}>
-      {browser.i18n.getMessage("network_issue")}
-    </div>
+    <div style={{ fontSize: "14px" }}>{browser.i18n.getMessage("network_issue")}</div>
     <div style={{ fontSize: "12px", color: "#a3a3a3" }}>
       {browser.i18n
         .getMessage("network_issue_description")
@@ -269,13 +229,7 @@ const NetworkErrorMessage: React.ReactNode = (
 
 export const WarningIcon = ({ color }: { color?: string }) => {
   return (
-    <svg
-      width="23"
-      height="22"
-      viewBox="0 0 23 22"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
+    <svg width="23" height="22" viewBox="0 0 23 22" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path
         d="M11.5 7V11M11.5 15H11.51M21.5 11C21.5 16.5228 17.0228 21 11.5 21C5.97715 21 1.5 16.5228 1.5 11C1.5 5.47715 5.97715 1 11.5 1C17.0228 1 21.5 5.47715 21.5 11Z"
         stroke={color || "#FF1A1A"}
@@ -289,19 +243,8 @@ export const WarningIcon = ({ color }: { color?: string }) => {
 
 export const NetworkErrorIcon = ({ color }: { color?: string }) => {
   return (
-    <svg
-      version="1.0"
-      width="20"
-      height="20"
-      viewBox="0 0 512 512"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <g
-        transform="translate(0,512) scale(0.1,-0.1)"
-        fill={color || "#FF1A1A"}
-        stroke="none"
-      >
+    <svg version="1.0" width="20" height="20" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <g transform="translate(0,512) scale(0.1,-0.1)" fill={color || "#FF1A1A"} stroke="none">
         <path
           d="M2450 5114 c-635 -40 -1197 -284 -1640 -711 -142 -137 -231 -240
 -335 -388 -221 -315 -359 -657 -426 -1049 -27 -155 -36 -484 -20 -652 73 -722
@@ -351,13 +294,16 @@ l-364 0 -47 141 c-82 245 -168 430 -282 607 -30 45 -54 85 -54 88 0 8 34 -4
   );
 };
 
-const Wrapper = styled.div<{ disableClickEffect?: boolean }>`
+const Wrapper = styled.div<{
+  disableClickEffect?: boolean;
+  disableCursor?: boolean;
+}>`
   position: relative;
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  cursor: pointer;
+  cursor: ${({ disableCursor }) => (disableCursor ? "default" : "pointer")};
   transition: all 0.07s ease-in-out;
 
   ${({ disableClickEffect }) =>
@@ -399,23 +345,41 @@ export const LogoAndDetails = styled.div`
   gap: 0.8rem;
 `;
 
+// TODO: this could be removed to the components it's being used in
 export const LogoWrapper = styled(Squircle)<{ small?: boolean }>`
   position: relative;
   width: ${(props) => (props.small ? "2.1875rem" : "2.8rem;")};
   height: ${(props) => (props.small ? "2.1875rem" : "2.8rem;")};
   flex-shrink: 0;
   color: rgba(${(props) => props.theme.theme}, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
 
 export const Logo = styled(Image).attrs({
   draggable: false,
-  backgroundColor: "#fffefc"
 })`
+  position: relative;
   width: 40px;
   height: 40px;
   flex-shrink: 0;
   border-radius: 29px;
   object-fit: cover;
+  overflow: hidden;
+  z-index: 1;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 1px;
+    left: 1px;
+    right: 1px;
+    bottom: 1px;
+    background-color: #fffefc;
+    border-radius: 28px;
+    z-index: -1;
+  }
 
   ${(props) =>
     props.theme.displayTheme === "light" &&
@@ -428,20 +392,28 @@ export const Logo = styled(Image).attrs({
 export const TokenName = styled(Text).attrs({
   noMargin: true,
   weight: "semibold",
-  lineHeight: 1.4
+  lineHeight: 1.4,
 })``;
+
+const Address = styled(Text).attrs({
+  noMargin: true,
+  weight: "light",
+  lineHeight: 1.4,
+})`
+  color: ${(props) => props.theme.secondaryTextv2};
+`;
 
 const NativeBalance = styled(Text).attrs({
   noMargin: true,
   weight: "semibold",
-  size: "md"
+  size: "md",
 })``;
 
 const FiatBalance = styled(Text).attrs({
   noMargin: true,
   weight: "medium",
   size: "sm",
-  variant: "secondary"
+  variant: "secondary",
 })``;
 
 const BalanceSection = styled.div`
@@ -466,6 +438,7 @@ const Canvas = styled.canvas`
 `;
 
 interface Props extends Omit<Token, "balance"> {
+  showId?: boolean;
   ao?: boolean;
   fiatPrice?: number;
   onAddClick?: MouseEventHandler<HTMLButtonElement>;
@@ -474,13 +447,11 @@ interface Props extends Omit<Token, "balance"> {
   onHideClick?: (hidden: boolean) => void;
   onClick?: MouseEventHandler<HTMLDivElement>;
   disableClickEffect?: boolean;
+  disableCursor?: boolean;
 }
 
-export function ArToken({
-  onClick,
-  disableClickEffect,
-  ...props
-}: ArTokenProps) {
+// TODO: can this component be removed?
+export function ArToken({ onClick, disableClickEffect, disableCursor, ...props }: ArTokenProps) {
   // currency setting
   const [currency] = useSetting<string>("currency");
 
@@ -491,7 +462,7 @@ export function ArToken({
   // active address
   const [activeAddress] = useStorage<string>({
     key: "active_address",
-    instance: ExtensionStorage
+    instance: ExtensionStorage,
   });
 
   // load ar balance
@@ -499,11 +470,7 @@ export function ArToken({
   const [totalBalance, setTotalBalance] = useState("");
   const [showTooltip, setShowTooltip] = useState(false);
 
-  const hasActionButton =
-    props?.onAddClick ||
-    props?.onRemoveClick ||
-    props?.onSettingsClick ||
-    props?.onHideClick;
+  const hasActionButton = props?.onAddClick || props?.onRemoveClick || props?.onSettingsClick || props?.onHideClick;
 
   useEffect(() => {
     (async () => {
@@ -523,14 +490,11 @@ export function ArToken({
 
   const fiatBalance = useMemo(() => {
     if (!price) return undefined;
-    return formatFiatBalance(
-      BigNumber(balance).multipliedBy(price).toString(),
-      currency
-    );
+    return formatFiatBalance(BigNumber(balance).multipliedBy(price).toString(), currency);
   }, [balance, price, currency]);
 
   return (
-    <Wrapper onClick={onClick} disableClickEffect={disableClickEffect}>
+    <Wrapper onClick={onClick} disableClickEffect={disableClickEffect} disableCursor={disableCursor}>
       <InnerWrapper width={hasActionButton ? "86%" : "100%"} onClick={onClick}>
         <LogoAndDetails>
           <Logo src={arLogoLight} />
@@ -539,9 +503,7 @@ export function ArToken({
             {hasActionButton ? (
               <FiatBalance>{balance}</FiatBalance>
             ) : (
-              formattedFiatPrice && (
-                <FiatBalance>{formattedFiatPrice}</FiatBalance>
-              )
+              formattedFiatPrice && <FiatBalance>{formattedFiatPrice}</FiatBalance>
             )}
           </div>
         </LogoAndDetails>
@@ -576,19 +538,11 @@ export function ArToken({
       {hasActionButton && (
         <div style={{ zIndex: 1 }}>
           {props?.onAddClick ? (
-            <Button
-              fullWidth
-              onClick={props.onAddClick}
-              style={{ padding: 0, minWidth: 40, maxWidth: 40 }}
-            >
+            <Button fullWidth onClick={props.onAddClick} style={{ padding: 0, minWidth: 40, maxWidth: 40 }}>
               <PlusIcon />
             </Button>
           ) : props?.onSettingsClick ? (
-            <Button
-              fullWidth
-              onClick={props.onSettingsClick}
-              style={{ padding: 0, minWidth: 40, maxWidth: 40 }}
-            >
+            <Button fullWidth onClick={props.onSettingsClick} style={{ padding: 0, minWidth: 40, maxWidth: 40 }}>
               <SettingsIcon />
             </Button>
           ) : props?.onHideClick ? (
@@ -600,11 +554,7 @@ export function ArToken({
             />
           ) : (
             props?.onRemoveClick && (
-              <Button
-                fullWidth
-                onClick={props.onRemoveClick}
-                style={{ padding: 0, minWidth: 40, maxWidth: 40 }}
-              >
+              <Button fullWidth onClick={props.onRemoveClick} style={{ padding: 0, minWidth: 40, maxWidth: 40 }}>
                 <TrashIcon />
               </Button>
             )

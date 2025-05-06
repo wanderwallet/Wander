@@ -5,16 +5,11 @@ import type { SubscriptionData } from "~subscriptions/subscription";
 import type { TokenType } from "~tokens/token";
 import type { SplitTransaction } from "~api/modules/sign/transaction_builder";
 import type { RawDataItem } from "~api/modules/sign_data_item/types";
-import type { Transaction } from "arbundles";
+import type { Transaction } from "@dha-team/arbundles";
 
 // COMMON:
 
-export type AuthRequestStatus =
-  | "pending"
-  | "accepted"
-  | "rejected"
-  | "aborted"
-  | "error";
+export type AuthRequestStatus = "pending" | "accepted" | "rejected" | "aborted" | "error";
 
 interface CommonAuthRequestProps {
   url: string;
@@ -121,7 +116,7 @@ export interface SignDataItemAuthRequestData {
 
 export interface BatchSignDataItemAuthRequestData {
   type: "batchSignDataItem";
-  data: RawDataItem;
+  data: RawDataItem[];
 }
 
 // SUBSCRIPTION:
@@ -132,26 +127,16 @@ export interface SubscriptionAuthRequestData extends SubscriptionData {
 
 // AuthRequestMessageData:
 
-export type ConnectAuthRequestMessageData = ConnectAuthRequestData &
-  CommonAuthRequestProps;
-export type AllowanceAuthRequestMessageData = AllowanceAuthRequestData &
-  CommonAuthRequestProps;
-export type TokenAuthRequestMessageData = TokenAuthRequestData &
-  CommonAuthRequestProps;
-export type DecryptAuthRequestMessageData = DecryptAuthRequestData &
-  CommonAuthRequestProps;
-export type SignAuthRequestMessageData = SignAuthRequestData &
-  CommonAuthRequestProps;
-export type SignKeystoneAuthRequestMessageData = SignKeystoneAuthRequestData &
-  CommonAuthRequestProps;
-export type SignatureAuthRequestMessageData = SignatureAuthRequestData &
-  CommonAuthRequestProps;
-export type SignDataItemAuthRequestMessageData = SignDataItemAuthRequestData &
-  CommonAuthRequestProps;
-export type BatchSignDataItemAuthRequestMessageData =
-  BatchSignDataItemAuthRequestData & CommonAuthRequestProps;
-export type SubscriptionAuthRequestMessageData = SubscriptionAuthRequestData &
-  CommonAuthRequestProps;
+export type ConnectAuthRequestMessageData = ConnectAuthRequestData & CommonAuthRequestProps;
+export type AllowanceAuthRequestMessageData = AllowanceAuthRequestData & CommonAuthRequestProps;
+export type TokenAuthRequestMessageData = TokenAuthRequestData & CommonAuthRequestProps;
+export type DecryptAuthRequestMessageData = DecryptAuthRequestData & CommonAuthRequestProps;
+export type SignAuthRequestMessageData = SignAuthRequestData & CommonAuthRequestProps;
+export type SignKeystoneAuthRequestMessageData = SignKeystoneAuthRequestData & CommonAuthRequestProps;
+export type SignatureAuthRequestMessageData = SignatureAuthRequestData & CommonAuthRequestProps;
+export type SignDataItemAuthRequestMessageData = SignDataItemAuthRequestData & CommonAuthRequestProps;
+export type BatchSignDataItemAuthRequestMessageData = BatchSignDataItemAuthRequestData & CommonAuthRequestProps;
+export type SubscriptionAuthRequestMessageData = SubscriptionAuthRequestData & CommonAuthRequestProps;
 
 // AuthRequest:
 
@@ -160,20 +145,17 @@ export type AllowanceAuthRequest = AllowanceAuthRequestMessageData;
 export type TokenAuthRequest = TokenAuthRequestMessageData;
 export type DecryptAuthRequest = DecryptAuthRequestMessageData;
 
-export interface SignAuthRequest
-  extends Omit<SignAuthRequestMessageData, "transaction"> {
+export interface SignAuthRequest extends Omit<SignAuthRequestMessageData, "transaction"> {
   transaction: SplitTransaction | Transaction;
 }
 
-export interface SignKeystoneAuthRequest
-  extends SignKeystoneAuthRequestMessageData {
+export interface SignKeystoneAuthRequest extends SignKeystoneAuthRequestMessageData {
   data?: Buffer;
 }
 
 export type SignatureAuthRequest = SignatureAuthRequestMessageData;
 export type SignDataItemAuthRequest = SignDataItemAuthRequestMessageData;
-export type BatchSignDataItemAuthRequest =
-  BatchSignDataItemAuthRequestMessageData;
+export type BatchSignDataItemAuthRequest = BatchSignDataItemAuthRequestMessageData;
 
 export type SubscriptionAuthRequest = SubscriptionAuthRequestMessageData;
 

@@ -1,55 +1,29 @@
-import {
-  Box,
-  Button,
-  Card,
-  KeyIcon,
-  RecoverHeaderIcon,
-  Row,
-  SeedIcon,
-  Text,
-  WanderIcon
-} from "~components/embed/ui";
+import { Box, Button, Card, KeyIcon, RecoverHeaderIcon, SeedIcon, WanderFooter } from "~components/embed/ui";
+import { useLocation } from "~wallets/router/router.utils";
 
 export function AuthRecoverAccountEmbeddedView() {
+  const { navigate, back } = useLocation();
   return (
     <Card
       headerIcon={<RecoverHeaderIcon />}
       headerText="Recover your account"
-      subtitle="After recovery, all your devices are logged out and your account recovery files are invalided. You'll have to download a new one."
-      footerElement={
-        <Row>
-          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
-            {"Secured by"}
-          </Text>
-          <WanderIcon color="#838383" />
-        </Row>
-      }
+      subtitle="Select a method for logging in on new devices and recovering your account."
+      footerElement={<WanderFooter />}
       hasBackButton={true}
-      onBackButtonClick={() => {
-        window.history.back();
-      }}
+      onBackButtonClick={back}
       hasCloseButton={true}
-      onCloseButtonClick={() => {
-        window.location.href = "/auth";
-      }}
-      size="auto"
-    >
+      onCloseButtonClick={() => navigate(`/auth`)}
+      size="auto">
       <Box>
         <Button
-          href="/auth/recover-account/keyfile"
+          href="#/auth/recover-account/seedphrase"
           variant="outlined"
           isFullWidth
-          icon={<KeyIcon fontSize={24} />}
-        >
-          Import Private Key
-        </Button>
-        <Button
-          href="/auth/recover-account/seedphrase"
-          variant="outlined"
-          isFullWidth
-          icon={<SeedIcon fontSize={24} />}
-        >
+          icon={<SeedIcon fontSize={24} />}>
           Enter Seedphrase
+        </Button>
+        <Button href="#/auth/recover-account/keyfile" variant="outlined" isFullWidth icon={<KeyIcon fontSize={24} />}>
+          Import Keyfile
         </Button>
       </Box>
     </Card>

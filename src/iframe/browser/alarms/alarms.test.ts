@@ -46,8 +46,8 @@ describe("Alarms Mock", () => {
     // Immediate alarms should fire right away
     expect(callback).toHaveBeenCalledWith(
       expect.objectContaining({
-        name: "test-immediate"
-      })
+        name: "test-immediate",
+      }),
     );
 
     // Clean up
@@ -71,8 +71,8 @@ describe("Alarms Mock", () => {
     // Now the alarm should have fired
     expect(callback).toHaveBeenCalledWith(
       expect.objectContaining({
-        name: "test-delayed"
-      })
+        name: "test-delayed",
+      }),
     );
 
     // Clean up
@@ -112,8 +112,8 @@ describe("Alarms Mock", () => {
     const parsedData = JSON.parse(storedData);
     expect(parsedData).toContainEqual(
       expect.objectContaining({
-        name: "test-persistence"
-      })
+        name: "test-persistence",
+      }),
     );
   });
 
@@ -125,8 +125,8 @@ describe("Alarms Mock", () => {
         name: "restored-alarm",
         scheduledTime: futureTime,
         periodInMinutes: 5,
-        createdAt: Date.now()
-      }
+        createdAt: Date.now(),
+      },
     ];
 
     localStorage.setItem("WANDER_ALARMS", JSON.stringify(testAlarms));
@@ -139,20 +139,20 @@ describe("Alarms Mock", () => {
     expect(loadedAlarms).toContainEqual(
       expect.objectContaining({
         name: "restored-alarm",
-        periodInMinutes: 5
-      })
+        periodInMinutes: 5,
+      }),
     );
   });
 
   it("should update existing alarms", async () => {
     // Create initial alarm
     await alarms.create("update-test", {
-      periodInMinutes: 10
+      periodInMinutes: 10,
     });
 
     // Update the same alarm with new settings
     await alarms.create("update-test", {
-      periodInMinutes: 5
+      periodInMinutes: 5,
     });
 
     // Get the updated alarm
@@ -161,8 +161,8 @@ describe("Alarms Mock", () => {
     expect(updatedAlarm).toEqual(
       expect.objectContaining({
         name: "update-test",
-        periodInMinutes: 5
-      })
+        periodInMinutes: 5,
+      }),
     );
   });
 
@@ -192,7 +192,7 @@ describe("Alarms Mock", () => {
     const pastTime = Date.now() - 60000; // 1 minute in the past
     const expiredAlarm = {
       name: "expired-alarm",
-      scheduledTime: pastTime
+      scheduledTime: pastTime,
       // No periodInMinutes means it's a one-time alarm
     };
 
@@ -213,7 +213,7 @@ describe("Alarms Mock", () => {
       name: "periodic-recalc",
       scheduledTime: pastTime,
       periodInMinutes: 1, // Every minute
-      createdAt: pastTime - 60000 // Created 3 minutes ago
+      createdAt: pastTime - 60000, // Created 3 minutes ago
     };
 
     localStorage.setItem("WANDER_ALARMS", JSON.stringify([periodicAlarm]));
@@ -231,13 +231,10 @@ describe("Alarms Mock", () => {
     const timeSinceCreation = Date.now() - periodicAlarm.createdAt;
     const periodsElapsed = Math.floor(timeSinceCreation / 60000);
 
-    const expectedNextTime =
-      periodicAlarm.createdAt + (periodsElapsed + 1) * 60000;
+    const expectedNextTime = periodicAlarm.createdAt + (periodsElapsed + 1) * 60000;
 
     // Allow small precision differences (within 100ms)
-    expect(Math.abs(recalcAlarm.scheduledTime - expectedNextTime)).toBeLessThan(
-      100
-    );
+    expect(Math.abs(recalcAlarm.scheduledTime - expectedNextTime)).toBeLessThan(100);
   });
 
   it("should handle multiple concurrent alarms", async () => {
@@ -254,24 +251,24 @@ describe("Alarms Mock", () => {
     expect(callback).toHaveBeenCalledTimes(1);
     expect(callback).toHaveBeenLastCalledWith(
       expect.objectContaining({
-        name: "concurrent-1"
-      })
+        name: "concurrent-1",
+      }),
     );
 
     vi.advanceTimersByTime(30000);
     expect(callback).toHaveBeenCalledTimes(2);
     expect(callback).toHaveBeenLastCalledWith(
       expect.objectContaining({
-        name: "concurrent-2"
-      })
+        name: "concurrent-2",
+      }),
     );
 
     vi.advanceTimersByTime(30000);
     expect(callback).toHaveBeenCalledTimes(3);
     expect(callback).toHaveBeenLastCalledWith(
       expect.objectContaining({
-        name: "concurrent-3"
-      })
+        name: "concurrent-3",
+      }),
     );
 
     // Clean up
@@ -325,8 +322,8 @@ describe("Alarms Mock", () => {
     // Now it should have fired
     expect(callback).toHaveBeenCalledWith(
       expect.objectContaining({
-        name: "minimum-delay"
-      })
+        name: "minimum-delay",
+      }),
     );
 
     // Clean up
@@ -346,8 +343,8 @@ describe("Alarms Mock", () => {
     expect(restoredAlarm).toEqual(
       expect.objectContaining({
         name: "persistence-test",
-        periodInMinutes: 5
-      })
+        periodInMinutes: 5,
+      }),
     );
   });
 
@@ -360,9 +357,7 @@ describe("Alarms Mock", () => {
       // Create 500 alarms
       const promises = [];
       for (let i = 0; i < 500; i++) {
-        promises.push(
-          alarms.create(`alarm-${i}`, { when: Date.now() + 60000 })
-        );
+        promises.push(alarms.create(`alarm-${i}`, { when: Date.now() + 60000 }));
       }
       await Promise.all(promises);
 

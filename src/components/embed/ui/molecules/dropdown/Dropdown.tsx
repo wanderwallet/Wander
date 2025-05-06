@@ -1,25 +1,18 @@
 import React, { useState } from "react";
 import styles from "./Dropdown.module.css";
 import type { DropdownBaseProps } from "./Dropdown.types";
-import {
-  ArrowDownIcon,
-  ExpandItIcon,
-  ProtocolLandIcon,
-  Text
-} from "../../atoms";
+import { ArrowDownIcon, Avatar, Text } from "../../atoms";
 import { useTheme } from "../../../contexts/ThemeContext";
 
 const Dropdown = React.forwardRef<HTMLDivElement, DropdownBaseProps>(
-  ({ className, children, ...props }, ref) => {
+  ({ className, children, label, ...props }, ref) => {
     const Component = "button";
     const { isDarkMode } = useTheme();
     const [showDropdown, setShowDropdown] = useState(false);
 
     const textColor = isDarkMode ? "var(--color-font-heading)" : "#121212";
     const borderColor = isDarkMode ? "var(--color-border-popover)" : undefined;
-    const backgroundColor = isDarkMode
-      ? "var(--color-card-background-default)"
-      : undefined;
+    const backgroundColor = isDarkMode ? "var(--color-card-background-default)" : undefined;
     const iconColor = isDarkMode ? "var(--color-font-body)" : undefined;
 
     return (
@@ -30,18 +23,14 @@ const Dropdown = React.forwardRef<HTMLDivElement, DropdownBaseProps>(
           className={`${styles["dropdown-button"]} ${className}`}
           style={{
             borderColor: borderColor,
-            backgroundColor: backgroundColor
+            backgroundColor: backgroundColor,
           }}
-          {...props}
-        >
-          <ProtocolLandIcon color={iconColor} />
+          {...props}>
+          <Avatar>{label}</Avatar>
           <Text variant="bodyMd" style={{ fontWeight: 600, color: textColor }}>
-            Account 1
+            {label}
           </Text>
-          <ArrowDownIcon
-            className={styles["dropdown-icon"]}
-            color={iconColor}
-          />
+          <ArrowDownIcon className={styles["dropdown-icon"]} color={iconColor} />
         </Component>
         {showDropdown && (
           <div id="dropdown-content" className={styles["dropdown"]}>
@@ -50,7 +39,7 @@ const Dropdown = React.forwardRef<HTMLDivElement, DropdownBaseProps>(
         )}
       </>
     );
-  }
+  },
 );
 
 Dropdown.displayName = "Dropdown";

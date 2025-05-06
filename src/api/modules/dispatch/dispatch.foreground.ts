@@ -4,17 +4,19 @@ import type Transaction from "arweave/web/lib/transaction";
 import type { TransformFinalizer } from "~api/foreground/foreground-modules";
 import type { ModuleFunction } from "~api/module";
 import type { DispatchResult } from "./index";
-import { sendChunk } from "../sign/chunks";
+import { sendChunk } from "~isomorphic-chunking";
+import type { SignatureOptions } from "arweave/web/lib/crypto/crypto-interface";
 
 const foreground: ModuleFunction<Record<any, any>> = async (
-  transaction: Transaction
+  transaction: Transaction,
+  signatureOptions?: SignatureOptions,
 ) => {
   // create chunks
   const {
     transaction: tx, // transaction without data and tags
     dataChunks,
     tagChunks,
-    chunkCollectionID
+    chunkCollectionID,
   } = deconstructTransaction(transaction);
 
   // we call the api and request it to start receiving
@@ -23,7 +25,7 @@ const foreground: ModuleFunction<Record<any, any>> = async (
     await sendChunk({
       collectionID: chunkCollectionID,
       type: "start",
-      index: -1
+      index: -1,
     });
   } catch (e) {
     // for some reason the chunk streaming was not accepted, most
@@ -37,9 +39,7 @@ const foreground: ModuleFunction<Record<any, any>> = async (
       await sendChunk(chunk);
     } catch (e) {
       // chunk fail
-      throw new Error(
-        `Error while sending a data (dispatch) chunk of collection "${chunkCollectionID}": \n${e}`
-      );
+      throw new Error(`Error while sending a data (dispatch) chunk of collection "${chunkCollectionID}": \n${e}`);
     }
   }
 
@@ -49,13 +49,11 @@ const foreground: ModuleFunction<Record<any, any>> = async (
       await sendChunk(chunk);
     } catch (e) {
       // chunk fail
-      throw new Error(
-        `Error while sending a tag chunk for tx from chunk collection "${chunkCollectionID}": \n${e}`
-      );
+      throw new Error(`Error while sending a tag chunk for tx from chunk collection "${chunkCollectionID}": \n${e}`);
     }
   }
 
-  return [tx, chunkCollectionID];
+  return [tx, chunkCollectionID, signatureOptions];
 };
 
 export const finalizer: TransformFinalizer<{

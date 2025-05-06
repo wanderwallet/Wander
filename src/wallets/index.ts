@@ -1,67 +1,18 @@
 import type { JWKInterface } from "arweave/node/lib/wallet";
 import { ExtensionStorage } from "~utils/storage";
-import type { HardwareWallet } from "./hardware";
-import browser from "webextension-polyfill";
 import Arweave from "arweave/web/common";
-import {
-  decryptWallet,
-  encryptWallet,
-  freeDecryptedWallet
-} from "./encryption";
-import {
-  checkPassword,
-  getDecryptionKeyOrRequestUnlock,
-  setDecryptionKey
-} from "./auth";
-import { ArweaveSigner } from "arbundles";
+import { decryptWallet, encryptWallet, freeDecryptedWallet } from "./encryption";
+import { checkPassword, getDecryptionKeyOrRequestUnlock, setDecryptionKey } from "./auth";
+import { ArweaveSigner } from "@dha-team/arbundles";
 import {
   DEFAULT_MODULE_APP_DATA,
   ERR_MSG_NO_ACTIVE_WALLET,
-  ERR_MSG_NO_WALLETS_ADDED
+  ERR_MSG_NO_WALLETS_ADDED,
 } from "~utils/auth/auth.constants";
 import type { ModuleAppData } from "~api/background/background-modules";
 import { isNotCancelError } from "~utils/assertions";
-import { log, LOG_GROUP } from "~utils/log/log.utils";
-import { resetStorage } from "~utils/storage.utils";
-
-/**
- * Locally stored wallet
- *
- * KeyfileFormat - string(encrypted) / JWKInterface(decrypted)
- */
-export interface LocalWallet<KeyfileFormat = string> {
-  type: "local";
-  nickname: string;
-  address: string;
-  keyfile: KeyfileFormat;
-}
-
-/**
- * KeyfileFormat - string(encrypted) / JWKInterface(decrypted)
- */
-export type StoredWallet<KeyfileFormat = string> =
-  | LocalWallet<KeyfileFormat>
-  | HardwareWallet;
-
-/**
- * Get wallets from storage
- *
- * @returns Wallets in storage
- */
-export async function getWallets() {
-  let wallets: StoredWallet[] = await ExtensionStorage.get("wallets");
-
-  return wallets || [];
-}
-
-/**
- * Get the active address
- */
-export async function getActiveAddress() {
-  const activeAddress = await ExtensionStorage.get("active_address");
-
-  return activeAddress;
-}
+import type { StoredWallet, LocalWallet } from "./wallets.types";
+import { getWallets, getActiveAddress, openOrSelectWelcomePage } from "./wallets.utils";
 
 /**
  * Get active wallet
@@ -100,42 +51,6 @@ export async function setActiveWallet(address?: string) {
 
 export type DecryptedWallet = StoredWallet<JWKInterface>;
 
-export async function openOrSelectWelcomePage(force = false) {
-  if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1") {
-    log(LOG_GROUP.AUTH, `PREVENTED openOrSelectWelcomePage(${force})`);
-
-    return;
-  }
-
-  // ONLY BROWSER EXTENSION BELOW THIS LINE:
-
-  log(LOG_GROUP.AUTH, `openOrSelectWelcomePage(${force})`);
-
-  // Make sure we clear any stored value from previous installations before
-  // opening the welcome page to onboard the user:
-  // Skip reset for test environment
-  const manifest = browser.runtime.getManifest();
-  if (manifest["__TEST_MODE__"] !== true) {
-    await resetStorage();
-  }
-
-  const url = browser.runtime.getURL("tabs/welcome.html");
-  const welcomePageTabs = await browser.tabs.query({ url });
-  const welcomePageTabID = welcomePageTabs[0]?.id;
-
-  if (welcomePageTabID) {
-    if (force) {
-      // More aggressive version, just select the existing tab:
-      browser.tabs.update(welcomePageTabID, { active: true });
-    } else {
-      // Less aggressive version, just highlight the existing tab but do not select it:
-      browser.tabs.highlight({ tabs: welcomePageTabID });
-    }
-  } else {
-    browser.tabs.create({ url });
-  }
-}
-
 /**
  * Get the active wallet with decrypted JWK
  *
@@ -147,9 +62,7 @@ export async function openOrSelectWelcomePage(force = false) {
  *
  * @returns Active wallet with decrypted JWK
  */
-export async function getActiveKeyfile(
-  appData: ModuleAppData = DEFAULT_MODULE_APP_DATA
-): Promise<DecryptedWallet> {
+export async function getActiveKeyfile(appData: ModuleAppData = DEFAULT_MODULE_APP_DATA): Promise<DecryptedWallet> {
   try {
     const activeWallet = await getActiveWallet();
 
@@ -167,15 +80,12 @@ export async function getActiveKeyfile(
     const decryptionKey = await getDecryptionKeyOrRequestUnlock(appData);
 
     // decrypt keyfile
-    const decryptedKeyfile = await decryptWallet(
-      activeWallet.keyfile,
-      decryptionKey
-    );
+    const decryptedKeyfile = await decryptWallet(activeWallet.keyfile, decryptionKey);
 
     // construct decrypted wallet object
     const decryptedWallet: DecryptedWallet = {
       ...activeWallet,
-      keyfile: decryptedKeyfile
+      keyfile: decryptedKeyfile,
     };
 
     return decryptedWallet;
@@ -217,9 +127,7 @@ export async function getKeyfile(address: string): Promise<DecryptedWallet> {
 
   // Get the `decryptionKey` if Wander is already unlocked, or unlock Wander if needed. This means the auth popup
   // will be displayed, prompting the user to enter their password:
-  const decryptionKey = await getDecryptionKeyOrRequestUnlock(
-    DEFAULT_MODULE_APP_DATA
-  );
+  const decryptionKey = await getDecryptionKeyOrRequestUnlock(DEFAULT_MODULE_APP_DATA);
 
   // decrypt keyfile
   const decryptedKeyfile = await decryptWallet(wallet.keyfile, decryptionKey);
@@ -227,7 +135,7 @@ export async function getKeyfile(address: string): Promise<DecryptedWallet> {
   // construct decrypted wallet object
   const decryptedWallet: DecryptedWallet = {
     ...wallet,
-    keyfile: decryptedKeyfile
+    keyfile: decryptedKeyfile,
   };
 
   return decryptedWallet;
@@ -274,12 +182,8 @@ function generateUniqueNickname(wallets: WalletWithNickname[]): string {
  * @param password Password to encrypt with
  */
 export async function addWallet(
-  wallet:
-    | JWKInterface
-    | WalletWithNickname
-    | JWKInterface[]
-    | WalletWithNickname[],
-  password: string
+  wallet: JWKInterface | WalletWithNickname | JWKInterface[] | WalletWithNickname[],
+  password: string,
 ) {
   // check password
   if (!(await checkPassword(password))) {
@@ -289,7 +193,7 @@ export async function addWallet(
   const arweave = new Arweave({
     host: "arweave.net",
     port: 443,
-    protocol: "https"
+    protocol: "https",
   });
 
   const walletsToAdd = Array.isArray(wallet)
@@ -319,7 +223,7 @@ export async function addWallet(
       // @ts-expect-error
       nickname: item.nickname || generateUniqueNickname(wallets),
       address,
-      keyfile: encrypted
+      keyfile: encrypted,
     });
   }
 
@@ -338,10 +242,7 @@ export async function addWallet(
  * @param newPassword new password
  * @param prevPassword previous password to verify
  */
-export async function updatePassword(
-  newPassword: string,
-  prevPassword: string
-) {
+export async function updatePassword(newPassword: string, prevPassword: string) {
   if (!(await checkPassword(prevPassword))) {
     throw new Error("Invalid password");
   }
@@ -405,8 +306,7 @@ export const readWalletFromFile = (file: File) =>
     reader.onload = async (e) => {
       const res = e!.target!.result;
 
-      if (!res || typeof res !== "string")
-        return reject("Invalid result from reader");
+      if (!res || typeof res !== "string") return reject("Invalid result from reader");
 
       try {
         const jwk = JSON.parse(res);
@@ -429,12 +329,13 @@ export interface WalletKeyLengths {
   match: boolean;
 }
 
-export async function getWalletKeyLength(
-  jwk: JWKInterface
-): Promise<WalletKeyLengths> {
+export async function getWalletKeyLength(jwk: JWKInterface): Promise<WalletKeyLengths> {
   const signer = new ArweaveSigner(jwk);
   const expectedLength = signer.ownerLength;
   const actualLength = signer.publicKey.byteLength;
   const match = actualLength === expectedLength;
   return { actualLength, expectedLength, match };
 }
+
+export type { StoredWallet, LocalWallet };
+export { getWallets, getActiveAddress, openOrSelectWelcomePage } from "./wallets.utils";

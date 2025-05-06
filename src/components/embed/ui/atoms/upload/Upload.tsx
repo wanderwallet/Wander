@@ -1,6 +1,9 @@
 import React, { useState, useRef, forwardRef } from "react";
 import styles from "./Upload.module.css";
-import { Box, Text, UploadIcon, CheckIcon } from "..";
+import { Box } from "../box";
+import { Text } from "../text";
+import { UploadIcon } from "../icon";
+import { CheckIcon } from "../icon";
 import { Loading } from "../loading";
 import type { FileUploadProps } from "./Upload.types";
 
@@ -23,7 +26,7 @@ const Upload = forwardRef<HTMLDivElement, FileUploadProps>(
       onError,
       ...props
     },
-    ref
+    ref,
   ) => {
     const [dragging, setDragging] = useState(false);
     const [file, setFile] = useState<File | null>(null);
@@ -37,9 +40,7 @@ const Upload = forwardRef<HTMLDivElement, FileUploadProps>(
     const validateFile = (file: File): boolean => {
       // Check file type if acceptedFileTypes is specified
       if (acceptedFileTypes && !file.type.match(acceptedFileTypes)) {
-        setFileError(
-          `File type not supported. Please upload ${acceptedFileTypes} files only.`
-        );
+        setFileError(`File type not supported. Please upload ${acceptedFileTypes} files only.`);
         return false;
       }
 
@@ -135,7 +136,7 @@ const Upload = forwardRef<HTMLDivElement, FileUploadProps>(
     const renderContent = () => {
       if (isLoading) {
         return (
-          <Box alignment="center">
+          <Box alignment="center" className={styles.upload__content}>
             <Loading />
             <Text variant="bodyMd">{loadingText}</Text>
           </Box>
@@ -144,26 +145,23 @@ const Upload = forwardRef<HTMLDivElement, FileUploadProps>(
 
       if (fileError) {
         return (
-          <Box alignment="center">
+          <Box alignment="center" className={styles.upload__content}>
             <Text variant="bodyMd" style={{ color: "#E53935" }}>
               {fileError}
             </Text>
-            <Text variant="bodyMd">{description}</Text>
           </Box>
         );
       }
 
       return (
-        <Box alignment="center">
+        <Box alignment="center" className={styles.upload__content}>
           {file && !isLoading ? (
             <>
               <CheckIcon style={{ color: "#0D6CE9" }} width={54} height={54} />
-              <Text variant="bodyMd" style={{ color: "#0D6CE9" }}>
+              <Text variant="bodyMd" style={{ color: "#0D6CE9" }} className={styles.upload__filename}>
                 {file.name}
               </Text>
-              <Text variant="bodyMd">
-                {(file.size / 1024 / 1024).toFixed(2)} MB
-              </Text>
+              <Text variant="bodyMd">{(file.size / 1024 / 1024).toFixed(2)} MB</Text>
             </>
           ) : (
             <>
@@ -171,10 +169,11 @@ const Upload = forwardRef<HTMLDivElement, FileUploadProps>(
               <Text variant="bodyMd" style={{ color: "#0D6CE9" }}>
                 {title}
               </Text>
+              <Text variant="bodyMd" className={styles.upload__description}>
+                {description}
+              </Text>
             </>
           )}
-
-          <Text variant="bodyMd">{description}</Text>
         </Box>
       );
     };
@@ -193,8 +192,7 @@ const Upload = forwardRef<HTMLDivElement, FileUploadProps>(
           ${isFullWidth ? styles.upload__full__width : ""}
           ${className}
         `}
-        {...props}
-      >
+        {...props}>
         <input
           ref={fileInputRef}
           accept={acceptedFileTypes}
@@ -205,7 +203,7 @@ const Upload = forwardRef<HTMLDivElement, FileUploadProps>(
         {renderContent()}
       </div>
     );
-  }
+  },
 );
 
 Upload.displayName = "Upload";

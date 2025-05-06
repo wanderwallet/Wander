@@ -4,9 +4,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #eee;
+  background-color: rgba(var(--color-overlay-rgb), 0.1);
   border-radius: 10px;
   position: relative;
+  height: 50px;
+  padding: 2px;
+  align-items: center;
+  align-self: stretch;
 }
 
 .tabs button {
@@ -19,7 +23,7 @@
 }
 
 .tabs .active {
-  background-color: white;
+  background-color: var(--color-background-default);
   border-radius: 10px;
   height: calc(100% - 10px);
   width: calc(50%);
@@ -28,6 +32,6 @@
   top: 5px;
   transform: translateX(5px);
   border-radius: inherit;
-  box-shadow: 0 2px 2px #ccc;
+  box-shadow: var(--shadow-small);
   transition: all 200ms;
 }

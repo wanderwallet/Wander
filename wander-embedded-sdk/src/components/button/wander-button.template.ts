@@ -1,7 +1,10 @@
-import { WanderEmbeddedLogoVariant } from "../../wander-embedded.types";
+import { WanderEmbeddedButtonLabels, WanderEmbeddedLogoVariant } from "../../wander-embedded.types";
 
 export interface WanderButtonTemplateContentOptions {
   wanderLogo: WanderEmbeddedLogoVariant;
+  i18n: WanderEmbeddedButtonLabels;
+  showLabel: boolean;
+  showBalance: boolean;
   customStyles: string;
   cssVariableKeys: string[];
 }
@@ -10,21 +13,26 @@ export interface WanderButtonTemplateContentOptions {
 
 export const getWanderButtonTemplateContent = ({
   wanderLogo,
+  i18n,
+  showLabel,
+  showBalance,
   customStyles,
-  cssVariableKeys = []
+  cssVariableKeys = [],
 }: WanderButtonTemplateContentOptions) => `
 <style>
 
-  :root[data-theme="dark"] {
-    ${cssVariableKeys
-      .map((cssVariableKey) => {
-        return `--${cssVariableKey}: var(--${cssVariableKey}Dark);`;
-      })
-      .join("\n")}
+  @media (prefers-color-scheme: light) {
+    :host {
+      ${cssVariableKeys
+        .map((cssVariableKey) => {
+          return `--${cssVariableKey}: var(--${cssVariableKey}Light);`;
+        })
+        .join("\n")}
+    }
   }
 
   @media (prefers-color-scheme: dark) {
-    :root[data-theme="system"] {
+    :host {
       ${cssVariableKeys
         .map((cssVariableKey) => {
           return `--${cssVariableKey}: var(--${cssVariableKey}Dark);`;
@@ -34,57 +42,105 @@ export const getWanderButtonTemplateContent = ({
   }
 
   .button {
+    position: relative;
     display: flex;
     align-items: center;
     gap: var(--gapInside);
     outline: none;
     user-select: none;
     cursor: pointer;
-    transition: transform linear 50ms;
-
     min-width: var(--minWidth);
     min-height: var(--minHeight);
-    z-index: var(--zIndex);
+    z-index: 0;
     padding: var(--padding);
     font: var(--font);
-
-    background: var(--background);
     color: var(--color);
+    background: transparent;
+    border: none;
+    border-radius: var(--borderRadius);
+  }
+
+  .button::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--background);
     border: var(--borderWidth) solid var(--borderColor);
     border-radius: var(--borderRadius);
     box-shadow: var(--boxShadow);
+    z-index: -1;
+    transition: transform linear 50ms;
+  }
+
+  .button::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: var(--borderRadius);
+    border-bottom-right-radius: 0;
+    z-index: -1;
   }
 
   .button:hover .wanderLogo {
     animation: sail 3s infinite;
   }
 
-  .button:active {
+  .button:active::before {
     transform: scale(0.95);
   }
 
   .wanderLogo {
     width: 32px;
     aspect-ratio: 1;
+    transition: transform linear 50ms;
   }
 
-  .label:empty {
+  .label {
+  }
+
+  .label[hidden],
+  .label:empty:not(.isLoading) {
     display: none;
   }
 
-  .label:not(:empty) + .balance {
+  .label.isLoading {
+    background: currentColor;
+    width: 64px;
+    height: 12px;
+    border-radius: 6px;
+    animation: blink-opacity 3s infinite;
+  }
+
+  .balance {
+    filter: blur(0px);
+    transition: filter linear 300ms;
     display: none;
+  }
+
+  .label:empty:not(.isLoading) + .balance:not([hidden]) {
+    display: block;
+  }
+
+  .balance:empty {
+    background: currentColor;
+    width: 64px;
+    height: 12px;
+    border-radius: 6px;
+    animation: blink-opacity 3s infinite;
+  }
+
+  .balance.isHidden {
+    filter: blur(6px);
   }
 
   .indicator,
-  .dappLogo,
   .notifications {
     position: absolute;
     right: calc(4px + var(--borderWidth));
     bottom: calc(4px + var(--borderWidth));
     border-radius: 32px;
-    border: var(--borderWidth) solid var(--borderColor);
     transition: transform linear 150ms, background linear 150ms;
+    pointer-events: none;
   }
 
   .indicator {
@@ -95,17 +151,13 @@ export const getWanderButtonTemplateContent = ({
     transform: translate(50%, 50%);
   }
 
-  .dappLogo {
-    width: 22px;
-    height: 22px;
-    z-index: 9;
-    background: var(--background);
-    transform: translate(50%, 50%) scale(0);
-    padding: 3px;
+  .indicator.isLoading {
+    animation: blink-indicator 3s infinite;
   }
 
   .notifications {
     background: red;
+    color: white;
     font-size: 12px;
     font-weight: bold;
     min-height: 22px;
@@ -119,11 +171,8 @@ export const getWanderButtonTemplateContent = ({
   }
 
   .isConnected + .indicator {
-    background: green;
-  }
-
-  .isConnected ~ .dappLogo[src] {
-    transform: translate(50%, 50%) scale(1);
+    /* TODO: Add CSS var */
+    background: #56C980;
   }
 
   .notifications:empty {
@@ -139,6 +188,24 @@ export const getWanderButtonTemplateContent = ({
     }
     100% {
       transform: rotate(-10deg) translate(0, 1px);
+    }
+  }
+
+  @keyframes blink-opacity {
+    0%, 100% {
+      opacity: 0.5;
+    }
+    50% {
+      opacity: 0.25;
+    }
+  }
+
+  @keyframes blink-indicator {
+    0%, 100% {
+      background: #CCC;
+    }
+    50% {
+      background: #56C980;
     }
   }
 
@@ -159,13 +226,9 @@ export const getWanderButtonTemplateContent = ({
       fill-rule="evenodd"
       clip-rule="evenodd" />
     <path d="M209.689 120.406L256.138 21.2852C257.135 19.114 254.755 16.9443 252.685 18.1364L183.231 58.0562L138.086 108.914L209.689 120.406Z"
-      fill="${
-        wanderLogo === "text-color" ? "currentColor" : "url(#gradient2)"
-      }" />
+      fill="${wanderLogo === "text-color" ? "currentColor" : "url(#gradient2)"}" />
     <path d="M47.211 120.406L0.762138 21.2853C-0.234245 19.1141 2.14523 16.9445 4.21552 18.1365L73.6694 58.0564L118.814 108.914L47.211 120.406Z"
-      fill="${
-        wanderLogo === "text-color" ? "currentColor" : "url(#gradient3)"
-      }" />
+      fill="${wanderLogo === "text-color" ? "currentColor" : "url(#gradient3)"}" />
 
     <defs>
       <linearGradient
@@ -203,11 +266,10 @@ export const getWanderButtonTemplateContent = ({
     </defs>
   </svg>
 
-  <span class="label"></span>
-  <span class="balance"></span>
+  <span class="label" ${showLabel ? "" : "hidden"}></span>
+  <span class="balance" ${showBalance ? "" : "hidden"} title="${i18n.loadingBalance}"></span>
 </button>
 
 <span class="indicator"></span>
-<img hidden class="dappLogo" />
 <span class="notifications"></span>
 `;

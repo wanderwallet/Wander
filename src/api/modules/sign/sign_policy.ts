@@ -1,6 +1,6 @@
 import Transaction from "arweave/web/lib/transaction";
 import BigNumber from "bignumber.js";
-import { DataItem } from "warp-arbundles";
+import type { DataItem } from "@dha-team/arbundles";
 import type { RawDataItem } from "../sign_data_item/types";
 import type { AuthRequestData } from "~utils/auth/auth.types";
 export type SignPolicy = "always_ask" | "ask_when_spending" | "auto_confirm";
@@ -9,7 +9,7 @@ export function checkIfUserNeedsToSign(
   signPolicy: SignPolicy,
   transaction?: Transaction | DataItem | RawDataItem,
   walletType: "local" | "hardware" = "local",
-  apiName?: AuthRequestData["type"]
+  apiName?: AuthRequestData["type"],
 ) {
   try {
     // Hardware wallets always need manual signing
@@ -48,15 +48,9 @@ export function checkIfUserNeedsToSign(
         }
 
         // Require auth if transaction spends AR (quantity > 0) or has network fees
-        const quantity =
-          "quantity" in transaction
-            ? new BigNumber(transaction.quantity)
-            : new BigNumber(0);
+        const quantity = "quantity" in transaction ? new BigNumber(transaction.quantity) : new BigNumber(0);
 
-        const reward =
-          "reward" in transaction
-            ? new BigNumber(transaction.reward)
-            : new BigNumber(0);
+        const reward = "reward" in transaction ? new BigNumber(transaction.reward) : new BigNumber(0);
 
         return !quantity.isZero() || !reward.isZero();
 

@@ -1,21 +1,11 @@
 import copy from "copy-to-clipboard";
-import {
-  Card,
-  Row,
-  WanderIcon,
-  Text,
-  Box,
-  Copyable,
-  Button
-} from "~components/embed/ui";
+import { Card, Copyable, Button, WanderFooter, Spacer } from "~components/embed/ui";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
-
-const shortenAddress = (address: string): string =>
-  `${address.slice(0, 8)}...${address.slice(-6)}`;
+import { useLocation } from "~wallets/router/router.utils";
 
 export function AccountConfirmationEmbeddedView() {
-  const { wallets, lastRegisteredWallet, clearLastRegisteredWallet } =
-    useEmbedded();
+  const { wallets, lastRegisteredWallet, clearLastRegisteredWallet } = useEmbedded();
+  const { navigate } = useLocation();
 
   return (
     <Card
@@ -23,37 +13,24 @@ export function AccountConfirmationEmbeddedView() {
         wallets.length === 1
           ? `Congratulations, your account\n has been created!`
           : `Congratulations, your wallet has been ${
-              lastRegisteredWallet.source.type === "IMPORTED"
-                ? "imported"
-                : "created"
+              lastRegisteredWallet.source.type === "IMPORTED" ? "imported" : "created"
             }!`
       }
-      subtitle="A confirmation email has been sent with recovery instructions."
-      footerElement={
-        <Row>
-          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
-            {"Secured by"}
-          </Text>
-          <WanderIcon color="#838383" />
-        </Row>
-      }
-      hasBackButton={true}
-      onBackButtonClick={() => {
-        window.location.href = "/auth";
-      }}
-      //   hasCloseButton={false}
-      size="auto"
-    >
+      footerElement={<WanderFooter />}
+      hasBackButton={false}
+      onBackButtonClick={() => navigate(`/auth`)}
+      size="auto">
       <br />
       <Copyable
         isFullWidth
-        label="Your account address"
-        value={shortenAddress(lastRegisteredWallet.address)}
-        tooltipValue={lastRegisteredWallet.address}
+        style={{ padding: 0 }}
+        label="Your wallet address"
+        value={lastRegisteredWallet.address}
         onClick={() => {
           copy(lastRegisteredWallet.address);
         }}
       />
+      <Spacer y={1.5} />
       <Button isFullWidth size="md" onClick={() => clearLastRegisteredWallet()}>
         Done
       </Button>

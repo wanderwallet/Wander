@@ -1,36 +1,22 @@
-import {
-  type DisplayTheme,
-  Section,
-  Text,
-  Spacer
-} from "@arconnect/components";
+import { type DisplayTheme, Section, Text, Spacer } from "@arconnect/components";
 import { Avatar, CloseLayer, NoAvatarIcon } from "./WalletHeader";
 import { AnimatePresence, motion } from "framer-motion";
 import { hoverEffect, useTheme } from "~utils/theme";
 import { useStorage } from "~utils/storage";
 import { ArrowLeftIcon } from "@iconicicons/react";
 import { ExtensionStorage } from "~utils/storage";
-import HardwareWalletIcon, {
-  hwIconAnimateProps
-} from "~components/hardware/HardwareWalletIcon";
+import HardwareWalletIcon, { hwIconAnimateProps } from "~components/hardware/HardwareWalletIcon";
 import { useHardwareApi } from "~wallets/hooks";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import keystoneLogo from "url:/assets/hardware/keystone.png";
 import WalletSwitcher from "./WalletSwitcher";
 import styled from "styled-components";
-import { svgie } from "~utils/svgies";
 import { useLocation } from "~wallets/router/router.utils";
 import { useNameServiceProfile } from "~lib/nameservice";
 import { FULL_HISTORY, useGateway } from "~gateways/wayfinder";
 import { concatGatewayURL } from "~gateways/utils";
 
-export default function Head({
-  title,
-  showOptions = true,
-  back: onBack,
-  showBack = true,
-  allowOpen = true
-}: Props) {
+export default function Head({ title, showOptions = true, back: onBack, showBack = true, allowOpen = true }: Props) {
   const theme = useTheme();
   const { back } = useLocation();
 
@@ -52,9 +38,7 @@ export default function Head({
       // if the difference between the scroll height
       // and the client height if not enough
       // don't let the scroll direction change
-      const diff =
-        document.documentElement.scrollHeight -
-        document.documentElement.clientHeight;
+      const diff = document.documentElement.scrollHeight - document.documentElement.clientHeight;
 
       if (diff < 85) return;
 
@@ -69,15 +53,10 @@ export default function Head({
   // current address
   const [activeAddress] = useStorage<string>({
     key: "active_address",
-    instance: ExtensionStorage
+    instance: ExtensionStorage,
   });
 
   const nameServiceProfile = useNameServiceProfile(activeAddress);
-
-  const svgieAvatar = useMemo(
-    () => svgie(activeAddress, { asDataURI: true }),
-    [activeAddress]
-  );
 
   // first render for animation
   const [firstRender, setFirstRender] = useState(true);
@@ -92,11 +71,7 @@ export default function Head({
   const gateway = useGateway(FULL_HISTORY);
 
   return (
-    <HeadWrapper
-      displayTheme={theme}
-      collapse={scrollDirection === "down"}
-      scrolled={scrolled}
-    >
+    <HeadWrapper displayTheme={theme} collapse={scrollDirection === "down"} scrolled={scrolled}>
       {showBack ? (
         <BackWrapper>
           <BackButton
@@ -110,31 +85,18 @@ export default function Head({
         <Spacer y={1.6} />
       )}
 
-      <PageInfo
-        key={scrollDirection}
-        scrollDirection={scrollDirection}
-        firstRender={firstRender}
-      >
+      <PageInfo key={scrollDirection} scrollDirection={scrollDirection} firstRender={firstRender}>
         <PageTitle>{title}</PageTitle>
         <ClickableAvatar
-          img={
-            nameServiceProfile?.logo
-              ? concatGatewayURL(gateway) + "/" + nameServiceProfile.logo
-              : svgieAvatar
-          }
+          img={nameServiceProfile?.logo && concatGatewayURL(gateway) + "/" + nameServiceProfile.logo}
           onClick={() => {
             if (!allowOpen) return;
             setOpen(true);
-          }}
-        >
-          {!nameServiceProfile?.logo && !svgieAvatar && <NoAvatarIcon />}
+          }}>
+          {!nameServiceProfile?.logo && <NoAvatarIcon />}
           <AnimatePresence initial={false}>
             {hardwareApi === "keystone" && (
-              <HardwareWalletIcon
-                icon={keystoneLogo}
-                color="#2161FF"
-                {...hwIconAnimateProps}
-              />
+              <HardwareWalletIcon icon={keystoneLogo} color="#2161FF" {...hwIconAnimateProps} />
             )}
           </AnimatePresence>
         </ClickableAvatar>
@@ -165,11 +127,7 @@ const HeadWrapper = styled(Section)<{
   backdrop-filter: blur(15px);
   border-bottom: 1px solid;
   border-bottom-color: ${(props) =>
-    props.scrolled
-      ? "rgba(" +
-        (props.displayTheme === "light" ? "235, 235, 241" : "31, 30, 47") +
-        ")"
-      : "transparent"};
+    props.scrolled ? "rgba(" + (props.displayTheme === "light" ? "235, 235, 241" : "31, 30, 47") + ")" : "transparent"};
   transition: border-color 0.23s ease-in-out;
 `;
 
@@ -209,11 +167,9 @@ const PageInfo = styled(motion.div).attrs<{
   scrollDirection: "up" | "down";
   firstRender: boolean;
 }>((props) => ({
-  initial: !props.firstRender
-    ? { opacity: 0, y: props.scrollDirection === "up" ? 20 : -20 }
-    : undefined,
+  initial: !props.firstRender ? { opacity: 0, y: props.scrollDirection === "up" ? 20 : -20 } : undefined,
   animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: props.scrollDirection === "up" ? -20 : 20 }
+  exit: { opacity: 0, y: props.scrollDirection === "up" ? -20 : 20 },
 }))<{
   firstRender: boolean;
   scrollDirection: "up" | "down";
@@ -226,7 +182,7 @@ const PageInfo = styled(motion.div).attrs<{
 
 const PageTitle = styled(Text).attrs({
   subtitle: true,
-  noMargin: true
+  noMargin: true,
 })`
   font-size: 1.5rem;
   font-weight: 500;

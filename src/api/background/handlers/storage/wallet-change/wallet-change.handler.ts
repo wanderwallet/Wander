@@ -1,20 +1,17 @@
 import { getActiveAddress, setActiveWallet, type StoredWallet } from "~wallets";
-import { sendMessage } from "@arconnect/webext-bridge";
 import type { StorageChange } from "~utils/runtime";
 import Application from "~applications/application";
 import { forEachTab } from "~applications/tab";
 import { getAppURL } from "~utils/format";
 import browser from "webextension-polyfill";
+import { isomorphicSendMessage } from "~isomorphic-messaging";
 
 /**
  * Added wallets change listener.
  * Fixup active address in case the current
  * active address' wallet has been removed.
  */
-export async function handleWalletsChange({
-  newValue,
-  oldValue
-}: StorageChange<StoredWallet[]>) {
+export async function handleWalletsChange({ newValue, oldValue }: StorageChange<StoredWallet[]>) {
   const wallets = newValue;
   const previousWallets = oldValue || [];
 
@@ -32,14 +29,14 @@ export async function handleWalletsChange({
     if (permissionCheck.has.length === 0) return;
 
     // trigger emiter
-    await sendMessage(
-      "event",
-      {
+    await isomorphicSendMessage({
+      destination: `content-script@${tab.id}`,
+      messageId: "event",
+      data: {
         name: "addresses",
-        value: permissionCheck.result ? addresses : null
+        value: permissionCheck.result ? addresses : null,
       },
-      `content-script@${tab.id}`
-    );
+    });
   });
 
   // add or remove ANS label change listener
@@ -48,7 +45,7 @@ export async function handleWalletsChange({
     // Wander has just been set up
     browser.alarms.create("sync_labels", {
       delayInMinutes: 1,
-      periodInMinutes: 60
+      periodInMinutes: 60,
     });
   } else if (wallets.length === 0 && previousWallets.length > 0) {
     // remove scheduled label refresh if

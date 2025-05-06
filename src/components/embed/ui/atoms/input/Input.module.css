@@ -1,0 +1,208 @@
+@import "../../../tokens/index.css";
+
+.input__container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--text-input-background);
+}
+
+.input__wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background-color: var(--text-input-background);
+}
+
+.input {
+  all: unset;
+  box-sizing: border-box;
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--color-input-border, #e0e0e0);
+  font-family: var(--font-family-serif);
+  color: var(--color-input-text, #121212);
+  transition: all var(--transition-base);
+  padding: var(--spacing-3) var(--spacing-4);
+}
+
+.input:focus {
+  border-color: var(--color-primary, #0d6ce9);
+  box-shadow: 0 0 0 2px rgba(13, 108, 233, 0.2);
+}
+
+.input::placeholder {
+  color: var(--color-input-placeholder, #aaa);
+}
+
+.input__error {
+  border-color: var(--color-error, #e53935) !important;
+  box-shadow: none;
+}
+
+.input__error:focus {
+  box-shadow: 0 0 0 2px rgba(229, 57, 53, 0.2);
+}
+
+.input__label {
+  margin-bottom: var(--spacing-2);
+  font-weight: var(--font-weight-medium);
+}
+
+.input__error__message {
+  margin-top: var(--spacing-1);
+  color: var(--color-error, #e53935);
+}
+
+.input__helper__text {
+  margin-top: var(--spacing-1);
+  color: var(--color-text-subdued, #666666);
+}
+
+.input__blurry {
+  filter: blur(2px);
+}
+
+.input__disabled {
+  opacity: var(--opacity-disabled, 0.5);
+  cursor: not-allowed;
+}
+
+/* Size variants */
+.input__sm {
+  padding: var(--spacing-2) var(--spacing-3);
+  font-size: var(--font-size-sm);
+}
+
+.input__md {
+  padding: var(--spacing-3) var(--spacing-4);
+  font-size: var(--font-size-base);
+}
+
+.input__lg {
+  padding: var(--spacing-4) var(--spacing-5);
+  font-size: var(--font-size-lg);
+}
+
+.input__full__width {
+  width: 100%;
+}
+
+/* Icon styles */
+.input__icon__start,
+.input__icon__end {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-icon, #666666);
+  pointer-events: none;
+}
+
+.input__icon__start {
+  left: var(--spacing-3);
+}
+
+.input__icon__end {
+  right: var(--spacing-3);
+}
+
+.input__icon__end[onClick] {
+  pointer-events: auto;
+}
+
+.input__has__start__icon {
+  padding-left: calc(var(--spacing-3) * 2 + 24px);
+}
+
+.input__has__end__icon {
+  padding-right: calc(var(--spacing-3) * 2 + 24px);
+}
+
+.input:focus + .input__icon__start,
+.input:focus + .input__icon__end {
+  color: var(--color-primary, #0d6ce9);
+}
+
+@media (prefers-color-scheme: dark) {
+  .input {
+    background-color: var(--color-input-bg-dark, #2a2a2a);
+    border-color: var(--color-input-border-dark, #444);
+    color: var(--color-input-text-dark, #ffffff);
+  }
+
+  .input::placeholder {
+    color: var(--color-input-placeholder-dark, #777);
+  }
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20%,
+  60% {
+    transform: translateX(-5px);
+  }
+  40%,
+  80% {
+    transform: translateX(5px);
+  }
+}
+
+.input__error:focus {
+  animation: shake 0.4s ease-in-out;
+}
+
+.input__success {
+  border-color: var(--color-success, #4caf50);
+}
+
+.input__warning {
+  border-color: var(--color-warning, #ff9800);
+}
+
+.input__character__count {
+  position: absolute;
+  right: var(--spacing-2);
+  bottom: -20px;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-subdued, #666666);
+}
+
+.input__character__count.over__limit {
+  color: var(--color-error, #e53935);
+}
+
+.input__centered {
+  text-align: center;
+}
+
+.input__auto_size {
+  width: auto;
+  min-width: 60px; /* Base minimum width */
+  transition: width 0.1s ease-out;
+}
+
+.input__measure {
+  position: absolute;
+  visibility: hidden;
+  height: 0;
+  white-space: pre;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+  padding-left: 0;
+  padding-right: 0;
+  pointer-events: none;
+}
+
+.input__wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}

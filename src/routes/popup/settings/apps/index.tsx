@@ -1,7 +1,6 @@
 import { Spacer, Text, useInput } from "@arconnect/components";
 import { useEffect, useMemo, useState } from "react";
-import { useStorage } from "~utils/storage";
-import { ExtensionStorage } from "~utils/storage";
+import { PersistentStorage, useStorage } from "~utils/storage";
 import Application from "~applications/application";
 import browser from "webextension-polyfill";
 import styled from "styled-components";
@@ -26,9 +25,9 @@ export function ApplicationsView() {
   const [connectedApps] = useStorage<string[]>(
     {
       key: "apps",
-      instance: ExtensionStorage
+      instance: PersistentStorage,
     },
-    []
+    [],
   );
 
   // apps
@@ -46,7 +45,7 @@ export function ApplicationsView() {
         appsWithData.push({
           name: appData.name || app,
           url: app,
-          icon: appData.logo
+          icon: appData.logo,
         });
       }
 
@@ -75,25 +74,15 @@ export function ApplicationsView() {
       return true;
     }
 
-    return (
-      app.name.toLowerCase().includes(query.toLowerCase()) ||
-      app.url.toLowerCase().includes(query.toLowerCase())
-    );
+    return app.name.toLowerCase().includes(query.toLowerCase()) || app.url.toLowerCase().includes(query.toLowerCase());
   }
 
   return (
     <>
-      <HeadV2
-        title={browser.i18n.getMessage("setting_apps")}
-        back={() => navigate("/quick-settings")}
-      />
+      <HeadV2 title={browser.i18n.getMessage("setting_apps")} back={() => navigate("/quick-settings")} />
       <Wrapper>
         <SearchWrapper>
-          <SearchInput
-            small
-            placeholder={browser.i18n.getMessage("search_apps")}
-            {...searchInput.bindings}
-          />
+          <SearchInput small placeholder={browser.i18n.getMessage("search_apps")} {...searchInput.bindings} />
         </SearchWrapper>
         <Spacer y={1} />
         <SettingsList>
@@ -115,9 +104,7 @@ export function ApplicationsView() {
               }
               icon={app.icon}
               active={false}
-              onClick={() =>
-                navigate(`/quick-settings/apps/${encodeURIComponent(app.url)}`)
-              }
+              onClick={() => navigate(`/quick-settings/apps/${encodeURIComponent(app.url)}`)}
               key={i}
             />
           ))}

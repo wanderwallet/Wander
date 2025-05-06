@@ -1,72 +1,49 @@
-import { DevFigmaScreen } from "~components/dev/figma-screen/figma-screen.component";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
-import screenSrc from "url:/assets-beta/figma-screens/recover-account-more-authentication.view.png";
-import {
-  AppleIcon,
-  Box,
-  Button,
-  Card,
-  FacebookIcon,
-  Row,
-  TwitterIcon,
-  WanderIcon,
-  Text,
-  Checkbox
-} from "~components/embed/ui";
-
+import { AppleIcon, Box, Button, Card, FacebookIcon, TwitterIcon, Checkbox, WanderFooter } from "~components/embed/ui";
+import { useLocation } from "~wallets/router/router.utils";
+import { toast } from "react-toastify";
+import type { AuthProviderType } from "embed-api";
 export function AuthRecoverAccountMoreAuthenticationEmbeddedView() {
-  const { importedTempWalletAddress, recoverableAccounts, recoverAccount } =
-    useEmbedded();
+  const { navigate, back } = useLocation();
+  const { recoverableAccounts, recoverAccount } = useEmbedded();
 
   const accountToRecover = recoverableAccounts?.[0];
   const accountToRecoverId = accountToRecover?.userId;
 
+  const handleRecoverAccount = useCallback(
+    async (authProviderType: AuthProviderType) => {
+      try {
+        await recoverAccount(authProviderType, accountToRecoverId);
+      } catch (error) {
+        toast.error(error);
+      }
+    },
+    [recoverAccount, accountToRecoverId],
+  );
+
   const [checkboxChecked, setCheckboxChecked] = useState<boolean>(false);
 
-  const toggleCheckboxChecked = () =>
-    setCheckboxChecked((prevValue) => !prevValue);
+  const toggleCheckboxChecked = () => setCheckboxChecked((prevValue) => !prevValue);
 
   return (
     <Card
       headerText="Recover your account"
       subtitle="More options"
-      footerElement={
-        <Row>
-          <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
-            {"Secured by"}
-          </Text>
-          <WanderIcon color="#838383" />
-        </Row>
-      }
+      footerElement={<WanderFooter />}
       hasBackButton={true}
-      onBackButtonClick={() => {
-        window.history.back();
-      }}
+      onBackButtonClick={back}
       hasCloseButton={true}
-      onCloseButtonClick={() => {
-        window.location.href = "/auth/recover-account/authentication";
-      }}
-      size="auto"
-    >
+      onCloseButtonClick={() => navigate(`/auth/recover-account/authentication`)}
+      size="auto">
       <Box>
-        {/* <Button
-          variant="outlined"
-          isFullWidth
-          icon={<EmailIcon fontSize={24} />}
-          onClick={() => recoverAccount("EMAIL_N_PASSWORD", accountToRecoverId)}
-          isDisabled={!checkboxChecked}
-        >
-          Email & Password
-        </Button> */}
         <Button
           variant="outlined"
           isFullWidth
           icon={<FacebookIcon fontSize={24} />}
-          onClick={() => recoverAccount("FACEBOOK", accountToRecoverId)}
-          isDisabled={!checkboxChecked}
-        >
+          onClick={() => handleRecoverAccount("FACEBOOK")}
+          isDisabled={!checkboxChecked}>
           Facebook
         </Button>
         <Button
@@ -74,8 +51,7 @@ export function AuthRecoverAccountMoreAuthenticationEmbeddedView() {
           isFullWidth
           icon={<AppleIcon fontSize={24} />}
           isDisabled={!checkboxChecked}
-          onClick={() => recoverAccount("APPLE", accountToRecoverId)}
-        >
+          onClick={() => handleRecoverAccount("APPLE")}>
           Apple
         </Button>
         <Button
@@ -83,8 +59,7 @@ export function AuthRecoverAccountMoreAuthenticationEmbeddedView() {
           isFullWidth
           icon={<TwitterIcon fontSize={24} />}
           isDisabled={!checkboxChecked}
-          onClick={() => recoverAccount("X", accountToRecoverId)}
-        >
+          onClick={() => handleRecoverAccount("X")}>
           X
         </Button>
         <Checkbox
@@ -95,14 +70,4 @@ export function AuthRecoverAccountMoreAuthenticationEmbeddedView() {
       </Box>
     </Card>
   );
-
-  //     config={[
-  //       {
-  //         label: importedTempWalletAddress,
-  //         isDisabled: true
-  //       },
-  //       {
-  //         label: accountToRecover ? accountToRecover.name : "-",
-  //         isDisabled: true
-  //       },
 }

@@ -12,7 +12,9 @@
   ],
   "compilerOptions": {
     "paths": {
-      "~*": ["./src/*"]
+      "~*": ["./src/*"],
+      "~isomorphic-messaging": ["./src/utils/messaging/strategies/extension/extension-messaging.strategy.ts"],
+      "~isomorphic-chunking": ["./src/utils/messaging/strategies/extension/extension-chunking.strategy.ts"]
     },
     "resolveJsonModule": true,
     "baseUrl": ".",

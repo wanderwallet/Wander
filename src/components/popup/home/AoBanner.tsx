@@ -4,9 +4,10 @@ import { Quantity } from "ao-tokens";
 import { useEffect, useState } from "react";
 import styled, { useTheme } from "styled-components";
 import browser from "webextension-polyfill";
-import { Id, useAo } from "~tokens/aoTokens/ao";
+import { Id } from "~tokens/aoTokens/ao";
 import { AO_NATIVE_TOKEN_BALANCE_MIRROR } from "~utils/ao_import";
 import { ExtensionStorage } from "~utils/storage";
+import { useAo } from "~tokens/hooks";
 
 interface AoBannerProps {
   activeAddress: string;
@@ -22,7 +23,7 @@ export default function AoBanner({ activeAddress }: AoBannerProps) {
       Id,
       Owner: activeAddress,
       process: AO_NATIVE_TOKEN_BALANCE_MIRROR,
-      tags: [{ name: "Action", value: "Balance" }]
+      tags: [{ name: "Action", value: "Balance" }],
     });
 
     const balance = res.Messages[0].Data;
@@ -46,15 +47,13 @@ export default function AoBanner({ activeAddress }: AoBannerProps) {
 
   useEffect(() => {
     if (activeAddress && ao) {
-      ExtensionStorage.get(`ao_hide_banner_${activeAddress}`).then(
-        (hideBanner) => {
-          if (!hideBanner) {
-            fetchAoNativeTokenBalance().catch(() => {});
-          } else {
-            setShowBanner(false);
-          }
+      ExtensionStorage.get(`ao_hide_banner_${activeAddress}`).then((hideBanner) => {
+        if (!hideBanner) {
+          fetchAoNativeTokenBalance().catch(() => {});
+        } else {
+          setShowBanner(false);
         }
-      );
+      });
     }
   }, [activeAddress, ao]);
 
@@ -74,18 +73,8 @@ export default function AoBanner({ activeAddress }: AoBannerProps) {
 function BannerVector() {
   return (
     <BannerVectorWrapper>
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="100%"
-        height="100%"
-        viewBox="0 0 378 40"
-        fill="none"
-      >
-        <g
-          style={{ mixBlendMode: "color-dodge" }}
-          opacity="0.5"
-          filter="url(#filter0_f_8_50)"
-        >
+      <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 378 40" fill="none">
+        <g style={{ mixBlendMode: "color-dodge" }} opacity="0.5" filter="url(#filter0_f_8_50)">
           <path
             d="M190 21C65.2 2.2 0.666666 36.1667 -16 55.5H395V-9C378.667 8.83334 314.8 39.8 190 21Z"
             fill="url(#paint0_radial_8_50)"
@@ -99,19 +88,10 @@ function BannerVector() {
             width="427"
             height="80.5"
             filterUnits="userSpaceOnUse"
-            colorInterpolationFilters="sRGB"
-          >
+            colorInterpolationFilters="sRGB">
             <feFlood floodOpacity="0" result="BackgroundImageFix" />
-            <feBlend
-              mode="normal"
-              in="SourceGraphic"
-              in2="BackgroundImageFix"
-              result="shape"
-            />
-            <feGaussianBlur
-              stdDeviation="4"
-              result="effect1_foregroundBlur_8_50"
-            />
+            <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape" />
+            <feGaussianBlur stdDeviation="4" result="effect1_foregroundBlur_8_50" />
           </filter>
           <radialGradient
             id="paint0_radial_8_50"
@@ -119,8 +99,7 @@ function BannerVector() {
             cy="0"
             r="1"
             gradientUnits="userSpaceOnUse"
-            gradientTransform="translate(-16 -9) rotate(8.91893) scale(416.03 608.898)"
-          >
+            gradientTransform="translate(-16 -9) rotate(8.91893) scale(416.03 608.898)">
             <stop offset="0.141974" stopColor="#544A81" />
             <stop offset="0.226901" stopColor="#8E7BEA" />
             <stop offset="0.587079" stopColor="#544A81" />
@@ -139,18 +118,9 @@ const Banner = styled.div<{ displayTheme: DisplayTheme; show: boolean }>`
   flex-direction: row;
   color: #ffffff;
   overflow: hidden;
-  background: linear-gradient(
-      0deg,
-      rgba(0, 0, 0, 0.4) 0%,
-      rgba(0, 0, 0, 0.4) 100%
-    ),
-    radial-gradient(
-      945.06% 141.42% at 0% 0%,
-      #8e7bea 0%,
-      #544a81 41.29%,
-      #8e7bea 77.31%,
-      #544a81 85.8%
-    );
+  background:
+    linear-gradient(0deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.4) 100%),
+    radial-gradient(945.06% 141.42% at 0% 0%, #8e7bea 0%, #544a81 41.29%, #8e7bea 77.31%, #544a81 85.8%);
   border-bottom: 2px solid #8e7bea;
   justify-content: center;
   align-items: center;

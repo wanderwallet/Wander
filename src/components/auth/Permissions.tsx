@@ -14,14 +14,9 @@ type PermissionsProps = {
   closeEdit: (setEdit: boolean) => void;
 };
 
-export default function Permissions({
-  connectAuthRequest,
-  requestedPermissions,
-  update,
-  closeEdit
-}: PermissionsProps) {
+export default function Permissions({ connectAuthRequest, requestedPermissions, update, closeEdit }: PermissionsProps) {
   const [permissions, setPermissions] = useState<Map<PermissionType, boolean>>(
-    new Map(requestedPermissions.map((permission) => [permission, true]))
+    new Map(requestedPermissions.map((permission) => [permission, true])),
   );
 
   return (
@@ -30,45 +25,44 @@ export default function Permissions({
         <Section showPaddingVertical={false}>
           <Title noMargin>{browser.i18n.getMessage("permissions")}</Title>
           <PermissionsWrapper>
-            {Object.keys(permissionData).map(
-              (permissionName: PermissionType, i) => {
-                let formattedPermissionName = permissionName
-                  .split("_")
-                  .map((word) => word.charAt(0) + word.slice(1).toLowerCase())
-                  .join(" ");
+            {Object.keys(permissionData).map((permissionName: PermissionType, i) => {
+              let formattedPermissionName = permissionName
+                .split("_")
+                .map((word) => word.charAt(0) + word.slice(1).toLowerCase())
+                .join(" ");
 
-                if (permissionName === "SIGNATURE") {
-                  formattedPermissionName = "Sign Data";
-                }
-
-                return (
-                  <div key={i}>
-                    <Permission>
-                      <Checkbox
-                        size={20}
-                        key={permissionName}
-                        onChange={(checked) => {
-                          const updated = new Map(permissions);
-                          updated.set(permissionName, checked);
-                          setPermissions(updated);
-                        }}
-                        checked={permissions.get(permissionName) ?? false}
-                      />
-                      <div>
-                        <PermissionTitle>
-                          {formattedPermissionName}
-                        </PermissionTitle>
-                        <PermissionDescription>
-                          {browser.i18n.getMessage(
-                            permissionData[permissionName]
-                          )}
-                        </PermissionDescription>
-                      </div>
-                    </Permission>
-                  </div>
-                );
+              if (permissionName === "SIGNATURE") {
+                formattedPermissionName = "Sign Data";
               }
-            )}
+
+              return (
+                <div key={i}>
+                  <Permission
+                    onClick={() => {
+                      const updated = new Map(permissions);
+                      updated.set(permissionName, !permissions.get(permissionName));
+                      setPermissions(updated);
+                    }}>
+                    <Checkbox
+                      size={20}
+                      key={permissionName}
+                      onChange={(checked) => {
+                        const updated = new Map(permissions);
+                        updated.set(permissionName, checked);
+                        setPermissions(updated);
+                      }}
+                      checked={permissions.get(permissionName) ?? false}
+                    />
+                    <div>
+                      <PermissionTitle>{formattedPermissionName}</PermissionTitle>
+                      <PermissionDescription>
+                        {browser.i18n.getMessage(permissionData[permissionName])}
+                      </PermissionDescription>
+                    </div>
+                  </Permission>
+                </div>
+              );
+            })}
           </PermissionsWrapper>
         </Section>
       </div>
@@ -85,7 +79,7 @@ export default function Permissions({
                 .map(([key]) => key);
               update(updatedPermissions);
               closeEdit(false);
-            }
+            },
           }}
         />
       </Section>
@@ -102,7 +96,7 @@ const Wrapper = styled.div`
 `;
 
 const Title = styled(Text).attrs({
-  heading: true
+  heading: true,
 })`
   margin-bottom: 0.75em;
   font-size: 1.125rem;
@@ -114,19 +108,25 @@ const PermissionsWrapper = styled.div`
   gap: 10px;
 `;
 
-const Permission = styled.div`
+const Permission = styled.button`
   display: flex;
   align-items: center;
   gap: 8px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  padding: 0;
 `;
 
 export const PermissionDescription = styled(Text).attrs({
   noMargin: true,
   size: "sm",
-  weight: "medium"
+  weight: "medium",
 })``;
 
 export const PermissionTitle = styled(Text).attrs({
   noMargin: true,
-  weight: "medium"
+  weight: "medium",
 })``;

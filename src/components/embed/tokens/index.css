@@ -12,3 +12,5 @@
 @import "./height.css";
 @import "./width.css";
 @import "./z-index.css";
+@import "./themes/light.css";
+@import "./themes/dark.css";

@@ -3,7 +3,7 @@ import { concatGatewayURL } from "~gateways/utils";
 import arLogoLight from "url:/assets/ar/logo_light.png";
 import arLogoDark from "url:/assets/ar/logo_dark.png";
 import { findGateway } from "~gateways/wayfinder";
-import { ExtensionStorage } from "~utils/storage";
+import { ExtensionStorage, PersistentStorage } from "~utils/storage";
 import { defaultTokens, type TokenInfo } from "./aoTokens/ao";
 
 export interface Token {
@@ -29,11 +29,7 @@ export type TokenType = "asset" | "collectible";
  * @param defaultLogo Default logo tx ID in the contract state
  * @param theme UI theme to match the logo with
  */
-export async function loadTokenLogo(
-  id: string,
-  defaultLogo?: string,
-  theme?: DisplayTheme
-) {
+export async function loadTokenLogo(id: string, defaultLogo?: string, theme?: DisplayTheme) {
   // find gateway with wayfinder
   const gateway = await findGateway({ startBlock: 0 });
 
@@ -60,18 +56,16 @@ export async function loadTokenLogo(
 }
 
 export async function loadTokens() {
-  const aoTokens: TokenInfo[] | undefined = await ExtensionStorage.get(
-    "ao_tokens"
-  );
+  const aoTokens: TokenInfo[] | undefined = await PersistentStorage.get("ao_tokens");
 
   // TODO: should this only be if it's undefined?
   if (!aoTokens || aoTokens.length === 0) {
-    await ExtensionStorage.set("ao_tokens", defaultTokens);
+    await PersistentStorage.set("ao_tokens", defaultTokens);
   } else {
     const arToken = defaultTokens[0];
     if (!aoTokens.some((t) => t.processId === arToken.processId)) {
       aoTokens.unshift(arToken);
-      await ExtensionStorage.set("ao_tokens", aoTokens);
+      await PersistentStorage.set("ao_tokens", aoTokens);
     }
   }
 }

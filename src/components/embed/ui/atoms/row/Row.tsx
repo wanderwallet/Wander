@@ -1,30 +1,10 @@
-import React, { forwardRef } from "react";
+import { forwardRef } from "react";
 import clsx from "clsx";
 import styles from "./Row.module.css";
 import type { RowBaseProps } from "./Row.types";
-import { useTheme } from "../../../contexts/ThemeContext";
 
 const Row = forwardRef<HTMLDivElement, RowBaseProps>(
-  (
-    {
-      children,
-      className,
-      alignment = "center",
-      justifyContent = "center",
-      style,
-      ...props
-    },
-    ref
-  ) => {
-    const { isDarkMode } = useTheme();
-
-    const rowStyle = {
-      ...style,
-      backgroundColor: isDarkMode
-        ? "var(--color-card-background-default)"
-        : style?.backgroundColor
-    };
-
+  ({ children, className, alignment = "center", justifyContent = "center", isFullWidth = false, ...props }, ref) => {
     return (
       <div
         ref={ref}
@@ -32,15 +12,14 @@ const Row = forwardRef<HTMLDivElement, RowBaseProps>(
           styles.row,
           styles[`row__align_${alignment}`],
           styles[`row__justify_${justifyContent}`],
-          className
+          isFullWidth && styles.row__full_width,
+          className,
         )}
-        style={rowStyle}
-        {...props}
-      >
+        {...props}>
         {children}
       </div>
     );
-  }
+  },
 );
 
 Row.displayName = "Row";

@@ -1,8 +1,5 @@
 import { ChallengeClientV1, type DbChallenge, type DbSession } from "embed-api";
-import type {
-  Wallet,
-  WalletActivationStatus
-} from "~utils/embedded/embedded.types";
+import type { Wallet, WalletActivationStatus } from "~utils/embedded/embedded.types";
 import { trpcVanilla } from "~utils/embedded/embedded.utils";
 import { isTRPCClientError } from "~utils/embedded/utils/trpc/trpc.utils";
 import { WalletUtils } from "~utils/wallets/wallets.utils";
@@ -14,9 +11,7 @@ async function fetchWallets(userId: string): Promise<Wallet[]> {
   const unusedDeviceSharesWalletIDs = new Set(Object.keys(deviceShares));
 
   const storageWallets = await getWallets();
-  const unusedStorageWalletsAddresses = new Set(
-    storageWallets.map((storageWallet) => storageWallet.address)
-  );
+  const unusedStorageWalletsAddresses = new Set(storageWallets.map((storageWallet) => storageWallet.address));
 
   const { wallets: dbWallets } = await trpcVanilla.fetchWallets.query();
 
@@ -34,11 +29,7 @@ async function fetchWallets(userId: string): Promise<Wallet[]> {
       if (walletStatus !== "ENABLED") {
         activationStatus = "disabled";
       } else if (!deviceShare) {
-        if (
-          dbWallet.totalExports === 0 &&
-          dbWallet.totalBackups === 0 &&
-          dbWallet.source.type === "GENERATED"
-        ) {
+        if (dbWallet.totalExports === 0 && dbWallet.totalBackups === 0 && dbWallet.source.type === "GENERATED") {
           activationStatus = "lost";
         } else {
           activationStatus = "recoveryNeeded";
@@ -49,19 +40,22 @@ async function fetchWallets(userId: string): Promise<Wallet[]> {
         ...dbWallet,
         activationStatus,
         authShare: null,
-        deviceShare
+        deviceShare,
       } satisfies Wallet;
     })
     .sort((a, b) => {
+      // If `lastActivatedAt`, the wallet has just been created but the user closed the tab before the share public key
+      // was generated, so the newly created wallet was never activated, but we consider that the most recent one.
+      const lastActivationA = a.lastActivatedAt || new Date();
+      const lastActivationB = b.lastActivatedAt || new Date();
+
       // Most recently activated first:
-      return b.lastActivatedAt.getTime() - a.lastActivatedAt.getTime();
+      return lastActivationB.getTime() - lastActivationA.getTime();
     });
 
   if (unusedDeviceSharesWalletIDs.size > 0) {
     console.warn(
-      `Orphan deviceShares stored in localStorage with IDs = ${Array.from(
-        unusedDeviceSharesWalletIDs
-      ).join(", ")}`
+      `Orphan deviceShares stored in localStorage with IDs = ${Array.from(unusedDeviceSharesWalletIDs).join(", ")}`,
     );
 
     unusedDeviceSharesWalletIDs.forEach(async (unusedDeviceSharesWalletID) => {
@@ -73,9 +67,9 @@ async function fetchWallets(userId: string): Promise<Wallet[]> {
     // TODO: These should actually be stored in memory. Clean up should not be necessary.
 
     console.warn(
-      `Left over wallets stored in sessionStorage with addresses = ${Array.from(
-        unusedStorageWalletsAddresses
-      ).join(", ")}`
+      `Left over wallets stored in sessionStorage with addresses = ${Array.from(unusedStorageWalletsAddresses).join(
+        ", ",
+      )}`,
     );
 
     for (const unusedStorageWalletsAddress of unusedStorageWalletsAddresses) {
@@ -97,40 +91,25 @@ async function createPublicWallet(wallet: CreatePublicWalletParams) {
     status: "ENABLED",
     chain: "ARWEAVE",
     walletPrivacySetting: "PUBLIC",
-    canRecoverAccountSetting: true
+    canRecoverAccountSetting: true,
   });
 }
 
-export type DoNotAskAgainForBackupData = Exclude<
-  Parameters<typeof trpcVanilla.doNotAskAgainForBackup.mutate>[0],
-  void
->;
+export type DoNotAskAgainForBackupData = Exclude<Parameters<typeof trpcVanilla.doNotAskAgainForBackup.mutate>[0], void>;
 
-async function doNotAskAgainForBackup(
-  doNotAskAgainForBackupData: DoNotAskAgainForBackupData
-) {
+async function doNotAskAgainForBackup(doNotAskAgainForBackupData: DoNotAskAgainForBackupData) {
   return trpcVanilla.doNotAskAgainForBackup.mutate(doNotAskAgainForBackupData);
 }
 
-export type RegisterRecoveryShareData = Exclude<
-  Parameters<typeof trpcVanilla.registerRecoveryShare.mutate>[0],
-  void
->;
+export type RegisterRecoveryShareData = Exclude<Parameters<typeof trpcVanilla.registerRecoveryShare.mutate>[0], void>;
 
-async function registerRecoveryShare(
-  recoveryShareData: RegisterRecoveryShareData
-) {
+async function registerRecoveryShare(recoveryShareData: RegisterRecoveryShareData) {
   return trpcVanilla.registerRecoveryShare.mutate(recoveryShareData);
 }
 
-export type RegisterWalletExportData = Exclude<
-  Parameters<typeof trpcVanilla.registerWalletExport.mutate>[0],
-  void
->;
+export type RegisterWalletExportData = Exclude<Parameters<typeof trpcVanilla.registerWalletExport.mutate>[0], void>;
 
-async function registerWalletExport(
-  walletExportData: RegisterWalletExportData
-) {
+async function registerWalletExport(walletExportData: RegisterWalletExportData) {
   return trpcVanilla.registerWalletExport.mutate(walletExportData);
 }
 
@@ -142,51 +121,46 @@ export interface FetchFirstAvailableAuthShareReturn {
 async function fetchFirstAvailableAuthShare(
   wallets: Wallet[],
   session: DbSession,
-  userId: string
+  userId: string,
 ): Promise<FetchFirstAvailableAuthShareReturn> {
   return new Promise(async (resolve) => {
     for (const wallet of wallets) {
       const { id: walletId, deviceShare } = wallet;
 
       try {
-        const {
-          shareHash: deviceShareHash,
-          sharePrivateKeyJWK: deviceSharePrivateKeyJWK
-        } = await WalletUtils.generateShareHashAndPrivateKey(deviceShare);
+        const { shareHash: deviceShareHash, sharePrivateKeyJWK: deviceSharePrivateKeyJWK } =
+          await WalletUtils.generateShareHashAndPrivateKey(deviceShare);
 
-        const { activationChallenge } =
-          await trpcVanilla.generateWalletActivationChallenge.mutate({
-            walletId
-          });
+        const { activationChallenge } = await trpcVanilla.generateWalletActivationChallenge.mutate({
+          walletId,
+        });
 
         const challengeSolution = await ChallengeClientV1.solveChallenge({
           challenge: activationChallenge,
           session,
           shareHash: deviceShareHash,
-          jwk: deviceSharePrivateKeyJWK
+          jwk: deviceSharePrivateKeyJWK,
         });
 
-        const { authShare, rotationChallenge } =
-          await trpcVanilla.activateWallet
-            .mutate({
-              walletId,
-              challengeSolution
-            })
-            .catch(async (err: unknown) => {
-              if (!isTRPCClientError(err) || err.data.httpStatus !== 404)
-                throw err;
+        const { authShare, rotationChallenge } = await trpcVanilla.activateWallet
+          .mutate({
+            walletId,
+            challengeSolution,
+          })
+          .catch(async (err: unknown) => {
+            if (!isTRPCClientError(err) || err.data.httpStatus !== 404) throw err;
 
-              console.warn(
-                `The corresponding auth share for the device share stored for walletId = ${walletId} was not found. Deleting device share from this device...`
-              );
+            console.warn(
+              `The corresponding auth share for the device share stored for walletId = ${walletId} was not found. Deleting device share from this device...`,
+            );
 
-              await WalletUtils.removeDeviceShare(deviceShare, userId);
+            await WalletUtils.removeDeviceShare(deviceShare, userId);
 
-              return {
-                authShare: null,
-                rotationChallenge: null
-              };
-            });
+            return {
+              authShare: null,
+              rotationChallenge: null,
+            };
+          });
 
         // TODO: Better with zk: instead of hashes or use a challenge here?
 
@@ -194,34 +168,28 @@ async function fetchFirstAvailableAuthShare(
           const activatedWallet: Wallet = {
             ...wallet,
             activationStatus: "active",
-            authShare
+            authShare,
           };
 
           resolve({
             activatedWallet,
-            rotationChallenge
+            rotationChallenge,
           } satisfies FetchFirstAvailableAuthShareReturn);
 
           return;
         }
       } catch (err) {
-        console.warn(
-          `Unexpected wallet activation error (walletId = "${walletId}") =`,
-          err
-        );
+        console.warn(`Unexpected wallet activation error (walletId = "${walletId}") =`, err);
       }
     }
 
     resolve({
-      activatedWallet: null
+      activatedWallet: null,
     } satisfies FetchFirstAvailableAuthShareReturn);
   });
 }
 
-export type RotateAuthShareData = Exclude<
-  Parameters<typeof trpcVanilla.rotateAuthShare.mutate>[0],
-  void
->;
+export type RotateAuthShareData = Exclude<Parameters<typeof trpcVanilla.rotateAuthShare.mutate>[0], void>;
 
 async function rotateAuthShare(rotateAuthShareData: RotateAuthShareData) {
   return trpcVanilla.rotateAuthShare.mutate(rotateAuthShareData);
@@ -233,26 +201,18 @@ export type GenerateWalletRecoveryChallengeData = Exclude<
 >;
 
 async function generateWalletRecoveryChallenge(
-  generateWalletRecoveryChallengeData: GenerateWalletRecoveryChallengeData
+  generateWalletRecoveryChallengeData: GenerateWalletRecoveryChallengeData,
 ) {
-  return trpcVanilla.generateWalletRecoveryChallenge.mutate(
-    generateWalletRecoveryChallengeData
-  );
+  return trpcVanilla.generateWalletRecoveryChallenge.mutate(generateWalletRecoveryChallengeData);
 }
 
-export type RecoverWalletData = Exclude<
-  Parameters<typeof trpcVanilla.recoverWallet.mutate>[0],
-  void
->;
+export type RecoverWalletData = Exclude<Parameters<typeof trpcVanilla.recoverWallet.mutate>[0], void>;
 
 async function recoverWallet(recoverWalletData: RecoverWalletData) {
   return trpcVanilla.recoverWallet.mutate(recoverWalletData);
 }
 
-export type RegisterAuthShareData = Exclude<
-  Parameters<typeof trpcVanilla.registerAuthShare.mutate>[0],
-  void
->;
+export type RegisterAuthShareData = Exclude<Parameters<typeof trpcVanilla.registerAuthShare.mutate>[0], void>;
 
 async function registerAuthShare(registerAuthShareData: RegisterAuthShareData) {
   return trpcVanilla.registerAuthShare.mutate(registerAuthShareData);
@@ -268,5 +228,5 @@ export const WalletService = {
   rotateAuthShare,
   generateWalletRecoveryChallenge,
   recoverWallet,
-  registerAuthShare
+  registerAuthShare,
 };

@@ -1,8 +1,7 @@
-import { formatFiatBalance } from "~tokens/currency";
 import { Loading } from "@arconnect/components-rebrand";
 import { useEffect, useMemo, useState, type HTMLProps } from "react";
 import { useStorage } from "~utils/storage";
-import { ExtensionStorage } from "~utils/storage";
+import { PersistentStorage } from "~utils/storage";
 import { useBalance } from "~wallets/hooks";
 import { getAr24hChange, useArPrice } from "~lib/coingecko";
 import useSetting from "~settings/hook";
@@ -11,6 +10,8 @@ import { Text } from "@arconnect/components-rebrand";
 import BigNumber from "bignumber.js";
 import { useTotalFiatBalance } from "~tokens/hooks";
 import NumberFlow from "@number-flow/react";
+import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
+import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 
 export default function Balance() {
   // balance in AR
@@ -20,29 +21,65 @@ export default function Balance() {
   // balance in local currency
   const [currency] = useSetting<string>("currency");
   const { data: price = "0" } = useArPrice(currency);
-  const fiat = useMemo(
-    () => BigNumber(price).multipliedBy(balance || BigNumber("0")),
-    [price, balance]
-  );
+  const fiat = useMemo(() => BigNumber(price).multipliedBy(balance || BigNumber("0")), [price, balance]);
   const totalFiatBalance = useTotalFiatBalance();
-
-  const [fiatBalance, setFiatBalance] = useState(0);
 
   // balance display
   const [hideBalance, setHideBalance] = useStorage<boolean>(
     {
       key: "hide_balance",
-      instance: ExtensionStorage
+      instance: PersistentStorage,
     },
-    false
+    false,
   );
+
+  useEffect(() => {
+    if (import.meta.env?.VITE_IS_EMBEDDED_APP !== "1") return;
+
+    // TODO: The balance and fiat balance should be loaded and calculated from a provider / background service. Relying
+    // on a comment, that might or might not render, to update the SDK balance, is a rather poor implementation.
+
+    if (hideBalance) {
+      const fakeAmount = 888.88;
+      const formattedFakeBalance = Intl.NumberFormat(undefined, {
+        style: "currency",
+        currency,
+      }).format(fakeAmount);
+
+      postEmbeddedMessage({
+        type: "embedded_balance",
+        data: {
+          amount: null,
+          currency: null,
+          formattedBalance: formattedFakeBalance,
+        },
+      });
+
+      return;
+    }
+
+    const amount = totalFiatBalance.toNumber();
+    const formattedBalance = Intl.NumberFormat(undefined, {
+      style: "currency",
+      currency,
+    }).format(amount);
+
+    postEmbeddedMessage({
+      type: "embedded_balance",
+      data: {
+        amount,
+        currency: currency as "USD",
+        formattedBalance,
+      },
+    });
+  }, [hideBalance, totalFiatBalance, currency]);
 
   const [savedAr24hChange, setSavedAr24hChange] = useStorage<{
     value: number;
     timestamp: string;
   }>({
     key: "saved_ar_24h_change",
-    instance: ExtensionStorage
+    instance: PersistentStorage,
   });
 
   useEffect(() => {
@@ -58,7 +95,7 @@ export default function Balance() {
 
         setSavedAr24hChange({
           value: ar24hChange,
-          timestamp: Date.now().toString()
+          timestamp: Date.now().toString(),
         });
 
         setPercentage(BigNumber(ar24hChange));
@@ -76,48 +113,38 @@ export default function Balance() {
     })();
   }, [balance, currency]);
 
-  useEffect(() => {
-    if (hideBalance) {
-      setFiatBalance(0);
-    } else {
-      setFiatBalance(totalFiatBalance.toNumber());
-    }
-  }, [totalFiatBalance, hideBalance]);
-
-  // balance history
-  const [historicalBalance, setHistoricalBalance] = useStorage<number[]>(
-    {
-      key: "historical_balance",
-      instance: ExtensionStorage
-    },
-    []
-  );
-
   return (
     <BalanceHead>
-      {isLoading && <Loading style={{ width: "20px", height: "20px" }} />}
-      {!isLoading && (
-        <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-          <BalanceText onClick={() => setHideBalance((val) => !val)} noMargin>
-            {hideBalance ? (
-              <>{"*".repeat(totalFiatBalance.toFixed(2).length)}</>
-            ) : (
-              <NumberFlow
-                value={fiatBalance}
-                format={{
-                  style: "currency",
-                  currency: currency
-                }}
-              />
-            )}
-          </BalanceText>
-          <PriceChangeIndicator
-            percentageChange={percentage}
-            fiatChange={fiat.multipliedBy(percentage.dividedBy(100))}
-            hideBalance={hideBalance}
+      {isLoading ? (
+        <Loading
+          style={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: "20px",
+            height: "20px",
+          }}
+        />
+      ) : null}
+
+      <BalanceWrapper $hideBalance={hideBalance || isLoading}>
+        <BalanceText onClick={() => setHideBalance((val) => !val)} noMargin>
+          <NumberFlow
+            value={totalFiatBalance}
+            format={{
+              style: "currency",
+              currency: currency,
+            }}
           />
-        </div>
-      )}
+        </BalanceText>
+
+        <PriceChangeIndicator
+          percentageChange={percentage}
+          fiatChange={fiat.multipliedBy(percentage.dividedBy(100))}
+          hideBalance={hideBalance}
+        />
+      </BalanceWrapper>
     </BalanceHead>
   );
 }
@@ -125,7 +152,6 @@ export default function Balance() {
 function PriceChangeIndicator({
   percentageChange,
   fiatChange,
-  hideBalance
 }: {
   percentageChange: BigNumber;
   fiatChange: BigNumber;
@@ -135,55 +161,39 @@ function PriceChangeIndicator({
   const [currency] = useSetting<string>("currency");
   const isPositive = percentageChange.isGreaterThanOrEqualTo(0);
   const isZeroChange = percentageChange.isEqualTo(0);
-  const absoluteFiatChange = formatFiatBalance(
-    fiatChange.multipliedBy(percentageChange.dividedBy(100)),
-    currency.toLowerCase()
-  );
-
-  const [fiatChangeNumber, setFiatChangeNumber] = useState(0);
-
-  useEffect(() => {
-    if (!hideBalance) {
-      setFiatChangeNumber(fiatChange.toNumber());
-    } else {
-      setFiatChangeNumber(0);
-    }
-  }, [fiatChange, hideBalance]);
 
   return (
     <PercentageChangeContainer>
-      <Text variant="secondary" weight="medium" noMargin>
-        {!hideBalance ? (
-          <NumberFlow
-            value={fiatChangeNumber}
-            format={{
-              style: "currency",
-              currency: currency
-            }}
-          />
-        ) : (
-          absoluteFiatChange.charAt(0) +
-          "*".repeat(absoluteFiatChange.length - 1)
-        )}
+      <Text
+        variant="secondary"
+        weight="medium"
+        noMargin
+        style={IS_EMBEDDED_APP ? { color: "var(--color-font-body)" } : {}}>
+        <NumberFlow
+          value={fiatChange}
+          format={{
+            style: "currency",
+            currency: currency,
+          }}
+        />
       </Text>
-      <Text variant="secondary" weight="medium" noMargin>
+      <Text
+        variant="secondary"
+        weight="medium"
+        noMargin
+        style={IS_EMBEDDED_APP ? { color: "var(--color-font-body)" } : {}}>
         (
         <NumberFlow
           value={Math.abs(Number(percentageChange.toFixed(2)) / 100)}
           format={{
             style: "percent",
             minimumFractionDigits: 2,
-            maximumFractionDigits: 2
+            maximumFractionDigits: 2,
           }}
         />
         )
       </Text>
-      {!isZeroChange && (
-        <TriangleIcon
-          negative={!isPositive}
-          color={isPositive ? theme.success : theme.fail}
-        />
-      )}
+      {!isZeroChange && <TriangleIcon negative={!isPositive} color={isPositive ? theme.success : theme.fail} />}
     </PercentageChangeContainer>
   );
 }
@@ -195,27 +205,27 @@ interface TriangleIconProps {
   negative?: boolean;
 }
 
-const TriangleIcon: React.FC<TriangleIconProps> = ({
-  width = 8.66,
-  height = 6,
-  color,
-  negative = false
-}) => {
+const TriangleIcon: React.FC<TriangleIconProps> = ({ width = 8.66, height = 6, color, negative = false }) => {
   return (
     <svg
       width={width}
       height={height}
       viewBox="0 0 9 7"
       fill="none"
-      style={{ transform: `rotate(${negative ? "180deg" : "0deg"})` }}
-    >
-      <path
-        d="M4.49999 0.5L8.83012 6.5H0.169861L4.49999 0.5Z"
-        fill={color || "#000000"}
-      />
+      style={{ transform: `rotate(${negative ? "180deg" : "0deg"})` }}>
+      <path d="M4.49999 0.5L8.83012 6.5H0.169861L4.49999 0.5Z" fill={color || "#000000"} />
     </svg>
   );
 };
+
+const BalanceWrapper = styled.div<{ $hideBalance?: boolean }>`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: filter linear 300ms;
+  filter: ${({ $hideBalance }) => ($hideBalance ? "blur(8px)" : "blur(0px)")};
+  user-select: ${({ $hideBalance }) => ($hideBalance ? "none" : "auto")};
+`;
 
 const PercentageChangeContainer = styled.div`
   display: flex;
@@ -225,6 +235,7 @@ const PercentageChangeContainer = styled.div`
 `;
 
 const BalanceHead = styled.div`
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -235,21 +246,15 @@ const BalanceHead = styled.div`
 const BalanceText = styled(Text).attrs({
   size: "4xl",
   weight: "medium",
-  noMargin: true
+  noMargin: true,
 })`
   cursor: pointer;
   text-align: center;
+  ${IS_EMBEDDED_APP && "color: var(--color-font-heading)"}
 `;
 
 export const CompassIcon = (props: HTMLProps<SVGElement>) => (
-  <svg
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    {...(props as any)}
-  >
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...(props as any)}>
     <path
       d="M11.75 19.5C16.0302 19.5 19.5 16.0302 19.5 11.75C19.5 7.46979 16.0302 4 11.75 4C7.46979 4 4 7.46979 4 11.75C4 16.0302 7.46979 19.5 11.75 19.5Z"
       stroke="currentColor"

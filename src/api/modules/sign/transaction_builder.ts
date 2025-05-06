@@ -4,6 +4,10 @@ import type { Tag } from "arweave/web/lib/transaction";
 import { type Chunk, CHUNK_SIZE } from "./chunks";
 import { signedTxTags } from "./tags";
 import { nanoid } from "nanoid";
+import Arweave from "arweave";
+import { defaultGateway } from "~gateways/gateway";
+
+const arweave = new Arweave(defaultGateway);
 
 /**
  * Transaction object **without** it's data or tags
@@ -13,20 +17,14 @@ export interface SplitTransaction extends TransactionInterface {
   tags: undefined;
 }
 
-export function isSplitTransaction(
-  tx: Transaction | SplitTransaction
-): tx is SplitTransaction {
+export function isSplitTransaction(tx: Transaction | SplitTransaction): tx is SplitTransaction {
   return !(tx instanceof Transaction);
 }
 
 /**
  * Split an Uint8Array to chunks, per chunks value max size is limited to 0.5mb
  */
-export const bytesToChunks = (
-  data: Uint8Array,
-  id: string,
-  start_index: number
-): Chunk[] => {
+export const bytesToChunks = (data: Uint8Array, id: string, start_index: number): Chunk[] => {
   const dataChunks: Chunk[] = [];
 
   for (let i = 0; i < Math.ceil(data.length / CHUNK_SIZE); i++) {
@@ -37,7 +35,7 @@ export const bytesToChunks = (
       collectionID: id,
       type: "bytes",
       index: i + start_index,
-      value: Array.from(chunkValue)
+      value: Array.from(chunkValue),
     });
   }
   return dataChunks;
@@ -84,19 +82,24 @@ export function deconstructTransaction(transaction: Transaction) {
     collectionID,
     type: "tag",
     index,
-    value
+    value,
   }));
 
   // the data array is split into chunks of 0.5 mb
   const dataChunks: Chunk[] = [];
 
+  if (typeof transaction.data === "string") {
+    try {
+      transaction.data = arweave.utils.b64UrlToBuffer(transaction.data);
+    } catch {
+      // do nothing
+    }
+  }
+
   // map data into chunks of 0.5 mb = 500000 bytes
   for (let i = 0; i < Math.ceil(transaction.data.length / CHUNK_SIZE); i++) {
     const sliceFrom = i * CHUNK_SIZE;
-    const chunkValue = transaction.data.slice(
-      sliceFrom,
-      sliceFrom + CHUNK_SIZE
-    );
+    const chunkValue = transaction.data.slice(sliceFrom, sliceFrom + CHUNK_SIZE);
 
     dataChunks.push({
       collectionID,
@@ -104,7 +107,7 @@ export function deconstructTransaction(transaction: Transaction) {
       // the index has to be added to the already
       // existing indexes of the tag chunks
       index: i + tagChunks.length,
-      value: Array.from(chunkValue)
+      value: Array.from(chunkValue),
     });
   }
 
@@ -115,14 +118,14 @@ export function deconstructTransaction(transaction: Transaction) {
   const tx: SplitTransaction = {
     ...transaction,
     data: undefined,
-    tags: undefined
+    tags: undefined,
   };
 
   return {
     transaction: tx,
     tagChunks,
     dataChunks,
-    chunkCollectionID: collectionID
+    chunkCollectionID: collectionID,
   };
 }
 
@@ -154,10 +157,7 @@ export function getDataSize(chunks: Chunk[]): number {
  *
  * @returns Constructed transaction
  */
-export function constructTransaction(
-  splitTransaction: SplitTransaction,
-  chunks: Chunk[]
-) {
+export function constructTransaction(splitTransaction: SplitTransaction, chunks: Chunk[]) {
   // create base tx
   const transaction: TransactionInterface = splitTransaction;
 
@@ -220,6 +220,6 @@ export function deconstructSignedTransaction(transaction: Transaction) {
   return {
     ...transaction,
     data: undefined,
-    tags
+    tags,
   };
 }

@@ -1,4 +1,4 @@
-import { useStorage } from "~utils/storage";
+import { PersistentStorage, useStorage } from "~utils/storage";
 import { ExtensionStorage } from "~utils/storage";
 import { useRoute } from "wouter";
 import { useEffect, useMemo } from "react";
@@ -20,9 +20,9 @@ export function TokensDashboardView() {
   const [aoTokens] = useStorage<TokenInfoWithBalance[]>(
     {
       key: "ao_tokens",
-      instance: ExtensionStorage
+      instance: PersistentStorage,
     },
-    []
+    [],
   );
 
   const enhancedAoTokens = useMemo(() => {
@@ -32,15 +32,12 @@ export function TokensDashboardView() {
       balance: "0",
       ticker: token.Ticker,
       type: "asset" as TokenType,
-      name: token.Name
+      name: token.Name,
     }));
   }, [aoTokens]);
 
   // active subsetting val
-  const activeTokenSetting = useMemo(
-    () => (params?.id ? params.id : undefined),
-    [params]
-  );
+  const activeTokenSetting = useMemo(() => (params?.id ? params.id : undefined), [params]);
 
   useEffect(() => {
     if (activeTokenSetting === "new" || !matches) {
@@ -48,10 +45,7 @@ export function TokensDashboardView() {
     }
 
     // return if there is a wallet present in params
-    if (
-      activeTokenSetting &&
-      enhancedAoTokens.some((t) => t.id === activeTokenSetting)
-    ) {
+    if (activeTokenSetting && enhancedAoTokens.some((t) => t.id === activeTokenSetting)) {
       return;
     }
 
@@ -83,15 +77,10 @@ export function TokensDashboardView() {
           axis="y"
           onReorder={() => {}}
           values={aoTokens}
-          style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}
-        >
+          style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
           {enhancedAoTokens.map((token) => (
             <div onClick={() => handleTokenClick(token)} key={token.id}>
-              <TokenListItem
-                token={token}
-                active={activeTokenSetting === token.id}
-                key={token.id}
-              />
+              <TokenListItem token={token} active={activeTokenSetting === token.id} key={token.id} />
             </div>
           ))}
         </Reorder.Group>

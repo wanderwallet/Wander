@@ -5,8 +5,8 @@ import { initializeARBalanceMonitor } from "~utils/analytics";
 import { updateAoToken } from "~utils/ao_import";
 import { handleGatewayUpdateAlarm } from "~api/background/handlers/alarms/gateway-update/gateway-update-alarm.handler";
 import { openOrSelectWelcomePage } from "~wallets";
-import { resetAllPermissions } from "~applications/permissions";
 import { ExtensionStorage } from "~utils/storage";
+import { resetAllPermissions } from "./permissions.handler";
 
 /**
  * On extension installed event handler
@@ -21,9 +21,7 @@ export async function handleInstall(details: Runtime.OnInstalledDetailsType) {
     // reset permissions
     await resetAllPermissions();
 
-    const isSplashSeen = Boolean(
-      await ExtensionStorage.get("update_splash_screen_seen")
-    );
+    const isSplashSeen = Boolean(await ExtensionStorage.get("update_splash_screen_seen"));
     // if this is undefined, set update_splash_screen_seen
     if (!isSplashSeen) {
       // initially set to false
@@ -35,14 +33,14 @@ export async function handleInstall(details: Runtime.OnInstalledDetailsType) {
   await initializeARBalanceMonitor();
 
   // initialize alarm to fetch notifications
-  browser.alarms.create("notifications", { periodInMinutes: 1 });
+  browser.alarms.create("notifications", { periodInMinutes: 10 });
 
   // reset notifications
   // await ExtensionStorage.set("show_announcement", true);
 
   // initialize alarm to update tokens once a week
   browser.alarms.create("update_ao_tokens", {
-    periodInMinutes: 10080
+    periodInMinutes: 10080,
   });
 
   // initialize tokens in wallet

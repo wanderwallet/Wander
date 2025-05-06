@@ -2,21 +2,15 @@ import type { SignatureOptions } from "arweave/web/lib/crypto/crypto-interface";
 import type { TransformFinalizer } from "~api/foreground/foreground-modules";
 import { createCoinWithAnimation } from "./animation";
 import type { ModuleFunction } from "~api/module";
-import { sendChunk } from "./chunks";
-import {
-  deconstructTransaction,
-  type SplitTransaction
-} from "./transaction_builder";
+import { sendChunk } from "~isomorphic-chunking";
+import { deconstructTransaction, type SplitTransaction } from "./transaction_builder";
 import type Transaction from "arweave/web/lib/transaction";
 import Arweave from "arweave";
 
 type ReturnParams = [SplitTransaction, SignatureOptions, string];
 type OriginalParams = [Transaction, SignatureOptions];
 
-const foreground: ModuleFunction<ReturnParams> = async (
-  transaction: Transaction,
-  options: SignatureOptions
-) => {
+const foreground: ModuleFunction<ReturnParams> = async (transaction: Transaction, options: SignatureOptions) => {
   /**
    * Part one, create chunks from the tags
    * and the data of the transaction
@@ -25,7 +19,7 @@ const foreground: ModuleFunction<ReturnParams> = async (
     transaction: tx, // transaction without data and tags
     dataChunks,
     tagChunks,
-    chunkCollectionID
+    chunkCollectionID,
   } = deconstructTransaction(transaction);
 
   /**
@@ -38,7 +32,7 @@ const foreground: ModuleFunction<ReturnParams> = async (
     await sendChunk({
       collectionID: chunkCollectionID,
       type: "start",
-      index: -1
+      index: -1,
     });
   } catch (e) {
     // for some reason the chunk streaming was not accepted, most
@@ -52,9 +46,7 @@ const foreground: ModuleFunction<ReturnParams> = async (
       await sendChunk(chunk);
     } catch (e) {
       // chunk fail
-      throw new Error(
-        `Error while sending a data chunk of collection "${chunkCollectionID}": \n${e}`
-      );
+      throw new Error(`Error while sending a data chunk of collection "${chunkCollectionID}": \n${e}`);
     }
   }
 
@@ -64,9 +56,7 @@ const foreground: ModuleFunction<ReturnParams> = async (
       await sendChunk(chunk);
     } catch (e) {
       // chunk fail
-      throw new Error(
-        `Error while sending a tag chunk for tx from chunk collection "${chunkCollectionID}": \n${e}`
-      );
+      throw new Error(`Error while sending a tag chunk for tx from chunk collection "${chunkCollectionID}": \n${e}`);
     }
   }
 
@@ -97,7 +87,7 @@ export const finalizer: TransformFinalizer<
   const arweave = new Arweave({
     host: "arweave.net",
     port: 443,
-    protocol: "https"
+    protocol: "https",
   });
 
   // Reconstruct the transaction
@@ -106,11 +96,8 @@ export const finalizer: TransformFinalizer<
   const decodeTransaction = arweave.transactions.fromRaw({
     ...result.transaction,
     // some wander tags are sent back, so we need to concat them
-    tags: [
-      ...(originalTransaction.tags || []),
-      ...(result.transaction.tags || [])
-    ],
-    data: originalTransaction.data
+    tags: [...(originalTransaction.tags || []), ...(result.transaction.tags || [])],
+    data: originalTransaction.data,
   });
 
   // show a nice confetti eeffect, if enabled
