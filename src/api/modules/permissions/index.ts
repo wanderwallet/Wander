@@ -2,7 +2,7 @@ import type { ModuleProperties } from "~api/module";
 
 const permissions: ModuleProperties = {
   functionName: "getPermissions",
-  permissions: []
+  permissions: [],
 };
 
 export default permissions;

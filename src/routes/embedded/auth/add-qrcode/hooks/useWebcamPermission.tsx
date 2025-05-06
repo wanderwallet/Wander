@@ -10,16 +10,13 @@ type PermissionStatus = "prompt" | "granted" | "denied" | "not-supported";
  * @returns Object with permission status, loading state, and request function
  */
 export function useWebcamPermission() {
-  const [permissionStatus, setPermissionStatus] =
-    useState<PermissionStatus>("prompt");
+  const [permissionStatus, setPermissionStatus] = useState<PermissionStatus>("prompt");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   // Check if the browser supports mediaDevices API
   const isSupported =
-    typeof navigator !== "undefined" &&
-    navigator.mediaDevices &&
-    !!navigator.mediaDevices.getUserMedia;
+    typeof navigator !== "undefined" && navigator.mediaDevices && !!navigator.mediaDevices.getUserMedia;
 
   // Initialize permission status based on browser support
   useEffect(() => {
@@ -42,7 +39,7 @@ export function useWebcamPermission() {
       // Request video stream (this triggers permission dialog)
       const stream = await navigator.mediaDevices.getUserMedia({
         video: true,
-        audio: false
+        audio: false,
       });
 
       // If we get here, permission was granted
@@ -55,10 +52,7 @@ export function useWebcamPermission() {
     } catch (err) {
       // Handle different error types
       if (err instanceof Error) {
-        if (
-          err.name === "NotAllowedError" ||
-          err.name === "PermissionDeniedError"
-        ) {
+        if (err.name === "NotAllowedError" || err.name === "PermissionDeniedError") {
           setPermissionStatus("denied");
           setError("Camera access was denied");
         } else {
@@ -96,9 +90,7 @@ export function useWebcamPermission() {
         })
         .catch(() => {
           // If permissions API fails, we'll rely on the getUserMedia request
-          console.log(
-            "Permissions API not fully supported, will use getUserMedia for permission check"
-          );
+          console.log("Permissions API not fully supported, will use getUserMedia for permission check");
         });
     }
   }, []);
@@ -107,6 +99,6 @@ export function useWebcamPermission() {
     permissionStatus,
     isLoading,
     error,
-    requestPermission
+    requestPermission,
   };
 }

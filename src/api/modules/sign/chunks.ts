@@ -40,7 +40,7 @@ export function handleChunk(chunk: Chunk, appURL: string): number {
     chunks.push({
       chunkCollectionID: chunk.collectionID,
       origin: appURL,
-      rawChunks: []
+      rawChunks: [],
     });
     // handle other chunks
   } else {
@@ -49,8 +49,7 @@ export function handleChunk(chunk: Chunk, appURL: string): number {
     // also check if the origin of the chunk matches
     // the origin of the tx creation
     const collectionID = chunks.findIndex(
-      ({ chunkCollectionID, origin }) =>
-        chunkCollectionID === chunk.collectionID && origin === appURL
+      ({ chunkCollectionID, origin }) => chunkCollectionID === chunk.collectionID && origin === appURL,
     );
 
     // check if the chunk has a valid origin
@@ -77,8 +76,7 @@ export function handleChunk(chunk: Chunk, appURL: string): number {
 export function getChunks(collectionID: string, appURL: string) {
   // find collection
   const collection = chunks.find(
-    ({ chunkCollectionID, origin }) =>
-      chunkCollectionID === collectionID && origin === appURL
+    ({ chunkCollectionID, origin }) => chunkCollectionID === collectionID && origin === appURL,
   );
 
   return collection?.rawChunks;
@@ -90,8 +88,6 @@ export function getChunks(collectionID: string, appURL: string) {
  * @param collectionID ID of the chunk collection to remove
  */
 export function cleanUpChunks(collectionID: string) {
-  const index = chunks.findIndex(
-    ({ chunkCollectionID }) => chunkCollectionID === collectionID
-  );
+  const index = chunks.findIndex(({ chunkCollectionID }) => chunkCollectionID === collectionID);
   chunks.splice(index, 1);
 }

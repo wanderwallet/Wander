@@ -9,18 +9,14 @@ export interface ContactSettingsViewParams {
   address: string;
 }
 
-export type ContactSettingsViewProps =
-  CommonRouteProps<ContactSettingsViewParams>;
+export type ContactSettingsViewProps = CommonRouteProps<ContactSettingsViewParams>;
 
 export function ContactSettingsView({ params }: ContactSettingsViewProps) {
   const { navigate } = useLocation();
 
   return (
     <>
-      <HeadV2
-        title={browser.i18n.getMessage("setting_contact")}
-        back={() => navigate("/quick-settings/contacts")}
-      />
+      <HeadV2 title={browser.i18n.getMessage("setting_contact")} back={() => navigate("/quick-settings/contacts")} />
       <Wrapper>
         <ContactSettingsDashboardView isQuickSetting params={params} />
       </Wrapper>

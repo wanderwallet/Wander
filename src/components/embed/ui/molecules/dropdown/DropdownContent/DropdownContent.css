@@ -13,7 +13,9 @@
   scrollbar-width: none;
   -ms-overflow-style: none;
   transform: translateY(-5%);
-  transition: transform 150ms ease-in-out, opacity 100ms ease-in-out;
+  transition:
+    transform 150ms ease-in-out,
+    opacity 100ms ease-in-out;
   opacity: 0;
   pointer-events: none;
 }

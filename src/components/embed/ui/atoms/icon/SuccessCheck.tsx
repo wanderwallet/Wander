@@ -1,17 +1,7 @@
 import * as React from "react";
 import type { SVGProps } from "react";
-const SvgSuccessCheck = ({
-  width = 18,
-  height = 17,
-  ...props
-}: SVGProps<SVGSVGElement>) => (
-  <svg
-    width="80"
-    height="80"
-    viewBox="0 0 80 80"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
+const SvgSuccessCheck = ({ width = 18, height = 17, ...props }: SVGProps<SVGSVGElement>) => (
+  <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
     <circle opacity="0.3" cx="40.0001" cy="40.0001" r="30.173" fill="#04AA3E" />
     <circle opacity="0.1" cx="40" cy="40" r="40" fill="#04AA3E" />
     <path
@@ -41,8 +31,7 @@ const SvgSuccessCheck = ({
         width="46.0744"
         height="46.0744"
         filterUnits="userSpaceOnUse"
-        color-interpolation-filters="sRGB"
-      >
+        color-interpolation-filters="sRGB">
         <feFlood flood-opacity="0" result="BackgroundImageFix" />
         <feColorMatrix
           in="SourceAlpha"
@@ -53,15 +42,8 @@ const SvgSuccessCheck = ({
         <feOffset dy="1.19755" />
         <feGaussianBlur stdDeviation="1.59673" />
         <feComposite in2="hardAlpha" operator="out" />
-        <feColorMatrix
-          type="matrix"
-          values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.16 0"
-        />
-        <feBlend
-          mode="normal"
-          in2="BackgroundImageFix"
-          result="effect1_dropShadow_18_596"
-        />
+        <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.16 0" />
+        <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_18_596" />
         <feColorMatrix
           in="SourceAlpha"
           type="matrix"
@@ -71,21 +53,9 @@ const SvgSuccessCheck = ({
         <feOffset dy="1.19755" />
         <feGaussianBlur stdDeviation="0.199591" />
         <feComposite in2="hardAlpha" operator="out" />
-        <feColorMatrix
-          type="matrix"
-          values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.04 0"
-        />
-        <feBlend
-          mode="normal"
-          in2="effect1_dropShadow_18_596"
-          result="effect2_dropShadow_18_596"
-        />
-        <feBlend
-          mode="normal"
-          in="SourceGraphic"
-          in2="effect2_dropShadow_18_596"
-          result="shape"
-        />
+        <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.04 0" />
+        <feBlend mode="normal" in2="effect1_dropShadow_18_596" result="effect2_dropShadow_18_596" />
+        <feBlend mode="normal" in="SourceGraphic" in2="effect2_dropShadow_18_596" result="shape" />
       </filter>
     </defs>
   </svg>

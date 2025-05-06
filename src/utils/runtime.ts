@@ -27,9 +27,7 @@ export function getPreReleaseVersionLabel() {
   if (process.env.BETA_VERSION) {
     preReleaseVersionLabel = process.env.BETA_VERSION.toLowerCase();
   } else if (process.env.NODE_ENV === "development") {
-    preReleaseVersionLabel = browser.i18n
-      .getMessage("development_version")
-      .toLowerCase();
+    preReleaseVersionLabel = browser.i18n.getMessage("development_version").toLowerCase();
   }
 
   return preReleaseVersionLabel;
@@ -38,7 +36,5 @@ export function getPreReleaseVersionLabel() {
 export function getFullVersionLabel() {
   const preReleaseVersionLabel = getPreReleaseVersionLabel();
 
-  return `${getVersionLabel()}${
-    preReleaseVersionLabel ? `${preReleaseVersionLabel}` : ""
-  }`;
+  return `${getVersionLabel()}${preReleaseVersionLabel ? `${preReleaseVersionLabel}` : ""}`;
 }

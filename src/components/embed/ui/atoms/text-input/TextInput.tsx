@@ -20,41 +20,26 @@ const TextInput = forwardRef<HTMLInputElement, TextInputBaseProps>(
       style,
       ...props
     },
-    ref
+    ref,
   ) => {
     const Component = "div";
     const inputType = isSecure ? "password" : type;
     return (
-      <Component
-        className={clsx(styles["wrapper"], className)}
-        style={style}
-        {...props}
-      >
-        <input
-          ref={ref}
-          type={inputType}
-          placeholder={placeholder}
-          className={styles["input"]}
-          disabled={isDisabled}
-        />
+      <Component className={clsx(styles["wrapper"], className)} style={style} {...props}>
+        <input ref={ref} type={inputType} placeholder={placeholder} className={styles["input"]} disabled={isDisabled} />
         {hasButton && (buttonLabel || buttonIcon) && (
           <Button
             variant={buttonIcon ? "icon" : "primary"}
-            className={clsx(
-              styles["button"],
-              buttonLabel ? styles["button__text"] : styles["button__icon"],
-              className
-            )}
+            className={clsx(styles["button"], buttonLabel ? styles["button__text"] : styles["button__icon"], className)}
             onClick={buttonOnClick}
             isLoading={isLoading}
-            isDisabled={isDisabled}
-          >
+            isDisabled={isDisabled}>
             {buttonIcon || buttonLabel}
           </Button>
         )}
       </Component>
     );
-  }
+  },
 );
 
 TextInput.displayName = "TextInput";

@@ -12,7 +12,7 @@ import {
   SocialsIcon,
   Text,
   Wander2Icon,
-  WanderFooter
+  WanderFooter,
 } from "~components/embed";
 import { useCallback, useRef, useState } from "react";
 import type { AuthProviderType } from "embed-api";
@@ -30,39 +30,29 @@ export function AuthEmbeddedView() {
   const { authenticate, authStatus, setAuthEmail } = useEmbedded();
   const [isLoading, setIsLoading] = useState(false);
 
-  const [selectedAuthProviderType, setSelectedAuthProviderType] = useState<
-    AuthProviderType | "NATIVE_WALLET" | null
-  >(null);
+  const [selectedAuthProviderType, setSelectedAuthProviderType] = useState<AuthProviderType | "NATIVE_WALLET" | null>(
+    null,
+  );
 
   const areButtonsDisabled =
-    authStatus === "unknown" ||
-    authStatus === "loading" ||
-    authStatus === "authLoading" ||
-    !!selectedAuthProviderType;
+    authStatus === "unknown" || authStatus === "loading" || authStatus === "authLoading" || !!selectedAuthProviderType;
 
   // TODO: Remember last selection and highlight that one / show it in the main screen (not in "More")
 
   const emailInputRef = useRef<HTMLInputElement>();
   const passwordInputRef = useRef<HTMLInputElement>();
 
-  const handleAuthenticate = useCallback(
-    async (authProviderType: AuthProviderType) => {
-      setSelectedAuthProviderType(authProviderType);
-      try {
-        await authenticate(
-          authProviderType,
-          emailInputRef.current?.value || "",
-          passwordInputRef.current?.value || ""
-        );
-        setSelectedAuthProviderType(null);
-      } catch (error) {
-        toast.error(`Error signing in with ${authProviderType}`);
-      } finally {
-        setSelectedAuthProviderType(null);
-      }
-    },
-    []
-  );
+  const handleAuthenticate = useCallback(async (authProviderType: AuthProviderType) => {
+    setSelectedAuthProviderType(authProviderType);
+    try {
+      await authenticate(authProviderType, emailInputRef.current?.value || "", passwordInputRef.current?.value || "");
+      setSelectedAuthProviderType(null);
+    } catch (error) {
+      toast.error(`Error signing in with ${authProviderType}`);
+    } finally {
+      setSelectedAuthProviderType(null);
+    }
+  }, []);
 
   const handleNativeWallet = useCallback(async () => {
     setSelectedAuthProviderType("NATIVE_WALLET");
@@ -72,8 +62,8 @@ export function AuthEmbeddedView() {
       data: {
         authType: "NATIVE_WALLET",
         authStatus: null,
-        userDetails: null
-      }
+        userDetails: null,
+      },
     });
 
     await sleep(500);
@@ -96,12 +86,9 @@ export function AuthEmbeddedView() {
         return;
       }
 
-      const { data: isAlreadyRegistered, error } = await supabase.rpc(
-        "user_exists_by_email",
-        {
-          p_email: email
-        }
-      );
+      const { data: isAlreadyRegistered, error } = await supabase.rpc("user_exists_by_email", {
+        p_email: email,
+      });
 
       if (error) {
         toast.error("Error checking email");
@@ -124,12 +111,7 @@ export function AuthEmbeddedView() {
   }, []);
 
   return (
-    <Card
-      headerText="Sign up or Sign in"
-      footerElement={<WanderFooter />}
-      hasBackButton={false}
-      size="auto"
-    >
+    <Card headerText="Sign up or Sign in" footerElement={<WanderFooter />} hasBackButton={false} size="auto">
       <Box>
         <TextInput
           ref={emailInputRef}
@@ -153,20 +135,17 @@ export function AuthEmbeddedView() {
             size="md"
             isLoading={selectedAuthProviderType === "GOOGLE"}
             isDisabled={areButtonsDisabled}
-            onClick={() => handleAuthenticate("GOOGLE")}
-          >
+            onClick={() => handleAuthenticate("GOOGLE")}>
             <GoogleIcon fontSize={24} />
           </Button>
           {EMBEDDED_HIDE_BE ||
-          (!!window.arweaveWallet?.walletName &&
-            window.arweaveWallet?.walletName !== "ArConnect") ? null : (
+          (!!window.arweaveWallet?.walletName && window.arweaveWallet?.walletName !== "ArConnect") ? null : (
             <Button
               variant="outlined"
               size="md"
               isLoading={selectedAuthProviderType === "NATIVE_WALLET"}
               isDisabled={areButtonsDisabled}
-              onClick={handleNativeWallet}
-            >
+              onClick={handleNativeWallet}>
               <Wander2Icon fontSize={24} />
             </Button>
           )}
@@ -176,8 +155,7 @@ export function AuthEmbeddedView() {
           isFullWidth
           isDisabled={areButtonsDisabled}
           icon={<SocialsIcon fontSize={24} />}
-          href="#/auth/more-providers"
-        >
+          href="#/auth/more-providers">
           More options
         </Button>
         <Row style={{ gap: "4px" }}>

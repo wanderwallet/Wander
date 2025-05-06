@@ -10,13 +10,13 @@ export function AuthAddDeviceEmbeddedView() {
       config={[
         {
           label: "Add Device",
-          onClick: () => alert("Not implemented.")
+          onClick: () => alert("Not implemented."),
         },
         {
           label: "Back",
           to: "/auth/add-wallet",
-          variant: "secondary"
-        }
+          variant: "secondary",
+        },
       ]}
     />
   );

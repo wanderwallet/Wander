@@ -5,7 +5,7 @@ const permissions: PermissionType[] = ["SIGNATURE"];
 
 const signature: ModuleProperties = {
   functionName: "signature",
-  permissions
+  permissions,
 };
 
 export default signature;

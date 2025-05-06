@@ -1,12 +1,4 @@
-import {
-  Card,
-  Row,
-  Text,
-  Box,
-  Button,
-  Divider,
-  XClose
-} from "~components/embed/ui";
+import { Card, Row, Text, Box, Button, Divider, XClose } from "~components/embed/ui";
 import { useLocation } from "~wallets/router/router.utils";
 import { useCurrentAuthRequest } from "~utils/auth/auth.hooks";
 import Image from "~components/common/Image";
@@ -23,8 +15,7 @@ import TransactionMessage from "~components/embed/auth/TransactionMessage";
 
 export function EmbeddedSignAuthRequestView() {
   const { navigate } = useLocation();
-  const { authRequest, rejectRequest, acceptRequest } =
-    useCurrentAuthRequest("sign");
+  const { authRequest, rejectRequest, acceptRequest } = useCurrentAuthRequest("sign");
 
   const { url = "", transaction } = authRequest;
 
@@ -57,7 +48,7 @@ export function EmbeddedSignAuthRequestView() {
   const handleCancel = async () => {
     postEmbeddedMessage({
       type: "embedded_close",
-      data: null
+      data: null,
     });
     navigate("/wallet");
     await rejectRequest();
@@ -67,16 +58,13 @@ export function EmbeddedSignAuthRequestView() {
     if (!transaction) return;
     postEmbeddedMessage({
       type: "embedded_close",
-      data: null
+      data: null,
     });
     navigate("/wallet");
     await acceptRequest();
   };
 
-  const isTransferTx = useMemo(
-    () => BigNumber(transaction?.quantity || "0").gt(0),
-    [transaction]
-  );
+  const isTransferTx = useMemo(() => BigNumber(transaction?.quantity || "0").gt(0), [transaction]);
 
   useEffect(() => {
     (async () => {
@@ -97,8 +85,7 @@ export function EmbeddedSignAuthRequestView() {
       hasBackButton={false}
       customIcon={<XClose fontSize={24} color={"#666666"} />}
       onCloseButtonClick={handleCancel}
-      style={{ padding: "2rem" }}
-    >
+      style={{ padding: "2rem" }}>
       <Box alignment="left" style={{ padding: "1rem 0" }}>
         <Row alignment="center" justifyContent="center" style={{ padding: 0 }}>
           <Image
@@ -120,11 +107,7 @@ export function EmbeddedSignAuthRequestView() {
 
       {isTransferTx ? (
         <>
-          <Box
-            hasBorder
-            alignment="left"
-            style={{ margin: "1rem", gap: "0.5rem" }}
-          >
+          <Box hasBorder alignment="left" style={{ margin: "1rem", gap: "0.5rem" }}>
             <Text variant="bodySm" style={{ color: "#666666" }}>
               Your account
             </Text>
@@ -166,16 +149,10 @@ export function EmbeddedSignAuthRequestView() {
         </>
       ) : (
         <Row style={{ padding: 12, backgroundColor: "#FFF9EA" }}>
-          <AlertTriangle
-            height={24}
-            width={24}
-            color="#BD8802"
-            style={{ flexShrink: 0 }}
-          />
+          <AlertTriangle height={24} width={24} color="#BD8802" style={{ flexShrink: 0 }} />
           <Text variant="bodyXs" style={{ color: "#666666" }}>
-            Only confirm if you understand the content and trust the requesting
-            site. This confirmation is used for authentication purposes, funds
-            are not being transferred.
+            Only confirm if you understand the content and trust the requesting site. This confirmation is used for
+            authentication purposes, funds are not being transferred.
           </Text>
         </Row>
       )}

@@ -5,7 +5,7 @@ const permissions: PermissionType[] = ["SIGN_TRANSACTION"];
 
 const batchSignDataItem: ModuleProperties = {
   functionName: "batchSignDataItem",
-  permissions
+  permissions,
 };
 
 export default batchSignDataItem;

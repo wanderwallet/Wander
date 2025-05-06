@@ -2,15 +2,7 @@ import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useEffect, useState } from "react";
 import { useLocation } from "~wallets/router/router.utils";
 
-import {
-  Card,
-  Row,
-  Button,
-  Copyable,
-  Upload,
-  Text,
-  WanderFooter
-} from "~components/embed";
+import { Card, Row, Button, Copyable, Upload, Text, WanderFooter } from "~components/embed";
 import copy from "copy-to-clipboard";
 import { toast } from "react-toastify";
 import { WalletUtils } from "~utils/wallets/wallets.utils";
@@ -25,7 +17,7 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
     importedTempWalletAddress,
     deleteImportedTempWallet,
     fetchRecoverableAccounts,
-    clearRecoverableAccounts
+    clearRecoverableAccounts,
   } = useEmbedded();
 
   const handleJsonParse = async (jsonData: any) => {
@@ -83,8 +75,7 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
       hasCloseButton={true}
       onCloseButtonClick={() => navigate(`/auth`)}
       style={{ gap: 24 }}
-      size="auto"
-    >
+      size="auto">
       <Text>Would you like to recover this account?</Text>
       <Copyable
         isFullWidth
@@ -96,19 +87,10 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
         value={importedTempWalletAddress}
       />
       <Row>
-        <Button
-          variant="secondary"
-          size="md"
-          onClick={deleteImportedTempWallet}
-        >
+        <Button variant="secondary" size="md" onClick={deleteImportedTempWallet}>
           No, try again
         </Button>
-        <Button
-          variant="primary"
-          size="md"
-          onClick={() => handleRecover()}
-          isLoading={loading}
-        >
+        <Button variant="primary" size="md" onClick={() => handleRecover()} isLoading={loading}>
           Yes, recover
         </Button>
       </Row>
@@ -121,8 +103,7 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
       hasBackButton={true}
       onBackButtonClick={back}
       size="auto"
-      style={{ gap: 24 }}
-    >
+      style={{ gap: 24 }}>
       <Upload
         isFullWidth
         title={"Click to upload"}
@@ -132,11 +113,7 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
         onFileParse={handleJsonParse}
       />
       {fileError && (
-        <Text
-          alignment="left"
-          variant="bodySm"
-          style={{ color: "#D22B1F", alignSelf: "flex-start", marginTop: -20 }}
-        >
+        <Text alignment="left" variant="bodySm" style={{ color: "#D22B1F", alignSelf: "flex-start", marginTop: -20 }}>
           Error: incorrect file format
         </Text>
       )}

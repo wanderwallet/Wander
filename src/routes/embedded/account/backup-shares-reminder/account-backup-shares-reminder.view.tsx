@@ -1,15 +1,7 @@
 import { useState } from "react";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 
-import {
-  Box,
-  Button,
-  Card,
-  Checkbox,
-  WanderFooter,
-  Copyable,
-  Text
-} from "~components/embed/ui";
+import { Box, Button, Card, Checkbox, WanderFooter, Copyable, Text } from "~components/embed/ui";
 import copy from "copy-to-clipboard";
 import { useLocation } from "~wallets/router/router.utils";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
@@ -18,9 +10,7 @@ export function AccountBackupSharesReminderEmbeddedView() {
   const { navigate } = useLocation();
   const { currentWallet, skipBackUp } = useEmbedded();
   const isMandatoryReminder =
-    currentWallet.totalExports === 0 &&
-    currentWallet.totalBackups === 0 &&
-    !currentWallet.doNotAskAgainSetting;
+    currentWallet.totalExports === 0 && currentWallet.totalBackups === 0 && !currentWallet.doNotAskAgainSetting;
 
   const [isLoading, setIsLoading] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
@@ -41,8 +31,7 @@ export function AccountBackupSharesReminderEmbeddedView() {
       footerElement={<WanderFooter />}
       hasBackButton={false}
       hasCloseButton={true}
-      size="auto"
-    >
+      size="auto">
       <Box>
         <Text
           variant="bodySm"
@@ -50,9 +39,8 @@ export function AccountBackupSharesReminderEmbeddedView() {
             marginBottom: 24,
             marginTop: -16,
             color: "#0D6CE9",
-            cursor: "pointer"
-          }}
-        >
+            cursor: "pointer",
+          }}>
           Why should I back up my wallet?
         </Text>
         <Copyable
@@ -64,22 +52,11 @@ export function AccountBackupSharesReminderEmbeddedView() {
             copy(currentWallet.address);
           }}
         />
-        <Button
-          variant="primary"
-          isDisabled={isLoading}
-          isFullWidth
-          href="#/account/backup-shares"
-        >
+        <Button variant="primary" isDisabled={isLoading} isFullWidth href="#/account/backup-shares">
           Backup now
         </Button>
         {isMandatoryReminder ? (
-          <Button
-            variant="secondary"
-            isDisabled={isLoading}
-            isFullWidth
-            href="#/wallet"
-            onClick={handleSkipClicked}
-          >
+          <Button variant="secondary" isDisabled={isLoading} isFullWidth href="#/wallet" onClick={handleSkipClicked}>
             Backup later
           </Button>
         ) : (

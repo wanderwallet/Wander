@@ -1,14 +1,7 @@
 import * as React from "react";
 import type { SVGProps } from "react";
 const SvgMinimize = (props: SVGProps<SVGSVGElement>) => (
-  <svg
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    {...props}
-  >
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
     <path
       d="M16.4142 9L21.7071 3.70711C22.0976 3.31658 22.0976 2.68342 21.7071 2.29289C21.3166 1.90237 20.6834 1.90237 20.2929 2.29289L15 7.58579V4C15 3.44772 14.5523 3 14 3C13.4477 3 13 3.44772 13 4V10C13 10.5523 13.4477 11 14 11H20C20.5523 11 21 10.5523 21 10C21 9.44772 20.5523 9 20 9H16.4142Z"
       fill="currentColor"

@@ -13,12 +13,9 @@ import { useLocation } from "~wallets/router/router.utils";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { useActiveWallet } from "~wallets/hooks";
 
-export type GenerateDoneWelcomeViewProps =
-  CommonRouteProps<SetupWelcomeViewParams>;
+export type GenerateDoneWelcomeViewProps = CommonRouteProps<SetupWelcomeViewParams>;
 
-export function GenerateDoneWelcomeView({
-  params
-}: GenerateDoneWelcomeViewProps) {
+export function GenerateDoneWelcomeView({ params }: GenerateDoneWelcomeViewProps) {
   // wallet context
   const { wallet } = useContext(WalletContext);
   const activeWallet = useActiveWallet();
@@ -56,17 +53,13 @@ export function GenerateDoneWelcomeView({
           </Text>
           <Text variant="secondary" noMargin>
             {browser.i18n.getMessage("congratulations_description", [
-              browser.i18n.getMessage(
-                setupMode === "generate" ? "creating" : "importing"
-              )
+              browser.i18n.getMessage(setupMode === "generate" ? "creating" : "importing"),
             ])}
           </Text>
         </InnerContent>
         <InnerContent>
           <AccountContainer>
-            <AccountIcon
-              placeholderText={wallet?.nickname?.slice(0, 1) || "A"}
-            />
+            <AccountIcon placeholderText={wallet?.nickname?.slice(0, 1) || "A"} />
             <Text size="base" weight="medium" noMargin>
               {wallet?.nickname || "Account 1"}
             </Text>
@@ -85,12 +78,7 @@ export function GenerateDoneWelcomeView({
         <Button fullWidth onClick={takeTour}>
           {browser.i18n.getMessage("take_a_tour")}
         </Button>
-        <Button
-          variant="secondary"
-          fullWidth
-          onClick={goToDashboard}
-          style={{ marginTop: "auto" }}
-        >
+        <Button variant="secondary" fullWidth onClick={goToDashboard} style={{ marginTop: "auto" }}>
           {browser.i18n.getMessage("go_to_dashboard")}
         </Button>
       </Actions>
@@ -134,7 +122,7 @@ const InnerContent = styled.div`
 `;
 
 const WalletIcon = styled.img.attrs({
-  src: WalletIconSvg
+  src: WalletIconSvg,
 })`
   height: 72px;
   width: 72px;
@@ -153,7 +141,7 @@ const AccountContainer = styled.div`
 const Label = styled(Text).attrs({
   size: "xs",
   weight: "medium",
-  noMargin: true
+  noMargin: true,
 })``;
 
 const AccountIcon = styled(Squircle)`

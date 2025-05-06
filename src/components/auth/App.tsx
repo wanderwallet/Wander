@@ -1,10 +1,4 @@
-import {
-  type DisplayTheme,
-  Section,
-  Spacer,
-  Text,
-  ListItem
-} from "@arconnect/components-rebrand";
+import { type DisplayTheme, Section, Spacer, Text, ListItem } from "@arconnect/components-rebrand";
 import { defaultGateway, type Gateway } from "~gateways/gateway";
 import { useTheme as useDisplayTheme } from "~utils/theme";
 import type { Allowance } from "~applications/allowance";
@@ -18,14 +12,7 @@ import styled from "styled-components";
 import Label from "./Label";
 import { Quantity } from "ao-tokens";
 
-export default function App({
-  appIcon,
-  appName,
-  appUrl,
-  gateway,
-  allowance,
-  showTitle = true
-}: Props) {
+export default function App({ appIcon, appName, appUrl, gateway, allowance, showTitle = true }: Props) {
   // // allowance spent in AR
   // const spent = useMemo(() => {
   //   if (!allowance) return new Quantity("0");
@@ -55,11 +42,7 @@ export default function App({
       {showTitle && (
         <>
           <SidePaddingSection>
-            <Label>
-              {browser.i18n.getMessage(
-                gateway ? "app_wants_to_connect" : "allowance_limit_reached"
-              )}
-            </Label>
+            <Label>{browser.i18n.getMessage(gateway ? "app_wants_to_connect" : "allowance_limit_reached")}</Label>
           </SidePaddingSection>
           <Spacer y={0.4} />
         </>
@@ -68,11 +51,7 @@ export default function App({
         <ListItem
           title={<PrimaryText>{appName || appUrl}</PrimaryText>}
           img={appIcon}
-          subtitle={
-            <SecondaryText>{`${browser.i18n.getMessage("gateway")}: ${
-              gateway?.host || ""
-            }`}</SecondaryText>
-          }
+          subtitle={<SecondaryText>{`${browser.i18n.getMessage("gateway")}: ${gateway?.host || ""}`}</SecondaryText>}
           style={{ pointerEvents: "none" }}
         />
         {/* <Wrapper displayTheme={theme}>
@@ -150,7 +129,7 @@ const NoAppIcon = styled(GridIcon)`
 
 const AppName = styled(Text).attrs({
   heading: true,
-  noMargin: true
+  noMargin: true,
 })`
   font-size: 1.3rem;
   font-weight: 500;
@@ -158,7 +137,7 @@ const AppName = styled(Text).attrs({
 `;
 
 const AppUrl = styled(Text).attrs({
-  noMargin: true
+  noMargin: true,
 })`
   font-size: 0.7rem;
 `;

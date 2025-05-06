@@ -5,13 +5,7 @@ import { useLocation } from "~wallets/router/router.utils";
 import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 
 const Home05Active = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="25"
-    height="24"
-    viewBox="0 0 25 24"
-    fill="none"
-  >
+  <svg xmlns="http://www.w3.org/2000/svg" width="25" height="24" viewBox="0 0 25 24" fill="none">
     <path
       fillRule="evenodd"
       clipRule="evenodd"
@@ -22,13 +16,7 @@ const Home05Active = () => (
 );
 
 const Compass03Active = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="25"
-    height="24"
-    viewBox="0 0 25 24"
-    fill="none"
-  >
+  <svg xmlns="http://www.w3.org/2000/svg" width="25" height="24" viewBox="0 0 25 24" fill="none">
     <path
       fillRule="evenodd"
       clipRule="evenodd"
@@ -45,7 +33,7 @@ const buttons = [
     icon: <Home05 />,
     iconActive: <Home05Active />,
     size: "24px",
-    route: "/"
+    route: "/",
   },
   {
     title: "Explore",
@@ -53,7 +41,7 @@ const buttons = [
     icon: <Compass03 />,
     iconActive: <Compass03Active />,
     size: "24px",
-    route: "/explore"
+    route: "/explore",
   },
   {
     title: "Menu",
@@ -61,16 +49,14 @@ const buttons = [
     icon: <Grid01 />,
     iconActive: <Grid01 color="#6B57F9" fill="#6B57F9" />,
     size: "24px",
-    route: "/quick-settings"
-  }
+    route: "/quick-settings",
+  },
 ] as const;
 
 export const NavigationBar = () => {
   const { location, navigate } = useLocation();
 
-  const shouldShowNavigationBar = buttons.some(
-    (button) => location === button.route
-  );
+  const shouldShowNavigationBar = buttons.some((button) => location === button.route);
 
   if (!shouldShowNavigationBar) {
     return null;
@@ -85,11 +71,8 @@ export const NavigationBar = () => {
             active={active}
             data-active={active ? "true" : "false"}
             key={index}
-            onClick={() => navigate(button.route)}
-          >
-            <IconWrapper size={button.size}>
-              {active ? button.iconActive : button.icon}
-            </IconWrapper>
+            onClick={() => navigate(button.route)}>
+            <IconWrapper size={button.size}>{active ? button.iconActive : button.icon}</IconWrapper>
             <div>{browser.i18n.getMessage(button.dictionaryKey)}</div>
           </NavigationButton>
         );
@@ -113,8 +96,7 @@ const NavigationBarWrapper = styled.nav`
 const NavigationButton = styled.button<{
   active?: boolean;
 }>`
-  color: ${(props) =>
-    props.active ? props.theme.primaryText : props.theme.secondaryText};
+  color: ${(props) => (props.active ? props.theme.primaryText : props.theme.secondaryText)};
   font-weight: 600;
   font-size: 12px;
   display: flex;

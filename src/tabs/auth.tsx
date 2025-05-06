@@ -18,9 +18,9 @@ const queryClient = new QueryClient({
       staleTime: 300_000,
       refetchInterval: 300_000,
       retry: 2,
-      refetchOnWindowFocus: true
-    }
-  }
+      refetchOnWindowFocus: true,
+    },
+  },
 });
 
 export function AuthApp() {

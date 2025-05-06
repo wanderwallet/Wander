@@ -12,8 +12,7 @@ export function WalletBuySuccessEmbeddedView() {
       onBackButtonClick={() => navigate("/wallet/buy/cash")}
       hasCloseButton={true}
       onCloseButtonClick={back}
-      style={{ padding: "32px" }}
-    >
+      style={{ padding: "32px" }}>
       <SuccessCheckIcon />
 
       <Box style={{ marginTop: "16px" }}>
@@ -22,8 +21,7 @@ export function WalletBuySuccessEmbeddedView() {
         </Text>
         <br />
         <Text alignment="center" variant="bodyMd" style={{ color: "#666666" }}>
-          Your purchase is in progress. This may take up to 30-60 minutes to
-          complete.
+          Your purchase is in progress. This may take up to 30-60 minutes to complete.
         </Text>
       </Box>
     </Card>

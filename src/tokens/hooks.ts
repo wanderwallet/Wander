@@ -4,7 +4,7 @@ import {
   getBotegaPrice,
   getBotegaPrices,
   type TokenInfo,
-  type TokenInfoWithBalance
+  type TokenInfoWithBalance,
 } from "./aoTokens/ao";
 import { useMemo } from "react";
 import useSetting from "~settings/hook";
@@ -22,15 +22,14 @@ const defaultOptions = {
   staleTime: 300_000,
   gcTime: 300_000,
   retry: 3,
-  retryDelay: (attemptIndex: number) =>
-    Math.min(1000 * 2 ** attemptIndex, 30000),
-  refetchOnWindowFocus: true
+  retryDelay: (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 30000),
+  refetchOnWindowFocus: true,
 };
 
 export const defaultQueryCache = {
   queryFn: () => null,
   enabled: false,
-  staleTime: Infinity
+  staleTime: Infinity,
 };
 
 export const useConversionRate = (currency: string) =>
@@ -38,18 +37,14 @@ export const useConversionRate = (currency: string) =>
     queryKey: ["conversionRate", currency],
     queryFn: () => getConversionRate(currency),
     enabled: !!currency,
-    ...defaultOptions
+    ...defaultOptions,
   });
 
 export function useQueryCache<T = unknown>(queryKey: unknown[]) {
   return useQuery({ ...defaultQueryCache, queryKey });
 }
 
-export function useTokenBalance(
-  token: TokenInfo,
-  address: string,
-  refresh?: boolean
-) {
+export function useTokenBalance(token: TokenInfo, address: string, refresh?: boolean) {
   return useQuery({
     queryKey: ["tokenBalance", token.processId, address],
     queryFn: async () => {
@@ -62,7 +57,7 @@ export function useTokenBalance(
     },
     ...defaultOptions,
     select: (data) => data || "0",
-    enabled: !!address && !!token.processId && isFinite(token?.Denomination)
+    enabled: !!address && !!token.processId && isFinite(token?.Denomination),
   });
 }
 
@@ -76,7 +71,7 @@ export function useTokenPrice(id?: string, currency = "USD") {
     queryFn: () => getBotegaPrice(id!),
     // queryFn: () => null,
     enabled: !!id && !isArToken,
-    ...defaultOptions
+    ...defaultOptions,
   });
 
   const { data: arPrice = "0", isLoading } = useArPrice(currency);
@@ -88,13 +83,9 @@ export function useTokenPrice(id?: string, currency = "USD") {
   }, [priceQuery.data, conversionRateQuery.data, arPrice]);
 
   return {
-    hasPrice: isArToken
-      ? !!arPrice && arPrice !== "0"
-      : priceQuery.data !== null,
-    loading: isArToken
-      ? isLoading
-      : priceQuery.isLoading || conversionRateQuery.isLoading,
-    price: convertedPrice
+    hasPrice: isArToken ? !!arPrice && arPrice !== "0" : priceQuery.data !== null,
+    loading: isArToken ? isLoading : priceQuery.isLoading || conversionRateQuery.isLoading,
+    price: convertedPrice,
   };
 }
 
@@ -108,7 +99,7 @@ export function useTokenPrices(ids?: string[]) {
     queryFn: () => getBotegaPrices(ids!),
     // queryFn: () => null,
     enabled: !!ids?.length,
-    ...defaultOptions
+    ...defaultOptions,
   });
 
   const { data: arPrice = "0" } = useArPrice(currency);
@@ -118,9 +109,7 @@ export function useTokenPrices(ids?: string[]) {
 
     const pricesEntries = (ids || []).map((id) => [
       id,
-      pricesQuery.data[id] !== null
-        ? pricesQuery.data[id] * (conversionRateQuery.data || 1)
-        : null
+      pricesQuery.data[id] !== null ? pricesQuery.data[id] * (conversionRateQuery.data || 1) : null,
     ]);
 
     pricesEntries.push(["AR", +arPrice]);
@@ -130,7 +119,7 @@ export function useTokenPrices(ids?: string[]) {
 
   return {
     prices: convertedPrices,
-    loading: pricesQuery.isLoading || conversionRateQuery.isLoading
+    loading: pricesQuery.isLoading || conversionRateQuery.isLoading,
   };
 }
 
@@ -138,31 +127,23 @@ export function useTotalFiatBalance() {
   const { tokens } = useAoTokens({ type: "asset", hidden: false });
   const [address] = useStorage<string>({
     key: "active_address",
-    instance: ExtensionStorage
+    instance: ExtensionStorage,
   });
   const [currency] = useSetting("currency");
 
   const { data: arPrice = "0" } = useArPrice(currency);
 
-  const conversionRateQuery = useQueryCache<number>([
-    "conversionRate",
-    currency
-  ]);
+  const conversionRateQuery = useQueryCache<number>(["conversionRate", currency]);
 
-  const tokenIds = tokens
-    .map((token) => token.id)
-    .filter((id) => id !== EXP_TOKEN && id !== "AR");
+  const tokenIds = tokens.map((token) => token.id).filter((id) => id !== EXP_TOKEN && id !== "AR");
 
-  const pricesQuery = useQueryCache<Record<string, number>>([
-    "tokenPrices",
-    tokenIds?.slice().sort().join(",")
-  ]);
+  const pricesQuery = useQueryCache<Record<string, number>>(["tokenPrices", tokenIds?.slice().sort().join(",")]);
 
   const tokenBalanceQueries = useQueries({
     queries: tokens.map((token) => ({
       queryKey: ["tokenBalance", token.id, address],
-      ...defaultQueryCache
-    }))
+      ...defaultQueryCache,
+    })),
   });
 
   return useMemo(() => {
@@ -173,25 +154,15 @@ export function useTotalFiatBalance() {
 
     tokens.forEach((token, index) => {
       const balance = tokenBalanceQueries[index].data;
-      const price =
-        token.id === "AR" ? +arPrice : pricesQuery.data?.[token.id] || 0;
+      const price = token.id === "AR" ? +arPrice : pricesQuery.data?.[token.id] || 0;
 
       if (balance && price) {
-        total = total.plus(
-          BigNumber(balance).times(price).times(conversionRate)
-        );
+        total = total.plus(BigNumber(balance).times(price).times(conversionRate));
       }
     });
 
     return total;
-  }, [
-    tokens,
-    address,
-    conversionRateQuery.data,
-    pricesQuery.data,
-    tokenBalanceQueries,
-    arPrice
-  ]);
+  }, [tokens, address, conversionRateQuery.data, pricesQuery.data, tokenBalanceQueries, arPrice]);
 }
 
 export function useAo() {
@@ -213,7 +184,7 @@ export function useAoTokens({
   type,
   hidden,
   sortFn,
-  skipSort = false
+  skipSort = false,
 }: {
   type?: "asset" | "collectible";
   hidden?: boolean;
@@ -227,15 +198,13 @@ export function useAoTokens({
   const [aoTokens, setAoTokens] = useStorage<TokenInfo[]>(
     {
       key: "ao_tokens",
-      instance: PersistentStorage
+      instance: PersistentStorage,
     },
-    []
+    [],
   );
 
   const changeTokenVisibility = (tokenId: string, hidden: boolean) => {
-    setAoTokens((tokens) =>
-      tokens.map((t) => (t.processId === tokenId ? { ...t, hidden } : t))
-    );
+    setAoTokens((tokens) => tokens.map((t) => (t.processId === tokenId ? { ...t, hidden } : t)));
   };
 
   // fetch token infos
@@ -247,8 +216,7 @@ export function useAoTokens({
           (type === "asset" && (t.type === "asset" || !t.type)) ||
           (type === "collectible" && t.type === "collectible");
 
-        const hiddenMatch =
-          hidden === undefined || (t.hidden ?? false) === hidden;
+        const hiddenMatch = hidden === undefined || (t.hidden ?? false) === hidden;
 
         return typeMatch && hiddenMatch;
       })
@@ -260,7 +228,7 @@ export function useAoTokens({
         Denomination: Number(aoToken.Denomination || 0),
         Logo: aoToken?.Logo,
         type: aoToken.type || "asset",
-        hidden: aoToken?.hidden ?? false
+        hidden: aoToken?.hidden ?? false,
       }));
 
     if (!skipSort) {
@@ -280,7 +248,7 @@ export function useAoTokens({
 
 export function useBalanceSortedTokens({
   type,
-  hidden
+  hidden,
 }: {
   type?: "asset" | "collectible";
   hidden?: boolean;
@@ -291,15 +259,15 @@ export function useBalanceSortedTokens({
 } {
   const [activeAddress] = useStorage<string>({
     key: "active_address",
-    instance: ExtensionStorage
+    instance: ExtensionStorage,
   });
 
   const [aoTokens] = useStorage<TokenInfo[]>(
     {
       key: "ao_tokens",
-      instance: PersistentStorage
+      instance: PersistentStorage,
     },
-    []
+    [],
   );
 
   const tokensByHidden = useMemo(
@@ -310,25 +278,22 @@ export function useBalanceSortedTokens({
           (type === "asset" && (t.type === "asset" || !t.type)) ||
           (type === "collectible" && t.type === "collectible");
 
-        const hiddenMatch =
-          hidden === undefined || (t.hidden ?? false) === hidden;
+        const hiddenMatch = hidden === undefined || (t.hidden ?? false) === hidden;
 
         return typeMatch && hiddenMatch;
       }),
-    [aoTokens, type, hidden]
+    [aoTokens, type, hidden],
   );
 
   const { prices } = useTokenPrices(
-    tokensByHidden
-      .map((t) => t.processId)
-      .filter((id) => id !== "AR" && id !== EXP_TOKEN)
+    tokensByHidden.map((t) => t.processId).filter((id) => id !== "AR" && id !== EXP_TOKEN),
   );
 
   const tokenBalanceQueries = useQueries({
     queries: tokensByHidden.map((token) => ({
       queryKey: ["tokenBalance", token.processId, activeAddress],
-      ...defaultQueryCache
-    }))
+      ...defaultQueryCache,
+    })),
   });
 
   // fetch token infos
@@ -344,7 +309,7 @@ export function useBalanceSortedTokens({
       hidden: aoToken?.hidden ?? false,
       fiatBalance: BigNumber(tokenBalanceQueries[index].data || "0")
         .times(prices[aoToken.processId] || 0)
-        .toString()
+        .toString(),
     }));
 
     const sortedTokens = filteredTokens.sort((a, b) => {

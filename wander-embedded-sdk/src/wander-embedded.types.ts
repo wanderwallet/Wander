@@ -137,11 +137,7 @@ export interface HalfLayoutConfig {
  * Union of all layout configurations
  * A type that can be any of the supported layout types (modal, popup, sidebar, half).
  */
-export type LayoutConfig =
-  | ModalLayoutConfig
-  | PopupLayoutConfig
-  | SidebarLayoutConfig
-  | HalfLayoutConfig;
+export type LayoutConfig = ModalLayoutConfig | PopupLayoutConfig | SidebarLayoutConfig | HalfLayoutConfig;
 
 /**
  * Available layout type names
@@ -151,24 +147,14 @@ export type LayoutType = LayoutConfig["type"];
 /**
  * Array of all supported layout types
  */
-export const LAYOUT_TYPES = [
-  "modal",
-  "popup",
-  "sidebar",
-  "half"
-] as const satisfies LayoutType[];
+export const LAYOUT_TYPES = ["modal", "popup", "sidebar", "half"] as const satisfies LayoutType[];
 
 /** Validates if an object is a valid layout configuration
  * @param obj Object to check
  * @returns True if object is a valid layout configuration
  */
 export function isRouteConfig(obj: unknown): obj is LayoutConfig {
-  return !!(
-    obj &&
-    typeof obj === "object" &&
-    "type" in obj &&
-    LAYOUT_TYPES.includes(obj.type as LayoutType)
-  );
+  return !!(obj && typeof obj === "object" && "type" in obj && LAYOUT_TYPES.includes(obj.type as LayoutType));
 }
 
 /**
@@ -354,8 +340,7 @@ export interface WanderEmbeddedComponentOptions<T> {
  * Resolved configuration with all required fields set.
  * @template T The type of CSS variables for this component
  */
-export interface WanderEmbeddedComponentConfig<T>
-  extends Required<WanderEmbeddedComponentOptions<T>> {
+export interface WanderEmbeddedComponentConfig<T> extends Required<WanderEmbeddedComponentOptions<T>> {
   /**
    * CSS variables for both light and dark themes.
    */
@@ -367,13 +352,9 @@ export interface WanderEmbeddedComponentConfig<T>
  * @returns True if theme-specific
  */
 export function isThemeRecord<T>(
-  cssVars: Partial<T> | Partial<Record<ThemeVariant, Partial<T>>>
+  cssVars: Partial<T> | Partial<Record<ThemeVariant, Partial<T>>>,
 ): cssVars is Partial<Record<ThemeVariant, Partial<T>>> {
-  return !!(
-    cssVars &&
-    typeof cssVars === "object" &&
-    ("light" in cssVars || "dark" in cssVars)
-  );
+  return !!(cssVars && typeof cssVars === "object" && ("light" in cssVars || "dark" in cssVars));
 }
 
 // Modal (iframe):
@@ -383,8 +364,7 @@ export function isThemeRecord<T>(
  * Customizes the appearance and behavior of the Wander Embedded iframe,
  * which displays the wallet UI.
  */
-export interface WanderEmbeddedIframeOptions
-  extends WanderEmbeddedComponentOptions<WanderEmbeddedIframeCSSVars> {
+export interface WanderEmbeddedIframeOptions extends WanderEmbeddedComponentOptions<WanderEmbeddedIframeCSSVars> {
   // TODO: Default should automatically be used for auth-requests, and auth for account and settings?
   /**
    * Layout configuration for different routes.
@@ -395,10 +375,7 @@ export interface WanderEmbeddedIframeOptions
    *   "settings" and "auth-request" routes; the "auth" option will be used for "auth" routes as well as as fallback for
    *   "account" routes.
    */
-  routeLayout?:
-    | LayoutType
-    | LayoutConfig
-    | Partial<Record<RouteType, LayoutType | LayoutConfig>>;
+  routeLayout?: LayoutType | LayoutConfig | Partial<Record<RouteType, LayoutType | LayoutConfig>>;
 
   /**
    * Close Wander Embedded when clicking outside of it.
@@ -413,8 +390,7 @@ export interface WanderEmbeddedIframeOptions
 /**
  * Configuration for the iframe component.
  */
-export interface WanderEmbeddedIframeConfig
-  extends WanderEmbeddedComponentConfig<WanderEmbeddedIframeCSSVars> {
+export interface WanderEmbeddedIframeConfig extends WanderEmbeddedComponentConfig<WanderEmbeddedIframeCSSVars> {
   /**
    * Layout configuration for all route types.
    * Complete mapping of route types to their layout configuration.
@@ -434,22 +410,13 @@ export interface WanderEmbeddedIframeConfig
  * Position of the button on the screen.
  * Determines where the button appears on the screen.
  */
-export type WanderEmbeddedButtonPosition =
-  | "top-right"
-  | "bottom-right"
-  | "top-left"
-  | "bottom-left"
-  | "static";
+export type WanderEmbeddedButtonPosition = "top-right" | "bottom-right" | "top-left" | "bottom-left" | "static";
 
 /**
  * Position of the popup on the screen.
  * Determines where the popup appears on the screen.
  */
-export type WanderEmbeddedPopupPosition =
-  | "top-right"
-  | "bottom-right"
-  | "top-left"
-  | "bottom-left";
+export type WanderEmbeddedPopupPosition = "top-right" | "bottom-right" | "top-left" | "bottom-left";
 
 /**
  * Variant of the Wander logo to display.
@@ -528,8 +495,7 @@ export interface WanderEmbeddedButtonLabels {
  * Configuration options for the button component.
  * Customizes the appearance and behavior of the Wander Embedded button.
  */
-export interface WanderEmbeddedButtonOptions
-  extends WanderEmbeddedComponentOptions<WanderEmbeddedButtonCSSVars> {
+export interface WanderEmbeddedButtonOptions extends WanderEmbeddedComponentOptions<WanderEmbeddedButtonCSSVars> {
   /**
    * Element the button will be appended to.
    * @default document.body
@@ -583,8 +549,7 @@ export interface WanderEmbeddedButtonOptions
 /**
  * Configuration for the button component.
  */
-export interface WanderEmbeddedButtonConfig
-  extends WanderEmbeddedComponentConfig<WanderEmbeddedButtonCSSVars> {
+export interface WanderEmbeddedButtonConfig extends WanderEmbeddedComponentConfig<WanderEmbeddedButtonCSSVars> {
   /**
    * Element the button will be appended to.
    */

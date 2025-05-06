@@ -9,7 +9,7 @@ import {
   IncomingRequestMessageData,
   IncomingResizeMessageData,
   OutgoingMessage,
-  WalletSwitchMessage
+  WalletSwitchMessage,
 } from "./message.types";
 
 export function isEventMessage(message: unknown): message is EventMessage {
@@ -28,9 +28,7 @@ export function isEventMessage(message: unknown): message is EventMessage {
   return typeof data.name === "string";
 }
 
-export function isWalletSwitchMessage(
-  message: unknown
-): message is WalletSwitchMessage {
+export function isWalletSwitchMessage(message: unknown): message is WalletSwitchMessage {
   if (
     !message ||
     typeof message !== "object" ||
@@ -47,14 +45,8 @@ export function isWalletSwitchMessage(
 }
 
 // Type guard for incoming messages
-export function isIncomingMessage(
-  message: unknown
-): message is IncomingMessage {
-  if (
-    !message ||
-    typeof message !== "object" ||
-    !("id" in message && "type" in message && "data" in message)
-  ) {
+export function isIncomingMessage(message: unknown): message is IncomingMessage {
+  if (!message || typeof message !== "object" || !("id" in message && "type" in message && "data" in message)) {
     return false;
   }
 
@@ -75,8 +67,7 @@ export function isIncomingMessage(
       return (
         EMBEDDED_AUTH_STATUS.includes(data.authStatus) &&
         EMBEDDED_AUTH_TYPE.includes(data.authType) &&
-        (data.userDetails === null ||
-          (!!data.userDetails && typeof data.userDetails === "object"))
+        (data.userDetails === null || (!!data.userDetails && typeof data.userDetails === "object"))
       );
     }
 
@@ -111,11 +102,7 @@ export function isIncomingMessage(
     case "embedded_request": {
       const data = message.data as IncomingRequestMessageData;
 
-      return !!(
-        data &&
-        typeof data === "object" &&
-        typeof data.pendingRequests === "number"
-      );
+      return !!(data && typeof data === "object" && typeof data.pendingRequests === "number");
     }
 
     default:
@@ -137,11 +124,7 @@ export function isOutgoingMessage(message: any): message is OutgoingMessage {
         typeof message.payload.secondary === "string"
       );
     case "WALLET_CONNECTED":
-      return (
-        message.payload &&
-        typeof message.payload === "object" &&
-        typeof message.payload.address === "string"
-      );
+      return message.payload && typeof message.payload === "object" && typeof message.payload.address === "string";
     case "WALLET_DISCONNECTED":
       return true;
     default:

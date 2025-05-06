@@ -6,18 +6,7 @@ import { Text } from "../text";
 import { useTheme } from "../../../contexts/ThemeContext";
 
 const Avatar = forwardRef<HTMLDivElement, AvatarBaseProps>(
-  (
-    {
-      children,
-      className,
-      backgroundColor,
-      fontColor,
-      isBlurry,
-      size = "md",
-      ...props
-    },
-    ref
-  ) => {
+  ({ children, className, backgroundColor, fontColor, isBlurry, size = "md", ...props }, ref) => {
     const { isDarkMode } = useTheme();
 
     const renderChildren = () => {
@@ -26,10 +15,8 @@ const Avatar = forwardRef<HTMLDivElement, AvatarBaseProps>(
           <Text
             variant="bodySm"
             style={{
-              color:
-                fontColor || (isDarkMode ? "var(--color-font-heading)" : "#FFF")
-            }}
-          >
+              color: fontColor || (isDarkMode ? "var(--color-font-heading)" : "#FFF"),
+            }}>
             {children.substring(0, 1).toUpperCase()}
           </Text>
         );
@@ -37,9 +24,7 @@ const Avatar = forwardRef<HTMLDivElement, AvatarBaseProps>(
       return children;
     };
 
-    const avatarBg =
-      backgroundColor ||
-      (isDarkMode ? "var(--color-card-background-default)" : undefined);
+    const avatarBg = backgroundColor || (isDarkMode ? "var(--color-card-background-default)" : undefined);
 
     return (
       <div
@@ -48,16 +33,15 @@ const Avatar = forwardRef<HTMLDivElement, AvatarBaseProps>(
           styles[`avatar__${size}`],
           isBlurry && styles.avatar__blurry,
           isDarkMode ? styles.avatar__dark : styles.avatar__light,
-          className
+          className,
         )}
         style={{ backgroundColor: avatarBg }}
         ref={ref}
-        {...props}
-      >
+        {...props}>
         {renderChildren()}
       </div>
     );
-  }
+  },
 );
 
 Avatar.displayName = "Avatar";

@@ -1,10 +1,6 @@
 import * as React from "react";
 import type { SVGProps } from "react";
-const SvgSuccess = ({
-  width = "72",
-  height = "72",
-  ...props
-}: SVGProps<SVGSVGElement>) => (
+const SvgSuccess = ({ width = "72", height = "72", ...props }: SVGProps<SVGSVGElement>) => (
   <svg
     width={width}
     height={height}
@@ -12,15 +8,8 @@ const SvgSuccess = ({
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
     {...props}
-    color="currentColor"
-  >
-    <circle
-      opacity="0.3"
-      cx="35.9999"
-      cy="36.0002"
-      r="27.1557"
-      fill="#04AA3E"
-    />
+    color="currentColor">
+    <circle opacity="0.3" cx="35.9999" cy="36.0002" r="27.1557" fill="#04AA3E" />
     <circle opacity="0.1" cx="36" cy="36" r="36" fill="#04AA3E" />
     <path
       d="M20.1678 56.2125C20.1864 56.1426 20.2856 56.1426 20.3041 56.2125L20.7445 57.8716C20.751 57.896 20.7699 57.915 20.7942 57.9216L22.4394 58.3671C22.5088 58.3859 22.5088 58.4844 22.4394 58.5032L20.7942 58.9487C20.7699 58.9553 20.751 58.9743 20.7445 58.9987L20.3041 60.6578C20.2856 60.7276 20.1864 60.7277 20.1678 60.6578L19.7274 58.9987C19.721 58.9743 19.702 58.9553 19.6777 58.9487L18.0325 58.5032C17.9631 58.4844 17.9631 58.3859 18.0325 58.3671L19.6777 57.9216C19.702 57.915 19.721 57.896 19.7274 57.8716L20.1678 56.2125Z"
@@ -49,8 +38,7 @@ const SvgSuccess = ({
         width="41.467"
         height="41.467"
         filterUnits="userSpaceOnUse"
-        color-interpolation-filters="sRGB"
-      >
+        color-interpolation-filters="sRGB">
         <feFlood flood-opacity="0" result="BackgroundImageFix" />
         <feColorMatrix
           in="SourceAlpha"
@@ -61,15 +49,8 @@ const SvgSuccess = ({
         <feOffset dy="1.07779" />
         <feGaussianBlur stdDeviation="1.43706" />
         <feComposite in2="hardAlpha" operator="out" />
-        <feColorMatrix
-          type="matrix"
-          values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.16 0"
-        />
-        <feBlend
-          mode="normal"
-          in2="BackgroundImageFix"
-          result="effect1_dropShadow_13_1038"
-        />
+        <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.16 0" />
+        <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_13_1038" />
         <feColorMatrix
           in="SourceAlpha"
           type="matrix"
@@ -79,21 +60,9 @@ const SvgSuccess = ({
         <feOffset dy="1.07779" />
         <feGaussianBlur stdDeviation="0.179632" />
         <feComposite in2="hardAlpha" operator="out" />
-        <feColorMatrix
-          type="matrix"
-          values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.04 0"
-        />
-        <feBlend
-          mode="normal"
-          in2="effect1_dropShadow_13_1038"
-          result="effect2_dropShadow_13_1038"
-        />
-        <feBlend
-          mode="normal"
-          in="SourceGraphic"
-          in2="effect2_dropShadow_13_1038"
-          result="shape"
-        />
+        <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.04 0" />
+        <feBlend mode="normal" in2="effect1_dropShadow_13_1038" result="effect2_dropShadow_13_1038" />
+        <feBlend mode="normal" in="SourceGraphic" in2="effect2_dropShadow_13_1038" result="shape" />
       </filter>
     </defs>
   </svg>

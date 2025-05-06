@@ -1,16 +1,6 @@
-import {
-  createContext,
-  useEffect,
-  useState,
-  type PropsWithChildren
-} from "react";
+import { createContext, useEffect, useState, type PropsWithChildren } from "react";
 import { ExtensionStorage } from "~utils/storage";
-import {
-  getActiveAddress,
-  getWallets,
-  openOrSelectWelcomePage,
-  type StoredWallet
-} from "~wallets";
+import { getActiveAddress, getWallets, openOrSelectWelcomePage, type StoredWallet } from "~wallets";
 import { getDecryptionKey } from "~wallets/auth";
 
 export type WalletStatus = "noWallets" | "loading" | "locked" | "unlocked";
@@ -32,11 +22,11 @@ const WALLETS_CONTEXT_INITIAL_STATE: WalletsContextState = {
   walletStatus: "noWallets",
   wallets: [],
   activeAddress: "",
-  decryptionKey: ""
+  decryptionKey: "",
 };
 
 export const WalletsContext = createContext<WalletsContextData>({
-  ...WALLETS_CONTEXT_INITIAL_STATE
+  ...WALLETS_CONTEXT_INITIAL_STATE,
   // isAuthenticated: false,
   // signIn
   // signOut
@@ -46,19 +36,15 @@ interface AuthRequestProviderProps extends PropsWithChildren {
   redirectToWelcome?: boolean;
 }
 
-export function WalletsProvider({
-  redirectToWelcome,
-  children
-}: AuthRequestProviderProps) {
-  const [walletsContextState, setWalletsContextState] =
-    useState<WalletsContextState>(WALLETS_CONTEXT_INITIAL_STATE);
+export function WalletsProvider({ redirectToWelcome, children }: AuthRequestProviderProps) {
+  const [walletsContextState, setWalletsContextState] = useState<WalletsContextState>(WALLETS_CONTEXT_INITIAL_STATE);
 
   useEffect(() => {
     async function checkWalletState() {
       const [activeAddress, wallets, decryptionKey] = await Promise.all([
         getActiveAddress(),
         getWallets(),
-        getDecryptionKey()
+        getDecryptionKey(),
       ]);
 
       const hasWallets = activeAddress && wallets.length > 0;
@@ -82,7 +68,7 @@ export function WalletsProvider({
         walletStatus,
         wallets,
         activeAddress,
-        decryptionKey
+        decryptionKey,
       });
 
       const coverElement = document.getElementById("cover");
@@ -97,21 +83,17 @@ export function WalletsProvider({
     }
 
     ExtensionStorage.watch({
-      decryption_key: checkWalletState
+      decryption_key: checkWalletState,
     });
 
     checkWalletState();
 
     return () => {
       ExtensionStorage.unwatch({
-        decryption_key: checkWalletState
+        decryption_key: checkWalletState,
       });
     };
   }, [redirectToWelcome]);
 
-  return (
-    <WalletsContext.Provider value={walletsContextState}>
-      {children}
-    </WalletsContext.Provider>
-  );
+  return <WalletsContext.Provider value={walletsContextState}>{children}</WalletsContext.Provider>;
 }

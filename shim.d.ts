@@ -2,10 +2,7 @@ import type { DisplayTheme } from "@arconnect/components-rebrand";
 import type { Chunk } from "~api/modules/sign/chunks";
 import type { InjectedEvents } from "~utils/events";
 import "styled-components";
-import type {
-  AuthRequestMessageData,
-  AuthResult
-} from "~utils/auth/auth.types";
+import type { AuthRequestMessageData, AuthResult } from "~utils/auth/auth.types";
 import { EmbeddedCall } from "~utils/embedded/utils/messages/embedded-messages.types.ts";
 
 declare module "@arconnect/webext-bridge" {
@@ -145,9 +142,7 @@ interface ApiErrorResponse extends BaseApiMessage<string> {
   error: true;
 }
 
-export type ApiResponse<DataType = any> =
-  | ApiSuccessResponse<DataType>
-  | ApiErrorResponse;
+export type ApiResponse<DataType = any> = ApiSuccessResponse<DataType> | ApiErrorResponse;
 
 type Event = {
   [K in keyof InjectedEvents]: { name: K; value: InjectedEvents[K] };

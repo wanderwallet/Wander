@@ -1,10 +1,4 @@
-import {
-  Card,
-  Input,
-  Spacer,
-  Text,
-  useInput
-} from "@arconnect/components-rebrand";
+import { Card, Input, Spacer, Text, useInput } from "@arconnect/components-rebrand";
 import SettingListItem from "~components/dashboard/list/SettingListItem";
 import { SettingsList } from "~components/dashboard/list/BaseElement";
 import { useEffect, useMemo, useState } from "react";
@@ -19,13 +13,10 @@ import {
   allSettings,
   basicSettings,
   isDashboardRouteConfig,
-  type DashboardRouteConfig
+  type DashboardRouteConfig,
 } from "~routes/dashboard/dashboard.constants";
 import type Setting from "~settings/setting";
-import {
-  DASHBOARD_SUB_SETTING_ROUTES,
-  type DashboardRoutePath
-} from "~wallets/router/dashboard/dashboard.routes";
+import { DASHBOARD_SUB_SETTING_ROUTES, type DashboardRoutePath } from "~wallets/router/dashboard/dashboard.routes";
 import { Redirect } from "~wallets/router/components/redirect/Redirect";
 import { Routes } from "~wallets/router/routes.component";
 import { HorizontalLine } from "~components/HorizontalLine";
@@ -56,9 +47,7 @@ export function SettingsDashboardView({ params }: SettingsDashboardViewProps) {
   }, [activeSettingParam]);
 
   const hasSubRoutes = useMemo(() => {
-    return DASHBOARD_SUB_SETTING_ROUTES.some((route) =>
-      route.path.startsWith(`/${actualActiveSetting?.name}/`)
-    );
+    return DASHBOARD_SUB_SETTING_ROUTES.some((route) => route.path.startsWith(`/${actualActiveSetting?.name}/`));
   }, [actualActiveSetting]);
 
   // search filter function
@@ -72,10 +61,7 @@ export function SettingsDashboardView({ params }: SettingsDashboardViewProps) {
 
       return (
         dashboardRouteConfig.name.toLowerCase().includes(query.toLowerCase()) ||
-        browser.i18n
-          .getMessage(dashboardRouteConfig.displayName)
-          .toLowerCase()
-          .includes(query.toLowerCase())
+        browser.i18n.getMessage(dashboardRouteConfig.displayName).toLowerCase().includes(query.toLowerCase())
       );
     };
   }, [searchInput.state]);
@@ -90,13 +76,8 @@ export function SettingsDashboardView({ params }: SettingsDashboardViewProps) {
     return <Redirect to={`/${allSettings[0].name}` as DashboardRoutePath} />;
   }
 
-  if (
-    isDashboardRouteConfig(actualActiveSetting) &&
-    !actualActiveSetting.component
-  ) {
-    throw new Error(
-      `Missing component for ${actualActiveSetting.displayName} (${actualActiveSetting.name}) setting`
-    );
+  if (isDashboardRouteConfig(actualActiveSetting) && !actualActiveSetting.component) {
+    throw new Error(`Missing component for ${actualActiveSetting.displayName} (${actualActiveSetting.name}) setting`);
   }
 
   return (
@@ -104,12 +85,7 @@ export function SettingsDashboardView({ params }: SettingsDashboardViewProps) {
       <Panel normalPadding showRightBorder isMenu>
         <Flex gap={24} direction="column" padding="1rem 0.5rem">
           <Flex gap={10}>
-            <Image
-              src={WanderIcon}
-              alt="Wander Icon"
-              width={57.61}
-              height={27}
-            />
+            <Image src={WanderIcon} alt="Wander Icon" width={57.61} height={27} />
             <IconText width={116.759} height={24.111} />
           </Flex>
           <SettingsTitle>{browser.i18n.getMessage("settings")}</SettingsTitle>
@@ -140,16 +116,8 @@ export function SettingsDashboardView({ params }: SettingsDashboardViewProps) {
           <AdvancedWrapper onClick={() => setShowAdvanced((prev) => !prev)}>
             <HorizontalLine />
             <Flex gap={4} align="center" justify="center">
-              <Text
-                style={{ whiteSpace: "nowrap" }}
-                variant="secondary"
-                size="xs"
-                weight="medium"
-                noMargin
-              >
-                {browser.i18n.getMessage(
-                  showAdvanced ? "less_settings" : "more_settings"
-                )}
+              <Text style={{ whiteSpace: "nowrap" }} variant="secondary" size="xs" weight="medium" noMargin>
+                {browser.i18n.getMessage(showAdvanced ? "less_settings" : "more_settings")}
               </Text>
               <Action as={showAdvanced ? ChevronUp : ChevronDown} />
             </Flex>
@@ -166,9 +134,7 @@ export function SettingsDashboardView({ params }: SettingsDashboardViewProps) {
                   description={setting.description}
                   icon={setting.icon}
                   active={activeSettingParam === setting.name}
-                  onClick={() =>
-                    navigate(`/${setting.name}` as DashboardRoutePath)
-                  }
+                  onClick={() => navigate(`/${setting.name}` as DashboardRoutePath)}
                   key={`advanced-settings-${i}`}
                 />
               ))}
@@ -178,12 +144,8 @@ export function SettingsDashboardView({ params }: SettingsDashboardViewProps) {
       <MainContent direction="column" height="100%" width="100%">
         <HeaderFlex padding="2rem">
           <Flex gap={8} direction="column">
-            <MidSettingsTitle>
-              {browser.i18n.getMessage(actualActiveSetting?.displayName || "")}
-            </MidSettingsTitle>
-            <MidSettingsSubTitle>
-              {browser.i18n.getMessage(actualActiveSetting?.description || "")}
-            </MidSettingsSubTitle>
+            <MidSettingsTitle>{browser.i18n.getMessage(actualActiveSetting?.displayName || "")}</MidSettingsTitle>
+            <MidSettingsSubTitle>{browser.i18n.getMessage(actualActiveSetting?.description || "")}</MidSettingsSubTitle>
           </Flex>
         </HeaderFlex>
         <PanelContainer showTwoPanels={actualActiveSetting?.name !== "about"}>
@@ -191,20 +153,13 @@ export function SettingsDashboardView({ params }: SettingsDashboardViewProps) {
             {isDashboardRouteConfig(actualActiveSetting) ? (
               <actualActiveSetting.component />
             ) : (
-              <SettingDashboardView
-                key={activeSettingParam}
-                setting={actualActiveSetting}
-              />
+              <SettingDashboardView key={activeSettingParam} setting={actualActiveSetting} />
             )}
           </Panel>
 
           {actualActiveSetting?.name !== "about" && (
             <Panel style={{ visibility: hasSubRoutes ? "visible" : "hidden" }}>
-              <Routes
-                routes={DASHBOARD_SUB_SETTING_ROUTES}
-                diffLocation
-                pageComponent={null}
-              />
+              <Routes routes={DASHBOARD_SUB_SETTING_ROUTES} diffLocation pageComponent={null} />
             </Panel>
           )}
         </PanelContainer>
@@ -271,8 +226,7 @@ const Panel = styled.div<{
   display: flex;
   flex-direction: column;
   border-radius: 0;
-  ${({ showRightBorder, theme }) =>
-    showRightBorder && `border-right: 1px solid ${theme.borderDefault}`};
+  ${({ showRightBorder, theme }) => showRightBorder && `border-right: 1px solid ${theme.borderDefault}`};
   padding: ${(props) => (props.normalPadding ? "1.5rem 1rem" : "2rem")};
   box-sizing: border-box;
 
@@ -341,13 +295,13 @@ const Panel = styled.div<{
 const SettingsTitle = styled(Text).attrs({
   size: "xl",
   weight: "bold",
-  noMargin: true
+  noMargin: true,
 })``;
 
 const MidSettingsTitle = styled(Text).attrs({
   noMargin: true,
   size: "3xl",
-  weight: "bold"
+  weight: "bold",
 })`
   text-transform: capitalize;
 `;
@@ -356,8 +310,7 @@ const PanelContainer = styled.div<{ showTwoPanels: boolean }>`
   flex: 1;
   width: 100%;
   display: grid;
-  grid-template-columns: ${(props) =>
-    props.showTwoPanels ? `1fr 1fr` : `1fr`};
+  grid-template-columns: ${(props) => (props.showTwoPanels ? `1fr 1fr` : `1fr`)};
   overflow: hidden;
 
   & > ${Panel} {
@@ -381,7 +334,7 @@ const PanelContainer = styled.div<{ showTwoPanels: boolean }>`
 const MidSettingsSubTitle = styled(Text).attrs({
   noMargin: true,
   weight: "medium",
-  variant: "secondary"
+  variant: "secondary",
 })``;
 
 const MainContent = styled(Flex)`

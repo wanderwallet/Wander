@@ -1,15 +1,6 @@
 import copy from "copy-to-clipboard";
 import { useCallback, useEffect, useState } from "react";
-import {
-  Button,
-  Card,
-  Copyable,
-  Row,
-  Upload,
-  WanderIcon,
-  Text,
-  WanderFooter
-} from "~components/embed/ui";
+import { Button, Card, Copyable, Row, Upload, WanderIcon, Text, WanderFooter } from "~components/embed/ui";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useLocation } from "~wallets/router/router.utils";
 
@@ -22,20 +13,13 @@ export function AccountImportKeyfileEmbeddedView() {
     setJsonData(parsedData);
   };
 
-  const {
-    importTempWallet,
-    importedTempWalletAddress,
-    deleteImportedTempWallet,
-    registerWallet
-  } = useEmbedded();
+  const { importTempWallet, importedTempWalletAddress, deleteImportedTempWallet, registerWallet } = useEmbedded();
 
   const handleImportWallet = useCallback(async () => {
     try {
       setLoading(true);
       if (jsonData) {
-        const tempWallet = await importTempWallet(
-          JSON.stringify(jsonData, null, 2)
-        );
+        const tempWallet = await importTempWallet(JSON.stringify(jsonData, null, 2));
 
         if (!tempWallet) {
           setLoading(false);
@@ -73,8 +57,7 @@ export function AccountImportKeyfileEmbeddedView() {
       }
       hasBackButton={true}
       onBackButtonClick={back}
-      size="auto"
-    >
+      size="auto">
       <Copyable
         isFullWidth
         label="Your wallet address"
@@ -84,18 +67,10 @@ export function AccountImportKeyfileEmbeddedView() {
         value={importedTempWalletAddress}
       />
       <Row>
-        <Button
-          variant="secondary"
-          size="md"
-          onClick={deleteImportedTempWallet}
-        >
+        <Button variant="secondary" size="md" onClick={deleteImportedTempWallet}>
           No, try again
         </Button>
-        <Button
-          variant="primary"
-          size="md"
-          onClick={() => registerWallet("IMPORTED")}
-        >
+        <Button variant="primary" size="md" onClick={() => registerWallet("IMPORTED")}>
           Yes, add
         </Button>
       </Row>
@@ -107,8 +82,7 @@ export function AccountImportKeyfileEmbeddedView() {
       footerElement={<WanderFooter />}
       hasBackButton={true}
       onBackButtonClick={back}
-      size="auto"
-    >
+      size="auto">
       <Upload
         isFullWidth
         title={"Click to upload"}
@@ -117,13 +91,7 @@ export function AccountImportKeyfileEmbeddedView() {
         loadingText={"Recovering account..."}
         onFileParse={handleJsonParse}
       />
-      <Button
-        isFullWidth
-        size="md"
-        isLoading={loading}
-        isDisabled={!jsonData || loading}
-        onClick={handleImportWallet}
-      >
+      <Button isFullWidth size="md" isLoading={loading} isDisabled={!jsonData || loading} onClick={handleImportWallet}>
         Import
       </Button>
     </Card>

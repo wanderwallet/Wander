@@ -2,12 +2,7 @@ import { createSupabaseClient, createTRPCClient } from "embed-api";
 import { jwtDecode } from "jwt-decode";
 import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 import { LocalStorage } from "~iframe/storage/unpartitioned-storage/local-storage";
-import {
-  isInsideIframe,
-  EMBEDDED_ANCESTOR_ORIGIN,
-  EMBEDDED_CLIENT_ID,
-  EMBEDDED_SERVER_BASE_URL
-} from "./iframe.utils";
+import { isInsideIframe, EMBEDDED_ANCESTOR_ORIGIN, EMBEDDED_CLIENT_ID, EMBEDDED_SERVER_BASE_URL } from "./iframe.utils";
 import { ExtensionStorage } from "~utils/storage";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 
@@ -28,7 +23,7 @@ export async function signOut() {
 
     postEmbeddedMessage({
       type: "embedded_close",
-      data: null
+      data: null,
     });
 
     ExtensionStorage.removeAll();
@@ -60,7 +55,7 @@ function getTRPCClientAndUtils() {
       deviceNonce: undefined,
       clientId: EMBEDDED_CLIENT_ID,
       applicationId: "",
-      onAuthError: signOut
+      onAuthError: signOut,
     });
   }
 
@@ -77,7 +72,7 @@ const {
   setDeviceNonceHeader,
   getClientIdHeader,
   setClientIdHeader,
-  setApplicationIdHeader
+  setApplicationIdHeader,
 } = trpcClientAndUtils || {};
 
 // Exporting the router from one repo to another might, in some scenarios, return incorrect types, but it can be fixed
@@ -105,10 +100,10 @@ export async function getSupabaseClient() {
           storage: {
             getItem: (key: string) => storage.getRaw(key),
             setItem: (key: string, value: string) => storage.setRaw(key, value),
-            removeItem: (key: string) => storage.removeItem(key)
-          }
-        }
-      }
+            removeItem: (key: string) => storage.removeItem(key),
+          },
+        },
+      },
     );
   }
 
@@ -125,7 +120,7 @@ export {
   getDeviceNonceHeader,
   setDeviceNonceHeader,
   getClientIdHeader,
-  setClientIdHeader
+  setClientIdHeader,
 };
 
 // TODO: When developers set up a new app/domain, we should probably use a mechanism like Google Search Console where
@@ -138,7 +133,7 @@ async function getSessionId() {
   try {
     const supabase = await getSupabaseClient();
     const {
-      data: { session }
+      data: { session },
     } = await supabase.auth.getSession();
     const jwtDecoded = jwtDecode(session?.access_token) as {
       session_id: string;
@@ -155,7 +150,7 @@ async function insecurelyValidateApplication() {
     const applicationId = await trpcVanilla.validateApplication.query({
       clientId: EMBEDDED_CLIENT_ID,
       applicationOrigin: EMBEDDED_ANCESTOR_ORIGIN,
-      sessionId
+      sessionId,
     });
 
     setApplicationIdHeader(applicationId);
@@ -165,20 +160,15 @@ async function insecurelyValidateApplication() {
 
     // Only show errors for validation failures
     // TRPC errors will have data.code property
-    if (
-      !err.data?.code ||
-      !["NOT_FOUND", "BAD_REQUEST", "FORBIDDEN"].includes(err.data.code)
-    ) {
+    if (!err.data?.code || !["NOT_FOUND", "BAD_REQUEST", "FORBIDDEN"].includes(err.data.code)) {
       console.error("Unexpected error during validation:", err);
       return;
     }
 
     const errorMessages = {
-      NOT_FOUND:
-        "Invalid application configuration. Please verify your clientId.",
+      NOT_FOUND: "Invalid application configuration. Please verify your clientId.",
       BAD_REQUEST: `Invalid origin URL provided`,
-      FORBIDDEN:
-        err.message || "This domain is not authorized to use this application."
+      FORBIDDEN: err.message || "This domain is not authorized to use this application.",
     };
 
     const errorMessage = errorMessages[err.data.code];
@@ -193,9 +183,7 @@ async function insecurelyValidateApplication() {
     window.stop();
 
     // Replace the entire document content
-    location.replace(
-      `data:text/html;charset=utf-8,${encodeURIComponent(html)}`
-    );
+    location.replace(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`);
 
     throw new Error("Application validation failed");
   }

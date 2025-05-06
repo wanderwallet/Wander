@@ -12,14 +12,14 @@ import { arPlaceholder } from "~routes/popup/send";
 import {
   calculateNextPaymentDate,
   updateSubscription as statusUpdateSubscription,
-  trackCanceledSubscription
+  trackCanceledSubscription,
 } from "~subscriptions";
 import { isLocalWallet } from "~utils/assertions";
 import BigNumber from "bignumber.js";
 
 export async function handleSubscriptionPayment(
   data: SubscriptionData,
-  initialPayment?: boolean
+  initialPayment?: boolean,
 ): Promise<SubscriptionData | null> {
   const activeAddress: string = await ExtensionStorage.get("active_address");
 
@@ -27,15 +27,8 @@ export async function handleSubscriptionPayment(
     throw new Error("Subscription canceled.");
   }
 
-  if (
-    BigNumber(data.applicationAllowance).lt(data.subscriptionFeeAmount) &&
-    !initialPayment
-  ) {
-    await statusUpdateSubscription(
-      activeAddress,
-      data.arweaveAccountAddress,
-      SubscriptionStatus.AWAITING_PAYMENT
-    );
+  if (BigNumber(data.applicationAllowance).lt(data.subscriptionFeeAmount) && !initialPayment) {
+    await statusUpdateSubscription(activeAddress, data.arweaveAccountAddress, SubscriptionStatus.AWAITING_PAYMENT);
     throw new Error("Subscription fee amount exceeds allowance.");
   }
 
@@ -45,11 +38,7 @@ export async function handleSubscriptionPayment(
   const oneWeek = 7 * 24 * 60 * 60 * 1000;
 
   if (now.getTime() > nextPaymentDue.getTime() + oneWeek) {
-    await statusUpdateSubscription(
-      activeAddress,
-      data.arweaveAccountAddress,
-      SubscriptionStatus.CANCELED
-    );
+    await statusUpdateSubscription(activeAddress, data.arweaveAccountAddress, SubscriptionStatus.CANCELED);
     await trackCanceledSubscription(data, true);
     throw new Error("Payment is overdue by more than a week.");
   }
@@ -67,7 +56,7 @@ export async function handleSubscriptionPayment(
 export const prepare = async (
   target: string,
   data: SubscriptionData,
-  activeAddress: string
+  activeAddress: string,
 ): Promise<RawStoredTransfer> => {
   try {
     // grab address
@@ -90,20 +79,16 @@ export const prepare = async (
     const formattedTxn: RawStoredTransfer = {
       type: "native",
       gateway: gateway,
-      transaction: {} as ReturnType<Transaction["toJSON"]>
+      transaction: {} as ReturnType<Transaction["toJSON"]>,
     };
 
     // convert to winston
-    const paymentQuantity = fractionedToBalance(
-      data.subscriptionFeeAmount.toString(),
-      arPlaceholder,
-      "AR"
-    ).toString();
+    const paymentQuantity = fractionedToBalance(data.subscriptionFeeAmount.toString(), arPlaceholder, "AR").toString();
 
     const tx = await arweave.createTransaction({
       target,
       quantity: paymentQuantity,
-      data: undefined
+      data: undefined,
     });
 
     // console.log("created tx:", tx);
@@ -126,7 +111,7 @@ export const send = async (
   activeAddress: string,
   formattedTxn: RawStoredTransfer,
   subscriptionData: SubscriptionData,
-  manualPayment: boolean = false
+  manualPayment: boolean = false,
 ): Promise<SubscriptionData | undefined> => {
   // get tx and gateway
   let { gateway, transaction } = formattedTxn;
@@ -149,13 +134,7 @@ export const send = async (
 
     try {
       // Post the transaction
-      const submitted = await submitTx(
-        activeAddress,
-        unRaw,
-        arweave,
-        subscriptionData,
-        manualPayment
-      );
+      const submitted = await submitTx(activeAddress, unRaw, arweave, subscriptionData, manualPayment);
       freeDecryptedWallet(keyfile);
       return submitted;
     } catch (e) {
@@ -164,13 +143,7 @@ export const send = async (
       gateway = await findGateway({ random: true });
       const fallbackArweave = new Arweave(gateway);
       await fallbackArweave.transactions.sign(unRaw, keyfile);
-      const submitted = await submitTx(
-        activeAddress,
-        unRaw,
-        fallbackArweave,
-        subscriptionData,
-        manualPayment
-      );
+      const submitted = await submitTx(activeAddress, unRaw, fallbackArweave, subscriptionData, manualPayment);
       freeDecryptedWallet(keyfile);
       await trackEvent(EventType.FALLBACK, {});
       return submitted;
@@ -186,30 +159,20 @@ const submitTx = async (
   transaction: Transaction,
   arweave: Arweave,
   data: SubscriptionData,
-  manualPayment: boolean = false
+  manualPayment: boolean = false,
 ): Promise<SubscriptionData | undefined> => {
   const timeoutPromise = new Promise((_, reject) => {
     setTimeout(() => {
-      reject(
-        new Error("Timeout: Posting to Arweave took more than 10 seconds")
-      );
+      reject(new Error("Timeout: Posting to Arweave took more than 10 seconds"));
     }, 10000);
   });
   try {
-    await Promise.race([
-      arweave.transactions.post(transaction),
-      timeoutPromise
-    ]);
-    const updatedSub = updateSubscriptionAlarm(
-      activeAddress,
-      data,
-      transaction.id,
-      manualPayment
-    );
+    await Promise.race([arweave.transactions.post(transaction), timeoutPromise]);
+    const updatedSub = updateSubscriptionAlarm(activeAddress, data, transaction.id, manualPayment);
     await trackEvent(EventType.SUBSCRIPTION_PAYMENT, {
       amount: data.subscriptionFeeAmount,
       autoPay: data.applicationAllowance !== 0,
-      success: true
+      success: true,
     });
     return updatedSub;
   } catch (err) {
@@ -218,7 +181,7 @@ const submitTx = async (
     await trackEvent(EventType.SUBSCRIPTION_PAYMENT, {
       amount: data.subscriptionFeeAmount,
       autoPay: data.applicationAllowance !== 0,
-      success: false
+      success: false,
     });
     throw new Error("Error posting subscription tx to Arweave");
   }
@@ -245,37 +208,22 @@ export async function updateSubscriptionAlarm(
   activeAddress: string,
   data: SubscriptionData,
   updatedTxnId: string,
-  manualPayment: boolean = false
+  manualPayment: boolean = false,
 ): Promise<SubscriptionData> {
   let nextPaymentDue: { currentDate: Date; status: "success" | "fail" };
 
   if (manualPayment) {
-    nextPaymentDue = calculateNextPaymentDate(
-      new Date(),
-      data.recurringPaymentFrequency
-    );
-  } else
-    nextPaymentDue = calculateNextPaymentDate(
-      data.nextPaymentDue,
-      data.recurringPaymentFrequency
-    );
+    nextPaymentDue = calculateNextPaymentDate(new Date(), data.recurringPaymentFrequency);
+  } else nextPaymentDue = calculateNextPaymentDate(data.nextPaymentDue, data.recurringPaymentFrequency);
 
   if (
-    (new Date(data.subscriptionEndDate) <= nextPaymentDue.currentDate &&
-      !data.applicationAutoRenewal) ||
+    (new Date(data.subscriptionEndDate) <= nextPaymentDue.currentDate && !data.applicationAutoRenewal) ||
     nextPaymentDue.status === "fail"
   ) {
     browser.alarms.clear(`subscription-alarm-${data.arweaveAccountAddress}`);
-    await statusUpdateSubscription(
-      activeAddress,
-      data.arweaveAccountAddress,
-      SubscriptionStatus.CANCELED
-    );
+    await statusUpdateSubscription(activeAddress, data.arweaveAccountAddress, SubscriptionStatus.CANCELED);
     await trackCanceledSubscription(data, true);
-  } else if (
-    new Date(data.subscriptionEndDate) <= nextPaymentDue.currentDate &&
-    data.applicationAutoRenewal
-  ) {
+  } else if (new Date(data.subscriptionEndDate) <= nextPaymentDue.currentDate && data.applicationAutoRenewal) {
     // Calculate the time frame between subscriptionStartDate and subscriptionEndDate
     const startDate = new Date(data.subscriptionStartDate);
     const endDate = new Date(data.subscriptionEndDate);
@@ -286,11 +234,11 @@ export async function updateSubscriptionAlarm(
     data.subscriptionEndDate = newEndDate.toISOString();
 
     browser.alarms.create(`subscription-alarm-${data.arweaveAccountAddress}`, {
-      when: nextPaymentDue.currentDate.getTime()
+      when: nextPaymentDue.currentDate.getTime(),
     });
   } else {
     browser.alarms.create(`subscription-alarm-${data.arweaveAccountAddress}`, {
-      when: nextPaymentDue.currentDate.getTime()
+      when: nextPaymentDue.currentDate.getTime(),
     });
   }
 

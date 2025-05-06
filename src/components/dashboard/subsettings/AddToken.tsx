@@ -1,19 +1,7 @@
-import {
-  Button,
-  Input,
-  Select,
-  Spacer,
-  Text,
-  useInput,
-  useToasts
-} from "@arconnect/components-rebrand";
+import { Button, Input, Select, Spacer, Text, useInput, useToasts } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
 import { useEffect, useState } from "react";
-import {
-  defaultTokens,
-  getTokenInfo,
-  type TokenInfo
-} from "~tokens/aoTokens/ao";
+import { defaultTokens, getTokenInfo, type TokenInfo } from "~tokens/aoTokens/ao";
 import styled from "styled-components";
 import { isAddress } from "~utils/assertions";
 import { getAoTokens } from "~tokens";
@@ -30,9 +18,7 @@ export interface AddTokenDashboardViewProps extends CommonRouteProps {
   isQuickSetting?: boolean;
 }
 
-export function AddTokenDashboardView({
-  isQuickSetting
-}: AddTokenDashboardViewProps) {
+export function AddTokenDashboardView({ isQuickSetting }: AddTokenDashboardViewProps) {
   const targetInput = useInput();
   const gateway = useGateway(FULL_HISTORY);
   const [tokenType, setTokenType] = useState<TokenType>("asset");
@@ -48,7 +34,7 @@ export function AddTokenDashboardView({
         setToast({
           type: "error",
           content: browser.i18n.getMessage("token_already_added"),
-          duration: 3000
+          duration: 3000,
         });
         throw new Error("Token already added");
       }
@@ -56,7 +42,7 @@ export function AddTokenDashboardView({
       const tokenToImport = {
         ...token,
         processId: targetInput.state,
-        type: tokenType
+        type: tokenType,
       };
 
       if (tokenToImport.processId === AO_NATIVE_TOKEN) {
@@ -68,7 +54,7 @@ export function AddTokenDashboardView({
       setToast({
         type: "success",
         content: browser.i18n.getMessage("token_imported"),
-        duration: 3000
+        duration: 3000,
       });
     } catch (err) {
       console.log("err", err);
@@ -82,9 +68,7 @@ export function AddTokenDashboardView({
         //TODO double check
         targetInput.state !== "AR" && isAddress(targetInput.state);
 
-        const foundToken = defaultTokens.find(
-          (t) => t.processId === targetInput.state
-        );
+        const foundToken = defaultTokens.find((t) => t.processId === targetInput.state);
 
         const token = foundToken || (await getTokenInfo(targetInput.state));
         setToken(token);
@@ -118,8 +102,7 @@ export function AddTokenDashboardView({
               // @ts-expect-error
               setTokenType(e.target.value);
             }}
-            fullWidth
-          >
+            fullWidth>
             <option selected={tokenType === "asset"} value="asset">
               {browser.i18n.getMessage("token_type_asset")}
             </option>
@@ -145,11 +128,7 @@ export function AddTokenDashboardView({
             <Title>{token.Ticker}</Title>
             <SubTitle>NAME:</SubTitle>
             <Title>{token.Name}</Title>
-            {tokenType === "collectible" && (
-              <Image
-                src={concatGatewayURL(gateway) + `/${targetInput.state}`}
-              />
-            )}
+            {tokenType === "collectible" && <Image src={concatGatewayURL(gateway) + `/${targetInput.state}`} />}
           </TokenWrapper>
         )}
       </div>
@@ -174,7 +153,7 @@ const Image = styled.div<{ src: string }>`
 const Title = styled(Text).attrs({
   size: "3xl",
   weight: "bold",
-  noMargin: true
+  noMargin: true,
 })`
   font-weight: 600;
   padding-bottom: 10px;

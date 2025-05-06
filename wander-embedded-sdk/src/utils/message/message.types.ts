@@ -5,19 +5,9 @@ import { BalanceInfo, RouteConfig } from "../../wander-embedded.types";
 
 // embedded_auth:
 
-export type EmbeddedAuthProviderType =
-  | "PASSKEYS"
-  | "EMAIL_N_PASSWORD"
-  | "GOOGLE"
-  | "FACEBOOK"
-  | "X"
-  | "APPLE";
+export type EmbeddedAuthProviderType = "PASSKEYS" | "EMAIL_N_PASSWORD" | "GOOGLE" | "FACEBOOK" | "X" | "APPLE";
 
-export type EmbeddedAuthStatus =
-  | "loading"
-  | "onboarding"
-  | "authenticated"
-  | "not-authenticated";
+export type EmbeddedAuthStatus = "loading" | "onboarding" | "authenticated" | "not-authenticated";
 
 export interface EmbeddedUserDetails {
   id: string;
@@ -86,29 +76,17 @@ export interface BaseIncomingMessage<K extends string = string, D = void> {
   data: D;
 }
 
-export type IncomingAuthMessage = BaseIncomingMessage<
-  "embedded_auth",
-  IncomingAuthMessageData
->;
+export type IncomingAuthMessage = BaseIncomingMessage<"embedded_auth", IncomingAuthMessageData>;
 
 export type IncomingOpenMessage = BaseIncomingMessage<"embedded_open", void>;
 
 export type IncomingCloseMessage = BaseIncomingMessage<"embedded_close", void>;
 
-export type IncomingResizeMessage = BaseIncomingMessage<
-  "embedded_resize",
-  IncomingResizeMessageData
->;
+export type IncomingResizeMessage = BaseIncomingMessage<"embedded_resize", IncomingResizeMessageData>;
 
-export type IncomingBalanceMessage = BaseIncomingMessage<
-  "embedded_balance",
-  IncomingBalanceMessageData
->;
+export type IncomingBalanceMessage = BaseIncomingMessage<"embedded_balance", IncomingBalanceMessageData>;
 
-export type IncomingRequestMessage = BaseIncomingMessage<
-  "embedded_request",
-  IncomingRequestMessageData
->;
+export type IncomingRequestMessage = BaseIncomingMessage<"embedded_request", IncomingRequestMessageData>;
 
 export type IncomingMessage =
   | IncomingAuthMessage
@@ -130,10 +108,7 @@ export type EventMessage = BaseIncomingMessage<"event", EventMessageData>;
 
 // INCOMING WALLET SWITCH MESSAGE
 
-export type WalletSwitchMessage = BaseIncomingMessage<
-  "switch_wallet_event",
-  string | null
->;
+export type WalletSwitchMessage = BaseIncomingMessage<"switch_wallet_event", string | null>;
 
 // OUTGOING MESSAGES (SDK => iframe):
 

@@ -14,9 +14,7 @@ export default function AddressScanner({ active, close, onScan }: Props) {
             <LoadingScanner />
           </LoadingWrapper>
           <Head>
-            <Title>
-              {browser.i18n.getMessage("transaction_send_scan_address")}
-            </Title>
+            <Title>{browser.i18n.getMessage("transaction_send_scan_address")}</Title>
             <Close onClick={close} />
           </Head>
           <Scanner onScan={onScan} />
@@ -29,14 +27,14 @@ export default function AddressScanner({ active, close, onScan }: Props) {
 
 const scannerAnimation: Variants = {
   shown: { top: 0 },
-  hidden: { top: "110%" }
+  hidden: { top: "110%" },
 };
 
 const Wrapper = styled(motion.div).attrs({
   variants: scannerAnimation,
   initial: "hidden",
   animate: "shown",
-  exit: "hidden"
+  exit: "hidden",
 })`
   position: fixed;
   width: 100vw;
@@ -54,7 +52,7 @@ const Head = styled.div`
 `;
 
 const Title = styled(Text).attrs({
-  noMargin: true
+  noMargin: true,
 })`
   font-size: 1.2rem;
   text-align: center;
@@ -102,7 +100,7 @@ const LoadingScanner = styled(Loading)`
 
 const Scanner = styled(QrReader).attrs({
   showViewFinder: false,
-  onError: () => {}
+  onError: () => {},
 })`
   position: absolute;
   top: 0;

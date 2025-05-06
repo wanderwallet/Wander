@@ -27,7 +27,7 @@ const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
       customIcon,
       ...props
     },
-    ref
+    ref,
   ) => {
     const [isMinimized, setIsMinimized] = React.useState(false);
     const { back } = useLocation();
@@ -35,7 +35,7 @@ const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
     const closeCard = () => {
       postEmbeddedMessage({
         type: "embedded_close",
-        data: null
+        data: null,
       });
     };
 
@@ -43,14 +43,8 @@ const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
       <button
         style={closeButtonStyles}
         className={styles["card__close__btn"]}
-        onClick={onCloseButtonClick ?? closeCard}
-      >
-        {customIcon ?? (
-          <MinimizeIcon
-            fontSize={24}
-            style={{ color: "var(--color-font-body)" }}
-          />
-        )}
+        onClick={onCloseButtonClick ?? closeCard}>
+        {customIcon ?? <MinimizeIcon fontSize={24} style={{ color: "var(--color-font-body)" }} />}
       </button>
     );
 
@@ -65,29 +59,16 @@ const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
         ${isMinimized && styles[`card_minimized__active`]}
         ${className}
       `}
-        {...props}
-      >
+        {...props}>
         {!isMinimized ? (
           <>
             {hasBackButton && (
-              <button
-                className={styles["card__back__btn"]}
-                onClick={onBackButtonClick ?? back}
-              >
-                <ChevronLeft
-                  fontSize={24}
-                  style={{ color: "var(--color-font-body)" }}
-                />
+              <button className={styles["card__back__btn"]} onClick={onBackButtonClick ?? back}>
+                <ChevronLeft fontSize={24} style={{ color: "var(--color-font-body)" }} />
               </button>
             )}
             {hasCloseButton && closeIcon}
-            {headerText && (
-              <Header
-                icon={headerIcon}
-                title={headerText}
-                subtitle={subtitle}
-              />
-            )}
+            {headerText && <Header icon={headerIcon} title={headerText} subtitle={subtitle} />}
             {children}
             <div style={{ marginTop: "auto" }}></div>
             {footerElement && <Footer children={footerElement} />}
@@ -100,13 +81,13 @@ const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
               width: "100%",
               height: "100%",
               zIndex: 100,
-              cursor: "pointer"
+              cursor: "pointer",
             }}
           />
         )}
       </Box>
     );
-  }
+  },
 );
 
 Card.displayName = "Card";

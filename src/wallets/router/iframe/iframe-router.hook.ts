@@ -6,25 +6,17 @@ import { useAuthRequestsLocation } from "~wallets/router/auth/auth-router.hook";
 import type { ExtensionRouteOverride } from "~wallets/router/extension/extension.routes";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
-import type {
-  WanderRoutePath,
-  BaseLocationHook,
-  RoutePath,
-  RouteRedirect
-} from "~wallets/router/router.types";
+import type { WanderRoutePath, BaseLocationHook, RoutePath, RouteRedirect } from "~wallets/router/router.types";
 import {
   isRouteOverride,
   isRouteRedirect,
   routeTrapMatches,
   routeTrapOutside,
   useSearchParams,
-  withRouterRedirects
+  withRouterRedirects,
 } from "~wallets/router/router.utils";
 
-const AUTH_STATUS_TO_OVERRIDE: Record<
-  AuthStatus,
-  null | ExtensionRouteOverride
-> = {
+const AUTH_STATUS_TO_OVERRIDE: Record<AuthStatus, null | ExtensionRouteOverride> = {
   // TODO: Redefine these override paths:
   unknown: "/__OVERRIDES/cover",
   authLoading: null,
@@ -34,11 +26,11 @@ const AUTH_STATUS_TO_OVERRIDE: Record<
   noShares: null,
   loading: "/__OVERRIDES/loading",
   locked: "/__OVERRIDES/unlock",
-  unlocked: null
+  unlocked: null,
 };
 
 export function useEmbeddedOverride(
-  location?: RoutePath
+  location?: RoutePath,
 ): null | ExtensionRouteOverride | RouteRedirect<WanderRoutePath> {
   const { authStatus, lastRegisteredWallet, currentWallet } = useEmbedded();
   const searchParams = useSearchParams<{
@@ -50,18 +42,10 @@ export function useEmbeddedOverride(
   if (searchParams.error && searchParams.error_description) {
     // Supabase redirects with error parameters in the URL when OAuth fails
     // Example: #error=server_error&error_description=OAuth+provider+error
-    return routeTrapMatches(
-      location,
-      [EmbeddedPaths.AuthError],
-      EmbeddedPaths.AuthError
-    );
+    return routeTrapMatches(location, [EmbeddedPaths.AuthError], EmbeddedPaths.AuthError);
   }
 
-  if (
-    !location ||
-    location.startsWith("/access_token") ||
-    authStatus === "unknown"
-  ) {
+  if (!location || location.startsWith("/access_token") || authStatus === "unknown") {
     return "/__OVERRIDES/cover";
   }
 
@@ -81,9 +65,9 @@ export function useEmbeddedOverride(
           EmbeddedPaths.AuthRecoverAccountSeedphrase,
           EmbeddedPaths.AuthRecoverAccountKeyfile,
           EmbeddedPaths.AuthRecoverAccountAuthentication,
-          EmbeddedPaths.AuthRecoverAccountMoreAuthentication
+          EmbeddedPaths.AuthRecoverAccountMoreAuthentication,
         ],
-        EmbeddedPaths.Auth
+        EmbeddedPaths.Auth,
       );
     }
 
@@ -102,11 +86,11 @@ export function useEmbeddedOverride(
           EmbeddedPaths.AuthQRCodeScanner,
           EmbeddedPaths.AuthImportKeyfile,
           EmbeddedPaths.AuthAddDevice,
-          EmbeddedPaths.AuthAddAuthProvider
+          EmbeddedPaths.AuthAddAuthProvider,
           // EmbeddedPaths.AddDevice/<SOMETHING>
           // EmbeddedPaths.AddAuthProvider/<SOMETHING>
         ],
-        EmbeddedPaths.AuthAddWallet
+        EmbeddedPaths.AuthAddWallet,
       );
     }
 
@@ -118,48 +102,36 @@ export function useEmbeddedOverride(
           EmbeddedPaths.AuthRestoreShares,
           EmbeddedPaths.AuthRestoreSharesRecoveryFile,
           EmbeddedPaths.AuthImportSeedPhrase,
-          EmbeddedPaths.AuthImportKeyfile
+          EmbeddedPaths.AuthImportKeyfile,
         ],
-        EmbeddedPaths.AuthRestoreShares
+        EmbeddedPaths.AuthRestoreShares,
       );
     }
 
     if (authStatus === "unlocked") {
       if (lastRegisteredWallet) {
         // If an account or wallet has just been created, then show AuthAddWalletConfirmation:
-        return routeTrapMatches(
-          location,
-          [EmbeddedPaths.AccountConfirmation],
-          EmbeddedPaths.AccountConfirmation
-        );
+        return routeTrapMatches(location, [EmbeddedPaths.AccountConfirmation], EmbeddedPaths.AccountConfirmation);
       }
 
-      if (
-        currentWallet.totalExports === 0 &&
-        currentWallet.totalBackups === 0 &&
-        !currentWallet.doNotAskAgainSetting
-      ) {
+      if (currentWallet.totalExports === 0 && currentWallet.totalBackups === 0 && !currentWallet.doNotAskAgainSetting) {
         return routeTrapMatches(
           location,
           [
             EmbeddedPaths.AccountBackupSharesReminder,
             EmbeddedPaths.AccountBackupShares,
             EmbeddedPaths.AccountBackupFullWallet,
-            EmbeddedPaths.AccountBackupCopySeedphrase
+            EmbeddedPaths.AccountBackupCopySeedphrase,
             // TODO: Missing EmbeddedPaths.AccountBackupShares/<PROVIDER>
           ],
-          EmbeddedPaths.AccountBackupSharesReminder
+          EmbeddedPaths.AccountBackupSharesReminder,
         );
       }
 
       // TODO: What if we are here but the wallet, for whatever reason, is not in the wallet provider / ExtensionStore?
       // if (!currentWallet.isActive)
 
-      return routeTrapOutside(
-        location,
-        EmbeddedPaths.Auth,
-        EmbeddedPaths.WalletHomeEmbeddedView
-      );
+      return routeTrapOutside(location, EmbeddedPaths.Auth, EmbeddedPaths.WalletHomeEmbeddedView);
     }
   }
 
@@ -173,8 +145,7 @@ export const useEmbeddedLocation: BaseLocationHook = withRouterRedirects(() => {
 
   const override = useEmbeddedOverride(wocation as RoutePath);
 
-  const [authRequestsLocation, authRequestsNavigate] =
-    useAuthRequestsLocation();
+  const [authRequestsLocation, authRequestsNavigate] = useAuthRequestsLocation();
 
   if (override) {
     return [override, isRouteRedirect(override) ? wavigate : NOOP];
