@@ -1,19 +1,11 @@
 import { EventType, trackEvent } from "~utils/analytics";
-import {
-  RecurringPaymentFrequency,
-  SubscriptionStatus,
-  type SubscriptionData
-} from "./subscription";
+import { RecurringPaymentFrequency, SubscriptionStatus, type SubscriptionData } from "./subscription";
 import { ExtensionStorage } from "~utils/storage";
 
 // get subscription data from storage
-export async function getSubscriptionData(
-  activeAddress: string
-): Promise<SubscriptionData[]> {
+export async function getSubscriptionData(activeAddress: string): Promise<SubscriptionData[]> {
   try {
-    const subscriptionData = await ExtensionStorage.get<SubscriptionData[]>(
-      `subscriptions_${activeAddress}`
-    );
+    const subscriptionData = await ExtensionStorage.get<SubscriptionData[]>(`subscriptions_${activeAddress}`);
     return subscriptionData || [];
   } catch (err) {
     console.log("Error getting subscription data:", err);
@@ -21,23 +13,17 @@ export async function getSubscriptionData(
   }
 }
 
-export async function deleteSubscription(
-  activeAddress: string,
-  deleteId: string
-) {
+export async function deleteSubscription(activeAddress: string, deleteId: string) {
   try {
     const subscriptions = await getSubscriptionData(activeAddress);
     const subscriptionIndex = subscriptions.findIndex(
-      (subscription) => subscription.arweaveAccountAddress === deleteId
+      (subscription) => subscription.arweaveAccountAddress === deleteId,
     );
 
     if (subscriptionIndex !== -1) {
       subscriptions.splice(subscriptionIndex, 1);
 
-      await ExtensionStorage.set(
-        `subscriptions_${activeAddress}`,
-        subscriptions
-      );
+      await ExtensionStorage.set(`subscriptions_${activeAddress}`, subscriptions);
     } else {
       console.log("No subscription found with the given ID");
     }
@@ -48,12 +34,10 @@ export async function deleteSubscription(
 
 export function calculateNextPaymentDate(
   currentNextPaymentDue: Date | string,
-  recurringPaymentFrequency: RecurringPaymentFrequency
+  recurringPaymentFrequency: RecurringPaymentFrequency,
 ): { currentDate: Date; status: "success" | "fail" } {
   const currentDate =
-    typeof currentNextPaymentDue === "string"
-      ? new Date(currentNextPaymentDue)
-      : currentNextPaymentDue;
+    typeof currentNextPaymentDue === "string" ? new Date(currentNextPaymentDue) : currentNextPaymentDue;
 
   switch (recurringPaymentFrequency) {
     // case RecurringPaymentFrequency.ANNUALLY:
@@ -86,42 +70,28 @@ export function calculateNextPaymentDate(
   return { currentDate, status: "success" };
 }
 
-export async function updateAutoRenewal(
-  autoRenewal: boolean,
-  activeAddress: string,
-  updateId: string
-) {
+export async function updateAutoRenewal(autoRenewal: boolean, activeAddress: string, updateId: string) {
   try {
     const subscriptions = await getSubscriptionData(activeAddress);
     const subscriptionIndex = subscriptions.findIndex(
-      (subscription) => subscription.arweaveAccountAddress === updateId
+      (subscription) => subscription.arweaveAccountAddress === updateId,
     );
     if (subscriptionIndex !== -1) {
       subscriptions[subscriptionIndex].applicationAutoRenewal = autoRenewal;
-      await ExtensionStorage.set(
-        `subscriptions_${activeAddress}`,
-        subscriptions
-      );
+      await ExtensionStorage.set(`subscriptions_${activeAddress}`, subscriptions);
     }
   } catch (err) {}
 }
 
-export async function updateAllowance(
-  newAllowance: number,
-  activeAddress: string,
-  updateId: string
-) {
+export async function updateAllowance(newAllowance: number, activeAddress: string, updateId: string) {
   try {
     const subscriptions = await getSubscriptionData(activeAddress);
     const subscriptionIndex = subscriptions.findIndex(
-      (subscription) => subscription.arweaveAccountAddress === updateId
+      (subscription) => subscription.arweaveAccountAddress === updateId,
     );
     if (subscriptionIndex !== -1) {
       subscriptions[subscriptionIndex].applicationAllowance = newAllowance;
-      await ExtensionStorage.set(
-        `subscriptions_${activeAddress}`,
-        subscriptions
-      );
+      await ExtensionStorage.set(`subscriptions_${activeAddress}`, subscriptions);
     }
   } catch (err) {
     console.error("Error updating allowance:", err);
@@ -132,12 +102,12 @@ export async function updateSubscription(
   activeAddress: string,
   updateId: string,
   newStatus: SubscriptionStatus,
-  nextPaymentDue?: Date | string
+  nextPaymentDue?: Date | string,
 ) {
   try {
     const subscriptions = await getSubscriptionData(activeAddress);
     const subscriptionIndex = subscriptions.findIndex(
-      (subscription) => subscription.arweaveAccountAddress === updateId
+      (subscription) => subscription.arweaveAccountAddress === updateId,
     );
     if (subscriptionIndex !== -1) {
       if (nextPaymentDue !== undefined) {
@@ -146,20 +116,14 @@ export async function updateSubscription(
       }
 
       // This is here to prevent transactions from going through if for some reason alarm wasn't deleted
-      if (
-        subscriptions[subscriptionIndex].subscriptionStatus ===
-        SubscriptionStatus.CANCELED
-      ) {
+      if (subscriptions[subscriptionIndex].subscriptionStatus === SubscriptionStatus.CANCELED) {
         return;
       } else {
         // update status
         subscriptions[subscriptionIndex].subscriptionStatus = newStatus;
       }
 
-      await ExtensionStorage.set(
-        `subscriptions_${activeAddress}`,
-        subscriptions
-      );
+      await ExtensionStorage.set(`subscriptions_${activeAddress}`, subscriptions);
     } else {
       console.log("No subscription found with the given ID");
     }
@@ -168,16 +132,12 @@ export async function updateSubscription(
   }
 }
 
-export async function addSubscription(
-  activeAddress: string,
-  newSubscription: SubscriptionData
-) {
+export async function addSubscription(activeAddress: string, newSubscription: SubscriptionData) {
   // get existing subs
   try {
     const subscriptions = (await getSubscriptionData(activeAddress)) || [];
     const existingIndex = subscriptions.findIndex(
-      (sub) =>
-        sub.arweaveAccountAddress === newSubscription.arweaveAccountAddress
+      (sub) => sub.arweaveAccountAddress === newSubscription.arweaveAccountAddress,
     );
 
     if (existingIndex !== -1) {
@@ -193,16 +153,11 @@ export async function addSubscription(
 
 // get subscription auto withdrawal allowance
 export async function getAutoAllowance(): Promise<number> {
-  const subscriptionAllowance = await ExtensionStorage.get<number>(
-    "setting_subscription_allowance"
-  );
+  const subscriptionAllowance = await ExtensionStorage.get<number>("setting_subscription_allowance");
   return subscriptionAllowance;
 }
 
-export async function trackCanceledSubscription(
-  data: SubscriptionData,
-  autoCanceled: boolean
-) {
+export async function trackCanceledSubscription(data: SubscriptionData, autoCanceled: boolean) {
   await trackEvent(EventType.UNSUBSCRIBED, {
     applicationName: data.applicationName,
     arweaveAccountAddress: data.arweaveAccountAddress,
@@ -210,6 +165,6 @@ export async function trackCanceledSubscription(
     subscriptionFeeAmount: data.subscriptionFeeAmount,
     autoPay: data.applicationAllowance !== 0,
     autoRenewal: data.applicationAutoRenewal,
-    autoCanceled
+    autoCanceled,
   });
 }

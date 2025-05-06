@@ -129,174 +129,174 @@ export const PopupPaths = {
   Contacts: "/quick-settings/contacts",
   NewContact: "/quick-settings/contacts/new",
   ContactSettings: "/quick-settings/contacts/:address",
-  NotificationSettings: "/quick-settings/notifications"
+  NotificationSettings: "/quick-settings/notifications",
 } as const satisfies Record<string, PopupRoutePath>;
 
 export const POPUP_ROUTES = [
   ...getExtensionOverrides({
     unlockView: UnlockView,
-    loadingView: LoadingView
+    loadingView: LoadingView,
   }),
   {
     path: PopupPaths.Home,
-    component: HomeView
+    component: HomeView,
   },
   {
     path: PopupPaths.Purchase,
-    component: PurchaseView
+    component: PurchaseView,
   },
   {
     path: PopupPaths.ConfirmPurchase,
-    component: ConfirmPurchaseView
+    component: ConfirmPurchaseView,
   },
   {
     path: PopupPaths.PendingPurchase,
-    component: PendingPurchaseView
+    component: PendingPurchaseView,
   },
   {
     path: PopupPaths.Receive,
-    component: ReceiveView
+    component: ReceiveView,
   },
   {
     path: PopupPaths.Send,
-    component: SendView
+    component: SendView,
   },
   {
     path: PopupPaths.Amount,
-    component: AmountView
+    component: AmountView,
   },
   {
     path: PopupPaths.Note,
-    component: NoteView
+    component: NoteView,
   },
   {
     path: PopupPaths.SendAuth,
-    component: SendAuthView
+    component: SendAuthView,
   },
   {
     path: PopupPaths.Explore,
-    component: ExploreView
+    component: ExploreView,
   },
   {
     path: PopupPaths.Subscriptions,
-    component: SubscriptionsView
+    component: SubscriptionsView,
   },
   {
     path: PopupPaths.SubscriptionDetails,
-    component: SubscriptionDetailsView
+    component: SubscriptionDetailsView,
   },
   {
     path: PopupPaths.SubscriptionManagement,
-    component: SubscriptionManagementView
+    component: SubscriptionManagementView,
   },
   {
     path: PopupPaths.SubscriptionPayment,
-    component: SubscriptionPaymentView
+    component: SubscriptionPaymentView,
   },
   {
     path: PopupPaths.Transactions,
-    component: TransactionsView
+    component: TransactionsView,
   },
   {
     path: PopupPaths.Notifications,
-    component: NotificationsView
+    component: NotificationsView,
   },
   {
     path: PopupPaths.MessageNotification,
-    component: MessageNotificationView
+    component: MessageNotificationView,
   },
   {
     path: PopupPaths.Tokens,
-    component: TokensView
+    component: TokensView,
   },
   {
     path: PopupPaths.Collectibles,
-    component: CollectiblesView
+    component: CollectiblesView,
   },
   {
     path: PopupPaths.Collectible,
-    component: CollectibleView
+    component: CollectibleView,
   },
   {
     path: PopupPaths.Transaction,
-    component: TransactionView
+    component: TransactionView,
   },
   {
     // TODO: This route is incorrect/misleading as a lot of its params are actually ignored and loaded from a temp tx
     // stored in the temp storage:
     path: PopupPaths.Confirm,
-    component: ConfirmView
+    component: ConfirmView,
   },
   {
     path: PopupPaths.TransactionCompleted,
-    component: TransactionCompletedView
+    component: TransactionCompletedView,
   },
   {
     path: PopupPaths.QuickSettings,
-    component: MenuView
+    component: MenuView,
   },
   {
     path: PopupPaths.Wallets,
-    component: WalletsView
+    component: WalletsView,
   },
   {
     path: PopupPaths.Wallet,
-    component: WalletView
+    component: WalletView,
   },
   {
     path: PopupPaths.ExportWallet,
-    component: ExportWalletView
+    component: ExportWalletView,
   },
   {
     path: PopupPaths.GenerateQR,
-    component: GenerateQRView
+    component: GenerateQRView,
   },
   {
     path: PopupPaths.RecoveryPhrase,
-    component: RecoveryPhraseView
+    component: RecoveryPhraseView,
   },
   {
     path: PopupPaths.Applications,
-    component: ApplicationsView
+    component: ApplicationsView,
   },
   {
     path: PopupPaths.AppSettings,
-    component: AppSettingsView
+    component: AppSettingsView,
   },
   {
     path: PopupPaths.AppPermissions,
-    component: AppPermissionsView
+    component: AppPermissionsView,
   },
   {
     path: PopupPaths.TokensSettings,
-    component: TokensSettingsView
+    component: TokensSettingsView,
   },
   {
     path: PopupPaths.NewTokenSettings,
-    component: NewTokenSettingsView
+    component: NewTokenSettingsView,
   },
   {
     path: PopupPaths.TokenSettings,
-    component: TokenSettingsView
+    component: TokenSettingsView,
   },
   {
     path: PopupPaths.Contacts,
-    component: ContactsView
+    component: ContactsView,
   },
   {
     path: PopupPaths.NewContact,
-    component: NewContactView
+    component: NewContactView,
   },
   {
     path: PopupPaths.ContactSettings,
-    component: ContactSettingsView
+    component: ContactSettingsView,
   },
   {
     path: PopupPaths.NotificationSettings,
-    component: NotificationSettingsView
+    component: NotificationSettingsView,
   },
   {
     path: WelcomePaths.GettingStarted,
-    component: GettingStartedSetupWelcomeView
-  }
+    component: GettingStartedSetupWelcomeView,
+  },
 ] as const satisfies RouteConfig[];

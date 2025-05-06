@@ -11,7 +11,7 @@ import {
   Pencil02,
   Settings01,
   Users01,
-  UserSquare
+  UserSquare,
 } from "@untitled-ui/icons-react";
 import settings, { getSetting } from "~settings";
 import type Setting from "~settings/setting";
@@ -37,9 +37,7 @@ export interface DashboardRouteConfig extends Omit<SettingItemProps, "active"> {
   component?: (...args: any[]) => JSX.Element;
 }
 
-export function isDashboardRouteConfig(
-  data: DashboardRouteConfig | Setting
-): data is DashboardRouteConfig {
+export function isDashboardRouteConfig(data: DashboardRouteConfig | Setting): data is DashboardRouteConfig {
   return data.hasOwnProperty("component");
 }
 
@@ -49,28 +47,28 @@ export const basicSettings: (DashboardRouteConfig | Setting)[] = [
     displayName: "setting_accounts",
     description: "setting_accounts_description",
     icon: Users01,
-    component: WalletsDashboardView
+    component: WalletsDashboardView,
   },
   {
     name: "apps",
     displayName: "setting_apps",
     description: "setting_apps_description",
     icon: Grid01,
-    component: ApplicationsDashboardView
+    component: ApplicationsDashboardView,
   },
   {
     name: "tokens",
     displayName: "setting_tokens",
     description: "setting_tokens_description",
     icon: Coins04,
-    component: TokensDashboardView
+    component: TokensDashboardView,
   },
   {
     name: "contacts",
     displayName: "setting_contacts",
     description: "setting_contacts_description",
     icon: UserSquare,
-    component: ContactsDashboardView
+    component: ContactsDashboardView,
   },
   getSetting("display_theme"),
   {
@@ -78,7 +76,7 @@ export const basicSettings: (DashboardRouteConfig | Setting)[] = [
     displayName: "setting_notifications",
     description: "setting_notifications_description",
     icon: Bell03,
-    component: NotificationSettingsDashboardView
+    component: NotificationSettingsDashboardView,
   },
   getSetting("gateways"),
   {
@@ -86,8 +84,8 @@ export const basicSettings: (DashboardRouteConfig | Setting)[] = [
     displayName: "setting_about",
     description: "setting_about_description",
     icon: InfoCircle,
-    component: AboutDashboardView
-  }
+    component: AboutDashboardView,
+  },
 ];
 
 export const advancedSettings: (DashboardRouteConfig | Setting)[] = [
@@ -96,13 +94,10 @@ export const advancedSettings: (DashboardRouteConfig | Setting)[] = [
     displayName: "setting_password_settings",
     description: "setting_password_settings_description",
     icon: Pencil02,
-    component: SignSettingsDashboardView
+    component: SignSettingsDashboardView,
   },
   ...settings.filter(
-    (setting) =>
-      setting.name !== "display_theme" &&
-      setting.name !== "analytics" &&
-      setting.name !== "gateways"
+    (setting) => setting.name !== "display_theme" && setting.name !== "analytics" && setting.name !== "gateways",
   ),
   // TODO
   /*{
@@ -116,57 +111,51 @@ export const advancedSettings: (DashboardRouteConfig | Setting)[] = [
     displayName: "setting_analytic",
     icon: BarChart07,
     description: "setting_analytics_description",
-    component: AnalyticsSettingsDashboardView
+    component: AnalyticsSettingsDashboardView,
   },
   {
     name: "reset",
     displayName: "setting_reset",
     description: "setting_reset_description",
     icon: AlertOctagon,
-    component: ResetDashboardView
-  }
+    component: ResetDashboardView,
+  },
 ];
 
-export const allSettings: (DashboardRouteConfig | Setting)[] = [
-  ...basicSettings,
-  ...advancedSettings
-];
+export const allSettings: (DashboardRouteConfig | Setting)[] = [...basicSettings, ...advancedSettings];
 
 // Menu items are: wallets, apps, tokens, contact, notifications and "All Settings":
-export const quickSettingsMenuItems: Omit<
-  DashboardRouteConfig,
-  "description"
->[] = [
+export const quickSettingsMenuItems: Omit<DashboardRouteConfig, "description">[] = [
   {
     name: "apps",
     displayName: "connected_apps",
     icon: Grid01,
-    component: ApplicationsDashboardView
+    component: ApplicationsDashboardView,
   },
   {
     name: "tokens",
     displayName: "setting_tokens",
     icon: Coins04,
-    component: TokensDashboardView
+    component: TokensDashboardView,
   },
   {
     name: "contacts",
     displayName: "setting_contacts",
     icon: UserSquare,
-    component: ContactsDashboardView
+    component: ContactsDashboardView,
   },
   {
     name: "subscriptions",
     displayName: "subscriptions",
     icon: CreditCard01,
-    component: NotificationSettingsDashboardView
+    component: NotificationSettingsDashboardView,
   },
   {
     name: "about",
     displayName: "setting_about",
     icon: InfoCircle,
     component: AboutDashboardView,
-    externalLink: "tabs/dashboard.html#/about"
+    externalLink: "tabs/dashboard.html#/about",
   },
   ...(location.pathname !== "/popup.html" || IS_EMBEDDED_APP
     ? []
@@ -175,13 +164,13 @@ export const quickSettingsMenuItems: Omit<
           name: "fullscreen",
           displayName: "setting_fullscreen",
           icon: Maximize01,
-          externalLink: "tabs/fullscreen.html"
-        }
+          externalLink: "tabs/fullscreen.html",
+        },
       ]),
   {
     name: "All Settings",
     displayName: "setting_all_settings",
     icon: Settings01,
-    externalLink: "tabs/dashboard.html"
-  }
+    externalLink: "tabs/dashboard.html",
+  },
 ];

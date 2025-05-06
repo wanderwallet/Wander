@@ -1,10 +1,6 @@
 import { useContext, useEffect, useRef } from "react";
 import browser from "webextension-polyfill";
-import {
-  PasswordContext,
-  WalletContext,
-  type SetupWelcomeViewParams
-} from "../setup";
+import { PasswordContext, WalletContext, type SetupWelcomeViewParams } from "../setup";
 import { EventType, trackEvent } from "~utils/analytics";
 import { useLocation } from "~wallets/router/router.utils";
 import type { CommonRouteProps } from "~wallets/router/router.types";
@@ -56,9 +52,9 @@ export function LoadingWelcomeView({ params }: LoadingWelcomeViewProps) {
     await addWallet(
       {
         nickname: walletRef.current?.nickname || "Account 1",
-        wallet: walletRef.current.jwk
+        wallet: walletRef.current.jwk,
       },
-      password
+      password,
     );
 
     await handleSaveRecoveryPhrase();
@@ -81,20 +77,11 @@ export function LoadingWelcomeView({ params }: LoadingWelcomeViewProps) {
   async function handleSaveRecoveryPhrase() {
     if (!walletRef.current.mnemonic) return;
 
-    const encryptedRecoveryPhrase = await encryptRecoveryPhrase(
-      walletRef.current.mnemonic,
-      password
-    );
+    const encryptedRecoveryPhrase = await encryptRecoveryPhrase(walletRef.current.mnemonic, password);
 
-    await ExtensionStorage.set(
-      `recovery_phrase_${walletRef.current.address}`,
-      encryptedRecoveryPhrase
-    );
+    await ExtensionStorage.set(`recovery_phrase_${walletRef.current.address}`, encryptedRecoveryPhrase);
 
-    await ExtensionStorage.set(
-      `recovery_phrase_backedup_${walletRef.current.address}`,
-      false
-    );
+    await ExtensionStorage.set(`recovery_phrase_backedup_${walletRef.current.address}`, false);
   }
 
   useEffect(() => {

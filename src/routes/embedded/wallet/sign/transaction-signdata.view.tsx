@@ -1,12 +1,4 @@
-import {
-  Card,
-  Row,
-  Text,
-  Box,
-  Button,
-  Divider,
-  XClose
-} from "~components/embed/ui";
+import { Card, Row, Text, Box, Button, Divider, XClose } from "~components/embed/ui";
 import { useLocation } from "~wallets/router/router.utils";
 import { useCurrentAuthRequest } from "~utils/auth/auth.hooks";
 import Image from "~components/common/Image";
@@ -16,16 +8,8 @@ import { type Gateway } from "~gateways/gateway";
 import { AlertTriangle } from "@untitled-ui/icons-react";
 import { Quantity } from "ao-tokens";
 import { getUserAvatar } from "~lib/avatar";
-import {
-  fetchTokenByProcessId,
-  getTagValue,
-  type TokenInfo
-} from "~tokens/aoTokens/ao";
-import {
-  ExtensionStorage,
-  PersistentStorage,
-  useStorage
-} from "~utils/storage";
+import { fetchTokenByProcessId, getTagValue, type TokenInfo } from "~tokens/aoTokens/ao";
+import { ExtensionStorage, PersistentStorage, useStorage } from "~utils/storage";
 import { humanizeTimestampTags } from "~utils/timestamp";
 import arLogoLight from "url:/assets/ar/logo_light.png";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
@@ -36,8 +20,7 @@ import { formatBalance } from "~utils/format";
 
 export function EmbeddedSignDataAuthRequestView() {
   const { navigate } = useLocation();
-  const { authRequest, rejectRequest, acceptRequest } =
-    useCurrentAuthRequest("signDataItem");
+  const { authRequest, rejectRequest, acceptRequest } = useCurrentAuthRequest("signDataItem");
   const { url = "", data, authID } = authRequest;
 
   const [appInfo, setAppInfo] = useState<AppInfo & { gateway: Gateway }>();
@@ -51,40 +34,31 @@ export function EmbeddedSignDataAuthRequestView() {
   const [activeAddress] = useStorage<string>(
     {
       key: "active_address",
-      instance: ExtensionStorage
+      instance: ExtensionStorage,
     },
-    ""
+    "",
   );
 
   const tags = useMemo(() => humanizeTimestampTags(data?.tags || []), [data]);
   const quantity = useMemo(() => getTagValue("Quantity", tags) || "0", [tags]);
-  const transfer = useMemo(
-    () => tags.some((tag) => tag.name === "Action" && tag.value === "Transfer"),
-    [tags]
-  );
+  const transfer = useMemo(() => tags.some((tag) => tag.name === "Action" && tag.value === "Transfer"), [tags]);
   const process = data?.target;
 
   const tokenInfo = useMemo(
     () => ({
       processId: process,
-      Denomination: denomination
+      Denomination: denomination,
     }),
-    [process, denomination]
+    [process, denomination],
   );
 
-  const { data: balance = "0", isLoading: balanceLoading } = useTokenBalance(
-    tokenInfo,
-    activeAddress
-  );
+  const { data: balance = "0", isLoading: balanceLoading } = useTokenBalance(tokenInfo, activeAddress);
 
   const formattedBalance = useMemo(() => {
     return formatBalance(balance).displayBalance;
   }, [balance]);
 
-  const formattedAmount = useMemo(
-    () => (amount || 0).toLocaleString(),
-    [amount]
-  );
+  const formattedAmount = useMemo(() => (amount || 0).toLocaleString(), [amount]);
 
   const arweaveLogo = arLogoLight;
 
@@ -92,7 +66,7 @@ export function EmbeddedSignDataAuthRequestView() {
   async function sign() {
     postEmbeddedMessage({
       type: "embedded_close",
-      data: null
+      data: null,
     });
     navigate("/wallet");
     await acceptRequest();
@@ -101,7 +75,7 @@ export function EmbeddedSignDataAuthRequestView() {
   const handleCancel = async () => {
     postEmbeddedMessage({
       type: "embedded_close",
-      data: null
+      data: null,
     });
     navigate("/wallet");
     await rejectRequest();
@@ -134,12 +108,10 @@ export function EmbeddedSignDataAuthRequestView() {
         try {
           const [aoTokens = [], aoTokensCache = []] = await Promise.all([
             PersistentStorage.get<TokenInfo[]>("ao_tokens"),
-            PersistentStorage.get<TokenInfo[]>("ao_tokens_cache")
+            PersistentStorage.get<TokenInfo[]>("ao_tokens_cache"),
           ]);
           const aoTokensCombined = [...aoTokens, ...aoTokensCache];
-          const token = aoTokensCombined.find(
-            ({ processId }) => data.target === processId
-          );
+          const token = aoTokensCombined.find(({ processId }) => data.target === processId);
           if (token) {
             tokenInfo = token;
           }
@@ -153,10 +125,7 @@ export function EmbeddedSignDataAuthRequestView() {
             setLogo(arweaveLogo);
           }
 
-          const tokenAmount = new Quantity(
-            BigInt(quantity),
-            BigInt(tokenInfo.Denomination)
-          );
+          const tokenAmount = new Quantity(BigInt(quantity), BigInt(tokenInfo.Denomination));
           setTokenName(tokenInfo.Name);
           setAmount(tokenAmount);
           setDenomination(tokenInfo.Denomination);
@@ -192,8 +161,7 @@ export function EmbeddedSignDataAuthRequestView() {
       hasBackButton={false}
       customIcon={<XClose fontSize={24} color={"#666666"} />}
       onCloseButtonClick={handleCancel}
-      style={{ padding: "2rem" }}
-    >
+      style={{ padding: "2rem" }}>
       <Box alignment="left" style={{ padding: "1rem 0" }}>
         <Row alignment="center" justifyContent="center" style={{ padding: 0 }}>
           <Image
@@ -215,11 +183,7 @@ export function EmbeddedSignDataAuthRequestView() {
 
       {transfer ? (
         <>
-          <Box
-            hasBorder
-            alignment="left"
-            style={{ margin: "1rem", gap: "0.5rem" }}
-          >
+          <Box hasBorder alignment="left" style={{ margin: "1rem", gap: "0.5rem" }}>
             <Text variant="bodySm" style={{ color: "#666666" }}>
               Your account
             </Text>
@@ -269,16 +233,10 @@ export function EmbeddedSignDataAuthRequestView() {
         </>
       ) : (
         <Row style={{ padding: 12, backgroundColor: "#FFF9EA" }}>
-          <AlertTriangle
-            height={24}
-            width={24}
-            color="#BD8802"
-            style={{ flexShrink: 0 }}
-          />
+          <AlertTriangle height={24} width={24} color="#BD8802" style={{ flexShrink: 0 }} />
           <Text variant="bodyXs" style={{ color: "#666666" }}>
-            Only confirm if you understand the content and trust the requesting
-            site. This confirmation is used for authentication purposes, funds
-            are not being transferred.
+            Only confirm if you understand the content and trust the requesting site. This confirmation is used for
+            authentication purposes, funds are not being transferred.
           </Text>
         </Row>
       )}

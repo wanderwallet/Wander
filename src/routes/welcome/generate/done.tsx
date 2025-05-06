@@ -20,12 +20,9 @@ import { Flex } from "~components/common/Flex";
 import { PinExtension } from "../PinExtension";
 import { TempTransactionStorage } from "~utils/storage";
 
-export type GenerateDoneWelcomeViewProps =
-  CommonRouteProps<SetupWelcomeViewParams>;
+export type GenerateDoneWelcomeViewProps = CommonRouteProps<SetupWelcomeViewParams>;
 
-export function GenerateDoneWelcomeView({
-  params
-}: GenerateDoneWelcomeViewProps) {
+export function GenerateDoneWelcomeView({ params }: GenerateDoneWelcomeViewProps) {
   const theme = useTheme();
   const { wallet } = useContext(WalletContext);
   const activeWallet = useActiveWallet();
@@ -64,9 +61,7 @@ export function GenerateDoneWelcomeView({
           </Text>
           <Text variant="secondary" noMargin>
             {browser.i18n.getMessage("congratulations_description", [
-              browser.i18n.getMessage(
-                setupMode === "generate" ? "creating" : "importing"
-              )
+              browser.i18n.getMessage(setupMode === "generate" ? "creating" : "importing"),
             ])}
           </Text>
         </InnerContent>
@@ -84,12 +79,7 @@ export function GenerateDoneWelcomeView({
           <Spacer y={2} />
           <Flex gap={16} justify="center" direction="column" align="center">
             <QRCodeWrapper size={155}>
-              <QRCodeSVG
-                fgColor="#fff"
-                bgColor="transparent"
-                size={142}
-                value={wallet.address}
-              />
+              <QRCodeSVG fgColor="#fff" bgColor="transparent" size={142} value={wallet.address} />
             </QRCodeWrapper>
             <Text variant="secondary" weight="medium" noMargin>
               Scan the QR code or copy the address for a seamless transfer
@@ -101,12 +91,7 @@ export function GenerateDoneWelcomeView({
         <Button fullWidth onClick={takeTour}>
           {browser.i18n.getMessage("take_a_tour")}
         </Button>
-        <Button
-          variant="secondary"
-          fullWidth
-          onClick={goToDashboard}
-          style={{ marginTop: "auto" }}
-        >
+        <Button variant="secondary" fullWidth onClick={goToDashboard} style={{ marginTop: "auto" }}>
           {browser.i18n.getMessage("close")}
         </Button>
       </Actions>
@@ -115,10 +100,9 @@ export function GenerateDoneWelcomeView({
           padding: 24,
           color: theme.primary,
           fontSize: 16,
-          fontWeight: 500
+          fontWeight: 500,
         }}
-        href="https://www.wander.app/help#browser-extension"
-      >
+        href="https://www.wander.app/help#browser-extension">
         {browser.i18n.getMessage("need_help")}
       </Link>
       <PinExtension />
@@ -162,7 +146,7 @@ const InnerContent = styled.div`
 `;
 
 const WalletIcon = styled.img.attrs({
-  src: WalletIconSvg
+  src: WalletIconSvg,
 })`
   height: 72px;
   width: 72px;
@@ -181,5 +165,5 @@ const AccountContainer = styled.div`
 const Label = styled(Text).attrs({
   size: "xs",
   weight: "medium",
-  noMargin: true
+  noMargin: true,
 })``;

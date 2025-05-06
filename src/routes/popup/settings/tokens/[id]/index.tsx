@@ -30,9 +30,9 @@ export function TokenSettingsView({ params: { id } }: TokenSettingsProps) {
   const [aoTokens, setAoTokens] = useStorage<any[]>(
     {
       key: "ao_tokens",
-      instance: PersistentStorage
+      instance: PersistentStorage,
     },
-    []
+    [],
   );
 
   const { setToast } = useToasts();
@@ -45,7 +45,7 @@ export function TokenSettingsView({ params: { id } }: TokenSettingsProps) {
       ...aoToken,
       id: aoToken.processId,
       name: aoToken.Name,
-      ticker: aoToken.Ticker
+      ticker: aoToken.Ticker,
       // Map additional AO token properties as needed
     };
   }, [aoTokens, id]);
@@ -67,10 +67,7 @@ export function TokenSettingsView({ params: { id } }: TokenSettingsProps) {
 
   return (
     <>
-      <HeadV2
-        title={token.name}
-        back={() => navigate("/quick-settings/tokens")}
-      />
+      <HeadV2 title={token.name} back={() => navigate("/quick-settings/tokens")} />
       <Wrapper>
         <div>
           <Spacer y={0.45} />
@@ -89,11 +86,8 @@ export function TokenSettingsView({ params: { id } }: TokenSettingsProps) {
                   copy(token.id);
                   setToast({
                     type: "info",
-                    content: browser.i18n.getMessage("copied_address", [
-                      token.ticker,
-                      formatAddress(token.id, 8)
-                    ]),
-                    duration: 2200
+                    content: browser.i18n.getMessage("copied_address", [token.ticker, formatAddress(token.id, 8)]),
+                    duration: 2200,
                   });
                 }}
               />
@@ -107,8 +101,7 @@ export function TokenSettingsView({ params: { id } }: TokenSettingsProps) {
               // @ts-expect-error
               updateType(e.target.value as TokenType);
             }}
-            fullWidth
-          >
+            fullWidth>
             <option value="asset" selected={token.type === "asset"}>
               {browser.i18n.getMessage("token_type_asset")}
             </option>
@@ -124,8 +117,7 @@ export function TokenSettingsView({ params: { id } }: TokenSettingsProps) {
               await removeToken(id);
               navigate(`/quick-settings/tokens`);
             }}
-            style={{ backgroundColor: "#8C1A1A" }}
-          >
+            style={{ backgroundColor: "#8C1A1A" }}>
             <TrashIcon style={{ marginRight: "5px" }} />
             {browser.i18n.getMessage("remove_token")}
           </ButtonV2>
@@ -144,7 +136,7 @@ const Wrapper = styled.div`
 `;
 
 const TokenAddress = styled(Text).attrs({
-  margin: true
+  margin: true,
 })`
   margin-top: 12px;
   font-size: 1rem;
@@ -159,7 +151,7 @@ const Property = styled.div`
 `;
 
 const BasePropertyText = styled(Text).attrs({
-  noMargin: true
+  noMargin: true,
 })`
   font-size: 1rem;
   font-weight: 500;

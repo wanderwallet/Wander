@@ -7,15 +7,14 @@ const useSetting = <T = any>(name: string) => {
   const hook = useStorage<T>(
     {
       key: `${PREFIX}${name}`,
-      instance: PersistentStorage
+      instance: PersistentStorage,
     },
-    (val) => (!isSettingUnset(val) ? val : (setting.defaultValue as T))
+    (val) => (!isSettingUnset(val) ? val : (setting.defaultValue as T)),
   );
 
   return hook;
 };
 
-const isSettingUnset = (val: unknown) =>
-  typeof val === "undefined" || val === null;
+const isSettingUnset = (val: unknown) => typeof val === "undefined" || val === null;
 
 export default useSetting;

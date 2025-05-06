@@ -4,7 +4,7 @@
 .button {
   all: unset;
 
-  border-radius: var(--border-radius-lg);
+  border-radius: var(--border-radius-xl);
   text-align: center;
   box-sizing: border-box;
   width: 100%;

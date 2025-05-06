@@ -1,10 +1,4 @@
-import {
-  Input,
-  Section,
-  Text,
-  useInput,
-  useToasts
-} from "@arconnect/components-rebrand";
+import { Input, Section, Text, useInput, useToasts } from "@arconnect/components-rebrand";
 import Message from "~components/auth/Message";
 import Wrapper from "~components/auth/Wrapper";
 import browser from "webextension-polyfill";
@@ -18,17 +12,16 @@ import { ExtensionStorage, useStorage } from "~utils/storage";
 import { checkPassword } from "~wallets/auth";
 
 export function SignatureAuthRequestView() {
-  const { authRequest, acceptRequest, rejectRequest } =
-    useCurrentAuthRequest("signature");
+  const { authRequest, acceptRequest, rejectRequest } = useCurrentAuthRequest("signature");
 
   const { setToast } = useToasts();
 
   const [transferRequirePassword] = useStorage<boolean>(
     {
       key: "transfer_require_password",
-      instance: ExtensionStorage
+      instance: ExtensionStorage,
     },
-    false
+    false,
   );
 
   const askPassword = useAskPassword();
@@ -43,7 +36,7 @@ export function SignatureAuthRequestView() {
         setToast({
           type: "error",
           content: browser.i18n.getMessage("invalidPassword"),
-          duration: 2400
+          duration: 2400,
         });
         return;
       }
@@ -69,9 +62,7 @@ export function SignatureAuthRequestView() {
         <HeadAuth title={browser.i18n.getMessage("titles_signature")} />
 
         <Section>
-          <Text noMargin>
-            {browser.i18n.getMessage("signature_description", url)}
-          </Text>
+          <Text noMargin>{browser.i18n.getMessage("signature_description", url)}</Text>
 
           <div style={{ marginTop: "16px" }}>
             <Message message={message} />
@@ -103,10 +94,10 @@ export function SignatureAuthRequestView() {
           authRequest={authRequest}
           primaryButtonProps={{
             label: browser.i18n.getMessage("signature_authorize"),
-            onClick: sign
+            onClick: sign,
           }}
           secondaryButtonProps={{
-            onClick: () => rejectRequest()
+            onClick: () => rejectRequest(),
           }}
         />
       </Section>

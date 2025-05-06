@@ -1,13 +1,4 @@
-import {
-  Card,
-  Button,
-  Text,
-  Input,
-  Row,
-  Box,
-  ChevronRight,
-  Footer
-} from "~components/embed/ui";
+import { Card, Button, Text, Input, Row, Box, ChevronRight, Footer } from "~components/embed/ui";
 import { useLocation } from "~wallets/router/router.utils";
 import { useState } from "react";
 
@@ -46,13 +37,9 @@ export function WalletBuyInputEmbeddedView() {
       hasCloseButton={true}
       onBackButtonClick={() => navigate("/wallet/buy")}
       onCloseButtonClick={() => navigate("/wallet")}
-      style={{ padding: "24px" }}
-    >
+      style={{ padding: "24px" }}>
       <Box alignment="left" style={{ marginBottom: "24px" }}>
-        <Text
-          variant="bodyMd"
-          style={{ color: "#666666", marginBottom: "8px" }}
-        >
+        <Text variant="bodyMd" style={{ color: "#666666", marginBottom: "8px" }}>
           Purchase
         </Text>
         <Row justifyContent="between" alignment="center">
@@ -66,7 +53,7 @@ export function WalletBuyInputEmbeddedView() {
               color: "#121212",
               border: "none",
               padding: "0",
-              width: "70%"
+              width: "70%",
             }}
           />
           <Row alignment="center" style={{ gap: "4px" }}>
@@ -78,7 +65,7 @@ export function WalletBuyInputEmbeddedView() {
                 width: "16px",
                 height: "16px",
                 borderRadius: "50%",
-                backgroundColor: "#0D6CE9"
+                backgroundColor: "#0D6CE9",
               }}
             />
           </Row>
@@ -89,10 +76,7 @@ export function WalletBuyInputEmbeddedView() {
       </Box>
 
       <Box alignment="left" style={{ marginBottom: "24px" }}>
-        <Text
-          variant="bodyMd"
-          style={{ color: "#666666", marginBottom: "8px" }}
-        >
+        <Text variant="bodyMd" style={{ color: "#666666", marginBottom: "8px" }}>
           Pay with
         </Text>
         <Row justifyContent="between" alignment="center">
@@ -106,7 +90,7 @@ export function WalletBuyInputEmbeddedView() {
               color: "#121212",
               border: "none",
               padding: "0",
-              width: "70%"
+              width: "70%",
             }}
           />
           <Box
@@ -116,16 +100,15 @@ export function WalletBuyInputEmbeddedView() {
               borderRadius: "8px",
               display: "flex",
               alignItems: "center",
-              gap: "4px"
-            }}
-          >
+              gap: "4px",
+            }}>
             <Text variant="bodyMd">USDA</Text>
             <Box
               style={{
                 width: "16px",
                 height: "16px",
                 borderRadius: "50%",
-                backgroundColor: "#008864"
+                backgroundColor: "#008864",
               }}
             />
             <ChevronRight fontSize={16} color={"#121212"} />
@@ -134,18 +117,12 @@ export function WalletBuyInputEmbeddedView() {
         <Button
           variant="link"
           style={{ padding: "0", color: "#0D6CE9", marginTop: "8px" }}
-          onClick={handleConnectWallet}
-        >
+          onClick={handleConnectWallet}>
           Connect wallet
         </Button>
       </Box>
 
-      <Button
-        variant="primary"
-        isFullWidth
-        onClick={handleEnterAmount}
-        isDisabled={!purchaseAmount || !payAmount}
-      >
+      <Button variant="primary" isFullWidth onClick={handleEnterAmount} isDisabled={!purchaseAmount || !payAmount}>
         Enter an amount
       </Button>
 

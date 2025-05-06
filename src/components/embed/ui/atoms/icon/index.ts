@@ -1,7 +1,6 @@
 export { default as AppleIcon } from "./Apple";
 export { default as ArConnectIcon } from "./ArConnect";
 export { default as ArrowDownIcon } from "./ArrowDown";
-export { default as ArrowUpIcon } from "./ArrowUp";
 export { default as BackupCompleteIcon } from "./BackupComplete";
 export { default as BuyWithCashIcon } from "./BuyWithCash";
 export { default as BuyWithCryptoIcon } from "./BuyWithCrypto";

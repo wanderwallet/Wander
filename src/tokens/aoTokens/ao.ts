@@ -2,8 +2,7 @@ import { connect, dryrun } from "@permaweb/aoconnect";
 import { type Tag } from "arweave/web/lib/transaction";
 import { PersistentStorage } from "~utils/storage";
 import { Quantity } from "ao-tokens";
-import Arweave from "arweave";
-import { ArweaveSigner, createData } from "arbundles";
+import { ArweaveSigner, createData } from "@dha-team/arbundles";
 import { getActiveKeyfile } from "~wallets";
 import { isLocalWallet } from "~utils/assertions";
 import { freeDecryptedWallet } from "~wallets/encryption";
@@ -11,16 +10,13 @@ import { AO_NATIVE_TOKEN_BALANCE_MIRROR } from "~utils/ao_import";
 import type { KeystoneSigner } from "~wallets/hardware/keystone";
 import browser from "webextension-polyfill";
 import type { DecodedTag } from "~api/modules/sign/tags";
-import {
-  isNetworkError,
-  NetworkError,
-  BalanceFetchError
-} from "~utils/error/error.utils";
+import { isNetworkError, NetworkError, BalanceFetchError } from "~utils/error/error.utils";
 import activeAddress from "~api/modules/active_address";
 import { findGateway } from "~gateways/wayfinder";
 import BigNumber from "bignumber.js";
 import type { Token } from "~tokens/token";
 import { CACHE_API } from "~constants/api";
+import Arweave from "arweave";
 
 let tokens: TokenInfo[] = null;
 export let tokenInfoMap = new Map<string, TokenInfo | Token>();
@@ -33,7 +29,7 @@ export const defaultTokens: TokenInfo[] = [
     Ticker: "AR",
     Denomination: 12,
     Logo: "jZ2XPRj37W-QNb3BwWWIyEelv-7nQjBHg0g6WLX91IM",
-    processId: "AR"
+    processId: "AR",
   },
   {
     Name: "AO",
@@ -41,22 +37,22 @@ export const defaultTokens: TokenInfo[] = [
     Denomination: 12,
     Logo: "UkS-mdoiG8hcAClhKK8ch4ZhEzla0mCPDOix9hpdSFE",
     // processId: "m3PaWzK4PTG9lAaqYQPaPdOcXdO8hYqi5Fe9NWqXd0w"
-    processId: "0syT13r0s0tgPmIed95bJnuSqaD29HQNN8D3ElLSrsc"
+    processId: "0syT13r0s0tgPmIed95bJnuSqaD29HQNN8D3ElLSrsc",
   },
   {
     Name: "Q Arweave",
     Ticker: "qAR",
     Denomination: 12,
     Logo: "26yDr08SuwvNQ4VnhAfV4IjJcOOlQ4tAQLc1ggrCPu0",
-    processId: "NG-0lVX882MG5nhARrSzyprEK6ejonHpdUmaaMPsHE8"
+    processId: "NG-0lVX882MG5nhARrSzyprEK6ejonHpdUmaaMPsHE8",
   },
   {
     Name: "Wrapped AR",
     Ticker: "wAR",
     Denomination: 12,
     Logo: "L99jaxRKQKJt9CqoJtPaieGPEhJD3wNhR4iGqc8amXs",
-    processId: "xU9zFkq3X2ZQ6olwNVvr1vUWIjc3kXTWr7xKQD6dh10"
-  }
+    processId: "xU9zFkq3X2ZQ6olwNVvr1vUWIjc3kXTWr7xKQD6dh10",
+  },
 ];
 
 /**
@@ -88,9 +84,7 @@ type DataItemResult = {
   raw: ArrayBuffer;
 };
 
-type CreateDataItemSigner = (
-  wallet: any
-) => (args: CreateDataItemArgs) => Promise<DataItemResult>;
+type CreateDataItemSigner = (wallet: any) => (args: CreateDataItemArgs) => Promise<DataItemResult>;
 
 export function getTokenInfoFromData(res: any, id: string): TokenInfo {
   // find message with token info
@@ -103,9 +97,7 @@ export function getTokenInfoFromData(res: any, id: string): TokenInfo {
         const Denomination = data.Denomination || data.denomination;
         const Logo = data.Logo || data.logo || id;
         const type =
-          typeof data?.transferable === "boolean" ||
-          typeof data?.Transferable === "boolean" ||
-          Ticker === "ATOMIC"
+          typeof data?.transferable === "boolean" || typeof data?.Transferable === "boolean" || Ticker === "ATOMIC"
             ? "collectible"
             : "asset";
 
@@ -116,7 +108,7 @@ export function getTokenInfoFromData(res: any, id: string): TokenInfo {
             Name,
             Denomination: Number(Denomination || 0),
             Logo,
-            type
+            type,
           } as TokenInfo;
         }
       } catch {}
@@ -135,7 +127,7 @@ export function getTokenInfoFromData(res: any, id: string): TokenInfo {
       Ticker,
       Denomination: Number(Denomination || 0),
       Logo,
-      type: Transferable || Ticker === "ATOMIC" ? "collectible" : "asset"
+      type: Transferable || Ticker === "ATOMIC" ? "collectible" : "asset",
     };
   }
 
@@ -147,8 +139,8 @@ export async function getTokenInfo(id: string): Promise<TokenInfo> {
     const response = await fetch(`${CACHE_API}/api/token-info?tokenId=${id}`, {
       cache: "force-cache",
       headers: {
-        "Cache-Control": "public, max-age=300" // 5 minutes
-      }
+        "Cache-Control": "public, max-age=300", // 5 minutes
+      },
     });
     const data = await response.json();
 
@@ -159,7 +151,7 @@ export async function getTokenInfo(id: string): Promise<TokenInfo> {
       Id,
       Owner,
       process: id,
-      tags: [{ name: "Action", value: "Info" }]
+      tags: [{ name: "Action", value: "Info" }],
     });
 
     return getTokenInfoFromData(res, id);
@@ -180,9 +172,7 @@ async function fetchTokenInfo(processId: string) {
   }
 }
 
-export const fetchTokenByProcessId = async (
-  processId: string
-): Promise<TokenInfo | null> => {
+export const fetchTokenByProcessId = async (processId: string): Promise<TokenInfo | null> => {
   if (tokenInfoMap.has(processId)) {
     return tokenInfoMap.get(processId) as TokenInfo;
   }
@@ -190,7 +180,7 @@ export const fetchTokenByProcessId = async (
   if (!tokens) {
     const [aoTokens, aoTokensCache] = await Promise.all([
       PersistentStorage.get<TokenInfo[]>("ao_tokens"),
-      PersistentStorage.get<TokenInfo[]>("ao_tokens_cache")
+      PersistentStorage.get<TokenInfo[]>("ao_tokens_cache"),
     ]);
 
     tokens = [...(aoTokens || []), ...(aoTokensCache || [])];
@@ -221,14 +211,9 @@ export async function getArTokenBalance(address: string) {
   return arBalance;
 }
 
-export async function getAoTokenBalance(
-  address: string,
-  process: string,
-  aoToken?: TokenInfo
-): Promise<Quantity> {
+export async function getAoTokenBalance(address: string, process: string, aoToken?: TokenInfo): Promise<Quantity> {
   if (!aoToken) {
-    const aoTokens =
-      (await PersistentStorage.get<TokenInfo[]>("ao_tokens")) || [];
+    const aoTokens = (await PersistentStorage.get<TokenInfo[]>("ao_tokens")) || [];
 
     aoToken = aoTokens.find((token) => token.processId === process);
   }
@@ -237,7 +222,7 @@ export async function getAoTokenBalance(
     Id,
     Owner: address,
     process,
-    tags: [{ name: "Action", value: "Balance" }]
+    tags: [{ name: "Action", value: "Balance" }],
   });
 
   const errorMessage = (res as any)?.error || res?.Error;
@@ -247,9 +232,7 @@ export async function getAoTokenBalance(
   }
 
   if (res.Messages.length === 0) {
-    throw new Error(
-      "Invalid token process: Balance action handler missing or unsupported."
-    );
+    throw new Error("Invalid token process: Balance action handler missing or unsupported.");
   }
 
   for (const msg of res.Messages as Message[]) {
@@ -273,7 +256,7 @@ export async function getAoTokenBalance(
 
 export async function getAoCollectibleBalance(
   collectible: TokenInfoWithBalance | TokenInfo,
-  address: string
+  address: string,
 ): Promise<Quantity> {
   const res = await dryrun({
     Id,
@@ -281,7 +264,7 @@ export async function getAoCollectibleBalance(
     // @ts-ignore
     process: collectible.processId || collectible.id,
     tags: [{ name: "Action", value: "Balance" }],
-    data: JSON.stringify({ Target: address })
+    data: JSON.stringify({ Target: address }),
   });
 
   const balance = res.Messages[0].Data;
@@ -295,7 +278,7 @@ export async function getNativeTokenBalance(address: string): Promise<string> {
     Id,
     Owner: address,
     process: AO_NATIVE_TOKEN_BALANCE_MIRROR,
-    tags: [{ name: "Action", value: "Balance" }]
+    tags: [{ name: "Action", value: "Balance" }],
   });
   const balance = res.Messages[0].Data;
   return balance ? new Quantity(BigInt(balance), BigInt(12)).toString() : "0";
@@ -304,15 +287,9 @@ export async function getNativeTokenBalance(address: string): Promise<string> {
 /**
  * Find the value for a tag name
  */
-export const getTagValue = (tagName: string, tags: (Tag | DecodedTag)[]) =>
-  tags.find((t) => t.name === tagName)?.value;
+export const getTagValue = (tagName: string, tags: (Tag | DecodedTag)[]) => tags.find((t) => t.name === tagName)?.value;
 
-export const sendAoTransfer = async (
-  ao: AoInstance,
-  process: string,
-  recipient: string,
-  amount: string
-) => {
+export const sendAoTransfer = async (ao: AoInstance, process: string, recipient: string, amount: string) => {
   try {
     const decryptedWallet = await getActiveKeyfile();
     isLocalWallet(decryptedWallet);
@@ -324,7 +301,7 @@ export const sendAoTransfer = async (
         data,
         tags = [],
         target,
-        anchor
+        anchor,
       }: {
         data: any;
         tags?: { name: string; value: string }[];
@@ -338,7 +315,7 @@ export const sendAoTransfer = async (
 
         return {
           id: dataItem.id,
-          raw: dataItem.getRaw()
+          raw: dataItem.getRaw(),
         };
       };
     const signer = createDataItemSigner(keyfile);
@@ -349,12 +326,12 @@ export const sendAoTransfer = async (
         { name: "Action", value: "Transfer" },
         {
           name: "Recipient",
-          value: recipient
+          value: recipient,
         },
         { name: "Quantity", value: amount },
         { name: "Client", value: "Wander" },
-        { name: "Client-Version", value: browser.runtime.getManifest().version }
-      ]
+        { name: "Client-Version", value: browser.runtime.getManifest().version },
+      ],
     });
     freeDecryptedWallet(decryptedWallet.keyfile);
     return transferID;
@@ -368,14 +345,14 @@ export const sendAoTransferKeystone = async (
   process: string,
   recipient: string,
   amount: string,
-  keystoneSigner: KeystoneSigner
+  keystoneSigner: KeystoneSigner,
 ) => {
   try {
     const dataItemSigner = async ({
       data,
       tags = [],
       target,
-      anchor
+      anchor,
     }: {
       data: any;
       tags?: { name: string; value: string }[];
@@ -390,7 +367,7 @@ export const sendAoTransferKeystone = async (
 
       return {
         id: dataItem.id,
-        raw: dataItem.getRaw()
+        raw: dataItem.getRaw(),
       };
     };
     const transferID = await ao.message({
@@ -400,12 +377,12 @@ export const sendAoTransferKeystone = async (
         { name: "Action", value: "Transfer" },
         {
           name: "Recipient",
-          value: recipient
+          value: recipient,
         },
         { name: "Quantity", value: amount },
         { name: "Client", value: "Wander" },
-        { name: "Client-Version", value: browser.runtime.getManifest().version }
-      ]
+        { name: "Client-Version", value: browser.runtime.getManifest().version },
+      ],
     });
     return transferID;
   } catch (err) {
@@ -431,11 +408,7 @@ export interface TokenInfoWithBalance extends TokenInfo {
   balance: string;
 }
 
-export async function fetchTokenBalance(
-  token: TokenInfo,
-  address: string,
-  refresh?: boolean
-): Promise<string> {
+export async function fetchTokenBalance(token: TokenInfo, address: string, refresh?: boolean): Promise<string> {
   try {
     if (token.processId === "AR") {
       return await getArTokenBalance(address);
@@ -444,28 +417,20 @@ export async function fetchTokenBalance(
       if (token.type === "collectible") {
         return (await getAoCollectibleBalance(token, address)).toString();
       } else {
-        return (
-          await getAoTokenBalance(address, token.processId, token)
-        ).toString();
+        return (await getAoTokenBalance(address, token.processId, token)).toString();
       }
     }
   } catch (error) {
     if (isNetworkError(error)) {
-      throw new NetworkError(
-        `Network error while fetching balance for ${token.processId}`
-      );
+      throw new NetworkError(`Network error while fetching balance for ${token.processId}`);
     }
-    throw new BalanceFetchError(
-      `Failed to fetch balance for ${token.processId}`
-    );
+    throw new BalanceFetchError(`Failed to fetch balance for ${token.processId}`);
   }
 }
 
 export async function getBotegaPrice(tokenId: string): Promise<number | null> {
   try {
-    const response = await fetch(
-      `${CACHE_API}/api/botega/prices?tokenIds=${tokenId}`
-    );
+    const response = await fetch(`${CACHE_API}/api/botega/prices?tokenIds=${tokenId}`);
 
     if (!response.ok) {
       throw new Error("Failed to fetch price");
@@ -479,14 +444,10 @@ export async function getBotegaPrice(tokenId: string): Promise<number | null> {
   }
 }
 
-export async function getBotegaPrices(
-  tokenIds: string[]
-): Promise<Record<string, number | null>> {
+export async function getBotegaPrices(tokenIds: string[]): Promise<Record<string, number | null>> {
   try {
     const queryString = tokenIds.join(",");
-    const response = await fetch(
-      `${CACHE_API}/api/botega/prices?tokenIds=${queryString}`
-    );
+    const response = await fetch(`${CACHE_API}/api/botega/prices?tokenIds=${queryString}`);
     if (!response.ok) {
       throw new Error("Failed to fetch prices");
     }

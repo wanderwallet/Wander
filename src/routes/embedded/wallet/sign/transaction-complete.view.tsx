@@ -1,9 +1,6 @@
 import { useLocation, useSearchParams } from "~wallets/router/router.utils";
 import browser from "webextension-polyfill";
-import type {
-  WanderRoutePath,
-  CommonRouteProps
-} from "~wallets/router/router.types";
+import type { WanderRoutePath, CommonRouteProps } from "~wallets/router/router.types";
 import Lottie from "react-lottie";
 import checkmarkAnimationData from "assets/lotties/checkmark.json";
 import { Box, Card, XClose, Text, Button } from "~components/embed/ui";
@@ -13,12 +10,9 @@ export interface TransactionCompletedParams {
   id: string;
 }
 
-export type TransactionCompletedViewProps =
-  CommonRouteProps<TransactionCompletedParams>;
+export type TransactionCompletedViewProps = CommonRouteProps<TransactionCompletedParams>;
 
-export function WalletTransactionCompleteEmbeddedView({
-  params: { id }
-}: TransactionCompletedViewProps) {
+export function WalletTransactionCompleteEmbeddedView({ params: { id } }: TransactionCompletedViewProps) {
   const { navigate } = useLocation();
   const { back: backPath, isAo } = useSearchParams<{
     back?: string;
@@ -28,7 +22,7 @@ export function WalletTransactionCompleteEmbeddedView({
   const handleCancel = () => {
     postEmbeddedMessage({
       type: "embedded_close",
-      data: null
+      data: null,
     });
     navigate("/wallet");
   };
@@ -41,8 +35,7 @@ export function WalletTransactionCompleteEmbeddedView({
       hasBackButton={false}
       customIcon={<XClose fontSize={24} color={"#666666"} />}
       onCloseButtonClick={handleCancel}
-      style={{ padding: "2rem" }}
-    >
+      style={{ padding: "2rem" }}>
       <Box>
         <Lottie
           options={{
@@ -50,8 +43,8 @@ export function WalletTransactionCompleteEmbeddedView({
             autoplay: true,
             animationData: checkmarkAnimationData,
             rendererSettings: {
-              preserveAspectRatio: "xMidYMid slice"
-            }
+              preserveAspectRatio: "xMidYMid slice",
+            },
           }}
           height={200}
           width={200}
@@ -67,10 +60,9 @@ export function WalletTransactionCompleteEmbeddedView({
               navigate(
                 `/transaction/${id}?fromSend=true${
                   backPath ? `&back=${encodeURIComponent(backPath)}` : ""
-                }` as WanderRoutePath
+                }` as WanderRoutePath,
               )
-            }
-          >
+            }>
             See transaction details
           </Button>
         </Box>

@@ -27,7 +27,7 @@ const CopyButton = styled.button`
 `;
 
 const Label = styled(Text).attrs({
-  noMargin: true
+  noMargin: true,
 })`
   overflow: hidden;
 `;
@@ -40,7 +40,7 @@ export function CopyToClipboard({
   labelStyle,
   showToast = true,
   onCopy,
-  labelAs = Label
+  labelAs = Label,
 }: CopyToClipboardProps) {
   const toast = useToasts();
   const [isCopied, setIsCopied] = useState(false);
@@ -54,7 +54,7 @@ export function CopyToClipboard({
         toast.setToast({
           type: "success",
           content: copySuccess || browser.i18n.getMessage("copied"),
-          duration: 2400
+          duration: 2400,
         });
       }
       setIsCopied(true);
@@ -64,7 +64,7 @@ export function CopyToClipboard({
         toast.setToast({
           type: "error",
           content: browser.i18n.getMessage("copy_failed"),
-          duration: 2400
+          duration: 2400,
         });
       }
     }
@@ -88,12 +88,7 @@ export function CopyToClipboard({
           {label}
         </Label>
       )}
-      <Icon
-        as={isCopied ? Check : Copy02}
-        height={iconSize}
-        width={iconSize}
-        $success={isCopied}
-      />
+      <Icon as={isCopied ? Check : Copy02} height={iconSize} width={iconSize} $success={isCopied} />
     </CopyButton>
   );
 }
@@ -101,6 +96,5 @@ export function CopyToClipboard({
 const Icon = styled.div<{ height: number; width: number; $success: boolean }>`
   height: ${(props) => props.height}px;
   width: ${(props) => props.width}px;
-  color: ${(props) =>
-    props.$success ? props.theme.success : props.theme.tertiaryText};
+  color: ${(props) => (props.$success ? props.theme.success : props.theme.tertiaryText)};
 `;

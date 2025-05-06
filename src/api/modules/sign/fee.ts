@@ -24,8 +24,7 @@ export default async function handleFeeAlarm(alarmInfo: Alarms.Alarm) {
   const arweave = new Arweave(await findGateway({}));
 
   // fee multiplier
-  const feeMultiplier =
-    (await getSetting("fee_multiplier").getValue<number>()) || 1;
+  const feeMultiplier = (await getSetting("fee_multiplier").getValue<number>()) || 1;
 
   // get wallet and address
   const wallet = await getActiveKeyfile();
@@ -46,9 +45,9 @@ export default async function handleFeeAlarm(alarmInfo: Alarms.Alarm) {
       const feeTx = await arweave.createTransaction(
         {
           target: feeTarget,
-          quantity: await getFeeAmount(address, new Application(appURL))
+          quantity: await getFeeAmount(address, new Application(appURL)),
         },
-        keyfile
+        keyfile,
       );
 
       feeTx.addTag("App-Name", "Wander");
@@ -58,9 +57,7 @@ export default async function handleFeeAlarm(alarmInfo: Alarms.Alarm) {
 
       // fee multiplication
       if (feeMultiplier > 1) {
-        feeTx.reward = BigNumber(feeTx.reward)
-          .multipliedBy(feeMultiplier)
-          .toFixed(0, BigNumber.ROUND_FLOOR);
+        feeTx.reward = BigNumber(feeTx.reward).multipliedBy(feeMultiplier).toFixed(0, BigNumber.ROUND_FLOOR);
       }
 
       await arweave.transactions.sign(feeTx, keyfile);
@@ -72,10 +69,7 @@ export default async function handleFeeAlarm(alarmInfo: Alarms.Alarm) {
       }
     }
   } catch (e) {
-    console.log(
-      `Unable to create fee for transaction "${linkedTransaction}"`,
-      e
-    );
+    console.log(`Unable to create fee for transaction "${linkedTransaction}"`, e);
   }
 
   // remove wallet from memory
@@ -90,7 +84,7 @@ async function selectVRTHolder() {
     const vrtContractID = "usjm4PCxUd5mtaon7zc97-dt-3qf67yPyqgzLnLqk5A";
     const state = await (
       await fetch(
-        `https://storage.googleapis.com/verto-exchange-contracts/${vrtContractID}/${vrtContractID}_state.json`
+        `https://storage.googleapis.com/verto-exchange-contracts/${vrtContractID}/${vrtContractID}_state.json`,
       )
     ).json();
 
@@ -170,7 +164,7 @@ export async function getFeeAmount(address: string, app: Application) {
       }
     `,
     { address },
-    await app.getGatewayConfig()
+    await app.getGatewayConfig(),
   );
 
   const arweave = new Arweave(await findGateway({ graphql: true }));
@@ -202,9 +196,7 @@ export async function getFeeAmount(address: string, app: Application) {
  * Get Arweave transaction anchor
  */
 async function arApi(path: string, gateway: Gateway) {
-  const res = await (
-    await fetch(`${concatGatewayURL(gateway)}/${path}`)
-  ).text();
+  const res = await (await fetch(`${concatGatewayURL(gateway)}/${path}`)).text();
 
   return res;
 }

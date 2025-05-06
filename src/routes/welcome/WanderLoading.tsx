@@ -21,20 +21,17 @@ export function WanderLoading() {
           ? wanderLoadingHoverLight
           : wanderLoadingDefaultLight
         : isHovered
-        ? wanderLoadingHover
-        : wanderLoadingDefault,
+          ? wanderLoadingHover
+          : wanderLoadingDefault,
       rendererSettings: {
-        preserveAspectRatio: "xMidYMid slice"
-      }
+        preserveAspectRatio: "xMidYMid slice",
+      },
     }),
-    [isLight, isHovered]
+    [isLight, isHovered],
   );
 
   return (
-    <LottieWrapper
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
+    <LottieWrapper onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
       {/* @ts-ignore */}
       <Lottie
         options={defaultOptions}

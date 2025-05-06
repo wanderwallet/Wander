@@ -1,13 +1,7 @@
 import { useEffect } from "react";
 import { PageType, trackPage } from "~utils/analytics";
 import { Container, Content } from "~components/welcome/Wrapper";
-import {
-  Checkbox,
-  Input,
-  Text,
-  useInput,
-  useToasts
-} from "@arconnect/components-rebrand";
+import { Checkbox, Input, Text, useInput, useToasts } from "@arconnect/components-rebrand";
 import { useStorage, ExtensionStorage } from "~utils/storage";
 import type { StoredWallet } from "~wallets";
 import browser from "webextension-polyfill";
@@ -27,9 +21,9 @@ export function GettingStartedPersonalizeView() {
   const [_, setWallets] = useStorage<StoredWallet[]>(
     {
       key: "wallets",
-      instance: ExtensionStorage
+      instance: ExtensionStorage,
     },
-    []
+    [],
   );
 
   // wallet name input
@@ -43,7 +37,7 @@ export function GettingStartedPersonalizeView() {
       return setToast({
         type: "error",
         content: "Please enter a valid nickname",
-        duration: 2200
+        duration: 2200,
       });
     }
 
@@ -57,22 +51,22 @@ export function GettingStartedPersonalizeView() {
 
           return {
             ...wallet,
-            nickname: newName
+            nickname: newName,
           };
-        })
+        }),
       );
 
       setToast({
         type: "info",
         content: browser.i18n.getMessage("updated_wallet_name"),
-        duration: 3000
+        duration: 3000,
       });
     } catch (e) {
       console.log("Could not update nickname", e);
       setToast({
         type: "error",
         content: browser.i18n.getMessage("error_updating_wallet_name"),
-        duration: 3000
+        duration: 3000,
       });
     }
   }
@@ -89,11 +83,7 @@ export function GettingStartedPersonalizeView() {
 
   return (
     <Container>
-      <Content
-        justifyContent="flex-start"
-        alignItems="center"
-        textAlign="center"
-      >
+      <Content justifyContent="flex-start" alignItems="center" textAlign="center">
         <Text size={isPopup ? "lg" : "xl"} weight="bold" noMargin>
           {browser.i18n.getMessage("personalize_your_experience")}
         </Text>

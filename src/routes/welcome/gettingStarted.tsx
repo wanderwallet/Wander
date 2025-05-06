@@ -19,7 +19,7 @@ import {
   HeaderIconWrapper,
   PageWrapper,
   Page,
-  type WelcomeSetupMode
+  type WelcomeSetupMode,
 } from "./setup";
 import StarIcons from "~components/welcome/StarIcons";
 import { GettingStartedWelcomeView } from "./gettingStarted/welcome";
@@ -38,14 +38,10 @@ const BASE_VIEWS = [
   GettingStartedTokensView,
   GettingStartedOnrampView,
   GettingStartedExploreView,
-  GettingStartedConnectView
+  GettingStartedConnectView,
 ];
 
-const GENERATE_VIEWS = [
-  ...BASE_VIEWS.slice(0, 4),
-  GettingStartedPersonalizeView,
-  ...BASE_VIEWS.slice(4)
-];
+const GENERATE_VIEWS = [...BASE_VIEWS.slice(0, 4), GettingStartedPersonalizeView, ...BASE_VIEWS.slice(4)];
 
 const getViews = (setupMode: WelcomeSetupMode) => {
   if (setupMode === "generate") return GENERATE_VIEWS;
@@ -57,16 +53,13 @@ export interface GettingStartedSetupWelcomeViewParams {
   page: string;
 }
 
-export type GettingStartedSetupWelcomeViewProps =
-  CommonRouteProps<GettingStartedSetupWelcomeViewParams>;
+export type GettingStartedSetupWelcomeViewProps = CommonRouteProps<GettingStartedSetupWelcomeViewParams>;
 
-export function GettingStartedSetupWelcomeView({
-  params: { page: pageParam }
-}: GettingStartedSetupWelcomeViewProps) {
+export function GettingStartedSetupWelcomeView({ params: { page: pageParam } }: GettingStartedSetupWelcomeViewProps) {
   const { navigate } = useLocation();
   const [setupMode] = useStorage<WelcomeSetupMode>({
     key: "setupMode",
-    instance: TempTransactionStorage
+    instance: TempTransactionStorage,
   });
 
   const page = Number(pageParam);
@@ -108,7 +101,7 @@ export function GettingStartedSetupWelcomeView({
         handleClose();
       }
     },
-    [navigate, viewsLength]
+    [navigate, viewsLength],
   );
 
   const View = Views[page - 1];
@@ -117,12 +110,7 @@ export function GettingStartedSetupWelcomeView({
     <Wrapper linearBackground>
       <Header>
         <HeaderIconWrapper>
-          <Image
-            width="57.61px"
-            height="27px"
-            src={WanderIcon}
-            alt="Wander Icon"
-          />
+          <Image width="57.61px" height="27px" src={WanderIcon} alt="Wander Icon" />
           <IconText width={116.759} height={24.111} />
         </HeaderIconWrapper>
         <Link href="https://www.wander.app/help#browser-extension">
@@ -136,9 +124,7 @@ export function GettingStartedSetupWelcomeView({
       <SetupCard transparentBackground>
         <HeaderContainer>
           <CardHeader>
-            {page > 1 && (
-              <BackButton onClick={() => navigateToPage(page - 1)} />
-            )}
+            {page > 1 && <BackButton onClick={() => navigateToPage(page - 1)} />}
             <Text style={{ fontSize: 22, margin: "auto" }} weight="bold">
               {browser.i18n.getMessage("getting_started")}
             </Text>

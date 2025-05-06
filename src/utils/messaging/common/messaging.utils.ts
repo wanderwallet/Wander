@@ -10,8 +10,6 @@ export function isApiResponse<T>(input: unknown): input is ApiResponse<T> {
   );
 }
 
-export function isApiErrorResponse<T>(
-  input: unknown
-): input is ApiErrorResponse {
+export function isApiErrorResponse<T>(input: unknown): input is ApiErrorResponse {
   return isApiResponse(input) && !!(input as ApiErrorResponse).error;
 }

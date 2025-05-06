@@ -10,14 +10,7 @@ export default function ContactListItem({
   ...props
 }: Props & HTMLProps<HTMLDivElement>) {
   return (
-    <ListItem
-      title={name}
-      subtitle={address}
-      img={profileIcon}
-      active={active}
-      height={64}
-      {...props}
-    >
+    <ListItem title={name} subtitle={address} img={profileIcon} active={active} height={64} {...props}>
       {!profileIcon && <NoAvatarIcon />}
     </ListItem>
   );

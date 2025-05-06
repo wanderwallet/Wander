@@ -26,9 +26,7 @@ export function SecureWelcomeView({ params }: SecureWelcomeViewProps) {
   return (
     <Container>
       <Content>
-        <Paragraph>
-          {browser.i18n.getMessage("secure_your_account_description")}
-        </Paragraph>
+        <Paragraph>{browser.i18n.getMessage("secure_your_account_description")}</Paragraph>
       </Content>
       <Flex direction="column" gap={16} width="100%">
         <Button fullWidth onClick={handleSetUpPassword}>

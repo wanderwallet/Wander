@@ -10,8 +10,7 @@ import SendTourImageLight from "url:/assets/setup/send_tour_light.png";
 export function GettingStartedTokensView() {
   const theme = useTheme();
 
-  const image =
-    theme.displayTheme === "dark" ? SendTourImage : SendTourImageLight;
+  const image = theme.displayTheme === "dark" ? SendTourImage : SendTourImageLight;
 
   // Segment
   useEffect(() => {
@@ -20,11 +19,7 @@ export function GettingStartedTokensView() {
 
   return (
     <Container>
-      <Content
-        justifyContent="flex-start"
-        alignItems="center"
-        textAlign="center"
-      >
+      <Content justifyContent="flex-start" alignItems="center" textAlign="center">
         <Image src={image} alt="Send Tour" />
         <Text size="md" weight="medium" noMargin>
           {browser.i18n.getMessage("getting_started_tokens_title")}

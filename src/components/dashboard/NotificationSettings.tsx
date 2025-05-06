@@ -10,18 +10,17 @@ export function NotificationSettingsDashboardView() {
   const [notificationSettings, setNotificationSettings] = useStorage(
     {
       key: "setting_notifications",
-      instance: ExtensionStorage
+      instance: ExtensionStorage,
     },
-    false
+    false,
   );
-  const [notificationCustomizeSettings, setNotificationCustomizeSettings] =
-    useStorage(
-      {
-        key: "setting_notifications_customize",
-        instance: ExtensionStorage
-      },
-      ["default"]
-    );
+  const [notificationCustomizeSettings, setNotificationCustomizeSettings] = useStorage(
+    {
+      key: "setting_notifications_customize",
+      instance: ExtensionStorage,
+    },
+    ["default"],
+  );
 
   const toggleNotificationSetting = () => {
     setNotificationSettings(!notificationSettings);
@@ -38,46 +37,31 @@ export function NotificationSettingsDashboardView() {
           style={{
             display: "flex",
             justifyContent: "space-between",
-            alignItems: "center"
-          }}
-        >
+            alignItems: "center",
+          }}>
           <Text size="lg" weight="medium" noMargin>
             {browser.i18n.getMessage("setting_notifications")}
           </Text>
-          <ToggleSwitch
-            width={51}
-            height={31}
-            checked={notificationSettings}
-            setChecked={toggleNotificationSetting}
-          />
+          <ToggleSwitch width={51} height={31} checked={notificationSettings} setChecked={toggleNotificationSetting} />
         </div>
         <RadioWrapper>
           {/* AR AND AO TRANSFER NOTIFICATIONS  */}
           <Checkbox
             label="Enable Arweave and ao Transaction Notifications"
-            checked={
-              notificationCustomizeSettings &&
-              notificationCustomizeSettings.includes("default")
-            }
+            checked={notificationCustomizeSettings && notificationCustomizeSettings.includes("default")}
             onChange={() => handleRadioChange("default")}
           />
 
           {/* JUST AR TRANSFER NOTIFICATIONS  */}
           <Checkbox
             label="Enable Arweave Transaction Notifications"
-            checked={
-              notificationCustomizeSettings &&
-              notificationCustomizeSettings.includes("arTransferNotifications")
-            }
+            checked={notificationCustomizeSettings && notificationCustomizeSettings.includes("arTransferNotifications")}
             onChange={() => handleRadioChange("arTransferNotifications")}
           />
 
           {/* ALL NOTIFICATIONS */}
           <Checkbox
-            checked={
-              notificationCustomizeSettings &&
-              notificationCustomizeSettings.includes("allTxns")
-            }
+            checked={notificationCustomizeSettings && notificationCustomizeSettings.includes("allTxns")}
             onChange={() => handleRadioChange("allTxns")}
             label="Enable all Arweave and ao Notifications"
           />

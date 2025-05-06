@@ -1,10 +1,4 @@
-import {
-  ButtonV2,
-  ModalV2,
-  Spacer,
-  Text,
-  type DisplayTheme
-} from "@arconnect/components";
+import { ButtonV2, ModalV2, Spacer, Text, type DisplayTheme } from "@arconnect/components";
 import browser from "webextension-polyfill";
 import styled from "styled-components";
 import { CheckIcon, CloseIcon } from "@iconicicons/react";
@@ -15,7 +9,7 @@ export const PasswordWarningModal = ({
   open,
   setOpen,
   passwordStatus,
-  done
+  done,
 }: {
   open: boolean;
   setOpen: (close: boolean) => void;
@@ -23,11 +17,7 @@ export const PasswordWarningModal = ({
   done: (skip: boolean) => void;
 }) => {
   return (
-    <ModalV2
-      root={document.getElementById("__plasmo")}
-      open={open}
-      setOpen={setOpen}
-    >
+    <ModalV2 root={document.getElementById("__plasmo")} open={open} setOpen={setOpen}>
       <ContentWrapper>
         <Content>
           <div>
@@ -35,47 +25,24 @@ export const PasswordWarningModal = ({
               {browser.i18n.getMessage("password_warning_title")}
             </HeaderText>
             <Spacer y={1} />
-            <CenterText>
-              {browser.i18n.getMessage("password_warning_description")}
-            </CenterText>
+            <CenterText>{browser.i18n.getMessage("password_warning_description")}</CenterText>
             <Spacer y={0.7} />
             <BulletPoints>
-              <StrengthCheck
-                isValid={passwordStatus.contains.includes("uppercase")}
-              >
-                {passwordStatus.contains.includes("uppercase") ? (
-                  <CheckIcon />
-                ) : (
-                  <CloseIcon />
-                )}
+              <StrengthCheck isValid={passwordStatus.contains.includes("uppercase")}>
+                {passwordStatus.contains.includes("uppercase") ? <CheckIcon /> : <CloseIcon />}
                 {browser.i18n.getMessage("password_strength_checklist_case")}
               </StrengthCheck>
-              <StrengthCheck
-                isValid={passwordStatus.contains.includes("symbol")}
-              >
-                {passwordStatus.contains.includes("symbol") ? (
-                  <CheckIcon />
-                ) : (
-                  <CloseIcon />
-                )}
+              <StrengthCheck isValid={passwordStatus.contains.includes("symbol")}>
+                {passwordStatus.contains.includes("symbol") ? <CheckIcon /> : <CloseIcon />}
                 {browser.i18n.getMessage("password_strength_checklist_symbol")}
               </StrengthCheck>
-              <StrengthCheck
-                isValid={passwordStatus.contains.includes("number")}
-              >
-                {passwordStatus.contains.includes("number") ? (
-                  <CheckIcon />
-                ) : (
-                  <CloseIcon />
-                )}
+              <StrengthCheck isValid={passwordStatus.contains.includes("number")}>
+                {passwordStatus.contains.includes("number") ? <CheckIcon /> : <CloseIcon />}
                 {browser.i18n.getMessage("password_strength_checklist_number")}
               </StrengthCheck>
               <StrengthCheck isValid={passwordStatus.length >= 10}>
                 {passwordStatus.length >= 10 ? <CheckIcon /> : <CloseIcon />}
-                {browser.i18n.getMessage(
-                  "password_strength_checklist_length",
-                  "10"
-                )}
+                {browser.i18n.getMessage("password_strength_checklist_length", "10")}
               </StrengthCheck>
             </BulletPoints>
             <Spacer y={1} />
@@ -88,15 +55,13 @@ export const PasswordWarningModal = ({
           onClick={() => {
             done(true);
             setOpen(false);
-          }}
-        >
+          }}>
           {browser.i18n.getMessage("continue")}
         </ButtonV2>
         <ResetButton
           onClick={() => {
             setOpen(false);
-          }}
-        >
+          }}>
           {browser.i18n.getMessage("cancel")}
         </ResetButton>
       </ButtonsWrapper>
@@ -118,12 +83,11 @@ const ButtonsWrapper = styled.div`
 `;
 
 const CenterText = styled(Text).attrs({
-  noMargin: true
+  noMargin: true,
 })<{ displayTheme?: DisplayTheme }>`
   width: 245px;
   text-align: center;
-  color: ${(props) =>
-    props.theme.displayTheme === "light" ? "#191919" : "#FFFFFF"};
+  color: ${(props) => (props.theme.displayTheme === "light" ? "#191919" : "#FFFFFF")};
   font-weight: 500;
   text-align: left;
   font-size: 11px;
@@ -136,8 +100,7 @@ const CenterText = styled(Text).attrs({
 const HeaderText = styled(Text)<{ displayTheme?: DisplayTheme }>`
   font-size: 18px;
   font-weight: 500;
-  color: ${(props) =>
-    props.theme.displayTheme === "light" ? "#191919" : "#FFFFFF"};
+  color: ${(props) => (props.theme.displayTheme === "light" ? "#191919" : "#FFFFFF")};
 `;
 
 const StrengthCheck = styled.div<{ isValid: boolean }>`
@@ -147,9 +110,7 @@ const StrengthCheck = styled.div<{ isValid: boolean }>`
 
   p {
     font-size: 0.84rem;
-    color: rgb(
-      ${(props) => (props.isValid ? "0, 255, 0" : props.theme.secondaryText)}
-    );
+    color: rgb(${(props) => (props.isValid ? "0, 255, 0" : props.theme.secondaryText)});
     line-height: 1.1em;
     transition: all 0.17s ease-in-out;
   }

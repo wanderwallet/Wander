@@ -26,23 +26,12 @@ export default function SettingListItem({
     <ListItem
       titleStyle={{
         fontWeight: 500,
-        color: isReset
-          ? "#F1655B"
-          : active
-          ? theme.primaryText
-          : theme.secondaryText
+        color: isReset ? "#F1655B" : active ? theme.primaryText : theme.secondaryText,
       }}
       title={browser.i18n.getMessage(displayName)}
       active={active}
       hideSquircle
-      icon={
-        <ListItemIcon
-          active={active}
-          fail={isReset}
-          style={{ height: 24, width: 24 }}
-          as={icon}
-        />
-      }
+      icon={<ListItemIcon active={active} fail={isReset} style={{ height: 24, width: 24 }} as={icon} />}
       {...props}
     />
   );
@@ -51,6 +40,5 @@ export default function SettingListItem({
 const ListItemIcon = styled.div<{ active?: boolean; fail?: boolean }>`
   height: 24px;
   width: 24px;
-  color: ${({ theme, active, fail }) =>
-    fail ? "#F1655B" : active ? theme.primary : theme.secondaryText};
+  color: ${({ theme, active, fail }) => (fail ? "#F1655B" : active ? theme.primary : theme.secondaryText)};
 `;

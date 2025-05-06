@@ -1,10 +1,6 @@
 import Arweave from "arweave";
 import type { Alarms } from "webextension-polyfill";
-import {
-  getAoTokens,
-  getAoTokensCache,
-  getAoTokensAutoImportRestrictedIds
-} from "~tokens";
+import { getAoTokens, getAoTokensCache, getAoTokensAutoImportRestrictedIds } from "~tokens";
 import { getTokenInfo } from "~tokens/aoTokens/ao";
 import {
   AO_TOKENS,
@@ -13,7 +9,7 @@ import {
   AO_TOKENS_LAST_BLOCK_HEIGHT,
   gateway,
   getNoticeTransactions,
-  verifyCollectiblesType
+  verifyCollectiblesType,
 } from "~tokens/aoTokens/sync";
 import { withRetry } from "~utils/promises/retry";
 import { timeoutPromise } from "~utils/promises/timeout";
@@ -29,20 +25,15 @@ export async function handleAoTokensImportAlarm(alarm: Alarms.Alarm) {
   try {
     const activeAddress = await getActiveAddress();
 
-    let [aoTokens, aoTokensCache, removedTokenIds = [], lastBlockHeight] =
-      await Promise.all([
-        getAoTokens(),
-        getAoTokensCache(),
-        getAoTokensAutoImportRestrictedIds(),
-        PersistentStorage.get<number>(
-          `${AO_TOKENS_LAST_BLOCK_HEIGHT}_${activeAddress}`
-        )
-      ]);
+    let [aoTokens, aoTokensCache, removedTokenIds = [], lastBlockHeight] = await Promise.all([
+      getAoTokens(),
+      getAoTokensCache(),
+      getAoTokensAutoImportRestrictedIds(),
+      PersistentStorage.get<number>(`${AO_TOKENS_LAST_BLOCK_HEIGHT}_${activeAddress}`),
+    ]);
 
     let aoTokensIds = new Set(aoTokens.map(({ processId }) => processId));
-    const aoTokensCacheIds = new Set(
-      aoTokensCache.map(({ processId }) => processId)
-    );
+    const aoTokensCacheIds = new Set(aoTokensCache.map(({ processId }) => processId));
     let tokenIdstoExclude = new Set([...aoTokensIds, ...removedTokenIds]);
     const walletTokenIds = new Set([...tokenIdstoExclude, ...aoTokensCacheIds]);
 
@@ -52,19 +43,16 @@ export async function handleAoTokensImportAlarm(alarm: Alarms.Alarm) {
       activeAddress,
       Array.from(walletTokenIds),
       5,
-      lastBlockHeight
+      lastBlockHeight,
     );
 
     if (maxBlockHeight && maxBlockHeight > 0) {
-      await PersistentStorage.set(
-        `${AO_TOKENS_LAST_BLOCK_HEIGHT}_${activeAddress}`,
-        maxBlockHeight
-      );
+      await PersistentStorage.set(`${AO_TOKENS_LAST_BLOCK_HEIGHT}_${activeAddress}`, maxBlockHeight);
     }
 
-    const newProcessIds = Array.from(
-      new Set([...processIds, ...aoTokensCacheIds])
-    ).filter((processId) => !tokenIdstoExclude.has(processId));
+    const newProcessIds = Array.from(new Set([...processIds, ...aoTokensCacheIds])).filter(
+      (processId) => !tokenIdstoExclude.has(processId),
+    );
 
     if (newProcessIds.length === 0) {
       console.log("No new ao tokens found!");
@@ -77,7 +65,7 @@ export async function handleAoTokensImportAlarm(alarm: Alarms.Alarm) {
         withRetry(async () => {
           const token = await timeoutPromise(getTokenInfo(processId), 3000);
           return { ...token, processId };
-        }, 2)
+        }, 2),
       );
     const results = await Promise.allSettled(promises);
 
@@ -101,18 +89,11 @@ export async function handleAoTokensImportAlarm(alarm: Alarms.Alarm) {
     tokenIdstoExclude = new Set([...aoTokensIds, ...removedTokenIds]);
 
     if (tokensToRestrict.length > 0) {
-      removedTokenIds.push(
-        ...tokensToRestrict.map(({ processId }) => processId)
-      );
-      await PersistentStorage.set(
-        AO_TOKENS_AUTO_IMPORT_RESTRICTED_IDS,
-        removedTokenIds
-      );
+      removedTokenIds.push(...tokensToRestrict.map(({ processId }) => processId));
+      await PersistentStorage.set(AO_TOKENS_AUTO_IMPORT_RESTRICTED_IDS, removedTokenIds);
     }
 
-    let newTokens = updatedTokens.filter(
-      (token) => !tokenIdstoExclude.has(token.processId)
-    );
+    let newTokens = updatedTokens.filter((token) => !tokenIdstoExclude.has(token.processId));
     if (newTokens.length === 0) return;
 
     // Verify collectibles type

@@ -18,11 +18,7 @@ export function GettingStartedOnrampView() {
 
   return (
     <Container>
-      <Content
-        justifyContent="flex-start"
-        alignItems="center"
-        textAlign="center"
-      >
+      <Content justifyContent="flex-start" alignItems="center" textAlign="center">
         <Image src={image} alt="Placeholder Image" />
         <Text size="md" weight="medium" noMargin>
           {browser.i18n.getMessage("getting_started_onramp_title")}

@@ -10,31 +10,14 @@ export function PinExtension() {
   return (
     <Container>
       <Content>
-        <Flex
-          direction="row"
-          align="center"
-          gap={16}
-          style={{ paddingRight: 20, paddingLeft: 20 }}
-        >
-          <Pin02
-            style={{ flexShrink: 0, color: "#EEE" }}
-            height={24}
-            width={24}
-          />
+        <Flex direction="row" align="center" gap={16} style={{ paddingRight: 20, paddingLeft: 20 }}>
+          <Pin02 style={{ flexShrink: 0, color: "#EEE" }} height={24} width={24} />
           <Text size="xs" noMargin style={{ color: "#EEE" }}>
-            <span style={{ fontWeight: 700 }}>
-              {browser.i18n.getMessage("pin_wander")}{" "}
-            </span>
+            <span style={{ fontWeight: 700 }}>{browser.i18n.getMessage("pin_wander")} </span>
             {browser.i18n.getMessage("pin_wander_rest")}
           </Text>
         </Flex>
-        <img
-          height="60px"
-          width="100%"
-          style={{ borderRadius: 12 }}
-          src={BrowserExtension}
-          alt="browser-extension"
-        />
+        <img height="60px" width="100%" style={{ borderRadius: 12 }} src={BrowserExtension} alt="browser-extension" />
       </Content>
       <img src={Arrow} alt="arrow" />
     </Container>

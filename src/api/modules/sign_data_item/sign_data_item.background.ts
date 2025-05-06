@@ -1,7 +1,7 @@
-import { isRawDataItem } from "~utils/assertions";
+import { isRawDataItem, isSignatureOptions } from "~utils/assertions";
 import { freeDecryptedWallet } from "~wallets/encryption";
 import type { BackgroundModuleFunction } from "~api/background/background-modules";
-import { ArweaveSigner, createData } from "arbundles";
+import { createData } from "@dha-team/arbundles";
 import Application from "~applications/application";
 import { getActiveKeyfile, getActiveWallet } from "~wallets";
 import { signAuthKeystone, type AuthKeystoneData } from "../sign/sign_auth";
@@ -11,14 +11,17 @@ import BigNumber from "bignumber.js";
 import { createDataItem } from "~utils/data_item";
 import { EventType, trackDirect } from "~utils/analytics";
 import { checkIfUserNeedsToSign } from "../sign/sign_policy";
+import { createArweaveSignerWithOptions } from "~utils/signer.utils";
 
 const background: BackgroundModuleFunction<number[]> = async (
   appData,
-  dataItem: unknown
+  dataItem: unknown,
+  signatureOptions?: unknown,
 ) => {
   // validate
   try {
     isRawDataItem(dataItem);
+    if (signatureOptions) isSignatureOptions(signatureOptions);
   } catch (err) {
     throw new Error(err);
   }
@@ -30,12 +33,8 @@ const background: BackgroundModuleFunction<number[]> = async (
   let amount = "0";
 
   if (
-    dataItem.tags?.some(
-      (tag) => tag.name === "Action" && tag.value === "Transfer"
-    ) &&
-    dataItem.tags?.some(
-      (tag) => tag.name === "Data-Protocol" && tag.value === "ao"
-    )
+    dataItem.tags?.some((tag) => tag.name === "Action" && tag.value === "Transfer") &&
+    dataItem.tags?.some((tag) => tag.name === "Data-Protocol" && tag.value === "ao")
   ) {
     isTransferTx = true;
     try {
@@ -62,11 +61,7 @@ const background: BackgroundModuleFunction<number[]> = async (
   const decryptedWallet = await getActiveKeyfile(appData);
 
   const signPolicy = await app.getSignPolicy();
-  const alwaysAsk = checkIfUserNeedsToSign(
-    signPolicy,
-    dataItem,
-    decryptedWallet.type
-  );
+  const alwaysAsk = checkIfUserNeedsToSign(signPolicy, dataItem, decryptedWallet.type);
 
   // get options and data
   const { data, ...options } = dataItem;
@@ -74,7 +69,7 @@ const background: BackgroundModuleFunction<number[]> = async (
 
   if (decryptedWallet.type == "local") {
     // create bundlr tx as a data entry
-    const dataSigner = new ArweaveSigner(decryptedWallet.keyfile);
+    const dataSigner = createArweaveSignerWithOptions(decryptedWallet.keyfile, signatureOptions);
     const dataEntry = createData(binaryData, dataSigner, options);
 
     // check allowance
@@ -87,9 +82,9 @@ const background: BackgroundModuleFunction<number[]> = async (
         await requestUserAuthorization(
           {
             type: "signDataItem",
-            data: dataItem
+            data: dataItem,
           },
-          appData
+          appData,
         );
       }
     } catch (e) {
@@ -117,20 +112,16 @@ const background: BackgroundModuleFunction<number[]> = async (
       signatureType: 1,
       signatureLength: 512,
       ownerLength: 512,
-      publicKey: Buffer.from(
-        Arweave.utils.b64UrlToBuffer(activeWallet.publicKey)
-      )
+      publicKey: Buffer.from(Arweave.utils.b64UrlToBuffer(activeWallet.publicKey)),
     };
     const dataEntry = createDataItem(binaryData, signerConfig, options);
     try {
       const data: AuthKeystoneData = {
         type: "DataItem",
-        data: dataEntry.getRaw()
+        data: dataEntry.getRaw(),
       };
       const res = await signAuthKeystone(appData, data);
-      dataEntry.setSignature(
-        Buffer.from(Arweave.utils.b64UrlToBuffer(res.data.signature))
-      );
+      dataEntry.setSignature(Buffer.from(Arweave.utils.b64UrlToBuffer(res.data.signature)));
     } catch (e) {
       throw new Error(e?.message || e);
     }
@@ -141,13 +132,7 @@ const background: BackgroundModuleFunction<number[]> = async (
   }
 };
 
-async function trackSigned(
-  app: Application,
-  appUrl: string,
-  tokenId: string,
-  amount: string,
-  isTransferTx: boolean
-) {
+async function trackSigned(app: Application, appUrl: string, tokenId: string, amount: string, isTransferTx: boolean) {
   try {
     if (isTransferTx && amount !== "0") {
       const appInfo = await app.getAppData();
@@ -155,7 +140,7 @@ async function trackSigned(
         appName: appInfo.name,
         appUrl,
         tokenId,
-        amount
+        amount,
       });
     }
   } catch {}

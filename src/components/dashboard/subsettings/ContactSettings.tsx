@@ -8,7 +8,7 @@ import {
   Spacer,
   Tooltip,
   useModal,
-  useToasts
+  useToasts,
 } from "@arconnect/components-rebrand";
 import { useState, useEffect, type MouseEventHandler } from "react";
 import { Share04, Upload01 } from "@untitled-ui/icons-react";
@@ -32,14 +32,13 @@ export interface ContactSettingsDashboardViewParams {
   address: string;
 }
 
-export interface ContactSettingsDashboardViewProps
-  extends CommonRouteProps<ContactSettingsDashboardViewParams> {
+export interface ContactSettingsDashboardViewProps extends CommonRouteProps<ContactSettingsDashboardViewParams> {
   isQuickSetting?: boolean;
 }
 
 export function ContactSettingsDashboardView({
   isQuickSetting,
-  params: { address }
+  params: { address },
 }: ContactSettingsDashboardViewProps) {
   const { navigate } = useLocation();
 
@@ -47,9 +46,9 @@ export function ContactSettingsDashboardView({
   const [storedContacts, setStoredContacts] = useStorage(
     {
       key: "contacts",
-      instance: ExtensionStorage
+      instance: ExtensionStorage,
     },
-    []
+    [],
   );
 
   const { setToast } = useToasts();
@@ -61,7 +60,7 @@ export function ContactSettingsDashboardView({
     profileIcon: "",
     notes: "",
     ArNSAddress: "",
-    avatarId: ""
+    avatarId: "",
   });
   const [contactIndex, setContactIndex] = useState(-1);
   // const [arnsResults, setArnsResults] = useState([]);
@@ -84,7 +83,7 @@ export function ContactSettingsDashboardView({
         profileIcon: "",
         notes: "",
         ArNSAddress: "",
-        avatarId: ""
+        avatarId: "",
       });
       setContactIndex(-1);
     }
@@ -107,28 +106,26 @@ export function ContactSettingsDashboardView({
     const { name, value } = e.target;
     setContact({
       ...contact,
-      [name]: value
+      [name]: value,
     });
   };
 
   const saveContact = async () => {
     // check if the address has been changed to a different one that's already in use
-    const addressChanged =
-      contact.address !== storedContacts[contactIndex].address;
+    const addressChanged = contact.address !== storedContacts[contactIndex].address;
     const addressUsedByAnotherContact = storedContacts.some(
-      (existingContact, index) =>
-        existingContact.address === contact.address && index !== contactIndex
+      (existingContact, index) => existingContact.address === contact.address && index !== contactIndex,
     );
 
     if (addressChanged && addressUsedByAnotherContact) {
       setToast({
         type: "error",
         content: browser.i18n.getMessage("address_in_use"),
-        duration: 3000
+        duration: 3000,
       });
       setContact({
         ...contact,
-        address: storedContacts[contactIndex].address
+        address: storedContacts[contactIndex].address,
       });
       return;
     }
@@ -167,18 +164,18 @@ export function ContactSettingsDashboardView({
           duration: 5000,
           action: {
             name: browser.i18n.getMessage("copyId"),
-            task: () => copy(avatarTxId)
-          }
+            task: () => copy(avatarTxId),
+          },
         });
         setContact({
           ...contact,
-          avatarId: avatarTxId
+          avatarId: avatarTxId,
         });
       } catch (error) {
         setToast({
           type: "error",
           content: `File size too large. ${error}`,
-          duration: 5000
+          duration: 5000,
         });
         console.error("Error uploading avatar:", error);
       }
@@ -192,7 +189,7 @@ export function ContactSettingsDashboardView({
         .then((imageUrl) => {
           setContact({
             ...contact,
-            profileIcon: imageUrl
+            profileIcon: imageUrl,
           });
           setAvatarLoading(false);
         })
@@ -246,7 +243,7 @@ export function ContactSettingsDashboardView({
               small={isQuickSetting}
               onClick={() =>
                 browser.tabs.create({
-                  url: `https://${contact.ArNSAddress}.arweave.ar`
+                  url: `https://${contact.ArNSAddress}.arweave.ar`,
                 })
               }
             />
@@ -309,37 +306,25 @@ export function ContactSettingsDashboardView({
             <Header>
               {editable ? (
                 <Flex direction="column" gap={8} width="100%">
-                  {contact.name && (
-                    <SubTitle>{browser.i18n.getMessage("name")}</SubTitle>
-                  )}
+                  {contact.name && <SubTitle>{browser.i18n.getMessage("name")}</SubTitle>}
                   <InputWrapper>
                     <Input
                       fullWidth
                       name="name"
-                      placeholder={
-                        contact.name
-                          ? contact.name
-                          : browser.i18n.getMessage("first_last_name")
-                      }
+                      placeholder={contact.name ? contact.name : browser.i18n.getMessage("first_last_name")}
                       value={contact.name}
                       onChange={handleInputChange}
                     />
                   </InputWrapper>
                 </Flex>
               ) : (
-                <Title>
-                  {contact.name
-                    ? contact.name
-                    : browser.i18n.getMessage("contact_info")}
-                </Title>
+                <Title>{contact.name ? contact.name : browser.i18n.getMessage("contact_info")}</Title>
               )}
             </Header>
           </div>
         )}
         <Spacer y={1} />
-        <SubTitle color="primary">
-          {browser.i18n.getMessage("contact_avatar")}
-        </SubTitle>
+        <SubTitle color="primary">{browser.i18n.getMessage("contact_avatar")}</SubTitle>
         <PicWrapper>
           {contact.avatarId && !avatarLoading ? (
             <ContactPic small={isQuickSetting} src={contact.profileIcon} />
@@ -352,9 +337,7 @@ export function ContactSettingsDashboardView({
             )
           )}
           {!contact.profileIcon && (
-            <AutoContactPic small={isQuickSetting}>
-              {generateProfileIcon(contact.name, contact.address)}
-            </AutoContactPic>
+            <AutoContactPic small={isQuickSetting}>{generateProfileIcon(contact.name, contact.address)}</AutoContactPic>
           )}
           {editable ? (
             <>
@@ -383,11 +366,7 @@ export function ContactSettingsDashboardView({
             <Input
               fullWidth
               name="address"
-              placeholder={
-                contact.address
-                  ? contact.address
-                  : browser.i18n.getMessage("account_address")
-              }
+              placeholder={contact.address ? contact.address : browser.i18n.getMessage("account_address")}
               value={contact.address}
               onChange={handleInputChange}
             />
@@ -395,20 +374,11 @@ export function ContactSettingsDashboardView({
         ) : (
           <Flex gap={4}>
             <Address small={isQuickSetting}>
-              {isQuickSetting
-                ? formatAddress(contact.address, 8)
-                : contact.address}
+              {isQuickSetting ? formatAddress(contact.address, 8) : contact.address}
             </Address>
             {!editable && (
-              <Tooltip
-                content={browser.i18n.getMessage("copy_address")}
-                position="top"
-              >
-                <Action
-                  small={isQuickSetting}
-                  as={copied ? CheckIcon : CopyIcon}
-                  onClick={copyAddress}
-                />
+              <Tooltip content={browser.i18n.getMessage("copy_address")} position="top">
+                <Action small={isQuickSetting} as={copied ? CheckIcon : CopyIcon} onClick={copyAddress} />
               </Tooltip>
             )}
           </Flex>
@@ -422,13 +392,7 @@ export function ContactSettingsDashboardView({
           value={contact.notes || ""}
           onChange={(e) => setContact({ ...contact, notes: e.target.value })}
           style={{
-            height: editable
-              ? isQuickSetting
-                ? "78px"
-                : "235px"
-              : isQuickSetting
-              ? "78px"
-              : "269px"
+            height: editable ? (isQuickSetting ? "78px" : "235px") : isQuickSetting ? "78px" : "269px",
           }}
         />
       </div>
@@ -443,11 +407,7 @@ export function ContactSettingsDashboardView({
             {browser.i18n.getMessage("edit_contact")}
           </Button>
         )}
-        <RemoveButton
-          fullWidth
-          variant="secondary"
-          onClick={() => removeContactModal.setOpen(true)}
-        >
+        <RemoveButton fullWidth variant="secondary" onClick={() => removeContactModal.setOpen(true)}>
           {browser.i18n.getMessage("remove_contact")}
         </RemoveButton>
       </Footer>
@@ -456,25 +416,15 @@ export function ContactSettingsDashboardView({
         root={document.getElementById("__plasmo")}
         actions={
           <>
-            <Button
-              variant="secondary"
-              onClick={() => removeContactModal.setOpen(false)}
-            >
+            <Button variant="secondary" onClick={() => removeContactModal.setOpen(false)}>
               {browser.i18n.getMessage("no")}
             </Button>
-            <Button onClick={confirmRemoveContact}>
-              {browser.i18n.getMessage("yes")}
-            </Button>
+            <Button onClick={confirmRemoveContact}>{browser.i18n.getMessage("yes")}</Button>
           </>
-        }
-      >
-        <CenterText size="xl">
-          {browser.i18n.getMessage("remove_contact")}
-        </CenterText>
+        }>
+        <CenterText size="xl">{browser.i18n.getMessage("remove_contact")}</CenterText>
         <Spacer y={0.55} />
-        <CenterText noMargin>
-          {browser.i18n.getMessage("remove_contact_question")}
-        </CenterText>
+        <CenterText noMargin>{browser.i18n.getMessage("remove_contact_question")}</CenterText>
         <Spacer y={1} />
       </Modal>
     </Wrapper>
@@ -541,7 +491,7 @@ export const CenterText = styled(Text)`
 
 const Address = styled(Text).attrs({
   heading: true,
-  noMargin: true
+  noMargin: true,
 })<{ small?: boolean }>`
   font-weight: 500;
   display: flex;
@@ -613,7 +563,7 @@ export const ContactInput = styled(Input)<{ small?: boolean }>`
 `;
 
 const ContactInfo = styled(Text).attrs({
-  heading: true
+  heading: true,
 })<{ small?: boolean }>`
   margin-bottom: 20px;
   font-weight: 500;
@@ -645,7 +595,7 @@ export const ContactNotes = styled.textarea<{ small?: boolean }>`
 export const SubTitle = styled(Text).attrs({
   variant: "secondary",
   weight: "medium",
-  noMargin: true
+  noMargin: true,
 })`
   margin-bottom: 10px;
 `;
@@ -653,5 +603,5 @@ export const SubTitle = styled(Text).attrs({
 export const Title = styled(Text).attrs({
   size: "3xl",
   weight: "bold",
-  noMargin: true
+  noMargin: true,
 })``;

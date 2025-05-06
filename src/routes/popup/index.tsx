@@ -5,13 +5,7 @@ import WalletHeader from "~components/popup/WalletHeader";
 import Balance from "~components/popup/home/Balance";
 import { AnnouncementPopup } from "./announcement";
 import { getDecryptionKey } from "~wallets/auth";
-import {
-  trackEvent,
-  EventType,
-  trackPage,
-  PageType,
-  checkWalletBits
-} from "~utils/analytics";
+import { trackEvent, EventType, trackPage, PageType, checkWalletBits } from "~utils/analytics";
 import styled, { useTheme } from "styled-components";
 import { useActiveWallet } from "~wallets/hooks";
 import Tabs from "~components/popup/home/Tabs";
@@ -31,7 +25,7 @@ export function HomeView() {
 
   const [announcement, _] = useStorage<boolean>({
     key: "show_announcement",
-    instance: ExtensionStorage
+    instance: ExtensionStorage,
   });
 
   // checking to see if it's a hardware wallet
@@ -54,8 +48,7 @@ export function HomeView() {
               onClick={() => {
                 navigate("/getting-started/1");
                 close();
-              }}
-            >
+              }}>
               {browser.i18n.getMessage("take_the_tour")}
             </Text>
           </Flex>
@@ -64,7 +57,7 @@ export function HomeView() {
         duration: 5000,
         showIcon: false,
         showProgress: true,
-        progressColor: "linear-gradient(47deg, #5842F8 5.41%, #6B57F9 96%)"
+        progressColor: "linear-gradient(47deg, #5842F8 5.41%, #6B57F9 96%)",
       });
       await ExtensionStorage.set(`tour_taken`, true);
     }

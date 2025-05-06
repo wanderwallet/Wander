@@ -18,13 +18,12 @@ const AuthRelatedScreenRoutes = [
   // EmbeddedPaths.WalletSettingsCustomEmbeddedView,
   "/wallet/settings/custom",
   // EmbeddedPaths.WalletTransactionDetailsEmbeddedView,
-  "/wallet/transaction-details"
+  "/wallet/transaction-details",
 ] as RoutePath[];
 
 export const useAuthRequestsLocation: BaseLocationHook = () => {
   const override = useExtensionStatusOverride();
-  const { authRequest: currentAuthRequest, closeAuthPopup } =
-    useCurrentAuthRequest("any");
+  const { authRequest: currentAuthRequest, closeAuthPopup } = useCurrentAuthRequest("any");
   const { authRequests, setCurrentAuthRequestIndex } = useAuthRequests();
   const [wocation, wavigate] = useHashLocation();
 
@@ -34,15 +33,13 @@ export const useAuthRequestsLocation: BaseLocationHook = () => {
     return closeAuthPopup(AUTH_POPUP_REQUEST_WAIT_MS);
   }, [currentAuthRequest, override]);
 
-  if (override && import.meta.env?.VITE_IS_EMBEDDED_APP !== "1")
-    return [override, NOOP];
+  if (override && import.meta.env?.VITE_IS_EMBEDDED_APP !== "1") return [override, NOOP];
 
   if (!currentAuthRequest) return [ExtensionOverrides.Loading, NOOP];
 
   // The authID has been added to the URL so that the auto-scroll and view transition effect work when switching
   // between different `AuthRequest`s of the same type:
-  const location =
-    `/auth-request/${currentAuthRequest.type}/${currentAuthRequest.authID}` satisfies AuthRoutePath;
+  const location = `/auth-request/${currentAuthRequest.type}/${currentAuthRequest.authID}` satisfies AuthRoutePath;
 
   // navigate function that can handle both auth request navigation and related routes
   const navigate = (to: string, options?: any) => {
@@ -54,9 +51,7 @@ export const useAuthRequestsLocation: BaseLocationHook = () => {
     if (authIDMatch && authIDMatch[1]) {
       const authID = authIDMatch[1];
       // Find the auth request with this ID
-      const index = authRequests.findIndex(
-        (request) => request.authID === authID
-      );
+      const index = authRequests.findIndex((request) => request.authID === authID);
       if (index !== -1) {
         setCurrentAuthRequestIndex(index);
         return;
@@ -68,11 +63,7 @@ export const useAuthRequestsLocation: BaseLocationHook = () => {
   };
 
   const matchedLocation = IS_EMBEDDED_APP
-    ? routeTrapMatches(
-        wocation as AuthRoutePath,
-        AuthRelatedScreenRoutes,
-        location
-      )
+    ? routeTrapMatches(wocation as AuthRoutePath, AuthRelatedScreenRoutes, location)
     : location;
 
   return [matchedLocation, navigate];

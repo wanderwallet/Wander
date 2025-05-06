@@ -1,13 +1,6 @@
 import { currencies } from "~utils/currency";
 import Setting from "./setting";
-import {
-  BarChart07,
-  Compass01,
-  CurrencyDollarCircle,
-  Percent02,
-  Star01,
-  Sun
-} from "@untitled-ui/icons-react";
+import { BarChart07, Compass01, CurrencyDollarCircle, Percent02, Star01, Sun } from "@untitled-ui/icons-react";
 import { ExtensionStorage } from "~utils/storage";
 
 /** All settings */
@@ -26,7 +19,7 @@ const settings: Setting[] = [
     icon: Percent02,
     description: "setting_fee_multiplier_description",
     type: "number",
-    defaultValue: 1
+    defaultValue: 1,
   }),
   new Setting({
     name: "currency",
@@ -36,7 +29,7 @@ const settings: Setting[] = [
     type: "pick",
     options: currencies,
     defaultValue: "USD",
-    inputPlaceholder: "search_currency"
+    inputPlaceholder: "search_currency",
   }),
   /*new Setting({
     name: "arverify",
@@ -53,7 +46,7 @@ const settings: Setting[] = [
     description: "setting_display_theme_description",
     type: "pick",
     options: ["system", "light", "dark"],
-    defaultValue: "system"
+    defaultValue: "system",
   }),
   new Setting({
     name: "arconfetti",
@@ -62,7 +55,7 @@ const settings: Setting[] = [
     description: "setting_setting_arconfetti_description",
     type: "pick",
     options: [false, "arweave", "hedgehog", "usd"],
-    defaultValue: "arweave"
+    defaultValue: "arweave",
   }),
   new Setting({
     name: "gateways",
@@ -71,7 +64,7 @@ const settings: Setting[] = [
     description: "setting_gateways_description",
     type: "pick",
     options: [],
-    defaultValue: { host: "arweave.net", port: 443, protocol: "https" }
+    defaultValue: { host: "arweave.net", port: 443, protocol: "https" },
   }),
   new Setting({
     name: "analytics",
@@ -79,8 +72,8 @@ const settings: Setting[] = [
     icon: BarChart07,
     description: "setting_analytics_description",
     type: "boolean",
-    defaultValue: false
-  })
+    defaultValue: false,
+  }),
 ];
 
 /**

@@ -14,11 +14,7 @@ export function GettingStartedPinView() {
 
   return (
     <Container>
-      <Content
-        justifyContent="flex-start"
-        alignItems="center"
-        textAlign="center"
-      >
+      <Content justifyContent="flex-start" alignItems="center" textAlign="center">
         <Image src={PinExtension} alt="Pin Extension" />
         <Text size="md" weight="medium" noMargin>
           {browser.i18n.getMessage("getting_started_pin_title")}

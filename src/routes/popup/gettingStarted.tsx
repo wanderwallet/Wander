@@ -14,7 +14,7 @@ import {
   BackButton,
   Wrapper,
   PageWrapper,
-  Page
+  Page,
 } from "../welcome/setup";
 import { GettingStartedTokensView } from "../welcome/gettingStarted/tokens";
 import { GettingStartedOnrampView } from "../welcome/gettingStarted/onramp";
@@ -29,7 +29,7 @@ const Views = [
   GettingStartedExploreView,
   GettingStartedPersonalizeView,
   GettingStartedPinView,
-  GettingStartedConnectView
+  GettingStartedConnectView,
 ];
 
 export interface GettingStartedSetupWelcomeViewParams {
@@ -37,12 +37,9 @@ export interface GettingStartedSetupWelcomeViewParams {
   page: string;
 }
 
-export type GettingStartedSetupWelcomeViewProps =
-  CommonRouteProps<GettingStartedSetupWelcomeViewParams>;
+export type GettingStartedSetupWelcomeViewProps = CommonRouteProps<GettingStartedSetupWelcomeViewParams>;
 
-export function GettingStartedSetupWelcomeView({
-  params: { page: pageParam }
-}: GettingStartedSetupWelcomeViewProps) {
+export function GettingStartedSetupWelcomeView({ params: { page: pageParam } }: GettingStartedSetupWelcomeViewProps) {
   const { navigate } = useLocation();
   const page = Number(pageParam);
 
@@ -62,10 +59,7 @@ export function GettingStartedSetupWelcomeView({
 
   return (
     <Wrapper style={{ maxHeight: "100vh", boxSizing: "border-box" }}>
-      <SetupCard
-        style={{ gap: 0, padding: 0, margin: 0 }}
-        transparentBackground
-      >
+      <SetupCard style={{ gap: 0, padding: 0, margin: 0 }} transparentBackground>
         <HeaderContainer style={{ padding: 24 }}>
           <CardHeader>
             <BackButton onClick={() => navigateToPage(page - 1)} />
@@ -87,11 +81,7 @@ export function GettingStartedSetupWelcomeView({
               {browser.i18n.getMessage(page < 6 ? "next" : "finish")}
             </Button>
             {page < 6 && (
-              <Button
-                fullWidth
-                variant="secondary"
-                onClick={() => navigateToPage(page - 1)}
-              >
+              <Button fullWidth variant="secondary" onClick={() => navigateToPage(page - 1)}>
                 {browser.i18n.getMessage("close")}
               </Button>
             )}

@@ -9,11 +9,7 @@ type PaginationProps = {
   subtitle: string;
 };
 
-const Pagination: React.FC<PaginationProps> = ({
-  currentPage,
-  totalPages,
-  subtitle
-}) => {
+const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, subtitle }) => {
   return (
     <PaginationContainer>
       <InactivePagination>
@@ -30,21 +26,14 @@ const Pagination: React.FC<PaginationProps> = ({
         ))}
       </InactivePagination>
       <Text size="sm" weight="medium" noMargin>
-        {browser.i18n.getMessage("step")} {currentPage}:{" "}
-        {browser.i18n.getMessage(subtitle)}
+        {browser.i18n.getMessage("step")} {currentPage}: {browser.i18n.getMessage(subtitle)}
       </Text>
     </PaginationContainer>
   );
 };
 
 export const CheckIcon = () => (
-  <svg
-    width="11"
-    height="8"
-    viewBox="0 0 11 8"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
+  <svg width="11" height="8" viewBox="0 0 11 8" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path
       d="M3.67794 6.31171L1.30728 3.82401L0.5 4.66517L3.67794 8L10.5 0.841163L9.69841 0L3.67794 6.31171Z"
       fill="white"

@@ -12,22 +12,15 @@ export default function RevealRecoveryPhraseModal({ open, close }: Props) {
   const [activeAddress] = useStorage(
     {
       key: "active_address",
-      instance: ExtensionStorage
+      instance: ExtensionStorage,
     },
-    ""
+    "",
   );
 
   return (
     <SliderMenu hasHeader={false} isOpen={open} onClose={close}>
       <Wrapper>
-        <Flex
-          direction="column"
-          align="center"
-          textAlign="center"
-          gap={16}
-          width="100%"
-          padding="24px 0px"
-        >
+        <Flex direction="column" align="center" textAlign="center" gap={16} width="100%" padding="24px 0px">
           <AlertTriangle height={48} width={48} color="#EEBD41" />
           <Flex direction="column" gap={8}>
             <Text size="xl" weight="semibold" noMargin>
@@ -38,23 +31,13 @@ export default function RevealRecoveryPhraseModal({ open, close }: Props) {
               weight="medium"
               variant="secondary"
               lineHeight={1.3}
-              noMargin
-            >
-              {browser.i18n.getMessage(
-                "you_can_only_see_your_recovery_phrase_once"
-              )}
+              noMargin>
+              {browser.i18n.getMessage("you_can_only_see_your_recovery_phrase_once")}
             </Text>
           </Flex>
         </Flex>
         <Flex direction="column" gap={8} width="100%">
-          <Button
-            fullWidth
-            onClick={() =>
-              navigate(
-                `/quick-settings/wallets/${activeAddress}/recovery-phrase`
-              )
-            }
-          >
+          <Button fullWidth onClick={() => navigate(`/quick-settings/wallets/${activeAddress}/recovery-phrase`)}>
             I understand
           </Button>
           <Button variant="secondary" fullWidth onClick={close}>

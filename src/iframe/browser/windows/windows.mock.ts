@@ -24,9 +24,9 @@ export const windows = {
     return {
       tabs: [
         {
-          id: EMBEDDED_IFRAME_TAB_ID
-        }
-      ]
+          id: EMBEDDED_IFRAME_TAB_ID,
+        },
+      ],
     };
-  }
+  },
 };

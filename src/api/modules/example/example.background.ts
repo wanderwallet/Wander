@@ -3,10 +3,7 @@ import type { BackgroundModuleFunction } from "~api/background/background-module
 /**
  * Background functionality of the module
  */
-const background: BackgroundModuleFunction<string> = async (
-  port,
-  test: string
-) => {
+const background: BackgroundModuleFunction<string> = async (port, test: string) => {
   return "fffff";
 };
 

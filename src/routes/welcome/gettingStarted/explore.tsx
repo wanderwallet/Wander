@@ -9,8 +9,7 @@ import ExploreImageLight from "url:/assets/setup/explore_tour_light.png";
 
 export function GettingStartedExploreView() {
   const theme = useTheme();
-  const image =
-    theme.displayTheme === "dark" ? ExploreImage : ExploreImageLight;
+  const image = theme.displayTheme === "dark" ? ExploreImage : ExploreImageLight;
 
   // Segment
   useEffect(() => {
@@ -19,11 +18,7 @@ export function GettingStartedExploreView() {
 
   return (
     <Container>
-      <Content
-        justifyContent="flex-start"
-        alignItems="center"
-        textAlign="center"
-      >
+      <Content justifyContent="flex-start" alignItems="center" textAlign="center">
         <Image src={image} alt="Explore Image" />
         <Text size="md" weight="medium" noMargin>
           {browser.i18n.getMessage("getting_started_explore_title")}

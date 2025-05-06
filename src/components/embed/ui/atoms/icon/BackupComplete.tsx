@@ -2,19 +2,8 @@ import * as React from "react";
 import type { SVGProps } from "react";
 import { withThemeAwareColor } from "./IconBase";
 
-const SvgBackupComplete = ({
-  width = 74,
-  height = 48,
-  ...props
-}: SVGProps<SVGSVGElement>) => (
-  <svg
-    width={width}
-    height={height}
-    viewBox="0 0 74 48"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    {...props}
-  >
+const SvgBackupComplete = ({ width = 74, height = 48, ...props }: SVGProps<SVGSVGElement>) => (
+  <svg width={width} height={height} viewBox="0 0 74 48" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
     <rect
       x="13.3726"
       y="11.7869"
@@ -49,13 +38,7 @@ const SvgBackupComplete = ({
       transform="rotate(-15 45.4121 15.774)"
       fill="#EAE7FF"
     />
-    <circle
-      cx="52.4781"
-      cy="20.2883"
-      r="2.37735"
-      transform="rotate(-15 52.4781 20.2883)"
-      fill="#6B57F9"
-    />
+    <circle cx="52.4781" cy="20.2883" r="2.37735" transform="rotate(-15 52.4781 20.2883)" fill="#6B57F9" />
     <path
       d="M4.83463 18.367C4.86862 18.239 5.05031 18.239 5.08429 18.367L5.89113 21.4065C5.90296 21.4511 5.93768 21.486 5.9822 21.498L8.99617 22.3142C9.12336 22.3486 9.12336 22.5291 8.99617 22.5635L5.9822 23.3797C5.93768 23.3917 5.90296 23.4266 5.89113 23.4712L5.08429 26.5107C5.05031 26.6387 4.86862 26.6387 4.83463 26.5107L4.02779 23.4712C4.01596 23.4266 3.98125 23.3917 3.93672 23.3797L0.922757 22.5635C0.795564 22.5291 0.795565 22.3486 0.922757 22.3142L3.93672 21.498C3.98125 21.486 4.01596 21.4511 4.02779 21.4065L4.83463 18.367Z"
       fill="#6B57F9"
@@ -87,8 +70,7 @@ const SvgBackupComplete = ({
         y1="45.4034"
         x2="35.1394"
         y2="14.6346"
-        gradientUnits="userSpaceOnUse"
-      >
+        gradientUnits="userSpaceOnUse">
         <stop stopColor="#6B57F9" />
         <stop offset="1" stopColor="#9787FF" />
       </linearGradient>

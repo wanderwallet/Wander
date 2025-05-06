@@ -24,9 +24,7 @@ function ensureUrlProtocol(url: string): string {
  * @param url - The URL to parse.
  * @returns - A promise resolving to the logo placeholder.
  */
-export async function generateLogoPlaceholder(
-  url: string
-): Promise<AppLogoInfo | undefined> {
+export async function generateLogoPlaceholder(url: string): Promise<AppLogoInfo | undefined> {
   try {
     url = ensureUrlProtocol(url);
     const { hostname } = new URL(url);
@@ -35,25 +33,22 @@ export async function generateLogoPlaceholder(
 
     const baseDomain = parts.slice(-2).join(".");
 
-    const candidateGatewayUrl =
-      parts.length > 1 ? parts.slice(1).join(".") : null;
+    const candidateGatewayUrl = parts.length > 1 ? parts.slice(1).join(".") : null;
 
-    const isGatewayUrl =
-      !!candidateGatewayUrl &&
-      (await isGateway(ensureUrlProtocol(candidateGatewayUrl)));
+    const isGatewayUrl = !!candidateGatewayUrl && (await isGateway(ensureUrlProtocol(candidateGatewayUrl)));
 
     if (isGatewayUrl) {
       // For gateways, take the first two letters of the first subdomain
       const subdomain = parts[0];
       return {
         type: "gateway",
-        placeholder: subdomain.slice(0, 2).toUpperCase()
+        placeholder: subdomain.slice(0, 2).toUpperCase(),
       };
     } else {
       // For non-gateways, take the first two letters of the base domain
       return {
         type: "default",
-        placeholder: baseDomain.slice(0, 2).toUpperCase()
+        placeholder: baseDomain.slice(0, 2).toUpperCase(),
       };
     }
   } catch (error) {

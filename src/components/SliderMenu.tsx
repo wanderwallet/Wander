@@ -24,7 +24,7 @@ export default function SliderMenu({
   paddingHorizontal,
   paddingVertical,
   height,
-  children
+  children,
 }: SliderMenuProps) {
   const wrapperElementRef = useRef<HTMLDivElement | null>(null);
 
@@ -51,8 +51,7 @@ export default function SliderMenu({
         variants={animationSlideFromBottom}
         initial="hidden"
         animate="shown"
-        exit="hidden"
-      >
+        exit="hidden">
         <Body>
           {hasHeader && title && (
             <Header>
@@ -66,16 +65,12 @@ export default function SliderMenu({
     </>
   ) : null;
 
-  return createPortal(
-    <AnimatePresence>{contentElement}</AnimatePresence>,
-    document.body
-  );
+  return createPortal(<AnimatePresence>{contentElement}</AnimatePresence>, document.body);
 }
 
 const ExitButton = styled(CloseIcon)`
   cursor: pointer;
-  color: ${({ theme }) =>
-    `${theme.displayTheme === "light" ? "#000000" : "#FFFFFF"}`};
+  color: ${({ theme }) => `${theme.displayTheme === "light" ? "#000000" : "#FFFFFF"}`};
   transition: transform 0.2s ease;
 
   &:hover {
@@ -103,11 +98,9 @@ const Wrapper = styled(motion.div)<{
   width: 100%;
   z-index: 1000;
   overflow: scroll;
-  background-color: ${({ theme }) =>
-    theme.displayTheme === "light" ? "#ffffff" : "#1B1B1B"};
+  background-color: ${({ theme }) => (theme.displayTheme === "light" ? "#ffffff" : "#1B1B1B")};
   border-radius: 24px 24px 0px 0px;
-  padding: ${({ paddingVertical = 24, paddingHorizontal = 24 }) =>
-    `${paddingVertical}px ${paddingHorizontal}px`};
+  padding: ${({ paddingVertical = 24, paddingHorizontal = 24 }) => `${paddingVertical}px ${paddingHorizontal}px`};
   ${({ hasHeader }) => hasHeader && "padding-top: 0;"}
   box-sizing: border-box;
 `;
@@ -117,16 +110,16 @@ export const animationSlideFromBottom: Variants = {
     y: "100vh",
     transition: {
       duration: 0.2,
-      ease: "easeOut"
-    }
+      ease: "easeOut",
+    },
   },
   shown: {
     y: "0",
     transition: {
       duration: 0.2,
-      ease: "easeInOut"
-    }
-  }
+      ease: "easeInOut",
+    },
+  },
 };
 
 const Body = styled.div`
@@ -141,8 +134,7 @@ const Header = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: ${({ theme }) =>
-    theme.displayTheme === "light" ? "#ffffff" : "#1B1B1B"};
+  background-color: ${({ theme }) => (theme.displayTheme === "light" ? "#ffffff" : "#1B1B1B")};
   z-index: 2;
   padding-bottom: 24px;
   padding-top: 32px;
@@ -167,8 +159,7 @@ const Title = styled.h2`
   font-style: normal;
   font-weight: 500;
   line-height: normal;
-  color: ${({ theme }) =>
-    `${theme.displayTheme === "light" ? "#000000" : "#FFFFFF"}`};
+  color: ${({ theme }) => `${theme.displayTheme === "light" ? "#000000" : "#FFFFFF"}`};
 `;
 
 export const CloseLayer = styled(motion.div)`
@@ -181,6 +172,5 @@ export const CloseLayer = styled(motion.div)`
   width: 100vw;
   height: 100vh;
   cursor: default;
-  background-color: ${({ theme }) =>
-    `rgba(0, 0, 0, ${theme.displayTheme === "light" ? 0.3 : 0.7})`};
+  background-color: ${({ theme }) => `rgba(0, 0, 0, ${theme.displayTheme === "light" ? 0.3 : 0.7})`};
 `;

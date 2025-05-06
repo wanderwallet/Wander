@@ -2,19 +2,9 @@ import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import browser from "webextension-polyfill";
 import { PageType, trackPage } from "~utils/analytics";
 import styled from "styled-components";
-import {
-  Input,
-  Section,
-  useInput,
-  Text,
-  Tooltip
-} from "@arconnect/components-rebrand";
+import { Input, Section, useInput, Text, Tooltip } from "@arconnect/components-rebrand";
 import { apps, categories, type App } from "~utils/apps";
-import {
-  ArrowLeft,
-  ArrowRight,
-  LinkExternal01
-} from "@untitled-ui/icons-react";
+import { ArrowLeft, ArrowRight, LinkExternal01 } from "@untitled-ui/icons-react";
 import { getAppURL, truncateMiddle } from "~utils/format";
 import WanderIcon from "url:assets/icon.svg";
 import { MinimizeIcon } from "@iconicicons/react";
@@ -33,7 +23,7 @@ export function ExploreView() {
       const scrollAmount = 100;
       categoriesRef.current.scrollBy({
         left: direction === "left" ? -scrollAmount : scrollAmount,
-        behavior: "smooth"
+        behavior: "smooth",
       });
     }
   }, []);
@@ -60,10 +50,7 @@ export function ExploreView() {
           </ScrollButton>
           <Categories ref={categoriesRef}>
             {categories.map((category) => (
-              <Category
-                key={category.title}
-                onClick={() => handleCategoryClick(category.title)}
-              >
+              <Category key={category.title} onClick={() => handleCategoryClick(category.title)}>
                 <CategoryIcon as={category.icon} />
                 {category.title}
               </Category>
@@ -73,16 +60,13 @@ export function ExploreView() {
             <ArrowRight height={20} width={20} />
           </ScrollButton>
           {isEmbedded && (
-            <Tooltip
-              content={browser.i18n.getMessage("close")}
-              position="bottomEnd"
-            >
+            <Tooltip content={browser.i18n.getMessage("close")} position="bottomEnd">
               <Action
                 as={MinimizeIcon}
                 onClick={() => {
                   postEmbeddedMessage({
                     type: "embedded_close",
-                    data: null
+                    data: null,
                   });
                 }}
                 style={{ width: "24px", height: "24px" }}
@@ -104,8 +88,7 @@ export function ExploreView() {
             key={index}
             onClick={() => {
               browser.tabs.create({ url: app.url });
-            }}
-          >
+            }}>
             <LogoDescriptionWrapper>
               {app.useAppIconWrapper ? (
                 <AppLinearGradientIconWrapper
@@ -130,9 +113,7 @@ export function ExploreView() {
                   <AppTitle>{app.name}</AppTitle>
                   <Pill>{app.category}</Pill>
                 </Title>
-                <AppDescription>
-                  {truncateMiddle(getAppURL(app.url), 30)}
-                </AppDescription>
+                <AppDescription>{truncateMiddle(getAppURL(app.url), 30)}</AppDescription>
               </Description>
             </LogoDescriptionWrapper>
             <LinkExternalIcon />
@@ -143,11 +124,7 @@ export function ExploreView() {
   );
 }
 
-const filterApps = (
-  apps: App[],
-  searchTerm: string = "",
-  category?: string
-): App[] => {
+const filterApps = (apps: App[], searchTerm: string = "", category?: string): App[] => {
   const lowercaseSearch = searchTerm.toLowerCase();
   return apps.filter((app: App) => {
     if (category && category !== app.category) return false;
@@ -216,22 +193,10 @@ interface AppIconProps {
   padding?: string;
 }
 
-function AppIconWrapper({
-  source,
-  alt,
-  backgroundColor,
-  objectFit,
-  imageSize,
-  padding
-}: AppIconProps) {
+function AppIconWrapper({ source, alt, backgroundColor, objectFit, imageSize, padding }: AppIconProps) {
   return (
     <IconWrapper backgroundColor={backgroundColor} padding={padding}>
-      <IconImage
-        src={source}
-        alt={alt || ""}
-        objectFit={objectFit}
-        size={imageSize}
-      />
+      <IconImage src={source} alt={alt || ""} objectFit={objectFit} size={imageSize} />
     </IconWrapper>
   );
 }
@@ -245,22 +210,10 @@ interface AppGradientIconProps {
   padding?: string;
 }
 
-function AppLinearGradientIconWrapper({
-  source,
-  alt,
-  colors,
-  objectFit,
-  imageSize,
-  padding
-}: AppGradientIconProps) {
+function AppLinearGradientIconWrapper({ source, alt, colors, objectFit, imageSize, padding }: AppGradientIconProps) {
   return (
     <GradientWrapper colors={colors} padding={padding}>
-      <IconImage
-        objectFit={objectFit}
-        src={source}
-        alt={alt || ""}
-        size={imageSize}
-      />
+      <IconImage objectFit={objectFit} src={source} alt={alt || ""} size={imageSize} />
     </GradientWrapper>
   );
 }
@@ -295,7 +248,7 @@ const Wrapper = styled(Section).attrs({ showPaddingVertical: false })`
 
 const AppTitle = styled(Text).attrs({
   noMargin: true,
-  weight: "semibold"
+  weight: "semibold",
 })``;
 
 const Pill = styled.div`
@@ -362,12 +315,7 @@ const Category = styled.div`
   align-items: center;
   gap: 8px;
   border-radius: 8px;
-  background: rgba(
-    255,
-    255,
-    255,
-    ${({ theme }) => (theme.displayTheme === "dark" ? "0.08" : "0.80")}
-  );
+  background: rgba(255, 255, 255, ${({ theme }) => (theme.displayTheme === "dark" ? "0.08" : "0.80")});
   backdrop-filter: blur(4px);
   font-weight: 500;
   font-size: 14px;
@@ -375,12 +323,7 @@ const Category = styled.div`
   color: ${(props) => props.theme.primaryText};
 
   &:hover {
-    background: rgba(
-      255,
-      255,
-      255,
-      ${({ theme }) => (theme.displayTheme === "dark" ? "0.12" : "0.90")}
-    );
+    background: rgba(255, 255, 255, ${({ theme }) => (theme.displayTheme === "dark" ? "0.12" : "0.90")});
   }
 
   &:active {

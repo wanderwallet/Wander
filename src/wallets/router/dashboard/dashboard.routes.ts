@@ -31,36 +31,36 @@ export const DashboardSubSettingPaths = {
   AddToken: "/tokens/new",
   TokenSettings: "/tokens/:id",
   AddContact: "/contacts/new",
-  ContactSettings: "/contacts/:address"
+  ContactSettings: "/contacts/:address",
 } as const satisfies Record<string, DashboardRoutePath>;
 
 export const DASHBOARD_SUB_SETTING_ROUTES = [
   {
     path: DashboardSubSettingPaths.AppSettings,
-    component: AppSettingsDashboardView
+    component: AppSettingsDashboardView,
   },
   {
     path: DashboardSubSettingPaths.AddWallet,
-    component: AddWalletDashboardView
+    component: AddWalletDashboardView,
   },
   {
     path: DashboardSubSettingPaths.WalletSettings,
-    component: WalletSettingsDashboardView
+    component: WalletSettingsDashboardView,
   },
   {
     path: DashboardSubSettingPaths.AddToken,
-    component: AddTokenDashboardView
+    component: AddTokenDashboardView,
   },
   {
     path: DashboardSubSettingPaths.TokenSettings,
-    component: TokenSettingsDashboardView
+    component: TokenSettingsDashboardView,
   },
   {
     path: DashboardSubSettingPaths.AddContact,
-    component: AddContactDashboardView
+    component: AddContactDashboardView,
   },
   {
     path: DashboardSubSettingPaths.ContactSettings,
-    component: ContactSettingsDashboardView
-  }
+    component: ContactSettingsDashboardView,
+  },
 ] as const satisfies RouteConfig[];

@@ -12,12 +12,10 @@ import browser, { type WebNavigation } from "webextension-polyfill";
  * Thank you ar.io for the updated method:
  * https://github.com/ar-io/wayfinder/blob/main/background.js#L13
  */
-export async function handleProtocol(
-  details: WebNavigation.OnBeforeNavigateDetailsType
-) {
+export async function handleProtocol(details: WebNavigation.OnBeforeNavigateDetailsType) {
   const gateway = await findGateway({
     arns: true,
-    ensureStake: true
+    ensureStake: true,
   });
 
   // parse redirect url
@@ -28,6 +26,6 @@ export async function handleProtocol(
 
   // update tab
   browser.tabs.update(details.tabId, {
-    url: redirectUrl
+    url: redirectUrl,
   });
 }

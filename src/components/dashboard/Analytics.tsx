@@ -11,9 +11,9 @@ export const AnalyticsSettingsDashboardView = () => {
   const [analyticsEnabled, setAnalyticsEnabled] = useStorage(
     {
       key: "setting_analytics",
-      instance: ExtensionStorage
+      instance: ExtensionStorage,
     },
-    false
+    false,
   );
 
   return (
@@ -22,22 +22,14 @@ export const AnalyticsSettingsDashboardView = () => {
         <Text size="md" weight="medium" noMargin>
           {browser.i18n.getMessage("enable_disable")}
         </Text>
-        <ToggleSwitch
-          width={51}
-          height={31}
-          checked={analyticsEnabled}
-          setChecked={setAnalyticsEnabled}
-        />
+        <ToggleSwitch width={51} height={31} checked={analyticsEnabled} setChecked={setAnalyticsEnabled} />
       </ToggleSwitchWrapper>
       <Spacer y={1.5} />
       <Flex
         justify="space-between"
         align="center"
         cursor="pointer"
-        onClick={() =>
-          browser.tabs.create({ url: "https://www.wander.app/privacy" })
-        }
-      >
+        onClick={() => browser.tabs.create({ url: "https://www.wander.app/privacy" })}>
         <Text size="md" weight="medium" noMargin>
           {browser.i18n.getMessage("privacy_policy")}
         </Text>

@@ -7,13 +7,7 @@ import copy from "copy-to-clipboard";
 import Paragraph from "~components/Paragraph";
 import browser from "webextension-polyfill";
 import { Button, Spacer, Text } from "@arconnect/components-rebrand";
-import {
-  AlertTriangle,
-  Check,
-  Copy01,
-  Eye,
-  EyeOff
-} from "@untitled-ui/icons-react";
+import { AlertTriangle, Check, Copy01, Eye, EyeOff } from "@untitled-ui/icons-react";
 import styled from "styled-components";
 import { PageType, trackPage } from "~utils/analytics";
 import { useStorage, ExtensionStorage } from "~utils/storage";
@@ -24,17 +18,16 @@ export interface RecoveryPhraseViewParams {
   address: string;
 }
 
-export type RecoveryPhraseViewProps =
-  CommonRouteProps<RecoveryPhraseViewParams>;
+export type RecoveryPhraseViewProps = CommonRouteProps<RecoveryPhraseViewParams>;
 
 export function RecoveryPhraseView({}: RecoveryPhraseViewProps) {
   const { navigate } = useLocation();
   const [activeAddress] = useStorage(
     {
       key: "active_address",
-      instance: ExtensionStorage
+      instance: ExtensionStorage,
     },
-    ""
+    "",
   );
 
   const [isFinishEnabled, setIsFinishEnabled] = useState(false);
@@ -47,9 +40,7 @@ export function RecoveryPhraseView({}: RecoveryPhraseViewProps) {
   const [copyDisplay, setCopyDisplay] = useState(true);
 
   async function getSeedphrase() {
-    const seedphrase = await ExtensionStorage.get(
-      `recovery_phrase_${activeAddress}`
-    );
+    const seedphrase = await ExtensionStorage.get(`recovery_phrase_${activeAddress}`);
 
     if (!seedphrase) return;
 
@@ -86,23 +77,15 @@ export function RecoveryPhraseView({}: RecoveryPhraseViewProps) {
 
   return (
     <>
-      <HeadV2
-        title={browser.i18n.getMessage("recovery_phrase")}
-        showOptions={false}
-      />
+      <HeadV2 title={browser.i18n.getMessage("recovery_phrase")} showOptions={false} />
       <Wrapper style={{ height: "calc(100vh - 100px)" }}>
         <Container>
           <Content>
-            <Paragraph>
-              {browser.i18n.getMessage("backup_wallet_content")}
-            </Paragraph>
+            <Paragraph>{browser.i18n.getMessage("backup_wallet_content")}</Paragraph>
             <div>
               <SeedContainer onClick={() => setShown((val) => !val)}>
                 <Seed shown={shown}>{seedphrase}</Seed>
-                <SeedShownIcon
-                  as={shown ? Eye : EyeOff}
-                  onClick={() => setIsFinishEnabled(true)}
-                />
+                <SeedShownIcon as={shown ? Eye : EyeOff} onClick={() => setIsFinishEnabled(true)} />
               </SeedContainer>
               <Spacer y={0.5} />
               <CopySeed onClick={copySeed}>
@@ -185,7 +168,7 @@ const Seed = styled(Text).attrs({ size: "sm" })<{ shown: boolean }>`
 const CopySeed = styled(Text).attrs({
   noMargin: true,
   variant: "secondary",
-  weight: "medium"
+  weight: "medium",
 })`
   display: flex;
   align-items: center;
@@ -208,6 +191,5 @@ const WarningContainer = styled.div`
   gap: 12px;
   align-self: stretch;
   border-radius: 8px;
-  background: ${(props) =>
-    props.theme.displayTheme === "dark" ? "#363225" : "#F5F5F5"};
+  background: ${(props) => (props.theme.displayTheme === "dark" ? "#363225" : "#F5F5F5")};
 `;

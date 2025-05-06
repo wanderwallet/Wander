@@ -21,9 +21,7 @@ export async function handleInstall(details: Runtime.OnInstalledDetailsType) {
     // reset permissions
     await resetAllPermissions();
 
-    const isSplashSeen = Boolean(
-      await ExtensionStorage.get("update_splash_screen_seen")
-    );
+    const isSplashSeen = Boolean(await ExtensionStorage.get("update_splash_screen_seen"));
     // if this is undefined, set update_splash_screen_seen
     if (!isSplashSeen) {
       // initially set to false
@@ -42,7 +40,7 @@ export async function handleInstall(details: Runtime.OnInstalledDetailsType) {
 
   // initialize alarm to update tokens once a week
   browser.alarms.create("update_ao_tokens", {
-    periodInMinutes: 10080
+    periodInMinutes: 10080,
   });
 
   // initialize tokens in wallet

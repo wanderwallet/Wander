@@ -5,14 +5,7 @@ import { useLocation } from "~wallets/router/router.utils";
 import { quickSettingsMenuItems } from "~routes/dashboard/dashboard.constants";
 import { SettingListItem } from "~components/popup/list/SettingListItem";
 import type { PopupRoutePath } from "~wallets/router/popup/popup.routes";
-import {
-  Button,
-  ListItem,
-  ListItemIcon,
-  Section,
-  Spacer,
-  Text
-} from "@arconnect/components-rebrand";
+import { Button, ListItem, ListItemIcon, Section, Spacer, Text, Tooltip } from "@arconnect/components-rebrand";
 import { useActiveWallet } from "~wallets/hooks";
 import { formatAddress } from "~utils/format";
 import { Users01 } from "@untitled-ui/icons-react";
@@ -48,17 +41,17 @@ export function MenuView({ params }: QuickSettingsViewProps) {
   const [wallets] = useStorage<StoredWallet[]>(
     {
       key: "wallets",
-      instance: ExtensionStorage
+      instance: ExtensionStorage,
     },
-    []
+    [],
   );
 
   const [isSeedphraseBackedUp] = useStorage(
     {
       key: `recovery_phrase_backedup_${wallet.address}`,
-      instance: ExtensionStorage
+      instance: ExtensionStorage,
     },
-    true
+    true,
   );
 
   return (
@@ -77,12 +70,9 @@ export function MenuView({ params }: QuickSettingsViewProps) {
         squircleSize={40}
         showArrow
         onClick={() => {
-          navigate(
-            `/quick-settings/wallets/${wallet.address}` as PopupRoutePath
-          );
+          navigate(`/quick-settings/wallets/${wallet.address}` as PopupRoutePath);
         }}
-        img={avatar}
-      >
+        img={avatar}>
         {!avatar && (
           <ListItemIcon>
             <NoAvatarIcon size="1.8em" />
@@ -101,8 +91,7 @@ export function MenuView({ params }: QuickSettingsViewProps) {
         showArrow
         onClick={() => {
           navigate("/quick-settings/wallets" as PopupRoutePath);
-        }}
-      >
+        }}>
         <Users01 height={24} width={24} color={theme.primaryText} />
       </ListItem>
       <HorizontalLine marginVertical={12} />
@@ -116,7 +105,7 @@ export function MenuView({ params }: QuickSettingsViewProps) {
             onClick={() => {
               if (setting.externalLink) {
                 browser.tabs.create({
-                  url: browser.runtime.getURL(setting.externalLink)
+                  url: browser.runtime.getURL(setting.externalLink),
                 });
               } else {
                 if (setting.name === "subscriptions") {
@@ -133,11 +122,7 @@ export function MenuView({ params }: QuickSettingsViewProps) {
       <Button variant="secondary" fullWidth onClick={() => setOpen(true)}>
         {browser.i18n.getMessage("sign_out")}
       </Button>
-      <SliderMenu
-        hasHeader={false}
-        isOpen={open}
-        onClose={() => setOpen(false)}
-      >
+      <SliderMenu hasHeader={false} isOpen={open} onClose={() => setOpen(false)}>
         <Section
           showPaddingHorizontal={false}
           showPaddingVertical={false}
@@ -146,9 +131,8 @@ export function MenuView({ params }: QuickSettingsViewProps) {
             gap: 24,
             height: "60vh",
             justifyContent: "space-between",
-            textAlign: "center"
-          }}
-        >
+            textAlign: "center",
+          }}>
           <div
             style={{
               flex: 1,
@@ -156,35 +140,18 @@ export function MenuView({ params }: QuickSettingsViewProps) {
               flexDirection: "column",
               gap: 24,
               alignItems: "center",
-              justifyContent: "center"
-            }}
-          >
-            <img
-              src={WanderIcon}
-              alt="Wander Icon"
-              width={102.418}
-              height={48}
-            />
+              justifyContent: "center",
+            }}>
+            <img src={WanderIcon} alt="Wander Icon" width={102.418} height={48} />
             <Text size="xl" weight="semibold" lineHeight={1.3}>
               {browser.i18n.getMessage("sign_out_description")}
             </Text>
           </div>
           <div style={{ display: "flex", gap: 8, width: "100%" }}>
-            <Button
-              fullWidth
-              variant="secondary"
-              onClick={() => setOpen(false)}
-            >
+            <Button fullWidth variant="secondary" onClick={() => setOpen(false)}>
               {browser.i18n.getMessage("cancel")}
             </Button>
-            <Button
-              fullWidth
-              onClick={
-                import.meta.env?.VITE_IS_EMBEDDED_APP === "1"
-                  ? signOut
-                  : removeDecryptionKey
-              }
-            >
+            <Button fullWidth onClick={import.meta.env?.VITE_IS_EMBEDDED_APP === "1" ? signOut : removeDecryptionKey}>
               {browser.i18n.getMessage("sign_out")}
             </Button>
           </div>

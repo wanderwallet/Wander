@@ -7,8 +7,7 @@ const DEVICE_NONCE_KEY = "DEVICE_NONCE";
 const INVALID_DEVICE_NONCE_ERR_MSG = "Invalid deviceNonce";
 const MISSING_DEVICE_NONCE_ERR_MSG = "Missing deviceNonce";
 
-export type DeviceNonce =
-  `${number}-${number}-${number}T${number}:${number}:${number}.${number}Z-${string}`;
+export type DeviceNonce = `${number}-${number}-${number}T${number}:${number}:${number}.${number}Z-${string}`;
 
 let _deviceNonce: DeviceNonce | null = null;
 
@@ -18,9 +17,7 @@ export async function loadDeviceNonce(): Promise<DeviceNonce | null> {
 
   if (
     deviceNonce === null ||
-    /\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z)\-[\w_-]{21}/.test(
-      deviceNonce
-    )
+    /\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z)\-[\w_-]{21}/.test(deviceNonce)
   ) {
     return deviceNonce as DeviceNonce;
   }
@@ -38,9 +35,7 @@ export function generateDeviceNonce(): DeviceNonce {
   return `${new Date().toISOString()}-${nanoid()}` as DeviceNonce;
 }
 
-export async function storeDeviceNonce(
-  deviceNonce: DeviceNonce
-): Promise<DeviceNonce> {
+export async function storeDeviceNonce(deviceNonce: DeviceNonce): Promise<DeviceNonce> {
   log(LOG_GROUP.WALLET_GENERATION, "storeDeviceNonce()");
 
   setDeviceNonceHeader(deviceNonce);
