@@ -52,7 +52,7 @@ export const EMBEDDED_SERVER_BASE_URL =
 
 console.log("EMBEDDED_SERVER_BASE_URL =", EMBEDDED_SERVER_BASE_URL);
 console.log("searchParams.get(PARAM_SERVER_BASE_URL) =");
-console.log("EMBEDDED_ENV_VARS =", EMBEDDED_ENV_VARS);
+console.log("EMBEDDED_ENV_VARS =", EMBEDDED_ENV_VARS_BY_ENV, NODE_ENV);
 
 // Note: DO NOT use document.referrer here as that will return the "incorrect" value when the user is redirected from
 // an auth provider domain to back to Wander Embedded.
