@@ -24,7 +24,7 @@ to the background script using `sendMessage(...)`.
 </td>
 <td>
 
-Embed injects the Wallet API with the `injectWanderConnectWalletAPI` function, invoked from `WanderEmbedded`'s
+Wander Connect injects the Wallet API with the `injectWanderConnectWalletAPI` function, invoked from `WanderEmbedded`'s
 `constructor`.
 
 It runs in the context of the integrating dApp.
