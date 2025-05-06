@@ -50,17 +50,6 @@ export const EMBEDDED_HIDE_BE = searchParams.get(PARAM_HIDE_BE) === "1" || false
 export const EMBEDDED_SERVER_BASE_URL =
   searchParams.get(PARAM_SERVER_BASE_URL) || EMBEDDED_ENV_VARS.DEFAULT_EMBEDDED_SERVER_BASE_URL;
 
-if (IS_EMBEDDED_APP) {
-  console.log("Wander Embedded URL params =", {
-    NODE_ENV,
-    EMBEDDED_CLIENT_ID,
-    EMBEDDED_THEME,
-    EMBEDDED_ANCESTOR_ORIGIN,
-    EMBEDDED_HIDE_BE,
-    EMBEDDED_SERVER_BASE_URL,
-  });
-}
-
 // Note: DO NOT use document.referrer here as that will return the "incorrect" value when the user is redirected from
 // an auth provider domain to back to Wander Embedded.
 
