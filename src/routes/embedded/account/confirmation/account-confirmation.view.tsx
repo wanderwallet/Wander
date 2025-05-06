@@ -1,11 +1,5 @@
 import copy from "copy-to-clipboard";
-import {
-  Card,
-  Copyable,
-  Button,
-  WanderFooter,
-  Spacer
-} from "~components/embed/ui";
+import { Card, Copyable, Button, WanderFooter, Spacer } from "~components/embed/ui";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useLocation } from "~wallets/router/router.utils";
 

@@ -2,16 +2,7 @@ import { Copy01, Eye, EyeOff } from "@untitled-ui/icons-react";
 import copy from "copy-to-clipboard";
 import { useState, useEffect } from "react";
 import { Flex } from "~components/common/Flex";
-import {
-  Box,
-  Button,
-  Card,
-  WanderFooter,
-  Snackbar,
-  WarningIcon,
-  Text,
-  CheckIcon
-} from "~components/embed/ui";
+import { Box, Button, Card, WanderFooter, Snackbar, WarningIcon, Text, CheckIcon } from "~components/embed/ui";
 import { Loading } from "~components/embed/ui/atoms/loading";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useLocation } from "~wallets/router/router.utils";
@@ -52,8 +43,7 @@ export function AccountBackupCopySeedphraseEmbeddedView() {
       footerElement={<WanderFooter />}
       hasBackButton={true}
       hasCloseButton={true}
-      size="auto"
-    >
+      size="auto">
       <Box style={{ gap: 28 }}>
         <Snackbar
           isFullWidth
@@ -73,17 +63,15 @@ export function AccountBackupCopySeedphraseEmbeddedView() {
               borderRadius: 10,
               padding: 16,
               flexWrap: "wrap",
-              filter: isVisible ? "none" : "blur(5px)"
-            }}
-          >
+              filter: isVisible ? "none" : "blur(5px)",
+            }}>
             <Text
               variant="bodySm"
               style={{
                 color: "var(--text-color-primary)",
                 wordBreak: "break-word",
-                wordSpacing: "8px"
-              }}
-            >
+                wordSpacing: "8px",
+              }}>
               {seedphrase}
             </Text>
           </Box>
@@ -93,16 +81,15 @@ export function AccountBackupCopySeedphraseEmbeddedView() {
               position: "absolute",
               right: 8,
               bottom: 8,
-              maxWidth: "fit-content"
+              maxWidth: "fit-content",
             }}
-            onClick={() => setIsVisible(!isVisible)}
-          >
+            onClick={() => setIsVisible(!isVisible)}>
             {isVisible ? (
               <EyeOff
                 style={{
                   height: 16,
                   width: 16,
-                  color: "#000"
+                  color: "#000",
                 }}
               />
             ) : (
@@ -110,7 +97,7 @@ export function AccountBackupCopySeedphraseEmbeddedView() {
                 style={{
                   height: 16,
                   width: 16,
-                  color: "#000"
+                  color: "#000",
                 }}
               />
             )}
@@ -125,9 +112,8 @@ export function AccountBackupCopySeedphraseEmbeddedView() {
                 bottom: 0,
                 display: "flex",
                 alignItems: "center",
-                justifyContent: "center"
-              }}
-            >
+                justifyContent: "center",
+              }}>
               <Loading color={"#000"} />
             </div>
           )}
@@ -140,10 +126,9 @@ export function AccountBackupCopySeedphraseEmbeddedView() {
             cursor: "pointer",
             marginTop: -20,
             marginLeft: 8,
-            alignSelf: "flex-start"
+            alignSelf: "flex-start",
           }}
-          onClick={copySeedphrase}
-        >
+          onClick={copySeedphrase}>
           <Text variant="bodyMd">{isCopied ? "Copied" : "Copy"}</Text>
           {isCopied ? (
             <CheckIcon style={{ height: 16, width: 16, color: "#22c55e" }} />

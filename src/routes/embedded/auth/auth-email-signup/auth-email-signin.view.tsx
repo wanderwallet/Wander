@@ -1,13 +1,6 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { toast } from "react-toastify";
-import {
-  Box,
-  Button,
-  Card,
-  TextInput,
-  Text,
-  WanderFooter
-} from "~components/embed";
+import { Box, Button, Card, TextInput, Text, WanderFooter } from "~components/embed";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getSupabaseClient } from "~utils/embedded/embedded.utils";
 import { useLocation } from "~wallets/router/router.utils";
@@ -45,7 +38,7 @@ export function AuthEmailSigninEmbeddedView() {
 
       const { error, data } = await supabase.auth.signInWithPassword({
         email: authEmail,
-        password: passwordInput.state
+        password: passwordInput.state,
       });
 
       if (error) {
@@ -90,15 +83,9 @@ export function AuthEmailSigninEmbeddedView() {
       footerElement={<WanderFooter />}
       hasBackButton={true}
       hasCloseButton={false}
-      size="auto"
-    >
+      size="auto">
       <Box style={{ gap: 32 }}>
-        <Flex
-          direction="column"
-          gap={12}
-          width="100%"
-          style={{ paddingTop: 32, gap: 24, paddingBottom: 32 }}
-        >
+        <Flex direction="column" gap={12} width="100%" style={{ paddingTop: 32, gap: 24, paddingBottom: 32 }}>
           <TextInput
             type={passwordType}
             {...passwordInput.bindings}
@@ -111,7 +98,7 @@ export function AuthEmailSigninEmbeddedView() {
                   style={{
                     width: 22,
                     height: 22,
-                    color: "var(--text-color-tertiary)"
+                    color: "var(--text-color-tertiary)",
                   }}
                 />
               ) : (
@@ -119,7 +106,7 @@ export function AuthEmailSigninEmbeddedView() {
                   style={{
                     width: 22,
                     height: 22,
-                    color: "var(--text-color-tertiary)"
+                    color: "var(--text-color-tertiary)",
                   }}
                 />
               )
@@ -132,12 +119,7 @@ export function AuthEmailSigninEmbeddedView() {
             }}
           />
 
-          <Button
-            isFullWidth
-            isLoading={isLoading}
-            onClick={handleEmailSignin}
-            isDisabled={areButtonsDisabled}
-          >
+          <Button isFullWidth isLoading={isLoading} onClick={handleEmailSignin} isDisabled={areButtonsDisabled}>
             Sign in
           </Button>
         </Flex>
@@ -152,8 +134,7 @@ export function AuthEmailSigninEmbeddedView() {
             variant="link"
             alignment="left"
             isFullWidth
-            href={EmbeddedPaths.AuthRecoverAccount}
-          >
+            href={EmbeddedPaths.AuthRecoverAccount}>
             Recover account
           </Button>
         </Flex>

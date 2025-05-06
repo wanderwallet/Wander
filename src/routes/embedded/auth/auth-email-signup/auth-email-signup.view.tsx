@@ -1,13 +1,6 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { toast } from "react-toastify";
-import {
-  Box,
-  Button,
-  Card,
-  TextInput,
-  Text,
-  WanderFooter
-} from "~components/embed";
+import { Box, Button, Card, TextInput, Text, WanderFooter } from "~components/embed";
 import { useCallback, useMemo, useState } from "react";
 import { getSupabaseClient } from "~utils/embedded/embedded.utils";
 import { useLocation } from "~wallets/router/router.utils";
@@ -26,17 +19,12 @@ export function AuthEmailSignupEmbeddedView() {
   const validPasswordInput = useInput();
   const [passwordType, setPasswordType] = useState("password");
 
-  const areButtonsDisabled =
-    authStatus === "unknown" ||
-    authStatus === "loading" ||
-    authStatus === "authLoading";
+  const areButtonsDisabled = authStatus === "unknown" || authStatus === "loading" || authStatus === "authLoading";
 
   // passwords match
   const matches = useMemo(
-    () =>
-      passwordInput.state === validPasswordInput.state &&
-      passwordInput.state?.length >= 5,
-    [passwordInput, validPasswordInput]
+    () => passwordInput.state === validPasswordInput.state && passwordInput.state?.length >= 5,
+    [passwordInput, validPasswordInput],
   );
 
   const handleEmailSignup = useCallback(async () => {
@@ -52,7 +40,7 @@ export function AuthEmailSignupEmbeddedView() {
 
       const { error, data } = await supabase.auth.signUp({
         email: authEmail,
-        password: passwordInput.state
+        password: passwordInput.state,
       });
 
       if (error) {
@@ -78,8 +66,7 @@ export function AuthEmailSignupEmbeddedView() {
       footerElement={<WanderFooter />}
       hasBackButton={true}
       hasCloseButton={false}
-      size="auto"
-    >
+      size="auto">
       <Box style={{ gap: 32 }}>
         <Text variant={"bodySm"} alignment={"center"}>
           Enter a password to secure your Wander account.
@@ -97,7 +84,7 @@ export function AuthEmailSignupEmbeddedView() {
                   style={{
                     width: 22,
                     height: 22,
-                    color: "var(--text-color-tertiary)"
+                    color: "var(--text-color-tertiary)",
                   }}
                 />
               ) : (
@@ -105,7 +92,7 @@ export function AuthEmailSignupEmbeddedView() {
                   style={{
                     width: 22,
                     height: 22,
-                    color: "var(--text-color-tertiary)"
+                    color: "var(--text-color-tertiary)",
                   }}
                 />
               )
@@ -123,12 +110,7 @@ export function AuthEmailSignupEmbeddedView() {
           <PasswordStrength password={passwordInput.state} />
         </Flex>
 
-        <Button
-          isFullWidth
-          isLoading={isLoading}
-          onClick={handleEmailSignup}
-          isDisabled={areButtonsDisabled}
-        >
+        <Button isFullWidth isLoading={isLoading} onClick={handleEmailSignup} isDisabled={areButtonsDisabled}>
           {matches ? "Next" : "Enter password"}
         </Button>
       </Box>

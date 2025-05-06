@@ -191,15 +191,15 @@ const IFRAME_OWN_ROUTES = [
   },
   {
     path: EmbeddedPaths.AuthEmailSignup,
-    component: AuthEmailSignupEmbeddedView
+    component: AuthEmailSignupEmbeddedView,
   },
   {
     path: EmbeddedPaths.AuthEmailVerify,
-    component: AuthEmailVerifyEmbeddedView
+    component: AuthEmailVerifyEmbeddedView,
   },
   {
     path: EmbeddedPaths.AuthEmailSignin,
-    component: AuthEmailSigninEmbeddedView
+    component: AuthEmailSigninEmbeddedView,
   },
   {
     path: EmbeddedPaths.AuthMoreProviders,
@@ -310,11 +310,11 @@ const IFRAME_OWN_ROUTES = [
   },
   {
     path: EmbeddedPaths.AccountBackupFullWallet,
-    component: AccountBackupFullWalletEmbeddedView
+    component: AccountBackupFullWalletEmbeddedView,
   },
   {
     path: EmbeddedPaths.AccountBackupCopySeedphrase,
-    component: AccountBackupCopySeedphraseEmbeddedView
+    component: AccountBackupCopySeedphraseEmbeddedView,
   },
   {
     path: EmbeddedPaths.AccountExportWallet,
@@ -324,7 +324,7 @@ const IFRAME_OWN_ROUTES = [
   // Wallet:
   {
     path: EmbeddedPaths.WalletDefaultHomeEmbeddedView,
-    component: WalletHomeEmbeddedView
+    component: WalletHomeEmbeddedView,
   },
   {
     path: EmbeddedPaths.WalletHomeEmbeddedView,
