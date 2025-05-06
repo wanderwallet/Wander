@@ -1,4 +1,4 @@
-# Wander Embedded SDK
+# Wander Connect SDK
 
 [![npm version](https://img.shields.io/npm/v/@wanderapp/connect.svg)](https://www.npmjs.com/package/@wanderapp/connect)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
@@ -523,22 +523,22 @@ The SDK supports all modern browsers (Chrome, Firefox, Safari, Edge).
 
 3. `yarn dev:iframe`
 
-   The Wander Embedded App should now be running at `http://localhost:5173`.
+   The Wander Connect App should now be running at `http://localhost:5173`.
 
-After this, you can use the Wander Embedded App in 2 different ways:
+After this, you can use the Wander Connect App in 2 different ways:
 
 - As a standalone app, you can just access `http://localhost:5173` and start using it. Note, however, that this is not
   how developers will be using it, so you might find some differences when testing some features (e.g. when running
   inside an iframe, we must use unpartitioned state for some features, like authentication, to work properly).
 
-- Embedded inside an iframe (**recommended**). In this case, you need a "test app" that install the Wander Embedded SDK
+- Embedded inside an iframe (**recommended**). In this case, you need a "test app" that install the Wander Connect SDK
   to load the app inside an iframe. The section below explains different ways to do that.
 
 <br />
 
-### Using the Wander Embedded SDK
+### Using the Wander Connect SDK
 
-The minimum setup you must do to get Wander Embedded to work on a project looks like this:
+The minimum setup you must do to get Wander Connect to work on a project looks like this:
 
 ```javascript
   import { WanderConnect } from "@wanderapp/connect";
@@ -551,10 +551,10 @@ The minimum setup you must do to get Wander Embedded to work on a project looks 
         clientId: "FREE_TRIAL",
       });
 
-      // After `new WanderConnect`, `window.arweaveWallet` is now the Wander Embedded API, rather
+      // After `new WanderConnect`, `window.arweaveWallet` is now the Wander Connect API, rather
       than the Wander BE one.
 
-      // Calling API methods will open/highlight the Wander Embedded iframe (popup/modal) if
+      // Calling API methods will open/highlight the Wander Connect iframe (popup/modal) if
       // authentication and/or authorization is needed:
 
       await window.arweaveWallet.connect(["SIGNATURE"]);
@@ -571,10 +571,10 @@ The minimum setup you must do to get Wander Embedded to work on a project looks 
   }, []);
 ```
 
-You can play around with Wander Embedded at <https://playground.othent.io/>, which uses:
+You can play around with Wander Connect at <https://playground.othent.io/>, which uses:
 
 - The latest version of the playground itself: <https://playground.othent.io/>
-- The latest version of the Wander Embedded app: <https://connect.wander.app/>
+- The latest version of the Wander Connect app: <https://connect.wander.app/>
 - The latest version of `@wanderapp/connect`: <https://www.npmjs.com/package/@wanderapp/connect>
 - The latest version of the server & tRPC API: <https://connect-api.wander.app/>
 
@@ -587,7 +587,7 @@ options available.
 
 **App:**
 
-After running `yarn dev:iframe`, the Wander Embedded App should be running at `http://localhost:5173`.
+After running `yarn dev:iframe`, the Wander Connect App should be running at `http://localhost:5173`.
 
 By default, the app will point its tRPC client to <http://localhost:3001> when running in development mode, or to
 <https://connect-api.wander.app/> when running in production mode. See:
@@ -601,7 +601,7 @@ By default, the app will point its tRPC client to <http://localhost:3001> when r
 Next, clone <https://github.com/Othent/KMS-test-repo/> and run `pnpm install && pnpm start`. The playground should be
 running at `http://localhost:3000`, using the published version of `@wanderapp/connect`.
 
-By default, the published version of `@wanderapp/connect` will point to the latest version of the Wander Embedded app,
+By default, the published version of `@wanderapp/connect` will point to the latest version of the Wander Connect app,
 which in turn will point its tRPC client to the latest version of the server (<https://connect-api.wander.app/>).
 
 You now need to make the SDK load `http://localhost:5173`, which you can do using the `baseURL` option. If you also need
