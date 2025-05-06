@@ -17,13 +17,18 @@ import {
 import { useCallback, useRef, useState } from "react";
 import type { AuthProviderType } from "embed-api";
 import { getSupabaseClient } from "~utils/embedded/embedded.utils";
+import { useLocation } from "~wallets/router/router.utils";
+import { isValidEmail } from "~utils/email";
+import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 import { useAllWallets } from "~wallets/hooks";
 import { sleep } from "~utils/promises/sleep";
 import { EMBEDDED_HIDE_BE } from "~utils/embedded/iframe.utils";
 
 export function AuthEmbeddedView() {
-  const { authenticate, authStatus } = useEmbedded();
+  const { navigate } = useLocation();
+  const { authenticate, authStatus, setAuthEmail } = useEmbedded();
+  const [isLoading, setIsLoading] = useState(false);
 
   const [selectedAuthProviderType, setSelectedAuthProviderType] = useState<
     AuthProviderType | "NATIVE_WALLET" | null
@@ -78,38 +83,49 @@ export function AuthEmbeddedView() {
     setSelectedAuthProviderType(null);
   }, []);
 
-  const handleEmailSignup = useCallback(async () => {
+  const handleCheckEmail = useCallback(async () => {
     try {
+      setIsLoading(true);
+
       const supabase = await getSupabaseClient();
 
-      const { error, data } = await supabase.auth.signUp({
-        email: emailInputRef.current?.value || "",
-        password: passwordInputRef.current?.value || ""
-      });
+      const email = emailInputRef.current?.value || "";
 
-      console.log({ error, data });
+      if (!email || !isValidEmail(email)) {
+        toast.error("Please enter a valid email address");
+        return;
+      }
+
+      const { data: isAlreadyRegistered, error } = await supabase.rpc(
+        "user_exists_by_email",
+        {
+          p_email: email
+        }
+      );
+
+      if (error) {
+        toast.error("Error checking email");
+        return;
+      }
+
+      setAuthEmail(email);
+
+      if (isAlreadyRegistered) {
+        navigate(EmbeddedPaths.AuthEmailSignin);
+      } else {
+        navigate(EmbeddedPaths.AuthEmailSignup);
+      }
     } catch (error) {
-      toast.error("Error signing up");
-    }
-  }, []);
-
-  const handleEmailSignIn = useCallback(async () => {
-    try {
-      const supabase = await getSupabaseClient();
-      const { error, data } = await supabase.auth.signInWithPassword({
-        email: emailInputRef.current?.value || "",
-        password: passwordInputRef.current?.value || ""
-      });
-
-      console.log({ error, data });
-    } catch (error) {
-      toast.error("Error signing in");
+      console.log(error);
+      toast.error("Error checking email");
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
   return (
     <Card
-      headerText="Sign Up or Sign In"
+      headerText="Sign up or Sign in"
       footerElement={<WanderFooter />}
       hasBackButton={false}
       size="auto"
@@ -117,33 +133,19 @@ export function AuthEmbeddedView() {
       <Box>
         <TextInput
           ref={emailInputRef}
-          placeholder="E-Mail"
-          isDisabled={areButtonsDisabled}
+          type="email"
+          placeholder="Enter your email"
+          isDisabled={areButtonsDisabled || isLoading}
+          hasButton
+          buttonLabel="Next"
+          isLoading={isLoading}
+          buttonOnClick={handleCheckEmail}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              handleCheckEmail();
+            }
+          }}
         />
-        <br />
-        <TextInput
-          ref={passwordInputRef}
-          placeholder="Password"
-          isDisabled={areButtonsDisabled}
-          isSecure
-        />
-        <br />
-        <Button
-          isFullWidth
-          onClick={() => handleEmailSignup()}
-          icon={<KeyIcon fontSize={24} />}
-          isDisabled={areButtonsDisabled}
-        >
-          Email Sign Up
-        </Button>
-        <Button
-          isFullWidth
-          onClick={() => handleEmailSignIn()}
-          icon={<KeyIcon fontSize={24} />}
-          isDisabled={areButtonsDisabled}
-        >
-          Email Sign In
-        </Button>
         <Divider text={"OR"} />
         <Row>
           <Button
@@ -179,7 +181,7 @@ export function AuthEmbeddedView() {
           More options
         </Button>
         <Row style={{ gap: "4px" }}>
-          <Text variant={"bodySm"}>{"Can’t sign in?"}</Text>
+          <Text variant={"bodySm"}>{"Can't sign in?"}</Text>
           <Button variant="link" href="#/auth/recover-account" size="sm">
             Recover account
           </Button>

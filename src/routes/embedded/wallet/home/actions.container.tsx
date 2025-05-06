@@ -60,7 +60,9 @@ export function WalletHomeActions() {
             padding: "var(--spacing-2) 0"
           }}
         >
-          <XClose style={{ color: "var(--color-font-body)" }} />
+          <XClose
+            style={{ color: "var(--color-font-body)", height: 20, width: 20 }}
+          />
           <Text variant="bodyMd">{browser.i18n.getMessage("sign_out")}</Text>
         </Row>
       </button>

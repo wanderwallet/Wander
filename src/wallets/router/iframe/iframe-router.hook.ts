@@ -71,6 +71,9 @@ export function useEmbeddedOverride(
         location,
         [
           EmbeddedPaths.Auth,
+          EmbeddedPaths.AuthEmailSignup,
+          EmbeddedPaths.AuthEmailVerify,
+          EmbeddedPaths.AuthEmailSignin,
           EmbeddedPaths.AuthMoreProviders,
           EmbeddedPaths.AuthAddWithQRCode,
           // TODO: These could be simply "anything under  AuthRecoverAccount"

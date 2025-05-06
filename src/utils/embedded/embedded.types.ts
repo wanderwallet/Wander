@@ -72,6 +72,7 @@ export interface EmbeddedContextState {
   importedTempWalletAddress: null | string;
   lastRegisteredWallet: null | Wallet;
   recoverableAccounts: null | RecoverableAccount[];
+  authEmail: null | string;
 }
 
 export interface EmbeddedContextAuth {
@@ -127,4 +128,5 @@ export interface EmbeddedContextData
     callbackFn?: (seedPhrase: string) => Promise<boolean>
   ) => Promise<string>;
   generateRecoveryAndDownload: () => Promise<void>;
+  setAuthEmail: (email: string) => void;
 }

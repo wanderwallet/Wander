@@ -77,10 +77,15 @@ async function recoverAccount(userId: string, challengeSolution: string) {
   });
 }
 
+async function checkUserExistsByEmail(email: string) {
+  return trpcVanilla.checkUserExistsByEmail.query({ email });
+}
+
 export const AuthenticationService = {
   authenticate,
   generateFetchRecoverableAccountsChallenge,
   fetchRecoverableAccounts,
   generateAccountRecoveryChallenge,
-  recoverAccount
+  recoverAccount,
+  checkUserExistsByEmail
 } as const;
