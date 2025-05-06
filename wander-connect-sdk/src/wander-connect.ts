@@ -11,7 +11,6 @@ import {
   ThemeSetting,
   WanderConnectOptions,
 } from "./wander-connect.types";
-import { IncomingRequestMessageData } from "./utils/message/message.types";
 import { isEventMessage, isIncomingMessage, isWalletSwitchMessage } from "./utils/message/message.utils";
 import { getWanderConnectAppURL } from "./utils/url/url.utils";
 
