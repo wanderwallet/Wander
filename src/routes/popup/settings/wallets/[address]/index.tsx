@@ -13,10 +13,20 @@ import type { CommonRouteProps } from "~wallets/router/router.types";
 import { useLocation } from "~wallets/router/router.utils";
 import { LoadingView } from "~components/page/common/loading/loading.view";
 import { CopyToClipboard } from "~components/CopyToClipboard";
-import { AlertCircle, ArrowUpRight, Cube01, Download01, Edit02, QrCode02, Share03 } from "@untitled-ui/icons-react";
+import {
+  AlertCircle,
+  ArrowUpRight,
+  Cube01,
+  Download01,
+  Edit02,
+  HelpCircle,
+  QrCode02,
+  Share03,
+} from "@untitled-ui/icons-react";
 import { HorizontalLine } from "~components/HorizontalLine";
 import SliderMenu from "~components/SliderMenu";
 import { getNameServiceProfile } from "~lib/nameservice";
+import { BackupSeedphraseWarning } from "~components/popup/settings/BackupSeedphraseWarning";
 
 export interface WalletViewParams {
   address: string;
@@ -27,6 +37,7 @@ export type WalletViewProps = CommonRouteProps<WalletViewParams>;
 export function WalletView({ params: { address } }: WalletViewProps) {
   const { navigate } = useLocation();
 
+  const [isRecoveryModalOpen, setIsRecoveryModalOpen] = useState(false);
   const [editName, setEditName] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -43,6 +54,14 @@ export function WalletView({ params: { address } }: WalletViewProps) {
 
   // this wallet
   const wallet = useMemo(() => wallets?.find((w) => w.address === address), [wallets, address]);
+
+  const [isSeedphraseBackedUp] = useStorage(
+    {
+      key: `recovery_phrase_backedup_${wallet?.address}`,
+      instance: ExtensionStorage,
+    },
+    true,
+  );
 
   // toasts
   const { setToast } = useToasts();
@@ -182,6 +201,7 @@ export function WalletView({ params: { address } }: WalletViewProps) {
             iconSize={24}
           />
           <HorizontalLine />
+          {!isSeedphraseBackedUp && <BackupSeedphraseWarning />}
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
             <Text size="lg" weight="medium" noMargin>
               {browser.i18n.getMessage("wallet_actions")}
@@ -228,6 +248,30 @@ export function WalletView({ params: { address } }: WalletViewProps) {
                 title={browser.i18n.getMessage("export_keyfile")}
                 titleStyle={{ fontSize: 18, fontWeight: 500 }}
                 icon={<Icon color="primary" as={Download01} />}
+                rightIcon={
+                  <div
+                    style={{
+                      cursor: "pointer",
+                      position: "absolute",
+                      right: "46%",
+                      marginTop: "5px",
+                    }}>
+                    <Tooltip
+                      position="bottom"
+                      content={
+                        <Text
+                          style={{ maxWidth: 220, textAlign: "center" }}
+                          size="xs"
+                          weight="medium"
+                          lineHeight={1.3}
+                          noMargin>
+                          {browser.i18n.getMessage("export_keyfile_tooltip")}
+                        </Text>
+                      }>
+                      <Icon style={{ height: 16, width: 16 }} color="tertiary" as={HelpCircle} />
+                    </Tooltip>
+                  </div>
+                }
                 hideSquircle
                 showArrow
                 onClick={() => navigate(`/quick-settings/wallets/${address}/export`)}

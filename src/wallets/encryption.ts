@@ -34,13 +34,13 @@ async function deriveKey(password: string, salt: BufferSource, keyUsages: KeyUsa
 }
 
 /**
- * Encrypt an Arweave wallet to securely store in the browser
+ * Common function to encrypt data using AES-GCM
  *
- * @param wallet Wallet in Json Web Key format
+ * @param data Data to encrypt
  * @param password Password to encrypt with
- * @returns Encrypted wallet as a base64 encoded string
+ * @returns Encrypted data as a base64 encoded string
  */
-export async function encryptWallet(wallet: JWKInterface, password: string) {
+async function encryptData(data: string, password: string) {
   // generate iv and salt for later usage
   const iv = crypto.getRandomValues(new Uint8Array(IV_LENGTH));
   const salt = crypto.getRandomValues(new Uint8Array(SALT_LENGTH));
@@ -55,20 +55,20 @@ export async function encryptWallet(wallet: JWKInterface, password: string) {
       iv,
     },
     key,
-    new TextEncoder().encode(JSON.stringify(wallet)),
+    new TextEncoder().encode(data),
   );
-  const data = new Uint8Array(encrypted);
+  const encryptedData = new Uint8Array(encrypted);
 
   // construct the encrypted data + info that we need for decryption
   const buffer = new Uint8Array(
     // encrypted data + iv + salt
-    iv.byteLength + salt.byteLength + data.byteLength,
+    iv.byteLength + salt.byteLength + encryptedData.byteLength,
   );
 
   // add data to the buffer
   buffer.set(iv, 0);
   buffer.set(salt, iv.byteLength);
-  buffer.set(data, iv.byteLength + salt.byteLength);
+  buffer.set(encryptedData, iv.byteLength + salt.byteLength);
 
   // create a string from the full data + info
   const base64 = btoa(String.fromCharCode.apply(null, buffer));
@@ -77,21 +77,30 @@ export async function encryptWallet(wallet: JWKInterface, password: string) {
 }
 
 /**
- * Decrypt an Arweave wallet from the browser's storage
+ * Encrypt an Arweave wallet to securely store in the browser
  *
- * !!IMPORTANT!!
- *
- * When using this function, always make sure to remove the keyfile
- * from the memory, after it is no longer needed, using the
- * "freeDecryptedWallet(decryptedJWK)" function.
- *
- * @param wallet Base64 encoded string of the encrypted wallet
- * @param password Passoword to decrypt the wallet with
- * @return Wallet Json Web Key
+ * @param wallet Wallet in Json Web Key format
+ * @param password Password to encrypt with
+ * @returns Encrypted wallet as a base64 encoded string
  */
-export async function decryptWallet(wallet: string, password: string) {
+export async function encryptWallet(wallet: JWKInterface, password: string) {
+  return encryptData(JSON.stringify(wallet), password);
+}
+
+/**
+ * Encrypt a recovery phrase to securely store in the browser
+ *
+ * @param phrase Recovery phrase to encrypt
+ * @param password Password to encrypt with
+ * @returns Encrypted phrase as a base64 encoded string
+ */
+export async function encryptRecoveryPhrase(phrase: string, password: string) {
+  return encryptData(phrase, password);
+}
+
+export async function decryptData(encrypted: string, password: string) {
   // re-construct buffer of data + info for decryption
-  const buffer = Uint8Array.from(atob(wallet), (c) => c.charCodeAt(null));
+  const buffer = Uint8Array.from(atob(encrypted), (c) => c.charCodeAt(null));
 
   // get salt, iv and data
   const iv = buffer.slice(0, IV_LENGTH);
@@ -111,10 +120,41 @@ export async function decryptWallet(wallet: string, password: string) {
     data,
   );
 
+  return new TextDecoder().decode(decrypted);
+}
+
+/**
+ * Decrypt an Arweave wallet from the browser's storage
+ *
+ * !!IMPORTANT!!
+ *
+ * When using this function, always make sure to remove the keyfile
+ * from the memory, after it is no longer needed, using the
+ * "freeDecryptedWallet(decryptedJWK)" function.
+ *
+ * @param wallet Base64 encoded string of the encrypted wallet
+ * @param password Passoword to decrypt the wallet with
+ * @return Wallet Json Web Key
+ */
+export async function decryptWallet(wallet: string, password: string) {
+  const decrypted = await decryptData(wallet, password);
+
   // construct JWK
-  const jwk: JWKInterface = JSON.parse(new TextDecoder().decode(decrypted));
+  const jwk: JWKInterface = JSON.parse(decrypted);
 
   return jwk;
+}
+
+/**
+ * Decrypt a recovery phrase from the browser's storage
+ *
+ * @param phrase Base64 encoded string of the encrypted phrase
+ * @param password Passoword to decrypt the phrase with
+ * @return Recovery phrase
+ */
+export async function decryptRecoveryPhrase(phrase: string, password: string) {
+  const decrypted = await decryptData(phrase, password);
+  return decrypted;
 }
 
 /**

@@ -12,6 +12,7 @@ interface FlexProps extends React.HTMLAttributes<HTMLDivElement> {
   height?: CSSProperties["height"];
   padding?: CSSProperties["padding"];
   cursor?: CSSProperties["cursor"];
+  textAlign?: CSSProperties["textAlign"];
 }
 
 export const Flex: React.FC<FlexProps> = ({
@@ -26,6 +27,7 @@ export const Flex: React.FC<FlexProps> = ({
   height,
   padding,
   cursor,
+  textAlign,
   style,
   ...props
 }) => {
@@ -43,6 +45,7 @@ export const Flex: React.FC<FlexProps> = ({
         height,
         padding,
         cursor,
+        textAlign,
         ...style,
       }}
       {...props}>

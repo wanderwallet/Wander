@@ -2520,6 +2520,10 @@
     "message": "Your account name is stored locally and will only be visible to you.",
     "description": "Create a new account description"
   },
+  "secure_your_account_description": {
+    "message": "Secure your account with a password. This will be used to confirm activity and transactions in Wander.",
+    "description": "Secure your account description"
+  },
   "import_an_account": {
     "message": "Import an account",
     "description": "Import an account button text"
@@ -2527,6 +2531,10 @@
   "name_your_account": {
     "message": "Name your account",
     "description": "Name your account input placeholder"
+  },
+  "secure_your_account": {
+    "message": "Secure your account",
+    "description": "Secure your account button text"
   },
   "backup_your_account": {
     "message": "Backup your account",
@@ -2576,10 +2584,6 @@
     "message": "Enable analytics to help us provide the best experience for you on Wander.",
     "description": "Enable analytics description"
   },
-  "go_to_dashboard": {
-    "message": "Go to dashboard",
-    "description": "Go to dashboard button text"
-  },
   "congratulations": {
     "message": "Congratulations!",
     "description": "Congratulations title"
@@ -2601,10 +2605,6 @@
   "copy_failed": {
     "message": "Failed to copy",
     "description": "Failed to copy text"
-  },
-  "your_wallet_address_is": {
-    "message": "Your wallet address is",
-    "description": "Your wallet address is"
   },
   "choose_how_to_add_your_account": {
     "message": "Choose how you want to add your account.",
@@ -2696,6 +2696,10 @@
     "message": "Take a tour",
     "description": "Take a tour button text"
   },
+  "take_the_tour": {
+    "message": "Take the tour",
+    "description": "Take the tour button text"
+  },
   "getting_started": {
     "message": "Getting started",
     "description": "Getting started title"
@@ -2720,16 +2724,20 @@
     "message": "Explore and connect to apps directly on Wander.",
     "description": "Getting started explore title"
   },
+  "getting_started_pin_title": {
+    "message": "Pin the Wander extension on your browser.",
+    "description": "Getting started pin title"
+  },
   "finish": {
     "message": "Finish",
     "description": "Finish button text"
   },
   "importing": {
-    "message": "Importing",
+    "message": "importing",
     "description": "Importing text"
   },
   "creating": {
-    "message": "Creating",
+    "message": "creating",
     "description": "Creating text"
   },
   "sign_into_wander": {
@@ -2971,5 +2979,53 @@
   "data_too_large": {
     "message": "Unable to display data: Data is too large to display.",
     "description": "Data too large text"
+  },
+  "set_up_a_password": {
+    "message": "Set up a password",
+    "description": "Set up a password text"
+  },
+  "generating_your_account": {
+    "message": "Generating your account!",
+    "description": "Generating your account text"
+  },
+  "generating_your_account_description": {
+    "message": "This process typically takes 1-2 minutes.",
+    "description": "Generating your account description"
+  },
+  "pin_wander": {
+    "message": "Pin Wander",
+    "description": "Pin Wander text"
+  },
+  "pin_wander_rest": {
+    "message": "in your extension menu for quick and seamless access.",
+    "description": "Pin Wander rest"
+  },
+  "personalize_your_experience": {
+    "message": "Personalize your experience",
+    "description": "Personalize your experience text"
+  },
+  "account_name_save_description": {
+    "message": "Your account name is stored locally and will only be visible to you.",
+    "description": "Account name save description"
+  },
+  "back_recovery_phrase": {
+    "message": "Back recovery phrase",
+    "description": "Back recovery phrase text"
+  },
+  "reveal_recovery_phrase": {
+    "message": "Reveal recovery phrase?",
+    "description": "Reveal recovery phrase text"
+  },
+  "you_can_only_see_your_recovery_phrase_once": {
+    "message": "You can only see your recovery phrase once. Please write it down in a secure place and do not share it with anyone.",
+    "description": "You can only see your recovery phrase once text"
+  },
+  "recovery_phrase": {
+    "message": "Recovery phrase",
+    "description": "Recovery phrase text"
+  },
+  "export_keyfile_tooltip": {
+    "message": "Your wallet's encrypted keyfile is used to securely sign transactions and access your Arweave account.",
+    "description": "Export keyfile tooltip"
   }
 }

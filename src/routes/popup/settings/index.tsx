@@ -18,11 +18,9 @@ import Online from "~components/Online";
 import type { StoredWallet } from "~wallets";
 import { useStorage } from "@plasmohq/storage/hook";
 import { ExtensionStorage } from "~utils/storage";
-import { Action, NoAvatarIcon } from "~components/popup/WalletHeader";
-import { MinimizeIcon } from "@iconicicons/react";
-import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
+import { NoAvatarIcon } from "~components/popup/WalletHeader";
 import { signOut } from "~utils/embedded/embedded.utils";
-import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
+import { BackupSeedphraseWarning } from "~components/popup/settings/BackupSeedphraseWarning";
 
 export interface QuickSettingsViewParams {
   setting?: string;
@@ -48,52 +46,41 @@ export function MenuView({ params }: QuickSettingsViewProps) {
     [],
   );
 
+  const [isSeedphraseBackedUp] = useStorage(
+    {
+      key: `recovery_phrase_backedup_${wallet.address}`,
+      instance: ExtensionStorage,
+    },
+    true,
+  );
+
   return (
     <Section style={{ paddingBottom: 100 }}>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 8,
-        }}>
-        <ListItem
-          height={56}
-          style={{ width: "100%" }}
-          title={
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              {wallet?.nickname}
-              <Online />
-            </div>
-          }
-          titleStyle={{ fontWeight: 500 }}
-          subtitle={formatAddress(wallet.address, 4)}
-          squircleSize={40}
-          showArrow
-          onClick={() => {
-            navigate(`/quick-settings/wallets/${wallet.address}` as PopupRoutePath);
-          }}
-          img={avatar}>
-          {!avatar && (
-            <ListItemIcon>
-              <NoAvatarIcon size="1.8em" />
-            </ListItemIcon>
-          )}
-        </ListItem>
-        {IS_EMBEDDED_APP && (
-          <Tooltip content={browser.i18n.getMessage("close")} position="bottomEnd">
-            <Action
-              as={MinimizeIcon}
-              onClick={() => {
-                postEmbeddedMessage({
-                  type: "embedded_close",
-                  data: null,
-                });
-              }}
-              style={{ width: "24px", height: "24px" }}
-            />
-          </Tooltip>
+      <ListItem
+        height={56}
+        style={{ width: "100%" }}
+        title={
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            {wallet?.nickname}
+            <Online />
+          </div>
+        }
+        titleStyle={{ fontWeight: 500 }}
+        subtitle={formatAddress(wallet.address, 4)}
+        squircleSize={40}
+        showArrow
+        onClick={() => {
+          navigate(`/quick-settings/wallets/${wallet.address}` as PopupRoutePath);
+        }}
+        img={avatar}>
+        {!avatar && (
+          <ListItemIcon>
+            <NoAvatarIcon size="1.8em" />
+          </ListItemIcon>
         )}
-      </div>
+      </ListItem>
+      <Spacer y={0.75} />
+      {!isSeedphraseBackedUp && <BackupSeedphraseWarning />}
       <Spacer y={0.75} />
       <ListItem
         height={40}
