@@ -102,11 +102,11 @@ export class Button {
   private notifications: HTMLSpanElement;
 
   // Config (options):
-  private config: ButtonConfig;
+  public config: ButtonConfig;
 
   // State:
-  private variant: null | AuthStatus = null;
-  private status: Partial<Record<ButtonStatus, boolean>> = {};
+  public variant: null | AuthStatus = null;
+  public status: Partial<Record<ButtonStatus, boolean>> = {};
 
   constructor(options: ButtonOptions = {}) {
     const cssVars = mergeCSSVariablesOption(

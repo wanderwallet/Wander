@@ -86,13 +86,12 @@ export class Iframe {
   private halfImage: HTMLImageElement;
 
   // Config (options):
-  private config: IframeConfig;
+  public config: IframeConfig;
 
   // State:
-  private currentLayoutType: LayoutType | null = null;
-  private isOpen = false;
-
   private imageBaseUrl: string | null = null;
+  public currentLayoutType: LayoutType | null = null;
+  public isOpen = false;
 
   constructor(src: string, options: IframeOptions = {}) {
     const cssVars = mergeCSSVariablesOption(
