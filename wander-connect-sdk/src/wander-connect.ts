@@ -74,13 +74,8 @@ export class WanderConnect {
   private buttonComponent: null | Button = null;
   private iframeComponent: null | Iframe = null;
 
-  // HTML elements:
-  private buttonHostRef: null | HTMLDivElement = null;
-  private buttonRef: null | HTMLButtonElement = null;
-  private backdropRef: null | HTMLDivElement = null;
-  private iframeRef: null | HTMLIFrameElement = null;
-
   // State:
+  private iframeRef: null | HTMLIFrameElement = null;
   private openReason: OpenReason | null = null;
   private allowOpeningAutomatically = true;
 
@@ -301,8 +296,13 @@ export class WanderConnect {
 
       const elements = this.iframeComponent.getElements();
 
-      this.backdropRef = elements.backdrop;
       this.iframeRef = elements.iframe;
+
+      if (iframeOptions?.clickOutsideBehavior) {
+        elements.backdrop.addEventListener("click", () => {
+          this.close();
+        });
+      }
     }
 
     if (typeof buttonOptions === "object") {
@@ -312,23 +312,12 @@ export class WanderConnect {
 
       this.buttonComponent.setVariant(this.authInfo.authStatus || "not-authenticated");
 
-      const { parent, host, button } = this.buttonComponent.getElements();
+      const elements = this.buttonComponent.getElements();
 
-      this.buttonHostRef = host;
-      this.buttonRef = button;
-
-      parent.appendChild(host);
+      elements.parent.appendChild(elements.host);
 
       this.handleButtonClick = this.handleButtonClick.bind(this);
-      this.buttonRef.addEventListener("click", this.handleButtonClick);
-    }
-
-    const clickOutsideBehavior = iframeOptions instanceof HTMLElement ? false : iframeOptions?.clickOutsideBehavior;
-
-    if (clickOutsideBehavior && this.backdropRef) {
-      this.backdropRef.addEventListener("click", () => {
-        this.close();
-      });
+      elements.button.addEventListener("click", this.handleButtonClick);
     }
 
     if (this.iframeComponent) {
