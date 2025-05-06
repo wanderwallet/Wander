@@ -1,18 +1,8 @@
 import Paragraph from "~components/Paragraph";
 import { useContext, useEffect, useRef, useState } from "react";
 import browser from "webextension-polyfill";
-import {
-  PasswordContext,
-  WalletContext,
-  type SetupWelcomeViewParams
-} from "../setup";
-import {
-  EventType,
-  isUserInGDPRCountry,
-  PageType,
-  trackEvent,
-  trackPage
-} from "~utils/analytics";
+import { PasswordContext, WalletContext, type SetupWelcomeViewParams } from "../setup";
+import { EventType, isUserInGDPRCountry, PageType, trackEvent, trackPage } from "~utils/analytics";
 import { useLocation } from "~wallets/router/router.utils";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import styled from "styled-components";
@@ -24,12 +14,9 @@ import { loadTokens } from "~tokens/token";
 import { addWallet } from "~wallets";
 import { useHardwareApi } from "~wallets/hooks";
 
-export type PermissionsWelcomeViewProps =
-  CommonRouteProps<SetupWelcomeViewParams>;
+export type PermissionsWelcomeViewProps = CommonRouteProps<SetupWelcomeViewParams>;
 
-export function PermissionsWelcomeView({
-  params
-}: PermissionsWelcomeViewProps) {
+export function PermissionsWelcomeView({ params }: PermissionsWelcomeViewProps) {
   const { navigate } = useLocation();
 
   const hardwareApi = useHardwareApi();
@@ -47,27 +34,27 @@ export function PermissionsWelcomeView({
   const [analyticSetting, setAnalyticSetting] = useStorage(
     {
       key: "setting_analytics",
-      instance: ExtensionStorage
+      instance: ExtensionStorage,
     },
-    (v) => v ?? false
+    (v) => v ?? false,
   );
 
   const [notificationSetting, setNotificationSetting] = useStorage(
     {
       key: "setting_notifications",
-      instance: ExtensionStorage
+      instance: ExtensionStorage,
     },
-    (v) => v ?? false
+    (v) => v ?? false,
   );
 
   const [answered, setAnswered] = useStorage<boolean>({
     key: "analytics_consent_answered",
-    instance: ExtensionStorage
+    instance: ExtensionStorage,
   });
 
   const [, setShowAnnouncement] = useStorage<boolean>({
     key: "show_announcement",
-    instance: ExtensionStorage
+    instance: ExtensionStorage,
   });
 
   // add generated wallet
@@ -111,9 +98,9 @@ export function PermissionsWelcomeView({
     await addWallet(
       {
         nickname: walletRef.current?.nickname || "Account 1",
-        wallet: walletRef.current.jwk
+        wallet: walletRef.current.jwk,
       },
-      password
+      password,
     );
 
     // load tokens
@@ -163,9 +150,7 @@ export function PermissionsWelcomeView({
   return (
     <Container>
       <Content>
-        <Paragraph>
-          {browser.i18n.getMessage("enable_permissions_description")}
-        </Paragraph>
+        <Paragraph>{browser.i18n.getMessage("enable_permissions_description")}</Paragraph>
         <div>
           <BoxContainer>
             <ToggleSwitch

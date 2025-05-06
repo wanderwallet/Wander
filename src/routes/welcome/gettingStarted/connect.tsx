@@ -19,27 +19,16 @@ export function GettingStartedConnectView() {
         <Text size="xl" weight="bold" noMargin>
           {browser.i18n.getMessage("connect_with_us_title")}
         </Text>
-        <Item
-          href="https://www.arconnect.io/twitter"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
+        <Item href="https://www.arconnect.io/twitter" target="_blank" rel="noopener noreferrer">
           <div
             style={{
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              gap: "1rem"
-            }}
-          >
+              gap: "1rem",
+            }}>
             <ImageWrapper>
-              <Image
-                src={xLogo}
-                alt={"X Logo"}
-                draggable={false}
-                width={"3rem"}
-                height={"3rem"}
-              />
+              <Image src={xLogo} alt={"X Logo"} draggable={false} width={"3rem"} height={"3rem"} />
             </ImageWrapper>
             <ItemTitle>@wanderapp</ItemTitle>
           </div>
@@ -47,19 +36,9 @@ export function GettingStartedConnectView() {
             {browser.i18n.getMessage("connect_paragraph")}
           </Text>
         </Item>
-        <Item
-          href="https://discord.com/invite/YGXJbuz44K"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
+        <Item href="https://discord.com/invite/YGXJbuz44K" target="_blank" rel="noopener noreferrer">
           <ImageWrapper>
-            <Image
-              src={discordLogo}
-              alt={"discord logo"}
-              draggable={false}
-              width={"3rem"}
-              height={"3rem"}
-            />
+            <Image src={discordLogo} alt={"discord logo"} draggable={false} width={"3rem"} height={"3rem"} />
           </ImageWrapper>
           <Text weight="medium" noMargin>
             {browser.i18n.getMessage("connect_paragraph_2")}
@@ -74,7 +53,7 @@ const ItemTitle = styled(Text).attrs({
   variant: "secondary",
   size: "sm",
   weight: "semibold",
-  noMargin: true
+  noMargin: true,
 })``;
 
 const Item = styled.a`

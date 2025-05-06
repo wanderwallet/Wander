@@ -3,14 +3,8 @@ import zhCnDic from "url:/assets/_locales/zh_CN/messages.json";
 import { asArray } from "~utils/array";
 
 const dictionaries = {
-  en: enDic as unknown as Record<
-    string,
-    { message: string; description: string }
-  >,
-  "zh-CN": zhCnDic as unknown as Record<
-    string,
-    { message: string; description: string }
-  >
+  en: enDic as unknown as Record<string, { message: string; description: string }>,
+  "zh-CN": zhCnDic as unknown as Record<string, { message: string; description: string }>,
 } as const;
 
 export const i18n = {
@@ -39,5 +33,5 @@ export const i18n = {
     }
 
     return value;
-  }
+  },
 };

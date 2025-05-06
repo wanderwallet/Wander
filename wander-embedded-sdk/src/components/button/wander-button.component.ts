@@ -3,13 +3,10 @@ import {
   WanderEmbeddedButtonConfig,
   WanderEmbeddedButtonCSSVars,
   WanderEmbeddedButtonOptions,
-  WanderEmbeddedButtonStatus
+  WanderEmbeddedButtonStatus,
 } from "../../wander-embedded.types";
 import { getWanderButtonTemplateContent } from "./wander-button.template";
-import {
-  addCSSVariables,
-  mergeCSSVariablesOption
-} from "../../utils/styles/styles.utils";
+import { addCSSVariables, mergeCSSVariablesOption } from "../../utils/styles/styles.utils";
 import { EmbeddedAuthStatus } from "../../utils/message/message.types";
 
 export class WanderButton {
@@ -42,7 +39,7 @@ export class WanderButton {
     notificationsBorderColor: "",
     notificationsBorderRadius: "",
     notificationsBoxShadow: "",
-    notificationsPadding: ""
+    notificationsPadding: "",
   };
 
   static DEFAULT_DARK_CSS_VARS: WanderEmbeddedButtonCSSVars = {
@@ -65,7 +62,7 @@ export class WanderButton {
     notificationsBorderColor: "",
     notificationsBorderRadius: "",
     notificationsBoxShadow: "",
-    notificationsPadding: ""
+    notificationsPadding: "",
   };
 
   static DEFAULT_CONFIG = {
@@ -73,7 +70,7 @@ export class WanderButton {
     theme: "system",
     cssVars: {
       light: WanderButton.DEFAULT_LIGHT_CSS_VARS,
-      dark: WanderButton.DEFAULT_DARK_CSS_VARS
+      dark: WanderButton.DEFAULT_DARK_CSS_VARS,
     },
     customStyles: "",
     parent: document.body,
@@ -82,7 +79,7 @@ export class WanderButton {
     label: true,
     balance: {
       balanceOf: "total",
-      currency: "auto"
+      currency: "auto",
     },
     notifications: "counter",
     i18n: {
@@ -90,8 +87,8 @@ export class WanderButton {
       loadingBalance: "Loading Balance",
       completeSignUp: "Complete Sign Up",
       signIn: "Sign in",
-      reviewRequests: "Review requests"
-    }
+      reviewRequests: "Review requests",
+    },
   } as const satisfies WanderEmbeddedButtonConfig;
 
   // Elements:
@@ -116,7 +113,7 @@ export class WanderButton {
       options.cssVars,
       options.theme,
       WanderButton.DEFAULT_LIGHT_CSS_VARS,
-      WanderButton.DEFAULT_DARK_CSS_VARS
+      WanderButton.DEFAULT_DARK_CSS_VARS,
     );
 
     this.config = {
@@ -124,8 +121,7 @@ export class WanderButton {
       id: options.id || WanderButton.DEFAULT_CONFIG.id,
       theme: options.theme || WanderButton.DEFAULT_CONFIG.theme,
       cssVars,
-      customStyles:
-        options.customStyles || WanderButton.DEFAULT_CONFIG.customStyles,
+      customStyles: options.customStyles || WanderButton.DEFAULT_CONFIG.customStyles,
       position: options.position || WanderButton.DEFAULT_CONFIG.position,
       wanderLogo: options.wanderLogo || WanderButton.DEFAULT_CONFIG.wanderLogo,
       label: options.label ?? WanderButton.DEFAULT_CONFIG.label,
@@ -134,17 +130,14 @@ export class WanderButton {
           ? false
           : {
               balanceOf:
-                (options.balance === true
-                  ? null
-                  : options.balance?.balanceOf) ??
+                (options.balance === true ? null : options.balance?.balanceOf) ??
                 WanderButton.DEFAULT_CONFIG.balance.balanceOf,
               currency:
                 (options.balance === true ? null : options.balance?.currency) ??
-                WanderButton.DEFAULT_CONFIG.balance.currency
+                WanderButton.DEFAULT_CONFIG.balance.currency,
             },
-      notifications:
-        options.notifications || WanderButton.DEFAULT_CONFIG.notifications,
-      i18n: options.i18n || WanderButton.DEFAULT_CONFIG.i18n
+      notifications: options.notifications || WanderButton.DEFAULT_CONFIG.notifications,
+      i18n: options.i18n || WanderButton.DEFAULT_CONFIG.i18n,
     };
 
     const elements = WanderButton.initializeButton(this.config);
@@ -174,7 +167,7 @@ export class WanderButton {
       showBalance: !!config.balance,
       customStyles: config.customStyles,
       // TODO: It would be better to create an interface with the subset of vars that we can override when changing themes:
-      cssVariableKeys: Object.keys(WanderButton.DEFAULT_LIGHT_CSS_VARS)
+      cssVariableKeys: Object.keys(WanderButton.DEFAULT_LIGHT_CSS_VARS),
     });
 
     shadow.appendChild(template.content);
@@ -184,28 +177,16 @@ export class WanderButton {
     const label = shadow.querySelector(".label") as HTMLSpanElement;
     const balance = shadow.querySelector(".balance") as HTMLSpanElement;
     const indicator = shadow.querySelector(".indicator") as HTMLSpanElement;
-    const notifications = shadow.querySelector(
-      ".notifications"
-    ) as HTMLSpanElement;
+    const notifications = shadow.querySelector(".notifications") as HTMLSpanElement;
 
-    if (
-      !button ||
-      !wanderLogo ||
-      !label ||
-      !balance ||
-      !indicator ||
-      !notifications
-    )
+    if (!button || !wanderLogo || !label || !balance || !indicator || !notifications)
       throw new Error("Missing elements");
 
     host.style.position = "fixed";
     host.style.zIndex = "var(--zIndex)";
 
     if (config.position !== "static") {
-      const [y, x] = config.position.split("-") as [
-        "top" | "bottom",
-        "left" | "right"
-      ];
+      const [y, x] = config.position.split("-") as ["top" | "bottom", "left" | "right"];
 
       host.style[y] = "var(--gapY)";
       host.style[x] = "var(--gapX)";
@@ -234,7 +215,7 @@ export class WanderButton {
       label,
       balance,
       indicator,
-      notifications
+      notifications,
     };
   }
 
@@ -247,7 +228,7 @@ export class WanderButton {
       label: this.label,
       balance: this.balance,
       indicator: this.indicator,
-      notifications: this.notifications
+      notifications: this.notifications,
     };
   }
 
@@ -270,8 +251,7 @@ export class WanderButton {
     if (notifications === "off") return;
 
     if (pendingRequests > 0) {
-      this.notifications.textContent =
-        notifications === "counter" ? `${pendingRequests}` : "!";
+      this.notifications.textContent = notifications === "counter" ? `${pendingRequests}` : "!";
       this.label.textContent = i18n.reviewRequests;
     } else {
       this.notifications.textContent = "";

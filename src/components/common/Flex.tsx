@@ -43,10 +43,9 @@ export const Flex: React.FC<FlexProps> = ({
         height,
         padding,
         cursor,
-        ...style
+        ...style,
       }}
-      {...props}
-    >
+      {...props}>
       {children}
     </div>
   );

@@ -13,7 +13,7 @@ export default function AnalyticsConsent() {
   const [_, setAnalytics] = useSetting<boolean>("analytics");
   const [answered, setAnswered] = useStorage<boolean>({
     key: "analytics_consent_answered",
-    instance: ExtensionStorage
+    instance: ExtensionStorage,
   });
 
   return (
@@ -25,16 +25,14 @@ export default function AnalyticsConsent() {
               setAnalytics(true);
               setAnswered(true);
             }}
-            key="dialog"
-          >
+            key="dialog">
             <ConsentText>
               {browser.i18n.getMessage("analytics_description")}{" "}
               <a
                 href="https://www.wander.app/privacy"
                 target="_blank"
                 rel="noopener noreferrer"
-                onClick={(e) => e.stopPropagation()}
-              >
+                onClick={(e) => e.stopPropagation()}>
                 {browser.i18n.getMessage("explore_article_read_more")}
               </a>
             </ConsentText>
@@ -44,8 +42,7 @@ export default function AnalyticsConsent() {
                   e.stopPropagation();
                   setAnalytics(false);
                   setAnswered(true);
-                }}
-              >
+                }}>
                 {browser.i18n.getMessage("decline")}
               </ConsentButton>
               <CloseButton>
@@ -54,9 +51,7 @@ export default function AnalyticsConsent() {
             </Buttons>
           </ConsentDialog>
         )}
-        {!answered && (
-          <BackgroundLayer onClick={() => setAnalytics(true)} key="bg" />
-        )}
+        {!answered && <BackgroundLayer onClick={() => setAnalytics(true)} key="bg" />}
       </AnimatePresence>
     </>
   );
@@ -64,12 +59,12 @@ export default function AnalyticsConsent() {
 
 const backgroundAnimation: Variants = {
   hidden: { opacity: 0 },
-  shown: { opacity: 1 }
+  shown: { opacity: 1 },
 };
 
 const dialogAnimation: Variants = {
   hidden: { opacity: 0, translateY: 10 },
-  shown: { opacity: 1, translateY: 0 }
+  shown: { opacity: 1, translateY: 0 },
 };
 
 const ConsentDialog = styled(motion.div).attrs({
@@ -77,7 +72,7 @@ const ConsentDialog = styled(motion.div).attrs({
   initial: "hidden",
   animate: "shown",
   exit: "hidden",
-  transition: { duration: 0.17 }
+  transition: { duration: 0.17 },
 })`
   position: fixed;
   display: flex;
@@ -97,7 +92,7 @@ const BackgroundLayer = styled(motion.div).attrs({
   initial: "hidden",
   animate: "shown",
   exit: "hidden",
-  transition: { duration: 0.15 }
+  transition: { duration: 0.15 },
 })`
   position: fixed;
   top: 0;
@@ -110,7 +105,7 @@ const BackgroundLayer = styled(motion.div).attrs({
 `;
 
 const ConsentText = styled(Text).attrs({
-  noMargin: true
+  noMargin: true,
 })`
   font-size: 0.88rem;
 
@@ -128,7 +123,7 @@ const Buttons = styled.div`
 
 const ConsentButton = styled(Button).attrs({
   small: true,
-  secondary: true
+  secondary: true,
 })`
   padding: 0.66rem 1.35rem;
   border-radius: 13px;

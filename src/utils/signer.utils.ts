@@ -1,14 +1,7 @@
-import {
-  ArweaveSigner,
-  getCryptoDriver,
-  type JWKInterface
-} from "@dha-team/arbundles";
+import { ArweaveSigner, getCryptoDriver, type JWKInterface } from "@dha-team/arbundles";
 import type { SignatureOptions } from "arweave/node/lib/crypto/crypto-interface";
 
-export function createArweaveSignerWithOptions(
-  keyfile: JWKInterface,
-  signatureOptions: SignatureOptions
-) {
+export function createArweaveSignerWithOptions(keyfile: JWKInterface, signatureOptions: SignatureOptions) {
   const dataSigner = new ArweaveSigner(keyfile);
 
   if (signatureOptions) {

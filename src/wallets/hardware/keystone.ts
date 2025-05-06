@@ -2,7 +2,7 @@ import {
   ArweaveCryptoAccount,
   ArweaveSignature,
   ArweaveSignRequest,
-  SignType
+  SignType,
 } from "@keystonehq/bc-ur-registry-arweave";
 import type { SignatureOptions } from "arweave/web/lib/crypto/crypto-interface";
 import type Transaction from "arweave/web/lib/transaction";
@@ -33,7 +33,7 @@ export class KeystoneSigner implements Signer {
     private mfp: string,
     private signType: SignType,
     private interaction: KeystoneInteraction,
-    private options: SignatureOptions = { saltLength: 32 }
+    private options: SignatureOptions = { saltLength: 32 },
   ) {}
 
   sign(message: Uint8Array, _opts?: any): Promise<Uint8Array> {
@@ -42,7 +42,7 @@ export class KeystoneSigner implements Signer {
       data,
       this.mfp,
       this.signType,
-      this.options.saltLength
+      this.options.saltLength,
     );
 
     return new Promise(async (resolve) => {
@@ -69,9 +69,7 @@ export class KeystoneSigner implements Signer {
 export async function decodeAccount(res: UR): Promise<KeystoneAccount> {
   // check UR type
   if (res.type !== "arweave-crypto-account") {
-    throw new Error(
-      `Invalid UR result. Expected "arweave-crypto-account", received "${res.type}".`
-    );
+    throw new Error(`Invalid UR result. Expected "arweave-crypto-account", received "${res.type}".`);
   }
 
   // decode cbor result
@@ -90,7 +88,7 @@ export async function decodeAccount(res: UR): Promise<KeystoneAccount> {
   return {
     address,
     owner,
-    xfp
+    xfp,
   };
 }
 
@@ -102,7 +100,7 @@ export async function transactionToUR(
   transaction: Transaction,
   xfp: string,
   publicKey: string,
-  options: SignatureOptions = { saltLength: 32 }
+  options: SignatureOptions = { saltLength: 32 },
 ) {
   // set transaction public key
   transaction.owner = publicKey;
@@ -119,17 +117,13 @@ export async function transactionToUR(
     xfp,
     SignType.Transaction,
     options.saltLength,
-    requestID
+    requestID,
   );
 
   return signRequest.toUR();
 }
 
-export async function messageToUR(
-  message: Uint8Array,
-  xfp: string,
-  options: SignatureOptions = { saltLength: 32 }
-) {
+export async function messageToUR(message: Uint8Array, xfp: string, options: SignatureOptions = { saltLength: 32 }) {
   const messageBuff = Buffer.from(message);
 
   // request ID
@@ -141,17 +135,13 @@ export async function messageToUR(
     xfp,
     SignType.Message,
     options.saltLength,
-    requestID
+    requestID,
   );
 
   return signRequest.toUR();
 }
 
-export async function dataItemToUR(
-  data: Uint8Array,
-  xfp: string,
-  options: SignatureOptions = { saltLength: 32 }
-) {
+export async function dataItemToUR(data: Uint8Array, xfp: string, options: SignatureOptions = { saltLength: 32 }) {
   const messageBuff = Buffer.from(data);
 
   // construct request
@@ -159,7 +149,7 @@ export async function dataItemToUR(
     messageBuff,
     xfp,
     SignType.DataItem,
-    options.saltLength
+    options.saltLength,
   );
 
   return signRequest.toUR();
@@ -174,9 +164,7 @@ export async function dataItemToUR(
 export async function decodeSignature(res: UR) {
   // check UR type
   if (res.type !== "arweave-signature") {
-    throw new Error(
-      `Invalid UR result. Expected "arweave-signature", received "${res.type}".`
-    );
+    throw new Error(`Invalid UR result. Expected "arweave-signature", received "${res.type}".`);
   }
 
   // decode cbor result
@@ -186,13 +174,11 @@ export async function decodeSignature(res: UR) {
   const signature = Arweave.utils.bufferTob64Url(rawSignature);
 
   // hash ID
-  const id = Arweave.utils.bufferTob64Url(
-    await Arweave.crypto.hash(rawSignature)
-  );
+  const id = Arweave.utils.bufferTob64Url(await Arweave.crypto.hash(rawSignature));
 
   return {
     id,
-    signature
+    signature,
   };
 }
 

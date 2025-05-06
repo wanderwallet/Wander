@@ -16,25 +16,25 @@ export default function PasswordStrength({ password }: Props) {
         return {
           bars: 1,
           color: "#F1655B",
-          text: `password_strength_${strengthIndex}`
+          text: `password_strength_${strengthIndex}`,
         };
       case "Weak":
         return {
           bars: 2,
           color: "#F1A15B",
-          text: `password_strength_${strengthIndex}`
+          text: `password_strength_${strengthIndex}`,
         };
       case "Medium":
         return {
           bars: 3,
           color: "#E8D85B",
-          text: `password_strength_${strengthIndex}`
+          text: `password_strength_${strengthIndex}`,
         };
       case "Strong":
         return {
           bars: 4,
           color: "#5BF16E",
-          text: `password_strength_${strengthIndex}`
+          text: `password_strength_${strengthIndex}`,
         };
       default:
         return { bars: 0, color: "#544A81", text: "" };
@@ -45,16 +45,16 @@ export default function PasswordStrength({ password }: Props) {
   const checklist: ChecklistElement[] = [
     {
       validity: ["lowercase", "uppercase"],
-      display: "password_strength_checklist_case"
+      display: "password_strength_checklist_case",
     },
     {
       validity: ["number"],
-      display: "password_strength_checklist_number"
+      display: "password_strength_checklist_number",
     },
     {
       validity: ["symbol"],
-      display: "password_strength_checklist_symbol"
-    }
+      display: "password_strength_checklist_symbol",
+    },
   ];
 
   const { bars, color, text } = getStrengthInfo();
@@ -90,9 +90,7 @@ export default function PasswordStrength({ password }: Props) {
           );
         })}
         <StrengthCheck isValid={password && password.length >= 5}>
-          {(password && password.length >= 5 && <Check height={24} />) || (
-            <X height={24} />
-          )}
+          {(password && password.length >= 5 && <Check height={24} />) || <X height={24} />}
           <Text variant="secondary" noMargin>
             {browser.i18n.getMessage("password_strength_checklist_length", "5")}
           </Text>
@@ -115,8 +113,7 @@ const ProgressBar = styled.div`
 const Bar = styled.div<{ active: boolean }>`
   width: 22%;
   height: 4px;
-  background-color: ${(props) =>
-    props.active ? props.theme.theme : "rgba(107, 87, 249, 0.50)"};
+  background-color: ${(props) => (props.active ? props.theme.theme : "rgba(107, 87, 249, 0.50)")};
   transition: all 0.23s ease-in-out;
 `;
 

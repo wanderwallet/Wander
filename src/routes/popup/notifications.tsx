@@ -2,7 +2,7 @@ import {
   extractQuantityTransferred,
   fetchNotifications,
   fetchTokenById,
-  mergeAndSortNotifications
+  mergeAndSortNotifications,
 } from "~utils/notifications";
 import aoLogo from "url:/assets/ecosystem/ao-logo.svg";
 import { useLocation } from "~wallets/router/router.utils";
@@ -16,10 +16,7 @@ import styled from "styled-components";
 import { balanceToFractioned, formatTokenBalance } from "~tokens/currency";
 import { ExtensionStorage } from "~utils/storage";
 import { getActiveAddress } from "~wallets";
-import {
-  SubscriptionStatus,
-  type SubscriptionData
-} from "~subscriptions/subscription";
+import { SubscriptionStatus, type SubscriptionData } from "~subscriptions/subscription";
 import { checkTransactionError } from "~lib/transactions";
 import type { Transaction } from "~api/background/handlers/alarms/notifications/notifications-alarm.utils";
 import { MessageDotsCircle, Wallet02 } from "@untitled-ui/icons-react";
@@ -44,14 +41,8 @@ export function NotificationsView() {
         setLoading(true);
         const address = await getActiveAddress();
         const n = await fetchNotifications(address);
-        const subs = (
-          (await ExtensionStorage.get<SubscriptionData[]>(
-            `subscriptions_${address}`
-          )) || []
-        ).filter(
-          (subscription) =>
-            subscription.subscriptionStatus ===
-            SubscriptionStatus.AWAITING_PAYMENT
+        const subs = ((await ExtensionStorage.get<SubscriptionData[]>(`subscriptions_${address}`)) || []).filter(
+          (subscription) => subscription.subscriptionStatus === SubscriptionStatus.AWAITING_PAYMENT,
         );
 
         setSubscriptions(subs);
@@ -60,10 +51,9 @@ export function NotificationsView() {
         }
         const sortedNotifications = mergeAndSortNotifications(
           n.arBalanceNotifications.arNotifications,
-          n.aoNotifications.aoNotifications
+          n.aoNotifications.aoNotifications,
         );
-        const { formattedTxMsgs, formattedNotifications } =
-          await formatTxMessage(sortedNotifications);
+        const { formattedTxMsgs, formattedNotifications } = await formatTxMessage(sortedNotifications);
         setNotifications(formattedNotifications);
         setFormattedTxMsgs(formattedTxMsgs);
         setLoading(false);
@@ -84,7 +74,7 @@ export function NotificationsView() {
   };
 
   const formatTxMessage = async (
-    notifications: Transaction[]
+    notifications: Transaction[],
   ): Promise<{
     formattedTxMsgs: string[];
     formattedNotifications: Transaction[];
@@ -112,77 +102,59 @@ export function NotificationsView() {
                 ticker = formatAddress(notification.tokenId, 4);
                 quantityTransfered = notification.quantity;
               } else {
-                ticker =
-                  token?.type === "collectible"
-                    ? token.Name! || token.Ticker!
-                    : token.Ticker! || token.Name!;
-                quantityTransfered = balanceToFractioned(
-                  notification.quantity,
-                  {
-                    id: notification.tokenId,
-                    decimals: token.Denomination,
-                    divisibility: token.Denomination
-                  }
-                ).toFixed();
+                ticker = token?.type === "collectible" ? token.Name! || token.Ticker! : token.Ticker! || token.Name!;
+                quantityTransfered = balanceToFractioned(notification.quantity, {
+                  id: notification.tokenId,
+                  decimals: token.Denomination,
+                  divisibility: token.Denomination,
+                }).toFixed();
               }
             } else if (notification.transactionType !== "Transaction") {
               let token = await fetchTokenById(notification.tokenId);
               if (!token) {
                 ticker = formatAddress(notification.tokenId, 5);
-                quantityTransfered = extractQuantityTransferred(
-                  notification.node.tags
-                );
+                quantityTransfered = extractQuantityTransferred(notification.node.tags);
               } else if (token.ticker !== "AR") {
                 ticker = token.ticker;
-                quantityTransfered = extractQuantityTransferred(
-                  notification.node.tags
-                );
+                quantityTransfered = extractQuantityTransferred(notification.node.tags);
                 quantityTransfered = formatTokenBalance(
                   balanceToFractioned(quantityTransfered, {
                     id: notification.tokenId,
                     decimals: token.decimals,
-                    divisibility: token.divisibility
-                  })
+                    divisibility: token.divisibility,
+                  }),
                 );
               } else {
                 ticker = token.ticker;
-                quantityTransfered = formatTokenBalance(
-                  notification.quantity || "0"
-                );
+                quantityTransfered = formatTokenBalance(notification.quantity || "0");
               }
             }
             if (notification.transactionType === "Sent") {
               formattedMessage = browser.i18n.getMessage("sent_balance", [
                 quantityTransfered,
                 ticker,
-                notification.isAo
-                  ? findRecipient(notification)
-                  : formatAddress(notification.node.recipient, 4)
+                notification.isAo ? findRecipient(notification) : formatAddress(notification.node.recipient, 4),
               ]);
             } else if (notification.transactionType === "Received") {
               formattedMessage = browser.i18n.getMessage("received_balance", [
                 quantityTransfered,
                 ticker,
-                formatAddress(notification.node.owner.address, 4)
+                formatAddress(notification.node.owner.address, 4),
               ]);
             } else {
               const recipient = notification.node.recipient;
               const sender = notification.node.owner.address;
               const isSent = sender === address;
-              const contentTypeTag = notification.node.tags.find(
-                (tag) => tag.name === "Content-Type"
-              );
+              const contentTypeTag = notification.node.tags.find((tag) => tag.name === "Content-Type");
               if (!recipient && contentTypeTag) {
                 formattedMessage = browser.i18n.getMessage("new_data_uploaded");
               } else if (!recipient) {
                 formattedMessage = `${browser.i18n.getMessage(
-                  "new_transaction"
+                  "new_transaction",
                 )} ${browser.i18n.getMessage("sent").toLowerCase()}`;
               } else {
-                formattedMessage = `${browser.i18n.getMessage(
-                  "new_transaction"
-                )} ${browser.i18n.getMessage(
-                  isSent ? "notification_to" : "notification_from"
+                formattedMessage = `${browser.i18n.getMessage("new_transaction")} ${browser.i18n.getMessage(
+                  isSent ? "notification_to" : "notification_from",
                 )} ${formatAddress(isSent ? recipient : sender, 4)}`;
               }
             }
@@ -190,32 +162,24 @@ export function NotificationsView() {
             const recipient = notification.node.recipient;
             const sender = notification.node.owner.address;
             const isSent = sender === address;
-            formattedMessage = `${browser.i18n.getMessage(
-              "new_message"
-            )} ${browser.i18n.getMessage(
-              isSent ? "notification_to" : "notification_from"
+            formattedMessage = `${browser.i18n.getMessage("new_message")} ${browser.i18n.getMessage(
+              isSent ? "notification_to" : "notification_from",
             )} ${formatAddress(isSent ? recipient : sender, 4)}`;
           }
           return { formattedMessage, notification };
         } catch {
           return { formattedMessage: null, notification };
         }
-      })
+      }),
     );
 
-    formattedNotifications = formattedNotifications.filter(
-      (notification) => notification.formattedMessage
-    );
+    formattedNotifications = formattedNotifications.filter((notification) => notification.formattedMessage);
 
-    const formattedTxMsgs = formattedNotifications.map(
-      (notification) => notification.formattedMessage
-    );
+    const formattedTxMsgs = formattedNotifications.map((notification) => notification.formattedMessage);
 
     return {
       formattedTxMsgs,
-      formattedNotifications: formattedNotifications.map(
-        ({ notification }) => notification
-      )
+      formattedNotifications: formattedNotifications.map(({ notification }) => notification),
     };
   };
 
@@ -226,21 +190,16 @@ export function NotificationsView() {
     const date = new Date(timestamp * 1000);
     return date.toLocaleDateString(undefined, {
       month: "short",
-      day: "numeric"
+      day: "numeric",
     });
   };
 
   const handleLink = (n) => {
-    navigate(
-      `/${n.transactionType === "Message" ? "notification" : "transaction"}/${
-        n.node.id
-      }`,
-      {
-        search: {
-          back: "/notifications"
-        }
-      }
-    );
+    navigate(`/${n.transactionType === "Message" ? "notification" : "transaction"}/${n.node.id}`, {
+      search: {
+        back: "/notifications",
+      },
+    });
   };
 
   return (
@@ -254,23 +213,15 @@ export function NotificationsView() {
         )}
         {empty && (
           <Empty>
-            <TitleMessage>
-              {browser.i18n.getMessage("no_notifications")}
-            </TitleMessage>
-            <TitleMessage>
-              {browser.i18n.getMessage("no_notifications_get_started")}
-            </TitleMessage>
+            <TitleMessage>{browser.i18n.getMessage("no_notifications")}</TitleMessage>
+            <TitleMessage>{browser.i18n.getMessage("no_notifications_get_started")}</TitleMessage>
           </Empty>
         )}
         {subscriptions.map((subscription) => (
           <NotificationItem showPaddingTop={true}>
             <Description>{"Subscription"}</Description>
             <TitleMessage>{`${subscription.applicationName} Awaiting Payment`}</TitleMessage>
-            <Link
-              onClick={() =>
-                navigate(`/subscriptions/${subscription.arweaveAccountAddress}`)
-              }
-            >
+            <Link onClick={() => navigate(`/subscriptions/${subscription.arweaveAccountAddress}`)}>
               Pay Subscription
             </Link>
           </NotificationItem>
@@ -282,39 +233,27 @@ export function NotificationsView() {
               <NotificationItem
                 key={notification.node.id}
                 onClick={() => handleLink(notification)}
-                showPaddingTop={index !== 0}
-              >
+                showPaddingTop={index !== 0}>
                 <Description>
                   <div
                     style={{
                       display: "flex",
                       alignItems: "center",
-                      gap: "4px"
-                    }}
-                  >
+                      gap: "4px",
+                    }}>
                     {notification.transactionType === "Message" ? (
                       <MessageDotsCircle height={19} width={19} />
                     ) : (
                       <Wallet02 height={19} width={19} />
                     )}
-                    <div>
-                      {notification.transactionType === "Message"
-                        ? "Message"
-                        : "Transaction"}
-                    </div>
-                    {!!notification.isAo && (
-                      <Image src={aoLogo} alt="ao logo" />
-                    )}
+                    <div>{notification.transactionType === "Message" ? "Message" : "Transaction"}</div>
+                    {!!notification.isAo && <Image src={aoLogo} alt="ao logo" />}
                   </div>
-                  <div style={{ fontSize: "14px" }}>
-                    {formatDate(notification.node.block.timestamp)}
-                  </div>
+                  <div style={{ fontSize: "14px" }}>{formatDate(notification.node.block.timestamp)}</div>
                 </Description>
                 <TitleMessage>{formattedTxMsgs[index]}</TitleMessage>
               </NotificationItem>
-              {index !== notifications.length - 1 && (
-                <HorizontalLine marginVertical={16} />
-              )}
+              {index !== notifications.length - 1 && <HorizontalLine marginVertical={16} />}
             </NotificationWrapper>
           ))}
       </Wrapper>
@@ -357,7 +296,7 @@ const Link = styled.a`
 export const TitleMessage = styled(Text).attrs({
   size: "md",
   weight: "medium",
-  noMargin: true
+  noMargin: true,
 })``;
 
 const Description = styled.div`

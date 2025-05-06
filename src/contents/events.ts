@@ -7,7 +7,7 @@ log(LOG_GROUP.SETUP, "events.content-script.ts");
 export const config: PlasmoCSConfig = {
   matches: ["file://*/*", "http://*/*", "https://*/*"],
   run_at: "document_end",
-  all_frames: true
+  all_frames: true,
 };
 
 setupEventListeners();

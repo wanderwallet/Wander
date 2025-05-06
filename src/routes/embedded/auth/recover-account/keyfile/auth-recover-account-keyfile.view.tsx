@@ -2,14 +2,7 @@ import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useCallback, useEffect, useState } from "react";
 import { useLocation } from "~wallets/router/router.utils";
 
-import {
-  Card,
-  Row,
-  Button,
-  Copyable,
-  Upload,
-  WanderFooter
-} from "~components/embed";
+import { Card, Row, Button, Copyable, Upload, WanderFooter } from "~components/embed";
 import copy from "copy-to-clipboard";
 import { toast } from "react-toastify";
 export function AuthRecoverAccountKeyfileEmbeddedView() {
@@ -26,7 +19,7 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
     importedTempWalletAddress,
     deleteImportedTempWallet,
     fetchRecoverableAccounts,
-    clearRecoverableAccounts
+    clearRecoverableAccounts,
   } = useEmbedded();
 
   const handleImportWallet = useCallback(async () => {
@@ -75,8 +68,7 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
       onBackButtonClick={back}
       hasCloseButton={true}
       onCloseButtonClick={() => navigate(`/auth`)}
-      size="auto"
-    >
+      size="auto">
       <Copyable
         isFullWidth
         label="Your wallet address"
@@ -86,19 +78,10 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
         value={importedTempWalletAddress}
       />
       <Row>
-        <Button
-          variant="secondary"
-          size="md"
-          onClick={deleteImportedTempWallet}
-        >
+        <Button variant="secondary" size="md" onClick={deleteImportedTempWallet}>
           No, try again
         </Button>
-        <Button
-          variant="primary"
-          size="md"
-          onClick={() => handleRecover()}
-          isLoading={loading}
-        >
+        <Button variant="primary" size="md" onClick={() => handleRecover()} isLoading={loading}>
           Yes, recover
         </Button>
       </Row>
@@ -110,8 +93,7 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
       footerElement={<WanderFooter />}
       hasBackButton={true}
       onBackButtonClick={back}
-      size="auto"
-    >
+      size="auto">
       <Upload
         isFullWidth
         title={"Click to upload"}
@@ -120,13 +102,7 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
         loadingText={"Recovering account..."}
         onFileParse={handleJsonParse}
       />
-      <Button
-        isFullWidth
-        size="md"
-        isLoading={loading}
-        isDisabled={!jsonData || loading}
-        onClick={handleImportWallet}
-      >
+      <Button isFullWidth size="md" isLoading={loading} isDisabled={!jsonData || loading} onClick={handleImportWallet}>
         Import
       </Button>
     </Card>

@@ -15,7 +15,7 @@ export const ViewAll = styled(Title).attrs({
   noMargin: true,
   variant: "secondary",
   size: "sm",
-  weight: "medium"
+  weight: "medium",
 })`
   display: flex;
   align-items: center;

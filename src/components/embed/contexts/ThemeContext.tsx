@@ -1,10 +1,4 @@
-import React, {
-  createContext,
-  useState,
-  useEffect,
-  useContext,
-  type ReactNode
-} from "react";
+import React, { createContext, useState, useEffect, useContext, type ReactNode } from "react";
 import { themeTokens, commonTokens } from "../themes/theme-config";
 
 type ThemeMode = "light" | "dark" | "system";
@@ -22,7 +16,7 @@ const defaultContext: ThemeContextType = {
   setMode: () => {},
   isDarkMode: false,
   tokens: themeTokens,
-  common: commonTokens
+  common: commonTokens,
 };
 
 const ThemeContext = createContext<ThemeContextType>(defaultContext);
@@ -75,10 +69,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem("theme", mode);
 
     if (window.parent !== window) {
-      window.parent.postMessage(
-        { type: "THEME_CHANGE", mode, isDarkMode },
-        "*"
-      );
+      window.parent.postMessage({ type: "THEME_CHANGE", mode, isDarkMode }, "*");
     }
   }, [mode, isDarkMode]);
 
@@ -89,9 +80,8 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
         setMode,
         isDarkMode,
         tokens: themeTokens,
-        common: commonTokens
-      }}
-    >
+        common: commonTokens,
+      }}>
       {children}
     </ThemeContext.Provider>
   );

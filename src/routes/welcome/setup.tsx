@@ -42,14 +42,14 @@ const LoadViews = [
   PasswordWelcomeView,
   ThemeWelcomeView,
   PermissionsWelcomeView,
-  GenerateDoneWelcomeView
+  GenerateDoneWelcomeView,
 ];
 const KeystoneViews = [
   WalletsWelcomeView,
   PasswordWelcomeView,
   ThemeWelcomeView,
   PermissionsWelcomeView,
-  GenerateDoneWelcomeView
+  GenerateDoneWelcomeView,
 ];
 
 // TODO: Use a nested router instead:
@@ -61,13 +61,13 @@ const ViewsBySetupMode = {
     PasswordWelcomeView,
     ThemeWelcomeView,
     PermissionsWelcomeView,
-    GenerateDoneWelcomeView
+    GenerateDoneWelcomeView,
   ],
   load: [OptionsWelcomView],
   recoveryPhraseLoad: LoadViews,
   keyfileLoad: LoadViews,
   qrLoad: LoadViews,
-  keystoneLoad: KeystoneViews
+  keystoneLoad: KeystoneViews,
 } as const;
 
 const VIEW_TITLES_BY_SETUP_MODE = {
@@ -76,7 +76,7 @@ const VIEW_TITLES_BY_SETUP_MODE = {
   recoveryPhraseLoad: "import_an_account",
   keyfileLoad: "import_an_account",
   qrLoad: "import_an_account",
-  keystoneLoad: "import_an_account"
+  keystoneLoad: "import_an_account",
 } as const;
 
 const remainingLoadSubtitles = [
@@ -84,15 +84,10 @@ const remainingLoadSubtitles = [
   "create_a_password",
   "choose_ui_theme",
   "enable_permissions",
-  "congratulations"
+  "congratulations",
 ];
 
-const remainingKeystoneSubtitles = [
-  "create_a_password",
-  "choose_ui_theme",
-  "enable_permissions",
-  "congratulations"
-];
+const remainingKeystoneSubtitles = ["create_a_password", "choose_ui_theme", "enable_permissions", "congratulations"];
 
 const VIEW_SUBTITLES_BY_SETUP_MODE = {
   generate: [
@@ -102,22 +97,16 @@ const VIEW_SUBTITLES_BY_SETUP_MODE = {
     "create_a_password",
     "choose_ui_theme",
     "enable_permissions",
-    "congratulations"
+    "congratulations",
   ],
   load: [""],
   recoveryPhraseLoad: ["enter_recovery_phrase", ...remainingLoadSubtitles],
   keyfileLoad: ["upload_key_file", ...remainingLoadSubtitles],
   qrLoad: ["scan_qr_code", ...remainingLoadSubtitles],
-  keystoneLoad: ["keystone_connect_title", ...remainingKeystoneSubtitles]
+  keystoneLoad: ["keystone_connect_title", ...remainingKeystoneSubtitles],
 };
 
-export type WelcomeSetupMode =
-  | "generate"
-  | "load"
-  | "recoveryPhraseLoad"
-  | "keyfileLoad"
-  | "qrLoad"
-  | "keystoneLoad";
+export type WelcomeSetupMode = "generate" | "load" | "recoveryPhraseLoad" | "keyfileLoad" | "qrLoad" | "keystoneLoad";
 
 export interface SetupWelcomeViewParams {
   setupMode: WelcomeSetupMode;
@@ -163,8 +152,7 @@ export function SetupWelcomeView({ params }: SetupWelcomeViewProps) {
 
     // prevent user from closing the window
     // while Wander is generating a wallet
-    window.onbeforeunload = () =>
-      browser.i18n.getMessage("close_tab_generate_wallet_message");
+    window.onbeforeunload = () => browser.i18n.getMessage("close_tab_generate_wallet_message");
 
     try {
       const arweave = new Arweave(defaultGateway);
@@ -177,14 +165,10 @@ export function SetupWelcomeView({ params }: SetupWelcomeViewProps) {
       // generate wallet from seedphrase
       let generatedKeyfile = await jwkFromMnemonic(seed);
 
-      let { actualLength, expectedLength } = await getWalletKeyLength(
-        generatedKeyfile
-      );
+      let { actualLength, expectedLength } = await getWalletKeyLength(generatedKeyfile);
       while (expectedLength !== actualLength) {
         generatedKeyfile = await jwkFromMnemonic(seed);
-        ({ actualLength, expectedLength } = await getWalletKeyLength(
-          generatedKeyfile
-        ));
+        ({ actualLength, expectedLength } = await getWalletKeyLength(generatedKeyfile));
       }
 
       setGeneratedWallet((val) => ({ ...val, jwk: generatedKeyfile }));
@@ -200,7 +184,7 @@ export function SetupWelcomeView({ params }: SetupWelcomeViewProps) {
       setToast({
         type: "error",
         content: browser.i18n.getMessage("error_generating_wallet"),
-        duration: 2300
+        duration: 2300,
       });
     }
 
@@ -258,12 +242,7 @@ export function SetupWelcomeView({ params }: SetupWelcomeViewProps) {
     <Wrapper linearBackground={transparentBackground}>
       <Header>
         <HeaderIconWrapper>
-          <Image
-            width="57.61px"
-            height="27px"
-            src={WanderIcon}
-            alt="Wander Icon"
-          />
+          <Image width="57.61px" height="27px" src={WanderIcon} alt="Wander Icon" />
           <IconText width={116.759} height={24.111} />
         </HeaderIconWrapper>
         <Link href="https://www.wander.app/help#browser-extension">
@@ -286,11 +265,7 @@ export function SetupWelcomeView({ params }: SetupWelcomeViewProps) {
             </CardHeader>
             {!hidePagination && (
               <PaginationContainer>
-                <Pagination
-                  currentPage={page}
-                  totalPages={pageCount}
-                  subtitle={pageSubtitle}
-                />
+                <Pagination currentPage={page} totalPages={pageCount} subtitle={pageSubtitle} />
               </PaginationContainer>
             )}
           </HeaderContainer>
@@ -301,9 +276,8 @@ export function SetupWelcomeView({ params }: SetupWelcomeViewProps) {
               wallet: generatedWallet,
               generateWallet,
               setAccountName,
-              setWallet: (wallet) => setGeneratedWallet(wallet)
-            }}
-          >
+              setWallet: (wallet) => setGeneratedWallet(wallet),
+            }}>
             <Content>
               <PageWrapper style={{ height: contentSize }}>
                 <AnimatePresence initial={false}>
@@ -363,17 +337,17 @@ const PageWrapper = styled.div`
 
 const pageAnimation: Variants = {
   init: {
-    opacity: 1
+    opacity: 1,
   },
   exit: {
-    opacity: 0
-  }
+    opacity: 0,
+  },
 };
 
 const Page = styled(motion.div).attrs({
   variants: pageAnimation,
   initial: "exit",
-  animate: "init"
+  animate: "init",
 })`
   position: absolute;
   width: 100%;
@@ -436,8 +410,7 @@ export const SetupCard = styled(Card)<{ transparentBackground?: boolean }>`
   padding: 24px;
   width: 377.5px;
   min-height: 600px;
-  ${({ transparentBackground }) =>
-    transparentBackground && `background: transparent; border: none;`}
+  ${({ transparentBackground }) => transparentBackground && `background: transparent; border: none;`}
 `;
 
 export const CardHeader = styled.div`
@@ -447,14 +420,14 @@ export const CardHeader = styled.div`
 
 export const PasswordContext = createContext({
   setPassword: (password: string) => {},
-  password: ""
+  password: "",
 });
 
 export const WalletContext = createContext<WalletContextValue>({
   wallet: {},
   setWallet: (wallet: GeneratedWallet) => {},
   generateWallet: (retry?: boolean) => Promise.resolve({}),
-  setAccountName: (name: string) => {}
+  setAccountName: (name: string) => {},
 });
 
 interface WalletContextValue {

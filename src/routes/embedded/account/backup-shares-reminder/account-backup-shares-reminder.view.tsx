@@ -1,14 +1,7 @@
 import { useState } from "react";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 
-import {
-  Box,
-  Button,
-  Card,
-  Checkbox,
-  WarningCircledIcon,
-  WanderFooter
-} from "~components/embed/ui";
+import { Box, Button, Card, Checkbox, WarningCircledIcon, WanderFooter } from "~components/embed/ui";
 import { useLocation } from "~wallets/router/router.utils";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 
@@ -16,9 +9,7 @@ export function AccountBackupSharesReminderEmbeddedView() {
   const { currentWallet, skipBackUp } = useEmbedded();
   const { navigate, back } = useLocation();
   const isMandatoryReminder =
-    currentWallet.totalExports === 0 &&
-    currentWallet.totalBackups === 0 &&
-    !currentWallet.doNotAskAgainSetting;
+    currentWallet.totalExports === 0 && currentWallet.totalBackups === 0 && !currentWallet.doNotAskAgainSetting;
 
   const [isLoading, setIsLoading] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
@@ -41,25 +32,13 @@ export function AccountBackupSharesReminderEmbeddedView() {
       hasBackButton={true}
       onBackButtonClick={back}
       hasCloseButton={true}
-      size="auto"
-    >
+      size="auto">
       <Box>
-        <Button
-          variant="primary"
-          isDisabled={isLoading}
-          isFullWidth
-          href="#/account/backup-shares"
-        >
+        <Button variant="primary" isDisabled={isLoading} isFullWidth href="#/account/backup-shares">
           Backup now
         </Button>
         {isMandatoryReminder ? (
-          <Button
-            variant="secondary"
-            isDisabled={isLoading}
-            isFullWidth
-            href="#/wallet"
-            onClick={handleSkipClicked}
-          >
+          <Button variant="secondary" isDisabled={isLoading} isFullWidth href="#/wallet" onClick={handleSkipClicked}>
             Backup later
           </Button>
         ) : (

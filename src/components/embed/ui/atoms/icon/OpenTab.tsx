@@ -1,19 +1,8 @@
 import * as React from "react";
 import type { SVGProps } from "react";
 
-const SvgOpenTab = ({
-  width = 20,
-  height = 21,
-  ...props
-}: SVGProps<SVGSVGElement>) => (
-  <svg
-    width={width}
-    height={height}
-    viewBox="0 0 20 21"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    {...props}
-  >
+const SvgOpenTab = ({ width = 20, height = 21, ...props }: SVGProps<SVGSVGElement>) => (
+  <svg width={width} height={height} viewBox="0 0 20 21" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
     <path
       d="M11.667 3.00002C11.667 2.53978 12.0401 2.16669 12.5003 2.16669H17.5003C17.9606 2.16669 18.3337 2.53978 18.3337 3.00002L18.3337 8.00002C18.3337 8.46026 17.9606 8.83335 17.5003 8.83335C17.0401 8.83335 16.667 8.46026 16.667 8.00002L16.667 5.01187L11.4229 10.2559C11.0975 10.5814 10.5698 10.5814 10.2444 10.2559C9.91897 9.93051 9.91897 9.40287 10.2444 9.07743L15.4885 3.83335H12.5003C12.0401 3.83335 11.667 3.46026 11.667 3.00002Z"
       fill="#121212"

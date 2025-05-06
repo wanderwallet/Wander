@@ -4,17 +4,12 @@ import { useEffect, useRef, useState } from "react";
 import browser from "webextension-polyfill";
 import aoLogo from "url:/assets/ecosystem/ao-token-logo.png";
 import { useStorage } from "~utils/storage";
-import {
-  ContentWrapper,
-  Content,
-  HeaderText,
-  CenterText
-} from "~components/modals/Components";
+import { ContentWrapper, Content, HeaderText, CenterText } from "~components/modals/Components";
 
 export const AnnouncementPopup = ({ isOpen, setOpen }) => {
   const [notifications, setNotifications] = useStorage<boolean>({
     key: "setting_notifications",
-    instance: ExtensionStorage
+    instance: ExtensionStorage,
   });
 
   const [checked, setChecked] = useState(!!notifications);
@@ -44,26 +39,16 @@ export const AnnouncementPopup = ({ isOpen, setOpen }) => {
   }, [isOpen]);
 
   return (
-    <ModalV2
-      root={document.getElementById("__plasmo")}
-      open={isOpen}
-      setOpen={setOpen}
-    >
+    <ModalV2 root={document.getElementById("__plasmo")} open={isOpen} setOpen={setOpen}>
       <ContentWrapper ref={modalRef}>
         <Content>
           <div>
-            <img
-              src={aoLogo}
-              alt="ao logo"
-              style={{ width: "100px", height: "auto" }}
-            />
+            <img src={aoLogo} alt="ao logo" style={{ width: "100px", height: "auto" }} />
             <HeaderText noMargin heading>
               {browser.i18n.getMessage("keystone_ao_popup_title")}
             </HeaderText>
             <Spacer y={1} />
-            <CenterText>
-              {browser.i18n.getMessage("keystone_ao_popup")}
-            </CenterText>
+            <CenterText>{browser.i18n.getMessage("keystone_ao_popup")}</CenterText>
             <Spacer y={1} />
           </div>
         </Content>
@@ -73,8 +58,7 @@ export const AnnouncementPopup = ({ isOpen, setOpen }) => {
             setOpen(false);
             setNotifications(checked);
             ExtensionStorage.set("show_announcement", false);
-          }}
-        >
+          }}>
           {browser.i18n.getMessage("got_it")}
         </ButtonV2>
       </ContentWrapper>

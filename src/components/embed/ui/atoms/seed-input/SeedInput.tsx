@@ -1,25 +1,9 @@
-import React, {
-  forwardRef,
-  useState,
-  useEffect,
-  type FormEvent,
-  useRef
-} from "react";
+import React, { forwardRef, useState, useEffect, type FormEvent, useRef } from "react";
 import styles from "./SeedInput.module.css";
 import type { SeedInputBaseProps } from "./SeedInput.types";
 
 const SeedInput = forwardRef<HTMLDivElement, SeedInputBaseProps>(
-  (
-    {
-      className = "",
-      size = 12,
-      handleSubmit,
-      handleInputChange,
-      seedPhrase = [],
-      ...props
-    },
-    ref
-  ) => {
+  ({ className = "", size = 12, handleSubmit, handleInputChange, seedPhrase = [], ...props }, ref) => {
     const Component = "div";
     const [numInputs, setNumInputs] = useState(size);
     const allowedSizes = [12, 18, 24];
@@ -64,10 +48,7 @@ const SeedInput = forwardRef<HTMLDivElement, SeedInputBaseProps>(
     };
 
     // Handle pasting a complete seedphrase
-    const handlePaste = (
-      e: React.ClipboardEvent<HTMLInputElement>,
-      currentIndex: number
-    ) => {
+    const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>, currentIndex: number) => {
       // Get pasted content
       const pastedText = e.clipboardData.getData("text");
 
@@ -102,7 +83,7 @@ const SeedInput = forwardRef<HTMLDivElement, SeedInputBaseProps>(
             if (formRef.current) {
               const event = new Event("submit", {
                 cancelable: true,
-                bubbles: true
+                bubbles: true,
               });
               formRef.current.dispatchEvent(event);
             }
@@ -121,10 +102,7 @@ const SeedInput = forwardRef<HTMLDivElement, SeedInputBaseProps>(
     };
 
     // Handle key press to move between inputs
-    const handleKeyDown = (
-      e: React.KeyboardEvent<HTMLInputElement>,
-      index: number
-    ) => {
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
       if (e.key === "ArrowRight" && index < numInputs - 1) {
         const nextInput = inputRefs.current[index + 1];
         if (nextInput) nextInput.focus();
@@ -140,7 +118,7 @@ const SeedInput = forwardRef<HTMLDivElement, SeedInputBaseProps>(
           if (formRef.current) {
             const event = new Event("submit", {
               cancelable: true,
-              bubbles: true
+              bubbles: true,
             }) as unknown as FormEvent;
             onSubmit(event);
           }
@@ -168,8 +146,7 @@ const SeedInput = forwardRef<HTMLDivElement, SeedInputBaseProps>(
           ${className}
         `}
         ref={ref}
-        {...props}
-      >
+        {...props}>
         <div className={styles["header"]}>
           <div className={styles["input-options"]}>
             {allowedSizes.map((sizeOption) => (
@@ -180,8 +157,7 @@ const SeedInput = forwardRef<HTMLDivElement, SeedInputBaseProps>(
                   ${styles["button"]}
                   ${sizeOption === numInputs ? styles["active"] : ""}
                 `}
-                onClick={() => handleNumInputsChange(sizeOption)}
-              >
+                onClick={() => handleNumInputsChange(sizeOption)}>
                 {sizeOption}
               </button>
             ))}
@@ -197,10 +173,7 @@ const SeedInput = forwardRef<HTMLDivElement, SeedInputBaseProps>(
                   }}
                   type="text"
                   value={seedPhrase[index] || ""}
-                  onChange={(e) =>
-                    handleInputChange &&
-                    handleInputChange(index, e.target.value)
-                  }
+                  onChange={(e) => handleInputChange && handleInputChange(index, e.target.value)}
                   onPaste={(e) => handlePaste(e, index)}
                   onKeyDown={(e) => handleKeyDown(e, index)}
                   placeholder={`${index + 1}`}
@@ -214,7 +187,7 @@ const SeedInput = forwardRef<HTMLDivElement, SeedInputBaseProps>(
         </form>
       </Component>
     );
-  }
+  },
 );
 
 SeedInput.displayName = "SeedInput";

@@ -34,16 +34,13 @@ export default function WalletListItem({
       squircleSize={40}
       height={56}
       showArrow
-      {...props}
-    >
+      {...props}>
       {!avatar && (
         <ListItemIcon>
           <NoAvatarIcon size="1.8em" />
         </ListItemIcon>
       )}
-      {wallet.type === "hardware" && wallet.api === "keystone" && (
-        <HardwareIcon icon={keystoneLogo} color="#2161FF" />
-      )}
+      {wallet.type === "hardware" && wallet.api === "keystone" && <HardwareIcon icon={keystoneLogo} color="#2161FF" />}
     </ListItem>
   );
 }

@@ -1,12 +1,7 @@
 import { dryrun } from "@permaweb/aoconnect";
 import { PersistentStorage } from "~utils/storage";
 import type { Alarms } from "webextension-polyfill";
-import {
-  Id,
-  Owner,
-  type TokenInfo,
-  getTokenInfoFromData
-} from "~tokens/aoTokens/ao";
+import { Id, Owner, type TokenInfo, getTokenInfoFromData } from "~tokens/aoTokens/ao";
 import { timeoutPromise } from "~utils/promises/timeout";
 
 /**
@@ -15,8 +10,7 @@ import { timeoutPromise } from "~utils/promises/timeout";
 export const handleAoTokenCacheAlarm = async (alarmInfo?: Alarms.Alarm) => {
   if (alarmInfo && !alarmInfo.name.startsWith("update_ao_tokens")) return;
 
-  const aoTokens =
-    (await PersistentStorage.get<TokenInfo[]>("ao_tokens")) || [];
+  const aoTokens = (await PersistentStorage.get<TokenInfo[]>("ao_tokens")) || [];
 
   const updatedTokens = [...aoTokens];
 
@@ -28,22 +22,20 @@ export const handleAoTokenCacheAlarm = async (alarmInfo?: Alarms.Alarm) => {
           Id,
           Owner,
           process: token.processId,
-          tags: [{ name: "Action", value: "Info" }]
+          tags: [{ name: "Action", value: "Info" }],
         }),
-        6000
+        6000,
       );
 
       if (res.Messages && Array.isArray(res.Messages)) {
         const tokenInfo = getTokenInfoFromData(res, token.processId);
         const updatedToken = {
           ...tokenInfo,
-          lastUpdated: new Date().toISOString()
+          lastUpdated: new Date().toISOString(),
         };
 
         if (updatedToken) {
-          const index = updatedTokens.findIndex(
-            (t) => t.processId === token.processId
-          );
+          const index = updatedTokens.findIndex((t) => t.processId === token.processId);
 
           if (index !== -1) {
             updatedTokens[index] = { ...updatedTokens[index], ...updatedToken };

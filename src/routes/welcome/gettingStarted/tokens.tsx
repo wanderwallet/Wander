@@ -23,11 +23,7 @@ export function GettingStartedTokensView() {
           <Image src={images[currentImage]} alt="Send Tour" />
           <DotsContainer>
             {images.map((_, index) => (
-              <Dot
-                key={index}
-                active={currentImage === index}
-                onClick={() => setCurrentImage(index)}
-              />
+              <Dot key={index} active={currentImage === index} onClick={() => setCurrentImage(index)} />
             ))}
           </DotsContainer>
         </CarouselContainer>

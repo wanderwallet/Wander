@@ -6,7 +6,7 @@ import type { SignatureOptions } from "arweave/web/lib/crypto/crypto-interface";
 
 const foreground: ModuleFunction<Record<any, any>> = async (
   dataItem: SignDataItemParams,
-  signatureOptions?: SignatureOptions
+  signatureOptions?: SignatureOptions,
 ) => {
   let rawDataItem: RawDataItem;
 
@@ -16,12 +16,12 @@ const foreground: ModuleFunction<Record<any, any>> = async (
 
     rawDataItem = {
       ...dataItem,
-      data: Array.from(dataItem.data)
+      data: Array.from(dataItem.data),
     };
   } else {
     rawDataItem = {
       ...dataItem,
-      data: Array.from(new TextEncoder().encode(dataItem.data))
+      data: Array.from(new TextEncoder().encode(dataItem.data)),
     };
   }
 

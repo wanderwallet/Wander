@@ -2,10 +2,7 @@ import { type Variants, motion } from "framer-motion";
 import { useEffect, useRef, useState, type PropsWithChildren } from "react";
 import styled from "styled-components";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
-import {
-  locationToRouteType,
-  routeTypeToPreferredLayout
-} from "~utils/embedded/utils/routes/embedded-routes.utils";
+import { locationToRouteType, routeTypeToPreferredLayout } from "~utils/embedded/utils/routes/embedded-routes.utils";
 import type { WanderRoutePath } from "~wallets/router/router.types";
 
 export interface PageProps extends PropsWithChildren {}
@@ -16,7 +13,7 @@ export function Page({ children }: PageProps) {
   const opacityAnimation: Variants = {
     initial: { opacity: 0 },
     enter: { opacity: 1 },
-    exit: { opacity: 0, y: 0, transition: { duration: 0.2 } }
+    exit: { opacity: 0, y: 0, transition: { duration: 0.2 } },
   };
 
   const [height, setHeight] = useState(0);
@@ -29,7 +26,7 @@ export function Page({ children }: PageProps) {
     const resizeObserver = new ResizeObserver((entries) => {
       const size = entries?.[0]?.contentBoxSize?.[0] || {
         inlineSize: 0,
-        blockSize: 0
+        blockSize: 0,
       };
       const width = Math.ceil(size.inlineSize);
       const height = Math.ceil(size.blockSize);
@@ -47,8 +44,8 @@ export function Page({ children }: PageProps) {
             routeType,
             preferredLayoutType,
             width,
-            height
-          }
+            height,
+          },
         });
 
         // For debugging only:;
@@ -64,20 +61,9 @@ export function Page({ children }: PageProps) {
   }, []);
 
   return (
-    <Main
-      ref={mainRef}
-      initial="initial"
-      animate="enter"
-      exit="exit"
-      variants={opacityAnimation}
-      data-test-id="Page"
-    >
-      {process.env.NODE_ENV === "development" &&
-      import.meta.env?.VITE_IS_EMBEDDED_APP === "1" ? (
-        <DivLine
-          style={{ top: `${height - 6}px` }}
-          data-height={`${height}px`}
-        />
+    <Main ref={mainRef} initial="initial" animate="enter" exit="exit" variants={opacityAnimation} data-test-id="Page">
+      {process.env.NODE_ENV === "development" && import.meta.env?.VITE_IS_EMBEDDED_APP === "1" ? (
+        <DivLine style={{ top: `${height - 6}px` }} data-height={`${height}px`} />
       ) : null}
 
       {children}
@@ -90,12 +76,8 @@ const Main = styled(motion.main)`
   top: 0;
   width: 100%;
   display: ${import.meta.env?.VITE_IS_EMBEDDED_APP === "1" ? "flex" : "block"};
-  min-height: ${import.meta.env?.VITE_IS_EMBEDDED_APP === "1"
-    ? "400px"
-    : "100vh"};
-  max-height: ${import.meta.env?.VITE_IS_EMBEDDED_APP === "1"
-    ? "none"
-    : "max-content"};
+  min-height: ${import.meta.env?.VITE_IS_EMBEDDED_APP === "1" ? "400px" : "100vh"};
+  max-height: ${import.meta.env?.VITE_IS_EMBEDDED_APP === "1" ? "none" : "max-content"};
 `;
 
 const DivLine = styled(motion.div)`

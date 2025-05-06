@@ -13,23 +13,15 @@ export const WalletKeySizeErrorModal = ({ isOpen, setOpen, back }: Props) => {
   const modalRef = useRef(null);
 
   return (
-    <ModalV2
-      root={document.getElementById("__plasmo")}
-      open={isOpen}
-      setOpen={setOpen}
-    >
+    <ModalV2 root={document.getElementById("__plasmo")} open={isOpen} setOpen={setOpen}>
       <ContentWrapper ref={modalRef}>
         <Content>
           <div>
             <HeaderText noMargin heading>
-              {browser.i18n.getMessage(
-                "import_wallet_key_length_short_error_title"
-              )}
+              {browser.i18n.getMessage("import_wallet_key_length_short_error_title")}
             </HeaderText>
             <Spacer y={1} />
-            <CenterText>
-              {browser.i18n.getMessage("import_wallet_key_length_short_error")}
-            </CenterText>
+            <CenterText>{browser.i18n.getMessage("import_wallet_key_length_short_error")}</CenterText>
             <Spacer y={1} />
           </div>
         </Content>
@@ -40,8 +32,7 @@ export const WalletKeySizeErrorModal = ({ isOpen, setOpen, back }: Props) => {
             if (back) {
               back();
             }
-          }}
-        >
+          }}>
           {browser.i18n.getMessage("close")}
         </ButtonV2>
       </ContentWrapper>

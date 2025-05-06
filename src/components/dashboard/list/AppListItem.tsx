@@ -3,13 +3,7 @@ import { GridIcon } from "@iconicicons/react";
 import type { HTMLProps } from "react";
 import Image from "~components/common/Image";
 
-export default function AppListItem({
-  name,
-  url,
-  icon,
-  active,
-  ...props
-}: Props & HTMLProps<HTMLDivElement>) {
+export default function AppListItem({ name, url, icon, active, ...props }: Props & HTMLProps<HTMLDivElement>) {
   return (
     <ListItem
       title={name}
@@ -18,8 +12,7 @@ export default function AppListItem({
       icon={icon && <Image height={40} width={40} src={icon} />}
       height={64}
       hideSquircle={!!icon}
-      {...props}
-    >
+      {...props}>
       {!icon && <GridIcon />}
     </ListItem>
   );

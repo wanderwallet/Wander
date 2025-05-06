@@ -1,10 +1,7 @@
 import type { ApiCall, ApiResponse, Event } from "shim";
 import type { MittInjectedEvents } from "~utils/events";
 import { nanoid } from "nanoid";
-import {
-  foregroundModules,
-  type ForegroundModule
-} from "~api/foreground/foreground-modules";
+import { foregroundModules, type ForegroundModule } from "~api/foreground/foreground-modules";
 import mitt from "mitt";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { version } from "../../../package.json";
@@ -12,10 +9,7 @@ import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 import { isApiErrorResponse } from "~utils/messaging/common/messaging.utils";
 // import { version as sdkVersion } from "../../../wander-embedded-sdk/package.json";
 
-export async function setupWalletSDK(
-  targetWindow: Window = window,
-  embeddedOrigin?: string
-) {
+export async function setupWalletSDK(targetWindow: Window = window, embeddedOrigin?: string) {
   log(LOG_GROUP.SETUP, "setupWalletSDK()");
 
   /** Init events */
@@ -25,7 +19,7 @@ export async function setupWalletSDK(
   const walletAPI = {
     walletName: IS_EMBEDDED_APP ? "Wander Embedded" : "ArConnect",
     walletVersion: version,
-    events
+    events,
   } as const;
 
   for (const mod of foregroundModules) {
@@ -40,22 +34,16 @@ export async function setupWalletSDK(
    */
   async function callForegroundThenBackground(
     foregroundModule: string | ForegroundModule,
-    params: any[]
+    params: any[],
   ): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
       // 1. Find out what function are we calling:
 
-      const functionName =
-        typeof foregroundModule === "string"
-          ? foregroundModule
-          : foregroundModule.functionName;
+      const functionName = typeof foregroundModule === "string" ? foregroundModule : foregroundModule.functionName;
 
       // 2. Get & prepare its params:
       // For `sign` and `dispatch`, this is where the params are send in chunks.
-      const functionParams =
-        typeof foregroundModule === "string"
-          ? params
-          : await foregroundModule.function(...params);
+      const functionParams = typeof foregroundModule === "string" ? params : await foregroundModule.function(...params);
 
       // TODO: Use a default function for those that do not have/need one and
       // see if chunking can be done automatically or if it is needed at all:
@@ -68,15 +56,13 @@ export async function setupWalletSDK(
         callID,
         type: `api_${functionName}`,
         data: {
-          params: functionParams
-        }
+          params: functionParams,
+        },
       };
 
       // 4. Send message to background script (Wander BE) or to the iframe window (Wander Embedded):
 
-      const targetOrigin = IS_EMBEDDED_APP
-        ? embeddedOrigin
-        : window.location.origin;
+      const targetOrigin = IS_EMBEDDED_APP ? embeddedOrigin : window.location.origin;
 
       targetWindow.postMessage(data, targetOrigin);
 
@@ -118,19 +104,12 @@ export async function setupWalletSDK(
           return reject(res.data);
         }
 
-        const finalizerFn =
-          typeof foregroundModule === "string"
-            ? null
-            : foregroundModule.finalizer;
+        const finalizerFn = typeof foregroundModule === "string" ? null : foregroundModule.finalizer;
 
         // call the finalizer function if it exists
         if (finalizerFn) {
           try {
-            const finalizerResult = await finalizerFn(
-              res.data,
-              functionParams,
-              params
-            );
+            const finalizerResult = await finalizerFn(res.data, functionParams, params);
 
             // TODO: This is a bad check because the result could be falsy:
             // if the finalizer transforms data
@@ -160,12 +139,12 @@ export async function setupWalletSDK(
       e: MessageEvent<{
         type: "wander_event";
         event: Event;
-      }>
+      }>,
     ) => {
       if (!e.data || !e.data.event || e.data.type !== "wander_event") return;
 
       events.emit(e.data.event.name, e.data.event.value);
-    }
+    },
   );
 
   // at the end of the injected script,
@@ -174,17 +153,15 @@ export async function setupWalletSDK(
   async function dispatchArweaveWalletLoaded() {
     if (!window.arweaveWallet) return;
 
-    const permissions = await window.arweaveWallet
-      .getPermissions()
-      .catch(() => []);
+    const permissions = await window.arweaveWallet.getPermissions().catch(() => []);
 
     // Note that for Wander Connect we just need to dispatch this once, no need to subscribe to the window load event to re-dispatch it:
     dispatchEvent(
       new CustomEvent("arweaveWalletLoaded", {
         detail: {
-          permissions
-        }
-      })
+          permissions,
+        },
+      }),
     );
 
     if (permissions.length > 0) {
@@ -192,7 +169,7 @@ export async function setupWalletSDK(
 
       const [activeAddress, addresses] = await Promise.all([
         window.arweaveWallet.getActiveAddress().catch(() => ""),
-        window.arweaveWallet.getAllAddresses().catch(() => [])
+        window.arweaveWallet.getAllAddresses().catch(() => []),
       ]);
 
       events.emit("activeAddress", activeAddress);

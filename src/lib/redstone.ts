@@ -12,11 +12,7 @@ import BigNumber from "bignumber.js";
  * @param isAoToken Token is ao token or not
  * @param opts Custom Redstone API "getPrice" options
  */
-export function usePrice(
-  symbol?: string,
-  isAoToken?: boolean,
-  opts?: GetPriceOptions
-) {
+export function usePrice(symbol?: string, isAoToken?: boolean, opts?: GetPriceOptions) {
   const [price, setPrice] = useState<BigNumber>();
   const [loading, setLoading] = useState(false);
 
@@ -40,8 +36,7 @@ export function usePrice(
         }
 
         // get price in currency
-        const multiplier =
-          currency !== "usd" ? await getPrice("usd", currency) : 1;
+        const multiplier = currency !== "usd" ? await getPrice("usd", currency) : 1;
 
         setPrice(BigNumber(res.value).multipliedBy(multiplier));
       } catch {}
@@ -72,7 +67,7 @@ export function usePriceHistory(period: string, symbol?: string) {
     Week: new Date().setDate(new Date().getDate() - 7),
     Month: new Date().setMonth(new Date().getMonth() - 1),
     Year: new Date().setMonth(new Date().getMonth() - 12),
-    All: FIRST_AR_PRICE_DATE.getTime()
+    All: FIRST_AR_PRICE_DATE.getTime(),
   };
 
   // intervals for periods
@@ -81,7 +76,7 @@ export function usePriceHistory(period: string, symbol?: string) {
     Week: 3600 * 1000, // hourly
     Month: 3600 * 1000 * 24, // daily
     Year: 3600 * 1000 * 24 * 25, // a bit less than a month
-    All: 3600 * 1000 * 24 * 31 // monthly
+    All: 3600 * 1000 * 24 * 31, // monthly
   };
 
   useEffect(() => {
@@ -96,7 +91,7 @@ export function usePriceHistory(period: string, symbol?: string) {
         const res = await redstone.getHistoricalPrice(symbol, {
           startDate: startDates[period],
           endDate: new Date().getTime(),
-          interval: intervals[period]
+          interval: intervals[period],
         });
 
         setPrices(res.map((p) => p.value));

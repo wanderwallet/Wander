@@ -27,20 +27,14 @@ const Copyable = forwardRef<HTMLDivElement, CopyableBaseProps>(
       style,
       ...props
     },
-    ref
+    ref,
   ) => {
     const { isDarkMode } = useTheme();
 
-    const textColor = isDarkMode
-      ? "var(--color-copyable-text-value)"
-      : "#666666";
-    const iconColor = isDarkMode
-      ? "var(--color-copyable-text-label)"
-      : "#666666";
+    const textColor = isDarkMode ? "var(--color-copyable-text-value)" : "#666666";
+    const iconColor = isDarkMode ? "var(--color-copyable-text-label)" : "#666666";
 
-    const displayValue = isShortened
-      ? value.slice(0, 4) + "..." + value.slice(-4)
-      : value;
+    const displayValue = isShortened ? value.slice(0, 4) + "..." + value.slice(-4) : value;
 
     return (
       <div
@@ -52,11 +46,10 @@ const Copyable = forwardRef<HTMLDivElement, CopyableBaseProps>(
           isBlurry && styles.copyable__blurry,
           isDisabled && styles.copyable__disabled,
           hasBorder && styles.copyable__border,
-          className
+          className,
         )}
         style={style}
-        {...props}
-      >
+        {...props}>
         {isLoading ? (
           <Loading />
         ) : (
@@ -65,20 +58,13 @@ const Copyable = forwardRef<HTMLDivElement, CopyableBaseProps>(
               variant="bodyMd"
               className={styles.copyable__label}
               style={{
-                color: isDarkMode
-                  ? "var(--color-copyable-text-label)"
-                  : undefined
-              }}
-            >
+                color: isDarkMode ? "var(--color-copyable-text-label)" : undefined,
+              }}>
               {label}
             </Text>
             <div className={styles.copyable__content}>
               {!isButtonOnly && (
-                <Text
-                  className={styles.copyable__value}
-                  variant="bodyLg"
-                  style={{ color: textColor }}
-                >
+                <Text className={styles.copyable__value} variant="bodyLg" style={{ color: textColor }}>
                   {displayValue}
                 </Text>
               )}
@@ -86,8 +72,7 @@ const Copyable = forwardRef<HTMLDivElement, CopyableBaseProps>(
                 className={styles.copyable__button}
                 onClick={onClick}
                 disabled={isDisabled}
-                aria-label="Copy to clipboard"
-              >
+                aria-label="Copy to clipboard">
                 {buttonText}
                 <CopyableIcon color={iconColor} width={16} height={16} />
               </button>
@@ -96,7 +81,7 @@ const Copyable = forwardRef<HTMLDivElement, CopyableBaseProps>(
         )}
       </div>
     );
-  }
+  },
 );
 
 Copyable.displayName = "Copyable";

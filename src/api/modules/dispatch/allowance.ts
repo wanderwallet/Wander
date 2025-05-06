@@ -18,7 +18,7 @@ export async function ensureAllowanceDispatch(
   allowance: AllowanceBigNumber,
   keyfile: JWKInterface,
   price: number | BigNumber,
-  alwaysAsk?: boolean
+  alwaysAsk?: boolean,
 ) {
   const arweave = new Arweave(defaultGateway);
 
@@ -31,7 +31,7 @@ export async function ensureAllowanceDispatch(
         appData,
         // @ts-expect-error
         dataEntry.toJSON(),
-        address
+        address,
       );
     }
 

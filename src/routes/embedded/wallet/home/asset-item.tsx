@@ -22,15 +22,7 @@ interface AssetItemProps {
   divisibility: number;
 }
 
-export function AssetItem({
-  id,
-  defaultLogo,
-  tokenName,
-  ticker,
-  amount,
-  fiatPrice,
-  divisibility
-}: AssetItemProps) {
+export function AssetItem({ id, defaultLogo, tokenName, ticker, amount, fiatPrice, divisibility }: AssetItemProps) {
   const theme = useTheme();
   const [logo, setLogo] = useState<string>();
   const [totalBalance, setTotalBalance] = useState("");
@@ -38,7 +30,7 @@ export function AssetItem({
   const [currency] = useSetting("currency");
   const [activeAddress] = useStorage({
     key: "active_address",
-    instance: ExtensionStorage
+    instance: ExtensionStorage,
   });
 
   const tokenInfo = useMemo(() => {
@@ -48,21 +40,13 @@ export function AssetItem({
       Ticker: ticker,
       Name: tokenName,
       Denomination: divisibility,
-      Logo: defaultLogo
+      Logo: defaultLogo,
     };
   }, [id, ticker, tokenName, divisibility, defaultLogo]);
 
-  const {
-    data: fractBalance = "0",
-    isError,
-    error,
-    isLoading
-  } = useTokenBalance(tokenInfo, activeAddress);
+  const { data: fractBalance = "0", isError, error, isLoading } = useTokenBalance(tokenInfo, activeAddress);
 
-  const arweaveLogo = useMemo(
-    () => (theme === "dark" ? arLogoDark : arLogoLight),
-    [theme]
-  );
+  const arweaveLogo = useMemo(() => (theme === "dark" ? arLogoDark : arLogoLight), [theme]);
 
   const balance = useMemo(() => {
     if (isError) return "0";
@@ -96,9 +80,8 @@ export function AssetItem({
       justifyContent="between"
       style={{
         cursor: "pointer",
-        height: "62px"
-      }}
-    >
+        height: "62px",
+      }}>
       <Logo src={logo || ""} alt="" key={`logo-${id}`} />
       <Text variant="bodyMd" style={{ color: "#121212", minWidth: "100px" }}>
         {tokenName}

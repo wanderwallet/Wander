@@ -8,7 +8,7 @@ const MAX_TOTAL_SIZE = 200 * 1024;
 
 const foreground: ModuleFunction<Record<any, any>[]> = async (
   dataItems: SignDataItemParams[],
-  signatureOptions?: SignatureOptions
+  signatureOptions?: SignatureOptions,
 ) => {
   if (!Array.isArray(dataItems)) {
     throw new Error("Input must be an array of data items");
@@ -16,9 +16,7 @@ const foreground: ModuleFunction<Record<any, any>[]> = async (
 
   const totalSize = dataItems.reduce((acc, dataItem) => {
     const dataSize =
-      typeof dataItem.data === "string"
-        ? new TextEncoder().encode(dataItem.data).length
-        : dataItem.data.length;
+      typeof dataItem.data === "string" ? new TextEncoder().encode(dataItem.data).length : dataItem.data.length;
     return acc + dataSize;
   }, 0);
 
@@ -34,12 +32,12 @@ const foreground: ModuleFunction<Record<any, any>[]> = async (
 
       rawDataItem = {
         ...dataItem,
-        data: Array.from(dataItem.data)
+        data: Array.from(dataItem.data),
       };
     } else {
       rawDataItem = {
         ...dataItem,
-        data: Array.from(new TextEncoder().encode(dataItem.data))
+        data: Array.from(new TextEncoder().encode(dataItem.data)),
       };
     }
 

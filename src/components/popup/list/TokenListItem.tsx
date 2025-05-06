@@ -21,18 +21,12 @@ export function TokenListItem({ token, onClick }: TokenListItemProps) {
   const { navigate } = useLocation();
 
   // format address
-  const formattedAddress = useMemo(
-    () => formatAddress(token.id, 8),
-    [token.id]
-  );
+  const formattedAddress = useMemo(() => formatAddress(token.id, 8), [token.id]);
 
   // display theme
   const theme = useTheme();
 
-  const arweaveLogo = useMemo(
-    () => (theme === "dark" ? arLogoDark : arLogoLight),
-    [theme]
-  );
+  const arweaveLogo = useMemo(() => (theme === "dark" ? arLogoDark : arLogoLight), [theme]);
 
   // token logo
   const [image, setImage] = useState(arweaveLogo);
@@ -75,9 +69,7 @@ export function TokenListItem({ token, onClick }: TokenListItemProps) {
       </DivTokenLogoWrapper>
       <div style={{ display: "flex", flexDirection: "column" }}>
         <DivTitleWrapper>{token.name}</DivTitleWrapper>
-        <DivDescriptionWrapper>
-          {token.id !== "AR" && formattedAddress}
-        </DivDescriptionWrapper>
+        <DivDescriptionWrapper>{token.id !== "AR" && formattedAddress}</DivDescriptionWrapper>
       </div>
     </DivListItem>
   );
@@ -133,7 +125,7 @@ const DivTokenLogoWrapper = styled.div`
 
 const ImgTokenLogo = styled.img.attrs({
   alt: "token-logo",
-  draggable: false
+  draggable: false,
 })`
   width: 2rem;
   border-radius: 29px;

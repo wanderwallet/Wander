@@ -11,7 +11,7 @@ export function useTokenIDs(): [string[], boolean] {
 
   const [aoTokens] = useStorage<any[]>({
     key: "ao_tokens",
-    instance: PersistentStorage
+    instance: PersistentStorage,
   });
 
   useEffect(() => {

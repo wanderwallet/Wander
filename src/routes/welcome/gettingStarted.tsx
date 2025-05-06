@@ -7,14 +7,7 @@ import styled from "styled-components";
 import { useLocation } from "~wallets/router/router.utils";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { Redirect } from "~wallets/router/components/redirect/Redirect";
-import {
-  SetupCard,
-  HeaderContainer,
-  Content,
-  CardHeader,
-  BackButton,
-  Wrapper
-} from "./setup";
+import { SetupCard, HeaderContainer, Content, CardHeader, BackButton, Wrapper } from "./setup";
 import StarIcons from "~components/welcome/StarIcons";
 import { GettingStartedWelcomeView } from "./gettingStarted/welcome";
 import { GettingStartedTokensView } from "./gettingStarted/tokens";
@@ -27,7 +20,7 @@ const Views = [
   GettingStartedTokensView,
   GettingStartedOnrampView,
   GettingStartedExploreView,
-  GettingStartedConnectView
+  GettingStartedConnectView,
 ];
 
 export interface GettingStartedSetupWelcomeViewParams {
@@ -35,12 +28,9 @@ export interface GettingStartedSetupWelcomeViewParams {
   page: string;
 }
 
-export type GettingStartedSetupWelcomeViewProps =
-  CommonRouteProps<GettingStartedSetupWelcomeViewParams>;
+export type GettingStartedSetupWelcomeViewProps = CommonRouteProps<GettingStartedSetupWelcomeViewParams>;
 
-export function GettingStartedSetupWelcomeView({
-  params: { page: pageParam }
-}: GettingStartedSetupWelcomeViewProps) {
+export function GettingStartedSetupWelcomeView({ params: { page: pageParam } }: GettingStartedSetupWelcomeViewProps) {
   const { navigate } = useLocation();
   const page = Number(pageParam);
 
@@ -119,11 +109,11 @@ export function GettingStartedSetupWelcomeView({
 
 const pageAnimation: Variants = {
   init: {
-    opacity: 1
+    opacity: 1,
   },
   exit: {
-    opacity: 0
-  }
+    opacity: 0,
+  },
 };
 
 const Footer = styled.div`
@@ -135,7 +125,7 @@ const Footer = styled.div`
 const Page = styled(motion.div).attrs({
   variants: pageAnimation,
   initial: "exit",
-  animate: "init"
+  animate: "init",
 })`
   display: flex;
   flex-direction: column;

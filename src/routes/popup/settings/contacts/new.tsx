@@ -9,10 +9,7 @@ export function NewContactView() {
 
   return (
     <>
-      <HeadV2
-        title={browser.i18n.getMessage("new_contact")}
-        back={() => navigate("/quick-settings/contacts")}
-      />
+      <HeadV2 title={browser.i18n.getMessage("new_contact")} back={() => navigate("/quick-settings/contacts")} />
       <Wrapper>
         <AddContactDashboardView isQuickSetting params={{}} />
       </Wrapper>

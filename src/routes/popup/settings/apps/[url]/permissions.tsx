@@ -14,12 +14,9 @@ export interface AppPermissionsViewParams {
   url: string;
 }
 
-export type AppPermissionsViewProps =
-  CommonRouteProps<AppPermissionsViewParams>;
+export type AppPermissionsViewProps = CommonRouteProps<AppPermissionsViewParams>;
 
-export function AppPermissionsView({
-  params: { url }
-}: AppPermissionsViewProps) {
+export function AppPermissionsView({ params: { url } }: AppPermissionsViewProps) {
   const { navigate } = useLocation();
 
   // app settings
@@ -32,61 +29,49 @@ export function AppPermissionsView({
 
   return (
     <>
-      <HeadV2
-        title={settings?.name || settings?.url}
-        back={() => navigate(`/quick-settings/apps/${url}`)}
-      />
+      <HeadV2 title={settings?.name || settings?.url} back={() => navigate(`/quick-settings/apps/${url}`)} />
       <Wrapper>
         <Title noMargin>{browser.i18n.getMessage("permissions")}</Title>
-        {Object.keys(permissionData).map(
-          (permissionName: PermissionType, i) => {
-            let formattedPermissionName = permissionName
-              .split("_")
-              .map((word) => word.charAt(0) + word.slice(1).toLowerCase())
-              .join(" ");
+        {Object.keys(permissionData).map((permissionName: PermissionType, i) => {
+          let formattedPermissionName = permissionName
+            .split("_")
+            .map((word) => word.charAt(0) + word.slice(1).toLowerCase())
+            .join(" ");
 
-            if (permissionName === "SIGNATURE") {
-              formattedPermissionName = "Sign Data";
-            }
-
-            return (
-              <div key={i}>
-                <Permission>
-                  <Checkbox
-                    size={16}
-                    onChange={(checked) =>
-                      updateSettings((val) => {
-                        // toggle permission
-                        if (
-                          checked &&
-                          !val.permissions.includes(permissionName)
-                        ) {
-                          val.permissions.push(permissionName);
-                        } else if (!checked) {
-                          val.permissions = val.permissions.filter(
-                            (p) => p !== permissionName
-                          );
-                        }
-
-                        return val;
-                      })
-                    }
-                    checked={settings.permissions.includes(permissionName)}
-                  />
-                  <div>
-                    <PermissionTitle>{formattedPermissionName}</PermissionTitle>
-                    <PermissionDescription>
-                      {browser.i18n.getMessage(permissionData[permissionName])}
-                    </PermissionDescription>
-                  </div>
-                </Permission>
-                {i !== Object.keys(permissionData).length - 1 && (
-                  <Spacer y={0.8} />
-                )}
-              </div>
-            );
+          if (permissionName === "SIGNATURE") {
+            formattedPermissionName = "Sign Data";
           }
-        )}
+
+          return (
+            <div key={i}>
+              <Permission>
+                <Checkbox
+                  size={16}
+                  onChange={(checked) =>
+                    updateSettings((val) => {
+                      // toggle permission
+                      if (checked && !val.permissions.includes(permissionName)) {
+                        val.permissions.push(permissionName);
+                      } else if (!checked) {
+                        val.permissions = val.permissions.filter((p) => p !== permissionName);
+                      }
+
+                      return val;
+                    })
+                  }
+                  checked={settings.permissions.includes(permissionName)}
+                />
+                <div>
+                  <PermissionTitle>{formattedPermissionName}</PermissionTitle>
+                  <PermissionDescription>
+                    {browser.i18n.getMessage(permissionData[permissionName])}
+                  </PermissionDescription>
+                </div>
+              </Permission>
+              {i !== Object.keys(permissionData).length - 1 && <Spacer y={0.8} />}
+            </div>
+          );
+        })}
         <Spacer y={1} />
       </Wrapper>
     </>
@@ -98,7 +83,7 @@ const Wrapper = styled.div`
 `;
 
 const Title = styled(Text).attrs({
-  heading: true
+  heading: true,
 })`
   margin-bottom: 0.6em;
   font-size: 1.125rem;
@@ -111,7 +96,7 @@ const Permission = styled.div`
 `;
 
 export const PermissionDescription = styled(Text).attrs({
-  noMargin: true
+  noMargin: true,
 })`
   margin-top: 0;
   font-size: 0.625rem;
@@ -119,7 +104,7 @@ export const PermissionDescription = styled(Text).attrs({
 
 export const PermissionTitle = styled(Text).attrs({
   noMargin: true,
-  heading: true
+  heading: true,
 })`
   margin-top: 0.2rem;
   font-size: 0.875rem;

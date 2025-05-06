@@ -1,12 +1,4 @@
-import {
-  Input,
-  Loading,
-  Section,
-  Spacer,
-  Text,
-  useInput,
-  useToasts
-} from "@arconnect/components-rebrand";
+import { Input, Loading, Section, Spacer, Text, useInput, useToasts } from "@arconnect/components-rebrand";
 import {
   FiatAmount,
   AmountTitle,
@@ -15,7 +7,7 @@ import {
   PropertyName,
   PropertyValue,
   TagValue,
-  useAdjustAmountTitleWidth
+  useAdjustAmountTitleWidth,
 } from "~routes/popup/transaction/[id]";
 import Wrapper from "~components/auth/Wrapper";
 import browser from "webextension-polyfill";
@@ -30,11 +22,7 @@ import prettyBytes from "pretty-bytes";
 import { formatFiatBalance } from "~tokens/currency";
 import useSetting from "~settings/hook";
 import { getPrice } from "~lib/coingecko";
-import {
-  getTagValue,
-  type TokenInfo,
-  type TokenInfoWithProcessId
-} from "~tokens/aoTokens/ao";
+import { getTagValue, type TokenInfo, type TokenInfoWithProcessId } from "~tokens/aoTokens/ao";
 import { ChevronRightIcon } from "@iconicicons/react";
 import { getUserAvatar } from "~lib/avatar";
 import { LogoWrapper, Logo, WarningIcon } from "~components/popup/Token";
@@ -50,8 +38,7 @@ import { useAskPassword } from "~wallets/hooks";
 import { humanizeTimestampTags } from "~utils/timestamp";
 
 export function SignDataItemAuthRequestView() {
-  const { authRequest, acceptRequest, rejectRequest } =
-    useCurrentAuthRequest("signDataItem");
+  const { authRequest, acceptRequest, rejectRequest } = useCurrentAuthRequest("signDataItem");
 
   const { authID, data, url } = authRequest;
 
@@ -67,25 +54,19 @@ export function SignDataItemAuthRequestView() {
   const tags = useMemo(() => humanizeTimestampTags(data?.tags || []), [data]);
   const recipient = useMemo(() => getTagValue("Recipient", tags) || "", [tags]);
   const quantity = useMemo(() => getTagValue("Quantity", tags) || "0", [tags]);
-  const transfer = useMemo(
-    () => tags.some((tag) => tag.name === "Action" && tag.value === "Transfer"),
-    [tags]
-  );
+  const transfer = useMemo(() => tags.some((tag) => tag.name === "Action" && tag.value === "Transfer"), [tags]);
 
   const [transferRequirePassword] = useStorage<boolean>(
     {
       key: "transfer_require_password",
-      instance: ExtensionStorage
+      instance: ExtensionStorage,
     },
-    false
+    false,
   );
 
   const process = data?.target;
 
-  const formattedAmount = useMemo(
-    () => (amount || 0).toLocaleString(),
-    [amount]
-  );
+  const formattedAmount = useMemo(() => (amount || 0).toLocaleString(), [amount]);
 
   // adjust amount title font sizes
   const parentRef = useRef(null);
@@ -96,17 +77,14 @@ export function SignDataItemAuthRequestView() {
   const [activeAddress] = useStorage<string>(
     {
       key: "active_address",
-      instance: ExtensionStorage
+      instance: ExtensionStorage,
     },
-    ""
+    "",
   );
 
   const theme = useTheme();
 
-  const arweaveLogo = useMemo(
-    () => (theme === "dark" ? arLogoDark : arLogoLight),
-    [theme]
-  );
+  const arweaveLogo = useMemo(() => (theme === "dark" ? arLogoDark : arLogoLight), [theme]);
 
   // currency setting
   const [currency] = useSetting<string>("currency");
@@ -123,9 +101,7 @@ export function SignDataItemAuthRequestView() {
     if (!tags?.length) return browser.i18n.getMessage("sign_item");
 
     const actionValue = getTagValue("Action", tags);
-    const isAOTransaction = tags.some(
-      (tag) => tag.name === "Data-Protocol" && tag.value === "ao"
-    );
+    const isAOTransaction = tags.some((tag) => tag.name === "Data-Protocol" && tag.value === "ao");
 
     if (isAOTransaction && actionValue) {
       return actionValue.replace(/-/g, " ");
@@ -142,7 +118,7 @@ export function SignDataItemAuthRequestView() {
         setToast({
           type: "error",
           content: browser.i18n.getMessage("invalidPassword"),
-          duration: 2400
+          duration: 2400,
         });
         return;
       }
@@ -168,24 +144,16 @@ export function SignDataItemAuthRequestView() {
         const token = await Token(data.target);
         tokenInfo = {
           ...token.info,
-          Denomination: Number(token.info.Denomination)
+          Denomination: Number(token.info.Denomination),
         };
       } catch (err) {
         // fallback
         console.log("err", err);
         try {
-          const aoTokens =
-            (await PersistentStorage.get<TokenInfoWithProcessId[]>(
-              "ao_tokens"
-            )) || [];
-          const aoTokensCache =
-            (await PersistentStorage.get<TokenInfoWithProcessId[]>(
-              "ao_tokens_cache"
-            )) || [];
+          const aoTokens = (await PersistentStorage.get<TokenInfoWithProcessId[]>("ao_tokens")) || [];
+          const aoTokensCache = (await PersistentStorage.get<TokenInfoWithProcessId[]>("ao_tokens_cache")) || [];
           const aoTokensCombined = [...aoTokens, ...aoTokensCache];
-          const token = aoTokensCombined.find(
-            ({ processId }) => data.target === processId
-          );
+          const token = aoTokensCombined.find(({ processId }) => data.target === processId);
           if (token) {
             tokenInfo = token;
           }
@@ -199,10 +167,7 @@ export function SignDataItemAuthRequestView() {
             setLogo(arweaveLogo);
           }
 
-          const tokenAmount = new Quantity(
-            BigInt(quantity),
-            BigInt(tokenInfo.Denomination)
-          );
+          const tokenAmount = new Quantity(BigInt(quantity), BigInt(tokenInfo.Denomination));
           setTokenName(tokenInfo.Name);
           setAmount(tokenAmount);
         }
@@ -240,9 +205,7 @@ export function SignDataItemAuthRequestView() {
       }
       try {
         const storageKey = `bits_check_${activeAddress}`;
-        const storedCheck = await ExtensionStorage.get<
-          WalletBitsCheck | boolean
-        >(storageKey);
+        const storedCheck = await ExtensionStorage.get<WalletBitsCheck | boolean>(storageKey);
 
         if (typeof storedCheck !== "object") {
           const bits = await checkWalletBits();
@@ -279,9 +242,7 @@ export function SignDataItemAuthRequestView() {
           </Degraded>
         )}
         <Description>
-          <Text noMargin>
-            {browser.i18n.getMessage("sign_data_description", url)}
-          </Text>
+          <Text noMargin>{browser.i18n.getMessage("sign_data_description", url)}</Text>
         </Description>
         <Section>
           <div
@@ -289,9 +250,8 @@ export function SignDataItemAuthRequestView() {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              marginBottom: "4px"
-            }}
-          >
+              marginBottom: "4px",
+            }}>
             {!loading ? (
               logo && (
                 <LogoWrapper>
@@ -304,11 +264,7 @@ export function SignDataItemAuthRequestView() {
           </div>
           {transfer && (
             <>
-              {+fiatPrice > 0 && (
-                <FiatAmount>
-                  {formatFiatBalance(fiatPrice, currency)}
-                </FiatAmount>
-              )}
+              {+fiatPrice > 0 && <FiatAmount>{formatFiatBalance(fiatPrice, currency)}</FiatAmount>}
               <AmountTitle
                 ref={childRef}
                 style={{
@@ -316,9 +272,8 @@ export function SignDataItemAuthRequestView() {
                   flexWrap: "wrap",
                   justifyContent: "center",
                   alignItems: "flex-end",
-                  marginBottom: "16px"
-                }}
-              >
+                  marginBottom: "16px",
+                }}>
                 {formattedAmount}
                 <span style={{ lineHeight: "1.5em" }}>{tokenName}</span>
               </AmountTitle>
@@ -328,37 +283,27 @@ export function SignDataItemAuthRequestView() {
           <Properties>
             {data?.target && (
               <TransactionProperty>
-                <PropertyName>
-                  {browser.i18n.getMessage("process_id")}
-                </PropertyName>
+                <PropertyName>{browser.i18n.getMessage("process_id")}</PropertyName>
                 <PropertyValue>{formatAddress(data.target, 6)}</PropertyValue>
               </TransactionProperty>
             )}
             <TransactionProperty>
-              <PropertyName>
-                {browser.i18n.getMessage("transaction_from")}
-              </PropertyName>
+              <PropertyName>{browser.i18n.getMessage("transaction_from")}</PropertyName>
               <PropertyValue>{formatAddress(activeAddress, 6)}</PropertyValue>
             </TransactionProperty>
             {recipient && (
               <TransactionProperty>
-                <PropertyName>
-                  {browser.i18n.getMessage("transaction_to")}
-                </PropertyName>
+                <PropertyName>{browser.i18n.getMessage("transaction_to")}</PropertyName>
                 <PropertyValue>{formatAddress(recipient, 6)}</PropertyValue>
               </TransactionProperty>
             )}
 
             <TransactionProperty>
-              <PropertyName>
-                {browser.i18n.getMessage("transaction_fee")}
-              </PropertyName>
+              <PropertyName>{browser.i18n.getMessage("transaction_fee")}</PropertyName>
               <PropertyValue>0 AR</PropertyValue>
             </TransactionProperty>
             <TransactionProperty>
-              <PropertyName>
-                {browser.i18n.getMessage("transaction_size")}
-              </PropertyName>
+              <PropertyName>{browser.i18n.getMessage("transaction_size")}</PropertyName>
               <PropertyValue>{prettyBytes(data.data.length)}</PropertyValue>
             </TransactionProperty>
             <Spacer y={0.1} />
@@ -366,10 +311,9 @@ export function SignDataItemAuthRequestView() {
               style={{
                 cursor: "pointer",
                 display: "flex",
-                alignItems: "center"
+                alignItems: "center",
               }}
-              onClick={() => setShowTags(!showTags)}
-            >
+              onClick={() => setShowTags(!showTags)}>
               {browser.i18n.getMessage("transaction_tags")}
               <AnimatedChevron $open={showTags}>
                 <ChevronRightIcon />
@@ -411,10 +355,10 @@ export function SignDataItemAuthRequestView() {
           authRequest={authRequest}
           primaryButtonProps={{
             label: browser.i18n.getMessage("signature_authorize"),
-            onClick: sign
+            onClick: sign,
           }}
           secondaryButtonProps={{
-            onClick: () => rejectRequest()
+            onClick: () => rejectRequest(),
           }}
         />
       </Section>

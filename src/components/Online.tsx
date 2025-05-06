@@ -9,7 +9,7 @@ export default function Online({ size = 8 }) {
         height: size,
         width: size,
         borderRadius: "50%",
-        backgroundColor: theme.success
+        backgroundColor: theme.success,
       }}
     />
   );

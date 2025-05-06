@@ -1,33 +1,18 @@
 import { PageType, trackPage } from "~utils/analytics";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import styled from "styled-components";
-import {
-  Button,
-  Input,
-  Section,
-  useInput,
-  Text,
-  ListItem,
-  useToasts
-} from "@arconnect/components-rebrand";
+import { Button, Input, Section, useInput, Text, ListItem, useToasts } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
 import { type Token as TokenInterface } from "~tokens/token";
 import HeadV2 from "~components/popup/HeadV2";
-import {
-  generateProfileIcon,
-  type Contact,
-  type Contacts
-} from "~components/Recipient";
+import { generateProfileIcon, type Contact, type Contacts } from "~components/Recipient";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { Flex } from "~components/common/Flex";
 import Tabs from "~components/Tabs";
 import { useContacts, type Recipient } from "~contacts/hooks";
 import { formatAddress, isAddressFormat } from "~utils/format";
 import { User01 } from "@untitled-ui/icons-react";
-import {
-  calculateDaysSinceTimestamp,
-  humanizeTimestampForRecipient
-} from "~utils/timestamp";
+import { calculateDaysSinceTimestamp, humanizeTimestampForRecipient } from "~utils/timestamp";
 import { isANS, getAnsProfileByLabel } from "~lib/ans";
 import { searchArNSName } from "~lib/arns";
 import SliderMenu from "~components/SliderMenu";
@@ -43,7 +28,7 @@ export const arPlaceholder: TokenInterface = {
   ticker: "AR",
   type: "asset",
   balance: "0",
-  decimals: 12
+  decimals: 12,
 };
 
 export type RecipientType = {
@@ -80,7 +65,7 @@ const ContactsTab = ({
   filteredAndGroupedContacts,
   hasContacts,
   onClick,
-  activeRecipient
+  activeRecipient,
 }: {
   filteredAndGroupedContacts: Record<string, Contacts>;
   hasContacts: boolean;
@@ -100,9 +85,7 @@ const ContactsTab = ({
                   title={contact?.name}
                   subtitle={formatAddress(contact.address, 4)}
                   img={
-                    contact.profileIcon
-                      ? contact.profileIcon
-                      : generateProfileIcon(contact?.name || contact.address)
+                    contact.profileIcon ? contact.profileIcon : generateProfileIcon(contact?.name || contact.address)
                   }
                   squircleSize={40}
                   height={56}
@@ -125,7 +108,7 @@ const RecipientsTab = ({
   possibleTargets,
   contacts,
   onClick,
-  activeRecipient
+  activeRecipient,
 }: {
   possibleTargets: Recipient[];
   contacts: Contacts;
@@ -136,7 +119,7 @@ const RecipientsTab = ({
     return possibleTargets.map((target) => ({
       address: target.address,
       contact: contacts.find((contact) => contact.address === target.address),
-      timestamp: target.timestamp
+      timestamp: target.timestamp,
     }));
   }, [contacts, possibleTargets]);
 
@@ -145,13 +128,8 @@ const RecipientsTab = ({
       {recipients.map((recipient) => (
         <ListItem
           title={formatAddress(recipient.address, 4)}
-          subtitle={
-            recipient?.timestamp &&
-            humanizeTimestampForRecipient(recipient.timestamp)
-          }
-          img={
-            recipient?.contact?.profileIcon && recipient?.contact?.profileIcon
-          }
+          subtitle={recipient?.timestamp && humanizeTimestampForRecipient(recipient.timestamp)}
+          img={recipient?.contact?.profileIcon && recipient?.contact?.profileIcon}
           icon={!recipient?.contact && <User01 height={24} width={24} />}
           squircleSize={40}
           height={56}
@@ -160,7 +138,7 @@ const RecipientsTab = ({
             onClick({
               address: recipient.address,
               timestamp: recipient.timestamp,
-              contact: recipient.contact
+              contact: recipient.contact,
             })
           }
           active={activeRecipient === recipient.address}
@@ -177,7 +155,7 @@ export function SendView({ params: { id } }: SendViewProps) {
 
   const [activeAddress] = useStorage<string>({
     key: "active_address",
-    instance: ExtensionStorage
+    instance: ExtensionStorage,
   });
 
   const { lastRecipients, storedContacts } = useContacts(activeAddress);
@@ -199,9 +177,7 @@ export function SendView({ params: { id } }: SendViewProps) {
       return [{ address: addressInput.state }];
     }
 
-    return lastRecipients.filter(({ address }) =>
-      address.toLowerCase().includes(query.toLowerCase())
-    );
+    return lastRecipients.filter(({ address }) => address.toLowerCase().includes(query.toLowerCase()));
   }, [lastRecipients, addressInput, isManualAddress]);
 
   const filteredAndGroupedContacts = useMemo(() => {
@@ -209,33 +185,29 @@ export function SendView({ params: { id } }: SendViewProps) {
 
     const filteredContacts = isManualAddress
       ? storedContacts.filter(
-          (contact) =>
-            contact?.name.toLowerCase().includes(query) ||
-            contact.address.toLowerCase().includes(query)
+          (contact) => contact?.name.toLowerCase().includes(query) || contact.address.toLowerCase().includes(query),
         )
       : storedContacts;
 
-    return filteredContacts.reduce((groups, contact) => {
-      let letter = contact.name
-        ? contact?.name[0].toUpperCase()
-        : contact.address[0].toUpperCase();
+    return filteredContacts.reduce(
+      (groups, contact) => {
+        let letter = contact.name ? contact?.name[0].toUpperCase() : contact.address[0].toUpperCase();
 
-      if (!letter.match(/[A-Z]/)) {
-        letter = "0-9";
-      }
+        if (!letter.match(/[A-Z]/)) {
+          letter = "0-9";
+        }
 
-      if (!groups[letter]) {
-        groups[letter] = [];
-      }
-      groups[letter].push(contact);
-      return groups;
-    }, {} as Record<string, Contacts>);
+        if (!groups[letter]) {
+          groups[letter] = [];
+        }
+        groups[letter].push(contact);
+        return groups;
+      },
+      {} as Record<string, Contacts>,
+    );
   }, [storedContacts, addressInput.state, isManualAddress]);
 
-  const hasContacts = useMemo(
-    () => Object.keys(filteredAndGroupedContacts).length > 0,
-    [filteredAndGroupedContacts]
-  );
+  const hasContacts = useMemo(() => Object.keys(filteredAndGroupedContacts).length > 0, [filteredAndGroupedContacts]);
 
   const handleTabOnClick = useCallback(
     (recipient: OnClickRecipient) => {
@@ -244,7 +216,7 @@ export function SendView({ params: { id } }: SendViewProps) {
       addressInput.setState(recipient.address);
       submit(recipient.address);
     },
-    [addressInput]
+    [addressInput],
   );
 
   const tabs = useMemo(
@@ -259,7 +231,7 @@ export function SendView({ params: { id } }: SendViewProps) {
             onClick={handleTabOnClick}
             activeRecipient={recipient.address}
           />
-        )
+        ),
       },
       {
         id: 1,
@@ -271,29 +243,23 @@ export function SendView({ params: { id } }: SendViewProps) {
             contacts={storedContacts}
             activeRecipient={recipient.address}
           />
-        )
-      }
+        ),
+      },
     ],
-    [
-      filteredAndGroupedContacts,
-      possibleTargets,
-      hasContacts,
-      recipient.address
-    ]
+    [filteredAndGroupedContacts, possibleTargets, hasContacts, recipient.address],
   );
 
   const submit = async (directAddress?: string) => {
     try {
       setLoading(true);
-      const input =
-        directAddress || addressInput.state?.trim() || recipient?.address || "";
+      const input = directAddress || addressInput.state?.trim() || recipient?.address || "";
       let recipientAddress = "";
       if (isAddressFormat(input)) {
         if (input === activeAddress) {
           setToast({
             type: "error",
             content: browser.i18n.getMessage("cannot_send_to_self"),
-            duration: 2400
+            duration: 2400,
           });
           return;
         }
@@ -305,7 +271,7 @@ export function SendView({ params: { id } }: SendViewProps) {
           setToast({
             type: "error",
             content: browser.i18n.getMessage("incorrect_address"),
-            duration: 2400
+            duration: 2400,
           });
         } else {
           recipientAddress = result.user;
@@ -327,7 +293,7 @@ export function SendView({ params: { id } }: SendViewProps) {
         setToast({
           type: "error",
           content: browser.i18n.getMessage("check_address"),
-          duration: 2400
+          duration: 2400,
         });
       }
     } catch {
@@ -344,7 +310,7 @@ export function SendView({ params: { id } }: SendViewProps) {
       setIsManualAddress(true);
       addressInput.setState(e.target.value);
     },
-    [isManualAddress, recipient?.address]
+    [isManualAddress, recipient?.address],
   );
 
   // Segment
@@ -389,24 +355,13 @@ export function SendView({ params: { id } }: SendViewProps) {
               style={{ padding: "12px 24px", width: "max-content", height: 42 }}
               disabled={loading}
               loading={loading}
-              onClick={() => submit()}
-            >
+              onClick={() => submit()}>
               {browser.i18n.getMessage("next")}
             </Button>
           </Flex>
-          <Tabs
-            tabs={tabs}
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-            containerStyle={{ paddingBottom: 24 }}
-          />
+          <Tabs tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} containerStyle={{ paddingBottom: 24 }} />
         </Flex>
-        <SliderMenu
-          hasHeader={false}
-          isOpen={open}
-          onClose={() => setOpen(false)}
-          paddingVertical={32}
-        >
+        <SliderMenu hasHeader={false} isOpen={open} onClose={() => setOpen(false)} paddingVertical={32}>
           <Section
             showPaddingHorizontal={false}
             showPaddingVertical={false}
@@ -414,9 +369,8 @@ export function SendView({ params: { id } }: SendViewProps) {
               alignItems: "center",
               gap: 24,
               height: "60vh",
-              justifyContent: "space-between"
-            }}
-          >
+              justifyContent: "space-between",
+            }}>
             <Flex direction="column" gap={24} width="100%">
               <Flex direction="column" gap={12}>
                 <Text weight="bold" style={{ fontSize: 22 }} noMargin>
@@ -438,15 +392,10 @@ export function SendView({ params: { id } }: SendViewProps) {
                 onClick={() => {
                   submit();
                   setOpen(false);
-                }}
-              >
+                }}>
                 {browser.i18n.getMessage("confirm")}
               </Button>
-              <Button
-                fullWidth
-                variant="secondary"
-                onClick={() => setOpen(false)}
-              >
+              <Button fullWidth variant="secondary" onClick={() => setOpen(false)}>
                 {browser.i18n.getMessage("cancel")}
               </Button>
             </Flex>
@@ -520,7 +469,7 @@ const ContactAddress = styled(Text).attrs({
   size: "sm",
   variant: "secondary",
   weight: "medium",
-  noMargin: true
+  noMargin: true,
 })``;
 
 const ContactsSection = styled.div`

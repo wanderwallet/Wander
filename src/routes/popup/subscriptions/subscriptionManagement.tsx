@@ -15,12 +15,9 @@ export interface SubscriptionManagementViewParams {
   id?: string;
 }
 
-export type SubscriptionManagementViewProps =
-  CommonRouteProps<SubscriptionManagementViewParams>;
+export type SubscriptionManagementViewProps = CommonRouteProps<SubscriptionManagementViewParams>;
 
-export function SubscriptionManagementView({
-  params: { id }
-}: SubscriptionManagementViewProps) {
+export function SubscriptionManagementView({ params: { id } }: SubscriptionManagementViewProps) {
   const [subData, setSubData] = useState<SubscriptionData | null>(null);
   const [nextPayment, setNextPayment] = useState<Date | null>(null);
 
@@ -32,9 +29,7 @@ export function SubscriptionManagementView({
         if (address) {
           const data = await getSubscriptionData(address);
           // finding like this for now
-          const subscription = data.find(
-            (subscription) => subscription.arweaveAccountAddress === id
-          );
+          const subscription = data.find((subscription) => subscription.arweaveAccountAddress === id);
           setSubData(subscription);
         }
       } catch (error) {
@@ -49,9 +44,7 @@ export function SubscriptionManagementView({
     const getAlarms = async () => {
       try {
         const alarms = await browser.alarms.getAll();
-        const nextPaymentAlarm = alarms.find(
-          (alarm) => alarm.name === `subscription-alarm-${id}`
-        );
+        const nextPaymentAlarm = alarms.find((alarm) => alarm.name === `subscription-alarm-${id}`);
         if (nextPaymentAlarm) {
           setNextPayment(new Date(nextPaymentAlarm.scheduledTime));
         }
@@ -77,9 +70,7 @@ export function SubscriptionManagementView({
                     <span>
                       <Title style={{ margin: 0 }}>Next Payment</Title>
                       <p style={{ margin: 0 }}>
-                        {nextPayment
-                          ? nextPayment.toLocaleString()
-                          : "No upcoming payment scheduled."}
+                        {nextPayment ? nextPayment.toLocaleString() : "No upcoming payment scheduled."}
                       </p>
                     </span>
                   </div>
@@ -97,7 +88,7 @@ export function SubscriptionManagementView({
                       key={index}
                       onClick={() =>
                         browser.tabs.create({
-                          url: `https://viewblock.io/arweave/tx/${payment.txId}`
+                          url: `https://viewblock.io/arweave/tx/${payment.txId}`,
                         })
                       }
                     />
@@ -110,10 +101,7 @@ export function SubscriptionManagementView({
         <ButtonV2
           fullWidth
           style={{ fontWeight: "500" }}
-          onClick={() =>
-            browser.tabs.create({ url: subData.subscriptionManagementUrl })
-          }
-        >
+          onClick={() => browser.tabs.create({ url: subData.subscriptionManagementUrl })}>
           View Subscription
         </ButtonV2>
       </Wrapper>

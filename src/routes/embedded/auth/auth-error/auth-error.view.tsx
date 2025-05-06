@@ -1,12 +1,4 @@
-import {
-  Box,
-  Button,
-  Card,
-  Text,
-  WanderIcon,
-  Row,
-  ErrorIcon
-} from "~components/embed";
+import { Box, Button, Card, Text, WanderIcon, Row, ErrorIcon } from "~components/embed";
 import { useErrorHandler } from "./hooks/useErrorHandler";
 
 export default function AuthErrorEmbeddedView() {
@@ -26,14 +18,9 @@ export default function AuthErrorEmbeddedView() {
         </Row>
       }
       hasBackButton={false}
-      size="auto"
-    >
+      size="auto">
       <Box>
-        <Row
-          alignment="center"
-          justifyContent="center"
-          style={{ marginBottom: 16, paddingTop: 4, paddingBottom: 4 }}
-        >
+        <Row alignment="center" justifyContent="center" style={{ marginBottom: 16, paddingTop: 4, paddingBottom: 4 }}>
           <ErrorIcon fontSize={48} />
         </Row>
 
@@ -45,12 +32,7 @@ export default function AuthErrorEmbeddedView() {
           {errorState.friendlyMessage}
         </Text>
 
-        <Button
-          isFullWidth
-          variant="primary"
-          onClick={handleRetry}
-          style={{ marginBottom: 8 }}
-        >
+        <Button isFullWidth variant="primary" onClick={handleRetry} style={{ marginBottom: 8 }}>
           Try Again
         </Button>
 
@@ -67,14 +49,10 @@ export default function AuthErrorEmbeddedView() {
             <Text variant="bodyXs">Clearing your browser cache</Text>
           </li>
           <li>
-            <Text variant="bodyXs">
-              Using a different authentication method
-            </Text>
+            <Text variant="bodyXs">Using a different authentication method</Text>
           </li>
           <li>
-            <Text variant="bodyXs">
-              Contacting support with error code: {errorState.code}
-            </Text>
+            <Text variant="bodyXs">Contacting support with error code: {errorState.code}</Text>
           </li>
         </ul>
       </Box>
