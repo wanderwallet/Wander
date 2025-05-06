@@ -1,11 +1,4 @@
-import {
-  Button,
-  Input,
-  Section,
-  Text,
-  useInput,
-  useToasts
-} from "@arconnect/components-rebrand";
+import { Button, Input, Section, Text, useInput, useToasts } from "@arconnect/components-rebrand";
 import { type StoredWallet } from "~wallets";
 import { useMemo, useState } from "react";
 import { useStorage } from "~utils/storage";
@@ -25,27 +18,22 @@ export interface ExportWalletViewParams {
 
 export type ExportWalletViewProps = CommonRouteProps<ExportWalletViewParams>;
 
-export function ExportWalletView({
-  params: { address }
-}: ExportWalletViewProps) {
+export function ExportWalletView({ params: { address } }: ExportWalletViewProps) {
   const { navigate } = useLocation();
 
   // wallets
   const [wallets] = useStorage<StoredWallet[]>(
     {
       key: "wallets",
-      instance: ExtensionStorage
+      instance: ExtensionStorage,
     },
-    []
+    [],
   );
 
   const [loading, setLoading] = useState(false);
 
   // this wallet
-  const wallet = useMemo(
-    () => wallets?.find((w) => w.address === address),
-    [wallets, address]
-  );
+  const wallet = useMemo(() => wallets?.find((w) => w.address === address), [wallets, address]);
 
   // toasts
   const { setToast } = useToasts();
@@ -62,10 +50,7 @@ export function ExportWalletView({
 
     try {
       // decrypt keyfile
-      const decrypted = await decryptWallet(
-        wallet.keyfile,
-        passwordInput.state
-      );
+      const decrypted = await decryptWallet(wallet.keyfile, passwordInput.state);
 
       // download the file
       downloadKeyfile(address, decrypted);
@@ -77,7 +62,7 @@ export function ExportWalletView({
       setToast({
         type: "error",
         content: browser.i18n.getMessage("export_wallet_error"),
-        duration: 2200
+        duration: 2200,
       });
     } finally {
       setLoading(false);
@@ -90,19 +75,11 @@ export function ExportWalletView({
 
   return (
     <>
-      <HeadV2
-        title={browser.i18n.getMessage("export_keyfile")}
-        showOptions={false}
-      />
+      <HeadV2 title={browser.i18n.getMessage("export_keyfile")} showOptions={false} />
       <Wrapper style={{ height: "calc(100vh - 100px)" }}>
-        <Section
-          style={{ justifyContent: "space-between", flex: 1 }}
-          showPaddingVertical={false}
-        >
+        <Section style={{ justifyContent: "space-between", flex: 1 }} showPaddingVertical={false}>
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            <Text noMargin>
-              {browser.i18n.getMessage("export_keyfile_description")}
-            </Text>
+            <Text noMargin>{browser.i18n.getMessage("export_keyfile_description")}</Text>
             <Input
               sizeVariant="small"
               type="password"

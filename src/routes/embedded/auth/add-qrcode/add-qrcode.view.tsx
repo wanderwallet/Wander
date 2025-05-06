@@ -29,16 +29,9 @@ export function AuthAddWithQRCodeEmbeddedView() {
       footerElement={<WanderFooter />}
       hasBackButton={true}
       onBackButtonClick={back}
-      size="sm"
-    >
+      size="sm">
       <Box>
-        <Button
-          variant="secondary"
-          isFullWidth
-          icon={<CameraIcon />}
-          onClick={handleOpenWebcam}
-          isLoading={isLoading}
-        >
+        <Button variant="secondary" isFullWidth icon={<CameraIcon />} onClick={handleOpenWebcam} isLoading={isLoading}>
           Open webcam
         </Button>
       </Box>

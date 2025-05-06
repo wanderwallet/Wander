@@ -20,27 +20,22 @@ export interface ContactsDashboardViewParams {
   contact?: string;
 }
 
-export interface ContactsDashboardViewProps
-  extends CommonRouteProps<ContactsDashboardViewParams> {
+export interface ContactsDashboardViewProps extends CommonRouteProps<ContactsDashboardViewParams> {
   isQuickSetting?: boolean;
 }
 
-export function ContactsDashboardView({
-  isQuickSetting
-}: ContactsDashboardViewProps) {
+export function ContactsDashboardView({ isQuickSetting }: ContactsDashboardViewProps) {
   const { navigate } = useLocation();
   // TODO: Replace with useParams:
-  const [matches, params] = useRoute<{ contact?: string }>(
-    "/contacts/:contact?"
-  );
+  const [matches, params] = useRoute<{ contact?: string }>("/contacts/:contact?");
 
   // contacts
   const [storedContacts, setStoredContacts] = useStorage(
     {
       key: "contacts",
-      instance: ExtensionStorage
+      instance: ExtensionStorage,
     },
-    []
+    [],
   );
 
   const [contacts, setContacts] = useState<SettingsContactData[]>([]);
@@ -55,9 +50,7 @@ export function ContactsDashboardView({
 
       if (storedContacts) {
         const namedContacts = storedContacts.filter((contact) => contact.name);
-        const addressOnlyContacts = storedContacts.filter(
-          (contact) => !contact.name
-        );
+        const addressOnlyContacts = storedContacts.filter((contact) => !contact.name);
 
         namedContacts.sort((a, b) => {
           const nameComparison = a.name.localeCompare(b.name);
@@ -72,9 +65,7 @@ export function ContactsDashboardView({
 
         const sortedContacts = [...namedContacts, ...sortedAddressOnlyContacts];
 
-        const enrichedContacts = await Promise.all(
-          sortedContacts.map(async (contact) => await enrichContact(contact))
-        );
+        const enrichedContacts = await Promise.all(sortedContacts.map(async (contact) => await enrichContact(contact)));
 
         setContacts(enrichedContacts);
       }
@@ -85,9 +76,7 @@ export function ContactsDashboardView({
 
   function groupContactsByFirstLetter(contacts) {
     return contacts.reduce((groups, contact) => {
-      let firstLetter = contact.name
-        ? contact.name[0].toUpperCase()
-        : contact.address[0].toUpperCase();
+      let firstLetter = contact.name ? contact.name[0].toUpperCase() : contact.address[0].toUpperCase();
 
       if (!firstLetter.match(/[A-Z]/)) {
         firstLetter = "0-9";
@@ -101,24 +90,14 @@ export function ContactsDashboardView({
     }, {});
   }
 
-  const groupedContacts = useMemo(
-    () => groupContactsByFirstLetter(contacts),
-    [contacts]
-  );
+  const groupedContacts = useMemo(() => groupContactsByFirstLetter(contacts), [contacts]);
 
   // active subsetting
-  const activeContact = useMemo(
-    () => (params?.contact ? decodeURIComponent(params.contact) : undefined),
-    [params]
-  );
+  const activeContact = useMemo(() => (params?.contact ? decodeURIComponent(params.contact) : undefined), [params]);
 
   // Update the URL when a contact is clicked
   const handleContactClick = (contactAddress: string) => {
-    navigate(
-      `/${isQuickSetting ? "quick-settings/" : ""}contacts/${encodeURIComponent(
-        contactAddress
-      )}`
-    );
+    navigate(`/${isQuickSetting ? "quick-settings/" : ""}contacts/${encodeURIComponent(contactAddress)}`);
   };
 
   const searchInput = useInput();
@@ -228,8 +207,7 @@ const SearchWrapper = styled.div<{ small?: boolean }>`
   right: 0;
   z-index: 20;
   grid-template-columns: auto auto;
-  ${(props) =>
-    !props.small && `background-color: rgb(${props.theme.cardBackground})`}
+  ${(props) => !props.small && `background-color: rgb(${props.theme.cardBackground})`}
 `;
 
 const AddContactButton = styled(Button)`

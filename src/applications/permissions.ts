@@ -26,7 +26,7 @@ export const permissionData: Record<PermissionType, string> = {
   SIGNATURE: "permissionDescriptionSignature",
   ACCESS_ARWEAVE_CONFIG: "permissionDescriptionArweaveConfig",
   DISPATCH: "permissionDescriptionDispatch",
-  ACCESS_TOKENS: "permissionAccessTokens"
+  ACCESS_TOKENS: "permissionAccessTokens",
 };
 
 /**
@@ -37,19 +37,10 @@ export const permissionData: Record<PermissionType, string> = {
  * @param required The permissions the app is required to have
  * @returns The missing permissions
  */
-export function getMissingPermissions(
-  existing: PermissionType[],
-  required: PermissionType[]
-) {
-  const missing = required.filter(
-    (permission) => !existing.includes(permission)
-  );
+export function getMissingPermissions(existing: PermissionType[], required: PermissionType[]) {
+  const missing = required.filter((permission) => !existing.includes(permission));
 
   return missing;
 }
 
-export const signPolicyOptions = [
-  "always_ask",
-  "ask_when_spending",
-  "auto_confirm"
-] as const;
+export const signPolicyOptions = ["always_ask", "ask_when_spending", "auto_confirm"] as const;

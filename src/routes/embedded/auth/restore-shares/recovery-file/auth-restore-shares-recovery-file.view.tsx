@@ -41,21 +41,14 @@ export function AuthRestoreSharesRecoveryFileEmbeddedView() {
       onBackButtonClick={back}
       hasCloseButton={true}
       onCloseButtonClick={() => navigate("/auth/restore-shares")}
-      size="auto"
-    >
+      size="auto">
       <Upload
         isFullWidth
         title={"Click to upload"}
         description={"or drag and drop your recovery file"}
         onFileParse={handleJsonParse}
       />
-      <Button
-        isFullWidth
-        size="md"
-        isLoading={loading}
-        isDisabled={!jsonData}
-        onClick={handleRestore}
-      >
+      <Button isFullWidth size="md" isLoading={loading} isDisabled={!jsonData} onClick={handleRestore}>
         Restore
       </Button>
     </Card>

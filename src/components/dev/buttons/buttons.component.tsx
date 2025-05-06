@@ -1,7 +1,4 @@
-import {
-  DevButton,
-  type DevButtonProps
-} from "~components/dev/button/button.component";
+import { DevButton, type DevButtonProps } from "~components/dev/button/button.component";
 
 import styles from "./buttons.module.scss";
 
@@ -12,12 +9,7 @@ export interface DevButtonsProps {
   isDisabled?: boolean;
 }
 
-export function DevButtons({
-  config,
-  variant,
-  isLoading,
-  isDisabled
-}: DevButtonsProps) {
+export function DevButtons({ config, variant, isLoading, isDisabled }: DevButtonsProps) {
   return (
     <ul className={styles.root}>
       {config.map((buttonConfig, i) => {

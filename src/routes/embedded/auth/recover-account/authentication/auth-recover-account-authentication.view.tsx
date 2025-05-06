@@ -11,52 +11,35 @@ import {
   Divider,
   Row,
   TextInput,
-  Wander2Icon
+  Wander2Icon,
 } from "~components/embed/ui";
 import type { AuthProviderType } from "embed-api";
 import { toast } from "react-toastify";
 import { getSupabaseClient } from "~utils/embedded/embedded.utils";
 
 export function AuthRecoverAccountAuthenticationEmbeddedView() {
-  const [selectedAuthProviderType, setSelectedAuthProviderType] =
-    useState<AuthProviderType | null>(null);
-  const {
-    recoverableAccounts,
-    recoverAccount,
-    authenticate,
-    authStatus,
-    accountToRecover
-  } = useEmbedded();
+  const [selectedAuthProviderType, setSelectedAuthProviderType] = useState<AuthProviderType | null>(null);
+  const { recoverableAccounts, recoverAccount, authenticate, authStatus, accountToRecover } = useEmbedded();
 
   const emailInputRef = useRef<HTMLInputElement>();
   const passwordInputRef = useRef<HTMLInputElement>();
 
   const areButtonsDisabled =
-    authStatus === "unknown" ||
-    authStatus === "loading" ||
-    authStatus === "authLoading" ||
-    !!selectedAuthProviderType;
+    authStatus === "unknown" || authStatus === "loading" || authStatus === "authLoading" || !!selectedAuthProviderType;
 
   const accountToRecoverId = accountToRecover?.userId;
 
-  const handleAuthenticate = useCallback(
-    async (authProviderType: AuthProviderType) => {
-      setSelectedAuthProviderType(authProviderType);
-      try {
-        await authenticate(
-          authProviderType,
-          emailInputRef.current?.value || "",
-          passwordInputRef.current?.value || ""
-        );
-        setSelectedAuthProviderType(null);
-      } catch (error) {
-        toast.error(`Error signing in with ${authProviderType}`);
-      } finally {
-        setSelectedAuthProviderType(null);
-      }
-    },
-    []
-  );
+  const handleAuthenticate = useCallback(async (authProviderType: AuthProviderType) => {
+    setSelectedAuthProviderType(authProviderType);
+    try {
+      await authenticate(authProviderType, emailInputRef.current?.value || "", passwordInputRef.current?.value || "");
+      setSelectedAuthProviderType(null);
+    } catch (error) {
+      toast.error(`Error signing in with ${authProviderType}`);
+    } finally {
+      setSelectedAuthProviderType(null);
+    }
+  }, []);
 
   const handleEmailSignup = useCallback(async () => {
     try {
@@ -64,7 +47,7 @@ export function AuthRecoverAccountAuthenticationEmbeddedView() {
 
       const { error, data } = await supabase.auth.signUp({
         email: emailInputRef.current?.value || "",
-        password: passwordInputRef.current?.value || ""
+        password: passwordInputRef.current?.value || "",
       });
 
       console.log({ error, data });
@@ -78,7 +61,7 @@ export function AuthRecoverAccountAuthenticationEmbeddedView() {
       const supabase = await getSupabaseClient();
       const { error, data } = await supabase.auth.signInWithPassword({
         email: emailInputRef.current?.value || "",
-        password: passwordInputRef.current?.value || ""
+        password: passwordInputRef.current?.value || "",
       });
 
       console.log({ error, data });
@@ -88,40 +71,24 @@ export function AuthRecoverAccountAuthenticationEmbeddedView() {
   }, []);
 
   return (
-    <Card
-      headerText="Select new sign in method"
-      footerElement={<WanderFooter />}
-      hasBackButton={false}
-      size="auto"
-    >
+    <Card headerText="Select new sign in method" footerElement={<WanderFooter />} hasBackButton={false} size="auto">
       <Box>
-        <TextInput
-          ref={emailInputRef}
-          placeholder="E-Mail"
-          isDisabled={areButtonsDisabled}
-        />
+        <TextInput ref={emailInputRef} placeholder="E-Mail" isDisabled={areButtonsDisabled} />
         <br />
-        <TextInput
-          ref={passwordInputRef}
-          placeholder="Password"
-          isDisabled={areButtonsDisabled}
-          isSecure
-        />
+        <TextInput ref={passwordInputRef} placeholder="Password" isDisabled={areButtonsDisabled} isSecure />
         <br />
         <Button
           isFullWidth
           onClick={() => handleEmailSignup()}
           icon={<KeyIcon fontSize={24} />}
-          isDisabled={areButtonsDisabled}
-        >
+          isDisabled={areButtonsDisabled}>
           Email Sign Up
         </Button>
         <Button
           isFullWidth
           onClick={() => handleEmailSignIn()}
           icon={<KeyIcon fontSize={24} />}
-          isDisabled={areButtonsDisabled}
-        >
+          isDisabled={areButtonsDisabled}>
           Email Sign In
         </Button>
         <Divider text={"OR"} />
@@ -131,8 +98,7 @@ export function AuthRecoverAccountAuthenticationEmbeddedView() {
             size="md"
             isLoading={selectedAuthProviderType === "GOOGLE"}
             isDisabled={areButtonsDisabled}
-            onClick={() => handleAuthenticate("GOOGLE")}
-          >
+            onClick={() => handleAuthenticate("GOOGLE")}>
             <GoogleIcon fontSize={24} />
           </Button>
           <Button variant="outlined" size="md" isDisabled>
@@ -144,8 +110,7 @@ export function AuthRecoverAccountAuthenticationEmbeddedView() {
           isFullWidth
           isDisabled
           icon={<SocialsIcon fontSize={24} />}
-          href="#/auth/recover-account/more-authentication"
-        >
+          href="#/auth/recover-account/more-authentication">
           More options
         </Button>
       </Box>

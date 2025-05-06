@@ -5,7 +5,7 @@ const permissions: PermissionType[] = ["SIGNATURE"];
 
 const signMessage: ModuleProperties = {
   functionName: "signMessage",
-  permissions
+  permissions,
 };
 
 export default signMessage;

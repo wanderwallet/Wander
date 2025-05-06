@@ -1,71 +1,60 @@
 import { PasscodeLock, Wallet03 } from "@untitled-ui/icons-react";
 import { useCallback, useState } from "react";
-import {
-  Box,
-  Button,
-  Card,
-  KeyIcon,
-  Spacer,
-  WanderFooter
-} from "~components/embed/ui";
+import { Box, Button, Card, KeyIcon, Spacer, WanderFooter } from "~components/embed/ui";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useLocation } from "~wallets/router/router.utils";
 
 export function AccountBackupSharesEmbeddedView() {
   const [isLoading, setIsLoading] = useState({
     calledId: "",
-    status: false
+    status: false,
   });
   const { navigate } = useLocation();
   const { generateRecoveryAndDownload } = useEmbedded();
 
-  const handleOnClick = useCallback(
-    async (method: "GDrive" | "Apple" | "Dropbox" | "FullWallet") => {
-      const setLoadingState = (status: boolean) =>
-        setIsLoading({ calledId: method, status });
+  const handleOnClick = useCallback(async (method: "GDrive" | "Apple" | "Dropbox" | "FullWallet") => {
+    const setLoadingState = (status: boolean) => setIsLoading({ calledId: method, status });
 
-      try {
-        setLoadingState(true);
+    try {
+      setLoadingState(true);
 
-        switch (method) {
-          case "FullWallet":
-            navigate("/account/backup-full-wallet");
-            break;
+      switch (method) {
+        case "FullWallet":
+          navigate("/account/backup-full-wallet");
+          break;
 
-          case "GDrive":
-          case "Apple":
-          case "Dropbox":
-            console.log("Not implemented yet");
-            break;
+        case "GDrive":
+        case "Apple":
+        case "Dropbox":
+          console.log("Not implemented yet");
+          break;
 
-          default:
-            console.log("Method doesn't exist");
-        }
-      } catch (error) {
-        alert(error);
-      } finally {
-        setLoadingState(false);
+        default:
+          console.log("Method doesn't exist");
       }
-    },
-    []
-  );
+    } catch (error) {
+      alert(error);
+    } finally {
+      setLoadingState(false);
+    }
+  }, []);
 
   const handleGenerateRecoveryAndDownload = useCallback(async () => {
     try {
       setIsLoading({
         calledId: "RecoveryFile",
-        status: true
+        status: true,
       });
       await generateRecoveryAndDownload();
       setIsLoading({
         calledId: "RecoveryFile",
-        status: false
+        status: false,
       });
     } catch (error) {
       alert(error);
       setIsLoading({
         calledId: "RecoveryFile",
-        status: false
+        status: false,
       });
     }
   }, [generateRecoveryAndDownload]);
@@ -93,8 +82,7 @@ export function AccountBackupSharesEmbeddedView() {
       hasBackButton={true}
       onBackButtonClick={() => navigate("/wallet")}
       hasCloseButton={true}
-      size="auto"
-    >
+      size="auto">
       <Box>
         <Button
           variant="outlined"
@@ -102,19 +90,15 @@ export function AccountBackupSharesEmbeddedView() {
           icon={<PasscodeLock fontSize={24} />}
           isLoading={isLoading.calledId === "RecoveryFile" && isLoading.status}
           isDisabled={isLoading.calledId === "RecoveryFile" && isLoading.status}
-          onClick={handleGenerateRecoveryAndDownload}
-        >
+          onClick={handleGenerateRecoveryAndDownload}>
           Export Recovery File
         </Button>
         <Button
           variant="outlined"
           isFullWidth
           icon={<Wallet03 fontSize={24} />}
-          isLoading={
-            isLoading.calledId === "FullWallet" && isLoading.status === true
-          }
-          onClick={() => handleOnClick("FullWallet")}
-        >
+          isLoading={isLoading.calledId === "FullWallet" && isLoading.status === true}
+          onClick={() => handleOnClick("FullWallet")}>
           Backup full wallet
         </Button>
         {/*

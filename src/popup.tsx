@@ -23,9 +23,9 @@ const queryClient = new QueryClient({
       staleTime: 300_000,
       refetchInterval: 300_000,
       retry: 2,
-      refetchOnWindowFocus: true
-    }
-  }
+      refetchOnWindowFocus: true,
+    },
+  },
 });
 
 export function WanderBrowserExtensionApp() {
@@ -40,9 +40,7 @@ export function WanderBrowserExtensionApp() {
   // To show update splash
   useEffect(() => {
     const showSplash = async () => {
-      const isSplashScreenSeen = await ExtensionStorage.get(
-        "update_splash_screen_seen"
-      );
+      const isSplashScreenSeen = await ExtensionStorage.get("update_splash_screen_seen");
 
       // we need to make sure it's not undefined
       if (isSplashScreenSeen === undefined) return;
@@ -63,11 +61,7 @@ export function WanderBrowserExtensionApp() {
         <Content>
           <StarIcons screen="unlock" />
           <IconsContainer>
-            <UpdateSplash
-              setShowSplash={setShowAnimation}
-              width={250}
-              height={250}
-            />
+            <UpdateSplash setShowSplash={setShowAnimation} width={250} height={250} />
           </IconsContainer>
         </Content>
       </Wrapper>

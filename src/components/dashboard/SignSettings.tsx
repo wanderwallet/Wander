@@ -10,28 +10,28 @@ export const SignSettingsDashboardView = () => {
   const [transferRequirePassword, setTransferRequirePassword] = useStorage(
     {
       key: "transfer_require_password",
-      instance: ExtensionStorage
+      instance: ExtensionStorage,
     },
-    false
+    false,
   );
 
   const [connectRequirePassword, setConnectRequirePassword] = useStorage(
     {
       key: "connect_require_password",
-      instance: ExtensionStorage
+      instance: ExtensionStorage,
     },
-    false
+    false,
   );
 
   const [autoLock, setAutoLock] = useStorage(
     {
       key: "auto_lock",
-      instance: ExtensionStorage
+      instance: ExtensionStorage,
     },
     {
       enabled: false,
-      timeout: 5
-    }
+      timeout: 5,
+    },
   );
 
   const [timeInput, setTimeInput] = useState(autoLock.timeout.toString());
@@ -57,9 +57,7 @@ export const SignSettingsDashboardView = () => {
   return (
     <Wrapper>
       <ToggleSwitchWrapper>
-        <Text noMargin>
-          {browser.i18n.getMessage("enable_transfer_settings")}
-        </Text>
+        <Text noMargin>{browser.i18n.getMessage("enable_transfer_settings")}</Text>
         <ToggleSwitch
           width={51}
           height={31}
@@ -68,27 +66,16 @@ export const SignSettingsDashboardView = () => {
         />
       </ToggleSwitchWrapper>
       <ToggleSwitchWrapper>
-        <Text noMargin>
-          {browser.i18n.getMessage("enable_connect_settings")}
-        </Text>
-        <ToggleSwitch
-          width={51}
-          height={31}
-          checked={connectRequirePassword}
-          setChecked={setConnectRequirePassword}
-        />
+        <Text noMargin>{browser.i18n.getMessage("enable_connect_settings")}</Text>
+        <ToggleSwitch width={51} height={31} checked={connectRequirePassword} setChecked={setConnectRequirePassword} />
       </ToggleSwitchWrapper>
       <ToggleSwitchWrapper>
-        <Text noMargin>
-          {browser.i18n.getMessage("auto_sign_out_settings")}
-        </Text>
+        <Text noMargin>{browser.i18n.getMessage("auto_sign_out_settings")}</Text>
         <ToggleSwitch
           width={51}
           height={31}
           checked={autoLock.enabled}
-          setChecked={(value: boolean) =>
-            setAutoLock((prev) => ({ ...prev, enabled: value }))
-          }
+          setChecked={(value: boolean) => setAutoLock((prev) => ({ ...prev, enabled: value }))}
         />
       </ToggleSwitchWrapper>
       {autoLock.enabled && (

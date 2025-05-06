@@ -11,7 +11,7 @@ export default function DashboardTabs() {
   const tabs = [
     { id: 0, name: "assets", component: Tokens },
     { id: 1, name: "collectibles", component: Collectibles },
-    { id: 2, name: "activity", component: Transactions }
+    { id: 2, name: "activity", component: Transactions },
   ] as const;
 
   return <Tabs tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} />;

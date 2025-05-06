@@ -1,15 +1,7 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useCallback, useEffect, useState } from "react";
 
-import {
-  Card,
-  Row,
-  Upload,
-  Copyable,
-  Button,
-  WanderFooter,
-  Text
-} from "~components/embed";
+import { Card, Row, Upload, Copyable, Button, WanderFooter, Text } from "~components/embed";
 import copy from "copy-to-clipboard";
 import { useLocation } from "~wallets/router/router.utils";
 import { toast } from "react-toastify";
@@ -57,15 +49,13 @@ export function AuthImportKeyfileEmbeddedView() {
     deleteImportedTempWallet,
     registerWallet,
     wallets,
-    recoverWallet
+    recoverWallet,
   } = useEmbedded();
 
   const handleAddWallet = useCallback(async () => {
     try {
       setLoading(true);
-      const isWalletPresent = wallets.some(
-        ({ address }) => address === importedTempWalletAddress
-      );
+      const isWalletPresent = wallets.some(({ address }) => address === importedTempWalletAddress);
       if (isWalletPresent) {
         await recoverWallet(jsonData);
       } else {
@@ -98,8 +88,7 @@ export function AuthImportKeyfileEmbeddedView() {
       hasBackButton={true}
       onBackButtonClick={back}
       style={{ gap: 24 }}
-      size="auto"
-    >
+      size="auto">
       <Copyable
         isFullWidth
         style={{ padding: 0 }}
@@ -110,19 +99,10 @@ export function AuthImportKeyfileEmbeddedView() {
         value={importedTempWalletAddress}
       />
       <Row>
-        <Button
-          variant="secondary"
-          size="md"
-          onClick={deleteImportedTempWallet}
-        >
+        <Button variant="secondary" size="md" onClick={deleteImportedTempWallet}>
           No, try again
         </Button>
-        <Button
-          variant="primary"
-          size="md"
-          onClick={handleAddWallet}
-          isLoading={loading}
-        >
+        <Button variant="primary" size="md" onClick={handleAddWallet} isLoading={loading}>
           Yes, {authStatus === "noShares" ? "recover" : "add"}
         </Button>
       </Row>
@@ -135,8 +115,7 @@ export function AuthImportKeyfileEmbeddedView() {
       hasBackButton={true}
       onBackButtonClick={back}
       style={{ gap: 24 }}
-      size="auto"
-    >
+      size="auto">
       <Upload
         isFullWidth
         title={"Click to upload"}
@@ -146,11 +125,7 @@ export function AuthImportKeyfileEmbeddedView() {
         onFileParse={handleJsonParse}
       />
       {fileError && (
-        <Text
-          alignment="left"
-          variant="bodySm"
-          style={{ color: "#D22B1F", alignSelf: "flex-start", marginTop: -20 }}
-        >
+        <Text alignment="left" variant="bodySm" style={{ color: "#D22B1F", alignSelf: "flex-start", marginTop: -20 }}>
           Error: incorrect file format
         </Text>
       )}

@@ -15,24 +15,18 @@ export function AuthRecoverAccountSelectEmbeddedView() {
       setAccountToRecover(account);
       navigate("/auth/recover-account/authentication");
     },
-    [setAccountToRecover, navigate]
+    [setAccountToRecover, navigate],
   );
 
   return (
-    <Card
-      headerText="Select account to recover"
-      footerElement={<WanderFooter />}
-      hasBackButton={false}
-      size="auto"
-    >
+    <Card headerText="Select account to recover" footerElement={<WanderFooter />} hasBackButton={false} size="auto">
       <Box>
         {recoverableAccounts.map((account) => (
           <Box
             hasBorder
             style={{ cursor: "pointer" }}
             key={account.userId}
-            onClick={() => handleSelectAccount(account)}
-          >
+            onClick={() => handleSelectAccount(account)}>
             <Flex direction="column" gap={1} justify="center" align="center">
               <Text>{truncateMiddle(account.userId, 30)}</Text>
               <Text>{account?.email || account?.name || account?.phone}</Text>

@@ -9,7 +9,7 @@ import { createArweaveSignerWithOptions } from "~utils/signer.utils";
 const background: BackgroundModuleFunction<number[][]> = async (
   appData,
   dataItems: unknown,
-  signatureOptions?: unknown
+  signatureOptions?: unknown,
 ) => {
   // validate
   isBatchOfRawDataItem(dataItems);
@@ -20,9 +20,9 @@ const background: BackgroundModuleFunction<number[][]> = async (
   await requestUserAuthorization(
     {
       type: "batchSignDataItem",
-      data: dataItems
+      data: dataItems,
     },
-    appData
+    appData,
   );
 
   // grab the user's keyfile
@@ -30,15 +30,10 @@ const background: BackgroundModuleFunction<number[][]> = async (
 
   try {
     if (decryptedWallet.type !== "local") {
-      throw new Error(
-        "Only local wallets are currently supported for batch signing"
-      );
+      throw new Error("Only local wallets are currently supported for batch signing");
     }
 
-    const dataSigner = createArweaveSignerWithOptions(
-      decryptedWallet.keyfile,
-      signatureOptions
-    );
+    const dataSigner = createArweaveSignerWithOptions(decryptedWallet.keyfile, signatureOptions);
 
     for (const dataItem of dataItems) {
       const { data, ...options } = dataItem;

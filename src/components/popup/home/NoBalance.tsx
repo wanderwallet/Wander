@@ -12,17 +12,10 @@ export default function NoBalance() {
   return (
     <Wrapper>
       <Art src={noBalanceArt} />
-      <NoBalanceText>
-        {browser.i18n.getMessage("home_no_balance", "$AR")}
-      </NoBalanceText>
+      <NoBalanceText>{browser.i18n.getMessage("home_no_balance", "$AR")}</NoBalanceText>
       <ButtonWrapper>
         <PureBuyButton />
-        <ButtonV2
-          onClick={() => navigate("/tokens")}
-          secondary
-          fullWidth
-          className="normal-font-weight"
-        >
+        <ButtonV2 onClick={() => navigate("/tokens")} secondary fullWidth className="normal-font-weight">
           {browser.i18n.getMessage("view_all_assets")}
           <ArrowRight style={{ marginLeft: "5px" }} />
         </ButtonV2>
@@ -40,14 +33,14 @@ const Wrapper = styled(Section)`
 
 const NoBalanceText = styled(Text).attrs({
   heading: true,
-  noMargin: true
+  noMargin: true,
 })`
   margin-bottom: 0.75rem;
 `;
 
 const Art = styled.img.attrs({
   draggable: false,
-  alt: "No balance art"
+  alt: "No balance art",
 })`
   user-select: none;
   width: 137px;

@@ -18,16 +18,14 @@ export async function fetchWalletBalances(wallets: Wallet[]) {
     await Promise.all(
       wallets.map(async (wallet) => {
         try {
-          const winstonBalance = await withRetry(() =>
-            arweave.wallets.getBalance(wallet.address)
-          );
+          const winstonBalance = await withRetry(() => arweave.wallets.getBalance(wallet.address));
           const arBalance = arweave.ar.winstonToAr(winstonBalance);
           balances[wallet.address] = arBalance;
         } catch (error) {
           console.error(`Error fetching balance for ${wallet.address}:`, error);
           balances[wallet.address] = "0";
         }
-      })
+      }),
     );
 
     return balances;

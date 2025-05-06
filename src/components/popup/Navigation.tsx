@@ -3,15 +3,10 @@ import browser from "webextension-polyfill";
 import styled from "styled-components";
 import { useLocation } from "~wallets/router/router.utils";
 import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
+import { useStorage, ExtensionStorage } from "~utils/storage";
 
 const Home05Active = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="25"
-    height="24"
-    viewBox="0 0 25 24"
-    fill="none"
-  >
+  <svg xmlns="http://www.w3.org/2000/svg" width="25" height="24" viewBox="0 0 25 24" fill="none">
     <path
       fillRule="evenodd"
       clipRule="evenodd"
@@ -22,13 +17,7 @@ const Home05Active = () => (
 );
 
 const Compass03Active = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="25"
-    height="24"
-    viewBox="0 0 25 24"
-    fill="none"
-  >
+  <svg xmlns="http://www.w3.org/2000/svg" width="25" height="24" viewBox="0 0 25 24" fill="none">
     <path
       fillRule="evenodd"
       clipRule="evenodd"
@@ -45,7 +34,7 @@ const buttons = [
     icon: <Home05 />,
     iconActive: <Home05Active />,
     size: "24px",
-    route: "/"
+    route: "/",
   },
   {
     title: "Explore",
@@ -53,7 +42,7 @@ const buttons = [
     icon: <Compass03 />,
     iconActive: <Compass03Active />,
     size: "24px",
-    route: "/explore"
+    route: "/explore",
   },
   {
     title: "Menu",
@@ -61,16 +50,29 @@ const buttons = [
     icon: <Grid01 />,
     iconActive: <Grid01 color="#6B57F9" fill="#6B57F9" />,
     size: "24px",
-    route: "/quick-settings"
-  }
+    route: "/quick-settings",
+  },
 ] as const;
 
 export const NavigationBar = () => {
   const { location, navigate } = useLocation();
-
-  const shouldShowNavigationBar = buttons.some(
-    (button) => location === button.route
+  const [activeAddress] = useStorage(
+    {
+      key: "active_address",
+      instance: ExtensionStorage,
+    },
+    "",
   );
+
+  const [isSeedphraseBackedUp = true] = useStorage(
+    {
+      key: `recovery_phrase_backedup_${activeAddress}`,
+      instance: ExtensionStorage,
+    },
+    true,
+  );
+
+  const shouldShowNavigationBar = buttons.some((button) => location === button.route);
 
   if (!shouldShowNavigationBar) {
     return null;
@@ -85,11 +87,12 @@ export const NavigationBar = () => {
             active={active}
             data-active={active ? "true" : "false"}
             key={index}
-            onClick={() => navigate(button.route)}
-          >
+            onClick={() => navigate(button.route)}>
             <IconWrapper size={button.size}>
               {active ? button.iconActive : button.icon}
+              {!isSeedphraseBackedUp && button.route === "/quick-settings" && <PendingActionDot />}
             </IconWrapper>
+
             <div>{browser.i18n.getMessage(button.dictionaryKey)}</div>
           </NavigationButton>
         );
@@ -113,8 +116,7 @@ const NavigationBarWrapper = styled.nav`
 const NavigationButton = styled.button<{
   active?: boolean;
 }>`
-  color: ${(props) =>
-    props.active ? props.theme.primaryText : props.theme.secondaryText};
+  color: ${(props) => (props.active ? props.theme.primaryText : props.theme.secondaryText)};
   font-weight: 600;
   font-size: 12px;
   display: flex;
@@ -143,8 +145,20 @@ const IconWrapper = styled.div<{ size: string }>`
   justify-content: center;
   align-items: center;
   transition: transform 0.2s ease;
+  position: relative;
 
   ${NavigationButton}:not([data-active="true"]):hover & {
     transform: scale(1.1);
   }
+`;
+
+const PendingActionDot = styled.div`
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 8px;
+  height: 8px;
+  background-color: #eebd41;
+  border-radius: 50%;
+  flex-shrink: 0;
 `;

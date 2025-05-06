@@ -8,15 +8,14 @@ import Message from "~components/embed/auth/Message";
 
 export function EmbeddedSignatureAuthRequestView() {
   const { navigate } = useLocation();
-  const { authRequest, rejectRequest, acceptRequest } =
-    useCurrentAuthRequest("signature");
+  const { authRequest, rejectRequest, acceptRequest } = useCurrentAuthRequest("signature");
 
   const { url, authID, message } = authRequest;
 
   const handleDecrypt = () => {
     postEmbeddedMessage({
       type: "embedded_close",
-      data: null
+      data: null,
     });
     navigate("/wallet");
     acceptRequest();
@@ -25,7 +24,7 @@ export function EmbeddedSignatureAuthRequestView() {
   const handleCancel = () => {
     postEmbeddedMessage({
       type: "embedded_close",
-      data: null
+      data: null,
     });
     navigate("/wallet");
     rejectRequest();
@@ -51,13 +50,12 @@ export function EmbeddedSignatureAuthRequestView() {
         style={{
           paddingTop: "24px",
           paddingInline: "16px",
-          paddingBottom: "24px"
+          paddingBottom: "24px",
         }}
         hasCloseButton={true}
         hasBackButton={false}
         customIcon={<XClose fontSize={24} color={"#666666"} />}
-        onCloseButtonClick={handleCancel}
-      >
+        onCloseButtonClick={handleCancel}>
         <Box>
           <Text variant="bodyMd" style={{ color: "#666666" }}>
             {browser.i18n.getMessage("signature_description", url)}

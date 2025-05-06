@@ -14,9 +14,7 @@ export function DashboardApp() {
     handleSyncLabelsAlarm();
   }, []);
 
-  return (
-    <Woute path="/:setting?/:subsetting?" component={SettingsDashboardView} />
-  );
+  return <Woute path="/:setting?/:subsetting?" component={SettingsDashboardView} />;
 }
 
 export function DashboardAppRoot() {

@@ -5,34 +5,15 @@ import { Text, Row } from "../../atoms";
 import { useTheme } from "../../../contexts/ThemeContext";
 
 const Snackbar = React.forwardRef<HTMLDivElement, SnackbarBaseProps>(
-  (
-    {
-      text,
-      textColor,
-      icon,
-      iconColor,
-      borderColor,
-      backgroundColor,
-      isFullWidth,
-      className,
-      ...props
-    },
-    ref
-  ) => {
+  ({ text, textColor, icon, iconColor, borderColor, backgroundColor, isFullWidth, className, ...props }, ref) => {
     const { isDarkMode } = useTheme();
 
-    const defaultBorderColor = isDarkMode
-      ? "var(--color-border-box)"
-      : borderColor || "var(--color-border-box)";
+    const defaultBorderColor = isDarkMode ? "var(--color-border-box)" : borderColor || "var(--color-border-box)";
 
     const defaultBackgroundColor =
-      backgroundColor ||
-      (isDarkMode
-        ? "var(--color-card-background-default)"
-        : "var(--color-background-default)");
+      backgroundColor || (isDarkMode ? "var(--color-card-background-default)" : "var(--color-background-default)");
 
-    const defaultIconColor =
-      iconColor || (isDarkMode ? "var(--color-font-body)" : iconColor);
+    const defaultIconColor = iconColor || (isDarkMode ? "var(--color-font-body)" : iconColor);
 
     const defaultTextColor = isDarkMode ? "var(--color-font-body)" : textColor;
 
@@ -47,28 +28,20 @@ const Snackbar = React.forwardRef<HTMLDivElement, SnackbarBaseProps>(
         `}
         style={{
           borderColor: defaultBorderColor,
-          backgroundColor: defaultBackgroundColor
+          backgroundColor: defaultBackgroundColor,
         }}
-        {...props}
-      >
+        {...props}>
         {icon && (
-          <div
-            className={styles["snackbar__icon"]}
-            style={{ color: defaultIconColor }}
-          >
+          <div className={styles["snackbar__icon"]} style={{ color: defaultIconColor }}>
             {icon}
           </div>
         )}
-        <Text
-          variant="bodyMd"
-          alignment="left"
-          style={{ color: defaultTextColor }}
-        >
+        <Text variant="bodyMd" alignment="left" style={{ color: defaultTextColor }}>
           {text}
         </Text>
       </Row>
     );
-  }
+  },
 );
 
 Snackbar.displayName = "Snackbar";

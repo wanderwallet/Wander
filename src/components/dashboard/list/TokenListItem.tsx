@@ -18,10 +18,7 @@ export default function TokenListItem({ token, active, onClick }: Props) {
   const { navigate } = useLocation();
 
   // format address
-  const formattedAddress = useMemo(
-    () => (token.id === "AR" ? "AR" : formatAddress(token.id, 8)),
-    [token.id]
-  );
+  const formattedAddress = useMemo(() => (token.id === "AR" ? "AR" : formatAddress(token.id, 8)), [token.id]);
 
   // allow dragging with the drag icon
   const dragControls = useDragControls();
@@ -70,8 +67,7 @@ export default function TokenListItem({ token, active, onClick }: Props) {
       id={token.id}
       dragListener={false}
       dragControls={dragControls}
-      onClick={handleClick}
-    >
+      onClick={handleClick}>
       <ListItem
         title={`${token.name} (${token.ticker})`}
         subtitle={
@@ -105,7 +101,7 @@ const DescriptionWrapper = styled.div`
 export const TokenLogo = styled(CommonImage).attrs({
   alt: "token-logo",
   draggable: false,
-  backgroundColor: "#fffefc"
+  backgroundColor: "#fffefc",
 })`
   height: 40px;
   width: 40px;

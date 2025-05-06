@@ -1,12 +1,7 @@
 import browser from "webextension-polyfill";
 import { useLocation } from "~wallets/router/router.utils";
 import SliderMenu from "~components/SliderMenu";
-import {
-  Button,
-  Input,
-  Section,
-  useInput
-} from "@arconnect/components-rebrand";
+import { Button, Input, Section, useInput } from "@arconnect/components-rebrand";
 import Token from "~components/popup/Token";
 import styled from "styled-components";
 import { type TokenInfo } from "~tokens/aoTokens/ao";
@@ -32,7 +27,7 @@ export function ManageAssets({ open, close }: Props) {
   const { tokens, changeTokenVisibility } = useAoTokens({
     type: "asset",
     sortFn,
-    skipSort: true
+    skipSort: true,
   });
 
   const filteredTokens = useMemo(() => {
@@ -47,19 +42,9 @@ export function ManageAssets({ open, close }: Props) {
   }, [tokens, searchInput.state]);
 
   return (
-    <SliderMenu
-      hasHeader={true}
-      title={browser.i18n.getMessage("manage_asset_list")}
-      isOpen={open}
-      onClose={close}
-    >
+    <SliderMenu hasHeader={true} title={browser.i18n.getMessage("manage_asset_list")} isOpen={open} onClose={close}>
       <Container>
-        <Input
-          fullWidth
-          variant="search"
-          placeholder="Search asset"
-          {...searchInput.bindings}
-        />
+        <Input fullWidth variant="search" placeholder="Search asset" {...searchInput.bindings} />
         <TokensList>
           {filteredTokens.map((token) => (
             <Token
@@ -92,8 +77,7 @@ export function ManageAssets({ open, close }: Props) {
           onClick={(e) => {
             e.preventDefault();
             navigate("/quick-settings/tokens/new");
-          }}
-        >
+          }}>
           {browser.i18n.getMessage("import_assets")}
         </ManageButton>
       </Container>
@@ -117,5 +101,5 @@ const TokensList = styled(Section)`
 
 const ManageButton = styled.a.attrs({
   rel: "noopener noreferrer",
-  target: "_blank"
+  target: "_blank",
 })``;

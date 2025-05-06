@@ -10,7 +10,7 @@ const Divider = forwardRef<HTMLDivElement, DividerBaseProps>(
     const { tokens } = useTheme();
 
     const dividerStyles = {
-      borderColor: tokens.divider
+      borderColor: tokens.divider,
     };
 
     const cardBackground = tokens.background.default;
@@ -18,29 +18,23 @@ const Divider = forwardRef<HTMLDivElement, DividerBaseProps>(
     return (
       <div
         ref={ref}
-        className={clsx(
-          styles.divider,
-          text && styles[`divider--text-${textPosition}`],
-          className
-        )}
+        className={clsx(styles.divider, text && styles[`divider--text-${textPosition}`], className)}
         style={dividerStyles}
-        {...props}
-      >
+        {...props}>
         {text && (
           <Text
             alignment={textPosition}
             className={styles.divider__text}
             variant="bodyXs"
             style={{
-              backgroundColor: cardBackground
-            }}
-          >
+              backgroundColor: cardBackground,
+            }}>
             {text}
           </Text>
         )}
       </div>
     );
-  }
+  },
 );
 
 Divider.displayName = "Divider";

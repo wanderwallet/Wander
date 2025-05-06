@@ -26,18 +26,12 @@ export default function Image({
   backgroundColor = "transparent",
   objectFit = "cover",
   transitionDuration = 0.2,
-  style
+  style,
 }: ImageProps) {
   const [isLoaded, setIsLoaded] = useState(false);
 
   return (
-    <ImageWrapper
-      width={width}
-      height={height}
-      className={className}
-      borderRadius={borderRadius}
-      style={style}
-    >
+    <ImageWrapper width={width} height={height} className={className} borderRadius={borderRadius} style={style}>
       <motion.div
         initial={{ opacity: 1 }}
         animate={{ opacity: isLoaded ? 0 : 1 }}
@@ -48,16 +42,13 @@ export default function Image({
           left: 0,
           width: "100%",
           height: "100%",
-          borderRadius:
-            typeof borderRadius === "number"
-              ? `${borderRadius}px`
-              : borderRadius,
+          borderRadius: typeof borderRadius === "number" ? `${borderRadius}px` : borderRadius,
           overflow: "hidden",
           backgroundImage: `url(${placeholderUrl})`,
           backgroundSize: objectFit,
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
-          zIndex: 1
+          zIndex: 1,
         }}
       />
 
@@ -73,13 +64,10 @@ export default function Image({
           width: "100%",
           height: "100%",
           objectFit,
-          borderRadius:
-            typeof borderRadius === "number"
-              ? `${borderRadius}px`
-              : borderRadius,
+          borderRadius: typeof borderRadius === "number" ? `${borderRadius}px` : borderRadius,
           background: backgroundColor,
           position: "relative",
-          zIndex: 0
+          zIndex: 0,
         }}
       />
     </ImageWrapper>
@@ -92,13 +80,9 @@ const ImageWrapper = styled.div<{
   borderRadius: number | string;
 }>`
   position: relative;
-  width: ${(props) =>
-    typeof props.width === "number" ? `${props.width}px` : props.width};
-  height: ${(props) =>
-    typeof props.height === "number" ? `${props.height}px` : props.height};
+  width: ${(props) => (typeof props.width === "number" ? `${props.width}px` : props.width)};
+  height: ${(props) => (typeof props.height === "number" ? `${props.height}px` : props.height)};
   border-radius: ${(props) =>
-    typeof props.borderRadius === "number"
-      ? `${props.borderRadius}px`
-      : props.borderRadius};
+    typeof props.borderRadius === "number" ? `${props.borderRadius}px` : props.borderRadius};
   overflow: hidden;
 `;

@@ -1,12 +1,4 @@
-import {
-  Box,
-  Button,
-  Card,
-  WalletIcon,
-  SeedIcon,
-  KeyIcon,
-  WanderFooter
-} from "~components/embed/ui";
+import { Box, Button, Card, WalletIcon, SeedIcon, KeyIcon, WanderFooter } from "~components/embed/ui";
 import { useLocation } from "~wallets/router/router.utils";
 
 export function AuthRestoreSharesEmbeddedView() {
@@ -19,8 +11,7 @@ export function AuthRestoreSharesEmbeddedView() {
       onBackButtonClick={back}
       hasCloseButton={true}
       onCloseButtonClick={() => navigate(`/auth`)}
-      size="auto"
-    >
+      size="auto">
       <Box>
         {/* <Button
           variant="outlined"
@@ -50,24 +41,13 @@ export function AuthRestoreSharesEmbeddedView() {
           variant="outlined"
           isFullWidth
           icon={<WalletIcon fontSize={24} />}
-          href="#/auth/restore-shares/recovery-file"
-        >
+          href="#/auth/restore-shares/recovery-file">
           Import Recovery File
         </Button>
-        <Button
-          variant="outlined"
-          isFullWidth
-          icon={<SeedIcon fontSize={24} />}
-          href="#/auth/import-seedphrase"
-        >
+        <Button variant="outlined" isFullWidth icon={<SeedIcon fontSize={24} />} href="#/auth/import-seedphrase">
           Enter Seedphrase
         </Button>
-        <Button
-          variant="outlined"
-          isFullWidth
-          icon={<KeyIcon fontSize={24} />}
-          href="#/auth/import-keyfile"
-        >
+        <Button variant="outlined" isFullWidth icon={<KeyIcon fontSize={24} />} href="#/auth/import-keyfile">
           Import keyfile
         </Button>
       </Box>

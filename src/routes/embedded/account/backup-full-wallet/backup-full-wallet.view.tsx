@@ -1,15 +1,7 @@
 import { FolderShield, Key01 } from "@untitled-ui/icons-react";
 import copy from "copy-to-clipboard";
 import { useState, useEffect } from "react";
-import {
-  Box,
-  Button,
-  Card,
-  WanderFooter,
-  Copyable,
-  WarningIcon,
-  Snackbar
-} from "~components/embed/ui";
+import { Box, Button, Card, WanderFooter, Copyable, WarningIcon, Snackbar } from "~components/embed/ui";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { WalletUtils } from "~utils/wallets/wallets.utils";
 import { useLocation } from "~wallets/router/router.utils";
@@ -21,11 +13,9 @@ export function AccountBackupFullWalletEmbeddedView() {
   const [hasEncryptedSeedPhrase, setHasEncryptedSeedPhrase] = useState(false);
 
   useEffect(() => {
-    WalletUtils.hasEncryptedSeedPhrase(currentWallet.id).then(
-      (hasEncryptedSeedPhrase) => {
-        setHasEncryptedSeedPhrase(hasEncryptedSeedPhrase);
-      }
-    );
+    WalletUtils.hasEncryptedSeedPhrase(currentWallet.id).then((hasEncryptedSeedPhrase) => {
+      setHasEncryptedSeedPhrase(hasEncryptedSeedPhrase);
+    });
   }, [currentWallet.id]);
 
   return (
@@ -35,8 +25,7 @@ export function AccountBackupFullWalletEmbeddedView() {
       footerElement={<WanderFooter />}
       hasBackButton={true}
       hasCloseButton={true}
-      size="auto"
-    >
+      size="auto">
       <Box style={{ gap: 28 }}>
         <Snackbar
           isFullWidth
@@ -57,12 +46,7 @@ export function AccountBackupFullWalletEmbeddedView() {
           }}
         />
         <Box style={{ padding: 0 }}>
-          <Button
-            variant="outlined"
-            isFullWidth
-            icon={<Key01 fontSize={24} />}
-            onClick={downloadKeyfile}
-          >
+          <Button variant="outlined" isFullWidth icon={<Key01 fontSize={24} />} onClick={downloadKeyfile}>
             Export Keyfile
           </Button>
           {hasEncryptedSeedPhrase && (
@@ -70,10 +54,7 @@ export function AccountBackupFullWalletEmbeddedView() {
               variant="outlined"
               isFullWidth
               icon={<FolderShield fontSize={24} />}
-              onClick={() =>
-                navigate("/account/backup-full-wallet/copy-seedphrase")
-              }
-            >
+              onClick={() => navigate("/account/backup-full-wallet/copy-seedphrase")}>
               Copy Seedphrase
             </Button>
           )}

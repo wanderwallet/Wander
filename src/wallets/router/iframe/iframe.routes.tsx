@@ -6,6 +6,7 @@ import { isRouteOverride } from "~wallets/router/router.utils";
 
 // Authentication Views:
 import { AuthEmbeddedView } from "~routes/embedded/auth/auth/auth.view";
+import { AuthEmailSignupEmbeddedView } from "~routes/embedded/auth/auth-email-signup/auth-email-signup.view";
 import { AuthMoreProvidersEmbeddedView } from "~routes/embedded/auth/auth-more-providers/auth-more-providers.view";
 import { AuthAddWalletEmbeddedView } from "~routes/embedded/auth/add-wallet/auth-add-wallet.view";
 import { AuthImportSeedphraseEmbeddedView } from "~routes/embedded/auth/import-seedphrase/auth-import-seedphrase.view";
@@ -59,9 +60,14 @@ import { WalletBuySuccessEmbeddedView } from "~routes/embedded/wallet/buy/buy.su
 import { EmbeddedConnectAuthRequestView } from "~routes/embedded/wallet/connect/dapp-connect.view";
 import { AccountBackupFullWalletEmbeddedView } from "~routes/embedded/account/backup-full-wallet/backup-full-wallet.view";
 import { AccountBackupCopySeedphraseEmbeddedView } from "~routes/embedded/account/backup-full-wallet/copy-seedphrase.view";
+import { AuthEmailVerifyEmbeddedView } from "~routes/embedded/auth/auth-email-signup/auth-email-verify.view";
+import { AuthEmailSigninEmbeddedView } from "~routes/embedded/auth/auth-email-signup/auth-email-signin.view";
 
 export type EmbeddedRoutePath =
   | "/auth"
+  | "/auth/email-signup"
+  | "/auth/email-signin"
+  | "/auth/email-verify"
   | "/auth/more-providers"
   | "/auth/add-wallet"
   | "/auth/import-seedphrase"
@@ -118,6 +124,9 @@ export const EmbeddedPaths = {
 
   // Authentication:
   Auth: "/auth",
+  AuthEmailSignup: "/auth/email-signup",
+  AuthEmailSignin: "/auth/email-signin",
+  AuthEmailVerify: "/auth/email-verify",
   AuthMoreProviders: "/auth/more-providers",
   AuthAddWallet: "/auth/add-wallet",
   AuthImportSeedPhrase: "/auth/import-seedphrase",
@@ -137,9 +146,9 @@ export const EmbeddedPaths = {
   AuthRecoverAccountSeedphrase: "/auth/recover-account/seedphrase",
   AuthRecoverAccountKeyfile: "/auth/recover-account/keyfile",
   AuthRecoverAccountAuthentication: "/auth/recover-account/authentication",
-  AuthRecoverAccountMoreAuthentication:
-    "/auth/recover-account/more-authentication",
+  AuthRecoverAccountMoreAuthentication: "/auth/recover-account/more-authentication",
   AuthRecoverAccountSelect: "/auth/recover-account/select",
+
   // Account Management:
   Account: "/account",
   AccountConfirmation: "/account/confirmation",
@@ -171,7 +180,7 @@ export const EmbeddedPaths = {
   WalletDepositTokensEmbeddedView: "/wallet/deposit",
   WalletBuyInputEmbeddedView: "/wallet/buy/crypto",
   WalletBuySuccessEmbeddedView: "/wallet/buy/success",
-  ConnectEmbeddedView: "/wallet/connect"
+  ConnectEmbeddedView: "/wallet/connect",
 
   // TODO: Add pages to add/link additional auth methods or devices post-auth (under /account)
 } as const satisfies Record<string, EmbeddedRoutePath>;
@@ -181,217 +190,226 @@ const IFRAME_OWN_ROUTES = [
 
   {
     path: EmbeddedPaths.Auth,
-    component: AuthEmbeddedView
+    component: AuthEmbeddedView,
+  },
+  {
+    path: EmbeddedPaths.AuthEmailSignup,
+    component: AuthEmailSignupEmbeddedView,
+  },
+  {
+    path: EmbeddedPaths.AuthEmailVerify,
+    component: AuthEmailVerifyEmbeddedView,
+  },
+  {
+    path: EmbeddedPaths.AuthEmailSignin,
+    component: AuthEmailSigninEmbeddedView,
   },
   {
     path: EmbeddedPaths.AuthMoreProviders,
-    component: AuthMoreProvidersEmbeddedView
+    component: AuthMoreProvidersEmbeddedView,
   },
   {
     path: EmbeddedPaths.AuthAddWallet,
-    component: AuthAddWalletEmbeddedView
+    component: AuthAddWalletEmbeddedView,
   },
   {
     path: EmbeddedPaths.AuthImportSeedPhrase,
-    component: AuthImportSeedphraseEmbeddedView
+    component: AuthImportSeedphraseEmbeddedView,
   },
   {
     path: EmbeddedPaths.AuthImportKeyfile,
-    component: AuthImportKeyfileEmbeddedView
+    component: AuthImportKeyfileEmbeddedView,
   },
   {
     path: EmbeddedPaths.ConnectEmbeddedView,
-    component: EmbeddedConnectAuthRequestView
+    component: EmbeddedConnectAuthRequestView,
   },
 
   // Authentication Linking:
 
   {
     path: EmbeddedPaths.AuthAddDevice,
-    component: AuthAddDeviceEmbeddedView
+    component: AuthAddDeviceEmbeddedView,
   },
   {
     path: EmbeddedPaths.AuthAddAuthProvider,
-    component: AuthAddAuthProviderEmbeddedView
+    component: AuthAddAuthProviderEmbeddedView,
   },
   {
     path: EmbeddedPaths.AuthAddWithQRCode,
-    component: AuthAddWithQRCodeEmbeddedView
+    component: AuthAddWithQRCodeEmbeddedView,
   },
   {
     path: EmbeddedPaths.AuthQRCodeScanner,
-    component: AuthQRCodeScannerEmbeddedView
+    component: AuthQRCodeScannerEmbeddedView,
   },
 
   // Shares Recovery:
 
   {
     path: EmbeddedPaths.AuthRestoreShares,
-    component: AuthRestoreSharesEmbeddedView
+    component: AuthRestoreSharesEmbeddedView,
   },
   {
     path: EmbeddedPaths.AuthRestoreSharesRecoveryFile,
-    component: AuthRestoreSharesRecoveryFileEmbeddedView
+    component: AuthRestoreSharesRecoveryFileEmbeddedView,
   },
 
   // Account Recovery:
 
   {
     path: EmbeddedPaths.AuthRecoverAccount,
-    component: AuthRecoverAccountEmbeddedView
+    component: AuthRecoverAccountEmbeddedView,
   },
   {
     path: EmbeddedPaths.AuthRecoverAccountSeedphrase,
-    component: AuthRecoverAccountSeedphraseEmbeddedView
+    component: AuthRecoverAccountSeedphraseEmbeddedView,
   },
   {
     path: EmbeddedPaths.AuthRecoverAccountKeyfile,
-    component: AuthRecoverAccountKeyfileEmbeddedView
+    component: AuthRecoverAccountKeyfileEmbeddedView,
   },
   {
     path: EmbeddedPaths.AuthRecoverAccountAuthentication,
-    component: AuthRecoverAccountAuthenticationEmbeddedView
+    component: AuthRecoverAccountAuthenticationEmbeddedView,
   },
   {
     path: EmbeddedPaths.AuthRecoverAccountMoreAuthentication,
-    component: AuthRecoverAccountMoreAuthenticationEmbeddedView
+    component: AuthRecoverAccountMoreAuthenticationEmbeddedView,
   },
   {
     path: EmbeddedPaths.AuthRecoverAccountSelect,
-    component: AuthRecoverAccountSelectEmbeddedView
+    component: AuthRecoverAccountSelectEmbeddedView,
   },
 
   // Account Management:
 
   {
     path: EmbeddedPaths.Account,
-    component: AccountEmbeddedView
+    component: AccountEmbeddedView,
   },
   {
     path: EmbeddedPaths.AccountConfirmation,
-    component: AccountConfirmationEmbeddedView
+    component: AccountConfirmationEmbeddedView,
   },
   {
     path: EmbeddedPaths.AccountAddWallet,
-    component: AccountAddWalletEmbeddedView
+    component: AccountAddWalletEmbeddedView,
   },
   {
     path: EmbeddedPaths.AccountImportSeedphrase,
-    component: AccountImportSeedphraseEmbeddedView
+    component: AccountImportSeedphraseEmbeddedView,
   },
   {
     path: EmbeddedPaths.AccountImportKeyfile,
-    component: AccountImportKeyfileEmbeddedView
+    component: AccountImportKeyfileEmbeddedView,
   },
 
   // Backup:
 
   {
     path: EmbeddedPaths.AccountBackupSharesReminder,
-    component: AccountBackupSharesReminderEmbeddedView
+    component: AccountBackupSharesReminderEmbeddedView,
   },
   {
     path: EmbeddedPaths.AccountBackupShares,
-    component: AccountBackupSharesEmbeddedView
+    component: AccountBackupSharesEmbeddedView,
   },
   {
     path: EmbeddedPaths.AccountBackupFullWallet,
-    component: AccountBackupFullWalletEmbeddedView
+    component: AccountBackupFullWalletEmbeddedView,
   },
   {
     path: EmbeddedPaths.AccountBackupCopySeedphrase,
-    component: AccountBackupCopySeedphraseEmbeddedView
+    component: AccountBackupCopySeedphraseEmbeddedView,
   },
   {
     path: EmbeddedPaths.AccountExportWallet,
-    component: AccountExportWalletEmbeddedView
+    component: AccountExportWalletEmbeddedView,
   },
 
   // Wallet:
   {
     path: EmbeddedPaths.WalletDefaultHomeEmbeddedView,
-    component: WalletHomeEmbeddedView
+    component: WalletHomeEmbeddedView,
   },
   {
     path: EmbeddedPaths.WalletHomeEmbeddedView,
-    component: WalletHomeEmbeddedView
+    component: WalletHomeEmbeddedView,
   },
   {
     path: EmbeddedPaths.WalletReceiveEmbeddedView,
-    component: WalletReceiveEmbeddedView
+    component: WalletReceiveEmbeddedView,
   },
   {
     path: EmbeddedPaths.WalletTransactionsEmbeddedView,
-    component: WalletTransactionsEmbeddedView
+    component: WalletTransactionsEmbeddedView,
   },
   {
     path: EmbeddedPaths.WalletTransactionsHistoryEmbeddedView,
-    component: WalletTransactionsHistoryEmbeddedView
+    component: WalletTransactionsHistoryEmbeddedView,
   },
   {
     path: EmbeddedPaths.WalletPermissionsRequestEmbeddedView,
-    component: WalletPermissionsRequestEmbeddedView
+    component: WalletPermissionsRequestEmbeddedView,
   },
   {
     path: EmbeddedPaths.WalletSettingsCustomEmbeddedView,
-    component: WalletSettingsCustomEmbeddedView
+    component: WalletSettingsCustomEmbeddedView,
   },
   {
     path: EmbeddedPaths.WalletTransactionDetailsEmbeddedView,
-    component: WalletTransactionDetailsEmbeddedView
+    component: WalletTransactionDetailsEmbeddedView,
   },
   {
     path: EmbeddedPaths.WalletTransactionCompleteEmbeddedView,
-    component: WalletTransactionCompleteEmbeddedView
+    component: WalletTransactionCompleteEmbeddedView,
   },
   {
     path: EmbeddedPaths.WalletBuyEmbeddedView,
-    component: WalletBuyEmbeddedView
+    component: WalletBuyEmbeddedView,
   },
   {
     path: EmbeddedPaths.WalletBuyCashEmbeddedView,
-    component: WalletBuyCashEmbeddedView
+    component: WalletBuyCashEmbeddedView,
   },
   {
     path: EmbeddedPaths.WalletReceiveOptionsEmbeddedView,
-    component: WalletReceiveOptionsEmbeddedView
+    component: WalletReceiveOptionsEmbeddedView,
   },
   {
     path: EmbeddedPaths.WalletDepositTokensEmbeddedView,
-    component: WalletDepositTokensEmbeddedView
+    component: WalletDepositTokensEmbeddedView,
   },
   {
     path: EmbeddedPaths.WalletBuyInputEmbeddedView,
-    component: WalletBuyInputEmbeddedView
+    component: WalletBuyInputEmbeddedView,
   },
   {
     path: EmbeddedPaths.WalletBuySuccessEmbeddedView,
-    component: WalletBuySuccessEmbeddedView
-  }
+    component: WalletBuySuccessEmbeddedView,
+  },
 ] as const satisfies RouteConfig<EmbeddedRoutePath>[];
 
 export const IFRAME_ROUTES = [
   // TODO: Update with actual fallbacks, even thought these are not supposed to be used:
   ...getExtensionOverrides({
     unlockView: () => <p>Placeholder Unlock</p>,
-    loadingView: () => <p>Placeholder Loading</p>
+    loadingView: () => <p>Placeholder Loading</p>,
   }),
 
   // popup.tsx:
   // ...POPUP_ROUTES.filter((route) => !isRouteOverride(route.path)),
 
   // auth.tsx: filter out the settings path as it's defined in IFRAME_OWN_ROUTES
-  ...AUTH_ROUTES.filter(
-    (route) =>
-      !isRouteOverride(route.path) && !route.path.includes("/wallet/settings/")
-  ),
+  ...AUTH_ROUTES.filter((route) => !isRouteOverride(route.path) && !route.path.includes("/wallet/settings/")),
 
   // OAuth Error:
   {
     path: EmbeddedPaths.AuthError,
-    component: AuthErrorEmbeddedView
+    component: AuthErrorEmbeddedView,
   },
 
   // Embedded wallet only:
-  ...IFRAME_OWN_ROUTES
+  ...IFRAME_OWN_ROUTES,
 ] as const satisfies RouteConfig[];

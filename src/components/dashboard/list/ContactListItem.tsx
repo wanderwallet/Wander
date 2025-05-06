@@ -1,7 +1,6 @@
 import { ListItem } from "@arconnect/components-rebrand";
-import { User01 } from "@untitled-ui/icons-react";
 import type { HTMLProps } from "react";
-import styled from "styled-components";
+import { NoAvatarIcon } from "~components/popup/WalletHeader";
 
 export default function ContactListItem({
   name,
@@ -11,15 +10,8 @@ export default function ContactListItem({
   ...props
 }: Props & HTMLProps<HTMLDivElement>) {
   return (
-    <ListItem
-      title={name}
-      subtitle={address}
-      img={profileIcon}
-      active={active}
-      height={64}
-      {...props}
-    >
-      {!profileIcon && <User01 />}
+    <ListItem title={name} subtitle={address} img={profileIcon} active={active} height={64} {...props}>
+      {!profileIcon && <NoAvatarIcon />}
     </ListItem>
   );
 }

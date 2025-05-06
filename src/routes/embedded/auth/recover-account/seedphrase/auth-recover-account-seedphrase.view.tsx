@@ -2,14 +2,7 @@ import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation } from "~wallets/router/router.utils";
 
-import {
-  Card,
-  Copyable,
-  Row,
-  Button,
-  SeedInput,
-  WanderFooter
-} from "~components/embed/ui";
+import { Card, Copyable, Row, Button, SeedInput, WanderFooter } from "~components/embed/ui";
 import copy from "copy-to-clipboard";
 import { toast } from "react-toastify";
 
@@ -22,7 +15,7 @@ export function AuthRecoverAccountSeedphraseEmbeddedView() {
     importedTempWalletAddress,
     deleteImportedTempWallet,
     fetchRecoverableAccounts,
-    clearRecoverableAccounts
+    clearRecoverableAccounts,
   } = useEmbedded();
 
   const handleImportWallet = useCallback(async () => {
@@ -77,8 +70,7 @@ export function AuthRecoverAccountSeedphraseEmbeddedView() {
       hasCloseButton={true}
       onCloseButtonClick={() => navigate(`/auth/recover-account`)}
       style={{ gap: 24 }}
-      size="auto"
-    >
+      size="auto">
       <Copyable
         isFullWidth
         style={{ padding: 0 }}
@@ -89,19 +81,10 @@ export function AuthRecoverAccountSeedphraseEmbeddedView() {
         value={importedTempWalletAddress}
       />
       <Row>
-        <Button
-          variant="secondary"
-          size="md"
-          onClick={deleteImportedTempWallet}
-        >
+        <Button variant="secondary" size="md" onClick={deleteImportedTempWallet}>
           No, try again
         </Button>
-        <Button
-          variant="primary"
-          size="md"
-          onClick={handleRecover}
-          isLoading={loading}
-        >
+        <Button variant="primary" size="md" onClick={handleRecover} isLoading={loading}>
           Yes, recover
         </Button>
       </Row>
@@ -113,20 +96,14 @@ export function AuthRecoverAccountSeedphraseEmbeddedView() {
       footerElement={<WanderFooter />}
       hasBackButton={true}
       onBackButtonClick={back}
-      size="auto"
-    >
-      <SeedInput
-        seedPhrase={seedPhrase}
-        handleSubmit={handleImportWallet}
-        handleInputChange={handleInputChange}
-      />
+      size="auto">
+      <SeedInput seedPhrase={seedPhrase} handleSubmit={handleImportWallet} handleInputChange={handleInputChange} />
       <Button
         isFullWidth
         size="md"
         onClick={handleImportWallet}
         isLoading={loading}
-        isDisabled={isSeedPhraseIncomplete}
-      >
+        isDisabled={isSeedPhraseIncomplete}>
         {isSeedPhraseIncomplete ? "Complete seedphrase" : "Next"}
       </Button>
     </Card>

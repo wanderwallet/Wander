@@ -1,7 +1,4 @@
-import {
-  SubscriptionStatus,
-  type SubscriptionData
-} from "~subscriptions/subscription";
+import { SubscriptionStatus, type SubscriptionData } from "~subscriptions/subscription";
 import HeadV2 from "~components/popup/HeadV2";
 import { useEffect, useState } from "react";
 import { getActiveAddress } from "~wallets";
@@ -27,28 +24,20 @@ export function SubscriptionsView() {
         data.forEach(async (subscription) => {
           if (
             subscription.subscriptionStatus === SubscriptionStatus.ACTIVE ||
-            subscription.subscriptionStatus ===
-              SubscriptionStatus.AWAITING_PAYMENT
+            subscription.subscriptionStatus === SubscriptionStatus.AWAITING_PAYMENT
           ) {
             const nextPaymentDue = new Date(subscription.nextPaymentDue);
             const now = new Date();
             if (nextPaymentDue < now) {
-              const daysPastDue = Math.floor(
-                (now.getTime() - nextPaymentDue.getTime()) /
-                  (1000 * 60 * 60 * 24)
-              );
+              const daysPastDue = Math.floor((now.getTime() - nextPaymentDue.getTime()) / (1000 * 60 * 60 * 24));
 
               if (daysPastDue >= 2) {
-                await updateSubscription(
-                  address,
-                  subscription.arweaveAccountAddress,
-                  SubscriptionStatus.EXPIRED
-                );
+                await updateSubscription(address, subscription.arweaveAccountAddress, SubscriptionStatus.EXPIRED);
               } else {
                 await updateSubscription(
                   address,
                   subscription.arweaveAccountAddress,
-                  SubscriptionStatus.AWAITING_PAYMENT
+                  SubscriptionStatus.AWAITING_PAYMENT,
                 );
               }
             }
@@ -120,8 +109,7 @@ const NoSubscriptionWrapper = styled.div<{ displayTheme?: DisplayTheme }>`
   span {
     font-size: 16px;
     font-weight: 400;
-    color: ${(props) =>
-      props.displayTheme === "dark" ? "#a3a3a3" : "#757575"};
+    color: ${(props) => (props.displayTheme === "dark" ? "#a3a3a3" : "#757575")};
   }
 `;
 
