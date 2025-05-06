@@ -1,13 +1,14 @@
-import { AuthProviderType, AuthStatus } from "../../wander-connect.types";
+import { AuthStatus } from "../../wander-connect.types";
 
-export const AUTH_TYPES = [
-  "PASSKEYS",
-  "EMAIL_N_PASSWORD",
-  "GOOGLE",
-  "FACEBOOK",
-  "X",
-  "APPLE",
-] as const satisfies AuthProviderType[];
+// Currently not used (for message validation) so that we can add additional providers without releasing a new SDK version:
+// export const AUTH_TYPES = [
+//   "PASSKEYS",
+//   "EMAIL_N_PASSWORD",
+//   "GOOGLE",
+//   "FACEBOOK",
+//   "X",
+//   "APPLE",
+// ] as const satisfies AuthProviderType[];
 
 export const AUTH_STATUS = [
   "loading",
