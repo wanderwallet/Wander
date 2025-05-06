@@ -193,7 +193,7 @@ export class WanderConnect {
     window.addEventListener("message", this.handleMessage);
 
     // We get a reference to any other `window.arweaveWallet` (most likely our BE), in case we need to swap them back:
-    if (window.arweaveWallet.walletName !== WanderConnect.WANDER_CONNECT_WALLET_NAME) {
+    if (window.arweaveWallet && window.arweaveWallet?.walletName !== WanderConnect.WANDER_CONNECT_WALLET_NAME) {
       this.windowArweaveWallet = window.arweaveWallet;
     }
 
