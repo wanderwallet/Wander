@@ -44,7 +44,7 @@ export function GettingStartedConnectView() {
           rel="noopener noreferrer"
           style={{ gap: "1rem" }}>
           <ImageWrapper>
-            <Image src={discordLogo} alt={"discord logo"} draggable={false} width={"3rem"} height={"3rem"} />
+            <Image src={discordLogo} alt={"discord logo"} draggable={false} width={"4rem"} height={"3rem"} />
           </ImageWrapper>
           <Text weight="medium" noMargin>
             {browser.i18n.getMessage("connect_paragraph_2")}
