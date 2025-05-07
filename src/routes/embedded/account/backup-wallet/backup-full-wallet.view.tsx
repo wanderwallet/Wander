@@ -1,4 +1,4 @@
-import { FolderShield, Key01 } from "@untitled-ui/icons-react";
+import { Key01, PasscodeLock } from "@untitled-ui/icons-react";
 import copy from "copy-to-clipboard";
 import { useState, useEffect } from "react";
 import { Box, Button, Card, WanderFooter, Copyable, WarningIcon, Snackbar } from "~components/embed/ui";
@@ -20,7 +20,7 @@ export function AccountBackupFullWalletEmbeddedView() {
 
   return (
     <Card
-      headerText="Backup your full wallet"
+      headerText="Export wallet"
       subtitle="Download your keyfile or copy your seedphrase to export your account."
       footerElement={<WanderFooter />}
       hasBackButton={true}
@@ -53,8 +53,8 @@ export function AccountBackupFullWalletEmbeddedView() {
             <Button
               variant="outlined"
               isFullWidth
-              icon={<FolderShield fontSize={24} />}
-              onClick={() => navigate("/account/backup-full-wallet/copy-seedphrase")}>
+              icon={<PasscodeLock fontSize={24} />}
+              onClick={() => navigate("/account/backup-wallet/copy-seedphrase")}>
               Copy Seedphrase
             </Button>
           )}
