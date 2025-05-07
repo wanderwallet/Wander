@@ -39,8 +39,11 @@ import { AccountImportSeedphraseEmbeddedView } from "~routes/embedded/account/im
 import { AccountImportKeyfileEmbeddedView } from "~routes/embedded/account/import-keyfile/account-import-keyfile.view";
 
 // Account Backup Views:
-import { AccountBackupSharesReminderEmbeddedView } from "~routes/embedded/account/backup-shares-reminder/account-backup-shares-reminder.view";
-import { AccountBackupSharesEmbeddedView } from "~routes/embedded/account/backup-shares/account-backup-shares.view";
+import { AccountBackupWalletReminderEmbeddedView } from "~routes/embedded/account/backup-wallet/backup-wallet-reminder.view";
+import { AccountBackupWalletEmbeddedView } from "~routes/embedded/account/backup-wallet/backup-wallet.view";
+import { AccountBackupCopySeedphraseEmbeddedView } from "~routes/embedded/account/backup-wallet/backup-wallet-copy-seedphrase.view";
+import { AccountBackupFullWalletEmbeddedView } from "~routes/embedded/account/backup-wallet/backup-full-wallet.view";
+import { AccountBackupWalletRecoveryFileEmbeddedView } from "~routes/embedded/account/backup-wallet/backup-wallet-recovery-file.view";
 import { AccountExportWalletEmbeddedView } from "~routes/embedded/account/export-wallet/account-export-wallet.view";
 
 import { WalletHomeEmbeddedView } from "~routes/embedded/wallet/home/wallet.view";
@@ -58,8 +61,6 @@ import { WalletDepositTokensEmbeddedView } from "~routes/embedded/wallet/deposit
 import { WalletBuyInputEmbeddedView } from "~routes/embedded/wallet/buy/buy.input.view";
 import { WalletBuySuccessEmbeddedView } from "~routes/embedded/wallet/buy/buy.success.view";
 import { EmbeddedConnectAuthRequestView } from "~routes/embedded/wallet/connect/dapp-connect.view";
-import { AccountBackupFullWalletEmbeddedView } from "~routes/embedded/account/backup-full-wallet/backup-full-wallet.view";
-import { AccountBackupCopySeedphraseEmbeddedView } from "~routes/embedded/account/backup-full-wallet/copy-seedphrase.view";
 import { AuthEmailVerifyEmbeddedView } from "~routes/embedded/auth/auth-email-signup/auth-email-verify.view";
 import { AuthEmailSigninEmbeddedView } from "~routes/embedded/auth/auth-email-signup/auth-email-signin.view";
 
@@ -93,11 +94,12 @@ export type EmbeddedRoutePath =
   | "/account/add-wallet"
   | "/account/import-seedphrase"
   | "/account/import-keyfile"
-  | "/account/backup-shares"
-  | "/account/backup-full-wallet"
-  | "/account/backup-full-wallet/copy-seedphrase"
+  | "/account/backup-wallet"
+  | "/account/backup-wallet/full"
+  | "/account/backup-wallet/copy-seedphrase"
+  | "/account/backup-wallet/recovery-file"
   // | "/account/backup-shares/<backupProvider>"
-  | "/account/backup-shares/reminder"
+  | "/account/backup-wallet/reminder"
   | "/account/export-wallet"
   | "/auth/error"
   | "/"
@@ -157,10 +159,11 @@ export const EmbeddedPaths = {
   AccountImportKeyfile: "/account/import-keyfile",
 
   // Backup:
-  AccountBackupShares: "/account/backup-shares",
-  AccountBackupFullWallet: "/account/backup-full-wallet",
-  AccountBackupCopySeedphrase: "/account/backup-full-wallet/copy-seedphrase",
-  AccountBackupSharesReminder: "/account/backup-shares/reminder",
+  AccountBackupWallet: "/account/backup-wallet",
+  AccountBackupFullWallet: "/account/backup-wallet/full",
+  AccountBackupCopySeedphrase: "/account/backup-wallet/copy-seedphrase",
+  AccountBackupWalletRecoveryFile: "/account/backup-wallet/recovery-file",
+  AccountBackupWalletReminder: "/account/backup-wallet/reminder",
   AccountExportWallet: "/account/export-wallet",
 
   // OAuth Error:
@@ -308,20 +311,24 @@ const IFRAME_OWN_ROUTES = [
   // Backup:
 
   {
-    path: EmbeddedPaths.AccountBackupSharesReminder,
-    component: AccountBackupSharesReminderEmbeddedView,
-  },
-  {
-    path: EmbeddedPaths.AccountBackupShares,
-    component: AccountBackupSharesEmbeddedView,
+    path: EmbeddedPaths.AccountBackupWalletReminder,
+    component: AccountBackupWalletReminderEmbeddedView,
   },
   {
     path: EmbeddedPaths.AccountBackupFullWallet,
     component: AccountBackupFullWalletEmbeddedView,
   },
   {
+    path: EmbeddedPaths.AccountBackupWallet,
+    component: AccountBackupWalletEmbeddedView,
+  },
+  {
     path: EmbeddedPaths.AccountBackupCopySeedphrase,
     component: AccountBackupCopySeedphraseEmbeddedView,
+  },
+  {
+    path: EmbeddedPaths.AccountBackupWalletRecoveryFile,
+    component: AccountBackupWalletRecoveryFileEmbeddedView,
   },
   {
     path: EmbeddedPaths.AccountExportWallet,

@@ -119,13 +119,14 @@ export function useEmbeddedOverride(
         return routeTrapMatches(
           location,
           [
-            EmbeddedPaths.AccountBackupSharesReminder,
-            EmbeddedPaths.AccountBackupShares,
+            EmbeddedPaths.AccountBackupWalletReminder,
+            EmbeddedPaths.AccountBackupWallet,
             EmbeddedPaths.AccountBackupFullWallet,
+            EmbeddedPaths.AccountBackupWalletRecoveryFile,
             EmbeddedPaths.AccountBackupCopySeedphrase,
             // TODO: Missing EmbeddedPaths.AccountBackupShares/<PROVIDER>
           ],
-          EmbeddedPaths.AccountBackupSharesReminder,
+          EmbeddedPaths.AccountBackupWalletReminder,
         );
       }
 
