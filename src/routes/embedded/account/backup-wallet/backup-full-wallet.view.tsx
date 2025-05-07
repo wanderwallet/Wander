@@ -24,7 +24,9 @@ export function AccountBackupFullWalletEmbeddedView() {
       subtitle="Download your keyfile or copy your seedphrase to export your account."
       footerElement={<WanderFooter />}
       hasBackButton={true}
+      onBackButtonClick={() => navigate("/account/backup-wallet")}
       hasCloseButton={true}
+      onCloseButtonClick={() => navigate("/wallet")}
       size="auto">
       <Box style={{ gap: 28 }}>
         <Snackbar
