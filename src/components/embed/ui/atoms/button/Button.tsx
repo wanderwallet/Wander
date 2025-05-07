@@ -26,13 +26,13 @@ const Button = React.forwardRef<HTMLButtonElement | HTMLAnchorElement, ButtonBas
     },
     ref,
   ) => {
-    const isAnchor = variant === "link" || props.href;
+    const isAnchor = variant === "link" || !!props.href;
     const Component = isAnchor ? Link : "button";
     const hasSize = !isAnchor || !isFullWidth;
 
     const handleChildren = () => {
       if (isLoading) {
-        return <Loading isAnchor={Boolean(isAnchor)} />;
+        return <Loading isAnchor={isAnchor} />;
       }
       if (icon) {
         return iconPosition === "start" ? (
