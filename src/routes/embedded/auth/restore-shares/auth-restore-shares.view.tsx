@@ -9,26 +9,39 @@ import {
   WanderFooter
 } from "~components/embed/ui";
 import { useLocation } from "~wallets/router/router.utils";
+import { useEmbedded } from "~utils/embedded/embedded.hooks";
 
 export function AuthRestoreSharesEmbeddedView() {
   const { navigate, back } = useLocation();
+  const { authProviderType, authStatus } = useEmbedded();
 
-  // Check for passkey authentication with auto wallet activation
+  // Improved passkey authentication handling
   useEffect(() => {
-    const needsWalletActivation =
-      localStorage.getItem("needsWalletActivation") === "true";
-    const sessionId = localStorage.getItem("sessionId");
-    const userId = localStorage.getItem("userId");
-
-    if (needsWalletActivation && sessionId && userId) {
+    const needsWalletActivation = localStorage.getItem("needsWalletActivation") === "true";
+    
+    // We can determine if we're using passkeys by checking the auth context
+    const isPasskeyAuth = authProviderType === "PASSKEYS";
+    
+    // Only proceed with automatic wallet activation if:
+    // 1. We're using passkeys (from auth context)
+    // 2. The needsWalletActivation flag is set (transitional - can be removed later)
+    // 3. We're authenticated
+    if (isPasskeyAuth && needsWalletActivation && authStatus !== "unknown" && authStatus !== "authLoading") {
       console.log("Automatic wallet activation from passkey authentication");
+      
       // Clear the flag to prevent repeated activations
       localStorage.removeItem("needsWalletActivation");
 
       // Use the consistent redirect approach
       redirectToHash("/");
     }
-  }, []);
+  }, [authProviderType, authStatus]);
+
+  // Helper function to redirect to a hash-based route
+  const redirectToHash = (path) => {
+    const baseUrl = window.location.origin;
+    window.location.href = `${baseUrl}/#${path}`;
+  };
 
   return (
     <Card

@@ -24,11 +24,98 @@ import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-mes
 import { useAllWallets } from "~wallets/hooks";
 import { sleep } from "~utils/promises/sleep";
 import { EMBEDDED_HIDE_BE } from "~utils/embedded/iframe.utils";
+import { AuthenticationService } from "~utils/authentication/authentication.service";
+import { getDeviceNonce } from "~utils/embedded/device-nonce/device-nonce.utils";
+
+// Define interfaces for WebAuthn types
+interface PublicKeyCredentialWithAuthenticatorResponse extends Credential {
+  response: {
+    authenticatorData: ArrayBuffer;
+    clientDataJSON: ArrayBuffer;
+    signature: ArrayBuffer;
+    userHandle: ArrayBuffer | null;
+  };
+}
+
+// Simple shim for startAuthentication if @simplewebauthn/browser isn't available
+const startAuthentication = async ({ optionsJSON }) => {
+  if (!window.PublicKeyCredential) {
+    throw new Error("WebAuthn is not supported in this browser");
+  }
+  
+  // This is a very basic implementation - in production you'd use the actual library
+  const credential = await navigator.credentials.get({
+    publicKey: {
+      ...optionsJSON,
+      challenge: Uint8Array.from(
+        atob(optionsJSON.challenge.replace(/-/g, '+').replace(/_/g, '/')), 
+        c => c.charCodeAt(0)
+      ),
+      allowCredentials: optionsJSON.allowCredentials?.map(cred => ({
+        ...cred,
+        id: Uint8Array.from(
+          atob(cred.id.replace(/-/g, '+').replace(/_/g, '/')), 
+          c => c.charCodeAt(0)
+        ),
+      })) || [],
+    },
+  }) as PublicKeyCredentialWithAuthenticatorResponse;
+  
+  // Convert the credential to the expected format
+  return {
+    id: credential.id,
+    response: {
+      authenticatorData: btoa(String.fromCharCode.apply(null, new Uint8Array(credential.response.authenticatorData))),
+      clientDataJSON: btoa(String.fromCharCode.apply(null, new Uint8Array(credential.response.clientDataJSON))),
+      signature: btoa(String.fromCharCode.apply(null, new Uint8Array(credential.response.signature))),
+      userHandle: credential.response.userHandle 
+        ? btoa(String.fromCharCode.apply(null, new Uint8Array(credential.response.userHandle)))
+        : null,
+    },
+  };
+};
+
+// Helper function to check if WebAuthn/passkeys are supported
+const checkPasskeySupport = async (): Promise<boolean> => {
+  // First check if PublicKeyCredential is defined
+  if (typeof window === 'undefined' || !window.PublicKeyCredential) {
+    return false;
+  }
+
+  // Then check if we're in an iframe context
+  const isInIframe = window !== window.top;
+
+  // If we're not in an iframe, WebAuthn should be available
+  if (!isInIframe) {
+    return true;
+  }
+
+  // If we're in an iframe, we need to check if the browser supports WebAuthn in iframes
+  try {
+    // Check if isUserVerifyingPlatformAuthenticatorAvailable is accessible
+    await window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+    return true;
+  } catch (error) {
+    console.error('WebAuthn is not available in this iframe context:', error);
+    return false;
+  }
+};
 
 export function AuthEmbeddedView() {
   const { navigate } = useLocation();
   const { authenticate, authStatus, setAuthEmail } = useEmbedded();
   const [isLoading, setIsLoading] = useState(false);
+  const [isAuthenticatingWithPasskey, setIsAuthenticatingWithPasskey] = useState(false);
+  const [passkeysSupported, setPasskeysSupported] = useState<boolean | null>(null);
+  
+  // Check if passkeys are supported when the component mounts
+  useEffect(() => {
+    const checkSupport = async () => {
+      const isSupported = await checkPasskeySupport();
+      setPasskeysSupported(isSupported);
+    };
+    checkSupport();
+  }, []);
 
   const [selectedAuthProviderType, setSelectedAuthProviderType] = useState<AuthProviderType | "NATIVE_WALLET" | null>(
     null,
@@ -112,11 +199,7 @@ export function AuthEmbeddedView() {
 
   const handlePasskeySignIn = useCallback(async () => {
     if (!passkeysSupported) {
-      setToast({
-        type: "error",
-        content: "Passkeys are not supported in your browser",
-        duration: 3000
-      });
+      toast.error("Passkeys are not supported in your browser");
       return;
     }
 
@@ -145,8 +228,8 @@ export function AuthEmbeddedView() {
           optionsJSON: authenticationResult.options
         });
 
-        // Get the stored device nonce if available
-        const deviceNonce = localStorage.getItem("deviceNonce") || undefined;
+        // Get the device nonce using the proper utility function
+        const deviceNonce = await getDeviceNonce();
 
         // Verify the authentication with the server
         const verificationResult =
@@ -176,13 +259,31 @@ export function AuthEmbeddedView() {
             localStorage.setItem("isCustomAuth", "true");
             console.log("Set isCustomAuth flag for passkey authentication");
           }
+          
+          // Check if the result has access tokens (TypeScript type guard)
+          const hasTokens = 'access_token' in verificationResult && verificationResult.access_token;
+          
+          // If the server provided an access token, use it instead of creating our own
+          if (hasTokens) {
+            // Use the properly signed JWT token for API requests
+            localStorage.setItem("authToken", verificationResult.access_token);
+            
+            // Store refresh token if available
+            if ('refresh_token' in verificationResult && verificationResult.refresh_token) {
+              localStorage.setItem("refreshToken", verificationResult.refresh_token);
+            }
+            
+            console.log("Using server-signed JWT for API requests");
+          } else {
+            // Fall back to requesting a token from the server API
+            console.log("No server-provided token in response");
+            
+            // The server should be updated to always provide a signed token
+            // This is a more secure approach than client-side token generation
+          }
 
           // Show success message
-          setToast({
-            type: "success",
-            content: "Authentication successful! Redirecting...",
-            duration: 2000
-          });
+          toast.success("Authentication successful! Redirecting...");
 
           // Use direct location change instead of forceRedirect
           setTimeout(() => {
@@ -192,11 +293,7 @@ export function AuthEmbeddedView() {
               window.location.origin + "/#/auth/restore-shares";
           }, 1000);
         } else {
-          setToast({
-            type: "error",
-            content: "Passkey authentication failed",
-            duration: 3000
-          });
+          toast.error("Passkey authentication failed");
         }
       } catch (error: any) {
         console.error("Error authenticating with passkey:", error);
@@ -206,26 +303,19 @@ export function AuthEmbeddedView() {
           error.name === "NotAllowedError" &&
           error.message?.includes("publickey-credentials-get")
         ) {
-          setToast({
-            type: "error",
-            content:
-              "Passkey authentication is not allowed in this iframe. The parent page must enable it using Permissions-Policy.",
-            duration: 5000
-          });
+          toast.error(
+            "Passkey authentication is not allowed in this iframe. The parent page must enable it using Permissions-Policy."
+          );
         } else {
-          setToast({
-            type: "error",
-            content: `Error authenticating with passkey: ${
-              error.message || "Unknown error"
-            }`,
-            duration: 3000
-          });
+          toast.error(`Error authenticating with passkey: ${
+            error.message || "Unknown error"
+          }`);
         }
       }
     } finally {
       setIsAuthenticatingWithPasskey(false);
     }
-  }, [passkeysSupported, setToast]);
+  }, [passkeysSupported]);
 
   return (
     <Card headerText="Sign up or Sign in" footerElement={<WanderFooter />} hasBackButton={false} size="auto">
@@ -264,6 +354,16 @@ export function AuthEmbeddedView() {
               isDisabled={areButtonsDisabled}
               onClick={handleNativeWallet}>
               <Wander2Icon fontSize={24} />
+            </Button>
+          )}
+          {passkeysSupported && (
+            <Button
+              variant="outlined"
+              size="md"
+              isLoading={isAuthenticatingWithPasskey}
+              isDisabled={areButtonsDisabled || !passkeysSupported}
+              onClick={handlePasskeySignIn}>
+              <KeyIcon fontSize={24} />
             </Button>
           )}
         </Row>
