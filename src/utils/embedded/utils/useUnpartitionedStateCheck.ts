@@ -30,21 +30,14 @@ const checkUnpartitionedState = async (): Promise<boolean> => {
     await caches.delete(cacheName);
 
     // Return true if any method shows unpartitioned state
-    return (
-      cookiesAccessible ||
-      localStorageAccessible ||
-      indexedDBAccessible ||
-      cacheAccessible
-    );
+    return cookiesAccessible || localStorageAccessible || indexedDBAccessible || cacheAccessible;
   } catch (error) {
     return false;
   }
 };
 
 export const useUnpartitionedStateCheck = () => {
-  const [hasUnpartitionedState, setHasUnpartitionedState] = useState<
-    boolean | null
-  >(null);
+  const [hasUnpartitionedState, setHasUnpartitionedState] = useState<boolean | null>(null);
 
   useEffect(() => {
     checkUnpartitionedState().then(setHasUnpartitionedState);

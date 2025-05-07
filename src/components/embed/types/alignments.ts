@@ -1,8 +1,1 @@
-export type Alignments =
-  | "left"
-  | "center"
-  | "right"
-  | "between"
-  | "around"
-  | "evenly"
-  | "justify";
+export type Alignments = "left" | "center" | "right" | "between" | "around" | "evenly" | "justify";

@@ -18,15 +18,15 @@ const Link = forwardRef<HTMLAnchorElement, LinkBaseProps>(
       iconPosition = "left",
       ...props
     },
-    ref
+    ref,
   ) => {
     const { isDarkMode } = useTheme();
 
     const linkColor = disabled
       ? "var(--color-link-disabled)"
       : variant === "primary"
-      ? "var(--color-link-primary)"
-      : "var(--color-link-secondary)";
+        ? "var(--color-link-primary)"
+        : "var(--color-link-secondary)";
 
     return (
       <a
@@ -39,21 +39,16 @@ const Link = forwardRef<HTMLAnchorElement, LinkBaseProps>(
           styles[`link__${variant}`],
           disabled && styles.linkDisabled,
           icon && styles[`link__icon_${iconPosition}`],
-          className
+          className,
         )}
         style={{ color: linkColor }}
-        {...props}
-      >
-        {icon && iconPosition === "left" && (
-          <span className={styles.icon}>{icon}</span>
-        )}
+        {...props}>
+        {icon && iconPosition === "left" && <span className={styles.icon}>{icon}</span>}
         {children}
-        {icon && iconPosition === "right" && (
-          <span className={styles.icon}>{icon}</span>
-        )}
+        {icon && iconPosition === "right" && <span className={styles.icon}>{icon}</span>}
       </a>
     );
-  }
+  },
 );
 
 Link.displayName = "Link";

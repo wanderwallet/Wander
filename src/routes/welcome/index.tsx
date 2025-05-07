@@ -3,13 +3,7 @@ import { Button } from "@arconnect/components-rebrand";
 import { AnimatePresence, motion } from "framer-motion";
 import styled from "styled-components";
 import browser from "webextension-polyfill";
-import {
-  type MutableRefObject,
-  useEffect,
-  useMemo,
-  useRef,
-  useState
-} from "react";
+import { type MutableRefObject, useEffect, useMemo, useRef, useState } from "react";
 import { PageType, trackPage } from "~utils/analytics";
 import { useLocation } from "~wallets/router/router.utils";
 import WanderIcon from "url:assets/icon.svg";
@@ -34,7 +28,7 @@ export function HomeWelcomeView() {
 
       setExpandPos({
         x: btnDimensions.x + btnDimensions.width / 2,
-        y: btnDimensions.y + btnDimensions.height / 2
+        y: btnDimensions.y + btnDimensions.height / 2,
       });
 
       // wait for the animation to complete
@@ -46,11 +40,8 @@ export function HomeWelcomeView() {
 
   // circle size
   const circleSize = useMemo(
-    () =>
-      windowDimensions.height > windowDimensions.width
-        ? windowDimensions.height
-        : windowDimensions.width,
-    [windowDimensions]
+    () => (windowDimensions.height > windowDimensions.width ? windowDimensions.height : windowDimensions.width),
+    [windowDimensions],
   );
 
   // Segment
@@ -64,12 +55,7 @@ export function HomeWelcomeView() {
       <Panel>
         <WelcomeContent>
           <ImagesWrapper>
-            <Image
-              width="126.314px"
-              height="59.199px"
-              src={WanderIcon}
-              alt="Wander Icon"
-            />
+            <Image width="126.314px" height="59.199px" src={WanderIcon} alt="Wander Icon" />
             <IconText width={280} height={52.866} />
           </ImagesWrapper>
           <Spacer y={3.5} />
@@ -79,8 +65,7 @@ export function HomeWelcomeView() {
               onClick={async () => {
                 await animate(startButton);
                 navigate("/generate/1");
-              }}
-            >
+              }}>
               {browser.i18n.getMessage("create_a_new_account")}
             </WelcomeButton>
             <WelcomeButton
@@ -89,17 +74,14 @@ export function HomeWelcomeView() {
               onClick={async () => {
                 await animate(walletButton);
                 navigate("/load/1");
-              }}
-            >
+              }}>
               {browser.i18n.getMessage("import_an_existing_account")}
             </WelcomeButton>
           </ButtonsWrapper>
         </WelcomeContent>
       </Panel>
       <AnimatePresence>
-        {expandPos && (
-          <ExpandAnimationElement pos={expandPos} circleSize={circleSize} />
-        )}
+        {expandPos && <ExpandAnimationElement pos={expandPos} circleSize={circleSize} />}
       </AnimatePresence>
     </Wrapper>
   );
@@ -110,8 +92,7 @@ const Wrapper = styled.div`
   align-items: stretch;
   width: 100vw;
   height: 100vh;
-  background-color: ${(props) =>
-    props.theme.displayTheme === "dark" ? "#1e1b4b" : "#f0e8ff"};
+  background-color: ${(props) => (props.theme.displayTheme === "dark" ? "#1e1b4b" : "#f0e8ff")};
 `;
 
 const Panel = styled.div`
@@ -151,23 +132,21 @@ const ExpandAnimationElement = styled(motion.div).attrs<{
       clipPath: `circle(20px at ${props.pos.x + "px"} ${props.pos.y + "px"})`,
       transition: {
         type: "easeInOut",
-        duration: expand_animation_duration
-      }
+        duration: expand_animation_duration,
+      },
     },
     open: {
       opacity: 1,
-      clipPath: `circle(${props.circleSize + "px"} at ${props.pos.x + "px"} ${
-        props.pos.y + "px"
-      })`,
+      clipPath: `circle(${props.circleSize + "px"} at ${props.pos.x + "px"} ${props.pos.y + "px"})`,
       transition: {
         type: "easeInOut",
-        duration: expand_animation_duration
-      }
-    }
+        duration: expand_animation_duration,
+      },
+    },
   },
   initial: "closed",
   animate: "open",
-  exit: "closed"
+  exit: "closed",
 }))<{ pos: { x: number; y: number }; circleSize: number }>`
   position: absolute;
   top: 0;
@@ -193,14 +172,12 @@ function getWindowDimensions() {
 
   return {
     width,
-    height
+    height,
   };
 }
 
 function useWindowDimensions() {
-  const [windowDimensions, setWindowDimensions] = useState(
-    getWindowDimensions()
-  );
+  const [windowDimensions, setWindowDimensions] = useState(getWindowDimensions());
 
   useEffect(() => {
     const lisetener = () => setWindowDimensions(getWindowDimensions());

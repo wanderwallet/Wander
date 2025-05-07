@@ -9,18 +9,12 @@ export function prettyDate(timestamp: number) {
   const elapsedHours = Math.floor(elapsedMinutes / 60);
 
   if (elapsedSeconds < 60) {
-    return browser.i18n.getMessage("formattedElapsedSeconds", [
-      elapsedSeconds.toString()
-    ]);
+    return browser.i18n.getMessage("formattedElapsedSeconds", [elapsedSeconds.toString()]);
   }
 
   if (elapsedMinutes < 60) {
-    return browser.i18n.getMessage("formattedElapsedMinutes", [
-      elapsedMinutes.toString()
-    ]);
+    return browser.i18n.getMessage("formattedElapsedMinutes", [elapsedMinutes.toString()]);
   }
 
-  return browser.i18n.getMessage("formattedElapsedHours", [
-    elapsedHours.toString()
-  ]);
+  return browser.i18n.getMessage("formattedElapsedHours", [elapsedHours.toString()]);
 }

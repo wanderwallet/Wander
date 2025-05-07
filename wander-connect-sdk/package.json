@@ -1,0 +1,46 @@
+{
+  "name": "@wanderapp/connect",
+  "version": "0.1.0",
+  "description": "Wander Connect SDK.",
+  "author": "wanderapp",
+  "license": "MIT",
+  "private": false,
+  "files": [
+    "sdk-dist/",
+    "package.json"
+  ],
+  "exports": {
+    ".": {
+      "types": "./sdk-dist/index.d.ts",
+      "import": "./sdk-dist/index.js",
+      "require": "./sdk-dist/index.cjs"
+    }
+  },
+  "type": "module",
+  "main": "sdk-dist/index.cjs",
+  "module": "sdk-dist/index.js",
+  "unpkg": "sdk-dist/index.global.js",
+  "jsdelivr": "sdk-dist/index.global.js",
+  "types": "sdk-dist/index.d.ts",
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "clean": "rm -rf sdk-dist wallet-api-dist",
+    "nuke": "pnpm clean && rm -rf pnpm-lock.yaml node_modules",
+    "prepare": "yarn build"
+  },
+  "devDependencies": {
+    "tsup": "^8.4.0",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "ts-deepmerge": "^7.0.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wanderwallet/Wander"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

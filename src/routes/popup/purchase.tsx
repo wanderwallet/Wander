@@ -1,20 +1,6 @@
-import {
-  Text,
-  Input,
-  useInput,
-  Section,
-  Button,
-  Loading,
-  ListItem,
-  ListItemIcon
-} from "@arconnect/components-rebrand";
+import { Text, Input, useInput, Section, Button, Loading, ListItem, ListItemIcon } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
-import {
-  Bank,
-  BankNote01,
-  ChevronDown,
-  SwitchVertical02
-} from "@untitled-ui/icons-react";
+import { Bank, BankNote01, ChevronDown, SwitchVertical02 } from "@untitled-ui/icons-react";
 import styled from "styled-components";
 import HeadV2 from "~components/popup/HeadV2";
 import { useEffect, useMemo } from "react";
@@ -58,7 +44,7 @@ export function PurchaseView() {
     closePaymentSelector,
     showCurrencySelector,
     showPaymentSelector,
-    openTransak
+    openTransak,
   } = useTransak(TRANSAK_API_KEY, false);
 
   const handleInputChange = (event: React.FormEvent<HTMLInputElement>) => {
@@ -90,11 +76,7 @@ export function PurchaseView() {
             onInput={handleInputChange}
             onChange={(e) => handleAmountChange(e.target.value)}
             inputMode="numeric"
-            placeholder={
-              arConversion
-                ? "0"
-                : `${getSymbolFromCurrency(selectedCurrency?.symbol) || ""}0`
-            }
+            placeholder={arConversion ? "0" : `${getSymbolFromCurrency(selectedCurrency?.symbol) || ""}0`}
             fullWidth
             hasRightIcon
             iconLeft={
@@ -104,9 +86,8 @@ export function PurchaseView() {
                   flexDirection: "column",
                   alignItems: "flex-start",
                   marginRight: "10px",
-                  cursor: "default"
-                }}
-              >
+                  cursor: "default",
+                }}>
                 <Text size="sm" noMargin weight="medium" variant="secondary">
                   {arConversion
                     ? browser.i18n.getMessage("buy_screen_receive")
@@ -141,13 +122,13 @@ export function PurchaseView() {
                   ? theme.primaryTextv2
                   : theme.input.placeholder.search
                 : quote?.cryptoAmount.toString()
-                ? theme.primaryTextv2
-                : theme.input.placeholder.search
+                  ? theme.primaryTextv2
+                  : theme.input.placeholder.search,
             }}
             inputStyle={{
               display: "flex",
               alignItems: "center",
-              justifyContent: "space-between"
+              justifyContent: "space-between",
             }}
           />
           <Switch
@@ -160,8 +141,7 @@ export function PurchaseView() {
                 }
               }
               setArConversion(!arConversion);
-            }}
-          >
+            }}>
             <SwitchVertical02 height={20} color={theme.primaryText} />
           </Switch>
           <InputButton
@@ -170,7 +150,7 @@ export function PurchaseView() {
               height: "90px",
               display: "flex",
               alignItems: "flex-end",
-              justifyContent: "space-between"
+              justifyContent: "space-between",
             }}
             innerStyle={{
               fontSize: "40px",
@@ -179,25 +159,21 @@ export function PurchaseView() {
                   ? theme.primaryTextv2
                   : theme.input.placeholder.search
                 : quote?.cryptoAmount.toString()
-                ? theme.primaryTextv2
-                : theme.input.placeholder.search
+                  ? theme.primaryTextv2
+                  : theme.input.placeholder.search,
             }}
             disabled={!arConversion}
             label={
-              arConversion
-                ? browser.i18n.getMessage("buy_screen_pay")
-                : browser.i18n.getMessage("buy_screen_receive")
+              arConversion ? browser.i18n.getMessage("buy_screen_pay") : browser.i18n.getMessage("buy_screen_receive")
             }
             onClick={openCurrencySelector}
             body={
               loading ? (
                 <Loading />
               ) : arConversion ? (
-                `${getSymbolFromCurrency(selectedCurrency?.symbol) || ""}${
-                  quote?.fiatAmount.toFixed(2) ?? "0"
-                }`
+                `${getSymbolFromCurrency(selectedCurrency?.symbol) || ""}${quote?.fiatAmount.toFixed(2) ?? "0"}`
               ) : (
-                quote?.cryptoAmount.toString() ?? "0"
+                (quote?.cryptoAmount.toString() ?? "0")
               )
             }
             icon={
@@ -219,16 +195,14 @@ export function PurchaseView() {
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
-                width: "100%"
-              }}
-            >
+                width: "100%",
+              }}>
               <Label
                 style={{
                   paddingTop: "14px",
                   paddingBottom: "0px",
-                  fontSize: "14px"
-                }}
-              >
+                  fontSize: "14px",
+                }}>
                 {browser.i18n.getMessage("exchange_message")}
               </Label>
               <Label
@@ -236,10 +210,9 @@ export function PurchaseView() {
                   paddingTop: "14px",
                   paddingBottom: "0px",
                   fontSize: "14px",
-                  margin: "right"
+                  margin: "right",
                 }}
-                outer
-              >
+                outer>
                 {getSymbolFromCurrency(selectedCurrency?.symbol) || ""}
                 {exchangeRate.toFixed(2)} = 1 AR
               </Label>
@@ -259,9 +232,8 @@ export function PurchaseView() {
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  justifyContent: "center"
-                }}
-              >
+                  justifyContent: "center",
+                }}>
                 <ChevronDown onClick={openPaymentSelector} />
               </div>
             }
@@ -271,8 +243,7 @@ export function PurchaseView() {
           <SliderMenu
             title={browser.i18n.getMessage("currency")}
             isOpen={showCurrencySelector}
-            onClose={closeCurrencySelector}
-          >
+            onClose={closeCurrencySelector}>
             <CurrencySelectorScreen
               onClose={closeCurrencySelector}
               updateCurrency={handleUpdateCurrency}
@@ -283,8 +254,7 @@ export function PurchaseView() {
           <SliderMenu
             title={browser.i18n.getMessage("buy_screen_payment_method")}
             isOpen={showPaymentSelector}
-            onClose={closePaymentSelector}
-          >
+            onClose={closePaymentSelector}>
             <PaymentSelectorScreen
               payments={selectedCurrency?.paymentOptions}
               updatePayment={setPaymentMethod}
@@ -298,8 +268,7 @@ export function PurchaseView() {
           onClick={async () => {
             await ExtensionStorage.set("transak_quote", quote);
             await openTransak("/wallet/buy/success");
-          }}
-        >
+          }}>
           {!quote ? "Enter amount" : "Review"}
         </Button>
       </Wrapper>
@@ -315,9 +284,8 @@ const AR = () => {
         display: "flex",
         flexDirection: "row",
         alignItems: "center",
-        gap: "4px"
-      }}
-    >
+        gap: "4px",
+      }}>
       <TokenLogo src={arLogo} />
       <Text noMargin>AR</Text>
     </div>
@@ -328,7 +296,7 @@ const Tag = ({
   currency,
   currencyLogo,
   iconColor,
-  onClick
+  onClick,
 }: {
   currency: string;
   currencyLogo: string;
@@ -340,10 +308,9 @@ const Tag = ({
       style={{
         display: "flex",
         alignItems: "center",
-        gap: "8px"
+        gap: "8px",
       }}
-      onClick={onClick}
-    >
+      onClick={onClick}>
       <TokenLogo src={currencyLogo} />
       <Text weight="medium" noMargin>
         {currency}
@@ -356,7 +323,7 @@ const Tag = ({
 const PaymentSelectorScreen = ({
   onClose,
   updatePayment,
-  payments
+  payments,
 }: {
   onClose: () => void;
   updatePayment: (payment: any) => void;
@@ -379,8 +346,7 @@ const PaymentSelectorScreen = ({
                 onClick={() => {
                   updatePayment(payment);
                   onClose();
-                }}
-              >
+                }}>
                 {isWireTransfer && <ListItemIcon as={Bank} />}
                 {isCashApp && <ListItemIcon as={BankNote01} />}
               </ListItem>
@@ -396,7 +362,7 @@ const PaymentSelectorScreen = ({
 const CurrencySelectorScreen = ({
   onClose,
   currencies,
-  updateCurrency
+  updateCurrency,
 }: {
   onClose: () => void;
   currencies: any[];
@@ -419,13 +385,7 @@ const CurrencySelectorScreen = ({
   return (
     <SelectorWrapper>
       <div style={{ paddingBottom: "18px" }}>
-        <Input
-          placeholder="Search currency"
-          fullWidth
-          variant="search"
-          sizeVariant="small"
-          {...searchInput.bindings}
-        />
+        <Input placeholder="Search currency" fullWidth variant="search" sizeVariant="small" {...searchInput.bindings} />
       </div>
       <Flex direction="column" gap={8}>
         {filteredCurrencies.map((currency, index) => {
@@ -436,13 +396,7 @@ const CurrencySelectorScreen = ({
               title={currency.symbol}
               subtitle={currency.name}
               hideSquircle
-              icon={
-                <TokenLogo
-                  src={currency.logo}
-                  style={{ height: 40, width: 40 }}
-                  backgroundColor="transparent"
-                />
-              }
+              icon={<TokenLogo src={currency.logo} style={{ height: 40, width: 40 }} backgroundColor="transparent" />}
               onClick={() => {
                 updateCurrency(currency);
                 onClose();
@@ -463,7 +417,7 @@ const InputButton = ({
   disabled,
   style,
   innerStyle,
-  outerLabel
+  outerLabel,
 }: {
   label: string;
   body: string | React.ReactNode;
@@ -484,9 +438,8 @@ const InputButton = ({
               display: "flex",
               flexDirection: "column",
               textAlign: "left",
-              gap: "4px"
-            }}
-          >
+              gap: "4px",
+            }}>
             <Text size="sm" noMargin weight="medium" variant="secondary">
               {label}
             </Text>
@@ -522,8 +475,7 @@ const Label = styled.div<{ outer?: boolean }>`
   padding-top: ${(props) => props.style?.paddingTop || "0px"};
   padding-bottom: ${(props) => props.style?.paddingBottom || "8px"};
   font-size: ${(props) => props.style?.fontSize || "16px"};
-  color: ${(props) =>
-    props.outer ? props.theme.primaryText : props.theme.secondaryText};
+  color: ${(props) => (props.outer ? props.theme.primaryText : props.theme.secondaryText)};
 `;
 
 const Wrapper = styled(Section).attrs({ showPaddingVertical: false })`
@@ -560,7 +512,7 @@ export const Line = styled.div<{ margin?: string }>`
 export const TokenLogo = styled(CommonImage).attrs((props) => ({
   alt: "token-logo",
   draggable: false,
-  backgroundColor: props.backgroundColor || "#fffefc"
+  backgroundColor: props.backgroundColor || "#fffefc",
 }))<{ backgroundColor?: string }>`
   height: 24px;
   width: 24px;

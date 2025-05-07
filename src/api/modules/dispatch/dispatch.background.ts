@@ -1,8 +1,4 @@
-import {
-  isLocalWallet,
-  isSignatureOptions,
-  isSplitTransaction
-} from "~utils/assertions";
+import { isLocalWallet, isSignatureOptions, isSplitTransaction } from "~utils/assertions";
 import { constructTransaction } from "../sign/transaction_builder";
 import { arconfettiIcon, signNotification } from "../sign/utils";
 import { cleanUpChunks, getChunks } from "../sign/chunks";
@@ -32,7 +28,7 @@ const background: BackgroundModuleFunction<ReturnType> = async (
   appData,
   tx: unknown,
   chunkCollectionID: unknown,
-  signatureOptions?: unknown
+  signatureOptions?: unknown,
 ) => {
   // validate input
   isSplitTransaction(tx);
@@ -58,7 +54,7 @@ const background: BackgroundModuleFunction<ReturnType> = async (
   // reconstruct the transaction from the chunks
   let transaction = arweave.transactions.fromRaw({
     ...constructTransaction(tx, chunks || []),
-    owner: keyfile.n
+    owner: keyfile.n,
   });
 
   // clean up chunks
@@ -69,7 +65,7 @@ const background: BackgroundModuleFunction<ReturnType> = async (
   // @ts-expect-error
   const tags = (transaction.get("tags") as Tag[]).map((tag) => ({
     name: tag.get("name", { decode: true, string: true }),
-    value: tag.get("value", { decode: true, string: true })
+    value: tag.get("value", { decode: true, string: true }),
   }));
 
   // add Wander tags to the tag list
@@ -81,32 +77,18 @@ const background: BackgroundModuleFunction<ReturnType> = async (
   // always ask
   // const alwaysAsk = allowance.enabled && allowance.limit.eq(BigNumber("0"));
   const signPolicy = await app.getSignPolicy();
-  const alwaysAsk = checkIfUserNeedsToSign(
-    signPolicy,
-    transaction,
-    decryptedWallet?.type
-  );
+  const alwaysAsk = checkIfUserNeedsToSign(signPolicy, transaction, decryptedWallet?.type);
 
   // attempt to create a bundle
   try {
     // create bundlr tx as a data entry
-    const dataSigner = createArweaveSignerWithOptions(
-      decryptedWallet.keyfile,
-      signatureOptions
-    );
+    const dataSigner = createArweaveSignerWithOptions(decryptedWallet.keyfile, signatureOptions);
     const dataEntry = createData(data, dataSigner, { tags });
 
     // check allowance
     const price = await getPrice(dataEntry, await app.getBundler());
 
-    await ensureAllowanceDispatch(
-      dataEntry,
-      appData,
-      allowance,
-      decryptedWallet.keyfile,
-      price,
-      alwaysAsk
-    );
+    await ensureAllowanceDispatch(dataEntry, appData, allowance, decryptedWallet.keyfile, price, alwaysAsk);
 
     // sign and upload bundler tx
     await dataEntry.sign(dataSigner);
@@ -125,8 +107,8 @@ const background: BackgroundModuleFunction<ReturnType> = async (
       arConfetti: await arconfettiIcon(),
       res: {
         id: dataEntry.id,
-        type: "BUNDLED"
-      }
+        type: "BUNDLED",
+      },
     };
   } catch (err) {
     if (isError(err) && err.message === ERR_MSG_USER_CANCELLED_AUTH) {
@@ -145,14 +127,7 @@ const background: BackgroundModuleFunction<ReturnType> = async (
     const price = BigNumber(transaction.reward).plus(transaction.quantity);
 
     // ensure allowance
-    await ensureAllowanceDispatch(
-      transaction,
-      appData,
-      allowance,
-      decryptedWallet.keyfile,
-      price,
-      alwaysAsk
-    );
+    await ensureAllowanceDispatch(transaction, appData, allowance, decryptedWallet.keyfile, price, alwaysAsk);
 
     // sign and upload
     await arweave.transactions.sign(transaction, keyfile);
@@ -175,8 +150,8 @@ const background: BackgroundModuleFunction<ReturnType> = async (
       arConfetti: await arconfettiIcon(),
       res: {
         id: transaction.id,
-        type: "BASE"
-      }
+        type: "BASE",
+      },
     };
   }
 };

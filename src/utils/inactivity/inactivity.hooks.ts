@@ -9,9 +9,7 @@ export function useActivityTracking() {
     const setup = async () => {
       const events = ["click", "submit", "change"];
 
-      const settings = await ExtensionStorage.get<AutoLockSettings>(
-        INACTIVITY.STORAGE.AUTO_LOCK
-      );
+      const settings = await ExtensionStorage.get<AutoLockSettings>(INACTIVITY.STORAGE.AUTO_LOCK);
       if (!settings?.enabled) return;
 
       inactivityManager.recordActivity();

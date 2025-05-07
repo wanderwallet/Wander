@@ -21,12 +21,12 @@ const queryClient = new QueryClient({
       staleTime: 300_000,
       refetchInterval: 300_000,
       retry: 2,
-      refetchOnWindowFocus: true
-    }
-  }
+      refetchOnWindowFocus: true,
+    },
+  },
 });
 
-export function ArConnectEmbeddedApp() {
+export function WanderConnectApp() {
   useEffect(() => {
     handleSyncLabelsAlarm();
   }, []);
@@ -40,7 +40,7 @@ export function ArConnectEmbeddedApp() {
   );
 }
 
-export function ArConnectEmbeddedAppRoot() {
+export function WanderConnectAppRoot() {
   return (
     <WanderThemeProvider>
       <ThemeProvider>
@@ -48,7 +48,7 @@ export function ArConnectEmbeddedAppRoot() {
           <AuthRequestsProvider>
             <QueryClientProvider client={queryClient}>
               <Wouter hook={useEmbeddedLocation}>
-                <ArConnectEmbeddedApp />
+                <WanderConnectApp />
                 <ToastContainer
                   position="top-center"
                   autoClose={2000}

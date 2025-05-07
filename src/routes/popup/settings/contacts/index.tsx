@@ -9,10 +9,7 @@ export function ContactsView() {
 
   return (
     <>
-      <HeadV2
-        title={browser.i18n.getMessage("setting_contacts")}
-        back={() => navigate("/quick-settings")}
-      />
+      <HeadV2 title={browser.i18n.getMessage("setting_contacts")} back={() => navigate("/quick-settings")} />
       <Wrapper>
         <ContactsDashboardView isQuickSetting params={{}} />
       </Wrapper>

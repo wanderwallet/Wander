@@ -6,11 +6,11 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     globals: true,
-    testTimeout: 10000
+    testTimeout: 10000,
   },
   resolve: {
     alias: {
-      "~utils": resolve(__dirname, "./src/utils")
-    }
-  }
+      "~utils": resolve(__dirname, "./src/utils"),
+    },
+  },
 });

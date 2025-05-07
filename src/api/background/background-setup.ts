@@ -21,10 +21,7 @@ import { handleSyncLabelsAlarm } from "~api/background/handlers/alarms/sync-labe
 import { handleWindowClose } from "~api/background/handlers/browser/window-close/window-close.handler";
 import { handleKeyRemovalAlarm } from "~api/background/handlers/alarms/key-removal/key-removal-alarm.handler";
 import { handleAoTokensImportAlarm } from "~api/background/handlers/alarms/ao-tokens-import/ao-tokens-import-alarm.handler";
-import {
-  handleTabClosed,
-  handleTabUpdate
-} from "~api/background/handlers/browser/tabs/tabs.handler";
+import { handleTabClosed, handleTabUpdate } from "~api/background/handlers/browser/tabs/tabs.handler";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { isomorphicOnMessage } from "~isomorphic-messaging";
 import { handleAuthStateChange } from "./handlers/storage/auth-state-change/auth-state-change.handler";
@@ -33,9 +30,7 @@ import { initInactivityTracking } from "~utils/inactivity/inactivity.utils";
 export function setupBackgroundService() {
   log(
     LOG_GROUP.SETUP,
-    `background-setup.ts > setupBackgroundService(VITE_IS_EMBEDDED_APP = "${
-      import.meta.env?.VITE_IS_EMBEDDED_APP
-    }")`
+    `background-setup.ts > setupBackgroundService(VITE_IS_EMBEDDED_APP = "${import.meta.env?.VITE_IS_EMBEDDED_APP}")`,
   );
 
   // MESSAGES:
@@ -118,7 +113,7 @@ export function setupBackgroundService() {
   ExtensionStorage.watch({
     active_address: handleActiveAddressChange,
     wallets: handleWalletsChange,
-    decryption_key: handleAuthStateChange
+    decryption_key: handleAuthStateChange,
   });
   PersistentStorage.watch({ apps: handleAppsChange });
 

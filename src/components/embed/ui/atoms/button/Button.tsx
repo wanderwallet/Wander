@@ -5,10 +5,7 @@ import styles from "./Button.module.css";
 import type { ButtonBaseProps } from "./Button.types";
 import { Loading } from "../loading";
 
-const Button = React.forwardRef<
-  HTMLButtonElement | HTMLAnchorElement,
-  ButtonBaseProps
->(
+const Button = React.forwardRef<HTMLButtonElement | HTMLAnchorElement, ButtonBaseProps>(
   (
     {
       children,
@@ -27,15 +24,15 @@ const Button = React.forwardRef<
       color,
       ...props
     },
-    ref
+    ref,
   ) => {
-    const isAnchor = variant === "link" || props.href;
+    const isAnchor = variant === "link" || !!props.href;
     const Component = isAnchor ? Link : "button";
     const hasSize = !isAnchor || !isFullWidth;
 
     const handleChildren = () => {
       if (isLoading) {
-        return <Loading isAnchor={Boolean(isAnchor)} />;
+        return <Loading isAnchor={isAnchor} />;
       }
       if (icon) {
         return iconPosition === "start" ? (
@@ -66,16 +63,15 @@ const Button = React.forwardRef<
           isFullWidth && styles["button__full__width"],
           isDisabled && isAnchor && styles["link__disabled"],
           !hasBorder && styles["button__borderless"],
-          className
+          className,
         )}
         style={color ? { borderColor: color, color } : undefined}
         disabled={isDisabled ?? isLoading}
-        {...props}
-      >
+        {...props}>
         {handleChildren()}
       </Component>
     );
-  }
+  },
 );
 
 Button.displayName = "Button";

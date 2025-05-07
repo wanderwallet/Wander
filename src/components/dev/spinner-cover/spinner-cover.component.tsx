@@ -7,16 +7,11 @@ export interface DevSpinnerCoverProps {
   label?: string;
 }
 
-export function DevSpinnerCover({
-  background = "blurred",
-  label
-}: DevSpinnerCoverProps) {
+export function DevSpinnerCover({ background = "blurred", label }: DevSpinnerCoverProps) {
   return (
     <div className={`${styles.root} ${styles[background]}`}>
       <DevSpinner position="static" size={48} />
-      {label === undefined ? null : (
-        <span className={styles.label}>{label}</span>
-      )}
+      {label === undefined ? null : <span className={styles.label}>{label}</span>}
     </div>
   );
 }

@@ -17,7 +17,7 @@ export const CurrencySelector = ({
   currencies,
   selectedCurrency,
   handleUpdateCurrency,
-  onClose
+  onClose,
 }: CurrencySelectorProps) => {
   const searchInput = useInput();
 
@@ -43,7 +43,7 @@ export const CurrencySelector = ({
           style={{
             padding: "8px 12px",
             borderRadius: "8px",
-            border: "1px solid var(--color-border-default)"
+            border: "1px solid var(--color-border-default)",
           }}
         />
       </div>
@@ -58,9 +58,8 @@ export const CurrencySelector = ({
           gap: "8px",
           width: "100%",
           height: "100%",
-          maxHeight: "calc(100% - 60px)"
-        }}
-      >
+          maxHeight: "calc(100% - 60px)",
+        }}>
         {filteredCurrencies.map((currency) => {
           const currencyIcon = currency.logo ? (
             <img
@@ -70,7 +69,7 @@ export const CurrencySelector = ({
                 width: "24px",
                 height: "24px",
                 objectFit: "contain",
-                borderRadius: "50%"
+                borderRadius: "50%",
               }}
             />
           ) : (

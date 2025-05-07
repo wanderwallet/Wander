@@ -14,7 +14,7 @@ import {
   TooltipV2,
   useInput,
   useModal,
-  useToasts
+  useToasts,
 } from "@arconnect/components";
 import { concatGatewayURL, urlToGateway } from "~gateways/utils";
 import Application from "~applications/application";
@@ -62,9 +62,7 @@ export function AppSettingsView({ params: { url } }: AppSettingsViewProps) {
 
   // is the current gateway a custom one
   const isCustom = useMemo(() => {
-    const gatewayUrls = suggestedGateways
-      .concat(testnets)
-      .map((g) => concatGatewayURL(g));
+    const gatewayUrls = suggestedGateways.concat(testnets).map((g) => concatGatewayURL(g));
 
     return !gatewayUrls.includes(gateway);
   }, [gateway]);
@@ -94,28 +92,20 @@ export function AppSettingsView({ params: { url } }: AppSettingsViewProps) {
 
   return (
     <>
-      <HeadV2
-        title={settings?.name || settings?.url}
-        back={() => navigate("/quick-settings/apps")}
-      />
+      <HeadV2 title={settings?.name || settings?.url} back={() => navigate("/quick-settings/apps")} />
       <Wrapper>
         <div>
           <Flex alignItems="center" justifyContent="space-between">
             <TitleV1 noMargin>{browser.i18n.getMessage("permissions")}</TitleV1>
-            <ResetButton
-              onClick={() =>
-                navigate(`/quick-settings/apps/${url}/permissions`)
-              }
-            >
+            <ResetButton onClick={() => navigate(`/quick-settings/apps/${url}/permissions`)}>
               <Text
                 heading
                 noMargin
                 style={{
                   fontSize: "1rem",
                   fontWeight: 500,
-                  lineHeight: 1
-                }}
-              >
+                  lineHeight: 1,
+                }}>
                 {browser.i18n.getMessage("view_all")}
               </Text>
             </ResetButton>
@@ -233,27 +223,16 @@ export function AppSettingsView({ params: { url } }: AppSettingsViewProps) {
           </Flex>
           <Spacer y={1} /> */}
           <TitleV2>{browser.i18n.getMessage("permission_settings")}</TitleV2>
-          <div
-            style={{ display: "flex", flexDirection: "column", gap: "16px" }}
-          >
+          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
             {signPolicyOptions.map((option) => (
-              <PolicyOption
-                key={option}
-                onClick={() =>
-                  updateSettings((val) => ({ ...val, signPolicy: option }))
-                }
-              >
+              <PolicyOption key={option} onClick={() => updateSettings((val) => ({ ...val, signPolicy: option }))}>
                 <Checkbox
                   size={16}
-                  onChange={() =>
-                    updateSettings((val) => ({ ...val, signPolicy: option }))
-                  }
+                  onChange={() => updateSettings((val) => ({ ...val, signPolicy: option }))}
                   checked={settings?.signPolicy === option}
                 />
                 <div>
-                  <PrimaryText fontSize={16}>
-                    {browser.i18n.getMessage(option)}
-                  </PrimaryText>
+                  <PrimaryText fontSize={16}>{browser.i18n.getMessage(option)}</PrimaryText>
                 </div>
               </PolicyOption>
             ))}
@@ -272,20 +251,15 @@ export function AppSettingsView({ params: { url } }: AppSettingsViewProps) {
               updateSettings((val) => ({
                 ...val,
                 // @ts-expect-error
-                gateway: urlToGateway(e.target.value)
+                gateway: urlToGateway(e.target.value),
               }));
             }}
-            fullWidth
-          >
+            fullWidth>
             {suggestedGateways.concat(testnets).map((g, i) => {
               const url = concatGatewayURL(g);
 
               return (
-                <option
-                  value={url}
-                  selected={!isCustom && url === gateway}
-                  key={i}
-                >
+                <option value={url} selected={!isCustom && url === gateway} key={i}>
                   {url}
                 </option>
               );
@@ -312,15 +286,14 @@ export function AppSettingsView({ params: { url } }: AppSettingsViewProps) {
                   onClick={() => {
                     updateSettings((val) => ({
                       ...val,
-                      gateway: urlToGateway(customGatewayInput.state)
+                      gateway: urlToGateway(customGatewayInput.state),
                     }));
                     setToast({
                       type: "info",
                       content: browser.i18n.getMessage("setCustomGateway"),
-                      duration: 3000
+                      duration: 3000,
                     });
-                  }}
-                >
+                  }}>
                   Save
                 </IconButton>
               </InputWithBtn>
@@ -335,7 +308,7 @@ export function AppSettingsView({ params: { url } }: AppSettingsViewProps) {
               updateSettings((val) => ({
                 ...val,
                 // @ts-expect-error
-                bundler: e.target.value
+                bundler: e.target.value,
               }))
             }
             fullWidth
@@ -354,10 +327,9 @@ export function AppSettingsView({ params: { url } }: AppSettingsViewProps) {
             onClick={() =>
               updateSettings((val) => ({
                 ...val,
-                blocked: !val.blocked
+                blocked: !val.blocked,
               }))
-            }
-          >
+            }>
             {browser.i18n.getMessage(settings.blocked ? "unblock" : "block")}
           </ButtonV2>
           <ModalV2
@@ -372,20 +344,14 @@ export function AppSettingsView({ params: { url } }: AppSettingsViewProps) {
                   onClick={async () => {
                     await removeApp(app.url);
                     navigate(`/quick-settings/apps`);
-                  }}
-                >
+                  }}>
                   {browser.i18n.getMessage("remove")}
                 </ButtonV2>
               </>
-            }
-          >
-            <CenterText heading>
-              {browser.i18n.getMessage("removeApp")}
-            </CenterText>
+            }>
+            <CenterText heading>{browser.i18n.getMessage("removeApp")}</CenterText>
             <Spacer y={0.55} />
-            <CenterText noMargin>
-              {browser.i18n.getMessage("removeAppNote")}
-            </CenterText>
+            <CenterText noMargin>{browser.i18n.getMessage("removeAppNote")}</CenterText>
             <Spacer y={0.75} />
           </ModalV2>
         </div>
@@ -403,7 +369,7 @@ const Wrapper = styled.div`
 `;
 
 const TitleV1 = styled(Text).attrs({
-  heading: true
+  heading: true,
 })`
   margin-bottom: 0;
   font-size: 1.125rem;
@@ -411,7 +377,7 @@ const TitleV1 = styled(Text).attrs({
 `;
 
 const TitleV2 = styled(Text).attrs({
-  heading: true
+  heading: true,
 })`
   margin-bottom: 0.6em;
   font-size: 1rem;
@@ -448,7 +414,7 @@ const PolicyOption = styled.div`
 `;
 
 const PrimaryText = styled(Text).attrs({
-  noMargin: true
+  noMargin: true,
 })<{ fontSize?: number; fontWeight?: number; textAlign?: string }>`
   color: ${(props) => props.theme.primaryTextv2};
   font-size: ${(props) => props.fontSize || 14}px;

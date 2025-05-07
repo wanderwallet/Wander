@@ -11,14 +11,21 @@
   <tr>
     <td>
 
-BE injects the Wallet API with the `setupWalletSDK` function, invoked from `src/contents/injected/setup-wallet-sdk.injected-script.ts`, which is injected using a `script` tag by `src/contents/api.ts`.
+BE injects the Wallet API with the `injectWanderWalletAPI` function, invoked from
+`src/contents/injected/setup-wallet-sdk.injected-script.ts`, which is injected using a `script` tag by
+`src/contents/api.ts`.
 
-This is done this way because `src/contents/api.ts` is a sandboxed extension content script, so it can use `sendMessage(...)` to talk to the background script, but cannot directly modify the integrating dApp `window` to add the wallet API. The injected script can add the wallet API to `window`, but cannot use `sendMessage(...)`, so `setupWalletSDK` will post messages that are received in `api.ts`'s `message` listener, which then re-sends them to the background script using `sendMessage(...)`.
+This is done this way because `src/contents/api.ts` is a sandboxed extension content script, so it can use
+`sendMessage(...)` to talk to the background script, but cannot directly modify the integrating dApp `window` to add the
+wallet API. The injected script can add the wallet API to `window`, but cannot use `sendMessage(...)`, so
+`injectWanderWalletAPI` will post messages that are received in `api.ts`'s `message` listener, which then re-sends them
+to the background script using `sendMessage(...)`.
 
 </td>
 <td>
 
-Embed injects the Wallet API with the `setupEmbeddedWalletSDK` function, invoked from `WanderEmbedded`'s `constructor`.
+Wander Connect injects the Wallet API with the `injectWanderConnectWalletAPI` function, invoked from `WanderEmbedded`'s
+`constructor`.
 
 It runs in the context of the integrating dApp.
 
@@ -29,17 +36,21 @@ It runs in the context of the integrating dApp.
   <tr>
     <td>
 
-When a wallet API method is called from the integrating dApp, the inner `callForegroundThenBackground` function inside `setupWalletSDK` is called.
+When a wallet API method is called from the integrating dApp, the inner `callForegroundThenBackground` function inside
+`injectWanderWalletAPI` is called.
 
-This functions posts a message that will be received in `api.ts`'s `message` listener, which then re-sends them to the background script using `sendMessage(...)`, as stated above.
+This functions posts a message that will be received in `api.ts`'s `message` listener, which then re-sends them to the
+background script using `sendMessage(...)`, as stated above.
 
-This function also sets a `message` listener to receive the response, which again, is received in `api.ts`'s `message` listener and re-posted using `postMessage(...)`.
+This function also sets a `message` listener to receive the response, which again, is received in `api.ts`'s `message`
+listener and re-posted using `postMessage(...)`.
 
 </td>
 <td>
-When a wallet API method is called from the integrating dApp, the inner `callForegroundThenBackground` function inside `setupEmbeddedWalletSDK` is called.
+When a wallet API method is called from the integrating dApp, the inner `callForegroundThenBackground` function inside `injectWanderConnectWalletAPI` is called.
 
-This function sends the message to the "background" script using `isomorphicSendMessage`, which returns the response as well.
+This function sends the message to the "background" script using `isomorphicSendMessage`, which returns the response as
+well.
 
 </td>
 
@@ -60,9 +71,10 @@ This function sends the message to the "background" script using `isomorphicSend
   </tr>
 </table>
 
-> [!WARNING] > `setupWalletSDK` and `setupEmbeddedWalletSDK` should eventually be combined into a single function and
-> `setupWalletSDK` should also use `isomorphicSendMessage`. Its usage of `postMessage(...)` and the `message` "proxy"
-> implemented in `api.ts` should be an implementation detail abstracted away by `isomorphicSendMessage`.
+> [!WARNING] > `injectWanderWalletAPI` and `injectWanderConnectWalletAPI` should eventually be combined into a single
+> function and `injectWanderWalletAPI` should also use `isomorphicSendMessage`. Its usage of `postMessage(...)` and the
+> `message` "proxy" implemented in `api.ts` should be an implementation detail abstracted away by
+> `isomorphicSendMessage`.
 
 The following diagram illustrates the flow in Embed:
 

@@ -12,15 +12,12 @@ export async function uploadDataToTurbo(dataItem: DataItem, node: string) {
   const res = await fetch(`${node}/tx`, {
     method: "POST",
     headers: {
-      "Content-Type": "application/octet-stream"
+      "Content-Type": "application/octet-stream",
     },
-    body: dataItem.getRaw()
+    body: dataItem.getRaw(),
   });
 
-  if (res.status >= 400)
-    throw new Error(
-      `Error uploading DataItem: ${res.status} ${res.statusText}`
-    );
+  if (res.status >= 400) throw new Error(`Error uploading DataItem: ${res.status} ${res.statusText}`);
 }
 
 /**
@@ -40,8 +37,7 @@ export async function getPrice(dataItem: DataItem, node: string) {
   }
   const res = await fetch(`${endpoint}/price/arweave/${size}`);
 
-  if (res.status >= 400)
-    throw new Error(`Error fetching price: ${res.status} ${res.statusText}`);
+  if (res.status >= 400) throw new Error(`Error fetching price: ${res.status} ${res.statusText}`);
 
   return parseInt(await res.text());
 }

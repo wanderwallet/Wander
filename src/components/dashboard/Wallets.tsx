@@ -18,24 +18,19 @@ import type { NameServiceProfile } from "~lib/types";
 export function WalletsDashboardView() {
   const { navigate } = useLocation();
   // TODO: Replace with useParams:
-  const [matches, params] = useRoute<{ address?: string }>(
-    "/wallets/:address?"
-  );
+  const [matches, params] = useRoute<{ address?: string }>("/wallets/:address?");
 
   // wallets
   const [wallets, setWallets] = useStorage<StoredWallet[]>(
     {
       key: "wallets",
-      instance: ExtensionStorage
+      instance: ExtensionStorage,
     },
-    []
+    [],
   );
 
   // active subsetting val
-  const activeWalletSetting = useMemo(
-    () => (params?.address ? params.address : undefined),
-    [params]
-  );
+  const activeWalletSetting = useMemo(() => (params?.address ? params.address : undefined), [params]);
 
   useEffect(() => {
     if (!matches) return;
@@ -43,11 +38,7 @@ export function WalletsDashboardView() {
     const firstWallet = wallets?.[0];
 
     // return if there is a wallet present in params
-    if (
-      !firstWallet ||
-      (!!activeWalletSetting &&
-        !!wallets.find((w) => w.address == activeWalletSetting))
-    ) {
+    if (!firstWallet || (!!activeWalletSetting && !!wallets.find((w) => w.address == activeWalletSetting))) {
       return;
     }
 
@@ -58,26 +49,21 @@ export function WalletsDashboardView() {
   }, [wallets, activeWalletSetting]);
 
   // ans data
-  const [nameServiceProfiles, setNameServiceProfiles] = useState<
-    NameServiceProfile[]
-  >([]);
+  const [nameServiceProfiles, setNameServiceProfiles] = useState<NameServiceProfile[]>([]);
 
   useEffect(() => {
     (async () => {
       if (!wallets) return;
 
       // fetch profiles
-      const profiles = await getNameServiceProfiles(
-        wallets.map((w) => w.address)
-      );
+      const profiles = await getNameServiceProfiles(wallets.map((w) => w.address));
 
       setNameServiceProfiles(profiles);
     })();
   }, [wallets]);
 
   // ans shortcuts
-  const findProfile = (address: string) =>
-    nameServiceProfiles.find((profile) => profile.address === address);
+  const findProfile = (address: string) => nameServiceProfiles.find((profile) => profile.address === address);
 
   const gateway = useGateway(FULL_HISTORY);
 
@@ -115,10 +101,7 @@ export function WalletsDashboardView() {
     <>
       <Wrapper>
         <SearchWrapper>
-          <SearchInput
-            placeholder={browser.i18n.getMessage("search_accounts")}
-            {...searchInput.bindings}
-          />
+          <SearchInput placeholder={browser.i18n.getMessage("search_accounts")} {...searchInput.bindings} />
           <AddWalletButton onClick={() => navigate("/wallets/new")}>
             {browser.i18n.getMessage("add_account")}
           </AddWalletButton>
@@ -130,8 +113,7 @@ export function WalletsDashboardView() {
             axis="y"
             onReorder={setWallets}
             values={wallets}
-            style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}
-          >
+            style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
             {wallets.filter(filterSearchResults).map((wallet) => (
               <WalletListItem
                 wallet={wallet}
@@ -167,7 +149,7 @@ const SearchWrapper = styled.div`
 `;
 
 const AddWalletButton = styled(Button).attrs({
-  secondary: false
+  secondary: false,
 })`
   width: 100%;
   height: 100%;

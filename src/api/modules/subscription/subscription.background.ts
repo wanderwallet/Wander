@@ -1,21 +1,11 @@
-import {
-  isAddress,
-  isLocalWallet,
-  isSubscriptionType
-} from "~utils/assertions";
+import { isAddress, isLocalWallet, isSubscriptionType } from "~utils/assertions";
 import { getActiveAddress, getActiveKeyfile } from "~wallets";
 import type { BackgroundModuleFunction } from "~api/background/background-modules";
 import { requestUserAuthorization } from "../../../utils/auth/auth.utils";
 import { getSubscriptionData } from "~subscriptions";
-import {
-  RecurringPaymentFrequency,
-  type SubscriptionData
-} from "~subscriptions/subscription";
+import { RecurringPaymentFrequency, type SubscriptionData } from "~subscriptions/subscription";
 
-const background: BackgroundModuleFunction<SubscriptionData> = async (
-  appData,
-  subscriptionData: SubscriptionData
-) => {
+const background: BackgroundModuleFunction<SubscriptionData> = async (appData, subscriptionData: SubscriptionData) => {
   // validate input
   isAddress(subscriptionData.arweaveAccountAddress);
 
@@ -35,11 +25,7 @@ const background: BackgroundModuleFunction<SubscriptionData> = async (
 
   if (
     subscriptions &&
-    subscriptions.find(
-      (subscription) =>
-        subscription.arweaveAccountAddress ===
-        subscriptionData.arweaveAccountAddress
-    )
+    subscriptions.find((subscription) => subscription.arweaveAccountAddress === subscriptionData.arweaveAccountAddress)
   ) {
     throw new Error("Account is already subscribed");
   }
@@ -56,16 +42,14 @@ const background: BackgroundModuleFunction<SubscriptionData> = async (
       nextPaymentDue: subscriptionData.nextPaymentDue,
       subscriptionStartDate: subscriptionData.subscriptionStartDate,
       subscriptionEndDate: subscriptionData.subscriptionEndDate,
-      applicationIcon: subscriptionData?.applicationIcon
+      applicationIcon: subscriptionData?.applicationIcon,
     },
-    appData
+    appData,
   );
 
   subscriptions = await getSubscriptionData(address);
   const subscription = subscriptions.find(
-    (subscription) =>
-      subscription.arweaveAccountAddress ===
-      subscriptionData.arweaveAccountAddress
+    (subscription) => subscription.arweaveAccountAddress === subscriptionData.arweaveAccountAddress,
   );
 
   return subscription;
