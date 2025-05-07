@@ -42,7 +42,9 @@ export function AccountBackupCopySeedphraseEmbeddedView() {
       subtitle="Save your 12 word seedphrase to a password manager, or write it down."
       footerElement={<WanderFooter />}
       hasBackButton={true}
+      onBackButtonClick={() => navigate("/account/backup-wallet/full")}
       hasCloseButton={true}
+      onCloseButtonClick={() => navigate("/wallet")}
       size="auto">
       <Box style={{ gap: 28 }}>
         <Snackbar

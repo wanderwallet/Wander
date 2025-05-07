@@ -5,8 +5,9 @@ import { Box, Button, Card, Checkbox, WanderFooter, Copyable, Text } from "~comp
 import copy from "copy-to-clipboard";
 import { useLocation } from "~wallets/router/router.utils";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
+import browser from "webextension-polyfill";
 
-export function AccountBackupSharesReminderEmbeddedView() {
+export function AccountBackupWalletReminderEmbeddedView() {
   const { navigate } = useLocation();
   const { currentWallet, skipBackUp } = useEmbedded();
   const isMandatoryReminder =
@@ -35,6 +36,9 @@ export function AccountBackupSharesReminderEmbeddedView() {
       <Box>
         <Text
           variant="bodySm"
+          onClick={() =>
+            browser.tabs.create({ url: "https://www.wander.app/help/benefits-of-backing-up-your-wander-wallet" })
+          }
           style={{
             marginBottom: 24,
             marginTop: -16,
@@ -52,7 +56,7 @@ export function AccountBackupSharesReminderEmbeddedView() {
             copy(currentWallet.address);
           }}
         />
-        <Button variant="primary" isDisabled={isLoading} isFullWidth href="#/account/backup-shares">
+        <Button variant="primary" isDisabled={isLoading} isFullWidth href="#/account/backup-wallet">
           Backup now
         </Button>
         {isMandatoryReminder ? (
