@@ -4,6 +4,7 @@
   "description": "Wander Connect SDK.",
   "author": "wanderapp",
   "license": "MIT",
+  "private": false,
   "files": [
     "sdk-dist/",
     "package.json"
@@ -34,5 +35,12 @@
   },
   "dependencies": {
     "ts-deepmerge": "^7.0.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wanderwallet/Wander"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
