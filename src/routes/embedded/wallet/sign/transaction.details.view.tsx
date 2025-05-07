@@ -61,7 +61,9 @@ export function WalletTransactionDetailsEmbeddedView() {
   const tags = useMemo<DecodedTag[]>(() => {
     if (!transaction) return [];
 
-    if (transaction?.tags && !transaction?.get) return transaction.tags;
+    if (!transaction?.get) {
+      return Array.isArray(transaction?.tags) ? transaction.tags : [];
+    }
 
     // @ts-expect-error
     const tags = transaction.get("tags") as Tag[];
