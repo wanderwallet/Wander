@@ -1,7 +1,7 @@
 {
-  "name": "@wanderapp/embed-sdk",
-  "version": "0.0.7",
-  "description": "Wander Embedded SDK.",
+  "name": "@wanderapp/connect",
+  "version": "0.1.0",
+  "description": "Wander Connect SDK.",
   "author": "wanderapp",
   "license": "MIT",
   "files": [

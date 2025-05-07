@@ -1,57 +1,11 @@
 // INCOMING MESSAGES (iframe => SDK):
 
 import { InjectedEvents } from "wallet-api/src/utils/events";
-import { BalanceInfo, RouteConfig } from "../../wander-embedded.types";
+import { AuthInfo, AuthProviderType, BalanceInfo, RequestsInfo, RouteConfig } from "../../wander-connect.types";
 
 // embedded_auth:
 
-export type EmbeddedAuthProviderType = "PASSKEYS" | "EMAIL_N_PASSWORD" | "GOOGLE" | "FACEBOOK" | "X" | "APPLE";
-
-export type EmbeddedAuthStatus = "loading" | "onboarding" | "authenticated" | "not-authenticated";
-
-export interface EmbeddedUserDetails {
-  id: string;
-  email: null | string;
-  phone: null | string;
-  username: null | string;
-  name: null | string;
-  fullName: null | string;
-  picture: null | string;
-  confirmed: boolean;
-  emailConfirmed: boolean;
-  phoneConfirmed: boolean;
-  createdAt: Date;
-}
-
-export interface IncomingAuthNativeMessageData {
-  authType: "NATIVE_WALLET";
-  authStatus: null;
-  userDetails: null;
-}
-
-export interface IncomingAuthNoAuthMessageData {
-  authType: null;
-  authStatus: "not-authenticated";
-  userDetails: null;
-}
-
-export interface IncomingAuthLoadingMessageData {
-  authType: EmbeddedAuthProviderType;
-  authStatus: "loading";
-  userDetails?: EmbeddedUserDetails;
-}
-
-export interface IncomingAuthCompletedMessageData {
-  authType: EmbeddedAuthProviderType;
-  authStatus: "onboarding" | "authenticated";
-  userDetails: EmbeddedUserDetails;
-}
-
-export type IncomingAuthMessageData =
-  | IncomingAuthNativeMessageData
-  | IncomingAuthNoAuthMessageData
-  | IncomingAuthLoadingMessageData
-  | IncomingAuthCompletedMessageData;
+export type IncomingAuthMessageData = AuthInfo;
 
 // embedded_resize
 
@@ -63,10 +17,7 @@ export type IncomingBalanceMessageData = BalanceInfo;
 
 // embedded_request
 
-export interface IncomingRequestMessageData {
-  pendingRequests: number;
-  hasNewConnectRequest: boolean;
-}
+export type IncomingRequestMessageData = RequestsInfo;
 
 // IncomingMessage:
 
@@ -112,7 +63,7 @@ export type WalletSwitchMessage = BaseIncomingMessage<"switch_wallet_event", str
 
 // OUTGOING MESSAGES (SDK => iframe):
 
-export type OutgoingMessage = {
-  type: "THEME_UPDATE" | "BALANCE_CURRENCY";
-  payload: string;
-};
+// export type OutgoingMessage = {
+//   type: "THEME_UPDATE" | "BALANCE_CURRENCY" | "SIGN_OUT";
+//   payload: string;
+// };

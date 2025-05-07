@@ -1,6 +1,6 @@
-# Wander Embedded SDK
+# Wander Connect SDK
 
-[![npm version](https://img.shields.io/npm/v/@wanderapp/embed-sdk.svg)](https://www.npmjs.com/package/@wanderapp/embed-sdk)
+[![npm version](https://img.shields.io/npm/v/@wanderapp/connect.svg)](https://www.npmjs.com/package/@wanderapp/connect)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 A lightweight, customizable SDK for integrating Wander wallet functionality into your web applications.
@@ -16,13 +16,13 @@ A lightweight, customizable SDK for integrating Wander wallet functionality into
 ## Installation
 
 ```bash
-npm install @wanderapp/embed-sdk
+npm install @wanderapp/connect
 ```
 
 or
 
 ```bash
-yarn add @wanderapp/embed-sdk
+yarn add @wanderapp/connect
 ```
 
 ## Basic Usage
@@ -31,25 +31,15 @@ yarn add @wanderapp/embed-sdk
 
 ```javascript
 import { useEffect, useState } from "react";
-import { WanderEmbedded } from "@wanderapp/embed-sdk";
+import { WanderConnect } from "@wanderapp/connect";
 
-function WalletConnect() {
+export function MyApp() {
   const [instance, setInstance] = useState(null);
 
   useEffect(() => {
     // Initialize the wallet
-    const wanderInstance = new WanderEmbedded({
-      iframe: {
-        routeLayout: {
-          auth: "modal"
-        }
-      },
-      button: {
-        position: "bottom-right",
-        theme: "light",
-        label: true,
-        wanderLogo: "default"
-      }
+    const wanderInstance = new WanderConnect({
+      clientID: "<CLIENT_ID>",
     });
 
     setInstance(wanderInstance);
@@ -64,14 +54,12 @@ function WalletConnect() {
 
   return ...;
 }
-
-export default WalletConnect;
 ```
 
 ## Configuration Options
 
 ```javascript
-const wander = new WanderEmbedded({
+const wander = new WanderConnect({
   // Button configuration
   button: {
     position: "bottom-right", // "bottom-right", "bottom-left", "top-right", "top-left", "static"
@@ -96,7 +84,7 @@ const wander = new WanderEmbedded({
 #### Custom Button Styling
 
 ```javascript
-const wander = new WanderEmbedded({
+const wander = new WanderConnect({
   button: {
     position: "top-right",
     cssVars: {
@@ -137,7 +125,7 @@ Available selectors:
 Example usage:
 
 ```javascript
-const wander = new WanderEmbedded({
+const wander = new WanderConnect({
   button: {
     customStyles: `
       /* Position the button container */
@@ -229,7 +217,7 @@ There are two approaches to positioning the Wander button:
 ##### 1. Using Predefined Positions
 
 ```javascript
-const wander = new WanderEmbedded({
+const wander = new WanderConnect({
   button: {
     position: "bottom-right", // Options: "bottom-right", "bottom-left", "top-right", "top-left"
   },
@@ -251,7 +239,7 @@ First, create a container element:
 Then reference it in your configuration:
 
 ```javascript
-const wander = new WanderEmbedded({
+const wander = new WanderConnect({
   button: {
     position: "static",
     parent: document.getElementById("wanderButtonContainer"),
@@ -262,7 +250,7 @@ const wander = new WanderEmbedded({
 ###### 2.2. Using Custom Styles
 
 ```javascript
-const wander = new WanderEmbedded({
+const wander = new WanderConnect({
   button: {
     position: "static",
     // Using customStyles for precise control over button appearance and position
@@ -289,7 +277,7 @@ const wander = new WanderEmbedded({
 Define the button with a custom ID:
 
 ```javascript
-const wander = new WanderEmbedded({
+const wander = new WanderConnect({
   button: {
     position: "static",
     id: "my-wander-button", // Default is "wanderEmbeddedButtonHost"
@@ -313,7 +301,7 @@ Then style it with external CSS:
 #### Custom Modal Layouts
 
 ```javascript
-const wander = new WanderEmbedded({
+const wander = new WanderConnect({
   iframe: {
     routeLayout: {
       // Different layouts for different routes
@@ -367,7 +355,7 @@ The HTML structure is follows:
 Example usage:
 
 ```javascript
-const wander = new WanderEmbedded({
+const wander = new WanderConnect({
   iframe: {
     customStyles: `
       /* Style the backdrop */
@@ -500,8 +488,8 @@ customStyles: `
 The SDK automatically sets up `window.arweaveWallet` for compatibility with Arweave applications:
 
 ```javascript
-// After initializing WanderEmbedded, you can use window.arweaveWallet
-const wander = new WanderEmbedded();
+// After initializing WanderConnect, you can use window.arweaveWallet
+const wander = new WanderConnect();
 
 // Example Arweave interaction
 async function connectWallet() {
@@ -527,45 +515,46 @@ The SDK supports all modern browsers (Chrome, Firefox, Safari, Edge).
 
 2. `yarn build:wallet-api`
 
-   The TS/JS SDK imports some shared dependencies (`setupWalletSDK()`) from an already built version of the main repo.
+   The TS/JS SDK imports some shared dependencies (`injectWanderWalletAPI()`) from an already built version of the main
+   repo.
 
    Until we have a monorepo, this command builds the bundle with this shared dependency under
-   `wander-embedded-sdk/sdk-dist`.
+   `wander-connect-sdk/sdk-dist`.
 
 3. `yarn dev:iframe`
 
-   The Wander Embedded App should now be running at `http://localhost:5173`.
+   The Wander Connect App should now be running at `http://localhost:5173`.
 
-After this, you can use the Wander Embedded App in 2 different ways:
+After this, you can use the Wander Connect App in 2 different ways:
 
 - As a standalone app, you can just access `http://localhost:5173` and start using it. Note, however, that this is not
   how developers will be using it, so you might find some differences when testing some features (e.g. when running
   inside an iframe, we must use unpartitioned state for some features, like authentication, to work properly).
 
-- Embedded inside an iframe (**recommended**). In this case, you need a "test app" that install the Wander Embedded SDK
+- Embedded inside an iframe (**recommended**). In this case, you need a "test app" that install the Wander Connect SDK
   to load the app inside an iframe. The section below explains different ways to do that.
 
 <br />
 
-### Using the Wander Embedded SDK
+### Using the Wander Connect SDK
 
-The minimum setup you must do to get Wander Embedded to work on a project looks like this:
+The minimum setup you must do to get Wander Connect to work on a project looks like this:
 
 ```javascript
-  import { WanderEmbedded } from "@wanderapp/embed-sdk";
+  import { WanderConnect } from "@wanderapp/connect";
 
   // ...
 
   useEffect(() => {
     async function initAndTestWander() {
-      const wander = new WanderEmbedded({
-        clientId: "ALPHA",
+      const wander = new WanderConnect({
+        clientId: "FREE_TRIAL",
       });
 
-      // After `new WanderEmbedded`, `window.arweaveWallet` is now the Wander Embedded API, rather
+      // After `new WanderConnect`, `window.arweaveWallet` is now the Wander Connect API, rather
       than the Wander BE one.
 
-      // Calling API methods will open/highlight the Wander Embedded iframe (popup/modal) if
+      // Calling API methods will open/highlight the Wander Connect iframe (popup/modal) if
       // authentication and/or authorization is needed:
 
       await window.arweaveWallet.connect(["SIGNATURE"]);
@@ -582,12 +571,12 @@ The minimum setup you must do to get Wander Embedded to work on a project looks 
   }, []);
 ```
 
-You can play around with Wander Embedded at <https://playground.othent.io/>, which uses:
+You can play around with Wander Connect at <https://playground.othent.io/>, which uses:
 
 - The latest version of the playground itself: <https://playground.othent.io/>
-- The latest version of the Wander Embedded app: <https://embed.wander.app/>
-- The latest version of `@wanderapp/embed-sdk`: <https://www.npmjs.com/package/@wanderapp/embed-sdk>
-- The latest version of the server & tRPC API: <https://embed-api.wander.app/>
+- The latest version of the Wander Connect app: <https://connect.wander.app/>
+- The latest version of `@wanderapp/connect`: <https://www.npmjs.com/package/@wanderapp/connect>
+- The latest version of the server & tRPC API: <https://connect-api.wander.app/>
 
 Most likely you need that playground to load your local version of the app, SDK, and/or server. See below the different
 options available.
@@ -598,10 +587,10 @@ options available.
 
 **App:**
 
-After running `yarn dev:iframe`, the Wander Embedded App should be running at `http://localhost:5173`.
+After running `yarn dev:iframe`, the Wander Connect App should be running at `http://localhost:5173`.
 
 By default, the app will point its tRPC client to <http://localhost:3001> when running in development mode, or to
-<https://embed-api.wander.app/> when running in production mode. See:
+<https://connect-api.wander.app/> when running in production mode. See:
 
 - `createTRPCClient` call in `src/utils/embedded/embedded.utils.ts` for the setup logic.
 - `.env` / `.env.example` for the development values.
@@ -610,17 +599,17 @@ By default, the app will point its tRPC client to <http://localhost:3001> when r
 **Playground & SDK:**
 
 Next, clone <https://github.com/Othent/KMS-test-repo/> and run `pnpm install && pnpm start`. The playground should be
-running at `http://localhost:3000`, using the published version of `@wanderapp/embed-sdk`.
+running at `http://localhost:3000`, using the published version of `@wanderapp/connect`.
 
-By default, the published version of `@wanderapp/embed-sdk` will point to the latest version of the Wander Embedded app,
-which in turn will point its tRPC client to the latest version of the server (<https://embed-api.wander.app/>).
+By default, the published version of `@wanderapp/connect` will point to the latest version of the Wander Connect app,
+which in turn will point its tRPC client to the latest version of the server (<https://connect-api.wander.app/>).
 
 You now need to make the SDK load `http://localhost:5173`, which you can do using the `baseURL` option. If you also need
 to connect to a server hosted elsewhere, you can use the `baseServerURL` options:
 
 ```javascript
-const wander = new WanderEmbedded({
-  clientId: "ALPHA",
+const wander = new WanderConnect({
+  clientId: "FREE_TRIAL",
   baseURL: "http://localhost:5173",
   baseServerURL: "http://localhost:3001",
 });
@@ -648,25 +637,22 @@ Go to the `embed-api` repo and run:
 
 #### Local Playground + Local App + Local SDK + Local/Latest Server
 
-To use a local `@wanderapp/embed-sdk`, go to the playground repo and run `pnpm link-embed`, which changes the
-`@wanderapp/embed-sdk` dependency to:
+To use a local `@wanderapp/connect`, go to the playground repo and run `pnpm link-embed`, which changes the
+`@wanderapp/connect` dependency to:
 
 ```json
-  "@wanderapp/embed-sdk": "link:./../wander/Wander/wander-embedded-sdk/"`
+  "@wanderapp/connect": "link:./../wander/Wander/wander-connect-sdk/"`
 ```
 
-You can revert this change running `pnpm link-embed`, which changes the `@wanderapp/embed-sdk` dependency back to:
+You can revert this change running `pnpm link-embed`, which changes the `@wanderapp/connect` dependency back to:
 
 ```json
-  "@wanderapp/embed-sdk": "^0.0.1"`
+  "@wanderapp/connect": "^0.0.1"`
 ```
 
-Then, go into `wander-embedded-sdk` in this repo and run `pnpm install` and `pnpm dev`.
+Then, go into `wander-connect-sdk` in this repo and run `pnpm install` and `pnpm dev`.
 
 When running in development mode, the SDK will use `http://localhost:5173` as the default value for `baseURL`, instead
-of `https://embed.wander.app/`. See `wander-embedded-sdk/src/wander-embedded.ts`.
-
-> [!WARNING] Temporarily, the <https://embed.wander.app/> URLs are actually <https://embed-dev.wander.app/>. This should
-> be replaced before launch.
+of `https://connect.wander.app/`. See `wander-connect-sdk/src/wander-connect.ts`.
 
 <br />

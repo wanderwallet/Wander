@@ -1,12 +1,9 @@
-export interface WanderIframeTemplateContentOptions {
+export interface IframeTemplateContentOptions {
   customStyles: string;
   cssVariableKeys: string[];
 }
 
-export const getWanderIframeTemplateContent = ({
-  customStyles,
-  cssVariableKeys = [],
-}: WanderIframeTemplateContentOptions) => {
+export const getIframeTemplateContent = ({ customStyles, cssVariableKeys = [] }: IframeTemplateContentOptions) => {
   return `
   <style>
 

@@ -1,7 +1,13 @@
 import { IncomingAuthMessageData } from "./utils/message/message.types";
 
+// SDK state:
+
+export type OpenReason = "manually" | "embedded_open" | "embedded_request";
+
+// Routes and layouts:
+
 /**
- * Types of routes available in the Wander Embedded SDK.
+ * Types of routes available in the Wander Connect SDK.
  */
 export type RouteType =
   /** Default home screen */
@@ -57,7 +63,7 @@ export interface PopupLayoutConfig {
    * Position of the popup on the screen.
    * @default "bottom-right"
    */
-  position?: WanderEmbeddedPopupPosition;
+  position?: PopupPosition;
 
   /** Fixed width in pixels
    * @default Auto-sized based on content */
@@ -145,19 +151,6 @@ export type LayoutConfig = ModalLayoutConfig | PopupLayoutConfig | SidebarLayout
 export type LayoutType = LayoutConfig["type"];
 
 /**
- * Array of all supported layout types
- */
-export const LAYOUT_TYPES = ["modal", "popup", "sidebar", "half"] as const satisfies LayoutType[];
-
-/** Validates if an object is a valid layout configuration
- * @param obj Object to check
- * @returns True if object is a valid layout configuration
- */
-export function isRouteConfig(obj: unknown): obj is LayoutConfig {
-  return !!(obj && typeof obj === "object" && "type" in obj && LAYOUT_TYPES.includes(obj.type as LayoutType));
-}
-
-/**
  * Configuration for a specific route.
  * Contains layout and dimension information for a particular UI route.
  */
@@ -182,7 +175,57 @@ export interface RouteConfig {
   // imgSrc?: string;
 }
 
-export type AuthState = IncomingAuthMessageData;
+// Messages / callbacks:
+
+export type AuthProviderType = "PASSKEYS" | "EMAIL_N_PASSWORD" | "GOOGLE" | "FACEBOOK" | "X" | "APPLE";
+
+export type AuthStatus = "loading" | "onboarding" | "authenticated" | "not-authenticated";
+
+export interface UserDetails {
+  id: string;
+  email: null | string;
+  phone: null | string;
+  username: null | string;
+  name: null | string;
+  fullName: null | string;
+  picture: null | string;
+  confirmed: boolean;
+  emailConfirmed: boolean;
+  phoneConfirmed: boolean;
+  createdAt: Date;
+}
+
+export interface AuthInfoNative {
+  authType: "NATIVE_WALLET";
+  authStatus: null;
+  userDetails: null;
+}
+
+export interface AuthInfoNoAuth {
+  authType: null;
+  authStatus: "not-authenticated";
+  userDetails: null;
+}
+
+export interface AuthInfoLoading {
+  authType: AuthProviderType;
+  authStatus: "loading";
+  userDetails?: UserDetails;
+}
+
+export interface AuthInfoOnboarding {
+  authType: AuthProviderType;
+  authStatus: "onboarding" | "authenticated";
+  userDetails: UserDetails;
+}
+
+export interface AuthInfoAuthenticated {
+  authType: AuthProviderType;
+  authStatus: "onboarding" | "authenticated";
+  userDetails: UserDetails;
+}
+
+export type AuthInfo = AuthInfoNative | AuthInfoNoAuth | AuthInfoLoading | AuthInfoOnboarding | AuthInfoAuthenticated;
 
 /** User's wallet balance information */
 export interface BalanceInfo {
@@ -207,8 +250,10 @@ export interface RequestsInfo {
   hasNewConnectRequest: boolean;
 }
 
-/** Main configuration options for the Wander Embedded SDK */
-export interface WanderEmbeddedOptions {
+// Main WanderConnect options:
+
+/** Main configuration options for the Wander Connect SDK */
+export interface WanderConnectOptions {
   /**
    * Client ID for your App, registered on the Wander Dashboard.
    * @required
@@ -230,38 +275,36 @@ export interface WanderEmbeddedOptions {
   hideBE?: boolean;
 
   /**
-   * Base URL for the Wander Embed client app.
-   * The URL where the Wander Embed client is hosted.
-   * Only change this if you're using a custom or self-hosted version of the embed client.
-   * @default "https://embed-dev.wander.app"
+   * Base URL for the Wander Connect client app.
+   * Only change this if you're using a custom or self-hosted version of the Wander Connect app.
+   * @default "https://connect.wander.app"
    */
   baseURL?: string;
 
   /**
-   * Base URL for the Wander Embed tRPC server.
-   * The URL where the Wander Embed API server is hosted.
-   * Only change this if you're using a custom or self-hosted version of the embed API.
-   * @default "https://embed-api-dev.wander.app"
+   * Base URL for the Wander Connect tRPC API server.
+   * Only change this if you're using a custom or self-hosted version of the Wander Connect API.
+   * @default "https://connect-api.wander.app"
    */
   baseServerURL?: string;
 
   /**
    * Configuration options for the iframe component or an existing iframe element.
    */
-  iframe?: WanderEmbeddedIframeOptions | HTMLIFrameElement;
+  iframe?: IframeOptions | HTMLIFrameElement;
 
   /**
    * Configure the button that opens the wallet UI, or set to true to use default settings.
    * The button can be styled and positioned in various ways.
    * @default true - Default Button is shown unless explicitly configured
    */
-  button?: WanderEmbeddedButtonOptions | boolean;
+  button?: ButtonOptions | boolean;
 
   /**
    * Callback function called when authentication state changes.
    * @param userDetails User details object when signed in, or null when signed out
    */
-  onAuth?: (authState: AuthState) => void;
+  onAuth?: (authInfo: AuthInfo) => void;
 
   /**
    * Callback function called when the wallet interface is opened.
@@ -305,11 +348,10 @@ export type ThemeVariant =
 export type ThemeSetting = "system" | ThemeVariant;
 
 /**
- * Options for Wander Embedded components.
- * Base interface for component customization options shared by iframe and button components.
+ * Base options for components.
  * @template T The type of CSS variables available for styling the component
  */
-export interface WanderEmbeddedComponentOptions<T> {
+export interface ComponentOptions<T> {
   /**
    * ID of the component element.
    */
@@ -336,36 +378,22 @@ export interface WanderEmbeddedComponentOptions<T> {
 }
 
 /**
- * Configuration for Wander Embedded components.
- * Resolved configuration with all required fields set.
- * @template T The type of CSS variables for this component
+ * Base config for components, with no optional fields.
+ * @template T Type for the CSS variables accepted by this this component.
  */
-export interface WanderEmbeddedComponentConfig<T> extends Required<WanderEmbeddedComponentOptions<T>> {
+export interface ComponentConfig<T> extends Required<ComponentOptions<T>> {
   /**
    * CSS variables for both light and dark themes.
    */
   cssVars: Record<ThemeVariant, T>;
 }
 
-/** Checks if CSS variables contain theme-specific settings
- * @param cssVars CSS variables object
- * @returns True if theme-specific
- */
-export function isThemeRecord<T>(
-  cssVars: Partial<T> | Partial<Record<ThemeVariant, Partial<T>>>,
-): cssVars is Partial<Record<ThemeVariant, Partial<T>>> {
-  return !!(cssVars && typeof cssVars === "object" && ("light" in cssVars || "dark" in cssVars));
-}
-
 // Modal (iframe):
 
 /**
- * Configuration options for the iframe.
- * Customizes the appearance and behavior of the Wander Embedded iframe,
- * which displays the wallet UI.
+ * Customizes the appearance and behavior of the modal (iframe component), where the Wander Connect app is loaded.
  */
-export interface WanderEmbeddedIframeOptions extends WanderEmbeddedComponentOptions<WanderEmbeddedIframeCSSVars> {
-  // TODO: Default should automatically be used for auth-requests, and auth for account and settings?
+export interface IframeOptions extends ComponentOptions<IframeCSSVars> {
   /**
    * Layout configuration for different routes.
    * Controls how the iframe is displayed for each route type:
@@ -378,10 +406,9 @@ export interface WanderEmbeddedIframeOptions extends WanderEmbeddedComponentOpti
   routeLayout?: LayoutType | LayoutConfig | Partial<Record<RouteType, LayoutType | LayoutConfig>>;
 
   /**
-   * Close Wander Embedded when clicking outside of it.
-   * Controls the behavior when a user clicks outside the iframe:
-   * - false: Will never close. The user must click the close icon.
-   * - true: Will always close when clicking outside.
+   * Controls the behavior when the user clicks outside of the modaL.
+   * - false: The modal will never close when clicking outside of it. The user must click the close icon.
+   * - true: The modal will always close when clicking outside of it.
    * @default "auto"
    */
   clickOutsideBehavior?: boolean;
@@ -390,7 +417,7 @@ export interface WanderEmbeddedIframeOptions extends WanderEmbeddedComponentOpti
 /**
  * Configuration for the iframe component.
  */
-export interface WanderEmbeddedIframeConfig extends WanderEmbeddedComponentConfig<WanderEmbeddedIframeCSSVars> {
+export interface IframeConfig extends ComponentConfig<IframeCSSVars> {
   /**
    * Layout configuration for all route types.
    * Complete mapping of route types to their layout configuration.
@@ -410,25 +437,25 @@ export interface WanderEmbeddedIframeConfig extends WanderEmbeddedComponentConfi
  * Position of the button on the screen.
  * Determines where the button appears on the screen.
  */
-export type WanderEmbeddedButtonPosition = "top-right" | "bottom-right" | "top-left" | "bottom-left" | "static";
+export type ButtonPosition = "top-right" | "bottom-right" | "top-left" | "bottom-left" | "static";
 
 /**
  * Position of the popup on the screen.
  * Determines where the popup appears on the screen.
  */
-export type WanderEmbeddedPopupPosition = "top-right" | "bottom-right" | "top-left" | "bottom-left";
+export type PopupPosition = "top-right" | "bottom-right" | "top-left" | "bottom-left";
 
 /**
  * Variant of the Wander logo to display.
  * Controls how the Wander logo appears on the button.
  */
-export type WanderEmbeddedLogoVariant = "none" | "default" | "text-color";
+export type LogoVariant = "none" | "default" | "text-color";
 
 /**
  * Configuration for balance display in the button.
  * Controls which balance is displayed and in what currency.
  */
-export interface WanderEmbeddedBalanceOptions {
+export interface BalanceOptions {
   /**
    * Determines which token or total balance is shown.
    * @param "total" Show total balance across all tokens
@@ -447,7 +474,7 @@ export interface WanderEmbeddedBalanceOptions {
 }
 
 /** Notification display options */
-export type WanderEmbeddedButtonNotifications =
+export type ButtonNotifications =
   /** No notifications shown */
   | "off"
   /** Show count of pending requests */
@@ -458,7 +485,7 @@ export type WanderEmbeddedButtonNotifications =
 /**
  * Custom labels for button text.
  */
-export interface WanderEmbeddedButtonLabels {
+export interface ButtonLabels {
   /**
    * Title/tooltip to display when the button is loading.
    * @default "Loading"
@@ -493,9 +520,9 @@ export interface WanderEmbeddedButtonLabels {
 
 /**
  * Configuration options for the button component.
- * Customizes the appearance and behavior of the Wander Embedded button.
+ * Customizes the appearance and behavior of the button component.
  */
-export interface WanderEmbeddedButtonOptions extends WanderEmbeddedComponentOptions<WanderEmbeddedButtonCSSVars> {
+export interface ButtonOptions extends ComponentOptions<ButtonCSSVars> {
   /**
    * Element the button will be appended to.
    * @default document.body
@@ -507,7 +534,7 @@ export interface WanderEmbeddedButtonOptions extends WanderEmbeddedComponentOpti
    * Use "static" for custom positioning via CSS.
    * @default "bottom-right"
    */
-  position?: WanderEmbeddedButtonPosition;
+  position?: ButtonPosition;
 
   /**
    * Variant of the Wander logo to display.
@@ -516,7 +543,7 @@ export interface WanderEmbeddedButtonOptions extends WanderEmbeddedComponentOpti
    * - "text-color": Logo with colored text is displayed
    * @default "default"
    */
-  wanderLogo?: WanderEmbeddedLogoVariant;
+  wanderLogo?: LogoVariant;
 
   /**
    * Whether to show the button label.
@@ -528,28 +555,28 @@ export interface WanderEmbeddedButtonOptions extends WanderEmbeddedComponentOpti
    * Configuration for displaying balance information.
    * - false: No balance is displayed
    * - true: Balance is displayed
-   * - WanderEmbeddedBalanceOptions: Customized balance display
+   * - BalanceOptions: Customized balance display
    * @default { balanceOf: "total", currency: "auto" }
    */
-  balance?: boolean | WanderEmbeddedBalanceOptions;
+  balance?: boolean | BalanceOptions;
 
   /**
    * Type of notifications to display.
    * @default "counter"
    */
-  notifications?: WanderEmbeddedButtonNotifications;
+  notifications?: ButtonNotifications;
 
   /**
    * Custom labels for button text.
    * @default { signIn: "Sign in", reviewRequests: "Review requests" }
    */
-  i18n?: WanderEmbeddedButtonLabels;
+  i18n?: ButtonLabels;
 }
 
 /**
  * Configuration for the button component.
  */
-export interface WanderEmbeddedButtonConfig extends WanderEmbeddedComponentConfig<WanderEmbeddedButtonCSSVars> {
+export interface ButtonConfig extends ComponentConfig<ButtonCSSVars> {
   /**
    * Element the button will be appended to.
    */
@@ -558,12 +585,12 @@ export interface WanderEmbeddedButtonConfig extends WanderEmbeddedComponentConfi
   /**
    * Position of the button on the screen.
    */
-  position: WanderEmbeddedButtonPosition;
+  position: ButtonPosition;
 
   /**
    * Variant of the Wander logo to display.
    */
-  wanderLogo: WanderEmbeddedLogoVariant;
+  wanderLogo: LogoVariant;
 
   /**
    * Whether to show the button label.
@@ -573,23 +600,23 @@ export interface WanderEmbeddedButtonConfig extends WanderEmbeddedComponentConfi
   /**
    * Configuration for displaying balance information.
    */
-  balance: false | WanderEmbeddedBalanceOptions;
+  balance: false | BalanceOptions;
 
   /**
    * Type of notifications to display.
    */
-  notifications: WanderEmbeddedButtonNotifications;
+  notifications: ButtonNotifications;
 
   /**
    * Custom labels for button text.
    */
-  i18n: WanderEmbeddedButtonLabels;
+  i18n: ButtonLabels;
 }
 
 /**
  * Button status properties that can be observed.
  */
-export type WanderEmbeddedButtonStatus =
+export type ButtonStatus =
   /** Whether the user's wallet is connected to the application. */
   | "isConnected"
   /** Whether the wallet UI is currently open. */
@@ -600,7 +627,7 @@ export type WanderEmbeddedButtonStatus =
 /**
  * CSS variables for styling the modal/iframe component.
  */
-export interface WanderEmbeddedIframeCSSVars {
+export interface IframeCSSVars {
   // Modal (iframe):
   /**
    * Background color of the modal.
@@ -711,7 +738,7 @@ export interface WanderEmbeddedIframeCSSVars {
 /**
  * CSS variables for styling the button component.
  */
-export interface WanderEmbeddedButtonCSSVars {
+export interface ButtonCSSVars {
   // Button (button):
   /**
    * Horizontal gap from the edge of the screen.
