@@ -3,23 +3,8 @@ import type { SVGProps } from "react";
 import { withThemeAwareColor } from "./IconBase";
 
 const SvgBuyWithCrypto = (props: SVGProps<SVGSVGElement>) => (
-  <svg
-    width="135"
-    height="37"
-    viewBox="0 0 135 37"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    {...props}
-  >
-    <rect
-      x="1.03366"
-      y="4.60728"
-      width="45"
-      height="31"
-      rx="3.5"
-      transform="rotate(-4 1.03366 4.60728)"
-      fill="white"
-    />
+  <svg width="135" height="37" viewBox="0 0 135 37" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+    <rect x="1.03366" y="4.60728" width="45" height="31" rx="3.5" transform="rotate(-4 1.03366 4.60728)" fill="white" />
     <rect
       x="1.03366"
       y="4.60728"
@@ -40,15 +25,7 @@ const SvgBuyWithCrypto = (props: SVGProps<SVGSVGElement>) => (
       stroke="black"
       stroke-width="0.396694"
     />
-    <rect
-      x="44.1538"
-      y="4.60728"
-      width="45"
-      height="31"
-      rx="5.5"
-      transform="rotate(-4 44.1538 4.60728)"
-      fill="white"
-    />
+    <rect x="44.1538" y="4.60728" width="45" height="31" rx="5.5" transform="rotate(-4 44.1538 4.60728)" fill="white" />
     <rect
       x="44.1538"
       y="4.60728"
@@ -68,10 +45,7 @@ const SvgBuyWithCrypto = (props: SVGProps<SVGSVGElement>) => (
         stroke="#333333"
         stroke-width="0.529"
       />
-      <path
-        d="M59.8666 22.3878L62.325 22.2159L62.7318 20.8241L61.4413 18.5916L59.8666 22.3878Z"
-        fill="black"
-      />
+      <path d="M59.8666 22.3878L62.325 22.2159L62.7318 20.8241L61.4413 18.5916L59.8666 22.3878Z" fill="black" />
       <path
         d="M66.2606 20.0976L63.1415 14.7866L62.4455 16.7288L65.4105 22.0001L67.2718 21.87L66.2606 20.0976Z"
         fill="black"
@@ -83,15 +57,7 @@ const SvgBuyWithCrypto = (props: SVGProps<SVGSVGElement>) => (
         fill="black"
       />
     </g>
-    <rect
-      x="87.274"
-      y="4.60728"
-      width="45"
-      height="31"
-      rx="5.5"
-      transform="rotate(-4 87.274 4.60728)"
-      fill="white"
-    />
+    <rect x="87.274" y="4.60728" width="45" height="31" rx="5.5" transform="rotate(-4 87.274 4.60728)" fill="white" />
     <rect
       x="87.274"
       y="4.60728"
@@ -121,12 +87,7 @@ const SvgBuyWithCrypto = (props: SVGProps<SVGSVGElement>) => (
     />
     <defs>
       <clipPath id="clip0_15_2101">
-        <rect
-          width="21.16"
-          height="21.16"
-          fill="white"
-          transform="translate(55.6864 8.11511) rotate(-4)"
-        />
+        <rect width="21.16" height="21.16" fill="white" transform="translate(55.6864 8.11511) rotate(-4)" />
       </clipPath>
     </defs>
   </svg>

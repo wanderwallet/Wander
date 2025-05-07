@@ -28,7 +28,7 @@ const Input = forwardRef<HTMLInputElement, InputBaseProps>(
       placeholder = "",
       ...props
     },
-    ref
+    ref,
   ) => {
     const [showPassword, setShowPassword] = useState(false);
     const [inputWidth, setInputWidth] = useState<string>("auto");
@@ -74,16 +74,13 @@ const Input = forwardRef<HTMLInputElement, InputBaseProps>(
           <Text
             variant="bodyMd"
             className={styles.input__label}
-            style={{ color: hasError ? "var(--color-error)" : undefined }}
-          >
+            style={{ color: hasError ? "var(--color-error)" : undefined }}>
             {label}
           </Text>
         )}
 
         <div className={styles.input__wrapper}>
-          {startIcon && (
-            <div className={styles.input__icon__start}>{startIcon}</div>
-          )}
+          {startIcon && <div className={styles.input__icon__start}>{startIcon}</div>}
 
           <input
             ref={handleRef}
@@ -98,13 +95,11 @@ const Input = forwardRef<HTMLInputElement, InputBaseProps>(
               hasError && styles.input__error,
               isBlurry && styles.input__blurry,
               startIcon && styles.input__has__start__icon,
-              (endIcon ||
-                (type === "password" && canTogglePasswordVisibility)) &&
-                styles.input__has__end__icon,
+              (endIcon || (type === "password" && canTogglePasswordVisibility)) && styles.input__has__end__icon,
               isCentered && styles.input__centered,
               autoSize && styles.input__auto_size,
               disabled && styles.input__disabled,
-              className
+              className,
             )}
             style={autoSize ? { width: inputWidth } : undefined}
             {...props}
@@ -112,30 +107,16 @@ const Input = forwardRef<HTMLInputElement, InputBaseProps>(
 
           {/* Hidden span to measure text width for auto-sizing */}
           {autoSize && (
-            <span
-              ref={measureRef}
-              className={styles.input__measure}
-              aria-hidden="true"
-            >
+            <span ref={measureRef} className={styles.input__measure} aria-hidden="true">
               {(value as string) || placeholder || "0"}
             </span>
           )}
 
-          {(endIcon ||
-            (type === "password" && canTogglePasswordVisibility)) && (
+          {(endIcon || (type === "password" && canTogglePasswordVisibility)) && (
             <div
               className={styles.input__icon__end}
-              onClick={
-                type === "password" && canTogglePasswordVisibility
-                  ? togglePasswordVisibility
-                  : undefined
-              }
-              style={
-                type === "password" && canTogglePasswordVisibility
-                  ? { cursor: "pointer" }
-                  : undefined
-              }
-            >
+              onClick={type === "password" && canTogglePasswordVisibility ? togglePasswordVisibility : undefined}
+              style={type === "password" && canTogglePasswordVisibility ? { cursor: "pointer" } : undefined}>
               {type === "password" && canTogglePasswordVisibility ? (
                 showPassword ? (
                   <EyeOffIcon />
@@ -162,7 +143,7 @@ const Input = forwardRef<HTMLInputElement, InputBaseProps>(
         )}
       </Box>
     );
-  }
+  },
 );
 
 Input.displayName = "Input";

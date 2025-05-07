@@ -91,5 +91,5 @@ export const backgroundModules: BackgroundModule<any>[] = [
   { ...subscriptionModule, function: subscription },
   { ...userTokensModule, function: userTokens },
   { ...tokenBalanceModule, function: tokenBalance },
-  { ...batchSignDataItemModule, function: batchSignDataItem }
+  { ...batchSignDataItemModule, function: batchSignDataItem },
 ];

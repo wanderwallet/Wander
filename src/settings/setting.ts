@@ -1,12 +1,7 @@
 import { PersistentStorage } from "~utils/storage";
 import type { Storage } from "@plasmohq/storage";
 import { getGatewayCache } from "~gateways/cache";
-import {
-  clGateway,
-  defaultGateway,
-  defaultGateways,
-  type Gateway
-} from "~gateways/gateway";
+import { clGateway, defaultGateway, defaultGateways, type Gateway } from "~gateways/gateway";
 
 export const PREFIX = "setting_";
 
@@ -41,16 +36,7 @@ export default class Setting {
   /** Storage to fetch from */
   #storage: Storage;
 
-  constructor({
-    name,
-    displayName,
-    description,
-    type,
-    defaultValue,
-    options,
-    icon,
-    inputPlaceholder
-  }: InitParams) {
+  constructor({ name, displayName, description, type, defaultValue, options, icon, inputPlaceholder }: InitParams) {
     this.name = name;
     this.displayName = displayName;
     this.description = description;
@@ -76,7 +62,7 @@ export default class Setting {
             gatewayOptions = gateways.map((gateway) => ({
               port: gateway.settings.port,
               protocol: gateway.settings.protocol,
-              host: gateway.settings.fqdn
+              host: gateway.settings.fqdn,
             }));
           }
           const gateway = (await this.getValue()) as Gateway;
@@ -87,14 +73,12 @@ export default class Setting {
               defaultGateway.host,
               clGateway.host,
               "aoweave.tech",
-              "defi.ao"
-            ])
+              "defi.ao",
+            ]),
           );
 
           const uniqueHosts = otherHosts
-            .filter(
-              (host) => !gatewayOptions.some((option) => option.host === host)
-            )
+            .filter((host) => !gatewayOptions.some((option) => option.host === host))
             .map((host) => ({ port: 443, protocol: "https", host }));
 
           this.options = [...gatewayOptions, ...uniqueHosts];

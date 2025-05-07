@@ -3,12 +3,7 @@ import QrScanner from "qr-scanner";
 import styled from "styled-components";
 import { Text, useToasts } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
-import {
-  parseFramesReducer,
-  areFramesComplete,
-  framesToData,
-  progressOfFrames
-} from "qrloop";
+import { parseFramesReducer, areFramesComplete, framesToData, progressOfFrames } from "qrloop";
 
 interface QRScannerProps {
   onScan: (result: string) => void;
@@ -33,14 +28,14 @@ export function QRScanner({ onScan, onError }: QRScannerProps) {
         setToast({
           type: "info",
           content: `Scanning: ${Math.round(progress * 100)}%`,
-          duration: 1000
+          duration: 1000,
         });
       }
     } catch (e) {
       setToast({
         type: "error",
         content: browser.i18n.getMessage("invalid_qr_code"),
-        duration: 2000
+        duration: 2000,
       });
       onError?.(browser.i18n.getMessage("invalid_qr_code"));
     }
@@ -54,7 +49,7 @@ export function QRScanner({ onScan, onError }: QRScannerProps) {
         const newScanner = new QrScanner(videoRef.current, handleQRScan, {
           returnDetailedScanResult: true,
           highlightScanRegion: true,
-          highlightCodeOutline: true
+          highlightCodeOutline: true,
         });
 
         setScanner(newScanner);
@@ -63,7 +58,7 @@ export function QRScanner({ onScan, onError }: QRScannerProps) {
         setToast({
           type: "error",
           content: browser.i18n.getMessage("camera_permission_denied"),
-          duration: 2000
+          duration: 2000,
         });
         onError?.(browser.i18n.getMessage("camera_permission_denied"));
       }
@@ -87,9 +82,7 @@ export function QRScanner({ onScan, onError }: QRScannerProps) {
       </VideoContainer>
       <Text size="sm" variant="secondary" style={{ textAlign: "center" }}>
         {frames
-          ? `${browser.i18n.getMessage("scanning")}: ${Math.round(
-              progressOfFrames(frames) * 100
-            )}%`
+          ? `${browser.i18n.getMessage("scanning")}: ${Math.round(progressOfFrames(frames) * 100)}%`
           : browser.i18n.getMessage("position_qr_code")}
       </Text>
     </ScannerContainer>

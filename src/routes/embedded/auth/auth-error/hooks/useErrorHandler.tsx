@@ -16,14 +16,12 @@ export function useErrorHandler() {
 
   useEffect(() => {
     const error = searchParams.error || "unknown_error";
-    const errorDescription =
-      searchParams.error_description ||
-      "An unexpected authentication error occurred";
+    const errorDescription = searchParams.error_description || "An unexpected authentication error occurred";
 
     setErrorState({
       code: error,
       description: errorDescription,
-      friendlyMessage: getFriendlyErrorMessage(error, errorDescription)
+      friendlyMessage: getFriendlyErrorMessage(error, errorDescription),
     });
   }, [searchParams]);
 
@@ -34,7 +32,7 @@ export function useErrorHandler() {
 
   return {
     errorState,
-    handleRetry
+    handleRetry,
   };
 }
 
@@ -59,14 +57,13 @@ function getFriendlyErrorMessage(error: string, description: string): string {
       "Access was denied. This usually happens if you declined permissions or the authentication was cancelled.",
     unauthorized_client:
       "This application is not authorized to perform this operation. Please contact support if this persists.",
-    invalid_grant:
-      "The authentication credentials were invalid or expired. Please try again with valid credentials.",
+    invalid_grant: "The authentication credentials were invalid or expired. Please try again with valid credentials.",
     invalid_scope:
       "The requested permissions were invalid or insufficient. Please try again and ensure all required permissions are granted.",
     temporarily_unavailable:
       "The authentication service is temporarily unavailable. Please try again in a few moments.",
     unknown_error:
-      "An unexpected error occurred during authentication. Please try again or contact support if the issue persists."
+      "An unexpected error occurred during authentication. Please try again or contact support if the issue persists.",
   };
 
   // If we have a specific message for this error code, use it

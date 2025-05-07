@@ -2,19 +2,13 @@ import type { AuthProviderType } from "embed-api";
 import { getSupabaseClient, trpcVanilla } from "~utils/embedded/embedded.utils";
 import type { Provider } from "@supabase/supabase-js";
 
-// Define API_URL directly in the file
-const API_URL = process.env.VITE_API_URL || "https://api.wander.app";
-
-const SUPABASE_PROVIDER_BY_AUTH_PROVIDER_TYPE: Record<
-  AuthProviderType,
-  Provider | null
-> = {
+const SUPABASE_PROVIDER_BY_AUTH_PROVIDER_TYPE: Record<AuthProviderType, Provider | null> = {
   PASSKEYS: null,
   EMAIL_N_PASSWORD: null,
   GOOGLE: "google",
   FACEBOOK: "facebook",
   X: "twitter",
-  APPLE: "apple"
+  APPLE: "apple",
 };
 
 // Use a trpc client with type casting for passkey operations
@@ -28,7 +22,7 @@ const passkeyClient = {
         console.error("Error in startRegistration:", err);
         throw err;
       }
-    }
+    },
   },
   verifyRegistration: {
     mutate: async (data: any) => {
@@ -39,7 +33,7 @@ const passkeyClient = {
         console.error("Error in verifyRegistration:", err);
         throw err;
       }
-    }
+    },
   },
   startAuthentication: {
     mutate: async (data: any) => {
@@ -50,7 +44,7 @@ const passkeyClient = {
         console.error("Error in startAuthentication:", err);
         throw err;
       }
-    }
+    },
   },
   verifyAuthentication: {
     mutate: async (data: any) => {
@@ -61,7 +55,7 @@ const passkeyClient = {
         console.error("Error in verifyAuthentication:", err);
         throw err;
       }
-    }
+    },
   },
   checkUserPasskeys: {
     query: async (data: any) => {
@@ -72,7 +66,7 @@ const passkeyClient = {
         console.error("Error in checkUserPasskeys:", err);
         throw err;
       }
-    }
+    },
   },
   finalizePasskey: {
     mutate: async (data: any) => {
@@ -83,8 +77,8 @@ const passkeyClient = {
         console.error("Error in finalizePasskey:", err);
         throw err;
       }
-    }
-  }
+    },
+  },
 };
 
 async function authenticate(authProviderType: AuthProviderType) {
@@ -115,8 +109,8 @@ async function authenticate(authProviderType: AuthProviderType) {
       options: {
         redirectTo: window.location.origin,
         skipBrowserRedirect: true,
-        scopes: provider === "google" ? "email profile" : undefined
-      }
+        scopes: provider === "google" ? "email profile" : undefined,
+      },
     });
 
     if (error) {
@@ -139,7 +133,7 @@ async function startPasskeyRegistration() {
   // Get the user's email from the current session
   const supabase = await getSupabaseClient();
   const {
-    data: { session }
+    data: { session },
   } = await supabase.auth.getSession();
 
   if (!session?.user?.email) {
@@ -148,19 +142,16 @@ async function startPasskeyRegistration() {
 
   // Start the registration process using the server-side API
   const registrationResult = await passkeyClient.startRegistration.mutate({
-    email: session.user.email
+    email: session.user.email,
   });
 
   return registrationResult;
 }
 
-async function verifyPasskeyRegistration(
-  userId: string,
-  attestationResponse: any
-) {
+async function verifyPasskeyRegistration(userId: string, attestationResponse: any) {
   return passkeyClient.verifyRegistration.mutate({
     userId,
-    attestationResponse
+    attestationResponse,
   });
 }
 
@@ -188,7 +179,7 @@ async function finalizePasskeyRegistration(params: {
       // Set the session in Supabase with our custom tokens
       const { data, error } = await supabase.auth.setSession({
         access_token: result.access_token,
-        refresh_token: result.refresh_token
+        refresh_token: result.refresh_token,
       });
 
       if (error) {
@@ -212,7 +203,7 @@ async function finalizePasskeyRegistration(params: {
 async function startPasskeyAuthentication(email?: string) {
   // Start the authentication process using the server-side API
   const authenticationResult = await passkeyClient.startAuthentication.mutate({
-    email
+    email,
   });
 
   return authenticationResult;
@@ -254,7 +245,7 @@ async function verifyPasskeyAuthentication(params: {
       // Set the session in Supabase with our custom tokens
       const { data, error } = await supabase.auth.setSession({
         access_token: authResult.access_token,
-        refresh_token: authResult.refresh_token
+        refresh_token: authResult.refresh_token,
       });
 
       if (error) {
@@ -277,7 +268,7 @@ async function checkUserPasskeys() {
     // Get the user's email from the current session
     const supabase = await getSupabaseClient();
     const {
-      data: { session }
+      data: { session },
     } = await supabase.auth.getSession();
 
     if (!session?.user?.email) {
@@ -286,7 +277,7 @@ async function checkUserPasskeys() {
 
     // Check if the user has any passkeys registered via API
     const result = await passkeyClient.checkUserPasskeys.query({
-      email: session.user.email
+      email: session.user.email,
     });
 
     return result;
@@ -299,35 +290,29 @@ async function checkUserPasskeys() {
 async function generateFetchRecoverableAccountsChallenge(address: string) {
   return trpcVanilla.generateFetchRecoverableAccountsChallenge.mutate({
     chain: "ARWEAVE",
-    address
+    address,
   });
 }
 
-async function fetchRecoverableAccounts(
-  challengeId: string,
-  challengeSolution: string
-) {
+async function fetchRecoverableAccounts(challengeId: string, challengeSolution: string) {
   return trpcVanilla.fetchRecoverableAccounts.mutate({
     challengeId,
-    challengeSolution
+    challengeSolution,
   });
 }
 
-async function generateAccountRecoveryChallenge(
-  address: string,
-  userId: string
-) {
+async function generateAccountRecoveryChallenge(address: string, userId: string) {
   return trpcVanilla.generateAccountRecoveryChallenge.mutate({
     chain: "ARWEAVE",
     address,
-    userId
+    userId,
   });
 }
 
 async function recoverAccount(userId: string, challengeSolution: string) {
   return trpcVanilla.recoverAccount.mutate({
     userId,
-    challengeSolution
+    challengeSolution,
   });
 }
 
@@ -358,8 +343,7 @@ async function handleOAuthCallback() {
     const params = new URLSearchParams(hashParams || searchParams);
 
     // Check for errors in the URL
-    const errorDescription =
-      params.get("error_description") || params.get("error");
+    const errorDescription = params.get("error_description") || params.get("error");
     if (errorDescription) {
       console.error("OAuth error from URL:", errorDescription);
       return { success: false, error: errorDescription };
@@ -374,7 +358,7 @@ async function handleOAuthCallback() {
 
       const sessionResult = await supabase.auth.setSession({
         access_token: accessToken,
-        refresh_token: refreshToken
+        refresh_token: refreshToken,
       });
 
       if (sessionResult.error) {
@@ -400,19 +384,16 @@ async function handleOAuthCallback() {
  * @param deviceNonce The device nonce for additional verification
  * @returns A properly signed access token from the server
  */
-export async function getSessionToken(
-  sessionId: string,
-  deviceNonce: string
-): Promise<{ access_token: string }> {
+export async function getSessionToken(sessionId: string, deviceNonce: string): Promise<{ access_token: string }> {
   const url = `${API_URL}/auth/sessions/${sessionId}/token`;
 
   const response = await fetch(url, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "x-device-nonce": deviceNonce
+      "x-device-nonce": deviceNonce,
     },
-    body: JSON.stringify({ sessionId, deviceNonce })
+    body: JSON.stringify({ sessionId, deviceNonce }),
   });
 
   if (!response.ok) {
@@ -435,5 +416,5 @@ export const AuthenticationService = {
   generateAccountRecoveryChallenge,
   recoverAccount,
   handleOAuthCallback,
-  getSessionToken
+  getSessionToken,
 } as const;

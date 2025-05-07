@@ -1,14 +1,7 @@
 import * as React from "react";
 import type { SVGProps } from "react";
 const SvgRecoverHeader = (props: SVGProps<SVGSVGElement>) => (
-  <svg
-    width="74"
-    height="49"
-    viewBox="0 0 74 49"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    {...props}
-  >
+  <svg width="74" height="49" viewBox="0 0 74 49" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
     <rect
       x="13.3726"
       y="12.2871"
@@ -18,12 +11,7 @@ const SvgRecoverHeader = (props: SVGProps<SVGSVGElement>) => (
       transform="rotate(-15 13.3726 12.2871)"
       fill="#26126F"
     />
-    <foreignObject
-      x="11.105"
-      y="1.30787"
-      width="54.3171"
-      height="46.5781"
-    ></foreignObject>
+    <foreignObject x="11.105" y="1.30787" width="54.3171" height="46.5781"></foreignObject>
     <rect
       data-figma-bg-blur-radius="3.4768"
       x="14.1357"
@@ -44,13 +32,7 @@ const SvgRecoverHeader = (props: SVGProps<SVGSVGElement>) => (
       transform="rotate(-15 45.4119 16.2744)"
       fill="#EAE7FF"
     />
-    <circle
-      cx="52.4783"
-      cy="20.7885"
-      r="2.37735"
-      transform="rotate(-15 52.4783 20.7885)"
-      fill="#6B57F9"
-    />
+    <circle cx="52.4783" cy="20.7885" r="2.37735" transform="rotate(-15 52.4783 20.7885)" fill="#6B57F9" />
     <path
       d="M4.83439 18.8667C4.86837 18.7387 5.05006 18.7387 5.08405 18.8667L5.89088 21.9062C5.90272 21.9508 5.93743 21.9857 5.98195 21.9978L8.99592 22.8139C9.12311 22.8484 9.12311 23.0288 8.99592 23.0633L5.98195 23.8794C5.93743 23.8915 5.90272 23.9264 5.89088 23.971L5.08405 27.0105C5.05006 27.1385 4.86837 27.1385 4.83439 27.0105L4.02755 23.971C4.01572 23.9264 3.981 23.8915 3.93648 23.8794L0.922513 23.0633C0.79532 23.0288 0.795321 22.8484 0.922513 22.8139L3.93648 21.9978C3.981 21.9857 4.01572 21.9508 4.02755 21.9062L4.83439 18.8667Z"
       fill="#6B57F9"
@@ -82,8 +64,7 @@ const SvgRecoverHeader = (props: SVGProps<SVGSVGElement>) => (
         y1="45.9036"
         x2="35.1394"
         y2="15.1348"
-        gradientUnits="userSpaceOnUse"
-      >
+        gradientUnits="userSpaceOnUse">
         <stop stop-color="#6B57F9" />
         <stop offset="1" stop-color="#9787FF" />
       </linearGradient>

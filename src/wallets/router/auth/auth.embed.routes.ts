@@ -35,48 +35,48 @@ export const AuthPaths = {
   Signature: "/auth-request/signature/:authID",
   SignDataItem: "/auth-request/signDataItem/:authID",
   BatchSignDataItem: "/auth-request/batchSignDataItem/:authID",
-  Subscription: "/auth-request/subscription/:authID"
+  Subscription: "/auth-request/subscription/:authID",
 } as const satisfies Record<string, AuthRoutePath>;
 
 export const AUTH_ROUTES = [
   ...getExtensionOverrides({
     unlockView: UnlockAuthRequestView,
-    loadingView: LoadingAuthRequestView
+    loadingView: LoadingAuthRequestView,
   }),
   {
     path: AuthPaths.Connect,
-    component: EmbeddedConnectAuthRequestView
+    component: EmbeddedConnectAuthRequestView,
   },
   {
     path: AuthPaths.Allowance,
-    component: AllowanceAuthRequestView
+    component: AllowanceAuthRequestView,
   },
   {
     path: AuthPaths.Decrypt,
-    component: EmbeddedDecryptAuthRequestView
+    component: EmbeddedDecryptAuthRequestView,
   },
   {
     path: AuthPaths.Sign,
-    component: EmbeddedSignAuthRequestView
+    component: EmbeddedSignAuthRequestView,
   },
   {
     path: AuthPaths.SignKeystone,
-    component: SignKeystoneAuthRequestView
+    component: SignKeystoneAuthRequestView,
   },
   {
     path: AuthPaths.Signature,
-    component: EmbeddedSignatureAuthRequestView
+    component: EmbeddedSignatureAuthRequestView,
   },
   {
     path: AuthPaths.SignDataItem,
-    component: EmbeddedSignDataAuthRequestView
+    component: EmbeddedSignDataAuthRequestView,
   },
   {
     path: AuthPaths.BatchSignDataItem,
-    component: EmbeddedBatchSignDataItemAuthRequestView
+    component: EmbeddedBatchSignDataItemAuthRequestView,
   },
   {
     path: AuthPaths.Subscription,
-    component: SubscriptionAuthRequestView
-  }
+    component: SubscriptionAuthRequestView,
+  },
 ] as const satisfies RouteConfig[];

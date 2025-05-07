@@ -10,6 +10,7 @@
   position: relative;
   width: 100%;
   box-sizing: border-box;
+  min-height: 100%;
 }
 
 /* Make sure all elements respect border-box */
@@ -24,7 +25,7 @@
   transition: 0.3s;
 }
 
-.card__blury {
+.card__blurry {
   filter: blur(var(--spacing-2));
 }
 
@@ -35,7 +36,7 @@
 }
 
 .card__auto {
-  min-height: auto;
+  height: auto;
   font-size: var(--font-size-base);
 }
 

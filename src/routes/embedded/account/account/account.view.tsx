@@ -14,8 +14,7 @@ export function AccountEmbeddedView() {
       footerElement={<WanderFooter />}
       hasBackButton={true}
       onBackButtonClick={back}
-      size="auto"
-    >
+      size="auto">
       <Copyable
         style={{ margin: "32px 0" }}
         isFullWidth

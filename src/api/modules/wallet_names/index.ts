@@ -5,7 +5,7 @@ const permissions: PermissionType[] = ["ACCESS_ALL_ADDRESSES"];
 
 const walletNames: ModuleProperties = {
   functionName: "getWalletNames",
-  permissions
+  permissions,
 };
 
 export default walletNames;

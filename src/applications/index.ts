@@ -42,7 +42,7 @@ export async function addApp({ url, ...rest }: InitAppParams) {
   // save app settings
   await PersistentStorage.set(`${PREFIX}${url}`, {
     url,
-    ...rest
+    ...rest,
   });
 }
 
@@ -57,7 +57,7 @@ export async function removeApp(url: string) {
   // remove app key
   await PersistentStorage.set(
     "apps",
-    storedApps.filter((val) => val !== url)
+    storedApps.filter((val) => val !== url),
   );
 
   // remove app settings
@@ -71,6 +71,6 @@ export const getActiveTab = async () =>
   (
     await browser.tabs.query({
       active: true,
-      currentWindow: true
+      currentWindow: true,
     })
   )[0];

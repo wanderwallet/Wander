@@ -38,8 +38,7 @@ export function AuthRestoreSharesEmbeddedView() {
       onBackButtonClick={back}
       hasCloseButton={true}
       onCloseButtonClick={() => navigate(`/auth`)}
-      size="auto"
-    >
+      size="auto">
       <Box>
         {/* <Button
           variant="outlined"
@@ -69,25 +68,14 @@ export function AuthRestoreSharesEmbeddedView() {
           variant="outlined"
           isFullWidth
           icon={<WalletIcon fontSize={24} />}
-          href="#/auth/restore-shares/recovery-file"
-        >
-          Upload Account Recovery File
+          href="#/auth/restore-shares/recovery-file">
+          Import Recovery File
         </Button>
-        <Button
-          variant="outlined"
-          isFullWidth
-          icon={<SeedIcon fontSize={24} />}
-          href="#/auth/import-seedphrase"
-        >
-          Enter Seed Phrase
+        <Button variant="outlined" isFullWidth icon={<SeedIcon fontSize={24} />} href="#/auth/import-seedphrase">
+          Enter Seedphrase
         </Button>
-        <Button
-          variant="outlined"
-          isFullWidth
-          icon={<KeyIcon fontSize={24} />}
-          href="#/auth/import-keyfile"
-        >
-          Import Private Key
+        <Button variant="outlined" isFullWidth icon={<KeyIcon fontSize={24} />} href="#/auth/import-keyfile">
+          Import keyfile
         </Button>
       </Box>
     </Card>

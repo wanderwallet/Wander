@@ -1,10 +1,4 @@
-import {
-  Button,
-  Input,
-  Text,
-  useInput,
-  useToasts
-} from "@arconnect/components-rebrand";
+import { Button, Input, Text, useInput, useToasts } from "@arconnect/components-rebrand";
 import { InputWithBtn, InputWrapper } from "./InputWrapper";
 import { useStorage } from "~utils/storage";
 import { ExtensionStorage } from "~utils/storage";
@@ -19,7 +13,7 @@ export default function Mint({ arweave }: Props) {
   // active address
   const [activeAddress] = useStorage<string>({
     key: "active_address",
-    instance: ExtensionStorage
+    instance: ExtensionStorage,
   });
 
   // toasts
@@ -30,7 +24,7 @@ export default function Mint({ arweave }: Props) {
     try {
       // mint tokens
       const { status, statusText } = await arweave.api.get(
-        `/mint/${activeAddress}/${arweave.ar.arToWinston(testnetQty.state)}`
+        `/mint/${activeAddress}/${arweave.ar.arToWinston(testnetQty.state)}`,
       );
 
       if (status !== 200) {
@@ -39,18 +33,15 @@ export default function Mint({ arweave }: Props) {
 
       setToast({
         type: "success",
-        content: browser.i18n.getMessage("arMinted", [
-          testnetQty.state,
-          formatAddress(activeAddress, 8)
-        ]),
-        duration: 3000
+        content: browser.i18n.getMessage("arMinted", [testnetQty.state, formatAddress(activeAddress, 8)]),
+        duration: 3000,
       });
     } catch (e) {
       console.log("Failed to mint tokens", e);
       setToast({
         type: "error",
         content: browser.i18n.getMessage("tokenMintFailed"),
-        duration: 2400
+        duration: 2400,
       });
     }
   }

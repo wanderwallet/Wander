@@ -17,9 +17,9 @@ export function TokensSettingsView() {
   const [aoTokens] = useStorage<TokenInfoWithBalance[]>(
     {
       key: "ao_tokens",
-      instance: PersistentStorage
+      instance: PersistentStorage,
     },
-    []
+    [],
   );
 
   const { assets, collectibles } = useMemo(() => {
@@ -31,7 +31,7 @@ export function TokensSettingsView() {
           balance: "0",
           ticker: token.Ticker,
           type: token.type || "asset",
-          name: token.Name
+          name: token.Name,
         };
 
         if (enhancedToken.type === "collectible") {
@@ -41,7 +41,7 @@ export function TokensSettingsView() {
         }
         return acc;
       },
-      { assets: [], collectibles: [] }
+      { assets: [], collectibles: [] },
     );
 
     return processed;
@@ -59,8 +59,7 @@ export function TokensSettingsView() {
     }
 
     return (
-      token.name.toLowerCase().includes(query.toLowerCase()) ||
-      token.ticker.toLowerCase().includes(query.toLowerCase())
+      token.name.toLowerCase().includes(query.toLowerCase()) || token.ticker.toLowerCase().includes(query.toLowerCase())
     );
   }
 
@@ -81,31 +80,18 @@ export function TokensSettingsView() {
 
   return (
     <>
-      <HeadV2
-        title={browser.i18n.getMessage("setting_tokens")}
-        back={() => navigate("/quick-settings")}
-      />
+      <HeadV2 title={browser.i18n.getMessage("setting_tokens")} back={() => navigate("/quick-settings")} />
       <Wrapper>
         <div>
-          <SearchInput
-            small
-            placeholder={browser.i18n.getMessage("search_tokens")}
-            {...searchInput.bindings}
-          />
+          <SearchInput small placeholder={browser.i18n.getMessage("search_tokens")} {...searchInput.bindings} />
           <Spacer y={1} />
-          <div
-            style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
-          >
+          <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
             {assets.length > 0 && (
               <>
                 <Label>{browser.i18n.getMessage("assets")}</Label>
                 {assets.filter(filterSearchResults).map((token) => (
                   <div onClick={() => handleTokenClick(token)} key={token.id}>
-                    <TokenListItem
-                      token={token}
-                      active={false}
-                      key={token.id}
-                    />
+                    <TokenListItem token={token} active={false} key={token.id} />
                   </div>
                 ))}
               </>
@@ -115,11 +101,7 @@ export function TokensSettingsView() {
                 <Label>{browser.i18n.getMessage("collectibles")}</Label>
                 {collectibles.filter(filterSearchResults).map((token) => (
                   <div onClick={() => handleTokenClick(token)} key={token.id}>
-                    <TokenListItem
-                      token={token}
-                      active={false}
-                      key={token.id}
-                    />
+                    <TokenListItem token={token} active={false} key={token.id} />
                   </div>
                 ))}
               </>

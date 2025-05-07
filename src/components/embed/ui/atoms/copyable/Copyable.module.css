@@ -148,8 +148,7 @@
   margin-left: -5px;
   border-width: 5px;
   border-style: solid;
-  border-color: var(--color-tooltip-bg, #555) transparent transparent
-    transparent;
+  border-color: var(--color-tooltip-bg, #555) transparent transparent transparent;
 }
 
 .tooltip:hover .tooltiptext {

@@ -1,10 +1,5 @@
 /** Webcrypto encryption algorithm */
-export type EncryptionAlgorithm =
-  | AlgorithmIdentifier
-  | RsaOaepParams
-  | AesCtrParams
-  | AesCbcParams
-  | AesGcmParams;
+export type EncryptionAlgorithm = AlgorithmIdentifier | RsaOaepParams | AesCtrParams | AesCbcParams | AesGcmParams;
 
 /** Legacy options for encryption */
 export interface LegacyEncryptionOptions {

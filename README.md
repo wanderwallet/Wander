@@ -24,7 +24,7 @@ const wander = new WanderEmbedded({
   iframeStyles: {
     /* custom styles */
   },
-  logo: "custom-logo-url"
+  logo: "custom-logo-url",
 });
 ```
 
@@ -85,14 +85,14 @@ const wander = new WanderEmbedded();
 const wander = new WanderEmbedded({
   buttonStyles: {
     backgroundColor: "#000000",
-    color: "#ffffff"
+    color: "#ffffff",
     // Add more custom styles
   },
   iframeStyles: {
     border: "none",
-    borderRadius: "12px"
+    borderRadius: "12px",
     // Add more custom styles
-  }
+  },
 });
 ```
 
@@ -108,7 +108,7 @@ const wander = new WanderEmbedded({
   },
   onResize: (data) => {
     console.log("Iframe resized:", data);
-  }
+  },
 });
 ```
 
@@ -117,7 +117,7 @@ const wander = new WanderEmbedded({
 ```javascript
 const customIframe = document.getElementById("my-iframe");
 const wander = new WanderEmbedded({
-  iframeRef: customIframe
+  iframeRef: customIframe,
 });
 ```
 
@@ -125,7 +125,7 @@ const wander = new WanderEmbedded({
 
 ```javascript
 const wander = new WanderEmbedded({
-  buttonStyles: "none"
+  buttonStyles: "none",
 });
 ```
 

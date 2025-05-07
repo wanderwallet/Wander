@@ -20,7 +20,7 @@ function invokeAlarms(name: string) {
     alarmCallback({
       name: alarmWithTimer.name,
       scheduledTime: alarmWithTimer.scheduledTime,
-      periodInMinutes: alarmWithTimer.periodInMinutes
+      periodInMinutes: alarmWithTimer.periodInMinutes,
     });
   });
 }
@@ -32,22 +32,17 @@ const MAX_32_BIT = 0x7fffffff;
 
 export const alarms = {
   create: (name: string, alarmInfo: Alarms.CreateAlarmInfoType) => {
-    const periodInMs = Math.min(
-      MAX_32_BIT,
-      (alarmInfo.periodInMinutes ?? -1) * 60000
-    );
+    const periodInMs = Math.min(MAX_32_BIT, (alarmInfo.periodInMinutes ?? -1) * 60000);
 
     const delayInMs = Math.min(
       MAX_32_BIT,
-      alarmInfo.when
-        ? alarmInfo.when - Date.now()
-        : (alarmInfo.delayInMinutes ?? -1) * 60000
+      alarmInfo.when ? alarmInfo.when - Date.now() : (alarmInfo.delayInMinutes ?? -1) * 60000,
     );
 
     const alarmWithTimer: AlarmWithTimer = {
       name,
       scheduledTime: 0,
-      periodInMinutes: alarmInfo.periodInMinutes
+      periodInMinutes: alarmInfo.periodInMinutes,
     };
 
     alarmsByName[name] = alarmWithTimer;
@@ -98,9 +93,7 @@ export const alarms = {
   },
 
   getAll: () => {
-    return Promise.resolve(
-      Object.values(alarmsByName) satisfies Alarms.Alarm[]
-    );
+    return Promise.resolve(Object.values(alarmsByName) satisfies Alarms.Alarm[]);
   },
 
   get: (name: string) => {
@@ -111,13 +104,13 @@ export const alarms = {
     return {
       name: alarmWithTimer.name,
       scheduledTime: alarmWithTimer.scheduledTime,
-      periodInMinutes: alarmWithTimer.periodInMinutes
+      periodInMinutes: alarmWithTimer.periodInMinutes,
     };
   },
 
   onAlarm: {
     addListener: (alarmCallback: AlarmCallback) => {
       alarmCallbacks.push(alarmCallback);
-    }
-  }
+    },
+  },
 };

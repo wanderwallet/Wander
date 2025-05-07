@@ -11,10 +11,7 @@ export function WalletReceiveEmbeddedView() {
   const { currentWallet } = useEmbedded();
   const { navigate } = useLocation();
 
-  const effectiveAddress = useMemo(
-    () => currentWallet.address,
-    [currentWallet]
-  );
+  const effectiveAddress = useMemo(() => currentWallet.address, [currentWallet]);
 
   return (
     <Card
@@ -22,8 +19,7 @@ export function WalletReceiveEmbeddedView() {
       headerText="Receive"
       hasBackButton={true}
       onBackButtonClick={() => navigate("/wallet")}
-      style={{ padding: "32px" }}
-    >
+      style={{ padding: "32px" }}>
       <Box>
         {/* <Text
           variant="bodyLg"
@@ -36,12 +32,7 @@ export function WalletReceiveEmbeddedView() {
           {effectiveWalletName}
         </Text> */}
         <div className="wrapper">
-          <QRCodeSVG
-            fgColor="#FFFFFF"
-            bgColor="#0D6CE9"
-            size={224}
-            value={effectiveAddress ?? ""}
-          />
+          <QRCodeSVG fgColor="#FFFFFF" bgColor="#0D6CE9" size={224} value={effectiveAddress ?? ""} />
         </div>
         <Copyable
           isFullWidth
@@ -51,7 +42,7 @@ export function WalletReceiveEmbeddedView() {
             marginTop: "1rem",
             backgroundColor: "#EBEBF0",
             borderRadius: "8px",
-            color: "#666666"
+            color: "#666666",
           }}
           onClick={() => {
             copy(effectiveAddress ?? "");

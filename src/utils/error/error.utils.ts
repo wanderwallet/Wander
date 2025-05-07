@@ -29,7 +29,7 @@ export enum ErrorTypes {
   SettingsNotFound = "Settings not found",
   WalletNotFound = "Wallet not found",
   TokenNotFound = "Token not found",
-  MissingTxId = "Transaction ID not found"
+  MissingTxId = "Transaction ID not found",
 }
 
 export class NetworkError extends Error {

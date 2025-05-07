@@ -7,42 +7,38 @@ export default defineConfig({
   plugins: [
     dts({
       insertTypesEntry: true,
-      tsconfigPath: "./tsconfig.json"
+      tsconfigPath: "./tsconfig.json",
     }),
-    nodePolyfills()
+    nodePolyfills(),
   ],
   build: {
     lib: {
       entry: path.resolve(__dirname, "src/sdk-entrypoint/sdk-entrypoint.ts"),
       name: "WalletSDK",
       formats: ["es", "umd"],
-      fileName: (format) => `wallet-sdk.${format}.js`
+      fileName: (format) => `wallet-sdk.${format}.js`,
     },
     outDir: "wander-embedded-sdk/wallet-api-dist",
     sourcemap: true,
     rollupOptions: {
-      external: [
-        "webextension-polyfill",
-        "~subscriptions/subscription",
-        "~iframe/plasmo-storage/plasmo-storage.mock"
-      ],
+      external: ["webextension-polyfill", "~subscriptions/subscription", "~iframe/plasmo-storage/plasmo-storage.mock"],
       output: {
         globals: {
           "webextension-polyfill": "browser",
           "~subscriptions/subscription": "ArConnectSubscription",
-          "~iframe/plasmo-storage/plasmo-storage.mock": "PlasmoStorageMock"
-        }
+          "~iframe/plasmo-storage/plasmo-storage.mock": "PlasmoStorageMock",
+        },
       },
       treeshake: {
         moduleSideEffects: false,
-        propertyReadSideEffects: false
-      }
-    }
+        propertyReadSideEffects: false,
+      },
+    },
   },
   define: {
     "process.env": {
-      ...(process?.env || {})
-    }
+      ...(process?.env || {}),
+    },
   },
   resolve: {
     alias: {
@@ -59,14 +55,14 @@ export default defineConfig({
       // BE or Embed (iframe) strategies for messaging and chunking:
       "~isomorphic-messaging": path.resolve(
         __dirname,
-        "./src/utils/messaging/strategies/iframe/iframe-messaging.strategy.ts"
+        "./src/utils/messaging/strategies/iframe/iframe-messaging.strategy.ts",
       ),
       "~isomorphic-chunking": path.resolve(
         __dirname,
-        "./src/utils/messaging/strategies/iframe/iframe-chunking.strategy.ts"
+        "./src/utils/messaging/strategies/iframe/iframe-chunking.strategy.ts",
       ),
       // Polyfill `webextension-polyfill` for embedded, as that's not a BE but a regular SPA:
-      "webextension-polyfill": path.resolve(__dirname, "./src/iframe/browser")
-    }
-  }
+      "webextension-polyfill": path.resolve(__dirname, "./src/iframe/browser"),
+    },
+  },
 });

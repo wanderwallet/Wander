@@ -12,205 +12,101 @@ import {
   SocialsIcon,
   Text,
   Wander2Icon,
-  WanderFooter
+  WanderFooter,
 } from "~components/embed";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { AuthProviderType } from "embed-api";
 import { getSupabaseClient } from "~utils/embedded/embedded.utils";
-import { AuthenticationService } from "~utils/authentication/authentication.service";
-import { startAuthentication } from "@simplewebauthn/browser";
-import { useToasts } from "@arconnect/components-rebrand";
-import { isInsideIframe } from "~utils/embedded/iframe.utils";
-import { getDeviceNonce } from "~utils/embedded/device-nonce/device-nonce.utils";
-
-// Base64 utility functions
-const base64ToBuffer = (base64: string): ArrayBuffer => {
-  const binaryString = atob(base64.replace(/-/g, "+").replace(/_/g, "/"));
-  const bytes = new Uint8Array(binaryString.length);
-  for (let i = 0; i < binaryString.length; i++) {
-    bytes[i] = binaryString.charCodeAt(i);
-  }
-  return bytes.buffer;
-};
-
-// Add a monitor to debug redirect issues
-const injectRedirectMonitor = () => {
-  try {
-    // Create a script to monitor the redirect process
-    const monitorScript = document.createElement("script");
-    monitorScript.textContent = `
-      (function() {
-        console.log("🔍 Redirect monitor active");
-        
-        // Store original methods
-        const originalReplace = window.location.replace;
-        const originalAssign = window.location.assign;
-        const originalOpen = window.open;
-        
-        // Monitor location.replace
-        window.location.replace = function(url) {
-          console.log("🔄 location.replace called with:", url);
-          return originalReplace.apply(this, arguments);
-        };
-        
-        // Monitor location.assign
-        window.location.assign = function(url) {
-          console.log("📌 location.assign called with:", url);
-          return originalAssign.apply(this, arguments);
-        };
-        
-        // Monitor location.href changes
-        let hrefDescriptor = Object.getOwnPropertyDescriptor(window.location, 'href');
-        if (hrefDescriptor && hrefDescriptor.set) {
-          let originalSet = hrefDescriptor.set;
-          Object.defineProperty(window.location, 'href', {
-            set: function(url) {
-              console.log("🔗 location.href set to:", url);
-              return originalSet.call(this, url);
-            },
-            get: hrefDescriptor.get,
-            configurable: true
-          });
-        }
-        
-        // Monitor window.open
-        window.open = function(url, target) {
-          console.log("🪟 window.open called with:", url, target);
-          return originalOpen.apply(this, arguments);
-        };
-        
-        // Add unload listener
-        window.addEventListener('beforeunload', function() {
-          console.log("🛑 Page unloading, final URL:", window.location.href);
-        });
-      })();
-    `;
-    document.head.appendChild(monitorScript);
-    console.log("Redirect monitor injected");
-  } catch (error) {
-    console.error("Failed to inject redirect monitor:", error);
-  }
-};
-
-// Now update the redirect function to be even more reliable
-const forceRedirect = (path: string) => {
-  const baseUrl = window.location.origin;
-  const url = `${baseUrl}/#${path}`;
-
-  console.log("🚀 Initiating force redirect to:", url);
-
-  // Inject monitor first to help with debugging
-  injectRedirectMonitor();
-
-  // Try with form submission (often most reliable)
-  try {
-    console.log("📝 Trying form submission method");
-    const form = document.createElement("form");
-    form.method = "GET";
-    form.action = url;
-    form.style.display = "none";
-    document.body.appendChild(form);
-    form.submit();
-    return;
-  } catch (e) {
-    console.error("Form method failed:", e);
-  }
-
-  // Try with replace
-  try {
-    console.log("🔄 Trying replace method");
-    window.location.replace(url);
-  } catch (e) {
-    console.error("Replace method failed:", e);
-  }
-
-  // Try with direct assignment
-  try {
-    console.log("🔗 Trying direct assignment");
-    window.location.href = url;
-  } catch (e) {
-    console.error("Direct assignment failed:", e);
-  }
-
-  // Try with window.open
-  try {
-    console.log("🪟 Trying window.open");
-    const newWindow = window.open(url, "_self");
-    if (newWindow) newWindow.focus();
-  } catch (e) {
-    console.error("Window.open failed:", e);
-  }
-};
+import { useLocation } from "~wallets/router/router.utils";
+import { isValidEmail } from "~utils/email";
+import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
+import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
+import { useAllWallets } from "~wallets/hooks";
+import { sleep } from "~utils/promises/sleep";
+import { EMBEDDED_HIDE_BE } from "~utils/embedded/iframe.utils";
 
 export function AuthEmbeddedView() {
-  const { authenticate, authStatus } = useEmbedded();
-  const { setToast } = useToasts();
+  const { navigate } = useLocation();
+  const { authenticate, authStatus, setAuthEmail } = useEmbedded();
+  const [isLoading, setIsLoading] = useState(false);
 
-  const [selectedAuthProviderType, setSelectedAuthProviderType] =
-    useState<AuthProviderType | null>(null);
-  const [isAuthenticatingWithPasskey, setIsAuthenticatingWithPasskey] =
-    useState(false);
-  const [isInIframe, setIsInIframe] = useState(false);
-  const [passkeysSupported, setPasskeysSupported] = useState(true);
-  const [authError, setAuthError] = useState("");
+  const [selectedAuthProviderType, setSelectedAuthProviderType] = useState<AuthProviderType | "NATIVE_WALLET" | null>(
+    null,
+  );
 
   const areButtonsDisabled =
-    authStatus === "unknown" ||
-    authStatus === "loading" ||
-    authStatus === "authLoading" ||
-    !!selectedAuthProviderType ||
-    isAuthenticatingWithPasskey;
+    authStatus === "unknown" || authStatus === "loading" || authStatus === "authLoading" || !!selectedAuthProviderType;
 
   // TODO: Remember last selection and highlight that one / show it in the main screen (not in "More")
 
   const emailInputRef = useRef<HTMLInputElement>();
   const passwordInputRef = useRef<HTMLInputElement>();
 
-  const handleAuthenticate = useCallback(
-    async (authProviderType: AuthProviderType) => {
-      setSelectedAuthProviderType(authProviderType);
-      try {
-        await authenticate(
-          authProviderType,
-          emailInputRef.current?.value || "",
-          passwordInputRef.current?.value || ""
-        );
-        setSelectedAuthProviderType(null);
-      } catch (error) {
-        toast.error(`Error signing in with ${authProviderType}`);
-      } finally {
-        setSelectedAuthProviderType(null);
-      }
-    },
-    [authenticate]
-  );
-
-  const handleEmailSignup = useCallback(async () => {
+  const handleAuthenticate = useCallback(async (authProviderType: AuthProviderType) => {
+    setSelectedAuthProviderType(authProviderType);
     try {
-      const supabase = await getSupabaseClient();
-
-      const { error, data } = await supabase.auth.signUp({
-        email: emailInputRef.current?.value || "",
-        password: passwordInputRef.current?.value || ""
-      });
-
-      console.log({ error, data });
+      await authenticate(authProviderType, emailInputRef.current?.value || "", passwordInputRef.current?.value || "");
+      setSelectedAuthProviderType(null);
     } catch (error) {
-      toast.error("Error signing up");
+      toast.error(`Error signing in with ${authProviderType}`);
+    } finally {
+      setSelectedAuthProviderType(null);
     }
   }, []);
 
-  const handleEmailSignIn = useCallback(async () => {
+  const handleNativeWallet = useCallback(async () => {
+    setSelectedAuthProviderType("NATIVE_WALLET");
+
+    postEmbeddedMessage({
+      type: "embedded_auth",
+      data: {
+        authType: "NATIVE_WALLET",
+        authStatus: null,
+        userDetails: null,
+      },
+    });
+
+    await sleep(500);
+
+    // Reset this shortly after the modal is closed so that if the user opens
+    // it again, they can pick a different option:
+    setSelectedAuthProviderType(null);
+  }, []);
+
+  const handleCheckEmail = useCallback(async () => {
     try {
+      setIsLoading(true);
+
       const supabase = await getSupabaseClient();
-      const { error, data } = await supabase.auth.signInWithPassword({
-        email: emailInputRef.current?.value || "",
-        password: passwordInputRef.current?.value || ""
+
+      const email = emailInputRef.current?.value || "";
+
+      if (!email || !isValidEmail(email)) {
+        toast.error("Please enter a valid email address");
+        return;
+      }
+
+      const { data: isAlreadyRegistered, error } = await supabase.rpc("user_exists_by_email", {
+        p_email: email,
       });
 
-      console.log({ error, data });
+      if (error) {
+        toast.error("Error checking email");
+        return;
+      }
+
+      setAuthEmail(email);
+
+      if (isAlreadyRegistered) {
+        navigate(EmbeddedPaths.AuthEmailSignin);
+      } else {
+        navigate(EmbeddedPaths.AuthEmailSignup);
+      }
     } catch (error) {
-      toast.error("Error signing in");
+      console.log(error);
+      toast.error("Error checking email");
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
@@ -332,64 +228,23 @@ export function AuthEmbeddedView() {
   }, [passkeysSupported, setToast]);
 
   return (
-    <Card
-      headerText="Sign Up or Sign In"
-      footerElement={<WanderFooter />}
-      hasBackButton={false}
-      size="auto"
-    >
+    <Card headerText="Sign up or Sign in" footerElement={<WanderFooter />} hasBackButton={false} size="auto">
       <Box>
         <TextInput
           ref={emailInputRef}
-          placeholder="E-Mail"
-          isDisabled={areButtonsDisabled}
+          type="email"
+          placeholder="Enter your email"
+          isDisabled={areButtonsDisabled || isLoading}
+          hasButton
+          buttonLabel="Next"
+          isLoading={isLoading}
+          buttonOnClick={handleCheckEmail}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              handleCheckEmail();
+            }
+          }}
         />
-        <br />
-        <TextInput
-          ref={passwordInputRef}
-          placeholder="Password"
-          isDisabled={areButtonsDisabled}
-          isSecure
-        />
-        <br />
-        <Button
-          isFullWidth
-          onClick={() => handleEmailSignup()}
-          icon={<KeyIcon fontSize={24} />}
-          isDisabled={areButtonsDisabled}
-        >
-          Email Sign Up
-        </Button>
-        <Button
-          isFullWidth
-          onClick={() => handleEmailSignIn()}
-          icon={<KeyIcon fontSize={24} />}
-          isDisabled={areButtonsDisabled}
-        >
-          Email Sign In
-        </Button>
-
-        <Button
-          variant="primary"
-          isFullWidth
-          onClick={handlePasskeySignIn}
-          icon={<KeyIcon fontSize={24} />}
-          isLoading={isAuthenticatingWithPasskey}
-          isDisabled={areButtonsDisabled || !passkeysSupported}
-        >
-          Sign in with Passkey
-          {isInIframe && " (Requires permission from parent frame)"}
-        </Button>
-
-        {isInIframe && (
-          <Text
-            variant="bodyXs"
-            style={{ color: "#FF9800", textAlign: "center", marginTop: 4 }}
-          >
-            Note: Using passkeys in an iframe requires parent frame permission
-          </Text>
-        )}
-
         <Divider text={"OR"} />
         <Row>
           <Button
@@ -397,21 +252,27 @@ export function AuthEmbeddedView() {
             size="md"
             isLoading={selectedAuthProviderType === "GOOGLE"}
             isDisabled={areButtonsDisabled}
-            onClick={() => handleAuthenticate("GOOGLE")}
-          >
+            onClick={() => handleAuthenticate("GOOGLE")}>
             <GoogleIcon fontSize={24} />
           </Button>
-          <Button variant="outlined" size="md" isDisabled>
-            <Wander2Icon fontSize={24} />
-          </Button>
+          {EMBEDDED_HIDE_BE ||
+          (!!window.arweaveWallet?.walletName && window.arweaveWallet?.walletName !== "ArConnect") ? null : (
+            <Button
+              variant="outlined"
+              size="md"
+              isLoading={selectedAuthProviderType === "NATIVE_WALLET"}
+              isDisabled={areButtonsDisabled}
+              onClick={handleNativeWallet}>
+              <Wander2Icon fontSize={24} />
+            </Button>
+          )}
         </Row>
         <Button
           variant="outlined"
           isFullWidth
-          isDisabled
+          isDisabled={areButtonsDisabled}
           icon={<SocialsIcon fontSize={24} />}
-          href="#/auth/more-providers"
-        >
+          href="#/auth/more-providers">
           More options
         </Button>
         <Row style={{ gap: "4px" }}>

@@ -1,11 +1,4 @@
-import {
-  Button,
-  Select,
-  Spacer,
-  Text,
-  Tooltip,
-  useToasts
-} from "@arconnect/components-rebrand";
+import { Button, Select, Spacer, Text, Tooltip, useToasts } from "@arconnect/components-rebrand";
 import type { TokenType } from "~tokens/token";
 import { Token as aoToken } from "ao-tokens";
 import { PersistentStorage, useStorage } from "~utils/storage";
@@ -31,19 +24,16 @@ export interface TokenSettingsDashboardViewParams {
   id: string;
 }
 
-export type TokenSettingsDashboardViewProps =
-  CommonRouteProps<TokenSettingsDashboardViewParams>;
+export type TokenSettingsDashboardViewProps = CommonRouteProps<TokenSettingsDashboardViewParams>;
 
-export function TokenSettingsDashboardView({
-  params: { id }
-}: TokenSettingsDashboardViewProps) {
+export function TokenSettingsDashboardView({ params: { id } }: TokenSettingsDashboardViewProps) {
   // ao tokens
   const [aoTokens, setAoTokens] = useStorage<TokenInfo[] | any[]>(
     {
       key: "ao_tokens",
-      instance: PersistentStorage
+      instance: PersistentStorage,
     },
-    []
+    [],
   );
 
   const { setToast } = useToasts();
@@ -61,7 +51,7 @@ export function TokenSettingsDashboardView({
       ...aoToken,
       id: aoToken.processId,
       name: aoToken.Name,
-      ticker: aoToken.Ticker
+      ticker: aoToken.Ticker,
     };
   }, [aoTokens, id]);
 
@@ -92,9 +82,9 @@ export function TokenSettingsDashboardView({
                   Logo: tokenInfo.Logo,
                   Denomination: Number(tokenInfo.Denomination),
                   processId: token.id,
-                  lastUpdated: new Date().toISOString()
+                  lastUpdated: new Date().toISOString(),
                 }
-              : t
+              : t,
           );
           setAoTokens(updatedTokens);
           setLoading(false);
@@ -158,10 +148,8 @@ export function TokenSettingsDashboardView({
                   copy(token.id);
                   setToast({
                     type: "info",
-                    content: browser.i18n.getMessage("copied_address", [
-                      formatAddress(token.id, 8)
-                    ]),
-                    duration: 2200
+                    content: browser.i18n.getMessage("copied_address", [formatAddress(token.id, 8)]),
+                    duration: 2200,
                   });
                 }}
               />
@@ -184,8 +172,7 @@ export function TokenSettingsDashboardView({
               // @ts-expect-error
               updateType(e.target.value as TokenType);
             }}
-            fullWidth
-          >
+            fullWidth>
             <option value="asset" selected={token.type === "asset"}>
               {browser.i18n.getMessage("token_type_asset")}
             </option>
@@ -201,8 +188,7 @@ export function TokenSettingsDashboardView({
           onClick={async () => {
             await refreshToken();
           }}
-          loading={loading}
-        >
+          loading={loading}>
           {browser.i18n.getMessage("refresh_token")}
         </Button>
 
@@ -243,7 +229,7 @@ const Image = styled.img`
 const TokenName = styled(Text).attrs({
   size: "3xl",
   weight: "bold",
-  noMargin: true
+  noMargin: true,
 })`
   font-weight: 600;
 `;
@@ -251,5 +237,5 @@ const TokenName = styled(Text).attrs({
 const Title = styled(Text).attrs({
   noMargin: true,
   variant: "secondary",
-  weight: "medium"
+  weight: "medium",
 })``;

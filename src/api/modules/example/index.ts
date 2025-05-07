@@ -7,7 +7,7 @@ const permissions: PermissionType[] = ["ACCESS_ADDRESS"];
 const exampleModule: ModuleProperties = {
   // name of the function (window.arweave.wallet.getExample)
   functionName: "getExample",
-  permissions
+  permissions,
 };
 
 export default exampleModule;

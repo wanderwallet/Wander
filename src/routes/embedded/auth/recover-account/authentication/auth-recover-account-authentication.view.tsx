@@ -1,32 +1,21 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useLocation } from "~wallets/router/router.utils";
 import { useState, useCallback } from "react";
-import {
-  Card,
-  Copyable,
-  Button,
-  KeyIcon,
-  GoogleIcon,
-  SocialsIcon,
-  Checkbox,
-  WanderFooter
-} from "~components/embed/ui";
+import { Card, Copyable, Button, KeyIcon, GoogleIcon, SocialsIcon, Checkbox, WanderFooter } from "~components/embed/ui";
 import copy from "copy-to-clipboard";
 import type { AuthProviderType } from "embed-api";
 import { toast } from "react-toastify";
 export function AuthRecoverAccountAuthenticationEmbeddedView() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { back } = useLocation();
-  const { importedTempWalletAddress, recoverableAccounts, recoverAccount } =
-    useEmbedded();
+  const { importedTempWalletAddress, recoverableAccounts, recoverAccount } = useEmbedded();
 
   const accountToRecover = recoverableAccounts?.[0];
   const accountToRecoverId = accountToRecover?.userId;
 
   const [checkboxChecked, setCheckboxChecked] = useState<boolean>(false);
 
-  const toggleCheckboxChecked = () =>
-    setCheckboxChecked((prevValue) => !prevValue);
+  const toggleCheckboxChecked = () => setCheckboxChecked((prevValue) => !prevValue);
 
   const handleRecoverAccount = useCallback(
     async (authProviderType: AuthProviderType) => {
@@ -39,7 +28,7 @@ export function AuthRecoverAccountAuthenticationEmbeddedView() {
         setIsLoading(false);
       }
     },
-    [recoverAccount, accountToRecoverId]
+    [recoverAccount, accountToRecoverId],
   );
 
   return (
@@ -51,8 +40,7 @@ export function AuthRecoverAccountAuthenticationEmbeddedView() {
       onCloseButtonClick={() => {
         window.history.back();
       }}
-      size="auto"
-    >
+      size="auto">
       <Copyable
         style={{ margin: "32px 0" }}
         isFullWidth
@@ -67,8 +55,7 @@ export function AuthRecoverAccountAuthenticationEmbeddedView() {
         variant="outlined"
         isFullWidth
         isDisabled={!checkboxChecked || isLoading}
-        icon={<KeyIcon fontSize={24} />}
-      >
+        icon={<KeyIcon fontSize={24} />}>
         Passkey
       </Button>
       <Button
@@ -76,8 +63,7 @@ export function AuthRecoverAccountAuthenticationEmbeddedView() {
         variant="outlined"
         isFullWidth
         isDisabled={!checkboxChecked || isLoading}
-        icon={<GoogleIcon fontSize={24} />}
-      >
+        icon={<GoogleIcon fontSize={24} />}>
         Google
       </Button>
       <Button
@@ -86,8 +72,7 @@ export function AuthRecoverAccountAuthenticationEmbeddedView() {
         isDisabled
         // isDisabled={!checkboxChecked || isLoading}
         icon={<SocialsIcon fontSize={24} />}
-        href="#/auth/recover-account/more-authentication"
-      >
+        href="#/auth/recover-account/more-authentication">
         More options
       </Button>
       <Checkbox

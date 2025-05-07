@@ -11,9 +11,7 @@ import type { NameServiceProfile } from "./types";
 export async function getAnsProfile(address: string): Promise<AnsUser> {
   // TODO: Fix this just like in Othent:
   try {
-    const user = await (
-      await fetch(`http://ans-stats.decent.land/profile/${address}`)
-    ).json();
+    const user = await (await fetch(`http://ans-stats.decent.land/profile/${address}`)).json();
 
     return user;
   } catch {
@@ -28,9 +26,7 @@ export async function getAnsProfile(address: string): Promise<AnsUser> {
  * @returns Profile data
  */
 export async function getAnsProfiles(addresses: string[]): Promise<AnsUser[]> {
-  const { res } = await (
-    await fetch("https://ans-stats.decent.land/users")
-  ).json();
+  const { res } = await (await fetch("https://ans-stats.decent.land/users")).json();
 
   return res.filter(({ user }) => addresses?.includes(user));
 }
@@ -43,9 +39,7 @@ export async function getAnsProfiles(addresses: string[]): Promise<AnsUser[]> {
  */
 export async function getAnsProfileByLabel(label: string): Promise<AnsUser> {
   try {
-    const user = await (
-      await fetch(`http://ans-stats.decent.land/profile/${label}`)
-    ).json();
+    const user = await (await fetch(`http://ans-stats.decent.land/profile/${label}`)).json();
 
     return user;
   } catch {
@@ -64,9 +58,7 @@ export const isANS = (label: string): boolean => {
   return lastThreeLetters === ".ar";
 };
 
-export async function getAnsNameServiceProfile(
-  query: string
-): Promise<NameServiceProfile | undefined> {
+export async function getAnsNameServiceProfile(query: string): Promise<NameServiceProfile | undefined> {
   if (!query) {
     return undefined;
   }
@@ -79,7 +71,7 @@ export async function getAnsNameServiceProfile(
     : {
         address: profile.user,
         name: profile.currentLabel + ".ar",
-        logo: profile.avatar
+        logo: profile.avatar,
       };
 }
 

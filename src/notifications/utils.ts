@@ -352,10 +352,7 @@ export const combineAndSortTransactions = (responses: any[]) => {
   return combinedTransactions;
 };
 
-export const processTransactions = (
-  combinedTransactions: any[],
-  address: string
-) => {
+export const processTransactions = (combinedTransactions: any[], address: string) => {
   return combinedTransactions.map((transaction) => {
     let quantity = "0";
     let tokenId = "";
@@ -366,57 +363,38 @@ export const processTransactions = (
     if (transaction.node.quantity && transaction.node.quantity.ar > 0) {
       tokenId = "AR";
       quantity = transaction.node.quantity.ar;
-      transactionType =
-        transaction.node.owner.address === address ? "Sent" : "Received";
+      transactionType = transaction.node.owner.address === address ? "Sent" : "Received";
     } else {
       // Check for Ao protocol transactions
-      const dataProtocolTag = transaction.node.tags.find(
-        (tag) => tag.name === "Data-Protocol" && tag.value === "ao"
-      );
-      const aoMessageTag = transaction.node.tags.find(
-        (tag) => tag.name === "Type" && tag.value === "Message"
-      );
+      const dataProtocolTag = transaction.node.tags.find((tag) => tag.name === "Data-Protocol" && tag.value === "ao");
+      const aoMessageTag = transaction.node.tags.find((tag) => tag.name === "Type" && tag.value === "Message");
       if (dataProtocolTag) {
         isAo = true;
-        const typeTag = transaction.node.tags.find(
-          (tag) => tag.name === "Action"
-        );
+        const typeTag = transaction.node.tags.find((tag) => tag.name === "Action");
         if (typeTag) {
           if (typeTag.value === "Transfer") {
-            transactionType =
-              transaction.node.owner.address === address ? "Sent" : "Received";
-            const recipientTag = transaction.node.tags.find(
-              (tag) => tag.name === "Recipient"
-            );
-            const quantityTag = transaction.node.tags.find(
-              (tag) => tag.name === "Quantity"
-            );
-            if (recipientTag && transaction.node.recipient)
-              tokenId = transaction.node.recipient;
+            transactionType = transaction.node.owner.address === address ? "Sent" : "Received";
+            const recipientTag = transaction.node.tags.find((tag) => tag.name === "Recipient");
+            const quantityTag = transaction.node.tags.find((tag) => tag.name === "Quantity");
+            if (recipientTag && transaction.node.recipient) tokenId = transaction.node.recipient;
             if (quantityTag) quantity = quantityTag.value;
           } else {
             transactionType = "Message";
           }
         }
-        if (
-          transactionType === "Transaction" &&
-          aoMessageTag.value === "Message"
-        ) {
+        if (transactionType === "Transaction" && aoMessageTag.value === "Message") {
           transactionType = "Message";
         }
       } else {
         // Process non-Ao transactions or Warp contracts
-        const contractTag = transaction.node.tags.find(
-          (tag) => tag.name === "Contract"
-        );
+        const contractTag = transaction.node.tags.find((tag) => tag.name === "Contract");
         if (contractTag) {
           tokenId = contractTag.value;
           warpContract = true;
-          transactionType =
-            transaction.node.owner.address === address ? "Sent" : "Received";
+          transactionType = transaction.node.owner.address === address ? "Sent" : "Received";
         } else {
           const printArchiveTag = transaction.node.tags.find(
-            (tag) => tag.name === "Type" && tag.value === "Print-Archive"
+            (tag) => tag.name === "Type" && tag.value === "Print-Archive",
           );
           if (printArchiveTag) {
             transactionType = "PrintArchive";
@@ -429,7 +407,7 @@ export const processTransactions = (
       transactionType,
       quantity,
       ...(isAo && { isAo }),
-      ...(tokenId && { tokenId })
+      ...(tokenId && { tokenId }),
     };
 
     if (warpContract) {
