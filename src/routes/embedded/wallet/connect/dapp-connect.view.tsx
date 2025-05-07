@@ -1,13 +1,4 @@
-import {
-  Card,
-  Button,
-  Text,
-  Row,
-  Box,
-  Avatar,
-  XClose,
-  WalletIcon
-} from "~components/embed/ui";
+import { Card, Button, Text, Row, Box, Avatar, XClose, WalletIcon } from "~components/embed/ui";
 import type { Wallet } from "~utils/embedded/embedded.types";
 import { formatAddress } from "~utils/format";
 import { setActiveWallet, useActiveWallet } from "~wallets/hooks";
@@ -46,7 +37,7 @@ export function EmbeddedConnectAuthRequestView() {
   const handleCancel = () => {
     postEmbeddedMessage({
       type: "embedded_close",
-      data: null
+      data: null,
     });
     navigate("/wallet");
     rejectRequest();
@@ -67,18 +58,15 @@ export function EmbeddedConnectAuthRequestView() {
         style={{
           paddingTop: "24px",
           paddingInline: "16px",
-          paddingBottom: "24px"
+          paddingBottom: "24px",
         }}
         hasCloseButton={true}
         hasBackButton={false}
         customIcon={<XClose fontSize={24} color={"#666666"} />}
-        onCloseButtonClick={handleCancel}
-      >
+        onCloseButtonClick={handleCancel}>
         <AppIcons appInfo={appInfo} />
         <Box>
-          <Text variant="headingMd">
-            {appInfo.name} would like to connect to your wallet
-          </Text>
+          <Text variant="headingMd">{appInfo.name} would like to connect to your wallet</Text>
         </Box>
         <Box alignment="left">
           <Text variant="bodyMd">Select an account to connect:</Text>
@@ -89,15 +77,10 @@ export function EmbeddedConnectAuthRequestView() {
               width: "100%",
               backgroundColor: "#EBEBF0",
               borderRadius: "16px",
-              position: "relative"
-            }}
-          >
+              position: "relative",
+            }}>
             <Row>
-              <Row
-                alignment="center"
-                justifyContent="start"
-                style={{ padding: 0, flex: 1 }}
-              >
+              <Row alignment="center" justifyContent="start" style={{ padding: 0, flex: 1 }}>
                 <Avatar fontColor="#EBEBF0" backgroundColor="#0D6CE9" size="lg">
                   <WalletIcon color="#FFF" />
                 </Avatar>
@@ -105,21 +88,14 @@ export function EmbeddedConnectAuthRequestView() {
                   <Text variant="bodyLg" style={{ color: "#121212" }}>
                     {activeWallet.nickname}
                   </Text>
-                  <Text variant="bodySm">
-                    {formatAddress(activeWallet.address, 4)}
-                  </Text>
+                  <Text variant="bodySm">{formatAddress(activeWallet.address, 4)}</Text>
                 </Box>
               </Row>
               <Button
                 variant="link"
                 style={{ paddingInline: "16px" }}
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              >
-                <Text
-                  alignment="right"
-                  variant="bodySm"
-                  style={{ color: "#0D6CE9" }}
-                >
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
+                <Text alignment="right" variant="bodySm" style={{ color: "#0D6CE9" }}>
                   Change
                 </Text>
               </Button>
@@ -134,8 +110,7 @@ export function EmbeddedConnectAuthRequestView() {
               ExtensionStorage.remove(`requested_permissions_${url}`);
               ExtensionStorage.remove("sign_policy");
               navigate("/wallet/settings");
-            }}
-          >
+            }}>
             Next
           </Button>
           <Button variant="secondary" isFullWidth onClick={handleCancel}>
@@ -154,7 +129,7 @@ export function EmbeddedConnectAuthRequestView() {
             right: 0,
             bottom: 0,
             backgroundColor: "rgba(0, 0, 0, 0.5)",
-            zIndex: 999
+            zIndex: 999,
           }}
           onClick={() => setIsDropdownOpen(false)}
         />
@@ -177,23 +152,19 @@ export function EmbeddedConnectAuthRequestView() {
             boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.15)",
             padding: "0",
             maxHeight: "70vh",
-            overflowY: "auto"
-          }}
-        >
+            overflowY: "auto",
+          }}>
           {wallets.map((wallet, index) => (
             <div
               key={wallet.address}
               onClick={handleWalletSelect(wallet)}
               style={{
                 cursor: "pointer",
-                backgroundColor:
-                  wallet.address === activeWallet.address
-                    ? "#F5F5FA"
-                    : "transparent",
+                backgroundColor: wallet.address === activeWallet.address ? "#F5F5FA" : "transparent",
                 margin: "0",
                 padding: "0",
                 transition: "background-color 0.2s ease",
-                width: "100%"
+                width: "100%",
               }}
               onMouseEnter={(e) => {
                 if (wallet.address !== activeWallet.address) {
@@ -204,13 +175,8 @@ export function EmbeddedConnectAuthRequestView() {
                 if (wallet.address !== activeWallet.address) {
                   e.currentTarget.style.backgroundColor = "transparent";
                 }
-              }}
-            >
-              <Row
-                alignment="center"
-                justifyContent="start"
-                style={{ paddingInline: "22px", marginTop: "4px" }}
-              >
+              }}>
+              <Row alignment="center" justifyContent="start" style={{ paddingInline: "22px", marginTop: "4px" }}>
                 <Avatar fontColor="#EBEBF0" backgroundColor="#0D6CE9" size="lg">
                   <WalletIcon color="#FFF" />
                 </Avatar>
@@ -218,9 +184,7 @@ export function EmbeddedConnectAuthRequestView() {
                   <Text variant="bodyLg" style={{ color: "#121212" }}>
                     {wallet.nickname}
                   </Text>
-                  <Text variant="bodySm">
-                    {wallet.address ? formatAddress(wallet.address, 4) : ""}
-                  </Text>
+                  <Text variant="bodySm">{wallet.address ? formatAddress(wallet.address, 4) : ""}</Text>
                 </Box>
               </Row>
             </div>

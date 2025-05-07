@@ -18,7 +18,7 @@ export function setupEventListeners() {
     // send to mitt instance
     postMessage({
       type: "wander_event",
-      event: data
+      event: data,
     });
   });
 
@@ -30,8 +30,8 @@ export function setupEventListeners() {
     // dispatch custom event
     dispatchEvent(
       new CustomEvent("walletSwitch", {
-        detail: { address: data }
-      })
+        detail: { address: data },
+      }),
     );
   });
 

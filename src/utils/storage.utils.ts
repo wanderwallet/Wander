@@ -1,7 +1,6 @@
 import { ExtensionStorage } from "~utils/storage";
 
-export const ARCONNECT_THEME_BACKGROUND_COLOR =
-  "ARCONNECT_THEME_BACKGROUND_COLOR";
+export const ARCONNECT_THEME_BACKGROUND_COLOR = "ARCONNECT_THEME_BACKGROUND_COLOR";
 export const ARCONNECT_THEME_TEXT_COLOR = "ARCONNECT_THEME_TEXT_COLOR";
 
 /**
@@ -15,13 +14,9 @@ export async function resetStorage() {
 
   try {
     // get all keys except gateways
-    const allStoredKeys = Object.keys(
-      (await ExtensionStorage.getAll()) || {}
-    ).filter((key) => key !== "gateways");
+    const allStoredKeys = Object.keys((await ExtensionStorage.getAll()) || {}).filter((key) => key !== "gateways");
 
     // remove all keys except gateways
-    await Promise.allSettled(
-      allStoredKeys.map((key) => ExtensionStorage.remove(key))
-    );
+    await Promise.allSettled(allStoredKeys.map((key) => ExtensionStorage.remove(key)));
   } catch {}
 }

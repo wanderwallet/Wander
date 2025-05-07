@@ -10,8 +10,7 @@ export const NoAppIcon = styled(GlobeIcon)`
 `;
 
 export const AppIcon = styled(Squircle)<{ color?: string }>`
-  color: ${(props) =>
-    props.color ? props.color : "rgb(" + props.theme.theme + ")"};
+  color: ${(props) => (props.color ? props.color : "rgb(" + props.theme.theme + ")")};
   width: 3rem;
   height: 3rem;
   cursor: pointer;

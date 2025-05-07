@@ -2,7 +2,7 @@ import styled from "styled-components";
 
 export const Link = styled.a.attrs({
   target: "_blank",
-  rel: "noopener noreferrer"
+  rel: "noopener noreferrer",
 })`
   display: flex;
   align-items: center;

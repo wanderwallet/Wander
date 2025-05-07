@@ -1,19 +1,12 @@
 import type React from "react";
-import type {
-  CommonRouteProps,
-  RouteConfig,
-  RouteOverride
-} from "~wallets/router/router.types";
+import type { CommonRouteProps, RouteConfig, RouteOverride } from "~wallets/router/router.types";
 
-export type ExtensionRouteOverride =
-  | `/__OVERRIDES/cover`
-  | `/__OVERRIDES/unlock`
-  | `/__OVERRIDES/loading`;
+export type ExtensionRouteOverride = `/__OVERRIDES/cover` | `/__OVERRIDES/unlock` | `/__OVERRIDES/loading`;
 
 export const ExtensionOverrides = {
   Cover: "/__OVERRIDES/cover",
   Unlock: "/__OVERRIDES/unlock",
-  Loading: "/__OVERRIDES/loading"
+  Loading: "/__OVERRIDES/loading",
 } as const satisfies Record<string, ExtensionRouteOverride>;
 
 export interface GetExtensionOverrideOptions {
@@ -21,22 +14,19 @@ export interface GetExtensionOverrideOptions {
   loadingView: React.ComponentType<CommonRouteProps>;
 }
 
-export function getExtensionOverrides({
-  unlockView,
-  loadingView
-}: GetExtensionOverrideOptions) {
+export function getExtensionOverrides({ unlockView, loadingView }: GetExtensionOverrideOptions) {
   return [
     {
       path: ExtensionOverrides.Cover,
-      component: () => <></>
+      component: () => <></>,
     },
     {
       path: ExtensionOverrides.Unlock,
-      component: unlockView
+      component: unlockView,
     },
     {
       path: ExtensionOverrides.Loading,
-      component: loadingView
-    }
+      component: loadingView,
+    },
   ] satisfies RouteConfig<RouteOverride>[];
 }

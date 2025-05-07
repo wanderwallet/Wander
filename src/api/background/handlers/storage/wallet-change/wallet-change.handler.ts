@@ -11,10 +11,7 @@ import { isomorphicSendMessage } from "~isomorphic-messaging";
  * Fixup active address in case the current
  * active address' wallet has been removed.
  */
-export async function handleWalletsChange({
-  newValue,
-  oldValue
-}: StorageChange<StoredWallet[]>) {
+export async function handleWalletsChange({ newValue, oldValue }: StorageChange<StoredWallet[]>) {
   const wallets = newValue;
   const previousWallets = oldValue || [];
 
@@ -37,8 +34,8 @@ export async function handleWalletsChange({
       messageId: "event",
       data: {
         name: "addresses",
-        value: permissionCheck.result ? addresses : null
-      }
+        value: permissionCheck.result ? addresses : null,
+      },
     });
   });
 
@@ -48,7 +45,7 @@ export async function handleWalletsChange({
     // Wander has just been set up
     browser.alarms.create("sync_labels", {
       delayInMinutes: 1,
-      periodInMinutes: 60
+      periodInMinutes: 60,
     });
   } else if (wallets.length === 0 && previousWallets.length > 0) {
     // remove scheduled label refresh if

@@ -18,20 +18,20 @@ const stars: readonly StarProps[] = [
   { left: 78, bottom: 382, opacity: 0.4, size: 41 },
   { right: 528, bottom: 253, opacity: 0.4, size: 41 },
   { left: 456, bottom: 199, opacity: 0.4, size: 95 },
-  { right: 132, bottom: 101, opacity: 0.4, size: 60 }
+  { right: 132, bottom: 101, opacity: 0.4, size: 60 },
 ] as const;
 
 const unlockStars = [
   { right: 50, top: 50, opacity: 0.4, size: 15 },
   { left: 50, top: 100, opacity: 0.4, size: 22 },
   { right: 80, top: 220, opacity: 0.4, size: 15 },
-  { left: 60, top: 230, opacity: 0.4, size: 35 }
+  { left: 60, top: 230, opacity: 0.4, size: 35 },
 ] as const;
 
 const starsByScreen = {
   welcome: stars,
   setup: stars.slice(2, 8),
-  unlock: unlockStars
+  unlock: unlockStars,
 };
 
 interface StarIconsProps {
@@ -43,10 +43,6 @@ export default function StarIcons({ screen = "welcome" }: StarIconsProps) {
   const displayStars = starsByScreen[screen];
 
   return displayStars.map((star, index) => (
-    <StarIcon
-      key={`star-${index}`}
-      {...star}
-      opacity={isLessOpacity ? 0.1 : star.opacity}
-    />
+    <StarIcon key={`star-${index}`} {...star} opacity={isLessOpacity ? 0.1 : star.opacity} />
   ));
 }

@@ -8,12 +8,9 @@ import {
   ARCONNECT_LIGHT_THEME,
   Provider as ThemeProvider,
   type ArconnectTheme,
-  type DisplayTheme
+  type DisplayTheme,
 } from "@arconnect/components-rebrand";
-import {
-  ARCONNECT_THEME_BACKGROUND_COLOR,
-  ARCONNECT_THEME_TEXT_COLOR
-} from "~utils/storage.utils";
+import { ARCONNECT_THEME_BACKGROUND_COLOR, ARCONNECT_THEME_TEXT_COLOR } from "~utils/storage.utils";
 
 /**
  * Modify the theme if the active wallet is a hardware wallet. We transform the
@@ -24,7 +21,7 @@ function hardwareThemeModifier(theme: ArconnectTheme): ArconnectTheme {
     ...theme,
     theme: "#9AB8FF",
     primary: "#9AB8FF",
-    primaryBtnHover: "#6F93E1"
+    primaryBtnHover: "#6F93E1",
   };
 }
 
@@ -38,9 +35,7 @@ export function WanderThemeProvider({ children }: PropsWithChildren<{}>) {
   const themeModifier = hardwareApi ? hardwareThemeModifier : noThemeModifier;
 
   useEffect(() => {
-    const reducedMotionPreference = window.matchMedia(
-      "(prefers-reduced-motion)"
-    );
+    const reducedMotionPreference = window.matchMedia("(prefers-reduced-motion)");
 
     if (reducedMotionPreference.matches) {
       // This could also be always set to `true` at the top of the file and then set to `false` after the application
@@ -51,11 +46,7 @@ export function WanderThemeProvider({ children }: PropsWithChildren<{}>) {
   }, []);
 
   return (
-    <ThemeProvider
-      theme={themeModifier(
-        theme === "dark" ? ARCONNECT_DARK_THEME : ARCONNECT_LIGHT_THEME
-      )}
-    >
+    <ThemeProvider theme={themeModifier(theme === "dark" ? ARCONNECT_DARK_THEME : ARCONNECT_LIGHT_THEME)}>
       <ThemeBackgroundObserver theme={theme} />
 
       {children}
@@ -67,9 +58,7 @@ interface ThemeBackgroundObserverProps {
   theme?: DisplayTheme;
 }
 
-export function ThemeBackgroundObserver({
-  theme
-}: ThemeBackgroundObserverProps) {
+export function ThemeBackgroundObserver({ theme }: ThemeBackgroundObserverProps) {
   const styledComponentsTheme = useStyledComponentsTheme();
   const backgroundColor = styledComponentsTheme.background;
   const textColor = styledComponentsTheme.primaryText;
@@ -80,15 +69,9 @@ export function ThemeBackgroundObserver({
     let formattedBackgroundColor = getFormattedColor(backgroundColor);
 
     if (formattedBackgroundColor) {
-      localStorage.setItem(
-        ARCONNECT_THEME_BACKGROUND_COLOR,
-        formattedBackgroundColor
-      );
+      localStorage.setItem(ARCONNECT_THEME_BACKGROUND_COLOR, formattedBackgroundColor);
 
-      document.documentElement.style.setProperty(
-        "--backgroundColor",
-        formattedBackgroundColor
-      );
+      document.documentElement.style.setProperty("--backgroundColor", formattedBackgroundColor);
     }
   }, [theme, backgroundColor]);
 
@@ -100,10 +83,7 @@ export function ThemeBackgroundObserver({
     if (formattedTextColor) {
       localStorage.setItem(ARCONNECT_THEME_TEXT_COLOR, formattedTextColor);
 
-      document.documentElement.style.setProperty(
-        "--textColor",
-        formattedTextColor
-      );
+      document.documentElement.style.setProperty("--textColor", formattedTextColor);
     }
   }, [theme, textColor]);
 

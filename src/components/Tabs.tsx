@@ -27,18 +27,12 @@ const Tab = ({ tab, active, setActiveTab }: TabProps) => (
     active={active}
     tabId={tab.id}
     onClick={() => setActiveTab(tab.id)}
-    data-active={active ? "true" : "false"}
-  >
+    data-active={active ? "true" : "false"}>
     {browser.i18n.getMessage(tab.name)}
   </StyledTab>
 );
 
-export default function Tabs({
-  tabs,
-  activeTab,
-  setActiveTab,
-  containerStyle
-}: TabsProps) {
+export default function Tabs({ tabs, activeTab, setActiveTab, containerStyle }: TabsProps) {
   const ActiveComponent = tabs[activeTab].component;
 
   return (
@@ -46,18 +40,10 @@ export default function Tabs({
       <TabsWrapper>
         {tabs.map((tab, index) => (
           <TabWrapper key={tab.id}>
-            <Tab
-              tab={tab}
-              active={tab.id === activeTab}
-              setActiveTab={setActiveTab}
-            />
+            <Tab tab={tab} active={tab.id === activeTab} setActiveTab={setActiveTab} />
             {/* Seperator always visible, but transparent when current or next tab is active */}
             {index < tabs.length - 1 && (
-              <Seperator
-                transparent={
-                  tab.id === activeTab || tabs[index + 1].id === activeTab
-                }
-              />
+              <Seperator transparent={tab.id === activeTab || tabs[index + 1].id === activeTab} />
             )}
           </TabWrapper>
         ))}
@@ -81,8 +67,7 @@ const Seperator = styled.div<{ transparent?: boolean }>`
   width: 1px;
   height: 23px;
   border-radius: 0.5px;
-  background: ${(props) =>
-    props.transparent ? "transparent" : "rgba(142, 142, 147, 0.2)"};
+  background: ${(props) => (props.transparent ? "transparent" : "rgba(142, 142, 147, 0.2)")};
 `;
 
 const TabsWrapper = styled.div`
@@ -98,13 +83,7 @@ const TabsWrapper = styled.div`
   position: relative;
 `;
 
-const ActiveTabIndicator = ({
-  activeTabId,
-  tabs
-}: {
-  activeTabId: number;
-  tabs: readonly TabType[];
-}) => {
+const ActiveTabIndicator = ({ activeTabId, tabs }: { activeTabId: number; tabs: readonly TabType[] }) => {
   const activeIndex = tabs.findIndex((tab) => tab.id === activeTabId);
   const tabWidth = 100 / tabs.length;
 
@@ -114,7 +93,7 @@ const ActiveTabIndicator = ({
     <SlideIndicator
       style={{
         left: `${tabWidth * activeIndex + tabWidth * insetPercentage}%`,
-        width: `${tabWidth * (1 - 2 * insetPercentage)}%`
+        width: `${tabWidth * (1 - 2 * insetPercentage)}%`,
       }}
     />
   );
@@ -125,13 +104,14 @@ const SlideIndicator = styled.div`
   height: 32px;
   border-radius: 8px;
   background: ${(props) =>
-    props.theme.displayTheme === "dark"
-      ? "linear-gradient(47deg, #5842f8 5.41%, #6b57f9 96%)"
-      : "#FFF"};
-  box-shadow: 0px 3px 1px 0px rgba(0, 0, 0, 0.04),
+    props.theme.displayTheme === "dark" ? "linear-gradient(47deg, #5842f8 5.41%, #6b57f9 96%)" : "#FFF"};
+  box-shadow:
+    0px 3px 1px 0px rgba(0, 0, 0, 0.04),
     0px 3px 8px 0px rgba(0, 0, 0, 0.16);
   border: 0.5px solid rgba(0, 0, 0, 0.12);
-  transition: left 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), width 0.3s ease;
+  transition:
+    left 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+    width 0.3s ease;
   z-index: 1;
 `;
 
@@ -146,17 +126,16 @@ const StyledTab = styled.button<{ active?: boolean; tabId: number }>`
   color: ${(props) => props.theme.secondaryText};
   box-sizing: border-box;
   cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
   position: relative;
   z-index: 2;
   background: transparent;
   border: none;
 
   &:hover:not([data-active="true"]) {
-    background: ${(props) =>
-      props.theme.displayTheme === "dark"
-        ? "#403785"
-        : "rgba(255, 255, 255, 0.8)"};
+    background: ${(props) => (props.theme.displayTheme === "dark" ? "#403785" : "rgba(255, 255, 255, 0.8)")};
   }
 
   ${(props) =>

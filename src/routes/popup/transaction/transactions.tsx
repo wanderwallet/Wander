@@ -6,21 +6,16 @@ import styled from "styled-components";
 import { Empty, TitleMessage } from "../notifications";
 import { Button, Loading } from "@arconnect/components-rebrand";
 import { getFullMonthNameWithYear } from "~lib/transactions";
-import {
-  TransactionItemComponent,
-  SectionTitle,
-  SectionList
-} from "~components/popup/home/Transactions";
+import { TransactionItemComponent, SectionTitle, SectionList } from "~components/popup/home/Transactions";
 import { useTransactions } from "~wallets/hooks";
 
 export function TransactionsView() {
   const [activeAddress] = useStorage<string>({
     key: "active_address",
-    instance: ExtensionStorage
+    instance: ExtensionStorage,
   });
 
-  const { transactions, loading, hasNextPage, fetchTransactions } =
-    useTransactions(activeAddress);
+  const { transactions, loading, hasNextPage, fetchTransactions } = useTransactions(activeAddress);
 
   return (
     <>
@@ -29,24 +24,17 @@ export function TransactionsView() {
         {Object.keys(transactions).length > 0
           ? Object.keys(transactions).map((monthYear) => (
               <SectionList key={monthYear}>
-                <SectionTitle>
-                  {getFullMonthNameWithYear(monthYear)}
-                </SectionTitle>
+                <SectionTitle>{getFullMonthNameWithYear(monthYear)}</SectionTitle>
                 <TransactionItem>
                   {transactions[monthYear].map((transaction) => (
-                    <TransactionItemComponent
-                      key={transaction.node.id}
-                      transaction={transaction}
-                    />
+                    <TransactionItemComponent key={transaction.node.id} transaction={transaction} />
                   ))}
                 </TransactionItem>
               </SectionList>
             ))
           : !loading && (
               <Empty>
-                <TitleMessage>
-                  {browser.i18n.getMessage("no_transactions")}
-                </TitleMessage>
+                <TitleMessage>{browser.i18n.getMessage("no_transactions")}</TitleMessage>
               </Empty>
             )}
         {hasNextPage && (
@@ -54,8 +42,7 @@ export function TransactionsView() {
             fullWidth
             disabled={!hasNextPage || loading}
             style={{ alignSelf: "center", marginTop: "5px" }}
-            onClick={fetchTransactions}
-          >
+            onClick={fetchTransactions}>
             {loading ? (
               <>
                 Loading <Loading style={{ margin: "0.18rem" }} />

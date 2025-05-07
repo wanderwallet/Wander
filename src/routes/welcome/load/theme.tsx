@@ -28,9 +28,7 @@ export function ThemeWelcomeView({ params }: ThemeWelcomeViewProps) {
   return (
     <Container>
       <Content>
-        <Paragraph>
-          {browser.i18n.getMessage("choose_ui_theme_description")}
-        </Paragraph>
+        <Paragraph>{browser.i18n.getMessage("choose_ui_theme_description")}</Paragraph>
         <Checkbox
           checked={theme === "system"}
           onChange={() => setTheme("system")}
@@ -47,12 +45,7 @@ export function ThemeWelcomeView({ params }: ThemeWelcomeViewProps) {
           label={browser.i18n.getMessage("dark_theme")}
         />
       </Content>
-      <Button
-        fullWidth
-        onClick={() =>
-          navigate(`/${params.setupMode}/${Number(params.page) + 1}`)
-        }
-      >
+      <Button fullWidth onClick={() => navigate(`/${params.setupMode}/${Number(params.page) + 1}`)}>
         {browser.i18n.getMessage("continue")}
       </Button>
     </Container>

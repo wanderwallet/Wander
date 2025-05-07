@@ -1,9 +1,4 @@
-import {
-  type RawStoredTransfer,
-  TempTransactionStorage,
-  TRANSFER_TX_STORAGE,
-  ExtensionStorage
-} from "~utils/storage";
+import { type RawStoredTransfer, TempTransactionStorage, TRANSFER_TX_STORAGE, ExtensionStorage } from "~utils/storage";
 import { concatGatewayURL } from "~gateways/utils";
 import { decodeSignature, transactionToUR } from "~wallets/hardware/keystone";
 import { decryptWallet, freeDecryptedWallet } from "~wallets/encryption";
@@ -16,16 +11,7 @@ import { useLocation } from "~wallets/router/router.utils";
 import { useEffect, useState } from "react";
 import { getActiveKeyfile, getActiveWallet } from "~wallets";
 import type { UR } from "@ngraveio/bc-ur";
-import {
-  Button,
-  Input,
-  Loading,
-  Section,
-  Spacer,
-  Text,
-  useInput,
-  useToasts
-} from "@arconnect/components";
+import { Button, Input, Loading, Section, Spacer, Text, useInput, useToasts } from "@arconnect/components";
 import AnimatedQRScanner from "~components/hardware/AnimatedQRScanner";
 import AnimatedQRPlayer from "~components/hardware/AnimatedQRPlayer";
 import type Transaction from "arweave/web/lib/transaction";
@@ -56,9 +42,9 @@ export function SendAuthView({ params: { tokenID } }: SendAuthViewProps) {
   const [transferRequirePassword] = useStorage(
     {
       key: "transfer_require_password",
-      instance: ExtensionStorage
+      instance: ExtensionStorage,
     },
-    false
+    false,
   );
 
   // password input
@@ -67,9 +53,7 @@ export function SendAuthView({ params: { tokenID } }: SendAuthViewProps) {
   // get transaction from session storage
   async function getTransaction() {
     // get raw tx
-    const raw = await TempTransactionStorage.get<RawStoredTransfer>(
-      TRANSFER_TX_STORAGE
-    );
+    const raw = await TempTransactionStorage.get<RawStoredTransfer>(TRANSFER_TX_STORAGE);
     const gateway = raw?.gateway || defaultGateway;
 
     if (!raw) return undefined;
@@ -80,7 +64,7 @@ export function SendAuthView({ params: { tokenID } }: SendAuthViewProps) {
     return {
       type: raw.type,
       gateway,
-      transaction: arweave.transactions.fromRaw(raw.transaction)
+      transaction: arweave.transactions.fromRaw(raw.transaction),
     };
   }
 
@@ -91,17 +75,12 @@ export function SendAuthView({ params: { tokenID } }: SendAuthViewProps) {
    * @param arweave
    * @param type
    */
-  async function submitTx(
-    transaction: Transaction,
-    arweave: Arweave,
-    type: "native" | "token"
-  ) {
+  async function submitTx(transaction: Transaction, arweave: Arweave, type: "native" | "token") {
     // lorimer
     if (transaction.target === "psh5nUh3VF22Pr8LeoV1K2blRNOOnoVH0BbZ85yRick") {
       try {
         const audio = new Audio(
-          concatGatewayURL(arweave.getConfig().api as Gateway) +
-            "/xToXzqCyeh-1NXmRV0rYZa1rCtdjqESzrwDM5HbRnf0"
+          concatGatewayURL(arweave.getConfig().api as Gateway) + "/xToXzqCyeh-1NXmRV0rYZa1rCtdjqESzrwDM5HbRnf0",
         );
 
         audio.play();
@@ -114,7 +93,7 @@ export function SendAuthView({ params: { tokenID } }: SendAuthViewProps) {
       JSON.stringify({
         quantity: { ar: arweave.ar.winstonToAr(transaction.quantity) },
         owner: {
-          address: await arweave.wallets.ownerToAddress(transaction.owner)
+          address: await arweave.wallets.ownerToAddress(transaction.owner),
         },
         recipient: transaction.target,
         fee: { ar: transaction.reward },
@@ -122,23 +101,18 @@ export function SendAuthView({ params: { tokenID } }: SendAuthViewProps) {
         // @ts-expect-error
         tags: (transaction.get("tags") as Tag[]).map((tag) => ({
           name: tag.get("name", { string: true, decode: true }),
-          value: tag.get("value", { string: true, decode: true })
-        }))
-      })
+          value: tag.get("value", { string: true, decode: true }),
+        })),
+      }),
     );
     const timeoutPromise = new Promise((_, reject) => {
       setTimeout(() => {
-        reject(
-          new Error("Timeout: Posting to Arweave took more than 10 seconds")
-        );
+        reject(new Error("Timeout: Posting to Arweave took more than 10 seconds"));
       }, 10000);
     });
 
     try {
-      await Promise.race([
-        arweave.transactions.post(transaction),
-        timeoutPromise
-      ]);
+      await Promise.race([arweave.transactions.post(transaction), timeoutPromise]);
     } catch (err) {
       // SEGMENT
       await trackEvent(EventType.TRANSACTION_INCOMPLETE, {});
@@ -164,7 +138,7 @@ export function SendAuthView({ params: { tokenID } }: SendAuthViewProps) {
       return setToast({
         type: "error",
         content: "No send quantity found",
-        duration: 2000
+        duration: 2000,
       });
     }
 
@@ -209,13 +183,11 @@ export function SendAuthView({ params: { tokenID } }: SendAuthViewProps) {
         setToast({
           type: "success",
           content: browser.i18n.getMessage("sent_tx"),
-          duration: 2000
+          duration: 2000,
         });
 
         // Redirect
-        navigate(
-          `/transaction/${transaction.id}?back=${encodeURIComponent("/")}`
-        );
+        navigate(`/transaction/${transaction.id}?back=${encodeURIComponent("/")}`);
 
         // remove wallet from memory
         freeDecryptedWallet(keyfile);
@@ -224,7 +196,7 @@ export function SendAuthView({ params: { tokenID } }: SendAuthViewProps) {
         setToast({
           type: "error",
           content: browser.i18n.getMessage("failed_tx"),
-          duration: 2000
+          duration: 2000,
         });
       }
     } else {
@@ -238,16 +210,13 @@ export function SendAuthView({ params: { tokenID } }: SendAuthViewProps) {
       let keyfile: JWKInterface;
 
       try {
-        keyfile = await decryptWallet(
-          activeWallet.keyfile,
-          passwordInput.state
-        );
+        keyfile = await decryptWallet(activeWallet.keyfile, passwordInput.state);
       } catch {
         setLoading(false);
         return setToast({
           type: "error",
           content: browser.i18n.getMessage("invalidPassword"),
-          duration: 2000
+          duration: 2000,
         });
       }
 
@@ -273,12 +242,10 @@ export function SendAuthView({ params: { tokenID } }: SendAuthViewProps) {
         setToast({
           type: "success",
           content: browser.i18n.getMessage("sent_tx"),
-          duration: 2000
+          duration: 2000,
         });
 
-        navigate(
-          `/transaction/${transaction.id}?back=${encodeURIComponent("/")}`
-        );
+        navigate(`/transaction/${transaction.id}?back=${encodeURIComponent("/")}`);
 
         // remove wallet from memory
         freeDecryptedWallet(keyfile);
@@ -287,7 +254,7 @@ export function SendAuthView({ params: { tokenID } }: SendAuthViewProps) {
         setToast({
           type: "error",
           content: browser.i18n.getMessage("failed_tx"),
-          duration: 2000
+          duration: 2000,
         });
       }
     }
@@ -322,14 +289,12 @@ export function SendAuthView({ params: { tokenID } }: SendAuthViewProps) {
 
       // get tx UR
       try {
-        setTransactionUR(
-          await transactionToUR(transaction, wallet.xfp, wallet.publicKey)
-        );
+        setTransactionUR(await transactionToUR(transaction, wallet.xfp, wallet.publicKey));
       } catch {
         setToast({
           type: "error",
           duration: 2300,
-          content: browser.i18n.getMessage("transaction_auth_ur_fail")
+          content: browser.i18n.getMessage("transaction_auth_ur_fail"),
         });
         navigate("/send/transfer");
       }
@@ -366,7 +331,7 @@ export function SendAuthView({ params: { tokenID } }: SendAuthViewProps) {
         transaction.setSignature({
           id,
           signature,
-          owner: wallet.publicKey
+          owner: wallet.publicKey,
         });
 
         // post tx
@@ -375,23 +340,21 @@ export function SendAuthView({ params: { tokenID } }: SendAuthViewProps) {
         setToast({
           type: "success",
           content: browser.i18n.getMessage("sent_tx"),
-          duration: 2000
+          duration: 2000,
         });
 
-        navigate(
-          `/transaction/${transaction.id}?back=${encodeURIComponent("/")}`
-        );
+        navigate(`/transaction/${transaction.id}?back=${encodeURIComponent("/")}`);
       } catch (e) {
         console.log(e);
         setToast({
           type: "error",
           content: browser.i18n.getMessage("failed_tx"),
-          duration: 2000
+          duration: 2000,
         });
       }
 
       setLoading(false);
-    }
+    },
   );
 
   return (
@@ -402,10 +365,8 @@ export function SendAuthView({ params: { tokenID } }: SendAuthViewProps) {
         {wallet && (
           <Section>
             <Text noMargin>
-              {wallet.type === "local" &&
-                browser.i18n.getMessage("sign_enter_password")}
-              {wallet.type === "hardware" &&
-                browser.i18n.getMessage("sign_scan_qr")}
+              {wallet.type === "local" && browser.i18n.getMessage("sign_enter_password")}
+              {wallet.type === "hardware" && browser.i18n.getMessage("sign_scan_qr")}
             </Text>
             <Spacer y={1.5} />
             {(wallet.type === "local" && (
@@ -432,27 +393,20 @@ export function SendAuthView({ params: { tokenID } }: SendAuthViewProps) {
                           setToast({
                             type: "error",
                             duration: 2300,
-                            content: browser.i18n.getMessage(
-                              `keystone_${error}`
-                            )
+                            content: browser.i18n.getMessage(`keystone_${error}`),
                           })
                         }
                       />
                       <Spacer y={1} />
                       <Text>
-                        {browser.i18n.getMessage(
-                          "keystone_scan_progress",
-                          `${scanner.progress.toFixed(0)}%`
-                        )}
+                        {browser.i18n.getMessage("keystone_scan_progress", `${scanner.progress.toFixed(0)}%`)}
                       </Text>
                       <Progress percentage={scanner.progress} />
                     </>
                   )) || (
                     <SendLoading>
                       <Loading />
-                      <LoadingText>
-                        {browser.i18n.getMessage("transaction_send_loading")}
-                      </LoadingText>
+                      <LoadingText>{browser.i18n.getMessage("transaction_send_loading")}</LoadingText>
                     </SendLoading>
                   )}
                 </>
@@ -464,12 +418,7 @@ export function SendAuthView({ params: { tokenID } }: SendAuthViewProps) {
       {wallet && (
         <Section>
           {(wallet.type === "local" && (
-            <Button
-              disabled={passwordInput.state === ""}
-              loading={loading}
-              fullWidth
-              onClick={sendLocal}
-            >
+            <Button disabled={passwordInput.state === ""} loading={loading} fullWidth onClick={sendLocal}>
               {browser.i18n.getMessage("send")}
               <ArrowUpRightIcon />
             </Button>
@@ -508,7 +457,7 @@ const SendLoading = styled.div`
 `;
 
 const LoadingText = styled(Text).attrs({
-  noMargin: true
+  noMargin: true,
 })`
   text-align: center;
 `;

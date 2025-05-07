@@ -5,7 +5,7 @@ const permissions: PermissionType[] = ["ACCESS_TOKENS"];
 
 const userTokensModule: ModuleProperties = {
   functionName: "userTokens",
-  permissions
+  permissions,
 };
 
 export default userTokensModule;

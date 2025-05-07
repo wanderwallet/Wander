@@ -1,16 +1,5 @@
-import {
-  Input,
-  Section,
-  Spacer,
-  Text,
-  useInput,
-  useToasts
-} from "@arconnect/components-rebrand";
-import {
-  permissionData,
-  signPolicyOptions,
-  type PermissionType
-} from "~applications/permissions";
+import { Input, Section, Spacer, Text, useInput, useToasts } from "@arconnect/components-rebrand";
+import { permissionData, signPolicyOptions, type PermissionType } from "~applications/permissions";
 import { useCurrentAuthRequest } from "~utils/auth/auth.hooks";
 import { AnimatePresence, motion } from "framer-motion";
 import { unlock as globalUnlock } from "~wallets/auth";
@@ -34,12 +23,7 @@ import { AuthButtons } from "~components/auth/AuthButtons";
 import Squircle from "~components/Squircle";
 import { useActiveWallet } from "~wallets/hooks";
 import Checkbox from "~components/Checkbox";
-import {
-  ChevronRight,
-  Edit02,
-  InfoCircle,
-  RefreshCcw01
-} from "@untitled-ui/icons-react";
+import { ChevronRight, Edit02, InfoCircle, RefreshCcw01 } from "@untitled-ui/icons-react";
 import WanderIcon from "url:assets/icon.svg";
 import Image from "~components/common/Image";
 import { Flex } from "~components/common/Flex";
@@ -58,7 +42,7 @@ export function ConnectAuthRequestView() {
   // active address
   const [activeAddress] = useStorage<string>({
     key: "active_address",
-    instance: ExtensionStorage
+    instance: ExtensionStorage,
   });
 
   const [signPolicy, setSignPolicy] = useState<SignPolicy>("ask_when_spending");
@@ -66,9 +50,9 @@ export function ConnectAuthRequestView() {
   const [askPassword] = useStorage<boolean>(
     {
       key: "connect_require_password",
-      instance: ExtensionStorage
+      instance: ExtensionStorage,
     },
-    false
+    false,
   );
 
   // permissions to add
@@ -89,15 +73,9 @@ export function ConnectAuthRequestView() {
     }
   }, [wallet, nameServiceProfile, nsGateway]);
 
-  const { authRequest, acceptRequest, rejectRequest } =
-    useCurrentAuthRequest("connect");
+  const { authRequest, acceptRequest, rejectRequest } = useCurrentAuthRequest("connect");
 
-  const {
-    url = "",
-    permissions: authRequestPermissions = [],
-    appInfo = {},
-    gateway
-  } = authRequest;
+  const { url = "", permissions: authRequestPermissions = [], appInfo = {}, gateway } = authRequest;
 
   // wallet switcher open
   const [switcherOpen, setSwitcherOpen] = useState(false);
@@ -112,13 +90,9 @@ export function ConnectAuthRequestView() {
   const { setToast } = useToasts();
 
   // requested permissions
-  const [requestedPermissions, setRequestedPermissions] = useState<
-    PermissionType[]
-  >([]);
+  const [requestedPermissions, setRequestedPermissions] = useState<PermissionType[]>([]);
 
-  const [requestedPermCopy, setRequestedPermCopy] = useState<PermissionType[]>(
-    []
-  );
+  const [requestedPermCopy, setRequestedPermCopy] = useState<PermissionType[]>([]);
 
   const withBackground = useMemo(() => {
     return PAGES_WITH_BACKGROUND.has(page);
@@ -132,9 +106,7 @@ export function ConnectAuthRequestView() {
     const sortedInitial = [...requestedPermCopy].sort();
 
     // Compare each element
-    return sortedRequested.some(
-      (permission, index) => permission !== sortedInitial[index]
-    );
+    return sortedRequested.some((permission, index) => permission !== sortedInitial[index]);
   }, [requestedPermissions, requestedPermCopy]);
 
   // connect
@@ -150,7 +122,7 @@ export function ConnectAuthRequestView() {
           return setToast({
             type: "error",
             content: browser.i18n.getMessage("invalidPassword"),
-            duration: 2200
+            duration: 2200,
           });
         }
       }
@@ -171,10 +143,10 @@ export function ConnectAuthRequestView() {
           allowance: {
             enabled: false,
             limit: "0",
-            spent: "0" // in winstons
+            spent: "0", // in winstons
           },
           // TODO: wayfinder
-          gateway: gateway || defaultGateway
+          gateway: gateway || defaultGateway,
         });
       } else {
         // update existing permissions, if the app
@@ -187,28 +159,20 @@ export function ConnectAuthRequestView() {
           allowance: {
             enabled: false,
             limit: "0",
-            spent: "0" // in winstons
-          }
+            spent: "0", // in winstons
+          },
         });
       }
 
       // track connected app.
       await trackEvent(EventType.CONNECTED_APP, {
         appName: appInfo.name,
-        appUrl: url
+        appUrl: url,
       });
 
       acceptRequest();
     },
-    [
-      url,
-      passwordInput.state,
-      permissions,
-      appInfo,
-      signPolicy,
-      gateway,
-      acceptRequest
-    ]
+    [url, passwordInput.state, permissions, appInfo, signPolicy, gateway, acceptRequest],
   );
 
   const handleBack = useCallback(async () => {
@@ -248,13 +212,9 @@ export function ConnectAuthRequestView() {
         }
       }
 
-      setRequestedPermissions(
-        requested.filter((p) => Object.keys(permissionData).includes(p))
-      );
+      setRequestedPermissions(requested.filter((p) => Object.keys(permissionData).includes(p)));
 
-      setRequestedPermCopy(
-        requested.filter((p) => Object.keys(permissionData).includes(p))
-      );
+      setRequestedPermCopy(requested.filter((p) => Object.keys(permissionData).includes(p)));
     })();
   }, [url, authRequestPermissions]);
 
@@ -337,14 +297,14 @@ export function ConnectAuthRequestView() {
                 page === "unlock" || (page === "confirm" && !askPassword)
                   ? "connect"
                   : page !== "confirm"
-                  ? "next"
-                  : "confirm"
+                    ? "next"
+                    : "confirm",
               ),
-              onClick: handlePrimaryOnClick
+              onClick: handlePrimaryOnClick,
             }}
             secondaryButtonProps={{
               label: browser.i18n.getMessage("cancel"),
-              onClick: () => rejectRequest()
+              onClick: () => rejectRequest(),
             }}
           />
         </Section>
@@ -357,7 +317,7 @@ const UnlockPage = ({
   appInfo,
   gateway,
   passwordBindings,
-  connect
+  connect,
 }: {
   appInfo: any;
   gateway: any;
@@ -372,26 +332,17 @@ const UnlockPage = ({
           height: "200px",
           display: "flex",
           flexDirection: "column",
-          justifyContent: "flex-end"
-        }}
-      >
+          justifyContent: "flex-end",
+        }}>
         <AppIconsWrapper>
           <IconWrapper src={appInfo.logo} alt={appInfo.name} />
-          <IconWrapper
-            backgroundColor="#EBE0FF"
-            src={WanderIcon}
-            style={{ marginLeft: "-4px" }}
-            alt="Wander Icon"
-          />
+          <IconWrapper backgroundColor="#EBE0FF" src={WanderIcon} style={{ marginLeft: "-4px" }} alt="Wander Icon" />
         </AppIconsWrapper>
         <Spacer y={1} />
         <div style={{ textAlign: "center", gap: 4 }}>
-          <ConnectToApp>
-            {browser.i18n.getMessage("enter_your_password")}
-          </ConnectToApp>
+          <ConnectToApp>{browser.i18n.getMessage("enter_your_password")}</ConnectToApp>
           <Gateway>
-            {browser.i18n.getMessage("gateway")}:{" "}
-            {(gateway || defaultGateway)?.host || ""}
+            {browser.i18n.getMessage("gateway")}: {(gateway || defaultGateway)?.host || ""}
           </Gateway>
         </div>
       </div>
@@ -414,7 +365,7 @@ const PermissionsPage = ({
   authRequest,
   requestedPermissions,
   setRequestedPermissions,
-  setPage
+  setPage,
 }: {
   authRequest: any;
   requestedPermissions: PermissionType[];
@@ -437,7 +388,7 @@ const ConnectPage = ({
   avatar,
   activeAddress,
   switcherOpen,
-  setSwitcherOpen
+  setSwitcherOpen,
 }: {
   appInfo: any;
   url: string;
@@ -453,46 +404,29 @@ const ConnectPage = ({
       <ConnectPageSectionHeader>
         <AppIconsWrapper>
           <IconWrapper src={appInfo.logo} alt={appInfo.name} />
-          <IconWrapper
-            backgroundColor="#EBE0FF"
-            src={WanderIcon}
-            style={{ marginLeft: "-4px" }}
-            alt="Wander Icon"
-          />
+          <IconWrapper backgroundColor="#EBE0FF" src={WanderIcon} style={{ marginLeft: "-4px" }} alt="Wander Icon" />
         </AppIconsWrapper>
         <Spacer y={1} />
         <Flex direction="column" gap={4} justify="center">
-          <ConnectToApp>
-            {browser.i18n.getMessage("connect_to_app", [appInfo.name || url])}
-          </ConnectToApp>
+          <ConnectToApp>{browser.i18n.getMessage("connect_to_app", [appInfo.name || url])}</ConnectToApp>
           <Gateway>
-            {browser.i18n.getMessage("gateway")}:{" "}
-            {(gateway || defaultGateway)?.host || ""}
+            {browser.i18n.getMessage("gateway")}: {(gateway || defaultGateway)?.host || ""}
           </Gateway>
         </Flex>
       </ConnectPageSectionHeader>
       <div>
-        <SecondaryText fontSize={16}>
-          {browser.i18n.getMessage("select_account", [appInfo.name || url])}:
-        </SecondaryText>
+        <SecondaryText fontSize={16}>{browser.i18n.getMessage("select_account", [appInfo.name || url])}:</SecondaryText>
         <Spacer y={0.5} />
         <ConnectWalletWrapper onClick={() => setSwitcherOpen(true)}>
           <div style={{ display: "flex", flexDirection: "row", gap: "12px" }}>
-            <Avatar img={avatar}>
-              {!avatar && <NoAvatarIcon size="1.8em" />}
-            </Avatar>
+            <Avatar img={avatar}>{!avatar && <NoAvatarIcon size="1.8em" />}</Avatar>
             <div>
               <WalletName>{wallet?.nickname}</WalletName>
-              <SecondaryText>
-                {formatAddress(activeAddress || "", 4)}
-              </SecondaryText>
+              <SecondaryText>{formatAddress(activeAddress || "", 4)}</SecondaryText>
             </div>
           </div>
           <ChangeText>{browser.i18n.getMessage("change")}</ChangeText>
-          <WalletSwitcher
-            open={switcherOpen}
-            close={() => setSwitcherOpen(false)}
-          />
+          <WalletSwitcher open={switcherOpen} close={() => setSwitcherOpen(false)} />
         </ConnectWalletWrapper>
       </div>
     </ConnectPageSection>
@@ -508,7 +442,7 @@ const ConfirmPage = ({
   setPage,
   theme,
   setRequestedPermissions,
-  requestedPermCopy
+  requestedPermCopy,
 }: {
   appInfo: any;
   url: string;
@@ -521,41 +455,26 @@ const ConfirmPage = ({
   requestedPermCopy: PermissionType[];
 }) => (
   <ConnectPageContent>
-    <Section
-      showPaddingVertical={false}
-      style={{ display: "flex", flexDirection: "column", gap: "24px" }}
-    >
+    <Section showPaddingVertical={false} style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
       <div style={{ textAlign: "center" }}>
         <PrimaryText fontSize={20} fontWeight={600}>
-          {browser.i18n.getMessage("confirm_permissions", [
-            appInfo.name || url
-          ])}
+          {browser.i18n.getMessage("confirm_permissions", [appInfo.name || url])}
         </PrimaryText>
         <SecondaryText>{url}</SecondaryText>
       </div>
       <PolicyOptionContainer>
         {signPolicyOptions.map((option) => (
           <PolicyOption key={option} onClick={() => setSignPolicy(option)}>
-            <Checkbox
-              size={20}
-              onChange={() => setSignPolicy(option)}
-              checked={signPolicy === option}
-            />
+            <Checkbox size={20} onChange={() => setSignPolicy(option)} checked={signPolicy === option} />
             <div>
-              <PrimaryText fontSize={16}>
-                {browser.i18n.getMessage(option)}
-              </PrimaryText>
+              <PrimaryText fontSize={16}>{browser.i18n.getMessage(option)}</PrimaryText>
             </div>
           </PolicyOption>
         ))}
       </PolicyOptionContainer>
       <CustomPermissionsButton onClick={() => setPage("permissions")}>
         <PrimaryText fontSize={16}>
-          {browser.i18n.getMessage(
-            isCustomPermissions
-              ? "custom_permissions_set"
-              : "set_custom_permissions"
-          )}
+          {browser.i18n.getMessage(isCustomPermissions ? "custom_permissions_set" : "set_custom_permissions")}
         </PrimaryText>
         <div style={{ display: "flex", gap: "8px" }}>
           {isCustomPermissions ? (
@@ -580,9 +499,7 @@ const ConfirmPage = ({
         <div>
           <InfoCircle height={24} width={24} color={theme.secondaryText} />
         </div>
-        <SecondaryText fontSize={14}>
-          {browser.i18n.getMessage(`${signPolicy}_description`)}
-        </SecondaryText>
+        <SecondaryText fontSize={14}>{browser.i18n.getMessage(`${signPolicy}_description`)}</SecondaryText>
       </CustomPermissionsInfo>
     </Section>
   </ConnectPageContent>
@@ -598,8 +515,8 @@ const UnlockWrapper = styled(motion.div).attrs({
   exit: { opacity: 0 },
   transition: {
     type: "easeInOut",
-    duration: 0.2
-  }
+    duration: 0.2,
+  },
 })`
   width: 100vw;
 
@@ -613,7 +530,7 @@ const IconWrapper = styled(Image).attrs((props) => ({
   width: 48,
   borderRadius: 48,
   objectFit: "contain",
-  backgroundColor: props.backgroundColor || "#fffefc"
+  backgroundColor: props.backgroundColor || "#fffefc",
 }))``;
 
 const AppIconsWrapper = styled.div`
@@ -630,7 +547,7 @@ const ConnectPageContent = styled.div`
 `;
 
 const ConnectToApp = styled(Text).attrs({
-  noMargin: true
+  noMargin: true,
 })`
   font-size: 24px;
   font-weight: 700;
@@ -639,7 +556,7 @@ const ConnectToApp = styled(Text).attrs({
 `;
 
 const Gateway = styled(Text).attrs({
-  noMargin: true
+  noMargin: true,
 })`
   color: ${(props) => props.theme.secondaryText};
   font-size: 14px;
@@ -689,7 +606,7 @@ export const AccountInitial = styled.span`
 `;
 
 const WalletName = styled(Text).attrs({
-  noMargin: true
+  noMargin: true,
 })`
   font-size: 18px;
   font-weight: 500;
@@ -697,7 +614,7 @@ const WalletName = styled(Text).attrs({
 `;
 
 const SecondaryText = styled(Text).attrs({
-  noMargin: true
+  noMargin: true,
 })<{ fontSize?: number }>`
   color: ${(props) => props.theme.secondaryText};
   font-size: ${(props) => props.fontSize || 14}px;
@@ -711,7 +628,7 @@ const SecondaryText = styled(Text).attrs({
 `;
 
 const PrimaryText = styled(Text).attrs({
-  noMargin: true
+  noMargin: true,
 })<{ fontSize?: number; fontWeight?: number; textAlign?: string }>`
   color: ${(props) => props.theme.primaryText};
   font-size: ${(props) => props.fontSize || 14}px;
@@ -720,7 +637,7 @@ const PrimaryText = styled(Text).attrs({
 `;
 
 const ChangeText = styled(Text).attrs({
-  noMargin: true
+  noMargin: true,
 })`
   color: ${(props) => props.theme.input.icons.searchActive};
   font-size: 14px;

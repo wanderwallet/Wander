@@ -5,7 +5,7 @@ const permissions: PermissionType[] = ["SIGNATURE"];
 
 const verifyMessage: ModuleProperties = {
   functionName: "verifyMessage",
-  permissions
+  permissions,
 };
 
 export default verifyMessage;

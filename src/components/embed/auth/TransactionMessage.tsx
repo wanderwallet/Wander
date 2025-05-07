@@ -14,10 +14,7 @@ interface TransactionMessaageProps {
   showLink?: boolean;
 }
 
-export default function TransactionMessage({
-  transaction,
-  showLink = true
-}: TransactionMessaageProps) {
+export default function TransactionMessage({ transaction, showLink = true }: TransactionMessaageProps) {
   const { navigate } = useLocation();
   const [message, setMessage] = useState<string>("");
 
@@ -26,13 +23,15 @@ export default function TransactionMessage({
     if (!transaction) return [];
 
     // @ts-expect-error
-    if (transaction?.tags && !transaction?.get) return transaction.tags;
+    if (!transaction?.get) {
+      return Array.isArray(transaction?.tags) ? transaction.tags : [];
+    }
 
     // @ts-expect-error
     const tags = transaction.get("tags") as Tag[];
     const decodedTags = tags.map((tag) => ({
       name: tag.get("name", { decode: true, string: true }),
-      value: tag.get("value", { decode: true, string: true })
+      value: tag.get("value", { decode: true, string: true }),
     }));
 
     return decodedTags;
@@ -42,9 +41,8 @@ export default function TransactionMessage({
   const getContentType = useCallback(
     () =>
       // @ts-expect-error
-      transaction?.data?.type ||
-      tags?.find((t) => t.name.toLowerCase() === "content-type")?.value,
-    [transaction, tags]
+      transaction?.data?.type || tags?.find((t) => t.name.toLowerCase() === "content-type")?.value,
+    [transaction, tags],
   );
 
   useEffect(() => {
@@ -52,10 +50,7 @@ export default function TransactionMessage({
       if (!transaction?.data) return;
 
       const type = getContentType();
-      const contentNotSupportedMessage = browser.i18n.getMessage(
-        "data_content_type_not_supported",
-        [type || "binary"]
-      );
+      const contentNotSupportedMessage = browser.i18n.getMessage("data_content_type_not_supported", [type || "binary"]);
 
       try {
         // if too large, show a message
@@ -67,9 +62,7 @@ export default function TransactionMessage({
         const arweave = new Arweave(defaultGateway);
 
         let txData = arweave.utils.bufferToString(
-          transaction.data instanceof Uint8Array
-            ? transaction.data
-            : new Uint8Array(transaction.data)
+          transaction.data instanceof Uint8Array ? transaction.data : new Uint8Array(transaction.data),
         );
 
         if (type === "application/json") {
@@ -85,11 +78,8 @@ export default function TransactionMessage({
           // Sample only the first 100 characters for performance
           const sampleSize = Math.min(100, txData.length);
           const sample = txData.substring(0, sampleSize);
-          const nonPrintableChars = sample.match(
-            /[\x00-\x08\x0B\x0C\x0E-\x1F]/g
-          );
-          const isProbablyText =
-            !nonPrintableChars || nonPrintableChars.length / sampleSize < 0.05;
+          const nonPrintableChars = sample.match(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g);
+          const isProbablyText = !nonPrintableChars || nonPrintableChars.length / sampleSize < 0.05;
 
           if (isProbablyText) {
             setMessage(txData.trim());
@@ -123,9 +113,8 @@ export default function TransactionMessage({
               maxHeight: "100px",
               overflowY: "auto",
               padding: 0,
-              margin: 0
-            }}
-          >
+              margin: 0,
+            }}>
             <Text variant="bodySm" style={{ color: "#121212" }}>
               {message}
             </Text>
@@ -137,8 +126,7 @@ export default function TransactionMessage({
           isFullWidth
           justifyContent="between"
           style={{ marginTop: "0.5rem", cursor: "pointer" }}
-          onClick={() => navigate("/wallet/transaction-details")}
-        >
+          onClick={() => navigate("/wallet/transaction-details")}>
           <Text variant="bodySm" style={{ color: "#666666" }}>
             Transaction details
           </Text>

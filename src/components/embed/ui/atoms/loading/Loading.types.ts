@@ -1,6 +1,6 @@
 export type LoadingBaseProps = {
-  size?: "small" | "medium" | "large";
   className?: string;
-  isAnchor?: boolean;
+  size?: "small" | "medium" | "large";
   color?: string;
+  isAnchor?: boolean;
 };

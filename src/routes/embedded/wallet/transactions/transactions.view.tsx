@@ -8,10 +8,7 @@ import TransactionGroup from "./components/TransactionGroup";
 export function WalletTransactionsEmbeddedView() {
   const { address } = useActiveWallet();
   const { navigate } = useLocation();
-  const { transactions, loading, hasNextPage, count } = useTransactions(
-    address,
-    3
-  );
+  const { transactions, loading, hasNextPage, count } = useTransactions(address, 3);
 
   return (
     <Card
@@ -19,15 +16,10 @@ export function WalletTransactionsEmbeddedView() {
       headerText="Transaction History"
       hasBackButton={true}
       onBackButtonClick={() => navigate("/wallet")}
-      style={{ padding: "2rem", overflowY: "auto" }}
-    >
+      style={{ padding: "2rem", overflowY: "auto" }}>
       {count.current > 0 ? (
         Object.entries(transactions).map(([monthYear, transactions]) => (
-          <TransactionGroup
-            key={monthYear}
-            monthYear={monthYear}
-            transactions={transactions}
-          />
+          <TransactionGroup key={monthYear} monthYear={monthYear} transactions={transactions} />
         ))
       ) : (
         <Box>

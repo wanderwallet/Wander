@@ -2,31 +2,14 @@ import { type MouseEventHandler, useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useStorage } from "~utils/storage";
 import { ExtensionStorage } from "~utils/storage";
-import HardwareWalletIcon, {
-  hwIconAnimateProps
-} from "~components/hardware/HardwareWalletIcon";
+import HardwareWalletIcon, { hwIconAnimateProps } from "~components/hardware/HardwareWalletIcon";
 import { useHardwareApi } from "~wallets/hooks";
 import type { StoredWallet } from "~wallets";
 import { formatAddress, getAppURL, truncateMiddle } from "~utils/format";
 import { removeApp } from "~applications";
 import { useTheme } from "~utils/theme";
-import {
-  Button,
-  Card,
-  type DisplayTheme,
-  Text,
-  useToasts,
-  Tooltip
-} from "@arconnect/components-rebrand";
-import {
-  CheckIcon,
-  CopyIcon,
-  GlobeIcon,
-  LogOutIcon,
-  SettingsIcon,
-  MinimizeIcon,
-  WalletIcon
-} from "@iconicicons/react";
+import { Button, Card, type DisplayTheme, Text, useToasts, Tooltip } from "@arconnect/components-rebrand";
+import { CheckIcon, CopyIcon, GlobeIcon, LogOutIcon, SettingsIcon, MinimizeIcon, WalletIcon } from "@iconicicons/react";
 import WalletSwitcher, { popoverAnimation } from "./WalletSwitcher";
 import Application, { type AppInfo } from "~applications/application";
 import keystoneLogo from "url:/assets/hardware/keystone.png";
@@ -52,16 +35,16 @@ export default function WalletHeader() {
   // current address
   const [activeAddress] = useStorage<string>({
     key: "active_address",
-    instance: ExtensionStorage
+    instance: ExtensionStorage,
   });
 
   // all wallets added
   const [wallets] = useStorage<StoredWallet[]>(
     {
       key: "wallets",
-      instance: ExtensionStorage
+      instance: ExtensionStorage,
     },
-    []
+    [],
   );
 
   // is the wallet selector open
@@ -79,10 +62,7 @@ export default function WalletHeader() {
     setToast({
       type: "success",
       duration: 2000,
-      content: browser.i18n.getMessage("copied_address", [
-        walletName,
-        formatAddress(activeAddress, 3)
-      ])
+      content: browser.i18n.getMessage("copied_address", [walletName, formatAddress(activeAddress, 3)]),
     });
   };
 
@@ -119,9 +99,9 @@ export default function WalletHeader() {
   const [newNotifications, setNewNotifications] = useStorage<boolean>(
     {
       key: "new_notifications",
-      instance: ExtensionStorage
+      instance: ExtensionStorage,
     },
-    false
+    false,
   );
 
   const [scrollY, setScrollY] = useState(0);
@@ -148,9 +128,7 @@ export default function WalletHeader() {
   }, [activeTab]);
 
   // active app data
-  const [activeAppData, setActiveAppData] = useState<
-    AppInfo & { gateway: Gateway }
-  >();
+  const [activeAppData, setActiveAppData] = useState<AppInfo & { gateway: Gateway }>();
 
   useEffect(() => {
     (async () => {
@@ -171,7 +149,7 @@ export default function WalletHeader() {
 
       setActiveAppData({
         ...appData,
-        gateway: gatewayConfig
+        gateway: gatewayConfig,
       });
     })();
   }, [activeApp]);
@@ -185,14 +163,10 @@ export default function WalletHeader() {
         onClick={(e) => {
           e.stopPropagation();
           setAppDataOpen(true);
-        }}
-      >
+        }}>
         <Tooltip
-          content={browser.i18n.getMessage(
-            !activeAppData ? "disconnected" : "account_connected"
-          )}
-          position="bottomStart"
-        >
+          content={browser.i18n.getMessage(!activeAppData ? "disconnected" : "account_connected")}
+          position="bottomStart">
           <Action as={GlobeIcon} style={{ width: "30px", height: "30px" }} />
         </Tooltip>
         <AppOnline online={!!activeAppData} />
@@ -202,22 +176,12 @@ export default function WalletHeader() {
         <Wallet
           onClick={() => {
             if (!isOpen) setOpen(true);
-          }}
-        >
-          <Avatar
-            img={
-              nameServiceProfile?.logo &&
-              concatGatewayURL(gateway) + "/" + nameServiceProfile.logo
-            }
-          >
+          }}>
+          <Avatar img={nameServiceProfile?.logo && concatGatewayURL(gateway) + "/" + nameServiceProfile.logo}>
             {!nameServiceProfile?.logo && <NoAvatarIcon />}
             <AnimatePresence initial={false}>
               {hardwareApi === "keystone" && (
-                <HardwareWalletIcon
-                  icon={keystoneLogo}
-                  color="#2161FF"
-                  {...hwIconAnimateProps}
-                />
+                <HardwareWalletIcon icon={keystoneLogo} color="#2161FF" {...hwIconAnimateProps} />
               )}
             </AnimatePresence>
           </Avatar>
@@ -229,10 +193,7 @@ export default function WalletHeader() {
             <Address>{address}</Address>
           </WalletName>
         </Wallet>
-        <Tooltip
-          content={browser.i18n.getMessage("copy_address")}
-          position="bottom"
-        >
+        <Tooltip content={browser.i18n.getMessage("copy_address")} position="bottom">
           <Action
             as={copied ? CheckIcon : CopyIcon}
             onClick={copyAddress}
@@ -242,10 +203,7 @@ export default function WalletHeader() {
         </Tooltip>
       </AddressContainer>
       <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-        <Tooltip
-          content={browser.i18n.getMessage("setting_notifications")}
-          position="bottomEnd"
-        >
+        <Tooltip content={browser.i18n.getMessage("setting_notifications")} position="bottomEnd">
           <Action
             as={Bell03}
             onClick={() => {
@@ -257,16 +215,13 @@ export default function WalletHeader() {
           {newNotifications && <Notifier />}
         </Tooltip>
         {IS_EMBEDDED_APP && (
-          <Tooltip
-            content={browser.i18n.getMessage("close")}
-            position="bottomEnd"
-          >
+          <Tooltip content={browser.i18n.getMessage("close")} position="bottomEnd">
             <Action
               as={MinimizeIcon}
               onClick={() => {
                 postEmbeddedMessage({
                   type: "embedded_close",
-                  data: null
+                  data: null,
                 });
               }}
               style={{ width: "24px", height: "24px" }}
@@ -294,28 +249,16 @@ export default function WalletHeader() {
 
       <AnimatePresence>
         {appDataOpen && (
-          <AppInfoWrapper
-            variants={popoverAnimation}
-            onClick={(e) => e.stopPropagation()}
-          >
+          <AppInfoWrapper variants={popoverAnimation} onClick={(e) => e.stopPropagation()}>
             <Card>
               <AppInfo>
                 {(!!activeAppData && (
                   <Tooltip
-                    content={
-                      browser.i18n.getMessage("gateway") +
-                      ": " +
-                      activeAppData.gateway.host
-                    }
-                    position="topStart"
-                  >
+                    content={browser.i18n.getMessage("gateway") + ": " + activeAppData.gateway.host}
+                    position="topStart">
                     <ActiveAppIcon connected>
                       {(activeAppData?.logo && (
-                        <img
-                          src={activeAppData.logo}
-                          alt={activeAppData.name || ""}
-                          draggable={false}
-                        />
+                        <img src={activeAppData.logo} alt={activeAppData.name || ""} draggable={false} />
                       )) || <NoAppIcon />}
                       <AppOnline online={!!activeAppData} />
                     </ActiveAppIcon>
@@ -327,19 +270,14 @@ export default function WalletHeader() {
                 )}
                 <div>
                   <AppName>
-                    {activeAppData?.name ||
-                      browser.i18n.getMessage(
-                        activeAppData ? "appConnected" : "not_connected"
-                      )}
+                    {activeAppData?.name || browser.i18n.getMessage(activeAppData ? "appConnected" : "not_connected")}
                   </AppName>
                   <AppUrl>{getAppURL(activeTab?.url)}</AppUrl>
                 </div>
               </AppInfo>
               <AppOptions>
                 {(!activeAppData && (
-                  <NotConnectedNote>
-                    {browser.i18n.getMessage("not_connected_text")}
-                  </NotConnectedNote>
+                  <NotConnectedNote>{browser.i18n.getMessage("not_connected_text")}</NotConnectedNote>
                 )) || (
                   <>
                     <AppActionButtons>
@@ -348,12 +286,9 @@ export default function WalletHeader() {
                         variant="secondary"
                         onClick={() =>
                           browser.tabs.create({
-                            url: browser.runtime.getURL(
-                              `tabs/dashboard.html#/apps/${activeApp.url}`
-                            )
+                            url: browser.runtime.getURL(`tabs/dashboard.html#/apps/${activeApp.url}`),
                           })
-                        }
-                      >
+                        }>
                         <SettingsIcon style={{ marginRight: "5px" }} />
                         {browser.i18n.getMessage("settings")}
                       </Button>
@@ -363,20 +298,17 @@ export default function WalletHeader() {
                           await removeApp(getAppURL(activeTab?.url));
                           setActiveAppData(undefined);
                           setAppDataOpen(false);
-                        }}
-                      >
+                        }}>
                         <LogOutIcon
                           style={{
                             position: "absolute",
                             right: "120px",
                             width: "24px",
                             height: "24px",
-                            marginRight: "5px"
+                            marginRight: "5px",
                           }}
                         />
-                        <div style={{ marginLeft: "24px" }}>
-                          {browser.i18n.getMessage("disconnect")}
-                        </div>
+                        <div style={{ marginLeft: "24px" }}>{browser.i18n.getMessage("disconnect")}</div>
                       </Button>
                     </AppActionButtons>
                   </>
@@ -433,7 +365,9 @@ const Wallet = styled.div`
   flex-direction: row;
   align-items: center;
   gap: 0.5rem;
-  transition: transform 0.06s ease-in-out, background-color 0.17s ease-in-out;
+  transition:
+    transform 0.06s ease-in-out,
+    background-color 0.17s ease-in-out;
 
   p {
     color: ${(props) => props.theme.primaryText};
@@ -457,7 +391,7 @@ const Wallet = styled.div`
 const Address = styled(Text).attrs({
   variant: "secondary",
   weight: "medium",
-  noMargin: true
+  noMargin: true,
 })`
   @media (max-width: 375px) {
     display: none;
@@ -507,8 +441,7 @@ const AppOnline = styled.div<{ online: boolean }>`
   width: 8px;
   height: 8px;
   border-radius: 100%;
-  background-color: ${(props) =>
-    props.online ? props.theme.success : "rgb(154, 154, 167)"};
+  background-color: ${(props) => (props.online ? props.theme.success : "rgb(154, 154, 167)")};
   border: 1px solid rgb(${(props) => props.theme.background});
 `;
 
@@ -522,8 +455,7 @@ export const Action = styled(CopyIcon)<{ $active?: boolean }>`
   font-size: 1.25rem;
   width: 1.5em;
   height: 1.5em;
-  color: ${(props) =>
-    props.$active ? props.theme.success : props.theme.primaryText};
+  color: ${(props) => (props.$active ? props.theme.success : props.theme.primaryText)};
   transition: all 0.23s ease-in-out;
 
   &:hover {
@@ -538,7 +470,7 @@ export const Action = styled(CopyIcon)<{ $active?: boolean }>`
 const AppInfoWrapper = styled(motion.div).attrs({
   initial: "closed",
   animate: "open",
-  exit: "closed"
+  exit: "closed",
 })`
   position: absolute;
   top: 100%;
@@ -573,7 +505,7 @@ const AppActionButtons = styled.div`
 `;
 
 const NotConnectedNote = styled(Text).attrs({
-  noMargin: true
+  noMargin: true,
 })`
   font-size: 0.84rem;
   text-align: justify;
@@ -583,10 +515,7 @@ const ActiveAppIcon = styled(AppIcon)<{ connected: boolean }>`
   position: relative;
   width: 2rem;
   height: 2rem;
-  color: rgb(
-    ${(props) =>
-      props.connected ? props.theme.theme : props.theme.secondaryText}
-  );
+  color: rgb(${(props) => (props.connected ? props.theme.theme : props.theme.secondaryText)});
 
   ${AppOnline} {
     width: 10px;
@@ -606,14 +535,14 @@ const ActiveAppIcon = styled(AppIcon)<{ connected: boolean }>`
 `;
 
 const AppName = styled(Text).attrs({
-  noMargin: true
+  noMargin: true,
 })`
   color: ${(props) => props.theme.primaryText};
   line-height: 1.1em;
 `;
 
 const AppUrl = styled(Text).attrs({
-  noMargin: true
+  noMargin: true,
 })`
   font-size: 0.75rem;
   line-height: 1.1em;
@@ -629,6 +558,5 @@ export const CloseLayer = styled(motion.div)`
   width: 100vw;
   height: 100vh;
   cursor: default;
-  background-color: ${({ theme }) =>
-    `rgba(0, 0, 0, ${theme.displayTheme === "light" ? 0.3 : 0.7})`};
+  background-color: ${({ theme }) => `rgba(0, 0, 0, ${theme.displayTheme === "light" ? 0.3 : 0.7})`};
 `;

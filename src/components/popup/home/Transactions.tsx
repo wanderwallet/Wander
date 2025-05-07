@@ -11,7 +11,7 @@ import {
   AO_SENT_QUERY,
   AR_RECEIVER_QUERY,
   AR_SENT_QUERY,
-  PRINT_ARWEAVE_QUERY
+  PRINT_ARWEAVE_QUERY,
 } from "~notifications/utils";
 import { printTxWorkingGateways, txHistoryGateways } from "~gateways/gateway";
 import { ViewAll } from "../Title";
@@ -22,7 +22,7 @@ import {
   groupTransactionsByMonth,
   processTransactions,
   sortFn,
-  type ExtendedTransaction
+  type ExtendedTransaction,
 } from "~lib/transactions";
 import BigNumber from "bignumber.js";
 import { retryWithDelay } from "~utils/promises/retry";
@@ -44,14 +44,13 @@ export default function Transactions() {
   const [loading, setLoading] = useState(false);
   const [activeAddress] = useStorage<string>({
     key: "active_address",
-    instance: ExtensionStorage
+    instance: ExtensionStorage,
   });
 
-  const [transactionsCache, setTransactionsCache] =
-    useStorage<TransactionsCache | null>({
-      key: "transactions_cache",
-      instance: ExtensionStorage
-    });
+  const [transactionsCache, setTransactionsCache] = useStorage<TransactionsCache | null>({
+    key: "transactions_cache",
+    instance: ExtensionStorage,
+  });
 
   useEffect(() => {
     const fetchTransactions = async () => {
@@ -71,21 +70,9 @@ export default function Transactions() {
             return;
           }
 
-          const queries = [
-            AR_RECEIVER_QUERY,
-            AR_SENT_QUERY,
-            AO_SENT_QUERY,
-            AO_RECEIVER_QUERY,
-            PRINT_ARWEAVE_QUERY
-          ];
+          const queries = [AR_RECEIVER_QUERY, AR_SENT_QUERY, AO_SENT_QUERY, AO_RECEIVER_QUERY, PRINT_ARWEAVE_QUERY];
 
-          const [
-            rawReceived,
-            rawSent,
-            rawAoSent,
-            rawAoReceived,
-            rawPrintArchive
-          ] = await Promise.allSettled(
+          const [rawReceived, rawSent, rawAoSent, rawAoReceived, rawPrintArchive] = await Promise.allSettled(
             queries.map((query, index) =>
               retryWithDelay(async (attempt) => {
                 const data = await gql(
@@ -93,43 +80,30 @@ export default function Transactions() {
                   { address: activeAddress },
                   index !== 4
                     ? txHistoryGateways[attempt % txHistoryGateways.length]
-                    : printTxWorkingGateways[
-                        attempt % printTxWorkingGateways.length
-                      ]
+                    : printTxWorkingGateways[attempt % printTxWorkingGateways.length],
                 );
                 if (data?.data === null && (data as any)?.errors?.length > 0) {
-                  throw new Error(
-                    (data as any)?.errors?.[0]?.message || "GraphQL Error"
-                  );
+                  throw new Error((data as any)?.errors?.[0]?.message || "GraphQL Error");
                 }
                 return data;
-              }, 2)
-            )
+              }, 2),
+            ),
           );
 
           let sent = await processTransactions(rawSent, "sent");
           sent = sent.filter((tx) => BigNumber(tx.node.quantity.ar).gt(0));
           let received = await processTransactions(rawReceived, "received");
-          received = received.filter((tx) =>
-            BigNumber(tx.node.quantity.ar).gt(0)
-          );
+          received = received.filter((tx) => BigNumber(tx.node.quantity.ar).gt(0));
           const aoSent = await processTransactions(rawAoSent, "aoSent", true);
-          const aoReceived = await processTransactions(
-            rawAoReceived,
-            "aoReceived",
-            true
-          );
-          const printArchive = await processTransactions(
-            rawPrintArchive,
-            "printArchive"
-          );
+          const aoReceived = await processTransactions(rawAoReceived, "aoReceived", true);
+          const printArchive = await processTransactions(rawPrintArchive, "printArchive");
 
           let combinedTransactions: ExtendedTransaction[] = [
             ...sent,
             ...received,
             ...aoReceived,
             ...aoSent,
-            ...printArchive
+            ...printArchive,
           ];
 
           const seenIds = new Set<string>();
@@ -155,7 +129,7 @@ export default function Transactions() {
                 day,
                 month,
                 year,
-                date: date.toISOString()
+                date: date.toISOString(),
               };
             } else {
               const now = new Date();
@@ -164,7 +138,7 @@ export default function Transactions() {
                 day: now.getDate(),
                 month: now.getMonth() + 1,
                 year: now.getFullYear(),
-                date: null
+                date: null,
               };
             }
           });
@@ -174,7 +148,7 @@ export default function Transactions() {
           const cacheData: TransactionsCache = {
             transactions: combinedTransactions,
             timestamp: now,
-            address: activeAddress
+            address: activeAddress,
           };
 
           setTransactionsCache(cacheData);
@@ -194,12 +168,7 @@ export default function Transactions() {
   }, [transactions]);
 
   const renderTransaction = (transaction: ExtendedTransaction) => {
-    return (
-      <TransactionItemComponent
-        key={transaction.node.id}
-        transaction={transaction}
-      />
-    );
+    return <TransactionItemComponent key={transaction.node.id} transaction={transaction} />;
   };
 
   return (
@@ -217,9 +186,7 @@ export default function Transactions() {
             </GroupedTransactions>
           ) : (
             <NoTransactionsContainer>
-              <NoTransactions>
-                {browser.i18n.getMessage("no_transactions")}
-              </NoTransactions>
+              <NoTransactions>{browser.i18n.getMessage("no_transactions")}</NoTransactions>
             </NoTransactionsContainer>
           )
         ) : (
@@ -237,11 +204,7 @@ export default function Transactions() {
   );
 }
 
-export const TransactionItemComponent = ({
-  transaction
-}: {
-  transaction: ExtendedTransaction;
-}) => {
+export const TransactionItemComponent = ({ transaction }: { transaction: ExtendedTransaction }) => {
   const [logoSource, setLogoSource] = useState<string>();
   const { navigate } = useLocation();
 
@@ -260,29 +223,20 @@ export const TransactionItemComponent = ({
 
   return (
     <TransactionItem>
-      <Transaction
-        onClick={() => navigate(`/transaction/${transaction.node.id}`)}
-      >
+      <Transaction onClick={() => navigate(`/transaction/${transaction.node.id}`)}>
         <FlexContainer>
           <Logo src={logoSource} alt="Token logo" />
           <Section>
             <Main>{getTransactionDescription(transaction)}</Main>
             <Secondary>
               {transaction.date
-                ? `${getFullMonthName(
-                    `${transaction.month}-${transaction.year}`
-                  )} ${transaction.day}`
+                ? `${getFullMonthName(`${transaction.month}-${transaction.year}`)} ${transaction.day}`
                 : browser.i18n.getMessage("pending")}
             </Secondary>
           </Section>
         </FlexContainer>
         <Section alignRight>
-          <Amount
-            success={
-              transaction.transactionType === "received" ||
-              transaction.transactionType === "aoReceived"
-            }
-          >
+          <Amount success={transaction.transactionType === "received" || transaction.transactionType === "aoReceived"}>
             {transaction.transactionType === "sent" ||
             transaction.transactionType === "aoSent" ||
             transaction.transactionType === "printArchive"
@@ -310,7 +264,7 @@ export const SectionList = styled.div`
 
 export const SectionTitle = styled(Text).attrs({
   weight: "medium",
-  noMargin: true
+  noMargin: true,
 })``;
 
 const FlexContainer = styled.div`
@@ -335,27 +289,23 @@ const TransactionsWrapper = styled.div`
 
 const Main = styled(Text).attrs({
   noMargin: true,
-  weight: "semibold"
+  weight: "semibold",
 })``;
 
 const Secondary = styled(Text).attrs({
   noMargin: true,
   weight: "medium",
   size: "sm",
-  variant: "secondary"
+  variant: "secondary",
 })``;
 
 const Amount = styled(Text).attrs({
   noMargin: true,
   weight: "medium",
-  size: "md"
+  size: "md",
 })<{ success?: boolean }>`
   color: ${(props) =>
-    props.success
-      ? props.theme.success
-      : props.theme.displayTheme === "light"
-      ? "#121212"
-      : "#EEEEEE"};
+    props.success ? props.theme.success : props.theme.displayTheme === "light" ? "#121212" : "#EEEEEE"};
 `;
 
 const Transaction = styled.div`
@@ -381,7 +331,7 @@ const TransactionItem = styled.div`
 `;
 
 const NoTransactions = styled(Text).attrs({
-  noMargin: true
+  noMargin: true,
 })`
   text-align: center;
 `;

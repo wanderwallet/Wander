@@ -12,10 +12,7 @@ import { getCachedAuthPopupWindowTabID } from "~utils/auth/auth.utils";
  * App disconnected listener. Sends a message
  * to trigger the disconnected event.
  */
-export async function handleAppsChange({
-  oldValue,
-  newValue
-}: StorageChange<string[]>) {
+export async function handleAppsChange({ oldValue, newValue }: StorageChange<string[]>) {
   // message to send the event
   const triggerEvent = (tabID: number, type: "connect" | "disconnect") =>
     isomorphicSendMessage({
@@ -23,8 +20,8 @@ export async function handleAppsChange({
       messageId: "event",
       data: {
         name: type,
-        value: null
-      }
+        value: null,
+      },
     });
 
   // trigger events
@@ -46,7 +43,7 @@ export async function handleAppsChange({
         isomorphicSendMessage({
           destination: `web_accessible@${popupTabID}`,
           messageId: "auth_app_disconnected",
-          data: tab.id
+          data: tab.id,
         });
       }
 
@@ -76,7 +73,7 @@ export async function handleAppsChange({
         isomorphicSendMessage({
           destination: `web_accessible@${popupTabID}`,
           messageId: "auth_app_disconnected",
-          data: tab.id
+          data: tab.id,
         });
       }
 

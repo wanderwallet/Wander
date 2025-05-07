@@ -35,9 +35,9 @@ function DevTools() {
   const [connectedApps] = useStorage<string[]>(
     {
       key: "apps",
-      instance: PersistentStorage
+      instance: PersistentStorage,
     },
-    []
+    [],
   );
 
   // app connected
@@ -55,16 +55,12 @@ function DevTools() {
       <CardBody>
         <Title>Wander {browser.i18n.getMessage("devtools")}</Title>
         <ConnectionText>
-          {browser.i18n.getMessage(
-            connected ? "appConnected" : "appNotConnected"
-          )}
+          {browser.i18n.getMessage(connected ? "appConnected" : "appNotConnected")}
           <ConnectionStatus connected={connected} />
         </ConnectionText>
         <Spacer y={1.5} />
         {(!connected && app && <Connector appUrl={app.url} />) ||
-          (connected && app && (
-            <AppSettingsDashboardView noTitle params={{ url: app.url }} />
-          ))}
+          (connected && app && <AppSettingsDashboardView noTitle params={{ url: app.url }} />)}
       </CardBody>
     </Wrapper>
   );
@@ -92,7 +88,7 @@ export const CardBody = styled(Card)`
 
 export const Title = styled(Text).attrs({
   subtitle: true,
-  noMargin: true
+  noMargin: true,
 })`
   display: flex;
   align-items: flex-start;
@@ -100,7 +96,7 @@ export const Title = styled(Text).attrs({
 `;
 
 export const ConnectionText = styled(Text).attrs({
-  noMargin: true
+  noMargin: true,
 })`
   display: flex;
   align-items: center;

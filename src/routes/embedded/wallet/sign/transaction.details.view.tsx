@@ -2,14 +2,7 @@ import Arweave from "arweave";
 import BigNumber from "bignumber.js";
 import { useMemo, useState } from "react";
 import type { DecodedTag } from "~api/modules/sign/tags";
-import {
-  Card,
-  Row,
-  Text,
-  Box,
-  XClose,
-  ChevronRight
-} from "~components/embed/ui";
+import { Card, Row, Text, Box, XClose, ChevronRight } from "~components/embed/ui";
 import { defaultGateway } from "~gateways/gateway";
 import { useCurrentAuthRequest } from "~utils/auth/auth.hooks";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
@@ -24,15 +17,14 @@ import TransactionMessage from "~components/embed/auth/TransactionMessage";
 export function WalletTransactionDetailsEmbeddedView() {
   const { navigate } = useLocation();
   const { authRequest, rejectRequest } = useCurrentAuthRequest("any");
-  const transaction =
-    (authRequest as any)?.transaction || (authRequest as any)?.data;
+  const transaction = (authRequest as any)?.transaction || (authRequest as any)?.data;
 
   const [activeAddress] = useStorage<string>(
     {
       key: "active_address",
-      instance: ExtensionStorage
+      instance: ExtensionStorage,
     },
-    ""
+    "",
   );
 
   // quantity
@@ -69,13 +61,15 @@ export function WalletTransactionDetailsEmbeddedView() {
   const tags = useMemo<DecodedTag[]>(() => {
     if (!transaction) return [];
 
-    if (transaction?.tags && !transaction?.get) return transaction.tags;
+    if (!transaction?.get) {
+      return Array.isArray(transaction?.tags) ? transaction.tags : [];
+    }
 
     // @ts-expect-error
     const tags = transaction.get("tags") as Tag[];
     const decodedTags = tags.map((tag) => ({
       name: tag.get("name", { decode: true, string: true }),
-      value: tag.get("value", { decode: true, string: true })
+      value: tag.get("value", { decode: true, string: true }),
     }));
 
     return humanizeTimestampTags(decodedTags);
@@ -99,7 +93,7 @@ export function WalletTransactionDetailsEmbeddedView() {
   const handleCancel = () => {
     postEmbeddedMessage({
       type: "embedded_close",
-      data: null
+      data: null,
     });
     navigate("/wallet");
     rejectRequest();
@@ -114,27 +108,19 @@ export function WalletTransactionDetailsEmbeddedView() {
       hasCloseButton={true}
       customIcon={<XClose fontSize={24} color={"#666666"} />}
       onCloseButtonClick={handleCancel}
-      style={{ padding: "2rem" }}
-    >
+      style={{ padding: "2rem" }}>
       <Box style={{ gap: "0.5rem" }} alignment="left">
-        {transaction?.id && (
-          <TransactionTag name="Transaction ID" value={transaction.id} />
-        )}
+        {transaction?.id && <TransactionTag name="Transaction ID" value={transaction.id} />}
         <TransactionTag name="From" value={formatAddress(activeAddress, 6)} />
-        {recipient && (
-          <TransactionTag name="To" value={formatAddress(recipient, 6)} />
-        )}
-        {!quantity.isZero() && (
-          <TransactionTag name="Quantity" value={`${quantity} AR`} />
-        )}
+        {recipient && <TransactionTag name="To" value={formatAddress(recipient, 6)} />}
+        {!quantity.isZero() && <TransactionTag name="Quantity" value={`${quantity} AR`} />}
         <TransactionTag name="Network Fee" value={`${fee} AR`} />
         <TransactionTag name="Size" value={prettyBytes(size)} />
         <Row
           alignment="center"
           justifyContent="start"
           style={{ gap: "0.3rem", cursor: "pointer" }}
-          onClick={() => setShowTags((prev) => !prev)}
-        >
+          onClick={() => setShowTags((prev) => !prev)}>
           <Text variant="bodySm" style={{ color: "#666666" }}>
             Tags
           </Text>
@@ -142,20 +128,15 @@ export function WalletTransactionDetailsEmbeddedView() {
             style={{
               display: "inline-flex",
               transition: "transform 0.2s ease",
-              transform: showTags ? "rotate(90deg)" : "rotate(0deg)"
-            }}
-          >
+              transform: showTags ? "rotate(90deg)" : "rotate(0deg)",
+            }}>
             <ChevronRight fontSize={24} color={"#666666"} />
           </div>
         </Row>
         {showTags && (
           <Box style={{ gap: "0.5rem", padding: 0 }} alignment="left">
             {tags.map((tag, index) => (
-              <TransactionTag
-                key={`${tag.name}-${index}`}
-                name={tag.name}
-                value={tag.value}
-              />
+              <TransactionTag key={`${tag.name}-${index}`} name={tag.name} value={tag.value} />
             ))}
           </Box>
         )}

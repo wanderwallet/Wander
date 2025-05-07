@@ -14,8 +14,7 @@ export function WalletDepositTokensEmbeddedView() {
       footerElement={<WanderFooter />}
       hasBackButton={true}
       onBackButtonClick={() => navigate("/wallet/receive/options")}
-      size="auto"
-    >
+      size="auto">
       <br />
       <Copyable
         isFullWidth
@@ -25,11 +24,7 @@ export function WalletDepositTokensEmbeddedView() {
           copy(walletAddress);
         }}
       />
-      <Button
-        isFullWidth
-        size="md"
-        onClick={() => navigate("/wallet/receive/options")}
-      >
+      <Button isFullWidth size="md" onClick={() => navigate("/wallet/receive/options")}>
         Done
       </Button>
     </Card>

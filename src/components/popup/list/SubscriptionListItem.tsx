@@ -2,14 +2,8 @@ import styled from "styled-components";
 import { useTheme } from "~utils/theme";
 import { useLocation } from "~wallets/router/router.utils";
 import dayjs from "dayjs";
-import {
-  SettingIconWrapper,
-  SettingImage
-} from "~components/dashboard/list/BaseElement";
-import {
-  RecurringPaymentFrequency,
-  SubscriptionStatus
-} from "~subscriptions/subscription";
+import { SettingIconWrapper, SettingImage } from "~components/dashboard/list/BaseElement";
+import { RecurringPaymentFrequency, SubscriptionStatus } from "~subscriptions/subscription";
 import type { DisplayTheme } from "@arconnect/components";
 
 export interface SubscriptionListItemProps {
@@ -22,15 +16,7 @@ export interface SubscriptionListItemProps {
   amount: number;
 }
 
-export const SubscriptionListItem = ({
-  title,
-  expiration,
-  status,
-  frequency,
-  amount,
-  id,
-  icon
-}) => {
+export const SubscriptionListItem = ({ title, expiration, status, frequency, amount, id, icon }) => {
   const { navigate } = useLocation();
   const theme = useTheme();
 
@@ -57,23 +43,13 @@ export const SubscriptionListItem = ({
   return (
     <ListItem onClick={() => navigate(`/subscriptions/${id}`)}>
       <Content>
-        <SettingIconWrapper
-          bg={theme === "light" ? "235,235,235" : "255, 255, 255"}
-          customSize="2rem"
-        >
+        <SettingIconWrapper bg={theme === "light" ? "235,235,235" : "255, 255, 255"} customSize="2rem">
           {icon && <SettingImage src={icon} />}
         </SettingIconWrapper>
         <ListDetails>
           <Title displayTheme={theme}>
             <h2>{title}</h2>
-            <h3>
-              Next payment date:{" "}
-              {expiration ? (
-                <span>{dayjs(expiration).format("MMM DD, YYYY")} </span>
-              ) : (
-                "--"
-              )}
-            </h3>
+            <h3>Next payment date: {expiration ? <span>{dayjs(expiration).format("MMM DD, YYYY")} </span> : "--"}</h3>
           </Title>
           <SubscriptionInformation>
             <Status color={color}>
@@ -103,26 +79,18 @@ export const getColorByStatus = (status: SubscriptionStatus): string => {
 };
 
 const StatusCircle = ({ color }: { color: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="6"
-    height="6"
-    viewBox="0 0 6 6"
-    fill="none"
-  >
+  <svg xmlns="http://www.w3.org/2000/svg" width="6" height="6" viewBox="0 0 6 6" fill="none">
     <circle cx="3" cy="3" r="2.5" fill={color} />
   </svg>
 );
 
 export const Title = styled.div<{ displayTheme?: DisplayTheme }>`
   h3 {
-    color: ${(props) =>
-      props.displayTheme === "dark" ? "#a3a3a3" : "#757575"};
+    color: ${(props) => (props.displayTheme === "dark" ? "#a3a3a3" : "#757575")};
 
     span {
       color: white;
-      color: ${(props) =>
-        props.displayTheme === "dark" ? "white" : "#191919"};
+      color: ${(props) => (props.displayTheme === "dark" ? "white" : "#191919")};
     }
   }
 `;

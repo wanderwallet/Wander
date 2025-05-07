@@ -18,10 +18,7 @@ function handleReload() {
   browser.runtime.reload();
 }
 
-export const FallbackView: React.FC<FallbackViewProps> = ({
-  error,
-  errorInfo
-}) => {
+export const FallbackView: React.FC<FallbackViewProps> = ({ error, errorInfo }) => {
   const isDEV = process.env.NODE_ENV === "development";
 
   return (
@@ -30,14 +27,10 @@ export const FallbackView: React.FC<FallbackViewProps> = ({
       {isDEV && (
         <ErrorWrapper>
           <Text>{error?.toString()}</Text>
-          <Text>{`${browser.i18n.getMessage("commonErrorInfo")}: ${
-            errorInfo?.componentStack
-          }`}</Text>
+          <Text>{`${browser.i18n.getMessage("commonErrorInfo")}: ${errorInfo?.componentStack}`}</Text>
         </ErrorWrapper>
       )}
-      <ButtonV2 onClick={handleReload}>
-        {browser.i18n.getMessage("reload")}
-      </ButtonV2>
+      <ButtonV2 onClick={handleReload}>{browser.i18n.getMessage("reload")}</ButtonV2>
     </DivWrapper>
   );
 };

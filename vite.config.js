@@ -9,14 +9,14 @@ export default defineConfig({
   // root: "./src/iframe/index.html",
   plugins: [
     react(),
-    nodePolyfills()
+    nodePolyfills(),
     // ,circleDependency() // uncomment this to see circular dependencies while building in the console
   ],
   define: {
     "process.env": {
       ...(process?.env || {}),
-      "process.env.NODE_ENV": process.env.NODE_ENV || "development"
-    }
+      "process.env.NODE_ENV": process.env.NODE_ENV || "development",
+    },
   },
   resolve: {
     alias: {
@@ -40,17 +40,16 @@ export default defineConfig({
       // BE or Embed (iframe) strategies for messaging and chunking:
       "~isomorphic-messaging": path.resolve(
         __dirname,
-        "./src/utils/messaging/strategies/iframe/iframe-messaging.strategy.ts"
+        "./src/utils/messaging/strategies/iframe/iframe-messaging.strategy.ts",
       ),
       "~isomorphic-chunking": path.resolve(
         __dirname,
-        "./src/utils/messaging/strategies/iframe/iframe-chunking.strategy.ts"
+        "./src/utils/messaging/strategies/iframe/iframe-chunking.strategy.ts",
       ),
       // Prisma Enum Fix:
       // See https://github.com/prisma/prisma/issues/12504#issuecomment-1136126199
       // See https://github.com/sveltejs/kit/issues/4444
-      ".prisma/client/index-browser":
-        "./node_modules/.prisma/client/index-browser.js",
+      ".prisma/client/index-browser": "./node_modules/.prisma/client/index-browser.js",
 
       // Assets:
       "assets/lotties": path.resolve(__dirname, "./assets/lotties"),
@@ -60,7 +59,7 @@ export default defineConfig({
       "url:assets-beta": path.resolve(__dirname, "./assets-beta"),
 
       // Polyfill `webextension-polyfill` for embedded, as that's not a BE but a regular SPA:
-      "webextension-polyfill": path.resolve(__dirname, "./src/iframe/browser")
-    }
-  }
+      "webextension-polyfill": path.resolve(__dirname, "./src/iframe/browser"),
+    },
+  },
 });

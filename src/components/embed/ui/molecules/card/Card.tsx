@@ -4,8 +4,8 @@ import type { CardBaseProps } from "./Card.types";
 import { Box, MinimizeIcon, ChevronLeft } from "../../atoms";
 import { Header } from "../header";
 import { Footer } from "../footer";
-import { useTheme } from "../../../contexts/ThemeContext";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
+import { useLocation } from "~wallets/router/router.utils";
 
 const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
   (
@@ -27,20 +27,15 @@ const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
       customIcon,
       ...props
     },
-    ref
+    ref,
   ) => {
-    const { isDarkMode } = useTheme();
     const [isMinimized, setIsMinimized] = React.useState(false);
-
-    const iconColor = isDarkMode ? "var(--color-font-body)" : "#757575";
-    const cardBackground = isDarkMode
-      ? "var(--brand-color-neutral1)"
-      : "transparent";
+    const { back } = useLocation();
 
     const closeCard = () => {
       postEmbeddedMessage({
         type: "embedded_close",
-        data: null
+        data: null,
       });
     };
 
@@ -48,9 +43,8 @@ const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
       <button
         style={closeButtonStyles}
         className={styles["card__close__btn"]}
-        onClick={onCloseButtonClick ?? closeCard}
-      >
-        {customIcon ?? <MinimizeIcon fontSize={24} color={iconColor} />}
+        onClick={onCloseButtonClick ?? closeCard}>
+        {customIcon ?? <MinimizeIcon fontSize={24} style={{ color: "var(--color-font-body)" }} />}
       </button>
     );
 
@@ -60,35 +54,23 @@ const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
         className={`
         ${styles["card"]}
         ${hasShadow && styles["card__shadow"]}
-        ${isBlurry && styles["card__blury"]}
+        ${isBlurry && styles["card__blurry"]}
         ${size && styles[`card__${size}`]}
         ${isMinimized && styles[`card_minimized__active`]}
         ${className}
       `}
-        style={{
-          backgroundColor: cardBackground
-        }}
-        {...props}
-      >
+        {...props}>
         {!isMinimized ? (
           <>
             {hasBackButton && (
-              <button
-                className={styles["card__back__btn"]}
-                onClick={onBackButtonClick}
-              >
-                <ChevronLeft fontSize={24} color={iconColor} />
+              <button className={styles["card__back__btn"]} onClick={onBackButtonClick ?? back}>
+                <ChevronLeft fontSize={24} style={{ color: "var(--color-font-body)" }} />
               </button>
             )}
             {hasCloseButton && closeIcon}
-            {headerText && (
-              <Header
-                icon={headerIcon}
-                title={headerText}
-                subtitle={subtitle}
-              />
-            )}
+            {headerText && <Header icon={headerIcon} title={headerText} subtitle={subtitle} />}
             {children}
+            <div style={{ marginTop: "auto" }}></div>
             {footerElement && <Footer children={footerElement} />}
           </>
         ) : (
@@ -99,13 +81,13 @@ const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
               width: "100%",
               height: "100%",
               zIndex: 100,
-              cursor: "pointer"
+              cursor: "pointer",
             }}
           />
         )}
       </Box>
     );
-  }
+  },
 );
 
 Card.displayName = "Card";

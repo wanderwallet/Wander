@@ -9,8 +9,7 @@ const SvgSocials = (props: SVGProps<SVGSVGElement>) => (
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
     {...props}
-    color="currentColor"
-  >
+    color="currentColor">
     <g clipPath="url(#clip0_937_884)">
       <rect x="1.5" y="1" width="24" height="24" rx="12" fill="white" />
       <path
