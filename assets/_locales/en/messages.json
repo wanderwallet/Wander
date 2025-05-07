@@ -3008,9 +3008,9 @@
     "message": "Your account name is stored locally and will only be visible to you.",
     "description": "Account name save description"
   },
-  "back_recovery_phrase": {
-    "message": "Back recovery phrase",
-    "description": "Back recovery phrase text"
+  "backup_recovery_phrase": {
+    "message": "Back up recovery phrase",
+    "description": "Back up recovery phrase text"
   },
   "reveal_recovery_phrase": {
     "message": "Reveal recovery phrase?",

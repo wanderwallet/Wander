@@ -2998,9 +2998,9 @@
         "message": "您的账户名称存储在本地，仅您可见。",
         "description": "Account name save description"
     },
-    "back_recovery_phrase": {
+    "backup_recovery_phrase": {
         "message": "备份恢复短语",
-        "description": "Back recovery phrase text"
+        "description": "Backup recovery phrase text"
     },
     "reveal_recovery_phrase": {
         "message": "显示恢复短语？",
