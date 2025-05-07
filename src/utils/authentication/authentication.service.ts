@@ -2,6 +2,9 @@ import type { AuthProviderType } from "embed-api";
 import { getSupabaseClient, trpcVanilla } from "~utils/embedded/embedded.utils";
 import type { Provider } from "@supabase/supabase-js";
 
+// Define API_URL directly in the file
+const API_URL = process.env.VITE_API_URL || "https://api.wander.app";
+
 const SUPABASE_PROVIDER_BY_AUTH_PROVIDER_TYPE: Record<
   AuthProviderType,
   Provider | null
@@ -389,6 +392,36 @@ async function handleOAuthCallback() {
   }
 }
 
+/**
+ * Gets a valid server-signed token for an existing session ID
+ * This replaces client-side token generation with proper server authentication
+ *
+ * @param sessionId The session ID to authenticate
+ * @param deviceNonce The device nonce for additional verification
+ * @returns A properly signed access token from the server
+ */
+export async function getSessionToken(
+  sessionId: string,
+  deviceNonce: string
+): Promise<{ access_token: string }> {
+  const url = `${API_URL}/auth/sessions/${sessionId}/token`;
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-device-nonce": deviceNonce
+    },
+    body: JSON.stringify({ sessionId, deviceNonce })
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to get session token: ${response.status}`);
+  }
+
+  return response.json();
+}
+
 export const AuthenticationService = {
   authenticate,
   startPasskeyRegistration,
@@ -401,5 +434,6 @@ export const AuthenticationService = {
   fetchRecoverableAccounts,
   generateAccountRecoveryChallenge,
   recoverAccount,
-  handleOAuthCallback
+  handleOAuthCallback,
+  getSessionToken
 } as const;

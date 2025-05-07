@@ -1086,169 +1086,6 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
       let authStatus = "noAuth" as AuthStatus;
 
-      // Check for passkey authentication (should be flagged in localStorage)
-      const isPasskeyAuth = embeddedContextAuth.authProviderType === "PASSKEYS";
-      const isCustomAuth = localStorage.getItem("isCustomAuth") === "true";
-
-      console.log("Wallet activation - auth details:", {
-        isPasskeyAuth,
-        isCustomAuth,
-        walletCount: wallets.length,
-        authProviderType: embeddedContextAuth.authProviderType
-      });
-
-      if (wallets.length > 0) {
-        // TODO: The wallet activation can be deferred until the wallet is going to be used:
-
-        // TODO: If we think the wallets are lost, we just show a different screen like the "add wallet"
-        // one but with a different message.
-
-        // TODO: Create an issue for the new storage needs (e.g. expiration). Note that for wallets
-        // that haven't been backup up, we must never delete a share without notifying the user.
-
-        // TODO: Add try-catch. If the initialization process fails, show an error...
-
-        const { activatedWallet, rotationChallenge } =
-          await WalletService.fetchFirstAvailableAuthShare(
-            wallets,
-            session,
-            userId
-          );
-
-        if (activatedWallet) {
-          const { id: walletId, address: walletAddress } = activatedWallet;
-
-          // Check if device share exists for passkey auth
-          const deviceShares = await WalletUtils.getDeviceSharesForUser(userId);
-          const hasDeviceShare = !!deviceShares[walletId];
-
-          console.log("Wallet activation - device share status:", {
-            walletId,
-            hasDeviceShare,
-            deviceShareCount: Object.keys(deviceShares).length
-          });
-
-          // For passkey auth or when device share is missing, we need to process differently
-          if ((isPasskeyAuth || isCustomAuth) && !hasDeviceShare) {
-            console.log(
-              "Passkey authentication with missing device share - recovery needed"
-            );
-            authStatus = "noShares";
-          } else {
-            const jwk = await WalletUtils.generateWalletJWKFromShares(
-              walletAddress,
-              [activatedWallet.authShare, activatedWallet.deviceShare]
-            );
-
-            if (rotationChallenge) {
-              const { authShare, deviceShare } =
-                await WalletUtils.generateWalletWorkShares(jwk);
-
-              activatedWallet.authShare = authShare;
-              activatedWallet.deviceShare = deviceShare;
-
-              const {
-                shareHash: deviceShareHash,
-                sharePublicKey: deviceSharePublicKey
-              } = await WalletUtils.generateShareHashAndPublicKey(deviceShare);
-
-              const challengeSolution = await ChallengeClientV1.solveChallenge({
-                challenge: rotationChallenge,
-                session,
-                shareHash: null,
-                jwk
-              });
-
-              await WalletService.rotateAuthShare({
-                walletId,
-                authShare,
-                deviceShareHash,
-                deviceSharePublicKey,
-                challengeSolution
-              });
-            }
-
-            await WalletUtils.storeDeviceShare(activatedWallet, userId);
-
-            try {
-              await addWallet(jwk, activatedWallet);
-            } finally {
-              freeDecryptedWallet(jwk);
-            }
-
-            authStatus = "unlocked";
-          }
-        } else {
-          authStatus = "noShares";
-        }
-      } else {
-        authStatus = "noWallets";
-      }
-
-      setEmbeddedContextAuth((prevEmbeddedContextAuth) => ({
-        ...prevEmbeddedContextAuth,
-        authStatus
-      }));
-    },
-    []
-  );
-
-  const completeAuth = useCallback(async (session: any) => {
-    window.opener.postMessage(
-      {
-        type: "AUTH_COMPLETE",
-        success: true,
-        data: session
-      },
-      window.location.origin
-    );
-
-    // waiting sometime before closing the popup
-    await sleep(500);
-
-    log(LOG_GROUP.EMBEDDED_FLOWS, "Closing popup window...");
-
-    // Close the popup after sending the message
-    window.close();
-  }, []);
-
-  const areBackgroundServicesInitialized = useRef(false);
-
-  useEffect(() => {
-    if (areBackgroundServicesInitialized.current) return;
-
-    areBackgroundServicesInitialized.current = true;
-
-    async function init() {
-      log(
-        LOG_GROUP.SETUP,
-        `Initializing Wander Embedded background services...`
-      );
-
-      setupBackgroundService();
-    }
-
-    init();
-  }, []);
-
-  useEffect(() => {
-    async function init() {
-      /*
-    KNOWN AUTHENTICATION ISSUES:
-
-    - The decoded JWT token sometimes is missing some properties (`deviceNonce`). Refreshing the
-      sessions seems to fix the issue, but not immediately. The `The current session is incomplete. Refreshing...` block
-      in `initEmbeddedWallet` is a dirty/temp fix for that.
-
-    - The `onAuthStateChange` callback below is never invoked when running the app inside an iframe on a different
-      origin. The `setTimeout` below is a dirty/tem fix for that.
-
-      See https://stackoverflow.com/questions/71819128/supabase-auth-onauthstatechange-not-working-when-react-app-is-in-iframe
-
-    - When a sessions is deleted from the DB, it's still reported as valid, even thought tRPC endpoints will return
-      UNAUTHORIZED errors. When that happens, we should force de-authentication of the frontend.
-    */
-
       // Check for passkey auth data in localStorage immediately on startup
       const customSessionId = localStorage.getItem("sessionId");
       const customUserId = localStorage.getItem("userId");
@@ -1260,56 +1097,60 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
           "Found passkey authentication data in localStorage, initializing immediately"
         );
 
-        // Build a minimal session object for wallet activation
-        const dbSession = {
-          id: customSessionId,
-          userId: customUserId,
-          deviceNonce: localStorage.getItem("deviceNonce") || undefined,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          ip: "127.0.0.1",
-          userAgent: navigator.userAgent
-        };
+        try {
+          // Get device nonce using the proper utility
+          const deviceNonce = await getDeviceNonce();
 
-        // Create a custom auth token for API requests
-        const deviceNonce =
-          localStorage.getItem("deviceNonce") || crypto.randomUUID();
-        localStorage.setItem("deviceNonce", deviceNonce);
+          // Build a minimal session object for wallet activation
+          const dbSession = {
+            id: customSessionId,
+            userId: customUserId,
+            deviceNonce,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            ip: "127.0.0.1",
+            userAgent: navigator.userAgent
+          };
 
-        const temporaryAuthToken = btoa(
-          JSON.stringify({
-            user_id: customUserId,
-            session_id: customSessionId,
-            device_nonce: deviceNonce,
-            exp: Math.floor(Date.now() / 1000) + 60 * 60, // 1 hour expiry
-            iat: Math.floor(Date.now() / 1000)
-          })
-        );
+          // Request a proper server-signed token using the session ID
+          const { access_token } = await AuthenticationService.getSessionToken(
+            customSessionId,
+            deviceNonce
+          );
 
-        // Set the auth token header for API requests
-        setAuthTokenHeader(temporaryAuthToken);
-        localStorage.setItem("authToken", temporaryAuthToken);
+          if (access_token) {
+            setAuthTokenHeader(access_token);
+            localStorage.setItem("authToken", access_token);
+            console.log("Received server-signed auth token");
 
-        // Create a custom user object
-        const customUser = {
-          id: customUserId,
-          email: null,
-          app_metadata: {},
-          user_metadata: {},
-          aud: "",
-          created_at: ""
-        };
+            // Create a minimal user object for context
+            const customUser = {
+              id: customUserId,
+              email: null,
+              app_metadata: { provider: "passkey", providers: ["passkey"] },
+              user_metadata: {},
+              aud: "authenticated",
+              created_at: ""
+            };
 
-        // Set auth context with PASSKEYS auth type
-        setEmbeddedContextAuth(({ authStatus }) => ({
-          authStatus: "authLoading",
-          authProviderType: "PASSKEYS",
-          user: customUser as any,
-          session: dbSession
-        }));
+            // Set auth context with PASSKEYS auth type
+            setEmbeddedContextAuth(({ authStatus }) => ({
+              authStatus: "authLoading",
+              authProviderType: "PASSKEYS",
+              user: customUser as any,
+              session: dbSession
+            }));
 
-        // Initialize wallet with custom session
-        initEmbeddedWallet(customUserId, dbSession);
+            // Initialize wallet with custom session
+            initEmbeddedWallet(customUserId, dbSession);
+          } else {
+            console.error("Failed to get server-signed token - auth will fail");
+            throw new Error("Failed to get server-signed token");
+          }
+        } catch (error) {
+          console.error("Error during passkey authentication setup:", error);
+          // Fall through to normal initialization
+        }
       }
 
       const forceInitTimeoutID = setTimeout(() => {
@@ -1393,51 +1234,351 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         ) {
           console.log("Detected passkey authentication with custom session");
 
+          try {
+            // Get device nonce using the proper utility
+            const deviceNonce = await getDeviceNonce();
+
+            // Clear the flag
+            localStorage.removeItem("needsWalletActivation");
+
+            // Build a minimal session object for wallet activation
+            const customDbSession = {
+              id: customSessionId,
+              userId: customUserId,
+              deviceNonce,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+              ip: "127.0.0.1",
+              userAgent: navigator.userAgent
+            };
+
+            // Request a proper server-signed token
+            const { access_token } =
+              await AuthenticationService.getSessionToken(
+                customSessionId,
+                deviceNonce
+              );
+
+            if (access_token) {
+              setAuthTokenHeader(access_token);
+              localStorage.setItem("authToken", access_token);
+              console.log("Received server-signed auth token for API requests");
+
+              // Use this session for initialization
+              dbSession = customDbSession;
+
+              // Set auth provider type to PASSKEYS for custom passkey auth
+              effectiveAuthProviderType = "PASSKEYS";
+            } else {
+              console.error(
+                "Failed to get server-signed token - auth will fail"
+              );
+            }
+          } catch (error) {
+            console.error("Error requesting server authentication:", error);
+          }
+        }
+
+        initEmbeddedWallet(user?.id || customUserId || null, dbSession);
+
+        if (user && dbSession) {
+          setEmbeddedContextAuth(({ authStatus }) => ({
+            authStatus:
+              authStatus === "unknown" || authStatus === "authError"
+                ? "authLoading"
+                : authStatus,
+            authProviderType: effectiveAuthProviderType,
+            user,
+            session: dbSession
+          }));
+        } else if (customUserId && dbSession) {
+          // Handle custom passkey auth session
+          const customUser = {
+            id: customUserId,
+            email: null,
+            // Add required User properties with default values
+            app_metadata: {},
+            user_metadata: {},
+            aud: "",
+            created_at: ""
+          };
+
+          setEmbeddedContextAuth(({ authStatus }) => ({
+            authStatus:
+              authStatus === "unknown" || authStatus === "authError"
+                ? "authLoading"
+                : authStatus,
+            authProviderType: "PASSKEYS", // Explicitly set to PASSKEYS for custom auth
+            user: customUser as any, // Cast to any to satisfy TypeScript
+            session: dbSession
+          }));
+        } else {
+          setEmbeddedContextState(EMBEDDED_CONTEXT_INITIAL_STATE);
+
+          setEmbeddedContextAuth({
+            authStatus: "noAuth",
+            authProviderType: null,
+            user: null,
+            session: null
+          });
+        }
+      });
+
+      return () => {
+        window.clearTimeout(forceInitTimeoutID);
+        subscription.unsubscribe();
+      };
+    },
+    []
+  );
+
+  const completeAuth = useCallback(async (session: any) => {
+    window.opener.postMessage(
+      {
+        type: "AUTH_COMPLETE",
+        success: true,
+        data: session
+      },
+      window.location.origin
+    );
+
+    // waiting sometime before closing the popup
+    await sleep(500);
+
+    log(LOG_GROUP.EMBEDDED_FLOWS, "Closing popup window...");
+
+    // Close the popup after sending the message
+    window.close();
+  }, []);
+
+  const areBackgroundServicesInitialized = useRef(false);
+
+  useEffect(() => {
+    if (areBackgroundServicesInitialized.current) return;
+
+    areBackgroundServicesInitialized.current = true;
+
+    async function init() {
+      log(
+        LOG_GROUP.SETUP,
+        `Initializing Wander Embedded background services...`
+      );
+
+      setupBackgroundService();
+    }
+
+    init();
+  }, []);
+
+  useEffect(() => {
+    async function init() {
+      /*
+    KNOWN AUTHENTICATION ISSUES:
+
+    - The decoded JWT token sometimes is missing some properties (`deviceNonce`). Refreshing the
+      sessions seems to fix the issue, but not immediately. The `The current session is incomplete. Refreshing...` block
+      in `initEmbeddedWallet` is a dirty/temp fix for that.
+
+    - The `onAuthStateChange` callback below is never invoked when running the app inside an iframe on a different
+      origin. The `setTimeout` below is a dirty/tem fix for that.
+
+      See https://stackoverflow.com/questions/71819128/supabase-auth-onauthstatechange-not-working-when-react-app-is-in-iframe
+
+    - When a sessions is deleted from the DB, it's still reported as valid, even thought tRPC endpoints will return
+      UNAUTHORIZED errors. When that happens, we should force de-authentication of the frontend.
+    */
+
+      // Check for passkey auth data in localStorage immediately on startup
+      const customSessionId = localStorage.getItem("sessionId");
+      const customUserId = localStorage.getItem("userId");
+      const isCustomAuth = localStorage.getItem("isCustomAuth") === "true";
+
+      // If we have passkey auth data, initialize immediately without waiting
+      if (isCustomAuth && customSessionId && customUserId) {
+        console.log(
+          "Found passkey authentication data in localStorage, initializing immediately"
+        );
+
+        try {
+          // Get device nonce using the proper utility
+          const deviceNonce = await getDeviceNonce();
+
           // Build a minimal session object for wallet activation
-          dbSession = {
+          const dbSession = {
             id: customSessionId,
             userId: customUserId,
-            deviceNonce: localStorage.getItem("deviceNonce") || undefined,
+            deviceNonce,
             createdAt: new Date(),
             updatedAt: new Date(),
             ip: "127.0.0.1",
             userAgent: navigator.userAgent
           };
 
-          // Clear the flag
-          localStorage.removeItem("needsWalletActivation");
-
-          // Important: Generate and set an authentication token for API requests
-          const deviceNonce =
-            localStorage.getItem("deviceNonce") || crypto.randomUUID();
-
-          // Store this nonce for future requests
-          localStorage.setItem("deviceNonce", deviceNonce);
-
-          // Create a custom auth token to use for API requests
-          // Instead of creating a malformed JWT that won't pass validation,
-          // we create a clearly distinct base64-encoded JSON token that will be sent
-          // in a separate header and processed differently by the backend
-          const temporaryAuthToken = btoa(
-            JSON.stringify({
-              user_id: customUserId,
-              session_id: customSessionId,
-              device_nonce: deviceNonce,
-              exp: Math.floor(Date.now() / 1000) + 60 * 60, // 1 hour expiry
-              iat: Math.floor(Date.now() / 1000)
-            })
+          // Request a proper server-signed token using the session ID
+          const { access_token } = await AuthenticationService.getSessionToken(
+            customSessionId,
+            deviceNonce
           );
 
-          // Set the auth token header for API requests
-          setAuthTokenHeader(temporaryAuthToken);
+          if (access_token) {
+            setAuthTokenHeader(access_token);
+            localStorage.setItem("authToken", access_token);
+            console.log("Received server-signed auth token");
 
-          // Also store this token to be picked up by the API client
-          localStorage.setItem("authToken", temporaryAuthToken);
+            // Create a minimal user object for context
+            const customUser = {
+              id: customUserId,
+              email: null,
+              app_metadata: { provider: "passkey", providers: ["passkey"] },
+              user_metadata: {},
+              aud: "authenticated",
+              created_at: ""
+            };
 
-          console.log("Set temporary auth token for API requests");
+            // Set auth context with PASSKEYS auth type
+            setEmbeddedContextAuth(({ authStatus }) => ({
+              authStatus: "authLoading",
+              authProviderType: "PASSKEYS",
+              user: customUser as any,
+              session: dbSession
+            }));
 
-          // Set auth provider type to PASSKEYS for custom passkey auth
-          effectiveAuthProviderType = "PASSKEYS";
+            // Initialize wallet with custom session
+            initEmbeddedWallet(customUserId, dbSession);
+          } else {
+            console.error("Failed to get server-signed token - auth will fail");
+            throw new Error("Failed to get server-signed token");
+          }
+        } catch (error) {
+          console.error("Error during passkey authentication setup:", error);
+          // Fall through to normal initialization
+        }
+      }
+
+      const forceInitTimeoutID = setTimeout(() => {
+        console.warn("Forcing initialization...");
+
+        setEmbeddedContextAuth({
+          authStatus: "noAuth",
+          authProviderType: null,
+          user: null,
+          session: null
+        });
+
+        initEmbeddedWallet();
+      }, 2000);
+
+      const supabase = await getSupabaseClient();
+      const {
+        data: { subscription }
+      } = supabase.auth.onAuthStateChange(async (_event, session) => {
+        // console.log("onAuthStateChange =", session);
+
+        window.clearTimeout(forceInitTimeoutID);
+
+        // Comment this line to run Wander Embedded as a standalone page:
+        if (!isInsideIframe()) {
+          if (session?.access_token && window.opener) {
+            await completeAuth(session);
+          }
+
+          if (window.location.origin === "https://embed.wander.app") {
+            window.close();
+            return;
+          } else {
+            console.warn(
+              "In production (https://embed.wander.app), the app would close right now."
+            );
+          }
+        }
+
+        const accessToken = session?.access_token ?? null;
+        const user = session?.user ?? null;
+        const authProviderType: AuthProviderType | null =
+          AUTH_PROVIDER_TYPE_BY_PROVIDER_STR[user?.identities?.[0]?.provider] ||
+          null;
+
+        let dbSession: DbSession | null = null;
+
+        if (accessToken) {
+          const {
+            sub,
+            session_id: sessionId,
+            sessionData
+          } = jwtDecode<SupabaseJwtPayload>(accessToken);
+
+          dbSession = {
+            ...sessionData,
+            id: sessionId,
+            userId: sub
+          };
+        }
+
+        setAuthTokenHeader(accessToken);
+
+        // Check for passkey authentication with our custom session
+        const needsWalletActivation =
+          localStorage.getItem("needsWalletActivation") === "true";
+        const customSessionId = localStorage.getItem("sessionId");
+        const customUserId = localStorage.getItem("userId");
+        const isCustomAuth = localStorage.getItem("isCustomAuth") === "true";
+
+        // Create a local variable for auth provider type
+        let effectiveAuthProviderType: AuthProviderType | null =
+          authProviderType;
+
+        // If we have passkey auth with custom session, set it up
+        if (
+          (needsWalletActivation || isCustomAuth) &&
+          customSessionId &&
+          customUserId &&
+          !dbSession
+        ) {
+          console.log("Detected passkey authentication with custom session");
+
+          try {
+            // Get device nonce using the proper utility
+            const deviceNonce = await getDeviceNonce();
+
+            // Clear the flag
+            localStorage.removeItem("needsWalletActivation");
+
+            // Build a minimal session object for wallet activation
+            const customDbSession = {
+              id: customSessionId,
+              userId: customUserId,
+              deviceNonce,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+              ip: "127.0.0.1",
+              userAgent: navigator.userAgent
+            };
+
+            // Request a proper server-signed token
+            const { access_token } =
+              await AuthenticationService.getSessionToken(
+                customSessionId,
+                deviceNonce
+              );
+
+            if (access_token) {
+              setAuthTokenHeader(access_token);
+              localStorage.setItem("authToken", access_token);
+              console.log("Received server-signed auth token for API requests");
+
+              // Use this session for initialization
+              dbSession = customDbSession;
+
+              // Set auth provider type to PASSKEYS for custom passkey auth
+              effectiveAuthProviderType = "PASSKEYS";
+            } else {
+              console.error(
+                "Failed to get server-signed token - auth will fail"
+              );
+            }
+          } catch (error) {
+            console.error("Error requesting server authentication:", error);
+          }
         }
 
         initEmbeddedWallet(user?.id || customUserId || null, dbSession);
