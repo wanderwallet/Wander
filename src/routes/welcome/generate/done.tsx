@@ -148,8 +148,8 @@ const InnerContent = styled.div`
 const WalletIcon = styled.img.attrs({
   src: WalletIconSvg,
 })`
-  height: 72px;
-  width: 72px;
+  height: 56px;
+  width: 86px;
 `;
 
 const AccountContainer = styled.div`
