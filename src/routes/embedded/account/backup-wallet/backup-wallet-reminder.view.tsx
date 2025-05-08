@@ -6,6 +6,7 @@ import copy from "copy-to-clipboard";
 import { useLocation } from "~wallets/router/router.utils";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 import browser from "webextension-polyfill";
+import { sleep } from "~utils/promises/sleep";
 
 export function AccountBackupWalletReminderEmbeddedView() {
   const { navigate } = useLocation();
@@ -22,7 +23,11 @@ export function AccountBackupWalletReminderEmbeddedView() {
     await skipBackUp(isChecked);
 
     // TODO: Temp fix until the button can handle onClick + href automatically:
+    await sleep(500);
+
     navigate(EmbeddedPaths.WalletHomeEmbeddedView);
+
+    setIsLoading(false);
   };
 
   return (

@@ -32,7 +32,7 @@ const EMBEDDED_ENV_VARS = EMBEDDED_ENV_VARS_BY_ENV[NODE_ENV];
 
 if (!EMBEDDED_ENV_VARS) throw new Error(`Missing ENV vars for NODE_ENV = "${NODE_ENV}"`);
 
-// Duplicated in `wander-embedded-sdk/src/utils/url/url.utils.ts`:
+// Duplicated in `wander-connect-sdk/src/utils/url/url.utils.ts`:
 const PARAM_CLIENT_ID = "client-id";
 const PARAM_THEME = "theme";
 const PARAM_ANCESTOR_ORIGIN = "ancestor-origin";
@@ -49,17 +49,6 @@ export const EMBEDDED_HIDE_BE = searchParams.get(PARAM_HIDE_BE) === "1" || false
 
 export const EMBEDDED_SERVER_BASE_URL =
   searchParams.get(PARAM_SERVER_BASE_URL) || EMBEDDED_ENV_VARS.DEFAULT_EMBEDDED_SERVER_BASE_URL;
-
-if (IS_EMBEDDED_APP) {
-  console.log("Wander Embedded URL params =", {
-    NODE_ENV,
-    EMBEDDED_CLIENT_ID,
-    EMBEDDED_THEME,
-    EMBEDDED_ANCESTOR_ORIGIN,
-    EMBEDDED_HIDE_BE,
-    EMBEDDED_SERVER_BASE_URL,
-  });
-}
 
 // Note: DO NOT use document.referrer here as that will return the "incorrect" value when the user is redirected from
 // an auth provider domain to back to Wander Embedded.

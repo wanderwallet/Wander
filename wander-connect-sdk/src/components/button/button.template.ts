@@ -1,8 +1,8 @@
-import { WanderEmbeddedButtonLabels, WanderEmbeddedLogoVariant } from "../../wander-embedded.types";
+import { ButtonLabels, LogoVariant } from "../../wander-connect.types";
 
-export interface WanderButtonTemplateContentOptions {
-  wanderLogo: WanderEmbeddedLogoVariant;
-  i18n: WanderEmbeddedButtonLabels;
+export interface ButtonTemplateContentOptions {
+  wanderLogo: LogoVariant;
+  i18n: ButtonLabels;
   showLabel: boolean;
   showBalance: boolean;
   customStyles: string;
@@ -11,14 +11,14 @@ export interface WanderButtonTemplateContentOptions {
 
 // TODO: Missing :hover, :active and :focus styles
 
-export const getWanderButtonTemplateContent = ({
+export const getButtonTemplateContent = ({
   wanderLogo,
   i18n,
   showLabel,
   showBalance,
   customStyles,
   cssVariableKeys = [],
-}: WanderButtonTemplateContentOptions) => `
+}: ButtonTemplateContentOptions) => `
 <style>
 
   @media (prefers-color-scheme: light) {
