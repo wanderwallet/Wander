@@ -19,7 +19,7 @@ export function BackupSeedphraseWarning() {
         }}
         leftIcon={<AlertTriangle height={24} width={24} color="#EEBD41" />}
         titleStyle={{ fontWeight: 500, fontSize: 16 }}
-        title={browser.i18n.getMessage("back_recovery_phrase")}
+        title={browser.i18n.getMessage("backup_recovery_phrase")}
         hideSquircle
         showArrow={true}
         onClick={() => setIsRecoveryModalOpen(true)}
