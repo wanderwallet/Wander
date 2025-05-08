@@ -22,7 +22,7 @@ export function GettingStartedConnectView() {
         <Text size="xl" weight="bold" noMargin>
           {browser.i18n.getMessage("connect_with_us_title")}
         </Text>
-        <Item href="https://www.arconnect.io/twitter" target="_blank" rel="noopener noreferrer">
+        <Item href="https://x.com/usewander" target="_blank" rel="noopener noreferrer">
           <div
             style={{
               display: "flex",
@@ -44,7 +44,7 @@ export function GettingStartedConnectView() {
           rel="noopener noreferrer"
           style={{ gap: "1rem" }}>
           <ImageWrapper>
-            <Image src={discordLogo} alt={"discord logo"} draggable={false} width={"3rem"} height={"3rem"} />
+            <Image src={discordLogo} alt={"discord logo"} draggable={false} width={"4rem"} height={"3rem"} />
           </ImageWrapper>
           <Text weight="medium" noMargin>
             {browser.i18n.getMessage("connect_paragraph_2")}

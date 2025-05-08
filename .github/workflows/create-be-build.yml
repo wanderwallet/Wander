@@ -20,7 +20,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-yarn-
       - name: Install dependencies
-        run: yarn install
+        run: yarn install --frozen-lockfile
       - name: Create .env file
         run: |
           echo "PLASMO_PUBLIC_TRANSAK_API_KEY=${{ secrets.TRANSAK_API_KEY }}" >> .env
