@@ -22,7 +22,7 @@ export function GettingStartedConnectView() {
         <Text size="xl" weight="bold" noMargin>
           {browser.i18n.getMessage("connect_with_us_title")}
         </Text>
-        <Item href="https://www.arconnect.io/twitter" target="_blank" rel="noopener noreferrer">
+        <Item href="https://x.com/usewander" target="_blank" rel="noopener noreferrer">
           <div
             style={{
               display: "flex",
