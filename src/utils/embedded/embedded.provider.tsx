@@ -62,7 +62,8 @@ const EMBEDDED_CONTEXT_INITIAL_STATE = {
   importedTempWalletAddress: null,
   lastRegisteredWallet: null,
   recoverableAccounts: null,
-  accountToRecover: null,
+  recoverableAccount: null,
+  recoverableAccountWallets: null,
   authEmail: null,
 } as const satisfies EmbeddedContextState;
 
@@ -82,7 +83,9 @@ export const EmbeddedContext = createContext<EmbeddedContextData>({
   authenticate: async () => null,
   fetchRecoverableAccounts: async () => null,
   clearRecoverableAccounts: async () => null,
-  setAccountToRecover: async () => null,
+  setRecoverableAccount: async () => null,
+  setRecoverableAccountWallets: async () => null,
+  fetchRecoverableAccountWallets: async () => null,
   recoverAccount: async () => null,
   recoverWallet: async () => null,
 
@@ -446,7 +449,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         importedTempWalletAddress: null,
         lastRegisteredWallet: isNewWallet ? wallet : null,
         recoverableAccounts: null,
-        accountToRecover: null,
+        recoverableAccount: null,
+        recoverableAccountWallets: null,
         authEmail: null,
       } satisfies EmbeddedContextState;
     });
@@ -691,15 +695,62 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     setEmbeddedContextState((prevAuthContextState) => ({
       ...prevAuthContextState,
       recoverableAccounts,
+      recoverableAccount: recoverableAccounts.length === 1 ? recoverableAccounts[0] : null,
     }));
 
     return recoverableAccounts;
   }, [session]);
 
-  const setAccountToRecover = useCallback((accountToRecover: RecoverableAccount) => {
+  const fetchRecoverableAccountWallets = useCallback(
+    async (recoverableAccount: RecoverableAccount) => {
+      log(LOG_GROUP.WALLET_GENERATION, `fetchRecoverableAccountWallets(${recoverableAccount.userId})`);
+
+      setEmbeddedContextState((prevAuthContextState) => ({
+        ...prevAuthContextState,
+        recoverableAccountWallets: null,
+      }));
+
+      const { jwk, walletAddress } = await importedTempWalletPromiseRef.current?.promise;
+
+      const latestSession = await getLatestSession(session);
+
+      const { fetchRecoverableWalletsChallenge } =
+        await AuthenticationService.generateFetchRecoverableAccountsChallenge(walletAddress);
+
+      const challengeSolution = await ChallengeClientV1.solveChallenge({
+        challenge: fetchRecoverableWalletsChallenge,
+        session: latestSession,
+        shareHash: null,
+        jwk,
+      });
+
+      const { recoverableAccountWallets } = await AuthenticationService.fetchRecoverableAccountWallets(
+        fetchRecoverableWalletsChallenge.id,
+        challengeSolution,
+        recoverableAccount.userId,
+      );
+
+      setEmbeddedContextState((prevAuthContextState) => ({
+        ...prevAuthContextState,
+        recoverableAccountWallets,
+      }));
+
+      return recoverableAccountWallets;
+    },
+    [session],
+  );
+
+  const setRecoverableAccount = useCallback((recoverableAccount: RecoverableAccount) => {
     setEmbeddedContextState((prevAuthContextState) => ({
       ...prevAuthContextState,
-      accountToRecover,
+      recoverableAccount,
+    }));
+  }, []);
+
+  const setRecoverableAccountWallets = useCallback((recoverableAccountWallets: Wallet[]) => {
+    setEmbeddedContextState((prevAuthContextState) => ({
+      ...prevAuthContextState,
+      recoverableAccountWallets,
     }));
   }, []);
 
@@ -707,7 +758,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     setEmbeddedContextState((prevAuthContextState) => ({
       ...prevAuthContextState,
       recoverableAccounts: null,
-      accountToRecover: null,
+      recoverableAccount: null,
+      recoverableAccountWallets: null,
     }));
   }, []);
 
@@ -720,8 +772,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       const latestSession = await getLatestSession(session);
 
       const { accountRecoveryChallenge } = await AuthenticationService.generateAccountRecoveryChallenge(
-        accountToRecoverId,
         walletAddress,
+        accountToRecoverId,
       );
 
       const challengeSolution = await ChallengeClientV1.solveChallenge({
@@ -731,7 +783,9 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         jwk,
       });
 
-      await AuthenticationService.recoverAccount(userId, challengeSolution);
+      await AuthenticationService.recoverAccount(accountToRecoverId, challengeSolution);
+
+      await WalletService.fetchWallets(userId).catch(() => {});
     },
     [session],
   );
@@ -1006,7 +1060,12 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
     lastUserIdRef.current = userId;
 
-    setEmbeddedContextState(EMBEDDED_CONTEXT_INITIAL_STATE);
+    setEmbeddedContextState((prevAuthContextState) => ({
+      ...EMBEDDED_CONTEXT_INITIAL_STATE,
+      recoverableAccounts: prevAuthContextState.recoverableAccounts,
+      recoverableAccount: prevAuthContextState.recoverableAccount,
+      recoverableAccountWallets: prevAuthContextState.recoverableAccountWallets,
+    }));
 
     if (!userId || !session) {
       postEmbeddedMessage({
@@ -1261,7 +1320,12 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
             session: dbSession,
           }));
         } else {
-          setEmbeddedContextState(EMBEDDED_CONTEXT_INITIAL_STATE);
+          setEmbeddedContextState((prevAuthContextState) => ({
+            ...prevAuthContextState,
+            recoverableAccounts: prevAuthContextState.recoverableAccounts,
+            recoverableAccount: prevAuthContextState.recoverableAccount,
+            recoverableAccountWallets: prevAuthContextState.recoverableAccountWallets,
+          }));
 
           setEmbeddedContextAuth({
             authStatus: "noAuth",
@@ -1308,7 +1372,9 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         authenticate,
         fetchRecoverableAccounts,
         clearRecoverableAccounts,
-        setAccountToRecover,
+        setRecoverableAccount,
+        fetchRecoverableAccountWallets,
+        setRecoverableAccountWallets,
         recoverAccount,
         recoverWallet,
 

@@ -41,11 +41,19 @@ export function AuthRecoverAccountSeedphraseEmbeddedView() {
   const handleRecover = async () => {
     try {
       setLoading(true);
-      await fetchRecoverableAccounts();
+      const recoverableAccounts = await fetchRecoverableAccounts();
+      if (recoverableAccounts.length === 1) {
+        navigate("/auth/recover-account/authentication");
+      } else if (recoverableAccounts.length > 1) {
+        toast.error("Multiple recoverable accounts found");
+        navigate("/auth/recover-account/select");
+      } else {
+        toast.error("No recoverable accounts found");
+      }
       setLoading(false);
       navigate("/auth/recover-account/authentication");
     } catch (error) {
-      toast.error(error);
+      toast.error(error?.message || "Error recovering account");
       setLoading(false);
     }
   };

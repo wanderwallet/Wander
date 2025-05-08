@@ -32,7 +32,7 @@ const AUTH_STATUS_TO_OVERRIDE: Record<AuthStatus, null | ExtensionRouteOverride>
 export function useEmbeddedOverride(
   location?: RoutePath,
 ): null | ExtensionRouteOverride | RouteRedirect<WanderRoutePath> {
-  const { authStatus, lastRegisteredWallet, currentWallet } = useEmbedded();
+  const { authStatus, lastRegisteredWallet, currentWallet, recoverableAccount } = useEmbedded();
   const searchParams = useSearchParams<{
     error?: string;
     error_description?: string;
@@ -75,6 +75,14 @@ export function useEmbeddedOverride(
     if (authStatus === "authError") {
       // TODO: Implement logic/screen for this:
       throw new Error("Not implemented");
+    }
+
+    if (authStatus === "noWallets" && recoverableAccount) {
+      return routeTrapMatches(
+        location,
+        [EmbeddedPaths.AuthRecoverAccountConfirm],
+        EmbeddedPaths.AuthRecoverAccountConfirm,
+      );
     }
 
     if (authStatus === "noWallets") {

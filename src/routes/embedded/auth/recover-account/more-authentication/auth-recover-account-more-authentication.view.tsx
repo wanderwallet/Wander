@@ -10,8 +10,8 @@ export function AuthRecoverAccountMoreAuthenticationEmbeddedView() {
   const { navigate, back } = useLocation();
   const { recoverableAccounts, recoverAccount } = useEmbedded();
 
-  const accountToRecover = recoverableAccounts?.[0];
-  const accountToRecoverId = accountToRecover?.userId;
+  const recoverableAccount = recoverableAccounts?.[0];
+  const accountToRecoverId = recoverableAccount?.userId;
 
   const handleRecoverAccount = useCallback(
     async (authProviderType: AuthProviderType) => {

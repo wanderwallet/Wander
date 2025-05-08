@@ -1,21 +1,30 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { Card, WanderFooter, Box, Text } from "~components/embed/ui";
 import type { RecoverableAccount } from "embed-api";
 import { useLocation } from "~wallets/router/router.utils";
 import { Flex } from "~components/common/Flex";
 import { truncateMiddle } from "~utils/format";
+import { toast } from "react-toastify";
 
 export function AuthRecoverAccountSelectEmbeddedView() {
   const { navigate } = useLocation();
-  const { recoverableAccounts, setAccountToRecover } = useEmbedded();
+  const [loading, setLoading] = useState(false);
+  const { recoverableAccounts, setRecoverableAccount, fetchRecoverableAccountWallets } = useEmbedded();
 
   const handleSelectAccount = useCallback(
-    (account: RecoverableAccount) => {
-      setAccountToRecover(account);
-      navigate("/auth/recover-account/authentication");
+    async (account: RecoverableAccount) => {
+      try {
+        setRecoverableAccount(account);
+        await fetchRecoverableAccountWallets(account);
+        navigate("/auth/recover-account/authentication");
+      } catch (error) {
+        toast.error("Error fetching recoverable account wallets");
+      } finally {
+        setLoading(false);
+      }
     },
-    [setAccountToRecover, navigate],
+    [setRecoverableAccount, navigate, fetchRecoverableAccountWallets],
   );
 
   return (

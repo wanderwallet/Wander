@@ -18,7 +18,7 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
     deleteImportedTempWallet,
     fetchRecoverableAccounts,
     clearRecoverableAccounts,
-    setAccountToRecover,
+    fetchRecoverableAccountWallets,
   } = useEmbedded();
 
   const handleJsonParse = async (jsonData: any) => {
@@ -53,8 +53,8 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
     try {
       setLoading(true);
       const recoverableAccounts = await fetchRecoverableAccounts();
+      await fetchRecoverableAccountWallets(recoverableAccounts[0]);
       if (recoverableAccounts.length === 1) {
-        setAccountToRecover(recoverableAccounts[0]);
         navigate("/auth/recover-account/authentication");
       } else if (recoverableAccounts.length > 1) {
         toast.error("Multiple recoverable accounts found");
@@ -64,7 +64,7 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
       }
       setLoading(false);
     } catch (error) {
-      toast.error(error);
+      toast.error(error?.message || "Error recovering account");
       setLoading(false);
     }
   };
@@ -99,7 +99,7 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
         <Button variant="secondary" size="md" onClick={deleteImportedTempWallet}>
           No, try again
         </Button>
-        <Button variant="primary" size="md" onClick={() => handleRecover()} isLoading={loading}>
+        <Button variant="primary" size="md" onClick={handleRecover} isLoading={loading}>
           Yes, recover
         </Button>
       </Row>
