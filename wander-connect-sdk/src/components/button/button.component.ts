@@ -122,7 +122,7 @@ export class Button {
       theme: options.theme || Button.DEFAULT_CONFIG.theme,
       cssVars,
       customStyles: options.customStyles || Button.DEFAULT_CONFIG.customStyles,
-      position: options.position || Button.DEFAULT_CONFIG.position,
+      position: options.position || (!!options.parent ? "static" : Button.DEFAULT_CONFIG.position),
       wanderLogo: options.wanderLogo || Button.DEFAULT_CONFIG.wanderLogo,
       label: options.label ?? Button.DEFAULT_CONFIG.label,
       balance:
@@ -181,12 +181,13 @@ export class Button {
     if (!button || !wanderLogo || !label || !balance || !indicator || !notifications)
       throw new Error("Missing elements");
 
-    host.style.position = "fixed";
-    host.style.zIndex = "var(--zIndex)";
-
-    if (config.position !== "static") {
+    if (config.position === "static") {
+      host.style.position = "relative";
+    } else {
       const [y, x] = config.position.split("-") as ["top" | "bottom", "left" | "right"];
 
+      host.style.position = "fixed";
+      host.style.zIndex = "var(--zIndex)";
       host.style[y] = "var(--gapY)";
       host.style[x] = "var(--gapX)";
     }
