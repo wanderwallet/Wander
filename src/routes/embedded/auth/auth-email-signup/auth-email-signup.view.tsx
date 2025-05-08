@@ -104,6 +104,11 @@ export function AuthEmailSignupEmbeddedView() {
             {...validPasswordInput.bindings}
             placeholder="Enter your password"
             isDisabled={areButtonsDisabled}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                handleEmailSignup();
+              }
+            }}
           />
 
           <PasswordMatch matches={matches} />

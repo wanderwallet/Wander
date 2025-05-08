@@ -6,6 +6,7 @@ import { useLocation } from "~wallets/router/router.utils";
 import { Flex } from "~components/common/Flex";
 import { truncateMiddle } from "~utils/format";
 import { toast } from "react-toastify";
+import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 
 export function AuthRecoverAccountSelectEmbeddedView() {
   const { navigate } = useLocation();
@@ -17,7 +18,7 @@ export function AuthRecoverAccountSelectEmbeddedView() {
       try {
         setRecoverableAccount(account);
         await fetchRecoverableAccountWallets(account);
-        navigate("/auth/recover-account/authentication");
+        navigate(EmbeddedPaths.Auth);
       } catch (error) {
         toast.error("Error fetching recoverable account wallets");
       } finally {

@@ -769,7 +769,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
       const { jwk, walletAddress } = await importedTempWalletPromiseRef.current?.promise;
 
-      const latestSession = await getLatestSession(session);
+      let latestSession = await getLatestSession(session);
 
       const { accountRecoveryChallenge } = await AuthenticationService.generateAccountRecoveryChallenge(
         walletAddress,
@@ -785,7 +785,9 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
       await AuthenticationService.recoverAccount(accountToRecoverId, challengeSolution);
 
-      await WalletService.fetchWallets(userId).catch(() => {});
+      latestSession = await getLatestSession(session);
+      lastUserIdRef.current = null;
+      await initEmbeddedWallet(session.userId, latestSession);
     },
     [session],
   );
@@ -1278,11 +1280,11 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
             await completeAuth(session);
           }
 
-          if (window.location.origin === "https://embed.wander.app") {
+          if (window.location.origin === "https://connect.wander.app") {
             window.close();
             return;
           } else {
-            console.warn("In production (https://embed.wander.app), the app would close right now.");
+            console.warn("In production (https://connect.wander.app), the app would close right now.");
           }
         }
 

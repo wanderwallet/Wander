@@ -45,105 +45,135 @@ export function AuthRecoverAccountConfirmEmbeddedView() {
       hasCloseButton={true}
       onCloseButtonClick={() => navigate("/wallet")}
       size="auto">
-      <Box style={{ gap: 28 }}>
-        <Flex
-          direction="column"
-          gap={12}
+      <Flex
+        direction="column"
+        style={{
+          minHeight: "500px",
+          maxHeight: "calc(100vh - 200px)",
+          position: "relative",
+          overflow: "hidden",
+        }}>
+        <Box
           style={{
-            width: "100%",
-            borderRadius: 8,
-            padding: 16,
-            borderColor: "var(--brand-color-error2)",
-            borderWidth: 1,
-            borderStyle: "solid",
-            backgroundColor: "rgba(255, 59, 48, 0.05)",
+            gap: 16,
+            overflowY: "auto",
+            padding: "160px 16px 24px 16px",
+            scrollbarWidth: "thin",
+            flex: 1,
+            minHeight: "300px",
+            overscrollBehavior: "contain",
+            isolation: "isolate",
+            display: "flex",
+            flexDirection: "column",
           }}>
-          <Text variant="bodyLg" alignment="left" style={{ color: "var(--brand-color-error2)", fontWeight: 600 }}>
-            ⚠️ Account Recovery Warning
-          </Text>
-          <Text variant="bodySm" alignment="left" style={{ color: "#121212" }}>
-            By proceeding with account recovery, you'll need to recover your wallets. Please review the status of your
-            wallets below carefully.
-          </Text>
-        </Flex>
-
-        {lostWallets.length > 0 && (
           <Flex
             direction="column"
-            gap={12}
+            gap={8}
             style={{
               width: "100%",
-              borderRadius: 8,
-              padding: 16,
+              borderRadius: 12,
+              padding: 20,
               borderColor: "var(--brand-color-error2)",
               borderWidth: 1,
               borderStyle: "solid",
               backgroundColor: "rgba(255, 59, 48, 0.05)",
             }}>
-            <Text variant="bodyMd" alignment="left" style={{ color: "var(--brand-color-error2)", fontWeight: 600 }}>
-              ⚠️ Wallets that will be lost forever
+            <Text variant="bodyLg" alignment="left" style={{ color: "var(--brand-color-error2)", fontWeight: 600 }}>
+              ⚠️ Before You Proceed
             </Text>
-            <Text variant="bodySm" alignment="left" style={{ color: "#121212" }}>
-              These wallets have never been backed up and will be permanently lost during recovery. Make sure you have
-              backed up any important data or funds.
+            <Text variant="bodySm" alignment="left" style={{ color: "#121212", lineHeight: 1.5 }}>
+              Account recovery requires you to recover each wallet separately. Please review your wallets below to
+              understand what will happen to each one.
             </Text>
-            <Flex direction="column" gap={8} style={{ marginTop: 8 }}>
-              {lostWallets.map((wallet) => (
-                <Flex key={wallet.id} direction="row" gap={8} align="center">
-                  <Text variant="bodyXs" alignment="left" style={{ color: "var(--brand-color-error2)" }}>
-                    •
-                  </Text>
-                  <Text variant="bodyXs" alignment="left" style={{ color: "#121212", fontFamily: "monospace" }}>
-                    {formatAddress(wallet.address, 16)}
-                  </Text>
-                </Flex>
-              ))}
-            </Flex>
           </Flex>
-        )}
 
-        {recoverableWallets.length > 0 && (
-          <Flex
-            direction="column"
-            gap={12}
-            style={{
-              width: "100%",
-              borderRadius: 8,
-              padding: 16,
-              borderColor: "#BD8802",
-              borderWidth: 1,
-              borderStyle: "solid",
-              backgroundColor: "rgba(189, 136, 2, 0.05)",
-            }}>
-            <Text variant="bodyMd" alignment="left" style={{ color: "#BD8802", fontWeight: 600 }}>
-              🔄 Wallets that can be recovered
-            </Text>
-            <Text variant="bodySm" alignment="left" style={{ color: "#121212" }}>
-              These wallets can be recovered after you sign in with your authentication method. You'll need to follow
-              the recovery process for each wallet.
-            </Text>
-            <Flex direction="column" gap={8} style={{ marginTop: 8 }}>
-              {recoverableWallets.map((wallet) => (
-                <Flex key={wallet.id} direction="row" gap={8} align="center">
-                  <Text variant="bodyXs" alignment="left" style={{ color: "#BD8802" }}>
-                    •
-                  </Text>
-                  <Text variant="bodyXs" alignment="left" style={{ color: "#121212", fontFamily: "monospace" }}>
-                    {formatAddress(wallet.address, 16)}
-                  </Text>
-                </Flex>
-              ))}
+          {lostWallets.length > 0 && (
+            <Flex
+              direction="column"
+              gap={8}
+              style={{
+                width: "100%",
+                borderRadius: 12,
+                padding: 20,
+                borderColor: "var(--brand-color-error2)",
+                borderWidth: 1,
+                borderStyle: "solid",
+                backgroundColor: "rgba(255, 59, 48, 0.05)",
+              }}>
+              <Text variant="bodyMd" alignment="left" style={{ color: "var(--brand-color-error2)", fontWeight: 600 }}>
+                ⚠️ Wallets That Cannot Be Recovered
+              </Text>
+              <Text variant="bodySm" alignment="left" style={{ color: "#121212", lineHeight: 1.5 }}>
+                These wallets have never been backed up. After recovery, you will permanently lose access these wallets.
+                Please back up any important information before proceeding.
+              </Text>
+              <Flex direction="column" gap={8} style={{ marginTop: 12 }}>
+                {lostWallets.map((wallet) => (
+                  <Flex key={wallet.id} direction="row" gap={8} align="center">
+                    <Text variant="bodyXs" alignment="left" style={{ color: "var(--brand-color-error2)" }}>
+                      •
+                    </Text>
+                    <Text variant="bodyXs" alignment="left" style={{ color: "#121212", fontFamily: "monospace" }}>
+                      {formatAddress(wallet.address, 16)}
+                    </Text>
+                  </Flex>
+                ))}
+              </Flex>
             </Flex>
-          </Flex>
-        )}
+          )}
 
-        <Flex direction="column">
+          {recoverableWallets.length > 0 && (
+            <Flex
+              direction="column"
+              gap={8}
+              style={{
+                width: "100%",
+                borderRadius: 12,
+                padding: 20,
+                borderColor: "#BD8802",
+                borderWidth: 1,
+                borderStyle: "solid",
+                backgroundColor: "rgba(189, 136, 2, 0.05)",
+              }}>
+              <Text variant="bodyMd" alignment="left" style={{ color: "#BD8802", fontWeight: 600 }}>
+                🔄 Wallets That Can Be Recovered
+              </Text>
+              <Text variant="bodySm" alignment="left" style={{ color: "#121212", lineHeight: 1.5 }}>
+                These wallets can be recovered. You will need to follow the recovery process for each wallet. Make sure
+                you have your recovery information (seed phrase or private key) ready.
+              </Text>
+              <Flex direction="column" gap={8} style={{ marginTop: 12 }}>
+                {recoverableWallets.map((wallet) => (
+                  <Flex key={wallet.id} direction="row" gap={8} align="center">
+                    <Text variant="bodyXs" alignment="left" style={{ color: "#BD8802" }}>
+                      •
+                    </Text>
+                    <Text variant="bodyXs" alignment="left" style={{ color: "#121212", fontFamily: "monospace" }}>
+                      {formatAddress(wallet.address, 16)}
+                    </Text>
+                  </Flex>
+                ))}
+              </Flex>
+            </Flex>
+          )}
+        </Box>
+
+        <Flex
+          direction="column"
+          style={{
+            padding: "20px 16px",
+            borderTop: "1px solid var(--brand-color-gray2)",
+            backgroundColor: "var(--brand-color-white)",
+            marginTop: "auto",
+            position: "relative",
+            zIndex: 1,
+          }}>
           <Checkbox
             isChecked={isChecked}
             label={
               lostWallets.length > 0
-                ? "I understand that some wallets will be permanently lost and I want to proceed with recovery"
-                : "I understand the recovery process and want to proceed"
+                ? "I understand some wallets will be permanently lost."
+                : "I have my recovery information ready for each wallet."
             }
             handleChange={() => setIsChecked(!isChecked)}
           />
@@ -153,11 +183,11 @@ export function AuthRecoverAccountConfirmEmbeddedView() {
             isDisabled={isLoading || !isChecked}
             isLoading={isLoading}
             onClick={handleRecoverAccount}
-            style={{ marginTop: 8 }}>
+            style={{ marginTop: 12 }}>
             Recover account
           </Button>
         </Flex>
-      </Box>
+      </Flex>
     </Card>
   );
 }

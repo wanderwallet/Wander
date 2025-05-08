@@ -6,6 +6,7 @@ import { Card, Row, Button, Copyable, Upload, Text, WanderFooter } from "~compon
 import copy from "copy-to-clipboard";
 import { toast } from "react-toastify";
 import { WalletUtils } from "~utils/wallets/wallets.utils";
+import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 
 export function AuthRecoverAccountKeyfileEmbeddedView() {
   const [loading, setLoading] = useState(false);
@@ -53,9 +54,9 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
     try {
       setLoading(true);
       const recoverableAccounts = await fetchRecoverableAccounts();
-      await fetchRecoverableAccountWallets(recoverableAccounts[0]);
       if (recoverableAccounts.length === 1) {
-        navigate("/auth/recover-account/authentication");
+        await fetchRecoverableAccountWallets(recoverableAccounts[0]);
+        navigate(EmbeddedPaths.Auth);
       } else if (recoverableAccounts.length > 1) {
         toast.error("Multiple recoverable accounts found");
         navigate("/auth/recover-account/select");
