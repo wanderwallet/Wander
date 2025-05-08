@@ -302,7 +302,7 @@ export class WanderConnect {
       }
     }
 
-    if (typeof buttonOptions === "object") {
+    if (options.button !== false && typeof buttonOptions === "object") {
       buttonOptions.theme ||= theme;
 
       this.buttonComponent = new Button(buttonOptions);
