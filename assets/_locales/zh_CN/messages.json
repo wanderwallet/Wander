@@ -3017,5 +3017,9 @@
     "export_keyfile_tooltip": {
         "message": "您的钱包的加密密钥文件用于安全地签署交易并访问您的Arweave账户。",
         "description": "Export keyfile tooltip"
+    },
+    "scan_qr_code_seamless_transfer": {
+        "message": "扫描二维码或复制地址以无缝转移",
+        "description": "Scan QR code seamless transfer text"
     }
 }

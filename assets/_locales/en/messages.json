@@ -3027,5 +3027,9 @@
   "export_keyfile_tooltip": {
     "message": "Your wallet's encrypted keyfile is used to securely sign transactions and access your Arweave account.",
     "description": "Export keyfile tooltip"
+  },
+  "scan_qr_code_seamless_transfer": {
+    "message": "Scan the QR code or copy the address for a seamless transfer",
+    "description": "Scan QR code seamless transfer text"
   }
 }
