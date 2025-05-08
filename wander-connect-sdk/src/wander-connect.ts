@@ -5,13 +5,13 @@ import { merge } from "ts-deepmerge";
 import {
   AuthInfo,
   BalanceInfo,
+  ButtonOptions,
   OpenReason,
   RequestsInfo,
   RouteConfig,
   ThemeSetting,
   WanderConnectOptions,
 } from "./wander-connect.types";
-import { IncomingRequestMessageData } from "./utils/message/message.types";
 import { isEventMessage, isIncomingMessage, isWalletSwitchMessage } from "./utils/message/message.utils";
 import { getWanderConnectAppURL } from "./utils/url/url.utils";
 
@@ -267,8 +267,17 @@ export class WanderConnect {
     } = options;
 
     // Deep clone these objects so that we don't mutate the original, developer-provider ones:
-    const iframeOptions = structuredClone(options.iframe || {});
-    const buttonOptions = options.button === true ? {} : structuredClone(options.button || {});
+
+    const iframeOptions =
+      options.iframe instanceof HTMLElement ? options.iframe : structuredClone(options.iframe || {});
+
+    let buttonOptions: ButtonOptions | null = null;
+
+    if (options.button === true) {
+      buttonOptions = {};
+    } else if (options.button) {
+      buttonOptions = { ...structuredClone({ ...options.button, parent: null }), parent: options.button.parent };
+    }
 
     const srcWithParams = getWanderConnectAppURL({
       baseURL,
@@ -302,7 +311,7 @@ export class WanderConnect {
       }
     }
 
-    if (typeof buttonOptions === "object") {
+    if (buttonOptions) {
       buttonOptions.theme ||= theme;
 
       this.buttonComponent = new Button(buttonOptions);
