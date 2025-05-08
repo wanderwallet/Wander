@@ -7,7 +7,7 @@ const foreground: ModuleFunction<any[]> = (
   algorithm: AlgorithmIdentifier | RsaPssParams | EcdsaParams,
 ) => {
   console.warn(
-    "Warning: The signature API is deprecated and it will be removed.\nVisit https://docs.arconnect.io/api/signature for alternatives.",
+    "Warning: The signature API is deprecated and it will be removed.\nVisit https://docs.wander.app/api/signature for alternatives.",
   );
 
   return [Object.values(data), algorithm];

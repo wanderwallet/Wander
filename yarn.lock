@@ -10,9 +10,9 @@
     "@jridgewell/gen-mapping" "^0.3.5"
     "@jridgewell/trace-mapping" "^0.3.24"
 
-"@arconnect/components-rebrand@https://github.com/arconnectio/components-rebrand.git#master":
+"@arconnect/components-rebrand@https://github.com/wanderwallet/components-rebrand.git#master":
   version "1.0.0"
-  resolved "https://github.com/arconnectio/components-rebrand.git#b1739fcfeb95548a1d04827cbcb15d067ec9a7aa"
+  resolved "https://github.com/wanderwallet/components-rebrand.git#b1739fcfeb95548a1d04827cbcb15d067ec9a7aa"
   dependencies:
     "@iconicicons/react" "^1.5.1"
     "@untitled-ui/icons-react" "^0.1.4"
