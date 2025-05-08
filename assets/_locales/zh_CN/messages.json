@@ -2998,9 +2998,9 @@
         "message": "您的账户名称存储在本地，仅您可见。",
         "description": "Account name save description"
     },
-    "back_recovery_phrase": {
+    "backup_recovery_phrase": {
         "message": "备份恢复短语",
-        "description": "Back recovery phrase text"
+        "description": "Backup recovery phrase text"
     },
     "reveal_recovery_phrase": {
         "message": "显示恢复短语？",
@@ -3017,5 +3017,9 @@
     "export_keyfile_tooltip": {
         "message": "您的钱包的加密密钥文件用于安全地签署交易并访问您的Arweave账户。",
         "description": "Export keyfile tooltip"
+    },
+    "scan_qr_code_seamless_transfer": {
+        "message": "扫描二维码或复制地址以无缝转移",
+        "description": "Scan QR code seamless transfer text"
     }
 }

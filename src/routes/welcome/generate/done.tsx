@@ -82,7 +82,7 @@ export function GenerateDoneWelcomeView({ params }: GenerateDoneWelcomeViewProps
               <QRCodeSVG fgColor="#fff" bgColor="transparent" size={142} value={wallet.address} />
             </QRCodeWrapper>
             <Text variant="secondary" weight="medium" noMargin>
-              Scan the QR code or copy the address for a seamless transfer
+              {browser.i18n.getMessage("scan_qr_code_seamless_transfer")}
             </Text>
           </Flex>
         </InnerContent>
