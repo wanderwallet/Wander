@@ -5,7 +5,7 @@ import { Card, Upload, Button, WanderFooter } from "~components/embed/ui";
 import { useLocation } from "~wallets/router/router.utils";
 import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard.module";
 
-export function AuthRestoreSharesRecoveryFileEmbeddedView() {
+export function AuthRestoreSharesSeedphraseEmbeddedView() {
   const { navigate, back } = useLocation();
   const [loading, setLoading] = useState(false);
   const { currentWallet, recoverWallet } = useEmbedded();
@@ -36,21 +36,31 @@ export function AuthRestoreSharesRecoveryFileEmbeddedView() {
 
   // TODO: Right now, because the auth-import-keyfile and seedphrase views are shared, it is possible to import a second wallet into the account!
 
+  // TODO: Validate the wallet I imported is actually one of the ones on my account and show appropriate error messages and actions.
+
+  // TODO: Request confirmation just line in import-keyfile
+
   return (
     <OnboardingCard
       headerText="Restore wallet"
-      subtitle="Upload your recovery file to restore your wallet."
+      subtitle="Enter your seedphrase to restore your wallet."
       onBackButtonClick={() => navigate("/auth/restore-shares")}
       isLoading={ loading }>
-      <Upload
+
+      <SeedInput seedPhrase={seedPhrase} handleSubmit={handleImportWallet} handleInputChange={handleInputChange} />
+
+      <Button
         isFullWidth
-        title={"Click to upload"}
-        description={"or drag and drop your recovery file"}
-        onFileParse={handleJsonParse}
-      />
-      <Button isFullWidth size="md" isLoading={loading} isDisabled={!jsonData} onClick={handleRestore}>
+        size="md"
+        onClick={handleImportWallet}
+        isLoading={loading}
+        isDisabled={isSeedPhraseIncomplete}>
         Restore
       </Button>
+
+      { /* <Button isFullWidth size="md" isLoading={loading} isDisabled={!jsonData} onClick={handleRestore}>
+        Restore
+      </Button> */ }
     </OnboardingCard>
   );
 }

@@ -110,7 +110,9 @@ export function AuthImportSeedphraseEmbeddedView() {
       hasBackButton={true}
       onBackButtonClick={back}
       size="auto">
+
       <SeedInput seedPhrase={seedPhrase} handleSubmit={handleImportWallet} handleInputChange={handleInputChange} />
+
       <Button
         isFullWidth
         size="md"
@@ -119,6 +121,7 @@ export function AuthImportSeedphraseEmbeddedView() {
         isDisabled={isSeedPhraseIncomplete}>
         {isSeedPhraseIncomplete ? "Complete seedphrase" : "Next"}
       </Button>
+
     </Card>
   );
 }

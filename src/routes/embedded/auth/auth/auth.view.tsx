@@ -14,68 +14,75 @@ import {
   Wander2Icon,
   WanderFooter,
 } from "~components/embed";
-import { useCallback, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import type { AuthProviderType } from "embed-api";
 import { getSupabaseClient } from "~utils/embedded/embedded.utils";
 import { useLocation } from "~wallets/router/router.utils";
 import { isValidEmail } from "~utils/email";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
-import { useAllWallets } from "~wallets/hooks";
 import { sleep } from "~utils/promises/sleep";
 import { EMBEDDED_HIDE_BE } from "~utils/embedded/iframe.utils";
+import { InputButton } from "~components/embed/ui/atoms/input-button/InputButton";
+import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard.module";
 
 export function AuthEmbeddedView() {
   const { navigate } = useLocation();
-  const { authenticate, authStatus, setAuthEmail } = useEmbedded();
-  const [isLoading, setIsLoading] = useState(false);
+  const { authenticate, authStatus } = useEmbedded();
 
-  const [selectedAuthProviderType, setSelectedAuthProviderType] = useState<AuthProviderType | "NATIVE_WALLET" | null>(
-    null,
-  );
-
-  const areButtonsDisabled =
-    authStatus === "unknown" || authStatus === "loading" || authStatus === "authLoading" || !!selectedAuthProviderType;
-
-  // TODO: Remember last selection and highlight that one / show it in the main screen (not in "More")
+  // Input refs:
 
   const emailInputRef = useRef<HTMLInputElement>();
-  const passwordInputRef = useRef<HTMLInputElement>();
+
+  // Loading state:
+
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
+  const [isCheckingEmail, setIsCheckingEmail] = useState(false);
+
+  const areButtonsDisabled =
+    authStatus === "unknown" || authStatus === "loading" || authStatus === "authLoading" || isAuthenticating || isCheckingEmail;
+
+  const isViewLoading = areButtonsDisabled && !isCheckingEmail;
+
+  // Handlers:
 
   const handleAuthenticate = useCallback(async (authProviderType: AuthProviderType) => {
-    setSelectedAuthProviderType(authProviderType);
     try {
-      await authenticate(authProviderType, emailInputRef.current?.value || "", passwordInputRef.current?.value || "");
-      setSelectedAuthProviderType(null);
+      setIsAuthenticating(true);
+      await authenticate(authProviderType);
     } catch (error) {
       toast.error(`Error signing in with ${authProviderType}`);
     } finally {
-      setSelectedAuthProviderType(null);
+      setIsAuthenticating(false);
     }
   }, []);
 
   const handleNativeWallet = useCallback(async () => {
-    setSelectedAuthProviderType("NATIVE_WALLET");
+    setIsAuthenticating(true);
 
-    postEmbeddedMessage({
-      type: "embedded_auth",
-      data: {
-        authType: "NATIVE_WALLET",
-        authStatus: null,
-        userDetails: null,
-      },
-    });
+    try {
+      postEmbeddedMessage({
+        type: "embedded_auth",
+        data: {
+          authType: "NATIVE_WALLET",
+          authStatus: null,
+          userDetails: null,
+        },
+      });
 
-    await sleep(500);
-
-    // Reset this shortly after the modal is closed so that if the user opens
-    // it again, they can pick a different option:
-    setSelectedAuthProviderType(null);
+      await sleep(500);
+    } finally {
+      // Reset this shortly after the modal is closed so that if the user opens
+      // it again, they can pick a different option:
+      setIsAuthenticating(false);
+    }
   }, []);
 
-  const handleCheckEmail = useCallback(async () => {
+  const handleCheckEmail = useCallback(async (e: React.FormEvent) => {
+    e.preventDefault();
+
     try {
-      setIsLoading(true);
+      setIsCheckingEmail(true);
 
       const supabase = await getSupabaseClient();
 
@@ -86,6 +93,8 @@ export function AuthEmbeddedView() {
         return;
       }
 
+      // TODO: What if email is not confirmed yet?
+
       const { data: isAlreadyRegistered, error } = await supabase.rpc("user_exists_by_email", {
         p_email: email,
       });
@@ -95,85 +104,88 @@ export function AuthEmbeddedView() {
         return;
       }
 
-      setAuthEmail(email);
-
-      if (isAlreadyRegistered) {
-        navigate(EmbeddedPaths.AuthEmailSignin);
-      } else {
-        navigate(EmbeddedPaths.AuthEmailSignup);
-      }
+      navigate(isAlreadyRegistered ? EmbeddedPaths.AuthEmailSignin : EmbeddedPaths.AuthEmailSignup, {
+        search: { email },
+      });
     } catch (error) {
       console.log(error);
       toast.error("Error checking email");
     } finally {
-      setIsLoading(false);
+      setIsCheckingEmail(false);
     }
   }, []);
 
+  /*
+  useEffect(() => {
+    navigate("/", { search: { error: "test error", error_description: "test error description"}})
+  }, []);
+  */
+
+  // TODO: Remember last selection and highlight that one / show it in the main screen (not in "More")
+
+  const emailInputButton = (
+    <InputButton
+      type="submit"
+      label="Next" />
+  );
+
   return (
-    <Card
+    <OnboardingCard
       headerText="Sign Up or Sign In"
-      footerElement={<WanderFooter />}
       hasBackButton={false}
-      size="auto"
-      isLoading={ areButtonsDisabled }>
-      <Box>
-        <TextInput
-          ref={emailInputRef}
-          type="email"
-          placeholder="Enter your email"
-          isDisabled={areButtonsDisabled || isLoading}
-          hasButton
-          buttonLabel="Next"
-          isLoading={isLoading}
-          buttonOnClick={handleCheckEmail}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              handleCheckEmail();
-            }
-          }}
-        />
-        <Divider text={"OR"} />
-        <Row>
+      isLoading={ isViewLoading }
+      onSubmit={ handleCheckEmail }>
+
+      <TextInput
+        name="email"
+        placeholder="Enter your email"
+        inputRef={emailInputRef}
+        disabled={areButtonsDisabled}
+        endSlot={emailInputButton}
+      />
+
+      <Divider text={"OR"} />
+
+      <Row>
+        <Button
+          variant="outlined"
+          size="md"
+          isDisabled={areButtonsDisabled}
+          onClick={() => handleAuthenticate("GOOGLE")}>
+          <GoogleIcon fontSize={24} />
+        </Button>
+        {EMBEDDED_HIDE_BE ||
+        (!!window.arweaveWallet?.walletName && window.arweaveWallet?.walletName !== "ArConnect") ? null : (
           <Button
             variant="outlined"
             size="md"
-            isLoading={selectedAuthProviderType === "GOOGLE"}
             isDisabled={areButtonsDisabled}
-            onClick={() => handleAuthenticate("GOOGLE")}>
-            <GoogleIcon fontSize={24} />
+            onClick={handleNativeWallet}>
+            <Wander2Icon fontSize={24} />
           </Button>
-          {EMBEDDED_HIDE_BE ||
-          (!!window.arweaveWallet?.walletName && window.arweaveWallet?.walletName !== "ArConnect") ? null : (
-            <Button
-              variant="outlined"
-              size="md"
-              isLoading={selectedAuthProviderType === "NATIVE_WALLET"}
-              isDisabled={areButtonsDisabled}
-              onClick={handleNativeWallet}>
-              <Wander2Icon fontSize={24} />
-            </Button>
-          )}
-        </Row>
+        )}
+      </Row>
+
+      <Button
+        variant="outlined"
+        isFullWidth
+        isDisabled={areButtonsDisabled}
+        icon={<SocialsIcon fontSize={24} />}
+        href="#/auth/more-providers">
+        More options
+      </Button>
+
+      <Row style={{ gap: "4px" }}>
+        <Text variant={"bodySm"}>{"Can't sign in?"}</Text>
         <Button
-          variant="outlined"
-          isFullWidth
+          variant="link"
           isDisabled={areButtonsDisabled}
-          icon={<SocialsIcon fontSize={24} />}
-          href="#/auth/more-providers">
-          More options
+          href="#/auth/recover-account"
+          size="sm">
+          Recover account
         </Button>
-        <Row style={{ gap: "4px" }}>
-          <Text variant={"bodySm"}>{"Can't sign in?"}</Text>
-          <Button
-            variant="link"
-            isDisabled={areButtonsDisabled}
-            href="#/auth/recover-account"
-            size="sm">
-            Recover account
-          </Button>
-        </Row>
-      </Box>
-    </Card>
+      </Row>
+
+    </OnboardingCard>
   );
 }

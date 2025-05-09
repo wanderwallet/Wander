@@ -117,6 +117,7 @@ export function AuthImportKeyfileEmbeddedView() {
       onBackButtonClick={back}
       style={{ gap: 24 }}
       size="auto">
+
       <Upload
         isFullWidth
         title={"Click to upload"}
@@ -125,11 +126,13 @@ export function AuthImportKeyfileEmbeddedView() {
         loadingText={"Recovering account..."}
         onFileParse={handleJsonParse}
       />
+
       {fileError && (
         <Text alignment="left" variant="bodySm" style={{ color: "#D22B1F", alignSelf: "flex-start", marginTop: -20 }}>
           Error: incorrect file format
         </Text>
       )}
+
     </Card>
   );
 }

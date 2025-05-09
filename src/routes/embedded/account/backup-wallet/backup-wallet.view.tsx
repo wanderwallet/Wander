@@ -3,6 +3,7 @@ import { useCallback, useState } from "react";
 import { Box, Button, Card, Spacer, WanderFooter } from "~components/embed/ui";
 import { useLocation } from "~wallets/router/router.utils";
 import browser from "webextension-polyfill";
+import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard.module";
 
 export function AccountBackupWalletEmbeddedView() {
   const [isLoading, setIsLoading] = useState({
@@ -54,77 +55,75 @@ export function AccountBackupWalletEmbeddedView() {
   // TODO: Redirect user to backup confirmation next or show some kind of confirmation or just redirect home?
 
   return (
-    <Card
+    <OnboardingCard
       headerText="Wallet backup"
       subtitle="Select a method to back up your wallet which can be used to sign in on a new device or recover your wallet"
-      footerElement={<WanderFooter />}
-      hasBackButton={true}
-      onBackButtonClick={() => navigate("/wallet")}
-      hasCloseButton={true}
-      size="auto">
-      <Box>
-        <Button
-          variant="outlined"
-          isFullWidth
-          icon={<FolderShield fontSize={24} />}
-          isLoading={isLoading.calledId === "RecoveryFile" && isLoading.status}
-          isDisabled={isLoading.calledId === "RecoveryFile" && isLoading.status}
-          onClick={() => handleOnClick("RecoveryFile")}>
-          Download recovery file
-        </Button>
-        <Button
-          variant="outlined"
-          isFullWidth
-          icon={<Wallet03 fontSize={24} />}
-          isLoading={isLoading.calledId === "FullWallet" && isLoading.status === true}
-          onClick={() => handleOnClick("FullWallet")}>
-          Export wallet
-        </Button>
-        {/*
-        <Button
-          variant="outlined"
-          isFullWidth
-          icon={<GDriveIcon fontSize={24} />}
-          onClick={() => handleOnClick("GDrive")}
-          isLoading={
-            isLoading.calledId === "GDrive" && isLoading.status === true
-          }
-        >
-          Backup to Google Drive
-        </Button>
-        <Button
-          variant="outlined"
-          isFullWidth
-          icon={<AppleIcon fontSize={24} />}
-          onClick={() => handleOnClick("Apple")}
-          isLoading={
-            isLoading.calledId === "Apple" && isLoading.status === true
-          }
-        >
-          Backup to iCloud
-        </Button>
-        <Button
-          variant="outlined"
-          isFullWidth
-          icon={<DropboxIcon fontSize={24} />}
-          onClick={() => handleOnClick("Dropbox")}
-          isLoading={
-            isLoading.calledId === "Dropbox" && isLoading.status === true
-          }
-        >
-          Backup to Dropbox
-        </Button> */}
-        <Spacer y={1} />
-        <Button
-          variant="link"
-          isFullWidth
-          onClick={(e) => {
-            e.preventDefault();
-            browser.tabs.create({ url: "https://www.wander.app/help/benefits-of-backing-up-your-wander-wallet" });
-          }}>
-          Why should I back up my account?
-        </Button>
-      </Box>
-    </Card>
+      // This should be reminder in some cases
+      onBackButtonClick={() => navigate("/wallet")}>
+
+      <Button
+        variant="outlined"
+        isFullWidth
+        icon={<FolderShield fontSize={24} />}
+        isLoading={isLoading.calledId === "RecoveryFile" && isLoading.status}
+        isDisabled={isLoading.calledId === "RecoveryFile" && isLoading.status}
+        onClick={() => handleOnClick("RecoveryFile")}>
+        Download recovery file
+      </Button>
+
+      <Button
+        variant="outlined"
+        isFullWidth
+        icon={<Wallet03 fontSize={24} />}
+        isLoading={isLoading.calledId === "FullWallet" && isLoading.status === true}
+        onClick={() => handleOnClick("FullWallet")}>
+        Export wallet
+      </Button>
+
+      {/*
+      <Button
+        variant="outlined"
+        isFullWidth
+        icon={<GDriveIcon fontSize={24} />}
+        onClick={() => handleOnClick("GDrive")}
+        isLoading={
+          isLoading.calledId === "GDrive" && isLoading.status === true
+        }
+      >
+        Backup to Google Drive
+      </Button>
+      <Button
+        variant="outlined"
+        isFullWidth
+        icon={<AppleIcon fontSize={24} />}
+        onClick={() => handleOnClick("Apple")}
+        isLoading={
+          isLoading.calledId === "Apple" && isLoading.status === true
+        }
+      >
+        Backup to iCloud
+      </Button>
+      <Button
+        variant="outlined"
+        isFullWidth
+        icon={<DropboxIcon fontSize={24} />}
+        onClick={() => handleOnClick("Dropbox")}
+        isLoading={
+          isLoading.calledId === "Dropbox" && isLoading.status === true
+        }
+      >
+        Backup to Dropbox
+      </Button> */}
+
+      <Button
+        variant="link"
+        isFullWidth
+        onClick={(e) => {
+          e.preventDefault();
+          browser.tabs.create({ url: "https://www.wander.app/help/benefits-of-backing-up-your-wander-wallet" });
+        }}>
+        Why should I back up my account?
+      </Button>
+    </OnboardingCard>
   );
 }

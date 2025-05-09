@@ -60,6 +60,11 @@
   --color-background-button-disabled: var(--brand-color-neutral3);
   --avatar-background: #0d6ce9;
 
-  --text-input-background: var(--brand-color-neutral8);
-  --text-input-color: var(--brand-color-neutral1);
+  --input-height: 48px;
+  --input-background: #f2f2f7;
+  --input-color: var(--brand-color-neutral1); /* In the other input, this is #121212 and #ffffff in dark mode */
+  --input-border-radius: var(--border-radius-xl);
+  --input-border: none;
+  --input-shadow: none;
+  --input-child-offset: 4px;
 }

@@ -5,6 +5,7 @@ import { useLocation } from "~wallets/router/router.utils";
 import { Card, Copyable, Row, Button, SeedInput, WanderFooter } from "~components/embed/ui";
 import copy from "copy-to-clipboard";
 import { toast } from "react-toastify";
+import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard.module";
 
 export function AuthRecoverAccountSeedphraseEmbeddedView() {
   const [loading, setLoading] = useState(false);
@@ -61,16 +62,11 @@ export function AuthRecoverAccountSeedphraseEmbeddedView() {
   }, [seedPhrase]);
 
   return importedTempWalletAddress ? (
-    <Card
+    <OnboardingCard
       headerText="Enter Seedphrase"
       subtitle="Would you like to add this wallet to your account?"
-      footerElement={<WanderFooter />}
-      hasBackButton={true}
-      onBackButtonClick={back}
-      hasCloseButton={true}
-      onCloseButtonClick={() => navigate(`/auth/recover-account`)}
-      style={{ gap: 24 }}
-      size="auto">
+      onBackButtonClick={() => navigate(`/auth/recover-account`)}
+      style={{ gap: 24 }}>
       <Copyable
         isFullWidth
         style={{ padding: 0 }}
@@ -88,15 +84,12 @@ export function AuthRecoverAccountSeedphraseEmbeddedView() {
           Yes, recover
         </Button>
       </Row>
-    </Card>
+    </OnboardingCard>
   ) : (
-    <Card
+    <OnboardingCard
       headerText="Enter Seedphrase"
       subtitle="Enter your seedphrase to recover your wallet."
-      footerElement={<WanderFooter />}
-      hasBackButton={true}
-      onBackButtonClick={back}
-      size="auto">
+      onBackButtonClick={() => navigate(`/auth/recover-account`)}>
       <SeedInput seedPhrase={seedPhrase} handleSubmit={handleImportWallet} handleInputChange={handleInputChange} />
       <Button
         isFullWidth
@@ -106,6 +99,6 @@ export function AuthRecoverAccountSeedphraseEmbeddedView() {
         isDisabled={isSeedPhraseIncomplete}>
         {isSeedPhraseIncomplete ? "Complete seedphrase" : "Next"}
       </Button>
-    </Card>
+    </OnboardingCard>
   );
 }

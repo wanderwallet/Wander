@@ -6,6 +6,7 @@ import { Card, Row, Button, Copyable, Upload, Text, WanderFooter } from "~compon
 import copy from "copy-to-clipboard";
 import { toast } from "react-toastify";
 import { WalletUtils } from "~utils/wallets/wallets.utils";
+import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard.module";
 
 export function AuthRecoverAccountKeyfileEmbeddedView() {
   const [loading, setLoading] = useState(false);
@@ -66,16 +67,10 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
   }, []);
 
   return importedTempWalletAddress ? (
-    <Card
+    <OnboardingCard
       headerText="Import Keyfile"
       subtitle="Upload your private key to recover your account."
-      footerElement={<WanderFooter />}
-      hasBackButton={true}
-      onBackButtonClick={back}
-      hasCloseButton={true}
-      onCloseButtonClick={() => navigate(`/auth`)}
-      style={{ gap: 24 }}
-      size="auto">
+      onBackButtonClick={() => navigate(`/auth/recover-account`)}>
       <Text>Would you like to recover this account?</Text>
       <Copyable
         isFullWidth
@@ -94,16 +89,12 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
           Yes, recover
         </Button>
       </Row>
-    </Card>
+    </OnboardingCard>
   ) : (
-    <Card
+    <OnboardingCard
       headerText="Import Keyfile"
       subtitle="Upload your private key to recover your account."
-      footerElement={<WanderFooter />}
-      hasBackButton={true}
-      onBackButtonClick={back}
-      size="auto"
-      style={{ gap: 24 }}>
+      onBackButtonClick={() => navigate(`/auth/recover-account`)}>
       <Upload
         isFullWidth
         title={"Click to upload"}
@@ -117,6 +108,6 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
           Error: incorrect file format
         </Text>
       )}
-    </Card>
+    </OnboardingCard>
   );
 }

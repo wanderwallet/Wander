@@ -8,6 +8,7 @@ import { Loading } from "../loading";
 const Button = React.forwardRef<HTMLButtonElement | HTMLAnchorElement, ButtonBaseProps>(
   (
     {
+      type = "button",
       children,
       className,
       variant = "primary",
@@ -47,10 +48,12 @@ const Button = React.forwardRef<HTMLButtonElement | HTMLAnchorElement, ButtonBas
       }
       return children;
     };
+
     return (
       <Component
         // @ts-ignore
         ref={ref}
+        type={type}
         href={isAnchor ? props.href : undefined}
         rel="noopener noreferrer"
         className={clsx(

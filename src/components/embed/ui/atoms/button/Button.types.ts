@@ -2,7 +2,11 @@ import React from "react";
 import type { Alignments, ButtonVariants, Sizes } from "../../../types";
 import type { ButtonIconPositionVariants } from "../../../types/variants";
 
+export type ButtonType = "button" | "submit" | "reset";
+
 export type ButtonBaseProps = {
+  type?: ButtonType;
+
   /**
    * Required prop for the content to be rendered within the ButtonBase
    */

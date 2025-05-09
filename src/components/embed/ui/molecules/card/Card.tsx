@@ -1,5 +1,4 @@
 import React from "react";
-import styles from "./Card.module.css";
 import type { CardBaseProps } from "./Card.types";
 import { Box, MinimizeIcon, ChevronLeft } from "../../atoms";
 import { Header } from "../header";
@@ -7,6 +6,8 @@ import { Footer } from "../footer";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 import { useLocation } from "~wallets/router/router.utils";
 import { Loading } from "@arconnect/components";
+
+import styles from "./Card.module.css";
 
 const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
   (
@@ -17,7 +18,6 @@ const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
       children,
       footerElement,
       className,
-      hasShadow = false,
       isDisabled,
       isLoading,
       size = "md",
@@ -64,7 +64,6 @@ const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
         ref={ref}
         className={`
         ${styles["card"]}
-        ${hasShadow && styles["card__shadow"]}
         ${(isDisabled || isLoading) && styles["card__disabled"]}
         ${size && styles[`card__${size}`]}
         ${className}
@@ -77,21 +76,19 @@ const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
         <div style={{ marginTop: "auto" }}></div>
         {footerElement && <Footer children={footerElement} />}
 
-        { (isDisabled || isLoading) ? (
-          <div className={ styles["card__loaderCover"]}>
-            { isLoading ? (
-              <Loading
-                style={{
-                  position: "absolute",
-                  top: "calc(50% - 16px)",
-                  left: "calc(50% - 16px)",
-                  width: "32px",
-                  height: "32px",
-                }}
-              />
-            ) : null }
-          </div>
-        ) : null }
+        <div className={ styles["card__loaderCover"]}>
+          { isLoading ? (
+            <Loading
+              style={{
+                position: "absolute",
+                top: "calc(50% - 16px)",
+                left: "calc(50% - 16px)",
+                width: "32px",
+                height: "32px",
+              }}
+            />
+          ) : null }
+        </div>
       </Box>
     );
   },

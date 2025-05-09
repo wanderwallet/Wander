@@ -1,15 +1,15 @@
-import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { toast } from "react-toastify";
 import { Box, Card, Text, WanderFooter, Button } from "~components/embed";
 import { useCallback, useEffect, useState } from "react";
 import { getSupabaseClient } from "~utils/embedded/embedded.utils";
-import { useLocation } from "~wallets/router/router.utils";
+import { useLocation, useSearchParams } from "~wallets/router/router.utils";
 import { Flex } from "~components/common/Flex";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
+import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard.module";
 
 export function AuthEmailVerifyEmbeddedView() {
   const { navigate } = useLocation();
-  const { authEmail } = useEmbedded();
+  const { email } = useSearchParams<{ email: string }>();
   const [isResending, setIsResending] = useState(false);
   const [cooldownTime, setCooldownTime] = useState(60);
   const [canResend, setCanResend] = useState(false);
@@ -39,7 +39,7 @@ export function AuthEmailVerifyEmbeddedView() {
   }, [cooldownTime]);
 
   const handleResendEmail = useCallback(async () => {
-    if (!authEmail || !canResend) return;
+    if (!email || !canResend) return;
 
     try {
       setIsResending(true);
@@ -47,7 +47,7 @@ export function AuthEmailVerifyEmbeddedView() {
 
       const { error } = await supabase.auth.resend({
         type: "signup",
-        email: authEmail,
+        email,
       });
 
       if (error) {
@@ -63,42 +63,44 @@ export function AuthEmailVerifyEmbeddedView() {
     } finally {
       setIsResending(false);
     }
-  }, [authEmail, canResend]);
+  }, [email, canResend]);
+
+  useEffect(() => {
+    if (!email) {
+      if (process.env.NODE_ENV === "development") {
+        throw new Error("No email search param. The router should have taken care of this.")
+      } else {
+        navigate(EmbeddedPaths.Auth)
+      }
+    }
+  }, [email]);
 
   return (
-    <Card
+    <OnboardingCard
       headerText="Verify your email"
-      footerElement={<WanderFooter />}
+      subtitle={ `We've sent an email to ${email}` }
       hasBackButton={false}
-      hasCloseButton={true}
-      onCloseButtonClick={() => navigate(EmbeddedPaths.Auth)}
-      size="auto"
       isLoading={ isResending }>
-      <Box style={{ gap: 32 }}>
-        <Text style={{ color: "var(--text-color-primary, #121212)" }} variant={"bodyLg"} alignment={"center"}>
-          We've sent an email to {authEmail}
+
+      <Text variant={"bodySm"} alignment={"center"} style={{ color: "var(--text-color-secondary, #666666)" }}>
+        Click on the link in that email to complete your sign up. If you do not see it, you may need to check your
+        spam folder.
+      </Text>
+
+      <Text variant={"bodyXs"} alignment={"center"} style={{ color: "var(--text-color-tertiary, #838383)" }}>
+        Didn't receive the message?
+      </Text>
+
+      {canResend ? (
+        <Button variant="link" isFullWidth onClick={handleResendEmail} isLoading={isResending}>
+          Send again
+        </Button>
+      ) : (
+        <Text variant={"bodyXs"} alignment={"center"}>
+          Send again in {cooldownTime} seconds
         </Text>
-        <Flex direction="column" gap={24} width="100%">
-          <Text variant={"bodySm"} alignment={"center"} style={{ color: "var(--text-color-secondary, #666666)" }}>
-            Click on the link in that email to complete your sign up. If you do not see it, you may need to check your
-            spam folder.
-          </Text>
-          <Flex direction="column" gap={4} width="100%">
-            <Text variant={"bodyXs"} alignment={"center"} style={{ color: "var(--text-color-tertiary, #838383)" }}>
-              Didn't receive the message?
-            </Text>
-            {canResend ? (
-              <Button variant="link" isFullWidth onClick={handleResendEmail} isLoading={isResending}>
-                Send again
-              </Button>
-            ) : (
-              <Text variant={"bodyXs"} alignment={"center"}>
-                Send again in {cooldownTime} seconds
-              </Text>
-            )}
-          </Flex>
-        </Flex>
-      </Box>
-    </Card>
+      )}
+
+    </OnboardingCard>
   );
 }

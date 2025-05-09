@@ -1,61 +1,72 @@
-import { Box, Button, Card, Text, WanderIcon, Row, ErrorIcon } from "~components/embed";
-import { useErrorHandler } from "./hooks/useErrorHandler";
+import { Button, Text, ErrorIcon } from "~components/embed";
+import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard.module";
+import { useSearchParams } from "~wallets/router/router.utils";
+import { useEffect, useMemo } from "react";
+import { getFriendlyErrorMessage } from "~routes/embedded/auth/auth-error/auth-error.utils";
 
 export default function AuthErrorEmbeddedView() {
-  const { errorState, handleRetry } = useErrorHandler();
+  const searchParams = useSearchParams<{
+    error: string;
+    error_description: string;
+  }>();
 
-  if (!errorState) return null;
+  const {
+    errorCode,
+    errorDescription,
+    friendlyErrorMessage,
+  } = useMemo(() => {
+    const errorCode = searchParams.error || "unknown_error";
+    const errorDescription = searchParams.error_description || "";
+    const friendlyErrorMessage = getFriendlyErrorMessage(errorCode, errorDescription);
+
+    return {
+      errorCode,
+      errorDescription,
+      friendlyErrorMessage,
+    };
+  }, [searchParams])
+
+
+  const handleReload = () => {
+    location.href = "/";
+  }
+
+  useEffect(() => {
+    if (!errorCode || !errorDescription) {
+      if (process.env.NODE_ENV === "development") {
+        throw new Error("No error or error_description search param. The router should have taken care of this.")
+      } else {
+        handleReload();
+      }
+    }
+  }, [errorCode, errorDescription]);
 
   return (
-    <Card
+    <OnboardingCard
+      headerIcon={<ErrorIcon fontSize={42} />}
       headerText="Authentication Failed"
-      footerElement={
-        <Row>
-          <Text variant="bodyXs" style={{ marginBottom: 0 }}>
-            {"Secured by"}
-          </Text>
-          <WanderIcon color="#838383" />
-        </Row>
-      }
-      hasBackButton={false}
-      size="auto">
-      <Box>
-        <Row alignment="center" justifyContent="center" style={{ marginBottom: 16, paddingTop: 4, paddingBottom: 4 }}>
-          <ErrorIcon fontSize={48} />
-        </Row>
+      subtitle={ friendlyErrorMessage }
+      hasBackButton={false}>
 
-        <Text variant="bodyMd" style={{ marginBottom: 8 }}>
-          Error Code: {errorState.code}
-        </Text>
+      <Button isFullWidth variant="primary" onClick={handleReload}>
+        Reload Wander
+      </Button>
 
-        <Text variant="bodySm" style={{ marginBottom: 24 }}>
-          {errorState.friendlyMessage}
-        </Text>
+      <Text variant="bodyXs" style={{ textAlign: "center", marginTop: 16 }}>
+        If you continue to experience issues, please try:
+      </Text>
 
-        <Button isFullWidth variant="primary" onClick={handleRetry} style={{ marginBottom: 8 }}>
-          Try Again
-        </Button>
-
-        <Button isFullWidth variant="secondary" onClick={() => window.close()}>
-          Close Window
-        </Button>
-
-        <Text variant="bodyXs" style={{ marginTop: 24, textAlign: "center" }}>
-          If you continue to experience issues, please try:
-        </Text>
-
-        <ul style={{ listStyleType: "disc", paddingLeft: 20, marginTop: 8 }}>
-          <li>
-            <Text variant="bodyXs">Clearing your browser cache</Text>
-          </li>
-          <li>
-            <Text variant="bodyXs">Using a different authentication method</Text>
-          </li>
-          <li>
-            <Text variant="bodyXs">Contacting support with error code: {errorState.code}</Text>
-          </li>
-        </ul>
-      </Box>
-    </Card>
+      <ul style={{ listStyleType: "disc", paddingLeft: 20, margin: 0 }}>
+        <li>
+          <Text variant="bodyXs">Clearing your browser cache.</Text>
+        </li>
+        <li>
+          <Text variant="bodyXs">Using a different authentication method.</Text>
+        </li>
+        <li>
+          <Text variant="bodyXs">Contacting support with error code: {errorCode}.</Text>
+        </li>
+      </ul>
+    </OnboardingCard>
   );
 }

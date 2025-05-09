@@ -24,11 +24,6 @@
   pointer-events: none;
 }
 
-.card__shadow {
-  box-shadow: 0 4px 40px 0 var(--color-card-shadow-default);
-  transition: 0.3s;
-}
-
 .card__sm {
   width: var(--card-sm-width);
   min-height: var(--card-sm-height);
@@ -96,8 +91,11 @@
   backdrop-filter: blur(var(--spacing-2));
   transition: opacity linear 150ms;
   opacity: 0;
+  z-index: 10;
+  pointer-events: none;
 }
 
 .card__disabled > .card__loaderCover {
   opacity: 1;
+  pointer-events: auto;
 }

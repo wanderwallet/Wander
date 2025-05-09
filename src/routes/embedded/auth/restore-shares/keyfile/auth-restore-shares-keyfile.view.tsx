@@ -5,7 +5,7 @@ import { Card, Upload, Button, WanderFooter } from "~components/embed/ui";
 import { useLocation } from "~wallets/router/router.utils";
 import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard.module";
 
-export function AuthRestoreSharesRecoveryFileEmbeddedView() {
+export function AuthRestoreSharesKeyfileEmbeddedView() {
   const { navigate, back } = useLocation();
   const [loading, setLoading] = useState(false);
   const { currentWallet, recoverWallet } = useEmbedded();
@@ -36,21 +36,36 @@ export function AuthRestoreSharesRecoveryFileEmbeddedView() {
 
   // TODO: Right now, because the auth-import-keyfile and seedphrase views are shared, it is possible to import a second wallet into the account!
 
+  // TODO: Validate the wallet I imported is actually one of the ones on my account and show appropriate error messages and actions.
+
+  // TODO: Request confirmation just line in import-keyfile
+
   return (
     <OnboardingCard
       headerText="Restore wallet"
-      subtitle="Upload your recovery file to restore your wallet."
+      subtitle="Upload your keyfile to restore."
       onBackButtonClick={() => navigate("/auth/restore-shares")}
       isLoading={ loading }>
+
       <Upload
         isFullWidth
         title={"Click to upload"}
-        description={"or drag and drop your recovery file"}
+        description={"or drag and drop your private key"}
+        isLoading={loading}
+        loadingText={"Recovering account..."}
         onFileParse={handleJsonParse}
       />
+
+      {fileError && (
+        <Text alignment="left" variant="bodySm" style={{ color: "#D22B1F", alignSelf: "flex-start", marginTop: -20 }}>
+          Error: incorrect file format
+        </Text>
+      )}
+
       <Button isFullWidth size="md" isLoading={loading} isDisabled={!jsonData} onClick={handleRestore}>
         Restore
       </Button>
+
     </OnboardingCard>
   );
 }
