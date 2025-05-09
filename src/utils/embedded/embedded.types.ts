@@ -61,8 +61,7 @@ export interface TempWalletPromise {
 
 export interface EmbeddedProviderProps extends PropsWithChildren {}
 
-export interface RecoverableAccountWallet
-  extends Pick<Wallet, "id" | "publicKey" | "canBeRecovered" | "status" | "chain" | "address"> {}
+export interface RecoverableAccountWallet extends Pick<Wallet, "canBeRecovered" | "address"> {}
 
 export interface EmbeddedContextState {
   currentWalletId: string;

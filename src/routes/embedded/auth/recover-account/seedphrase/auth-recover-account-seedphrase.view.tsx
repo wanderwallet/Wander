@@ -48,7 +48,6 @@ export function AuthRecoverAccountSeedphraseEmbeddedView() {
         await fetchRecoverableAccountWallets(recoverableAccounts[0]);
         navigate(EmbeddedPaths.Auth);
       } else if (recoverableAccounts.length > 1) {
-        toast.error("Multiple recoverable accounts found");
         navigate(EmbeddedPaths.AuthRecoverAccountSelect);
       } else {
         toast.error("No recoverable accounts found");

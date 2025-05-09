@@ -107,8 +107,8 @@ export function AuthRecoverAccountConfirmEmbeddedView() {
                 These wallets have never been backed up. After recovery, you will permanently lose access these wallets.
               </Text>
               <Flex direction="column" gap={8} style={{ marginTop: 12 }}>
-                {lostWallets.map((wallet) => (
-                  <Flex key={wallet.id} direction="row" gap={8} align="center">
+                {lostWallets.map((wallet, index) => (
+                  <Flex key={`lost-wallet-${index}`} direction="row" gap={8} align="center">
                     <Text variant="bodyXs" alignment="left" style={{ color: "var(--brand-color-error2)" }}>
                       •
                     </Text>
@@ -142,8 +142,8 @@ export function AuthRecoverAccountConfirmEmbeddedView() {
                 you have your recovery information (recovery file, seed phrase or private key) ready.
               </Text>
               <Flex direction="column" gap={8} style={{ marginTop: 12 }}>
-                {recoverableWallets.map((wallet) => (
-                  <Flex key={wallet.id} direction="row" gap={8} align="center">
+                {recoverableWallets.map((wallet, index) => (
+                  <Flex key={`recoverable-wallet-${index}`} direction="row" gap={8} align="center">
                     <Text variant="bodyXs" alignment="left" style={{ color: "#BD8802" }}>
                       •
                     </Text>
