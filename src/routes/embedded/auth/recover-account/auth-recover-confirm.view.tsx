@@ -105,7 +105,6 @@ export function AuthRecoverAccountConfirmEmbeddedView() {
               </Text>
               <Text variant="bodySm" alignment="left" style={{ color: "#121212", lineHeight: 1.5 }}>
                 These wallets have never been backed up. After recovery, you will permanently lose access these wallets.
-                Please back up any important information before proceeding.
               </Text>
               <Flex direction="column" gap={8} style={{ marginTop: 12 }}>
                 {lostWallets.map((wallet) => (
@@ -140,7 +139,7 @@ export function AuthRecoverAccountConfirmEmbeddedView() {
               </Text>
               <Text variant="bodySm" alignment="left" style={{ color: "#121212", lineHeight: 1.5 }}>
                 These wallets can be recovered. You will need to follow the recovery process for each wallet. Make sure
-                you have your recovery information (seed phrase or private key) ready.
+                you have your recovery information (recovery file, seed phrase or private key) ready.
               </Text>
               <Flex direction="column" gap={8} style={{ marginTop: 12 }}>
                 {recoverableWallets.map((wallet) => (
