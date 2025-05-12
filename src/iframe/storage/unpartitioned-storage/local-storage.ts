@@ -7,8 +7,10 @@ export class LocalStorage {
   private static readonly DEVICE_NONCE_KEY = "DEVICE_NONCE";
   private static readonly SUPABASE_AUTH_PREFIX = "sb-";
   private static readonly SUPABASE_AUTH_SUFFIX = "-auth-token";
+
   // Maximum size for a single cookie chunk (about 4KB - some overhead)
   private static readonly MAX_COOKIE_CHUNK_SIZE = 3000;
+
   // Suffix for chunked cookies
   private static readonly CHUNK_SUFFIX = "_chunk_";
   private static readonly CHUNK_META_SUFFIX = "_chunk_meta";
@@ -17,14 +19,13 @@ export class LocalStorage {
   private static readonly COOKIE_OPTIONS: CookieAttributes = {
     path: "/",
     sameSite: "None",
-    secure: process.env.NODE_ENV === "production",
+    secure: true,
     expires: 365,
   };
 
-  // Cache of known critical keys to avoid repeated checks
-  private static readonly criticalKeysCache = new Set<string>();
-  // Debug flag to control verbose logging
-  private static debugMode = true;
+  // Cache of known keys to avoid repeated checks
+  private static readonly cookieBackupKeysCache = new Set<string>();
+  private static debugMode = process.env.NODE_ENV === "development";
 
   private constructor() {
     this.storage = new EnhancedStorage({ area: "local" });
@@ -76,17 +77,13 @@ export class LocalStorage {
    * Determine if we should use raw storage for a key
    */
   private shouldUseRawStorage(key: string): boolean {
-    // Use raw storage for device nonce and auth tokens as they're already stringified
-    return (
-      key === LocalStorage.DEVICE_NONCE_KEY ||
-      (key.startsWith(LocalStorage.SUPABASE_AUTH_PREFIX) && key.endsWith(LocalStorage.SUPABASE_AUTH_SUFFIX))
-    );
+    return key.startsWith(LocalStorage.SUPABASE_AUTH_PREFIX) && key.endsWith(LocalStorage.SUPABASE_AUTH_SUFFIX);
   }
 
   /**
    * Set a cookie with chunking if needed
    */
-  private setCookieWithFallbacks(key: string, value: string): boolean {
+  private setCookieWithChunkingIfNeeded(key: string, value: string): boolean {
     // Check if value is too large for a single cookie
     if (value.length > LocalStorage.MAX_COOKIE_CHUNK_SIZE) {
       if (LocalStorage.debugMode) console.log(`Value for key '${key}' is large (${value.length} chars), chunking...`);
@@ -158,9 +155,7 @@ export class LocalStorage {
       const metaKey = `${key}${LocalStorage.CHUNK_META_SUFFIX}`;
       const metaValue = Cookies.get(metaKey);
 
-      if (!metaValue) {
-        return null;
-      }
+      if (!metaValue) return null;
 
       const chunkCount = parseInt(metaValue, 10);
       if (isNaN(chunkCount) || chunkCount <= 0) {
@@ -189,8 +184,7 @@ export class LocalStorage {
         const localValue = this.getStorageValue(key, useRaw);
 
         if (localValue) {
-          // Try to reset the cookies from localStorage
-          this.setCookieWithFallbacks(key, localValue);
+          this.setCookieWithChunkingIfNeeded(key, localValue);
           return localValue;
         }
 
@@ -239,14 +233,11 @@ export class LocalStorage {
   }
 
   setItem(key: string, value: string): void {
-    // Quick check if this is a critical key
-    const isCritical = this.isCriticalKey(key);
+    const requiresCookieBackup = this.isKeyRequiringCookieBackup(key);
 
-    // For critical items, set cookie first
-    if (isCritical) {
-      if (LocalStorage.debugMode)
-        console.log(`Setting critical cookie for key '${key}' (value length: ${value.length})`);
-      this.setCookieWithFallbacks(key, value);
+    if (requiresCookieBackup) {
+      if (LocalStorage.debugMode) console.log(`Setting cookie for key '${key}' (value length: ${value.length})`);
+      this.setCookieWithChunkingIfNeeded(key, value);
     }
 
     // Always set in localStorage with appropriate method
@@ -255,16 +246,13 @@ export class LocalStorage {
   }
 
   getItem(key: string): string | null {
-    // Quick check if this is a critical key
-    const isCritical = this.isCriticalKey(key);
+    const requiresCookieBackup = this.isKeyRequiringCookieBackup(key);
     const useRaw = this.shouldUseRawStorage(key);
 
-    // Check critical keys in cookies first
-    if (isCritical) {
+    if (requiresCookieBackup) {
       try {
         if (LocalStorage.debugMode) console.log(`Checking cookie for key '${key}'`);
 
-        // Try chunked cookies first (more likely for auth tokens)
         let cookieValue = this.getChunkedCookies(key);
 
         // If not found as chunks, try regular cookie
@@ -292,8 +280,7 @@ export class LocalStorage {
                 `Cookie not found for '${key}', setting from localStorage value (length: ${localValue.length})`,
               );
 
-            // Try to set the cookie with our enhanced method
-            const success = this.setCookieWithFallbacks(key, localValue);
+            const success = this.setCookieWithChunkingIfNeeded(key, localValue);
             if (LocalStorage.debugMode) console.log(`Cookie set success: ${success}`);
 
             return localValue;
@@ -304,13 +291,11 @@ export class LocalStorage {
       }
     }
 
-    // Fallback to localStorage with appropriate method
     return this.getStorageValue(key, useRaw);
   }
 
   removeItem(key: string): void {
-    // Also remove from cookies if it's a critical item
-    if (this.isCriticalKey(key)) {
+    if (this.isKeyRequiringCookieBackup(key)) {
       try {
         if (LocalStorage.debugMode) console.log(`Removing cookie for key '${key}'`);
 
@@ -328,13 +313,12 @@ export class LocalStorage {
   }
 
   clear(): void {
-    // Clear critical cookies
     try {
       // Only check actual cookies rather than all potential keys
       const cookies = Cookies.get() || {};
 
       Object.keys(cookies).forEach((key) => {
-        if (this.isCriticalKey(key) || key.includes(LocalStorage.CHUNK_SUFFIX)) {
+        if (this.isKeyRequiringCookieBackup(key) || key.includes(LocalStorage.CHUNK_SUFFIX)) {
           if (LocalStorage.debugMode) console.log(`Clearing cookie: ${key}`);
           this.removeCookie(key);
         }
@@ -346,28 +330,28 @@ export class LocalStorage {
     this.storage.clear();
   }
 
-  private isCriticalKey(key: string): boolean {
+  private isKeyRequiringCookieBackup(key: string): boolean {
     // Fast check for chunk-related keys
     if (key.includes(LocalStorage.CHUNK_SUFFIX)) {
       const baseKey = key.split(LocalStorage.CHUNK_SUFFIX)[0];
-      return this.isCriticalKey(baseKey);
+      return this.isKeyRequiringCookieBackup(baseKey);
     }
 
     // Check cache for performance
-    if (LocalStorage.criticalKeysCache.has(key)) {
+    if (LocalStorage.cookieBackupKeysCache.has(key)) {
       return true;
     }
 
     // Check criteria
-    const isCritical =
+    const requiresCookieBackup =
       key === LocalStorage.DEVICE_NONCE_KEY ||
       (key.startsWith(LocalStorage.SUPABASE_AUTH_PREFIX) && key.endsWith(LocalStorage.SUPABASE_AUTH_SUFFIX));
 
     // Cache result
-    if (isCritical) {
-      LocalStorage.criticalKeysCache.add(key);
+    if (requiresCookieBackup) {
+      LocalStorage.cookieBackupKeysCache.add(key);
     }
 
-    return isCritical;
+    return requiresCookieBackup;
   }
 }

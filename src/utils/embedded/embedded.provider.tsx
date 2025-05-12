@@ -34,7 +34,7 @@ import {
   EMBEDDED_FEATURE_FLAGS,
   EMBEDDED_SDK_AUTH_STATUS_BY_AUTH_STATUS,
 } from "~utils/embedded/embedded.constants";
-import { getDeviceNonce } from "~utils/embedded/device-nonce/device-nonce.utils";
+import { getDeviceNonce, isDeviceNonceValid, storeDeviceNonce } from "~utils/embedded/device-nonce/device-nonce.utils";
 import { jwtDecode } from "jwt-decode";
 import type { SupabaseJwtPayload } from "~utils/authentication/authentication.types";
 import { isTempWalletPromiseExpired } from "~utils/embedded/utils/wallets/embedded-wallets.utils";
@@ -906,6 +906,10 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
                         const supabase = await getSupabaseClient();
                         if (event.data?.data) {
                           const { data } = event.data;
+                          if (data.deviceNonce && isDeviceNonceValid(data.deviceNonce)) {
+                            await storeDeviceNonce(data.deviceNonce);
+                          }
+
                           await supabase.auth.refreshSession({
                             refresh_token: data.refresh_token,
                           });
@@ -1090,11 +1094,12 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
   }, []);
 
   const completeAuth = useCallback(async (session: any) => {
+    const deviceNonce = await getDeviceNonce();
     window.opener.postMessage(
       {
         type: "AUTH_COMPLETE",
         success: true,
-        data: session,
+        data: { ...session, deviceNonce },
       },
       window.location.origin,
     );

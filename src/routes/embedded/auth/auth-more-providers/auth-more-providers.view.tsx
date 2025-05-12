@@ -21,15 +21,16 @@ export function AuthMoreProvidersEmbeddedView() {
     try {
       setSelectedAuthProviderType(authProviderType);
       await authenticate(authProviderType);
-      setSelectedAuthProviderType(null);
     } catch (error) {
       toast.error(`Error signing in with ${authProviderType}`);
+    } finally {
+      setSelectedAuthProviderType(null);
     }
   }, []);
 
   return (
     <Card
-      headerText="Sign Up or Sign In"
+      headerText="Sign up or Sign in"
       subtitle="Select a method to authenticate"
       footerElement={<WanderFooter />}
       hasBackButton={true}

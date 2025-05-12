@@ -11,14 +11,15 @@ export type DeviceNonce = `${number}-${number}-${number}T${number}:${number}:${n
 
 let _deviceNonce: DeviceNonce | null = null;
 
+export function isDeviceNonceValid(deviceNonce: string): boolean {
+  return /\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z)\-[\w_-]{21}/.test(deviceNonce);
+}
+
 export async function loadDeviceNonce(): Promise<DeviceNonce | null> {
   const storage = await LocalStorage.getInstance();
   let deviceNonce = storage.getItem(DEVICE_NONCE_KEY) || null;
 
-  if (
-    deviceNonce === null ||
-    /\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z)\-[\w_-]{21}/.test(deviceNonce)
-  ) {
+  if (deviceNonce === null || isDeviceNonceValid(deviceNonce)) {
     return deviceNonce as DeviceNonce;
   }
 
