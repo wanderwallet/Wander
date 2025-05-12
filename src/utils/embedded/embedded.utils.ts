@@ -98,8 +98,8 @@ export async function getSupabaseClient() {
           persistSession: true,
           detectSessionInUrl: true,
           storage: {
-            getItem: (key: string) => storage.getRaw(key),
-            setItem: (key: string, value: string) => storage.setRaw(key, value),
+            getItem: (key: string) => storage.getItem(key),
+            setItem: (key: string, value: string) => storage.setItem(key, value),
             removeItem: (key: string) => storage.removeItem(key),
           },
         },
