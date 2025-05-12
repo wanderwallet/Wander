@@ -69,7 +69,6 @@ export function AuthEmailVerifyEmbeddedView() {
         });
 
         if (error) {
-          console.log(error.code);
           toast.error(error.message);
           return;
         }
