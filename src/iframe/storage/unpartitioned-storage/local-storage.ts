@@ -1,3 +1,4 @@
+import { isInsideIframe } from "~utils/embedded/iframe.utils";
 import { EnhancedStorage, StorageAccessState } from "./unpartitioned-storage";
 import Cookies, { type CookieAttributes } from "js-cookie";
 
@@ -23,7 +24,7 @@ export class LocalStorage {
     expires: 365,
   };
 
-  private static debugMode = process.env.NODE_ENV === "development";
+  private static debugMode = true;
 
   private constructor() {
     this.storage = new EnhancedStorage({ area: "local" });
@@ -288,6 +289,9 @@ export class LocalStorage {
       }
       this.setCookieWithChunkingIfNeeded(key, value);
     } else {
+      if (!isInsideIframe() && shouldBackupToCookies) {
+        this.setCookieWithChunkingIfNeeded(key, value);
+      }
       this.setStorageValue(key, value, useRaw);
     }
   }
