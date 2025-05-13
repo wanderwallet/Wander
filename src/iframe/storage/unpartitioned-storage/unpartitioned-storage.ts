@@ -412,6 +412,7 @@ export class EnhancedStorage implements Storage {
       // @ts-expect-error - requestStorageAccess should return a handle
       const handle = await document.requestStorageAccess({
         [this.storageType]: true,
+        cookies: true,
       });
 
       this.accessState = StorageAccessState.FULL_ACCESS;
@@ -465,45 +466,62 @@ export class EnhancedStorage implements Storage {
       }
 
       // Check permission state
-      const permission = await navigator.permissions.query({
-        name: "storage-access",
-      });
+      try {
+        const permission = await navigator.permissions.query({
+          name: "storage-access",
+        });
 
-      if (permission.state === "granted") {
-        try {
-          this.storage = await this.getStorageHandle();
-          this.accessState = StorageAccessState.FULL_ACCESS;
-          log(LOG_GROUP.STORAGE, "Full storage access granted via permission");
-        } catch (error) {
-          // If we can't get the handle but have storage access, we have cookie access
-          this.accessState = StorageAccessState.COOKIES_ONLY;
-          log(LOG_GROUP.STORAGE, "Cookie access granted via permission");
-        }
-      } else if (permission.state === "prompt") {
-        log(LOG_GROUP.STORAGE, "Storage access requires user interaction");
-        this.setupUserInteractionHandler();
-      } else if (permission.state === "denied") {
-        log(LOG_GROUP.STORAGE, "Storage access denied by user");
-      }
-
-      // Set up permission change listener
-      permission.addEventListener("change", () => {
         if (permission.state === "granted") {
-          document.hasStorageAccess().then((hasAccess) => {
-            if (hasAccess) {
-              this.getStorageHandle()
-                .then((handle) => {
-                  this.storage = handle;
-                  this.accessState = StorageAccessState.FULL_ACCESS;
-                })
-                .catch(() => {
-                  this.accessState = StorageAccessState.COOKIES_ONLY;
-                });
+          // If permission is granted, we can just call requestStorageAccess() without user interaction
+          try {
+            const handle = await this.getStorageHandle();
+            this.storage = handle;
+            this.accessState = StorageAccessState.FULL_ACCESS;
+            log(LOG_GROUP.STORAGE, "Full storage access granted via permission");
+          } catch (error) {
+            // Try to get just cookie access if we couldn't get the handle
+            try {
+              await document.requestStorageAccess();
+              const hasAccess = await document.hasStorageAccess();
+              if (hasAccess) {
+                this.accessState = StorageAccessState.COOKIES_ONLY;
+                log(LOG_GROUP.STORAGE, "Cookie access granted via permission");
+              }
+            } catch (cookieError) {
+              log(LOG_GROUP.STORAGE, "Failed to get cookie access:", cookieError);
             }
-          });
+          }
+        } else if (permission.state === "prompt") {
+          log(LOG_GROUP.STORAGE, "Storage access requires user interaction");
+          this.setupUserInteractionHandler();
+        } else if (permission.state === "denied") {
+          log(LOG_GROUP.STORAGE, "Storage access denied by user");
         }
-        log(LOG_GROUP.STORAGE, `Storage access permission changed to: ${permission.state}`);
-      });
+
+        // Set up permission change listener
+        permission.addEventListener("change", () => {
+          if (permission.state === "granted") {
+            document.hasStorageAccess().then((hasAccess) => {
+              if (hasAccess) {
+                this.getStorageHandle()
+                  .then((handle) => {
+                    this.storage = handle;
+                    this.accessState = StorageAccessState.FULL_ACCESS;
+                  })
+                  .catch(() => {
+                    this.accessState = StorageAccessState.COOKIES_ONLY;
+                  });
+              }
+            });
+          }
+          log(LOG_GROUP.STORAGE, `Storage access permission changed to: ${permission.state}`);
+        });
+      } catch (error) {
+        // This might happen if the browser doesn't support the "storage-access" permission
+        log(LOG_GROUP.STORAGE, "Error querying storage-access permission:", error);
+        // We'll still try to set up the user interaction handler
+        this.setupUserInteractionHandler();
+      }
     } catch (error) {
       log(LOG_GROUP.STORAGE, "Error requesting storage access:", error);
     }
@@ -513,20 +531,24 @@ export class EnhancedStorage implements Storage {
     try {
       if (!document.hasStorageAccess) return;
 
-      // First try to get document storage access
-      await document.requestStorageAccess();
-
-      // Then try to get the handle
+      // Try to get full storage access with handle
       try {
-        this.storage = await this.getStorageHandle();
+        const handle = await this.getStorageHandle();
+        this.storage = handle;
         this.accessState = StorageAccessState.FULL_ACCESS;
         log(LOG_GROUP.STORAGE, "Full storage access granted after user interaction");
-      } catch (error) {
-        // If we can't get the handle but have storage access, we have cookie access
-        const hasAccess = await document.hasStorageAccess();
-        if (hasAccess) {
-          this.accessState = StorageAccessState.COOKIES_ONLY;
-          log(LOG_GROUP.STORAGE, "Cookie access granted after user interaction");
+        return;
+      } catch (handleError) {
+        // If we couldn't get the handle, try to get just cookie access
+        try {
+          await document.requestStorageAccess();
+          const hasAccess = await document.hasStorageAccess();
+          if (hasAccess) {
+            this.accessState = StorageAccessState.COOKIES_ONLY;
+            log(LOG_GROUP.STORAGE, "Cookie access granted after user interaction");
+          }
+        } catch (cookieError) {
+          log(LOG_GROUP.STORAGE, "Error requesting cookie access after interaction:", cookieError);
         }
       }
     } catch (error) {
