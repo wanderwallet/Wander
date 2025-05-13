@@ -57,7 +57,7 @@ export function AuthRecoverAccountConfirmEmbeddedView() {
           style={{
             gap: 16,
             overflowY: "auto",
-            padding: "160px 16px 24px 16px",
+            padding: "100px 16px 24px 16px",
             scrollbarWidth: "thin",
             flex: 1,
             minHeight: "300px",
@@ -160,9 +160,8 @@ export function AuthRecoverAccountConfirmEmbeddedView() {
         <Flex
           direction="column"
           style={{
-            padding: "20px 16px",
+            padding: "4px var(--spacing-3)",
             borderTop: "1px solid var(--brand-color-gray2)",
-            backgroundColor: "var(--brand-color-white)",
             marginTop: "auto",
             position: "relative",
             zIndex: 1,
