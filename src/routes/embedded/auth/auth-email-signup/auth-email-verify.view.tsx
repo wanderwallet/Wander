@@ -92,7 +92,7 @@ export function AuthEmailVerifyEmbeddedView() {
       </Text>
 
       {canResend ? (
-        <Button variant="link" isFullWidth onClick={handleResendEmail} isLoading={isResending}>
+        <Button variant="link" isFullWidth onClick={handleResendEmail} isDisabled={isResending}>
           Send again
         </Button>
       ) : (

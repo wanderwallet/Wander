@@ -70,7 +70,8 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
     <OnboardingCard
       headerText="Import Keyfile"
       subtitle="Upload your private key to recover your account."
-      onBackButtonClick={() => navigate(`/auth/recover-account`)}>
+      onBackButtonClick={() => navigate(`/auth/recover-account`)}
+      isLoading={ loading }>
       <Text>Would you like to recover this account?</Text>
       <Copyable
         isFullWidth
@@ -82,10 +83,10 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
         value={importedTempWalletAddress}
       />
       <Row>
-        <Button variant="secondary" size="md" onClick={deleteImportedTempWallet}>
+        <Button variant="secondary" size="md" onClick={deleteImportedTempWallet} isDisabled={loading}>
           No, try again
         </Button>
-        <Button variant="primary" size="md" onClick={() => handleRecover()} isLoading={loading}>
+        <Button variant="primary" size="md" onClick={() => handleRecover()} isDisabled={loading}>
           Yes, recover
         </Button>
       </Row>
@@ -94,7 +95,8 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
     <OnboardingCard
       headerText="Import Keyfile"
       subtitle="Upload your private key to recover your account."
-      onBackButtonClick={() => navigate(`/auth/recover-account`)}>
+      onBackButtonClick={() => navigate(`/auth/recover-account`)}
+      isLoading={ loading }>
       <Upload
         isFullWidth
         title={"Click to upload"}

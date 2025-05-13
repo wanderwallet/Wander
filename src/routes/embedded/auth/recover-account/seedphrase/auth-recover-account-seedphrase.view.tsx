@@ -66,6 +66,7 @@ export function AuthRecoverAccountSeedphraseEmbeddedView() {
       headerText="Enter Seedphrase"
       subtitle="Would you like to add this wallet to your account?"
       onBackButtonClick={() => navigate(`/auth/recover-account`)}
+      isLoading={loading}
       style={{ gap: 24 }}>
       <Copyable
         isFullWidth
@@ -77,10 +78,10 @@ export function AuthRecoverAccountSeedphraseEmbeddedView() {
         value={importedTempWalletAddress}
       />
       <Row>
-        <Button variant="secondary" size="md" onClick={deleteImportedTempWallet}>
+        <Button variant="secondary" size="md" onClick={deleteImportedTempWallet} isDisabled={loading}>
           No, try again
         </Button>
-        <Button variant="primary" size="md" onClick={handleRecover} isLoading={loading}>
+        <Button variant="primary" size="md" onClick={handleRecover} isDisabled={loading}>
           Yes, recover
         </Button>
       </Row>
@@ -89,14 +90,14 @@ export function AuthRecoverAccountSeedphraseEmbeddedView() {
     <OnboardingCard
       headerText="Enter Seedphrase"
       subtitle="Enter your seedphrase to recover your wallet."
-      onBackButtonClick={() => navigate(`/auth/recover-account`)}>
+      onBackButtonClick={() => navigate(`/auth/recover-account`)}
+      isLoading={loading}>
       <SeedInput seedPhrase={seedPhrase} handleSubmit={handleImportWallet} handleInputChange={handleInputChange} />
       <Button
         isFullWidth
         size="md"
         onClick={handleImportWallet}
-        isLoading={loading}
-        isDisabled={isSeedPhraseIncomplete}>
+        isDisabled={loading || isSeedPhraseIncomplete}>
         {isSeedPhraseIncomplete ? "Complete seedphrase" : "Next"}
       </Button>
     </OnboardingCard>
