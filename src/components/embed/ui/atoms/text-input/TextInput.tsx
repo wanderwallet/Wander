@@ -33,7 +33,8 @@ const TextInput = forwardRef<HTMLInputElement, TextInputBaseProps>(
             className={clsx(styles["button"], buttonLabel ? styles["button__text"] : styles["button__icon"], className)}
             onClick={buttonOnClick}
             isLoading={isLoading}
-            isDisabled={isDisabled}>
+            isDisabled={isDisabled}
+            tabIndex={-1}>
             {buttonIcon || buttonLabel}
           </Button>
         )}
