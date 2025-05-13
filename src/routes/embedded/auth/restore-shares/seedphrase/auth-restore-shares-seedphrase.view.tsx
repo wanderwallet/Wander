@@ -1,46 +1,117 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import { Card, Upload, Button, WanderFooter } from "~components/embed/ui";
+import { Button, SeedInput, Row, Copyable } from "~components/embed/ui";
 import { useLocation } from "~wallets/router/router.utils";
 import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard.module";
+import copy from "copy-to-clipboard";
 
-export function AuthRestoreSharesSeedphraseEmbeddedView() {
-  const { navigate, back } = useLocation();
+export function AuthRestoreSharesSeedPhraseEmbeddedView() {
   const [loading, setLoading] = useState(false);
-  const { currentWallet, recoverWallet } = useEmbedded();
-  const walletAddress = currentWallet.address;
-  const [jsonData, setJsonData] = useState<any>(null);
+  const { navigate } = useLocation();
+  const [seedPhrase, setSeedPhrase] = useState<string[]>([]);
+  const {
+    importTempWallet,
+    importedTempWalletAddress,
+    deleteImportedTempWallet,
+    wallets,
+    recoverWallet,
+  } = useEmbedded();
 
-  const handleJsonParse = (parsedData: any) => {
-    setJsonData(parsedData);
-  };
+  const validateSeedPhrase = useCallback(() => {
+    const parsedSeedPhrase = seedPhrase.filter((word) => !!word.trim());
 
-  const handleRestore = useCallback(async () => {
-    if (!jsonData) return;
+    if (![12, 18, 24].includes(parsedSeedPhrase.length)) {
+      toast.error("Incomplete seedphrase.");
+
+      return false;
+    }
+
+    return true;
+  }, [seedPhrase])
+
+  const handleImportWallet = useCallback(async () => {
     try {
+      const isSeedPhraseValid = validateSeedPhrase();
+
+      if (!isSeedPhraseValid) return;
+
       setLoading(true);
-      await recoverWallet(jsonData);
+
+      await importTempWallet(seedPhrase.join(" "));
     } catch (error) {
-      toast.error(error?.message || "Something went wrong");
+      toast.error(error);
     } finally {
       setLoading(false);
     }
-  }, [jsonData, recoverWallet]);
+  }, [seedPhrase]);
 
-  // TODO: The recovery file should probably include the wallet address or a hash so that we can
-  // request the recovery of the right one from the backend without asking the user to manually select
-  // the address of the wallet they want to recover.
+  const handleRecoverWallet = useCallback(async () => {
+    try {
+      const isSeedPhraseValid = validateSeedPhrase();
 
-  // TODO: This view should probably work if the user uploads a keyfile too as many might be confused about the two.
+      if (!isSeedPhraseValid) return;
 
-  // TODO: Right now, because the auth-import-keyfile and seedphrase views are shared, it is possible to import a second wallet into the account!
+      const isWalletPresent = wallets.some(({ address }) => address === importedTempWalletAddress);
 
-  // TODO: Validate the wallet I imported is actually one of the ones on my account and show appropriate error messages and actions.
+      if (!isWalletPresent) {
+        toast.error("This wallet is not part of your account.");
 
-  // TODO: Request confirmation just line in import-keyfile
+        return;
+      }
 
-  return (
+      setLoading(true);
+
+      await recoverWallet(seedPhrase.join(" "));
+    } catch (error) {
+      console.error(error);
+      toast.error("An unexpected error happened.");
+    } finally {
+      setLoading(false);
+    }
+  }, [seedPhrase, wallets, importedTempWalletAddress]);
+
+  const handleInputChange = useCallback((index: number, value: string) => {
+    setSeedPhrase((prevSeedPhrase) => {
+      const newSeedPhrase = [...prevSeedPhrase];
+      newSeedPhrase[index] = value;
+      return newSeedPhrase;
+    });
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      // Remove the imported keyfile from memory as soon as we leave this view. Note at this point it will already have
+      // been passed to `importTempWallet()`, if the user confirmed:
+      deleteImportedTempWallet();
+    };
+  }, []);
+
+  return importedTempWalletAddress ? (
+    <OnboardingCard
+      headerText="Restore wallet"
+      subtitle="Confirm your wallet to restore it."
+      onBackButtonClick={() => navigate("/auth/restore-shares")}
+      isLoading={ loading }>
+      <Copyable
+        isFullWidth
+        style={{ padding: 0 }}
+        label="Your wallet address"
+        onClick={() => {
+          copy(importedTempWalletAddress);
+        }}
+        value={importedTempWalletAddress}
+      />
+      <Row>
+        <Button variant="secondary" size="md" onClick={deleteImportedTempWallet} isDisabled={loading}>
+          No, try again
+        </Button>
+        <Button variant="primary" size="md" onClick={handleRecoverWallet} isDisabled={loading}>
+          Yes, restore
+        </Button>
+      </Row>
+    </OnboardingCard>
+  ) : (
     <OnboardingCard
       headerText="Restore wallet"
       subtitle="Enter your seedphrase to restore your wallet."
@@ -53,14 +124,10 @@ export function AuthRestoreSharesSeedphraseEmbeddedView() {
         isFullWidth
         size="md"
         onClick={handleImportWallet}
-        isLoading={loading}
-        isDisabled={isSeedPhraseIncomplete}>
-        Restore
+        isDisabled={loading}>
+        Next
       </Button>
 
-      { /* <Button isFullWidth size="md" isLoading={loading} isDisabled={!jsonData} onClick={handleRestore}>
-        Restore
-      </Button> */ }
     </OnboardingCard>
   );
 }

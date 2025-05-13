@@ -46,11 +46,11 @@ export function AuthRestoreSharesEmbeddedView() {
         Import Recovery File
       </Button>
 
-      <Button variant="outlined" isFullWidth icon={<SeedIcon fontSize={24} />} href="#/auth/import-seedphrase">
+      <Button variant="outlined" isFullWidth icon={<SeedIcon fontSize={24} />} href="#/auth/restore-shares/seedphrase">
         Enter Seedphrase
       </Button>
 
-      <Button variant="outlined" isFullWidth icon={<KeyIcon fontSize={24} />} href="#/auth/import-keyfile">
+      <Button variant="outlined" isFullWidth icon={<KeyIcon fontSize={24} />} href="#/auth/restore-shares/keyfile">
         Import keyfile
       </Button>
     </OnboardingCard>

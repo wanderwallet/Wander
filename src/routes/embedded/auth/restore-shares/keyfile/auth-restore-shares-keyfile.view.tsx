@@ -1,70 +1,171 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import { Card, Upload, Button, WanderFooter } from "~components/embed/ui";
+import { Upload, Button, Copyable, Row, Text } from "~components/embed/ui";
 import { useLocation } from "~wallets/router/router.utils";
 import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard.module";
+import copy from "copy-to-clipboard";
+import { WalletUtils } from "~utils/wallets/wallets.utils";
+import type { CommonRouteProps } from "~wallets/router/router.types";
 
-export function AuthRestoreSharesKeyfileEmbeddedView() {
-  const { navigate, back } = useLocation();
+export type AuthRestoreFileViewVariant = "recovery-file" | "keyfile";
+
+export interface AuthRestoreSharesKeyfileEmbeddedViewProps extends CommonRouteProps {
+  variant?: AuthRestoreFileViewVariant;
+}
+
+export function AuthRestoreSharesKeyfileEmbeddedView({
+  variant = "keyfile",
+}: AuthRestoreSharesKeyfileEmbeddedViewProps) {
+  const { navigate } = useLocation();
   const [loading, setLoading] = useState(false);
-  const { currentWallet, recoverWallet } = useEmbedded();
-  const walletAddress = currentWallet.address;
+  const [fileError, setFileError] = useState(false);
   const [jsonData, setJsonData] = useState<any>(null);
+  const [recoveryFileLoaded, setRecoveryFileLoaded] = useState(false);
 
-  const handleJsonParse = (parsedData: any) => {
-    setJsonData(parsedData);
-  };
+  const fileTypeLabel = variant === "keyfile" ? "private key" : "recovery file";
 
-  const handleRestore = useCallback(async () => {
-    if (!jsonData) return;
+  const handleJsonParse = async (jsonData: any) => {
     try {
+      setJsonData(jsonData);
+
+      if (WalletUtils.isRecoveryJSON(jsonData)) {
+        setRecoveryFileLoaded(true);
+        return;
+      } else {
+        setRecoveryFileLoaded(false);
+      }
+
       setLoading(true);
-      await recoverWallet(jsonData);
+      setFileError(false);
+
+      if (jsonData) {
+        if (!WalletUtils.isJWK(jsonData)) {
+          setFileError(true);
+          setLoading(false);
+          return;
+        }
+        const tempWallet = await importTempWallet(jsonData);
+
+        if (!tempWallet) {
+          setLoading(false);
+          return toast.error(`Something isn't right`);
+        }
+        setLoading(false);
+        return tempWallet;
+      } else {
+        setFileError(true);
+      }
     } catch (error) {
-      toast.error(error?.message || "Something went wrong");
+      toast.error(error);
     } finally {
       setLoading(false);
     }
-  }, [jsonData, recoverWallet]);
+  };
 
-  // TODO: The recovery file should probably include the wallet address or a hash so that we can
-  // request the recovery of the right one from the backend without asking the user to manually select
-  // the address of the wallet they want to recover.
 
-  // TODO: This view should probably work if the user uploads a keyfile too as many might be confused about the two.
+  const {
+    importTempWallet,
+    importedTempWalletAddress,
+    deleteImportedTempWallet,
+    recoverWallet,
+    wallets,
+  } = useEmbedded();
 
-  // TODO: Right now, because the auth-import-keyfile and seedphrase views are shared, it is possible to import a second wallet into the account!
+  const handleRecoverWallet = useCallback(async () => {
+    try {
+      if (WalletUtils.isJWK(jsonData)) {
+        const isWalletPresent = wallets.some(({ address }) => address === importedTempWalletAddress);
 
-  // TODO: Validate the wallet I imported is actually one of the ones on my account and show appropriate error messages and actions.
+        if (!isWalletPresent) {
+          toast.error("This wallet is not part of your account.");
 
-  // TODO: Request confirmation just line in import-keyfile
+          return;
+        }
+      } else if (WalletUtils.isRecoveryJSON(jsonData)) {
+        const isWalletPresent = wallets.some(({ id }) => jsonData.walletId === id);
 
-  return (
+        if (!isWalletPresent) {
+          toast.error("This wallet is not part of your account.");
+
+          return;
+        }
+      } else {
+        toast.error("Invalid file.");
+
+        return;
+      }
+
+      setLoading(true);
+
+      await recoverWallet(jsonData);
+    } catch (error) {
+      console.error(error);
+      toast.error("An unexpected error happened.");
+    } finally {
+      setLoading(false);
+    }
+  }, [recoverWallet, jsonData, wallets, importedTempWalletAddress]);
+
+  useEffect(() => {
+    return () => {
+      // Remove the imported keyfile from memory as soon as we leave this view. Note at this point it will already have
+      // been passed to `importTempWallet()`, if the user confirmed:
+      deleteImportedTempWallet();
+    };
+  }, []);
+
+  return importedTempWalletAddress ? (
     <OnboardingCard
       headerText="Restore wallet"
-      subtitle="Upload your keyfile to restore."
+      subtitle="Confirm your wallet to restore it."
+      onBackButtonClick={() => navigate("/auth/restore-shares")}
+      isLoading={ loading }>
+      <Copyable
+        isFullWidth
+        style={{ padding: 0 }}
+        label="Your wallet address"
+        onClick={() => {
+          copy(importedTempWalletAddress);
+        }}
+        value={importedTempWalletAddress}
+      />
+      <Row>
+        <Button variant="secondary" size="md" onClick={deleteImportedTempWallet} isDisabled={loading}>
+          No, try again
+        </Button>
+        <Button variant="primary" size="md" onClick={handleRecoverWallet} isDisabled={loading}>
+          Yes, add
+        </Button>
+      </Row>
+    </OnboardingCard>
+  ) : (
+    <OnboardingCard
+      headerText="Restore wallet"
+      subtitle={ `Upload your ${ fileTypeLabel } to restore your wallet.` }
       onBackButtonClick={() => navigate("/auth/restore-shares")}
       isLoading={ loading }>
 
       <Upload
         isFullWidth
         title={"Click to upload"}
-        description={"or drag and drop your private key"}
+        description={ `or drag and drop your ${ fileTypeLabel }` }
         isLoading={loading}
-        loadingText={"Recovering account..."}
+        loadingText={"Restoring wallet..."}
         onFileParse={handleJsonParse}
       />
 
+      { recoveryFileLoaded ? (
+        <Button isFullWidth size="md" isDisabled={loading} onClick={handleRecoverWallet}>
+          Restore
+        </Button>
+      ) : null }
+
       {fileError && (
-        <Text alignment="left" variant="bodySm" style={{ color: "#D22B1F", alignSelf: "flex-start", marginTop: -20 }}>
+        <Text alignment="left" variant="bodySm" style={{ color: "#D22B1F", alignSelf: "flex-start", marginTop: 8 }}>
           Error: incorrect file format
         </Text>
       )}
-
-      <Button isFullWidth size="md" isLoading={loading} isDisabled={!jsonData} onClick={handleRestore}>
-        Restore
-      </Button>
 
     </OnboardingCard>
   );

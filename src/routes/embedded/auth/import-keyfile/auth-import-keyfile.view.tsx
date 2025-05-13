@@ -1,24 +1,26 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useCallback, useEffect, useState } from "react";
 
-import { Card, Row, Upload, Copyable, Button, WanderFooter, Text } from "~components/embed";
+import { Row, Upload, Copyable, Button, Text } from "~components/embed";
 import copy from "copy-to-clipboard";
 import { useLocation } from "~wallets/router/router.utils";
 import { toast } from "react-toastify";
 import { WalletUtils } from "~utils/wallets/wallets.utils";
+import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard.module";
 
 export function AuthImportKeyfileEmbeddedView() {
+  const { navigate } = useLocation();
   const [loading, setLoading] = useState(false);
   const [fileError, setFileError] = useState(false);
   const [jsonData, setJsonData] = useState<any>(null);
-  const { back } = useLocation();
 
   const handleJsonParse = async (jsonData: any) => {
     try {
       setJsonData(jsonData);
       setLoading(true);
+      setFileError(false);
+
       if (jsonData) {
-        setFileError(false);
         if (!WalletUtils.isJWK(jsonData)) {
           setFileError(true);
           setLoading(false);
@@ -43,30 +45,36 @@ export function AuthImportKeyfileEmbeddedView() {
   };
 
   const {
-    authStatus,
     importTempWallet,
     importedTempWalletAddress,
     deleteImportedTempWallet,
     registerWallet,
     wallets,
-    recoverWallet,
   } = useEmbedded();
 
   const handleAddWallet = useCallback(async () => {
     try {
-      setLoading(true);
       const isWalletPresent = wallets.some(({ address }) => address === importedTempWalletAddress);
+
       if (isWalletPresent) {
-        await recoverWallet(jsonData);
-      } else {
-        if (wallets.length === 0) {
-          await registerWallet("IMPORTED");
-        } else {
-          toast.error("Wallet not found!");
-        }
+        toast.error("This wallet was already added to your account.");
+
+        return;
       }
+
+      if (wallets.length > 0) {
+        toast.error("Can't add more than one wallet to your account.");
+
+        return;
+      }
+
+      setLoading(true);
+
+      //await recoverWallet(jsonData);
+      await registerWallet("IMPORTED");
     } catch (error) {
-      alert(error);
+      console.error(error);
+      toast.error("An unexpected error happened.");
     } finally {
       setLoading(false);
     }
@@ -81,14 +89,10 @@ export function AuthImportKeyfileEmbeddedView() {
   }, []);
 
   return importedTempWalletAddress ? (
-    <Card
-      headerText="Enter Keyfile"
+    <OnboardingCard
+      headerText="Import Keyfile"
       subtitle="Would you like to add this wallet to your account?"
-      footerElement={<WanderFooter />}
-      hasBackButton={true}
-      onBackButtonClick={back}
-      style={{ gap: 24 }}
-      size="auto"
+      onBackButtonClick={() => navigate(`/auth/add-wallet`)}
       isLoading={ loading }>
       <Copyable
         isFullWidth
@@ -100,23 +104,20 @@ export function AuthImportKeyfileEmbeddedView() {
         value={importedTempWalletAddress}
       />
       <Row>
-        <Button variant="secondary" size="md" onClick={deleteImportedTempWallet}>
+        <Button variant="secondary" size="md" onClick={deleteImportedTempWallet} isDisabled={loading}>
           No, try again
         </Button>
-        <Button variant="primary" size="md" onClick={handleAddWallet} isLoading={loading}>
-          Yes, {authStatus === "noShares" ? "recover" : "add"}
+        <Button variant="primary" size="md" onClick={handleAddWallet} isDisabled={loading}>
+          Yes, add
         </Button>
       </Row>
-    </Card>
+    </OnboardingCard>
   ) : (
-    <Card
+    <OnboardingCard
       headerText="Import Keyfile"
-      subtitle="Upload your private key to connect your wallet to your account."
-      footerElement={<WanderFooter />}
-      hasBackButton={true}
-      onBackButtonClick={back}
-      style={{ gap: 24 }}
-      size="auto">
+      subtitle="Upload your private key to add your wallet to your account."
+      onBackButtonClick={() => navigate(`/auth/add-wallet`)}
+      isLoading={ loading }>
 
       <Upload
         isFullWidth
@@ -128,11 +129,11 @@ export function AuthImportKeyfileEmbeddedView() {
       />
 
       {fileError && (
-        <Text alignment="left" variant="bodySm" style={{ color: "#D22B1F", alignSelf: "flex-start", marginTop: -20 }}>
+        <Text alignment="left" variant="bodySm" style={{ color: "#D22B1F", alignSelf: "flex-start", marginTop: 8 }}>
           Error: incorrect file format
         </Text>
       )}
 
-    </Card>
+    </OnboardingCard>
   );
 }

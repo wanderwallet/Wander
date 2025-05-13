@@ -718,15 +718,19 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         ({ jwk, walletAddress } = await promise);
         walletId = wallets.find(({ address }) => address === walletAddress)?.id;
         isRecoveryJSON = false;
-      } else {
+      } else if (WalletUtils.isRecoveryJSON(recoveryData)) {
         ({ walletId, recoveryBackupShare, recoveryFileServerSignature } = recoveryData as RecoveryJSON);
         ({ shareHash: recoveryBackupShareHash, sharePrivateKeyJWK: recoveryBackupSharePrivateKeyJWK } =
           await WalletUtils.generateShareHashAndPrivateKey(recoveryBackupShare));
         walletAddress = wallets.find(({ id }) => id === walletId)?.address;
+      } else {
+        // TODO: Move to constant:
+        throw new Error("Invalid file. Is this a recovery or keyfile?");
       }
 
       if (!walletId || !walletAddress) {
-        throw new Error("Wallet not found!");
+        // TODO: Move to constant:
+        throw new Error("This wallet doesn't belong to this account.");
       }
 
       const latestSession = await getLatestSession(session);

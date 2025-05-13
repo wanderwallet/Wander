@@ -6,42 +6,7 @@ import browser from "webextension-polyfill";
 import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard.module";
 
 export function AccountBackupWalletEmbeddedView() {
-  const [isLoading, setIsLoading] = useState({
-    calledId: "",
-    status: false,
-  });
   const { navigate } = useLocation();
-
-  const handleOnClick = useCallback(async (method: "GDrive" | "Apple" | "Dropbox" | "FullWallet" | "RecoveryFile") => {
-    const setLoadingState = (status: boolean) => setIsLoading({ calledId: method, status });
-
-    try {
-      setLoadingState(true);
-
-      switch (method) {
-        case "RecoveryFile":
-          navigate("/account/backup-wallet/recovery-file");
-          break;
-
-        case "FullWallet":
-          navigate("/account/backup-wallet/full");
-          break;
-
-        case "GDrive":
-        case "Apple":
-        case "Dropbox":
-          console.log("Not implemented yet");
-          break;
-
-        default:
-          console.log("Method doesn't exist");
-      }
-    } catch (error) {
-      alert(error);
-    } finally {
-      setLoadingState(false);
-    }
-  }, []);
 
   // TODO: What if the user already has more than 3 backup shares?
 
@@ -58,16 +23,14 @@ export function AccountBackupWalletEmbeddedView() {
     <OnboardingCard
       headerText="Wallet backup"
       subtitle="Select a method to back up your wallet which can be used to sign in on a new device or recover your wallet"
-      // This should be reminder in some cases
+      // TODO: This should be reminder in some cases
       onBackButtonClick={() => navigate("/wallet")}>
 
       <Button
         variant="outlined"
         isFullWidth
         icon={<FolderShield fontSize={24} />}
-        isLoading={isLoading.calledId === "RecoveryFile" && isLoading.status}
-        isDisabled={isLoading.calledId === "RecoveryFile" && isLoading.status}
-        onClick={() => handleOnClick("RecoveryFile")}>
+        href="#/account/backup-wallet/recovery-file">
         Download recovery file
       </Button>
 
@@ -75,8 +38,7 @@ export function AccountBackupWalletEmbeddedView() {
         variant="outlined"
         isFullWidth
         icon={<Wallet03 fontSize={24} />}
-        isLoading={isLoading.calledId === "FullWallet" && isLoading.status === true}
-        onClick={() => handleOnClick("FullWallet")}>
+        href="#/account/backup-wallet/full">
         Export wallet
       </Button>
 
@@ -86,9 +48,6 @@ export function AccountBackupWalletEmbeddedView() {
         isFullWidth
         icon={<GDriveIcon fontSize={24} />}
         onClick={() => handleOnClick("GDrive")}
-        isLoading={
-          isLoading.calledId === "GDrive" && isLoading.status === true
-        }
       >
         Backup to Google Drive
       </Button>
@@ -97,9 +56,6 @@ export function AccountBackupWalletEmbeddedView() {
         isFullWidth
         icon={<AppleIcon fontSize={24} />}
         onClick={() => handleOnClick("Apple")}
-        isLoading={
-          isLoading.calledId === "Apple" && isLoading.status === true
-        }
       >
         Backup to iCloud
       </Button>
@@ -108,9 +64,6 @@ export function AccountBackupWalletEmbeddedView() {
         isFullWidth
         icon={<DropboxIcon fontSize={24} />}
         onClick={() => handleOnClick("Dropbox")}
-        isLoading={
-          isLoading.calledId === "Dropbox" && isLoading.status === true
-        }
       >
         Backup to Dropbox
       </Button> */}

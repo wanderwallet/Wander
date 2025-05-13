@@ -41,12 +41,16 @@ export default function AuthErrorEmbeddedView() {
     }
   }, [errorCode, errorDescription]);
 
+  // TODO: Instead of reload, should we just show a close option?
+
   return (
     <OnboardingCard
       headerIcon={<ErrorIcon fontSize={42} />}
       headerText="Authentication Failed"
       subtitle={ friendlyErrorMessage }
-      hasBackButton={false}>
+      hasBackButton={false}
+      // No close button because this page is rendered in a popup window, not embedded (usually):
+      hasCloseButton={false}>
 
       <Button isFullWidth variant="primary" onClick={handleReload}>
         Reload Wander

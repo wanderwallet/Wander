@@ -22,6 +22,8 @@ import { AuthAddAuthProviderEmbeddedView } from "~routes/embedded/auth/add-auth-
 // Shares Views:
 import { AuthRestoreSharesEmbeddedView } from "~routes/embedded/auth/restore-shares/auth-restore-shares.view";
 import { AuthRestoreSharesRecoveryFileEmbeddedView } from "~routes/embedded/auth/restore-shares/recovery-file/auth-restore-shares-recovery-file.view";
+import { AuthRestoreSharesSeedPhraseEmbeddedView } from "~routes/embedded/auth/restore-shares/seedphrase/auth-restore-shares-seedphrase.view";
+import { AuthRestoreSharesKeyfileEmbeddedView } from "~routes/embedded/auth/restore-shares/keyfile/auth-restore-shares-keyfile.view";
 
 // Account Recovery Views:
 import { AuthRecoverAccountEmbeddedView } from "~routes/embedded/auth/recover-account/auth-recover-account.view";
@@ -76,6 +78,8 @@ export type EmbeddedRoutePath =
   | "/auth/add-auth-provider"
   | "/auth/restore-shares"
   | "/auth/restore-shares/recovery-file"
+  | "/auth/restore-shares/seedphrase"
+  | "/auth/restore-shares/keyfile"
   | "/auth/add-qrcode"
   | "/auth/qrcode-scanner"
   // | "/auth/restore-shares/<backupProvider>"
@@ -135,9 +139,12 @@ export const EmbeddedPaths = {
   AuthAddAuthProvider: "/auth/add-auth-provider",
   AuthAddWithQRCode: "/auth/add-qrcode",
   AuthQRCodeScanner: "/auth/qrcode-scanner",
+
   // Shares Recovery:
   AuthRestoreShares: "/auth/restore-shares",
   AuthRestoreSharesRecoveryFile: "/auth/restore-shares/recovery-file",
+  AuthRestoreSharesSeedPhrase: "/auth/restore-shares/seedphrase",
+  AuthRestoreSharesKeyfile: "/auth/restore-shares/keyfile",
 
   // Account Recovery:
   AuthRecoverAccount: "/auth/recover-account",
@@ -250,6 +257,14 @@ const IFRAME_OWN_ROUTES = [
   {
     path: EmbeddedPaths.AuthRestoreSharesRecoveryFile,
     component: AuthRestoreSharesRecoveryFileEmbeddedView,
+  },
+  {
+    path: EmbeddedPaths.AuthRestoreSharesSeedPhrase,
+    component: AuthRestoreSharesSeedPhraseEmbeddedView,
+  },
+  {
+    path: EmbeddedPaths.AuthRestoreSharesKeyfile,
+    component: AuthRestoreSharesKeyfileEmbeddedView,
   },
 
   // Account Recovery:

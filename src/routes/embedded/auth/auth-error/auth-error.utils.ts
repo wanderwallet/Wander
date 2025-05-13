@@ -13,6 +13,8 @@ const errorMap: Record<string, string> = {
   temporarily_unavailable: "The authentication service is temporarily unavailable. Please try again in a few moments.",
   unknown_error:
     "An unexpected error occurred during authentication. Please try again or contact support if the issue persists.",
+  unexpected_failure: "We could not get your email. Please, try a different authentication method.",
+  // unexpected_failure description = Error+getting+user+email+from+external+provider
 };
 
 export function getFriendlyErrorMessage(error: string, description: string): string {

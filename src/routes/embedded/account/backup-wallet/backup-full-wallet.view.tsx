@@ -19,10 +19,6 @@ export function AccountBackupFullWalletEmbeddedView() {
     });
   }, [currentWallet.id]);
 
-  // TODO: Can I extend the keyfile to include the encrypted seed phrase? Can I include it in the recovery file?
-
-  // BACKUPS ARE NOT BEING REGISTERED!!!! GO BACK TO THE OLD SCREENS
-
   return (
     <OnboardingCard
       headerText="Export wallet"

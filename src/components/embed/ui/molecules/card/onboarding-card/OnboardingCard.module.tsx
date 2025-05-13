@@ -5,7 +5,7 @@ import { WanderFooter } from "~components/embed/ui/templates/wander-footer/Wande
 
 import styles from "./OnboardingCard.module.scss";
 
-export interface OnboardingCardProps extends Omit<CardBaseProps, "footerElement" | "size" | "hasCloseButton" | "onCloseButtonClick" | "closeButtonStyles"> {
+export interface OnboardingCardProps extends Omit<CardBaseProps, "footerElement" | "size" | "onCloseButtonClick" | "closeButtonStyles"> {
   onSubmit?: React.FormEventHandler;
 }
 
