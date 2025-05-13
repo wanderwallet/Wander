@@ -235,7 +235,6 @@ export class LocalStorage {
    */
   private removeCookie(key: string): void {
     Cookies.remove(key, LocalStorage.COOKIE_OPTIONS);
-    Cookies.remove(key); // Default removal
   }
 
   /**
@@ -289,7 +288,11 @@ export class LocalStorage {
       }
       this.setCookieWithChunkingIfNeeded(key, value);
     } else {
+      // When not in iframe, always store shared data in both localStorage and cookies
       if (!isInsideIframe() && shouldBackupToCookies) {
+        if (LocalStorage.debugMode) {
+          console.log(`Not in iframe, storing shared data '${key}' in both localStorage and cookies`);
+        }
         this.setCookieWithChunkingIfNeeded(key, value);
       }
       this.setStorageValue(key, value, useRaw);
