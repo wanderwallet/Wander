@@ -6440,7 +6440,7 @@ elliptic@6.6.1, elliptic@^6.5.3, elliptic@^6.5.5, elliptic@^6.5.7:
 
 "embed-api@https://github.com/wanderwallet/embed-api#arc-1280/recover-account":
   version "0.1.0"
-  resolved "https://github.com/wanderwallet/embed-api#8e7230e9518eca71e3efbdbfe30b782c548eeecd"
+  resolved "https://github.com/wanderwallet/embed-api#18bc620a03b11c339b32f7ab931926d9e30d0356"
   dependencies:
     "@prisma/client" "6.7.0"
     "@supabase/ssr" "^0.6.1"
