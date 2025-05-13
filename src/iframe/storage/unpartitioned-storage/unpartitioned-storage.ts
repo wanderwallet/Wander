@@ -6,6 +6,18 @@ interface UnpartitionedStorageOptions {
   area?: "local" | "session";
 }
 
+/**
+ * Represents the current state of storage access
+ */
+export enum StorageAccessState {
+  /** Using partitioned storage (default) */
+  PARTITIONED = "partitioned",
+  /** Cookie access granted but no storage handle */
+  COOKIES_ONLY = "cookies_only",
+  /** Full unpartitioned storage access granted with handle */
+  FULL_ACCESS = "full_access",
+}
+
 export type StorageItem<T = string> =
   | T
   | {
@@ -382,6 +394,9 @@ export class EnhancedStorage implements Storage {
 
   public storageType: StorageType;
 
+  /** Current state of storage access */
+  public accessState: StorageAccessState = StorageAccessState.PARTITIONED;
+
   constructor({ area = "local" }: UnpartitionedStorageOptions = {}) {
     this.storageType = area === "local" ? "localStorage" : "sessionStorage";
     this.storage = globalThis[this.storageType];
@@ -393,12 +408,21 @@ export class EnhancedStorage implements Storage {
   }
 
   protected async getStorageHandle(): Promise<Storage> {
-    // @ts-expect-error - requestStorageAccess should return a handle
-    const handle = await document.requestStorageAccess({
-      [this.storageType]: true,
-    });
+    try {
+      // @ts-expect-error - requestStorageAccess should return a handle
+      const handle = await document.requestStorageAccess({
+        [this.storageType]: true,
+      });
 
-    return handle[this.storageType];
+      this.accessState = StorageAccessState.FULL_ACCESS;
+      return handle[this.storageType];
+    } catch (error) {
+      // If we get an error but have cookie access, we're in COOKIES_ONLY state
+      if (await document.hasStorageAccess()) {
+        this.accessState = StorageAccessState.COOKIES_ONLY;
+      }
+      throw error;
+    }
   }
 
   protected setupUserInteractionHandler() {
@@ -412,7 +436,11 @@ export class EnhancedStorage implements Storage {
   }
 
   async requestStorageAccess() {
-    if (!isInsideIframe()) return;
+    if (!isInsideIframe()) {
+      // Not in iframe, so we have direct access
+      this.accessState = StorageAccessState.FULL_ACCESS;
+      return;
+    }
 
     try {
       // Check if API is supported
@@ -425,7 +453,14 @@ export class EnhancedStorage implements Storage {
       const hasAccess = await document.hasStorageAccess();
       if (hasAccess) {
         log(LOG_GROUP.STORAGE, "Already has storage access");
-        this.storage = await this.getStorageHandle();
+        try {
+          this.storage = await this.getStorageHandle();
+          this.accessState = StorageAccessState.FULL_ACCESS;
+        } catch (error) {
+          // If we can't get the handle but have storage access, we have cookie access
+          this.accessState = StorageAccessState.COOKIES_ONLY;
+          log(LOG_GROUP.STORAGE, "Has cookie access but couldn't get storage handle");
+        }
         return;
       }
 
@@ -435,14 +470,40 @@ export class EnhancedStorage implements Storage {
       });
 
       if (permission.state === "granted") {
-        this.storage = await this.getStorageHandle();
-        log(LOG_GROUP.STORAGE, "Storage access granted via permission");
+        try {
+          this.storage = await this.getStorageHandle();
+          this.accessState = StorageAccessState.FULL_ACCESS;
+          log(LOG_GROUP.STORAGE, "Full storage access granted via permission");
+        } catch (error) {
+          // If we can't get the handle but have storage access, we have cookie access
+          this.accessState = StorageAccessState.COOKIES_ONLY;
+          log(LOG_GROUP.STORAGE, "Cookie access granted via permission");
+        }
       } else if (permission.state === "prompt") {
         log(LOG_GROUP.STORAGE, "Storage access requires user interaction");
         this.setupUserInteractionHandler();
       } else if (permission.state === "denied") {
         log(LOG_GROUP.STORAGE, "Storage access denied by user");
       }
+
+      // Set up permission change listener
+      permission.addEventListener("change", () => {
+        if (permission.state === "granted") {
+          document.hasStorageAccess().then((hasAccess) => {
+            if (hasAccess) {
+              this.getStorageHandle()
+                .then((handle) => {
+                  this.storage = handle;
+                  this.accessState = StorageAccessState.FULL_ACCESS;
+                })
+                .catch(() => {
+                  this.accessState = StorageAccessState.COOKIES_ONLY;
+                });
+            }
+          });
+        }
+        log(LOG_GROUP.STORAGE, `Storage access permission changed to: ${permission.state}`);
+      });
     } catch (error) {
       log(LOG_GROUP.STORAGE, "Error requesting storage access:", error);
     }
@@ -452,11 +513,57 @@ export class EnhancedStorage implements Storage {
     try {
       if (!document.hasStorageAccess) return;
 
-      this.storage = await this.getStorageHandle();
-      log(LOG_GROUP.STORAGE, "Storage access granted after user interaction");
+      // First try to get document storage access
+      await document.requestStorageAccess();
+
+      // Then try to get the handle
+      try {
+        this.storage = await this.getStorageHandle();
+        this.accessState = StorageAccessState.FULL_ACCESS;
+        log(LOG_GROUP.STORAGE, "Full storage access granted after user interaction");
+      } catch (error) {
+        // If we can't get the handle but have storage access, we have cookie access
+        const hasAccess = await document.hasStorageAccess();
+        if (hasAccess) {
+          this.accessState = StorageAccessState.COOKIES_ONLY;
+          log(LOG_GROUP.STORAGE, "Cookie access granted after user interaction");
+        }
+      }
     } catch (error) {
       log(LOG_GROUP.STORAGE, "Error requesting storage access after interaction:", error);
     }
+  }
+
+  /**
+   * Check if we have any unpartitioned access (either cookies or full)
+   * @returns True if we have any unpartitioned access
+   */
+  hasUnpartitionedAccess(): boolean {
+    return this.accessState === StorageAccessState.COOKIES_ONLY || this.accessState === StorageAccessState.FULL_ACCESS;
+  }
+
+  /**
+   * Check if we have full unpartitioned access with storage handle
+   * @returns True if we have full unpartitioned access
+   */
+  hasFullAccess(): boolean {
+    return this.accessState === StorageAccessState.FULL_ACCESS;
+  }
+
+  /**
+   * Check if we have cookie access only
+   * @returns True if we have cookie access only
+   */
+  hasCookieAccess(): boolean {
+    return this.accessState === StorageAccessState.COOKIES_ONLY;
+  }
+
+  /**
+   * Get the current storage access state
+   * @returns The current storage access state
+   */
+  getAccessState(): StorageAccessState {
+    return this.accessState;
   }
 
   /**

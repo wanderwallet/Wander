@@ -1,4 +1,4 @@
-import { EnhancedStorage } from "./unpartitioned-storage";
+import { EnhancedStorage, StorageAccessState } from "./unpartitioned-storage";
 import Cookies, { type CookieAttributes } from "js-cookie";
 
 export class LocalStorage {
@@ -23,8 +23,6 @@ export class LocalStorage {
     expires: 365,
   };
 
-  // Cache of known keys to avoid repeated checks
-  private static readonly cookieBackupKeysCache = new Set<string>();
   private static debugMode = process.env.NODE_ENV === "development";
 
   private constructor() {
@@ -37,6 +35,38 @@ export class LocalStorage {
       await this.instance.storage.requestStorageAccess();
     }
     return this.instance;
+  }
+
+  /**
+   * Determine the primary storage strategy based on access state
+   * @returns Whether to use cookies as primary storage
+   */
+  private shouldUseCookiesAsPrimary(): boolean {
+    // Only use cookies as primary when we have cookie access but not full access
+    return this.storage.hasCookieAccess() && !this.storage.hasFullAccess();
+  }
+
+  /**
+   * Check if this key should be stored in cookies
+   */
+  private shouldStoreInCookies(key: string): boolean {
+    // Always use cookies for critical authentication data
+    if (this.isAuthenticationKey(key)) {
+      return true;
+    }
+
+    // For other data, only use cookies if that's our primary storage
+    return this.shouldUseCookiesAsPrimary();
+  }
+
+  /**
+   * Check if this is an authentication-related key
+   */
+  private isAuthenticationKey(key: string): boolean {
+    return (
+      key === LocalStorage.DEVICE_NONCE_KEY ||
+      (key.startsWith(LocalStorage.SUPABASE_AUTH_PREFIX) && key.endsWith(LocalStorage.SUPABASE_AUTH_SUFFIX))
+    );
   }
 
   /**
@@ -232,24 +262,49 @@ export class LocalStorage {
     }
   }
 
-  setItem(key: string, value: string): void {
-    const requiresCookieBackup = this.isKeyRequiringCookieBackup(key);
+  /**
+   * Get the current storage access state for debugging or UI feedback
+   */
+  getStorageAccessState(): StorageAccessState {
+    return this.storage.accessState;
+  }
 
-    if (requiresCookieBackup) {
-      if (LocalStorage.debugMode) console.log(`Setting cookie for key '${key}' (value length: ${value.length})`);
-      this.setCookieWithChunkingIfNeeded(key, value);
+  setItem(key: string, value: string): void {
+    const useRaw = this.shouldUseRawStorage(key);
+    const useCookiesAsPrimary = this.shouldUseCookiesAsPrimary();
+    const shouldBackupToCookies = this.shouldStoreInCookies(key);
+
+    if (LocalStorage.debugMode) {
+      console.log(
+        `Setting ${key} with strategy: ${useCookiesAsPrimary && shouldBackupToCookies ? "cookies-primary" : "localStorage-primary"}`,
+      );
     }
 
-    // Always set in localStorage with appropriate method
-    const useRaw = this.shouldUseRawStorage(key);
-    this.setStorageValue(key, value, useRaw);
+    // Store in cookies if needed
+    if (shouldBackupToCookies && useCookiesAsPrimary) {
+      if (LocalStorage.debugMode) {
+        const reason = useCookiesAsPrimary ? "cookies-only access" : "auth data backup";
+        console.log(`Setting cookie for key '${key}' (${reason}, value length: ${value.length})`);
+      }
+      this.setCookieWithChunkingIfNeeded(key, value);
+    } else {
+      this.setStorageValue(key, value, useRaw);
+    }
   }
 
   getItem(key: string): string | null {
-    const requiresCookieBackup = this.isKeyRequiringCookieBackup(key);
     const useRaw = this.shouldUseRawStorage(key);
+    const useCookiesAsPrimary = this.shouldUseCookiesAsPrimary();
+    const shouldBackupToCookies = this.shouldStoreInCookies(key);
 
-    if (requiresCookieBackup) {
+    if (LocalStorage.debugMode) {
+      console.log(
+        `Getting ${key} with strategy: ${useCookiesAsPrimary && shouldBackupToCookies ? "cookies-primary" : "localStorage-primary"}`,
+      );
+    }
+
+    // If cookies are primary or we should check cookies for this key
+    if (useCookiesAsPrimary && shouldBackupToCookies) {
       try {
         if (LocalStorage.debugMode) console.log(`Checking cookie for key '${key}'`);
 
@@ -260,18 +315,7 @@ export class LocalStorage {
           cookieValue = Cookies.get(key);
         }
 
-        if (cookieValue !== undefined) {
-          if (LocalStorage.debugMode) console.log(`Found cookie value for '${key}' (length: ${cookieValue.length})`);
-
-          // Only sync to localStorage if necessary
-          const localValue = this.getStorageValue(key, useRaw);
-
-          if (localValue !== cookieValue) {
-            if (LocalStorage.debugMode) console.log(`Syncing cookie value to localStorage for key '${key}'`);
-            this.setStorageValue(key, cookieValue, useRaw);
-          }
-          return cookieValue;
-        } else {
+        if (!cookieValue) {
           const localValue = this.getStorageValue(key, useRaw);
 
           if (localValue !== null) {
@@ -286,39 +330,43 @@ export class LocalStorage {
             return localValue;
           }
         }
+
+        return cookieValue;
       } catch (error) {
         console.warn("Failed to get cookie:", error);
       }
     }
 
+    // If cookies aren't primary or we didn't find in cookies, try localStorage
     return this.getStorageValue(key, useRaw);
   }
 
   removeItem(key: string): void {
-    if (this.isKeyRequiringCookieBackup(key)) {
+    // Always remove from localStorage
+    this.storage.removeItem(key);
+
+    // If we're using cookies for this key, remove from there too
+    if (this.shouldStoreInCookies(key)) {
       try {
         if (LocalStorage.debugMode) console.log(`Removing cookie for key '${key}'`);
-
-        // Remove any chunked cookies first
         this.removeChunkedCookies(key);
-
-        // Remove the main cookie
         this.removeCookie(key);
       } catch (error) {
         console.warn("Failed to remove cookie:", error);
       }
     }
-
-    this.storage.removeItem(key);
   }
 
   clear(): void {
+    // Clear localStorage
+    this.storage.clear();
+
     try {
       // Only check actual cookies rather than all potential keys
       const cookies = Cookies.get() || {};
 
       Object.keys(cookies).forEach((key) => {
-        if (this.isKeyRequiringCookieBackup(key) || key.includes(LocalStorage.CHUNK_SUFFIX)) {
+        if (this.shouldStoreInCookies(key) || key.includes(LocalStorage.CHUNK_SUFFIX)) {
           if (LocalStorage.debugMode) console.log(`Clearing cookie: ${key}`);
           this.removeCookie(key);
         }
@@ -326,32 +374,5 @@ export class LocalStorage {
     } catch (error) {
       console.warn("Failed to clear cookies:", error);
     }
-
-    this.storage.clear();
-  }
-
-  private isKeyRequiringCookieBackup(key: string): boolean {
-    // Fast check for chunk-related keys
-    if (key.includes(LocalStorage.CHUNK_SUFFIX)) {
-      const baseKey = key.split(LocalStorage.CHUNK_SUFFIX)[0];
-      return this.isKeyRequiringCookieBackup(baseKey);
-    }
-
-    // Check cache for performance
-    if (LocalStorage.cookieBackupKeysCache.has(key)) {
-      return true;
-    }
-
-    // Check criteria
-    const requiresCookieBackup =
-      key === LocalStorage.DEVICE_NONCE_KEY ||
-      (key.startsWith(LocalStorage.SUPABASE_AUTH_PREFIX) && key.endsWith(LocalStorage.SUPABASE_AUTH_SUFFIX));
-
-    // Cache result
-    if (requiresCookieBackup) {
-      LocalStorage.cookieBackupKeysCache.add(key);
-    }
-
-    return requiresCookieBackup;
   }
 }
