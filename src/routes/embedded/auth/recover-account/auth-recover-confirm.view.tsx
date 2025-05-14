@@ -104,7 +104,7 @@ export function AuthRecoverAccountConfirmEmbeddedView() {
                 ⚠️ Wallets That Cannot Be Recovered
               </Text>
               <Text variant="bodySm" alignment="left" style={{ color: "#121212", lineHeight: 1.5 }}>
-                These wallets have never been backed up. After recovery, you will permanently lose access these wallets.
+                These wallets have never been backed up. After recovery, you will permanently lose access to these wallets.
               </Text>
               <Flex direction="column" gap={8} style={{ marginTop: 12 }}>
                 {lostWallets.map((wallet, index) => (
