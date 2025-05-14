@@ -12,7 +12,7 @@ import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 export function AuthEmailSigninEmbeddedView() {
   const { navigate } = useLocation();
   const [isLoading, setIsLoading] = useState(false);
-  const { authStatus, authEmail } = useEmbedded();
+  const { authStatus, authEmail, setAuthPassword } = useEmbedded();
   const passwordInput = useInput();
   const [passwordType, setPasswordType] = useState("password");
 
@@ -44,6 +44,7 @@ export function AuthEmailSigninEmbeddedView() {
       if (error) {
         toast.error(error.message);
         if (error.code === "email_not_confirmed") {
+          setAuthPassword(passwordInput.state);
           navigate(EmbeddedPaths.AuthEmailVerify);
         }
         return;

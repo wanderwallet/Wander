@@ -2,7 +2,7 @@ import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { toast } from "react-toastify";
 import { Box, Card, Text, WanderFooter, Button } from "~components/embed";
 import { useCallback, useEffect, useState } from "react";
-import { getSupabaseClient } from "~utils/embedded/embedded.utils";
+import { getSupabaseAuthFromUrl, getSupabaseClient } from "~utils/embedded/embedded.utils";
 import { useLocation } from "~wallets/router/router.utils";
 import { Flex } from "~components/common/Flex";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
@@ -12,10 +12,12 @@ const COOLDOWN_DURATION = 60; // seconds
 
 export function AuthEmailVerifyEmbeddedView() {
   const { navigate } = useLocation();
-  const { authEmail } = useEmbedded();
+  const { authEmail, authPassword, setAuthPassword } = useEmbedded();
+  const [isLoading, setIsLoading] = useState(false);
   const [isResending, setIsResending] = useState(false);
   const [cooldownTime, setCooldownTime] = useState(0);
   const [canResend, setCanResend] = useState(false);
+  const [showContinueButton, setShowContinueButton] = useState(false);
 
   const [verifyEmailResentTimestamp, setVerifyEmailResentTimestamp] = useStorage<number>(
     { key: "sb-verify-email-resent-timestamp", instance: PersistentStorage },
@@ -32,6 +34,7 @@ export function AuthEmailVerifyEmbeddedView() {
     if (initialCooldown === 0) {
       setCanResend(true);
       setCooldownTime(0);
+      setShowContinueButton(true);
       return;
     }
 
@@ -41,6 +44,7 @@ export function AuthEmailVerifyEmbeddedView() {
     const timer = window.setInterval(() => {
       setCooldownTime((prevTime) => {
         if (prevTime <= 1) {
+          setShowContinueButton(true);
           clearInterval(timer);
           setCanResend(true);
           return 0;
@@ -86,6 +90,36 @@ export function AuthEmailVerifyEmbeddedView() {
     [authEmail, canResend, setVerifyEmailResentTimestamp],
   );
 
+  const handleContinue = useCallback(
+    async (e: React.MouseEvent<HTMLButtonElement>) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      try {
+        setIsLoading(true);
+        const isSuccess = await getSupabaseAuthFromUrl(window.location.origin, "EMAIL_N_PASSWORD");
+        if (!isSuccess && authEmail && authPassword) {
+          const supabase = await getSupabaseClient();
+          const { error } = await supabase.auth.signInWithPassword({
+            email: authEmail,
+            password: authPassword,
+          });
+
+          if (error) {
+            toast.error(error.message);
+          } else {
+            setAuthPassword(null);
+          }
+        }
+      } catch (error) {
+        console.error("Error continuing to wallet creation:", error);
+      } finally {
+        setTimeout(() => setIsLoading(false), 2000);
+      }
+    },
+    [navigate, authEmail, authPassword],
+  );
+
   return (
     <Card
       headerText="Verify your email"
@@ -117,6 +151,16 @@ export function AuthEmailVerifyEmbeddedView() {
               </Text>
             )}
           </Flex>
+          {showContinueButton && (
+            <Flex direction="column" gap={4} width="100%">
+              <Text variant={"bodyXs"} alignment={"center"}>
+                Email verified but still not redirected to wallet creation?
+              </Text>
+              <Button variant="link" isFullWidth isLoading={isLoading} onClick={handleContinue}>
+                Click here to continue
+              </Button>
+            </Flex>
+          )}
         </Flex>
       </Box>
     </Card>

@@ -1,10 +1,11 @@
-import { createSupabaseClient, createTRPCClient } from "embed-api";
+import { AuthProviderType, createSupabaseClient, createTRPCClient } from "embed-api";
 import { jwtDecode } from "jwt-decode";
 import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 import { LocalStorage } from "~iframe/storage/unpartitioned-storage/local-storage";
 import { isInsideIframe, EMBEDDED_ANCESTOR_ORIGIN, EMBEDDED_CLIENT_ID, EMBEDDED_SERVER_BASE_URL } from "./iframe.utils";
 import { ExtensionStorage } from "~utils/storage";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
+import { isDeviceNonceValid, storeDeviceNonce } from "./device-nonce/device-nonce.utils";
 
 // Then, its tRPC client will be initialized with the following headers:
 // - authorization (getAuthTokenHeader / setAuthTokenHeader)
@@ -186,6 +187,131 @@ async function insecurelyValidateApplication() {
     location.replace(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`);
 
     throw new Error("Application validation failed");
+  }
+}
+
+export async function getSupabaseAuthFromUrl(url: string, authProviderType: AuthProviderType = "GOOGLE") {
+  if (url) {
+    // Calculate center position for the popup
+    const width = 500;
+    const height = 600;
+    const left = window.screenX + (window.outerWidth - width) / 2;
+    const top = window.screenY + (window.outerHeight - height) / 2;
+
+    let popup = window.open(
+      url,
+      "Auth",
+      [
+        `width=${width}`,
+        `height=${height}`,
+        `left=${left}`,
+        `top=${top}`,
+        "popup=1",
+        "location=1",
+        "status=1",
+        "resizable=no",
+        "toolbar=no",
+        "menubar=no",
+      ].join(","),
+    );
+
+    if (!popup) {
+      console.error("Popup blocked. Please allow popups for this site.");
+      // Redirect to Google's OAuth page
+      // Opening the URL on the current tab won't work when Embedded is loaded inside the iframe:
+
+      if (authProviderType !== "EMAIL_N_PASSWORD") {
+        if (location.ancestorOrigins.length === 0) {
+          console.log(`Redirecting to ${url}...`);
+
+          window.location.href = url;
+        } else {
+          console.log(`Opening ${url}...`);
+
+          popup = window.open(url, "_blank");
+        }
+      } else {
+        // TODO: Implement email/password auth
+      }
+    }
+
+    if (popup) {
+      try {
+        // Set up message listener and popup close checker
+        const result = await Promise.race([
+          // Auth completion promise
+          new Promise<boolean>((resolve, reject) => {
+            const messageHandler = async (event: MessageEvent) => {
+              // Since same origin, we can check it exactly
+              if (event.origin !== window.location.origin) return;
+
+              if (event.data?.type === "AUTH_COMPLETE") {
+                console.log("Auth message received:", event.data);
+                cleanup();
+                if (event.data?.success) {
+                  const supabase = await getSupabaseClient();
+                  if (event.data?.data) {
+                    const { data } = event.data;
+                    if (data.deviceNonce && isDeviceNonceValid(data.deviceNonce)) {
+                      await storeDeviceNonce(data.deviceNonce);
+                    }
+
+                    const { error } = await supabase.auth.refreshSession({
+                      refresh_token: data.refresh_token,
+                    });
+
+                    if (error) {
+                      reject(new Error("Authentication failed"));
+                    }
+                  } else {
+                    const { error } = await supabase.auth.refreshSession();
+                    if (error) {
+                      reject(new Error("Authentication failed"));
+                    }
+                  }
+
+                  resolve(true);
+                } else {
+                  reject(new Error("Authentication failed"));
+                }
+              }
+            };
+
+            // Check for popup closure
+            const popupCheckInterval = setInterval(() => {
+              if (popup.closed) {
+                cleanup();
+                reject(new Error("Authentication cancelled - popup closed"));
+              }
+            }, 1000);
+
+            // Timeout after 5 minutes
+            const timeoutId = setTimeout(
+              () => {
+                cleanup();
+                reject(new Error("Authentication timeout"));
+              },
+              5 * 60 * 1000,
+            );
+
+            // Cleanup function
+            const cleanup = () => {
+              window.removeEventListener("message", messageHandler);
+              clearInterval(popupCheckInterval);
+              clearTimeout(timeoutId);
+            };
+
+            window.addEventListener("message", messageHandler);
+          }),
+        ]);
+
+        return result;
+      } catch (error) {
+        console.error("Authentication process failed:", error);
+      }
+    }
+  } else {
+    console.error("No URL returned from authenticate");
   }
 }
 

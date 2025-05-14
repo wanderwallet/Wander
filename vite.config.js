@@ -13,7 +13,7 @@ export default defineConfig({
     // ,circleDependency() // uncomment this to see circular dependencies while building in the console
   ],
   server: {
-    allowedHosts: ["localhost", "columnists-cir-elder-scotland.trycloudflare.com"],
+    allowedHosts: ["localhost", "nov-guilty-wrapping-marathon.trycloudflare.com"],
   },
   define: {
     "process.env": {

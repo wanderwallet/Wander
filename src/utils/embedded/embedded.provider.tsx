@@ -24,17 +24,13 @@ import type {
   EmbeddedContextAuth,
   Wallet,
 } from "~utils/embedded/embedded.types";
-import { setAuthTokenHeader, getSupabaseClient } from "~utils/embedded/embedded.utils";
+import { setAuthTokenHeader, getSupabaseClient, getSupabaseAuthFromUrl } from "~utils/embedded/embedded.utils";
 import { isInsideIframe } from "~utils/embedded/iframe.utils";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { AuthProviderType, ChallengeClientV1, WalletSourceType, type DbSession } from "embed-api";
 import { AuthenticationService } from "~utils/authentication/authentication.service";
-import {
-  AUTH_PROVIDER_TYPE_BY_PROVIDER_STR,
-  EMBEDDED_FEATURE_FLAGS,
-  EMBEDDED_SDK_AUTH_STATUS_BY_AUTH_STATUS,
-} from "~utils/embedded/embedded.constants";
-import { getDeviceNonce, isDeviceNonceValid, storeDeviceNonce } from "~utils/embedded/device-nonce/device-nonce.utils";
+import { EMBEDDED_FEATURE_FLAGS, EMBEDDED_SDK_AUTH_STATUS_BY_AUTH_STATUS } from "~utils/embedded/embedded.constants";
+import { getDeviceNonce } from "~utils/embedded/device-nonce/device-nonce.utils";
 import { jwtDecode } from "jwt-decode";
 import type { SupabaseJwtPayload } from "~utils/authentication/authentication.types";
 import { isTempWalletPromiseExpired } from "~utils/embedded/utils/wallets/embedded-wallets.utils";
@@ -57,6 +53,7 @@ const EMBEDDED_CONTEXT_INITIAL_STATE = {
   lastRegisteredWallet: null,
   recoverableAccounts: null,
   authEmail: null,
+  authPassword: null,
 } as const satisfies EmbeddedContextState;
 
 const EMBEDDED_CONTEXT_INITIAL_AUTH = {
@@ -96,6 +93,7 @@ export const EmbeddedContext = createContext<EmbeddedContextData>({
 
   // Supabase email auth
   setAuthEmail: () => null,
+  setAuthPassword: () => null,
 });
 
 export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
@@ -427,6 +425,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         lastRegisteredWallet: isNewWallet ? wallet : null,
         recoverableAccounts: null,
         authEmail: null,
+        authPassword: null,
       } satisfies EmbeddedContextState;
     });
 
@@ -848,116 +847,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         });
 
         const { url } = await AuthenticationService.authenticate(authProviderType);
-
-        if (url) {
-          // Calculate center position for the popup
-          const width = 500;
-          const height = 600;
-          const left = window.screenX + (window.outerWidth - width) / 2;
-          const top = window.screenY + (window.outerHeight - height) / 2;
-
-          let popup = window.open(
-            url,
-            "Auth",
-            [
-              `width=${width}`,
-              `height=${height}`,
-              `left=${left}`,
-              `top=${top}`,
-              "popup=1",
-              "location=1",
-              "status=1",
-              "resizable=no",
-              "toolbar=no",
-              "menubar=no",
-            ].join(","),
-          );
-
-          if (!popup) {
-            console.error("Popup blocked. Please allow popups for this site.");
-            // Redirect to Google's OAuth page
-            // Opening the URL on the current tab won't work when Embedded is loaded inside the iframe:
-
-            if (location.ancestorOrigins.length === 0) {
-              console.log(`Redirecting to ${url}...`);
-
-              window.location.href = url;
-            } else {
-              console.log(`Opening ${url}...`);
-
-              popup = window.open(url, "_blank");
-            }
-          }
-
-          if (popup) {
-            try {
-              // Set up message listener and popup close checker
-              await Promise.race([
-                // Auth completion promise
-                new Promise<void>((resolve, reject) => {
-                  const messageHandler = async (event: MessageEvent) => {
-                    // Since same origin, we can check it exactly
-                    if (event.origin !== window.location.origin) return;
-
-                    if (event.data?.type === "AUTH_COMPLETE") {
-                      console.log("Auth message received:", event.data);
-                      cleanup();
-                      if (event.data?.success) {
-                        const supabase = await getSupabaseClient();
-                        if (event.data?.data) {
-                          const { data } = event.data;
-                          if (data.deviceNonce && isDeviceNonceValid(data.deviceNonce)) {
-                            await storeDeviceNonce(data.deviceNonce);
-                          }
-
-                          await supabase.auth.refreshSession({
-                            refresh_token: data.refresh_token,
-                          });
-                        } else {
-                          await supabase.auth.refreshSession();
-                        }
-
-                        resolve();
-                      } else {
-                        reject(new Error("Authentication failed"));
-                      }
-                    }
-                  };
-
-                  // Check for popup closure
-                  const popupCheckInterval = setInterval(() => {
-                    if (popup.closed) {
-                      cleanup();
-                      reject(new Error("Authentication cancelled - popup closed"));
-                    }
-                  }, 1000);
-
-                  // Timeout after 5 minutes
-                  const timeoutId = setTimeout(
-                    () => {
-                      cleanup();
-                      reject(new Error("Authentication timeout"));
-                    },
-                    5 * 60 * 1000,
-                  );
-
-                  // Cleanup function
-                  const cleanup = () => {
-                    window.removeEventListener("message", messageHandler);
-                    clearInterval(popupCheckInterval);
-                    clearTimeout(timeoutId);
-                  };
-
-                  window.addEventListener("message", messageHandler);
-                }),
-              ]);
-            } catch (error) {
-              console.error("Authentication process failed:", error);
-            }
-          }
-        } else {
-          console.error("No URL returned from authenticate");
-        }
+        await getSupabaseAuthFromUrl(url, authProviderType);
       } catch (error) {
         console.error(`${authProviderType} authentication failed:`, error);
       }
@@ -969,6 +859,13 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     setEmbeddedContextAuth((prevAuthContextAuth) => ({
       ...prevAuthContextAuth,
       authEmail: email,
+    }));
+  }, []);
+
+  const setAuthPassword = useCallback((password: string) => {
+    setEmbeddedContextAuth((prevAuthContextAuth) => ({
+      ...prevAuthContextAuth,
+      authPassword: password,
     }));
   }, []);
 
@@ -1288,6 +1185,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         recoverWallet,
 
         setAuthEmail,
+        setAuthPassword,
 
         generateTempWallet,
         deleteGeneratedTempWallet,

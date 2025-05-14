@@ -14,7 +14,7 @@ import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 export function AuthEmailSignupEmbeddedView() {
   const { navigate } = useLocation();
   const [isLoading, setIsLoading] = useState(false);
-  const { authStatus, authEmail } = useEmbedded();
+  const { authStatus, authEmail, setAuthPassword } = useEmbedded();
   const passwordInput = useInput();
   const validPasswordInput = useInput();
   const [passwordType, setPasswordType] = useState("password");
@@ -48,6 +48,7 @@ export function AuthEmailSignupEmbeddedView() {
         return;
       }
 
+      setAuthPassword(passwordInput.state);
       navigate(EmbeddedPaths.AuthEmailVerify);
     } catch (error) {
       toast.error("Error signing up");
