@@ -106,6 +106,7 @@ export function AuthEmailSignupEmbeddedView() {
     <OnboardingCard
       headerText="Create your password"
       subtitle="Enter a password to secure your Wander account."
+      onBackButtonClick={() => navigate(`/auth`)}
       isLoading={ isViewLoading }
       onSubmit={ handleEmailSignup }>
 

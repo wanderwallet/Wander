@@ -108,6 +108,7 @@ export function AuthEmailSigninEmbeddedView() {
     <OnboardingCard
       headerText="Enter your password"
       isLoading={ isViewLoading }
+      onBackButtonClick={() => navigate(`/auth`)}
       onSubmit={ handleEmailSignin }>
 
       <PasswordInput

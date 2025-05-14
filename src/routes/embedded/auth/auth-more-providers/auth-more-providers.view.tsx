@@ -8,6 +8,7 @@ import { toast } from "react-toastify";
 import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard.module";
 
 export function AuthMoreProvidersEmbeddedView() {
+  const { navigate } = useLocation();
   const { authenticate, authStatus } = useEmbedded();
 
   // Loading state:
@@ -36,6 +37,7 @@ export function AuthMoreProvidersEmbeddedView() {
     <OnboardingCard
       headerText="Sign Up or Sign In"
       subtitle="Select a method to authenticate"
+      onBackButtonClick={() => navigate(`/auth`)}
       isLoading={ isViewLoading }>
 
       <Button
