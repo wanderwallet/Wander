@@ -61,6 +61,8 @@ export interface TempWalletPromise {
 
 export interface EmbeddedProviderProps extends PropsWithChildren {}
 
+export interface RecoverableAccountWallet extends Pick<Wallet, "canBeRecovered" | "address"> {}
+
 export interface EmbeddedContextState {
   currentWalletId: string;
   wallets: Wallet[];
@@ -68,6 +70,8 @@ export interface EmbeddedContextState {
   importedTempWalletAddress: null | string;
   lastRegisteredWallet: null | Wallet;
   recoverableAccounts: null | RecoverableAccount[];
+  recoverableAccount: null | RecoverableAccount;
+  recoverableAccountWallets: null | RecoverableAccountWallet[];
   authEmail: null | string;
 }
 
@@ -92,6 +96,9 @@ export interface EmbeddedContextData extends EmbeddedContextState, EmbeddedConte
   authenticate: (authProviderType: AuthProviderType, email?: string, password?: string) => Promise<void>;
   fetchRecoverableAccounts: () => Promise<RecoverableAccount[]>;
   clearRecoverableAccounts: () => void;
+  setRecoverableAccount: (recoverableAccount: RecoverableAccount) => void;
+  setRecoverableAccountWallets: (recoverableAccountWallets: RecoverableAccountWallet[]) => void;
+  fetchRecoverableAccountWallets: (recoverableAccount: RecoverableAccount) => Promise<RecoverableAccountWallet[]>;
   recoverAccount: (authProviderType: AuthProviderType, accountToRecoverId: string) => Promise<void>;
   recoverWallet: (recoveryData: RecoveryJSON | JWKInterface | string) => Promise<void>;
 

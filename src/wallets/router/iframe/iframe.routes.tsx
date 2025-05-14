@@ -27,8 +27,8 @@ import { AuthRestoreSharesRecoveryFileEmbeddedView } from "~routes/embedded/auth
 import { AuthRecoverAccountEmbeddedView } from "~routes/embedded/auth/recover-account/auth-recover-account.view";
 import { AuthRecoverAccountSeedphraseEmbeddedView } from "~routes/embedded/auth/recover-account/seedphrase/auth-recover-account-seedphrase.view";
 import { AuthRecoverAccountKeyfileEmbeddedView } from "~routes/embedded/auth/recover-account/keyfile/auth-recover-account-keyfile.view";
-import { AuthRecoverAccountAuthenticationEmbeddedView } from "~routes/embedded/auth/recover-account/authentication/auth-recover-account-authentication.view";
-import { AuthRecoverAccountMoreAuthenticationEmbeddedView } from "~routes/embedded/auth/recover-account/more-authentication/auth-recover-account-more-authentication.view";
+import { AuthRecoverAccountSelectEmbeddedView } from "~routes/embedded/auth/recover-account/select-account/auth-recover-account-select.view";
+import { AuthRecoverAccountConfirmEmbeddedView } from "~routes/embedded/auth/recover-account/auth-recover-confirm.view";
 
 // Account Management Views:
 import { AccountEmbeddedView } from "~routes/embedded/account/account/account.view";
@@ -83,8 +83,8 @@ export type EmbeddedRoutePath =
   | "/auth/recover-account"
   | "/auth/recover-account/seedphrase"
   | "/auth/recover-account/keyfile"
-  | "/auth/recover-account/authentication"
-  | "/auth/recover-account/more-authentication"
+  | "/auth/recover-account/select"
+  | "/auth/recover-account/confirm"
   | "/account"
   | "/account/confirmation"
   // | "/account/add-provider"
@@ -145,8 +145,8 @@ export const EmbeddedPaths = {
   AuthRecoverAccount: "/auth/recover-account",
   AuthRecoverAccountSeedphrase: "/auth/recover-account/seedphrase",
   AuthRecoverAccountKeyfile: "/auth/recover-account/keyfile",
-  AuthRecoverAccountAuthentication: "/auth/recover-account/authentication",
-  AuthRecoverAccountMoreAuthentication: "/auth/recover-account/more-authentication",
+  AuthRecoverAccountSelect: "/auth/recover-account/select",
+  AuthRecoverAccountConfirm: "/auth/recover-account/confirm",
 
   // Account Management:
   Account: "/account",
@@ -270,12 +270,12 @@ const IFRAME_OWN_ROUTES = [
     component: AuthRecoverAccountKeyfileEmbeddedView,
   },
   {
-    path: EmbeddedPaths.AuthRecoverAccountAuthentication,
-    component: AuthRecoverAccountAuthenticationEmbeddedView,
+    path: EmbeddedPaths.AuthRecoverAccountSelect,
+    component: AuthRecoverAccountSelectEmbeddedView,
   },
   {
-    path: EmbeddedPaths.AuthRecoverAccountMoreAuthentication,
-    component: AuthRecoverAccountMoreAuthenticationEmbeddedView,
+    path: EmbeddedPaths.AuthRecoverAccountConfirm,
+    component: AuthRecoverAccountConfirmEmbeddedView,
   },
 
   // Account Management:
