@@ -133,12 +133,24 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
   }, [authStatus]);
 
   useEffect(() => {
+    if (authStatus === "noAuth") {
+      postEmbeddedMessage({
+        type: "embedded_auth",
+        data: {
+          authType: null,
+          authStatus: "not-authenticated",
+          userDetails: null,
+        },
+      });
+
+      return;
+    }
+
     const sdkAuthStatus = EMBEDDED_SDK_AUTH_STATUS_BY_AUTH_STATUS[authStatus];
 
-    if (!authProviderType || !sdkAuthStatus) return;
+    if (!sdkAuthStatus) return;
 
     const userDetails = getUserDetailsFromSupabaseUser(user);
-
     postEmbeddedMessage({
       type: "embedded_auth",
       data: {
@@ -334,7 +346,6 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
           } as RecoveryJSON;
 
           await WalletUtils.storeEncryptedRecoveryShare(walletId, recoveryData, jwk);
-          console.log("Recovery share stored successfully");
         } catch (error) {
           console.error("Failed to store recovery share:", error);
         }
@@ -977,15 +988,6 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     setEmbeddedContextState(EMBEDDED_CONTEXT_INITIAL_STATE);
 
     if (!userId || !session) {
-      postEmbeddedMessage({
-        type: "embedded_auth",
-        data: {
-          authType: null,
-          authStatus: "not-authenticated",
-          userDetails: null,
-        },
-      });
-
       generateTempWallet();
 
       return;
@@ -1158,23 +1160,19 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       const { data, error } = await supabase.auth.getSession();
       const cachedUser = data?.session?.user;
 
-      // Send the initial state for the SDK button ASAP:
+      // Send the initial state for the SDK button ASAP if there's cached data. Otherwise, the initial state will be
+      // sent by the `useEffect` above that sends `"embedded_auth"` events too.
 
-      postEmbeddedMessage({
-        type: "embedded_auth",
-        data:
-          !error && cachedUser
-            ? {
-                authType: getAuthProviderTypeFromSupabaseUser(cachedUser),
-                authStatus: "loading",
-                userDetails: getUserDetailsFromSupabaseUser(cachedUser),
-              }
-            : {
-                authType: null,
-                authStatus: "not-authenticated",
-                userDetails: null,
-              },
-      });
+      if (!error && cachedUser) {
+        postEmbeddedMessage({
+          type: "embedded_auth",
+          data: {
+            authType: getAuthProviderTypeFromSupabaseUser(cachedUser),
+            authStatus: "loading",
+            userDetails: getUserDetailsFromSupabaseUser(cachedUser),
+          },
+        });
+      }
 
       const {
         data: { subscription },
