@@ -12,6 +12,9 @@ export default defineConfig({
     nodePolyfills(),
     // ,circleDependency() // uncomment this to see circular dependencies while building in the console
   ],
+  server: {
+    allowedHosts: ["localhost", "columnists-cir-elder-scotland.trycloudflare.com"],
+  },
   define: {
     "process.env": {
       ...(process?.env || {}),

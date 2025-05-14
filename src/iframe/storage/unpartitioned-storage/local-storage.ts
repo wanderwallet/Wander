@@ -16,18 +16,40 @@ export class LocalStorage {
   private static readonly CHUNK_SUFFIX = "_chunk_";
   private static readonly CHUNK_META_SUFFIX = "_chunk_meta";
 
-  // Cookie options
-  private static readonly COOKIE_OPTIONS: CookieAttributes = {
-    path: "/",
-    sameSite: "None",
-    secure: true,
-    expires: 365,
-  };
+  private cookieStoreAvailable: boolean;
+  private static debugMode = process.env.NODE_ENV === "development";
+  private isHttps: boolean;
 
-  private static debugMode = true;
+  // Cookie options
+  private get COOKIE_OPTIONS(): CookieAttributes {
+    return {
+      path: "/",
+      sameSite: !this.isHttps ? "Lax" : "None",
+      secure: this.isHttps,
+      expires: 365,
+    };
+  }
+
+  private get COOKIE_STORE_OPTIONS(): Omit<CookieInit, "name" | "value"> {
+    return {
+      expires: Date.now() + 365 * 24 * 60 * 60 * 1000,
+      partitioned: false,
+      path: "/",
+      sameSite: !this.isHttps ? "lax" : "none",
+    };
+  }
 
   private constructor() {
     this.storage = new EnhancedStorage({ area: "local" });
+
+    this.isHttps = typeof location !== "undefined" && location.protocol === "https:";
+
+    this.cookieStoreAvailable =
+      typeof window !== "undefined" && "cookieStore" in window && window.cookieStore !== undefined;
+
+    if (LocalStorage.debugMode) {
+      console.log(`Storage initialized: isHttps=${this.isHttps}, cookieStoreAvailable=${this.cookieStoreAvailable}`);
+    }
   }
 
   static async getInstance(): Promise<LocalStorage> {
@@ -51,13 +73,7 @@ export class LocalStorage {
    * Check if this key should be stored in cookies
    */
   private shouldStoreInCookies(key: string): boolean {
-    // Always use cookies for critical authentication data
-    if (this.isAuthenticationKey(key)) {
-      return true;
-    }
-
-    // For other data, only use cookies if that's our primary storage
-    return this.shouldUseCookiesAsPrimary();
+    return this.isAuthenticationKey(key);
   }
 
   /**
@@ -71,36 +87,130 @@ export class LocalStorage {
   }
 
   /**
-   * Set a cookie
+   * Get access to the CookieStore API safely
    */
-  private setCookie(key: string, value: string, options = LocalStorage.COOKIE_OPTIONS): boolean {
+  private getCookieStore() {
+    if (this.cookieStoreAvailable) return window.cookieStore;
+    return undefined;
+  }
+
+  /**
+   * Set a cookie using CookieStore API or js-cookie fallback
+   */
+  private async setCookie(key: string, value: string, options?: CookieAttributes): Promise<boolean> {
+    const cookieOptions = options || this.COOKIE_OPTIONS;
+
     try {
-      Cookies.set(key, value, options);
-      const result = Cookies.get(key);
-      if (result === value) {
-        return true;
+      const cookieStore = this.getCookieStore();
+      if (cookieStore) {
+        const cookieOptions = {
+          name: key,
+          value,
+          ...this.COOKIE_STORE_OPTIONS,
+        };
+
+        await cookieStore.set(cookieOptions);
+        const result = await this.getCookieValue(key);
+        return result === value;
+      } else {
+        // Fallback to js-cookie
+        Cookies.set(key, value, cookieOptions);
+        const result = Cookies.get(key);
+        return result === value;
       }
     } catch (e) {
       if (LocalStorage.debugMode) console.warn(`Failed to set cookie for key '${key}'`, e);
+      try {
+        Cookies.set(key, value, cookieOptions);
+        const result = Cookies.get(key);
+        return result === value;
+      } catch (fallbackError) {
+        if (LocalStorage.debugMode) console.warn(`Fallback cookie set also failed for key '${key}'`, fallbackError);
+      }
+
       return false;
+    }
+  }
+
+  /**
+   * Get a cookie value using CookieStore API or js-cookie fallback
+   */
+  private async getCookieValue(key: string): Promise<string | null> {
+    try {
+      const cookieStore = this.getCookieStore();
+      if (cookieStore) {
+        const cookie = await cookieStore.get(key);
+        return cookie?.value || null;
+      } else {
+        return Cookies.get(key) || null;
+      }
+    } catch (e) {
+      if (LocalStorage.debugMode) console.warn(`Failed to get cookie for key '${key}'`, e);
+      try {
+        return Cookies.get(key) || null;
+      } catch (fallbackError) {
+        if (LocalStorage.debugMode) console.warn(`Fallback cookie get also failed for key '${key}'`, fallbackError);
+      }
+      return null;
+    }
+  }
+
+  /**
+   * Get all cookies using CookieStore API or js-cookie fallback
+   */
+  private async getAllCookies(): Promise<Record<string, string>> {
+    try {
+      const cookieStore = this.getCookieStore();
+      if (cookieStore) {
+        const cookies = await cookieStore.getAll();
+        return cookies.reduce(
+          (acc, cookie) => {
+            acc[cookie.name] = cookie.value;
+            return acc;
+          },
+          {} as Record<string, string>,
+        );
+      } else {
+        return Cookies.get() || {};
+      }
+    } catch (e) {
+      if (LocalStorage.debugMode) console.warn(`Failed to get all cookies`, e);
+      try {
+        return Cookies.get() || {};
+      } catch (fallbackError) {
+        if (LocalStorage.debugMode) console.warn(`Fallback getAll cookies also failed`, fallbackError);
+      }
+
+      return {};
     }
   }
 
   /**
    * Get a value from storage with appropriate method
    */
-  private getStorageValue(key: string, useRaw = false): string | null {
-    return useRaw ? this.storage.getRaw(key) : this.storage.getItem(key);
+  private getStorageValue<T = string>(key: string, useRaw = false): T | null {
+    try {
+      return useRaw ? (this.storage.getRaw(key) as T) : (this.storage.getItem(key) as T);
+    } catch (e) {
+      if (LocalStorage.debugMode) console.warn(`Failed to get storage value for key '${key}'`, e);
+      return null;
+    }
   }
 
   /**
    * Set a value to storage with appropriate method
    */
-  private setStorageValue(key: string, value: string, useRaw = false): void {
-    if (useRaw) {
-      this.storage.setRaw(key, value);
-    } else {
-      this.storage.setItem(key, value);
+  private setStorageValue<T>(key: string, value: T, useRaw = false): boolean {
+    try {
+      if (useRaw) {
+        this.storage.setRaw(key, value as string);
+      } else {
+        this.storage.setItem(key, value);
+      }
+      return true;
+    } catch (e) {
+      if (LocalStorage.debugMode) console.warn(`Failed to set storage value for key '${key}'`, e);
+      return false;
     }
   }
 
@@ -114,16 +224,23 @@ export class LocalStorage {
   /**
    * Set a cookie with chunking if needed
    */
-  private setCookieWithChunkingIfNeeded(key: string, value: string): boolean {
+  private async setCookieWithChunkingIfNeeded(key: string, value: string): Promise<boolean> {
+    if (!value) {
+      if (LocalStorage.debugMode) console.warn(`Attempted to set empty value for key '${key}'`);
+      return false;
+    }
+
     // Check if value is too large for a single cookie
     if (value.length > LocalStorage.MAX_COOKIE_CHUNK_SIZE) {
       if (LocalStorage.debugMode) console.log(`Value for key '${key}' is large (${value.length} chars), chunking...`);
       return this.setChunkedCookies(key, value);
     }
 
-    const success = this.setCookie(key, value);
+    const success = await this.setCookie(key, value);
     if (success && LocalStorage.debugMode) {
       console.log(`Cookie set successfully for: ${key}`);
+    } else if (!success && LocalStorage.debugMode) {
+      console.warn(`Failed to set cookie for: ${key}`);
     }
     return success;
   }
@@ -131,37 +248,37 @@ export class LocalStorage {
   /**
    * Set large values as multiple chunked cookies
    */
-  private setChunkedCookies(key: string, value: string): boolean {
+  private async setChunkedCookies(key: string, value: string): Promise<boolean> {
     try {
       // Clean up any existing chunks
-      this.removeChunkedCookies(key);
+      await this.removeChunkedCookies(key);
 
       // Calculate chunks needed
       const chunkCount = Math.ceil(value.length / LocalStorage.MAX_COOKIE_CHUNK_SIZE);
       const metaKey = `${key}${LocalStorage.CHUNK_META_SUFFIX}`;
 
       // Set metadata first
-      const metaSuccess = this.setCookie(metaKey, String(chunkCount));
+      const metaSuccess = await this.setCookie(metaKey, String(chunkCount));
       if (!metaSuccess) {
         if (LocalStorage.debugMode) console.error(`Failed to set metadata for chunked value ${key}`);
         return false;
       }
 
-      // Store each chunk
-      let allChunksSuccess = true;
+      // Store each chunk in parallel for better performance
+      const chunkPromises = [];
+
       for (let i = 0; i < chunkCount; i++) {
         const chunkKey = `${key}${LocalStorage.CHUNK_SUFFIX}${i}`;
         const start = i * LocalStorage.MAX_COOKIE_CHUNK_SIZE;
         const end = Math.min(start + LocalStorage.MAX_COOKIE_CHUNK_SIZE, value.length);
         const chunk = value.substring(start, end);
 
-        const chunkSuccess = this.setCookie(chunkKey, chunk);
-
-        if (!chunkSuccess) {
-          allChunksSuccess = false;
-          if (LocalStorage.debugMode) console.error(`Failed to set chunk ${i} for key ${key}`);
-        }
+        chunkPromises.push(this.setCookie(chunkKey, chunk));
       }
+
+      // Wait for all chunks to be set
+      const results = await Promise.all(chunkPromises);
+      const allChunksSuccess = results.every(Boolean);
 
       if (LocalStorage.debugMode) {
         if (allChunksSuccess) {
@@ -181,10 +298,10 @@ export class LocalStorage {
   /**
    * Get a value potentially stored as multiple chunked cookies
    */
-  private getChunkedCookies(key: string): string | null {
+  private async getChunkedCookies(key: string): Promise<string | null> {
     try {
       const metaKey = `${key}${LocalStorage.CHUNK_META_SUFFIX}`;
-      const metaValue = Cookies.get(metaKey);
+      const metaValue = await this.getCookieValue(metaKey);
 
       if (!metaValue) return null;
 
@@ -194,28 +311,23 @@ export class LocalStorage {
         return null;
       }
 
-      const chunks = new Array(chunkCount);
-      let hasAllChunks = true;
-
+      // Fetch all chunks in parallel for better performance
+      const chunkPromises = [];
       for (let i = 0; i < chunkCount; i++) {
         const chunkKey = `${key}${LocalStorage.CHUNK_SUFFIX}${i}`;
-        const chunk = Cookies.get(chunkKey);
-
-        if (chunk === undefined) {
-          hasAllChunks = false;
-          break;
-        }
-
-        chunks[i] = chunk;
+        chunkPromises.push(this.getCookieValue(chunkKey));
       }
 
-      if (!hasAllChunks) {
+      const chunks = await Promise.all(chunkPromises);
+
+      // Check if any chunks are missing
+      if (chunks.some((chunk) => chunk === null)) {
         if (LocalStorage.debugMode) console.warn(`Incomplete chunked value for key ${key}, fallback to localStorage`);
         const useRaw = this.shouldUseRawStorage(key);
-        const localValue = this.getStorageValue(key, useRaw);
+        const localValue = this.getStorageValue<string>(key, useRaw);
 
         if (localValue) {
-          this.setCookieWithChunkingIfNeeded(key, localValue);
+          await this.setCookieWithChunkingIfNeeded(key, localValue);
           return localValue;
         }
 
@@ -231,31 +343,51 @@ export class LocalStorage {
   }
 
   /**
-   * Remove a cookie and handle all options
+   * Remove a cookie using CookieStore API or js-cookie fallback
    */
-  private removeCookie(key: string): void {
-    Cookies.remove(key, LocalStorage.COOKIE_OPTIONS);
+  private async removeCookie(key: string): Promise<void> {
+    try {
+      const cookieStore = this.getCookieStore();
+      if (cookieStore) {
+        await cookieStore.delete({
+          name: key,
+          path: this.COOKIE_STORE_OPTIONS.path,
+          partitioned: this.COOKIE_STORE_OPTIONS.partitioned,
+        });
+      } else {
+        Cookies.remove(key, this.COOKIE_OPTIONS);
+      }
+    } catch (e) {
+      if (LocalStorage.debugMode) console.warn(`Failed to remove cookie for key '${key}'`, e);
+      try {
+        Cookies.remove(key, this.COOKIE_OPTIONS);
+      } catch (fallbackError) {
+        if (LocalStorage.debugMode) console.warn(`Fallback cookie remove also failed for key '${key}'`, fallbackError);
+      }
+    }
   }
 
   /**
    * Remove all chunks for a given key
    */
-  private removeChunkedCookies(key: string): void {
+  private async removeChunkedCookies(key: string): Promise<void> {
     try {
       const metaKey = `${key}${LocalStorage.CHUNK_META_SUFFIX}`;
-      const metaValue = Cookies.get(metaKey);
+      const metaValue = await this.getCookieValue(metaKey);
 
       if (metaValue) {
         const chunkCount = parseInt(metaValue, 10);
         if (!isNaN(chunkCount) && chunkCount > 0) {
-          // Remove all chunk cookies
+          // Remove all chunk cookies in parallel
+          const removePromises = [];
           for (let i = 0; i < chunkCount; i++) {
-            this.removeCookie(`${key}${LocalStorage.CHUNK_SUFFIX}${i}`);
+            removePromises.push(this.removeCookie(`${key}${LocalStorage.CHUNK_SUFFIX}${i}`));
           }
+          await Promise.all(removePromises);
         }
 
         // Remove the metadata cookie
-        this.removeCookie(metaKey);
+        await this.removeCookie(metaKey);
       }
     } catch (e) {
       if (LocalStorage.debugMode) console.error("Error in removeChunkedCookies", e);
@@ -269,7 +401,15 @@ export class LocalStorage {
     return this.storage.accessState;
   }
 
-  setItem(key: string, value: string): void {
+  /**
+   * Set an item in storage, with appropriate backup strategies
+   */
+  async setItem<T>(key: string, value: T): Promise<void> {
+    if (!key) {
+      if (LocalStorage.debugMode) console.warn("Attempted to set a value with an empty key");
+      return;
+    }
+
     const useRaw = this.shouldUseRawStorage(key);
     const useCookiesAsPrimary = this.shouldUseCookiesAsPrimary();
     const shouldBackupToCookies = this.shouldStoreInCookies(key);
@@ -284,22 +424,32 @@ export class LocalStorage {
     if (shouldBackupToCookies && useCookiesAsPrimary) {
       if (LocalStorage.debugMode) {
         const reason = useCookiesAsPrimary ? "cookies-only access" : "auth data backup";
-        console.log(`Setting cookie for key '${key}' (${reason}, value length: ${value.length})`);
+        console.log(
+          `Setting cookie for key '${key}' (${reason}, value length: ${typeof value === "string" ? value.length : JSON.stringify(value).length})`,
+        );
       }
-      this.setCookieWithChunkingIfNeeded(key, value);
+      await this.setCookieWithChunkingIfNeeded(key, value as string);
     } else {
       // When not in iframe, always store shared data in both localStorage and cookies
       if (!isInsideIframe() && shouldBackupToCookies) {
         if (LocalStorage.debugMode) {
           console.log(`Not in iframe, storing shared data '${key}' in both localStorage and cookies`);
         }
-        this.setCookieWithChunkingIfNeeded(key, value);
+        await this.setCookieWithChunkingIfNeeded(key, value as string);
       }
       this.setStorageValue(key, value, useRaw);
     }
   }
 
-  getItem(key: string): string | null {
+  /**
+   * Get an item from storage, with appropriate fallback strategies
+   */
+  async getItem<T = string>(key: string): Promise<T | null> {
+    if (!key) {
+      if (LocalStorage.debugMode) console.warn("Attempted to get a value with an empty key");
+      return null;
+    }
+
     const useRaw = this.shouldUseRawStorage(key);
     const useCookiesAsPrimary = this.shouldUseCookiesAsPrimary();
     const shouldBackupToCookies = this.shouldStoreInCookies(key);
@@ -315,40 +465,52 @@ export class LocalStorage {
       try {
         if (LocalStorage.debugMode) console.log(`Checking cookie for key '${key}'`);
 
-        let cookieValue = this.getChunkedCookies(key);
+        let cookieValue = await this.getChunkedCookies(key);
 
         // If not found as chunks, try regular cookie
         if (cookieValue === null) {
-          cookieValue = Cookies.get(key);
+          cookieValue = await this.getCookieValue(key);
         }
 
         if (!cookieValue) {
-          const localValue = this.getStorageValue(key, useRaw);
+          const localValue = this.getStorageValue<T>(key, useRaw);
 
           if (localValue !== null) {
             if (LocalStorage.debugMode)
               console.log(
-                `Cookie not found for '${key}', setting from localStorage value (length: ${localValue.length})`,
+                `Cookie not found for '${key}', setting from localStorage value (length: ${
+                  typeof localValue === "string" ? localValue.length : JSON.stringify(localValue).length
+                })`,
               );
 
-            const success = this.setCookieWithChunkingIfNeeded(key, localValue);
-            if (LocalStorage.debugMode) console.log(`Cookie set success: ${success}`);
+            if (typeof localValue === "string") {
+              const success = await this.setCookieWithChunkingIfNeeded(key, localValue);
+              if (LocalStorage.debugMode) console.log(`Cookie set success: ${success}`);
+            }
 
             return localValue;
           }
         }
 
-        return cookieValue;
+        return cookieValue as unknown as T;
       } catch (error) {
         console.warn("Failed to get cookie:", error);
       }
     }
 
     // If cookies aren't primary or we didn't find in cookies, try localStorage
-    return this.getStorageValue(key, useRaw);
+    return this.getStorageValue<T>(key, useRaw);
   }
 
-  removeItem(key: string): void {
+  /**
+   * Remove an item from all storage locations
+   */
+  async removeItem(key: string): Promise<void> {
+    if (!key) {
+      if (LocalStorage.debugMode) console.warn("Attempted to remove a value with an empty key");
+      return;
+    }
+
     // Always remove from localStorage
     this.storage.removeItem(key);
 
@@ -356,30 +518,47 @@ export class LocalStorage {
     if (this.shouldStoreInCookies(key)) {
       try {
         if (LocalStorage.debugMode) console.log(`Removing cookie for key '${key}'`);
-        this.removeChunkedCookies(key);
-        this.removeCookie(key);
+        await this.removeChunkedCookies(key);
+        await this.removeCookie(key);
       } catch (error) {
         console.warn("Failed to remove cookie:", error);
       }
     }
   }
 
-  clear(): void {
+  /**
+   * Clear all storage
+   */
+  async clear(): Promise<void> {
     // Clear localStorage
     this.storage.clear();
 
     try {
       // Only check actual cookies rather than all potential keys
-      const cookies = Cookies.get() || {};
+      const cookies = await this.getAllCookies();
 
-      Object.keys(cookies).forEach((key) => {
+      const removePromises = [];
+      for (const key of Object.keys(cookies)) {
         if (this.shouldStoreInCookies(key) || key.includes(LocalStorage.CHUNK_SUFFIX)) {
           if (LocalStorage.debugMode) console.log(`Clearing cookie: ${key}`);
-          this.removeCookie(key);
+          removePromises.push(this.removeCookie(key));
         }
-      });
+      }
+      await Promise.all(removePromises);
     } catch (error) {
       console.warn("Failed to clear cookies:", error);
+    }
+  }
+
+  /**
+   * Get all keys from localStorage
+   */
+  async keys(): Promise<string[]> {
+    try {
+      return this.storage.keys();
+    } catch (e) {
+      if (LocalStorage.debugMode) console.warn("Failed to get keys from storage", e);
+      return [];
     }
   }
 }

@@ -292,7 +292,7 @@ let _deviceSharesByUser: DeviceSharesByUser | null = null;
 async function loadDeviceSharesByUser(): Promise<DeviceSharesByUser> {
   try {
     const storage = await LocalStorage.getInstance();
-    let deviceSharesInfo = storage.getItem<DeviceSharesByUser>(DEVICE_SHARES_INFO_KEY);
+    let deviceSharesInfo = await storage.getItem<DeviceSharesByUser>(DEVICE_SHARES_INFO_KEY);
 
     // TODO: Add additional validation...
 
@@ -376,12 +376,12 @@ async function storeEncryptedSeedPhrase(walletId: string, seedPhrase: string, jw
   const encryptedSeedPhrase = Buffer.from(encryptedSeedPhraseBuffer).toString("base64");
 
   const storage = await LocalStorage.getInstance();
-  storage.setItem(`${ENCRYPTED_SEED_PHRASE_KEY}-${walletId}`, encryptedSeedPhrase);
+  await storage.setItem(`${ENCRYPTED_SEED_PHRASE_KEY}-${walletId}`, encryptedSeedPhrase);
 }
 
 async function hasEncryptedSeedPhrase(walletId: string) {
   const storage = await LocalStorage.getInstance();
-  return !!storage.getItem(`${ENCRYPTED_SEED_PHRASE_KEY}-${walletId}`);
+  return !!(await storage.getItem(`${ENCRYPTED_SEED_PHRASE_KEY}-${walletId}`));
 }
 
 async function getDecryptedSeedPhrase(walletId: string, jwk: JWKInterface) {
@@ -409,7 +409,7 @@ async function getDecryptedSeedPhrase(walletId: string, jwk: JWKInterface) {
   );
 
   const storage = await LocalStorage.getInstance();
-  const encryptedSeedPhrase = storage.getItem(`${ENCRYPTED_SEED_PHRASE_KEY}-${walletId}`);
+  const encryptedSeedPhrase = await storage.getItem(`${ENCRYPTED_SEED_PHRASE_KEY}-${walletId}`);
 
   const decryptedSeedPhraseBuffer = await crypto.subtle.decrypt(
     {
@@ -500,7 +500,7 @@ async function storeEncryptedRecoveryShare(walletId: string, recoveryData: Recov
   };
 
   const storage = await LocalStorage.getInstance();
-  storage.setItem(`${ENCRYPTED_RECOVERY_SHARE_KEY}-${walletId}`, finalData);
+  await storage.setItem(`${ENCRYPTED_RECOVERY_SHARE_KEY}-${walletId}`, finalData);
 
   return true;
 }
@@ -511,7 +511,7 @@ async function storeEncryptedRecoveryShare(walletId: string, recoveryData: Recov
  */
 async function hasEncryptedRecoveryShare(walletId: string) {
   const storage = await LocalStorage.getInstance();
-  return !!storage.getItem(`${ENCRYPTED_RECOVERY_SHARE_KEY}-${walletId}`);
+  return !!(await storage.getItem(`${ENCRYPTED_RECOVERY_SHARE_KEY}-${walletId}`));
 }
 
 /**
@@ -546,7 +546,7 @@ async function getDecryptedRecoveryShare(walletId: string, jwk: JWKInterface): P
 
   // Get encrypted data from storage
   const storage = await LocalStorage.getInstance();
-  const encryptedData = storage.getItem<{
+  const encryptedData = await storage.getItem<{
     iv: string;
     encryptedKey: string;
     encryptedData: string;
@@ -609,7 +609,7 @@ async function storeDeviceShare(wallet: Wallet, userId: string) {
   _deviceSharesByUser[userId][wallet.id] = wallet.deviceShare;
 
   const storage = await LocalStorage.getInstance();
-  storage.setItem(DEVICE_SHARES_INFO_KEY, _deviceSharesByUser);
+  await storage.setItem(DEVICE_SHARES_INFO_KEY, _deviceSharesByUser);
 }
 
 async function removeDeviceShare(walletId: string, userId: string) {
@@ -624,7 +624,7 @@ async function removeDeviceShare(walletId: string, userId: string) {
   delete _deviceSharesByUser[userId][walletId];
 
   const storage = await LocalStorage.getInstance();
-  storage.setItem(DEVICE_SHARES_INFO_KEY, _deviceSharesByUser);
+  await storage.setItem(DEVICE_SHARES_INFO_KEY, _deviceSharesByUser);
 }
 
 async function storeEncryptedWalletJWK(jwk: JWKInterface): Promise<void> {
@@ -699,10 +699,10 @@ export const WalletUtils = {
 if (!EMBEDDED_FEATURE_FLAGS.STORE_SEED_PHRASE) {
   (async () => {
     const storage = await LocalStorage.getInstance();
-    const keys = storage.keys();
+    const keys = await storage.keys();
     for (const key of keys) {
       if (key.startsWith(ENCRYPTED_SEED_PHRASE_KEY)) {
-        storage.removeItem(key);
+        await storage.removeItem(key);
       }
     }
   })();
@@ -712,10 +712,10 @@ if (!EMBEDDED_FEATURE_FLAGS.STORE_SEED_PHRASE) {
 if (!EMBEDDED_FEATURE_FLAGS.STORE_RECOVERY_SHARES) {
   (async () => {
     const storage = await LocalStorage.getInstance();
-    const keys = storage.keys();
+    const keys = await storage.keys();
     for (const key of keys) {
       if (key.startsWith(ENCRYPTED_RECOVERY_SHARE_KEY)) {
-        storage.removeItem(key);
+        await storage.removeItem(key);
       }
     }
   })();

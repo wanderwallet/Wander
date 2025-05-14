@@ -427,13 +427,7 @@ export class EnhancedStorage implements Storage {
   }
 
   protected setupUserInteractionHandler() {
-    document.addEventListener(
-      "click",
-      async () => {
-        await this.requestAccessOnUserInteraction();
-      },
-      { once: true },
-    );
+    document.addEventListener("click", async () => this.requestAccessOnUserInteraction(), { once: true });
   }
 
   async requestStorageAccess() {
@@ -474,8 +468,7 @@ export class EnhancedStorage implements Storage {
         if (permission.state === "granted") {
           // If permission is granted, we can just call requestStorageAccess() without user interaction
           try {
-            const handle = await this.getStorageHandle();
-            this.storage = handle;
+            this.storage = await this.getStorageHandle();
             this.accessState = StorageAccessState.FULL_ACCESS;
             log(LOG_GROUP.STORAGE, "Full storage access granted via permission");
           } catch (error) {
@@ -533,8 +526,7 @@ export class EnhancedStorage implements Storage {
 
       // Try to get full storage access with handle
       try {
-        const handle = await this.getStorageHandle();
-        this.storage = handle;
+        this.storage = await this.getStorageHandle();
         this.accessState = StorageAccessState.FULL_ACCESS;
         log(LOG_GROUP.STORAGE, "Full storage access granted after user interaction");
         return;
