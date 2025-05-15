@@ -1180,6 +1180,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
   }, []);
 
   const completeAuth = useCallback(async (session: any) => {
+    window.alert('completeAuth called, calling postMessage');
+
     window.opener.postMessage(
       {
         type: "AUTH_COMPLETE",
@@ -1194,6 +1196,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
     log(LOG_GROUP.EMBEDDED_FLOWS, "Closing popup window...");
 
+    window.alert('calling window.close()');
     // Close the popup after sending the message
     window.close();
   }, []);
