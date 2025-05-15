@@ -1,6 +1,6 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { toast } from "react-toastify";
-import { Box, Button, Card, Text, WanderFooter } from "~components/embed";
+import { Button } from "~components/embed";
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { getSupabaseClient } from "~utils/embedded/embedded.utils";
 import { useLocation, useSearchParams } from "~wallets/router/router.utils";
@@ -10,7 +10,7 @@ import PasswordStrength from "~components/welcome/PasswordStrength";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 import { PasswordInput } from "~components/embed/ui/atoms/password-input";
 import { useThrottledCallback } from "@swyg/corre";
-import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard.module";
+import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
 
 export function AuthEmailSignupEmbeddedView() {
   const { navigate } = useLocation();

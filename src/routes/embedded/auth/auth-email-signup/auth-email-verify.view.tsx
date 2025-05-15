@@ -1,11 +1,10 @@
 import { toast } from "react-toastify";
-import { Box, Card, Text, WanderFooter, Button } from "~components/embed";
+import { Button, Text } from "~components/embed";
 import { useCallback, useEffect, useState } from "react";
 import { getSupabaseClient } from "~utils/embedded/embedded.utils";
 import { useLocation, useSearchParams } from "~wallets/router/router.utils";
-import { Flex } from "~components/common/Flex";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
-import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard.module";
+import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
 
 export function AuthEmailVerifyEmbeddedView() {
   const { navigate } = useLocation();

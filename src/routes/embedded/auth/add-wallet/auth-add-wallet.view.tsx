@@ -1,10 +1,8 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useLocation } from "~wallets/router/router.utils";
-
-import { Box, Button, Card, KeyIcon, QRCodeIcon, SeedIcon, WalletIcon, WanderFooter } from "~components/embed";
+import { useCallback, useEffect, useState } from "react";
+import { Button, KeyIcon, SeedIcon, WalletIcon } from "~components/embed";
 import type { WalletSourceType } from "embed-api";
-import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard.module";
+import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
 import { signOut } from "~utils/embedded/embedded.utils";
 
 export function AuthAddWalletEmbeddedView() {

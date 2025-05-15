@@ -9,6 +9,7 @@ import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-mes
 import { useLocation } from "~wallets/router/router.utils";
 import { Box, Button, Card, XClose, Text, Row } from "~components/embed/ui";
 import { fetchTokenByProcessId } from "~tokens/aoTokens/ao";
+import { AuthRequestCard } from "~components/embed/ui/molecules/card/auth-request-card/AuthRequestCard";
 
 export function EmbeddedBatchSignDataItemAuthRequestView() {
   const { authRequest, acceptRequest, rejectRequest } = useCurrentAuthRequest("batchSignDataItem");
@@ -97,14 +98,10 @@ export function EmbeddedBatchSignDataItemAuthRequestView() {
   }, [data]);
 
   return (
-    <Card
-      size="auto"
+    <AuthRequestCard
       headerText={browser.i18n.getMessage("batch_sign_items")}
-      hasBackButton={transaction ? true : false}
       onBackButtonClick={transaction ? () => setTransaction(null) : undefined}
-      customIcon={<XClose fontSize={24} color={"#666666"} />}
-      onCloseButtonClick={handleCancel}
-      style={{ padding: "2rem" }}>
+      onCloseButtonClick={handleCancel}>
       <Box alignment="left" style={{ padding: "1rem 0" }}>
         <Text variant="bodyMd" style={{ color: "#666666" }}>
           {browser.i18n.getMessage("batch_sign_data_description", url)}
@@ -114,18 +111,18 @@ export function EmbeddedBatchSignDataItemAuthRequestView() {
       </Box>
 
       {!transaction ? (
-        <Box style={{ padding: 0, width: "100%" }}>
-          <Button variant="primary" onClick={handleSign} isDisabled={loading}>
-            {browser.i18n.getMessage("sign_authorize_all")}
-          </Button>
+        <Row style={{ padding: 0, width: "100%" }}>
           <Button variant="secondary" onClick={handleCancel}>
             Cancel
           </Button>
-        </Box>
+          <Button variant="primary" onClick={handleSign} isDisabled={loading}>
+            {browser.i18n.getMessage("sign_authorize_all")}
+          </Button>
+        </Row>
       ) : (
         <Button onClick={() => setTransaction(null)}>{browser.i18n.getMessage("continue")}</Button>
       )}
-    </Card>
+    </AuthRequestCard>
   );
 }
 

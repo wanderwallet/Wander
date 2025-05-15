@@ -1,9 +1,8 @@
 import { FolderShield, Wallet03 } from "@untitled-ui/icons-react";
-import { useCallback, useState } from "react";
-import { Box, Button, Card, Spacer, WanderFooter } from "~components/embed/ui";
+import { Button } from "~components/embed/ui";
 import { useLocation } from "~wallets/router/router.utils";
 import browser from "webextension-polyfill";
-import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard.module";
+import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
 
 export function AccountBackupWalletEmbeddedView() {
   const { navigate } = useLocation();

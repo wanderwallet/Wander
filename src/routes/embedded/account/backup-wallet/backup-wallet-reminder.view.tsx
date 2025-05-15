@@ -1,13 +1,12 @@
 import { useState } from "react";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
-
-import { Box, Button, Card, Checkbox, WanderFooter, Copyable, Text } from "~components/embed/ui";
+import { Button, Checkbox, Copyable, Text } from "~components/embed/ui";
 import copy from "copy-to-clipboard";
 import { useLocation } from "~wallets/router/router.utils";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 import browser from "webextension-polyfill";
 import { sleep } from "~utils/promises/sleep";
-import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard.module";
+import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
 
 export function AccountBackupWalletReminderEmbeddedView() {
   const { navigate } = useLocation();

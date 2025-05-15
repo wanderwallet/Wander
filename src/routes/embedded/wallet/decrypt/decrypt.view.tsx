@@ -1,10 +1,11 @@
-import { Card, Button, Text, Box, XClose } from "~components/embed/ui";
+import { Button, Text, Box, Row } from "~components/embed/ui";
 import { useLocation } from "~wallets/router/router.utils";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 import { useCurrentAuthRequest } from "~utils/auth/auth.hooks";
 import { useEffect } from "react";
 import browser from "webextension-polyfill";
 import Message from "~components/embed/auth/Message";
+import { AuthRequestCard } from "~components/embed/ui/molecules/card/auth-request-card/AuthRequestCard";
 
 export function EmbeddedDecryptAuthRequestView() {
   const { navigate } = useLocation();
@@ -43,36 +44,25 @@ export function EmbeddedDecryptAuthRequestView() {
   }, [authID]);
 
   return (
-    <>
-      <Card
-        headerText={browser.i18n.getMessage("titles_decrypt")}
-        size="auto"
-        style={{
-          paddingTop: "24px",
-          paddingInline: "16px",
-          paddingBottom: "24px",
-        }}
-        hasCloseButton={true}
-        hasBackButton={false}
-        customIcon={<XClose fontSize={24} color={"#666666"} />}
-        onCloseButtonClick={handleCancel}>
-        <Box>
-          <Text variant="bodyMd" style={{ color: "#666666" }}>
-            {browser.i18n.getMessage("decrypt_description", url)}
-          </Text>
+    <AuthRequestCard
+      headerText={browser.i18n.getMessage("titles_decrypt")}
+      onCloseButtonClick={handleCancel}>
+      <Box>
+        <Text variant="bodyMd" style={{ color: "#666666" }}>
+          {browser.i18n.getMessage("decrypt_description", url)}
+        </Text>
 
-          <Message message={message} />
-        </Box>
+        <Message message={message} />
+      </Box>
 
-        <Box alignment="left" style={{ paddingTop: 0 }}>
-          <Button variant="primary" isFullWidth onClick={handleDecrypt}>
-            {browser.i18n.getMessage("decrypt_authorize")}
-          </Button>
-          <Button variant="secondary" isFullWidth onClick={handleCancel}>
-            Cancel
-          </Button>
-        </Box>
-      </Card>
-    </>
+      <Row>
+        <Button variant="secondary" isFullWidth onClick={handleCancel}>
+          Cancel
+        </Button>
+        <Button variant="primary" isFullWidth onClick={handleDecrypt}>
+          {browser.i18n.getMessage("decrypt_authorize")}
+        </Button>
+      </Row>
+    </AuthRequestCard>
   );
 }

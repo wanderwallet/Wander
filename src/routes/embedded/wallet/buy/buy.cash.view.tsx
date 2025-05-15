@@ -1,10 +1,14 @@
-import { Card, Button, Text, Row, Box, ChevronRight } from "~components/embed/ui";
+import { Button, Text, Row, ChevronRight } from "~components/embed/ui";
 import { useLocation } from "~wallets/router/router.utils";
 import { useTransak } from "~utils/transak/transak.hooks";
 import browser from "webextension-polyfill";
 import AutosizeInput from "react-input-autosize";
 import arLogo from "url:/assets/ecosystem/ar-logo.svg";
 import { PaymentSelector, CurrencySelector } from "./components/selector";
+import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
+
+import styles from "./buy.module.scss";
+import { DefaultCard } from "~components/embed/ui/molecules/card/default-card/DefaultCard";
 
 const TRANSAK_API_KEY = import.meta.env?.VITE_TRANSAK_API_KEY;
 
@@ -35,12 +39,11 @@ export function WalletBuyCashEmbeddedView() {
   } = useTransak(TRANSAK_API_KEY, true);
 
   const renderMainView = () => (
-    <Card
-      size="auto"
+    <DefaultCard
       headerText="Buy Tokens"
-      hasBackButton={true}
-      onBackButtonClick={() => navigate("/wallet")}
-      style={{ padding: "32px" }}>
+      hasFooter
+      onBackButtonClick={() => navigate("/wallet/receive/options")}>
+
       <div style={{ display: "flex", alignItems: "baseline" }}>
         <AutosizeInput
           value={purchaseAmount}
@@ -64,63 +67,59 @@ export function WalletBuyCashEmbeddedView() {
         {getDisplayAmount()}
       </Text>
 
-      <Button variant="link" onClick={openCurrencySelector} style={{ padding: 0, marginTop: "16px", width: "100%" }}>
-        <Box hasBorder>
-          <Row justifyContent="between" alignment="center">
-            <Text variant="bodyMd" style={{ color: "#666666" }}>
-              Currency
-            </Text>
-            <Row justifyContent="end">
-              {selectedCurrency?.logo && (
-                <img
-                  src={selectedCurrency?.logo}
-                  alt={selectedCurrency?.symbol}
-                  style={{
-                    width: "24px",
-                    height: "24px",
-                    objectFit: "contain",
-                    borderRadius: "50%",
-                  }}
-                />
-              )}
-              <Text variant="bodyMd" style={{ color: "#121212" }}>
-                {selectedCurrency?.symbol || "USD"}
-              </Text>
-              <ChevronRight fontSize={24} color={"#121212"} />
-            </Row>
-          </Row>
-        </Box>
-      </Button>
-      <Button variant="link" onClick={openPaymentSelector} style={{ padding: 0, marginTop: "16px", width: "100%" }}>
-        <Box hasBorder>
-          <Row justifyContent="between" alignment="center">
-            <Text variant="bodyMd" style={{ color: "#666666" }}>
-              Payment
-            </Text>
-            <Row justifyContent="end">
-              <Text variant="bodyMd" style={{ color: "#121212" }}>
-                {paymentMethod?.name || "Credit or Debit Card"}
-              </Text>
-              <ChevronRight fontSize={24} color={"#121212"} />
-            </Row>
-          </Row>
-        </Box>
-      </Button>
+      <button className={ styles.buttonDropdown } onClick={openCurrencySelector}>
+        <Text variant="bodyMd" style={{ color: "var(--color-divider-text)" }}>
+          Currency
+        </Text>
+
+        <Row justifyContent="end">
+          {selectedCurrency?.logo && (
+            <img
+              src={selectedCurrency?.logo}
+              alt={selectedCurrency?.symbol}
+              style={{
+                width: "24px",
+                height: "24px",
+                objectFit: "contain",
+                borderRadius: "50%",
+              }}
+            />
+          )}
+          <Text variant="bodyMd" style={{ color: "#121212" }}>
+            {selectedCurrency?.symbol || "USD"}
+          </Text>
+          <ChevronRight fontSize={24} color={"#121212"} />
+        </Row>
+      </button>
+
+      <button className={ styles.buttonDropdown } onClick={openPaymentSelector}>
+        <Text variant="bodyMd" style={{ color: "#666666" }}>
+          Payment
+        </Text>
+
+        <Row justifyContent="end">
+          <Text variant="bodyMd" style={{ color: "#121212" }}>
+            {paymentMethod?.name || "Credit or Debit Card"}
+          </Text>
+          <ChevronRight fontSize={24} color={"#121212"} />
+        </Row>
+      </button>
 
       {error && (
         <Text variant="bodySm" style={{ color: "red", marginTop: "8px", marginBottom: "8px" }}>
           {error}
         </Text>
       )}
+
       <Button
         isLoading={loading}
         variant="primary"
         onClick={() => openTransak("/wallet/buy/success")}
         isDisabled={!purchaseAmount || loading || invalidFiatAmount || !!error || !quote}
-        style={{ marginTop: "16px" }}>
+        style={{ marginTop: " var(--spacing-3)" }}>
         {!quote ? browser.i18n.getMessage("enter_an_amount") : browser.i18n.getMessage("next")}
       </Button>
-    </Card>
+    </DefaultCard>
   );
 
   return (

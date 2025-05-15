@@ -1,8 +1,8 @@
 import { Key01, PasscodeLock } from "@untitled-ui/icons-react";
 import copy from "copy-to-clipboard";
 import { useState, useEffect } from "react";
-import { Box, Button, Card, WanderFooter, Copyable, WarningIcon, Snackbar } from "~components/embed/ui";
-import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard.module";
+import { Button, Copyable, WarningIcon, Snackbar } from "~components/embed/ui";
+import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { WalletUtils } from "~utils/wallets/wallets.utils";
 import { useLocation } from "~wallets/router/router.utils";

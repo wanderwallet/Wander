@@ -1,6 +1,6 @@
 import copy from "copy-to-clipboard";
-import { Card, Copyable, Button, WanderFooter, Spacer } from "~components/embed/ui";
-import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard.module";
+import { Copyable, Button } from "~components/embed/ui";
+import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useLocation } from "~wallets/router/router.utils";
 

@@ -1,5 +1,5 @@
 import { Button, Text, ErrorIcon } from "~components/embed";
-import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard.module";
+import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
 import { useSearchParams } from "~wallets/router/router.utils";
 import { useEffect, useMemo } from "react";
 import { getFriendlyErrorMessage } from "~routes/embedded/auth/auth-error/auth-error.utils";

@@ -6,7 +6,7 @@ import copy from "copy-to-clipboard";
 import { useLocation } from "~wallets/router/router.utils";
 import { toast } from "react-toastify";
 import { WalletUtils } from "~utils/wallets/wallets.utils";
-import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard.module";
+import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
 
 export function AuthImportKeyfileEmbeddedView() {
   const { navigate } = useLocation();

@@ -1,5 +1,5 @@
-import { Box, Button, Card, KeyIcon, RecoverHeaderIcon, SeedIcon, WanderFooter } from "~components/embed/ui";
-import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard.module";
+import { Button, KeyIcon, RecoverHeaderIcon, SeedIcon } from "~components/embed/ui";
+import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
 import { useLocation } from "~wallets/router/router.utils";
 
 export function AuthRecoverAccountEmbeddedView() {

@@ -1,6 +1,7 @@
 import React from "react";
 import type { Alignments, ButtonVariants, Sizes } from "../../../types";
 import type { ButtonIconPositionVariants } from "../../../types/variants";
+import type { WanderRoutePath } from "~wallets/router/router.types";
 
 export type ButtonType = "button" | "submit" | "reset";
 
@@ -71,7 +72,7 @@ export type ButtonBaseProps = {
   /**
    * Optional prop for the href of the ButtonBase component
    */
-  href?: string;
+  href?: WanderRoutePath;
   /**
    * Optional prop for the alignment of the ButtonBase component
    */

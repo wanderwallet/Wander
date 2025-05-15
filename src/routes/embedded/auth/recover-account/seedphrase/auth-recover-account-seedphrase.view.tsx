@@ -1,11 +1,10 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation } from "~wallets/router/router.utils";
-
-import { Card, Copyable, Row, Button, SeedInput, WanderFooter } from "~components/embed/ui";
+import { Copyable, Row, Button, SeedInput } from "~components/embed/ui";
 import copy from "copy-to-clipboard";
 import { toast } from "react-toastify";
-import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard.module";
+import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
 
 export function AuthRecoverAccountSeedphraseEmbeddedView() {
   const [loading, setLoading] = useState(false);

@@ -1,20 +1,16 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { toast } from "react-toastify";
 import {
-  Box,
   Button,
-  Card,
   Divider,
   GoogleIcon,
-  KeyIcon,
   TextInput,
   Row,
   SocialsIcon,
   Text,
   Wander2Icon,
-  WanderFooter,
 } from "~components/embed";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import type { AuthProviderType } from "embed-api";
 import { getSupabaseClient } from "~utils/embedded/embedded.utils";
 import { useLocation } from "~wallets/router/router.utils";
@@ -24,7 +20,7 @@ import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-mes
 import { sleep } from "~utils/promises/sleep";
 import { EMBEDDED_HIDE_BE } from "~utils/embedded/iframe.utils";
 import { InputButton } from "~components/embed/ui/atoms/input-button/InputButton";
-import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard.module";
+import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
 
 export function AuthEmbeddedView() {
   const { navigate } = useLocation();

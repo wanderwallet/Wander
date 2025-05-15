@@ -1,5 +1,7 @@
 import copy from "copy-to-clipboard";
-import { Card, Copyable, Button, WanderFooter } from "~components/embed/ui";
+import { Copyable, Button } from "~components/embed/ui";
+import { DefaultCard } from "~components/embed/ui/molecules/card/default-card/DefaultCard";
+import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
 import { useActiveWallet } from "~wallets/hooks";
 import { useLocation } from "~wallets/router/router.utils";
 
@@ -7,15 +9,14 @@ export function WalletDepositTokensEmbeddedView() {
   const wallet = useActiveWallet();
   const { navigate } = useLocation();
   const walletAddress = wallet.address;
+
   return (
-    <Card
-      headerText={"Deposit Tokens"}
+    <DefaultCard
+      headerText="Deposit Tokens"
       subtitle="Paste this address to send tokens to your account."
-      footerElement={<WanderFooter />}
-      hasBackButton={true}
-      onBackButtonClick={() => navigate("/wallet/receive/options")}
-      size="auto">
-      <br />
+      hasFooter
+      onBackButtonClick={() => navigate("/wallet/receive/options")}>
+
       <Copyable
         isFullWidth
         label="Your deposit address"
@@ -24,9 +25,12 @@ export function WalletDepositTokensEmbeddedView() {
           copy(walletAddress);
         }}
       />
-      <Button isFullWidth size="md" onClick={() => navigate("/wallet/receive/options")}>
+
+      <Button isFullWidth size="md" onClick={() => navigate("/wallet/receive/options")}
+        style={{ marginTop: " var(--spacing-3)" }}>
         Done
       </Button>
-    </Card>
+
+    </DefaultCard>
   );
 }

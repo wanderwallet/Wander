@@ -2,9 +2,9 @@ import { Copy01, Eye, EyeOff } from "@untitled-ui/icons-react";
 import copy from "copy-to-clipboard";
 import { useState, useEffect } from "react";
 import { Flex } from "~components/common/Flex";
-import { Box, Button, Card, WanderFooter, Snackbar, WarningIcon, Text, CheckIcon } from "~components/embed/ui";
+import { Box, Button, Snackbar, WarningIcon, Text, CheckIcon } from "~components/embed/ui";
 import { Loading } from "~components/embed/ui/atoms/loading";
-import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard.module";
+import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useLocation } from "~wallets/router/router.utils";
 

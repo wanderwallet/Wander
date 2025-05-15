@@ -2,8 +2,8 @@ import { AlertTriangle, XClose } from "@untitled-ui/icons-react";
 import { useState, useCallback } from "react";
 import { toast } from "react-toastify";
 import { Flex } from "~components/common/Flex";
-import { Box, Button, Card, WanderFooter, Text } from "~components/embed/ui";
-import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard.module";
+import { Button, Text } from "~components/embed/ui";
+import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useLocation } from "~wallets/router/router.utils";
 

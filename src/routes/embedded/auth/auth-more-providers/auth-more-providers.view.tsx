@@ -1,11 +1,11 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 
-import { AppleIcon, Box, Button, Card, FacebookIcon, TwitterIcon, WanderFooter } from "~components/embed";
+import { AppleIcon, Button, FacebookIcon, TwitterIcon } from "~components/embed";
 import { useCallback, useState } from "react";
 import type { AuthProviderType } from "embed-api";
 import { useLocation } from "~wallets/router/router.utils";
 import { toast } from "react-toastify";
-import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard.module";
+import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
 
 export function AuthMoreProvidersEmbeddedView() {
   const { navigate } = useLocation();

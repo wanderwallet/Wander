@@ -2,7 +2,7 @@ import Arweave from "arweave";
 import BigNumber from "bignumber.js";
 import { useMemo, useState } from "react";
 import type { DecodedTag } from "~api/modules/sign/tags";
-import { Card, Row, Text, Box, XClose, ChevronRight } from "~components/embed/ui";
+import { Row, Text, Box, ChevronRight } from "~components/embed/ui";
 import { defaultGateway } from "~gateways/gateway";
 import { useCurrentAuthRequest } from "~utils/auth/auth.hooks";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
@@ -13,6 +13,7 @@ import prettyBytes from "pretty-bytes";
 import { useStorage, ExtensionStorage } from "~utils/storage";
 import TransactionTag from "~components/embed/auth/TransactionTag";
 import TransactionMessage from "~components/embed/auth/TransactionMessage";
+import { AuthRequestCard } from "~components/embed/ui/molecules/card/auth-request-card/AuthRequestCard";
 
 export function WalletTransactionDetailsEmbeddedView() {
   const { navigate } = useLocation();
@@ -100,15 +101,10 @@ export function WalletTransactionDetailsEmbeddedView() {
   };
 
   return (
-    <Card
-      size="auto"
+    <AuthRequestCard
       headerText="Transaction details"
-      hasBackButton={true}
       onBackButtonClick={() => navigate("/wallet")}
-      hasCloseButton={true}
-      customIcon={<XClose fontSize={24} color={"#666666"} />}
-      onCloseButtonClick={handleCancel}
-      style={{ padding: "2rem" }}>
+      onCloseButtonClick={handleCancel}>
       <Box style={{ gap: "0.5rem" }} alignment="left">
         {transaction?.id && <TransactionTag name="Transaction ID" value={transaction.id} />}
         <TransactionTag name="From" value={formatAddress(activeAddress, 6)} />
@@ -143,6 +139,6 @@ export function WalletTransactionDetailsEmbeddedView() {
       </Box>
 
       <TransactionMessage transaction={transaction} showLink={false} />
-    </Card>
+    </AuthRequestCard>
   );
 }

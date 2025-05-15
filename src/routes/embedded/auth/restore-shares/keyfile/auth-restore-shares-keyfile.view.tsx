@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { Upload, Button, Copyable, Row, Text } from "~components/embed/ui";
 import { useLocation } from "~wallets/router/router.utils";
-import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard.module";
+import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
 import copy from "copy-to-clipboard";
 import { WalletUtils } from "~utils/wallets/wallets.utils";
 import type { CommonRouteProps } from "~wallets/router/router.types";

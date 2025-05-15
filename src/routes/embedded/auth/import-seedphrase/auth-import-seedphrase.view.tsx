@@ -2,7 +2,7 @@ import copy from "copy-to-clipboard";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { Button, Row, SeedInput, Copyable } from "~components/embed/ui";
-import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard.module";
+import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useLocation } from "~wallets/router/router.utils";
 

@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from "react";
 import { permissionData, type PermissionType } from "~applications/permissions";
-import { Card, Box, Switch, XClose } from "~components/embed/ui";
+import { Box, Switch } from "~components/embed/ui";
+import { AuthRequestCard } from "~components/embed/ui/molecules/card/auth-request-card/AuthRequestCard";
 import browser from "~iframe/browser";
 import { useCurrentAuthRequest } from "~utils/auth/auth.hooks";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
@@ -68,33 +69,27 @@ export function WalletSettingsCustomEmbeddedView() {
   };
 
   return (
-    <Card
-      size="auto"
+    <AuthRequestCard
       headerText="Custom Permissions"
-      hasBackButton={true}
-      customIcon={<XClose fontSize={24} color={"#666666"} />}
       onBackButtonClick={() => navigate("/wallet/settings")}
-      onCloseButtonClick={handleCancel}
-      style={{ padding: "2rem 1rem" }}>
-      <Box alignment="left" style={{ gap: 16 }}>
-        {Object.keys(permissionData).map((permissionName: PermissionType) => (
-          <Box
-            style={{ padding: 0 }}
-            alignment="left"
-            key={permissionName}
-            onClick={(e) => handleClick(e, permissionName)}>
-            <Switch
-              size={28}
-              labelPosition="left"
-              id={`checkbox-${permissionName}`}
-              label={formatPermissionName(permissionName)}
-              description={browser.i18n.getMessage(permissionData[permissionName])}
-              handleChange={(e) => {}}
-              isChecked={permissions.get(permissionName) ?? false}
-            />
-          </Box>
-        ))}
-      </Box>
-    </Card>
+      onCloseButtonClick={handleCancel}>
+      {Object.keys(permissionData).map((permissionName: PermissionType) => (
+        <Box
+          style={{ padding: 0 }}
+          alignment="left"
+          key={permissionName}
+          onClick={(e) => handleClick(e, permissionName)}>
+          <Switch
+            size={28}
+            labelPosition="left"
+            id={`checkbox-${permissionName}`}
+            label={formatPermissionName(permissionName)}
+            description={browser.i18n.getMessage(permissionData[permissionName])}
+            handleChange={(e) => {}}
+            isChecked={permissions.get(permissionName) ?? false}
+          />
+        </Box>
+      ))}
+    </AuthRequestCard>
   );
 }
