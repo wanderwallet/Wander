@@ -111,6 +111,7 @@ export class LocalStorage {
 
         await cookieStore.set(cookieOptions);
         const result = await this.getCookieValue(key);
+        if (result !== value) throw new Error(`Failed to set cookie for key '${key}'`);
         return result === value;
       } else {
         // Fallback to js-cookie
@@ -122,7 +123,11 @@ export class LocalStorage {
       if (LocalStorage.debugMode) console.warn(`Failed to set cookie for key '${key}'`, e);
       try {
         Cookies.set(key, value, cookieOptions);
-        const result = Cookies.get(key);
+        let result = Cookies.get(key);
+        if (result !== value) {
+          const useRaw = this.shouldUseRawStorage(key);
+          return this.setStorageValue(key, value, useRaw);
+        }
         return result === value;
       } catch (fallbackError) {
         if (LocalStorage.debugMode) console.warn(`Fallback cookie set also failed for key '${key}'`, fallbackError);

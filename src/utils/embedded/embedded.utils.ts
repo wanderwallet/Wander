@@ -230,8 +230,6 @@ export async function getSupabaseAuthFromUrl(url: string, authProviderType: Auth
 
           popup = window.open(url, "_blank");
         }
-      } else {
-        // TODO: Implement email/password auth
       }
     }
 

@@ -17,7 +17,6 @@ export function AuthEmailVerifyEmbeddedView() {
   const [isResending, setIsResending] = useState(false);
   const [cooldownTime, setCooldownTime] = useState(0);
   const [canResend, setCanResend] = useState(false);
-  const [showContinueButton, setShowContinueButton] = useState(false);
 
   const [verifyEmailResentTimestamp, setVerifyEmailResentTimestamp] = useStorage<number>(
     { key: "sb-verify-email-resent-timestamp", instance: PersistentStorage },
@@ -34,7 +33,6 @@ export function AuthEmailVerifyEmbeddedView() {
     if (initialCooldown === 0) {
       setCanResend(true);
       setCooldownTime(0);
-      setShowContinueButton(true);
       return;
     }
 
@@ -44,7 +42,6 @@ export function AuthEmailVerifyEmbeddedView() {
     const timer = window.setInterval(() => {
       setCooldownTime((prevTime) => {
         if (prevTime <= 1) {
-          setShowContinueButton(true);
           clearInterval(timer);
           setCanResend(true);
           return 0;
@@ -151,16 +148,14 @@ export function AuthEmailVerifyEmbeddedView() {
               </Text>
             )}
           </Flex>
-          {showContinueButton && (
-            <Flex direction="column" gap={4} width="100%">
-              <Text variant={"bodyXs"} alignment={"center"}>
-                Email verified but still not redirected to wallet creation?
-              </Text>
-              <Button variant="link" isFullWidth isLoading={isLoading} onClick={handleContinue}>
-                Click here to continue
-              </Button>
-            </Flex>
-          )}
+          <Flex direction="column" gap={4} width="100%">
+            <Text variant={"bodyXs"} alignment={"center"}>
+              Email confirmed but still not redirected to wallet creation screen?
+            </Text>
+            <Button variant="link" isFullWidth isLoading={isLoading} onClick={handleContinue}>
+              Click here to continue
+            </Button>
+          </Flex>
         </Flex>
       </Box>
     </Card>
