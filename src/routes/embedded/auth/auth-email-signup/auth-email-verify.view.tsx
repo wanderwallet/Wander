@@ -6,64 +6,85 @@ import { getSupabaseClient } from "~utils/embedded/embedded.utils";
 import { useLocation } from "~wallets/router/router.utils";
 import { Flex } from "~components/common/Flex";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
+import { PersistentStorage, useStorage } from "~utils/storage";
+
+const COOLDOWN_DURATION = 60; // seconds
 
 export function AuthEmailVerifyEmbeddedView() {
   const { navigate } = useLocation();
   const { authEmail } = useEmbedded();
   const [isResending, setIsResending] = useState(false);
-  const [cooldownTime, setCooldownTime] = useState(60);
+  const [cooldownTime, setCooldownTime] = useState(0);
   const [canResend, setCanResend] = useState(false);
 
+  const [verifyEmailResentTimestamp, setVerifyEmailResentTimestamp] = useStorage<number>(
+    { key: "sb-verify-email-resent-timestamp", instance: PersistentStorage },
+    (v) => (v === undefined ? Date.now() : v),
+  );
+
   useEffect(() => {
-    let timer: number | undefined;
+    if (!verifyEmailResentTimestamp) return;
 
-    if (cooldownTime > 0) {
-      timer = window.setInterval(() => {
-        setCooldownTime((prevTime) => {
-          const newTime = prevTime - 1;
-          if (newTime <= 0) {
-            setCanResend(true);
-            clearInterval(timer);
-            return 0;
-          }
-          return newTime;
-        });
-      }, 1000);
-    } else {
+    const now = Date.now();
+    const elapsedTime = Math.floor((now - verifyEmailResentTimestamp) / 1000);
+    const initialCooldown = Math.max(0, COOLDOWN_DURATION - elapsedTime);
+
+    if (initialCooldown === 0) {
       setCanResend(true);
+      setCooldownTime(0);
+      return;
     }
 
-    return () => {
-      if (timer) clearInterval(timer);
-    };
-  }, [cooldownTime]);
+    setCooldownTime(initialCooldown);
+    setCanResend(false);
 
-  const handleResendEmail = useCallback(async () => {
-    if (!authEmail || !canResend) return;
-
-    try {
-      setIsResending(true);
-      const supabase = await getSupabaseClient();
-
-      const { error } = await supabase.auth.resend({
-        type: "signup",
-        email: authEmail,
+    const timer = window.setInterval(() => {
+      setCooldownTime((prevTime) => {
+        if (prevTime <= 1) {
+          clearInterval(timer);
+          setCanResend(true);
+          return 0;
+        }
+        return prevTime - 1;
       });
+    }, 1000);
 
-      if (error) {
-        toast.error(error.message);
-        return;
+    return () => clearInterval(timer);
+  }, [verifyEmailResentTimestamp]);
+
+  const handleResendEmail = useCallback(
+    async (e: React.MouseEvent<HTMLButtonElement>) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      if (!authEmail || !canResend) return;
+
+      try {
+        setIsResending(true);
+        const supabase = await getSupabaseClient();
+
+        const { error } = await supabase.auth.resend({
+          type: "signup",
+          email: authEmail,
+        });
+
+        if (error) {
+          toast.error(error.message);
+          return;
+        }
+
+        toast.success("Verification email resent successfully");
+        setVerifyEmailResentTimestamp(Date.now());
+        setCanResend(false);
+        setCooldownTime(COOLDOWN_DURATION);
+      } catch (error) {
+        toast.error("Error sending verification email");
+      } finally {
+        setIsResending(false);
       }
-
-      toast.success("Verification email resent successfully");
-      setCanResend(false);
-      setCooldownTime(60);
-    } catch (error) {
-      toast.error("Error sending verification email");
-    } finally {
-      setIsResending(false);
-    }
-  }, [authEmail, canResend]);
+    },
+    [authEmail, canResend, setVerifyEmailResentTimestamp],
+  );
 
   return (
     <Card

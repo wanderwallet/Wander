@@ -102,7 +102,7 @@ export function AuthEmailSignupEmbeddedView() {
           <TextInput
             type={passwordType}
             {...validPasswordInput.bindings}
-            placeholder="Enter your password"
+            placeholder="Confirm your password"
             isDisabled={areButtonsDisabled}
             onKeyDown={(e) => {
               if (e.key === "Enter") {

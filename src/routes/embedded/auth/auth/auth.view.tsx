@@ -89,7 +89,7 @@ export function AuthEmbeddedView() {
       });
 
       if (error) {
-        toast.error("Error checking email");
+        toast.error(error.message || "Error checking email");
         return;
       }
 
