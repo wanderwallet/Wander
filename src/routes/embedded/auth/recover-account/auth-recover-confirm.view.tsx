@@ -1,17 +1,31 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { toast } from "react-toastify";
 import { Flex } from "~components/common/Flex";
 import { Box, Button, Card, WanderFooter, Text, Checkbox } from "~components/embed/ui";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { formatAddress } from "~utils/format";
+import { withRetry } from "~utils/promises/retry";
+import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 import { useLocation } from "~wallets/router/router.utils";
 
 export function AuthRecoverAccountConfirmEmbeddedView() {
   const { navigate } = useLocation();
-  const { recoverAccount, recoverableAccount, setRecoverableAccount, recoverableAccountWallets, authProviderType } =
-    useEmbedded();
+  const {
+    recoverAccount,
+    recoverWallet,
+    recoverableAccount,
+    deleteImportedTempWallet,
+    setRecoverableAccount,
+    recoverableAccountWallets,
+    authProviderType,
+    wallets,
+  } = useEmbedded();
+  const [shouldRecoverWallet, setShouldRecoverWallet] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
+  const isAccountRecovered = useRef(false);
+  const isWalletRecovered = useRef(false);
+  const walletsRef = useRef(wallets);
 
   const lostWallets = useMemo(
     () => recoverableAccountWallets?.filter((wallet) => wallet.canBeRecovered === false) || [],
@@ -23,18 +37,55 @@ export function AuthRecoverAccountConfirmEmbeddedView() {
     [recoverableAccountWallets],
   );
 
+  const handleRecoverWallet = useCallback(async () => {
+    try {
+      if (!isWalletRecovered.current) {
+        setIsLoading(true);
+        await new Promise((resolve) => {
+          const interval = setInterval(() => {
+            if (walletsRef.current.length > 0) {
+              clearInterval(interval);
+              resolve(true);
+            }
+          }, 1000);
+        });
+        await withRetry(recoverWallet, 3, 1000);
+        await deleteImportedTempWallet();
+        isWalletRecovered.current = true;
+      }
+    } catch {
+    } finally {
+      setRecoverableAccount(null);
+      navigate(EmbeddedPaths.WalletHomeEmbeddedView);
+      setIsLoading(false);
+    }
+  }, [recoverWallet, deleteImportedTempWallet, navigate]);
+
   const handleRecoverAccount = useCallback(async () => {
     try {
       setIsLoading(true);
-      await recoverAccount(authProviderType, recoverableAccount.userId);
-      setRecoverableAccount(null);
-      navigate("/wallet");
+      if (!isAccountRecovered.current) {
+        await recoverAccount(authProviderType, recoverableAccount.userId);
+        isAccountRecovered.current = true;
+        setShouldRecoverWallet(true);
+      }
     } catch (error) {
       toast.error("Error recovering account");
     } finally {
       setIsLoading(false);
     }
-  }, [recoverAccount, recoverableAccount, navigate, setRecoverableAccount, authProviderType]);
+  }, [recoverAccount, recoverableAccount, authProviderType]);
+
+  useEffect(() => {
+    if (shouldRecoverWallet && !isWalletRecovered.current) {
+      handleRecoverWallet();
+      setShouldRecoverWallet(false);
+    }
+  }, [shouldRecoverWallet, handleRecoverWallet]);
+
+  useEffect(() => {
+    walletsRef.current = wallets;
+  }, [wallets]);
 
   return (
     <Card
@@ -104,7 +155,8 @@ export function AuthRecoverAccountConfirmEmbeddedView() {
                 ⚠️ Wallets That Cannot Be Recovered
               </Text>
               <Text variant="bodySm" alignment="left" style={{ color: "#121212", lineHeight: 1.5 }}>
-                These wallets have never been backed up. After recovery, you will permanently lose access to these wallets.
+                These wallets have never been backed up. After recovery, you will permanently lose access to these
+                wallets.
               </Text>
               <Flex direction="column" gap={8} style={{ marginTop: 12 }}>
                 {lostWallets.map((wallet, index) => (

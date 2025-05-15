@@ -793,7 +793,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
   );
 
   const recoverWallet = useCallback(
-    async (recoveryData: RecoveryJSON | JWKInterface | string) => {
+    async (recoveryData?: RecoveryJSON | JWKInterface | string) => {
       let jwk: JWKInterface;
       let walletAddress: string;
       let walletId: string;
@@ -803,16 +803,21 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       let recoveryBackupSharePrivateKeyJWK: JWKInterface | null = null;
       let isRecoveryJSON = true;
 
-      if (WalletUtils.isJWK(recoveryData) || WalletUtils.isSeedPhrase(recoveryData)) {
+      if (
+        (!recoveryData || WalletUtils.isJWK(recoveryData) || WalletUtils.isSeedPhrase(recoveryData)) &&
+        importedTempWalletPromiseRef.current?.promise
+      ) {
         const promise = importedTempWalletPromiseRef.current?.promise;
         ({ jwk, walletAddress } = await promise);
         walletId = wallets.find(({ address }) => address === walletAddress)?.id;
         isRecoveryJSON = false;
-      } else {
+      } else if (WalletUtils.isRecoveryJSON(recoveryData)) {
         ({ walletId, recoveryBackupShare, recoveryFileServerSignature } = recoveryData as RecoveryJSON);
         ({ shareHash: recoveryBackupShareHash, sharePrivateKeyJWK: recoveryBackupSharePrivateKeyJWK } =
           await WalletUtils.generateShareHashAndPrivateKey(recoveryBackupShare));
         walletAddress = wallets.find(({ id }) => id === walletId)?.address;
+      } else {
+        throw new Error("Invalid recovery data provided!");
       }
 
       if (!walletId || !walletAddress) {
