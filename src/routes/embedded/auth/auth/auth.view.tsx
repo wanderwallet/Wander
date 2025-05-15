@@ -6,7 +6,6 @@ import {
   Card,
   Divider,
   GoogleIcon,
-  KeyIcon,
   TextInput,
   Row,
   SocialsIcon,
@@ -21,13 +20,12 @@ import { useLocation } from "~wallets/router/router.utils";
 import { isValidEmail } from "~utils/email";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
-import { useAllWallets } from "~wallets/hooks";
 import { sleep } from "~utils/promises/sleep";
 import { EMBEDDED_HIDE_BE } from "~utils/embedded/iframe.utils";
 
 export function AuthEmbeddedView() {
   const { navigate } = useLocation();
-  const { authenticate, authStatus, setAuthEmail } = useEmbedded();
+  const { authenticate, authStatus, setAuthEmail, recoverableAccount } = useEmbedded();
   const [isLoading, setIsLoading] = useState(false);
 
   const [selectedAuthProviderType, setSelectedAuthProviderType] = useState<AuthProviderType | "NATIVE_WALLET" | null>(
@@ -111,7 +109,11 @@ export function AuthEmbeddedView() {
   }, []);
 
   return (
-    <Card headerText="Sign up or Sign in" footerElement={<WanderFooter />} hasBackButton={false} size="auto">
+    <Card
+      headerText={recoverableAccount ? "Select new sign in method" : "Sign up or Sign in"}
+      footerElement={<WanderFooter />}
+      hasBackButton={false}
+      size="auto">
       <Box>
         <TextInput
           ref={emailInputRef}
@@ -158,12 +160,14 @@ export function AuthEmbeddedView() {
           href="#/auth/more-providers">
           More options
         </Button>
-        <Row style={{ gap: "4px" }}>
-          <Text variant={"bodySm"}>{"Can't sign in?"}</Text>
-          <Button variant="link" href="#/auth/recover-account" size="sm">
-            Recover account
-          </Button>
-        </Row>
+        {!recoverableAccount && (
+          <Row style={{ gap: "4px" }}>
+            <Text variant={"bodySm"}>{"Can't sign in?"}</Text>
+            <Button variant="link" href="#/auth/recover-account" size="sm">
+              Recover account
+            </Button>
+          </Row>
+        )}
       </Box>
     </Card>
   );
