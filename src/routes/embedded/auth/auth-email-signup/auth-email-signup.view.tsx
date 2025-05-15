@@ -10,6 +10,7 @@ import { useInput } from "@arconnect/components-rebrand";
 import PasswordMatch from "~components/welcome/PasswordMatch";
 import PasswordStrength from "~components/welcome/PasswordStrength";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
+import { PersistentStorage } from "~utils/storage";
 
 export function AuthEmailSignupEmbeddedView() {
   const { navigate } = useLocation();
@@ -49,6 +50,7 @@ export function AuthEmailSignupEmbeddedView() {
       }
 
       setAuthPassword(passwordInput.state);
+      await PersistentStorage.setItem("sb-verify-email-resent-timestamp", Date.now());
       navigate(EmbeddedPaths.AuthEmailVerify);
     } catch (error) {
       toast.error("Error signing up");

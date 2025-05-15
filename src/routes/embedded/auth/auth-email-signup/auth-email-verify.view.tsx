@@ -74,7 +74,7 @@ export function AuthEmailVerifyEmbeddedView() {
           return;
         }
 
-        toast.success("Verification email resent successfully");
+        toast.success("Verification email sent successfully");
         setVerifyEmailResentTimestamp(Date.now());
         setCanResend(false);
         setCooldownTime(COOLDOWN_DURATION);
@@ -149,8 +149,8 @@ export function AuthEmailVerifyEmbeddedView() {
             )}
           </Flex>
           <Flex direction="column" gap={4} width="100%">
-            <Text variant={"bodyXs"} alignment={"center"}>
-              Email confirmed but still not redirected to wallet creation screen?
+            <Text variant={"bodyXs"} alignment={"center"} style={{ color: "var(--text-color-tertiary, #838383)" }}>
+              Already verified your email but not seeing anything?
             </Text>
             <Button variant="link" isFullWidth isLoading={isLoading} onClick={handleContinue}>
               Click here to continue
