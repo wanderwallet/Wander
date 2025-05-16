@@ -795,6 +795,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
   const recoverWallet = useCallback(
     async (recoveryData?: RecoveryJSON | JWKInterface | string) => {
       let jwk: JWKInterface;
+      let seedPhrase: string | null = null;
       let walletAddress: string;
       let walletId: string;
       let recoveryBackupShare: string | null = null;
@@ -808,8 +809,11 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         importedTempWalletPromiseRef.current?.promise
       ) {
         const promise = importedTempWalletPromiseRef.current?.promise;
-        ({ jwk, walletAddress } = await promise);
+        ({ jwk, walletAddress, seedPhrase } = await promise);
         walletId = wallets.find(({ address }) => address === walletAddress)?.id;
+        if (!recoveryData && seedPhrase && EMBEDDED_FEATURE_FLAGS.STORE_SEED_PHRASE) {
+          await WalletUtils.storeEncryptedSeedPhrase(walletId, seedPhrase, jwk).catch(() => {});
+        }
         isRecoveryJSON = false;
       } else if (WalletUtils.isRecoveryJSON(recoveryData)) {
         ({ walletId, recoveryBackupShare, recoveryFileServerSignature } = recoveryData as RecoveryJSON);

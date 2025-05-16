@@ -64,13 +64,20 @@ export function AuthRecoverAccountConfirmEmbeddedView() {
   const handleRecoverAccount = useCallback(async () => {
     try {
       setIsLoading(true);
+      setShouldRecoverWallet(false);
+      if (walletsRef.current.length > 0) {
+        isAccountRecovered.current = true;
+        setShouldRecoverWallet(true);
+        return;
+      }
+
       if (!isAccountRecovered.current) {
         await recoverAccount(authProviderType, recoverableAccount.userId);
         isAccountRecovered.current = true;
         setShouldRecoverWallet(true);
       }
     } catch (error) {
-      toast.error("Error recovering account");
+      toast.error(error?.message || "Error recovering account");
     } finally {
       setIsLoading(false);
     }
