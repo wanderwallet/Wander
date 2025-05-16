@@ -39,7 +39,7 @@ export function MyApp() {
   useEffect(() => {
     // Initialize the wallet
     const wanderInstance = new WanderConnect({
-      clientID: "<CLIENT_ID>",
+      clientId: "<CLIENT_ID>",
     });
 
     setInstance(wanderInstance);
