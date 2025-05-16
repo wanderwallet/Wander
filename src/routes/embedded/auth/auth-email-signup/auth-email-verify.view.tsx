@@ -7,6 +7,7 @@ import { useLocation } from "~wallets/router/router.utils";
 import { Flex } from "~components/common/Flex";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 import { PersistentStorage, useStorage } from "~utils/storage";
+import styles from "~components/embed/ui/atoms/text-input/TextInput.module.css";
 
 const COOLDOWN_DURATION = 60; // seconds
 const OTP_LENGTH = 6;
@@ -265,6 +266,7 @@ export function AuthEmailVerifyEmbeddedView() {
               {Array.from({ length: OTP_LENGTH }).map((_, index) => (
                 <input
                   key={index}
+                  className={styles["input"]}
                   id={`otp-input-${index}`}
                   ref={(el) => (inputRefs.current[index] = el)}
                   type="text"
@@ -278,10 +280,7 @@ export function AuthEmailVerifyEmbeddedView() {
                     height: "48px",
                     textAlign: "center",
                     fontSize: "18px",
-                    border: "1px solid var(--border-color, #E0E0E0)",
                     borderRadius: "8px",
-                    backgroundColor: "var(--background-color-input, #FFFFFF)",
-                    color: "var(--text-color-primary, #121212)",
                     outline: "none",
                   }}
                 />
