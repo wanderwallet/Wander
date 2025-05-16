@@ -80,7 +80,7 @@ export function useEmbeddedOverride(
       throw new Error("Not implemented");
     }
 
-    if (authStatus === "noWallets" && recoverableAccount) {
+    if ((authStatus === "noWallets" || authStatus === "noShares") && recoverableAccount) {
       return routeTrapMatches(
         location,
         [EmbeddedPaths.AuthRecoverAccountConfirm],

@@ -665,6 +665,14 @@ function isSeedPhrase(obj: unknown): boolean {
   }
 }
 
+function isRecoveryJSON(obj: unknown): boolean {
+  if (typeof obj !== "object" || obj === null) {
+    return false;
+  }
+  const requiredKeys = ["version", "walletId", "recoveryBackupShare", "recoveryFileServerSignature"];
+  return requiredKeys.every((key) => key in obj);
+}
+
 export const WalletUtils = {
   // Generation:
   generateSeedPhrase,
@@ -693,6 +701,7 @@ export const WalletUtils = {
   // Validation:
   isJWK,
   isSeedPhrase,
+  isRecoveryJSON,
 };
 
 // Stored seedphrases and recovery shares are removed if the feature flags are disabled:

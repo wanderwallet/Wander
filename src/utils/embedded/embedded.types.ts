@@ -100,7 +100,7 @@ export interface EmbeddedContextData extends EmbeddedContextState, EmbeddedConte
   setRecoverableAccountWallets: (recoverableAccountWallets: RecoverableAccountWallet[]) => void;
   fetchRecoverableAccountWallets: (recoverableAccount: RecoverableAccount) => Promise<RecoverableAccountWallet[]>;
   recoverAccount: (authProviderType: AuthProviderType, accountToRecoverId: string) => Promise<void>;
-  recoverWallet: (recoveryData: RecoveryJSON | JWKInterface | string) => Promise<void>;
+  recoverWallet: (recoveryData?: RecoveryJSON | JWKInterface | string) => Promise<void>;
 
   generateTempWallet: () => Promise<TempWallet>;
   deleteGeneratedTempWallet: () => Promise<void>;
