@@ -11,6 +11,7 @@ import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 import { PasswordInput } from "~components/embed/ui/atoms/password-input";
 import { useThrottledCallback } from "@swyg/corre";
 import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
+import { PersistentStorage } from "~utils/storage";
 
 export function AuthEmailSignupEmbeddedView() {
   const { navigate } = useLocation();
@@ -82,6 +83,8 @@ export function AuthEmailSignupEmbeddedView() {
         return;
       }
 
+      // TODO: Move to constant and rename.
+      await PersistentStorage.setItem("sb-verify-email-resent-timestamp", Date.now());
       navigate(EmbeddedPaths.AuthEmailVerify, {
         search: { email },
       });
@@ -119,7 +122,7 @@ export function AuthEmailSignupEmbeddedView() {
 
       <PasswordInput
         name="repeatPassword"
-        placeholder="Enter your password"
+        placeholder="Confirm your password"
         inputRef={repeatPasswordInputRef}
         disabled={areButtonsDisabled}
         onChange={ handlePasswordChange } />

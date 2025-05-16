@@ -64,6 +64,9 @@ export function AuthEmailSigninEmbeddedView() {
 
       if (error) {
         toast.error(error.message);
+        if (error.code === "email_not_confirmed") {
+          navigate(EmbeddedPaths.AuthEmailVerify);
+        }
         return;
       }
 

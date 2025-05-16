@@ -87,4 +87,9 @@ export type ButtonBaseProps = {
    * Optional prop for the style of the ButtonBase component
    */
   style?: React.CSSProperties;
+
+  /**
+   * Optional prop for the tabIndex of the ButtonBase component
+   */
+  tabIndex?: number;
 };

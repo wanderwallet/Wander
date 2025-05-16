@@ -24,7 +24,8 @@ import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-c
 
 export function AuthEmbeddedView() {
   const { navigate } = useLocation();
-  const { authenticate, authStatus } = useEmbedded();
+  const { authenticate, authStatus, recoverableAccount } = useEmbedded();
+  const [isLoading, setIsLoading] = useState(false);
 
   // Input refs:
 
@@ -96,7 +97,7 @@ export function AuthEmbeddedView() {
       });
 
       if (error) {
-        toast.error("Error checking email");
+        toast.error(error.message || "Error checking email");
         return;
       }
 
@@ -127,7 +128,7 @@ export function AuthEmbeddedView() {
 
   return (
     <OnboardingCard
-      headerText="Sign Up or Sign In"
+      headerText={recoverableAccount ? "Select new sign in method" : "Sign up or Sign in"}
       hasBackButton={false}
       isLoading={ isViewLoading }
       onSubmit={ handleCheckEmail }>
@@ -171,16 +172,18 @@ export function AuthEmbeddedView() {
         More options
       </Button>
 
-      <Row style={{ gap: "4px" }}>
-        <Text variant={"bodySm"}>{"Can't sign in?"}</Text>
-        <Button
-          variant="link"
-          isDisabled={areButtonsDisabled}
-          href="/auth/recover-account"
-          size="sm">
-          Recover account
-        </Button>
-      </Row>
+      { recoverableAccount ? (
+        <Row style={{ gap: "4px" }}>
+          <Text variant={"bodySm"}>{"Can't sign in?"}</Text>
+          <Button
+            variant="link"
+            isDisabled={areButtonsDisabled}
+            href="/auth/recover-account"
+            size="sm">
+            Recover account
+          </Button>
+        </Row>
+      ) : null }
 
     </OnboardingCard>
   );

@@ -9,7 +9,7 @@ import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-c
 
 export function AuthMoreProvidersEmbeddedView() {
   const { navigate } = useLocation();
-  const { authenticate, authStatus } = useEmbedded();
+  const { authenticate, authStatus, recoverableAccount } = useEmbedded();
 
   // Loading state:
 
@@ -35,7 +35,7 @@ export function AuthMoreProvidersEmbeddedView() {
 
   return (
     <OnboardingCard
-      headerText="Sign Up or Sign In"
+      headerText={recoverableAccount ? "Select new sign in method" : "Sign up or Sign in"}
       subtitle="Select a method to authenticate"
       onBackButtonClick={() => navigate(`/auth`)}
       isLoading={ isViewLoading }>

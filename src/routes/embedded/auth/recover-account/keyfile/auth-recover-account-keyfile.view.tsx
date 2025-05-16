@@ -6,6 +6,7 @@ import copy from "copy-to-clipboard";
 import { toast } from "react-toastify";
 import { WalletUtils } from "~utils/wallets/wallets.utils";
 import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
+import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 
 export function AuthRecoverAccountKeyfileEmbeddedView() {
   const [loading, setLoading] = useState(false);
@@ -18,6 +19,7 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
     deleteImportedTempWallet,
     fetchRecoverableAccounts,
     clearRecoverableAccounts,
+    fetchRecoverableAccountWallets,
   } = useEmbedded();
 
   const handleJsonParse = async (jsonData: any) => {
@@ -51,11 +53,18 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
   const handleRecover = async () => {
     try {
       setLoading(true);
-      await fetchRecoverableAccounts();
+      const recoverableAccounts = await fetchRecoverableAccounts();
+      if (recoverableAccounts.length === 1) {
+        await fetchRecoverableAccountWallets(recoverableAccounts[0]);
+        navigate(EmbeddedPaths.Auth);
+      } else if (recoverableAccounts.length > 1) {
+        navigate("/auth/recover-account/select");
+      } else {
+        toast.error("No recoverable accounts found");
+      }
       setLoading(false);
-      navigate("/auth/recover-account/authentication");
     } catch (error) {
-      toast.error(error);
+      toast.error(error?.message || "Error recovering account");
       setLoading(false);
     }
   };
