@@ -52,10 +52,19 @@ export function EmbeddedConnectAuthRequestView() {
     }
   }, [activeWallet, nameServiceProfile, nsGateway]);
 
+  const handleNext = () => {
+    ExtensionStorage.remove(`requested_permissions_${url}`);
+    ExtensionStorage.remove("sign_policy");
+    navigate("/wallet/settings");
+  };
+
   return (
     <>
       <AuthRequestCard
-        onCloseButtonClick={handleCancel}>
+        onCloseButtonClick={handleCancel}
+        onCancel={handleCancel}
+        onConfirm={handleNext}
+        confirmLabel="Next">
 
         <AppIcons appInfo={appInfo} />
 
@@ -93,22 +102,6 @@ export function EmbeddedConnectAuthRequestView() {
             </Button>
           </Row>
         </Box>
-
-        <Row style={{ paddingTop: " var(--spacing-3)", marginTop: "auto" }}>
-          <Button variant="secondary" isFullWidth onClick={handleCancel}>
-            Cancel
-          </Button>
-          <Button
-            variant="primary"
-            isFullWidth
-            onClick={() => {
-              ExtensionStorage.remove(`requested_permissions_${url}`);
-              ExtensionStorage.remove("sign_policy");
-              navigate("/wallet/settings");
-            }}>
-            Next
-          </Button>
-        </Row>
       </AuthRequestCard>
 
       {/* Add overlay when dropdown is open */}

@@ -45,7 +45,7 @@ const TransactionItem = ({ transaction }: TransactionItemProps) => {
   }, [transaction]);
 
   return (
-    <Box hasBorder style={{ margin: "1rem 0", cursor: "pointer" }} onClick={handleTransactionClick}>
+    <Box hasBorder style={{ cursor: "pointer" }} onClick={handleTransactionClick}>
       <Row isFullWidth style={{ width: "100%" }}>
         <Logo src={logoSource} alt={transaction.aoInfo?.tickerName} height={24} width={24} />
         <Box

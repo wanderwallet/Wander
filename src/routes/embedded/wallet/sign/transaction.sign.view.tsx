@@ -1,4 +1,4 @@
-import { Row, Text, Box, Button, Divider } from "~components/embed/ui";
+import { Row, Text, Box, Divider } from "~components/embed/ui";
 import { useLocation } from "~wallets/router/router.utils";
 import { useCurrentAuthRequest } from "~utils/auth/auth.hooks";
 import Image from "~components/common/Image";
@@ -82,7 +82,9 @@ export function EmbeddedSignAuthRequestView() {
   return (
     <AuthRequestCard
       headerText="Confirm Activity"
-      onCloseButtonClick={handleCancel}>
+      onCloseButtonClick={handleCancel}
+      onCancel={handleCancel}
+      onConfirm={sign}>
       <Box alignment="left" style={{ padding: "1rem 0" }}>
         <Row alignment="center" justifyContent="center" style={{ padding: 0 }}>
           <Image
@@ -155,15 +157,6 @@ export function EmbeddedSignAuthRequestView() {
       )}
 
       <TransactionMessage transaction={transaction} />
-
-      <Row>
-        <Button variant="secondary" onClick={handleCancel}>
-          Cancel
-        </Button>
-        <Button variant="primary" onClick={sign}>
-          Confirm
-        </Button>
-      </Row>
     </AuthRequestCard>
   );
 }

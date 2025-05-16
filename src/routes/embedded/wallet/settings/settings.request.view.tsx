@@ -1,5 +1,5 @@
 import { permissionData, signPolicyOptions, type PermissionType } from "~applications/permissions";
-import { Box, Button, Radio, Snackbar, InfoIcon, Text, Row, ChevronRight } from "~components/embed/ui";
+import { Box, Radio, Snackbar, InfoIcon, Text, Row, ChevronRight } from "~components/embed/ui";
 import { useLocation } from "~wallets/router/router.utils";
 import browser from "webextension-polyfill";
 import { Spacer } from "@arconnect/components-rebrand";
@@ -137,7 +137,11 @@ export function WalletPermissionsRequestEmbeddedView() {
 
   return (
     <AuthRequestCard
-      onCloseButtonClick={handleCancel}>
+      onCloseButtonClick={handleCancel}
+      onCancel={handleCancel}
+      onConfirm={connect}
+      confirmLabel="Next"
+      isConfirmDisabled={!signPolicy}>
 
       <AppIcons appInfo={appInfo} />
 
@@ -178,14 +182,6 @@ export function WalletPermissionsRequestEmbeddedView() {
         />
       </Box>
 
-      <Row style={{ paddingTop: " var(--spacing-3)", marginTop: "auto" }}>
-        <Button variant="outlined" isFullWidth onClick={handleCancel}>
-          Cancel
-        </Button>
-        <Button variant="primary" isFullWidth onClick={connect} isDisabled={!signPolicy}>
-          Confirm
-        </Button>
-      </Row>
     </AuthRequestCard>
   );
 }

@@ -101,7 +101,7 @@ export default function TransactionMessage({ transaction, showLink = true }: Tra
   if (!message && !showLink) return null;
 
   return (
-    <Box hasBorder alignment="left" style={{ margin: "1rem" }}>
+    <Box hasBorder>
       {message && (
         <Box alignment="left" style={{ padding: 0, margin: 0 }}>
           <Text variant="bodySm" style={{ color: "#666666" }}>
@@ -121,6 +121,7 @@ export default function TransactionMessage({ transaction, showLink = true }: Tra
           </Box>
         </Box>
       )}
+
       {showLink && (
         <Row
           isFullWidth

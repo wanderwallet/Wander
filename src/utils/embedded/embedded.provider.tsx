@@ -820,6 +820,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
   // AUTHENTICATION:
 
+  /*
   const refreshSession = async (session?: DbSession) => {
     const supabase = await getSupabaseClient();
     const {
@@ -840,6 +841,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
     return session;
   };
+  */
 
   const authenticate = useCallback(
     async (authProviderType: AuthProviderType) => {
@@ -993,25 +995,12 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       return;
     }
 
-    if (!session.id || !session.deviceNonce) {
-      console.warn("❌  The current session is incomplete. Refreshing...", session);
-      session = await refreshSession(session);
-    } else if (session.deviceNonce !== (await getDeviceNonce())) {
-      console.warn("⚠️  The current session is complete, but the device nonce doesn't match!. Refreshing...", session);
-      session = await refreshSession(session);
-    } else {
-      console.log("✅  The current session is complete!", session);
-    }
-
-    session = await getLatestSession(session);
-
     const wallets = await WalletService.fetchWallets(userId);
 
     setEmbeddedContextState((prevAuthContextState) => ({
       ...prevAuthContextState,
       currentWalletId: wallets?.[0]?.id || null,
       wallets,
-      session,
     }));
 
     let authStatus = "noAuth" as AuthStatus;
@@ -1124,6 +1113,9 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
   }, []);
 
   useEffect(() => {
+    let forceInitTimeoutID = 0;
+    let unsubscribe: any = () => {};
+
     async function init() {
       /*
       KNOWN AUTHENTICATION ISSUES:
@@ -1136,12 +1128,9 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         origin. The `setTimeout` below is a dirty/tem fix for that.
 
         See https://stackoverflow.com/questions/71819128/supabase-auth-onauthstatechange-not-working-when-react-app-is-in-iframe
-
-      - When a sessions is deleted from the DB, it's still reported as valid, even thought tRPC endpoints will return
-        UNAUTHORIZED errors. When that happens, we should force de-authentication of the frontend.
       */
 
-      const forceInitTimeoutID = setTimeout(() => {
+      forceInitTimeoutID = window.setTimeout(() => {
         console.warn("Forcing initialization...");
 
         setEmbeddedContextAuth({
@@ -1156,41 +1145,49 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
       const supabase = await getSupabaseClient();
 
-      // Retrieves the current LOCAL session:
-      const { data, error } = await supabase.auth.getSession();
-      const cachedUser = data?.session?.user;
-
-      // Send the initial state for the SDK button ASAP if there's cached data. Otherwise, the initial state will be
-      // sent by the `useEffect` above that sends `"embedded_auth"` events too.
-
-      if (!error && cachedUser) {
-        postEmbeddedMessage({
-          type: "embedded_auth",
-          data: {
-            authType: getAuthProviderTypeFromSupabaseUser(cachedUser),
-            authStatus: "loading",
-            userDetails: getUserDetailsFromSupabaseUser(cachedUser),
-          },
-        });
-      }
+      let isInitialAuthEventDispatched = false;
 
       const {
         data: { subscription },
       } = supabase.auth.onAuthStateChange(async (_event, session) => {
         window.clearTimeout(forceInitTimeoutID);
 
-        // Comment this line to run Wander Embedded as a standalone page:
+        if (isInitialAuthEventDispatched && _event === "INITIAL_SESSION") return;
+
+        if (!isInitialAuthEventDispatched) {
+          isInitialAuthEventDispatched = true;
+
+          const cachedUser = session?.user;
+
+          // Send the initial state for the SDK button ASAP if there's cached data. Otherwise, the initial state will be
+          // sent by the `useEffect` above that sends `"embedded_auth"` events too.
+
+          if (cachedUser) {
+            if (_event === "INITIAL_SESSION") {
+              supabase.auth.refreshSession();
+            }
+
+            postEmbeddedMessage({
+              type: "embedded_auth",
+              data: {
+                authType: getAuthProviderTypeFromSupabaseUser(cachedUser),
+                authStatus: "loading",
+                userDetails: getUserDetailsFromSupabaseUser(cachedUser),
+              },
+            });
+          }
+        }
+
         if (!isInsideIframe()) {
           if (session?.access_token && window.opener) {
-            await completeAuth(session);
+            completeAuth(session);
+          } else if (window.location.origin === "https://connect.wander.app") {
+            window.close();
+          } else {
+            console.warn("In production (https://connect.wander.app), the app would close right now.");
           }
 
-          if (window.location.origin === "https://embed.wander.app") {
-            window.close();
-            return;
-          } else {
-            console.warn("In production (https://embed.wander.app), the app would close right now.");
-          }
+          return;
         }
 
         const accessToken = session?.access_token ?? null;
@@ -1213,6 +1210,30 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
             id: sessionId,
             userId: sub,
           };
+
+          const deviceNonce = await getDeviceNonce();
+
+          if (!dbSession.id || !dbSession.deviceNonce) {
+            console.warn("❌  The current session is incomplete =", dbSession);
+          } else if (dbSession.deviceNonce !== deviceNonce) {
+            console.warn(`⚠️  The current session is complete, but the device nonce (${ deviceNonce }) doesn't match =`, dbSession);
+          } else {
+            console.log("✅  The current session is complete =", dbSession);
+          }
+
+          if (_event !== "TOKEN_REFRESHED" && (!dbSession.id || dbSession.deviceNonce !== deviceNonce)) {
+            console.log("🔃 Refreshing session...");
+
+            // We wait to leave some time for the trigger to update the session and make sure that, when we refresh, we
+            // get the updated session data:
+            await sleep(2500);
+
+            supabase.auth.refreshSession();
+
+            return;
+          }
+
+          dbSession = await getLatestSession(dbSession);
         }
 
         setAuthTokenHeader(accessToken);
@@ -1227,6 +1248,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
             session: dbSession,
           }));
         } else {
+          // TODO: Duplicated in initEmbeddedWallet()?
           setEmbeddedContextState(EMBEDDED_CONTEXT_INITIAL_STATE);
 
           setEmbeddedContextAuth({
@@ -1238,15 +1260,18 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         }
       });
 
-      return () => {
-        window.clearTimeout(forceInitTimeoutID);
-        subscription.unsubscribe();
-      };
+      unsubscribe = subscription.unsubscribe;
     }
 
     init();
+
+    return () => {
+      window.clearTimeout(forceInitTimeoutID);
+      unsubscribe();
+    };
   }, [initEmbeddedWallet]);
 
+  // TODO: Move to app entry/mount point and do not even start the app?
   useEffect(() => {
     if (wocation.startsWith("/access_token") && window.opener) {
       // Get the hash fragment without the leading '#'

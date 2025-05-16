@@ -6,15 +6,6 @@ import { isInsideIframe, EMBEDDED_ANCESTOR_ORIGIN, EMBEDDED_CLIENT_ID, EMBEDDED_
 import { ExtensionStorage } from "~utils/storage";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 
-// Then, its tRPC client will be initialized with the following headers:
-// - authorization (getAuthTokenHeader / setAuthTokenHeader)
-// - x-device-nonce (getDeviceNonceHeader / setDeviceNonceHeader)
-// - x-client-id (getClientIdHeader / setClientIdHeader)
-// - x-application-id (getApplicationIdHeader / setApplicationIdHeader)
-//
-// The code/functions below run in the context of Wander Embedded iframe/domain.
-
-// Note: This is run when trpc detects UNAUTHORIZED error.
 export async function signOut(close = true) {
   try {
     // We send "embedded_close", instead of just closing the modal on "embedded_auth" (log out), because log out can be
@@ -35,36 +26,51 @@ export async function signOut(close = true) {
 
   try {
     const supabase = await getSupabaseClient();
-    await supabase.auth.signOut();
+    const { error } = await supabase.auth.signOut();
+
+    if (error) throw error;
   } catch (err) {
     console.error("Error signing out:", err);
+
+    const storage = await LocalStorage.getInstance();
+
+    const supabaseAuthTokenKeys = storage.keys().filter((key) => key.endsWith("-auth-token"));
+
+    storage.removeItems(supabaseAuthTokenKeys);
 
     window.location.href = "#/";
     window.location.reload();
   }
 }
 
-// Create a singleton instance of `TRPCClient`
-let trpcInstance: ReturnType<typeof createTRPCClient> | null = null;
+let trpcClientAndUtils: ReturnType<typeof createTRPCClient> | null = null;
 
+/**
+ * Create (if needed) and return a tRPC client instance (singleton) and initialized with the following headers:
+ * - authorization (getAuthTokenHeader / setAuthTokenHeader)
+ * - x-device-nonce (getDeviceNonceHeader / setDeviceNonceHeader)
+ * - x-client-id (getClientIdHeader / setClientIdHeader)
+ * - x-application-id (getApplicationIdHeader / setApplicationIdHeader)
+ *
+ * @returns A configured tRPC client instance.
+ */
 function getTRPCClientAndUtils() {
   if (!IS_EMBEDDED_APP) return null;
 
-  if (!trpcInstance) {
-    trpcInstance = createTRPCClient({
+  if (!trpcClientAndUtils) {
+    trpcClientAndUtils = createTRPCClient({
       baseURL: EMBEDDED_SERVER_BASE_URL,
       authToken: null,
       deviceNonce: undefined,
       clientId: EMBEDDED_CLIENT_ID,
       applicationId: "",
-      onAuthError: signOut,
+      // Note: Errors like UNAUTHORIZED will de-authenticate the user automatically (without closing the modal):
+      onAuthError: () => signOut(false),
     });
   }
 
-  return trpcInstance;
+  return trpcClientAndUtils;
 }
-
-const trpcClientAndUtils = getTRPCClientAndUtils();
 
 const {
   client: trpcVanilla,
@@ -75,7 +81,7 @@ const {
   getClientIdHeader,
   setClientIdHeader,
   setApplicationIdHeader,
-} = trpcClientAndUtils || {};
+} = getTRPCClientAndUtils() || {};
 
 // Exporting the router from one repo to another might, in some scenarios, return incorrect types, but it can be fixed
 // by also importing the right AppRouter type and overriding the `client` type:

@@ -1,4 +1,4 @@
-import { Button, Text, Box, Row } from "~components/embed/ui";
+import { Text } from "~components/embed/ui";
 import { useLocation } from "~wallets/router/router.utils";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 import { useCurrentAuthRequest } from "~utils/auth/auth.hooks";
@@ -46,23 +46,15 @@ export function EmbeddedSignatureAuthRequestView() {
   return (
     <AuthRequestCard
       headerText={browser.i18n.getMessage("titles_signature")}
-      onCloseButtonClick={handleCancel}>
-      <Box>
-        <Text variant="bodyMd" style={{ color: "#666666" }}>
-          {browser.i18n.getMessage("signature_description", url)}
-        </Text>
+      onCloseButtonClick={handleCancel}
+      onCancel={handleCancel}
+      onConfirm={handleDecrypt}
+      confirmLabel={browser.i18n.getMessage("signature_authorize")}>
+      <Text variant="bodyMd" style={{ color: "#666666" }}>
+        {browser.i18n.getMessage("signature_description", url)}
+      </Text>
 
-        <Message message={message} />
-      </Box>
-
-      <Row>
-        <Button variant="secondary" isFullWidth onClick={handleCancel}>
-          Cancel
-        </Button>
-        <Button variant="primary" isFullWidth onClick={handleDecrypt}>
-          {browser.i18n.getMessage("signature_authorize")}
-        </Button>
-      </Row>
+      <Message message={message} />
     </AuthRequestCard>
   );
 }

@@ -2,7 +2,6 @@ import React from "react";
 import type { CardBaseProps } from "./Card.types";
 import { Box, MinimizeIcon, ChevronLeft } from "../../atoms";
 import { Header } from "../header";
-import { Footer } from "../footer";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 import { useLocation } from "~wallets/router/router.utils";
 import { Loading } from "@arconnect/components";
@@ -59,6 +58,8 @@ const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
       </button>
     ) : null;
 
+    // TODO: Use CSS shape-outside for the buttons and use <header> and <footer>. Also address all those paddings...
+
     return (
       <Box
         ref={ref}
@@ -74,7 +75,7 @@ const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
         {headerText && <Header icon={headerIcon} title={headerText} subtitle={subtitle} />}
         {children}
         <div style={{ marginTop: "auto" }}></div>
-        {footerElement && <Footer children={footerElement} />}
+        {footerElement}
 
         <div className={ styles["card__loaderCover"]}>
           { isLoading ? (
