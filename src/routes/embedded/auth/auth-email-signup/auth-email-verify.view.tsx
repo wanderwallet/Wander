@@ -1,14 +1,15 @@
 import { toast } from "react-toastify";
-import { Box, Card, Text, WanderFooter, Button } from "~components/embed";
+import { Text, Button } from "~components/embed";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getSupabaseClient } from "~utils/embedded/embedded.utils";
 import { useLocation, useSearchParams } from "~wallets/router/router.utils";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 import { PersistentStorage, useStorage } from "~utils/storage";
-import styles from "~components/embed/ui/atoms/text-input/TextInput.module.css";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
 import { Flex } from "~components/common/Flex";
+
+import styles from "./auth-email-verify.module.scss";
 
 const COOLDOWN_DURATION = 60; // seconds
 const OTP_LENGTH = 6;
@@ -273,23 +274,15 @@ export function AuthEmailVerifyEmbeddedView() {
           {Array.from({ length: OTP_LENGTH }).map((_, index) => (
             <input
               key={index}
-              className={styles["input"]}
-              id={`otp-input-${index}`}
-              ref={(el) => (inputRefs.current[index] = el)}
               type="text"
+              className={styles["input"]}
+              name={`otp-input-${index}`}
+              ref={(el) => (inputRefs.current[index] = el)}
               maxLength={1}
               value={otpDigits[index] || ""}
               onChange={(e) => handleOtpDigitChange(index, e.target.value)}
               onKeyDown={(e) => handleKeyDown(e, index)}
               onPaste={(e) => handlePaste(e, index)}
-              style={{
-                width: "40px",
-                height: "48px",
-                textAlign: "center",
-                fontSize: "18px",
-                borderRadius: "8px",
-                outline: "none",
-              }}
             />
           ))}
         </Flex>

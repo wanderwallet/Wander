@@ -13,7 +13,7 @@ export interface TextInputProps {
   readOnly?: boolean;
 
   // Custom input props:
-  inputRef?: React.RefObject<HTMLInputElement>;
+  inputRef?: React.Ref<HTMLInputElement>;
   startSlot?: React.ReactElement;
   endSlot?: React.ReactElement;
 
