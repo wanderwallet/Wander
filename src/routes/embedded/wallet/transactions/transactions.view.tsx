@@ -1,4 +1,4 @@
-import { Card, Text, Box, Button } from "~components/embed/ui";
+import { Text, Box, Button } from "~components/embed/ui";
 import { useActiveWallet, useTransactions } from "~wallets/hooks";
 import { useLocation } from "~wallets/router/router.utils";
 import browser from "webextension-polyfill";

@@ -72,7 +72,7 @@ export function AuthRecoverAccountAuthenticationEmbeddedView() {
         isDisabled
         // isDisabled={!checkboxChecked || isLoading}
         icon={<SocialsIcon fontSize={24} />}
-        href="#/auth/recover-account/more-authentication">
+        href="/auth/recover-account/more-authentication">
         More options
       </Button>
       <Checkbox

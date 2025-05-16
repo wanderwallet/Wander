@@ -167,7 +167,7 @@ export function AuthEmbeddedView() {
         isFullWidth
         isDisabled={areButtonsDisabled}
         icon={<SocialsIcon fontSize={24} />}
-        href="#/auth/more-providers">
+        href="/auth/more-providers">
         More options
       </Button>
 
@@ -176,7 +176,7 @@ export function AuthEmbeddedView() {
         <Button
           variant="link"
           isDisabled={areButtonsDisabled}
-          href="#/auth/recover-account"
+          href="/auth/recover-account"
           size="sm">
           Recover account
         </Button>

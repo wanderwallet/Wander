@@ -29,7 +29,7 @@ export function AccountBackupWalletEmbeddedView() {
         variant="outlined"
         isFullWidth
         icon={<FolderShield fontSize={24} />}
-        href="#/account/backup-wallet/recovery-file">
+        href="/account/backup-wallet/recovery-file">
         Download recovery file
       </Button>
 
@@ -37,7 +37,7 @@ export function AccountBackupWalletEmbeddedView() {
         variant="outlined"
         isFullWidth
         icon={<Wallet03 fontSize={24} />}
-        href="#/account/backup-wallet/full">
+        href="/account/backup-wallet/full">
         Export wallet
       </Button>
 

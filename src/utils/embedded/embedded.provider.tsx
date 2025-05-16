@@ -914,7 +914,6 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
                 if (event.origin !== window.location.origin) return;
 
                 if (event.data?.type === "AUTH_COMPLETE") {
-                  console.log("Auth message received:", event.data);
                   cleanup();
                   if (event.data?.success) {
                     const supabase = await getSupabaseClient();

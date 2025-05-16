@@ -44,7 +44,7 @@ export function AuthAddWalletEmbeddedView() {
         variant="outlined"
         isFullWidth
         icon={<WalletIcon fontSize={24} />}
-        href="#/auth/import-seedphrase"
+        href="/auth/import-seedphrase"
         isDisabled={isLoading}>
         Enter Seed Phrase
       </Button>
@@ -53,7 +53,7 @@ export function AuthAddWalletEmbeddedView() {
         variant="outlined"
         isFullWidth
         icon={<KeyIcon fontSize={24} />}
-        href="#/auth/import-keyfile"
+        href="/auth/import-keyfile"
         isDisabled={isLoading}>
         Import Keyfile
       </Button>
@@ -63,7 +63,7 @@ export function AuthAddWalletEmbeddedView() {
           variant="outlined"
           isFullWidth
           icon={<QRCodeIcon fontSize={24} />}
-          href="#/auth/add-device"
+          href="/auth/add-device"
           isDisabled={isLoading}
         >
           Scan QR Code
@@ -73,7 +73,7 @@ export function AuthAddWalletEmbeddedView() {
           variant="outlined"
           isFullWidth
           icon={<QRCodeIcon fontSize={24} />}
-          href="#/auth/add-auth-provider"
+          href="/auth/add-auth-provider"
           isDisabled={isLoading}
         >
           Add {(authProviderType || "UNKNOWN").toLocaleUpperCase()} to an

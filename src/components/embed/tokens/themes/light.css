@@ -49,9 +49,7 @@
   --color-copyable-text-label: var(--brand-color-neutral3);
   --color-copyable-text-value: var(--brand-color-neutral1);
 
-  --color-seed-input-border: var(--brand-color-neutral3);
   --color-seed-input-active: var(--brand-color-primary3);
-  --color-seed-input-background: var(--brand-color-gray-100);
 
   --color-border-radio: var(--brand-color-primary3);
   --color-non-checked-background-radio: var(--brand-color-secondary7);

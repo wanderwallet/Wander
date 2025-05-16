@@ -12,14 +12,14 @@ export function AuthRecoverAccountEmbeddedView() {
       subtitle="Select a method for logging in on new devices and recovering your account."
       onBackButtonClick={() => navigate(`/auth`)}>
       <Button
-        href="#/auth/recover-account/seedphrase"
+        href="/auth/recover-account/seedphrase"
         variant="outlined"
         isFullWidth
         icon={<SeedIcon fontSize={24} />}>
         Enter Seedphrase
       </Button>
 
-      <Button href="#/auth/recover-account/keyfile" variant="outlined" isFullWidth icon={<KeyIcon fontSize={24} />}>
+      <Button href="/auth/recover-account/keyfile" variant="outlined" isFullWidth icon={<KeyIcon fontSize={24} />}>
         Import Keyfile
       </Button>
     </OnboardingCard>

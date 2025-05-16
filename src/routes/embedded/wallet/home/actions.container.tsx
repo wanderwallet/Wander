@@ -32,7 +32,7 @@ export function WalletHomeActions() {
         </Row>
       </Link>
 
-      <button onClick={signOut} style={{ textDecoration: "none", width: "100%" }}>
+      <button onClick={() => signOut()} style={{ textDecoration: "none", width: "100%" }}>
         <Row
           alignment="center"
           justifyContent="start"

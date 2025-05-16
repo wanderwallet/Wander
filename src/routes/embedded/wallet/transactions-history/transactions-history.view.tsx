@@ -1,5 +1,5 @@
 import { Loading } from "@arconnect/components-rebrand";
-import { Card, Text, Box, Button } from "~components/embed/ui";
+import { Text, Box, Button } from "~components/embed/ui";
 import browser from "~iframe/browser";
 import { useActiveWallet, useTransactions } from "~wallets/hooks";
 import { useLocation } from "~wallets/router/router.utils";
