@@ -254,7 +254,7 @@ export function AuthEmailVerifyEmbeddedView() {
         </Text>
         <Flex direction="column" gap={24} width="100%">
           <Text variant={"bodySm"} alignment={"center"} style={{ color: "var(--text-color-secondary, #666666)" }}>
-            Enter the 6-digit verification code from your email to complete signup. If you don't see the email, please
+            Enter the 6-digit verification code from that email to complete signup. If you don't see the email, please
             check your spam folder.
           </Text>
           <Flex direction="column" gap={16} width="100%">
