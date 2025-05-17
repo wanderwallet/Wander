@@ -1,4 +1,4 @@
-import { useTheme } from "styled-components";
+import styled, { useTheme, keyframes } from "styled-components";
 
 interface StarIconProps {
   opacity?: number;
@@ -22,8 +22,21 @@ export default function StarIcon({
 }: StarIconProps) {
   const theme = useTheme();
 
+  const shineAnimation = keyframes`
+    0% { transform: scale(1.0); }
+    50% { transform: scale(1.3); }
+    100% { transform: scale(1.0); }
+  `;
+
+  const StarSVG = styled.svg`
+    animation-name: ${shineAnimation};
+    animation-duration: 3s;
+    animation-iteration-count: infinite;
+    animation-delay: calc(${size / 100} * -3000ms);
+  `;
+
   return (
-    <svg
+    <StarSVG
       xmlns="http://www.w3.org/2000/svg"
       style={{ top, left, right, bottom, position }}
       width={size}
@@ -35,6 +48,6 @@ export default function StarIcon({
         d="M21.0445 0L25.3651 16.2764L41.4801 20.6403L25.3651 25.0042L21.0445 41.2806L16.724 25.0042L0.609009 20.6403L16.724 16.2764L21.0445 0Z"
         fill={theme.displayTheme === "dark" ? "#9787FF" : "#6B57F9"}
       />
-    </svg>
+    </StarSVG>
   );
 }
