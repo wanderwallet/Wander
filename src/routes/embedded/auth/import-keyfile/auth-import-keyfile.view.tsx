@@ -7,78 +7,67 @@ import { useLocation } from "~wallets/router/router.utils";
 import { toast } from "react-toastify";
 import { WalletUtils } from "~utils/wallets/wallets.utils";
 import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
+import { useWalletUpload } from "~utils/upload/wallet/use-wallet-upload.hook";
 
 export function AuthImportKeyfileEmbeddedView() {
   const { navigate } = useLocation();
-  const [loading, setLoading] = useState(false);
-  const [fileError, setFileError] = useState(false);
-  const [jsonData, setJsonData] = useState<any>(null);
-
-  const handleJsonParse = async (jsonData: any) => {
-    try {
-      setJsonData(jsonData);
-      setLoading(true);
-      setFileError(false);
-
-      if (jsonData) {
-        if (!WalletUtils.isJWK(jsonData)) {
-          setFileError(true);
-          setLoading(false);
-          return;
-        }
-        const tempWallet = await importTempWallet(jsonData);
-
-        if (!tempWallet) {
-          setLoading(false);
-          return toast.error(`Something isn't right`);
-        }
-        setLoading(false);
-        return tempWallet;
-      } else {
-        setFileError(true);
-      }
-    } catch (error) {
-      toast.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [isAdding, setIsAdding] = useState(false);
 
   const {
     importTempWallet,
-    importedTempWalletAddress,
     deleteImportedTempWallet,
     registerWallet,
     wallets,
   } = useEmbedded();
 
-  const handleAddWallet = useCallback(async () => {
+  const {
+    data: uploadData,
+    isLoading: isUploading,
+    error: uploadError,
+    importedWalletAddress,
+    parse: parseUpload,
+    reset: resetUpload,
+  } = useWalletUpload({
+    wallets,
+    importTempWallet,
+    allowRecoveryFile: false,
+    mustWalletExist: false,
+  });
+
+  const areButtonsDisabled = isAdding || isUploading;
+  const isViewLoading = isUploading;
+
+  const handleAddWallet = async () => {
     try {
-      const isWalletPresent = wallets.some(({ address }) => address === importedTempWalletAddress);
+      if (areButtonsDisabled) return;
 
-      if (isWalletPresent) {
-        toast.error("This wallet was already added to your account.");
-
-        return;
-      }
-
-      if (wallets.length > 0) {
-        toast.error("Can't add more than one wallet to your account.");
+      if (uploadError) {
+        toast.error(uploadError);
 
         return;
       }
 
-      setLoading(true);
+      if (!WalletUtils.isJWK(uploadData)) {
+        toast.error("Invalid file.");
 
-      //await recoverWallet(jsonData);
+        return;
+      }
+
+      setIsAdding(true);
+
       await registerWallet("IMPORTED");
     } catch (error) {
       console.error(error);
-      toast.error("An unexpected error happened.");
+      toast.error("Unexpected error while importing wallet.");
     } finally {
-      setLoading(false);
+      setIsAdding(false);
     }
-  }, [registerWallet, jsonData, wallets, importedTempWalletAddress]);
+  };
+
+  const handleTryAgain = () => {
+    resetUpload();
+    deleteImportedTempWallet();
+  };
 
   useEffect(() => {
     return () => {
@@ -88,26 +77,26 @@ export function AuthImportKeyfileEmbeddedView() {
     };
   }, []);
 
-  return importedTempWalletAddress ? (
+  return importedWalletAddress ? (
     <OnboardingCard
       headerText="Import Keyfile"
       subtitle="Would you like to add this wallet to your account?"
       onBackButtonClick={() => navigate(`/auth/add-wallet`)}
-      isLoading={ loading }>
+      isLoading={ isViewLoading }>
       <Copyable
         isFullWidth
         style={{ padding: 0 }}
         label="Your wallet address"
         onClick={() => {
-          copy(importedTempWalletAddress);
+          copy(importedWalletAddress);
         }}
-        value={importedTempWalletAddress}
+        value={importedWalletAddress}
       />
       <Row>
-        <Button variant="secondary" size="md" onClick={deleteImportedTempWallet} isDisabled={loading}>
+        <Button variant="secondary" size="md" onClick={handleTryAgain} isDisabled={areButtonsDisabled}>
           No, try again
         </Button>
-        <Button variant="primary" size="md" onClick={handleAddWallet} isDisabled={loading}>
+        <Button variant="primary" size="md" onClick={handleAddWallet} isDisabled={areButtonsDisabled}>
           Yes, add
         </Button>
       </Row>
@@ -117,20 +106,20 @@ export function AuthImportKeyfileEmbeddedView() {
       headerText="Import Keyfile"
       subtitle="Upload your private key to add your wallet to your account."
       onBackButtonClick={() => navigate(`/auth/add-wallet`)}
-      isLoading={ loading }>
+      isLoading={ isViewLoading }>
 
       <Upload
         isFullWidth
         title={"Click to upload"}
-        description={"or drag and drop your private key"}
-        isLoading={loading}
+        description={"or drag and drop your keyfile"}
+        isLoading={isUploading}
         loadingText={"Recovering account..."}
-        onFileParse={handleJsonParse}
+        onFileParse={parseUpload}
       />
 
-      {fileError && (
+      {uploadError && (
         <Text alignment="left" variant="bodySm" style={{ color: "#D22B1F", alignSelf: "flex-start", marginTop: 8 }}>
-          Error: incorrect file format
+          { uploadError }
         </Text>
       )}
 

@@ -172,7 +172,7 @@ export function AuthEmbeddedView() {
         More options
       </Button>
 
-      { recoverableAccount ? (
+      { !recoverableAccount ? (
         <Row style={{ gap: "4px" }}>
           <Text variant={"bodySm"}>{"Can't sign in?"}</Text>
           <Button

@@ -1,5 +1,5 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { Upload, Button, Copyable, Row, Text } from "~components/embed/ui";
 import { useLocation } from "~wallets/router/router.utils";
@@ -7,6 +7,7 @@ import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-c
 import copy from "copy-to-clipboard";
 import { WalletUtils } from "~utils/wallets/wallets.utils";
 import type { CommonRouteProps } from "~wallets/router/router.types";
+import { useWalletUpload } from "~utils/upload/wallet/use-wallet-upload.hook";
 
 export type AuthRestoreFileViewVariant = "recovery-file" | "keyfile";
 
@@ -18,94 +19,63 @@ export function AuthRestoreSharesKeyfileEmbeddedView({
   variant = "keyfile",
 }: AuthRestoreSharesKeyfileEmbeddedViewProps) {
   const { navigate } = useLocation();
-  const [loading, setLoading] = useState(false);
-  const [fileError, setFileError] = useState(false);
-  const [jsonData, setJsonData] = useState<any>(null);
-  const [recoveryFileLoaded, setRecoveryFileLoaded] = useState(false);
-
-  const fileTypeLabel = variant === "keyfile" ? "private key" : "recovery file";
-
-  const handleJsonParse = async (jsonData: any) => {
-    try {
-      setJsonData(jsonData);
-
-      if (WalletUtils.isRecoveryJSON(jsonData)) {
-        setRecoveryFileLoaded(true);
-        return;
-      } else {
-        setRecoveryFileLoaded(false);
-      }
-
-      setLoading(true);
-      setFileError(false);
-
-      if (jsonData) {
-        if (!WalletUtils.isJWK(jsonData)) {
-          setFileError(true);
-          setLoading(false);
-          return;
-        }
-        const tempWallet = await importTempWallet(jsonData);
-
-        if (!tempWallet) {
-          setLoading(false);
-          return toast.error(`Something isn't right`);
-        }
-        setLoading(false);
-        return tempWallet;
-      } else {
-        setFileError(true);
-      }
-    } catch (error) {
-      toast.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  const [isRecovering, setIsRecovering] = useState(false);
 
   const {
     importTempWallet,
-    importedTempWalletAddress,
     deleteImportedTempWallet,
     recoverWallet,
     wallets,
   } = useEmbedded();
 
-  const handleRecoverWallet = useCallback(async () => {
+  const {
+    data: uploadData,
+    isLoading: isUploading,
+    error: uploadError,
+    importedWalletAddress,
+    parse: parseUpload,
+    reset: resetUpload,
+  } = useWalletUpload({
+    wallets,
+    importTempWallet,
+    allowRecoveryFile: true,
+    mustWalletExist: true,
+  });
+
+  const areButtonsDisabled = isRecovering || isUploading;
+  const isViewLoading = isUploading;
+
+  const handleRecoverWallet = async () => {
     try {
-      if (WalletUtils.isJWK(jsonData)) {
-        const isWalletPresent = wallets.some(({ address }) => address === importedTempWalletAddress);
+      if (areButtonsDisabled) return;
 
-        if (!isWalletPresent) {
-          toast.error("This wallet is not part of your account.");
+      if (uploadError) {
+        toast.error(uploadError);
 
-          return;
-        }
-      } else if (WalletUtils.isRecoveryJSON(jsonData)) {
-        const isWalletPresent = wallets.some(({ id }) => jsonData.walletId === id);
+        return;
+      }
 
-        if (!isWalletPresent) {
-          toast.error("This wallet is not part of your account.");
-
-          return;
-        }
-      } else {
+      if (!WalletUtils.isJWK(uploadData) && !WalletUtils.isRecoveryJSON(uploadData)) {
         toast.error("Invalid file.");
 
         return;
       }
 
-      setLoading(true);
+      setIsRecovering(true);
 
-      await recoverWallet(jsonData);
+      await recoverWallet(uploadData);
     } catch (error) {
       console.error(error);
-      toast.error("An unexpected error happened.");
+      toast.error("Unexpected error while recovering wallet.");
     } finally {
-      setLoading(false);
+      setIsRecovering(false);
     }
-  }, [recoverWallet, jsonData, wallets, importedTempWalletAddress]);
+  };
+
+  const handleTryAgain = () => {
+    resetUpload();
+    deleteImportedTempWallet();
+  };
 
   useEffect(() => {
     return () => {
@@ -115,26 +85,28 @@ export function AuthRestoreSharesKeyfileEmbeddedView({
     };
   }, []);
 
-  return importedTempWalletAddress ? (
+  const fileTypeLabel = variant === "keyfile" ? "private key" : "recovery file";
+
+  return importedWalletAddress ? (
     <OnboardingCard
       headerText="Restore wallet"
       subtitle="Confirm your wallet to restore it."
       onBackButtonClick={() => navigate("/auth/restore-shares")}
-      isLoading={ loading }>
+      isLoading={ isViewLoading }>
       <Copyable
         isFullWidth
         style={{ padding: 0 }}
         label="Your wallet address"
         onClick={() => {
-          copy(importedTempWalletAddress);
+          copy(importedWalletAddress);
         }}
-        value={importedTempWalletAddress}
+        value={importedWalletAddress}
       />
       <Row>
-        <Button variant="secondary" size="md" onClick={deleteImportedTempWallet} isDisabled={loading}>
+        <Button variant="secondary" size="md" onClick={handleTryAgain} isDisabled={areButtonsDisabled}>
           No, try again
         </Button>
-        <Button variant="primary" size="md" onClick={handleRecoverWallet} isDisabled={loading}>
+        <Button variant="primary" size="md" onClick={handleRecoverWallet} isDisabled={areButtonsDisabled}>
           Yes, add
         </Button>
       </Row>
@@ -144,26 +116,20 @@ export function AuthRestoreSharesKeyfileEmbeddedView({
       headerText="Restore wallet"
       subtitle={ `Upload your ${ fileTypeLabel } to restore your wallet.` }
       onBackButtonClick={() => navigate("/auth/restore-shares")}
-      isLoading={ loading }>
+      isLoading={ isViewLoading }>
 
       <Upload
         isFullWidth
         title={"Click to upload"}
         description={ `or drag and drop your ${ fileTypeLabel }` }
-        isLoading={loading}
+        isLoading={isUploading}
         loadingText={"Restoring wallet..."}
-        onFileParse={handleJsonParse}
+        onFileParse={parseUpload}
       />
 
-      { recoveryFileLoaded ? (
-        <Button isFullWidth size="md" isDisabled={loading} onClick={handleRecoverWallet}>
-          Restore
-        </Button>
-      ) : null }
-
-      {fileError && (
+      {uploadError && (
         <Text alignment="left" variant="bodySm" style={{ color: "#D22B1F", alignSelf: "flex-start", marginTop: 8 }}>
-          Error: incorrect file format
+          { uploadError }
         </Text>
       )}
 

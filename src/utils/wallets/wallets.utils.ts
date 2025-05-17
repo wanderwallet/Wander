@@ -708,7 +708,6 @@ export const WalletUtils = {
   isJWK,
   isRecoveryJSON,
   isSeedPhrase,
-  isRecoveryJSON,
 };
 
 // Stored seedphrases and recovery shares are removed if the feature flags are disabled:
