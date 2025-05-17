@@ -32,7 +32,6 @@ import { PermissionsWelcomeView } from "./generate/permissions";
 import { OptionsWelcomView } from "./load/options";
 import IconText from "~components/IconText";
 import { Link } from "~routes/popup/token/[id]";
-// import { SecureWelcomeView } from "./generate/secure";
 import { LoadingWelcomeView } from "./generate/loading";
 
 // Wallet generate pages:

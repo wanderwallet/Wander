@@ -2520,10 +2520,6 @@
     "message": "Your account name is stored locally and will only be visible to you.",
     "description": "Create a new account description"
   },
-  "secure_your_account_description": {
-    "message": "Secure your account with a password. This will be used to confirm activity and transactions in Wander.",
-    "description": "Secure your account description"
-  },
   "import_an_account": {
     "message": "Import an account",
     "description": "Import an account button text"
@@ -2979,10 +2975,6 @@
   "data_too_large": {
     "message": "Unable to display data: Data is too large to display.",
     "description": "Data too large text"
-  },
-  "set_up_a_password": {
-    "message": "Set up a password",
-    "description": "Set up a password text"
   },
   "generating_your_account": {
     "message": "Generating your account!",

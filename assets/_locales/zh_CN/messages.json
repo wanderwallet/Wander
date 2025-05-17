@@ -2522,10 +2522,6 @@
         "message": "保护您的账户",
         "description": "Secure your account button text"
     },
-    "secure_your_account_description": {
-        "message": "使用密码保护您的账户。这将用于确认在 Wander 中的活动和交易。",
-        "description": "Secure your account description"
-    },
     "backup_your_account": {
         "message": "备份您的账户",
         "description": "Backup your account button text"
@@ -2969,10 +2965,6 @@
     "data_too_large": {
         "message": "无法显示数据：数据太大，无法显示。",
         "description": "Data too large text"
-    },
-    "set_up_a_password": {
-        "message": "设置密码",
-        "description": "Set up a password text"
     },
     "generating_your_account": {
         "message": "正在生成您的账户！",
