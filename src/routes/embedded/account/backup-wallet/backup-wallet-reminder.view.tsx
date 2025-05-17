@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { Button, Checkbox, Copyable, Text } from "~components/embed/ui";
 import copy from "copy-to-clipboard";
@@ -11,8 +11,11 @@ import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-c
 export function AccountBackupWalletReminderEmbeddedView() {
   const { navigate } = useLocation();
   const { currentWallet, skipBackUp } = useEmbedded();
-  const isMandatoryReminder =
-    currentWallet.totalExports === 0 && currentWallet.totalBackups === 0 && !currentWallet.doNotAskAgainSetting;
+
+  // We use a ref so that this value doesn't change just when users back up their account, forcing the view to re-render
+  // differently. Instead, the view should remain unchanged while the redirect to the wallet home is taking place, and
+  // only show a different variant once users come back to it later.
+  const isMandatoryReminder = useRef(currentWallet.totalExports === 0 && currentWallet.totalBackups === 0 && !currentWallet.doNotAskAgainSetting).current;
 
   const [isLoading, setIsLoading] = useState(false);
   const [isChecked, setIsChecked] = useState(false);

@@ -9,6 +9,7 @@ export interface InputButtonProps {
   type?: ButtonType;
   className?: string;
   label?: string;
+  tabIndex?: number;
   icon?: React.ReactNode;
   onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
   disabled?: boolean;
@@ -19,6 +20,7 @@ export function InputButton({
   type,
   className,
   label,
+  tabIndex,
   icon,
   onClick,
   disabled,
@@ -29,6 +31,7 @@ export function InputButton({
       type={ type }
       variant={icon ? "icon" : "primary"}
       className={clsx(styles["button"], icon ? styles["button__icon"] : styles["button__text"], className)}
+      tabIndex={tabIndex}
       onClick={onClick}
       isDisabled={disabled}
       isLoading={loading}>

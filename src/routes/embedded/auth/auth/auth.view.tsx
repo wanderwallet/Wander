@@ -25,7 +25,6 @@ import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-c
 export function AuthEmbeddedView() {
   const { navigate } = useLocation();
   const { authenticate, authStatus, recoverableAccount } = useEmbedded();
-  const [isLoading, setIsLoading] = useState(false);
 
   // Input refs:
 

@@ -33,6 +33,7 @@ export function PasswordInput(props: PasswordInputProps) {
   const visibilityButton = (
     <InputButton
       icon={ visibilityIcon }
+      tabIndex={-1}
       onClick={ toggleIsVisible } />
   );
 
