@@ -208,7 +208,7 @@ export function SetupWelcomeView({ params }: SetupWelcomeViewProps) {
     isNaN(page) ||
     page < 1 ||
     page > pageCount ||
-    (setupMode === "generate" && page > 2 && password === "") ||
+    (setupMode === "generate" && page > 1 && password === "") ||
     (setupMode !== "generate" && page > 3 && password === "")
   ) {
     return <Redirect to={`/${setupMode}/1`} />;

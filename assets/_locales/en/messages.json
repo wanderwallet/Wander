@@ -2581,7 +2581,7 @@
     "description": "Enable notifications description"
   },
   "enable_analytics_description": {
-    "message": "Enable analytics to help us provide the best experience for you on Wander.",
+    "message": "Enable anonymous analytics to help us continue making Wander better.",
     "description": "Enable analytics description"
   },
   "congratulations": {
@@ -2589,7 +2589,7 @@
     "description": "Congratulations title"
   },
   "congratulations_description": {
-    "message": "You have now finished $TYPE$ your Wander account",
+    "message": "You have now finished $TYPE$ your Wander account. Your wallet address is below:",
     "description": "Congratulations description",
     "placeholders": {
       "type": {
@@ -3029,7 +3029,7 @@
     "description": "Export keyfile tooltip"
   },
   "scan_qr_code_seamless_transfer": {
-    "message": "Scan the QR code or copy the address for a seamless transfer",
+    "message": "The above wallet address and QR code correspond to your new Wander account. If you own AR or AO tokens on an exchange, you can now withdraw them to this address.",
     "description": "Scan QR code seamless transfer text"
   }
 }

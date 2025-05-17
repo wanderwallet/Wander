@@ -2571,7 +2571,7 @@
         "description": "Enable notifications description"
     },
     "enable_analytics_description": {
-        "message": "启用分析功能，帮助我们为您提供最佳的Wander体验。",
+        "message": "启用匿名分析来帮助我们继续改进 Wander。",
         "description": "Enable analytics description"
     },
     "congratulations": {
@@ -3019,7 +3019,7 @@
         "description": "Export keyfile tooltip"
     },
     "scan_qr_code_seamless_transfer": {
-        "message": "扫描二维码或复制地址以无缝转移",
+        "message": "上述钱包地址和二维码对应您新的 Wander 账户。如果您在交易所持有 AR 或 AO 代币，现在可以将其提现至此地址。",
         "description": "Scan QR code seamless transfer text"
     }
 }
