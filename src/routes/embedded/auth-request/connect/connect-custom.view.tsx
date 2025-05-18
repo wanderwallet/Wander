@@ -4,19 +4,15 @@ import { Box, Switch } from "~components/embed/ui";
 import { AuthRequestCard } from "~components/embed/ui/molecules/card/auth-request-card/AuthRequestCard";
 import browser from "~iframe/browser";
 import { useCurrentAuthRequest } from "~utils/auth/auth.hooks";
-import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 import { useStorage, ExtensionStorage } from "~utils/storage";
 import { useLocation } from "~wallets/router/router.utils";
 
 export function EmbeddedConnectCustomAuthRequestView() {
   const { navigate } = useLocation();
   const { authRequest } = useCurrentAuthRequest("connect");
-
-  const { url = "" } = authRequest;
-
   const [requestedPermissions, setRequestedPermissions] = useStorage<PermissionType[]>(
     {
-      key: `requested_permissions_${url}`,
+      key: `requested_permissions`,
       instance: ExtensionStorage,
     },
     [],

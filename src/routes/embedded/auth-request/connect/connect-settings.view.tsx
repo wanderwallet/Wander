@@ -29,7 +29,7 @@ export function EmbeddedConnectSettingsAuthRequestView() {
   const { url = "", permissions: authRequestPermissions = [], appInfo = {}, gateway } = authRequest;
 
   const [requestedPermissions, setRequestedPermissions] = useStorage<PermissionType[]>({
-    key: `requested_permissions_${url}`,
+    key: `requested_permissions`,
     instance: ExtensionStorage,
   });
   const [requestedPermCopy, setRequestedPermCopy] = useState<PermissionType[]>([]);
@@ -108,7 +108,7 @@ export function EmbeddedConnectSettingsAuthRequestView() {
         }
       }
 
-      const requestedPermissions = await ExtensionStorage.get(`requested_permissions_${url}`);
+      const requestedPermissions = await ExtensionStorage.get(`requested_permission`);
 
       if (!requestedPermissions) {
         setRequestedPermissions(requested.filter((p) => Object.keys(permissionData).includes(p)));

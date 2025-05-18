@@ -6,9 +6,10 @@ import { useExtensionStatusOverride } from "~wallets/router/extension/extension-
 import { ExtensionOverrides } from "~wallets/router/extension/extension.routes";
 import type { BaseLocationHook } from "~wallets/router/router.types";
 import { useHashLocation } from "wouter/use-hash-location";
-import { routeTrapInside } from "../router.utils";
+import { routeTrapInside, routeTrapOutside } from "../router.utils";
 import { useEffect } from "react";
 import { AUTH_POPUP_REQUEST_WAIT_MS } from "~utils/auth/auth.constants";
+import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 
 export const useAuthRequestsLocation: BaseLocationHook = () => {
   const override = useExtensionStatusOverride();
@@ -23,15 +24,22 @@ export const useAuthRequestsLocation: BaseLocationHook = () => {
     return closeAuthPopup(AUTH_POPUP_REQUEST_WAIT_MS);
   }, [currentAuthRequest, override]);
 
-  if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1") {
-    // For Connect, `embedded.provider.ts` won't be calling `window.close()`. Instead, we just redirect the user back
-    // to the wallet home:
-    if (!currentAuthRequest) return ["/wallet", wavigate];
-  } else {
+  if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1" && !currentAuthRequest) {
+    // For Connect, we won't be calling `window.close()` in `auth.provider.ts`. Instead, we just redirect the user back
+    // to the wallet home once all auth requests are handled:
+
+    // TODO: Update this to take users back to wherever they were before they were interrupted by the auth request.
+
+    const override = routeTrapOutside(wocation as AuthRoutePath, "/auth-request", EmbeddedPaths.WalletHomeEmbeddedView);
+
+    return override ? [override, wavigate] : [null, NOOP];
+  }
+
+  if (import.meta.env?.VITE_IS_EMBEDDED_APP !== "1") {
     // For BE, we might have to wait for the wallet to initialize:
     if (override) return [override, NOOP];
 
-    // For BE, we might have to wait for popup window to receive the AuthRequest. Note this can't happen in Connect,
+    // Also, we might have to wait for popup window to receive the AuthRequest. Note this can't happen in Connect,
     // because everything runs in the same window/app:
     if (!currentAuthRequest) return [ExtensionOverrides.Loading, NOOP];
   }

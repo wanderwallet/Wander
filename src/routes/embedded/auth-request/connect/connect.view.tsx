@@ -3,7 +3,6 @@ import type { Wallet } from "~utils/embedded/embedded.types";
 import { formatAddress } from "~utils/format";
 import { setActiveWallet, useActiveWallet } from "~wallets/hooks";
 import { useLocation } from "~wallets/router/router.utils";
-import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 import { useCurrentAuthRequest } from "~utils/auth/auth.hooks";
 import { useEffect, useState } from "react";
 import { concatGatewayURL } from "~gateways/utils";
@@ -44,7 +43,7 @@ export function EmbeddedConnectAuthRequestView() {
   }, [activeWallet, nameServiceProfile, nsGateway]);
 
   const handleConfirm = () => {
-    ExtensionStorage.remove(`requested_permissions_${url}`);
+    ExtensionStorage.remove(`requested_permissions`);
     ExtensionStorage.remove("sign_policy");
     navigate(`/auth-request/connect/${ authRequest.authID }/settings`);
   };

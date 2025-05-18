@@ -60,8 +60,6 @@ export const useStorage: typeof usePlasmoStorage = IS_EMBEDDED_APP
         return typeof onInit === "function" ? onInit(value) : (value ?? onInit);
       }, [value]);
 
-      if (returnValue === null) debugger;
-
       return [returnValue, ...otherReturnValues];
     }) as any)
   : usePlasmoStorage;

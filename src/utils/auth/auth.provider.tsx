@@ -18,7 +18,6 @@ import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { isError } from "~utils/error/error.utils";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 import { getDecryptionKey } from "~wallets/auth";
-import { useLocation } from "~wallets/router/router.utils";
 
 interface AuthRequestsContextState {
   authRequests: AuthRequest[];
