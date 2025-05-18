@@ -127,6 +127,12 @@ async function fetchFirstAvailableAuthShare(
     for (const wallet of wallets) {
       const { id: walletId, deviceShare } = wallet;
 
+      if (deviceShare === null) {
+        // If the device share is not present in the device, skip, otherwise
+        // `WalletUtils.generateShareHashAndPrivateKey()` will throw an error.
+        continue;
+      }
+
       try {
         const { shareHash: deviceShareHash, sharePrivateKeyJWK: deviceSharePrivateKeyJWK } =
           await WalletUtils.generateShareHashAndPrivateKey(deviceShare);
