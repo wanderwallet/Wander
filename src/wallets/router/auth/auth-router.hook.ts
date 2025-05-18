@@ -63,7 +63,19 @@ export const useAuthRequestsLocation: BaseLocationHook = () => {
     wavigate(to, options);
   };
 
-  const locationOverride = routeTrapInside(wocation as AuthRoutePath, location);
+  // TODO: Once we change the routing library, there should not be differences like this between different apps. This
+  // one happens because:
+  //
+  // - Connect can handle __REDIRECT/... and will make the URL match the current route.
+  //
+  // - BE cannot handle __REDIRECT/... and won't make the URL match the current route. The auth popup's path will always
+  //   be /, regardless of the `location` value returned below.
 
-  return [locationOverride || (wocation as AuthRoutePath), navigate];
+  if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1") {
+    const locationOverride = routeTrapInside(wocation as AuthRoutePath, location);
+
+    return [locationOverride || (wocation as AuthRoutePath), navigate];
+  }
+
+  return [location, navigate];
 };
