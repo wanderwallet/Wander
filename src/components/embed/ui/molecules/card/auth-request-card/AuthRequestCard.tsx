@@ -5,13 +5,14 @@ import { Button } from "~components/embed/ui/atoms";
 import browser from "~iframe/browser";
 
 import styles from "./AuthRequestCard.module.scss";
+import { useEffect } from "react";
 
-export interface AuthRequestCardProps extends Omit<CardBaseProps, "size" | "hasBackButton" | "customIcon" | "hasCloseButton" | "closeButtonStyles"> {
+export interface AuthRequestCardProps extends Omit<CardBaseProps, "size" | "hasBackButton" | "customIcon" | "hasCloseButton" | "onCloseButtonClick" | "closeButtonStyles"> {
   onCancel?: () => void;
   onConfirm?: () => void;
   cancelLabel?: string;
   confirmLabel?: string;
-  isConfirmDisabled?: boolean;
+  areButtonsDisabled?: boolean;
 }
 
 export function AuthRequestCard({
@@ -20,10 +21,24 @@ export function AuthRequestCard({
   onConfirm,
   cancelLabel = browser.i18n.getMessage("cancel"),
   confirmLabel = browser.i18n.getMessage("continue"),
-  isConfirmDisabled,
+  areButtonsDisabled,
   children: childrenProp,
   ...cardProps
 }: AuthRequestCardProps) {
+
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (areButtonsDisabled) return;
+
+      if (onConfirm && (e.key === "Enter" || e.key.toUpperCase() === "Y")) onConfirm();
+      else if (onCancel && (e.key === "Delete" || e.key.toUpperCase() === "N")) onCancel();
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onConfirm, onCancel]);
+
   const children = (
     <div className={ styles.childrenWrapper }>
       {childrenProp}
@@ -42,7 +57,8 @@ export function AuthRequestCard({
         <Button
           variant="secondary"
           isFullWidth
-          onClick={onCancel}>
+          onClick={onCancel}
+          isDisabled={ areButtonsDisabled }>
           { cancelLabel }
         </Button>
       ) : null }
@@ -52,7 +68,7 @@ export function AuthRequestCard({
           variant="primary"
           isFullWidth
           onClick={onConfirm}
-          isDisabled={ isConfirmDisabled }>
+          isDisabled={ areButtonsDisabled }>
           { confirmLabel }
         </Button>
       ) : null }

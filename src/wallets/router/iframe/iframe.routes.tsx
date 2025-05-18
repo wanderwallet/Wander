@@ -50,17 +50,14 @@ import { WalletHomeEmbeddedView } from "~routes/embedded/wallet/home/wallet.view
 import { WalletReceiveEmbeddedView } from "~routes/embedded/wallet/receive/receive.view";
 import { WalletTransactionsEmbeddedView } from "~routes/embedded/wallet/transactions/transactions.view";
 import { WalletTransactionsHistoryEmbeddedView } from "~routes/embedded/wallet/transactions-history/transactions-history.view";
-import { WalletPermissionsRequestEmbeddedView } from "~routes/embedded/wallet/settings/settings.request.view";
-import { WalletSettingsCustomEmbeddedView } from "~routes/embedded/wallet/settings/settings.custom.view";
-import { WalletTransactionCompleteEmbeddedView } from "~routes/embedded/wallet/sign/transaction-complete.view";
-import { WalletTransactionDetailsEmbeddedView } from "~routes/embedded/wallet/sign/transaction.details.view";
+import { WalletTransactionCompleteEmbeddedView } from "~routes/embedded/wallet/transactions/transaction-complete.view";
 import { WalletBuyEmbeddedView } from "~routes/embedded/wallet/buy/buy.container.view";
 import { WalletBuyCashEmbeddedView } from "~routes/embedded/wallet/buy/buy.cash.view";
 import { WalletReceiveOptionsEmbeddedView } from "~routes/embedded/wallet/receive/options/receive.options.view";
 import { WalletDepositTokensEmbeddedView } from "~routes/embedded/wallet/deposit/deposit.container.view";
 import { WalletBuyInputEmbeddedView } from "~routes/embedded/wallet/buy/buy.input.view";
 import { WalletBuySuccessEmbeddedView } from "~routes/embedded/wallet/buy/buy.success.view";
-import { EmbeddedConnectAuthRequestView } from "~routes/embedded/wallet/connect/dapp-connect.view";
+import { EmbeddedConnectAuthRequestView } from "~routes/embedded/auth-request/connect/connect.view";
 import { AuthEmailVerifyEmbeddedView } from "~routes/embedded/auth/auth-email-signup/auth-email-verify.view";
 import { AuthEmailSigninEmbeddedView } from "~routes/embedded/auth/auth-email-signup/auth-email-signin.view";
 
@@ -111,10 +108,7 @@ export type EmbeddedRoutePath =
   | "/wallet/receive/options"
   | "/wallet/transactions"
   | "/wallet/transactions-history"
-  | "/wallet/settings"
-  | "/wallet/settings/custom"
   | "/wallet/transaction"
-  | "/wallet/transaction-details"
   | `/wallet/transaction-complete/${string}`
   | "/wallet/buy"
   | "/wallet/buy/cash"
@@ -178,9 +172,6 @@ export const EmbeddedPaths = {
   WalletReceiveOptionsEmbeddedView: "/wallet/receive/options",
   WalletTransactionsEmbeddedView: "/wallet/transactions",
   WalletTransactionsHistoryEmbeddedView: "/wallet/transactions-history",
-  WalletPermissionsRequestEmbeddedView: "/wallet/settings",
-  WalletSettingsCustomEmbeddedView: "/wallet/settings/custom",
-  WalletTransactionDetailsEmbeddedView: "/wallet/transaction-details",
   WalletTransactionCompleteEmbeddedView: "/wallet/transaction-complete/:id",
   WalletBuyEmbeddedView: "/wallet/buy",
   WalletBuyCashEmbeddedView: "/wallet/buy/cash",
@@ -361,18 +352,6 @@ const IFRAME_OWN_ROUTES = [
     component: WalletTransactionsHistoryEmbeddedView,
   },
   {
-    path: EmbeddedPaths.WalletPermissionsRequestEmbeddedView,
-    component: WalletPermissionsRequestEmbeddedView,
-  },
-  {
-    path: EmbeddedPaths.WalletSettingsCustomEmbeddedView,
-    component: WalletSettingsCustomEmbeddedView,
-  },
-  {
-    path: EmbeddedPaths.WalletTransactionDetailsEmbeddedView,
-    component: WalletTransactionDetailsEmbeddedView,
-  },
-  {
     path: EmbeddedPaths.WalletTransactionCompleteEmbeddedView,
     component: WalletTransactionCompleteEmbeddedView,
   },
@@ -412,8 +391,8 @@ export const IFRAME_ROUTES = [
   // popup.tsx:
   // ...POPUP_ROUTES.filter((route) => !isRouteOverride(route.path)),
 
-  // auth.tsx: filter out the settings path as it's defined in IFRAME_OWN_ROUTES
-  ...AUTH_ROUTES.filter((route) => !isRouteOverride(route.path) && !route.path.includes("/wallet/settings/")),
+  // auth.tsx:
+  ...AUTH_ROUTES.filter((route) => !isRouteOverride(route.path)),
 
   // OAuth Error:
   {

@@ -35,15 +35,6 @@ export function EmbeddedConnectAuthRequestView() {
     }
   };
 
-  const handleCancel = () => {
-    postEmbeddedMessage({
-      type: "embedded_close",
-      data: null,
-    });
-    navigate("/wallet");
-    rejectRequest();
-  };
-
   useEffect(() => {
     if (!activeWallet?.address) return;
 
@@ -52,18 +43,17 @@ export function EmbeddedConnectAuthRequestView() {
     }
   }, [activeWallet, nameServiceProfile, nsGateway]);
 
-  const handleNext = () => {
+  const handleConfirm = () => {
     ExtensionStorage.remove(`requested_permissions_${url}`);
     ExtensionStorage.remove("sign_policy");
-    navigate("/wallet/settings");
+    navigate(`/auth-request/connect/${ authRequest.authID }/settings`);
   };
 
   return (
     <>
       <AuthRequestCard
-        onCloseButtonClick={handleCancel}
-        onCancel={handleCancel}
-        onConfirm={handleNext}
+        onCancel={rejectRequest}
+        onConfirm={handleConfirm}
         confirmLabel="Next">
 
         <AppIcons appInfo={appInfo} />

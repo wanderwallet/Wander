@@ -5,17 +5,16 @@ import browser from "webextension-polyfill";
 import { Spacer } from "@arconnect/components-rebrand";
 import type { SignPolicy } from "~applications/application";
 import { useCurrentAuthRequest } from "~utils/auth/auth.hooks";
-import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 import { ExtensionStorage, useStorage } from "~utils/storage";
 import { useState, useMemo, useEffect, useCallback } from "react";
 import Application from "~applications/application";
 import { Edit02 } from "@untitled-ui/icons-react";
 import { addApp } from "~applications";
 import { defaultGateway } from "~gateways/gateway";
-import AppIcons from "../connect/components/AppIcons";
+import AppIcons from "./components/AppIcons";
 import { AuthRequestCard } from "~components/embed/ui/molecules/card/auth-request-card/AuthRequestCard";
 
-export function WalletPermissionsRequestEmbeddedView() {
+export function EmbeddedConnectSettingsAuthRequestView() {
   const { navigate } = useLocation();
   const [signPolicy, setSignPolicy] = useStorage<SignPolicy>(
     {
@@ -51,9 +50,8 @@ export function WalletPermissionsRequestEmbeddedView() {
     setSignPolicy(permission);
   };
 
-  // connect
-  const connect = useCallback(async () => {
-    if (!url) return;
+  const handleConfirm = useCallback(async () => {
+    if (!signPolicy || !url) return;
 
     // get existing permissions
     const app = new Application(url);
@@ -92,23 +90,8 @@ export function WalletPermissionsRequestEmbeddedView() {
       });
     }
 
-    postEmbeddedMessage({
-      type: "embedded_close",
-      data: null,
-    });
-    navigate("/wallet");
-
     acceptRequest();
   }, [url, requestedPermissions, appInfo, signPolicy, gateway, acceptRequest]);
-
-  const handleCancel = () => {
-    postEmbeddedMessage({
-      type: "embedded_close",
-      data: null,
-    });
-    navigate("/wallet");
-    rejectRequest();
-  };
 
   useEffect(() => {
     (async () => {
@@ -137,11 +120,11 @@ export function WalletPermissionsRequestEmbeddedView() {
 
   return (
     <AuthRequestCard
-      onCloseButtonClick={handleCancel}
-      onCancel={handleCancel}
-      onConfirm={connect}
+      onBackButtonClick={() => navigate(`/auth-request/connect/${ authRequest.authID }`)}
+      onCancel={() => rejectRequest()}
+      onConfirm={handleConfirm}
       confirmLabel="Next"
-      isConfirmDisabled={!signPolicy}>
+      areButtonsDisabled={!signPolicy || !url}>
 
       <AppIcons appInfo={appInfo} />
 
@@ -162,7 +145,7 @@ export function WalletPermissionsRequestEmbeddedView() {
           alignment="left"
           justifyContent="between"
           style={{ cursor: "pointer" }}
-          onClick={() => navigate("/wallet/settings/custom")}>
+          onClick={() => navigate(`/auth-request/connect/${ authRequest.authID }/custom`)}>
           <Text variant="headingMd" style={{ fontSize: 16, fontWeight: 500 }} alignment="left">
             {isCustomPermissions ? "Custom permissions set" : "Set custom permissions"}
           </Text>

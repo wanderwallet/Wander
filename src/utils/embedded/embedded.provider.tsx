@@ -1085,6 +1085,9 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       recoverableAccountWallets: prevAuthContextState.recoverableAccountWallets,
     }));
 
+    // TODO: Store a user identifier in both of them and delete on auth instead?
+    // PersistentStorage.removeAll();
+
     if (!userId || !session) {
       generateTempWallet();
 

@@ -8,9 +8,9 @@ import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-mes
 import { useStorage, ExtensionStorage } from "~utils/storage";
 import { useLocation } from "~wallets/router/router.utils";
 
-export function WalletSettingsCustomEmbeddedView() {
+export function EmbeddedConnectCustomAuthRequestView() {
   const { navigate } = useLocation();
-  const { authRequest, rejectRequest } = useCurrentAuthRequest("connect");
+  const { authRequest } = useCurrentAuthRequest("connect");
 
   const { url = "" } = authRequest;
 
@@ -59,20 +59,10 @@ export function WalletSettingsCustomEmbeddedView() {
     [handlePermissionChange],
   );
 
-  const handleCancel = async () => {
-    postEmbeddedMessage({
-      type: "embedded_close",
-      data: null,
-    });
-    navigate("/wallet");
-    await rejectRequest();
-  };
-
   return (
     <AuthRequestCard
       headerText="Custom Permissions"
-      onBackButtonClick={() => navigate("/wallet/settings")}
-      onCloseButtonClick={handleCancel}>
+      onBackButtonClick={() => navigate(`/auth-request/connect/${ authRequest.authID }/settings`)}>
       {Object.keys(permissionData).map((permissionName: PermissionType) => (
         <Box
           style={{ padding: 0 }}
