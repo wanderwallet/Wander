@@ -12,6 +12,7 @@ import { defaultGateway } from "~gateways/gateway";
 import { Signer } from "@dha-team/arbundles";
 import { EventEmitter } from "events";
 import { nanoid } from "nanoid";
+import { v4 as uuid } from "uuid";
 
 export interface KeystoneInteraction {
   display(data: UR);
@@ -109,7 +110,7 @@ export async function transactionToUR(
   const txBuff = Buffer.from(JSON.stringify(transaction.toJSON()), "utf-8");
 
   // request ID
-  const requestID = nanoid();
+  const requestID = uuid();
 
   // construct request
   const signRequest = ArweaveSignRequest.constructArweaveRequest(
