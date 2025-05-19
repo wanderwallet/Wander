@@ -3,9 +3,9 @@ import { useMemo } from "react";
 
 const ANIMATION_FACTORS = [3, 5, 7, 11] as const;
 
-const getRandomDuration = () => {
-  const randomFactor = ANIMATION_FACTORS[Math.floor(Math.random() * ANIMATION_FACTORS.length)];
-  return `${randomFactor}s`;
+const getDurationFromSize = (size: number): number => {
+  const sizeGroup = Math.round(size) % ANIMATION_FACTORS.length;
+  return ANIMATION_FACTORS[sizeGroup];
 };
 
 interface StarIconProps {
@@ -29,7 +29,11 @@ export default function StarIcon({
   size = 42,
 }: StarIconProps) {
   const theme = useTheme();
-  const animationDuration = useMemo(getRandomDuration, []);
+
+  const animationDuration = useMemo(() => {
+    const factor = getDurationFromSize(size);
+    return `${factor}s`;
+  }, [size]);
 
   return (
     <StarSVG
@@ -51,10 +55,10 @@ export default function StarIcon({
 }
 
 const shineAnimation = keyframes`
-    0% { transform: scale(1.0); }
-    50% { transform: scale(1.3); }
-    100% { transform: scale(1.0); }
-  `;
+  0% { transform: scale(1.0); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1.0); }
+`;
 
 const StarSVG = styled.svg<{ size: number; animationDuration: string }>`
   animation-name: ${shineAnimation};
