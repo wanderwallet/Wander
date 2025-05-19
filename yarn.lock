@@ -1495,42 +1495,43 @@
   resolved "https://registry.yarnpkg.com/@keystonehq/alias-sampling/-/alias-sampling-0.1.2.tgz#63af931ffe6500aef4c0d87775a5b279189abf8d"
   integrity sha512-5ukLB3bcgltgaFfQfYKYwHDUbwHicekYo53fSEa7xhVkAEqsA74kxdIwoBIURmGUtXe3EVIRm4SYlgcrt2Ri0w==
 
-"@keystonehq/arweave-keyring@^0.5.3":
-  version "0.5.3"
-  resolved "https://registry.yarnpkg.com/@keystonehq/arweave-keyring/-/arweave-keyring-0.5.3.tgz#3521ef7e5dfe77db25c556b89a41d02c5a6e628b"
-  integrity sha512-/BiyqtPU6nijU3DwhhwPV7sJefORoD290FBKwECi9l64bw3sEEfH9F6SJxlbrZ+QrW4T3FJobkq1s/dlHXgpuA==
+"@keystonehq/arweave-keyring@^0.1.1-alpha.0":
+  version "0.1.6"
+  resolved "https://registry.yarnpkg.com/@keystonehq/arweave-keyring/-/arweave-keyring-0.1.6.tgz#71fc0c751ed493ce02137c10db3476cccaa98947"
+  integrity sha512-uBYlLtAZAU0mJFwaQ1fiVxMjdQ0CzjvDVqeDSt1h5L4OHFIZPHf/BPeo1EJlyMWtXDIQV9JuLhHeZDOOyzsFRA==
   dependencies:
-    "@keystonehq/bc-ur-registry-arweave" "^0.5.2"
-    "@keystonehq/sdk" "^0.19.2"
+    "@keystonehq/bc-ur-registry-arweave" "^0.1.6"
+    "@keystonehq/sdk" "^0.14.1-alpha.2"
     uuid "^8.3.2"
 
-"@keystonehq/bc-ur-registry-arweave@^0.5.2", "@keystonehq/bc-ur-registry-arweave@^0.5.3":
-  version "0.5.3"
-  resolved "https://registry.yarnpkg.com/@keystonehq/bc-ur-registry-arweave/-/bc-ur-registry-arweave-0.5.3.tgz#881259fcfdb8aecf2fc81328cf8061a2c988a965"
-  integrity sha512-b5OAzhW7HLaOX7OEyWA+Bz+4EJIzCT7c+JXU0TElzpBD5rGo4ylf+StuyV6WnuKx5NV11fv9k2XDyHit26CCLA==
+"@keystonehq/bc-ur-registry-arweave@^0.1.1-alpha.0", "@keystonehq/bc-ur-registry-arweave@^0.1.6":
+  version "0.1.6"
+  resolved "https://registry.yarnpkg.com/@keystonehq/bc-ur-registry-arweave/-/bc-ur-registry-arweave-0.1.6.tgz#b93315acada744582adf26dea361b96e41306c58"
+  integrity sha512-v3ZchIClnejXlGPoUpbDKScjQzmuApJae5EATpmxYei/2wfMyTdNVeQSrLQKcGvRb0cmh5jixbzT2moXeQpAbg==
   dependencies:
-    "@keystonehq/bc-ur-registry" "^0.6.4"
+    "@keystonehq/bc-ur-registry" "0.5.4"
     uuid "^8.3.2"
 
-"@keystonehq/bc-ur-registry@^0.6.4":
-  version "0.6.4"
-  resolved "https://registry.yarnpkg.com/@keystonehq/bc-ur-registry/-/bc-ur-registry-0.6.4.tgz#9c57ff9687cafdc0d2bbd04dc36676d3a38c1485"
-  integrity sha512-j8Uy44DuAkvYkbf0jMxRY3UizJfn8wsEQr7GS3miRF44vcq7k0/yemVkftbn3jQ+0JYaUXf5wY7lVpLhAeW5nQ==
+"@keystonehq/bc-ur-registry@0.5.4":
+  version "0.5.4"
+  resolved "https://registry.yarnpkg.com/@keystonehq/bc-ur-registry/-/bc-ur-registry-0.5.4.tgz#5802486a29f5d772520d15579d40fba02860e27f"
+  integrity sha512-z7bZe10I5k0zz9znmDTXh+o3Rzb5XsRVpwAzexubOaLxVdZ0F7aMbe2LoEsw766Hpox/7zARi7UGmLz5C8BAzA==
   dependencies:
     "@ngraveio/bc-ur" "^1.1.5"
     bs58check "^2.1.2"
     tslib "^2.3.0"
 
-"@keystonehq/sdk@^0.19.2":
-  version "0.19.2"
-  resolved "https://registry.yarnpkg.com/@keystonehq/sdk/-/sdk-0.19.2.tgz#2c7e35b93fc8c853b1161f32c1f0f68d272b43f3"
-  integrity sha512-ilA7xAhPKvpHWlxjzv3hjMehD6IKYda4C1TeG2/DhFgX9VSffzv77Eebf8kVwzPLdYV4LjX1KQ2ZDFoN1MsSFQ==
+"@keystonehq/sdk@^0.14.1-alpha.2":
+  version "0.14.1-alpha.2"
+  resolved "https://registry.yarnpkg.com/@keystonehq/sdk/-/sdk-0.14.1-alpha.2.tgz#77c2fdd7a1105898a2241e58b0942ea7f97de1d9"
+  integrity sha512-SUvg4vNd4zJeuLdFwt4s3UtU1+YYHEjO7lLBJkCRh+wuFp/MieFNF58FzEKelLhVsgjA7bQ5v84P33drbgbZwA==
   dependencies:
     "@ngraveio/bc-ur" "^1.0.0"
     qrcode.react "^1.0.1"
     react-modal "^3.12.1"
     react-qr-reader "^2.2.1"
     rxjs "^6.6.3"
+    typescript "^4.6.2"
 
 "@lezer/common@^0.15.0", "@lezer/common@^0.15.7":
   version "0.15.12"
@@ -11828,6 +11829,11 @@ typescript@5.8.2:
   version "5.8.2"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.8.2.tgz#8170b3702f74b79db2e5a96207c15e65807999e4"
   integrity sha512-aJn6wq13/afZp/jT9QZmwEjDqqvSGp1VT5GVg+f/t6/oVyrgXM6BY1h9BRh/O5p3PlUPAe+WuiEZOmb/49RqoQ==
+
+typescript@^4.6.2:
+  version "4.9.5"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.9.5.tgz#095979f9bcc0d09da324d58d03ce8f8374cbe65a"
+  integrity sha512-1FXk9E2Hm+QzZQ7z+McJiHL4NW1F2EzMu9Nq9i3zAaGqibafqYwCVU6WyWAuyQRRzOlxou8xZSyXLEN8oKj24g==
 
 typescript@^5.8.3:
   version "5.8.3"

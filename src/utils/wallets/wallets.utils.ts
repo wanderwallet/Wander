@@ -172,6 +172,10 @@ export interface GenerateShareHashAndPublicKeyReturn {
 async function generateShareHashAndPublicKey(share: string): Promise<GenerateShareHashAndPublicKeyReturn> {
   log(LOG_GROUP.WALLET_GENERATION, "generateShareHashAndPublicKey()");
 
+  if (!share) {
+    throw new Error("Share is missing — unable to generate share hash and public key.");
+  }
+
   const sharePrng = random.createInstance();
 
   sharePrng.seedFileSync = (needed) => {
@@ -224,6 +228,10 @@ export interface GenerateShareHashAndPrivateKeyReturn {
  */
 async function generateShareHashAndPrivateKey(share: string): Promise<GenerateShareHashAndPrivateKeyReturn> {
   log(LOG_GROUP.WALLET_GENERATION, "generateShareHashAndPrivateKey()");
+
+  if (!share) {
+    throw new Error("Share is missing — unable to generate share hash and private key.");
+  }
 
   const sharePrng = random.createInstance();
 
