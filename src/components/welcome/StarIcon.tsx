@@ -22,25 +22,13 @@ export default function StarIcon({
 }: StarIconProps) {
   const theme = useTheme();
 
-  const shineAnimation = keyframes`
-    0% { transform: scale(1.0); }
-    50% { transform: scale(1.3); }
-    100% { transform: scale(1.0); }
-  `;
-
-  const StarSVG = styled.svg`
-    animation-name: ${shineAnimation};
-    animation-duration: 3s;
-    animation-iteration-count: infinite;
-    animation-delay: calc(${size / 100} * -3000ms);
-  `;
-
   return (
     <StarSVG
       xmlns="http://www.w3.org/2000/svg"
       style={{ top, left, right, bottom, position }}
       width={size}
       height={size}
+      size={size}
       viewBox="0 0 42 42"
       fill="none">
       <path
@@ -51,3 +39,16 @@ export default function StarIcon({
     </StarSVG>
   );
 }
+
+const shineAnimation = keyframes`
+    0% { transform: scale(1.0); }
+    50% { transform: scale(1.3); }
+    100% { transform: scale(1.0); }
+  `;
+
+const StarSVG = styled.svg<{ size: number }>`
+  animation-name: ${shineAnimation};
+  animation-duration: 3s;
+  animation-iteration-count: infinite;
+  animation-delay: calc(${({ size }) => size / 100} * -3000ms);
+`;
