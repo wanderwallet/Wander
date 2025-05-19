@@ -3021,7 +3021,17 @@
     "description": "Export keyfile tooltip"
   },
   "scan_qr_code_seamless_transfer": {
-    "message": "The above wallet address and QR code correspond to your new Wander account. If you own AR or AO tokens on an exchange, you can now withdraw them to this address.",
-    "description": "Scan QR code seamless transfer text"
+    "message": "The above wallet address and QR code correspond to your $TYPE$ Wander account. If you own AR or AO tokens on an exchange, you can now withdraw them to this address.",
+    "description": "Scan QR code seamless transfer text",
+    "placeholders": {
+      "type": {
+        "content": "$1",
+        "example": "new"
+      }
+    }
+  },
+  "imported": {
+    "message": "imported",
+    "description": "Imported text"
   }
 }

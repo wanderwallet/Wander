@@ -3011,7 +3011,17 @@
         "description": "Export keyfile tooltip"
     },
     "scan_qr_code_seamless_transfer": {
-        "message": "上述钱包地址和二维码对应您新的 Wander 账户。如果您在交易所持有 AR 或 AO 代币，现在可以将其提现至此地址。",
-        "description": "Scan QR code seamless transfer text"
+        "message": "以上钱包地址和二维码对应您的$TYPE$ Wander账户。如果您在交易所持有AR或AO代币，现在可以将其提现至此地址。",
+        "description": "Scan QR code seamless transfer text",
+        "placeholders": {
+            "type": {
+                "content": "$1",
+                "example": "new"
+            }
+        }
+    },
+    "imported": {
+        "message": "已导入",
+        "description": "Imported text"
     }
 }
