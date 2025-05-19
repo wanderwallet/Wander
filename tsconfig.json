@@ -1,6 +1,6 @@
 {
   "extends": "plasmo/templates/tsconfig.base",
-  "exclude": ["node_modules", "wander-embedded-sdk"],
+  "exclude": ["node_modules", "wander-connect-sdk"],
   "include": [
     ".plasmo/index.d.ts",
     ".plasmo/**/*",

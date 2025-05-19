@@ -82,7 +82,7 @@ export function GenerateDoneWelcomeView({ params }: GenerateDoneWelcomeViewProps
               <QRCodeSVG fgColor="#fff" bgColor="transparent" size={142} value={wallet.address} />
             </QRCodeWrapper>
             <Text variant="secondary" weight="medium" noMargin>
-              Scan the QR code or copy the address for a seamless transfer
+              {browser.i18n.getMessage("scan_qr_code_seamless_transfer")}
             </Text>
           </Flex>
         </InnerContent>
@@ -148,8 +148,8 @@ const InnerContent = styled.div`
 const WalletIcon = styled.img.attrs({
   src: WalletIconSvg,
 })`
-  height: 72px;
-  width: 72px;
+  height: 56px;
+  width: 86px;
 `;
 
 const AccountContainer = styled.div`

@@ -33,7 +33,7 @@ out/
 build/
 dist/
 sdk-dist
-wander-embedded-sdk/wallet-api-dist/
+wander-connect-sdk/wallet-api-dist/
 # plasmo - https://www.plasmo.com
 .plasmo
 

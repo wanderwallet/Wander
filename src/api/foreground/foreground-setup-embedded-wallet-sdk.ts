@@ -9,10 +9,10 @@ import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 import { isApiErrorResponse } from "~utils/messaging/common/messaging.utils";
 import { isomorphicSendMessage } from "~isomorphic-messaging";
 import { setEmbeddedTargetIframe } from "~utils/messaging/strategies/iframe/iframe-messaging.strategy";
-// import { version as sdkVersion } from "../../../wander-embedded-sdk/package.json";
+// import { version as sdkVersion } from "../../../wander-connect-sdk/package.json";
 
-export function setupEmbeddedWalletSDK(targetWindowOrIframe: Window | HTMLIFrameElement = window) {
-  log(LOG_GROUP.SETUP, "setupEmbeddedWalletSDK()");
+export function injectWanderConnectWalletAPI(targetWindowOrIframe: Window | HTMLIFrameElement = window) {
+  log(LOG_GROUP.SETUP, "injectWanderConnectWalletAPI()");
 
   if (!(targetWindowOrIframe instanceof HTMLIFrameElement)) {
     throw new Error("Target for Wander Embedded must be an IFRAME element.");
@@ -25,7 +25,7 @@ export function setupEmbeddedWalletSDK(targetWindowOrIframe: Window | HTMLIFrame
 
   // TODO: Can we get the right type here?:
   const walletAPI = {
-    walletName: IS_EMBEDDED_APP ? "Wander Embedded" : "ArConnect",
+    walletName: IS_EMBEDDED_APP ? "Wander Connect" : "ArConnect",
     walletVersion: version,
     events,
   } as const;

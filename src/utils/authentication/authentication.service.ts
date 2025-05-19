@@ -50,6 +50,14 @@ async function fetchRecoverableAccounts(challengeId: string, challengeSolution: 
   });
 }
 
+async function fetchRecoverableAccountWallets(challengeId: string, challengeSolution: string, userId: string) {
+  return trpcVanilla.fetchRecoverableAccountWallets.mutate({
+    challengeId,
+    challengeSolution,
+    userId,
+  });
+}
+
 async function generateAccountRecoveryChallenge(address: string, userId: string) {
   return trpcVanilla.generateAccountRecoveryChallenge.mutate({
     chain: "ARWEAVE",
@@ -69,6 +77,7 @@ export const AuthenticationService = {
   authenticate,
   generateFetchRecoverableAccountsChallenge,
   fetchRecoverableAccounts,
+  fetchRecoverableAccountWallets,
   generateAccountRecoveryChallenge,
   recoverAccount,
 } as const;

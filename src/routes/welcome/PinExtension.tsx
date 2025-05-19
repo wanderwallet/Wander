@@ -19,7 +19,7 @@ export function PinExtension() {
         </Flex>
         <img height="60px" width="100%" style={{ borderRadius: 12 }} src={BrowserExtension} alt="browser-extension" />
       </Content>
-      <img src={Arrow} alt="arrow" />
+      <Image src={Arrow} alt="arrow" />
     </Container>
   );
 }
@@ -49,4 +49,8 @@ const Content = styled.div`
   flex-shrink: 0;
   border-radius: 12px;
   background: ${(props) => props.theme.primary};
+`;
+
+const Image = styled.img`
+  filter: ${(props) => (props.theme.displayTheme === "dark" ? "brightness(0) saturate(100%) invert(1)" : "none")};
 `;

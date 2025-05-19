@@ -1,0 +1,57 @@
+name: "Create BE Build"
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v4.0.1
+        with:
+          node-version: "20.x"
+          cache: "yarn"
+      - name: Cache yarn modules
+        uses: actions/cache@v3
+        with:
+          path: "**/node_modules"
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+      - name: Create .env file
+        run: |
+          echo "PLASMO_PUBLIC_TRANSAK_API_KEY=${{ secrets.TRANSAK_API_KEY }}" >> .env
+
+      - name: Modify .env if we are building `development` branch
+        if: github.ref == 'refs/heads/development'
+        run: |
+          echo "NODE_ENV=developement" >> .env
+
+      - name: Modify package.json and icons for BETA
+        if: github.ref == 'refs/heads/staging'
+        run: |
+          jq '.displayName = "Wander BETA"' package.json > temp.json && \
+          mv temp.json package.json && \
+          jq --arg version "${{ secrets.VERSION }}" '.version = $version' package.json > temp.json && \
+          mv temp.json package.json && \
+          cp -rf assets-beta/* assets/
+
+      - name: Set metadata for artifact name
+        run: |
+          echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
+          echo "SAFE_REF_NAME=${GITHUB_REF_NAME//\//-}" >> $GITHUB_ENV
+          echo "TIMESTAMP=$(date +'%Y.%m.%d-%H.%M.%S')" >> $GITHUB_ENV
+
+      - name: Build and Package the extension into a zip artifact
+        run: yarn build:chrome --zip
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Wander-${{ env.SHORT_SHA }}-${{ env.SAFE_REF_NAME }}-${{ env.TIMESTAMP }}
+          path: build/chrome-mv3-prod.zip
+          retention-days: 90 # or any number between 1 and 90
+          compression-level: 0 # avoid compressing artifact since it's already compressed

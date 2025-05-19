@@ -18,7 +18,7 @@ export default defineConfig({
       formats: ["es", "umd"],
       fileName: (format) => `wallet-sdk.${format}.js`,
     },
-    outDir: "wander-embedded-sdk/wallet-api-dist",
+    outDir: "wander-connect-sdk/wallet-api-dist",
     sourcemap: true,
     rollupOptions: {
       external: ["webextension-polyfill", "~subscriptions/subscription", "~iframe/plasmo-storage/plasmo-storage.mock"],

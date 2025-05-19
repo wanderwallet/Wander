@@ -7,17 +7,17 @@ import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { version } from "../../../package.json";
 import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 import { isApiErrorResponse } from "~utils/messaging/common/messaging.utils";
-// import { version as sdkVersion } from "../../../wander-embedded-sdk/package.json";
+// import { version as sdkVersion } from "../../../wander-connect-sdk/package.json";
 
-export async function setupWalletSDK(targetWindow: Window = window, embeddedOrigin?: string) {
-  log(LOG_GROUP.SETUP, "setupWalletSDK()");
+export async function injectWanderWalletAPI(targetWindow: Window = window, embeddedOrigin?: string) {
+  log(LOG_GROUP.SETUP, "injectWanderWalletAPI()");
 
   /** Init events */
   const events = mitt<MittInjectedEvents>();
 
   // TODO: Can we get the right type here?:
   const walletAPI = {
-    walletName: IS_EMBEDDED_APP ? "Wander Embedded" : "ArConnect",
+    walletName: IS_EMBEDDED_APP ? "Wander Connect" : "ArConnect",
     walletVersion: version,
     events,
   } as const;
