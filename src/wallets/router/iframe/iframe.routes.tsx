@@ -1,6 +1,5 @@
-import { AUTH_ROUTES } from "~wallets/router/auth/auth.embed.routes";
+import { CONNECT_AUTH_ROUTES } from "~wallets/router/auth/auth.embed.routes";
 import { getExtensionOverrides } from "~wallets/router/extension/extension.routes";
-import { POPUP_ROUTES } from "~wallets/router/popup/popup.routes";
 import type { RouteConfig } from "~wallets/router/router.types";
 import { isRouteOverride } from "~wallets/router/router.utils";
 
@@ -392,7 +391,7 @@ export const IFRAME_ROUTES = [
   // ...POPUP_ROUTES.filter((route) => !isRouteOverride(route.path)),
 
   // auth.tsx:
-  ...AUTH_ROUTES.filter((route) => !isRouteOverride(route.path)),
+  ...CONNECT_AUTH_ROUTES.filter((route) => !isRouteOverride(route.path)),
 
   // OAuth Error:
   {

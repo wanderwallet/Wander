@@ -49,7 +49,7 @@ export const ConnectAuthPaths = {
   Subscription: "/auth-request/subscription/:authID",
 } as const satisfies Record<string, ConnectAuthRoutePath>;
 
-export const AUTH_ROUTES = [
+export const CONNECT_AUTH_ROUTES = [
   ...getExtensionOverrides({
     unlockView: UnlockAuthRequestView,
     loadingView: LoadingAuthRequestView,
