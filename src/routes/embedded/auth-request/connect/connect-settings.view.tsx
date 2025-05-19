@@ -108,7 +108,7 @@ export function EmbeddedConnectSettingsAuthRequestView() {
         }
       }
 
-      const requestedPermissions = await ExtensionStorage.get(`requested_permission`);
+      const requestedPermissions = await ExtensionStorage.get(`requested_permissions`);
 
       if (!requestedPermissions) {
         setRequestedPermissions(requested.filter((p) => Object.keys(permissionData).includes(p)));
