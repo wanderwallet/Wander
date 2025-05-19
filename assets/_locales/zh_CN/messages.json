@@ -697,6 +697,10 @@
       "message": "取消",
       "description": "Cancel button text"
   },
+  "back": {
+    "message": "后退",
+    "description": "Back button text"
+  },
   "export": {
       "message": "导出",
       "description": "Export button text"

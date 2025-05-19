@@ -44,7 +44,7 @@ export const ConnectAuthPaths = {
   SignKeystone: "/auth-request/signKeystone/:authID",
   Signature: "/auth-request/signature/:authID",
   SignDataItem: "/auth-request/signDataItem/:authID",
-  SignDataItemDetails: "/auth-request/signDataItem/:authID/detail",
+  SignDataItemDetails: "/auth-request/signDataItem/:authID/details",
   BatchSignDataItem: "/auth-request/batchSignDataItem/:authID",
   Subscription: "/auth-request/subscription/:authID",
 } as const satisfies Record<string, ConnectAuthRoutePath>;

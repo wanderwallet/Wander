@@ -13,9 +13,9 @@ import { formatBalance } from "~utils/format";
 import { AlertTriangle } from "@untitled-ui/icons-react";
 import TransactionMessage from "~components/embed/auth/TransactionMessage";
 import { AuthRequestCard } from "~components/embed/ui/molecules/card/auth-request-card/AuthRequestCard";
+import browser from "~iframe/browser";
 
 export function EmbeddedSignAuthRequestView() {
-  const { navigate } = useLocation();
   const { authRequest, rejectRequest, acceptRequest } = useCurrentAuthRequest("sign");
 
   const { url = "", transaction } = authRequest;
@@ -65,7 +65,8 @@ export function EmbeddedSignAuthRequestView() {
       headerText="Confirm Activity"
       onCancel={rejectRequest}
       onConfirm={acceptRequest}
-      areButtonsDisabled={!transaction}>
+      confirmLabel={browser.i18n.getMessage("sign_authorize")}
+      isDisabled={!transaction || authRequest.status !== "pending"}>
       <Box alignment="left" style={{ padding: "1rem 0" }}>
         <Row alignment="center" justifyContent="center" style={{ padding: 0 }}>
           <Image

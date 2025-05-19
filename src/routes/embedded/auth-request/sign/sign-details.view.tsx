@@ -14,6 +14,7 @@ import { useStorage, ExtensionStorage } from "~utils/storage";
 import TransactionTag from "~components/embed/auth/TransactionTag";
 import TransactionMessage from "~components/embed/auth/TransactionMessage";
 import { AuthRequestCard } from "~components/embed/ui/molecules/card/auth-request-card/AuthRequestCard";
+import browser from "~iframe/browser";
 
 export function EmbeddedSignDetailsAuthRequestView() {
   const { navigate } = useLocation();
@@ -96,7 +97,7 @@ export function EmbeddedSignDetailsAuthRequestView() {
       headerText="Transaction details"
       onBackButtonClick={() => navigate(`/auth-request/${ authRequest.type }/${ authRequest.authID}`)}
       onCancel={() => navigate(`/auth-request/${ authRequest.type }/${ authRequest.authID}`)}
-      cancelLabel="Back">
+      cancelLabel={browser.i18n.getMessage("back")}>
       <Box style={{ gap: "0.5rem" }} alignment="left">
         {transaction?.id && <TransactionTag name="Transaction ID" value={transaction.id} />}
         <TransactionTag name="From" value={formatAddress(activeAddress, 6)} />

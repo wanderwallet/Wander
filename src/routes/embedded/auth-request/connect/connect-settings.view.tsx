@@ -123,8 +123,8 @@ export function EmbeddedConnectSettingsAuthRequestView() {
       onBackButtonClick={() => navigate(`/auth-request/connect/${ authRequest.authID }`)}
       onCancel={() => rejectRequest()}
       onConfirm={handleConfirm}
-      confirmLabel="Next"
-      areButtonsDisabled={!signPolicy || !url}>
+      confirmLabel={browser.i18n.getMessage("connect")}
+      isDisabled={!signPolicy || !url}>
 
       <AppIcons appInfo={appInfo} />
 

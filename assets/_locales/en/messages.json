@@ -701,6 +701,10 @@
     "message": "Cancel",
     "description": "Cancel button text"
   },
+  "back": {
+    "message": "Back",
+    "description": "Back button text"
+  },
   "export": {
     "message": "Export",
     "description": "Export button text"

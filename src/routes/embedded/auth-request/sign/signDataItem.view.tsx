@@ -18,6 +18,7 @@ import { Loading } from "@arconnect/components-rebrand";
 import TransactionMessage from "~components/embed/auth/TransactionMessage";
 import { formatBalance } from "~utils/format";
 import { AuthRequestCard } from "~components/embed/ui/molecules/card/auth-request-card/AuthRequestCard";
+import browser from "~iframe/browser";
 
 export function EmbeddedSignDataAuthRequestView() {
   const { authRequest, rejectRequest, acceptRequest } = useCurrentAuthRequest("signDataItem");
@@ -128,7 +129,8 @@ export function EmbeddedSignDataAuthRequestView() {
       headerText="Confirm Activity"
       onCancel={rejectRequest}
       onConfirm={acceptRequest}
-      areButtonsDisabled={loading}>
+      confirmLabel={browser.i18n.getMessage("signature_authorize")}
+      isDisabled={loading}>
       <Box alignment="left" style={{ padding: "1rem 0" }}>
         <Row alignment="center" justifyContent="center" style={{ padding: 0 }}>
           <Image
@@ -210,7 +212,7 @@ export function EmbeddedSignDataAuthRequestView() {
 
       <TransactionMessage
         transaction={data}
-        detailsLink={ `/auth-request/signDataItem/${ authRequest.authID}/details` }  />
+        detailsLink={ `/auth-request/signDataItem/${ authRequest.authID }/details` }  />
     </AuthRequestCard>
   );
 }

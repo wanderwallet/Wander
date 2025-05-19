@@ -82,7 +82,7 @@ export function EmbeddedBatchSignDataItemAuthRequestView() {
       headerText={browser.i18n.getMessage("batch_sign_items")}
       onBackButtonClick={() => setTransaction(null)}
       onCancel={() => setTransaction(null)}
-      cancelLabel="Back">
+      cancelLabel={browser.i18n.getMessage("back")}>
 
       <Box alignment="left" style={{ padding: "1rem 0" }}>
         <Text variant="bodyMd" style={{ color: "#666666" }}>
@@ -99,7 +99,7 @@ export function EmbeddedBatchSignDataItemAuthRequestView() {
       onCancel={rejectRequest}
       onConfirm={acceptRequest}
       confirmLabel={browser.i18n.getMessage("sign_authorize_all")}
-      areButtonsDisabled={loading}>
+      isDisabled={loading}>
 
       <Box alignment="left" style={{ padding: "1rem 0" }}>
         <Text variant="bodyMd" style={{ color: "#666666" }}>

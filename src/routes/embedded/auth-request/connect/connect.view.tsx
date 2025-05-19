@@ -12,6 +12,7 @@ import { ExtensionStorage } from "~utils/storage";
 import AppIcons from "./components/AppIcons";
 import { useAllWallets } from "~wallets/hooks";
 import { AuthRequestCard } from "~components/embed/ui/molecules/card/auth-request-card/AuthRequestCard";
+import browser from "~iframe/browser";
 
 export function EmbeddedConnectAuthRequestView() {
   const { navigate } = useLocation();
@@ -53,7 +54,7 @@ export function EmbeddedConnectAuthRequestView() {
       <AuthRequestCard
         onCancel={rejectRequest}
         onConfirm={handleConfirm}
-        confirmLabel="Next">
+        confirmLabel={ browser.i18n.getMessage("next") }>
 
         <AppIcons appInfo={appInfo} />
 

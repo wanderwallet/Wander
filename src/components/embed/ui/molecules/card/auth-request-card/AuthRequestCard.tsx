@@ -5,40 +5,24 @@ import { Button } from "~components/embed/ui/atoms";
 import browser from "~iframe/browser";
 
 import styles from "./AuthRequestCard.module.scss";
-import { useEffect } from "react";
 
-export interface AuthRequestCardProps extends Omit<CardBaseProps, "size" | "hasBackButton" | "customIcon" | "hasCloseButton" | "onCloseButtonClick" | "closeButtonStyles"> {
+export interface AuthRequestCardProps extends Omit<CardBaseProps, "size" | "hasBackButton" | "customIcon" | "hasCloseButton" | "closeButtonStyles"> {
   onCancel?: () => void;
-  onConfirm?: () => void;
   cancelLabel?: string;
+  onConfirm?: () => void;
   confirmLabel?: string;
-  areButtonsDisabled?: boolean;
 }
 
 export function AuthRequestCard({
-  onBackButtonClick,
   onCancel,
-  onConfirm,
   cancelLabel = browser.i18n.getMessage("cancel"),
-  confirmLabel = browser.i18n.getMessage("continue"),
-  areButtonsDisabled,
+  onConfirm,
+  confirmLabel = browser.i18n.getMessage("confirm"),
   children: childrenProp,
+  isDisabled,
+  onBackButtonClick,
   ...cardProps
 }: AuthRequestCardProps) {
-
-  useEffect(() => {
-    function handleKeyDown(e: KeyboardEvent) {
-      if (areButtonsDisabled) return;
-
-      if (onConfirm && (e.key === "Enter" || e.key.toUpperCase() === "Y")) onConfirm();
-      else if (onCancel && (e.key === "Delete" || e.key.toUpperCase() === "N")) onCancel();
-    }
-
-    window.addEventListener("keydown", handleKeyDown);
-
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onConfirm, onCancel]);
-
   const children = (
     <div className={ styles.childrenWrapper }>
       {childrenProp}
@@ -58,7 +42,7 @@ export function AuthRequestCard({
           variant="secondary"
           isFullWidth
           onClick={onCancel}
-          isDisabled={ areButtonsDisabled }>
+          isDisabled={ isDisabled }>
           { cancelLabel }
         </Button>
       ) : null }
@@ -68,7 +52,7 @@ export function AuthRequestCard({
           variant="primary"
           isFullWidth
           onClick={onConfirm}
-          isDisabled={ areButtonsDisabled }>
+          isDisabled={ isDisabled }>
           { confirmLabel }
         </Button>
       ) : null }
@@ -83,6 +67,7 @@ export function AuthRequestCard({
       onBackButtonClick={onBackButtonClick}
       customIcon={<XClose fontSize={24} color={"#666666"} />}
       footerElement={ footerElement }
-      children={ children } />
+      children={ children }
+      isDisabled={isDisabled} />
   )
 }
