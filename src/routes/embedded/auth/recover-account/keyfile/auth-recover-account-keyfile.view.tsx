@@ -36,7 +36,7 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
   });
 
   const areButtonsDisabled = isRecovering || isUploading;
-  const isViewLoading = isUploading;
+  const isViewLoading = isRecovering;
 
   const handleRecover = async () => {
     try {

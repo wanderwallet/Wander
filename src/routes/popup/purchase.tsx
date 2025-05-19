@@ -15,6 +15,7 @@ import { WarningIcon } from "~components/popup/Token";
 import { Flex } from "~components/common/Flex";
 import { useTransak } from "~utils/transak/transak.hooks";
 import { paymentMethods } from "~utils/ramps";
+import { PopupPaths } from "~wallets/router/popup/popup.routes";
 
 const TRANSAK_API_KEY = process.env.PLASMO_PUBLIC_TRANSAK_API_KEY;
 
@@ -267,7 +268,7 @@ export function PurchaseView() {
           fullWidth
           onClick={async () => {
             await ExtensionStorage.set("transak_quote", quote);
-            await openTransak("/wallet/buy/success");
+            await openTransak(PopupPaths.PendingPurchase);
           }}>
           {!quote ? "Enter amount" : "Review"}
         </Button>

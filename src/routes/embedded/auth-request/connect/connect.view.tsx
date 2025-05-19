@@ -65,7 +65,7 @@ export function EmbeddedConnectAuthRequestView() {
           alignment="left"
           style={{
             width: "100%",
-            backgroundColor: "#EBEBF0",
+            backgroundColor: "var(--input-background)",
             borderRadius: "16px",
             position: "relative",
           }}>
@@ -121,7 +121,7 @@ export function EmbeddedConnectAuthRequestView() {
             width: "90%",
             maxWidth: "360px",
             zIndex: 1000,
-            backgroundColor: "#FFFFFF",
+            backgroundColor: "var(--color-background-default)",
             borderRadius: "16px",
             boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.15)",
             padding: "0",
@@ -134,7 +134,7 @@ export function EmbeddedConnectAuthRequestView() {
               onClick={handleWalletSelect(wallet)}
               style={{
                 cursor: "pointer",
-                backgroundColor: wallet.address === activeWallet.address ? "#F5F5FA" : "transparent",
+                backgroundColor: wallet.address === activeWallet.address ? "var(--input-background)" : "transparent",
                 margin: "0",
                 padding: "0",
                 transition: "background-color 0.2s ease",
