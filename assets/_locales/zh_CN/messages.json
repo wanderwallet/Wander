@@ -2575,7 +2575,7 @@
         "description": "Congratulations title"
     },
     "congratulations_description": {
-        "message": "您已完成$TYPE$您的Wander账户。",
+        "message": "您已完成 $TYPE$ 您的 Wander 账户。您的钱包地址如下：",
         "description": "Congratulations description",
         "placeholders": {
             "type": {
