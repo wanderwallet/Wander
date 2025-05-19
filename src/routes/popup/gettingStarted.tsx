@@ -81,7 +81,7 @@ export function GettingStartedSetupWelcomeView({ params: { page: pageParam } }: 
               {browser.i18n.getMessage(page < 6 ? "next" : "finish")}
             </Button>
             {page < 6 && (
-              <Button fullWidth variant="secondary" onClick={() => navigateToPage(page - 1)}>
+              <Button fullWidth variant="secondary" onClick={() => navigateToPage(0)}>
                 {browser.i18n.getMessage("close")}
               </Button>
             )}
