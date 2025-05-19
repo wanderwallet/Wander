@@ -2520,10 +2520,6 @@
     "message": "Your account name is stored locally and will only be visible to you.",
     "description": "Create a new account description"
   },
-  "secure_your_account_description": {
-    "message": "Secure your account with a password. This will be used to confirm activity and transactions in Wander.",
-    "description": "Secure your account description"
-  },
   "import_an_account": {
     "message": "Import an account",
     "description": "Import an account button text"
@@ -2581,7 +2577,7 @@
     "description": "Enable notifications description"
   },
   "enable_analytics_description": {
-    "message": "Enable analytics to help us provide the best experience for you on Wander.",
+    "message": "Enable anonymous analytics to help us continue making Wander better.",
     "description": "Enable analytics description"
   },
   "congratulations": {
@@ -2589,7 +2585,7 @@
     "description": "Congratulations title"
   },
   "congratulations_description": {
-    "message": "You have now finished $TYPE$ your Wander account",
+    "message": "You have now finished $TYPE$ your Wander account. Your wallet address is below:",
     "description": "Congratulations description",
     "placeholders": {
       "type": {
@@ -2980,10 +2976,6 @@
     "message": "Unable to display data: Data is too large to display.",
     "description": "Data too large text"
   },
-  "set_up_a_password": {
-    "message": "Set up a password",
-    "description": "Set up a password text"
-  },
   "generating_your_account": {
     "message": "Generating your account!",
     "description": "Generating your account text"
@@ -3029,7 +3021,17 @@
     "description": "Export keyfile tooltip"
   },
   "scan_qr_code_seamless_transfer": {
-    "message": "Scan the QR code or copy the address for a seamless transfer",
-    "description": "Scan QR code seamless transfer text"
+    "message": "The above wallet address and QR code correspond to your $TYPE$ Wander account. If you own AR or AO tokens on an exchange, you can now withdraw them to this address.",
+    "description": "Scan QR code seamless transfer text",
+    "placeholders": {
+      "type": {
+        "content": "$1",
+        "example": "new"
+      }
+    }
+  },
+  "imported": {
+    "message": "imported",
+    "description": "Imported text"
   }
 }
