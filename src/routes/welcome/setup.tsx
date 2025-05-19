@@ -32,7 +32,6 @@ import { PermissionsWelcomeView } from "./generate/permissions";
 import { OptionsWelcomView } from "./load/options";
 import IconText from "~components/IconText";
 import { Link } from "~routes/popup/token/[id]";
-import { SecureWelcomeView } from "./generate/secure";
 import { LoadingWelcomeView } from "./generate/loading";
 
 // Wallet generate pages:
@@ -55,7 +54,6 @@ const KeystoneViews = [
 // TODO: Use a nested router instead:
 const ViewsBySetupMode = {
   generate: [
-    SecureWelcomeView,
     PasswordWelcomeView,
     PermissionsWelcomeView,
     LoadingWelcomeView,
@@ -88,7 +86,7 @@ const remainingLoadSubtitles = [
 const remainingKeystoneSubtitles = ["create_a_password", "choose_ui_theme", "enable_permissions", "congratulations"];
 
 const VIEW_SUBTITLES_BY_SETUP_MODE = {
-  generate: ["secure_your_account", "create_a_password", "enable_permissions", "loading_wallet", "congratulations"],
+  generate: ["secure_your_account", "enable_permissions", "loading_wallet", "congratulations"],
   load: [""],
   recoveryPhraseLoad: ["enter_recovery_phrase", ...remainingLoadSubtitles],
   keyfileLoad: ["upload_key_file", ...remainingLoadSubtitles],
@@ -113,8 +111,8 @@ export function SetupWelcomeView({ params }: SetupWelcomeViewProps) {
   const pageTitle = VIEW_TITLES_BY_SETUP_MODE[setupMode];
   const pageSubtitle = VIEW_SUBTITLES_BY_SETUP_MODE[setupMode][page - 1];
   const pageCount = ViewsBySetupMode[setupMode].length;
-  const transparentBackground = (setupMode !== "load" && pageCount === page) || (setupMode === "generate" && page > 3);
-  const hidePagination = (setupMode === "load" && page === 1) || (setupMode === "generate" && page > 3);
+  const transparentBackground = (setupMode !== "load" && pageCount === page) || (setupMode === "generate" && page > 2);
+  const hidePagination = (setupMode === "load" && page === 1) || (setupMode === "generate" && page > 2);
 
   // temporarily stored password
   const [password, setPassword] = useState("");
@@ -209,7 +207,7 @@ export function SetupWelcomeView({ params }: SetupWelcomeViewProps) {
     isNaN(page) ||
     page < 1 ||
     page > pageCount ||
-    (setupMode === "generate" && page > 2 && password === "") ||
+    (setupMode === "generate" && page > 1 && password === "") ||
     (setupMode !== "generate" && page > 3 && password === "")
   ) {
     return <Redirect to={`/${setupMode}/1`} />;
@@ -263,7 +261,7 @@ export function SetupWelcomeView({ params }: SetupWelcomeViewProps) {
               <PaginationContainer>
                 <Pagination
                   currentPage={page}
-                  totalPages={setupMode === "generate" ? 3 : pageCount}
+                  totalPages={setupMode === "generate" ? 2 : pageCount}
                   subtitle={pageSubtitle}
                 />
               </PaginationContainer>
