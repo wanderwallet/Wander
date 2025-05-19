@@ -1,4 +1,12 @@
 import styled, { useTheme, keyframes } from "styled-components";
+import { useMemo } from "react";
+
+const ANIMATION_FACTORS = [3, 5, 7, 11] as const;
+
+const getRandomDuration = () => {
+  const randomFactor = ANIMATION_FACTORS[Math.floor(Math.random() * ANIMATION_FACTORS.length)];
+  return `${randomFactor}s`;
+};
 
 interface StarIconProps {
   opacity?: number;
@@ -21,11 +29,13 @@ export default function StarIcon({
   size = 42,
 }: StarIconProps) {
   const theme = useTheme();
+  const animationDuration = useMemo(getRandomDuration, []);
 
   return (
     <StarSVG
       xmlns="http://www.w3.org/2000/svg"
       style={{ top, left, right, bottom, position }}
+      animationDuration={animationDuration}
       width={size}
       height={size}
       size={size}
@@ -46,9 +56,9 @@ const shineAnimation = keyframes`
     100% { transform: scale(1.0); }
   `;
 
-const StarSVG = styled.svg<{ size: number }>`
+const StarSVG = styled.svg<{ size: number; animationDuration: string }>`
   animation-name: ${shineAnimation};
-  animation-duration: 3s;
+  animation-duration: ${({ animationDuration }) => animationDuration};
   animation-iteration-count: infinite;
   animation-delay: calc(${({ size }) => size / 100} * -3000ms);
 `;
