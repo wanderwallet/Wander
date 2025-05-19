@@ -2575,7 +2575,7 @@
         "description": "Congratulations title"
     },
     "congratulations_description": {
-        "message": "您已完成 $TYPE$ 您的 Wander 账户。您的钱包地址如下：",
+        "message": "您已完成$TYPE$您的 Wander 账户，以下是您的钱包地址。",
         "description": "Congratulations description",
         "placeholders": {
             "type": {
@@ -3011,7 +3011,7 @@
         "description": "Export keyfile tooltip"
     },
     "scan_qr_code_seamless_transfer": {
-        "message": "以上钱包地址和二维码对应您的$TYPE$ Wander账户。如果您在交易所持有AR或AO代币，现在可以将其提现至此地址。",
+        "message": "上述钱包地址和二维码对应您$TYPE$的 Wander 账户。如果您在交易所持有 AR 或 AO 代币，现在可以将其提取到此地址。",
         "description": "Scan QR code seamless transfer text",
         "placeholders": {
             "type": {
@@ -3021,7 +3021,7 @@
         }
     },
     "imported": {
-        "message": "已导入",
+        "message": "导入",
         "description": "Imported text"
     }
 }
