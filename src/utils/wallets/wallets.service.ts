@@ -128,8 +128,9 @@ async function fetchFirstAvailableAuthShare(
       const { id: walletId, deviceShare } = wallet;
 
       try {
-        if (!deviceShare) {
-          console.warn(`Missing device share for wallet ${walletId}. Wallet needs recovery.`);
+        if (deviceShare === null) {
+          // If the device share is not present in the device, skip, otherwise
+          // `WalletUtils.generateShareHashAndPrivateKey()` will throw an error.
           continue;
         }
 
