@@ -43,7 +43,7 @@ export function AuthRestoreSharesKeyfileEmbeddedView({
   });
 
   const areButtonsDisabled = isRecovering || isUploading;
-  const isViewLoading = isUploading;
+  const isViewLoading = isRecovering;
 
   const handleRecoverWallet = async () => {
     try {

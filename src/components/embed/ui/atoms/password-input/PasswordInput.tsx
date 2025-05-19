@@ -1,8 +1,10 @@
 import { useCallback, useState } from "react";
 import { TextInput } from "~components/embed";
-import type { PasswordInputProps } from "~components/embed/ui/atoms/password-input/PasswordInput.types";
 import { Eye, EyeOff } from "@untitled-ui/icons-react";
 import { InputButton } from "~components/embed/ui/atoms/input-button/InputButton";
+import type { TextInputProps } from "~components/embed/ui/atoms/text-input/TextInput.types";
+
+export type PasswordInputProps = Omit<TextInputProps, "type">;
 
 export function PasswordInput(props: PasswordInputProps) {
   const [isVisible, setIsVisible] = useState(false);

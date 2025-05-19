@@ -35,7 +35,7 @@ export function AuthImportKeyfileEmbeddedView() {
   });
 
   const areButtonsDisabled = isAdding || isUploading;
-  const isViewLoading = isUploading;
+  const isViewLoading = isAdding;
 
   const handleAddWallet = async () => {
     try {

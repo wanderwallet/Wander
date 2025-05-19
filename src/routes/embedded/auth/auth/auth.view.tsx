@@ -111,18 +111,11 @@ export function AuthEmbeddedView() {
     }
   }, []);
 
-  /*
-  useEffect(() => {
-    navigate("/", { search: { error: "test error", error_description: "test error description"}})
-  }, []);
-  */
-
-  // TODO: Remember last selection and highlight that one / show it in the main screen (not in "More")
-
   const emailInputButton = (
     <InputButton
       type="submit"
-      label="Next" />
+      label="Next"
+      loading={ isCheckingEmail } />
   );
 
   return (

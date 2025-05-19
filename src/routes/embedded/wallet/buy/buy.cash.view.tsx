@@ -52,7 +52,7 @@ export function WalletBuyCashEmbeddedView() {
           inputStyle={{
             fontSize: "40px",
             fontWeight: "500",
-            color: "#121212",
+            color: "var(--input-color)",
             border: "none",
             background: "transparent",
           }}
