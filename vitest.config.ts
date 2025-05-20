@@ -1,4 +1,3 @@
-// vitest.config.ts
 import { defineConfig } from "vitest/config";
 import { resolve } from "path";
 
@@ -11,6 +10,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "~utils": resolve(__dirname, "./src/utils"),
+      "~iframe": resolve(__dirname, "./src/iframe"),
     },
   },
 });

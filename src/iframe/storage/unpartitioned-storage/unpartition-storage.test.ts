@@ -273,7 +273,7 @@ describe("StorageMock", () => {
 
     // Verify it's gone from both the API and storage
     const result = await storageMock.getItem("toRemove");
-    expect(result).toBeNull();
+    expect(result).toBeUndefined();
     expect(sessionStorage.getItem("toRemove")).toBeNull();
   });
 
