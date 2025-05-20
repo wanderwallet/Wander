@@ -55,7 +55,7 @@ export const defaultTokens = [
     Logo: "L99jaxRKQKJt9CqoJtPaieGPEhJD3wNhR4iGqc8amXs",
     processId: "xU9zFkq3X2ZQ6olwNVvr1vUWIjc3kXTWr7xKQD6dh10",
   },
-] as const satisfies TokenInfoWithProcessId[];
+] as const satisfies TokenInfo[];
 
 /**
  * Dummy ID
@@ -397,13 +397,11 @@ export interface TokenInfo {
   Ticker?: string;
   Logo?: string;
   Denomination: number;
-  processId?: string;
+  processId: string;
   lastUpdated?: string | null;
   type?: "asset" | "collectible";
   hidden?: boolean;
 }
-
-export type TokenInfoWithProcessId = TokenInfo & { processId: string };
 
 export interface TokenInfoWithBalance extends TokenInfo {
   id?: string;

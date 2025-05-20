@@ -1,6 +1,4 @@
-import { getAoTokens } from "~tokens";
-import { PersistentStorage } from "./storage";
-import type { TokenInfoWithProcessId } from "~tokens/aoTokens/ao";
+import type { TokenInfo } from "~tokens/aoTokens/ao";
 
 // export const AO_NATIVE_OLD_TOKEN = "BJj8sNao3XPqsoJnea4DnJyPzHnKhkhcY1HtWBxHcLs" as const;
 export const AO_NATIVE_OLD_TOKEN = "m3PaWzK4PTG9lAaqYQPaPdOcXdO8hYqi5Fe9NWqXd0w" as const;
@@ -14,4 +12,4 @@ export const AO_NATIVE_TOKEN_INFO = {
   Denomination: 12,
   Logo: "UkS-mdoiG8hcAClhKK8ch4ZhEzla0mCPDOix9hpdSFE",
   processId: AO_NATIVE_TOKEN,
-} as const satisfies TokenInfoWithProcessId;
+} as const satisfies TokenInfo;
