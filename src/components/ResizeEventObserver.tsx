@@ -13,8 +13,6 @@ export interface ResizeEventObserver {
 export function ResizeEventObserver({
   containerRef,
 }: ResizeEventObserver) {
-  if (import.meta.env?.VITE_IS_EMBEDDED_APP !== "1" || process.env.NODE_ENV !== "development") return null;
-
   const { location } = useLocation();
   const [height, setHeight] = useState(0);
 
@@ -77,6 +75,8 @@ export function ResizeEventObserver({
       resizeObserver.disconnect();
     };
   }, [dispatchResizeEvent]);
+
+  if (import.meta.env?.VITE_IS_EMBEDDED_APP !== "1" || process.env.NODE_ENV !== "development") return null;
 
   return <DivLine style={{ top: `${height - 6}px` }} data-height={`${height}px`} />;
 }
