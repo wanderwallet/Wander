@@ -79,8 +79,6 @@ const background: BackgroundModuleFunction<ReturnType> = async (
   const signPolicy = await app.getSignPolicy();
   const alwaysAsk = checkIfUserNeedsToSign(signPolicy, transaction, decryptedWallet?.type);
 
-  console.log("alwaysAsk =", alwaysAsk);
-
   // attempt to create a bundle
   try {
     // create bundlr tx as a data entry
