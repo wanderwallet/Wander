@@ -112,9 +112,13 @@ const background: BackgroundModuleFunction<ReturnType> = async (
     };
   } catch (err) {
     if (isError(err) && err.message === ERR_MSG_USER_CANCELLED_AUTH) {
+      freeDecryptedWallet(keyfile);
+
       throw err;
     }
+  }
 
+  try {
     // TODO: If there's an error in the first request, the previous (already accepted) AuthRequest's UI should probably
     // reflect that. Maybe we could even reuse the same AuthRequest item instead of creating a separated one.
 
@@ -153,6 +157,10 @@ const background: BackgroundModuleFunction<ReturnType> = async (
         type: "BASE",
       },
     };
+  } catch (err) {
+    freeDecryptedWallet(keyfile);
+
+    throw err;
   }
 };
 
