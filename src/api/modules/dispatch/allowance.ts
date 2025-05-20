@@ -23,24 +23,19 @@ export async function ensureAllowanceDispatch(
   const arweave = new Arweave(defaultGateway);
 
   // allowance or sign auth
-  try {
-    if (alwaysAsk) {
-      const address = await arweave.wallets.jwkToAddress(keyfile);
 
-      await signAuth(
-        appData,
-        // @ts-expect-error
-        dataEntry.toJSON(),
-        address,
-      );
-    }
+  if (alwaysAsk) {
+    const address = await arweave.wallets.jwkToAddress(keyfile);
 
-    // if (allowance.enabled) {
-    //   await allowanceAuth(appData, allowance, price, alwaysAsk);
-    // }
-  } catch (e) {
-    freeDecryptedWallet(keyfile);
-    throw new Error(e?.message || e);
+    await signAuth(
+      appData,
+      // @ts-expect-error
+      dataEntry.toJSON(),
+      address,
+    );
   }
-  return;
+
+  // if (allowance.enabled) {
+  //   await allowanceAuth(appData, allowance, price, alwaysAsk);
+  // }
 }

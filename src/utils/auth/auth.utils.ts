@@ -270,7 +270,7 @@ export function getPopupResponse<T>(authID: string, popupWindowTabID: number) {
       } else if (isAuthErrorResult(data)) {
         log(LOG_GROUP.AUTH, `auth_result for authID = "${authID}" = Error (${data.error})`);
 
-        reject(data.error);
+        reject(new Error(data.error));
       } else {
         log(LOG_GROUP.AUTH, `auth_result for authID = "${authID}" = Success`);
 

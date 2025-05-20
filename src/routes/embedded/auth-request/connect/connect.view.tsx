@@ -52,7 +52,7 @@ export function EmbeddedConnectAuthRequestView() {
   return (
     <>
       <AuthRequestCard
-        onCancel={rejectRequest}
+        onCancel={() => rejectRequest()}
         onConfirm={handleConfirm}
         confirmLabel={ browser.i18n.getMessage("next") }>
 

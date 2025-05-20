@@ -1,5 +1,4 @@
 import { Row, Text, Box, Divider } from "~components/embed/ui";
-import { useLocation } from "~wallets/router/router.utils";
 import { useCurrentAuthRequest } from "~utils/auth/auth.hooks";
 import Image from "~components/common/Image";
 import { useEffect, useMemo, useState } from "react";
@@ -12,7 +11,6 @@ import { fetchTokenByProcessId, getTagValue, type TokenInfo } from "~tokens/aoTo
 import { ExtensionStorage, PersistentStorage, useStorage } from "~utils/storage";
 import { humanizeTimestampTags } from "~utils/timestamp";
 import arLogoLight from "url:/assets/ar/logo_light.png";
-import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 import { useTokenBalance } from "~tokens/hooks";
 import { Loading } from "@arconnect/components-rebrand";
 import TransactionMessage from "~components/embed/auth/TransactionMessage";
@@ -127,8 +125,8 @@ export function EmbeddedSignDataAuthRequestView() {
   return (
     <AuthRequestCard
       headerText="Confirm Activity"
-      onCancel={rejectRequest}
-      onConfirm={acceptRequest}
+      onCancel={() => rejectRequest()}
+      onConfirm={() => acceptRequest()}
       confirmLabel={browser.i18n.getMessage("signature_authorize")}
       isDisabled={loading}>
       <Box alignment="left" style={{ padding: "1rem 0" }}>
