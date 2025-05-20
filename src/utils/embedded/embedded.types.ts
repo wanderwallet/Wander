@@ -8,6 +8,7 @@ import type {
   WalletSourceType,
   DbSession,
 } from "embed-api";
+import type { LocalWallet } from "~wallets/wallets.types";
 
 export type AuthStatus =
   | "unknown"
@@ -112,6 +113,7 @@ export interface EmbeddedContextData extends EmbeddedContextState, EmbeddedConte
   skipBackUp: (doNotAskAgain: boolean) => void | Promise<void>;
   downloadKeyfile: () => Promise<void>;
   copySeedphrase: () => Promise<boolean>;
+  getDecryptedWallet: () => Promise<LocalWallet<JWKInterface>>;
   getSeedphrase: (callbackFn?: (seedPhrase: string) => Promise<boolean>) => Promise<string>;
   generateRecoveryAndDownload: () => Promise<void>;
 }

@@ -54,7 +54,14 @@ import {
 } from "~utils/embedded/utils/messages/embedded-messages.utils";
 import { ExtensionStorage, PersistentStorage } from "~utils/storage";
 import { StorageKeys } from "~utils/storage/storage.constants";
-import { AO_TOKENS, AO_TOKENS_AUTO_IMPORT_RESTRICTED_IDS, AO_TOKENS_CACHE, AO_TOKENS_IDS, AO_TOKENS_IMPORT_TIMESTAMP, AO_TOKENS_LAST_BLOCK_HEIGHT } from "~tokens/aoTokens/sync";
+import {
+  AO_TOKENS,
+  AO_TOKENS_AUTO_IMPORT_RESTRICTED_IDS,
+  AO_TOKENS_CACHE,
+  AO_TOKENS_IDS,
+  AO_TOKENS_IMPORT_TIMESTAMP,
+  AO_TOKENS_LAST_BLOCK_HEIGHT,
+} from "~tokens/aoTokens/sync";
 import { loadTokens } from "~tokens/token";
 import { updateAoToken } from "~utils/ao_import";
 
@@ -107,6 +114,7 @@ export const EmbeddedContext = createContext<EmbeddedContextData>({
   downloadKeyfile: async () => null,
   copySeedphrase: async () => null,
   getSeedphrase: async () => null,
+  getDecryptedWallet: async () => null,
   generateRecoveryAndDownload: async () => null,
 });
 
@@ -304,6 +312,28 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     },
     [walletId, walletAddress],
   );
+
+  const getDecryptedWallet = useCallback(async (): Promise<LocalWallet<JWKInterface>> => {
+    log(LOG_GROUP.EMBEDDED_FLOWS, `getDecryptedWallet()`);
+
+    const decryptedWallet = (await getKeyfile(walletAddress)) as LocalWallet<JWKInterface>;
+
+    try {
+      const { wallet: updatedWallet } = await WalletService.registerWalletExport({
+        walletId,
+        type: "KEYFILE",
+      });
+
+      updateCurrentWallet((currentWallet) => ({
+        ...currentWallet,
+        ...updatedWallet,
+      }));
+    } catch (error) {
+      console.error("Failed to register wallet export:", error);
+    }
+
+    return decryptedWallet;
+  }, [walletId, walletAddress]);
 
   const copySeedphrase = useCallback(async () => {
     log(LOG_GROUP.EMBEDDED_FLOWS, `copySeedphrase()`);
@@ -959,7 +989,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         const { url } = await AuthenticationService.authenticate(authProviderType);
 
         if (!url) {
-          throw new Error(`Missing authentication URL.`)
+          throw new Error(`Missing authentication URL.`);
         }
 
         // Calculate center position for the popup
@@ -1083,7 +1113,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
     lastUserIdRef.current = userId;
 
-    if (userId && userId !== await PersistentStorage.get<string>(StorageKeys.CONNECT.AUTH.USER_ID)) {
+    if (userId && userId !== (await PersistentStorage.get<string>(StorageKeys.CONNECT.AUTH.USER_ID))) {
       // TODO: This is a TEMP FIX to prevent users who share the same device from seeing someone else's tokens and
       // connected apps when logging in with a different account, until we properly namespace those settings by user
       // and/or wallet address. Note that because `PersistentStorage` is a wrapper around `localStorage`, calling
@@ -1123,10 +1153,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       ]);
 
       // Because the background services have already been started, let's re-run these now that we've cleared the storage:
-      await Promise.allSettled([
-        loadTokens(),
-        updateAoToken(),
-      ]);
+      await Promise.allSettled([loadTokens(), updateAoToken()]);
     }
 
     setEmbeddedContextState((prevAuthContextState) => ({
@@ -1363,7 +1390,10 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
           if (!dbSession.id || !dbSession.deviceNonce) {
             console.warn("❌  The current session is incomplete =", dbSession);
           } else if (dbSession.deviceNonce !== deviceNonce) {
-            console.warn(`⚠️  The current session is complete, but the device nonce (${ deviceNonce }) doesn't match =`, dbSession);
+            console.warn(
+              `⚠️  The current session is complete, but the device nonce (${deviceNonce}) doesn't match =`,
+              dbSession,
+            );
           } else {
             console.log("✅  The current session is complete =", dbSession);
           }
@@ -1470,6 +1500,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         downloadKeyfile,
         copySeedphrase,
         getSeedphrase,
+        getDecryptedWallet,
         generateRecoveryAndDownload,
       }}>
       {children}

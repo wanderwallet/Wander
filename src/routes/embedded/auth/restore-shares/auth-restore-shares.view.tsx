@@ -1,3 +1,4 @@
+import { QrCode02 } from "@untitled-ui/icons-react";
 import { Button, WalletIcon, SeedIcon, KeyIcon } from "~components/embed/ui";
 import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
@@ -10,8 +11,7 @@ export function AuthRestoreSharesEmbeddedView() {
     <OnboardingCard
       headerText="Restore wallet"
       subtitle="Select a method for restoring your wallet."
-      onBackButtonClick={ () => signOut(false) }>
-
+      onBackButtonClick={() => signOut(false)}>
       {/* <Button
         variant="outlined"
         isFullWidth
@@ -52,6 +52,14 @@ export function AuthRestoreSharesEmbeddedView() {
 
       <Button variant="outlined" isFullWidth icon={<KeyIcon fontSize={24} />} href="/auth/restore-shares/keyfile">
         Import keyfile
+      </Button>
+
+      <Button
+        variant="outlined"
+        isFullWidth
+        icon={<QrCode02 fontSize={24} color="currentColor" />}
+        href="/auth/restore-shares/qrcode">
+        Scan QR Code
       </Button>
     </OnboardingCard>
   );

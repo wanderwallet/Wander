@@ -22,11 +22,13 @@ import { AuthRestoreSharesEmbeddedView } from "~routes/embedded/auth/restore-sha
 import { AuthRestoreSharesRecoveryFileEmbeddedView } from "~routes/embedded/auth/restore-shares/recovery-file/auth-restore-shares-recovery-file.view";
 import { AuthRestoreSharesSeedPhraseEmbeddedView } from "~routes/embedded/auth/restore-shares/seedphrase/auth-restore-shares-seedphrase.view";
 import { AuthRestoreSharesKeyfileEmbeddedView } from "~routes/embedded/auth/restore-shares/keyfile/auth-restore-shares-keyfile.view";
+import { AuthRestoreSharesQrCodeEmbeddedView } from "~routes/embedded/auth/restore-shares/qrcode/auth-restore-shares-qrcode.view";
 
 // Account Recovery Views:
 import { AuthRecoverAccountEmbeddedView } from "~routes/embedded/auth/recover-account/auth-recover-account.view";
 import { AuthRecoverAccountSeedphraseEmbeddedView } from "~routes/embedded/auth/recover-account/seedphrase/auth-recover-account-seedphrase.view";
 import { AuthRecoverAccountKeyfileEmbeddedView } from "~routes/embedded/auth/recover-account/keyfile/auth-recover-account-keyfile.view";
+import { AuthRecoverAccountQrCodeEmbeddedView } from "~routes/embedded/auth/recover-account/qrcode/auth-recover-account-qrcode.view";
 import { AuthRecoverAccountSelectEmbeddedView } from "~routes/embedded/auth/recover-account/select-account/auth-recover-account-select.view";
 import { AuthRecoverAccountConfirmEmbeddedView } from "~routes/embedded/auth/recover-account/auth-recover-confirm.view";
 
@@ -42,6 +44,7 @@ import { AccountBackupWalletEmbeddedView } from "~routes/embedded/account/backup
 import { AccountBackupCopySeedphraseEmbeddedView } from "~routes/embedded/account/backup-wallet/backup-wallet-copy-seedphrase.view";
 import { AccountBackupFullWalletEmbeddedView } from "~routes/embedded/account/backup-wallet/backup-full-wallet.view";
 import { AccountBackupWalletRecoveryFileEmbeddedView } from "~routes/embedded/account/backup-wallet/backup-wallet-recovery-file.view";
+import { AccountBackupWalletQrCodeEmbeddedView } from "~routes/embedded/account/backup-wallet/backup-wallet-qrcode";
 import { AccountExportWalletEmbeddedView } from "~routes/embedded/account/export-wallet/account-export-wallet.view";
 
 import { WalletHomeEmbeddedView } from "~routes/embedded/wallet/home/wallet.view";
@@ -76,12 +79,14 @@ export type EmbeddedRoutePath =
   | "/auth/restore-shares/recovery-file"
   | "/auth/restore-shares/seedphrase"
   | "/auth/restore-shares/keyfile"
+  | "/auth/restore-shares/qrcode"
   | "/auth/add-qrcode"
   | "/auth/qrcode-scanner"
   // | "/auth/restore-shares/<backupProvider>"
   | "/auth/recover-account"
   | "/auth/recover-account/seedphrase"
   | "/auth/recover-account/keyfile"
+  | "/auth/recover-account/qrcode"
   // | "/auth/recover-account/authentication"
   // | "/auth/recover-account/more-authentication"
   | "/auth/recover-account/select"
@@ -97,6 +102,7 @@ export type EmbeddedRoutePath =
   | "/account/backup-wallet/full"
   | "/account/backup-wallet/copy-seedphrase"
   | "/account/backup-wallet/recovery-file"
+  | "/account/backup-wallet/qrcode"
   // | "/account/backup-shares/<backupProvider>"
   | "/account/backup-wallet/reminder"
   | "/account/export-wallet"
@@ -141,11 +147,13 @@ export const EmbeddedPaths = {
   AuthRestoreSharesRecoveryFile: "/auth/restore-shares/recovery-file",
   AuthRestoreSharesSeedPhrase: "/auth/restore-shares/seedphrase",
   AuthRestoreSharesKeyfile: "/auth/restore-shares/keyfile",
+  AuthRestoreSharesQrCode: "/auth/restore-shares/qrcode",
 
   // Account Recovery:
   AuthRecoverAccount: "/auth/recover-account",
   AuthRecoverAccountSeedphrase: "/auth/recover-account/seedphrase",
   AuthRecoverAccountKeyfile: "/auth/recover-account/keyfile",
+  AuthRecoverAccountQrCode: "/auth/recover-account/qrcode",
   AuthRecoverAccountSelect: "/auth/recover-account/select",
   AuthRecoverAccountConfirm: "/auth/recover-account/confirm",
 
@@ -160,6 +168,7 @@ export const EmbeddedPaths = {
   AccountBackupFullWallet: "/account/backup-wallet/full",
   AccountBackupCopySeedphrase: "/account/backup-wallet/copy-seedphrase",
   AccountBackupWalletRecoveryFile: "/account/backup-wallet/recovery-file",
+  AccountBackupWalletQrCode: "/account/backup-wallet/qrcode",
   AccountBackupWalletReminder: "/account/backup-wallet/reminder",
   AccountExportWallet: "/account/export-wallet",
 
@@ -255,6 +264,10 @@ const IFRAME_OWN_ROUTES = [
     path: EmbeddedPaths.AuthRestoreSharesKeyfile,
     component: AuthRestoreSharesKeyfileEmbeddedView,
   },
+  {
+    path: EmbeddedPaths.AuthRestoreSharesQrCode,
+    component: AuthRestoreSharesQrCodeEmbeddedView,
+  },
 
   // Account Recovery:
 
@@ -269,6 +282,10 @@ const IFRAME_OWN_ROUTES = [
   {
     path: EmbeddedPaths.AuthRecoverAccountKeyfile,
     component: AuthRecoverAccountKeyfileEmbeddedView,
+  },
+  {
+    path: EmbeddedPaths.AuthRecoverAccountQrCode,
+    component: AuthRecoverAccountQrCodeEmbeddedView,
   },
   {
     path: EmbeddedPaths.AuthRecoverAccountSelect,
@@ -319,6 +336,10 @@ const IFRAME_OWN_ROUTES = [
   {
     path: EmbeddedPaths.AccountBackupWalletRecoveryFile,
     component: AccountBackupWalletRecoveryFileEmbeddedView,
+  },
+  {
+    path: EmbeddedPaths.AccountBackupWalletQrCode,
+    component: AccountBackupWalletQrCodeEmbeddedView,
   },
   {
     path: EmbeddedPaths.AccountExportWallet,
