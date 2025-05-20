@@ -6,7 +6,7 @@ import { ArweaveSigner, createData } from "@dha-team/arbundles";
 import { getActiveKeyfile } from "~wallets";
 import { isLocalWallet } from "~utils/assertions";
 import { freeDecryptedWallet } from "~wallets/encryption";
-import { AO_NATIVE_TOKEN_BALANCE_MIRROR } from "~utils/ao_import";
+import { AO_NATIVE_TOKEN, AO_NATIVE_TOKEN_BALANCE_MIRROR } from "~utils/ao_import";
 import type { KeystoneSigner } from "~wallets/hardware/keystone";
 import browser from "webextension-polyfill";
 import type { DecodedTag } from "~api/modules/sign/tags";
@@ -23,21 +23,23 @@ export let tokenInfoMap = new Map<string, TokenInfo | Token>();
 
 export type AoInstance = ReturnType<typeof connect>;
 
-export const defaultTokens: TokenInfo[] = [
+export const AR_PROCESS_ID = "AR" as const;
+
+export const defaultTokens = [
   {
     Name: "AR",
     Ticker: "AR",
     Denomination: 12,
     Logo: "jZ2XPRj37W-QNb3BwWWIyEelv-7nQjBHg0g6WLX91IM",
-    processId: "AR",
+    processId: AR_PROCESS_ID,
   },
   {
     Name: "AO",
     Ticker: "AO",
     Denomination: 12,
     Logo: "UkS-mdoiG8hcAClhKK8ch4ZhEzla0mCPDOix9hpdSFE",
-    // processId: "m3PaWzK4PTG9lAaqYQPaPdOcXdO8hYqi5Fe9NWqXd0w"
-    processId: "0syT13r0s0tgPmIed95bJnuSqaD29HQNN8D3ElLSrsc",
+    // processId: AO_NATIVE_OLD_TOKEN
+    processId: AO_NATIVE_TOKEN,
   },
   {
     Name: "Q Arweave",
@@ -53,7 +55,7 @@ export const defaultTokens: TokenInfo[] = [
     Logo: "L99jaxRKQKJt9CqoJtPaieGPEhJD3wNhR4iGqc8amXs",
     processId: "xU9zFkq3X2ZQ6olwNVvr1vUWIjc3kXTWr7xKQD6dh10",
   },
-];
+] as const satisfies TokenInfoWithProcessId[];
 
 /**
  * Dummy ID
@@ -410,7 +412,7 @@ export interface TokenInfoWithBalance extends TokenInfo {
 
 export async function fetchTokenBalance(token: TokenInfo, address: string, refresh?: boolean): Promise<string> {
   try {
-    if (token.processId === "AR") {
+    if (token.processId === AR_PROCESS_ID) {
       return await getArTokenBalance(address);
     } else {
       if (refresh) token = await fetchTokenByProcessId(token.processId);

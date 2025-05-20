@@ -56,7 +56,6 @@ import { ExtensionStorage, PersistentStorage } from "~utils/storage";
 import { StorageKeys } from "~utils/storage/storage.constants";
 import { AO_TOKENS, AO_TOKENS_AUTO_IMPORT_RESTRICTED_IDS, AO_TOKENS_CACHE, AO_TOKENS_IDS, AO_TOKENS_IMPORT_TIMESTAMP, AO_TOKENS_LAST_BLOCK_HEIGHT } from "~tokens/aoTokens/sync";
 import { loadTokens } from "~tokens/token";
-import { updateAoToken } from "~utils/ao_import";
 
 export type AuthStatusCopy = AuthStatus;
 
@@ -1084,49 +1083,50 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     lastUserIdRef.current = userId;
 
     if (userId && userId !== await PersistentStorage.get<string>(StorageKeys.CONNECT.AUTH.USER_ID)) {
-      // TODO: This is a TEMP FIX to prevent users who share the same device from seeing someone else's tokens and
-      // connected apps when logging in with a different account, until we properly namespace those settings by user
-      // and/or wallet address. Note that because `PersistentStorage` is a wrapper around `localStorage`, calling
-      // PersistentStorage.removeAll() will also remove the deviceNonce and key shares, so do not.
+      try {
+        // TODO: This is a TEMP FIX to prevent users who share the same device from seeing someone else's tokens and
+        // connected apps when logging in with a different account, until we properly namespace those settings by user
+        // and/or wallet address. Note that because `PersistentStorage` is a wrapper around `localStorage`, calling
+        // PersistentStorage.removeAll() will also remove the deviceNonce and key shares, so do not.
 
-      const lastBlockHeightKeys = Object.keys(localStorage).filter((localStorageKey) => {
-        return localStorageKey.startsWith(`${AO_TOKENS_LAST_BLOCK_HEIGHT}_`);
-      });
+        const lastBlockHeightKeys = Object.keys(localStorage).filter((localStorageKey) => {
+          return localStorageKey.startsWith(`${AO_TOKENS_LAST_BLOCK_HEIGHT}_`);
+        });
 
-      const appsKeys = Object.keys(localStorage).filter((localStorageKey) => {
-        return localStorageKey.startsWith(`app_`);
-      });
+        const appsKeys = Object.keys(localStorage).filter((localStorageKey) => {
+          return localStorageKey.startsWith(`app_`);
+        });
 
-      await Promise.allSettled([
-        // Storage the user ID to check next time if it's the same one or a different one:
-        PersistentStorage.set(StorageKeys.CONNECT.AUTH.USER_ID, userId),
+        await Promise.allSettled([
+          // Storage the user ID to check next time if it's the same one or a different one:
+          PersistentStorage.set(StorageKeys.CONNECT.AUTH.USER_ID, userId),
 
-        // All these reset the token list and balances:
-        PersistentStorage.remove(AO_TOKENS),
-        PersistentStorage.remove(AO_TOKENS_CACHE),
-        PersistentStorage.remove(AO_TOKENS_IDS),
-        PersistentStorage.remove(AO_TOKENS_IMPORT_TIMESTAMP),
-        PersistentStorage.remove(AO_TOKENS_LAST_BLOCK_HEIGHT),
-        PersistentStorage.remove(AO_TOKENS_AUTO_IMPORT_RESTRICTED_IDS),
-        PersistentStorage.removeItems(lastBlockHeightKeys),
+          // All these reset the token list and balances:
+          PersistentStorage.remove(AO_TOKENS),
+          PersistentStorage.remove(AO_TOKENS_CACHE),
+          PersistentStorage.remove(AO_TOKENS_IDS),
+          PersistentStorage.remove(AO_TOKENS_IMPORT_TIMESTAMP),
+          PersistentStorage.remove(AO_TOKENS_LAST_BLOCK_HEIGHT),
+          PersistentStorage.remove(AO_TOKENS_AUTO_IMPORT_RESTRICTED_IDS),
+          PersistentStorage.removeItems(lastBlockHeightKeys),
 
-        // No need to remove this one:
-        // PersistentStorage.remove("last_saved_price"),
+          // No need to remove this one:
+          // PersistentStorage.remove("last_saved_price"),
 
-        // These 3 ones get rid of the connected apps:
-        PersistentStorage.remove("is_permissions_reset"),
-        PersistentStorage.remove("apps"),
-        PersistentStorage.removeItems(appsKeys),
+          // These 3 ones get rid of the connected apps:
+          PersistentStorage.remove("is_permissions_reset"),
+          PersistentStorage.remove("apps"),
+          PersistentStorage.removeItems(appsKeys),
 
-        // This was already executed on signOut(), but just in case...:
-        ExtensionStorage.removeAll(),
-      ]);
+          // This was already executed on signOut(), but just in case...:
+          ExtensionStorage.removeAll(),
+        ]);
 
-      // Because the background services have already been started, let's re-run these now that we've cleared the storage:
-      await Promise.allSettled([
-        loadTokens(),
-        updateAoToken(),
-      ]);
+        // Because the background services have already been started, let's re-run this now that we've cleared the storage:
+        await loadTokens();
+      } catch (err) {
+        console.error("Error clearing previous user data:", err);
+      }
     }
 
     setEmbeddedContextState((prevAuthContextState) => ({
