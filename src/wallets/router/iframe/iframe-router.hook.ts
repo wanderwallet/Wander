@@ -95,6 +95,7 @@ export function useEmbeddedOverride(location?: RoutePath) {
           EmbeddedPaths.AuthAddWithQRCode,
           EmbeddedPaths.AuthQRCodeScanner,
           EmbeddedPaths.AuthImportKeyfile,
+          EmbeddedPaths.AuthImportQrCode,
           EmbeddedPaths.AuthAddDevice,
           EmbeddedPaths.AuthAddAuthProvider,
           // EmbeddedPaths.AddDevice/<SOMETHING>

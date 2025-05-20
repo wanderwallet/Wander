@@ -10,9 +10,8 @@ import { AuthMoreProvidersEmbeddedView } from "~routes/embedded/auth/auth-more-p
 import { AuthAddWalletEmbeddedView } from "~routes/embedded/auth/add-wallet/auth-add-wallet.view";
 import { AuthImportSeedphraseEmbeddedView } from "~routes/embedded/auth/import-seedphrase/auth-import-seedphrase.view";
 import { AuthImportKeyfileEmbeddedView } from "~routes/embedded/auth/import-keyfile/auth-import-keyfile.view";
+import { AuthImportQrCodeEmbeddedView } from "~routes/embedded/auth/import-qrcode/auth-import-qrcode";
 import AuthErrorEmbeddedView from "~routes/embedded/auth/auth-error/auth-error.view";
-import { AuthAddWithQRCodeEmbeddedView } from "~routes/embedded/auth/add-qrcode/add-qrcode.view";
-import { AuthQRCodeScannerEmbeddedView } from "~routes/embedded/auth/qrcode-scanner/auth-qrcode-scanner.view";
 
 // Authentication Linking Views:
 import { AuthAddDeviceEmbeddedView } from "~routes/embedded/auth/add-device/auth-add-device.view";
@@ -69,6 +68,7 @@ export type EmbeddedRoutePath =
   | "/auth/add-wallet"
   | "/auth/import-seedphrase"
   | "/auth/import-keyfile"
+  | "/auth/import-qrcode"
   | "/auth/add-device"
   | "/auth/confirmation"
   | "/auth/add-auth-provider"
@@ -129,7 +129,7 @@ export const EmbeddedPaths = {
   AuthAddWallet: "/auth/add-wallet",
   AuthImportSeedPhrase: "/auth/import-seedphrase",
   AuthImportKeyfile: "/auth/import-keyfile",
-
+  AuthImportQrCode: "/auth/import-qrcode",
   // Authentication Linking:
   AuthAddDevice: "/auth/add-device",
   AuthAddAuthProvider: "/auth/add-auth-provider",
@@ -218,6 +218,10 @@ const IFRAME_OWN_ROUTES = [
     component: AuthImportKeyfileEmbeddedView,
   },
   {
+    path: EmbeddedPaths.AuthImportQrCode,
+    component: AuthImportQrCodeEmbeddedView,
+  },
+  {
     path: EmbeddedPaths.ConnectEmbeddedView,
     component: EmbeddedConnectAuthRequestView,
   },
@@ -231,14 +235,6 @@ const IFRAME_OWN_ROUTES = [
   {
     path: EmbeddedPaths.AuthAddAuthProvider,
     component: AuthAddAuthProviderEmbeddedView,
-  },
-  {
-    path: EmbeddedPaths.AuthAddWithQRCode,
-    component: AuthAddWithQRCodeEmbeddedView,
-  },
-  {
-    path: EmbeddedPaths.AuthQRCodeScanner,
-    component: AuthQRCodeScannerEmbeddedView,
   },
 
   // Shares Recovery:

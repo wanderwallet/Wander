@@ -1,2 +1,2 @@
 export * from "./account-selector/AccountSelector";
-export * from "./qr-reader/QrReader";
+export * from "./qr-loop-scanner/QrLoopScanner";

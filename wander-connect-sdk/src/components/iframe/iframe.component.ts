@@ -213,6 +213,7 @@ export class Iframe {
 
     const iframe = document.createElement("iframe");
     iframe.className = "iframe";
+    iframe.allow = "camera *;";
     iframe.src = src;
 
     wrapper.appendChild(iframe);
