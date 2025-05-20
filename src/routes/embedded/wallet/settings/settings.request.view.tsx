@@ -1,5 +1,5 @@
 import { permissionData, signPolicyOptions, type PermissionType } from "~applications/permissions";
-import { Card, Box, Button, Radio, Snackbar, InfoIcon, Text, Row, ChevronRight, XClose } from "~components/embed/ui";
+import { Box, Radio, Snackbar, InfoIcon, Text, Row, ChevronRight } from "~components/embed/ui";
 import { useLocation } from "~wallets/router/router.utils";
 import browser from "webextension-polyfill";
 import { Spacer } from "@arconnect/components-rebrand";
@@ -13,6 +13,7 @@ import { Edit02 } from "@untitled-ui/icons-react";
 import { addApp } from "~applications";
 import { defaultGateway } from "~gateways/gateway";
 import AppIcons from "../connect/components/AppIcons";
+import { AuthRequestCard } from "~components/embed/ui/molecules/card/auth-request-card/AuthRequestCard";
 
 export function WalletPermissionsRequestEmbeddedView() {
   const { navigate } = useLocation();
@@ -135,19 +136,18 @@ export function WalletPermissionsRequestEmbeddedView() {
   }, [url, authRequestPermissions]);
 
   return (
-    <Card
-      size="auto"
-      hasBackButton={false}
-      hasCloseButton={true}
-      customIcon={<XClose fontSize={24} color={"#666666"} />}
+    <AuthRequestCard
       onCloseButtonClick={handleCancel}
-      style={{ padding: "2rem" }}>
-      <AppIcons appInfo={appInfo} />
-      <Box>
-        <Text variant="headingMd">Confirm permissions</Text>
-      </Box>
+      onCancel={handleCancel}
+      onConfirm={connect}
+      confirmLabel="Next"
+      isConfirmDisabled={!signPolicy}>
 
-      <Box alignment="left" style={{ paddingLeft: 0, paddingRight: 0 }}>
+      <AppIcons appInfo={appInfo} />
+
+      <Text variant="headingMd">Confirm permissions</Text>
+
+      <Box alignment="left" style={{ padding: 0 }}>
         {signPolicyOptions.map((option) => (
           <Radio
             key={option}
@@ -182,12 +182,6 @@ export function WalletPermissionsRequestEmbeddedView() {
         />
       </Box>
 
-      <Button variant="primary" isFullWidth onClick={connect} isDisabled={!signPolicy}>
-        Confirm
-      </Button>
-      <Button variant="outlined" isFullWidth onClick={handleCancel}>
-        Cancel
-      </Button>
-    </Card>
+    </AuthRequestCard>
   );
 }

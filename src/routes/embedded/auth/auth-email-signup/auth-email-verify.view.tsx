@@ -1,20 +1,23 @@
-import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { toast } from "react-toastify";
-import { Box, Card, Text, WanderFooter, Button } from "~components/embed";
+import { Text, Button } from "~components/embed";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getSupabaseClient } from "~utils/embedded/embedded.utils";
-import { useLocation } from "~wallets/router/router.utils";
-import { Flex } from "~components/common/Flex";
+import { useLocation, useSearchParams } from "~wallets/router/router.utils";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 import { PersistentStorage, useStorage } from "~utils/storage";
-import styles from "~components/embed/ui/atoms/text-input/TextInput.module.css";
+import { useEmbedded } from "~utils/embedded/embedded.hooks";
+import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
+import { Flex } from "~components/common/Flex";
+
+import styles from "./auth-email-verify.module.scss";
 
 const COOLDOWN_DURATION = 60; // seconds
 const OTP_LENGTH = 6;
 
 export function AuthEmailVerifyEmbeddedView() {
   const { navigate } = useLocation();
-  const { authEmail, authStatus } = useEmbedded();
+  const { authStatus } = useEmbedded();
+  const { email } = useSearchParams<{ email: string }>();
   const [isResending, setIsResending] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [cooldownTime, setCooldownTime] = useState(0);
@@ -70,14 +73,14 @@ export function AuthEmailVerifyEmbeddedView() {
 
   const autoSubmitIfComplete = useCallback(
     (digits: string[]) => {
-      if (isOtpComplete(digits) && authEmail) {
+      if (isOtpComplete(digits) && email) {
         setTimeout(() => {
           const otpCode = digits.join("");
           handleVerifyCode(otpCode);
         }, 300);
       }
     },
-    [authEmail],
+    [email],
   );
 
   const handleOtpDigitChange = useCallback(
@@ -108,14 +111,14 @@ export function AuthEmailVerifyEmbeddedView() {
   );
 
   const handleVerifyCode = async (otpCode: string) => {
-    if (!authEmail) return;
+    if (!email) return;
 
     setIsVerifying(true);
     try {
       const supabase = await getSupabaseClient();
 
       const { error } = await supabase.auth.verifyOtp({
-        email: authEmail,
+        email,
         token: otpCode,
         type: "email",
       });
@@ -143,7 +146,7 @@ export function AuthEmailVerifyEmbeddedView() {
   };
 
   const verifyOtp = useCallback(() => {
-    if (!authEmail) return;
+    if (!email) return;
 
     const otpCode = otpDigits.join("");
     if (otpCode.length !== OTP_LENGTH) {
@@ -152,7 +155,7 @@ export function AuthEmailVerifyEmbeddedView() {
     }
 
     handleVerifyCode(otpCode);
-  }, [authEmail, otpDigits]);
+  }, [email, otpDigits]);
 
   const handlePaste = useCallback(
     (e: React.ClipboardEvent<HTMLInputElement>, index: number) => {
@@ -208,7 +211,7 @@ export function AuthEmailVerifyEmbeddedView() {
       e.preventDefault();
       e.stopPropagation();
 
-      if (!authEmail || !canResend) return;
+      if (!email || !canResend) return;
 
       try {
         setIsResending(true);
@@ -216,7 +219,7 @@ export function AuthEmailVerifyEmbeddedView() {
 
         const { error } = await supabase.auth.resend({
           type: "signup",
-          email: authEmail,
+          email,
         });
 
         if (error) {
@@ -234,84 +237,79 @@ export function AuthEmailVerifyEmbeddedView() {
         setIsResending(false);
       }
     },
-    [authEmail, canResend, setVerifyEmailResentTimestamp],
+    [email, canResend, setVerifyEmailResentTimestamp],
   );
 
   useEffect(() => {
     authStatusRef.current = authStatus;
   }, [authStatus]);
 
-  return (
-    <Card
-      headerText="Verify your email"
-      footerElement={<WanderFooter />}
-      hasBackButton={false}
-      hasCloseButton={true}
-      onCloseButtonClick={() => navigate(EmbeddedPaths.Auth)}
-      size="auto">
-      <Box style={{ gap: 32 }}>
-        <Text style={{ color: "var(--text-color-primary, #121212)" }} variant={"bodyLg"} alignment={"center"}>
-          We've sent an email to {authEmail}
-        </Text>
-        <Flex direction="column" gap={24} width="100%">
-          <Text variant={"bodySm"} alignment={"center"} style={{ color: "var(--text-color-secondary, #666666)" }}>
-            Enter the 6-digit verification code from that email to complete signup. If you don't see the email, please
-            check your spam folder.
-          </Text>
-          <Flex direction="column" gap={16} width="100%">
-            <Text alignment="center" variant={"bodySm"} style={{ color: "var(--text-color-secondary, #666666)" }}>
-              Verification Code
-            </Text>
-            <Flex direction="row" gap={8} width="100%" justify="center">
-              {Array.from({ length: OTP_LENGTH }).map((_, index) => (
-                <input
-                  key={index}
-                  className={styles["input"]}
-                  id={`otp-input-${index}`}
-                  ref={(el) => (inputRefs.current[index] = el)}
-                  type="text"
-                  maxLength={1}
-                  value={otpDigits[index] || ""}
-                  onChange={(e) => handleOtpDigitChange(index, e.target.value)}
-                  onKeyDown={(e) => handleKeyDown(e, index)}
-                  onPaste={(e) => handlePaste(e, index)}
-                  style={{
-                    width: "40px",
-                    height: "48px",
-                    textAlign: "center",
-                    fontSize: "18px",
-                    borderRadius: "8px",
-                    outline: "none",
-                  }}
-                />
-              ))}
-            </Flex>
-            <Button
-              variant="primary"
-              isFullWidth
-              onClick={verifyOtp}
-              isLoading={isVerifying}
-              isDisabled={isVerifying || !isOtpComplete(otpDigits)}>
-              Verify Code
-            </Button>
-          </Flex>
+  useEffect(() => {
+    if (!email) {
+      if (process.env.NODE_ENV === "development") {
+        throw new Error("No email search param. The router should have taken care of this.")
+      } else {
+        navigate(EmbeddedPaths.Auth)
+      }
+    }
+  }, [email]);
 
-          <Flex direction="column" gap={4} width="100%">
-            <Text variant={"bodyXs"} alignment={"center"} style={{ color: "var(--text-color-tertiary, #838383)" }}>
-              Didn't receive the message?
-            </Text>
-            {canResend ? (
-              <Button variant="link" isFullWidth onClick={handleResendEmail} isLoading={isResending}>
-                Send again
-              </Button>
-            ) : (
-              <Text variant={"bodyXs"} alignment={"center"}>
-                Send again in {cooldownTime} seconds
-              </Text>
-            )}
-          </Flex>
+  return (
+    <OnboardingCard
+      headerText="Verify your email"
+      subtitle={ `We've sent an email to ${email}` }
+      hasBackButton={false}
+      isLoading={ isResending }>
+
+      <Text variant={"bodySm"} alignment={"center"} style={{ color: "var(--text-color-secondary, #666666)" }}>
+        Enter the 6-digit verification code from that email to complete signup. If you don't see the email, please
+        check your spam folder.
+      </Text>
+
+      <Flex direction="column" gap={16} width="100%">
+        <Text alignment="center" variant={"bodySm"} style={{ color: "var(--text-color-secondary, #666666)" }}>
+          Verification Code
+        </Text>
+        <Flex direction="row" gap={8} width="100%" justify="center">
+          {Array.from({ length: OTP_LENGTH }).map((_, index) => (
+            <input
+              key={index}
+              type="text"
+              className={styles["input"]}
+              name={`otp-input-${index}`}
+              ref={(el) => (inputRefs.current[index] = el)}
+              maxLength={1}
+              value={otpDigits[index] || ""}
+              onChange={(e) => handleOtpDigitChange(index, e.target.value)}
+              onKeyDown={(e) => handleKeyDown(e, index)}
+              onPaste={(e) => handlePaste(e, index)}
+            />
+          ))}
         </Flex>
-      </Box>
-    </Card>
+        <Button
+          variant="primary"
+          isFullWidth
+          onClick={verifyOtp}
+          isLoading={isVerifying}
+          isDisabled={isVerifying || !isOtpComplete(otpDigits)}>
+          Verify Code
+        </Button>
+      </Flex>
+
+
+      <Text variant={"bodyXs"} alignment={"center"} style={{ color: "var(--text-color-tertiary, #838383)" }}>
+        Didn't receive the message?
+      </Text>
+
+      {canResend ? (
+        <Button variant="link" isFullWidth onClick={handleResendEmail} isDisabled={isResending}>
+          Send again
+        </Button>
+      ) : (
+        <Text variant={"bodyXs"} alignment={"center"}>
+          Send again in {cooldownTime} seconds
+        </Text>
+      )}
+    </OnboardingCard>
   );
 }

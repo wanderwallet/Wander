@@ -1,4 +1,4 @@
-import { Card, Row, Text, Box, Button, Divider, XClose } from "~components/embed/ui";
+import { Row, Text, Box, Divider } from "~components/embed/ui";
 import { useLocation } from "~wallets/router/router.utils";
 import { useCurrentAuthRequest } from "~utils/auth/auth.hooks";
 import Image from "~components/common/Image";
@@ -12,6 +12,7 @@ import { useBalance } from "~wallets/hooks";
 import { formatBalance } from "~utils/format";
 import { AlertTriangle } from "@untitled-ui/icons-react";
 import TransactionMessage from "~components/embed/auth/TransactionMessage";
+import { AuthRequestCard } from "~components/embed/ui/molecules/card/auth-request-card/AuthRequestCard";
 
 export function EmbeddedSignAuthRequestView() {
   const { navigate } = useLocation();
@@ -79,13 +80,11 @@ export function EmbeddedSignAuthRequestView() {
   }, [url]);
 
   return (
-    <Card
-      size="auto"
+    <AuthRequestCard
       headerText="Confirm Activity"
-      hasBackButton={false}
-      customIcon={<XClose fontSize={24} color={"#666666"} />}
       onCloseButtonClick={handleCancel}
-      style={{ padding: "2rem" }}>
+      onCancel={handleCancel}
+      onConfirm={sign}>
       <Box alignment="left" style={{ padding: "1rem 0" }}>
         <Row alignment="center" justifyContent="center" style={{ padding: 0 }}>
           <Image
@@ -158,14 +157,6 @@ export function EmbeddedSignAuthRequestView() {
       )}
 
       <TransactionMessage transaction={transaction} />
-      <Row>
-        <Button variant="secondary" onClick={handleCancel}>
-          Cancel
-        </Button>
-        <Button variant="primary" onClick={sign}>
-          Confirm
-        </Button>
-      </Row>
-    </Card>
+    </AuthRequestCard>
   );
 }

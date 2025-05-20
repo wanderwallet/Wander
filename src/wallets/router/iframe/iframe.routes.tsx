@@ -22,6 +22,8 @@ import { AuthAddAuthProviderEmbeddedView } from "~routes/embedded/auth/add-auth-
 // Shares Views:
 import { AuthRestoreSharesEmbeddedView } from "~routes/embedded/auth/restore-shares/auth-restore-shares.view";
 import { AuthRestoreSharesRecoveryFileEmbeddedView } from "~routes/embedded/auth/restore-shares/recovery-file/auth-restore-shares-recovery-file.view";
+import { AuthRestoreSharesSeedPhraseEmbeddedView } from "~routes/embedded/auth/restore-shares/seedphrase/auth-restore-shares-seedphrase.view";
+import { AuthRestoreSharesKeyfileEmbeddedView } from "~routes/embedded/auth/restore-shares/keyfile/auth-restore-shares-keyfile.view";
 
 // Account Recovery Views:
 import { AuthRecoverAccountEmbeddedView } from "~routes/embedded/auth/recover-account/auth-recover-account.view";
@@ -31,7 +33,6 @@ import { AuthRecoverAccountSelectEmbeddedView } from "~routes/embedded/auth/reco
 import { AuthRecoverAccountConfirmEmbeddedView } from "~routes/embedded/auth/recover-account/auth-recover-confirm.view";
 
 // Account Management Views:
-import { AccountEmbeddedView } from "~routes/embedded/account/account/account.view";
 import { AccountConfirmationEmbeddedView } from "~routes/embedded/account/confirmation/account-confirmation.view";
 import { AccountAddWalletEmbeddedView } from "~routes/embedded/account/add-wallet/account-add-wallet.view";
 import { AccountImportSeedphraseEmbeddedView } from "~routes/embedded/account/import-seedphrase/account-import-seedphrase.view";
@@ -77,12 +78,16 @@ export type EmbeddedRoutePath =
   | "/auth/add-auth-provider"
   | "/auth/restore-shares"
   | "/auth/restore-shares/recovery-file"
+  | "/auth/restore-shares/seedphrase"
+  | "/auth/restore-shares/keyfile"
   | "/auth/add-qrcode"
   | "/auth/qrcode-scanner"
   // | "/auth/restore-shares/<backupProvider>"
   | "/auth/recover-account"
   | "/auth/recover-account/seedphrase"
   | "/auth/recover-account/keyfile"
+  // | "/auth/recover-account/authentication"
+  // | "/auth/recover-account/more-authentication"
   | "/auth/recover-account/select"
   | "/auth/recover-account/confirm"
   | "/account"
@@ -137,9 +142,12 @@ export const EmbeddedPaths = {
   AuthAddAuthProvider: "/auth/add-auth-provider",
   AuthAddWithQRCode: "/auth/add-qrcode",
   AuthQRCodeScanner: "/auth/qrcode-scanner",
+
   // Shares Recovery:
   AuthRestoreShares: "/auth/restore-shares",
   AuthRestoreSharesRecoveryFile: "/auth/restore-shares/recovery-file",
+  AuthRestoreSharesSeedPhrase: "/auth/restore-shares/seedphrase",
+  AuthRestoreSharesKeyfile: "/auth/restore-shares/keyfile",
 
   // Account Recovery:
   AuthRecoverAccount: "/auth/recover-account",
@@ -149,7 +157,6 @@ export const EmbeddedPaths = {
   AuthRecoverAccountConfirm: "/auth/recover-account/confirm",
 
   // Account Management:
-  Account: "/account",
   AccountConfirmation: "/account/confirmation",
   AccountAddWallet: "/account/add-wallet",
   AccountImportSeedphrase: "/account/import-seedphrase",
@@ -254,6 +261,14 @@ const IFRAME_OWN_ROUTES = [
     path: EmbeddedPaths.AuthRestoreSharesRecoveryFile,
     component: AuthRestoreSharesRecoveryFileEmbeddedView,
   },
+  {
+    path: EmbeddedPaths.AuthRestoreSharesSeedPhrase,
+    component: AuthRestoreSharesSeedPhraseEmbeddedView,
+  },
+  {
+    path: EmbeddedPaths.AuthRestoreSharesKeyfile,
+    component: AuthRestoreSharesKeyfileEmbeddedView,
+  },
 
   // Account Recovery:
 
@@ -280,10 +295,6 @@ const IFRAME_OWN_ROUTES = [
 
   // Account Management:
 
-  {
-    path: EmbeddedPaths.Account,
-    component: AccountEmbeddedView,
-  },
   {
     path: EmbeddedPaths.AccountConfirmation,
     component: AccountConfirmationEmbeddedView,

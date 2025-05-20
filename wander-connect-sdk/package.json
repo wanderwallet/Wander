@@ -36,6 +36,7 @@
   "dependencies": {
     "ts-deepmerge": "^7.0.3"
   },
+  "homepage": "https://www.wander.app/connect",
   "repository": {
     "type": "git",
     "url": "https://github.com/wanderwallet/Wander"

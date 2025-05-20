@@ -43,9 +43,7 @@
   --color-copyable-text-label: var(--brand-color-neutral4);
   --color-copyable-text-value: var(--brand-color-neutral6);
 
-  --color-seed-input-border: var(--brand-color-neutral4);
   --color-seed-input-active: var(--brand-color-primary3);
-  --color-seed-input-background: var(--brand-color-neutral6);
 
   --color-border-radio: var(--brand-color-primary4);
   --color-non-checked-background-radio: var(--brand-color-secondary1);
@@ -54,6 +52,11 @@
   --color-background-button-disabled: var(--brand-color-neutral2);
   --avatar-background: #0d6ce9;
 
-  --text-input-background: var(--brand-color-neutral2);
-  --text-input-color: var(--brand-color-neutral7);
+  --input-height: 48px;
+  --input-background: var(--brand-color-neutral2);
+  --input-color: var(--brand-color-neutral7); /* In the other input, this is #121212 and #ffffff in dark mode */
+  --input-border-radius: var(--border-radius-xl);
+  --input-border: none;
+  --input-shadow: none;
+  --input-child-offset: 4px;
 }

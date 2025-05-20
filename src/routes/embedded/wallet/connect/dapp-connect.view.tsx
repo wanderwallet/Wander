@@ -1,4 +1,4 @@
-import { Card, Button, Text, Row, Box, Avatar, XClose, WalletIcon } from "~components/embed/ui";
+import { Button, Text, Row, Box, Avatar, WalletIcon } from "~components/embed/ui";
 import type { Wallet } from "~utils/embedded/embedded.types";
 import { formatAddress } from "~utils/format";
 import { setActiveWallet, useActiveWallet } from "~wallets/hooks";
@@ -12,6 +12,7 @@ import { useNameServiceProfile } from "~lib/nameservice";
 import { ExtensionStorage } from "~utils/storage";
 import AppIcons from "./components/AppIcons";
 import { useAllWallets } from "~wallets/hooks";
+import { AuthRequestCard } from "~components/embed/ui/molecules/card/auth-request-card/AuthRequestCard";
 
 export function EmbeddedConnectAuthRequestView() {
   const { navigate } = useLocation();
@@ -51,73 +52,57 @@ export function EmbeddedConnectAuthRequestView() {
     }
   }, [activeWallet, nameServiceProfile, nsGateway]);
 
+  const handleNext = () => {
+    ExtensionStorage.remove(`requested_permissions_${url}`);
+    ExtensionStorage.remove("sign_policy");
+    navigate("/wallet/settings");
+  };
+
   return (
     <>
-      <Card
-        size="auto"
-        style={{
-          paddingTop: "24px",
-          paddingInline: "16px",
-          paddingBottom: "24px",
-        }}
-        hasCloseButton={true}
-        hasBackButton={false}
-        customIcon={<XClose fontSize={24} color={"#666666"} />}
-        onCloseButtonClick={handleCancel}>
+      <AuthRequestCard
+        onCloseButtonClick={handleCancel}
+        onCancel={handleCancel}
+        onConfirm={handleNext}
+        confirmLabel="Next">
+
         <AppIcons appInfo={appInfo} />
-        <Box>
-          <Text variant="headingMd">{appInfo.name} would like to connect to your wallet</Text>
-        </Box>
-        <Box alignment="left">
-          <Text variant="bodyMd">Select an account to connect:</Text>
-          <Box
-            alignment="left"
-            style={{
-              margin: "16px 0 24px 0",
-              width: "100%",
-              backgroundColor: "#EBEBF0",
-              borderRadius: "16px",
-              position: "relative",
-            }}>
-            <Row>
-              <Row alignment="center" justifyContent="start" style={{ padding: 0, flex: 1 }}>
-                <Avatar fontColor="#EBEBF0" backgroundColor="#0D6CE9" size="lg">
-                  <WalletIcon color="#FFF" />
-                </Avatar>
-                <Box isAutoWidth alignment="left" style={{ padding: 0 }}>
-                  <Text variant="bodyLg" style={{ color: "#121212" }}>
-                    {activeWallet.nickname}
-                  </Text>
-                  <Text variant="bodySm">{formatAddress(activeWallet.address, 4)}</Text>
-                </Box>
-              </Row>
-              <Button
-                variant="link"
-                style={{ paddingInline: "16px" }}
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
-                <Text alignment="right" variant="bodySm" style={{ color: "#0D6CE9" }}>
-                  Change
+
+        <Text variant="headingMd" style={{ display: "block", width: "100%" }}>{appInfo.name} would like to connect to your wallet</Text>
+
+        <Text variant="bodyMd" style={{ display: "block", width: "100%" }}>Select an account to connect:</Text>
+
+        <Box
+          alignment="left"
+          style={{
+            width: "100%",
+            backgroundColor: "var(--input-background)",
+            borderRadius: "16px",
+            position: "relative",
+          }}>
+          <Row>
+            <Row alignment="center" justifyContent="start" style={{ padding: 0, flex: 1 }}>
+              <Avatar fontColor="#EBEBF0" backgroundColor="#0D6CE9" size="lg">
+                <WalletIcon color="#FFF" />
+              </Avatar>
+              <Box isAutoWidth alignment="left" style={{ padding: 0 }}>
+                <Text variant="bodyLg" style={{ color: "#121212" }}>
+                  {activeWallet.nickname}
                 </Text>
-              </Button>
+                <Text variant="bodySm">{formatAddress(activeWallet.address, 4)}</Text>
+              </Box>
             </Row>
-          </Box>
+            <Button
+              variant="link"
+              style={{ paddingInline: "16px" }}
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
+              <Text alignment="right" variant="bodySm" style={{ color: "#0D6CE9" }}>
+                Change
+              </Text>
+            </Button>
+          </Row>
         </Box>
-        <Box alignment="left" style={{ paddingTop: 0 }}>
-          <Button
-            variant="primary"
-            isFullWidth
-            onClick={() => {
-              ExtensionStorage.remove(`requested_permissions_${url}`);
-              ExtensionStorage.remove("sign_policy");
-              navigate("/wallet/settings");
-            }}>
-            Next
-          </Button>
-          <Button variant="secondary" isFullWidth onClick={handleCancel}>
-            Cancel
-          </Button>
-        </Box>
-      </Card>
+      </AuthRequestCard>
 
       {/* Add overlay when dropdown is open */}
       {isDropdownOpen && (
@@ -147,7 +132,7 @@ export function EmbeddedConnectAuthRequestView() {
             width: "90%",
             maxWidth: "360px",
             zIndex: 1000,
-            backgroundColor: "#FFFFFF",
+            backgroundColor: "var(--color-background-default)",
             borderRadius: "16px",
             boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.15)",
             padding: "0",
@@ -160,7 +145,7 @@ export function EmbeddedConnectAuthRequestView() {
               onClick={handleWalletSelect(wallet)}
               style={{
                 cursor: "pointer",
-                backgroundColor: wallet.address === activeWallet.address ? "#F5F5FA" : "transparent",
+                backgroundColor: wallet.address === activeWallet.address ? "var(--input-background)" : "transparent",
                 margin: "0",
                 padding: "0",
                 transition: "background-color 0.2s ease",

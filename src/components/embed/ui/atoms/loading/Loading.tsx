@@ -3,11 +3,11 @@ import clsx from "clsx";
 import styles from "./Loading.module.css";
 import type { LoadingBaseProps } from "./Loading.types";
 
+// TODO: Delete and use the one from "@arconnect/components" everywhere.
 const Loading = forwardRef<HTMLDivElement, LoadingBaseProps>(({
   className,
   size = "md",
   color,
-  isAnchor,
   ...props
 }, ref) => {
   return (

@@ -14,22 +14,49 @@
   align-items: center;
   justify-content: center;
 
-  margin: var(--spacing-2) 0;
+  /* margin: var(--spacing-2) 0; */
 
   cursor: pointer;
   overflow: hidden;
   transition: all 0.2s;
   padding: var(--spacing-6) var(--spacing-3);
+  user-select: none;
 
   /* Base interactive states */
-  &:disabled {
-    opacity: 0.5;
+  &:disabled,
+  &.isDisabled {
     cursor: not-allowed;
-    pointer-events: none;
+  }
+
+  &.isDisabled {
+    opacity: 0.5;
   }
 
   &:active:not(:disabled) {
     transform: translateY(1px);
+  }
+
+  & > svg {
+    margin-right: 8px;
+  }
+}
+
+.loaderCover {
+  position: absolute;
+  inset: 0;
+  backdrop-filter: blur(var(--spacing-1));
+  transition: opacity linear 150ms;
+  opacity: 0;
+  z-index: 10;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+
+  .isLoading > & {
+    opacity: 1;
+    pointer-events: auto;
   }
 }
 
@@ -63,15 +90,6 @@
   height: var(--button-lg-height);
   padding: 0 var(--spacing-6);
   font-size: var(--font-size-lg);
-}
-
-/* Icon positioning */
-.button--icon-start svg {
-  margin-right: 8px;
-}
-
-.button--icon-end svg {
-  margin-left: 8px;
 }
 
 /* Button variants */
@@ -127,11 +145,6 @@
 
 .button__blurry {
   backdrop-filter: blur(10px);
-}
-
-.link__disabled {
-  pointer-events: none;
-  opacity: 0.5;
 }
 
 .button__borderless {

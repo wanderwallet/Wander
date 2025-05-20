@@ -656,7 +656,7 @@ async function storeEncryptedWalletJWK(jwk: JWKInterface): Promise<void> {
   return addWallet(jwk, randomPassword);
 }
 
-function isJWK(obj: unknown): boolean {
+function isJWK(obj: unknown): obj is JWKInterface {
   if (typeof obj !== "object" || obj === null) {
     return false;
   }
@@ -664,21 +664,27 @@ function isJWK(obj: unknown): boolean {
   return requiredKeys.every((key) => key in obj);
 }
 
-function isSeedPhrase(obj: unknown): boolean {
+function isRecoveryJSON(obj: unknown): obj is RecoveryJSON {
+  return (
+    typeof obj === "object" &&
+    typeof (obj as RecoveryJSON).version === "string" &&
+    !!(obj as RecoveryJSON).version &&
+    typeof (obj as RecoveryJSON).walletId === "string" &&
+    !!(obj as RecoveryJSON).walletId &&
+    typeof (obj as RecoveryJSON).recoveryBackupShare === "string" &&
+    !!(obj as RecoveryJSON).recoveryBackupShare &&
+    typeof (obj as RecoveryJSON).recoveryFileServerSignature === "string" &&
+    !!(obj as RecoveryJSON).recoveryFileServerSignature
+  );
+}
+
+function isSeedPhrase(obj: unknown) {
   try {
     isValidMnemonic(obj as string);
     return true;
   } catch (e) {
     return false;
   }
-}
-
-function isRecoveryJSON(obj: unknown): boolean {
-  if (typeof obj !== "object" || obj === null) {
-    return false;
-  }
-  const requiredKeys = ["version", "walletId", "recoveryBackupShare", "recoveryFileServerSignature"];
-  return requiredKeys.every((key) => key in obj);
 }
 
 export const WalletUtils = {
@@ -708,8 +714,8 @@ export const WalletUtils = {
 
   // Validation:
   isJWK,
-  isSeedPhrase,
   isRecoveryJSON,
+  isSeedPhrase,
 };
 
 // Stored seedphrases and recovery shares are removed if the feature flags are disabled:

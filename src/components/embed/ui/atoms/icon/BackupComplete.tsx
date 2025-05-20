@@ -27,7 +27,7 @@ const SvgBackupComplete = ({ width = 74, height = 48, ...props }: SVGProps<SVGSV
       rx="1.98674"
       transform="rotate(-15 14.1357 14.6346)"
       fill="url(#paint0_linear_10_4113)"
-      fill-opacity="0.8"
+      fillOpacity="0.8"
     />
     <rect
       x="45.4121"

@@ -45,7 +45,7 @@ const Checkbox = forwardRef<HTMLDivElement, CheckboxBaseProps>(
               checked={isChecked}
               disabled={isDisabled}
               required={isRequired}
-              onClick={handleChange}
+              onChange={handleChange}
             />
             {isChecked && (
               <CheckIcon

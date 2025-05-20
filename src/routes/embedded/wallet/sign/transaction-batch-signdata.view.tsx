@@ -7,8 +7,9 @@ import { Quantity } from "ao-tokens";
 import { timeoutPromise } from "~utils/promises/timeout";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 import { useLocation } from "~wallets/router/router.utils";
-import { Box, Button, Card, XClose, Text, Row } from "~components/embed/ui";
+import { Box, Text, Row } from "~components/embed/ui";
 import { fetchTokenByProcessId } from "~tokens/aoTokens/ao";
+import { AuthRequestCard } from "~components/embed/ui/molecules/card/auth-request-card/AuthRequestCard";
 
 export function EmbeddedBatchSignDataItemAuthRequestView() {
   const { authRequest, acceptRequest, rejectRequest } = useCurrentAuthRequest("batchSignDataItem");
@@ -96,36 +97,41 @@ export function EmbeddedBatchSignDataItemAuthRequestView() {
     fetchTransactionList();
   }, [data]);
 
-  return (
-    <Card
-      size="auto"
+  return transaction ? (
+    <AuthRequestCard
       headerText={browser.i18n.getMessage("batch_sign_items")}
-      hasBackButton={transaction ? true : false}
-      onBackButtonClick={transaction ? () => setTransaction(null) : undefined}
-      customIcon={<XClose fontSize={24} color={"#666666"} />}
+      onBackButtonClick={() => setTransaction(null)}
       onCloseButtonClick={handleCancel}
-      style={{ padding: "2rem" }}>
+      onConfirm={() => setTransaction(null)}
+      confirmLabel={browser.i18n.getMessage("continue")}>
+
       <Box alignment="left" style={{ padding: "1rem 0" }}>
         <Text variant="bodyMd" style={{ color: "#666666" }}>
           {browser.i18n.getMessage("batch_sign_data_description", url)}
         </Text>
 
-        {transaction ? <SignDataItemDetails params={transaction} /> : <>{transactionList}</>}
+        <SignDataItemDetails params={transaction} />
       </Box>
 
-      {!transaction ? (
-        <Box style={{ padding: 0, width: "100%" }}>
-          <Button variant="primary" onClick={handleSign} isDisabled={loading}>
-            {browser.i18n.getMessage("sign_authorize_all")}
-          </Button>
-          <Button variant="secondary" onClick={handleCancel}>
-            Cancel
-          </Button>
-        </Box>
-      ) : (
-        <Button onClick={() => setTransaction(null)}>{browser.i18n.getMessage("continue")}</Button>
-      )}
-    </Card>
+    </AuthRequestCard>
+  ) : (
+    <AuthRequestCard
+      headerText={browser.i18n.getMessage("batch_sign_items")}
+      onCloseButtonClick={handleCancel}
+      onCancel={handleCancel}
+      onConfirm={handleSign}
+      confirmLabel={browser.i18n.getMessage("sign_authorize_all")}
+      isConfirmDisabled={loading}>
+
+      <Box alignment="left" style={{ padding: "1rem 0" }}>
+        <Text variant="bodyMd" style={{ color: "#666666" }}>
+          {browser.i18n.getMessage("batch_sign_data_description", url)}
+        </Text>
+
+        {transactionList}
+      </Box>
+
+    </AuthRequestCard>
   );
 }
 

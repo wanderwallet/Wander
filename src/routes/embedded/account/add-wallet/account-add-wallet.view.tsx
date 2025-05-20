@@ -52,7 +52,7 @@ export function AccountAddWalletEmbeddedView() {
           isFullWidth
           isDisabled={isDisabled}
           icon={<WalletIcon fontSize={24} />}
-          href="#/auth/import-seedphrase">
+          href="/auth/import-seedphrase">
           Enter Seed Phrase
         </Button>
         <Button
@@ -60,7 +60,7 @@ export function AccountAddWalletEmbeddedView() {
           isFullWidth
           isDisabled={isDisabled}
           icon={<KeyIcon fontSize={24} />}
-          href="#/auth/import-keyfile">
+          href="/auth/import-keyfile">
           Import Keyfile
         </Button>
         {/* {authProviderType === "PASSKEYS" ? (
@@ -69,7 +69,7 @@ export function AccountAddWalletEmbeddedView() {
             isFullWidth
             isDisabled={isDisabled}
             icon={<QRCodeIcon fontSize={24} />}
-            href="#/auth/add-device"
+            href="/auth/add-device"
           >
             Add this device to an existing account
           </Button>
@@ -79,7 +79,7 @@ export function AccountAddWalletEmbeddedView() {
             isFullWidth
             isDisabled={isDisabled}
             icon={<QRCodeIcon fontSize={24} />}
-            href="#/auth/add-auth-provider"
+            href="/auth/add-auth-provider"
           >
             Add {authProviderType.toLocaleUpperCase()} to an existing account
           </Button>

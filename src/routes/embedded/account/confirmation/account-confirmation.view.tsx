@@ -1,5 +1,6 @@
 import copy from "copy-to-clipboard";
-import { Card, Copyable, Button, WanderFooter, Spacer } from "~components/embed/ui";
+import { Copyable, Button } from "~components/embed/ui";
+import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useLocation } from "~wallets/router/router.utils";
 
@@ -8,7 +9,7 @@ export function AccountConfirmationEmbeddedView() {
   const { navigate } = useLocation();
 
   return (
-    <Card
+    <OnboardingCard
       headerText={
         wallets.length === 1
           ? `Congratulations, your account\n has been created!`
@@ -16,11 +17,8 @@ export function AccountConfirmationEmbeddedView() {
               lastRegisteredWallet.source.type === "IMPORTED" ? "imported" : "created"
             }!`
       }
-      footerElement={<WanderFooter />}
-      hasBackButton={false}
-      onBackButtonClick={() => navigate(`/auth`)}
-      size="auto">
-      <br />
+      hasBackButton={ false }>
+
       <Copyable
         isFullWidth
         style={{ padding: 0 }}
@@ -30,10 +28,11 @@ export function AccountConfirmationEmbeddedView() {
           copy(lastRegisteredWallet.address);
         }}
       />
-      <Spacer y={1.5} />
+
       <Button isFullWidth size="md" onClick={() => clearLastRegisteredWallet()}>
-        Done
+        Continue
       </Button>
-    </Card>
+
+    </OnboardingCard>
   );
 }

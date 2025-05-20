@@ -1,76 +1,73 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useCallback, useEffect, useState } from "react";
 
-import { Card, Row, Upload, Copyable, Button, WanderFooter, Text } from "~components/embed";
+import { Row, Upload, Copyable, Button, Text } from "~components/embed";
 import copy from "copy-to-clipboard";
 import { useLocation } from "~wallets/router/router.utils";
 import { toast } from "react-toastify";
 import { WalletUtils } from "~utils/wallets/wallets.utils";
+import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
+import { useWalletUpload } from "~utils/upload/wallet/use-wallet-upload.hook";
 
 export function AuthImportKeyfileEmbeddedView() {
-  const [loading, setLoading] = useState(false);
-  const [fileError, setFileError] = useState(false);
-  const [jsonData, setJsonData] = useState<any>(null);
-  const { back } = useLocation();
-
-  const handleJsonParse = async (jsonData: any) => {
-    try {
-      setJsonData(jsonData);
-      setLoading(true);
-      if (jsonData) {
-        setFileError(false);
-        if (!WalletUtils.isJWK(jsonData)) {
-          setFileError(true);
-          setLoading(false);
-          return;
-        }
-        const tempWallet = await importTempWallet(jsonData);
-
-        if (!tempWallet) {
-          setLoading(false);
-          return toast.error(`Something isn't right`);
-        }
-        setLoading(false);
-        return tempWallet;
-      } else {
-        setFileError(true);
-      }
-    } catch (error) {
-      toast.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { navigate } = useLocation();
+  const [isAdding, setIsAdding] = useState(false);
 
   const {
-    authStatus,
     importTempWallet,
-    importedTempWalletAddress,
     deleteImportedTempWallet,
     registerWallet,
     wallets,
-    recoverWallet,
   } = useEmbedded();
 
-  const handleAddWallet = useCallback(async () => {
+  const {
+    data: uploadData,
+    isLoading: isUploading,
+    error: uploadError,
+    importedWalletAddress,
+    parse: parseUpload,
+    reset: resetUpload,
+  } = useWalletUpload({
+    wallets,
+    importTempWallet,
+    allowRecoveryFile: false,
+    mustWalletExist: false,
+  });
+
+  const areButtonsDisabled = isAdding || isUploading;
+  const isViewLoading = isAdding;
+
+  const handleAddWallet = async () => {
     try {
-      setLoading(true);
-      const isWalletPresent = wallets.some(({ address }) => address === importedTempWalletAddress);
-      if (isWalletPresent) {
-        await recoverWallet(jsonData);
-      } else {
-        if (wallets.length === 0) {
-          await registerWallet("IMPORTED");
-        } else {
-          toast.error("Wallet not found!");
-        }
+      if (areButtonsDisabled) return;
+
+      if (uploadError) {
+        toast.error(uploadError);
+
+        return;
       }
+
+      if (!WalletUtils.isJWK(uploadData)) {
+        toast.error("Invalid file.");
+
+        return;
+      }
+
+      setIsAdding(true);
+
+      await registerWallet("IMPORTED");
     } catch (error) {
-      alert(error);
+      console.error(error);
+      toast.error("Unexpected error while importing wallet.");
     } finally {
-      setLoading(false);
+      setIsAdding(false);
     }
-  }, [registerWallet, jsonData, wallets, importedTempWalletAddress]);
+  };
+
+  const handleTryAgain = () => {
+    resetUpload();
+    deleteImportedTempWallet();
+  };
 
   useEffect(() => {
     return () => {
@@ -80,55 +77,52 @@ export function AuthImportKeyfileEmbeddedView() {
     };
   }, []);
 
-  return importedTempWalletAddress ? (
-    <Card
-      headerText="Enter Keyfile"
+  return importedWalletAddress ? (
+    <OnboardingCard
+      headerText="Import Keyfile"
       subtitle="Would you like to add this wallet to your account?"
-      footerElement={<WanderFooter />}
-      hasBackButton={true}
-      onBackButtonClick={back}
-      style={{ gap: 24 }}
-      size="auto">
+      onBackButtonClick={() => navigate(`/auth/add-wallet`)}
+      isLoading={ isViewLoading }>
       <Copyable
         isFullWidth
         style={{ padding: 0 }}
         label="Your wallet address"
         onClick={() => {
-          copy(importedTempWalletAddress);
+          copy(importedWalletAddress);
         }}
-        value={importedTempWalletAddress}
+        value={importedWalletAddress}
       />
       <Row>
-        <Button variant="secondary" size="md" onClick={deleteImportedTempWallet}>
+        <Button variant="secondary" size="md" onClick={handleTryAgain} isDisabled={areButtonsDisabled}>
           No, try again
         </Button>
-        <Button variant="primary" size="md" onClick={handleAddWallet} isLoading={loading}>
-          Yes, {authStatus === "noShares" ? "recover" : "add"}
+        <Button variant="primary" size="md" onClick={handleAddWallet} isDisabled={areButtonsDisabled}>
+          Yes, add
         </Button>
       </Row>
-    </Card>
+    </OnboardingCard>
   ) : (
-    <Card
+    <OnboardingCard
       headerText="Import Keyfile"
-      subtitle="Upload your private key to connect your wallet to your account."
-      footerElement={<WanderFooter />}
-      hasBackButton={true}
-      onBackButtonClick={back}
-      style={{ gap: 24 }}
-      size="auto">
+      subtitle="Upload your private key to add your wallet to your account."
+      onBackButtonClick={() => navigate(`/auth/add-wallet`)}
+      isLoading={ isViewLoading }>
+
       <Upload
         isFullWidth
         title={"Click to upload"}
-        description={"or drag and drop your private key"}
-        isLoading={loading}
+        description={"or drag and drop your keyfile"}
+        isLoading={isUploading}
         loadingText={"Recovering account..."}
-        onFileParse={handleJsonParse}
+        onFileParse={parseUpload}
       />
-      {fileError && (
-        <Text alignment="left" variant="bodySm" style={{ color: "#D22B1F", alignSelf: "flex-start", marginTop: -20 }}>
-          Error: incorrect file format
+
+      {uploadError && (
+        <Text alignment="left" variant="bodySm" style={{ color: "#D22B1F", alignSelf: "flex-start", marginTop: 8 }}>
+          { uploadError }
         </Text>
       )}
-    </Card>
+
+    </OnboardingCard>
   );
 }

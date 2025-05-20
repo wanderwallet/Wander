@@ -1,6 +1,6 @@
 import browser from "webextension-polyfill";
 import { useMemo, useState } from "react";
-import { Box, Row, Spacer, Text } from "../ui";
+import { Box, Row, Text } from "../ui";
 
 export default function Message({ message }: Props) {
   const [decodeType, setDecodeType] = useState("UTF-8");
@@ -21,12 +21,13 @@ export default function Message({ message }: Props) {
   }, [message, decodeType]);
 
   return (
-    <Box style={{ paddingLeft: 0, paddingRight: 0 }}>
+    <>
       <Row justifyContent="between">
         <Text variant="bodyMd" style={{ color: "#666666" }}>
           {browser.i18n.getMessage("signature_message")}
         </Text>
         <select
+          value={ decodeType }
           style={{
             fontWeight: "500",
             color: "#666666",
@@ -40,13 +41,13 @@ export default function Message({ message }: Props) {
           }}
           onChange={(e) => setDecodeType(e.target.value)}>
           {availableDecodeTypes.map((type, i) => (
-            <option value={type} key={i} selected={type === decodeType}>
+            <option value={type} key={i}>
               {type}
             </option>
           ))}
         </select>
       </Row>
-      <Spacer y={0.3} />
+
       <Box
         alignment="left"
         style={{
@@ -68,7 +69,7 @@ export default function Message({ message }: Props) {
           {msg}
         </Text>
       </Box>
-    </Box>
+    </>
   );
 }
 

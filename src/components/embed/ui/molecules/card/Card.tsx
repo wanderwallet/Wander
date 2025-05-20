@@ -1,11 +1,12 @@
 import React from "react";
-import styles from "./Card.module.css";
 import type { CardBaseProps } from "./Card.types";
 import { Box, MinimizeIcon, ChevronLeft } from "../../atoms";
 import { Header } from "../header";
-import { Footer } from "../footer";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 import { useLocation } from "~wallets/router/router.utils";
+import { Loading } from "@arconnect/components";
+
+import styles from "./Card.module.css";
 
 const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
   (
@@ -16,8 +17,8 @@ const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
       children,
       footerElement,
       className,
-      hasShadow = false,
-      isBlurry,
+      isDisabled,
+      isLoading,
       size = "md",
       hasBackButton = true,
       hasCloseButton = true,
@@ -29,7 +30,6 @@ const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
     },
     ref,
   ) => {
-    const [isMinimized, setIsMinimized] = React.useState(false);
     const { back } = useLocation();
 
     const closeCard = () => {
@@ -39,52 +39,57 @@ const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
       });
     };
 
-    const closeIcon = (
+    const closeButton = hasCloseButton ? (
       <button
         style={closeButtonStyles}
         className={styles["card__close__btn"]}
-        onClick={onCloseButtonClick ?? closeCard}>
+        onClick={onCloseButtonClick ?? closeCard}
+        disabled={ isDisabled || isLoading }>
         {customIcon ?? <MinimizeIcon fontSize={24} style={{ color: "var(--color-font-body)" }} />}
       </button>
-    );
+    ) : null;
+
+    const backButton = hasBackButton ? (
+      <button
+        className={styles["card__back__btn"]}
+        onClick={onBackButtonClick ?? back}
+        disabled={ isDisabled || isLoading }>
+        <ChevronLeft fontSize={24} style={{ color: "var(--color-font-body)" }} />
+      </button>
+    ) : null;
+
+    // TODO: Use CSS shape-outside for the buttons and use <header> and <footer>. Also address all those paddings...
 
     return (
       <Box
         ref={ref}
         className={`
         ${styles["card"]}
-        ${hasShadow && styles["card__shadow"]}
-        ${isBlurry && styles["card__blurry"]}
+        ${(isDisabled || isLoading) && styles["card__disabled"]}
         ${size && styles[`card__${size}`]}
-        ${isMinimized && styles[`card_minimized__active`]}
         ${className}
       `}
         {...props}>
-        {!isMinimized ? (
-          <>
-            {hasBackButton && (
-              <button className={styles["card__back__btn"]} onClick={onBackButtonClick ?? back}>
-                <ChevronLeft fontSize={24} style={{ color: "var(--color-font-body)" }} />
-              </button>
-            )}
-            {hasCloseButton && closeIcon}
-            {headerText && <Header icon={headerIcon} title={headerText} subtitle={subtitle} />}
-            {children}
-            <div style={{ marginTop: "auto" }}></div>
-            {footerElement && <Footer children={footerElement} />}
-          </>
-        ) : (
-          <button
-            id="toggleBtn"
-            onClick={() => setIsMinimized(!isMinimized)}
-            style={{
-              width: "100%",
-              height: "100%",
-              zIndex: 100,
-              cursor: "pointer",
-            }}
-          />
-        )}
+        {backButton}
+        {closeButton}
+        {headerText && <Header icon={headerIcon} title={headerText} subtitle={subtitle} />}
+        {children}
+        <div style={{ marginTop: "auto" }}></div>
+        {footerElement}
+
+        <div className={ styles["card__loaderCover"]}>
+          { isLoading ? (
+            <Loading
+              style={{
+                position: "absolute",
+                top: "calc(50% - 16px)",
+                left: "calc(50% - 16px)",
+                width: "32px",
+                height: "32px",
+              }}
+            />
+          ) : null }
+        </div>
       </Box>
     );
   },

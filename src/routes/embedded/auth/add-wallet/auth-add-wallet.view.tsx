@@ -1,13 +1,12 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useLocation } from "~wallets/router/router.utils";
-
-import { Box, Button, Card, KeyIcon, QRCodeIcon, SeedIcon, WalletIcon, WanderFooter } from "~components/embed";
+import { useCallback, useEffect, useState } from "react";
+import { Button, KeyIcon, SeedIcon, WalletIcon } from "~components/embed";
 import type { WalletSourceType } from "embed-api";
+import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
+import { signOut } from "~utils/embedded/embedded.utils";
 
 export function AuthAddWalletEmbeddedView() {
-  const { authProviderType, generateTempWallet, registerWallet } = useEmbedded();
-  const { navigate } = useLocation();
+  const { generateTempWallet, registerWallet } = useEmbedded();
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -26,62 +25,62 @@ export function AuthAddWalletEmbeddedView() {
   }, []);
 
   return (
-    <Card
+    <OnboardingCard
       headerText="Add a wallet"
       subtitle="Add a wallet to your account to hold your funds. Create or add an existing wallet to continue."
-      footerElement={<WanderFooter />}
-      hasBackButton={true}
-      onBackButtonClick={() => navigate(`/wallet`)}
-      size="auto">
-      <Box>
+      onBackButtonClick={ () => signOut(false) }
+      isLoading={ isLoading }>
+
+      <Button
+        onClick={() => handleRegisterWallet("GENERATED")}
+        variant="outlined"
+        isFullWidth
+        icon={<SeedIcon fontSize={24} />}
+        isDisabled={isLoading}>
+        Create new wallet
+      </Button>
+
+      <Button
+        variant="outlined"
+        isFullWidth
+        icon={<WalletIcon fontSize={24} />}
+        href="/auth/import-seedphrase"
+        isDisabled={isLoading}>
+        Enter Seed Phrase
+      </Button>
+
+      <Button
+        variant="outlined"
+        isFullWidth
+        icon={<KeyIcon fontSize={24} />}
+        href="/auth/import-keyfile"
+        isDisabled={isLoading}>
+        Import Keyfile
+      </Button>
+
+      {/* {authProviderType === "PASSKEYS" ? (
         <Button
-          onClick={() => handleRegisterWallet("GENERATED")}
           variant="outlined"
           isFullWidth
-          icon={<SeedIcon fontSize={24} />}
-          isLoading={isLoading}
-          isDisabled={isLoading}>
-          Create new wallet
+          icon={<QRCodeIcon fontSize={24} />}
+          href="/auth/add-device"
+          isDisabled={isLoading}
+        >
+          Scan QR Code
         </Button>
+      ) : (
         <Button
           variant="outlined"
           isFullWidth
-          icon={<WalletIcon fontSize={24} />}
-          href="#/auth/import-seedphrase"
-          isDisabled={isLoading}>
-          Enter Seed Phrase
+          icon={<QRCodeIcon fontSize={24} />}
+          href="/auth/add-auth-provider"
+          isDisabled={isLoading}
+        >
+          Add {(authProviderType || "UNKNOWN").toLocaleUpperCase()} to an
+          existing account
         </Button>
-        <Button
-          variant="outlined"
-          isFullWidth
-          icon={<KeyIcon fontSize={24} />}
-          href="#/auth/import-keyfile"
-          isDisabled={isLoading}>
-          Import Keyfile
-        </Button>
-        {/* {authProviderType === "PASSKEYS" ? (
-          <Button
-            variant="outlined"
-            isFullWidth
-            icon={<QRCodeIcon fontSize={24} />}
-            href="#/auth/add-device"
-            isDisabled={isLoading}
-          >
-            Scan QR Code
-          </Button>
-        ) : (
-          <Button
-            variant="outlined"
-            isFullWidth
-            icon={<QRCodeIcon fontSize={24} />}
-            href="#/auth/add-auth-provider"
-            isDisabled={isLoading}
-          >
-            Add {(authProviderType || "UNKNOWN").toLocaleUpperCase()} to an
-            existing account
-          </Button>
-        )} */}
-      </Box>
-    </Card>
+      )} */}
+
+    </OnboardingCard>
   );
 }
