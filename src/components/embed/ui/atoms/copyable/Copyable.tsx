@@ -40,8 +40,8 @@ const Copyable = forwardRef<HTMLDivElement, CopyableBaseProps>(
           ? "#4ade80"
           : "var(--color-copyable-text-label)"
         : isCopied
-          ? "#22c55e"
-          : "#666666";
+        ? "#22c55e"
+        : "#666666";
     }, [isDarkMode, isCopied]);
 
     const displayValue = isShortened ? value.slice(0, 4) + "..." + value.slice(-4) : value;

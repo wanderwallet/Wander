@@ -2976,6 +2976,18 @@
     "message": "Unable to display data: Data is too large to display.",
     "description": "Data too large text"
   },
+  "partitioned_storage_banner": {
+    "message": "Your wallets will not be automatically available on other sites. You may need to manually import them when visiting other sites.",
+    "description": "Partitioned storage banner message"
+  },
+  "re_request_access": {
+    "message": "Re-request access",
+    "description": "Re-request access text"
+  },
+  "set_up_a_password": {
+    "message": "Set up a password",
+    "description": "Set up a password text"
+  },
   "generating_your_account": {
     "message": "Generating your account!",
     "description": "Generating your account text"

@@ -182,9 +182,7 @@ const HeadWrapper = styled(Section)<{
   display: flex;
   flex-direction: row;
   width: full;
-  transition:
-    padding 0.07s ease-in-out,
-    border-color 0.23s ease-in-out;
+  transition: padding 0.07s ease-in-out, border-color 0.23s ease-in-out;
   padding: ${(props) => (props.padding ? props.padding : "24px")};
   justify-content: ${(props) => (props.center ? "center" : "space-between")};
   align-items: center;

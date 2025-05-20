@@ -152,9 +152,7 @@ export const InputV2Wrapper = styled.div<SharedPropsV2>`
 
   overflow: hidden;
   color: rgb(${(props) => props.theme.cardBorder});
-  transition:
-    border-color 0.13s ease-in-out,
-    background 0.13s ease-in-out;
+  transition: border-color 0.13s ease-in-out, background 0.13s ease-in-out;
 
   ${(props) =>
     props.variant === "dropdown"
@@ -164,10 +162,10 @@ export const InputV2Wrapper = styled.div<SharedPropsV2>`
       box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.10), 0px 1px 2px 0px rgba(0, 0, 0, 0.06);
     `
       : props.variant === "search" && props.special
-        ? `border: 1.5px solid ${props.theme.input.border[props.variant || "default"].special}; background:  ${
-            props.theme.input.background[props.variant || "default"].special
-          };`
-        : ``}
+      ? `border: 1.5px solid ${props.theme.input.border[props.variant || "default"].special}; background:  ${
+          props.theme.input.background[props.variant || "default"].special
+        };`
+      : ``}
 
   ${(props) => props.status === "error" && `border: 1.5px solid ${props.theme.fail}`};
 

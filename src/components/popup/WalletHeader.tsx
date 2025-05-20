@@ -365,9 +365,7 @@ const Wallet = styled.div`
   flex-direction: row;
   align-items: center;
   gap: 0.5rem;
-  transition:
-    transform 0.06s ease-in-out,
-    background-color 0.17s ease-in-out;
+  transition: transform 0.06s ease-in-out, background-color 0.17s ease-in-out;
 
   p {
     color: ${(props) => props.theme.primaryText};

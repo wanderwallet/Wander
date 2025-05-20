@@ -120,8 +120,8 @@ const Bar = styled.div<{ active: boolean }>`
         ? "rgba(13, 108, 233)"
         : props.theme.theme
       : IS_EMBEDDED_APP
-        ? "rgba(13, 108, 233, 0.50)"
-        : "rgba(107, 87, 249, 0.50)"};
+      ? "rgba(13, 108, 233, 0.50)"
+      : "rgba(107, 87, 249, 0.50)"};
   transition: all 0.23s ease-in-out;
 `;
 

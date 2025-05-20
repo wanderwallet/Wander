@@ -125,13 +125,10 @@ export default function WalletSwitcher({ open, close }: Props) {
   }, [open, inactiveWallets]);
 
   const fiatBalances = useMemo(() => {
-    return Object.entries(walletBalances).reduce(
-      (acc, [address, balance]) => {
-        acc[address] = BigNumber(balance).multipliedBy(price);
-        return acc;
-      },
-      {} as Record<string, BigNumber>,
-    );
+    return Object.entries(walletBalances).reduce((acc, [address, balance]) => {
+      acc[address] = BigNumber(balance).multipliedBy(price);
+      return acc;
+    }, {} as Record<string, BigNumber>);
   }, [walletBalances, price]);
 
   // toasts

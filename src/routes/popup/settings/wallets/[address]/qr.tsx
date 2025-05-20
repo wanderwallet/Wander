@@ -66,7 +66,7 @@ export function GenerateQRView({ params: { address } }: GenerateQRViewProps) {
   return (
     <>
       <HeadV2
-        title={wallet ? (wallet?.nickname ?? "Account") : browser.i18n.getMessage("generate_qr_code")}
+        title={wallet ? wallet?.nickname ?? "Account" : browser.i18n.getMessage("generate_qr_code")}
         showOptions={false}
       />
       <Wrapper style={{ height: "calc(100vh - 100px)" }}>

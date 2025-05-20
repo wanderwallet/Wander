@@ -297,8 +297,8 @@ export function ConnectAuthRequestView() {
                 page === "unlock" || (page === "confirm" && !askPassword)
                   ? "connect"
                   : page !== "confirm"
-                    ? "next"
-                    : "confirm",
+                  ? "next"
+                  : "confirm",
               ),
               onClick: handlePrimaryOnClick,
             }}

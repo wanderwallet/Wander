@@ -123,8 +123,8 @@ export function PurchaseView() {
                   ? theme.primaryTextv2
                   : theme.input.placeholder.search
                 : quote?.cryptoAmount.toString()
-                  ? theme.primaryTextv2
-                  : theme.input.placeholder.search,
+                ? theme.primaryTextv2
+                : theme.input.placeholder.search,
             }}
             inputStyle={{
               display: "flex",
@@ -160,8 +160,8 @@ export function PurchaseView() {
                   ? theme.primaryTextv2
                   : theme.input.placeholder.search
                 : quote?.cryptoAmount.toString()
-                  ? theme.primaryTextv2
-                  : theme.input.placeholder.search,
+                ? theme.primaryTextv2
+                : theme.input.placeholder.search,
             }}
             disabled={!arConversion}
             label={
@@ -174,7 +174,7 @@ export function PurchaseView() {
               ) : arConversion ? (
                 `${getSymbolFromCurrency(selectedCurrency?.symbol) || ""}${quote?.fiatAmount.toFixed(2) ?? "0"}`
               ) : (
-                (quote?.cryptoAmount.toString() ?? "0")
+                quote?.cryptoAmount.toString() ?? "0"
               )
             }
             icon={

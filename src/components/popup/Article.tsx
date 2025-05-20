@@ -62,9 +62,7 @@ export const LoadingArticle = () => (
 const Wrapper = styled(Section)`
   position: relative;
   cursor: pointer;
-  transition:
-    transform 0.07s ease-in-out,
-    opacity 0.23s ease-in-out;
+  transition: transform 0.07s ease-in-out, opacity 0.23s ease-in-out;
 
   ${hoverEffect}
 

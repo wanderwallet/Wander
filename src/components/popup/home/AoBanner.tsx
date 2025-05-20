@@ -118,8 +118,7 @@ const Banner = styled.div<{ displayTheme: DisplayTheme; show: boolean }>`
   flex-direction: row;
   color: #ffffff;
   overflow: hidden;
-  background:
-    linear-gradient(0deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.4) 100%),
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.4) 100%),
     radial-gradient(945.06% 141.42% at 0% 0%, #8e7bea 0%, #544a81 41.29%, #8e7bea 77.31%, #544a81 85.8%);
   border-bottom: 2px solid #8e7bea;
   justify-content: center;

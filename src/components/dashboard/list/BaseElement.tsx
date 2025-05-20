@@ -58,8 +58,8 @@ const SettingWrapper = styled.div<{ active: boolean; ao?: boolean }>`
               ? ".24"
               : ".14"
             : props.theme.displayTheme === "light"
-              ? ".14"
-              : ".04")
+            ? ".14"
+            : ".04")
         }
       );
     }

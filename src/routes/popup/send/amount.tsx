@@ -675,9 +675,7 @@ const TokenSelector = styled.div`
   background: ${(props) => props.theme.surfaceSecondary};
 
   /* xsmall shadow */
-  box-shadow:
-    0px 1px 3px 0px rgba(0, 0, 0, 0.1),
-    0px 1px 2px 0px rgba(0, 0, 0, 0.06);
+  box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.1), 0px 1px 2px 0px rgba(0, 0, 0, 0.06);
   transition: all 0.12s ease-;
   z-index: 20;
 

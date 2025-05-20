@@ -683,8 +683,9 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
     const latestSession = await getLatestSession(session);
 
-    const { fetchRecoverableWalletsChallenge } =
-      await AuthenticationService.generateFetchRecoverableAccountsChallenge(walletAddress);
+    const { fetchRecoverableWalletsChallenge } = await AuthenticationService.generateFetchRecoverableAccountsChallenge(
+      walletAddress,
+    );
 
     const challengeSolution = await ChallengeClientV1.solveChallenge({
       challenge: fetchRecoverableWalletsChallenge,

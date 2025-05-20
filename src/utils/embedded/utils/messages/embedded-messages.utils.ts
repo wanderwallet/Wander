@@ -1,7 +1,7 @@
 import type { AuthProviderType, SupabaseUser } from "embed-api";
 import { nanoid } from "nanoid";
+import { getEmbeddedAncestorOrigin, isInsideIframe } from "~utils/embedded/iframe.utils";
 import { AUTH_PROVIDER_TYPE_BY_PROVIDER_STR } from "~utils/embedded/embedded.constants";
-import { isInsideIframe, getEmbeddedAncestorOrigin } from "~utils/embedded/iframe.utils";
 import type {
   EmbeddedAuthMessageData,
   EmbeddedCall,

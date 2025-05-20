@@ -2966,6 +2966,18 @@
         "message": "无法显示数据：数据太大，无法显示。",
         "description": "Data too large text"
     },
+    "partitioned_storage_banner": {
+        "message": "您的钱包不会自动在其他网站上可用。当您访问其他网站时，可能需要手动导入它们。",
+        "description": "Partitioned storage banner message"
+    },
+    "re_request_access": {
+        "message": "重新请求访问",
+        "description": "Re-request access text"
+    },
+    "set_up_a_password": {
+        "message": "设置密码",
+        "description": "Set up a password text"
+    },
     "generating_your_account": {
         "message": "正在生成您的账户！",
         "description": "Generating your account text"

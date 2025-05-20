@@ -1,5 +1,5 @@
 import { AnimatePresence } from "framer-motion";
-import React, { useEffect, useMemo, type PropsWithChildren } from "react";
+import React, { useEffect, useMemo, useRef, type PropsWithChildren } from "react";
 import { Switch, Route as Woute } from "wouter";
 import { Page } from "~components/page/page.component";
 import type { CommonRouteProps, RouteConfig } from "~wallets/router/router.types";

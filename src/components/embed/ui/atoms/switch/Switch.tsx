@@ -71,8 +71,8 @@ const Switch = forwardRef<HTMLInputElement, SwitchBaseProps>(
                 backgroundColor: isChecked
                   ? "var(--color-background-switch-enabled)"
                   : isDarkMode
-                    ? "var(--color-button-secondary-background)"
-                    : undefined,
+                  ? "var(--color-button-secondary-background)"
+                  : undefined,
                 borderRadius: `${switchHeight / 2}px`,
                 "--knob-size": `${knobSize}px`,
                 "--knob-offset": `${knobOffset}px`,

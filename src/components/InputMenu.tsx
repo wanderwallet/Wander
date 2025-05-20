@@ -282,8 +282,8 @@ const Option = styled.div<{ active: boolean; displayTheme: DisplayTheme }>`
             ? ".24"
             : ".14"
           : props.theme.displayTheme === "light"
-            ? ".14"
-            : ".04")}
+          ? ".14"
+          : ".04")}
     );
   }
 `;
