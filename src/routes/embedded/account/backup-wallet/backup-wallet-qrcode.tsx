@@ -24,16 +24,16 @@ export function AccountBackupWalletQrCodeEmbeddedView() {
 
   const fetchDecryptedWallet = useCallback(async () => {
     try {
+      if (decryptedWallet) return;
       setIsLoading(true);
-      const decryptedWallet = await getDecryptedWallet();
-      setDecryptedWallet(decryptedWallet);
+      const wallet = await getDecryptedWallet();
+      setDecryptedWallet(wallet);
     } catch (error) {
-      console.log(error);
-      toast.error("Error getting keyfile");
+      toast.error("Error getting wallet");
     } finally {
       setIsLoading(false);
     }
-  }, [getDecryptedWallet]);
+  }, [getDecryptedWallet, decryptedWallet]);
 
   useEffect(() => {
     fetchDecryptedWallet();
@@ -44,7 +44,7 @@ export function AccountBackupWalletQrCodeEmbeddedView() {
       setFrames(dataToFrames(JSON.stringify(decryptedWallet.keyfile)));
       freeDecryptedWallet(decryptedWallet.keyfile);
     }
-  }, [decryptedWallet]);
+  }, [decryptedWallet?.keyfile]);
 
   useEffect(() => {
     return () => setFrames([]);
@@ -62,8 +62,10 @@ export function AccountBackupWalletQrCodeEmbeddedView() {
               backgroundColor: "#fff",
               padding: "12px",
               borderRadius: "12px",
+              height: 299,
+              width: 299,
             }}>
-            <QRCodeLoop frames={frames} fps={5} size={275} />
+            {frames.length > 0 && <QRCodeLoop frames={frames} fps={5} size={275} />}
           </div>
         </QRCodeWrapper>
         <Flex

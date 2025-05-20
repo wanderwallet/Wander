@@ -1,4 +1,4 @@
-import { FolderShield, Wallet03 } from "@untitled-ui/icons-react";
+import { FolderShield, QrCode02, Wallet03 } from "@untitled-ui/icons-react";
 import { Button } from "~components/embed/ui";
 import { useLocation } from "~wallets/router/router.utils";
 import browser from "webextension-polyfill";
@@ -36,7 +36,11 @@ export function AccountBackupWalletEmbeddedView() {
         Export wallet
       </Button>
 
-      <Button variant="outlined" isFullWidth icon={<Wallet03 fontSize={24} />} href="/account/backup-wallet/qrcode">
+      <Button
+        variant="outlined"
+        isFullWidth
+        icon={<QrCode02 fontSize={24} color="currentColor" />}
+        href="/account/backup-wallet/qrcode">
         Generate QR code
       </Button>
 
