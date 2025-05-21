@@ -40,13 +40,13 @@ const background: BackgroundModuleFunction<ReturnType> = async (
   const arweave = new Arweave(await app.getGatewayConfig());
 
   // grab the user's keyfile
-  const decryptedWallet = await getActiveKeyfile(appData);
+  let decryptedWallet = await getActiveKeyfile(appData);
 
   // ensure that the currently selected
   // wallet is not a local wallet
   isLocalWallet(decryptedWallet);
 
-  const keyfile = decryptedWallet.keyfile;
+  let keyfile = decryptedWallet.keyfile;
 
   // get chunks for transaction
   const chunks = getChunks(chunkCollectionID, appData.url);
@@ -119,6 +119,15 @@ const background: BackgroundModuleFunction<ReturnType> = async (
   }
 
   try {
+    // grab the user's keyfile again:
+    decryptedWallet = await getActiveKeyfile(appData);
+
+    // ensure that the currently selected
+    // wallet is not a local wallet again:
+    isLocalWallet(decryptedWallet);
+
+    keyfile = decryptedWallet.keyfile;
+
     // TODO: If there's an error in the first request, the previous (already accepted) AuthRequest's UI should probably
     // reflect that. Maybe we could even reuse the same AuthRequest item instead of creating a separated one.
 
