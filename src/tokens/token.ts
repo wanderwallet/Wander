@@ -63,17 +63,21 @@ export async function loadTokens() {
   // Remove the old AO token if present:
   aoTokens = aoTokens.filter((token) => token.processId !== AO_NATIVE_OLD_TOKEN);
 
-  // If AR or AO are not already in the list, add them:
+  // If AR, AO or PI tokens are not already in the list, add them:
 
-  const ao = defaultTokens[1];
-  const ar = defaultTokens[0];
+  const existingProcessIds = new Set(aoTokens.map((token) => token.processId));
 
-  if (!aoTokens.some((t) => t.processId === ao.processId)) {
-    aoTokens.unshift(ao);
-  }
+  const requiredTokens = [
+    defaultTokens[2], // PI
+    defaultTokens[1], // AO
+    defaultTokens[0], // AR
+  ];
 
-  if (!aoTokens.some((t) => t.processId === ar.processId)) {
-    aoTokens.unshift(ar);
+  for (let i = 0; i < requiredTokens.length; i++) {
+    const token = requiredTokens[i];
+    if (!existingProcessIds.has(token.processId)) {
+      aoTokens.unshift(token);
+    }
   }
 
   await PersistentStorage.set("ao_tokens", aoTokens);

@@ -38,8 +38,14 @@ export const defaultTokens = [
     Ticker: "AO",
     Denomination: 12,
     Logo: "UkS-mdoiG8hcAClhKK8ch4ZhEzla0mCPDOix9hpdSFE",
-    // processId: AO_NATIVE_OLD_TOKEN
     processId: AO_NATIVE_TOKEN,
+  },
+  {
+    Name: "Permaweb Index Token",
+    Ticker: "PI",
+    Denomination: 12,
+    Logo: "zmQwyD6QiZge10OG2HasBqu27Zg0znGkdFRufOq6rv0",
+    processId: "4hXj_E-5fAKmo4E8KjgQvuDJKAFk9P2grhycVmISDLs",
   },
   {
     Name: "Q Arweave",
