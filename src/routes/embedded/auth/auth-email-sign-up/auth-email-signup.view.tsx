@@ -1,6 +1,6 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { toast } from "react-toastify";
-import { Button } from "~components/embed";
+import { Button, TextInput } from "~components/embed";
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { getSupabaseClient } from "~utils/embedded/embedded.utils";
 import { useLocation, useSearchParams } from "~wallets/router/router.utils";
@@ -12,8 +12,10 @@ import { PasswordInput } from "~components/embed/ui/atoms/password-input";
 import { useThrottledCallback } from "@swyg/corre";
 import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
 import { PersistentStorage } from "~utils/storage";
+import { InputButton } from "~components/embed/ui/atoms/input-button/InputButton";
+import { EditIcon } from "@iconicicons/react";
 
-export function AuthEmailSignupEmbeddedView() {
+export function AuthEmailSignUpEmbeddedView() {
   const { navigate } = useLocation();
   const { email } = useSearchParams<{ email: string }>();
   const { authStatus } = useEmbedded();
@@ -105,6 +107,23 @@ export function AuthEmailSignupEmbeddedView() {
     }
   }, [email]);
 
+  const editIcon = (
+    <EditIcon
+      aria-label="Edit"
+      style={{
+        width: 22,
+        height: 22,
+        color: "var(--text-color-tertiary)",
+      }}/>
+  );
+
+  const emailInputButton = (
+    <InputButton
+      icon={editIcon}
+      disabled={ areButtonsDisabled }
+      onClick={ () => navigate("/auth", { search: { email }}) } />
+  );
+
   return (
     <OnboardingCard
       headerText="Create your password"
@@ -112,6 +131,15 @@ export function AuthEmailSignupEmbeddedView() {
       onBackButtonClick={() => navigate(`/auth`)}
       isLoading={ isViewLoading }
       onSubmit={ handleEmailSignup }>
+
+      <TextInput
+        name="email"
+        placeholder="Enter your email"
+        value={ email }
+        disabled={areButtonsDisabled}
+        readOnly
+        endSlot={emailInputButton}
+      />
 
       <PasswordInput
         name="password"

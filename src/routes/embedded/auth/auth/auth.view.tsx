@@ -13,7 +13,7 @@ import {
 import React, { useCallback, useRef, useState } from "react";
 import type { AuthProviderType } from "embed-api";
 import { getSupabaseClient } from "~utils/embedded/embedded.utils";
-import { useLocation } from "~wallets/router/router.utils";
+import { useLocation, useSearchParams } from "~wallets/router/router.utils";
 import { isValidEmail } from "~utils/email";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
@@ -24,6 +24,7 @@ import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-c
 
 export function AuthEmbeddedView() {
   const { navigate } = useLocation();
+  const { email } = useSearchParams<{ email: string }>();
   const { authenticate, authStatus, recoverableAccount } = useEmbedded();
 
   // Input refs:
@@ -128,6 +129,7 @@ export function AuthEmbeddedView() {
       <TextInput
         name="email"
         placeholder="Enter your email"
+        defaultValue={ email }
         inputRef={emailInputRef}
         disabled={areButtonsDisabled}
         endSlot={emailInputButton}

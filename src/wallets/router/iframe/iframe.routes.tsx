@@ -6,12 +6,12 @@ import { isRouteOverride } from "~wallets/router/router.utils";
 
 // Authentication Views:
 import { AuthEmbeddedView } from "~routes/embedded/auth/auth/auth.view";
-import { AuthEmailSignupEmbeddedView } from "~routes/embedded/auth/auth-email-signup/auth-email-signup.view";
+import { AuthEmailSignUpEmbeddedView } from "~routes/embedded/auth/auth-email-sign-up/auth-email-signup.view";
 import { AuthMoreProvidersEmbeddedView } from "~routes/embedded/auth/auth-more-providers/auth-more-providers.view";
 import { AuthAddWalletEmbeddedView } from "~routes/embedded/auth/add-wallet/auth-add-wallet.view";
 import { AuthImportSeedphraseEmbeddedView } from "~routes/embedded/auth/import-seedphrase/auth-import-seedphrase.view";
 import { AuthImportKeyfileEmbeddedView } from "~routes/embedded/auth/import-keyfile/auth-import-keyfile.view";
-import AuthErrorEmbeddedView from "~routes/embedded/auth/auth-error/auth-error.view";
+import { AuthErrorEmbeddedView } from "~routes/embedded/auth/auth-error/auth-error.view";
 import { AuthAddWithQRCodeEmbeddedView } from "~routes/embedded/auth/add-qrcode/add-qrcode.view";
 import { AuthQRCodeScannerEmbeddedView } from "~routes/embedded/auth/qrcode-scanner/auth-qrcode-scanner.view";
 
@@ -61,8 +61,8 @@ import { WalletDepositTokensEmbeddedView } from "~routes/embedded/wallet/deposit
 import { WalletBuyInputEmbeddedView } from "~routes/embedded/wallet/buy/buy.input.view";
 import { WalletBuySuccessEmbeddedView } from "~routes/embedded/wallet/buy/buy.success.view";
 import { EmbeddedConnectAuthRequestView } from "~routes/embedded/wallet/connect/dapp-connect.view";
-import { AuthEmailVerifyEmbeddedView } from "~routes/embedded/auth/auth-email-signup/auth-email-verify.view";
-import { AuthEmailSigninEmbeddedView } from "~routes/embedded/auth/auth-email-signup/auth-email-signin.view";
+import { AuthEmailVerifyEmbeddedView } from "~routes/embedded/auth/auth-email-verify/auth-email-verify.view";
+import { AuthEmailSignInEmbeddedView } from "~routes/embedded/auth/auth-email-sign-in/auth-email-sign-in.view";
 
 export type EmbeddedRoutePath =
   | "/auth"
@@ -201,7 +201,7 @@ const IFRAME_OWN_ROUTES = [
   },
   {
     path: EmbeddedPaths.AuthEmailSignup,
-    component: AuthEmailSignupEmbeddedView,
+    component: AuthEmailSignUpEmbeddedView,
   },
   {
     path: EmbeddedPaths.AuthEmailVerify,
@@ -209,7 +209,7 @@ const IFRAME_OWN_ROUTES = [
   },
   {
     path: EmbeddedPaths.AuthEmailSignin,
-    component: AuthEmailSigninEmbeddedView,
+    component: AuthEmailSignInEmbeddedView,
   },
   {
     path: EmbeddedPaths.AuthMoreProviders,

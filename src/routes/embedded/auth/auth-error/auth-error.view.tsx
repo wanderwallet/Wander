@@ -4,7 +4,7 @@ import { useSearchParams } from "~wallets/router/router.utils";
 import { useEffect, useMemo } from "react";
 import { getFriendlyErrorMessage } from "~routes/embedded/auth/auth-error/auth-error.utils";
 
-export default function AuthErrorEmbeddedView() {
+export function AuthErrorEmbeddedView() {
   const searchParams = useSearchParams<{
     error: string;
     error_description: string;
