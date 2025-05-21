@@ -1,4 +1,4 @@
-import { ExtensionStorage, PersistentStorage } from "~utils/storage";
+import { PersistentStorage } from "~utils/storage";
 import type { TokenInfoWithProcessId } from "./aoTokens/ao";
 
 /**

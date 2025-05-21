@@ -13,12 +13,13 @@ import arLogoDark from "url:/assets/ar/logo_dark.png";
 import { getUserAvatar } from "~lib/avatar";
 import { useLocation } from "~wallets/router/router.utils";
 import CommonImage from "~components/common/Image";
+import { AR_PROCESS_ID } from "~tokens/aoTokens/ao";
 
 export default function TokenListItem({ token, active, onClick }: Props) {
   const { navigate } = useLocation();
 
   // format address
-  const formattedAddress = useMemo(() => (token.id === "AR" ? "AR" : formatAddress(token.id, 8)), [token.id]);
+  const formattedAddress = useMemo(() => (token.id === AR_PROCESS_ID ? AR_PROCESS_ID : formatAddress(token.id, 8)), [token.id]);
 
   // allow dragging with the drag icon
   const dragControls = useDragControls();
@@ -73,7 +74,7 @@ export default function TokenListItem({ token, active, onClick }: Props) {
         subtitle={
           <DescriptionWrapper>
             {formattedAddress}
-            <Image src={token.id === "AR" ? arLogo : aoLogo} alt="ao logo" />
+            <Image src={token.id === AR_PROCESS_ID ? arLogo : aoLogo} alt="ao logo" />
           </DescriptionWrapper>
         }
         hideSquircle

@@ -3,7 +3,6 @@ import type { Wallet } from "~utils/embedded/embedded.types";
 import { formatAddress } from "~utils/format";
 import { setActiveWallet, useActiveWallet } from "~wallets/hooks";
 import { useLocation } from "~wallets/router/router.utils";
-import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 import { useCurrentAuthRequest } from "~utils/auth/auth.hooks";
 import { useEffect, useState } from "react";
 import { concatGatewayURL } from "~gateways/utils";
@@ -13,6 +12,7 @@ import { ExtensionStorage } from "~utils/storage";
 import AppIcons from "./components/AppIcons";
 import { useAllWallets } from "~wallets/hooks";
 import { AuthRequestCard } from "~components/embed/ui/molecules/card/auth-request-card/AuthRequestCard";
+import browser from "~iframe/browser";
 
 export function EmbeddedConnectAuthRequestView() {
   const { navigate } = useLocation();
@@ -35,15 +35,6 @@ export function EmbeddedConnectAuthRequestView() {
     }
   };
 
-  const handleCancel = () => {
-    postEmbeddedMessage({
-      type: "embedded_close",
-      data: null,
-    });
-    navigate("/wallet");
-    rejectRequest();
-  };
-
   useEffect(() => {
     if (!activeWallet?.address) return;
 
@@ -52,19 +43,18 @@ export function EmbeddedConnectAuthRequestView() {
     }
   }, [activeWallet, nameServiceProfile, nsGateway]);
 
-  const handleNext = () => {
-    ExtensionStorage.remove(`requested_permissions_${url}`);
+  const handleConfirm = () => {
+    ExtensionStorage.remove(`requested_permissions`);
     ExtensionStorage.remove("sign_policy");
-    navigate("/wallet/settings");
+    navigate(`/auth-request/connect/${ authRequest.authID }/settings`);
   };
 
   return (
     <>
       <AuthRequestCard
-        onCloseButtonClick={handleCancel}
-        onCancel={handleCancel}
-        onConfirm={handleNext}
-        confirmLabel="Next">
+        onCancel={rejectRequest}
+        onConfirm={handleConfirm}
+        confirmLabel={ browser.i18n.getMessage("next") }>
 
         <AppIcons appInfo={appInfo} />
 

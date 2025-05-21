@@ -18,11 +18,11 @@ import { Loading } from "@arconnect/components-rebrand";
 import TransactionMessage from "~components/embed/auth/TransactionMessage";
 import { formatBalance } from "~utils/format";
 import { AuthRequestCard } from "~components/embed/ui/molecules/card/auth-request-card/AuthRequestCard";
+import browser from "~iframe/browser";
 
 export function EmbeddedSignDataAuthRequestView() {
-  const { navigate } = useLocation();
   const { authRequest, rejectRequest, acceptRequest } = useCurrentAuthRequest("signDataItem");
-  const { url = "", data, authID } = authRequest;
+  const { url = "", data } = authRequest;
 
   const [appInfo, setAppInfo] = useState<AppInfo & { gateway: Gateway }>();
   const [loading, setLoading] = useState<boolean>(false);
@@ -62,25 +62,6 @@ export function EmbeddedSignDataAuthRequestView() {
   const formattedAmount = useMemo(() => (amount || 0).toLocaleString(), [amount]);
 
   const arweaveLogo = arLogoLight;
-
-  // sign message
-  async function sign() {
-    postEmbeddedMessage({
-      type: "embedded_close",
-      data: null,
-    });
-    navigate("/wallet");
-    await acceptRequest();
-  }
-
-  const handleCancel = async () => {
-    postEmbeddedMessage({
-      type: "embedded_close",
-      data: null,
-    });
-    navigate("/wallet");
-    await rejectRequest();
-  };
 
   useEffect(() => {
     (async () => {
@@ -137,18 +118,6 @@ export function EmbeddedSignDataAuthRequestView() {
     fetchTokenInfo();
   }, [data]);
 
-  // listen for enter to reset
-  useEffect(() => {
-    const listener = async (e: KeyboardEvent) => {
-      if (e.key !== "Enter") return;
-      await sign();
-    };
-
-    window.addEventListener("keydown", listener);
-
-    return () => window.removeEventListener("keydown", listener);
-  }, [authID]);
-
   useEffect(() => {
     if (tokenName && !logo) {
       setLogo(arweaveLogo);
@@ -158,10 +127,10 @@ export function EmbeddedSignDataAuthRequestView() {
   return (
     <AuthRequestCard
       headerText="Confirm Activity"
-      onCloseButtonClick={handleCancel}
-      onCancel={handleCancel}
-      onConfirm={sign}
-      isConfirmDisabled={loading}>
+      onCancel={rejectRequest}
+      onConfirm={acceptRequest}
+      confirmLabel={browser.i18n.getMessage("signature_authorize")}
+      isDisabled={loading}>
       <Box alignment="left" style={{ padding: "1rem 0" }}>
         <Row alignment="center" justifyContent="center" style={{ padding: 0 }}>
           <Image
@@ -241,7 +210,9 @@ export function EmbeddedSignDataAuthRequestView() {
         </Row>
       )}
 
-      <TransactionMessage transaction={data} />
+      <TransactionMessage
+        transaction={data}
+        detailsLink={ `/auth-request/signDataItem/${ authRequest.authID }/details` }  />
     </AuthRequestCard>
   );
 }

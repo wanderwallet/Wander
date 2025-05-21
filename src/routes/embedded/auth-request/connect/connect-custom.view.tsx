@@ -4,19 +4,15 @@ import { Box, Switch } from "~components/embed/ui";
 import { AuthRequestCard } from "~components/embed/ui/molecules/card/auth-request-card/AuthRequestCard";
 import browser from "~iframe/browser";
 import { useCurrentAuthRequest } from "~utils/auth/auth.hooks";
-import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 import { useStorage, ExtensionStorage } from "~utils/storage";
 import { useLocation } from "~wallets/router/router.utils";
 
-export function WalletSettingsCustomEmbeddedView() {
+export function EmbeddedConnectCustomAuthRequestView() {
   const { navigate } = useLocation();
-  const { authRequest, rejectRequest } = useCurrentAuthRequest("connect");
-
-  const { url = "" } = authRequest;
-
+  const { authRequest } = useCurrentAuthRequest("connect");
   const [requestedPermissions, setRequestedPermissions] = useStorage<PermissionType[]>(
     {
-      key: `requested_permissions_${url}`,
+      key: `requested_permissions`,
       instance: ExtensionStorage,
     },
     [],
@@ -59,20 +55,10 @@ export function WalletSettingsCustomEmbeddedView() {
     [handlePermissionChange],
   );
 
-  const handleCancel = async () => {
-    postEmbeddedMessage({
-      type: "embedded_close",
-      data: null,
-    });
-    navigate("/wallet");
-    await rejectRequest();
-  };
-
   return (
     <AuthRequestCard
       headerText="Custom Permissions"
-      onBackButtonClick={() => navigate("/wallet/settings")}
-      onCloseButtonClick={handleCancel}>
+      onBackButtonClick={() => navigate(`/auth-request/connect/${ authRequest.authID }/settings`)}>
       {Object.keys(permissionData).map((permissionName: PermissionType) => (
         <Box
           style={{ padding: 0 }}

@@ -131,6 +131,7 @@ export function AuthEmbeddedView() {
         inputRef={emailInputRef}
         disabled={areButtonsDisabled}
         endSlot={emailInputButton}
+        autoFocus
       />
 
       <Divider text={"OR"} />
