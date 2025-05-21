@@ -24,6 +24,7 @@ export let tokenInfoMap = new Map<string, TokenInfo | Token>();
 export type AoInstance = ReturnType<typeof connect>;
 
 export const AR_PROCESS_ID = "AR" as const;
+export const PI_PROCESS_ID = "4hXj_E-5fAKmo4E8KjgQvuDJKAFk9P2grhycVmISDLs" as const;
 
 export const defaultTokens = [
   {
@@ -38,15 +39,14 @@ export const defaultTokens = [
     Ticker: "AO",
     Denomination: 12,
     Logo: "UkS-mdoiG8hcAClhKK8ch4ZhEzla0mCPDOix9hpdSFE",
-    // processId: AO_NATIVE_OLD_TOKEN
     processId: AO_NATIVE_TOKEN,
   },
   {
-    Name: "Q Arweave",
-    Ticker: "qAR",
+    Name: "Permaweb Index Token",
+    Ticker: "PI",
     Denomination: 12,
-    Logo: "26yDr08SuwvNQ4VnhAfV4IjJcOOlQ4tAQLc1ggrCPu0",
-    processId: "NG-0lVX882MG5nhARrSzyprEK6ejonHpdUmaaMPsHE8",
+    Logo: "zmQwyD6QiZge10OG2HasBqu27Zg0znGkdFRufOq6rv0",
+    processId: PI_PROCESS_ID,
   },
   {
     Name: "Wrapped AR",
