@@ -3023,5 +3023,13 @@
     "imported": {
         "message": "导入",
         "description": "Imported text"
+    },
+    "create_wander_agent": {
+        "message": "创建一个Wander代理",
+        "description": "Create a Wander Agent text"
+    },
+    "agents": {
+        "message": "代理们",
+        "description": "Agents text"
     }
 }

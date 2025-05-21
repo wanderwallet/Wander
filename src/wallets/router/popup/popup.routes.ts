@@ -3,7 +3,6 @@ import { HomeView } from "~routes/popup";
 import { CollectibleView } from "~routes/popup/collectible/[id]";
 import { CollectiblesView } from "~routes/popup/collectibles";
 import { ConfirmPurchaseView } from "~routes/popup/confirm";
-import { ExploreView } from "~routes/popup/explore";
 import { MessageNotificationView } from "~routes/popup/notification/[id]";
 import { NotificationsView } from "~routes/popup/notifications";
 import { PendingPurchaseView } from "~routes/popup/pending";
@@ -99,7 +98,6 @@ export const PopupPaths = {
   Amount: "/send/amount/:recipient/:id?",
   Note: "/send/note",
   SendAuth: "/send/auth/:tokenID?",
-  Explore: "/explore",
   Subscriptions: "/subscriptions",
   SubscriptionDetails: "/subscriptions/:id",
   SubscriptionManagement: "/subscriptions/:id/manage",
@@ -172,10 +170,6 @@ export const POPUP_ROUTES = [
   {
     path: PopupPaths.SendAuth,
     component: SendAuthView,
-  },
-  {
-    path: PopupPaths.Explore,
-    component: ExploreView,
   },
   {
     path: PopupPaths.Subscriptions,

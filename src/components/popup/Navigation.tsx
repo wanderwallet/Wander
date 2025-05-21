@@ -1,9 +1,11 @@
-import { Compass03, Grid01, Home05, Users01 } from "@untitled-ui/icons-react";
+import { Grid01, Home05 } from "@untitled-ui/icons-react";
 import browser from "webextension-polyfill";
 import styled from "styled-components";
 import { useLocation } from "~wallets/router/router.utils";
 import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 import { useStorage, ExtensionStorage } from "~utils/storage";
+import HedgehogHeadIcon from "~assets/agents/hedgehog-head.svg";
+import type { WanderRoutePath } from "~wallets/router/router.types";
 
 const Home05Active = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="25" height="24" viewBox="0 0 25 24" fill="none">
@@ -16,16 +18,7 @@ const Home05Active = () => (
   </svg>
 );
 
-const Compass03Active = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="25" height="24" viewBox="0 0 25 24" fill="none">
-    <path
-      fillRule="evenodd"
-      clipRule="evenodd"
-      d="M12.6459 3C7.67531 3 3.64587 7.02944 3.64587 12C3.64587 16.9706 7.67531 21 12.6459 21C17.6164 21 21.6459 16.9706 21.6459 12C21.6459 7.02944 17.6164 3 12.6459 3ZM15.6055 8.79222C15.4726 8.74483 15.2728 8.81145 14.873 8.94469L11.2218 10.1618C11.108 10.1997 11.051 10.2187 11.0038 10.251C10.9619 10.2797 10.9257 10.3158 10.8971 10.3577C10.8648 10.405 10.8458 10.4619 10.8078 10.5757L9.59075 14.227C9.45751 14.6267 9.39089 14.8266 9.43828 14.9595C9.47953 15.0751 9.57054 15.1662 9.6862 15.2074C9.81911 15.2548 10.019 15.1882 10.4187 15.0549L14.0699 13.8378C14.1838 13.7999 14.2407 13.7809 14.288 13.7486C14.3298 13.72 14.366 13.6838 14.3947 13.6419C14.427 13.5946 14.446 13.5377 14.4839 13.4239L15.701 9.77263C15.8342 9.37291 15.9008 9.17305 15.8535 9.04014C15.8122 8.92448 15.7212 8.83347 15.6055 8.79222Z"
-      fill="#6B57F9"
-    />
-  </svg>
-);
+const AgentsIcon = () => <img src={HedgehogHeadIcon} alt="Agents" style={{ height: 32, width: 32, flexShrink: 0 }} />;
 
 const buttons = [
   {
@@ -37,12 +30,12 @@ const buttons = [
     route: "/",
   },
   {
-    title: "Explore",
-    dictionaryKey: "explore",
-    icon: <Compass03 />,
-    iconActive: <Compass03Active />,
+    title: "Agents",
+    dictionaryKey: "agents",
+    icon: <AgentsIcon />,
+    iconActive: <AgentsIcon />,
     size: "24px",
-    route: "/explore",
+    route: "/agents",
   },
   {
     title: "Menu",
@@ -87,7 +80,7 @@ export const NavigationBar = () => {
             active={active}
             data-active={active ? "true" : "false"}
             key={index}
-            onClick={() => navigate(button.route)}>
+            onClick={() => navigate(button.route as WanderRoutePath)}>
             <IconWrapper size={button.size}>
               {active ? button.iconActive : button.icon}
               {!isSeedphraseBackedUp && button.route === "/quick-settings" && <PendingActionDot />}

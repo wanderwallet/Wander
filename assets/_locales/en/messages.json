@@ -3033,5 +3033,13 @@
   "imported": {
     "message": "imported",
     "description": "Imported text"
+  },
+  "create_wander_agent": {
+    "message": "Create a Wander Agent",
+    "description": "Create a Wander Agent text"
+  },
+  "agents": {
+    "message": "Agents",
+    "description": "Agents text"
   }
 }

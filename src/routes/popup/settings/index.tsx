@@ -54,6 +54,18 @@ export function MenuView({ params }: QuickSettingsViewProps) {
     true,
   );
 
+  function handleItemClick(setting: (typeof quickSettingsMenuItems)[number]) {
+    if (setting.externalLink) {
+      const url = setting.name === "explore" ? setting.externalLink : browser.runtime.getURL(setting.externalLink);
+      browser.tabs.create({ url });
+    } else {
+      if (setting.name === "subscriptions") {
+        return navigate(`/${setting.name}`);
+      }
+      navigate(`/quick-settings/${setting.name}` as PopupRoutePath);
+    }
+  }
+
   return (
     <Section style={{ paddingBottom: 100 }}>
       <ListItem
@@ -102,18 +114,7 @@ export function MenuView({ params }: QuickSettingsViewProps) {
             icon={setting.icon}
             active={activeSetting === setting.name}
             isExternalLink={!!setting.externalLink}
-            onClick={() => {
-              if (setting.externalLink) {
-                browser.tabs.create({
-                  url: browser.runtime.getURL(setting.externalLink),
-                });
-              } else {
-                if (setting.name === "subscriptions") {
-                  return navigate(`/${setting.name}`);
-                }
-                navigate(`/quick-settings/${setting.name}` as PopupRoutePath);
-              }
-            }}
+            onClick={() => handleItemClick(setting)}
             key={i}
           />
         ))}
@@ -151,7 +152,9 @@ export function MenuView({ params }: QuickSettingsViewProps) {
             <Button fullWidth variant="secondary" onClick={() => setOpen(false)}>
               {browser.i18n.getMessage("cancel")}
             </Button>
-            <Button fullWidth onClick={import.meta.env?.VITE_IS_EMBEDDED_APP === "1" ? () => signOut : removeDecryptionKey}>
+            <Button
+              fullWidth
+              onClick={import.meta.env?.VITE_IS_EMBEDDED_APP === "1" ? () => signOut : removeDecryptionKey}>
               {browser.i18n.getMessage("sign_out")}
             </Button>
           </div>

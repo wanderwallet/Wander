@@ -13,6 +13,8 @@ interface FlexProps extends React.HTMLAttributes<HTMLDivElement> {
   padding?: CSSProperties["padding"];
   cursor?: CSSProperties["cursor"];
   textAlign?: CSSProperties["textAlign"];
+  background?: CSSProperties["background"];
+  borderRadius?: CSSProperties["borderRadius"];
 }
 
 export const Flex: React.FC<FlexProps> = ({
@@ -21,6 +23,8 @@ export const Flex: React.FC<FlexProps> = ({
   align = "stretch",
   justify = "flex-start",
   wrap = "nowrap",
+  background,
+  borderRadius,
   gap = 0,
   flex,
   width,
@@ -46,6 +50,8 @@ export const Flex: React.FC<FlexProps> = ({
         padding,
         cursor,
         textAlign,
+        background,
+        borderRadius,
         ...style,
       }}
       {...props}>
