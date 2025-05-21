@@ -49,13 +49,6 @@ export const defaultTokens = [
     processId: PI_PROCESS_ID,
   },
   {
-    Name: "Q Arweave",
-    Ticker: "qAR",
-    Denomination: 12,
-    Logo: "26yDr08SuwvNQ4VnhAfV4IjJcOOlQ4tAQLc1ggrCPu0",
-    processId: "NG-0lVX882MG5nhARrSzyprEK6ejonHpdUmaaMPsHE8",
-  },
-  {
     Name: "Wrapped AR",
     Ticker: "wAR",
     Denomination: 12,
