@@ -1,0 +1,134 @@
+@keyframes marqueeAnimation {
+    0%   { transform: translate(0deg); }
+    100% { transform: translate(var(--marqueeOffset, 0)); }
+}
+
+.root {
+  position: relative;
+  width: 100%;
+  height: 64px;
+  display: flex;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: var(--spacing-2);
+  padding: 0;
+  transition: align-items linear 150ms;
+}
+
+.logo {
+  flex: 0 0 auto;
+  align-self: center;
+}
+
+.info {
+  position: relative;
+  // background: pink;
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  align-items: center;
+  overflow: hidden;
+}
+
+.name,
+.balance,
+.fiat {
+  height: 26px;
+  line-height: 26px;
+}
+
+.name {
+  // flex: 1 0 auto;
+  // flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.balanceAndPrice {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  max-width: var(--balanceMaxWidth, 50%);
+  padding-left: var(--spacing-4);
+  transition: transform linear 150ms;
+  transform: translate(var(--balanceOffset, 0px), -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  margin-left: auto;
+  background: var(--color-background-default);
+  flex: 1;
+  min-width: 0;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: calc(-1 * var(--spacing-4));
+    width: var(--spacing-8);
+    height: 100%;
+    background: linear-gradient(to left, var(--color-background-default) 50%, transparent);
+  }
+
+
+  // overflow: hidden;
+  // text-overflow: ellipsis;
+  // white-space: nowrap;
+}
+
+.fiat {
+}
+
+.balance {
+  position: relative;
+  display: flex;
+  justify-content: flex-end;
+  // gap: var(--spacing-2);
+  max-width: 100%;
+
+  // overflow: hidden;
+  // min-width: 0;
+  // width: 100%;
+  // background: yellow;
+}
+
+.balanceAmountWrapper {
+  flex: 1 1 auto;
+  // min-width: 0;
+  // max-width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  overflow: hidden;
+
+  // text-align: left;
+}
+
+.balanceAmount {
+  // flex: 1 0 auto;
+  // white-space: nowrap;
+
+  // text-align: left;
+}
+
+.balanceTicker {
+  padding-left: var(--spacing-2);
+}
+
+/*
+.leftArea,
+.rightArea {
+  position: absolute;
+  inset: 0;
+}
+
+.leftArea {
+  position: absolute;
+  right: 50%;
+  // background: yellow;
+}
+
+.rightArea {
+  position: absolute;
+  left: 50%;
+  // background: red;
+}
+*/

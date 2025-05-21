@@ -103,6 +103,16 @@
   }
 }
 
+.button__variant__icon {
+  background-color: inherit;
+  color: var(--color-button-outlined-active);
+  border: none;
+
+  &:hover:not(:disabled) {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+}
+
 .button__variant__outlined {
   background-color: inherit;
   color: var(--color-button-outlined-active);

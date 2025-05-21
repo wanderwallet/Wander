@@ -34,7 +34,7 @@ export function SecretInput({
     timeoutIdRef.current = window.setTimeout(() => {
       setIsCopied(false);
     }, 3000);
-  }, []);
+  }, [secret]);
 
   const copyIcon = isCopied ? (
     <CheckIcon

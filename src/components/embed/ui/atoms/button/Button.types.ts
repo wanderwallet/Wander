@@ -1,8 +1,10 @@
 import React, { type MouseEventHandler } from "react";
 import type { Alignments, ButtonVariants, Sizes } from "../../../types";
-import type { WanderRoutePath } from "~wallets/router/router.types";
+import type { ExternalURL, WanderRoutePath } from "~wallets/router/router.types";
 
-export interface ButtonBaseProps {
+export type ButtonType = "button" | "submit" | "reset";
+
+export interface ButtonProps {
   /**
    * Required prop for the content to be rendered within the ButtonBase
    */
@@ -68,29 +70,20 @@ export interface ButtonBaseProps {
    * Optional prop for the tabIndex of the ButtonBase component
    */
   tabIndex?: number;
-}
 
-export type ButtonType = "button" | "submit" | "reset";
+  // Actually a link:
 
-export interface ButtonButtonProps extends ButtonBaseProps {
+  /**
+   * Optional prop for the href of the ButtonBase component
+   */
+  href?: WanderRoutePath | ExternalURL;
+
+  // Actually a button:
+
   type?: ButtonType;
 
   /**
    * Optional prop for the onClick event handler for the ButtonBase component
    */
-  onClick?: MouseEventHandler<HTMLButtonElement>;
+  onClick?: MouseEventHandler<HTMLButtonElement> | MouseEventHandler<HTMLAnchorElement>;
 }
-
-export interface ButtonLinkProps extends ButtonBaseProps {
-  /**
-   * Optional prop for the href of the ButtonBase component
-   */
-  href: WanderRoutePath;
-
-  /**
-   * Optional prop for the onClick event handler for the ButtonBase component
-   */
-  onClick?: MouseEventHandler<HTMLAnchorElement>;
-}
-
-export type ButtonProps = ButtonButtonProps | ButtonLinkProps;
