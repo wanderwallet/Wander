@@ -13,8 +13,10 @@ import { dataToFrames } from "qrloop";
 import { freeDecryptedWallet } from "~wallets/encryption";
 import { QRCodeWrapper } from "~components/QRCodeWrapper";
 import { QRCodeLoop } from "~components/QRCodeLoop";
+import { useTheme } from "~components/embed/contexts/ThemeContext";
 
 export function AccountBackupWalletQrCodeEmbeddedView() {
+  const { isDarkMode } = useTheme();
   const { navigate } = useLocation();
   const { getDecryptedWallet } = useEmbedded();
   const [isLoading, setIsLoading] = useState(false);
@@ -56,7 +58,7 @@ export function AccountBackupWalletQrCodeEmbeddedView() {
       onBackButtonClick={() => navigate("/account/backup-wallet")}
       isLoading={isLoading}>
       <Flex direction="column" gap={32} justify="center" align="center">
-        <QRCodeWrapper size={297}>
+        <QRCodeWrapper size={323}>
           <div
             style={{
               backgroundColor: "#fff",
@@ -74,13 +76,18 @@ export function AccountBackupWalletQrCodeEmbeddedView() {
           align="center"
           gap={12}
           padding={12}
-          style={{ background: "#EBEBF0", borderRadius: 8, width: "100%" }}>
-          <Text
-            variant="bodyMd"
-            alignment="left"
-            style={{ color: "#121212", flex: 1, textAlign: "center", wordBreak: "break-all" }}>
+          style={{ background: isDarkMode ? "#2C2C2E" : "#EBEBF0", borderRadius: 8, width: "100%" }}>
+          <span
+            style={{
+              color: isDarkMode ? "#fff" : "#121212",
+              flex: 1,
+              textAlign: "center",
+              wordBreak: "break-all",
+              fontSize: 14,
+              fontWeight: 500,
+            }}>
             {decryptedWallet?.address}
-          </Text>
+          </span>
           <CopyToClipboard
             onCopy={setCopied}
             showToast={false}
