@@ -24,6 +24,7 @@ export let tokenInfoMap = new Map<string, TokenInfo | Token>();
 export type AoInstance = ReturnType<typeof connect>;
 
 export const AR_PROCESS_ID = "AR" as const;
+export const PI_PROCESS_ID = "4hXj_E-5fAKmo4E8KjgQvuDJKAFk9P2grhycVmISDLs" as const;
 
 export const defaultTokens = [
   {
@@ -45,7 +46,7 @@ export const defaultTokens = [
     Ticker: "PI",
     Denomination: 12,
     Logo: "zmQwyD6QiZge10OG2HasBqu27Zg0znGkdFRufOq6rv0",
-    processId: "4hXj_E-5fAKmo4E8KjgQvuDJKAFk9P2grhycVmISDLs",
+    processId: PI_PROCESS_ID,
   },
   {
     Name: "Q Arweave",

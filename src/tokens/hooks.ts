@@ -4,6 +4,7 @@ import {
   fetchTokenBalance,
   getBotegaPrice,
   getBotegaPrices,
+  PI_PROCESS_ID,
   type TokenInfo,
   type TokenInfoWithBalance,
 } from "./aoTokens/ao";
@@ -26,6 +27,8 @@ const defaultOptions = {
   retryDelay: (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 30000),
   refetchOnWindowFocus: true,
 };
+
+const fixedTokenIds = [PI_PROCESS_ID, AO_NATIVE_TOKEN, AR_PROCESS_ID];
 
 export const defaultQueryCache = {
   queryFn: () => null,
@@ -233,8 +236,7 @@ export function useAoTokens({
       }));
 
     if (!skipSort) {
-      moveTokenToTop(filteredTokens, AO_NATIVE_TOKEN);
-      moveTokenToTop(filteredTokens, AR_PROCESS_ID);
+      fixedTokenIds.forEach((id) => moveTokenToTop(filteredTokens, id));
 
       if (sortFn) {
         filteredTokens.sort(sortFn);
@@ -325,8 +327,7 @@ export function useBalanceSortedTokens({
       return +b.balance - +a.balance;
     });
 
-    moveTokenToTop(sortedTokens, AO_NATIVE_TOKEN);
-    moveTokenToTop(sortedTokens, AR_PROCESS_ID);
+    fixedTokenIds.forEach((id) => moveTokenToTop(sortedTokens, id));
 
     return sortedTokens;
   }, [tokensByHidden, prices, tokenBalanceQueries]);

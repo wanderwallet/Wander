@@ -3,8 +3,8 @@ import { concatGatewayURL } from "~gateways/utils";
 import arLogoLight from "url:/assets/ar/logo_light.png";
 import arLogoDark from "url:/assets/ar/logo_dark.png";
 import { findGateway } from "~gateways/wayfinder";
-import { ExtensionStorage, PersistentStorage } from "~utils/storage";
-import { defaultTokens, type TokenInfo, type TokenInfoWithProcessId } from "./aoTokens/ao";
+import { PersistentStorage } from "~utils/storage";
+import { defaultTokens, type TokenInfoWithProcessId } from "./aoTokens/ao";
 import { AO_NATIVE_OLD_TOKEN } from "~utils/ao_import";
 
 export interface Token {
@@ -73,12 +73,11 @@ export async function loadTokens() {
     defaultTokens[0], // AR
   ];
 
-  for (let i = 0; i < requiredTokens.length; i++) {
-    const token = requiredTokens[i];
-    if (!existingProcessIds.has(token.processId)) {
-      aoTokens.unshift(token);
+  requiredTokens.forEach((requiredToken) => {
+    if (!existingProcessIds.has(requiredToken.processId)) {
+      aoTokens.unshift(requiredToken);
     }
-  }
+  });
 
   await PersistentStorage.set("ao_tokens", aoTokens);
 }
