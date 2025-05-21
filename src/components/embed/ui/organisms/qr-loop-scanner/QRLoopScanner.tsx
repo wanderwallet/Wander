@@ -20,7 +20,7 @@ interface QRLoopState {
   exploredFountains: string[];
 }
 
-export function QRLoopScanner<T>({ onResult, onError, onProgress }: QRScannerProps) {
+export function QRLoopScanner({ onResult, onError, onProgress }: QRScannerProps) {
   const framesRef = useRef<QRLoopState | null>(null);
   const [progress, setProgress] = useState<number>(0);
   const [cameraAllowed, setCameraAllowed] = useState(true);
