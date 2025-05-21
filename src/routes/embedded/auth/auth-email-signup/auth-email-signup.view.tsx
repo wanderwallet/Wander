@@ -118,7 +118,8 @@ export function AuthEmailSignupEmbeddedView() {
         placeholder="Enter your password"
         inputRef={passwordInputRef}
         disabled={areButtonsDisabled}
-        onChange={ handlePasswordChange } />
+        onChange={ handlePasswordChange }
+        autoFocus />
 
       <PasswordInput
         name="repeatPassword"

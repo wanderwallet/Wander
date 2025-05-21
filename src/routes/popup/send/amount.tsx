@@ -20,7 +20,7 @@ import SliderMenu from "~components/SliderMenu";
 import { type Contact } from "~components/Recipient";
 import { formatAddress } from "~utils/format";
 import { useContact } from "~contacts/hooks";
-import { defaultTokens, type TokenInfo } from "~tokens/aoTokens/ao";
+import { AR_PROCESS_ID, defaultTokens, type TokenInfo } from "~tokens/aoTokens/ao";
 import { useAoTokens } from "~tokens/hooks";
 import BigNumber from "bignumber.js";
 import { EXP_TOKEN } from "~utils/ao_import";
@@ -147,7 +147,7 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
       key: "last_send_token",
       instance: ExtensionStorage,
     },
-    "AR",
+    AR_PROCESS_ID,
   );
 
   // currency setting
@@ -157,7 +157,7 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
   const { tokens: assets } = useAoTokens({ type: "asset" });
   const { tokens: collectibles } = useAoTokens({ type: "collectible" });
 
-  const { prices } = useTokenPrices(assets.map((t) => t.id).filter((id) => id !== "AR" && id !== EXP_TOKEN));
+  const { prices } = useTokenPrices(assets.map((t) => t.id).filter((id) => id !== AR_PROCESS_ID && id !== EXP_TOKEN));
 
   // set ao for following page
   const [isAo, setIsAo] = useState<boolean>(false);
@@ -168,7 +168,7 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
       id: defaultTokens[0].processId,
     };
 
-    setIsAo(matchingTokenInAoToken.id !== "AR");
+    setIsAo(matchingTokenInAoToken.id !== AR_PROCESS_ID);
     return {
       Denomination: matchingTokenInAoToken.Denomination,
       id: matchingTokenInAoToken.id,
@@ -239,7 +239,7 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
   const [networkFee, setNetworkFee] = useState<string>("0");
 
   useEffect(() => {
-    if (tokenID !== "AR") {
+    if (tokenID !== AR_PROCESS_ID) {
       setNetworkFee("0");
       return;
     }
@@ -255,7 +255,7 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
           arweave.transactions.getPrice(byte, recipient),
         );
 
-        if (tokenID === "AR") {
+        if (tokenID === AR_PROCESS_ID) {
           setNetworkFee(arweave.ar.winstonToAr(txPrice));
         } else {
           setNetworkFee("0");
@@ -309,7 +309,7 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
         id: token.id,
         decimals: token.Denomination,
       },
-      token.id === "AR" ? "AR" : "AO",
+      token.id === AR_PROCESS_ID ? "AR" : "AO",
     );
 
     await TempTransactionStorage.set("send", {

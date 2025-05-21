@@ -1,5 +1,6 @@
 import { useQuery, useQueries } from "@tanstack/react-query";
 import {
+  AR_PROCESS_ID,
   fetchTokenBalance,
   getBotegaPrice,
   getBotegaPrices,
@@ -62,7 +63,7 @@ export function useTokenBalance(token: TokenInfo, address: string, refresh?: boo
 }
 
 export function useTokenPrice(id?: string, currency = "USD") {
-  const isArToken = id === "AR";
+  const isArToken = id === AR_PROCESS_ID;
 
   const conversionRateQuery = useConversionRate(currency);
 
@@ -112,7 +113,7 @@ export function useTokenPrices(ids?: string[]) {
       pricesQuery.data[id] !== null ? pricesQuery.data[id] * (conversionRateQuery.data || 1) : null,
     ]);
 
-    pricesEntries.push(["AR", +arPrice]);
+    pricesEntries.push([AR_PROCESS_ID, +arPrice]);
 
     return Object.fromEntries(pricesEntries) as Record<string, number>;
   }, [ids, pricesQuery.data, conversionRateQuery.data, arPrice]);
@@ -135,7 +136,7 @@ export function useTotalFiatBalance() {
 
   const conversionRateQuery = useQueryCache<number>(["conversionRate", currency]);
 
-  const tokenIds = tokens.map((token) => token.id).filter((id) => id !== EXP_TOKEN && id !== "AR");
+  const tokenIds = tokens.map((token) => token.id).filter((id) => id !== EXP_TOKEN && id !== AR_PROCESS_ID);
 
   const pricesQuery = useQueryCache<Record<string, number>>(["tokenPrices", tokenIds?.slice().sort().join(",")]);
 
@@ -154,7 +155,7 @@ export function useTotalFiatBalance() {
 
     tokens.forEach((token, index) => {
       const balance = tokenBalanceQueries[index].data;
-      const price = token.id === "AR" ? +arPrice : pricesQuery.data?.[token.id] || 0;
+      const price = token.id === AR_PROCESS_ID ? +arPrice : pricesQuery.data?.[token.id] || 0;
 
       if (balance && price) {
         total = total.plus(BigNumber(balance).times(price).times(conversionRate));
@@ -233,7 +234,7 @@ export function useAoTokens({
 
     if (!skipSort) {
       moveTokenToTop(filteredTokens, AO_NATIVE_TOKEN);
-      moveTokenToTop(filteredTokens, "AR");
+      moveTokenToTop(filteredTokens, AR_PROCESS_ID);
 
       if (sortFn) {
         filteredTokens.sort(sortFn);
@@ -286,7 +287,7 @@ export function useBalanceSortedTokens({
   );
 
   const { prices } = useTokenPrices(
-    tokensByHidden.map((t) => t.processId).filter((id) => id !== "AR" && id !== EXP_TOKEN),
+    tokensByHidden.map((t) => t.processId).filter((id) => id !== AR_PROCESS_ID && id !== EXP_TOKEN),
   );
 
   const tokenBalanceQueries = useQueries({
@@ -325,7 +326,7 @@ export function useBalanceSortedTokens({
     });
 
     moveTokenToTop(sortedTokens, AO_NATIVE_TOKEN);
-    moveTokenToTop(sortedTokens, "AR");
+    moveTokenToTop(sortedTokens, AR_PROCESS_ID);
 
     return sortedTokens;
   }, [tokensByHidden, prices, tokenBalanceQueries]);

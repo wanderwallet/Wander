@@ -4,7 +4,7 @@ export const BeStorageKeys = {} as const;
 
 export const ConnectStorageKeys = {
   AUTH: {
-    USER_ID: "CON_USER_ID",
+    USER_ID: "USER_ID",
   },
 } as const;
 
