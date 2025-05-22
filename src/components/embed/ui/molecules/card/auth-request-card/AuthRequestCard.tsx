@@ -5,6 +5,7 @@ import { Button } from "~components/embed/ui/atoms";
 import browser from "~iframe/browser";
 
 import styles from "./AuthRequestCard.module.scss";
+import { useEffect } from "react";
 
 export interface AuthRequestCardProps extends Omit<CardBaseProps, "size" | "hasBackButton" | "customIcon" | "hasCloseButton" | "closeButtonStyles"> {
   onCancel?: () => void;
@@ -23,6 +24,23 @@ export function AuthRequestCard({
   onBackButtonClick,
   ...cardProps
 }: AuthRequestCardProps) {
+
+  useEffect(() => {
+    const listener = async (e: KeyboardEvent) => {
+      if (isDisabled) return;
+
+      if (onConfirm && (e.key === "Enter" || e.key.toUpperCase() === "Y")) {
+        onConfirm();
+      } else if (onCancel && (e.key === "Delete" || e.key.toUpperCase() === "N")) {
+        onCancel();
+      }
+    };
+
+    window.addEventListener("keydown", listener);
+
+    return () => window.removeEventListener("keydown", listener);
+  }, [isDisabled]);
+
   const children = (
     <div className={ styles.childrenWrapper }>
       {childrenProp}
