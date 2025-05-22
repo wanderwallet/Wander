@@ -6,7 +6,6 @@ import { ArweaveSigner, createData } from "@dha-team/arbundles";
 import { getActiveKeyfile } from "~wallets";
 import { isLocalWallet } from "~utils/assertions";
 import { freeDecryptedWallet } from "~wallets/encryption";
-import { AO_NATIVE_TOKEN, AO_NATIVE_TOKEN_BALANCE_MIRROR } from "~utils/ao_import";
 import type { KeystoneSigner } from "~wallets/hardware/keystone";
 import browser from "webextension-polyfill";
 import type { DecodedTag } from "~api/modules/sign/tags";
@@ -25,6 +24,10 @@ export type AoInstance = ReturnType<typeof connect>;
 
 export const AR_PROCESS_ID = "AR" as const;
 export const PI_PROCESS_ID = "4hXj_E-5fAKmo4E8KjgQvuDJKAFk9P2grhycVmISDLs" as const;
+export const EXP_PROCESS_ID = "aYrCboXVSl1AXL9gPFe3tfRxRf0ZmkOXH65mKT0HHZw" as const;
+export const AO_PROCESS_ID = "0syT13r0s0tgPmIed95bJnuSqaD29HQNN8D3ElLSrsc" as const;
+export const AO_OLD_PROCESS_ID = "m3PaWzK4PTG9lAaqYQPaPdOcXdO8hYqi5Fe9NWqXd0w" as const;
+export const AO_PROCESS_BALANCE_MIRROR = "Pi-WmAQp2-mh-oWH9lWpz5EthlUDj_W0IusAv-RXhRk" as const;
 
 export const defaultTokens = [
   {
@@ -39,7 +42,7 @@ export const defaultTokens = [
     Ticker: "AO",
     Denomination: 12,
     Logo: "UkS-mdoiG8hcAClhKK8ch4ZhEzla0mCPDOix9hpdSFE",
-    processId: AO_NATIVE_TOKEN,
+    processId: AO_PROCESS_ID,
   },
   {
     Name: "Permaweb Index Token",
@@ -279,7 +282,7 @@ export async function getNativeTokenBalance(address: string): Promise<string> {
   const res = await dryrun({
     Id,
     Owner: address,
-    process: AO_NATIVE_TOKEN_BALANCE_MIRROR,
+    process: AO_PROCESSt_BALANCE_MIRROR,
     tags: [{ name: "Action", value: "Balance" }],
   });
   const balance = res.Messages[0].Data;
