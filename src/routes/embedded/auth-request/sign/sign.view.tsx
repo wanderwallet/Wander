@@ -1,5 +1,4 @@
 import { Row, Text, Box, Divider } from "~components/embed/ui";
-import { useLocation } from "~wallets/router/router.utils";
 import { useCurrentAuthRequest } from "~utils/auth/auth.hooks";
 import Image from "~components/common/Image";
 import { useEffect, useMemo, useState } from "react";
@@ -7,15 +6,14 @@ import Application, { type AppInfo } from "~applications/application";
 import { defaultGateway, type Gateway } from "~gateways/gateway";
 import Arweave from "arweave";
 import BigNumber from "bignumber.js";
-import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 import { useBalance } from "~wallets/hooks";
 import { formatBalance } from "~utils/format";
 import { AlertTriangle } from "@untitled-ui/icons-react";
 import TransactionMessage from "~components/embed/auth/TransactionMessage";
 import { AuthRequestCard } from "~components/embed/ui/molecules/card/auth-request-card/AuthRequestCard";
+import browser from "~iframe/browser";
 
 export function EmbeddedSignAuthRequestView() {
-  const { navigate } = useLocation();
   const { authRequest, rejectRequest, acceptRequest } = useCurrentAuthRequest("sign");
 
   const { url = "", transaction } = authRequest;
@@ -46,25 +44,6 @@ export function EmbeddedSignAuthRequestView() {
     return arweave.ar.winstonToAr(transaction.reward);
   }, [transaction]);
 
-  const handleCancel = async () => {
-    postEmbeddedMessage({
-      type: "embedded_close",
-      data: null,
-    });
-    navigate("/wallet");
-    await rejectRequest();
-  };
-
-  const sign = async () => {
-    if (!transaction) return;
-    postEmbeddedMessage({
-      type: "embedded_close",
-      data: null,
-    });
-    navigate("/wallet");
-    await acceptRequest();
-  };
-
   const isTransferTx = useMemo(() => BigNumber(transaction?.quantity || "0").gt(0), [transaction]);
 
   useEffect(() => {
@@ -82,9 +61,10 @@ export function EmbeddedSignAuthRequestView() {
   return (
     <AuthRequestCard
       headerText="Confirm Activity"
-      onCloseButtonClick={handleCancel}
-      onCancel={handleCancel}
-      onConfirm={sign}>
+      onCancel={() => rejectRequest()}
+      onConfirm={() => acceptRequest()}
+      confirmLabel={browser.i18n.getMessage("sign_authorize")}
+      isDisabled={!transaction || authRequest.status !== "pending"}>
       <Box alignment="left" style={{ padding: "1rem 0" }}>
         <Row alignment="center" justifyContent="center" style={{ padding: 0 }}>
           <Image
@@ -156,7 +136,9 @@ export function EmbeddedSignAuthRequestView() {
         </Row>
       )}
 
-      <TransactionMessage transaction={transaction} />
+      <TransactionMessage
+        transaction={transaction}
+        detailsLink={ `/auth-request/sign/${ authRequest.authID}/details` } />
     </AuthRequestCard>
   );
 }

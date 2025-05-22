@@ -33,8 +33,8 @@ const messageKeyFnByType: {
         .map((v) => v[1]),
     ].join("|");
   },
-  embedded_open: (data) => null,
-  embedded_close: (data) => null,
+  embedded_open: () => null,
+  embedded_close: () => null,
   embedded_resize: (data) => {
     return [data.routeType, data.preferredLayoutType, data.width, data.height].join("|");
   },

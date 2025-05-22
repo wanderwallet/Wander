@@ -701,6 +701,10 @@
     "message": "Cancel",
     "description": "Cancel button text"
   },
+  "back": {
+    "message": "Back",
+    "description": "Back button text"
+  },
   "export": {
     "message": "Export",
     "description": "Export button text"
@@ -2026,13 +2030,13 @@
     "message": "Congrats on earning AO Tokens for hodling AR! 🥳",
     "description": "ao token announcement title text"
   },
-  "AO_token_send_popup": {
-    "message": "The AO token is non transferable until February 8th, 2025 when 15% of AO has been minted.",
-    "description": "Popup description about ao token transfer"
-  },
   "EXP_token_send_popup": {
     "message": "The EXP Token is non transferable",
     "description": "Popup description about ao token transfer"
+  },
+  "PI_token_send_popup": {
+    "message": "The PI Token is non transferable",
+    "description": "Popup description about pi token transfer"
   },
   "token_send_popup_title": {
     "message": "$TOKEN$ Token Transfer Notice",

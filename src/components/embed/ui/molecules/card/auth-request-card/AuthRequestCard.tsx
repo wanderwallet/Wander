@@ -8,20 +8,19 @@ import styles from "./AuthRequestCard.module.scss";
 
 export interface AuthRequestCardProps extends Omit<CardBaseProps, "size" | "hasBackButton" | "customIcon" | "hasCloseButton" | "closeButtonStyles"> {
   onCancel?: () => void;
-  onConfirm?: () => void;
   cancelLabel?: string;
+  onConfirm?: () => void;
   confirmLabel?: string;
-  isConfirmDisabled?: boolean;
 }
 
 export function AuthRequestCard({
-  onBackButtonClick,
   onCancel,
-  onConfirm,
   cancelLabel = browser.i18n.getMessage("cancel"),
-  confirmLabel = browser.i18n.getMessage("continue"),
-  isConfirmDisabled,
+  onConfirm,
+  confirmLabel = browser.i18n.getMessage("confirm"),
   children: childrenProp,
+  isDisabled,
+  onBackButtonClick,
   ...cardProps
 }: AuthRequestCardProps) {
   const children = (
@@ -42,7 +41,8 @@ export function AuthRequestCard({
         <Button
           variant="secondary"
           isFullWidth
-          onClick={onCancel}>
+          onClick={onCancel}
+          isDisabled={ isDisabled }>
           { cancelLabel }
         </Button>
       ) : null }
@@ -52,7 +52,7 @@ export function AuthRequestCard({
           variant="primary"
           isFullWidth
           onClick={onConfirm}
-          isDisabled={ isConfirmDisabled }>
+          isDisabled={ isDisabled }>
           { confirmLabel }
         </Button>
       ) : null }
@@ -67,6 +67,7 @@ export function AuthRequestCard({
       onBackButtonClick={onBackButtonClick}
       customIcon={<XClose fontSize={24} color={"#666666"} />}
       footerElement={ footerElement }
-      children={ children } />
+      children={ children }
+      isDisabled={isDisabled} />
   )
 }

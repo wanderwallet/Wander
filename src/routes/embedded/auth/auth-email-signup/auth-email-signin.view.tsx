@@ -118,7 +118,8 @@ export function AuthEmailSigninEmbeddedView() {
         name="password"
         placeholder="Enter your password"
         inputRef={passwordInputRef}
-        disabled={areButtonsDisabled} />
+        disabled={areButtonsDisabled}
+        autoFocus />
 
       <Button type="submit" isFullWidth isDisabled={areButtonsDisabled}>
         Sign in

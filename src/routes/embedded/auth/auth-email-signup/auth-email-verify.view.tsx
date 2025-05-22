@@ -283,6 +283,7 @@ export function AuthEmailVerifyEmbeddedView() {
               onChange={(e) => handleOtpDigitChange(index, e.target.value)}
               onKeyDown={(e) => handleKeyDown(e, index)}
               onPaste={(e) => handlePaste(e, index)}
+              autoFocus={ index === 0 }
             />
           ))}
         </Flex>

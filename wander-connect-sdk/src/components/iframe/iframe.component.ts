@@ -248,6 +248,7 @@ export class Iframe {
     this.isOpen = true;
     this.backdrop.classList.add("show");
     this.wrapper.classList.add("show");
+    this.iframe.contentWindow?.focus();
 
     if (this.currentLayoutType === "half" && this.halfImage.src) {
       this.halfImage.classList.add("show");
@@ -258,6 +259,7 @@ export class Iframe {
     this.isOpen = false;
     this.backdrop.classList.remove("show");
     this.wrapper.classList.remove("show");
+    (document.activeElement as HTMLElement)?.blur();
     this.halfImage.classList.remove("show");
   }
 

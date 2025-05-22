@@ -17,7 +17,7 @@ import { Quantity, Token } from "ao-tokens";
 import prettyBytes from "pretty-bytes";
 import { formatFiatBalance } from "~tokens/currency";
 import useSetting from "~settings/hook";
-import type { TokenInfo, TokenInfoWithProcessId } from "~tokens/aoTokens/ao";
+import type { TokenInfo } from "~tokens/aoTokens/ao";
 import { ChevronUpIcon, ChevronDownIcon } from "@iconicicons/react";
 import { getUserAvatar } from "~lib/avatar";
 import { LogoWrapper, Logo } from "~components/popup/Token";
@@ -51,14 +51,15 @@ export default function SignDataItemDetails({ params }) {
         tokenInfo = {
           ...token.info,
           Denomination: Number(token.info.Denomination),
+          processId: token.id,
         };
       } catch (err) {
         // fallback
         console.log("err", err);
 
         try {
-          const aoTokens = (await PersistentStorage.get<TokenInfoWithProcessId[]>("ao_tokens")) || [];
-          const aoTokensCache = (await PersistentStorage.get<TokenInfoWithProcessId[]>("ao_tokens_cache")) || [];
+          const aoTokens = (await PersistentStorage.get<TokenInfo[]>("ao_tokens")) || [];
+          const aoTokensCache = (await PersistentStorage.get<TokenInfo[]>("ao_tokens_cache")) || [];
           const aoTokensCombined = [...aoTokens, ...aoTokensCache];
           const token = aoTokensCombined.find(({ processId }) => params.target === processId);
           if (token) {

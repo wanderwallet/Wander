@@ -1,12 +1,9 @@
 import { useCurrentAuthRequest } from "~utils/auth/auth.hooks";
 import browser from "webextension-polyfill";
 import { useEffect, useState } from "react";
-
 import SignDataItemDetails from "~components/embed/auth/SignDataItemDetails";
 import { Quantity } from "ao-tokens";
 import { timeoutPromise } from "~utils/promises/timeout";
-import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
-import { useLocation } from "~wallets/router/router.utils";
 import { Box, Text, Row } from "~components/embed/ui";
 import { fetchTokenByProcessId } from "~tokens/aoTokens/ao";
 import { AuthRequestCard } from "~components/embed/ui/molecules/card/auth-request-card/AuthRequestCard";
@@ -14,28 +11,9 @@ import { AuthRequestCard } from "~components/embed/ui/molecules/card/auth-reques
 export function EmbeddedBatchSignDataItemAuthRequestView() {
   const { authRequest, acceptRequest, rejectRequest } = useCurrentAuthRequest("batchSignDataItem");
   const { data, url } = authRequest;
-  const { navigate } = useLocation();
   const [loading, setLoading] = useState<boolean>(false);
   const [transaction, setTransaction] = useState<any | null>(null);
   const [transactionList, setTransactionList] = useState<any | null>(null);
-
-  async function handleSign() {
-    postEmbeddedMessage({
-      type: "embedded_close",
-      data: null,
-    });
-    navigate("/wallet");
-    acceptRequest();
-  }
-
-  async function handleCancel() {
-    postEmbeddedMessage({
-      type: "embedded_close",
-      data: null,
-    });
-    navigate("/wallet");
-    rejectRequest();
-  }
 
   useEffect(() => {
     const fetchTransactionList = async () => {
@@ -101,9 +79,8 @@ export function EmbeddedBatchSignDataItemAuthRequestView() {
     <AuthRequestCard
       headerText={browser.i18n.getMessage("batch_sign_items")}
       onBackButtonClick={() => setTransaction(null)}
-      onCloseButtonClick={handleCancel}
-      onConfirm={() => setTransaction(null)}
-      confirmLabel={browser.i18n.getMessage("continue")}>
+      onCancel={() => setTransaction(null)}
+      cancelLabel={browser.i18n.getMessage("back")}>
 
       <Box alignment="left" style={{ padding: "1rem 0" }}>
         <Text variant="bodyMd" style={{ color: "#666666" }}>
@@ -117,11 +94,10 @@ export function EmbeddedBatchSignDataItemAuthRequestView() {
   ) : (
     <AuthRequestCard
       headerText={browser.i18n.getMessage("batch_sign_items")}
-      onCloseButtonClick={handleCancel}
-      onCancel={handleCancel}
-      onConfirm={handleSign}
+      onCancel={() => rejectRequest()}
+      onConfirm={() => acceptRequest()}
       confirmLabel={browser.i18n.getMessage("sign_authorize_all")}
-      isConfirmDisabled={loading}>
+      isDisabled={loading}>
 
       <Box alignment="left" style={{ padding: "1rem 0" }}>
         <Text variant="bodyMd" style={{ color: "#666666" }}>

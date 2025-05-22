@@ -20,10 +20,9 @@ import SliderMenu from "~components/SliderMenu";
 import { type Contact } from "~components/Recipient";
 import { formatAddress } from "~utils/format";
 import { useContact } from "~contacts/hooks";
-import { defaultTokens, type TokenInfo } from "~tokens/aoTokens/ao";
+import { AR_PROCESS_ID, defaultTokens, EXP_PROCESS_ID, PI_PROCESS_ID, type TokenInfo } from "~tokens/aoTokens/ao";
 import { useAoTokens } from "~tokens/hooks";
 import BigNumber from "bignumber.js";
-import { EXP_TOKEN } from "~utils/ao_import";
 import { AnnouncementPopup } from "./announcement";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { useTokenBalance, useTokenPrice, useTokenPrices } from "~tokens/hooks";
@@ -147,8 +146,10 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
       key: "last_send_token",
       instance: ExtensionStorage,
     },
-    "AR",
+    AR_PROCESS_ID,
   );
+
+  const showNonTransferableAnnouncement = tokenID === EXP_PROCESS_ID || tokenID === PI_PROCESS_ID;
 
   // currency setting
   const [currency] = useSetting<string>("currency");
@@ -157,7 +158,9 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
   const { tokens: assets } = useAoTokens({ type: "asset" });
   const { tokens: collectibles } = useAoTokens({ type: "collectible" });
 
-  const { prices } = useTokenPrices(assets.map((t) => t.id).filter((id) => id !== "AR" && id !== EXP_TOKEN));
+  const { prices } = useTokenPrices(
+    assets.map((t) => t.id).filter((id) => id !== AR_PROCESS_ID && id !== EXP_PROCESS_ID),
+  );
 
   // set ao for following page
   const [isAo, setIsAo] = useState<boolean>(false);
@@ -166,9 +169,10 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
     const matchingTokenInAoToken = [...assets, ...collectibles].find((aoToken) => aoToken.id === tokenID) || {
       ...defaultTokens[0],
       id: defaultTokens[0].processId,
+      type: "asset",
     };
 
-    setIsAo(matchingTokenInAoToken.id !== "AR");
+    setIsAo(matchingTokenInAoToken.id !== AR_PROCESS_ID);
     return {
       Denomination: matchingTokenInAoToken.Denomination,
       id: matchingTokenInAoToken.id,
@@ -239,7 +243,7 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
   const [networkFee, setNetworkFee] = useState<string>("0");
 
   useEffect(() => {
-    if (tokenID !== "AR") {
+    if (tokenID !== AR_PROCESS_ID) {
       setNetworkFee("0");
       return;
     }
@@ -255,7 +259,7 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
           arweave.transactions.getPrice(byte, recipient),
         );
 
-        if (tokenID === "AR") {
+        if (tokenID === AR_PROCESS_ID) {
           setNetworkFee(arweave.ar.winstonToAr(txPrice));
         } else {
           setNetworkFee("0");
@@ -309,7 +313,7 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
         id: token.id,
         decimals: token.Denomination,
       },
-      token.id === "AR" ? "AR" : "AO",
+      token.id === AR_PROCESS_ID ? "AR" : "AO",
     );
 
     await TempTransactionStorage.set("send", {
@@ -369,7 +373,7 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
         }}
         title={browser.i18n.getMessage("select_amount")}
       />
-      {EXP_TOKEN === tokenID && <AnnouncementPopup isOpen={isOpen} setOpen={setOpen} ticker={token.Ticker} />}
+      {showNonTransferableAnnouncement && <AnnouncementPopup isOpen={isOpen} setOpen={setOpen} ticker={token.Ticker} />}
       <Wrapper showPaddingVertical={false} showOverlay={degraded}>
         <SendForm>
           {/* TOP INPUT */}
@@ -491,7 +495,9 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
           </TokenSelector>
 
           <Button
-            disabled={invalidQty || parseFloat(qty) === 0 || qty === "" || recipient === "" || EXP_TOKEN === tokenID}
+            disabled={
+              invalidQty || parseFloat(qty) === 0 || qty === "" || recipient === "" || showNonTransferableAnnouncement
+            }
             fullWidth
             onClick={send}>
             {browser.i18n.getMessage(qty ? "next" : "enter_amount")}
