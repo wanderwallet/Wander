@@ -4,7 +4,7 @@ import arLogoLight from "url:/assets/ar/logo_light.png";
 import arLogoDark from "url:/assets/ar/logo_dark.png";
 import { findGateway } from "~gateways/wayfinder";
 import { PersistentStorage } from "~utils/storage";
-import { AO_OLD_PROCESS_ID, defaultTokens, type TokenInfoWithProcessId } from "./aoTokens/ao";
+import { AO_OLD_PROCESS_ID, defaultTokens, type TokenInfo } from "./aoTokens/ao";
 
 export interface Token {
   id: string;
@@ -57,7 +57,7 @@ export async function loadTokenLogo(id: string, defaultLogo?: string, theme?: Di
 
 export async function loadTokens() {
   // Load tokens or fall back to default tokens:
-  let aoTokens = (await PersistentStorage.get<TokenInfoWithProcessId[]>("ao_tokens")) || defaultTokens;
+  let aoTokens = (await PersistentStorage.get<TokenInfo[]>("ao_tokens")) || defaultTokens;
 
   // Remove the old AO token if present:
   aoTokens = aoTokens.filter((token) => token.processId !== AO_OLD_PROCESS_ID);
