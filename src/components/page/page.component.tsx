@@ -35,7 +35,6 @@ const Main = styled(motion.main)`
   top: 0;
   width: 100%;
   display: ${import.meta.env?.VITE_IS_EMBEDDED_APP === "1" ? "flex" : "block"};
-  flex-direction: column;
   min-height: ${import.meta.env?.VITE_IS_EMBEDDED_APP === "1" ? "400px" : "100vh"};
   max-height: ${import.meta.env?.VITE_IS_EMBEDDED_APP === "1" ? "none" : "max-content"};
 `;
