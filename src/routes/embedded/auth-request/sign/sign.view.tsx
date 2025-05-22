@@ -1,5 +1,4 @@
 import { Row, Text, Box, Divider } from "~components/embed/ui";
-import { useLocation } from "~wallets/router/router.utils";
 import { useCurrentAuthRequest } from "~utils/auth/auth.hooks";
 import Image from "~components/common/Image";
 import { useEffect, useMemo, useState } from "react";
@@ -7,7 +6,6 @@ import Application, { type AppInfo } from "~applications/application";
 import { defaultGateway, type Gateway } from "~gateways/gateway";
 import Arweave from "arweave";
 import BigNumber from "bignumber.js";
-import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 import { useBalance } from "~wallets/hooks";
 import { formatBalance } from "~utils/format";
 import { AlertTriangle } from "@untitled-ui/icons-react";
@@ -63,8 +61,8 @@ export function EmbeddedSignAuthRequestView() {
   return (
     <AuthRequestCard
       headerText="Confirm Activity"
-      onCancel={rejectRequest}
-      onConfirm={acceptRequest}
+      onCancel={() => rejectRequest()}
+      onConfirm={() => acceptRequest()}
       confirmLabel={browser.i18n.getMessage("sign_authorize")}
       isDisabled={!transaction || authRequest.status !== "pending"}>
       <Box alignment="left" style={{ padding: "1rem 0" }}>
