@@ -7,9 +7,12 @@ import HedgehogHeadIcon from "url:/assets/agents/hedgehog-head.svg";
 import { XClose } from "@untitled-ui/icons-react";
 import { IconButton } from "~components/common/IconButton";
 import browser from "webextension-polyfill";
+import WanderAgentExplainerPopup from "./WanderAgentExplainerPopup";
+import { useState } from "react";
 
 export default function CreateWanderAgentCTA() {
   const theme = useTheme();
+  const [open, setOpen] = useState(false);
 
   const [showCreateAgent, setShowCreateAgent] = useStorage(
     {
@@ -19,7 +22,26 @@ export default function CreateWanderAgentCTA() {
     true,
   );
 
+  const [hasShownAgentExplainerPopup, setHasShownAgentExplainerPopup] = useStorage(
+    {
+      key: "has_shown_agent_explainer_popup",
+      instance: ExtensionStorage,
+    },
+    false,
+  );
+
+  const handleOpen = () => {
+    if (!hasShownAgentExplainerPopup) {
+      setHasShownAgentExplainerPopup(true);
+      setOpen(true);
+    }
+  };
+
   const handleClose = () => {
+    setOpen(false);
+  };
+
+  const handleCloseCTA = () => {
     setShowCreateAgent(false);
   };
 
@@ -43,10 +65,13 @@ export default function CreateWanderAgentCTA() {
         </Flex>
         <IconButton
           icon={<XClose style={{ width: 24, height: 24, cursor: "pointer" }} />}
-          onClick={() => handleClose()}
+          onClick={() => handleCloseCTA()}
         />
       </Flex>
-      <Button fullWidth>{browser.i18n.getMessage("get_started")}</Button>
+      <Button fullWidth onClick={() => handleOpen()}>
+        {browser.i18n.getMessage("get_started")}
+      </Button>
+      {open && <WanderAgentExplainerPopup open={open} close={() => handleClose()} />}
     </Flex>
   );
 }

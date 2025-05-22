@@ -3031,5 +3031,21 @@
     "agents": {
         "message": "代理们",
         "description": "Agents text"
+    },
+    "create_ao_yield_agent": {
+        "message": "创建一个AO收益代理",
+        "description": "Create a AO Yield Agent text"
+    },
+    "learn_more": {
+        "message": "了解更多",
+        "description": "Learn more text"
+    },
+    "introducing_the_wander_agent": {
+        "message": "介绍Wander代理",
+        "description": "Introducing the Wander Agent text"
+    },
+    "introducing_the_wander_agent_description": {
+        "message": "创建一个代理，自动将您的AO代币收益转换为wAR或wUSDC，每天一次。",
+        "description": "Introducing the Wander Agent description"   
     }
 }
