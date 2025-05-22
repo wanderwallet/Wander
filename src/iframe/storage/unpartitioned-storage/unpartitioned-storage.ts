@@ -1,9 +1,6 @@
 import { isInsideIframe } from "~utils/embedded/iframe.utils";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
-import {
-  PARTITIONED_STORAGE_BANNER_DISMISSAL_KEY,
-  PARTITIONED_STORAGE_BANNER_EVENT,
-} from "./unpartitioned-storage.utils";
+import { PARTITIONED_STORAGE_BANNER_EVENT } from "./unpartitioned-storage.utils";
 
 type StorageType = "localStorage" | "sessionStorage";
 interface UnpartitionedStorageOptions {
@@ -536,9 +533,6 @@ export class EnhancedStorage implements Storage {
     eventType: "open" | "close" = "open",
     actionButtonType: "dismiss" | "re-request" = "dismiss",
   ): void {
-    const isDismissed = localStorage.getItem(PARTITIONED_STORAGE_BANNER_DISMISSAL_KEY) === "true";
-    if (isDismissed) return;
-
     setTimeout(() => {
       document.dispatchEvent(
         new CustomEvent(PARTITIONED_STORAGE_BANNER_EVENT, {
