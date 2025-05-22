@@ -4,8 +4,8 @@ import styled from "styled-components";
 import { useLocation } from "~wallets/router/router.utils";
 import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 import { useStorage, ExtensionStorage } from "~utils/storage";
-import HedgehogHeadIcon from "~assets/agents/hedgehog-head.svg";
 import type { WanderRoutePath } from "~wallets/router/router.types";
+import HedgehogHeadIcon from "url:/assets/agents/hedgehog-head.svg";
 
 const Home05Active = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="25" height="24" viewBox="0 0 25 24" fill="none">
@@ -18,7 +18,13 @@ const Home05Active = () => (
   </svg>
 );
 
-const AgentsIcon = () => <img src={HedgehogHeadIcon} alt="Agents" style={{ height: 32, width: 32, flexShrink: 0 }} />;
+const HedgehogIcon = ({ active }: { active: boolean }) => (
+  <img
+    src={HedgehogHeadIcon}
+    alt="Agents"
+    style={{ height: 32, width: 32, filter: active ? "none" : "grayscale(100%)" }}
+  />
+);
 
 const buttons = [
   {
@@ -32,8 +38,8 @@ const buttons = [
   {
     title: "Agents",
     dictionaryKey: "agents",
-    icon: <AgentsIcon />,
-    iconActive: <AgentsIcon />,
+    icon: <HedgehogIcon active={false} />,
+    iconActive: <HedgehogIcon active={true} />,
     size: "24px",
     route: "/agents",
   },
