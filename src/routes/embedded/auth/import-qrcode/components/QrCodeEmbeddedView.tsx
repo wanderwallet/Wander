@@ -158,7 +158,10 @@ export function QrCodeScanEmbeddedView({
       {permissionStatus === "granted" ? (
         <>
           <QRLoopScanner onResult={handleScanResult} />
-          <Link style={{ color: "#0D6CE9", fontSize: 14, fontWeight: 600, letterSpacing: 0.2 }} href="" target="_blank">
+          <Link
+            style={{ color: "#0D6CE9", fontSize: 14, fontWeight: 600, letterSpacing: 0.2 }}
+            href="https://www.wander.app/help/browser-extension---onboarding-add-an-existing-wallet-by-qr-code"
+            target="_blank">
             Where do I find my QR code?
           </Link>
         </>
