@@ -11,11 +11,7 @@ export function AuthRecoverAccountEmbeddedView() {
       headerText="Recover your account"
       subtitle="Select a method for logging in on new devices and recovering your account."
       onBackButtonClick={() => navigate(`/auth`)}>
-      <Button
-        href="/auth/recover-account/seedphrase"
-        variant="outlined"
-        isFullWidth
-        icon={<SeedIcon fontSize={24} />}>
+      <Button href="/auth/recover-account/seedphrase" variant="outlined" isFullWidth icon={<SeedIcon fontSize={24} />}>
         Enter Seedphrase
       </Button>
 

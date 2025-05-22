@@ -1,4 +1,4 @@
-import { Card,  } from "~components/embed/ui/molecules/card/Card";
+import { Card } from "~components/embed/ui/molecules/card/Card";
 import type { CardBaseProps } from "~components/embed/ui/molecules/card/Card.types";
 import { XClose } from "@untitled-ui/icons-react";
 import { Button } from "~components/embed/ui/atoms";
@@ -7,7 +7,8 @@ import browser from "~iframe/browser";
 import styles from "./AuthRequestCard.module.scss";
 import { useEffect } from "react";
 
-export interface AuthRequestCardProps extends Omit<CardBaseProps, "size" | "hasBackButton" | "customIcon" | "hasCloseButton" | "closeButtonStyles"> {
+export interface AuthRequestCardProps
+  extends Omit<CardBaseProps, "size" | "hasBackButton" | "customIcon" | "hasCloseButton" | "closeButtonStyles"> {
   onCancel?: () => void;
   cancelLabel?: string;
   onConfirm?: () => void;
@@ -24,7 +25,6 @@ export function AuthRequestCard({
   onBackButtonClick,
   ...cardProps
 }: AuthRequestCardProps) {
-
   useEffect(() => {
     const listener = async (e: KeyboardEvent) => {
       if (isDisabled) return;
@@ -41,51 +41,42 @@ export function AuthRequestCard({
     return () => window.removeEventListener("keydown", listener);
   }, [isDisabled]);
 
-  const children = (
-    <div className={ styles.childrenWrapper }>
-      {childrenProp}
-    </div>
-  );
+  const children = <div className={styles.childrenWrapper}>{childrenProp}</div>;
 
-  const footerElement = (onCancel || onConfirm) ? (
-    <div style={{
-      display: "flex",
-      padding: "var(--spacing-3)",
-      gap: "var(--spacing-3)",
-      marginTop: "auto",
-      width: "100%",
-    }}>
-      { onCancel ? (
-        <Button
-          variant="secondary"
-          isFullWidth
-          onClick={onCancel}
-          isDisabled={ isDisabled }>
-          { cancelLabel }
-        </Button>
-      ) : null }
+  const footerElement =
+    onCancel || onConfirm ? (
+      <div
+        style={{
+          display: "flex",
+          padding: "var(--spacing-3)",
+          gap: "var(--spacing-3)",
+          marginTop: "auto",
+          width: "100%",
+        }}>
+        {onCancel ? (
+          <Button variant="secondary" isFullWidth onClick={onCancel} isDisabled={isDisabled}>
+            {cancelLabel}
+          </Button>
+        ) : null}
 
-      { onConfirm ? (
-        <Button
-          variant="primary"
-          isFullWidth
-          onClick={onConfirm}
-          isDisabled={ isDisabled }>
-          { confirmLabel }
-        </Button>
-      ) : null }
-    </div>
-  ) : null;
+        {onConfirm ? (
+          <Button variant="primary" isFullWidth onClick={onConfirm} isDisabled={isDisabled}>
+            {confirmLabel}
+          </Button>
+        ) : null}
+      </div>
+    ) : null;
 
   return (
     <Card
       {...cardProps}
       size="auto"
-      hasBackButton={ !!onBackButtonClick }
+      hasBackButton={!!onBackButtonClick}
       onBackButtonClick={onBackButtonClick}
       customIcon={<XClose fontSize={24} color={"#666666"} />}
-      footerElement={ footerElement }
-      children={ children }
-      isDisabled={isDisabled} />
-  )
+      footerElement={footerElement}
+      children={children}
+      isDisabled={isDisabled}
+    />
+  );
 }

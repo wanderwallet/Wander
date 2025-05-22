@@ -16,7 +16,6 @@ export function WalletDepositTokensEmbeddedView() {
       subtitle="Paste this address to send tokens to your account."
       hasFooter
       onBackButtonClick={() => navigate("/wallet/receive/options")}>
-
       <Copyable
         isFullWidth
         label="Your deposit address"
@@ -26,11 +25,13 @@ export function WalletDepositTokensEmbeddedView() {
         }}
       />
 
-      <Button isFullWidth size="md" onClick={() => navigate("/wallet/receive/options")}
+      <Button
+        isFullWidth
+        size="md"
+        onClick={() => navigate("/wallet/receive/options")}
         style={{ marginTop: " var(--spacing-3)" }}>
         Done
       </Button>
-
     </DefaultCard>
   );
 }

@@ -38,8 +38,7 @@ export function AuthMoreProvidersEmbeddedView() {
       headerText={recoverableAccount ? "Select new sign in method" : "Sign up or Sign in"}
       subtitle="Select a method to authenticate"
       onBackButtonClick={() => navigate(`/auth`)}
-      isLoading={ isViewLoading }>
-
+      isLoading={isViewLoading}>
       <Button
         variant="outlined"
         isFullWidth
@@ -66,7 +65,6 @@ export function AuthMoreProvidersEmbeddedView() {
         isDisabled={areButtonsDisabled}>
         Continue with X
       </Button>
-
     </OnboardingCard>
   );
 }

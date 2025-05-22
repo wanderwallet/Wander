@@ -46,7 +46,7 @@ export function EmbeddedConnectAuthRequestView() {
   const handleConfirm = () => {
     ExtensionStorage.remove(`requested_permissions`);
     ExtensionStorage.remove("sign_policy");
-    navigate(`/auth-request/connect/${ authRequest.authID }/settings`);
+    navigate(`/auth-request/connect/${authRequest.authID}/settings`);
   };
 
   return (
@@ -54,13 +54,16 @@ export function EmbeddedConnectAuthRequestView() {
       <AuthRequestCard
         onCancel={() => rejectRequest()}
         onConfirm={handleConfirm}
-        confirmLabel={ browser.i18n.getMessage("next") }>
-
+        confirmLabel={browser.i18n.getMessage("next")}>
         <AppIcons appInfo={appInfo} />
 
-        <Text variant="headingMd" style={{ display: "block", width: "100%" }}>{appInfo.name} would like to connect to your wallet</Text>
+        <Text variant="headingMd" style={{ display: "block", width: "100%" }}>
+          {appInfo.name} would like to connect to your wallet
+        </Text>
 
-        <Text variant="bodyMd" style={{ display: "block", width: "100%" }}>Select an account to connect:</Text>
+        <Text variant="bodyMd" style={{ display: "block", width: "100%" }}>
+          Select an account to connect:
+        </Text>
 
         <Box
           alignment="left"
@@ -82,10 +85,7 @@ export function EmbeddedConnectAuthRequestView() {
                 <Text variant="bodySm">{formatAddress(activeWallet.address, 4)}</Text>
               </Box>
             </Row>
-            <Button
-              variant="link"
-              style={{ paddingInline: "16px" }}
-              onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
+            <Button variant="link" style={{ paddingInline: "16px" }} onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
               <Text alignment="right" variant="bodySm" style={{ color: "#0D6CE9" }}>
                 Change
               </Text>

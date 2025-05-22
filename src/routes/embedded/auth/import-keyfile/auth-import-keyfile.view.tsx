@@ -13,12 +13,7 @@ export function AuthImportKeyfileEmbeddedView() {
   const { navigate } = useLocation();
   const [isAdding, setIsAdding] = useState(false);
 
-  const {
-    importTempWallet,
-    deleteImportedTempWallet,
-    registerWallet,
-    wallets,
-  } = useEmbedded();
+  const { importTempWallet, deleteImportedTempWallet, registerWallet, wallets } = useEmbedded();
 
   const {
     data: uploadData,
@@ -82,7 +77,7 @@ export function AuthImportKeyfileEmbeddedView() {
       headerText="Import Keyfile"
       subtitle="Would you like to add this wallet to your account?"
       onBackButtonClick={() => navigate(`/auth/add-wallet`)}
-      isLoading={ isViewLoading }>
+      isLoading={isViewLoading}>
       <Copyable
         isFullWidth
         style={{ padding: 0 }}
@@ -106,8 +101,7 @@ export function AuthImportKeyfileEmbeddedView() {
       headerText="Import Keyfile"
       subtitle="Upload your private key to add your wallet to your account."
       onBackButtonClick={() => navigate(`/auth/add-wallet`)}
-      isLoading={ isViewLoading }>
-
+      isLoading={isViewLoading}>
       <Upload
         isFullWidth
         title={"Click to upload"}
@@ -119,10 +113,9 @@ export function AuthImportKeyfileEmbeddedView() {
 
       {uploadError && (
         <Text alignment="left" variant="bodySm" style={{ color: "#D22B1F", alignSelf: "flex-start", marginTop: 8 }}>
-          { uploadError }
+          {uploadError}
         </Text>
       )}
-
     </OnboardingCard>
   );
 }

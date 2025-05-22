@@ -89,7 +89,7 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
       headerText="Import Keyfile"
       subtitle="Upload your private key to recover your account."
       onBackButtonClick={() => navigate(`/auth/recover-account`)}
-      isLoading={ isViewLoading }>
+      isLoading={isViewLoading}>
       <Text>Would you like to recover this account?</Text>
       <Copyable
         isFullWidth
@@ -114,8 +114,7 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
       headerText="Import Keyfile"
       subtitle="Upload your private key to recover your account."
       onBackButtonClick={() => navigate(`/auth/recover-account`)}
-      isLoading={ isViewLoading }>
-
+      isLoading={isViewLoading}>
       <Upload
         isFullWidth
         title={"Click to upload"}
@@ -127,10 +126,9 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
 
       {uploadError && (
         <Text alignment="left" variant="bodySm" style={{ color: "#D22B1F", alignSelf: "flex-start", marginTop: 8 }}>
-          { uploadError }
+          {uploadError}
         </Text>
       )}
-
     </OnboardingCard>
   );
 }
