@@ -10,11 +10,7 @@ export default function AuthErrorEmbeddedView() {
     error_description: string;
   }>();
 
-  const {
-    errorCode,
-    errorDescription,
-    friendlyErrorMessage,
-  } = useMemo(() => {
+  const { errorCode, errorDescription, friendlyErrorMessage } = useMemo(() => {
     const errorCode = searchParams.error || "unknown_error";
     const errorDescription = searchParams.error_description || "";
     const friendlyErrorMessage = getFriendlyErrorMessage(errorCode, errorDescription);
@@ -24,17 +20,16 @@ export default function AuthErrorEmbeddedView() {
       errorDescription,
       friendlyErrorMessage,
     };
-  }, [searchParams])
-
+  }, [searchParams]);
 
   const handleReload = () => {
     location.href = "/";
-  }
+  };
 
   useEffect(() => {
     if (!errorCode || !errorDescription) {
       if (process.env.NODE_ENV === "development") {
-        throw new Error("No error or error_description search param. The router should have taken care of this.")
+        throw new Error("No error or error_description search param. The router should have taken care of this.");
       } else {
         handleReload();
       }
@@ -47,11 +42,10 @@ export default function AuthErrorEmbeddedView() {
     <OnboardingCard
       headerIcon={<ErrorIcon fontSize={42} />}
       headerText="Authentication Failed"
-      subtitle={ friendlyErrorMessage }
+      subtitle={friendlyErrorMessage}
       hasBackButton={false}
       // No close button because this page is rendered in a popup window, not embedded (usually):
       hasCloseButton={false}>
-
       <Button isFullWidth variant="primary" onClick={handleReload}>
         Reload Wander
       </Button>

@@ -39,10 +39,12 @@ export const CurrencySelector = ({
         name="currencySearch"
         placeholder="Search currency"
         {...searchInput.bindings}
-        style={{
-          // position: "sticky",
-          // top: 0,
-        }}
+        style={
+          {
+            // position: "sticky",
+            // top: 0,
+          }
+        }
       />
 
       <ul

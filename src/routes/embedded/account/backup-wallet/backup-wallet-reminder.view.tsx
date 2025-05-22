@@ -15,7 +15,9 @@ export function AccountBackupWalletReminderEmbeddedView() {
   // We use a ref so that this value doesn't change just when users back up their account, forcing the view to re-render
   // differently. Instead, the view should remain unchanged while the redirect to the wallet home is taking place, and
   // only show a different variant once users come back to it later.
-  const isMandatoryReminder = useRef(currentWallet.totalExports === 0 && currentWallet.totalBackups === 0 && !currentWallet.doNotAskAgainSetting).current;
+  const isMandatoryReminder = useRef(
+    currentWallet.totalExports === 0 && currentWallet.totalBackups === 0 && !currentWallet.doNotAskAgainSetting,
+  ).current;
 
   const [isLoading, setIsLoading] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
@@ -38,8 +40,7 @@ export function AccountBackupWalletReminderEmbeddedView() {
       headerText="Wallet backup"
       subtitle={"Secure your wallet by backing it up"}
       hasBackButton={false}
-      isLoading={ isLoading }>
-
+      isLoading={isLoading}>
       <Text
         variant="bodySm"
         onClick={() =>
@@ -88,7 +89,6 @@ export function AccountBackupWalletReminderEmbeddedView() {
           isChecked={isChecked}
         />
       )}
-
     </OnboardingCard>
   );
 }

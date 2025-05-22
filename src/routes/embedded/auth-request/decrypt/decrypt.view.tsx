@@ -14,13 +14,11 @@ export function EmbeddedDecryptAuthRequestView() {
       onCancel={() => rejectRequest()}
       onConfirm={() => acceptRequest()}
       confirmLabel={browser.i18n.getMessage("decrypt_authorize")}>
-
       <Text variant="bodyMd" style={{ color: "#666666" }}>
         {browser.i18n.getMessage("decrypt_description", url)}
       </Text>
 
       <Message message={message} />
-
     </AuthRequestCard>
   );
 }

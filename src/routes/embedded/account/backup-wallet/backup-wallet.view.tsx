@@ -24,7 +24,6 @@ export function AccountBackupWalletEmbeddedView() {
       subtitle="Select a method to back up your wallet which can be used to sign in on a new device or recover your wallet"
       // TODO: This should be reminder in some cases
       onBackButtonClick={() => navigate("/wallet")}>
-
       <Button
         variant="outlined"
         isFullWidth
@@ -33,11 +32,7 @@ export function AccountBackupWalletEmbeddedView() {
         Download recovery file
       </Button>
 
-      <Button
-        variant="outlined"
-        isFullWidth
-        icon={<Wallet03 fontSize={24} />}
-        href="/account/backup-wallet/full">
+      <Button variant="outlined" isFullWidth icon={<Wallet03 fontSize={24} />} href="/account/backup-wallet/full">
         Export wallet
       </Button>
 

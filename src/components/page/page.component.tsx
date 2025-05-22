@@ -18,7 +18,13 @@ export function Page({ children }: PageProps) {
   };
 
   return (
-    <Main ref={containerRef} initial="initial" animate="enter" exit="exit" variants={opacityAnimation} data-test-id="Page">
+    <Main
+      ref={containerRef}
+      initial="initial"
+      animate="enter"
+      exit="exit"
+      variants={opacityAnimation}
+      data-test-id="Page">
       <ResizeEventObserver containerRef={containerRef} />
       {children}
       <StoragePartitionedBanner />

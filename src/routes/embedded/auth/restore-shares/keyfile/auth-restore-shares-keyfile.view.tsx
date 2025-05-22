@@ -21,12 +21,7 @@ export function AuthRestoreSharesKeyfileEmbeddedView({
   const { navigate } = useLocation();
   const [isRecovering, setIsRecovering] = useState(false);
 
-  const {
-    importTempWallet,
-    deleteImportedTempWallet,
-    recoverWallet,
-    wallets,
-  } = useEmbedded();
+  const { importTempWallet, deleteImportedTempWallet, recoverWallet, wallets } = useEmbedded();
 
   const {
     data: uploadData,
@@ -92,7 +87,7 @@ export function AuthRestoreSharesKeyfileEmbeddedView({
       headerText="Restore wallet"
       subtitle="Confirm your wallet to restore it."
       onBackButtonClick={() => navigate("/auth/restore-shares")}
-      isLoading={ isViewLoading }>
+      isLoading={isViewLoading}>
       <Copyable
         isFullWidth
         style={{ padding: 0 }}
@@ -114,14 +109,13 @@ export function AuthRestoreSharesKeyfileEmbeddedView({
   ) : (
     <OnboardingCard
       headerText="Restore wallet"
-      subtitle={ `Upload your ${ fileTypeLabel } to restore your wallet.` }
+      subtitle={`Upload your ${fileTypeLabel} to restore your wallet.`}
       onBackButtonClick={() => navigate("/auth/restore-shares")}
-      isLoading={ isViewLoading }>
-
+      isLoading={isViewLoading}>
       <Upload
         isFullWidth
         title={"Click to upload"}
-        description={ `or drag and drop your ${ fileTypeLabel }` }
+        description={`or drag and drop your ${fileTypeLabel}`}
         isLoading={isUploading}
         loadingText={"Restoring wallet..."}
         onFileParse={parseUpload}
@@ -129,10 +123,9 @@ export function AuthRestoreSharesKeyfileEmbeddedView({
 
       {uploadError && (
         <Text alignment="left" variant="bodySm" style={{ color: "#D22B1F", alignSelf: "flex-start", marginTop: 8 }}>
-          { uploadError }
+          {uploadError}
         </Text>
       )}
-
     </OnboardingCard>
   );
 }

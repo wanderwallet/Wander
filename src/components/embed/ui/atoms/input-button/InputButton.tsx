@@ -6,7 +6,7 @@ import type { ButtonType } from "~components/embed/ui/atoms/button/Button.types"
 import styles from "./InputButton.module.scss";
 
 export interface InputButtonProps {
-  variant?: "primary" | "icon",
+  variant?: "primary" | "icon";
   type?: ButtonType;
   className?: string;
   label?: string;
@@ -30,23 +30,27 @@ export function InputButton({
 }: InputButtonProps) {
   const variant = variantProp ?? (icon && !label ? "icon" : "primary");
 
-  const className = clsx(styles["button"], {
-    [styles.variantPrimary]: variant === "primary",
-    [styles.variantIcon]: variant === "icon",
-    [styles.onlyIcon]: icon && !label,
-  }, classNameProp);
+  const className = clsx(
+    styles["button"],
+    {
+      [styles.variantPrimary]: variant === "primary",
+      [styles.variantIcon]: variant === "icon",
+      [styles.onlyIcon]: icon && !label,
+    },
+    classNameProp,
+  );
 
   return (
     <Button
-      type={ type }
+      type={type}
       variant={variant}
       className={className}
       tabIndex={tabIndex}
       onClick={onClick}
       isDisabled={disabled}
       isLoading={loading}>
-      { icon }
-      { label }
+      {icon}
+      {label}
     </Button>
   );
 }
