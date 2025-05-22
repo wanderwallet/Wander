@@ -1,9 +1,12 @@
 import { useQuery, useQueries } from "@tanstack/react-query";
 import {
+  AO_PROCESS_ID,
   AR_PROCESS_ID,
+  EXP_PROCESS_ID,
   fetchTokenBalance,
   getBotegaPrice,
   getBotegaPrices,
+  PI_PROCESS_ID,
   type TokenInfo,
   type TokenInfoWithBalance,
 } from "./aoTokens/ao";
@@ -13,7 +16,6 @@ import { getConversionRate } from "~utils/currency";
 import BigNumber from "bignumber.js";
 import { ExtensionStorage, PersistentStorage } from "~utils/storage";
 import { useStorage } from "@plasmohq/storage/hook";
-import { AO_NATIVE_TOKEN, EXP_TOKEN } from "~utils/ao_import";
 import { useArPrice } from "~lib/coingecko";
 import { defaultConfig } from "./aoTokens/config";
 import { connect } from "@permaweb/aoconnect";
@@ -26,6 +28,36 @@ const defaultOptions = {
   retryDelay: (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 30000),
   refetchOnWindowFocus: true,
 };
+
+const fixedTokenIds = [AR_PROCESS_ID, AO_PROCESS_ID, PI_PROCESS_ID];
+
+/**
+ * Apply a fixed order to a list of tokens
+ * @param tokens - The list of tokens to apply the fixed order to
+ * @param fixedOrderIds - The list of token ids to apply the fixed order to
+ * @returns The list of tokens with the fixed order applied
+ */
+function applyFixedTokenOrder<T extends TokenInfoWithBalance>(tokens: T[], fixedOrderIds: string[]): T[] {
+  const fixedTokensById = new Map<string, T>();
+  const fixedIdSet = new Set(fixedOrderIds);
+  const otherTokens: T[] = [];
+
+  for (const token of tokens) {
+    if (token.id && fixedIdSet.has(token.id)) {
+      fixedTokensById.set(token.id, token);
+    } else {
+      otherTokens.push(token);
+    }
+  }
+
+  const result: T[] = [];
+  for (const id of fixedOrderIds) {
+    const token = fixedTokensById.get(id);
+    if (token) result.push(token);
+  }
+  result.push(...otherTokens);
+  return result;
+}
 
 export const defaultQueryCache = {
   queryFn: () => null,
@@ -136,7 +168,7 @@ export function useTotalFiatBalance() {
 
   const conversionRateQuery = useQueryCache<number>(["conversionRate", currency]);
 
-  const tokenIds = tokens.map((token) => token.id).filter((id) => id !== EXP_TOKEN && id !== AR_PROCESS_ID);
+  const tokenIds = tokens.map((token) => token.id).filter((id) => id !== EXP_PROCESS_ID && id !== AR_PROCESS_ID);
 
   const pricesQuery = useQueryCache<Record<string, number>>(["tokenPrices", tokenIds?.slice().sort().join(",")]);
 
@@ -173,14 +205,6 @@ export function useAo() {
   return ao;
 }
 
-function moveTokenToTop(tokens: TokenInfoWithBalance[], tokenId: string) {
-  const tokenIndex = tokens.findIndex((t) => t.id === tokenId);
-  if (tokenIndex !== -1) {
-    const token = tokens.splice(tokenIndex, 1)[0];
-    tokens.unshift(token);
-  }
-}
-
 export function useAoTokens({
   type,
   hidden,
@@ -210,7 +234,7 @@ export function useAoTokens({
 
   // fetch token infos
   const tokens = useMemo(() => {
-    const filteredTokens = aoTokens
+    let filteredTokens = aoTokens
       .filter((t) => {
         const typeMatch =
           !type ||
@@ -233,8 +257,7 @@ export function useAoTokens({
       }));
 
     if (!skipSort) {
-      moveTokenToTop(filteredTokens, AO_NATIVE_TOKEN);
-      moveTokenToTop(filteredTokens, AR_PROCESS_ID);
+      filteredTokens = applyFixedTokenOrder(filteredTokens, fixedTokenIds);
 
       if (sortFn) {
         filteredTokens.sort(sortFn);
@@ -287,7 +310,7 @@ export function useBalanceSortedTokens({
   );
 
   const { prices } = useTokenPrices(
-    tokensByHidden.map((t) => t.processId).filter((id) => id !== AR_PROCESS_ID && id !== EXP_TOKEN),
+    tokensByHidden.map((t) => t.processId).filter((id) => id !== AR_PROCESS_ID && id !== EXP_PROCESS_ID),
   );
 
   const tokenBalanceQueries = useQueries({
@@ -313,7 +336,7 @@ export function useBalanceSortedTokens({
         .toString(),
     }));
 
-    const sortedTokens = filteredTokens.sort((a, b) => {
+    let sortedTokens = filteredTokens.sort((a, b) => {
       // If both tokens have fiat balance, compare those
       if (+a.fiatBalance && +b.fiatBalance) {
         return +b.fiatBalance - +a.fiatBalance;
@@ -325,8 +348,7 @@ export function useBalanceSortedTokens({
       return +b.balance - +a.balance;
     });
 
-    moveTokenToTop(sortedTokens, AO_NATIVE_TOKEN);
-    moveTokenToTop(sortedTokens, AR_PROCESS_ID);
+    sortedTokens = applyFixedTokenOrder(sortedTokens, fixedTokenIds);
 
     return sortedTokens;
   }, [tokensByHidden, prices, tokenBalanceQueries]);
