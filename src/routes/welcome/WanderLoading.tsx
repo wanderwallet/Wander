@@ -21,8 +21,8 @@ export function WanderLoading() {
           ? wanderLoadingHoverLight
           : wanderLoadingDefaultLight
         : isHovered
-        ? wanderLoadingHover
-        : wanderLoadingDefault,
+          ? wanderLoadingHover
+          : wanderLoadingDefault,
       rendererSettings: {
         preserveAspectRatio: "xMidYMid slice",
       },

@@ -4,9 +4,7 @@ import styled from "styled-components";
 import { ResizeEventObserver } from "~components/ResizeEventObserver";
 import StoragePartitionedBanner from "~components/StoragePartitionedBanner";
 
-export interface PageProps extends PropsWithChildren {
-
-}
+export interface PageProps extends PropsWithChildren {}
 
 export function Page({ children }: PageProps) {
   const containerRef = useRef<HTMLDivElement>(null);

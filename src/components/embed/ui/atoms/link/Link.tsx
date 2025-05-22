@@ -25,8 +25,8 @@ const Link = forwardRef<HTMLAnchorElement, LinkBaseProps>(
     const linkColor = disabled
       ? "var(--color-link-disabled)"
       : variant === "primary"
-      ? "var(--color-link-primary)"
-      : "var(--color-link-secondary)";
+        ? "var(--color-link-primary)"
+        : "var(--color-link-secondary)";
 
     return (
       <a

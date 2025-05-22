@@ -188,19 +188,22 @@ export function SendView({ params: { id } }: SendViewProps) {
         )
       : storedContacts;
 
-    return filteredContacts.reduce((groups, contact) => {
-      let letter = contact.name ? contact?.name[0].toUpperCase() : contact.address[0].toUpperCase();
+    return filteredContacts.reduce(
+      (groups, contact) => {
+        let letter = contact.name ? contact?.name[0].toUpperCase() : contact.address[0].toUpperCase();
 
-      if (!letter.match(/[A-Z]/)) {
-        letter = "0-9";
-      }
+        if (!letter.match(/[A-Z]/)) {
+          letter = "0-9";
+        }
 
-      if (!groups[letter]) {
-        groups[letter] = [];
-      }
-      groups[letter].push(contact);
-      return groups;
-    }, {} as Record<string, Contacts>);
+        if (!groups[letter]) {
+          groups[letter] = [];
+        }
+        groups[letter].push(contact);
+        return groups;
+      },
+      {} as Record<string, Contacts>,
+    );
   }, [storedContacts, addressInput.state, isManualAddress]);
 
   const hasContacts = useMemo(() => Object.keys(filteredAndGroupedContacts).length > 0, [filteredAndGroupedContacts]);

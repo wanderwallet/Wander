@@ -105,9 +105,13 @@ const SlideIndicator = styled.div`
   border-radius: 8px;
   background: ${(props) =>
     props.theme.displayTheme === "dark" ? "linear-gradient(47deg, #5842f8 5.41%, #6b57f9 96%)" : "#FFF"};
-  box-shadow: 0px 3px 1px 0px rgba(0, 0, 0, 0.04), 0px 3px 8px 0px rgba(0, 0, 0, 0.16);
+  box-shadow:
+    0px 3px 1px 0px rgba(0, 0, 0, 0.04),
+    0px 3px 8px 0px rgba(0, 0, 0, 0.16);
   border: 0.5px solid rgba(0, 0, 0, 0.12);
-  transition: left 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), width 0.3s ease;
+  transition:
+    left 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+    width 0.3s ease;
   z-index: 1;
 `;
 
@@ -122,7 +126,9 @@ const StyledTab = styled.button<{ active?: boolean; tabId: number }>`
   color: ${(props) => props.theme.secondaryText};
   box-sizing: border-box;
   cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
   position: relative;
   z-index: 2;
   background: transparent;
