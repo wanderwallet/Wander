@@ -4,8 +4,7 @@ import { Quantity } from "ao-tokens";
 import { useEffect, useState } from "react";
 import styled, { useTheme } from "styled-components";
 import browser from "webextension-polyfill";
-import { Id } from "~tokens/aoTokens/ao";
-import { AO_NATIVE_TOKEN_BALANCE_MIRROR } from "~utils/ao_import";
+import { AO_PROCESS_BALANCE_MIRROR, Id } from "~tokens/aoTokens/ao";
 import { ExtensionStorage } from "~utils/storage";
 import { useAo } from "~tokens/hooks";
 
@@ -22,7 +21,7 @@ export default function AoBanner({ activeAddress }: AoBannerProps) {
     const res = await ao.dryrun({
       Id,
       Owner: activeAddress,
-      process: AO_NATIVE_TOKEN_BALANCE_MIRROR,
+      process: AO_PROCESS_BALANCE_MIRROR,
       tags: [{ name: "Action", value: "Balance" }],
     });
 

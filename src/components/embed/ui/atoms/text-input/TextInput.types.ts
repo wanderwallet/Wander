@@ -11,6 +11,7 @@ export interface TextInputProps {
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   disabled?: boolean;
   readOnly?: boolean;
+  autoFocus?: boolean;
 
   // Custom input props:
   inputRef?: React.Ref<HTMLInputElement>;

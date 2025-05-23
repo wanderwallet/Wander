@@ -10,6 +10,7 @@ import { getUserAvatar } from "~lib/avatar";
 import type { Token } from "~tokens/token";
 import { useLocation } from "~wallets/router/router.utils";
 import { useEffect, useMemo, useState } from "react";
+import { AR_PROCESS_ID } from "~tokens/aoTokens/ao";
 
 export interface TokenListItemProps {
   token: Token;
@@ -69,7 +70,7 @@ export function TokenListItem({ token, onClick }: TokenListItemProps) {
       </DivTokenLogoWrapper>
       <div style={{ display: "flex", flexDirection: "column" }}>
         <DivTitleWrapper>{token.name}</DivTitleWrapper>
-        <DivDescriptionWrapper>{token.id !== "AR" && formattedAddress}</DivDescriptionWrapper>
+        <DivDescriptionWrapper>{token.id !== AR_PROCESS_ID && formattedAddress}</DivDescriptionWrapper>
       </div>
     </DivListItem>
   );

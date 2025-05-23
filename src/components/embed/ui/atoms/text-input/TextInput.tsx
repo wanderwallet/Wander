@@ -13,6 +13,7 @@ export function TextInput({
   onChange,
   disabled,
   readOnly,
+  autoFocus,
 
   // Custom input props:
   inputRef,
@@ -36,7 +37,8 @@ export function TextInput({
         onChange={onChange}
         className={styles["input"]}
         disabled={disabled}
-        readOnly={readOnly} />
+        readOnly={readOnly}
+        autoFocus={autoFocus} />
       { endSlot}
     </label>
   );

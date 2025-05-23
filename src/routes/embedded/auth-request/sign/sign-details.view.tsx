@@ -14,10 +14,11 @@ import { useStorage, ExtensionStorage } from "~utils/storage";
 import TransactionTag from "~components/embed/auth/TransactionTag";
 import TransactionMessage from "~components/embed/auth/TransactionMessage";
 import { AuthRequestCard } from "~components/embed/ui/molecules/card/auth-request-card/AuthRequestCard";
+import browser from "~iframe/browser";
 
-export function WalletTransactionDetailsEmbeddedView() {
+export function EmbeddedSignDetailsAuthRequestView() {
   const { navigate } = useLocation();
-  const { authRequest, rejectRequest } = useCurrentAuthRequest("any");
+  const { authRequest } = useCurrentAuthRequest("any");
   const transaction = (authRequest as any)?.transaction || (authRequest as any)?.data;
 
   const [activeAddress] = useStorage<string>(
@@ -91,20 +92,12 @@ export function WalletTransactionDetailsEmbeddedView() {
     return transaction?.target || "";
   }, [tags]);
 
-  const handleCancel = () => {
-    postEmbeddedMessage({
-      type: "embedded_close",
-      data: null,
-    });
-    navigate("/wallet");
-    rejectRequest();
-  };
-
   return (
     <AuthRequestCard
       headerText="Transaction details"
-      onBackButtonClick={() => navigate("/wallet")}
-      onCloseButtonClick={handleCancel}>
+      onBackButtonClick={() => navigate(`/auth-request/${ authRequest.type }/${ authRequest.authID}`)}
+      onCancel={() => navigate(`/auth-request/${ authRequest.type }/${ authRequest.authID}`)}
+      cancelLabel={browser.i18n.getMessage("back")}>
       <Box style={{ gap: "0.5rem" }} alignment="left">
         {transaction?.id && <TransactionTag name="Transaction ID" value={transaction.id} />}
         <TransactionTag name="From" value={formatAddress(activeAddress, 6)} />
@@ -138,7 +131,9 @@ export function WalletTransactionDetailsEmbeddedView() {
         )}
       </Box>
 
-      <TransactionMessage transaction={transaction} showLink={false} />
+      <TransactionMessage
+        transaction={transaction}
+        detailsLink={null} />
     </AuthRequestCard>
   );
 }

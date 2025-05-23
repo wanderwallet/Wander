@@ -4,6 +4,7 @@ import {
   type ItemStorageOptions,
   StorageManager,
 } from "../unpartitioned-storage/unpartitioned-storage";
+import { resolve } from "url";
 
 export interface StorageMockInterface extends PlasmoStorage {
   setItem<T>(key: string, value: T, options?: ItemStorageOptions): Promise<void>;
@@ -145,8 +146,9 @@ export class StorageMock extends PlasmoStorage implements StorageMockInterface {
   removeMany: (keys: string[]) => Promise<void> = this.removeItems;
 
   removeAll: () => Promise<void> = () => {
-    return new Promise<void>(() => {
+    return new Promise<void>((resolve) => {
       this.storage.clear();
+      resolve();
     });
   };
 
