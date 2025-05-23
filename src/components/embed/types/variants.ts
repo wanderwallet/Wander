@@ -19,5 +19,3 @@ export type TextVariants =
   | "bodyMd" // medium
   | "bodySm" // small
   | "bodyXs"; // xsmall
-
-export type ButtonIconPositionVariants = "start" | "end";

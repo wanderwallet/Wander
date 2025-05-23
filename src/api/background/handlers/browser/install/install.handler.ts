@@ -2,7 +2,6 @@ import { scheduleGatewayUpdate } from "~gateways/cache";
 import browser, { type Runtime } from "webextension-polyfill";
 import { loadTokens } from "~tokens/token";
 import { initializeARBalanceMonitor } from "~utils/analytics";
-import { updateAoToken } from "~utils/ao_import";
 import { handleGatewayUpdateAlarm } from "~api/background/handlers/alarms/gateway-update/gateway-update-alarm.handler";
 import { openOrSelectWelcomePage } from "~wallets";
 import { ExtensionStorage } from "~utils/storage";
@@ -45,9 +44,6 @@ export async function handleInstall(details: Runtime.OnInstalledDetailsType) {
 
   // initialize tokens in wallet
   await loadTokens();
-
-  // update old ao token to new ao token
-  await updateAoToken();
 
   // wayfinder
   await scheduleGatewayUpdate();

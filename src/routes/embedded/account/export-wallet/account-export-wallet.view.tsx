@@ -14,6 +14,7 @@ import copy from "copy-to-clipboard";
 import { WalletUtils } from "~utils/wallets/wallets.utils";
 import { useEffect, useState } from "react";
 import { useLocation } from "~wallets/router/router.utils";
+
 export function AccountExportWalletEmbeddedView() {
   const { back } = useLocation();
   const { currentWallet, downloadKeyfile, copySeedphrase } = useEmbedded();

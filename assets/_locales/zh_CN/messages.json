@@ -697,6 +697,10 @@
       "message": "取消",
       "description": "Cancel button text"
   },
+  "back": {
+    "message": "后退",
+    "description": "Back button text"
+  },
   "export": {
       "message": "导出",
       "description": "Export button text"
@@ -2026,17 +2030,13 @@
       }
     }
   },
-  "AO_token_send_popup": {
-    "message": "在2025年2月8日前，当AO代币铸造量达到15%之前，AO代币无法转账。",
-    "description": "Popup description about ao token transfer"
-  },
   "EXP_token_send_popup": {
     "message": "EXP代币无法转账",
     "description": "Popup description about ao token transfer"
   },
-  "ao_token_send_popup_title": {
-    "message": "AO代币转账公告",
-    "description": "Popup description about ao token transfer"
+  "PI_token_send_popup": {
+    "message": "PI代币无法转账",
+    "description": "Popup description about pi token transfer"
   },
   "ao_token_send_popup_learn_more": {
     "message": "了解更多",

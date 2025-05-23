@@ -1,9 +1,10 @@
 import { Loading } from "@arconnect/components-rebrand";
-import { Card, Text, Box, Button } from "~components/embed/ui";
+import { Text, Box, Button } from "~components/embed/ui";
 import browser from "~iframe/browser";
 import { useActiveWallet, useTransactions } from "~wallets/hooks";
 import { useLocation } from "~wallets/router/router.utils";
 import TransactionGroup from "../transactions/components/TransactionGroup";
+import { AuthRequestCard } from "~components/embed/ui/molecules/card/auth-request-card/AuthRequestCard";
 
 export function WalletTransactionsHistoryEmbeddedView() {
   const { address } = useActiveWallet();
@@ -11,16 +12,19 @@ export function WalletTransactionsHistoryEmbeddedView() {
   const { transactions, loading, hasNextPage, fetchTransactions, count } = useTransactions(address);
 
   return (
-    <Card
-      size="auto"
-      headerText="Transaction History"
-      hasBackButton={true}
-      onBackButtonClick={() => navigate("/wallet/transactions")}
-      style={{ padding: "2rem", overflowY: "auto" }}>
+    <AuthRequestCard headerText="Transaction History" onBackButtonClick={() => navigate("/wallet/transactions")}>
       {count.actual > 0 ? (
-        Object.entries(transactions).map(([monthYear, transactions]) => (
-          <TransactionGroup key={monthYear} monthYear={monthYear} transactions={transactions} />
-        ))
+        <>
+          {Object.entries(transactions).map(([monthYear, transactions]) => (
+            <TransactionGroup key={monthYear} monthYear={monthYear} transactions={transactions} />
+          ))}
+
+          {hasNextPage && (
+            <Button isLoading={loading} onClick={fetchTransactions}>
+              Load more...
+            </Button>
+          )}
+        </>
       ) : (
         <Box>
           {loading ? (
@@ -30,12 +34,6 @@ export function WalletTransactionsHistoryEmbeddedView() {
           )}
         </Box>
       )}
-
-      {hasNextPage && (
-        <Button isLoading={loading} onClick={fetchTransactions}>
-          Load more...
-        </Button>
-      )}
-    </Card>
+    </AuthRequestCard>
   );
 }

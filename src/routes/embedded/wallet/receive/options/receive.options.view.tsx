@@ -1,43 +1,29 @@
-import { Card, Button, Text, BuyWithCashIcon, Box, WanderFooter } from "~components/embed/ui";
+import { Text, BuyWithCashIcon, Box } from "~components/embed/ui";
 import { Link } from "~wallets/router/components/link/Link";
 import { useLocation } from "~wallets/router/router.utils";
+import { DefaultCard } from "~components/embed/ui/molecules/card/default-card/DefaultCard";
+
+import styles from "./receive.module.scss";
 
 export function WalletReceiveOptionsEmbeddedView() {
   const { navigate } = useLocation();
 
   return (
-    <Card
-      size="auto"
+    <DefaultCard
       headerText="Receive Tokens"
-      footerElement={<WanderFooter />}
-      hasBackButton={true}
-      onBackButtonClick={() => navigate("/wallet")}
-      style={{ padding: "32px" }}>
-      <Box hasBorder style={{ marginTop: "16px" }}>
-        <Link
-          to="/wallet/buy/cash"
-          style={{
-            textDecoration: "none",
-            width: "100%",
-            display: "flex",
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "flex-start",
-          }}>
-          <Text variant="bodyMd" style={{ color: "#121212", marginRight: "8px" }}>
-            Cash
-          </Text>
+      subtitle="Where would you like to get your tokens from?"
+      hasFooter
+      onBackButtonClick={() => navigate("/wallet")}>
+      <Link to="/wallet/buy/cash" className={styles.linkOption}>
+        Cash
+        <span style={{ display: "flex", margin: "-8px 0" }}>
           <BuyWithCashIcon />
-        </Link>
-      </Box>
+        </span>
+      </Link>
 
-      <Box hasBorder style={{ marginBottom: "32px", marginTop: "16px", padding: "16px" }}>
-        <Link to="/wallet/deposit" style={{ textDecoration: "none", width: "100%" }}>
-          <Text variant="bodyMd" style={{ color: "#121212" }}>
-            Receive from another wallet
-          </Text>
-        </Link>
-      </Box>
-    </Card>
+      <Link to="/wallet/deposit" className={styles.linkOption}>
+        Receive from another wallet
+      </Link>
+    </DefaultCard>
   );
 }

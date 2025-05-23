@@ -1,10 +1,10 @@
 import { useMemo } from "react";
-import { Input } from "~components/embed/ui";
 import React from "react";
 import { Coins03 } from "@untitled-ui/icons-react";
 import { useInput } from "@arconnect/components-rebrand";
 import SelectorContainer from "./SelectorContainer";
 import SelectorItem from "./SelectorItem";
+import { TextInput } from "~components/embed";
 
 interface CurrencySelectorProps {
   currencies: any[];
@@ -35,30 +35,27 @@ export const CurrencySelector = ({
 
   return (
     <SelectorContainer title="Select Currency" onClose={onClose}>
-      <div style={{ marginBottom: "16px", width: "100%" }}>
-        <Input
-          placeholder="Search currency"
-          {...searchInput.bindings}
-          isFullWidth
-          style={{
-            padding: "8px 12px",
-            borderRadius: "8px",
-            border: "1px solid var(--color-border-default)",
-          }}
-        />
-      </div>
+      <TextInput
+        name="currencySearch"
+        placeholder="Search currency"
+        {...searchInput.bindings}
+        style={
+          {
+            // position: "sticky",
+            // top: 0,
+          }
+        }
+      />
 
-      <div
+      <ul
         style={{
-          overflowY: "auto",
-          overflowX: "hidden",
-          flexGrow: 1,
           display: "flex",
           flexDirection: "column",
-          gap: "8px",
+          gap: "var(--spacing-3)",
           width: "100%",
-          height: "100%",
-          maxHeight: "calc(100% - 60px)",
+          padding: 0,
+          margin: 0,
+          listStyle: "none",
         }}>
         {filteredCurrencies.map((currency) => {
           const currencyIcon = currency.logo ? (
@@ -66,10 +63,10 @@ export const CurrencySelector = ({
               src={currency.logo}
               alt={currency.name}
               style={{
-                width: "24px",
-                height: "24px",
+                width: "1em",
+                height: "1em",
                 objectFit: "contain",
-                borderRadius: "50%",
+                borderRadius: "128px",
               }}
             />
           ) : (
@@ -87,7 +84,7 @@ export const CurrencySelector = ({
             />
           );
         })}
-      </div>
+      </ul>
     </SelectorContainer>
   );
 };

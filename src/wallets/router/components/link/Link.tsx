@@ -4,10 +4,12 @@ import { Link as Wink } from "wouter";
 import type { WanderRoutePath } from "~wallets/router/router.types";
 
 export interface LinkProps extends PropsWithChildren {
+  className?: string;
   to: WanderRoutePath;
   state?: unknown;
-  onClick?: React.MouseEventHandler<HTMLLinkElement>;
+  onClick?: React.MouseEventHandler<HTMLAnchorElement>;
   style?: React.CSSProperties;
+  rel?: string;
 }
 
 export function Link(props: LinkProps) {

@@ -53,12 +53,7 @@ const KeystoneViews = [
 
 // TODO: Use a nested router instead:
 const ViewsBySetupMode = {
-  generate: [
-    PasswordWelcomeView,
-    PermissionsWelcomeView,
-    LoadingWelcomeView,
-    GenerateDoneWelcomeView,
-  ],
+  generate: [PasswordWelcomeView, PermissionsWelcomeView, LoadingWelcomeView, GenerateDoneWelcomeView],
   load: [OptionsWelcomView],
   recoveryPhraseLoad: LoadViews,
   keyfileLoad: LoadViews,

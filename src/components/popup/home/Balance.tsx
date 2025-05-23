@@ -119,9 +119,8 @@ export default function Balance() {
         <Loading
           style={{
             position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
+            top: "calc(50% - 10px)",
+            left: "calc(50% - 10px)",
             width: "20px",
             height: "20px",
           }}

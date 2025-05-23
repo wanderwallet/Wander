@@ -72,7 +72,6 @@ export interface EmbeddedContextState {
   recoverableAccounts: null | RecoverableAccount[];
   recoverableAccount: null | RecoverableAccount;
   recoverableAccountWallets: null | RecoverableAccountWallet[];
-  authEmail: null | string;
 }
 
 export interface EmbeddedContextAuth {
@@ -80,7 +79,6 @@ export interface EmbeddedContextAuth {
   authProviderType: null | AuthProviderType;
   user: null | SupabaseUser;
   session: null | DbSession;
-  // accessToken?
 }
 
 export interface RecoveryJSON {
@@ -116,5 +114,4 @@ export interface EmbeddedContextData extends EmbeddedContextState, EmbeddedConte
   copySeedphrase: () => Promise<boolean>;
   getSeedphrase: (callbackFn?: (seedPhrase: string) => Promise<boolean>) => Promise<string>;
   generateRecoveryAndDownload: () => Promise<void>;
-  setAuthEmail: (email: string) => void;
 }
