@@ -1,5 +1,7 @@
 // JUST AR TRANSFER NOTIFICATIONS
 
+import { AR_PROCESS_ID } from "~tokens/aoTokens/ao";
+
 export const AR_RECEIVER_QUERY = `
 query ($address: String!) {
   transactions(first: 10, recipients: [$address], bundledIn: null) {
@@ -12,7 +14,7 @@ query ($address: String!) {
         quantity { ar }
         block { timestamp, height }
         tags {
-          name, 
+          name,
           value
         }
       }
@@ -45,9 +47,9 @@ export const AR_SENT_QUERY = `query ($address: String!) {
 export const AO_RECEIVER_QUERY = `
 query($address: String!) {
   transactions(
-    first: 10, 
+    first: 10,
     tags: [
-      {name: "Data-Protocol", values: ["ao"]}, 
+      {name: "Data-Protocol", values: ["ao"]},
       {name: "Action", values: ["Transfer"]},
       {name: "Recipient", values: [$address]}
     ]
@@ -104,10 +106,10 @@ query($messageId: String!) {
 export const AO_SENT_QUERY = `
 query($address: String!) {
   transactions(
-    first: 10, 
-    owners: [$address], 
+    first: 10,
+    owners: [$address],
     tags: [
-      {name: "Data-Protocol", values: ["ao"]}, 
+      {name: "Data-Protocol", values: ["ao"]},
       {name: "Action", values: ["Transfer"]}
     ]
   ) {
@@ -138,7 +140,7 @@ query ($address: String!) {
         quantity { ar }
         block { timestamp, height }
         tags {
-          name, 
+          name,
           value
         }
       }
@@ -216,9 +218,9 @@ query ($address: String!, $after: String) {
 export const AO_RECEIVER_QUERY_WITH_CURSOR = `
 query($address: String!, $after: String) {
   transactions(
-    first: 10, 
+    first: 10,
     tags: [
-      {name: "Data-Protocol", values: ["ao"]}, 
+      {name: "Data-Protocol", values: ["ao"]},
       {name: "Action", values: ["Transfer"]},
       {name: "Recipient", values: [$address]}
     ],
@@ -247,10 +249,10 @@ query($address: String!, $after: String) {
 export const AO_SENT_QUERY_WITH_CURSOR = `
 query($address: String!, $after: String) {
   transactions(
-    first: 10, 
-    owners: [$address], 
+    first: 10,
+    owners: [$address],
     tags: [
-      {name: "Data-Protocol", values: ["ao"]}, 
+      {name: "Data-Protocol", values: ["ao"]},
       {name: "Action", values: ["Transfer"]}
     ],
     after: $after
@@ -361,7 +363,7 @@ export const processTransactions = (combinedTransactions: any[], address: string
     let isAo = false;
 
     if (transaction.node.quantity && transaction.node.quantity.ar > 0) {
-      tokenId = "AR";
+      tokenId = AR_PROCESS_ID;
       quantity = transaction.node.quantity.ar;
       transactionType = transaction.node.owner.address === address ? "Sent" : "Received";
     } else {

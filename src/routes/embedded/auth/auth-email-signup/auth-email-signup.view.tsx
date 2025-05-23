@@ -1,126 +1,141 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { toast } from "react-toastify";
-import { Box, Button, Card, TextInput, Text, WanderFooter } from "~components/embed";
-import { useCallback, useMemo, useState } from "react";
+import { Button } from "~components/embed";
+import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { getSupabaseClient } from "~utils/embedded/embedded.utils";
-import { useLocation } from "~wallets/router/router.utils";
+import { useLocation, useSearchParams } from "~wallets/router/router.utils";
 import { Flex } from "~components/common/Flex";
-import { Eye, EyeOff } from "@untitled-ui/icons-react";
-import { useInput } from "@arconnect/components-rebrand";
 import PasswordMatch from "~components/welcome/PasswordMatch";
 import PasswordStrength from "~components/welcome/PasswordStrength";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
+import { PasswordInput } from "~components/embed/ui/atoms/password-input";
+import { useThrottledCallback } from "@swyg/corre";
+import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
 import { PersistentStorage } from "~utils/storage";
 
 export function AuthEmailSignupEmbeddedView() {
   const { navigate } = useLocation();
-  const [isLoading, setIsLoading] = useState(false);
-  const { authStatus, authEmail } = useEmbedded();
-  const passwordInput = useInput();
-  const validPasswordInput = useInput();
-  const [passwordType, setPasswordType] = useState("password");
+  const { email } = useSearchParams<{ email: string }>();
+  const { authStatus } = useEmbedded();
 
-  const areButtonsDisabled = authStatus === "unknown" || authStatus === "loading" || authStatus === "authLoading";
+  // Input refs:
 
-  // passwords match
-  const matches = useMemo(
-    () => passwordInput.state === validPasswordInput.state && passwordInput.state?.length >= 5,
-    [passwordInput, validPasswordInput],
+  const passwordInputRef = useRef<HTMLInputElement>();
+  const repeatPasswordInputRef = useRef<HTMLInputElement>();
+
+  // Loading state:
+
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
+
+  const areButtonsDisabled =
+    authStatus === "unknown" || authStatus === "loading" || authStatus === "authLoading" || isAuthenticating;
+
+  const isViewLoading = areButtonsDisabled;
+
+  // Passwords match:
+
+  const [{ password, passwordsMatch }, setPasswordsState] = useState({
+    password: "",
+    passwordsMatch: false,
+  });
+
+  const handlePasswordChange = useThrottledCallback(() => {
+    const password = passwordInputRef.current.value;
+    const repeatPassword = repeatPasswordInputRef.current.value;
+
+    setPasswordsState({
+      password,
+      passwordsMatch: password === repeatPassword,
+    });
+  }, 250);
+
+  const handleEmailSignup = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+
+      const password = passwordInputRef.current.value || "";
+      const repeatPassword = repeatPasswordInputRef.current.value || "";
+
+      try {
+        setIsAuthenticating(true);
+
+        const supabase = await getSupabaseClient();
+
+        if (!email || !password) {
+          toast.error("Please enter an email and password");
+          return;
+        }
+
+        if (password !== repeatPassword) {
+          toast.error("Passwords do not match");
+          return;
+        }
+
+        const { error, data } = await supabase.auth.signUp({
+          email,
+          password,
+        });
+
+        if (error) {
+          toast.error(error.message);
+          return;
+        }
+
+        // TODO: Move to constant and rename.
+        await PersistentStorage.setItem("sb-verify-email-resent-timestamp", Date.now());
+        navigate(EmbeddedPaths.AuthEmailVerify, {
+          search: { email },
+        });
+      } catch (error) {
+        toast.error("Error signing up");
+      } finally {
+        setIsAuthenticating(false);
+      }
+    },
+    [email],
   );
 
-  const handleEmailSignup = useCallback(async () => {
-    try {
-      setIsLoading(true);
-
-      const supabase = await getSupabaseClient();
-
-      if (!authEmail || !passwordInput.state) {
-        toast.error("Please enter an email and password");
-        return;
+  useEffect(() => {
+    if (!email) {
+      if (process.env.NODE_ENV === "development") {
+        throw new Error("No email search param. The router should have taken care of this.");
+      } else {
+        navigate(EmbeddedPaths.Auth);
       }
-
-      const { error, data } = await supabase.auth.signUp({
-        email: authEmail,
-        password: passwordInput.state,
-      });
-
-      if (error) {
-        toast.error(error.message);
-        return;
-      }
-
-      await PersistentStorage.setItem("sb-verify-email-resent-timestamp", Date.now());
-      navigate(EmbeddedPaths.AuthEmailVerify);
-    } catch (error) {
-      toast.error("Error signing up");
-    } finally {
-      setIsLoading(false);
     }
-  }, [authEmail, passwordInput.state]);
-
-  const handleTogglePasswordVisibility = useCallback(() => {
-    setPasswordType(passwordType === "password" ? "text" : "password");
-  }, [passwordType]);
+  }, [email]);
 
   return (
-    <Card
+    <OnboardingCard
       headerText="Create your password"
-      footerElement={<WanderFooter />}
-      hasBackButton={true}
-      hasCloseButton={false}
-      size="auto">
-      <Box style={{ gap: 32 }}>
-        <Text variant={"bodySm"} alignment={"center"}>
-          Enter a password to secure your Wander account.
-        </Text>
-        <Flex direction="column" gap={12} width="100%">
-          <TextInput
-            type={passwordType}
-            {...passwordInput.bindings}
-            placeholder="Enter your password"
-            isDisabled={areButtonsDisabled}
-            hasButton
-            buttonIcon={
-              passwordType === "password" ? (
-                <Eye
-                  style={{
-                    width: 22,
-                    height: 22,
-                    color: "var(--text-color-tertiary)",
-                  }}
-                />
-              ) : (
-                <EyeOff
-                  style={{
-                    width: 22,
-                    height: 22,
-                    color: "var(--text-color-tertiary)",
-                  }}
-                />
-              )
-            }
-            buttonOnClick={handleTogglePasswordVisibility}
-          />
-          <TextInput
-            type={passwordType}
-            {...validPasswordInput.bindings}
-            placeholder="Confirm your password"
-            isDisabled={areButtonsDisabled}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                handleEmailSignup();
-              }
-            }}
-          />
+      subtitle="Enter a password to secure your Wander account."
+      onBackButtonClick={() => navigate(`/auth`)}
+      isLoading={isViewLoading}
+      onSubmit={handleEmailSignup}>
+      <PasswordInput
+        name="password"
+        placeholder="Enter your password"
+        inputRef={passwordInputRef}
+        disabled={areButtonsDisabled}
+        onChange={handlePasswordChange}
+        autoFocus
+      />
 
-          <PasswordMatch matches={matches} />
-          <PasswordStrength password={passwordInput.state} />
-        </Flex>
+      <PasswordInput
+        name="repeatPassword"
+        placeholder="Confirm your password"
+        inputRef={repeatPasswordInputRef}
+        disabled={areButtonsDisabled}
+        onChange={handlePasswordChange}
+      />
 
-        <Button isFullWidth isLoading={isLoading} onClick={handleEmailSignup} isDisabled={areButtonsDisabled}>
-          {matches ? "Next" : "Enter password"}
-        </Button>
-      </Box>
-    </Card>
+      <PasswordMatch matches={passwordsMatch} />
+
+      <PasswordStrength password={password} />
+
+      <Button type="submit" isFullWidth isDisabled={areButtonsDisabled}>
+        Sign up
+      </Button>
+    </OnboardingCard>
   );
 }

@@ -1,14 +1,16 @@
-import { Card } from "~components/embed/ui";
-import React from "react";
+import React, { type PropsWithChildren } from "react";
+import { DefaultCard } from "~components/embed/ui/molecules/card/default-card/DefaultCard";
+import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
 
-interface SelectorContainerProps {
+interface SelectorContainerProps extends PropsWithChildren {
   title: string;
   onClose: (e?: React.MouseEvent) => void;
-  children: React.ReactNode;
 }
 
 export const SelectorContainer = ({ title, onClose, children }: SelectorContainerProps) => (
-  <div
+  <DefaultCard
+    headerText={title}
+    onBackButtonClick={onClose}
     style={{
       position: "fixed",
       top: 0,
@@ -17,22 +19,11 @@ export const SelectorContainer = ({ title, onClose, children }: SelectorContaine
       bottom: 0,
       zIndex: 1000,
       backgroundColor: "var(--color-card-background-default)",
+      maxHeight: "100%",
+      overflowY: "scroll",
     }}>
-    <Card
-      size="auto"
-      headerText={title}
-      hasBackButton={true}
-      onBackButtonClick={onClose}
-      style={{
-        height: "100%",
-        width: "100%",
-        padding: "32px",
-        display: "flex",
-        flexDirection: "column",
-      }}>
-      {children}
-    </Card>
-  </div>
+    {children}
+  </DefaultCard>
 );
 
 export default SelectorContainer;

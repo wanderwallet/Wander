@@ -1,0 +1,36 @@
+@import "../../../tokens/index.css";
+
+.tabs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--input-background);
+  border-radius: var(--input-border-radius);
+  position: relative;
+  height: var(--input-height);
+  align-items: stretch;
+  align-self: stretch;
+  user-select: none;
+}
+
+.tabs button {
+  flex: 1 1 0;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.tabs .active {
+  position: absolute;
+  pointer-events: none;
+  top: var(--input-child-offset);
+  left: 0;
+  transform: translate(calc(var(--input-child-offset) + (100% + 8px) * var(--tabIndex, 0)), 0);
+  background-color: var(--color-background-default);
+  height: calc(100% - 8px);
+  width: calc(var(--tabWidth, 50%) - 2 * var(--input-child-offset));
+  box-shadow: var(--shadow-small);
+  transition: transform linear 150ms;
+  border-radius: calc(var(--border-radius-xl) - var(--input-child-offset));
+}

@@ -29,9 +29,7 @@ const AUTH_STATUS_TO_OVERRIDE: Record<AuthStatus, null | ExtensionRouteOverride>
   unlocked: null,
 };
 
-export function useEmbeddedOverride(
-  location?: RoutePath,
-): null | ExtensionRouteOverride | RouteRedirect<WanderRoutePath> {
+export function useEmbeddedOverride(location?: RoutePath) {
   const { authStatus, lastRegisteredWallet, currentWallet, recoverableAccount } = useEmbedded();
   const searchParams = useSearchParams<{
     error?: string;
@@ -113,8 +111,8 @@ export function useEmbeddedOverride(
         [
           EmbeddedPaths.AuthRestoreShares,
           EmbeddedPaths.AuthRestoreSharesRecoveryFile,
-          EmbeddedPaths.AuthImportSeedPhrase,
-          EmbeddedPaths.AuthImportKeyfile,
+          EmbeddedPaths.AuthRestoreSharesSeedPhrase,
+          EmbeddedPaths.AuthRestoreSharesKeyfile,
         ],
         EmbeddedPaths.AuthRestoreShares,
       );
@@ -126,6 +124,7 @@ export function useEmbeddedOverride(
         return routeTrapMatches(location, [EmbeddedPaths.AccountConfirmation], EmbeddedPaths.AccountConfirmation);
       }
 
+      // TODO: Once we support multiple wallets, the condition here should instead check if ANY of the wallets hasn't been backed up yet:
       if (currentWallet.totalExports === 0 && currentWallet.totalBackups === 0 && !currentWallet.doNotAskAgainSetting) {
         return routeTrapMatches(
           location,
@@ -161,7 +160,8 @@ export const useEmbeddedLocation: BaseLocationHook = withRouterRedirects(() => {
   const [authRequestsLocation, authRequestsNavigate] = useAuthRequestsLocation();
 
   if (override) {
-    return [override, isRouteRedirect(override) ? wavigate : NOOP];
+    // return [override, isRouteRedirect(override) ? wavigate : NOOP];
+    return [override, wavigate];
   }
 
   if (authRequestsLocation && !isRouteOverride(authRequestsLocation)) {

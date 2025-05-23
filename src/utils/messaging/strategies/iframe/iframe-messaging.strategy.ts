@@ -57,15 +57,6 @@ function getPostMessageFunction<K extends MessageID>(
 
   if (postMessageTargetWindow && postMessageTargetOrigin) {
     return async function postMessage() {
-      console.log("POST MESSAGE CALLED", messageData, postMessageTargetOrigin);
-
-      /*
-      console.log(
-        `SEND (postMessage) ${messageId} to ${destination} (${postMessageTargetOrigin}), data =`,
-        data
-      );
-      */
-
       return new Promise<ApiResponse>(async (resolve) => {
         // These have no response, so there's no need to set another `message` listener.
         // TODO: Why is switch_wallet_event not just another "event type"?

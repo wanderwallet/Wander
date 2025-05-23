@@ -52,6 +52,17 @@ import {
   getUserDetailsFromSupabaseUser,
   postEmbeddedMessage,
 } from "~utils/embedded/utils/messages/embedded-messages.utils";
+import { ExtensionStorage, PersistentStorage } from "~utils/storage";
+import { StorageKeys } from "~utils/storage/storage.constants";
+import {
+  AO_TOKENS,
+  AO_TOKENS_AUTO_IMPORT_RESTRICTED_IDS,
+  AO_TOKENS_CACHE,
+  AO_TOKENS_IDS,
+  AO_TOKENS_IMPORT_TIMESTAMP,
+  AO_TOKENS_LAST_BLOCK_HEIGHT,
+} from "~tokens/aoTokens/sync";
+import { loadTokens } from "~tokens/token";
 
 export type AuthStatusCopy = AuthStatus;
 
@@ -64,7 +75,6 @@ const EMBEDDED_CONTEXT_INITIAL_STATE = {
   recoverableAccounts: null,
   recoverableAccount: null,
   recoverableAccountWallets: null,
-  authEmail: null,
 } as const satisfies EmbeddedContextState;
 
 const EMBEDDED_CONTEXT_INITIAL_AUTH = {
@@ -104,9 +114,6 @@ export const EmbeddedContext = createContext<EmbeddedContextData>({
   copySeedphrase: async () => null,
   getSeedphrase: async () => null,
   generateRecoveryAndDownload: async () => null,
-
-  // Supabase email auth
-  setAuthEmail: () => null,
 });
 
 export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
@@ -148,12 +155,24 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
   }, [authStatus]);
 
   useEffect(() => {
+    if (authStatus === "noAuth") {
+      postEmbeddedMessage({
+        type: "embedded_auth",
+        data: {
+          authType: null,
+          authStatus: "not-authenticated",
+          userDetails: null,
+        },
+      });
+
+      return;
+    }
+
     const sdkAuthStatus = EMBEDDED_SDK_AUTH_STATUS_BY_AUTH_STATUS[authStatus];
 
-    if (!authProviderType || !sdkAuthStatus) return;
+    if (!sdkAuthStatus) return;
 
     const userDetails = getUserDetailsFromSupabaseUser(user);
-
     postEmbeddedMessage({
       type: "embedded_auth",
       data: {
@@ -361,7 +380,6 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
           } as RecoveryJSON;
 
           await WalletUtils.storeEncryptedRecoveryShare(walletId, recoveryData, jwk);
-          console.log("Recovery share stored successfully");
         } catch (error) {
           console.error("Failed to store recovery share:", error);
         }
@@ -451,7 +469,6 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         recoverableAccounts: null,
         recoverableAccount: null,
         recoverableAccountWallets: null,
-        authEmail: null,
       } satisfies EmbeddedContextState;
     });
 
@@ -821,11 +838,13 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
           await WalletUtils.generateShareHashAndPrivateKey(recoveryBackupShare));
         walletAddress = wallets.find(({ id }) => id === walletId)?.address;
       } else {
-        throw new Error("Invalid recovery data provided!");
+        // TODO: Move error to constant:
+        throw new Error("Invalid file. Is this a recovery or keyfile?");
       }
 
       if (!walletId || !walletAddress) {
-        throw new Error("Wallet not found!");
+        // TODO: Move error to constant:
+        throw new Error("This wallet doesn't belong to this account.");
       }
 
       const latestSession = await getLatestSession(session);
@@ -904,6 +923,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
   // AUTHENTICATION:
 
+  /*
   const refreshSession = async (session?: DbSession) => {
     const supabase = await getSupabaseClient();
     const {
@@ -924,6 +944,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
     return session;
   };
+  */
 
   const authenticate = useCallback(
     async (authProviderType: AuthProviderType) => {
@@ -943,124 +964,121 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
         const { url } = await AuthenticationService.authenticate(authProviderType);
 
-        if (url) {
-          // Calculate center position for the popup
-          const width = 500;
-          const height = 600;
-          const left = window.screenX + (window.outerWidth - width) / 2;
-          const top = window.screenY + (window.outerHeight - height) / 2;
+        if (!url) {
+          throw new Error(`Missing authentication URL.`);
+        }
 
-          let popup = window.open(
-            url,
-            "Auth",
-            [
-              `width=${width}`,
-              `height=${height}`,
-              `left=${left}`,
-              `top=${top}`,
-              "popup=1",
-              "location=1",
-              "status=1",
-              "resizable=no",
-              "toolbar=no",
-              "menubar=no",
-            ].join(","),
-          );
+        // Calculate center position for the popup
+        const width = 500;
+        const height = 600;
+        const left = window.screenX + (window.outerWidth - width) / 2;
+        const top = window.screenY + (window.outerHeight - height) / 2;
 
-          if (!popup) {
-            console.error("Popup blocked. Please allow popups for this site.");
-            // Redirect to Google's OAuth page
-            // Opening the URL on the current tab won't work when Embedded is loaded inside the iframe:
+        let popup = window.open(
+          url,
+          "Auth",
+          [
+            `width=${width}`,
+            `height=${height}`,
+            `left=${left}`,
+            `top=${top}`,
+            "popup=1",
+            "location=1",
+            "status=1",
+            "resizable=no",
+            "toolbar=no",
+            "menubar=no",
+          ].join(","),
+        );
 
-            if (location.ancestorOrigins.length === 0) {
-              console.log(`Redirecting to ${url}...`);
+        if (!popup) {
+          console.error("Popup blocked. Please allow popups for this site.");
+          // Redirect to Google's OAuth page
+          // Opening the URL on the current tab won't work when Embedded is loaded inside the iframe:
 
-              window.location.href = url;
-            } else {
-              console.log(`Opening ${url}...`);
+          if (location.ancestorOrigins.length === 0) {
+            console.log(`Redirecting to ${url}...`);
 
-              popup = window.open(url, "_blank");
-            }
+            window.location.href = url;
+          } else {
+            console.log(`Opening ${url}...`);
+
+            popup = window.open(url, "_blank");
           }
+        }
 
-          if (popup) {
-            try {
-              // Set up message listener and popup close checker
-              await Promise.race([
-                // Auth completion promise
-                new Promise<void>((resolve, reject) => {
-                  const messageHandler = async (event: MessageEvent) => {
-                    // Since same origin, we can check it exactly
-                    if (event.origin !== window.location.origin) return;
+        if (popup) {
+          // Set up message listener and popup close checker
+          await Promise.race([
+            // Auth completion promise
+            new Promise<void>((resolve, reject) => {
+              const messageHandler = async (event: MessageEvent) => {
+                // Since same origin, we can check it exactly
+                if (event.origin !== window.location.origin) return;
 
-                    if (event.data?.type === "AUTH_COMPLETE") {
-                      console.log("Auth message received:", event.data);
-                      cleanup();
-                      if (event.data?.success) {
-                        const supabase = await getSupabaseClient();
-                        if (event.data?.data) {
-                          const { data } = event.data;
-                          await supabase.auth.refreshSession({
-                            refresh_token: data.refresh_token,
-                          });
-                        } else {
-                          await supabase.auth.refreshSession();
-                        }
-
-                        resolve();
-                      } else {
-                        reject(new Error("Authentication failed"));
-                      }
+                if (event.data?.type === "AUTH_COMPLETE") {
+                  cleanup();
+                  if (event.data?.success) {
+                    const supabase = await getSupabaseClient();
+                    if (event.data?.data) {
+                      const { data } = event.data;
+                      await supabase.auth.refreshSession({
+                        refresh_token: data.refresh_token,
+                      });
+                    } else {
+                      await supabase.auth.refreshSession();
                     }
-                  };
 
-                  // Check for popup closure
-                  const popupCheckInterval = setInterval(() => {
-                    if (popup.closed) {
-                      cleanup();
-                      reject(new Error("Authentication cancelled - popup closed"));
-                    }
-                  }, 1000);
+                    resolve();
+                  } else {
+                    reject(new Error("Authentication failed"));
+                  }
+                }
+              };
 
-                  // Timeout after 5 minutes
-                  const timeoutId = setTimeout(
-                    () => {
-                      cleanup();
-                      reject(new Error("Authentication timeout"));
-                    },
-                    5 * 60 * 1000,
-                  );
+              // Check for popup closure
+              const popupCheckInterval = setInterval(() => {
+                if (popup.closed) {
+                  cleanup();
+                  reject(new Error("Authentication cancelled - popup closed"));
+                }
+              }, 1000);
 
-                  // Cleanup function
-                  const cleanup = () => {
-                    window.removeEventListener("message", messageHandler);
-                    clearInterval(popupCheckInterval);
-                    clearTimeout(timeoutId);
-                  };
+              // Timeout after 5 minutes
+              const timeoutId = setTimeout(
+                () => {
+                  cleanup();
+                  reject(new Error("Authentication timeout"));
+                },
+                5 * 60 * 1000,
+              );
 
-                  window.addEventListener("message", messageHandler);
-                }),
-              ]);
-            } catch (error) {
-              console.error("Authentication process failed:", error);
-            }
-          }
-        } else {
-          console.error("No URL returned from authenticate");
+              // Cleanup function
+              const cleanup = () => {
+                window.removeEventListener("message", messageHandler);
+                clearInterval(popupCheckInterval);
+                clearTimeout(timeoutId);
+              };
+
+              window.addEventListener("message", messageHandler);
+            }),
+          ]);
         }
       } catch (error) {
         console.error(`${authProviderType} authentication failed:`, error);
+
+        // TODO: This should be `authStatus: "authError"` but the router will show a specific error handling route, while we might want to handle that
+        // in the same page we were.
+        setEmbeddedContextAuth({
+          authStatus: "noAuth",
+          authProviderType: null,
+          user: null,
+          session: null,
+        });
       }
     },
     [user],
   );
-
-  const setAuthEmail = useCallback((email: string) => {
-    setEmbeddedContextAuth((prevAuthContextAuth) => ({
-      ...prevAuthContextAuth,
-      authEmail: email,
-    }));
-  }, []);
 
   // INITIALIZATION:
 
@@ -1071,6 +1089,53 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
     lastUserIdRef.current = userId;
 
+    if (userId && userId !== (await PersistentStorage.get<string>(StorageKeys.CONNECT.AUTH.USER_ID))) {
+      try {
+        // TODO: This is a TEMP FIX to prevent users who share the same device from seeing someone else's tokens and
+        // connected apps when logging in with a different account, until we properly namespace those settings by user
+        // and/or wallet address. Note that because `PersistentStorage` is a wrapper around `localStorage`, calling
+        // PersistentStorage.removeAll() will also remove the deviceNonce and key shares, so do not.
+
+        const lastBlockHeightKeys = Object.keys(localStorage).filter((localStorageKey) => {
+          return localStorageKey.startsWith(`${AO_TOKENS_LAST_BLOCK_HEIGHT}_`);
+        });
+
+        const appsKeys = Object.keys(localStorage).filter((localStorageKey) => {
+          return localStorageKey.startsWith(`app_`);
+        });
+
+        await Promise.allSettled([
+          // Storage the user ID to check next time if it's the same one or a different one:
+          PersistentStorage.set(StorageKeys.CONNECT.AUTH.USER_ID, userId),
+
+          // All these reset the token list and balances:
+          PersistentStorage.remove(AO_TOKENS),
+          PersistentStorage.remove(AO_TOKENS_CACHE),
+          PersistentStorage.remove(AO_TOKENS_IDS),
+          PersistentStorage.remove(AO_TOKENS_IMPORT_TIMESTAMP),
+          PersistentStorage.remove(AO_TOKENS_LAST_BLOCK_HEIGHT),
+          PersistentStorage.remove(AO_TOKENS_AUTO_IMPORT_RESTRICTED_IDS),
+          PersistentStorage.removeItems(lastBlockHeightKeys),
+
+          // No need to remove this one:
+          // PersistentStorage.remove("last_saved_price"),
+
+          // These 3 ones get rid of the connected apps:
+          PersistentStorage.remove("is_permissions_reset"),
+          PersistentStorage.remove("apps"),
+          PersistentStorage.removeItems(appsKeys),
+
+          // This was already executed on signOut(), but just in case...:
+          ExtensionStorage.removeAll(),
+        ]);
+
+        // Because the background services have already been started, let's re-run this now that we've cleared the storage:
+        await loadTokens();
+      } catch (err) {
+        console.error("Error clearing previous user data:", err);
+      }
+    }
+
     setEmbeddedContextState((prevAuthContextState) => ({
       ...EMBEDDED_CONTEXT_INITIAL_STATE,
       recoverableAccounts: prevAuthContextState.recoverableAccounts,
@@ -1079,31 +1144,10 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     }));
 
     if (!userId || !session) {
-      postEmbeddedMessage({
-        type: "embedded_auth",
-        data: {
-          authType: null,
-          authStatus: "not-authenticated",
-          userDetails: null,
-        },
-      });
-
       generateTempWallet();
 
       return;
     }
-
-    if (!session.id || !session.deviceNonce) {
-      console.warn("❌  The current session is incomplete. Refreshing...", session);
-      session = await refreshSession(session);
-    } else if (session.deviceNonce !== (await getDeviceNonce())) {
-      console.warn("⚠️  The current session is complete, but the device nonce doesn't match!. Refreshing...", session);
-      session = await refreshSession(session);
-    } else {
-      console.log("✅  The current session is complete!", session);
-    }
-
-    session = await getLatestSession(session);
 
     const wallets = await WalletService.fetchWallets(userId);
 
@@ -1111,7 +1155,6 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       ...prevAuthContextState,
       currentWalletId: wallets?.[0]?.id || null,
       wallets,
-      session,
     }));
 
     let authStatus = "noAuth" as AuthStatus;
@@ -1224,6 +1267,9 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
   }, []);
 
   useEffect(() => {
+    let forceInitTimeoutID = 0;
+    let unsubscribe: any = () => {};
+
     async function init() {
       /*
       KNOWN AUTHENTICATION ISSUES:
@@ -1236,12 +1282,9 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         origin. The `setTimeout` below is a dirty/tem fix for that.
 
         See https://stackoverflow.com/questions/71819128/supabase-auth-onauthstatechange-not-working-when-react-app-is-in-iframe
-
-      - When a sessions is deleted from the DB, it's still reported as valid, even thought tRPC endpoints will return
-        UNAUTHORIZED errors. When that happens, we should force de-authentication of the frontend.
       */
 
-      const forceInitTimeoutID = setTimeout(() => {
+      forceInitTimeoutID = window.setTimeout(() => {
         console.warn("Forcing initialization...");
 
         setEmbeddedContextAuth({
@@ -1256,45 +1299,49 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
       const supabase = await getSupabaseClient();
 
-      // Retrieves the current LOCAL session:
-      const { data, error } = await supabase.auth.getSession();
-      const cachedUser = data?.session?.user;
-
-      // Send the initial state for the SDK button ASAP:
-
-      postEmbeddedMessage({
-        type: "embedded_auth",
-        data:
-          !error && cachedUser
-            ? {
-                authType: getAuthProviderTypeFromSupabaseUser(cachedUser),
-                authStatus: "loading",
-                userDetails: getUserDetailsFromSupabaseUser(cachedUser),
-              }
-            : {
-                authType: null,
-                authStatus: "not-authenticated",
-                userDetails: null,
-              },
-      });
+      let isInitialAuthEventDispatched = false;
 
       const {
         data: { subscription },
       } = supabase.auth.onAuthStateChange(async (_event, session) => {
         window.clearTimeout(forceInitTimeoutID);
 
-        // Comment this line to run Wander Embedded as a standalone page:
+        if (isInitialAuthEventDispatched && _event === "INITIAL_SESSION") return;
+
+        if (!isInitialAuthEventDispatched) {
+          isInitialAuthEventDispatched = true;
+
+          const cachedUser = session?.user;
+
+          // Send the initial state for the SDK button ASAP if there's cached data. Otherwise, the initial state will be
+          // sent by the `useEffect` above that sends `"embedded_auth"` events too.
+
+          if (cachedUser) {
+            if (_event === "INITIAL_SESSION") {
+              supabase.auth.refreshSession();
+            }
+
+            postEmbeddedMessage({
+              type: "embedded_auth",
+              data: {
+                authType: getAuthProviderTypeFromSupabaseUser(cachedUser),
+                authStatus: "loading",
+                userDetails: getUserDetailsFromSupabaseUser(cachedUser),
+              },
+            });
+          }
+        }
+
         if (!isInsideIframe()) {
           if (session?.access_token && window.opener) {
-            await completeAuth(session);
-          }
-
-          if (window.location.origin === "https://connect.wander.app") {
+            completeAuth(session);
+          } else if (window.location.origin === "https://connect.wander.app") {
             window.close();
-            return;
           } else {
             console.warn("In production (https://connect.wander.app), the app would close right now.");
           }
+
+          return;
         }
 
         const accessToken = session?.access_token ?? null;
@@ -1317,6 +1364,33 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
             id: sessionId,
             userId: sub,
           };
+
+          const deviceNonce = await getDeviceNonce();
+
+          if (!dbSession.id || !dbSession.deviceNonce) {
+            console.warn("❌  The current session is incomplete =", dbSession);
+          } else if (dbSession.deviceNonce !== deviceNonce) {
+            console.warn(
+              `⚠️  The current session is complete, but the device nonce (${deviceNonce}) doesn't match =`,
+              dbSession,
+            );
+          } else {
+            console.log("✅  The current session is complete =", dbSession);
+          }
+
+          if (_event !== "TOKEN_REFRESHED" && (!dbSession.id || dbSession.deviceNonce !== deviceNonce)) {
+            console.log("🔃 Refreshing session...");
+
+            // We wait to leave some time for the trigger to update the session and make sure that, when we refresh, we
+            // get the updated session data:
+            await sleep(2500);
+
+            supabase.auth.refreshSession();
+
+            return;
+          }
+
+          dbSession = await getLatestSession(dbSession);
         }
 
         setAuthTokenHeader(accessToken);
@@ -1331,8 +1405,10 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
             session: dbSession,
           }));
         } else {
+          // TODO: Duplicated in initEmbeddedWallet()?
           setEmbeddedContextState((prevAuthContextState) => ({
-            ...prevAuthContextState,
+            // ...prevAuthContextState,
+            ...EMBEDDED_CONTEXT_INITIAL_STATE,
             recoverableAccounts: prevAuthContextState.recoverableAccounts,
             recoverableAccount: prevAuthContextState.recoverableAccount,
             recoverableAccountWallets: prevAuthContextState.recoverableAccountWallets,
@@ -1347,15 +1423,18 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         }
       });
 
-      return () => {
-        window.clearTimeout(forceInitTimeoutID);
-        subscription.unsubscribe();
-      };
+      unsubscribe = subscription.unsubscribe;
     }
 
     init();
+
+    return () => {
+      window.clearTimeout(forceInitTimeoutID);
+      unsubscribe();
+    };
   }, [initEmbeddedWallet]);
 
+  // TODO: Move to app entry/mount point and do not even start the app?
   useEffect(() => {
     if (wocation.startsWith("/access_token") && window.opener) {
       // Get the hash fragment without the leading '#'
@@ -1388,8 +1467,6 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         setRecoverableAccountWallets,
         recoverAccount,
         recoverWallet,
-
-        setAuthEmail,
 
         generateTempWallet,
         deleteGeneratedTempWallet,

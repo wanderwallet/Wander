@@ -1,0 +1,75 @@
+.button {
+  position: relative;
+  display: flex;
+  padding: 8px 12px;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  background-color: #fff;
+  height: auto;
+  width: auto;
+}
+
+.variantPrimary {
+  font-family: var(--font-family-serif);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semi);
+  line-height: var(--line-height-snug);
+  letter-spacing: var(--letter-spacing-wide);
+  padding: 0 16px;
+  margin: var(--input-child-offset);
+  border-radius: calc(var(--input-border-radius) - var(--input-child-offset));
+  overflow: visible;
+  background: var(--color-background-default);
+  color: var(--input-color);
+
+  &:not(:disabled):focus {
+    // TODO: Add --input-border-width and --input-border-color
+    border: 2px dashed black;
+  }
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: calc(-1 * var(--input-child-offset));
+  }
+}
+
+.variantIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  box-shadow: none;
+  flex: 0 0 auto;
+
+  &.onlyIcon {
+    width: var(--input-height);
+    margin: 0;
+    padding: 0;
+
+    & > svg {
+      margin: 0;
+    }
+  }
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: var(--input-child-offset);
+    border-radius: calc(var(--input-border-radius) - var(--input-child-offset));
+    background: rgba(var(--color-overlay-rgb), 0);
+    transition: background linear 150ms;
+  }
+
+  &:not(:disabled):hover::before {
+    background: rgba(var(--color-overlay-rgb), 0.125);
+  }
+
+  // TODO: Add a global isFocusActive class
+
+  &:not(:disabled):focus::before {
+    // TODO: Add --input-border-width and --input-border-color
+    border: 2px dashed black;
+  }
+}

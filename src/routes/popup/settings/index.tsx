@@ -151,7 +151,9 @@ export function MenuView({ params }: QuickSettingsViewProps) {
             <Button fullWidth variant="secondary" onClick={() => setOpen(false)}>
               {browser.i18n.getMessage("cancel")}
             </Button>
-            <Button fullWidth onClick={import.meta.env?.VITE_IS_EMBEDDED_APP === "1" ? signOut : removeDecryptionKey}>
+            <Button
+              fullWidth
+              onClick={import.meta.env?.VITE_IS_EMBEDDED_APP === "1" ? () => signOut : removeDecryptionKey}>
               {browser.i18n.getMessage("sign_out")}
             </Button>
           </div>

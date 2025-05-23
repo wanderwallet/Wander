@@ -81,7 +81,12 @@ export function WalletHomeEmbeddedView() {
       <AccountSelector wallets={wallets} activeWallet={wallet} />
       <WalletHomeBalance />
       <Divider />
-      <TabBar tabs={[{ label: "Assets" }, { label: "Actions" }]} setActiveTab={setActiveTab} activeTab={activeTab} />
+      <TabBar
+        tabs={[{ label: "Assets" }, { label: "Actions" }]}
+        setActiveTab={setActiveTab}
+        activeTab={activeTab}
+        style={{ marginBottom: "var(--spacing-3)" }}
+      />
       {activeTab === 1 ? <WalletHomeActions /> : <WalletHomeAssets tokens={tokens} prices={prices} />}
     </Card>
   );

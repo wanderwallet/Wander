@@ -1,10 +1,10 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation } from "~wallets/router/router.utils";
-
-import { Card, Copyable, Row, Button, SeedInput, WanderFooter } from "~components/embed/ui";
+import { Copyable, Row, Button, SeedInput } from "~components/embed/ui";
 import copy from "copy-to-clipboard";
 import { toast } from "react-toastify";
+import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 
 export function AuthRecoverAccountSeedphraseEmbeddedView() {
@@ -70,16 +70,12 @@ export function AuthRecoverAccountSeedphraseEmbeddedView() {
   }, [seedPhrase]);
 
   return importedTempWalletAddress ? (
-    <Card
+    <OnboardingCard
       headerText="Enter Seedphrase"
       subtitle="Would you like to add this wallet to your account?"
-      footerElement={<WanderFooter />}
-      hasBackButton={true}
-      onBackButtonClick={back}
-      hasCloseButton={true}
-      onCloseButtonClick={() => navigate(`/auth/recover-account`)}
-      style={{ gap: 24 }}
-      size="auto">
+      onBackButtonClick={() => navigate(`/auth/recover-account`)}
+      isLoading={loading}
+      style={{ gap: 24 }}>
       <Copyable
         isFullWidth
         style={{ padding: 0 }}
@@ -90,31 +86,24 @@ export function AuthRecoverAccountSeedphraseEmbeddedView() {
         value={importedTempWalletAddress}
       />
       <Row>
-        <Button variant="secondary" size="md" onClick={deleteImportedTempWallet}>
+        <Button variant="secondary" size="md" onClick={deleteImportedTempWallet} isDisabled={loading}>
           No, try again
         </Button>
-        <Button variant="primary" size="md" onClick={handleRecover} isLoading={loading}>
+        <Button variant="primary" size="md" onClick={handleRecover} isDisabled={loading}>
           Yes, recover
         </Button>
       </Row>
-    </Card>
+    </OnboardingCard>
   ) : (
-    <Card
+    <OnboardingCard
       headerText="Enter Seedphrase"
       subtitle="Enter your seedphrase to recover your wallet."
-      footerElement={<WanderFooter />}
-      hasBackButton={true}
-      onBackButtonClick={back}
-      size="auto">
+      onBackButtonClick={() => navigate(`/auth/recover-account`)}
+      isLoading={loading}>
       <SeedInput seedPhrase={seedPhrase} handleSubmit={handleImportWallet} handleInputChange={handleInputChange} />
-      <Button
-        isFullWidth
-        size="md"
-        onClick={handleImportWallet}
-        isLoading={loading}
-        isDisabled={isSeedPhraseIncomplete}>
+      <Button isFullWidth size="md" onClick={handleImportWallet} isDisabled={loading || isSeedPhraseIncomplete}>
         {isSeedPhraseIncomplete ? "Complete seedphrase" : "Next"}
       </Button>
-    </Card>
+    </OnboardingCard>
   );
 }

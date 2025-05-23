@@ -1,4 +1,4 @@
-import { Card, Button, Text, Input, Row, Box, ChevronRight, Footer } from "~components/embed/ui";
+import { Card, Button, Text, Input, Row, Box, ChevronRight } from "~components/embed/ui";
 import { useLocation } from "~wallets/router/router.utils";
 import { useState } from "react";
 
@@ -125,8 +125,6 @@ export function WalletBuyInputEmbeddedView() {
       <Button variant="primary" isFullWidth onClick={handleEnterAmount} isDisabled={!purchaseAmount || !payAmount}>
         Enter an amount
       </Button>
-
-      <Footer />
     </Card>
   );
 }
