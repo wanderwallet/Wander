@@ -28,9 +28,8 @@ export function AuthAddWalletEmbeddedView() {
     <OnboardingCard
       headerText="Add a wallet"
       subtitle="Add a wallet to your account to hold your funds. Create or add an existing wallet to continue."
-      onBackButtonClick={ () => signOut(false) }
-      isLoading={ isLoading }>
-
+      onBackButtonClick={() => signOut(false)}
+      isLoading={isLoading}>
       <Button
         onClick={() => handleRegisterWallet("GENERATED")}
         variant="outlined"
@@ -80,7 +79,6 @@ export function AuthAddWalletEmbeddedView() {
           existing account
         </Button>
       )} */}
-
     </OnboardingCard>
   );
 }

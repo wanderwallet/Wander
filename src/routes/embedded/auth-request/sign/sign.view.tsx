@@ -136,9 +136,7 @@ export function EmbeddedSignAuthRequestView() {
         </Row>
       )}
 
-      <TransactionMessage
-        transaction={transaction}
-        detailsLink={ `/auth-request/sign/${ authRequest.authID}/details` } />
+      <TransactionMessage transaction={transaction} detailsLink={`/auth-request/sign/${authRequest.authID}/details`} />
     </AuthRequestCard>
   );
 }

@@ -10,13 +10,8 @@ export function AuthRestoreSharesSeedPhraseEmbeddedView() {
   const [loading, setLoading] = useState(false);
   const { navigate } = useLocation();
   const [seedPhrase, setSeedPhrase] = useState<string[]>([]);
-  const {
-    importTempWallet,
-    importedTempWalletAddress,
-    deleteImportedTempWallet,
-    wallets,
-    recoverWallet,
-  } = useEmbedded();
+  const { importTempWallet, importedTempWalletAddress, deleteImportedTempWallet, wallets, recoverWallet } =
+    useEmbedded();
 
   const validateSeedPhrase = useCallback(() => {
     const parsedSeedPhrase = seedPhrase.filter((word) => !!word.trim());
@@ -28,7 +23,7 @@ export function AuthRestoreSharesSeedPhraseEmbeddedView() {
     }
 
     return true;
-  }, [seedPhrase])
+  }, [seedPhrase]);
 
   const handleImportWallet = useCallback(async () => {
     try {
@@ -92,7 +87,7 @@ export function AuthRestoreSharesSeedPhraseEmbeddedView() {
       headerText="Restore wallet"
       subtitle="Confirm your wallet to restore it."
       onBackButtonClick={() => navigate("/auth/restore-shares")}
-      isLoading={ loading }>
+      isLoading={loading}>
       <Copyable
         isFullWidth
         style={{ padding: 0 }}
@@ -116,18 +111,12 @@ export function AuthRestoreSharesSeedPhraseEmbeddedView() {
       headerText="Restore wallet"
       subtitle="Enter your seedphrase to restore your wallet."
       onBackButtonClick={() => navigate("/auth/restore-shares")}
-      isLoading={ loading }>
-
+      isLoading={loading}>
       <SeedInput seedPhrase={seedPhrase} handleSubmit={handleImportWallet} handleInputChange={handleInputChange} />
 
-      <Button
-        isFullWidth
-        size="md"
-        onClick={handleImportWallet}
-        isDisabled={loading}>
+      <Button isFullWidth size="md" onClick={handleImportWallet} isDisabled={loading}>
         Next
       </Button>
-
     </OnboardingCard>
   );
 }

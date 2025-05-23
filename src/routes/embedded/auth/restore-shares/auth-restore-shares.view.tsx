@@ -10,8 +10,7 @@ export function AuthRestoreSharesEmbeddedView() {
     <OnboardingCard
       headerText="Restore wallet"
       subtitle="Select a method for restoring your wallet."
-      onBackButtonClick={ () => signOut(false) }>
-
+      onBackButtonClick={() => signOut(false)}>
       {/* <Button
         variant="outlined"
         isFullWidth

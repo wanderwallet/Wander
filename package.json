@@ -165,6 +165,6 @@
     "axios": "^1.7.2"
   },
   "lint-staged": {
-    "*.{js,ts,html,css,md,json}": "prettier --write"
+    "*.{js,ts,tsx,html,css,scss,md,json}": "prettier --write"
   }
 }

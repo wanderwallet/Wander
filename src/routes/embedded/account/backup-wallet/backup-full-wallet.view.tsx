@@ -24,7 +24,6 @@ export function AccountBackupFullWalletEmbeddedView() {
       headerText="Export wallet"
       subtitle="Download your keyfile or copy your seedphrase to export your account."
       onBackButtonClick={() => navigate("/account/backup-wallet")}>
-
       <Snackbar
         isFullWidth
         icon={<WarningIcon />}
@@ -58,7 +57,6 @@ export function AccountBackupFullWalletEmbeddedView() {
           Copy Seedphrase
         </Button>
       )}
-
     </OnboardingCard>
   );
 }

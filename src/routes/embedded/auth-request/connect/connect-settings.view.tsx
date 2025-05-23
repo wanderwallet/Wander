@@ -120,12 +120,11 @@ export function EmbeddedConnectSettingsAuthRequestView() {
 
   return (
     <AuthRequestCard
-      onBackButtonClick={() => navigate(`/auth-request/connect/${ authRequest.authID }`)}
+      onBackButtonClick={() => navigate(`/auth-request/connect/${authRequest.authID}`)}
       onCancel={() => rejectRequest()}
       onConfirm={handleConfirm}
       confirmLabel={browser.i18n.getMessage("connect")}
       isDisabled={!signPolicy || !url}>
-
       <AppIcons appInfo={appInfo} />
 
       <Text variant="headingMd">Confirm permissions</Text>
@@ -145,7 +144,7 @@ export function EmbeddedConnectSettingsAuthRequestView() {
           alignment="left"
           justifyContent="between"
           style={{ cursor: "pointer" }}
-          onClick={() => navigate(`/auth-request/connect/${ authRequest.authID }/custom`)}>
+          onClick={() => navigate(`/auth-request/connect/${authRequest.authID}/custom`)}>
           <Text variant="headingMd" style={{ fontSize: 16, fontWeight: 500 }} alignment="left">
             {isCustomPermissions ? "Custom permissions set" : "Set custom permissions"}
           </Text>
@@ -164,7 +163,6 @@ export function EmbeddedConnectSettingsAuthRequestView() {
           textColor="var(--color-font-body)"
         />
       </Box>
-
     </AuthRequestCard>
   );
 }

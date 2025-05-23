@@ -17,8 +17,7 @@ export function AccountConfirmationEmbeddedView() {
               lastRegisteredWallet.source.type === "IMPORTED" ? "imported" : "created"
             }!`
       }
-      hasBackButton={ false }>
-
+      hasBackButton={false}>
       <Copyable
         isFullWidth
         style={{ padding: 0 }}
@@ -32,7 +31,6 @@ export function AccountConfirmationEmbeddedView() {
       <Button isFullWidth size="md" onClick={() => clearLastRegisteredWallet()}>
         Continue
       </Button>
-
     </OnboardingCard>
   );
 }

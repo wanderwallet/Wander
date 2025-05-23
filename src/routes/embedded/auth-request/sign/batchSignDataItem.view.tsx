@@ -81,7 +81,6 @@ export function EmbeddedBatchSignDataItemAuthRequestView() {
       onBackButtonClick={() => setTransaction(null)}
       onCancel={() => setTransaction(null)}
       cancelLabel={browser.i18n.getMessage("back")}>
-
       <Box alignment="left" style={{ padding: "1rem 0" }}>
         <Text variant="bodyMd" style={{ color: "#666666" }}>
           {browser.i18n.getMessage("batch_sign_data_description", url)}
@@ -89,7 +88,6 @@ export function EmbeddedBatchSignDataItemAuthRequestView() {
 
         <SignDataItemDetails params={transaction} />
       </Box>
-
     </AuthRequestCard>
   ) : (
     <AuthRequestCard
@@ -98,7 +96,6 @@ export function EmbeddedBatchSignDataItemAuthRequestView() {
       onConfirm={() => acceptRequest()}
       confirmLabel={browser.i18n.getMessage("sign_authorize_all")}
       isDisabled={loading}>
-
       <Box alignment="left" style={{ padding: "1rem 0" }}>
         <Text variant="bodyMd" style={{ color: "#666666" }}>
           {browser.i18n.getMessage("batch_sign_data_description", url)}
@@ -106,7 +103,6 @@ export function EmbeddedBatchSignDataItemAuthRequestView() {
 
         {transactionList}
       </Box>
-
     </AuthRequestCard>
   );
 }

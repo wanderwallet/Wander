@@ -1,15 +1,6 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { toast } from "react-toastify";
-import {
-  Button,
-  Divider,
-  GoogleIcon,
-  TextInput,
-  Row,
-  SocialsIcon,
-  Text,
-  Wander2Icon,
-} from "~components/embed";
+import { Button, Divider, GoogleIcon, TextInput, Row, SocialsIcon, Text, Wander2Icon } from "~components/embed";
 import React, { useCallback, useRef, useState } from "react";
 import type { AuthProviderType } from "embed-api";
 import { getSupabaseClient } from "~utils/embedded/embedded.utils";
@@ -36,7 +27,11 @@ export function AuthEmbeddedView() {
   const [isCheckingEmail, setIsCheckingEmail] = useState(false);
 
   const areButtonsDisabled =
-    authStatus === "unknown" || authStatus === "loading" || authStatus === "authLoading" || isAuthenticating || isCheckingEmail;
+    authStatus === "unknown" ||
+    authStatus === "loading" ||
+    authStatus === "authLoading" ||
+    isAuthenticating ||
+    isCheckingEmail;
 
   const isViewLoading = areButtonsDisabled && !isCheckingEmail;
 
@@ -111,20 +106,14 @@ export function AuthEmbeddedView() {
     }
   }, []);
 
-  const emailInputButton = (
-    <InputButton
-      type="submit"
-      label="Next"
-      loading={ isCheckingEmail } />
-  );
+  const emailInputButton = <InputButton type="submit" label="Next" loading={isCheckingEmail} />;
 
   return (
     <OnboardingCard
       headerText={recoverableAccount ? "Select new sign in method" : "Sign up or Sign in"}
       hasBackButton={false}
-      isLoading={ isViewLoading }
-      onSubmit={ handleCheckEmail }>
-
+      isLoading={isViewLoading}
+      onSubmit={handleCheckEmail}>
       <TextInput
         name="email"
         placeholder="Enter your email"
@@ -146,11 +135,7 @@ export function AuthEmbeddedView() {
         </Button>
         {EMBEDDED_HIDE_BE ||
         (!!window.arweaveWallet?.walletName && window.arweaveWallet?.walletName !== "ArConnect") ? null : (
-          <Button
-            variant="outlined"
-            size="md"
-            isDisabled={areButtonsDisabled}
-            onClick={handleNativeWallet}>
+          <Button variant="outlined" size="md" isDisabled={areButtonsDisabled} onClick={handleNativeWallet}>
             <Wander2Icon fontSize={24} />
           </Button>
         )}
@@ -165,19 +150,14 @@ export function AuthEmbeddedView() {
         More options
       </Button>
 
-      { !recoverableAccount ? (
+      {!recoverableAccount ? (
         <Row style={{ gap: "4px" }}>
           <Text variant={"bodySm"}>{"Can't sign in?"}</Text>
-          <Button
-            variant="link"
-            isDisabled={areButtonsDisabled}
-            href="/auth/recover-account"
-            size="sm">
+          <Button variant="link" isDisabled={areButtonsDisabled} href="/auth/recover-account" size="sm">
             Recover account
           </Button>
         </Row>
-      ) : null }
-
+      ) : null}
     </OnboardingCard>
   );
 }

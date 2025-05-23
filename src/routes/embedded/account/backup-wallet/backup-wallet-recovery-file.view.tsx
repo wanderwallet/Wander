@@ -29,7 +29,6 @@ export function AccountBackupWalletRecoveryFileEmbeddedView() {
       subtitle="Use this recovery file to sign in to Wander Connect on a new device."
       onBackButtonClick={() => navigate("/account/backup-wallet")}
       isLoading={isLoading}>
-
       <Flex
         direction="column"
         gap={12}
@@ -42,7 +41,6 @@ export function AccountBackupWalletRecoveryFileEmbeddedView() {
           borderStyle: "solid",
           flexWrap: "wrap",
         }}>
-
         <Text variant="bodyMd" alignment="left" style={{ color: "#121212" }}>
           About this file:
         </Text>
@@ -75,13 +73,11 @@ export function AccountBackupWalletRecoveryFileEmbeddedView() {
             credentials.
           </Text>
         </Flex>
-
       </Flex>
 
       <Button isFullWidth isDisabled={isLoading} onClick={handleGenerateRecoveryAndDownload}>
         Download
       </Button>
-
     </OnboardingCard>
   );
 }
