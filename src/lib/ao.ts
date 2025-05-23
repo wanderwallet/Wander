@@ -1,7 +1,23 @@
 import { connect } from "@permaweb/aoconnect";
-import { ArweaveSigner, createData } from "@dha-team/arbundles";
-import type { JWKInterface } from "arweave/web/lib/wallet";
 import { defaultConfig } from "~tokens/aoTokens/config";
+
+const __DEV__ = process.env.NODE_ENV === "development";
+
+const logger = {
+  debug: (...args: any[]) => {
+    if (__DEV__) console.debug(...args);
+  },
+  error: (...args: any[]) => {
+    if (__DEV__) console.error(...args);
+  },
+};
+
+export type DryRunResult = {
+  Output: any;
+  Messages: any[];
+  Spawns: any[];
+  Error?: any;
+};
 
 export const joinUrl = ({ url, path }: { url: string; path: string }) => {
   if (!path) return url;
@@ -20,6 +36,38 @@ export const joinUrl = ({ url, path }: { url: string; path: string }) => {
 
   return urlObj.toString();
 };
+
+export function removeUnicodeFromError(error: string): string {
+  //The regular expression /[\u001b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g is designed to match ANSI escape codes used for terminal formatting. These are sequences that begin with \u001b (ESC character) and are often followed by [ and control codes.
+  const ESC = String.fromCharCode(27); // Represents '\u001b' or '\x1b'
+  return error
+    .replace(new RegExp(`${ESC}[\\[\\]()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]`, "g"), "")
+    .trim();
+}
+
+export function errorMessageFromOutput(output: {
+  Error?: string;
+  Messages?: { Tags?: { name: string; value: string }[] }[];
+}): string | undefined {
+  const errorData = output.Error;
+
+  // Attempt to extract error details from Messages.Tags if Error is undefined
+  const error = errorData ?? output.Messages?.[0]?.Tags?.find((tag) => tag.name === "Error")?.value;
+
+  if (error !== undefined) {
+    // Consolidated regex to match and extract line number and AO error message or Error Tags
+    const match = error.match(/\[string "aos"]:(\d+):\s*(.+)/);
+    if (match) {
+      const [, lineNumber, errorMessage] = match;
+      const cleanError = removeUnicodeFromError(errorMessage);
+      return `${cleanError.trim()} (line ${lineNumber.trim()})`.trim();
+    }
+    // With no match, just remove unicode
+    return removeUnicodeFromError(error);
+  }
+
+  return undefined;
+}
 
 export function safeDecode<R = unknown>(data: any): R {
   try {
@@ -40,216 +88,115 @@ export class WriteInteractionError extends BaseError {}
 
 export class AOProcess {
   private processId: string;
-  private ao: {
-    result: any;
-    results: any;
-    message: any;
-    spawn: any;
-    monitor: any;
-    unmonitor: any;
-    dryrun: any;
-    assign: any;
-  };
+  private ao: ReturnType<typeof connect>;
 
-  constructor({
-    processId,
-    connectionConfig,
-  }: {
-    processId: string;
-    connectionConfig?: {
-      CU_URL: string;
-      MU_URL: string;
-      GATEWAY_URL: string;
-      GRAPHQL_URL: string;
-    };
-  }) {
+  constructor({ processId }: { processId: string }) {
     this.processId = processId;
     this.ao = connect({
-      GRAPHQL_URL:
-        connectionConfig?.GRAPHQL_URL ??
-        joinUrl({
-          url: connectionConfig?.GATEWAY_URL ?? defaultConfig.GATEWAY_URL,
-          path: "graphql",
-        }),
-      CU_URL: connectionConfig?.CU_URL ?? defaultConfig.CU_URL,
-      MU_URL: connectionConfig?.MU_URL ?? defaultConfig.MU_URL,
-      GATEWAY_URL: connectionConfig?.GATEWAY_URL ?? defaultConfig.GATEWAY_URL,
+      GRAPHQL_URL: joinUrl({
+        url: defaultConfig.GATEWAY_URL!,
+        path: "graphql",
+      }),
+      ...defaultConfig,
+      CU_URL: "https://cu.ardrive.io",
     });
   }
 
-  static async createAoSigner(
-    wallet: JWKInterface,
-  ): Promise<
-    (args: {
-      data: string | Buffer;
-      tags?: { name: string; value: string }[];
-      target?: string;
-      anchor?: string;
-    }) => Promise<{ id: string; raw: ArrayBuffer }>
-  > {
-    const aoSigner = async ({ data, tags, target, anchor }) => {
-      const signer = new ArweaveSigner(wallet);
-      const dataItem = createData(data, signer, { tags, target, anchor });
-
-      await dataItem.sign(signer);
-
-      return {
-        id: dataItem.id,
-        raw: dataItem.getRaw(),
-      };
-    };
-
-    return aoSigner;
+  private isMessageDataEmpty(messageData: string | null | undefined): boolean {
+    return (
+      messageData === undefined ||
+      messageData === "null" || // This is what the CU returns for 'nil' values that are json.encoded
+      messageData === "" ||
+      messageData === null
+    );
   }
 
   async read<K>({
     tags,
     retries = 3,
+    fromAddress,
   }: {
     tags?: Array<{ name: string; value: string }>;
     retries?: number;
+    fromAddress?: string;
   }): Promise<K> {
+    logger.debug(`Evaluating read interaction on process`, {
+      tags,
+      processId: this.processId,
+    });
+    // map tags to inputs
+    const dryRunInput = {
+      process: this.processId,
+      tags,
+    };
+    if (fromAddress !== undefined) {
+      // @ts-ignore
+      dryRunInput["Owner"] = fromAddress;
+    }
+
     let attempts = 0;
-    let lastError: Error | undefined;
+    let result: DryRunResult | undefined = undefined;
+
     while (attempts < retries) {
       try {
-        console.debug(`Evaluating read interaction on contract`, {
-          tags,
-        });
-        // map tags to inputs
-        const result = await this.ao.dryrun({
-          process: this.processId,
-          tags,
-        });
-
-        if (result.Error !== undefined) {
-          throw new Error(result.Error);
-        }
-
-        if (result.Messages.length === 0) {
-          throw new Error("Process does not support provided action.");
-        }
-
-        console.debug(`Read interaction result`, {
-          result: result.Messages[0].Data,
-        });
-
-        const data: K = JSON.parse(result.Messages[0].Data);
-        return data;
-      } catch (e) {
+        result = await this.ao.dryrun(dryRunInput);
+        // break on successful return of result
+        break;
+      } catch (error: any) {
         attempts++;
-        console.debug(`Read attempt ${attempts} failed`, {
-          error: e,
+        logger.debug(`Read attempt ${attempts} failed`, {
+          error: error?.message,
+          stack: error?.stack,
           tags,
+          processId: this.processId,
         });
-        lastError = e;
+
+        if (attempts >= retries) {
+          logger.debug(`Maximum read attempts exceeded`, {
+            error: error?.message,
+            stack: error?.stack,
+            tags,
+            processId: this.processId,
+            ao: JSON.stringify(this.ao),
+          });
+          throw new Error(`Failed to evaluate a dry-run on process ${this.processId}.`);
+        }
+
         // exponential backoff
         await new Promise((resolve) => setTimeout(resolve, 2 ** attempts * 1000));
       }
     }
-    throw lastError;
-  }
 
-  async send<I, K>({
-    tags,
-    data,
-    wallet,
-    retries = 3,
-  }: {
-    tags: Array<{ name: string; value: string }>;
-    data?: I;
-    wallet: JWKInterface;
-    retries?: number;
-  }): Promise<{ id: string; result?: K }> {
-    // main purpose of retries is to handle network errors/new process delays
-    let attempts = 0;
-    let lastError: Error | undefined;
-    while (attempts < retries) {
-      try {
-        console.debug(`Evaluating send interaction on contract`, {
-          tags,
-          data,
-          processId: this.processId,
-        });
-
-        // TODO: do a read as a dry run to check if the process supports the action
-
-        const messageId = await this.ao.message({
-          process: this.processId,
-          // TODO: any other default tags we want to add?
-          tags: [...tags],
-          data: typeof data !== "string" ? JSON.stringify(data) : data,
-          signer: await AOProcess.createAoSigner(wallet),
-        });
-
-        console.debug(`Sent message to process`, {
-          messageId,
-          processId: this.processId,
-        });
-
-        // check the result of the send interaction
-        const output = await this.ao.result({
-          message: messageId,
-          process: this.processId,
-        });
-
-        console.debug("Message result", {
-          output,
-          messageId,
-          processId: this.processId,
-        });
-
-        // check if there are any Messages in the output
-        if (output.Messages?.length === 0 || output.Messages === undefined) {
-          return { id: messageId };
-        }
-
-        const tagsOutput = output.Messages[0].Tags;
-        const error = tagsOutput.find((tag) => tag.name === "Error");
-        // if there's an Error tag, throw an error related to it
-        if (error) {
-          const result = output.Messages[0].Data;
-          throw new WriteInteractionError(`${error.Value}: ${result}`);
-        }
-
-        if (output.Messages.length === 0) {
-          throw new Error(`Process ${this.processId} does not support provided action.`);
-        }
-
-        if (output.Messages[0].Data === undefined) {
-          return { id: messageId };
-        }
-
-        const resultData: K = safeDecode<K>(output.Messages[0].Data);
-
-        console.debug("Message result data", {
-          resultData,
-          messageId,
-          processId: this.processId,
-        });
-
-        return { id: messageId, result: resultData };
-      } catch (error) {
-        console.error("Error sending message to process", {
-          error: error.message,
-          processId: this.processId,
-          tags,
-        });
-        // throw on write interaction errors. No point retrying write interactions, waste of gas.
-        if (error.message.includes("500")) {
-          console.debug("Retrying send interaction", {
-            attempts,
-            retries,
-            error: error.message,
-            processId: this.processId,
-          });
-          // exponential backoff
-          await new Promise((resolve) => setTimeout(resolve, 2 ** attempts * 2000));
-          attempts++;
-          lastError = error;
-        } else throw error;
-      }
+    if (result === undefined) {
+      throw new Error("Unexpected error when evaluating read interaction");
     }
-    throw lastError;
+
+    logger.debug(`Read interaction result`, {
+      result,
+      processId: this.processId,
+    });
+
+    const error = errorMessageFromOutput(result);
+    if (error !== undefined) {
+      throw new Error(error);
+    }
+
+    if (result.Messages === undefined || result.Messages.length === 0) {
+      logger.debug(`Empty result - process ${this.processId} does not support provided action.`, {
+        result,
+        tags,
+        processId: this.processId,
+      });
+      throw new Error(`Process ${this.processId} does not support provided action.`);
+    }
+    const messageData = result.Messages?.[0]?.Data;
+
+    // return undefined if no data is returned
+    if (this.isMessageDataEmpty(messageData)) {
+      return undefined as K;
+    }
+
+    const response: K = safeDecode<K>(messageData);
+    return response;
   }
 }
