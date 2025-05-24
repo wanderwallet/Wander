@@ -1,16 +1,16 @@
-import { Row, Text, WanderIcon } from "../../atoms";
+import { WanderIcon } from "../../atoms";
+import { NoUnpartitionedStorageBanner } from "~components/embed/ui/templates/no-unpartitioned-storage-banner/NoUnpartitionedStorageBanner";
 
-function WanderFooter() {
+import styles from "./WanderFooter.module.scss";
+
+export function WanderFooter() {
   return (
-    <Row style={{ gap: "4px", marginTop: "16px" }}>
-      <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
-        {"Secured by"}
-      </Text>
-      <WanderIcon color="#838383" />
-    </Row>
+    <footer className={styles.root}>
+      <div className={styles.attribution}>
+        Secured by <WanderIcon />
+      </div>
+
+      <NoUnpartitionedStorageBanner className={styles.banner} />
+    </footer>
   );
 }
-
-WanderFooter.displayName = "WanderFooter";
-
-export { WanderFooter };

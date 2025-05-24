@@ -1,6 +1,7 @@
 import copy from "copy-to-clipboard";
 import { useCallback, useEffect, useState } from "react";
-import { Button, Card, Copyable, Row, Upload, WanderIcon, Text, WanderFooter } from "~components/embed/ui";
+import { Button, Card, Copyable, Row, Upload, WanderIcon, Text } from "~components/embed/ui";
+import { WanderFooter } from "~components/embed/ui/templates/wander-footer/WanderFooter";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useLocation } from "~wallets/router/router.utils";
 

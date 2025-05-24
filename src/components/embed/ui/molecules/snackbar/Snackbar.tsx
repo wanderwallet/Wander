@@ -1,49 +1,92 @@
-import React from "react";
-import styles from "./Snackbar.module.css";
-import type { SnackbarBaseProps } from "./Snackbar.types";
-import { Text, Row } from "../../atoms";
-import { useTheme } from "../../../contexts/ThemeContext";
+import { InfoIcon, Text, WarningIcon } from "../../atoms";
+import clsx from "clsx";
+import { FormattedText } from "~components/embed/ui/atoms/formatted-text/FormattedText";
 
-const Snackbar = React.forwardRef<HTMLDivElement, SnackbarBaseProps>(
-  ({ text, textColor, icon, iconColor, borderColor, backgroundColor, isFullWidth, className, ...props }, ref) => {
-    const { isDarkMode } = useTheme();
+import styles from "./Snackbar.module.scss";
+import type React from "react";
+import { AlertTriangle } from "@untitled-ui/icons-react";
 
-    const defaultBorderColor = isDarkMode ? "var(--color-border-box)" : borderColor || "var(--color-border-box)";
+export type SnackbarVariant = "info" | "warning" | "error";
 
-    const defaultBackgroundColor =
-      backgroundColor || (isDarkMode ? "var(--color-card-background-default)" : "var(--color-background-default)");
+const SNACKBAR_ICON_BY_VARIANT: Record<SnackbarVariant, (props: React.SVGProps<SVGSVGElement>) => JSX.Element> = {
+  info: InfoIcon,
+  warning: AlertTriangle,
+  //warning: WarningIcon,
+  error: null,
+};
 
-    const defaultIconColor = iconColor || (isDarkMode ? "var(--color-font-body)" : iconColor);
+export interface SnackbarBaseProps extends FormattedText {
+  variant: SnackbarVariant;
+  tag?: React.ComponentType | keyof JSX.IntrinsicElements;
+  //textColor?: string;
+  // icon?: React.ReactNode;
+  // iconColor?: string;
+  // borderColor?: string;
+  // backgroundColor?: string;
+}
 
-    const defaultTextColor = isDarkMode ? "var(--color-font-body)" : textColor;
+export function Snackbar({ variant, tag: Root = "div", className: classNameProp, children }: SnackbarBaseProps) {
+  const className = clsx(styles.root, styles[`${variant}Variant`], classNameProp);
 
-    return (
-      <Row
-        ref={ref}
-        alignment="center"
-        className={`
-          ${styles["snackbar"]}
-          ${isFullWidth && styles["snackbar__isFullWidth"]}
-          ${className}
-        `}
-        style={{
-          borderColor: defaultBorderColor,
-          backgroundColor: defaultBackgroundColor,
-        }}
-        {...props}>
-        {icon && (
-          <div className={styles["snackbar__icon"]} style={{ color: defaultIconColor }}>
-            {icon}
-          </div>
-        )}
-        <Text variant="bodyMd" alignment="left" style={{ color: defaultTextColor }}>
-          {text}
-        </Text>
-      </Row>
-    );
-  },
-);
+  const Icon = SNACKBAR_ICON_BY_VARIANT[variant];
+  const icon = Icon ? <Icon className={styles.icon} /> : null;
 
-Snackbar.displayName = "Snackbar";
+  // width={20} height={20}
 
-export { Snackbar };
+  // TODO: Add an optional title that removes the left padding.
+
+  // TODO: Swap FormattedText and div
+
+  return (
+    <Root className={className}>
+      {icon}
+
+      <FormattedText className={styles.content}>{children}</FormattedText>
+    </Root>
+  );
+}
+
+/*
+
+connect-settings.view.tsx had:
+
+  backgroundColor="var(--color-background-default)"
+  iconColor="var(--color-font-body)"
+  textColor="var(--color-font-body)"
+
+---
+
+account-export-wallet.view.tsx had:
+
+  backgroundColor="#FFF9EA"
+  borderColor="#F2DC1320"
+  textColor="#757575"
+  iconColor="#BD8802"
+
+---
+
+backup-wallet-copy-seedphrase.tsx had:
+
+  backgroundColor="#FFF9EA"
+  borderColor="#F2DC1320"
+  textColor="#121212"
+  iconColor="#BD8802"
+
+---
+
+backup-full-wallet.view.tsx had:
+
+  backgroundColor="#FFF9EA"
+  borderColor="#F2DC1320"
+  textColor="#121212"
+  iconColor="#BD8802"
+
+---
+
+NoUnpartitionedStorageBanner.tsx had:
+
+
+  background-color: #ffe3ba;
+  color: #663c00;
+
+*/

@@ -1,7 +1,8 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { toast } from "react-toastify";
 import { Flex } from "~components/common/Flex";
-import { Box, Button, Card, WanderFooter, Text, Checkbox } from "~components/embed/ui";
+import { Box, Button, Card, Text, Checkbox } from "~components/embed/ui";
+import { WanderFooter } from "~components/embed/ui/templates/wander-footer/WanderFooter";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { formatAddress } from "~utils/format";
 import { withRetry } from "~utils/promises/retry";

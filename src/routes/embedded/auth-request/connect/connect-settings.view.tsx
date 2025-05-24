@@ -154,14 +154,10 @@ export function EmbeddedConnectSettingsAuthRequestView() {
             <ChevronRight height={24} width={24} color="var(--color-font-body)" />
           )}
         </Row>
+
         <Spacer y={1} />
-        <Snackbar
-          text={browser.i18n.getMessage(`${signPolicy}_description`)}
-          icon={<InfoIcon />}
-          backgroundColor="var(--color-background-default)"
-          iconColor="var(--color-font-body)"
-          textColor="var(--color-font-body)"
-        />
+
+        <Snackbar variant="info">{browser.i18n.getMessage(`${signPolicy}_description`)}</Snackbar>
       </Box>
     </AuthRequestCard>
   );

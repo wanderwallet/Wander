@@ -1,8 +1,9 @@
 import { useCallback, useState } from "react";
-import { Box, Button, CameraIcon, Card, WanderFooter } from "~components/embed";
+import { Box, Button, CameraIcon, Card } from "~components/embed";
 import { useLocation } from "~wallets/router/router.utils";
 import { useWebcamPermission } from "./hooks/useWebcamPermission";
 import { toast } from "react-toastify";
+import { WanderFooter } from "~components/embed/ui/templates/wander-footer/WanderFooter";
 
 export function AuthAddWithQRCodeEmbeddedView() {
   const { navigate, back } = useLocation();

@@ -1,1 +1,0 @@
-export { WanderFooter } from "./WanderFooter";

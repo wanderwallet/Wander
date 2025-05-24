@@ -2,7 +2,6 @@ import { type Variants, motion } from "framer-motion";
 import { useRef, type PropsWithChildren } from "react";
 import styled from "styled-components";
 import { ResizeEventObserver } from "~components/ResizeEventObserver";
-import StoragePartitionedBanner from "~components/StoragePartitionedBanner";
 
 export interface PageProps extends PropsWithChildren {}
 
@@ -25,7 +24,6 @@ export function Page({ children }: PageProps) {
       data-test-id="Page">
       <ResizeEventObserver containerRef={containerRef} />
       {children}
-      <StoragePartitionedBanner />
     </Main>
   );
 }

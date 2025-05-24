@@ -24,15 +24,7 @@ export function AccountBackupFullWalletEmbeddedView() {
       headerText="Export wallet"
       subtitle="Download your keyfile or copy your seedphrase to export your account."
       onBackButtonClick={() => navigate("/account/backup-wallet")}>
-      <Snackbar
-        isFullWidth
-        icon={<WarningIcon />}
-        text="Do not share this with anyone."
-        backgroundColor="#FFF9EA"
-        borderColor="#F2DC1320"
-        textColor="#121212"
-        iconColor="#BD8802"
-      />
+      <Snackbar variant="warning">Do not share this with anyone.</Snackbar>
 
       <Copyable
         style={{ padding: "0" }}

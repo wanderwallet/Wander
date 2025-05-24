@@ -1,0 +1,75 @@
+@import "../../../tokens/index.css";
+
+.root {
+  // border: 1px solid var(--color-border-box);
+  border: 1px solid currentColor;
+  border-radius: var(--border-radius-lg);
+  font-size: 12px;
+
+  padding: var(--spacing-3);
+  width: auto;
+  height: auto;
+  width: 100%;
+
+  display: flex;
+  align-items: flex-start;
+
+  &.infoVariant {
+    background: var(--color-background-default);
+  }
+
+  &.warningVariant {
+    background: #fff9ea;
+    // color: #121212;
+    // color: #757575;
+    color: rgb(120, 120, 0);
+    color: #bd8802;
+  }
+
+  &.errorVariant {
+    background: red;
+  }
+}
+
+.icon {
+  flex: 1 0 auto;
+  font-size: 24px;
+  margin-right: var(--spacing-3);
+
+  .infoVariant > & {
+    //color: blue;
+  }
+
+  .warningVariant > & {
+    //color: yellow;
+  }
+
+  .errorVariant > & {
+    //color: red;
+  }
+}
+
+.content {
+  flex: 1 1 100%;
+  color: inherit;
+  font: inherit;
+}
+
+/*
+
+
+
+  const defaultBorderColor = isDarkMode ? "var(--color-border-box)" : borderColor || "var(--color-border-box)";
+
+  const defaultBackgroundColor =
+    backgroundColor || (isDarkMode ? "var(--color-card-background-default)" : "var(--color-background-default)");
+
+  const defaultIconColor = iconColor || (isDarkMode ? "var(--color-font-body)" : iconColor);
+
+  const defaultTextColor = isDarkMode ? "var(--color-font-body)" : textColor;
+      style={{
+        borderColor: defaultBorderColor,
+        backgroundColor: defaultBackgroundColor,
+      }}
+
+*/
