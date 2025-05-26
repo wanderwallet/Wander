@@ -43,7 +43,7 @@ import { WelcomePaths } from "../welcome/welcome.routes";
 import { GettingStartedSetupWelcomeView } from "~routes/popup/gettingStarted";
 import { RecoveryPhraseView } from "~routes/popup/settings/wallets/[address]/recovery-phrase";
 import { AgentsView } from "~routes/popup/agents";
-import { AOYieldAgentView } from "~routes/popup/agents/ao-yield-agent";
+import { CreateAOYieldAgentView } from "~routes/popup/agents/ao-yield/create-agent";
 
 export type PopupRoutePath =
   | "/"
@@ -90,7 +90,7 @@ export type PopupRoutePath =
   | `/quick-settings/notifications`
   | `/getting-started/${string}`
   | `/agents`
-  | `/agents/ao-yield-agent`;
+  | `/agents/ao-yield/create-agent`;
 
 export const PopupPaths = {
   Home: "/",
@@ -133,7 +133,7 @@ export const PopupPaths = {
   ContactSettings: "/quick-settings/contacts/:address",
   NotificationSettings: "/quick-settings/notifications",
   Agents: "/agents",
-  AOYieldAgent: "/agents/ao-yield-agent",
+  CreateAOYieldAgent: "/agents/ao-yield/create-agent",
 } as const satisfies Record<string, PopupRoutePath>;
 
 export const POPUP_ROUTES = [
@@ -304,7 +304,7 @@ export const POPUP_ROUTES = [
     component: AgentsView,
   },
   {
-    path: PopupPaths.AOYieldAgent,
-    component: AOYieldAgentView,
+    path: PopupPaths.CreateAOYieldAgent,
+    component: CreateAOYieldAgentView,
   },
 ] as const satisfies RouteConfig[];

@@ -12,7 +12,7 @@
 
 "@arconnect/components-rebrand@https://github.com/wanderwallet/components-rebrand.git#feat/listitem-expandable":
   version "1.0.0"
-  resolved "https://github.com/wanderwallet/components-rebrand.git#5aef88dcadfb84794e8fc486af3aa459b0953856"
+  resolved "https://github.com/wanderwallet/components-rebrand.git#0d29cbfc6d21cad8660925fbe20ea9867daa59a7"
   dependencies:
     "@iconicicons/react" "^1.5.1"
     "@untitled-ui/icons-react" "^0.1.4"

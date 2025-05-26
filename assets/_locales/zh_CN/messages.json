@@ -3117,5 +3117,9 @@
     "run_indefinitely_tooltip": {
         "message": "除非您取消，否则代理将不会停止转换已铸造的AO。",
         "description": "Run indefinitely tooltip"
+    },
+    "your_agents": {
+        "message": "您的代理们",
+        "description": "Your agents text"
     }
 }

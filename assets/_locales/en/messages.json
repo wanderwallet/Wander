@@ -3127,5 +3127,9 @@
   "run_indefinitely_tooltip": {
     "message": "The agent will not stop converting minted AO unless you cancel it.",
     "description": "Run indefinitely tooltip"
+  },
+  "your_agents": {
+    "message": "Your agents",
+    "description": "Your agents text"
   }
 }

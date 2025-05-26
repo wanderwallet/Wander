@@ -8,10 +8,10 @@ import { useState } from "react";
 import { Slider } from "~components/Slider";
 import { InputButton } from "~components/common/InputButton";
 import { HorizontalLine } from "~components/HorizontalLine";
-import { assets, AssetSelectorModal, type Asset } from "~components/agents/ao-yield/AssetSelectorModal";
-import { SlippageSelectorModal } from "~components/agents/ao-yield/SlippageSelectorModal";
+import { assets, AssetSelectorModal, type Asset } from "../components/ao-yield/AssetSelectorModal";
+import { SlippageSelectorModal } from "../components/ao-yield/SlippageSelectorModal";
 
-export function AOYieldAgentView() {
+export function CreateAOYieldAgentView() {
   const theme = useTheme();
   const [percentage, setPercentage] = useState(50);
   const [selectedAsset, setSelectedAsset] = useState<Asset>(assets[0]);
