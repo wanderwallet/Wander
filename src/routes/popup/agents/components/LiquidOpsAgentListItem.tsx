@@ -12,7 +12,7 @@ export const LiquidOpsAgentListItem = () => {
     <ListItem
       title={browser.i18n.getMessage("liquidops_agent")}
       subtitle={browser.i18n.getMessage("liquidops_agent_description", ["0", "3"])}
-      subtitleStyle={{ fontSize: 14, fontWeight: 500 }}
+      subtitleStyle={{ fontSize: 14, fontWeight: 500, lineHeight: "18.2px" }}
       squircleSize={40}
       hideSquircle={true}
       icon={

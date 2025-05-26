@@ -53,7 +53,7 @@ export const AOYieldAgentListItem = ({ aoYieldAgentAvailable }: { aoYieldAgentAv
     <ListItem
       title={browser.i18n.getMessage("ao_yield_agent")}
       subtitle={browser.i18n.getMessage("ao_yield_agent_description")}
-      subtitleStyle={{ fontSize: 10, fontWeight: 500 }}
+      subtitleStyle={{ fontSize: 10, fontWeight: 500, lineHeight: "13px" }}
       squircleSize={40}
       hideSquircle={true}
       icon={
