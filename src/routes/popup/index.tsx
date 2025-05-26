@@ -15,7 +15,7 @@ import { Text, useToasts } from "@arconnect/components-rebrand";
 import { Flex } from "~components/common/Flex";
 import { useLocation } from "~wallets/router/router.utils";
 import browser from "webextension-polyfill";
-import CreateWanderAgentCTA from "~components/agents/CreateWanderAgentCTA";
+import CreateWanderAgentCTA from "./agents/components/CreateWanderAgentCTA";
 
 export function HomeView() {
   const theme = useTheme();
