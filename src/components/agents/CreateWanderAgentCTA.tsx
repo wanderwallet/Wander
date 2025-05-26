@@ -75,7 +75,7 @@ export default function CreateWanderAgentCTA() {
       <Button fullWidth onClick={() => handleOpen()}>
         {browser.i18n.getMessage("get_started")}
       </Button>
-      {open && <WanderAgentExplainerPopup open={open} close={() => handleClose()} />}
+      <WanderAgentExplainerPopup open={open} close={() => handleClose()} />
     </Flex>
   );
 }

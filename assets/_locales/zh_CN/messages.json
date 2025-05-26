@@ -3047,5 +3047,71 @@
     "introducing_the_wander_agent_description": {
         "message": "创建一个代理，自动将您的AO代币收益转换为wAR或wUSDC，每天一次。",
         "description": "Introducing the Wander Agent description"   
+    },
+    "no_active_yield_agents": {
+        "message": "您没有活跃的收益代理",
+        "description": "You don't have any active yield agents text"
+    },
+    "ao_yield_agent": {
+        "message": "AO收益代理",
+        "description": "AO Yield Agent text"
+    },
+    "ao_yield_agent_description": {
+        "message": "自动将您的AO代币收益转换为wUSDC或wAR",
+        "description": "AO Yield Agent description"
+    },
+    "liquidops_agent": {
+        "message": "LiquidOps代理",
+        "description": "LiquidOps Agent text"
+    },
+    "liquidops_agent_description": {
+        "message": "$ACTIVE$个活跃代理，$AVAILABLE$个可用代理",
+        "description": "LiquidOps Agent description",
+        "placeholders": {
+            "active": {
+                "content": "$1",
+                "example": "0"
+            },
+            "available": {
+                "content": "$2",
+                "example": "3"
+            }
+        }
+    },
+    "select_buy_asset": {
+        "message": "选择购买资产",
+        "description": "Select buy asset text"
+    },
+    "buy_asset": {
+        "message": "购买资产",
+        "description": "Buy asset text"
+    },
+    "percentage_of_daily_ao_to_sell": {
+        "message": "每日待出售 AO 的百分比",
+        "description": "Percentage of daily AO to sell text"
+    },
+    "percentage_of_daily_ao_to_sell_description": {
+        "message": "你想要兑换的每日铸造 AO 数量",
+        "description": "Percentage of daily AO to sell description"
+    },
+    "running_time": {
+        "message": "运行时间",
+        "description": "Running time text"
+    },
+    "slippage": {
+        "message": "滑点",
+        "description": "Slippage text"
+    },
+    "auto": {
+        "message": "自动",
+        "description": "Auto text"
+    },
+    "run_indefinitely": {
+        "message": "持续运行",
+        "description": "Run indefinitely text"
+    },
+    "run_indefinitely_tooltip": {
+        "message": "除非您取消，否则代理将不会停止转换已铸造的AO。",
+        "description": "Run indefinitely tooltip"
     }
 }

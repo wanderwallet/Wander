@@ -7,6 +7,8 @@ import { Flex } from "~components/common/Flex";
 import browser from "webextension-polyfill";
 
 export default function WanderAgentExplainerPopup({ open, close }: Props) {
+  if (!open) return null;
+
   return (
     <SliderMenu hasHeader={false} isOpen={open} onClose={close}>
       <CloseIcon

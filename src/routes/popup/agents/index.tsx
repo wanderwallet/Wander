@@ -9,8 +9,28 @@ import LiquidOpsIcon from "url:/assets/ecosystem/liquidops.svg";
 import UsdaIcon from "url:/assets/ecosystem/usda.svg";
 import WarIcon from "url:/assets/ecosystem/war.svg";
 import { ClockRewind } from "@untitled-ui/icons-react";
+import { PopupPaths } from "~wallets/router/popup/popup.routes";
+import { useLocation } from "~wallets/router/router.utils";
+import WanderAgentExplainerPopup from "~components/agents/WanderAgentExplainerPopup";
+import { useEffect, useState } from "react";
+import { ExtensionStorage } from "~utils/storage";
 
 export function AgentsView() {
+  const { navigate } = useLocation();
+  const [open, setOpen] = useState(false);
+
+  async function checkAndShowAgentExplainerPopup() {
+    const hasShownAgentExplainerPopup = await ExtensionStorage.get("has_shown_agent_explainer_popup");
+    if (!hasShownAgentExplainerPopup) {
+      setOpen(true);
+      await ExtensionStorage.set("has_shown_agent_explainer_popup", true);
+    }
+  }
+
+  useEffect(() => {
+    checkAndShowAgentExplainerPopup();
+  }, []);
+
   return (
     <>
       <HeadV2 title={browser.i18n.getMessage("agents")} backIcon={<ClockRewind fontSize={24} />} back={() => {}} />
@@ -19,11 +39,11 @@ export function AgentsView() {
         <Flex align="center" gap={16} justify="center" direction="column" textAlign="center">
           <img src={HedgehogHeadIcon} alt="Hedgehog Head" height={128} width={120} />
           <Text size="md" weight="medium" noMargin>
-            You don't have any active yield agents
+            {browser.i18n.getMessage("no_active_yield_agents")}
           </Text>
           <ListItem
-            title={"AO Yield Agent"}
-            subtitle={"Automatically convert your AO to wUSDC ot wAR"}
+            title={browser.i18n.getMessage("ao_yield_agent")}
+            subtitle={browser.i18n.getMessage("ao_yield_agent_description")}
             subtitleStyle={{ fontSize: 10, fontWeight: 500 }}
             squircleSize={40}
             hideSquircle={true}
@@ -33,11 +53,12 @@ export function AgentsView() {
               </LogoBackground>
             }
             active
+            onClick={() => navigate(PopupPaths.AOYieldAgent)}
             style={{ width: "100%", textAlign: "left", padding: "12px 8px" }}
           />
           <ListItem
-            title={"LiquidOps Agent"}
-            subtitle={"0 agents active, 3 agents available"}
+            title={browser.i18n.getMessage("liquidops_agent")}
+            subtitle={browser.i18n.getMessage("liquidops_agent_description", ["0", "3"])}
             subtitleStyle={{ fontSize: 14, fontWeight: 500 }}
             squircleSize={40}
             hideSquircle={true}
@@ -48,6 +69,8 @@ export function AgentsView() {
             }
             active
             style={{ width: "100%", textAlign: "left", padding: "12px 8px" }}
+            expandedText={browser.i18n.getMessage("hide")}
+            collapsedText={browser.i18n.getMessage("show")}
             expandable
             expandableContent={
               <Flex direction="column" gap={16}>
@@ -81,6 +104,7 @@ export function AgentsView() {
           />
         </Flex>
       </Wrapper>
+      <WanderAgentExplainerPopup open={open} close={() => setOpen(false)} />
     </>
   );
 }

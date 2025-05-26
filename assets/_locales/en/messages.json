@@ -3057,5 +3057,71 @@
   "introducing_the_wander_agent_description": {
     "message": "Create an agent to automatically convert your AO token earnings for wAR or wUSDC on a daily basis",
     "description": "Introducing the Wander Agent description"
+  },
+  "no_active_yield_agents": {
+    "message": "You don't have any active yield agents",
+    "description": "You don't have any active yield agents text"
+  },
+  "ao_yield_agent": {
+    "message": "AO Yield Agent",
+    "description": "AO Yield Agent text"
+  },
+  "ao_yield_agent_description": {
+    "message": "Automatically convert your AO to wUSDC or wAR",
+    "description": "AO Yield Agent description"
+  },
+  "liquidops_agent": {
+    "message": "LiquidOps Agent",
+    "description": "LiquidOps Agent text"
+  },
+  "liquidops_agent_description": {
+    "message": "$ACTIVE$ agents active, $AVAILABLE$ agents available",
+    "description": "LiquidOps Agent description",
+    "placeholders": {
+      "active": {
+        "content": "$1",
+        "example": "0"
+      },
+      "available": {
+        "content": "$2",
+        "example": "3"
+      }
+    }
+  },
+  "select_buy_asset": {
+    "message": "Select buy asset",
+    "description": "Select buy asset text"
+  },
+  "buy_asset": {
+    "message": "Buy asset",
+    "description": "Buy asset text"
+  },
+  "percentage_of_daily_ao_to_sell": {
+    "message": "% of daily AO to sell",
+    "description": "Percentage of daily AO to sell text"
+  },
+  "percentage_of_daily_ao_to_sell_description": {
+    "message": "The amount of AO minted daily you want to convert",
+    "description": "Percentage of daily AO to sell description"
+  },
+  "running_time": {
+    "message": "Running time",
+    "description": "Running time text"
+  },
+  "slippage": {
+    "message": "Slippage",
+    "description": "Slippage text"
+  },
+  "auto": {
+    "message": "Auto",
+    "description": "Auto text"
+  },
+  "run_indefinitely": {
+    "message": "Run indefinitely",
+    "description": "Run indefinitely text"
+  },
+  "run_indefinitely_tooltip": {
+    "message": "The agent will not stop converting minted AO unless you cancel it.",
+    "description": "Run indefinitely tooltip"
   }
 }
