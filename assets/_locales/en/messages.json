@@ -3112,6 +3112,10 @@
     "message": "Slippage",
     "description": "Slippage text"
   },
+  "slippage_description": {
+    "message": "Your sell will be cancelled if the price changes more than the slippage percentage.",
+    "description": "Slippage description"
+  },
   "auto": {
     "message": "Auto",
     "description": "Auto text"

@@ -3102,6 +3102,10 @@
         "message": "滑点",
         "description": "Slippage text"
     },
+    "slippage_description": {
+        "message": "如果价格变化超过滑点百分比，您的出售将被取消。",
+        "description": "Slippage description"
+    },
     "auto": {
         "message": "自动",
         "description": "Auto text"
