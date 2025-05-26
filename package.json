@@ -58,7 +58,7 @@
   },
   "dependencies": {
     "@arconnect/components": "^1.0.0",
-    "@arconnect/components-rebrand": "https://github.com/wanderwallet/components-rebrand.git#master",
+    "@arconnect/components-rebrand": "https://github.com/wanderwallet/components-rebrand.git#feat/listitem-expandable",
     "@arconnect/keystone-sdk": "^0.0.5",
     "@arconnect/webext-bridge": "^5.0.6",
     "@dha-team/arbundles": "^1.0.2",

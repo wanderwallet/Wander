@@ -3,7 +3,6 @@ import { formatAddress } from "~utils/format";
 import { useTheme } from "~utils/theme";
 import { FULL_HISTORY, useGateway } from "~gateways/wayfinder";
 import { concatGatewayURL } from "~gateways/utils";
-import aoLogo from "url:/assets/ecosystem/ao-logo.svg";
 import arLogoDark from "url:/assets/ar/logo_dark.png";
 import arLogoLight from "url:/assets/ar/logo_light.png";
 import { getUserAvatar } from "~lib/avatar";

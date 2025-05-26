@@ -30,6 +30,7 @@ export interface HeadV2Props {
   back?: (...args) => any;
   appInfo?: AppLogoInfo;
   onAppInfoClick?: () => void;
+  backIcon?: React.ReactNode;
 }
 
 export default function HeadV2({
@@ -40,6 +41,7 @@ export default function HeadV2({
   showBack = true,
   appInfo,
   onAppInfoClick,
+  backIcon,
 }: HeadV2Props) {
   const theme = useTheme();
   const { back } = useLocation();
@@ -110,7 +112,7 @@ export default function HeadV2({
             if (onBack) await onBack();
             else back();
           }}>
-          <BackButtonIcon />
+          {backIcon ? backIcon : <BackButtonIcon />}
         </BackButton>
       ) : null}
       <PageTitle showLeftMargin={showBack && !showOptions && !!appName}>{title}</PageTitle>

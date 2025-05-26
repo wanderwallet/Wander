@@ -42,6 +42,7 @@ import { NoteView } from "~routes/popup/send/note";
 import { WelcomePaths } from "../welcome/welcome.routes";
 import { GettingStartedSetupWelcomeView } from "~routes/popup/gettingStarted";
 import { RecoveryPhraseView } from "~routes/popup/settings/wallets/[address]/recovery-phrase";
+import { AgentsView } from "~routes/popup/agents";
 
 export type PopupRoutePath =
   | "/"
@@ -86,7 +87,8 @@ export type PopupRoutePath =
   | `/quick-settings/contacts/new`
   | `/quick-settings/contacts/${string}`
   | `/quick-settings/notifications`
-  | `/getting-started/${string}`;
+  | `/getting-started/${string}`
+  | `/agents`;
 
 export const PopupPaths = {
   Home: "/",
@@ -128,6 +130,7 @@ export const PopupPaths = {
   NewContact: "/quick-settings/contacts/new",
   ContactSettings: "/quick-settings/contacts/:address",
   NotificationSettings: "/quick-settings/notifications",
+  Agents: "/agents",
 } as const satisfies Record<string, PopupRoutePath>;
 
 export const POPUP_ROUTES = [
@@ -292,5 +295,9 @@ export const POPUP_ROUTES = [
   {
     path: WelcomePaths.GettingStarted,
     component: GettingStartedSetupWelcomeView,
+  },
+  {
+    path: PopupPaths.Agents,
+    component: AgentsView,
   },
 ] as const satisfies RouteConfig[];

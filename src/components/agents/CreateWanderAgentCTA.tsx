@@ -9,10 +9,12 @@ import { IconButton } from "~components/common/IconButton";
 import browser from "webextension-polyfill";
 import WanderAgentExplainerPopup from "./WanderAgentExplainerPopup";
 import { useState } from "react";
+import { useLocation } from "~wallets/router/router.utils";
 
 export default function CreateWanderAgentCTA() {
   const theme = useTheme();
   const [open, setOpen] = useState(false);
+  const { navigate } = useLocation();
 
   const [showCreateAgent, setShowCreateAgent] = useStorage(
     {
@@ -34,6 +36,8 @@ export default function CreateWanderAgentCTA() {
     if (!hasShownAgentExplainerPopup) {
       setHasShownAgentExplainerPopup(true);
       setOpen(true);
+    } else {
+      navigate("/agents");
     }
   };
 
