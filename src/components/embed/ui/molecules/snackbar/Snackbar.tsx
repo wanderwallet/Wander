@@ -49,4 +49,4 @@ export function Snackbar({ variant, title, className: classNameProp, children, r
   );
 }
 
-export const MotionSnackbar = motion(Snackbar);
+export const MotionSnackbar = motion.create(Snackbar);
