@@ -2,17 +2,18 @@ import { InfoIcon } from "../../atoms";
 import clsx from "clsx";
 import { FormattedText } from "~components/embed/ui/atoms/formatted-text/FormattedText";
 import type React from "react";
-import { AlertTriangle, XCircle } from "@untitled-ui/icons-react";
+import { AlertTriangle, XCircle, Check } from "@untitled-ui/icons-react";
 import { motion } from "framer-motion";
 
 import styles from "./Snackbar.module.scss";
 
-export type SnackbarVariant = "info" | "warning" | "error";
+export type SnackbarVariant = "info" | "warning" | "error" | "success";
 
 const SNACKBAR_ICON_BY_VARIANT: Record<SnackbarVariant, (props: React.SVGProps<SVGSVGElement>) => JSX.Element> = {
   info: InfoIcon,
   warning: AlertTriangle,
   error: XCircle,
+  success: Check,
 };
 
 export interface SnackbarBaseProps extends FormattedText {

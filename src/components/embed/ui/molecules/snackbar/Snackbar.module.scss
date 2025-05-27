@@ -37,6 +37,12 @@
     color: var(--snackbar-color-error);
     border-color: var(--snackbar-color-error);
   }
+
+  &.successVariant {
+    background: var(--snackbar-background-success);
+    color: var(--snackbar-color-success);
+    border-color: var(--snackbar-color-success);
+  }
 }
 
 .title {

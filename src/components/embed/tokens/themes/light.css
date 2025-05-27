@@ -42,10 +42,12 @@
   --snackbar-background-info: var(--input-background);
   --snackbar-background-warning: #fff9ea;
   --snackbar-background-error: #ffeaea;
+  --snackbar-background-success: #eaffed;
 
   --snackbar-color-info: var(--input-color);
   --snackbar-color-warning: #bd8802;
   --snackbar-color-error: #bd0202;
+  --snackbar-color-success: #02bd59;
 
   --color-text-footer: var(--brand-color-neutral5);
 

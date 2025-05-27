@@ -39,7 +39,9 @@ export function AccountBackupWalletRecoveryFileEmbeddedView() {
 
         <Flex direction="row" gap={8} align="center">
           <XClose style={{ flexShrink: 0 }} height={17} width={17} color="transparent" />
-          Would you like to <Link to="/account/backup-wallet/full">export your wallet</Link> instead?
+          <span>
+            Would you like to <Link to="/account/backup-wallet/full">export your wallet</Link> instead?
+          </span>
         </Flex>
 
         <Flex direction="row" gap={8} align="center">
@@ -48,7 +50,7 @@ export function AccountBackupWalletRecoveryFileEmbeddedView() {
         </Flex>
       </Snackbar>
 
-      <Snackbar variant="warning" title="Do not share this with anyone!">
+      <Snackbar variant="success" title="Safer than a keyfile!">
         <p>
           If someone steals this file, they won't be able to access your wallet unless they also have access to your
           credentials.
