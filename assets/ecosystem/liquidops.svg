@@ -1,24 +1,19 @@
-<svg width="49" height="48" viewBox="0 0 49 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g id="Frame 307">
-<rect x="0.125" width="48" height="48" rx="9.8" fill="#F5F5FE"/>
-<g id="Group 465">
-<path id="Subtract" fill-rule="evenodd" clip-rule="evenodd" d="M24.1304 33.6694C18.7871 33.6694 14.4556 29.3379 14.4556 23.9946C14.4556 18.6514 18.7871 14.3198 24.1304 14.3198C29.4736 14.3198 33.8052 18.6514 33.8052 23.9946C33.8052 29.3379 29.4736 33.6694 24.1304 33.6694Z" fill="white"/>
-<path id="Ellipse 39 (Stroke)" fill-rule="evenodd" clip-rule="evenodd" d="M14.4556 23.9948C14.4556 29.338 18.7872 33.6696 24.1305 33.6696C29.4737 33.6696 33.8053 29.338 33.8053 23.9948C33.8053 18.6515 29.4737 14.32 24.1305 14.32C18.7872 14.32 14.4556 18.6515 14.4556 23.9948ZM8.13981 23.9948C8.13981 32.8262 15.2991 39.9854 24.1304 39.9854C32.9618 39.9854 40.1211 32.8262 40.1211 23.9948C40.1211 15.1634 32.9618 8.00415 24.1305 8.00415C15.2991 8.00415 8.13981 15.1634 8.13981 23.9948Z" fill="url(#paint0_radial_527_5449)"/>
-<path id="Intersect" fill-rule="evenodd" clip-rule="evenodd" d="M25.9329 39.8855C23.7401 38.3615 12.9748 27.4936 23.1784 22.8122C34.3419 17.6903 33.6441 11.8075 30.9791 9.54448C27.6699 7.97412 23.807 7.52653 19.9917 8.54884C12.3022 10.6092 7.09863 17.9536 8.29635 26.2385C9.54247 34.8583 17.3292 40.8723 25.9329 39.8855Z" fill="url(#paint1_linear_527_5449)"/>
-<path id="Intersect_2" fill-rule="evenodd" clip-rule="evenodd" d="M30.8229 9.47168C33.1815 11.0667 38.9953 15.7801 29.0785 21.4676C18.2141 27.6987 27.3097 37.3554 33.4056 37.0259C38.6886 33.2645 41.3532 26.4885 39.5761 19.8562C38.2967 15.0812 34.986 11.3929 30.8229 9.47168Z" fill="url(#paint2_linear_527_5449)"/>
-</g>
-</g>
+<svg width="101" height="100" viewBox="0 0 101 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M50.6894 79.7456C34.0899 79.7456 20.6333 66.289 20.6333 49.6894C20.6333 33.0899 34.0899 19.6333 50.6895 19.6333C67.289 19.6333 80.7456 33.0899 80.7456 49.6895C80.7456 66.289 67.289 79.7456 50.6894 79.7456Z" fill="white"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M20.6333 49.6895C20.6333 66.289 34.0899 79.7456 50.6894 79.7456C67.289 79.7456 80.7455 66.289 80.7455 49.6895C80.7455 33.0899 67.289 19.6334 50.6894 19.6334C34.0899 19.6334 20.6333 33.0899 20.6333 49.6895ZM1.01231 49.6895C1.01231 77.1254 23.2535 99.3666 50.6894 99.3666C78.1253 99.3666 100.367 77.1254 100.367 49.6895C100.367 22.2536 78.1253 0.0123663 50.6894 0.0123651C23.2535 0.0123639 1.01231 22.2536 1.01231 49.6895Z" fill="url(#paint0_radial_1_27)"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M56.2893 99.0566C49.4769 94.3223 16.0331 60.5595 47.7319 46.016C82.4128 30.1044 80.245 11.8285 71.9659 4.79813C61.6854 -0.0803967 49.6848 -1.47091 37.8321 1.70503C13.9435 8.10594 -2.19091 30.8571 1.49884 56.6604C5.33273 83.4718 29.5605 102.122 56.2893 99.0566Z" fill="url(#paint1_linear_1_27)"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M71.4808 4.57137C78.8081 9.52657 96.8694 24.1693 66.0617 41.8384C32.3098 61.1961 60.5666 91.196 79.5044 90.1724C95.9166 78.4871 104.195 57.4364 98.6739 36.8323C94.6991 21.9981 84.4141 10.5398 71.4808 4.57137Z" fill="url(#paint2_linear_1_27)"/>
 <defs>
-<radialGradient id="paint0_radial_527_5449" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(24.1304 23.9948) rotate(-29.6192) scale(20.8367 19.9519)">
+<radialGradient id="paint0_radial_1_27" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(50.6894 49.6895) rotate(-29.6192) scale(64.7322 61.9832)">
 <stop offset="0.5" stop-color="#B6B5FF"/>
 <stop offset="1" stop-color="#DCDCFF"/>
 </radialGradient>
-<linearGradient id="paint1_linear_527_5449" x1="20.378" y1="8" x2="20.378" y2="39.9914" gradientUnits="userSpaceOnUse">
+<linearGradient id="paint1_linear_1_27" x1="39.0356" y1="0" x2="39.0356" y2="99.3862" gradientUnits="userSpaceOnUse">
 <stop stop-color="#6D6AFF"/>
 <stop offset="0.5" stop-color="#4844EC"/>
 <stop offset="1" stop-color="#191994"/>
 </linearGradient>
-<linearGradient id="paint2_linear_527_5449" x1="49.1383" y1="26.5393" x2="15.003" y2="26.5393" gradientUnits="userSpaceOnUse">
+<linearGradient id="paint2_linear_1_27" x1="128.38" y1="57.5944" x2="22.3341" y2="57.5944" gradientUnits="userSpaceOnUse">
 <stop stop-color="#4844EC"/>
 <stop offset="1" stop-color="#6D6AFF"/>
 </linearGradient>

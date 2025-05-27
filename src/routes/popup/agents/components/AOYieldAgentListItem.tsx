@@ -5,7 +5,7 @@ import aoLogo from "url:/assets/ecosystem/ao-logo.svg";
 import UsdaIcon from "url:/assets/ecosystem/usda.svg";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import { useLocation } from "~wallets/router/router.utils";
-import { SvgImage, SvgImageBackground } from "./SvgImage";
+import { SvgImageWithBackground } from "./SvgImage";
 
 export const AOYieldAgentListItem = ({ aoYieldAgentAvailable }: { aoYieldAgentAvailable: boolean }) => {
   const { navigate } = useLocation();
@@ -39,9 +39,14 @@ export const AOYieldAgentListItem = ({ aoYieldAgentAvailable }: { aoYieldAgentAv
       hideSquircle={true}
       icon={
         <Flex direction="row" style={{ width: 32, position: "relative" }}>
-          <SvgImageBackground size={20} style={{ position: "absolute", top: -17, left: 2 }}>
-            <SvgImage src={aoLogo} size={16} />
-          </SvgImageBackground>
+          <SvgImageWithBackground
+            height={20}
+            width={20}
+            style={{ position: "absolute", top: -17, left: 2 }}
+            src={aoLogo}
+            iconSize={16}
+            iconColor="black"
+          />
           <img src={UsdaIcon} height={24} width={24} style={{ position: "absolute", bottom: -19, right: -6 }} />
         </Flex>
       }
@@ -57,9 +62,15 @@ export const AOYieldAgentListItem = ({ aoYieldAgentAvailable }: { aoYieldAgentAv
       squircleSize={40}
       hideSquircle={true}
       icon={
-        <SvgImageBackground>
-          <SvgImage src={aoLogo} size={28} />
-        </SvgImageBackground>
+        <SvgImageWithBackground
+          height={44}
+          width={40}
+          shape="hexagon"
+          src={aoLogo}
+          iconSize={24}
+          iconColor="black"
+          hasBorder
+        />
       }
       active
       onClick={() => navigate(PopupPaths.CreateAOYieldAgent)}

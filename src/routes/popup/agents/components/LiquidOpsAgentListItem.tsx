@@ -5,7 +5,7 @@ import aoLogo from "url:/assets/ecosystem/ao-logo.svg";
 import UsdaIcon from "url:/assets/ecosystem/usda.svg";
 import LiquidOpsIcon from "url:/assets/ecosystem/liquidops.svg";
 import WarIcon from "url:/assets/ecosystem/war.svg";
-import { SvgImage, SvgImageBackground } from "./SvgImage";
+import { SvgImageWithBackground } from "./SvgImage";
 
 export const LiquidOpsAgentListItem = () => {
   return (
@@ -15,11 +15,7 @@ export const LiquidOpsAgentListItem = () => {
       subtitleStyle={{ fontSize: 14, fontWeight: 500, lineHeight: "18.2px" }}
       squircleSize={40}
       hideSquircle={true}
-      icon={
-        <Flex borderRadius="50%" align="center" justify="center" height={40} width={40} overflow="hidden">
-          <img src={LiquidOpsIcon} alt="LiquidOps" style={{ transform: "scale(1.3)" }} />
-        </Flex>
-      }
+      icon={<SvgImageWithBackground height={44} width={40} shape="hexagon" src={LiquidOpsIcon} iconSize={24} />}
       active
       style={{ width: "100%", textAlign: "left", padding: "12px 8px" }}
       expandedText={browser.i18n.getMessage("hide")}
@@ -29,11 +25,7 @@ export const LiquidOpsAgentListItem = () => {
         <Flex direction="column" gap={16}>
           <ListItem
             title={<Title ticker="AO" apy="1.13" />}
-            icon={
-              <SvgImageBackground size={24}>
-                <SvgImage src={aoLogo} size={16} />
-              </SvgImageBackground>
-            }
+            icon={<SvgImageWithBackground height={24} width={24} src={aoLogo} iconSize={16} iconColor="black" />}
             hideSquircle
             padding={0}
             subtitleExtra={<Status status="Inactive" />}
