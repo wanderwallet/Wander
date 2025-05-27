@@ -120,10 +120,12 @@ export function useEmbeddedOverride(location?: RoutePath) {
 
     if (authStatus === "unlocked") {
       if (lastRegisteredWallet) {
+        // TODO: Remove this unnecessary step and just include a confirmation in the dashboard.
         // If an account or wallet has just been created, then show AuthAddWalletConfirmation:
         return routeTrapMatches(location, [EmbeddedPaths.AccountConfirmation], EmbeddedPaths.AccountConfirmation);
       }
 
+      // TODO: Make recovery mandatory if no unpartitioned storage support, or optional if it has (because it will be hard to find the original site they were they first created a wallet).
       // TODO: Once we support multiple wallets, the condition here should instead check if ANY of the wallets hasn't been backed up yet:
       if (currentWallet.totalExports === 0 && currentWallet.totalBackups === 0 && !currentWallet.doNotAskAgainSetting) {
         return routeTrapMatches(

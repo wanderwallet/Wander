@@ -28,15 +28,7 @@ export function AccountBackupCopySeedphraseEmbeddedView() {
       headerText="Copy seedphrase"
       subtitle="Save your 12 word seedphrase to a password manager, or write it down."
       onBackButtonClick={() => navigate("/account/backup-wallet/full")}>
-      <Snackbar
-        isFullWidth
-        icon={<WarningIcon />}
-        text="Do not share this with anyone."
-        backgroundColor="#FFF9EA"
-        borderColor="#F2DC1320"
-        textColor="#121212"
-        iconColor="#BD8802"
-      />
+      <Snackbar variant="warning">Do not share this with anyone.</Snackbar>
 
       <SecretInput secret={seedphrase} isLoading={!seedphrase} />
 

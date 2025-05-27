@@ -1,4 +1,4 @@
-import { Row, Text, Box, Divider } from "~components/embed/ui";
+import { Row, Text, Box, Divider, Snackbar } from "~components/embed/ui";
 import { useCurrentAuthRequest } from "~utils/auth/auth.hooks";
 import Image from "~components/common/Image";
 import { useEffect, useMemo, useState } from "react";
@@ -199,13 +199,10 @@ export function EmbeddedSignDataAuthRequestView() {
           </Row>
         </>
       ) : (
-        <Row style={{ padding: 12, backgroundColor: "#FFF9EA" }}>
-          <AlertTriangle height={24} width={24} color="#BD8802" style={{ flexShrink: 0 }} />
-          <Text variant="bodyXs" style={{ color: "#666666" }}>
-            Only confirm if you understand the content and trust the requesting site. This confirmation is used for
-            authentication purposes, funds are not being transferred.
-          </Text>
-        </Row>
+        <Snackbar variant="warning">
+          Only confirm if you understand the content and trust the requesting site. This confirmation is used for
+          authentication purposes, funds are not being transferred.
+        </Snackbar>
       )}
 
       <TransactionMessage transaction={data} detailsLink={`/auth-request/signDataItem/${authRequest.authID}/details`} />

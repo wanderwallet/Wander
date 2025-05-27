@@ -5,7 +5,7 @@
   width: fit-content;
   padding: 0.5rem 0.75rem;
   background-color: var(--color-background-default);
-  border-radius: 0.5rem;
+  border-radius: var(--input-border-radius);
   box-shadow: var(--shadow-blurred);
   border: 2px solid transparent;
   cursor: pointer;
