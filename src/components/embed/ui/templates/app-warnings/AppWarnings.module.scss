@@ -17,7 +17,7 @@
 
 .banner {
   position: absolute;
-  z-index: 100;
+  z-index: 1000;
   top: calc(var(--spacing-8) + var(--input-height) + var(--spacing-3));
   left: var(--spacing-8);
   right: var(--spacing-8);
