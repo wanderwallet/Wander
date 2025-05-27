@@ -15,7 +15,6 @@ import { WalletHomeBalance } from "./balance.container";
 
 export function WalletHomeEmbeddedView() {
   const [loggedIn, setLoggedIn] = useState(false);
-  const [isOpen, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useStorage<number>(
     {
       key: "wallet_home_active_tab",
@@ -50,31 +49,6 @@ export function WalletHomeEmbeddedView() {
 
     scheduleImportAoTokens();
   }, []);
-
-  useEffect(() => {
-    const checkBits = async () => {
-      if (!loggedIn) return;
-
-      const bits = await checkWalletBits();
-    };
-
-    checkBits();
-  }, [loggedIn]);
-
-  useEffect(() => {
-    (async () => {
-      const decryptionKey = await getDecryptionKey();
-      if (decryptionKey) {
-        setLoggedIn(true);
-      }
-
-      if (announcement && wallet?.type === "hardware") {
-        setOpen(true);
-      } else {
-        setOpen(false);
-      }
-    })();
-  }, [wallet, announcement]);
 
   return (
     <Card size="auto" style={{ padding: "32px" }} hasBackButton={false} closeButtonStyles={{ right: "2rem" }}>
