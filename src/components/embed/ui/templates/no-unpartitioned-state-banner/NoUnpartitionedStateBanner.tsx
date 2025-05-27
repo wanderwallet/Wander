@@ -1,6 +1,6 @@
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import browser from "webextension-polyfill";
-import { Button, MotionSnackbar } from "../../..";
+import { Button, Snackbar, MotionSnackbar } from "../../..";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 
 // Animation variants
@@ -24,28 +24,41 @@ export function NoUnpartitionedStateBanner({ className }: StoragePartitionedBann
   const { unpartitionedStateStatus } = useEmbedded();
   const canBeRequested = unpartitionedStateStatus === "rejected" || unpartitionedStateStatus === "error";
 
-  return (
-    <AnimatePresence>
-      {unpartitionedStateStatus !== "supported" && (
-        <MotionSnackbar
-          variant="warning"
-          className={className}
-          variants={bannerAnimations}
-          initial="hidden"
-          animate="visible"
-          exit="exit"
-          transition={{ duration: 0.3 }}>
-          {browser.i18n.getMessage(
-            canBeRequested ? "partitioned_storage_banner_rejected" : "partitioned_storage_banner",
-          )}
+  return unpartitionedStateStatus !== "supported" ? (
+    <Snackbar variant="warning" className={className}>
+      {browser.i18n.getMessage(canBeRequested ? "partitioned_storage_banner_rejected" : "partitioned_storage_banner")}
 
-          {canBeRequested && (
-            <Button variant="secondary" size="sm">
-              {browser.i18n.getMessage("re_request_access")}
-            </Button>
-          )}
-        </MotionSnackbar>
+      {canBeRequested && (
+        <Button variant="secondary" size="sm">
+          {browser.i18n.getMessage("re_request_access")}
+        </Button>
       )}
+    </Snackbar>
+  ) : null;
+}
+
+export function AnimatedNoUnpartitionedStateBanner({ className }: StoragePartitionedBannerProps) {
+  const { unpartitionedStateStatus } = useEmbedded();
+  const canBeRequested = unpartitionedStateStatus === "rejected" || unpartitionedStateStatus === "error";
+
+  return unpartitionedStateStatus !== "supported" ? (
+    <AnimatePresence>
+      <MotionSnackbar
+        variant="warning"
+        className={className}
+        variants={bannerAnimations}
+        initial="hidden"
+        animate="visible"
+        exit="exit"
+        transition={{ duration: 0.3 }}>
+        {browser.i18n.getMessage(canBeRequested ? "partitioned_storage_banner_rejected" : "partitioned_storage_banner")}
+
+        {canBeRequested && (
+          <Button variant="secondary" size="sm">
+            {browser.i18n.getMessage("re_request_access")}
+          </Button>
+        )}
+      </MotionSnackbar>
     </AnimatePresence>
-  );
+  ) : null;
 }

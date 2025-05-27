@@ -19,9 +19,10 @@ const SNACKBAR_ICON_BY_VARIANT: Record<SnackbarVariant, (props: React.SVGProps<S
 export interface SnackbarBaseProps extends FormattedText {
   variant: SnackbarVariant;
   title?: string;
+  ref?: React.Ref<HTMLDivElement>;
 }
 
-export function Snackbar({ variant, title, className: classNameProp, children }: SnackbarBaseProps) {
+export function Snackbar({ variant, title, className: classNameProp, children, ref }: SnackbarBaseProps) {
   if (!children) return null;
 
   const className = clsx(
@@ -34,7 +35,7 @@ export function Snackbar({ variant, title, className: classNameProp, children }:
   const icon = Icon ? <Icon className={styles.icon} /> : null;
 
   return (
-    <div className={className}>
+    <div className={className} ref={ref}>
       {title ? (
         <strong className={styles.title}>
           {icon} {title}

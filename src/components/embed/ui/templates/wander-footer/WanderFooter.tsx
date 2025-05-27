@@ -1,5 +1,5 @@
 import { WanderIcon } from "../../atoms";
-import { NoUnpartitionedStateBanner } from "~components/embed/ui/templates/no-unpartitioned-state-banner/NoUnpartitionedStateBanner";
+import { AnimatedNoUnpartitionedStateBanner } from "~components/embed/ui/templates/no-unpartitioned-state-banner/NoUnpartitionedStateBanner";
 
 import styles from "./WanderFooter.module.scss";
 
@@ -10,7 +10,7 @@ export function WanderFooter() {
         Secured by <WanderIcon />
       </div>
 
-      <NoUnpartitionedStateBanner className={styles.banner} />
+      <AnimatedNoUnpartitionedStateBanner className={styles.banner} />
     </footer>
   );
 }

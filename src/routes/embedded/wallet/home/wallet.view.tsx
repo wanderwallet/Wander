@@ -12,6 +12,7 @@ import { WalletHomeActions } from "./actions.container";
 import { WalletHomeAssets } from "./assets.container";
 import { useBalanceSortedTokens } from "~/tokens/hooks";
 import { WalletHomeBalance } from "./balance.container";
+import { AppWarnings } from "~components/embed/ui/templates/app-warnings/AppWarnings";
 
 export function WalletHomeEmbeddedView() {
   const [loggedIn, setLoggedIn] = useState(false);
@@ -53,6 +54,7 @@ export function WalletHomeEmbeddedView() {
   return (
     <Card size="auto" style={{ padding: "32px" }} hasBackButton={false} closeButtonStyles={{ right: "2rem" }}>
       <AccountSelector wallets={wallets} activeWallet={wallet} />
+      <AppWarnings />
       <WalletHomeBalance />
       <Divider />
       <TabBar

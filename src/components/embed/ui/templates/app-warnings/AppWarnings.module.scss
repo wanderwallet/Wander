@@ -1,0 +1,35 @@
+.button {
+  position: absolute;
+  top: var(--spacing-6);
+  right: calc(var(--spacing-8) + var(--spacing-8) + var(--spacing-2));
+  height: var(--input-height);
+  width: var(--input-height);
+  color: var(--snackbar-color-warning);
+  overflow: visible;
+
+  &:hover::after {
+    content: "";
+    position: absolute;
+    transform: translate(0, var(--spacing-6));
+    inset: calc(-1 * var(--spacing-6));
+  }
+}
+
+.banner {
+  position: absolute;
+  z-index: 100;
+  top: calc(var(--spacing-8) + var(--input-height) + var(--spacing-3));
+  left: var(--spacing-8);
+  right: var(--spacing-8);
+  width: auto;
+  opacity: 0;
+  pointer-events: none;
+  transform: opacity linear 150ms;
+  box-shadow: var(--shadow-blurred);
+
+  .button:hover + &,
+  &:hover {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
