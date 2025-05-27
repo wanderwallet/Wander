@@ -1,11 +1,9 @@
 .dropdown-item {
-  padding: 0.1rem;
-  margin: 0.1rem;
   width: auto;
-  border-radius: 0.5rem;
   cursor: pointer;
+  border-radius: calc(var(--border-radius-xl) - var(--input-child-offset));
 }
 
 .dropdown-item:hover {
-  background-color: rgb(240 249 255);
+  background-color: var(--input-background);
 }

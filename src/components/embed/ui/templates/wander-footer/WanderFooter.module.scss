@@ -14,12 +14,7 @@
 }
 
 .banner {
-  border-left: 0;
-  border-right: 0;
-  border-bottom: 0;
-  border-radius: 0;
-  margin: var(--spacing-6) calc(-1 * var(--spacing-3)) calc(-1 * var(--spacing-3));
-  width: auto;
   z-index: 100;
   pointer-events: all;
+  margin-top: var(--spacing-6);
 }

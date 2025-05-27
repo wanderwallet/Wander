@@ -5,9 +5,9 @@
   flex-direction: column;
   align-items: center;
   margin-top: 0.5rem;
-  background-color: white;
-  border-radius: 0.5rem;
-  box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
+  background-color: var(--color-background-default);
+  border-radius: var(--input-border-radius);
+  box-shadow: var(--shadow-blurred);
   max-height: 40vh;
   overflow-y: scroll;
   scrollbar-width: none;
@@ -18,6 +18,8 @@
     opacity 100ms ease-in-out;
   opacity: 0;
   pointer-events: none;
+  padding: var(--input-child-offset);
+  /* width: calc(100vw - 2 * var(--spacing-8)); */
 }
 
 .dropdown-content::-webkit-scrollbar {
