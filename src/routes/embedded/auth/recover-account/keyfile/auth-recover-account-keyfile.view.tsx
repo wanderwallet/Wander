@@ -1,7 +1,7 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useEffect, useState } from "react";
 import { useLocation } from "~wallets/router/router.utils";
-import { Row, Button, Copyable, Upload, Text } from "~components/embed";
+import { Row, Button, Copyable, Upload, Text, Snackbar } from "~components/embed";
 import copy from "copy-to-clipboard";
 import { toast } from "react-toastify";
 import { WalletUtils } from "~utils/wallets/wallets.utils";
@@ -89,7 +89,7 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
       headerText="Import Keyfile"
       subtitle="Upload your private key to recover your account."
       onBackButtonClick={() => navigate(`/auth/recover-account`)}
-      isLoading={ isViewLoading }>
+      isLoading={isViewLoading}>
       <Text>Would you like to recover this account?</Text>
       <Copyable
         isFullWidth
@@ -114,8 +114,7 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
       headerText="Import Keyfile"
       subtitle="Upload your private key to recover your account."
       onBackButtonClick={() => navigate(`/auth/recover-account`)}
-      isLoading={ isViewLoading }>
-
+      isLoading={isViewLoading}>
       <Upload
         isFullWidth
         title={"Click to upload"}
@@ -125,12 +124,7 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
         onFileParse={parseUpload}
       />
 
-      {uploadError && (
-        <Text alignment="left" variant="bodySm" style={{ color: "#D22B1F", alignSelf: "flex-start", marginTop: 8 }}>
-          { uploadError }
-        </Text>
-      )}
-
+      <Snackbar variant="error">{uploadError}</Snackbar>
     </OnboardingCard>
   );
 }

@@ -10,7 +10,7 @@ export function PasswordInput(props: PasswordInputProps) {
   const [isVisible, setIsVisible] = useState(false);
 
   const toggleIsVisible = useCallback(() => {
-    setIsVisible(prevIsVisible => !prevIsVisible);
+    setIsVisible((prevIsVisible) => !prevIsVisible);
   }, []);
 
   const visibilityIcon = isVisible ? (
@@ -21,7 +21,8 @@ export function PasswordInput(props: PasswordInputProps) {
         height: 22,
         color: "var(--text-color-tertiary)",
       }}
-    />) : (
+    />
+  ) : (
     <Eye
       aria-label="Show password"
       style={{
@@ -32,17 +33,7 @@ export function PasswordInput(props: PasswordInputProps) {
     />
   );
 
-  const visibilityButton = (
-    <InputButton
-      icon={ visibilityIcon }
-      tabIndex={-1}
-      onClick={ toggleIsVisible } />
-  );
+  const visibilityButton = <InputButton icon={visibilityIcon} tabIndex={-1} onClick={toggleIsVisible} />;
 
-  return (
-    <TextInput
-      {...props}
-      type={ isVisible ? "text" : "password" }
-      endSlot={ visibilityButton } />
-  );
+  return <TextInput {...props} type={isVisible ? "text" : "password"} endSlot={visibilityButton} />;
 }

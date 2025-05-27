@@ -18,7 +18,7 @@ export function AuthEmailSignupEmbeddedView() {
   const { email } = useSearchParams<{ email: string }>();
   const { authStatus } = useEmbedded();
 
-// Input refs:
+  // Input refs:
 
   const passwordInputRef = useRef<HTMLInputElement>();
   const repeatPasswordInputRef = useRef<HTMLInputElement>();
@@ -34,10 +34,7 @@ export function AuthEmailSignupEmbeddedView() {
 
   // Passwords match:
 
-  const [{
-    password,
-    passwordsMatch,
-  }, setPasswordsState] = useState({
+  const [{ password, passwordsMatch }, setPasswordsState] = useState({
     password: "",
     passwordsMatch: false,
   });
@@ -52,55 +49,58 @@ export function AuthEmailSignupEmbeddedView() {
     });
   }, 250);
 
-  const handleEmailSignup = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleEmailSignup = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
 
-    const password = passwordInputRef.current.value || "";
-    const repeatPassword = repeatPasswordInputRef.current.value || "";
+      const password = passwordInputRef.current.value || "";
+      const repeatPassword = repeatPasswordInputRef.current.value || "";
 
-    try {
-      setIsAuthenticating(true);
+      try {
+        setIsAuthenticating(true);
 
-      const supabase = await getSupabaseClient();
+        const supabase = await getSupabaseClient();
 
-      if (!email || !password) {
-        toast.error("Please enter an email and password");
-        return;
+        if (!email || !password) {
+          toast.error("Please enter an email and password");
+          return;
+        }
+
+        if (password !== repeatPassword) {
+          toast.error("Passwords do not match");
+          return;
+        }
+
+        const { error, data } = await supabase.auth.signUp({
+          email,
+          password,
+        });
+
+        if (error) {
+          toast.error(error.message);
+          return;
+        }
+
+        // TODO: Move to constant and rename.
+        await PersistentStorage.setItem("sb-verify-email-resent-timestamp", Date.now());
+        navigate(EmbeddedPaths.AuthEmailVerify, {
+          search: { email },
+        });
+      } catch (error) {
+        toast.error("Error signing up");
+      } finally {
+        setIsAuthenticating(false);
       }
-
-      if (password !== repeatPassword) {
-        toast.error("Passwords do not match");
-        return;
-      }
-
-      const { error, data } = await supabase.auth.signUp({
-        email,
-        password,
-      });
-
-      if (error) {
-        toast.error(error.message);
-        return;
-      }
-
-      // TODO: Move to constant and rename.
-      await PersistentStorage.setItem("sb-verify-email-resent-timestamp", Date.now());
-      navigate(EmbeddedPaths.AuthEmailVerify, {
-        search: { email },
-      });
-    } catch (error) {
-      toast.error("Error signing up");
-    } finally {
-      setIsAuthenticating(false);
-    }
-  }, [email]);
+    },
+    [email],
+  );
 
   useEffect(() => {
     if (!email) {
       if (process.env.NODE_ENV === "development") {
-        throw new Error("No email search param. The router should have taken care of this.")
+        throw new Error("No email search param. The router should have taken care of this.");
       } else {
-        navigate(EmbeddedPaths.Auth)
+        navigate(EmbeddedPaths.Auth);
       }
     }
   }, [email]);
@@ -110,23 +110,24 @@ export function AuthEmailSignupEmbeddedView() {
       headerText="Create your password"
       subtitle="Enter a password to secure your Wander account."
       onBackButtonClick={() => navigate(`/auth`)}
-      isLoading={ isViewLoading }
-      onSubmit={ handleEmailSignup }>
-
+      isLoading={isViewLoading}
+      onSubmit={handleEmailSignup}>
       <PasswordInput
         name="password"
         placeholder="Enter your password"
         inputRef={passwordInputRef}
         disabled={areButtonsDisabled}
-        onChange={ handlePasswordChange }
-        autoFocus />
+        onChange={handlePasswordChange}
+        autoFocus
+      />
 
       <PasswordInput
         name="repeatPassword"
         placeholder="Confirm your password"
         inputRef={repeatPasswordInputRef}
         disabled={areButtonsDisabled}
-        onChange={ handlePasswordChange } />
+        onChange={handlePasswordChange}
+      />
 
       <PasswordMatch matches={passwordsMatch} />
 

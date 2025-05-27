@@ -40,58 +40,61 @@ export function AuthEmailSigninEmbeddedView() {
 
   const authStatusRef = useRef(authStatus);
 
-  const handleEmailSignin = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleEmailSignin = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
 
-    const password = passwordInputRef.current?.value || "";
+      const password = passwordInputRef.current?.value || "";
 
-    try {
-      if (!password) {
-        toast.error("Please enter an email and password");
-        return;
-      }
-
-      setIsAuthenticating(true);
-
-      // TODO: Call authenticate instead.
-
-      const supabase = await getSupabaseClient();
-
-      const { error, data } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        toast.error(error.message);
-        if (error.code === "email_not_confirmed") {
-          navigate(EmbeddedPaths.AuthEmailVerify);
+      try {
+        if (!password) {
+          toast.error("Please enter an email and password");
+          return;
         }
-        return;
-      }
 
-      const interval = setInterval(() => {
-        if (authStatusRef.current === "unlocked") {
-          navigate(EmbeddedPaths.WalletHomeEmbeddedView);
+        setIsAuthenticating(true);
+
+        // TODO: Call authenticate instead.
+
+        const supabase = await getSupabaseClient();
+
+        const { error, data } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (error) {
+          toast.error(error.message);
+          if (error.code === "email_not_confirmed") {
+            navigate(EmbeddedPaths.AuthEmailVerify);
+          }
+          return;
         }
-      }, 1000);
 
-      await new Promise((resolve) => {
         const interval = setInterval(() => {
           if (authStatusRef.current === "unlocked") {
-            clearInterval(interval);
-            resolve(true);
+            navigate(EmbeddedPaths.WalletHomeEmbeddedView);
           }
         }, 1000);
-      });
 
-      return () => clearInterval(interval);
-    } catch (error) {
-      toast.error("Error signing up");
-    } finally {
-      setIsAuthenticating(false);
-    }
-  }, [email]);
+        await new Promise((resolve) => {
+          const interval = setInterval(() => {
+            if (authStatusRef.current === "unlocked") {
+              clearInterval(interval);
+              resolve(true);
+            }
+          }, 1000);
+        });
+
+        return () => clearInterval(interval);
+      } catch (error) {
+        toast.error("Error signing up");
+      } finally {
+        setIsAuthenticating(false);
+      }
+    },
+    [email],
+  );
 
   useEffect(() => {
     authStatusRef.current = authStatus;
@@ -100,9 +103,9 @@ export function AuthEmailSigninEmbeddedView() {
   useEffect(() => {
     if (!email) {
       if (process.env.NODE_ENV === "development") {
-        throw new Error("No email search param. The router should have taken care of this.")
+        throw new Error("No email search param. The router should have taken care of this.");
       } else {
-        navigate(EmbeddedPaths.Auth)
+        navigate(EmbeddedPaths.Auth);
       }
     }
   }, [email]);
@@ -110,16 +113,16 @@ export function AuthEmailSigninEmbeddedView() {
   return (
     <OnboardingCard
       headerText="Enter your password"
-      isLoading={ isViewLoading }
+      isLoading={isViewLoading}
       onBackButtonClick={() => navigate(`/auth`)}
-      onSubmit={ handleEmailSignin }>
-
+      onSubmit={handleEmailSignin}>
       <PasswordInput
         name="password"
         placeholder="Enter your password"
         inputRef={passwordInputRef}
         disabled={areButtonsDisabled}
-        autoFocus />
+        autoFocus
+      />
 
       <Button type="submit" isFullWidth isDisabled={areButtonsDisabled}>
         Sign in
@@ -140,7 +143,6 @@ export function AuthEmailSigninEmbeddedView() {
           Recover account
         </Button>
       </Flex>
-
     </OnboardingCard>
   );
 }

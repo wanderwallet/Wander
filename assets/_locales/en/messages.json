@@ -2030,13 +2030,13 @@
     "message": "Congrats on earning AO Tokens for hodling AR! 🥳",
     "description": "ao token announcement title text"
   },
-  "AO_token_send_popup": {
-    "message": "The AO token is non transferable until February 8th, 2025 when 15% of AO has been minted.",
-    "description": "Popup description about ao token transfer"
-  },
   "EXP_token_send_popup": {
     "message": "The EXP Token is non transferable",
     "description": "Popup description about ao token transfer"
+  },
+  "PI_token_send_popup": {
+    "message": "The PI Token is non transferable",
+    "description": "Popup description about pi token transfer"
   },
   "token_send_popup_title": {
     "message": "$TOKEN$ Token Transfer Notice",
@@ -2979,6 +2979,22 @@
   "data_too_large": {
     "message": "Unable to display data: Data is too large to display.",
     "description": "Data too large text"
+  },
+  "partitioned_storage_banner": {
+    "message": "Your current browser does not support cross-site authentication and wallet syncing. This means you’ll need to manually import your wallet each time you visit a new site that uses Wander Connect.\nTo enjoy a seamless experience across sites, please use Chrome or Edge.",
+    "description": "Unpartitioned state banner message"
+  },
+  "partitioned_storage_banner_rejected": {
+    "message": "Wander Connect needs access to your browser's storage to enable cross-site authentication and wallet syncing. Denying access means you’ll need to manually import your wallet each time you visit a new site that uses Wander Connect.\nTo enjoy a seamless experience across sites, please allow access to your browser's storage.",
+    "description": "Unpartitioned state rejected banner message"
+  },
+  "re_request_access": {
+    "message": "Re-request access",
+    "description": "Re-request access text"
+  },
+  "set_up_a_password": {
+    "message": "Set up a password",
+    "description": "Set up a password text"
   },
   "generating_your_account": {
     "message": "Generating your account!",

@@ -19,7 +19,10 @@ export default function TokenListItem({ token, active, onClick }: Props) {
   const { navigate } = useLocation();
 
   // format address
-  const formattedAddress = useMemo(() => (token.id === AR_PROCESS_ID ? AR_PROCESS_ID : formatAddress(token.id, 8)), [token.id]);
+  const formattedAddress = useMemo(
+    () => (token.id === AR_PROCESS_ID ? AR_PROCESS_ID : formatAddress(token.id, 8)),
+    [token.id],
+  );
 
   // allow dragging with the drag icon
   const dragControls = useDragControls();

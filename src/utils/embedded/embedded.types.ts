@@ -9,6 +9,7 @@ import type {
   DbSession,
 } from "embed-api";
 import type { LocalWallet } from "~wallets/wallets.types";
+import type { UnpartitionedStateStatus } from "~iframe/storage/unpartitioned-storage/unpartitioned-storage.utils";
 
 export type AuthStatus =
   | "unknown"
@@ -91,6 +92,7 @@ export interface RecoveryJSON {
 
 export interface EmbeddedContextData extends EmbeddedContextState, EmbeddedContextAuth {
   currentWallet: Wallet | null;
+  unpartitionedStateStatus: UnpartitionedStateStatus;
 
   authenticate: (authProviderType: AuthProviderType, email?: string, password?: string) => Promise<void>;
   fetchRecoverableAccounts: () => Promise<RecoverableAccount[]>;

@@ -12,22 +12,20 @@ export function WalletTransactionsHistoryEmbeddedView() {
   const { transactions, loading, hasNextPage, fetchTransactions, count } = useTransactions(address);
 
   return (
-    <AuthRequestCard
-      headerText="Transaction History"
-      onBackButtonClick={() => navigate("/wallet/transactions")}>
-      {count.actual > 0 ? (<>
-        {
-           Object.entries(transactions).map(([monthYear, transactions]) => (
+    <AuthRequestCard headerText="Transaction History" onBackButtonClick={() => navigate("/wallet/transactions")}>
+      {count.actual > 0 ? (
+        <>
+          {Object.entries(transactions).map(([monthYear, transactions]) => (
             <TransactionGroup key={monthYear} monthYear={monthYear} transactions={transactions} />
-          ))
-        }
+          ))}
 
-        {hasNextPage && (
-          <Button isLoading={loading} onClick={fetchTransactions}>
-            Load more...
-          </Button>
-        )}
-      </>) : (
+          {hasNextPage && (
+            <Button isLoading={loading} onClick={fetchTransactions}>
+              Load more...
+            </Button>
+          )}
+        </>
+      ) : (
         <Box>
           {loading ? (
             <Loading style={{ width: "20px", height: "20px" }} />

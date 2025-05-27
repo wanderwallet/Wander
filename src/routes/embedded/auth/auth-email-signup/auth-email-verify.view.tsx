@@ -247,9 +247,9 @@ export function AuthEmailVerifyEmbeddedView() {
   useEffect(() => {
     if (!email) {
       if (process.env.NODE_ENV === "development") {
-        throw new Error("No email search param. The router should have taken care of this.")
+        throw new Error("No email search param. The router should have taken care of this.");
       } else {
-        navigate(EmbeddedPaths.Auth)
+        navigate(EmbeddedPaths.Auth);
       }
     }
   }, [email]);
@@ -257,13 +257,12 @@ export function AuthEmailVerifyEmbeddedView() {
   return (
     <OnboardingCard
       headerText="Verify your email"
-      subtitle={ `We've sent an email to ${email}` }
+      subtitle={`We've sent an email to ${email}`}
       hasBackButton={false}
-      isLoading={ isResending }>
-
+      isLoading={isResending}>
       <Text variant={"bodySm"} alignment={"center"} style={{ color: "var(--text-color-secondary, #666666)" }}>
-        Enter the 6-digit verification code from that email to complete signup. If you don't see the email, please
-        check your spam folder.
+        Enter the 6-digit verification code from that email to complete signup. If you don't see the email, please check
+        your spam folder.
       </Text>
 
       <Flex direction="column" gap={16} width="100%">
@@ -283,7 +282,7 @@ export function AuthEmailVerifyEmbeddedView() {
               onChange={(e) => handleOtpDigitChange(index, e.target.value)}
               onKeyDown={(e) => handleKeyDown(e, index)}
               onPaste={(e) => handlePaste(e, index)}
-              autoFocus={ index === 0 }
+              autoFocus={index === 0}
             />
           ))}
         </Flex>
@@ -296,7 +295,6 @@ export function AuthEmailVerifyEmbeddedView() {
           Verify Code
         </Button>
       </Flex>
-
 
       <Text variant={"bodyXs"} alignment={"center"} style={{ color: "var(--text-color-tertiary, #838383)" }}>
         Didn't receive the message?
