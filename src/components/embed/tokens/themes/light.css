@@ -39,6 +39,14 @@
   --color-card-shadow-default: var(--brand-color-gray-200);
   --color-card-border-default: var(--brand-color-gray-100);
 
+  --snackbar-background-info: var(--input-background);
+  --snackbar-background-warning: #fff9ea;
+  --snackbar-background-error: #ffeaea;
+
+  --snackbar-color-info: var(--input-color);
+  --snackbar-color-warning: #bd8802;
+  --snackbar-color-error: #bd0202;
+
   --color-text-footer: var(--brand-color-neutral5);
 
   --color-background-box: var(--brand-color-secondary7);

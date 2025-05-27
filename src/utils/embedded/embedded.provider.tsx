@@ -35,11 +35,7 @@ import {
   type RecoverableAccount,
 } from "embed-api";
 import { AuthenticationService } from "~utils/authentication/authentication.service";
-import {
-  AUTH_PROVIDER_TYPE_BY_PROVIDER_STR,
-  EMBEDDED_FEATURE_FLAGS,
-  EMBEDDED_SDK_AUTH_STATUS_BY_AUTH_STATUS,
-} from "~utils/embedded/embedded.constants";
+import { EMBEDDED_FEATURE_FLAGS, EMBEDDED_SDK_AUTH_STATUS_BY_AUTH_STATUS } from "~utils/embedded/embedded.constants";
 import { getDeviceNonce } from "~utils/embedded/device-nonce/device-nonce.utils";
 import { jwtDecode } from "jwt-decode";
 import type { SupabaseJwtPayload } from "~utils/authentication/authentication.types";
@@ -63,6 +59,11 @@ import {
   AO_TOKENS_LAST_BLOCK_HEIGHT,
 } from "~tokens/aoTokens/sync";
 import { loadTokens } from "~tokens/token";
+import {
+  getUnpartitionedStateStatus,
+  UNPARTITIONED_STATE_STATUS_CHANGE_EVENT,
+  type UnpartitionedStateStatusChangeEvent,
+} from "~iframe/storage/unpartitioned-storage/unpartitioned-storage.utils";
 
 export type AuthStatusCopy = AuthStatus;
 
@@ -89,6 +90,7 @@ export const EmbeddedContext = createContext<EmbeddedContextData>({
   ...EMBEDDED_CONTEXT_INITIAL_AUTH,
 
   currentWallet: null,
+  unpartitionedStateStatus: getUnpartitionedStateStatus(),
 
   authenticate: async () => null,
   fetchRecoverableAccounts: async () => null,
@@ -122,7 +124,21 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
   const [embeddedContextAuth, setEmbeddedContextAuth] = useState<EmbeddedContextAuth>(EMBEDDED_CONTEXT_INITIAL_AUTH);
 
-  const [wocation] = useHashLocation();
+  const [unpartitionedStateStatus, setUnpartitionedStateStatus] = useState(() => getUnpartitionedStateStatus());
+
+  // Unpartitioned state:
+
+  useEffect(() => {
+    function handleBanner(event: UnpartitionedStateStatusChangeEvent) {
+      const { unpartitionedStateStatus } = event.detail;
+
+      if (unpartitionedStateStatus) setUnpartitionedStateStatus(unpartitionedStateStatus);
+    }
+
+    document.addEventListener(UNPARTITIONED_STATE_STATUS_CHANGE_EVENT, handleBanner);
+
+    return () => document.removeEventListener(UNPARTITIONED_STATE_STATUS_CHANGE_EVENT, handleBanner);
+  }, []);
 
   // Wallet props:
 
@@ -1435,6 +1451,9 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
   }, [initEmbeddedWallet]);
 
   // TODO: Move to app entry/mount point and do not even start the app?
+
+  const [wocation] = useHashLocation();
+
   useEffect(() => {
     if (wocation.startsWith("/access_token") && window.opener) {
       // Get the hash fragment without the leading '#'
@@ -1458,6 +1477,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         ...embeddedContextAuth,
 
         currentWallet,
+        unpartitionedStateStatus,
 
         authenticate,
         fetchRecoverableAccounts,

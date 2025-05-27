@@ -1,75 +1,73 @@
 @import "../../../tokens/index.css";
 
 .root {
-  // border: 1px solid var(--color-border-box);
-  border: 1px solid currentColor;
-  border-radius: var(--border-radius-lg);
+  position: relative;
+  display: flex;
   font-size: 12px;
-
-  padding: var(--spacing-3);
   width: auto;
   height: auto;
   width: 100%;
+  border-radius: var(--input-border-radius);
+  border: var(--input-border);
+  padding: var(--spacing-3);
+  min-height: var(--input-height);
 
-  display: flex;
-  align-items: flex-start;
+  &.withTitle {
+    flex-direction: column;
+  }
+
+  &.noTitle {
+    flex-direction: row;
+  }
 
   &.infoVariant {
-    background: var(--color-background-default);
+    background: var(--snackbar-background-info);
+    color: var(--snackbar-color-info);
+    border-color: var(--snackbar-color-info);
   }
 
   &.warningVariant {
-    background: #fff9ea;
-    // color: #121212;
-    // color: #757575;
-    color: rgb(120, 120, 0);
-    color: #bd8802;
+    background: var(--snackbar-background-warning);
+    color: var(--snackbar-color-warning);
+    border-color: var(--snackbar-color-warning);
   }
 
   &.errorVariant {
-    background: red;
+    background: var(--snackbar-background-error);
+    color: var(--snackbar-color-error);
+    border-color: var(--snackbar-color-error);
   }
 }
 
+.title {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 24px;
+  // padding-left: calc(var(--spacing-3) + 24px);
+  margin-bottom: var(--spacing-3);
+}
+
 .icon {
-  flex: 1 0 auto;
+  // flex: 1 0 auto;
+  min-width: 0;
   font-size: 24px;
   margin-right: var(--spacing-3);
+  align-self: flex-start;
 
-  .infoVariant > & {
-    //color: blue;
+  /*
+  .withTitle & {
+    position: absolute;
+    top: var(--spacing-3);
+    left: var(--spacing-3);
   }
-
-  .warningVariant > & {
-    //color: yellow;
-  }
-
-  .errorVariant > & {
-    //color: red;
-  }
+    */
 }
 
 .content {
   flex: 1 1 100%;
   color: inherit;
   font: inherit;
+  align-self: center;
 }
-
-/*
-
-
-
-  const defaultBorderColor = isDarkMode ? "var(--color-border-box)" : borderColor || "var(--color-border-box)";
-
-  const defaultBackgroundColor =
-    backgroundColor || (isDarkMode ? "var(--color-card-background-default)" : "var(--color-background-default)");
-
-  const defaultIconColor = iconColor || (isDarkMode ? "var(--color-font-body)" : iconColor);
-
-  const defaultTextColor = isDarkMode ? "var(--color-font-body)" : textColor;
-      style={{
-        borderColor: defaultBorderColor,
-        backgroundColor: defaultBackgroundColor,
-      }}
-
-*/

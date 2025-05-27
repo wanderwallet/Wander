@@ -1,6 +1,14 @@
 import { isInsideIframe } from "~utils/embedded/iframe.utils";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
-import { PARTITIONED_STORAGE_BANNER_EVENT } from "./unpartitioned-storage.utils";
+import {
+  getUnpartitionedStateStatus,
+  HAS_SIMPLE_STORAGE_API,
+  setUnpartitionedStateStatus,
+  UNPARTITIONED_STATE_STATUS_CHANGE_EVENT,
+  type UnpartitionedStateStatus,
+  type UnpartitionedStateStatusChangeEvent,
+} from "./unpartitioned-storage.utils";
+import { isError } from "~utils/error/error.utils";
 
 type StorageType = "localStorage" | "sessionStorage";
 interface UnpartitionedStorageOptions {
@@ -395,8 +403,6 @@ export class EnhancedStorage implements Storage {
 
   protected async getStorageHandle(): Promise<void> {
     try {
-      if (!document.requestStorageAccess) return;
-
       log(LOG_GROUP.STORAGE, `Requesting ${this.storageType} access with typed API`);
 
       // @ts-expect-error - Newer API with types may not be recognized by TypeScript
@@ -406,84 +412,76 @@ export class EnhancedStorage implements Storage {
 
       // @ts-expect-error - Newer API may not be recognized by TypeScript
       if (handle && handle[this.storageType]) {
+        this.dispatchUnpartitionedStateStatusChange("supported");
         this.storage = handle[this.storageType];
-        log(LOG_GROUP.STORAGE, `Unpartitioned ${this.storageType} access granted with handle`);
-        return;
       } else {
-        throw new Error(`Unpartitioned ${this.storageType} access not granted with handle`);
+        this.dispatchUnpartitionedStateStatusChange("limited");
       }
     } catch (error) {
-      log(LOG_GROUP.STORAGE, "Failed to get storage access:", error);
-      throw error;
+      this.dispatchUnpartitionedStateStatusChange(error);
     }
   }
 
   async requestStorageAccess(): Promise<void> {
     if (!isInsideIframe()) return;
 
-    // Check if Storage Access API is supported
-    if (!document.hasStorageAccess && !document.requestStorageAccess) {
-      log(LOG_GROUP.STORAGE, "Storage Access API not supported");
-      this.handlePartitionedStorage("open", "dismiss");
+    // Check if Storage Access API is supported:
+
+    if (!HAS_SIMPLE_STORAGE_API) {
+      this.dispatchUnpartitionedStateStatusChange("unsupported");
       return;
     }
 
     try {
-      // Check if we already have access
-      let hasAccess = false;
-      if (document.hasStorageAccess) {
-        hasAccess = await document.hasStorageAccess();
-      }
+      // Check if we already have access:
+
+      const hasAccess = await document.hasStorageAccess();
 
       if (hasAccess) {
-        log(LOG_GROUP.STORAGE, "Already has storage access");
         await this.getStorageHandle();
+
         return;
       }
 
-      // If no access, check permission state
-      let permissionState = "prompt"; // Default
-      try {
-        if (navigator.permissions) {
+      // If no access, check permission state:
+
+      let permissionState: PermissionState = "prompt"; // Default
+
+      if (navigator.permissions) {
+        try {
           const permission = await navigator.permissions.query({
             name: "storage-access" as PermissionName,
           });
+
           permissionState = permission.state;
 
-          // Listen for permission changes
           permission.addEventListener("change", () => {
-            if (permission.state === "granted") {
-              this.getStorageHandle()
-                .then(() => {
-                  log(LOG_GROUP.STORAGE, "Storage access granted via permission change");
-                })
-                .catch((error) => {
-                  log(LOG_GROUP.STORAGE, "Error getting storage after permission change:", error);
-                });
-            }
+            log(LOG_GROUP.STORAGE, `Storage access permission changed to ${permission.state}`);
+
+            this.handleStorageAccessPermission(permission.state);
           });
+        } catch (error) {
+          log(LOG_GROUP.STORAGE, "Error checking permission:", error);
         }
-      } catch (e) {
-        log(LOG_GROUP.STORAGE, "Error checking permission:", e);
       }
 
-      // Handle based on permission state
-      if (permissionState === "granted") {
-        // Already granted to another same-site embed, can request directly
-        await this.getStorageHandle();
-        log(LOG_GROUP.STORAGE, "Storage access granted via permission");
-      } else if (permissionState === "prompt") {
-        // Need user interaction to request
-        this.setupUserInteractionHandler();
-        this.handlePartitionedStorage("open", "re-request");
-      } else if (permissionState === "denied") {
-        // User has denied access
-        log(LOG_GROUP.STORAGE, "Storage access permanently denied");
-        this.handlePartitionedStorage("open", "re-request");
-      }
+      this.handleStorageAccessPermission(permissionState);
     } catch (error) {
-      log(LOG_GROUP.STORAGE, "Error in storage access flow:", error);
-      this.handlePartitionedStorage("open", "re-request");
+      this.dispatchUnpartitionedStateStatusChange(error);
+    }
+  }
+
+  private async handleStorageAccessPermission(permissionState: PermissionState) {
+    // Handle based on permission state
+    if (permissionState === "granted") {
+      // Already granted to another same-site embed, can request directly
+      await this.getStorageHandle();
+    } else if (permissionState === "prompt") {
+      // Need user interaction to request
+      this.setupUserInteractionHandler();
+    } else if (permissionState === "denied") {
+      // User has denied access
+      this.dispatchUnpartitionedStateStatusChange("rejected");
     }
   }
 
@@ -502,11 +500,8 @@ export class EnhancedStorage implements Storage {
 
         // Clean up event listeners after successful request
         cleanupListeners();
-
-        this.handlePartitionedStorage("close", "dismiss");
       } catch (error) {
         log(LOG_GROUP.STORAGE, "Storage access denied after user interaction:", error);
-        this.handlePartitionedStorage("open", "dismiss");
       }
     };
 
@@ -529,25 +524,27 @@ export class EnhancedStorage implements Storage {
   /**
    * Handle the case when unpartitioned storage access is denied or unavailable
    */
-  protected handlePartitionedStorage(
-    eventType: "open" | "close" = "open",
-    actionButtonType: "dismiss" | "re-request" = "dismiss",
+  protected dispatchUnpartitionedStateStatusChange(
+    unpartitionedStateStatusOrError: UnpartitionedStateStatus | Error,
   ): void {
-    setTimeout(() => {
-      document.dispatchEvent(
-        new CustomEvent(PARTITIONED_STORAGE_BANNER_EVENT, {
-          detail: {
-            type: eventType,
-            actionButtonType,
-          },
-          bubbles: true,
-        }),
-      );
-    }, 500);
+    const unpartitionedStateStatus = isError(unpartitionedStateStatusOrError)
+      ? "error"
+      : unpartitionedStateStatusOrError;
+    const error = isError(unpartitionedStateStatusOrError) ? unpartitionedStateStatusOrError : undefined;
 
-    if (actionButtonType === "re-request") {
-      this.setupUserInteractionHandler();
-    }
+    log(LOG_GROUP.STORAGE, `Unpartitioned state access for = ${unpartitionedStateStatus} (${this.storageType})`);
+
+    setUnpartitionedStateStatus(unpartitionedStateStatus);
+
+    document.dispatchEvent(
+      new CustomEvent(UNPARTITIONED_STATE_STATUS_CHANGE_EVENT, {
+        detail: {
+          unpartitionedStateStatus,
+          error,
+        },
+        bubbles: true,
+      }) satisfies UnpartitionedStateStatusChangeEvent,
+    );
   }
 
   /**

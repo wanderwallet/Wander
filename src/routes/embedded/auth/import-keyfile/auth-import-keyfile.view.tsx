@@ -1,7 +1,7 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useCallback, useEffect, useState } from "react";
 
-import { Row, Upload, Copyable, Button, Text } from "~components/embed";
+import { Row, Upload, Copyable, Button, Text, Snackbar } from "~components/embed";
 import copy from "copy-to-clipboard";
 import { useLocation } from "~wallets/router/router.utils";
 import { toast } from "react-toastify";
@@ -111,11 +111,7 @@ export function AuthImportKeyfileEmbeddedView() {
         onFileParse={parseUpload}
       />
 
-      {uploadError && (
-        <Text alignment="left" variant="bodySm" style={{ color: "#D22B1F", alignSelf: "flex-start", marginTop: 8 }}>
-          {uploadError}
-        </Text>
-      )}
+      <Snackbar variant="error">{uploadError}</Snackbar>
     </OnboardingCard>
   );
 }

@@ -2981,8 +2981,12 @@
     "description": "Data too large text"
   },
   "partitioned_storage_banner": {
-    "message": "Your current browser does not support cross-site authentication and wallet syncing. This means you’ll need to manually import your wallet each time you visit a new site that uses Wander Connect.\nTo enjoy a seamless experience across browsers, please use Chrome or Edge.",
-    "description": "Partitioned storage banner message"
+    "message": "Your current browser does not support cross-site authentication and wallet syncing. This means you’ll need to manually import your wallet each time you visit a new site that uses Wander Connect.\nTo enjoy a seamless experience across sites, please use Chrome or Edge.",
+    "description": "Unpartitioned state banner message"
+  },
+  "partitioned_storage_banner_rejected": {
+    "message": "Wander Connect needs access to your browser's storage to enable cross-site authentication and wallet syncing. Denying access means you’ll need to manually import your wallet each time you visit a new site that uses Wander Connect.\nTo enjoy a seamless experience across sites, please allow access to your browser's storage.",
+    "description": "Unpartitioned state rejected banner message"
   },
   "re_request_access": {
     "message": "Re-request access",

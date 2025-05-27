@@ -1,15 +1,17 @@
-import { AlertTriangle, XClose } from "@untitled-ui/icons-react";
+import { XClose } from "@untitled-ui/icons-react";
+import copy from "copy-to-clipboard";
 import { useState, useCallback } from "react";
 import { toast } from "react-toastify";
 import { Flex } from "~components/common/Flex";
-import { Button, Text } from "~components/embed/ui";
+import { Button, Copyable, Snackbar } from "~components/embed/ui";
 import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
+import { Link } from "~wallets/router/components/link/Link";
 import { useLocation } from "~wallets/router/router.utils";
 
 export function AccountBackupWalletRecoveryFileEmbeddedView() {
   const { navigate } = useLocation();
-  const { generateRecoveryAndDownload } = useEmbedded();
+  const { currentWallet, generateRecoveryAndDownload } = useEmbedded();
   const [isLoading, setIsLoading] = useState(false);
 
   const handleGenerateRecoveryAndDownload = useCallback(async () => {
@@ -29,51 +31,39 @@ export function AccountBackupWalletRecoveryFileEmbeddedView() {
       subtitle="Use this recovery file to sign in to Wander Connect on a new device."
       onBackButtonClick={() => navigate("/account/backup-wallet")}
       isLoading={isLoading}>
-      <Flex
-        direction="column"
-        gap={12}
-        style={{
-          width: "100%",
-          borderRadius: 8,
-          padding: 12,
-          borderColor: "#D6D6DD",
-          borderWidth: 1,
-          borderStyle: "solid",
-          flexWrap: "wrap",
-        }}>
-        <Text variant="bodyMd" alignment="left" style={{ color: "#121212" }}>
-          About this file:
-        </Text>
-
+      <Snackbar variant="info" title="About this file:">
         <Flex direction="row" gap={8} align="center">
           <XClose style={{ flexShrink: 0 }} height={17} width={17} color="var(--brand-color-error2)" />
-          <Text variant="bodyXs" alignment="left" style={{ color: "#121212" }}>
-            This file cannot be used to import your wallet into other wallet apps.
-          </Text>
+          This file cannot be used to import your wallet into other wallet apps.
+        </Flex>
+
+        <Flex direction="row" gap={8} align="center">
+          <XClose style={{ flexShrink: 0 }} height={17} width={17} color="transparent" />
+          Would you like to <Link to="/account/backup-wallet/full">export your wallet</Link> instead?
         </Flex>
 
         <Flex direction="row" gap={8} align="center">
           <XClose style={{ flexShrink: 0 }} height={17} width={17} color="var(--brand-color-error2)" />
-          <Text variant="bodyXs" alignment="left" style={{ color: "#121212" }}>
-            This file cannot be used to recover your account if you lose access to your credentials.
-          </Text>
+          This file cannot be used to recover your account if you lose access to your credentials.
         </Flex>
+      </Snackbar>
 
-        <Flex direction="row" gap={8} align="center">
-          <AlertTriangle style={{ flexShrink: 0 }} height={17} width={17} color="#BD8802" />
-          <Text variant="bodyXs" alignment="left" style={{ color: "#121212" }}>
-            You'll need to sign-in with your authentication method and upload this file to recover your wallet.
-          </Text>
-        </Flex>
+      <Snackbar variant="warning" title="Do not share this with anyone!">
+        <p>
+          If someone steals this file, they won't be able to access your wallet unless they also have access to your
+          credentials.
+        </p>
+      </Snackbar>
 
-        <Flex direction="row" gap={8} align="center">
-          <AlertTriangle style={{ flexShrink: 0 }} height={17} width={17} color="#BD8802" />
-          <Text variant="bodyXs" alignment="left" style={{ color: "#121212" }}>
-            If someone steals this file, they won't be able to access your wallet unless they also have access to your
-            credentials.
-          </Text>
-        </Flex>
-      </Flex>
+      <Copyable
+        style={{ padding: "0" }}
+        isFullWidth
+        label="Your wallet address"
+        value={currentWallet.address}
+        onClick={() => {
+          copy(currentWallet.address);
+        }}
+      />
 
       <Button isFullWidth isDisabled={isLoading} onClick={handleGenerateRecoveryAndDownload}>
         Download

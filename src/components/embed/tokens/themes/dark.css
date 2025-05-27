@@ -33,6 +33,14 @@
   --color-card-shadow-default: rgba(0, 0, 0, 0.3);
   --color-card-border-default: var(--brand-color-gray-700);
 
+  --snackbar-background-info: var(--input-background);
+  --snackbar-background-warning: #6a5a31;
+  --snackbar-background-error: rgb(108, 53, 53);
+
+  --snackbar-color-info: var(--input-color);
+  --snackbar-color-warning: #e5d8b7;
+  --snackbar-color-error: #e0b9b9;
+
   --color-text-footer: var(--brand-color-neutral4);
 
   --color-background-box: var(--brand-color-secondary1);

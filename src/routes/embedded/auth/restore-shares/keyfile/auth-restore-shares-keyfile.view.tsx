@@ -1,7 +1,7 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import { Upload, Button, Copyable, Row, Text } from "~components/embed/ui";
+import { Upload, Button, Copyable, Row, Text, Snackbar } from "~components/embed/ui";
 import { useLocation } from "~wallets/router/router.utils";
 import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
 import copy from "copy-to-clipboard";
@@ -121,11 +121,7 @@ export function AuthRestoreSharesKeyfileEmbeddedView({
         onFileParse={parseUpload}
       />
 
-      {uploadError && (
-        <Text alignment="left" variant="bodySm" style={{ color: "#D22B1F", alignSelf: "flex-start", marginTop: 8 }}>
-          {uploadError}
-        </Text>
-      )}
+      <Snackbar variant="error">{uploadError}</Snackbar>
     </OnboardingCard>
   );
 }
