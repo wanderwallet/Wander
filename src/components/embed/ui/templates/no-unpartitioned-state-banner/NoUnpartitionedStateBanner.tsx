@@ -20,7 +20,7 @@ interface StoragePartitionedBannerProps {
  * A simple banner that informs users about storage partitioning and its implications
  * for wallet availability across sites.
  */
-export function NoUnpartitionedStorageBanner({ className }: StoragePartitionedBannerProps) {
+export function NoUnpartitionedStateBanner({ className }: StoragePartitionedBannerProps) {
   const { unpartitionedStateStatus } = useEmbedded();
   const canBeRequested = unpartitionedStateStatus === "rejected" || unpartitionedStateStatus === "error";
 
