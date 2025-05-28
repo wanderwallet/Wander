@@ -2,7 +2,9 @@ import browser from "webextension-polyfill";
 import { Flex } from "~components/common/Flex";
 import { useState } from "react";
 import SliderMenu from "~components/SliderMenu";
-import { Button, Text } from "@arconnect/components-rebrand";
+import { Button, Text, useToasts } from "@arconnect/components-rebrand";
+import { AlertTriangle } from "@untitled-ui/icons-react";
+import styled from "styled-components";
 
 export interface Asset {
   ticker: string;
@@ -42,15 +44,24 @@ const SlippageSelectorScreen = ({
   slippage: number;
   updateSlippage: (slippage: number) => void;
 }) => {
+  const toasts = useToasts();
   const [selectedSlippage, setSelectedSlippage] = useState(slippage);
 
   function handleDecreaseSlippage() {
     const newValue = Number((selectedSlippage - 0.1).toFixed(1));
+    if (newValue < 0.5) {
+      showToast(toasts, true);
+      return;
+    }
     setSelectedSlippage(Math.max(newValue, 0.5));
   }
 
   function handleIncreaseSlippage() {
     const newValue = Number((selectedSlippage + 0.1).toFixed(1));
+    if (newValue > 10) {
+      showToast(toasts, false);
+      return;
+    }
     setSelectedSlippage(Math.min(newValue, 10));
   }
 
@@ -59,16 +70,12 @@ const SlippageSelectorScreen = ({
       <Text variant="secondary" size="sm" weight="medium" noMargin>
         {browser.i18n.getMessage("slippage_description")}
       </Text>
-      <Flex direction="row" gap={16} align="center" justify="center" padding="20px 0">
-        <Button variant="secondary" fullWidth onClick={handleDecreaseSlippage}>
-          -
-        </Button>
+      <Flex direction="row" gap={16} align="center" justify="center" padding="20px 0" width="100%">
+        <RoundedButton onClick={handleDecreaseSlippage}>-</RoundedButton>
         <Text size="5xl" weight="semibold" noMargin>
           {selectedSlippage}%
         </Text>
-        <Button variant="secondary" fullWidth onClick={handleIncreaseSlippage}>
-          +
-        </Button>
+        <RoundedButton onClick={handleIncreaseSlippage}>+</RoundedButton>
       </Flex>
       <Button
         onClick={() => {
@@ -81,3 +88,34 @@ const SlippageSelectorScreen = ({
     </Flex>
   );
 };
+
+function showToast(toasts: ReturnType<typeof useToasts>, isMinSlippage: boolean) {
+  toasts.setToast({
+    content: isMinSlippage
+      ? browser.i18n.getMessage("slippage_cannot_be_less_than_0_5")
+      : browser.i18n.getMessage("slippage_cannot_be_greater_than_10"),
+    type: "info",
+    duration: 3000,
+    showProgress: true,
+    position: "top",
+    showCloseButton: false,
+    icon: <AlertTriangle style={{ color: "#EEBD41" }} height={20} width={20} />,
+  });
+}
+
+const RoundedButton = styled(Button).attrs({
+  variant: "secondary",
+  height: "40px",
+  width: "40px",
+})`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 32px;
+  flex-shrink: 0;
+  flex-grow: 0;
+  min-width: 40px;
+  min-height: 40px;
+  padding: 0;
+`;

@@ -1,5 +1,5 @@
 import styled, { useTheme } from "styled-components";
-import { Button, Input, Section, Text, Tooltip } from "@arconnect/components-rebrand";
+import { Button, Section, Text, Tooltip } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
 import HeadV2 from "~components/popup/HeadV2";
 import { Flex } from "~components/common/Flex";
@@ -10,6 +10,7 @@ import { InputButton } from "~components/common/InputButton";
 import { HorizontalLine } from "~components/HorizontalLine";
 import { assets, AssetSelectorModal, type Asset } from "../components/ao-yield/AssetSelectorModal";
 import { SlippageSelectorModal } from "../components/ao-yield/SlippageSelectorModal";
+import { DateSelectorModal } from "../components/ao-yield/DateSelectorModal";
 
 export function CreateAOYieldAgentView() {
   const theme = useTheme();
@@ -17,8 +18,11 @@ export function CreateAOYieldAgentView() {
   const [selectedAsset, setSelectedAsset] = useState<Asset>(assets[0]);
   const [selectedSlippage, setSelectedSlippage] = useState(0.5);
   const [runIndefinitely, setRunIndefinitely] = useState(false);
+  const [startDate, setStartDate] = useState<Date | null>(new Date());
+  const [endDate, setEndDate] = useState<Date | null>(null);
   const [showAssetSelector, setShowAssetSelector] = useState(false);
   const [showSlippageSelector, setShowSlippageSelector] = useState(false);
+  const [showDateSelector, setShowDateSelector] = useState(false);
 
   const openAssetSelector = () => {
     setShowAssetSelector(true);
@@ -34,6 +38,34 @@ export function CreateAOYieldAgentView() {
 
   const closeSlippageSelector = () => {
     setShowSlippageSelector(false);
+  };
+
+  const openDateSelector = () => {
+    setShowDateSelector(true);
+  };
+
+  const closeDateSelector = () => {
+    setShowDateSelector(false);
+  };
+
+  const handleDateSelect = (selectedStartDate: Date, selectedEndDate: Date) => {
+    setStartDate(selectedStartDate);
+    setEndDate(selectedEndDate);
+  };
+
+  const formatDateRange = (type: "start" | "end" = "start") => {
+    const formatOptions: Intl.DateTimeFormatOptions = {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    };
+    if (startDate && type === "start") {
+      return startDate.toLocaleDateString("en-US", formatOptions);
+    } else if (endDate && type === "end") {
+      return endDate.toLocaleDateString("en-US", formatOptions);
+    }
+
+    return type === "start" ? "Start date" : "End date";
   };
 
   return (
@@ -86,21 +118,33 @@ export function CreateAOYieldAgentView() {
             <Flex direction="column" gap={8}>
               <Text noMargin>{browser.i18n.getMessage("running_time")}</Text>
               <Flex direction="row" gap={8} align="center">
-                <Input placeholder="0" />
+                <InputButton
+                  style={{ background: theme.surfaceTertiary }}
+                  body={
+                    <Text size="lg" weight="medium" noMargin>
+                      {formatDateRange()}
+                    </Text>
+                  }
+                  onClick={openDateSelector}
+                  outerLabel
+                />
                 <Text variant="secondary" size="base" weight="semibold" noMargin>
                   -
                 </Text>
-                <Input placeholder="0" />
+                <InputButton
+                  style={{ background: theme.surfaceTertiary }}
+                  body={
+                    <Text size="lg" weight="medium" noMargin>
+                      {runIndefinitely ? "∞" : formatDateRange("end")}
+                    </Text>
+                  }
+                  onClick={openDateSelector}
+                  outerLabel
+                />
               </Flex>
             </Flex>
             <Flex direction="row" gap={8} align="center">
-              <input
-                type="checkbox"
-                height={14}
-                width={14}
-                checked={runIndefinitely}
-                onChange={() => setRunIndefinitely((prev) => !prev)}
-              />
+              <Checkbox checked={runIndefinitely} onChange={() => setRunIndefinitely((prev) => !prev)} />
               <Text size="sm" weight="medium" noMargin>
                 {browser.i18n.getMessage("run_indefinitely")}
               </Text>
@@ -154,12 +198,24 @@ export function CreateAOYieldAgentView() {
           />
         </Flex>
       </Wrapper>
-      <AssetSelectorModal open={showAssetSelector} onClose={closeAssetSelector} onSelect={setSelectedAsset} />
+      <AssetSelectorModal
+        open={showAssetSelector}
+        onClose={closeAssetSelector}
+        selectedAsset={selectedAsset}
+        onSelect={setSelectedAsset}
+      />
       <SlippageSelectorModal
         open={showSlippageSelector}
         onClose={closeSlippageSelector}
         slippage={selectedSlippage}
         onSelect={setSelectedSlippage}
+      />
+      <DateSelectorModal
+        startDate={startDate}
+        endDate={endDate}
+        open={showDateSelector}
+        onClose={closeDateSelector}
+        onSelect={handleDateSelect}
       />
     </>
   );
@@ -192,4 +248,19 @@ const Tag = styled.div`
   font-size: 12px;
   font-weight: 500;
   color: ${({ theme }) => theme.secondaryText};
+`;
+
+const Checkbox = styled.input.attrs({ type: "checkbox" })`
+  height: 16px;
+  width: 16px;
+  accent-color: ${({ theme }) => theme.primary};
+  cursor: "pointer";
+  display: "flex";
+  padding: "1px";
+  justify-content: "center";
+  align-items: "center";
+  border-radius: "3.556px";
+  border: 1px solid ${({ theme }) => theme.primary};
+  background: ${({ theme }) => theme.primary};
+  cursor: pointer;
 `;

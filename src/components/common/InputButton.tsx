@@ -13,15 +13,15 @@ export const InputButton = ({
 }: {
   label?: string;
   body: string | React.ReactNode;
-  icon: React.ReactNode;
+  icon?: React.ReactNode;
   onClick: () => void;
-  disabled: boolean;
+  disabled?: boolean;
   style?: React.CSSProperties;
   innerStyle?: React.CSSProperties;
   outerLabel?: boolean;
 }) => {
   return (
-    <div>
+    <div style={{ width: "100%" }}>
       {outerLabel && label && <Label outer={outerLabel}>{label}</Label>}
       <InputButtonWrapper onClick={onClick} disabled={disabled} style={style}>
         {!outerLabel && label && (
@@ -39,7 +39,7 @@ export const InputButton = ({
           </div>
         )}
         {outerLabel && <div style={innerStyle}>{body}</div>}
-        {icon}
+        {icon && icon}
       </InputButtonWrapper>
     </div>
   );

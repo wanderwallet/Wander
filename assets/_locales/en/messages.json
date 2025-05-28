@@ -3131,5 +3131,17 @@
   "your_agents": {
     "message": "Your agents",
     "description": "Your agents text"
+  },
+  "slippage_cannot_be_less_than_0_5": {
+    "message": "Slippage cannot be less than 0.5%",
+    "description": "Slippage cannot be less than 0.5% text"
+  },
+  "slippage_cannot_be_greater_than_10": {
+    "message": "Slippage cannot be greater than 10%",
+    "description": "Slippage cannot be greater than 10% text"
+  },
+  "select_running_dates": {
+    "message": "Select running dates",
+    "description": "Select running dates text"
   }
 }

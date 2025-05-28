@@ -3121,5 +3121,17 @@
     "your_agents": {
         "message": "您的代理们",
         "description": "Your agents text"
+    },
+    "slippage_cannot_be_less_than_0_5": {
+        "message": "滑点不能小于0.5%",
+        "description": "Slippage cannot be less than 0.5% text"
+    },
+    "slippage_cannot_be_greater_than_10": {
+        "message": "滑点不能大于10%",
+        "description": "Slippage cannot be greater than 10% text"
+    },
+    "select_running_dates": {
+        "message": "选择运行日期",
+        "description": "Select running dates text"
     }
 }

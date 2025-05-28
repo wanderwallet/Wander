@@ -25,10 +25,11 @@ export const assets: Asset[] = [
 interface AssetSelectorModalProps {
   open: boolean;
   onClose: () => void;
+  selectedAsset: Asset;
   onSelect: (asset: Asset) => void;
 }
 
-export function AssetSelectorModal({ open, onClose, onSelect }: AssetSelectorModalProps) {
+export function AssetSelectorModal({ open, selectedAsset, onClose, onSelect }: AssetSelectorModalProps) {
   return (
     <SliderMenu
       title={browser.i18n.getMessage("select_buy_asset")}
@@ -37,6 +38,7 @@ export function AssetSelectorModal({ open, onClose, onSelect }: AssetSelectorMod
       onClose={onClose}>
       <AssetSelectorScreen
         onClose={onClose}
+        selectedAsset={selectedAsset}
         updateAsset={(asset) => {
           onSelect(asset);
           onClose();
@@ -50,10 +52,12 @@ export function AssetSelectorModal({ open, onClose, onSelect }: AssetSelectorMod
 const AssetSelectorScreen = ({
   onClose,
   assets,
+  selectedAsset,
   updateAsset,
 }: {
   onClose: () => void;
   assets: Asset[];
+  selectedAsset: Asset;
   updateAsset: (asset: Asset) => void;
 }) => {
   return (
@@ -69,6 +73,8 @@ const AssetSelectorScreen = ({
             updateAsset(asset);
             onClose();
           }}
+          active={selectedAsset.ticker === asset.ticker}
+          style={{ border: selectedAsset.ticker === asset.ticker ? "1px solid #6B57F9" : "transparent" }}
         />
       ))}
     </Flex>
