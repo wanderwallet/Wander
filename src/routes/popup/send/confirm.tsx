@@ -25,7 +25,7 @@ import type { JWKInterface } from "@dha-team/arbundles";
 import { AutoContactPic, generateProfileIcon, ProfilePicture } from "~components/Recipient";
 import { formatFiatBalance, fractionedToBalance } from "~tokens/currency";
 import { useContact } from "~contacts/hooks";
-import { sendAoTransfer, sendAoTransferKeystone, type TokenInfo } from "~tokens/aoTokens/ao";
+import { AR_PROCESS_ID, sendAoTransfer, sendAoTransferKeystone, type TokenInfo } from "~tokens/aoTokens/ao";
 import { useAo } from "~tokens/hooks";
 import { useActiveWallet } from "~wallets/hooks";
 import { UR } from "@ngraveio/bc-ur";
@@ -179,7 +179,7 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
       // save tx json into the session
       // to be signed and submitted
       const storedTx: Partial<RawStoredTransfer> = {
-        type: tokenID === "AR" ? "native" : "token",
+        type: tokenID === AR_PROCESS_ID ? "native" : "token",
         gateway: gateway,
       };
 
@@ -389,7 +389,7 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
           });
           trackEvent(EventType.TX_SENT, {
             contact: toContact ? true : false,
-            amount: tokenID === "AR" ? +transactionAmount : 0,
+            amount: tokenID === AR_PROCESS_ID ? +transactionAmount : 0,
             fee: networkFee,
           });
           // Redirect
@@ -440,7 +440,7 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
           });
           trackEvent(EventType.TX_SENT, {
             contact: toContact ? true : false,
-            amount: tokenID === "AR" ? +transactionAmount : 0,
+            amount: tokenID === AR_PROCESS_ID ? +transactionAmount : 0,
             fee: networkFee,
           });
           navigate(`/send/completed/${convertedTransaction.id}?back=${encodeURIComponent("/")}`);
@@ -620,7 +620,7 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
         const latestTxQty = Number((await ExtensionStorage.get("last_send_qty")) || "0");
         trackEvent(EventType.TX_SENT, {
           contact: toContact ? true : false,
-          amount: tokenID === "AR" ? latestTxQty : 0,
+          amount: tokenID === AR_PROCESS_ID ? latestTxQty : 0,
           fee: networkFee,
         });
         navigate(`/send/completed/${transaction.id}?back=${encodeURIComponent("/")}`);

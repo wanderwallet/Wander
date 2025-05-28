@@ -1,5 +1,6 @@
 import type React from "react";
 import type { RouteComponentProps as WouteComponentProps } from "wouter";
+import type { ConnectAuthRoutePath } from "~wallets/router/auth/auth.embed.routes";
 import type { AuthRoutePath } from "~wallets/router/auth/auth.routes";
 import type { DashboardRoutePath } from "~wallets/router/dashboard/dashboard.routes";
 import type { EmbeddedRoutePath } from "~wallets/router/iframe/iframe.routes";
@@ -30,6 +31,7 @@ export interface RouteConfig<P extends RoutePath | RouteOverride = RoutePath | R
 export type WanderRoutePath =
   | WelcomeRoutePath
   | AuthRoutePath
+  | ConnectAuthRoutePath
   | PopupRoutePath
   | DashboardRoutePath
   | EmbeddedRoutePath;

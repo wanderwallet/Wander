@@ -12,9 +12,7 @@ export function WalletTransactionsEmbeddedView() {
   const { transactions, loading, hasNextPage, count } = useTransactions(address, 3);
 
   return (
-    <AuthRequestCard
-      headerText="Transaction History"
-      onBackButtonClick={() => navigate("/wallet")}>
+    <AuthRequestCard headerText="Transaction History" onBackButtonClick={() => navigate("/wallet")}>
       {count.current > 0 ? (
         Object.entries(transactions).map(([monthYear, transactions]) => (
           <TransactionGroup key={monthYear} monthYear={monthYear} transactions={transactions} />

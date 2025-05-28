@@ -13,10 +13,7 @@ interface SelectorItemProps {
 
 const SelectorItem = ({ icon, title, subtitle, isSelected, onClick }: SelectorItemProps) => (
   <li>
-    <button
-      className={ styles.buttonDropdown }
-      onClick={onClick}>
-
+    <button className={styles.buttonDropdown} onClick={onClick}>
       <div
         style={{
           display: "flex",
@@ -70,7 +67,6 @@ const SelectorItem = ({ icon, title, subtitle, isSelected, onClick }: SelectorIt
           ✓
         </Text>
       )}
-
     </button>
   </li>
 );

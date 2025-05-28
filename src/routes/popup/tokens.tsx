@@ -9,7 +9,7 @@ import styled from "styled-components";
 import HeadV2 from "~components/popup/HeadV2";
 import { type TokenInfoWithBalance } from "~tokens/aoTokens/ao";
 import { useAoTokens } from "~tokens/hooks";
-import { ExtensionStorage, PersistentStorage } from "~utils/storage";
+import { PersistentStorage } from "~utils/storage";
 import { syncAoTokens } from "~tokens/aoTokens/sync";
 
 export function TokensView() {

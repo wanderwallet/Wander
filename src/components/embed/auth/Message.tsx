@@ -27,7 +27,7 @@ export default function Message({ message }: Props) {
           {browser.i18n.getMessage("signature_message")}
         </Text>
         <select
-          value={ decodeType }
+          value={decodeType}
           style={{
             fontWeight: "500",
             color: "#666666",

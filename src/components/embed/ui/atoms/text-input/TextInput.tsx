@@ -13,6 +13,7 @@ export function TextInput({
   onChange,
   disabled,
   readOnly,
+  autoFocus,
 
   // Custom input props:
   inputRef,
@@ -25,7 +26,7 @@ export function TextInput({
 }: TextInputProps) {
   return (
     <label className={clsx(styles["wrapper"], className)} style={style}>
-      { startSlot }
+      {startSlot}
       <input
         ref={inputRef}
         type={type}
@@ -36,8 +37,10 @@ export function TextInput({
         onChange={onChange}
         className={styles["input"]}
         disabled={disabled}
-        readOnly={readOnly} />
-      { endSlot}
+        readOnly={readOnly}
+        autoFocus={autoFocus}
+      />
+      {endSlot}
     </label>
   );
 }

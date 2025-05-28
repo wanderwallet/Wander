@@ -10,6 +10,7 @@ import type { CommonRouteProps } from "~wallets/router/router.types";
 import { useLocation } from "~wallets/router/router.utils";
 import { useActiveWallet } from "~wallets/hooks";
 import { CopyToClipboard } from "~components/CopyToClipboard";
+import { QRCodeWrapper } from "~components/QRCodeWrapper";
 
 interface ReceiveViewProps extends CommonRouteProps {
   walletName?: string;
@@ -133,15 +134,4 @@ export const CopyAction = styled(CopyIcon)`
   &:active {
     transform: scale(0.92);
   }
-`;
-
-export const QRCodeWrapper = styled.div<{ size?: number }>`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: ${(props) => props.theme.primary};
-  border-radius: 24px;
-  padding: 16px;
-  width: ${(props) => props.size ?? 176}px;
-  height: ${(props) => props.size ?? 176}px;
 `;

@@ -10,9 +10,7 @@ export interface ResizeEventObserver {
   containerRef: React.MutableRefObject<HTMLElement>;
 }
 
-export function ResizeEventObserver({
-  containerRef,
-}: ResizeEventObserver) {
+export function ResizeEventObserver({ containerRef }: ResizeEventObserver) {
   const { location } = useLocation();
   const [height, setHeight] = useState(0);
 
@@ -48,7 +46,7 @@ export function ResizeEventObserver({
   useEffect(() => {
     locationRef.current = location;
     dispatchResizeEvent();
-  }, [dispatchResizeEvent, location])
+  }, [dispatchResizeEvent, location]);
 
   useEffect(() => {
     const containerElement = containerRef.current;
@@ -80,7 +78,6 @@ export function ResizeEventObserver({
 
   return <DivLine style={{ top: `${height - 6}px` }} data-height={`${height}px`} />;
 }
-
 
 const DivLine = styled(motion.div)`
   position: absolute;

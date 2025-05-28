@@ -115,21 +115,14 @@ export function useAllWallets() {
 }
 
 export async function setActiveWallet(address?: string) {
-  // verify address
-
-  const [wallets] = useStorage<StoredWallet[]>(
-    {
-      key: "wallets",
-      instance: ExtensionStorage,
-    },
-    [],
-  );
-
   // remove if the address is undefined
   if (!address) {
     return await ExtensionStorage.remove("active_address");
   }
 
+  const wallets = (await ExtensionStorage.get<StoredWallet[]>("wallets")) || [];
+
+  // verify address
   if (!wallets.find((wallet) => wallet.address === address)) {
     return;
   }

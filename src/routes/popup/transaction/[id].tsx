@@ -287,7 +287,7 @@ export function TransactionView({ params: { id, gateway: gw, message } }: Transa
   // currency setting
   const [currency] = useSetting<string>("currency");
 
-  const { price, hasPrice, loading } = useTokenPrice(ao.isAo ? ao.tokenId : "AR");
+  const { price, hasPrice, loading } = useTokenPrice(ao.isAo ? ao.tokenId : AR_PROCESS_ID);
 
   // transaction price
   const fiatPrice = useMemo(() => {

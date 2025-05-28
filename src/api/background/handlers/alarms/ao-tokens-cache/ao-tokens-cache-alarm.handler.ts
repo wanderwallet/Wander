@@ -1,7 +1,7 @@
 import { dryrun } from "@permaweb/aoconnect";
 import { PersistentStorage } from "~utils/storage";
 import type { Alarms } from "webextension-polyfill";
-import { Id, Owner, type TokenInfo, getTokenInfoFromData } from "~tokens/aoTokens/ao";
+import { AR_PROCESS_ID, Id, Owner, type TokenInfo, getTokenInfoFromData } from "~tokens/aoTokens/ao";
 import { timeoutPromise } from "~utils/promises/timeout";
 
 /**
@@ -15,7 +15,7 @@ export const handleAoTokenCacheAlarm = async (alarmInfo?: Alarms.Alarm) => {
   const updatedTokens = [...aoTokens];
 
   for (const token of aoTokens) {
-    if (token.processId === "AR") continue;
+    if (token.processId === AR_PROCESS_ID) continue;
     try {
       const res = await timeoutPromise(
         dryrun({

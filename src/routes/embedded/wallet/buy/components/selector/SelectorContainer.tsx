@@ -21,7 +21,7 @@ export const SelectorContainer = ({ title, onClose, children }: SelectorContaine
       backgroundColor: "var(--color-card-background-default)",
       maxHeight: "100%",
       overflowY: "scroll",
-  }}>
+    }}>
     {children}
   </DefaultCard>
 );

@@ -18,12 +18,12 @@ import { TrashIcon, PlusIcon, SettingsIcon } from "@iconicicons/react";
 import BigNumber from "bignumber.js";
 import JSConfetti from "js-confetti";
 import browser from "webextension-polyfill";
-import { AO_NATIVE_TOKEN } from "~utils/ao_import";
 import { useBalance } from "~wallets/hooks";
 import { useTokenBalance } from "~tokens/hooks";
 import { BalanceFetchError, NetworkError } from "~utils/error/error.utils";
 import { ToggleSwitch } from "~routes/popup/subscriptions/subscriptionDetails";
 import Image from "~components/common/Image";
+import { AO_PROCESS_ID } from "~tokens/aoTokens/ao";
 
 export default function Token({ onClick, disableClickEffect, disableCursor, ...props }: Props) {
   const ref = useRef(null);
@@ -100,17 +100,17 @@ export default function Token({ onClick, disableClickEffect, disableCursor, ...p
   }, [props, logo, arweaveLogo]);
 
   useEffect(() => {
-    if (activeAddress && AO_NATIVE_TOKEN === props.id) {
+    if (activeAddress && AO_PROCESS_ID === props.id) {
       ExtensionStorage.get<boolean>(`ao_confetti_shown_${activeAddress}`).then(setAoConfettiShown);
     }
-  }, [AO_NATIVE_TOKEN, props.id, activeAddress]);
+  }, [AO_PROCESS_ID, props.id, activeAddress]);
 
   useEffect(() => {
     if (
       ref.current &&
       activeAddress &&
       !isLoading &&
-      AO_NATIVE_TOKEN === props.id &&
+      AO_PROCESS_ID === props.id &&
       !aoConfettiShown &&
       +fractBalance > 0
     ) {
@@ -120,7 +120,7 @@ export default function Token({ onClick, disableClickEffect, disableCursor, ...p
 
   return (
     <Wrapper disableClickEffect={disableClickEffect} disableCursor={disableCursor}>
-      {(!aoConfettiShown || ref.current) && AO_NATIVE_TOKEN === props.id && +fractBalance > 0 && <Canvas ref={ref} />}
+      {(!aoConfettiShown || ref.current) && AO_PROCESS_ID === props.id && +fractBalance > 0 && <Canvas ref={ref} />}
       <InnerWrapper width={hasActionButton ? "86%" : "100%"} onClick={onClick}>
         <LogoAndDetails>
           <Logo src={logo || ""} alt="" key={props.id} />

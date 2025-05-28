@@ -1,7 +1,7 @@
 import type { AuthProviderType, SupabaseUser } from "embed-api";
 import { nanoid } from "nanoid";
+import { getEmbeddedAncestorOrigin, isInsideIframe } from "~utils/embedded/iframe.utils";
 import { AUTH_PROVIDER_TYPE_BY_PROVIDER_STR } from "~utils/embedded/embedded.constants";
-import { isInsideIframe, getEmbeddedAncestorOrigin } from "~utils/embedded/iframe.utils";
 import type {
   EmbeddedAuthMessageData,
   EmbeddedCall,
@@ -33,8 +33,8 @@ const messageKeyFnByType: {
         .map((v) => v[1]),
     ].join("|");
   },
-  embedded_open: (data) => null,
-  embedded_close: (data) => null,
+  embedded_open: () => null,
+  embedded_close: () => null,
   embedded_resize: (data) => {
     return [data.routeType, data.preferredLayoutType, data.width, data.height].join("|");
   },

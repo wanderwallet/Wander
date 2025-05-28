@@ -3,8 +3,8 @@ import { concatGatewayURL } from "~gateways/utils";
 import arLogoLight from "url:/assets/ar/logo_light.png";
 import arLogoDark from "url:/assets/ar/logo_dark.png";
 import { findGateway } from "~gateways/wayfinder";
-import { ExtensionStorage, PersistentStorage } from "~utils/storage";
-import { defaultTokens, type TokenInfo } from "./aoTokens/ao";
+import { PersistentStorage } from "~utils/storage";
+import { AO_OLD_PROCESS_ID, defaultTokens, type TokenInfo } from "./aoTokens/ao";
 
 export interface Token {
   id: string;
@@ -56,16 +56,27 @@ export async function loadTokenLogo(id: string, defaultLogo?: string, theme?: Di
 }
 
 export async function loadTokens() {
-  const aoTokens: TokenInfo[] | undefined = await PersistentStorage.get("ao_tokens");
+  // Load tokens or fall back to default tokens:
+  let aoTokens = (await PersistentStorage.get<TokenInfo[]>("ao_tokens")) || defaultTokens;
 
-  // TODO: should this only be if it's undefined?
-  if (!aoTokens || aoTokens.length === 0) {
-    await PersistentStorage.set("ao_tokens", defaultTokens);
-  } else {
-    const arToken = defaultTokens[0];
-    if (!aoTokens.some((t) => t.processId === arToken.processId)) {
-      aoTokens.unshift(arToken);
-      await PersistentStorage.set("ao_tokens", aoTokens);
+  // Remove the old AO token if present:
+  aoTokens = aoTokens.filter((token) => token.processId !== AO_OLD_PROCESS_ID);
+
+  // If AR, AO or PI tokens are not already in the list, add them:
+
+  const existingProcessIds = new Set(aoTokens.map((token) => token.processId));
+
+  const requiredTokens = [
+    defaultTokens[2], // PI
+    defaultTokens[1], // AO
+    defaultTokens[0], // AR
+  ];
+
+  requiredTokens.forEach((requiredToken) => {
+    if (!existingProcessIds.has(requiredToken.processId)) {
+      aoTokens.unshift(requiredToken);
     }
-  }
+  });
+
+  await PersistentStorage.set("ao_tokens", aoTokens);
 }

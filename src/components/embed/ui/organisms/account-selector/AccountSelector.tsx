@@ -2,8 +2,6 @@ import copy from "copy-to-clipboard";
 import { Avatar, Copyable, DownloadIcon, Row, Text, WalletIcon } from "~components/embed/ui";
 import Dropdown from "~components/embed/ui/molecules/dropdown/Dropdown/Dropdown";
 import DropdownItem from "~components/embed/ui/molecules/dropdown/DropdownItem/DropdownItem";
-import type { Wallet } from "~utils/embedded/embedded.types";
-
 import type { LocalWallet, StoredWallet } from "~wallets";
 import type { HardwareWallet } from "~wallets/hardware";
 import { setActiveWallet } from "~wallets/hooks";
@@ -23,7 +21,7 @@ export function AccountSelector({
         type: string;
       };
 }) {
-  const handleAccountClick = async (wallet: Wallet) => {
+  const handleAccountClick = async (wallet: StoredWallet) => {
     return await setActiveWallet(wallet.address);
   };
 
@@ -59,7 +57,7 @@ export function AccountSelector({
         content={
           <>
             {wallets.map((wallet, id) => (
-              <DropdownItem key={id} onClick={handleAccountClick}>
+              <DropdownItem key={id} onClick={() => handleAccountClick(wallet)}>
                 <Row key={wallet.address} alignment="center" justifyContent="start" style={{ padding: "8px 16px" }}>
                   <Avatar fontColor={"#FFF"}>
                     <WalletIcon color="#FFF" style={{ height: 16, width: 16 }} />
