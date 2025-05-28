@@ -115,6 +115,7 @@ export const EmbeddedContext = createContext<EmbeddedContextData>({
   downloadKeyfile: async () => null,
   copySeedphrase: async () => null,
   getSeedphrase: async () => null,
+  getDecryptedWallet: async () => null,
   generateRecoveryAndDownload: async () => null,
 });
 
@@ -326,6 +327,38 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     },
     [walletId, walletAddress],
   );
+
+  const getDecryptedWallet = useCallback(async (): Promise<LocalWallet<JWKInterface>> => {
+    log(LOG_GROUP.EMBEDDED_FLOWS, `getDecryptedWallet()`);
+
+    const decryptedWallet = (await getKeyfile(walletAddress)) as LocalWallet<JWKInterface>;
+
+    /*
+
+    This is probably a bad idea, because seeing the QR code doesn't guarantee the user has a copy of it. I think we need
+    to update the backend to include a new QR type for this, and either make that type not update the export count (so
+    that we keep prompting users to back up) or include a download button that downloads the QR as GIF/video. In that
+    case, we only register this when they click download, not when we decrypt the keyfile. That means users should be
+    able to upload that QR code too. In that case, it might be easier to parse if we include the JWK JSON in it as
+    metadata (wondering if any upload service like Drive or Dropbox would automatically get rid of that metadata).
+
+    try {
+      const { wallet: updatedWallet } = await WalletService.registerWalletExport({
+        walletId,
+        type: "KEYFILE",
+      });
+
+      updateCurrentWallet((currentWallet) => ({
+        ...currentWallet,
+        ...updatedWallet,
+      }));
+    } catch (error) {
+      console.error("Failed to register wallet export:", error);
+    }
+    */
+
+    return decryptedWallet;
+  }, [walletId, walletAddress]);
 
   const copySeedphrase = useCallback(async () => {
     log(LOG_GROUP.EMBEDDED_FLOWS, `copySeedphrase()`);
@@ -1500,6 +1533,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         downloadKeyfile,
         copySeedphrase,
         getSeedphrase,
+        getDecryptedWallet,
         generateRecoveryAndDownload,
       }}>
       {children}

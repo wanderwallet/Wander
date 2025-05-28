@@ -1,30 +1,38 @@
-import { useEffect, useRef, useState } from "react";
+import styles from "./QRLoopScanner.module.css";
+import { useEffect, useMemo, useRef, useState } from "react";
 import QrReader from "react-qr-reader";
-import styled from "styled-components";
-import { Text, useToasts } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
 import { parseFramesReducer, areFramesComplete, framesToData, progressOfFrames } from "qrloop";
 import { CameraOffIcon } from "@iconicicons/react";
-import { Loading, Spacer } from "@arconnect/components-rebrand";
+import { toast } from "react-toastify";
+import { Spacer, Text } from "~components/embed";
+import { Loading } from "@arconnect/components";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 interface QRScannerProps {
-  onResult: (result: string) => void;
+  onResult: (result: any) => void;
   onError?: (error: string) => void;
   onProgress?: (progress: number) => void;
 }
 
-export default function QRLoopScanner({ onResult, onError, onProgress }: QRScannerProps) {
-  const framesRef = useRef<Record<string, string> | null>(null);
+interface QRLoopState {
+  frames: any[];
+  fountainsQueue: any[];
+  exploredFountains: string[];
+}
+
+export function QRLoopScanner({ onResult, onError, onProgress }: QRScannerProps) {
+  const framesRef = useRef<QRLoopState | null>(null);
   const [progress, setProgress] = useState<number>(0);
   const [cameraAllowed, setCameraAllowed] = useState(true);
-  const { setToast } = useToasts();
   const [isLoading, setIsLoading] = useState(true);
+
+  const isWebWorkerAvailable = useMemo(() => typeof Worker !== "undefined", [Worker]);
 
   useAsyncEffect(async () => {
     // get if camera permission is granted
     const cameraPerms = await navigator.permissions.query({
-      name: "camera",
+      name: "camera" as PermissionName,
     });
 
     const handleCameraPermsChange = () => {
@@ -61,21 +69,13 @@ export default function QRLoopScanner({ onResult, onError, onProgress }: QRScann
       console.error("QR parsing error:", e);
       framesRef.current = null;
       setProgress(0);
-      setToast({
-        type: "error",
-        content: browser.i18n.getMessage("invalid_qr_code"),
-        duration: 2000,
-      });
+      toast.error(browser.i18n.getMessage("invalid_qr_code"));
       onError?.(browser.i18n.getMessage("invalid_qr_code"));
     }
   };
 
   const handleError = () => {
-    setToast({
-      type: "error",
-      content: browser.i18n.getMessage("scan_error"),
-      duration: 2000,
-    });
+    toast.error(browser.i18n.getMessage("scan_error"));
     onError?.(browser.i18n.getMessage("scan_error"));
   };
 
@@ -84,89 +84,44 @@ export default function QRLoopScanner({ onResult, onError, onProgress }: QRScann
   };
 
   return (
-    <ScannerContainer>
-      <VideoContainer>
-        {isLoading && (
-          <LoadingSection>
+    <div className={styles.scannerContainer}>
+      <div className={styles.videoContainer}>
+        {(isLoading || !isWebWorkerAvailable) && (
+          <div className={styles.loadingSection}>
             {cameraAllowed ? (
               <>
-                <LoadingCamera />
+                <Loading className={styles.loadingCamera} />
                 <Spacer y={0.85} />
-                <Text size="sm" variant="secondary" style={{ textAlign: "center" }}>
+                <Text variant="bodySm" style={{ textAlign: "center" }}>
                   {browser.i18n.getMessage("keystone_loading_camera")}
                 </Text>
               </>
             ) : (
               <>
-                <DeniedCamera />
+                <CameraOffIcon className={styles.deniedCamera} />
                 <Spacer y={0.85} />
-                <Text size="sm" variant="secondary" style={{ textAlign: "center" }}>
+                <Text variant="bodySm" style={{ textAlign: "center" }}>
                   {browser.i18n.getMessage("keystone_disabled_camera")}
                 </Text>
               </>
             )}
-          </LoadingSection>
+          </div>
         )}
-        <QrReader
-          onScan={handleScan}
-          onError={handleError}
-          onLoad={handleLoad}
-          delay={100}
-          style={{ width: "100%" }}
-          showViewFinder={false}
-        />
-      </VideoContainer>
-      <Text size="sm" variant="secondary" style={{ textAlign: "center" }}>
+        {isWebWorkerAvailable && (
+          /* @ts-ignore - QrReader component type issue */
+          <QrReader
+            onScan={handleScan}
+            onError={handleError}
+            onLoad={handleLoad}
+            delay={100}
+            style={{ width: "100%" }}
+            showViewFinder={false}
+          />
+        )}
+      </div>
+      <Text variant="bodySm" style={{ textAlign: "center", marginTop: 8 }}>
         {browser.i18n.getMessage("progress")}: {Math.round(progress * 100)}%
       </Text>
-    </ScannerContainer>
+    </div>
   );
 }
-
-export const ScannerContainer = styled.div`
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-`;
-
-export const VideoContainer = styled.div`
-  width: 100%;
-  height: 350px;
-  aspect-ratio: 1;
-  border-radius: 24px;
-  display: flex;
-  gap: 16px;
-  border: 2px solid ${(props) => props.theme.theme};
-  overflow: hidden;
-  box-sizing: border-box;
-`;
-
-const LoadingSection = styled.div`
-  position: absolute;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  top: 50%;
-  left: 50%;
-  width: 90%;
-  transform: translate(-50%, -50%);
-  z-index: 1;
-`;
-
-const LoadingCamera = styled(Loading)`
-  color: ${(props) => props.theme.theme};
-  width: 1.85rem;
-  height: 1.85rem;
-`;
-
-const DeniedCamera = styled(CameraOffIcon)`
-  font-size: 2rem;
-  width: 1em;
-  height: 1em;
-  color: ${(props) => props.theme.theme};
-`;

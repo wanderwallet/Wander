@@ -62,6 +62,7 @@ export function useEmbeddedOverride(location?: RoutePath) {
           EmbeddedPaths.AuthRecoverAccount,
           EmbeddedPaths.AuthRecoverAccountSeedphrase,
           EmbeddedPaths.AuthRecoverAccountKeyfile,
+          EmbeddedPaths.AuthRecoverAccountQrCode,
           EmbeddedPaths.Auth,
           EmbeddedPaths.AuthMoreProviders,
           EmbeddedPaths.AuthEmailSignin,
@@ -95,6 +96,7 @@ export function useEmbeddedOverride(location?: RoutePath) {
           EmbeddedPaths.AuthAddWithQRCode,
           EmbeddedPaths.AuthQRCodeScanner,
           EmbeddedPaths.AuthImportKeyfile,
+          EmbeddedPaths.AuthImportQrCode,
           EmbeddedPaths.AuthAddDevice,
           EmbeddedPaths.AuthAddAuthProvider,
           // EmbeddedPaths.AddDevice/<SOMETHING>
@@ -113,6 +115,7 @@ export function useEmbeddedOverride(location?: RoutePath) {
           EmbeddedPaths.AuthRestoreSharesRecoveryFile,
           EmbeddedPaths.AuthRestoreSharesSeedPhrase,
           EmbeddedPaths.AuthRestoreSharesKeyfile,
+          EmbeddedPaths.AuthRestoreSharesQrCode,
         ],
         EmbeddedPaths.AuthRestoreShares,
       );
@@ -136,6 +139,7 @@ export function useEmbeddedOverride(location?: RoutePath) {
             EmbeddedPaths.AccountBackupFullWallet,
             EmbeddedPaths.AccountBackupWalletRecoveryFile,
             EmbeddedPaths.AccountBackupCopySeedphrase,
+            EmbeddedPaths.AccountBackupWalletQrCode,
             // TODO: Missing EmbeddedPaths.AccountBackupShares/<PROVIDER>
           ],
           EmbeddedPaths.AccountBackupWalletReminder,
