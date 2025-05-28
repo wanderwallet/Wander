@@ -1,9 +1,10 @@
 import { Loading, Spacer, Text, useToasts } from "@arconnect/components";
 import { AnimatedQRScanner as Scanner } from "@arconnect/keystone-sdk";
-import { type ComponentProps, useEffect, useMemo, useState } from "react";
+import { type ComponentProps, useMemo, useState } from "react";
 import { CameraOffIcon } from "@iconicicons/react";
 import browser from "webextension-polyfill";
 import styled from "styled-components";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 export default function AnimatedQRScanner({ className, ...props }: Props) {
   // toasts
@@ -14,34 +15,32 @@ export default function AnimatedQRScanner({ className, ...props }: Props) {
 
   const isWebWorkerAvailable = useMemo(() => typeof Worker !== "undefined", [Worker]);
 
-  useEffect(() => {
-    (async () => {
-      // get if camera permission is granted
-      const cameraPerms = await navigator.permissions.query({
-        // @ts-expect-error
-        name: "camera",
-      });
-      const listener = () => {
-        setCameraAllowed(cameraPerms.state === "granted");
-
-        if (cameraPerms.state !== "granted") return;
-
-        // notify the user to refresh the page
-        // when they grant camera permissions
-        setToast({
-          type: "info",
-          duration: 4500,
-          content: browser.i18n.getMessage("keystone_allowed_camera"),
-        });
-      };
-
+  useAsyncEffect(async () => {
+    // get if camera permission is granted
+    const cameraPerms = await navigator.permissions.query({
+      // @ts-expect-error
+      name: "camera",
+    });
+    const listener = () => {
       setCameraAllowed(cameraPerms.state === "granted");
 
-      // listen for camera permission changes
-      cameraPerms.addEventListener("change", listener);
+      if (cameraPerms.state !== "granted") return;
 
-      return () => cameraPerms.removeEventListener("change", listener);
-    })();
+      // notify the user to refresh the page
+      // when they grant camera permissions
+      setToast({
+        type: "info",
+        duration: 4500,
+        content: browser.i18n.getMessage("keystone_allowed_camera"),
+      });
+    };
+
+    setCameraAllowed(cameraPerms.state === "granted");
+
+    // listen for camera permission changes
+    cameraPerms.addEventListener("change", listener);
+
+    return () => cameraPerms.removeEventListener("change", listener);
   }, []);
 
   return (

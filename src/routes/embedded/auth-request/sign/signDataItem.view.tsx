@@ -4,7 +4,6 @@ import Image from "~components/common/Image";
 import { useEffect, useMemo, useState } from "react";
 import Application, { type AppInfo } from "~applications/application";
 import { type Gateway } from "~gateways/gateway";
-import { AlertTriangle } from "@untitled-ui/icons-react";
 import { Quantity } from "ao-tokens";
 import { getUserAvatar } from "~lib/avatar";
 import { fetchTokenByProcessId, getTagValue, type TokenInfo } from "~tokens/aoTokens/ao";
@@ -17,6 +16,7 @@ import TransactionMessage from "~components/embed/auth/TransactionMessage";
 import { formatBalance } from "~utils/format";
 import { AuthRequestCard } from "~components/embed/ui/molecules/card/auth-request-card/AuthRequestCard";
 import browser from "~iframe/browser";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 export function EmbeddedSignDataAuthRequestView() {
   const { authRequest, rejectRequest, acceptRequest } = useCurrentAuthRequest("signDataItem");
@@ -61,16 +61,14 @@ export function EmbeddedSignDataAuthRequestView() {
 
   const arweaveLogo = arLogoLight;
 
-  useEffect(() => {
-    (async () => {
-      if (!url) return;
+  useAsyncEffect(async () => {
+    if (!url) return;
 
-      const app = new Application(url);
-      const gateway = await app.getGatewayConfig();
-      const appData = await app.getAppData();
+    const app = new Application(url);
+    const gateway = await app.getGatewayConfig();
+    const appData = await app.getAppData();
 
-      setAppInfo({ ...appData, gateway });
-    })();
+    setAppInfo({ ...appData, gateway });
   }, [url]);
 
   // get ao token info
