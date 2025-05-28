@@ -1,5 +1,5 @@
 import { dataItemToUR, decodeSignature, messageToUR } from "~wallets/hardware/keystone";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useScanner } from "@arconnect/keystone-sdk";
 import { useActiveWallet } from "~wallets/hooks";
 import type { UR } from "@ngraveio/bc-ur";
@@ -13,19 +13,18 @@ import Message from "~components/auth/Message";
 import { useCurrentAuthRequest } from "~utils/auth/auth.hooks";
 import { HeadAuth } from "~components/HeadAuth";
 import { AuthButtons } from "~components/auth/AuthButtons";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 export function SignKeystoneAuthRequestView() {
   const { authRequest, acceptRequest, rejectRequest } = useCurrentAuthRequest("signKeystone");
 
   const { keystoneSignType, data: dataToSign } = authRequest;
 
-  useEffect(() => {
-    (async () => {
-      if (keystoneSignType === "DataItem" && !!dataToSign) {
-        await loadTransactionUR();
-        setPage("qr");
-      }
-    })();
+  useAsyncEffect(async () => {
+    if (keystoneSignType === "DataItem" && !!dataToSign) {
+      await loadTransactionUR();
+      setPage("qr");
+    }
   }, [keystoneSignType, dataToSign]);
 
   /**

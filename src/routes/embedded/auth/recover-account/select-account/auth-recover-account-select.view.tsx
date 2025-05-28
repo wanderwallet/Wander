@@ -1,12 +1,13 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useCallback, useState } from "react";
-import { Card, WanderFooter, Box, Text, Button } from "~components/embed/ui";
+import { Card, Box, Text, Button } from "~components/embed/ui";
 import type { RecoverableAccount } from "embed-api";
 import { useLocation } from "~wallets/router/router.utils";
 import { Flex } from "~components/common/Flex";
 import { truncateMiddle } from "~utils/format";
 import { toast } from "react-toastify";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
+import { WanderFooter } from "~components/embed/ui/templates/wander-footer/WanderFooter";
 
 export function AuthRecoverAccountSelectEmbeddedView() {
   const { navigate } = useLocation();

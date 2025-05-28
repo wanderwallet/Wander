@@ -14,6 +14,7 @@ import { FULL_HISTORY, useGateway } from "~gateways/wayfinder";
 import { useLocation } from "~wallets/router/router.utils";
 import { getNameServiceProfiles } from "~lib/nameservice";
 import type { NameServiceProfile } from "~lib/types";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 export function WalletsDashboardView() {
   const { navigate } = useLocation();
@@ -51,15 +52,13 @@ export function WalletsDashboardView() {
   // ans data
   const [nameServiceProfiles, setNameServiceProfiles] = useState<NameServiceProfile[]>([]);
 
-  useEffect(() => {
-    (async () => {
-      if (!wallets) return;
+  useAsyncEffect(async () => {
+    if (!wallets) return;
 
-      // fetch profiles
-      const profiles = await getNameServiceProfiles(wallets.map((w) => w.address));
+    // fetch profiles
+    const profiles = await getNameServiceProfiles(wallets.map((w) => w.address));
 
-      setNameServiceProfiles(profiles);
-    })();
+    setNameServiceProfiles(profiles);
   }, [wallets]);
 
   // ans shortcuts

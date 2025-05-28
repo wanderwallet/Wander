@@ -28,6 +28,7 @@ import { useTheme } from "~utils/theme";
 import { useLocation, useSearchParams } from "~wallets/router/router.utils";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { RemoveButton } from "~routes/popup/settings/wallets/[address]";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 // import { isAddressFormat } from "~utils/format";
 
 export interface AddContactDashboardViewProps extends CommonRouteProps {
@@ -150,40 +151,36 @@ export function AddContactDashboardView({ isQuickSetting }: AddContactDashboardV
   //   }
   // }
 
-  useEffect(() => {
+  useAsyncEffect(async () => {
     // if (contact.address && isAddressFormat(contact.address)) {
     //   fetchArnsAddresses(contact.address);
     // }
 
-    (async () => {
-      if (!activeAddress) return;
-      const gateway = await findGateway({ graphql: true });
+    if (!activeAddress) return;
 
-      // fetch last outgoing txs
-      const { data } = await gql(
-        `
-          query($address: [String!]) {
-            transactions(owners: $address, first: 100) {
-              edges {
-                node {
-                  recipient
-                }
+    const gateway = await findGateway({ graphql: true });
+
+    // fetch last outgoing txs
+    const { data } = await gql(
+      `
+        query($address: [String!]) {
+          transactions(owners: $address, first: 100) {
+            edges {
+              node {
+                recipient
               }
             }
           }
-        `,
-        { address: activeAddress },
-        gateway,
-      );
+        }
+      `,
+      { address: activeAddress },
+      gateway,
+    );
 
-      // filter addresses
-      const recipients = data.transactions.edges
-        .filter((tx) => tx.node.recipient !== "")
-        .map((tx) => tx.node.recipient);
+    // filter addresses
+    const recipients = data.transactions.edges.filter((tx) => tx.node.recipient !== "").map((tx) => tx.node.recipient);
 
-      console.log(recipients);
-      setLastRecipients([...new Set(recipients)]);
-    })();
+    setLastRecipients([...new Set(recipients)]);
   }, [contact.address, activeAddress]);
 
   const saveNewContact = async () => {

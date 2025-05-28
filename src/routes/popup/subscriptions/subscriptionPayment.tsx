@@ -2,7 +2,7 @@ import HeadV2 from "~components/popup/HeadV2";
 import { Address, AddressWrapper, BodySection } from "../send/confirm";
 import styled from "styled-components";
 import { prepare, send } from "~subscriptions/payments";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import browser from "webextension-polyfill";
 import { getActiveAddress } from "~wallets";
 import { addSubscription, getSubscriptionData, trackCanceledSubscription, updateSubscription } from "~subscriptions";
@@ -17,6 +17,7 @@ import { getPrice } from "~lib/coingecko";
 import useSetting from "~settings/hook";
 import BigNumber from "bignumber.js";
 import type { CommonRouteProps } from "~wallets/router/router.types";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 export interface SubscriptionPaymentViewParams {
   id?: string;
@@ -89,33 +90,25 @@ export function SubscriptionPaymentView({ params: { id } }: SubscriptionPaymentV
     }
   };
 
-  useEffect(() => {
-    async function getSubData() {
-      try {
-        const address = await getActiveAddress();
-        const data = await getSubscriptionData(address);
-        // finding like this for now
-        const subscription = data.find((subscription) => subscription.arweaveAccountAddress === id);
-        setSubData(subscription);
-      } catch (error) {
-        console.error("Error fetching subscription data:", error);
-      }
-    }
-
+  useAsyncEffect(async () => {
     // segment
-
-    getSubData();
+    try {
+      const address = await getActiveAddress();
+      const data = await getSubscriptionData(address);
+      // finding like this for now
+      const subscription = data.find((subscription) => subscription.arweaveAccountAddress === id);
+      setSubData(subscription);
+    } catch (error) {
+      console.error("Error fetching subscription data:", error);
+    }
   }, []);
 
-  useEffect(() => {
-    async function fetchArPrice() {
-      const arPrice = await getPrice("arweave", currency);
-      if (arPrice) {
-        setPrice(BigNumber(arPrice).multipliedBy(subData.subscriptionFeeAmount).toFixed(2));
-      }
-    }
+  useAsyncEffect(async () => {
+    const arPrice = await getPrice("arweave", currency);
 
-    fetchArPrice();
+    if (arPrice) {
+      setPrice(BigNumber(arPrice).multipliedBy(subData.subscriptionFeeAmount).toFixed(2));
+    }
   }, [subData, currency]);
 
   return (

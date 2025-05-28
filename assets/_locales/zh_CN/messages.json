@@ -2966,6 +2966,22 @@
         "message": "无法显示数据：数据太大，无法显示。",
         "description": "Data too large text"
     },
+    "partitioned_storage_banner": {
+        "message": "您当前的浏览器不支持跨站身份验证和钱包同步。这意味着您每次访问使用 Wander Connect 的新网站时都需要手动导入钱包。\n为了享受跨站无缝体验，请使用 Chrome 或 Edge。",
+        "description": "Unpartitioned state banner message"
+    },
+    "partitioned_storage_banner_rejected": {
+        "message": "Wander Connect 需要访问您浏览器的存储空间才能启用跨站身份验证和钱包同步。拒绝访问意味着您每次访问使用 Wander Connect 的新网站时都需要手动导入钱包。\n为了享受跨站无缝体验，请允许访问您浏览器的存储空间。",
+        "description": "Unpartitioned state rejected banner message"
+    },
+    "re_request_access": {
+        "message": "重新请求访问",
+        "description": "Re-request access text"
+    },
+    "set_up_a_password": {
+        "message": "设置密码",
+        "description": "Set up a password text"
+    },
     "generating_your_account": {
         "message": "正在生成您的账户！",
         "description": "Generating your account text"

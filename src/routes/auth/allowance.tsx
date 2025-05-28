@@ -1,4 +1,4 @@
-import { type Allowance, type AllowanceBigNumber, defaultAllowance } from "~applications/allowance";
+import { type AllowanceBigNumber, defaultAllowance } from "~applications/allowance";
 import Application, { type AppInfo } from "~applications/application";
 import { checkPassword } from "~wallets/auth";
 import { useEffect, useState } from "react";
@@ -13,6 +13,7 @@ import BigNumber from "bignumber.js";
 import { useCurrentAuthRequest } from "~utils/auth/auth.hooks";
 import { HeadAuth } from "~components/HeadAuth";
 import { AuthButtons } from "~components/auth/AuthButtons";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 export function AllowanceAuthRequestView() {
   const arweave = new Arweave(defaultGateway);
@@ -48,16 +49,14 @@ export function AllowanceAuthRequestView() {
   // app data
   const [appData, setAppData] = useState<AppInfo>();
 
-  useEffect(() => {
-    (async () => {
-      if (!url) return;
+  useAsyncEffect(async () => {
+    if (!url) return;
 
-      // construct app
-      const app = new Application(url);
+    // construct app
+    const app = new Application(url);
 
-      setAllowance(await app.getAllowance());
-      setAppData(await app.getAppData());
-    })();
+    setAllowance(await app.getAllowance());
+    setAppData(await app.getAppData());
   }, [url]);
 
   // password input

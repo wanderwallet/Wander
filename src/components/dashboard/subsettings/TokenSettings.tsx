@@ -2,9 +2,8 @@ import { Button, Select, Spacer, Text, Tooltip, useToasts } from "@arconnect/com
 import type { TokenType } from "~tokens/token";
 import { Token as aoToken } from "ao-tokens";
 import { PersistentStorage, useStorage } from "~utils/storage";
-import { ExtensionStorage } from "~utils/storage";
 import { removeToken } from "~tokens";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { CopyButton } from "./WalletSettings";
 import browser, { theme } from "webextension-polyfill";
 import styled from "styled-components";
@@ -19,6 +18,7 @@ import { concatGatewayURL } from "~gateways/utils";
 import { getUserAvatar } from "~lib/avatar";
 import { defaultGateway } from "~gateways/gateway";
 import { TokenLogo } from "../list/TokenListItem";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 export interface TokenSettingsDashboardViewParams {
   id: string;
@@ -99,24 +99,23 @@ export function TokenSettingsDashboardView({ params: { id } }: TokenSettingsDash
     }
   };
 
-  useEffect(() => {
-    (async () => {
-      try {
-        // if it is a collectible, we don't need to determinate the logo
-        if (token.type === "collectible") {
-          return setImage(`${concatGatewayURL(defaultGateway)}/${token.id}`);
-        }
+  useAsyncEffect(async () => {
+    try {
+      // if it is a collectible, we don't need to determinate the logo
+      if (token.type === "collectible") {
+        setImage(`${concatGatewayURL(defaultGateway)}/${token.id}`);
+        return;
+      }
 
-        if (token.Logo) {
-          const logo = await getUserAvatar(token.Logo);
-          return setImage(logo);
-        } else {
-          return setImage(arLogoDark);
-        }
-      } catch {
+      if (token.Logo) {
+        const logo = await getUserAvatar(token.Logo);
+        setImage(logo);
+      } else {
         setImage(arLogoDark);
       }
-    })();
+    } catch {
+      setImage(arLogoDark);
+    }
   }, [token, theme]);
 
   if (!token) return null;

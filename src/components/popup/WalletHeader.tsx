@@ -27,6 +27,7 @@ import { useNameServiceProfile } from "~lib/nameservice";
 import { concatGatewayURL } from "~gateways/utils";
 import { FULL_HISTORY, useGateway } from "~gateways/wayfinder";
 import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 export default function WalletHeader() {
   const theme = useTheme();
@@ -130,28 +131,28 @@ export default function WalletHeader() {
   // active app data
   const [activeAppData, setActiveAppData] = useState<AppInfo & { gateway: Gateway }>();
 
-  useEffect(() => {
-    (async () => {
-      // check if there is an active app
-      if (!activeApp) {
-        return setActiveAppData(undefined);
-      }
+  useAsyncEffect(async () => {
+    // check if there is an active app
+    if (!activeApp) {
+      setActiveAppData(undefined);
+      return;
+    }
 
-      // check if connected
-      const connected = await activeApp.isConnected();
-      if (!connected) {
-        return setActiveAppData(undefined);
-      }
+    // check if connected
+    const connected = await activeApp.isConnected();
+    if (!connected) {
+      setActiveAppData(undefined);
+      return;
+    }
 
-      // get app data
-      const appData = await activeApp.getAppData();
-      const gatewayConfig = await activeApp.getGatewayConfig();
+    // get app data
+    const appData = await activeApp.getAppData();
+    const gatewayConfig = await activeApp.getGatewayConfig();
 
-      setActiveAppData({
-        ...appData,
-        gateway: gatewayConfig,
-      });
-    })();
+    setActiveAppData({
+      ...appData,
+      gateway: gatewayConfig,
+    });
   }, [activeApp]);
 
   // copied address

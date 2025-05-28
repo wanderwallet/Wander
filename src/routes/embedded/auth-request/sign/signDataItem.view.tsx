@@ -1,10 +1,9 @@
-import { Row, Text, Box, Divider } from "~components/embed/ui";
+import { Row, Text, Box, Divider, Snackbar } from "~components/embed/ui";
 import { useCurrentAuthRequest } from "~utils/auth/auth.hooks";
 import Image from "~components/common/Image";
 import { useEffect, useMemo, useState } from "react";
 import Application, { type AppInfo } from "~applications/application";
 import { type Gateway } from "~gateways/gateway";
-import { AlertTriangle } from "@untitled-ui/icons-react";
 import { Quantity } from "ao-tokens";
 import { getUserAvatar } from "~lib/avatar";
 import { fetchTokenByProcessId, getTagValue, type TokenInfo } from "~tokens/aoTokens/ao";
@@ -17,6 +16,7 @@ import TransactionMessage from "~components/embed/auth/TransactionMessage";
 import { formatBalance } from "~utils/format";
 import { AuthRequestCard } from "~components/embed/ui/molecules/card/auth-request-card/AuthRequestCard";
 import browser from "~iframe/browser";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 export function EmbeddedSignDataAuthRequestView() {
   const { authRequest, rejectRequest, acceptRequest } = useCurrentAuthRequest("signDataItem");
@@ -61,16 +61,14 @@ export function EmbeddedSignDataAuthRequestView() {
 
   const arweaveLogo = arLogoLight;
 
-  useEffect(() => {
-    (async () => {
-      if (!url) return;
+  useAsyncEffect(async () => {
+    if (!url) return;
 
-      const app = new Application(url);
-      const gateway = await app.getGatewayConfig();
-      const appData = await app.getAppData();
+    const app = new Application(url);
+    const gateway = await app.getGatewayConfig();
+    const appData = await app.getAppData();
 
-      setAppInfo({ ...appData, gateway });
-    })();
+    setAppInfo({ ...appData, gateway });
   }, [url]);
 
   // get ao token info
@@ -199,13 +197,10 @@ export function EmbeddedSignDataAuthRequestView() {
           </Row>
         </>
       ) : (
-        <Row style={{ padding: 12, backgroundColor: "#FFF9EA" }}>
-          <AlertTriangle height={24} width={24} color="#BD8802" style={{ flexShrink: 0 }} />
-          <Text variant="bodyXs" style={{ color: "#666666" }}>
-            Only confirm if you understand the content and trust the requesting site. This confirmation is used for
-            authentication purposes, funds are not being transferred.
-          </Text>
-        </Row>
+        <Snackbar variant="warning">
+          Only confirm if you understand the content and trust the requesting site. This confirmation is used for
+          authentication purposes, funds are not being transferred.
+        </Snackbar>
       )}
 
       <TransactionMessage transaction={data} detailsLink={`/auth-request/signDataItem/${authRequest.authID}/details`} />

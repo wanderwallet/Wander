@@ -1,17 +1,17 @@
-import { Row, Text, Box, Divider } from "~components/embed/ui";
+import { Row, Text, Box, Divider, Snackbar } from "~components/embed/ui";
 import { useCurrentAuthRequest } from "~utils/auth/auth.hooks";
 import Image from "~components/common/Image";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Application, { type AppInfo } from "~applications/application";
 import { defaultGateway, type Gateway } from "~gateways/gateway";
 import Arweave from "arweave";
 import BigNumber from "bignumber.js";
 import { useBalance } from "~wallets/hooks";
 import { formatBalance } from "~utils/format";
-import { AlertTriangle } from "@untitled-ui/icons-react";
 import TransactionMessage from "~components/embed/auth/TransactionMessage";
 import { AuthRequestCard } from "~components/embed/ui/molecules/card/auth-request-card/AuthRequestCard";
 import browser from "~iframe/browser";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 export function EmbeddedSignAuthRequestView() {
   const { authRequest, rejectRequest, acceptRequest } = useCurrentAuthRequest("sign");
@@ -46,16 +46,14 @@ export function EmbeddedSignAuthRequestView() {
 
   const isTransferTx = useMemo(() => BigNumber(transaction?.quantity || "0").gt(0), [transaction]);
 
-  useEffect(() => {
-    (async () => {
-      if (!url) return;
+  useAsyncEffect(async () => {
+    if (!url) return;
 
-      const app = new Application(url);
-      const gateway = await app.getGatewayConfig();
-      const appData = await app.getAppData();
+    const app = new Application(url);
+    const gateway = await app.getGatewayConfig();
+    const appData = await app.getAppData();
 
-      setAppInfo({ ...appData, gateway });
-    })();
+    setAppInfo({ ...appData, gateway });
   }, [url]);
 
   return (
@@ -127,13 +125,10 @@ export function EmbeddedSignAuthRequestView() {
           </Row>
         </>
       ) : (
-        <Row style={{ padding: 12, backgroundColor: "#FFF9EA" }}>
-          <AlertTriangle height={24} width={24} color="#BD8802" style={{ flexShrink: 0 }} />
-          <Text variant="bodyXs" style={{ color: "#666666" }}>
-            Only confirm if you understand the content and trust the requesting site. This confirmation is used for
-            authentication purposes, funds are not being transferred.
-          </Text>
-        </Row>
+        <Snackbar variant="warning">
+          Only confirm if you understand the content and trust the requesting site. This confirmation is used for
+          authentication purposes, funds are not being transferred.
+        </Snackbar>
       )}
 
       <TransactionMessage transaction={transaction} detailsLink={`/auth-request/sign/${authRequest.authID}/details`} />

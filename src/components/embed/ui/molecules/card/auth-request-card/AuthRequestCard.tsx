@@ -3,9 +3,9 @@ import type { CardBaseProps } from "~components/embed/ui/molecules/card/Card.typ
 import { XClose } from "@untitled-ui/icons-react";
 import { Button } from "~components/embed/ui/atoms";
 import browser from "~iframe/browser";
+import { useEffect } from "react";
 
 import styles from "./AuthRequestCard.module.scss";
-import { useEffect } from "react";
 
 export interface AuthRequestCardProps
   extends Omit<CardBaseProps, "size" | "hasBackButton" | "customIcon" | "hasCloseButton" | "closeButtonStyles"> {

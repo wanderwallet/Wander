@@ -12,10 +12,10 @@ import { WalletHomeActions } from "./actions.container";
 import { WalletHomeAssets } from "./assets.container";
 import { useBalanceSortedTokens } from "~/tokens/hooks";
 import { WalletHomeBalance } from "./balance.container";
+import { AppWarnings } from "~components/embed/ui/templates/app-warnings/AppWarnings";
 
 export function WalletHomeEmbeddedView() {
   const [loggedIn, setLoggedIn] = useState(false);
-  const [isOpen, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useStorage<number>(
     {
       key: "wallet_home_active_tab",
@@ -51,34 +51,10 @@ export function WalletHomeEmbeddedView() {
     scheduleImportAoTokens();
   }, []);
 
-  useEffect(() => {
-    const checkBits = async () => {
-      if (!loggedIn) return;
-
-      const bits = await checkWalletBits();
-    };
-
-    checkBits();
-  }, [loggedIn]);
-
-  useEffect(() => {
-    (async () => {
-      const decryptionKey = await getDecryptionKey();
-      if (decryptionKey) {
-        setLoggedIn(true);
-      }
-
-      if (announcement && wallet?.type === "hardware") {
-        setOpen(true);
-      } else {
-        setOpen(false);
-      }
-    })();
-  }, [wallet, announcement]);
-
   return (
     <Card size="auto" style={{ padding: "32px" }} hasBackButton={false} closeButtonStyles={{ right: "2rem" }}>
       <AccountSelector wallets={wallets} activeWallet={wallet} />
+      <AppWarnings />
       <WalletHomeBalance />
       <Divider />
       <TabBar
