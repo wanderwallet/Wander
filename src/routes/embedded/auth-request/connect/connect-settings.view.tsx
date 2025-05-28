@@ -1,18 +1,19 @@
 import { permissionData, signPolicyOptions, type PermissionType } from "~applications/permissions";
-import { Box, Radio, Snackbar, InfoIcon, Text, Row, ChevronRight } from "~components/embed/ui";
+import { Box, Radio, Snackbar, Text, Row, ChevronRight } from "~components/embed/ui";
 import { useLocation } from "~wallets/router/router.utils";
 import browser from "webextension-polyfill";
 import { Spacer } from "@arconnect/components-rebrand";
 import type { SignPolicy } from "~applications/application";
 import { useCurrentAuthRequest } from "~utils/auth/auth.hooks";
 import { ExtensionStorage, useStorage } from "~utils/storage";
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useCallback } from "react";
 import Application from "~applications/application";
 import { Edit02 } from "@untitled-ui/icons-react";
 import { addApp } from "~applications";
 import { defaultGateway } from "~gateways/gateway";
 import AppIcons from "./components/AppIcons";
 import { AuthRequestCard } from "~components/embed/ui/molecules/card/auth-request-card/AuthRequestCard";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 export function EmbeddedConnectSettingsAuthRequestView() {
   const { navigate } = useLocation();
@@ -93,29 +94,27 @@ export function EmbeddedConnectSettingsAuthRequestView() {
     acceptRequest();
   }, [url, requestedPermissions, appInfo, signPolicy, gateway, acceptRequest]);
 
-  useEffect(() => {
-    (async () => {
-      const requested: PermissionType[] = authRequestPermissions;
+  useAsyncEffect(async () => {
+    const requested: PermissionType[] = authRequestPermissions;
 
-      // add existing permissions
-      if (url) {
-        const app = new Application(url);
-        const existing = await app.getPermissions();
+    // add existing permissions
+    if (url) {
+      const app = new Application(url);
+      const existing = await app.getPermissions();
 
-        for (const existingP of existing) {
-          if (requested.includes(existingP)) continue;
-          requested.push(existingP);
-        }
+      for (const existingP of existing) {
+        if (requested.includes(existingP)) continue;
+        requested.push(existingP);
       }
+    }
 
-      const requestedPermissions = await ExtensionStorage.get(`requested_permissions`);
+    const requestedPermissions = await ExtensionStorage.get(`requested_permissions`);
 
-      if (!requestedPermissions) {
-        setRequestedPermissions(requested.filter((p) => Object.keys(permissionData).includes(p)));
-      }
+    if (!requestedPermissions) {
+      setRequestedPermissions(requested.filter((p) => Object.keys(permissionData).includes(p)));
+    }
 
-      setRequestedPermCopy(requested.filter((p) => Object.keys(permissionData).includes(p)));
-    })();
+    setRequestedPermCopy(requested.filter((p) => Object.keys(permissionData).includes(p)));
   }, [url, authRequestPermissions]);
 
   return (

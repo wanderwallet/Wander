@@ -53,6 +53,7 @@ import prettyBytes from "pretty-bytes";
 import { stringToBuffer } from "arweave/web/lib/utils";
 import useSetting from "~settings/hook";
 import { Flex } from "~components/common/Flex";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 export interface ConfirmViewParams {
   token: string;
@@ -486,84 +487,85 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
     return keystoneSigner;
   }, [wallet, isAo, keystoneInteraction]);
 
-  useEffect(() => {
-    (async () => {
-      setIsLoading(true);
-      if (!recipient?.address) {
-        setIsLoading(false);
-        return;
-      }
+  useAsyncEffect(async () => {
+    setIsLoading(true);
 
-      // get the tx from storage
-      const prepared = await prepare(recipient.address);
+    if (!recipient?.address) {
+      setIsLoading(false);
+      return;
+    }
 
-      // redirect to transfer if the
-      // transaction was not found
-      if (!prepared || !prepared.transaction) {
-        return navigate("/send/transfer");
-      }
+    // get the tx from storage
+    const prepared = await prepare(recipient.address);
 
-      // check if the current wallet
-      // is a hardware wallet
-      if (wallet?.type !== "hardware") {
-        setIsLoading(false);
-        return;
-      }
+    // redirect to transfer if the
+    // transaction was not found
+    if (!prepared || !prepared.transaction) {
+      navigate("/send/transfer");
+      return;
+    }
 
-      if (isAo) {
-        try {
-          setPreparedTx(prepared);
-          const res = await sendAoTransferKeystone(
-            ao,
+    // check if the current wallet
+    // is a hardware wallet
+    if (wallet?.type !== "hardware") {
+      setIsLoading(false);
+      return;
+    }
+
+    if (isAo) {
+      try {
+        setPreparedTx(prepared);
+
+        const res = await sendAoTransferKeystone(
+          ao,
+          tokenID,
+          recipient.address,
+          fractionedToBalance(amount, { decimals: token.Denomination }, "AO"),
+          keystoneSigner,
+        );
+
+        if (res) {
+          saveAoTransactionToLocalStorage(
+            res,
             tokenID,
             recipient.address,
-            fractionedToBalance(amount, { decimals: token.Denomination }, "AO"),
-            keystoneSigner,
+            activeAddress,
+            amount,
+            token.Ticker,
+            networkFee,
+            message,
           );
-          if (res) {
-            saveAoTransactionToLocalStorage(
-              res,
-              tokenID,
-              recipient.address,
-              activeAddress,
-              amount,
-              token.Ticker,
-              networkFee,
-              message,
-            );
 
-            setToast({
-              type: "success",
-              content: browser.i18n.getMessage("sent_tx"),
-              duration: 2000,
-            });
-            navigate(`/send/completed/${res}?isAo=true`);
-            setIsLoading(false);
-          }
-          return res;
-        } catch (err) {
-          console.log("err in ao", err);
-          throw err;
+          setToast({
+            type: "success",
+            content: browser.i18n.getMessage("sent_tx"),
+            duration: 2000,
+          });
+          navigate(`/send/completed/${res}?isAo=true`);
+          setIsLoading(false);
         }
+      } catch (err) {
+        console.log("err in ao", err);
+        throw err;
       }
+    }
 
-      const arweave = new Arweave(prepared.gateway);
-      const convertedTransaction = arweave.transactions.fromRaw(prepared.transaction);
+    const arweave = new Arweave(prepared.gateway);
+    const convertedTransaction = arweave.transactions.fromRaw(prepared.transaction);
 
-      // get tx UR
-      try {
-        setIsLoading(false);
-        setTransactionUR(await transactionToUR(convertedTransaction, wallet.xfp, wallet.publicKey));
-        setPreparedTx(prepared);
-      } catch {
-        setToast({
-          type: "error",
-          duration: 2300,
-          content: browser.i18n.getMessage("transaction_auth_ur_fail"),
-        });
-        navigate("/send/transfer");
-      }
-    })();
+    // get tx UR
+    try {
+      setIsLoading(false);
+      setTransactionUR(await transactionToUR(convertedTransaction, wallet.xfp, wallet.publicKey));
+      setPreparedTx(prepared);
+    } catch {
+      setToast({
+        type: "error",
+        duration: 2300,
+        content: browser.i18n.getMessage("transaction_auth_ur_fail"),
+      });
+      navigate("/send/transfer");
+    }
   }, [wallet, recipient?.address, keystoneSigner, amount]);
 
   // current hardware wallet operation

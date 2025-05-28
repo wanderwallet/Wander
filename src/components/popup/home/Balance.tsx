@@ -12,6 +12,7 @@ import { useTotalFiatBalance } from "~tokens/hooks";
 import NumberFlow from "@number-flow/react";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 export default function Balance() {
   // balance in AR
@@ -82,35 +83,34 @@ export default function Balance() {
     instance: PersistentStorage,
   });
 
-  useEffect(() => {
+  useAsyncEffect(async () => {
     if (!currency) return;
 
-    (async () => {
-      try {
-        if (balance === "0") {
-          setPercentage(BigNumber(0));
-          return;
-        }
-        const ar24hChange = await getAr24hChange(currency);
-
-        setSavedAr24hChange({
-          value: ar24hChange,
-          timestamp: Date.now().toString(),
-        });
-
-        setPercentage(BigNumber(ar24hChange));
-      } catch (error) {
-        console.error("Error fetching AR 24h change:", error);
-
-        // Check if we have a saved value
-        if (savedAr24hChange) {
-          const fallbackPercentage = BigNumber(savedAr24hChange.value);
-          setPercentage(fallbackPercentage);
-        } else {
-          setPercentage(BigNumber(0));
-        }
+    try {
+      if (balance === "0") {
+        setPercentage(BigNumber(0));
+        return;
       }
-    })();
+
+      const ar24hChange = await getAr24hChange(currency);
+
+      setSavedAr24hChange({
+        value: ar24hChange,
+        timestamp: Date.now().toString(),
+      });
+
+      setPercentage(BigNumber(ar24hChange));
+    } catch (error) {
+      console.error("Error fetching AR 24h change:", error);
+
+      // Check if we have a saved value
+      if (savedAr24hChange) {
+        const fallbackPercentage = BigNumber(savedAr24hChange.value);
+        setPercentage(fallbackPercentage);
+      } else {
+        setPercentage(BigNumber(0));
+      }
+    }
   }, [balance, currency]);
 
   return (

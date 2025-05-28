@@ -1,5 +1,5 @@
 import { Card, Spacer, Text } from "@arconnect/components-rebrand";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { PersistentStorage, useStorage } from "~utils/storage";
 import { getTab } from "~applications/tab";
 import { getAppURL } from "~utils/format";
@@ -13,6 +13,7 @@ import { WanderThemeProvider } from "~components/hardware/HardwareWalletTheme";
 import { useRemoveCover } from "~wallets/setup/non/non-wallet-setup.hook";
 import { useWallets } from "~utils/wallets/wallets.hooks";
 import { WalletsProvider } from "~utils/wallets/wallets.provider";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 function DevTools() {
   useRemoveCover();
@@ -20,15 +21,13 @@ function DevTools() {
   // fetch app data
   const [app, setApp] = useState<Application>();
 
-  useEffect(() => {
-    (async () => {
-      // get if app is connected
-      const tab = await getTab(browser.devtools.inspectedWindow.tabId);
-      const appURL = getAppURL(tab.url);
-      const app = new Application(appURL);
+  useAsyncEffect(async () => {
+    // get if app is connected
+    const tab = await getTab(browser.devtools.inspectedWindow.tabId);
+    const appURL = getAppURL(tab.url);
+    const app = new Application(appURL);
 
-      setApp(app);
-    })();
+    setApp(app);
   }, []);
 
   // connected apps
