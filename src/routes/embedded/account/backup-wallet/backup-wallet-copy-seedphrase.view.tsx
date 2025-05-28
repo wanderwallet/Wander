@@ -3,6 +3,7 @@ import { Button, Snackbar, WarningIcon } from "~components/embed/ui";
 import { SecretInput } from "~components/embed/ui/atoms/secret-input/SecretInput";
 import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { useLocation } from "~wallets/router/router.utils";
 
 export function AccountBackupCopySeedphraseEmbeddedView() {
@@ -10,15 +11,12 @@ export function AccountBackupCopySeedphraseEmbeddedView() {
   const { getSeedphrase } = useEmbedded();
   const [seedphrase, setSeedphrase] = useState("");
 
-  async function fetchSeedphrase() {
+  useAsyncEffect(async () => {
     const recoveryPhrase = await getSeedphrase(() => Promise.resolve(true));
+
     if (recoveryPhrase) {
       setSeedphrase(recoveryPhrase);
     }
-  }
-
-  useEffect(() => {
-    fetchSeedphrase();
   }, []);
 
   // TODO: Add a cancel button to go straight to backup reminder or wallet dashboard

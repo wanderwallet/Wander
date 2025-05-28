@@ -32,6 +32,7 @@ import { useActiveWallet } from "~wallets/hooks";
 import { ChevronDown, Pencil01, SwitchVertical02 } from "@untitled-ui/icons-react";
 import { SendInput } from "~components/SendInput";
 import { HorizontalLine } from "~components/HorizontalLine";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 enum AmountValidationState {
   Invalid = "Invalid",
@@ -205,10 +206,8 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
   // token logo
   const [logo, setLogo] = useState<string>();
 
-  useEffect(() => {
-    (async () => {
-      setLogo(await loadTokenLogo(token.processId, token.Logo, theme));
-    })();
+  useAsyncEffect(async () => {
+    setLogo(await loadTokenLogo(token.processId, token.Logo, theme));
   }, [theme, token]);
 
   //arweave logo

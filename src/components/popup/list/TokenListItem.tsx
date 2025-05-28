@@ -8,8 +8,9 @@ import arLogoLight from "url:/assets/ar/logo_light.png";
 import { getUserAvatar } from "~lib/avatar";
 import type { Token } from "~tokens/token";
 import { useLocation } from "~wallets/router/router.utils";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { AR_PROCESS_ID } from "~tokens/aoTokens/ao";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 export interface TokenListItemProps {
   token: Token;
@@ -34,24 +35,23 @@ export function TokenListItem({ token, onClick }: TokenListItemProps) {
   // gateway
   const gateway = useGateway(FULL_HISTORY);
 
-  useEffect(() => {
-    (async () => {
-      try {
-        // if it is a collectible, we don't need to determinate the logo
-        if (token.type === "collectible") {
-          return setImage(`${concatGatewayURL(gateway)}/${token.id}`);
-        }
+  useAsyncEffect(async () => {
+    try {
+      // if it is a collectible, we don't need to determinate the logo
+      if (token.type === "collectible") {
+        setImage(`${concatGatewayURL(gateway)}/${token.id}`);
+        return;
+      }
 
-        if (token.defaultLogo) {
-          const logo = await getUserAvatar(token.defaultLogo);
-          return setImage(logo);
-        } else {
-          return setImage(arLogoDark);
-        }
-      } catch {
+      if (token.defaultLogo) {
+        const logo = await getUserAvatar(token.defaultLogo);
+        setImage(logo);
+      } else {
         setImage(arLogoDark);
       }
-    })();
+    } catch {
+      setImage(arLogoDark);
+    }
   }, [token, theme, gateway]);
 
   const handleClick = () => {

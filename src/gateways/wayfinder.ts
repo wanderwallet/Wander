@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { getGatewayCache } from "./cache";
 import { getSetting } from "~settings";
 import Arweave from "arweave";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 export const FULL_HISTORY: Requirements = { startBlock: 0 };
 
@@ -68,15 +69,13 @@ export function useGateway(requirements: Requirements) {
   // currently active gw
   const [activeGateway, setActiveGateway] = useState<Gateway>(defaultGateway);
 
-  useEffect(() => {
-    (async () => {
-      try {
-        // select recommended gateway using wayfinder
-        const recommended = await findGateway(requirements);
+  useAsyncEffect(async () => {
+    try {
+      // select recommended gateway using wayfinder
+      const recommended = await findGateway(requirements);
 
-        setActiveGateway(recommended);
-      } catch {}
-    })();
+      setActiveGateway(recommended);
+    } catch {}
   }, [requirements.graphql, requirements.arns, requirements.startBlock, requirements.ensureStake]);
 
   return activeGateway;

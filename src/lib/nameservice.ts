@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { NameServiceProfile } from "./types";
 import { getAnsNameServiceProfile } from "./ans";
 import { getArNSProfile } from "./arns";
 import { ExtensionStorage } from "~utils/storage";
 import { getWallets } from "~wallets";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 let IN_MEM_CACHE: Record<string, NameServiceProfile | "none"> = {};
 
@@ -88,16 +89,15 @@ export async function getNameServiceProfiles(walletAddress: string[]): Promise<A
 export function useNameServiceProfile(walletAddress: string) {
   const [profile, setProfile] = useState<NameServiceProfile>();
 
-  useEffect(() => {
-    (async () => {
-      if (!walletAddress) {
-        return setProfile(undefined);
-      }
+  useAsyncEffect(async () => {
+    if (!walletAddress) {
+      setProfile(undefined);
+      return;
+    }
 
-      const profile = await getNameServiceProfile(walletAddress);
+    const profile = await getNameServiceProfile(walletAddress);
 
-      setProfile(profile);
-    })();
+    setProfile(profile);
   }, [walletAddress]);
 
   return profile;

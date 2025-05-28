@@ -26,6 +26,7 @@ import { PageType, trackPage } from "~utils/analytics";
 import BigNumber from "bignumber.js";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { Flex } from "~components/common/Flex";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 export interface SubscriptionDetailsViewParams {
   id?: string;
@@ -104,31 +105,27 @@ export function SubscriptionDetailsView({ params: { id } }: SubscriptionDetailsV
     update();
   }, [autopayChecked]);
 
-  useEffect(() => {
-    async function getSubData() {
-      const address = await getActiveAddress();
-
-      try {
-        const data = await getSubscriptionData(address);
-        // finding like this for now
-        const subscription = data.find((subscription) => subscription.arweaveAccountAddress === id);
-        setSubData(subscription);
-        setChecked(subscription.applicationAutoRenewal);
-        setColor(getColorByStatus(subscription.subscriptionStatus));
-        setAutopayChecked(!!subscription.applicationAllowance);
-        const arPrice = await getPrice("arweave", currency);
-        if (arPrice) {
-          setPrice(BigNumber(arPrice).multipliedBy(subscription.subscriptionFeeAmount));
-        }
-      } catch (error) {
-        console.error("Error fetching subscription data:", error);
-      }
-    }
-
+  useAsyncEffect(async () => {
     // segment
     trackPage(PageType.SUBSCRIPTIONS_MANAGEMENT);
 
-    getSubData();
+    const address = await getActiveAddress();
+
+    try {
+      const data = await getSubscriptionData(address);
+      // finding like this for now
+      const subscription = data.find((subscription) => subscription.arweaveAccountAddress === id);
+      setSubData(subscription);
+      setChecked(subscription.applicationAutoRenewal);
+      setColor(getColorByStatus(subscription.subscriptionStatus));
+      setAutopayChecked(!!subscription.applicationAllowance);
+      const arPrice = await getPrice("arweave", currency);
+      if (arPrice) {
+        setPrice(BigNumber(arPrice).multipliedBy(subscription.subscriptionFeeAmount));
+      }
+    } catch (error) {
+      console.error("Error fetching subscription data:", error);
+    }
   }, []);
 
   // update auto renewal
