@@ -35,11 +35,7 @@ import {
   type RecoverableAccount,
 } from "embed-api";
 import { AuthenticationService } from "~utils/authentication/authentication.service";
-import {
-  AUTH_PROVIDER_TYPE_BY_PROVIDER_STR,
-  EMBEDDED_FEATURE_FLAGS,
-  EMBEDDED_SDK_AUTH_STATUS_BY_AUTH_STATUS,
-} from "~utils/embedded/embedded.constants";
+import { EMBEDDED_FEATURE_FLAGS, EMBEDDED_SDK_AUTH_STATUS_BY_AUTH_STATUS } from "~utils/embedded/embedded.constants";
 import { getDeviceNonce } from "~utils/embedded/device-nonce/device-nonce.utils";
 import { jwtDecode } from "jwt-decode";
 import type { SupabaseJwtPayload } from "~utils/authentication/authentication.types";
@@ -63,6 +59,11 @@ import {
   AO_TOKENS_LAST_BLOCK_HEIGHT,
 } from "~tokens/aoTokens/sync";
 import { loadTokens } from "~tokens/token";
+import {
+  getUnpartitionedStateStatus,
+  UNPARTITIONED_STATE_STATUS_CHANGE_EVENT,
+  type UnpartitionedStateStatusChangeEvent,
+} from "~iframe/storage/unpartitioned-storage/unpartitioned-storage.utils";
 
 export type AuthStatusCopy = AuthStatus;
 
@@ -89,6 +90,7 @@ export const EmbeddedContext = createContext<EmbeddedContextData>({
   ...EMBEDDED_CONTEXT_INITIAL_AUTH,
 
   currentWallet: null,
+  unpartitionedStateStatus: getUnpartitionedStateStatus(),
 
   authenticate: async () => null,
   fetchRecoverableAccounts: async () => null,
@@ -113,6 +115,7 @@ export const EmbeddedContext = createContext<EmbeddedContextData>({
   downloadKeyfile: async () => null,
   copySeedphrase: async () => null,
   getSeedphrase: async () => null,
+  getDecryptedWallet: async () => null,
   generateRecoveryAndDownload: async () => null,
 });
 
@@ -122,7 +125,21 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
   const [embeddedContextAuth, setEmbeddedContextAuth] = useState<EmbeddedContextAuth>(EMBEDDED_CONTEXT_INITIAL_AUTH);
 
-  const [wocation] = useHashLocation();
+  const [unpartitionedStateStatus, setUnpartitionedStateStatus] = useState(() => getUnpartitionedStateStatus());
+
+  // Unpartitioned state:
+
+  useEffect(() => {
+    function handleBanner(event: UnpartitionedStateStatusChangeEvent) {
+      const { unpartitionedStateStatus } = event.detail;
+
+      if (unpartitionedStateStatus) setUnpartitionedStateStatus(unpartitionedStateStatus);
+    }
+
+    document.addEventListener(UNPARTITIONED_STATE_STATUS_CHANGE_EVENT, handleBanner);
+
+    return () => document.removeEventListener(UNPARTITIONED_STATE_STATUS_CHANGE_EVENT, handleBanner);
+  }, []);
 
   // Wallet props:
 
@@ -310,6 +327,38 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     },
     [walletId, walletAddress],
   );
+
+  const getDecryptedWallet = useCallback(async (): Promise<LocalWallet<JWKInterface>> => {
+    log(LOG_GROUP.EMBEDDED_FLOWS, `getDecryptedWallet()`);
+
+    const decryptedWallet = (await getKeyfile(walletAddress)) as LocalWallet<JWKInterface>;
+
+    /*
+
+    This is probably a bad idea, because seeing the QR code doesn't guarantee the user has a copy of it. I think we need
+    to update the backend to include a new QR type for this, and either make that type not update the export count (so
+    that we keep prompting users to back up) or include a download button that downloads the QR as GIF/video. In that
+    case, we only register this when they click download, not when we decrypt the keyfile. That means users should be
+    able to upload that QR code too. In that case, it might be easier to parse if we include the JWK JSON in it as
+    metadata (wondering if any upload service like Drive or Dropbox would automatically get rid of that metadata).
+
+    try {
+      const { wallet: updatedWallet } = await WalletService.registerWalletExport({
+        walletId,
+        type: "KEYFILE",
+      });
+
+      updateCurrentWallet((currentWallet) => ({
+        ...currentWallet,
+        ...updatedWallet,
+      }));
+    } catch (error) {
+      console.error("Failed to register wallet export:", error);
+    }
+    */
+
+    return decryptedWallet;
+  }, [walletId, walletAddress]);
 
   const copySeedphrase = useCallback(async () => {
     log(LOG_GROUP.EMBEDDED_FLOWS, `copySeedphrase()`);
@@ -1435,6 +1484,9 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
   }, [initEmbeddedWallet]);
 
   // TODO: Move to app entry/mount point and do not even start the app?
+
+  const [wocation] = useHashLocation();
+
   useEffect(() => {
     if (wocation.startsWith("/access_token") && window.opener) {
       // Get the hash fragment without the leading '#'
@@ -1458,6 +1510,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         ...embeddedContextAuth,
 
         currentWallet,
+        unpartitionedStateStatus,
 
         authenticate,
         fetchRecoverableAccounts,
@@ -1480,6 +1533,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         downloadKeyfile,
         copySeedphrase,
         getSeedphrase,
+        getDecryptedWallet,
         generateRecoveryAndDownload,
       }}>
       {children}
