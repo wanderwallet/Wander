@@ -31,6 +31,7 @@ import { useNameServiceProfile } from "~lib/nameservice";
 import { FULL_HISTORY, useGateway } from "~gateways/wayfinder";
 import { concatGatewayURL } from "~gateways/utils";
 import { NoAvatarIcon } from "~components/popup/WalletHeader";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 type Page = "unlock" | "connect" | "permissions" | "confirm";
 
@@ -197,25 +198,23 @@ export function ConnectAuthRequestView() {
     }
   }, [page, askPassword, connect]);
 
-  useEffect(() => {
-    (async () => {
-      const requested: PermissionType[] = authRequestPermissions;
+  useAsyncEffect(async () => {
+    const requested: PermissionType[] = authRequestPermissions;
 
-      // add existing permissions
-      if (url) {
-        const app = new Application(url);
-        const existing = await app.getPermissions();
+    // add existing permissions
+    if (url) {
+      const app = new Application(url);
+      const existing = await app.getPermissions();
 
-        for (const existingP of existing) {
-          if (requested.includes(existingP)) continue;
-          requested.push(existingP);
-        }
+      for (const existingP of existing) {
+        if (requested.includes(existingP)) continue;
+        requested.push(existingP);
       }
+    }
 
-      setRequestedPermissions(requested.filter((p) => Object.keys(permissionData).includes(p)));
+    setRequestedPermissions(requested.filter((p) => Object.keys(permissionData).includes(p)));
 
-      setRequestedPermCopy(requested.filter((p) => Object.keys(permissionData).includes(p)));
-    })();
+    setRequestedPermCopy(requested.filter((p) => Object.keys(permissionData).includes(p)));
   }, [url, authRequestPermissions]);
 
   useEffect(() => setPermissions(requestedPermissions), [requestedPermissions]);

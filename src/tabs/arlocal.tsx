@@ -18,6 +18,7 @@ import { WanderThemeProvider } from "~components/hardware/HardwareWalletTheme";
 import { useRemoveCover } from "~wallets/setup/non/non-wallet-setup.hook";
 import { useWallets } from "~utils/wallets/wallets.hooks";
 import { WalletsProvider } from "~utils/wallets/wallets.provider";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 function ArLocal() {
   useRemoveCover();
@@ -47,13 +48,11 @@ function ArLocal() {
   // load testnet for the first time
   const [loadedTestnet, setLoadedTestnet] = useState(false);
 
-  useEffect(() => {
-    (async () => {
-      if (!lastUsedTestnet || loadedTestnet) return;
+  useAsyncEffect(async () => {
+    if (!lastUsedTestnet || loadedTestnet) return;
 
-      await loadTestnet(lastUsedTestnet);
-      setLoadedTestnet(true);
-    })();
+    await loadTestnet(lastUsedTestnet);
+    setLoadedTestnet(true);
   }, [lastUsedTestnet]);
 
   // try to load in the testnet

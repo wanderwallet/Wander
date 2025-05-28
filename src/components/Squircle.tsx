@@ -1,7 +1,8 @@
-import { type HTMLProps, useEffect, useMemo, useState } from "react";
+import { type HTMLProps, useMemo, useState } from "react";
 import styled from "styled-components";
 import axios from "axios";
 import { nanoid } from "nanoid";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 export interface SquircleProps {
   img?: string;
@@ -24,25 +25,24 @@ export default function Squircle({
   // we use this to have a nicer loading
   // because otherwise the background looks
   // weird for a second
-  useEffect(() => {
-    (async () => {
-      if (!img) {
-        return setImageData(img);
-      }
+  useAsyncEffect(async () => {
+    if (!img) {
+      setImageData(img);
+      return;
+    }
 
-      try {
-        const { data, headers } = await axios.get(img, {
-          responseType: "arraybuffer",
-        });
-        const base64 = Buffer.from(data, "binary").toString("base64");
-        const prefix = "data:" + headers["content-type"] + ";base64, ";
+    try {
+      const { data, headers } = await axios.get(img, {
+        responseType: "arraybuffer",
+      });
+      const base64 = Buffer.from(data, "binary").toString("base64");
+      const prefix = "data:" + headers["content-type"] + ";base64, ";
 
-        // append the base64 image string
-        setImageData(prefix + base64);
-      } catch (error) {
-        setImageData(img);
-      }
-    })();
+      // append the base64 image string
+      setImageData(prefix + base64);
+    } catch (error) {
+      setImageData(img);
+    }
   }, [img]);
 
   const outlinePath =

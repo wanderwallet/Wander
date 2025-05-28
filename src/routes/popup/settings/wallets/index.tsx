@@ -1,6 +1,6 @@
 import { concatGatewayURL } from "~gateways/utils";
 import { Button, Section } from "@arconnect/components-rebrand";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useStorage } from "~utils/storage";
 import browser from "webextension-polyfill";
 import styled from "styled-components";
@@ -12,6 +12,7 @@ import { ExtensionStorage } from "~utils/storage";
 import type { StoredWallet } from "~wallets";
 import { getNameServiceProfiles } from "~lib/nameservice";
 import type { NameServiceProfile } from "~lib/types";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 export function WalletsView() {
   const { navigate } = useLocation();
@@ -34,15 +35,13 @@ export function WalletsView() {
   // ans data
   const [nameServiceProfiles, setNameServiceProfiles] = useState<NameServiceProfile[]>([]);
 
-  useEffect(() => {
-    (async () => {
-      if (!wallets) return;
+  useAsyncEffect(async () => {
+    if (!wallets) return;
 
-      // fetch profiles
-      const profiles = await getNameServiceProfiles(wallets.map((w) => w.address));
+    // fetch profiles
+    const profiles = await getNameServiceProfiles(wallets.map((w) => w.address));
 
-      setNameServiceProfiles(profiles);
-    })();
+    setNameServiceProfiles(profiles);
   }, [wallets]);
 
   // ans shortcuts

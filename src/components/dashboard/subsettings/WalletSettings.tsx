@@ -26,6 +26,7 @@ import { formatAddress } from "~utils/format";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { LoadingView } from "~components/page/common/loading/loading.view";
 import { getNameServiceProfile } from "~lib/nameservice";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 export interface WalletSettingsDashboardViewParams {
   address: string;
@@ -52,13 +53,11 @@ export function WalletSettingsDashboardView({ params: { address } }: WalletSetti
   // name service name
   const [nameServiceName, setNameServiceName] = useState<string>();
 
-  useEffect(() => {
-    (async () => {
-      if (!wallet) return;
+  useAsyncEffect(async () => {
+    if (!wallet) return;
 
-      const nameServiceProfile = await getNameServiceProfile(wallet.address);
-      setNameServiceName(nameServiceProfile?.name);
-    })();
+    const nameServiceProfile = await getNameServiceProfile(wallet.address);
+    setNameServiceName(nameServiceProfile?.name);
   }, [wallet?.address]);
 
   // wallet name input

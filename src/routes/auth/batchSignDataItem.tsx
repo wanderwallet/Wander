@@ -14,6 +14,7 @@ import { AuthButtons } from "~components/auth/AuthButtons";
 import { useAskPassword } from "~wallets/hooks";
 import { ExtensionStorage } from "~utils/storage";
 import { useStorage } from "~utils/storage";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 export function BatchSignDataItemAuthRequestView() {
   const { authRequest, acceptRequest, rejectRequest } = useCurrentAuthRequest("batchSignDataItem");
@@ -51,55 +52,51 @@ export function BatchSignDataItemAuthRequestView() {
     acceptRequest();
   }
 
-  useEffect(() => {
-    const fetchTransactionList = async () => {
-      setLoading(true);
+  useAsyncEffect(async () => {
+    setLoading(true);
 
-      try {
-        if (Array.isArray(data)) {
-          const listItems = await Promise.all(
-            data.map(async (item, index) => {
-              let amount = "";
-              let name = "";
-              const quantity = item?.tags?.find((tag) => tag.name === "Quantity")?.value || "0";
-              const transfer = item?.tags?.some((tag) => tag.name === "Action" && tag.value === "Transfer");
+    try {
+      if (Array.isArray(data)) {
+        const listItems = await Promise.all(
+          data.map(async (item, index) => {
+            let amount = "";
+            let name = "";
+            const quantity = item?.tags?.find((tag) => tag.name === "Quantity")?.value || "0";
+            const transfer = item?.tags?.some((tag) => tag.name === "Action" && tag.value === "Transfer");
 
-              if (transfer && quantity) {
-                let tokenInfo: any;
-                try {
-                  const token = await timeoutPromise(Token(item.target), 6000);
-                  tokenInfo = {
-                    ...token.info,
-                    Denomination: Number(token.info.Denomination),
-                  };
-                  const tokenAmount = new Quantity(BigInt(quantity), BigInt(tokenInfo.Denomination));
-                  amount = tokenAmount.toLocaleString();
-                  name = tokenInfo.Name;
-                } catch (error) {
-                  console.error("Token fetch timed out or failed", error);
-                  amount = quantity;
-                  name = item.target;
-                }
+            if (transfer && quantity) {
+              let tokenInfo: any;
+              try {
+                const token = await timeoutPromise(Token(item.target), 6000);
+                tokenInfo = {
+                  ...token.info,
+                  Denomination: Number(token.info.Denomination),
+                };
+                const tokenAmount = new Quantity(BigInt(quantity), BigInt(tokenInfo.Denomination));
+                amount = tokenAmount.toLocaleString();
+                name = tokenInfo.Name;
+              } catch (error) {
+                console.error("Token fetch timed out or failed", error);
+                amount = quantity;
+                name = item.target;
               }
-              return (
-                <ListItem
-                  key={index}
-                  title={`Transaction ${index + 1}`}
-                  subtitle={formatTransactionDescription(amount, name)}
-                  small
-                  onClick={() => setTransaction(item)}
-                />
-              );
-            }),
-          );
-          setTransactionList(listItems);
-        }
-      } finally {
-        setLoading(false);
+            }
+            return (
+              <ListItem
+                key={index}
+                title={`Transaction ${index + 1}`}
+                subtitle={formatTransactionDescription(amount, name)}
+                small
+                onClick={() => setTransaction(item)}
+              />
+            );
+          }),
+        );
+        setTransactionList(listItems);
       }
-    };
-
-    fetchTransactionList();
+    } finally {
+      setLoading(false);
+    }
   }, [data]);
 
   return (
