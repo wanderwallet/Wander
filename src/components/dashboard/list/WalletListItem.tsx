@@ -4,7 +4,7 @@ import { formatAddress } from "~utils/format";
 import type { StoredWallet } from "~wallets";
 import HardwareWalletIcon from "~components/hardware/HardwareWalletIcon";
 import keystoneLogo from "url:/assets/hardware/keystone.png";
-import { ListItem, ListItemIcon } from "@arconnect/components-rebrand";
+import { ListItem, ListItemIcon, Text } from "@arconnect/components-rebrand";
 import Online from "~components/Online";
 import { NoAvatarIcon } from "~components/popup/WalletHeader";
 
@@ -24,7 +24,7 @@ export default function WalletListItem({
     <ListItem
       title={
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          {name}
+          <WalletName>{name}</WalletName>
           {activeWallet && <Online />}
         </div>
       }
@@ -61,4 +61,15 @@ const HardwareIcon = styled(HardwareWalletIcon)`
   height: 24px;
   right: -5px;
   bottom: -5px;
+`;
+
+export const WalletName = styled(Text).attrs({
+  size: "lg",
+  weight: "semibold",
+  noMargin: true,
+})`
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  max-width: 200px;
 `;

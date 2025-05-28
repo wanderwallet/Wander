@@ -21,6 +21,7 @@ import { ExtensionStorage } from "~utils/storage";
 import { NoAvatarIcon } from "~components/popup/WalletHeader";
 import { signOut } from "~utils/embedded/embedded.utils";
 import { BackupSeedphraseWarning } from "~components/popup/settings/BackupSeedphraseWarning";
+import { WalletName } from "~components/dashboard/list/WalletListItem";
 
 export interface QuickSettingsViewParams {
   setting?: string;
@@ -73,7 +74,7 @@ export function MenuView({ params }: QuickSettingsViewProps) {
         style={{ width: "100%" }}
         title={
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            {wallet?.nickname}
+            <WalletName>{wallet?.nickname}</WalletName>
             <Online />
           </div>
         }
