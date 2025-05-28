@@ -24,7 +24,7 @@ import {
 } from "~notifications/utils";
 import { gql } from "~gateways/api";
 import BigNumber from "bignumber.js";
-import { storage } from "~iframe/browser/storage/storage.mock";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 /**
  * Wallets with details hook
@@ -32,38 +32,36 @@ import { storage } from "~iframe/browser/storage/storage.mock";
 export function useWalletsDetails(wallets: JWKInterface[]) {
   const [walletDetails, setWalletDetails] = useState<WalletInterface[]>([]);
 
-  useEffect(() => {
-    (async () => {
-      const arweave = new Arweave(defaultGateway);
-      const details: WalletInterface[] = [];
+  useAsyncEffect(async () => {
+    const arweave = new Arweave(defaultGateway);
+    const details: WalletInterface[] = [];
 
-      // load wallet addresses
-      for (const wallet of wallets) {
-        const address = await arweave.wallets.getAddress(wallet);
+    // load wallet addresses
+    for (const wallet of wallets) {
+      const address = await arweave.wallets.getAddress(wallet);
 
-        // skip already added wallets
-        if (!!walletDetails.find((w) => w.address === address)) {
-          continue;
-        }
-
-        details.push({ address });
+      // skip already added wallets
+      if (!!walletDetails.find((w) => w.address === address)) {
+        continue;
       }
 
-      // load ans labels
-      try {
-        const profiles = await getNameServiceProfiles(details.map((w) => w.address));
+      details.push({ address });
+    }
 
-        for (const wallet of details) {
-          const profile = profiles.find((p) => p.address === wallet.address);
+    // load ans labels
+    try {
+      const profiles = await getNameServiceProfiles(details.map((w) => w.address));
 
-          if (!profile?.name) continue;
-          wallet.label = profile.name;
-        }
-      } catch {}
+      for (const wallet of details) {
+        const profile = profiles.find((p) => p.address === wallet.address);
 
-      // set details
-      setWalletDetails(details);
-    })();
+        if (!profile?.name) continue;
+        wallet.label = profile.name;
+      }
+    } catch {}
+
+    // set details
+    setWalletDetails(details);
   }, [wallets]);
 
   return walletDetails;

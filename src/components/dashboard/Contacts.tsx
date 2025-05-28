@@ -15,6 +15,7 @@ import { EventType, trackEvent } from "~utils/analytics";
 import type { Contacts } from "~components/Recipient";
 import { useLocation } from "~wallets/router/router.utils";
 import type { CommonRouteProps } from "~wallets/router/router.types";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 export interface ContactsDashboardViewParams {
   contact?: string;
@@ -44,34 +45,30 @@ export function ContactsDashboardView({ isQuickSetting }: ContactsDashboardViewP
     trackEvent(EventType.CONTACTS, {});
   }, []);
 
-  useEffect(() => {
-    async function fetchContacts() {
-      const storedContacts = await ExtensionStorage.get<Contacts>("contacts");
+  useAsyncEffect(async () => {
+    const storedContacts = await ExtensionStorage.get<Contacts>("contacts");
 
-      if (storedContacts) {
-        const namedContacts = storedContacts.filter((contact) => contact.name);
-        const addressOnlyContacts = storedContacts.filter((contact) => !contact.name);
+    if (!storedContacts) return;
 
-        namedContacts.sort((a, b) => {
-          const nameComparison = a.name.localeCompare(b.name);
-          if (nameComparison !== 0) {
-            return nameComparison;
-          }
+    const namedContacts = storedContacts.filter((contact) => contact.name);
+    const addressOnlyContacts = storedContacts.filter((contact) => !contact.name);
 
-          return multiSort([a, b])[0] === a ? -1 : 1;
-        });
-
-        const sortedAddressOnlyContacts = multiSort(addressOnlyContacts);
-
-        const sortedContacts = [...namedContacts, ...sortedAddressOnlyContacts];
-
-        const enrichedContacts = await Promise.all(sortedContacts.map(async (contact) => await enrichContact(contact)));
-
-        setContacts(enrichedContacts);
+    namedContacts.sort((a, b) => {
+      const nameComparison = a.name.localeCompare(b.name);
+      if (nameComparison !== 0) {
+        return nameComparison;
       }
-    }
 
-    fetchContacts();
+      return multiSort([a, b])[0] === a ? -1 : 1;
+    });
+
+    const sortedAddressOnlyContacts = multiSort(addressOnlyContacts);
+
+    const sortedContacts = [...namedContacts, ...sortedAddressOnlyContacts];
+
+    const enrichedContacts = await Promise.all(sortedContacts.map(async (contact) => await enrichContact(contact)));
+
+    setContacts(enrichedContacts);
   }, [storedContacts]);
 
   function groupContactsByFirstLetter(contacts) {

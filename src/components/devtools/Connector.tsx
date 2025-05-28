@@ -2,12 +2,13 @@ import { permissionData, type PermissionType } from "~applications/permissions";
 import { Button, Spacer, useToasts, Text } from "@arconnect/components-rebrand";
 import type { AppInfo } from "~applications/application";
 import { PermissionDescription } from "~components/auth/PermissionCheckbox";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { getTab } from "~applications/tab";
 import { addApp } from "~applications";
 import browser from "webextension-polyfill";
 import { ToggleSwitch } from "~routes/popup/subscriptions/subscriptionDetails";
 import { Flex } from "~components/common/Flex";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 export default function Connector({ appUrl }: Props) {
   // permissions to "force-connect" the app with
@@ -18,15 +19,13 @@ export default function Connector({ appUrl }: Props) {
 
   const [appData, setAppData] = useState<AppInfo>({});
 
-  useEffect(() => {
-    (async () => {
-      const tab = await getTab(browser.devtools.inspectedWindow.tabId);
+  useAsyncEffect(async () => {
+    const tab = await getTab(browser.devtools.inspectedWindow.tabId);
 
-      setAppData({
-        name: tab?.title?.slice(0, 14),
-        logo: tab?.favIconUrl,
-      });
-    })();
+    setAppData({
+      name: tab?.title?.slice(0, 14),
+      logo: tab?.favIconUrl,
+    });
   }, []);
 
   // force connect

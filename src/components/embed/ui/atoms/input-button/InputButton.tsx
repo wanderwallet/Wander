@@ -19,14 +19,12 @@ export interface InputButtonProps {
 
 export function InputButton({
   variant: variantProp,
-  type,
   className: classNameProp,
   label,
-  tabIndex,
   icon,
-  onClick,
   disabled,
   loading,
+  ...props
 }: InputButtonProps) {
   const variant = variantProp ?? (icon && !label ? "icon" : "primary");
 
@@ -41,14 +39,7 @@ export function InputButton({
   );
 
   return (
-    <Button
-      type={type}
-      variant={variant}
-      className={className}
-      tabIndex={tabIndex}
-      onClick={onClick}
-      isDisabled={disabled}
-      isLoading={loading}>
+    <Button {...props} variant={variant} className={className} isDisabled={disabled} isLoading={loading}>
       {icon}
       {label}
     </Button>

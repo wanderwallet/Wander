@@ -1,6 +1,6 @@
 import { type Token } from "~tokens/token";
 import { Reorder, useDragControls } from "framer-motion";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { ListItem } from "@arconnect/components-rebrand";
 import { formatAddress } from "~utils/format";
 import { useTheme } from "~utils/theme";
@@ -14,6 +14,7 @@ import { getUserAvatar } from "~lib/avatar";
 import { useLocation } from "~wallets/router/router.utils";
 import CommonImage from "~components/common/Image";
 import { AR_PROCESS_ID } from "~tokens/aoTokens/ao";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 export default function TokenListItem({ token, active, onClick }: Props) {
   const { navigate } = useLocation();
@@ -36,24 +37,22 @@ export default function TokenListItem({ token, active, onClick }: Props) {
   // gateway
   const gateway = useGateway(FULL_HISTORY);
 
-  useEffect(() => {
-    (async () => {
-      try {
-        // if it is a collectible, we don't need to determinate the logo
-        if (token.type === "collectible") {
-          return setImage(`${concatGatewayURL(gateway)}/${token.id}`);
-        }
-
-        if (token.defaultLogo) {
-          const logo = await getUserAvatar(token.defaultLogo);
-          return setImage(logo);
-        } else {
-          return setImage(arLogoDark);
-        }
-      } catch {
-        setImage(arLogoDark);
+  useAsyncEffect(async () => {
+    try {
+      // if it is a collectible, we don't need to determinate the logo
+      if (token.type === "collectible") {
+        return setImage(`${concatGatewayURL(gateway)}/${token.id}`);
       }
-    })();
+
+      if (token.defaultLogo) {
+        const logo = await getUserAvatar(token.defaultLogo);
+        return setImage(logo);
+      } else {
+        return setImage(arLogoDark);
+      }
+    } catch {
+      setImage(arLogoDark);
+    }
   }, [token, theme, gateway]);
 
   const handleClick = () => {

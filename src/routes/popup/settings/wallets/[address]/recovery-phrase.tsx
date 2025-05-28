@@ -13,6 +13,7 @@ import { PageType, trackPage } from "~utils/analytics";
 import { useStorage, ExtensionStorage } from "~utils/storage";
 import { decryptRecoveryPhrase } from "~wallets/encryption";
 import { getDecryptionKey } from "~wallets/auth";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 export interface RecoveryPhraseViewParams {
   address: string;
@@ -39,17 +40,6 @@ export function RecoveryPhraseView({}: RecoveryPhraseViewProps) {
   // icon displayed for "copy seedphrase"
   const [copyDisplay, setCopyDisplay] = useState(true);
 
-  async function getSeedphrase() {
-    const seedphrase = await ExtensionStorage.get(`recovery_phrase_${activeAddress}`);
-
-    if (!seedphrase) return;
-
-    const decryptionKey = await getDecryptionKey();
-    const decrypted = await decryptRecoveryPhrase(seedphrase, decryptionKey);
-
-    setSeedphrase(decrypted);
-  }
-
   // copy the seedphrase
   function copySeed() {
     copy(seedphrase);
@@ -64,10 +54,17 @@ export function RecoveryPhraseView({}: RecoveryPhraseViewProps) {
     navigate("/");
   }
 
-  useEffect(() => {
+  useAsyncEffect(async () => {
     if (!activeAddress) return;
 
-    getSeedphrase();
+    const seedphrase = await ExtensionStorage.get(`recovery_phrase_${activeAddress}`);
+
+    if (!seedphrase) return;
+
+    const decryptionKey = await getDecryptionKey();
+    const decrypted = await decryptRecoveryPhrase(seedphrase, decryptionKey);
+
+    setSeedphrase(decrypted);
   }, [activeAddress]);
 
   // Segment

@@ -24,6 +24,7 @@ import { BalanceFetchError, NetworkError } from "~utils/error/error.utils";
 import { ToggleSwitch } from "~routes/popup/subscriptions/subscriptionDetails";
 import Image from "~components/common/Image";
 import { AO_PROCESS_ID } from "~tokens/aoTokens/ao";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 export default function Token({ onClick, disableClickEffect, disableCursor, ...props }: Props) {
   const ref = useRef(null);
@@ -472,15 +473,13 @@ export function ArToken({ onClick, disableClickEffect, disableCursor, ...props }
 
   const hasActionButton = props?.onAddClick || props?.onRemoveClick || props?.onSettingsClick || props?.onHideClick;
 
-  useEffect(() => {
-    (async () => {
-      if (!activeAddress) return;
+  useAsyncEffect(async () => {
+    if (!activeAddress) return;
 
-      const formattedBalance = formatBalance(balance);
-      setTotalBalance(formattedBalance.tooltipBalance);
-      setShowTooltip(formattedBalance.showTooltip);
-      setDisplayBalance(formattedBalance.displayBalance);
-    })();
+    const formattedBalance = formatBalance(balance);
+    setTotalBalance(formattedBalance.tooltipBalance);
+    setShowTooltip(formattedBalance.showTooltip);
+    setDisplayBalance(formattedBalance.displayBalance);
   }, [activeAddress, balance]);
 
   const formattedFiatPrice = useMemo(() => {

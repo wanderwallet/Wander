@@ -1,4 +1,3 @@
-import type React from "react";
 import { Card } from "~components/embed/ui/molecules/card/Card";
 import type { CardBaseProps } from "~components/embed/ui/molecules/card/Card.types";
 import { WanderFooter } from "~components/embed/ui/templates/wander-footer/WanderFooter";

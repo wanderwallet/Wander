@@ -282,7 +282,7 @@ export async function getNativeTokenBalance(address: string): Promise<string> {
   const res = await dryrun({
     Id,
     Owner: address,
-    process: AO_PROCESSt_BALANCE_MIRROR,
+    process: AO_PROCESS_BALANCE_MIRROR,
     tags: [{ name: "Action", value: "Balance" }],
   });
   const balance = res.Messages[0].Data;
