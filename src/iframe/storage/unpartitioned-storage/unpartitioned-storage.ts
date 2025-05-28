@@ -1,7 +1,6 @@
 import { isInsideIframe } from "~utils/embedded/iframe.utils";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import {
-  getUnpartitionedStateStatus,
   HAS_SIMPLE_STORAGE_API,
   setUnpartitionedStateStatus,
   UNPARTITIONED_STATE_STATUS_CHANGE_EVENT,

@@ -2,7 +2,7 @@
 
 Introducing the Wander Connect Embedded Wallet for Arweave and AO.
 
-![Wander Connect SDK banner](../.github/wander-connect-banner.png)
+![Wander Connect SDK banner](https://raw.githubusercontent.com/wanderwallet/Wander/production/.github/wander-connect-banner.png)
 
 [![Wander Connect SDK NPM package](https://img.shields.io/npm/v/@wanderapp/connect.svg?style=for-the-badge&color=%23CC3534)](https://www.npmjs.com/package/@wanderapp/connect)
 [![Wander Connect SDK NPM package license: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge&color=%230077FF)](https://opensource.org/licenses/MIT)
