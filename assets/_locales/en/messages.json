@@ -3171,5 +3171,21 @@
   "available_agents": {
     "message": "Available agents",
     "description": "Available agents text"
+  },
+  "agent": {
+    "message": "Agent",
+    "description": "Agent text"
+  },
+  "deposited": {
+    "message": "Deposited",
+    "description": "Deposited amount text"
+  },
+  "deposit": {
+    "message": "Deposit",
+    "description": "Deposit text"
+  },
+  "withdraw": {
+    "message": "Withdraw",
+    "description": "Withdraw text"
   }
 }

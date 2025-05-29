@@ -1,10 +1,11 @@
 import HeadV2 from "~components/popup/HeadV2";
 import browser from "webextension-polyfill";
 import styled from "styled-components";
-import { ListItem, Section, Spacer, Text } from "@arconnect/components-rebrand";
+import { Section, Text } from "@arconnect/components-rebrand";
 import { Flex } from "~components/common/Flex";
-import { SvgImageWithBackground } from "../components/SvgImage";
 import AoLogo from "url:/assets/ecosystem/ao-logo.svg";
+import UsdaLogo from "url:/assets/ecosystem/usda.svg";
+import WARLogo from "url:/assets/ecosystem/war.svg";
 import { Line } from "~routes/popup/purchase";
 import { Agent } from "../components/liquidops/Agent";
 import { Quantity } from "ao-tokens";
@@ -20,7 +21,7 @@ export function LiquidOpsAgentsView() {
             {browser.i18n.getMessage("active_agents")}
           </Text>
 
-          <Agent ticker="USDA" walletBalance={new Quantity(1244n, 2n)} supplyAPY={3.43} logo={AoLogo} running />
+          <Agent ticker="USDA" walletBalance={new Quantity(1244n, 2n)} supplyAPY={3.43} logo={UsdaLogo} running />
         </Flex>
 
         <Line />
@@ -31,7 +32,7 @@ export function LiquidOpsAgentsView() {
           </Text>
 
           <Agent ticker="AO" walletBalance={new Quantity(1244n, 2n)} supplyAPY={1.13} logo={AoLogo} />
-          <Agent ticker="wAR" walletBalance={new Quantity(718n, 2n)} supplyAPY={1.57} logo={AoLogo} />
+          <Agent ticker="wAR" walletBalance={new Quantity(718n, 2n)} supplyAPY={1.57} logo={WARLogo} />
         </Flex>
       </Wrapper>
     </>

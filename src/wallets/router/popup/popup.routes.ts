@@ -45,9 +45,9 @@ import { RecoveryPhraseView } from "~routes/popup/settings/wallets/[address]/rec
 import { AgentsView } from "~routes/popup/agents";
 import { CreateAOYieldAgentView } from "~routes/popup/agents/ao-yield/create-agent";
 import { LiquidOpsAgentsView } from "~routes/popup/agents/liquidops/agents";
-import LiquidOpsAgent from "~routes/popup/agents/liquidops/[agent]";
-import LiquidOpsAgentDeposit from "~routes/popup/agents/liquidops/deposit";
-import LiquidOpsAgentWithdraw from "~routes/popup/agents/liquidops/withdraw";
+import { LiquidOpsAgent } from "~routes/popup/agents/liquidops/[agent]";
+import { LiquidOpsAgentDeposit } from "~routes/popup/agents/liquidops/deposit";
+import { LiquidOpsAgentWithdraw } from "~routes/popup/agents/liquidops/withdraw";
 
 export type PopupRoutePath =
   | "/"

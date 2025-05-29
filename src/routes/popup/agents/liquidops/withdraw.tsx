@@ -1,3 +1,3 @@
-export default function LiquidOpsAgentWithdraw() {
+export function LiquidOpsAgentWithdraw() {
   return <></>;
 }

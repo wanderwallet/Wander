@@ -1,3 +1,3 @@
-export default function LiquidOpsAgentDeposit() {
+export function LiquidOpsAgentDeposit() {
   return <></>;
 }
