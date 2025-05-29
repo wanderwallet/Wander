@@ -36,10 +36,9 @@ export const getIframeTemplateContent = ({ customStyles, cssVariableKeys = [] }:
       background: var(--backdropBackground);
       backdrop-filter: var(--backdropBackdropFilter);
       padding: var(--backdropPadding);
-      transition-property: display, opacity;
-      transition-timing-function: linear;
-      transition-duration: 150ms;
-      transition-behavior: allow-discrete;
+      transition:
+        display linear 150ms allow-discrete,
+        opacity linear 150ms;
       display: none;
       opacity: 0;
     }
@@ -70,10 +69,9 @@ export const getIframeTemplateContent = ({ customStyles, cssVariableKeys = [] }:
       max-height: calc(100dvh - 2 * var(--backdropPadding));
       box-sizing: border-box;
       overflow: hidden;
-      transition-property: display, opacity;
-      transition-timing-function: linear;
-      transition-duration: 150ms;
-      transition-behavior: allow-discrete;
+      transition:
+        display linear 150ms allow-discrete,
+        opacity linear 150ms;
       display: none;
       opacity: 0;
     }
@@ -167,7 +165,10 @@ export const getIframeTemplateContent = ({ customStyles, cssVariableKeys = [] }:
     /* Popup specific styles */
 
     .iframe-wrapper[data-layout="popup"] {
-      transition: opacity linear 150ms, height ease-in-out 150ms;
+      transition:
+        display linear 150ms allow-discrete,
+        opacity linear 150ms,
+        height ease-in-out 150ms;
     }
 
     .iframe-wrapper[data-layout="popup"][data-position="top-left"] {
@@ -196,20 +197,27 @@ export const getIframeTemplateContent = ({ customStyles, cssVariableKeys = [] }:
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      transition: opacity linear 150ms, height ease-in-out 150ms;
+      transition:
+        display linear 150ms allow-discrete,
+        opacity linear 150ms,
+        height ease-in-out 150ms;
     }
 
     /* Sidebar specific styles */
 
     .iframe-wrapper[data-layout="sidebar"] {
       opacity: 1;
-      transition: transform ease-in-out 150ms;
+      transition:
+        display linear 150ms allow-discrete,
+        transform linear 150ms;
     }
 
     /* Half specific styles */
 
     .iframe-wrapper[data-layout="half"] {
-      transition: opacity linear 150ms;
+      transition:
+        display linear 150ms allow-discrete,
+        opacity linear 150ms;
     }
 
     /* Right position - Sidebar & Half */
