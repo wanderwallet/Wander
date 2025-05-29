@@ -6,8 +6,12 @@ import UsdaIcon from "url:/assets/ecosystem/usda.svg";
 import LiquidOpsIcon from "url:/assets/ecosystem/liquidops.svg";
 import WarIcon from "url:/assets/ecosystem/war.svg";
 import { SvgImageWithBackground } from "./SvgImage";
+import { useLocation } from "~wallets/router/router.utils";
+import { PopupPaths } from "~wallets/router/popup/popup.routes";
 
 export const LiquidOpsAgentListItem = () => {
+  const { navigate } = useLocation();
+
   return (
     <ListItem
       title={browser.i18n.getMessage("liquidops_agent")}
@@ -46,6 +50,7 @@ export const LiquidOpsAgentListItem = () => {
           />
         </Flex>
       }
+      onClick={() => navigate(PopupPaths.LiquidOpsAgentsList)}
     />
   );
 };

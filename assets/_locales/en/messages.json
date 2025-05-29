@@ -3163,5 +3163,13 @@
   "select_running_dates": {
     "message": "Select running dates",
     "description": "Select running dates text"
+  },
+  "active_agents": {
+    "message": "Active agents",
+    "description": "Active agents text"
+  },
+  "available_agents": {
+    "message": "Available agents",
+    "description": "Available agents text"
   }
 }
