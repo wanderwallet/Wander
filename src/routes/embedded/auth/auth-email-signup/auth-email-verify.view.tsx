@@ -16,14 +16,13 @@ const OTP_LENGTH = 6;
 
 export function AuthEmailVerifyEmbeddedView() {
   const { navigate } = useLocation();
-  const { authStatus } = useEmbedded();
+  const { authStatus, authenticate } = useEmbedded();
   const { email } = useSearchParams<{ email: string }>();
   const [isResending, setIsResending] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [cooldownTime, setCooldownTime] = useState(0);
   const [canResend, setCanResend] = useState(false);
   const [otpDigits, setOtpDigits] = useState<string[]>(Array(OTP_LENGTH).fill(""));
-  const authStatusRef = useRef(authStatus);
   const inputRefs = useRef<Array<HTMLInputElement | null>>(Array(OTP_LENGTH).fill(null));
 
   const [verifyEmailResentTimestamp, setVerifyEmailResentTimestamp] = useStorage<number>(
@@ -75,8 +74,7 @@ export function AuthEmailVerifyEmbeddedView() {
     (digits: string[]) => {
       if (isOtpComplete(digits) && email) {
         setTimeout(() => {
-          const otpCode = digits.join("");
-          handleVerifyCode(otpCode);
+          handleVerifyCode({ preventDefault: () => {} } as any);
         }, 300);
       }
     },
@@ -110,25 +108,30 @@ export function AuthEmailVerifyEmbeddedView() {
     [otpDigits, focusInput, autoSubmitIfComplete],
   );
 
-  const handleVerifyCode = async (otpCode: string) => {
+  const handleVerifyCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+
     if (!email) return;
 
-    setIsVerifying(true);
-    try {
-      const supabase = await getSupabaseClient();
+    const otpCode = otpDigits.join("");
 
-      const { error } = await supabase.auth.verifyOtp({
+    if (otpCode.length !== OTP_LENGTH) {
+      toast.error(`Please enter all ${OTP_LENGTH} digits of the verification code`);
+      return;
+    }
+
+    setIsVerifying(true);
+
+    try {
+      await authenticate({
+        method: "verifyOtp",
         email,
         token: otpCode,
-        type: "email",
       });
 
-      if (error) {
-        toast.error(error.message || "Invalid verification code");
-        return;
-      }
-
       toast.success("Email verified successfully");
+
+      /*
       await new Promise((resolve) => {
         const interval = setInterval(() => {
           if (authStatusRef.current === "noWallets") {
@@ -137,25 +140,15 @@ export function AuthEmailVerifyEmbeddedView() {
           }
         }, 100);
       });
+
       navigate(EmbeddedPaths.WalletHomeEmbeddedView);
+      */
     } catch (error) {
-      toast.error("Error verifying email");
+      toast.error(error.message || "Invalid verification code");
     } finally {
       setIsVerifying(false);
     }
   };
-
-  const verifyOtp = useCallback(() => {
-    if (!email) return;
-
-    const otpCode = otpDigits.join("");
-    if (otpCode.length !== OTP_LENGTH) {
-      toast.error(`Please enter all ${OTP_LENGTH} digits of the verification code`);
-      return;
-    }
-
-    handleVerifyCode(otpCode);
-  }, [email, otpDigits]);
 
   const handlePaste = useCallback(
     (e: React.ClipboardEvent<HTMLInputElement>, index: number) => {
@@ -241,10 +234,6 @@ export function AuthEmailVerifyEmbeddedView() {
   );
 
   useEffect(() => {
-    authStatusRef.current = authStatus;
-  }, [authStatus]);
-
-  useEffect(() => {
     if (!email) {
       if (process.env.NODE_ENV === "development") {
         throw new Error("No email search param. The router should have taken care of this.");
@@ -259,7 +248,8 @@ export function AuthEmailVerifyEmbeddedView() {
       headerText="Verify your email"
       subtitle={`We've sent an email to ${email}`}
       hasBackButton={false}
-      isLoading={isResending}>
+      isLoading={isResending}
+      onSubmit={handleVerifyCode}>
       <Text variant={"bodySm"} alignment={"center"} style={{ color: "var(--text-color-secondary, #666666)" }}>
         Enter the 6-digit verification code from that email to complete signup. If you don't see the email, please check
         your spam folder.
@@ -287,9 +277,9 @@ export function AuthEmailVerifyEmbeddedView() {
           ))}
         </Flex>
         <Button
+          type="submit"
           variant="primary"
           isFullWidth
-          onClick={verifyOtp}
           isLoading={isVerifying}
           isDisabled={isVerifying || !isOtpComplete(otpDigits)}>
           Verify Code

@@ -2,7 +2,6 @@ import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { toast } from "react-toastify";
 import { Button, Text } from "~components/embed";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { getSupabaseClient } from "~utils/embedded/embedded.utils";
 import { useLocation, useSearchParams } from "~wallets/router/router.utils";
 import { Flex } from "~components/common/Flex";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
@@ -12,7 +11,7 @@ import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-c
 export function AuthEmailSigninEmbeddedView() {
   const { navigate } = useLocation();
   const { email } = useSearchParams<{ email: string }>();
-  const { authStatus } = useEmbedded();
+  const { authStatus, authenticate } = useEmbedded();
 
   // Input refs:
 
@@ -38,15 +37,13 @@ export function AuthEmailSigninEmbeddedView() {
     !passwordInput.state;
   */
 
-  const authStatusRef = useRef(authStatus);
-
-  const handleEmailSignin = useCallback(
+  const handleEmailSignIn = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
 
-      const password = passwordInputRef.current?.value || "";
-
       try {
+        const password = passwordInputRef.current?.value || "";
+
         if (!password) {
           toast.error("Please enter an email and password");
           return;
@@ -54,51 +51,25 @@ export function AuthEmailSigninEmbeddedView() {
 
         setIsAuthenticating(true);
 
-        // TODO: Call authenticate instead.
-
-        const supabase = await getSupabaseClient();
-
-        const { error, data } = await supabase.auth.signInWithPassword({
+        await authenticate({
+          method: "signInWithPassword",
           email,
           password,
         });
 
-        if (error) {
-          toast.error(error.message);
-          if (error.code === "email_not_confirmed") {
-            navigate(EmbeddedPaths.AuthEmailVerify);
-          }
-          return;
-        }
-
-        const interval = setInterval(() => {
-          if (authStatusRef.current === "unlocked") {
-            navigate(EmbeddedPaths.WalletHomeEmbeddedView);
-          }
-        }, 1000);
-
-        await new Promise((resolve) => {
-          const interval = setInterval(() => {
-            if (authStatusRef.current === "unlocked") {
-              clearInterval(interval);
-              resolve(true);
-            }
-          }, 1000);
-        });
-
-        return () => clearInterval(interval);
+        // navigate(EmbeddedPaths.WalletHomeEmbeddedView);
       } catch (error) {
-        toast.error("Error signing up");
+        if (error.code === "email_not_confirmed") {
+          navigate(EmbeddedPaths.AuthEmailVerify);
+        } else {
+          toast.error(error.message || "Error signing up");
+        }
       } finally {
         setIsAuthenticating(false);
       }
     },
     [email],
   );
-
-  useEffect(() => {
-    authStatusRef.current = authStatus;
-  }, [authStatus]);
 
   useEffect(() => {
     if (!email) {
@@ -115,7 +86,7 @@ export function AuthEmailSigninEmbeddedView() {
       headerText="Enter your password"
       isLoading={isViewLoading}
       onBackButtonClick={() => navigate(`/auth`)}
-      onSubmit={handleEmailSignin}>
+      onSubmit={handleEmailSignIn}>
       <PasswordInput
         name="password"
         placeholder="Enter your password"

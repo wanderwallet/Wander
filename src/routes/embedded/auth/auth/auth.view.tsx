@@ -2,7 +2,6 @@ import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { toast } from "react-toastify";
 import { Button, Divider, GoogleIcon, TextInput, Row, SocialsIcon, Text, Wander2Icon } from "~components/embed";
 import React, { useCallback, useRef, useState } from "react";
-import type { AuthProviderType } from "embed-api";
 import { getSupabaseClient } from "~utils/embedded/embedded.utils";
 import { useLocation } from "~wallets/router/router.utils";
 import { isValidEmail } from "~utils/email";
@@ -12,10 +11,11 @@ import { sleep } from "~utils/promises/sleep";
 import { EMBEDDED_HIDE_BE } from "~utils/embedded/iframe.utils";
 import { InputButton } from "~components/embed/ui/atoms/input-button/InputButton";
 import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
+import type { OAutProviderType } from "~utils/embedded/embedded.types";
 
 export function AuthEmbeddedView() {
   const { navigate } = useLocation();
-  const { authenticate, authStatus, recoverableAccount } = useEmbedded();
+  const { authStatus, authenticate, recoverableAccount } = useEmbedded();
 
   // Input refs:
 
@@ -37,7 +37,7 @@ export function AuthEmbeddedView() {
 
   // Handlers:
 
-  const handleAuthenticate = useCallback(async (authProviderType: AuthProviderType) => {
+  const handleAuthenticate = useCallback(async (authProviderType: OAutProviderType) => {
     try {
       setIsAuthenticating(true);
       await authenticate(authProviderType);

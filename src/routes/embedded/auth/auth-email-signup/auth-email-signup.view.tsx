@@ -49,7 +49,7 @@ export function AuthEmailSignupEmbeddedView() {
     });
   }, 250);
 
-  const handleEmailSignup = useCallback(
+  const handleEmailSignUp = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
 
@@ -75,6 +75,8 @@ export function AuthEmailSignupEmbeddedView() {
           email,
           password,
         });
+
+        console.log("signUp() =", data, error);
 
         if (error) {
           toast.error(error.message);
@@ -111,7 +113,7 @@ export function AuthEmailSignupEmbeddedView() {
       subtitle="Enter a password to secure your Wander account."
       onBackButtonClick={() => navigate(`/auth`)}
       isLoading={isViewLoading}
-      onSubmit={handleEmailSignup}>
+      onSubmit={handleEmailSignUp}>
       <PasswordInput
         name="password"
         placeholder="Enter your password"

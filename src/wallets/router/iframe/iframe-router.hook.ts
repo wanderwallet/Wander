@@ -36,6 +36,8 @@ export function useEmbeddedOverride(location?: RoutePath) {
     error_description?: string;
   }>();
 
+  // TODO: Move this block below to main.tsx?
+
   // Handle OAuth redirect error URL from Supabase
   if (searchParams.error && searchParams.error_description) {
     // Supabase redirects with error parameters in the URL when OAuth fails
@@ -43,7 +45,7 @@ export function useEmbeddedOverride(location?: RoutePath) {
     return routeTrapMatches(location, [EmbeddedPaths.AuthError], EmbeddedPaths.AuthError);
   }
 
-  if (!location || location.startsWith("/access_token") || authStatus === "unknown") {
+  if (!location || authStatus === "unknown") {
     return "/__OVERRIDES/cover";
   }
 
