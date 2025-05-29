@@ -36,14 +36,21 @@ export const getIframeTemplateContent = ({ customStyles, cssVariableKeys = [] }:
       background: var(--backdropBackground);
       backdrop-filter: var(--backdropBackdropFilter);
       padding: var(--backdropPadding);
-      transition: opacity linear 150ms;
-      pointer-events: none;
+      transition-property: display, opacity;
+      transition-timing-function: linear;
+      transition-duration: 150ms;
+      transition-behavior: allow-discrete;
+      display: none;
       opacity: 0;
     }
 
     .backdrop.show {
-      pointer-events: auto;
+      display: block;
       opacity: 1;
+
+      @starting-style {
+        opacity: 0;
+      }
     }
 
     /* Iframe wrapper styles */
@@ -62,14 +69,22 @@ export const getIframeTemplateContent = ({ customStyles, cssVariableKeys = [] }:
       max-width: calc(100dvw - 2 * var(--backdropPadding));
       max-height: calc(100dvh - 2 * var(--backdropPadding));
       box-sizing: border-box;
-      pointer-events: none;
-      opacity: 0;
       overflow: hidden;
+      transition-property: display, opacity;
+      transition-timing-function: linear;
+      transition-duration: 150ms;
+      transition-behavior: allow-discrete;
+      display: none;
+      opacity: 0;
     }
 
     .iframe-wrapper.show {
-      pointer-events: auto;
+      display: block;
       opacity: 1;
+
+      @starting-style {
+        opacity: 0;
+      }
     }
 
     /* Base iframe styles */
