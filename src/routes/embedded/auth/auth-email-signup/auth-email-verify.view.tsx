@@ -60,54 +60,6 @@ export function AuthEmailVerifyEmbeddedView() {
     return () => clearInterval(timer);
   }, [verifyEmailResentTimestamp]);
 
-  const focusInput = useCallback((index: number) => {
-    if (index >= 0 && index < OTP_LENGTH && inputRefs.current[index]) {
-      inputRefs.current[index]?.focus();
-    }
-  }, []);
-
-  const isOtpComplete = useCallback((digits: string[]) => {
-    return digits.join("").length === OTP_LENGTH;
-  }, []);
-
-  const autoSubmitIfComplete = useCallback(
-    (digits: string[]) => {
-      if (isOtpComplete(digits) && email) {
-        setTimeout(() => {
-          handleVerifyCode({ preventDefault: () => {} } as any);
-        }, 300);
-      }
-    },
-    [email],
-  );
-
-  const handleOtpDigitChange = useCallback(
-    (index: number, value: string) => {
-      const sanitizedValue = value.replace(/[^0-9]/g, "");
-      const newDigits = [...otpDigits];
-
-      if (sanitizedValue.length > 0) {
-        // Fill in digits starting from current position
-        for (let i = 0; i < sanitizedValue.length && index + i < OTP_LENGTH; i++) {
-          newDigits[index + i] = sanitizedValue[i];
-        }
-
-        // Focus next input if available
-        const nextIndex = Math.min(index + sanitizedValue.length, OTP_LENGTH - 1);
-        if (index + sanitizedValue.length < OTP_LENGTH) {
-          focusInput(nextIndex);
-        }
-      } else {
-        // Handle backspace/delete
-        newDigits[index] = "";
-      }
-
-      setOtpDigits(newDigits);
-      autoSubmitIfComplete(newDigits);
-    },
-    [otpDigits, focusInput, autoSubmitIfComplete],
-  );
-
   const handleVerifyCode = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -149,6 +101,54 @@ export function AuthEmailVerifyEmbeddedView() {
       setIsVerifying(false);
     }
   };
+
+  const focusInput = useCallback((index: number) => {
+    if (index >= 0 && index < OTP_LENGTH && inputRefs.current[index]) {
+      inputRefs.current[index]?.focus();
+    }
+  }, []);
+
+  const isOtpComplete = useCallback((digits: string[]) => {
+    return digits.join("").length === OTP_LENGTH;
+  }, []);
+
+  const autoSubmitIfComplete = useCallback(
+    (digits: string[]) => {
+      if (isOtpComplete(digits) && email) {
+        setTimeout(() => {
+          handleVerifyCode({ preventDefault: () => {} } as any);
+        }, 300);
+      }
+    },
+    [email, handleVerifyCode],
+  );
+
+  const handleOtpDigitChange = useCallback(
+    (index: number, value: string) => {
+      const sanitizedValue = value.replace(/[^0-9]/g, "");
+      const newDigits = [...otpDigits];
+
+      if (sanitizedValue.length > 0) {
+        // Fill in digits starting from current position
+        for (let i = 0; i < sanitizedValue.length && index + i < OTP_LENGTH; i++) {
+          newDigits[index + i] = sanitizedValue[i];
+        }
+
+        // Focus next input if available
+        const nextIndex = Math.min(index + sanitizedValue.length, OTP_LENGTH - 1);
+        if (index + sanitizedValue.length < OTP_LENGTH) {
+          focusInput(nextIndex);
+        }
+      } else {
+        // Handle backspace/delete
+        newDigits[index] = "";
+      }
+
+      setOtpDigits(newDigits);
+      autoSubmitIfComplete(newDigits);
+    },
+    [otpDigits, focusInput, autoSubmitIfComplete],
+  );
 
   const handlePaste = useCallback(
     (e: React.ClipboardEvent<HTMLInputElement>, index: number) => {
