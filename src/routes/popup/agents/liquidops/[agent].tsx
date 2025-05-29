@@ -44,11 +44,33 @@ export function LiquidOpsAgent() {
             {browser.i18n.getMessage("withdraw")}
           </Button>
         </Flex>
+
         <Spacer y={1.1} />
+
         <Stats>
           <Text size="sm" variant="secondary" weight="medium" noMargin style={{ textAlign: "center" }}>
             {browser.i18n.getMessage("apy_earned")}
           </Text>
+          <Spacer y={0.5} />
+          <Grid>
+            <Flex direction="column" align="center" gap=".2rem" padding="2px 0">
+              <Text size="lg" weight="medium" noMargin>
+                3.43%
+              </Text>
+              <Text size="xs" variant="secondary" weight="medium" noMargin>
+                {browser.i18n.getMessage("current_apy")}
+              </Text>
+            </Flex>
+            <VerticalLine />
+            <Flex direction="column" align="center" gap=".2rem" padding="2px 0">
+              <Text size="lg" weight="medium" noMargin style={{ color: "rgb(86, 201, 128)" }}>
+                +0.85 USDA
+              </Text>
+              <Text size="xs" variant="secondary" weight="medium" noMargin>
+                {browser.i18n.getMessage("earned")}
+              </Text>
+            </Flex>
+          </Grid>
         </Stats>
       </Wrapper>
     </>
@@ -63,4 +85,16 @@ const Stats = styled.div`
   border-radius: 10px;
   padding: 12px 16px 16px;
   border: 1px solid ${(props) => props.theme.borderDefault};
+`;
+
+const Grid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1px 1fr;
+  padding: 6px 1fr;
+`;
+
+const VerticalLine = styled.div`
+  width: 1px;
+  height: 100%;
+  background-color: ${(props) => props.theme.borderDefault};
 `;
