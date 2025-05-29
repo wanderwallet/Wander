@@ -3187,5 +3187,17 @@
   "withdraw": {
     "message": "Withdraw",
     "description": "Withdraw text"
+  },
+  "apy_earned": {
+    "message": "APY earned",
+    "description": "APY earned text"
+  },
+  "current_apy": {
+    "message": "Current APY",
+    "description": "Current APY text"
+  },
+  "earned": {
+    "message": "Earned",
+    "description": "Earned text"
   }
 }

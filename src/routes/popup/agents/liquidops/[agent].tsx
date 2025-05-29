@@ -30,7 +30,7 @@ export function LiquidOpsAgent() {
               </Flex>
               <SvgImageWithBackground height={14} width={14} shape="circle" src={UsdaLogo} iconSize={14} />
             </Flex>
-            <Text size="base" variant="secondary" weight="medium" noMargin>
+            <Text size="sm" variant="secondary" weight="medium" noMargin>
               $10.00 USD
             </Text>
           </Flex>
@@ -44,6 +44,12 @@ export function LiquidOpsAgent() {
             {browser.i18n.getMessage("withdraw")}
           </Button>
         </Flex>
+        <Spacer y={1.1} />
+        <Stats>
+          <Text size="sm" variant="secondary" weight="medium" noMargin style={{ textAlign: "center" }}>
+            {browser.i18n.getMessage("apy_earned")}
+          </Text>
+        </Stats>
       </Wrapper>
     </>
   );
@@ -51,4 +57,10 @@ export function LiquidOpsAgent() {
 
 const Wrapper = styled(Section)`
   padding-top: 0px;
+`;
+
+const Stats = styled.div`
+  border-radius: 10px;
+  padding: 12px 16px 16px;
+  border: 1px solid ${(props) => props.theme.borderDefault};
 `;
