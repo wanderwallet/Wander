@@ -33,6 +33,7 @@ export const LiquidOpsAgentListItem = () => {
             hideSquircle
             padding={0}
             subtitleExtra={<Status status="Inactive" />}
+            onClick={() => navigate(`/agents/liquidops/AO}`)}
           />
           <ListItem
             title={<Title ticker="USDA" apy="3.43" />}
@@ -40,6 +41,7 @@ export const LiquidOpsAgentListItem = () => {
             hideSquircle
             padding={0}
             subtitleExtra={<Status status="Inactive" />}
+            onClick={() => navigate(`/agents/liquidops/USDA}`)}
           />
           <ListItem
             title={<Title ticker="wAR" apy="1.57" />}
@@ -47,6 +49,7 @@ export const LiquidOpsAgentListItem = () => {
             hideSquircle
             padding={0}
             subtitleExtra={<Status status="Inactive" />}
+            onClick={() => navigate(`/agents/liquidops/wAR}`)}
           />
         </Flex>
       }

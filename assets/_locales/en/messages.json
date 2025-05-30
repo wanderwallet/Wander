@@ -3199,5 +3199,35 @@
   "earned": {
     "message": "Earned",
     "description": "Earned text"
+  },
+  "status": {
+    "message": "Status",
+    "description": "Status text"
+  },
+  "active": {
+    "message": "Active",
+    "description": "Active label"
+  },
+  "inactive": {
+    "message": "Inactive",
+    "description": "Inactive label"
+  },
+  "token_balance": {
+    "message": "$TICKER$ balance",
+    "description": "Token (ticker) balance label",
+    "placeholders": {
+      "ticker": {
+        "content": "$1",
+        "example": "oUSDA"
+      }
+    }
+  },
+  "start_date": {
+    "message": "Start date",
+    "description": "Start date label"
+  },
+  "liquidops_open": {
+    "message": "Open in LiquidOps",
+    "description": "Open in LiquidOps link text"
   }
 }

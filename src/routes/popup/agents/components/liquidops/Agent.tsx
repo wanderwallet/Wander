@@ -43,7 +43,15 @@ export const Agent = ({
       squircleSize={40}
       hideSquircle={true}
       icon={
-        <SvgImageWithBackground height={44} width={40} shape="hexagon" src={logo || AoLogo} iconSize={24} hasBorder />
+        <SvgImageWithBackground
+          height={44}
+          width={40}
+          shape="hexagon"
+          src={logo || AoLogo}
+          iconSize={24}
+          hasBorder={ticker.toUpperCase() === "AO"}
+          iconColor={ticker.toUpperCase() === "AO" ? "black" : undefined}
+        />
       }
       active
       style={{

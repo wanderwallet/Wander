@@ -7,6 +7,7 @@ import UsdaLogo from "url:/assets/ecosystem/usda.svg";
 import Image from "~components/common/Image";
 import { SvgImageWithBackground } from "../components/SvgImage";
 import { Spacer } from "~components/embed";
+import dayjs from "dayjs";
 
 export function LiquidOpsAgent() {
   return (
@@ -72,6 +73,38 @@ export function LiquidOpsAgent() {
             </Flex>
           </Grid>
         </Stats>
+
+        <Spacer y={1.1} />
+
+        <Flex direction="column" gap=".35rem">
+          <Flex align="center" gap=".37rem">
+            <Text size="md" weight="medium" noMargin>
+              {browser.i18n.getMessage("status")}
+            </Text>
+            {/** TODO */}
+          </Flex>
+
+          <Spacer y={0.4} />
+
+          <Flex direction="column" align="center" gap=".34rem">
+            <Flex justify="space-between" style={{ width: "100%" }}>
+              <Text size="sm" variant="secondary" weight="medium" noMargin>
+                {browser.i18n.getMessage("start_date")}
+              </Text>
+              <Text size="sm" weight="medium" noMargin>
+                {dayjs(Date.now()).format("MMM DD, YYYY")}
+              </Text>
+            </Flex>
+            <Flex justify="space-between" style={{ width: "100%" }}>
+              <Text size="sm" variant="secondary" weight="medium" noMargin>
+                {browser.i18n.getMessage("token_balance", ["oUSDA"])}
+              </Text>
+              <Text size="sm" weight="medium" noMargin>
+                10 oUSDA
+              </Text>
+            </Flex>
+          </Flex>
+        </Flex>
       </Wrapper>
     </>
   );
