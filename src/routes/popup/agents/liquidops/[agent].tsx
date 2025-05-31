@@ -4,11 +4,11 @@ import { Flex } from "~components/common/Flex";
 import { Button, Section, Text } from "@arconnect/components-rebrand";
 import styled from "styled-components";
 import UsdaLogo from "url:/assets/ecosystem/usda.svg";
-import Image from "~components/common/Image";
 import { SvgImageWithBackground } from "../components/SvgImage";
 import { Spacer } from "~components/embed";
 import dayjs from "dayjs";
 import { LinkExternal02 } from "@untitled-ui/icons-react";
+import { StatusLabel } from "../components/StatusLabel";
 
 export function LiquidOpsAgent() {
   return (
@@ -78,11 +78,11 @@ export function LiquidOpsAgent() {
         <Spacer y={1.1} />
 
         <Flex direction="column" gap=".35rem">
-          <Flex align="center" gap=".37rem">
+          <Flex align="center" gap=".55rem">
             <Text size="md" weight="medium" noMargin>
               {browser.i18n.getMessage("status")}
             </Text>
-            {/** TODO */}
+            <StatusLabel status={true} label={browser.i18n.getMessage("active")} />
           </Flex>
 
           <Spacer y={0.4} />
