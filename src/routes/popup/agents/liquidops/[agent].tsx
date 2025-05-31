@@ -9,11 +9,14 @@ import { Spacer } from "~components/embed";
 import dayjs from "dayjs";
 import { LinkExternal02 } from "@untitled-ui/icons-react";
 import { StatusLabel } from "../components/StatusLabel";
+import type { CommonRouteProps } from "~wallets/router/router.types";
 
-export function LiquidOpsAgent() {
+export type LiquidOpsAgentProps = CommonRouteProps<{ ticker: string }>;
+
+export function LiquidOpsAgent({ params: { ticker } }: LiquidOpsAgentProps) {
   return (
     <>
-      <HeadV2 title={"USDA " + browser.i18n.getMessage("agent")} />
+      <HeadV2 title={ticker + " " + browser.i18n.getMessage("agent")} />
 
       <Wrapper>
         <Flex align="center" direction="column" gap={2}>
@@ -27,7 +30,7 @@ export function LiquidOpsAgent() {
                   10
                 </Text>
                 <Text size="base" weight="medium" noMargin>
-                  USDA
+                  {ticker}
                 </Text>
               </Flex>
               <SvgImageWithBackground height={14} width={14} shape="circle" src={UsdaLogo} iconSize={14} />
@@ -66,7 +69,7 @@ export function LiquidOpsAgent() {
             <VerticalLine />
             <Flex direction="column" align="center" gap=".2rem" padding="2px 0">
               <Text size="lg" weight="medium" noMargin style={{ color: "rgb(86, 201, 128)" }}>
-                +0.85 USDA
+                +0.85 {ticker}
               </Text>
               <Text size="xs" variant="secondary" weight="medium" noMargin>
                 {browser.i18n.getMessage("earned")}
@@ -98,11 +101,11 @@ export function LiquidOpsAgent() {
             </Flex>
             <Flex justify="space-between" style={{ width: "100%" }}>
               <Text size="sm" variant="secondary" weight="medium" noMargin>
-                {browser.i18n.getMessage("token_balance", ["oUSDA"])}
+                {browser.i18n.getMessage("token_balance", ["o" + ticker])}
               </Text>
               <Flex align="center" gap={4}>
                 <Text size="sm" weight="medium" noMargin>
-                  10 oUSDA
+                  10 {"o" + ticker}
                 </Text>
                 <SvgImageWithBackground
                   height={16}
@@ -119,7 +122,7 @@ export function LiquidOpsAgent() {
               noMargin
               onClick={() =>
                 browser.tabs.create({
-                  url: `https://liquidops.io/wUSDC`, // TODO this should be the ticker of the token
+                  url: `https://liquidops.io/${ticker}`, // TODO this should be the ticker of the token
                 })
               }>
               {browser.i18n.getMessage("liquidops_open")}

@@ -143,9 +143,9 @@ export const PopupPaths = {
   Agents: "/agents",
   CreateAOYieldAgent: "/agents/ao-yield/create-agent",
   LiquidOpsAgentsList: "/agents/liquidops/agents",
-  LiquidOpsAgent: "/agents/liquidops/:agent",
-  LiquidOpsAgentDeposit: "/agents/liquidops/:agent/deposit",
-  LiquidOpsAgentWithdraw: "/agents/liquidops/:agent/withdraw",
+  LiquidOpsAgent: "/agents/liquidops/:ticker",
+  LiquidOpsAgentDeposit: "/agents/liquidops/:ticker/deposit",
+  LiquidOpsAgentWithdraw: "/agents/liquidops/:ticker/withdraw",
 } as const satisfies Record<string, PopupRoutePath>;
 
 export const POPUP_ROUTES = [
