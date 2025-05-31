@@ -8,6 +8,7 @@ import Image from "~components/common/Image";
 import { SvgImageWithBackground } from "../components/SvgImage";
 import { Spacer } from "~components/embed";
 import dayjs from "dayjs";
+import { LinkExternal02 } from "@untitled-ui/icons-react";
 
 export function LiquidOpsAgent() {
   return (
@@ -86,7 +87,7 @@ export function LiquidOpsAgent() {
 
           <Spacer y={0.4} />
 
-          <Flex direction="column" align="center" gap=".34rem">
+          <Flex direction="column" gap=".4rem">
             <Flex justify="space-between" style={{ width: "100%" }}>
               <Text size="sm" variant="secondary" weight="medium" noMargin>
                 {browser.i18n.getMessage("start_date")}
@@ -99,10 +100,31 @@ export function LiquidOpsAgent() {
               <Text size="sm" variant="secondary" weight="medium" noMargin>
                 {browser.i18n.getMessage("token_balance", ["oUSDA"])}
               </Text>
-              <Text size="sm" weight="medium" noMargin>
-                10 oUSDA
-              </Text>
+              <Flex align="center" gap={4}>
+                <Text size="sm" weight="medium" noMargin>
+                  10 oUSDA
+                </Text>
+                <SvgImageWithBackground
+                  height={16}
+                  width={16}
+                  shape="circle"
+                  src={"https://arweave.net/7EEISJIzxC-3RPhgvRc-lAZnP7st1b79_ER4Sc5P_MU"} /** TODO: oToken logo */
+                  iconSize={16}
+                />
+              </Flex>
             </Flex>
+            <OpenInLiquidops
+              size="sm"
+              weight="medium"
+              noMargin
+              onClick={() =>
+                browser.tabs.create({
+                  url: `https://liquidops.io/wUSDC`, // TODO this should be the ticker of the token
+                })
+              }>
+              {browser.i18n.getMessage("liquidops_open")}
+              <LinkExternalIcon />
+            </OpenInLiquidops>
           </Flex>
         </Flex>
       </Wrapper>
@@ -130,4 +152,18 @@ const VerticalLine = styled.div`
   width: 1px;
   height: 100%;
   background-color: ${(props) => props.theme.borderDefault};
+`;
+
+const OpenInLiquidops = styled(Text)`
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: ${(props) => props.theme.primary};
+  cursor: pointer;
+`;
+
+const LinkExternalIcon = styled(LinkExternal02)`
+  height: 1em;
+  width: 1em;
+  color: ${(props) => props.theme.secondaryText};
 `;
