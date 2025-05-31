@@ -551,7 +551,7 @@ const RecipientAmountWrapper = styled.div`
   gap: 18px;
 `;
 
-const MaxButton = styled.button`
+export const MaxButton = styled.button`
   display: flex;
   text-align: center;
   align-items: center;

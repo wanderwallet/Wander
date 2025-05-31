@@ -4,6 +4,7 @@ import { SvgImageWithBackground } from "../SvgImage";
 import AoLogo from "url:/assets/ecosystem/ao-logo.svg";
 import { Quantity } from "ao-tokens";
 import { useLocation } from "~wallets/router/router.utils";
+import browser from "webextension-polyfill";
 
 export const Agent = ({
   ticker,
@@ -36,7 +37,7 @@ export const Agent = ({
             {running ? "% APY" : " " + ticker}
           </Text>
           <Text size="sm" variant="secondary" weight="medium" noMargin>
-            {running ? "Earned" : "Estimated APY"}
+            {browser.i18n.getMessage(running ? "earned" : "estimated_apy")}
           </Text>
         </Flex>
       }

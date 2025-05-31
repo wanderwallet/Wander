@@ -10,10 +10,13 @@ import dayjs from "dayjs";
 import { LinkExternal02 } from "@untitled-ui/icons-react";
 import { StatusLabel } from "../components/StatusLabel";
 import type { CommonRouteProps } from "~wallets/router/router.types";
+import { useLocation } from "~wallets/router/router.utils";
 
 export type LiquidOpsAgentProps = CommonRouteProps<{ ticker: string }>;
 
 export function LiquidOpsAgent({ params: { ticker } }: LiquidOpsAgentProps) {
+  const { navigate } = useLocation();
+
   return (
     <>
       <HeadV2 title={ticker + " " + browser.i18n.getMessage("agent")} />
@@ -42,10 +45,10 @@ export function LiquidOpsAgent({ params: { ticker } }: LiquidOpsAgentProps) {
         </Flex>
         <Spacer y={1.1} />
         <Flex align="center" gap={10}>
-          <Button variant="primary" fullWidth>
+          <Button variant="primary" fullWidth onClick={() => navigate(`/agents/liquidops/${ticker}/deposit`)}>
             {browser.i18n.getMessage("deposit")}
           </Button>
-          <Button variant="secondary" fullWidth>
+          <Button variant="secondary" fullWidth onClick={() => navigate(`/agents/liquidops/${ticker}/withdraw`)}>
             {browser.i18n.getMessage("withdraw")}
           </Button>
         </Flex>
@@ -122,7 +125,7 @@ export function LiquidOpsAgent({ params: { ticker } }: LiquidOpsAgentProps) {
               noMargin
               onClick={() =>
                 browser.tabs.create({
-                  url: `https://liquidops.io/${ticker}`, // TODO this should be the ticker of the token
+                  url: `https://liquidops.io/${ticker}`,
                 })
               }>
               {browser.i18n.getMessage("liquidops_open")}
@@ -157,15 +160,15 @@ const VerticalLine = styled.div`
   background-color: ${(props) => props.theme.borderDefault};
 `;
 
-const OpenInLiquidops = styled(Text)`
+export const OpenInLiquidops = styled(Text)`
   display: flex;
   align-items: center;
-  gap: 0.3rem;
+  gap: 0.24rem;
   color: ${(props) => props.theme.primary};
   cursor: pointer;
 `;
 
-const LinkExternalIcon = styled(LinkExternal02)`
+export const LinkExternalIcon = styled(LinkExternal02)`
   height: 1em;
   width: 1em;
   color: ${(props) => props.theme.secondaryText};

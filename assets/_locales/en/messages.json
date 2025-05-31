@@ -3229,5 +3229,41 @@
   "liquidops_open": {
     "message": "Open in LiquidOps",
     "description": "Open in LiquidOps link text"
+  },
+  "you_deposit": {
+    "message": "You deposit",
+    "description": "You deposit label"
+  },
+  "wander_fee": {
+    "message": "Wander fee",
+    "description": "Wander fee text"
+  },
+  "estimated_apy": {
+    "message": "Estimated APY",
+    "description": "Estimated APY text"
+  },
+  "deposit_receive": {
+    "message": "You will recieve $OTOKEN$ tokens in place of your deposited $TICKER$ tokens.",
+    "description": "Note about getting oTokens for tokens",
+    "placeholders": {
+      "otoken": {
+        "content": "$1",
+        "example": "oUSDA"
+      },
+      "ticker": {
+        "content": "$2",
+        "example": "USDA"
+      }
+    }
+  },
+  "withdraw_receive": {
+    "message": "You will recieve your deposited $TICKER$ tokens along with the yield you have earned.",
+    "description": "Note about getting tokens for oTokens",
+    "placeholders": {
+      "ticker": {
+        "content": "$1",
+        "example": "USDA"
+      }
+    }
   }
 }
