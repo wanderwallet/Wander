@@ -47,6 +47,7 @@ import { CreateAOYieldAgentView } from "~routes/popup/agents/ao-yield/create-age
 import { LiquidOpsAgentsView } from "~routes/popup/agents/liquidops/agents";
 import { LiquidOpsAgent } from "~routes/popup/agents/liquidops/[agent]";
 import { LiquidOpsDepositWithdraw } from "~routes/popup/agents/liquidops/depositwithdraw";
+import { LiquidOpsConfirm } from "~routes/popup/agents/liquidops/confirm";
 
 export type PopupRoutePath =
   | "/"
@@ -145,6 +146,8 @@ export const PopupPaths = {
   LiquidOpsAgentsList: "/agents/liquidops/agents",
   LiquidOpsAgent: "/agents/liquidops/:ticker",
   LiquidOpsDepositWithdraw: "/agents/liquidops/:ticker/:action",
+  LiquidOpsConfirm: "/agents/liquidops/:ticker/:action/confirm",
+  LiquidOpsResult: "/agents/liquidops/:ticker/:action/result",
 } as const satisfies Record<string, PopupRoutePath>;
 
 export const POPUP_ROUTES = [
@@ -329,5 +332,9 @@ export const POPUP_ROUTES = [
   {
     path: PopupPaths.LiquidOpsDepositWithdraw,
     component: LiquidOpsDepositWithdraw,
+  },
+  {
+    path: PopupPaths.LiquidOpsConfirm,
+    component: LiquidOpsConfirm,
   },
 ] as const satisfies RouteConfig[];

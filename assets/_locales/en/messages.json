@@ -3265,5 +3265,13 @@
         "example": "USDA"
       }
     }
+  },
+  "withdrawing": {
+    "message": "Withdrawing",
+    "description": "Ongoing withdraw text"
+  },
+  "depositing": {
+    "message": "Depositing",
+    "description": "Ongoing deposit text"
   }
 }

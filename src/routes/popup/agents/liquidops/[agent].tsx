@@ -7,10 +7,10 @@ import UsdaLogo from "url:/assets/ecosystem/usda.svg";
 import { SvgImageWithBackground } from "../components/SvgImage";
 import { Spacer } from "~components/embed";
 import dayjs from "dayjs";
-import { LinkExternal02 } from "@untitled-ui/icons-react";
 import { StatusLabel } from "../components/StatusLabel";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { useLocation } from "~wallets/router/router.utils";
+import { LinkExternalIcon, OpenInLiquidops } from "../components/liquidops/AgentStats";
 
 export type LiquidOpsAgentProps = CommonRouteProps<{ ticker: string }>;
 
@@ -43,7 +43,9 @@ export function LiquidOpsAgent({ params: { ticker } }: LiquidOpsAgentProps) {
             </Text>
           </Flex>
         </Flex>
+
         <Spacer y={1.1} />
+
         <Flex align="center" gap={10}>
           <Button variant="primary" fullWidth onClick={() => navigate(`/agents/liquidops/${ticker}/deposit`)}>
             {browser.i18n.getMessage("deposit")}
@@ -158,18 +160,4 @@ const VerticalLine = styled.div`
   width: 1px;
   height: 100%;
   background-color: ${(props) => props.theme.borderDefault};
-`;
-
-export const OpenInLiquidops = styled(Text)`
-  display: flex;
-  align-items: center;
-  gap: 0.24rem;
-  color: ${(props) => props.theme.primary};
-  cursor: pointer;
-`;
-
-export const LinkExternalIcon = styled(LinkExternal02)`
-  height: 1em;
-  width: 1em;
-  color: ${(props) => props.theme.secondaryText};
 `;

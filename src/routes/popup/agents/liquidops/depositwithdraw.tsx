@@ -5,17 +5,18 @@ import styled, { useTheme } from "styled-components";
 import { Section, Input, Text, Spacer, Button } from "@arconnect/components-rebrand";
 import { Flex } from "~components/common/Flex";
 import UsdaLogo from "url:/assets/ecosystem/usda.svg";
-import LiquidOpsLogo from "url:/assets/ecosystem/liquidops.svg";
 import { SvgImageWithBackground } from "../components/SvgImage";
 import { MaxButton } from "~routes/popup/send/amount";
 import { Line } from "~routes/popup/purchase";
-import { LinkExternalIcon, OpenInLiquidops } from "./[agent]";
 import { Info } from "../components/liquidops/Info";
+import { AgentStats } from "../components/liquidops/AgentStats";
+import { useLocation } from "~wallets/router/router.utils";
 
 export type LiquidOpsDepositWithdrawProps = CommonRouteProps<{ action: "deposit" | "withdraw"; ticker: string }>;
 
 export function LiquidOpsDepositWithdraw({ params: { action, ticker } }: LiquidOpsDepositWithdrawProps) {
   const theme = useTheme();
+  const { navigate } = useLocation();
 
   return (
     <>
@@ -78,60 +79,19 @@ export function LiquidOpsDepositWithdraw({ params: { action, ticker } }: LiquidO
                 flexDirection: "column",
                 padding: "10px",
               }}
+              autoFocus
             />
           </InputWrapper>
 
           <Line />
 
-          <Flex direction="column" gap=".5rem">
-            {action === "deposit" && (
-              <Flex justify="space-between" style={{ width: "100%" }}>
-                <Text size="sm" variant="secondary" weight="medium" noMargin>
-                  {browser.i18n.getMessage("estimated_apy")}
-                </Text>
-                <Text size="sm" weight="medium" noMargin>
-                  3.43%
-                </Text>
-              </Flex>
-            )}
-            <Flex justify="space-between" style={{ width: "100%" }}>
-              <Text size="sm" variant="secondary" weight="medium" noMargin>
-                {browser.i18n.getMessage("transaction_fee")}
-              </Text>
-              <Text size="sm" weight="medium" noMargin>
-                0.000001 AO
-              </Text>
-            </Flex>
-            <Flex justify="space-between" style={{ width: "100%" }}>
-              <Text size="sm" variant="secondary" weight="medium" noMargin>
-                {browser.i18n.getMessage("wander_fee")}
-              </Text>
-              <Text size="sm" weight="medium" noMargin>
-                0.000001 AO
-              </Text>
-            </Flex>
-            <Flex justify="space-between" style={{ width: "100%" }}>
-              <Text size="sm" variant="secondary" weight="medium" noMargin>
-                {browser.i18n.getMessage("transaction_size")}
-              </Text>
-              <Text size="sm" weight="medium" noMargin>
-                0 B
-              </Text>
-            </Flex>
-            <OpenInLiquidops
-              size="sm"
-              weight="medium"
-              noMargin
-              onClick={() =>
-                browser.tabs.create({
-                  url: `https://liquidops.io/${ticker}`,
-                })
-              }>
-              <SvgImageWithBackground height={14} width={14} shape="circle" src={LiquidOpsLogo} iconSize={14} />
-              {browser.i18n.getMessage("liquidops_open")}
-              <LinkExternalIcon />
-            </OpenInLiquidops>
-          </Flex>
+          <AgentStats
+            ticker={ticker}
+            apy={action === "deposit" ? 3.43 : undefined} // apy is not defined for withdrawals
+            size={0}
+            wanderFee={0.0000001}
+            transactionFee={0.0000001}
+          />
 
           <Spacer y={1} />
 
@@ -144,7 +104,7 @@ export function LiquidOpsDepositWithdraw({ params: { action, ticker } }: LiquidO
             </Text>
           </Info>
         </div>
-        <Button variant="primary" fullWidth>
+        <Button variant="primary" fullWidth onClick={() => navigate(`/agents/liquidops/${ticker}/${action}/confirm`)}>
           {browser.i18n.getMessage("continue")}
         </Button>
       </Wrapper>
