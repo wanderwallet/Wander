@@ -12,14 +12,14 @@ import { Line } from "~routes/popup/purchase";
 import { LinkExternalIcon, OpenInLiquidops } from "./[agent]";
 import { Info } from "../components/liquidops/Info";
 
-export type LiquidOpsDepositProps = CommonRouteProps<{ ticker: string }>;
+export type LiquidOpsDepositWithdrawProps = CommonRouteProps<{ action: "deposit" | "withdraw"; ticker: string }>;
 
-export function LiquidOpsAgentDeposit({ params: { ticker } }: LiquidOpsDepositProps) {
+export function LiquidOpsDepositWithdraw({ params: { action, ticker } }: LiquidOpsDepositWithdrawProps) {
   const theme = useTheme();
 
   return (
     <>
-      <HeadV2 title={browser.i18n.getMessage("deposit") + " " + ticker} />
+      <HeadV2 title={browser.i18n.getMessage(action) + " " + ticker} />
 
       <Wrapper>
         <div>
@@ -35,29 +35,31 @@ export function LiquidOpsAgentDeposit({ params: { ticker } }: LiquidOpsDepositPr
               fullWidth
               hasRightIcon
               iconLeft={
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "flex-start",
-                    marginRight: "10px",
-                    cursor: "default",
-                  }}>
-                  <Text size="sm" noMargin weight="medium" variant="secondary">
-                    {browser.i18n.getMessage("you_deposit")}
-                  </Text>
-                </div>
+                action === "deposit" ? (
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "flex-start",
+                      marginRight: "10px",
+                      cursor: "default",
+                    }}>
+                    <Text size="sm" noMargin weight="medium" variant="secondary">
+                      {browser.i18n.getMessage("you_deposit")}
+                    </Text>
+                  </div>
+                ) : undefined
               }
               iconRight={
                 <Flex direction="column" align="flex-end" gap="1rem" style={{ cursor: "default", paddingTop: 20 }}>
                   <Flex align="center" gap=".4rem">
                     <SvgImageWithBackground height={22} width={22} shape="circle" src={UsdaLogo} iconSize={22} />
                     <Text size="base" noMargin weight="medium">
+                      {action === "withdraw" && "o"}
                       {ticker}
                     </Text>
                   </Flex>
                   <MaxButton>MAX</MaxButton>
-                  {/** We cannot put this at the bottom left any other way */}
                   <Text
                     size="sm"
                     variant="secondary"
@@ -75,13 +77,6 @@ export function LiquidOpsAgentDeposit({ params: { ticker } }: LiquidOpsDepositPr
                 justifyContent: "space-between",
                 flexDirection: "column",
                 padding: "10px",
-                /*color: arConversion
-                  ? quote?.fiatAmount.toString()
-                    ? theme.primaryTextv2
-                    : theme.input.placeholder.search
-                  : quote?.cryptoAmount.toString()
-                    ? theme.primaryTextv2
-                    : theme.input.placeholder.search,*/
               }}
             />
           </InputWrapper>
@@ -89,14 +84,16 @@ export function LiquidOpsAgentDeposit({ params: { ticker } }: LiquidOpsDepositPr
           <Line />
 
           <Flex direction="column" gap=".5rem">
-            <Flex justify="space-between" style={{ width: "100%" }}>
-              <Text size="sm" variant="secondary" weight="medium" noMargin>
-                {browser.i18n.getMessage("estimated_apy")}
-              </Text>
-              <Text size="sm" weight="medium" noMargin>
-                3.43%
-              </Text>
-            </Flex>
+            {action === "deposit" && (
+              <Flex justify="space-between" style={{ width: "100%" }}>
+                <Text size="sm" variant="secondary" weight="medium" noMargin>
+                  {browser.i18n.getMessage("estimated_apy")}
+                </Text>
+                <Text size="sm" weight="medium" noMargin>
+                  3.43%
+                </Text>
+              </Flex>
+            )}
             <Flex justify="space-between" style={{ width: "100%" }}>
               <Text size="sm" variant="secondary" weight="medium" noMargin>
                 {browser.i18n.getMessage("transaction_fee")}
@@ -140,7 +137,10 @@ export function LiquidOpsAgentDeposit({ params: { ticker } }: LiquidOpsDepositPr
 
           <Info>
             <Text size="sm" weight="medium" noMargin style={{ lineHeight: "1.4em" }}>
-              {browser.i18n.getMessage("deposit_receive", ["o" + ticker, ticker])}
+              {browser.i18n.getMessage(
+                action === "deposit" ? "deposit_receive" : "withdraw_receive",
+                action === "deposit" ? ["o" + ticker, ticker] : [ticker],
+              )}
             </Text>
           </Info>
         </div>
