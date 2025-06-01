@@ -30,6 +30,7 @@ export function LiquidOpsAgent({ params: { ticker } }: LiquidOpsAgentProps) {
   const [currency] = useSetting<string>("currency");
   const [fiatBalance, setFiatBalance] = useState(0);
 
+  // TODO
   useEffect(() => {
     setTimeout(() => {
       setAgentBalance(10);
