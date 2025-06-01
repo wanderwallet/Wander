@@ -11,11 +11,40 @@ import { StatusLabel } from "../components/StatusLabel";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { useLocation } from "~wallets/router/router.utils";
 import { LinkExternalIcon, OpenInLiquidops } from "../components/liquidops/AgentStats";
+import NumberFlow from "@number-flow/react";
+import { useEffect, useState } from "react";
+import useSetting from "~settings/hook";
+import { useStorage } from "~utils/storage";
+import { PersistentStorage } from "~utils/storage";
 
 export type LiquidOpsAgentProps = CommonRouteProps<{ ticker: string }>;
 
 export function LiquidOpsAgent({ params: { ticker } }: LiquidOpsAgentProps) {
+  // router
   const { navigate } = useLocation();
+
+  // balance on liquidops (oToken worth)
+  const [agentBalance, setAgentBalance] = useState(0);
+
+  // balance in local currency
+  const [currency] = useSetting<string>("currency");
+  const [fiatBalance, setFiatBalance] = useState(0);
+
+  useEffect(() => {
+    setTimeout(() => {
+      setAgentBalance(10);
+      setFiatBalance(10);
+    }, 1500);
+  }, []);
+
+  // balance display
+  const [hideBalance, setHideBalance] = useStorage<boolean>(
+    {
+      key: "hide_balance",
+      instance: PersistentStorage,
+    },
+    false,
+  );
 
   return (
     <>
@@ -26,11 +55,16 @@ export function LiquidOpsAgent({ params: { ticker } }: LiquidOpsAgentProps) {
           <Text size="base" variant="secondary" weight="medium" noMargin>
             {browser.i18n.getMessage("deposited")}
           </Text>
-          <Flex align="center" direction="column" gap={4}>
+          <Balances align="center" direction="column" gap={4} blur={hideBalance}>
             <Flex align="baseline" gap={4}>
               <Flex align="baseline">
-                <Text size="5xl" weight="medium" noMargin>
-                  10
+                <Text
+                  size="5xl"
+                  weight="medium"
+                  noMargin
+                  style={{ cursor: "pointer" }}
+                  onClick={() => setHideBalance((val) => !val)}>
+                  <NumberFlow value={agentBalance} />
                 </Text>
                 <Text size="base" weight="medium" noMargin>
                   {ticker}
@@ -39,9 +73,15 @@ export function LiquidOpsAgent({ params: { ticker } }: LiquidOpsAgentProps) {
               <SvgImageWithBackground height={14} width={14} shape="circle" src={UsdaLogo} iconSize={14} />
             </Flex>
             <Text size="sm" variant="secondary" weight="medium" noMargin>
-              $10.00 USD
+              <NumberFlow
+                value={fiatBalance}
+                format={{
+                  style: "currency",
+                  currency: currency,
+                }}
+              />
             </Text>
-          </Flex>
+          </Balances>
         </Flex>
 
         <Spacer y={1.1} />
@@ -142,6 +182,7 @@ export function LiquidOpsAgent({ params: { ticker } }: LiquidOpsAgentProps) {
 
 const Wrapper = styled(Section)`
   padding-top: 0px;
+  --number-flow-char-height: 0.84em;
 `;
 
 const Stats = styled.div`
@@ -160,4 +201,10 @@ const VerticalLine = styled.div`
   width: 1px;
   height: 100%;
   background-color: ${(props) => props.theme.borderDefault};
+`;
+
+const Balances = styled(Flex)<{ blur: boolean }>`
+  filter: ${(props) => (props.blur ? "blur(8px)" : "blur(0px)")};
+  user-select: ${(props) => (props.blur ? "none" : "auto")};
+  transition: filter linear 300ms;
 `;
