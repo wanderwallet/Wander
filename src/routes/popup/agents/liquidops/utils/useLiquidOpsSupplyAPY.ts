@@ -10,7 +10,7 @@ const defaultOptions = {
   refetchOnWindowFocus: true,
 };
 
-export function useSupplyAPY(ticker: string) {
+export function useLiquidOpsSupplyAPY(ticker: string) {
   return useQuery({
     queryKey: ["liquidopsTokenAPY", ticker],
     queryFn: async () => {
