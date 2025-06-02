@@ -8,9 +8,21 @@ import WarIcon from "url:/assets/ecosystem/war.svg";
 import { SvgImageWithBackground } from "./SvgImage";
 import { useLocation } from "~wallets/router/router.utils";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
+import { tokenData } from "liquidops";
+import { findGateway } from "~gateways/wayfinder";
+import { concatGatewayURL } from "~gateways/utils";
 
 export const LiquidOpsAgentListItem = () => {
   const { navigate } = useLocation();
+
+  const activeTokens = Object.values(tokenData).filter((token) => !token.deprecated);
+
+  const gateway = {
+    host: "arweave.net",
+    port: 443,
+    protocol: "https",
+  }; // TODO: await findGateway({ graphql: true });
+  const gatewayUrl = concatGatewayURL(gateway);
 
   return (
     <ListItem
@@ -27,30 +39,16 @@ export const LiquidOpsAgentListItem = () => {
       expandable
       expandableContent={
         <Flex direction="column" gap={16}>
-          <ListItem
-            title={<Title ticker="AO" apy="1.13" />}
-            icon={<SvgImageWithBackground height={24} width={24} src={aoLogo} iconSize={16} iconColor="black" />}
-            hideSquircle
-            padding={0}
-            subtitleExtra={<Status status="Inactive" />}
-            onClick={() => navigate(`/agents/liquidops/AO`)}
-          />
-          <ListItem
-            title={<Title ticker="USDA" apy="3.43" />}
-            icon={<img src={UsdaIcon} height={24} width={24} />}
-            hideSquircle
-            padding={0}
-            subtitleExtra={<Status status="Inactive" />}
-            onClick={() => navigate(`/agents/liquidops/USDA`)}
-          />
-          <ListItem
-            title={<Title ticker="wAR" apy="1.57" />}
-            icon={<img src={WarIcon} height={24} width={24} />}
-            hideSquircle
-            padding={0}
-            subtitleExtra={<Status status="Inactive" />}
-            onClick={() => navigate(`/agents/liquidops/wAR`)}
-          />
+          {activeTokens.map((token) => (
+            <ListItem
+              title={<Title ticker={token.cleanTicker} apy="1.13" />}
+              icon={<img src={`${gatewayUrl}/${token.icon}`} height={24} width={24} />}
+              hideSquircle
+              padding={0}
+              subtitleExtra={<Status status="Inactive" />}
+              onClick={() => navigate(`/agents/liquidops/${token.cleanTicker}`)}
+            />
+          ))}
         </Flex>
       }
       onClick={() => navigate(PopupPaths.LiquidOpsAgentsList)}
