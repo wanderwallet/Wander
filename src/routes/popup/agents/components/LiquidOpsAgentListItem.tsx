@@ -24,10 +24,15 @@ export const LiquidOpsAgentListItem = () => {
   }; // TODO: await findGateway({ graphql: true });
   const gatewayUrl = concatGatewayURL(gateway);
 
+  const activeAgents = 1; // TODO
+  const totalAgents = activeTokens.length;
+
+  const supplyAPY = 1;
+
   return (
     <ListItem
       title={browser.i18n.getMessage("liquidops_agent")}
-      subtitle={browser.i18n.getMessage("liquidops_agent_description", ["0", "3"])}
+      subtitle={browser.i18n.getMessage("liquidops_agent_description", [activeAgents, totalAgents])}
       subtitleStyle={{ fontSize: 14, fontWeight: 500, lineHeight: "18.2px" }}
       squircleSize={40}
       hideSquircle={true}
@@ -41,7 +46,7 @@ export const LiquidOpsAgentListItem = () => {
         <Flex direction="column" gap={16}>
           {activeTokens.map((token) => (
             <ListItem
-              title={<Title ticker={token.cleanTicker} apy="1.13" />}
+              title={<Title ticker={token.cleanTicker} apy={supplyAPY.toString()} />}
               icon={<img src={`${gatewayUrl}/${token.icon}`} height={24} width={24} />}
               hideSquircle
               padding={0}
