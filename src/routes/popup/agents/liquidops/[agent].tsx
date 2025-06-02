@@ -3,7 +3,6 @@ import browser from "webextension-polyfill";
 import { Flex } from "~components/common/Flex";
 import { Button, Section, Text } from "@arconnect/components-rebrand";
 import styled from "styled-components";
-import UsdaLogo from "url:/assets/ecosystem/usda.svg";
 import { SvgImageWithBackground } from "../components/SvgImage";
 import { Spacer } from "~components/embed";
 import dayjs from "dayjs";
@@ -16,6 +15,9 @@ import { useEffect, useState } from "react";
 import useSetting from "~settings/hook";
 import { useStorage } from "~utils/storage";
 import { PersistentStorage } from "~utils/storage";
+import { tokenData } from "liquidops";
+import { findGateway } from "~gateways/wayfinder";
+import { concatGatewayURL } from "~gateways/utils";
 
 export type LiquidOpsAgentProps = CommonRouteProps<{ ticker: string }>;
 
@@ -47,6 +49,17 @@ export function LiquidOpsAgent({ params: { ticker } }: LiquidOpsAgentProps) {
     false,
   );
 
+  const activeTokens = Object.values(tokenData).filter((token) => !token.deprecated);
+
+  const token = activeTokens.find((token) => token.ticker.toLowerCase() === ticker.toLowerCase());
+
+  const gateway = {
+    host: "arweave.net",
+    port: 443,
+    protocol: "https",
+  }; // TODO: await findGateway({ graphql: true });
+  const gatewayUrl = concatGatewayURL(gateway);
+
   return (
     <>
       <HeadV2 title={ticker + " " + browser.i18n.getMessage("agent")} />
@@ -71,7 +84,13 @@ export function LiquidOpsAgent({ params: { ticker } }: LiquidOpsAgentProps) {
                   {ticker}
                 </Text>
               </Flex>
-              <SvgImageWithBackground height={14} width={14} shape="circle" src={UsdaLogo} iconSize={14} />
+              <SvgImageWithBackground
+                height={14}
+                width={14}
+                shape="circle"
+                src={`${gatewayUrl}/${token.icon}`}
+                iconSize={14}
+              />
             </Flex>
             <Text size="sm" variant="secondary" weight="medium" noMargin>
               <NumberFlow

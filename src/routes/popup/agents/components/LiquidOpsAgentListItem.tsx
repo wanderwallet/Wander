@@ -25,14 +25,13 @@ export const LiquidOpsAgentListItem = () => {
   const gatewayUrl = concatGatewayURL(gateway);
 
   const activeAgents = 1; // TODO
-  const totalAgents = activeTokens.length;
 
   const supplyAPY = 1;
 
   return (
     <ListItem
       title={browser.i18n.getMessage("liquidops_agent")}
-      subtitle={browser.i18n.getMessage("liquidops_agent_description", [activeAgents, totalAgents])}
+      subtitle={browser.i18n.getMessage("liquidops_agent_description", [activeAgents, activeTokens.length])}
       subtitleStyle={{ fontSize: 14, fontWeight: 500, lineHeight: "18.2px" }}
       squircleSize={40}
       hideSquircle={true}
