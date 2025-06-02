@@ -3,14 +3,26 @@ import browser from "webextension-polyfill";
 import styled from "styled-components";
 import { Section, Text } from "@arconnect/components-rebrand";
 import { Flex } from "~components/common/Flex";
-import AoLogo from "url:/assets/ecosystem/ao-logo.svg";
 import UsdaLogo from "url:/assets/ecosystem/usda.svg";
-import WARLogo from "url:/assets/ecosystem/war.svg";
 import { Line } from "~routes/popup/purchase";
 import { Agent } from "../components/liquidops/Agent";
 import { Quantity } from "ao-tokens";
+import { tokenData } from "liquidops";
+import { findGateway } from "~gateways/wayfinder";
+import { concatGatewayURL } from "~gateways/utils";
+import { useTokenBalance } from "~tokens/hooks";
 
 export function LiquidOpsAgentsView() {
+  const availableTokens = Object.values(tokenData).filter((token) => !token.deprecated);
+  const activeTokens = Object.values(tokenData).filter((token) => !token.deprecated); // TODO
+
+  const gateway = {
+    host: "arweave.net",
+    port: 443,
+    protocol: "https",
+  }; // TODO: await findGateway({ graphql: true });
+  const gatewayUrl = concatGatewayURL(gateway);
+
   return (
     <>
       <HeadV2 title={"LiquidOps " + browser.i18n.getMessage("agents")} />
@@ -21,7 +33,9 @@ export function LiquidOpsAgentsView() {
             {browser.i18n.getMessage("active_agents")}
           </Text>
 
-          <Agent ticker="USDA" walletBalance={new Quantity(1244n, 2n)} supplyAPY={3.43} logo={UsdaLogo} running />
+          {activeTokens.map((token) => (
+            <Agent ticker={token.cleanTicker} logo={`${gatewayUrl}/${token.icon}`} running />
+          ))}
         </Flex>
 
         <Line />
@@ -31,8 +45,9 @@ export function LiquidOpsAgentsView() {
             {browser.i18n.getMessage("available_agents")}
           </Text>
 
-          <Agent ticker="AO" walletBalance={new Quantity(1244n, 2n)} supplyAPY={1.13} logo={AoLogo} />
-          <Agent ticker="wAR" walletBalance={new Quantity(718n, 2n)} supplyAPY={1.57} logo={WARLogo} />
+          {availableTokens.map((token) => (
+            <Agent ticker={token.cleanTicker} logo={`${gatewayUrl}/${token.icon}`} />
+          ))}
         </Flex>
       </Wrapper>
     </>

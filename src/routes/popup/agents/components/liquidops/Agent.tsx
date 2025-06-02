@@ -5,16 +5,25 @@ import AoLogo from "url:/assets/ecosystem/ao-logo.svg";
 import { Quantity } from "ao-tokens";
 import { useLocation } from "~wallets/router/router.utils";
 import browser from "webextension-polyfill";
+import { useTokenBalance } from "~tokens/hooks";
+import { tokenData } from "liquidops";
+import { useLiquidOpsSupplyAPY } from "../../liquidops/utils/useLiquidOpsSupplyAPY";
 
-export const Agent = ({
-  ticker,
-  walletBalance,
-  logo,
-  supplyAPY,
-  running = false,
-  earned = new Quantity(0n, 0n),
-}: Props) => {
+export const Agent = ({ ticker, logo, running = false, earned = new Quantity(0n, 0n) }: Props) => {
   const { navigate } = useLocation();
+
+  const activeTokens = Object.values(tokenData).filter((token) => !token.deprecated);
+
+  const token = activeTokens.find((token) => token.ticker.toLowerCase() === ticker.toLowerCase());
+
+  const tokenObj = {
+    Name: token.name,
+    Denomination: Number(token.denomination),
+    processId: token.oAddress,
+  };
+  const walletBalance = useTokenBalance(tokenObj, token.oAddress); // TODO: get oToken rate
+
+  const supplyAPY = useLiquidOpsSupplyAPY(token.ticker);
 
   return (
     <ListItem
@@ -73,9 +82,7 @@ export const Agent = ({
 
 type Props = {
   ticker: string;
-  walletBalance: Quantity;
   logo?: string;
-  supplyAPY: number;
   running?: boolean;
   earned?: Quantity;
 };
