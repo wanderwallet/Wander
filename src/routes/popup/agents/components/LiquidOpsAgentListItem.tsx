@@ -15,7 +15,7 @@ import { concatGatewayURL } from "~gateways/utils";
 export const LiquidOpsAgentListItem = () => {
   const { navigate } = useLocation();
 
-  const activeTokens = Object.values(tokenData).filter((token) => !token.deprecated);
+  const availableTokens = Object.values(tokenData).filter((token) => !token.deprecated);
 
   const gateway = {
     host: "arweave.net",
@@ -31,7 +31,7 @@ export const LiquidOpsAgentListItem = () => {
   return (
     <ListItem
       title={browser.i18n.getMessage("liquidops_agent")}
-      subtitle={browser.i18n.getMessage("liquidops_agent_description", [activeAgents, activeTokens.length])}
+      subtitle={browser.i18n.getMessage("liquidops_agent_description", [activeAgents, availableTokens.length])}
       subtitleStyle={{ fontSize: 14, fontWeight: 500, lineHeight: "18.2px" }}
       squircleSize={40}
       hideSquircle={true}
@@ -43,7 +43,7 @@ export const LiquidOpsAgentListItem = () => {
       expandable
       expandableContent={
         <Flex direction="column" gap={16}>
-          {activeTokens.map((token) => (
+          {availableTokens.map((token) => (
             <ListItem
               title={<Title ticker={token.cleanTicker} apy={supplyAPY.toString()} />}
               icon={<img src={`${gatewayUrl}/${token.icon}`} height={24} width={24} />}
