@@ -8,12 +8,19 @@ import { SvgImageWithBackground } from "../components/SvgImage";
 import UsdaLogo from "url:/assets/ecosystem/usda.svg";
 import { AgentStats } from "../components/liquidops/AgentStats";
 import { useActiveWallet } from "~wallets/hooks";
+import { tokenData } from "liquidops";
+import { useLOSupplyAPY } from "./utils/hooks/useLOSupplyAPY";
 
 export function LiquidOpsConfirm({ params: { action, ticker } }: LiquidOpsDepositWithdrawProps) {
   const passwordInput = useInput();
   const wallet = useActiveWallet();
 
   async function executeLocal() {}
+
+  const activeTokens = Object.values(tokenData).filter((token) => !token.deprecated);
+  const token = activeTokens.find((token) => token.ticker.toLowerCase() === ticker.toLowerCase());
+
+  const { data: supplyAPR } = useLOSupplyAPY(token.ticker);
 
   return (
     <>
@@ -47,10 +54,10 @@ export function LiquidOpsConfirm({ params: { action, ticker } }: LiquidOpsDeposi
 
           <AgentStats
             ticker={ticker}
-            apy={action === "deposit" ? 3.43 : undefined} // apy is not defined for withdrawals
+            apy={action === "deposit" ? supplyAPR.toLocaleString(undefined, { maximumFractionDigits: 2 }) : undefined} // apy is not defined for withdrawals
             size={0}
-            wanderFee={0.0000001}
-            transactionFee={0.0000001}
+            wanderFee={0} // TODO: talk to Clabs
+            transactionFee={0} // this is 0 for now
           />
 
           <Flex direction="column" gap={12} padding="24px 0">

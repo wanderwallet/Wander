@@ -2,28 +2,26 @@ import { ListItem, Text } from "@arconnect/components-rebrand";
 import { Flex } from "~components/common/Flex";
 import { SvgImageWithBackground } from "../SvgImage";
 import AoLogo from "url:/assets/ecosystem/ao-logo.svg";
-import { Quantity } from "ao-tokens";
 import { useLocation } from "~wallets/router/router.utils";
 import browser from "webextension-polyfill";
-import { useTokenBalance } from "~tokens/hooks";
 import { tokenData } from "liquidops";
-import { useLiquidOpsSupplyAPY } from "../../liquidops/utils/useLiquidOpsSupplyAPY";
+import { useLOSupplyAPY } from "../../liquidops/utils/hooks/useLOSupplyAPY";
+import { useLOOTokenBalance } from "../../liquidops/utils/hooks/useLOOTokenBalance";
 
-export const Agent = ({ ticker, logo, running = false, earned = new Quantity(0n, 0n) }: Props) => {
+export const Agent = ({ ticker, logo, running = false }: Props) => {
   const { navigate } = useLocation();
 
   const activeTokens = Object.values(tokenData).filter((token) => !token.deprecated);
-
   const token = activeTokens.find((token) => token.ticker.toLowerCase() === ticker.toLowerCase());
 
-  const tokenObj = {
-    Name: token.name,
-    Denomination: Number(token.denomination),
-    processId: token.oAddress,
-  };
-  const walletBalance = useTokenBalance(tokenObj, token.oAddress); // TODO: get oToken rate
+  // Always call hooks unconditionally at the top level
+  const { data: walletBalance } = useLOOTokenBalance(token.cleanTicker);
+  const { data: supplyAPY } = useLOSupplyAPY(token.ticker);
 
-  const supplyAPY = useLiquidOpsSupplyAPY(token.ticker);
+  // Early return if token not found
+  if (!token) {
+    return null;
+  }
 
   return (
     <ListItem
@@ -34,7 +32,7 @@ export const Agent = ({ ticker, logo, running = false, earned = new Quantity(0n,
           </Text>
           <Text weight="semibold" noMargin style={running ? { color: "rgb(86, 201, 128)" } : {}}>
             {running ? "+" : ""}
-            {(running ? earned : supplyAPY).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+            {Number(supplyAPY).toLocaleString(undefined, { maximumFractionDigits: 2 })}
             {running ? " " + ticker : "%"}
           </Text>
         </Flex>
@@ -42,7 +40,7 @@ export const Agent = ({ ticker, logo, running = false, earned = new Quantity(0n,
       subtitle={
         <Flex justify="space-between" align="center" width="100%">
           <Text size="sm" variant="secondary" weight="medium" noMargin>
-            {(running ? supplyAPY : walletBalance).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+            {Number(running ? supplyAPY : walletBalance).toLocaleString(undefined, { maximumFractionDigits: 2 })}
             {running ? "% APY" : " " + ticker}
           </Text>
           <Text size="sm" variant="secondary" weight="medium" noMargin>
@@ -84,5 +82,4 @@ type Props = {
   ticker: string;
   logo?: string;
   running?: boolean;
-  earned?: Quantity;
 };

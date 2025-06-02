@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { LiquidOpsClient } from "./LiquidOps";
+import { getArweaveLink } from "~gateways/utils";
 
 const defaultOptions = {
   refetchInterval: 300_000,
@@ -10,20 +10,18 @@ const defaultOptions = {
   refetchOnWindowFocus: true,
 };
 
-export function useLiquidOpsSupplyAPY(ticker: string) {
+export function useGateway(txId: string) {
   return useQuery({
-    queryKey: ["liquidopsTokenAPY", ticker],
+    queryKey: ["gateway", txId],
     queryFn: async () => {
       try {
-        const client = await LiquidOpsClient();
-        const apr = await client.getSupplyAPR({ token: ticker.toUpperCase() });
-        return apr || "0";
+        return (await getArweaveLink(txId)) || `https://arweave.net/${txId}`;
       } catch (error) {
         throw error;
       }
     },
     ...defaultOptions,
-    select: (data) => data || "0",
-    enabled: !!ticker,
+    select: (data) => data || `https://arweave.net/${txId}`,
+    enabled: !!txId,
   });
 }

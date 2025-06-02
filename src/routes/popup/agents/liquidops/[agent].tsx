@@ -16,14 +16,26 @@ import useSetting from "~settings/hook";
 import { useStorage } from "~utils/storage";
 import { PersistentStorage } from "~utils/storage";
 import { tokenData } from "liquidops";
-import { findGateway } from "~gateways/wayfinder";
-import { concatGatewayURL } from "~gateways/utils";
-import { useTokenBalance } from "~tokens/hooks";
-import { useLiquidOpsSupplyAPY } from "./utils/useLiquidOpsSupplyAPY";
+import { useLOSupplyAPY } from "./utils/hooks/useLOSupplyAPY";
+import { useLOOTokenBalance } from "./utils/hooks/useLOOTokenBalance";
+import { useEarnings } from "./utils/hooks/useEarnings";
+import { useGateway } from "./utils/hooks/useGateway";
+import { useTokenStatus } from "./utils/hooks/useTokenStatus";
 
 export type LiquidOpsAgentProps = CommonRouteProps<{ ticker: string }>;
 
 export function LiquidOpsAgent({ params: { ticker } }: LiquidOpsAgentProps) {
+  const activeTokens = Object.values(tokenData).filter((token) => !token.deprecated);
+  const token = activeTokens.find((token) => token.ticker.toLowerCase() === ticker.toLowerCase());
+
+  // Always call hooks unconditionally at the top level
+  const { data: oTokenBalance } = useLOOTokenBalance(token.cleanTicker);
+  const { data: supplyAPR } = useLOSupplyAPY(token.ticker);
+  const { data: earnedInterest } = useEarnings(token.ticker);
+  const { data: tokenIconUrl } = useGateway(token.icon);
+
+  const tokenStatus = useTokenStatus(token.ticker).hasToken;
+
   // router
   const { navigate } = useLocation();
 
@@ -34,11 +46,10 @@ export function LiquidOpsAgent({ params: { ticker } }: LiquidOpsAgentProps) {
   const [currency] = useSetting<string>("currency");
   const [fiatBalance, setFiatBalance] = useState(0);
 
-  // TODO
   useEffect(() => {
     setTimeout(() => {
-      setAgentBalance(10);
-      setFiatBalance(10);
+      setAgentBalance(Number(oTokenBalance)); // TODO: convert oToken to token
+      setFiatBalance(Number(oTokenBalance)); // TODO: convert token to fiat price
     }, 1500);
   }, []);
 
@@ -51,27 +62,24 @@ export function LiquidOpsAgent({ params: { ticker } }: LiquidOpsAgentProps) {
     false,
   );
 
-  const activeTokens = Object.values(tokenData).filter((token) => !token.deprecated);
-
-  const token = activeTokens.find((token) => token.ticker.toLowerCase() === ticker.toLowerCase());
-
-  const gateway = {
-    host: "arweave.net",
-    port: 443,
-    protocol: "https",
-  }; // TODO: await findGateway({ graphql: true });
-  const gatewayUrl = concatGatewayURL(gateway);
-
-  const tokenObj = {
-    Name: token.name,
-    Denomination: Number(token.denomination),
-    processId: token.oAddress,
-  };
-  const oTokenBalance = useTokenBalance(tokenObj, token.oAddress);
-
-  const supplyAPR = useLiquidOpsSupplyAPY(token.ticker);
-
-  const earnedInterest = 1;
+  // Handle case where token is not found
+  if (!token) {
+    return (
+      <>
+        <HeadV2 title={ticker + " " + browser.i18n.getMessage("agent")} />
+        <Wrapper>
+          <Flex align="center" justify="center" direction="column" gap={16}>
+            <Text size="lg" weight="medium" noMargin>
+              Token not found
+            </Text>
+            <Button variant="secondary" onClick={() => navigate(-1)}>
+              Go Back
+            </Button>
+          </Flex>
+        </Wrapper>
+      </>
+    );
+  }
 
   return (
     <>
@@ -97,13 +105,7 @@ export function LiquidOpsAgent({ params: { ticker } }: LiquidOpsAgentProps) {
                   {ticker}
                 </Text>
               </Flex>
-              <SvgImageWithBackground
-                height={14}
-                width={14}
-                shape="circle"
-                src={`${gatewayUrl}/${token.icon}`}
-                iconSize={14}
-              />
+              <SvgImageWithBackground height={14} width={14} shape="circle" src={tokenIconUrl} iconSize={14} />
             </Flex>
             <Text size="sm" variant="secondary" weight="medium" noMargin>
               <NumberFlow
@@ -138,7 +140,7 @@ export function LiquidOpsAgent({ params: { ticker } }: LiquidOpsAgentProps) {
           <Grid>
             <Flex direction="column" align="center" gap=".2rem" padding="2px 0">
               <Text size="lg" weight="medium" noMargin>
-                {supplyAPR}%
+                {Number(supplyAPR).toLocaleString(undefined, { maximumFractionDigits: 2 })}%
               </Text>
               <Text size="xs" variant="secondary" weight="medium" noMargin>
                 {browser.i18n.getMessage("current_apy")}
@@ -147,7 +149,7 @@ export function LiquidOpsAgent({ params: { ticker } }: LiquidOpsAgentProps) {
             <VerticalLine />
             <Flex direction="column" align="center" gap=".2rem" padding="2px 0">
               <Text size="lg" weight="medium" noMargin style={{ color: "rgb(86, 201, 128)" }}>
-                +{earnedInterest} {ticker}
+                +{Number(earnedInterest).toLocaleString(undefined, { maximumFractionDigits: 2 })} {ticker}
               </Text>
               <Text size="xs" variant="secondary" weight="medium" noMargin>
                 {browser.i18n.getMessage("earned")}
@@ -163,7 +165,7 @@ export function LiquidOpsAgent({ params: { ticker } }: LiquidOpsAgentProps) {
             <Text size="md" weight="medium" noMargin>
               {browser.i18n.getMessage("status")}
             </Text>
-            <StatusLabel status={true} label={browser.i18n.getMessage("active")} />
+            <StatusLabel status={tokenStatus} label={browser.i18n.getMessage(tokenStatus ? "active" : "inactive")} />
           </Flex>
 
           <Spacer y={0.4} />
@@ -183,13 +185,13 @@ export function LiquidOpsAgent({ params: { ticker } }: LiquidOpsAgentProps) {
               </Text>
               <Flex align="center" gap={4}>
                 <Text size="sm" weight="medium" noMargin>
-                  {oTokenBalance.toString()} {"o" + ticker}
+                  {Number(oTokenBalance).toLocaleString(undefined, { maximumFractionDigits: 2 })} {"o" + ticker}
                 </Text>
                 <SvgImageWithBackground
                   height={16}
                   width={16}
                   shape="circle"
-                  src={"https://arweave.net/7EEISJIzxC-3RPhgvRc-lAZnP7st1b79_ER4Sc5P_MU"} /** TODO: oToken logo */
+                  src={useGateway(token.oIcon).data}
                   iconSize={16}
                 />
               </Flex>

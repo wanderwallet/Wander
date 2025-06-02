@@ -14,7 +14,7 @@ export const AgentStats = ({ ticker, apy, size, wanderFee, transactionFee }: Pro
           {browser.i18n.getMessage("estimated_apy")}
         </Text>
         <Text size="sm" weight="medium" noMargin>
-          {apy.toLocaleString(undefined, { maximumFractionDigits: 2 })}%
+          {apy}%
         </Text>
       </Flex>
     )}
@@ -23,7 +23,7 @@ export const AgentStats = ({ ticker, apy, size, wanderFee, transactionFee }: Pro
         {browser.i18n.getMessage("transaction_fee")}
       </Text>
       <Text size="sm" weight="medium" noMargin>
-        {transactionFee.toLocaleString(undefined, { maximumFractionDigits: 8 })} AO
+        {transactionFee.toLocaleString(undefined, { maximumFractionDigits: 8 })}
       </Text>
     </Flex>
     <Flex justify="space-between" style={{ width: "100%" }}>
@@ -31,7 +31,7 @@ export const AgentStats = ({ ticker, apy, size, wanderFee, transactionFee }: Pro
         {browser.i18n.getMessage("wander_fee")}
       </Text>
       <Text size="sm" weight="medium" noMargin>
-        {wanderFee.toLocaleString(undefined, { maximumFractionDigits: 8 })} AO
+        {wanderFee.toLocaleString(undefined, { maximumFractionDigits: 8 })}
       </Text>
     </Flex>
     <Flex justify="space-between" style={{ width: "100%" }}>
@@ -61,7 +61,7 @@ export const AgentStats = ({ ticker, apy, size, wanderFee, transactionFee }: Pro
 
 interface Props {
   ticker: string;
-  apy?: number;
+  apy?: string;
   size: number;
   wanderFee: number;
   transactionFee: number;

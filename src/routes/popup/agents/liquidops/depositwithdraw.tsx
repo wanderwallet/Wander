@@ -11,12 +11,19 @@ import { Line } from "~routes/popup/purchase";
 import { Info } from "../components/liquidops/Info";
 import { AgentStats } from "../components/liquidops/AgentStats";
 import { useLocation } from "~wallets/router/router.utils";
+import { tokenData } from "liquidops";
+import { useLOSupplyAPY } from "./utils/hooks/useLOSupplyAPY";
 
 export type LiquidOpsDepositWithdrawProps = CommonRouteProps<{ action: "deposit" | "withdraw"; ticker: string }>;
 
 export function LiquidOpsDepositWithdraw({ params: { action, ticker } }: LiquidOpsDepositWithdrawProps) {
   const theme = useTheme();
   const { navigate } = useLocation();
+
+  const activeTokens = Object.values(tokenData).filter((token) => !token.deprecated);
+  const token = activeTokens.find((token) => token.ticker.toLowerCase() === ticker.toLowerCase());
+
+  const { data: supplyAPR } = useLOSupplyAPY(token.ticker);
 
   return (
     <>
@@ -87,10 +94,10 @@ export function LiquidOpsDepositWithdraw({ params: { action, ticker } }: LiquidO
 
           <AgentStats
             ticker={ticker}
-            apy={action === "deposit" ? 3.43 : undefined} // apy is not defined for withdrawals
+            apy={action === "deposit" ? supplyAPR.toLocaleString(undefined, { maximumFractionDigits: 2 }) : undefined} // apy is not defined for withdrawals
             size={0}
-            wanderFee={0.0000001}
-            transactionFee={0.0000001}
+            wanderFee={0} // TODO: talk to Clabs
+            transactionFee={0} // this is 0 for now
           />
 
           <Spacer y={1} />

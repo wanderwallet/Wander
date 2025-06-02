@@ -3,25 +3,16 @@ import browser from "webextension-polyfill";
 import styled from "styled-components";
 import { Section, Text } from "@arconnect/components-rebrand";
 import { Flex } from "~components/common/Flex";
-import UsdaLogo from "url:/assets/ecosystem/usda.svg";
 import { Line } from "~routes/popup/purchase";
 import { Agent } from "../components/liquidops/Agent";
-import { Quantity } from "ao-tokens";
 import { tokenData } from "liquidops";
-import { findGateway } from "~gateways/wayfinder";
-import { concatGatewayURL } from "~gateways/utils";
-import { useTokenBalance } from "~tokens/hooks";
+import { useGateway } from "./utils/hooks/useGateway";
+import { useActiveTokens } from "./utils/hooks/useAvailableTokens";
 
 export function LiquidOpsAgentsView() {
   const availableTokens = Object.values(tokenData).filter((token) => !token.deprecated);
-  const activeTokens = Object.values(tokenData).filter((token) => !token.deprecated); // TODO
 
-  const gateway = {
-    host: "arweave.net",
-    port: 443,
-    protocol: "https",
-  }; // TODO: await findGateway({ graphql: true });
-  const gatewayUrl = concatGatewayURL(gateway);
+  const { data: activeTokens } = useActiveTokens();
 
   return (
     <>
@@ -34,7 +25,7 @@ export function LiquidOpsAgentsView() {
           </Text>
 
           {activeTokens.map((token) => (
-            <Agent ticker={token.cleanTicker} logo={`${gatewayUrl}/${token.icon}`} running />
+            <AgentItem key={token.ticker} token={token} running />
           ))}
         </Flex>
 
@@ -46,7 +37,7 @@ export function LiquidOpsAgentsView() {
           </Text>
 
           {availableTokens.map((token) => (
-            <Agent ticker={token.cleanTicker} logo={`${gatewayUrl}/${token.icon}`} />
+            <AgentItem key={token.ticker} token={token} />
           ))}
         </Flex>
       </Wrapper>
@@ -64,3 +55,16 @@ const Wrapper = styled(Section)`
   overflow-y: auto;
   padding-bottom: 100px;
 `;
+
+const AgentItem = ({ token, running = false }: { token: any; running?: boolean }) => {
+  const { data: logoUrl } = useGateway(token.icon);
+
+  return (
+    <Agent
+      key={token.ticker}
+      ticker={token.cleanTicker}
+      logo={logoUrl || `https://arweave.net/${token.icon}`}
+      running={running}
+    />
+  );
+};

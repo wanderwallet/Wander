@@ -6,29 +6,25 @@ import { SvgImageWithBackground } from "./SvgImage";
 import { useLocation } from "~wallets/router/router.utils";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import { tokenData } from "liquidops";
-import { findGateway } from "~gateways/wayfinder";
-import { concatGatewayURL } from "~gateways/utils";
+import { useGateway } from "../liquidops/utils/hooks/useGateway";
+import { useLOSupplyAPY } from "../liquidops/utils/hooks/useLOSupplyAPY";
+import { useActiveTokens } from "../liquidops/utils/hooks/useAvailableTokens";
+import { useTokenStatus } from "../liquidops/utils/hooks/useTokenStatus";
 
 export const LiquidOpsAgentListItem = () => {
   const { navigate } = useLocation();
 
   const availableTokens = Object.values(tokenData).filter((token) => !token.deprecated);
 
-  const gateway = {
-    host: "arweave.net",
-    port: 443,
-    protocol: "https",
-  }; // TODO: await findGateway({ graphql: true });
-  const gatewayUrl = concatGatewayURL(gateway);
-
-  const activeAgents = 1; // TODO
-
-  const supplyAPY = 1;
+  const { data: activeTokens } = useActiveTokens();
 
   return (
     <ListItem
       title={browser.i18n.getMessage("liquidops_agent")}
-      subtitle={browser.i18n.getMessage("liquidops_agent_description", [activeAgents, availableTokens.length])}
+      subtitle={browser.i18n.getMessage("liquidops_agent_description", [
+        activeTokens?.length ?? 0,
+        availableTokens.length,
+      ])}
       subtitleStyle={{ fontSize: 14, fontWeight: 500, lineHeight: "18.2px" }}
       squircleSize={40}
       hideSquircle={true}
@@ -42,11 +38,12 @@ export const LiquidOpsAgentListItem = () => {
         <Flex direction="column" gap={16}>
           {availableTokens.map((token) => (
             <ListItem
-              title={<Title ticker={token.cleanTicker} apy={supplyAPY.toString()} />}
-              icon={<img src={`${gatewayUrl}/${token.icon}`} height={24} width={24} />}
+              key={token.ticker}
+              title={<Title ticker={token.cleanTicker} apy={useLOSupplyAPY(token.ticker).data.toString()} />}
+              icon={<img src={`${useGateway(token.icon).data}`} height={24} width={24} />}
               hideSquircle
               padding={0}
-              subtitleExtra={<Status status="Inactive" />}
+              subtitleExtra={<Status status={useTokenStatus(token.ticker).hasToken} />}
               onClick={() => navigate(`/agents/liquidops/${token.cleanTicker}`)}
             />
           ))}
@@ -68,8 +65,8 @@ const Title = ({ ticker, apy }: { ticker: string; apy: string }) => (
   </Flex>
 );
 
-const Status = ({ status }: { status: string }) => (
+const Status = ({ status }: { status: boolean }) => (
   <Text variant="tertiary" weight="medium" noMargin>
-    {status}
+    {status ? "Active" : "Inactive"}
   </Text>
 );
