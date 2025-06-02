@@ -18,6 +18,8 @@ import { PersistentStorage } from "~utils/storage";
 import { tokenData } from "liquidops";
 import { findGateway } from "~gateways/wayfinder";
 import { concatGatewayURL } from "~gateways/utils";
+import { useTokenBalance } from "~tokens/hooks";
+import { useLiquidOpsSupplyAPY } from "./utils/useLiquidOpsSupplyAPY";
 
 export type LiquidOpsAgentProps = CommonRouteProps<{ ticker: string }>;
 
@@ -59,6 +61,17 @@ export function LiquidOpsAgent({ params: { ticker } }: LiquidOpsAgentProps) {
     protocol: "https",
   }; // TODO: await findGateway({ graphql: true });
   const gatewayUrl = concatGatewayURL(gateway);
+
+  const tokenObj = {
+    Name: token.name,
+    Denomination: Number(token.denomination),
+    processId: token.oAddress,
+  };
+  const oTokenBalance = useTokenBalance(tokenObj, token.oAddress);
+
+  const supplyAPR = useLiquidOpsSupplyAPY(token.ticker);
+
+  const earnedInterest = 1;
 
   return (
     <>
@@ -125,7 +138,7 @@ export function LiquidOpsAgent({ params: { ticker } }: LiquidOpsAgentProps) {
           <Grid>
             <Flex direction="column" align="center" gap=".2rem" padding="2px 0">
               <Text size="lg" weight="medium" noMargin>
-                3.43%
+                {supplyAPR}%
               </Text>
               <Text size="xs" variant="secondary" weight="medium" noMargin>
                 {browser.i18n.getMessage("current_apy")}
@@ -134,7 +147,7 @@ export function LiquidOpsAgent({ params: { ticker } }: LiquidOpsAgentProps) {
             <VerticalLine />
             <Flex direction="column" align="center" gap=".2rem" padding="2px 0">
               <Text size="lg" weight="medium" noMargin style={{ color: "rgb(86, 201, 128)" }}>
-                +0.85 {ticker}
+                +{earnedInterest} {ticker}
               </Text>
               <Text size="xs" variant="secondary" weight="medium" noMargin>
                 {browser.i18n.getMessage("earned")}
@@ -170,7 +183,7 @@ export function LiquidOpsAgent({ params: { ticker } }: LiquidOpsAgentProps) {
               </Text>
               <Flex align="center" gap={4}>
                 <Text size="sm" weight="medium" noMargin>
-                  10 {"o" + ticker}
+                  {oTokenBalance.toString()} {"o" + ticker}
                 </Text>
                 <SvgImageWithBackground
                   height={16}
