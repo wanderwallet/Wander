@@ -3163,5 +3163,61 @@
   "select_running_dates": {
     "message": "Select running dates",
     "description": "Select running dates text"
+  },
+  "confirm_agent": {
+    "message": "Confirm agent",
+    "description": "Confirm agent text"
+  },
+  "activate_agent": {
+    "message": "Activate agent",
+    "description": "Activate agent text"
+  },
+  "daily_conversion": {
+    "message": "Daily conversion",
+    "description": "daily conversion text"
+  },
+  "start_date": {
+    "message": "Start date",
+    "description": "Start date description"
+  },
+  "end_date": {
+    "message": "End date",
+    "description": "End date description"
+  },
+  "fee": {
+    "message": "Fee",
+    "description": "Fee description"
+  },
+  "enter_password_confirm": {
+    "message": "Enter password to confirm",
+    "description": "Enter password to confirm title"
+  },
+  "go_to_dashboard": {
+    "message": "Go to dashboard",
+    "description": "Goto dashboard description"
+  },
+  "manage_agent": {
+    "message": "Manage agent",
+    "description": "Manage agent description"
+  },
+  "agent_activated_title": {
+    "message": "Agent Activated!",
+    "description": "Agent activated title"
+  },
+  "agent_activated_description": {
+    "message": "Your AO Yield Agent has been successfully activated and will start converting your AO earnings.",
+    "description": "Agent activated title"
+  },
+  "agent_not_activated_title": {
+    "message": "Agent could not be activated",
+    "description": "Agent not activated title"
+  },
+  "agent_not_activated_description": {
+    "message": "Looks like something went wrong, please try again.",
+    "description": "Agent not activated title"
+  },
+  "try_again": {
+    "message": "Try again",
+    "description": "Try again description"
   }
 }

@@ -44,6 +44,8 @@ import { GettingStartedSetupWelcomeView } from "~routes/popup/gettingStarted";
 import { RecoveryPhraseView } from "~routes/popup/settings/wallets/[address]/recovery-phrase";
 import { AgentsView } from "~routes/popup/agents";
 import { CreateAOYieldAgentView } from "~routes/popup/agents/ao-yield/create-agent";
+import { ConfirmAOYieldAgentView } from "~routes/popup/agents/ao-yield/confirm-agent";
+import { AOYieldAgentActivatedView } from "~routes/popup/agents/ao-yield/agent-activated";
 
 export type PopupRoutePath =
   | "/"
@@ -90,7 +92,9 @@ export type PopupRoutePath =
   | `/quick-settings/notifications`
   | `/getting-started/${string}`
   | `/agents`
-  | `/agents/ao-yield/create-agent`;
+  | `/agents/ao-yield/create-agent`
+  | `/agents/ao-yield/confirm-agent`
+  | `/agents/ao-yield/activated`;
 
 export const PopupPaths = {
   Home: "/",
@@ -134,6 +138,8 @@ export const PopupPaths = {
   NotificationSettings: "/quick-settings/notifications",
   Agents: "/agents",
   CreateAOYieldAgent: "/agents/ao-yield/create-agent",
+  ConfirmAOYieldAgent: "/agents/ao-yield/confirm-agent",
+  AOYieldAgentActivated: "/agents/ao-yield/activated",
 } as const satisfies Record<string, PopupRoutePath>;
 
 export const POPUP_ROUTES = [
@@ -306,5 +312,13 @@ export const POPUP_ROUTES = [
   {
     path: PopupPaths.CreateAOYieldAgent,
     component: CreateAOYieldAgentView,
+  },
+  {
+    path: PopupPaths.ConfirmAOYieldAgent,
+    component: ConfirmAOYieldAgentView,
+  },
+  {
+    path: PopupPaths.AOYieldAgentActivated,
+    component: AOYieldAgentActivatedView,
   },
 ] as const satisfies RouteConfig[];

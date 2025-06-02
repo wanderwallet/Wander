@@ -4,16 +4,20 @@ import browser from "webextension-polyfill";
 import HeadV2 from "~components/popup/HeadV2";
 import { Flex } from "~components/common/Flex";
 import { ChevronDown, ClockRewind, HelpCircle } from "@untitled-ui/icons-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Slider } from "~components/Slider";
 import { InputButton } from "~components/common/InputButton";
 import { HorizontalLine } from "~components/HorizontalLine";
 import { assets, AssetSelectorModal, type Asset } from "../components/ao-yield/AssetSelectorModal";
 import { SlippageSelectorModal } from "../components/ao-yield/SlippageSelectorModal";
 import { DateSelectorModal } from "../components/ao-yield/DateSelectorModal";
+import { PopupPaths } from "~wallets/router/popup/popup.routes";
+import { useLocation } from "~wallets/router/router.utils";
+import { TempTransactionStorage } from "~utils/storage";
 
 export function CreateAOYieldAgentView() {
   const theme = useTheme();
+  const { navigate } = useLocation();
   const [percentage, setPercentage] = useState(50);
   const [selectedAsset, setSelectedAsset] = useState<Asset>(assets[0]);
   const [selectedSlippage, setSelectedSlippage] = useState(0.5);
@@ -23,6 +27,10 @@ export function CreateAOYieldAgentView() {
   const [showAssetSelector, setShowAssetSelector] = useState(false);
   const [showSlippageSelector, setShowSlippageSelector] = useState(false);
   const [showDateSelector, setShowDateSelector] = useState(false);
+
+  const continueButtonDisabled = useMemo(() => {
+    return !selectedAsset || !selectedSlippage || !startDate || !endDate || !percentage;
+  }, [selectedAsset, selectedSlippage, startDate, endDate, percentage]);
 
   const openAssetSelector = () => {
     setShowAssetSelector(true);
@@ -66,6 +74,18 @@ export function CreateAOYieldAgentView() {
     }
 
     return type === "start" ? "Start date" : "End date";
+  };
+
+  const handleContinue = () => {
+    TempTransactionStorage.set("ao-yield-agent", {
+      percentage,
+      asset: selectedAsset,
+      slippage: selectedSlippage,
+      runIndefinitely,
+      startDate,
+      endDate,
+    });
+    navigate(PopupPaths.ConfirmAOYieldAgent);
   };
 
   return (
@@ -188,7 +208,7 @@ export function CreateAOYieldAgentView() {
           </Flex>
         </Content>
         <Flex gap={8}>
-          <Button style={{ flex: 1 }} fullWidth>
+          <Button style={{ flex: 1 }} disabled={continueButtonDisabled} onClick={handleContinue} fullWidth>
             {browser.i18n.getMessage("continue")}
           </Button>
           <Button
@@ -219,6 +239,15 @@ export function CreateAOYieldAgentView() {
       />
     </>
   );
+}
+
+export interface AOYieldAgentCreate {
+  percentage: Number;
+  asset: Asset;
+  slippage: Number;
+  runIndefinitely: boolean;
+  startDate: Date;
+  endDate: Date;
 }
 
 const Wrapper = styled(Section)`
