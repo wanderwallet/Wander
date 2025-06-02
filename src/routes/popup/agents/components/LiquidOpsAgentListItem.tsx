@@ -1,10 +1,7 @@
 import { ListItem, Text } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
 import { Flex } from "~components/common/Flex";
-import aoLogo from "url:/assets/ecosystem/ao-logo.svg";
-import UsdaIcon from "url:/assets/ecosystem/usda.svg";
 import LiquidOpsIcon from "url:/assets/ecosystem/liquidops.svg";
-import WarIcon from "url:/assets/ecosystem/war.svg";
 import { SvgImageWithBackground } from "./SvgImage";
 import { useLocation } from "~wallets/router/router.utils";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
