@@ -27,7 +27,6 @@ import type {
   AuthEmailParams,
 } from "~utils/embedded/embedded.types";
 import { setAuthTokenHeader, getSupabaseClient } from "~utils/embedded/embedded.utils";
-import { isInsideIframe } from "~utils/embedded/iframe.utils";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import {
   AuthProviderType,
@@ -192,6 +191,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     if (!sdkAuthStatus) return;
 
     const userDetails = getUserDetailsFromSupabaseUser(user);
+
     postEmbeddedMessage({
       type: "embedded_auth",
       data: {
@@ -1001,6 +1001,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     async (authParams: OAutProviderType | AuthEmailParams) => {
       if (user) throw new Error("Already authenticated.");
 
+      const authProviderType: AuthProviderType = typeof authParams === "string" ? authParams : "EMAIL_N_PASSWORD";
+
       try {
         setEmbeddedContextAuth({
           authStatus: "authLoading",
@@ -1018,6 +1020,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         }
       } catch (error) {
         console.error(`${authProviderType} authentication failed:`, error);
+
+        // TODO: Show auth error on the page:
 
         // TODO: This should be `authStatus: "authError"` but the router will show a specific error handling route, while we might want to handle that
         // in the same page we were.
@@ -1319,7 +1323,6 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     });
 
     return () => {
-      window.clearTimeout(forceInitTimeoutID);
       subscription.unsubscribe();
     };
   }, [initEmbeddedWallet]);

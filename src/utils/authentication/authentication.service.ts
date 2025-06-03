@@ -1,11 +1,18 @@
 import { getSupabaseClient, trpcVanilla } from "~utils/embedded/embedded.utils";
-import type { Provider } from "@supabase/supabase-js";
+import type { Provider, Session } from "@supabase/supabase-js";
 import type {
   AuthSignInWithPasswordParams,
   AuthVerifyOtpParams,
   OAutProviderType,
 } from "~utils/embedded/embedded.types";
 import { isInsideIframe } from "~utils/embedded/iframe.utils";
+import {
+  AUTH_COMPLETE_MSG_TYPE,
+  isAuthCompleteMessage,
+  POPUP_CHECK_INTERVAL_MS,
+  POPUP_AUTHENTICATION_TIMEOUT_MS,
+} from "~utils/authentication/authentication.utils";
+import type { AuthCompleteMessage } from "~utils/authentication/authentication.types";
 
 const SUPABASE_PROVIDER_BY_OAUTH_PROVIDER_TYPE: Record<OAutProviderType, Provider | null> = {
   GOOGLE: "google",
@@ -14,7 +21,7 @@ const SUPABASE_PROVIDER_BY_OAUTH_PROVIDER_TYPE: Record<OAutProviderType, Provide
   APPLE: "apple",
 };
 
-async function authenticateWithOAuth(oAuthProviderType: OAutProviderType) {
+async function authenticateWithOAuth(oAuthProviderType: OAutProviderType): Promise<Session> {
   const provider = SUPABASE_PROVIDER_BY_OAUTH_PROVIDER_TYPE[oAuthProviderType];
 
   const supabase = await getSupabaseClient();
@@ -38,10 +45,8 @@ async function authenticateWithOAuth(oAuthProviderType: OAutProviderType) {
 
   // Calculate center position for the popup:
 
-  // TODO: Same size as the iframe?
-
-  const width = 500;
-  const height = 600;
+  const width = Math.min(400, document.documentElement.offsetWidth);
+  const height = Math.min(Math.max(600, document.documentElement.offsetHeight), window.screen.availHeight - 32);
   const left = window.screenX + (window.outerWidth - width) / 2;
   const top = window.screenY + (window.outerHeight - height) / 2;
 
@@ -81,74 +86,72 @@ async function authenticateWithOAuth(oAuthProviderType: OAutProviderType) {
   }
 
   if (!popup) {
-    // TODO: Throw an error so that we can remove the loader?
-
-    console.warn("Could not open OAuth popup window either way.");
-
-    return;
+    throw new Error("Could not open OAuth popup window");
   }
 
-  // TODO: Is the code below running `refreshSession` twice if unpartitioned state is supported?
-
-  // Set up message listener and popup close checker
-
-  // Auth completion promise
-
-  await new Promise<void>((resolve, reject) => {
-    const messageHandler = async (event: MessageEvent) => {
+  return new Promise<Session>((resolve, reject) => {
+    async function authCompleteMessageHandler(event: MessageEvent<AuthCompleteMessage>) {
       // Since same origin, we can check it exactly
-      // TODO: Move "AUTH_COMPLETE" to constant:
-      if (event.origin !== window.location.origin || event.data?.type !== "AUTH_COMPLETE") return;
-
-      console.log("AUTH_COMPLETE received", event.data);
+      if (event.origin !== window.location.origin || event.data?.type !== AUTH_COMPLETE_MSG_TYPE) return;
 
       cleanup();
 
-      if (event.data?.success) {
-        const supabase = await getSupabaseClient();
-        // Can we just send an AUTH_COMPLETE message without data?
-        if (event.data?.data) {
-          const { data } = event.data;
-          await supabase.auth.refreshSession({
-            refresh_token: data.refresh_token,
-          });
-        } else {
-          await supabase.auth.refreshSession();
-        }
+      popup.close();
 
-        resolve();
-      } else {
-        reject(new Error("Authentication failed"));
+      if (!isAuthCompleteMessage(event.data)) {
+        reject(new Error(`Invalid ${AUTH_COMPLETE_MSG_TYPE}`));
+        return;
       }
-    };
 
-    // TODO: Move delays below to constants:
+      const { success, session } = event.data;
 
-    // Check for popup closure
+      if (!success) {
+        reject(new Error("OAuth authentication failed"));
+        return;
+      }
+
+      const supabase = await getSupabaseClient();
+
+      const { data, error } = await supabase.auth.setSession(session);
+
+      if (error) {
+        reject(error);
+        return;
+      }
+
+      if (!data.session) {
+        reject(new Error("Session could not be created"));
+        return;
+      }
+
+      resolve(data.session);
+    }
+
+    // Check if the popup window has been closed every POPUP_CHECK_INTERVAL_MS:
+
     const popupCheckInterval = setInterval(() => {
       if (popup.closed) {
         cleanup();
         reject(new Error("Authentication cancelled - popup closed"));
       }
-    }, 250);
+    }, POPUP_CHECK_INTERVAL_MS);
 
-    // Timeout after 5 minutes
-    const timeoutId = setTimeout(
-      () => {
-        cleanup();
-        reject(new Error("Authentication timeout"));
-      },
-      5 * 60 * 1000,
-    );
+    // Timeout if authentication is not completed in less than POPUP_AUTHENTICATION_TIMEOUT_MS:
 
-    // Cleanup function
+    const timeoutId = setTimeout(() => {
+      cleanup();
+      reject(new Error("Authentication timeout"));
+    }, POPUP_AUTHENTICATION_TIMEOUT_MS);
+
+    // Cleanup function:
+
     const cleanup = () => {
-      window.removeEventListener("message", messageHandler);
+      window.removeEventListener("message", authCompleteMessageHandler);
       clearInterval(popupCheckInterval);
       clearTimeout(timeoutId);
     };
 
-    window.addEventListener("message", messageHandler);
+    window.addEventListener("message", authCompleteMessageHandler);
   });
 }
 
@@ -159,8 +162,6 @@ async function signInWithPassword(authParams: AuthSignInWithPasswordParams) {
     email: authParams.email,
     password: authParams.password,
   });
-
-  console.log("signInWithPassword() =", data, error);
 
   if (error) throw error;
 
@@ -174,8 +175,6 @@ async function verifyOtp(authParams: AuthVerifyOtpParams) {
     token: authParams.token,
     type: "email",
   });
-
-  console.log("verifyOtp() =", data, error);
 
   if (error) throw error;
 
