@@ -224,6 +224,7 @@ export function CreateAOYieldAgentView() {
             style={{ maxWidth: "max-content" }}
             variant="secondary"
             icon={<ClockRewind height={24} width={24} />}
+            onClick={() => navigate(PopupPaths.AOYieldAgentHistory)}
           />
         </Flex>
       </Wrapper>

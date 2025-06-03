@@ -3295,5 +3295,13 @@
   "agent_cancelled": {
     "message": "Agent cancelled",
     "description": "Agent cancelled text"
+  },
+  "agent_history": {
+    "message": "Agent history",
+    "description": "Agent history text"
+  },
+  "total_wander_fee": {
+    "message": "Total Wander fee",
+    "description": "Total Wander fee text"
   }
 }

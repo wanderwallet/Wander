@@ -22,7 +22,7 @@ export function AOYieldAgentActivatedView() {
 
   const handleSecondaryAction = () => {
     if (isActivated) {
-      navigate(PopupPaths.Home);
+      navigate(PopupPaths.ManageAOYieldAgent);
     } else {
       navigate(PopupPaths.Home);
     }

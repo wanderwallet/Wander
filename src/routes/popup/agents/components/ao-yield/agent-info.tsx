@@ -16,14 +16,22 @@ import { Settings01 } from "@untitled-ui/icons-react";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import { useLocation } from "~wallets/router/router.utils";
 import { AgentCancelModal } from "./AgentCancelModal";
+import { formatBalance } from "~utils/format";
+import { balanceToFractioned } from "~tokens/currency";
+import { WUSDC_PROCESS_ID } from "~tokens/aoTokens/ao";
 
 interface AgentInfoProps {
   agentId: string;
   showEdit?: boolean;
   showCancel?: boolean;
+  isHistory?: boolean;
 }
 
-export function AgentInfo({ agentId, showEdit = false, showCancel = false }: AgentInfoProps) {
+function formatTokenValue(value: string, decimals: number) {
+  return formatBalance(balanceToFractioned(String(value), { decimals })).displayBalance;
+}
+
+export function AgentInfo({ agentId, showEdit = false, showCancel = false, isHistory = false }: AgentInfoProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const agent = useAOYieldAgent(agentId);
@@ -48,7 +56,6 @@ export function AgentInfo({ agentId, showEdit = false, showCancel = false }: Age
       { name: "start_date", value: dayjs(startDate).format("MMM D, YYYY") },
       { name: "end_date", value: dayjs(endDate).format("MMM D, YYYY") },
       { name: "slippage", value: `${slippage}%` },
-      // { name: "fee", value: "0.5% of each conversion" },
     ];
   }, [agent, asset]);
 
@@ -56,13 +63,28 @@ export function AgentInfo({ agentId, showEdit = false, showCancel = false }: Age
     if (!agentInfo) return [];
 
     const { totalAOSold, totalBought, totalTransactions, totalWanderFee } = agentInfo;
+    const decimals = asset.id === WUSDC_PROCESS_ID ? 6 : 12;
 
-    return [
-      { name: "total_ao_sold", value: totalAOSold },
-      { name: `total_bought`, value: `${totalBought?.[asset?.id] || 0} ${asset?.ticker}` },
+    const details = [
+      {
+        name: "total_ao_sold",
+        value: formatTokenValue(totalAOSold, decimals),
+      },
+      {
+        name: `total_bought`,
+        value: `${formatTokenValue(String(totalBought?.[asset?.id] || 0), decimals)} ${asset?.ticker}`,
+      },
       { name: "total_transactions", value: totalTransactions },
-      // { name: "total_wander_fee", value: totalWanderFee },
     ];
+
+    if (isHistory) {
+      details.push({
+        name: "total_wander_fee",
+        value: `${formatTokenValue(totalWanderFee, decimals)} AO`,
+      });
+    }
+
+    return details;
   }, [agentInfo]);
 
   async function handleCancelAgent() {

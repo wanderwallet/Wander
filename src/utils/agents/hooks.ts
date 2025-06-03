@@ -25,12 +25,12 @@ export function useAOYieldActiveAgent() {
   return agent;
 }
 
-export function useAOYieldAgent(agentId: string) {
+export function useAOYieldAgent(agentId: string, status?: AOYieldAgentStatus) {
   const [activeAddress] = useStorage({ key: "active_address", instance: ExtensionStorage });
   const [agent, setAgent] = useState<AOYieldAgent>();
 
   useEffect(() => {
-    getAOYieldAgents(activeAddress, "Active").then((agents) => {
+    getAOYieldAgents(activeAddress, status).then((agents) => {
       const agent = agents.find((agent) => agent.id === agentId);
       setAgent(agent);
     });

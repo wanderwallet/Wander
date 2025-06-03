@@ -8,10 +8,21 @@ import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import { useLocation } from "~wallets/router/router.utils";
 import { SvgImageWithBackground } from "./SvgImage";
 import type { AOYieldAgent } from "~utils/agents/types";
-import { WAR_PROCESS_ID } from "~tokens/aoTokens/ao";
+import { WAR_PROCESS_ID, WUSDC_PROCESS_ID } from "~tokens/aoTokens/ao";
 import dayjs from "dayjs";
+import type { WanderRoutePath } from "~wallets/router/router.types";
 
-export const AOYieldAgentListItem = ({ aoAgent }: { aoAgent: AOYieldAgent }) => {
+interface AOYieldAgentListItemProps {
+  aoAgent: AOYieldAgent;
+  isHistory?: boolean;
+}
+
+const tokenIdNameMap = {
+  [WAR_PROCESS_ID]: "wAR",
+  [WUSDC_PROCESS_ID]: "wUSDC",
+};
+
+export const AOYieldAgentListItem = ({ aoAgent, isHistory = false }: AOYieldAgentListItemProps) => {
   const { navigate } = useLocation();
 
   return !!aoAgent ? (
@@ -19,7 +30,7 @@ export const AOYieldAgentListItem = ({ aoAgent }: { aoAgent: AOYieldAgent }) => 
       title={
         <Flex justify="space-between" align="center" width="100%">
           <Text weight="semibold" noMargin>
-            {browser.i18n.getMessage("ao_yield_agent")}
+            {isHistory ? `AO <> ${tokenIdNameMap[aoAgent?.tokenOut]}` : browser.i18n.getMessage("ao_yield_agent")}
           </Text>
           <Flex align="center" gap={4}>
             <div
@@ -74,7 +85,13 @@ export const AOYieldAgentListItem = ({ aoAgent }: { aoAgent: AOYieldAgent }) => 
         </Flex>
       }
       active
-      onClick={() => navigate(PopupPaths.ManageAOYieldAgent)}
+      onClick={() =>
+        isHistory
+          ? navigate(PopupPaths.AOYieldAgentInfo.replace(":id", aoAgent.id) as WanderRoutePath)
+          : aoAgent.status !== "Cancelled"
+            ? navigate(PopupPaths.ManageAOYieldAgent)
+            : navigate(PopupPaths.CreateAOYieldAgent)
+      }
       style={{ width: "100%", textAlign: "left", padding: "12px 8px" }}
     />
   ) : (

@@ -3281,5 +3281,13 @@
     "agent_cancelled": {
         "message": "代理已取消",
         "description": "Agent cancelled text"
+    },
+    "agent_history": {
+        "message": "代理历史",
+        "description": "Agent history text"
+    },
+    "total_wander_fee": {
+        "message": "总Wander费用",
+        "description": "Total Wander fee text"
     }
 }

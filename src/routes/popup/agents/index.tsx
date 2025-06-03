@@ -12,8 +12,11 @@ import { AOYieldAgentListItem } from "./components/AOYieldAgentListItem";
 import { LiquidOpsAgentListItem } from "./components/LiquidOpsAgentListItem";
 import { getAOYieldAgents } from "~utils/agents/utils";
 import type { AOYieldAgent } from "~utils/agents/types";
+import { useLocation } from "~wallets/router/router.utils";
+import { PopupPaths } from "~wallets/router/popup/popup.routes";
 
 export function AgentsView() {
+  const { navigate } = useLocation();
   const [activeAddress] = useStorage({ key: "active_address", instance: ExtensionStorage });
   const [open, setOpen] = useState(false);
   const [aoAgent, setAoAgent] = useState<AOYieldAgent>();
@@ -43,7 +46,11 @@ export function AgentsView() {
 
   return (
     <>
-      <HeadV2 title={browser.i18n.getMessage("agents")} backIcon={<ClockRewind fontSize={24} />} back={() => {}} />
+      <HeadV2
+        title={browser.i18n.getMessage("agents")}
+        backIcon={<ClockRewind fontSize={24} onClick={() => navigate(PopupPaths.AOYieldAgentHistory)} />}
+        back={() => {}}
+      />
 
       <Wrapper>
         <Flex align="center" gap={16} justify="center" direction="column" textAlign="center">

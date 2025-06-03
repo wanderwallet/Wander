@@ -48,6 +48,8 @@ import { ConfirmAOYieldAgentView } from "~routes/popup/agents/ao-yield/confirm-a
 import { AOYieldAgentActivatedView } from "~routes/popup/agents/ao-yield/agent-activated";
 import { ManageAOYieldAgentView } from "~routes/popup/agents/ao-yield/manage-agent";
 import { EditAOYieldAgentView } from "~routes/popup/agents/ao-yield/edit-agent";
+import { AOYieldAgentHistoryView } from "~routes/popup/agents/ao-yield/agent-history";
+import { AOYieldAgentInfoView } from "~routes/popup/agents/ao-yield/agent-info";
 
 export type PopupRoutePath =
   | "/"
@@ -98,7 +100,9 @@ export type PopupRoutePath =
   | `/agents/ao-yield/confirm-agent`
   | `/agents/ao-yield/manage-agent`
   | `/agents/ao-yield/edit-agent`
-  | `/agents/ao-yield/activated`;
+  | `/agents/ao-yield/activated`
+  | `/agents/ao-yield/history`
+  | `/agents/ao-yield/info/${string}`;
 
 export const PopupPaths = {
   Home: "/",
@@ -146,6 +150,8 @@ export const PopupPaths = {
   ManageAOYieldAgent: "/agents/ao-yield/manage-agent",
   EditAOYieldAgent: "/agents/ao-yield/edit-agent",
   AOYieldAgentActivated: "/agents/ao-yield/activated",
+  AOYieldAgentHistory: "/agents/ao-yield/history",
+  AOYieldAgentInfo: "/agents/ao-yield/info/:id",
 } as const satisfies Record<string, PopupRoutePath>;
 
 export const POPUP_ROUTES = [
@@ -334,5 +340,13 @@ export const POPUP_ROUTES = [
   {
     path: PopupPaths.AOYieldAgentActivated,
     component: AOYieldAgentActivatedView,
+  },
+  {
+    path: PopupPaths.AOYieldAgentHistory,
+    component: AOYieldAgentHistoryView,
+  },
+  {
+    path: PopupPaths.AOYieldAgentInfo,
+    component: AOYieldAgentInfoView,
   },
 ] as const satisfies RouteConfig[];

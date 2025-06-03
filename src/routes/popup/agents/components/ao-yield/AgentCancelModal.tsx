@@ -9,6 +9,8 @@ import { ExtensionStorage, useStorage } from "~utils/storage";
 import { useTheme } from "styled-components";
 import { checkPassword } from "~wallets/auth";
 import alertTriangle from "url:/assets/agents/images/alert-triangle.svg";
+import { useLocation } from "~wallets/router/router.utils";
+import { PopupPaths } from "~wallets/router/popup/popup.routes";
 
 interface AgentCancelModalProps {
   open: boolean;
@@ -30,6 +32,7 @@ const AgentCancelScreen = ({ onClose, agentId }: { onClose: () => void; agentId:
   const passwordInput = useInput();
   const toasts = useToasts();
   const theme = useTheme();
+  const { navigate } = useLocation();
   const [transferRequirePassword] = useStorage(
     {
       key: "transfer_require_password",
@@ -60,6 +63,7 @@ const AgentCancelScreen = ({ onClose, agentId }: { onClose: () => void; agentId:
         duration: 2400,
       });
       onClose();
+      navigate(PopupPaths.Agents);
     } catch {
       toasts.setToast({
         content: browser.i18n.getMessage("error_updating_agent"),
