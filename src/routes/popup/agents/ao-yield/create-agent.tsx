@@ -4,16 +4,17 @@ import browser from "webextension-polyfill";
 import HeadV2 from "~components/popup/HeadV2";
 import { Flex } from "~components/common/Flex";
 import { ChevronDown, ClockRewind, HelpCircle } from "@untitled-ui/icons-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Slider } from "~components/Slider";
 import { InputButton } from "~components/common/InputButton";
 import { HorizontalLine } from "~components/HorizontalLine";
-import { assets, AssetSelectorModal, type Asset } from "../components/ao-yield/AssetSelectorModal";
+import { assets, AssetSelectorModal } from "../components/ao-yield/AssetSelectorModal";
 import { SlippageSelectorModal } from "../components/ao-yield/SlippageSelectorModal";
 import { DateSelectorModal } from "../components/ao-yield/DateSelectorModal";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import { useLocation } from "~wallets/router/router.utils";
 import { TempTransactionStorage } from "~utils/storage";
+import type { Asset } from "~utils/agents/types";
 
 export function CreateAOYieldAgentView() {
   const theme = useTheme();
@@ -78,15 +79,23 @@ export function CreateAOYieldAgentView() {
 
   const handleContinue = () => {
     TempTransactionStorage.set("ao-yield-agent", {
-      percentage,
+      conversionPercentage: percentage,
       asset: selectedAsset,
       slippage: selectedSlippage,
       runIndefinitely,
-      startDate,
-      endDate,
+      startDate: startDate.getTime(),
+      endDate: endDate.getTime(),
     });
     navigate(PopupPaths.ConfirmAOYieldAgent);
   };
+
+  useEffect(() => {
+    if (runIndefinitely) {
+      setEndDate(new Date("9999-12-31"));
+    } else {
+      setEndDate(null);
+    }
+  }, [runIndefinitely]);
 
   return (
     <>
@@ -239,15 +248,6 @@ export function CreateAOYieldAgentView() {
       />
     </>
   );
-}
-
-export interface AOYieldAgentCreate {
-  percentage: Number;
-  asset: Asset;
-  slippage: Number;
-  runIndefinitely: boolean;
-  startDate: Date;
-  endDate: Date;
 }
 
 const Wrapper = styled(Section)`

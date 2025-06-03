@@ -2,7 +2,7 @@ import styled from "styled-components";
 import SliderMenu from "~components/SliderMenu";
 import { XClose } from "@untitled-ui/icons-react";
 import { Button, Text } from "@arconnect/components-rebrand";
-import HedgehogPopupImage from "url:/assets/agents/hedgehog-popup.png";
+import HedgehogPopupImage from "url:/assets/agents/images/hedgehog-popup.png";
 import { Flex } from "~components/common/Flex";
 import browser from "webextension-polyfill";
 

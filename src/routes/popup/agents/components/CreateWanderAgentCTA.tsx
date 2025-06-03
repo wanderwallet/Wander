@@ -3,7 +3,7 @@ import { useStorage } from "@plasmohq/storage/hook";
 import styled, { useTheme } from "styled-components";
 import { Flex } from "~components/common/Flex";
 import { ExtensionStorage } from "~utils/storage";
-import HedgehogHeadIcon from "url:/assets/agents/hedgehog-head.svg";
+import HedgehogHeadIcon from "url:/assets/agents/images/hedgehog-head.svg";
 import { XClose } from "@untitled-ui/icons-react";
 import { IconButton } from "~components/common/IconButton";
 import browser from "webextension-polyfill";

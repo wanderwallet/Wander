@@ -2,15 +2,19 @@ import { ListItem, Text } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
 import { Flex } from "~components/common/Flex";
 import aoLogo from "url:/assets/ecosystem/ao-logo.svg";
-import UsdaIcon from "url:/assets/ecosystem/usda.svg";
+import WarIcon from "url:/assets/ecosystem/war.svg";
+import wUSDCIcon from "url:/assets/ecosystem/wusdc.svg";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import { useLocation } from "~wallets/router/router.utils";
 import { SvgImageWithBackground } from "./SvgImage";
+import type { AOYieldAgent } from "~utils/agents/types";
+import { WAR_PROCESS_ID } from "~tokens/aoTokens/ao";
+import dayjs from "dayjs";
 
-export const AOYieldAgentListItem = ({ aoYieldAgentAvailable }: { aoYieldAgentAvailable: boolean }) => {
+export const AOYieldAgentListItem = ({ aoAgent }: { aoAgent: AOYieldAgent }) => {
   const { navigate } = useLocation();
 
-  return aoYieldAgentAvailable ? (
+  return !!aoAgent ? (
     <ListItem
       title={
         <Flex justify="space-between" align="center" width="100%">
@@ -19,8 +23,14 @@ export const AOYieldAgentListItem = ({ aoYieldAgentAvailable }: { aoYieldAgentAv
           </Text>
           <Flex align="center" gap={4}>
             <div style={{ height: 6, width: 6, borderRadius: "50%", backgroundColor: "#56C980" }} />
-            <Text size="sm" weight="medium" style={{ color: "#56C980" }} noMargin>
-              Active
+            <Text
+              size="sm"
+              weight="medium"
+              style={{
+                color: aoAgent.status === "Active" ? "#56C980" : aoAgent.status === "Cancelled" ? "#EE5A4F" : "#6B57F9",
+              }}
+              noMargin>
+              {aoAgent.status}
             </Text>
           </Flex>
         </Flex>
@@ -28,10 +38,10 @@ export const AOYieldAgentListItem = ({ aoYieldAgentAvailable }: { aoYieldAgentAv
       subtitle={
         <Flex justify="space-between" align="center" width="100%">
           <Text size="sm" variant="secondary" weight="medium" noMargin>
-            May 9 - Jun 8
+            {dayjs(aoAgent.startDate).format("MMM D")} - {dayjs(aoAgent.endDate).format("MMM D")}
           </Text>
           <Text size="sm" variant="secondary" weight="medium" noMargin>
-            5 transactions
+            {aoAgent?.totalTransactions || 0} transactions
           </Text>
         </Flex>
       }
@@ -47,7 +57,12 @@ export const AOYieldAgentListItem = ({ aoYieldAgentAvailable }: { aoYieldAgentAv
             iconSize={16}
             iconColor="black"
           />
-          <img src={UsdaIcon} height={24} width={24} style={{ position: "absolute", bottom: -19, right: -6 }} />
+          <img
+            src={aoAgent.tokenOut === WAR_PROCESS_ID ? WarIcon : wUSDCIcon}
+            height={24}
+            width={24}
+            style={{ position: "absolute", bottom: -19, right: -6 }}
+          />
         </Flex>
       }
       active

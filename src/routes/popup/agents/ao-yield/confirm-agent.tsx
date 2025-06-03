@@ -4,19 +4,24 @@ import browser from "webextension-polyfill";
 import HeadV2 from "~components/popup/HeadV2";
 import { Flex } from "~components/common/Flex";
 import { SvgImageWithBackground } from "../components/SvgImage";
-import confirmAgentImage from "url:/assets/agents/confirm-agent.svg";
+import confirmAgentImage from "url:/assets/agents/images/confirm-agent.svg";
 import aoLogo from "url:/assets/ecosystem/ao-logo.svg";
 import { ExtensionStorage, TempTransactionStorage, useStorage } from "~utils/storage";
-import type { AOYieldAgentCreate } from "./create-agent";
 import { PropertyName, PropertyValue, TransactionProperty } from "~routes/popup/transaction/[id]";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import dayjs from "dayjs";
 import { useAskPassword } from "~wallets/hooks";
 import { checkPassword } from "~wallets/auth";
 import { useLocation } from "~wallets/router/router.utils";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
+import { deployContract } from "~utils/agents/deploy";
+import aoYieldAgentContract from "raw:/assets/agents/contracts/ao-yield-agent.lua";
+import { getActiveAddress } from "~wallets/wallets.utils";
+import type { AOYieldAgent, AOYieldAgentCreate, AOYieldAgentStatus } from "~utils/agents/types";
+import { getAoYieldAgents, setAoYieldAgents } from "~utils/agents/utils";
 
 export function ConfirmAOYieldAgentView() {
+  const [isLoading, setIsLoading] = useState(false);
   const toasts = useToasts();
   const { navigate } = useLocation();
   const askPassword = useAskPassword();
@@ -39,11 +44,11 @@ export function ConfirmAOYieldAgentView() {
   const properties = useMemo(() => {
     if (!aoYieldAgent) return [];
 
-    const { percentage, asset, startDate, endDate, runIndefinitely, slippage } = aoYieldAgent;
+    const { conversionPercentage, asset, startDate, endDate, runIndefinitely, slippage } = aoYieldAgent;
     const runningTime = runIndefinitely ? "∞" : `${dayjs(endDate).diff(dayjs(startDate), "day") + 1} days`;
 
     return [
-      { name: "daily_conversion", value: `${percentage}% of AO earnings` },
+      { name: "daily_conversion", value: `${conversionPercentage}% of AO earnings` },
       { name: "buy_asset", value: `${asset.ticker}` },
       { name: "running_time", value: runningTime },
       { name: "start_date", value: dayjs(startDate).format("MMM D, YYYY") },
@@ -54,6 +59,10 @@ export function ConfirmAOYieldAgentView() {
   }, [aoYieldAgent]);
 
   async function handleActiveAgent() {
+    if (!aoYieldAgent) return;
+
+    setIsLoading(true);
+
     if (askPassword && transferRequirePassword) {
       const checkPw = await checkPassword(passwordInput.state);
       if (!checkPw) {
@@ -65,9 +74,65 @@ export function ConfirmAOYieldAgentView() {
         return;
       }
     }
-    // TODO: Agent deployment
 
-    navigate(PopupPaths.AOYieldAgentActivated, { search: { activationStatus: "success" } });
+    try {
+      const { processId } = await deployContract({
+        name: "ao-yield-agent",
+        contractPath: aoYieldAgentContract,
+        tags: [
+          {
+            name: "Conversion-Percentage",
+            value: aoYieldAgent.conversionPercentage.toString(),
+          },
+          {
+            name: "Token-Out",
+            value: aoYieldAgent.asset.id,
+          },
+          {
+            name: "Start-Date",
+            value: aoYieldAgent.startDate.toString(),
+          },
+          {
+            name: "End-Date",
+            value: aoYieldAgent.endDate.toString(),
+          },
+          {
+            name: "Run-Indefinitely",
+            value: aoYieldAgent.runIndefinitely.toString(),
+          },
+          {
+            name: "Slippage",
+            value: aoYieldAgent.slippage.toString(),
+          },
+        ],
+        forceSpawn: true,
+      });
+
+      const activeAddress = await getActiveAddress();
+      const agents = await getAoYieldAgents(activeAddress);
+
+      agents.push({
+        id: processId,
+        status: "Active" as AOYieldAgentStatus,
+        conversionPercentage: aoYieldAgent.conversionPercentage,
+        tokenOut: aoYieldAgent.asset.id,
+        startDate: aoYieldAgent.startDate,
+        endDate: aoYieldAgent.endDate,
+        runIndefinitely: aoYieldAgent.runIndefinitely,
+        slippage: aoYieldAgent.slippage,
+      });
+
+      await setAoYieldAgents(activeAddress, agents);
+
+      navigate(PopupPaths.AOYieldAgentActivated, { search: { activationStatus: "success" } });
+
+      TempTransactionStorage.remove("ao-yield-agent");
+    } catch (error) {
+      console.log("error: ", error);
+      navigate(PopupPaths.AOYieldAgentActivated, { search: { activationStatus: "error" } });
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -128,7 +193,7 @@ export function ConfirmAOYieldAgentView() {
           )}
         </Content>
         <Flex gap={8}>
-          <Button style={{ flex: 1 }} disabled={isButtonDisabled} onClick={handleActiveAgent} fullWidth>
+          <Button disabled={isButtonDisabled || isLoading} onClick={handleActiveAgent} loading={isLoading} fullWidth>
             {browser.i18n.getMessage(isButtonDisabled ? "enter_password" : "activate_agent")}
           </Button>
         </Flex>

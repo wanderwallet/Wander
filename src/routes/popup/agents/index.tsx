@@ -2,20 +2,21 @@ import styled from "styled-components";
 import { Section, Text } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
 import HeadV2 from "~components/popup/HeadV2";
-import HedgehogHeadIcon from "url:/assets/agents/hedgehog-head.svg";
+import HedgehogHeadIcon from "url:/assets/agents/images/hedgehog-head.svg";
 import { Flex } from "~components/common/Flex";
 import { ClockRewind } from "@untitled-ui/icons-react";
 import WanderAgentExplainerPopup from "./components/WanderAgentExplainerPopup";
 import { useEffect, useState } from "react";
-import { ExtensionStorage } from "~utils/storage";
+import { ExtensionStorage, useStorage } from "~utils/storage";
 import { AOYieldAgentListItem } from "./components/AOYieldAgentListItem";
 import { LiquidOpsAgentListItem } from "./components/LiquidOpsAgentListItem";
+import { getAoYieldAgents } from "~utils/agents/utils";
+import type { AOYieldAgent } from "~utils/agents/types";
 
 export function AgentsView() {
+  const [activeAddress] = useStorage({ key: "active_address", instance: ExtensionStorage });
   const [open, setOpen] = useState(false);
-
-  // TODO: Check if there are available agents
-  const aoYieldAgentAvailable = false;
+  const [aoAgent, setAoAgent] = useState<AOYieldAgent>();
 
   async function checkAndShowAgentExplainerPopup() {
     const hasShownAgentExplainerPopup = await ExtensionStorage.get("has_shown_agent_explainer_popup");
@@ -25,9 +26,20 @@ export function AgentsView() {
     }
   }
 
+  async function checkAoYieldAgentAvailable() {
+    const agents = await getAoYieldAgents(activeAddress, "Active");
+    setAoAgent(agents[0]);
+  }
+
   useEffect(() => {
     checkAndShowAgentExplainerPopup();
   }, []);
+
+  useEffect(() => {
+    if (activeAddress) {
+      checkAoYieldAgentAvailable();
+    }
+  }, [activeAddress]);
 
   return (
     <>
@@ -35,7 +47,7 @@ export function AgentsView() {
 
       <Wrapper>
         <Flex align="center" gap={16} justify="center" direction="column" textAlign="center">
-          {!aoYieldAgentAvailable ? (
+          {!aoAgent ? (
             <>
               <img src={HedgehogHeadIcon} alt="Hedgehog Head" height={128} width={120} />
               <Text size="md" weight="medium" noMargin>
@@ -47,7 +59,7 @@ export function AgentsView() {
               {browser.i18n.getMessage("your_agents")}
             </Text>
           )}
-          <AOYieldAgentListItem aoYieldAgentAvailable={aoYieldAgentAvailable} />
+          <AOYieldAgentListItem aoAgent={aoAgent} />
           <LiquidOpsAgentListItem />
         </Flex>
       </Wrapper>

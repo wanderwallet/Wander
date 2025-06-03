@@ -23,6 +23,8 @@ export let tokenInfoMap = new Map<string, TokenInfo | Token>();
 export type AoInstance = ReturnType<typeof connect>;
 
 export const AR_PROCESS_ID = "AR" as const;
+export const WAR_PROCESS_ID = "xU9zFkq3X2ZQ6olwNVvr1vUWIjc3kXTWr7xKQD6dh10" as const;
+export const WUSDC_PROCESS_ID = "7zH9dlMNoxprab9loshv3Y7WG45DOny_Vrq9KrXObdQ" as const;
 export const PI_PROCESS_ID = "4hXj_E-5fAKmo4E8KjgQvuDJKAFk9P2grhycVmISDLs" as const;
 export const EXP_PROCESS_ID = "aYrCboXVSl1AXL9gPFe3tfRxRf0ZmkOXH65mKT0HHZw" as const;
 export const AO_PROCESS_ID = "0syT13r0s0tgPmIed95bJnuSqaD29HQNN8D3ElLSrsc" as const;
@@ -294,35 +296,36 @@ export async function getNativeTokenBalance(address: string): Promise<string> {
  */
 export const getTagValue = (tagName: string, tags: (Tag | DecodedTag)[]) => tags.find((t) => t.name === tagName)?.value;
 
+export const createDataItemSigner =
+  (wallet: any) =>
+  async ({
+    data,
+    tags = [],
+    target,
+    anchor,
+  }: {
+    data: any;
+    tags?: { name: string; value: string }[];
+    target?: string;
+    anchor?: string;
+  }): Promise<{ id: string; raw: ArrayBuffer }> => {
+    const signer = new ArweaveSigner(wallet);
+    const dataItem = createData(data, signer, { tags, target, anchor });
+
+    await dataItem.sign(signer);
+
+    return {
+      id: dataItem.id,
+      raw: dataItem.getRaw(),
+    };
+  };
+
 export const sendAoTransfer = async (ao: AoInstance, process: string, recipient: string, amount: string) => {
   try {
     const decryptedWallet = await getActiveKeyfile();
     isLocalWallet(decryptedWallet);
     const keyfile = decryptedWallet.keyfile;
 
-    const createDataItemSigner =
-      (wallet: any) =>
-      async ({
-        data,
-        tags = [],
-        target,
-        anchor,
-      }: {
-        data: any;
-        tags?: { name: string; value: string }[];
-        target?: string;
-        anchor?: string;
-      }): Promise<{ id: string; raw: ArrayBuffer }> => {
-        const signer = new ArweaveSigner(wallet);
-        const dataItem = createData(data, signer, { tags, target, anchor });
-
-        await dataItem.sign(signer);
-
-        return {
-          id: dataItem.id,
-          raw: dataItem.getRaw(),
-        };
-      };
     const signer = createDataItemSigner(keyfile);
     const transferID = await ao.message({
       process,

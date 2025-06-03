@@ -2,13 +2,31 @@ import styled from "styled-components";
 import { Button, Section, Text } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
 import { Flex } from "~components/common/Flex";
-import agentActivated from "url:/assets/agents/agent-activated.svg";
-import agentNotActivated from "url:/assets/agents/agent-not-activated.svg";
-import { useSearchParams } from "~wallets/router/router.utils";
+import agentActivated from "url:/assets/agents/images/agent-activated.svg";
+import agentNotActivated from "url:/assets/agents/images/agent-not-activated.svg";
+import { useLocation, useSearchParams } from "~wallets/router/router.utils";
+import { PopupPaths } from "~wallets/router/popup/popup.routes";
 
 export function AOYieldAgentActivatedView() {
+  const { navigate } = useLocation();
   const { activationStatus = "success" } = useSearchParams<{ activationStatus: "success" | "error" }>();
   const isActivated = activationStatus === "success";
+
+  const handlePrimaryAction = () => {
+    if (isActivated) {
+      navigate(PopupPaths.Home);
+    } else {
+      navigate(PopupPaths.CreateAOYieldAgent);
+    }
+  };
+
+  const handleSecondaryAction = () => {
+    if (isActivated) {
+      navigate(PopupPaths.Home);
+    } else {
+      navigate(PopupPaths.Home);
+    }
+  };
 
   return (
     <Wrapper>
@@ -26,8 +44,10 @@ export function AOYieldAgentActivatedView() {
         </Flex>
       </Content>
       <Flex direction="column" gap={12}>
-        <Button fullWidth>{browser.i18n.getMessage(isActivated ? "go_to_dashboard" : "try_again")}</Button>
-        <Button variant="secondary" fullWidth>
+        <Button onClick={handlePrimaryAction} fullWidth>
+          {browser.i18n.getMessage(isActivated ? "go_to_dashboard" : "try_again")}
+        </Button>
+        <Button onClick={handleSecondaryAction} variant="secondary" fullWidth>
           {browser.i18n.getMessage(isActivated ? "manage_agent" : "go_to_dashboard")}
         </Button>
       </Flex>

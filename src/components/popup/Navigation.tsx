@@ -5,7 +5,7 @@ import { useLocation } from "~wallets/router/router.utils";
 import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 import { useStorage, ExtensionStorage } from "~utils/storage";
 import type { WanderRoutePath } from "~wallets/router/router.types";
-import HedgehogHeadIcon from "url:/assets/agents/hedgehog-head.svg";
+import HedgehogHeadIcon from "url:/assets/agents/images/hedgehog-head.svg";
 
 const Home05Active = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="25" height="24" viewBox="0 0 25 24" fill="none">
