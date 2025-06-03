@@ -3205,5 +3205,81 @@
     "try_again": {
         "message": "请重试",
         "description": "Try again description"
+    },
+    "active": {
+        "message": "活跃",
+        "description": "Active text"
+    },
+    "cancelled": {
+        "message": "已取消",
+        "description": "Cancelled text"
+    },
+    "completed": {
+        "message": "已完成",
+        "description": "Completed text"
+    },
+    "percentage_of_each_conversion": {
+        "message": "$PERCENTAGE$% 每次转换",
+        "description": "Percentage of each conversion text",
+        "placeholders": {
+            "percentage": {
+                "content": "$1",
+                "example": "0.5"
+            }
+        }
+    },
+    "cancel_agent": {
+        "message": "取消代理",
+        "description": "Cancel agent text"
+    },
+    "agent_details": {
+        "message": "代理详情",
+        "description": "Agent details text"
+    },
+    "performance": {
+        "message": "性能",
+        "description": "Performance text"
+    },
+    "total_ao_sold": {
+        "message": "总AO已售出",
+        "description": "Total AO sold text"
+    },
+    "total_bought": {
+        "message": "总$ASSET$已购买",
+        "description": "Total bought text",
+        "placeholders": {
+            "asset": {
+                "content": "$1",
+                "example": "wUSDC"
+            }
+        }
+    },
+    "total_transactions": {
+        "message": "总交易次数",
+        "description": "Total transactions text"
+    },
+    "view_transaction_history": {
+        "message": "查看交易历史",
+        "description": "View transaction history text"
+    },
+    "status": {
+        "message": "状态",
+        "description": "Status text"
+    },
+    "edit_agent": {
+        "message": "编辑代理",
+        "description": "Edit agent text"
+    },
+    "error_updating_agent": {
+        "message": "更新代理失败",
+        "description": "Error updating agent text"
+    },
+    "agent_updated": {
+        "message": "代理已更新",
+        "description": "Agent updated text"
+    },
+    "agent_cancelled": {
+        "message": "代理已取消",
+        "description": "Agent cancelled text"
     }
 }

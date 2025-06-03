@@ -129,22 +129,32 @@ export interface AosConfig {
 
 export type AOYieldAgentStatus = "Active" | "Cancelled" | "Completed";
 
+export type AOYieldAgentDex = "BOTEGA" | "PERMASWAP" | "AUTO";
+
 export interface AOYieldAgent {
   id: string;
   status: AOYieldAgentStatus;
-  conversionPercentage: Number;
+  conversionPercentage: number;
   tokenOut: string;
   startDate: number;
   endDate: number;
   runIndefinitely: boolean;
-  slippage: Number;
+  slippage: number;
   totalTransactions?: number;
 }
 
+export interface AOYieldAgentInfo extends AOYieldAgent {
+  dex: AOYieldAgentDex;
+  totalAOSold: string;
+  totalBought: Record<string, number>;
+  totalTransactions: number;
+  totalWanderFee: string;
+}
+
 export interface AOYieldAgentCreate {
-  conversionPercentage: Number;
+  conversionPercentage: number;
   asset: Asset;
-  slippage: Number;
+  slippage: number;
   runIndefinitely: boolean;
   startDate: number;
   endDate: number;

@@ -17,8 +17,8 @@ import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import { deployContract } from "~utils/agents/deploy";
 import aoYieldAgentContract from "raw:/assets/agents/contracts/ao-yield-agent.lua";
 import { getActiveAddress } from "~wallets/wallets.utils";
-import type { AOYieldAgent, AOYieldAgentCreate, AOYieldAgentStatus } from "~utils/agents/types";
-import { getAoYieldAgents, setAoYieldAgents } from "~utils/agents/utils";
+import type { AOYieldAgentCreate, AOYieldAgentStatus } from "~utils/agents/types";
+import { getAOYieldAgents, setAOYieldAgents } from "~utils/agents/utils";
 
 export function ConfirmAOYieldAgentView() {
   const [isLoading, setIsLoading] = useState(false);
@@ -54,7 +54,7 @@ export function ConfirmAOYieldAgentView() {
       { name: "start_date", value: dayjs(startDate).format("MMM D, YYYY") },
       { name: "end_date", value: dayjs(endDate).format("MMM D, YYYY") },
       { name: "slippage", value: `${slippage}%` },
-      { name: "fee", value: "0.5% of each conversion" },
+      { name: "fee", value: browser.i18n.getMessage("percentage_of_each_conversion", ["0.5"]) },
     ];
   }, [aoYieldAgent]);
 
@@ -109,7 +109,7 @@ export function ConfirmAOYieldAgentView() {
       });
 
       const activeAddress = await getActiveAddress();
-      const agents = await getAoYieldAgents(activeAddress);
+      const agents = await getAOYieldAgents(activeAddress);
 
       agents.push({
         id: processId,
@@ -122,7 +122,7 @@ export function ConfirmAOYieldAgentView() {
         slippage: aoYieldAgent.slippage,
       });
 
-      await setAoYieldAgents(activeAddress, agents);
+      await setAOYieldAgents(activeAddress, agents);
 
       navigate(PopupPaths.AOYieldAgentActivated, { search: { activationStatus: "success" } });
 
@@ -181,7 +181,7 @@ export function ConfirmAOYieldAgentView() {
               placeholder="Password"
               sizeVariant="small"
               {...passwordInput.bindings}
-              label={"Enter password to confirm"}
+              label={browser.i18n.getMessage("enter_password_confirm")}
               labelStyle={{ marginBottom: -4, color: theme.primaryText }}
               type="password"
               onKeyDown={async (e) => {

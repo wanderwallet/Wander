@@ -2,7 +2,12 @@ import Arweave from "arweave";
 import { TRANSACTION_QUERY } from "./constants";
 import { defaultGateway } from "~gateways/gateway";
 import { ExtensionStorage } from "~utils/storage";
-import type { AOYieldAgent, AOYieldAgentStatus } from "./types";
+import type { AOYieldAgent, AOYieldAgentInfo, AOYieldAgentStatus, Tag } from "./types";
+import { connect } from "@permaweb/aoconnect";
+import { defaultConfig } from "~tokens/aoTokens/config";
+import { createDataItemSigner, getTagValue, Id, Owner } from "~tokens/aoTokens/ao";
+import { getActiveAddress, getActiveKeyfile } from "~wallets";
+import { isLocalWallet } from "~utils/assertions";
 
 /**
  * Initializes a default Arweave instance.
@@ -201,7 +206,7 @@ export async function pollForProcessSpawn({
   }
 }
 
-export async function getAoYieldAgents(activeAddress: string, status?: AOYieldAgentStatus) {
+export async function getAOYieldAgents(activeAddress: string, status?: AOYieldAgentStatus) {
   const agents = ((await ExtensionStorage.get(`ao-yield-agents-${activeAddress}`)) || []) as AOYieldAgent[];
   if (status) {
     return agents.filter((agent) => agent.status === status);
@@ -210,6 +215,131 @@ export async function getAoYieldAgents(activeAddress: string, status?: AOYieldAg
   return agents;
 }
 
-export async function setAoYieldAgents(activeAddress: string, agents: AOYieldAgent[]) {
+export async function setAOYieldAgents(activeAddress: string, agents: AOYieldAgent[]) {
   await ExtensionStorage.set(`ao-yield-agents-${activeAddress}`, agents);
+}
+
+export async function getAOYieldActiveAgent() {
+  const activeAddress = await getActiveAddress();
+  const agents = await getAOYieldAgents(activeAddress, "Active");
+  return agents[agents.length - 1];
+}
+
+export async function getAOYieldAgentInfo(agentId: string) {
+  const aoInstance = connect(defaultConfig);
+
+  const dryrunRes = await aoInstance.dryrun({
+    Id,
+    Owner,
+    process: agentId,
+    tags: [{ name: "Action", value: "Info" }],
+  });
+
+  const message = dryrunRes.Messages?.[0];
+  const tags = message?.Tags;
+
+  const dex = getTagValue("Dex", tags);
+  const status = getTagValue("Status", tags);
+  const tokenOut = getTagValue("Token-Out", tags);
+  const conversionPercentage = getTagValue("Conversion-Percentage", tags);
+  const startDate = getTagValue("Start-Date", tags);
+  const endDate = getTagValue("End-Date", tags);
+  const runIndefinitely = getTagValue("Run-Indefinitely", tags);
+  const slippage = getTagValue("Slippage", tags);
+  const totalAOSold = getTagValue("Total-AO-Sold", tags);
+  const totalBought = getTagValue("Total-Bought", tags);
+  const totalTransactions = getTagValue("Total-Transactions", tags);
+  const totalWanderFee = getTagValue("Total-Wander-Fee", tags);
+
+  return {
+    id: agentId,
+    status,
+    dex,
+    tokenOut,
+    conversionPercentage: Number(conversionPercentage),
+    startDate: Number(startDate),
+    endDate: Number(endDate),
+    runIndefinitely: runIndefinitely === "true",
+    slippage: Number(slippage),
+    totalAOSold,
+    totalBought: JSON.parse(totalBought),
+    totalTransactions: Number(totalTransactions),
+    totalWanderFee,
+  } as AOYieldAgentInfo;
+}
+
+export async function updateAOYieldAgent(agentId: string, updateData: Partial<AOYieldAgent>) {
+  const aoInstance = connect(defaultConfig);
+
+  const decryptedWallet = await getActiveKeyfile();
+  isLocalWallet(decryptedWallet);
+  const keyfile = decryptedWallet.keyfile;
+
+  const signer = createDataItemSigner(keyfile);
+
+  const tags = [{ name: "Action", value: "Update-Agent" }];
+
+  if (updateData.slippage) {
+    tags.push({ name: "Slippage", value: updateData.slippage.toString() });
+  }
+
+  if (updateData.tokenOut) {
+    tags.push({ name: "Token-Out", value: updateData.tokenOut });
+  }
+
+  if (updateData.startDate) {
+    tags.push({ name: "Start-Date", value: updateData.startDate.toString() });
+  }
+
+  if (updateData.endDate) {
+    tags.push({ name: "End-Date", value: updateData.endDate.toString() });
+  }
+
+  if (updateData.runIndefinitely) {
+    tags.push({ name: "Run-Indefinitely", value: updateData.runIndefinitely.toString() });
+  }
+
+  if (updateData.status) {
+    tags.push({ name: "Status", value: updateData.status });
+  }
+
+  const messageId = await aoInstance.message({
+    process: agentId,
+    tags,
+    signer,
+  });
+
+  const result = await aoInstance.result({
+    process: agentId,
+    message: messageId,
+  });
+
+  if (result.Error) {
+    throw new Error(result.Error);
+  }
+
+  const activeAddress = await getActiveAddress();
+  const agents = await getAOYieldAgents(activeAddress);
+  const agent = agents.find((agent) => agent.id === agentId);
+  if (agent) {
+    if (updateData.slippage) {
+      agent.slippage = updateData.slippage;
+    }
+    if (updateData.tokenOut) {
+      agent.tokenOut = updateData.tokenOut;
+    }
+    if (updateData.startDate) {
+      agent.startDate = updateData.startDate;
+    }
+    if (updateData.endDate) {
+      agent.endDate = updateData.endDate;
+    }
+    if (updateData.runIndefinitely) {
+      agent.runIndefinitely = updateData.runIndefinitely;
+    }
+    if (updateData.status) {
+      agent.status = updateData.status;
+    }
+    await setAOYieldAgents(activeAddress, agents);
+  }
 }

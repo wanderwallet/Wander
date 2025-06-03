@@ -3219,5 +3219,81 @@
   "try_again": {
     "message": "Try again",
     "description": "Try again description"
+  },
+  "active": {
+    "message": "Active",
+    "description": "Active text"
+  },
+  "cancelled": {
+    "message": "Cancelled",
+    "description": "Cancelled text"
+  },
+  "completed": {
+    "message": "Completed",
+    "description": "Completed text"
+  },
+  "percentage_of_each_conversion": {
+    "message": "$PERCENTAGE$% of each conversion",
+    "description": "Percentage of each conversion text",
+    "placeholders": {
+      "percentage": {
+        "content": "$1",
+        "example": "0.5"
+      }
+    }
+  },
+  "cancel_agent": {
+    "message": "Cancel agent",
+    "description": "Cancel agent text"
+  },
+  "agent_details": {
+    "message": "Agent details",
+    "description": "Agent details text"
+  },
+  "performance": {
+    "message": "Performance",
+    "description": "Performance text"
+  },
+  "total_ao_sold": {
+    "message": "Total AO sold",
+    "description": "Total AO sold text"
+  },
+  "total_bought": {
+    "message": "Total $ASSET$ bought",
+    "description": "Total bought text",
+    "placeholders": {
+      "asset": {
+        "content": "$1",
+        "example": "wUSDC"
+      }
+    }
+  },
+  "total_transactions": {
+    "message": "Total transactions",
+    "description": "Total transactions text"
+  },
+  "view_transaction_history": {
+    "message": "View transaction history",
+    "description": "View transaction history text"
+  },
+  "status": {
+    "message": "Status",
+    "description": "Status text"
+  },
+  "edit_agent": {
+    "message": "Edit agent",
+    "description": "Edit agent text"
+  },
+  "error_updating_agent": {
+    "message": "Error updating agent",
+    "description": "Error updating agent text"
+  },
+  "agent_updated": {
+    "message": "Agent updated",
+    "description": "Agent updated text"
+  },
+  "agent_cancelled": {
+    "message": "Agent cancelled",
+    "description": "Agent cancelled text"
   }
 }

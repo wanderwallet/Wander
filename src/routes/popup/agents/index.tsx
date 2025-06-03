@@ -10,7 +10,7 @@ import { useEffect, useState } from "react";
 import { ExtensionStorage, useStorage } from "~utils/storage";
 import { AOYieldAgentListItem } from "./components/AOYieldAgentListItem";
 import { LiquidOpsAgentListItem } from "./components/LiquidOpsAgentListItem";
-import { getAoYieldAgents } from "~utils/agents/utils";
+import { getAOYieldAgents } from "~utils/agents/utils";
 import type { AOYieldAgent } from "~utils/agents/types";
 
 export function AgentsView() {
@@ -27,8 +27,8 @@ export function AgentsView() {
   }
 
   async function checkAoYieldAgentAvailable() {
-    const agents = await getAoYieldAgents(activeAddress, "Active");
-    setAoAgent(agents[0]);
+    const agents = await getAOYieldAgents(activeAddress);
+    setAoAgent(agents[agents.length - 1]);
   }
 
   useEffect(() => {

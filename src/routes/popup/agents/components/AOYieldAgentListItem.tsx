@@ -19,10 +19,18 @@ export const AOYieldAgentListItem = ({ aoAgent }: { aoAgent: AOYieldAgent }) => 
       title={
         <Flex justify="space-between" align="center" width="100%">
           <Text weight="semibold" noMargin>
-            AO Yield Agent
+            {browser.i18n.getMessage("ao_yield_agent")}
           </Text>
           <Flex align="center" gap={4}>
-            <div style={{ height: 6, width: 6, borderRadius: "50%", backgroundColor: "#56C980" }} />
+            <div
+              style={{
+                height: 6,
+                width: 6,
+                borderRadius: "50%",
+                backgroundColor:
+                  aoAgent.status === "Active" ? "#56C980" : aoAgent.status === "Cancelled" ? "#EE5A4F" : "#6B57F9",
+              }}
+            />
             <Text
               size="sm"
               weight="medium"
@@ -30,7 +38,7 @@ export const AOYieldAgentListItem = ({ aoAgent }: { aoAgent: AOYieldAgent }) => 
                 color: aoAgent.status === "Active" ? "#56C980" : aoAgent.status === "Cancelled" ? "#EE5A4F" : "#6B57F9",
               }}
               noMargin>
-              {aoAgent.status}
+              {browser.i18n.getMessage(aoAgent.status?.toLowerCase())}
             </Text>
           </Flex>
         </Flex>
@@ -66,7 +74,7 @@ export const AOYieldAgentListItem = ({ aoAgent }: { aoAgent: AOYieldAgent }) => 
         </Flex>
       }
       active
-      onClick={() => navigate(PopupPaths.CreateAOYieldAgent)}
+      onClick={() => navigate(PopupPaths.ManageAOYieldAgent)}
       style={{ width: "100%", textAlign: "left", padding: "12px 8px" }}
     />
   ) : (

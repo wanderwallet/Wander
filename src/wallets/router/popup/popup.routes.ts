@@ -46,6 +46,8 @@ import { AgentsView } from "~routes/popup/agents";
 import { CreateAOYieldAgentView } from "~routes/popup/agents/ao-yield/create-agent";
 import { ConfirmAOYieldAgentView } from "~routes/popup/agents/ao-yield/confirm-agent";
 import { AOYieldAgentActivatedView } from "~routes/popup/agents/ao-yield/agent-activated";
+import { ManageAOYieldAgentView } from "~routes/popup/agents/ao-yield/manage-agent";
+import { EditAOYieldAgentView } from "~routes/popup/agents/ao-yield/edit-agent";
 
 export type PopupRoutePath =
   | "/"
@@ -94,6 +96,8 @@ export type PopupRoutePath =
   | `/agents`
   | `/agents/ao-yield/create-agent`
   | `/agents/ao-yield/confirm-agent`
+  | `/agents/ao-yield/manage-agent`
+  | `/agents/ao-yield/edit-agent`
   | `/agents/ao-yield/activated`;
 
 export const PopupPaths = {
@@ -139,6 +143,8 @@ export const PopupPaths = {
   Agents: "/agents",
   CreateAOYieldAgent: "/agents/ao-yield/create-agent",
   ConfirmAOYieldAgent: "/agents/ao-yield/confirm-agent",
+  ManageAOYieldAgent: "/agents/ao-yield/manage-agent",
+  EditAOYieldAgent: "/agents/ao-yield/edit-agent",
   AOYieldAgentActivated: "/agents/ao-yield/activated",
 } as const satisfies Record<string, PopupRoutePath>;
 
@@ -316,6 +322,14 @@ export const POPUP_ROUTES = [
   {
     path: PopupPaths.ConfirmAOYieldAgent,
     component: ConfirmAOYieldAgentView,
+  },
+  {
+    path: PopupPaths.ManageAOYieldAgent,
+    component: ManageAOYieldAgentView,
+  },
+  {
+    path: PopupPaths.EditAOYieldAgent,
+    component: EditAOYieldAgentView,
   },
   {
     path: PopupPaths.AOYieldAgentActivated,
