@@ -10,6 +10,7 @@ import { AgentStats } from "../components/liquidops/AgentStats";
 import { useActiveWallet } from "~wallets/hooks";
 import { tokenData } from "liquidops";
 import { useLOSupplyAPY } from "./utils/hooks/useLOSupplyAPY";
+import { useMemo } from "react";
 
 export function LiquidOpsConfirm({ params: { action, ticker } }: LiquidOpsDepositWithdrawProps) {
   const passwordInput = useInput();
@@ -18,7 +19,10 @@ export function LiquidOpsConfirm({ params: { action, ticker } }: LiquidOpsDeposi
   async function executeLocal() {}
 
   const activeTokens = Object.values(tokenData).filter((token) => !token.deprecated);
-  const token = activeTokens.find((token) => token.ticker.toLowerCase() === ticker.toLowerCase());
+  const token = useMemo(
+    () => activeTokens.find((token) => token.ticker.toLowerCase() === ticker.toLowerCase()),
+    [activeTokens, ticker],
+  );
 
   const { data: supplyAPR } = useLOSupplyAPY(token.ticker);
 

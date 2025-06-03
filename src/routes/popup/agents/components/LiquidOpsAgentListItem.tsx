@@ -5,11 +5,12 @@ import LiquidOpsIcon from "url:/assets/ecosystem/liquidops.svg";
 import { SvgImageWithBackground } from "./SvgImage";
 import { useLocation } from "~wallets/router/router.utils";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
-import { tokenData } from "liquidops";
+import { tokenData, type TokenData } from "liquidops";
 import { useGateway } from "../liquidops/utils/hooks/useGateway";
 import { useLOSupplyAPY } from "../liquidops/utils/hooks/useLOSupplyAPY";
 import { useActiveTokens } from "../liquidops/utils/hooks/useAvailableTokens";
 import { useTokenStatus } from "../liquidops/utils/hooks/useTokenStatus";
+import type { ComponentProps } from "react";
 
 export const LiquidOpsAgentListItem = () => {
   const { navigate } = useLocation();
@@ -22,8 +23,8 @@ export const LiquidOpsAgentListItem = () => {
     <ListItem
       title={browser.i18n.getMessage("liquidops_agent")}
       subtitle={browser.i18n.getMessage("liquidops_agent_description", [
-        activeTokens?.length ?? 0,
-        availableTokens.length,
+        (activeTokens?.length ?? 0).toString(),
+        availableTokens.length.toString(),
       ])}
       subtitleStyle={{ fontSize: 14, fontWeight: 500, lineHeight: "18.2px" }}
       squircleSize={40}
@@ -37,15 +38,7 @@ export const LiquidOpsAgentListItem = () => {
       expandableContent={
         <Flex direction="column" gap={16}>
           {availableTokens.map((token) => (
-            <ListItem
-              key={token.ticker}
-              title={<Title ticker={token.cleanTicker} apy={useLOSupplyAPY(token.ticker).data.toString()} />}
-              icon={<img src={`${useGateway(token.icon).data}`} height={24} width={24} />}
-              hideSquircle
-              padding={0}
-              subtitleExtra={<Status status={useTokenStatus(token.ticker).hasToken} />}
-              onClick={() => navigate(`/agents/liquidops/${token.cleanTicker}`)}
-            />
+            <AgentListItem token={token} onClick={() => navigate(`/agents/liquidops/${token.cleanTicker}`)} />
           ))}
         </Flex>
       }
@@ -54,13 +47,13 @@ export const LiquidOpsAgentListItem = () => {
   );
 };
 
-const Title = ({ ticker, apy }: { ticker: string; apy: string }) => (
+const Title = ({ ticker, apy }: { ticker: string; apy: number }) => (
   <Flex direction="row" gap={4} align="center">
     <Text size="md" weight="semibold" noMargin>
       {ticker}
     </Text>
     <Text variant="secondary" size="sm" weight="medium" noMargin>
-      {apy}% APY
+      {apy.toLocaleString(undefined, { maximumFractionDigits: 2 })}% APY
     </Text>
   </Flex>
 );
@@ -70,3 +63,21 @@ const Status = ({ status }: { status: boolean }) => (
     {status ? "Active" : "Inactive"}
   </Text>
 );
+
+const AgentListItem = ({ token, ...rest }: { token: TokenData } & Partial<ComponentProps<typeof ListItem>>) => {
+  const { data: supplyAPY } = useLOSupplyAPY(token.ticker);
+  const { data: icon } = useGateway(token.icon);
+  const { hasToken } = useTokenStatus(token.ticker);
+
+  return (
+    <ListItem
+      key={token.ticker}
+      title={<Title ticker={token.cleanTicker} apy={supplyAPY || 0} />}
+      icon={<img src={icon} height={24} width={24} />}
+      hideSquircle
+      padding={0}
+      subtitleExtra={<Status status={hasToken} />}
+      {...rest}
+    />
+  );
+};

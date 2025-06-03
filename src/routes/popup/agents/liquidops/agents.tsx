@@ -24,9 +24,7 @@ export function LiquidOpsAgentsView() {
             {browser.i18n.getMessage("active_agents")}
           </Text>
 
-          {activeTokens.map((token) => (
-            <AgentItem key={token.ticker} token={token} running />
-          ))}
+          {activeTokens && activeTokens.map((token) => <AgentItem key={token.ticker} token={token} running />)}
         </Flex>
 
         <Line />

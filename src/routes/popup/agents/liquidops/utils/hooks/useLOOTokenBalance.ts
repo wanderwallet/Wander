@@ -1,5 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
+import { Quantity } from "ao-tokens";
 import { tokenData } from "liquidops";
+import { useMemo } from "react";
 import { fetchTokenBalance } from "~tokens/aoTokens/ao";
 
 const defaultOptions = {
@@ -14,26 +16,30 @@ const defaultOptions = {
 export function useLOOTokenBalance(ticker: string, refresh?: boolean) {
   const activeTokens = Object.values(tokenData).filter((token) => !token.deprecated);
 
-  const token = activeTokens.find((token) => token.ticker.toLowerCase() === ticker.toLowerCase());
-
-  const tokenObj = {
-    Name: token.name,
-    Denomination: Number(token.denomination),
-    processId: token.oAddress,
-  };
+  const token = useMemo(
+    () => activeTokens.find((token) => token.ticker.toLowerCase() === ticker.toLowerCase()),
+    [ticker, activeTokens],
+  );
 
   return useQuery({
     queryKey: ["tokenBalance", token.address],
     queryFn: async () => {
+      const tokenObj = {
+        Name: token.name,
+        Denomination: Number(token.denomination),
+        processId: token.oAddress,
+      };
+
       try {
         const balance = await fetchTokenBalance(tokenObj, token.oAddress, refresh);
-        return balance || "0";
+
+        return new Quantity(balance || 0n, token.denomination);
       } catch (error) {
         throw error;
       }
     },
     ...defaultOptions,
-    select: (data) => data || "0",
+    select: (data) => data || new Quantity(0n, 0n),
     enabled: !!ticker,
   });
 }

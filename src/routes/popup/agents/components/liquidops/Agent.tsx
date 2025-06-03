@@ -7,12 +7,16 @@ import browser from "webextension-polyfill";
 import { tokenData } from "liquidops";
 import { useLOSupplyAPY } from "../../liquidops/utils/hooks/useLOSupplyAPY";
 import { useLOOTokenBalance } from "../../liquidops/utils/hooks/useLOOTokenBalance";
+import { useMemo } from "react";
 
 export const Agent = ({ ticker, logo, running = false }: Props) => {
   const { navigate } = useLocation();
 
   const activeTokens = Object.values(tokenData).filter((token) => !token.deprecated);
-  const token = activeTokens.find((token) => token.ticker.toLowerCase() === ticker.toLowerCase());
+  const token = useMemo(
+    () => activeTokens.find((token) => token.ticker.toLowerCase() === ticker.toLowerCase()),
+    [ticker, activeTokens],
+  );
 
   // Always call hooks unconditionally at the top level
   const { data: walletBalance } = useLOOTokenBalance(token.cleanTicker);
@@ -20,7 +24,7 @@ export const Agent = ({ ticker, logo, running = false }: Props) => {
 
   // Early return if token not found
   if (!token) {
-    return null;
+    return <></>;
   }
 
   return (
@@ -32,7 +36,7 @@ export const Agent = ({ ticker, logo, running = false }: Props) => {
           </Text>
           <Text weight="semibold" noMargin style={running ? { color: "rgb(86, 201, 128)" } : {}}>
             {running ? "+" : ""}
-            {Number(supplyAPY).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+            {(supplyAPY || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
             {running ? " " + ticker : "%"}
           </Text>
         </Flex>
@@ -40,7 +44,7 @@ export const Agent = ({ ticker, logo, running = false }: Props) => {
       subtitle={
         <Flex justify="space-between" align="center" width="100%">
           <Text size="sm" variant="secondary" weight="medium" noMargin>
-            {Number(running ? supplyAPY : walletBalance).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+            {((running ? supplyAPY : walletBalance) || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
             {running ? "% APY" : " " + ticker}
           </Text>
           <Text size="sm" variant="secondary" weight="medium" noMargin>

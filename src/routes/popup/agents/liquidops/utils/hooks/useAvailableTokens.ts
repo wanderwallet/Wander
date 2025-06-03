@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { Quantity } from "ao-tokens";
 import { tokenData } from "liquidops";
 import { fetchTokenBalance } from "~tokens/aoTokens/ao";
 
@@ -29,9 +30,9 @@ export function useActiveTokens() {
 
           try {
             const balance = await fetchTokenBalance(tokenObj, token.oAddress);
-            const balanceNum = parseFloat(balance);
+            const balanceQty = new Quantity(0n, token.denomination).fromString(balance);
 
-            if (balanceNum > 0) {
+            if (Quantity.lt(new Quantity(0n, token.denomination), balanceQty)) {
               tickersWithBalance.push({
                 ticker: token.ticker,
                 balance: balance,

@@ -3,6 +3,7 @@ import { LiquidOpsClient } from "../LiquidOps";
 import { getActiveAddress } from "~wallets";
 import { fetchTokenBalance } from "~tokens/aoTokens/ao";
 import { tokenData } from "liquidops";
+import { Quantity } from "ao-tokens";
 
 const defaultOptions = {
   refetchInterval: 300_000,
@@ -13,36 +14,34 @@ const defaultOptions = {
   refetchOnWindowFocus: true,
 };
 
-export function useEarnings(ticker: string, refresh?: boolean) {
-  const activeTokens = Object.values(tokenData).filter((token) => !token.deprecated);
-
-  const token = activeTokens.find((token) => token.ticker.toLowerCase() === ticker.toLowerCase());
-
-  const tokenObj = {
-    Name: token.name,
-    Denomination: Number(token.denomination),
-    processId: token.oAddress,
-  };
-
+export function useEarnings(ticker: string) {
   return useQuery({
     queryKey: ["earnings", ticker],
     queryFn: async () => {
+      const activeTokens = Object.values(tokenData).filter((token) => !token.deprecated);
+      const token = activeTokens.find((token) => token.ticker.toLowerCase() === ticker.toLowerCase());
+
       try {
-        const oTokenBalance = await fetchTokenBalance(tokenObj, token.oAddress, refresh);
         const walletAddress = await getActiveAddress();
         const client = await LiquidOpsClient();
+
+        const { collateralization } = await client.getPosition({
+          token: ticker.toUpperCase(),
+          recipient: walletAddress,
+        });
         const earnings = await client.getEarnings({
           token: ticker.toUpperCase(),
-          collateralization: BigInt(oTokenBalance),
+          collateralization: BigInt(collateralization),
           walletAddress: walletAddress,
         });
-        return earnings.profit || "0";
+
+        return new Quantity(earnings.profit || 0n, token.baseDenomination);
       } catch (error) {
         throw error;
       }
     },
     ...defaultOptions,
-    select: (data) => data || "0",
+    select: (data) => data || new Quantity(0n, 0n),
     enabled: !!ticker,
   });
 }

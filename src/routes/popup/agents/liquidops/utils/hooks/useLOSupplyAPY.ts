@@ -17,13 +17,14 @@ export function useLOSupplyAPY(ticker: string) {
       try {
         const client = await LiquidOpsClient();
         const apr = await client.getSupplyAPR({ token: ticker.toUpperCase() });
-        return apr || "0";
+
+        return apr || 0;
       } catch (error) {
         throw error;
       }
     },
     ...defaultOptions,
-    select: (data) => data || "0",
+    select: (data) => data || 0,
     enabled: !!ticker,
   });
 }

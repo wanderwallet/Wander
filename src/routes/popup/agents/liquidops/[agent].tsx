@@ -11,7 +11,7 @@ import type { CommonRouteProps } from "~wallets/router/router.types";
 import { useLocation } from "~wallets/router/router.utils";
 import { LinkExternalIcon, OpenInLiquidops } from "../components/liquidops/AgentStats";
 import NumberFlow from "@number-flow/react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import useSetting from "~settings/hook";
 import { useStorage } from "~utils/storage";
 import { PersistentStorage } from "~utils/storage";
@@ -26,7 +26,10 @@ export type LiquidOpsAgentProps = CommonRouteProps<{ ticker: string }>;
 
 export function LiquidOpsAgent({ params: { ticker } }: LiquidOpsAgentProps) {
   const activeTokens = Object.values(tokenData).filter((token) => !token.deprecated);
-  const token = activeTokens.find((token) => token.ticker.toLowerCase() === ticker.toLowerCase());
+  const token = useMemo(
+    () => activeTokens.find((token) => token.ticker.toLowerCase() === ticker.toLowerCase()),
+    [activeTokens, ticker],
+  );
 
   // Always call hooks unconditionally at the top level
   const { data: oTokenBalance } = useLOOTokenBalance(token.cleanTicker);
@@ -34,7 +37,7 @@ export function LiquidOpsAgent({ params: { ticker } }: LiquidOpsAgentProps) {
   const { data: earnedInterest } = useEarnings(token.ticker);
   const { data: tokenIconUrl } = useGateway(token.icon);
 
-  const tokenStatus = useTokenStatus(token.ticker).hasToken;
+  const { hasToken: tokenStatus } = useTokenStatus(token.ticker);
 
   // router
   const { navigate } = useLocation();
@@ -48,8 +51,8 @@ export function LiquidOpsAgent({ params: { ticker } }: LiquidOpsAgentProps) {
 
   useEffect(() => {
     setTimeout(() => {
-      setAgentBalance(Number(oTokenBalance)); // TODO: convert oToken to token
-      setFiatBalance(Number(oTokenBalance)); // TODO: convert token to fiat price
+      setAgentBalance(oTokenBalance.toNumber()); // TODO: convert oToken to token
+      setFiatBalance(oTokenBalance.toNumber()); // TODO: convert token to fiat price
     }, 1500);
   }, []);
 
@@ -140,7 +143,7 @@ export function LiquidOpsAgent({ params: { ticker } }: LiquidOpsAgentProps) {
           <Grid>
             <Flex direction="column" align="center" gap=".2rem" padding="2px 0">
               <Text size="lg" weight="medium" noMargin>
-                {Number(supplyAPR).toLocaleString(undefined, { maximumFractionDigits: 2 })}%
+                {(supplyAPR || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}%
               </Text>
               <Text size="xs" variant="secondary" weight="medium" noMargin>
                 {browser.i18n.getMessage("current_apy")}
@@ -149,7 +152,7 @@ export function LiquidOpsAgent({ params: { ticker } }: LiquidOpsAgentProps) {
             <VerticalLine />
             <Flex direction="column" align="center" gap=".2rem" padding="2px 0">
               <Text size="lg" weight="medium" noMargin style={{ color: "rgb(86, 201, 128)" }}>
-                +{Number(earnedInterest).toLocaleString(undefined, { maximumFractionDigits: 2 })} {ticker}
+                +{(earnedInterest || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} {ticker}
               </Text>
               <Text size="xs" variant="secondary" weight="medium" noMargin>
                 {browser.i18n.getMessage("earned")}

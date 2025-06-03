@@ -13,8 +13,7 @@ import { AgentStats } from "../components/liquidops/AgentStats";
 import { useLocation } from "~wallets/router/router.utils";
 import { tokenData } from "liquidops";
 import { useLOSupplyAPY } from "./utils/hooks/useLOSupplyAPY";
-import { Quantity } from "ao-tokens";
-import { getBaseDenomination } from "./utils/getBaseDenomination";
+import { useMemo } from "react";
 
 export type LiquidOpsDepositWithdrawProps = CommonRouteProps<{ action: "deposit" | "withdraw"; ticker: string }>;
 
@@ -23,7 +22,10 @@ export function LiquidOpsDepositWithdraw({ params: { action, ticker } }: LiquidO
   const { navigate } = useLocation();
 
   const activeTokens = Object.values(tokenData).filter((token) => !token.deprecated);
-  const token = activeTokens.find((token) => token.ticker.toLowerCase() === ticker.toLowerCase());
+  const token = useMemo(
+    () => activeTokens.find((token) => token.ticker.toLowerCase() === ticker.toLowerCase()),
+    [activeTokens, ticker],
+  );
 
   const { data: supplyAPR } = useLOSupplyAPY(token.ticker);
 
