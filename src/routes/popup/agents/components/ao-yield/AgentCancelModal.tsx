@@ -19,14 +19,6 @@ interface AgentCancelModalProps {
 }
 
 export function AgentCancelModal({ open, onClose, agentId }: AgentCancelModalProps) {
-  return (
-    <SliderMenu isOpen={open} onClose={onClose} paddingVertical={32}>
-      <AgentCancelScreen onClose={onClose} agentId={agentId} />
-    </SliderMenu>
-  );
-}
-
-const AgentCancelScreen = ({ onClose, agentId }: { onClose: () => void; agentId: string }) => {
   const [isLoading, setIsLoading] = useState(false);
   const askPassword = useAskPassword();
   const passwordInput = useInput();
@@ -76,32 +68,34 @@ const AgentCancelScreen = ({ onClose, agentId }: { onClose: () => void; agentId:
   }
 
   return (
-    <Flex direction="column" gap={16} height="100%" width="100%">
-      <img src={alertTriangle} style={{ margin: "0 auto" }} />
-      <Text size="lg" weight="semibold" style={{ fontSize: 22, textAlign: "center" }} noMargin>
-        {browser.i18n.getMessage("agent_cancel_title")}
-      </Text>
-      <Text variant="secondary" weight="medium" style={{ textAlign: "center" }} noMargin>
-        {browser.i18n.getMessage("agent_cancel_description")}
-      </Text>
-      {askPassword && transferRequirePassword && (
-        <Input
-          placeholder={browser.i18n.getMessage("password")}
-          sizeVariant="small"
-          {...passwordInput.bindings}
-          label={browser.i18n.getMessage("enter_password_confirm")}
-          labelStyle={{ marginBottom: -4, color: theme.primaryText }}
-          type="password"
-          onKeyDown={async (e) => {
-            if (e.key !== "Enter") return;
-            await handleCancel();
-          }}
-          fullWidth
-        />
-      )}
-      <Button onClick={handleCancel} loading={isLoading} disabled={isLoading} fullWidth>
-        {browser.i18n.getMessage("cancel_agent")}
-      </Button>
-    </Flex>
+    <SliderMenu isOpen={open} onClose={onClose} paddingVertical={32}>
+      <Flex direction="column" gap={16} height="100%" width="100%">
+        <img src={alertTriangle} style={{ margin: "0 auto" }} />
+        <Text size="lg" weight="semibold" style={{ fontSize: 22, textAlign: "center" }} noMargin>
+          {browser.i18n.getMessage("agent_cancel_title")}
+        </Text>
+        <Text variant="secondary" weight="medium" style={{ textAlign: "center" }} noMargin>
+          {browser.i18n.getMessage("agent_cancel_description")}
+        </Text>
+        {askPassword && transferRequirePassword && (
+          <Input
+            placeholder={browser.i18n.getMessage("password")}
+            sizeVariant="small"
+            {...passwordInput.bindings}
+            label={browser.i18n.getMessage("enter_password_confirm")}
+            labelStyle={{ marginBottom: -4, color: theme.primaryText }}
+            type="password"
+            onKeyDown={async (e) => {
+              if (e.key !== "Enter") return;
+              await handleCancel();
+            }}
+            fullWidth
+          />
+        )}
+        <Button onClick={handleCancel} loading={isLoading} disabled={isLoading} fullWidth>
+          {browser.i18n.getMessage("cancel_agent")}
+        </Button>
+      </Flex>
+    </SliderMenu>
   );
-};
+}
