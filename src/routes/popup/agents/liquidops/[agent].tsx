@@ -36,11 +36,13 @@ export function LiquidOpsAgent({ params: { ticker } }: LiquidOpsAgentProps) {
   );
 
   // Always call hooks unconditionally at the top level
-  const { data: oTokenBalance = 0 } = useLOOTokenBalance(token.cleanTicker);
-  const { data: agentBalance = 0, isLoading: isLoadingAgentBalance } = useLOAssetBalance(
-    oTokenBalance as BigNumber,
-    token.cleanTicker,
-  );
+  const { data: oTokenBalance = BigNumber(0) } = useLOOTokenBalance(token.cleanTicker);
+  const { data: agentBalance = BigNumber(0), isLoading: isLoadingAgentBalance } = useLOAssetBalance(token.cleanTicker);
+
+  const maximumFractionDigits = useMemo(() => {
+    if (!agentBalance) return 2;
+    return agentBalance.isLessThan(10) ? 6 : 2;
+  }, [agentBalance]);
 
   const { data: supplyAPR = 0 } = useLOSupplyAPY(token.ticker);
   const { data: earnedInterest } = useEarnings(token.ticker);
@@ -114,7 +116,7 @@ export function LiquidOpsAgent({ params: { ticker } }: LiquidOpsAgentProps) {
                     noMargin
                     style={{ cursor: "pointer" }}
                     onClick={() => setHideBalance((val) => !val)}>
-                    <NumberFlow value={agentBalance} />
+                    <NumberFlow value={agentBalance} format={{ maximumFractionDigits }} />
                   </Text>
                   <Text size="base" weight="medium" noMargin>
                     {ticker}
@@ -156,7 +158,14 @@ export function LiquidOpsAgent({ params: { ticker } }: LiquidOpsAgentProps) {
           <Grid>
             <Flex direction="column" align="center" gap=".2rem" padding="2px 0">
               <Text size="lg" weight="medium" noMargin>
-                {supplyAPR.toLocaleString(undefined, { maximumFractionDigits: 2 })}%
+                <NumberFlow
+                  value={supplyAPR / 100}
+                  format={{
+                    style: "percent",
+                    maximumFractionDigits: 2,
+                    minimumFractionDigits: 2,
+                  }}
+                />
               </Text>
               <Text size="xs" variant="secondary" weight="medium" noMargin>
                 {browser.i18n.getMessage("current_apy")}
