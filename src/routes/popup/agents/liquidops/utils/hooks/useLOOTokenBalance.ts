@@ -29,7 +29,7 @@ export function useLOOTokenBalance(ticker: string, refresh?: boolean) {
   });
 
   return useQuery({
-    queryKey: ["tokenBalance", token.address],
+    queryKey: ["tokenBalance", token.address, activeAddress],
     queryFn: async () => {
       const tokenObj = {
         Name: token.name,

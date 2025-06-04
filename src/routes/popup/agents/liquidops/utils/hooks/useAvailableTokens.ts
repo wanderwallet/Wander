@@ -1,7 +1,10 @@
+import { useStorage } from "@plasmohq/storage/hook";
 import { useQuery } from "@tanstack/react-query";
 import { Quantity } from "ao-tokens";
-import { tokenData } from "liquidops";
-import { fetchTokenBalance } from "~tokens/aoTokens/ao";
+import BigNumber from "bignumber.js";
+import { tokenData, type TokenData } from "liquidops";
+import { ExtensionStorage } from "~utils/storage";
+import { LiquidOpsClient } from "../LiquidOps";
 
 const defaultOptions = {
   refetchInterval: 300_000,
@@ -12,45 +15,58 @@ const defaultOptions = {
   refetchOnWindowFocus: true,
 };
 
+export interface ActiveAgentToken extends TokenData {
+  balance: BigNumber;
+  profit: BigNumber;
+}
+
 export function useActiveTokens() {
+  const [activeAddress] = useStorage<string>({
+    key: "active_address",
+    instance: ExtensionStorage,
+  });
+
   return useQuery({
-    queryKey: ["activeTokens"],
+    queryKey: ["activeTokens", activeAddress],
     queryFn: async () => {
-      try {
-        const activeTokens = Object.values(tokenData).filter((token) => !token.deprecated);
-        const tickersWithBalance = [];
+      const client = await LiquidOpsClient();
+      const activeTokens = Object.values(tokenData).filter((token) => !token.deprecated);
 
-        // Check balance for each token
-        for (const token of activeTokens) {
-          const tokenObj = {
-            Name: token.name,
-            Denomination: Number(token.denomination),
-            processId: token.oAddress,
-          };
-
+      const res = await Promise.all(
+        activeTokens.map(async (token) => {
           try {
-            const balance = await fetchTokenBalance(tokenObj, token.oAddress);
-            const balanceQty = new Quantity(0n, token.denomination).fromString(balance);
-
-            if (Quantity.lt(new Quantity(0n, token.denomination), balanceQty)) {
-              tickersWithBalance.push({
-                ticker: token.ticker,
-                balance: balance,
-                name: token.name,
-                address: token.address,
-                oAddress: token.oAddress,
-              });
+            const position = await client.getPosition({
+              token: token.ticker.toUpperCase(),
+              recipient: activeAddress,
+            });
+            const collateralization = BigInt(position.collateralization);
+            if (collateralization === 0n) {
+              return undefined;
             }
-          } catch (error) {
-            console.warn(`Failed to fetch balance for ${token.ticker}:`, error);
-            // Continue with other tokens even if one fails
-          }
-        }
 
-        return tickersWithBalance;
-      } catch (error) {
-        throw error;
-      }
+            let profit = BigNumber(0);
+            try {
+              const earnings = await client.getEarnings({
+                token: token.ticker.toUpperCase(),
+                walletAddress: activeAddress,
+                collateralization,
+              });
+
+              profit = BigNumber(new Quantity(earnings.profit, token.baseDenomination).toString());
+            } catch {}
+
+            return <ActiveAgentToken>{
+              ...token,
+              balance: BigNumber(new Quantity(position.collateralization, token.baseDenomination).toString()),
+              profit,
+            };
+          } catch {
+            return undefined;
+          }
+        }),
+      );
+
+      return res.filter((t) => typeof t !== "undefined");
     },
     ...defaultOptions,
     select: (data) => data || [],

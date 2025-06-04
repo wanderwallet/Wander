@@ -12,13 +12,14 @@ import type { TokenInfo } from "~tokens/aoTokens/ao";
 import { ExtensionStorage } from "~utils/storage";
 import { useStorage } from "@plasmohq/storage/hook";
 import BigNumber from "bignumber.js";
+import { useGateway } from "../../liquidops/utils/hooks/useGateway";
 
-export const Agent = ({ ticker, logo, running = false }: Props) => {
+export const Agent = ({ ticker, running = false, profit = BigNumber(0) }: Props) => {
   const { navigate } = useLocation();
 
   const activeTokens = Object.values(tokenData).filter((token) => !token.deprecated);
   const token = useMemo(
-    () => activeTokens.find((token) => token.ticker.toLowerCase() === ticker.toLowerCase()),
+    () => activeTokens && ticker && activeTokens.find((token) => token.ticker.toLowerCase() === ticker.toLowerCase()),
     [ticker, activeTokens],
   );
 
@@ -31,6 +32,7 @@ export const Agent = ({ ticker, logo, running = false }: Props) => {
     }),
     [token],
   );
+  const { data: logo } = useGateway(token.icon);
 
   // current wallet
   const [activeAddress] = useStorage<string>({
@@ -56,7 +58,7 @@ export const Agent = ({ ticker, logo, running = false }: Props) => {
           </Text>
           <Text weight="semibold" noMargin style={running ? { color: "rgb(86, 201, 128)" } : {}}>
             {running ? "+" : ""}
-            {supplyAPY.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+            {(running ? profit : supplyAPY).toLocaleString(undefined, { maximumFractionDigits: 2 })}
             {running ? " " + ticker : "%"}
           </Text>
         </Flex>
@@ -104,6 +106,6 @@ export const Agent = ({ ticker, logo, running = false }: Props) => {
 
 type Props = {
   ticker: string;
-  logo?: string;
   running?: boolean;
+  profit?: BigNumber;
 };

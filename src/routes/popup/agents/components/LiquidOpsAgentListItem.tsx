@@ -9,8 +9,9 @@ import { tokenData, type TokenData } from "liquidops";
 import { useGateway } from "../liquidops/utils/hooks/useGateway";
 import { useLOSupplyAPY } from "../liquidops/utils/hooks/useLOSupplyAPY";
 import { useActiveTokens } from "../liquidops/utils/hooks/useAvailableTokens";
-import { useTokenStatus } from "../liquidops/utils/hooks/useTokenStatus";
-import type { ComponentProps } from "react";
+import { useMemo, type ComponentProps } from "react";
+import BigNumber from "bignumber.js";
+import { Quantity } from "ao-tokens";
 
 export const LiquidOpsAgentListItem = () => {
   const { navigate } = useLocation();
@@ -37,9 +38,17 @@ export const LiquidOpsAgentListItem = () => {
       expandable
       expandableContent={
         <Flex direction="column" gap={16}>
-          {availableTokens.map((token) => (
-            <AgentListItem token={token} onClick={() => navigate(`/agents/liquidops/${token.cleanTicker}`)} />
-          ))}
+          {availableTokens.map((token) => {
+            const activeData = activeTokens && activeTokens.find((t) => t.address === token.address);
+
+            return (
+              <AgentListItem
+                token={token}
+                profit={activeData?.profit}
+                onClick={() => navigate(`/agents/liquidops/${token.cleanTicker}`)}
+              />
+            );
+          })}
         </Flex>
       }
       onClick={() => navigate(PopupPaths.LiquidOpsAgentsList)}
@@ -58,16 +67,22 @@ const Title = ({ ticker, apy }: { ticker: string; apy: number }) => (
   </Flex>
 );
 
-const Status = ({ status }: { status: boolean }) => (
-  <Text variant="tertiary" weight="medium" noMargin>
-    {status ? "Active" : "Inactive"}
-  </Text>
-);
-
-const AgentListItem = ({ token, ...rest }: { token: TokenData } & Partial<ComponentProps<typeof ListItem>>) => {
+const AgentListItem = ({
+  token,
+  profit,
+  ...rest
+}: { token: TokenData; profit?: BigNumber } & Partial<ComponentProps<typeof ListItem>>) => {
   const { data: supplyAPY } = useLOSupplyAPY(token.ticker);
   const { data: icon } = useGateway(token.icon);
-  const { hasToken } = useTokenStatus(token.ticker);
+
+  const active = useMemo(() => typeof profit !== "undefined", [profit]);
+  const profitVal = useMemo(() => {
+    if (!active || !token) return "";
+    const maximumFractionDigits = profit.isLessThan(10) ? 6 : 2;
+    const qty = new Quantity(0n, token.baseDenomination).fromString(profit.toString());
+
+    return "+" + qty.toLocaleString(undefined, { maximumFractionDigits });
+  }, [profit, active, token]);
 
   return (
     <ListItem
@@ -76,7 +91,11 @@ const AgentListItem = ({ token, ...rest }: { token: TokenData } & Partial<Compon
       icon={<img src={icon} height={24} width={24} />}
       hideSquircle
       padding={0}
-      subtitleExtra={<Status status={hasToken} />}
+      subtitleExtra={
+        <Text variant="tertiary" weight="medium" noMargin style={active ? { color: "rgb(86, 201, 128)" } : {}}>
+          {active ? profitVal : "Inactive"}
+        </Text>
+      }
       {...rest}
     />
   );

@@ -30,6 +30,7 @@ export const LiquidOpsClient = async () => {
 
         return {
           id: dataItem.id,
+          // @ts-expect-error
           raw: dataItem.getRaw(),
         };
       };

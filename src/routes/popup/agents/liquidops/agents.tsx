@@ -8,12 +8,19 @@ import { Agent } from "../components/liquidops/Agent";
 import { tokenData } from "liquidops";
 import { useGateway } from "./utils/hooks/useGateway";
 import { useActiveTokens } from "./utils/hooks/useAvailableTokens";
-import BigNumber from "bignumber.js";
+import { useMemo } from "react";
 
 export function LiquidOpsAgentsView() {
   const availableTokens = Object.values(tokenData).filter((token) => !token.deprecated);
 
   const { data: activeTokens } = useActiveTokens();
+  const inactiveTokens = useMemo(
+    () =>
+      availableTokens.filter((token1) =>
+        activeTokens ? !activeTokens.find((token2) => token2.address === token1.address) : [],
+      ),
+    [availableTokens, activeTokens],
+  );
 
   return (
     <>
@@ -25,7 +32,10 @@ export function LiquidOpsAgentsView() {
             {browser.i18n.getMessage("active_agents")}
           </Text>
 
-          {activeTokens && activeTokens.map((token) => <AgentItem key={token.ticker} token={token} running />)}
+          {activeTokens &&
+            activeTokens.map((token) => (
+              <Agent key={token.ticker} ticker={token.cleanTicker} running={true} profit={token.profit} />
+            ))}
         </Flex>
 
         <Line />
@@ -35,8 +45,8 @@ export function LiquidOpsAgentsView() {
             {browser.i18n.getMessage("available_agents")}
           </Text>
 
-          {availableTokens.map((token) => (
-            <AgentItem key={token.ticker} token={token} />
+          {inactiveTokens.map((token) => (
+            <Agent key={token.ticker} ticker={token.cleanTicker} running={false} />
           ))}
         </Flex>
       </Wrapper>
@@ -54,16 +64,3 @@ const Wrapper = styled(Section)`
   overflow-y: auto;
   padding-bottom: 100px;
 `;
-
-const AgentItem = ({ token, running = false }: { token: any; running?: boolean }) => {
-  const { data: logoUrl } = useGateway(token.icon);
-
-  return (
-    <Agent
-      key={token.ticker}
-      ticker={token.cleanTicker}
-      logo={logoUrl || `https://arweave.net/${token.icon}`}
-      running={running}
-    />
-  );
-};
