@@ -3307,5 +3307,13 @@
   "load_more": {
     "message": "Load more",
     "description": "Load more text"
+  },
+  "agent_cancel_title": {
+    "message": "Are you sure your want to cancel your agent?",
+    "description": "Agent cancel title"
+  },
+  "agent_cancel_description": {
+    "message": "Cancelling your agent will stop your automatic AO token conversions. You can also create a new agent.",
+    "description": "Agent cancel description"
   }
 }

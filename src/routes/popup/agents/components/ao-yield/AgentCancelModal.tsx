@@ -20,7 +20,7 @@ interface AgentCancelModalProps {
 
 export function AgentCancelModal({ open, onClose, agentId }: AgentCancelModalProps) {
   return (
-    <SliderMenu isOpen={open} onClose={onClose}>
+    <SliderMenu isOpen={open} onClose={onClose} paddingVertical={32}>
       <AgentCancelScreen onClose={onClose} agentId={agentId} />
     </SliderMenu>
   );
@@ -77,16 +77,16 @@ const AgentCancelScreen = ({ onClose, agentId }: { onClose: () => void; agentId:
 
   return (
     <Flex direction="column" gap={16} height="100%" width="100%">
-      <img src={alertTriangle} height={90} width={76} style={{ margin: "0 auto" }} />
+      <img src={alertTriangle} style={{ margin: "0 auto" }} />
       <Text size="lg" weight="semibold" style={{ fontSize: 22, textAlign: "center" }} noMargin>
-        Are you sure your want to cancel your agent?
+        {browser.i18n.getMessage("agent_cancel_title")}
       </Text>
-      <Text variant="secondary" weight="medium" style={{ fontSize: 22, textAlign: "center" }} noMargin>
-        Cancelling your agent will stop your automatic AO token conversions. You can also create a new agent.
+      <Text variant="secondary" weight="medium" style={{ textAlign: "center" }} noMargin>
+        {browser.i18n.getMessage("agent_cancel_description")}
       </Text>
       {askPassword && transferRequirePassword && (
         <Input
-          placeholder="Password"
+          placeholder={browser.i18n.getMessage("password")}
           sizeVariant="small"
           {...passwordInput.bindings}
           label={browser.i18n.getMessage("enter_password_confirm")}

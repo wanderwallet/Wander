@@ -3293,5 +3293,13 @@
     "load_more": {
         "message": "加载更多",
         "description": "Load more text"
+    },
+    "agent_cancel_title": {
+        "message": "确定要取消您的代理吗？",
+        "description": "Agent cancel title"
+    },
+    "agent_cancel_description": {
+        "message": "取消您的代理将停止您的自动AO代币转换。您也可以创建一个新的代理。",
+        "description": "Agent cancel description"
     }
 }
