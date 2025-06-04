@@ -58,7 +58,7 @@ export const defaultTokens = [
     Ticker: "wAR",
     Denomination: 12,
     Logo: "L99jaxRKQKJt9CqoJtPaieGPEhJD3wNhR4iGqc8amXs",
-    processId: "xU9zFkq3X2ZQ6olwNVvr1vUWIjc3kXTWr7xKQD6dh10",
+    processId: WAR_PROCESS_ID,
   },
 ] as const satisfies TokenInfo[];
 

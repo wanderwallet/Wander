@@ -2,18 +2,11 @@ import { connect } from "@permaweb/aoconnect";
 import type { AosConfig, DeployConfig, DeployResult, Services } from "./types";
 import { AOS_QUERY, APP_NAME, defaultServices } from "./constants";
 import { Logger } from "./logger";
-import {
-  getArweave,
-  isArweaveAddress,
-  isCronPattern,
-  isUrl,
-  parseToInt,
-  pollForProcessSpawn,
-  retryWithDelay,
-} from "./utils";
+import { getArweave, isArweaveAddress, isCronPattern, isUrl, parseToInt, pollForProcessSpawn } from "./utils";
 import { ExtensionStorage } from "~utils/storage";
 import { getActiveKeyfile } from "~wallets";
 import { createDataItemSigner } from "~tokens/aoTokens/ao";
+import { retryWithDelay } from "~utils/promises/retry";
 
 /**
  * Manages deployments of contracts to AO.
