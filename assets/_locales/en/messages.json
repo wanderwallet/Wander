@@ -3303,5 +3303,9 @@
   "total_wander_fee": {
     "message": "Total Wander fee",
     "description": "Total Wander fee text"
+  },
+  "load_more": {
+    "message": "Load more",
+    "description": "Load more text"
   }
 }

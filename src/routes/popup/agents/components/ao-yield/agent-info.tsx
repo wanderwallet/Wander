@@ -19,6 +19,7 @@ import { AgentCancelModal } from "./AgentCancelModal";
 import { formatBalance } from "~utils/format";
 import { balanceToFractioned } from "~tokens/currency";
 import { WUSDC_PROCESS_ID } from "~tokens/aoTokens/ao";
+import type { WanderRoutePath } from "~wallets/router/router.types";
 
 interface AgentInfoProps {
   agentId: string;
@@ -171,6 +172,9 @@ export function AgentInfo({ agentId, showEdit = false, showCancel = false, isHis
                 title={browser.i18n.getMessage("view_transaction_history")}
                 titleStyle={{ fontSize: 14, fontWeight: 500 }}
                 style={{ padding: "4px 0px 4px 4px" }}
+                onClick={() =>
+                  navigate(PopupPaths.AOYieldAgentTransactionHistory.replace(":id", agentId) as WanderRoutePath)
+                }
                 hideSquircle
                 showArrow
               />

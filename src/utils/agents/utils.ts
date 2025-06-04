@@ -8,6 +8,7 @@ import { defaultConfig } from "~tokens/aoTokens/config";
 import { createDataItemSigner, getTagValue, Id, Owner } from "~tokens/aoTokens/ao";
 import { getActiveAddress, getActiveKeyfile } from "~wallets";
 import { isLocalWallet } from "~utils/assertions";
+import { retryWithDelay } from "~utils/promises/retry";
 
 /**
  * Initializes a default Arweave instance.
@@ -51,40 +52,6 @@ export function getArweave(gateway?: string) {
 
 export function isArweaveAddress(address: any): boolean {
   return typeof address === "string" && /^[\w-]{43}$/.test(address);
-}
-
-/**
- * Retries a given function up to a maximum number of attempts.
- * @param fn - The asynchronous function to retry, which should return a Promise.
- * @param maxAttempts - The maximum number of attempts to make.
- * @param initialDelay - The delay between attempts in milliseconds.
- * @param getDelay - A function that returns the delay for a given attempt.
- * @return A Promise that resolves with the result of the function or rejects after all attempts fail.
- */
-export async function retryWithDelay<T>(
-  fn: () => Promise<T>,
-  maxAttempts: number = 3,
-  initialDelay: number = 1000,
-  getDelay: (attempt: number) => number = () => initialDelay,
-): Promise<T> {
-  let attempts = 0;
-
-  const attempt = async (): Promise<T> => {
-    try {
-      return await fn();
-    } catch (error) {
-      attempts += 1;
-      if (attempts < maxAttempts) {
-        const currentDelay = getDelay(attempts);
-        // console.log(`Attempt ${attempts} failed, retrying...`)
-        return new Promise<T>((resolve) => setTimeout(() => resolve(attempt()), currentDelay));
-      } else {
-        throw error;
-      }
-    }
-  };
-
-  return attempt();
 }
 
 /**

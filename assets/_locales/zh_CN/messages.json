@@ -3289,5 +3289,9 @@
     "total_wander_fee": {
         "message": "总Wander费用",
         "description": "Total Wander fee text"
+    },
+    "load_more": {
+        "message": "加载更多",
+        "description": "Load more text"
     }
 }

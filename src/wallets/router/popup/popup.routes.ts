@@ -50,6 +50,7 @@ import { ManageAOYieldAgentView } from "~routes/popup/agents/ao-yield/manage-age
 import { EditAOYieldAgentView } from "~routes/popup/agents/ao-yield/edit-agent";
 import { AOYieldAgentHistoryView } from "~routes/popup/agents/ao-yield/agent-history";
 import { AOYieldAgentInfoView } from "~routes/popup/agents/ao-yield/agent-info";
+import { AOYieldAgentTransactionHistoryView } from "~routes/popup/agents/ao-yield/agent-transaction-history";
 
 export type PopupRoutePath =
   | "/"
@@ -102,7 +103,8 @@ export type PopupRoutePath =
   | `/agents/ao-yield/edit-agent`
   | `/agents/ao-yield/activated`
   | `/agents/ao-yield/history`
-  | `/agents/ao-yield/info/${string}`;
+  | `/agents/ao-yield/info/${string}`
+  | `/agents/ao-yield/transaction-history/${string}`;
 
 export const PopupPaths = {
   Home: "/",
@@ -152,6 +154,7 @@ export const PopupPaths = {
   AOYieldAgentActivated: "/agents/ao-yield/activated",
   AOYieldAgentHistory: "/agents/ao-yield/history",
   AOYieldAgentInfo: "/agents/ao-yield/info/:id",
+  AOYieldAgentTransactionHistory: "/agents/ao-yield/transaction-history/:id",
 } as const satisfies Record<string, PopupRoutePath>;
 
 export const POPUP_ROUTES = [
@@ -348,5 +351,9 @@ export const POPUP_ROUTES = [
   {
     path: PopupPaths.AOYieldAgentInfo,
     component: AOYieldAgentInfoView,
+  },
+  {
+    path: PopupPaths.AOYieldAgentTransactionHistory,
+    component: AOYieldAgentTransactionHistoryView,
   },
 ] as const satisfies RouteConfig[];

@@ -48,7 +48,7 @@ export function TransactionsView() {
                 Loading <Loading style={{ margin: "0.18rem" }} />
               </>
             ) : (
-              "Load more..."
+              browser.i18n.getMessage("load_more") + "..."
             )}
           </Button>
         )}
