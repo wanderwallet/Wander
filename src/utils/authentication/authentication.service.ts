@@ -1,5 +1,5 @@
 import { getSupabaseClient, trpcVanilla } from "~utils/embedded/embedded.utils";
-import type { Provider, Session } from "@supabase/supabase-js";
+import type { Session } from "@supabase/supabase-js";
 import type {
   AuthSignInWithPasswordParams,
   AuthVerifyOtpParams,
@@ -7,14 +7,17 @@ import type {
 } from "~utils/embedded/embedded.types";
 import { isInsideIframe } from "~utils/embedded/iframe.utils";
 import {
-  AUTH_COMPLETE_MSG_TYPE,
-  isAuthCompleteMessage,
   POPUP_CHECK_INTERVAL_MS,
   POPUP_AUTHENTICATION_TIMEOUT_MS,
+  OAUTH_SUCCESS_MSG_TYPE,
+  OAUTH_ERROR_MSG_TYPE,
+  isOAuthErrorMessage,
+  isOAuthSuccessMessage,
+  OAuthError,
 } from "~utils/authentication/authentication.utils";
-import type { AuthCompleteMessage } from "~utils/authentication/authentication.types";
+import type { OAuthResultMessage, SupabaseProvider } from "~utils/authentication/authentication.types";
 
-const SUPABASE_PROVIDER_BY_OAUTH_PROVIDER_TYPE: Record<OAutProviderType, Provider | null> = {
+const SUPABASE_PROVIDER_BY_OAUTH_PROVIDER_TYPE: Record<OAutProviderType, SupabaseProvider | null> = {
   GOOGLE: "google",
   FACEBOOK: "facebook",
   X: "twitter",
@@ -30,6 +33,7 @@ async function authenticateWithOAuth(oAuthProviderType: OAutProviderType): Promi
     provider,
     options: {
       // redirectTo: `${window.location.origin}#/auth/callback/google`,
+      // redirectTo: `${window.location.origin}#theme=${ EMBEDDED_THEME }`,
       redirectTo: window.location.origin,
       skipBrowserRedirect: true,
     },
@@ -86,33 +90,37 @@ async function authenticateWithOAuth(oAuthProviderType: OAutProviderType): Promi
   }
 
   if (!popup) {
-    throw new Error("Could not open OAuth popup window");
+    throw new Error(OAuthError.CANNOT_OPEN_POPUP);
   }
 
   return new Promise<Session>((resolve, reject) => {
-    async function authCompleteMessageHandler(event: MessageEvent<AuthCompleteMessage>) {
+    async function authCompleteMessageHandler(event: MessageEvent<OAuthResultMessage>) {
       // Since same origin, we can check it exactly
-      if (event.origin !== window.location.origin || event.data?.type !== AUTH_COMPLETE_MSG_TYPE) return;
+      if (
+        event.origin !== window.location.origin ||
+        (event.data?.type !== OAUTH_SUCCESS_MSG_TYPE && event.data?.type !== OAUTH_ERROR_MSG_TYPE)
+      )
+        return;
 
       cleanup();
 
       popup.close();
 
-      if (!isAuthCompleteMessage(event.data)) {
-        reject(new Error(`Invalid ${AUTH_COMPLETE_MSG_TYPE}`));
+      console.log("OAUTH RESULT =", event.data);
+
+      if (isOAuthErrorMessage(event.data)) {
+        reject(new Error(event.data.errorCode, { cause: event.data }));
         return;
       }
 
-      const { success, session } = event.data;
-
-      if (!success) {
-        reject(new Error("OAuth authentication failed"));
+      if (!isOAuthSuccessMessage(event.data)) {
+        reject(new Error(OAuthError.INVALID_OAUTH_MESSAGE));
         return;
       }
 
       const supabase = await getSupabaseClient();
 
-      const { data, error } = await supabase.auth.setSession(session);
+      const { data, error } = await supabase.auth.setSession(event.data.session);
 
       if (error) {
         reject(error);
@@ -120,7 +128,7 @@ async function authenticateWithOAuth(oAuthProviderType: OAutProviderType): Promi
       }
 
       if (!data.session) {
-        reject(new Error("Session could not be created"));
+        reject(new Error(OAuthError.CANNOT_CREATE_SESSION));
         return;
       }
 
@@ -132,7 +140,7 @@ async function authenticateWithOAuth(oAuthProviderType: OAutProviderType): Promi
     const popupCheckInterval = setInterval(() => {
       if (popup.closed) {
         cleanup();
-        reject(new Error("Authentication cancelled - popup closed"));
+        reject(new Error(OAuthError.POPUP_CLOSED));
       }
     }, POPUP_CHECK_INTERVAL_MS);
 
@@ -140,7 +148,7 @@ async function authenticateWithOAuth(oAuthProviderType: OAutProviderType): Promi
 
     const timeoutId = setTimeout(() => {
       cleanup();
-      reject(new Error("Authentication timeout"));
+      reject(new Error(OAuthError.POPUP_TIMEOUT));
     }, POPUP_AUTHENTICATION_TIMEOUT_MS);
 
     // Cleanup function:

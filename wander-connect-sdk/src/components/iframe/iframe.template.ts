@@ -63,8 +63,8 @@ export const getIframeTemplateContent = ({ customStyles, cssVariableKeys = [] }:
       box-shadow: var(--boxShadow);
       width: calc(var(--preferredWidth) + 2 * var(--borderWidth));
       height: calc(var(--preferredHeight) + 2 * var(--borderWidth));
-      min-width: 400px;
-      min-height: 400px;
+      min-width: calc(400px + 2 * var(--borderWidth));
+      min-height: calc(400px + 2 * var(--borderWidth));
       max-width: calc(100dvw - 2 * var(--backdropPadding));
       max-height: calc(100dvh - 2 * var(--backdropPadding));
       box-sizing: border-box;
@@ -87,10 +87,11 @@ export const getIframeTemplateContent = ({ customStyles, cssVariableKeys = [] }:
 
     /* Base iframe styles */
     .iframe {
+      position: absolute;
+      display: block;
       border: none;
       width: 100%;
       height: 100%;
-      display: block;
     }
 
     /* Half layout image styles */

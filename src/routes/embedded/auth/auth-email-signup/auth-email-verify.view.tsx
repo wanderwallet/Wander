@@ -82,21 +82,9 @@ export function AuthEmailVerifyEmbeddedView() {
       });
 
       toast.success("Email verified successfully");
-
-      /*
-      await new Promise((resolve) => {
-        const interval = setInterval(() => {
-          if (authStatusRef.current === "noWallets") {
-            resolve(null);
-            clearInterval(interval);
-          }
-        }, 100);
-      });
-
-      navigate(EmbeddedPaths.WalletHomeEmbeddedView);
-      */
     } catch (error) {
-      toast.error(error.message || "Invalid verification code");
+      console.error(error);
+      toast.error("Invalid verification code");
     } finally {
       setIsVerifying(false);
     }

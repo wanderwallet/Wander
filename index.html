@@ -7,8 +7,35 @@
   </head>
 
   <body>
-    <div id="cover"></div>
+    <script>
+      document.documentElement.dataset.theme = new URLSearchParams(location.search).get("theme") || "system";
+    </script>
+
+    <div id="cover">
+      <svg id="spinner" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+        <circle
+          cx="24"
+          cy="24"
+          fill="none"
+          r="20"
+          stroke-dasharray="80"
+          stroke-linecap="round"
+          stroke="currentColor"
+          stroke-width="3"></circle>
+        <circle
+          cx="24"
+          cy="24"
+          fill="none"
+          opacity="0.3"
+          r="20"
+          stroke-linecap="round"
+          stroke="currentColor"
+          stroke-width="3"></circle>
+      </svg>
+    </div>
+
     <div id="root"></div>
+
     <!-- <script type="text/javascript" src="/assets/popup.js"></script> -->
     <script type="module" src="/src/iframe/main.tsx"></script>
   </body>

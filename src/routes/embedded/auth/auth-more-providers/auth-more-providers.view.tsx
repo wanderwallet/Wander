@@ -2,10 +2,10 @@ import { useEmbedded } from "~utils/embedded/embedded.hooks";
 
 import { AppleIcon, Button, FacebookIcon, TwitterIcon } from "~components/embed";
 import { useCallback, useState } from "react";
-import type { AuthProviderType } from "embed-api";
 import { useLocation } from "~wallets/router/router.utils";
 import { toast } from "react-toastify";
 import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
+import type { OAutProviderType } from "~utils/embedded/embedded.types";
 
 export function AuthMoreProvidersEmbeddedView() {
   const { navigate } = useLocation();
@@ -22,11 +22,12 @@ export function AuthMoreProvidersEmbeddedView() {
 
   // Handlers:
 
-  const handleAuthenticate = useCallback(async (authProviderType: AuthProviderType) => {
+  const handleAuthenticate = useCallback(async (authProviderType: OAutProviderType) => {
     try {
       setIsAuthenticating(true);
       await authenticate(authProviderType);
     } catch (error) {
+      console.error(error);
       toast.error(`Error signing in with ${authProviderType}`);
     } finally {
       setIsAuthenticating(false);

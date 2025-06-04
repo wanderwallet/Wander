@@ -42,6 +42,7 @@ export function AuthEmbeddedView() {
       setIsAuthenticating(true);
       await authenticate(authProviderType);
     } catch (error) {
+      console.error(error);
       toast.error(`Error signing in with ${authProviderType}`);
     } finally {
       setIsAuthenticating(false);
@@ -133,6 +134,7 @@ export function AuthEmbeddedView() {
           onClick={() => handleAuthenticate("GOOGLE")}>
           <GoogleIcon fontSize={24} />
         </Button>
+
         {EMBEDDED_HIDE_BE ||
         (!!window.arweaveWallet?.walletName && window.arweaveWallet?.walletName !== "ArConnect") ? null : (
           <Button variant="outlined" size="md" isDisabled={areButtonsDisabled} onClick={handleNativeWallet}>

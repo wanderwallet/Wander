@@ -72,19 +72,34 @@
   }
 }
 
-html[data-theme] {
-  background-color: var(--color-background-default, white) !important;
-  color: var(--color-font-body, black);
+@keyframes spin {
+  0% {
+    transform: rotate(0);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
-html:not([data-theme]) {
-  background-color: var(--backgroundColor, var(--defaultBackgroundColor, white));
-  color: var(--textColor, var(--defaultTextColor, black));
+html {
+  background: var(--defaultBackgroundColor);
+  color: var(--defaultTextColor);
+}
+
+html[data-theme="light"] {
+  --defaultBackgroundColor: white;
+  --defaultTextColor: black;
+}
+
+html[data-theme="dark"] {
+  --defaultBackgroundColor: black;
+  --defaultTextColor: white;
 }
 
 html, body {
   margin: 0;
   padding: 0;
+  min-height: 100vh;
 }
 
 body#popup {
@@ -134,12 +149,28 @@ button {
   left: 0;
   z-index: 99999999;
   background-color: var(--backgroundColor, var(--defaultBackgroundColor, white));
-  transition: background-color linear 230ms;
+  transition:
+    display linear 230ms allow-discrete,
+    background-color linear 230ms,
+    opacity linear 230ms;
 }
 
 #cover[aria-hidden] {
-  background: transparent;
-  pointer-events: none;
+  display: none;
+  opacity: 0;
+
+  @starting-style {
+    opacity: 1;
+  }
+}
+
+#spinner {
+  position: absolute;
+  top: calc(50% - 16px);
+  left: calc(50% - 16px);
+  width: 32px;
+  height: 32px;
+  animation: spin 0.9s linear infinite;
 }
 
 /* Prevent input background from changing when autocompleted by the browser */

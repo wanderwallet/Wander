@@ -28,15 +28,6 @@ export function AuthEmailSigninEmbeddedView() {
 
   // Handlers:
 
-  /*
-  const areButtonsDisabled =
-    authStatus === "unknown" ||
-    authStatus === "loading" ||
-    authStatus === "authLoading" ||
-    !authEmail ||
-    !passwordInput.state;
-  */
-
   const handleEmailSignIn = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
@@ -62,7 +53,8 @@ export function AuthEmailSigninEmbeddedView() {
         if (error.code === "email_not_confirmed") {
           navigate(EmbeddedPaths.AuthEmailVerify);
         } else {
-          toast.error(error.message || "Error signing up");
+          console.error(error);
+          toast.error("Error signing up");
         }
       } finally {
         setIsAuthenticating(false);

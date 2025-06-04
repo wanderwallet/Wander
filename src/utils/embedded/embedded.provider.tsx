@@ -1021,16 +1021,14 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       } catch (error) {
         console.error(`${authProviderType} authentication failed:`, error);
 
-        // TODO: Show auth error on the page:
-
-        // TODO: This should be `authStatus: "authError"` but the router will show a specific error handling route, while we might want to handle that
-        // in the same page we were.
         setEmbeddedContextAuth({
-          authStatus: "noAuth",
+          authStatus: "authError",
           authProviderType: null,
           user: null,
           session: null,
         });
+
+        throw error;
       }
     },
     [user],
