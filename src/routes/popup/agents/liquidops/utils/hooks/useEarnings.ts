@@ -4,6 +4,7 @@ import { getActiveAddress } from "~wallets";
 import { fetchTokenBalance } from "~tokens/aoTokens/ao";
 import { tokenData } from "liquidops";
 import { Quantity } from "ao-tokens";
+import BigNumber from "bignumber.js";
 
 const defaultOptions = {
   refetchInterval: 300_000,
@@ -35,13 +36,13 @@ export function useEarnings(ticker: string) {
           walletAddress: walletAddress,
         });
 
-        return new Quantity(earnings.profit || 0n, token.baseDenomination);
+        return BigNumber(new Quantity(earnings.profit || 0n, token.baseDenomination).toString());
       } catch (error) {
         throw error;
       }
     },
     ...defaultOptions,
-    select: (data) => data || new Quantity(0n, 0n),
+    select: (data) => data || BigNumber(0),
     enabled: !!ticker,
   });
 }

@@ -6,7 +6,6 @@ import { Flex } from "~components/common/Flex";
 import { Line } from "~routes/popup/purchase";
 import { Agent } from "../components/liquidops/Agent";
 import { tokenData } from "liquidops";
-import { useGateway } from "./utils/hooks/useGateway";
 import { useActiveTokens } from "./utils/hooks/useAvailableTokens";
 import { useMemo } from "react";
 

@@ -45,7 +45,7 @@ export function LiquidOpsAgent({ params: { ticker } }: LiquidOpsAgentProps) {
   }, [agentBalance]);
 
   const { data: supplyAPR = 0 } = useLOSupplyAPY(token.ticker);
-  const { data: earnedInterest } = useEarnings(token.ticker);
+  const { data: earnedInterest = BigNumber(0) } = useEarnings(token.ticker);
   const { data: tokenIconUrl } = useGateway(token.icon);
 
   const { hasToken: tokenStatus } = useTokenStatus(token.ticker);
@@ -174,7 +174,12 @@ export function LiquidOpsAgent({ params: { ticker } }: LiquidOpsAgentProps) {
             <VerticalLine />
             <Flex direction="column" align="center" gap=".2rem" padding="2px 0">
               <Text size="lg" weight="medium" noMargin style={{ color: "rgb(86, 201, 128)" }}>
-                +{(earnedInterest || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} {ticker}
+                <NumberFlow
+                  value={earnedInterest}
+                  format={{ maximumFractionDigits: 2 }}
+                  prefix="+"
+                  suffix={" " + ticker}
+                />
               </Text>
               <Text size="xs" variant="secondary" weight="medium" noMargin>
                 {browser.i18n.getMessage("earned")}
