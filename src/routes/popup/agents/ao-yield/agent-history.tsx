@@ -32,5 +32,4 @@ const Wrapper = styled(Section)`
   justify-content: space-between;
   position: relative;
   overflow-y: auto;
-  padding-bottom: 100px;
 `;

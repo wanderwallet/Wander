@@ -118,12 +118,11 @@ export function AgentInfo({ agentId, showEdit = false, showCancel = false, isHis
               </Flex>
               {showEdit && (
                 <Button
+                  width={"80px"}
                   variant="secondary"
-                  width="fit-content"
-                  height={36}
                   icon={<Settings01 height={20} width={20} />}
                   iconPosition="right"
-                  style={{ padding: "8px 12px" }}
+                  style={{ padding: "8px 12px", height: 36 }}
                   onClick={() => navigate(PopupPaths.EditAOYieldAgent)}>
                   {browser.i18n.getMessage("edit")}
                 </Button>
