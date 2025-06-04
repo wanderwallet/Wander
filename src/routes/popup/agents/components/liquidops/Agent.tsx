@@ -6,8 +6,12 @@ import { useLocation } from "~wallets/router/router.utils";
 import browser from "webextension-polyfill";
 import { tokenData } from "liquidops";
 import { useLOSupplyAPY } from "../../liquidops/utils/hooks/useLOSupplyAPY";
-import { useLOOTokenBalance } from "../../liquidops/utils/hooks/useLOOTokenBalance";
 import { useMemo } from "react";
+import { useTokenBalance } from "~tokens/hooks";
+import type { TokenInfo } from "~tokens/aoTokens/ao";
+import { ExtensionStorage } from "~utils/storage";
+import { useStorage } from "@plasmohq/storage/hook";
+import BigNumber from "bignumber.js";
 
 export const Agent = ({ ticker, logo, running = false }: Props) => {
   const { navigate } = useLocation();
@@ -18,9 +22,25 @@ export const Agent = ({ ticker, logo, running = false }: Props) => {
     [ticker, activeTokens],
   );
 
+  const tokenInfo = useMemo<TokenInfo>(
+    () => ({
+      Name: token.name,
+      Ticker: token.cleanTicker,
+      Denomination: Number(token.denomination),
+      processId: token.address,
+    }),
+    [token],
+  );
+
+  // current wallet
+  const [activeAddress] = useStorage<string>({
+    key: "active_address",
+    instance: ExtensionStorage,
+  });
+
   // Always call hooks unconditionally at the top level
-  const { data: walletBalance } = useLOOTokenBalance(token.cleanTicker);
-  const { data: supplyAPY } = useLOSupplyAPY(token.ticker);
+  const { data: supplyAPY = 0 } = useLOSupplyAPY(token.ticker);
+  const { data: balance = "0" } = useTokenBalance(tokenInfo, activeAddress);
 
   // Early return if token not found
   if (!token) {
@@ -36,7 +56,7 @@ export const Agent = ({ ticker, logo, running = false }: Props) => {
           </Text>
           <Text weight="semibold" noMargin style={running ? { color: "rgb(86, 201, 128)" } : {}}>
             {running ? "+" : ""}
-            {(supplyAPY || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+            {supplyAPY.toLocaleString(undefined, { maximumFractionDigits: 2 })}
             {running ? " " + ticker : "%"}
           </Text>
         </Flex>
@@ -44,7 +64,7 @@ export const Agent = ({ ticker, logo, running = false }: Props) => {
       subtitle={
         <Flex justify="space-between" align="center" width="100%">
           <Text size="sm" variant="secondary" weight="medium" noMargin>
-            {((running ? supplyAPY : walletBalance) || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+            {(running ? supplyAPY : BigNumber(balance)).toLocaleString(undefined, { maximumFractionDigits: 2 })}
             {running ? "% APY" : " " + ticker}
           </Text>
           <Text size="sm" variant="secondary" weight="medium" noMargin>

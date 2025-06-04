@@ -8,6 +8,7 @@ import { Agent } from "../components/liquidops/Agent";
 import { tokenData } from "liquidops";
 import { useGateway } from "./utils/hooks/useGateway";
 import { useActiveTokens } from "./utils/hooks/useAvailableTokens";
+import BigNumber from "bignumber.js";
 
 export function LiquidOpsAgentsView() {
   const availableTokens = Object.values(tokenData).filter((token) => !token.deprecated);

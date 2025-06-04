@@ -11,7 +11,7 @@ import type { CommonRouteProps } from "~wallets/router/router.types";
 import { useLocation } from "~wallets/router/router.utils";
 import { LinkExternalIcon, OpenInLiquidops } from "../components/liquidops/AgentStats";
 import NumberFlow from "@number-flow/react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import useSetting from "~settings/hook";
 import { useStorage } from "~utils/storage";
 import { PersistentStorage } from "~utils/storage";
@@ -21,6 +21,10 @@ import { useLOOTokenBalance } from "./utils/hooks/useLOOTokenBalance";
 import { useEarnings } from "./utils/hooks/useEarnings";
 import { useGateway } from "./utils/hooks/useGateway";
 import { useTokenStatus } from "./utils/hooks/useTokenStatus";
+import { useLOAssetBalance } from "./utils/hooks/useLOAssetBalance";
+import { Loading } from "@arconnect/components-rebrand";
+import { useTokenPrice } from "~tokens/hooks";
+import BigNumber from "bignumber.js";
 
 export type LiquidOpsAgentProps = CommonRouteProps<{ ticker: string }>;
 
@@ -32,8 +36,13 @@ export function LiquidOpsAgent({ params: { ticker } }: LiquidOpsAgentProps) {
   );
 
   // Always call hooks unconditionally at the top level
-  const { data: oTokenBalance } = useLOOTokenBalance(token.cleanTicker);
-  const { data: supplyAPR } = useLOSupplyAPY(token.ticker);
+  const { data: oTokenBalance = 0 } = useLOOTokenBalance(token.cleanTicker);
+  const { data: agentBalance = 0, isLoading: isLoadingAgentBalance } = useLOAssetBalance(
+    oTokenBalance as BigNumber,
+    token.cleanTicker,
+  );
+
+  const { data: supplyAPR = 0 } = useLOSupplyAPY(token.ticker);
   const { data: earnedInterest } = useEarnings(token.ticker);
   const { data: tokenIconUrl } = useGateway(token.icon);
 
@@ -42,19 +51,10 @@ export function LiquidOpsAgent({ params: { ticker } }: LiquidOpsAgentProps) {
   // router
   const { navigate } = useLocation();
 
-  // balance on liquidops (oToken worth)
-  const [agentBalance, setAgentBalance] = useState(0);
-
   // balance in local currency
   const [currency] = useSetting<string>("currency");
-  const [fiatBalance, setFiatBalance] = useState(0);
-
-  useEffect(() => {
-    setTimeout(() => {
-      setAgentBalance(oTokenBalance.toNumber()); // TODO: convert oToken to token
-      setFiatBalance(oTokenBalance.toNumber()); // TODO: convert token to fiat price
-    }, 1500);
-  }, []);
+  const { price = 0 } = useTokenPrice(token.address, currency || "USD");
+  const fiatBalance = useMemo(() => (agentBalance ? agentBalance.multipliedBy(price) : 0), [price, agentBalance]);
 
   // balance display
   const [hideBalance, setHideBalance] = useStorage<boolean>(
@@ -93,33 +93,46 @@ export function LiquidOpsAgent({ params: { ticker } }: LiquidOpsAgentProps) {
           <Text size="base" variant="secondary" weight="medium" noMargin>
             {browser.i18n.getMessage("deposited")}
           </Text>
-          <Balances align="center" direction="column" gap={4} blur={hideBalance}>
-            <Flex align="baseline" gap={4}>
-              <Flex align="baseline">
-                <Text
-                  size="5xl"
-                  weight="medium"
-                  noMargin
-                  style={{ cursor: "pointer" }}
-                  onClick={() => setHideBalance((val) => !val)}>
-                  <NumberFlow value={agentBalance} />
-                </Text>
-                <Text size="base" weight="medium" noMargin>
-                  {ticker}
-                </Text>
-              </Flex>
-              <SvgImageWithBackground height={14} width={14} shape="circle" src={tokenIconUrl} iconSize={14} />
-            </Flex>
-            <Text size="sm" variant="secondary" weight="medium" noMargin>
-              <NumberFlow
-                value={fiatBalance}
-                format={{
-                  style: "currency",
-                  currency: currency,
+          <div style={{ position: "relative" }}>
+            {isLoadingAgentBalance ? (
+              <Loading
+                style={{
+                  position: "absolute",
+                  top: "calc(50% - 10px)",
+                  left: "calc(50% - 10px)",
+                  width: "20px",
+                  height: "20px",
                 }}
               />
-            </Text>
-          </Balances>
+            ) : null}
+            <Balances align="center" direction="column" gap={4} blur={hideBalance || isLoadingAgentBalance}>
+              <Flex align="baseline" gap={4}>
+                <Flex align="baseline">
+                  <Text
+                    size="5xl"
+                    weight="medium"
+                    noMargin
+                    style={{ cursor: "pointer" }}
+                    onClick={() => setHideBalance((val) => !val)}>
+                    <NumberFlow value={agentBalance} />
+                  </Text>
+                  <Text size="base" weight="medium" noMargin>
+                    {ticker}
+                  </Text>
+                </Flex>
+                <SvgImageWithBackground height={14} width={14} shape="circle" src={tokenIconUrl} iconSize={14} />
+              </Flex>
+              <Text size="sm" variant="secondary" weight="medium" noMargin>
+                <NumberFlow
+                  value={fiatBalance}
+                  format={{
+                    style: "currency",
+                    currency: currency,
+                  }}
+                />
+              </Text>
+            </Balances>
+          </div>
         </Flex>
 
         <Spacer y={1.1} />
@@ -143,7 +156,7 @@ export function LiquidOpsAgent({ params: { ticker } }: LiquidOpsAgentProps) {
           <Grid>
             <Flex direction="column" align="center" gap=".2rem" padding="2px 0">
               <Text size="lg" weight="medium" noMargin>
-                {(supplyAPR || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}%
+                {supplyAPR.toLocaleString(undefined, { maximumFractionDigits: 2 })}%
               </Text>
               <Text size="xs" variant="secondary" weight="medium" noMargin>
                 {browser.i18n.getMessage("current_apy")}
@@ -188,7 +201,7 @@ export function LiquidOpsAgent({ params: { ticker } }: LiquidOpsAgentProps) {
               </Text>
               <Flex align="center" gap={4}>
                 <Text size="sm" weight="medium" noMargin>
-                  {Number(oTokenBalance).toLocaleString(undefined, { maximumFractionDigits: 2 })} {"o" + ticker}
+                  {oTokenBalance.toLocaleString(undefined, { maximumFractionDigits: 2 })} {"o" + ticker}
                 </Text>
                 <SvgImageWithBackground
                   height={16}
@@ -242,6 +255,7 @@ const VerticalLine = styled.div`
 `;
 
 const Balances = styled(Flex)<{ blur: boolean }>`
+  position: relative;
   filter: ${(props) => (props.blur ? "blur(8px)" : "blur(0px)")};
   user-select: ${(props) => (props.blur ? "none" : "auto")};
   transition: filter linear 300ms;

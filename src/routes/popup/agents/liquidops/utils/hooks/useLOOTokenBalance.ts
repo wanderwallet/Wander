@@ -1,8 +1,10 @@
+import { useStorage } from "@plasmohq/storage/hook";
 import { useQuery } from "@tanstack/react-query";
-import { Quantity } from "ao-tokens";
 import { tokenData } from "liquidops";
 import { useMemo } from "react";
 import { fetchTokenBalance } from "~tokens/aoTokens/ao";
+import { ExtensionStorage } from "~utils/storage";
+import BigNumber from "bignumber.js";
 
 const defaultOptions = {
   refetchInterval: 300_000,
@@ -21,6 +23,11 @@ export function useLOOTokenBalance(ticker: string, refresh?: boolean) {
     [ticker, activeTokens],
   );
 
+  const [activeAddress] = useStorage<string>({
+    key: "active_address",
+    instance: ExtensionStorage,
+  });
+
   return useQuery({
     queryKey: ["tokenBalance", token.address],
     queryFn: async () => {
@@ -31,15 +38,15 @@ export function useLOOTokenBalance(ticker: string, refresh?: boolean) {
       };
 
       try {
-        const balance = await fetchTokenBalance(tokenObj, token.oAddress, refresh);
+        const balance = await fetchTokenBalance(tokenObj, activeAddress, refresh);
 
-        return new Quantity(balance || 0n, token.denomination);
+        return BigNumber(balance || 0);
       } catch (error) {
         throw error;
       }
     },
     ...defaultOptions,
-    select: (data) => data || new Quantity(0n, 0n),
+    select: (data) => data || BigNumber(0),
     enabled: !!ticker,
   });
 }
