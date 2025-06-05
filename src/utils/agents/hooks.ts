@@ -165,8 +165,6 @@ export function useAOMintingStatus() {
         await ExtensionStorage.set("ao_minting_paused", isPaused);
       }
 
-      return "Paused";
-
       return isPaused ? "Paused" : "Active";
     },
     ...defaultOptions,

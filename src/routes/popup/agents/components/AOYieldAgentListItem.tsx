@@ -37,7 +37,7 @@ export const AOYieldAgentListItem = ({ aoAgent, isHistory = false }: AOYieldAgen
                 height: 6,
                 width: 6,
                 borderRadius: "50%",
-                backgroundColor: getStatusColor(getStatusText(aoAgent.status, mintingStatus)),
+                backgroundColor: getStatusColor(aoAgent.status, mintingStatus),
               }}
             />
             <Text size="sm" weight="medium" noMargin>
@@ -80,7 +80,7 @@ export const AOYieldAgentListItem = ({ aoAgent, isHistory = false }: AOYieldAgen
       onClick={() =>
         isHistory
           ? navigate(PopupPaths.AOYieldAgentInfo.replace(":id", aoAgent.id) as WanderRoutePath)
-          : aoAgent.status !== "Cancelled"
+          : aoAgent.status === "Active"
             ? navigate(PopupPaths.ManageAOYieldAgent)
             : navigate(PopupPaths.CreateAOYieldAgent)
       }

@@ -12,6 +12,7 @@ import { TRANSACTION_QUERY } from "./queries";
 import type GQLResultInterface from "ar-gql/dist/faces";
 import { formatBalance } from "~utils/format";
 import { balanceToFractioned } from "~tokens/currency";
+import { freeDecryptedWallet } from "~wallets/encryption";
 
 /**
  * Initializes a default Arweave instance.
@@ -305,6 +306,9 @@ export async function updateAOYieldAgent(agentId: string, updateData: Partial<AO
       signer,
     });
 
+    // Free the keyfile from memory
+    freeDecryptedWallet(decryptedWallet.keyfile);
+
     const result = await aoInstance.result({
       process: agentId,
       message: messageId,
@@ -348,8 +352,10 @@ export async function processTransactions(rawData: GQLResultInterface) {
   return processedTransactions.filter((tx) => tx.amountIn && tx.amountOut && tx.tokenIn && tx.tokenOut);
 }
 
-export function getStatusColor(status: AOYieldAgentStatus) {
-  switch (status) {
+export function getStatusColor(status: AOYieldAgentStatus, mintingStatus?: MintingStatus) {
+  const statusText = getStatusText(status, mintingStatus);
+
+  switch (statusText) {
     case "Active":
       return "#56C980";
     case "Cancelled":
@@ -361,8 +367,8 @@ export function getStatusColor(status: AOYieldAgentStatus) {
   }
 }
 
-export function getStatusText(status: AOYieldAgentStatus, mintingStatus: MintingStatus) {
-  if (mintingStatus === "Paused" && status === "Active") {
+export function getStatusText(status: AOYieldAgentStatus, mintingStatus?: MintingStatus) {
+  if (mintingStatus && mintingStatus === "Paused" && status === "Active") {
     return "Paused";
   }
   return status;

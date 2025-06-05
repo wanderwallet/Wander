@@ -1,6 +1,6 @@
 import { gql } from "~gateways/api";
 import { AO_PROCESS_MINT_QUERY } from "./queries";
-import { getAOYieldActiveAgent, getArweave } from "./utils";
+import { getAOYieldActiveAgent, getArweave, updateAOYieldAgent } from "./utils";
 import { getActiveAddress } from "~wallets/wallets.utils";
 import BigNumber from "bignumber.js";
 import { AO_PROCESS_ID, defaultTokens, fetchTokenBalance, sendAoTransfer } from "~tokens/aoTokens/ao";
@@ -8,8 +8,10 @@ import { connect } from "@permaweb/aoconnect";
 import { defaultConfig } from "~tokens/aoTokens/config";
 import { QueryClient } from "@tanstack/react-query";
 import { defaultOptions } from "~tokens/hooks";
+import { log, LOG_GROUP } from "~utils/log/log.utils";
 
 const queryClient = new QueryClient();
+let isPerformSwapRunning = false;
 
 export interface MintTransaction {
   id: string;
@@ -83,64 +85,78 @@ export async function getMintQuantityForDay(address: string, targetDate: number)
 }
 
 export async function performSwapIfNeeded() {
-  const activeAddress = await getActiveAddress();
-  if (!activeAddress) {
-    console.log("No active address found");
-    return;
-  }
+  if (isPerformSwapRunning) return;
+  isPerformSwapRunning = true;
 
-  const activeAgent = await getAOYieldActiveAgent();
+  try {
+    const activeAddress = await getActiveAddress();
+    if (!activeAddress) {
+      log(LOG_GROUP.AGENTS, "No active address found");
+      return;
+    }
 
-  if (!activeAgent) {
-    console.log("No active agent found");
-    return;
-  }
+    const activeAgent = await getAOYieldActiveAgent();
 
-  if (getDate(activeAgent.endDate) < getDate(Date.now())) {
-    console.log("Agent running time has ended");
-    return;
-  }
+    if (!activeAgent) {
+      log(LOG_GROUP.AGENTS, "No active agent found");
+      return;
+    }
 
-  const mintedQuantity = await getMintQuantityForDay(activeAddress, new Date().getTime());
-
-  const swapQuantity = BigNumber(mintedQuantity)
-    .multipliedBy(activeAgent.conversionPercentage)
-    .dividedBy(100)
-    .toFixed(0, BigNumber.ROUND_FLOOR);
-
-  console.log({
-    mintedQuantity,
-    swapQuantity,
-  });
-
-  if (swapQuantity === "0") {
-    console.log("No swap needed");
-    return;
-  }
-
-  const token = defaultTokens[1];
-  const balance = await queryClient.fetchQuery({
-    queryKey: ["tokenBalance", AO_PROCESS_ID, activeAddress],
-    queryFn: async () => {
-      try {
-        const balance = await fetchTokenBalance(token, activeAddress);
-        return balance || "0";
-      } catch {
-        return "0";
+    if (getDate(activeAgent.endDate) < getDate(Date.now())) {
+      if (activeAgent.status === "Active") {
+        await updateAOYieldAgent(activeAgent.id, { status: "Completed" });
       }
-    },
-    ...defaultOptions,
-  });
+      log(LOG_GROUP.AGENTS, "Agent running time has ended");
+      return;
+    }
 
-  if (balance && BigNumber(balance).shiftedBy(12).lt(swapQuantity)) {
-    console.log("Not enough AO tokens to swap");
-    return;
-  }
+    const mintedQuantity = await getMintQuantityForDay(activeAddress, new Date().getTime());
 
-  const ao = connect(defaultConfig);
-  const messageId = await sendAoTransfer(ao, AO_PROCESS_ID, activeAgent.id, swapQuantity);
-  if (!messageId) {
-    console.log("Failed to transfer AO tokens to agent: ", activeAgent.id);
+    const swapQuantity = BigNumber(mintedQuantity)
+      .multipliedBy(activeAgent.conversionPercentage)
+      .dividedBy(100)
+      .toFixed(0, BigNumber.ROUND_FLOOR);
+
+    log(LOG_GROUP.AGENTS, { mintedQuantity, swapQuantity });
+
+    if (swapQuantity === "0") {
+      log(LOG_GROUP.AGENTS, "No swap needed");
+      return;
+    }
+
+    const token = defaultTokens[1];
+    const balance = await queryClient.fetchQuery({
+      queryKey: ["tokenBalance", AO_PROCESS_ID, activeAddress],
+      queryFn: async () => {
+        try {
+          const balance = await fetchTokenBalance(token, activeAddress);
+          return balance || "0";
+        } catch {
+          return "0";
+        }
+      },
+      ...defaultOptions,
+    });
+
+    log(LOG_GROUP.AGENTS, { balance });
+
+    if (balance && BigNumber(balance).shiftedBy(12).lt(swapQuantity)) {
+      log(LOG_GROUP.AGENTS, "Not enough AO tokens to swap");
+      return;
+    }
+
+    log(LOG_GROUP.AGENTS, "Swapping AO tokens to agent: ", activeAgent.id);
     return;
+
+    const ao = connect(defaultConfig);
+    const messageId = await sendAoTransfer(ao, AO_PROCESS_ID, activeAgent.id, swapQuantity);
+    if (!messageId) {
+      log(LOG_GROUP.AGENTS, "Failed to transfer AO tokens to agent: ", activeAgent.id);
+      return;
+    }
+  } catch (error) {
+    log(LOG_GROUP.AGENTS, "Error performing swap: ", error);
+  } finally {
+    isPerformSwapRunning = false;
   }
 }

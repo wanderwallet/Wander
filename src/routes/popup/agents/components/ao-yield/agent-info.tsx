@@ -18,11 +18,13 @@ import { useLocation } from "~wallets/router/router.utils";
 import { AgentCancelModal } from "./AgentCancelModal";
 import { WUSDC_PROCESS_ID } from "~tokens/aoTokens/ao";
 import type { WanderRoutePath } from "~wallets/router/router.types";
-import { formatTokenQuantity } from "~utils/agents/utils";
+import { formatTokenQuantity, getStatusColor, getStatusText } from "~utils/agents/utils";
+import type { MintingStatus } from "~utils/agents/types";
 
 interface AgentInfoProps {
   agentId: string;
   headerTitle: string;
+  mintingStatus?: MintingStatus;
   showEdit?: boolean;
   showCancel?: boolean;
   isHistory?: boolean;
@@ -31,6 +33,7 @@ interface AgentInfoProps {
 export function AgentInfo({
   agentId,
   headerTitle,
+  mintingStatus,
   showEdit = false,
   showCancel = false,
   isHistory = false,
@@ -109,12 +112,11 @@ export function AgentInfo({
                     height: 10,
                     width: 10,
                     borderRadius: "50%",
-                    backgroundColor:
-                      agent?.status === "Active" ? "#56C980" : agent?.status === "Cancelled" ? "#EE5A4F" : "#6B57F9",
+                    backgroundColor: getStatusColor(agent?.status, mintingStatus),
                   }}
                 />
                 <Text weight="semibold" noMargin>
-                  {agent && browser.i18n.getMessage(agent?.status?.toLowerCase())}
+                  {agent?.status && browser.i18n.getMessage(getStatusText(agent?.status, mintingStatus))}
                 </Text>
               </Flex>
               {showEdit && (

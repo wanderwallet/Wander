@@ -4,13 +4,17 @@ import SliderMenu from "~components/SliderMenu";
 import { Button, Text } from "@arconnect/components-rebrand";
 import alertWarning from "url:/assets/agents/images/alert-warning.svg";
 import alertSuccess from "url:/assets/agents/images/alert-success.svg";
-import { useAOMintingStatus } from "~utils/agents/hooks";
 import { useMemo, useState } from "react";
+import type { MintingStatus } from "~utils/agents/types";
 
-export function AOMintingStatusModal() {
+interface AOMintingStatusModalProps {
+  mintingStatus: MintingStatus;
+  isError: boolean;
+}
+
+export function AOMintingStatusModal({ mintingStatus, isError }: AOMintingStatusModalProps) {
   const [open, setOpen] = useState(true);
-  const { data, isError } = useAOMintingStatus();
-  const status = useMemo(() => (data === "Paused" ? "Paused" : "Resumed"), [data]);
+  const status = useMemo(() => (mintingStatus === "Paused" ? "Paused" : "Resumed"), [mintingStatus]);
 
   function onClose() {
     setOpen(false);
