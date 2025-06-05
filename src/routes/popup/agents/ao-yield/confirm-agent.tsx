@@ -140,7 +140,13 @@ export function ConfirmAOYieldAgentView() {
       <HeadV2 title={browser.i18n.getMessage("confirm_agent")} />
       <Wrapper>
         <Content>
-          <Flex align="center" justify="space-around">
+          <Flex
+            align="center"
+            justify="space-around"
+            style={{
+              maskImage: "linear-gradient(to bottom, transparent, black 20%, black 80%, transparent)",
+              WebkitMaskImage: "linear-gradient(to bottom, transparent, black 20%, black 80%, transparent)",
+            }}>
             <SvgImageWithBackground
               height={53.3}
               width={53.3}

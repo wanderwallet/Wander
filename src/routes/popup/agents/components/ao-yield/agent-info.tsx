@@ -81,7 +81,7 @@ export function AgentInfo({
     const details = [
       {
         name: "total_ao_sold",
-        value: formatTokenQuantity(totalAOSold, decimals),
+        value: formatTokenQuantity(totalAOSold, 12),
       },
       {
         name: `total_bought`,

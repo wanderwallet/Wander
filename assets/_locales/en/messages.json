@@ -3353,5 +3353,9 @@
         "example": "wUSDC"
       }
     }
+  },
+  "no_agents": {
+    "message": "You don't have any agents",
+    "description": "No agents text"
   }
 }

@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { Section } from "@arconnect/components-rebrand";
+import { Section, Text } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
 import HeadV2 from "~components/popup/HeadV2";
 import { Flex } from "~components/common/Flex";
@@ -18,6 +18,13 @@ export function AOYieldAgentHistoryView() {
           {aoAgents.map((aoAgent) => (
             <AOYieldAgentListItem key={aoAgent.id} aoAgent={aoAgent} isHistory />
           ))}
+          {aoAgents.length === 0 && (
+            <Flex align="center" justify="center" style={{ height: "100%" }}>
+              <Text size="lg" weight="medium" noMargin>
+                {browser.i18n.getMessage("no_agents")}
+              </Text>
+            </Flex>
+          )}
         </Flex>
       </Wrapper>
     </>

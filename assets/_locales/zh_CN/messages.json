@@ -3313,5 +3313,9 @@
     "go_back": {
         "message": "返回",
         "description": "Go back text"
+    },
+    "no_agents": {
+        "message": "您没有代理",
+        "description": "No agents text"
     }
 }

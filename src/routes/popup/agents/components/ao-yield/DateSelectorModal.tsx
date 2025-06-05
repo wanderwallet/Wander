@@ -216,7 +216,9 @@ const DateSelectorScreen = ({ onClose, onSelect, currentStartDate, currentEndDat
           $isDisabled={isPrevMonthDisabled}>
           <Text
             size="sm"
-            color={isPrevMonthSelected ? "#fff" : isPrevMonthDisabled ? theme.tertiaryText : theme.secondaryText}
+            style={{
+              color: isPrevMonthSelected ? "#fff" : isPrevMonthDisabled ? theme.tertiaryText : theme.secondaryText,
+            }}
             weight={isPrevMonthSelected ? "semibold" : "medium"}
             noMargin>
             {prevMonthDay}
@@ -244,7 +246,9 @@ const DateSelectorScreen = ({ onClose, onSelect, currentStartDate, currentEndDat
           onClick={() => !isDisabled && handleDateClick(day)}>
           <Text
             size="sm"
-            color={showAsSelected ? "#fff" : isDisabled ? theme.tertiaryText : theme.primaryText}
+            style={{
+              color: showAsSelected ? "#fff" : isDisabled ? theme.tertiaryText : theme.primaryText,
+            }}
             weight={showAsSelected ? "semibold" : "medium"}
             noMargin>
             {day}
@@ -274,7 +278,9 @@ const DateSelectorScreen = ({ onClose, onSelect, currentStartDate, currentEndDat
           $isDisabled={isNextMonthDisabled}>
           <Text
             size="sm"
-            color={isNextMonthSelected ? "#fff" : isNextMonthDisabled ? theme.tertiaryText : theme.secondaryText}
+            style={{
+              color: isNextMonthSelected ? "#fff" : isNextMonthDisabled ? theme.tertiaryText : theme.secondaryText,
+            }}
             weight={isNextMonthSelected ? "semibold" : "medium"}
             noMargin>
             {day}
@@ -326,7 +332,7 @@ const DateSelectorScreen = ({ onClose, onSelect, currentStartDate, currentEndDat
         <DayHeaders>
           {dayNames.map((day) => (
             <DayHeader key={day}>
-              <Text size="sm" color={theme.secondaryText} weight="medium" noMargin>
+              <Text size="sm" style={{ color: theme.secondaryText }} weight="medium" noMargin>
                 {day}
               </Text>
             </DayHeader>

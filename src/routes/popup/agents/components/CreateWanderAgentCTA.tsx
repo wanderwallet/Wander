@@ -66,6 +66,7 @@ export default function CreateWanderAgentCTA() {
           <IconButton
             icon={<XClose style={{ width: 24, height: 24, cursor: "pointer" }} />}
             onClick={() => handleCloseCTA()}
+            style={{ zIndex: 1 }}
           />
         </Flex>
         <Button fullWidth onClick={() => handleOpen()} style={{ zIndex: 1 }}>

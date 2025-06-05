@@ -276,7 +276,7 @@ const Content = styled.div`
 const Tag = styled.div`
   padding: 4px 8px;
   border-radius: 50px;
-  background-color: #2b2269;
+  background-color: ${({ theme }) => (theme.displayTheme === "dark" ? "#2b2269" : "#E3D8F6")};
   font-size: 12px;
   font-weight: 500;
   color: ${({ theme }) => theme.secondaryText};
