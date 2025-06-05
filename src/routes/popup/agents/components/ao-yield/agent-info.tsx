@@ -129,7 +129,7 @@ export function AgentInfo({
               {browser.i18n.getMessage("status")}
             </Text>
             <Flex gap={8} justify="space-between" width="100%">
-              <StatusBade variant="secondary" width="90px">
+              <StatusBade variant="secondary" width="max-content">
                 <div
                   style={{
                     height: 10,

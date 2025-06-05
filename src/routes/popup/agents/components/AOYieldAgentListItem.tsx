@@ -78,10 +78,10 @@ export const AOYieldAgentListItem = ({ aoAgent, isHistory = false }: AOYieldAgen
       }
       active
       onClick={() =>
-        isHistory
-          ? navigate(PopupPaths.AOYieldAgentInfo.replace(":id", aoAgent.id) as WanderRoutePath)
-          : aoAgent.status === "Active"
-            ? navigate(PopupPaths.ManageAOYieldAgent)
+        aoAgent.status === "Active"
+          ? navigate(PopupPaths.ManageAOYieldAgent)
+          : isHistory
+            ? navigate(PopupPaths.AOYieldAgentInfo.replace(":id", aoAgent.id) as WanderRoutePath)
             : navigate(PopupPaths.CreateAOYieldAgent)
       }
       style={{ width: "100%", textAlign: "left", padding: "12px 8px" }}

@@ -15,7 +15,7 @@ export function AOYieldAgentHistoryView() {
 
       <Wrapper>
         <Flex gap={12} direction="column">
-          {aoAgents.map((aoAgent) => (
+          {aoAgents.reverse().map((aoAgent) => (
             <AOYieldAgentListItem key={aoAgent.id} aoAgent={aoAgent} isHistory />
           ))}
           {aoAgents.length === 0 && (
