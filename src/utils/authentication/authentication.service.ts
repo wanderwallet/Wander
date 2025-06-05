@@ -50,7 +50,7 @@ async function authenticateWithOAuth(oAuthProviderType: OAutProviderType): Promi
   // Calculate center position for the popup:
 
   const width = Math.min(400, document.documentElement.offsetWidth);
-  const height = Math.min(Math.max(600, document.documentElement.offsetHeight), window.screen.availHeight - 32);
+  const height = Math.min(600, window.screen.availHeight - 32);
   const left = window.screenX + (window.outerWidth - width) / 2;
   const top = window.screenY + (window.outerHeight - height) / 2;
 
