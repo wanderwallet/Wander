@@ -32,7 +32,7 @@ export function useAOYieldActiveAgent() {
   const [agent, setAgent] = useState<AOYieldAgent>();
 
   useEffect(() => {
-    getAOYieldAgents(activeAddress, "Active").then((agents) => setAgent(agents[agents.length - 1]));
+    getAOYieldAgents(activeAddress).then((agents) => setAgent(agents[agents.length - 1]));
   }, [activeAddress]);
 
   return agent;

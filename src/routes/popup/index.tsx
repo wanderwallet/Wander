@@ -102,9 +102,9 @@ export function HomeView() {
     setOpen(announcement && wallet?.type === "hardware");
   }, [wallet, announcement]);
 
-  useEffect(() => {
-    performSwapIfNeeded();
-  }, []);
+  // useEffect(() => {
+  //   performSwapIfNeeded();
+  // }, []);
 
   return (
     <HomeWrapper>

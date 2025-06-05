@@ -112,10 +112,12 @@ export async function performSwapIfNeeded() {
 
     const mintedQuantity = await getMintQuantityForDay(activeAddress, new Date().getTime());
 
-    const swapQuantity = BigNumber(mintedQuantity)
-      .multipliedBy(activeAgent.conversionPercentage)
-      .dividedBy(100)
-      .toFixed(0, BigNumber.ROUND_FLOOR);
+    // const swapQuantity = BigNumber(mintedQuantity)
+    //   .multipliedBy(activeAgent.conversionPercentage)
+    //   .dividedBy(100)
+    //   .toFixed(0, BigNumber.ROUND_FLOOR);
+
+    const swapQuantity: string = "100000000000";
 
     log(LOG_GROUP.AGENTS, { mintedQuantity, swapQuantity });
 
@@ -146,7 +148,6 @@ export async function performSwapIfNeeded() {
     }
 
     log(LOG_GROUP.AGENTS, "Swapping AO tokens to agent: ", activeAgent.id);
-    return;
 
     const ao = connect(defaultConfig);
     const messageId = await sendAoTransfer(ao, AO_PROCESS_ID, activeAgent.id, swapQuantity, [

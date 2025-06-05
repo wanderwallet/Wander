@@ -1,10 +1,10 @@
-import styled, { useTheme } from "styled-components";
+import styled from "styled-components";
 import { Section, Text, ListItem, Loading, Button } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
 import HeadV2 from "~components/popup/HeadV2";
 import { Flex } from "~components/common/Flex";
 import { PropertyName, PropertyValue, TransactionProperty } from "~routes/popup/transaction/[id]";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import dayjs from "dayjs";
 import { useAOYieldAgent, useAOYieldAgentInfo } from "~utils/agents/hooks";
 import { assets } from "./AssetSelectorModal";
@@ -33,23 +33,14 @@ interface AgentInfoProps {
   agentId: string;
   headerTitle: string;
   mintingStatus?: MintingStatus;
-  showEdit?: boolean;
-  showCancel?: boolean;
   isHistory?: boolean;
 }
 
-export function AgentInfo({
-  agentId,
-  headerTitle,
-  mintingStatus,
-  showEdit = false,
-  showCancel = false,
-  isHistory = false,
-}: AgentInfoProps) {
+export function AgentInfo({ agentId, headerTitle, mintingStatus, isHistory = false }: AgentInfoProps) {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const agent = useAOYieldAgent(agentId);
   const { data: agentInfo } = useAOYieldAgentInfo(agentId);
-  const { navigate, back } = useLocation();
+  const { navigate } = useLocation();
 
   const asset = useMemo(() => {
     if (!agent) return null;
@@ -60,7 +51,8 @@ export function AgentInfo({
     if (!agent || !asset) return [];
 
     const { conversionPercentage, startDate, endDate, runIndefinitely, slippage } = agent;
-    const runningTime = runIndefinitely ? "∞" : `${dayjs(endDate).diff(dayjs(startDate), "day") + 1} days`;
+    const days = dayjs(endDate).diff(dayjs(startDate), "day") + 1;
+    const runningTime = runIndefinitely ? "∞" : `${days} ${days === 1 ? "day" : "days"}`;
 
     return [
       { name: "daily_conversion", value: `${conversionPercentage}% of AO earnings` },
@@ -114,7 +106,6 @@ export function AgentInfo({
       if (foundAgentIndex !== -1) {
         agents[foundAgentIndex] = { ...agent, status: agentInfo.status };
         await setAOYieldAgents(activeAddress, agents);
-        back();
       }
     }
   }, [agent, agentInfo]);
@@ -143,7 +134,7 @@ export function AgentInfo({
                   {agent?.status && browser.i18n.getMessage(getStatusText(agent?.status, mintingStatus))}
                 </Text>
               </StatusBade>
-              {showEdit && (
+              {agent?.status === "Active" && (
                 <Button
                   width={"80px"}
                   variant="secondary"
@@ -207,7 +198,7 @@ export function AgentInfo({
             </Flex>
           </Flex>
         </Content>
-        {showCancel && (
+        {agent?.status === "Active" && (
           <Flex gap={8}>
             <RemoveButton onClick={handleCancelAgent} fullWidth>
               {browser.i18n.getMessage("cancel_agent")}

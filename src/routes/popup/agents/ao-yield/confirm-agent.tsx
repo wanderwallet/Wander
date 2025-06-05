@@ -19,6 +19,7 @@ import aoYieldAgentContract from "raw:/assets/agents/contracts/ao-yield-agent.lu
 import { getActiveAddress } from "~wallets/wallets.utils";
 import type { AOYieldAgentCreate, AOYieldAgentStatus } from "~utils/agents/types";
 import { getAOYieldAgents, setAOYieldAgents } from "~utils/agents/utils";
+import { performSwapIfNeeded } from "~utils/agents/mint";
 
 export function ConfirmAOYieldAgentView() {
   const [isLoading, setIsLoading] = useState(false);
@@ -45,7 +46,8 @@ export function ConfirmAOYieldAgentView() {
     if (!aoYieldAgent) return [];
 
     const { conversionPercentage, asset, startDate, endDate, runIndefinitely, slippage } = aoYieldAgent;
-    const runningTime = runIndefinitely ? "∞" : `${dayjs(endDate).diff(dayjs(startDate), "day") + 1} days`;
+    const days = dayjs(endDate).diff(dayjs(startDate), "day") + 1;
+    const runningTime = runIndefinitely ? "∞" : `${days} ${days === 1 ? "day" : "days"}`;
 
     return [
       { name: "daily_conversion", value: `${conversionPercentage}% of AO earnings` },
@@ -127,6 +129,13 @@ export function ConfirmAOYieldAgentView() {
       navigate(PopupPaths.AOYieldAgentActivated, { search: { activationStatus: "success" } });
 
       TempTransactionStorage.remove("ao-yield-agent");
+
+      // TODO: remove this after testing
+      setTimeout(() => {
+        performSwapIfNeeded().catch((error) => {
+          console.log("error: ", error);
+        });
+      }, 5000);
     } catch (error) {
       console.log("error: ", error);
       navigate(PopupPaths.AOYieldAgentActivated, { search: { activationStatus: "error" } });
