@@ -93,7 +93,7 @@ export function AgentInfo({
     if (isHistory) {
       details.push({
         name: "total_wander_fee",
-        value: `${formatTokenQuantity(totalWanderFee, decimals)} AO`,
+        value: `${formatTokenQuantity(totalWanderFee, 12)} AO`,
       });
     }
 

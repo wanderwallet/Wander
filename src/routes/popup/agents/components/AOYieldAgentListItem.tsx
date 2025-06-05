@@ -72,7 +72,7 @@ export const AOYieldAgentListItem = ({ aoAgent, isHistory = false }: AOYieldAgen
             src={aoAgent.tokenOut === WAR_PROCESS_ID ? WarIcon : wUSDCIcon}
             height={24}
             width={24}
-            style={{ position: "absolute", bottom: -19, right: -6 }}
+            style={{ position: "absolute", bottom: -17, right: -6 }}
           />
         </Flex>
       }
