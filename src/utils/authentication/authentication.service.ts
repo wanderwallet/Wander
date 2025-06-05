@@ -44,7 +44,7 @@ async function authenticateWithOAuth(oAuthProviderType: OAutProviderType): Promi
   const { url } = data;
 
   if (!url) {
-    throw new Error(`Missing OAuth URL.`);
+    throw new Error(OAuthError.MISSING_URL);
   }
 
   // Calculate center position for the popup:

@@ -6,6 +6,7 @@ import type {
 } from "~utils/authentication/authentication.types";
 
 export enum OAuthError {
+  MISSING_URL = "MISSING_URL",
   OAUTH_TIMEOUT = "OAUTH_TIMEOUT",
   CANNOT_OPEN_POPUP = "CANNOT_OPEN_POPUP",
   INVALID_OAUTH_MESSAGE = "INVALID_OAUTH_MESSAGE",
@@ -31,6 +32,7 @@ const AUTH_ERRORS_BY_CODE: Record<string | OAuthError, string> = {
     "An unexpected error occurred during authentication. Please try again or contact support if the issue persists.",
   unexpected_failure: "We could not get your email. Please, try a different authentication method.",
   // unexpected_failure description = Error+getting+user+email+from+external+provider
+  [OAuthError.MISSING_URL]: "Authentication error. Please, try again.",
   [OAuthError.OAUTH_TIMEOUT]: "Authentication timeout. Please, try again.",
   [OAuthError.CANNOT_OPEN_POPUP]: "Could not open authentication popup. Please, try again.",
   [OAuthError.INVALID_OAUTH_MESSAGE]: "Authentication error. Please, try again.",
