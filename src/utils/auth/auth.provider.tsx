@@ -12,7 +12,7 @@ import type { Chunk } from "~api/modules/sign/chunks";
 import { defaultGateway } from "~gateways/gateway";
 import Arweave from "arweave";
 import { bytesFromChunks, constructTransaction, type SplitTransaction } from "~api/modules/sign/transaction_builder";
-import { isomorphicOnMessage } from "~isomorphic-messaging";
+import { isomorphicOnMessage, isomorphicSendMessage } from "~isomorphic-messaging";
 import type { IBridgeMessage } from "@arconnect/webext-bridge";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { isError } from "~utils/error/error.utils";
@@ -60,12 +60,13 @@ export function AuthRequestsProvider({ children }: PropsWithChildren) {
     });
   }, []);
 
-  const closeAuthPopup = useCallback((delay: number = 0) => {
-    function closeOrClear() {
-      if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1") {
-        setAuthRequestContextState(AUTH_REQUESTS_CONTEXT_INITIAL_STATE);
+  const closeAuthPopup = useCallback(
+    (delay: number, lastAuthID: string) => {
+      async function closeOrClear() {
+        if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1") {
+          setAuthRequestContextState(AUTH_REQUESTS_CONTEXT_INITIAL_STATE);
 
-        /*
+          /*
 
         // This message below is already sent when the last request is handled / completed:
 
@@ -90,21 +91,41 @@ export function AuthRequestsProvider({ children }: PropsWithChildren) {
         // here.
 
         */
-      } else {
-        window.top.close();
+        } else {
+          console.log("Request last ID");
+
+          const lastAuthIDFromBackground = await isomorphicSendMessage({
+            destination: "background",
+            messageId: "auth_incoming_check" as any,
+            data: null,
+          });
+
+          console.log({ lastAuthIDFromBackground, lastAuthID });
+
+          console.trace("DEBUG CLOSE");
+
+          if ((window as any).noclose) {
+            debugger;
+          }
+
+          if (lastAuthIDFromBackground !== lastAuthID) return;
+
+          window.top.close();
+        }
       }
-    }
 
-    if (delay > 0) {
-      const timeoutID = setTimeout(closeOrClear, delay);
+      if (delay > 0) {
+        const timeoutID = setTimeout(closeOrClear, delay);
 
-      return () => clearTimeout(timeoutID);
-    }
+        return () => clearTimeout(timeoutID);
+      }
 
-    closeOrClear();
+      closeOrClear();
 
-    return () => {};
-  }, []);
+      return () => {};
+    },
+    [authRequests],
+  );
 
   const completeAuthRequest = useCallback(
     async (authID: string, data: any) => {
@@ -232,6 +253,8 @@ export function AuthRequestsProvider({ children }: PropsWithChildren) {
     log(LOG_GROUP.AUTH, "Auth popup initialized. Waiting for AuthRequests");
 
     isomorphicOnMessage("auth_request", (authRequestMessage) => {
+      console.log("auth_request");
+
       log(LOG_GROUP.AUTH, "auth_request =", authRequestMessage);
 
       // UnlockAuthRequests are not enqueued as those are simply used to open the popup to prompt users to enter their
@@ -317,7 +340,7 @@ export function AuthRequestsProvider({ children }: PropsWithChildren) {
 
         if (pendingRequestsCount === 0 && authRequests.length > 0) {
           // All tabs that sent AuthRequest also got closed/reloaded/disconnected, so close the popup immediately:
-          closeAuthPopup();
+          closeAuthPopup(0, authRequests[authRequests.length - 1].authID);
         }
 
         // TODO: Consider automatically selecting the next pending AuthRequest.
@@ -343,6 +366,8 @@ export function AuthRequestsProvider({ children }: PropsWithChildren) {
 
     isomorphicOnMessage("auth_chunk", ({ sender, data }) => {
       if (sender.context !== "background") return;
+
+      console.log("auth_chunk");
 
       const { type, collectionID } = data;
 
@@ -432,12 +457,20 @@ export function AuthRequestsProvider({ children }: PropsWithChildren) {
       const isEmbedded = import.meta.env?.VITE_IS_EMBEDDED_APP === "1";
       const hasAuthRequests = authRequests.length > 0;
       const isDone = hasAuthRequests && authRequests.every((authRequest) => authRequest.status !== "pending");
+      const lastAuthID = authRequests[authRequests.length - 1].authID;
+
+      console.log({
+        isEmbedded,
+        hasAuthRequests,
+        isDone,
+        authRequests,
+      });
 
       if (isDone) {
         // Close the window if the last request has been handled:
         // TODO: Add setting to decide whether this closes automatically or stays open in a "done" state.
 
-        clearCloseAuthPopupTimeout = closeAuthPopup(AUTH_POPUP_CLOSING_DELAY_MS);
+        clearCloseAuthPopupTimeout = closeAuthPopup(AUTH_POPUP_CLOSING_DELAY_MS, lastAuthID);
       } else if (!isEmbedded) {
         const isLocked = !(await getDecryptionKey());
 
@@ -449,11 +482,11 @@ export function AuthRequestsProvider({ children }: PropsWithChildren) {
           // If the wallet is locked, the user has `AUTH_POPUP_UNLOCK_REQUEST_TTL_MS` (15 minutes) to unlock it before
           // we close it automatically. While that's happening, AuthRequest might or might not be in this provide
           // already:
-          clearCloseAuthPopupTimeout = closeAuthPopup(AUTH_POPUP_UNLOCK_REQUEST_TTL_MS);
+          clearCloseAuthPopupTimeout = closeAuthPopup(AUTH_POPUP_UNLOCK_REQUEST_TTL_MS, lastAuthID);
         } else if (!hasAuthRequests && !isInRequestArrivalWindow) {
           // Once the wallet is unlocked, we close the popup if an AuthRequest doesn't arrive in less than
           // `AUTH_POPUP_REQUEST_WAIT_MS` (1 second) but only if the component is not in the initial request arrival window:
-          clearCloseAuthPopupTimeout = closeAuthPopup(AUTH_POPUP_REQUEST_WAIT_MS);
+          clearCloseAuthPopupTimeout = closeAuthPopup(AUTH_POPUP_REQUEST_WAIT_MS, lastAuthID);
         }
       }
     }

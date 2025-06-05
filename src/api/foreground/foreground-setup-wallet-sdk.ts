@@ -18,7 +18,7 @@ export async function injectWanderWalletAPI(targetWindow: Window = window, embed
   // TODO: Can we get the right type here?:
   const walletAPI = {
     walletName: IS_EMBEDDED_APP ? "Wander Connect" : "ArConnect",
-    walletVersion: version,
+    walletVersion: "1.28.0",
     events,
   } as const;
 
