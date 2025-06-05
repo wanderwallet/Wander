@@ -7,6 +7,7 @@ import { Flex } from "~components/common/Flex";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 import { PasswordInput } from "~components/embed/ui/atoms/password-input";
 import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
+import { getFriendlyAuthErrorMessage } from "~utils/authentication/authentication.utils";
 
 export function AuthEmailSigninEmbeddedView() {
   const { navigate } = useLocation();
@@ -53,8 +54,7 @@ export function AuthEmailSigninEmbeddedView() {
         if (error.code === "email_not_confirmed") {
           navigate(EmbeddedPaths.AuthEmailVerify);
         } else {
-          console.error(error);
-          toast.error("Error signing up");
+          toast.error(getFriendlyAuthErrorMessage(error, "Error signing up"));
         }
       } finally {
         setIsAuthenticating(false);

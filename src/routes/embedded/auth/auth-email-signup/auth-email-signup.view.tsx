@@ -1,10 +1,9 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { toast } from "react-toastify";
 import { Button } from "~components/embed";
-import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { getSupabaseClient } from "~utils/embedded/embedded.utils";
 import { useLocation, useSearchParams } from "~wallets/router/router.utils";
-import { Flex } from "~components/common/Flex";
 import PasswordMatch from "~components/welcome/PasswordMatch";
 import PasswordStrength from "~components/welcome/PasswordStrength";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
@@ -12,6 +11,8 @@ import { PasswordInput } from "~components/embed/ui/atoms/password-input";
 import { useThrottledCallback } from "@swyg/corre";
 import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
 import { PersistentStorage } from "~utils/storage";
+import { getFriendlyAuthErrorMessage } from "~utils/authentication/authentication.utils";
+import { StorageKeys } from "~utils/storage/storage.constants";
 
 export function AuthEmailSignupEmbeddedView() {
   const { navigate } = useLocation();
@@ -76,20 +77,18 @@ export function AuthEmailSignupEmbeddedView() {
           password,
         });
 
-        console.log("signUp() =", data, error);
-
         if (error) {
-          toast.error(error.message);
+          toast.error(getFriendlyAuthErrorMessage(error, error.message || "Error signing up"));
           return;
         }
 
-        // TODO: Move to constant and rename.
-        await PersistentStorage.setItem("sb-verify-email-resent-timestamp", Date.now());
+        await PersistentStorage.setItem(StorageKeys.CONNECT.AUTH.LAST_EMAIL_VERIFICATION, Date.now());
+
         navigate(EmbeddedPaths.AuthEmailVerify, {
           search: { email },
         });
       } catch (error) {
-        toast.error("Error signing up");
+        toast.error(getFriendlyAuthErrorMessage(error, "Error signing up"));
       } finally {
         setIsAuthenticating(false);
       }

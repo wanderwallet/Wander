@@ -14,7 +14,7 @@ export enum OAuthError {
   POPUP_TIMEOUT = "POPUP_TIMEOUT",
 }
 
-const errorMap: Record<string, string> = {
+const AUTH_ERRORS_BY_CODE: Record<string | OAuthError, string> = {
   server_error:
     "There was a problem connecting to the authentication service. This could be due to network issues or server maintenance.",
   invalid_request:
@@ -31,22 +31,36 @@ const errorMap: Record<string, string> = {
     "An unexpected error occurred during authentication. Please try again or contact support if the issue persists.",
   unexpected_failure: "We could not get your email. Please, try a different authentication method.",
   // unexpected_failure description = Error+getting+user+email+from+external+provider
+  [OAuthError.OAUTH_TIMEOUT]: "Authentication timeout. Please, try again.",
+  [OAuthError.CANNOT_OPEN_POPUP]: "Could not open authentication popup. Please, try again.",
+  [OAuthError.INVALID_OAUTH_MESSAGE]: "Authentication error. Please, try again.",
+  [OAuthError.CANNOT_CREATE_SESSION]: "Authentication error. Please, try again.",
+  [OAuthError.POPUP_CLOSED]: "Authentication cancelled.",
+  [OAuthError.POPUP_TIMEOUT]: "Authentication timeout. Please, try again.",
 };
 
-export function getFriendlyErrorMessage(error: string, description: string): string {
-  // First check if it's a database error from the description
-  if (description.includes("Database error")) {
+export function getFriendlyAuthErrorMessage(error: Error, defaultErrorMessage?: string): string {
+  console.error("getFriendlyAuthErrorMessage() =", error);
+
+  const { message } = error;
+
+  const { errorCode, errorDescription = message } = error.cause as OAuthErrorMessage;
+
+  const mappedErrorMessage = AUTH_ERRORS_BY_CODE[errorCode];
+
+  if (mappedErrorMessage) return mappedErrorMessage;
+
+  // Check if it's a database error from the description (e.g.: "500: Database error"):
+  if (errorDescription.includes("Database error")) {
     return "We're experiencing database connectivity issues. Please try again in a few moments.";
   }
 
-  // Check for specific error codes in description (e.g., "500: Database error")
-  const errorCode = description.split(":")[0];
-
-  if (errorCode === "500") {
+  // Check if it's a 500 error from the description (e.g.: "500: Database error"):
+  if (errorDescription.startsWith("500:")) {
     return "Our authentication service is temporarily unavailable. Please try again later.";
   }
 
-  return errorMap[error] || errorMap.unknown_error;
+  return defaultErrorMessage || AUTH_ERRORS_BY_CODE.unknown_error;
 }
 
 export const OAUTH_SUCCESS_MSG_TYPE = "OAUTH_SUCCESS" as const;

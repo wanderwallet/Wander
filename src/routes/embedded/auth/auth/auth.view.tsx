@@ -12,6 +12,7 @@ import { EMBEDDED_HIDE_BE } from "~utils/embedded/iframe.utils";
 import { InputButton } from "~components/embed/ui/atoms/input-button/InputButton";
 import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
 import type { OAutProviderType } from "~utils/embedded/embedded.types";
+import { getFriendlyAuthErrorMessage } from "~utils/authentication/authentication.utils";
 
 export function AuthEmbeddedView() {
   const { navigate } = useLocation();
@@ -42,8 +43,7 @@ export function AuthEmbeddedView() {
       setIsAuthenticating(true);
       await authenticate(authProviderType);
     } catch (error) {
-      console.error(error);
-      toast.error(`Error signing in with ${authProviderType}`);
+      toast.error(getFriendlyAuthErrorMessage(error, `Error signing in with ${authProviderType}`));
     } finally {
       setIsAuthenticating(false);
     }
@@ -85,14 +85,12 @@ export function AuthEmbeddedView() {
         return;
       }
 
-      // TODO: What if email is not confirmed yet?
-
       const { data: isAlreadyRegistered, error } = await supabase.rpc("user_exists_by_email", {
         p_email: email,
       });
 
       if (error) {
-        toast.error(error.message || "Error checking email");
+        toast.error(getFriendlyAuthErrorMessage(error, error.message || "Error checking email"));
         return;
       }
 
@@ -100,8 +98,7 @@ export function AuthEmbeddedView() {
         search: { email },
       });
     } catch (error) {
-      console.log(error);
-      toast.error("Error checking email");
+      toast.error(getFriendlyAuthErrorMessage(error, "Error checking email"));
     } finally {
       setIsCheckingEmail(false);
     }

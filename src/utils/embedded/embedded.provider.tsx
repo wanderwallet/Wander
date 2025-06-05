@@ -1019,7 +1019,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
           await AuthenticationService.verifyOtp(authParams);
         }
       } catch (error) {
-        console.error(`${authProviderType} authentication failed:`, error);
+        console.error(`authenticate(${authProviderType}) error =`, error);
 
         setEmbeddedContextAuth({
           authStatus: "authError",

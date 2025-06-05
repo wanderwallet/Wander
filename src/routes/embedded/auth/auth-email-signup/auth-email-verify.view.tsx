@@ -8,8 +8,10 @@ import { PersistentStorage, useStorage } from "~utils/storage";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
 import { Flex } from "~components/common/Flex";
+import { getFriendlyAuthErrorMessage } from "~utils/authentication/authentication.utils";
 
 import styles from "./auth-email-verify.module.scss";
+import { StorageKeys } from "~utils/storage/storage.constants";
 
 const COOLDOWN_DURATION = 60; // seconds
 const OTP_LENGTH = 6;
@@ -18,15 +20,19 @@ export function AuthEmailVerifyEmbeddedView() {
   const { navigate } = useLocation();
   const { authenticate } = useEmbedded();
   const { email } = useSearchParams<{ email: string }>();
-  const [isResending, setIsResending] = useState(false);
-  const [isVerifying, setIsVerifying] = useState(false);
   const [cooldownTime, setCooldownTime] = useState(0);
   const [canResend, setCanResend] = useState(false);
   const inputRefs = useRef<Array<HTMLInputElement | null>>(Array(OTP_LENGTH).fill(null));
   const [isComplete, setIsComplete] = useState(false);
 
+  // Loading state:
+
+  const [isResending, setIsResending] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const isViewLoading = isResending || isVerifying;
+
   const [verifyEmailResentTimestamp, setVerifyEmailResentTimestamp] = useStorage<number>(
-    { key: "sb-verify-email-resent-timestamp", instance: PersistentStorage },
+    { key: StorageKeys.CONNECT.AUTH.LAST_EMAIL_VERIFICATION, instance: PersistentStorage },
     (v) => (v === undefined ? Date.now() : v),
   );
 
@@ -89,8 +95,7 @@ export function AuthEmailVerifyEmbeddedView() {
       toast.success("Email verified successfully");
     } catch (error) {
       setIsVerifying(false);
-      console.error(error);
-      toast.error("Invalid verification code");
+      toast.error(getFriendlyAuthErrorMessage(error, "Invalid verification code"));
     }
 
     // We leave isVerifying = true intentionally as the user will simply be redirected after verifying the account.
@@ -214,7 +219,7 @@ export function AuthEmailVerifyEmbeddedView() {
         });
 
         if (error) {
-          toast.error(error.message);
+          toast.error(getFriendlyAuthErrorMessage(error, error.message));
           return;
         }
 
@@ -223,7 +228,7 @@ export function AuthEmailVerifyEmbeddedView() {
         setCanResend(false);
         setCooldownTime(COOLDOWN_DURATION);
       } catch (error) {
-        toast.error("Error sending verification email");
+        toast.error(getFriendlyAuthErrorMessage(error, "Error sending verification email"));
       } finally {
         setIsResending(false);
       }
@@ -246,7 +251,7 @@ export function AuthEmailVerifyEmbeddedView() {
       headerText="Verify your email"
       subtitle={`We've sent an email to ${email}`}
       hasBackButton={false}
-      isLoading={isResending}
+      isLoading={isViewLoading}
       onSubmit={handleVerifyCode}>
       <Text variant={"bodySm"} alignment={"center"} style={{ color: "var(--text-color-secondary, #666666)" }}>
         Enter the 6-digit verification code from that email to complete signup. If you don't see the email, please check
@@ -257,6 +262,7 @@ export function AuthEmailVerifyEmbeddedView() {
         <Text alignment="center" variant={"bodySm"} style={{ color: "var(--text-color-secondary, #666666)" }}>
           Verification Code
         </Text>
+
         <Flex direction="row" gap={8} width="100%" justify="center">
           {Array.from({ length: OTP_LENGTH }).map((_, index) => (
             <input
@@ -266,6 +272,7 @@ export function AuthEmailVerifyEmbeddedView() {
               name={`otp-input-${index}`}
               ref={(el) => (inputRefs.current[index] = el)}
               maxLength={1}
+              disabled={isViewLoading}
               onInput={handleInputOrPaste}
               onPaste={handleInputOrPaste}
               onKeyDown={handleKeyDown}
@@ -274,12 +281,8 @@ export function AuthEmailVerifyEmbeddedView() {
             />
           ))}
         </Flex>
-        <Button
-          type="submit"
-          variant="primary"
-          isFullWidth
-          isLoading={isVerifying}
-          isDisabled={isVerifying || !isComplete}>
+
+        <Button type="submit" variant="primary" isFullWidth isDisabled={isViewLoading || !isComplete}>
           Verify Code
         </Button>
       </Flex>
@@ -289,7 +292,7 @@ export function AuthEmailVerifyEmbeddedView() {
       </Text>
 
       {canResend ? (
-        <Button variant="link" isFullWidth onClick={handleResendEmail} isDisabled={isResending}>
+        <Button variant="link" isFullWidth onClick={handleResendEmail} isDisabled={isViewLoading}>
           Send again
         </Button>
       ) : (
