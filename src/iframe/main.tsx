@@ -23,8 +23,6 @@ import {
 } from "~utils/authentication/authentication.utils";
 import { jwtDecode } from "jwt-decode";
 
-// import "../../assets/popup.css";
-
 if (process.env.NODE_ENV === "development") {
   console.log("Wander Connect URL params =", {
     NODE_ENV: process.env.NODE_ENV,
