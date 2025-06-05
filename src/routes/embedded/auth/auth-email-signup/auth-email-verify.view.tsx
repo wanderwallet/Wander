@@ -1,6 +1,6 @@
 import { toast } from "react-toastify";
 import { Text, Button } from "~components/embed";
-import { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { getSupabaseClient } from "~utils/embedded/embedded.utils";
 import { useLocation, useSearchParams } from "~wallets/router/router.utils";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
@@ -16,14 +16,14 @@ const OTP_LENGTH = 6;
 
 export function AuthEmailVerifyEmbeddedView() {
   const { navigate } = useLocation();
-  const { authStatus, authenticate } = useEmbedded();
+  const { authenticate } = useEmbedded();
   const { email } = useSearchParams<{ email: string }>();
   const [isResending, setIsResending] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [cooldownTime, setCooldownTime] = useState(0);
   const [canResend, setCanResend] = useState(false);
-  const [otpDigits, setOtpDigits] = useState<string[]>(Array(OTP_LENGTH).fill(""));
   const inputRefs = useRef<Array<HTMLInputElement | null>>(Array(OTP_LENGTH).fill(null));
+  const [isComplete, setIsComplete] = useState(false);
 
   const [verifyEmailResentTimestamp, setVerifyEmailResentTimestamp] = useStorage<number>(
     { key: "sb-verify-email-resent-timestamp", instance: PersistentStorage },
@@ -60,18 +60,23 @@ export function AuthEmailVerifyEmbeddedView() {
     return () => clearInterval(timer);
   }, [verifyEmailResentTimestamp]);
 
-  const handleVerifyCode = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const getCode = () => {
+    return inputRefs.current.map((input) => input.value.trim()).join("");
+  };
 
-    if (!email) return;
+  const handleVerifyCode = async (e?: React.FormEvent) => {
+    e?.preventDefault();
 
-    const otpCode = otpDigits.join("");
+    if (!email || isVerifying) return;
+
+    const otpCode = getCode();
 
     if (otpCode.length !== OTP_LENGTH) {
-      toast.error(`Please enter all ${OTP_LENGTH} digits of the verification code`);
+      if (e) toast.error(`Please enter all ${OTP_LENGTH} digits of the verification code`);
       return;
     }
 
+    setIsComplete(true);
     setIsVerifying(true);
 
     try {
@@ -83,108 +88,106 @@ export function AuthEmailVerifyEmbeddedView() {
 
       toast.success("Email verified successfully");
     } catch (error) {
+      setIsVerifying(false);
       console.error(error);
       toast.error("Invalid verification code");
-    } finally {
-      setIsVerifying(false);
     }
+
+    // We leave isVerifying = true intentionally as the user will simply be redirected after verifying the account.
   };
 
-  const focusInput = useCallback((index: number) => {
-    if (index >= 0 && index < OTP_LENGTH && inputRefs.current[index]) {
-      inputRefs.current[index]?.focus();
-    }
+  const focusInput = useCallback((inputOrIndex: HTMLInputElement | number) => {
+    const input =
+      typeof inputOrIndex === "number"
+        ? inputRefs.current[Math.min(Math.max(inputOrIndex, 0), OTP_LENGTH - 1)]
+        : inputOrIndex;
+
+    if (!input) return;
+
+    input.focus();
+
+    requestAnimationFrame(() => {
+      input.select();
+    });
   }, []);
 
-  const isOtpComplete = useCallback((digits: string[]) => {
-    return digits.join("").length === OTP_LENGTH;
-  }, []);
+  const handleInputOrPaste = useCallback(
+    (e: React.ClipboardEvent<HTMLInputElement> | React.ChangeEvent<HTMLInputElement>) => {
+      e.preventDefault();
 
-  const autoSubmitIfComplete = useCallback(
-    (digits: string[]) => {
-      if (isOtpComplete(digits) && email) {
-        setTimeout(() => {
-          handleVerifyCode({ preventDefault: () => {} } as any);
-        }, 300);
-      }
-    },
-    [email, handleVerifyCode],
-  );
+      const inputs = inputRefs.current;
+      const rawValue =
+        "clipboardData" in e ? e.clipboardData.getData("text/plain").trim() : e.currentTarget.value.trim();
+      const sanitizedValue = rawValue.replace(/[^0-9]/g, "");
+      const currentIndex = parseInt(e.currentTarget.name.replace("otp-input-", "")) || 0;
 
-  const handleOtpDigitChange = useCallback(
-    (index: number, value: string) => {
-      const sanitizedValue = value.replace(/[^0-9]/g, "");
-      const newDigits = [...otpDigits];
+      if (!inputs) return;
 
-      if (sanitizedValue.length > 0) {
-        // Fill in digits starting from current position
-        for (let i = 0; i < sanitizedValue.length && index + i < OTP_LENGTH; i++) {
-          newDigits[index + i] = sanitizedValue[i];
+      let nextEmptyIndex = currentIndex;
+
+      if (sanitizedValue.length === OTP_LENGTH) {
+        // Fill in digits starting from the start:
+        for (let i = 0; i < OTP_LENGTH; ++i) {
+          inputs[i].value = sanitizedValue[i];
         }
+        nextEmptyIndex = OTP_LENGTH - 1;
+      } else if (sanitizedValue) {
+        // Fill in digits starting from the current position:
+        for (let i = currentIndex; i < OTP_LENGTH; ++i) {
+          const inputValue = sanitizedValue[i - currentIndex];
 
-        // Focus next input if available
-        const nextIndex = Math.min(index + sanitizedValue.length, OTP_LENGTH - 1);
-        if (index + sanitizedValue.length < OTP_LENGTH) {
-          focusInput(nextIndex);
+          if (inputValue) {
+            inputs[i].value = inputValue;
+            nextEmptyIndex = i + 1;
+          }
         }
       } else {
-        // Handle backspace/delete
-        newDigits[index] = "";
+        e.currentTarget.value = "";
       }
 
-      setOtpDigits(newDigits);
-      autoSubmitIfComplete(newDigits);
+      // Focus next empty input or last one:
+      focusInput(Math.min(nextEmptyIndex, OTP_LENGTH - 1));
+
+      handleVerifyCode();
     },
-    [otpDigits, focusInput, autoSubmitIfComplete],
-  );
-
-  const handlePaste = useCallback(
-    (e: React.ClipboardEvent<HTMLInputElement>, index: number) => {
-      e.preventDefault();
-      const pastedData = e.clipboardData.getData("text/plain").trim();
-      const sanitizedValue = pastedData.replace(/[^0-9]/g, "");
-
-      if (sanitizedValue) {
-        const newDigits = [...otpDigits];
-
-        // Fill in digits starting from current position
-        for (let i = 0; i < sanitizedValue.length && index + i < OTP_LENGTH; i++) {
-          newDigits[index + i] = sanitizedValue[i];
-        }
-
-        // Find next empty input or focus last input
-        const nextEmptyIndex = newDigits.findIndex((digit, idx) => idx >= index && !digit);
-        const focusIndex = nextEmptyIndex !== -1 ? nextEmptyIndex : OTP_LENGTH - 1;
-        focusInput(focusIndex);
-
-        setOtpDigits(newDigits);
-        autoSubmitIfComplete(newDigits);
-      }
-    },
-    [otpDigits, focusInput, autoSubmitIfComplete],
+    [focusInput, handleVerifyCode],
   );
 
   const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      const currentIndex = parseInt(e.currentTarget.name.replace("otp-input-", "")) || 0;
+
       switch (e.key) {
         case "Backspace":
-          if (!otpDigits[index] && index > 0) {
-            focusInput(index - 1);
+        case "Delete":
+          if (e.currentTarget.value) {
+            e.currentTarget.value = "";
+          } else {
+            focusInput(currentIndex - 1);
           }
+          break;
+        case "ArrowUp":
+          focusInput(0);
           break;
         case "ArrowLeft":
-          if (index > 0) {
-            focusInput(index - 1);
-          }
+          focusInput(currentIndex - 1);
           break;
         case "ArrowRight":
-          if (index < OTP_LENGTH - 1) {
-            focusInput(index + 1);
-          }
+          focusInput(currentIndex + 1);
+          break;
+        case "ArrowDown":
+          focusInput(OTP_LENGTH - 1);
           break;
       }
     },
-    [otpDigits, focusInput],
+    [focusInput],
+  );
+
+  const handleMouseDown = useCallback(
+    (e: React.MouseEvent<HTMLInputElement>) => {
+      focusInput(e.currentTarget);
+    },
+    [focusInput],
   );
 
   const handleResendEmail = useCallback(
@@ -192,9 +195,16 @@ export function AuthEmailVerifyEmbeddedView() {
       e.preventDefault();
       e.stopPropagation();
 
-      if (!email || !canResend) return;
+      const inputs = inputRefs.current;
+
+      if (!email || !canResend || !inputs) return;
+
+      for (let i = 0; i < OTP_LENGTH; ++i) {
+        inputs[i].value = "";
+      }
 
       try {
+        setIsComplete(false);
         setIsResending(true);
         const supabase = await getSupabaseClient();
 
@@ -256,10 +266,10 @@ export function AuthEmailVerifyEmbeddedView() {
               name={`otp-input-${index}`}
               ref={(el) => (inputRefs.current[index] = el)}
               maxLength={1}
-              value={otpDigits[index] || ""}
-              onChange={(e) => handleOtpDigitChange(index, e.target.value)}
-              onKeyDown={(e) => handleKeyDown(e, index)}
-              onPaste={(e) => handlePaste(e, index)}
+              onInput={handleInputOrPaste}
+              onPaste={handleInputOrPaste}
+              onKeyDown={handleKeyDown}
+              onMouseDown={handleMouseDown}
               autoFocus={index === 0}
             />
           ))}
@@ -269,7 +279,7 @@ export function AuthEmailVerifyEmbeddedView() {
           variant="primary"
           isFullWidth
           isLoading={isVerifying}
-          isDisabled={isVerifying || !isOtpComplete(otpDigits)}>
+          isDisabled={isVerifying || !isComplete}>
           Verify Code
         </Button>
       </Flex>
