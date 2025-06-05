@@ -16,27 +16,28 @@ import { Settings01 } from "@untitled-ui/icons-react";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import { useLocation } from "~wallets/router/router.utils";
 import { AgentCancelModal } from "./AgentCancelModal";
-import { formatBalance } from "~utils/format";
-import { balanceToFractioned } from "~tokens/currency";
 import { WUSDC_PROCESS_ID } from "~tokens/aoTokens/ao";
 import type { WanderRoutePath } from "~wallets/router/router.types";
+import { formatTokenQuantity } from "~utils/agents/utils";
 
 interface AgentInfoProps {
   agentId: string;
+  headerTitle: string;
   showEdit?: boolean;
   showCancel?: boolean;
   isHistory?: boolean;
 }
 
-function formatTokenValue(value: string, decimals: number) {
-  return formatBalance(balanceToFractioned(String(value), { decimals })).displayBalance;
-}
-
-export function AgentInfo({ agentId, showEdit = false, showCancel = false, isHistory = false }: AgentInfoProps) {
-  const [isLoading, setIsLoading] = useState(false);
+export function AgentInfo({
+  agentId,
+  headerTitle,
+  showEdit = false,
+  showCancel = false,
+  isHistory = false,
+}: AgentInfoProps) {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const agent = useAOYieldAgent(agentId);
-  const agentInfo = useAOYieldAgentInfo(agentId);
+  const { data: agentInfo } = useAOYieldAgentInfo(agentId);
   const { navigate } = useLocation();
 
   const asset = useMemo(() => {
@@ -45,7 +46,7 @@ export function AgentInfo({ agentId, showEdit = false, showCancel = false, isHis
   }, [agent]);
 
   const agentDetails = useMemo(() => {
-    if (!agent) return [];
+    if (!agent || !asset) return [];
 
     const { conversionPercentage, startDate, endDate, runIndefinitely, slippage } = agent;
     const runningTime = runIndefinitely ? "∞" : `${dayjs(endDate).diff(dayjs(startDate), "day") + 1} days`;
@@ -61,7 +62,7 @@ export function AgentInfo({ agentId, showEdit = false, showCancel = false, isHis
   }, [agent, asset]);
 
   const performanceDetails = useMemo(() => {
-    if (!agentInfo) return [];
+    if (!agentInfo || !asset) return [];
 
     const { totalAOSold, totalBought, totalTransactions, totalWanderFee } = agentInfo;
     const decimals = asset.id === WUSDC_PROCESS_ID ? 6 : 12;
@@ -69,11 +70,11 @@ export function AgentInfo({ agentId, showEdit = false, showCancel = false, isHis
     const details = [
       {
         name: "total_ao_sold",
-        value: formatTokenValue(totalAOSold, decimals),
+        value: formatTokenQuantity(totalAOSold, decimals),
       },
       {
         name: `total_bought`,
-        value: `${formatTokenValue(String(totalBought?.[asset?.id] || 0), decimals)} ${asset?.ticker}`,
+        value: `${formatTokenQuantity(String(totalBought?.[asset?.id] || 0), decimals)} ${asset?.ticker}`,
       },
       { name: "total_transactions", value: totalTransactions },
     ];
@@ -81,12 +82,12 @@ export function AgentInfo({ agentId, showEdit = false, showCancel = false, isHis
     if (isHistory) {
       details.push({
         name: "total_wander_fee",
-        value: `${formatTokenValue(totalWanderFee, decimals)} AO`,
+        value: `${formatTokenQuantity(totalWanderFee, decimals)} AO`,
       });
     }
 
     return details;
-  }, [agentInfo]);
+  }, [agentInfo, asset]);
 
   async function handleCancelAgent() {
     setShowCancelModal(true);
@@ -94,7 +95,7 @@ export function AgentInfo({ agentId, showEdit = false, showCancel = false, isHis
 
   return (
     <>
-      <HeadV2 title={browser.i18n.getMessage("manage_agent")} />
+      <HeadV2 title={browser.i18n.getMessage(headerTitle)} />
       <Wrapper>
         <Content>
           <Flex gap={8} align="center" width="100%">
@@ -182,7 +183,7 @@ export function AgentInfo({ agentId, showEdit = false, showCancel = false, isHis
         </Content>
         {showCancel && (
           <Flex gap={8}>
-            <RemoveButton disabled={isLoading} onClick={handleCancelAgent} loading={isLoading} fullWidth>
+            <RemoveButton onClick={handleCancelAgent} fullWidth>
               {browser.i18n.getMessage("cancel_agent")}
             </RemoveButton>
           </Flex>

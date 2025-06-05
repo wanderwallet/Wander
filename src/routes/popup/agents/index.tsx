@@ -14,6 +14,7 @@ import { getAOYieldAgents } from "~utils/agents/utils";
 import type { AOYieldAgent } from "~utils/agents/types";
 import { useLocation } from "~wallets/router/router.utils";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
+import { AOMintingPausedListItem } from "./components/AOMintingPausedListItem";
 
 export function AgentsView() {
   const { navigate } = useLocation();
@@ -67,6 +68,7 @@ export function AgentsView() {
             </Text>
           )}
           <AOYieldAgentListItem aoAgent={aoAgent} />
+          <AOMintingPausedListItem />
           <LiquidOpsAgentListItem />
         </Flex>
       </Wrapper>

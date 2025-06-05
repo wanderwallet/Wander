@@ -11,23 +11,13 @@ import { SvgImageWithBackground } from "../components/SvgImage";
 import aoLogo from "url:/assets/ecosystem/ao-logo.svg";
 import WarIcon from "url:/assets/ecosystem/war.svg";
 import wUSDCIcon from "url:/assets/ecosystem/wusdc.svg";
-import { balanceToFractioned } from "~tokens/currency";
-import { formatBalance } from "~utils/format";
+import { formatTokenQuantity, tokenIdNameMap } from "~utils/agents/utils";
 
 export interface AOYieldAgentTransactionHistoryParams {
   id: string;
 }
 
 export type AOYieldAgentTransactionHistoryViewProps = CommonRouteProps<AOYieldAgentTransactionHistoryParams>;
-
-const tokenIdNameMap = {
-  [WAR_PROCESS_ID]: "wAR",
-  [WUSDC_PROCESS_ID]: "wUSDC",
-};
-
-function formatTokenValue(value: string, decimals: number) {
-  return formatBalance(balanceToFractioned(String(value), { decimals })).displayBalance;
-}
 
 export function AOYieldAgentTransactionHistoryView({ params: { id } }: AOYieldAgentTransactionHistoryViewProps) {
   const { transactions, loading, hasNextPage, count, fetchTransactions } = useTransactions(id);
@@ -46,7 +36,7 @@ export function AOYieldAgentTransactionHistoryView({ params: { id } }: AOYieldAg
                     {`AO <> ${tokenIdNameMap[transaction?.tokenOut]}`}
                   </Text>
                   <Text size="sm" weight="medium" noMargin>
-                    -{formatTokenValue(transaction.amountIn, 12)} AO
+                    -{formatTokenQuantity(transaction.amountIn, 12)} AO
                   </Text>
                 </Flex>
               }
@@ -56,7 +46,7 @@ export function AOYieldAgentTransactionHistoryView({ params: { id } }: AOYieldAg
                     {dayjs(transaction.timestamp).format("MMM DD, YYYY")}
                   </Text>
                   <Text size="sm" weight="medium" noMargin>
-                    +{formatTokenValue(transaction.amountOut, transaction?.tokenOut === WUSDC_PROCESS_ID ? 6 : 12)}{" "}
+                    +{formatTokenQuantity(transaction.amountOut, transaction?.tokenOut === WUSDC_PROCESS_ID ? 6 : 12)}{" "}
                     {tokenIdNameMap[transaction?.tokenOut]}
                   </Text>
                 </Flex>

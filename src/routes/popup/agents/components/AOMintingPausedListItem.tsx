@@ -1,0 +1,42 @@
+import { AlertCircle, XClose } from "@untitled-ui/icons-react";
+import { Flex } from "~components/common/Flex";
+import { Button, Text } from "@arconnect/components-rebrand";
+import { useTheme } from "styled-components";
+import { useAOMintingStatus } from "~utils/agents/hooks";
+import { ExtensionStorage, useStorage } from "~utils/storage";
+
+export function AOMintingPausedListItem() {
+  const theme = useTheme();
+  const { data: status, isError } = useAOMintingStatus();
+  const [showCta, setShowCta] = useStorage({
+    key: "show_ao_minting_paused_cta",
+    instance: ExtensionStorage,
+  });
+
+  if (isError || status === "Active" || !showCta) return null;
+
+  return (
+    <Flex
+      padding={8}
+      gap={8}
+      width="100%"
+      align="center"
+      background="#372323"
+      borderRadius={8}
+      style={{ boxSizing: "border-box" }}>
+      <AlertCircle height={24} width={24} color={theme.fail} />
+      <Flex gap={8} justify="space-between" align="center" width="100%">
+        <Text weight="semibold" noMargin>
+          Minting is paused
+        </Text>
+        <Button
+          onClick={() => setShowCta(false)}
+          icon={<XClose height={24} width={24} />}
+          width="fit-content"
+          style={{ padding: 0, background: "transparent", height: "24px", width: "24px" }}
+          variant="secondary"
+        />
+      </Flex>
+    </Flex>
+  );
+}

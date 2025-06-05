@@ -1,14 +1,17 @@
 import Arweave from "arweave";
-import { TRANSACTION_QUERY } from "./constants";
 import { defaultGateway } from "~gateways/gateway";
 import { ExtensionStorage } from "~utils/storage";
-import type { AOYieldAgent, AOYieldAgentInfo, AOYieldAgentStatus, Tag } from "./types";
+import type { AOYieldAgent, AOYieldAgentInfo, AOYieldAgentStatus, MintingStatus, Tag } from "./types";
 import { connect } from "@permaweb/aoconnect";
 import { defaultConfig } from "~tokens/aoTokens/config";
-import { createDataItemSigner, getTagValue, Id, Owner } from "~tokens/aoTokens/ao";
+import { createDataItemSigner, getTagValue, Id, Owner, WAR_PROCESS_ID, WUSDC_PROCESS_ID } from "~tokens/aoTokens/ao";
 import { getActiveAddress, getActiveKeyfile } from "~wallets";
 import { isLocalWallet } from "~utils/assertions";
 import { retryWithDelay } from "~utils/promises/retry";
+import { TRANSACTION_QUERY } from "./queries";
+import type GQLResultInterface from "ar-gql/dist/faces";
+import { formatBalance } from "~utils/format";
+import { balanceToFractioned } from "~tokens/currency";
 
 /**
  * Initializes a default Arweave instance.
@@ -174,7 +177,7 @@ export async function pollForProcessSpawn({
 }
 
 export async function getAOYieldAgents(activeAddress: string, status?: AOYieldAgentStatus) {
-  const agents = ((await ExtensionStorage.get(`ao-yield-agents-${activeAddress}`)) || []) as AOYieldAgent[];
+  const agents = ((await ExtensionStorage.get(`ao_yield_agents_${activeAddress}`)) || []) as AOYieldAgent[];
   if (status) {
     return agents.filter((agent) => agent.status === status);
   }
@@ -183,7 +186,7 @@ export async function getAOYieldAgents(activeAddress: string, status?: AOYieldAg
 }
 
 export async function setAOYieldAgents(activeAddress: string, agents: AOYieldAgent[]) {
-  await ExtensionStorage.set(`ao-yield-agents-${activeAddress}`, agents);
+  await ExtensionStorage.set(`ao_yield_agents_${activeAddress}`, agents);
 }
 
 export async function getAOYieldActiveAgent() {
@@ -235,78 +238,141 @@ export async function getAOYieldAgentInfo(agentId: string) {
   } as AOYieldAgentInfo;
 }
 
+/**
+ * Builds tags array for agent update based on the update data
+ */
+function buildUpdateTags(updateData: Partial<AOYieldAgent>): Tag[] {
+  const tags: Tag[] = [{ name: "Action", value: "Update-Agent" }];
+
+  const tagMappings: Array<{
+    key: keyof Partial<AOYieldAgent>;
+    tagName: string;
+    transform?: (value: any) => string;
+  }> = [
+    { key: "slippage", tagName: "Slippage", transform: (v) => v.toString() },
+    { key: "tokenOut", tagName: "Token-Out" },
+    { key: "startDate", tagName: "Start-Date", transform: (v) => v.toString() },
+    { key: "endDate", tagName: "End-Date", transform: (v) => v.toString() },
+    { key: "runIndefinitely", tagName: "Run-Indefinitely", transform: (v) => v.toString() },
+    { key: "status", tagName: "Status" },
+  ];
+
+  for (const mapping of tagMappings) {
+    const value = updateData[mapping.key];
+    if (value !== undefined) {
+      const tagValue = mapping.transform ? mapping.transform(value) : String(value);
+      tags.push({ name: mapping.tagName, value: tagValue });
+    }
+  }
+
+  return tags;
+}
+
+/**
+ * Updates local agent data with the provided update data
+ */
+function updateAgentProperties(agent: AOYieldAgent, updateData: Partial<AOYieldAgent>): void {
+  const updatableFields: Array<keyof AOYieldAgent> = [
+    "slippage",
+    "tokenOut",
+    "startDate",
+    "endDate",
+    "runIndefinitely",
+    "status",
+  ];
+
+  for (const field of updatableFields) {
+    if (updateData[field] !== undefined) {
+      (agent as any)[field] = updateData[field];
+    }
+  }
+}
+
 export async function updateAOYieldAgent(agentId: string, updateData: Partial<AOYieldAgent>) {
-  const aoInstance = connect(defaultConfig);
+  try {
+    const aoInstance = connect(defaultConfig);
 
-  const decryptedWallet = await getActiveKeyfile();
-  isLocalWallet(decryptedWallet);
-  const keyfile = decryptedWallet.keyfile;
+    const decryptedWallet = await getActiveKeyfile();
+    isLocalWallet(decryptedWallet);
+    const keyfile = decryptedWallet.keyfile;
 
-  const signer = createDataItemSigner(keyfile);
+    const signer = createDataItemSigner(keyfile);
+    const tags = buildUpdateTags(updateData);
 
-  const tags = [{ name: "Action", value: "Update-Agent" }];
+    const messageId = await aoInstance.message({
+      process: agentId,
+      tags,
+      signer,
+    });
 
-  if (updateData.slippage) {
-    tags.push({ name: "Slippage", value: updateData.slippage.toString() });
+    const result = await aoInstance.result({
+      process: agentId,
+      message: messageId,
+    });
+
+    if (result.Error) {
+      throw new Error(`Failed to update agent: ${result.Error}`);
+    }
+
+    // Update local storage
+    const activeAddress = await getActiveAddress();
+    const agents = await getAOYieldAgents(activeAddress);
+    const agent = agents.find((agent) => agent.id === agentId);
+
+    if (agent) {
+      updateAgentProperties(agent, updateData);
+      await setAOYieldAgents(activeAddress, agents);
+    } else {
+      console.warn(`Agent with ID ${agentId} not found in local storage`);
+    }
+  } catch (error) {
+    throw new Error(`Failed to update AO Yield Agent: ${error instanceof Error ? error.message : String(error)}`);
   }
+}
 
-  if (updateData.tokenOut) {
-    tags.push({ name: "Token-Out", value: updateData.tokenOut });
-  }
-
-  if (updateData.startDate) {
-    tags.push({ name: "Start-Date", value: updateData.startDate.toString() });
-  }
-
-  if (updateData.endDate) {
-    tags.push({ name: "End-Date", value: updateData.endDate.toString() });
-  }
-
-  if (updateData.runIndefinitely) {
-    tags.push({ name: "Run-Indefinitely", value: updateData.runIndefinitely.toString() });
-  }
-
-  if (updateData.status) {
-    tags.push({ name: "Status", value: updateData.status });
-  }
-
-  const messageId = await aoInstance.message({
-    process: agentId,
-    tags,
-    signer,
+export async function processTransactions(rawData: GQLResultInterface) {
+  const edges = rawData?.data?.transactions?.edges || [];
+  const processedTransactions = edges.map((edge) => {
+    const tags = edge.node.tags as Tag[];
+    return {
+      amountIn: getTagValue("Amount-In", tags),
+      amountOut: getTagValue("Amount-Out", tags),
+      tokenIn: getTagValue("Token-In", tags),
+      tokenOut: getTagValue("Token-Out", tags),
+      wanderFee: getTagValue("Swap-Fee", tags),
+      timestamp: edge.node.block?.timestamp ? edge.node.block.timestamp * 1000 : Date.now(),
+      id: edge.node.id,
+      cursor: edge.cursor,
+    };
   });
+  return processedTransactions.filter((tx) => tx.amountIn && tx.amountOut && tx.tokenIn && tx.tokenOut);
+}
 
-  const result = await aoInstance.result({
-    process: agentId,
-    message: messageId,
-  });
-
-  if (result.Error) {
-    throw new Error(result.Error);
+export function getStatusColor(status: AOYieldAgentStatus) {
+  switch (status) {
+    case "Active":
+      return "#56C980";
+    case "Cancelled":
+      return "#EE5A4F";
+    case "Paused":
+      return "#FFE342";
+    default:
+      return "#6B57F9";
   }
+}
 
-  const activeAddress = await getActiveAddress();
-  const agents = await getAOYieldAgents(activeAddress);
-  const agent = agents.find((agent) => agent.id === agentId);
-  if (agent) {
-    if (updateData.slippage) {
-      agent.slippage = updateData.slippage;
-    }
-    if (updateData.tokenOut) {
-      agent.tokenOut = updateData.tokenOut;
-    }
-    if (updateData.startDate) {
-      agent.startDate = updateData.startDate;
-    }
-    if (updateData.endDate) {
-      agent.endDate = updateData.endDate;
-    }
-    if (updateData.runIndefinitely) {
-      agent.runIndefinitely = updateData.runIndefinitely;
-    }
-    if (updateData.status) {
-      agent.status = updateData.status;
-    }
-    await setAOYieldAgents(activeAddress, agents);
+export function getStatusText(status: AOYieldAgentStatus, mintingStatus: MintingStatus) {
+  if (mintingStatus === "Paused" && status === "Active") {
+    return "Paused";
   }
+  return status;
+}
+
+export const tokenIdNameMap = {
+  [WAR_PROCESS_ID]: "wAR",
+  [WUSDC_PROCESS_ID]: "wUSDC",
+};
+
+export function formatTokenQuantity(value: string, decimals: number) {
+  return formatBalance(balanceToFractioned(String(value), { decimals })).displayBalance;
 }

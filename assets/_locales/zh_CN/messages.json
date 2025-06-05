@@ -3218,6 +3218,10 @@
         "message": "已完成",
         "description": "Completed text"
     },
+    "paused": {
+        "message": "已暂停",
+        "description": "Paused text"
+    },
     "percentage_of_each_conversion": {
         "message": "$PERCENTAGE$% 每次转换",
         "description": "Percentage of each conversion text",
@@ -3301,5 +3305,13 @@
     "agent_cancel_description": {
         "message": "取消您的代理将停止您的自动AO代币转换。您也可以创建一个新的代理。",
         "description": "Agent cancel description"
+    },
+    "i_understand": {
+        "message": "我明白",
+        "description": "I understand text"
+    },
+    "go_back": {
+        "message": "返回",
+        "description": "Go back text"
     }
 }

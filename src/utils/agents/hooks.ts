@@ -1,23 +1,20 @@
 import { useCallback, useEffect, useState } from "react";
-import { getAOYieldAgentInfo, getAOYieldAgents } from "./utils";
-import type { AOYieldAgent, AOYieldAgentInfo, AOYieldAgentStatus, Tag } from "./types";
+import { getAOYieldAgentInfo, getAOYieldAgents, processTransactions } from "./utils";
+import type {
+  AOYieldAgent,
+  AOYieldAgentInfo,
+  AOYieldAgentStatus,
+  MintingStatus,
+  SwapSuccessTransaction,
+} from "./types";
 import { ExtensionStorage, useStorage } from "../storage";
 import type GQLResultInterface from "ar-gql/dist/faces";
 import { gql } from "~gateways/api";
 import { retryWithDelay } from "~utils/promises/retry";
 import { SWAP_SUCCESS_QUERY_WITH_CURSOR } from "./queries";
-import { getTagValue } from "~tokens/aoTokens/ao";
-
-export interface SwapSuccessTransaction {
-  amountIn: string;
-  amountOut: string;
-  tokenIn: string;
-  tokenOut: string;
-  wanderFee: string;
-  timestamp: number;
-  id: string;
-  cursor: string;
-}
+import { useQuery } from "@tanstack/react-query";
+import { defaultOptions } from "~tokens/hooks";
+import { isMintingPaused } from "./mint";
 
 export function useAOYieldAgents(status?: AOYieldAgentStatus) {
   const [activeAddress] = useStorage({ key: "active_address", instance: ExtensionStorage });
@@ -56,32 +53,17 @@ export function useAOYieldAgent(agentId: string, status?: AOYieldAgentStatus) {
 }
 
 export function useAOYieldAgentInfo(agentId: string) {
-  const [info, setInfo] = useState<AOYieldAgentInfo>();
-
-  useEffect(() => {
-    if (!agentId) return;
-    getAOYieldAgentInfo(agentId).then(setInfo);
-  }, [agentId]);
-
-  return info;
-}
-
-async function processTransactions(rawData: GQLResultInterface) {
-  const edges = rawData?.data?.transactions?.edges || [];
-  const processedTransactions = edges.map((edge) => {
-    const tags = edge.node.tags as Tag[];
-    return {
-      amountIn: getTagValue("Amount-In", tags),
-      amountOut: getTagValue("Amount-Out", tags),
-      tokenIn: getTagValue("Token-In", tags),
-      tokenOut: getTagValue("Token-Out", tags),
-      wanderFee: getTagValue("Swap-Fee", tags),
-      timestamp: edge.node.block?.timestamp ? edge.node.block.timestamp * 1000 : Date.now(),
-      id: edge.node.id,
-      cursor: edge.cursor,
-    };
+  return useQuery<AOYieldAgentInfo>({
+    queryKey: ["ao-yield-agent-info", agentId],
+    queryFn: () => getAOYieldAgentInfo(agentId),
+    enabled: !!agentId,
+    refetchInterval: 300_000,
+    staleTime: 300_000,
+    gcTime: 300_000,
+    retry: 3,
+    retryDelay: (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    refetchOnWindowFocus: true,
   });
-  return processedTransactions.filter((tx) => tx.amountIn && tx.amountOut && tx.tokenIn && tx.tokenOut);
 }
 
 export const useTransactions = (agentId: string, limit?: number) => {
@@ -169,3 +151,24 @@ export const useTransactions = (agentId: string, limit?: number) => {
     fetchTransactions,
   };
 };
+
+export function useAOMintingStatus() {
+  return useQuery<MintingStatus>({
+    queryKey: ["ao-minting-status"],
+    queryFn: async () => {
+      const [isPaused, storedValue] = await Promise.all([
+        isMintingPaused(),
+        ExtensionStorage.get<boolean>("ao_minting_paused"),
+      ]);
+
+      if (storedValue !== isPaused) {
+        await ExtensionStorage.set("ao_minting_paused", isPaused);
+      }
+
+      return "Paused";
+
+      return isPaused ? "Paused" : "Active";
+    },
+    ...defaultOptions,
+  });
+}

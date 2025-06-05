@@ -127,7 +127,7 @@ export interface AosConfig {
   authority: string;
 }
 
-export type AOYieldAgentStatus = "Active" | "Cancelled" | "Completed";
+export type AOYieldAgentStatus = "Active" | "Cancelled" | "Completed" | "Paused";
 
 export type AOYieldAgentDex = "BOTEGA" | "PERMASWAP" | "AUTO";
 
@@ -165,3 +165,16 @@ export interface Asset {
   logo: string;
   id: string;
 }
+
+export interface SwapSuccessTransaction {
+  amountIn: string;
+  amountOut: string;
+  tokenIn: string;
+  tokenOut: string;
+  wanderFee: string;
+  timestamp: number;
+  id: string;
+  cursor: string;
+}
+
+export type MintingStatus = "Active" | "Paused";

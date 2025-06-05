@@ -69,14 +69,16 @@ export function AgentCancelModal({ open, onClose, agentId }: AgentCancelModalPro
 
   return (
     <SliderMenu isOpen={open} onClose={onClose} paddingVertical={32}>
-      <Flex direction="column" gap={16} height="100%" width="100%">
-        <img src={alertTriangle} style={{ margin: "0 auto" }} />
-        <Text size="lg" weight="semibold" style={{ fontSize: 22, textAlign: "center" }} noMargin>
-          {browser.i18n.getMessage("agent_cancel_title")}
-        </Text>
-        <Text variant="secondary" weight="medium" style={{ textAlign: "center" }} noMargin>
-          {browser.i18n.getMessage("agent_cancel_description")}
-        </Text>
+      <Flex direction="column" gap={24} height="100%" width="100%">
+        <Flex direction="column" gap={16}>
+          <img src={alertTriangle} style={{ margin: "0 auto" }} />
+          <Text size="lg" weight="semibold" style={{ fontSize: 22, textAlign: "center" }} noMargin>
+            {browser.i18n.getMessage("agent_cancel_title")}
+          </Text>
+          <Text variant="secondary" weight="medium" style={{ textAlign: "center" }} noMargin>
+            {browser.i18n.getMessage("agent_cancel_description")}
+          </Text>
+        </Flex>
         {askPassword && transferRequirePassword && (
           <Input
             placeholder={browser.i18n.getMessage("password")}

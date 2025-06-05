@@ -8,22 +8,21 @@ import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import { useLocation } from "~wallets/router/router.utils";
 import { SvgImageWithBackground } from "./SvgImage";
 import type { AOYieldAgent } from "~utils/agents/types";
-import { WAR_PROCESS_ID, WUSDC_PROCESS_ID } from "~tokens/aoTokens/ao";
+import { WAR_PROCESS_ID } from "~tokens/aoTokens/ao";
 import dayjs from "dayjs";
 import type { WanderRoutePath } from "~wallets/router/router.types";
+import { useAOMintingStatus, useAOYieldAgentInfo } from "~utils/agents/hooks";
+import { getStatusColor, getStatusText, tokenIdNameMap } from "~utils/agents/utils";
 
 interface AOYieldAgentListItemProps {
   aoAgent: AOYieldAgent;
   isHistory?: boolean;
 }
 
-const tokenIdNameMap = {
-  [WAR_PROCESS_ID]: "wAR",
-  [WUSDC_PROCESS_ID]: "wUSDC",
-};
-
 export const AOYieldAgentListItem = ({ aoAgent, isHistory = false }: AOYieldAgentListItemProps) => {
   const { navigate } = useLocation();
+  const { data: mintingStatus } = useAOMintingStatus();
+  const { data: agentInfo } = useAOYieldAgentInfo(aoAgent?.id);
 
   return !!aoAgent ? (
     <ListItem
@@ -38,18 +37,11 @@ export const AOYieldAgentListItem = ({ aoAgent, isHistory = false }: AOYieldAgen
                 height: 6,
                 width: 6,
                 borderRadius: "50%",
-                backgroundColor:
-                  aoAgent.status === "Active" ? "#56C980" : aoAgent.status === "Cancelled" ? "#EE5A4F" : "#6B57F9",
+                backgroundColor: getStatusColor(getStatusText(aoAgent.status, mintingStatus)),
               }}
             />
-            <Text
-              size="sm"
-              weight="medium"
-              style={{
-                color: aoAgent.status === "Active" ? "#56C980" : aoAgent.status === "Cancelled" ? "#EE5A4F" : "#6B57F9",
-              }}
-              noMargin>
-              {browser.i18n.getMessage(aoAgent.status?.toLowerCase())}
+            <Text size="sm" weight="medium" noMargin>
+              {browser.i18n.getMessage(getStatusText(aoAgent.status, mintingStatus))}
             </Text>
           </Flex>
         </Flex>
@@ -60,7 +52,7 @@ export const AOYieldAgentListItem = ({ aoAgent, isHistory = false }: AOYieldAgen
             {dayjs(aoAgent.startDate).format("MMM D")} - {dayjs(aoAgent.endDate).format("MMM D")}
           </Text>
           <Text size="sm" variant="secondary" weight="medium" noMargin>
-            {aoAgent?.totalTransactions || 0} transactions
+            {agentInfo?.totalTransactions || 0} transactions
           </Text>
         </Flex>
       }

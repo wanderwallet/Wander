@@ -5,8 +5,12 @@ import { Button, Text } from "@arconnect/components-rebrand";
 import HedgehogPopupImage from "url:/assets/agents/images/hedgehog-popup.png";
 import { Flex } from "~components/common/Flex";
 import browser from "webextension-polyfill";
+import { useLocation } from "~wallets/router/router.utils";
+import { PopupPaths } from "~wallets/router/popup/popup.routes";
 
 export default function WanderAgentExplainerPopup({ open, close }: Props) {
+  const { navigate } = useLocation();
+
   if (!open) return null;
 
   return (
@@ -28,7 +32,14 @@ export default function WanderAgentExplainerPopup({ open, close }: Props) {
           </Text>
         </Flex>
         <Flex direction="column" gap={12} width="100%">
-          <Button fullWidth>{browser.i18n.getMessage("create_ao_yield_agent")}</Button>
+          <Button
+            onClick={() => {
+              close();
+              navigate(PopupPaths.Agents);
+            }}
+            fullWidth>
+            {browser.i18n.getMessage("create_ao_yield_agent")}
+          </Button>
           <Button
             fullWidth
             variant="secondary"

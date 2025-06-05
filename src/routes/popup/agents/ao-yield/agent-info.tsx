@@ -8,5 +8,5 @@ export interface AOYieldAgentInfoParams {
 export type AOYieldAgentInfoViewProps = CommonRouteProps<AOYieldAgentInfoParams>;
 
 export function AOYieldAgentInfoView({ params: { id } }: AOYieldAgentInfoViewProps) {
-  return <AgentInfo agentId={id} isHistory />;
+  return <AgentInfo headerTitle="agent_history" agentId={id} isHistory />;
 }

@@ -3232,6 +3232,10 @@
     "message": "Completed",
     "description": "Completed text"
   },
+  "paused": {
+    "message": "Paused",
+    "description": "Paused text"
+  },
   "percentage_of_each_conversion": {
     "message": "$PERCENTAGE$% of each conversion",
     "description": "Percentage of each conversion text",
@@ -3315,5 +3319,39 @@
   "agent_cancel_description": {
     "message": "Cancelling your agent will stop your automatic AO token conversions. You can also create a new agent.",
     "description": "Agent cancel description"
+  },
+  "i_understand": {
+    "message": "I understand",
+    "description": "I understand text"
+  },
+  "go_back": {
+    "message": "Go back",
+    "description": "Go back text"
+  },
+  "ao_minting_paused_title": {
+    "message": "AO minting process error",
+    "description": "AO Minting Paused title"
+  },
+  "ao_minting_paused_description": {
+    "message": "AO minting has stopped due to a network error. You will receive your missing tokens when minting resumes.",
+    "description": "AO Minting Paused description"
+  },
+  "ao_minting_paused_action_description": {
+    "message": "You do not need to take any action.",
+    "description": "AO Minting Paused action description"
+  },
+  "ao_minting_resumed_title": {
+    "message": "AO minting resumed",
+    "description": "AO Minting Resumed title"
+  },
+  "ao_minting_resumed_description": {
+    "message": "You have received your missing tokens and the appropriate amounts have been converted to $ASSET$.",
+    "description": "AO Minting Resumed description",
+    "placeholders": {
+      "asset": {
+        "content": "$1",
+        "example": "wUSDC"
+      }
+    }
   }
 }
