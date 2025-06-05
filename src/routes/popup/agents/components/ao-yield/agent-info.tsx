@@ -1,10 +1,10 @@
-import styled from "styled-components";
+import styled, { useTheme } from "styled-components";
 import { Section, Text, ListItem, Loading, Button } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
 import HeadV2 from "~components/popup/HeadV2";
 import { Flex } from "~components/common/Flex";
 import { PropertyName, PropertyValue, TransactionProperty } from "~routes/popup/transaction/[id]";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import dayjs from "dayjs";
 import { useAOYieldAgent, useAOYieldAgentInfo } from "~utils/agents/hooks";
 import { assets } from "./AssetSelectorModal";
@@ -18,8 +18,16 @@ import { useLocation } from "~wallets/router/router.utils";
 import { AgentCancelModal } from "./AgentCancelModal";
 import { WUSDC_PROCESS_ID } from "~tokens/aoTokens/ao";
 import type { WanderRoutePath } from "~wallets/router/router.types";
-import { formatTokenQuantity, getStatusColor, getStatusText } from "~utils/agents/utils";
+import {
+  formatTokenQuantity,
+  getAOYieldAgents,
+  getStatusColor,
+  getStatusText,
+  setAOYieldAgents,
+} from "~utils/agents/utils";
 import type { MintingStatus } from "~utils/agents/types";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import { getActiveAddress } from "~wallets";
 
 interface AgentInfoProps {
   agentId: string;
@@ -41,7 +49,7 @@ export function AgentInfo({
   const [showCancelModal, setShowCancelModal] = useState(false);
   const agent = useAOYieldAgent(agentId);
   const { data: agentInfo } = useAOYieldAgentInfo(agentId);
-  const { navigate } = useLocation();
+  const { navigate, back } = useLocation();
 
   const asset = useMemo(() => {
     if (!agent) return null;
@@ -96,6 +104,21 @@ export function AgentInfo({
     setShowCancelModal(true);
   }
 
+  useAsyncEffect(async () => {
+    if (!agent || !agentInfo) return;
+
+    if (agent.status !== agentInfo.status) {
+      const activeAddress = await getActiveAddress();
+      const agents = await getAOYieldAgents(activeAddress);
+      const foundAgentIndex = agents.findIndex((agent) => agent.id === agentId);
+      if (foundAgentIndex !== -1) {
+        agents[foundAgentIndex] = { ...agent, status: agentInfo.status };
+        await setAOYieldAgents(activeAddress, agents);
+        back();
+      }
+    }
+  }, [agent, agentInfo]);
+
   return (
     <>
       <HeadV2 title={browser.i18n.getMessage(headerTitle)} />
@@ -106,19 +129,20 @@ export function AgentInfo({
               {browser.i18n.getMessage("status")}
             </Text>
             <Flex gap={8} justify="space-between" width="100%">
-              <Flex gap={8} align="center" justify="center" padding="6px 8px" background="#253327" borderRadius={8}>
+              <StatusBade variant="secondary" width="90px">
                 <div
                   style={{
                     height: 10,
                     width: 10,
                     borderRadius: "50%",
                     backgroundColor: getStatusColor(agent?.status, mintingStatus),
+                    flexShrink: 0,
                   }}
                 />
                 <Text weight="semibold" noMargin>
                   {agent?.status && browser.i18n.getMessage(getStatusText(agent?.status, mintingStatus))}
                 </Text>
-              </Flex>
+              </StatusBade>
               {showEdit && (
                 <Button
                   width={"80px"}
@@ -215,4 +239,15 @@ const Content = styled.div`
   overflow-y: auto;
   height: 100%;
   gap: 16px;
+`;
+
+const StatusBade = styled(Button)`
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: ${({ theme }) => theme.displayTheme === "dark" && "#253327"};
+  height: 36px;
+  pointer-events: none;
 `;
