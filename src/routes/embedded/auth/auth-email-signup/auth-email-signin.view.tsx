@@ -48,8 +48,6 @@ export function AuthEmailSigninEmbeddedView() {
           email,
           password,
         });
-
-        // navigate(EmbeddedPaths.WalletHomeEmbeddedView);
       } catch (error) {
         if (error.code === "email_not_confirmed") {
           navigate(EmbeddedPaths.AuthEmailVerify);
