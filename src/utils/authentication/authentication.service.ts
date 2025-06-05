@@ -106,8 +106,6 @@ async function authenticateWithOAuth(oAuthProviderType: OAutProviderType): Promi
 
       popup.close();
 
-      console.log("OAUTH RESULT =", event.data);
-
       if (isOAuthErrorMessage(event.data)) {
         reject(new Error(event.data.errorCode, { cause: event.data }));
         return;

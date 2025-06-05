@@ -84,8 +84,6 @@ if (window.location.hash.startsWith("#access_token=") && window.opener) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      console.log("onAuthStateChange");
-
       if (!session?.access_token) return;
 
       subscription.unsubscribe();

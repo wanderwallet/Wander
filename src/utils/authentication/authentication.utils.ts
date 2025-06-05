@@ -45,9 +45,7 @@ export function getFriendlyAuthErrorMessage(error: Error, defaultErrorMessage?: 
   console.error("getFriendlyAuthErrorMessage() =", error);
 
   const { message } = error;
-
-  const { errorCode, errorDescription = message } = error.cause as OAuthErrorMessage;
-
+  const { errorCode = message, errorDescription } = (error.cause || {}) as OAuthErrorMessage;
   const mappedErrorMessage = AUTH_ERRORS_BY_CODE[errorCode];
 
   if (mappedErrorMessage) return mappedErrorMessage;

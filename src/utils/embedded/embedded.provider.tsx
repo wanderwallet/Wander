@@ -1213,8 +1213,6 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      console.log("onAuthStateChange", _event, session);
-
       if (isInitialAuthEventDispatched && _event === "INITIAL_SESSION") return;
 
       if (!isInitialAuthEventDispatched) {
