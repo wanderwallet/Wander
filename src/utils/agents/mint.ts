@@ -149,7 +149,10 @@ export async function performSwapIfNeeded() {
     return;
 
     const ao = connect(defaultConfig);
-    const messageId = await sendAoTransfer(ao, AO_PROCESS_ID, activeAgent.id, swapQuantity);
+    const messageId = await sendAoTransfer(ao, AO_PROCESS_ID, activeAgent.id, swapQuantity, [
+      { name: "X-Swap-Date-From", value: getDate(Date.now()).toString() },
+      { name: "X-Swap-Date-To", value: getDate(Date.now()).toString() },
+    ]);
     if (!messageId) {
       log(LOG_GROUP.AGENTS, "Failed to transfer AO tokens to agent: ", activeAgent.id);
       return;

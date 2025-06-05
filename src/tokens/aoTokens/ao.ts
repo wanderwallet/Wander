@@ -309,7 +309,13 @@ export const createDataItemSigner =
     };
   };
 
-export const sendAoTransfer = async (ao: AoInstance, process: string, recipient: string, amount: string) => {
+export const sendAoTransfer = async (
+  ao: AoInstance,
+  process: string,
+  recipient: string,
+  amount: string,
+  tags: (Tag | DecodedTag)[] = [],
+) => {
   try {
     const decryptedWallet = await getActiveKeyfile();
     isLocalWallet(decryptedWallet);
@@ -328,6 +334,7 @@ export const sendAoTransfer = async (ao: AoInstance, process: string, recipient:
         { name: "Quantity", value: amount },
         { name: "Client", value: "Wander" },
         { name: "Client-Version", value: browser.runtime.getManifest().version },
+        ...tags,
       ],
     });
     freeDecryptedWallet(decryptedWallet.keyfile);
