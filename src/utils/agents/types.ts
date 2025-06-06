@@ -149,6 +149,10 @@ export interface AOYieldAgentInfo extends AOYieldAgent {
   totalBought: Record<string, number>;
   totalTransactions: number;
   totalWanderFee: string;
+  swapInProgress: boolean;
+  lastSwapTimestamp?: number;
+  swappedUpToDate?: number;
+  agentVersion: string;
 }
 
 export interface AOYieldAgentCreate {

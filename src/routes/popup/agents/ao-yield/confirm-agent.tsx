@@ -19,7 +19,6 @@ import aoYieldAgentContract from "raw:/assets/agents/contracts/ao-yield-agent.lu
 import { getActiveAddress } from "~wallets/wallets.utils";
 import type { AOYieldAgentCreate, AOYieldAgentStatus } from "~utils/agents/types";
 import { getAOYieldAgents, setAOYieldAgents } from "~utils/agents/utils";
-import { performSwapIfNeeded } from "~utils/agents/mint";
 
 export function ConfirmAOYieldAgentView() {
   const [isLoading, setIsLoading] = useState(false);
@@ -129,13 +128,6 @@ export function ConfirmAOYieldAgentView() {
       navigate(PopupPaths.AOYieldAgentActivated, { search: { activationStatus: "success" } });
 
       TempTransactionStorage.remove("ao-yield-agent");
-
-      // TODO: remove this after testing
-      setTimeout(() => {
-        performSwapIfNeeded().catch((error) => {
-          console.log("error: ", error);
-        });
-      }, 5000);
     } catch (error) {
       console.log("error: ", error);
       navigate(PopupPaths.AOYieldAgentActivated, { search: { activationStatus: "error" } });
