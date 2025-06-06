@@ -197,7 +197,7 @@ export function ConfirmAOYieldAgentView() {
               sizeVariant="small"
               {...passwordInput.bindings}
               label={browser.i18n.getMessage("enter_password_confirm")}
-              labelStyle={{ marginBottom: -4, color: theme.primaryText }}
+              labelStyle={{ marginBottom: -4, color: theme.primaryText, fontSize: 16, fontWeight: 500 }}
               type="password"
               onKeyDown={async (e) => {
                 if (e.key !== "Enter") return;
