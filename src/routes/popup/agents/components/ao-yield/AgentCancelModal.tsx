@@ -1,6 +1,6 @@
 import browser from "webextension-polyfill";
 import { Flex } from "~components/common/Flex";
-import SliderMenu from "~components/SliderMenu";
+import SliderMenu, { ExitButton } from "~components/SliderMenu";
 import { Button, Input, Text, useInput, useToasts } from "@arconnect/components-rebrand";
 import { updateAOYieldAgent } from "~utils/agents/utils";
 import { useState } from "react";
@@ -69,6 +69,7 @@ export function AgentCancelModal({ open, onClose, agentId }: AgentCancelModalPro
 
   return (
     <SliderMenu isOpen={open} onClose={onClose} paddingVertical={32}>
+      <ExitButton onClick={onClose} style={{ position: "absolute", top: 0, right: 0 }} />
       <Flex direction="column" gap={24} height="100%" width="100%">
         <Flex direction="column" gap={16}>
           <img src={alertTriangle} style={{ margin: "0 auto" }} />

@@ -68,7 +68,7 @@ export default function SliderMenu({
   return createPortal(<AnimatePresence>{contentElement}</AnimatePresence>, document.body);
 }
 
-const ExitButton = styled(CloseIcon)`
+export const ExitButton = styled(CloseIcon)`
   cursor: pointer;
   color: ${({ theme }) => `${theme.displayTheme === "light" ? "#000000" : "#FFFFFF"}`};
   transition: transform 0.2s ease;

@@ -14,7 +14,7 @@ import { retryWithDelay } from "~utils/promises/retry";
 import { SWAP_SUCCESS_QUERY_WITH_CURSOR } from "./queries";
 import { useQuery } from "@tanstack/react-query";
 import { defaultOptions } from "~tokens/hooks";
-import { isMintingPaused } from "./mint";
+import { checkIfMintingIsPaused } from "./mint";
 
 interface UseAOYieldAgentsProps {
   status?: AOYieldAgentStatus;
@@ -168,7 +168,7 @@ export function useAOMintingStatus() {
     queryKey: ["ao-minting-status"],
     queryFn: async () => {
       const [isPaused, storedValue] = await Promise.all([
-        isMintingPaused(),
+        checkIfMintingIsPaused(),
         ExtensionStorage.get<boolean>("ao_minting_paused"),
       ]);
 

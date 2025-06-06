@@ -63,11 +63,34 @@ query {
     tags: [
       {name: "Data-Protocol", values: ["ao"]},
       {name: "Action", values: ["Mint"]},
-      {name: "From-Process", values: ["${AO_MINTER_PROCESS_ID}"]}
+      {name: "From-Process", values: ["${AO_MINTER_PROCESS_ID}"]},
+      {name: "Index", values: ["1"]}
     ]
   ) {
     edges {
-      cursor
+      node {
+        id
+        block { timestamp, height }
+        tags { name, value }
+      }
+    }
+  }
+}
+`;
+
+export const AO_PROCESS_MINT_WITH_NONCE_QUERY = `
+query ($nonce: String!) {
+  transactions(
+    first: 30,
+    recipients: ["${AO_PROCESS_ID}"],
+    tags: [
+      {name: "Data-Protocol", values: ["ao"]},
+      {name: "Action", values: ["Mint"]},
+      {name: "From-Process", values: ["${AO_MINTER_PROCESS_ID}"]},
+      {name: "Nonce", values: [$nonce]}
+    ]
+  ) {
+    edges {
       node {
         id
         block { timestamp, height }
