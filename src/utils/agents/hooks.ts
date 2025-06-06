@@ -16,18 +16,29 @@ import { useQuery } from "@tanstack/react-query";
 import { defaultOptions } from "~tokens/hooks";
 import { isMintingPaused } from "./mint";
 
-export function useAOYieldAgents(status?: AOYieldAgentStatus) {
+interface UseAOYieldAgentsProps {
+  status?: AOYieldAgentStatus;
+  showNewAtTop?: boolean;
+}
+
+export function useAOYieldAgents({ status, showNewAtTop = false }: UseAOYieldAgentsProps = {}) {
   const [activeAddress] = useStorage({ key: "active_address", instance: ExtensionStorage });
   const [agents, setAgents] = useState<AOYieldAgent[]>([]);
 
   useEffect(() => {
-    getAOYieldAgents(activeAddress, status).then(setAgents);
+    getAOYieldAgents(activeAddress, status).then((agents) => {
+      if (showNewAtTop) {
+        setAgents(agents.reverse());
+      } else {
+        setAgents(agents);
+      }
+    });
   }, [activeAddress, status]);
 
   return agents;
 }
 
-export function useAOYieldActiveAgent() {
+export function useAOYieldLatestAgent() {
   const [activeAddress] = useStorage({ key: "active_address", instance: ExtensionStorage });
   const [agent, setAgent] = useState<AOYieldAgent>();
 
@@ -57,9 +68,9 @@ export function useAOYieldAgentInfo(agentId: string) {
     queryKey: ["ao-yield-agent-info", agentId],
     queryFn: () => getAOYieldAgentInfo(agentId),
     enabled: !!agentId,
-    refetchInterval: 300_000,
-    staleTime: 300_000,
-    gcTime: 300_000,
+    refetchInterval: 60_000,
+    staleTime: 60_000,
+    gcTime: 60_000,
     retry: 3,
     retryDelay: (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 30000),
     refetchOnWindowFocus: true,

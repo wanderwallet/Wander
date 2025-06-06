@@ -49,8 +49,8 @@ export function AgentsView() {
     <>
       <HeadV2
         title={browser.i18n.getMessage("agents")}
-        backIcon={<ClockRewind fontSize={24} onClick={() => navigate(PopupPaths.AOYieldAgentHistory)} />}
-        back={() => {}}
+        backIcon={<ClockRewind fontSize={24} />}
+        back={() => navigate(PopupPaths.AOYieldAgentHistory)}
       />
 
       <Wrapper>

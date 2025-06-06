@@ -7,7 +7,7 @@ import { useAOYieldAgents } from "~utils/agents/hooks";
 import { AOYieldAgentListItem } from "../components/AOYieldAgentListItem";
 
 export function AOYieldAgentHistoryView() {
-  const aoAgents = useAOYieldAgents();
+  const aoAgents = useAOYieldAgents({ showNewAtTop: true });
 
   return (
     <>
@@ -15,7 +15,7 @@ export function AOYieldAgentHistoryView() {
 
       <Wrapper>
         <Flex gap={12} direction="column">
-          {aoAgents.reverse().map((aoAgent) => (
+          {aoAgents.map((aoAgent) => (
             <AOYieldAgentListItem key={aoAgent.id} aoAgent={aoAgent} isHistory />
           ))}
           {aoAgents.length === 0 && (

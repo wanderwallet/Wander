@@ -1,9 +1,9 @@
-import { useAOMintingStatus, useAOYieldActiveAgent } from "~utils/agents/hooks";
+import { useAOMintingStatus, useAOYieldLatestAgent } from "~utils/agents/hooks";
 import { AgentInfo } from "../components/ao-yield/agent-info";
 import { AOMintingStatusModal } from "../components/AOMintingStatusModal";
 
 export function ManageAOYieldAgentView() {
-  const activeAgent = useAOYieldActiveAgent();
+  const activeAgent = useAOYieldLatestAgent();
   const { data: mintingStatus, isError } = useAOMintingStatus();
 
   return (

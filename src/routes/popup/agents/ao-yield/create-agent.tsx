@@ -23,7 +23,7 @@ export function CreateAOYieldAgentView() {
   const [selectedAsset, setSelectedAsset] = useState<Asset>(assets[0]);
   const [selectedSlippage, setSelectedSlippage] = useState(0.5);
   const [runIndefinitely, setRunIndefinitely] = useState(false);
-  const [startDate, setStartDate] = useState<Date | null>(new Date());
+  const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [showAssetSelector, setShowAssetSelector] = useState(false);
   const [showSlippageSelector, setShowSlippageSelector] = useState(false);

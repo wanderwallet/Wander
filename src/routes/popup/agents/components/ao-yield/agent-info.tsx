@@ -134,9 +134,10 @@ export function AgentInfo({ agentId, headerTitle, mintingStatus, isHistory = fal
                   {agent?.status && browser.i18n.getMessage(getStatusText(agent?.status, mintingStatus))}
                 </Text>
               </StatusBade>
-              {agent?.status === "Active" && (
+              {!isHistory && (
                 <Button
                   width={"80px"}
+                  disabled={agent?.status !== "Active"}
                   variant="secondary"
                   icon={<Settings01 height={20} width={20} />}
                   iconPosition="right"
@@ -198,9 +199,9 @@ export function AgentInfo({ agentId, headerTitle, mintingStatus, isHistory = fal
             </Flex>
           </Flex>
         </Content>
-        {agent?.status === "Active" && (
+        {!isHistory && (
           <Flex gap={8}>
-            <RemoveButton onClick={handleCancelAgent} fullWidth>
+            <RemoveButton onClick={handleCancelAgent} fullWidth disabled={agent?.status !== "Active"}>
               {browser.i18n.getMessage("cancel_agent")}
             </RemoveButton>
           </Flex>
