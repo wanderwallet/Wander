@@ -158,6 +158,7 @@ export async function performSwapIfNeeded() {
       log(LOG_GROUP.AGENTS, "Failed to transfer AO tokens to agent: ", activeAgent.id);
       return;
     }
+    await queryClient.invalidateQueries({ queryKey: ["tokenBalance", AO_PROCESS_ID, activeAddress] });
   } catch (error) {
     log(LOG_GROUP.AGENTS, "Error performing swap: ", error);
   } finally {
