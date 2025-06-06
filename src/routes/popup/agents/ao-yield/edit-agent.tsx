@@ -248,6 +248,7 @@ export function EditAOYieldAgentView() {
         open={showDateSelector}
         onClose={closeDateSelector}
         onSelect={handleDateSelect}
+        runIndefinitely={runIndefinitely}
       />
     </>
   );

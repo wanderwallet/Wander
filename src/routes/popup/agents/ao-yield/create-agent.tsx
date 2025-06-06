@@ -247,6 +247,7 @@ export function CreateAOYieldAgentView() {
         open={showDateSelector}
         onClose={closeDateSelector}
         onSelect={handleDateSelect}
+        runIndefinitely={runIndefinitely}
       />
     </>
   );
