@@ -161,6 +161,7 @@ export interface AOYieldAgentCreate {
 }
 
 export interface Asset {
+  denomination: number;
   ticker: string;
   logo: string;
   id: string;

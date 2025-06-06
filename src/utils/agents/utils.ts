@@ -382,11 +382,13 @@ export const assets: Asset[] = [
     ticker: "wUSDC",
     logo: wUSDCIcon,
     id: WUSDC_PROCESS_ID,
+    denomination: 6,
   },
   {
     ticker: "wAR",
     logo: WarIcon,
     id: WAR_PROCESS_ID,
+    denomination: 12,
   },
 ];
 

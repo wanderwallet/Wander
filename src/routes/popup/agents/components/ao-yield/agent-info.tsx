@@ -15,7 +15,6 @@ import { Settings01 } from "@untitled-ui/icons-react";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import { useLocation } from "~wallets/router/router.utils";
 import { AgentCancelModal } from "./AgentCancelModal";
-import { WAR_PROCESS_ID, WUSDC_PROCESS_ID } from "~tokens/aoTokens/ao";
 import type { WanderRoutePath } from "~wallets/router/router.types";
 import {
   assets,
@@ -68,45 +67,41 @@ export function AgentInfo({ agentId, headerTitle, mintingStatus, isHistory = fal
     if (!agentInfo || !asset) return [];
 
     const { totalAOSold, totalBought, totalTransactions, totalWanderFee } = agentInfo;
-    const decimals = asset.id === WUSDC_PROCESS_ID ? 6 : 12;
 
-    const containsBothAssets = Object.keys(totalBought || {}).length > 1;
+    const totalBoughtKeys = Object.keys(totalBought || {});
+    const containsBothAssets = totalBoughtKeys.length > 1 || (totalBoughtKeys[0] && totalBoughtKeys[0] !== asset.id);
 
     const details = [
       {
         name: "total_ao_sold",
         value: formatTokenQuantity(totalAOSold, 12),
+        logo: undefined,
+        substitutions: [],
       },
       ...(containsBothAssets
-        ? [
-            {
-              name: `total_bought`,
-              value: `${formatTokenQuantity(String(totalBought?.[WAR_PROCESS_ID] || 0), decimals)}`,
-              substitutions: ["wAR"],
-              logo: assets.find((asset) => asset.id === WAR_PROCESS_ID)?.logo,
-            },
-            {
-              name: `total_bought`,
-              value: `${formatTokenQuantity(String(totalBought?.[WUSDC_PROCESS_ID] || 0), decimals)}`,
-              substitutions: ["wUSDC"],
-              logo: assets.find((asset) => asset.id === WUSDC_PROCESS_ID)?.logo,
-            },
-          ]
+        ? assets.map((a) => ({
+            name: `total_bought`,
+            value: `${formatTokenQuantity(String(totalBought?.[a.id] || 0), a.denomination)}`,
+            substitutions: [a.ticker],
+            logo: a.logo,
+          }))
         : [
             {
               name: `total_bought`,
-              value: `${formatTokenQuantity(String(totalBought?.[asset?.id] || 0), decimals)}`,
+              value: `${formatTokenQuantity(String(totalBought?.[asset?.id] || 0), asset.denomination)}`,
               substitutions: [asset?.ticker],
               logo: asset?.logo,
             },
           ]),
-      { name: "total_transactions", value: totalTransactions },
+      { name: "total_transactions", value: totalTransactions, logo: undefined, substitutions: [] },
     ];
 
     if (isHistory) {
       details.push({
         name: "total_wander_fee",
         value: `${formatTokenQuantity(totalWanderFee, 12)} AO`,
+        logo: undefined,
+        substitutions: [],
       });
     }
 
