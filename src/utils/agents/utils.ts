@@ -13,6 +13,9 @@ import type GQLResultInterface from "ar-gql/dist/faces";
 import { formatBalance } from "~utils/format";
 import { balanceToFractioned } from "~tokens/currency";
 import { freeDecryptedWallet } from "~wallets/encryption";
+import WarIcon from "url:/assets/ecosystem/war.svg";
+import wUSDCIcon from "url:/assets/ecosystem/wusdc.svg";
+import type { Asset } from "~utils/agents/types";
 
 /**
  * Initializes a default Arweave instance.
@@ -374,9 +377,22 @@ export function getStatusText(status: AOYieldAgentStatus, mintingStatus?: Mintin
   return status;
 }
 
-export const tokenIdNameMap = {
-  [WAR_PROCESS_ID]: "wAR",
-  [WUSDC_PROCESS_ID]: "wUSDC",
+export const assets: Asset[] = [
+  {
+    ticker: "wUSDC",
+    logo: wUSDCIcon,
+    id: WUSDC_PROCESS_ID,
+  },
+  {
+    ticker: "wAR",
+    logo: WarIcon,
+    id: WAR_PROCESS_ID,
+  },
+];
+
+export const tokenIdInfoMap = {
+  [WUSDC_PROCESS_ID]: assets[0],
+  [WAR_PROCESS_ID]: assets[1],
 };
 
 export function formatTokenQuantity(value: string, decimals: number) {

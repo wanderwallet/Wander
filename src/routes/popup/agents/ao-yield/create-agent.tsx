@@ -8,13 +8,14 @@ import { useEffect, useMemo, useState } from "react";
 import { Slider } from "~components/Slider";
 import { InputButton } from "~components/common/InputButton";
 import { HorizontalLine } from "~components/HorizontalLine";
-import { assets, AssetSelectorModal } from "../components/ao-yield/AssetSelectorModal";
+import { AssetSelectorModal } from "../components/ao-yield/AssetSelectorModal";
 import { SlippageSelectorModal } from "../components/ao-yield/SlippageSelectorModal";
 import { DateSelectorModal } from "../components/ao-yield/DateSelectorModal";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import { useLocation } from "~wallets/router/router.utils";
 import { TempTransactionStorage } from "~utils/storage";
 import type { Asset } from "~utils/agents/types";
+import { assets } from "~utils/agents/utils";
 
 export function CreateAOYieldAgentView() {
   const theme = useTheme();

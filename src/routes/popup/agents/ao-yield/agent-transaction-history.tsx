@@ -11,7 +11,7 @@ import { SvgImageWithBackground } from "../components/SvgImage";
 import aoLogo from "url:/assets/ecosystem/ao-logo.svg";
 import WarIcon from "url:/assets/ecosystem/war.svg";
 import wUSDCIcon from "url:/assets/ecosystem/wusdc.svg";
-import { formatTokenQuantity, tokenIdNameMap } from "~utils/agents/utils";
+import { formatTokenQuantity, tokenIdInfoMap } from "~utils/agents/utils";
 
 export interface AOYieldAgentTransactionHistoryParams {
   id: string;
@@ -33,7 +33,7 @@ export function AOYieldAgentTransactionHistoryView({ params: { id } }: AOYieldAg
               title={
                 <Flex justify="space-between" align="center" width="100%">
                   <Text weight="semibold" noMargin>
-                    {`AO <> ${tokenIdNameMap[transaction?.tokenOut]}`}
+                    {`AO <> ${tokenIdInfoMap[transaction?.tokenOut]?.ticker}`}
                   </Text>
                   <Text size="sm" weight="medium" noMargin>
                     -{formatTokenQuantity(transaction.amountIn, 12)} AO
@@ -47,7 +47,7 @@ export function AOYieldAgentTransactionHistoryView({ params: { id } }: AOYieldAg
                   </Text>
                   <Text size="sm" weight="medium" noMargin>
                     +{formatTokenQuantity(transaction.amountOut, transaction?.tokenOut === WUSDC_PROCESS_ID ? 6 : 12)}{" "}
-                    {tokenIdNameMap[transaction?.tokenOut]}
+                    {tokenIdInfoMap[transaction?.tokenOut]?.ticker}
                   </Text>
                 </Flex>
               }

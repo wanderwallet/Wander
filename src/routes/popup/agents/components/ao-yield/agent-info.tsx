@@ -7,7 +7,6 @@ import { PropertyName, PropertyValue, TransactionProperty } from "~routes/popup/
 import { useMemo, useState } from "react";
 import dayjs from "dayjs";
 import { useAOYieldAgent, useAOYieldAgentInfo } from "~utils/agents/hooks";
-import { assets } from "./AssetSelectorModal";
 import { Divider } from "~components/Divider";
 import { RemoveButton } from "~routes/popup/settings/wallets/[address]";
 import { SvgImageWithBackground } from "../SvgImage";
@@ -16,9 +15,10 @@ import { Settings01 } from "@untitled-ui/icons-react";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import { useLocation } from "~wallets/router/router.utils";
 import { AgentCancelModal } from "./AgentCancelModal";
-import { WUSDC_PROCESS_ID } from "~tokens/aoTokens/ao";
+import { WAR_PROCESS_ID, WUSDC_PROCESS_ID } from "~tokens/aoTokens/ao";
 import type { WanderRoutePath } from "~wallets/router/router.types";
 import {
+  assets,
   formatTokenQuantity,
   getAOYieldAgents,
   getStatusColor,
@@ -70,15 +70,36 @@ export function AgentInfo({ agentId, headerTitle, mintingStatus, isHistory = fal
     const { totalAOSold, totalBought, totalTransactions, totalWanderFee } = agentInfo;
     const decimals = asset.id === WUSDC_PROCESS_ID ? 6 : 12;
 
+    const containsBothAssets = Object.keys(totalBought || {}).length > 1;
+
     const details = [
       {
         name: "total_ao_sold",
         value: formatTokenQuantity(totalAOSold, 12),
       },
-      {
-        name: `total_bought`,
-        value: `${formatTokenQuantity(String(totalBought?.[asset?.id] || 0), decimals)} ${asset?.ticker}`,
-      },
+      ...(containsBothAssets
+        ? [
+            {
+              name: `total_bought`,
+              value: `${formatTokenQuantity(String(totalBought?.[WAR_PROCESS_ID] || 0), decimals)}`,
+              substitutions: ["wAR"],
+              logo: assets.find((asset) => asset.id === WAR_PROCESS_ID)?.logo,
+            },
+            {
+              name: `total_bought`,
+              value: `${formatTokenQuantity(String(totalBought?.[WUSDC_PROCESS_ID] || 0), decimals)}`,
+              substitutions: ["wUSDC"],
+              logo: assets.find((asset) => asset.id === WUSDC_PROCESS_ID)?.logo,
+            },
+          ]
+        : [
+            {
+              name: `total_bought`,
+              value: `${formatTokenQuantity(String(totalBought?.[asset?.id] || 0), decimals)}`,
+              substitutions: [asset?.ticker],
+              logo: asset?.logo,
+            },
+          ]),
       { name: "total_transactions", value: totalTransactions },
     ];
 
@@ -173,13 +194,13 @@ export function AgentInfo({ agentId, headerTitle, mintingStatus, isHistory = fal
               {performanceDetails.length > 0 ? (
                 performanceDetails.map((property, i) => (
                   <TransactionProperty key={`property-${i}`}>
-                    <PropertyName>{browser.i18n.getMessage(property.name, [asset?.ticker])}</PropertyName>
+                    <PropertyName>{browser.i18n.getMessage(property.name, property.substitutions)}</PropertyName>
                     <PropertyValue>
                       {property.value}
                       {i === 0 && (
                         <SvgImageWithBackground height={18} width={18} src={aoLogo} iconSize={12} iconColor="black" />
                       )}
-                      {i === 1 && asset?.logo && <img src={asset.logo} height={18} width={18} />}
+                      {(i === 1 || i == 2) && property?.logo && <img src={property.logo} height={18} width={18} />}
                     </PropertyValue>
                   </TransactionProperty>
                 ))

@@ -12,7 +12,7 @@ import { WAR_PROCESS_ID } from "~tokens/aoTokens/ao";
 import dayjs from "dayjs";
 import type { WanderRoutePath } from "~wallets/router/router.types";
 import { useAOMintingStatus, useAOYieldAgentInfo } from "~utils/agents/hooks";
-import { getStatusColor, getStatusText, tokenIdNameMap } from "~utils/agents/utils";
+import { getStatusColor, getStatusText, tokenIdInfoMap } from "~utils/agents/utils";
 
 interface AOYieldAgentListItemProps {
   aoAgent: AOYieldAgent;
@@ -29,7 +29,9 @@ export const AOYieldAgentListItem = ({ aoAgent, isHistory = false }: AOYieldAgen
       title={
         <Flex justify="space-between" align="center" width="100%">
           <Text weight="semibold" noMargin>
-            {isHistory ? `AO <> ${tokenIdNameMap[aoAgent?.tokenOut]}` : browser.i18n.getMessage("ao_yield_agent")}
+            {isHistory
+              ? `AO <> ${tokenIdInfoMap[aoAgent?.tokenOut]?.ticker}`
+              : browser.i18n.getMessage("ao_yield_agent")}
           </Text>
           <Flex align="center" gap={4}>
             <div

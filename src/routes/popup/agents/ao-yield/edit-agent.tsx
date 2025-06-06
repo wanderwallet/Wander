@@ -7,11 +7,11 @@ import { ChevronDown, HelpCircle } from "@untitled-ui/icons-react";
 import { useEffect, useMemo, useState } from "react";
 import { InputButton } from "~components/common/InputButton";
 import { HorizontalLine } from "~components/HorizontalLine";
-import { assets, AssetSelectorModal } from "../components/ao-yield/AssetSelectorModal";
+import { AssetSelectorModal } from "../components/ao-yield/AssetSelectorModal";
 import { SlippageSelectorModal } from "../components/ao-yield/SlippageSelectorModal";
 import { DateSelectorModal } from "../components/ao-yield/DateSelectorModal";
 import type { Asset } from "~utils/agents/types";
-import { getAOYieldActiveAgent, updateAOYieldAgent } from "~utils/agents/utils";
+import { assets, getAOYieldActiveAgent, updateAOYieldAgent } from "~utils/agents/utils";
 
 export function EditAOYieldAgentView() {
   const theme = useTheme();
