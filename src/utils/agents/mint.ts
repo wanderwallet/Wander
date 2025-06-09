@@ -319,7 +319,7 @@ async function executeTokenSwap(
   swapDateTo: number,
   activeAddress: string,
 ): Promise<void> {
-  log(LOG_GROUP.AGENTS, "Swapping AO tokens to agent: ", activeAgent.id);
+  log(LOG_GROUP.AGENTS, "Transferring AO tokens to agent: ", activeAgent.id);
 
   const ao = connect(defaultConfig);
   const messageId = await sendAoTransfer(ao, AO_PROCESS_ID, activeAgent.id, swapQuantity, [
