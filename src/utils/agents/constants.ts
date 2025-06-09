@@ -11,3 +11,6 @@ export const aoExplorerUrl = "https://www.ao.link";
 export const AO_MINTER_PROCESS_ID = "NTE-RcHEeO15MYMUbXwWytRxn_IUJmXPKPOFVc5qZcg";
 
 export const ONE_HOUR_MS = 3600000;
+export const AO_YIELD_AGENT_LAST_SWAP_DATE_KEY = "ao_yield_agent_last_swap_date";
+export const AO_YIELD_AGENT_SWAP_IN_PROGRESS_KEY = "ao_yield_agent_swap_in_progress";
+export const AO_YIELD_AGENT_ALARM_NAME = "ao-yield-agent-alarm";

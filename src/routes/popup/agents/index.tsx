@@ -10,17 +10,16 @@ import { useEffect, useState } from "react";
 import { ExtensionStorage, useStorage } from "~utils/storage";
 import { AOYieldAgentListItem } from "./components/AOYieldAgentListItem";
 import { LiquidOpsAgentListItem } from "./components/LiquidOpsAgentListItem";
-import { getAOYieldAgents } from "~utils/agents/utils";
-import type { AOYieldAgent } from "~utils/agents/types";
 import { useLocation } from "~wallets/router/router.utils";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import { AOMintingPausedListItem } from "./components/AOMintingPausedListItem";
+import { useAOYieldLatestAgent } from "~utils/agents/hooks";
 
 export function AgentsView() {
   const { navigate } = useLocation();
   const [activeAddress] = useStorage({ key: "active_address", instance: ExtensionStorage });
   const [open, setOpen] = useState(false);
-  const [aoAgent, setAoAgent] = useState<AOYieldAgent>();
+  const aoAgent = useAOYieldLatestAgent();
 
   async function checkAndShowAgentExplainerPopup() {
     const hasShownAgentExplainerPopup = await ExtensionStorage.get("has_shown_agent_explainer_popup");
@@ -30,20 +29,9 @@ export function AgentsView() {
     }
   }
 
-  async function checkAoYieldAgentAvailable() {
-    const agents = await getAOYieldAgents(activeAddress);
-    setAoAgent(agents[agents.length - 1]);
-  }
-
   useEffect(() => {
     checkAndShowAgentExplainerPopup();
   }, []);
-
-  useEffect(() => {
-    if (activeAddress) {
-      checkAoYieldAgentAvailable();
-    }
-  }, [activeAddress]);
 
   return (
     <>

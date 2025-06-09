@@ -43,7 +43,10 @@ export function useAOYieldLatestAgent() {
   const [agent, setAgent] = useState<AOYieldAgent>();
 
   useEffect(() => {
-    getAOYieldAgents(activeAddress).then((agents) => setAgent(agents[agents.length - 1]));
+    getAOYieldAgents(activeAddress).then((agents) => {
+      const activeAgent = agents.find((agent) => agent.status === "Active") || agents[agents.length - 1];
+      setAgent(activeAgent);
+    });
   }, [activeAddress]);
 
   return agent;

@@ -9,11 +9,20 @@ import { defaultConfig } from "~tokens/aoTokens/config";
 import { QueryClient } from "@tanstack/react-query";
 import { defaultOptions } from "~tokens/hooks";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
-import { ONE_HOUR_MS } from "./constants";
+import {
+  AO_YIELD_AGENT_ALARM_NAME,
+  AO_YIELD_AGENT_LAST_SWAP_DATE_KEY,
+  AO_YIELD_AGENT_SWAP_IN_PROGRESS_KEY,
+  ONE_HOUR_MS,
+} from "./constants";
 import type { AOYieldAgent, AOYieldAgentInfo } from "./types";
+import type { DecodedTag } from "~api/modules/sign/tags";
+import { ExtensionStorage } from "~utils/storage";
+import browser from "webextension-polyfill";
 
 const queryClient = new QueryClient();
 let isSwapExecutionInProgress = false;
+let isSchedulingInProgress = false;
 
 export interface MintTransaction {
   id: string;
@@ -254,14 +263,13 @@ function shouldSkipSwap(agentInfo: AOYieldAgentInfo): boolean {
 
 /**
  * Calculates swap dates.
- * @param swappedUpToDate - The swapped up to date.
+ * @param agentInfo - The agent info.
  * @returns The swap dates.
  */
-function calculateSwapDates(swappedUpToDate: number | null): { from: number; to: number } {
-  const now = Date.now();
+function calculateSwapDates(agentInfo: AOYieldAgentInfo): { from: number; to: number } {
   return {
-    from: swappedUpToDate ? normalizeToStartOfDay(swappedUpToDate) : normalizeToStartOfDay(now),
-    to: normalizeToStartOfDay(now),
+    from: normalizeToStartOfDay(agentInfo.swappedUpToDate || agentInfo.startDate),
+    to: normalizeToStartOfDay(Date.now()),
   };
 }
 
@@ -324,6 +332,24 @@ async function executeTokenSwap(
     return;
   }
 
+  try {
+    const { Error, Messages } = await ao.result({ message: messageId, process: AO_PROCESS_ID });
+    const hasValidTag = Messages?.some((message) =>
+      message?.Tags?.some(
+        (tag: DecodedTag) => tag.name === "Action" && (tag.value === "Debit-Notice" || tag.value === "Credit-Notice"),
+      ),
+    );
+
+    if (Error || !hasValidTag) {
+      log(LOG_GROUP.AGENTS, "Failed to transfer AO tokens to agent: ", activeAgent.id);
+      return;
+    }
+  } catch {}
+
+  log(LOG_GROUP.AGENTS, "Transferred AO tokens to agent: ", activeAgent.id);
+
+  await ExtensionStorage.set(AO_YIELD_AGENT_LAST_SWAP_DATE_KEY, normalizeToStartOfDay(Date.now()));
+
   await queryClient.invalidateQueries({
     queryKey: ["tokenBalance", AO_PROCESS_ID, activeAddress],
   });
@@ -335,20 +361,56 @@ export async function executeAutomaticSwapIfNeeded(): Promise<void> {
   isSwapExecutionInProgress = true;
 
   try {
+    // Check if swap already happened today
+    const lastSwapDate = await ExtensionStorage.get<number>(AO_YIELD_AGENT_LAST_SWAP_DATE_KEY);
+    if (lastSwapDate) {
+      if (normalizeToStartOfDay(lastSwapDate) === normalizeToStartOfDay(Date.now())) {
+        log(LOG_GROUP.AGENTS, "Already swapped today");
+        return;
+      }
+    }
+
+    // Atomic check-and-set for swap lock
+    const lockTimestamp = Date.now();
+    const currentLock = await ExtensionStorage.get<number>(AO_YIELD_AGENT_SWAP_IN_PROGRESS_KEY);
+
+    if (currentLock) {
+      // If swap has been in progress for more than 1 hour, consider it failed and allow retry
+      if (lockTimestamp - currentLock < ONE_HOUR_MS) {
+        log(LOG_GROUP.AGENTS, "Swap already in progress");
+        return;
+      } else {
+        log(LOG_GROUP.AGENTS, "Clearing stale swap in progress flag");
+      }
+    }
+
+    // Try to acquire the lock atomically
+    await ExtensionStorage.set(AO_YIELD_AGENT_SWAP_IN_PROGRESS_KEY, lockTimestamp);
+
+    // Double-check that we actually got the lock (handle race conditions)
+    const verifyLock = await ExtensionStorage.get<number>(AO_YIELD_AGENT_SWAP_IN_PROGRESS_KEY);
+    if (verifyLock !== lockTimestamp) {
+      log(LOG_GROUP.AGENTS, "Failed to acquire swap lock - another process is running");
+      return;
+    }
+
     const activeAddress = await getActiveAddress();
     if (!activeAddress) {
       log(LOG_GROUP.AGENTS, "No active address found");
+      await ExtensionStorage.remove(AO_YIELD_AGENT_SWAP_IN_PROGRESS_KEY);
       return;
     }
 
     const activeAgent = await getAOYieldActiveAgent();
     if (!activeAgent) {
       log(LOG_GROUP.AGENTS, "No active agent found");
+      await ExtensionStorage.remove(AO_YIELD_AGENT_SWAP_IN_PROGRESS_KEY);
       return;
     }
 
     // Validate agent eligibility
     if (!(await validateAgentForSwap(activeAgent))) {
+      await ExtensionStorage.remove(AO_YIELD_AGENT_SWAP_IN_PROGRESS_KEY);
       return;
     }
 
@@ -363,10 +425,13 @@ export async function executeAutomaticSwapIfNeeded(): Promise<void> {
     });
 
     // Check if swap should be skipped
-    if (shouldSkipSwap(agentInfo)) return;
+    if (shouldSkipSwap(agentInfo)) {
+      await ExtensionStorage.remove(AO_YIELD_AGENT_SWAP_IN_PROGRESS_KEY);
+      return;
+    }
 
     // Calculate swap dates
-    const { from: swapDateFrom, to: swapDateTo } = calculateSwapDates(agentInfo.swappedUpToDate);
+    const { from: swapDateFrom, to: swapDateTo } = calculateSwapDates(agentInfo);
 
     // Calculate mint quantity for the date range
     const mintResult = await calculateMintQuantityForDateRange(activeAddress, swapDateFrom, swapDateTo);
@@ -382,17 +447,41 @@ export async function executeAutomaticSwapIfNeeded(): Promise<void> {
 
     if (BigNumber(swapQuantity).eq("0")) {
       log(LOG_GROUP.AGENTS, "No swap needed");
+      await ExtensionStorage.remove(AO_YIELD_AGENT_SWAP_IN_PROGRESS_KEY);
       return;
     }
 
     // Validate token balance
-    if (!(await validateTokenBalanceForSwap(activeAddress, swapQuantity))) return;
+    if (!(await validateTokenBalanceForSwap(activeAddress, swapQuantity))) {
+      await ExtensionStorage.remove(AO_YIELD_AGENT_SWAP_IN_PROGRESS_KEY);
+      return;
+    }
 
-    // Execute the swap
+    // Execute the swap (lock is already acquired above)
     await executeTokenSwap(activeAgent, swapQuantity, actualDateFrom, actualDateTo, activeAddress);
+
+    // Clear swap in progress flag after successful execution
+    await ExtensionStorage.remove(AO_YIELD_AGENT_SWAP_IN_PROGRESS_KEY);
   } catch (error) {
     log(LOG_GROUP.AGENTS, "Error performing swap: ", error);
+    // Clear swap in progress flag on error
+    await ExtensionStorage.remove(AO_YIELD_AGENT_SWAP_IN_PROGRESS_KEY);
   } finally {
     isSwapExecutionInProgress = false;
+  }
+}
+
+export async function scheduleSwapExecution() {
+  if (isSchedulingInProgress) return;
+
+  isSchedulingInProgress = true;
+
+  try {
+    const alarms = await browser.alarms.get(AO_YIELD_AGENT_ALARM_NAME);
+    if (alarms) return;
+
+    browser.alarms.create(AO_YIELD_AGENT_ALARM_NAME, { when: Date.now() });
+  } finally {
+    isSchedulingInProgress = false;
   }
 }
