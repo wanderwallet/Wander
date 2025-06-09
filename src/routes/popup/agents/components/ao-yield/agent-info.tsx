@@ -27,6 +27,7 @@ import {
 import type { MintingStatus } from "~utils/agents/types";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { getActiveAddress } from "~wallets";
+import { EventType, trackEvent } from "~utils/analytics";
 
 interface AgentInfoProps {
   agentId: string;
@@ -116,12 +117,16 @@ export function AgentInfo({ agentId, headerTitle, mintingStatus, isHistory = fal
     if (!agent || !agentInfo) return;
 
     if (agent.status !== agentInfo.status) {
+      const isCompleted = agent.status === "Active" && agentInfo.status === "Completed";
       const activeAddress = await getActiveAddress();
       const agents = await getAOYieldAgents(activeAddress);
       const foundAgentIndex = agents.findIndex((agent) => agent.id === agentId);
       if (foundAgentIndex !== -1) {
         agents[foundAgentIndex] = { ...agent, status: agentInfo.status };
         await setAOYieldAgents(activeAddress, agents);
+        if (isCompleted) {
+          await trackEvent(EventType.AO_YIELD_AGENT_END, {});
+        }
       }
     }
   }, [agent, agentInfo]);

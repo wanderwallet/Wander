@@ -11,6 +11,7 @@ import WanderAgentExplainerPopup from "./WanderAgentExplainerPopup";
 import { useState } from "react";
 import { useLocation } from "~wallets/router/router.utils";
 import StarIcon from "~components/welcome/StarIcon";
+import { EventType, trackEvent } from "~utils/analytics";
 
 export default function CreateWanderAgentCTA() {
   const [open, setOpen] = useState(false);
@@ -33,6 +34,7 @@ export default function CreateWanderAgentCTA() {
   );
 
   const handleOpen = () => {
+    trackEvent(EventType.AGENT_DASHBOARD, {});
     if (!hasShownAgentExplainerPopup) {
       setHasShownAgentExplainerPopup(true);
       setOpen(true);

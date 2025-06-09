@@ -8,7 +8,7 @@ import confirmAgentImage from "url:/assets/agents/images/confirm-agent.svg";
 import aoLogo from "url:/assets/ecosystem/ao-logo.svg";
 import { ExtensionStorage, TempTransactionStorage, useStorage } from "~utils/storage";
 import { PropertyName, PropertyValue, TransactionProperty } from "~routes/popup/transaction/[id]";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import dayjs from "dayjs";
 import { useAskPassword } from "~wallets/hooks";
 import { checkPassword } from "~wallets/auth";
@@ -19,6 +19,7 @@ import aoYieldAgentContract from "raw:/assets/agents/contracts/ao-yield-agent.lu
 import { getActiveAddress } from "~wallets/wallets.utils";
 import type { AOYieldAgentCreate, AOYieldAgentStatus } from "~utils/agents/types";
 import { getAOYieldAgents, setAOYieldAgents } from "~utils/agents/utils";
+import { EventType, PageType, trackEvent, trackPage } from "~utils/analytics";
 
 export function ConfirmAOYieldAgentView() {
   const [isLoading, setIsLoading] = useState(false);
@@ -125,6 +126,14 @@ export function ConfirmAOYieldAgentView() {
 
       await setAOYieldAgents(activeAddress, agents);
 
+      const days = dayjs(aoYieldAgent.endDate).diff(dayjs(aoYieldAgent.startDate), "day") + 1;
+      const runningTime = aoYieldAgent.runIndefinitely ? "∞" : `${days} ${days === 1 ? "day" : "days"}`;
+      await trackEvent(EventType.AO_YIELD_AGENT_CREATED, {
+        buyAsset: aoYieldAgent.asset.id,
+        runningTime,
+        dailyConversionPercentage: aoYieldAgent.conversionPercentage,
+      });
+
       navigate(PopupPaths.AOYieldAgentActivated, { search: { activationStatus: "success" } });
 
       TempTransactionStorage.remove("ao-yield-agent");
@@ -135,6 +144,10 @@ export function ConfirmAOYieldAgentView() {
       setIsLoading(false);
     }
   }
+
+  useEffect(() => {
+    trackPage(PageType.AO_YIELD_AGENT_CONFIRM);
+  }, []);
 
   return (
     <>

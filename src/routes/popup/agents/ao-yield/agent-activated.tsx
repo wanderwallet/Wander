@@ -6,6 +6,8 @@ import agentActivated from "url:/assets/agents/images/agent-activated.svg";
 import agentNotActivated from "url:/assets/agents/images/agent-not-activated.svg";
 import { useLocation, useSearchParams } from "~wallets/router/router.utils";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
+import { useEffect } from "react";
+import { trackPage, PageType } from "~utils/analytics";
 
 export function AOYieldAgentActivatedView() {
   const { navigate } = useLocation();
@@ -27,6 +29,16 @@ export function AOYieldAgentActivatedView() {
       navigate(PopupPaths.Home);
     }
   };
+
+  useEffect(() => {
+    if (!activationStatus) return;
+
+    if (isActivated) {
+      trackPage(PageType.AO_YIELD_AGENT_ACTIVATED);
+    } else {
+      trackPage(PageType.AO_YIELD_AGENT_ACTIVATION_FAILED);
+    }
+  }, [isActivated, activationStatus]);
 
   return (
     <Wrapper>

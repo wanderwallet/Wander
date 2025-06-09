@@ -12,6 +12,7 @@ import { SlippageSelectorModal } from "../components/ao-yield/SlippageSelectorMo
 import { DateSelectorModal } from "../components/ao-yield/DateSelectorModal";
 import type { Asset } from "~utils/agents/types";
 import { assets, getAOYieldActiveAgent, updateAOYieldAgent } from "~utils/agents/utils";
+import { trackPage, PageType } from "~utils/analytics";
 
 export function EditAOYieldAgentView() {
   const theme = useTheme();
@@ -124,6 +125,8 @@ export function EditAOYieldAgentView() {
         setEndDate(new Date(agent.endDate));
       }
     });
+
+    trackPage(PageType.AO_YIELD_AGENT_EDIT);
   }, []);
 
   return (

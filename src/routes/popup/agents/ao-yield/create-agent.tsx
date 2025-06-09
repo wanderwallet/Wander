@@ -16,6 +16,7 @@ import { useLocation } from "~wallets/router/router.utils";
 import { TempTransactionStorage } from "~utils/storage";
 import type { Asset } from "~utils/agents/types";
 import { assets } from "~utils/agents/utils";
+import { trackPage, PageType } from "~utils/analytics";
 
 export function CreateAOYieldAgentView() {
   const theme = useTheme();
@@ -98,9 +99,13 @@ export function CreateAOYieldAgentView() {
     }
   }, [runIndefinitely]);
 
+  useEffect(() => {
+    trackPage(PageType.AO_YIELD_AGENT_CREATE);
+  }, []);
+
   return (
     <>
-      <HeadV2 title={browser.i18n.getMessage("agents")} />
+      <HeadV2 title={browser.i18n.getMessage("ao_yield_agent")} />
       <Wrapper>
         <Content>
           <Flex direction="column" gap={16} padding="16px 8px">

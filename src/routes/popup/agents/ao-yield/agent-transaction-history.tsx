@@ -12,6 +12,8 @@ import aoLogo from "url:/assets/ecosystem/ao-logo.svg";
 import WarIcon from "url:/assets/ecosystem/war.svg";
 import wUSDCIcon from "url:/assets/ecosystem/wusdc.svg";
 import { formatTokenQuantity, tokenIdInfoMap } from "~utils/agents/utils";
+import { useEffect } from "react";
+import { trackPage, PageType } from "~utils/analytics";
 
 export interface AOYieldAgentTransactionHistoryParams {
   id: string;
@@ -21,6 +23,10 @@ export type AOYieldAgentTransactionHistoryViewProps = CommonRouteProps<AOYieldAg
 
 export function AOYieldAgentTransactionHistoryView({ params: { id } }: AOYieldAgentTransactionHistoryViewProps) {
   const { transactions, loading, hasNextPage, count, fetchTransactions } = useTransactions(id);
+
+  useEffect(() => {
+    trackPage(PageType.AO_YIELD_AGENT_TX_HISTORY);
+  }, []);
 
   return (
     <>

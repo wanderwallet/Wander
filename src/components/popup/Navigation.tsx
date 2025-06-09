@@ -7,6 +7,7 @@ import { useStorage, ExtensionStorage } from "~utils/storage";
 import type { WanderRoutePath } from "~wallets/router/router.types";
 import HedgehogHeadIcon from "url:/assets/agents/images/hedgehog-head.svg";
 import { useAOMintingStatus } from "~utils/agents/hooks";
+import { EventType, trackEvent } from "~utils/analytics";
 
 const Home05Active = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="25" height="24" viewBox="0 0 25 24" fill="none">
@@ -88,7 +89,13 @@ export const NavigationBar = () => {
             active={active}
             data-active={active ? "true" : "false"}
             key={index}
-            onClick={() => navigate(button.route as WanderRoutePath)}>
+            onClick={() => {
+              if (button.route === "/agents") {
+                trackEvent(EventType.AGENT_DASHBOARD, {});
+              }
+
+              navigate(button.route as WanderRoutePath);
+            }}>
             <IconWrapper size={button.size}>
               {active ? button.iconActive : button.icon}
               {!isSeedphraseBackedUp && button.route === "/quick-settings" && <PendingActionDot />}

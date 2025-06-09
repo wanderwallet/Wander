@@ -5,9 +5,15 @@ import HeadV2 from "~components/popup/HeadV2";
 import { Flex } from "~components/common/Flex";
 import { useAOYieldAgents } from "~utils/agents/hooks";
 import { AOYieldAgentListItem } from "../components/AOYieldAgentListItem";
+import { useEffect } from "react";
+import { trackPage, PageType } from "~utils/analytics";
 
 export function AOYieldAgentHistoryView() {
   const aoAgents = useAOYieldAgents({ showNewAtTop: true });
+
+  useEffect(() => {
+    trackPage(PageType.AO_YIELD_AGENT_HISTORY);
+  }, []);
 
   return (
     <>

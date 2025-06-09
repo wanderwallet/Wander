@@ -11,6 +11,7 @@ import { checkPassword } from "~wallets/auth";
 import alertTriangle from "url:/assets/agents/images/alert-triangle.svg";
 import { useLocation } from "~wallets/router/router.utils";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
+import { EventType, trackEvent } from "~utils/analytics";
 
 interface AgentCancelModalProps {
   open: boolean;
@@ -49,6 +50,7 @@ export function AgentCancelModal({ open, onClose, agentId }: AgentCancelModalPro
       }
 
       await updateAOYieldAgent(agentId, { status: "Cancelled" });
+      await trackEvent(EventType.AO_YIELD_AGENT_CANCEL, {});
       toasts.setToast({
         content: browser.i18n.getMessage("agent_cancelled"),
         type: "success",

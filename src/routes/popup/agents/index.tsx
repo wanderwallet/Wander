@@ -7,17 +7,17 @@ import { Flex } from "~components/common/Flex";
 import { ClockRewind } from "@untitled-ui/icons-react";
 import WanderAgentExplainerPopup from "./components/WanderAgentExplainerPopup";
 import { useEffect, useState } from "react";
-import { ExtensionStorage, useStorage } from "~utils/storage";
+import { ExtensionStorage } from "~utils/storage";
 import { AOYieldAgentListItem } from "./components/AOYieldAgentListItem";
 import { LiquidOpsAgentListItem } from "./components/LiquidOpsAgentListItem";
 import { useLocation } from "~wallets/router/router.utils";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import { AOMintingPausedListItem } from "./components/AOMintingPausedListItem";
 import { useAOYieldLatestAgent } from "~utils/agents/hooks";
+import { PageType, trackPage } from "~utils/analytics";
 
 export function AgentsView() {
   const { navigate } = useLocation();
-  const [activeAddress] = useStorage({ key: "active_address", instance: ExtensionStorage });
   const [open, setOpen] = useState(false);
   const aoAgent = useAOYieldLatestAgent();
 
@@ -31,6 +31,7 @@ export function AgentsView() {
 
   useEffect(() => {
     checkAndShowAgentExplainerPopup();
+    trackPage(PageType.AGENTS);
   }, []);
 
   return (
