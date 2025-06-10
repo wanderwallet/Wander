@@ -15,7 +15,7 @@ export function useLOSupplyAPY(ticker: string) {
     queryKey: ["liquidopsTokenAPY", ticker],
     queryFn: async () => {
       try {
-        const client = await LiquidOpsClient();
+        const { client } = await LiquidOpsClient();
         const apr = await client.getSupplyAPR({ token: ticker.toUpperCase() });
 
         return apr || 0;

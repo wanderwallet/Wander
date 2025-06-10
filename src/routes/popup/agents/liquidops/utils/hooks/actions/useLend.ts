@@ -22,75 +22,85 @@ interface Params {
 export function useLend({ onSettled }: Params) {
   const lendMutation = useMutation({
     mutationFn: async ({ token, quantity }: LendParams) => {
-      const client = await LiquidOpsClient();
-      const walletAddress = await getActiveAddress();
-      const transferId = await client.lend({
-        token,
-        quantity,
-        noResult: true,
-      });
+      const { client, free } = await LiquidOpsClient(true);
 
-      const { tokenAddress, oTokenAddress } = tokenInput(token);
-      const res = await client.trackResult({
-        process: tokenAddress,
-        message: transferId,
-        targetProcess: oTokenAddress,
-        match: {
-          success: {
-            Target: walletAddress,
-            Tags: [{ name: "Action", values: "Mint-Confirmation" }],
+      try {
+        const walletAddress = await getActiveAddress();
+        const transferId = await client.lend({
+          token,
+          quantity,
+          noResult: true,
+        });
+
+        const { tokenAddress, oTokenAddress } = tokenInput(token);
+        const res = await client.trackResult({
+          process: tokenAddress,
+          message: transferId,
+          targetProcess: oTokenAddress,
+          match: {
+            success: {
+              Target: walletAddress,
+              Tags: [{ name: "Action", values: "Mint-Confirmation" }],
+            },
+            fail: {
+              Target: walletAddress,
+              Tags: [{ name: "Action", values: ["Mint-Error", "Transfer-Error"] }],
+            },
           },
-          fail: {
-            Target: walletAddress,
-            Tags: [{ name: "Action", values: ["Mint-Error", "Transfer-Error"] }],
-          },
-        },
-      });
+        });
 
-      if (res && res.match === "fail") {
-        const errorMessage = res.message.Tags.find((tag) => tag.name === "Error")?.value || "Unknown error";
+        if (res && res.match === "fail") {
+          const errorMessage = res.message.Tags.find((tag) => tag.name === "Error")?.value || "Unknown error";
 
-        throw new Error(errorMessage);
+          throw new Error(errorMessage);
+        }
+
+        return "Lent assets";
+      } finally {
+        free();
       }
-
-      return "Lent assets";
     },
     onSettled,
   });
 
   const unlendMutation = useMutation({
     mutationFn: async ({ token, quantity }: UnlendParams) => {
-      const client = await LiquidOpsClient();
-      const walletAddress = await getActiveAddress();
-      const messageId = await client.unLend({
-        token,
-        quantity,
-        noResult: true,
-      });
+      const { client, free } = await LiquidOpsClient(true);
 
-      const { oTokenAddress } = tokenInput(token);
-      const res = await client.trackResult({
-        process: oTokenAddress,
-        message: messageId,
-        match: {
-          success: {
-            Target: walletAddress,
-            Tags: [{ name: "Action", values: "Redeem-Confirmation" }],
+      try {
+        const walletAddress = await getActiveAddress();
+        const messageId = await client.unLend({
+          token,
+          quantity,
+          noResult: true,
+        });
+
+        const { oTokenAddress } = tokenInput(token);
+        const res = await client.trackResult({
+          process: oTokenAddress,
+          message: messageId,
+          match: {
+            success: {
+              Target: walletAddress,
+              Tags: [{ name: "Action", values: "Redeem-Confirmation" }],
+            },
+            fail: {
+              Target: walletAddress,
+              Tags: [{ name: "Action", values: "Redeem-Error" }],
+            },
           },
-          fail: {
-            Target: walletAddress,
-            Tags: [{ name: "Action", values: "Redeem-Error" }],
-          },
-        },
-      });
+        });
 
-      if (res && res.match === "fail") {
-        const errorMessage = res.message.Tags.find((tag) => tag.name === "Error")?.value || "Unknown error";
+        if (res && res.match === "fail") {
+          const errorMessage = res.message.Tags.find((tag) => tag.name === "Error")?.value || "Unknown error";
 
-        throw new Error(errorMessage);
+          throw new Error(errorMessage);
+        }
+
+        return "Unlent assets";
+      } finally {
+        free();
       }
-
-      return "Unlent assets";
     },
     onSettled,
   });

@@ -54,9 +54,11 @@ export function LiquidOpsConfirm({ params: { action, ticker, quantity } }: Liqui
             queryKey: ["liquidopsTokenAPY", ticker],
           }),
         ]);
+      } else {
+        console.warn("Error trying to lend/withdraw: " + (error?.message || error || "Unknown error"));
       }
 
-      navigate(`/agents/liquidops/${ticker}/${action}/result/${typeof error === "undefined" ? "success" : "failure"}`);
+      navigate(`/agents/liquidops/${ticker}/${action}/result/${!error ? "success" : "failure"}`);
     },
   });
 

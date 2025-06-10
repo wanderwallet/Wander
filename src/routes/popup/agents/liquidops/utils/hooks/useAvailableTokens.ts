@@ -29,7 +29,7 @@ export function useActiveTokens() {
   return useQuery({
     queryKey: ["activeTokens", activeAddress],
     queryFn: async () => {
-      const client = await LiquidOpsClient();
+      const { client } = await LiquidOpsClient();
       const activeTokens = Object.values(tokenData).filter((token) => !token.deprecated);
 
       const res = await Promise.all(

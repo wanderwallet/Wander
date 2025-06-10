@@ -20,7 +20,7 @@ export function useOExchangeRate(ticker: string, quantity: string) {
         return BigNumber(0);
       }
 
-      const client = await LiquidOpsClient();
+      const { client } = await LiquidOpsClient();
       const value = await client.getExchangeRate({
         token: token.ticker.toUpperCase(),
         quantity: new Quantity(0n, token.denomination).fromString(quantity).raw,

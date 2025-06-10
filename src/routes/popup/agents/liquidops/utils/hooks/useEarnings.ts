@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { LiquidOpsClient } from "../LiquidOps";
 import { getActiveAddress } from "~wallets";
-import { fetchTokenBalance } from "~tokens/aoTokens/ao";
 import { tokenData } from "liquidops";
 import { Quantity } from "ao-tokens";
 import BigNumber from "bignumber.js";
@@ -24,7 +23,7 @@ export function useEarnings(ticker: string) {
 
       try {
         const walletAddress = await getActiveAddress();
-        const client = await LiquidOpsClient();
+        const { client } = await LiquidOpsClient();
 
         const { collateralization } = await client.getPosition({
           token: ticker.toUpperCase(),

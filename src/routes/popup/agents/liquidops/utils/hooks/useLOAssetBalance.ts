@@ -26,7 +26,7 @@ export function useLOAssetBalance(ticker: string) {
         return BigNumber(0);
       }
 
-      const client = await LiquidOpsClient();
+      const { client } = await LiquidOpsClient();
       const value = await client.getPosition({
         token: token.ticker.toUpperCase(),
         recipient: activeAddress,
