@@ -3357,5 +3357,17 @@
   "no_agents": {
     "message": "You don't have any agents",
     "description": "No agents text"
+  },
+  "ao_delegation_title": {
+    "message": "No AO yield allocated",
+    "description": "AO Delegation title"
+  },
+  "ao_delegation_description": {
+    "message": "You haven't allocated any AO yield to your wallet. Update your AO yield delegation preferences to start receiving AO tokens and enable agent functionality.",
+    "description": "AO Delegation description"
+  },
+  "update_preferences": {
+    "message": "Update preferences",
+    "description": "Update preferences text"
   }
 }

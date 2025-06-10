@@ -1,13 +1,13 @@
 import { connect } from "@permaweb/aoconnect";
 import type { AosConfig, DeployConfig, DeployResult, Services } from "./types";
 import { APP_NAME, defaultServices } from "./constants";
-import { Logger } from "./logger";
 import { getArweave, isArweaveAddress, isCronPattern, isUrl, parseToInt, pollForProcessSpawn } from "./utils";
 import { ExtensionStorage } from "~utils/storage";
 import { getActiveKeyfile } from "~wallets";
 import { createDataItemSigner } from "~tokens/aoTokens/ao";
 import { retryWithDelay } from "~utils/promises/retry";
 import { AOS_QUERY } from "./queries";
+import { log, LOG_GROUP } from "~utils/log/log.utils";
 
 /**
  * Manages deployments of contracts to AO.
@@ -128,7 +128,6 @@ export class DeploymentsManager {
       delay: parseToInt(retry?.delay, 3000),
     };
 
-    const logger = new Logger(configName, silent);
     const aosConfig = await this.#getAosConfig();
     module = isArweaveAddress(module) ? module! : aosConfig.module;
     scheduler = isArweaveAddress(scheduler) ? scheduler! : aosConfig.scheduler;
@@ -160,7 +159,7 @@ export class DeploymentsManager {
     const contractSrc = await (await fetch(contractPath)).text();
 
     if (isNewProcess) {
-      logger.log("Spawning new process...", false, true);
+      log(LOG_GROUP.AGENTS, "Spawning new process...");
       tags = Array.isArray(tags) ? tags : [];
       tags = [
         { name: "App-Name", value: APP_NAME },
@@ -199,7 +198,7 @@ export class DeploymentsManager {
     let messageId: string;
     if (!onBoot || !isNewProcess) {
       if (!isNewProcess) {
-        logger.log("Updating existing process...", false, true);
+        log(LOG_GROUP.AGENTS, "Updating existing process...");
       }
       // Load contract to process
       messageId = await retryWithDelay(

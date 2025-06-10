@@ -3317,5 +3317,17 @@
     "no_agents": {
         "message": "您没有代理",
         "description": "No agents text"
+    },
+    "ao_delegation_title": {
+        "message": "未分配 AO 收益",
+        "description": "AO Delegation title"
+    },
+    "ao_delegation_description": {
+        "message": "您的钱包未分配任何 AO 收益。请更新您的 AO 收益委托偏好设置以开始接收 AO 代币并启用代理功能。",
+        "description": "AO Delegation description"
+    },
+    "update_preferences": {
+        "message": "更新偏好",
+        "description": "Update preferences text"
     }
 }

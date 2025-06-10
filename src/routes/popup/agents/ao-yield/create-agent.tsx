@@ -17,6 +17,7 @@ import { TempTransactionStorage } from "~utils/storage";
 import type { Asset } from "~utils/agents/types";
 import { assets } from "~utils/agents/utils";
 import { trackPage, PageType } from "~utils/analytics";
+import { AODelegationModal } from "../components/AODelegationModal";
 
 export function CreateAOYieldAgentView() {
   const theme = useTheme();
@@ -254,6 +255,7 @@ export function CreateAOYieldAgentView() {
         onSelect={handleDateSelect}
         runIndefinitely={runIndefinitely}
       />
+      <AODelegationModal />
     </>
   );
 }
