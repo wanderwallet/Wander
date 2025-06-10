@@ -47,9 +47,7 @@ export function useLend({ onSettled }: Params) {
         },
       });
 
-      if (!res) {
-        throw new Error("Failed to find lend result onchain. Your action might have failed.");
-      } else if (res.match === "fail") {
+      if (res && res.match === "fail") {
         const errorMessage = res.message.Tags.find((tag) => tag.name === "Error")?.value || "Unknown error";
 
         throw new Error(errorMessage);
@@ -86,9 +84,7 @@ export function useLend({ onSettled }: Params) {
         },
       });
 
-      if (!res) {
-        throw new Error("Failed to find unlend result onchain. Your action might have failed.");
-      } else if (res.match === "fail") {
+      if (res && res.match === "fail") {
         const errorMessage = res.message.Tags.find((tag) => tag.name === "Error")?.value || "Unknown error";
 
         throw new Error(errorMessage);

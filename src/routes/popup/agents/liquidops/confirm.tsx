@@ -1,13 +1,12 @@
 import HeadV2 from "~components/popup/HeadV2";
-import { Button, Section, Text, Spacer, Input, useInput } from "@arconnect/components-rebrand";
+import { Button, Section, Text, Spacer, Input, useInput, useToasts } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
 import styled from "styled-components";
 import { Flex } from "~components/common/Flex";
 import { SvgImageWithBackground } from "../components/SvgImage";
-import UsdaLogo from "url:/assets/ecosystem/usda.svg";
 import { AgentStats } from "../components/liquidops/AgentStats";
 import { useActiveWallet } from "~wallets/hooks";
-import { tokenData } from "liquidops";
+import { tokenData, tokenInput } from "liquidops";
 import { useLOSupplyAPY } from "./utils/hooks/useLOSupplyAPY";
 import { useMemo } from "react";
 import type { CommonRouteProps } from "~wallets/router/router.types";
@@ -17,6 +16,11 @@ import useSetting from "~settings/hook";
 import { useTokenPrice } from "~tokens/hooks";
 import { useOExchangeRate } from "./utils/hooks/useOExchangeRate";
 import { useGateway } from "./utils/hooks/useGateway";
+import { useLend } from "./utils/hooks/actions/useLend";
+import { useLocation } from "~wallets/router/router.utils";
+import { Quantity } from "ao-tokens";
+import { useQueryClient } from "@tanstack/react-query";
+import { checkPassword } from "~wallets/auth";
 
 export type LiquidOpsConfirmProps = CommonRouteProps<{
   action: "deposit" | "withdraw";
@@ -25,10 +29,36 @@ export type LiquidOpsConfirmProps = CommonRouteProps<{
 }>;
 
 export function LiquidOpsConfirm({ params: { action, ticker, quantity } }: LiquidOpsConfirmProps) {
+  const { navigate } = useLocation();
+  const queryClient = useQueryClient();
+
   const passwordInput = useInput();
   const wallet = useActiveWallet();
 
-  async function executeLocal() {}
+  const { lend, isLending, unlend, isUnlending } = useLend({
+    onSettled: async (_, error) => {
+      if (!error) {
+        const { oTokenAddress, tokenAddress } = tokenInput(ticker.toUpperCase());
+
+        await Promise.all([
+          queryClient.invalidateQueries({
+            queryKey: ["tokenBalance", oTokenAddress, wallet?.address],
+          }),
+          queryClient.invalidateQueries({
+            queryKey: ["tokenBalance", tokenAddress, wallet?.address],
+          }),
+          queryClient.invalidateQueries({
+            queryKey: ["assetBalance", tokenAddress, wallet?.address],
+          }),
+          queryClient.invalidateQueries({
+            queryKey: ["liquidopsTokenAPY", ticker],
+          }),
+        ]);
+      }
+
+      navigate(`/agents/liquidops/${ticker}/${action}/result/${typeof error === "undefined" ? "success" : "failure"}`);
+    },
+  });
 
   const activeTokens = Object.values(tokenData).filter((token) => !token.deprecated);
   const token = useMemo(
@@ -55,6 +85,43 @@ export function LiquidOpsConfirm({ params: { action, ticker, quantity } }: Liqui
   const { price = 0 } = useTokenPrice(token.address, currency);
 
   const fiatWorth = useMemo(() => quantityInCollateral.multipliedBy(price), [quantityInCollateral]);
+
+  // submit interaction
+  const { setToast } = useToasts();
+
+  const submit = async () => {
+    if (wallet.type === "hardware") {
+      return setToast({
+        type: "error",
+        content: browser.i18n.getMessage("wallet_hardware_unsupported"),
+        duration: 2400,
+      });
+    }
+
+    // validate password
+    const checkPw = await checkPassword(passwordInput.state);
+    if (!checkPw) {
+      return setToast({
+        type: "error",
+        content: browser.i18n.getMessage("invalidPassword"),
+        duration: 2400,
+      });
+    }
+
+    // create and submit interaction
+    const params = {
+      token: token.ticker.toUpperCase(),
+      quantity: new Quantity(0n, action === "deposit" ? token.baseDenomination : token.denomination).fromString(
+        quantity,
+      ).raw,
+    };
+
+    if (action === "deposit") {
+      lend(params);
+    } else if (action === "withdraw") {
+      unlend(params);
+    }
+  };
 
   return (
     <>
@@ -104,19 +171,15 @@ export function LiquidOpsConfirm({ params: { action, ticker, quantity } }: Liqui
               {...passwordInput.bindings}
               type="password"
               fullWidth
-              onKeyDown={async (e) => {
+              onKeyDown={(e) => {
                 if (e.key !== "Enter") return;
-
-                if (wallet.type === "local") await executeLocal();
-                /*else if (!hardwareStatus || hardwareStatus === "play") {
-                  setHardwareStatus((val) => (val === "play" ? "scan" : "play"));
-                  }*/
+                submit();
               }}
             />
           </Flex>
         </div>
 
-        <Button variant="primary" fullWidth>
+        <Button variant="primary" fullWidth loading={isLending || isUnlending} onClick={submit}>
           {browser.i18n.getMessage(action)}
         </Button>
       </Wrapper>

@@ -85,13 +85,6 @@ export function LiquidOpsDepositWithdraw({ params: { action, ticker } }: LiquidO
 
   const submit = () => navigate(`/agents/liquidops/${ticker}/${action}/${quantity}/confirm`);
 
-  // // TODO: create params for the transaction
-  // const baseDenomination = getBaseDenomination(ticker.toUpperCase());
-  // const params = {
-  //   token: ticker.toUpperCase(),
-  //   quantity: new Quantity(0n, baseDenomination).fromString(inputValue).raw,
-  // };
-
   return (
     <>
       <HeadV2 title={browser.i18n.getMessage(action) + " " + ticker} />
