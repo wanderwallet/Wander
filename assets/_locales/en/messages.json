@@ -3273,5 +3273,85 @@
   "depositing": {
     "message": "Depositing",
     "description": "Ongoing deposit text"
+  },
+  "view_all_agents": {
+    "message": "View all agents",
+    "description": "View all agents button text"
+  },
+  "manage_agent": {
+    "message": "Manage agent",
+    "description": "Manage agent button text"
+  },
+  "try_again": {
+    "message": "Try again",
+    "description": "Try again button text"
+  },
+  "go_to_dashboard": {
+    "message": "Go to dashboard",
+    "description": "Go to dashboard button text"
+  },
+  "withdraw_success": {
+    "message": "$TICKER$ withdrawn!",
+    "description": "Note about withdrawing tokens",
+    "placeholders": {
+      "ticker": {
+        "content": "$1",
+        "example": "USDA"
+      }
+    }
+  },
+  "withdraw_failure": {
+    "message": "$TICKER$ could not be withdrawn",
+    "description": "Note about error while withdrawing tokens",
+    "placeholders": {
+      "ticker": {
+        "content": "$1",
+        "example": "USDA"
+      }
+    }
+  },
+  "deposit_success": {
+    "message": "$TICKER$ deposited!",
+    "description": "Note about depositing tokens",
+    "placeholders": {
+      "ticker": {
+        "content": "$1",
+        "example": "USDA"
+      }
+    }
+  },
+  "deposit_failure": {
+    "message": "$TICKER$ could not be deposited",
+    "description": "Note about error while depositing tokens",
+    "placeholders": {
+      "ticker": {
+        "content": "$1",
+        "example": "USDA"
+      }
+    }
+  },
+  "withdraw_success_subtext": {
+    "message": "Your $TICKER$ has been successfully withdrawn along with your earned yield.",
+    "description": "Subtext about a successful withdrawal",
+    "placeholders": {
+      "ticker": {
+        "content": "$1",
+        "example": "USDA"
+      }
+    }
+  },
+  "deposit_success_subtext": {
+    "message": "Your $TICKER$ has been successfully deposited and will start earning yield.",
+    "description": "Subtext about a successful deposit",
+    "placeholders": {
+      "ticker": {
+        "content": "$1",
+        "example": "USDA"
+      }
+    }
+  },
+  "deposit_withdraw_failure_subtext": {
+    "message": "Looks like something went wrong, please try again.",
+    "description": "Subtext about a failed deposit or withdrawal"
   }
 }
