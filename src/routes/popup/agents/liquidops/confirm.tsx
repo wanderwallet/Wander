@@ -16,6 +16,7 @@ import { formatFiatBalance, formatTokenBalance } from "~tokens/currency";
 import useSetting from "~settings/hook";
 import { useTokenPrice } from "~tokens/hooks";
 import { useOExchangeRate } from "./utils/hooks/useOExchangeRate";
+import { useGateway } from "./utils/hooks/useGateway";
 
 export type LiquidOpsConfirmProps = CommonRouteProps<{
   action: "deposit" | "withdraw";
@@ -34,6 +35,7 @@ export function LiquidOpsConfirm({ params: { action, ticker, quantity } }: Liqui
     () => activeTokens.find((token) => token.ticker.toLowerCase() === ticker.toLowerCase()),
     [activeTokens, ticker],
   );
+  const { data: tokenIconUrl } = useGateway(token.icon);
 
   const { data: supplyAPR } = useLOSupplyAPY(token.ticker);
 
@@ -74,7 +76,7 @@ export function LiquidOpsConfirm({ params: { action, ticker, quantity } }: Liqui
                     {ticker}
                   </Text>
                 </Flex>
-                <SvgImageWithBackground height={14} width={14} shape="circle" src={UsdaLogo} iconSize={14} />
+                <SvgImageWithBackground height={14} width={14} shape="circle" src={tokenIconUrl} iconSize={14} />
               </Flex>
               <Text size="sm" variant="secondary" weight="medium" noMargin>
                 {formatFiatBalance(fiatWorth, currency)}

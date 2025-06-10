@@ -187,7 +187,11 @@ export function LiquidOpsDepositWithdraw({ params: { action, ticker } }: LiquidO
             </Text>
           </Info>
         </div>
-        <Button variant="primary" fullWidth onClick={submit}>
+        <Button
+          variant="primary"
+          fullWidth
+          disabled={invalidQty || parseFloat(quantity) === 0 || quantity === ""}
+          onClick={submit}>
           {browser.i18n.getMessage("continue")}
         </Button>
       </Wrapper>
