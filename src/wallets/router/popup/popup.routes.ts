@@ -98,8 +98,8 @@ export type PopupRoutePath =
   | `/agents/liquidops/agents`
   | `/agents/liquidops/${string}`
   | `/agents/liquidops/${string}/${"deposit" | "withdraw"}`
-  | `/agents/liquidops/${string}/${"deposit" | "withdraw"}/confirm`
-  | `/agents/liquidops/${string}/${"deposit" | "withdraw"}/result`;
+  | `/agents/liquidops/${string}/${"deposit" | "withdraw"}/${string}/confirm`
+  | `/agents/liquidops/${string}/${"deposit" | "withdraw"}/${"success" | "failure"}`;
 
 export const PopupPaths = {
   Home: "/",
@@ -146,8 +146,8 @@ export const PopupPaths = {
   LiquidOpsAgentsList: "/agents/liquidops/agents",
   LiquidOpsAgent: "/agents/liquidops/:ticker",
   LiquidOpsDepositWithdraw: "/agents/liquidops/:ticker/:action",
-  LiquidOpsConfirm: "/agents/liquidops/:ticker/:action/confirm",
-  LiquidOpsResult: "/agents/liquidops/:ticker/:action/result",
+  LiquidOpsConfirm: "/agents/liquidops/:ticker/:action/:quantity/confirm",
+  LiquidOpsResult: "/agents/liquidops/:ticker/:action/:result",
 } as const satisfies Record<string, PopupRoutePath>;
 
 export const POPUP_ROUTES = [

@@ -1,5 +1,4 @@
 import HeadV2 from "~components/popup/HeadV2";
-import type { LiquidOpsDepositWithdrawProps } from "./depositwithdraw";
 import { Button, Section, Text, Spacer, Input, useInput } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
 import styled from "styled-components";
@@ -11,8 +10,20 @@ import { useActiveWallet } from "~wallets/hooks";
 import { tokenData } from "liquidops";
 import { useLOSupplyAPY } from "./utils/hooks/useLOSupplyAPY";
 import { useMemo } from "react";
+import type { CommonRouteProps } from "~wallets/router/router.types";
+import BigNumber from "bignumber.js";
+import { formatFiatBalance, formatTokenBalance } from "~tokens/currency";
+import useSetting from "~settings/hook";
+import { useTokenPrice } from "~tokens/hooks";
+import { useOExchangeRate } from "./utils/hooks/useOExchangeRate";
 
-export function LiquidOpsConfirm({ params: { action, ticker } }: LiquidOpsDepositWithdrawProps) {
+export type LiquidOpsConfirmProps = CommonRouteProps<{
+  action: "deposit" | "withdraw";
+  ticker: string;
+  quantity: string;
+}>;
+
+export function LiquidOpsConfirm({ params: { action, ticker, quantity } }: LiquidOpsConfirmProps) {
   const passwordInput = useInput();
   const wallet = useActiveWallet();
 
@@ -25,6 +36,23 @@ export function LiquidOpsConfirm({ params: { action, ticker } }: LiquidOpsDeposi
   );
 
   const { data: supplyAPR } = useLOSupplyAPY(token.ticker);
+
+  // performed action quantity in collateral
+  const { data: exchangeRate = BigNumber(0) } = useOExchangeRate(token?.ticker, quantity);
+
+  const quantityInCollateral = useMemo(() => {
+    if (action === "deposit") {
+      return BigNumber(quantity);
+    } else {
+      return exchangeRate;
+    }
+  }, [quantity, action, exchangeRate]);
+
+  // withdraw fiat worth
+  const [currency] = useSetting<string>("currency");
+  const { price = 0 } = useTokenPrice(token.address, currency);
+
+  const fiatWorth = useMemo(() => quantityInCollateral.multipliedBy(price), [quantityInCollateral]);
 
   return (
     <>
@@ -40,7 +68,7 @@ export function LiquidOpsConfirm({ params: { action, ticker } }: LiquidOpsDeposi
               <Flex align="baseline" gap={4}>
                 <Flex align="baseline">
                   <Text size="5xl" weight="medium" noMargin>
-                    10
+                    {formatTokenBalance(quantityInCollateral)}
                   </Text>
                   <Text size="base" weight="medium" noMargin>
                     {ticker}
@@ -49,7 +77,7 @@ export function LiquidOpsConfirm({ params: { action, ticker } }: LiquidOpsDeposi
                 <SvgImageWithBackground height={14} width={14} shape="circle" src={UsdaLogo} iconSize={14} />
               </Flex>
               <Text size="sm" variant="secondary" weight="medium" noMargin>
-                $10.00 USD
+                {formatFiatBalance(fiatWorth, currency)}
               </Text>
             </Flex>
           </Flex>

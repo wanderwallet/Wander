@@ -83,6 +83,8 @@ export function LiquidOpsDepositWithdraw({ params: { action, ticker } }: LiquidO
     else return exchangeRate;
   }, [price, quantity, exchangeRate]);
 
+  const submit = () => navigate(`/agents/liquidops/${ticker}/${action}/${quantity}/confirm`);
+
   // // TODO: create params for the transaction
   // const baseDenomination = getBaseDenomination(ticker.toUpperCase());
   // const params = {
@@ -105,7 +107,7 @@ export function LiquidOpsDepositWithdraw({ params: { action, ticker } }: LiquidO
               onChange={(e) => setQuantity((e.target as HTMLInputElement).value)}
               onKeyDown={(e) => {
                 if (e.key !== "Enter" || invalidQty || parseFloat(quantity) === 0 || quantity === "") return;
-                // TODO: execute
+                submit();
               }}
               errorMessage={getErrorMessage(amountValidationState)}
               status={invalidQty ? "error" : "default"}
@@ -185,7 +187,7 @@ export function LiquidOpsDepositWithdraw({ params: { action, ticker } }: LiquidO
             </Text>
           </Info>
         </div>
-        <Button variant="primary" fullWidth onClick={() => navigate(`/agents/liquidops/${ticker}/${action}/confirm`)}>
+        <Button variant="primary" fullWidth onClick={submit}>
           {browser.i18n.getMessage("continue")}
         </Button>
       </Wrapper>
