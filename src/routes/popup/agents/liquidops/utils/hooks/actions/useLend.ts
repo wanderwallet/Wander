@@ -49,7 +49,9 @@ export function useLend({ onSettled }: Params) {
           },
         });
 
-        if (res && res.match === "fail") {
+        if (!res) {
+          console.warn("Could not find withdraw result onchain, guessing success");
+        } else if (res.match === "fail") {
           const errorMessage = res.message.Tags.find((tag) => tag.name === "Error")?.value || "Unknown error";
 
           throw new Error(errorMessage);
@@ -91,7 +93,9 @@ export function useLend({ onSettled }: Params) {
           },
         });
 
-        if (res && res.match === "fail") {
+        if (!res) {
+          console.warn("Could not find withdraw result onchain, guessing success");
+        } else if (res.match === "fail") {
           const errorMessage = res.message.Tags.find((tag) => tag.name === "Error")?.value || "Unknown error";
 
           throw new Error(errorMessage);
