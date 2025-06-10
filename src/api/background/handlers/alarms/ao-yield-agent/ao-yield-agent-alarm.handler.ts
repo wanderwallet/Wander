@@ -1,6 +1,6 @@
 import type { Alarms } from "webextension-polyfill";
-import { AO_YIELD_AGENT_ALARM_NAME } from "~utils/agents/constants";
-import { executeAutomaticSwapIfNeeded } from "~utils/agents/mint";
+import { AO_YIELD_AGENT_ALARM_NAME, AO_YIELD_AGENT_RECENT_TXS_CHECK_ALARM_NAME } from "~utils/agents/constants";
+import { checkIfRecentTxSwapSucceeded, executeAutomaticSwapIfNeeded } from "~utils/agents/mint";
 
 /**
  * Alarm handler for executing automatic token swaps via AO yield agent.
@@ -12,4 +12,14 @@ export async function handleAOYieldAgentAlarm(alarmInfo?: Alarms.Alarm) {
   if (alarmInfo && alarmInfo.name !== AO_YIELD_AGENT_ALARM_NAME) return;
 
   await executeAutomaticSwapIfNeeded();
+}
+
+/**
+ * Alarm handler for checking if recent txs have succeeded.
+ * Checks if any recent txs have succeeded and updates the recent txs list.
+ */
+export async function handleAOYieldAgentRecentTxsCheck(alarmInfo?: Alarms.Alarm) {
+  if (alarmInfo && alarmInfo.name !== AO_YIELD_AGENT_RECENT_TXS_CHECK_ALARM_NAME) return;
+
+  await checkIfRecentTxSwapSucceeded();
 }

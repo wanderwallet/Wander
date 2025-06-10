@@ -99,3 +99,22 @@ query ($nonce: String!) {
   }
 }
 `;
+
+export const AO_YIELD_AGENT_RECENT_TX_QUERY = `
+query ($parentTxIds: [String!]!) {
+  transactions(
+    first: 100,
+    tags: [
+      {name: "Data-Protocol", values: ["ao"]},
+      {name: "Action", values: ["Swap-Success"]},
+      {name: "Pushed-For", values: $parentTxIds}
+    ]
+  ) {
+    edges {
+      node {
+        id
+        tags { name, value }
+      }
+    }
+  }
+}`;

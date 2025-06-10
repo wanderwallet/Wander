@@ -20,6 +20,7 @@ import { getActiveAddress } from "~wallets/wallets.utils";
 import type { AOYieldAgentCreate, AOYieldAgentStatus } from "~utils/agents/types";
 import { getAOYieldAgents, setAOYieldAgents } from "~utils/agents/utils";
 import { EventType, PageType, trackEvent, trackPage } from "~utils/analytics";
+import { scheduleSwapExecution } from "~utils/agents/mint";
 
 export function ConfirmAOYieldAgentView() {
   const [isLoading, setIsLoading] = useState(false);
@@ -133,6 +134,9 @@ export function ConfirmAOYieldAgentView() {
         runningTime,
         dailyConversionPercentage: aoYieldAgent.conversionPercentage,
       });
+
+      // Schedule swap execution
+      scheduleSwapExecution();
 
       navigate(PopupPaths.AOYieldAgentActivated, { search: { activationStatus: "success" } });
 

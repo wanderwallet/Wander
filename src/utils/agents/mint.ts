@@ -1,5 +1,5 @@
 import { gql } from "~gateways/api";
-import { AO_PROCESS_MINT_QUERY, AO_PROCESS_MINT_WITH_NONCE_QUERY } from "./queries";
+import { AO_PROCESS_MINT_QUERY, AO_PROCESS_MINT_WITH_NONCE_QUERY, AO_YIELD_AGENT_RECENT_TX_QUERY } from "./queries";
 import { getAOYieldActiveAgent, getAOYieldAgentInfo, getArweave, updateAOYieldAgent } from "./utils";
 import { getActiveAddress } from "~wallets/wallets.utils";
 import BigNumber from "bignumber.js";
@@ -12,6 +12,9 @@ import { log, LOG_GROUP } from "~utils/log/log.utils";
 import {
   AO_YIELD_AGENT_ALARM_NAME,
   AO_YIELD_AGENT_LAST_SWAP_DATE_KEY,
+  AO_YIELD_AGENT_RECENT_TXS,
+  AO_YIELD_AGENT_RECENT_TXS_CHECK_ALARM_NAME,
+  AO_YIELD_AGENT_RECENT_TXS_CHECK_IN_PROGRESS_KEY,
   AO_YIELD_AGENT_SWAP_IN_PROGRESS_KEY,
   ONE_HOUR_MS,
 } from "./constants";
@@ -19,10 +22,12 @@ import type { AOYieldAgent, AOYieldAgentInfo } from "./types";
 import type { DecodedTag } from "~api/modules/sign/tags";
 import { ExtensionStorage } from "~utils/storage";
 import browser from "webextension-polyfill";
+import { EventType, trackEvent } from "~utils/analytics";
 
 const queryClient = new QueryClient();
 let isSwapExecutionInProgress = false;
 let isSchedulingInProgress = false;
+let isRecentTxCheckInProgress = false;
 
 export interface MintTransaction {
   id: string;
@@ -348,7 +353,9 @@ async function executeTokenSwap(
 
   log(LOG_GROUP.AGENTS, "Transferred AO tokens to agent: ", activeAgent.id);
 
-  await ExtensionStorage.set(AO_YIELD_AGENT_LAST_SWAP_DATE_KEY, normalizeToStartOfDay(Date.now()));
+  const recentTxs = (await ExtensionStorage.get<string[]>(AO_YIELD_AGENT_RECENT_TXS)) || [];
+  await ExtensionStorage.set(AO_YIELD_AGENT_RECENT_TXS, [...recentTxs, messageId]);
+  await ExtensionStorage.set(AO_YIELD_AGENT_LAST_SWAP_DATE_KEY, swapDateTo);
 
   await queryClient.invalidateQueries({
     queryKey: ["tokenBalance", AO_PROCESS_ID, activeAddress],
@@ -460,6 +467,11 @@ export async function executeAutomaticSwapIfNeeded(): Promise<void> {
     // Execute the swap (lock is already acquired above)
     await executeTokenSwap(activeAgent, swapQuantity, actualDateFrom, actualDateTo, activeAddress);
 
+    // Schedule staggered checks for transaction success
+    [0.5, 1, 1.5, 2].forEach((delay) => {
+      browser.alarms.create(AO_YIELD_AGENT_RECENT_TXS_CHECK_ALARM_NAME, { when: Date.now() + delay * 60 * 1000 });
+    });
+
     // Clear swap in progress flag after successful execution
     await ExtensionStorage.remove(AO_YIELD_AGENT_SWAP_IN_PROGRESS_KEY);
   } catch (error) {
@@ -468,6 +480,84 @@ export async function executeAutomaticSwapIfNeeded(): Promise<void> {
     await ExtensionStorage.remove(AO_YIELD_AGENT_SWAP_IN_PROGRESS_KEY);
   } finally {
     isSwapExecutionInProgress = false;
+  }
+}
+
+export async function checkIfRecentTxSwapSucceeded(): Promise<boolean> {
+  try {
+    if (isRecentTxCheckInProgress) return;
+
+    isRecentTxCheckInProgress = true;
+
+    const activeAddress = await getActiveAddress();
+    if (!activeAddress) {
+      log(LOG_GROUP.AGENTS, "No active address found");
+      return;
+    }
+
+    const checkInProgress = await ExtensionStorage.get<boolean>(AO_YIELD_AGENT_RECENT_TXS_CHECK_IN_PROGRESS_KEY);
+    if (checkInProgress) {
+      log(LOG_GROUP.AGENTS, "Recent txs check already in progress");
+      return;
+    }
+
+    await ExtensionStorage.set(AO_YIELD_AGENT_RECENT_TXS_CHECK_IN_PROGRESS_KEY, true);
+
+    let recentTxs = (await ExtensionStorage.get<string[]>(AO_YIELD_AGENT_RECENT_TXS)) || [];
+    if (recentTxs.length === 0) {
+      log(LOG_GROUP.AGENTS, "No recent txs found");
+      return;
+    }
+
+    const response = await gql(AO_YIELD_AGENT_RECENT_TX_QUERY, { parentTxIds: recentTxs });
+    const edges = response?.data?.transactions?.edges || [];
+
+    if (edges.length === 0) {
+      log(LOG_GROUP.AGENTS, "No recent txs found");
+      return;
+    }
+
+    log(LOG_GROUP.AGENTS, "Recent txs found: ", recentTxs);
+
+    const foundTxIds = new Set<string>();
+
+    try {
+      for (const edge of edges) {
+        const tags = edge.node.tags;
+        const txId = getTagValue("Pushed-For", tags);
+        const buyAsset = getTagValue("Token-Out", tags);
+        const sellAmount = getTagValue("Amount-In", tags);
+        const buyAmount = getTagValue("Amount-Out", tags);
+        const dexUsed = getTagValue("Dex", tags);
+        const wanderFee = getTagValue("Swap-Fee", tags);
+
+        if (foundTxIds.has(txId)) continue;
+        foundTxIds.add(txId);
+
+        await trackEvent(EventType.AO_YIELD_AGENT_TRANSACTION, {
+          buyAsset,
+          sellAmount,
+          buyAmount,
+          dexUsed,
+          wanderFee,
+        });
+      }
+    } catch (error) {
+      log(LOG_GROUP.AGENTS, "Error tracking recent txs: ", error);
+    }
+
+    recentTxs = (await ExtensionStorage.get<string[]>(AO_YIELD_AGENT_RECENT_TXS)) || [];
+    const remainingTxs = recentTxs.filter((tx) => !foundTxIds.has(tx));
+    log(LOG_GROUP.AGENTS, "Remaining txs: ", remainingTxs);
+    if (remainingTxs.length === 0) {
+      await browser.alarms.clear(AO_YIELD_AGENT_RECENT_TXS_CHECK_ALARM_NAME);
+    }
+    await ExtensionStorage.set(AO_YIELD_AGENT_RECENT_TXS, remainingTxs);
+  } catch {
+    log(LOG_GROUP.AGENTS, "Error checking recent txs");
+  } finally {
+    await ExtensionStorage.remove(AO_YIELD_AGENT_RECENT_TXS_CHECK_IN_PROGRESS_KEY);
+    isRecentTxCheckInProgress = false;
   }
 }
 
