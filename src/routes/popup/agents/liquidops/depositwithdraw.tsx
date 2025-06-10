@@ -6,14 +6,20 @@ import { Section, Input, Text, Spacer, Button } from "@arconnect/components-rebr
 import { Flex } from "~components/common/Flex";
 import UsdaLogo from "url:/assets/ecosystem/usda.svg";
 import { SvgImageWithBackground } from "../components/SvgImage";
-import { MaxButton } from "~routes/popup/send/amount";
+import { AmountValidationState, getErrorMessage, MaxButton, validateAmount } from "~routes/popup/send/amount";
 import { Line } from "~routes/popup/purchase";
 import { Info } from "../components/liquidops/Info";
 import { AgentStats } from "../components/liquidops/AgentStats";
 import { useLocation } from "~wallets/router/router.utils";
 import { tokenData } from "liquidops";
 import { useLOSupplyAPY } from "./utils/hooks/useLOSupplyAPY";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useLOOTokenBalance } from "./utils/hooks/useLOOTokenBalance";
+import { useTokenBalance } from "~tokens/hooks";
+import { useActiveWallet } from "~wallets/hooks";
+import { type TokenInfo } from "~tokens/aoTokens/ao";
+import BigNumber from "bignumber.js";
+import { useGateway } from "./utils/hooks/useGateway";
 
 export type LiquidOpsDepositWithdrawProps = CommonRouteProps<{ action: "deposit" | "withdraw"; ticker: string }>;
 
@@ -26,8 +32,41 @@ export function LiquidOpsDepositWithdraw({ params: { action, ticker } }: LiquidO
     () => activeTokens.find((token) => token.ticker.toLowerCase() === ticker.toLowerCase()),
     [activeTokens, ticker],
   );
+  const tokenInfo = useMemo<TokenInfo>(
+    () => ({
+      processId: action === "deposit" ? token.address : token.oAddress,
+      Denomination: Number(action === "deposit" ? token.baseDenomination : token.denomination),
+    }),
+    [token],
+  );
+  const { data: tokenIconUrl } = useGateway(action === "deposit" ? token.icon : token.oIcon);
 
-  const { data: supplyAPR } = useLOSupplyAPY(token.ticker);
+  const { data: supplyAPR = 0 } = useLOSupplyAPY(token.ticker);
+
+  // active address
+  const wallet = useActiveWallet();
+
+  // input
+
+  // otoken or asset balance
+  const { data: balance = "0" } = useTokenBalance(tokenInfo, wallet?.address);
+
+  const handleInputChange = (event: React.FormEvent<HTMLInputElement>) => {
+    const input = event.currentTarget;
+    input.value = input.value.replace(/[^0-9.]/g, "");
+  };
+
+  const [quantity, setQuantity] = useState("");
+
+  const amountValidationState = useMemo(() => {
+    return validateAmount(quantity, balance, "0", "token", 0);
+  }, [quantity, balance]);
+
+  const invalidQty = useMemo(
+    () =>
+      amountValidationState !== AmountValidationState.Valid && amountValidationState !== AmountValidationState.Empty,
+    [amountValidationState],
+  );
 
   // // TODO: create params for the transaction
   // const baseDenomination = getBaseDenomination(ticker.toUpperCase());
@@ -46,12 +85,19 @@ export function LiquidOpsDepositWithdraw({ params: { action, ticker } }: LiquidO
             <Input
               stacked
               sizeVariant="large"
-              //value={purchaseAmount}
-              //onInput={handleInputChange}
-              //onChange={(e) => handleAmountChange(e.target.value)}
+              value={quantity}
+              onInput={handleInputChange}
+              onChange={(e) => setQuantity((e.target as HTMLInputElement).value)}
+              onKeyDown={(e) => {
+                if (e.key !== "Enter" || invalidQty || parseFloat(quantity) === 0 || quantity === "") return;
+                // TODO: execute
+              }}
+              errorMessage={getErrorMessage(amountValidationState)}
+              status={invalidQty ? "error" : "default"}
               inputMode="numeric"
               placeholder="0"
               fullWidth
+              min="0"
               hasRightIcon
               iconLeft={
                 action === "deposit" ? (
@@ -72,13 +118,13 @@ export function LiquidOpsDepositWithdraw({ params: { action, ticker } }: LiquidO
               iconRight={
                 <Flex direction="column" align="flex-end" gap="1rem" style={{ cursor: "default", paddingTop: 20 }}>
                   <Flex align="center" gap=".4rem">
-                    <SvgImageWithBackground height={22} width={22} shape="circle" src={UsdaLogo} iconSize={22} />
+                    <SvgImageWithBackground height={22} width={22} shape="circle" src={tokenIconUrl} iconSize={22} />
                     <Text size="base" noMargin weight="medium">
                       {action === "withdraw" && "o"}
                       {ticker}
                     </Text>
                   </Flex>
-                  <MaxButton>MAX</MaxButton>
+                  <MaxButton onClick={() => setQuantity(balance)}>MAX</MaxButton>
                   <Text
                     size="sm"
                     variant="secondary"
