@@ -21,6 +21,7 @@ import { useLocation } from "~wallets/router/router.utils";
 import { Quantity } from "ao-tokens";
 import { useQueryClient } from "@tanstack/react-query";
 import { checkPassword } from "~wallets/auth";
+import { ExtensionStorage, useStorage } from "~utils/storage";
 
 export type LiquidOpsConfirmProps = CommonRouteProps<{
   action: "deposit" | "withdraw";
@@ -91,6 +92,14 @@ export function LiquidOpsConfirm({ params: { action, ticker, quantity } }: Liqui
   // submit interaction
   const { setToast } = useToasts();
 
+  const [transferRequirePassword] = useStorage<boolean>(
+    {
+      key: "transfer_require_password",
+      instance: ExtensionStorage,
+    },
+    false,
+  );
+
   const [checkingPassword, setCheckingPassword] = useState(false);
   const loading = useMemo(
     () => checkingPassword || isLending || isUnlending,
@@ -107,25 +116,27 @@ export function LiquidOpsConfirm({ params: { action, ticker, quantity } }: Liqui
     }
 
     // validate password
-    try {
-      setCheckingPassword(true);
+    if (transferRequirePassword) {
+      try {
+        setCheckingPassword(true);
 
-      const checkPw = await checkPassword(passwordInput.state);
-      if (!checkPw) {
+        const checkPw = await checkPassword(passwordInput.state);
+        if (!checkPw) {
+          return setToast({
+            type: "error",
+            content: browser.i18n.getMessage("invalidPassword"),
+            duration: 2400,
+          });
+        }
+      } catch {
         return setToast({
           type: "error",
           content: browser.i18n.getMessage("invalidPassword"),
           duration: 2400,
         });
+      } finally {
+        setCheckingPassword(false);
       }
-    } catch {
-      return setToast({
-        type: "error",
-        content: browser.i18n.getMessage("invalidPassword"),
-        duration: 2400,
-      });
-    } finally {
-      setCheckingPassword(false);
     }
 
     // create and submit interaction
@@ -181,29 +192,31 @@ export function LiquidOpsConfirm({ params: { action, ticker, quantity } }: Liqui
             transactionFee={0} // this is 0 for now
           />
 
-          <Flex direction="column" gap={12} padding="24px 0">
-            <Text noMargin weight="medium">
-              {browser.i18n.getMessage("sign_enter_password")}
-            </Text>
-            <Input
-              placeholder={browser.i18n.getMessage("enter_password")}
-              sizeVariant="small"
-              {...passwordInput.bindings}
-              type="password"
-              fullWidth
-              onKeyDown={(e) => {
-                if (e.key !== "Enter") return;
-                submit();
-              }}
-            />
-          </Flex>
+          {transferRequirePassword && (
+            <Flex direction="column" gap={12} padding="24px 0">
+              <Text noMargin weight="medium">
+                {browser.i18n.getMessage("sign_enter_password")}
+              </Text>
+              <Input
+                placeholder={browser.i18n.getMessage("enter_password")}
+                sizeVariant="small"
+                {...passwordInput.bindings}
+                type="password"
+                fullWidth
+                onKeyDown={(e) => {
+                  if (e.key !== "Enter") return;
+                  submit();
+                }}
+              />
+            </Flex>
+          )}
         </div>
 
         <Button
           variant="primary"
           fullWidth
           loading={loading}
-          disabled={!passwordInput.state || passwordInput.state === "" || loading}
+          disabled={(transferRequirePassword && (!passwordInput.state || passwordInput.state === "")) || loading}
           onClick={submit}>
           {browser.i18n.getMessage(action)}
         </Button>
