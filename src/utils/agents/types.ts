@@ -141,6 +141,7 @@ export interface AOYieldAgent {
   runIndefinitely: boolean;
   slippage: number;
   totalTransactions?: number;
+  version: string;
 }
 
 export interface AOYieldAgentInfo extends AOYieldAgent {

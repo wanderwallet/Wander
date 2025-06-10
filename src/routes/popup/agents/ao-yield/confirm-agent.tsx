@@ -21,6 +21,7 @@ import type { AOYieldAgentCreate, AOYieldAgentStatus } from "~utils/agents/types
 import { getAOYieldAgents, setAOYieldAgents } from "~utils/agents/utils";
 import { EventType, PageType, trackEvent, trackPage } from "~utils/analytics";
 import { scheduleSwapExecution } from "~utils/agents/mint";
+import { AGENT_VERSION } from "~utils/agents/constants";
 
 export function ConfirmAOYieldAgentView() {
   const [isLoading, setIsLoading] = useState(false);
@@ -123,6 +124,7 @@ export function ConfirmAOYieldAgentView() {
         endDate: aoYieldAgent.endDate,
         runIndefinitely: aoYieldAgent.runIndefinitely,
         slippage: aoYieldAgent.slippage,
+        version: AGENT_VERSION,
       });
 
       await setAOYieldAgents(activeAddress, agents);

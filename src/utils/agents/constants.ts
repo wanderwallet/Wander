@@ -17,3 +17,5 @@ export const AO_YIELD_AGENT_LAST_SWAP_DATE_KEY = "ao_yield_agent_last_swap_date"
 export const AO_YIELD_AGENT_SWAP_IN_PROGRESS_KEY = "ao_yield_agent_swap_in_progress";
 export const AO_YIELD_AGENT_ALARM_NAME = "ao-yield-agent-alarm";
 export const AO_YIELD_AGENT_RECENT_TXS_CHECK_ALARM_NAME = "ao-yield-agent-recent-txs-check-alarm";
+
+export const AGENT_VERSION = "1.0.0";
