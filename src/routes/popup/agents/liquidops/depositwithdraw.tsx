@@ -4,7 +4,6 @@ import browser from "webextension-polyfill";
 import styled, { useTheme } from "styled-components";
 import { Section, Input, Text, Spacer, Button } from "@arconnect/components-rebrand";
 import { Flex } from "~components/common/Flex";
-import UsdaLogo from "url:/assets/ecosystem/usda.svg";
 import { SvgImageWithBackground } from "../components/SvgImage";
 import { AmountValidationState, getErrorMessage, MaxButton, validateAmount } from "~routes/popup/send/amount";
 import { Line } from "~routes/popup/purchase";
@@ -13,13 +12,15 @@ import { AgentStats } from "../components/liquidops/AgentStats";
 import { useLocation } from "~wallets/router/router.utils";
 import { tokenData } from "liquidops";
 import { useLOSupplyAPY } from "./utils/hooks/useLOSupplyAPY";
-import { useEffect, useMemo, useState } from "react";
-import { useLOOTokenBalance } from "./utils/hooks/useLOOTokenBalance";
-import { useTokenBalance } from "~tokens/hooks";
+import { useMemo, useState } from "react";
+import { useTokenBalance, useTokenPrice } from "~tokens/hooks";
 import { useActiveWallet } from "~wallets/hooks";
 import { type TokenInfo } from "~tokens/aoTokens/ao";
 import BigNumber from "bignumber.js";
 import { useGateway } from "./utils/hooks/useGateway";
+import useSetting from "~settings/hook";
+import { formatFiatBalance, formatTokenBalance } from "~tokens/currency";
+import { useOExchangeRate } from "./utils/hooks/useOExchangeRate";
 
 export type LiquidOpsDepositWithdrawProps = CommonRouteProps<{ action: "deposit" | "withdraw"; ticker: string }>;
 
@@ -51,6 +52,7 @@ export function LiquidOpsDepositWithdraw({ params: { action, ticker } }: LiquidO
   // otoken or asset balance
   const { data: balance = "0" } = useTokenBalance(tokenInfo, wallet?.address);
 
+  // validation and qty
   const handleInputChange = (event: React.FormEvent<HTMLInputElement>) => {
     const input = event.currentTarget;
     input.value = input.value.replace(/[^0-9.]/g, "");
@@ -67,6 +69,19 @@ export function LiquidOpsDepositWithdraw({ params: { action, ticker } }: LiquidO
       amountValidationState !== AmountValidationState.Valid && amountValidationState !== AmountValidationState.Empty,
     [amountValidationState],
   );
+
+  // token worth
+  const [currency] = useSetting<string>("currency");
+  const { price = 0 } = useTokenPrice(token.address, currency);
+
+  const { data: exchangeRate = BigNumber(0) } = useOExchangeRate(token?.ticker, quantity);
+
+  const tokenWorth = useMemo(() => {
+    const qtyParsed = BigNumber(quantity || "0");
+
+    if (action === "deposit") return qtyParsed.multipliedBy(price);
+    else return exchangeRate;
+  }, [price, quantity, exchangeRate]);
 
   // // TODO: create params for the transaction
   // const baseDenomination = getBaseDenomination(ticker.toUpperCase());
@@ -131,7 +146,9 @@ export function LiquidOpsDepositWithdraw({ params: { action, ticker } }: LiquidO
                     noMargin
                     weight="medium"
                     style={{ position: "absolute", left: 10, bottom: 10 }}>
-                    ~$10.00
+                    {"~"}
+                    {action === "deposit" ? formatFiatBalance(tokenWorth, currency) : formatTokenBalance(tokenWorth)}
+                    {action === "withdraw" && " " + token.cleanTicker}
                   </Text>
                 </Flex>
               }
