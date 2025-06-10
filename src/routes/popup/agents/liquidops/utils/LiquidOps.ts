@@ -1,14 +1,14 @@
 import LiquidOps from "liquidops";
 import { ArweaveSigner, createData } from "@dha-team/arbundles";
-import { getActiveKeyfile } from "~wallets";
+import { getActiveKeyfile, type DecryptedWallet } from "~wallets";
 import { isLocalWallet } from "~utils/assertions";
 import { freeDecryptedWallet } from "~wallets/encryption";
 
 export const LiquidOpsClient = async () => {
+  let decryptedWallet: DecryptedWallet;
   try {
-    const decryptedWallet = await getActiveKeyfile();
+    decryptedWallet = await getActiveKeyfile();
     isLocalWallet(decryptedWallet);
-    const keyfile = decryptedWallet.keyfile;
 
     const createDataItemSigner =
       (wallet: any) =>
@@ -34,11 +34,14 @@ export const LiquidOpsClient = async () => {
           raw: dataItem.getRaw(),
         };
       };
-    const signer = createDataItemSigner(keyfile);
-    freeDecryptedWallet(decryptedWallet.keyfile);
+    const signer = createDataItemSigner(decryptedWallet.keyfile);
     const LiquidOpsClient = new LiquidOps(signer);
     return LiquidOpsClient;
   } catch (err) {
     console.log("Error in LiquidOps client: ", err);
+  } finally {
+    if (decryptedWallet && decryptedWallet.type === "local") {
+      freeDecryptedWallet(decryptedWallet.keyfile);
+    }
   }
 };

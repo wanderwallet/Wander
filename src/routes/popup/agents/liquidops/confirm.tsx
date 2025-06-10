@@ -8,7 +8,7 @@ import { AgentStats } from "../components/liquidops/AgentStats";
 import { useActiveWallet } from "~wallets/hooks";
 import { tokenData, tokenInput } from "liquidops";
 import { useLOSupplyAPY } from "./utils/hooks/useLOSupplyAPY";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import BigNumber from "bignumber.js";
 import { formatFiatBalance, formatTokenBalance } from "~tokens/currency";
@@ -89,6 +89,12 @@ export function LiquidOpsConfirm({ params: { action, ticker, quantity } }: Liqui
   // submit interaction
   const { setToast } = useToasts();
 
+  const [checkingPassword, setCheckingPassword] = useState(false);
+  const loading = useMemo(
+    () => checkingPassword || isLending || isUnlending,
+    [checkingPassword, isLending, isUnlending],
+  );
+
   const submit = async () => {
     if (wallet.type === "hardware") {
       return setToast({
@@ -99,13 +105,25 @@ export function LiquidOpsConfirm({ params: { action, ticker, quantity } }: Liqui
     }
 
     // validate password
-    const checkPw = await checkPassword(passwordInput.state);
-    if (!checkPw) {
+    try {
+      setCheckingPassword(true);
+
+      const checkPw = await checkPassword(passwordInput.state);
+      if (!checkPw) {
+        return setToast({
+          type: "error",
+          content: browser.i18n.getMessage("invalidPassword"),
+          duration: 2400,
+        });
+      }
+    } catch {
       return setToast({
         type: "error",
         content: browser.i18n.getMessage("invalidPassword"),
         duration: 2400,
       });
+    } finally {
+      setCheckingPassword(false);
     }
 
     // create and submit interaction
@@ -179,7 +197,12 @@ export function LiquidOpsConfirm({ params: { action, ticker, quantity } }: Liqui
           </Flex>
         </div>
 
-        <Button variant="primary" fullWidth loading={isLending || isUnlending} onClick={submit}>
+        <Button
+          variant="primary"
+          fullWidth
+          loading={loading}
+          disabled={!passwordInput.state || passwordInput.state === "" || loading}
+          onClick={submit}>
           {browser.i18n.getMessage(action)}
         </Button>
       </Wrapper>
