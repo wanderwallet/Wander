@@ -3369,5 +3369,9 @@
   "update_preferences": {
     "message": "Update preferences",
     "description": "Update preferences text"
+  },
+  "ao_minting_paused": {
+    "message": "Minting is paused",
+    "description": "AO Minting Paused text"
   }
 }

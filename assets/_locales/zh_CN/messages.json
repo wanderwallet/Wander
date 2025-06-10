@@ -3329,5 +3329,9 @@
     "update_preferences": {
         "message": "更新偏好",
         "description": "Update preferences text"
-    }
+    },
+    "ao_minting_paused": {
+        "message": "铸造已暂停",
+        "description": "AO Minting Paused text"
+    } 
 }

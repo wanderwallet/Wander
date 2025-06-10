@@ -4,16 +4,20 @@ import { Button, Text } from "@arconnect/components-rebrand";
 import { useTheme } from "styled-components";
 import { useAOMintingStatus } from "~utils/agents/hooks";
 import { ExtensionStorage, useStorage } from "~utils/storage";
+import browser from "webextension-polyfill";
 
 export function AOMintingPausedListItem() {
   const theme = useTheme();
-  const { data: status, isError } = useAOMintingStatus();
-  const [showCta, setShowCta] = useStorage({
-    key: "show_ao_minting_paused_cta",
-    instance: ExtensionStorage,
-  });
+  const { data: status, isError, isFetched } = useAOMintingStatus();
+  const [showCta, setShowCta] = useStorage(
+    {
+      key: "show_ao_minting_paused_cta",
+      instance: ExtensionStorage,
+    },
+    true,
+  );
 
-  if (isError || status === "Active" || !showCta) return null;
+  if (!isFetched || isError || status === "Active" || !showCta) return null;
 
   return (
     <Flex
@@ -27,7 +31,7 @@ export function AOMintingPausedListItem() {
       <AlertCircle height={24} width={24} color={theme.fail} />
       <Flex gap={8} justify="space-between" align="center" width="100%">
         <Text weight="semibold" noMargin>
-          Minting is paused
+          {browser.i18n.getMessage("ao_minting_paused")}
         </Text>
         <Button
           onClick={() => setShowCta(false)}
