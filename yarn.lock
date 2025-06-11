@@ -8483,10 +8483,10 @@ lint-staged@>=10:
     string-argv "^0.3.2"
     yaml "^2.7.0"
 
-liquidops@^1.2.1:
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/liquidops/-/liquidops-1.2.1.tgz#af74697f2992d19c39e6ba46355ea44d41c9a451"
-  integrity sha512-TNKybwlCkSZWoBx2BQ+oH291nkBCBISExBrvUEkLDKwdpnM4iNhqaYe7esRDGX2lx6yM9B4eSDBVVniW0YjYzQ==
+liquidops@^1.2.2:
+  version "1.2.2"
+  resolved "https://registry.yarnpkg.com/liquidops/-/liquidops-1.2.2.tgz#1a086c326ff3e4992c76d23cb742807e6a50b30a"
+  integrity sha512-eB/4JAYbu46QPc5eXT7TA/dDGc/BoUgWX36np2JrpXlFfbUeE5ih4uCUYHtE9cxEnnpNZ/vHjsG6zzxvbcmo9A==
   dependencies:
     ar-gql "^2.0.2"
     arbundles "^0.11.2"

@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import { LiquidOpsClient } from "../LiquidOps";
-import { getActiveAddress } from "~wallets";
 import { tokenData } from "liquidops";
 import { Quantity } from "ao-tokens";
 import BigNumber from "bignumber.js";
@@ -21,7 +20,10 @@ export function useEarnings(ticker: string) {
     instance: ExtensionStorage,
   });
 
-  return useQuery({
+  return useQuery<{
+    profit: BigNumber;
+    startDate?: number;
+  }>({
     queryKey: ["earnings", ticker, activeAddress],
     queryFn: async () => {
       const activeTokens = Object.values(tokenData).filter((token) => !token.deprecated);
@@ -40,13 +42,16 @@ export function useEarnings(ticker: string) {
           walletAddress: activeAddress,
         });
 
-        return BigNumber(new Quantity(earnings.profit || 0n, token.baseDenomination).toString());
+        return {
+          profit: BigNumber(new Quantity(earnings.profit || 0n, token.baseDenomination).toString()),
+          startDate: earnings.startDate,
+        };
       } catch (error) {
         throw error;
       }
     },
     ...defaultOptions,
-    select: (data) => data || BigNumber(0),
+    select: (data) => data || { profit: BigNumber(0) },
     enabled: !!ticker,
   });
 }

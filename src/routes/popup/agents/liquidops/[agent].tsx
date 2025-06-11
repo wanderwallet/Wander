@@ -46,7 +46,7 @@ export function LiquidOpsAgent({ params: { ticker } }: LiquidOpsAgentProps) {
   }, [agentBalance]);
 
   const { data: supplyAPR = 0 } = useLOSupplyAPY(token.ticker);
-  const { data: earnedInterest = BigNumber(0) } = useEarnings(token.ticker);
+  const { data: earned = { profit: BigNumber(0), startDate: undefined } } = useEarnings(token.ticker);
   const { data: tokenIconUrl } = useGateway(token.icon);
 
   const { hasToken: tokenStatus } = useTokenStatus(token.ticker);
@@ -176,7 +176,7 @@ export function LiquidOpsAgent({ params: { ticker } }: LiquidOpsAgentProps) {
             <Flex direction="column" align="center" gap=".2rem" padding="2px 0">
               <Text size="lg" weight="medium" noMargin style={{ color: "rgb(86, 201, 128)" }}>
                 <NumberFlow
-                  value={earnedInterest}
+                  value={earned.profit}
                   format={{ maximumFractionDigits: 2 }}
                   prefix="+"
                   suffix={" " + ticker}
@@ -207,7 +207,7 @@ export function LiquidOpsAgent({ params: { ticker } }: LiquidOpsAgentProps) {
                 {browser.i18n.getMessage("start_date")}
               </Text>
               <Text size="sm" weight="medium" noMargin>
-                {dayjs(Date.now()).format("MMM DD, YYYY")}
+                {earned.startDate ? dayjs(earned.startDate * 1000).format("MMM DD, YYYY") : "--"}
               </Text>
             </Flex>
             <Flex justify="space-between" style={{ width: "100%" }}>
