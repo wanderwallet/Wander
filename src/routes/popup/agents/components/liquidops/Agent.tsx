@@ -13,6 +13,7 @@ import { ExtensionStorage } from "~utils/storage";
 import { useStorage } from "@plasmohq/storage/hook";
 import BigNumber from "bignumber.js";
 import { useGateway } from "../../liquidops/utils/hooks/useGateway";
+import { formatNumber } from "../../liquidops/utils/format";
 
 export const Agent = ({ ticker, running = false, profit = BigNumber(0) }: Props) => {
   const { navigate } = useLocation();
@@ -58,7 +59,7 @@ export const Agent = ({ ticker, running = false, profit = BigNumber(0) }: Props)
           </Text>
           <Text weight="semibold" noMargin style={running ? { color: "rgb(86, 201, 128)" } : {}}>
             {running ? "+" : ""}
-            {(running ? profit : supplyAPY).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+            {formatNumber(running ? profit : supplyAPY, 2, running ? 6 : 0)}
             {running ? " " + ticker : "%"}
           </Text>
         </Flex>
@@ -66,7 +67,7 @@ export const Agent = ({ ticker, running = false, profit = BigNumber(0) }: Props)
       subtitle={
         <Flex justify="space-between" align="center" width="100%">
           <Text size="sm" variant="secondary" weight="medium" noMargin>
-            {(running ? supplyAPY : BigNumber(balance)).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+            {formatNumber(running ? supplyAPY : BigNumber(balance), 2, running ? 0 : 6)}
             {running ? "% APY" : " " + ticker}
           </Text>
           <Text size="sm" variant="secondary" weight="medium" noMargin>

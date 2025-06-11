@@ -11,7 +11,7 @@ import { useLOSupplyAPY } from "../liquidops/utils/hooks/useLOSupplyAPY";
 import { useActiveTokens } from "../liquidops/utils/hooks/useAvailableTokens";
 import { useMemo, type ComponentProps } from "react";
 import BigNumber from "bignumber.js";
-import { Quantity } from "ao-tokens";
+import { formatNumber } from "../liquidops/utils/format";
 
 export const LiquidOpsAgentListItem = () => {
   const { navigate } = useLocation();
@@ -73,28 +73,21 @@ const AgentListItem = ({
   profit,
   ...rest
 }: { token: TokenData; profit?: BigNumber } & Partial<ComponentProps<typeof ListItem>>) => {
-  const { data: supplyAPY } = useLOSupplyAPY(token.ticker);
+  const { data: supplyAPY = 0 } = useLOSupplyAPY(token.ticker);
   const { data: icon } = useGateway(token.icon);
 
   const active = useMemo(() => typeof profit !== "undefined", [profit]);
-  const profitVal = useMemo(() => {
-    if (!active || !token) return "";
-    const maximumFractionDigits = profit.isLessThan(10) ? 6 : 2;
-    const qty = new Quantity(0n, token.baseDenomination).fromString(profit.toString());
-
-    return "+" + qty.toLocaleString(undefined, { maximumFractionDigits });
-  }, [profit, active, token]);
 
   return (
     <ListItem
       key={token.ticker}
-      title={<Title ticker={token.cleanTicker} apy={supplyAPY || 0} />}
+      title={<Title ticker={token.cleanTicker} apy={supplyAPY} />}
       icon={<img src={icon} height={24} width={24} />}
       hideSquircle
       padding={0}
       subtitleExtra={
         <Text variant="tertiary" weight="medium" noMargin style={active ? { color: "rgb(86, 201, 128)" } : {}}>
-          {active ? profitVal : "Inactive"}
+          {active ? "+" + formatNumber(profit || BigNumber(0)) : "Inactive"}
         </Text>
       }
       {...rest}

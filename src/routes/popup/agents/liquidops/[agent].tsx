@@ -25,6 +25,7 @@ import { useLOAssetBalance } from "./utils/hooks/useLOAssetBalance";
 import { Loading } from "@arconnect/components-rebrand";
 import { useTokenPrice } from "~tokens/hooks";
 import BigNumber from "bignumber.js";
+import { formatNumber } from "./utils/format";
 
 export type LiquidOpsAgentProps = CommonRouteProps<{ ticker: string }>;
 
@@ -215,7 +216,7 @@ export function LiquidOpsAgent({ params: { ticker } }: LiquidOpsAgentProps) {
               </Text>
               <Flex align="center" gap={4}>
                 <Text size="sm" weight="medium" noMargin>
-                  {oTokenBalance.toLocaleString(undefined, { maximumFractionDigits: 2 })} {"o" + ticker}
+                  {formatNumber(oTokenBalance)} {"o" + ticker}
                 </Text>
                 <SvgImageWithBackground
                   height={16}

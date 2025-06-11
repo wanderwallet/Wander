@@ -19,8 +19,9 @@ import { type TokenInfo } from "~tokens/aoTokens/ao";
 import BigNumber from "bignumber.js";
 import { useGateway } from "./utils/hooks/useGateway";
 import useSetting from "~settings/hook";
-import { formatFiatBalance, formatTokenBalance } from "~tokens/currency";
+import { formatFiatBalance } from "~tokens/currency";
 import { useOExchangeRate } from "./utils/hooks/useOExchangeRate";
+import { formatNumber } from "./utils/format";
 
 export type LiquidOpsDepositWithdrawProps = CommonRouteProps<{ action: "deposit" | "withdraw"; ticker: string }>;
 
@@ -142,7 +143,7 @@ export function LiquidOpsDepositWithdraw({ params: { action, ticker } }: LiquidO
                     weight="medium"
                     style={{ position: "absolute", left: 10, bottom: 10 }}>
                     {"~"}
-                    {action === "deposit" ? formatFiatBalance(tokenWorth, currency) : formatTokenBalance(tokenWorth)}
+                    {action === "deposit" ? formatFiatBalance(tokenWorth, currency) : formatNumber(tokenWorth)}
                     {action === "withdraw" && " " + token.cleanTicker}
                   </Text>
                 </Flex>

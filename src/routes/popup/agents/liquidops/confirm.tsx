@@ -11,7 +11,7 @@ import { useLOSupplyAPY } from "./utils/hooks/useLOSupplyAPY";
 import { useMemo, useState } from "react";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import BigNumber from "bignumber.js";
-import { formatFiatBalance, formatTokenBalance } from "~tokens/currency";
+import { formatFiatBalance } from "~tokens/currency";
 import useSetting from "~settings/hook";
 import { useTokenPrice } from "~tokens/hooks";
 import { useOExchangeRate } from "./utils/hooks/useOExchangeRate";
@@ -22,6 +22,7 @@ import { Quantity } from "ao-tokens";
 import { useQueryClient } from "@tanstack/react-query";
 import { checkPassword } from "~wallets/auth";
 import { ExtensionStorage, useStorage } from "~utils/storage";
+import { formatNumber } from "./utils/format";
 
 export type LiquidOpsConfirmProps = CommonRouteProps<{
   action: "deposit" | "withdraw";
@@ -174,7 +175,7 @@ export function LiquidOpsConfirm({ params: { action, ticker, quantity } }: Liqui
               <Flex align="baseline" gap={4}>
                 <Flex align="baseline">
                   <Text size="5xl" weight="medium" noMargin>
-                    {formatTokenBalance(quantityInCollateral)}
+                    {formatNumber(quantityInCollateral)}
                   </Text>
                   <Text size="base" weight="medium" noMargin>
                     {ticker}
