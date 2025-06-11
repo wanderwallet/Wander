@@ -20,6 +20,10 @@ export function formatNumber(val: BigNumber | number | Quantity, maxDigits = 2, 
   const oneQty = new Quantity(1n, 0n);
   const oneBig = BigNumber(1);
 
+  if (typeof val === "string") {
+    val = BigNumber(val);
+  }
+
   if (
     (typeof val === "number" && val < 1) ||
     (val instanceof Quantity && Quantity.lt(val, oneQty)) ||

@@ -100,7 +100,7 @@ export const Agent = ({ ticker, running = false, profit = BigNumber(0) }: Props)
             }
           : {}),
       }}
-      onClick={() => navigate(`/agents/liquidops/${ticker}`)}
+      onClick={() => navigate(`/agents/liquidops/${ticker}${running ? "" : "/deposit"}`)}
     />
   );
 };
