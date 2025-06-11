@@ -19,13 +19,14 @@ export const LiquidOpsAgentListItem = () => {
   const availableTokens = Object.values(tokenData).filter((token) => !token.deprecated);
 
   const { data: activeTokens } = useActiveTokens();
+  const activeCount = useMemo(() => activeTokens?.length || 0, [activeTokens]);
 
   return (
     <ListItem
       title={browser.i18n.getMessage("liquidops_agent")}
       subtitle={browser.i18n.getMessage("liquidops_agent_description", [
-        (activeTokens?.length ?? 0).toString(),
-        availableTokens.length.toString(),
+        activeCount.toString(),
+        (availableTokens.length - activeCount).toString(),
       ])}
       subtitleStyle={{ fontSize: 14, fontWeight: 500, lineHeight: "18.2px" }}
       squircleSize={40}
