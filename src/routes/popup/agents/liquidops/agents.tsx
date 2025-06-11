@@ -26,18 +26,21 @@ export function LiquidOpsAgentsView() {
       <HeadV2 title={"LiquidOps " + browser.i18n.getMessage("agents")} />
 
       <Wrapper>
-        <Flex align="center" gap={16} justify="center" direction="column" textAlign="center">
-          <Text style={{ alignSelf: "flex-start" }} weight="semibold" noMargin>
-            {browser.i18n.getMessage("active_agents")}
-          </Text>
+        {activeTokens && activeTokens.length > 0 && (
+          <>
+            <Flex align="center" gap={16} justify="center" direction="column" textAlign="center">
+              <Text style={{ alignSelf: "flex-start" }} weight="semibold" noMargin>
+                {browser.i18n.getMessage("active_agents")}
+              </Text>
 
-          {activeTokens &&
-            activeTokens.map((token) => (
-              <Agent key={token.ticker} ticker={token.cleanTicker} running={true} profit={token.profit} />
-            ))}
-        </Flex>
+              {activeTokens.map((token) => (
+                <Agent key={token.ticker} ticker={token.cleanTicker} running={true} profit={token.profit} />
+              ))}
+            </Flex>
 
-        <Line />
+            <Line />
+          </>
+        )}
 
         <Flex align="center" gap={16} justify="center" direction="column" textAlign="center">
           <Text style={{ alignSelf: "flex-start" }} weight="semibold" noMargin>

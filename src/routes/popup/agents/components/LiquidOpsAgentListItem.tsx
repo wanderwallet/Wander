@@ -46,7 +46,9 @@ export const LiquidOpsAgentListItem = () => {
               <AgentListItem
                 token={token}
                 profit={activeData?.profit}
-                onClick={() => navigate(`/agents/liquidops/${token.cleanTicker}`)}
+                onClick={() =>
+                  navigate(`/agents/liquidops/${token.cleanTicker}${!activeData?.profit ? "/deposit" : ""}`)
+                }
               />
             );
           })}
