@@ -1,7 +1,7 @@
 import Arweave from "arweave";
 import { defaultGateway } from "~gateways/gateway";
 import { ExtensionStorage } from "~utils/storage";
-import type { AOYieldAgent, AOYieldAgentInfo, AOYieldAgentStatus, MintingStatus, Tag } from "./types";
+import type { AOYieldAgent, AOYieldAgentInfo, AOYieldAgentStatus, MintingStatus, RecentTx, Tag } from "./types";
 import { connect } from "@permaweb/aoconnect";
 import { defaultConfig } from "~tokens/aoTokens/config";
 import { createDataItemSigner, getTagValue, Id, Owner, WAR_PROCESS_ID, WUSDC_PROCESS_ID } from "~tokens/aoTokens/ao";
@@ -16,6 +16,7 @@ import { freeDecryptedWallet } from "~wallets/encryption";
 import WarIcon from "url:/assets/ecosystem/war.svg";
 import wUSDCIcon from "url:/assets/ecosystem/wusdc.svg";
 import type { Asset } from "~utils/agents/types";
+import { AO_YIELD_AGENT_RECENT_TXS } from "./constants";
 
 /**
  * Initializes a default Arweave instance.
@@ -191,6 +192,15 @@ export async function getAOYieldAgents(activeAddress: string, status?: AOYieldAg
 
 export async function setAOYieldAgents(activeAddress: string, agents: AOYieldAgent[]) {
   await ExtensionStorage.set(`ao_yield_agents_${activeAddress}`, agents);
+}
+
+export async function getRecentTxs(): Promise<RecentTx[]> {
+  const recentTxs = await ExtensionStorage.get<RecentTx[]>(AO_YIELD_AGENT_RECENT_TXS);
+  return recentTxs || [];
+}
+
+export async function setRecentTxs(recentTxs: RecentTx[]) {
+  await ExtensionStorage.set(AO_YIELD_AGENT_RECENT_TXS, recentTxs);
 }
 
 export async function getAOYieldActiveAgent() {

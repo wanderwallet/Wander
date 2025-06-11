@@ -184,3 +184,29 @@ export interface SwapSuccessTransaction {
 }
 
 export type MintingStatus = "Active" | "Paused";
+
+export type RecentTx = {
+  id: string;
+  timestamp: number;
+  queryCount: number;
+};
+
+export interface MintTransaction {
+  id: string;
+  timestamp: number;
+  total?: number;
+  nonce?: number;
+}
+
+export interface ParsedMintData {
+  recipient: string;
+  amount: string;
+  user: string;
+  token: string;
+}
+
+export interface MintQuantityResult {
+  quantity: string;
+  swapDateFrom: number;
+  swapDateTo: number;
+}

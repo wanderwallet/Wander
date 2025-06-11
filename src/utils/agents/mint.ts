@@ -1,6 +1,13 @@
 import { gql } from "~gateways/api";
 import { AO_PROCESS_MINT_QUERY, AO_PROCESS_MINT_WITH_NONCE_QUERY, AO_YIELD_AGENT_RECENT_TX_QUERY } from "./queries";
-import { getAOYieldActiveAgent, getAOYieldAgentInfo, getArweave, updateAOYieldAgent } from "./utils";
+import {
+  getAOYieldActiveAgent,
+  getAOYieldAgentInfo,
+  getArweave,
+  getRecentTxs,
+  setRecentTxs,
+  updateAOYieldAgent,
+} from "./utils";
 import { getActiveAddress } from "~wallets/wallets.utils";
 import BigNumber from "bignumber.js";
 import { AO_PROCESS_ID, defaultTokens, fetchTokenBalance, getTagValue, sendAoTransfer } from "~tokens/aoTokens/ao";
@@ -12,41 +19,29 @@ import { log, LOG_GROUP } from "~utils/log/log.utils";
 import {
   AO_YIELD_AGENT_ALARM_NAME,
   AO_YIELD_AGENT_LAST_SWAP_DATE_KEY,
-  AO_YIELD_AGENT_RECENT_TXS,
   AO_YIELD_AGENT_RECENT_TXS_CHECK_ALARM_NAME,
   AO_YIELD_AGENT_RECENT_TXS_CHECK_IN_PROGRESS_KEY,
   AO_YIELD_AGENT_SWAP_IN_PROGRESS_KEY,
   ONE_HOUR_MS,
 } from "./constants";
-import type { AOYieldAgent, AOYieldAgentInfo } from "./types";
+import type { AOYieldAgent, AOYieldAgentInfo, MintQuantityResult, MintTransaction, ParsedMintData } from "./types";
 import type { DecodedTag } from "~api/modules/sign/tags";
 import { ExtensionStorage } from "~utils/storage";
 import browser from "webextension-polyfill";
 import { EventType, trackEvent } from "~utils/analytics";
+import { getSetting } from "~settings";
 
 const queryClient = new QueryClient();
 let isSwapExecutionInProgress = false;
 let isSchedulingInProgress = false;
 let isRecentTxCheckInProgress = false;
 
-export interface MintTransaction {
-  id: string;
-  timestamp: number;
-  total?: number;
-  nonce?: number;
+async function startSwapInProgress(lockTimestamp: number) {
+  await ExtensionStorage.set(AO_YIELD_AGENT_SWAP_IN_PROGRESS_KEY, lockTimestamp);
 }
 
-export interface ParsedMintData {
-  recipient: string;
-  amount: string;
-  user: string;
-  token: string;
-}
-
-interface MintQuantityResult {
-  quantity: string;
-  swapDateFrom: number;
-  swapDateTo: number;
+async function clearSwapInProgress() {
+  await ExtensionStorage.remove(AO_YIELD_AGENT_SWAP_IN_PROGRESS_KEY);
 }
 
 function sortAscending(a: MintTransaction, b: MintTransaction): number {
@@ -323,7 +318,7 @@ async function executeTokenSwap(
   swapDateFrom: number,
   swapDateTo: number,
   activeAddress: string,
-): Promise<void> {
+): Promise<string> {
   log(LOG_GROUP.AGENTS, "Transferring AO tokens to agent: ", activeAgent.id);
 
   const ao = connect(defaultConfig);
@@ -353,13 +348,11 @@ async function executeTokenSwap(
 
   log(LOG_GROUP.AGENTS, "Transferred AO tokens to agent: ", activeAgent.id);
 
-  const recentTxs = (await ExtensionStorage.get<string[]>(AO_YIELD_AGENT_RECENT_TXS)) || [];
-  await ExtensionStorage.set(AO_YIELD_AGENT_RECENT_TXS, [...recentTxs, messageId]);
   await ExtensionStorage.set(AO_YIELD_AGENT_LAST_SWAP_DATE_KEY, swapDateTo);
 
-  await queryClient.invalidateQueries({
-    queryKey: ["tokenBalance", AO_PROCESS_ID, activeAddress],
-  });
+  await queryClient.invalidateQueries({ queryKey: ["tokenBalance", AO_PROCESS_ID, activeAddress] });
+
+  return messageId;
 }
 
 export async function executeAutomaticSwapIfNeeded(): Promise<void> {
@@ -392,7 +385,7 @@ export async function executeAutomaticSwapIfNeeded(): Promise<void> {
     }
 
     // Try to acquire the lock atomically
-    await ExtensionStorage.set(AO_YIELD_AGENT_SWAP_IN_PROGRESS_KEY, lockTimestamp);
+    await startSwapInProgress(lockTimestamp);
 
     // Double-check that we actually got the lock (handle race conditions)
     const verifyLock = await ExtensionStorage.get<number>(AO_YIELD_AGENT_SWAP_IN_PROGRESS_KEY);
@@ -404,20 +397,20 @@ export async function executeAutomaticSwapIfNeeded(): Promise<void> {
     const activeAddress = await getActiveAddress();
     if (!activeAddress) {
       log(LOG_GROUP.AGENTS, "No active address found");
-      await ExtensionStorage.remove(AO_YIELD_AGENT_SWAP_IN_PROGRESS_KEY);
+      await clearSwapInProgress();
       return;
     }
 
     const activeAgent = await getAOYieldActiveAgent();
     if (!activeAgent) {
       log(LOG_GROUP.AGENTS, "No active agent found");
-      await ExtensionStorage.remove(AO_YIELD_AGENT_SWAP_IN_PROGRESS_KEY);
+      await clearSwapInProgress();
       return;
     }
 
     // Validate agent eligibility
     if (!(await validateAgentForSwap(activeAgent))) {
-      await ExtensionStorage.remove(AO_YIELD_AGENT_SWAP_IN_PROGRESS_KEY);
+      await clearSwapInProgress();
       return;
     }
 
@@ -433,7 +426,7 @@ export async function executeAutomaticSwapIfNeeded(): Promise<void> {
 
     // Check if swap should be skipped
     if (shouldSkipSwap(agentInfo)) {
-      await ExtensionStorage.remove(AO_YIELD_AGENT_SWAP_IN_PROGRESS_KEY);
+      await clearSwapInProgress();
       return;
     }
 
@@ -454,30 +447,40 @@ export async function executeAutomaticSwapIfNeeded(): Promise<void> {
 
     if (BigNumber(swapQuantity).eq("0")) {
       log(LOG_GROUP.AGENTS, "No swap needed");
-      await ExtensionStorage.remove(AO_YIELD_AGENT_SWAP_IN_PROGRESS_KEY);
+      await clearSwapInProgress();
       return;
     }
 
     // Validate token balance
     if (!(await validateTokenBalanceForSwap(activeAddress, swapQuantity))) {
-      await ExtensionStorage.remove(AO_YIELD_AGENT_SWAP_IN_PROGRESS_KEY);
+      await clearSwapInProgress();
       return;
     }
 
     // Execute the swap (lock is already acquired above)
-    await executeTokenSwap(activeAgent, swapQuantity, actualDateFrom, actualDateTo, activeAddress);
+    const messageId = await executeTokenSwap(activeAgent, swapQuantity, actualDateFrom, actualDateTo, activeAddress);
+    if (!messageId) {
+      await clearSwapInProgress();
+      return;
+    }
 
-    // Schedule staggered checks for transaction success
-    [0.5, 1, 1.5, 2].forEach((delay) => {
-      browser.alarms.create(AO_YIELD_AGENT_RECENT_TXS_CHECK_ALARM_NAME, { when: Date.now() + delay * 60 * 1000 });
-    });
+    // first we check if we are allowed to collect data
+    const enabled = await getSetting("analytics").getValue();
+    if (enabled) {
+      const recentTxs = await getRecentTxs();
+      await setRecentTxs([...recentTxs, { id: messageId, timestamp: Date.now(), queryCount: 0 }]);
+
+      // Schedule staggered checks for transaction success
+      [0.5, 1, 1.5, 2].forEach((delay) => {
+        browser.alarms.create(AO_YIELD_AGENT_RECENT_TXS_CHECK_ALARM_NAME, { when: Date.now() + delay * 60 * 1000 });
+      });
+    }
 
     // Clear swap in progress flag after successful execution
-    await ExtensionStorage.remove(AO_YIELD_AGENT_SWAP_IN_PROGRESS_KEY);
+    await clearSwapInProgress();
   } catch (error) {
     log(LOG_GROUP.AGENTS, "Error performing swap: ", error);
-    // Clear swap in progress flag on error
-    await ExtensionStorage.remove(AO_YIELD_AGENT_SWAP_IN_PROGRESS_KEY);
+    await clearSwapInProgress();
   } finally {
     isSwapExecutionInProgress = false;
   }
@@ -485,6 +488,12 @@ export async function executeAutomaticSwapIfNeeded(): Promise<void> {
 
 export async function checkIfRecentTxSwapSucceeded(): Promise<boolean> {
   try {
+    const enabled = await getSetting("analytics").getValue();
+    if (!enabled) {
+      await browser.alarms.clear(AO_YIELD_AGENT_RECENT_TXS_CHECK_ALARM_NAME);
+      return;
+    }
+
     if (isRecentTxCheckInProgress) return;
 
     isRecentTxCheckInProgress = true;
@@ -503,7 +512,7 @@ export async function checkIfRecentTxSwapSucceeded(): Promise<boolean> {
 
     await ExtensionStorage.set(AO_YIELD_AGENT_RECENT_TXS_CHECK_IN_PROGRESS_KEY, true);
 
-    let recentTxs = (await ExtensionStorage.get<string[]>(AO_YIELD_AGENT_RECENT_TXS)) || [];
+    let recentTxs = await getRecentTxs();
     if (recentTxs.length === 0) {
       log(LOG_GROUP.AGENTS, "No recent txs found");
       return;
@@ -517,7 +526,7 @@ export async function checkIfRecentTxSwapSucceeded(): Promise<boolean> {
       return;
     }
 
-    log(LOG_GROUP.AGENTS, "Recent txs found: ", recentTxs);
+    log(LOG_GROUP.AGENTS, "Recent txs found: ", recentTxs.length);
 
     const foundTxIds = new Set<string>();
 
@@ -546,13 +555,13 @@ export async function checkIfRecentTxSwapSucceeded(): Promise<boolean> {
       log(LOG_GROUP.AGENTS, "Error tracking recent txs: ", error);
     }
 
-    recentTxs = (await ExtensionStorage.get<string[]>(AO_YIELD_AGENT_RECENT_TXS)) || [];
-    const remainingTxs = recentTxs.filter((tx) => !foundTxIds.has(tx));
-    log(LOG_GROUP.AGENTS, "Remaining txs: ", remainingTxs);
+    recentTxs = await getRecentTxs();
+    const remainingTxs = recentTxs.filter((tx) => !foundTxIds.has(tx.id) || tx.queryCount >= 8);
+    log(LOG_GROUP.AGENTS, "Remaining txs: ", remainingTxs.length);
     if (remainingTxs.length === 0) {
       await browser.alarms.clear(AO_YIELD_AGENT_RECENT_TXS_CHECK_ALARM_NAME);
     }
-    await ExtensionStorage.set(AO_YIELD_AGENT_RECENT_TXS, remainingTxs);
+    await setRecentTxs(remainingTxs.map((tx) => ({ ...tx, queryCount: tx.queryCount + 1 })));
   } catch {
     log(LOG_GROUP.AGENTS, "Error checking recent txs");
   } finally {
