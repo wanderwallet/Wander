@@ -70,7 +70,7 @@ export function LiquidOpsConfirm({ params: { action, ticker, quantity } }: Liqui
   );
   const { data: tokenIconUrl } = useGateway(token.icon);
 
-  const { data: supplyAPR } = useLOSupplyAPY(token.ticker);
+  const { data: supplyAPR = 0 } = useLOSupplyAPY(token.ticker);
 
   // performed action quantity in collateral
   const { data: exchangeRate = BigNumber(0) } = useOExchangeRate(token?.ticker, quantity);
