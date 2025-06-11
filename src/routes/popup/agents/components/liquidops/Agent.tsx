@@ -14,6 +14,7 @@ import { useStorage } from "@plasmohq/storage/hook";
 import BigNumber from "bignumber.js";
 import { useGateway } from "../../liquidops/utils/hooks/useGateway";
 import { formatNumber } from "../../liquidops/utils/format";
+import { useTheme } from "~utils/theme";
 
 export const Agent = ({ ticker, running = false, profit = BigNumber(0) }: Props) => {
   const { navigate } = useLocation();
@@ -34,6 +35,8 @@ export const Agent = ({ ticker, running = false, profit = BigNumber(0) }: Props)
     [token],
   );
   const { data: logo } = useGateway(token.icon);
+
+  const theme = useTheme();
 
   // current wallet
   const [activeAddress] = useStorage<string>({
@@ -95,8 +98,8 @@ export const Agent = ({ ticker, running = false, profit = BigNumber(0) }: Props)
         padding: "12px 8px",
         ...(running
           ? {
-              backgroundColor: "rgba(37, 51, 39, 0.5)",
-              border: "1px solid rgb(16, 65, 36)",
+              backgroundColor: `rgba(${theme === "dark" ? "37, 51, 39" : "233, 252, 236"}, 0.5)`,
+              border: `1px solid rgb(${theme === "dark" ? "16, 65, 36" : "4, 170, 62"})`,
             }
           : {}),
       }}
