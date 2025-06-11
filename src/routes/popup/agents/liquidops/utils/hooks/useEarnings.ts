@@ -4,6 +4,7 @@ import { getActiveAddress } from "~wallets";
 import { tokenData } from "liquidops";
 import { Quantity } from "ao-tokens";
 import BigNumber from "bignumber.js";
+import { ExtensionStorage, useStorage } from "~utils/storage";
 
 const defaultOptions = {
   refetchInterval: 300_000,
@@ -15,24 +16,28 @@ const defaultOptions = {
 };
 
 export function useEarnings(ticker: string) {
+  const [activeAddress] = useStorage<string>({
+    key: "active_address",
+    instance: ExtensionStorage,
+  });
+
   return useQuery({
-    queryKey: ["earnings", ticker],
+    queryKey: ["earnings", ticker, activeAddress],
     queryFn: async () => {
       const activeTokens = Object.values(tokenData).filter((token) => !token.deprecated);
       const token = activeTokens.find((token) => token.ticker.toLowerCase() === ticker.toLowerCase());
 
       try {
-        const walletAddress = await getActiveAddress();
         const { client } = await LiquidOpsClient();
 
         const { collateralization } = await client.getPosition({
           token: ticker.toUpperCase(),
-          recipient: walletAddress,
+          recipient: activeAddress,
         });
         const earnings = await client.getEarnings({
           token: ticker.toUpperCase(),
           collateralization: BigInt(collateralization),
-          walletAddress: walletAddress,
+          walletAddress: activeAddress,
         });
 
         return BigNumber(new Quantity(earnings.profit || 0n, token.baseDenomination).toString());
