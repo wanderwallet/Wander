@@ -29,16 +29,21 @@ type PopupCallback = (popupTabID: number) => void;
 let popupUpdatedCallbacks: PopupCallback[] = [];
 let popupClosedCallbacks: PopupCallback[] = [];
 
+let POPUP_WINDOW_ID = -1;
 let POPUP_TAB_ID = -1;
 
-function setPopupTabID(popupTabID: number) {
-  log(LOG_GROUP.AUTH, "setPopupTabID =", popupTabID);
+function setPopupTabID(window: browser.Windows.Window | null) {
+  const popupWindowId = window ? window.id : -1;
+  const popupTabId = window ? window.tabs[0].id : -1;
 
-  POPUP_TAB_ID = popupTabID;
+  log(LOG_GROUP.AUTH, { popupWindowId, popupTabId });
 
-  if (popupTabID === -1) {
+  POPUP_WINDOW_ID = popupWindowId;
+  POPUP_TAB_ID = popupTabId;
+
+  if (popupTabId === -1) {
     popupClosedCallbacks.forEach((cb) => {
-      cb(popupTabID);
+      cb(popupTabId);
     });
 
     popupClosedCallbacks = [];
@@ -47,10 +52,14 @@ function setPopupTabID(popupTabID: number) {
   }
 
   popupUpdatedCallbacks.forEach((cb) => {
-    cb(popupTabID);
+    cb(popupTabId);
   });
 
   popupUpdatedCallbacks = [];
+}
+
+export function getPopupWindowID() {
+  return POPUP_WINDOW_ID;
 }
 
 function onPopupTabUpdated(cb: PopupCallback) {
@@ -70,7 +79,7 @@ export function onPopupClosed(cb: PopupCallback) {
 }
 
 export function resetPopupTabID() {
-  setPopupTabID(-1);
+  setPopupTabID(null);
 }
 
 export function getCachedAuthPopupWindowTabID() {
@@ -100,11 +109,19 @@ export async function requestUserAuthorization<T = any>(
 ) {
   log(LOG_GROUP.AUTH, `requestUserAuthorization("${authRequestData.type}")`);
 
+  // TODO: Should we wrap both in retry in case the popup was already closed?
+
   // create the popup
   const { authID, popupWindowTabID } = await createAuthPopup(authRequestData, moduleAppData);
 
   // wait for the results from the popup
   return await getPopupResponse<T>(authID, popupWindowTabID);
+}
+
+let lastAuthID = "";
+
+export function getLastAuthID() {
+  return lastAuthID;
 }
 
 /**
@@ -115,6 +132,13 @@ export async function requestUserAuthorization<T = any>(
  * @returns ID of the authentication
  */
 export async function createAuthPopup(authRequestData: null | AuthRequestData, moduleAppData: ModuleAppData) {
+  // Generate an unique id for the authentication to be checked later:
+  const authID = nanoid();
+  if (authRequestData) {
+    console.log("Update ID =", authID);
+    lastAuthID = authID;
+  }
+
   const unlock = await popupMutex.lock();
 
   try {
@@ -146,6 +170,8 @@ export async function createAuthPopup(authRequestData: null | AuthRequestData, m
     // TODO: In Embedded we are already in the right window, so no need to create one, just skip
     // this and make the authRequestData make it to the AuthRequestsProvider.
 
+    console.log("popupWindowTab", popupWindowTab);
+
     try {
       if (!popupWindowTab) {
         // TODO: To center this, the injected tab should send the center or dimensions of the screen:
@@ -160,9 +186,11 @@ export async function createAuthPopup(authRequestData: null | AuthRequestData, m
           height: 720,
         });
 
-        setPopupTabID(window.tabs[0].id);
+        setPopupTabID(window);
       } else {
         log(LOG_GROUP.AUTH, "reusePopupTabID =", POPUP_TAB_ID);
+
+        // TODO: Use drawAttention instead of focused if the tab that sent this is not active.
 
         await browser.windows.update(popupWindowTab.windowId, {
           focused: true,
@@ -172,12 +200,7 @@ export async function createAuthPopup(authRequestData: null | AuthRequestData, m
       console.warn(`Could not ${popupWindowTab ? "focus" : "open"} "tabs/auth.html":`, err);
     }
 
-    let authID: string | undefined;
-
     if (authRequestData) {
-      // Generate an unique id for the authentication to be checked later:
-      authID = nanoid();
-
       log(LOG_GROUP.AUTH, `isomorphicSendMessage(authID = "${authID}", tabId = ${POPUP_TAB_ID})`);
 
       await isomorphicSendMessage({
@@ -216,19 +239,19 @@ function addAuthResultListener<T>(authID: string, popupWindowTabID: number, fn: 
 
   if (authResultCallbacks.size === 1) {
     isomorphicOnMessage("auth_result", ({ sender, data }) => {
+      const authResultCallback = authResultCallbacks.get(data.authID);
+
+      if (!authResultCallback) {
+        console.warn(`authID = ${data.authID} doesn't have an "auth_result" listener`);
+
+        return;
+      }
+
       // validate sender by it's tabId
       if (sender.tabId !== popupWindowTabID) {
         console.warn(
           `auth_result for authID = ${authID} received from tabId = ${sender.tabId}, but ${popupWindowTabID} expected`,
         );
-
-        return;
-      }
-
-      const authResultCallback = authResultCallbacks.get(data.authID);
-
-      if (!authResultCallback) {
-        console.warn(`authID = ${data.authID} doesn't have an "auth_result" listener`);
 
         return;
       }
@@ -257,6 +280,9 @@ export function getPopupResponse<T>(authID: string, popupWindowTabID: number) {
     const timeoutID = setTimeout(() => {
       reject(ERR_MSG_UNLOCK_TIMEOUT);
     }, AUTH_POPUP_UNLOCK_REQUEST_TTL_MS);
+
+    // TODO: If the popup was closed in the race condition, do we return a response?
+    // TODO:
 
     addAuthResultListener<AuthSuccessResult<T>>(authID, popupWindowTabID, (data) => {
       stopKeepAlive(authID);
