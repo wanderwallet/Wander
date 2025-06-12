@@ -5,8 +5,7 @@ import HeadV2 from "~components/popup/HeadV2";
 import { Flex } from "~components/common/Flex";
 import { PropertyName, PropertyValue, TransactionProperty } from "~routes/popup/transaction/[id]";
 import { useMemo, useState } from "react";
-import dayjs from "dayjs";
-import { useAOYieldAgent, useAOYieldAgentInfo } from "~utils/agents/hooks";
+import { useAOYieldAgent, useAOYieldAgentInfo, useAOYieldAgentProperties } from "~utils/agents/hooks";
 import { Divider } from "~components/Divider";
 import { RemoveButton } from "~routes/popup/settings/wallets/[address]";
 import { SvgImageWithBackground } from "../SvgImage";
@@ -15,7 +14,6 @@ import { Settings01 } from "@untitled-ui/icons-react";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import { useLocation } from "~wallets/router/router.utils";
 import { AgentCancelModal } from "./AgentCancelModal";
-import type { WanderRoutePath } from "~wallets/router/router.types";
 import {
   assets,
   formatTokenQuantity,
@@ -47,22 +45,7 @@ export function AgentInfo({ agentId, headerTitle, mintingStatus, isHistory = fal
     return assets.find((asset) => asset.id === agent.tokenOut);
   }, [agent]);
 
-  const agentDetails = useMemo(() => {
-    if (!agent || !asset) return [];
-
-    const { conversionPercentage, startDate, endDate, runIndefinitely, slippage } = agent;
-    const days = dayjs(endDate).diff(dayjs(startDate), "day") + 1;
-    const runningTime = runIndefinitely ? "∞" : `${days} ${days === 1 ? "day" : "days"}`;
-
-    return [
-      { name: "daily_conversion", value: `${conversionPercentage}% of AO earnings` },
-      { name: "buy_asset", value: `${asset.ticker}` },
-      { name: "running_time", value: runningTime },
-      { name: "start_date", value: dayjs(startDate).format("MMM D, YYYY") },
-      { name: "end_date", value: dayjs(endDate).format("MMM D, YYYY") },
-      { name: "slippage", value: `${slippage}%` },
-    ];
-  }, [agent, asset]);
+  const agentDetails = useAOYieldAgentProperties(agent);
 
   const performanceDetails = useMemo(() => {
     if (!agentInfo || !asset) return [];

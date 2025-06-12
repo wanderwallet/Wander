@@ -22,6 +22,7 @@ import { getAOYieldAgents, setAOYieldAgents } from "~utils/agents/utils";
 import { EventType, PageType, trackEvent, trackPage } from "~utils/analytics";
 import { scheduleSwapExecution } from "~utils/agents/mint";
 import { AGENT_VERSION } from "~utils/agents/constants";
+import { useAOYieldAgentProperties } from "~utils/agents/hooks";
 
 export function ConfirmAOYieldAgentView() {
   const [isLoading, setIsLoading] = useState(false);
@@ -44,23 +45,7 @@ export function ConfirmAOYieldAgentView() {
     [askPassword, transferRequirePassword, passwordInput.state],
   );
 
-  const properties = useMemo(() => {
-    if (!aoYieldAgent) return [];
-
-    const { conversionPercentage, asset, startDate, endDate, runIndefinitely, slippage } = aoYieldAgent;
-    const days = dayjs(endDate).diff(dayjs(startDate), "day") + 1;
-    const runningTime = runIndefinitely ? "∞" : `${days} ${days === 1 ? "day" : "days"}`;
-
-    return [
-      { name: "daily_conversion", value: `${conversionPercentage}% of AO earnings` },
-      { name: "buy_asset", value: `${asset.ticker}` },
-      { name: "running_time", value: runningTime },
-      { name: "start_date", value: dayjs(startDate).format("MMM D, YYYY") },
-      { name: "end_date", value: dayjs(endDate).format("MMM D, YYYY") },
-      { name: "slippage", value: `${slippage}%` },
-      { name: "fee", value: browser.i18n.getMessage("percentage_of_each_conversion", ["0.5"]) },
-    ];
-  }, [aoYieldAgent]);
+  const properties = useAOYieldAgentProperties(aoYieldAgent, true);
 
   async function handleActivateAgent(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
