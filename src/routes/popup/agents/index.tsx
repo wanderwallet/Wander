@@ -22,10 +22,10 @@ export function AgentsView() {
   const aoAgent = useAOYieldLatestAgent();
 
   async function checkAndShowAgentExplainerPopup() {
-    const hasShownAgentExplainerPopup = await ExtensionStorage.get("has_shown_agent_explainer_popup");
+    const hasShownAgentExplainerPopup = await ExtensionStorage.get("has_shown_agents_explainer_popup");
     if (!hasShownAgentExplainerPopup) {
       setOpen(true);
-      await ExtensionStorage.set("has_shown_agent_explainer_popup", true);
+      await ExtensionStorage.set("has_shown_agents_explainer_popup", true);
     }
   }
 
@@ -61,7 +61,7 @@ export function AgentsView() {
           <LiquidOpsAgentListItem />
         </Flex>
       </Wrapper>
-      <WanderAgentExplainerPopup open={open} close={() => setOpen(false)} />
+      <WanderAgentExplainerPopup open={open} close={() => setOpen(false)} agentType="agents" />
     </>
   );
 }

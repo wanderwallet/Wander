@@ -3066,6 +3066,10 @@
     "message": "Create AO Yield Agent",
     "description": "Create AO Yield Agent text"
   },
+  "create_an_agent": {
+    "message": "Create an agent",
+    "description": "Create an agent text"
+  },
   "learn_more": {
     "message": "Learn more",
     "description": "Learn more text"
@@ -3077,6 +3081,14 @@
   "introducing_the_wander_agent_description": {
     "message": "Create an agent to automatically convert your AO token earnings for wAR or wUSDC on a daily basis",
     "description": "Introducing the Wander Agent description"
+  },
+  "introducing_the_agents": {
+    "message": "Introducing Agents in Wander!",
+    "description": "Introducing the Agents text"
+  },
+  "introducing_the_agents_description": {
+    "message": "Easily lend your tokens and earn interest—set up an agent to auto-convert your AO earnings into wAR or wUSDC daily.",
+    "description": "Introducing the Agents description"
   },
   "no_active_yield_agents": {
     "message": "You don't have any active yield agents",
