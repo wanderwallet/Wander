@@ -3,7 +3,7 @@ import { type Tag } from "arweave/web/lib/transaction";
 import { PersistentStorage } from "~utils/storage";
 import { Quantity } from "ao-tokens";
 import { ArweaveSigner, createData } from "@dha-team/arbundles";
-import { getActiveKeyfile } from "~wallets";
+import { getActiveKeyfile, getKeyfile, type DecryptedWallet } from "~wallets";
 import { isLocalWallet } from "~utils/assertions";
 import { freeDecryptedWallet } from "~wallets/encryption";
 import type { KeystoneSigner } from "~wallets/hardware/keystone";
@@ -316,8 +316,30 @@ export const sendAoTransfer = async (
   amount: string,
   tags: (Tag | DecodedTag)[] = [],
 ) => {
+  return sendAoTransferForWallet(ao, process, recipient, amount, tags);
+};
+
+/**
+ * Sends AO transfer for a specific wallet address
+ * @param ao - AO instance
+ * @param process - Process ID
+ * @param recipient - Recipient address
+ * @param amount - Amount to transfer
+ * @param walletAddress - Specific wallet address to use for signing
+ * @param tags - Additional tags
+ * @returns Message ID
+ */
+export async function sendAoTransferForWallet(
+  ao: AoInstance,
+  process: string,
+  recipient: string,
+  amount: string,
+  tags: (Tag | DecodedTag)[] = [],
+  walletAddress?: string,
+): Promise<string | undefined> {
+  let decryptedWallet: DecryptedWallet;
   try {
-    const decryptedWallet = await getActiveKeyfile();
+    decryptedWallet = walletAddress ? await getKeyfile(walletAddress) : await getActiveKeyfile();
     isLocalWallet(decryptedWallet);
     const keyfile = decryptedWallet.keyfile;
 
@@ -327,22 +349,25 @@ export const sendAoTransfer = async (
       signer,
       tags: [
         { name: "Action", value: "Transfer" },
-        {
-          name: "Recipient",
-          value: recipient,
-        },
+        { name: "Recipient", value: recipient },
         { name: "Quantity", value: amount },
         { name: "Client", value: "Wander" },
         { name: "Client-Version", value: browser.runtime.getManifest().version },
         ...tags,
       ],
     });
-    freeDecryptedWallet(decryptedWallet.keyfile);
+
     return transferID;
   } catch (err) {
     console.log("err", err);
+    return undefined;
+  } finally {
+    // Clean up keyfile from memory
+    if (decryptedWallet && decryptedWallet.type !== "hardware") {
+      freeDecryptedWallet(decryptedWallet.keyfile);
+    }
   }
-};
+}
 
 export const sendAoTransferKeystone = async (
   ao: AoInstance,

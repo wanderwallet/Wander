@@ -6,16 +6,23 @@ import {
   SWAP_SUCCESS_QUERY_WITH_CURSOR,
 } from "./queries";
 import {
-  getAOYieldActiveAgent,
   getAOYieldAgentInfo,
   getArweave,
   getRecentTxs,
   setRecentTxs,
   updateAOYieldAgent,
+  getAOYieldAgents,
 } from "./utils";
 import { getActiveAddress } from "~wallets/wallets.utils";
+import { getWallets } from "~wallets";
 import BigNumber from "bignumber.js";
-import { AO_PROCESS_ID, defaultTokens, fetchTokenBalance, getTagValue, sendAoTransfer } from "~tokens/aoTokens/ao";
+import {
+  AO_PROCESS_ID,
+  defaultTokens,
+  fetchTokenBalance,
+  getTagValue,
+  sendAoTransferForWallet,
+} from "~tokens/aoTokens/ao";
 import { connect } from "@permaweb/aoconnect";
 import { defaultConfig } from "~tokens/aoTokens/config";
 import { QueryClient } from "@tanstack/react-query";
@@ -338,30 +345,68 @@ async function validateTokenBalanceForSwap(activeAddress: string, swapQuantity: 
 }
 
 /**
+ * Gets the last swap date for a specific wallet address
+ * @param walletAddress - The wallet address
+ * @returns The last swap timestamp or undefined
+ */
+async function getLastSwapDateForWallet(walletAddress: string): Promise<number | undefined> {
+  return await ExtensionStorage.get<number>(`${AO_YIELD_AGENT_LAST_SWAP_DATE_KEY}_${walletAddress}`);
+}
+
+/**
+ * Sets the last swap date for a specific wallet address
+ * @param walletAddress - The wallet address
+ * @param timestamp - The swap timestamp
+ */
+async function setLastSwapDateForWallet(walletAddress: string, timestamp: number): Promise<void> {
+  await ExtensionStorage.set(`${AO_YIELD_AGENT_LAST_SWAP_DATE_KEY}_${walletAddress}`, timestamp);
+}
+
+/**
+ * Checks if a wallet has already swapped today
+ * @param walletAddress - The wallet address to check
+ * @returns True if wallet has already swapped today
+ */
+async function hasWalletSwappedToday(walletAddress: string): Promise<boolean> {
+  const lastSwapDate = await getLastSwapDateForWallet(walletAddress);
+  if (lastSwapDate) {
+    return normalizeToStartOfDay(lastSwapDate) === normalizeToStartOfDay(Date.now());
+  }
+  return false;
+}
+
+/**
  * Executes the token swap.
  * @param activeAgent - The active agent.
  * @param swapQuantity - The swap quantity.
  * @param swapDateFrom - The swap date from.
  * @param swapDateTo - The swap date to.
- * @param activeAddress - The active address.
+ * @param walletAddress - The wallet address to use for the swap.
  */
 async function executeTokenSwap(
   activeAgent: AOYieldAgent,
   swapQuantity: string,
   swapDateFrom: number,
   swapDateTo: number,
-  activeAddress: string,
+  walletAddress: string,
 ): Promise<string> {
-  log(LOG_GROUP.AGENTS, "Transferring AO tokens to agent: ", activeAgent.id);
+  log(LOG_GROUP.AGENTS, "Transferring AO tokens to agent: ", activeAgent.id, "from wallet:", walletAddress);
 
   const ao = connect(defaultConfig);
-  const messageId = await sendAoTransfer(ao, AO_PROCESS_ID, activeAgent.id, swapQuantity, [
-    { name: "X-Swap-Date-From", value: swapDateFrom.toString() },
-    { name: "X-Swap-Date-To", value: swapDateTo.toString() },
-  ]);
+  const messageId = await sendAoTransferForWallet(
+    ao,
+    AO_PROCESS_ID,
+    activeAgent.id,
+    swapQuantity,
+    [
+      { name: "X-Swap-Date-From", value: swapDateFrom.toString() },
+      { name: "X-Swap-Date-To", value: swapDateTo.toString() },
+    ],
+    walletAddress,
+  );
 
   if (!messageId) {
-    log(LOG_GROUP.AGENTS, "Failed to transfer AO tokens to agent: ", activeAgent.id);
+    log(LOG_GROUP.AGENTS, "Failed to transfer AO tokens to agent: ", activeAgent.id, "from wallet:", walletAddress);
     return;
   }
 
@@ -374,18 +419,95 @@ async function executeTokenSwap(
     );
 
     if (Error || !hasValidTag) {
-      log(LOG_GROUP.AGENTS, "Failed to transfer AO tokens to agent: ", activeAgent.id);
+      log(LOG_GROUP.AGENTS, "Failed to transfer AO tokens to agent: ", activeAgent.id, "from wallet:", walletAddress);
       return;
     }
   } catch {}
 
-  log(LOG_GROUP.AGENTS, "Transferred AO tokens to agent: ", activeAgent.id);
+  log(LOG_GROUP.AGENTS, "Transferred AO tokens to agent: ", activeAgent.id, "from wallet:", walletAddress);
 
-  await ExtensionStorage.set(AO_YIELD_AGENT_LAST_SWAP_DATE_KEY, swapDateTo);
+  // Set wallet-specific last swap date
+  await setLastSwapDateForWallet(walletAddress, swapDateTo);
 
-  await queryClient.invalidateQueries({ queryKey: ["tokenBalance", AO_PROCESS_ID, activeAddress] });
+  await queryClient.invalidateQueries({ queryKey: ["tokenBalance", AO_PROCESS_ID, walletAddress] });
 
   return messageId;
+}
+
+/**
+ * Processes automatic swap for a single agent
+ * @param agent - The agent to process
+ * @param walletAddress - The wallet address that owns the agent
+ */
+async function processAgentSwap(agent: AOYieldAgent, walletAddress: string): Promise<void> {
+  try {
+    // Validate agent eligibility
+    if (!(await validateAgentForSwap(agent))) {
+      return;
+    }
+
+    // Fetch agent info
+    const agentInfo = await queryClient.fetchQuery({
+      queryKey: ["ao-yield-agent-info", agent.id],
+      queryFn: () => getAOYieldAgentInfo(agent.id),
+      staleTime: 60_000,
+      gcTime: 60_000,
+      retry: 3,
+      retryDelay: (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    });
+
+    // Check if swap should be skipped
+    if (shouldSkipSwap(agentInfo)) {
+      return;
+    }
+
+    // Calculate swap dates
+    const { from: swapDateFrom, to: swapDateTo } = calculateSwapDates(agentInfo);
+
+    // Calculate mint quantity for the date range
+    const mintResult = await calculateMintQuantityForDateRange(walletAddress, swapDateFrom, swapDateTo);
+    const { quantity: mintedQuantity, swapDateFrom: actualDateFrom, swapDateTo: actualDateTo } = mintResult;
+
+    // Calculate swap quantity
+    const swapQuantity = BigNumber(mintedQuantity)
+      .multipliedBy(agent.conversionPercentage)
+      .dividedBy(100)
+      .toFixed(0, BigNumber.ROUND_FLOOR);
+
+    log(LOG_GROUP.AGENTS, { agent: agent.id, walletAddress, mintedQuantity, swapQuantity });
+
+    if (BigNumber(swapQuantity).eq("0")) {
+      log(LOG_GROUP.AGENTS, "No swap needed for agent:", agent.id);
+      return;
+    }
+
+    // Validate token balance
+    if (!(await validateTokenBalanceForSwap(walletAddress, swapQuantity))) {
+      return;
+    }
+
+    // Execute the swap
+    const messageId = await executeTokenSwap(agent, swapQuantity, actualDateFrom, actualDateTo, walletAddress);
+    if (!messageId) {
+      return;
+    }
+
+    // first we check if we are allowed to collect data
+    const enabled = await getSetting("analytics").getValue();
+    if (enabled) {
+      const recentTxs = await getRecentTxs();
+      await setRecentTxs([...recentTxs, { id: messageId, timestamp: Date.now(), queryCount: 0 }]);
+
+      // Schedule staggered checks for transaction success
+      [0.5, 1, 1.5, 2].forEach((delay) => {
+        browser.alarms.create(AO_YIELD_AGENT_RECENT_TXS_CHECK_ALARM_NAME, { when: Date.now() + delay * 60 * 1000 });
+      });
+    }
+
+    log(LOG_GROUP.AGENTS, "Successfully processed swap for agent:", agent.id, "wallet:", walletAddress);
+  } catch (error) {
+    log(LOG_GROUP.AGENTS, "Error processing agent swap:", agent.id, "wallet:", walletAddress, error);
+  }
 }
 
 export async function executeAutomaticSwapIfNeeded(): Promise<void> {
@@ -394,15 +516,6 @@ export async function executeAutomaticSwapIfNeeded(): Promise<void> {
   isSwapExecutionInProgress = true;
 
   try {
-    // Check if swap already happened today
-    const lastSwapDate = await ExtensionStorage.get<number>(AO_YIELD_AGENT_LAST_SWAP_DATE_KEY);
-    if (lastSwapDate) {
-      if (normalizeToStartOfDay(lastSwapDate) === normalizeToStartOfDay(Date.now())) {
-        log(LOG_GROUP.AGENTS, "Already swapped today");
-        return;
-      }
-    }
-
     // Atomic check-and-set for swap lock
     const lockTimestamp = Date.now();
     const currentLock = await ExtensionStorage.get<number>(AO_YIELD_AGENT_SWAP_IN_PROGRESS_KEY);
@@ -427,94 +540,49 @@ export async function executeAutomaticSwapIfNeeded(): Promise<void> {
       return;
     }
 
-    const activeAddress = await getActiveAddress();
-    if (!activeAddress) {
-      log(LOG_GROUP.AGENTS, "No active address found");
-      await clearSwapInProgress();
+    // Get all wallets
+    const wallets = await getWallets();
+    if (!wallets || wallets.length === 0) {
+      log(LOG_GROUP.AGENTS, "No wallets found");
       return;
     }
 
-    const activeAgent = await getAOYieldActiveAgent();
-    if (!activeAgent) {
-      log(LOG_GROUP.AGENTS, "No active agent found");
-      await clearSwapInProgress();
-      return;
+    log(LOG_GROUP.AGENTS, `Processing agents for ${wallets.length} wallets`);
+
+    // Process agents for each wallet
+    for (const wallet of wallets) {
+      if (wallet.type === "hardware") continue;
+
+      try {
+        // Check if this wallet has already swapped today
+        if (await hasWalletSwappedToday(wallet.address)) {
+          log(LOG_GROUP.AGENTS, `Wallet ${wallet.address} already swapped today`);
+          continue;
+        }
+
+        // Get active agents for this wallet
+        const agents = await getAOYieldAgents(wallet.address, "Active");
+
+        if (agents.length === 0) {
+          log(LOG_GROUP.AGENTS, `No active agents found for wallet: ${wallet.address}`);
+          continue;
+        }
+
+        log(LOG_GROUP.AGENTS, `Processing active agent for wallet: ${wallet.address}`);
+
+        // Process each agent for this wallet
+        const activeAgent = agents[agents.length - 1];
+        await processAgentSwap(activeAgent, wallet.address);
+      } catch (error) {
+        log(LOG_GROUP.AGENTS, `Error processing agents for wallet ${wallet.address}:`, error);
+        // Continue processing other wallets even if one fails
+        continue;
+      }
     }
-
-    // Validate agent eligibility
-    if (!(await validateAgentForSwap(activeAgent))) {
-      await clearSwapInProgress();
-      return;
-    }
-
-    // Fetch agent info
-    const agentInfo = await queryClient.fetchQuery({
-      queryKey: ["ao-yield-agent-info", activeAgent.id],
-      queryFn: () => getAOYieldAgentInfo(activeAgent.id),
-      staleTime: 60_000,
-      gcTime: 60_000,
-      retry: 3,
-      retryDelay: (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 30000),
-    });
-
-    // Check if swap should be skipped
-    if (shouldSkipSwap(agentInfo)) {
-      await clearSwapInProgress();
-      return;
-    }
-
-    // Calculate swap dates
-    const { from: swapDateFrom, to: swapDateTo } = calculateSwapDates(agentInfo);
-
-    // Calculate mint quantity for the date range
-    const mintResult = await calculateMintQuantityForDateRange(activeAddress, swapDateFrom, swapDateTo);
-    const { quantity: mintedQuantity, swapDateFrom: actualDateFrom, swapDateTo: actualDateTo } = mintResult;
-
-    // Calculate swap quantity
-    const swapQuantity = BigNumber(mintedQuantity)
-      .multipliedBy(activeAgent.conversionPercentage)
-      .dividedBy(100)
-      .toFixed(0, BigNumber.ROUND_FLOOR);
-
-    log(LOG_GROUP.AGENTS, { mintedQuantity, swapQuantity });
-
-    if (BigNumber(swapQuantity).eq("0")) {
-      log(LOG_GROUP.AGENTS, "No swap needed");
-      await clearSwapInProgress();
-      return;
-    }
-
-    // Validate token balance
-    if (!(await validateTokenBalanceForSwap(activeAddress, swapQuantity))) {
-      await clearSwapInProgress();
-      return;
-    }
-
-    // Execute the swap (lock is already acquired above)
-    const messageId = await executeTokenSwap(activeAgent, swapQuantity, actualDateFrom, actualDateTo, activeAddress);
-    if (!messageId) {
-      await clearSwapInProgress();
-      return;
-    }
-
-    // first we check if we are allowed to collect data
-    const enabled = await getSetting("analytics").getValue();
-    if (enabled) {
-      const recentTxs = await getRecentTxs();
-      await setRecentTxs([...recentTxs, { id: messageId, timestamp: Date.now(), queryCount: 0 }]);
-
-      // Schedule staggered checks for transaction success
-      [0.5, 1, 1.5, 2].forEach((delay) => {
-        browser.alarms.create(AO_YIELD_AGENT_RECENT_TXS_CHECK_ALARM_NAME, { when: Date.now() + delay * 60 * 1000 });
-      });
-    }
-
-    // Clear swap in progress flag after successful execution
-    await clearSwapInProgress();
   } catch (error) {
     log(LOG_GROUP.AGENTS, "Error performing swap: ", error);
-    await clearSwapInProgress();
   } finally {
+    await clearSwapInProgress();
     isSwapExecutionInProgress = false;
   }
 }
