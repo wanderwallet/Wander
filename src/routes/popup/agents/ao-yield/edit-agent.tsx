@@ -105,13 +105,15 @@ export function EditAOYieldAgentView() {
     }
   }
 
-  useEffect(() => {
-    if (runIndefinitely) {
+  const handleCheckboxChange = () => {
+    const newRunIndefinitely = !runIndefinitely;
+    setRunIndefinitely(newRunIndefinitely);
+    if (newRunIndefinitely) {
       setEndDate(new Date("9999-12-31"));
     } else {
       setEndDate(null);
     }
-  }, [runIndefinitely]);
+  };
 
   useEffect(() => {
     getAOYieldActiveAgent().then((agent) => {
@@ -184,7 +186,7 @@ export function EditAOYieldAgentView() {
               </Flex>
             </Flex>
             <Flex direction="row" gap={8} align="center">
-              <Checkbox checked={runIndefinitely} onChange={() => setRunIndefinitely((prev) => !prev)} />
+              <Checkbox checked={runIndefinitely} onChange={handleCheckboxChange} />
               <Text size="sm" weight="medium" noMargin>
                 {browser.i18n.getMessage("run_indefinitely")}
               </Text>
