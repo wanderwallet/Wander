@@ -1,4 +1,4 @@
-import styled from "styled-components";
+import styled, { useTheme } from "styled-components";
 import { Button, Section, Text, ListItem } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
 import HeadV2 from "~components/popup/HeadV2";
@@ -23,6 +23,7 @@ export type AOYieldAgentTransactionHistoryViewProps = CommonRouteProps<AOYieldAg
 
 export function AOYieldAgentTransactionHistoryView({ params: { id } }: AOYieldAgentTransactionHistoryViewProps) {
   const { transactions, loading, hasNextPage, count, fetchTransactions } = useTransactions(id);
+  const theme = useTheme();
 
   useEffect(() => {
     trackPage(PageType.AO_YIELD_AGENT_TX_HISTORY);
@@ -63,7 +64,12 @@ export function AOYieldAgentTransactionHistoryView({ params: { id } }: AOYieldAg
                   <SvgImageWithBackground
                     height={20}
                     width={20}
-                    style={{ position: "absolute", top: -17, left: 2 }}
+                    style={{
+                      position: "absolute",
+                      top: -17,
+                      left: 2,
+                      border: `0.6px solid ${theme.displayTheme === "dark" ? "#333333" : "#D6D6DD"}`,
+                    }}
                     src={aoLogo}
                     iconSize={16}
                     iconColor="black"
