@@ -3333,5 +3333,81 @@
     "ao_minting_paused": {
         "message": "铸造已暂停",
         "description": "AO Minting Paused text"
-    } 
+    },
+    "month_january": {
+        "message": "一月",
+        "description": "Month name January"
+    },
+    "month_february": {
+        "message": "二月",
+        "description": "Month name February"
+    },
+    "month_march": {
+        "message": "三月",
+        "description": "Month name March"
+    },
+    "month_april": {
+        "message": "四月",
+        "description": "Month name April"
+    },
+    "month_may": {
+        "message": "五月",
+        "description": "Month name May"
+    },
+    "month_june": {
+        "message": "六月",
+        "description": "Month name June"
+    },
+    "month_july": {
+        "message": "七月",
+        "description": "Month name July"
+    },
+    "month_august": {
+        "message": "八月",
+        "description": "Month name August"
+    },
+    "month_september": {
+        "message": "九月",
+        "description": "Month name September"
+    },
+    "month_october": {
+        "message": "十月",
+        "description": "Month name October"
+    },
+    "month_november": {
+        "message": "十一月",
+        "description": "Month name November"
+    },
+    "month_december": {
+        "message": "十二月",
+        "description": "Month name December"
+    },
+    "day_sunday": {
+        "message": "日",
+        "description": "Abbreviated day name Sunday"
+    },
+    "day_monday": {
+        "message": "一",
+        "description": "Abbreviated day name Monday"
+    },
+    "day_tuesday": {
+        "message": "二",
+        "description": "Abbreviated day name Tuesday"
+    },
+    "day_wednesday": {
+        "message": "三",
+        "description": "Abbreviated day name Wednesday"
+    },
+    "day_thursday": {
+        "message": "四",
+        "description": "Abbreviated day name Thursday"
+    },
+    "day_friday": {
+        "message": "五",
+        "description": "Abbreviated day name Friday"
+    },
+    "day_saturday": {
+        "message": "六",
+        "description": "Abbreviated day name Saturday"
+    }
 }

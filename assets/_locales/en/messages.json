@@ -2829,7 +2829,7 @@
     "description": "Verify the full address text"
   },
   "verify_full_address_description": {
-    "message": "You haven’t interacted with this address recently. Please ensure the entire address is correct.",
+    "message": "You haven't interacted with this address recently. Please ensure the entire address is correct.",
     "description": "Verify the full address description"
   },
   "select_token": {
@@ -3373,5 +3373,81 @@
   "ao_minting_paused": {
     "message": "Minting is paused",
     "description": "AO Minting Paused text"
+  },
+  "month_january": {
+    "message": "January",
+    "description": "Month name January"
+  },
+  "month_february": {
+    "message": "February",
+    "description": "Month name February"
+  },
+  "month_march": {
+    "message": "March",
+    "description": "Month name March"
+  },
+  "month_april": {
+    "message": "April",
+    "description": "Month name April"
+  },
+  "month_may": {
+    "message": "May",
+    "description": "Month name May"
+  },
+  "month_june": {
+    "message": "June",
+    "description": "Month name June"
+  },
+  "month_july": {
+    "message": "July",
+    "description": "Month name July"
+  },
+  "month_august": {
+    "message": "August",
+    "description": "Month name August"
+  },
+  "month_september": {
+    "message": "September",
+    "description": "Month name September"
+  },
+  "month_october": {
+    "message": "October",
+    "description": "Month name October"
+  },
+  "month_november": {
+    "message": "November",
+    "description": "Month name November"
+  },
+  "month_december": {
+    "message": "December",
+    "description": "Month name December"
+  },
+  "day_sunday": {
+    "message": "Su",
+    "description": "Abbreviated day name Sunday"
+  },
+  "day_monday": {
+    "message": "Mo",
+    "description": "Abbreviated day name Monday"
+  },
+  "day_tuesday": {
+    "message": "Tu",
+    "description": "Abbreviated day name Tuesday"
+  },
+  "day_wednesday": {
+    "message": "We",
+    "description": "Abbreviated day name Wednesday"
+  },
+  "day_thursday": {
+    "message": "Th",
+    "description": "Abbreviated day name Thursday"
+  },
+  "day_friday": {
+    "message": "Fr",
+    "description": "Abbreviated day name Friday"
+  },
+  "day_saturday": {
+    "message": "Sat",
+    "description": "Abbreviated day name Saturday"
   }
 }

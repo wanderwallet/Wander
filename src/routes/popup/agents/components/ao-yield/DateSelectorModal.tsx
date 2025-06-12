@@ -15,21 +15,29 @@ interface DateSelectorModalProps {
 }
 
 const monthNames = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
+  browser.i18n.getMessage("month_january"),
+  browser.i18n.getMessage("month_february"),
+  browser.i18n.getMessage("month_march"),
+  browser.i18n.getMessage("month_april"),
+  browser.i18n.getMessage("month_may"),
+  browser.i18n.getMessage("month_june"),
+  browser.i18n.getMessage("month_july"),
+  browser.i18n.getMessage("month_august"),
+  browser.i18n.getMessage("month_september"),
+  browser.i18n.getMessage("month_october"),
+  browser.i18n.getMessage("month_november"),
+  browser.i18n.getMessage("month_december"),
 ];
 
-const dayNames = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sat"];
+const dayNames = [
+  browser.i18n.getMessage("day_sunday"),
+  browser.i18n.getMessage("day_monday"),
+  browser.i18n.getMessage("day_tuesday"),
+  browser.i18n.getMessage("day_wednesday"),
+  browser.i18n.getMessage("day_thursday"),
+  browser.i18n.getMessage("day_friday"),
+  browser.i18n.getMessage("day_saturday"),
+];
 
 export function DateSelectorModal({
   open,
