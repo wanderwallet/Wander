@@ -6,7 +6,7 @@ import HedgehogHeadIcon from "url:/assets/agents/images/hedgehog-head.svg";
 import { Flex } from "~components/common/Flex";
 import { ClockRewind } from "@untitled-ui/icons-react";
 import WanderAgentExplainerPopup from "./components/WanderAgentExplainerPopup";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ExtensionStorage } from "~utils/storage";
 import { AOYieldAgentListItem } from "./components/AOYieldAgentListItem";
 import { LiquidOpsAgentListItem } from "./components/LiquidOpsAgentListItem";
@@ -15,11 +15,15 @@ import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import { AOMintingPausedListItem } from "./components/AOMintingPausedListItem";
 import { useAOYieldLatestAgent } from "~utils/agents/hooks";
 import { PageType, trackPage } from "~utils/analytics";
+import { useActiveTokens } from "./liquidops/utils/hooks/useAvailableTokens";
 
 export function AgentsView() {
   const { navigate } = useLocation();
   const [open, setOpen] = useState(false);
   const aoAgent = useAOYieldLatestAgent();
+  const { data: activeTokens } = useActiveTokens();
+
+  const isAgentAvailable = useMemo(() => activeTokens?.length > 0 || !!aoAgent, [activeTokens, aoAgent]);
 
   async function checkAndShowAgentExplainerPopup() {
     const hasShownAgentExplainerPopup = await ExtensionStorage.get("has_shown_agents_explainer_popup");
@@ -44,7 +48,7 @@ export function AgentsView() {
 
       <Wrapper>
         <Flex align="center" gap={16} justify="center" direction="column" textAlign="center">
-          {!aoAgent ? (
+          {!isAgentAvailable ? (
             <>
               <img src={HedgehogHeadIcon} alt="Hedgehog Head" height={128} width={120} />
               <Text size="md" weight="medium" noMargin>
@@ -58,7 +62,7 @@ export function AgentsView() {
           )}
           <AOYieldAgentListItem aoAgent={aoAgent} />
           <AOMintingPausedListItem />
-          <LiquidOpsAgentListItem />
+          <LiquidOpsAgentListItem activeTokens={activeTokens} />
         </Flex>
       </Wrapper>
       <WanderAgentExplainerPopup open={open} close={() => setOpen(false)} agentType="agents" />
