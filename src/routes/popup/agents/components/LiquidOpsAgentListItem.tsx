@@ -1,17 +1,33 @@
 import { ListItem, Text } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
 import { Flex } from "~components/common/Flex";
-import aoLogo from "url:/assets/ecosystem/ao-logo.svg";
-import UsdaIcon from "url:/assets/ecosystem/usda.svg";
 import LiquidOpsIcon from "url:/assets/ecosystem/liquidops.svg";
-import WarIcon from "url:/assets/ecosystem/war.svg";
 import { SvgImageWithBackground } from "./SvgImage";
+import { useLocation } from "~wallets/router/router.utils";
+import { PopupPaths } from "~wallets/router/popup/popup.routes";
+import { tokenData, type TokenData } from "liquidops";
+import { useGateway } from "../liquidops/utils/hooks/useGateway";
+import { useLOSupplyAPY } from "../liquidops/utils/hooks/useLOSupplyAPY";
+import { useActiveTokens } from "../liquidops/utils/hooks/useAvailableTokens";
+import { useMemo, type ComponentProps } from "react";
+import BigNumber from "bignumber.js";
+import { formatNumber } from "../liquidops/utils/format";
 
 export const LiquidOpsAgentListItem = () => {
+  const { navigate } = useLocation();
+
+  const availableTokens = Object.values(tokenData).filter((token) => !token.deprecated);
+
+  const { data: activeTokens } = useActiveTokens();
+  const activeCount = useMemo(() => activeTokens?.length || 0, [activeTokens]);
+
   return (
     <ListItem
       title={browser.i18n.getMessage("liquidops_agent")}
-      subtitle={browser.i18n.getMessage("liquidops_agent_description", ["0", "3"])}
+      subtitle={browser.i18n.getMessage("liquidops_agent_description", [
+        activeCount.toString(),
+        (availableTokens.length - activeCount).toString(),
+      ])}
       subtitleStyle={{ fontSize: 14, fontWeight: 500, lineHeight: "18.2px" }}
       squircleSize={40}
       hideSquircle={true}
@@ -23,46 +39,60 @@ export const LiquidOpsAgentListItem = () => {
       expandable
       expandableContent={
         <Flex direction="column" gap={16}>
-          <ListItem
-            title={<Title ticker="AO" apy="1.13" />}
-            icon={<SvgImageWithBackground height={24} width={24} src={aoLogo} iconSize={16} iconColor="black" />}
-            hideSquircle
-            padding={0}
-            subtitleExtra={<Status status="Inactive" />}
-          />
-          <ListItem
-            title={<Title ticker="USDA" apy="3.43" />}
-            icon={<img src={UsdaIcon} height={24} width={24} />}
-            hideSquircle
-            padding={0}
-            subtitleExtra={<Status status="Inactive" />}
-          />
-          <ListItem
-            title={<Title ticker="wAR" apy="1.57" />}
-            icon={<img src={WarIcon} height={24} width={24} />}
-            hideSquircle
-            padding={0}
-            subtitleExtra={<Status status="Inactive" />}
-          />
+          {availableTokens.map((token) => {
+            const activeData = activeTokens && activeTokens.find((t) => t.address === token.address);
+
+            return (
+              <AgentListItem
+                token={token}
+                profit={activeData?.profit}
+                onClick={() =>
+                  navigate(`/agents/liquidops/${token.cleanTicker}${!activeData?.profit ? "/deposit" : ""}`)
+                }
+              />
+            );
+          })}
         </Flex>
       }
+      onClick={() => navigate(PopupPaths.LiquidOpsAgentsList)}
     />
   );
 };
 
-const Title = ({ ticker, apy }: { ticker: string; apy: string }) => (
+const Title = ({ ticker, apy }: { ticker: string; apy: number }) => (
   <Flex direction="row" gap={4} align="center">
     <Text size="md" weight="semibold" noMargin>
       {ticker}
     </Text>
     <Text variant="secondary" size="sm" weight="medium" noMargin>
-      {apy}% APY
+      {apy.toLocaleString(undefined, { maximumFractionDigits: 2 })}% APY
     </Text>
   </Flex>
 );
 
-const Status = ({ status }: { status: string }) => (
-  <Text variant="tertiary" weight="medium" noMargin>
-    {status}
-  </Text>
-);
+const AgentListItem = ({
+  token,
+  profit,
+  ...rest
+}: { token: TokenData; profit?: BigNumber } & Partial<ComponentProps<typeof ListItem>>) => {
+  const { data: supplyAPY = 0 } = useLOSupplyAPY(token.ticker);
+  const { data: icon } = useGateway(token.icon);
+
+  const active = useMemo(() => typeof profit !== "undefined", [profit]);
+
+  return (
+    <ListItem
+      key={token.ticker}
+      title={<Title ticker={token.cleanTicker} apy={supplyAPY} />}
+      icon={<img src={icon} height={24} width={24} />}
+      hideSquircle
+      padding={0}
+      subtitleExtra={
+        <Text variant="tertiary" weight="medium" noMargin style={active ? { color: "rgb(86, 201, 128)" } : {}}>
+          {active ? "+" + formatNumber(profit || BigNumber(0)) : "Inactive"}
+        </Text>
+      }
+      {...rest}
+    />
+  );
+};
