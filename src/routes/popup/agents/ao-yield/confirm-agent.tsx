@@ -62,7 +62,9 @@ export function ConfirmAOYieldAgentView() {
     ];
   }, [aoYieldAgent]);
 
-  async function handleActiveAgent() {
+  async function handleActivateAgent(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+
     if (!aoYieldAgent) return;
 
     setIsLoading(true);
@@ -158,7 +160,7 @@ export function ConfirmAOYieldAgentView() {
   return (
     <>
       <HeadV2 title={browser.i18n.getMessage("confirm_agent")} />
-      <Wrapper>
+      <Wrapper as="form" onSubmit={handleActivateAgent} noValidate>
         <Content>
           <Flex
             align="center"
@@ -210,16 +212,12 @@ export function ConfirmAOYieldAgentView() {
               label={browser.i18n.getMessage("enter_password_confirm")}
               labelStyle={{ marginBottom: -4, color: theme.primaryText, fontSize: 16, fontWeight: 500 }}
               type="password"
-              onKeyDown={async (e) => {
-                if (e.key !== "Enter") return;
-                await handleActiveAgent();
-              }}
               fullWidth
             />
           )}
         </Content>
         <Flex gap={8}>
-          <Button disabled={isButtonDisabled || isLoading} onClick={handleActiveAgent} loading={isLoading} fullWidth>
+          <Button type="submit" disabled={isButtonDisabled || isLoading} loading={isLoading} fullWidth>
             {browser.i18n.getMessage(isButtonDisabled ? "enter_password" : "activate_agent")}
           </Button>
         </Flex>

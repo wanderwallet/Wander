@@ -3,7 +3,7 @@ import { Flex } from "~components/common/Flex";
 import SliderMenu from "~components/SliderMenu";
 import { Button, Input, Text, useInput, useToasts } from "@arconnect/components-rebrand";
 import { updateAOYieldAgent } from "~utils/agents/utils";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useAskPassword } from "~wallets/hooks";
 import { ExtensionStorage, useStorage } from "~utils/storage";
 import { useTheme } from "styled-components";
@@ -26,6 +26,7 @@ export function AgentCancelModal({ open, onClose, agentId }: AgentCancelModalPro
   const toasts = useToasts();
   const theme = useTheme();
   const { navigate } = useLocation();
+
   const [transferRequirePassword] = useStorage(
     {
       key: "transfer_require_password",
@@ -34,7 +35,14 @@ export function AgentCancelModal({ open, onClose, agentId }: AgentCancelModalPro
     false,
   );
 
-  async function handleCancel() {
+  const isButtonDisabled = useMemo(
+    () => askPassword && transferRequirePassword && !passwordInput.state,
+    [askPassword, transferRequirePassword, passwordInput.state],
+  );
+
+  async function handleCancel(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+
     setIsLoading(true);
     try {
       if (askPassword && transferRequirePassword) {
@@ -71,35 +79,33 @@ export function AgentCancelModal({ open, onClose, agentId }: AgentCancelModalPro
 
   return (
     <SliderMenu isOpen={open} onClose={onClose} paddingVertical={32}>
-      <Flex direction="column" gap={24} height="100%" width="100%">
-        <Flex direction="column" gap={16}>
-          <img src={alertTriangle} style={{ margin: "0 auto" }} />
-          <Text size="lg" weight="semibold" style={{ fontSize: 22, textAlign: "center" }} noMargin>
-            {browser.i18n.getMessage("agent_cancel_title")}
-          </Text>
-          <Text variant="secondary" weight="medium" style={{ textAlign: "center" }} noMargin>
-            {browser.i18n.getMessage("agent_cancel_description")}
-          </Text>
+      <form onSubmit={handleCancel} noValidate>
+        <Flex direction="column" gap={24} height="100%" width="100%">
+          <Flex direction="column" gap={16}>
+            <img src={alertTriangle} style={{ margin: "0 auto" }} />
+            <Text size="lg" weight="semibold" style={{ fontSize: 22, textAlign: "center" }} noMargin>
+              {browser.i18n.getMessage("agent_cancel_title")}
+            </Text>
+            <Text variant="secondary" weight="medium" style={{ textAlign: "center" }} noMargin>
+              {browser.i18n.getMessage("agent_cancel_description")}
+            </Text>
+          </Flex>
+          {askPassword && transferRequirePassword && (
+            <Input
+              placeholder={browser.i18n.getMessage("password")}
+              sizeVariant="small"
+              {...passwordInput.bindings}
+              label={browser.i18n.getMessage("enter_password_confirm")}
+              labelStyle={{ marginBottom: -12, color: theme.primaryText, fontSize: 16, fontWeight: 500 }}
+              type="password"
+              fullWidth
+            />
+          )}
+          <Button type="submit" loading={isLoading} disabled={isLoading || isButtonDisabled} fullWidth>
+            {browser.i18n.getMessage(isButtonDisabled ? "enter_password" : "cancel_agent")}
+          </Button>
         </Flex>
-        {askPassword && transferRequirePassword && (
-          <Input
-            placeholder={browser.i18n.getMessage("password")}
-            sizeVariant="small"
-            {...passwordInput.bindings}
-            label={browser.i18n.getMessage("enter_password_confirm")}
-            labelStyle={{ marginBottom: -12, color: theme.primaryText, fontSize: 16, fontWeight: 500 }}
-            type="password"
-            onKeyDown={async (e) => {
-              if (e.key !== "Enter") return;
-              await handleCancel();
-            }}
-            fullWidth
-          />
-        )}
-        <Button onClick={handleCancel} loading={isLoading} disabled={isLoading} fullWidth>
-          {browser.i18n.getMessage("cancel_agent")}
-        </Button>
-      </Flex>
+      </form>
     </SliderMenu>
   );
 }
