@@ -85,7 +85,7 @@ export function AOYieldAgentTransactionHistoryView({ params: { id } }: AOYieldAg
             />
           ))}
           {!loading && transactions.length === 0 && (
-            <Text size="sm" variant="secondary" weight="medium" style={{ textAlign: "center" }} noMargin>
+            <Text variant="secondary" weight="medium" style={{ textAlign: "center" }} noMargin>
               {browser.i18n.getMessage("no_transactions")}
             </Text>
           )}

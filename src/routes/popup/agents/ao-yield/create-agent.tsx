@@ -15,7 +15,7 @@ import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import { useLocation } from "~wallets/router/router.utils";
 import { TempTransactionStorage } from "~utils/storage";
 import type { Asset } from "~utils/agents/types";
-import { assets } from "~utils/agents/utils";
+import { assets, formatDate } from "~utils/agents/utils";
 import { trackPage, PageType } from "~utils/analytics";
 import { AODelegationModal } from "../components/AODelegationModal";
 
@@ -63,21 +63,6 @@ export function CreateAOYieldAgentView() {
   const handleDateSelect = (selectedStartDate: Date, selectedEndDate: Date) => {
     setStartDate(selectedStartDate);
     setEndDate(selectedEndDate);
-  };
-
-  const formatDateRange = (type: "start" | "end" = "start") => {
-    const formatOptions: Intl.DateTimeFormatOptions = {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    };
-    if (startDate && type === "start") {
-      return startDate.toLocaleDateString("en-US", formatOptions);
-    } else if (endDate && type === "end") {
-      return endDate.toLocaleDateString("en-US", formatOptions);
-    }
-
-    return type === "start" ? "Start date" : "End date";
   };
 
   const handleContinue = () => {
@@ -160,7 +145,7 @@ export function CreateAOYieldAgentView() {
                   style={{ background: theme.surfaceTertiary }}
                   body={
                     <Text size="lg" weight="medium" noMargin>
-                      {formatDateRange()}
+                      {formatDate(startDate, "Start date")}
                     </Text>
                   }
                   onClick={openDateSelector}
@@ -173,7 +158,7 @@ export function CreateAOYieldAgentView() {
                   style={{ background: theme.surfaceTertiary }}
                   body={
                     <Text size="lg" weight="medium" noMargin>
-                      {runIndefinitely ? "∞" : formatDateRange("end")}
+                      {runIndefinitely ? "∞" : formatDate(endDate, "End date")}
                     </Text>
                   }
                   onClick={openDateSelector}

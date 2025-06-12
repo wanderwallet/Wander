@@ -17,6 +17,7 @@ import WarIcon from "url:/assets/ecosystem/war.svg";
 import wUSDCIcon from "url:/assets/ecosystem/wusdc.svg";
 import type { Asset } from "~utils/agents/types";
 import { AO_YIELD_AGENT_RECENT_TXS } from "./constants";
+import dayjs from "dayjs";
 
 /**
  * Initializes a default Arweave instance.
@@ -441,4 +442,8 @@ export async function getAODelegationInfo(address?: string) {
   );
 
   return { hasAODelegation };
+}
+
+export function formatDate(date: Date | null, fallbackLabel: string) {
+  return date ? dayjs(date).format("MMM D, YYYY") : fallbackLabel;
 }
