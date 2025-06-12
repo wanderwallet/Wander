@@ -2829,7 +2829,7 @@
     "description": "Verify the full address text"
   },
   "verify_full_address_description": {
-    "message": "You haven’t interacted with this address recently. Please ensure the entire address is correct.",
+    "message": "You haven't interacted with this address recently. Please ensure the entire address is correct.",
     "description": "Verify the full address description"
   },
   "select_token": {
@@ -3066,6 +3066,10 @@
     "message": "Create AO Yield Agent",
     "description": "Create AO Yield Agent text"
   },
+  "create_an_agent": {
+    "message": "Create an agent",
+    "description": "Create an agent text"
+  },
   "learn_more": {
     "message": "Learn more",
     "description": "Learn more text"
@@ -3077,6 +3081,14 @@
   "introducing_the_wander_agent_description": {
     "message": "Create an agent to automatically convert your AO token earnings for wAR or wUSDC on a daily basis",
     "description": "Introducing the Wander Agent description"
+  },
+  "introducing_the_agents": {
+    "message": "Introducing Agents in Wander!",
+    "description": "Introducing the Agents text"
+  },
+  "introducing_the_agents_description": {
+    "message": "Easily lend your tokens and earn interest—set up an agent to auto-convert your AO earnings into wAR or wUSDC daily.",
+    "description": "Introducing the Agents description"
   },
   "no_active_yield_agents": {
     "message": "You don't have any active yield agents",
@@ -3164,6 +3176,114 @@
     "message": "Select running dates",
     "description": "Select running dates text"
   },
+  "confirm_agent": {
+    "message": "Confirm agent",
+    "description": "Confirm agent text"
+  },
+  "activate_agent": {
+    "message": "Activate agent",
+    "description": "Activate agent text"
+  },
+  "daily_conversion": {
+    "message": "Daily conversion",
+    "description": "daily conversion text"
+  },
+  "start_date": {
+    "message": "Start date",
+    "description": "Start date description"
+  },
+  "end_date": {
+    "message": "End date",
+    "description": "End date description"
+  },
+  "fee": {
+    "message": "Fee",
+    "description": "Fee description"
+  },
+  "enter_password_confirm": {
+    "message": "Enter password to confirm",
+    "description": "Enter password to confirm title"
+  },
+  "go_to_dashboard": {
+    "message": "Go to dashboard",
+    "description": "Goto dashboard description"
+  },
+  "manage_agent": {
+    "message": "Manage agent",
+    "description": "Manage agent description"
+  },
+  "agent_activated_title": {
+    "message": "Agent Activated!",
+    "description": "Agent activated title"
+  },
+  "agent_activated_description": {
+    "message": "Your AO Yield Agent has been successfully activated and will start converting your AO earnings.",
+    "description": "Agent activated title"
+  },
+  "agent_not_activated_title": {
+    "message": "Agent could not be activated",
+    "description": "Agent not activated title"
+  },
+  "agent_not_activated_description": {
+    "message": "Looks like something went wrong, please try again.",
+    "description": "Agent not activated title"
+  },
+  "cancelled": {
+    "message": "Cancelled",
+    "description": "Cancelled text"
+  },
+  "completed": {
+    "message": "Completed",
+    "description": "Completed text"
+  },
+  "paused": {
+    "message": "Paused",
+    "description": "Paused text"
+  },
+  "percentage_of_each_conversion": {
+    "message": "$PERCENTAGE$% of each conversion",
+    "description": "Percentage of each conversion text",
+    "placeholders": {
+      "percentage": {
+        "content": "$1",
+        "example": "0.5"
+      }
+    }
+  },
+  "cancel_agent": {
+    "message": "Cancel agent",
+    "description": "Cancel agent text"
+  },
+  "agent_details": {
+    "message": "Agent details",
+    "description": "Agent details text"
+  },
+  "performance": {
+    "message": "Performance",
+    "description": "Performance text"
+  },
+  "total_ao_sold": {
+    "message": "Total AO sold",
+    "description": "Total AO sold text"
+  },
+  "total_bought": {
+    "message": "Total $ASSET$ bought",
+    "description": "Total bought text",
+    "placeholders": {
+      "asset": {
+        "content": "$1",
+        "example": "wUSDC"
+      }
+    }
+  },
+  "total_transactions": {
+    "message": "Total transactions",
+    "description": "Total transactions text"
+  },
+  "view_transaction_history": {
+    "message": "View transaction history",
+    "description": "View transaction history text"
+  },
   "active_agents": {
     "message": "Active agents",
     "description": "Active agents text"
@@ -3204,6 +3324,172 @@
     "message": "Status",
     "description": "Status text"
   },
+  "edit_agent": {
+    "message": "Edit agent",
+    "description": "Edit agent text"
+  },
+  "error_updating_agent": {
+    "message": "Error updating agent",
+    "description": "Error updating agent text"
+  },
+  "agent_updated": {
+    "message": "Agent updated",
+    "description": "Agent updated text"
+  },
+  "agent_cancelled": {
+    "message": "Agent cancelled",
+    "description": "Agent cancelled text"
+  },
+  "agent_history": {
+    "message": "Agent history",
+    "description": "Agent history text"
+  },
+  "total_wander_fee": {
+    "message": "Total Wander fee",
+    "description": "Total Wander fee text"
+  },
+  "load_more": {
+    "message": "Load more",
+    "description": "Load more text"
+  },
+  "agent_cancel_title": {
+    "message": "Are you sure your want to cancel your agent?",
+    "description": "Agent cancel title"
+  },
+  "agent_cancel_description": {
+    "message": "Cancelling your agent will stop your automatic AO token conversions. You can also create a new agent.",
+    "description": "Agent cancel description"
+  },
+  "i_understand": {
+    "message": "I understand",
+    "description": "I understand text"
+  },
+  "go_back": {
+    "message": "Go back",
+    "description": "Go back text"
+  },
+  "ao_minting_paused_title": {
+    "message": "AO minting process error",
+    "description": "AO Minting Paused title"
+  },
+  "ao_minting_paused_description": {
+    "message": "AO minting has stopped due to a network error. You will receive your missing tokens when minting resumes.",
+    "description": "AO Minting Paused description"
+  },
+  "ao_minting_paused_action_description": {
+    "message": "You do not need to take any action.",
+    "description": "AO Minting Paused action description"
+  },
+  "ao_minting_resumed_title": {
+    "message": "AO minting resumed",
+    "description": "AO Minting Resumed title"
+  },
+  "ao_minting_resumed_description": {
+    "message": "You have received your missing tokens and the appropriate amounts have been converted to $ASSET$.",
+    "description": "AO Minting Resumed description",
+    "placeholders": {
+      "asset": {
+        "content": "$1",
+        "example": "wUSDC"
+      }
+    }
+  },
+  "no_agents": {
+    "message": "You don't have any agents",
+    "description": "No agents text"
+  },
+  "ao_delegation_title": {
+    "message": "No AO yield allocated",
+    "description": "AO Delegation title"
+  },
+  "ao_delegation_description": {
+    "message": "You haven't allocated any AO yield to your wallet. Update your AO yield delegation preferences to start receiving AO tokens and enable agent functionality.",
+    "description": "AO Delegation description"
+  },
+  "update_preferences": {
+    "message": "Update preferences",
+    "description": "Update preferences text"
+  },
+  "ao_minting_paused": {
+    "message": "Minting is paused",
+    "description": "AO Minting Paused text"
+  },
+  "month_january": {
+    "message": "January",
+    "description": "Month name January"
+  },
+  "month_february": {
+    "message": "February",
+    "description": "Month name February"
+  },
+  "month_march": {
+    "message": "March",
+    "description": "Month name March"
+  },
+  "month_april": {
+    "message": "April",
+    "description": "Month name April"
+  },
+  "month_may": {
+    "message": "May",
+    "description": "Month name May"
+  },
+  "month_june": {
+    "message": "June",
+    "description": "Month name June"
+  },
+  "month_july": {
+    "message": "July",
+    "description": "Month name July"
+  },
+  "month_august": {
+    "message": "August",
+    "description": "Month name August"
+  },
+  "month_september": {
+    "message": "September",
+    "description": "Month name September"
+  },
+  "month_october": {
+    "message": "October",
+    "description": "Month name October"
+  },
+  "month_november": {
+    "message": "November",
+    "description": "Month name November"
+  },
+  "month_december": {
+    "message": "December",
+    "description": "Month name December"
+  },
+  "day_sunday": {
+    "message": "Su",
+    "description": "Abbreviated day name Sunday"
+  },
+  "day_monday": {
+    "message": "Mo",
+    "description": "Abbreviated day name Monday"
+  },
+  "day_tuesday": {
+    "message": "Tu",
+    "description": "Abbreviated day name Tuesday"
+  },
+  "day_wednesday": {
+    "message": "We",
+    "description": "Abbreviated day name Wednesday"
+  },
+  "day_thursday": {
+    "message": "Th",
+    "description": "Abbreviated day name Thursday"
+  },
+  "day_friday": {
+    "message": "Fr",
+    "description": "Abbreviated day name Friday"
+  },
+  "day_saturday": {
+    "message": "Sat",
+    "description": "Abbreviated day name Saturday"
+  },
   "active": {
     "message": "Active",
     "description": "Active label"
@@ -3221,10 +3507,6 @@
         "example": "oUSDA"
       }
     }
-  },
-  "start_date": {
-    "message": "Start date",
-    "description": "Start date label"
   },
   "liquidops_open": {
     "message": "Open in LiquidOps",
@@ -3278,17 +3560,9 @@
     "message": "View all agents",
     "description": "View all agents button text"
   },
-  "manage_agent": {
-    "message": "Manage agent",
-    "description": "Manage agent button text"
-  },
   "try_again": {
     "message": "Try again",
     "description": "Try again button text"
-  },
-  "go_to_dashboard": {
-    "message": "Go to dashboard",
-    "description": "Go to dashboard button text"
   },
   "withdraw_success": {
     "message": "$TICKER$ withdrawn!",

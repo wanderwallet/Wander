@@ -1,26 +1,10 @@
 import { ListItem } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
 import { Flex } from "~components/common/Flex";
-import WarIcon from "url:/assets/ecosystem/war.svg";
-import wUSDCIcon from "url:/assets/ecosystem/wusdc.svg";
 import SliderMenu from "~components/SliderMenu";
 import { TokenLogo } from "~routes/popup/purchase";
-
-export interface Asset {
-  ticker: string;
-  logo: string;
-}
-
-export const assets: Asset[] = [
-  {
-    ticker: "wUSDC",
-    logo: wUSDCIcon,
-  },
-  {
-    ticker: "wAR",
-    logo: WarIcon,
-  },
-];
+import type { Asset } from "~utils/agents/types";
+import { assets } from "~utils/agents/utils";
 
 interface AssetSelectorModalProps {
   open: boolean;

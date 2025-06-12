@@ -4,25 +4,37 @@ import browser from "webextension-polyfill";
 import HeadV2 from "~components/popup/HeadV2";
 import { Flex } from "~components/common/Flex";
 import { ChevronDown, ClockRewind, HelpCircle } from "@untitled-ui/icons-react";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Slider } from "~components/Slider";
 import { InputButton } from "~components/common/InputButton";
 import { HorizontalLine } from "~components/HorizontalLine";
-import { assets, AssetSelectorModal, type Asset } from "../components/ao-yield/AssetSelectorModal";
+import { AssetSelectorModal } from "../components/ao-yield/AssetSelectorModal";
 import { SlippageSelectorModal } from "../components/ao-yield/SlippageSelectorModal";
 import { DateSelectorModal } from "../components/ao-yield/DateSelectorModal";
+import { PopupPaths } from "~wallets/router/popup/popup.routes";
+import { useLocation } from "~wallets/router/router.utils";
+import { TempTransactionStorage } from "~utils/storage";
+import type { Asset } from "~utils/agents/types";
+import { assets, formatDate } from "~utils/agents/utils";
+import { trackPage, PageType } from "~utils/analytics";
+import { AODelegationModal } from "../components/AODelegationModal";
 
 export function CreateAOYieldAgentView() {
   const theme = useTheme();
+  const { navigate } = useLocation();
   const [percentage, setPercentage] = useState(50);
   const [selectedAsset, setSelectedAsset] = useState<Asset>(assets[0]);
   const [selectedSlippage, setSelectedSlippage] = useState(0.5);
   const [runIndefinitely, setRunIndefinitely] = useState(false);
-  const [startDate, setStartDate] = useState<Date | null>(new Date());
+  const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [showAssetSelector, setShowAssetSelector] = useState(false);
   const [showSlippageSelector, setShowSlippageSelector] = useState(false);
   const [showDateSelector, setShowDateSelector] = useState(false);
+
+  const continueButtonDisabled = useMemo(() => {
+    return !selectedAsset || !selectedSlippage || !startDate || !endDate || !percentage;
+  }, [selectedAsset, selectedSlippage, startDate, endDate, percentage]);
 
   const openAssetSelector = () => {
     setShowAssetSelector(true);
@@ -53,24 +65,35 @@ export function CreateAOYieldAgentView() {
     setEndDate(selectedEndDate);
   };
 
-  const formatDateRange = (type: "start" | "end" = "start") => {
-    const formatOptions: Intl.DateTimeFormatOptions = {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    };
-    if (startDate && type === "start") {
-      return startDate.toLocaleDateString("en-US", formatOptions);
-    } else if (endDate && type === "end") {
-      return endDate.toLocaleDateString("en-US", formatOptions);
-    }
-
-    return type === "start" ? "Start date" : "End date";
+  const handleContinue = () => {
+    TempTransactionStorage.set("ao-yield-agent", {
+      conversionPercentage: percentage,
+      asset: selectedAsset,
+      slippage: selectedSlippage,
+      runIndefinitely,
+      startDate: startDate.getTime(),
+      endDate: endDate.getTime(),
+    });
+    navigate(PopupPaths.ConfirmAOYieldAgent);
   };
+
+  const handleCheckboxChange = () => {
+    const newRunIndefinitely = !runIndefinitely;
+    setRunIndefinitely(newRunIndefinitely);
+    if (newRunIndefinitely) {
+      setEndDate(new Date("9999-12-31"));
+    } else {
+      setEndDate(null);
+    }
+  };
+
+  useEffect(() => {
+    trackPage(PageType.AO_YIELD_AGENT_CREATE);
+  }, []);
 
   return (
     <>
-      <HeadV2 title={browser.i18n.getMessage("agents")} />
+      <HeadV2 title={browser.i18n.getMessage("ao_yield_agent")} />
       <Wrapper>
         <Content>
           <Flex direction="column" gap={16} padding="16px 8px">
@@ -122,7 +145,7 @@ export function CreateAOYieldAgentView() {
                   style={{ background: theme.surfaceTertiary }}
                   body={
                     <Text size="lg" weight="medium" noMargin>
-                      {formatDateRange()}
+                      {formatDate(startDate, "Start date")}
                     </Text>
                   }
                   onClick={openDateSelector}
@@ -135,7 +158,7 @@ export function CreateAOYieldAgentView() {
                   style={{ background: theme.surfaceTertiary }}
                   body={
                     <Text size="lg" weight="medium" noMargin>
-                      {runIndefinitely ? "∞" : formatDateRange("end")}
+                      {runIndefinitely ? "∞" : formatDate(endDate, "End date")}
                     </Text>
                   }
                   onClick={openDateSelector}
@@ -144,7 +167,7 @@ export function CreateAOYieldAgentView() {
               </Flex>
             </Flex>
             <Flex direction="row" gap={8} align="center">
-              <Checkbox checked={runIndefinitely} onChange={() => setRunIndefinitely((prev) => !prev)} />
+              <Checkbox checked={runIndefinitely} onChange={handleCheckboxChange} />
               <Text size="sm" weight="medium" noMargin>
                 {browser.i18n.getMessage("run_indefinitely")}
               </Text>
@@ -188,13 +211,14 @@ export function CreateAOYieldAgentView() {
           </Flex>
         </Content>
         <Flex gap={8}>
-          <Button style={{ flex: 1 }} fullWidth>
+          <Button style={{ flex: 1 }} disabled={continueButtonDisabled} onClick={handleContinue} fullWidth>
             {browser.i18n.getMessage("continue")}
           </Button>
           <Button
             style={{ maxWidth: "max-content" }}
             variant="secondary"
             icon={<ClockRewind height={24} width={24} />}
+            onClick={() => navigate(PopupPaths.AOYieldAgentHistory)}
           />
         </Flex>
       </Wrapper>
@@ -216,7 +240,9 @@ export function CreateAOYieldAgentView() {
         open={showDateSelector}
         onClose={closeDateSelector}
         onSelect={handleDateSelect}
+        runIndefinitely={runIndefinitely}
       />
+      <AODelegationModal />
     </>
   );
 }
@@ -244,7 +270,7 @@ const Content = styled.div`
 const Tag = styled.div`
   padding: 4px 8px;
   border-radius: 50px;
-  background-color: #2b2269;
+  background-color: ${({ theme }) => (theme.displayTheme === "dark" ? "#2b2269" : "#E3D8F6")};
   font-size: 12px;
   font-weight: 500;
   color: ${({ theme }) => theme.secondaryText};

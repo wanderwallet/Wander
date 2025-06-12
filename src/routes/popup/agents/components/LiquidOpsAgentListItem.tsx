@@ -8,17 +8,19 @@ import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import { tokenData, type TokenData } from "liquidops";
 import { useGateway } from "../liquidops/utils/hooks/useGateway";
 import { useLOSupplyAPY } from "../liquidops/utils/hooks/useLOSupplyAPY";
-import { useActiveTokens } from "../liquidops/utils/hooks/useAvailableTokens";
+import { type ActiveAgentToken } from "../liquidops/utils/hooks/useAvailableTokens";
 import { useMemo, type ComponentProps } from "react";
 import BigNumber from "bignumber.js";
 import { formatNumber } from "../liquidops/utils/format";
 
-export const LiquidOpsAgentListItem = () => {
+interface Props {
+  activeTokens: ActiveAgentToken[];
+}
+
+export const LiquidOpsAgentListItem = ({ activeTokens }: Props) => {
   const { navigate } = useLocation();
 
   const availableTokens = Object.values(tokenData).filter((token) => !token.deprecated);
-
-  const { data: activeTokens } = useActiveTokens();
   const activeCount = useMemo(() => activeTokens?.length || 0, [activeTokens]);
 
   return (

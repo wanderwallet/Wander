@@ -21,7 +21,7 @@ export function WalletTransactionsHistoryEmbeddedView() {
 
           {hasNextPage && (
             <Button isLoading={loading} onClick={fetchTransactions}>
-              Load more...
+              {browser.i18n.getMessage("load_more")}...
             </Button>
           )}
         </>

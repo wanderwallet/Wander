@@ -17,6 +17,7 @@ import { useLocation } from "~wallets/router/router.utils";
 import browser from "webextension-polyfill";
 import CreateWanderAgentCTA from "./agents/components/CreateWanderAgentCTA";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import { scheduleSwapExecution } from "~utils/agents/mint";
 
 export function HomeView() {
   const theme = useTheme();
@@ -100,6 +101,10 @@ export function HomeView() {
     // WALLET.TYPE JUST FOR KEYSTONE POPUP
     setOpen(announcement && wallet?.type === "hardware");
   }, [wallet, announcement]);
+
+  useEffect(() => {
+    scheduleSwapExecution();
+  }, []);
 
   return (
     <HomeWrapper>

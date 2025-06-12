@@ -1,15 +1,12 @@
 import { useHashLocation } from "wouter/use-hash-location";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
-import type { AuthStatus, Wallet } from "~utils/embedded/embedded.types";
-import { NOOP } from "~utils/misc";
+import type { AuthStatus } from "~utils/embedded/embedded.types";
 import { useAuthRequestsLocation } from "~wallets/router/auth/auth-router.hook";
 import type { ExtensionRouteOverride } from "~wallets/router/extension/extension.routes";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
-import { PopupPaths } from "~wallets/router/popup/popup.routes";
-import type { WanderRoutePath, BaseLocationHook, RoutePath, RouteRedirect } from "~wallets/router/router.types";
+import type { WanderRoutePath, BaseLocationHook, RoutePath } from "~wallets/router/router.types";
 import {
   isRouteOverride,
-  isRouteRedirect,
   routeTrapMatches,
   routeTrapOutside,
   useSearchParams,

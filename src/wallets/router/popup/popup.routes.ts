@@ -44,6 +44,13 @@ import { GettingStartedSetupWelcomeView } from "~routes/popup/gettingStarted";
 import { RecoveryPhraseView } from "~routes/popup/settings/wallets/[address]/recovery-phrase";
 import { AgentsView } from "~routes/popup/agents";
 import { CreateAOYieldAgentView } from "~routes/popup/agents/ao-yield/create-agent";
+import { ConfirmAOYieldAgentView } from "~routes/popup/agents/ao-yield/confirm-agent";
+import { AOYieldAgentActivatedView } from "~routes/popup/agents/ao-yield/agent-activated";
+import { ManageAOYieldAgentView } from "~routes/popup/agents/ao-yield/manage-agent";
+import { EditAOYieldAgentView } from "~routes/popup/agents/ao-yield/edit-agent";
+import { AOYieldAgentHistoryView } from "~routes/popup/agents/ao-yield/agent-history";
+import { AOYieldAgentInfoView } from "~routes/popup/agents/ao-yield/agent-info";
+import { AOYieldAgentTransactionHistoryView } from "~routes/popup/agents/ao-yield/agent-transaction-history";
 import { LiquidOpsAgentsView } from "~routes/popup/agents/liquidops/agents";
 import { LiquidOpsAgent } from "~routes/popup/agents/liquidops/[agent]";
 import { LiquidOpsDepositWithdraw } from "~routes/popup/agents/liquidops/depositwithdraw";
@@ -96,6 +103,13 @@ export type PopupRoutePath =
   | `/getting-started/${string}`
   | `/agents`
   | `/agents/ao-yield/create-agent`
+  | `/agents/ao-yield/confirm-agent`
+  | `/agents/ao-yield/manage-agent`
+  | `/agents/ao-yield/edit-agent`
+  | `/agents/ao-yield/activated`
+  | `/agents/ao-yield/history`
+  | `/agents/ao-yield/info/${string}`
+  | `/agents/ao-yield/transaction-history/${string}`
   | `/agents/liquidops/agents`
   | `/agents/liquidops/${string}`
   | `/agents/liquidops/${string}/${"deposit" | "withdraw"}`
@@ -144,6 +158,13 @@ export const PopupPaths = {
   NotificationSettings: "/quick-settings/notifications",
   Agents: "/agents",
   CreateAOYieldAgent: "/agents/ao-yield/create-agent",
+  ConfirmAOYieldAgent: "/agents/ao-yield/confirm-agent",
+  ManageAOYieldAgent: "/agents/ao-yield/manage-agent",
+  EditAOYieldAgent: "/agents/ao-yield/edit-agent",
+  AOYieldAgentActivated: "/agents/ao-yield/activated",
+  AOYieldAgentHistory: "/agents/ao-yield/history",
+  AOYieldAgentInfo: "/agents/ao-yield/info/:id",
+  AOYieldAgentTransactionHistory: "/agents/ao-yield/transaction-history/:id",
   LiquidOpsAgentsList: "/agents/liquidops/agents",
   LiquidOpsAgent: "/agents/liquidops/:ticker",
   LiquidOpsDepositWithdraw: "/agents/liquidops/:ticker/:action",
@@ -321,6 +342,34 @@ export const POPUP_ROUTES = [
   {
     path: PopupPaths.CreateAOYieldAgent,
     component: CreateAOYieldAgentView,
+  },
+  {
+    path: PopupPaths.ConfirmAOYieldAgent,
+    component: ConfirmAOYieldAgentView,
+  },
+  {
+    path: PopupPaths.ManageAOYieldAgent,
+    component: ManageAOYieldAgentView,
+  },
+  {
+    path: PopupPaths.EditAOYieldAgent,
+    component: EditAOYieldAgentView,
+  },
+  {
+    path: PopupPaths.AOYieldAgentActivated,
+    component: AOYieldAgentActivatedView,
+  },
+  {
+    path: PopupPaths.AOYieldAgentHistory,
+    component: AOYieldAgentHistoryView,
+  },
+  {
+    path: PopupPaths.AOYieldAgentInfo,
+    component: AOYieldAgentInfoView,
+  },
+  {
+    path: PopupPaths.AOYieldAgentTransactionHistory,
+    component: AOYieldAgentTransactionHistoryView,
   },
   {
     path: PopupPaths.LiquidOpsAgentsList,

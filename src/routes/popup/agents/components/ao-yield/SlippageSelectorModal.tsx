@@ -6,11 +6,6 @@ import { Button, Text, useToasts } from "@arconnect/components-rebrand";
 import { AlertTriangle } from "@untitled-ui/icons-react";
 import styled from "styled-components";
 
-export interface Asset {
-  ticker: string;
-  logo: string;
-}
-
 interface SlippageSelectorModalProps {
   open: boolean;
   onClose: () => void;

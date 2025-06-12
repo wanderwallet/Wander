@@ -2,25 +2,52 @@ import { ListItem, Text } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
 import { Flex } from "~components/common/Flex";
 import aoLogo from "url:/assets/ecosystem/ao-logo.svg";
-import UsdaIcon from "url:/assets/ecosystem/usda.svg";
+import WarIcon from "url:/assets/ecosystem/war.svg";
+import wUSDCIcon from "url:/assets/ecosystem/wusdc.svg";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import { useLocation } from "~wallets/router/router.utils";
 import { SvgImageWithBackground } from "./SvgImage";
+import type { AOYieldAgent } from "~utils/agents/types";
+import { WAR_PROCESS_ID } from "~tokens/aoTokens/ao";
+import dayjs from "dayjs";
+import type { WanderRoutePath } from "~wallets/router/router.types";
+import { useAOMintingStatus, useAOYieldAgentInfo } from "~utils/agents/hooks";
+import { getStatusColor, getStatusText, tokenIdInfoMap } from "~utils/agents/utils";
+import { useTheme } from "styled-components";
+import styled from "styled-components";
 
-export const AOYieldAgentListItem = ({ aoYieldAgentAvailable }: { aoYieldAgentAvailable: boolean }) => {
+interface AOYieldAgentListItemProps {
+  aoAgent: AOYieldAgent;
+  isHistory?: boolean;
+}
+
+export const AOYieldAgentListItem = ({ aoAgent, isHistory = false }: AOYieldAgentListItemProps) => {
   const { navigate } = useLocation();
+  const { data: mintingStatus } = useAOMintingStatus();
+  const { data: agentInfo } = useAOYieldAgentInfo(aoAgent?.id);
+  const theme = useTheme();
 
-  return aoYieldAgentAvailable ? (
-    <ListItem
+  return !!aoAgent ? (
+    <StyledListItem
+      isActive={aoAgent.status === "Active"}
       title={
         <Flex justify="space-between" align="center" width="100%">
           <Text weight="semibold" noMargin>
-            AO Yield Agent
+            {isHistory
+              ? `AO <> ${tokenIdInfoMap[aoAgent?.tokenOut]?.ticker}`
+              : browser.i18n.getMessage("ao_yield_agent")}
           </Text>
           <Flex align="center" gap={4}>
-            <div style={{ height: 6, width: 6, borderRadius: "50%", backgroundColor: "#56C980" }} />
-            <Text size="sm" weight="medium" style={{ color: "#56C980" }} noMargin>
-              Active
+            <div
+              style={{
+                height: 6,
+                width: 6,
+                borderRadius: "50%",
+                backgroundColor: getStatusColor(aoAgent.status, mintingStatus),
+              }}
+            />
+            <Text size="sm" weight="medium" noMargin>
+              {browser.i18n.getMessage(getStatusText(aoAgent.status, mintingStatus))}
             </Text>
           </Flex>
         </Flex>
@@ -28,10 +55,10 @@ export const AOYieldAgentListItem = ({ aoYieldAgentAvailable }: { aoYieldAgentAv
       subtitle={
         <Flex justify="space-between" align="center" width="100%">
           <Text size="sm" variant="secondary" weight="medium" noMargin>
-            May 9 - Jun 8
+            {dayjs(aoAgent.startDate).format("MMM D")} - {dayjs(aoAgent.endDate).format("MMM D")}
           </Text>
           <Text size="sm" variant="secondary" weight="medium" noMargin>
-            5 transactions
+            {agentInfo?.totalTransactions || 0} transactions
           </Text>
         </Flex>
       }
@@ -42,17 +69,32 @@ export const AOYieldAgentListItem = ({ aoYieldAgentAvailable }: { aoYieldAgentAv
           <SvgImageWithBackground
             height={20}
             width={20}
-            style={{ position: "absolute", top: -17, left: 2 }}
+            style={{
+              position: "absolute",
+              top: -17,
+              left: 2,
+              border: `1px solid ${theme.displayTheme === "dark" ? "#333333" : "#D6D6DD"}`,
+            }}
             src={aoLogo}
             iconSize={16}
             iconColor="black"
           />
-          <img src={UsdaIcon} height={24} width={24} style={{ position: "absolute", bottom: -19, right: -6 }} />
+          <img
+            src={aoAgent.tokenOut === WAR_PROCESS_ID ? WarIcon : wUSDCIcon}
+            height={24}
+            width={24}
+            style={{ position: "absolute", bottom: -17, right: -6 }}
+          />
         </Flex>
       }
       active
-      onClick={() => navigate(PopupPaths.CreateAOYieldAgent)}
-      style={{ width: "100%", textAlign: "left", padding: "12px 8px" }}
+      onClick={() =>
+        aoAgent.status === "Active"
+          ? navigate(PopupPaths.ManageAOYieldAgent)
+          : isHistory
+            ? navigate(PopupPaths.AOYieldAgentInfo, { params: { id: aoAgent.id } })
+            : navigate(PopupPaths.CreateAOYieldAgent)
+      }
     />
   ) : (
     <ListItem
@@ -78,3 +120,21 @@ export const AOYieldAgentListItem = ({ aoYieldAgentAvailable }: { aoYieldAgentAv
     />
   );
 };
+
+const StyledListItem = styled(ListItem)<{ isActive: boolean }>`
+  width: 100%;
+  text-align: left;
+  padding: 12px 8px;
+  box-sizing: border-box;
+  border: 1px solid transparent;
+  transition: none;
+  outline: none;
+  margin: 0;
+
+  ${({ isActive, theme }) =>
+    isActive &&
+    `
+    background-color: rgba(${theme.displayTheme === "dark" ? "37, 51, 39" : "233, 252, 236"}, 0.5);
+    border-color: rgb(${theme.displayTheme === "dark" ? "16, 65, 36" : "4, 170, 62"});
+  `}
+`;

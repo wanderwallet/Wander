@@ -5,7 +5,7 @@ import styled from "styled-components";
 import { Flex } from "~components/common/Flex";
 import { SvgImageWithBackground } from "../components/SvgImage";
 import { AgentStats } from "../components/liquidops/AgentStats";
-import { useActiveWallet } from "~wallets/hooks";
+import { useActiveWallet, useAskPassword } from "~wallets/hooks";
 import { tokenData, tokenInput } from "liquidops";
 import { useLOSupplyAPY } from "./utils/hooks/useLOSupplyAPY";
 import { useMemo, useState } from "react";
@@ -98,6 +98,7 @@ export function LiquidOpsConfirm({ params: { action, ticker, quantity } }: Liqui
 
   // submit interaction
   const { setToast } = useToasts();
+  const askPassword = useAskPassword();
 
   const [transferRequirePassword] = useStorage<boolean>(
     {
@@ -123,7 +124,7 @@ export function LiquidOpsConfirm({ params: { action, ticker, quantity } }: Liqui
     }
 
     // validate password
-    if (transferRequirePassword) {
+    if (askPassword && transferRequirePassword) {
       try {
         setCheckingPassword(true);
 
@@ -199,7 +200,7 @@ export function LiquidOpsConfirm({ params: { action, ticker, quantity } }: Liqui
             transactionFee={0} // this is 0 for now
           />
 
-          {transferRequirePassword && (
+          {askPassword && transferRequirePassword && (
             <Flex direction="column" gap={12} padding="24px 0">
               <Text noMargin weight="medium">
                 {browser.i18n.getMessage("sign_enter_password")}
@@ -223,7 +224,9 @@ export function LiquidOpsConfirm({ params: { action, ticker, quantity } }: Liqui
           variant="primary"
           fullWidth
           loading={loading}
-          disabled={(transferRequirePassword && (!passwordInput.state || passwordInput.state === "")) || loading}
+          disabled={
+            (askPassword && transferRequirePassword && (!passwordInput.state || passwordInput.state === "")) || loading
+          }
           onClick={submit}>
           {browser.i18n.getMessage(action)}
         </Button>

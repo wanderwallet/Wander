@@ -53,12 +53,15 @@ export default function SliderMenu({
         animate="shown"
         exit="hidden">
         <Body>
-          {hasHeader && title && (
-            <Header>
-              <Title>{title}</Title>
-              <ExitButton onClick={onClose} />
-            </Header>
-          )}
+          {hasHeader &&
+            (title ? (
+              <Header>
+                <Title>{title}</Title>
+                <ExitButton onClick={onClose} />
+              </Header>
+            ) : (
+              <AbsoluteExitButton onClick={onClose} />
+            ))}
           {children}
         </Body>
       </Wrapper>
@@ -80,6 +83,12 @@ const ExitButton = styled(CloseIcon)`
   & path {
     stroke-width: 2;
   }
+`;
+
+const AbsoluteExitButton = styled(ExitButton)`
+  position: absolute;
+  top: -8px;
+  right: 0;
 `;
 
 const Wrapper = styled(motion.div)<{
@@ -105,7 +114,7 @@ const Wrapper = styled(motion.div)<{
   box-sizing: border-box;
 `;
 
-export const animationSlideFromBottom: Variants = {
+const animationSlideFromBottom: Variants = {
   hidden: {
     y: "100vh",
     transition: {

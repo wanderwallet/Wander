@@ -38,10 +38,10 @@ export default function RevealRecoveryPhraseModal({ open, close }: Props) {
         </Flex>
         <Flex direction="column" gap={8} width="100%">
           <Button fullWidth onClick={() => navigate(`/quick-settings/wallets/${activeAddress}/recovery-phrase`)}>
-            I understand
+            {browser.i18n.getMessage("i_understand")}
           </Button>
           <Button variant="secondary" fullWidth onClick={close}>
-            Go back
+            {browser.i18n.getMessage("go_back")}
           </Button>
         </Flex>
       </Wrapper>

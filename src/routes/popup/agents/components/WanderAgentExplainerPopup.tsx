@@ -2,12 +2,17 @@ import styled from "styled-components";
 import SliderMenu from "~components/SliderMenu";
 import { XClose } from "@untitled-ui/icons-react";
 import { Button, Text } from "@arconnect/components-rebrand";
-import HedgehogPopupImage from "url:/assets/agents/hedgehog-popup.png";
+import HedgehogPopupTokensImage from "url:/assets/agents/images/hedgehog-popup-tokens.svg";
+import HedgehogPopupImage from "url:/assets/agents/images/hedgehog-popup.svg";
 import { Flex } from "~components/common/Flex";
 import browser from "webextension-polyfill";
+import { useLocation } from "~wallets/router/router.utils";
+import { PopupPaths } from "~wallets/router/popup/popup.routes";
 
-export default function WanderAgentExplainerPopup({ open, close }: Props) {
-  if (!open) return null;
+export default function WanderAgentExplainerPopup({ open, close, agentType }: Props) {
+  const { navigate } = useLocation();
+
+  if (!open || !agentType) return null;
 
   return (
     <SliderMenu hasHeader={false} isOpen={open} onClose={close}>
@@ -18,17 +23,28 @@ export default function WanderAgentExplainerPopup({ open, close }: Props) {
         }}
       />
       <Wrapper>
-        <img src={HedgehogPopupImage} alt="Hedgehog Popup" style={{ marginBottom: -32 }} />
+        <img
+          src={agentType === "agents" ? HedgehogPopupImage : HedgehogPopupTokensImage}
+          alt="Hedgehog Popup"
+          style={{ marginBottom: -32 }}
+        />
         <Flex direction="column" gap={8} align="center" textAlign="center">
           <Text size="lg" weight="semibold" noMargin>
-            {browser.i18n.getMessage("introducing_the_wander_agent")}
+            {browser.i18n.getMessage(`introducing_the_${agentType}`)}
           </Text>
           <Text weight="medium" variant="secondary" noMargin>
-            {browser.i18n.getMessage("introducing_the_wander_agent_description")}
+            {browser.i18n.getMessage(`introducing_the_${agentType}_description`)}
           </Text>
         </Flex>
         <Flex direction="column" gap={12} width="100%">
-          <Button fullWidth>{browser.i18n.getMessage("create_ao_yield_agent")}</Button>
+          <Button
+            onClick={() => {
+              close();
+              navigate(PopupPaths.Agents);
+            }}
+            fullWidth>
+            {browser.i18n.getMessage(agentType === "agents" ? "create_an_agent" : "create_ao_yield_agent")}
+          </Button>
           <Button
             fullWidth
             variant="secondary"
@@ -63,4 +79,5 @@ const Wrapper = styled.div`
 interface Props {
   open: boolean;
   close: () => any;
+  agentType: "agents" | "wander_agent";
 }
