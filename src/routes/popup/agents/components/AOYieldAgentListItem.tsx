@@ -13,6 +13,7 @@ import dayjs from "dayjs";
 import type { WanderRoutePath } from "~wallets/router/router.types";
 import { useAOMintingStatus, useAOYieldAgentInfo } from "~utils/agents/hooks";
 import { getStatusColor, getStatusText, tokenIdInfoMap } from "~utils/agents/utils";
+import { useTheme } from "styled-components";
 
 interface AOYieldAgentListItemProps {
   aoAgent: AOYieldAgent;
@@ -23,6 +24,7 @@ export const AOYieldAgentListItem = ({ aoAgent, isHistory = false }: AOYieldAgen
   const { navigate } = useLocation();
   const { data: mintingStatus } = useAOMintingStatus();
   const { data: agentInfo } = useAOYieldAgentInfo(aoAgent?.id);
+  const theme = useTheme();
 
   return !!aoAgent ? (
     <ListItem
@@ -65,7 +67,12 @@ export const AOYieldAgentListItem = ({ aoAgent, isHistory = false }: AOYieldAgen
           <SvgImageWithBackground
             height={20}
             width={20}
-            style={{ position: "absolute", top: -17, left: 2 }}
+            style={{
+              position: "absolute",
+              top: -17,
+              left: 2,
+              border: `1px solid ${theme.displayTheme === "dark" ? "#333333" : "#D6D6DD"}`,
+            }}
             src={aoLogo}
             iconSize={16}
             iconColor="black"
@@ -86,7 +93,17 @@ export const AOYieldAgentListItem = ({ aoAgent, isHistory = false }: AOYieldAgen
             ? navigate(PopupPaths.AOYieldAgentInfo.replace(":id", aoAgent.id) as WanderRoutePath)
             : navigate(PopupPaths.CreateAOYieldAgent)
       }
-      style={{ width: "100%", textAlign: "left", padding: "12px 8px" }}
+      style={{
+        width: "100%",
+        textAlign: "left",
+        padding: "12px 8px",
+        ...(aoAgent.status === "Active"
+          ? {
+              backgroundColor: `rgba(${theme.displayTheme === "dark" ? "37, 51, 39" : "233, 252, 236"}, 0.5)`,
+              border: `1px solid rgb(${theme.displayTheme === "dark" ? "16, 65, 36" : "4, 170, 62"})`,
+            }
+          : {}),
+      }}
     />
   ) : (
     <ListItem
