@@ -109,6 +109,8 @@ export async function requestUserAuthorization<T = any>(
 ) {
   log(LOG_GROUP.AUTH, `requestUserAuthorization("${authRequestData.type}")`);
 
+  // TODO: Should we wrap both in retry in case the popup was already closed?
+
   // create the popup
   const { authID, popupWindowTabID } = await createAuthPopup(authRequestData, moduleAppData);
 
@@ -278,6 +280,9 @@ export function getPopupResponse<T>(authID: string, popupWindowTabID: number) {
     const timeoutID = setTimeout(() => {
       reject(ERR_MSG_UNLOCK_TIMEOUT);
     }, AUTH_POPUP_UNLOCK_REQUEST_TTL_MS);
+
+    // TODO: If the popup was closed in the race condition, do we return a response?
+    // TODO:
 
     addAuthResultListener<AuthSuccessResult<T>>(authID, popupWindowTabID, (data) => {
       stopKeepAlive(authID);

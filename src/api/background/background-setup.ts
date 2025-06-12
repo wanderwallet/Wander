@@ -26,7 +26,7 @@ import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { isomorphicOnMessage } from "~isomorphic-messaging";
 import { handleAuthStateChange } from "./handlers/storage/auth-state-change/auth-state-change.handler";
 import { initInactivityTracking } from "~utils/inactivity/inactivity.utils";
-import { getLastAuthID, getPopupWindowID, resetPopupTabID } from "~utils/auth/auth.utils";
+import { getAuthPopupWindowTabID, getLastAuthID, getPopupWindowID, resetPopupTabID } from "~utils/auth/auth.utils";
 
 export function setupBackgroundService() {
   log(
@@ -42,7 +42,15 @@ export function setupBackgroundService() {
     return getLastAuthID();
   });
 
-  chrome.windows.onRemoved.addListener(function (closedWindowId) {
+  console.log("TEST 4");
+
+  chrome.windows.onCreated.addListener((window) => {
+    console.log("ON CREATED", window.id, getPopupWindowID());
+  });
+
+  chrome.windows.onRemoved.addListener((closedWindowId) => {
+    console.log("ON REMOVED", closedWindowId, getPopupWindowID());
+
     if (closedWindowId === getPopupWindowID()) {
       console.log("POPUP CLOSED");
       resetPopupTabID();

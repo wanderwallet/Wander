@@ -108,7 +108,11 @@ export function AuthRequestsProvider({ children }: PropsWithChildren) {
             debugger;
           }
 
-          if (lastAuthIDFromBackground !== lastAuthID) return;
+          if (lastAuthIDFromBackground !== lastAuthID) {
+            console.log("CLOSE ABORTED");
+
+            return;
+          }
 
           window.top.close();
         }
