@@ -51,6 +51,11 @@ import { EditAOYieldAgentView } from "~routes/popup/agents/ao-yield/edit-agent";
 import { AOYieldAgentHistoryView } from "~routes/popup/agents/ao-yield/agent-history";
 import { AOYieldAgentInfoView } from "~routes/popup/agents/ao-yield/agent-info";
 import { AOYieldAgentTransactionHistoryView } from "~routes/popup/agents/ao-yield/agent-transaction-history";
+import { LiquidOpsAgentsView } from "~routes/popup/agents/liquidops/agents";
+import { LiquidOpsAgent } from "~routes/popup/agents/liquidops/[agent]";
+import { LiquidOpsDepositWithdraw } from "~routes/popup/agents/liquidops/depositwithdraw";
+import { LiquidOpsConfirm } from "~routes/popup/agents/liquidops/confirm";
+import { LiquidOpsResult } from "~routes/popup/agents/liquidops/result";
 
 export type PopupRoutePath =
   | "/"
@@ -104,7 +109,12 @@ export type PopupRoutePath =
   | `/agents/ao-yield/activated`
   | `/agents/ao-yield/history`
   | `/agents/ao-yield/info/${string}`
-  | `/agents/ao-yield/transaction-history/${string}`;
+  | `/agents/ao-yield/transaction-history/${string}`
+  | `/agents/liquidops/agents`
+  | `/agents/liquidops/${string}`
+  | `/agents/liquidops/${string}/${"deposit" | "withdraw"}`
+  | `/agents/liquidops/${string}/${"deposit" | "withdraw"}/${string}/confirm`
+  | `/agents/liquidops/${string}/${"deposit" | "withdraw"}/result/${"success" | "failure"}`;
 
 export const PopupPaths = {
   Home: "/",
@@ -155,6 +165,11 @@ export const PopupPaths = {
   AOYieldAgentHistory: "/agents/ao-yield/history",
   AOYieldAgentInfo: "/agents/ao-yield/info/:id",
   AOYieldAgentTransactionHistory: "/agents/ao-yield/transaction-history/:id",
+  LiquidOpsAgentsList: "/agents/liquidops/agents",
+  LiquidOpsAgent: "/agents/liquidops/:ticker",
+  LiquidOpsDepositWithdraw: "/agents/liquidops/:ticker/:action",
+  LiquidOpsResult: "/agents/liquidops/:ticker/:action/result/:result",
+  LiquidOpsConfirm: "/agents/liquidops/:ticker/:action/:quantity/confirm",
 } as const satisfies Record<string, PopupRoutePath>;
 
 export const POPUP_ROUTES = [
@@ -355,5 +370,25 @@ export const POPUP_ROUTES = [
   {
     path: PopupPaths.AOYieldAgentTransactionHistory,
     component: AOYieldAgentTransactionHistoryView,
+  },
+  {
+    path: PopupPaths.LiquidOpsAgentsList,
+    component: LiquidOpsAgentsView,
+  },
+  {
+    path: PopupPaths.LiquidOpsAgent,
+    component: LiquidOpsAgent,
+  },
+  {
+    path: PopupPaths.LiquidOpsDepositWithdraw,
+    component: LiquidOpsDepositWithdraw,
+  },
+  {
+    path: PopupPaths.LiquidOpsResult,
+    component: LiquidOpsResult,
+  },
+  {
+    path: PopupPaths.LiquidOpsConfirm,
+    component: LiquidOpsConfirm,
   },
 ] as const satisfies RouteConfig[];
