@@ -1,6 +1,6 @@
 import browser from "webextension-polyfill";
 import { Flex } from "~components/common/Flex";
-import SliderMenu, { ExitButton } from "~components/SliderMenu";
+import SliderMenu from "~components/SliderMenu";
 import { Button, Text } from "@arconnect/components-rebrand";
 import alertWarning from "url:/assets/agents/images/alert-warning.svg";
 import alertSuccess from "url:/assets/agents/images/alert-success.svg";
@@ -43,7 +43,6 @@ export function AOMintingStatusModal({ agent, mintingStatus, isError }: AOMintin
 
   return (
     <SliderMenu isOpen={open} onClose={onClose} paddingVertical={32}>
-      <ExitButton onClick={() => setOpen(false)} style={{ position: "absolute", top: -12, right: 0 }} />
       <Flex direction="column" gap={32} height="100%" width="100%">
         <Flex direction="column" gap={8}>
           <img src={status === "Paused" ? alertWarning : alertSuccess} style={{ margin: "0 auto" }} />
