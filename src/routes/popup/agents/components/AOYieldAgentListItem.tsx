@@ -14,6 +14,7 @@ import type { WanderRoutePath } from "~wallets/router/router.types";
 import { useAOMintingStatus, useAOYieldAgentInfo } from "~utils/agents/hooks";
 import { getStatusColor, getStatusText, tokenIdInfoMap } from "~utils/agents/utils";
 import { useTheme } from "styled-components";
+import styled from "styled-components";
 
 interface AOYieldAgentListItemProps {
   aoAgent: AOYieldAgent;
@@ -27,7 +28,8 @@ export const AOYieldAgentListItem = ({ aoAgent, isHistory = false }: AOYieldAgen
   const theme = useTheme();
 
   return !!aoAgent ? (
-    <ListItem
+    <StyledListItem
+      isActive={aoAgent.status === "Active"}
       title={
         <Flex justify="space-between" align="center" width="100%">
           <Text weight="semibold" noMargin>
@@ -93,17 +95,6 @@ export const AOYieldAgentListItem = ({ aoAgent, isHistory = false }: AOYieldAgen
             ? navigate(PopupPaths.AOYieldAgentInfo.replace(":id", aoAgent.id) as WanderRoutePath)
             : navigate(PopupPaths.CreateAOYieldAgent)
       }
-      style={{
-        width: "100%",
-        textAlign: "left",
-        padding: "12px 8px",
-        ...(aoAgent.status === "Active"
-          ? {
-              backgroundColor: `rgba(${theme.displayTheme === "dark" ? "37, 51, 39" : "233, 252, 236"}, 0.5)`,
-              border: `1px solid rgb(${theme.displayTheme === "dark" ? "16, 65, 36" : "4, 170, 62"})`,
-            }
-          : {}),
-      }}
     />
   ) : (
     <ListItem
@@ -129,3 +120,21 @@ export const AOYieldAgentListItem = ({ aoAgent, isHistory = false }: AOYieldAgen
     />
   );
 };
+
+const StyledListItem = styled(ListItem)<{ isActive: boolean }>`
+  width: 100%;
+  text-align: left;
+  padding: 12px 8px;
+  box-sizing: border-box;
+  border: 1px solid transparent;
+  transition: none;
+  outline: none;
+  margin: 0;
+
+  ${({ isActive, theme }) =>
+    isActive &&
+    `
+    background-color: rgba(${theme.displayTheme === "dark" ? "37, 51, 39" : "233, 252, 236"}, 0.5);
+    border-color: rgb(${theme.displayTheme === "dark" ? "16, 65, 36" : "4, 170, 62"});
+  `}
+`;
