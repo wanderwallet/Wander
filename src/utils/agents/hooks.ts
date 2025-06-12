@@ -14,7 +14,7 @@ import { retryWithDelay } from "~utils/promises/retry";
 import { SWAP_SUCCESS_QUERY_WITH_CURSOR } from "./queries";
 import { useQuery } from "@tanstack/react-query";
 import { defaultOptions } from "~tokens/hooks";
-import { checkIfMintingIsPaused } from "./mint";
+import { checkIfMintingIsPaused, checkIfAgentHasRecentSwaps } from "./mint";
 
 interface UseAOYieldAgentsProps {
   status?: AOYieldAgentStatus;
@@ -167,20 +167,41 @@ export const useTransactions = (agentId: string, limit?: number) => {
 };
 
 export function useAOMintingStatus() {
+  const [activeAddress] = useStorage({ key: "active_address", instance: ExtensionStorage });
+
   return useQuery<MintingStatus>({
     queryKey: ["ao-minting-status"],
     queryFn: async () => {
-      const [isPaused, storedValue] = await Promise.all([
+      const [isPaused, wasStoredAsPaused] = await Promise.all([
         checkIfMintingIsPaused(),
         ExtensionStorage.get<boolean>("ao_minting_paused"),
       ]);
 
-      if (storedValue !== isPaused) {
+      // If state changed, update storage and handle notifications
+      if (wasStoredAsPaused !== isPaused) {
         await ExtensionStorage.set("ao_minting_paused", isPaused);
+
+        // If minting just resumed (was paused, now active), check agent activity too
+        if (wasStoredAsPaused === true && isPaused === false) {
+          // Get active agent to check its swap activity
+          const agents = await getAOYieldAgents(activeAddress);
+          const activeAgent = agents.find((agent) => agent.status === "Active");
+
+          if (activeAgent) {
+            // Check if agent has recent swaps to confirm full functionality
+            const hasRecentSwaps = await checkIfAgentHasRecentSwaps(activeAgent.id);
+
+            // Only show resume notification if agent is also making swaps
+            if (hasRecentSwaps) {
+              await ExtensionStorage.set("show_mint_resumed", true);
+            }
+          }
+        }
       }
 
       return isPaused ? "Paused" : "Active";
     },
+    enabled: !!activeAddress,
     ...defaultOptions,
   });
 }

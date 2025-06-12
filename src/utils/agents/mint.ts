@@ -1,5 +1,10 @@
 import { gql } from "~gateways/api";
-import { AO_PROCESS_MINT_QUERY, AO_PROCESS_MINT_WITH_NONCE_QUERY, AO_YIELD_AGENT_RECENT_TX_QUERY } from "./queries";
+import {
+  AO_PROCESS_MINT_QUERY,
+  AO_PROCESS_MINT_WITH_NONCE_QUERY,
+  AO_YIELD_AGENT_RECENT_TX_QUERY,
+  SWAP_SUCCESS_QUERY_WITH_CURSOR,
+} from "./queries";
 import {
   getAOYieldActiveAgent,
   getAOYieldAgentInfo,
@@ -128,6 +133,34 @@ export async function checkIfMintingIsPaused(): Promise<boolean> {
 
   // If there are no transactions today or yesterday, minting is paused
   return !hasTransactionToday && !hasTransactionYesterday;
+}
+
+/**
+ * Checks if the agent has recent swap transactions (within last 24 hours)
+ * This ensures the agent is not only receiving AO tokens but also swapping them
+ */
+export async function checkIfAgentHasRecentSwaps(agentId: string): Promise<boolean> {
+  if (!agentId) return false;
+
+  try {
+    const response = await gql(SWAP_SUCCESS_QUERY_WITH_CURSOR, { agentId, after: "" });
+    const edges = response?.data?.transactions?.edges || [];
+
+    if (edges.length === 0) return false;
+
+    const oneDayAgo = Date.now() - 24 * 60 * 60 * 1000;
+
+    // Check if there are any swap transactions within the last 24 hours
+    const hasRecentSwaps = edges.some((edge) => {
+      const timestamp = edge.node.block?.timestamp ? edge.node.block.timestamp * 1000 : Date.now();
+      return timestamp > oneDayAgo;
+    });
+
+    return hasRecentSwaps;
+  } catch (error) {
+    log(LOG_GROUP.AGENTS, "Error checking agent recent swaps:", error);
+    return false;
+  }
 }
 
 export async function fetchRawMintData(transactionId: string): Promise<string> {

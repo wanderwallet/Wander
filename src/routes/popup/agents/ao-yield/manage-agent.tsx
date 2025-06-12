@@ -15,7 +15,7 @@ export function ManageAOYieldAgentView() {
   return (
     <>
       <AgentInfo headerTitle="manage_agent" agentId={activeAgent?.id || ""} mintingStatus={mintingStatus} />
-      <AOMintingStatusModal mintingStatus={mintingStatus} isError={isError} />
+      <AOMintingStatusModal agent={activeAgent} mintingStatus={mintingStatus} isError={isError} />
     </>
   );
 }
