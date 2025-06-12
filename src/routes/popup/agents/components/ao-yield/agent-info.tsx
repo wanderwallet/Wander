@@ -211,9 +211,7 @@ export function AgentInfo({ agentId, headerTitle, mintingStatus, isHistory = fal
                 title={browser.i18n.getMessage("view_transaction_history")}
                 titleStyle={{ fontSize: 14, fontWeight: 500 }}
                 style={{ padding: "4px 0px 4px 4px" }}
-                onClick={() =>
-                  navigate(PopupPaths.AOYieldAgentTransactionHistory.replace(":id", agentId) as WanderRoutePath)
-                }
+                onClick={() => navigate(PopupPaths.AOYieldAgentTransactionHistory, { params: { id: agentId } })}
                 hideSquircle
                 showArrow
               />

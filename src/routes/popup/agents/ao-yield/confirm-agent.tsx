@@ -143,11 +143,12 @@ export function ConfirmAOYieldAgentView() {
       scheduleSwapExecution();
 
       navigate(PopupPaths.AOYieldAgentActivated, { search: { activationStatus: "success" } });
+
+      TempTransactionStorage.remove("ao-yield-agent");
     } catch (error) {
       console.log("error: ", error);
       navigate(PopupPaths.AOYieldAgentActivated, { search: { activationStatus: "error" } });
     } finally {
-      TempTransactionStorage.remove("ao-yield-agent");
       setIsLoading(false);
     }
   }

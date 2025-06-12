@@ -122,6 +122,14 @@ export function useLocation() {
         }
       }
 
+      // Handle path parameters
+      if (options?.params) {
+        Object.entries(options.params).forEach(([key, value]) => {
+          toPath = toPath.replace(`:${key}`, value.toString()) as WanderRoutePath;
+        });
+      }
+
+      // Handle search parameters
       if (options?.search) {
         const searchParams = new URLSearchParams();
 
