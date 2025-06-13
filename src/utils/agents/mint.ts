@@ -266,7 +266,7 @@ export async function calculateMintQuantityForDateRange(
  * @param activeAgent - The active agent.
  * @returns True if the agent is eligible for swap, false otherwise.
  */
-async function validateAgentForSwap(activeAgent: any): Promise<boolean> {
+async function validateAgentForSwap(activeAgent: AOYieldAgent): Promise<boolean> {
   if (normalizeToStartOfDay(activeAgent.endDate) < normalizeToStartOfDay(Date.now())) {
     if (activeAgent.status === "Active") {
       await updateAOYieldAgent(activeAgent.id, { status: "Completed" });
