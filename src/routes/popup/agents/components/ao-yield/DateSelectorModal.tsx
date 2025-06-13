@@ -351,7 +351,8 @@ const DateSelectorScreen = ({
       lastDayPrevMonth >= startDate &&
       lastDayPrevMonth <= endDate &&
       currentMonthDate >= startDate &&
-      currentMonthDate <= endDate
+      currentMonthDate <= endDate &&
+      lastDayPrevMonth.getDay() !== 6 // Don't connect if last day of prev month is Saturday
     );
   };
 
@@ -367,7 +368,8 @@ const DateSelectorScreen = ({
       firstDayNextMonth >= startDate &&
       firstDayNextMonth <= endDate &&
       currentMonthDate >= startDate &&
-      currentMonthDate <= endDate
+      currentMonthDate <= endDate &&
+      firstDayNextMonth.getDay() !== 0 // Don't connect if first day of next month is Sunday
     );
   };
 
