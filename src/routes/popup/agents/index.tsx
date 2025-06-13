@@ -65,7 +65,7 @@ export function AgentsView() {
           <LiquidOpsAgentListItem activeTokens={activeTokens} />
         </Flex>
       </Wrapper>
-      <WanderAgentExplainerPopup open={open} close={() => setOpen(false)} agentType="agents" />
+      <WanderAgentExplainerPopup open={open} close={() => setOpen(false)} />
     </>
   );
 }

@@ -78,7 +78,7 @@ export default function CreateWanderAgentCTA() {
         <StarIcon top={32} left={-8} size={32} opacity={0.4} filter="blur(1.5px)" shineAnimation={shineAnimation} />
         <StarIcon top={24} right={74} size={24} opacity={0.4} filter="blur(1.5px)" shineAnimation={shineAnimation} />
         <StarIcon bottom={8} right={-4} size={32} opacity={0.4} filter="blur(1.5px)" shineAnimation={shineAnimation} />
-        <WanderAgentExplainerPopup open={open} close={() => handleClose()} agentType="wander_agent" />
+        <WanderAgentExplainerPopup open={open} close={() => handleClose()} />
       </Flex>
     </AnimatedContainer>
   );

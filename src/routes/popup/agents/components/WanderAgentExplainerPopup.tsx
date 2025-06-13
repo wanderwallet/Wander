@@ -2,17 +2,16 @@ import styled from "styled-components";
 import SliderMenu from "~components/SliderMenu";
 import { XClose } from "@untitled-ui/icons-react";
 import { Button, Text } from "@arconnect/components-rebrand";
-import HedgehogPopupTokensImage from "url:/assets/agents/images/hedgehog-popup-tokens.svg";
 import HedgehogPopupImage from "url:/assets/agents/images/hedgehog-popup.svg";
 import { Flex } from "~components/common/Flex";
 import browser from "webextension-polyfill";
 import { useLocation } from "~wallets/router/router.utils";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 
-export default function WanderAgentExplainerPopup({ open, close, agentType }: Props) {
+export default function WanderAgentExplainerPopup({ open, close }: Props) {
   const { navigate } = useLocation();
 
-  if (!open || !agentType) return null;
+  if (!open) return null;
 
   return (
     <SliderMenu hasHeader={false} isOpen={open} onClose={close}>
@@ -23,17 +22,13 @@ export default function WanderAgentExplainerPopup({ open, close, agentType }: Pr
         }}
       />
       <Wrapper>
-        <img
-          src={agentType === "agents" ? HedgehogPopupImage : HedgehogPopupTokensImage}
-          alt="Hedgehog Popup"
-          style={{ marginBottom: -32 }}
-        />
+        <img src={HedgehogPopupImage} alt="Hedgehog Popup" style={{ marginBottom: -32 }} />
         <Flex direction="column" gap={8} align="center" textAlign="center">
           <Text size="lg" weight="semibold" noMargin>
-            {browser.i18n.getMessage(`introducing_the_${agentType}`)}
+            {browser.i18n.getMessage(`introducing_the_agents`)}
           </Text>
           <Text weight="medium" variant="secondary" noMargin>
-            {browser.i18n.getMessage(`introducing_the_${agentType}_description`)}
+            {browser.i18n.getMessage(`introducing_the_agents_description`)}
           </Text>
         </Flex>
         <Flex direction="column" gap={12} width="100%">
@@ -43,7 +38,7 @@ export default function WanderAgentExplainerPopup({ open, close, agentType }: Pr
               navigate(PopupPaths.Agents);
             }}
             fullWidth>
-            {browser.i18n.getMessage(agentType === "agents" ? "create_an_agent" : "create_ao_yield_agent")}
+            {browser.i18n.getMessage("create_an_agent")}
           </Button>
           <Button
             fullWidth
@@ -79,5 +74,4 @@ const Wrapper = styled.div`
 interface Props {
   open: boolean;
   close: () => any;
-  agentType: "agents" | "wander_agent";
 }
