@@ -115,7 +115,7 @@ export function CreateAOYieldAgentView() {
                 {percentage}%
               </Text>
             </Flex>
-            <Slider value={percentage} onChange={setPercentage} min={0} max={100} minLabel="0" maxLabel="100" />
+            <Slider onChange={setPercentage} min={0} max={100} minLabel="0" maxLabel="100" />
           </Flex>
           <Flex direction="column" gap={16}>
             <InputButton

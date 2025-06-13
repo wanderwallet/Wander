@@ -1,10 +1,9 @@
-import React from "react";
+import React, { useRef, useCallback, forwardRef, useEffect } from "react";
 import styled from "styled-components";
 import { Text } from "@arconnect/components-rebrand";
+import throttle from "lodash/throttle";
 
 interface SliderProps {
-  value: number;
-  onChange: (value: number) => void;
   min?: number;
   max?: number;
   step?: number;
@@ -13,62 +12,110 @@ interface SliderProps {
   maxLabel?: string;
   disabled?: boolean;
   className?: string;
+  defaultValue?: number;
+  onChange?: (value: number) => void;
 }
 
-export function Slider({
-  value,
-  onChange,
-  min = 0,
-  max = 100,
-  step = 1,
-  showLabels = true,
-  minLabel,
-  maxLabel,
-  disabled = false,
-  className,
-}: SliderProps) {
-  const handleSliderChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    onChange(Number(event.target.value));
-  };
+export const Slider = forwardRef<HTMLInputElement, SliderProps>(
+  (
+    {
+      min = 0,
+      max = 100,
+      step = 1,
+      showLabels = true,
+      minLabel,
+      maxLabel,
+      disabled = false,
+      className,
+      defaultValue = 50,
+      onChange,
+    },
+    ref,
+  ) => {
+    const fillRef = useRef<HTMLDivElement>(null);
+    const thumbRef = useRef<HTMLDivElement>(null);
+    const rafRef = useRef<number>();
 
-  const percentage = ((value - min) / (max - min)) * 100;
+    const throttledOnChange = useCallback(
+      throttle((value: number) => onChange?.(value), 16),
+      [onChange],
+    );
 
-  return (
-    <SliderContainer className={className}>
-      <SliderWrapper>
-        {showLabels && (
-          <SliderLabel position="left">
-            <Text variant="secondary" size="sm" weight="medium" noMargin>
-              {minLabel || min}
-            </Text>
-          </SliderLabel>
-        )}
-        <SliderTrackContainer>
-          <SliderInput
-            type="range"
-            min={min}
-            max={max}
-            step={step}
-            value={value}
-            onChange={handleSliderChange}
-            disabled={disabled}
-          />
-          <SliderTrack>
-            <SliderFill style={{ width: `${percentage}%` }} />
-            <SliderThumb style={{ left: `${percentage}%` }} />
-          </SliderTrack>
-        </SliderTrackContainer>
-        {showLabels && (
-          <SliderLabel position="right">
-            <Text variant="secondary" size="sm" weight="medium" noMargin>
-              {maxLabel || max}
-            </Text>
-          </SliderLabel>
-        )}
-      </SliderWrapper>
-    </SliderContainer>
-  );
-}
+    const updateSlider = useCallback(
+      (newValue: number) => {
+        const percentage = ((newValue - min) / (max - min)) * 100;
+
+        if (rafRef.current) {
+          cancelAnimationFrame(rafRef.current);
+        }
+
+        rafRef.current = requestAnimationFrame(() => {
+          if (fillRef.current) {
+            fillRef.current.style.transform = `scaleX(${percentage / 100})`;
+          }
+          if (thumbRef.current) {
+            thumbRef.current.style.left = `${percentage}%`;
+          }
+        });
+      },
+      [min, max],
+    );
+
+    const handleSliderChange = useCallback(
+      (event: React.ChangeEvent<HTMLInputElement>) => {
+        const newValue = Number(event.target.value);
+        updateSlider(newValue);
+        throttledOnChange(newValue);
+      },
+      [throttledOnChange, updateSlider],
+    );
+
+    useEffect(() => {
+      return () => {
+        if (rafRef.current) {
+          cancelAnimationFrame(rafRef.current);
+        }
+      };
+    }, []);
+
+    return (
+      <SliderContainer className={className}>
+        <SliderWrapper>
+          {showLabels && (
+            <SliderLabel position="left">
+              <Text variant="secondary" size="sm" weight="medium" noMargin>
+                {minLabel || min}
+              </Text>
+            </SliderLabel>
+          )}
+          <SliderTrackContainer>
+            <SliderInput
+              ref={ref}
+              type="range"
+              min={min}
+              max={max}
+              step={step}
+              defaultValue={defaultValue}
+              onChange={handleSliderChange}
+              disabled={disabled}
+            />
+            <SliderTrack>
+              <SliderFill ref={fillRef} value={defaultValue} />
+              <SliderThumb ref={thumbRef} value={defaultValue} />
+            </SliderTrack>
+          </SliderTrackContainer>
+          {showLabels && (
+            <SliderLabel position="right">
+              <Text variant="secondary" size="sm" weight="medium" noMargin>
+                {maxLabel || max}
+              </Text>
+            </SliderLabel>
+          )}
+        </SliderWrapper>
+      </SliderContainer>
+    );
+  },
+);
 
 const SliderContainer = styled.div`
   position: relative;
@@ -139,23 +186,28 @@ const SliderTrack = styled.div`
   border-radius: 3px;
 `;
 
-const SliderFill = styled.div`
+const SliderFill = styled.div<{ value: number }>`
   position: absolute;
   height: 100%;
+  width: 100%;
   background: linear-gradient(90deg, #5842f8 0%, #6b57f9 100%);
   border-radius: 3px;
-  transition: width 0.2s ease;
+  transform-origin: left;
+  transform: scaleX(${({ value }) => value / 100});
+  will-change: transform;
 `;
 
-const SliderThumb = styled.div`
+const SliderThumb = styled.div<{ value: number }>`
   position: absolute;
+  left: ${({ value }) => value}%;
   top: 50%;
   width: 12px;
   height: 12px;
+  flex-shrink: 0;
   background: #ffffff;
   border-radius: 50%;
   transform: translate(-50%, -50%);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  transition: left 0.2s ease;
+  will-change: transform;
   pointer-events: none;
 `;
