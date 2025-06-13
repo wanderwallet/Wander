@@ -13,7 +13,7 @@ import type GQLResultInterface from "ar-gql/dist/faces";
 import { formatBalance } from "~utils/format";
 import { balanceToFractioned } from "~tokens/currency";
 import { freeDecryptedWallet } from "~wallets/encryption";
-import WarIcon from "url:/assets/ecosystem/war.svg";
+import WarIcon from "url:/assets/ecosystem/war.png";
 import wUSDCIcon from "url:/assets/ecosystem/wusdc.svg";
 import type { Asset } from "~utils/agents/types";
 import { AO_YIELD_AGENT_RECENT_TXS } from "./constants";

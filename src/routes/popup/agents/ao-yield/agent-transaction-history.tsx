@@ -9,7 +9,7 @@ import dayjs from "dayjs";
 import { WAR_PROCESS_ID, WUSDC_PROCESS_ID } from "~tokens/aoTokens/ao";
 import { SvgImageWithBackground } from "../components/SvgImage";
 import aoLogo from "url:/assets/ecosystem/ao-logo.svg";
-import WarIcon from "url:/assets/ecosystem/war.svg";
+import WarIcon from "url:/assets/ecosystem/war.png";
 import wUSDCIcon from "url:/assets/ecosystem/wusdc.svg";
 import { formatTokenQuantity, tokenIdInfoMap } from "~utils/agents/utils";
 import { useEffect } from "react";
