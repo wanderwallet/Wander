@@ -544,6 +544,14 @@ const DateSelectorScreen = ({
       );
     }
 
+    // Add empty cells to ensure we always have 6 rows (42 cells total)
+    const totalDays = days.length;
+    const emptyCellsNeeded = 42 - totalDays;
+
+    for (let i = 0; i < emptyCellsNeeded; i++) {
+      days.push(<EmptyCalendarDay key={`empty-${i}`} />);
+    }
+
     return days;
   };
 
@@ -693,6 +701,15 @@ const CalendarGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 4px;
+  min-height: 264px; /* 6 rows * 40px height + 5 * 4px gap */
+`;
+
+const EmptyCalendarDay = styled.div`
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
 
 const CalendarDay = styled.button<{
