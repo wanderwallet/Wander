@@ -61,12 +61,13 @@ function sortAscending(a: MintTransaction, b: MintTransaction): number {
 }
 
 /**
- * Normalizes a timestamp to the start of the day.
+ * Normalizes a timestamp to the start of the day in UTC.
  * @param timestamp - The timestamp to normalize.
- * @returns The normalized timestamp.
+ * @returns The normalized timestamp in UTC.
  */
 function normalizeToStartOfDay(timestamp: number): number {
-  return new Date(timestamp).setHours(0, 0, 0, 0);
+  const date = new Date(timestamp);
+  return Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
 }
 
 /**

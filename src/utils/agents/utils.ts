@@ -447,3 +447,25 @@ export async function getAODelegationInfo(address?: string) {
 export function formatDate(date: Date | null, fallbackLabel: string) {
   return date ? dayjs(date).format("MMM D, YYYY") : fallbackLabel;
 }
+
+export async function getWanderFee() {
+  const defaultFee = "0.25";
+  try {
+    const aoInstance = connect(defaultConfig);
+
+    const dryrunRes = await aoInstance.dryrun({
+      Id,
+      Owner,
+      process: "PHQp9YR-zTTaSkyn82jq79Fj3zBuBr08tLLA_q2kUnU",
+      tags: [{ name: "Action", value: "Info" }],
+    });
+
+    const tags = dryrunRes.Messages?.[0]?.Tags || [];
+    const fee = getTagValue("Conversion-Fee", tags) || defaultFee;
+
+    return fee;
+  } catch (error) {
+    console.error("Error getting wander fee", error);
+    return defaultFee;
+  }
+}

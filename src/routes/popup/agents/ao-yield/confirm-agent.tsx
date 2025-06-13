@@ -22,7 +22,7 @@ import { getAOYieldAgents, setAOYieldAgents } from "~utils/agents/utils";
 import { EventType, PageType, trackEvent, trackPage } from "~utils/analytics";
 import { scheduleSwapExecution } from "~utils/agents/mint";
 import { AGENT_VERSION } from "~utils/agents/constants";
-import { useAOYieldAgentProperties } from "~utils/agents/hooks";
+import { useAOYieldAgentProperties, useWanderFee } from "~utils/agents/hooks";
 
 export function ConfirmAOYieldAgentView() {
   const [isLoading, setIsLoading] = useState(false);
@@ -32,6 +32,7 @@ export function ConfirmAOYieldAgentView() {
   const passwordInput = useInput();
   const theme = useTheme();
   const [aoYieldAgent] = useStorage<AOYieldAgentCreate>({ key: "ao-yield-agent", instance: TempTransactionStorage });
+  const { data: wanderFee = "0.25" } = useWanderFee();
   const [transferRequirePassword] = useStorage(
     {
       key: "transfer_require_password",
@@ -45,7 +46,7 @@ export function ConfirmAOYieldAgentView() {
     [askPassword, transferRequirePassword, passwordInput.state],
   );
 
-  const properties = useAOYieldAgentProperties(aoYieldAgent, true);
+  const properties = useAOYieldAgentProperties(aoYieldAgent, wanderFee);
 
   async function handleActivateAgent(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();

@@ -3,6 +3,7 @@ import {
   getAODelegationInfo,
   getAOYieldAgentInfo,
   getAOYieldAgents,
+  getWanderFee,
   processTransactions,
   tokenIdInfoMap,
 } from "./utils";
@@ -230,7 +231,7 @@ export function useAODelegationInfo() {
   });
 }
 
-export function useAOYieldAgentProperties(agent: AOYieldAgentCreate | AOYieldAgent, showFee = false) {
+export function useAOYieldAgentProperties(agent: AOYieldAgentCreate | AOYieldAgent, wanderFee?: string) {
   const properties = useMemo(() => {
     if (!agent) return [];
 
@@ -248,12 +249,20 @@ export function useAOYieldAgentProperties(agent: AOYieldAgentCreate | AOYieldAge
       { name: "slippage", value: `${slippage}%` },
     ];
 
-    if (showFee) {
-      properties.push({ name: "fee", value: browser.i18n.getMessage("percentage_of_each_conversion", ["0.5"]) });
+    if (wanderFee) {
+      properties.push({ name: "fee", value: browser.i18n.getMessage("percentage_of_each_conversion", [wanderFee]) });
     }
 
     return properties;
   }, [agent]);
 
   return properties;
+}
+
+export function useWanderFee() {
+  return useQuery<string>({
+    queryKey: ["wander-fee"],
+    queryFn: () => getWanderFee(),
+    ...defaultOptions,
+  });
 }
