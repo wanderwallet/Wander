@@ -8,7 +8,7 @@ import { AgentStats } from "../components/liquidops/AgentStats";
 import { useActiveWallet, useAskPassword } from "~wallets/hooks";
 import { tokenData, tokenInput } from "liquidops";
 import { useLOSupplyAPY } from "./utils/hooks/useLOSupplyAPY";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import BigNumber from "bignumber.js";
 import { formatFiatBalance } from "~tokens/currency";
@@ -23,6 +23,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { checkPassword } from "~wallets/auth";
 import { ExtensionStorage, useStorage } from "~utils/storage";
 import { formatNumber } from "./utils/format";
+import { PageType, trackPage } from "~utils/analytics";
 
 export type LiquidOpsConfirmProps = CommonRouteProps<{
   action: "deposit" | "withdraw";
@@ -161,6 +162,14 @@ export function LiquidOpsConfirm({ params: { action, ticker, quantity } }: Liqui
       unlend(params);
     }
   };
+
+  useEffect(() => {
+    if (!action) return;
+
+    trackPage(
+      action === "deposit" ? PageType.LIQUID_OPS_AGENT_CONFIRM_DEPOSIT : PageType.LIQUID_OPS_AGENT_CONFIRM_WITHDRAW,
+    );
+  }, [action]);
 
   return (
     <>

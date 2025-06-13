@@ -9,6 +9,8 @@ import HedgehogSuccessImage from "react:/assets/agents/hedgehog-success.svg";
 import HedgehogFailureImage from "react:/assets/agents/hedgehog-failure.svg";
 import SuccessImage from "react:/assets/agents/success.svg";
 import FailureImage from "react:/assets/agents/failure.svg";
+import { PageType, trackPage } from "~utils/analytics";
+import { useEffect } from "react";
 
 export type LiquidOpsConfirmProps = CommonRouteProps<{
   action: "deposit" | "withdraw";
@@ -26,6 +28,20 @@ export function LiquidOpsResult({ params: { action, ticker, result } }: LiquidOp
     width: 76,
     height: 76,
   };
+
+  useEffect(() => {
+    if (!action || !result) return;
+
+    trackPage(
+      result === "success"
+        ? action === "deposit"
+          ? PageType.LIQUID_OPS_AGENT_DEPOSIT_SUCCESS
+          : PageType.LIQUID_OPS_AGENT_WITHDRAW_SUCCESS
+        : action === "deposit"
+          ? PageType.LIQUID_OPS_AGENT_DEPOSIT_FAILURE
+          : PageType.LIQUID_OPS_AGENT_WITHDRAW_FAILURE,
+    );
+  }, [action, result]);
 
   return (
     <Wrapper>

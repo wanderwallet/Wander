@@ -11,7 +11,7 @@ import type { CommonRouteProps } from "~wallets/router/router.types";
 import { useLocation } from "~wallets/router/router.utils";
 import { LinkExternalIcon, OpenInLiquidops } from "../components/liquidops/AgentStats";
 import NumberFlow from "@number-flow/react";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import useSetting from "~settings/hook";
 import { useStorage } from "~utils/storage";
 import { PersistentStorage } from "~utils/storage";
@@ -26,6 +26,7 @@ import { Loading } from "@arconnect/components-rebrand";
 import { useTokenPrice } from "~tokens/hooks";
 import BigNumber from "bignumber.js";
 import { formatNumber } from "./utils/format";
+import { PageType, trackPage } from "~utils/analytics";
 
 export type LiquidOpsAgentProps = CommonRouteProps<{ ticker: string }>;
 
@@ -67,6 +68,10 @@ export function LiquidOpsAgent({ params: { ticker } }: LiquidOpsAgentProps) {
     },
     false,
   );
+
+  useEffect(() => {
+    trackPage(PageType.LIQUID_OPS_AGENT_MANAGE);
+  }, []);
 
   // Handle case where token is not found
   if (!token) {

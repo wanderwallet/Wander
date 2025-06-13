@@ -12,7 +12,7 @@ import { AgentStats } from "../components/liquidops/AgentStats";
 import { useLocation } from "~wallets/router/router.utils";
 import { tokenData } from "liquidops";
 import { useLOSupplyAPY } from "./utils/hooks/useLOSupplyAPY";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTokenBalance, useTokenPrice } from "~tokens/hooks";
 import { useActiveWallet } from "~wallets/hooks";
 import { type TokenInfo } from "~tokens/aoTokens/ao";
@@ -22,6 +22,7 @@ import useSetting from "~settings/hook";
 import { formatFiatBalance } from "~tokens/currency";
 import { useOExchangeRate } from "./utils/hooks/useOExchangeRate";
 import { formatNumber } from "./utils/format";
+import { PageType, trackPage } from "~utils/analytics";
 
 export type LiquidOpsDepositWithdrawProps = CommonRouteProps<{ action: "deposit" | "withdraw"; ticker: string }>;
 
@@ -85,6 +86,12 @@ export function LiquidOpsDepositWithdraw({ params: { action, ticker } }: LiquidO
   }, [price, quantity, exchangeRate]);
 
   const submit = () => navigate(`/agents/liquidops/${ticker}/${action}/${quantity}/confirm`);
+
+  useEffect(() => {
+    if (!action) return;
+
+    trackPage(action === "deposit" ? PageType.LIQUID_OPS_AGENT_DEPOSIT : PageType.LIQUID_OPS_AGENT_WITHDRAW);
+  }, [action]);
 
   return (
     <>

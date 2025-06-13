@@ -7,7 +7,8 @@ import { Line } from "~routes/popup/purchase";
 import { Agent } from "../components/liquidops/Agent";
 import { tokenData } from "liquidops";
 import { useActiveTokens } from "./utils/hooks/useAvailableTokens";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
+import { trackEvent, EventType, trackPage, PageType } from "~utils/analytics";
 
 export function LiquidOpsAgentsView() {
   const availableTokens = Object.values(tokenData).filter((token) => !token.deprecated);
@@ -20,6 +21,10 @@ export function LiquidOpsAgentsView() {
       ),
     [availableTokens, activeTokens],
   );
+
+  useEffect(() => {
+    trackPage(PageType.LIQUID_OPS_AGENTS);
+  }, []);
 
   return (
     <>

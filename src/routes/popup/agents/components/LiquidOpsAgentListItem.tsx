@@ -12,6 +12,7 @@ import { type ActiveAgentToken } from "../liquidops/utils/hooks/useAvailableToke
 import { useMemo, type ComponentProps } from "react";
 import BigNumber from "bignumber.js";
 import { formatNumber } from "../liquidops/utils/format";
+import { EventType, trackEvent } from "~utils/analytics";
 
 interface Props {
   activeTokens: ActiveAgentToken[];
@@ -48,15 +49,19 @@ export const LiquidOpsAgentListItem = ({ activeTokens }: Props) => {
               <AgentListItem
                 token={token}
                 profit={activeData?.profit}
-                onClick={() =>
-                  navigate(`/agents/liquidops/${token.cleanTicker}${!activeData?.profit ? "/deposit" : ""}`)
-                }
+                onClick={() => {
+                  trackEvent(EventType.SELECT_AGENT, { agentType: "LiquidOps Agent" });
+                  navigate(`/agents/liquidops/${token.cleanTicker}${!activeData?.profit ? "/deposit" : ""}`);
+                }}
               />
             );
           })}
         </Flex>
       }
-      onClick={() => navigate(PopupPaths.LiquidOpsAgentsList)}
+      onClick={() => {
+        trackEvent(EventType.SELECT_AGENT, { agentType: "LiquidOps Agent" });
+        navigate(PopupPaths.LiquidOpsAgentsList);
+      }}
     />
   );
 };

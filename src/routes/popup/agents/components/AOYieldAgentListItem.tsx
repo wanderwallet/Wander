@@ -10,11 +10,11 @@ import { SvgImageWithBackground } from "./SvgImage";
 import type { AOYieldAgent } from "~utils/agents/types";
 import { WAR_PROCESS_ID } from "~tokens/aoTokens/ao";
 import dayjs from "dayjs";
-import type { WanderRoutePath } from "~wallets/router/router.types";
 import { useAOMintingStatus, useAOYieldAgentInfo } from "~utils/agents/hooks";
 import { getStatusColor, getStatusText, tokenIdInfoMap } from "~utils/agents/utils";
 import { useTheme } from "styled-components";
 import styled from "styled-components";
+import { EventType, trackEvent } from "~utils/analytics";
 
 interface AOYieldAgentListItemProps {
   aoAgent: AOYieldAgent;
@@ -88,13 +88,14 @@ export const AOYieldAgentListItem = ({ aoAgent, isHistory = false }: AOYieldAgen
         </Flex>
       }
       active
-      onClick={() =>
+      onClick={() => {
+        trackEvent(EventType.SELECT_AGENT, { agentType: "AO Yield Agent" });
         aoAgent.status === "Active"
           ? navigate(PopupPaths.ManageAOYieldAgent)
           : isHistory
             ? navigate(PopupPaths.AOYieldAgentInfo, { params: { id: aoAgent.id } })
-            : navigate(PopupPaths.CreateAOYieldAgent)
-      }
+            : navigate(PopupPaths.CreateAOYieldAgent);
+      }}
     />
   ) : (
     <ListItem
@@ -115,7 +116,10 @@ export const AOYieldAgentListItem = ({ aoAgent, isHistory = false }: AOYieldAgen
         />
       }
       active
-      onClick={() => navigate(PopupPaths.CreateAOYieldAgent)}
+      onClick={() => {
+        trackEvent(EventType.SELECT_AGENT, { agentType: "AO Yield Agent" });
+        navigate(PopupPaths.CreateAOYieldAgent);
+      }}
       style={{ width: "100%", textAlign: "left", padding: "12px 8px" }}
     />
   );

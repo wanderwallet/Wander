@@ -2,6 +2,7 @@ import { useMutation } from "@tanstack/react-query";
 import { LiquidOpsClient } from "../../LiquidOps";
 import { tokenInput } from "liquidops";
 import { getActiveAddress } from "~wallets";
+import { EventType, trackEvent } from "~utils/analytics";
 
 interface LendParams {
   token: string;
@@ -57,6 +58,8 @@ export function useLend({ onSettled }: Params) {
           throw new Error(errorMessage);
         }
 
+        trackEvent(EventType.LIQUID_OPS_AGENT_DEPOSIT, { depositAsset: token, depositAmount: quantity });
+
         return "Lent assets";
       } finally {
         free();
@@ -100,6 +103,8 @@ export function useLend({ onSettled }: Params) {
 
           throw new Error(errorMessage);
         }
+
+        trackEvent(EventType.LIQUID_OPS_AGENT_WITHDRAW, { withdrawAsset: token, withdrawAmount: quantity });
 
         return "Unlent assets";
       } finally {
