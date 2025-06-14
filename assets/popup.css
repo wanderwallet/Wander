@@ -81,17 +81,26 @@
   }
 }
 
-html {
+/* Applies only to BE */
+
+html:not(#wanderConnectRoot) {
+  background: var(--backgroundColor, var(--defaultBackgroundColor, white));
+  color: var(--textColor, var(--defaultTextColor, black));
+}
+
+/* Applies only to Connect */
+
+html#wanderConnectRoot {
   background: var(--defaultBackgroundColor);
   color: var(--defaultTextColor);
 }
 
-html[data-theme="light"] {
+html#wanderConnectRoot[data-theme="light"] {
   --defaultBackgroundColor: white;
   --defaultTextColor: black;
 }
 
-html[data-theme="dark"] {
+html#wanderConnectRoot[data-theme="dark"] {
   --defaultBackgroundColor: black;
   --defaultTextColor: white;
 }
