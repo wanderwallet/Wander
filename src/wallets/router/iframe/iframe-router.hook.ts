@@ -31,126 +31,102 @@ const AUTH_STATUS_TO_OVERRIDE: Record<AuthStatus, null | ExtensionRouteOverride>
 
 export function useEmbeddedOverride(location?: RoutePath) {
   const { authStatus, lastRegisteredWallet, currentWallet, recoverableAccount } = useEmbedded();
-  const searchParams = useSearchParams<{
-    error?: string;
-    error_description?: string;
-  }>();
 
-  // Handle OAuth redirect error URL from Supabase
-  if (searchParams.error && searchParams.error_description) {
-    // Supabase redirects with error parameters in the URL when OAuth fails
-    // Example: #error=server_error&error_description=OAuth+provider+error
-    return routeTrapMatches(location, [EmbeddedPaths.AuthError], EmbeddedPaths.AuthError);
-  }
-
-  if (!location || location.startsWith("/access_token") || authStatus === "unknown") {
+  if (!location || authStatus === "unknown") {
     return "/__OVERRIDES/cover";
   }
 
-  if (location) {
-    if (authStatus === "noAuth" || authStatus === "authLoading") {
-      return routeTrapMatches(
-        location,
-        [
-          EmbeddedPaths.Auth,
-          EmbeddedPaths.AuthEmailSignup,
-          EmbeddedPaths.AuthEmailVerify,
-          EmbeddedPaths.AuthEmailSignin,
-          EmbeddedPaths.AuthMoreProviders,
-          EmbeddedPaths.AuthAddWithQRCode,
-          // TODO: These could be simply "anything under  AuthRecoverAccount"
-          EmbeddedPaths.AuthRecoverAccount,
-          EmbeddedPaths.AuthRecoverAccountSeedphrase,
-          EmbeddedPaths.AuthRecoverAccountKeyfile,
-          EmbeddedPaths.AuthRecoverAccountQrCode,
-          EmbeddedPaths.Auth,
-          EmbeddedPaths.AuthMoreProviders,
-          EmbeddedPaths.AuthEmailSignin,
-          EmbeddedPaths.AuthEmailSignup,
-          EmbeddedPaths.AuthEmailVerify,
-          EmbeddedPaths.AuthRecoverAccountSelect,
-        ],
+  if (authStatus === "noAuth" || authStatus === "authLoading" || authStatus === "authError") {
+    return routeTrapMatches(
+      location,
+      [
         EmbeddedPaths.Auth,
-      );
-    }
+        EmbeddedPaths.AuthEmailSignup,
+        EmbeddedPaths.AuthEmailVerify,
+        EmbeddedPaths.AuthEmailSignin,
+        EmbeddedPaths.AuthMoreProviders,
+        // TODO: These could be simply "anything under  AuthRecoverAccount"
+        EmbeddedPaths.AuthRecoverAccount,
+        EmbeddedPaths.AuthRecoverAccountSeedphrase,
+        EmbeddedPaths.AuthRecoverAccountKeyfile,
+        EmbeddedPaths.AuthRecoverAccountQrCode,
+        EmbeddedPaths.AuthRecoverAccountSelect,
+      ],
+      EmbeddedPaths.Auth,
+    );
+  }
 
-    if (authStatus === "authError") {
-      // TODO: Implement logic/screen for this:
-      throw new Error("Not implemented");
-    }
+  if ((authStatus === "noWallets" || authStatus === "noShares") && recoverableAccount) {
+    return routeTrapMatches(
+      location,
+      [EmbeddedPaths.AuthRecoverAccountConfirm],
+      EmbeddedPaths.AuthRecoverAccountConfirm,
+    );
+  }
 
-    if ((authStatus === "noWallets" || authStatus === "noShares") && recoverableAccount) {
-      return routeTrapMatches(
-        location,
-        [EmbeddedPaths.AuthRecoverAccountConfirm],
-        EmbeddedPaths.AuthRecoverAccountConfirm,
-      );
-    }
-
-    if (authStatus === "noWallets") {
-      return routeTrapMatches(
-        location,
-        [
-          EmbeddedPaths.AuthAddWallet,
-          EmbeddedPaths.AuthImportSeedPhrase,
-          EmbeddedPaths.AuthAddWithQRCode,
-          EmbeddedPaths.AuthQRCodeScanner,
-          EmbeddedPaths.AuthImportKeyfile,
-          EmbeddedPaths.AuthImportQrCode,
-          EmbeddedPaths.AuthAddDevice,
-          EmbeddedPaths.AuthAddAuthProvider,
-          // EmbeddedPaths.AddDevice/<SOMETHING>
-          // EmbeddedPaths.AddAuthProvider/<SOMETHING>
-        ],
+  if (authStatus === "noWallets") {
+    return routeTrapMatches(
+      location,
+      [
         EmbeddedPaths.AuthAddWallet,
-      );
+        EmbeddedPaths.AuthImportSeedPhrase,
+        EmbeddedPaths.AuthAddWithQRCode,
+        EmbeddedPaths.AuthQRCodeScanner,
+        EmbeddedPaths.AuthImportKeyfile,
+        EmbeddedPaths.AuthImportQrCode,
+        EmbeddedPaths.AuthAddDevice,
+        EmbeddedPaths.AuthAddAuthProvider,
+        // EmbeddedPaths.AddDevice/<SOMETHING>
+        // EmbeddedPaths.AddAuthProvider/<SOMETHING>
+      ],
+      EmbeddedPaths.AuthAddWallet,
+    );
+  }
+
+  if (authStatus === "noShares") {
+    return routeTrapMatches(
+      location,
+      // TODO: Do we allow simply generating a new wallet? EmbeddedPaths.AuthAddWallet
+      [
+        EmbeddedPaths.AuthRestoreShares,
+        EmbeddedPaths.AuthRestoreSharesRecoveryFile,
+        EmbeddedPaths.AuthRestoreSharesSeedPhrase,
+        EmbeddedPaths.AuthRestoreSharesKeyfile,
+        EmbeddedPaths.AuthRestoreSharesQrCode,
+      ],
+      EmbeddedPaths.AuthRestoreShares,
+    );
+  }
+
+  if (authStatus === "unlocked") {
+    if (lastRegisteredWallet) {
+      // TODO: Remove this unnecessary step and just include a confirmation in the dashboard.
+      // If an account or wallet has just been created, then show AuthAddWalletConfirmation:
+      return routeTrapMatches(location, [EmbeddedPaths.AccountConfirmation], EmbeddedPaths.AccountConfirmation);
     }
 
-    if (authStatus === "noShares") {
+    // TODO: Make recovery mandatory if no unpartitioned storage support, or optional if it has (because it will be hard to find the original site they were they first created a wallet).
+    // TODO: Once we support multiple wallets, the condition here should instead check if ANY of the wallets hasn't been backed up yet:
+    if (currentWallet.totalExports === 0 && currentWallet.totalBackups === 0 && !currentWallet.doNotAskAgainSetting) {
       return routeTrapMatches(
         location,
-        // TODO: Do we allow simply generating a new wallet? EmbeddedPaths.AuthAddWallet
         [
-          EmbeddedPaths.AuthRestoreShares,
-          EmbeddedPaths.AuthRestoreSharesRecoveryFile,
-          EmbeddedPaths.AuthRestoreSharesSeedPhrase,
-          EmbeddedPaths.AuthRestoreSharesKeyfile,
-          EmbeddedPaths.AuthRestoreSharesQrCode,
+          EmbeddedPaths.AccountBackupWalletReminder,
+          EmbeddedPaths.AccountBackupWallet,
+          EmbeddedPaths.AccountBackupFullWallet,
+          EmbeddedPaths.AccountBackupWalletRecoveryFile,
+          EmbeddedPaths.AccountBackupCopySeedphrase,
+          EmbeddedPaths.AccountBackupWalletQrCode,
+          // TODO: Missing EmbeddedPaths.AccountBackupShares/<PROVIDER>
         ],
-        EmbeddedPaths.AuthRestoreShares,
+        EmbeddedPaths.AccountBackupWalletReminder,
       );
     }
 
-    if (authStatus === "unlocked") {
-      if (lastRegisteredWallet) {
-        // TODO: Remove this unnecessary step and just include a confirmation in the dashboard.
-        // If an account or wallet has just been created, then show AuthAddWalletConfirmation:
-        return routeTrapMatches(location, [EmbeddedPaths.AccountConfirmation], EmbeddedPaths.AccountConfirmation);
-      }
+    // TODO: What if we are here but the wallet, for whatever reason, is not in the wallet provider / ExtensionStore?
+    // if (!currentWallet.isActive)
 
-      // TODO: Make recovery mandatory if no unpartitioned storage support, or optional if it has (because it will be hard to find the original site they were they first created a wallet).
-      // TODO: Once we support multiple wallets, the condition here should instead check if ANY of the wallets hasn't been backed up yet:
-      if (currentWallet.totalExports === 0 && currentWallet.totalBackups === 0 && !currentWallet.doNotAskAgainSetting) {
-        return routeTrapMatches(
-          location,
-          [
-            EmbeddedPaths.AccountBackupWalletReminder,
-            EmbeddedPaths.AccountBackupWallet,
-            EmbeddedPaths.AccountBackupFullWallet,
-            EmbeddedPaths.AccountBackupWalletRecoveryFile,
-            EmbeddedPaths.AccountBackupCopySeedphrase,
-            EmbeddedPaths.AccountBackupWalletQrCode,
-            // TODO: Missing EmbeddedPaths.AccountBackupShares/<PROVIDER>
-          ],
-          EmbeddedPaths.AccountBackupWalletReminder,
-        );
-      }
-
-      // TODO: What if we are here but the wallet, for whatever reason, is not in the wallet provider / ExtensionStore?
-      // if (!currentWallet.isActive)
-
-      return routeTrapOutside(location, EmbeddedPaths.Auth, EmbeddedPaths.WalletHomeEmbeddedView);
-    }
+    return routeTrapOutside(location, EmbeddedPaths.Auth, EmbeddedPaths.WalletHomeEmbeddedView);
   }
 
   return AUTH_STATUS_TO_OVERRIDE[authStatus];
