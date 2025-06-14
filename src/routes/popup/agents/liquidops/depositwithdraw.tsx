@@ -81,7 +81,7 @@ export function LiquidOpsDepositWithdraw({ params: { action, ticker } }: LiquidO
   const tokenWorth = useMemo(() => {
     const qtyParsed = BigNumber(quantity || "0");
 
-    if (action === "deposit") return qtyParsed.multipliedBy(price);
+    if (action === "deposit") return qtyParsed.multipliedBy(price || 0);
     else return exchangeRate;
   }, [price, quantity, exchangeRate]);
 
