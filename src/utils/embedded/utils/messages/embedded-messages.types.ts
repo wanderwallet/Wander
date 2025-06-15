@@ -1,4 +1,5 @@
 import type { AuthProviderType } from "embed-api";
+import type { ThemeMode } from "~components/embed/contexts/ThemeContext";
 import type { EmbeddedLayout, RouteType } from "~utils/embedded/utils/routes/embedded-routes.utils";
 
 export type EmbeddedMessageId =
@@ -79,8 +80,21 @@ export interface EmbeddedMessageMap {
   embedded_request: EmbeddedRequestMessageData;
 }
 
-export interface EmbeddedCall<K extends EmbeddedMessageId> {
+export interface EmbeddedMessage<K extends EmbeddedMessageId> {
   id: string;
   type: K;
   data: EmbeddedMessageMap[K];
+}
+
+export type EmbeddedCallId = "embedded_signOut" | "embedded_changeTheme";
+
+export interface EmbeddedCallMap {
+  embedded_signOut: void;
+  embedded_changeTheme: ThemeMode;
+}
+
+export interface EmbeddedCall<K extends EmbeddedCallId> {
+  id: string;
+  type: K;
+  data: EmbeddedCallMap[K];
 }

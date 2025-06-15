@@ -1,7 +1,7 @@
-import React, { createContext, useState, useEffect, useContext, type ReactNode } from "react";
+import { createContext, useState, useEffect, useContext, type ReactNode } from "react";
 import { themeTokens, commonTokens } from "../themes/theme-config";
 
-type ThemeMode = "light" | "dark" | "system";
+export type ThemeMode = "light" | "dark" | "system";
 
 interface ThemeContextType {
   mode: ThemeMode;

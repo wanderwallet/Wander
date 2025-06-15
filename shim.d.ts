@@ -3,7 +3,8 @@ import type { Chunk } from "~api/modules/sign/chunks";
 import type { InjectedEvents } from "~utils/events";
 import "styled-components";
 import type { AuthRequestMessageData, AuthResult } from "~utils/auth/auth.types";
-import { EmbeddedCall } from "~utils/embedded/utils/messages/embedded-messages.types.ts";
+import { EmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.types.ts";
+import type { ThemeMode } from "~components/embed/contexts/ThemeContext";
 
 declare module "@arconnect/webext-bridge" {
   export interface ProtocolMap {
@@ -87,22 +88,34 @@ declare module "@arconnect/webext-bridge" {
     // EMBEDDED:
 
     embedded_auth: {
-      data: EmbeddedCall<EmbeddedAuthMessageData>;
+      data: EmbeddedMessage<EmbeddedAuthMessageData>;
       return: void;
     };
 
     embedded_balance: {
-      data: EmbeddedCall<EmbeddedBalanceMessageData>;
+      data: EmbeddedMessage<EmbeddedBalanceMessageData>;
       return: void;
     };
 
     embedded_resize: {
-      data: EmbeddedCall<EmbeddedResizeMessageData>;
+      data: EmbeddedMessage<EmbeddedResizeMessageData>;
       return: void;
     };
 
     embedded_close: {
-      data: EmbeddedCall<void>;
+      data: EmbeddedMessage<void>;
+      return: void;
+    };
+
+    // Calls:
+
+    embedded_signOut: {
+      data: void;
+      return: void;
+    };
+
+    embedded_changeTheme: {
+      data: ThemeMode;
       return: void;
     };
 

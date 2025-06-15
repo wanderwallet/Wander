@@ -26,7 +26,7 @@ import type {
   OAutProviderType,
   AuthEmailParams,
 } from "~utils/embedded/embedded.types";
-import { setAuthTokenHeader, getSupabaseClient } from "~utils/embedded/embedded.utils";
+import { setAuthTokenHeader, getSupabaseClient, signOut } from "~utils/embedded/embedded.utils";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import {
   AuthProviderType,
@@ -65,6 +65,8 @@ import {
   type UnpartitionedStateStatusChangeEvent,
 } from "~iframe/storage/unpartitioned-storage/unpartitioned-storage.utils";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import { isomorphicOnMessage } from "~isomorphic-messaging";
+import { useTheme } from "~components/embed/contexts/ThemeContext";
 
 export type AuthStatusCopy = AuthStatus;
 
@@ -1322,6 +1324,20 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       subscription.unsubscribe();
     };
   }, [initEmbeddedWallet]);
+
+  const { setMode } = useTheme();
+
+  useEffect(() => {
+    isomorphicOnMessage("embedded_signOut", () => {
+      console.log("SIGN OUT");
+      signOut(false);
+    });
+
+    isomorphicOnMessage("embedded_changeTheme", ({ data }) => {
+      console.log("CHANGE THEME =", data);
+      setMode(data);
+    });
+  }, []);
 
   return (
     <EmbeddedContext.Provider

@@ -14,6 +14,8 @@ import {
 } from "./wander-connect.types";
 import { isEventMessage, isIncomingMessage, isWalletSwitchMessage } from "./utils/message/message.utils";
 import { getWanderConnectAppURL } from "./utils/url/url.utils";
+import { EmbeddedCall } from "wallet-api/src/utils/embedded/utils/messages/embedded-messages.types";
+import { nanoid } from "nanoid";
 
 const NOOP = () => {};
 
@@ -66,6 +68,7 @@ export class WanderConnect {
   private onResize: (routeConfig: RouteConfig) => void = NOOP;
   private onBalance: (balanceInfo: BalanceInfo) => void = NOOP;
   private onRequest: (data: RequestsInfo) => void = NOOP;
+  private signOutMethodCallback: () => void = NOOP;
 
   // Components:
   private buttonComponent: null | Button = null;
@@ -435,6 +438,10 @@ export class WanderConnect {
           this.onAuth(messageData);
         }
 
+        if (messageData.authStatus === "not-authenticated") {
+          this.signOutMethodCallback();
+        }
+
         break;
 
       case "embedded_open":
@@ -542,6 +549,32 @@ export class WanderConnect {
    */
   public close(): void {
     this._close();
+  }
+
+  public signOut(): Promise<void> {
+    // TODO: Check if already authenticated.
+
+    this.close();
+
+    return new Promise((resolve, reject) => {
+      const { iframeRef } = this;
+      const contentWindow = iframeRef?.contentWindow;
+
+      if (!iframeRef || !contentWindow) {
+        reject(new Error("Missing Wander Connect iframe"));
+        return;
+      }
+
+      const message: EmbeddedCall<"embedded_signOut"> = {
+        id: nanoid(),
+        type: "embedded_signOut",
+        data: undefined,
+      };
+
+      contentWindow.postMessage(message, new URL(iframeRef.src).origin);
+
+      this.signOutMethodCallback = resolve;
+    });
   }
 
   /**
