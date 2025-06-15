@@ -62,6 +62,9 @@ export function LiquidOpsConfirm({ params: { action, ticker, quantity } }: Liqui
           queryClient.invalidateQueries({
             queryKey: ["earnings", ticker, wallet?.address],
           }),
+          queryClient.invalidateQueries({
+            queryKey: ["apyOrder"],
+          }),
         ]);
       } else {
         console.warn("Error trying to lend/withdraw: " + (error?.message || error || "Unknown error"));
