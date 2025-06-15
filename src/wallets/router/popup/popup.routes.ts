@@ -52,7 +52,7 @@ import { AOYieldAgentHistoryView } from "~routes/popup/agents/ao-yield/agent-his
 import { AOYieldAgentInfoView } from "~routes/popup/agents/ao-yield/agent-info";
 import { AOYieldAgentTransactionHistoryView } from "~routes/popup/agents/ao-yield/agent-transaction-history";
 import { LiquidOpsAgentsView } from "~routes/popup/agents/liquidops/agents";
-import { LiquidOpsAgent } from "~routes/popup/agents/liquidops/[agent]";
+import { LiquidOpsAgent } from "~routes/popup/agents/liquidops/agent";
 import { LiquidOpsDepositWithdraw } from "~routes/popup/agents/liquidops/depositwithdraw";
 import { LiquidOpsConfirm } from "~routes/popup/agents/liquidops/confirm";
 import { LiquidOpsResult } from "~routes/popup/agents/liquidops/result";
