@@ -12,16 +12,14 @@ import { trackEvent, EventType, trackPage, PageType } from "~utils/analytics";
 import { useAPYOrder } from "./utils/hooks/useAPYOrder";
 
 export function LiquidOpsAgentsView() {
-  const availableTokens = Object.values(tokenData).filter((token) => !token.deprecated);
-
   const { data: activeTokens } = useActiveTokens();
-  const inactiveTokens = useMemo(
-    () =>
-      availableTokens.filter((token1) =>
-        activeTokens ? !activeTokens.find((token2) => token2.address === token1.address) : [],
-      ),
-    [availableTokens, activeTokens],
-  );
+  const inactiveTokens = useMemo(() => {
+    const availableTokens = Object.values(tokenData).filter((token) => !token.deprecated);
+
+    return availableTokens.filter((token1) =>
+      activeTokens ? !activeTokens.find((token2) => token2.address === token1.address) : [],
+    );
+  }, [activeTokens]);
 
   const { data: apys = {} } = useAPYOrder();
   const apySort = (a: ActiveAgentToken, b: ActiveAgentToken) => apys[b.ticker] || 0 - apys[a.ticker] || 0;
