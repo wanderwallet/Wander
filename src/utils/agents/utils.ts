@@ -236,7 +236,7 @@ export async function getAOYieldAgentInfo(agentId: string) {
   const totalTransactions = getTagValue("Total-Transactions", tags);
   const totalWanderFee = getTagValue("Total-Wander-Fee", tags);
   const swapInProgress = getTagValue("Swap-In-Progress", tags);
-  const lastSwapTimestamp = getTagValue("Last-Swap-Timestamp", tags);
+  const processedUpToDate = getTagValue("Processed-Up-To-Date", tags);
   const swappedUpToDate = getTagValue("Swapped-Up-To-Date", tags);
   const agentVersion = getTagValue("Agent-Version", tags);
 
@@ -255,7 +255,7 @@ export async function getAOYieldAgentInfo(agentId: string) {
     totalTransactions: Number(totalTransactions),
     totalWanderFee,
     swapInProgress: swapInProgress === "true",
-    lastSwapTimestamp: lastSwapTimestamp !== "nil" ? Number(lastSwapTimestamp) : undefined,
+    processedUpToDate: processedUpToDate !== "nil" ? Number(processedUpToDate) : undefined,
     swappedUpToDate: swappedUpToDate !== "nil" ? Number(swappedUpToDate) : undefined,
     agentVersion,
   } as AOYieldAgentInfo;

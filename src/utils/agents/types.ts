@@ -151,7 +151,7 @@ export interface AOYieldAgentInfo extends AOYieldAgent {
   totalTransactions: number;
   totalWanderFee: string;
   swapInProgress: boolean;
-  lastSwapTimestamp?: number;
+  processedUpToDate?: number;
   swappedUpToDate?: number;
   agentVersion: string;
 }

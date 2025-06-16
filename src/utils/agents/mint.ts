@@ -35,6 +35,7 @@ import {
   AO_YIELD_AGENT_RECENT_TXS_CHECK_IN_PROGRESS_KEY,
   AO_YIELD_AGENT_SWAP_IN_PROGRESS_KEY,
   ONE_HOUR_MS,
+  AO_YIELD_AGENT_COOLDOWN_KEY,
 } from "./constants";
 import type { AOYieldAgent, AOYieldAgentInfo, MintQuantityResult, MintTransaction, ParsedMintData } from "./types";
 import type { DecodedTag } from "~api/modules/sign/tags";
@@ -54,6 +55,18 @@ async function startSwapInProgress(lockTimestamp: number) {
 
 async function clearSwapInProgress() {
   await ExtensionStorage.remove(AO_YIELD_AGENT_SWAP_IN_PROGRESS_KEY);
+}
+
+async function addCooldown() {
+  await ExtensionStorage.set(`${AO_YIELD_AGENT_COOLDOWN_KEY}`, Date.now() + 5 * 60 * 1000);
+}
+
+async function isCooldownActive() {
+  const cooldownUntil = await ExtensionStorage.get<number>(AO_YIELD_AGENT_COOLDOWN_KEY);
+  if (cooldownUntil && cooldownUntil > Date.now()) {
+    return true;
+  }
+  return false;
 }
 
 function sortAscending(a: MintTransaction, b: MintTransaction): number {
@@ -283,18 +296,15 @@ async function validateAgentForSwap(activeAgent: AOYieldAgent): Promise<boolean>
  * @returns True if the swap is already in progress or completed, false otherwise.
  */
 function shouldSkipSwap(agentInfo: AOYieldAgentInfo): boolean {
-  const { swapInProgress, lastSwapTimestamp, swappedUpToDate } = agentInfo;
+  const { processedUpToDate, swappedUpToDate } = agentInfo;
 
-  if (
-    (swapInProgress && !lastSwapTimestamp) ||
-    (swapInProgress && lastSwapTimestamp && Date.now() - lastSwapTimestamp <= ONE_HOUR_MS)
-  ) {
-    log(LOG_GROUP.AGENTS, "Swap already in progress");
+  if (processedUpToDate && normalizeToStartOfDay(processedUpToDate) === normalizeToStartOfDay(Date.now())) {
+    log(LOG_GROUP.AGENTS, "Swap already processed up to date today");
     return true;
   }
 
   if (swappedUpToDate && normalizeToStartOfDay(swappedUpToDate) === normalizeToStartOfDay(Date.now())) {
-    log(LOG_GROUP.AGENTS, "Agent has already swapped up to date");
+    log(LOG_GROUP.AGENTS, "Agent has already swapped up to date today");
     return true;
   }
 
@@ -307,10 +317,16 @@ function shouldSkipSwap(agentInfo: AOYieldAgentInfo): boolean {
  * @returns The swap dates.
  */
 function calculateSwapDates(agentInfo: AOYieldAgentInfo): { from: number; to: number } {
-  return {
-    from: normalizeToStartOfDay(agentInfo.swappedUpToDate || agentInfo.startDate),
-    to: normalizeToStartOfDay(Date.now()),
-  };
+  let swapDateFrom = normalizeToStartOfDay(agentInfo.startDate);
+  const processedUpToDate = agentInfo.processedUpToDate || agentInfo.swappedUpToDate;
+  if (processedUpToDate) {
+    // If the agent has been processed up to a certain date, we need to start from the next day
+    swapDateFrom = normalizeToStartOfDay(processedUpToDate) + 24 * 60 * 60 * 1000;
+  }
+
+  const swapDateTo = normalizeToStartOfDay(Date.now());
+
+  return { from: swapDateFrom, to: swapDateTo };
 }
 
 /**
@@ -446,15 +462,20 @@ async function processAgentSwap(agent: AOYieldAgent, walletAddress: string): Pro
       return;
     }
 
-    // Fetch agent info
+    // Fetch fresh agent info
     const agentInfo = await queryClient.fetchQuery({
       queryKey: ["ao-yield-agent-info", agent.id],
       queryFn: () => getAOYieldAgentInfo(agent.id),
-      staleTime: 60_000,
-      gcTime: 60_000,
+      staleTime: 0, // Force fresh data
+      gcTime: 0,
       retry: 3,
       retryDelay: (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 30000),
     });
+
+    if (!agentInfo) {
+      log(LOG_GROUP.AGENTS, "Agent info not found");
+      return;
+    }
 
     // Check if swap should be skipped
     if (shouldSkipSwap(agentInfo)) {
@@ -511,6 +532,12 @@ async function processAgentSwap(agent: AOYieldAgent, walletAddress: string): Pro
 }
 
 export async function executeAutomaticSwapIfNeeded(): Promise<void> {
+  // TODO: decide keep or remove this cooldown ?
+  if (await isCooldownActive()) {
+    log(LOG_GROUP.AGENTS, "Cooldown is active, skipping swap");
+    return;
+  }
+
   if (isSwapExecutionInProgress) return;
 
   isSwapExecutionInProgress = true;
@@ -582,6 +609,7 @@ export async function executeAutomaticSwapIfNeeded(): Promise<void> {
   } catch (error) {
     log(LOG_GROUP.AGENTS, "Error performing swap: ", error);
   } finally {
+    await addCooldown();
     await clearSwapInProgress();
     isSwapExecutionInProgress = false;
   }
