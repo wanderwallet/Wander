@@ -31,6 +31,7 @@ export function CreateAOYieldAgentView() {
   const [showAssetSelector, setShowAssetSelector] = useState(false);
   const [showSlippageSelector, setShowSlippageSelector] = useState(false);
   const [showDateSelector, setShowDateSelector] = useState(false);
+  const [initialSelection, setInitialSelection] = useState<"start" | "end">("start");
 
   const continueButtonDisabled = useMemo(() => {
     return !selectedAsset || !selectedSlippage || !startDate || !endDate || !percentage;
@@ -52,7 +53,8 @@ export function CreateAOYieldAgentView() {
     setShowSlippageSelector(false);
   };
 
-  const openDateSelector = () => {
+  const openDateSelector = (selection: "start" | "end") => {
+    setInitialSelection(selection);
     setShowDateSelector(true);
   };
 
@@ -148,7 +150,7 @@ export function CreateAOYieldAgentView() {
                       {formatDate(startDate, "Start date")}
                     </Text>
                   }
-                  onClick={openDateSelector}
+                  onClick={() => openDateSelector("start")}
                   outerLabel
                 />
                 <Text variant="secondary" size="base" weight="semibold" noMargin>
@@ -162,7 +164,7 @@ export function CreateAOYieldAgentView() {
                       {runIndefinitely ? "∞" : formatDate(endDate, "End date")}
                     </Text>
                   }
-                  onClick={openDateSelector}
+                  onClick={() => openDateSelector("end")}
                   outerLabel
                 />
               </Flex>
@@ -242,6 +244,7 @@ export function CreateAOYieldAgentView() {
         onClose={closeDateSelector}
         onSelect={handleDateSelect}
         runIndefinitely={runIndefinitely}
+        initialSelection={initialSelection}
       />
       <AODelegationModal />
     </>

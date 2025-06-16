@@ -3,7 +3,7 @@ import styled, { css, useTheme } from "styled-components";
 import browser from "webextension-polyfill";
 import { Text } from "@arconnect/components-rebrand";
 import SliderMenu from "~components/SliderMenu";
-import { ChevronLeft, ChevronRight, X } from "@untitled-ui/icons-react";
+import { ChevronLeft, ChevronRight } from "@untitled-ui/icons-react";
 
 interface DateSelectorModalProps {
   open: boolean;
@@ -12,6 +12,7 @@ interface DateSelectorModalProps {
   endDate: Date | null;
   onSelect: (startDate: Date, endDate: Date) => void;
   runIndefinitely: boolean;
+  initialSelection?: "start" | "end";
 }
 
 const monthNames = [
@@ -46,6 +47,7 @@ export function DateSelectorModal({
   startDate,
   endDate,
   runIndefinitely,
+  initialSelection = "start",
 }: DateSelectorModalProps) {
   return (
     <SliderMenu
@@ -59,6 +61,7 @@ export function DateSelectorModal({
         currentStartDate={startDate}
         currentEndDate={endDate}
         runIndefinitely={runIndefinitely}
+        initialSelection={initialSelection}
       />
     </SliderMenu>
   );
@@ -70,6 +73,7 @@ interface DateSelectorScreenProps {
   currentStartDate: Date | null;
   currentEndDate: Date | null;
   runIndefinitely: boolean;
+  initialSelection?: "start" | "end";
 }
 
 const DateSelectorScreen = ({
@@ -78,18 +82,24 @@ const DateSelectorScreen = ({
   currentStartDate,
   currentEndDate,
   runIndefinitely,
+  initialSelection = "start",
 }: DateSelectorScreenProps) => {
   const theme = useTheme();
   const [currentDate, setCurrentDate] = useState(() => {
-    // If we have a start date, open to that month, otherwise current month
-    if (currentStartDate) {
+    // Navigate to the month containing the relevant date based on initialSelection
+    if (initialSelection === "end" && currentEndDate) {
+      return new Date(currentEndDate.getFullYear(), currentEndDate.getMonth(), 1);
+    } else if (initialSelection === "start" && currentStartDate) {
+      return new Date(currentStartDate.getFullYear(), currentStartDate.getMonth(), 1);
+    } else if (currentStartDate) {
+      // Fallback to start date if available
       return new Date(currentStartDate.getFullYear(), currentStartDate.getMonth(), 1);
     }
     return new Date();
   });
   const [startDate, setStartDate] = useState<Date | null>(currentStartDate);
   const [endDate, setEndDate] = useState<Date | null>(currentEndDate);
-  const [isSelectingStart, setIsSelectingStart] = useState(true);
+  const [isSelectingStart, setIsSelectingStart] = useState(runIndefinitely ? true : initialSelection === "start");
 
   const today = useMemo(() => {
     const date = new Date();
@@ -158,7 +168,7 @@ const DateSelectorScreen = ({
         return;
       }
 
-      if (isSelectingStart || !startDate) {
+      if (isSelectingStart) {
         // If clicking on already selected start date, unselect it
         if (isStartDateSelected) {
           setStartDate(null);
@@ -179,6 +189,13 @@ const DateSelectorScreen = ({
           setIsSelectingStart(false);
         }
       } else {
+        // Handle case where no start date exists but we're selecting end date
+        if (!startDate) {
+          // If no start date exists but user is selecting end date, only set end date
+          setEndDate(selectedDate);
+          // Don't call onSelect yet since we don't have a complete range
+          return;
+        }
         // If clicking on already selected end date, unselect it
         if (isEndDateSelected && !isStartDateSelected) {
           setEndDate(null);
@@ -593,7 +610,7 @@ const DateSelectorScreen = ({
                 <Text size="lg" weight="medium" noMargin>
                   -
                 </Text>
-                <DateInput $isActive={!isSelectingStart} onClick={() => !runIndefinitely && setIsSelectingStart(false)}>
+                <DateInput $isActive={!isSelectingStart} onClick={() => setIsSelectingStart(false)}>
                   <Text size="sm" weight="medium" style={{ textAlign: "center" }} noMargin>
                     {endDate ? formatDate(endDate) : "End date"}
                   </Text>
