@@ -61,9 +61,6 @@ export function mergeCSSVariablesOption<T extends Object>(
     }
   }
 
-  // if (themeOption === "light") cssVarsDark = cssVarsLight;
-  // if (themeOption === "dark") cssVarsLight = cssVarsDark;
-
   return {
     light: cssVarsLight,
     dark: cssVarsDark,
