@@ -27,6 +27,8 @@ export const WAR_PROCESS_ID = "xU9zFkq3X2ZQ6olwNVvr1vUWIjc3kXTWr7xKQD6dh10" as c
 export const WUSDC_PROCESS_ID = "7zH9dlMNoxprab9loshv3Y7WG45DOny_Vrq9KrXObdQ" as const;
 export const PI_PROCESS_ID = "4hXj_E-5fAKmo4E8KjgQvuDJKAFk9P2grhycVmISDLs" as const;
 export const EXP_PROCESS_ID = "aYrCboXVSl1AXL9gPFe3tfRxRf0ZmkOXH65mKT0HHZw" as const;
+export const ARIO_PROCESS_ID = "qNvAoz0TgcH7DMg8BCVn8jF32QH5L6T29VjHxhHqqGE" as const;
+export const USDA_PROCESS_ID = "FBt9A5GA_KXMMSxA2DJ0xZbAq8sLLU2ak-YJe9zDvg8" as const;
 export const AO_PROCESS_ID = "0syT13r0s0tgPmIed95bJnuSqaD29HQNN8D3ElLSrsc" as const;
 export const AO_OLD_PROCESS_ID = "m3PaWzK4PTG9lAaqYQPaPdOcXdO8hYqi5Fe9NWqXd0w" as const;
 export const AO_PROCESS_BALANCE_MIRROR = "Pi-WmAQp2-mh-oWH9lWpz5EthlUDj_W0IusAv-RXhRk" as const;
@@ -92,6 +94,14 @@ type DataItemResult = {
 };
 
 type CreateDataItemSigner = (wallet: any) => (args: CreateDataItemArgs) => Promise<DataItemResult>;
+
+const { dryrun: customDryrun } = connect({ CU_URL: "https://cu.ardrive.io" });
+
+const getDryrunForProcess = (processId: string) => {
+  return processId === ARIO_PROCESS_ID || processId === USDA_PROCESS_ID
+    ? { dryrunFn: customDryrun, isCustomDryrun: true }
+    : { dryrunFn: dryrun, isCustomDryrun: false };
+};
 
 export function getTokenInfoFromData(res: any, id: string): TokenInfo {
   // find message with token info
@@ -225,11 +235,18 @@ export async function getAoTokenBalance(address: string, process: string, aoToke
     aoToken = aoTokens.find((token) => token.processId === process);
   }
 
-  const res = await dryrun({
+  const { dryrunFn, isCustomDryrun } = getDryrunForProcess(process);
+  const tags = [{ name: "Action", value: "Balance" }];
+
+  if (isCustomDryrun) {
+    tags.push({ name: "Referer", value: "Wander" });
+  }
+
+  const res = await dryrunFn({
     Id,
     Owner: address,
     process,
-    tags: [{ name: "Action", value: "Balance" }],
+    tags,
   });
 
   const errorMessage = (res as any)?.error || res?.Error;
