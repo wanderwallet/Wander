@@ -189,13 +189,7 @@ function setPostMessageListener() {
   // `embedded_signOut` and `embedded_setTheme`.
 
   window.addEventListener("message", async ({ origin, data }: MessageEvent<ApiCall>) => {
-    if (!data || origin !== getEmbeddedAncestorOrigin()) return;
-
-    if (typeof data !== "object" || !data) {
-      console.warn("Invalid message:", data);
-
-      return;
-    }
+    if (!data || typeof data !== "object" || origin !== getEmbeddedAncestorOrigin()) return;
 
     let messageId = data.type;
 
