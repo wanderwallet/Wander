@@ -1,14 +1,14 @@
 import Arweave from "arweave";
 import { defaultGateway } from "~gateways/gateway";
 import { ExtensionStorage } from "~utils/storage";
-import type { AOYieldAgent, AOYieldAgentInfo, AOYieldAgentStatus, MintingStatus, RecentTx, Tag } from "./types";
+import type { AOYieldAgent, AOYieldAgentInfo, AOYieldAgentStatus, MintingStatus, RecentTx, Tag } from "../types";
 import { connect } from "@permaweb/aoconnect";
 import { defaultConfig } from "~tokens/aoTokens/config";
 import { createDataItemSigner, getTagValue, Id, Owner, WAR_PROCESS_ID, WUSDC_PROCESS_ID } from "~tokens/aoTokens/ao";
 import { getActiveAddress, getActiveKeyfile } from "~wallets";
 import { isLocalWallet } from "~utils/assertions";
 import { retryWithDelay } from "~utils/promises/retry";
-import { TRANSACTION_QUERY } from "./queries";
+import { TRANSACTION_QUERY } from "../queries";
 import type GQLResultInterface from "ar-gql/dist/faces";
 import { formatBalance } from "~utils/format";
 import { balanceToFractioned } from "~tokens/currency";
@@ -16,7 +16,7 @@ import { freeDecryptedWallet } from "~wallets/encryption";
 import WarIcon from "url:/assets/ecosystem/war.png";
 import wUSDCIcon from "url:/assets/ecosystem/wusdc.svg";
 import type { Asset } from "~utils/agents/types";
-import { AO_YIELD_AGENT_RECENT_TXS } from "./constants";
+import { AO_YIELD_AGENT_RECENT_TXS } from "../constants";
 import dayjs from "dayjs";
 
 /**
