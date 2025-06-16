@@ -1,5 +1,4 @@
 import { Button, Text } from "@arconnect/components-rebrand";
-import { useStorage } from "@plasmohq/storage/hook";
 import styled, { css, keyframes } from "styled-components";
 import { Flex } from "~components/common/Flex";
 import { ExtensionStorage } from "~utils/storage";
@@ -12,31 +11,20 @@ import { useState } from "react";
 import { useLocation } from "~wallets/router/router.utils";
 import StarIcon from "~components/welcome/StarIcon";
 import { EventType, trackEvent } from "~utils/analytics";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 export default function CreateWanderAgentCTA() {
+  const [showCreateAgent, setShowCreateAgent] = useState(false);
   const [open, setOpen] = useState(false);
   const { navigate } = useLocation();
 
-  const [showCreateAgent, setShowCreateAgent] = useStorage(
-    {
-      key: "show_create_wander_agent_cta",
-      instance: ExtensionStorage,
-    },
-    true,
-  );
-
-  const [hasShownAgentExplainerPopup, setHasShownAgentExplainerPopup] = useStorage(
-    {
-      key: "has_shown_agents_explainer_popup",
-      instance: ExtensionStorage,
-    },
-    false,
-  );
-
-  const handleOpen = () => {
+  const handleOpen = async () => {
     trackEvent(EventType.AGENT_DASHBOARD, {});
+
+    const hasShownAgentExplainerPopup = await ExtensionStorage.get<boolean>("has_shown_agents_explainer_popup");
+
     if (!hasShownAgentExplainerPopup) {
-      setHasShownAgentExplainerPopup(true);
+      await ExtensionStorage.set("has_shown_agents_explainer_popup", true);
       setOpen(true);
     } else {
       navigate("/agents");
@@ -48,8 +36,14 @@ export default function CreateWanderAgentCTA() {
   };
 
   const handleCloseCTA = () => {
+    ExtensionStorage.set("show_create_wander_agent_cta", false);
     setShowCreateAgent(false);
   };
+
+  useAsyncEffect(async () => {
+    const storedValue = await ExtensionStorage.get<boolean>("show_create_wander_agent_cta");
+    setShowCreateAgent(storedValue ?? true);
+  }, []);
 
   if (!showCreateAgent) return null;
 

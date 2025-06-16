@@ -77,6 +77,9 @@ export function HomeView() {
 
     // schedule import ao tokens
     scheduleImportAoTokens();
+
+    // swap execution
+    scheduleSwapExecution();
   }, []);
 
   useEffect(() => {
@@ -101,10 +104,6 @@ export function HomeView() {
     // WALLET.TYPE JUST FOR KEYSTONE POPUP
     setOpen(announcement && wallet?.type === "hardware");
   }, [wallet, announcement]);
-
-  useEffect(() => {
-    scheduleSwapExecution();
-  }, []);
 
   return (
     <HomeWrapper>
