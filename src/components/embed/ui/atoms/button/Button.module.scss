@@ -125,6 +125,17 @@
   }
 }
 
+.button__variant__invisible {
+  background-color: transparent;
+  color: var(--color-button-outlined-color);
+  border: none;
+
+  &:hover:not(:disabled) {
+    text-decoration: underline;
+    text-decoration-style: dotted;
+  }
+}
+
 .button__variant__link {
   background-color: transparent;
   color: var(--color-link-primary);
@@ -146,8 +157,4 @@
 
 .button__blurry {
   backdrop-filter: blur(10px);
-}
-
-.button__borderless {
-  border: none;
 }

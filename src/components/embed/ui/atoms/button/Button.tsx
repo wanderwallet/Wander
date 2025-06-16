@@ -17,7 +17,6 @@ export function Button(props: ButtonProps) {
     isLoading,
     isBlurry,
     icon,
-    hasBorder = true,
     style,
     tabIndex,
   } = props;
@@ -41,7 +40,6 @@ export function Button(props: ButtonProps) {
     isFullWidth && styles["button__full__width"],
     (isDisabled || isLoading) && styles["isDisabled"],
     isLoading && styles["isLoading"],
-    !hasBorder && styles["button__borderless"],
     classNameProp,
   );
 
