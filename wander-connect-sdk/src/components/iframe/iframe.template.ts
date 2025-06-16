@@ -63,7 +63,7 @@ export const getIframeTemplateContent = ({ customStyles, cssVariableKeys = [] }:
       border-radius: var(--borderRadius);
       box-shadow: var(--boxShadow);
       width: calc(var(--preferredWidth) + 2 * var(--borderWidth));
-      height: calc(var(--preferredHeight) + 2 * var(--borderWidth));
+      height: min(calc(var(--preferredHeight) + 2 * var(--borderWidth)), 800px);
       min-width: calc(400px + 2 * var(--borderWidth));
       min-height: calc(400px + 2 * var(--borderWidth));
       max-width: calc(100dvw - 2 * var(--backdropPadding));
