@@ -62,6 +62,13 @@ export const defaultTokens = [
     Logo: "L99jaxRKQKJt9CqoJtPaieGPEhJD3wNhR4iGqc8amXs",
     processId: WAR_PROCESS_ID,
   },
+  {
+    Name: "Astro USD",
+    Ticker: "USDA",
+    Denomination: 12,
+    Logo: "seXozJrsP0OgI0gvAnr8zmfxiHHb5iSlI9wMI8SdamE",
+    processId: USDA_PROCESS_ID,
+  },
 ] as const satisfies TokenInfo[];
 
 /**
