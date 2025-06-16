@@ -1,9 +1,10 @@
-import React, { useRef, useCallback, forwardRef, useEffect } from "react";
+import React, { useCallback, forwardRef } from "react";
 import styled from "styled-components";
 import { Text } from "@arconnect/components-rebrand";
 import throttle from "lodash/throttle";
 
 interface SliderProps {
+  value: number;
   min?: number;
   max?: number;
   step?: number;
@@ -12,13 +13,13 @@ interface SliderProps {
   maxLabel?: string;
   disabled?: boolean;
   className?: string;
-  defaultValue?: number;
   onChange?: (value: number) => void;
 }
 
 export const Slider = forwardRef<HTMLInputElement, SliderProps>(
   (
     {
+      value,
       min = 0,
       max = 100,
       step = 1,
@@ -27,56 +28,22 @@ export const Slider = forwardRef<HTMLInputElement, SliderProps>(
       maxLabel,
       disabled = false,
       className,
-      defaultValue = 50,
       onChange,
     },
     ref,
   ) => {
-    const fillRef = useRef<HTMLDivElement>(null);
-    const thumbRef = useRef<HTMLDivElement>(null);
-    const rafRef = useRef<number>();
-
     const throttledOnChange = useCallback(
       throttle((value: number) => onChange?.(value), 16),
       [onChange],
     );
 
-    const updateSlider = useCallback(
-      (newValue: number) => {
-        const percentage = ((newValue - min) / (max - min)) * 100;
-
-        if (rafRef.current) {
-          cancelAnimationFrame(rafRef.current);
-        }
-
-        rafRef.current = requestAnimationFrame(() => {
-          if (fillRef.current) {
-            fillRef.current.style.transform = `scaleX(${percentage / 100})`;
-          }
-          if (thumbRef.current) {
-            thumbRef.current.style.left = `${percentage}%`;
-          }
-        });
-      },
-      [min, max],
-    );
-
     const handleSliderChange = useCallback(
       (event: React.ChangeEvent<HTMLInputElement>) => {
         const newValue = Number(event.target.value);
-        updateSlider(newValue);
         throttledOnChange(newValue);
       },
-      [throttledOnChange, updateSlider],
+      [throttledOnChange],
     );
-
-    useEffect(() => {
-      return () => {
-        if (rafRef.current) {
-          cancelAnimationFrame(rafRef.current);
-        }
-      };
-    }, []);
 
     return (
       <SliderContainer className={className}>
@@ -95,13 +62,13 @@ export const Slider = forwardRef<HTMLInputElement, SliderProps>(
               min={min}
               max={max}
               step={step}
-              defaultValue={defaultValue}
+              defaultValue={value}
               onChange={handleSliderChange}
               disabled={disabled}
             />
             <SliderTrack>
-              <SliderFill ref={fillRef} value={defaultValue} />
-              <SliderThumb ref={thumbRef} value={defaultValue} />
+              <SliderFill value={value} />
+              <SliderThumb value={value} />
             </SliderTrack>
           </SliderTrackContainer>
           {showLabels && (

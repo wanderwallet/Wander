@@ -4,7 +4,7 @@ import browser from "webextension-polyfill";
 import HeadV2 from "~components/popup/HeadV2";
 import { Flex } from "~components/common/Flex";
 import { ChevronDown, ClockRewind, HelpCircle } from "@untitled-ui/icons-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Slider } from "~components/Slider";
 import { InputButton } from "~components/common/InputButton";
 import { HorizontalLine } from "~components/HorizontalLine";
@@ -14,7 +14,7 @@ import { DateSelectorModal } from "../components/ao-yield/DateSelectorModal";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import { useLocation } from "~wallets/router/router.utils";
 import { TempTransactionStorage } from "~utils/storage";
-import type { Asset } from "~utils/agents/types";
+import type { AOYieldAgentCreate, Asset } from "~utils/agents/types";
 import { assets, formatDate } from "~utils/agents/utils";
 import { trackPage, PageType } from "~utils/analytics";
 import { AODelegationModal } from "../components/AODelegationModal";
@@ -91,6 +91,20 @@ export function CreateAOYieldAgentView() {
 
   useEffect(() => {
     trackPage(PageType.AO_YIELD_AGENT_CREATE);
+
+    const restoreFormState = async () => {
+      const savedData = await TempTransactionStorage.get<AOYieldAgentCreate>("ao-yield-agent");
+      if (savedData) {
+        setPercentage(savedData.conversionPercentage || 50);
+        setSelectedAsset(savedData.asset || assets[0]);
+        setSelectedSlippage(savedData.slippage || 0.5);
+        setRunIndefinitely(savedData.runIndefinitely || false);
+        if (savedData.startDate) setStartDate(new Date(savedData.startDate));
+        if (savedData.endDate) setEndDate(new Date(savedData.endDate));
+      }
+    };
+
+    restoreFormState();
   }, []);
 
   return (
@@ -117,7 +131,7 @@ export function CreateAOYieldAgentView() {
                 {percentage}%
               </Text>
             </Flex>
-            <Slider onChange={setPercentage} min={0} max={100} minLabel="0" maxLabel="100" />
+            <Slider value={percentage} onChange={setPercentage} min={0} max={100} minLabel="0" maxLabel="100" />
           </Flex>
           <Flex direction="column" gap={16}>
             <InputButton

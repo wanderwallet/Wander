@@ -224,6 +224,7 @@ const Wrapper = styled(Section)`
   overflow-y: auto;
   height: calc(100vh - 100px);
   background-color: ${({ theme }) => theme.background};
+  gap: 16px;
 `;
 
 const Content = styled.div`
@@ -232,6 +233,7 @@ const Content = styled.div`
   position: relative;
   overflow-y: auto;
   height: 100%;
+  padding-bottom: 16px;
   gap: 16px;
 `;
 
