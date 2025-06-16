@@ -418,15 +418,14 @@ export class WanderConnect {
 
           if (authStatus === "authenticated") {
             this.dispatchWalletLoadedEvents();
+          } else if (authStatus === "not-authenticated") {
+            this.isWalletReady = false;
+            this.buttonComponent?.setNotifications(0);
+            this.buttonComponent?.unsetStatus("isConnected");
           }
 
           // Update button for all authentication changes:
           this.buttonComponent?.setVariant(authStatus);
-
-          if (authStatus === "not-authenticated") {
-            this.isWalletReady = false;
-            this.buttonComponent?.unsetStatus("isConnected");
-          }
 
           if (authStatus === "loading") {
             // TODO: Show spinner instead of iframe.
