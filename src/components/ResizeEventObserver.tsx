@@ -25,9 +25,9 @@ export function ResizeEventObserver({ containerRef }: ResizeEventObserver) {
 
     if (location.startsWith("/__OVERRIDES/")) return;
 
-    const { width, height } = sizeRef.current;
+    const { height } = sizeRef.current;
 
-    if (width <= 0 || height <= 0) return;
+    if (height <= 0) return;
 
     const routeType = locationToRouteType(location);
     const preferredLayoutType = routeTypeToPreferredLayout(routeType);
@@ -37,7 +37,6 @@ export function ResizeEventObserver({ containerRef }: ResizeEventObserver) {
       data: {
         routeType,
         preferredLayoutType,
-        width,
         height,
       },
     });
