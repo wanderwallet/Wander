@@ -38,6 +38,7 @@ export const getIframeTemplateContent = ({ customStyles, cssVariableKeys = [] }:
       padding: var(--backdropPadding);
       transition:
         display linear 150ms allow-discrete,
+        background linear 230ms,
         opacity linear 150ms;
       display: none;
       opacity: 0;
@@ -71,6 +72,8 @@ export const getIframeTemplateContent = ({ customStyles, cssVariableKeys = [] }:
       overflow: hidden;
       transition:
         display linear 150ms allow-discrete,
+        background linear 230ms,
+        border linear 230ms,
         opacity linear 150ms;
       display: none;
       opacity: 0;
@@ -200,6 +203,8 @@ export const getIframeTemplateContent = ({ customStyles, cssVariableKeys = [] }:
       transform: translate(-50%, -50%);
       transition:
         display linear 150ms allow-discrete,
+        background linear 230ms,
+        border linear 230ms,
         opacity linear 150ms,
         height ease-in-out 150ms;
     }
@@ -210,6 +215,8 @@ export const getIframeTemplateContent = ({ customStyles, cssVariableKeys = [] }:
       opacity: 1;
       transition:
         display linear 150ms allow-discrete,
+        background linear 230ms,
+        border linear 230ms,
         transform linear 150ms;
     }
 
@@ -218,6 +225,8 @@ export const getIframeTemplateContent = ({ customStyles, cssVariableKeys = [] }:
     .iframe-wrapper[data-layout="half"] {
       transition:
         display linear 150ms allow-discrete,
+        background linear 230ms,
+        border linear 230ms,
         opacity linear 150ms;
     }
 

@@ -1,6 +1,5 @@
 import { createContext, useState, useEffect, useContext, type ReactNode, useCallback, useRef } from "react";
 import { themeTokens, commonTokens } from "../themes/theme-config";
-import { EMBEDDED_THEME } from "~utils/embedded/iframe.utils";
 
 export type ThemeMode = "light" | "dark" | "system";
 
@@ -91,9 +90,11 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
 
     window.clearTimeout(setModeTimeoutIDRef.current);
     cover.removeAttribute("aria-hidden");
-    setMode(mode);
     setModeTimeoutIDRef.current = window.setTimeout(() => {
-      cover.setAttribute("aria-hidden", "true");
+      setMode(mode);
+      setModeTimeoutIDRef.current = window.setTimeout(() => {
+        cover.setAttribute("aria-hidden", "true");
+      }, 230);
     }, 230);
   }, []);
 

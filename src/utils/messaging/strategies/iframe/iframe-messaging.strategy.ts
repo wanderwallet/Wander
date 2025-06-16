@@ -92,7 +92,7 @@ function getPostMessageFunction<K extends MessageID>(
           let { data: res } = e;
 
           // validate return message
-          if (!data || typeof data !== "object") return;
+          if (!data || typeof data !== "object" || !res || typeof res !== "object") return;
 
           // only resolve when the result matching our callID is delivered
           if (!("callID" in data) || data.callID !== res.callID) return;
@@ -109,13 +109,6 @@ function getPostMessageFunction<K extends MessageID>(
   }
 
   return async function sendMessageToCallback() {
-    /*
-    console.log(
-      `SEND (sendMessageToCallback) ${messageId} to ${destination}, data =`,
-      data
-    );
-    */
-
     const messageHandlers = messageHandlersByMessageID[messageId];
 
     if (!messageHandlers) {

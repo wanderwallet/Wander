@@ -60,10 +60,3 @@ export type EventMessage = BaseIncomingMessage<"event", EventMessageData>;
 // INCOMING WALLET SWITCH MESSAGE
 
 export type WalletSwitchMessage = BaseIncomingMessage<"switch_wallet_event", string | null>;
-
-// OUTGOING MESSAGES (SDK => iframe):
-
-// export type OutgoingMessage = {
-//   type: "THEME_UPDATE" | "BALANCE_CURRENCY" | "SIGN_OUT";
-//   payload: string;
-// };

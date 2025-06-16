@@ -4,7 +4,6 @@ import styled from "styled-components";
 import { useLocation } from "~wallets/router/router.utils";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 import { locationToRouteType, routeTypeToPreferredLayout } from "~utils/embedded/utils/routes/embedded-routes.utils";
-import type { WanderRoutePath } from "~wallets/router/router.types";
 
 export interface ResizeEventObserver {
   containerRef: React.MutableRefObject<HTMLElement>;
@@ -21,6 +20,10 @@ export function ResizeEventObserver({ containerRef }: ResizeEventObserver) {
     const containerElement = containerRef.current;
 
     if (!containerElement || import.meta.env?.VITE_IS_EMBEDDED_APP !== "1") return;
+
+    const location = locationRef.current;
+
+    if (location.startsWith("/__OVERRIDES/")) return;
 
     const { width, height } = sizeRef.current;
 

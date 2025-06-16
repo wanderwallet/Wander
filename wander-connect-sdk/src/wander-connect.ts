@@ -76,6 +76,9 @@ export class WanderConnect {
   private iframeRef: null | HTMLIFrameElement = null;
   private openReason: OpenReason | null = null;
   private allowOpeningAutomatically = true;
+  private hasIndependentIframeTheme = false;
+  private hasIndependentButtonTheme = false;
+  private setThemeTimeoutID = 0;
 
   /**
    * Contains the current authentication state of the SDK, and it is initialized with cached data in order to show as
@@ -298,6 +301,8 @@ export class WanderConnect {
 
       this.iframeRef = iframeOptions;
     } else {
+      if (iframeOptions.theme) this.hasIndependentIframeTheme = true;
+
       iframeOptions.theme ||= theme;
 
       this.iframeComponent = new Iframe(srcWithParams, iframeOptions);
@@ -314,6 +319,8 @@ export class WanderConnect {
     }
 
     if (buttonOptions) {
+      if (buttonOptions.theme) this.hasIndependentButtonTheme = true;
+
       buttonOptions.theme ||= theme;
 
       this.buttonComponent = new Button(buttonOptions);
@@ -552,9 +559,9 @@ export class WanderConnect {
   }
 
   public signOut(): Promise<void> {
-    // TODO: Check if already authenticated.
-
-    this.close();
+    if (this.authInfo.authStatus === "not-authenticated" || this.authInfo.authStatus === "loading") {
+      throw new Error("The user is not authenticated");
+    }
 
     return new Promise((resolve, reject) => {
       const { iframeRef } = this;
@@ -578,8 +585,6 @@ export class WanderConnect {
   }
 
   public setTheme(theme: ThemeSetting): void {
-    // TODO: Also change theme at the SDK level.
-
     const { iframeRef } = this;
     const contentWindow = iframeRef?.contentWindow;
 
@@ -594,6 +599,21 @@ export class WanderConnect {
       // @ts-ignore
       data: theme,
     });
+
+    window.clearTimeout(this.setThemeTimeoutID);
+
+    this.setThemeTimeoutID = window.setTimeout(() => {
+      if (!this.hasIndependentIframeTheme && this.iframeComponent) this.iframeComponent.setTheme(theme);
+      if (!this.hasIndependentButtonTheme && this.buttonComponent) this.buttonComponent.setTheme(theme);
+    }, 230);
+  }
+
+  public setIframeTheme(theme: ThemeSetting): void {
+    this.iframeComponent?.setTheme(theme);
+  }
+
+  public setButtonTheme(theme: ThemeSetting): void {
+    this.buttonComponent?.setTheme(theme);
   }
 
   /**
