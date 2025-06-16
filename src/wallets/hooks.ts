@@ -20,6 +20,7 @@ import {
   AO_SENT_QUERY_WITH_CURSOR,
   AR_RECEIVER_QUERY_WITH_CURSOR,
   AR_SENT_QUERY_WITH_CURSOR,
+  AO_LIQUIDOPS_RECEIVER_QUERY_WITH_CURSOR,
   PRINT_ARWEAVE_QUERY_WITH_CURSOR,
 } from "~notifications/utils";
 import { gql } from "~gateways/api";
@@ -224,8 +225,8 @@ export const useAskPassword = (): boolean => {
 };
 
 export const useTransactions = (activeAddress: string, limit?: number) => {
-  const defaultCursors = ["", "", "", "", ""];
-  const defaultHasNextPages = [true, true, true, true, true];
+  const defaultCursors = ["", "", "", "", "", ""];
+  const defaultHasNextPages = [true, true, true, true, true, true];
 
   const [count, setCount] = useState({ current: 0, actual: 0 });
   const [cursors, setCursors] = useState(defaultCursors);
@@ -246,44 +247,47 @@ export const useTransactions = (activeAddress: string, limit?: number) => {
         AR_SENT_QUERY_WITH_CURSOR,
         AO_SENT_QUERY_WITH_CURSOR,
         AO_RECEIVER_QUERY_WITH_CURSOR,
+        AO_LIQUIDOPS_RECEIVER_QUERY_WITH_CURSOR,
         PRINT_ARWEAVE_QUERY_WITH_CURSOR,
       ];
 
-      const [rawReceived, rawSent, rawAoSent, rawAoReceived, rawPrintArchive] = await Promise.allSettled(
-        queries.map((query, idx) => {
-          return hasNextPages[idx]
-            ? retryWithDelay(async (attempt) => {
-                const data = await gql(
-                  query,
-                  { address: activeAddress, after: cursors[idx] },
-                  idx !== 4
-                    ? txHistoryGateways[attempt % txHistoryGateways.length]
-                    : printTxWorkingGateways[attempt % printTxWorkingGateways.length],
-                );
-                if (data?.data === null && (data as any)?.errors?.length > 0) {
-                  throw new Error((data as any)?.errors?.[0]?.message || "GraphQL Error");
-                }
-                return data;
-              }, 2)
-            : ({
-                data: {
-                  transactions: {
-                    pageInfo: { hasNextPage: false },
-                    edges: [],
+      const [rawReceived, rawSent, rawAoSent, rawAoReceived, rawLiquidOpsAoReceived, rawPrintArchive] =
+        await Promise.allSettled(
+          queries.map((query, idx) => {
+            return hasNextPages[idx]
+              ? retryWithDelay(async (attempt) => {
+                  const data = await gql(
+                    query,
+                    { address: activeAddress, after: cursors[idx] },
+                    idx !== 5
+                      ? txHistoryGateways[attempt % txHistoryGateways.length]
+                      : printTxWorkingGateways[attempt % printTxWorkingGateways.length],
+                  );
+                  if (data?.data === null && (data as any)?.errors?.length > 0) {
+                    throw new Error((data as any)?.errors?.[0]?.message || "GraphQL Error");
+                  }
+                  return data;
+                }, 2)
+              : ({
+                  data: {
+                    transactions: {
+                      pageInfo: { hasNextPage: false },
+                      edges: [],
+                    },
                   },
-                },
-              } as GQLResultInterface);
-        }),
-      );
+                } as GQLResultInterface);
+          }),
+        );
 
       let sent = await processTransactions(rawSent, "sent");
       let received = await processTransactions(rawReceived, "received");
       const aoSent = await processTransactions(rawAoSent, "aoSent", true);
       const aoReceived = await processTransactions(rawAoReceived, "aoReceived", true);
+      const liquidOpsAoReceived = await processTransactions(rawLiquidOpsAoReceived, "liquidOpsAoReceived", true);
       const printArchive = await processTransactions(rawPrintArchive, "printArchive");
 
       setCursors((prev) =>
-        [received, sent, aoSent, aoReceived, printArchive].map(
+        [received, sent, aoSent, aoReceived, liquidOpsAoReceived, printArchive].map(
           (data, idx) => data[data.length - 1]?.cursor ?? prev[idx],
         ),
       );
@@ -292,7 +296,7 @@ export const useTransactions = (activeAddress: string, limit?: number) => {
       received = received.filter((tx) => BigNumber(tx.node.quantity.ar).gt(0));
 
       setHasNextPages(
-        [rawReceived, rawSent, rawAoSent, rawAoReceived, rawPrintArchive].map(
+        [rawReceived, rawSent, rawAoSent, rawAoReceived, rawLiquidOpsAoReceived, rawPrintArchive].map(
           (result) =>
             (result.status === "fulfilled" && result.value?.data?.transactions?.pageInfo?.hasNextPage) ?? true,
         ),
@@ -303,6 +307,7 @@ export const useTransactions = (activeAddress: string, limit?: number) => {
         ...received,
         ...aoReceived,
         ...aoSent,
+        ...liquidOpsAoReceived,
         ...printArchive,
       ];
 
