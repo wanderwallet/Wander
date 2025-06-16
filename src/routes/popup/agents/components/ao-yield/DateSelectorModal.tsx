@@ -4,6 +4,7 @@ import browser from "webextension-polyfill";
 import { Text } from "@arconnect/components-rebrand";
 import SliderMenu from "~components/SliderMenu";
 import { ChevronLeft, ChevronRight } from "@untitled-ui/icons-react";
+import { CustomSelect } from "./CustomSelect";
 import {
   type DateCheckOptions,
   type DateDisabledOptions,
@@ -60,6 +61,16 @@ const dayNames = [
   browser.i18n.getMessage("day_friday"),
   browser.i18n.getMessage("day_saturday"),
 ];
+
+const monthOptions = monthNames.map((month, index) => ({
+  value: index,
+  label: month,
+}));
+
+const yearOptions = Array.from({ length: 50 }, (_, index) => ({
+  value: new Date().getFullYear() + index,
+  label: (new Date().getFullYear() + index).toString(),
+}));
 
 export function DateSelectorModal({
   open,
@@ -132,6 +143,24 @@ const DateSelectorScreen = ({
     (direction: number) => {
       const newDate = new Date(currentDate);
       newDate.setMonth(currentDate.getMonth() + direction);
+      setCurrentDate(newDate);
+    },
+    [currentDate],
+  );
+
+  const handleMonthChange = useCallback(
+    (monthIndex: number) => {
+      const newDate = new Date(currentDate);
+      newDate.setMonth(monthIndex);
+      setCurrentDate(newDate);
+    },
+    [currentDate],
+  );
+
+  const handleYearChange = useCallback(
+    (year: number) => {
+      const newDate = new Date(currentDate);
+      newDate.setFullYear(year);
       setCurrentDate(newDate);
     },
     [currentDate],
@@ -448,9 +477,27 @@ const DateSelectorScreen = ({
             }>
             <ChevronLeft width={20} height={20} color={theme.primaryText} />
           </NavButton>
-          <Text size="lg" weight="semibold" noMargin>
-            {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
-          </Text>
+
+          <MonthYearSelectors>
+            <CustomSelect
+              options={monthOptions}
+              value={currentDate.getMonth()}
+              onSelect={handleMonthChange}
+              minWidth="120px"
+              placeholder="Month"
+            />
+
+            <SelectorSeparator />
+
+            <CustomSelect
+              options={yearOptions}
+              value={currentDate.getFullYear()}
+              onSelect={handleYearChange}
+              minWidth="80px"
+              placeholder="Year"
+            />
+          </MonthYearSelectors>
+
           <NavButton onClick={() => navigateMonth(1)}>
             <ChevronRight width={20} height={20} color={theme.primaryText} />
           </NavButton>
@@ -526,6 +573,13 @@ const DateInput = styled.div<{ $isActive: boolean }>`
   flex: 1;
   cursor: pointer;
   transition: all 0.2s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   &:hover {
     background: ${({ theme }) => theme.surfaceSecondary};
@@ -539,8 +593,9 @@ const CalendarContainer = styled.div`
 
 const MonthNavigation = styled.div`
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
+  gap: 8px;
   margin-bottom: 8px;
 `;
 
@@ -565,6 +620,23 @@ const NavButton = styled.button<{ $disabled?: boolean }>`
       cursor: not-allowed;
       pointer-events: none;
     `}
+`;
+
+const MonthYearSelectors = styled.div`
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  background: ${({ theme }) => theme.surfaceSecondary};
+  padding: 8px;
+  border-radius: 12px;
+  border: 1px solid ${({ theme }) => theme.surfaceTertiary};
+`;
+
+const SelectorSeparator = styled.div`
+  width: 1px;
+  height: 20px;
+  background: ${({ theme }) => theme.surfaceTertiary};
+  margin: 0 4px;
 `;
 
 const DayHeaders = styled.div`
