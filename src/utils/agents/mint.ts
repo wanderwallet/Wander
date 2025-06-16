@@ -600,6 +600,7 @@ export async function executeAutomaticSwapIfNeeded(): Promise<void> {
         // Process each agent for this wallet
         const activeAgent = agents[agents.length - 1];
         await processAgentSwap(activeAgent, wallet.address);
+        await addCooldown();
       } catch (error) {
         log(LOG_GROUP.AGENTS, `Error processing agents for wallet ${wallet.address}:`, error);
         // Continue processing other wallets even if one fails
@@ -609,7 +610,6 @@ export async function executeAutomaticSwapIfNeeded(): Promise<void> {
   } catch (error) {
     log(LOG_GROUP.AGENTS, "Error performing swap: ", error);
   } finally {
-    await addCooldown();
     await clearSwapInProgress();
     isSwapExecutionInProgress = false;
   }
@@ -617,6 +617,7 @@ export async function executeAutomaticSwapIfNeeded(): Promise<void> {
 
 export async function checkIfRecentTxSwapSucceeded(): Promise<boolean> {
   try {
+    log(LOG_GROUP.AGENTS, "Checking if recent tx swap succeeded");
     const enabled = await getSetting("analytics").getValue();
     if (!enabled) {
       await browser.alarms.clear(AO_YIELD_AGENT_RECENT_TXS_CHECK_ALARM_NAME);
@@ -647,7 +648,8 @@ export async function checkIfRecentTxSwapSucceeded(): Promise<boolean> {
       return;
     }
 
-    const response = await gql(AO_YIELD_AGENT_RECENT_TX_QUERY, { parentTxIds: recentTxs });
+    const parentTxIds = recentTxs.map((tx) => tx.id);
+    const response = await gql(AO_YIELD_AGENT_RECENT_TX_QUERY, { parentTxIds });
     const edges = response?.data?.transactions?.edges || [];
 
     if (edges.length === 0) {

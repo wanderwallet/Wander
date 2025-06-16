@@ -27,7 +27,7 @@ export const AOYieldAgentListItem = ({ aoAgent, isHistory = false }: AOYieldAgen
   const { data: agentInfo } = useAOYieldAgentInfo(aoAgent?.id);
   const theme = useTheme();
 
-  return !!aoAgent ? (
+  return !!aoAgent && ((!isHistory && aoAgent.status === "Active") || isHistory) ? (
     <StyledListItem
       isActive={aoAgent.status === "Active"}
       title={
