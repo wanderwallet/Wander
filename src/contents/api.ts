@@ -36,9 +36,7 @@ container.removeChild(script);
 
 window.addEventListener("message", async ({ data }: MessageEvent<ApiCall>) => {
   // verify that the call is meant for the extension
-  if (data.app !== "wander") {
-    return;
-  }
+  if (typeof data !== "object" || data.app !== "wander") return;
 
   // verify that the call has an ID
   if (!data.callID) {

@@ -1,4 +1,4 @@
-import { injectWanderConnectWalletAPI } from "wallet-api/wallet-sdk.es.js";
+import { injectWanderConnectWalletAPI, isomorphicSendMessage } from "wallet-api/wallet-sdk.es.js";
 import { Button } from "./components/button/button.component";
 import { Iframe } from "./components/iframe/iframe.component";
 import { merge } from "ts-deepmerge";
@@ -14,8 +14,6 @@ import {
 } from "./wander-connect.types";
 import { isEventMessage, isIncomingMessage, isWalletSwitchMessage } from "./utils/message/message.utils";
 import { getWanderConnectAppURL } from "./utils/url/url.utils";
-import { EmbeddedCall } from "wallet-api/src/utils/embedded/utils/messages/embedded-messages.types";
-import { nanoid } from "nanoid";
 
 const NOOP = () => {};
 
@@ -245,6 +243,7 @@ export class WanderConnect {
       this.buttonComponent?.unsetStatus("isConnected");
     }
 
+    // @ts-ignore
     const events = window.arweaveWallet?.events;
 
     if (events && permissions.length > 0) {
@@ -355,6 +354,7 @@ export class WanderConnect {
         this.buttonComponent?.unsetStatus("isConnected");
       }
 
+      // @ts-ignore
       const events = window.arweaveWallet?.events;
 
       if (events) events.emit(message.data.name, message.data.value);
@@ -565,15 +565,34 @@ export class WanderConnect {
         return;
       }
 
-      const message: EmbeddedCall<"embedded_signOut"> = {
-        id: nanoid(),
-        type: "embedded_signOut",
+      isomorphicSendMessage({
+        destination: "background",
+        // @ts-ignore
+        messageId: "embedded_signOut",
+        // @ts-ignore
         data: undefined,
-      };
-
-      contentWindow.postMessage(message, new URL(iframeRef.src).origin);
+      });
 
       this.signOutMethodCallback = resolve;
+    });
+  }
+
+  public setTheme(theme: ThemeSetting): void {
+    // TODO: Also change theme at the SDK level.
+
+    const { iframeRef } = this;
+    const contentWindow = iframeRef?.contentWindow;
+
+    if (!iframeRef || !contentWindow) {
+      throw new Error("Missing Wander Connect iframe");
+    }
+
+    isomorphicSendMessage({
+      destination: "background",
+      // @ts-ignore
+      messageId: "embedded_setTheme",
+      // @ts-ignore
+      data: theme,
     });
   }
 
@@ -596,6 +615,7 @@ export class WanderConnect {
 
     WanderConnect.instance = null;
 
+    // @ts-ignore
     delete window.arweaveWallet;
 
     if (this.windowArweaveWallet) {

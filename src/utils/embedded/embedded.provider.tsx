@@ -1329,12 +1329,10 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
   useEffect(() => {
     isomorphicOnMessage("embedded_signOut", () => {
-      console.log("SIGN OUT");
       signOut(false);
     });
 
-    isomorphicOnMessage("embedded_changeTheme", ({ data }) => {
-      console.log("CHANGE THEME =", data);
+    isomorphicOnMessage("embedded_setTheme", ({ data }) => {
       setMode(data);
     });
   }, []);
