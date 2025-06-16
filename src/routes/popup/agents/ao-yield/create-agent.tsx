@@ -155,6 +155,7 @@ export function CreateAOYieldAgentView() {
                   -
                 </Text>
                 <InputButton
+                  disabled={runIndefinitely}
                   style={{ background: theme.surfaceTertiary }}
                   body={
                     <Text size="lg" weight="medium" noMargin>

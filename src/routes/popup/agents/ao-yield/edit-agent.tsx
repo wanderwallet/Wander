@@ -159,6 +159,7 @@ export function EditAOYieldAgentView() {
                   -
                 </Text>
                 <InputButton
+                  disabled={runIndefinitely}
                   style={{ background: theme.surfaceTertiary }}
                   body={
                     <Text size="lg" weight="medium" noMargin>
