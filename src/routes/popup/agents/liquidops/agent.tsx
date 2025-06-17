@@ -23,10 +23,12 @@ import { useGateway } from "./utils/hooks/useGateway";
 import { useTokenStatus } from "./utils/hooks/useTokenStatus";
 import { useLOAssetBalance } from "./utils/hooks/useLOAssetBalance";
 import { Loading } from "@arconnect/components-rebrand";
-import { useTokenPrice } from "~tokens/hooks";
+import { useTokenBalance, useTokenPrice } from "~tokens/hooks";
 import BigNumber from "bignumber.js";
 import { formatNumber } from "./utils/format";
 import { PageType, trackPage } from "~utils/analytics";
+import { type TokenInfo } from "~tokens/aoTokens/ao";
+import { useActiveWallet } from "~wallets/hooks";
 
 export type LiquidOpsAgentProps = CommonRouteProps<{ ticker: string }>;
 
@@ -36,9 +38,18 @@ export function LiquidOpsAgent({ params: { ticker } }: LiquidOpsAgentProps) {
     () => activeTokens.find((token) => token.ticker.toLowerCase() === ticker.toLowerCase()),
     [activeTokens, ticker],
   );
+  const oToken = useMemo<TokenInfo>(
+    () => ({
+      processId: token.oAddress,
+      Denomination: Number(token.denomination),
+    }),
+    [token],
+  );
+
+  const wallet = useActiveWallet();
 
   // Always call hooks unconditionally at the top level
-  const { data: oTokenBalance = BigNumber(0) } = useLOOTokenBalance(token.cleanTicker);
+  const { data: oTokenBalance = "0" } = useTokenBalance(oToken, wallet?.address);
   const { data: agentBalance = BigNumber(0), isLoading: isLoadingAgentBalance } = useLOAssetBalance(token.cleanTicker);
 
   const maximumFractionDigits = useMemo(() => {
@@ -221,7 +232,7 @@ export function LiquidOpsAgent({ params: { ticker } }: LiquidOpsAgentProps) {
               </Text>
               <Flex align="center" gap={4}>
                 <Text size="sm" weight="medium" noMargin>
-                  {formatNumber(oTokenBalance)} {"o" + ticker}
+                  {oTokenBalance} {"o" + ticker}
                 </Text>
                 <SvgImageWithBackground
                   height={16}
