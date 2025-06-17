@@ -3054,16 +3054,12 @@
     "message": "imported",
     "description": "Imported text"
   },
-  "create_wander_agent": {
-    "message": "Create a Wander Agent",
-    "description": "Create a Wander Agent text"
-  },
   "agents": {
     "message": "Agents",
     "description": "Agents text"
   },
   "create_an_agent": {
-    "message": "Create an agent",
+    "message": "Create an Agent",
     "description": "Create an agent text"
   },
   "learn_more": {

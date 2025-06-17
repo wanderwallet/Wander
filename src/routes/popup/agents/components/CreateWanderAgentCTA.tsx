@@ -56,7 +56,7 @@ export default function CreateWanderAgentCTA() {
               <img src={HedgehogHeadIcon} alt="Hedgehog Head" />
             </ImageContainer>
             <Text weight="medium" noMargin>
-              {browser.i18n.getMessage("create_wander_agent")}
+              {browser.i18n.getMessage("create_an_agent")}
             </Text>
           </Flex>
           <IconButton
