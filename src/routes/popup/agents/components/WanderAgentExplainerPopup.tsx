@@ -44,7 +44,7 @@ export default function WanderAgentExplainerPopup({ open, close }: Props) {
             fullWidth
             variant="secondary"
             onClick={() => {
-              browser.tabs.create({ url: "https://www.wander.app/help#browser-extension" });
+              browser.tabs.create({ url: "http://www.wander.app/help/browser-extension---how-to-use-agents" });
             }}>
             {browser.i18n.getMessage("learn_more")}
           </Button>
