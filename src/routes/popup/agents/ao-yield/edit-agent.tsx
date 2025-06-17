@@ -27,6 +27,7 @@ export function EditAOYieldAgentView() {
   const [showAssetSelector, setShowAssetSelector] = useState(false);
   const [showSlippageSelector, setShowSlippageSelector] = useState(false);
   const [showDateSelector, setShowDateSelector] = useState(false);
+  const [initialSelection, setInitialSelection] = useState<"start" | "end">("start");
 
   const continueButtonDisabled = useMemo(() => {
     return !selectedAsset || !selectedSlippage || !startDate || !endDate;
@@ -48,7 +49,8 @@ export function EditAOYieldAgentView() {
     setShowSlippageSelector(false);
   };
 
-  const openDateSelector = () => {
+  const openDateSelector = (selection: "start" | "end") => {
+    setInitialSelection(selection);
     setShowDateSelector(true);
   };
 
@@ -152,20 +154,21 @@ export function EditAOYieldAgentView() {
                       {formatDate(startDate, "Start date")}
                     </Text>
                   }
-                  onClick={openDateSelector}
+                  onClick={() => openDateSelector("start")}
                   outerLabel
                 />
                 <Text variant="secondary" size="base" weight="semibold" noMargin>
                   -
                 </Text>
                 <InputButton
+                  disabled={runIndefinitely}
                   style={{ background: theme.surfaceTertiary }}
                   body={
                     <Text size="lg" weight="medium" noMargin>
                       {runIndefinitely ? "∞" : formatDate(endDate, "End date")}
                     </Text>
                   }
-                  onClick={openDateSelector}
+                  onClick={() => openDateSelector("end")}
                   outerLabel
                 />
               </Flex>
@@ -239,6 +242,7 @@ export function EditAOYieldAgentView() {
         onClose={closeDateSelector}
         onSelect={handleDateSelect}
         runIndefinitely={runIndefinitely}
+        initialSelection={initialSelection}
       />
     </>
   );

@@ -4,7 +4,7 @@ import browser from "webextension-polyfill";
 import HeadV2 from "~components/popup/HeadV2";
 import { Flex } from "~components/common/Flex";
 import { ChevronDown, ClockRewind, HelpCircle } from "@untitled-ui/icons-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Slider } from "~components/Slider";
 import { InputButton } from "~components/common/InputButton";
 import { HorizontalLine } from "~components/HorizontalLine";
@@ -14,7 +14,7 @@ import { DateSelectorModal } from "../components/ao-yield/DateSelectorModal";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import { useLocation } from "~wallets/router/router.utils";
 import { TempTransactionStorage } from "~utils/storage";
-import type { Asset } from "~utils/agents/types";
+import type { AOYieldAgentCreate, Asset } from "~utils/agents/types";
 import { assets, formatDate } from "~utils/agents/utils";
 import { trackPage, PageType } from "~utils/analytics";
 import { AODelegationModal } from "../components/AODelegationModal";
@@ -31,6 +31,7 @@ export function CreateAOYieldAgentView() {
   const [showAssetSelector, setShowAssetSelector] = useState(false);
   const [showSlippageSelector, setShowSlippageSelector] = useState(false);
   const [showDateSelector, setShowDateSelector] = useState(false);
+  const [initialSelection, setInitialSelection] = useState<"start" | "end">("start");
 
   const continueButtonDisabled = useMemo(() => {
     return !selectedAsset || !selectedSlippage || !startDate || !endDate || !percentage;
@@ -52,7 +53,8 @@ export function CreateAOYieldAgentView() {
     setShowSlippageSelector(false);
   };
 
-  const openDateSelector = () => {
+  const openDateSelector = (selection: "start" | "end") => {
+    setInitialSelection(selection);
     setShowDateSelector(true);
   };
 
@@ -89,6 +91,20 @@ export function CreateAOYieldAgentView() {
 
   useEffect(() => {
     trackPage(PageType.AO_YIELD_AGENT_CREATE);
+
+    const restoreFormState = async () => {
+      const savedData = await TempTransactionStorage.get<AOYieldAgentCreate>("ao-yield-agent");
+      if (savedData) {
+        setPercentage(savedData.conversionPercentage || 50);
+        setSelectedAsset(savedData.asset || assets[0]);
+        setSelectedSlippage(savedData.slippage || 0.5);
+        setRunIndefinitely(savedData.runIndefinitely || false);
+        if (savedData.startDate) setStartDate(new Date(savedData.startDate));
+        if (savedData.endDate) setEndDate(new Date(savedData.endDate));
+      }
+    };
+
+    restoreFormState();
   }, []);
 
   return (
@@ -148,20 +164,21 @@ export function CreateAOYieldAgentView() {
                       {formatDate(startDate, "Start date")}
                     </Text>
                   }
-                  onClick={openDateSelector}
+                  onClick={() => openDateSelector("start")}
                   outerLabel
                 />
                 <Text variant="secondary" size="base" weight="semibold" noMargin>
                   -
                 </Text>
                 <InputButton
+                  disabled={runIndefinitely}
                   style={{ background: theme.surfaceTertiary }}
                   body={
                     <Text size="lg" weight="medium" noMargin>
                       {runIndefinitely ? "∞" : formatDate(endDate, "End date")}
                     </Text>
                   }
-                  onClick={openDateSelector}
+                  onClick={() => openDateSelector("end")}
                   outerLabel
                 />
               </Flex>
@@ -241,6 +258,7 @@ export function CreateAOYieldAgentView() {
         onClose={closeDateSelector}
         onSelect={handleDateSelect}
         runIndefinitely={runIndefinitely}
+        initialSelection={initialSelection}
       />
       <AODelegationModal />
     </>

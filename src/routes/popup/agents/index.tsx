@@ -7,7 +7,7 @@ import { Flex } from "~components/common/Flex";
 import { ClockRewind } from "@untitled-ui/icons-react";
 import WanderAgentExplainerPopup from "./components/WanderAgentExplainerPopup";
 import { useEffect, useMemo, useState } from "react";
-import { ExtensionStorage } from "~utils/storage";
+import { ExtensionStorage, TempTransactionStorage } from "~utils/storage";
 import { AOYieldAgentListItem } from "./components/AOYieldAgentListItem";
 import { LiquidOpsAgentListItem } from "./components/LiquidOpsAgentListItem";
 import { useLocation } from "~wallets/router/router.utils";
@@ -35,6 +35,7 @@ export function AgentsView() {
 
   useEffect(() => {
     checkAndShowAgentExplainerPopup();
+    TempTransactionStorage.remove("ao-yield-agent");
     trackPage(PageType.AGENTS);
   }, []);
 

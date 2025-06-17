@@ -2,7 +2,7 @@ import { ListItem, Text } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
 import { Flex } from "~components/common/Flex";
 import aoLogo from "url:/assets/ecosystem/ao-logo.svg";
-import WarIcon from "url:/assets/ecosystem/war.svg";
+import WarIcon from "url:/assets/ecosystem/war.png";
 import wUSDCIcon from "url:/assets/ecosystem/wusdc.svg";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import { useLocation } from "~wallets/router/router.utils";
@@ -11,10 +11,11 @@ import type { AOYieldAgent } from "~utils/agents/types";
 import { WAR_PROCESS_ID } from "~tokens/aoTokens/ao";
 import dayjs from "dayjs";
 import { useAOMintingStatus, useAOYieldAgentInfo } from "~utils/agents/hooks";
-import { getStatusColor, getStatusText, tokenIdInfoMap } from "~utils/agents/utils";
+import { getStatusColor, getStatusText, tokenIdInfoMap, updateLocalAOYieldAgent } from "~utils/agents/utils";
 import { useTheme } from "styled-components";
 import styled from "styled-components";
 import { EventType, trackEvent } from "~utils/analytics";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 interface AOYieldAgentListItemProps {
   aoAgent: AOYieldAgent;
@@ -27,7 +28,19 @@ export const AOYieldAgentListItem = ({ aoAgent, isHistory = false }: AOYieldAgen
   const { data: agentInfo } = useAOYieldAgentInfo(aoAgent?.id);
   const theme = useTheme();
 
-  return !!aoAgent ? (
+  useAsyncEffect(async () => {
+    if (!aoAgent || !agentInfo || isHistory) return;
+
+    try {
+      if (aoAgent.totalTransactions !== agentInfo.totalTransactions) {
+        await updateLocalAOYieldAgent(aoAgent.id, { totalTransactions: agentInfo.totalTransactions });
+      }
+    } catch (error) {
+      console.error("Error updating AO Yield Agent total transactions", error);
+    }
+  }, [aoAgent, agentInfo, isHistory]);
+
+  return !!aoAgent && ((!isHistory && aoAgent.status === "Active") || isHistory) ? (
     <StyledListItem
       isActive={aoAgent.status === "Active"}
       title={
@@ -58,7 +71,7 @@ export const AOYieldAgentListItem = ({ aoAgent, isHistory = false }: AOYieldAgen
             {dayjs(aoAgent.startDate).format("MMM D")} - {dayjs(aoAgent.endDate).format("MMM D")}
           </Text>
           <Text size="sm" variant="secondary" weight="medium" noMargin>
-            {agentInfo?.totalTransactions || 0} transactions
+            {aoAgent?.totalTransactions || agentInfo?.totalTransactions || 0} transactions
           </Text>
         </Flex>
       }

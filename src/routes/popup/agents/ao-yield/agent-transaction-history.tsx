@@ -9,7 +9,7 @@ import dayjs from "dayjs";
 import { WAR_PROCESS_ID, WUSDC_PROCESS_ID } from "~tokens/aoTokens/ao";
 import { SvgImageWithBackground } from "../components/SvgImage";
 import aoLogo from "url:/assets/ecosystem/ao-logo.svg";
-import WarIcon from "url:/assets/ecosystem/war.svg";
+import WarIcon from "url:/assets/ecosystem/war.png";
 import wUSDCIcon from "url:/assets/ecosystem/wusdc.svg";
 import { formatTokenQuantity, tokenIdInfoMap } from "~utils/agents/utils";
 import { useEffect } from "react";
@@ -38,24 +38,24 @@ export function AOYieldAgentTransactionHistoryView({ params: { id } }: AOYieldAg
             <ListItem
               key={`${transaction.id}-${i}`}
               title={
-                <Flex justify="space-between" align="center" width="100%">
-                  <Text weight="semibold" noMargin>
+                <Flex justify="space-between" align="center" width="100%" gap={4}>
+                  <StyledText size="sm" weight="semibold" noMargin>
                     {`AO <> ${tokenIdInfoMap[transaction?.tokenOut]?.ticker}`}
-                  </Text>
-                  <Text size="sm" weight="medium" noMargin>
+                  </StyledText>
+                  <StyledText size="sm" weight="medium" noMargin>
                     -{formatTokenQuantity(transaction.amountIn, 12)} AO
-                  </Text>
+                  </StyledText>
                 </Flex>
               }
               subtitle={
-                <Flex justify="space-between" align="center" width="100%">
+                <Flex justify="space-between" align="center" width="100%" gap={4}>
                   <Text size="sm" variant="secondary" weight="medium" noMargin>
                     {dayjs(transaction.timestamp).format("MMM DD, YYYY")}
                   </Text>
-                  <Text size="sm" weight="medium" noMargin>
+                  <StyledText size="sm" weight="medium" noMargin>
                     +{formatTokenQuantity(transaction.amountOut, transaction?.tokenOut === WUSDC_PROCESS_ID ? 6 : 12)}{" "}
                     {tokenIdInfoMap[transaction?.tokenOut]?.ticker}
-                  </Text>
+                  </StyledText>
                 </Flex>
               }
               hideSquircle={true}
@@ -126,4 +126,12 @@ const Content = styled.div`
   & > * {
     flex-shrink: 0;
   }
+`;
+
+const StyledText = styled(Text)`
+  flex-shrink: 0;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `;

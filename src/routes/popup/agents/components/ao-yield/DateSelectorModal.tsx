@@ -3,7 +3,29 @@ import styled, { css, useTheme } from "styled-components";
 import browser from "webextension-polyfill";
 import { Text } from "@arconnect/components-rebrand";
 import SliderMenu from "~components/SliderMenu";
-import { ChevronLeft, ChevronRight, X } from "@untitled-ui/icons-react";
+import { ChevronLeft, ChevronRight } from "@untitled-ui/icons-react";
+import { CustomSelect } from "./CustomSelect";
+import {
+  type DateCheckOptions,
+  type DateDisabledOptions,
+  getDaysInMonth,
+  getFirstDayOfMonth,
+  isDateSelected,
+  isStartDate,
+  isEndDate,
+  isDateInRange,
+  isStartOfWeekInRange,
+  isEndOfWeekInRange,
+  isDateSelectedOtherMonth,
+  isStartDateOtherMonth,
+  isEndDateOtherMonth,
+  isStartOfWeekInRangeOtherMonth,
+  isEndOfWeekInRangeOtherMonth,
+  shouldConnectToPrevMonth,
+  shouldConnectToNextMonth,
+  isDateDisabled,
+  formatDate,
+} from "~utils/agents/utils/date.utils";
 
 interface DateSelectorModalProps {
   open: boolean;
@@ -12,6 +34,7 @@ interface DateSelectorModalProps {
   endDate: Date | null;
   onSelect: (startDate: Date, endDate: Date) => void;
   runIndefinitely: boolean;
+  initialSelection?: "start" | "end";
 }
 
 const monthNames = [
@@ -39,6 +62,16 @@ const dayNames = [
   browser.i18n.getMessage("day_saturday"),
 ];
 
+const monthOptions = monthNames.map((month, index) => ({
+  value: index,
+  label: month,
+}));
+
+const yearOptions = Array.from({ length: 50 }, (_, index) => ({
+  value: new Date().getFullYear() + index,
+  label: (new Date().getFullYear() + index).toString(),
+}));
+
 export function DateSelectorModal({
   open,
   onClose,
@@ -46,6 +79,7 @@ export function DateSelectorModal({
   startDate,
   endDate,
   runIndefinitely,
+  initialSelection = "start",
 }: DateSelectorModalProps) {
   return (
     <SliderMenu
@@ -59,6 +93,7 @@ export function DateSelectorModal({
         currentStartDate={startDate}
         currentEndDate={endDate}
         runIndefinitely={runIndefinitely}
+        initialSelection={initialSelection}
       />
     </SliderMenu>
   );
@@ -70,6 +105,7 @@ interface DateSelectorScreenProps {
   currentStartDate: Date | null;
   currentEndDate: Date | null;
   runIndefinitely: boolean;
+  initialSelection?: "start" | "end";
 }
 
 const DateSelectorScreen = ({
@@ -78,33 +114,30 @@ const DateSelectorScreen = ({
   currentStartDate,
   currentEndDate,
   runIndefinitely,
+  initialSelection = "start",
 }: DateSelectorScreenProps) => {
   const theme = useTheme();
   const [currentDate, setCurrentDate] = useState(() => {
-    // If we have a start date, open to that month, otherwise current month
-    if (currentStartDate) {
+    // Navigate to the month containing the relevant date based on initialSelection
+    if (initialSelection === "end" && currentEndDate) {
+      return new Date(currentEndDate.getFullYear(), currentEndDate.getMonth(), 1);
+    } else if (initialSelection === "start" && currentStartDate) {
+      return new Date(currentStartDate.getFullYear(), currentStartDate.getMonth(), 1);
+    } else if (currentStartDate) {
+      // Fallback to start date if available
       return new Date(currentStartDate.getFullYear(), currentStartDate.getMonth(), 1);
     }
     return new Date();
   });
   const [startDate, setStartDate] = useState<Date | null>(currentStartDate);
   const [endDate, setEndDate] = useState<Date | null>(currentEndDate);
-  const [isSelectingStart, setIsSelectingStart] = useState(true);
+  const [isSelectingStart, setIsSelectingStart] = useState(runIndefinitely ? true : initialSelection === "start");
 
   const today = useMemo(() => {
     const date = new Date();
     date.setHours(0, 0, 0, 0);
     return date;
   }, []);
-
-  const formatDate = (date: Date | null) => {
-    if (!date) return "";
-    return date.toLocaleDateString("en-US", {
-      month: "long",
-      day: "numeric",
-      year: "numeric",
-    });
-  };
 
   const navigateMonth = useCallback(
     (direction: number) => {
@@ -115,20 +148,30 @@ const DateSelectorScreen = ({
     [currentDate],
   );
 
-  const getDaysInMonth = useCallback((date: Date) => {
-    return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
-  }, []);
+  const handleMonthChange = useCallback(
+    (monthIndex: number) => {
+      const newDate = new Date(currentDate);
+      newDate.setMonth(monthIndex);
+      setCurrentDate(newDate);
+    },
+    [currentDate],
+  );
 
-  const getFirstDayOfMonth = useCallback((date: Date) => {
-    return new Date(date.getFullYear(), date.getMonth(), 1).getDay();
-  }, []);
+  const handleYearChange = useCallback(
+    (year: number) => {
+      const newDate = new Date(currentDate);
+      newDate.setFullYear(year);
+      setCurrentDate(newDate);
+    },
+    [currentDate],
+  );
 
   const currentMonthInfo = useMemo(
     () => ({
       daysInMonth: getDaysInMonth(currentDate),
       firstDay: getFirstDayOfMonth(currentDate),
     }),
-    [currentDate, getDaysInMonth, getFirstDayOfMonth],
+    [currentDate],
   );
 
   const handleDateSelection = useCallback(
@@ -158,7 +201,7 @@ const DateSelectorScreen = ({
         return;
       }
 
-      if (isSelectingStart || !startDate) {
+      if (isSelectingStart) {
         // If clicking on already selected start date, unselect it
         if (isStartDateSelected) {
           setStartDate(null);
@@ -179,6 +222,13 @@ const DateSelectorScreen = ({
           setIsSelectingStart(false);
         }
       } else {
+        // Handle case where no start date exists but we're selecting end date
+        if (!startDate) {
+          // If no start date exists but user is selecting end date, only set end date
+          setEndDate(selectedDate);
+          // Don't call onSelect yet since we don't have a complete range
+          return;
+        }
         // If clicking on already selected end date, unselect it
         if (isEndDateSelected && !isStartDateSelected) {
           setEndDate(null);
@@ -230,171 +280,25 @@ const DateSelectorScreen = ({
     [currentDate, handleDateSelection],
   );
 
-  const isDateInRange = (day: number) => {
-    if (!startDate || !endDate) return false;
-    const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-    // Include both start and end dates, even if they're the same
-    return date >= startDate && date <= endDate;
-  };
+  const dateCheckOptions = useMemo<DateCheckOptions>(
+    () => ({
+      currentDate,
+      startDate,
+      endDate,
+      day: 0,
+    }),
+    [currentDate, startDate, endDate],
+  );
 
-  const isDateSelected = (day: number) => {
-    const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-    return (startDate && date.getTime() === startDate.getTime()) || (endDate && date.getTime() === endDate.getTime());
-  };
-
-  const isStartDate = (day: number) => {
-    const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-    return startDate && date.getTime() === startDate.getTime();
-  };
-
-  const isEndDate = (day: number) => {
-    const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-    return endDate && date.getTime() === endDate.getTime();
-  };
-
-  const isStartOfWeekInRange = (day: number) => {
-    const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-    if (!startDate || !endDate || date < startDate || date > endDate) return false;
-
-    // Check if this is the first selected date in its week
-    const dayOfWeek = date.getDay(); // 0 = Sunday, 1 = Monday, etc.
-
-    // Check previous days in the same week to see if any are in range (including other months)
-    for (let i = 0; i < dayOfWeek; i++) {
-      const prevDate = new Date(date);
-      prevDate.setDate(date.getDate() - (dayOfWeek - i));
-      if (prevDate >= startDate && prevDate <= endDate) {
-        return false; // There's a selected date earlier in this week
-      }
-    }
-    return true;
-  };
-
-  const isEndOfWeekInRange = (day: number) => {
-    const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-    if (!startDate || !endDate || date < startDate || date > endDate) return false;
-
-    // Check if this is the last selected date in its week
-    const dayOfWeek = date.getDay(); // 0 = Sunday, 1 = Monday, etc.
-
-    // Check next days in the same week to see if any are in range (including other months)
-    for (let i = dayOfWeek + 1; i < 7; i++) {
-      const nextDate = new Date(date);
-      nextDate.setDate(date.getDate() + (i - dayOfWeek));
-      if (nextDate >= startDate && nextDate <= endDate) {
-        return false; // There's a selected date later in this week
-      }
-    }
-    return true;
-  };
-
-  const isDateSelectedOtherMonth = (day: number, monthOffset: number) => {
-    const targetMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + monthOffset, day);
-    return (
-      (startDate && targetMonth.getTime() === startDate.getTime()) ||
-      (endDate && targetMonth.getTime() === endDate.getTime())
-    );
-  };
-
-  const isStartDateOtherMonth = (day: number, monthOffset: number) => {
-    const targetMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + monthOffset, day);
-    return startDate && targetMonth.getTime() === startDate.getTime();
-  };
-
-  const isEndDateOtherMonth = (day: number, monthOffset: number) => {
-    const targetMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + monthOffset, day);
-    return endDate && targetMonth.getTime() === endDate.getTime();
-  };
-
-  const isStartOfWeekInRangeOtherMonth = (day: number, monthOffset: number) => {
-    const date = new Date(currentDate.getFullYear(), currentDate.getMonth() + monthOffset, day);
-    if (!startDate || !endDate || date < startDate || date > endDate) return false;
-
-    const dayOfWeek = date.getDay();
-
-    // Check previous days in the same week to see if any are in range (across all months)
-    for (let i = 0; i < dayOfWeek; i++) {
-      const prevDate = new Date(date);
-      prevDate.setDate(date.getDate() - (dayOfWeek - i));
-      if (prevDate >= startDate && prevDate <= endDate) {
-        return false;
-      }
-    }
-    return true;
-  };
-
-  const isEndOfWeekInRangeOtherMonth = (day: number, monthOffset: number) => {
-    const date = new Date(currentDate.getFullYear(), currentDate.getMonth() + monthOffset, day);
-    if (!startDate || !endDate || date < startDate || date > endDate) return false;
-
-    const dayOfWeek = date.getDay();
-
-    // Check next days in the same week to see if any are in range (across all months)
-    for (let i = dayOfWeek + 1; i < 7; i++) {
-      const nextDate = new Date(date);
-      nextDate.setDate(date.getDate() + (i - dayOfWeek));
-      if (nextDate >= startDate && nextDate <= endDate) {
-        return false;
-      }
-    }
-    return true;
-  };
-
-  const shouldConnectToPrevMonth = (day: number) => {
-    if (!startDate || !endDate) return false;
-    const currentMonthDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-    const lastDayPrevMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0);
-
-    // Check if this is the first day of current month and there are selected dates in previous month
-    return (
-      day === 1 &&
-      lastDayPrevMonth >= startDate &&
-      lastDayPrevMonth <= endDate &&
-      currentMonthDate >= startDate &&
-      currentMonthDate <= endDate &&
-      lastDayPrevMonth.getDay() !== 6 // Don't connect if last day of prev month is Saturday
-    );
-  };
-
-  const shouldConnectToNextMonth = (day: number) => {
-    if (!startDate || !endDate) return false;
-    const daysInCurrentMonth = getDaysInMonth(currentDate);
-    const currentMonthDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-    const firstDayNextMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
-
-    // Check if this is the last day of current month and there are selected dates in next month
-    return (
-      day === daysInCurrentMonth &&
-      firstDayNextMonth >= startDate &&
-      firstDayNextMonth <= endDate &&
-      currentMonthDate >= startDate &&
-      currentMonthDate <= endDate &&
-      firstDayNextMonth.getDay() !== 0 // Don't connect if first day of next month is Sunday
-    );
-  };
-
-  const isDateDisabled = (day: number) => {
-    const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    // Always disable past dates
-    if (date < today) {
-      return true;
-    }
-
-    // When selecting start date, only past dates are disabled
-    if (isSelectingStart || !startDate) {
-      return false;
-    }
-
-    // When selecting end date, dates before start date are disabled (but same date is allowed)
-    if (startDate && date < startDate) {
-      return true;
-    }
-
-    return false;
-  };
+  const dateDisabledOptions = useMemo<DateDisabledOptions>(
+    () => ({
+      currentDate,
+      startDate,
+      isSelectingStart,
+      day: 0,
+    }),
+    [currentDate, startDate, isSelectingStart],
+  );
 
   const renderCalendar = () => {
     const { daysInMonth, firstDay } = currentMonthInfo;
@@ -406,11 +310,12 @@ const DateSelectorScreen = ({
 
     for (let i = firstDay - 1; i >= 0; i--) {
       const prevMonthDay = prevMonthDays - i;
-      const isPrevMonthSelected = isDateSelectedOtherMonth(prevMonthDay, -1);
-      const isPrevMonthStart = isStartDateOtherMonth(prevMonthDay, -1);
-      const isPrevMonthEnd = isEndDateOtherMonth(prevMonthDay, -1);
-      const isPrevMonthWeekStart = isStartOfWeekInRangeOtherMonth(prevMonthDay, -1);
-      const isPrevMonthWeekEnd = isEndOfWeekInRangeOtherMonth(prevMonthDay, -1);
+      const prevMonthOptions = { ...dateCheckOptions, day: prevMonthDay, monthOffset: -1 };
+      const isPrevMonthSelected = isDateSelectedOtherMonth(prevMonthOptions);
+      const isPrevMonthStart = isStartDateOtherMonth(prevMonthOptions);
+      const isPrevMonthEnd = isEndDateOtherMonth(prevMonthOptions);
+      const isPrevMonthWeekStart = isStartOfWeekInRangeOtherMonth(prevMonthOptions);
+      const isPrevMonthWeekEnd = isEndOfWeekInRangeOtherMonth(prevMonthOptions);
 
       // Check if this previous month date is disabled (before today)
       const prevMonthDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, prevMonthDay);
@@ -454,15 +359,18 @@ const DateSelectorScreen = ({
 
     // Current month days
     for (let day = 1; day <= daysInMonth; day++) {
-      const isSelected = isDateSelected(day);
-      const isInRange = isDateInRange(day);
-      const isDisabled = isDateDisabled(day);
-      const isStart = isStartDate(day);
-      const isEnd = isEndDate(day);
-      const isWeekStart = isStartOfWeekInRange(day);
-      const isWeekEnd = isEndOfWeekInRange(day);
-      const connectToPrev = shouldConnectToPrevMonth(day);
-      const connectToNext = shouldConnectToNextMonth(day);
+      const dayOptions = { ...dateCheckOptions, day };
+      const disabledOptions = { ...dateDisabledOptions, day };
+
+      const isSelected = isDateSelected(dayOptions);
+      const isInRange = isDateInRange(dayOptions);
+      const isDisabled = isDateDisabled(disabledOptions);
+      const isStart = isStartDate(dayOptions);
+      const isEnd = isEndDate(dayOptions);
+      const isWeekStart = isStartOfWeekInRange(dayOptions);
+      const isWeekEnd = isEndOfWeekInRange(dayOptions);
+      const connectToPrev = shouldConnectToPrevMonth(dayOptions);
+      const connectToNext = shouldConnectToNextMonth(dayOptions);
 
       // If start and end dates are the same, prioritize selected styling over range styling
       const showAsSelected = isSelected;
@@ -500,11 +408,12 @@ const DateSelectorScreen = ({
     const remainingCells = totalCells - (firstDay + daysInMonth);
 
     for (let day = 1; day <= remainingCells; day++) {
-      const isNextMonthSelected = isDateSelectedOtherMonth(day, 1);
-      const isNextMonthStart = isStartDateOtherMonth(day, 1);
-      const isNextMonthEnd = isEndDateOtherMonth(day, 1);
-      const isNextMonthWeekStart = isStartOfWeekInRangeOtherMonth(day, 1);
-      const isNextMonthWeekEnd = isEndOfWeekInRangeOtherMonth(day, 1);
+      const nextMonthOptions = { ...dateCheckOptions, day, monthOffset: 1 };
+      const isNextMonthSelected = isDateSelectedOtherMonth(nextMonthOptions);
+      const isNextMonthStart = isStartDateOtherMonth(nextMonthOptions);
+      const isNextMonthEnd = isEndDateOtherMonth(nextMonthOptions);
+      const isNextMonthWeekStart = isStartOfWeekInRangeOtherMonth(nextMonthOptions);
+      const isNextMonthWeekEnd = isEndOfWeekInRangeOtherMonth(nextMonthOptions);
 
       // Check if this next month date is disabled (before today)
       const nextMonthDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, day);
@@ -568,9 +477,27 @@ const DateSelectorScreen = ({
             }>
             <ChevronLeft width={20} height={20} color={theme.primaryText} />
           </NavButton>
-          <Text size="lg" weight="semibold" noMargin>
-            {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
-          </Text>
+
+          <MonthYearSelectors>
+            <CustomSelect
+              options={monthOptions}
+              value={currentDate.getMonth()}
+              onSelect={handleMonthChange}
+              minWidth="120px"
+              placeholder="Month"
+            />
+
+            <SelectorSeparator />
+
+            <CustomSelect
+              options={yearOptions}
+              value={currentDate.getFullYear()}
+              onSelect={handleYearChange}
+              minWidth="80px"
+              placeholder="Year"
+            />
+          </MonthYearSelectors>
+
           <NavButton onClick={() => navigateMonth(1)}>
             <ChevronRight width={20} height={20} color={theme.primaryText} />
           </NavButton>
@@ -583,7 +510,14 @@ const DateSelectorScreen = ({
                 Starts on:
               </Text>
             )}
-            <DateInput $isActive={isSelectingStart} onClick={() => setIsSelectingStart(true)}>
+            <DateInput
+              $isActive={isSelectingStart}
+              onClick={() => {
+                setIsSelectingStart(true);
+                if (startDate) {
+                  setCurrentDate(new Date(startDate.getFullYear(), startDate.getMonth(), 1));
+                }
+              }}>
               <Text size="sm" weight="medium" style={{ textAlign: "center" }} noMargin>
                 {startDate ? formatDate(startDate) : "Start date"}
               </Text>
@@ -593,7 +527,14 @@ const DateSelectorScreen = ({
                 <Text size="lg" weight="medium" noMargin>
                   -
                 </Text>
-                <DateInput $isActive={!isSelectingStart} onClick={() => !runIndefinitely && setIsSelectingStart(false)}>
+                <DateInput
+                  $isActive={!isSelectingStart}
+                  onClick={() => {
+                    setIsSelectingStart(false);
+                    if (endDate) {
+                      setCurrentDate(new Date(endDate.getFullYear(), endDate.getMonth(), 1));
+                    }
+                  }}>
                   <Text size="sm" weight="medium" style={{ textAlign: "center" }} noMargin>
                     {endDate ? formatDate(endDate) : "End date"}
                   </Text>
@@ -646,6 +587,13 @@ const DateInput = styled.div<{ $isActive: boolean }>`
   flex: 1;
   cursor: pointer;
   transition: all 0.2s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   &:hover {
     background: ${({ theme }) => theme.surfaceSecondary};
@@ -659,8 +607,9 @@ const CalendarContainer = styled.div`
 
 const MonthNavigation = styled.div`
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
+  gap: 8px;
   margin-bottom: 8px;
 `;
 
@@ -685,6 +634,23 @@ const NavButton = styled.button<{ $disabled?: boolean }>`
       cursor: not-allowed;
       pointer-events: none;
     `}
+`;
+
+const MonthYearSelectors = styled.div`
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  background: ${({ theme }) => theme.surfaceSecondary};
+  padding: 8px;
+  border-radius: 12px;
+  border: 1px solid ${({ theme }) => theme.surfaceTertiary};
+`;
+
+const SelectorSeparator = styled.div`
+  width: 1px;
+  height: 20px;
+  background: ${({ theme }) => theme.surfaceTertiary};
+  margin: 0 4px;
 `;
 
 const DayHeaders = styled.div`
@@ -784,6 +750,13 @@ const CalendarDay = styled.button<{
       }
     `;
   }}
+
+  /* Ensure selected dates are always on top */
+  ${({ $isSelected }) =>
+    $isSelected &&
+    `
+    z-index: 1;
+  `}
 
   &:hover {
     background: ${({ theme, $isSelected, $isOtherMonth, $isDisabled }) =>

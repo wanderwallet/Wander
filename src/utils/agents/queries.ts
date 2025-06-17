@@ -56,9 +56,9 @@ export const TRANSACTION_QUERY = `query ($ids: [ID!]!) {
 }`;
 
 export const AO_PROCESS_MINT_QUERY = `
-query {
+query ($count: Int!) {
   transactions(
-    first: 10,
+    first: $count,
     recipients: ["${AO_PROCESS_ID}"],
     tags: [
       {name: "Data-Protocol", values: ["ao"]},

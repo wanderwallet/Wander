@@ -1,22 +1,22 @@
 import Arweave from "arweave";
 import { defaultGateway } from "~gateways/gateway";
 import { ExtensionStorage } from "~utils/storage";
-import type { AOYieldAgent, AOYieldAgentInfo, AOYieldAgentStatus, MintingStatus, RecentTx, Tag } from "./types";
+import type { AOYieldAgent, AOYieldAgentInfo, AOYieldAgentStatus, MintingStatus, RecentTx, Tag } from "../types";
 import { connect } from "@permaweb/aoconnect";
 import { defaultConfig } from "~tokens/aoTokens/config";
 import { createDataItemSigner, getTagValue, Id, Owner, WAR_PROCESS_ID, WUSDC_PROCESS_ID } from "~tokens/aoTokens/ao";
 import { getActiveAddress, getActiveKeyfile } from "~wallets";
 import { isLocalWallet } from "~utils/assertions";
 import { retryWithDelay } from "~utils/promises/retry";
-import { TRANSACTION_QUERY } from "./queries";
+import { TRANSACTION_QUERY } from "../queries";
 import type GQLResultInterface from "ar-gql/dist/faces";
 import { formatBalance } from "~utils/format";
 import { balanceToFractioned } from "~tokens/currency";
 import { freeDecryptedWallet } from "~wallets/encryption";
-import WarIcon from "url:/assets/ecosystem/war.svg";
+import WarIcon from "url:/assets/ecosystem/war.png";
 import wUSDCIcon from "url:/assets/ecosystem/wusdc.svg";
 import type { Asset } from "~utils/agents/types";
-import { AO_YIELD_AGENT_RECENT_TXS } from "./constants";
+import { AO_YIELD_AGENT_RECENT_TXS } from "../constants";
 import dayjs from "dayjs";
 
 /**
@@ -195,6 +195,36 @@ export async function setAOYieldAgents(activeAddress: string, agents: AOYieldAge
   await ExtensionStorage.set(`ao_yield_agents_${activeAddress}`, agents);
 }
 
+/**
+ * Updates a local AO Yield Agent with the provided data
+ * @param agentId - The ID of the agent to update
+ * @param updateData - Partial agent data to update
+ * @param activeAddress - Optional active address, will fetch if not provided
+ * @returns Promise<boolean> - Returns true if agent was found and updated, false otherwise
+ */
+export async function updateLocalAOYieldAgent(
+  agentId: string,
+  updateData: Partial<AOYieldAgent>,
+  activeAddress?: string,
+): Promise<boolean> {
+  try {
+    const address = activeAddress || (await getActiveAddress());
+    const agents = await getAOYieldAgents(address);
+    const foundAgentIndex = agents.findIndex((agent) => agent.id === agentId);
+
+    if (foundAgentIndex !== -1) {
+      agents[foundAgentIndex] = { ...agents[foundAgentIndex], ...updateData };
+      await setAOYieldAgents(address, agents);
+      return true;
+    }
+
+    return false;
+  } catch (error) {
+    console.error("Error updating local AO Yield Agent", error);
+    return false;
+  }
+}
+
 export async function getRecentTxs(): Promise<RecentTx[]> {
   const recentTxs = await ExtensionStorage.get<RecentTx[]>(AO_YIELD_AGENT_RECENT_TXS);
   return recentTxs || [];
@@ -236,7 +266,7 @@ export async function getAOYieldAgentInfo(agentId: string) {
   const totalTransactions = getTagValue("Total-Transactions", tags);
   const totalWanderFee = getTagValue("Total-Wander-Fee", tags);
   const swapInProgress = getTagValue("Swap-In-Progress", tags);
-  const lastSwapTimestamp = getTagValue("Last-Swap-Timestamp", tags);
+  const processedUpToDate = getTagValue("Processed-Up-To-Date", tags);
   const swappedUpToDate = getTagValue("Swapped-Up-To-Date", tags);
   const agentVersion = getTagValue("Agent-Version", tags);
 
@@ -255,7 +285,7 @@ export async function getAOYieldAgentInfo(agentId: string) {
     totalTransactions: Number(totalTransactions),
     totalWanderFee,
     swapInProgress: swapInProgress === "true",
-    lastSwapTimestamp: lastSwapTimestamp !== "nil" ? Number(lastSwapTimestamp) : undefined,
+    processedUpToDate: processedUpToDate !== "nil" ? Number(processedUpToDate) : undefined,
     swappedUpToDate: swappedUpToDate !== "nil" ? Number(swappedUpToDate) : undefined,
     agentVersion,
   } as AOYieldAgentInfo;
