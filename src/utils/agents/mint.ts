@@ -119,8 +119,9 @@ function buildTransactionMap(edges: any[]): Map<string, MintTransaction> {
   return transactionMap;
 }
 
-export async function fetchAllMintTransactions(): Promise<MintTransaction[]> {
-  const response = await gql(AO_PROCESS_MINT_QUERY);
+export async function fetchAllMintTransactions(count = 10): Promise<MintTransaction[]> {
+  count = Math.min(count, 100);
+  const response = await gql(AO_PROCESS_MINT_QUERY, { count });
   const edges = response?.data?.transactions?.edges || [];
 
   const transactionMap = buildTransactionMap(edges);
@@ -239,7 +240,8 @@ export async function calculateMintQuantityForDateRange(
   const normalizedStartDate = normalizeToStartOfDay(startDate);
   const normalizedEndDate = normalizeToStartOfDay(endDate);
 
-  const transactions = await fetchAllMintTransactions();
+  const days = Math.max(1, Math.round((normalizedEndDate - normalizedStartDate) / (24 * 60 * 60 * 1000)));
+  const transactions = await fetchAllMintTransactions(days);
   const transactionsInRange = transactions.filter((tx) => {
     const txDate = normalizeToStartOfDay(tx.timestamp);
     return txDate >= normalizedStartDate && txDate <= normalizedEndDate;
