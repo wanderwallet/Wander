@@ -158,15 +158,19 @@ export function ConfirmAOYieldAgentView() {
             <SvgImageWithBackground
               height={53.3}
               width={53.3}
-              style={{ position: "absolute", left: 36 }}
+              style={{
+                position: "absolute",
+                left: 36,
+                border: `0.6px solid ${theme.displayTheme === "dark" ? "#333333" : "#D6D6DD"}`,
+              }}
               src={aoLogo}
               iconSize={36}
               iconColor="black"
             />
             <img
               style={{
-                width: 330,
-                height: 128,
+                width: "235.481px",
+                height: "128px",
                 flexShrink: 0,
               }}
               src={confirmAgentImage}
