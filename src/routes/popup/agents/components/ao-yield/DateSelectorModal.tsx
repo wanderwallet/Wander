@@ -510,7 +510,14 @@ const DateSelectorScreen = ({
                 Starts on:
               </Text>
             )}
-            <DateInput $isActive={isSelectingStart} onClick={() => setIsSelectingStart(true)}>
+            <DateInput
+              $isActive={isSelectingStart}
+              onClick={() => {
+                setIsSelectingStart(true);
+                if (startDate) {
+                  setCurrentDate(new Date(startDate.getFullYear(), startDate.getMonth(), 1));
+                }
+              }}>
               <Text size="sm" weight="medium" style={{ textAlign: "center" }} noMargin>
                 {startDate ? formatDate(startDate) : "Start date"}
               </Text>
@@ -520,7 +527,14 @@ const DateSelectorScreen = ({
                 <Text size="lg" weight="medium" noMargin>
                   -
                 </Text>
-                <DateInput $isActive={!isSelectingStart} onClick={() => setIsSelectingStart(false)}>
+                <DateInput
+                  $isActive={!isSelectingStart}
+                  onClick={() => {
+                    setIsSelectingStart(false);
+                    if (endDate) {
+                      setCurrentDate(new Date(endDate.getFullYear(), endDate.getMonth(), 1));
+                    }
+                  }}>
                   <Text size="sm" weight="medium" style={{ textAlign: "center" }} noMargin>
                     {endDate ? formatDate(endDate) : "End date"}
                   </Text>
