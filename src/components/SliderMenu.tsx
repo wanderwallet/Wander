@@ -83,6 +83,13 @@ const ExitButton = styled(CloseIcon)`
   & path {
     stroke-width: 2;
   }
+
+  /* Prevent rendering artifacts on hover */
+  &:hover {
+    transform-origin: center;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
 `;
 
 const AbsoluteExitButton = styled(ExitButton)`

@@ -751,6 +751,13 @@ const CalendarDay = styled.button<{
     `;
   }}
 
+  /* Ensure selected dates are always on top */
+  ${({ $isSelected }) =>
+    $isSelected &&
+    `
+    z-index: 1;
+  `}
+
   &:hover {
     background: ${({ theme, $isSelected, $isOtherMonth, $isDisabled }) =>
       $isDisabled ? "transparent" : $isSelected ? "#6366f1" : theme.surfaceSecondary};
