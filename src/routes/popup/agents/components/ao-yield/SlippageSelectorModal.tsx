@@ -1,11 +1,12 @@
 import browser from "webextension-polyfill";
 import { Flex } from "~components/common/Flex";
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback } from "react";
 import SliderMenu from "~components/SliderMenu";
 import { Button, Text, useToasts } from "@arconnect/components-rebrand";
 import { AlertTriangle } from "@untitled-ui/icons-react";
 import styled from "styled-components";
 import { MinusIcon, PlusIcon } from "@iconicicons/react";
+import { useInterval, useThrottledCallback, useTimeout } from "@swyg/corre";
 
 interface SlippageSelectorModalProps {
   open: boolean;
@@ -19,18 +20,12 @@ export function SlippageSelectorModal({ open, onClose, slippage, onSelect }: Sli
   const [selectedSlippage, setSelectedSlippage] = useState(slippage);
   const [isHolding, setIsHolding] = useState(false);
   const [holdDirection, setHoldDirection] = useState<"increase" | "decrease" | null>(null);
-  const holdTimeoutRef = useRef<NodeJS.Timeout>();
-  const animationFrameRef = useRef<number>();
+  const [holdStep, setHoldStep] = useState(0.1);
+  const [shouldStartHolding, setShouldStartHolding] = useState(false);
   const isToastShowing = useRef(false);
-  const lastUpdateTime = useRef<number>(0);
-  const updateSpeed = useRef<number>(0.1);
 
-  const handleSlippageChange = useCallback(
+  const throttledSlippageChange = useThrottledCallback(
     (amount: number, isIncrease: boolean) => {
-      const now = Date.now();
-      if (now - lastUpdateTime.current < 32) return; // ~30fps
-
-      lastUpdateTime.current = now;
       const newValue = Number((selectedSlippage + (isIncrease ? amount : -amount)).toFixed(1));
       const isAtLimit = isIncrease ? selectedSlippage >= 10 : selectedSlippage <= 0.5;
 
@@ -47,70 +42,48 @@ export function SlippageSelectorModal({ open, onClose, slippage, onSelect }: Sli
 
       setSelectedSlippage(isIncrease ? Math.min(newValue, 10) : Math.max(newValue, 0.5));
     },
+    100,
     [selectedSlippage, toasts],
   );
 
-  const handleDecreaseSlippage = useCallback(
-    (amount: number = 0.1) => {
-      handleSlippageChange(amount, false);
+  useTimeout(
+    () => {
+      setIsHolding(true);
+      setHoldStep(0.1);
     },
-    [handleSlippageChange],
+    shouldStartHolding ? 300 : null,
+    [shouldStartHolding],
   );
 
-  const handleIncreaseSlippage = useCallback(
-    (amount: number = 0.1) => {
-      handleSlippageChange(amount, true);
-    },
-    [handleSlippageChange],
-  );
-
-  const updateHold = useCallback(() => {
-    if (!isHolding || !holdDirection) return;
-
-    updateSpeed.current = Math.min(updateSpeed.current + 0.1, 1.0);
-
-    if (holdDirection === "increase") {
-      handleIncreaseSlippage(updateSpeed.current);
-    } else {
-      handleDecreaseSlippage(updateSpeed.current);
-    }
-
-    animationFrameRef.current = requestAnimationFrame(updateHold);
-  }, [isHolding, holdDirection, handleIncreaseSlippage, handleDecreaseSlippage]);
-
-  useEffect(() => {
-    if (isHolding && holdDirection) {
-      updateSpeed.current = 0.1;
-      animationFrameRef.current = requestAnimationFrame(updateHold);
-    }
-
-    return () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-        animationFrameRef.current = undefined;
+  useInterval(
+    () => {
+      if (holdDirection) {
+        setHoldStep((prev) => Math.min(prev * 1.1, 0.5));
+        throttledSlippageChange(holdStep, holdDirection === "increase");
       }
-    };
-  }, [isHolding, holdDirection, updateHold]);
+    },
+    isHolding && holdDirection ? 100 : null,
+  );
 
   const handleInteractionStart = useCallback(
     (direction: "increase" | "decrease") => {
-      if (direction === "increase") {
-        handleIncreaseSlippage(0.1);
-      } else {
-        handleDecreaseSlippage(0.1);
-      }
+      // Immediate single step on press
+      throttledSlippageChange(0.1, direction === "increase");
 
-      if (holdTimeoutRef.current) {
-        clearTimeout(holdTimeoutRef.current);
-      }
-
-      holdTimeoutRef.current = setTimeout(() => {
-        setIsHolding(true);
-        setHoldDirection(direction);
-      }, 150);
+      // Set direction and trigger timeout
+      setHoldDirection(direction);
+      setShouldStartHolding(true);
     },
-    [handleIncreaseSlippage, handleDecreaseSlippage],
+    [throttledSlippageChange],
   );
+
+  const stopHold = useCallback(() => {
+    // Stop the timeout and holding
+    setShouldStartHolding(false);
+    setIsHolding(false);
+    setHoldDirection(null);
+    setHoldStep(0.1);
+  }, []);
 
   const handleMouseDown = useCallback(
     (direction: "increase" | "decrease") => (e: React.MouseEvent) => {
@@ -128,35 +101,10 @@ export function SlippageSelectorModal({ open, onClose, slippage, onSelect }: Sli
     [handleInteractionStart],
   );
 
-  const stopHold = useCallback(() => {
-    if (holdTimeoutRef.current) {
-      clearTimeout(holdTimeoutRef.current);
-      holdTimeoutRef.current = undefined;
-    }
-    if (animationFrameRef.current) {
-      cancelAnimationFrame(animationFrameRef.current);
-      animationFrameRef.current = undefined;
-    }
-    setIsHolding(false);
-    setHoldDirection(null);
-    updateSpeed.current = 0.1;
-  }, []);
-
   const handleConfirm = () => {
     onSelect(selectedSlippage);
     onClose();
   };
-
-  useEffect(() => {
-    return () => {
-      if (holdTimeoutRef.current) {
-        clearTimeout(holdTimeoutRef.current);
-      }
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-    };
-  }, []);
 
   return (
     <SliderMenu title={browser.i18n.getMessage("slippage")} isOpen={open} onClose={onClose}>
