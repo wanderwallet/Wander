@@ -238,14 +238,15 @@ export function useAOYieldAgentProperties(agent: AOYieldAgentCreate | AOYieldAge
     const { conversionPercentage, startDate, endDate, runIndefinitely, slippage } = agent;
     const asset = "asset" in agent ? agent.asset : tokenIdInfoMap[agent?.tokenOut];
     const days = dayjs(endDate).diff(dayjs(startDate), "day") + 1;
-    const runningTime = runIndefinitely ? "∞" : `${days} ${days === 1 ? "day" : "days"}`;
+    const runningTime = runIndefinitely ? "∞ days" : `${days} ${days === 1 ? "day" : "days"}`;
+    const endDateFormatted = runIndefinitely ? "∞" : dayjs(endDate).format("MMM D, YYYY");
 
     const properties = [
       { name: "daily_conversion", value: `${conversionPercentage}% of AO earnings` },
       { name: "buy_asset", value: asset?.ticker || "" },
       { name: "running_time", value: runningTime },
       { name: "start_date", value: dayjs(startDate).format("MMM D, YYYY") },
-      { name: "end_date", value: dayjs(endDate).format("MMM D, YYYY") },
+      { name: "end_date", value: endDateFormatted },
       { name: "slippage", value: `${slippage}%` },
     ];
 
