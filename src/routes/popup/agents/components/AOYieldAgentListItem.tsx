@@ -11,10 +11,11 @@ import type { AOYieldAgent } from "~utils/agents/types";
 import { WAR_PROCESS_ID } from "~tokens/aoTokens/ao";
 import dayjs from "dayjs";
 import { useAOMintingStatus, useAOYieldAgentInfo } from "~utils/agents/hooks";
-import { getStatusColor, getStatusText, tokenIdInfoMap } from "~utils/agents/utils";
+import { getStatusColor, getStatusText, tokenIdInfoMap, updateLocalAOYieldAgent } from "~utils/agents/utils";
 import { useTheme } from "styled-components";
 import styled from "styled-components";
 import { EventType, trackEvent } from "~utils/analytics";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 interface AOYieldAgentListItemProps {
   aoAgent: AOYieldAgent;
@@ -26,6 +27,18 @@ export const AOYieldAgentListItem = ({ aoAgent, isHistory = false }: AOYieldAgen
   const { data: mintingStatus } = useAOMintingStatus();
   const { data: agentInfo } = useAOYieldAgentInfo(aoAgent?.id);
   const theme = useTheme();
+
+  useAsyncEffect(async () => {
+    if (!aoAgent || !agentInfo || isHistory) return;
+
+    try {
+      if (aoAgent.totalTransactions !== agentInfo.totalTransactions) {
+        await updateLocalAOYieldAgent(aoAgent.id, { totalTransactions: agentInfo.totalTransactions });
+      }
+    } catch (error) {
+      console.error("Error updating AO Yield Agent total transactions", error);
+    }
+  }, [aoAgent, agentInfo, isHistory]);
 
   return !!aoAgent && ((!isHistory && aoAgent.status === "Active") || isHistory) ? (
     <StyledListItem
@@ -58,7 +71,7 @@ export const AOYieldAgentListItem = ({ aoAgent, isHistory = false }: AOYieldAgen
             {dayjs(aoAgent.startDate).format("MMM D")} - {dayjs(aoAgent.endDate).format("MMM D")}
           </Text>
           <Text size="sm" variant="secondary" weight="medium" noMargin>
-            {agentInfo?.totalTransactions || 0} transactions
+            {aoAgent?.totalTransactions || agentInfo?.totalTransactions || 0} transactions
           </Text>
         </Flex>
       }

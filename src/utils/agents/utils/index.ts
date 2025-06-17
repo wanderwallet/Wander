@@ -195,6 +195,36 @@ export async function setAOYieldAgents(activeAddress: string, agents: AOYieldAge
   await ExtensionStorage.set(`ao_yield_agents_${activeAddress}`, agents);
 }
 
+/**
+ * Updates a local AO Yield Agent with the provided data
+ * @param agentId - The ID of the agent to update
+ * @param updateData - Partial agent data to update
+ * @param activeAddress - Optional active address, will fetch if not provided
+ * @returns Promise<boolean> - Returns true if agent was found and updated, false otherwise
+ */
+export async function updateLocalAOYieldAgent(
+  agentId: string,
+  updateData: Partial<AOYieldAgent>,
+  activeAddress?: string,
+): Promise<boolean> {
+  try {
+    const address = activeAddress || (await getActiveAddress());
+    const agents = await getAOYieldAgents(address);
+    const foundAgentIndex = agents.findIndex((agent) => agent.id === agentId);
+
+    if (foundAgentIndex !== -1) {
+      agents[foundAgentIndex] = { ...agents[foundAgentIndex], ...updateData };
+      await setAOYieldAgents(address, agents);
+      return true;
+    }
+
+    return false;
+  } catch (error) {
+    console.error("Error updating local AO Yield Agent", error);
+    return false;
+  }
+}
+
 export async function getRecentTxs(): Promise<RecentTx[]> {
   const recentTxs = await ExtensionStorage.get<RecentTx[]>(AO_YIELD_AGENT_RECENT_TXS);
   return recentTxs || [];

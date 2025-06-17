@@ -17,14 +17,12 @@ import { AgentCancelModal } from "./AgentCancelModal";
 import {
   assets,
   formatTokenQuantity,
-  getAOYieldAgents,
   getStatusColor,
   getStatusText,
-  setAOYieldAgents,
+  updateLocalAOYieldAgent,
 } from "~utils/agents/utils";
 import type { MintingStatus } from "~utils/agents/types";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
-import { getActiveAddress } from "~wallets";
 import { EventType, trackEvent } from "~utils/analytics";
 
 interface AgentInfoProps {
@@ -99,18 +97,16 @@ export function AgentInfo({ agentId, headerTitle, mintingStatus, isHistory = fal
   useAsyncEffect(async () => {
     if (!agent || !agentInfo) return;
 
-    if (agent.status !== agentInfo.status) {
-      const isCompleted = agent.status === "Active" && agentInfo.status === "Completed";
-      const activeAddress = await getActiveAddress();
-      const agents = await getAOYieldAgents(activeAddress);
-      const foundAgentIndex = agents.findIndex((agent) => agent.id === agentId);
-      if (foundAgentIndex !== -1) {
-        agents[foundAgentIndex] = { ...agent, status: agentInfo.status };
-        await setAOYieldAgents(activeAddress, agents);
-        if (isCompleted) {
+    try {
+      if (agent.status !== agentInfo.status) {
+        const isCompleted = agent.status === "Active" && agentInfo.status === "Completed";
+        const updated = await updateLocalAOYieldAgent(agentId, { status: agentInfo.status });
+        if (updated && isCompleted) {
           await trackEvent(EventType.AO_YIELD_AGENT_END, {});
         }
       }
+    } catch (error) {
+      console.error("Error updating AO Yield Agent status", error);
     }
   }, [agent, agentInfo]);
 
