@@ -6,21 +6,23 @@ import { Flex } from "~components/common/Flex";
 import { Line } from "~routes/popup/purchase";
 import { Agent } from "../components/liquidops/Agent";
 import { tokenData } from "liquidops";
-import { useActiveTokens } from "./utils/hooks/useAvailableTokens";
+import { useActiveTokens, type ActiveAgentToken } from "./utils/hooks/useAvailableTokens";
 import { useEffect, useMemo } from "react";
 import { trackEvent, EventType, trackPage, PageType } from "~utils/analytics";
+import { useAPYOrder } from "./utils/hooks/useAPYOrder";
 
 export function LiquidOpsAgentsView() {
-  const availableTokens = Object.values(tokenData).filter((token) => !token.deprecated);
-
   const { data: activeTokens } = useActiveTokens();
-  const inactiveTokens = useMemo(
-    () =>
-      availableTokens.filter((token1) =>
-        activeTokens ? !activeTokens.find((token2) => token2.address === token1.address) : [],
-      ),
-    [availableTokens, activeTokens],
-  );
+  const inactiveTokens = useMemo(() => {
+    const availableTokens = Object.values(tokenData).filter((token) => !token.deprecated);
+
+    return availableTokens.filter((token1) =>
+      activeTokens ? !activeTokens.find((token2) => token2.address === token1.address) : [],
+    );
+  }, [activeTokens]);
+
+  const { data: apys = {} } = useAPYOrder();
+  const apySort = (a: ActiveAgentToken, b: ActiveAgentToken) => apys[b.ticker] || 0 - apys[a.ticker] || 0;
 
   useEffect(() => {
     trackPage(PageType.LIQUID_OPS_AGENTS);
@@ -38,8 +40,8 @@ export function LiquidOpsAgentsView() {
                 {browser.i18n.getMessage("active_agents")}
               </Text>
 
-              {activeTokens.map((token) => (
-                <Agent key={token.ticker} ticker={token.cleanTicker} running={true} profit={token.profit} />
+              {activeTokens.sort(apySort).map((token) => (
+                <Agent key={token.ticker} ticker={token.cleanTicker} profit={token.profit} running />
               ))}
             </Flex>
 
@@ -52,8 +54,8 @@ export function LiquidOpsAgentsView() {
             {browser.i18n.getMessage("available_agents")}
           </Text>
 
-          {inactiveTokens.map((token) => (
-            <Agent key={token.ticker} ticker={token.cleanTicker} running={false} />
+          {inactiveTokens.sort(apySort).map((token) => (
+            <Agent key={token.ticker} ticker={token.cleanTicker} />
           ))}
         </Flex>
       </Wrapper>

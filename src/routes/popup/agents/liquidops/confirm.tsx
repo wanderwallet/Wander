@@ -62,6 +62,9 @@ export function LiquidOpsConfirm({ params: { action, ticker, quantity } }: Liqui
           queryClient.invalidateQueries({
             queryKey: ["earnings", ticker, wallet?.address],
           }),
+          queryClient.invalidateQueries({
+            queryKey: ["apyOrder"],
+          }),
         ]);
       } else {
         console.warn("Error trying to lend/withdraw: " + (error?.message || error || "Unknown error"));
@@ -71,11 +74,11 @@ export function LiquidOpsConfirm({ params: { action, ticker, quantity } }: Liqui
     },
   });
 
-  const activeTokens = Object.values(tokenData).filter((token) => !token.deprecated);
-  const token = useMemo(
-    () => activeTokens.find((token) => token.ticker.toLowerCase() === ticker.toLowerCase()),
-    [activeTokens, ticker],
-  );
+  const token = useMemo(() => {
+    const activeTokens = Object.values(tokenData).filter((token) => !token.deprecated);
+
+    return activeTokens.find((token) => token.ticker.toLowerCase() === ticker.toLowerCase());
+  }, [ticker]);
   const { data: tokenIconUrl } = useGateway(token.icon);
 
   const { data: supplyAPR = 0 } = useLOSupplyAPY(token.ticker);
