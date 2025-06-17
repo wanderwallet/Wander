@@ -10,9 +10,9 @@
     "@jridgewell/gen-mapping" "^0.3.5"
     "@jridgewell/trace-mapping" "^0.3.24"
 
-"@arconnect/components-rebrand@https://github.com/wanderwallet/components-rebrand.git#feat/listitem-expandable":
+"@arconnect/components-rebrand@https://github.com/wanderwallet/components-rebrand.git#master":
   version "1.0.0"
-  resolved "https://github.com/wanderwallet/components-rebrand.git#bde90adcf6493c0b737a89ccd88e217486a3359f"
+  resolved "https://github.com/wanderwallet/components-rebrand.git#1edc97010150af638e9bb813feca7476881feb97"
   dependencies:
     "@iconicicons/react" "^1.5.1"
     "@untitled-ui/icons-react" "^0.1.4"
