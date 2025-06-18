@@ -3509,7 +3509,7 @@
     "description": "Estimated APY text"
   },
   "deposit_receive": {
-    "message": "You will recieve $OTOKEN$ tokens in place of your deposited $TICKER$ tokens.",
+    "message": "You will receive $OTOKEN$ tokens in place of your deposited $TICKER$ tokens.",
     "description": "Note about getting oTokens for tokens",
     "placeholders": {
       "otoken": {
@@ -3523,7 +3523,7 @@
     }
   },
   "withdraw_receive": {
-    "message": "You will recieve your deposited $TICKER$ tokens along with the yield you have earned.",
+    "message": "You will receive your deposited $TICKER$ tokens along with the yield you have earned.",
     "description": "Note about getting tokens for oTokens",
     "placeholders": {
       "ticker": {
