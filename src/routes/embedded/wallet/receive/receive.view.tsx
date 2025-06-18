@@ -37,7 +37,6 @@ export function WalletReceiveEmbeddedView() {
         <Copyable
           isFullWidth
           value={effectiveAddress ?? ""}
-          hasBorder={false}
           style={{
             marginTop: "1rem",
             backgroundColor: "#EBEBF0",

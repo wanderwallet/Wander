@@ -1,4 +1,5 @@
 import copy from "copy-to-clipboard";
+import { CopyToClipboard } from "~components/CopyToClipboard";
 import { Avatar, Copyable, DownloadIcon, Row, Text, WalletIcon } from "~components/embed/ui";
 import Dropdown from "~components/embed/ui/molecules/dropdown/Dropdown/Dropdown";
 import DropdownItem from "~components/embed/ui/molecules/dropdown/DropdownItem/DropdownItem";
@@ -71,17 +72,7 @@ export function AccountSelector({
                     }}>
                     {wallet.nickname ?? wallet.address}
                   </Text>
-                  <Copyable
-                    isButtonOnly
-                    hasBorder={false}
-                    value={wallet.address}
-                    style={{
-                      maxWidth: 140,
-                    }}
-                    onClick={() => {
-                      copy(wallet.address);
-                    }}
-                  />
+                  <CopyToClipboard text={wallet.address} />
                 </Row>
               </DropdownItem>
             ))}
