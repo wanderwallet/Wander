@@ -83,6 +83,24 @@ export interface EmbeddedContextAuth {
   session: null | DbSession;
 }
 
+export type OAutProviderType = Exclude<AuthProviderType, "EMAIL_N_PASSWORD" | "PASSKEYS">;
+
+export interface AuthSignInWithPasswordParams {
+  method: "signInWithPassword";
+  email: string;
+  password: string;
+}
+
+export interface AuthVerifyOtpParams {
+  method: "verifyOtp";
+  email: string;
+  token: string;
+}
+
+export type AuthEmailParams = AuthSignInWithPasswordParams | AuthVerifyOtpParams;
+
+export type AuthEmailParamsMethod = AuthEmailParams["method"];
+
 export interface RecoveryJSON {
   version: string;
   walletId: string;
@@ -94,7 +112,7 @@ export interface EmbeddedContextData extends EmbeddedContextState, EmbeddedConte
   currentWallet: Wallet | null;
   unpartitionedStateStatus: UnpartitionedStateStatus;
 
-  authenticate: (authProviderType: AuthProviderType, email?: string, password?: string) => Promise<void>;
+  authenticate: (authParams: OAutProviderType | AuthEmailParams) => Promise<void>;
   fetchRecoverableAccounts: () => Promise<RecoverableAccount[]>;
   clearRecoverableAccounts: () => void;
   setRecoverableAccount: (recoverableAccount: RecoverableAccount) => void;

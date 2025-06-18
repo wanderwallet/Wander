@@ -7,13 +7,37 @@ export function isThemeRecord<T>(
   return !!(cssVars && typeof cssVars === "object" && ("light" in cssVars || "dark" in cssVars));
 }
 
-export function addCSSVariables<T>(element: HTMLElement, vars: T, suffix = "") {
+export function addCSSVariables<T extends Object>(element: HTMLElement, vars: T, suffix = "") {
   for (const key in vars) {
     const name = `--${key}${suffix}`;
     const value = vars[key];
 
     if (typeof value === "string") element.style.setProperty(name, value);
     else if (typeof value === "number") element.style.setProperty(name, `${value}px`);
+  }
+}
+
+export function addCSSVariablesForTheme<T extends Object>(
+  element: HTMLElement,
+  vars: T | Record<ThemeVariant, T>,
+  themeOption?: ThemeSetting,
+) {
+  if (!vars || Object.keys(vars).length === 0) return;
+
+  if (isThemeRecord(vars)) {
+    if (themeOption === "system") {
+      addCSSVariables(element, vars.light, "Light");
+      addCSSVariables(element, vars.dark, "Dark");
+    } else if (themeOption === "dark") {
+      addCSSVariables(element, vars.dark, "Light");
+      addCSSVariables(element, vars.dark, "Dark");
+    } else {
+      addCSSVariables(element, vars.light, "Light");
+      addCSSVariables(element, vars.light, "Dark");
+    }
+  } else {
+    addCSSVariables(element, vars, "Light");
+    addCSSVariables(element, vars, "Dark");
   }
 }
 
@@ -37,11 +61,10 @@ export function mergeCSSVariablesOption<T extends Object>(
     }
   }
 
-  if (themeOption === "light") cssVarsDark = cssVarsLight;
-  if (themeOption === "dark") cssVarsLight = cssVarsDark;
-
   return {
     light: cssVarsLight,
     dark: cssVarsDark,
   };
 }
+
+export const THEMES = ["system", "light", "dark"] as const satisfies ThemeSetting[];
