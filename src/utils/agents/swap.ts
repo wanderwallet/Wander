@@ -302,15 +302,18 @@ async function validateAgentForSwap(activeAgent: AOYieldAgent): Promise<boolean>
  * @param agentInfo - The agent info.
  * @returns True if the swap is already in progress or completed, false otherwise.
  */
-function shouldSkipSwap(agentInfo: AOYieldAgentInfo): boolean {
+async function shouldSkipSwap(agentInfo: AOYieldAgentInfo, walletAddress: string): Promise<boolean> {
   const { processedUpToDate, swappedUpToDate } = agentInfo;
 
-  if (processedUpToDate && normalizeToStartOfDay(processedUpToDate) === normalizeToStartOfDay(Date.now())) {
+  const normalizedNow = normalizeToStartOfDay(Date.now());
+  if (processedUpToDate && normalizeToStartOfDay(processedUpToDate) === normalizedNow) {
+    await setLastSwapDateForWallet(walletAddress, normalizedNow);
     log(LOG_GROUP.AGENTS, "Swap already processed up to date today");
     return true;
   }
 
-  if (swappedUpToDate && normalizeToStartOfDay(swappedUpToDate) === normalizeToStartOfDay(Date.now())) {
+  if (swappedUpToDate && normalizeToStartOfDay(swappedUpToDate) === normalizedNow) {
+    await setLastSwapDateForWallet(walletAddress, normalizedNow);
     log(LOG_GROUP.AGENTS, "Agent has already swapped up to date today");
     return true;
   }
@@ -485,7 +488,7 @@ async function processAgentSwap(agent: AOYieldAgent, walletAddress: string): Pro
     }
 
     // Check if swap should be skipped
-    if (shouldSkipSwap(agentInfo)) {
+    if (await shouldSkipSwap(agentInfo, walletAddress)) {
       return;
     }
 
