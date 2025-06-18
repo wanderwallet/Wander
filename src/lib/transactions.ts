@@ -13,7 +13,7 @@ import type {
   RawTransaction,
   Transaction,
 } from "~api/background/handlers/alarms/notifications/notifications-alarm.utils";
-import { fetchTokenByProcessId } from "~tokens/aoTokens/ao";
+import { fetchTokenByProcessId, getTagValue } from "~tokens/aoTokens/ao";
 
 const AGENT_TOKEN_ADDRESS = "8rbAftv7RaPxFjFk5FGUVAVCSjGQB4JHDcb9P9wCVhQ";
 
@@ -82,22 +82,25 @@ const processAoTransaction = async (transaction: GQLEdgeInterface, type: string)
     return null;
   }
 
-  const tokenData = await timeoutPromise(fetchTokenByProcessId(transaction.node.recipient), 10000).catch(() => null);
-  const quantityTag = transaction.node.tags.find((tag) => tag.name === "Quantity");
+  const tags = transaction.node.tags || [];
+  const isLiquidOpsAoReceived = type === "liquidOpsAoReceived";
+  const processId = isLiquidOpsAoReceived ? getTagValue("From-Process", tags) : transaction.node.recipient;
+  const tokenData = await timeoutPromise(fetchTokenByProcessId(processId), 10000).catch(() => null);
+  const quantity = getTagValue("Quantity", tags) || getTagValue("Mint-Quantity", tags);
   const isCollectible = tokenData?.type === "collectible";
 
   return {
     ...transaction,
-    transactionType: type,
+    transactionType: isLiquidOpsAoReceived ? "aoReceived" : type,
     day: 0,
     month: 0,
     year: 0,
     date: "",
     aoInfo: {
-      quantity: quantityTag ? quantityTag.value : undefined,
+      quantity: quantity ? quantity : undefined,
       tickerName:
         (isCollectible ? tokenData?.Name! || tokenData?.Ticker! : tokenData?.Ticker! || tokenData?.Name!) ||
-        formatAddress(transaction.node.recipient, 4),
+        formatAddress(processId, 4),
       denomination: tokenData?.Denomination || 0,
       logo: tokenData?.Logo,
     },

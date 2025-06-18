@@ -3,7 +3,7 @@ import { type Tag } from "arweave/web/lib/transaction";
 import { PersistentStorage } from "~utils/storage";
 import { Quantity } from "ao-tokens";
 import { ArweaveSigner, createData } from "@dha-team/arbundles";
-import { getActiveKeyfile } from "~wallets";
+import { getActiveKeyfile, getKeyfile, type DecryptedWallet } from "~wallets";
 import { isLocalWallet } from "~utils/assertions";
 import { freeDecryptedWallet } from "~wallets/encryption";
 import type { KeystoneSigner } from "~wallets/hardware/keystone";
@@ -23,8 +23,12 @@ export let tokenInfoMap = new Map<string, TokenInfo | Token>();
 export type AoInstance = ReturnType<typeof connect>;
 
 export const AR_PROCESS_ID = "AR" as const;
+export const WAR_PROCESS_ID = "xU9zFkq3X2ZQ6olwNVvr1vUWIjc3kXTWr7xKQD6dh10" as const;
+export const WUSDC_PROCESS_ID = "7zH9dlMNoxprab9loshv3Y7WG45DOny_Vrq9KrXObdQ" as const;
 export const PI_PROCESS_ID = "4hXj_E-5fAKmo4E8KjgQvuDJKAFk9P2grhycVmISDLs" as const;
 export const EXP_PROCESS_ID = "aYrCboXVSl1AXL9gPFe3tfRxRf0ZmkOXH65mKT0HHZw" as const;
+export const ARIO_PROCESS_ID = "qNvAoz0TgcH7DMg8BCVn8jF32QH5L6T29VjHxhHqqGE" as const;
+export const USDA_PROCESS_ID = "FBt9A5GA_KXMMSxA2DJ0xZbAq8sLLU2ak-YJe9zDvg8" as const;
 export const AO_PROCESS_ID = "0syT13r0s0tgPmIed95bJnuSqaD29HQNN8D3ElLSrsc" as const;
 export const AO_OLD_PROCESS_ID = "m3PaWzK4PTG9lAaqYQPaPdOcXdO8hYqi5Fe9NWqXd0w" as const;
 export const AO_PROCESS_BALANCE_MIRROR = "Pi-WmAQp2-mh-oWH9lWpz5EthlUDj_W0IusAv-RXhRk" as const;
@@ -56,7 +60,14 @@ export const defaultTokens = [
     Ticker: "wAR",
     Denomination: 12,
     Logo: "L99jaxRKQKJt9CqoJtPaieGPEhJD3wNhR4iGqc8amXs",
-    processId: "xU9zFkq3X2ZQ6olwNVvr1vUWIjc3kXTWr7xKQD6dh10",
+    processId: WAR_PROCESS_ID,
+  },
+  {
+    Name: "Astro USD",
+    Ticker: "USDA",
+    Denomination: 12,
+    Logo: "seXozJrsP0OgI0gvAnr8zmfxiHHb5iSlI9wMI8SdamE",
+    processId: USDA_PROCESS_ID,
   },
 ] as const satisfies TokenInfo[];
 
@@ -90,6 +101,14 @@ type DataItemResult = {
 };
 
 type CreateDataItemSigner = (wallet: any) => (args: CreateDataItemArgs) => Promise<DataItemResult>;
+
+const { dryrun: customDryrun } = connect({ CU_URL: "https://cu.ardrive.io" });
+
+const getDryrunForProcess = (processId: string) => {
+  return processId === ARIO_PROCESS_ID || processId === USDA_PROCESS_ID
+    ? { dryrunFn: customDryrun, isCustomDryrun: true }
+    : { dryrunFn: dryrun, isCustomDryrun: false };
+};
 
 export function getTokenInfoFromData(res: any, id: string): TokenInfo {
   // find message with token info
@@ -223,11 +242,18 @@ export async function getAoTokenBalance(address: string, process: string, aoToke
     aoToken = aoTokens.find((token) => token.processId === process);
   }
 
-  const res = await dryrun({
+  const { dryrunFn, isCustomDryrun } = getDryrunForProcess(process);
+  const tags = [{ name: "Action", value: "Balance" }];
+
+  if (isCustomDryrun) {
+    tags.push({ name: "Referer", value: "Wander" });
+  }
+
+  const res = await dryrunFn({
     Id,
     Owner: address,
     process,
-    tags: [{ name: "Action", value: "Balance" }],
+    tags,
   });
 
   const errorMessage = (res as any)?.error || res?.Error;
@@ -278,72 +304,94 @@ export async function getAoCollectibleBalance(
     : new Quantity(0, BigInt(collectible.Denomination));
 }
 
-export async function getNativeTokenBalance(address: string): Promise<string> {
-  const res = await dryrun({
-    Id,
-    Owner: address,
-    process: AO_PROCESS_BALANCE_MIRROR,
-    tags: [{ name: "Action", value: "Balance" }],
-  });
-  const balance = res.Messages[0].Data;
-  return balance ? new Quantity(BigInt(balance), BigInt(12)).toString() : "0";
-}
-
 /**
  * Find the value for a tag name
  */
 export const getTagValue = (tagName: string, tags: (Tag | DecodedTag)[]) => tags.find((t) => t.name === tagName)?.value;
 
-export const sendAoTransfer = async (ao: AoInstance, process: string, recipient: string, amount: string) => {
+export const createDataItemSigner =
+  (wallet: any) =>
+  async ({
+    data,
+    tags = [],
+    target,
+    anchor,
+  }: {
+    data: any;
+    tags?: { name: string; value: string }[];
+    target?: string;
+    anchor?: string;
+  }): Promise<{ id: string; raw: ArrayBuffer }> => {
+    const signer = new ArweaveSigner(wallet);
+    const dataItem = createData(data, signer, { tags, target, anchor });
+
+    await dataItem.sign(signer);
+
+    return {
+      id: dataItem.id,
+      raw: dataItem.getRaw(),
+    };
+  };
+
+export const sendAoTransfer = async (
+  ao: AoInstance,
+  process: string,
+  recipient: string,
+  amount: string,
+  tags: (Tag | DecodedTag)[] = [],
+) => {
+  return sendAoTransferForWallet(ao, process, recipient, amount, tags);
+};
+
+/**
+ * Sends AO transfer for a specific wallet address
+ * @param ao - AO instance
+ * @param process - Process ID
+ * @param recipient - Recipient address
+ * @param amount - Amount to transfer
+ * @param walletAddress - Specific wallet address to use for signing
+ * @param tags - Additional tags
+ * @returns Message ID
+ */
+export async function sendAoTransferForWallet(
+  ao: AoInstance,
+  process: string,
+  recipient: string,
+  amount: string,
+  tags: (Tag | DecodedTag)[] = [],
+  walletAddress?: string,
+): Promise<string | undefined> {
+  let decryptedWallet: DecryptedWallet;
   try {
-    const decryptedWallet = await getActiveKeyfile();
+    decryptedWallet = walletAddress ? await getKeyfile(walletAddress) : await getActiveKeyfile();
     isLocalWallet(decryptedWallet);
     const keyfile = decryptedWallet.keyfile;
 
-    const createDataItemSigner =
-      (wallet: any) =>
-      async ({
-        data,
-        tags = [],
-        target,
-        anchor,
-      }: {
-        data: any;
-        tags?: { name: string; value: string }[];
-        target?: string;
-        anchor?: string;
-      }): Promise<{ id: string; raw: ArrayBuffer }> => {
-        const signer = new ArweaveSigner(wallet);
-        const dataItem = createData(data, signer, { tags, target, anchor });
-
-        await dataItem.sign(signer);
-
-        return {
-          id: dataItem.id,
-          raw: dataItem.getRaw(),
-        };
-      };
     const signer = createDataItemSigner(keyfile);
     const transferID = await ao.message({
       process,
       signer,
       tags: [
         { name: "Action", value: "Transfer" },
-        {
-          name: "Recipient",
-          value: recipient,
-        },
+        { name: "Recipient", value: recipient },
         { name: "Quantity", value: amount },
         { name: "Client", value: "Wander" },
         { name: "Client-Version", value: browser.runtime.getManifest().version },
+        ...tags,
       ],
     });
-    freeDecryptedWallet(decryptedWallet.keyfile);
+
     return transferID;
   } catch (err) {
     console.log("err", err);
+    return undefined;
+  } finally {
+    // Clean up keyfile from memory
+    if (decryptedWallet && decryptedWallet.type !== "hardware") {
+      freeDecryptedWallet(decryptedWallet.keyfile);
+    }
   }
-};
+}
 
 export const sendAoTransferKeystone = async (
   ao: AoInstance,

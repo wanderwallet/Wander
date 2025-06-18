@@ -3039,5 +3039,537 @@
     "imported": {
         "message": "导入",
         "description": "Imported text"
+    },
+    "agents": {
+        "message": "代理们",
+        "description": "Agents text"
+    },
+    "create_an_agent": {
+        "message": "创建一个代理",
+        "description": "Create an agent text"
+    },
+    "learn_more": {
+        "message": "了解更多",
+        "description": "Learn more text"
+    },
+    "introducing_the_agents": {
+        "message": "Wander代理现已推出！",
+        "description": "Introducing the Agents text"
+    },
+    "introducing_the_agents_description": {
+        "message": "轻松出借您的代币并赚取利息——设置一个代理，自动将您的AO收益转换为wAR或wUSDC每日一次。",
+        "description": "Introducing the Agents description"
+    },
+    "no_active_yield_agents": {
+        "message": "您没有活跃的收益代理",
+        "description": "You don't have any active yield agents text"
+    },
+    "ao_yield_agent": {
+        "message": "AO收益代理",
+        "description": "AO Yield Agent text"
+    },
+    "ao_yield_agent_description": {
+        "message": "自动将您的AO代币收益转换为wUSDC或wAR",
+        "description": "AO Yield Agent description"
+    },
+    "liquidops_agent": {
+        "message": "LiquidOps代理",
+        "description": "LiquidOps Agent text"
+    },
+    "liquidops_agent_description": {
+        "message": "$ACTIVE$个活跃代理，$AVAILABLE$个可用代理",
+        "description": "LiquidOps Agent description",
+        "placeholders": {
+            "active": {
+                "content": "$1",
+                "example": "0"
+            },
+            "available": {
+                "content": "$2",
+                "example": "3"
+            }
+        }
+    },
+    "select_buy_asset": {
+        "message": "选择购买资产",
+        "description": "Select buy asset text"
+    },
+    "buy_asset": {
+        "message": "购买资产",
+        "description": "Buy asset text"
+    },
+    "percentage_of_daily_ao_to_sell": {
+        "message": "每日待出售 AO 的百分比",
+        "description": "Percentage of daily AO to sell text"
+    },
+    "percentage_of_daily_ao_to_sell_description": {
+        "message": "你想要兑换的每日铸造 AO 数量",
+        "description": "Percentage of daily AO to sell description"
+    },
+    "running_time": {
+        "message": "运行时间",
+        "description": "Running time text"
+    },
+    "slippage": {
+        "message": "滑点",
+        "description": "Slippage text"
+    },
+    "slippage_description": {
+        "message": "如果价格变化超过滑点百分比，您的出售将被取消。",
+        "description": "Slippage description"
+    },
+    "auto": {
+        "message": "自动",
+        "description": "Auto text"
+    },
+    "run_indefinitely": {
+        "message": "持续运行",
+        "description": "Run indefinitely text"
+    },
+    "run_indefinitely_tooltip": {
+        "message": "除非您取消，否则代理将不会停止转换已铸造的AO。",
+        "description": "Run indefinitely tooltip"
+    },
+    "your_agents": {
+        "message": "您的代理们",
+        "description": "Your agents text"
+    },
+    "slippage_cannot_be_less_than_0_5": {
+        "message": "滑点不能小于0.5%",
+        "description": "Slippage cannot be less than 0.5% text"
+    },
+    "slippage_cannot_be_greater_than_10": {
+        "message": "滑点不能大于10%",
+        "description": "Slippage cannot be greater than 10% text"
+    },
+    "select_running_dates": {
+        "message": "选择运行日期",
+        "description": "Select running dates text"
+    },
+    "confirm_agent": {
+        "message": "确认代理",
+        "description": "Confirm agent text"
+    },
+    "activate_agent": {
+        "message": "激活代理",
+        "description": "Activate agent text"
+    },
+    "daily_conversion": {
+        "message": "每日兑换",
+        "description": "daily conversion text"
+    },
+    "start_date": {
+        "message": "开始日期",
+        "description": "Start date description"
+    },
+    "end_date": {
+        "message": "结束日期",
+        "description": "End date description"
+    },
+    "fee": {
+        "message": "费用",
+        "description": "Fee description"
+    },
+    "enter_password_confirm": {
+        "message": "输入密码以确认",
+        "description": "Enter password to confirm title"
+    },
+    "go_to_dashboard": {
+        "message": "前往仪表盘",
+        "description": "Goto dashboard description"
+    },
+    "manage_agent": {
+        "message": "管理代理",
+        "description": "Manage agent description"
+    },  
+    "agent_activated_title": {
+        "message": "代理已激活！",
+        "description": "Agent activated title"
+    },
+    "agent_activated_description": {
+        "message": "您的 AO 收益代理已成功激活，并将开始转换您的 AO 收益。",
+        "description": "Agent activated title"
+    },
+    "agent_not_activated_title": {
+        "message": "代理无法激活",
+        "description": "Agent not activated title"
+    },
+    "agent_not_activated_description": {
+        "message": "似乎出了点问题，请重试。",
+        "description": "Agent not activated title"
+    },
+    "try_again": {
+        "message": "请重试",
+        "description": "Try again description"
+    },
+    "active": {
+        "message": "活跃",
+        "description": "Active text"
+    },
+    "cancelled": {
+        "message": "已取消",
+        "description": "Cancelled text"
+    },
+    "completed": {
+        "message": "已完成",
+        "description": "Completed text"
+    },
+    "paused": {
+        "message": "已暂停",
+        "description": "Paused text"
+    },
+    "percentage_of_each_conversion": {
+        "message": "$PERCENTAGE$% 每次转换",
+        "description": "Percentage of each conversion text",
+        "placeholders": {
+            "percentage": {
+                "content": "$1",
+                "example": "0.5"
+            }
+        }
+    },
+    "cancel_agent": {
+        "message": "取消代理",
+        "description": "Cancel agent text"
+    },
+    "agent_details": {
+        "message": "代理详情",
+        "description": "Agent details text"
+    },
+    "performance": {
+        "message": "性能",
+        "description": "Performance text"
+    },
+    "total_ao_sold": {
+        "message": "总AO已售出",
+        "description": "Total AO sold text"
+    },
+    "total_bought": {
+        "message": "总$ASSET$已购买",
+        "description": "Total bought text",
+        "placeholders": {
+            "asset": {
+                "content": "$1",
+                "example": "wUSDC"
+            }
+        }
+    },
+    "total_transactions": {
+        "message": "总交易次数",
+        "description": "Total transactions text"
+    },
+    "view_transaction_history": {
+        "message": "查看交易历史",
+        "description": "View transaction history text"
+    },
+    "edit_agent": {
+        "message": "编辑代理",
+        "description": "Edit agent text"
+    },
+    "error_updating_agent": {
+        "message": "更新代理失败",
+        "description": "Error updating agent text"
+    },
+    "agent_updated": {
+        "message": "代理已更新",
+        "description": "Agent updated text"
+    },
+    "agent_cancelled": {
+        "message": "代理已取消",
+        "description": "Agent cancelled text"
+    },
+    "agent_history": {
+        "message": "代理历史",
+        "description": "Agent history text"
+    },
+    "total_wander_fee": {
+        "message": "总Wander费用",
+        "description": "Total Wander fee text"
+    },
+    "load_more": {
+        "message": "加载更多",
+        "description": "Load more text"
+    },
+    "agent_cancel_title": {
+        "message": "确定要取消您的代理吗？",
+        "description": "Agent cancel title"
+    },
+    "agent_cancel_description": {
+        "message": "取消您的代理将停止您的自动AO代币转换。您也可以创建一个新的代理。",
+        "description": "Agent cancel description"
+    },
+    "i_understand": {
+        "message": "我明白",
+        "description": "I understand text"
+    },
+    "go_back": {
+        "message": "返回",
+        "description": "Go back text"
+    },
+    "no_agents": {
+        "message": "您没有代理",
+        "description": "No agents text"
+    },
+    "ao_delegation_title": {
+        "message": "未分配 AO 收益",
+        "description": "AO Delegation title"
+    },
+    "ao_delegation_description": {
+        "message": "您的钱包未分配任何 AO 收益。请更新您的 AO 收益委托偏好设置以开始接收 AO 代币并启用代理功能。",
+        "description": "AO Delegation description"
+    },
+    "update_preferences": {
+        "message": "更新偏好",
+        "description": "Update preferences text"
+    },
+    "ao_minting_paused": {
+        "message": "铸造已暂停",
+        "description": "AO Minting Paused text"
+    },
+    "month_january": {
+        "message": "一月",
+        "description": "Month name January"
+    },
+    "month_february": {
+        "message": "二月",
+        "description": "Month name February"
+    },
+    "month_march": {
+        "message": "三月",
+        "description": "Month name March"
+    },
+    "month_april": {
+        "message": "四月",
+        "description": "Month name April"
+    },
+    "month_may": {
+        "message": "五月",
+        "description": "Month name May"
+    },
+    "month_june": {
+        "message": "六月",
+        "description": "Month name June"
+    },
+    "month_july": {
+        "message": "七月",
+        "description": "Month name July"
+    },
+    "month_august": {
+        "message": "八月",
+        "description": "Month name August"
+    },
+    "month_september": {
+        "message": "九月",
+        "description": "Month name September"
+    },
+    "month_october": {
+        "message": "十月",
+        "description": "Month name October"
+    },
+    "month_november": {
+        "message": "十一月",
+        "description": "Month name November"
+    },
+    "month_december": {
+        "message": "十二月",
+        "description": "Month name December"
+    },
+    "day_sunday": {
+        "message": "日",
+        "description": "Abbreviated day name Sunday"
+    },
+    "day_monday": {
+        "message": "一",
+        "description": "Abbreviated day name Monday"
+    },
+    "day_tuesday": {
+        "message": "二",
+        "description": "Abbreviated day name Tuesday"
+    },
+    "day_wednesday": {
+        "message": "三",
+        "description": "Abbreviated day name Wednesday"
+    },
+    "day_thursday": {
+        "message": "四",
+        "description": "Abbreviated day name Thursday"
+    },
+    "day_friday": {
+        "message": "五",
+        "description": "Abbreviated day name Friday"
+    },
+    "day_saturday": {
+        "message": "六",
+        "description": "Abbreviated day name Saturday"
+    },
+    "active_agents": {
+      "message": "活跃代理",
+      "description": "Active agents text"
+    },
+    "available_agents": {
+      "message": "可用代理",
+      "description": "Available agents text"
+    },
+    "agent": {
+      "message": "代理",
+      "description": "Agent text"
+    },
+    "deposited": {
+      "message": "已存入",
+      "description": "Deposited amount text"
+    },
+    "deposit": {
+      "message": "存入",
+      "description": "Deposit text"
+    },
+    "withdraw": {
+      "message": "提取",
+      "description": "Withdraw text"
+    },
+    "apy_earned": {
+      "message": "已赚取年利率",
+      "description": "APY earned text"
+    },
+    "current_apy": {
+      "message": "当前年利率",
+      "description": "Current APY text"
+    },
+    "earned": {
+      "message": "已赚取",
+      "description": "Earned text"
+    },
+    "status": {
+      "message": "状态",
+      "description": "Status text"
+    },
+    "inactive": {
+      "message": "不活跃",
+      "description": "Inactive label"
+    },
+    "token_balance": {
+      "message": "$TICKER$ 余额",
+      "description": "Token (ticker) balance label",
+      "placeholders": {
+        "ticker": {
+          "content": "$1",
+          "example": "oUSDA"
+        }
+      }
+    },
+    "liquidops_open": {
+      "message": "在 LiquidOps 中打开",
+      "description": "Open in LiquidOps link text"
+    },
+    "you_deposit": {
+      "message": "您存入",
+      "description": "You deposit label"
+    },
+    "wander_fee": {
+      "message": "漂移费用",
+      "description": "Wander fee text"
+    },
+    "estimated_apy": {
+      "message": "预估年利率",
+      "description": "Estimated APY text"
+    },
+    "deposit_receive": {
+      "message": "您将收到 $OTOKEN$ 代币，以替代您存入的 $TICKER$ 代币。",
+      "description": "Note about getting oTokens for tokens",
+      "placeholders": {
+        "otoken": {
+          "content": "$1",
+          "example": "oUSDA"
+        },
+        "ticker": {
+          "content": "$2",
+          "example": "USDA"
+        }
+      }
+    },
+    "withdraw_receive": {
+      "message": "您将收到您存入的 $TICKER$ 代币以及所赚取的收益。",
+      "description": "Note about getting tokens for oTokens",
+      "placeholders": {
+        "ticker": {
+          "content": "$1",
+          "example": "USDA"
+        }
+      }
+    },
+    "withdrawing": {
+      "message": "正在提取",
+      "description": "Ongoing withdraw text"
+    },
+    "depositing": {
+      "message": "正在存入",
+      "description": "Ongoing deposit text"
+    },
+    "view_all_agents": {
+      "message": "查看所有代理",
+      "description": "View all agents button text"
+    },
+    "withdraw_success": {
+      "message": "$TICKER$ 提取成功！",
+      "description": "Note about withdrawing tokens",
+      "placeholders": {
+        "ticker": {
+          "content": "$1",
+          "example": "USDA"
+        }
+      }
+    },
+    "withdraw_failure": {
+      "message": "$TICKER$ 无法提取",
+      "description": "Note about error while withdrawing tokens",
+      "placeholders": {
+        "ticker": {
+          "content": "$1",
+          "example": "USDA"
+        }
+      }
+    },
+    "deposit_success": {
+      "message": "$TICKER$ 存入成功！",
+      "description": "Note about depositing tokens",
+      "placeholders": {
+        "ticker": {
+          "content": "$1",
+          "example": "USDA"
+        }
+      }
+    },
+    "deposit_failure": {
+      "message": "$TICKER$ 无法存入",
+      "description": "Note about error while depositing tokens",
+      "placeholders": {
+        "ticker": {
+          "content": "$1",
+          "example": "USDA"
+        }
+      }
+    },
+    "withdraw_success_subtext": {
+      "message": "您的 $TICKER$ 已成功提取，并包含您赚取的收益。",
+      "description": "Subtext about a successful withdrawal",
+      "placeholders": {
+        "ticker": {
+          "content": "$1",
+          "example": "USDA"
+        }
+      }
+    },
+    "deposit_success_subtext": {
+      "message": "您的 $TICKER$ 已成功存入，将开始产生收益。",
+      "description": "Subtext about a successful deposit",
+      "placeholders": {
+        "ticker": {
+          "content": "$1",
+          "example": "USDA"
+        }
+      }
+    },
+    "deposit_withdraw_failure_subtext": {
+      "message": "似乎出现了问题，请重试。",
+      "description": "Subtext about a failed deposit or withdrawal"
     }
 }

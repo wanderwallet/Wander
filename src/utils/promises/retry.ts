@@ -4,13 +4,15 @@ import { sleep } from "~utils/promises/sleep";
  * Retries a given function up to a maximum number of attempts.
  * @param fn - The asynchronous function to retry, which should return a Promise.
  * @param maxAttempts - The maximum number of attempts to make.
- * @param delay - The delay between attempts in milliseconds.
+ * @param initialDelay - The delay between attempts in milliseconds.
+ * @param getDelay - A function that returns the delay for a given attempt.
  * @return A Promise that resolves with the result of the function or rejects after all attempts fail.
  */
 export async function retryWithDelay<T>(
   fn: (attempt: number) => Promise<T>,
   maxAttempts: number = 3,
-  delay: number = 1000,
+  initialDelay: number = 1000,
+  getDelay: (attempt: number) => number = () => initialDelay,
 ): Promise<T> {
   let attempts = 0;
 
@@ -20,8 +22,9 @@ export async function retryWithDelay<T>(
     } catch (error) {
       attempts += 1;
       if (attempts < maxAttempts) {
+        const currentDelay = getDelay(attempts);
         // console.log(`Attempt ${attempts} failed, retrying...`)
-        return new Promise<T>((resolve) => setTimeout(() => resolve(attempt()), delay));
+        return new Promise<T>((resolve) => setTimeout(() => resolve(attempt()), currentDelay));
       } else {
         throw error;
       }

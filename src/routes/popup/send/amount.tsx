@@ -34,14 +34,14 @@ import { SendInput } from "~components/SendInput";
 import { HorizontalLine } from "~components/HorizontalLine";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
-enum AmountValidationState {
+export enum AmountValidationState {
   Invalid = "Invalid",
   Insufficient = "Insufficient",
   Valid = "Valid",
   Empty = "Empty",
 }
 
-function validateAmount(
+export function validateAmount(
   amount: string,
   balance: string,
   networkFee: string = "0",
@@ -70,7 +70,7 @@ function validateAmount(
   return AmountValidationState.Valid;
 }
 
-const getErrorMessage = (state: AmountValidationState) => {
+export const getErrorMessage = (state: AmountValidationState) => {
   switch (state) {
     case AmountValidationState.Insufficient:
       return browser.i18n.getMessage("insufficient_balance");
@@ -551,7 +551,7 @@ const RecipientAmountWrapper = styled.div`
   gap: 18px;
 `;
 
-const MaxButton = styled.button`
+export const MaxButton = styled.button`
   display: flex;
   text-align: center;
   align-items: center;

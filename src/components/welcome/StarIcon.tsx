@@ -1,4 +1,4 @@
-import styled, { useTheme, keyframes } from "styled-components";
+import styled, { useTheme, keyframes, type Keyframes } from "styled-components";
 import { useMemo } from "react";
 
 const ANIMATION_FACTORS = [2, 3, 3.5, 5] as const;
@@ -17,6 +17,8 @@ interface StarIconProps {
   bottom?: number;
   position?: "absolute" | "fixed";
   color?: string;
+  filter?: string;
+  shineAnimation?: Keyframes;
 }
 
 export default function StarIcon({
@@ -27,6 +29,8 @@ export default function StarIcon({
   position = "absolute",
   opacity = 0.4,
   size = 42,
+  filter,
+  shineAnimation,
 }: StarIconProps) {
   const theme = useTheme();
 
@@ -38,12 +42,13 @@ export default function StarIcon({
   return (
     <StarSVG
       xmlns="http://www.w3.org/2000/svg"
-      style={{ top, left, right, bottom, position }}
+      style={{ top, left, right, bottom, position, filter }}
       animationDuration={animationDuration}
       width={size}
       height={size}
       size={size}
       viewBox="0 0 42 42"
+      shineAnimation={shineAnimation}
       fill="none">
       <path
         opacity={opacity}
@@ -54,14 +59,14 @@ export default function StarIcon({
   );
 }
 
-const shineAnimation = keyframes`
+const defaultShineAnimation = keyframes`
   0% { transform: scale(1.0); }
   50% { transform: scale(1.3); }
   100% { transform: scale(1.0); }
 `;
 
-const StarSVG = styled.svg<{ size: number; animationDuration: string }>`
-  animation-name: ${shineAnimation};
+const StarSVG = styled.svg<{ size: number; animationDuration: string; shineAnimation: Keyframes }>`
+  animation-name: ${({ shineAnimation }) => shineAnimation || defaultShineAnimation};
   animation-duration: ${({ animationDuration }) => animationDuration};
   animation-iteration-count: infinite;
   animation-delay: calc(${({ size }) => size / 100} * -3000ms);

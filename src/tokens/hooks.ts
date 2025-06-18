@@ -20,7 +20,7 @@ import { useArPrice } from "~lib/coingecko";
 import { defaultConfig } from "./aoTokens/config";
 import { connect } from "@permaweb/aoconnect";
 
-const defaultOptions = {
+export const defaultOptions = {
   refetchInterval: 300_000,
   staleTime: 300_000,
   gcTime: 300_000,
