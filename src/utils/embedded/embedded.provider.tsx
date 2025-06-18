@@ -23,9 +23,10 @@ import type {
   RecoveryJSON,
   EmbeddedContextAuth,
   Wallet,
+  OAutProviderType,
+  AuthEmailParams,
 } from "~utils/embedded/embedded.types";
 import { setAuthTokenHeader, getSupabaseClient } from "~utils/embedded/embedded.utils";
-import { isInsideIframe } from "~utils/embedded/iframe.utils";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import {
   AuthProviderType,
@@ -41,7 +42,6 @@ import { jwtDecode } from "jwt-decode";
 import type { SupabaseJwtPayload } from "~utils/authentication/authentication.types";
 import { isTempWalletPromiseExpired } from "~utils/embedded/utils/wallets/embedded-wallets.utils";
 import copy from "copy-to-clipboard";
-import { useHashLocation } from "wouter/use-hash-location";
 import { getIPAddress } from "~utils/ip_address";
 import {
   getAuthProviderTypeFromSupabaseUser,
@@ -191,6 +191,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     if (!sdkAuthStatus) return;
 
     const userDetails = getUserDetailsFromSupabaseUser(user);
+
     postEmbeddedMessage({
       type: "embedded_auth",
       data: {
@@ -997,12 +998,10 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
   */
 
   const authenticate = useCallback(
-    async (authProviderType: AuthProviderType) => {
-      if (user) {
-        const supabase = await getSupabaseClient();
-        await supabase.auth.refreshSession();
-        return;
-      }
+    async (authParams: OAutProviderType | AuthEmailParams) => {
+      if (user) throw new Error("Already authenticated.");
+
+      const authProviderType: AuthProviderType = typeof authParams === "string" ? authParams : "EMAIL_N_PASSWORD";
 
       try {
         setEmbeddedContextAuth({
@@ -1012,119 +1011,24 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
           session: null,
         });
 
-        const { url } = await AuthenticationService.authenticate(authProviderType);
-
-        if (!url) {
-          throw new Error(`Missing authentication URL.`);
-        }
-
-        // Calculate center position for the popup
-        const width = 500;
-        const height = 600;
-        const left = window.screenX + (window.outerWidth - width) / 2;
-        const top = window.screenY + (window.outerHeight - height) / 2;
-
-        let popup = window.open(
-          url,
-          "Auth",
-          [
-            `width=${width}`,
-            `height=${height}`,
-            `left=${left}`,
-            `top=${top}`,
-            "popup=1",
-            "location=1",
-            "status=1",
-            "resizable=no",
-            "toolbar=no",
-            "menubar=no",
-          ].join(","),
-        );
-
-        if (!popup) {
-          console.error("Popup blocked. Please allow popups for this site.");
-          // Redirect to Google's OAuth page
-          // Opening the URL on the current tab won't work when Embedded is loaded inside the iframe:
-
-          if (location.ancestorOrigins.length === 0) {
-            console.log(`Redirecting to ${url}...`);
-
-            window.location.href = url;
-          } else {
-            console.log(`Opening ${url}...`);
-
-            popup = window.open(url, "_blank");
-          }
-        }
-
-        if (popup) {
-          // Set up message listener and popup close checker
-          await Promise.race([
-            // Auth completion promise
-            new Promise<void>((resolve, reject) => {
-              const messageHandler = async (event: MessageEvent) => {
-                // Since same origin, we can check it exactly
-                if (event.origin !== window.location.origin) return;
-
-                if (event.data?.type === "AUTH_COMPLETE") {
-                  cleanup();
-                  if (event.data?.success) {
-                    const supabase = await getSupabaseClient();
-                    if (event.data?.data) {
-                      const { data } = event.data;
-                      await supabase.auth.refreshSession({
-                        refresh_token: data.refresh_token,
-                      });
-                    } else {
-                      await supabase.auth.refreshSession();
-                    }
-
-                    resolve();
-                  } else {
-                    reject(new Error("Authentication failed"));
-                  }
-                }
-              };
-
-              // Check for popup closure
-              const popupCheckInterval = setInterval(() => {
-                if (popup.closed) {
-                  cleanup();
-                  reject(new Error("Authentication cancelled - popup closed"));
-                }
-              }, 1000);
-
-              // Timeout after 5 minutes
-              const timeoutId = setTimeout(
-                () => {
-                  cleanup();
-                  reject(new Error("Authentication timeout"));
-                },
-                5 * 60 * 1000,
-              );
-
-              // Cleanup function
-              const cleanup = () => {
-                window.removeEventListener("message", messageHandler);
-                clearInterval(popupCheckInterval);
-                clearTimeout(timeoutId);
-              };
-
-              window.addEventListener("message", messageHandler);
-            }),
-          ]);
+        if (typeof authParams === "string") {
+          await AuthenticationService.authenticateWithOAuth(authParams);
+        } else if (authParams.method === "signInWithPassword") {
+          await AuthenticationService.signInWithPassword(authParams);
+        } else if (authParams.method === "verifyOtp") {
+          await AuthenticationService.verifyOtp(authParams);
         }
       } catch (error) {
-        console.error(`${authProviderType} authentication failed:`, error);
+        console.error(`authenticate(${authProviderType}) error =`, error);
 
-        // TODO: This should be `authStatus: "authError"` but the router will show a specific error handling route, while we might want to handle that
-        // in the same page we were.
         setEmbeddedContextAuth({
-          authStatus: "noAuth",
+          authStatus: "authError",
           authProviderType: null,
           user: null,
           session: null,
         });
+
+        throw error;
       }
     },
     [user],
@@ -1281,25 +1185,6 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     }));
   }, []);
 
-  const completeAuth = useCallback(async (session: any) => {
-    window.opener.postMessage(
-      {
-        type: "AUTH_COMPLETE",
-        success: true,
-        data: session,
-      },
-      window.location.origin,
-    );
-
-    // waiting sometime before closing the popup
-    await sleep(500);
-
-    log(LOG_GROUP.EMBEDDED_FLOWS, "Closing popup window...");
-
-    // Close the popup after sending the message
-    window.close();
-  }, []);
-
   const areBackgroundServicesInitialized = useRef(false);
 
   useAsyncEffect(async () => {
@@ -1319,25 +1204,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     - The decoded JWT token sometimes is missing some properties (`deviceNonce`). Refreshing the
       sessions seems to fix the issue, but not immediately. The `The current session is incomplete. Refreshing...` block
       in `initEmbeddedWallet` is a dirty/temp fix for that.
-
-    - The `onAuthStateChange` callback below is never invoked when running the app inside an iframe on a different
-      origin. The `setTimeout` below is a dirty/tem fix for that.
-
-      See https://stackoverflow.com/questions/71819128/supabase-auth-onauthstatechange-not-working-when-react-app-is-in-iframe
     */
-
-    const forceInitTimeoutID = window.setTimeout(() => {
-      console.warn("Forcing initialization...");
-
-      setEmbeddedContextAuth({
-        authStatus: "noAuth",
-        authProviderType: null,
-        user: null,
-        session: null,
-      });
-
-      initEmbeddedWallet();
-    }, 2000);
 
     const supabase = await getSupabaseClient();
 
@@ -1346,8 +1213,6 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      window.clearTimeout(forceInitTimeoutID);
-
       if (isInitialAuthEventDispatched && _event === "INITIAL_SESSION") return;
 
       if (!isInitialAuthEventDispatched) {
@@ -1372,18 +1237,6 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
             },
           });
         }
-      }
-
-      if (!isInsideIframe()) {
-        if (session?.access_token && window.opener) {
-          completeAuth(session);
-        } else if (window.location.origin === "https://connect.wander.app") {
-          window.close();
-        } else {
-          console.warn("In production (https://connect.wander.app), the app would close right now.");
-        }
-
-        return;
       }
 
       const accessToken = session?.access_token ?? null;
@@ -1466,30 +1319,9 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     });
 
     return () => {
-      window.clearTimeout(forceInitTimeoutID);
       subscription.unsubscribe();
     };
   }, [initEmbeddedWallet]);
-
-  // TODO: Move to app entry/mount point and do not even start the app?
-
-  const [wocation] = useHashLocation();
-
-  useEffect(() => {
-    if (wocation.startsWith("/access_token") && window.opener) {
-      // Get the hash fragment without the leading '#'
-      const hashParams = window.location.hash.substring(1);
-      // Create URLSearchParams from the hash fragment
-      const params = new URLSearchParams(hashParams);
-      const searchParams = Object.fromEntries(params.entries());
-
-      // We have completeAuth() in the onAuthStateChange callback, but if it didn't work,
-      // we'll use a timeout to call it after a delay.
-      setTimeout(() => {
-        completeAuth(searchParams);
-      }, 5000);
-    }
-  }, [wocation]);
 
   return (
     <EmbeddedContext.Provider

@@ -131,9 +131,6 @@ export {
   setClientIdHeader,
 };
 
-// TODO: When developers set up a new app/domain, we should probably use a mechanism like Google Search Console where
-// they need to create a file at the root of their domain, or add an HTML tag, so that we can verify it's actually theirs.
-
 // TODO: Move to embedded.provider and make sure it's called once deviceNonce has been loaded, and that a loader/spinner
 // is shown until this validation has happened.
 

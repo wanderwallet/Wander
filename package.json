@@ -18,7 +18,7 @@
     "build:sdk": "cd ./wander-connect-sdk/ && pnpm build",
     "build:assets": "cp -r assets/forge dist/assets/forge && cp -r assets/animation dist/assets/animation",
     "build:wallet-api": "vite build --config vite.wallet-config.js",
-    "clean": "rm -rf yarn.lock node_modules",
+    "clean": "rm -rf .plasmo build dist",
     "nuke": "yarn clean && rm -rf yarn.lock node_modules",
     "fmt": "prettier --write .",
     "fmt:check": "prettier --check .",

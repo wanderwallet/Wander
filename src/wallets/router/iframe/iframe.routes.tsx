@@ -11,7 +11,6 @@ import { AuthAddWalletEmbeddedView } from "~routes/embedded/auth/add-wallet/auth
 import { AuthImportSeedphraseEmbeddedView } from "~routes/embedded/auth/import-seedphrase/auth-import-seedphrase.view";
 import { AuthImportKeyfileEmbeddedView } from "~routes/embedded/auth/import-keyfile/auth-import-keyfile.view";
 import { AuthImportQrCodeEmbeddedView } from "~routes/embedded/auth/import-qrcode/auth-import-qrcode";
-import AuthErrorEmbeddedView from "~routes/embedded/auth/auth-error/auth-error.view";
 
 // Authentication Linking Views:
 import { AuthAddDeviceEmbeddedView } from "~routes/embedded/auth/add-device/auth-add-device.view";
@@ -106,7 +105,6 @@ export type EmbeddedRoutePath =
   // | "/account/backup-shares/<backupProvider>"
   | "/account/backup-wallet/reminder"
   | "/account/export-wallet"
-  | "/auth/error"
   | "/"
   | "/wallet"
   | "/wallet/receive"
@@ -172,8 +170,7 @@ export const EmbeddedPaths = {
   AccountBackupWalletReminder: "/account/backup-wallet/reminder",
   AccountExportWallet: "/account/export-wallet",
 
-  // OAuth Error:
-  AuthError: "/auth/error",
+  // Wallet:
   WalletDefaultHomeEmbeddedView: "/",
   WalletHomeEmbeddedView: "/wallet",
   WalletReceiveEmbeddedView: "/wallet/receive",
@@ -409,12 +406,6 @@ export const IFRAME_ROUTES = [
 
   // auth.tsx:
   ...CONNECT_AUTH_ROUTES.filter((route) => !isRouteOverride(route.path)),
-
-  // OAuth Error:
-  {
-    path: EmbeddedPaths.AuthError,
-    component: AuthErrorEmbeddedView,
-  },
 
   // Embedded wallet only:
   ...IFRAME_OWN_ROUTES,

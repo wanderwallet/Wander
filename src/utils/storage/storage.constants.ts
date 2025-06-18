@@ -1,10 +1,11 @@
-export const SharedStorageKeys = {} as const;
+const SharedStorageKeys = {} as const;
 
-export const BeStorageKeys = {} as const;
+const BeStorageKeys = {} as const;
 
-export const ConnectStorageKeys = {
+const ConnectStorageKeys = {
   AUTH: {
     USER_ID: "USER_ID",
+    LAST_EMAIL_VERIFICATION: "LAST_EMAIL_VERIFICATION",
   },
 } as const;
 
