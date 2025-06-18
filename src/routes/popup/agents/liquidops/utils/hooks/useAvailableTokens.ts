@@ -5,6 +5,7 @@ import BigNumber from "bignumber.js";
 import { tokenData, type TokenData } from "liquidops";
 import { ExtensionStorage } from "~utils/storage";
 import { LiquidOpsClient } from "../LiquidOps";
+import { retryWithDelay } from "~utils/promises/retry";
 
 const defaultOptions = {
   refetchInterval: 300_000,
@@ -33,37 +34,40 @@ export function useActiveTokens() {
       const activeTokens = Object.values(tokenData).filter((token) => !token.deprecated);
 
       const res = await Promise.all(
-        activeTokens.map(async (token) => {
-          try {
-            const position = await client.getPosition({
-              token: token.ticker.toUpperCase(),
-              recipient: activeAddress,
-            });
-            const collateralization = BigInt(position.collateralization);
-            if (collateralization === 0n) {
-              return undefined;
-            }
-
-            let profit = BigNumber(0);
+        activeTokens.map((token) =>
+          retryWithDelay(async (attempt) => {
             try {
-              const earnings = await client.getEarnings({
+              const position = await client.getPosition({
                 token: token.ticker.toUpperCase(),
-                walletAddress: activeAddress,
-                collateralization,
+                recipient: activeAddress,
               });
+              const collateralization = BigInt(position.collateralization);
+              if (collateralization === 0n) {
+                return undefined;
+              }
 
-              profit = BigNumber(new Quantity(earnings.profit, token.baseDenomination).toString());
-            } catch {}
+              let profit = BigNumber(0);
+              try {
+                const earnings = await client.getEarnings({
+                  token: token.ticker.toUpperCase(),
+                  walletAddress: activeAddress,
+                  collateralization,
+                });
 
-            return <ActiveAgentToken>{
-              ...token,
-              balance: BigNumber(new Quantity(position.collateralization, token.baseDenomination).toString()),
-              profit,
-            };
-          } catch {
-            return undefined;
-          }
-        }),
+                profit = BigNumber(new Quantity(earnings.profit, token.baseDenomination).toString());
+              } catch {}
+
+              return <ActiveAgentToken>{
+                ...token,
+                balance: BigNumber(new Quantity(position.collateralization, token.baseDenomination).toString()),
+                profit,
+              };
+            } catch {
+              if (attempt === 1) return undefined;
+              throw new Error("Failed to get position");
+            }
+          }, 2),
+        ),
       );
 
       return res.filter((t) => typeof t !== "undefined");

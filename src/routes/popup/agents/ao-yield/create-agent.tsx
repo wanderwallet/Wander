@@ -109,7 +109,7 @@ export function CreateAOYieldAgentView() {
 
   return (
     <>
-      <HeadV2 title={browser.i18n.getMessage("ao_yield_agent")} />
+      <HeadV2 title={browser.i18n.getMessage("ao_yield_agent")} back={() => navigate(PopupPaths.Agents)} />
       <Wrapper>
         <Content>
           <Flex direction="column" gap={16} padding="16px 8px">

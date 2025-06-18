@@ -10,9 +10,11 @@ import { useActiveTokens, type ActiveAgentToken } from "./utils/hooks/useAvailab
 import { useEffect, useMemo } from "react";
 import { trackEvent, EventType, trackPage, PageType } from "~utils/analytics";
 import { useAPYOrder } from "./utils/hooks/useAPYOrder";
+import { useLocation } from "~wallets/router/router.utils";
 
 export function LiquidOpsAgentsView() {
   const { data: activeTokens } = useActiveTokens();
+  const { navigate } = useLocation();
   const inactiveTokens = useMemo(() => {
     const availableTokens = Object.values(tokenData).filter((token) => !token.deprecated);
 
@@ -30,7 +32,7 @@ export function LiquidOpsAgentsView() {
 
   return (
     <>
-      <HeadV2 title={"LiquidOps " + browser.i18n.getMessage("agents")} />
+      <HeadV2 title={"LiquidOps " + browser.i18n.getMessage("agents")} back={() => navigate("/agents")} />
 
       <Wrapper>
         {activeTokens && activeTokens.length > 0 && (

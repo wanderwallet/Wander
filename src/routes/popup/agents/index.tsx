@@ -24,7 +24,10 @@ export function AgentsView() {
   const aoAgent = useAOYieldLatestAgent();
   const { data: activeTokens } = useActiveTokens();
 
-  const isAgentAvailable = useMemo(() => activeTokens?.length > 0 || !!aoAgent, [activeTokens, aoAgent]);
+  const isAgentAvailable = useMemo(
+    () => activeTokens?.length > 0 || aoAgent?.status === "Active",
+    [activeTokens, aoAgent],
+  );
 
   async function checkAndShowAgentExplainerPopup() {
     const hasShownAgentExplainerPopup = await ExtensionStorage.get(HAS_SHOWN_AGENTS_EXPLAINER_POPUP);

@@ -36,7 +36,7 @@ export function AgentInfo({ agentId, headerTitle, mintingStatus, isHistory = fal
   const [showCancelModal, setShowCancelModal] = useState(false);
   const agent = useAOYieldAgent(agentId);
   const { data: agentInfo } = useAOYieldAgentInfo(agentId);
-  const { navigate } = useLocation();
+  const { navigate, previousLocation } = useLocation();
 
   const asset = useMemo(() => {
     if (!agent) return null;
@@ -112,7 +112,20 @@ export function AgentInfo({ agentId, headerTitle, mintingStatus, isHistory = fal
 
   return (
     <>
-      <HeadV2 title={browser.i18n.getMessage(headerTitle)} />
+      <HeadV2
+        title={browser.i18n.getMessage(headerTitle)}
+        back={
+          !isHistory
+            ? () => {
+                if (previousLocation === "/agents/ao-yield/history") {
+                  navigate(previousLocation);
+                } else {
+                  navigate("/agents");
+                }
+              }
+            : undefined
+        }
+      />
       <Wrapper>
         <Content>
           <Flex gap={8} align="center" width="100%">
