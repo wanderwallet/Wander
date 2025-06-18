@@ -440,6 +440,8 @@ export function AuthRequestsProvider({ children }: PropsWithChildren) {
     setCloseTimers();
 
     function rejectPendingAuthRequests() {
+      closeAuthPopup();
+
       authRequests.forEach((authRequest) => {
         if (authRequest.status !== "pending") return;
 
