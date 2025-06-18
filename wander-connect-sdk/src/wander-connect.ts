@@ -14,6 +14,7 @@ import {
 } from "./wander-connect.types";
 import { isEventMessage, isIncomingMessage, isWalletSwitchMessage } from "./utils/message/message.utils";
 import { getWanderConnectAppURL } from "./utils/url/url.utils";
+import { THEMES } from "./utils/styles/styles.utils";
 
 const NOOP = () => {};
 
@@ -584,12 +585,7 @@ export class WanderConnect {
   }
 
   public setTheme(theme: ThemeSetting): void {
-    const { iframeRef } = this;
-    const contentWindow = iframeRef?.contentWindow;
-
-    if (!iframeRef || !contentWindow) {
-      throw new Error("Missing Wander Connect iframe");
-    }
+    if (!THEMES.includes(theme)) throw new Error(`${theme} is not a valid theme. Use: ${THEMES.join(", ")}`);
 
     isomorphicSendMessage({
       destination: "background",
@@ -608,10 +604,14 @@ export class WanderConnect {
   }
 
   public setIframeTheme(theme: ThemeSetting): void {
+    if (!THEMES.includes(theme)) throw new Error(`${theme} is not a valid theme. Use: ${THEMES.join(", ")}`);
+
     this.iframeComponent?.setTheme(theme);
   }
 
   public setButtonTheme(theme: ThemeSetting): void {
+    if (!THEMES.includes(theme)) throw new Error(`${theme} is not a valid theme. Use: ${THEMES.join(", ")}`);
+
     this.buttonComponent?.setTheme(theme);
   }
 

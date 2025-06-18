@@ -66,3 +66,5 @@ export function mergeCSSVariablesOption<T extends Object>(
     dark: cssVarsDark,
   };
 }
+
+export const THEMES = ["system", "light", "dark"] as const satisfies ThemeSetting[];
