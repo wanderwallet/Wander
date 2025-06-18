@@ -1,4 +1,4 @@
-import { injectWanderConnectWalletAPI } from "wallet-api/wallet-sdk.es.js";
+import { injectWanderConnectWalletAPI, isomorphicSendMessage } from "wallet-api/wallet-sdk.es.js";
 import { Button } from "./components/button/button.component";
 import { Iframe } from "./components/iframe/iframe.component";
 import { merge } from "ts-deepmerge";
@@ -14,6 +14,7 @@ import {
 } from "./wander-connect.types";
 import { isEventMessage, isIncomingMessage, isWalletSwitchMessage } from "./utils/message/message.utils";
 import { getWanderConnectAppURL } from "./utils/url/url.utils";
+import { THEMES } from "./utils/styles/styles.utils";
 
 const NOOP = () => {};
 
@@ -66,6 +67,7 @@ export class WanderConnect {
   private onResize: (routeConfig: RouteConfig) => void = NOOP;
   private onBalance: (balanceInfo: BalanceInfo) => void = NOOP;
   private onRequest: (data: RequestsInfo) => void = NOOP;
+  private signOutMethodCallback: () => void = NOOP;
 
   // Components:
   private buttonComponent: null | Button = null;
@@ -75,6 +77,9 @@ export class WanderConnect {
   private iframeRef: null | HTMLIFrameElement = null;
   private openReason: OpenReason | null = null;
   private allowOpeningAutomatically = true;
+  private hasIndependentIframeTheme = false;
+  private hasIndependentButtonTheme = false;
+  private setThemeTimeoutID = 0;
 
   /**
    * Contains the current authentication state of the SDK, and it is initialized with cached data in order to show as
@@ -242,6 +247,7 @@ export class WanderConnect {
       this.buttonComponent?.unsetStatus("isConnected");
     }
 
+    // @ts-ignore
     const events = window.arweaveWallet?.events;
 
     if (events && permissions.length > 0) {
@@ -296,6 +302,8 @@ export class WanderConnect {
 
       this.iframeRef = iframeOptions;
     } else {
+      if (iframeOptions.theme) this.hasIndependentIframeTheme = true;
+
       iframeOptions.theme ||= theme;
 
       this.iframeComponent = new Iframe(srcWithParams, iframeOptions);
@@ -312,6 +320,8 @@ export class WanderConnect {
     }
 
     if (buttonOptions) {
+      if (buttonOptions.theme) this.hasIndependentButtonTheme = true;
+
       buttonOptions.theme ||= theme;
 
       this.buttonComponent = new Button(buttonOptions);
@@ -352,6 +362,7 @@ export class WanderConnect {
         this.buttonComponent?.unsetStatus("isConnected");
       }
 
+      // @ts-ignore
       const events = window.arweaveWallet?.events;
 
       if (events) events.emit(message.data.name, message.data.value);
@@ -408,15 +419,14 @@ export class WanderConnect {
 
           if (authStatus === "authenticated") {
             this.dispatchWalletLoadedEvents();
+          } else if (authStatus === "not-authenticated") {
+            this.isWalletReady = false;
+            this.buttonComponent?.setNotifications(0);
+            this.buttonComponent?.unsetStatus("isConnected");
           }
 
           // Update button for all authentication changes:
           this.buttonComponent?.setVariant(authStatus);
-
-          if (authStatus === "not-authenticated") {
-            this.isWalletReady = false;
-            this.buttonComponent?.unsetStatus("isConnected");
-          }
 
           if (authStatus === "loading") {
             // TODO: Show spinner instead of iframe.
@@ -433,6 +443,10 @@ export class WanderConnect {
           });
         } else {
           this.onAuth(messageData);
+        }
+
+        if (messageData.authStatus === "not-authenticated") {
+          this.signOutMethodCallback();
         }
 
         break;
@@ -544,6 +558,63 @@ export class WanderConnect {
     this._close();
   }
 
+  public signOut(): Promise<void> {
+    if (this.authInfo.authStatus === "not-authenticated" || this.authInfo.authStatus === "loading") {
+      throw new Error("The user is not authenticated");
+    }
+
+    return new Promise((resolve, reject) => {
+      const { iframeRef } = this;
+      const contentWindow = iframeRef?.contentWindow;
+
+      if (!iframeRef || !contentWindow) {
+        reject(new Error("Missing Wander Connect iframe"));
+        return;
+      }
+
+      isomorphicSendMessage({
+        destination: "background",
+        // @ts-ignore
+        messageId: "embedded_signOut",
+        // @ts-ignore
+        data: undefined,
+      });
+
+      this.signOutMethodCallback = resolve;
+    });
+  }
+
+  public setTheme(theme: ThemeSetting): void {
+    if (!THEMES.includes(theme)) throw new Error(`${theme} is not a valid theme. Use: ${THEMES.join(", ")}`);
+
+    isomorphicSendMessage({
+      destination: "background",
+      // @ts-ignore
+      messageId: "embedded_setTheme",
+      // @ts-ignore
+      data: theme,
+    });
+
+    window.clearTimeout(this.setThemeTimeoutID);
+
+    this.setThemeTimeoutID = window.setTimeout(() => {
+      if (!this.hasIndependentIframeTheme && this.iframeComponent) this.iframeComponent.setTheme(theme);
+      if (!this.hasIndependentButtonTheme && this.buttonComponent) this.buttonComponent.setTheme(theme);
+    }, 230);
+  }
+
+  public setIframeTheme(theme: ThemeSetting): void {
+    if (!THEMES.includes(theme)) throw new Error(`${theme} is not a valid theme. Use: ${THEMES.join(", ")}`);
+
+    this.iframeComponent?.setTheme(theme);
+  }
+
+  public setButtonTheme(theme: ThemeSetting): void {
+    if (!THEMES.includes(theme)) throw new Error(`${theme} is not a valid theme. Use: ${THEMES.join(", ")}`);
+
+    this.buttonComponent?.setTheme(theme);
+  }
+
   /**
    * Removes all elements and event listeners
    */
@@ -563,6 +634,7 @@ export class WanderConnect {
 
     WanderConnect.instance = null;
 
+    // @ts-ignore
     delete window.arweaveWallet;
 
     if (this.windowArweaveWallet) {

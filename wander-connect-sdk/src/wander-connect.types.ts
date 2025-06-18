@@ -1,5 +1,3 @@
-import { IncomingAuthMessageData } from "./utils/message/message.types";
-
 // SDK state:
 
 export type OpenReason = "manually" | "embedded_open" | "embedded_request";

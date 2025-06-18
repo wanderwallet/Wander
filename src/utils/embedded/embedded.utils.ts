@@ -6,6 +6,16 @@ import { isInsideIframe, EMBEDDED_CLIENT_ID, EMBEDDED_ANCESTOR_ORIGIN, EMBEDDED_
 import { ExtensionStorage } from "~utils/storage";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 
+const signOutListeners = new Set<() => void>();
+
+export function addSignOutListener(listener: () => void) {
+  signOutListeners.add(listener);
+}
+
+export function removeSignOutListener(listener: () => void) {
+  signOutListeners.delete(listener);
+}
+
 export async function signOut(close = true) {
   try {
     // We send "embedded_close", instead of just closing the modal on "embedded_auth" (log out), because log out can be
@@ -40,6 +50,12 @@ export async function signOut(close = true) {
 
     window.location.href = "#/";
     window.location.reload();
+  }
+
+  try {
+    signOutListeners.forEach((listener) => listener());
+  } catch (err) {
+    console.error("Error invoking sign out listeners:", err);
   }
 }
 

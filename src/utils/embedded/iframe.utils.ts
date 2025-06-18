@@ -1,3 +1,4 @@
+import type { ThemeMode } from "~components/embed/contexts/ThemeContext";
 import { IS_EMBEDDED_APP } from "./embedded.constants";
 
 const { search = "", ancestorOrigins = [] } = IS_EMBEDDED_APP ? document.location : {};
@@ -45,7 +46,7 @@ const PARAM_SERVER_BASE_URL = "server-base-url";
 
 export const EMBEDDED_CLIENT_ID = searchParams.get(PARAM_CLIENT_ID) || EMBEDDED_ENV_VARS.DEFAULT_EMBEDDED_CLIENT_ID;
 
-export const EMBEDDED_THEME = searchParams.get(PARAM_THEME) || "system";
+export const EMBEDDED_THEME = (searchParams.get(PARAM_THEME) as ThemeMode) || "system";
 
 export const EMBEDDED_ANCESTOR_ORIGIN = ancestorOrigin || searchParams.get(PARAM_ANCESTOR_ORIGIN);
 

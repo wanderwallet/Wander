@@ -79,7 +79,7 @@ export interface EmbeddedMessageMap {
   embedded_request: EmbeddedRequestMessageData;
 }
 
-export interface EmbeddedCall<K extends EmbeddedMessageId> {
+export interface EmbeddedMessage<K extends EmbeddedMessageId> {
   id: string;
   type: K;
   data: EmbeddedMessageMap[K];

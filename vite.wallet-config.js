@@ -37,7 +37,8 @@ export default defineConfig({
   },
   define: {
     "process.env": {
-      ...(process?.env || {}),
+      // DO NOT spread process.env. Manually add those you need.
+      NODE_ENV: process.env.NODE_ENV || "development",
     },
   },
   resolve: {

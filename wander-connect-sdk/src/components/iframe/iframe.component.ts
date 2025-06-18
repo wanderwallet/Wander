@@ -7,8 +7,9 @@ import {
   IframeConfig,
   IframeOptions,
   IframeCSSVars,
+  ThemeSetting,
 } from "../../wander-connect.types";
-import { addCSSVariables, mergeCSSVariablesOption } from "../../utils/styles/styles.utils";
+import { addCSSVariablesForTheme, mergeCSSVariablesOption } from "../../utils/styles/styles.utils";
 import { getIframeTemplateContent } from "./iframe.template";
 import { isRouteConfig } from "../../utils/layout/layout.utils";
 
@@ -92,6 +93,7 @@ export class Iframe {
   private imageBaseUrl: string | null = null;
   public currentLayoutType: LayoutType | null = null;
   public isOpen = false;
+  private layoutCssVars: Partial<IframeCSSVars> = {};
 
   constructor(src: string, options: IframeOptions = {}) {
     const cssVars = mergeCSSVariablesOption(
@@ -203,6 +205,8 @@ export class Iframe {
       cssVariableKeys: Object.keys(Iframe.DEFAULT_LIGHT_CSS_VARS),
     });
 
+    addCSSVariablesForTheme(host, config.cssVars, config.theme);
+
     shadow.appendChild(template.content);
 
     const backdrop = document.createElement("div");
@@ -286,13 +290,13 @@ export class Iframe {
     // TODO: Default to true, unless explicitly set to false, false is WIP
     wrapper.dataset.expandOnMobile = layoutConfig.expandOnMobile !== false ? "true" : "false";
 
-    const layoutCssVarsUpdates: Partial<IframeCSSVars> = {};
+    const layoutCssVars: Partial<IframeCSSVars> = {};
 
     switch (layoutConfig.type) {
       case "modal": {
         // Modal resizes to fit content (unless fixed-size provided):
-        layoutCssVarsUpdates.preferredWidth = layoutConfig.fixedWidth || routeConfig.width || "";
-        layoutCssVarsUpdates.preferredHeight = layoutConfig.fixedHeight || routeConfig.height || "";
+        layoutCssVars.preferredWidth = layoutConfig.fixedWidth || routeConfig.width || "";
+        layoutCssVars.preferredHeight = layoutConfig.fixedHeight || routeConfig.height || "";
         break;
       }
 
@@ -300,8 +304,8 @@ export class Iframe {
         wrapper.dataset.position = layoutConfig.position || "bottom-right";
 
         // Popup resizes to fit content (unless fixed-size provided):
-        layoutCssVarsUpdates.preferredWidth = layoutConfig.fixedWidth || routeConfig.width || "";
-        layoutCssVarsUpdates.preferredHeight = layoutConfig.fixedHeight || routeConfig.height || "";
+        layoutCssVars.preferredWidth = layoutConfig.fixedWidth || routeConfig.width || "";
+        layoutCssVars.preferredHeight = layoutConfig.fixedHeight || routeConfig.height || "";
         break;
       }
 
@@ -309,10 +313,10 @@ export class Iframe {
         wrapper.dataset.position = layoutConfig.position || "right";
         wrapper.dataset.expanded = layoutConfig.expanded ? "true" : "false";
 
-        if (layoutConfig.expanded) layoutCssVarsUpdates.backdropPadding = 0;
+        if (layoutConfig.expanded) layoutCssVars.backdropPadding = 0;
 
-        layoutCssVarsUpdates.preferredWidth = layoutConfig.fixedWidth || routeConfig.width || "";
-        layoutCssVarsUpdates.preferredHeight = "calc(100dvh - 2 * var(--backdropPadding, 0))";
+        layoutCssVars.preferredWidth = layoutConfig.fixedWidth || routeConfig.width || "";
+        layoutCssVars.preferredHeight = "calc(100dvh - 2 * var(--backdropPadding, 0))";
 
         break;
       }
@@ -321,10 +325,10 @@ export class Iframe {
         const position = (wrapper.dataset.position = layoutConfig.position || "right");
         wrapper.dataset.expanded = layoutConfig.expanded ? "true" : "false";
 
-        if (layoutConfig.expanded) layoutCssVarsUpdates.backdropPadding = 0;
+        if (layoutConfig.expanded) layoutCssVars.backdropPadding = 0;
 
-        layoutCssVarsUpdates.preferredWidth = "calc(50vw - 2 * var(--backdropPadding, 0))";
-        layoutCssVarsUpdates.preferredHeight = "calc(100dvh - 2 * var(--backdropPadding, 0))";
+        layoutCssVars.preferredWidth = "calc(50vw - 2 * var(--backdropPadding, 0))";
+        layoutCssVars.preferredHeight = "calc(100dvh - 2 * var(--backdropPadding, 0))";
 
         // TODO: Fix sidebar flying over the screen when initialized.
         // TODO: Make the image work for the sidebar too?
@@ -352,13 +356,15 @@ export class Iframe {
     }
 
     // Every time we change the layout type (e.g. going from the auth routes "modal" to the default routes "popup"), the
-    // style attribute must be reset to avoid conflicts with leftover properties from the previous layout
-
+    // style attribute must be reset to avoid conflicts with leftover properties from the previous layout:
     this.host.removeAttribute("style");
+    this.layoutCssVars = layoutCssVars;
+    this.setTheme(this.config.theme);
+  }
 
-    addCSSVariables(this.host, { ...config.cssVars.light, ...layoutCssVarsUpdates }, "Light");
-
-    addCSSVariables(this.host, { ...config.cssVars.dark, ...layoutCssVarsUpdates }, "Dark");
+  setTheme(theme: ThemeSetting): void {
+    addCSSVariablesForTheme(this.host, this.config.cssVars, theme);
+    addCSSVariablesForTheme(this.host, this.layoutCssVars);
   }
 
   destroy() {
