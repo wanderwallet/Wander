@@ -10,7 +10,7 @@ import { useEffect } from "react";
 import { trackPage, PageType } from "~utils/analytics";
 
 export function AOYieldAgentActivatedView() {
-  const { navigate } = useLocation();
+  const { navigate, back } = useLocation();
   const { activationStatus = "success" } = useSearchParams<{ activationStatus: "success" | "error" }>();
   const isActivated = activationStatus === "success";
 
@@ -18,7 +18,9 @@ export function AOYieldAgentActivatedView() {
     if (isActivated) {
       navigate(PopupPaths.Home);
     } else {
-      navigate(PopupPaths.CreateAOYieldAgent);
+      // double back to get to the create agent page
+      back();
+      back();
     }
   };
 

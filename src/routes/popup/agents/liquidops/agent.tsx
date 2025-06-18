@@ -64,7 +64,7 @@ export function LiquidOpsAgent({ params: { ticker } }: LiquidOpsAgentProps) {
   const { hasToken: tokenStatus } = useTokenStatus(token.ticker);
 
   // router
-  const { navigate } = useLocation();
+  const { navigate, previousLocation } = useLocation();
 
   // balance in local currency
   const [currency] = useSetting<string>("currency");
@@ -105,7 +105,16 @@ export function LiquidOpsAgent({ params: { ticker } }: LiquidOpsAgentProps) {
 
   return (
     <>
-      <HeadV2 title={ticker + " " + browser.i18n.getMessage("agent")} />
+      <HeadV2
+        title={ticker + " " + browser.i18n.getMessage("agent")}
+        back={() => {
+          if (previousLocation === "/agents") {
+            navigate(previousLocation);
+          } else {
+            navigate("/agents/liquidops/agents");
+          }
+        }}
+      />
 
       <Wrapper>
         <Flex align="center" direction="column" gap={2}>

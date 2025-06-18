@@ -19,7 +19,7 @@ export type LiquidOpsConfirmProps = CommonRouteProps<{
 }>;
 
 export function LiquidOpsResult({ params: { action, ticker, result } }: LiquidOpsConfirmProps) {
-  const { navigate } = useLocation();
+  const { navigate, back } = useLocation();
   const hedgehogSvgProps: React.SVGProps<SVGSVGElement> = {
     width: 119,
     height: 128,
@@ -75,7 +75,9 @@ export function LiquidOpsResult({ params: { action, ticker, result } }: LiquidOp
             if (result === "success") {
               navigate(PopupPaths.LiquidOpsAgentsList);
             } else {
-              navigate(`/agents/liquidops/${ticker}/${action}`);
+              // double back to go to create agent page
+              back();
+              back();
             }
           }}>
           {browser.i18n.getMessage(result === "success" ? "view_all_agents" : "try_again")}

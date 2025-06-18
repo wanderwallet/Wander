@@ -7,8 +7,10 @@ import { useAOYieldAgents } from "~utils/agents/hooks";
 import { AOYieldAgentListItem } from "../components/AOYieldAgentListItem";
 import { useEffect } from "react";
 import { trackPage, PageType } from "~utils/analytics";
+import { useLocation } from "~wallets/router/router.utils";
 
 export function AOYieldAgentHistoryView() {
+  const { navigate, previousLocation } = useLocation();
   const aoAgents = useAOYieldAgents({ showNewAtTop: true });
 
   useEffect(() => {
@@ -17,7 +19,16 @@ export function AOYieldAgentHistoryView() {
 
   return (
     <>
-      <HeadV2 title={browser.i18n.getMessage("agent_history")} />
+      <HeadV2
+        title={browser.i18n.getMessage("agent_history")}
+        back={() => {
+          if (previousLocation === "/agents/ao-yield/create-agent") {
+            navigate(previousLocation);
+          } else {
+            navigate("/agents");
+          }
+        }}
+      />
 
       <Wrapper>
         <Flex gap={12} direction="column">

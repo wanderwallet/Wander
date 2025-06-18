@@ -170,10 +170,12 @@ export function useLocation() {
 
   return {
     location: wocation,
+    previousLocation: customHistory[customHistory.length - 2]?.to,
     navigate,
     back,
   } as {
     location: WanderRoutePath;
+    previousLocation: WanderRoutePath;
     navigate: typeof navigate;
     back: typeof back;
   };
