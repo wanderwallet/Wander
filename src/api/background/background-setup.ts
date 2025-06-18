@@ -24,6 +24,7 @@ import { handleAoTokensImportAlarm } from "~api/background/handlers/alarms/ao-to
 import {
   handleAOYieldAgentAlarm,
   handleAOYieldAgentRecentTxsCheck,
+  handleAOYieldAgentSync,
 } from "./handlers/alarms/ao-yield-agent/ao-yield-agent-alarm.handler";
 import { handleTabClosed, handleTabUpdate } from "~api/background/handlers/browser/tabs/tabs.handler";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
@@ -132,6 +133,7 @@ export function setupBackgroundService() {
   // ALARMS:
   browser.alarms.onAlarm.addListener(handleAOYieldAgentAlarm);
   browser.alarms.onAlarm.addListener(handleAOYieldAgentRecentTxsCheck);
+  browser.alarms.onAlarm.addListener(handleAOYieldAgentSync);
 
   // When the last window connected to the extension is closed, the decryption key will be removed from memory. This is no needed in the embedded wallet because
   // each wallet instance will be removed automatically when its tab/window is closed.

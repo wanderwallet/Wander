@@ -12,6 +12,7 @@ import { useLocation } from "~wallets/router/router.utils";
 import StarIcon from "~components/welcome/StarIcon";
 import { EventType, trackEvent } from "~utils/analytics";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import { HAS_SHOWN_AGENTS_EXPLAINER_POPUP, SHOW_CREATE_WANDER_AGENT_CTA } from "~utils/agents/constants";
 
 export default function CreateWanderAgentCTA() {
   const [showCreateAgent, setShowCreateAgent] = useState(false);
@@ -21,10 +22,10 @@ export default function CreateWanderAgentCTA() {
   const handleOpen = async () => {
     trackEvent(EventType.AGENT_DASHBOARD, {});
 
-    const hasShownAgentExplainerPopup = await ExtensionStorage.get<boolean>("has_shown_agents_explainer_popup");
+    const hasShownAgentExplainerPopup = await ExtensionStorage.get<boolean>(HAS_SHOWN_AGENTS_EXPLAINER_POPUP);
 
     if (!hasShownAgentExplainerPopup) {
-      await ExtensionStorage.set("has_shown_agents_explainer_popup", true);
+      await ExtensionStorage.set(HAS_SHOWN_AGENTS_EXPLAINER_POPUP, true);
       setOpen(true);
     } else {
       navigate("/agents");
@@ -36,12 +37,12 @@ export default function CreateWanderAgentCTA() {
   };
 
   const handleCloseCTA = () => {
-    ExtensionStorage.set("show_create_wander_agent_cta", false);
+    ExtensionStorage.set(SHOW_CREATE_WANDER_AGENT_CTA, false);
     setShowCreateAgent(false);
   };
 
   useAsyncEffect(async () => {
-    const storedValue = await ExtensionStorage.get<boolean>("show_create_wander_agent_cta");
+    const storedValue = await ExtensionStorage.get<boolean>(SHOW_CREATE_WANDER_AGENT_CTA);
     setShowCreateAgent(storedValue ?? true);
   }, []);
 

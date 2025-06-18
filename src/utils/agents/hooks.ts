@@ -33,47 +33,57 @@ interface UseAOYieldAgentsProps {
 
 export function useAOYieldAgents({ status, showNewAtTop = false }: UseAOYieldAgentsProps = {}) {
   const [activeAddress] = useStorage({ key: "active_address", instance: ExtensionStorage });
-  const [agents, setAgents] = useState<AOYieldAgent[]>([]);
+  const [agents] = useStorage<AOYieldAgent[]>(
+    {
+      key: `ao_yield_agents_${activeAddress}`,
+      instance: ExtensionStorage,
+    },
+    [],
+  );
 
-  useEffect(() => {
-    getAOYieldAgents(activeAddress, status).then((agents) => {
-      if (showNewAtTop) {
-        setAgents(agents.reverse());
-      } else {
-        setAgents(agents);
-      }
-    });
-  }, [activeAddress, status]);
+  return useMemo(() => {
+    if (!agents.length) return [];
 
-  return agents;
+    const filteredAgents = status ? agents.filter((agent) => agent.status === status) : agents;
+    return showNewAtTop ? [...filteredAgents].reverse() : filteredAgents;
+  }, [agents, status, showNewAtTop]);
 }
 
 export function useAOYieldLatestAgent() {
   const [activeAddress] = useStorage({ key: "active_address", instance: ExtensionStorage });
-  const [agent, setAgent] = useState<AOYieldAgent>();
+  const [agents] = useStorage<AOYieldAgent[]>(
+    {
+      key: `ao_yield_agents_${activeAddress}`,
+      instance: ExtensionStorage,
+    },
+    [],
+  );
 
-  useEffect(() => {
-    getAOYieldAgents(activeAddress).then((agents) => {
-      const activeAgent = agents.find((agent) => agent.status === "Active") || agents[agents.length - 1];
-      setAgent(activeAgent);
-    });
-  }, [activeAddress]);
+  return useMemo(() => {
+    if (!agents.length) return undefined;
 
-  return agent;
+    return agents.find((agent) => agent.status === "Active") || agents[agents.length - 1];
+  }, [agents]);
 }
 
 export function useAOYieldAgent(agentId: string, status?: AOYieldAgentStatus) {
   const [activeAddress] = useStorage({ key: "active_address", instance: ExtensionStorage });
-  const [agent, setAgent] = useState<AOYieldAgent>();
+  const [agents] = useStorage<AOYieldAgent[]>(
+    {
+      key: `ao_yield_agents_${activeAddress}`,
+      instance: ExtensionStorage,
+    },
+    [],
+  );
 
-  useEffect(() => {
-    getAOYieldAgents(activeAddress, status).then((agents) => {
-      const agent = agents.find((agent) => agent.id === agentId);
-      setAgent(agent);
-    });
-  }, [activeAddress, agentId]);
+  return useMemo(() => {
+    if (!agents.length) return undefined;
 
-  return agent;
+    if (!status) {
+      return agents.find((agent) => agent.id === agentId);
+    }
+    return agents.find((agent) => agent.id === agentId && agent.status === status);
+  }, [agents, agentId, status]);
 }
 
 export function useAOYieldAgentInfo(agentId: string) {

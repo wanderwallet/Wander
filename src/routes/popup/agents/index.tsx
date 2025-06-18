@@ -16,6 +16,7 @@ import { AOMintingPausedListItem } from "./components/AOMintingPausedListItem";
 import { useAOYieldLatestAgent } from "~utils/agents/hooks";
 import { PageType, trackPage } from "~utils/analytics";
 import { useActiveTokens } from "./liquidops/utils/hooks/useAvailableTokens";
+import { HAS_SHOWN_AGENTS_EXPLAINER_POPUP } from "~utils/agents/constants";
 
 export function AgentsView() {
   const { navigate } = useLocation();
@@ -26,10 +27,10 @@ export function AgentsView() {
   const isAgentAvailable = useMemo(() => activeTokens?.length > 0 || !!aoAgent, [activeTokens, aoAgent]);
 
   async function checkAndShowAgentExplainerPopup() {
-    const hasShownAgentExplainerPopup = await ExtensionStorage.get("has_shown_agents_explainer_popup");
+    const hasShownAgentExplainerPopup = await ExtensionStorage.get(HAS_SHOWN_AGENTS_EXPLAINER_POPUP);
     if (!hasShownAgentExplainerPopup) {
       setOpen(true);
-      await ExtensionStorage.set("has_shown_agents_explainer_popup", true);
+      await ExtensionStorage.set(HAS_SHOWN_AGENTS_EXPLAINER_POPUP, true);
     }
   }
 

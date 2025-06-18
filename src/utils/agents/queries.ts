@@ -1,5 +1,6 @@
-import { AO_PROCESS_ID } from "~tokens/aoTokens/ao";
 import { AO_MINTER_PROCESS_ID } from "./constants";
+
+const AO_PROCESS_ID = "0syT13r0s0tgPmIed95bJnuSqaD29HQNN8D3ElLSrsc" as const;
 
 export const SWAP_SUCCESS_QUERY_WITH_CURSOR = `
 query ($agentId: String!, $after: String) {
@@ -118,3 +119,26 @@ query ($parentTxIds: [String!]!) {
     }
   }
 }`;
+
+export const AO_YIELD_AGENT_SYNC_QUERY = `
+query ($address: String!) {
+  transactions(
+    first: 10,
+    owners: [$address],
+    tags: [
+      {name: "Data-Protocol", values: ["ao"]},
+      {name: "Type", values: ["Process"]},
+      {name: "App-Name", values: ["Wander"]},
+      {name: "Name", values: ["ao-yield-agent"]},
+    ]
+  ) {
+    edges {
+      node {
+        id
+        block { timestamp, height }
+        tags { name, value }
+      }
+    }
+  }
+}
+`;

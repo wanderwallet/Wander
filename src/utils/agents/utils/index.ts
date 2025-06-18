@@ -16,7 +16,7 @@ import { freeDecryptedWallet } from "~wallets/encryption";
 import WarIcon from "url:/assets/ecosystem/war.png";
 import wUSDCIcon from "url:/assets/ecosystem/wusdc.svg";
 import type { Asset } from "~utils/agents/types";
-import { AO_YIELD_AGENT_RECENT_TXS } from "../constants";
+import { AO_YIELD_AGENT_RECENT_TXS, WANDER_FEE_PROCESS_ID } from "../constants";
 import dayjs from "dayjs";
 
 /**
@@ -486,7 +486,7 @@ export async function getWanderFee() {
     const dryrunRes = await aoInstance.dryrun({
       Id,
       Owner,
-      process: "PHQp9YR-zTTaSkyn82jq79Fj3zBuBr08tLLA_q2kUnU",
+      process: WANDER_FEE_PROCESS_ID,
       tags: [{ name: "Action", value: "Info" }],
     });
 
