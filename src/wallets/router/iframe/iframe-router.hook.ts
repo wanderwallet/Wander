@@ -5,13 +5,7 @@ import { useAuthRequestsLocation } from "~wallets/router/auth/auth-router.hook";
 import type { ExtensionRouteOverride } from "~wallets/router/extension/extension.routes";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 import type { WanderRoutePath, BaseLocationHook, RoutePath } from "~wallets/router/router.types";
-import {
-  isRouteOverride,
-  routeTrapMatches,
-  routeTrapOutside,
-  useSearchParams,
-  withRouterRedirects,
-} from "~wallets/router/router.utils";
+import { isRouteOverride, routeTrapMatches, routeTrapOutside, withRouterRedirects } from "~wallets/router/router.utils";
 
 const AUTH_STATUS_TO_OVERRIDE: Record<AuthStatus, null | ExtensionRouteOverride> = {
   // TODO: Redefine these override paths:

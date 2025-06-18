@@ -157,11 +157,21 @@ button {
   bottom: 0;
   left: 0;
   z-index: 99999999;
-  background-color: var(--backgroundColor, var(--defaultBackgroundColor, white));
   transition:
     display linear 230ms allow-discrete,
     background-color linear 230ms,
+    color linear 230ms,
     opacity linear 230ms;
+}
+
+html:not(#wanderConnectRoot) #cover {
+  background-color: var(--backgroundColor, var(--defaultBackgroundColor, white));
+  color: var(--textColor, var(--defaultTextColor, black));
+}
+
+html#wanderConnectRoot #cover {
+  background-color: var(--defaultBackgroundColor, white);
+  color: var(--defaultTextColor, black);
 }
 
 #cover[aria-hidden] {
@@ -186,11 +196,11 @@ button {
 
 input:-webkit-autofill,
 input:-webkit-autofill:focus {
-    transition: background-color 600000s 0s, color 600000s 0s;
+  transition: background-color 600000s 0s, color 600000s 0s;
 }
 
 input[data-autocompleted] {
-    background-color: transparent !important;
+  background-color: transparent !important;
 }
 
 p {

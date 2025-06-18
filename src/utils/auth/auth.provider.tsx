@@ -18,6 +18,7 @@ import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { isError } from "~utils/error/error.utils";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 import { getDecryptionKey } from "~wallets/auth";
+import { addSignOutListener, removeSignOutListener } from "~utils/embedded/embedded.utils";
 
 interface AuthRequestsContextState {
   authRequests: AuthRequest[];
@@ -65,31 +66,9 @@ export function AuthRequestsProvider({ children }: PropsWithChildren) {
       if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1") {
         setAuthRequestContextState(AUTH_REQUESTS_CONTEXT_INITIAL_STATE);
 
-        /*
-
-        // This message below is already sent when the last request is handled / completed:
-
-        postEmbeddedMessage({
-          type: "embedded_request",
-          data: {
-            pendingRequests: 0,
-            hasNewConnectRequest: false,
-          }
-        });
-
-        // And this other one is not needed as the SDK will close the modal when receiving a "embedded_request" message
-        // with pendingRequests === 0.
-
-        postEmbeddedMessage({
-          type: "embedded_close",
-          data: null
-        });
-
-        // However, note the wait-before-closing functionality won't work for Embed with this implementation. One
+        // Note the wait-before-closing functionality won't work for Embed with this implementation. One
         // possible fix would be to add a shouldClose = true property to the "embedded_request" message being sent from
         // here.
-
-        */
       } else {
         window.top.close();
       }
@@ -460,22 +439,26 @@ export function AuthRequestsProvider({ children }: PropsWithChildren) {
 
     setCloseTimers();
 
-    // Not needed in the embedded wallet, but can be left alone. It won't do anything:
-    function handleBeforeUnload() {
+    function rejectPendingAuthRequests() {
+      closeAuthPopup();
+
       authRequests.forEach((authRequest) => {
         if (authRequest.status !== "pending") return;
 
-        // Send cancel event for all pending requests if the popup is closed by the user:
+        // Send cancel event for all pending requests if the popup is closed by
+        // the user (BE) or if the user signs out (Connect):
         replyToAuthRequest(authRequest.type, authRequest.authID, new Error(ERR_MSG_USER_CANCELLED_AUTH));
       });
     }
 
-    window.addEventListener("beforeunload", handleBeforeUnload);
+    if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1") addSignOutListener(rejectPendingAuthRequests);
+    else window.addEventListener("beforeunload", rejectPendingAuthRequests);
 
     return () => {
       clearCloseAuthPopupTimeout();
 
-      window.removeEventListener("beforeunload", handleBeforeUnload);
+      if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1") removeSignOutListener(rejectPendingAuthRequests);
+      else window.removeEventListener("beforeunload", rejectPendingAuthRequests);
     };
   }, [authRequests, currentAuthRequestIndex, closeAuthPopup]);
 
