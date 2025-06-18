@@ -151,6 +151,9 @@ export const useTransactions = (agentId: string, limit?: number) => {
         [...transactions],
       );
 
+      // sort by timestamp in descending order (newest first)
+      filteredTransactions.sort((a, b) => b.timestamp - a.timestamp);
+
       setTransactions(filteredTransactions);
     } catch (error) {
       console.error("Error fetching transactions", error);
