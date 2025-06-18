@@ -4,7 +4,7 @@ import {
   AO_YIELD_AGENT_RECENT_TXS_CHECK_ALARM_NAME,
   AO_YIELD_AGENT_SYNC_ALARM_NAME_PREFIX,
 } from "~utils/agents/constants";
-import { checkIfRecentTxSwapSucceeded, executeAutomaticSwapIfNeeded } from "~utils/agents/mint";
+import { checkIfRecentTxSwapSucceeded, executeAutomaticSwapIfNeeded } from "~utils/agents/swap";
 import { checkAndSyncAgents } from "~utils/agents/sync";
 
 /**

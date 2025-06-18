@@ -17,7 +17,7 @@ import { useLocation } from "~wallets/router/router.utils";
 import browser from "webextension-polyfill";
 import CreateWanderAgentCTA from "./agents/components/CreateWanderAgentCTA";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
-import { scheduleSwapExecution } from "~utils/agents/mint";
+import { scheduleSwapExecution } from "~utils/agents/swap";
 
 export function HomeView() {
   const theme = useTheme();

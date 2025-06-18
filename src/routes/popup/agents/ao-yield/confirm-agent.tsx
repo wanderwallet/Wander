@@ -20,7 +20,7 @@ import { getActiveAddress } from "~wallets/wallets.utils";
 import type { AOYieldAgentCreate, AOYieldAgentStatus } from "~utils/agents/types";
 import { getAOYieldAgents, setAOYieldAgents } from "~utils/agents/utils";
 import { EventType, PageType, trackEvent, trackPage } from "~utils/analytics";
-import { scheduleSwapExecution } from "~utils/agents/mint";
+import { scheduleSwapExecution } from "~utils/agents/swap";
 import { AGENT_VERSION } from "~utils/agents/constants";
 import { useAOYieldAgentProperties, useWanderFee } from "~utils/agents/hooks";
 

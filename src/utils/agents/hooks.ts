@@ -22,7 +22,7 @@ import { retryWithDelay } from "~utils/promises/retry";
 import { SWAP_SUCCESS_QUERY_WITH_CURSOR } from "./queries";
 import { useQuery } from "@tanstack/react-query";
 import { defaultOptions } from "~tokens/hooks";
-import { checkIfMintingIsPaused, checkIfAgentHasRecentSwaps } from "./mint";
+import { checkIfMintingIsPaused, checkIfAgentHasRecentSwaps } from "./swap";
 import dayjs from "dayjs";
 import browser from "webextension-polyfill";
 
