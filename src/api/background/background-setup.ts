@@ -21,6 +21,11 @@ import { handleSyncLabelsAlarm } from "~api/background/handlers/alarms/sync-labe
 import { handleWindowClose } from "~api/background/handlers/browser/window-close/window-close.handler";
 import { handleKeyRemovalAlarm } from "~api/background/handlers/alarms/key-removal/key-removal-alarm.handler";
 import { handleAoTokensImportAlarm } from "~api/background/handlers/alarms/ao-tokens-import/ao-tokens-import-alarm.handler";
+import {
+  handleAOYieldAgentAlarm,
+  handleAOYieldAgentRecentTxsCheck,
+  handleAOYieldAgentSync,
+} from "./handlers/alarms/ao-yield-agent/ao-yield-agent-alarm.handler";
 import { handleTabClosed, handleTabUpdate } from "~api/background/handlers/browser/tabs/tabs.handler";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { isomorphicOnMessage } from "~isomorphic-messaging";
@@ -124,6 +129,11 @@ export function setupBackgroundService() {
   if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1") return;
 
   // ONLY BROWSER EXTENSION BELOW THIS LINE:
+
+  // ALARMS:
+  browser.alarms.onAlarm.addListener(handleAOYieldAgentAlarm);
+  browser.alarms.onAlarm.addListener(handleAOYieldAgentRecentTxsCheck);
+  browser.alarms.onAlarm.addListener(handleAOYieldAgentSync);
 
   // When the last window connected to the extension is closed, the decryption key will be removed from memory. This is no needed in the embedded wallet because
   // each wallet instance will be removed automatically when its tab/window is closed.

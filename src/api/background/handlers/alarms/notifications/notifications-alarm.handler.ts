@@ -6,6 +6,7 @@ import { arNotificationsHandler } from "~api/background/handlers/alarms/notifica
 import {
   ALL_AR_RECEIVER_QUERY,
   ALL_AR_SENT_QUERY,
+  AO_LIQUIDOPS_RECEIVER_QUERY,
   AO_RECEIVER_QUERY,
   AO_SENT_QUERY,
   AR_RECEIVER_QUERY,
@@ -67,9 +68,11 @@ export async function handleNotificationsAlarm(alarm?: Alarms.Alarm) {
           },
           {
             query: AO_SENT_QUERY,
-            variables: {
-              address,
-            },
+            variables: { address },
+          },
+          {
+            query: AO_LIQUIDOPS_RECEIVER_QUERY,
+            variables: { address },
           },
         ],
       );

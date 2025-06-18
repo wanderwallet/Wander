@@ -69,7 +69,7 @@ function getNoticeTransactionsQuery(address: string, filterProcesses: string[], 
             ? `{ name: "From-Process", values: [${filterProcesses.map((process) => `"${process}"`)}], op: NEQ }`
             : ""
         },
-        { name: "Action", values: ["Credit-Notice", "Debit-Notice"] }
+        { name: "Action", values: ["Credit-Notice", "Debit-Notice", "Mint-Confirmation"] }
       ]
       sort: HEIGHT_ASC
     ) {
