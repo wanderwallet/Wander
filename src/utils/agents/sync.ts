@@ -15,17 +15,14 @@ import { pLimit } from "plimit-lit";
 import { ExtensionStorage } from "~utils/storage";
 
 const limit = pLimit(10);
-
 const queryClient = new QueryClient();
-
-let isSchedulingInProgress = false;
-let isSyncInProgress = false;
 
 export async function checkAndSyncAgents(address: string): Promise<void> {
   try {
-    if (isSyncInProgress || !address) return;
-
-    isSyncInProgress = true;
+    if (!address) {
+      log(LOG_GROUP.AGENTS, "No address provided");
+      return;
+    }
 
     log(LOG_GROUP.AGENTS, "Checking and syncing agents");
 
@@ -52,9 +49,19 @@ export async function checkAndSyncAgents(address: string): Promise<void> {
 
     const agentIds = sortedEdges.map((edge) => edge.node.id);
 
-    const agentInfoPromises = agentIds.map((agentId) =>
+    // Set extension storage values immediately since we know agents exist
+    await ExtensionStorage.set(HAS_SHOWN_AGENTS_EXPLAINER_POPUP, true);
+    await ExtensionStorage.set(SHOW_CREATE_WANDER_AGENT_CTA, false);
+
+    // Read existing agents once and maintain ordered slots
+    const currentAgents = await getAOYieldAgents(address);
+    const agentSlots: (AOYieldAgent | null)[] = new Array(agentIds.length).fill(null);
+    let successCount = 0;
+
+    const agentInfoPromises = agentIds.map((agentId, index) =>
       limit(async () => {
         try {
+          log(LOG_GROUP.AGENTS, `Fetching agent info for ${agentId}`);
           const agentInfo = await queryClient.fetchQuery({
             queryKey: ["ao-yield-agent-info", agentId],
             queryFn: async (): Promise<AOYieldAgentInfo> => {
@@ -74,7 +81,9 @@ export async function checkAndSyncAgents(address: string): Promise<void> {
             return null;
           }
 
-          return {
+          log(LOG_GROUP.AGENTS, `Agent info fetched for ${agentId}`);
+
+          const agent: AOYieldAgent = {
             id: agentId,
             status: agentInfo.status,
             conversionPercentage: agentInfo.conversionPercentage,
@@ -84,7 +93,16 @@ export async function checkAndSyncAgents(address: string): Promise<void> {
             runIndefinitely: agentInfo.runIndefinitely,
             slippage: agentInfo.slippage,
             version: agentInfo.version,
-          } as AOYieldAgent;
+          };
+
+          // Store agent in correct position and update storage with ordered agents
+          agentSlots[index] = agent;
+          const orderedNewAgents = agentSlots.filter((agent): agent is AOYieldAgent => agent !== null);
+          await setAOYieldAgents(address, [...currentAgents, ...orderedNewAgents]);
+          successCount++;
+          log(LOG_GROUP.AGENTS, `Agent ${agentId} added at position ${index} (${successCount}/${agentIds.length})`);
+
+          return agent;
         } catch (error) {
           log(LOG_GROUP.AGENTS, `Error fetching agent info for ${agentId}:`, error);
           return null;
@@ -92,33 +110,20 @@ export async function checkAndSyncAgents(address: string): Promise<void> {
       }),
     );
 
-    const agentResults = await Promise.allSettled(agentInfoPromises);
+    await Promise.allSettled(agentInfoPromises);
 
-    const validAgents: AOYieldAgent[] = agentResults
-      .filter(
-        (result): result is PromiseFulfilledResult<AOYieldAgent | null> =>
-          result.status === "fulfilled" && result.value !== null,
-      )
-      .map((result) => result.value!);
-
-    if (validAgents.length > 0) {
-      const existingAgents = await getAOYieldAgents(address);
-      await setAOYieldAgents(address, [...existingAgents, ...validAgents]);
-      await ExtensionStorage.set(HAS_SHOWN_AGENTS_EXPLAINER_POPUP, true);
-      await ExtensionStorage.set(SHOW_CREATE_WANDER_AGENT_CTA, false);
-      log(LOG_GROUP.AGENTS, `Successfully synced ${validAgents.length} agents`);
+    if (successCount > 0) {
+      log(LOG_GROUP.AGENTS, `Successfully synced ${successCount} agents progressively`);
+    } else {
+      log(LOG_GROUP.AGENTS, "No valid agents were fetched successfully");
     }
   } catch (error) {
-    log(LOG_GROUP.AGENTS, "Error checking recent txs:", error);
-  } finally {
-    isSyncInProgress = false;
+    log(LOG_GROUP.AGENTS, "Error checking and syncing agents: ", error);
   }
 }
 
 export async function scheduleAgentsSync(address: string) {
-  if (IS_EMBEDDED_APP || isSchedulingInProgress) return;
-
-  isSchedulingInProgress = true;
+  if (IS_EMBEDDED_APP) return;
 
   try {
     const alarmName = AO_YIELD_AGENT_SYNC_ALARM_NAME_PREFIX + address;
@@ -126,7 +131,7 @@ export async function scheduleAgentsSync(address: string) {
     if (alarms) return;
 
     browser.alarms.create(alarmName, { when: Date.now() });
-  } finally {
-    isSchedulingInProgress = false;
+  } catch (error) {
+    log(LOG_GROUP.AGENTS, "Error scheduling agents sync: ", error);
   }
 }
