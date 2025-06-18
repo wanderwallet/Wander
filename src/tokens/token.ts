@@ -67,6 +67,7 @@ export async function loadTokens() {
   const existingProcessIds = new Set(aoTokens.map((token) => token.processId));
 
   const requiredTokens = [
+    defaultTokens[4], // USDA // TODO: maybe remove later in next builds
     defaultTokens[2], // PI
     defaultTokens[1], // AO
     defaultTokens[0], // AR

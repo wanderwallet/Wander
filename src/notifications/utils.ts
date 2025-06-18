@@ -167,6 +167,33 @@ export const ALL_AR_SENT_QUERY = `query ($address: String!) {
   }
 }`;
 
+export const AO_LIQUIDOPS_RECEIVER_QUERY = `
+query($address: String!) {
+  transactions(
+    first: 10,
+    recipients: [$address],
+    tags: [
+      {name: "Data-Protocol", values: ["ao"]},
+      {name: "Action", values: ["Mint-Confirmation"]},
+    ]
+  ) {
+    edges {
+      cursor
+      node {
+        recipient
+        id
+        owner { address }
+        block { timestamp, height }
+        tags {
+          name
+          value
+        }
+      }
+    }
+  }
+}
+`;
+
 export const AR_RECEIVER_QUERY_WITH_CURSOR = `
 query ($address: String!, $after: String) {
   transactions(first: 10, recipients: [$address], bundledIn: null, after: $after) {
@@ -265,6 +292,37 @@ query($address: String!, $after: String) {
       node {
         id
         recipient
+        owner { address }
+        block { timestamp, height }
+        tags {
+          name
+          value
+        }
+      }
+    }
+  }
+}
+`;
+
+export const AO_LIQUIDOPS_RECEIVER_QUERY_WITH_CURSOR = `
+query($address: String!, $after: String) {
+  transactions(
+    first: 10,
+    recipients: [$address],
+    tags: [
+      {name: "Data-Protocol", values: ["ao"]},
+      {name: "Action", values: ["Mint-Confirmation"]},
+    ],
+    after: $after
+  ) {
+    pageInfo {
+      hasNextPage
+    }
+    edges {
+      cursor
+      node {
+        recipient
+        id
         owner { address }
         block { timestamp, height }
         tags {
@@ -379,6 +437,12 @@ export const processTransactions = (combinedTransactions: any[], address: string
             const recipientTag = transaction.node.tags.find((tag) => tag.name === "Recipient");
             const quantityTag = transaction.node.tags.find((tag) => tag.name === "Quantity");
             if (recipientTag && transaction.node.recipient) tokenId = transaction.node.recipient;
+            if (quantityTag) quantity = quantityTag.value;
+          } else if (typeTag.value === "Mint-Confirmation") {
+            transactionType = "Received";
+            const processTag = transaction.node.tags.find((tag) => tag.name === "From-Process");
+            const quantityTag = transaction.node.tags.find((tag) => tag.name === "Mint-Quantity");
+            if (processTag && processTag.value) tokenId = processTag.value;
             if (quantityTag) quantity = quantityTag.value;
           } else {
             transactionType = "Message";

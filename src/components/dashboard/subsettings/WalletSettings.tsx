@@ -166,6 +166,7 @@ export function WalletSettingsDashboardView({ params: { address } }: WalletSetti
             </Tooltip>
           )}
         </WalletName>
+        <Spacer y={1} />
         <WalletAddress>
           {wallet.address}
           <Tooltip content={browser.i18n.getMessage("copy_address")} position="bottom">
@@ -184,6 +185,7 @@ export function WalletSettingsDashboardView({ params: { address } }: WalletSetti
             />
           </Tooltip>
         </WalletAddress>
+        <Spacer y={1} />
         <Title>{browser.i18n.getMessage("edit_wallet_name")}</Title>
         <InputWithBtn>
           <InputWrapper>

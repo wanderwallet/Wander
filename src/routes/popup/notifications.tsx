@@ -266,7 +266,7 @@ export function NotificationsView() {
 }
 
 export const Empty = styled.div`
-  width: calc(100% - 30px);
+  width: 100%;
   height: calc(100% - 64.59px);
   margin-top: 50%;
   display: flex;
