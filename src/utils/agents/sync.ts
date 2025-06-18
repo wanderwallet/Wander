@@ -9,7 +9,7 @@ import {
 } from "./constants";
 import browser from "webextension-polyfill";
 import { QueryClient } from "@tanstack/react-query";
-import type { AOYieldAgent } from "./types";
+import type { AOYieldAgent, AOYieldAgentInfo } from "./types";
 import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 import { pLimit } from "plimit-lit";
 import { ExtensionStorage } from "~utils/storage";
@@ -57,12 +57,22 @@ export async function checkAndSyncAgents(address: string): Promise<void> {
         try {
           const agentInfo = await queryClient.fetchQuery({
             queryKey: ["ao-yield-agent-info", agentId],
-            queryFn: () => getAOYieldAgentInfo(agentId),
+            queryFn: async (): Promise<AOYieldAgentInfo> => {
+              const timeoutPromise = new Promise<never>((_, reject) => {
+                setTimeout(() => reject(new Error("Query timeout")), 10000);
+              });
+              return Promise.race([getAOYieldAgentInfo(agentId), timeoutPromise]);
+            },
             staleTime: 0, // Force fresh data
             gcTime: 0,
-            retry: 3,
+            retry: 1,
             retryDelay: (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 30000),
           });
+
+          if (!agentInfo) {
+            log(LOG_GROUP.AGENTS, `Agent info not found for ${agentId}`);
+            return null;
+          }
 
           return {
             id: agentId,
