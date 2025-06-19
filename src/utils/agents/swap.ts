@@ -12,6 +12,7 @@ import {
   setRecentTxs,
   updateAOYieldAgent,
   getAOYieldAgents,
+  queryClient,
 } from "./utils";
 import { getActiveAddress } from "~wallets/wallets.utils";
 import { getWallets } from "~wallets";
@@ -25,7 +26,6 @@ import {
 } from "~tokens/aoTokens/ao";
 import { connect } from "@permaweb/aoconnect";
 import { defaultConfig } from "~tokens/aoTokens/config";
-import { QueryClient } from "@tanstack/react-query";
 import { defaultOptions } from "~tokens/hooks";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import {
@@ -44,7 +44,6 @@ import browser from "webextension-polyfill";
 import { EventType, trackDirect } from "~utils/analytics";
 import { getSetting } from "~settings";
 
-const queryClient = new QueryClient();
 let isSwapExecutionInProgress = false;
 let isSchedulingInProgress = false;
 let isRecentTxCheckInProgress = false;

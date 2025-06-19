@@ -17,7 +17,10 @@ import WarIcon from "url:/assets/ecosystem/war.png";
 import wUSDCIcon from "url:/assets/ecosystem/wusdc.svg";
 import type { Asset } from "~utils/agents/types";
 import { AO_YIELD_AGENT_RECENT_TXS, WANDER_FEE_PROCESS_ID } from "../constants";
+import { QueryClient } from "@tanstack/react-query";
 import dayjs from "dayjs";
+
+export const queryClient = new QueryClient();
 
 /**
  * Initializes a default Arweave instance.
@@ -213,7 +216,8 @@ export async function updateLocalAOYieldAgent(
     const foundAgentIndex = agents.findIndex((agent) => agent.id === agentId);
 
     if (foundAgentIndex !== -1) {
-      agents[foundAgentIndex] = { ...agents[foundAgentIndex], ...updateData };
+      const agent = agents[foundAgentIndex];
+      agents[foundAgentIndex] = updateAgentProperties(agent, updateData);
       await setAOYieldAgents(address, agents);
       return true;
     }
@@ -324,7 +328,7 @@ function buildUpdateTags(updateData: Partial<AOYieldAgent>): Tag[] {
 /**
  * Updates local agent data with the provided update data
  */
-function updateAgentProperties(agent: AOYieldAgent, updateData: Partial<AOYieldAgent>): void {
+function updateAgentProperties(agent: AOYieldAgent, updateData: Partial<AOYieldAgent>): AOYieldAgent {
   const updatableFields: Array<keyof AOYieldAgent> = [
     "slippage",
     "tokenOut",
@@ -339,6 +343,8 @@ function updateAgentProperties(agent: AOYieldAgent, updateData: Partial<AOYieldA
       (agent as any)[field] = updateData[field];
     }
   }
+
+  return agent;
 }
 
 export async function updateAOYieldAgent(agentId: string, updateData: Partial<AOYieldAgent>) {
@@ -370,17 +376,8 @@ export async function updateAOYieldAgent(agentId: string, updateData: Partial<AO
       throw new Error(`Failed to update agent: ${result.Error}`);
     }
 
-    // Update local storage
-    const activeAddress = await getActiveAddress();
-    const agents = await getAOYieldAgents(activeAddress);
-    const agent = agents.find((agent) => agent.id === agentId);
-
-    if (agent) {
-      updateAgentProperties(agent, updateData);
-      await setAOYieldAgents(activeAddress, agents);
-    } else {
-      console.warn(`Agent with ID ${agentId} not found in local storage`);
-    }
+    await updateLocalAOYieldAgent(agentId, updateData);
+    await queryClient.invalidateQueries({ queryKey: ["ao-yield-agent-info", agentId] });
   } catch (error) {
     throw new Error(`Failed to update AO Yield Agent: ${error instanceof Error ? error.message : String(error)}`);
   }
