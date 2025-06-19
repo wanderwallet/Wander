@@ -82,17 +82,25 @@ export function TransactionView({ params: { id, gateway: gw, message } }: Transa
     instance: ExtensionStorage,
   });
 
-  const ownerAddress = transaction?.owner.address;
-  const fromAddress = useMemo(
-    () =>
-      ao.isAo && ownerAddress === AO_AUTHORITY_ID
+  const { isAo } = ao;
+
+  const { fromAddress, toAddress, fromMe, toMe } = useMemo(() => {
+    const ownerAddress = transaction?.owner.address;
+    const fromAddress =
+      isAo && ownerAddress === AO_AUTHORITY_ID
         ? getTagValue("From-Process", transaction?.tags || []) || ownerAddress
-        : ownerAddress,
-    [ao, transaction?.tags, ownerAddress],
-  );
-  const toAddress = transaction?.recipient;
-  const fromMe = useMemo(() => wallets.find((wallet) => wallet.address === fromAddress), [wallets, fromAddress]);
-  const toMe = useMemo(() => wallets.find((wallet) => wallet.address === toAddress), [wallets, toAddress]);
+        : ownerAddress;
+    const toAddress = transaction?.recipient;
+    const fromMe = wallets.find((wallet) => wallet.address === fromAddress);
+    const toMe = wallets.find((wallet) => wallet.address === toAddress);
+
+    return {
+      fromAddress,
+      toAddress,
+      fromMe,
+      toMe,
+    };
+  }, [isAo, transaction]);
 
   // const [contact, setContact] = useState<any | undefined>(undefined);
   const fromContact = useContact(fromAddress);
