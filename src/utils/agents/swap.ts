@@ -41,7 +41,7 @@ import type { AOYieldAgent, AOYieldAgentInfo, MintQuantityResult, MintTransactio
 import type { DecodedTag } from "~api/modules/sign/tags";
 import { ExtensionStorage } from "~utils/storage";
 import browser from "webextension-polyfill";
-import { EventType, trackEvent } from "~utils/analytics";
+import { EventType, trackDirect } from "~utils/analytics";
 import { getSetting } from "~settings";
 
 const queryClient = new QueryClient();
@@ -671,8 +671,8 @@ export async function checkIfRecentTxSwapSucceeded(): Promise<boolean> {
 
     const foundTxIds = new Set<string>();
 
-    try {
-      for (const edge of edges) {
+    for (const edge of edges) {
+      try {
         const tags = edge.node.tags;
         const txId = getTagValue("Pushed-For", tags);
         const buyAsset = getTagValue("Token-Out", tags);
@@ -684,16 +684,16 @@ export async function checkIfRecentTxSwapSucceeded(): Promise<boolean> {
         if (foundTxIds.has(txId)) continue;
         foundTxIds.add(txId);
 
-        await trackEvent(EventType.AO_YIELD_AGENT_TRANSACTION, {
+        await trackDirect(EventType.AO_YIELD_AGENT_TRANSACTION, {
           buyAsset,
           sellAmount,
           buyAmount,
           dexUsed,
           wanderFee,
         });
+      } catch (error) {
+        log(LOG_GROUP.AGENTS, "Error tracking recent tx: ", error);
       }
-    } catch (error) {
-      log(LOG_GROUP.AGENTS, "Error tracking recent txs: ", error);
     }
 
     recentTxs = await getRecentTxs();
