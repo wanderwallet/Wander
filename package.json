@@ -57,6 +57,7 @@
     ]
   },
   "dependencies": {
+    "@ar.io/sdk": "^3.13.0",
     "@arconnect/components": "^1.0.0",
     "@arconnect/components-rebrand": "https://github.com/wanderwallet/components-rebrand.git#master",
     "@arconnect/keystone-sdk": "^0.0.5",
