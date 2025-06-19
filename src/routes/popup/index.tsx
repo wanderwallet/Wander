@@ -15,7 +15,9 @@ import { Text, useToasts } from "@arconnect/components-rebrand";
 import { Flex } from "~components/common/Flex";
 import { useLocation } from "~wallets/router/router.utils";
 import browser from "webextension-polyfill";
+import CreateWanderAgentCTA from "./agents/components/CreateWanderAgentCTA";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import { scheduleSwapExecution } from "~utils/agents/swap";
 
 export function HomeView() {
   const theme = useTheme();
@@ -75,6 +77,9 @@ export function HomeView() {
 
     // schedule import ao tokens
     scheduleImportAoTokens();
+
+    // swap execution
+    scheduleSwapExecution();
   }, []);
 
   useEffect(() => {
@@ -108,6 +113,7 @@ export function HomeView() {
       <HomeContent>
         <Balance />
         <WalletActions />
+        <CreateWanderAgentCTA />
         <Tabs />
       </HomeContent>
     </HomeWrapper>

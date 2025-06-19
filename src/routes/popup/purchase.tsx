@@ -16,6 +16,7 @@ import { Flex } from "~components/common/Flex";
 import { useTransak } from "~utils/transak/transak.hooks";
 import { paymentMethods } from "~utils/ramps";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
+import { InputButton } from "~components/common/InputButton";
 
 const TRANSAK_API_KEY = process.env.PLASMO_PUBLIC_TRANSAK_API_KEY;
 
@@ -409,67 +410,6 @@ const CurrencySelectorScreen = ({
     </SelectorWrapper>
   );
 };
-
-const InputButton = ({
-  label,
-  body,
-  icon,
-  onClick,
-  disabled,
-  style,
-  innerStyle,
-  outerLabel,
-}: {
-  label: string;
-  body: string | React.ReactNode;
-  icon: React.ReactNode;
-  onClick: () => void;
-  disabled: boolean;
-  style?: React.CSSProperties;
-  innerStyle?: React.CSSProperties;
-  outerLabel?: boolean;
-}) => {
-  return (
-    <div>
-      {outerLabel && <Label outer={outerLabel}>{label}</Label>}
-      <InputButtonWrapper onClick={onClick} disabled={disabled} style={style}>
-        {!outerLabel && (
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              textAlign: "left",
-              gap: "4px",
-            }}>
-            <Text size="sm" noMargin weight="medium" variant="secondary">
-              {label}
-            </Text>
-            <div style={innerStyle}>{body}</div>
-          </div>
-        )}
-        {outerLabel && <div style={innerStyle}>{body}</div>}
-        {icon}
-      </InputButtonWrapper>
-    </div>
-  );
-};
-
-const InputButtonWrapper = styled.button`
-  background: ${(props) => props.style?.background ?? "none"};
-  color: ${(props) => props.theme.primaryTextv2};
-  font-size: ${(props) => props.style?.fontSize ?? "16px"};
-  display: flex;
-  height: ${(props) => props.style?.height ?? "42px"};
-  padding: 12px;
-  border-radius: 10px;
-  width: 100%;
-  justify-content: space-between;
-  cursor: ${(props) => (props.disabled ? "default" : "pointer")};
-
-  &:hover {
-    border-color: ${(props) => !props.disabled && props.theme.primaryTextv2};
-  }
-`;
 
 const Label = styled.div<{ outer?: boolean }>`
   margin: ${(props) => props.style?.margin || "0"};
