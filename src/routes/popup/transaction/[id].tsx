@@ -148,7 +148,7 @@ export function TransactionView({ params: { id, gateway: gw, message } }: Transa
   useEffect(() => {
     if (!id || !graphqlGateways.length) return;
 
-    let timeoutID: NodeJS.Timeout | undefined;
+    let timeoutID: number | undefined;
     let fetchCount = 0;
 
     const fetchTx = async () => {
@@ -220,7 +220,7 @@ export function TransactionView({ params: { id, gateway: gw, message } }: Transa
 
       if (!data.transaction) {
         fetchCount++;
-        timeoutID = setTimeout(fetchTx, 5000);
+        timeoutID = window.setTimeout(fetchTx, 5000);
       } else {
         timeoutID = undefined;
         try {
