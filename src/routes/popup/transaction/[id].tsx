@@ -32,7 +32,7 @@ import { LinkExternal02 } from "@untitled-ui/icons-react";
 import { AdaptiveBalanceDisplay } from "~components/AdaptiveBalanceDisplay";
 import arweaveLogo from "url:/assets/ar/logo_light.png";
 import { useTokenPrice } from "~tokens/hooks";
-import { AR_PROCESS_ID, fetchTokenByProcessId } from "~tokens/aoTokens/ao";
+import { AO_AUTHORITY_ID, AR_PROCESS_ID, fetchTokenByProcessId, getTagValue } from "~tokens/aoTokens/ao";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 // pull contacts and check if to address is in contacts
@@ -63,6 +63,8 @@ export function TransactionView({ params: { id, gateway: gw, message } }: Transa
     throw new Error(ErrorTypes.MissingTxId);
   }
 
+  const [ao, setAo] = useState<ao>({ isAo: false });
+
   // fetch tx data
   const [transaction, setTransaction] = useState<GQLNodeInterface>();
   const [logo, setLogo] = useState<string | undefined>(undefined);
@@ -80,16 +82,21 @@ export function TransactionView({ params: { id, gateway: gw, message } }: Transa
     instance: ExtensionStorage,
   });
 
-  const fromAddress = transaction?.owner.address;
+  const ownerAddress = transaction?.owner.address;
+  const fromAddress = useMemo(
+    () =>
+      ao.isAo && ownerAddress === AO_AUTHORITY_ID
+        ? getTagValue("From-Process", transaction?.tags || []) || ownerAddress
+        : ownerAddress,
+    [ao, transaction?.tags, ownerAddress],
+  );
   const toAddress = transaction?.recipient;
-  const fromMe = wallets.find((wallet) => wallet.address === fromAddress);
-  const toMe = wallets.find((wallet) => wallet.address === toAddress);
+  const fromMe = useMemo(() => wallets.find((wallet) => wallet.address === fromAddress), [wallets, fromAddress]);
+  const toMe = useMemo(() => wallets.find((wallet) => wallet.address === toAddress), [wallets, toAddress]);
 
   // const [contact, setContact] = useState<any | undefined>(undefined);
   const fromContact = useContact(fromAddress);
   const toContact = useContact(toAddress);
-
-  const [ao, setAo] = useState<ao>({ isAo: false });
 
   const [ticker, setTicker] = useState<string | null>(null);
 
@@ -141,7 +148,7 @@ export function TransactionView({ params: { id, gateway: gw, message } }: Transa
   useEffect(() => {
     if (!id || !graphqlGateways.length) return;
 
-    let timeoutID: number | undefined;
+    let timeoutID: NodeJS.Timeout | undefined;
     let fetchCount = 0;
 
     const fetchTx = async () => {
@@ -219,14 +226,20 @@ export function TransactionView({ params: { id, gateway: gw, message } }: Transa
         try {
           const dataProtocolTag = data.transaction.tags.find((tag) => tag.name === "Data-Protocol");
           if (dataProtocolTag && dataProtocolTag.value === "ao") {
-            setAo({ isAo: true, tokenId: data.transaction.recipient });
-            const aoRecipient = data.transaction.tags.find((tag) => tag.name === "Recipient");
-            const aoQuantity = data.transaction.tags.find((tag) => tag.name === "Quantity");
+            const isMintConfirmation = getTagValue("Action", data.transaction.tags) === "Mint-Confirmation";
+            const tokenId = isMintConfirmation
+              ? getTagValue("From-Process", data.transaction.tags) || data.transaction.recipient
+              : data.transaction.recipient;
+            setAo({ isAo: true, tokenId });
+
+            const aoRecipient = getTagValue("Recipient", data.transaction.tags) || data.transaction.recipient;
+            const aoQuantity =
+              getTagValue("Quantity", data.transaction.tags) || getTagValue("Mint-Quantity", data.transaction.tags);
 
             if (aoQuantity) {
-              const tokenInfo = await fetchTokenByProcessId(data.transaction.recipient);
+              const tokenInfo = await fetchTokenByProcessId(tokenId);
               if (tokenInfo) {
-                const amount = balanceToFractioned(aoQuantity.value, {
+                const amount = balanceToFractioned(aoQuantity, {
                   id: data.transaction.recipient,
                   decimals: Number(tokenInfo.Denomination),
                 });
@@ -241,11 +254,11 @@ export function TransactionView({ params: { id, gateway: gw, message } }: Transa
                   ar: amount.toFixed(),
                   winston: "",
                 };
-                data.transaction.recipient = aoRecipient.value;
+                data.transaction.recipient = aoRecipient;
               } else {
                 setLogo(arweaveLogo);
                 setTicker(formatAddress(data.transaction.recipient, 4));
-                const amount = balanceToFractioned(aoQuantity.value, {
+                const amount = balanceToFractioned(aoQuantity, {
                   id: data.transaction.recipient,
                   decimals: 0,
                 });
