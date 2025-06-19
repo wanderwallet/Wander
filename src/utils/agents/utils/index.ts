@@ -216,8 +216,7 @@ export async function updateLocalAOYieldAgent(
     const foundAgentIndex = agents.findIndex((agent) => agent.id === agentId);
 
     if (foundAgentIndex !== -1) {
-      const agent = agents[foundAgentIndex];
-      agents[foundAgentIndex] = updateAgentProperties(agent, updateData);
+      agents[foundAgentIndex] = updateAgentProperties(agents[foundAgentIndex], updateData);
       await setAOYieldAgents(address, agents);
       return true;
     }
@@ -330,6 +329,9 @@ function buildUpdateTags(updateData: Partial<AOYieldAgent>): Tag[] {
  */
 function updateAgentProperties(agent: AOYieldAgent, updateData: Partial<AOYieldAgent>): AOYieldAgent {
   const updatableFields: Array<keyof AOYieldAgent> = [
+    "totalTransactions",
+    "conversionPercentage",
+    "version",
     "slippage",
     "tokenOut",
     "startDate",
