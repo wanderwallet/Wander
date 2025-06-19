@@ -11,20 +11,19 @@ import { Flex } from "~components/common/Flex";
 import Tabs from "~components/Tabs";
 import { useContacts, type Recipient } from "~contacts/hooks";
 import { formatAddress, isAddressFormat } from "~utils/format";
-import { User01 } from "@untitled-ui/icons-react";
 import { calculateDaysSinceTimestamp, humanizeTimestampForRecipient } from "~utils/timestamp";
 import { isANS, getAnsProfileByLabel } from "~lib/ans";
 import { searchArNSName } from "~lib/arns";
 import SliderMenu from "~components/SliderMenu";
 import { useLocation } from "~wallets/router/router.utils";
 import { ExtensionStorage, TempTransactionStorage } from "~utils/storage";
-import type { TokenInfo } from "~tokens/aoTokens/ao";
+import { AR_PROCESS_ID, type TokenInfo } from "~tokens/aoTokens/ao";
 import { useStorage } from "@plasmohq/storage/hook";
 import { NoAvatarIcon } from "~components/popup/WalletHeader";
 
 // default size for the qty text
 export const arPlaceholder: TokenInterface = {
-  id: "AR",
+  id: AR_PROCESS_ID,
   name: "Arweave",
   ticker: "AR",
   type: "asset",
@@ -286,9 +285,9 @@ export function SendView({ params: { id } }: SendViewProps) {
       }
       if (recipientAddress) {
         await ExtensionStorage.set("last_send_qty", "");
-        await ExtensionStorage.set("last_send_token", id ?? "AR");
+        await ExtensionStorage.set("last_send_token", id ?? AR_PROCESS_ID);
         await TempTransactionStorage.set("last_send_note", "");
-        navigate(`/send/amount/${recipientAddress}/${id ?? "AR"}`);
+        navigate(`/send/amount/${recipientAddress}/${id ?? AR_PROCESS_ID}`);
       } else {
         setToast({
           type: "error",

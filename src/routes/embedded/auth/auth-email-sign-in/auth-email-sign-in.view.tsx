@@ -2,7 +2,6 @@ import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { toast } from "react-toastify";
 import { Button, Text, TextInput } from "~components/embed";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { getSupabaseClient } from "~utils/embedded/embedded.utils";
 import { useLocation, useSearchParams } from "~wallets/router/router.utils";
 import { Flex } from "~components/common/Flex";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
@@ -10,11 +9,12 @@ import { PasswordInput } from "~components/embed/ui/atoms/password-input";
 import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
 import { InputButton } from "~components/embed/ui/atoms/input-button/InputButton";
 import { EditIcon } from "@iconicicons/react";
+import { getFriendlyAuthErrorMessage } from "~utils/authentication/authentication.utils";
 
 export function AuthEmailSignInEmbeddedView() {
   const { navigate } = useLocation();
   const { email } = useSearchParams<{ email: string }>();
-  const { authStatus } = useEmbedded();
+  const { authStatus, authenticate } = useEmbedded();
 
   // Input refs:
 
@@ -31,80 +31,44 @@ export function AuthEmailSignInEmbeddedView() {
 
   // Handlers:
 
-  /*
-  const areButtonsDisabled =
-    authStatus === "unknown" ||
-    authStatus === "loading" ||
-    authStatus === "authLoading" ||
-    !authEmail ||
-    !passwordInput.state;
-  */
+  const handleEmailSignIn = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
 
-  const authStatusRef = useRef(authStatus);
+      try {
+        const password = passwordInputRef.current?.value || "";
 
-  const handleEmailSignin = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
+        if (!password) {
+          toast.error("Please enter an email and password");
+          return;
+        }
 
-    const password = passwordInputRef.current?.value || "";
+        setIsAuthenticating(true);
 
-    try {
-      if (!password) {
-        toast.error("Please enter an email and password");
-        return;
-      }
-
-      setIsAuthenticating(true);
-
-      // TODO: Call authenticate instead.
-
-      const supabase = await getSupabaseClient();
-
-      const { error, data } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        toast.error(error.message);
+        await authenticate({
+          method: "signInWithPassword",
+          email,
+          password,
+        });
+      } catch (error) {
         if (error.code === "email_not_confirmed") {
           navigate(EmbeddedPaths.AuthEmailVerify);
+        } else {
+          toast.error(getFriendlyAuthErrorMessage(error, "Error signing up"));
         }
-        return;
+      } finally {
+        setIsAuthenticating(false);
       }
-
-      const interval = setInterval(() => {
-        if (authStatusRef.current === "unlocked") {
-          navigate(EmbeddedPaths.WalletHomeEmbeddedView);
-        }
-      }, 1000);
-
-      await new Promise((resolve) => {
-        const interval = setInterval(() => {
-          if (authStatusRef.current === "unlocked") {
-            clearInterval(interval);
-            resolve(true);
-          }
-        }, 1000);
-      });
-
-      return () => clearInterval(interval);
-    } catch (error) {
-      toast.error("Error signing up");
-    } finally {
-      setIsAuthenticating(false);
-    }
-  }, [email]);
-
-  useEffect(() => {
-    authStatusRef.current = authStatus;
-  }, [authStatus]);
+    },
+    [email],
+  );
 
   useEffect(() => {
     if (!email) {
       if (process.env.NODE_ENV === "development") {
-        throw new Error("No email search param. The router should have taken care of this.")
+        throw new Error("No email search param. The router should have taken care of this.");
       } else {
-        navigate(EmbeddedPaths.Auth)
+        navigate(EmbeddedPaths.Auth);
       }
     }
   }, [email]);
@@ -116,27 +80,28 @@ export function AuthEmailSignInEmbeddedView() {
         width: 22,
         height: 22,
         color: "var(--text-color-tertiary)",
-      }}/>
+      }}
+    />
   );
 
   const emailInputButton = (
     <InputButton
       icon={editIcon}
-      disabled={ areButtonsDisabled }
-      onClick={ () => navigate("/auth", { search: { email }}) } />
+      disabled={areButtonsDisabled}
+      onClick={() => navigate("/auth", { search: { email } })}
+    />
   );
 
   return (
     <OnboardingCard
       headerText="Enter your password"
-      isLoading={ isViewLoading }
+      isLoading={isViewLoading}
       onBackButtonClick={() => navigate(`/auth`)}
-      onSubmit={ handleEmailSignin }>
-
+      onSubmit={handleEmailSignIn}>
       <TextInput
         name="email"
         placeholder="Enter your email"
-        value={ email }
+        value={email}
         disabled={areButtonsDisabled}
         readOnly
         endSlot={emailInputButton}
@@ -146,7 +111,9 @@ export function AuthEmailSignInEmbeddedView() {
         name="password"
         placeholder="Enter your password"
         inputRef={passwordInputRef}
-        disabled={areButtonsDisabled} />
+        disabled={areButtonsDisabled}
+        autoFocus
+      />
 
       <Button type="submit" isFullWidth isDisabled={areButtonsDisabled}>
         Sign in
@@ -167,7 +134,6 @@ export function AuthEmailSignInEmbeddedView() {
           Recover account
         </Button>
       </Flex>
-
     </OnboardingCard>
   );
 }

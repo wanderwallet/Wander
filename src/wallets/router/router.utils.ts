@@ -34,27 +34,29 @@ export function parseRouteRedirect<T extends RoutePath>(routeRedirect: RouteRedi
   return routeRedirect.slice(REDIRECT_PREFIX.length - 1) as T;
 }
 
-export function routeTrapInside<T extends RoutePath>(location: RoutePath, baseRoute: T): null | RouteRedirect<T> {
+export function routeTrapInside<T extends RoutePath>(location: RoutePath, baseRoute: T): T | RouteRedirect<T> {
   return location === baseRoute || location.startsWith(`${baseRoute}/`)
-    ? null
+    ? (location as T)
     : (`${REDIRECT_PREFIX}${baseRoute.slice(1)}` as RouteRedirect<T>);
 }
 
-export function routeTrapMatches<T extends RoutePath>(
+export function routeTrapMatches<T extends RoutePath, R extends RoutePath>(
   location: RoutePath,
   validRoutes: T[],
-  redirectTo: T,
-): null | RouteRedirect<T> {
-  return validRoutes.includes(location as T) ? null : (`${REDIRECT_PREFIX}${redirectTo.slice(1)}` as RouteRedirect<T>);
+  redirectTo: R,
+): T | RouteRedirect<R> {
+  return validRoutes.includes(location as T)
+    ? (location as T)
+    : (`${REDIRECT_PREFIX}${redirectTo.slice(1)}` as RouteRedirect<R>);
 }
 
-export function routeTrapOutside<T extends RoutePath>(
+export function routeTrapOutside<T extends RoutePath, R extends RoutePath>(
   location: RoutePath,
   baseRoute: T,
-  redirectTo: T,
-): null | RouteRedirect<T> {
+  redirectTo: R,
+): null | RouteRedirect<R> {
   return location === baseRoute || location.startsWith(`${baseRoute}/`)
-    ? (`${REDIRECT_PREFIX}${redirectTo.slice(1)}` as RouteRedirect<T>)
+    ? (`${REDIRECT_PREFIX}${redirectTo.slice(1)}` as RouteRedirect<R>)
     : null;
 }
 
@@ -120,6 +122,17 @@ export function useLocation() {
         }
       }
 
+      // Handle path parameters
+      if (options?.params) {
+        Object.entries(options.params).forEach(([key, value]) => {
+          if (process.env.NODE_ENV === "development" && toPath.indexOf(`:${key}`) === -1) {
+            throw new Error(`Path ${toPath} has no ${key} param.`);
+          }
+          toPath = toPath.replace(`:${key}`, value.toString()) as WanderRoutePath;
+        });
+      }
+
+      // Handle search parameters
       if (options?.search) {
         const searchParams = new URLSearchParams();
 
@@ -157,10 +170,12 @@ export function useLocation() {
 
   return {
     location: wocation,
+    previousLocation: customHistory[customHistory.length - 2]?.to,
     navigate,
     back,
   } as {
     location: WanderRoutePath;
+    previousLocation: WanderRoutePath;
     navigate: typeof navigate;
     back: typeof back;
   };

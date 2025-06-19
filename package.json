@@ -12,13 +12,13 @@
     "dev:firefox": "plasmo dev --target=firefox-mv2",
     "build:firefox": "plasmo build --target=firefox-mv2 --no-hoist",
     "dev:iframe": "vite",
-    "build:iframe": "vite build && yarn build:forge",
+    "build:iframe": "vite build && yarn build:assets",
     "preview:iframe": "vite preview",
     "dev:sdk": "cd ./wander-connect-sdk/ && pnpm dev",
     "build:sdk": "cd ./wander-connect-sdk/ && pnpm build",
-    "build:forge": "cp -r assets/forge dist/assets/forge",
+    "build:assets": "cp -r assets/forge dist/assets/forge && cp -r assets/animation dist/assets/animation",
     "build:wallet-api": "vite build --config vite.wallet-config.js",
-    "clean": "rm -rf yarn.lock node_modules",
+    "clean": "rm -rf .plasmo build dist",
     "nuke": "yarn clean && rm -rf yarn.lock node_modules",
     "fmt": "prettier --write .",
     "fmt:check": "prettier --check .",
@@ -90,6 +90,7 @@
     "human-crypto-keys": "^0.1.4",
     "js-confetti": "^0.12.0",
     "jwt-decode": "^4.0.0",
+    "liquidops": "^1.2.2",
     "lodash.throttle": "^4.1.1",
     "mitt": "^3.0.0",
     "nanoid": "5.0.4",
@@ -165,6 +166,6 @@
     "axios": "^1.7.2"
   },
   "lint-staged": {
-    "*.{js,ts,html,css,md,json}": "prettier --write"
+    "*.{js,ts,tsx,html,css,scss,md,json}": "prettier --write"
   }
 }

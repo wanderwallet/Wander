@@ -5,7 +5,7 @@ import { Loading } from "@arconnect/components";
 
 import styles from "./Button.module.scss";
 
-export function Button (props: ButtonProps) {
+export function Button(props: ButtonProps) {
   const {
     children,
     className: classNameProp,
@@ -17,22 +17,19 @@ export function Button (props: ButtonProps) {
     isLoading,
     isBlurry,
     icon,
-    hasBorder = true,
     style,
     tabIndex,
   } = props;
 
   const hasSize = !("href" in props) || !isFullWidth;
 
-  const content = (<>
-    <span className={ styles.loaderCover}>
-      { isLoading ? (
-        <Loading />
-      ) : null }
-    </span>
-    { icon }
-    { children }
-  </>);
+  const content = (
+    <>
+      <span className={styles.loaderCover}>{isLoading ? <Loading /> : null}</span>
+      {icon}
+      {children}
+    </>
+  );
 
   const className = clsx(
     styles.button,
@@ -43,44 +40,37 @@ export function Button (props: ButtonProps) {
     isFullWidth && styles["button__full__width"],
     (isDisabled || isLoading) && styles["isDisabled"],
     isLoading && styles["isLoading"],
-    !hasBorder && styles["button__borderless"],
     classNameProp,
   );
 
   if ("href" in props) {
-    const {
-      href,
-      onClick
-    } = props;
+    const { href, onClick } = props;
 
     return (
       <Link
         to={href}
         rel="noopener noreferrer"
         className={className}
-        style={ style }
+        style={style}
         // disabled={isDisabled || isLoading}
         // tabIndex={ tabIndex }
-        onClick={ onClick }>
-        { content }
+        onClick={onClick}>
+        {content}
       </Link>
     );
   }
 
-  const {
-    type = "button",
-    onClick,
-  } = props;
+  const { type = "button", onClick } = props;
 
   return (
     <button
       type={type}
       className={className}
-      style={ style }
+      style={style}
       disabled={isDisabled || isLoading}
-      tabIndex={ tabIndex }
-      onClick={ onClick }>
-      { content }
+      tabIndex={tabIndex}
+      onClick={onClick}>
+      {content}
     </button>
   );
 }

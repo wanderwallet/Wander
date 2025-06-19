@@ -1,49 +1,52 @@
-import React from "react";
-import styles from "./Snackbar.module.css";
-import type { SnackbarBaseProps } from "./Snackbar.types";
-import { Text, Row } from "../../atoms";
-import { useTheme } from "../../../contexts/ThemeContext";
+import { InfoIcon } from "../../atoms";
+import clsx from "clsx";
+import { FormattedText } from "~components/embed/ui/atoms/formatted-text/FormattedText";
+import type React from "react";
+import { AlertTriangle, XCircle, Check } from "@untitled-ui/icons-react";
+import { motion } from "framer-motion";
 
-const Snackbar = React.forwardRef<HTMLDivElement, SnackbarBaseProps>(
-  ({ text, textColor, icon, iconColor, borderColor, backgroundColor, isFullWidth, className, ...props }, ref) => {
-    const { isDarkMode } = useTheme();
+import styles from "./Snackbar.module.scss";
 
-    const defaultBorderColor = isDarkMode ? "var(--color-border-box)" : borderColor || "var(--color-border-box)";
+export type SnackbarVariant = "info" | "warning" | "error" | "success";
 
-    const defaultBackgroundColor =
-      backgroundColor || (isDarkMode ? "var(--color-card-background-default)" : "var(--color-background-default)");
+const SNACKBAR_ICON_BY_VARIANT: Record<SnackbarVariant, (props: React.SVGProps<SVGSVGElement>) => JSX.Element> = {
+  info: InfoIcon,
+  warning: AlertTriangle,
+  error: XCircle,
+  success: Check,
+};
 
-    const defaultIconColor = iconColor || (isDarkMode ? "var(--color-font-body)" : iconColor);
+export interface SnackbarBaseProps extends FormattedText {
+  variant: SnackbarVariant;
+  title?: string;
+  ref?: React.Ref<HTMLDivElement>;
+}
 
-    const defaultTextColor = isDarkMode ? "var(--color-font-body)" : textColor;
+export function Snackbar({ variant, title, className: classNameProp, children, ref }: SnackbarBaseProps) {
+  if (!children) return null;
 
-    return (
-      <Row
-        ref={ref}
-        alignment="center"
-        className={`
-          ${styles["snackbar"]}
-          ${isFullWidth && styles["snackbar__isFullWidth"]}
-          ${className}
-        `}
-        style={{
-          borderColor: defaultBorderColor,
-          backgroundColor: defaultBackgroundColor,
-        }}
-        {...props}>
-        {icon && (
-          <div className={styles["snackbar__icon"]} style={{ color: defaultIconColor }}>
-            {icon}
-          </div>
-        )}
-        <Text variant="bodyMd" alignment="left" style={{ color: defaultTextColor }}>
-          {text}
-        </Text>
-      </Row>
-    );
-  },
-);
+  const className = clsx(
+    styles.root,
+    styles[`${variant}Variant`],
+    styles[`${title ? "with" : "no"}Title`],
+    classNameProp,
+  );
+  const Icon = SNACKBAR_ICON_BY_VARIANT[variant];
+  const icon = Icon ? <Icon className={styles.icon} /> : null;
 
-Snackbar.displayName = "Snackbar";
+  return (
+    <div className={className} ref={ref}>
+      {title ? (
+        <strong className={styles.title}>
+          {icon} {title}
+        </strong>
+      ) : (
+        icon
+      )}
 
-export { Snackbar };
+      <FormattedText className={styles.content}>{children}</FormattedText>
+    </div>
+  );
+}
+
+export const MotionSnackbar = motion.create(Snackbar);

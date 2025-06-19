@@ -101,11 +101,7 @@ export function AuthRecoverAccountSeedphraseEmbeddedView() {
       onBackButtonClick={() => navigate(`/auth/recover-account`)}
       isLoading={loading}>
       <SeedInput seedPhrase={seedPhrase} handleSubmit={handleImportWallet} handleInputChange={handleInputChange} />
-      <Button
-        isFullWidth
-        size="md"
-        onClick={handleImportWallet}
-        isDisabled={loading || isSeedPhraseIncomplete}>
+      <Button isFullWidth size="md" onClick={handleImportWallet} isDisabled={loading || isSeedPhraseIncomplete}>
         {isSeedPhraseIncomplete ? "Complete seedphrase" : "Next"}
       </Button>
     </OnboardingCard>

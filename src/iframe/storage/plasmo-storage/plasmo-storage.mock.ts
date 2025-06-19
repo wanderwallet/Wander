@@ -4,6 +4,7 @@ import {
   type ItemStorageOptions,
   StorageManager,
 } from "../unpartitioned-storage/unpartitioned-storage";
+import { resolve } from "url";
 
 export interface StorageMockInterface extends PlasmoStorage {
   setItem<T>(key: string, value: T, options?: ItemStorageOptions): Promise<void>;
@@ -34,7 +35,6 @@ export interface StorageMockInterface extends PlasmoStorage {
     expiresIn?: number,
   ): Promise<void>;
   requestStorageAccess(): Promise<void>;
-  requestAccessOnUserInteraction(): Promise<void>;
   hasAvailableSpace(bytesNeeded: number): Promise<boolean>;
   getRaw(key: string): Promise<string | null>;
   setRaw(key: string, value: string): Promise<void>;
@@ -43,10 +43,12 @@ export interface StorageMockInterface extends PlasmoStorage {
 
 export class StorageMock extends PlasmoStorage implements StorageMockInterface {
   private storage: EnhancedStorage;
+  private _area: "session" | "local" = "session";
 
   constructor(area: "session" | "local" = "session") {
     super({ area });
     this.storage = new EnhancedStorage({ area });
+    this._area = area;
 
     // This browser doesn't support the Storage Access API
     // so let's just hope we have access!
@@ -66,7 +68,7 @@ export class StorageMock extends PlasmoStorage implements StorageMockInterface {
   }
 
   get area(): "session" | "sync" | "local" | "managed" {
-    return "session";
+    return this._area;
   }
 
   get hasWebApi(): boolean {
@@ -145,8 +147,9 @@ export class StorageMock extends PlasmoStorage implements StorageMockInterface {
   removeMany: (keys: string[]) => Promise<void> = this.removeItems;
 
   removeAll: () => Promise<void> = () => {
-    return new Promise<void>(() => {
+    return new Promise<void>((resolve) => {
       this.storage.clear();
+      resolve();
     });
   };
 
@@ -206,10 +209,6 @@ export class StorageMock extends PlasmoStorage implements StorageMockInterface {
   // unpartitioned storage:
   async requestStorageAccess() {
     await this.storage.requestStorageAccess();
-  }
-
-  async requestAccessOnUserInteraction() {
-    await this.storage.requestAccessOnUserInteraction();
   }
 
   // Additional methods:

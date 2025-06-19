@@ -26,6 +26,7 @@ import BigNumber from "bignumber.js";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { useStorage } from "@plasmohq/storage/hook";
 import { findGateway } from "~gateways/wayfinder";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 export interface SendAuthViewParams {
   tokenID?: string;
@@ -272,33 +273,32 @@ export function SendAuthView({ params: { tokenID } }: SendAuthViewProps) {
   // load tx UR
   const [transactionUR, setTransactionUR] = useState<UR>();
 
-  useEffect(() => {
-    (async () => {
-      // get the tx from storage
-      const { transaction } = await getTransaction();
+  useAsyncEffect(async () => {
+    // get the tx from storage
+    const { transaction } = await getTransaction();
 
-      // redirect to transfer if the
-      // transaction was not found
-      if (!transaction) {
-        return navigate("/send/transfer");
-      }
+    // redirect to transfer if the
+    // transaction was not found
+    if (!transaction) {
+      navigate("/send/transfer");
+      return;
+    }
 
-      // check if the current wallet
-      // is a hardware wallet
-      if (wallet?.type !== "hardware") return;
+    // check if the current wallet
+    // is a hardware wallet
+    if (wallet?.type !== "hardware") return;
 
-      // get tx UR
-      try {
-        setTransactionUR(await transactionToUR(transaction, wallet.xfp, wallet.publicKey));
-      } catch {
-        setToast({
-          type: "error",
-          duration: 2300,
-          content: browser.i18n.getMessage("transaction_auth_ur_fail"),
-        });
-        navigate("/send/transfer");
-      }
-    })();
+    // get tx UR
+    try {
+      setTransactionUR(await transactionToUR(transaction, wallet.xfp, wallet.publicKey));
+    } catch {
+      setToast({
+        type: "error",
+        duration: 2300,
+        content: browser.i18n.getMessage("transaction_auth_ur_fail"),
+      });
+      navigate("/send/transfer");
+    }
   }, [wallet]);
 
   // current hardware wallet operation

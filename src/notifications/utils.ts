@@ -1,5 +1,7 @@
 // JUST AR TRANSFER NOTIFICATIONS
 
+import { AR_PROCESS_ID } from "~tokens/aoTokens/ao";
+
 export const AR_RECEIVER_QUERY = `
 query ($address: String!) {
   transactions(first: 10, recipients: [$address], bundledIn: null) {
@@ -12,7 +14,7 @@ query ($address: String!) {
         quantity { ar }
         block { timestamp, height }
         tags {
-          name, 
+          name,
           value
         }
       }
@@ -45,9 +47,9 @@ export const AR_SENT_QUERY = `query ($address: String!) {
 export const AO_RECEIVER_QUERY = `
 query($address: String!) {
   transactions(
-    first: 10, 
+    first: 10,
     tags: [
-      {name: "Data-Protocol", values: ["ao"]}, 
+      {name: "Data-Protocol", values: ["ao"]},
       {name: "Action", values: ["Transfer"]},
       {name: "Recipient", values: [$address]}
     ]
@@ -104,10 +106,10 @@ query($messageId: String!) {
 export const AO_SENT_QUERY = `
 query($address: String!) {
   transactions(
-    first: 10, 
-    owners: [$address], 
+    first: 10,
+    owners: [$address],
     tags: [
-      {name: "Data-Protocol", values: ["ao"]}, 
+      {name: "Data-Protocol", values: ["ao"]},
       {name: "Action", values: ["Transfer"]}
     ]
   ) {
@@ -138,7 +140,7 @@ query ($address: String!) {
         quantity { ar }
         block { timestamp, height }
         tags {
-          name, 
+          name,
           value
         }
       }
@@ -164,6 +166,33 @@ export const ALL_AR_SENT_QUERY = `query ($address: String!) {
     }
   }
 }`;
+
+export const AO_LIQUIDOPS_RECEIVER_QUERY = `
+query($address: String!) {
+  transactions(
+    first: 10,
+    recipients: [$address],
+    tags: [
+      {name: "Data-Protocol", values: ["ao"]},
+      {name: "Action", values: ["Mint-Confirmation"]},
+    ]
+  ) {
+    edges {
+      cursor
+      node {
+        recipient
+        id
+        owner { address }
+        block { timestamp, height }
+        tags {
+          name
+          value
+        }
+      }
+    }
+  }
+}
+`;
 
 export const AR_RECEIVER_QUERY_WITH_CURSOR = `
 query ($address: String!, $after: String) {
@@ -216,9 +245,9 @@ query ($address: String!, $after: String) {
 export const AO_RECEIVER_QUERY_WITH_CURSOR = `
 query($address: String!, $after: String) {
   transactions(
-    first: 10, 
+    first: 10,
     tags: [
-      {name: "Data-Protocol", values: ["ao"]}, 
+      {name: "Data-Protocol", values: ["ao"]},
       {name: "Action", values: ["Transfer"]},
       {name: "Recipient", values: [$address]}
     ],
@@ -247,10 +276,10 @@ query($address: String!, $after: String) {
 export const AO_SENT_QUERY_WITH_CURSOR = `
 query($address: String!, $after: String) {
   transactions(
-    first: 10, 
-    owners: [$address], 
+    first: 10,
+    owners: [$address],
     tags: [
-      {name: "Data-Protocol", values: ["ao"]}, 
+      {name: "Data-Protocol", values: ["ao"]},
       {name: "Action", values: ["Transfer"]}
     ],
     after: $after
@@ -263,6 +292,37 @@ query($address: String!, $after: String) {
       node {
         id
         recipient
+        owner { address }
+        block { timestamp, height }
+        tags {
+          name
+          value
+        }
+      }
+    }
+  }
+}
+`;
+
+export const AO_LIQUIDOPS_RECEIVER_QUERY_WITH_CURSOR = `
+query($address: String!, $after: String) {
+  transactions(
+    first: 10,
+    recipients: [$address],
+    tags: [
+      {name: "Data-Protocol", values: ["ao"]},
+      {name: "Action", values: ["Mint-Confirmation"]},
+    ],
+    after: $after
+  ) {
+    pageInfo {
+      hasNextPage
+    }
+    edges {
+      cursor
+      node {
+        recipient
+        id
         owner { address }
         block { timestamp, height }
         tags {
@@ -361,7 +421,7 @@ export const processTransactions = (combinedTransactions: any[], address: string
     let isAo = false;
 
     if (transaction.node.quantity && transaction.node.quantity.ar > 0) {
-      tokenId = "AR";
+      tokenId = AR_PROCESS_ID;
       quantity = transaction.node.quantity.ar;
       transactionType = transaction.node.owner.address === address ? "Sent" : "Received";
     } else {
@@ -377,6 +437,12 @@ export const processTransactions = (combinedTransactions: any[], address: string
             const recipientTag = transaction.node.tags.find((tag) => tag.name === "Recipient");
             const quantityTag = transaction.node.tags.find((tag) => tag.name === "Quantity");
             if (recipientTag && transaction.node.recipient) tokenId = transaction.node.recipient;
+            if (quantityTag) quantity = quantityTag.value;
+          } else if (typeTag.value === "Mint-Confirmation") {
+            transactionType = "Received";
+            const processTag = transaction.node.tags.find((tag) => tag.name === "From-Process");
+            const quantityTag = transaction.node.tags.find((tag) => tag.name === "Mint-Quantity");
+            if (processTag && processTag.value) tokenId = processTag.value;
             if (quantityTag) quantity = quantityTag.value;
           } else {
             transactionType = "Message";

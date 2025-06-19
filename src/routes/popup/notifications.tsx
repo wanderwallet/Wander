@@ -10,7 +10,7 @@ import { Text, Loading } from "@arconnect/components-rebrand";
 import { formatAddress } from "~utils/format";
 import HeadV2 from "~components/popup/HeadV2";
 import browser from "webextension-polyfill";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { fetchTokenByProcessId } from "~tokens/aoTokens/ao";
 import styled from "styled-components";
 import { balanceToFractioned, formatTokenBalance } from "~tokens/currency";
@@ -22,6 +22,7 @@ import type { Transaction } from "~api/background/handlers/alarms/notifications/
 import { MessageDotsCircle, Wallet02 } from "@untitled-ui/icons-react";
 import { HorizontalLine } from "~components/HorizontalLine";
 import { useAo } from "~tokens/hooks";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 export function NotificationsView() {
   const { navigate } = useLocation();
@@ -35,34 +36,37 @@ export function NotificationsView() {
 
   const ao = useAo();
 
-  useEffect(() => {
-    (async () => {
-      try {
-        setLoading(true);
-        const address = await getActiveAddress();
-        const n = await fetchNotifications(address);
-        const subs = ((await ExtensionStorage.get<SubscriptionData[]>(`subscriptions_${address}`)) || []).filter(
-          (subscription) => subscription.subscriptionStatus === SubscriptionStatus.AWAITING_PAYMENT,
-        );
+  useAsyncEffect(async () => {
+    try {
+      setLoading(true);
 
-        setSubscriptions(subs);
-        if (!n && subs.length === 0) {
-          setEmpty(true);
-        }
-        const sortedNotifications = mergeAndSortNotifications(
-          n.arBalanceNotifications.arNotifications,
-          n.aoNotifications.aoNotifications,
-        );
-        const { formattedTxMsgs, formattedNotifications } = await formatTxMessage(sortedNotifications);
-        setNotifications(formattedNotifications);
-        setFormattedTxMsgs(formattedTxMsgs);
-        setLoading(false);
-      } catch (error) {
-        console.log(error);
-        setLoading(false);
-        setFormattedTxMsgs(["Error fetching messages"]);
+      const address = await getActiveAddress();
+      const n = await fetchNotifications(address);
+      const subs = ((await ExtensionStorage.get<SubscriptionData[]>(`subscriptions_${address}`)) || []).filter(
+        (subscription) => subscription.subscriptionStatus === SubscriptionStatus.AWAITING_PAYMENT,
+      );
+
+      setSubscriptions(subs);
+
+      if (!n && subs.length === 0) {
+        setEmpty(true);
       }
-    })();
+
+      const sortedNotifications = mergeAndSortNotifications(
+        n.arBalanceNotifications.arNotifications,
+        n.aoNotifications.aoNotifications,
+      );
+
+      const { formattedTxMsgs, formattedNotifications } = await formatTxMessage(sortedNotifications);
+
+      setNotifications(formattedNotifications);
+      setFormattedTxMsgs(formattedTxMsgs);
+      setLoading(false);
+    } catch (error) {
+      console.log(error);
+      setLoading(false);
+      setFormattedTxMsgs(["Error fetching messages"]);
+    }
   }, []);
 
   const findRecipient = (n) => {
@@ -149,9 +153,9 @@ export function NotificationsView() {
               if (!recipient && contentTypeTag) {
                 formattedMessage = browser.i18n.getMessage("new_data_uploaded");
               } else if (!recipient) {
-                formattedMessage = `${browser.i18n.getMessage(
-                  "new_transaction",
-                )} ${browser.i18n.getMessage("sent").toLowerCase()}`;
+                formattedMessage = `${browser.i18n.getMessage("new_transaction")} ${browser.i18n
+                  .getMessage("sent")
+                  .toLowerCase()}`;
               } else {
                 formattedMessage = `${browser.i18n.getMessage("new_transaction")} ${browser.i18n.getMessage(
                   isSent ? "notification_to" : "notification_from",
@@ -262,7 +266,7 @@ export function NotificationsView() {
 }
 
 export const Empty = styled.div`
-  width: calc(100% - 30px);
+  width: 100%;
   height: calc(100% - 64.59px);
   margin-top: 50%;
   display: flex;

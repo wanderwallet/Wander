@@ -36,14 +36,21 @@ export const getIframeTemplateContent = ({ customStyles, cssVariableKeys = [] }:
       background: var(--backdropBackground);
       backdrop-filter: var(--backdropBackdropFilter);
       padding: var(--backdropPadding);
-      transition: opacity linear 150ms;
-      pointer-events: none;
+      transition:
+        display linear 150ms allow-discrete,
+        background linear 230ms,
+        opacity linear 150ms;
+      display: none;
       opacity: 0;
     }
 
     .backdrop.show {
-      pointer-events: auto;
+      display: block;
       opacity: 1;
+
+      @starting-style {
+        opacity: 0;
+      }
     }
 
     /* Iframe wrapper styles */
@@ -56,28 +63,38 @@ export const getIframeTemplateContent = ({ customStyles, cssVariableKeys = [] }:
       border-radius: var(--borderRadius);
       box-shadow: var(--boxShadow);
       width: calc(var(--preferredWidth) + 2 * var(--borderWidth));
-      height: calc(var(--preferredHeight) + 2 * var(--borderWidth));
-      min-width: 400px;
-      min-height: 400px;
+      height: min(calc(var(--preferredHeight) + 2 * var(--borderWidth)), 800px);
+      min-width: calc(400px + 2 * var(--borderWidth));
+      min-height: calc(400px + 2 * var(--borderWidth));
       max-width: calc(100dvw - 2 * var(--backdropPadding));
       max-height: calc(100dvh - 2 * var(--backdropPadding));
       box-sizing: border-box;
-      pointer-events: none;
-      opacity: 0;
       overflow: hidden;
+      transition:
+        display linear 150ms allow-discrete,
+        background linear 230ms,
+        border linear 230ms,
+        opacity linear 150ms;
+      display: none;
+      opacity: 0;
     }
 
     .iframe-wrapper.show {
-      pointer-events: auto;
+      display: block;
       opacity: 1;
+
+      @starting-style {
+        opacity: 0;
+      }
     }
 
     /* Base iframe styles */
     .iframe {
+      position: absolute;
+      display: block;
       border: none;
       width: 100%;
       height: 100%;
-      display: block;
     }
 
     /* Half layout image styles */
@@ -152,7 +169,10 @@ export const getIframeTemplateContent = ({ customStyles, cssVariableKeys = [] }:
     /* Popup specific styles */
 
     .iframe-wrapper[data-layout="popup"] {
-      transition: opacity linear 150ms, height ease-in-out 150ms;
+      transition:
+        display linear 150ms allow-discrete,
+        opacity linear 150ms,
+        height ease-in-out 150ms;
     }
 
     .iframe-wrapper[data-layout="popup"][data-position="top-left"] {
@@ -181,20 +201,33 @@ export const getIframeTemplateContent = ({ customStyles, cssVariableKeys = [] }:
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      transition: opacity linear 150ms, height ease-in-out 150ms;
+      transition:
+        display linear 150ms allow-discrete,
+        background linear 230ms,
+        border linear 230ms,
+        opacity linear 150ms,
+        height ease-in-out 150ms;
     }
 
     /* Sidebar specific styles */
 
     .iframe-wrapper[data-layout="sidebar"] {
       opacity: 1;
-      transition: transform ease-in-out 150ms;
+      transition:
+        display linear 150ms allow-discrete,
+        background linear 230ms,
+        border linear 230ms,
+        transform linear 150ms;
     }
 
     /* Half specific styles */
 
     .iframe-wrapper[data-layout="half"] {
-      transition: opacity linear 150ms;
+      transition:
+        display linear 150ms allow-discrete,
+        background linear 230ms,
+        border linear 230ms,
+        opacity linear 150ms;
     }
 
     /* Right position - Sidebar & Half */

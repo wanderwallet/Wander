@@ -1,6 +1,6 @@
 import { toast } from "react-toastify";
 import { Text, Button } from "~components/embed";
-import { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { getSupabaseClient } from "~utils/embedded/embedded.utils";
 import { useLocation, useSearchParams } from "~wallets/router/router.utils";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
@@ -8,26 +8,31 @@ import { PersistentStorage, useStorage } from "~utils/storage";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
 import { Flex } from "~components/common/Flex";
+import { getFriendlyAuthErrorMessage } from "~utils/authentication/authentication.utils";
 
 import styles from "./auth-email-verify.module.scss";
+import { StorageKeys } from "~utils/storage/storage.constants";
 
 const COOLDOWN_DURATION = 60; // seconds
 const OTP_LENGTH = 6;
 
 export function AuthEmailVerifyEmbeddedView() {
   const { navigate } = useLocation();
-  const { authStatus } = useEmbedded();
+  const { authenticate } = useEmbedded();
   const { email } = useSearchParams<{ email: string }>();
-  const [isResending, setIsResending] = useState(false);
-  const [isVerifying, setIsVerifying] = useState(false);
   const [cooldownTime, setCooldownTime] = useState(0);
   const [canResend, setCanResend] = useState(false);
-  const [otpDigits, setOtpDigits] = useState<string[]>(Array(OTP_LENGTH).fill(""));
-  const authStatusRef = useRef(authStatus);
   const inputRefs = useRef<Array<HTMLInputElement | null>>(Array(OTP_LENGTH).fill(null));
+  const [isComplete, setIsComplete] = useState(false);
+
+  // Loading state:
+
+  const [isResending, setIsResending] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const isViewLoading = isResending || isVerifying;
 
   const [verifyEmailResentTimestamp, setVerifyEmailResentTimestamp] = useStorage<number>(
-    { key: "sb-verify-email-resent-timestamp", instance: PersistentStorage },
+    { key: StorageKeys.CONNECT.AUTH.LAST_EMAIL_VERIFICATION, instance: PersistentStorage },
     (v) => (v === undefined ? Date.now() : v),
   );
 
@@ -61,149 +66,133 @@ export function AuthEmailVerifyEmbeddedView() {
     return () => clearInterval(timer);
   }, [verifyEmailResentTimestamp]);
 
-  const focusInput = useCallback((index: number) => {
-    if (index >= 0 && index < OTP_LENGTH && inputRefs.current[index]) {
-      inputRefs.current[index]?.focus();
-    }
-  }, []);
-
-  const isOtpComplete = useCallback((digits: string[]) => {
-    return digits.join("").length === OTP_LENGTH;
-  }, []);
-
-  const autoSubmitIfComplete = useCallback(
-    (digits: string[]) => {
-      if (isOtpComplete(digits) && email) {
-        setTimeout(() => {
-          const otpCode = digits.join("");
-          handleVerifyCode(otpCode);
-        }, 300);
-      }
-    },
-    [email],
-  );
-
-  const handleOtpDigitChange = useCallback(
-    (index: number, value: string) => {
-      const sanitizedValue = value.replace(/[^0-9]/g, "");
-      const newDigits = [...otpDigits];
-
-      if (sanitizedValue.length > 0) {
-        // Fill in digits starting from current position
-        for (let i = 0; i < sanitizedValue.length && index + i < OTP_LENGTH; i++) {
-          newDigits[index + i] = sanitizedValue[i];
-        }
-
-        // Focus next input if available
-        const nextIndex = Math.min(index + sanitizedValue.length, OTP_LENGTH - 1);
-        if (index + sanitizedValue.length < OTP_LENGTH) {
-          focusInput(nextIndex);
-        }
-      } else {
-        // Handle backspace/delete
-        newDigits[index] = "";
-      }
-
-      setOtpDigits(newDigits);
-      autoSubmitIfComplete(newDigits);
-    },
-    [otpDigits, focusInput, autoSubmitIfComplete],
-  );
-
-  const handleVerifyCode = async (otpCode: string) => {
-    if (!email) return;
-
-    setIsVerifying(true);
-    try {
-      const supabase = await getSupabaseClient();
-
-      const { error } = await supabase.auth.verifyOtp({
-        email,
-        token: otpCode,
-        type: "email",
-      });
-
-      if (error) {
-        toast.error(error.message || "Invalid verification code");
-        return;
-      }
-
-      toast.success("Email verified successfully");
-      await new Promise((resolve) => {
-        const interval = setInterval(() => {
-          if (authStatusRef.current === "noWallets") {
-            resolve(null);
-            clearInterval(interval);
-          }
-        }, 100);
-      });
-      navigate(EmbeddedPaths.WalletHomeEmbeddedView);
-    } catch (error) {
-      toast.error("Error verifying email");
-    } finally {
-      setIsVerifying(false);
-    }
+  const getCode = () => {
+    return inputRefs.current.map((input) => input.value.trim()).join("");
   };
 
-  const verifyOtp = useCallback(() => {
-    if (!email) return;
+  const handleVerifyCode = async (e?: React.FormEvent) => {
+    e?.preventDefault();
 
-    const otpCode = otpDigits.join("");
+    if (!email || isVerifying) return;
+
+    const otpCode = getCode();
+
     if (otpCode.length !== OTP_LENGTH) {
-      toast.error(`Please enter all ${OTP_LENGTH} digits of the verification code`);
+      if (e) toast.error(`Please enter all ${OTP_LENGTH} digits of the verification code`);
       return;
     }
 
-    handleVerifyCode(otpCode);
-  }, [email, otpDigits]);
+    setIsComplete(true);
+    setIsVerifying(true);
 
-  const handlePaste = useCallback(
-    (e: React.ClipboardEvent<HTMLInputElement>, index: number) => {
+    try {
+      await authenticate({
+        method: "verifyOtp",
+        email,
+        token: otpCode,
+      });
+
+      toast.success("Email verified successfully");
+    } catch (error) {
+      setIsVerifying(false);
+      toast.error(getFriendlyAuthErrorMessage(error, "Invalid verification code"));
+    }
+
+    // We leave isVerifying = true intentionally as the user will simply be redirected after verifying the account.
+  };
+
+  const focusInput = useCallback((inputOrIndex: HTMLInputElement | number) => {
+    const input =
+      typeof inputOrIndex === "number"
+        ? inputRefs.current[Math.min(Math.max(inputOrIndex, 0), OTP_LENGTH - 1)]
+        : inputOrIndex;
+
+    if (!input) return;
+
+    input.focus();
+
+    requestAnimationFrame(() => {
+      input.select();
+    });
+  }, []);
+
+  const handleInputOrPaste = useCallback(
+    (e: React.ClipboardEvent<HTMLInputElement> | React.ChangeEvent<HTMLInputElement>) => {
       e.preventDefault();
-      const pastedData = e.clipboardData.getData("text/plain").trim();
-      const sanitizedValue = pastedData.replace(/[^0-9]/g, "");
 
-      if (sanitizedValue) {
-        const newDigits = [...otpDigits];
+      const inputs = inputRefs.current;
+      const rawValue =
+        "clipboardData" in e ? e.clipboardData.getData("text/plain").trim() : e.currentTarget.value.trim();
+      const sanitizedValue = rawValue.replace(/[^0-9]/g, "");
+      const currentIndex = parseInt(e.currentTarget.name.replace("otp-input-", "")) || 0;
 
-        // Fill in digits starting from current position
-        for (let i = 0; i < sanitizedValue.length && index + i < OTP_LENGTH; i++) {
-          newDigits[index + i] = sanitizedValue[i];
+      if (!inputs) return;
+
+      let nextEmptyIndex = currentIndex;
+
+      if (sanitizedValue.length === OTP_LENGTH) {
+        // Fill in digits starting from the start:
+        for (let i = 0; i < OTP_LENGTH; ++i) {
+          inputs[i].value = sanitizedValue[i];
         }
+        nextEmptyIndex = OTP_LENGTH - 1;
+      } else if (sanitizedValue) {
+        // Fill in digits starting from the current position:
+        for (let i = currentIndex; i < OTP_LENGTH; ++i) {
+          const inputValue = sanitizedValue[i - currentIndex];
 
-        // Find next empty input or focus last input
-        const nextEmptyIndex = newDigits.findIndex((digit, idx) => idx >= index && !digit);
-        const focusIndex = nextEmptyIndex !== -1 ? nextEmptyIndex : OTP_LENGTH - 1;
-        focusInput(focusIndex);
-
-        setOtpDigits(newDigits);
-        autoSubmitIfComplete(newDigits);
+          if (inputValue) {
+            inputs[i].value = inputValue;
+            nextEmptyIndex = i + 1;
+          }
+        }
+      } else {
+        e.currentTarget.value = "";
       }
+
+      // Focus next empty input or last one:
+      focusInput(Math.min(nextEmptyIndex, OTP_LENGTH - 1));
+
+      handleVerifyCode();
     },
-    [otpDigits, focusInput, autoSubmitIfComplete],
+    [focusInput, handleVerifyCode],
   );
 
   const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      const currentIndex = parseInt(e.currentTarget.name.replace("otp-input-", "")) || 0;
+
       switch (e.key) {
         case "Backspace":
-          if (!otpDigits[index] && index > 0) {
-            focusInput(index - 1);
+        case "Delete":
+          if (e.currentTarget.value) {
+            e.currentTarget.value = "";
+          } else {
+            focusInput(currentIndex - 1);
           }
+          break;
+        case "ArrowUp":
+          focusInput(0);
           break;
         case "ArrowLeft":
-          if (index > 0) {
-            focusInput(index - 1);
-          }
+          focusInput(currentIndex - 1);
           break;
         case "ArrowRight":
-          if (index < OTP_LENGTH - 1) {
-            focusInput(index + 1);
-          }
+          focusInput(currentIndex + 1);
+          break;
+        case "ArrowDown":
+          focusInput(OTP_LENGTH - 1);
           break;
       }
     },
-    [otpDigits, focusInput],
+    [focusInput],
+  );
+
+  const handleMouseDown = useCallback(
+    (e: React.MouseEvent<HTMLInputElement>) => {
+      focusInput(e.currentTarget);
+    },
+    [focusInput],
   );
 
   const handleResendEmail = useCallback(
@@ -211,9 +200,16 @@ export function AuthEmailVerifyEmbeddedView() {
       e.preventDefault();
       e.stopPropagation();
 
-      if (!email || !canResend) return;
+      const inputs = inputRefs.current;
+
+      if (!email || !canResend || !inputs) return;
+
+      for (let i = 0; i < OTP_LENGTH; ++i) {
+        inputs[i].value = "";
+      }
 
       try {
+        setIsComplete(false);
         setIsResending(true);
         const supabase = await getSupabaseClient();
 
@@ -223,7 +219,7 @@ export function AuthEmailVerifyEmbeddedView() {
         });
 
         if (error) {
-          toast.error(error.message);
+          toast.error(getFriendlyAuthErrorMessage(error, error.message));
           return;
         }
 
@@ -232,7 +228,7 @@ export function AuthEmailVerifyEmbeddedView() {
         setCanResend(false);
         setCooldownTime(COOLDOWN_DURATION);
       } catch (error) {
-        toast.error("Error sending verification email");
+        toast.error(getFriendlyAuthErrorMessage(error, "Error sending verification email"));
       } finally {
         setIsResending(false);
       }
@@ -241,15 +237,11 @@ export function AuthEmailVerifyEmbeddedView() {
   );
 
   useEffect(() => {
-    authStatusRef.current = authStatus;
-  }, [authStatus]);
-
-  useEffect(() => {
     if (!email) {
       if (process.env.NODE_ENV === "development") {
-        throw new Error("No email search param. The router should have taken care of this.")
+        throw new Error("No email search param. The router should have taken care of this.");
       } else {
-        navigate(EmbeddedPaths.Auth)
+        navigate(EmbeddedPaths.Auth);
       }
     }
   }, [email]);
@@ -257,19 +249,20 @@ export function AuthEmailVerifyEmbeddedView() {
   return (
     <OnboardingCard
       headerText="Verify your email"
-      subtitle={ `We've sent an email to ${email}` }
+      subtitle={`We've sent an email to ${email}`}
       hasBackButton={false}
-      isLoading={ isResending }>
-
+      isLoading={isViewLoading}
+      onSubmit={handleVerifyCode}>
       <Text variant={"bodySm"} alignment={"center"} style={{ color: "var(--text-color-secondary, #666666)" }}>
-        Enter the 6-digit verification code from that email to complete signup. If you don't see the email, please
-        check your spam folder.
+        Enter the 6-digit verification code from that email to complete signup. If you don't see the email, please check
+        your spam folder.
       </Text>
 
       <Flex direction="column" gap={16} width="100%">
         <Text alignment="center" variant={"bodySm"} style={{ color: "var(--text-color-secondary, #666666)" }}>
           Verification Code
         </Text>
+
         <Flex direction="row" gap={8} width="100%" justify="center">
           {Array.from({ length: OTP_LENGTH }).map((_, index) => (
             <input
@@ -279,30 +272,27 @@ export function AuthEmailVerifyEmbeddedView() {
               name={`otp-input-${index}`}
               ref={(el) => (inputRefs.current[index] = el)}
               maxLength={1}
-              value={otpDigits[index] || ""}
-              onChange={(e) => handleOtpDigitChange(index, e.target.value)}
-              onKeyDown={(e) => handleKeyDown(e, index)}
-              onPaste={(e) => handlePaste(e, index)}
+              disabled={isViewLoading}
+              onInput={handleInputOrPaste}
+              onPaste={handleInputOrPaste}
+              onKeyDown={handleKeyDown}
+              onMouseDown={handleMouseDown}
+              autoFocus={index === 0}
             />
           ))}
         </Flex>
-        <Button
-          variant="primary"
-          isFullWidth
-          onClick={verifyOtp}
-          isLoading={isVerifying}
-          isDisabled={isVerifying || !isOtpComplete(otpDigits)}>
+
+        <Button type="submit" variant="primary" isFullWidth isDisabled={isViewLoading || !isComplete}>
           Verify Code
         </Button>
       </Flex>
-
 
       <Text variant={"bodyXs"} alignment={"center"} style={{ color: "var(--text-color-tertiary, #838383)" }}>
         Didn't receive the message?
       </Text>
 
       {canResend ? (
-        <Button variant="link" isFullWidth onClick={handleResendEmail} isDisabled={isResending}>
+        <Button variant="link" isFullWidth onClick={handleResendEmail} isDisabled={isViewLoading}>
           Send again
         </Button>
       ) : (

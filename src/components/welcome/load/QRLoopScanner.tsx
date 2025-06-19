@@ -6,6 +6,7 @@ import browser from "webextension-polyfill";
 import { parseFramesReducer, areFramesComplete, framesToData, progressOfFrames } from "qrloop";
 import { CameraOffIcon } from "@iconicicons/react";
 import { Loading, Spacer } from "@arconnect/components-rebrand";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 interface QRScannerProps {
   onResult: (result: string) => void;
@@ -20,27 +21,22 @@ export default function QRLoopScanner({ onResult, onError, onProgress }: QRScann
   const { setToast } = useToasts();
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    (async () => {
-      // get if camera permission is granted
-      const cameraPerms = await navigator.permissions.query({
-        // @ts-expect-error
-        name: "camera",
-      });
+  useAsyncEffect(async () => {
+    // get if camera permission is granted
+    const cameraPerms = await navigator.permissions.query({
+      name: "camera",
+    });
 
-      const listener = () => {
-        setCameraAllowed(cameraPerms.state === "granted");
-
-        if (cameraPerms.state !== "granted") return;
-      };
-
+    const handleCameraPermsChange = () => {
       setCameraAllowed(cameraPerms.state === "granted");
+    };
 
-      // listen for camera permission changes
-      cameraPerms.addEventListener("change", listener);
+    handleCameraPermsChange();
 
-      return () => cameraPerms.removeEventListener("change", listener);
-    })();
+    // listen for camera permission changes
+    cameraPerms.addEventListener("change", handleCameraPermsChange);
+
+    return () => cameraPerms.removeEventListener("change", handleCameraPermsChange);
   }, []);
 
   useEffect(() => {

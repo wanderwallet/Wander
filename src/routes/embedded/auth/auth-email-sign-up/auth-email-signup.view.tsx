@@ -4,7 +4,6 @@ import { Button, TextInput } from "~components/embed";
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { getSupabaseClient } from "~utils/embedded/embedded.utils";
 import { useLocation, useSearchParams } from "~wallets/router/router.utils";
-import { Flex } from "~components/common/Flex";
 import PasswordMatch from "~components/welcome/PasswordMatch";
 import PasswordStrength from "~components/welcome/PasswordStrength";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
@@ -14,13 +13,15 @@ import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-c
 import { PersistentStorage } from "~utils/storage";
 import { InputButton } from "~components/embed/ui/atoms/input-button/InputButton";
 import { EditIcon } from "@iconicicons/react";
+import { getFriendlyAuthErrorMessage } from "~utils/authentication/authentication.utils";
+import { StorageKeys } from "~utils/storage/storage.constants";
 
 export function AuthEmailSignUpEmbeddedView() {
   const { navigate } = useLocation();
   const { email } = useSearchParams<{ email: string }>();
   const { authStatus } = useEmbedded();
 
-// Input refs:
+  // Input refs:
 
   const passwordInputRef = useRef<HTMLInputElement>();
   const repeatPasswordInputRef = useRef<HTMLInputElement>();
@@ -36,10 +37,7 @@ export function AuthEmailSignUpEmbeddedView() {
 
   // Passwords match:
 
-  const [{
-    password,
-    passwordsMatch,
-  }, setPasswordsState] = useState({
+  const [{ password, passwordsMatch }, setPasswordsState] = useState({
     password: "",
     passwordsMatch: false,
   });
@@ -54,55 +52,58 @@ export function AuthEmailSignUpEmbeddedView() {
     });
   }, 250);
 
-  const handleEmailSignup = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleEmailSignUp = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
 
-    const password = passwordInputRef.current.value || "";
-    const repeatPassword = repeatPasswordInputRef.current.value || "";
+      const password = passwordInputRef.current.value || "";
+      const repeatPassword = repeatPasswordInputRef.current.value || "";
 
-    try {
-      setIsAuthenticating(true);
+      try {
+        setIsAuthenticating(true);
 
-      const supabase = await getSupabaseClient();
+        const supabase = await getSupabaseClient();
 
-      if (!email || !password) {
-        toast.error("Please enter an email and password");
-        return;
+        if (!email || !password) {
+          toast.error("Please enter an email and password");
+          return;
+        }
+
+        if (password !== repeatPassword) {
+          toast.error("Passwords do not match");
+          return;
+        }
+
+        const { error, data } = await supabase.auth.signUp({
+          email,
+          password,
+        });
+
+        if (error) {
+          toast.error(getFriendlyAuthErrorMessage(error, error.message || "Error signing up"));
+          return;
+        }
+
+        await PersistentStorage.setItem(StorageKeys.CONNECT.AUTH.LAST_EMAIL_VERIFICATION, Date.now());
+
+        navigate(EmbeddedPaths.AuthEmailVerify, {
+          search: { email },
+        });
+      } catch (error) {
+        toast.error(getFriendlyAuthErrorMessage(error, "Error signing up"));
+      } finally {
+        setIsAuthenticating(false);
       }
-
-      if (password !== repeatPassword) {
-        toast.error("Passwords do not match");
-        return;
-      }
-
-      const { error, data } = await supabase.auth.signUp({
-        email,
-        password,
-      });
-
-      if (error) {
-        toast.error(error.message);
-        return;
-      }
-
-      // TODO: Move to constant and rename.
-      await PersistentStorage.setItem("sb-verify-email-resent-timestamp", Date.now());
-      navigate(EmbeddedPaths.AuthEmailVerify, {
-        search: { email },
-      });
-    } catch (error) {
-      toast.error("Error signing up");
-    } finally {
-      setIsAuthenticating(false);
-    }
-  }, [email]);
+    },
+    [email],
+  );
 
   useEffect(() => {
     if (!email) {
       if (process.env.NODE_ENV === "development") {
-        throw new Error("No email search param. The router should have taken care of this.")
+        throw new Error("No email search param. The router should have taken care of this.");
       } else {
-        navigate(EmbeddedPaths.Auth)
+        navigate(EmbeddedPaths.Auth);
       }
     }
   }, [email]);
@@ -114,14 +115,16 @@ export function AuthEmailSignUpEmbeddedView() {
         width: 22,
         height: 22,
         color: "var(--text-color-tertiary)",
-      }}/>
+      }}
+    />
   );
 
   const emailInputButton = (
     <InputButton
       icon={editIcon}
-      disabled={ areButtonsDisabled }
-      onClick={ () => navigate("/auth", { search: { email }}) } />
+      disabled={areButtonsDisabled}
+      onClick={() => navigate("/auth", { search: { email } })}
+    />
   );
 
   return (
@@ -129,13 +132,12 @@ export function AuthEmailSignUpEmbeddedView() {
       headerText="Create your password"
       subtitle="Enter a password to secure your Wander account."
       onBackButtonClick={() => navigate(`/auth`)}
-      isLoading={ isViewLoading }
-      onSubmit={ handleEmailSignup }>
-
+      isLoading={isViewLoading}
+      onSubmit={handleEmailSignUp}>
       <TextInput
         name="email"
         placeholder="Enter your email"
-        value={ email }
+        value={email}
         disabled={areButtonsDisabled}
         readOnly
         endSlot={emailInputButton}
@@ -146,14 +148,17 @@ export function AuthEmailSignUpEmbeddedView() {
         placeholder="Enter your password"
         inputRef={passwordInputRef}
         disabled={areButtonsDisabled}
-        onChange={ handlePasswordChange } />
+        onChange={handlePasswordChange}
+        autoFocus
+      />
 
       <PasswordInput
         name="repeatPassword"
         placeholder="Confirm your password"
         inputRef={repeatPasswordInputRef}
         disabled={areButtonsDisabled}
-        onChange={ handlePasswordChange } />
+        onChange={handlePasswordChange}
+      />
 
       <PasswordMatch matches={passwordsMatch} />
 

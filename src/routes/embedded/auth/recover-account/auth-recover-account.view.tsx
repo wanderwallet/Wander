@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
 import { Button, Divider, KeyIcon, RecoverHeaderIcon, SeedIcon, TextInput } from "~components/embed/ui";
 import { InputButton } from "~components/embed/ui/atoms/input-button/InputButton";
+import { QrCode02 } from "@untitled-ui/icons-react";
 import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
 import { isValidEmail } from "~utils/email";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
@@ -122,20 +123,9 @@ export function AuthRecoverAccountEmbeddedView() {
     }
   }, []);
 
-  const emailInputButton = (
-    <InputButton
-      type="submit"
-      label="Next"
-      loading={ isCheckingEmail } />
-  );
+  const emailInputButton = <InputButton type="submit" label="Next" loading={isCheckingEmail} />;
 
-  const otpInputButton = (
-    <InputButton
-      type="submit"
-      label="Next"
-      loading={ isCheckingEmail }
-      onClick={ handleSignIn } />
-  );
+  const otpInputButton = <InputButton type="submit" label="Next" loading={isCheckingEmail} onClick={handleSignIn} />;
 
   return (
     <OnboardingCard
@@ -143,12 +133,11 @@ export function AuthRecoverAccountEmbeddedView() {
       headerText="Recover your account"
       subtitle="Select a method for logging in on new devices and recovering your account."
       onBackButtonClick={() => navigate(`/auth`)}
-      onSubmit={ handleCheckEmail }>
-
+      onSubmit={handleCheckEmail}>
       <TextInput
         name="email"
         placeholder="Enter your email"
-        defaultValue={ email }
+        defaultValue={email}
         inputRef={emailInputRef}
         disabled={areButtonsDisabled}
         endSlot={emailInputButton}
@@ -164,16 +153,20 @@ export function AuthRecoverAccountEmbeddedView() {
 
       <Divider text={"OR"} />
 
-      <Button
-        href="/auth/recover-account/seedphrase"
-        variant="outlined"
-        isFullWidth
-        icon={<SeedIcon fontSize={24} />}>
+      <Button href="/auth/recover-account/seedphrase" variant="outlined" isFullWidth icon={<SeedIcon fontSize={24} />}>
         Enter Seedphrase
       </Button>
 
       <Button href="/auth/recover-account/keyfile" variant="outlined" isFullWidth icon={<KeyIcon fontSize={24} />}>
         Import Keyfile
+      </Button>
+
+      <Button
+        href="/auth/recover-account/qrcode"
+        variant="outlined"
+        isFullWidth
+        icon={<QrCode02 fontSize={24} color="currentColor" />}>
+        Scan QR Code
       </Button>
     </OnboardingCard>
   );

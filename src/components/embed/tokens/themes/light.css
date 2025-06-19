@@ -12,20 +12,6 @@
   --color-font-body: var(--brand-color-neutral3);
 
   --color-background-default: var(--brand-color-neutral6);
-  --color-background-button-primary: var(--brand-color-primary3);
-  --color-background-button-secondary: var(--brand-color-neutral7);
-
-  --color-button-primary-active: var(--brand-color-neutral6);
-  --color-button-primary-success: var(--brand-color-success1);
-  --color-button-primary-error: var(--brand-color-error1);
-
-  --color-button-outlined-active: var(--brand-color-neutral1);
-  --color-button-outlined-border: var(--brand-color-gray-200);
-
-  --color-button-secondary-active: var(--brand-color-neutral1);
-  --color-button-secondary-border: var(--brand-color-gray-200);
-  --color-button-secondary-background: var(--brand-color-gray-100);
-
   --color-divider-default: var(--brand-color-gray-200);
   --color-divider-text: #666;
 
@@ -38,6 +24,34 @@
   --color-card-background-default: var(--brand-color-neutral6);
   --color-card-shadow-default: var(--brand-color-gray-200);
   --color-card-border-default: var(--brand-color-gray-100);
+
+  --color-button-primary-background: var(--brand-color-primary3);
+  --color-button-primary-background-hover: var(--brand-color-primary3-darker);
+  --color-button-primary-color: var(--brand-color-neutral6);
+  --button-primary-border: 1px solid transparent;
+  --button-primary-border-hover: 1px solid transparent;
+
+  --color-button-secondary-background: var(--brand-color-gray-100);
+  --color-button-secondary-background-hover: var(--brand-color-gray-200);
+  --color-button-secondary-color: var(--brand-color-neutral1);
+  --button-secondary-border: 1px solid var(--brand-color-gray-200);
+  --button-secondary-border-hover: 1px solid var(--brand-color-gray-200);
+
+  --color-button-outlined-background: transparent;
+  --color-button-outlined-background-hover: rgba(var(--color-overlay-rgb), 0.0625);
+  --color-button-outlined-color: var(--brand-color-neutral1);
+  --button-outlined-border: 1px solid var(--brand-color-gray-200);
+  --button-outlined-border-hover: 1px solid var(--brand-color-gray-200);
+
+  --snackbar-background-info: var(--input-background);
+  --snackbar-background-warning: #fff9ea;
+  --snackbar-background-error: #ffeaea;
+  --snackbar-background-success: #eaffed;
+
+  --snackbar-color-info: var(--input-color);
+  --snackbar-color-warning: #bd8802;
+  --snackbar-color-error: #bd0202;
+  --snackbar-color-success: #02bd59;
 
   --color-text-footer: var(--brand-color-neutral5);
 

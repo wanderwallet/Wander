@@ -32,7 +32,8 @@ import { LinkExternal02 } from "@untitled-ui/icons-react";
 import { AdaptiveBalanceDisplay } from "~components/AdaptiveBalanceDisplay";
 import arweaveLogo from "url:/assets/ar/logo_light.png";
 import { useTokenPrice } from "~tokens/hooks";
-import { fetchTokenByProcessId } from "~tokens/aoTokens/ao";
+import { AR_PROCESS_ID, fetchTokenByProcessId } from "~tokens/aoTokens/ao";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 // pull contacts and check if to address is in contacts
 
@@ -276,18 +277,16 @@ export function TransactionView({ params: { id, gateway: gw, message } }: Transa
   // transaction confirmations
   const [confirmations, setConfirmations] = useState(0);
 
-  useEffect(() => {
-    (async () => {
-      const status = await arweave.transactions.getStatus(id);
+  useAsyncEffect(async () => {
+    const status = await arweave.transactions.getStatus(id);
 
-      setConfirmations(status.confirmed?.number_of_confirmations || 0);
-    })();
+    setConfirmations(status.confirmed?.number_of_confirmations || 0);
   }, [id, arweave]);
 
   // currency setting
   const [currency] = useSetting<string>("currency");
 
-  const { price, hasPrice, loading } = useTokenPrice(ao.isAo ? ao.tokenId : "AR");
+  const { price, hasPrice, loading } = useTokenPrice(ao.isAo ? ao.tokenId : AR_PROCESS_ID);
 
   // transaction price
   const fiatPrice = useMemo(() => {
@@ -322,36 +321,32 @@ export function TransactionView({ params: { id, gateway: gw, message } }: Transa
     return type && type.startsWith("image/");
   }, [transaction]);
 
-  useEffect(() => {
-    (async () => {
-      if (!transaction || !id || !arweave || isBinary || isPrintTx) {
-        return;
-      }
+  useAsyncEffect(async () => {
+    if (!transaction || !id || !arweave || isBinary || isPrintTx) {
+      return;
+    }
 
-      const type = getContentType();
+    const type = getContentType();
 
-      // return for null type
-      if (!type) {
-        return;
-      }
+    // return for null type
+    if (!type) {
+      return;
+    }
 
-      // load data
-      let txData = await (await fetch(`${concatGatewayURL(gateway)}/${id}`)).text();
+    // load data
+    let txData = await (await fetch(`${concatGatewayURL(gateway)}/${id}`)).text();
 
-      // format json
-      if (type === "application/json") {
-        txData = JSON.stringify(JSON.parse(txData), null, 2);
-      }
+    // format json
+    if (type === "application/json") {
+      txData = JSON.stringify(JSON.parse(txData), null, 2);
+    }
 
-      setData(txData);
-    })();
+    setData(txData);
   }, [id, transaction, gateway, isBinary, isPrintTx]);
 
   // Clears out current transaction
-  useEffect(() => {
-    (async () => {
-      await TempTransactionStorage.removeItem("send");
-    })();
+  useAsyncEffect(async () => {
+    await TempTransactionStorage.removeItem("send");
   }, []);
 
   // interaction input

@@ -701,6 +701,10 @@
     "message": "Cancel",
     "description": "Cancel button text"
   },
+  "back": {
+    "message": "Back",
+    "description": "Back button text"
+  },
   "export": {
     "message": "Export",
     "description": "Export button text"
@@ -2026,13 +2030,13 @@
     "message": "Congrats on earning AO Tokens for hodling AR! 🥳",
     "description": "ao token announcement title text"
   },
-  "AO_token_send_popup": {
-    "message": "The AO token is non transferable until February 8th, 2025 when 15% of AO has been minted.",
-    "description": "Popup description about ao token transfer"
-  },
   "EXP_token_send_popup": {
     "message": "The EXP Token is non transferable",
     "description": "Popup description about ao token transfer"
+  },
+  "PI_token_send_popup": {
+    "message": "The PI Token is non transferable",
+    "description": "Popup description about pi token transfer"
   },
   "token_send_popup_title": {
     "message": "$TOKEN$ Token Transfer Notice",
@@ -2825,7 +2829,7 @@
     "description": "Verify the full address text"
   },
   "verify_full_address_description": {
-    "message": "You haven’t interacted with this address recently. Please ensure the entire address is correct.",
+    "message": "You haven't interacted with this address recently. Please ensure the entire address is correct.",
     "description": "Verify the full address description"
   },
   "select_token": {
@@ -2976,6 +2980,22 @@
     "message": "Unable to display data: Data is too large to display.",
     "description": "Data too large text"
   },
+  "partitioned_storage_banner": {
+    "message": "Your current browser does not support cross-site authentication and wallet syncing. This means you’ll need to manually import your wallet each time you visit a new site that uses Wander Connect.\nTo enjoy a seamless experience across sites, please use Chrome or Edge.",
+    "description": "Unpartitioned state banner message"
+  },
+  "partitioned_storage_banner_rejected": {
+    "message": "Wander Connect needs access to your browser's storage to enable cross-site authentication and wallet syncing. Denying access means you’ll need to manually import your wallet each time you visit a new site that uses Wander Connect.\nTo enjoy a seamless experience across sites, please allow access to your browser's storage.",
+    "description": "Unpartitioned state rejected banner message"
+  },
+  "re_request_access": {
+    "message": "Re-request access",
+    "description": "Re-request access text"
+  },
+  "set_up_a_password": {
+    "message": "Set up a password",
+    "description": "Set up a password text"
+  },
   "generating_your_account": {
     "message": "Generating your account!",
     "description": "Generating your account text"
@@ -3033,5 +3053,563 @@
   "imported": {
     "message": "imported",
     "description": "Imported text"
+  },
+  "agents": {
+    "message": "Agents",
+    "description": "Agents text"
+  },
+  "create_an_agent": {
+    "message": "Create an Agent",
+    "description": "Create an agent text"
+  },
+  "learn_more": {
+    "message": "Learn more",
+    "description": "Learn more text"
+  },
+  "introducing_the_agents": {
+    "message": "Introducing Agents in Wander!",
+    "description": "Introducing the Agents text"
+  },
+  "introducing_the_agents_description": {
+    "message": "Easily lend your tokens and earn interest—set up an agent to auto-convert your AO earnings into wAR or wUSDC daily.",
+    "description": "Introducing the Agents description"
+  },
+  "no_active_yield_agents": {
+    "message": "You don't have any active yield agents",
+    "description": "You don't have any active yield agents text"
+  },
+  "ao_yield_agent": {
+    "message": "AO Yield Agent",
+    "description": "AO Yield Agent text"
+  },
+  "ao_yield_agent_description": {
+    "message": "Automatically convert your AO to wUSDC or wAR",
+    "description": "AO Yield Agent description"
+  },
+  "liquidops_agent": {
+    "message": "LiquidOps Agent",
+    "description": "LiquidOps Agent text"
+  },
+  "liquidops_agent_description": {
+    "message": "$ACTIVE$ agents active, $AVAILABLE$ agents available",
+    "description": "LiquidOps Agent description",
+    "placeholders": {
+      "active": {
+        "content": "$1",
+        "example": "0"
+      },
+      "available": {
+        "content": "$2",
+        "example": "3"
+      }
+    }
+  },
+  "select_buy_asset": {
+    "message": "Select buy asset",
+    "description": "Select buy asset text"
+  },
+  "buy_asset": {
+    "message": "Buy asset",
+    "description": "Buy asset text"
+  },
+  "percentage_of_daily_ao_to_sell": {
+    "message": "% of daily AO to sell",
+    "description": "Percentage of daily AO to sell text"
+  },
+  "percentage_of_daily_ao_to_sell_description": {
+    "message": "The amount of AO minted daily you want to convert",
+    "description": "Percentage of daily AO to sell description"
+  },
+  "running_time": {
+    "message": "Running time",
+    "description": "Running time text"
+  },
+  "slippage": {
+    "message": "Slippage",
+    "description": "Slippage text"
+  },
+  "slippage_description": {
+    "message": "Your sell will be cancelled if the price changes more than the slippage percentage.",
+    "description": "Slippage description"
+  },
+  "auto": {
+    "message": "Auto",
+    "description": "Auto text"
+  },
+  "run_indefinitely": {
+    "message": "Run indefinitely",
+    "description": "Run indefinitely text"
+  },
+  "run_indefinitely_tooltip": {
+    "message": "The agent will not stop converting minted AO unless you cancel it.",
+    "description": "Run indefinitely tooltip"
+  },
+  "your_agents": {
+    "message": "Your agents",
+    "description": "Your agents text"
+  },
+  "slippage_cannot_be_less_than_0_5": {
+    "message": "Slippage cannot be less than 0.5%",
+    "description": "Slippage cannot be less than 0.5% text"
+  },
+  "slippage_cannot_be_greater_than_10": {
+    "message": "Slippage cannot be greater than 10%",
+    "description": "Slippage cannot be greater than 10% text"
+  },
+  "select_running_dates": {
+    "message": "Select running dates",
+    "description": "Select running dates text"
+  },
+  "confirm_agent": {
+    "message": "Confirm agent",
+    "description": "Confirm agent text"
+  },
+  "activate_agent": {
+    "message": "Activate agent",
+    "description": "Activate agent text"
+  },
+  "daily_conversion": {
+    "message": "Daily conversion",
+    "description": "daily conversion text"
+  },
+  "start_date": {
+    "message": "Start date",
+    "description": "Start date description"
+  },
+  "end_date": {
+    "message": "End date",
+    "description": "End date description"
+  },
+  "fee": {
+    "message": "Fee",
+    "description": "Fee description"
+  },
+  "enter_password_confirm": {
+    "message": "Enter password to confirm",
+    "description": "Enter password to confirm title"
+  },
+  "go_to_dashboard": {
+    "message": "Go to dashboard",
+    "description": "Goto dashboard description"
+  },
+  "manage_agent": {
+    "message": "Manage agent",
+    "description": "Manage agent description"
+  },
+  "agent_activated_title": {
+    "message": "Agent Activated!",
+    "description": "Agent activated title"
+  },
+  "agent_activated_description": {
+    "message": "Your AO Yield Agent has been successfully activated and will start converting your AO earnings.",
+    "description": "Agent activated title"
+  },
+  "agent_not_activated_title": {
+    "message": "Agent could not be activated",
+    "description": "Agent not activated title"
+  },
+  "agent_not_activated_description": {
+    "message": "Looks like something went wrong, please try again.",
+    "description": "Agent not activated title"
+  },
+  "cancelled": {
+    "message": "Cancelled",
+    "description": "Cancelled text"
+  },
+  "completed": {
+    "message": "Completed",
+    "description": "Completed text"
+  },
+  "paused": {
+    "message": "Paused",
+    "description": "Paused text"
+  },
+  "percentage_of_each_conversion": {
+    "message": "$PERCENTAGE$% of each conversion",
+    "description": "Percentage of each conversion text",
+    "placeholders": {
+      "percentage": {
+        "content": "$1",
+        "example": "0.5"
+      }
+    }
+  },
+  "cancel_agent": {
+    "message": "Cancel agent",
+    "description": "Cancel agent text"
+  },
+  "agent_details": {
+    "message": "Agent details",
+    "description": "Agent details text"
+  },
+  "performance": {
+    "message": "Performance",
+    "description": "Performance text"
+  },
+  "total_ao_sold": {
+    "message": "Total AO sold",
+    "description": "Total AO sold text"
+  },
+  "total_bought": {
+    "message": "Total $ASSET$ bought",
+    "description": "Total bought text",
+    "placeholders": {
+      "asset": {
+        "content": "$1",
+        "example": "wUSDC"
+      }
+    }
+  },
+  "total_transactions": {
+    "message": "Total transactions",
+    "description": "Total transactions text"
+  },
+  "view_transaction_history": {
+    "message": "View transaction history",
+    "description": "View transaction history text"
+  },
+  "active_agents": {
+    "message": "Active agents",
+    "description": "Active agents text"
+  },
+  "available_agents": {
+    "message": "Available agents",
+    "description": "Available agents text"
+  },
+  "agent": {
+    "message": "Agent",
+    "description": "Agent text"
+  },
+  "deposited": {
+    "message": "Deposited",
+    "description": "Deposited amount text"
+  },
+  "deposit": {
+    "message": "Deposit",
+    "description": "Deposit text"
+  },
+  "withdraw": {
+    "message": "Withdraw",
+    "description": "Withdraw text"
+  },
+  "apy_earned": {
+    "message": "APY earned",
+    "description": "APY earned text"
+  },
+  "current_apy": {
+    "message": "Current APY",
+    "description": "Current APY text"
+  },
+  "earned": {
+    "message": "Earned",
+    "description": "Earned text"
+  },
+  "status": {
+    "message": "Status",
+    "description": "Status text"
+  },
+  "edit_agent": {
+    "message": "Edit agent",
+    "description": "Edit agent text"
+  },
+  "error_updating_agent": {
+    "message": "Error updating agent",
+    "description": "Error updating agent text"
+  },
+  "agent_updated": {
+    "message": "Agent updated",
+    "description": "Agent updated text"
+  },
+  "agent_cancelled": {
+    "message": "Agent cancelled",
+    "description": "Agent cancelled text"
+  },
+  "agent_history": {
+    "message": "Agent history",
+    "description": "Agent history text"
+  },
+  "total_wander_fee": {
+    "message": "Total Wander fee",
+    "description": "Total Wander fee text"
+  },
+  "load_more": {
+    "message": "Load more",
+    "description": "Load more text"
+  },
+  "agent_cancel_title": {
+    "message": "Are you sure your want to cancel your agent?",
+    "description": "Agent cancel title"
+  },
+  "agent_cancel_description": {
+    "message": "Cancelling your agent will stop your automatic AO token conversions. You can also create a new agent.",
+    "description": "Agent cancel description"
+  },
+  "i_understand": {
+    "message": "I understand",
+    "description": "I understand text"
+  },
+  "go_back": {
+    "message": "Go back",
+    "description": "Go back text"
+  },
+  "ao_minting_paused_title": {
+    "message": "AO minting process error",
+    "description": "AO Minting Paused title"
+  },
+  "ao_minting_paused_description": {
+    "message": "AO minting has stopped due to a network error. You will receive your missing tokens when minting resumes.",
+    "description": "AO Minting Paused description"
+  },
+  "ao_minting_paused_action_description": {
+    "message": "You do not need to take any action.",
+    "description": "AO Minting Paused action description"
+  },
+  "ao_minting_resumed_title": {
+    "message": "AO minting resumed",
+    "description": "AO Minting Resumed title"
+  },
+  "ao_minting_resumed_description": {
+    "message": "You have received your missing tokens and the appropriate amounts have been converted to $ASSET$.",
+    "description": "AO Minting Resumed description",
+    "placeholders": {
+      "asset": {
+        "content": "$1",
+        "example": "wUSDC"
+      }
+    }
+  },
+  "no_agents": {
+    "message": "You don't have any agents",
+    "description": "No agents text"
+  },
+  "ao_delegation_title": {
+    "message": "No AO yield allocated",
+    "description": "AO Delegation title"
+  },
+  "ao_delegation_description": {
+    "message": "You haven't allocated any AO yield to your wallet. Update your AO yield delegation preferences to start receiving AO tokens and enable agent functionality.",
+    "description": "AO Delegation description"
+  },
+  "update_preferences": {
+    "message": "Update preferences",
+    "description": "Update preferences text"
+  },
+  "ao_minting_paused": {
+    "message": "Minting is paused",
+    "description": "AO Minting Paused text"
+  },
+  "month_january": {
+    "message": "January",
+    "description": "Month name January"
+  },
+  "month_february": {
+    "message": "February",
+    "description": "Month name February"
+  },
+  "month_march": {
+    "message": "March",
+    "description": "Month name March"
+  },
+  "month_april": {
+    "message": "April",
+    "description": "Month name April"
+  },
+  "month_may": {
+    "message": "May",
+    "description": "Month name May"
+  },
+  "month_june": {
+    "message": "June",
+    "description": "Month name June"
+  },
+  "month_july": {
+    "message": "July",
+    "description": "Month name July"
+  },
+  "month_august": {
+    "message": "August",
+    "description": "Month name August"
+  },
+  "month_september": {
+    "message": "September",
+    "description": "Month name September"
+  },
+  "month_october": {
+    "message": "October",
+    "description": "Month name October"
+  },
+  "month_november": {
+    "message": "November",
+    "description": "Month name November"
+  },
+  "month_december": {
+    "message": "December",
+    "description": "Month name December"
+  },
+  "day_sunday": {
+    "message": "Su",
+    "description": "Abbreviated day name Sunday"
+  },
+  "day_monday": {
+    "message": "Mo",
+    "description": "Abbreviated day name Monday"
+  },
+  "day_tuesday": {
+    "message": "Tu",
+    "description": "Abbreviated day name Tuesday"
+  },
+  "day_wednesday": {
+    "message": "We",
+    "description": "Abbreviated day name Wednesday"
+  },
+  "day_thursday": {
+    "message": "Th",
+    "description": "Abbreviated day name Thursday"
+  },
+  "day_friday": {
+    "message": "Fr",
+    "description": "Abbreviated day name Friday"
+  },
+  "day_saturday": {
+    "message": "Sat",
+    "description": "Abbreviated day name Saturday"
+  },
+  "active": {
+    "message": "Active",
+    "description": "Active label"
+  },
+  "inactive": {
+    "message": "Inactive",
+    "description": "Inactive label"
+  },
+  "token_balance": {
+    "message": "$TICKER$ balance",
+    "description": "Token (ticker) balance label",
+    "placeholders": {
+      "ticker": {
+        "content": "$1",
+        "example": "oUSDA"
+      }
+    }
+  },
+  "liquidops_open": {
+    "message": "Open in LiquidOps",
+    "description": "Open in LiquidOps link text"
+  },
+  "you_deposit": {
+    "message": "You deposit",
+    "description": "You deposit label"
+  },
+  "wander_fee": {
+    "message": "Wander fee",
+    "description": "Wander fee text"
+  },
+  "estimated_apy": {
+    "message": "Estimated APY",
+    "description": "Estimated APY text"
+  },
+  "deposit_receive": {
+    "message": "You will receive $OTOKEN$ tokens in place of your deposited $TICKER$ tokens.",
+    "description": "Note about getting oTokens for tokens",
+    "placeholders": {
+      "otoken": {
+        "content": "$1",
+        "example": "oUSDA"
+      },
+      "ticker": {
+        "content": "$2",
+        "example": "USDA"
+      }
+    }
+  },
+  "withdraw_receive": {
+    "message": "You will receive your deposited $TICKER$ tokens along with the yield you have earned.",
+    "description": "Note about getting tokens for oTokens",
+    "placeholders": {
+      "ticker": {
+        "content": "$1",
+        "example": "USDA"
+      }
+    }
+  },
+  "withdrawing": {
+    "message": "Withdrawing",
+    "description": "Ongoing withdraw text"
+  },
+  "depositing": {
+    "message": "Depositing",
+    "description": "Ongoing deposit text"
+  },
+  "view_all_agents": {
+    "message": "View all agents",
+    "description": "View all agents button text"
+  },
+  "try_again": {
+    "message": "Try again",
+    "description": "Try again button text"
+  },
+  "withdraw_success": {
+    "message": "$TICKER$ withdrawn!",
+    "description": "Note about withdrawing tokens",
+    "placeholders": {
+      "ticker": {
+        "content": "$1",
+        "example": "USDA"
+      }
+    }
+  },
+  "withdraw_failure": {
+    "message": "$TICKER$ could not be withdrawn",
+    "description": "Note about error while withdrawing tokens",
+    "placeholders": {
+      "ticker": {
+        "content": "$1",
+        "example": "USDA"
+      }
+    }
+  },
+  "deposit_success": {
+    "message": "$TICKER$ deposited!",
+    "description": "Note about depositing tokens",
+    "placeholders": {
+      "ticker": {
+        "content": "$1",
+        "example": "USDA"
+      }
+    }
+  },
+  "deposit_failure": {
+    "message": "$TICKER$ could not be deposited",
+    "description": "Note about error while depositing tokens",
+    "placeholders": {
+      "ticker": {
+        "content": "$1",
+        "example": "USDA"
+      }
+    }
+  },
+  "withdraw_success_subtext": {
+    "message": "Your $TICKER$ has been successfully withdrawn along with your earned yield.",
+    "description": "Subtext about a successful withdrawal",
+    "placeholders": {
+      "ticker": {
+        "content": "$1",
+        "example": "USDA"
+      }
+    }
+  },
+  "deposit_success_subtext": {
+    "message": "Your $TICKER$ has been successfully deposited and will start earning yield.",
+    "description": "Subtext about a successful deposit",
+    "placeholders": {
+      "ticker": {
+        "content": "$1",
+        "example": "USDA"
+      }
+    }
+  },
+  "deposit_withdraw_failure_subtext": {
+    "message": "Looks like something went wrong, please try again.",
+    "description": "Subtext about a failed deposit or withdrawal"
   }
 }

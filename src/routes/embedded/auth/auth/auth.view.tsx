@@ -1,17 +1,7 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { toast } from "react-toastify";
-import {
-  Button,
-  Divider,
-  GoogleIcon,
-  TextInput,
-  Row,
-  SocialsIcon,
-  Text,
-  Wander2Icon,
-} from "~components/embed";
+import { Button, Divider, GoogleIcon, TextInput, Row, SocialsIcon, Text, Wander2Icon } from "~components/embed";
 import React, { useCallback, useRef, useState } from "react";
-import type { AuthProviderType } from "embed-api";
 import { getSupabaseClient } from "~utils/embedded/embedded.utils";
 import { useLocation, useSearchParams } from "~wallets/router/router.utils";
 import { isValidEmail } from "~utils/email";
@@ -21,11 +11,13 @@ import { sleep } from "~utils/promises/sleep";
 import { EMBEDDED_HIDE_BE } from "~utils/embedded/iframe.utils";
 import { InputButton } from "~components/embed/ui/atoms/input-button/InputButton";
 import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
+import type { OAutProviderType } from "~utils/embedded/embedded.types";
+import { getFriendlyAuthErrorMessage } from "~utils/authentication/authentication.utils";
 
 export function AuthEmbeddedView() {
   const { navigate } = useLocation();
   const { email } = useSearchParams<{ email: string }>();
-  const { authenticate, authStatus, recoverableAccount } = useEmbedded();
+  const { authStatus, authenticate, recoverableAccount } = useEmbedded();
 
   // Input refs:
 
@@ -37,18 +29,22 @@ export function AuthEmbeddedView() {
   const [isCheckingEmail, setIsCheckingEmail] = useState(false);
 
   const areButtonsDisabled =
-    authStatus === "unknown" || authStatus === "loading" || authStatus === "authLoading" || isAuthenticating || isCheckingEmail;
+    authStatus === "unknown" ||
+    authStatus === "loading" ||
+    authStatus === "authLoading" ||
+    isAuthenticating ||
+    isCheckingEmail;
 
   const isViewLoading = areButtonsDisabled && !isCheckingEmail;
 
   // Handlers:
 
-  const handleAuthenticate = useCallback(async (authProviderType: AuthProviderType) => {
+  const handleAuthenticate = useCallback(async (authProviderType: OAutProviderType) => {
     try {
       setIsAuthenticating(true);
       await authenticate(authProviderType);
     } catch (error) {
-      toast.error(`Error signing in with ${authProviderType}`);
+      toast.error(getFriendlyAuthErrorMessage(error, `Error signing in with ${authProviderType}`));
     } finally {
       setIsAuthenticating(false);
     }
@@ -90,14 +86,12 @@ export function AuthEmbeddedView() {
         return;
       }
 
-      // TODO: What if email is not confirmed yet?
-
       const { data: isAlreadyRegistered, error } = await supabase.rpc("user_exists_by_email", {
         p_email: email,
       });
 
       if (error) {
-        toast.error(error.message || "Error checking email");
+        toast.error(getFriendlyAuthErrorMessage(error, error.message || "Error checking email"));
         return;
       }
 
@@ -105,34 +99,28 @@ export function AuthEmbeddedView() {
         search: { email },
       });
     } catch (error) {
-      console.log(error);
-      toast.error("Error checking email");
+      toast.error(getFriendlyAuthErrorMessage(error, "Error checking email"));
     } finally {
       setIsCheckingEmail(false);
     }
   }, []);
 
-  const emailInputButton = (
-    <InputButton
-      type="submit"
-      label="Next"
-      loading={ isCheckingEmail } />
-  );
+  const emailInputButton = <InputButton type="submit" label="Next" loading={isCheckingEmail} />;
 
   return (
     <OnboardingCard
       headerText={recoverableAccount ? "Select new sign in method" : "Sign up or Sign in"}
       hasBackButton={false}
-      isLoading={ isViewLoading }
-      onSubmit={ handleCheckEmail }>
-
+      isLoading={isViewLoading}
+      onSubmit={handleCheckEmail}>
       <TextInput
         name="email"
         placeholder="Enter your email"
-        defaultValue={ email }
+        defaultValue={email}
         inputRef={emailInputRef}
         disabled={areButtonsDisabled}
         endSlot={emailInputButton}
+        autoFocus
       />
 
       <Divider text={"OR"} />
@@ -145,13 +133,10 @@ export function AuthEmbeddedView() {
           onClick={() => handleAuthenticate("GOOGLE")}>
           <GoogleIcon fontSize={24} />
         </Button>
+
         {EMBEDDED_HIDE_BE ||
         (!!window.arweaveWallet?.walletName && window.arweaveWallet?.walletName !== "ArConnect") ? null : (
-          <Button
-            variant="outlined"
-            size="md"
-            isDisabled={areButtonsDisabled}
-            onClick={handleNativeWallet}>
+          <Button variant="outlined" size="md" isDisabled={areButtonsDisabled} onClick={handleNativeWallet}>
             <Wander2Icon fontSize={24} />
           </Button>
         )}
@@ -166,19 +151,14 @@ export function AuthEmbeddedView() {
         More options
       </Button>
 
-      { !recoverableAccount ? (
+      {!recoverableAccount ? (
         <Row style={{ gap: "4px" }}>
           <Text variant={"bodySm"}>{"Can't sign in?"}</Text>
-          <Button
-            variant="link"
-            isDisabled={areButtonsDisabled}
-            href="/auth/recover-account"
-            size="sm">
+          <Button variant="link" isDisabled={areButtonsDisabled} href="/auth/recover-account" size="sm">
             Recover account
           </Button>
         </Row>
-      ) : null }
-
+      ) : null}
     </OnboardingCard>
   );
 }
