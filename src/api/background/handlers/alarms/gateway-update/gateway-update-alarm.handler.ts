@@ -1,9 +1,9 @@
 import { extractGarItems, pingUpdater } from "~lib/wayfinder";
 import { type Alarms } from "webextension-polyfill";
 import { AOProcess } from "~lib/ao";
-import { AO_ARNS_PROCESS } from "~lib/arns";
 import type { GatewayAddressRegistryItem, GatewayAddressRegistryItemData, PaginatedResult } from "~gateways/types";
 import { RETRY_ALARM, scheduleGatewayUpdate, UPDATE_ALARM, updateGatewayCache } from "~gateways/cache";
+import { ARIO_MAINNET_PROCESS_ID } from "@ar.io/sdk";
 
 /**
  * Gateway cache update call. Usually called by an alarm,
@@ -18,7 +18,7 @@ export async function handleGatewayUpdateAlarm(alarm?: Alarms.Alarm) {
 
   try {
     // fetch cache
-    const ArIO = new AOProcess({ processId: AO_ARNS_PROCESS });
+    const ArIO = new AOProcess({ processId: ARIO_MAINNET_PROCESS_ID });
 
     const gatewaysResult = await ArIO.read<PaginatedResult<GatewayAddressRegistryItemData>>({
       tags: [
