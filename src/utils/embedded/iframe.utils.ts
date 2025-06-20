@@ -6,8 +6,6 @@ const { search = "", ancestorOrigins = [] } =
 export const searchParams = new URLSearchParams(search);
 export const ancestorOrigin = ancestorOrigins[ancestorOrigins.length - 1];
 
-console.log("HERE 1");
-
 export function isInsideIframe(): boolean {
   try {
     return typeof window !== "undefined" && (window.self !== window.top || !!ancestorOrigin);
