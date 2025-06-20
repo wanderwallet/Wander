@@ -42,10 +42,10 @@ const AUTH_ERRORS_BY_CODE: Record<string | OAuthError, string> = {
 };
 
 export function getFriendlyAuthErrorMessage(error: Error, defaultErrorMessage?: string): string {
-  console.error("getFriendlyAuthErrorMessage() =", error);
+  if (process.env.NODE_ENV === "development") console.error("getFriendlyAuthErrorMessage() =", error);
 
   const { message } = error;
-  const { errorCode = message, errorDescription } = (error.cause || {}) as OAuthErrorMessage;
+  const { errorCode = message, errorDescription = "" } = (error.cause || {}) as OAuthErrorMessage;
   const mappedErrorMessage = AUTH_ERRORS_BY_CODE[errorCode];
 
   if (mappedErrorMessage) return mappedErrorMessage;
