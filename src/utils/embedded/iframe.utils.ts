@@ -6,9 +6,11 @@ const { search = "", ancestorOrigins = [] } =
 export const searchParams = new URLSearchParams(search);
 export const ancestorOrigin = ancestorOrigins[ancestorOrigins.length - 1];
 
+console.log("HERE 1");
+
 export function isInsideIframe(): boolean {
   try {
-    return window.self !== window.top || !!ancestorOrigin;
+    return typeof window !== "undefined" && (window.self !== window.top || !!ancestorOrigin);
   } catch (e) {
     // If we can't access window.top due to cross-origin restrictions,
     // we're definitely in an iframe

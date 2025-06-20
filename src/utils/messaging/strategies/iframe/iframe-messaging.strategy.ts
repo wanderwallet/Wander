@@ -185,6 +185,8 @@ export function isomorphicOnMessage<K extends MessageID>(messageId: K, callback:
 }
 
 function setPostMessageListener() {
+  if (typeof window === "undefined") return;
+
   // This handles messages coming from outside the iframe and into the iframe, so wallet API calls (and chunks),
   // `embedded_signOut` and `embedded_setTheme`.
 
