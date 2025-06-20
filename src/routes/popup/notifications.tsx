@@ -11,7 +11,7 @@ import { formatAddress } from "~utils/format";
 import HeadV2 from "~components/popup/HeadV2";
 import browser from "webextension-polyfill";
 import { useState } from "react";
-import { fetchTokenByProcessId } from "~tokens/aoTokens/ao";
+import { AO_AUTHORITY_ID, fetchTokenByProcessId, getTagValue } from "~tokens/aoTokens/ao";
 import styled from "styled-components";
 import { balanceToFractioned, formatTokenBalance } from "~tokens/currency";
 import { ExtensionStorage } from "~utils/storage";
@@ -140,10 +140,15 @@ export function NotificationsView() {
                 notification.isAo ? findRecipient(notification) : formatAddress(notification.node.recipient, 4),
               ]);
             } else if (notification.transactionType === "Received") {
+              const ownerAddress = notification.node.owner.address;
+              const fromAddress =
+                notification.isAo && ownerAddress === AO_AUTHORITY_ID
+                  ? getTagValue("From-Process", notification.node.tags) || ownerAddress
+                  : ownerAddress;
               formattedMessage = browser.i18n.getMessage("received_balance", [
                 quantityTransfered,
                 ticker,
-                formatAddress(notification.node.owner.address, 4),
+                formatAddress(fromAddress, 4),
               ]);
             } else {
               const recipient = notification.node.recipient;
