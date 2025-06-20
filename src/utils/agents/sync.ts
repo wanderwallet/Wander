@@ -1,6 +1,6 @@
 import { gql } from "~gateways/api";
 import { AO_YIELD_AGENT_SYNC_QUERY } from "./queries";
-import { getAOYieldAgentInfo, getAOYieldAgents, setAOYieldAgents } from "./utils";
+import { getAOYieldAgentInfo, getAOYieldAgents, queryClient, setAOYieldAgents } from "./utils";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import {
   AO_YIELD_AGENT_SYNC_ALARM_NAME_PREFIX,
@@ -15,7 +15,6 @@ import { pLimit } from "plimit-lit";
 import { ExtensionStorage } from "~utils/storage";
 
 const limit = pLimit(10);
-const queryClient = new QueryClient();
 
 export async function checkAndSyncAgents(address: string): Promise<void> {
   try {
