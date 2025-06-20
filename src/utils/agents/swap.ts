@@ -12,6 +12,7 @@ import {
   setRecentTxs,
   updateAOYieldAgent,
   getAOYieldAgents,
+  queryClient,
 } from "./utils";
 import { getActiveAddress } from "~wallets/wallets.utils";
 import { getWallets } from "~wallets";
@@ -25,7 +26,6 @@ import {
 } from "~tokens/aoTokens/ao";
 import { connect } from "@permaweb/aoconnect";
 import { defaultConfig } from "~tokens/aoTokens/config";
-import { QueryClient } from "@tanstack/react-query";
 import { defaultOptions } from "~tokens/hooks";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import {
@@ -41,10 +41,9 @@ import type { AOYieldAgent, AOYieldAgentInfo, MintQuantityResult, MintTransactio
 import type { DecodedTag } from "~api/modules/sign/tags";
 import { ExtensionStorage } from "~utils/storage";
 import browser from "webextension-polyfill";
-import { EventType, trackEvent } from "~utils/analytics";
+import { EventType, trackDirect } from "~utils/analytics";
 import { getSetting } from "~settings";
 
-const queryClient = new QueryClient();
 let isSwapExecutionInProgress = false;
 let isSchedulingInProgress = false;
 let isRecentTxCheckInProgress = false;
@@ -671,33 +670,35 @@ export async function checkIfRecentTxSwapSucceeded(): Promise<boolean> {
 
     const foundTxIds = new Set<string>();
 
-    try {
-      for (const edge of edges) {
-        const tags = edge.node.tags;
-        const txId = getTagValue("Pushed-For", tags);
-        const buyAsset = getTagValue("Token-Out", tags);
-        const sellAmount = getTagValue("Amount-In", tags);
-        const buyAmount = getTagValue("Amount-Out", tags);
-        const dexUsed = getTagValue("Dex", tags);
-        const wanderFee = getTagValue("Swap-Fee", tags);
+    const trackDirectPromises = edges.map(async (edge) => {
+      const tags = edge.node.tags;
+      const txId = getTagValue("Pushed-For", tags);
 
-        if (foundTxIds.has(txId)) continue;
-        foundTxIds.add(txId);
+      if (foundTxIds.has(txId)) return;
+      foundTxIds.add(txId);
 
-        await trackEvent(EventType.AO_YIELD_AGENT_TRANSACTION, {
-          buyAsset,
-          sellAmount,
-          buyAmount,
-          dexUsed,
-          wanderFee,
-        });
+      const transactionData = {
+        buyAsset: getTagValue("Token-Out", tags),
+        sellAmount: getTagValue("Amount-In", tags),
+        buyAmount: getTagValue("Amount-Out", tags),
+        dexUsed: getTagValue("Dex", tags),
+        wanderFee: getTagValue("Swap-Fee", tags),
+      };
+
+      try {
+        return await trackDirect(EventType.AO_YIELD_AGENT_TRANSACTION, transactionData);
+      } catch (err) {
+        log(LOG_GROUP.AGENTS, "Error tracking recent tx: ", err);
+        throw err;
       }
-    } catch (error) {
-      log(LOG_GROUP.AGENTS, "Error tracking recent txs: ", error);
-    }
+    });
+
+    await Promise.allSettled(trackDirectPromises);
 
     recentTxs = await getRecentTxs();
-    const remainingTxs = recentTxs.filter((tx) => !foundTxIds.has(tx.id) || tx.queryCount >= 8);
+    // Filter transactions that haven't been found in the GraphQL response (not processed yet)
+    // and have been queried less than 9 times (to retry failed queries)
+    const remainingTxs = recentTxs.filter((tx) => !foundTxIds.has(tx.id) && tx.queryCount <= 8);
     log(LOG_GROUP.AGENTS, "Remaining txs: ", remainingTxs.length);
     if (remainingTxs.length === 0) {
       await browser.alarms.clear(AO_YIELD_AGENT_RECENT_TXS_CHECK_ALARM_NAME);

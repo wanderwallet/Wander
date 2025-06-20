@@ -58,7 +58,7 @@ export function useLend({ onSettled }: Params) {
           throw new Error(errorMessage);
         }
 
-        trackEvent(EventType.LIQUID_OPS_AGENT_DEPOSIT, { depositAsset: token, depositAmount: quantity });
+        trackEvent(EventType.LIQUID_OPS_AGENT_DEPOSIT, { depositAsset: token, depositAmount: quantity.toString() });
 
         return "Lent assets";
       } finally {
@@ -104,7 +104,7 @@ export function useLend({ onSettled }: Params) {
           throw new Error(errorMessage);
         }
 
-        trackEvent(EventType.LIQUID_OPS_AGENT_WITHDRAW, { withdrawAsset: token, withdrawAmount: quantity });
+        trackEvent(EventType.LIQUID_OPS_AGENT_WITHDRAW, { withdrawAsset: token, withdrawAmount: quantity.toString() });
 
         return "Unlent assets";
       } finally {
