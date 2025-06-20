@@ -98,7 +98,7 @@ export function AgentInfo({ agentId, headerTitle, mintingStatus, isHistory = fal
     if (!agent || !agentInfo) return;
 
     try {
-      if (agent.status !== agentInfo.status) {
+      if (agent.status === "Active" && agent.status !== agentInfo.status) {
         const isCompleted = agent.status === "Active" && agentInfo.status === "Completed";
         const updated = await updateLocalAOYieldAgent(agentId, { status: agentInfo.status });
         if (updated && isCompleted) {
