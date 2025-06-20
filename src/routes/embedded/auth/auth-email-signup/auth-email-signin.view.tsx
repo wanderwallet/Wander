@@ -52,7 +52,7 @@ export function AuthEmailSigninEmbeddedView() {
         if (error.code === "email_not_confirmed") {
           navigate(EmbeddedPaths.AuthEmailVerify);
         } else {
-          toast.error(getFriendlyAuthErrorMessage(error, "Error signing up"));
+          toast.error(getFriendlyAuthErrorMessage(error, error.message || "Error signing in"));
         }
       } finally {
         setIsAuthenticating(false);
