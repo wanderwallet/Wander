@@ -1,7 +1,7 @@
 import type { ThemeMode } from "~components/embed/contexts/ThemeContext";
-import { IS_EMBEDDED_APP } from "./embedded.constants";
 
-const { search = "", ancestorOrigins = [] } = IS_EMBEDDED_APP ? document.location : {};
+const { search = "", ancestorOrigins = [] } =
+  import.meta.env?.VITE_IS_EMBEDDED_APP === "1" && typeof document !== "undefined" ? document.location : {};
 
 export const searchParams = new URLSearchParams(search);
 export const ancestorOrigin = ancestorOrigins[ancestorOrigins.length - 1];

@@ -12,7 +12,6 @@ import alertTriangle from "url:/assets/agents/images/alert-triangle.svg";
 import { useLocation } from "~wallets/router/router.utils";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import { EventType, trackEvent } from "~utils/analytics";
-import { useQueryClient } from "@tanstack/react-query";
 
 interface AgentCancelModalProps {
   open: boolean;
@@ -27,7 +26,6 @@ export function AgentCancelModal({ open, onClose, agentId }: AgentCancelModalPro
   const toasts = useToasts();
   const theme = useTheme();
   const { navigate } = useLocation();
-  const queryClient = useQueryClient();
 
   const [transferRequirePassword] = useStorage(
     {
@@ -76,7 +74,6 @@ export function AgentCancelModal({ open, onClose, agentId }: AgentCancelModalPro
       });
     } finally {
       setIsLoading(false);
-      queryClient.invalidateQueries({ queryKey: ["ao-yield-agent-info", agentId] });
     }
   }
 
