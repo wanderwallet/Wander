@@ -151,7 +151,7 @@ export async function injectWanderWalletAPI(targetWindow: Window = window, embed
   // we dispatch the wallet loaded event
 
   async function dispatchArweaveWalletLoaded() {
-    if (!window.arweaveWallet) return;
+    if (!window.arweaveWallet || window.arweaveWallet.walletName !== "ArConnect") return;
 
     const permissions = await window.arweaveWallet.getPermissions().catch(() => []);
 
