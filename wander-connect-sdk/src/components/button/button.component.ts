@@ -74,7 +74,7 @@ export class Button {
       dark: Button.DEFAULT_DARK_CSS_VARS,
     },
     customStyles: "",
-    parent: document.body,
+    parent: typeof document !== "undefined" ? document.body : (null as any as HTMLElement),
     position: "bottom-right",
     wanderLogo: "default",
     label: true,
