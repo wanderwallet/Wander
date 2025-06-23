@@ -6,7 +6,7 @@ import { isRouteOverride } from "~wallets/router/router.utils";
 // Authentication Views:
 import { AuthEmbeddedView } from "~routes/embedded/auth/auth/auth.view";
 import { AuthEmailSignInEmbeddedView } from "~routes/embedded/auth/auth-email-sign-in/auth-email-sign-in.view";
-import { AuthEmailSignUpEmbeddedView } from "~routes/embedded/auth/auth-email-sign-up/auth-email-signup.view";
+import { AuthEmailSignUpEmbeddedView } from "~routes/embedded/auth/auth-email-sign-up/auth-email-sign-up.view";
 import { AuthEmailVerifyEmbeddedView } from "~routes/embedded/auth/auth-email-verify/auth-email-verify.view";
 import { AuthMoreProvidersEmbeddedView } from "~routes/embedded/auth/auth-more-providers/auth-more-providers.view";
 import { AuthAddWalletEmbeddedView } from "~routes/embedded/auth/add-wallet/auth-add-wallet.view";
