@@ -92,6 +92,13 @@ export function AuthEmailVerifyEmbeddedView() {
         token: otpCode,
       });
 
+      const { error, data } = await supabase.auth.updateUser({
+        password,
+        data: {
+          hasPassword: true,
+        },
+      });
+
       toast.success("Email verified successfully");
     } catch (error) {
       setIsVerifying(false);

@@ -4,6 +4,8 @@ import styles from "./Link.module.css";
 import type { LinkBaseProps } from "./Link.types";
 import { useTheme } from "../../../contexts/ThemeContext";
 
+// TODO: Prevent middle button click for non-external links.
+
 const Link = forwardRef<HTMLAnchorElement, LinkBaseProps>(
   (
     {

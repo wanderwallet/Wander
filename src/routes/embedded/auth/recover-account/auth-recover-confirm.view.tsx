@@ -102,7 +102,7 @@ export function AuthRecoverAccountConfirmEmbeddedView() {
       hasBackButton={true}
       onBackButtonClick={() => navigate("/auth/recover-account/select")}
       hasCloseButton={true}
-      onCloseButtonClick={() => navigate("/wallet")}
+      onCloseButtonClick={() => navigate(EmbeddedPaths.WalletHomeEmbeddedView)}
       size="auto">
       <Flex
         direction="column"

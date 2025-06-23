@@ -35,6 +35,9 @@ import { AuthRecoverAccountConfirmEmbeddedView } from "~routes/embedded/auth/rec
 
 // Account Management Views:
 import { AccountConfirmationEmbeddedView } from "~routes/embedded/account/confirmation/account-confirmation.view";
+import { AccountChangePasswordEmbeddedView } from "~routes/embedded/account/change-password/account-change-password.view";
+
+// Account Wallet Views:
 import { AccountAddWalletEmbeddedView } from "~routes/embedded/account/add-wallet/account-add-wallet.view";
 import { AccountImportSeedphraseEmbeddedView } from "~routes/embedded/account/import-seedphrase/account-import-seedphrase.view";
 import { AccountImportKeyfileEmbeddedView } from "~routes/embedded/account/import-keyfile/account-import-keyfile.view";
@@ -91,6 +94,7 @@ export type EmbeddedRoutePath =
   | "/auth/recover-account/confirm"
   | "/account"
   | "/account/confirmation"
+  | "/account/change-password"
   // | "/account/add-provider"
   // | "/account/add-provider/more-providers"
   | "/account/add-wallet"
@@ -105,7 +109,6 @@ export type EmbeddedRoutePath =
   | "/account/backup-wallet/reminder"
   | "/account/export-wallet"
   | "/"
-  | "/wallet"
   | "/wallet/receive"
   | "/wallet/receive/options"
   | "/wallet/transactions"
@@ -155,11 +158,14 @@ export const EmbeddedPaths = {
 
   // Account Management:
   AccountConfirmation: "/account/confirmation",
+  AccountChangePassword: "/account/change-password",
+
+  // Account Wallets:
   AccountAddWallet: "/account/add-wallet",
   AccountImportSeedphrase: "/account/import-seedphrase",
   AccountImportKeyfile: "/account/import-keyfile",
 
-  // Backup:
+  // Account Backup:
   AccountBackupWallet: "/account/backup-wallet",
   AccountBackupFullWallet: "/account/backup-wallet/full",
   AccountBackupCopySeedphrase: "/account/backup-wallet/copy-seedphrase",
@@ -169,8 +175,7 @@ export const EmbeddedPaths = {
   AccountExportWallet: "/account/export-wallet",
 
   // Wallet:
-  WalletDefaultHomeEmbeddedView: "/",
-  WalletHomeEmbeddedView: "/wallet",
+  WalletHomeEmbeddedView: "/",
   WalletReceiveEmbeddedView: "/wallet/receive",
   WalletReceiveOptionsEmbeddedView: "/wallet/receive/options",
   WalletTransactionsEmbeddedView: "/wallet/transactions",
@@ -293,6 +298,13 @@ const IFRAME_OWN_ROUTES = [
     component: AccountConfirmationEmbeddedView,
   },
   {
+    path: EmbeddedPaths.AccountChangePassword,
+    component: AccountChangePasswordEmbeddedView,
+  },
+
+  // Account Wallets:
+
+  {
     path: EmbeddedPaths.AccountAddWallet,
     component: AccountAddWalletEmbeddedView,
   },
@@ -305,7 +317,7 @@ const IFRAME_OWN_ROUTES = [
     component: AccountImportKeyfileEmbeddedView,
   },
 
-  // Backup:
+  // Account Backup:
 
   {
     path: EmbeddedPaths.AccountBackupWalletReminder,
@@ -337,10 +349,6 @@ const IFRAME_OWN_ROUTES = [
   },
 
   // Wallet:
-  {
-    path: EmbeddedPaths.WalletDefaultHomeEmbeddedView,
-    component: WalletHomeEmbeddedView,
-  },
   {
     path: EmbeddedPaths.WalletHomeEmbeddedView,
     component: WalletHomeEmbeddedView,
