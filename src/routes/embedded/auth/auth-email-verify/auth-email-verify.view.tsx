@@ -105,16 +105,6 @@ export function AuthEmailVerifyEmbeddedView() {
         token: otpCode,
       });
 
-      const supabase = await getSupabaseClient();
-
-      const { data, error } = await supabase.auth.updateUser({
-        data: {
-          hasPassword: true,
-        },
-      });
-
-      console.log("AuthEmailVerify", { data, error });
-
       toast.success("Email verified successfully");
     } catch (error) {
       setIsVerifying(false);

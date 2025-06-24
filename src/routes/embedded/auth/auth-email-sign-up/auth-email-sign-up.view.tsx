@@ -74,7 +74,7 @@ export function AuthEmailSignUpEmbeddedView() {
           return;
         }
 
-        const { error, data } = await supabase.auth.signUp({
+        const { error } = await supabase.auth.signUp({
           email,
           password,
         });

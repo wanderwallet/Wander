@@ -25,7 +25,7 @@ import { Flex } from "~components/common/Flex";
 export function AccountChangePasswordEmbeddedView() {
   const { navigate } = useLocation();
   const { authStatus, user } = useEmbedded();
-  const { email } = user;
+  const { email, user_metadata } = user;
 
   // Input refs:
 
@@ -105,92 +105,96 @@ export function AccountChangePasswordEmbeddedView() {
 
   // Password change:
 
-  const handleUpdatePassword = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleUpdatePassword = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
 
-    if (isUpdatingPassword) return;
+      if (isUpdatingPassword) return;
 
-    const passwordInput = passwordInputRef.current;
-    const repeatPasswordInput = repeatPasswordInputRef.current;
-    const otpCodeInput = codeInputRef.current;
+      const passwordInput = passwordInputRef.current;
+      const repeatPasswordInput = repeatPasswordInputRef.current;
+      const otpCodeInput = codeInputRef.current;
 
-    let password = "";
-    let nonce: string | undefined;
+      let password = "";
+      let nonce: string | undefined;
 
-    if (passwordInput && repeatPasswordInput) {
-      password = passwordInputRef.current.value || "";
-      const repeatPassword = repeatPasswordInputRef.current.value || "";
+      if (passwordInput && repeatPasswordInput) {
+        password = passwordInputRef.current.value || "";
+        const repeatPassword = repeatPasswordInputRef.current.value || "";
 
-      if (password !== repeatPassword) {
-        toast.error("Passwords do not match");
-        return;
-      }
-    } else if (otpCodeInput) {
-      const otpCode = codeInputRef.current.getCode();
+        if (password !== repeatPassword) {
+          toast.error("Passwords do not match");
+          return;
+        }
+      } else if (otpCodeInput) {
+        const otpCode = codeInputRef.current.getCode();
 
-      if (otpCode.length !== OTP_LENGTH) {
-        toast.error(`Please enter all ${OTP_LENGTH} digits of the verification code`);
-        return;
-      }
-
-      password = confirmedPassword;
-      nonce = otpCode;
-    } else {
-      return;
-    }
-
-    // TODO: Missing password validation, also in sign up. It should be 6 characters long, not 5.
-
-    setIsUpdatingPassword(true);
-
-    try {
-      const supabase = await getSupabaseClient();
-
-      // If the current session was created less than 24 hours ago, `updateUser()` will update the password when called
-      // without a `nonce`. If it's been more than 24 hours, it will throw an error, as it requires a `nonce`. In that
-      // case, we call `resendEmail()` and show the `CodeInput`. Once users enter the code, this function is called
-      // again, but now it will include `nonce`.
-      // See https://supabase.com/docs/reference/javascript/auth-reauthentication.
-
-      const { data, error } = await supabase.auth.updateUser({
-        password,
-        nonce,
-        data: {
-          hasPassword: true,
-        },
-      });
-
-      console.log(data, error);
-
-      if (error) {
-        const { message } = error;
-
-        if (message === "Password update requires reauthentication") {
-          resendEmail(false);
-          setConfirmedPassword(password);
-        } else if (message === "Nonce has expired or is invalid") {
-          codeInputRef.current?.clear();
-          toast.error("Invalid or expired code");
-        } else {
-          // In this case, the error is most likely related to the password itself (e.g. password is the same as before, password is too short, etc.), so we
-          // just show the `PasswordInput` again:
-
-          toast.error(getFriendlyAuthErrorMessage(error, message || "Error updating password"));
-          setConfirmedPassword("");
+        if (otpCode.length !== OTP_LENGTH) {
+          toast.error(`Please enter all ${OTP_LENGTH} digits of the verification code`);
+          return;
         }
 
+        password = confirmedPassword;
+        nonce = otpCode;
+      } else {
         return;
       }
 
-      toast.success("Password updated successfully");
+      // TODO: Missing password validation, also in sign up. It should be 6 characters long, not 5.
 
-      navigate(EmbeddedPaths.WalletHomeEmbeddedView);
-    } catch (error) {
-      toast.error(getFriendlyAuthErrorMessage(error, "Error updating password"));
-    } finally {
-      setIsUpdatingPassword(false);
-    }
-  };
+      setIsUpdatingPassword(true);
+
+      try {
+        const supabase = await getSupabaseClient();
+
+        // If the current session was created less than 24 hours ago, `updateUser()` will update the password when called
+        // without a `nonce`. If it's been more than 24 hours, it will throw an error, as it requires a `nonce`. In that
+        // case, we call `resendEmail()` and show the `CodeInput`. Once users enter the code, this function is called
+        // again, but now it will include `nonce`.
+        // See https://supabase.com/docs/reference/javascript/auth-reauthentication.
+
+        const { data, error } = await supabase.auth.updateUser({
+          password,
+          nonce,
+          data: user_metadata.hasPassword
+            ? undefined
+            : {
+                ...user_metadata,
+                hasPassword: true,
+              },
+        });
+
+        if (error) {
+          const { message } = error;
+
+          if (message === "Password update requires reauthentication") {
+            resendEmail(false);
+            setConfirmedPassword(password);
+          } else if (message === "Nonce has expired or is invalid") {
+            codeInputRef.current?.clear();
+            toast.error("Invalid or expired code");
+          } else {
+            // In this case, the error is most likely related to the password itself (e.g. password is the same as before, password is too short, etc.), so we
+            // just show the `PasswordInput` again:
+
+            toast.error(getFriendlyAuthErrorMessage(error, message || "Error updating password"));
+            setConfirmedPassword("");
+          }
+
+          return;
+        }
+
+        toast.success("Password updated successfully");
+
+        navigate(EmbeddedPaths.WalletHomeEmbeddedView);
+      } catch (error) {
+        toast.error(getFriendlyAuthErrorMessage(error, "Error updating password"));
+      } finally {
+        setIsUpdatingPassword(false);
+      }
+    },
+    [isUpdatingPassword, confirmedPassword, user_metadata],
+  );
 
   useEffect(() => {
     if (!email) {
@@ -229,7 +233,7 @@ export function AccountChangePasswordEmbeddedView() {
       </Flex>
 
       <Button type="submit" variant="primary" isFullWidth isDisabled={isViewLoading || !isComplete}>
-        {browser.i18n.getMessage("change_password")}
+        {browser.i18n.getMessage(user_metadata.hasPassword ? "change_password" : "set_password")}
       </Button>
 
       <Text variant="bodySm" alignment="center">
