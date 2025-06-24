@@ -17,14 +17,16 @@ export function useCooldownCallback<F extends Function>(
   callback: F,
   { key, cooldownDuration }: UseCooldownCallbackProps,
 ): UseCooldownCallbackReturn<F> {
-  const [cooldownSeconds, setCooldownSeconds] = useState(cooldownDuration);
+  const [cooldownSeconds, setCooldownSeconds] = useState(-1);
 
   useAsyncEffect(async () => {
     try {
       const lastCalledAt = await PersistentStorage.get(key);
       const elapsedSeconds = Math.round((Date.now() - parseInt(lastCalledAt)) / 1000);
 
-      setCooldownSeconds(Math.max(cooldownDuration - elapsedSeconds, 0));
+      setCooldownSeconds((prevCooldownSeconds) =>
+        prevCooldownSeconds === -1 ? Math.max(cooldownDuration - elapsedSeconds, 0) : prevCooldownSeconds,
+      );
     } catch (err) {
       console.error(`Error reading ${key} from storage:`, err);
 
@@ -74,6 +76,6 @@ export function useCooldownCallback<F extends Function>(
 
   return {
     fn: fn as unknown as F,
-    cooldownSeconds,
+    cooldownSeconds: cooldownSeconds === -1 ? cooldownDuration : cooldownSeconds,
   };
 }
