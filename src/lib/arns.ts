@@ -1,10 +1,9 @@
-import { pLimit } from "plimit-lit";
+import { QueryClient } from "@tanstack/react-query";
 import type { NameServiceProfile } from "./types";
 import {
   ARIO,
   ARIO_MAINNET_PROCESS_ID,
   AOProcess,
-  fetchAllArNSRecords,
   ANT,
   type AoANTInfo,
   type AoArNSNameData,
@@ -12,6 +11,17 @@ import {
   type AoPrimaryName,
 } from "@ar.io/sdk";
 import { connect } from "@permaweb/aoconnect/browser";
+
+// Query client for ArNS profile caching
+const arnsQueryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const aoCuUrl = "https://cu.ardrive.io";
 
@@ -31,14 +41,6 @@ export async function getArNSRecord(name: string): Promise<AoArNSNameData | unde
   return record;
 }
 
-export async function getArNSRecords(): Promise<Record<string, AoArNSNameData>> {
-  const records = await fetchAllArNSRecords({
-    contract: ARIO_READ_SDK,
-    pageSize: 1000,
-  });
-  return records;
-}
-
 export async function getANTInfo(processId: string): Promise<AoANTInfo> {
   const ant = ANT.init({
     process: new AOProcess({ processId, ao: AO_CLIENT }),
@@ -54,40 +56,6 @@ export async function getANTState(processId: string): Promise<AoANTState> {
 
   return ant.getState();
 }
-
-export const getAllArNSNames = async (address: string): Promise<string[]> => {
-  if (!address) return [];
-
-  const throttle = pLimit(50);
-
-  const arnsRecords = await getArNSRecords().then((records) =>
-    Object.values(records).filter((record) => record.processId !== undefined),
-  );
-
-  // check the contract owner and controllers
-  const results = await Promise.all(
-    arnsRecords.map(async (record) =>
-      throttle(async () => {
-        try {
-          const state = await getANTState(record.processId);
-
-          if (state.Owner === address || state.Controllers.includes(address)) {
-            return state.Name;
-          }
-          return;
-        } catch (err) {
-          return;
-        }
-      }),
-    ),
-  );
-
-  if (results.length === 0) {
-    return [];
-  }
-
-  return Array.from(new Set(results.filter((result) => result)));
-};
 
 export async function searchArNSName(name: string) {
   name = name.toLowerCase();
@@ -133,7 +101,7 @@ export async function getPrimaryArNSName(address: string): Promise<AoPrimaryName
   return ARIO_READ_SDK.getPrimaryName({ address });
 }
 
-export async function getArNSProfile(query: string): Promise<NameServiceProfile | undefined> {
+async function fetchArNSProfile(query: string): Promise<NameServiceProfile | undefined> {
   if (!query) {
     return undefined;
   }
@@ -150,7 +118,30 @@ export async function getArNSProfile(query: string): Promise<NameServiceProfile 
     };
   } catch (error) {
     console.error("Error fetching ArNS profile:", error);
+    return undefined;
+  }
+}
+
+export async function getArNSProfile(query: string): Promise<NameServiceProfile | undefined> {
+  if (!query) {
+    return undefined;
   }
 
-  return undefined;
+  try {
+    const result = await arnsQueryClient
+      .fetchQuery({
+        queryKey: ["arns-profile", query],
+        queryFn: () => fetchArNSProfile(query),
+        staleTime: 5 * 60 * 1000, // 5 minutes
+      })
+      .catch((error) => {
+        console.error(`Error in ArNS profile query for ${query}:`, error);
+        return undefined;
+      });
+
+    return result;
+  } catch (error) {
+    console.error(`Unexpected error in getArNSProfile for ${query}:`, error);
+    return undefined;
+  }
 }
