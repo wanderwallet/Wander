@@ -70,11 +70,16 @@ export function AccountBackupWalletReminderEmbeddedView() {
       </Button>
 
       {isMandatoryReminder ? (
-        <Button variant="secondary" isDisabled={isLoading} isFullWidth href="/wallet" onClick={handleSkipClicked}>
+        <Button
+          variant="secondary"
+          isDisabled={isLoading}
+          isFullWidth
+          href={EmbeddedPaths.WalletHomeEmbeddedView}
+          onClick={handleSkipClicked}>
           Backup later
         </Button>
       ) : (
-        <Button variant="secondary" isFullWidth href="/wallet">
+        <Button variant="secondary" isFullWidth href={EmbeddedPaths.WalletHomeEmbeddedView}>
           Cancel
         </Button>
       )}

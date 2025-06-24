@@ -1,7 +1,7 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { toast } from "react-toastify";
-import { Button } from "~components/embed";
-import { useCallback, useRef, useState } from "react";
+import { Text, Button } from "~components/embed";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { getSupabaseClient } from "~utils/embedded/embedded.utils";
 import { useLocation } from "~wallets/router/router.utils";
 import PasswordMatch from "~components/welcome/PasswordMatch";
@@ -10,14 +10,22 @@ import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 import { PasswordInput } from "~components/embed/ui/atoms/password-input";
 import { useThrottledCallback } from "@swyg/corre";
 import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
-import { PersistentStorage } from "~utils/storage";
 import { getFriendlyAuthErrorMessage } from "~utils/authentication/authentication.utils";
 import { StorageKeys } from "~utils/storage/storage.constants";
 import browser from "~iframe/browser";
+import {
+  CodeInput,
+  OPT_COOLDOWN_DURATION_SEC,
+  OTP_LENGTH,
+  type CodeInputHandle,
+} from "~components/embed/ui/atoms/code-input/CodeInput";
+import { useCooldownCallback } from "~utils/react/useCooldownCallback";
+import { Flex } from "~components/common/Flex";
 
 export function AccountChangePasswordEmbeddedView() {
   const { navigate } = useLocation();
-  const { authStatus } = useEmbedded();
+  const { authStatus, user } = useEmbedded();
+  const { email } = user;
 
   // Input refs:
 
@@ -26,14 +34,59 @@ export function AccountChangePasswordEmbeddedView() {
 
   // Loading state:
 
+  const [isResending, setIsResending] = useState(false);
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
+  const isViewLoading =
+    authStatus === "unknown" ||
+    authStatus === "loading" ||
+    authStatus === "authLoading" ||
+    isResending ||
+    isUpdatingPassword;
 
-  const areButtonsDisabled =
-    authStatus === "unknown" || authStatus === "loading" || authStatus === "authLoading" || isUpdatingPassword;
+  // Code input:
 
-  const isViewLoading = areButtonsDisabled;
+  const codeInputRef = useRef<CodeInputHandle>();
+  const [isComplete, setIsComplete] = useState(false);
+
+  const handleCodeChange = useCallback((_, isComplete: boolean) => {
+    setIsComplete(isComplete);
+  }, []);
+
+  // Code retrieval:
+
+  const { fn: resendEmail, cooldownSeconds } = useCooldownCallback(
+    async (showConfirmationToast: boolean) => {
+      if (codeInputRef.current) codeInputRef.current.clear();
+
+      try {
+        setIsResending(true);
+        const supabase = await getSupabaseClient();
+
+        const { data, error } = await supabase.auth.reauthenticate();
+
+        console.log(data, error);
+
+        if (error) {
+          toast.error(getFriendlyAuthErrorMessage(error, error.message));
+          return;
+        }
+
+        if (showConfirmationToast) toast.success("Password confirmation email resent successfully");
+      } catch (error) {
+        toast.error(getFriendlyAuthErrorMessage(error, "Error sending password confirmation email"));
+      } finally {
+        setIsResending(false);
+      }
+    },
+    {
+      key: StorageKeys.CONNECT.AUTH.LAST_PASSWORD_CHANGE,
+      cooldownDuration: OPT_COOLDOWN_DURATION_SEC,
+    },
+  );
 
   // Passwords match:
+
+  const [confirmedPassword, setConfirmedPassword] = useState("");
 
   const [{ password, passwordsMatch }, setPasswordsState] = useState({
     password: "",
@@ -50,25 +103,56 @@ export function AccountChangePasswordEmbeddedView() {
     });
   }, 250);
 
-  const handleConfirmPassword = useCallback(async (e: React.FormEvent) => {
+  // Password change:
+
+  const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const password = passwordInputRef.current.value || "";
-    const repeatPassword = repeatPasswordInputRef.current.value || "";
+    if (isUpdatingPassword) return;
 
-    try {
-      setIsUpdatingPassword(true);
+    const passwordInput = passwordInputRef.current;
+    const repeatPasswordInput = repeatPasswordInputRef.current;
+    const otpCodeInput = codeInputRef.current;
 
-      const supabase = await getSupabaseClient();
+    let password = "";
+    let nonce: string | undefined;
+
+    if (passwordInput && repeatPasswordInput) {
+      password = passwordInputRef.current.value || "";
+      const repeatPassword = repeatPasswordInputRef.current.value || "";
 
       if (password !== repeatPassword) {
         toast.error("Passwords do not match");
         return;
       }
+    } else if (otpCodeInput) {
+      const otpCode = codeInputRef.current.getCode();
 
-      // const { error } = await supabase.auth.reauthenticate()
+      if (otpCode.length !== OTP_LENGTH) {
+        toast.error(`Please enter all ${OTP_LENGTH} digits of the verification code`);
+        return;
+      }
 
-      const { error, data } = await supabase.auth.updateUser({
+      password = confirmedPassword;
+      nonce = otpCode;
+    } else {
+      return;
+    }
+
+    // TODO: Missing password validation, also in sign up. It should be 6 characters long, not 5.
+
+    setIsUpdatingPassword(true);
+
+    try {
+      const supabase = await getSupabaseClient();
+
+      // If the current session was created less than 24 hours ago, `updateUser()` will update the password when called
+      // without a `nonce`. If it's been more than 24 hours, it will throw an error, as it requires a `nonce`. In that
+      // case, we call `resendEmail()` and show the `CodeInput`. Once users enter the code, this function is called
+      // again, but now it will include `nonce`.
+      // See https://supabase.com/docs/reference/javascript/auth-reauthentication.
+
+      const { data, error } = await supabase.auth.updateUser({
         password,
         nonce,
         data: {
@@ -76,37 +160,101 @@ export function AccountChangePasswordEmbeddedView() {
         },
       });
 
+      console.log(data, error);
+
       if (error) {
-        toast.error(getFriendlyAuthErrorMessage(error, error.message || "Error changing password"));
+        const { message } = error;
+
+        if (message === "Password update requires reauthentication") {
+          resendEmail(false);
+          setConfirmedPassword(password);
+        } else if (message === "Nonce has expired or is invalid") {
+          codeInputRef.current?.clear();
+          toast.error("Invalid or expired code");
+        } else {
+          // In this case, the error is most likely related to the password itself (e.g. password is the same as before, password is too short, etc.), so we
+          // just show the `PasswordInput` again:
+
+          toast.error(getFriendlyAuthErrorMessage(error, message || "Error updating password"));
+          setConfirmedPassword("");
+        }
+
         return;
       }
 
-      await PersistentStorage.setItem(StorageKeys.CONNECT.AUTH.LAST_EMAIL_VERIFICATION, Date.now());
-
-      // TODO: Toast to confirm password change.
+      toast.success("Password updated successfully");
 
       navigate(EmbeddedPaths.WalletHomeEmbeddedView);
     } catch (error) {
-      toast.error(getFriendlyAuthErrorMessage(error, "Error changing password"));
+      toast.error(getFriendlyAuthErrorMessage(error, "Error updating password"));
     } finally {
       setIsUpdatingPassword(false);
     }
-  }, []);
+  };
 
-  const handleChangePassword = useCallback(() => {}, []);
+  useEffect(() => {
+    if (!email) {
+      if (process.env.NODE_ENV === "development") {
+        throw new Error("No email search param. The router should have taken care of this.");
+      } else {
+        navigate(EmbeddedPaths.Auth);
+      }
+    }
+  }, [email]);
 
-  return (
+  return confirmedPassword ? (
+    <OnboardingCard
+      headerText="Confirm your password"
+      subtitle={`We've sent an email to ${email}`}
+      onBackButtonClick={() => navigate(EmbeddedPaths.WalletHomeEmbeddedView)}
+      isLoading={isViewLoading}
+      onSubmit={handleUpdatePassword}>
+      <Text variant={"bodySm"} alignment={"center"} style={{ color: "var(--text-color-secondary, #666666)" }}>
+        Enter the 6-digit verification code from that email to change your password. If you don't see the email, please
+        check your spam folder.
+      </Text>
+
+      <Flex direction="column" gap={12} width="100%">
+        <Text alignment="center" variant={"bodySm"} style={{ color: "var(--text-color-secondary, #666666)" }}>
+          Verification Code
+        </Text>
+
+        <CodeInput
+          name="otp-input"
+          inputRef={codeInputRef}
+          disabled={isViewLoading}
+          onChange={handleCodeChange}
+          autoFocus
+        />
+      </Flex>
+
+      <Button type="submit" variant="primary" isFullWidth isDisabled={isViewLoading || !isComplete}>
+        {browser.i18n.getMessage("change_password")}
+      </Button>
+
+      <Text variant="bodySm" alignment="center">
+        Didn't receive the email?{" "}
+        {cooldownSeconds === 0 ? (
+          <Button variant="link" onClick={() => resendEmail(true)} isDisabled={isViewLoading}>
+            Send again
+          </Button>
+        ) : (
+          <>Send again in {cooldownSeconds} seconds</>
+        )}
+      </Text>
+    </OnboardingCard>
+  ) : (
     <OnboardingCard
       headerText="Change your password"
       subtitle="Enter your new password."
-      onBackButtonClick={() => navigate(`/`)}
+      onBackButtonClick={() => navigate(EmbeddedPaths.WalletHomeEmbeddedView)}
       isLoading={isViewLoading}
-      onSubmit={handleChangePassword}>
+      onSubmit={handleUpdatePassword}>
       <PasswordInput
         name="password"
         placeholder="Enter your password"
         inputRef={passwordInputRef}
-        disabled={areButtonsDisabled}
+        disabled={isViewLoading}
         onChange={handlePasswordChange}
         autoFocus
       />
@@ -115,7 +263,7 @@ export function AccountChangePasswordEmbeddedView() {
         name="repeatPassword"
         placeholder="Confirm your password"
         inputRef={repeatPasswordInputRef}
-        disabled={areButtonsDisabled}
+        disabled={isViewLoading}
         onChange={handlePasswordChange}
       />
 
@@ -123,8 +271,8 @@ export function AccountChangePasswordEmbeddedView() {
 
       <PasswordStrength password={password} />
 
-      <Button type="submit" isFullWidth isDisabled={areButtonsDisabled}>
-        {browser.i18n.getMessage("change_password")}
+      <Button type="submit" isFullWidth isDisabled={isViewLoading}>
+        {browser.i18n.getMessage("continue")}
       </Button>
     </OnboardingCard>
   );

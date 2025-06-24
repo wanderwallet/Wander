@@ -119,21 +119,12 @@ export function AuthEmailSignInEmbeddedView() {
         Sign in
       </Button>
 
-      <Flex direction="row" gap={4} width="100%" justify="center">
-        <Text variant={"bodySm"} alignment="left">
-          Forgot your password?
-        </Text>
-
-        <Button
-          style={{ width: "auto" }}
-          variant="link"
-          alignment="left"
-          isFullWidth
-          isDisabled={areButtonsDisabled}
-          href={EmbeddedPaths.AuthRecoverAccount}>
+      <Text variant="bodySm" alignment="center">
+        Forgot your password?{" "}
+        <Button variant="link" isDisabled={areButtonsDisabled} href={EmbeddedPaths.AuthRecoverAccount}>
           Recover account
         </Button>
-      </Flex>
+      </Text>
     </OnboardingCard>
   );
 }

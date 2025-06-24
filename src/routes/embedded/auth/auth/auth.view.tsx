@@ -152,12 +152,12 @@ export function AuthEmbeddedView() {
       </Button>
 
       {!recoverableAccount ? (
-        <Row style={{ gap: "4px" }}>
-          <Text variant={"bodySm"}>{"Can't sign in?"}</Text>
-          <Button variant="link" isDisabled={areButtonsDisabled} href="/auth/recover-account" size="sm">
+        <Text variant="bodySm" alignment="center">
+          Can't sign in?{" "}
+          <Button variant="link" isDisabled={areButtonsDisabled} href={EmbeddedPaths.AuthRecoverAccount}>
             Recover account
           </Button>
-        </Row>
+        </Text>
       ) : null}
     </OnboardingCard>
   );

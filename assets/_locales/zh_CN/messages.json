@@ -649,6 +649,10 @@
       "message": "新密码不能与旧密码相同",
       "description": "Password must be different from old one"
   },
+  "set_password": {
+    "message": "设置密码",
+    "description": "Set password button text"
+  },
   "change_password": {
     "message": "更改密码",
     "description": "Change password button text"

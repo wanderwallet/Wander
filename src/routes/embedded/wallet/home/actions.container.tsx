@@ -3,8 +3,11 @@ import { Row, CoinsIcon, Text, ReceiptIcon, OpenTabIcon, XClose, Box } from "~co
 import { signOut } from "~utils/embedded/embedded.utils";
 import { Link } from "~wallets/router/components/link/Link";
 import browser from "~iframe/browser";
+import { useEmbedded } from "~utils/embedded/embedded.hooks";
 
 export function WalletHomeActions() {
+  const { user } = useEmbedded();
+
   return (
     <Box>
       <Link to="/wallet/receive/options" style={{ textDecoration: "none", width: "100%" }}>
@@ -42,7 +45,9 @@ export function WalletHomeActions() {
             padding: "var(--spacing-2) 0",
           }}>
           <Lock01 style={{ color: "var(--color-font-body)", height: 20, width: 20 }} />
-          <Text variant="bodyMd">{browser.i18n.getMessage("change_password")}</Text>
+          <Text variant="bodyMd">
+            {browser.i18n.getMessage(user.user_metadata.hasPassword ? "change_password" : "set_password")}
+          </Text>
         </Row>
       </Link>
 
