@@ -528,9 +528,11 @@ async function processAgentSwap(agent: AOYieldAgent, walletAddress: string): Pro
       const recentTxs = await getRecentTxs();
       await setRecentTxs([...recentTxs, { id: messageId, timestamp: Date.now(), queryCount: 0 }]);
 
-      // Schedule staggered checks for transaction success
-      [0.5, 1, 1.5, 2].forEach((delay) => {
-        browser.alarms.create(AO_YIELD_AGENT_RECENT_TXS_CHECK_ALARM_NAME, { when: Date.now() + delay * 60 * 1000 });
+      // Schedule alarm to check if the swap was successful
+      await browser.alarms.clear(AO_YIELD_AGENT_RECENT_TXS_CHECK_ALARM_NAME);
+      browser.alarms.create(AO_YIELD_AGENT_RECENT_TXS_CHECK_ALARM_NAME, {
+        delayInMinutes: 1,
+        periodInMinutes: 2,
       });
     }
 
@@ -653,18 +655,14 @@ export async function checkIfRecentTxSwapSucceeded(): Promise<boolean> {
 
     let recentTxs = await getRecentTxs();
     if (recentTxs.length === 0) {
-      log(LOG_GROUP.AGENTS, "No recent txs found");
+      await browser.alarms.clear(AO_YIELD_AGENT_RECENT_TXS_CHECK_ALARM_NAME);
+      log(LOG_GROUP.AGENTS, "No recent txs found. Clearing recent txs check alarm.");
       return;
     }
 
     const parentTxIds = recentTxs.map((tx) => tx.id);
     const response = await gql(AO_YIELD_AGENT_RECENT_TX_QUERY, { parentTxIds });
     const edges = response?.data?.transactions?.edges || [];
-
-    if (edges.length === 0) {
-      log(LOG_GROUP.AGENTS, "No recent txs found");
-      return;
-    }
 
     log(LOG_GROUP.AGENTS, "Recent txs found: ", recentTxs.length);
 
@@ -697,10 +695,11 @@ export async function checkIfRecentTxSwapSucceeded(): Promise<boolean> {
 
     recentTxs = await getRecentTxs();
     // Filter transactions that haven't been found in the GraphQL response (not processed yet)
-    // and have been queried less than 9 times (to retry failed queries)
-    const remainingTxs = recentTxs.filter((tx) => !foundTxIds.has(tx.id) && tx.queryCount <= 8);
+    // and have been queried less than 11 times (to retry failed queries)
+    const remainingTxs = recentTxs.filter((tx) => !foundTxIds.has(tx.id) && tx.queryCount <= 10);
     log(LOG_GROUP.AGENTS, "Remaining txs: ", remainingTxs.length);
     if (remainingTxs.length === 0) {
+      log(LOG_GROUP.AGENTS, "No remaining txs found. Clearing recent txs check alarm.");
       await browser.alarms.clear(AO_YIELD_AGENT_RECENT_TXS_CHECK_ALARM_NAME);
     }
     await setRecentTxs(remainingTxs.map((tx) => ({ ...tx, queryCount: tx.queryCount + 1 })));
