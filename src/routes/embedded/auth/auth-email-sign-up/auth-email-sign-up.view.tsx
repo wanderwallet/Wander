@@ -131,7 +131,7 @@ export function AuthEmailSignUpEmbeddedView() {
     <OnboardingCard
       headerText="Create your password"
       subtitle="Enter a password to secure your Wander account."
-      onBackButtonClick={() => navigate(`/auth`)}
+      onBackButtonClick={() => navigate(EmbeddedPaths.Auth)}
       isLoading={isViewLoading}
       onSubmit={handleEmailSignUp}>
       <TextInput

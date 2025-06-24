@@ -1,6 +1,7 @@
 import { useInterval } from "@swyg/corre";
 import { useCallback, useRef, useState } from "react";
-import { PersistentStorage, useStorage } from "~utils/storage";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import { PersistentStorage } from "~utils/storage";
 
 export interface UseCooldownCallbackProps {
   key: string;
@@ -16,13 +17,22 @@ export function useCooldownCallback<F extends Function>(
   callback: F,
   { key, cooldownDuration }: UseCooldownCallbackProps,
 ): UseCooldownCallbackReturn<F> {
-  const [lastCalledAt, setLastCalledAt] = useStorage<number>({ key, instance: PersistentStorage }, (v) => v || 0);
+  const [cooldownSeconds, setCooldownSeconds] = useState(cooldownDuration);
 
-  const [cooldownSeconds, setCooldownSeconds] = useState(() => {
-    const elapsedSeconds = Math.round((Date.now() - lastCalledAt) / 1000);
+  useAsyncEffect(async () => {
+    try {
+      const lastCalledAt = await PersistentStorage.get(key);
+      const elapsedSeconds = Math.round((Date.now() - parseInt(lastCalledAt)) / 1000);
 
-    return Math.max(cooldownDuration - elapsedSeconds, 0);
-  });
+      setCooldownSeconds(Math.max(cooldownDuration - elapsedSeconds, 0));
+    } catch (err) {
+      console.error(`Error reading ${key} from storage:`, err);
+
+      await PersistentStorage.remove(key).catch((err) => {
+        console.error(`Error removing ${key} from storage:`, err);
+      });
+    }
+  }, []);
 
   const cooldownSecondsRef = useRef(cooldownSeconds);
 
@@ -51,12 +61,15 @@ export function useCooldownCallback<F extends Function>(
 
       if (!cb) throw Error("Missing callback function");
 
-      setLastCalledAt(Date.now());
+      PersistentStorage.set(key, Date.now()).catch((err) => {
+        console.error(`Error setting ${key} into storage:`, err);
+      });
+
       setCooldownSeconds(cooldownDuration);
 
       return cb(...args);
     },
-    [cooldownDuration],
+    [key, cooldownDuration],
   );
 
   return {

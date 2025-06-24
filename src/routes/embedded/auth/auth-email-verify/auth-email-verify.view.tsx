@@ -113,7 +113,7 @@ export function AuthEmailVerifyEmbeddedView() {
         },
       });
 
-      console.log({ data, error });
+      console.log("AuthEmailVerify", { data, error });
 
       toast.success("Email verified successfully");
     } catch (error) {
@@ -138,7 +138,7 @@ export function AuthEmailVerifyEmbeddedView() {
     <OnboardingCard
       headerText="Verify your email"
       subtitle={`We've sent an email to ${email}`}
-      hasBackButton={false}
+      onBackButtonClick={() => navigate(EmbeddedPaths.Auth)}
       isLoading={isViewLoading}
       onSubmit={handleVerifyCode}>
       <Text variant={"bodySm"} alignment={"center"} style={{ color: "var(--text-color-secondary, #666666)" }}>
