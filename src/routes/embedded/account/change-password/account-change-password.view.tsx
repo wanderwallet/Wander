@@ -35,12 +35,13 @@ export function AccountChangePasswordEmbeddedView() {
 
   const [isResending, setIsResending] = useState(false);
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
-  const isViewLoading =
+  const areButtonsDisabled =
     authStatus === "unknown" ||
     authStatus === "loading" ||
     authStatus === "authLoading" ||
     isResending ||
     isUpdatingPassword;
+  const isViewLoading = areButtonsDisabled;
 
   // Code input:
 
@@ -230,20 +231,20 @@ export function AccountChangePasswordEmbeddedView() {
         <CodeInput
           name="otp-input"
           inputRef={codeInputRef}
-          disabled={isViewLoading}
+          disabled={areButtonsDisabled}
           onChange={handleCodeChange}
           autoFocus
         />
       </Flex>
 
-      <Button type="submit" variant="primary" isFullWidth isDisabled={isViewLoading || !isComplete}>
+      <Button type="submit" variant="primary" isFullWidth isDisabled={areButtonsDisabled || !isComplete}>
         {browser.i18n.getMessage(user_metadata.hasPassword ? "change_password" : "set_password")}
       </Button>
 
       <Text variant="bodySm" alignment="center">
         Didn't receive the email?{" "}
         {cooldownSeconds === 0 ? (
-          <Button variant="link" onClick={() => resendEmail(true)} isDisabled={isViewLoading}>
+          <Button variant="link" onClick={() => resendEmail(true)} isDisabled={areButtonsDisabled}>
             Send again
           </Button>
         ) : (
@@ -256,13 +257,13 @@ export function AccountChangePasswordEmbeddedView() {
       headerText="Change your password"
       subtitle="Enter your new password."
       onBackButtonClick={() => navigate(EmbeddedPaths.WalletHomeEmbeddedView)}
-      isLoading={isViewLoading}
+      isLoading={areButtonsDisabled}
       onSubmit={handleUpdatePassword}>
       <PasswordInput
         name="password"
         placeholder="Enter your password"
         inputRef={passwordInputRef}
-        disabled={isViewLoading}
+        disabled={areButtonsDisabled}
         onChange={handlePasswordChange}
         autoFocus
       />
@@ -271,13 +272,13 @@ export function AccountChangePasswordEmbeddedView() {
         name="repeatPassword"
         placeholder="Confirm your password"
         inputRef={repeatPasswordInputRef}
-        disabled={isViewLoading}
+        disabled={areButtonsDisabled}
         onChange={handlePasswordChange}
       />
 
       <PasswordStrength password={password} passwordsMatch={passwordsMatch} minLength={MIN_SUPABASE_PASSWORD_LENGTH} />
 
-      <Button type="submit" isFullWidth isDisabled={isViewLoading || !isPasswordValid}>
+      <Button type="submit" isFullWidth isDisabled={areButtonsDisabled || !isPasswordValid}>
         {browser.i18n.getMessage("continue")}
       </Button>
     </OnboardingCard>

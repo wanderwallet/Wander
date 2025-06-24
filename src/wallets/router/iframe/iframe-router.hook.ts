@@ -38,6 +38,7 @@ export function useEmbeddedOverride(location?: RoutePath) {
         EmbeddedPaths.AuthMoreProviders,
         // TODO: These could be simply "anything under  AuthRecoverAccount"
         EmbeddedPaths.AuthRecoverAccount,
+        EmbeddedPaths.AuthRecoverAccountOtp,
         EmbeddedPaths.AuthRecoverAccountSeedphrase,
         EmbeddedPaths.AuthRecoverAccountKeyfile,
         EmbeddedPaths.AuthRecoverAccountQrCode,

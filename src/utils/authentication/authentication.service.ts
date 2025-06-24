@@ -192,6 +192,8 @@ async function verifyOtp(authParams: AuthVerifyOtpParams) {
     type: "email",
   });
 
+  console.log("verifyOtp", data, error);
+
   if (error) throw error;
 
   if (data.user.user_metadata.hasPassword) {

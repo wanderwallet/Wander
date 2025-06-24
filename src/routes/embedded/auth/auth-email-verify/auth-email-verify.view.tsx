@@ -84,35 +84,38 @@ export function AuthEmailVerifyEmbeddedView() {
 
   // Code verification:
 
-  const handleVerifyCode = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleVerifyCode = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
 
-    if (!email || isVerifying) return;
+      if (!email || isVerifying) return;
 
-    const otpCode = codeInputRef.current.getCode();
+      const otpCode = codeInputRef.current.getCode();
 
-    if (otpCode.length !== OTP_LENGTH) {
-      toast.error(`Please enter all ${OTP_LENGTH} digits of the verification code`);
-      return;
-    }
+      if (otpCode.length !== OTP_LENGTH) {
+        toast.error(`Please enter all ${OTP_LENGTH} digits of the verification code`);
+        return;
+      }
 
-    setIsVerifying(true);
+      setIsVerifying(true);
 
-    try {
-      await authenticate({
-        method: "verifyOtp",
-        email,
-        token: otpCode,
-      });
+      try {
+        await authenticate({
+          method: "verifyOtp",
+          email,
+          token: otpCode,
+        });
 
-      toast.success("Email verified successfully");
-    } catch (error) {
-      setIsVerifying(false);
-      toast.error(getFriendlyAuthErrorMessage(error, "Invalid or expired code"));
-    }
+        toast.success("Email verified successfully");
+      } catch (error) {
+        setIsVerifying(false);
+        toast.error(getFriendlyAuthErrorMessage(error, "Invalid or expired code"));
+      }
 
-    // We leave isVerifying = true intentionally as the user will simply be redirected after verifying the account.
-  };
+      // We leave isVerifying = true intentionally as the user will simply be redirected after verifying the account.
+    },
+    [email, isVerifying, authenticate],
+  );
 
   useEffect(() => {
     if (!email) {

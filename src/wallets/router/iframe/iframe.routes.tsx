@@ -27,11 +27,12 @@ import { AuthRestoreSharesQrCodeEmbeddedView } from "~routes/embedded/auth/resto
 
 // Account Recovery Views:
 import { AuthRecoverAccountEmbeddedView } from "~routes/embedded/auth/recover-account/auth-recover-account.view";
+import { AuthRecoverAccountOtpEmbeddedView } from "~routes/embedded/auth/recover-account/otp/auth-recover-account-otp.view";
 import { AuthRecoverAccountSeedphraseEmbeddedView } from "~routes/embedded/auth/recover-account/seedphrase/auth-recover-account-seedphrase.view";
 import { AuthRecoverAccountKeyfileEmbeddedView } from "~routes/embedded/auth/recover-account/keyfile/auth-recover-account-keyfile.view";
 import { AuthRecoverAccountQrCodeEmbeddedView } from "~routes/embedded/auth/recover-account/qrcode/auth-recover-account-qrcode.view";
 import { AuthRecoverAccountSelectEmbeddedView } from "~routes/embedded/auth/recover-account/select-account/auth-recover-account-select.view";
-import { AuthRecoverAccountConfirmEmbeddedView } from "~routes/embedded/auth/recover-account/auth-recover-confirm.view";
+import { AuthRecoverAccountConfirmEmbeddedView } from "~routes/embedded/auth/recover-account/confirm/auth-recover-confirm.view";
 
 // Account Management Views:
 import { AccountConfirmationEmbeddedView } from "~routes/embedded/account/confirmation/account-confirmation.view";
@@ -85,6 +86,7 @@ export type EmbeddedRoutePath =
   | "/auth/qrcode-scanner"
   // | "/auth/restore-shares/<backupProvider>"
   | "/auth/recover-account"
+  | "/auth/recover-account/otp"
   | "/auth/recover-account/seedphrase"
   | "/auth/recover-account/keyfile"
   | "/auth/recover-account/qrcode"
@@ -150,6 +152,7 @@ export const EmbeddedPaths = {
 
   // Account Recovery:
   AuthRecoverAccount: "/auth/recover-account",
+  AuthRecoverAccountOtp: "/auth/recover-account/otp",
   AuthRecoverAccountSeedphrase: "/auth/recover-account/seedphrase",
   AuthRecoverAccountKeyfile: "/auth/recover-account/keyfile",
   AuthRecoverAccountQrCode: "/auth/recover-account/qrcode",
@@ -269,6 +272,10 @@ const IFRAME_OWN_ROUTES = [
   {
     path: EmbeddedPaths.AuthRecoverAccount,
     component: AuthRecoverAccountEmbeddedView,
+  },
+  {
+    path: EmbeddedPaths.AuthRecoverAccountOtp,
+    component: AuthRecoverAccountOtpEmbeddedView,
   },
   {
     path: EmbeddedPaths.AuthRecoverAccountSeedphrase,

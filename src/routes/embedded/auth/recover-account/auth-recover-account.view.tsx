@@ -9,6 +9,8 @@ import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { getSupabaseClient } from "~utils/embedded/embedded.utils";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 import { useLocation, useSearchParams } from "~wallets/router/router.utils";
+import { StorageKeys } from "~utils/storage/storage.constants";
+import { PersistentStorage } from "~utils/storage";
 
 export function AuthRecoverAccountEmbeddedView() {
   const { navigate } = useLocation();
@@ -18,24 +20,21 @@ export function AuthRecoverAccountEmbeddedView() {
   // Input refs:
 
   const emailInputRef = useRef<HTMLInputElement>();
-  const otpInputRef = useRef<HTMLInputElement>();
 
   // Loading state:
 
   const [isAuthenticating, setIsAuthenticating] = useState(false);
-  const [isCheckingEmail, setIsCheckingEmail] = useState(false);
-
-  const areButtonsDisabled = isAuthenticating || isCheckingEmail;
-
-  const isViewLoading = areButtonsDisabled && !isCheckingEmail;
+  const areButtonsDisabled =
+    authStatus === "unknown" || authStatus === "loading" || authStatus === "authLoading" || isAuthenticating;
+  const isViewLoading = areButtonsDisabled && !isAuthenticating;
 
   // Handlers:
 
-  const handleCheckEmail = useCallback(async (e: React.FormEvent) => {
+  const signInWithOtp = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
-      setIsCheckingEmail(true);
+      setIsAuthenticating(true);
 
       const supabase = await getSupabaseClient();
 
@@ -46,14 +45,28 @@ export function AuthRecoverAccountEmbeddedView() {
         return;
       }
 
+      // TODO: Check if LAST_OTP_SIGN_IN?
+
       const { data, error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          // shouldCreateUser: false,
+          shouldCreateUser: false,
         },
       });
 
       console.log({ data, error });
+
+      if (error) {
+        console.log("signInWithOtp error", error);
+        toast.error("Error checking email");
+        return;
+      }
+
+      await PersistentStorage.setItem(StorageKeys.CONNECT.AUTH.LAST_OTP_SIGN_IN, Date.now());
+
+      navigate(EmbeddedPaths.AuthRecoverAccountOtp, {
+        search: { email },
+      });
 
       // TODO: What if email is not confirmed yet?
 
@@ -72,60 +85,14 @@ export function AuthRecoverAccountEmbeddedView() {
       });
       */
     } catch (error) {
-      console.log(error);
+      console.log("catch error", error);
       toast.error("Error checking email");
-    } finally {
-      setIsCheckingEmail(false);
-    }
-  }, []);
-
-  const authStatusRef = useRef(authStatus);
-
-  useEffect(() => {
-    authStatusRef.current = authStatus;
-  }, [authStatus]);
-
-  const handleSignIn = useCallback(async () => {
-    const otpCode = otpInputRef.current.value;
-
-    if (!email || !otpCode) return;
-
-    setIsAuthenticating(true);
-
-    try {
-      const supabase = await getSupabaseClient();
-
-      const { error } = await supabase.auth.verifyOtp({
-        email,
-        token: otpCode,
-        type: "email",
-      });
-
-      if (error) {
-        toast.error(error.message || "Invalid verification code");
-        return;
-      }
-
-      toast.success("Email verified successfully");
-      await new Promise((resolve) => {
-        const interval = setInterval(() => {
-          if (authStatusRef.current === "noWallets") {
-            resolve(null);
-            clearInterval(interval);
-          }
-        }, 100);
-      });
-      navigate(EmbeddedPaths.WalletHomeEmbeddedView);
-    } catch (error) {
-      toast.error("Error verifying email");
     } finally {
       setIsAuthenticating(false);
     }
   }, []);
 
-  const emailInputButton = <InputButton type="submit" label="Next" loading={isCheckingEmail} />;
-
-  const otpInputButton = <InputButton type="submit" label="Next" loading={isCheckingEmail} onClick={handleSignIn} />;
+  const emailInputButton = <InputButton type="submit" label="Next" loading={isAuthenticating} />;
 
   return (
     <OnboardingCard
@@ -133,7 +100,8 @@ export function AuthRecoverAccountEmbeddedView() {
       headerText="Recover your account"
       subtitle="Select a method for logging in on new devices and recovering your account."
       onBackButtonClick={() => navigate(`/auth`)}
-      onSubmit={handleCheckEmail}>
+      isLoading={isViewLoading}
+      onSubmit={signInWithOtp}>
       <TextInput
         name="email"
         placeholder="Enter your email"
@@ -141,14 +109,6 @@ export function AuthRecoverAccountEmbeddedView() {
         inputRef={emailInputRef}
         disabled={areButtonsDisabled}
         endSlot={emailInputButton}
-      />
-
-      <TextInput
-        name="otp"
-        placeholder="Email code"
-        inputRef={otpInputRef}
-        disabled={areButtonsDisabled}
-        endSlot={otpInputButton}
       />
 
       <Divider text={"OR"} />
