@@ -22,6 +22,7 @@ import { WandAnnouncementPopup } from "~components/popup/home/WandAnnouncementPo
 import { ActivityNotificationsNotice } from "~components/popup/home/ActivityNotificationsNotice";
 import { isStargridAnnouncementActive } from "~utils/announcements";
 import { StargridAccessAnnouncementPopup } from "~components/popup/home/StargridAccessAnnouncementPopup";
+import ArNSBanner from "~components/popup/home/ArNSBanner";
 
 export function HomeView() {
   const theme = useTheme();
@@ -34,6 +35,11 @@ export function HomeView() {
 
   const [announcement, _] = useStorage<boolean>({
     key: "show_announcement",
+    instance: ExtensionStorage,
+  });
+
+  const [activeAddress] = useStorage<string>({
+    key: "active_address",
     instance: ExtensionStorage,
   });
 
@@ -127,6 +133,7 @@ export function HomeView() {
           <KeystoneAnnouncementPopup isOpen={isOpen} setOpen={setOpen} />
           <StargridAccessAnnouncementPopup isOpen={isStargridAnnouncementOpen} setOpen={setStargridAnnouncementOpen} />
           <WandAnnouncementPopup isOpen={isWandAnnouncementOpen} setOpen={setWandAnnouncementOpen} />
+          <ArNSBanner activeAddress={activeAddress} />
         </>
       )}
       <WalletHeader />

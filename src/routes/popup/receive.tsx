@@ -59,9 +59,20 @@ export function ReceiveView({ walletName, walletAddress }: ReceiveViewProps) {
             justifyContent: "center",
             flex: 1,
           }}>
-          <Text size="lg" weight="semibold" noMargin>
-            {effectiveWalletName}
-          </Text>
+          <div>
+            <Text size="lg" weight="semibold" noMargin>
+              {effectiveWalletName}
+            </Text>
+            <button
+              style={{
+                color: "rgba(151, 135, 255, 1)",
+                cursor: "pointer",
+                paddingTop: ".5rem",
+                margin: 0,
+              }}>
+              Get your ArNS Name
+            </button>
+          </div>
           <QRCodeWrapper>
             <QRCodeSVG fgColor="#fff" bgColor="transparent" size={176} value={effectiveAddress ?? ""} />
           </QRCodeWrapper>

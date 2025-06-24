@@ -1,4 +1,5 @@
 import { Button, Input, ListItem, Section, Text, Tooltip, useInput, useToasts } from "@arconnect/components-rebrand";
+import ArioIcon from "url:/assets/ecosystem/ario.svg";
 import { CopyIcon } from "@iconicicons/react";
 import { removeWallet, type StoredWallet } from "~wallets";
 import { useEffect, useMemo, useState } from "react";
@@ -198,6 +199,16 @@ export function WalletView({ params: { address } }: WalletViewProps) {
             labelAs={WalletAddress}
             text={wallet.address}
             iconSize={24}
+          />
+
+          <ListItem
+            // title={browser.i18n.getMessage("generate_qr_code")}
+            title={"Get ArNS"}
+            titleStyle={{ fontSize: 18, fontWeight: 500 }}
+            icon={<img src={ArioIcon} width="24" height="24" />}
+            hideSquircle
+            showArrow
+            // onClick={() => navigate(`/quick-settings/wallets/${address}/qr`)}
           />
           <HorizontalLine />
           {!isSeedphraseBackedUp && <BackupSeedphraseWarning />}
