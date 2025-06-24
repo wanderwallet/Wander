@@ -531,8 +531,8 @@ async function processAgentSwap(agent: AOYieldAgent, walletAddress: string): Pro
       // Schedule alarm to check if the swap was successful
       await browser.alarms.clear(AO_YIELD_AGENT_RECENT_TXS_CHECK_ALARM_NAME);
       browser.alarms.create(AO_YIELD_AGENT_RECENT_TXS_CHECK_ALARM_NAME, {
-        when: Date.now() + 60_000, // 1 minute
-        periodInMinutes: 2, // 2 minutes
+        delayInMinutes: 1,
+        periodInMinutes: 2,
       });
     }
 
