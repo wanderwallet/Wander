@@ -4,13 +4,12 @@ import { Text, Button } from "~components/embed";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getSupabaseClient } from "~utils/embedded/embedded.utils";
 import { useLocation } from "~wallets/router/router.utils";
-import PasswordMatch from "~components/welcome/PasswordMatch";
 import PasswordStrength from "~components/welcome/PasswordStrength";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 import { PasswordInput } from "~components/embed/ui/atoms/password-input";
 import { useThrottledCallback } from "@swyg/corre";
 import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
-import { getFriendlyAuthErrorMessage } from "~utils/authentication/authentication.utils";
+import { getFriendlyAuthErrorMessage, MIN_SUPABASE_PASSWORD_LENGTH } from "~utils/authentication/authentication.utils";
 import { StorageKeys } from "~utils/storage/storage.constants";
 import browser from "~iframe/browser";
 import {
@@ -93,6 +92,8 @@ export function AccountChangePasswordEmbeddedView() {
     passwordsMatch: false,
   });
 
+  const isPasswordValid = passwordsMatch && password.length >= MIN_SUPABASE_PASSWORD_LENGTH;
+
   const handlePasswordChange = useThrottledCallback(() => {
     const password = passwordInputRef.current.value;
     const repeatPassword = repeatPasswordInputRef.current.value;
@@ -123,7 +124,12 @@ export function AccountChangePasswordEmbeddedView() {
         const repeatPassword = repeatPasswordInputRef.current.value || "";
 
         if (password !== repeatPassword) {
-          toast.error("Passwords do not match");
+          toast.error(browser.i18n.getMessage("passwords_not_match"));
+          return;
+        }
+
+        if (password.length < MIN_SUPABASE_PASSWORD_LENGTH) {
+          toast.error(`Password must be at least ${MIN_SUPABASE_PASSWORD_LENGTH} characters`);
           return;
         }
       } else if (otpCodeInput) {
@@ -139,8 +145,6 @@ export function AccountChangePasswordEmbeddedView() {
       } else {
         return;
       }
-
-      // TODO: Missing password validation, also in sign up. It should be 6 characters long, not 5.
 
       setIsUpdatingPassword(true);
 
@@ -271,11 +275,9 @@ export function AccountChangePasswordEmbeddedView() {
         onChange={handlePasswordChange}
       />
 
-      <PasswordMatch matches={passwordsMatch} />
+      <PasswordStrength password={password} passwordsMatch={passwordsMatch} minLength={MIN_SUPABASE_PASSWORD_LENGTH} />
 
-      <PasswordStrength password={password} />
-
-      <Button type="submit" isFullWidth isDisabled={isViewLoading}>
+      <Button type="submit" isFullWidth isDisabled={isViewLoading || !isPasswordValid}>
         {browser.i18n.getMessage("continue")}
       </Button>
     </OnboardingCard>

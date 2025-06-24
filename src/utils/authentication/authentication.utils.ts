@@ -5,6 +5,8 @@ import type {
   SupabaseProvider,
 } from "~utils/authentication/authentication.types";
 
+export const MIN_SUPABASE_PASSWORD_LENGTH = 6 as const;
+
 export enum OAuthError {
   MISSING_URL = "MISSING_URL",
   OAUTH_TIMEOUT = "OAUTH_TIMEOUT",

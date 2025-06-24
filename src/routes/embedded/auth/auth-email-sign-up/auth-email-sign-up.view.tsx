@@ -1,10 +1,9 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { toast } from "react-toastify";
 import { Button, TextInput } from "~components/embed";
-import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { getSupabaseClient } from "~utils/embedded/embedded.utils";
 import { useLocation, useSearchParams } from "~wallets/router/router.utils";
-import PasswordMatch from "~components/welcome/PasswordMatch";
 import PasswordStrength from "~components/welcome/PasswordStrength";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 import { PasswordInput } from "~components/embed/ui/atoms/password-input";
@@ -13,8 +12,9 @@ import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-c
 import { PersistentStorage } from "~utils/storage";
 import { InputButton } from "~components/embed/ui/atoms/input-button/InputButton";
 import { EditIcon } from "@iconicicons/react";
-import { getFriendlyAuthErrorMessage } from "~utils/authentication/authentication.utils";
+import { getFriendlyAuthErrorMessage, MIN_SUPABASE_PASSWORD_LENGTH } from "~utils/authentication/authentication.utils";
 import { StorageKeys } from "~utils/storage/storage.constants";
+import browser from "~iframe/browser";
 
 export function AuthEmailSignUpEmbeddedView() {
   const { navigate } = useLocation();
@@ -41,6 +41,8 @@ export function AuthEmailSignUpEmbeddedView() {
     password: "",
     passwordsMatch: false,
   });
+
+  const isPasswordValid = passwordsMatch && password.length >= MIN_SUPABASE_PASSWORD_LENGTH;
 
   const handlePasswordChange = useThrottledCallback(() => {
     const password = passwordInputRef.current.value;
@@ -70,7 +72,12 @@ export function AuthEmailSignUpEmbeddedView() {
         }
 
         if (password !== repeatPassword) {
-          toast.error("Passwords do not match");
+          toast.error(browser.i18n.getMessage("passwords_not_match"));
+          return;
+        }
+
+        if (password.length < MIN_SUPABASE_PASSWORD_LENGTH) {
+          toast.error(`Password must be at least ${MIN_SUPABASE_PASSWORD_LENGTH} characters`);
           return;
         }
 
@@ -160,11 +167,9 @@ export function AuthEmailSignUpEmbeddedView() {
         onChange={handlePasswordChange}
       />
 
-      <PasswordMatch matches={passwordsMatch} />
+      <PasswordStrength password={password} passwordsMatch={passwordsMatch} minLength={MIN_SUPABASE_PASSWORD_LENGTH} />
 
-      <PasswordStrength password={password} />
-
-      <Button type="submit" isFullWidth isDisabled={areButtonsDisabled}>
+      <Button type="submit" isFullWidth isDisabled={areButtonsDisabled || !isPasswordValid}>
         Sign up
       </Button>
     </OnboardingCard>
