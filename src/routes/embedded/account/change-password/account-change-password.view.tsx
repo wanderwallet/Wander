@@ -62,9 +62,7 @@ export function AccountChangePasswordEmbeddedView() {
         setIsResending(true);
         const supabase = await getSupabaseClient();
 
-        const { data, error } = await supabase.auth.reauthenticate();
-
-        console.log(data, error);
+        const { error } = await supabase.auth.reauthenticate();
 
         if (error) {
           toast.error(getFriendlyAuthErrorMessage(error, error.message));
@@ -158,7 +156,7 @@ export function AccountChangePasswordEmbeddedView() {
         // again, but now it will include `nonce`.
         // See https://supabase.com/docs/reference/javascript/auth-reauthentication.
 
-        const { data, error } = await supabase.auth.updateUser({
+        const { error } = await supabase.auth.updateUser({
           password,
           nonce,
           data: user_metadata.hasPassword

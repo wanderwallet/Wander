@@ -11,6 +11,7 @@ import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 import { useLocation, useSearchParams } from "~wallets/router/router.utils";
 import { StorageKeys } from "~utils/storage/storage.constants";
 import { PersistentStorage } from "~utils/storage";
+import { getFriendlyAuthErrorMessage } from "~utils/authentication/authentication.utils";
 
 export function AuthRecoverAccountEmbeddedView() {
   const { navigate } = useLocation();
@@ -47,18 +48,15 @@ export function AuthRecoverAccountEmbeddedView() {
 
       // TODO: Check if LAST_OTP_SIGN_IN?
 
-      const { data, error } = await supabase.auth.signInWithOtp({
+      const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
           shouldCreateUser: false,
         },
       });
 
-      console.log({ data, error });
-
       if (error) {
-        console.log("signInWithOtp error", error);
-        toast.error("Error checking email");
+        toast.error(getFriendlyAuthErrorMessage(error, "Error trying to recover account"));
         return;
       }
 
@@ -68,25 +66,10 @@ export function AuthRecoverAccountEmbeddedView() {
         search: { email },
       });
 
-      // TODO: What if email is not confirmed yet?
-
-      /*
-      const { data: isAlreadyRegistered, error } = await supabase.rpc("user_exists_by_email", {
-        p_email: email,
-      });
-
-      if (error) {
-        toast.error(error.message || "Error checking email");
-        return;
-      }
-
-      navigate(isAlreadyRegistered ? EmbeddedPaths.AuthEmailSignin : EmbeddedPaths.AuthEmailSignup, {
-        search: { email },
-      });
-      */
+      // Note we don't need to check if the email is verified or not. Once the user signs in using the OTP code, their
+      // email is verified if it wasn't already and the router redirects them to the right page (add wallet, backup reminder...).
     } catch (error) {
-      console.log("catch error", error);
-      toast.error("Error checking email");
+      toast.error(getFriendlyAuthErrorMessage(error, "Error trying to recover account"));
     } finally {
       setIsAuthenticating(false);
     }

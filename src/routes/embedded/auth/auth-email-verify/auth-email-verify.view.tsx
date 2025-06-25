@@ -73,6 +73,8 @@ export function AuthEmailVerifyEmbeddedView() {
   );
 
   useEffect(() => {
+    // TODO: For new accounts, this is still called when it should not.
+
     try {
       resendEmail(false);
     } catch (err) {

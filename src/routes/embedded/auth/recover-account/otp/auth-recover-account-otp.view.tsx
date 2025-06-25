@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { toast } from "react-toastify";
 import { Button, Text, RecoverHeaderIcon } from "~components/embed/ui";
 import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
@@ -53,28 +53,24 @@ export function AuthRecoverAccountOtpEmbeddedView() {
 
         const supabase = await getSupabaseClient();
 
-        const { data, error } = await supabase.auth.signInWithOtp({
+        const { error } = await supabase.auth.signInWithOtp({
           email,
           options: {
             shouldCreateUser: false,
           },
         });
 
-        console.log({ data, error });
-
         if (error) {
-          console.log("signInWithOtp error", error);
-          toast.error("Error checking email");
+          toast.error(getFriendlyAuthErrorMessage(error, "Error sending account recovery email"));
           return;
         }
 
-        toast.error(getFriendlyAuthErrorMessage(error, "Error sending account recovery email"));
+        toast.success("Account recovery email resent successfully");
 
-        // TODO: What if email is not confirmed yet?
+        // Note we don't need to check if the email is verified or not. Once the user signs in using the OTP code, their
+        // email is verified if it wasn't already and the router redirects them to the right page (add wallet, backup reminder...).
       } catch (error) {
-        console.log("catch error", error);
-        toast.error("Error checking email");
-        // toast.success("Password confirmation email resent successfully");
+        toast.error(getFriendlyAuthErrorMessage(error, "Error sending account recovery email"));
       } finally {
         setIsReAuthenticating(false);
       }
@@ -87,39 +83,39 @@ export function AuthRecoverAccountOtpEmbeddedView() {
 
   // Handlers:
 
-  const handleVerifyOtp = useCallback(async () => {
-    if (!email || isVerifyingOtp) return;
+  const handleVerifyOtp = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
 
-    const otpCode = codeInputRef.current.getCode();
+      if (!email || isVerifyingOtp) return;
 
-    if (otpCode.length !== OTP_LENGTH) {
-      toast.error(`Please enter all ${OTP_LENGTH} digits of the verification code`);
-      return;
-    }
+      const otpCode = codeInputRef.current.getCode();
 
-    setIsVerifyingOtp(true);
+      if (otpCode.length !== OTP_LENGTH) {
+        toast.error(`Please enter all ${OTP_LENGTH} digits of the verification code`);
+        return;
+      }
 
-    console.log("AUTHENTICATE WITH CODE =", otpCode);
+      setIsVerifyingOtp(true);
 
-    try {
-      await authenticate({
-        method: "verifyOtp",
-        email,
-        token: otpCode,
-      });
+      try {
+        await authenticate({
+          method: "verifyOtp",
+          email,
+          token: otpCode,
+        });
 
-      toast.success("Email verified successfully");
-    } catch (error) {
-      setIsVerifyingOtp(false);
-      toast.error(getFriendlyAuthErrorMessage(error, "Invalid or expired code"));
-    }
+        toast.success("Email verified successfully");
+      } catch (error) {
+        setIsVerifyingOtp(false);
+        toast.error(getFriendlyAuthErrorMessage(error, "Invalid or expired code"));
+      }
 
-    // We leave isVerifying = true intentionally as the user will simply be redirected after verifying the account.
-  }, [email, isVerifyingOtp, authenticate]);
+      // We leave isVerifying = true intentionally as the user will simply be redirected after verifying the account.
+    },
+    [email, isVerifyingOtp, authenticate],
+  );
 
-  console.log("email =", email);
-
-  /*
   useEffect(() => {
     if (!email) {
       if (process.env.NODE_ENV === "development") {
@@ -129,7 +125,6 @@ export function AuthRecoverAccountOtpEmbeddedView() {
       }
     }
   }, [email]);
-  */
 
   return (
     <OnboardingCard

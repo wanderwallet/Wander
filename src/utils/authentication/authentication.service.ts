@@ -164,7 +164,7 @@ async function authenticateWithOAuth(oAuthProviderType: OAutProviderType): Promi
 async function signInWithPassword(authParams: AuthSignInWithPasswordParams) {
   const supabase = await getSupabaseClient();
 
-  const { error, data } = await supabase.auth.signInWithPassword({
+  const { data, error } = await supabase.auth.signInWithPassword({
     email: authParams.email,
     password: authParams.password,
   });
@@ -186,13 +186,11 @@ async function signInWithPassword(authParams: AuthSignInWithPasswordParams) {
 async function verifyOtp(authParams: AuthVerifyOtpParams) {
   const supabase = await getSupabaseClient();
 
-  const { error, data } = await supabase.auth.verifyOtp({
+  const { data, error } = await supabase.auth.verifyOtp({
     email: authParams.email,
     token: authParams.token,
     type: "email",
   });
-
-  console.log("verifyOtp", data, error);
 
   if (error) throw error;
 
