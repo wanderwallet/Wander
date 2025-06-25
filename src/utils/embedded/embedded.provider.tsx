@@ -79,6 +79,7 @@ const EMBEDDED_CONTEXT_INITIAL_STATE = {
   recoverableAccounts: null,
   recoverableAccount: null,
   recoverableAccountWallets: null,
+  requestPasswordChange: false,
 } as const satisfies EmbeddedContextState;
 
 const EMBEDDED_CONTEXT_INITIAL_AUTH = {
@@ -103,6 +104,7 @@ export const EmbeddedContext = createContext<EmbeddedContextData>({
   fetchRecoverableAccountWallets: async () => null,
   recoverAccount: async () => null,
   recoverWallet: async () => null,
+  setRequestPasswordChange: () => null,
 
   generateTempWallet: async () => null,
   deleteGeneratedTempWallet: async () => null,
@@ -505,7 +507,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     // TODO: We could consider calling `initEmbeddedWallet` again instead, which will make sure the wallet has been
     // properly added to the backend as well.
 
-    setEmbeddedContextState(({ wallets: prevWallets }) => {
+    setEmbeddedContextState(({ wallets: prevWallets, requestPasswordChange }) => {
       const wallets = [...prevWallets];
       const walletIDs = wallets.map((wallet) => wallet.id);
 
@@ -514,14 +516,11 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       }
 
       return {
+        ...EMBEDDED_CONTEXT_INITIAL_STATE,
         currentWalletId: wallet.id,
         wallets,
-        generatedTempWalletAddress: null,
-        importedTempWalletAddress: null,
         lastRegisteredWallet: isNewWallet ? wallet : null,
-        recoverableAccounts: null,
-        recoverableAccount: null,
-        recoverableAccountWallets: null,
+        requestPasswordChange,
       } satisfies EmbeddedContextState;
     });
 
@@ -974,6 +973,13 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     [session, userId, wallets],
   );
 
+  const setRequestPasswordChange = useCallback((requestPasswordChange: boolean) => {
+    setEmbeddedContextState((prevAuthContextState) => ({
+      ...prevAuthContextState,
+      requestPasswordChange,
+    }));
+  }, []);
+
   // AUTHENTICATION:
 
   /*
@@ -1097,6 +1103,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       recoverableAccounts: prevAuthContextState.recoverableAccounts,
       recoverableAccount: prevAuthContextState.recoverableAccount,
       recoverableAccountWallets: prevAuthContextState.recoverableAccountWallets,
+      requestPasswordChange: prevAuthContextState.requestPasswordChange,
     }));
 
     if (!userId || !session) {
@@ -1309,6 +1316,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
           recoverableAccounts: prevAuthContextState.recoverableAccounts,
           recoverableAccount: prevAuthContextState.recoverableAccount,
           recoverableAccountWallets: prevAuthContextState.recoverableAccountWallets,
+          requestPasswordChange: prevAuthContextState.requestPasswordChange,
         }));
 
         setEmbeddedContextAuth({
@@ -1354,6 +1362,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         setRecoverableAccountWallets,
         recoverAccount,
         recoverWallet,
+        setRequestPasswordChange,
 
         generateTempWallet,
         deleteGeneratedTempWallet,

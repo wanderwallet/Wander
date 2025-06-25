@@ -2,7 +2,7 @@ import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { toast } from "react-toastify";
 import { Text, Button } from "~components/embed";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { getSupabaseClient } from "~utils/embedded/embedded.utils";
+import { getSupabaseClient, signOut } from "~utils/embedded/embedded.utils";
 import { useLocation } from "~wallets/router/router.utils";
 import PasswordStrength from "~components/welcome/PasswordStrength";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
@@ -23,7 +23,7 @@ import { Flex } from "~components/common/Flex";
 
 export function AccountChangePasswordEmbeddedView() {
   const { navigate } = useLocation();
-  const { authStatus, user } = useEmbedded();
+  const { authStatus, user, requestPasswordChange, setRequestPasswordChange } = useEmbedded();
   const { email, user_metadata } = user;
 
   // Input refs:
@@ -189,15 +189,21 @@ export function AccountChangePasswordEmbeddedView() {
 
         toast.success("Password updated successfully");
 
-        navigate(EmbeddedPaths.WalletHomeEmbeddedView);
+        if (requestPasswordChange) {
+          setRequestPasswordChange(false);
+        } else {
+          navigate(EmbeddedPaths.WalletHomeEmbeddedView);
+        }
       } catch (error) {
         toast.error(getFriendlyAuthErrorMessage(error, "Error updating password"));
       } finally {
         setIsUpdatingPassword(false);
       }
     },
-    [isUpdatingPassword, confirmedPassword, user_metadata],
+    [isUpdatingPassword, confirmedPassword, user_metadata, requestPasswordChange, setRequestPasswordChange],
   );
+
+  // Routing:
 
   useEffect(() => {
     if (!email) {
@@ -213,7 +219,9 @@ export function AccountChangePasswordEmbeddedView() {
     <OnboardingCard
       headerText="Confirm your password"
       subtitle={`We've sent an email to ${email}`}
-      onBackButtonClick={() => navigate(EmbeddedPaths.WalletHomeEmbeddedView)}
+      onBackButtonClick={() =>
+        requestPasswordChange ? signOut(false) : navigate(EmbeddedPaths.WalletHomeEmbeddedView)
+      }
       isLoading={isViewLoading}
       onSubmit={handleUpdatePassword}>
       <Text variant={"bodySm"} alignment={"center"} style={{ color: "var(--text-color-secondary, #666666)" }}>
@@ -254,7 +262,9 @@ export function AccountChangePasswordEmbeddedView() {
     <OnboardingCard
       headerText="Change your password"
       subtitle="Enter your new password."
-      onBackButtonClick={() => navigate(EmbeddedPaths.WalletHomeEmbeddedView)}
+      onBackButtonClick={() =>
+        requestPasswordChange ? signOut(false) : navigate(EmbeddedPaths.WalletHomeEmbeddedView)
+      }
       isLoading={areButtonsDisabled}
       onSubmit={handleUpdatePassword}>
       <PasswordInput

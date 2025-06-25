@@ -21,7 +21,7 @@ import { StorageKeys } from "~utils/storage/storage.constants";
 export function AuthRecoverAccountOtpEmbeddedView() {
   const { navigate } = useLocation();
   const { email } = useSearchParams<{ email: string }>();
-  const { authStatus, authenticate } = useEmbedded();
+  const { authStatus, authenticate, setRequestPasswordChange } = useEmbedded();
 
   // Loading state:
 
@@ -107,7 +107,9 @@ export function AuthRecoverAccountOtpEmbeddedView() {
           token: otpCode,
         });
 
-        toast.success("Email verified successfully");
+        toast.success("Account recovered successfully");
+
+        setRequestPasswordChange(true);
       } catch (error) {
         setIsVerifyingOtp(false);
         toast.error(getFriendlyAuthErrorMessage(error, "Invalid or expired code"));
