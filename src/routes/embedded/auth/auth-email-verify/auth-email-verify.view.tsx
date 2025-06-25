@@ -67,7 +67,7 @@ export function AuthEmailVerifyEmbeddedView() {
       }
     },
     {
-      key: StorageKeys.CONNECT.AUTH.LAST_EMAIL_VERIFICATION,
+      key: StorageKeys.CONNECT.AUTH.LAST_OTP_EMAIL,
       cooldownDuration: OPT_COOLDOWN_DURATION_SEC,
     },
   );
@@ -76,7 +76,7 @@ export function AuthEmailVerifyEmbeddedView() {
     try {
       resendEmail(false);
     } catch (err) {
-      // When coming from `AuthEmailSignUpEmbeddedView` for the first time, `LAST_EMAIL_VERIFICATION` would already be set
+      // When coming from `AuthEmailSignUpEmbeddedView` for the first time, `LAST_OTP_EMAIL` would already be set
       // in `localStorage`, so this call will throw an error. If the user doesn't confirm the email now and comes back
       // later, then if the required time has passed, a new code will be requested automatically.
     }

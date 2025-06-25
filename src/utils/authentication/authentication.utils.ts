@@ -33,6 +33,7 @@ const AUTH_ERRORS_BY_CODE: Record<string | OAuthError, string> = {
   unknown_error:
     "An unexpected error occurred during authentication. Please try again or contact support if the issue persists.",
   unexpected_failure: "We could not get your email. Please, try a different authentication method.",
+  over_email_send_rate_limit: "Wait 60 seconds before requesting a new code.",
   // unexpected_failure description = Error+getting+user+email+from+external+provider
   [OAuthError.MISSING_URL]: "Authentication error. Please, try again.",
   [OAuthError.OAUTH_TIMEOUT]: "Authentication timeout. Please, try again.",

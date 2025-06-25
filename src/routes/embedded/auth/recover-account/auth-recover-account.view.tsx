@@ -49,7 +49,7 @@ export function AuthRecoverAccountEmbeddedView() {
       }
 
       const shouldCallSignInWithOtp = await hasCooldownPassed({
-        key: StorageKeys.CONNECT.AUTH.LAST_OTP_SIGN_IN,
+        key: StorageKeys.CONNECT.AUTH.LAST_OTP_EMAIL,
         cooldownDuration: OPT_COOLDOWN_DURATION_SEC,
       });
 
@@ -61,12 +61,14 @@ export function AuthRecoverAccountEmbeddedView() {
           },
         });
 
-        if (error) {
+        if (error && error.code !== "over_email_send_rate_limit") {
           toast.error(getFriendlyAuthErrorMessage(error, "Error trying to recover account"));
           return;
         }
 
-        await PersistentStorage.setItem(StorageKeys.CONNECT.AUTH.LAST_OTP_SIGN_IN, Date.now());
+        if (!error) {
+          await PersistentStorage.setItem(StorageKeys.CONNECT.AUTH.LAST_OTP_EMAIL, Date.now());
+        }
       }
 
       navigate(EmbeddedPaths.AuthRecoverAccountOtp, {

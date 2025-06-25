@@ -49,6 +49,8 @@ export function AuthRecoverAccountOtpEmbeddedView() {
   const { fn: signInWithOtp, cooldownSeconds } = useCooldownCallback(
     async () => {
       try {
+        if (codeInputRef.current) codeInputRef.current.clear();
+
         setIsReAuthenticating(true);
 
         const supabase = await getSupabaseClient();
@@ -76,7 +78,7 @@ export function AuthRecoverAccountOtpEmbeddedView() {
       }
     },
     {
-      key: StorageKeys.CONNECT.AUTH.LAST_OTP_SIGN_IN,
+      key: StorageKeys.CONNECT.AUTH.LAST_OTP_EMAIL,
       cooldownDuration: OPT_COOLDOWN_DURATION_SEC,
     },
   );

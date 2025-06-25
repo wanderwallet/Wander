@@ -77,7 +77,7 @@ export function AccountChangePasswordEmbeddedView() {
       }
     },
     {
-      key: StorageKeys.CONNECT.AUTH.LAST_PASSWORD_CHANGE,
+      key: StorageKeys.CONNECT.AUTH.LAST_OTP_EMAIL,
       cooldownDuration: OPT_COOLDOWN_DURATION_SEC,
     },
   );

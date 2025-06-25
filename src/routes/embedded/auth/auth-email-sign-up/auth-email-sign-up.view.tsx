@@ -91,7 +91,7 @@ export function AuthEmailSignUpEmbeddedView() {
           return;
         }
 
-        await PersistentStorage.setItem(StorageKeys.CONNECT.AUTH.LAST_EMAIL_VERIFICATION, Date.now());
+        await PersistentStorage.setItem(StorageKeys.CONNECT.AUTH.LAST_OTP_EMAIL, Date.now());
 
         navigate(EmbeddedPaths.AuthEmailVerify, {
           search: { email },
