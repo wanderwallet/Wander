@@ -12,6 +12,8 @@ import { useLocation, useSearchParams } from "~wallets/router/router.utils";
 import { StorageKeys } from "~utils/storage/storage.constants";
 import { PersistentStorage } from "~utils/storage";
 import { getFriendlyAuthErrorMessage } from "~utils/authentication/authentication.utils";
+import { hasCooldownPassed } from "~utils/react/useCooldownCallback";
+import { OPT_COOLDOWN_DURATION_SEC } from "~components/embed/ui/atoms/code-input/CodeInput";
 
 export function AuthRecoverAccountEmbeddedView() {
   const { navigate } = useLocation();
@@ -46,21 +48,26 @@ export function AuthRecoverAccountEmbeddedView() {
         return;
       }
 
-      // TODO: Check if LAST_OTP_SIGN_IN?
-
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          shouldCreateUser: false,
-        },
+      const shouldCallSignInWithOtp = await hasCooldownPassed({
+        key: StorageKeys.CONNECT.AUTH.LAST_OTP_SIGN_IN,
+        cooldownDuration: OPT_COOLDOWN_DURATION_SEC,
       });
 
-      if (error) {
-        toast.error(getFriendlyAuthErrorMessage(error, "Error trying to recover account"));
-        return;
-      }
+      if (shouldCallSignInWithOtp) {
+        const { error } = await supabase.auth.signInWithOtp({
+          email,
+          options: {
+            shouldCreateUser: false,
+          },
+        });
 
-      await PersistentStorage.setItem(StorageKeys.CONNECT.AUTH.LAST_OTP_SIGN_IN, Date.now());
+        if (error) {
+          toast.error(getFriendlyAuthErrorMessage(error, "Error trying to recover account"));
+          return;
+        }
+
+        await PersistentStorage.setItem(StorageKeys.CONNECT.AUTH.LAST_OTP_SIGN_IN, Date.now());
+      }
 
       navigate(EmbeddedPaths.AuthRecoverAccountOtp, {
         search: { email },
