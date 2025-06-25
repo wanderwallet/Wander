@@ -84,6 +84,11 @@ export function AuthEmailSignUpEmbeddedView() {
         const { error } = await supabase.auth.signUp({
           email,
           password,
+          options: {
+            data: {
+              hasPassword: true,
+            },
+          },
         });
 
         if (error) {

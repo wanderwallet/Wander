@@ -171,7 +171,7 @@ async function signInWithPassword(authParams: AuthSignInWithPasswordParams) {
 
   if (error) throw error;
 
-  if (data.user.user_metadata.hasPassword) {
+  if (!data.user.user_metadata.hasPassword) {
     // No need to handle error, we can re-attempt this lazily on the next sign in:
     await supabase.auth.updateUser({
       data: {
@@ -194,7 +194,7 @@ async function verifyOtp(authParams: AuthVerifyOtpParams) {
 
   if (error) throw error;
 
-  if (data.user.user_metadata.hasPassword) {
+  if (!data.user.user_metadata.hasPassword) {
     // No need to handle error, we can re-attempt this lazily on the next sign in:
     await supabase.auth.updateUser({
       data: {
