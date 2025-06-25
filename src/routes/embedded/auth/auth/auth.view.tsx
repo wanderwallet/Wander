@@ -1,6 +1,16 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { toast } from "react-toastify";
-import { Button, Divider, GoogleIcon, TextInput, Row, SocialsIcon, Text, Wander2Icon } from "~components/embed";
+import {
+  Button,
+  Divider,
+  GoogleIcon,
+  TextInput,
+  Row,
+  SocialsIcon,
+  Text,
+  Wander2Icon,
+  RecoverHeaderIcon,
+} from "~components/embed";
 import React, { useCallback, useRef, useState } from "react";
 import { getSupabaseClient } from "~utils/embedded/embedded.utils";
 import { useLocation, useSearchParams } from "~wallets/router/router.utils";
@@ -109,6 +119,7 @@ export function AuthEmbeddedView() {
 
   return (
     <OnboardingCard
+      headerIcon={recoverableAccount ? <RecoverHeaderIcon /> : null}
       headerText={recoverableAccount ? "Select new sign in method" : "Sign up or Sign in"}
       hasBackButton={false}
       isLoading={isViewLoading}
