@@ -14,6 +14,7 @@ interface SliderMenuProps {
   paddingVertical?: number;
   children?: React.ReactNode;
   height?: number | string;
+  fullscreen?: boolean;
 }
 
 export default function SliderMenu({
@@ -25,6 +26,7 @@ export default function SliderMenu({
   paddingVertical,
   height,
   children,
+  fullscreen = false,
 }: SliderMenuProps) {
   const wrapperElementRef = useRef<HTMLDivElement | null>(null);
 
@@ -43,6 +45,7 @@ export default function SliderMenu({
       />
 
       <Wrapper
+        fullscreen={fullscreen}
         height={height}
         hasHeader={hasHeader && !!title}
         paddingHorizontal={paddingHorizontal}
@@ -103,19 +106,20 @@ const Wrapper = styled(motion.div)<{
   paddingVertical?: number;
   hasHeader?: boolean;
   height?: number | string;
+  fullscreen?: boolean;
 }>`
   position: fixed;
   bottom: 0;
   left: 0;
-  height: ${({ height }) => height || "auto"};
-  max-height: calc(100% - 66px);
+  height: ${({ height, fullscreen }) => (fullscreen ? "100vh" : height || "auto")};
+  max-height: ${({ fullscreen }) => (fullscreen ? "100%" : "calc(100% - 66px)")};
   display: flex;
   flex-direction: column;
   width: 100%;
   z-index: 1000;
   overflow: scroll;
   background-color: ${({ theme }) => (theme.displayTheme === "light" ? "#ffffff" : "#1B1B1B")};
-  border-radius: 24px 24px 0px 0px;
+  border-radius: ${({ fullscreen }) => (fullscreen ? "0px" : "24px 24px 0px 0px")};
   padding: ${({ paddingVertical = 24, paddingHorizontal = 24 }) => `${paddingVertical}px ${paddingHorizontal}px`};
   ${({ hasHeader }) => hasHeader && "padding-top: 0;"}
   box-sizing: border-box;
@@ -142,6 +146,8 @@ const Body = styled.div`
   display: flex;
   flex-direction: column;
   position: relative;
+  height: 100%;
+  flex: 1;
 `;
 
 const Header = styled.div`

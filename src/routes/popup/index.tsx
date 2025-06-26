@@ -18,6 +18,7 @@ import browser from "webextension-polyfill";
 import CreateWanderAgentCTA from "./agents/components/CreateWanderAgentCTA";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { scheduleSwapExecution } from "~utils/agents/swap";
+import { WandAnnouncementPopup } from "~components/popup/home/WandAnnouncementPopup";
 
 export function HomeView() {
   const theme = useTheme();
@@ -25,6 +26,7 @@ export function HomeView() {
   const { navigate } = useLocation();
   const [loggedIn, setLoggedIn] = useState(false);
   const [isOpen, setOpen] = useState(false);
+  const [isWandAnnouncementOpen, setWandAnnouncementOpen] = useState(false);
 
   const [announcement, _] = useStorage<boolean>({
     key: "show_announcement",
@@ -101,6 +103,9 @@ export function HomeView() {
       setLoggedIn(true);
     }
 
+    const wandAnnouncementShown = (await ExtensionStorage.get<boolean>("wand_announcement_shown")) ?? false;
+    setWandAnnouncementOpen(!wandAnnouncementShown);
+
     // WALLET.TYPE JUST FOR KEYSTONE POPUP
     setOpen(announcement && wallet?.type === "hardware");
   }, [wallet, announcement]);
@@ -109,6 +114,7 @@ export function HomeView() {
     <HomeWrapper>
       {/* <AoBanner activeAddress={activeAddress} /> */}
       {loggedIn && <AnnouncementPopup isOpen={isOpen} setOpen={setOpen} />}
+      {loggedIn && <WandAnnouncementPopup isOpen={isWandAnnouncementOpen} setOpen={setWandAnnouncementOpen} />}
       <WalletHeader />
       <HomeContent>
         <Balance />
