@@ -189,18 +189,15 @@ export function AccountChangePasswordEmbeddedView() {
 
         toast.success("Password updated successfully");
 
-        if (requestPasswordChange) {
-          setRequestPasswordChange(false);
-        } else {
-          navigate(EmbeddedPaths.WalletHomeEmbeddedView);
-        }
+        setRequestPasswordChange(false);
+        navigate(EmbeddedPaths.WalletHomeEmbeddedView);
       } catch (error) {
         toast.error(getFriendlyAuthErrorMessage(error, "Error updating password"));
       } finally {
         setIsUpdatingPassword(false);
       }
     },
-    [isUpdatingPassword, confirmedPassword, user_metadata, requestPasswordChange, setRequestPasswordChange],
+    [isUpdatingPassword, confirmedPassword, user_metadata, setRequestPasswordChange],
   );
 
   // Routing:
