@@ -5,6 +5,7 @@ import Lottie from "react-lottie";
 import checkmarkAnimationData from "assets/lotties/checkmark.json";
 import { Box, Card, XClose, Text, Button } from "~components/embed/ui";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
+import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 
 export interface TransactionCompletedParams {
   id: string;
@@ -24,7 +25,7 @@ export function WalletTransactionCompleteEmbeddedView({ params: { id } }: Transa
       type: "embedded_close",
       data: null,
     });
-    navigate("/wallet");
+    navigate(EmbeddedPaths.WalletHomeEmbeddedView);
   };
 
   if (!id) return null;

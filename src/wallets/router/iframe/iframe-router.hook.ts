@@ -21,7 +21,7 @@ const AUTH_STATUS_TO_OVERRIDE: Record<AuthStatus, null | ExtensionRouteOverride>
 };
 
 export function useEmbeddedOverride(location?: RoutePath) {
-  const { authStatus, lastRegisteredWallet, currentWallet, recoverableAccount } = useEmbedded();
+  const { authStatus, lastRegisteredWallet, currentWallet, recoverableAccount, requestPasswordChange } = useEmbedded();
 
   if (!location || authStatus === "unknown") {
     return "/__OVERRIDES/cover";
@@ -38,6 +38,7 @@ export function useEmbeddedOverride(location?: RoutePath) {
         EmbeddedPaths.AuthMoreProviders,
         // TODO: These could be simply "anything under  AuthRecoverAccount"
         EmbeddedPaths.AuthRecoverAccount,
+        EmbeddedPaths.AuthRecoverAccountOtp,
         EmbeddedPaths.AuthRecoverAccountSeedphrase,
         EmbeddedPaths.AuthRecoverAccountKeyfile,
         EmbeddedPaths.AuthRecoverAccountQrCode,
@@ -90,6 +91,11 @@ export function useEmbeddedOverride(location?: RoutePath) {
   }
 
   if (authStatus === "unlocked") {
+    if (requestPasswordChange) {
+      // TODO: Consider also including this as a box in the dashboard?
+      return routeTrapMatches(location, [EmbeddedPaths.AccountChangePassword], EmbeddedPaths.AccountChangePassword);
+    }
+
     if (lastRegisteredWallet) {
       // TODO: Remove this unnecessary step and just include a confirmation in the dashboard.
       // If an account or wallet has just been created, then show AuthAddWalletConfirmation:
