@@ -1133,6 +1133,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
       // TODO: Add try-catch. If the initialization process fails, show an error...
 
+      // TODO: Move rotation logic to service and retry. Consider listening for the challenge to be resolved to get a new one. Subscribe to activation from other tabs?
+
       const { activatedWallet, rotationChallenge } = await WalletService.fetchFirstAvailableAuthShare(
         wallets,
         session,
