@@ -20,6 +20,7 @@ import {
 } from "~components/embed/ui/atoms/code-input/CodeInput";
 import { useCooldownCallback } from "~utils/react/useCooldownCallback";
 import { Flex } from "~components/common/Flex";
+import { sleep } from "~utils/promises/sleep";
 
 export function AccountChangePasswordEmbeddedView() {
   const { navigate } = useLocation();
@@ -190,6 +191,9 @@ export function AccountChangePasswordEmbeddedView() {
         toast.success("Password updated successfully");
 
         setRequestPasswordChange(false);
+
+        await sleep(100);
+
         navigate(EmbeddedPaths.WalletHomeEmbeddedView);
       } catch (error) {
         toast.error(getFriendlyAuthErrorMessage(error, "Error updating password"));
