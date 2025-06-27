@@ -16,6 +16,7 @@ import {
   OAuthErrorCode,
 } from "~utils/authentication/authentication.utils";
 import type { OAuthResultMessage, SupabaseProvider } from "~utils/authentication/authentication.types";
+import type { SupabaseUserMetadata } from "embed-api";
 
 const SUPABASE_PROVIDER_BY_OAUTH_PROVIDER_TYPE: Record<OAutProviderType, SupabaseProvider | null> = {
   GOOGLE: "google",
@@ -171,13 +172,13 @@ async function signInWithPassword(authParams: AuthSignInWithPasswordParams) {
 
   if (error) throw error;
 
-  if (!data.user.user_metadata.hasPassword) {
+  if (!(data.user.user_metadata as SupabaseUserMetadata).hasPassword) {
     // No need to handle error, we can re-attempt this lazily on the next sign in:
     await supabase.auth.updateUser({
       data: {
         ...data.user.user_metadata,
         hasPassword: true,
-      },
+      } satisfies SupabaseUserMetadata,
     });
   }
 
@@ -194,13 +195,13 @@ async function verifyOtp(authParams: AuthVerifyOtpParams) {
 
   if (error) throw error;
 
-  if (!data.user.user_metadata.hasPassword) {
+  if (!(data.user.user_metadata as SupabaseUserMetadata).hasPassword) {
     // No need to handle error, we can re-attempt this lazily on the next sign in:
     await supabase.auth.updateUser({
       data: {
         ...data.user.user_metadata,
         hasPassword: true,
-      },
+      } satisfies SupabaseUserMetadata,
     });
   }
 

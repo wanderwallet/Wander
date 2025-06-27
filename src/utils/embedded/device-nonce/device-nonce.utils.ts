@@ -13,6 +13,7 @@ let _deviceNonce: DeviceNonce | null = null;
 
 export async function loadDeviceNonce(): Promise<DeviceNonce | null> {
   const storage = await LocalStorage.getInstance();
+
   let deviceNonce = storage.getItem(DEVICE_NONCE_KEY) || null;
 
   if (
@@ -41,6 +42,7 @@ export async function storeDeviceNonce(deviceNonce: DeviceNonce): Promise<Device
   setDeviceNonceHeader(deviceNonce);
 
   const storage = await LocalStorage.getInstance();
+
   storage.setItem(DEVICE_NONCE_KEY, deviceNonce);
 
   return (_deviceNonce = deviceNonce);
@@ -50,6 +52,7 @@ export async function initializeDeviceNonce(): Promise<DeviceNonce> {
   if (_deviceNonce) return _deviceNonce;
 
   const loadedNonce = await loadDeviceNonce();
+
   _deviceNonce = loadedNonce || generateDeviceNonce();
 
   setDeviceNonceHeader(_deviceNonce);
@@ -61,6 +64,8 @@ export async function initializeDeviceNonce(): Promise<DeviceNonce> {
   return _deviceNonce;
 }
 
+// TODO: Consider always reading it from storage...
+
 export async function getDeviceNonce(): Promise<DeviceNonce> {
   await initializeDeviceNonce();
 
@@ -69,6 +74,7 @@ export async function getDeviceNonce(): Promise<DeviceNonce> {
   }
 
   const storage = await LocalStorage.getInstance();
+
   let storedDeviceNonce = storage.getItem(DEVICE_NONCE_KEY) || null;
 
   if (storedDeviceNonce === _deviceNonce) return _deviceNonce;
