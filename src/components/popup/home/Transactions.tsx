@@ -186,10 +186,9 @@ export default function Transactions() {
   }, [transactions]);
 
   const renderTransaction = (transaction: ExtendedTransaction) => {
-    if (transaction.transactionType === "announcement") {
-      return <AnnouncementItemComponent key={transaction.node.id} transaction={transaction} />;
-    }
-    return <TransactionItemComponent key={transaction.node.id} transaction={transaction} />;
+    const TransactionComponent =
+      transaction.transactionType === "announcement" ? AnnouncementItemComponent : TransactionItemComponent;
+    return <TransactionComponent key={transaction.node.id} transaction={transaction} />;
   };
 
   return (
@@ -272,11 +271,9 @@ export const TransactionItemComponent = ({ transaction }: { transaction: Extende
 };
 
 export const AnnouncementItemComponent = ({ transaction }: { transaction: ExtendedTransaction }) => {
-  const { navigate } = useLocation();
-
   return (
     <TransactionItem>
-      <Transaction onClick={() => navigate(`/transaction/${transaction.node.id}`)}>
+      <Transaction isAnnouncement>
         <Flex direction="column" gap={8}>
           <Flex direction="row" gap={4} align="center" justify="space-between">
             <Flex direction="row" gap={4} align="center">
@@ -289,7 +286,7 @@ export const AnnouncementItemComponent = ({ transaction }: { transaction: Extend
               {`${getMonthName(`${transaction.month}-${transaction.year}`, "short")} ${transaction.day}`}
             </Secondary>
           </Flex>
-          <Secondary>
+          <Secondary style={{ whiteSpace: "nowrap" }}>
             {transaction?.announcementData?.description?.split(" ").map((word, i) => {
               const isLink = isURL(word);
               if (isLink) {
@@ -350,14 +347,18 @@ const TransactionsWrapper = styled.div`
 const Main = styled(Text).attrs({
   noMargin: true,
   weight: "semibold",
-})``;
+})`
+  white-space: nowrap;
+`;
 
 const Secondary = styled(Text).attrs({
   noMargin: true,
   weight: "medium",
   size: "sm",
   variant: "secondary",
-})``;
+})`
+  white-space: nowrap;
+`;
 
 const Amount = styled(Text).attrs({
   noMargin: true,
@@ -368,9 +369,9 @@ const Amount = styled(Text).attrs({
     props.success ? props.theme.success : props.theme.displayTheme === "light" ? "#121212" : "#EEEEEE"};
 `;
 
-const Transaction = styled.div`
+const Transaction = styled.div<{ isAnnouncement?: boolean }>`
   display: flex;
-  cursor: pointer;
+  cursor: ${({ isAnnouncement }) => (isAnnouncement ? "default" : "pointer")};
   justify-content: space-between;
   align-items: center;
   padding: 12px;
@@ -390,6 +391,10 @@ const TransactionItem = styled.div`
   &:active {
     transform: scale(0.98);
     opacity: 0.8;
+  }
+
+  &:hover {
+    background: ${({ theme }) => theme.surfaceTertiary};
   }
 `;
 
