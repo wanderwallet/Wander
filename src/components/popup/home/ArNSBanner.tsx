@@ -2,8 +2,10 @@ import type { DisplayTheme } from "@arconnect/components";
 import { CloseIcon } from "@iconicicons/react";
 import { useEffect, useState } from "react";
 import styled, { useTheme } from "styled-components";
+import { useLocation } from "wouter";
+import { ArioIcon } from "~components/embed";
 import { ExtensionStorage } from "~utils/storage";
-import ArioIcon from "url:/assets/ecosystem/ario.svg";
+import { PopupPaths } from "~wallets/router/popup/popup.routes";
 
 interface ArNSBannerProps {
   activeAddress: string;
@@ -12,6 +14,12 @@ interface ArNSBannerProps {
 export default function ArNSBanner({ activeAddress }: ArNSBannerProps) {
   const theme = useTheme();
   const [showBanner, setShowBanner] = useState(true);
+  const [, navigate] = useLocation();
+
+  const handleRegisterClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    navigate(PopupPaths.ArNSPurchaseStart);
+  };
 
   async function hideBanner() {
     setShowBanner(false);
@@ -36,9 +44,9 @@ export default function ArNSBanner({ activeAddress }: ArNSBannerProps) {
 
   return (
     <Banner displayTheme={theme.displayTheme} show={showBanner}>
-      <img src={ArioIcon} width={24} height={24} />
+      <ArioIcon width="24px" height="24px" />
       <h4>
-        Get your ArNS Name! <a>Register Now</a>
+        Get your ArNS Name! <a onClick={handleRegisterClick}>Register Now</a>
       </h4>
       <Close onClick={hideBanner} />
     </Banner>

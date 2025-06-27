@@ -11,6 +11,7 @@ import { useLocation } from "~wallets/router/router.utils";
 import { useActiveWallet } from "~wallets/hooks";
 import { CopyToClipboard } from "~components/CopyToClipboard";
 import { QRCodeWrapper } from "~components/QRCodeWrapper";
+import { PopupPaths } from "~wallets/router/popup/popup.routes";
 
 interface ReceiveViewProps extends CommonRouteProps {
   walletName?: string;
@@ -60,7 +61,7 @@ export function ReceiveView({ walletName, walletAddress }: ReceiveViewProps) {
             flex: 1,
           }}>
           <div>
-            <Text size="lg" weight="semibold" noMargin>
+            <Text size="lg" weight="semibold" style={{ textAlign: "center" }} noMargin>
               {effectiveWalletName}
             </Text>
             <button
@@ -69,7 +70,9 @@ export function ReceiveView({ walletName, walletAddress }: ReceiveViewProps) {
                 cursor: "pointer",
                 paddingTop: ".5rem",
                 margin: 0,
-              }}>
+                fontSize: "1rem",
+              }}
+              onClick={() => navigate(PopupPaths.ArNSPurchaseStart)}>
               Get your ArNS Name
             </button>
           </div>

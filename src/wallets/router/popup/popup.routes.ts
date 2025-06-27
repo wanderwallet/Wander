@@ -6,6 +6,7 @@ import { ConfirmPurchaseView } from "~routes/popup/confirm";
 import { MessageNotificationView } from "~routes/popup/notification/[id]";
 import { PendingPurchaseView } from "~routes/popup/pending";
 import { PurchaseView } from "~routes/popup/purchase";
+import { ArNSPurchaseStartView } from "~routes/popup/arns/ArNSPurchaseStartView";
 import { ReceiveView } from "~routes/popup/receive";
 import { SendView } from "~routes/popup/send";
 import { AmountView } from "~routes/popup/send/amount";
@@ -126,11 +127,13 @@ export type PopupRoutePath =
   | `/tier`
   | `/earn`
   | `/earn/manage`
-  | `/earn/allocation-set`;
+  | `/earn/allocation-set`
+  | `/arns-purchase-start`;
 
 export const PopupPaths = {
   Home: "/",
   Purchase: "/purchase",
+  ArNSPurchaseStart: "/arns-purchase-start",
   ConfirmPurchase: "/confirm-purchase/:quoteId?",
   PendingPurchase: "/purchase-pending",
   Receive: "/receive",
@@ -432,5 +435,9 @@ export const POPUP_ROUTES = [
   {
     path: PopupPaths.AllocationSet,
     component: AllocationSetView,
+  },
+  {
+    path: PopupPaths.ArNSPurchaseStart,
+    component: ArNSPurchaseStartView,
   },
 ] as const satisfies RouteConfig[];

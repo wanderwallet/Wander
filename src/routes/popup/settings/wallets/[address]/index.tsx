@@ -1,5 +1,4 @@
 import { Button, Input, ListItem, Section, Text, Tooltip, useInput, useToasts } from "@arconnect/components-rebrand";
-import ArioIcon from "url:/assets/ecosystem/ario.svg";
 import { CopyIcon } from "@iconicicons/react";
 import { removeWallet, type StoredWallet } from "~wallets";
 import { useEffect, useMemo, useState } from "react";
@@ -29,6 +28,8 @@ import SliderMenu from "~components/SliderMenu";
 import { getNameServiceProfile } from "~lib/nameservice";
 import { BackupSeedphraseWarning } from "~components/popup/settings/BackupSeedphraseWarning";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import { ArioIcon } from "~components/embed";
+import { PopupPaths } from "~wallets/router/popup/popup.routes";
 
 export interface WalletViewParams {
   address: string;
@@ -205,10 +206,10 @@ export function WalletView({ params: { address } }: WalletViewProps) {
             // title={browser.i18n.getMessage("generate_qr_code")}
             title={"Get ArNS"}
             titleStyle={{ fontSize: 18, fontWeight: 500 }}
-            icon={<img src={ArioIcon} width="24" height="24" />}
+            icon={<ArioIcon width="24px" height="24px" />}
             hideSquircle
             showArrow
-            // onClick={() => navigate(`/quick-settings/wallets/${address}/qr`)}
+            onClick={() => navigate(PopupPaths.ArNSPurchaseStart)}
           />
           <HorizontalLine />
           {!isSeedphraseBackedUp && <BackupSeedphraseWarning />}
