@@ -21,6 +21,7 @@ import {
 import { useCooldownCallback } from "~utils/react/useCooldownCallback";
 import { Flex } from "~components/common/Flex";
 import { sleep } from "~utils/promises/sleep";
+import type { SupabaseUserMetadata } from "embed-api";
 
 export function AccountChangePasswordEmbeddedView() {
   const { navigate } = useLocation();
@@ -162,10 +163,10 @@ export function AccountChangePasswordEmbeddedView() {
           nonce,
           data: user_metadata.hasPassword
             ? undefined
-            : {
+            : ({
                 ...user_metadata,
                 hasPassword: true,
-              },
+              } satisfies SupabaseUserMetadata),
         });
 
         if (error) {
