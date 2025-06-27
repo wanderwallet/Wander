@@ -347,18 +347,14 @@ const TransactionsWrapper = styled.div`
 const Main = styled(Text).attrs({
   noMargin: true,
   weight: "semibold",
-})`
-  white-space: nowrap;
-`;
+})``;
 
 const Secondary = styled(Text).attrs({
   noMargin: true,
   weight: "medium",
   size: "sm",
   variant: "secondary",
-})`
-  white-space: nowrap;
-`;
+})``;
 
 const Amount = styled(Text).attrs({
   noMargin: true,
