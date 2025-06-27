@@ -160,6 +160,9 @@ async function fetchFirstAvailableAuthShare(
             challengeSolution,
           })
           .catch(async (err: unknown) => {
+            // We do not retry 404 errors as that means the authShare is no longer in the DB. Any other error, we retry, so we re-throw it here instead of
+            // resolving normally.
+
             if (!isTRPCClientError(err) || err.data.httpStatus !== 404) throw err;
 
             console.warn(
