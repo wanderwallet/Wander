@@ -9,6 +9,8 @@
   height: auto;
   width: auto;
   min-width: calc(var(--input-height) - var(--input-child-offset));
+  border: none;
+  box-shadow: none;
 }
 
 .variantPrimary {

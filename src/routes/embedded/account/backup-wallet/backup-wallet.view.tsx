@@ -3,6 +3,7 @@ import { Button } from "~components/embed/ui";
 import { useLocation } from "~wallets/router/router.utils";
 import browser from "webextension-polyfill";
 import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
+import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 
 export function AccountBackupWalletEmbeddedView() {
   const { navigate } = useLocation();
@@ -23,7 +24,7 @@ export function AccountBackupWalletEmbeddedView() {
       headerText="Wallet backup"
       subtitle="Select a method to back up your wallet which can be used to sign in on a new device or recover your wallet"
       // TODO: This should be reminder in some cases
-      onBackButtonClick={() => navigate("/wallet")}>
+      onBackButtonClick={() => navigate(EmbeddedPaths.WalletHomeEmbeddedView)}>
       <Button
         variant="outlined"
         isFullWidth
