@@ -386,7 +386,7 @@ export class StorageManager {
 }
 
 export class EnhancedStorage implements Storage {
-  protected storage: Storage;
+  public storage: Storage;
 
   public storageType: StorageType;
 

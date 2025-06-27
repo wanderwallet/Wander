@@ -15,6 +15,7 @@ import { EditIcon } from "@iconicicons/react";
 import { getFriendlyAuthErrorMessage, MIN_SUPABASE_PASSWORD_LENGTH } from "~utils/authentication/authentication.utils";
 import { StorageKeys } from "~utils/storage/storage.constants";
 import browser from "~iframe/browser";
+import type { SupabaseUserMetadata } from "embed-api";
 
 export function AuthEmailSignUpEmbeddedView() {
   const { navigate } = useLocation();
@@ -87,7 +88,7 @@ export function AuthEmailSignUpEmbeddedView() {
           options: {
             data: {
               hasPassword: true,
-            },
+            } satisfies SupabaseUserMetadata,
           },
         });
 
