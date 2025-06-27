@@ -1135,6 +1135,9 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       let jwk: JWKInterface | null = null;
 
       try {
+        // TODO: Add some extra logic here to wait if there are other tabs activating a wallet at the same time.
+        // Do it by checking both a stored flag as well as by querying the backend (subscribe?).
+
         const fetchFirstAvailableAuthShareReturn = await withRetry(() =>
           WalletService.fetchFirstAvailableAuthShare(wallets, session, userId),
         );
