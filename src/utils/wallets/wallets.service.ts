@@ -1,4 +1,4 @@
-import { ChallengeClientV1, type DbSession } from "embed-api";
+import { ChallengeClientV1, ErrorMessages, type DbSession } from "embed-api";
 import type { Wallet, WalletActivationStatus } from "~utils/embedded/embedded.types";
 import { trpcVanilla } from "~utils/embedded/embedded.utils";
 import { isTRPCClientError } from "~utils/embedded/utils/trpc/trpc.utils";
@@ -154,28 +154,10 @@ async function fetchFirstAvailableAuthShare(
           jwk: deviceSharePrivateKeyJWK,
         });
 
-        const { authShare, rotationChallenge } = await trpcVanilla.activateWallet
-          .mutate({
-            walletId,
-            challengeSolution,
-          })
-          .catch(async (err: unknown) => {
-            // We do not retry 404 errors as that means the authShare is no longer in the DB. Any other error, we retry, so we re-throw it here instead of
-            // resolving normally.
-
-            if (!isTRPCClientError(err) || err.data.httpStatus !== 404) throw err;
-
-            console.warn(
-              `The corresponding auth share for the device share stored for walletId = ${walletId} was not found. Deleting device share from this device...`,
-            );
-
-            await WalletUtils.removeDeviceShare(deviceShare, userId);
-
-            return {
-              authShare: null,
-              rotationChallenge: null,
-            };
-          });
+        const { authShare, rotationChallenge } = await trpcVanilla.activateWallet.mutate({
+          walletId,
+          challengeSolution,
+        });
 
         // TODO: Better with zk: instead of hashes or use a challenge here?
 
@@ -227,9 +209,27 @@ async function fetchFirstAvailableAuthShare(
       } catch (err) {
         if (jwk) freeDecryptedWallet(jwk);
 
-        error = err;
+        if (
+          isTRPCClientError(err) &&
+          err.data.httpStatus === 404 &&
+          ([ErrorMessages.WORK_SHARE_INVALIDATED, ErrorMessages.WORK_SHARE_NOT_FOUND] as string[]).includes(err.message)
+        ) {
+          // If we get one of these errors, we know we've tried to get an auth share that is already gone, so we can
+          // delete its corresponding device share:
 
-        console.warn(`Unexpected wallet activation error (walletId = "${walletId}") =`, err);
+          console.warn(
+            `The corresponding auth share for the device share stored for walletId = ${walletId} was not found. Deleting device share from this device...`,
+          );
+
+          await WalletUtils.removeDeviceShare(deviceShare, userId);
+        } else {
+          // Otherwise, for any other type of error, we handle it normally. Meaning, we'll try to repeat this same
+          // activation and, if all attempts fail, we'll reject this Promise with this error.
+
+          error = err;
+
+          console.warn(`Unexpected wallet activation error (walletId = "${walletId}") =`, err);
+        }
       }
     }
 

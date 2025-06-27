@@ -34,6 +34,7 @@ import {
   WalletSourceType,
   type DbSession,
   type RecoverableAccount,
+  type SupabaseUser,
 } from "embed-api";
 import { AuthenticationService } from "~utils/authentication/authentication.service";
 import { EMBEDDED_FEATURE_FLAGS, EMBEDDED_SDK_AUTH_STATUS_BY_AUTH_STATUS } from "~utils/embedded/embedded.constants";
@@ -1199,7 +1200,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       if (!isInitialAuthEventDispatched) {
         isInitialAuthEventDispatched = true;
 
-        const cachedUser = session?.user;
+        const cachedUser = session?.user as SupabaseUser;
 
         // Send the initial state for the SDK button ASAP if there's cached data. Otherwise, the initial state will be
         // sent by the `useEffect` above that sends `"embedded_auth"` events too.
@@ -1221,7 +1222,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       }
 
       const accessToken = session?.access_token ?? null;
-      const user = session?.user ?? null;
+      const user = (session?.user as SupabaseUser) ?? null;
       const authProviderType = getAuthProviderTypeFromSupabaseUser(user);
 
       if (process.env.NODE_ENV === "development" && user && authProviderType === null) {

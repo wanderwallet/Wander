@@ -1,7 +1,7 @@
+import type { SupabaseAuthError } from "embed-api";
 import {
-  isAuthError,
   isOAuthError,
-  type AuthError,
+  isSupabaseAuthError,
   type OAuthError,
   type OAuthErrorMessage,
   type OAuthResultMessage,
@@ -50,7 +50,7 @@ const AUTH_ERRORS_BY_CODE: Record<string | OAuthErrorCode, string> = {
 };
 
 export function getFriendlyAuthErrorMessage(
-  error: Error | AuthError | OAuthError,
+  error: Error | SupabaseAuthError | OAuthError,
   defaultErrorMessage?: string,
 ): string {
   if (process.env.NODE_ENV === "development") console.error("getFriendlyAuthErrorMessage() =", error);
@@ -61,7 +61,7 @@ export function getFriendlyAuthErrorMessage(
   if (isOAuthError(error)) {
     errorCode = error.cause.errorCode;
     errorDescription = error.cause.errorDescription;
-  } else if (isAuthError(error)) {
+  } else if (isSupabaseAuthError(error)) {
     errorCode = error.code || `${error.status}` || error.name;
     errorDescription = error.message;
   } else {
