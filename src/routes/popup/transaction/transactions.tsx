@@ -46,17 +46,19 @@ export function TransactionsView() {
       <HeadV2 title={browser.i18n.getMessage("feed")} />
       <TransactionsWrapper>
         <Button
-          style={{ marginBottom: 4 }}
+          style={{ marginBottom: 4, height: 42 }}
           variant="secondary"
           icon={<FilterLines height={20} width={20} />}
           iconPosition="left"
           onClick={() => setShowFilter(true)}
           fullWidth>
-          {filter === FeedFilter.NO_FILTERS
-            ? "Filters"
-            : filter === FeedFilter.ANNOUNCEMENTS
-              ? "Announcements only"
-              : "Transactions only"}
+          {browser.i18n.getMessage(
+            filter === FeedFilter.NO_FILTERS
+              ? "filter"
+              : filter === FeedFilter.ANNOUNCEMENTS
+                ? "announcements_only"
+                : "transactions_only",
+          )}
         </Button>
         {Object.keys(filteredTransactions).length > 0
           ? Object.keys(filteredTransactions).map((monthYear) => (

@@ -3,6 +3,7 @@ import { ContentWrapper } from "~components/modals/Components";
 import SliderMenu from "~components/SliderMenu";
 import { Check } from "@untitled-ui/icons-react";
 import styled from "styled-components";
+import browser from "webextension-polyfill";
 
 export enum FeedFilter {
   NO_FILTERS = "no_filters",
@@ -11,9 +12,9 @@ export enum FeedFilter {
 }
 
 const filtersMap = {
-  [FeedFilter.NO_FILTERS]: "No filters",
-  [FeedFilter.TRANSACTIONS]: "Transactions",
-  [FeedFilter.ANNOUNCEMENTS]: "Announcements",
+  [FeedFilter.NO_FILTERS]: browser.i18n.getMessage("no_filters"),
+  [FeedFilter.TRANSACTIONS]: browser.i18n.getMessage("transactions"),
+  [FeedFilter.ANNOUNCEMENTS]: browser.i18n.getMessage("announcements"),
 } as const;
 
 const filters = Object.keys(filtersMap) as FeedFilter[];

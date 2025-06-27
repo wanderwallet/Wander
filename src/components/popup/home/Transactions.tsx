@@ -271,9 +271,11 @@ export const TransactionItemComponent = ({ transaction }: { transaction: Extende
 };
 
 export const AnnouncementItemComponent = ({ transaction }: { transaction: ExtendedTransaction }) => {
+  const { navigate } = useLocation();
+
   return (
     <TransactionItem>
-      <Transaction isAnnouncement>
+      <Transaction onClick={() => navigate(`/announcement/${transaction.node.id}`)}>
         <Flex direction="column" gap={8}>
           <Flex direction="row" gap={4} align="center" justify="space-between">
             <Flex direction="row" gap={4} align="center">
@@ -286,7 +288,14 @@ export const AnnouncementItemComponent = ({ transaction }: { transaction: Extend
               {`${getMonthName(`${transaction.month}-${transaction.year}`, "short")} ${transaction.day}`}
             </Secondary>
           </Flex>
-          <Secondary style={{ whiteSpace: "nowrap" }}>
+          <Secondary
+            style={{
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              display: "block",
+              // width: "320px",
+            }}>
             {transaction?.announcementData?.description?.split(" ").map((word, i) => {
               const isLink = isURL(word);
               if (isLink) {
@@ -365,9 +374,9 @@ const Amount = styled(Text).attrs({
     props.success ? props.theme.success : props.theme.displayTheme === "light" ? "#121212" : "#EEEEEE"};
 `;
 
-const Transaction = styled.div<{ isAnnouncement?: boolean }>`
+const Transaction = styled.div`
   display: flex;
-  cursor: ${({ isAnnouncement }) => (isAnnouncement ? "default" : "pointer")};
+  cursor: pointer;
   justify-content: space-between;
   align-items: center;
   padding: 12px;
@@ -420,4 +429,5 @@ const AnnouncementIcon = styled(Announcement01)`
 const AnnouncementLink = styled.a`
   color: ${({ theme }) => theme.theme};
   text-decoration: none;
+  display: inline;
 `;

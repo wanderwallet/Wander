@@ -1,6 +1,8 @@
+import browser from "webextension-polyfill";
 import type { ExtendedTransaction } from "~lib/transactions";
 
 export type Announcement = {
+  id: number;
   title: string;
   description: string;
   timestamp: number;
@@ -8,13 +10,15 @@ export type Announcement = {
 
 export const ANNOUNCEMENTS: Announcement[] = [
   {
-    title: "ArConnect is now Wander!",
-    description: "To learn more visit https://wander.app.",
+    id: 1,
+    title: browser.i18n.getMessage("announcement_1_title"),
+    description: browser.i18n.getMessage("announcement_1_description"),
     timestamp: 1740489749000,
   },
   {
-    title: "Introducing Wander Agents",
-    description: "Auto-convert your daily AO token earnings.",
+    id: 2,
+    title: browser.i18n.getMessage("announcement_2_title"),
+    description: browser.i18n.getMessage("announcement_2_description"),
     timestamp: 1750857749000,
   },
 ];
@@ -26,16 +30,16 @@ export const ANNOUNCEMENTS: Announcement[] = [
 export function convertAnnouncementsToTransactions(
   announcements: Announcement[] = ANNOUNCEMENTS,
 ): ExtendedTransaction[] {
-  return announcements.map((announcement, index) => {
+  return announcements.map((announcement) => {
     const date = new Date(announcement.timestamp);
     const day = date.getDate();
     const month = date.getMonth() + 1;
     const year = date.getFullYear();
 
     return {
-      cursor: `announcement_${index}`,
+      cursor: "",
       node: {
-        id: `announcement_${announcement.timestamp}_${index}`,
+        id: announcement.id.toString(),
         recipient: "",
         owner: {
           address: "",
@@ -47,7 +51,7 @@ export function convertAnnouncementsToTransactions(
           ar: "0",
         },
         block: {
-          timestamp: Math.floor(announcement.timestamp / 1000), // Convert to seconds
+          timestamp: Math.floor(announcement.timestamp / 1000),
           height: 0,
         },
         tags: [],
@@ -57,11 +61,11 @@ export function convertAnnouncementsToTransactions(
       day,
       date: date.toISOString(),
       transactionType: "announcement",
-      // Store announcement data for rendering
-      announcementData: {
-        title: announcement.title,
-        description: announcement.description,
-      },
-    } as ExtendedTransaction & { announcementData: { title: string; description: string } };
+      announcementData: announcement,
+    } as ExtendedTransaction & { announcementData: Announcement };
   });
+}
+
+export function getAnnouncement(id: string | number) {
+  return ANNOUNCEMENTS.find((announcement) => announcement.id === Number(id));
 }

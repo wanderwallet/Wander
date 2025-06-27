@@ -3,7 +3,7 @@ import { ExtensionStorage } from "~utils/storage";
 import { useEffect, useState } from "react";
 import WalletHeader from "~components/popup/WalletHeader";
 import Balance from "~components/popup/home/Balance";
-import { AnnouncementPopup } from "./announcement";
+import { KeystoneAnnouncementPopup } from "../../components/popup/home/KeystoneAnnouncementPopup";
 import { getDecryptionKey } from "~wallets/auth";
 import { trackEvent, EventType, trackPage, PageType, checkWalletBits } from "~utils/analytics";
 import styled, { useTheme } from "styled-components";
@@ -113,7 +113,7 @@ export function HomeView() {
   return (
     <HomeWrapper>
       {/* <AoBanner activeAddress={activeAddress} /> */}
-      {loggedIn && <AnnouncementPopup isOpen={isOpen} setOpen={setOpen} />}
+      {loggedIn && <KeystoneAnnouncementPopup isOpen={isOpen} setOpen={setOpen} />}
       {loggedIn && <WandAnnouncementPopup isOpen={isWandAnnouncementOpen} setOpen={setWandAnnouncementOpen} />}
       <WalletHeader />
       <HomeContent>

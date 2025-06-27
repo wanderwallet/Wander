@@ -3571,5 +3571,45 @@
     "deposit_withdraw_failure_subtext": {
       "message": "似乎出现了问题，请重试。",
       "description": "Subtext about a failed deposit or withdrawal"
+    },
+    "filter": {
+      "message": "过滤器",
+      "description": "Filter text"
+    },
+    "announcements_only": {
+      "message": "仅公告",
+      "description": "Announcements only text"
+    },
+    "transactions_only": {
+      "message": "仅交易",
+      "description": "Transactions only text"
+    },
+    "no_filters": {
+      "message": "无过滤器",
+      "description": "No filters text"
+    },
+    "announcement": {
+      "message": "公告",
+      "description": "Announcement text"
+    },
+    "announcements": {
+      "message": "公告",
+      "description": "Announcements text"
+    },
+    "announcement_1_title": {
+      "message": "ArConnect 现已更名为 Wander！",
+      "description": "Announcement 1 title"
+    },
+    "announcement_1_description": {
+      "message": "了解更多请访问 https://wander.app。",
+      "description": "Announcement 1 description"
+    },
+    "announcement_2_title": {
+      "message": "推出 Wander 代理",
+      "description": "Announcement 2 title"
+    },
+    "announcement_2_description": {
+      "message": "自动转换您的每日 AO 代币收益。",
+      "description": "Announcement 2 description"
     }
 }

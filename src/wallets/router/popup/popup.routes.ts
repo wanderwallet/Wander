@@ -55,6 +55,7 @@ import { LiquidOpsAgent } from "~routes/popup/agents/liquidops/agent";
 import { LiquidOpsDepositWithdraw } from "~routes/popup/agents/liquidops/depositwithdraw";
 import { LiquidOpsConfirm } from "~routes/popup/agents/liquidops/confirm";
 import { LiquidOpsResult } from "~routes/popup/agents/liquidops/result";
+import { AnnouncementView } from "~routes/popup/announcement";
 
 export type PopupRoutePath =
   | "/"
@@ -81,6 +82,7 @@ export type PopupRoutePath =
   | `/collectible/${string}`
   | `/transaction/${string}`
   | `/transaction/${string}/${string}`
+  | `/announcement/${string}`
   | `/send/confirm/${string}/${string}/${string}`
   | `/send/confirm/${string}/${string}/${string}/${string}`
   | `/send/completed/${string}`
@@ -137,6 +139,7 @@ export const PopupPaths = {
   Collectibles: "/collectibles",
   Collectible: "/collectible/:id",
   Transaction: "/transaction/:id/:gateway?",
+  Announcement: "/announcement/:id",
   Confirm: "/send/confirm/:token/:qty/:recipient/:message?",
   TransactionCompleted: "/send/completed/:id",
   QuickSettings: "/quick-settings",
@@ -251,6 +254,10 @@ export const POPUP_ROUTES = [
   {
     path: PopupPaths.Transaction,
     component: TransactionView,
+  },
+  {
+    path: PopupPaths.Announcement,
+    component: AnnouncementView,
   },
   {
     // TODO: This route is incorrect/misleading as a lot of its params are actually ignored and loaded from a temp tx

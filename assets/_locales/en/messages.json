@@ -3611,5 +3611,45 @@
   "deposit_withdraw_failure_subtext": {
     "message": "Looks like something went wrong, please try again.",
     "description": "Subtext about a failed deposit or withdrawal"
+  },
+  "filter": {
+    "message": "Filter",
+    "description": "Filter text"
+  },
+  "announcements_only": {
+    "message": "Announcements only",
+    "description": "Announcements only text"
+  },
+  "transactions_only": {
+    "message": "Transactions only",
+    "description": "Transactions only text"
+  },
+  "no_filters": {
+    "message": "No filters",
+    "description": "No filters text"
+  },
+  "announcement": {
+    "message": "Announcement",
+    "description": "Announcement text"
+  },
+  "announcements": {
+    "message": "Announcements",
+    "description": "Announcements text"
+  },
+  "announcement_1_title": {
+    "message": "ArConnect is now Wander!",
+    "description": "Announcement 1 title"
+  },
+  "announcement_1_description": {
+    "message": "To learn more visit https://wander.app.",
+    "description": "Announcement 1 description"
+  },
+  "announcement_2_title": {
+    "message": "Introducing Wander Agents",
+    "description": "Announcement 2 title"
+  },
+  "announcement_2_description": {
+    "message": "Auto-convert your daily AO token earnings.",
+    "description": "Announcement 2 description"
   }
 }
