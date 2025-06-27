@@ -67,6 +67,7 @@ import {
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { isomorphicOnMessage } from "~isomorphic-messaging";
 import { useTheme } from "~components/embed/contexts/ThemeContext";
+import { withRetry } from "~utils/promises/retry";
 
 export type AuthStatusCopy = AuthStatus;
 
@@ -1120,7 +1121,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       wallets,
     }));
 
-    let authStatus = "noAuth" as AuthStatus;
+    let authStatus: AuthStatus = wallets.length === 0 ? "noWallets" : "noShares";
 
     if (wallets.length > 0) {
       // TODO: The wallet activation can be deferred until the wallet is going to be used:
@@ -1131,63 +1132,29 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       // TODO: Create an issue for the new storage needs (e.g. expiration). Note that for wallets
       // that haven't been backup up, we must never delete a share without notifying the user.
 
-      // TODO: Add try-catch. If the initialization process fails, show an error...
+      let jwk: JWKInterface | null = null;
 
-      // TODO: Move rotation logic to service and retry. Consider listening for the challenge to be resolved to get a new one. Subscribe to activation from other tabs?
+      try {
+        const fetchFirstAvailableAuthShareReturn = await withRetry(() =>
+          WalletService.fetchFirstAvailableAuthShare(wallets, session, userId),
+        );
 
-      const { activatedWallet, rotationChallenge } = await WalletService.fetchFirstAvailableAuthShare(
-        wallets,
-        session,
-        userId,
-      );
+        const { activatedWallet } = fetchFirstAvailableAuthShareReturn;
+        jwk = fetchFirstAvailableAuthShareReturn.jwk;
 
-      if (activatedWallet) {
-        const { id: walletId, address: walletAddress } = activatedWallet;
-
-        const jwk = await WalletUtils.generateWalletJWKFromShares(walletAddress, [
-          activatedWallet.authShare,
-          activatedWallet.deviceShare,
-        ]);
-
-        if (rotationChallenge) {
-          const { authShare, deviceShare } = await WalletUtils.generateWalletWorkShares(jwk);
-
-          activatedWallet.authShare = authShare;
-          activatedWallet.deviceShare = deviceShare;
-
-          const { shareHash: deviceShareHash, sharePublicKey: deviceSharePublicKey } =
-            await WalletUtils.generateShareHashAndPublicKey(deviceShare);
-
-          const challengeSolution = await ChallengeClientV1.solveChallenge({
-            challenge: rotationChallenge,
-            session,
-            shareHash: null,
-            jwk,
-          });
-
-          await WalletService.rotateAuthShare({
-            walletId,
-            authShare,
-            deviceShareHash,
-            deviceSharePublicKey,
-            challengeSolution,
-          });
-        }
-
-        await WalletUtils.storeDeviceShare(activatedWallet, userId);
-
-        try {
+        if (jwk && activatedWallet) {
+          await WalletUtils.storeDeviceShare(activatedWallet, userId);
           await addWallet(jwk, activatedWallet);
-        } finally {
-          freeDecryptedWallet(jwk);
-        }
 
-        authStatus = "unlocked";
-      } else {
-        authStatus = "noShares";
+          authStatus = "unlocked";
+        }
+      } catch (err) {
+        // All attempts failed, or activation suceded but some of the code afer that threw an error.
+
+        console.warn("Failed to activate wallet:", err);
+      } finally {
+        if (jwk) freeDecryptedWallet(jwk);
       }
-    } else {
-      authStatus = "noWallets";
     }
 
     setEmbeddedContextAuth((prevEmbeddedContextAuth) => ({

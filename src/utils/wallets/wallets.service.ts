@@ -1,11 +1,14 @@
-import { ChallengeClientV1, type DbChallenge, type DbSession } from "embed-api";
+import { ChallengeClientV1, type DbSession } from "embed-api";
 import type { Wallet, WalletActivationStatus } from "~utils/embedded/embedded.types";
 import { trpcVanilla } from "~utils/embedded/embedded.utils";
 import { isTRPCClientError } from "~utils/embedded/utils/trpc/trpc.utils";
 import { WalletUtils } from "~utils/wallets/wallets.utils";
 import { getWallets, removeWallet } from "~wallets";
+import type { JWKInterface } from "arweave/web/lib/wallet";
+import { freeDecryptedWallet } from "~wallets/encryption";
 
 // TODO: Consider getting `userId` automatically
+
 async function fetchWallets(userId: string): Promise<Wallet[]> {
   const deviceShares = await WalletUtils.getDeviceSharesForUser(userId);
   const unusedDeviceSharesWalletIDs = new Set(Object.keys(deviceShares));
@@ -114,8 +117,8 @@ async function registerWalletExport(walletExportData: RegisterWalletExportData) 
 }
 
 export interface FetchFirstAvailableAuthShareReturn {
+  jwk: null | JWKInterface;
   activatedWallet: null | Wallet;
-  rotationChallenge?: DbChallenge;
 }
 
 async function fetchFirstAvailableAuthShare(
@@ -123,15 +126,12 @@ async function fetchFirstAvailableAuthShare(
   session: DbSession,
   userId: string,
 ): Promise<FetchFirstAvailableAuthShareReturn> {
-  return new Promise(async (resolve) => {
-    for (const wallet of wallets) {
-      const { id: walletId, deviceShare } = wallet;
+  return new Promise<FetchFirstAvailableAuthShareReturn>(async (resolve, reject) => {
+    let jwk: JWKInterface | null = null;
+    let error: Error | null = null;
 
-      if (deviceShare === null) {
-        // If the device share is not present in the device, skip, otherwise
-        // `WalletUtils.generateShareHashAndPrivateKey()` will throw an error.
-        continue;
-      }
+    for (const wallet of wallets) {
+      const { id: walletId, address: walletAddress, deviceShare } = wallet;
 
       try {
         if (deviceShare === null) {
@@ -177,27 +177,71 @@ async function fetchFirstAvailableAuthShare(
         // TODO: Better with zk: instead of hashes or use a challenge here?
 
         if (authShare) {
+          // In case there was a previous one already in memory:
+          if (jwk) freeDecryptedWallet(jwk);
+
+          jwk = await WalletUtils.generateWalletJWKFromShares(walletAddress, [authShare, deviceShare]);
+
           const activatedWallet: Wallet = {
             ...wallet,
             activationStatus: "active",
             authShare,
           };
 
+          if (rotationChallenge) {
+            const { authShare, deviceShare } = await WalletUtils.generateWalletWorkShares(jwk);
+
+            // Replace authShare and deviceShare with the new ones:
+            activatedWallet.authShare = authShare;
+            activatedWallet.deviceShare = deviceShare;
+
+            const { shareHash: deviceShareHash, sharePublicKey: deviceSharePublicKey } =
+              await WalletUtils.generateShareHashAndPublicKey(deviceShare);
+
+            const challengeSolution = await ChallengeClientV1.solveChallenge({
+              challenge: rotationChallenge,
+              session,
+              shareHash: null,
+              jwk,
+            });
+
+            await rotateAuthShare({
+              walletId,
+              authShare,
+              deviceShareHash,
+              deviceSharePublicKey,
+              challengeSolution,
+            });
+          }
+
           resolve({
+            jwk,
             activatedWallet,
-            rotationChallenge,
-          } satisfies FetchFirstAvailableAuthShareReturn);
+          });
 
           return;
         }
       } catch (err) {
+        if (jwk) freeDecryptedWallet(jwk);
+
+        error = err;
+
         console.warn(`Unexpected wallet activation error (walletId = "${walletId}") =`, err);
       }
     }
 
-    resolve({
-      activatedWallet: null,
-    } satisfies FetchFirstAvailableAuthShareReturn);
+    // Once we've checked all wallets and tried to activate the ones that had a deviceShare, we:
+    // - Rethrow the last error, if the activation (or rotation) of any of them failed.
+    // - Resolve normally with null values, if none of them had a deviceShare.
+
+    if (error) {
+      reject(error);
+    } else {
+      resolve({
+        jwk: null,
+        activatedWallet: null,
+      });
+    }
   });
 }
 

@@ -36,6 +36,8 @@ export function generateDeviceNonce(): DeviceNonce {
 }
 
 export async function storeDeviceNonce(deviceNonce: DeviceNonce): Promise<DeviceNonce> {
+  console.trace("Updating deviceNonce =", deviceNonce);
+
   log(LOG_GROUP.WALLET_GENERATION, "storeDeviceNonce()");
 
   setDeviceNonceHeader(deviceNonce);
@@ -60,6 +62,8 @@ export async function initializeDeviceNonce(): Promise<DeviceNonce> {
 
   return _deviceNonce;
 }
+
+// TODO: Consider always reading it from storage...
 
 export async function getDeviceNonce(): Promise<DeviceNonce> {
   await initializeDeviceNonce();
