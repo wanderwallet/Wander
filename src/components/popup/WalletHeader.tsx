@@ -9,7 +9,7 @@ import { formatAddress, getAppURL, truncateMiddle } from "~utils/format";
 import { removeApp } from "~applications";
 import { useTheme } from "~utils/theme";
 import { Button, Card, type DisplayTheme, Text, useToasts, Tooltip } from "@arconnect/components-rebrand";
-import { CheckIcon, CopyIcon, GlobeIcon, LogOutIcon, SettingsIcon, MinimizeIcon, WalletIcon } from "@iconicicons/react";
+import { CheckIcon, CopyIcon, GlobeIcon, LogOutIcon, SettingsIcon, WalletIcon } from "@iconicicons/react";
 import WalletSwitcher, { popoverAnimation } from "./WalletSwitcher";
 import Application, { type AppInfo } from "~applications/application";
 import keystoneLogo from "url:/assets/hardware/keystone.png";
@@ -20,14 +20,13 @@ import browser from "webextension-polyfill";
 import styled from "styled-components";
 import copy from "copy-to-clipboard";
 import { type Gateway } from "~gateways/gateway";
-import { Bell03 } from "@untitled-ui/icons-react";
 import { useLocation } from "~wallets/router/router.utils";
-import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 import { useNameServiceProfile } from "~lib/nameservice";
 import { concatGatewayURL } from "~gateways/utils";
 import { FULL_HISTORY, useGateway } from "~gateways/wayfinder";
-import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import { BenefitsTag } from "./BenefitsTag";
+import { Flex } from "~components/common/Flex";
 
 export default function WalletHeader() {
   const theme = useTheme();
@@ -96,15 +95,6 @@ export default function WalletHeader() {
   // hardware wallet type
   const hardwareApi = useHardwareApi();
 
-  // has notifications
-  const [newNotifications, setNewNotifications] = useStorage<boolean>(
-    {
-      key: "new_notifications",
-      instance: ExtensionStorage,
-    },
-    false,
-  );
-
   const [scrollY, setScrollY] = useState(0);
 
   useEffect(() => {
@@ -160,76 +150,52 @@ export default function WalletHeader() {
 
   return (
     <Wrapper displayTheme={theme} scrolled={scrollY > 14}>
-      <AppAction
-        onClick={(e) => {
-          e.stopPropagation();
-          setAppDataOpen(true);
-        }}>
-        <Tooltip
-          content={browser.i18n.getMessage(!activeAppData ? "disconnected" : "account_connected")}
-          position="bottomStart">
-          <Action as={GlobeIcon} style={{ width: "30px", height: "30px" }} />
-        </Tooltip>
-        <AppOnline online={!!activeAppData} />
-      </AppAction>
-
-      <AddressContainer>
-        <Wallet
-          onClick={() => {
-            if (!isOpen) setOpen(true);
+      <Flex align="center" gap="8px">
+        <AppAction
+          onClick={(e) => {
+            e.stopPropagation();
+            setAppDataOpen(true);
           }}>
-          <Avatar img={nameServiceProfile?.logo && concatGatewayURL(gateway) + "/" + nameServiceProfile.logo}>
-            {!nameServiceProfile?.logo && <NoAvatarIcon />}
-            <AnimatePresence initial={false}>
-              {hardwareApi === "keystone" && (
-                <HardwareWalletIcon icon={keystoneLogo} color="#2161FF" {...hwIconAnimateProps} />
-              )}
-            </AnimatePresence>
-          </Avatar>
+          <Tooltip
+            content={browser.i18n.getMessage(!activeAppData ? "disconnected" : "account_connected")}
+            position="bottomStart">
+            <Action as={GlobeIcon} style={{ width: "30px", height: "30px" }} />
+          </Tooltip>
+          <AppOnline online={!!activeAppData} />
+        </AppAction>
 
-          <WalletName>
-            <Text weight="medium" noMargin>
-              {truncateMiddle(displayName, 9)}
-            </Text>
-            <Address>{address}</Address>
-          </WalletName>
-        </Wallet>
-        <Tooltip content={browser.i18n.getMessage("copy_address")} position="bottom">
-          <Action
-            as={copied ? CheckIcon : CopyIcon}
-            onClick={copyAddress}
-            $active={copied}
-            style={{ width: "24px", height: "24px" }}
-          />
-        </Tooltip>
-      </AddressContainer>
-      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-        <Tooltip content={browser.i18n.getMessage("setting_notifications")} position="bottomEnd">
-          <Action
-            as={Bell03}
+        <AddressContainer>
+          <Wallet
             onClick={() => {
-              setNewNotifications(false);
-              navigate("/notifications");
-            }}
-            style={{ width: "24px", height: "24px" }}
-          />
-          {newNotifications && <Notifier />}
-        </Tooltip>
-        {IS_EMBEDDED_APP && (
-          <Tooltip content={browser.i18n.getMessage("close")} position="bottomEnd">
+              if (!isOpen) setOpen(true);
+            }}>
+            <Avatar img={nameServiceProfile?.logo && concatGatewayURL(gateway) + "/" + nameServiceProfile.logo}>
+              {!nameServiceProfile?.logo && <NoAvatarIcon />}
+              <AnimatePresence initial={false}>
+                {hardwareApi === "keystone" && (
+                  <HardwareWalletIcon icon={keystoneLogo} color="#2161FF" {...hwIconAnimateProps} />
+                )}
+              </AnimatePresence>
+            </Avatar>
+
+            <WalletName>
+              <Text weight="medium" noMargin>
+                {truncateMiddle(displayName, 9)}
+              </Text>
+            </WalletName>
+          </Wallet>
+          <Tooltip content={browser.i18n.getMessage("copy_address")} position="bottom">
             <Action
-              as={MinimizeIcon}
-              onClick={() => {
-                postEmbeddedMessage({
-                  type: "embedded_close",
-                  data: null,
-                });
-              }}
+              as={copied ? CheckIcon : CopyIcon}
+              onClick={copyAddress}
+              $active={copied}
               style={{ width: "24px", height: "24px" }}
             />
           </Tooltip>
-        )}
-      </div>
+        </AddressContainer>
+      </Flex>
+
+      <BenefitsTag />
 
       {appDataOpen && (
         <CloseLayer
@@ -331,6 +297,7 @@ const Wrapper = styled.nav<{
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 8px;
   z-index: 100;
   top: 0;
   left: 0;
@@ -389,16 +356,6 @@ const Wallet = styled.div`
   }
 `;
 
-const Address = styled(Text).attrs({
-  variant: "secondary",
-  weight: "medium",
-  noMargin: true,
-})`
-  @media (max-width: 375px) {
-    display: none;
-  }
-`;
-
 const avatarSize = "1.5rem";
 
 export const Avatar = styled(Squircle)`
@@ -422,17 +379,6 @@ export const NoAvatarIcon = styled(WalletIcon)<{ size?: string }>`
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-`;
-
-const Notifier = styled.div`
-  position: absolute;
-  right: 1.3px;
-  top: 0.7px;
-  width: 8px;
-  height: 8px;
-  border-radius: 100%;
-  background-color: ${(props) => props.theme.fail};
-  border: 1px solid rgb(${(props) => props.theme.background});
 `;
 
 const AppOnline = styled.div<{ online: boolean }>`

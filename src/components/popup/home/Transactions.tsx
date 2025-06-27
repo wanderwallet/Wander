@@ -18,7 +18,7 @@ import { printTxWorkingGateways, txHistoryGateways } from "~gateways/gateway";
 import { ViewAll } from "../Title";
 import {
   getFormattedAmount,
-  getFullMonthName,
+  getMonthName,
   getTransactionDescription,
   groupTransactionsByMonth,
   processTransactions,
@@ -31,6 +31,10 @@ import { useLocation } from "~wallets/router/router.utils";
 import arLogoLight from "url:/assets/ar/logo_light.png";
 import { Logo } from "../Token";
 import { getUserAvatar } from "~lib/avatar";
+import { convertAnnouncementsToTransactions } from "~utils/announcements";
+import { Announcement01 } from "@untitled-ui/icons-react";
+import { Flex } from "~components/common/Flex";
+import { isURL } from "~utils/urls/isURL";
 
 interface TransactionsCache {
   transactions: ExtendedTransaction[];
@@ -127,6 +131,9 @@ export default function Transactions() {
             return true;
           });
 
+          const announcementTransactions = convertAnnouncementsToTransactions();
+          combinedTransactions = [...combinedTransactions, ...announcementTransactions];
+
           combinedTransactions.sort(sortFn);
 
           combinedTransactions = combinedTransactions.map((transaction) => {
@@ -175,10 +182,13 @@ export default function Transactions() {
   }, [activeAddress]);
 
   const groupedTransactions = useMemo(() => {
-    return groupTransactionsByMonth(transactions);
+    return groupTransactionsByMonth(transactions.slice(0, 20));
   }, [transactions]);
 
   const renderTransaction = (transaction: ExtendedTransaction) => {
+    if (transaction.transactionType === "announcement") {
+      return <AnnouncementItemComponent key={transaction.node.id} transaction={transaction} />;
+    }
     return <TransactionItemComponent key={transaction.node.id} transaction={transaction} />;
   };
 
@@ -241,7 +251,7 @@ export const TransactionItemComponent = ({ transaction }: { transaction: Extende
             <Main>{getTransactionDescription(transaction)}</Main>
             <Secondary>
               {transaction.date
-                ? `${getFullMonthName(`${transaction.month}-${transaction.year}`)} ${transaction.day}`
+                ? `${getMonthName(`${transaction.month}-${transaction.year}`)} ${transaction.day}`
                 : browser.i18n.getMessage("pending")}
             </Secondary>
           </Section>
@@ -256,6 +266,45 @@ export const TransactionItemComponent = ({ transaction }: { transaction: Extende
             {getFormattedAmount(transaction)}
           </Amount>
         </Section>
+      </Transaction>
+    </TransactionItem>
+  );
+};
+
+export const AnnouncementItemComponent = ({ transaction }: { transaction: ExtendedTransaction }) => {
+  const { navigate } = useLocation();
+
+  return (
+    <TransactionItem>
+      <Transaction onClick={() => navigate(`/transaction/${transaction.node.id}`)}>
+        <Flex direction="column" gap={8}>
+          <Flex direction="row" gap={4} align="center" justify="space-between">
+            <Flex direction="row" gap={4} align="center">
+              <AnnouncementIconWrapper>
+                <AnnouncementIcon />
+              </AnnouncementIconWrapper>
+              <Main style={{ whiteSpace: "nowrap" }}>{getTransactionDescription(transaction)}</Main>
+            </Flex>
+            <Secondary style={{ whiteSpace: "nowrap" }}>
+              {`${getMonthName(`${transaction.month}-${transaction.year}`, "short")} ${transaction.day}`}
+            </Secondary>
+          </Flex>
+          <Secondary>
+            {transaction?.announcementData?.description?.split(" ").map((word, i) => {
+              const isLink = isURL(word);
+              if (isLink) {
+                const displayText = word.replace(/^(https?:\/\/|www\.)/, "");
+                const href = word.endsWith(".") ? word.slice(0, -1) : word;
+                return (
+                  <AnnouncementLink key={i} href={href} target="_blank" rel="noopener noreferrer">
+                    {displayText}
+                  </AnnouncementLink>
+                );
+              }
+              return ` ${word} `;
+            }) || "Announcement description"}
+          </Secondary>
+        </Flex>
       </Transaction>
     </TransactionItem>
   );
@@ -324,8 +373,9 @@ const Transaction = styled.div`
   cursor: pointer;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 0;
+  padding: 12px;
   gap: 1rem;
+  align-self: stretch;
 `;
 
 const Section = styled.div<{ alignRight?: boolean }>`
@@ -334,6 +384,8 @@ const Section = styled.div<{ alignRight?: boolean }>`
 
 const TransactionItem = styled.div`
   position: relative;
+  background: ${({ theme }) => theme.surfaceSecondary};
+  border-radius: 8px;
 
   &:active {
     transform: scale(0.98);
@@ -345,4 +397,26 @@ const NoTransactions = styled(Text).attrs({
   noMargin: true,
 })`
   text-align: center;
+`;
+
+const AnnouncementIconWrapper = styled.div`
+  display: flex;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50px;
+  background: ${({ theme }) => theme.surfaceDefault};
+`;
+
+const AnnouncementIcon = styled(Announcement01)`
+  height: 12px;
+  width: 12px;
+  color: ${({ theme }) => theme.theme};
+`;
+
+const AnnouncementLink = styled.a`
+  color: ${({ theme }) => theme.theme};
+  text-decoration: none;
 `;

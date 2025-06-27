@@ -4,7 +4,6 @@ import { CollectibleView } from "~routes/popup/collectible/[id]";
 import { CollectiblesView } from "~routes/popup/collectibles";
 import { ConfirmPurchaseView } from "~routes/popup/confirm";
 import { MessageNotificationView } from "~routes/popup/notification/[id]";
-import { NotificationsView } from "~routes/popup/notifications";
 import { PendingPurchaseView } from "~routes/popup/pending";
 import { PurchaseView } from "~routes/popup/purchase";
 import { ReceiveView } from "~routes/popup/receive";
@@ -232,10 +231,6 @@ export const POPUP_ROUTES = [
   {
     path: PopupPaths.Transactions,
     component: TransactionsView,
-  },
-  {
-    path: PopupPaths.Notifications,
-    component: NotificationsView,
   },
   {
     path: PopupPaths.MessageNotification,

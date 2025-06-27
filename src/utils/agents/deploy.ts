@@ -1,13 +1,14 @@
 import { connect } from "@permaweb/aoconnect";
 import type { AosConfig, DeployConfig, DeployResult, Services } from "./types";
 import { APP_NAME, defaultServices } from "./constants";
-import { getArweave, isArweaveAddress, isCronPattern, isUrl, parseToInt, pollForProcessSpawn } from "./utils";
+import { getArweave, isArweaveAddress, isCronPattern, parseToInt, pollForProcessSpawn } from "./utils";
 import { ExtensionStorage } from "~utils/storage";
 import { getActiveKeyfile } from "~wallets";
 import { createDataItemSigner } from "~tokens/aoTokens/ao";
 import { retryWithDelay } from "~utils/promises/retry";
 import { AOS_QUERY } from "./queries";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
+import { isURL } from "~utils/urls/isURL";
 
 /**
  * Manages deployments of contracts to AO.
@@ -20,9 +21,9 @@ export class DeploymentsManager {
     const { gatewayUrl, cuUrl, muUrl } = services ?? {};
 
     services = {
-      gatewayUrl: isUrl(gatewayUrl) ? gatewayUrl : defaultServices.gatewayUrl,
-      cuUrl: isUrl(cuUrl) ? cuUrl : defaultServices.cuUrl,
-      muUrl: isUrl(muUrl) ? muUrl : defaultServices.muUrl,
+      gatewayUrl: isURL(gatewayUrl) ? gatewayUrl : defaultServices.gatewayUrl,
+      cuUrl: isURL(cuUrl) ? cuUrl : defaultServices.cuUrl,
+      muUrl: isURL(muUrl) ? muUrl : defaultServices.muUrl,
     };
 
     return services;

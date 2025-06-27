@@ -26,6 +26,7 @@ import {
 import { gql } from "~gateways/api";
 import BigNumber from "bignumber.js";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import { convertAnnouncementsToTransactions } from "~utils/announcements";
 
 /**
  * Wallets with details hook
@@ -99,6 +100,18 @@ export function useActiveWallet() {
   );
 
   return wallet;
+}
+
+/**
+ * Active address
+ */
+export function useActiveAddress() {
+  const [activeAddress] = useStorage<string>({
+    key: "active_address",
+    instance: ExtensionStorage,
+  });
+
+  return activeAddress;
 }
 
 export function useAllWallets() {
@@ -310,6 +323,13 @@ export const useTransactions = (activeAddress: string, limit?: number) => {
         ...liquidOpsAoReceived,
         ...printArchive,
       ];
+
+      if (import.meta.env?.VITE_IS_EMBEDDED_APP !== "1") {
+        const announcementTransactions = convertAnnouncementsToTransactions();
+        combinedTransactions = [...combinedTransactions, ...announcementTransactions];
+      }
+
+      combinedTransactions.sort(sortFn);
 
       combinedTransactions = combinedTransactions.map((transaction) => {
         if (transaction.node.block && transaction.node.block.timestamp) {

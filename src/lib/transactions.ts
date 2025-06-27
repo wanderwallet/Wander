@@ -14,6 +14,7 @@ import type {
   Transaction,
 } from "~api/background/handlers/alarms/notifications/notifications-alarm.utils";
 import { fetchTokenByProcessId, getTagValue } from "~tokens/aoTokens/ao";
+import type { Announcement } from "~utils/announcements";
 
 const AGENT_TOKEN_ADDRESS = "8rbAftv7RaPxFjFk5FGUVAVCSjGQB4JHDcb9P9wCVhQ";
 
@@ -30,6 +31,7 @@ export type ExtendedTransaction = RawTransaction & {
     quantity: string;
     logo?: string;
   };
+  announcementData?: Announcement;
 };
 
 export type GroupedTransactions = {
@@ -144,7 +146,9 @@ export const getFormattedAmount = (transaction: ExtendedTransaction) => {
       }
       return "";
     case "printArchive":
-      return `${parseFloat(transaction.node.fee.ar).toFixed(3)} AR`;
+      return `${parseFloat((transaction.node as any).fee?.ar || "0").toFixed(3)} AR`;
+    case "announcement":
+      return ""; // Announcements don't have amounts
     default:
       return "";
   }
@@ -152,11 +156,15 @@ export const getFormattedAmount = (transaction: ExtendedTransaction) => {
 
 export const getFormattedFiatAmount = (transaction: ExtendedTransaction, arPrice: number, currency: string) => {
   try {
-    if (transaction.node.quantity && transaction.transactionType !== "printArchive") {
+    if (
+      transaction.node.quantity &&
+      transaction.transactionType !== "printArchive" &&
+      transaction.transactionType !== "announcement"
+    ) {
       const fiatBalance = BigNumber(transaction.node.quantity.ar).multipliedBy(arPrice);
       return formatFiatBalance(fiatBalance, currency);
-    } else if (transaction.node.fee && transaction.transactionType === "printArchive") {
-      const fiatBalance = BigNumber(transaction.node.fee.ar).multipliedBy(arPrice);
+    } else if ((transaction.node as any).fee && transaction.transactionType === "printArchive") {
+      const fiatBalance = BigNumber((transaction.node as any).fee.ar).multipliedBy(arPrice);
       return formatFiatBalance(fiatBalance, currency);
     }
   } catch {}
@@ -175,12 +183,14 @@ export const getTransactionDescription = (transaction: ExtendedTransaction) => {
       return `${browser.i18n.getMessage("received")} ${transaction.aoInfo.tickerName}`;
     case "printArchive":
       return browser.i18n.getMessage("print_archived");
+    case "announcement":
+      return (transaction as any).announcementData?.title || "Announcement";
     default:
       return "";
   }
 };
 
-type DateFormatOptions = { month: "long"; year?: "numeric" };
+type DateFormatOptions = { month: "long" | "short"; year?: "numeric" };
 
 const formatMonthYear = (monthYear: string, options: DateFormatOptions): string => {
   const [month, year] = monthYear.split("-").map(Number);
@@ -188,8 +198,8 @@ const formatMonthYear = (monthYear: string, options: DateFormatOptions): string 
   return date.toLocaleString("default", options);
 };
 
-export const getFullMonthName = (monthYear: string) => {
-  return formatMonthYear(monthYear, { month: "long" });
+export const getMonthName = (monthYear: string, monthType: DateFormatOptions["month"] = "long") => {
+  return formatMonthYear(monthYear, { month: monthType });
 };
 
 export const getFullMonthNameWithYear = (monthYear: string) => {

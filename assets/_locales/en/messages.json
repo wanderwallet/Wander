@@ -2772,9 +2772,9 @@
     "message": "Your other accounts",
     "description": "Your other accounts text"
   },
-  "activity": {
-    "message": "Activity",
-    "description": "Activity text"
+  "feed": {
+    "message": "Feed",
+    "description": "Feed text"
   },
   "manage_asset_list": {
     "message": "Manage asset list",

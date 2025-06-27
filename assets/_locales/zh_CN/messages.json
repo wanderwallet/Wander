@@ -2758,9 +2758,9 @@
         "message": "您的其他账户",
         "description": "Your other accounts text"
     },
-    "activity": {
-        "message": "活动",
-        "description": "Activity text"
+    "feed": {
+        "message": "动态",
+        "description": "Feed text"
     },
     "manage_asset_list": {
         "message": "管理资产列表",

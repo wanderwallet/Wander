@@ -19,6 +19,7 @@ import type { Asset } from "~utils/agents/types";
 import { AO_YIELD_AGENT_RECENT_TXS, WANDER_FEE_PROCESS_ID } from "../constants";
 import { QueryClient } from "@tanstack/react-query";
 import dayjs from "dayjs";
+import { isURL } from "~utils/urls/isURL";
 
 export const queryClient = new QueryClient();
 
@@ -67,25 +68,6 @@ export function isArweaveAddress(address: any): boolean {
 }
 
 /**
- * Checks if a string is a valid URL.
- *
- * @param url - The string to be checked.
- * @returns True if the string is a valid URL, false otherwise.
- */
-export function isUrl(url?: string): boolean {
-  try {
-    if (!url || typeof url !== "string") {
-      return false;
-    }
-    // eslint-disable-next-line no-new
-    new URL(url);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-/**
  * Parses a string to an integer.
  * If parsing fails (i.e., the value is NaN), it returns the specified default value.
  *
@@ -116,7 +98,7 @@ export function parseUrl(value: string | undefined, defaultValue: string): strin
   if (value === undefined) {
     return defaultValue;
   }
-  const urlValid = isUrl(value);
+  const urlValid = isURL(value);
   if (!urlValid) {
     return defaultValue;
   }

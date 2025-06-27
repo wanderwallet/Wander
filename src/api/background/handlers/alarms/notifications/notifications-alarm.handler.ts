@@ -101,13 +101,7 @@ export async function handleNotificationsAlarm(alarm?: Alarms.Alarm) {
         // Listen for clicks on the notification
         browser.notifications.onClicked.addListener((clickedNotificationId) => {
           if (clickedNotificationId === notificationId) {
-            const txnId = newTransactions[0].node.id;
-            browser.tabs.create({
-              url:
-                Array.isArray(newAoTransactions) && newAoTransactions.length === 1
-                  ? `https://viewblock.io/ao/tx/${txnId}`
-                  : `https://viewblock.io/arweave/tx/${txnId}`,
-            });
+            browser.tabs.create({ url: browser.runtime.getURL(`tabs/popup.html#/transactions`) });
           }
         });
       }
