@@ -653,6 +653,14 @@
     "message": "New password cannot be the same as your old password",
     "description": "Password must be different from old one"
   },
+  "set_password": {
+    "message": "Set password",
+    "description": "Set password button text"
+  },
+  "change_password": {
+    "message": "Change password",
+    "description": "Change password button text"
+  },
   "invalid_mnemonic": {
     "message": "Invalid mnemonic seedphrase",
     "description": "Invalid mnemonic seedphrase error notification"

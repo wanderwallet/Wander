@@ -13,7 +13,7 @@ import {
   OAUTH_ERROR_MSG_TYPE,
   isOAuthErrorMessage,
   isOAuthSuccessMessage,
-  OAuthError,
+  OAuthErrorCode,
 } from "~utils/authentication/authentication.utils";
 import type { OAuthResultMessage, SupabaseProvider } from "~utils/authentication/authentication.types";
 
@@ -44,7 +44,7 @@ async function authenticateWithOAuth(oAuthProviderType: OAutProviderType): Promi
   const { url } = data;
 
   if (!url) {
-    throw new Error(OAuthError.MISSING_URL);
+    throw new Error(OAuthErrorCode.MISSING_URL);
   }
 
   // Calculate center position for the popup:
@@ -90,7 +90,7 @@ async function authenticateWithOAuth(oAuthProviderType: OAutProviderType): Promi
   }
 
   if (!popup) {
-    throw new Error(OAuthError.CANNOT_OPEN_POPUP);
+    throw new Error(OAuthErrorCode.CANNOT_OPEN_POPUP);
   }
 
   return new Promise<Session>((resolve, reject) => {
@@ -112,7 +112,7 @@ async function authenticateWithOAuth(oAuthProviderType: OAutProviderType): Promi
       }
 
       if (!isOAuthSuccessMessage(event.data)) {
-        reject(new Error(OAuthError.INVALID_OAUTH_MESSAGE));
+        reject(new Error(OAuthErrorCode.INVALID_OAUTH_MESSAGE));
         return;
       }
 
@@ -126,7 +126,7 @@ async function authenticateWithOAuth(oAuthProviderType: OAutProviderType): Promi
       }
 
       if (!data.session) {
-        reject(new Error(OAuthError.CANNOT_CREATE_SESSION));
+        reject(new Error(OAuthErrorCode.CANNOT_CREATE_SESSION));
         return;
       }
 
@@ -138,7 +138,7 @@ async function authenticateWithOAuth(oAuthProviderType: OAutProviderType): Promi
     const popupCheckInterval = setInterval(() => {
       if (popup.closed) {
         cleanup();
-        reject(new Error(OAuthError.POPUP_CLOSED));
+        reject(new Error(OAuthErrorCode.POPUP_CLOSED));
       }
     }, POPUP_CHECK_INTERVAL_MS);
 
@@ -146,7 +146,7 @@ async function authenticateWithOAuth(oAuthProviderType: OAutProviderType): Promi
 
     const timeoutId = setTimeout(() => {
       cleanup();
-      reject(new Error(OAuthError.POPUP_TIMEOUT));
+      reject(new Error(OAuthErrorCode.POPUP_TIMEOUT));
     }, POPUP_AUTHENTICATION_TIMEOUT_MS);
 
     // Cleanup function:
@@ -164,25 +164,45 @@ async function authenticateWithOAuth(oAuthProviderType: OAutProviderType): Promi
 async function signInWithPassword(authParams: AuthSignInWithPasswordParams) {
   const supabase = await getSupabaseClient();
 
-  const { error, data } = await supabase.auth.signInWithPassword({
+  const { data, error } = await supabase.auth.signInWithPassword({
     email: authParams.email,
     password: authParams.password,
   });
 
   if (error) throw error;
 
+  if (!data.user.user_metadata.hasPassword) {
+    // No need to handle error, we can re-attempt this lazily on the next sign in:
+    await supabase.auth.updateUser({
+      data: {
+        ...data.user.user_metadata,
+        hasPassword: true,
+      },
+    });
+  }
+
   return data;
 }
 async function verifyOtp(authParams: AuthVerifyOtpParams) {
   const supabase = await getSupabaseClient();
 
-  const { error, data } = await supabase.auth.verifyOtp({
+  const { data, error } = await supabase.auth.verifyOtp({
     email: authParams.email,
     token: authParams.token,
     type: "email",
   });
 
   if (error) throw error;
+
+  if (!data.user.user_metadata.hasPassword) {
+    // No need to handle error, we can re-attempt this lazily on the next sign in:
+    await supabase.auth.updateUser({
+      data: {
+        ...data.user.user_metadata,
+        hasPassword: true,
+      },
+    });
+  }
 
   return data;
 }

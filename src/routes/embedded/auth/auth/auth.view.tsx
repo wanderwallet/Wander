@@ -1,9 +1,19 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { toast } from "react-toastify";
-import { Button, Divider, GoogleIcon, TextInput, Row, SocialsIcon, Text, Wander2Icon } from "~components/embed";
+import {
+  Button,
+  Divider,
+  GoogleIcon,
+  TextInput,
+  Row,
+  SocialsIcon,
+  Text,
+  Wander2Icon,
+  RecoverHeaderIcon,
+} from "~components/embed";
 import React, { useCallback, useRef, useState } from "react";
 import { getSupabaseClient } from "~utils/embedded/embedded.utils";
-import { useLocation } from "~wallets/router/router.utils";
+import { useLocation, useSearchParams } from "~wallets/router/router.utils";
 import { isValidEmail } from "~utils/email";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
@@ -16,6 +26,7 @@ import { getFriendlyAuthErrorMessage } from "~utils/authentication/authenticatio
 
 export function AuthEmbeddedView() {
   const { navigate } = useLocation();
+  const { email } = useSearchParams<{ email: string }>();
   const { authStatus, authenticate, recoverableAccount } = useEmbedded();
 
   // Input refs:
@@ -108,6 +119,7 @@ export function AuthEmbeddedView() {
 
   return (
     <OnboardingCard
+      headerIcon={recoverableAccount ? <RecoverHeaderIcon /> : null}
       headerText={recoverableAccount ? "Select new sign in method" : "Sign up or Sign in"}
       hasBackButton={false}
       isLoading={isViewLoading}
@@ -115,6 +127,7 @@ export function AuthEmbeddedView() {
       <TextInput
         name="email"
         placeholder="Enter your email"
+        defaultValue={email}
         inputRef={emailInputRef}
         disabled={areButtonsDisabled}
         endSlot={emailInputButton}
@@ -150,12 +163,12 @@ export function AuthEmbeddedView() {
       </Button>
 
       {!recoverableAccount ? (
-        <Row style={{ gap: "4px" }}>
-          <Text variant={"bodySm"}>{"Can't sign in?"}</Text>
-          <Button variant="link" isDisabled={areButtonsDisabled} href="/auth/recover-account" size="sm">
+        <Text variant="bodySm" alignment="center">
+          Can't sign in?{" "}
+          <Button variant="link" isDisabled={areButtonsDisabled} href={EmbeddedPaths.AuthRecoverAccount}>
             Recover account
           </Button>
-        </Row>
+        </Text>
       ) : null}
     </OnboardingCard>
   );

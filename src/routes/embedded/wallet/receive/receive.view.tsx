@@ -6,6 +6,7 @@ import { useActiveWallet } from "~wallets/hooks";
 import { useLocation } from "~wallets/router/router.utils";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import copy from "copy-to-clipboard";
+import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 
 export function WalletReceiveEmbeddedView() {
   const { currentWallet } = useEmbedded();
@@ -18,7 +19,7 @@ export function WalletReceiveEmbeddedView() {
       size="auto"
       headerText="Receive"
       hasBackButton={true}
-      onBackButtonClick={() => navigate("/wallet")}
+      onBackButtonClick={() => navigate(EmbeddedPaths.WalletHomeEmbeddedView)}
       style={{ padding: "32px" }}>
       <Box>
         {/* <Text
