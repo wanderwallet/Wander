@@ -32,22 +32,20 @@ export function AccountBackupWalletRecoveryFileEmbeddedView() {
       onBackButtonClick={() => navigate("/account/backup-wallet")}
       isLoading={isLoading}>
       <Snackbar variant="info" title="About this file:">
-        <Flex direction="row" gap={8} align="center">
+        <p style={{ display: "flex", gap: "8px" }}>
           <XClose style={{ flexShrink: 0 }} height={17} width={17} color="var(--brand-color-error2)" />
           This file cannot be used to import your wallet into other wallet apps.
-        </Flex>
+        </p>
 
-        <Flex direction="row" gap={8} align="center">
+        <p style={{ display: "flex", gap: "8px" }}>
           <XClose style={{ flexShrink: 0 }} height={17} width={17} color="transparent" />
-          <span>
-            Would you like to <Link to="/account/backup-wallet/full">export your wallet</Link> instead?
-          </span>
-        </Flex>
+          Would you like to <Link to="/account/backup-wallet/full">export your wallet</Link> instead?
+        </p>
 
-        <Flex direction="row" gap={8} align="center">
+        <p style={{ display: "flex", gap: "8px" }}>
           <XClose style={{ flexShrink: 0 }} height={17} width={17} color="var(--brand-color-error2)" />
           This file cannot be used to recover your account if you lose access to your credentials.
-        </Flex>
+        </p>
       </Snackbar>
 
       <Snackbar variant="success" title="Safer than a keyfile!">

@@ -1,20 +1,18 @@
 @import "../../../tokens/index.css";
 
 .upload {
-  all: unset;
   border-radius: var(--border-radius-lg);
   border: 1px solid var(--color-copyable-border);
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
   font-family: var(--font-family-serif);
   overflow: hidden;
-  transition: all 0.2s;
   padding: var(--spacing-12) var(--spacing-6);
   cursor: pointer;
   width: auto;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform linear 150ms;
 }
 
 .upload__blurry {
@@ -39,17 +37,14 @@
 }
 
 .upload__filename {
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  word-break: break-all;
   text-align: center;
+  margin-bottom: var(--spacing-2);
 }
 
 .upload__description {
   text-align: center;
-  word-wrap: break-word;
-  max-width: 100%;
+  text-wrap: balance;
 }
 
 .upload:disabled {
