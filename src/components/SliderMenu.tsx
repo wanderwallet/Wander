@@ -15,6 +15,7 @@ interface SliderMenuProps {
   children?: React.ReactNode;
   height?: number | string;
   fullscreen?: boolean;
+  style?: React.CSSProperties;
 }
 
 export default function SliderMenu({
@@ -27,6 +28,7 @@ export default function SliderMenu({
   height,
   children,
   fullscreen = false,
+  style,
 }: SliderMenuProps) {
   const wrapperElementRef = useRef<HTMLDivElement | null>(null);
 
@@ -54,7 +56,8 @@ export default function SliderMenu({
         variants={animationSlideFromBottom}
         initial="hidden"
         animate="shown"
-        exit="hidden">
+        exit="hidden"
+        style={style}>
         <Body>
           {hasHeader &&
             (title ? (

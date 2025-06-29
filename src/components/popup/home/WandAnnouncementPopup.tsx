@@ -1,104 +1,196 @@
 import { Button, Text } from "@arconnect/components-rebrand";
 import { ExtensionStorage } from "~utils/storage";
-import { ContentWrapper } from "~components/modals/Components";
 import { Flex } from "~components/common/Flex";
 import SliderMenu from "~components/SliderMenu";
 import styled from "styled-components";
-import { Percent01, Power01, Star01 } from "@untitled-ui/icons-react";
 import browser from "webextension-polyfill";
-import wandAnnouncementBackground from "~assets/images/wand_announcement.png";
+import { useState, useCallback, useEffect } from "react";
+import useEmblaCarousel from "embla-carousel-react";
+import wandAnnouncementBackground from "~assets/images/wand-announcement/wand_announcement_bg.svg";
+import powerups from "~assets/images/wand-announcement/powerups.png";
+import exclusiveFeature from "~assets/images/wand-announcement/exclusive_feature.png";
+import zeroFees from "~assets/images/wand-announcement/zero_fees.png";
+import wand from "~assets/images/wand-announcement/wand.png";
 
-const features = [
+const carouselData = [
   {
-    icon: <Percent01 height={16} width={16} />,
-    title: "Up to 100% fee reduction",
+    image: wand,
+    title: "Swipe to learn more",
   },
   {
-    icon: <Star01 height={16} width={16} />,
-    title: "Early access to new features",
+    image: zeroFees,
+    title: "Zero fees",
   },
   {
-    icon: <Power01 height={16} width={16} />,
-    title: "Access to partner power ups",
+    image: exclusiveFeature,
+    title: "Exclusive feature access",
   },
-] as const;
+  {
+    image: powerups,
+    title: "Power-ups with partners",
+  },
+];
 
 export const WandAnnouncementPopup = ({ isOpen, setOpen }) => {
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [emblaRef, emblaApi] = useEmblaCarousel({
+    loop: true,
+    align: "center",
+    skipSnaps: false,
+    dragFree: false,
+    containScroll: "trimSnaps",
+  });
+
   async function handleClose() {
     setOpen(false);
     await ExtensionStorage.set("wand_announcement_shown", true);
   }
 
+  const onSelect = useCallback(() => {
+    if (!emblaApi) return;
+    setSelectedIndex(emblaApi.selectedScrollSnap());
+  }, [emblaApi, setSelectedIndex]);
+
+  const scrollTo = useCallback((index: number) => emblaApi && emblaApi.scrollTo(index), [emblaApi]);
+
+  useEffect(() => {
+    if (!emblaApi) return;
+    onSelect();
+    emblaApi.on("select", onSelect);
+    emblaApi.on("reInit", onSelect);
+  }, [emblaApi, onSelect]);
+
   return (
-    <SliderMenu isOpen={isOpen} onClose={handleClose} fullscreen>
-      <BackgroundWrapper>
-        <ContentWrapper style={{ gap: 24 }}>
-          <Flex flex={1}></Flex>
-          <Flex direction="column" gap={24} width="100%" align="center">
-            <Text size="lg" weight="bold" noMargin>
-              Introducing the WAND token!
+    <SliderMenu
+      isOpen={isOpen}
+      onClose={handleClose}
+      style={{
+        backgroundImage: `url(${wandAnnouncementBackground})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+        padding: "24px",
+        boxSizing: "border-box",
+      }}
+      fullscreen>
+      <Flex direction="column" justify="space-between" height="100%">
+        <Flex direction="column" width="100%">
+          <Flex direction="column" gap={8} align="center" justify="center">
+            <Text size="sm" weight="semibold" noMargin>
+              Introducing the
             </Text>
-            <FeaturesBox>
-              {features.map((feature) => (
-                <Flex direction="row" gap={8} width="100%" align="center">
-                  <IconWrapper>{feature.icon}</IconWrapper>
-                  <Text weight="semibold" noMargin style={{ whiteSpace: "nowrap" }}>
-                    {feature.title}
-                  </Text>
-                </Flex>
+            <Flex gap={4} justify="center" align="flex-end">
+              <Text
+                size="3xl"
+                weight="semibold"
+                style={{
+                  background: "linear-gradient(89deg, #7461FA -3.24%, #8B7AFD 98.77%)",
+                  backgroundClip: "text",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                }}
+                noMargin>
+                WAND
+              </Text>
+              <Text size="3xl" weight="semibold" noMargin>
+                token!
+              </Text>
+            </Flex>
+          </Flex>
+          <CarouselContainer>
+            <EmblaViewport ref={emblaRef}>
+              <EmblaContainer>
+                {carouselData.map((item, index) => (
+                  <EmblaSlide key={index}>
+                    <CarouselImage src={item.image} alt={item.title} />
+                    <Text weight="semibold" noMargin>
+                      {item.title}
+                    </Text>
+                  </EmblaSlide>
+                ))}
+              </EmblaContainer>
+            </EmblaViewport>
+
+            <DotsContainer>
+              {carouselData.map((_, index) => (
+                <Dot key={index} active={index === selectedIndex} onClick={() => scrollTo(index)} />
               ))}
-            </FeaturesBox>
-          </Flex>
-          <Flex direction="column" gap={16} width="100%">
-            <Button
-              fullWidth
-              onClick={() => {
-                browser.tabs.create({ url: "https://ao.arweave.net/#/delegate/" });
-              }}>
-              Get WAND tokens
-            </Button>
-            <Button variant="secondary" fullWidth onClick={() => {}}>
-              Explore tier benefits
-            </Button>
-          </Flex>
-        </ContentWrapper>
-      </BackgroundWrapper>
+            </DotsContainer>
+          </CarouselContainer>
+        </Flex>
+
+        <Flex direction="column" width="100%">
+          <Button
+            fullWidth
+            onClick={() => {
+              browser.tabs.create({ url: "https://ao.arweave.net/#/delegate/" });
+            }}>
+            Get WAND tokens
+          </Button>
+          <LinkButton fullWidth onClick={() => {}}>
+            Explore tier benefits
+          </LinkButton>
+        </Flex>
+      </Flex>
     </SliderMenu>
   );
 };
 
-const BackgroundWrapper = styled.div`
-  position: fixed;
-  z-index: -1;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+const CarouselContainer = styled.div`
   width: 100%;
-  height: 100%;
-  background-image: url("${wandAnnouncementBackground}");
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  padding: 24px;
-  box-sizing: border-box;
 `;
 
-const FeaturesBox = styled.div`
+const EmblaViewport = styled.div`
+  overflow: hidden;
+`;
+
+const EmblaContainer = styled.div`
+  display: flex;
+  touch-action: pan-y pinch-zoom;
+`;
+
+const EmblaSlide = styled.div`
+  flex: 0 0 100%;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 24px 32px;
-  border-radius: 16px;
-  border: 1px solid ${({ theme }) => theme.theme};
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
 `;
 
-const IconWrapper = styled.div`
-  width: 24px;
-  height: 24px;
-  flex-shrink: 0;
-  background-color: #342888;
+const CarouselImage = styled.img`
+  width: 100%;
+  height: 100%;
+`;
+
+const DotsContainer = styled.div`
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 20px;
+`;
+
+const Dot = styled.button<{ active: boolean }>`
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  padding: 4px;
-  box-sizing: border-box;
+  border: none;
+  background: ${(props) => (props.active ? "white" : "rgba(255, 255, 255, 0.4)")};
+  cursor: pointer;
+  transition: background 0.2s ease;
+
+  &:hover {
+    background: ${(props) => (props.active ? "white" : "rgba(255, 255, 255, 0.6)")};
+  }
+`;
+
+const LinkButton = styled(Button)`
+  background: none;
+  border: none;
+  transition: all 0.2s ease;
+  &:hover {
+    background: none;
+    opacity: 0.8;
+  }
 `;
