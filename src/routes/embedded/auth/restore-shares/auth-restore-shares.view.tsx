@@ -1,74 +1,88 @@
 import { QrCode02 } from "@untitled-ui/icons-react";
 import { useMemo } from "react";
-import {
-  Button,
-  WalletIcon,
-  SeedIcon,
-  KeyIcon,
-  Text,
-  Snackbar,
-  type SnackbarVariant,
-  Divider,
-} from "~components/embed/ui";
+import { Button, WalletIcon, SeedIcon, KeyIcon, Snackbar, type SnackbarVariant, Divider } from "~components/embed/ui";
 import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
+import { formatDate } from "~utils/agents/utils";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { signOut } from "~utils/embedded/embedded.utils";
+import browser from "webextension-polyfill";
 
 export function AuthRestoreSharesEmbeddedView() {
   const { wallets, unpartitionedStateStatus } = useEmbedded();
   const hasMultipleWallets = wallets.length > 1;
-  const hasRecoverableWallets = wallets.some((wallet) => wallet.canBeRecovered) || true;
+
+  // TODO: Let them know what type of backup/export they made and where? Let them check all available options?
+
+  const { lastRecovery, hasRecoverableWallets } = useMemo(() => {
+    let lastRecovery = 0;
+    let hasRecoverableWallets = false;
+
+    wallets.forEach(({ canBeRecovered, lastBackedUpAt, lastExportedAt }) => {
+      lastRecovery = canBeRecovered
+        ? Math.max(lastRecovery, lastBackedUpAt?.getTime() || 0, lastExportedAt?.getTime() || 0)
+        : lastRecovery;
+      hasRecoverableWallets = hasRecoverableWallets || canBeRecovered;
+    });
+
+    return {
+      lastRecovery,
+      hasRecoverableWallets,
+    };
+  }, []);
 
   let createFirst = false;
   let snackbarVariant: SnackbarVariant = "warning";
-  let title = "Using a new device?";
-  let message =
-    "This happens when you start using Wander on a new device or browser, or clear your browser data. If you've lost your backup options, you can create a new one instead.";
+  let title = "No wallets found on this device";
+  let message = "New device or browser? Did you clear your browser data? Select a method for restoring your wallet.";
   let unpartitionedStorageMessage = "";
-  let showSupportLinks = false;
-  let needsWalletCreationConfirmation = false;
-
-  // TODO: Let them know what type of backup/export they made and where? Let them check all available options?
-  const lastRecovery = useMemo(() => {
-    let lastRecovery = 0;
-
-    wallets.forEach(({ lastBackedUpAt, lastExportedAt }) => {
-      lastRecovery = Math.max(lastRecovery, lastBackedUpAt?.getTime() || 0, lastExportedAt?.getTime() || 0);
-    });
-  }, []);
 
   // Keep in mind users could have seen the QR or seedphrase backup but then they might not scan or save it, respectively. Also, users might have exported
   // a keyfile or recovery file, but they might have lost it.
 
   if (!hasRecoverableWallets) {
     createFirst = true;
-    showSupportLinks = true;
     snackbarVariant = "error";
     title = "No backups detected";
     message = hasMultipleWallets
-      ? `It looks like your wallets are not recoverable. Unless you backed any of them up, they are lost forever. Create a new wallet instead.`
-      : `It looks like your wallet is not recoverable. Unless you backed it up, it's lost forever. Create a new wallet instead.`;
-  } else if (unpartitionedStateStatus !== "supported") {
-    // TODO: Let them know where they've previously signed in?
-    showSupportLinks = true;
-    snackbarVariant = "error";
-    unpartitionedStorageMessage =
-      "If you've previously used Wander on a different site, your might still be able to backup your wallet from it. Please, go back and try to backup your wallet.";
+      ? `It looks like your wallets are not recoverable. Unless you backed any of them up, they are lost forever.`
+      : `It looks like your wallet is not recoverable. Unless you backed it up, it's lost forever.`;
+
+    if (unpartitionedStateStatus !== "supported") {
+      // TODO: Let them know where they've previously signed in?
+      unpartitionedStorageMessage =
+        "If you've previously used Wander on a different site, your might still be able to backup your wallet from it.";
+    }
   }
 
   return (
     <OnboardingCard
-      headerText="Restore wallet"
-      subtitle="Select a method for restoring your wallet."
+      headerText="Restore Wallet"
+      subtitle="We need to restore you wallet on this device."
       onBackButtonClick={() => signOut(false)}>
       <Snackbar title={title} variant={snackbarVariant}>
         <p>{message}</p>
         {unpartitionedStorageMessage ? <p>{unpartitionedStorageMessage} </p> : null}
+        {lastRecovery ? <p>You last backed up your wallet on {formatDate(new Date(lastRecovery), "")}</p> : null}
+        <p>
+          Need help?{" "}
+          <Button
+            variant="link"
+            onClick={(e) => {
+              e.preventDefault();
+              browser.tabs.create({ url: "https://www.wander.app/help" });
+            }}>
+            Learn more
+          </Button>
+        </p>
       </Snackbar>
 
       {createFirst ? (
         <>
-          <Button variant="outlined" isFullWidth icon={<WalletIcon fontSize={24} />} href="/auth/add-wallet">
+          <Button
+            variant="outlined"
+            isFullWidth
+            icon={<WalletIcon fontSize={24} />}
+            href="/auth/restore-shares/create-confirmation">
             Create new wallet
           </Button>
 
@@ -130,7 +144,11 @@ export function AuthRestoreSharesEmbeddedView() {
         <>
           <Divider text={"OR"} />
 
-          <Button variant="outlined" isFullWidth icon={<WalletIcon fontSize={24} />} href="/auth/add-wallet">
+          <Button
+            variant="outlined"
+            isFullWidth
+            icon={<WalletIcon fontSize={24} />}
+            href="/auth/restore-shares/create-confirmation">
             Create new wallet
           </Button>
         </>

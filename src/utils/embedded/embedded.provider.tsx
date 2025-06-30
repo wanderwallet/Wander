@@ -677,6 +677,10 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     async (sourceType: WalletSourceType) => {
       log(LOG_GROUP.WALLET_GENERATION, `registerWallet(${sourceType})`);
 
+      if (authStatus === "noShares") {
+        // TODO: Mark all wallets as lost first.
+      }
+
       const promise =
         sourceType === "GENERATED"
           ? generatedTempWalletPromiseRef.current?.promise

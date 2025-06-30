@@ -78,13 +78,22 @@ export function useEmbeddedOverride(location?: RoutePath) {
   if (authStatus === "noShares") {
     return routeTrapMatches(
       location,
-      // TODO: Do we allow simply generating a new wallet? EmbeddedPaths.AuthAddWallet
       [
+        // Restore:
         EmbeddedPaths.AuthRestoreShares,
+        EmbeddedPaths.AuthRestoreSharesCreateConfirmation,
         EmbeddedPaths.AuthRestoreSharesRecoveryFile,
         EmbeddedPaths.AuthRestoreSharesSeedPhrase,
         EmbeddedPaths.AuthRestoreSharesKeyfile,
         EmbeddedPaths.AuthRestoreSharesQrCode,
+
+        // Add wallet:
+        EmbeddedPaths.AuthAddWallet,
+        EmbeddedPaths.AuthImportSeedPhrase,
+        EmbeddedPaths.AuthAddWithQRCode,
+        EmbeddedPaths.AuthQRCodeScanner,
+        EmbeddedPaths.AuthImportKeyfile,
+        EmbeddedPaths.AuthImportQrCode,
       ],
       EmbeddedPaths.AuthRestoreShares,
     );
