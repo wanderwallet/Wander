@@ -3651,5 +3651,37 @@
   "announcement_2_description": {
     "message": "Auto-convert your daily AO token earnings.",
     "description": "Announcement 2 description"
+  },
+  "swipe_to_learn_more": {
+    "message": "Swipe to learn more",
+    "description": "Swipe to learn more text"
+  },
+  "zero_fees": {
+    "message": "Zero fees",
+    "description": "Zero fees text"
+  },
+  "exclusive_feature_access": {
+    "message": "Exclusive feature access",
+    "description": "Exclusive feature access text"
+  },
+  "power_ups_with_partners": {
+    "message": "Power-ups with partners",
+    "description": "Power-ups with partners text"
+  },
+  "introducing_the": {
+    "message": "Introducing the",
+    "description": "Introducing the text"
+  },
+  "token": {
+    "message": "token",
+    "description": "Token text"
+  },
+  "get_wand_tokens": {
+    "message": "Get WAND tokens",
+    "description": "Get WAND tokens text"
+  },
+  "explore_tier_benefits": {
+    "message": "Explore tier benefits",
+    "description": "Explore tier benefits text"
   }
 }

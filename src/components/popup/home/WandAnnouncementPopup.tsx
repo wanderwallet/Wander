@@ -2,63 +2,53 @@ import { Button, Text } from "@arconnect/components-rebrand";
 import { ExtensionStorage } from "~utils/storage";
 import { Flex } from "~components/common/Flex";
 import SliderMenu from "~components/SliderMenu";
+import { Carousel } from "~components/Carousel";
 import styled from "styled-components";
 import browser from "webextension-polyfill";
-import { useState, useCallback, useEffect } from "react";
-import useEmblaCarousel from "embla-carousel-react";
-import wandAnnouncementBackground from "~assets/images/wand-announcement/wand_announcement_bg.svg";
 import powerups from "~assets/images/wand-announcement/powerups.png";
 import exclusiveFeature from "~assets/images/wand-announcement/exclusive_feature.png";
 import zeroFees from "~assets/images/wand-announcement/zero_fees.png";
 import wand from "~assets/images/wand-announcement/wand.png";
+import wandAnnouncementBackground from "~assets/images/wand-announcement/wand_announcement_bg.svg";
 
-const carouselData = [
+interface WandCarouselSlide {
+  image: string;
+  title: string;
+}
+
+const carouselData: WandCarouselSlide[] = [
   {
     image: wand,
-    title: "Swipe to learn more",
+    title: browser.i18n.getMessage("swipe_to_learn_more"),
   },
   {
     image: zeroFees,
-    title: "Zero fees",
+    title: browser.i18n.getMessage("zero_fees"),
   },
   {
     image: exclusiveFeature,
-    title: "Exclusive feature access",
+    title: browser.i18n.getMessage("exclusive_feature_access"),
   },
   {
     image: powerups,
-    title: "Power-ups with partners",
+    title: browser.i18n.getMessage("power_ups_with_partners"),
   },
 ];
 
 export const WandAnnouncementPopup = ({ isOpen, setOpen }) => {
-  const [selectedIndex, setSelectedIndex] = useState(0);
-  const [emblaRef, emblaApi] = useEmblaCarousel({
-    loop: true,
-    align: "center",
-    skipSnaps: false,
-    dragFree: false,
-    containScroll: "trimSnaps",
-  });
-
   async function handleClose() {
     setOpen(false);
     await ExtensionStorage.set("wand_announcement_shown", true);
   }
 
-  const onSelect = useCallback(() => {
-    if (!emblaApi) return;
-    setSelectedIndex(emblaApi.selectedScrollSnap());
-  }, [emblaApi, setSelectedIndex]);
-
-  const scrollTo = useCallback((index: number) => emblaApi && emblaApi.scrollTo(index), [emblaApi]);
-
-  useEffect(() => {
-    if (!emblaApi) return;
-    onSelect();
-    emblaApi.on("select", onSelect);
-    emblaApi.on("reInit", onSelect);
-  }, [emblaApi, onSelect]);
+  const renderSlide = (slide: WandCarouselSlide) => (
+    <SlideContent>
+      <CarouselImage src={slide.image} alt={slide.title} />
+      <Text weight="semibold" style={{ color: "white" }} noMargin>
+        {slide.title}
+      </Text>
+    </SlideContent>
+  );
 
   return (
     <SliderMenu
@@ -72,13 +62,14 @@ export const WandAnnouncementPopup = ({ isOpen, setOpen }) => {
         padding: "24px",
         boxSizing: "border-box",
       }}
+      closeIconColor="white"
       fullscreen>
       <Flex direction="column" justify="space-between" height="100%">
         <Flex direction="column" width="100%">
           <Flex direction="column" gap={8} align="center" justify="center">
-            <Text size="sm" weight="semibold" noMargin>
-              Introducing the
-            </Text>
+            <WhiteText size="sm" weight="semibold" noMargin>
+              {browser.i18n.getMessage("introducing_the")}
+            </WhiteText>
             <Flex gap={4} justify="center" align="flex-end">
               <Text
                 size="3xl"
@@ -92,31 +83,19 @@ export const WandAnnouncementPopup = ({ isOpen, setOpen }) => {
                 noMargin>
                 WAND
               </Text>
-              <Text size="3xl" weight="semibold" noMargin>
-                token!
-              </Text>
+              <WhiteText size="3xl" weight="semibold" noMargin>
+                {browser.i18n.getMessage("token")}!
+              </WhiteText>
             </Flex>
           </Flex>
-          <CarouselContainer>
-            <EmblaViewport ref={emblaRef}>
-              <EmblaContainer>
-                {carouselData.map((item, index) => (
-                  <EmblaSlide key={index}>
-                    <CarouselImage src={item.image} alt={item.title} />
-                    <Text weight="semibold" noMargin>
-                      {item.title}
-                    </Text>
-                  </EmblaSlide>
-                ))}
-              </EmblaContainer>
-            </EmblaViewport>
 
-            <DotsContainer>
-              {carouselData.map((_, index) => (
-                <Dot key={index} active={index === selectedIndex} onClick={() => scrollTo(index)} />
-              ))}
-            </DotsContainer>
-          </CarouselContainer>
+          <Carousel
+            slides={carouselData}
+            renderSlide={renderSlide}
+            showDots={true}
+            dotColor="rgba(255, 255, 255, 0.4)"
+            activeDotColor="white"
+          />
         </Flex>
 
         <Flex direction="column" width="100%">
@@ -125,10 +104,10 @@ export const WandAnnouncementPopup = ({ isOpen, setOpen }) => {
             onClick={() => {
               browser.tabs.create({ url: "https://ao.arweave.net/#/delegate/" });
             }}>
-            Get WAND tokens
+            {browser.i18n.getMessage("get_wand_tokens")}
           </Button>
           <LinkButton fullWidth onClick={() => {}}>
-            Explore tier benefits
+            {browser.i18n.getMessage("explore_tier_benefits")}
           </LinkButton>
         </Flex>
       </Flex>
@@ -136,22 +115,7 @@ export const WandAnnouncementPopup = ({ isOpen, setOpen }) => {
   );
 };
 
-const CarouselContainer = styled.div`
-  width: 100%;
-`;
-
-const EmblaViewport = styled.div`
-  overflow: hidden;
-`;
-
-const EmblaContainer = styled.div`
-  display: flex;
-  touch-action: pan-y pinch-zoom;
-`;
-
-const EmblaSlide = styled.div`
-  flex: 0 0 100%;
-  min-width: 0;
+const SlideContent = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -164,27 +128,6 @@ const CarouselImage = styled.img`
   height: 100%;
 `;
 
-const DotsContainer = styled.div`
-  display: flex;
-  gap: 8px;
-  justify-content: center;
-  margin-top: 20px;
-`;
-
-const Dot = styled.button<{ active: boolean }>`
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  border: none;
-  background: ${(props) => (props.active ? "white" : "rgba(255, 255, 255, 0.4)")};
-  cursor: pointer;
-  transition: background 0.2s ease;
-
-  &:hover {
-    background: ${(props) => (props.active ? "white" : "rgba(255, 255, 255, 0.6)")};
-  }
-`;
-
 const LinkButton = styled(Button)`
   background: none;
   border: none;
@@ -193,4 +136,8 @@ const LinkButton = styled(Button)`
     background: none;
     opacity: 0.8;
   }
+`;
+
+const WhiteText = styled(Text)`
+  color: white;
 `;

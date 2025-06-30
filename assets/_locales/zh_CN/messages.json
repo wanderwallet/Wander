@@ -3611,5 +3611,37 @@
     "announcement_2_description": {
       "message": "自动转换您的每日 AO 代币收益。",
       "description": "Announcement 2 description"
+    },
+    "swipe_to_learn_more": {
+      "message": "滑动了解更多",
+      "description": "Swipe to learn more text"
+    },
+    "zero_fees": {
+      "message": "零费用",
+      "description": "Zero fees text"
+    },
+    "exclusive_feature_access": {
+      "message": "独家功能访问",
+      "description": "Exclusive feature access text"
+    },
+    "power_ups_with_partners": {
+      "message": "与合作伙伴的增强功能",
+      "description": "Power-ups with partners text"
+    },
+    "introducing_the": {
+      "message": "介绍",
+      "description": "Introducing the text"
+    },
+    "token": {
+      "message": "代币",
+      "description": "Token text"
+    },
+    "get_wand_tokens": {
+      "message": "获取 WAND 代币",
+      "description": "Get WAND tokens text"
+    },
+    "explore_tier_benefits": {
+      "message": "探索层级收益",
+      "description": "Explore tier benefits text"
     }
 }

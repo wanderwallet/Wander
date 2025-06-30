@@ -16,6 +16,7 @@ interface SliderMenuProps {
   height?: number | string;
   fullscreen?: boolean;
   style?: React.CSSProperties;
+  closeIconColor?: string;
 }
 
 export default function SliderMenu({
@@ -29,6 +30,7 @@ export default function SliderMenu({
   children,
   fullscreen = false,
   style,
+  closeIconColor,
 }: SliderMenuProps) {
   const wrapperElementRef = useRef<HTMLDivElement | null>(null);
 
@@ -63,10 +65,10 @@ export default function SliderMenu({
             (title ? (
               <Header>
                 <Title>{title}</Title>
-                <ExitButton onClick={onClose} />
+                <ExitButton onClick={onClose} color={closeIconColor} />
               </Header>
             ) : (
-              <AbsoluteExitButton onClick={onClose} />
+              <AbsoluteExitButton onClick={onClose} color={closeIconColor} />
             ))}
           {children}
         </Body>
@@ -77,9 +79,9 @@ export default function SliderMenu({
   return createPortal(<AnimatePresence>{contentElement}</AnimatePresence>, document.body);
 }
 
-const ExitButton = styled(CloseIcon)`
+const ExitButton = styled(CloseIcon)<{ color?: string }>`
   cursor: pointer;
-  color: ${({ theme }) => `${theme.displayTheme === "light" ? "#000000" : "#FFFFFF"}`};
+  color: ${({ theme, color }) => color || `${theme.displayTheme === "light" ? "#000000" : "#FFFFFF"}`};
   transition: transform 0.2s ease;
 
   &:hover {
