@@ -1,18 +1,18 @@
-import { type Variants, motion } from "framer-motion";
-import React, { useCallback, useEffect, useRef, useState, type PropsWithChildren } from "react";
-import styled from "styled-components";
+import React, { useCallback, useEffect, useRef } from "react";
 import { useLocation } from "~wallets/router/router.utils";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 import { locationToRouteType, routeTypeToPreferredLayout } from "~utils/embedded/utils/routes/embedded-routes.utils";
 
-export interface ResizeEventObserver {
+import styles from "./ResizeEventObserver.module.scss";
+
+export interface ResizeEventObserverProps {
   containerRef: React.MutableRefObject<HTMLElement>;
 }
 
-export function ResizeEventObserver({ containerRef }: ResizeEventObserver) {
+export function ResizeEventObserver({ containerRef }: ResizeEventObserverProps) {
   const { location } = useLocation();
-  const [height, setHeight] = useState(0);
 
+  const lineRef = useRef<HTMLDivElement>();
   const locationRef = useRef(location);
   const sizeRef = useRef({ width: 0, height: 0 });
 
@@ -41,8 +41,12 @@ export function ResizeEventObserver({ containerRef }: ResizeEventObserver) {
       },
     });
 
-    // For debugging only:
-    setHeight(height);
+    const lineElement = lineRef.current;
+
+    if (lineElement) {
+      lineElement.style.setProperty("--height", `${height - 2}px`);
+      lineElement.dataset.height = `${height}px`;
+    }
   }, []);
 
   useEffect(() => {
@@ -78,28 +82,5 @@ export function ResizeEventObserver({ containerRef }: ResizeEventObserver) {
 
   if (import.meta.env?.VITE_IS_EMBEDDED_APP !== "1" || process.env.NODE_ENV !== "development") return null;
 
-  return <DivLine style={{ top: `${height - 6}px` }} data-height={`${height}px`} />;
+  return <div className={styles.line} ref={lineRef} />;
 }
-
-const DivLine = styled(motion.div)`
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  border-bottom: 2px dashed red;
-  z-index: 9999;
-  pointer-events: none;
-
-  &::before {
-    content: attr(data-height);
-    position: absolute;
-    top: 2px;
-    left: 16px;
-    transform: translate(0, -100%);
-    padding: 4px 8px;
-    background: red;
-    color: white;
-    font: bold 11px monospace;
-    border-radius: 4px 4px 0 0;
-  }
-`;
