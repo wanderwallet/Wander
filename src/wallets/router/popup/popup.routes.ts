@@ -56,6 +56,7 @@ import { LiquidOpsDepositWithdraw } from "~routes/popup/agents/liquidops/deposit
 import { LiquidOpsConfirm } from "~routes/popup/agents/liquidops/confirm";
 import { LiquidOpsResult } from "~routes/popup/agents/liquidops/result";
 import { AnnouncementView } from "~routes/popup/announcement";
+import { BenefitsView } from "~routes/popup/benefits";
 
 export type PopupRoutePath =
   | "/"
@@ -115,7 +116,8 @@ export type PopupRoutePath =
   | `/agents/liquidops/${string}`
   | `/agents/liquidops/${string}/${"deposit" | "withdraw"}`
   | `/agents/liquidops/${string}/${"deposit" | "withdraw"}/${string}/confirm`
-  | `/agents/liquidops/${string}/${"deposit" | "withdraw"}/result/${"success" | "failure"}`;
+  | `/agents/liquidops/${string}/${"deposit" | "withdraw"}/result/${"success" | "failure"}`
+  | `/benefits`;
 
 export const PopupPaths = {
   Home: "/",
@@ -172,6 +174,7 @@ export const PopupPaths = {
   LiquidOpsDepositWithdraw: "/agents/liquidops/:ticker/:action",
   LiquidOpsResult: "/agents/liquidops/:ticker/:action/result/:result",
   LiquidOpsConfirm: "/agents/liquidops/:ticker/:action/:quantity/confirm",
+  Benefits: "/benefits",
 } as const satisfies Record<string, PopupRoutePath>;
 
 export const POPUP_ROUTES = [
@@ -392,5 +395,9 @@ export const POPUP_ROUTES = [
   {
     path: PopupPaths.LiquidOpsConfirm,
     component: LiquidOpsConfirm,
+  },
+  {
+    path: PopupPaths.Benefits,
+    component: BenefitsView,
   },
 ] as const satisfies RouteConfig[];

@@ -24,8 +24,8 @@ import { fetchWalletBalances } from "~utils/balances";
 import useSetting from "~settings/hook";
 import QRModal from "~components/modals/QRModal";
 import { useArPrice } from "~lib/coingecko";
-import { NoAvatarIcon } from "./WalletHeader";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import { NoAvatarIcon } from "~components/Avatar";
 
 export default function WalletSwitcher({ open, close }: Props) {
   const theme = useTheme();

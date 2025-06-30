@@ -6,7 +6,7 @@ import HardwareWalletIcon from "~components/hardware/HardwareWalletIcon";
 import keystoneLogo from "url:/assets/hardware/keystone.png";
 import { ListItem, ListItemIcon, Text } from "@arconnect/components-rebrand";
 import Online from "~components/Online";
-import { NoAvatarIcon } from "~components/popup/WalletHeader";
+import { NoAvatarIcon } from "~components/Avatar";
 
 export default function WalletListItem({
   wallet,

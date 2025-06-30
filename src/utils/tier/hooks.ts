@@ -1,28 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
 import { useActiveAddress } from "~wallets/hooks";
-import type { Tier } from "./types";
-
-const tiers = [
-  {
-    name: "Gold",
-    iconColor: "#D5AA0F",
-  },
-  {
-    name: "Silver",
-    iconColor: "#90A1A5",
-  },
-  {
-    name: "Bronze",
-    iconColor: "#EDA355",
-  },
-];
+import type { ActiveTier } from "./types";
+import { getActiveTier } from "./utils";
 
 export function useActiveTier() {
   const activeAddress = useActiveAddress();
 
-  return useQuery<Tier>({
+  return useQuery<ActiveTier>({
     queryKey: ["active-tier", activeAddress],
-    queryFn: () => tiers[0],
+    queryFn: async () => getActiveTier(activeAddress),
     enabled: !!activeAddress,
     refetchInterval: 60_000,
     staleTime: 60_000,

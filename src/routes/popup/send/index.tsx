@@ -19,7 +19,7 @@ import { useLocation } from "~wallets/router/router.utils";
 import { ExtensionStorage, TempTransactionStorage } from "~utils/storage";
 import { AR_PROCESS_ID, type TokenInfo } from "~tokens/aoTokens/ao";
 import { useStorage } from "@plasmohq/storage/hook";
-import { NoAvatarIcon } from "~components/popup/WalletHeader";
+import { NoAvatarIcon } from "~components/Avatar";
 
 // default size for the qty text
 export const arPlaceholder: TokenInterface = {

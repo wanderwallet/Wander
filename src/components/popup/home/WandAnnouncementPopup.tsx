@@ -10,6 +10,7 @@ import exclusiveFeature from "~assets/images/wand-announcement/exclusive_feature
 import zeroFees from "~assets/images/wand-announcement/zero_fees.png";
 import wand from "~assets/images/wand-announcement/wand.png";
 import wandAnnouncementBackground from "~assets/images/wand-announcement/wand_announcement_bg.svg";
+import { useLocation } from "~wallets/router/router.utils";
 
 interface WandCarouselSlide {
   image: string;
@@ -36,6 +37,8 @@ const carouselData: WandCarouselSlide[] = [
 ];
 
 export const WandAnnouncementPopup = ({ isOpen, setOpen }) => {
+  const { navigate } = useLocation();
+
   async function handleClose() {
     setOpen(false);
     await ExtensionStorage.set("wand_announcement_shown", true);
@@ -106,7 +109,7 @@ export const WandAnnouncementPopup = ({ isOpen, setOpen }) => {
             }}>
             {browser.i18n.getMessage("get_wand_tokens")}
           </Button>
-          <LinkButton fullWidth onClick={() => {}}>
+          <LinkButton fullWidth onClick={() => navigate("/benefits")}>
             {browser.i18n.getMessage("explore_tier_benefits")}
           </LinkButton>
         </Flex>

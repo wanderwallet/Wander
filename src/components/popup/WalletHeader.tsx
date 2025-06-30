@@ -9,28 +9,26 @@ import { formatAddress, getAppURL, truncateMiddle } from "~utils/format";
 import { removeApp } from "~applications";
 import { useTheme } from "~utils/theme";
 import { Button, Card, type DisplayTheme, Text, useToasts, Tooltip } from "@arconnect/components-rebrand";
-import { CheckIcon, CopyIcon, GlobeIcon, LogOutIcon, SettingsIcon, WalletIcon } from "@iconicicons/react";
+import { CheckIcon, CopyIcon, GlobeIcon, LogOutIcon, SettingsIcon } from "@iconicicons/react";
 import WalletSwitcher, { popoverAnimation } from "./WalletSwitcher";
 import Application, { type AppInfo } from "~applications/application";
 import keystoneLogo from "url:/assets/hardware/keystone.png";
 import useActiveTab from "~applications/useActiveTab";
 import AppIcon, { NoAppIcon } from "./home/AppIcon";
-import Squircle from "~components/Squircle";
 import browser from "webextension-polyfill";
 import styled from "styled-components";
 import copy from "copy-to-clipboard";
 import { type Gateway } from "~gateways/gateway";
-import { useLocation } from "~wallets/router/router.utils";
 import { useNameServiceProfile } from "~lib/nameservice";
 import { concatGatewayURL } from "~gateways/utils";
 import { FULL_HISTORY, useGateway } from "~gateways/wayfinder";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
-import { BenefitsTag } from "./BenefitsTag";
+import { BenefitsTag } from "./tier/BenefitsTag";
 import { Flex } from "~components/common/Flex";
+import { Avatar, NoAvatarIcon } from "~components/Avatar";
 
 export default function WalletHeader() {
   const theme = useTheme();
-  const { navigate } = useLocation();
 
   // current address
   const [activeAddress] = useStorage<string>({
@@ -354,31 +352,6 @@ const Wallet = styled.div`
     background-color: rgba(${(props) => props.theme.theme}, 0.15);
     transform: scale(0.96);
   }
-`;
-
-const avatarSize = "1.5rem";
-
-export const Avatar = styled(Squircle)`
-  position: relative;
-  width: ${avatarSize};
-  height: ${avatarSize};
-
-  ${HardwareWalletIcon} {
-    position: absolute;
-    right: -5px;
-    bottom: -5px;
-  }
-`;
-
-export const NoAvatarIcon = styled(WalletIcon)<{ size?: string }>`
-  position: absolute;
-  font-size: 1rem;
-  width: ${(props) => props.size || "1em"};
-  height: ${(props) => props.size || "1em"};
-  color: #fff;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
 `;
 
 const AppOnline = styled.div<{ online: boolean }>`

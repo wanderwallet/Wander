@@ -1,6 +1,6 @@
 import { type DisplayTheme, Section, Text, Tooltip } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
-import { Action, Avatar, CloseLayer, NoAvatarIcon } from "./WalletHeader";
+import { Action, CloseLayer } from "./WalletHeader";
 import { AnimatePresence } from "framer-motion";
 import { useTheme } from "~utils/theme";
 import { useStorage } from "~utils/storage";
@@ -20,6 +20,7 @@ import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-mes
 import { useNameServiceProfile } from "~lib/nameservice";
 import { concatGatewayURL } from "~gateways/utils";
 import { FULL_HISTORY, useGateway } from "~gateways/wayfinder";
+import { Avatar, NoAvatarIcon } from "~components/Avatar";
 
 export interface HeadV2Props {
   title: string;
