@@ -170,7 +170,7 @@ export interface GenerateShareHashAndPublicKeyReturn {
  * - https://www.youtube.com/watch?v=cMoD0wIxIpQ
  */
 async function generateShareHashAndPublicKey(share: string): Promise<GenerateShareHashAndPublicKeyReturn> {
-  log(LOG_GROUP.WALLET_GENERATION, "generateShareHashAndPublicKey()");
+  log(LOG_GROUP.WALLET_GENERATION, "generateShareHashAndPublicKey(🐌)");
 
   if (!share) {
     throw new Error("Share is missing — unable to generate share hash and public key.");
@@ -230,7 +230,7 @@ async function generateShareHashAndPrivateKey(
   share: string,
   skipKeyGeneration = false,
 ): Promise<GenerateShareHashAndPrivateKeyReturn> {
-  log(LOG_GROUP.WALLET_GENERATION, "generateShareHashAndPrivateKey()");
+  log(LOG_GROUP.WALLET_GENERATION, `generateShareHashAndPrivateKey(${skipKeyGeneration ? "⚡" : "🐌"})`);
 
   if (!share) {
     throw new Error("Share is missing — unable to generate share hash and private key.");
