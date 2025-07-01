@@ -1,0 +1,29 @@
+.root {
+  position: absolute;
+  bottom: -1px;
+  right: 0;
+  z-index: 99999;
+  display: flex;
+  background: var(--backgroundColor);
+  box-shadow: 0 0 16px rgba(0, 128, 0, 0.25);
+  color: white;
+  font: bold 11px monospace;
+  border-radius: 4px 0 0 0;
+  overflow: hidden;
+  cursor: default;
+}
+
+.envStatus,
+.envType {
+  display: flex;
+  align-items: center;
+}
+
+.envStatus {
+  padding: 4px 6px;
+}
+
+.envType {
+  padding: 4px;
+  box-shadow: 0 0 16px rgba(0, 0, 0, 0.25);
+}

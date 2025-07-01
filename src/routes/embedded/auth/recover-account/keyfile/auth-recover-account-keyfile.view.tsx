@@ -119,8 +119,7 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
       isLoading={isViewLoading}>
       <Upload
         isFullWidth
-        title={"Click to upload"}
-        description={"or drag and drop your keyfile"}
+        fileLabel="your keyfile"
         isLoading={isUploading}
         loadingText={"Recovering account..."}
         onFileParse={parseUpload}
