@@ -44,7 +44,7 @@ export function EnvPanel({}: EnvPanelProps) {
 
       if (hostname === "localhost") {
         clientEnv = "local";
-      } else if (/^wander-embed-([a-z0-9]+)-community-labs.vercel.app$/.test(hostname)) {
+      } else if (/^https?:\/\/wander-embed-([a-z0-9]+)-community-labs.vercel.app$/.test(hostname)) {
         clientEnv = "preview";
       } else if (hostname === "connect-dev.wander.app") {
         clientEnv = "development";
