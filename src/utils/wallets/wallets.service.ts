@@ -141,7 +141,10 @@ async function fetchFirstAvailableAuthShare(
         }
 
         const { shareHash: deviceShareHash, sharePrivateKeyJWK: deviceSharePrivateKeyJWK } =
-          await WalletUtils.generateShareHashAndPrivateKey(deviceShare);
+          await WalletUtils.generateShareHashAndPrivateKey(
+            deviceShare,
+            import.meta.env?.VITE_SKIP_RSA_PRIVATE_KEY_DERIVATION === "1",
+          );
 
         const { activationChallenge } = await trpcVanilla.generateWalletActivationChallenge.mutate({
           walletId,

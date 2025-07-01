@@ -218,7 +218,7 @@ async function generateShareHashAndPublicKey(share: string): Promise<GenerateSha
 
 export interface GenerateShareHashAndPrivateKeyReturn {
   shareHash: string;
-  sharePrivateKeyJWK: JWKInterface;
+  sharePrivateKeyJWK: null | JWKInterface;
 }
 
 /**
@@ -226,11 +226,23 @@ export interface GenerateShareHashAndPrivateKeyReturn {
  * - https://github.com/framp/zero-knowledge-node/blob/master/keypair-auth/crypto-utils.js
  * - https://www.youtube.com/watch?v=cMoD0wIxIpQ
  */
-async function generateShareHashAndPrivateKey(share: string): Promise<GenerateShareHashAndPrivateKeyReturn> {
+async function generateShareHashAndPrivateKey(
+  share: string,
+  skipKeyGeneration = false,
+): Promise<GenerateShareHashAndPrivateKeyReturn> {
   log(LOG_GROUP.WALLET_GENERATION, "generateShareHashAndPrivateKey()");
 
   if (!share) {
     throw new Error("Share is missing — unable to generate share hash and private key.");
+  }
+
+  if (skipKeyGeneration) {
+    const shareHash = await generateShareHash(share);
+
+    return {
+      shareHash,
+      sharePrivateKeyJWK: null,
+    };
   }
 
   const sharePrng = random.createInstance();
