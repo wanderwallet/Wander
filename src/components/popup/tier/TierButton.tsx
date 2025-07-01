@@ -1,0 +1,60 @@
+import { Button } from "@arconnect/components-rebrand";
+import styled from "styled-components";
+import type { Tier } from "~utils/tier/types";
+
+const tierStyles = {
+  Core: {
+    border: "rgba(255, 255, 255, 0.2)",
+    background: "#26273b",
+    hoverBackground: "#2f3047",
+    activeBackground: "#1e1f30",
+  },
+  Select: {
+    border: "rgba(255, 255, 255, 0.2)",
+    background: "#26373b",
+    hoverBackground: "#2f414a",
+    activeBackground: "#1e2d32",
+  },
+  Plus: {
+    border: "rgba(255, 255, 255, 0.2)",
+    background: "#10291d",
+    hoverBackground: "#143323",
+    activeBackground: "#0c1f17",
+  },
+  Prime: {
+    border: "rgba(255, 255, 255, 0.2)",
+    background: "#242424",
+    hoverBackground: "#2f2f2f",
+    activeBackground: "#1a1a1a",
+  },
+  Elite: {
+    border: "#ffeac2",
+    background: "#26241b",
+    hoverBackground: "#2f2c21",
+    activeBackground: "#1e1c15",
+  },
+};
+
+export const TierButton = styled(Button)<{ tier: Tier }>`
+  display: flex;
+  height: 46px;
+  padding: 24px;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  align-self: stretch;
+  border-radius: 12px;
+  border: 1px solid ${(props) => tierStyles[props.tier].border};
+  background: ${(props) => tierStyles[props.tier].background};
+
+  &:hover {
+    background: ${(props) => tierStyles[props.tier].hoverBackground};
+    border: 1px solid ${(props) => tierStyles[props.tier].border};
+  }
+
+  &:active {
+    background: ${(props) => tierStyles[props.tier].activeBackground};
+    border: 1px solid ${(props) => tierStyles[props.tier].border};
+  }
+`;

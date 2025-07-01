@@ -3684,9 +3684,9 @@
     "message": "Explore tier benefits",
     "description": "Explore tier benefits text"
   },
-  "wander_benefits": {
-    "message": "Wander Benefits",
-    "description": "Wander benefits text"
+  "your_tier": {
+    "message": "Your tier",
+    "description": "Your tier text"
   },
   "benefits": {
     "message": "Benefits",

@@ -32,6 +32,7 @@ export interface HeadV2Props {
   appInfo?: AppLogoInfo;
   onAppInfoClick?: () => void;
   backIcon?: React.ReactNode;
+  optionsIcon?: React.ReactNode;
 }
 
 export default function HeadV2({
@@ -43,6 +44,7 @@ export default function HeadV2({
   appInfo,
   onAppInfoClick,
   backIcon,
+  optionsIcon,
 }: HeadV2Props) {
   const theme = useTheme();
   const { back } = useLocation();
@@ -127,20 +129,23 @@ export default function HeadV2({
       {(showOptions || isEmbedded) && (
         <>
           <AvatarButton>
-            {showOptions && (
-              <ButtonAvatar
-                img={nameServiceProfile?.logo && concatGatewayURL(gateway) + "/" + nameServiceProfile.logo}
-                onClick={() => {
-                  setOpen(true);
-                }}>
-                {!nameServiceProfile?.logo && <NoAvatarIcon />}
-                <AnimatePresence initial={false}>
-                  {hardwareApi === "keystone" && (
-                    <HardwareWalletIcon icon={keystoneLogo} color="#2161FF" {...hwIconAnimateProps} />
-                  )}
-                </AnimatePresence>
-              </ButtonAvatar>
-            )}
+            {showOptions &&
+              (optionsIcon ? (
+                optionsIcon
+              ) : (
+                <ButtonAvatar
+                  img={nameServiceProfile?.logo && concatGatewayURL(gateway) + "/" + nameServiceProfile.logo}
+                  onClick={() => {
+                    setOpen(true);
+                  }}>
+                  {!nameServiceProfile?.logo && <NoAvatarIcon />}
+                  <AnimatePresence initial={false}>
+                    {hardwareApi === "keystone" && (
+                      <HardwareWalletIcon icon={keystoneLogo} color="#2161FF" {...hwIconAnimateProps} />
+                    )}
+                  </AnimatePresence>
+                </ButtonAvatar>
+              ))}
             {isEmbedded && (
               <Tooltip content={browser.i18n.getMessage("close")} position="bottomEnd">
                 <Action

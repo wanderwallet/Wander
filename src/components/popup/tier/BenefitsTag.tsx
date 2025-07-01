@@ -17,7 +17,7 @@ export function BenefitsTag() {
   }, [activeTier, isLoading]);
 
   return (
-    <Tag onClick={() => navigate("/benefits")}>
+    <Tag onClick={() => navigate("/tier")}>
       <WanderIcon tier={activeTier?.tier} />
       {isLoading ? <Loading style={{ width: "20px", height: "20px" }} /> : <Text noMargin>{tier}</Text>}
     </Tag>

@@ -109,7 +109,7 @@ export const WandAnnouncementPopup = ({ isOpen, setOpen }) => {
             }}>
             {browser.i18n.getMessage("get_wand_tokens")}
           </Button>
-          <LinkButton fullWidth onClick={() => navigate("/benefits")}>
+          <LinkButton fullWidth onClick={() => navigate("/tier")}>
             {browser.i18n.getMessage("explore_tier_benefits")}
           </LinkButton>
         </Flex>

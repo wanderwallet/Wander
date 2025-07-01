@@ -1,4 +1,4 @@
-export type Tier = "Elite" | "Platinum" | "Prime" | "Plus" | "Unranked";
+export type Tier = "Elite" | "Prime" | "Plus" | "Select" | "Core" | "Unranked";
 
 export type TierProgress = {
   balanceNeeded: string;
@@ -6,6 +6,7 @@ export type TierProgress = {
   currentRank: number;
   nextTier: Tier;
   nextTierRequirement: string;
+  progressPercent: number;
 };
 
 export type ActiveTier = {

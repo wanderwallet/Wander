@@ -7,3 +7,5 @@ export enum TierTypes {
   Plus = "Plus",
   Unranked = "Unranked",
 }
+
+export const SHOW_TIER_FEATURES = "show_tier_features";
