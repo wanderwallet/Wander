@@ -1,4 +1,4 @@
-import type { DbSession } from "embed-api";
+import type { DbSession, SupabaseAuthError } from "embed-api";
 import type { JwtPayload } from "jwt-decode";
 import type { Provider, Session } from "@supabase/supabase-js";
 import type { OAuthErrorCode } from "~utils/authentication/authentication.utils";
@@ -50,14 +50,7 @@ export function isOAuthError(error: unknown): error is OAuthError {
   );
 }
 
-// TODO: Import from Supabase (should be exported from embed-api):
-
-export interface AuthError extends Error {
-  code: string;
-  status: number;
-}
-
-export function isAuthError(error: unknown): error is AuthError {
+export function isSupabaseAuthError(error: unknown): error is SupabaseAuthError {
   return (
     error instanceof Error &&
     "code" in error &&
