@@ -60,7 +60,7 @@ export function EnvPanel({}: EnvPanelProps) {
 
       if (EMBEDDED_SERVER_BASE_URL.includes("://localhost:")) {
         serverEnv = "local";
-      } else if (/^embed-([a-z0-9]+)-community-labs.vercel.app$/.test(hostname)) {
+      } else if (/^https?:\/\/embed-([a-z0-9]+)-community-labs.vercel.app$/.test(EMBEDDED_SERVER_BASE_URL)) {
         serverEnv = "preview";
       } else if (EMBEDDED_SERVER_BASE_URL === "https://connect-api-dev.wander.app") {
         serverEnv = "development";
