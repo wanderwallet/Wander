@@ -114,8 +114,7 @@ export function AuthRestoreSharesKeyfileEmbeddedView({
       isLoading={isViewLoading}>
       <Upload
         isFullWidth
-        title={"Click to upload"}
-        description={`or drag and drop your ${fileTypeLabel}`}
+        fileLabel={`your ${fileTypeLabel}`}
         isLoading={isUploading}
         loadingText={"Restoring wallet..."}
         onFileParse={parseUpload}

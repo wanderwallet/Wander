@@ -86,8 +86,7 @@ export function AccountImportKeyfileEmbeddedView() {
       size="auto">
       <Upload
         isFullWidth
-        title={"Click to upload"}
-        description={"or drag and drop your private key"}
+        fileLabel="your private key"
         isLoading={loading}
         loadingText={"Recovering account..."}
         onFileParse={handleJsonParse}
