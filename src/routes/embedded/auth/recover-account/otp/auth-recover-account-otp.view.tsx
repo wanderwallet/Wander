@@ -1,22 +1,24 @@
-import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
 import { Button, Text, RecoverHeaderIcon } from "~components/embed/ui";
 import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
-import { isValidEmail } from "~utils/email";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { getSupabaseClient } from "~utils/embedded/embedded.utils";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 import { useLocation, useSearchParams } from "~wallets/router/router.utils";
 import { Flex } from "~components/common/Flex";
-import {
-  CodeInput,
-  OPT_COOLDOWN_DURATION_SEC,
-  OTP_LENGTH,
-  type CodeInputHandle,
-} from "~components/embed/ui/atoms/code-input/CodeInput";
+import { CodeInput, type CodeInputHandle } from "~components/embed/ui/atoms/code-input/CodeInput";
 import { useCooldownCallback } from "~utils/react/useCooldownCallback";
 import { getFriendlyAuthErrorMessage } from "~utils/authentication/authentication.utils";
 import { StorageKeys } from "~utils/storage/storage.constants";
+import {
+  checkNeedsNewOtp,
+  clearOtpAvailable,
+  OPT_COOLDOWN_DURATION_SEC,
+  OTP_LENGTH,
+  setOtpAvailable,
+} from "~utils/otp/otp.utils";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 export function AuthRecoverAccountOtpEmbeddedView() {
   const { navigate } = useLocation();
@@ -25,15 +27,11 @@ export function AuthRecoverAccountOtpEmbeddedView() {
 
   // Loading state:
 
-  const [isReAuthenticating, setIsReAuthenticating] = useState(false);
-  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
-  const areButtonsDisabled =
-    authStatus === "unknown" ||
-    authStatus === "loading" ||
-    authStatus === "authLoading" ||
-    isReAuthenticating ||
-    isVerifyingOtp;
-  const isViewLoading = areButtonsDisabled;
+  const [isResending, setIsResending] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const isViewLoading =
+    authStatus === "unknown" || authStatus === "loading" || authStatus === "authLoading" || isVerifying;
+  const areButtonsDisabled = isViewLoading || isResending;
 
   // Code input:
 
@@ -47,14 +45,15 @@ export function AuthRecoverAccountOtpEmbeddedView() {
   // Code retrieval:
 
   const { fn: signInWithOtp, cooldownSeconds } = useCooldownCallback(
-    async () => {
+    async (showConfirmationToast: boolean) => {
       try {
         if (codeInputRef.current) codeInputRef.current.clear();
 
-        setIsReAuthenticating(true);
+        setIsResending(true);
 
         const supabase = await getSupabaseClient();
 
+        // TODO: Replace with service:
         const { error } = await supabase.auth.signInWithOtp({
           email,
           options: {
@@ -67,14 +66,16 @@ export function AuthRecoverAccountOtpEmbeddedView() {
           return;
         }
 
-        toast.success("Account recovery email resent successfully");
+        setOtpAvailable();
+
+        if (showConfirmationToast) toast.success("Account recovery email resent successfully");
 
         // Note we don't need to check if the email is verified or not. Once the user signs in using the OTP code, their
         // email is verified if it wasn't already and the router redirects them to the right page (add wallet, backup reminder...).
       } catch (error) {
         toast.error(getFriendlyAuthErrorMessage(error, "Error sending account recovery email"));
       } finally {
-        setIsReAuthenticating(false);
+        setIsResending(false);
       }
     },
     {
@@ -83,13 +84,21 @@ export function AuthRecoverAccountOtpEmbeddedView() {
     },
   );
 
+  useAsyncEffect(async () => {
+    try {
+      if (await checkNeedsNewOtp()) signInWithOtp(false);
+    } catch {
+      // In case `LAST_OTP_EMAIL` is already be set in `localStorage` and the required time hasn't passed yet (so this call will throw an error).
+    }
+  }, [signInWithOtp]);
+
   // Handlers:
 
   const handleVerifyOtp = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
 
-      if (!email || isVerifyingOtp) return;
+      if (!email || isVerifying) return;
 
       const otpCode = codeInputRef.current.getCode();
 
@@ -98,7 +107,7 @@ export function AuthRecoverAccountOtpEmbeddedView() {
         return;
       }
 
-      setIsVerifyingOtp(true);
+      setIsVerifying(true);
 
       try {
         await authenticate({
@@ -111,13 +120,15 @@ export function AuthRecoverAccountOtpEmbeddedView() {
 
         setRequestPasswordChange(true);
       } catch (error) {
-        setIsVerifyingOtp(false);
+        setIsVerifying(false);
         toast.error(getFriendlyAuthErrorMessage(error, "Invalid or expired code"));
+      } finally {
+        clearOtpAvailable();
       }
 
       // We leave isVerifying = true intentionally as the user will simply be redirected after verifying the account.
     },
-    [email, isVerifyingOtp, authenticate],
+    [email, isVerifying, authenticate],
   );
 
   useEffect(() => {
@@ -151,20 +162,25 @@ export function AuthRecoverAccountOtpEmbeddedView() {
         <CodeInput
           name="otp-input"
           inputRef={codeInputRef}
-          disabled={isViewLoading}
+          disabled={areButtonsDisabled}
           onChange={handleCodeChange}
           autoFocus
         />
       </Flex>
 
-      <Button type="submit" variant="primary" isFullWidth isDisabled={isViewLoading || !isComplete}>
+      <Button
+        type="submit"
+        variant="primary"
+        isFullWidth
+        isLoading={isResending}
+        isDisabled={areButtonsDisabled || !isComplete}>
         Recover account
       </Button>
 
       <Text variant="bodySm" alignment="center">
         Didn't receive the email?{" "}
         {cooldownSeconds === 0 ? (
-          <Button variant="link" onClick={signInWithOtp} isDisabled={isViewLoading}>
+          <Button variant="link" onClick={() => signInWithOtp(true)} isDisabled={areButtonsDisabled}>
             Send again
           </Button>
         ) : (

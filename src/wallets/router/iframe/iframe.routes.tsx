@@ -5,8 +5,8 @@ import { isRouteOverride } from "~wallets/router/router.utils";
 
 // Authentication Views:
 import { AuthEmbeddedView } from "~routes/embedded/auth/auth/auth.view";
-import { AuthEmailSignInEmbeddedView } from "~routes/embedded/auth/auth-email-sign-in/auth-email-sign-in.view";
-import { AuthEmailSignUpEmbeddedView } from "~routes/embedded/auth/auth-email-sign-up/auth-email-sign-up.view";
+import { AuthEmailOtpEmbeddedView } from "~routes/embedded/auth/auth-email-otp/auth-email-otp.view";
+import { AuthEmailSignInPasswordEmbeddedView } from "~routes/embedded/auth/auth-email-sign-in-password/auth-email-sign-in-password.view";
 import { AuthEmailVerifyEmbeddedView } from "~routes/embedded/auth/auth-email-verify/auth-email-verify.view";
 import { AuthMoreProvidersEmbeddedView } from "~routes/embedded/auth/auth-more-providers/auth-more-providers.view";
 import { AuthAddWalletEmbeddedView } from "~routes/embedded/auth/add-wallet/auth-add-wallet.view";
@@ -66,8 +66,8 @@ import { WalletBuySuccessEmbeddedView } from "~routes/embedded/wallet/buy/buy.su
 
 export type EmbeddedRoutePath =
   | "/auth"
-  | "/auth/email-signup"
-  | "/auth/email-signin"
+  | "/auth/otp"
+  | "/auth/email-signin/password"
   | "/auth/email-verify"
   | "/auth/more-providers"
   | "/auth/add-wallet"
@@ -129,14 +129,15 @@ export const EmbeddedPaths = {
 
   // Authentication:
   Auth: "/auth",
-  AuthEmailSignup: "/auth/email-signup",
-  AuthEmailSignin: "/auth/email-signin",
+  AuthEmailOtp: "/auth/otp",
+  AuthEmailSignInPassword: "/auth/email-signin/password",
   AuthEmailVerify: "/auth/email-verify",
   AuthMoreProviders: "/auth/more-providers",
   AuthAddWallet: "/auth/add-wallet",
   AuthImportSeedPhrase: "/auth/import-seedphrase",
   AuthImportKeyfile: "/auth/import-keyfile",
   AuthImportQrCode: "/auth/import-qrcode",
+
   // Authentication Linking:
   AuthAddDevice: "/auth/add-device",
   AuthAddAuthProvider: "/auth/add-auth-provider",
@@ -201,16 +202,16 @@ const IFRAME_OWN_ROUTES = [
     component: AuthEmbeddedView,
   },
   {
-    path: EmbeddedPaths.AuthEmailSignup,
-    component: AuthEmailSignUpEmbeddedView,
+    path: EmbeddedPaths.AuthEmailOtp,
+    component: AuthEmailOtpEmbeddedView,
+  },
+  {
+    path: EmbeddedPaths.AuthEmailSignInPassword,
+    component: AuthEmailSignInPasswordEmbeddedView,
   },
   {
     path: EmbeddedPaths.AuthEmailVerify,
     component: AuthEmailVerifyEmbeddedView,
-  },
-  {
-    path: EmbeddedPaths.AuthEmailSignin,
-    component: AuthEmailSignInEmbeddedView,
   },
   {
     path: EmbeddedPaths.AuthMoreProviders,

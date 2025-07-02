@@ -32,9 +32,9 @@ export function useEmbeddedOverride(location?: RoutePath) {
       location,
       [
         EmbeddedPaths.Auth,
-        EmbeddedPaths.AuthEmailSignup,
+        EmbeddedPaths.AuthEmailOtp,
+        EmbeddedPaths.AuthEmailSignInPassword,
         EmbeddedPaths.AuthEmailVerify,
-        EmbeddedPaths.AuthEmailSignin,
         EmbeddedPaths.AuthMoreProviders,
         // TODO: These could be simply "anything under  AuthRecoverAccount"
         EmbeddedPaths.AuthRecoverAccount,

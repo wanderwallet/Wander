@@ -12,15 +12,11 @@ import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-c
 import { getFriendlyAuthErrorMessage, MIN_SUPABASE_PASSWORD_LENGTH } from "~utils/authentication/authentication.utils";
 import { StorageKeys } from "~utils/storage/storage.constants";
 import browser from "~iframe/browser";
-import {
-  CodeInput,
-  OPT_COOLDOWN_DURATION_SEC,
-  OTP_LENGTH,
-  type CodeInputHandle,
-} from "~components/embed/ui/atoms/code-input/CodeInput";
+import { CodeInput, type CodeInputHandle } from "~components/embed/ui/atoms/code-input/CodeInput";
 import { useCooldownCallback } from "~utils/react/useCooldownCallback";
 import { Flex } from "~components/common/Flex";
 import { sleep } from "~utils/promises/sleep";
+import { clearOtpAvailable, OPT_COOLDOWN_DURATION_SEC, OTP_LENGTH, setOtpAvailable } from "~utils/otp/otp.utils";
 
 export function AccountChangePasswordEmbeddedView() {
   const { navigate } = useLocation();
@@ -69,6 +65,8 @@ export function AccountChangePasswordEmbeddedView() {
           toast.error(getFriendlyAuthErrorMessage(error, error.message));
           return;
         }
+
+        setOtpAvailable();
 
         if (showConfirmationToast) toast.success("Password confirmation email resent successfully");
       } catch (error) {
@@ -167,6 +165,8 @@ export function AccountChangePasswordEmbeddedView() {
                 hasPassword: true,
               },
         });
+
+        if (otpCodeInput) clearOtpAvailable();
 
         if (error) {
           const { message } = error;

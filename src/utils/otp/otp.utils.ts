@@ -1,0 +1,32 @@
+import { PersistentStorage } from "~utils/storage";
+import { StorageKeys } from "~utils/storage/storage.constants";
+
+export const OTP_LENGTH = 6;
+export const OPT_COOLDOWN_DURATION_SEC = 60;
+export const OTP_EXPIRATION_SEC = 86400;
+
+export async function checkNeedsNewOtp() {
+  const [lastCalledAt, otpAvailable] = await Promise.all([
+    PersistentStorage.getItem(StorageKeys.CONNECT.AUTH.LAST_OTP_EMAIL),
+    PersistentStorage.getItem(StorageKeys.CONNECT.AUTH.LAST_OTP_EMAIL_AVAILABLE),
+  ]);
+
+  const elapsedSeconds = Math.round((Date.now() - parseInt(lastCalledAt || "0")) / 1000);
+
+  // We've already sent an OTP in the last 60 seconds:
+  if (elapsedSeconds < OPT_COOLDOWN_DURATION_SEC) return false;
+
+  // The last OTP that was sent was sent more than 24h ago, so it has expired:
+  if (elapsedSeconds >= OTP_EXPIRATION_SEC) return true;
+
+  // At this point, we could request a new OTP, but do we actually need a new one or is the previous one still around?
+  return !otpAvailable;
+}
+
+export async function setOtpAvailable() {
+  PersistentStorage.setItem(StorageKeys.CONNECT.AUTH.LAST_OTP_EMAIL_AVAILABLE, "1");
+}
+
+export function clearOtpAvailable() {
+  PersistentStorage.removeItem(StorageKeys.CONNECT.AUTH.LAST_OTP_EMAIL_AVAILABLE);
+}

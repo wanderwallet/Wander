@@ -23,11 +23,19 @@ import { InputButton } from "~components/embed/ui/atoms/input-button/InputButton
 import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
 import type { OAutProviderType } from "~utils/embedded/embedded.types";
 import { getFriendlyAuthErrorMessage } from "~utils/authentication/authentication.utils";
+import { PersistentStorage, useStorage } from "~utils/storage";
+import { StorageKeys } from "~utils/storage/storage.constants";
+import type { PreferredEmailAuth } from "~utils/auth/auth.types";
 
 export function AuthEmbeddedView() {
   const { navigate } = useLocation();
   const { email } = useSearchParams<{ email: string }>();
   const { authStatus, authenticate, recoverableAccount } = useEmbedded();
+
+  const [preferredEmailAuth] = useStorage<PreferredEmailAuth | undefined>({
+    key: StorageKeys.CONNECT.AUTH.PREFERRED_EMAIL_AUTH,
+    instance: PersistentStorage,
+  });
 
   // Input refs:
 
@@ -105,9 +113,14 @@ export function AuthEmbeddedView() {
         return;
       }
 
-      navigate(isAlreadyRegistered ? EmbeddedPaths.AuthEmailSignin : EmbeddedPaths.AuthEmailSignup, {
-        search: { email },
-      });
+      navigate(
+        isAlreadyRegistered || preferredEmailAuth !== "password"
+          ? EmbeddedPaths.AuthEmailOtp
+          : EmbeddedPaths.AuthEmailSignInPassword,
+        {
+          search: { email },
+        },
+      );
     } catch (error) {
       toast.error(getFriendlyAuthErrorMessage(error, "Error checking email"));
     } finally {
@@ -120,7 +133,7 @@ export function AuthEmbeddedView() {
   return (
     <OnboardingCard
       headerIcon={recoverableAccount ? <RecoverHeaderIcon /> : null}
-      headerText={recoverableAccount ? "Select new sign in method" : "Sign up or Sign in"}
+      headerText={recoverableAccount ? "Select New Sign In Method" : "Sign Up or Sign In"}
       hasBackButton={false}
       isLoading={isViewLoading}
       onSubmit={handleCheckEmail}>
