@@ -54,7 +54,6 @@ export function AuthEmailOtpEmbeddedView() {
   const { fn: signInWithOtp, cooldownSeconds } = useCooldownCallback(
     async (showConfirmationToast: boolean) => {
       try {
-        console.log("SENDING");
         if (codeInputRef.current) codeInputRef.current.clear();
 
         setIsResending(true);
