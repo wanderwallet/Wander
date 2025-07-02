@@ -22,6 +22,8 @@ import {
   AR_SENT_QUERY_WITH_CURSOR,
   AO_LIQUIDOPS_RECEIVER_QUERY_WITH_CURSOR,
   PRINT_ARWEAVE_QUERY_WITH_CURSOR,
+  AO_SENT_QUERY_FOR_TOKEN_WITH_CURSOR,
+  AO_RECEIVER_QUERY_FOR_TOKEN_WITH_CURSOR,
 } from "~notifications/utils";
 import { gql } from "~gateways/api";
 import BigNumber from "bignumber.js";
@@ -408,6 +410,154 @@ export const useTransactions = (activeAddress: string, limit?: number) => {
     setTransactions({});
     fetchTransactions();
   }, [activeAddress]);
+
+  return {
+    transactions,
+    loading,
+    hasNextPage,
+    count,
+    fetchTransactions,
+  };
+};
+
+export const useTokenTransactions = (activeAddress: string, tokenId: string, limit?: number) => {
+  const defaultCursors = ["", ""];
+  const defaultHasNextPages = [true, true];
+
+  const [count, setCount] = useState({ current: 0, actual: 0 });
+  const [cursors, setCursors] = useState(defaultCursors);
+  const [hasNextPages, setHasNextPages] = useState(defaultHasNextPages);
+  const [transactions, setTransactions] = useState<GroupedTransactions>({});
+  const [loading, setLoading] = useState(false);
+
+  const hasNextPage = useMemo(() => hasNextPages.some((v) => v === true), [hasNextPages]);
+
+  const fetchTransactions = useCallback(async () => {
+    try {
+      if (!activeAddress || !hasNextPage) return;
+
+      setLoading(true);
+
+      const queries = [AO_SENT_QUERY_FOR_TOKEN_WITH_CURSOR, AO_RECEIVER_QUERY_FOR_TOKEN_WITH_CURSOR];
+
+      const [rawAoSent, rawAoReceived] = await Promise.allSettled(
+        queries.map((query, idx) => {
+          return hasNextPages[idx]
+            ? retryWithDelay(async (attempt) => {
+                const data = await gql(
+                  query,
+                  { address: activeAddress, tokenId, after: cursors[idx] },
+                  txHistoryGateways[attempt % txHistoryGateways.length],
+                );
+                if (data?.data === null && (data as any)?.errors?.length > 0) {
+                  throw new Error((data as any)?.errors?.[0]?.message || "GraphQL Error");
+                }
+                return data;
+              }, 2)
+            : ({
+                data: {
+                  transactions: {
+                    pageInfo: { hasNextPage: false },
+                    edges: [],
+                  },
+                },
+              } as GQLResultInterface);
+        }),
+      );
+
+      const aoSent = await processTransactions(rawAoSent, "aoSent", true);
+      const aoReceived = await processTransactions(rawAoReceived, "aoReceived", true);
+
+      setCursors((prev) => [aoSent, aoReceived].map((data, idx) => data[data.length - 1]?.cursor ?? prev[idx]));
+
+      setHasNextPages(
+        [rawAoSent, rawAoReceived].map(
+          (result) =>
+            (result.status === "fulfilled" && result.value?.data?.transactions?.pageInfo?.hasNextPage) ?? true,
+        ),
+      );
+
+      let combinedTransactions: ExtendedTransaction[] = [...aoReceived, ...aoSent];
+
+      combinedTransactions.sort(sortFn);
+
+      combinedTransactions = combinedTransactions.map((transaction) => {
+        if (transaction.node.block && transaction.node.block.timestamp) {
+          const date = new Date(transaction.node.block.timestamp * 1000);
+          const day = date.getDate();
+          const month = date.getMonth() + 1;
+          const year = date.getFullYear();
+          return {
+            ...transaction,
+            day,
+            month,
+            year,
+            date: date.toISOString(),
+          };
+        } else {
+          const now = new Date();
+          return {
+            ...transaction,
+            day: now.getDate(),
+            month: now.getMonth() + 1,
+            year: now.getFullYear(),
+            date: null,
+          };
+        }
+      });
+
+      const actualCount = combinedTransactions.length;
+
+      if (limit) {
+        combinedTransactions = combinedTransactions.slice(0, limit);
+      }
+
+      setCount((prev) => ({
+        current: prev.current + combinedTransactions.length,
+        actual: prev.actual + actualCount,
+      }));
+
+      const groupedTransactions = combinedTransactions.reduce((acc, transaction) => {
+        const monthYear = `${transaction.month}-${transaction.year}`;
+        if (!acc[monthYear]) {
+          acc[monthYear] = [];
+        }
+        if (!acc[monthYear].some((t) => t.node.id === transaction.node.id)) {
+          acc[monthYear].push(transaction);
+        }
+        return acc;
+      }, transactions);
+
+      // Get the month-year keys and sort them in descending order
+      const sortedMonthYears = Object.keys(groupedTransactions).sort((a, b) => {
+        const [monthA, yearA] = a.split("-").map(Number);
+        const [monthB, yearB] = b.split("-").map(Number);
+
+        // Sort by year first, then by month
+        return yearB - yearA || monthB - monthA;
+      });
+
+      // Create a new object with sorted keys
+      const sortedGroupedTransactions: GroupedTransactions = sortedMonthYears.reduce((acc, key) => {
+        acc[key] = groupedTransactions[key].sort(sortFn);
+        return acc;
+      }, {});
+
+      setTransactions(sortedGroupedTransactions);
+    } catch (error) {
+      console.error("Error fetching transactions", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [activeAddress, hasNextPage, transactions, limit, tokenId]);
+
+  useEffect(() => {
+    setCursors(defaultCursors);
+    setHasNextPages(defaultHasNextPages);
+    setCount({ current: 0, actual: 0 });
+    setTransactions({});
+    fetchTransactions();
+  }, [activeAddress, tokenId]);
 
   return {
     transactions,
