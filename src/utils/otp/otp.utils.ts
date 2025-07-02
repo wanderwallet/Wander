@@ -5,6 +5,12 @@ export const OTP_LENGTH = 6;
 export const OPT_COOLDOWN_DURATION_SEC = 60;
 export const OTP_EXPIRATION_SEC = 86400;
 
+/**
+ * While a new OTP can be requested every 60 seconds, an OTP actually expires in 24h. Therefore, when we request a new
+ * OTP, we keep track of whether it has been used or not. If at some point we need to request a new one, but the
+ * previous one hasn't been used, we just don't. The user can still request it manually if it's been more than 60
+ * seconds.
+ */
 export async function checkNeedsNewOtp() {
   const [lastCalledAt, otpAvailable] = await Promise.all([
     PersistentStorage.getItem(StorageKeys.CONNECT.AUTH.LAST_OTP_EMAIL),

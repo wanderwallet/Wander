@@ -53,7 +53,6 @@ export function AuthRecoverAccountOtpEmbeddedView() {
 
         const supabase = await getSupabaseClient();
 
-        // TODO: Replace with service:
         const { error } = await supabase.auth.signInWithOtp({
           email,
           options: {
