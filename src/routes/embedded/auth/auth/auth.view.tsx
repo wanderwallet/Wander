@@ -115,7 +115,7 @@ export function AuthEmbeddedView() {
         }
 
         navigate(
-          isAlreadyRegistered || preferredEmailAuth !== "password"
+          !isAlreadyRegistered || preferredEmailAuth !== "password"
             ? EmbeddedPaths.AuthEmailOtp
             : EmbeddedPaths.AuthEmailSignInPassword,
           {
