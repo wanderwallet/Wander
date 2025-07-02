@@ -2,7 +2,7 @@ import { PersistentStorage } from "~utils/storage";
 import { StorageKeys } from "~utils/storage/storage.constants";
 
 export const OTP_LENGTH = 6;
-export const OPT_COOLDOWN_DURATION_SEC = 60; // 1 minute
+export const OTP_COOLDOWN_DURATION_SEC = 60; // 1 minute
 export const OTP_EXPIRATION_SEC = 3600; // 1 hour
 
 /**
@@ -20,7 +20,7 @@ export async function checkNeedsNewOtp() {
   const elapsedSeconds = Math.round((Date.now() - parseInt(lastCalledAt || "0")) / 1000);
 
   // We've already sent an OTP in the last 60 seconds:
-  if (elapsedSeconds < OPT_COOLDOWN_DURATION_SEC) return false;
+  if (elapsedSeconds < OTP_COOLDOWN_DURATION_SEC) return false;
 
   // The last OTP that was sent was sent more than 24h ago, so it has expired:
   if (elapsedSeconds >= OTP_EXPIRATION_SEC) return true;

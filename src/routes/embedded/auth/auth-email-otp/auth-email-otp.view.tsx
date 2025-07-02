@@ -16,7 +16,7 @@ import type { PreferredEmailAuth } from "~utils/auth/auth.types";
 import {
   checkNeedsNewOtp,
   clearOtpAvailable,
-  OPT_COOLDOWN_DURATION_SEC,
+  OTP_COOLDOWN_DURATION_SEC,
   OTP_LENGTH,
   setOtpAvailable,
 } from "~utils/otp/otp.utils";
@@ -81,7 +81,7 @@ export function AuthEmailOtpEmbeddedView() {
     },
     {
       key: StorageKeys.CONNECT.AUTH.LAST_OTP_EMAIL,
-      cooldownDuration: OPT_COOLDOWN_DURATION_SEC,
+      cooldownDuration: OTP_COOLDOWN_DURATION_SEC,
     },
   );
 

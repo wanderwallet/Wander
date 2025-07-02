@@ -16,7 +16,7 @@ import { CodeInput, type CodeInputHandle } from "~components/embed/ui/atoms/code
 import { useCooldownCallback } from "~utils/react/useCooldownCallback";
 import { Flex } from "~components/common/Flex";
 import { sleep } from "~utils/promises/sleep";
-import { clearOtpAvailable, OPT_COOLDOWN_DURATION_SEC, OTP_LENGTH, setOtpAvailable } from "~utils/otp/otp.utils";
+import { clearOtpAvailable, OTP_COOLDOWN_DURATION_SEC, OTP_LENGTH, setOtpAvailable } from "~utils/otp/otp.utils";
 import type { SupabaseUserMetadata } from "embed-api";
 
 export function AccountChangePasswordEmbeddedView() {
@@ -74,7 +74,7 @@ export function AccountChangePasswordEmbeddedView() {
     },
     {
       key: StorageKeys.CONNECT.AUTH.LAST_OTP_EMAIL,
-      cooldownDuration: OPT_COOLDOWN_DURATION_SEC,
+      cooldownDuration: OTP_COOLDOWN_DURATION_SEC,
     },
   );
 

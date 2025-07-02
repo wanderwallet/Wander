@@ -14,7 +14,7 @@ import { StorageKeys } from "~utils/storage/storage.constants";
 import {
   checkNeedsNewOtp,
   clearOtpAvailable,
-  OPT_COOLDOWN_DURATION_SEC,
+  OTP_COOLDOWN_DURATION_SEC,
   OTP_LENGTH,
   setOtpAvailable,
 } from "~utils/otp/otp.utils";
@@ -79,7 +79,7 @@ export function AuthRecoverAccountOtpEmbeddedView() {
     },
     {
       key: StorageKeys.CONNECT.AUTH.LAST_OTP_EMAIL,
-      cooldownDuration: OPT_COOLDOWN_DURATION_SEC,
+      cooldownDuration: OTP_COOLDOWN_DURATION_SEC,
     },
   );
 
