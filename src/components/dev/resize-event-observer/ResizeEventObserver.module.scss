@@ -1,0 +1,23 @@
+.line {
+  position: absolute;
+  top: var(--height, 0px);
+  left: 0;
+  width: 100%;
+  border-bottom: 2px dashed red;
+  z-index: 9999;
+  pointer-events: none;
+
+  &::before {
+    content: attr(data-height);
+    position: absolute;
+    top: 2px;
+    left: 0;
+    transform: translate(0, -100%);
+    padding: 4px 8px;
+    background: red;
+    box-shadow: 0 0 16px rgba(255, 0, 0, 0.25);
+    color: white;
+    font: bold 11px monospace;
+    border-radius: 0 4px 0 0;
+  }
+}

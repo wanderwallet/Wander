@@ -1,7 +1,8 @@
 import { type Variants, motion } from "framer-motion";
 import { useRef, type PropsWithChildren } from "react";
+import { EnvPanel } from "~components/dev/env-panel/EnvPanel";
+import { ResizeEventObserver } from "~components/dev/resize-event-observer/ResizeEventObserver";
 import styled from "styled-components";
-import { ResizeEventObserver } from "~components/ResizeEventObserver";
 
 export interface PageProps extends PropsWithChildren {}
 
@@ -23,6 +24,7 @@ export function Page({ children }: PageProps) {
       variants={opacityAnimation}
       data-test-id="Page">
       <ResizeEventObserver containerRef={containerRef} />
+      <EnvPanel />
       {children}
     </Main>
   );
