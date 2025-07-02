@@ -3677,8 +3677,8 @@
     "description": "Token text"
   },
   "get_wand_tokens": {
-    "message": "Get WAND tokens",
-    "description": "Get WAND tokens text"
+    "message": "Get WNDR tokens",
+    "description": "Get WNDR tokens text"
   },
   "explore_tier_benefits": {
     "message": "Explore tier benefits",

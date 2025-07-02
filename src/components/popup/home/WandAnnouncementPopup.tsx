@@ -84,7 +84,7 @@ export const WandAnnouncementPopup = ({ isOpen, setOpen }) => {
                   WebkitTextFillColor: "transparent",
                 }}
                 noMargin>
-                WAND
+                WNDR
               </Text>
               <WhiteText size="3xl" weight="semibold" noMargin>
                 {browser.i18n.getMessage("token")}!

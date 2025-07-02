@@ -23,7 +23,7 @@ import { useNameServiceProfile } from "~lib/nameservice";
 import { concatGatewayURL } from "~gateways/utils";
 import { FULL_HISTORY, useGateway } from "~gateways/wayfinder";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
-import { BenefitsTag } from "./tier/BenefitsTag";
+import { TierTag } from "./tier/TierTag";
 import { Flex } from "~components/common/Flex";
 import { Avatar, NoAvatarIcon } from "~components/Avatar";
 
@@ -193,7 +193,7 @@ export default function WalletHeader() {
         </AddressContainer>
       </Flex>
 
-      <BenefitsTag />
+      <TierTag />
 
       {appDataOpen && (
         <CloseLayer

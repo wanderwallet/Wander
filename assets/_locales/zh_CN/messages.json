@@ -3637,8 +3637,8 @@
       "description": "Token text"
     },
     "get_wand_tokens": {
-      "message": "获取 WAND 代币",
-      "description": "Get WAND tokens text"
+      "message": "获取 WNDR 代币",
+      "description": "Get WNDR tokens text"
     },
     "explore_tier_benefits": {
       "message": "探索层级收益",

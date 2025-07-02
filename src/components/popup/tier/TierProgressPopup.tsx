@@ -1,6 +1,5 @@
-import { Text } from "@arconnect/components-rebrand";
+import { Spacer, Text } from "@arconnect/components-rebrand";
 import SliderMenu from "~components/SliderMenu";
-import { Carousel } from "~components/Carousel";
 import styled from "styled-components";
 import { TierButton } from "./TierButton";
 import { Flex } from "~components/common/Flex";
@@ -13,6 +12,8 @@ import plusCarouselBg from "~assets/images/tier/plus_carousel_bg.png";
 import primeCarouselBg from "~assets/images/tier/prime_carousel_bg.png";
 import eliteCarouselBg from "~assets/images/tier/elite_carousel_bg.png";
 import stars from "~assets/images/tier/stars.png";
+import { useActiveTier } from "~utils/tier/hooks";
+import { TierProgress } from "./TierProgress";
 import { StarIcon } from "./StarIcon";
 import browser from "webextension-polyfill";
 
@@ -70,75 +71,66 @@ const carouselData: WandCarouselSlide[] = [
   },
 ];
 
-const renderSlide = (slide: WandCarouselSlide) => (
-  <SlideContent carouselBg={slide.carouselBg}>
-    <StarsBackground />
-    <TierCard
-      tier={slide.tierName}
-      style={{ width: "100%", position: "relative", zIndex: 2 }}
-      hideBackground
-      hideBorder>
-      <Flex direction="column" gap={4} align="center" justify="center">
-        <WanderIcon height={30} width={64} tier={slide.tierName} />
-        <Text size="xl" weight="semibold" noMargin>
-          {slide.tierName}
-        </Text>
-      </Flex>
-    </TierCard>
-    <Flex
-      direction="column"
-      gap={24}
-      width="100%"
-      padding="16px 16px 24px 16px"
-      boxSizing="border-box"
-      style={{ position: "relative", zIndex: 2 }}>
-      <TierButton
-        tier={slide.tierName}
-        onClick={() => browser.tabs.create({ url: "https://ao.arweave.net/#/delegate/" })}>
-        Get WNDR tokens
-      </TierButton>
-      <Flex direction="column" gap={8} width="100%">
-        {slide.tierBenefits.map((benefit) => (
-          <Flex direction="row" gap={8} align="center">
-            <StarIcon tier={slide.tierName} />
-            <Text size="sm" weight="semibold" noMargin>
-              {benefit}
-            </Text>
-          </Flex>
-        ))}
-      </Flex>
-    </Flex>
-  </SlideContent>
-);
+export const TierProgressPopup = ({ isOpen, setOpen }) => {
+  const { data: activeTier } = useActiveTier();
+  const slide = carouselData.find((slide) => slide.tierName === activeTier?.tier);
 
-export const TiersPopup = ({ isOpen, setOpen }) => {
+  if (!slide) return null;
+
   return (
     <SliderMenu
       isOpen={isOpen}
-      title="Wander Tiers"
       onClose={() => setOpen(false)}
-      height="95vh"
-      maxHeight="100vh"
-      centerTitle>
-      <Carousel
-        slides={carouselData}
-        renderSlide={renderSlide}
-        showDots={true}
-        dotColor="rgba(255, 255, 255, 0.4)"
-        activeDotColor="white"
-        showChevrons={true}
-      />
+      paddingHorizontal={0}
+      paddingVertical={0}
+      hasHeader={false}>
+      <SliderContent carouselBg={slide.carouselBg}>
+        <StarsBackground />
+        <TierCard
+          tier={slide.tierName}
+          style={{ width: "100%", position: "relative", zIndex: 2 }}
+          hideBackground
+          hideBorder>
+          <Flex direction="column" gap={4} align="center" justify="center">
+            <WanderIcon height={30} width={64} tier={slide.tierName} />
+            <Text size="xl" weight="semibold" noMargin>
+              {slide.tierName}
+            </Text>
+          </Flex>
+        </TierCard>
+        <Text size="md" weight="semibold" noMargin style={{ padding: "16px 0" }}>
+          Unlock {slide.tierName} to use this feature
+        </Text>
+        <Flex direction="column" gap={32} width="100%" boxSizing="border-box" style={{ marginTop: 16 }}>
+          <TierProgress activeTier={activeTier} />
+          <Flex direction="column" gap={8} width="100%">
+            {slide.tierBenefits.map((benefit) => (
+              <Flex direction="row" gap={8} align="center">
+                <StarIcon tier={slide.tierName} />
+                <Text size="sm" weight="semibold" noMargin>
+                  {benefit}
+                </Text>
+              </Flex>
+            ))}
+          </Flex>
+        </Flex>
+        <Spacer y={1} />
+        <TierButton
+          tier={slide.tierName}
+          onClick={() => browser.tabs.create({ url: "https://ao.arweave.net/#/delegate/" })}>
+          Get WNDR tokens
+        </TierButton>
+      </SliderContent>
     </SliderMenu>
   );
 };
 
-const SlideContent = styled.div<{ carouselBg: string }>`
+const SliderContent = styled.div<{ carouselBg: string }>`
   display: flex;
   flex-direction: column;
   align-items: center;
   align-self: stretch;
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.01);
   box-sizing: border-box;
   flex: 1;
@@ -146,6 +138,7 @@ const SlideContent = styled.div<{ carouselBg: string }>`
   position: relative;
   background: url(${({ carouselBg }) => carouselBg}) no-repeat center center;
   background-size: 100% 100%;
+  padding: 32px 24px;
 `;
 
 const StarsBackground = styled.div`
@@ -154,7 +147,8 @@ const StarsBackground = styled.div`
   left: 0;
   width: 245px;
   height: 56.322px;
-  margin-left: 40px;
+  margin-left: 60px;
+  margin-top: 40px;
   background: url(${stars}) no-repeat center center;
   background-size: 100% 100%;
   flex-shrink: 0;

@@ -7,7 +7,7 @@ import { WanderIcon } from "./WanderIcon";
 import { useMemo } from "react";
 import { TierTypes } from "~utils/tier/constants";
 
-export function BenefitsTag() {
+export function TierTag() {
   const { data: activeTier, isLoading } = useActiveTier();
   const { navigate } = useLocation();
 

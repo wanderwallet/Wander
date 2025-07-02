@@ -69,11 +69,9 @@ export default function SliderMenu({
           {hasHeader &&
             (title ? (
               <Header>
-                <>
-                  {centerTitle && <div />}
-                  <Title>{title}</Title>
-                  <ExitButton onClick={onClose} color={closeIconColor} />
-                </>
+                {centerTitle && <div />}
+                <Title>{title}</Title>
+                <ExitButton onClick={onClose} color={closeIconColor} />
               </Header>
             ) : (
               <AbsoluteExitButton onClick={onClose} color={closeIconColor} />

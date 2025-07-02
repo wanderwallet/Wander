@@ -12,13 +12,13 @@ import { useState } from "react";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { ExtensionStorage } from "~utils/storage";
 import powerupsIcon from "~assets/images/tier/powerups.svg";
-import { ProgressBar } from "~components/popup/tier/ProgressBar";
 import { TierButton } from "~components/popup/tier/TierButton";
 import { TierWrapper } from "~components/popup/tier/TierWrapper";
 import { TierCard } from "~components/popup/tier/TierCard";
 import { useActiveTier } from "~utils/tier/hooks";
 import { balanceToFractioned } from "~tokens/currency";
 import { TiersPopup } from "~components/popup/tier/TiersPopup";
+import { TierProgress } from "~components/popup/tier/TierProgress";
 
 const stars = defaultStars.toSpliced(1, 1);
 
@@ -77,18 +77,14 @@ export function TierView() {
               {balanceToFractioned(String(activeTier?.progress?.currentBalance ?? 0), { decimals: 12 }).toFixed(2)}
             </Text>
             <Text variant="secondary" weight="medium" noMargin>
-              WAND
+              WNDR
             </Text>
             <img src={wanderIcon} alt="Wander" height={24} width={24} />
           </Flex>
         </TierCard>
 
-        <TierButton
-          tier={tier}
-          onClick={() => {
-            browser.tabs.create({ url: "https://ao.arweave.net/#/delegate/" });
-          }}>
-          Get WAND tokens
+        <TierButton tier={tier} onClick={() => browser.tabs.create({ url: "https://ao.arweave.net/#/delegate/" })}>
+          Get WNDR tokens
         </TierButton>
 
         {showFeatures && (
@@ -107,17 +103,7 @@ export function TierView() {
         )}
 
         <Flex direction="column" gap={12} style={{ marginTop: 16 }}>
-          <Flex direction="row" justify="space-between">
-            <Text size="sm" weight="medium" noMargin>
-              Your position
-            </Text>
-            <Text weight="semibold" noMargin>
-              #{activeTier?.progress?.currentRank || 0}
-            </Text>
-          </Flex>
-
-          <ProgressBar progress={activeTier?.progress?.progressPercent ?? 0} />
-
+          <TierProgress activeTier={activeTier} />
           <Flex direction="row" gap={8} margin="16px 0 0 0">
             <Text weight="semibold" noMargin>
               Activity
