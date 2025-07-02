@@ -13,3 +13,9 @@ export type ActiveTier = {
   tier: Tier;
   progress: TierProgress;
 };
+
+export type DefiFeeDetails = {
+  originalFeePercent: string;
+  finalFeePercent: string;
+  feeHasChanged: boolean;
+};

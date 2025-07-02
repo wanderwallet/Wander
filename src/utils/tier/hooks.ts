@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { useActiveAddress } from "~wallets/hooks";
 import type { ActiveTier } from "./types";
-import { getActiveTier } from "./utils";
+import { getActiveTier, getDefiFeeDetailsForTier } from "./utils";
+import { useMemo } from "react";
 
 export function useActiveTier() {
   const activeAddress = useActiveAddress();
@@ -17,4 +18,13 @@ export function useActiveTier() {
     retryDelay: (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 30000),
     refetchOnWindowFocus: true,
   });
+}
+
+export function useDefiFeeDetails() {
+  const { data: activeTier } = useActiveTier();
+
+  return useMemo(() => {
+    if (!activeTier) return null;
+    return getDefiFeeDetailsForTier(activeTier.tier);
+  }, [activeTier]);
 }
