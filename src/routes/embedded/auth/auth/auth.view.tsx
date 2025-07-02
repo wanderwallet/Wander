@@ -89,44 +89,47 @@ export function AuthEmbeddedView() {
     }
   }, []);
 
-  const handleCheckEmail = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleCheckEmail = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
 
-    try {
-      setIsCheckingEmail(true);
+      try {
+        setIsCheckingEmail(true);
 
-      const supabase = await getSupabaseClient();
+        const supabase = await getSupabaseClient();
 
-      const email = emailInputRef.current?.value || "";
+        const email = emailInputRef.current?.value || "";
 
-      if (!email || !isValidEmail(email)) {
-        toast.error("Please enter a valid email address");
-        return;
+        if (!email || !isValidEmail(email)) {
+          toast.error("Please enter a valid email address");
+          return;
+        }
+
+        const { data: isAlreadyRegistered, error } = await supabase.rpc("user_exists_by_email", {
+          p_email: email,
+        });
+
+        if (error) {
+          toast.error(getFriendlyAuthErrorMessage(error, error.message || "Error checking email"));
+          return;
+        }
+
+        navigate(
+          isAlreadyRegistered || preferredEmailAuth !== "password"
+            ? EmbeddedPaths.AuthEmailOtp
+            : EmbeddedPaths.AuthEmailSignInPassword,
+          {
+            search: { email },
+          },
+        );
+      } catch (error) {
+        toast.error(getFriendlyAuthErrorMessage(error, "Error checking email"));
+      } finally {
+        setIsCheckingEmail(false);
       }
-
-      const { data: isAlreadyRegistered, error } = await supabase.rpc("user_exists_by_email", {
-        p_email: email,
-      });
-
-      if (error) {
-        toast.error(getFriendlyAuthErrorMessage(error, error.message || "Error checking email"));
-        return;
-      }
-
-      navigate(
-        isAlreadyRegistered || preferredEmailAuth !== "password"
-          ? EmbeddedPaths.AuthEmailOtp
-          : EmbeddedPaths.AuthEmailSignInPassword,
-        {
-          search: { email },
-        },
-      );
-    } catch (error) {
-      toast.error(getFriendlyAuthErrorMessage(error, "Error checking email"));
-    } finally {
-      setIsCheckingEmail(false);
-    }
-  }, []);
+    },
+    [preferredEmailAuth],
+  );
 
   const emailInputButton = <InputButton type="submit" label="Next" loading={isCheckingEmail} />;
 
