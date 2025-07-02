@@ -2,8 +2,8 @@ import { PersistentStorage } from "~utils/storage";
 import { StorageKeys } from "~utils/storage/storage.constants";
 
 export const OTP_LENGTH = 6;
-export const OPT_COOLDOWN_DURATION_SEC = 60;
-export const OTP_EXPIRATION_SEC = 86400;
+export const OPT_COOLDOWN_DURATION_SEC = 60; // 1 minute
+export const OTP_EXPIRATION_SEC = 3600; // 1 hour
 
 /**
  * While a new OTP can be requested every 60 seconds, an OTP actually expires in 24h. Therefore, when we request a new
