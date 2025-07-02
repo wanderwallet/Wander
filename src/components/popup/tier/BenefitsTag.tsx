@@ -12,13 +12,13 @@ export function BenefitsTag() {
   const { navigate } = useLocation();
 
   const tier = useMemo(() => {
-    if (isLoading || !activeTier || activeTier?.tier === TierTypes.Unranked) return browser.i18n.getMessage("benefits");
+    if (isLoading || !activeTier || activeTier?.tier === TierTypes.Core) return browser.i18n.getMessage("benefits");
     return activeTier?.tier;
   }, [activeTier, isLoading]);
 
   return (
     <Tag onClick={() => navigate("/tier")}>
-      <WanderIcon tier={activeTier?.tier} />
+      <WanderIcon tier={"Prime"} />
       {isLoading ? <Loading style={{ width: "20px", height: "20px" }} /> : <Text noMargin>{tier}</Text>}
     </Tag>
   );

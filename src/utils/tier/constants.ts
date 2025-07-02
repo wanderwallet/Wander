@@ -1,11 +1,11 @@
 export const TIER_PROCESS_ID = "Unzzq_gNIBn-D-IrUPvXV4BKRqox3naPTees4I5-Gqo";
 
 export enum TierTypes {
-  Elite = "Elite",
-  Platinum = "Platinum",
-  Prime = "Prime",
+  Core = "Core",
+  Select = "Select",
   Plus = "Plus",
-  Unranked = "Unranked",
+  Prime = "Prime",
+  Elite = "Elite",
 }
 
 export const SHOW_TIER_FEATURES = "show_tier_features";

@@ -3,25 +3,27 @@ import { TierTypes } from "~utils/tier/constants";
 
 interface WanderIconProps {
   tier: Tier;
+  height?: number;
+  width?: number;
 }
 
 const colors = {
   [TierTypes.Elite]: { stopColorOne: "#D5AA0F", stopColorTwo: "#F7D68D" },
-  [TierTypes.Platinum]: { stopColorOne: "#D5AA0F", stopColorTwo: "#F7D68D" },
-  [TierTypes.Prime]: { stopColorOne: "#90A1A5", stopColorTwo: "#E6E6E6" },
-  [TierTypes.Plus]: { stopColorOne: "#C26C10", stopColorTwo: "#EDA355" },
-  [TierTypes.Unranked]: { stopColorOne: "#838383", stopColorTwo: "#838383" },
+  [TierTypes.Prime]: { stopColorOne: "#D5AA0F", stopColorTwo: "#F7D68D" },
+  [TierTypes.Plus]: { stopColorOne: "#90A1A5", stopColorTwo: "#E6E6E6" },
+  [TierTypes.Select]: { stopColorOne: "#C26C10", stopColorTwo: "#EDA355" },
+  [TierTypes.Core]: { stopColorOne: "#838383", stopColorTwo: "#838383" },
 };
 
-export function WanderIcon({ tier }: WanderIconProps) {
-  const { stopColorOne, stopColorTwo } = colors[tier] || colors[TierTypes.Unranked];
+export function WanderIcon({ tier, height = 10, width = 21 }: WanderIconProps) {
+  const { stopColorOne, stopColorTwo } = colors[tier] || colors[TierTypes.Core];
 
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       style={{ flexShrink: 0 }}
-      width="21"
-      height="10"
+      width={width}
+      height={height}
       viewBox="0 0 21 10"
       fill="none">
       <path

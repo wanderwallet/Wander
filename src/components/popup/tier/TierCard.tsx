@@ -25,14 +25,15 @@ const tierStyles = {
   },
 };
 
-export const TierCard = styled.div<{ tier: Tier }>`
+export const TierCard = styled.div<{ tier: Tier; hideBorder?: boolean; hideBackground?: boolean }>`
   display: flex;
   padding: 16px;
   flex-direction: column;
   align-items: center;
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: url(${(props) => tierStyles[props.tier].background}) no-repeat center center;
+  border: ${(props) => (props.hideBorder ? "none" : "1px solid rgba(255, 255, 255, 0.1)")};
+  background: ${(props) =>
+    props.hideBackground ? "transparent" : `url(${tierStyles[props.tier].background}) no-repeat center center`};
   background-size: cover;
   background-position: center;
 `;

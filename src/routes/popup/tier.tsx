@@ -18,6 +18,7 @@ import { TierWrapper } from "~components/popup/tier/TierWrapper";
 import { TierCard } from "~components/popup/tier/TierCard";
 import { useActiveTier } from "~utils/tier/hooks";
 import { balanceToFractioned } from "~tokens/currency";
+import { TiersPopup } from "~components/popup/tier/TiersPopup";
 
 const stars = defaultStars.toSpliced(1, 1);
 
@@ -37,6 +38,7 @@ const features = [
 ];
 
 export function TierView() {
+  const [isOpen, setOpen] = useState(false);
   const [showFeatures, setShowFeatures] = useState(false);
   const { data: activeTier } = useActiveTier();
 
@@ -57,8 +59,8 @@ export function TierView() {
       <HeadV2
         title={browser.i18n.getMessage("your_tier")}
         optionsIcon={
-          <OptionsIconWrapper>
-            <Award03 height={20} width={20} />
+          <OptionsIconWrapper onClick={() => setOpen(true)}>
+            <OptionsIcon />
           </OptionsIconWrapper>
         }
       />
@@ -123,9 +125,16 @@ export function TierView() {
           </Flex>
         </Flex>
       </TierWrapper>
+
+      <TiersPopup isOpen={isOpen} setOpen={setOpen} />
     </>
   );
 }
+
+const OptionsIcon = styled(Award03)`
+  height: 20px;
+  width: 20px;
+`;
 
 const OptionsIconWrapper = styled.div`
   display: flex;
@@ -137,6 +146,10 @@ const OptionsIconWrapper = styled.div`
   flex-shrink: 0;
   border-radius: 8px;
   background: #2c2c2e;
+
+  &:active ${OptionsIcon} {
+    transform: scale(0.93);
+  }
 `;
 
 const IconWrapper = styled.div`

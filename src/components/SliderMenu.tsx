@@ -14,9 +14,11 @@ interface SliderMenuProps {
   paddingVertical?: number;
   children?: React.ReactNode;
   height?: number | string;
+  maxHeight?: number | string;
   fullscreen?: boolean;
   style?: React.CSSProperties;
   closeIconColor?: string;
+  centerTitle?: boolean;
 }
 
 export default function SliderMenu({
@@ -28,9 +30,11 @@ export default function SliderMenu({
   paddingVertical,
   height,
   children,
+  maxHeight,
   fullscreen = false,
   style,
   closeIconColor,
+  centerTitle = false,
 }: SliderMenuProps) {
   const wrapperElementRef = useRef<HTMLDivElement | null>(null);
 
@@ -51,6 +55,7 @@ export default function SliderMenu({
       <Wrapper
         fullscreen={fullscreen}
         height={height}
+        maxHeight={maxHeight}
         hasHeader={hasHeader && !!title}
         paddingHorizontal={paddingHorizontal}
         paddingVertical={paddingVertical}
@@ -64,8 +69,11 @@ export default function SliderMenu({
           {hasHeader &&
             (title ? (
               <Header>
-                <Title>{title}</Title>
-                <ExitButton onClick={onClose} color={closeIconColor} />
+                <>
+                  {centerTitle && <div />}
+                  <Title>{title}</Title>
+                  <ExitButton onClick={onClose} color={closeIconColor} />
+                </>
               </Header>
             ) : (
               <AbsoluteExitButton onClick={onClose} color={closeIconColor} />
@@ -111,13 +119,14 @@ const Wrapper = styled(motion.div)<{
   paddingVertical?: number;
   hasHeader?: boolean;
   height?: number | string;
+  maxHeight?: number | string;
   fullscreen?: boolean;
 }>`
   position: fixed;
   bottom: 0;
   left: 0;
   height: ${({ height, fullscreen }) => (fullscreen ? "100vh" : height || "auto")};
-  max-height: ${({ fullscreen }) => (fullscreen ? "100%" : "calc(100% - 66px)")};
+  max-height: ${({ fullscreen, maxHeight }) => (fullscreen ? "100%" : maxHeight || "calc(100% - 66px)")};
   display: flex;
   flex-direction: column;
   width: 100%;

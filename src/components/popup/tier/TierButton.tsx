@@ -35,11 +35,10 @@ const tierStyles = {
   },
 };
 
-export const TierButton = styled(Button)<{ tier: Tier }>`
+export const TierButton = styled(Button).attrs({ fullWidth: true })<{ tier: Tier }>`
   display: flex;
   height: 46px;
   padding: 24px;
-  width: 100%;
   justify-content: center;
   align-items: center;
   gap: 4px;
