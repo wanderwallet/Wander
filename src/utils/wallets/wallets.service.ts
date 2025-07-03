@@ -98,12 +98,6 @@ async function createPublicWallet(wallet: CreatePublicWalletParams) {
   });
 }
 
-export type DoNotAskAgainForBackupData = Exclude<Parameters<typeof trpcVanilla.doNotAskAgainForBackup.mutate>[0], void>;
-
-async function doNotAskAgainForBackup(doNotAskAgainForBackupData: DoNotAskAgainForBackupData) {
-  return trpcVanilla.doNotAskAgainForBackup.mutate(doNotAskAgainForBackupData);
-}
-
 export type RegisterRecoveryShareData = Exclude<Parameters<typeof trpcVanilla.registerRecoveryShare.mutate>[0], void>;
 
 async function registerRecoveryShare(recoveryShareData: RegisterRecoveryShareData) {
@@ -279,7 +273,6 @@ async function registerAuthShare(registerAuthShareData: RegisterAuthShareData) {
 
 export const WalletService = {
   fetchWallets,
-  doNotAskAgainForBackup,
   createPublicWallet,
   registerRecoveryShare,
   registerWalletExport,
