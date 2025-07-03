@@ -18,4 +18,4 @@ export const defiFeeReductionsInPercent = {
 
 export const defiFeePercent = 1;
 
-export const SHOW_TIER_FEATURES = "show_tier_features";
+export const EXPLORE_TIER_BENEFITS = "explore_tier_benefits";

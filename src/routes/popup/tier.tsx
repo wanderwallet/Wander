@@ -3,7 +3,7 @@ import styled from "styled-components";
 import HeadV2 from "~components/popup/HeadV2";
 import { Award03 } from "@untitled-ui/icons-react";
 import { WanderIcon } from "~components/popup/tier/WanderIcon";
-import { SHOW_TIER_FEATURES, TierTypes } from "~utils/tier/constants";
+import { EXPLORE_TIER_BENEFITS, TierTypes } from "~utils/tier/constants";
 import { Loading, Text } from "@arconnect/components-rebrand";
 import { Flex } from "~components/common/Flex";
 import wanderIcon from "~assets/ecosystem/wander.svg";
@@ -29,19 +29,19 @@ const stars = defaultStars.toSpliced(1, 1);
 
 export function TierView() {
   const [isOpen, setOpen] = useState(false);
-  const [showFeatures, setShowFeatures] = useState(false);
+  const [showExploreTierBenefits, setShowExploreTierBenefits] = useState(false);
   const { data: activeTier } = useActiveTier();
 
   const tier = activeTier?.tier ?? TierTypes.Select;
 
   const handleCloseCTA = () => {
-    ExtensionStorage.set(SHOW_TIER_FEATURES, false);
-    setShowFeatures(false);
+    ExtensionStorage.set(EXPLORE_TIER_BENEFITS, false);
+    setShowExploreTierBenefits(false);
   };
 
   useAsyncEffect(async () => {
-    const storedValue = await ExtensionStorage.get<boolean>(SHOW_TIER_FEATURES);
-    setShowFeatures(storedValue ?? true);
+    const storedValue = await ExtensionStorage.get<boolean>(EXPLORE_TIER_BENEFITS);
+    setShowExploreTierBenefits(storedValue ?? true);
   }, []);
 
   return (
@@ -76,7 +76,7 @@ export function TierView() {
 
         <GetTokensButton tier={tier} />
 
-        {showFeatures && (
+        {showExploreTierBenefits && (
           <AnimatedStarContainer
             stars={stars}
             onClick={() => setOpen(true)}
