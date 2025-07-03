@@ -118,7 +118,6 @@ export const EmbeddedContext = createContext<EmbeddedContextData>({
   clearLastRegisteredWallet: () => null,
 
   // TODO: These should work for multiple wallets:
-  skipBackUp: () => null,
   downloadKeyfile: async () => null,
   copySeedphrase: async () => null,
   getSeedphrase: async () => null,
@@ -254,31 +253,6 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       };
     });
   }, []);
-
-  const skipBackUp = useCallback(
-    async (doNotAskAgainSetting: boolean) => {
-      log(LOG_GROUP.EMBEDDED_FLOWS, `skipBackUp(${doNotAskAgainSetting})`);
-
-      // TODO: Persist lastPromptData locally too?
-
-      if (doNotAskAgainSetting) {
-        const { wallet: updatedWallet } = await WalletService.doNotAskAgainForBackup({
-          walletId,
-        });
-
-        updateCurrentWallet((currentWallet) => ({
-          ...currentWallet,
-          ...updatedWallet,
-        }));
-      } else {
-        updateCurrentWallet((currentWallet) => ({
-          ...currentWallet,
-          doNotAskAgainSetting: true,
-        }));
-      }
-    },
-    [walletId, updateCurrentWallet],
-  );
 
   const downloadKeyfile = useCallback(async () => {
     log(LOG_GROUP.EMBEDDED_FLOWS, `downloadKeyfile()`);
@@ -679,6 +653,22 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     async (sourceType: WalletSourceType) => {
       log(LOG_GROUP.WALLET_GENERATION, `registerWallet(${sourceType})`);
 
+      if (authStatus === "noShares") {
+        await Promise.all(
+          wallets.map(({ id: walletId, status }) =>
+            status === "ENABLED" ? WalletService.updateWalletStatus({ walletId, status: "LOST" }) : null,
+          ),
+        );
+
+        setEmbeddedContextState((prevAuthContextState) => ({
+          ...prevAuthContextState,
+          wallets: prevAuthContextState.wallets.map((wallet) => ({
+            ...wallet,
+            status: wallet.status === "ENABLED" ? "LOST" : wallet.status,
+          })),
+        }));
+      }
+
       const promise =
         sourceType === "GENERATED"
           ? generatedTempWalletPromiseRef.current?.promise
@@ -724,7 +714,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
       return wallet;
     },
-    [userId],
+    [wallets, userId],
   );
 
   const clearLastRegisteredWallet = useCallback(() => {
@@ -1345,7 +1335,6 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
         registerWallet,
         clearLastRegisteredWallet,
-        skipBackUp,
         downloadKeyfile,
         copySeedphrase,
         getSeedphrase,
