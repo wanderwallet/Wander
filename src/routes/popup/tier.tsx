@@ -14,7 +14,7 @@ import { ExtensionStorage } from "~utils/storage";
 import { TierButton } from "~components/popup/tier/TierButton";
 import { TierWrapper } from "~components/popup/tier/TierWrapper";
 import { TierCard } from "~components/popup/tier/TierCard";
-import { useActiveTier, useWalletSavings } from "~utils/tier/hooks";
+import { useActiveTier, useWalletLifetimeSavings } from "~utils/tier/hooks";
 import { balanceToFractioned } from "~tokens/currency";
 import { TiersPopup } from "~components/popup/tier/TiersPopup";
 import { TierProgress } from "~components/popup/tier/TierProgress";
@@ -139,7 +139,7 @@ function Activity({ tier }: { tier: Tier }) {
 }
 
 function LifeTimeSavings() {
-  const { data: savings = "0", isLoading } = useWalletSavings();
+  const { data: savings = "0", isLoading } = useWalletLifetimeSavings();
 
   const formattedSavings = useMemo(() => {
     const savingsInUSD = Number(savings || 0);

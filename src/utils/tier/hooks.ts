@@ -1,8 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { useActiveAddress } from "~wallets/hooks";
 import type { ActiveTier } from "./types";
-import { getActiveTier, getDefiFeeDetailsForTier, getWalletSavings } from "./utils";
+import { getActiveTier, getDefiFeeDetailsForTier, getWalletLifetimeSavings } from "./utils";
 import { useMemo } from "react";
+import { defaultOptions } from "~tokens/hooks";
 
 export function useActiveTier() {
   const activeAddress = useActiveAddress();
@@ -20,20 +21,15 @@ export function useActiveTier() {
   });
 }
 
-export function useWalletSavings() {
+export function useWalletLifetimeSavings() {
   const activeAddress = useActiveAddress();
 
   return useQuery<string>({
     queryKey: ["wallet-savings", activeAddress],
-    queryFn: async () => getWalletSavings(activeAddress),
+    queryFn: async () => getWalletLifetimeSavings(activeAddress),
     enabled: !!activeAddress,
-    refetchInterval: 60_000,
-    staleTime: 60_000,
-    gcTime: 60_000,
-    retry: 3,
     select: (data) => data || "0",
-    retryDelay: (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 30000),
-    refetchOnWindowFocus: true,
+    ...defaultOptions,
   });
 }
 

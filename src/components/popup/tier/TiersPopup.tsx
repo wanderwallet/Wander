@@ -2,14 +2,12 @@ import { Text } from "@arconnect/components-rebrand";
 import SliderMenu from "~components/SliderMenu";
 import { Carousel } from "~components/Carousel";
 import styled from "styled-components";
-import { TierButton } from "./TierButton";
 import { Flex } from "~components/common/Flex";
 import { TierCard } from "./TierCard";
 import { WanderIcon } from "./WanderIcon";
 import type { Tier } from "~utils/tier/types";
 import stars from "~assets/images/tier/stars.png";
 import { StarIcon } from "./StarIcon";
-import browser from "webextension-polyfill";
 import { carouselData } from "~utils/tier/carousel";
 import { GetTokensButton } from "./GetTokensButton";
 

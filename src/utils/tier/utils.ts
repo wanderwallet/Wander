@@ -1,7 +1,7 @@
 import { dryrun, message } from "@permaweb/aoconnect/browser";
 import { AO_PROCESS_ID, createDataItemSigner, getBotegaPrice, getTagValue, Id } from "~tokens/aoTokens/ao";
 import { TIER_PROCESS_ID } from "./constants";
-import type { ActiveTier, DefiFeeDetails, Tier } from "./types";
+import type { ActiveTier, DefiFeeDetails, Tier, WalletSavings } from "./types";
 import { defiFeePercent, defiFeeReductionsInPercent } from "./constants";
 import BigNumber from "bignumber.js";
 import { getKeyfile, type DecryptedWallet } from "~wallets";
@@ -9,8 +9,23 @@ import { freeDecryptedWallet } from "~wallets/encryption";
 import { isLocalWallet } from "~utils/assertions";
 import { balanceToFractioned } from "~tokens/currency";
 import { queryClient } from "~utils/agents/utils";
+import { ExtensionStorage } from "~utils/storage";
+import { scheduleRefreshWalletLifetimeSavings } from "./alarms";
 
 const ONE_HUNDRED = BigNumber(100);
+const THREE_HOURS_MS = 10_800_000;
+
+export async function getWalletLifetimeSavingsFromStorage(walletAddress: string) {
+  return ExtensionStorage.get<WalletSavings>(`wallet_lifetime_savings_${walletAddress}`);
+}
+
+export async function saveWalletLifetimeSavingsToStorage(walletAddress: string, feeSavings: string, fresh?: boolean) {
+  await ExtensionStorage.set(`wallet_lifetime_savings_${walletAddress}`, {
+    lifetimeSavings: feeSavings,
+    fresh: fresh ?? true,
+    lastUpdated: Date.now(),
+  });
+}
 
 export async function getActiveTier(walletAddress: string): Promise<ActiveTier> {
   const dryrunRes = await dryrun({
@@ -36,7 +51,18 @@ export function getDefiFeeDetailsForTier(tier: Tier): DefiFeeDetails {
   };
 }
 
-export async function getWalletSavings(walletAddress: string): Promise<string> {
+export async function getWalletLifetimeSavings(walletAddress: string): Promise<string> {
+  const savedSavings = await getWalletLifetimeSavingsFromStorage(walletAddress);
+
+  if (
+    savedSavings &&
+    savedSavings?.fresh &&
+    savedSavings?.lifetimeSavings &&
+    savedSavings?.lastUpdated + THREE_HOURS_MS > Date.now()
+  ) {
+    return savedSavings.lifetimeSavings;
+  }
+
   const dryrunRes = await dryrun({
     Id,
     Owner: walletAddress,
@@ -47,10 +73,13 @@ export async function getWalletSavings(walletAddress: string): Promise<string> {
   const message = dryrunRes.Messages?.[0];
   const tags = message?.Tags || [];
   const savings = getTagValue("Savings", tags) || "0";
+
+  await saveWalletLifetimeSavingsToStorage(walletAddress, savings);
+
   return savings;
 }
 
-export async function saveWalletSavings(walletAddress: string, feeSavings: string) {
+export async function saveWalletLifetimeSavings(walletAddress: string, feeSavings: string) {
   let decryptedWallet: DecryptedWallet;
   try {
     if (!walletAddress || !feeSavings || BigNumber(feeSavings).lte(0)) return;
@@ -89,6 +118,8 @@ export async function saveWalletSavings(walletAddress: string, feeSavings: strin
         { name: "Fee-Savings", value: savingsInUsd },
       ],
     });
+
+    await scheduleRefreshWalletLifetimeSavings(walletAddress);
 
     return transferID;
   } catch {

@@ -19,3 +19,9 @@ export type DefiFeeDetails = {
   finalFeePercent: string;
   feeHasChanged: boolean;
 };
+
+export type WalletSavings = {
+  lifetimeSavings: string;
+  lastUpdated: number;
+  fresh: boolean;
+};

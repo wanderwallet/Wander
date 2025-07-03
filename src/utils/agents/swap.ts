@@ -21,7 +21,6 @@ import {
   AO_PROCESS_ID,
   defaultTokens,
   fetchTokenBalance,
-  getBotegaPrice,
   getTagValue,
   sendAoTransferForWallet,
 } from "~tokens/aoTokens/ao";
@@ -43,9 +42,7 @@ import type { DecodedTag } from "~api/modules/sign/tags";
 import { ExtensionStorage } from "~utils/storage";
 import browser from "webextension-polyfill";
 import { EventType, trackDirect } from "~utils/analytics";
-import { getSetting } from "~settings";
-import { saveWalletSavings } from "~utils/tier/utils";
-import { balanceToFractioned } from "~tokens/currency";
+import { saveWalletLifetimeSavings } from "~utils/tier/utils";
 
 let isSwapExecutionInProgress = false;
 let isSchedulingInProgress = false;
@@ -682,7 +679,7 @@ export async function checkIfRecentTxSwapSucceeded(): Promise<boolean> {
       const feeSavings = getTagValue("Fee-Savings", tags);
       const agentOwner = getTagValue("Agent-Owner", tags);
       const walletAddress = edge.node.recipient || agentOwner;
-      await saveWalletSavings(walletAddress, feeSavings);
+      await saveWalletLifetimeSavings(walletAddress, feeSavings);
 
       try {
         return await trackDirect(EventType.AO_YIELD_AGENT_TRANSACTION, transactionData);
