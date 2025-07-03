@@ -140,7 +140,7 @@ export function WalletHomeEmbeddedView() {
       {activeTab === 1 ? (
         <WalletHomeActions />
       ) : (
-        <WalletHomeAssets activeWalletAddress={wallet.address} tokens={tokens} prices={prices} />
+        <WalletHomeAssets activeWalletAddress={wallet?.address} tokens={tokens} prices={prices} />
       )}
     </Card>
   );
