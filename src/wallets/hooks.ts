@@ -90,11 +90,13 @@ export function useActiveWallet() {
   // active wallet
   const wallet = useMemo(
     () =>
-      wallets?.find(({ address }) => address === activeAddress) || {
+      wallets?.find(({ address }) => address === activeAddress) ||
+      ({
         address: activeAddress,
         nickname: "",
         type: "local",
-      },
+        keyfile: "",
+      } satisfies StoredWallet),
     [activeAddress, wallets],
   );
 

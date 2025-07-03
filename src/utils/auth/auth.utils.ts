@@ -137,7 +137,8 @@ export async function createAuthPopup(authRequestData: null | AuthRequestData, m
       throw new Error(ERR_MSG_NO_WALLETS_ADDED);
     }
 
-    const popupWindowTab: browser.Tabs.Tab | null = await browser.tabs.get(POPUP_TAB_ID).catch(() => null);
+    const popupWindowTab: browser.Tabs.Tab | null =
+      POPUP_TAB_ID >= 0 ? await browser.tabs.get(POPUP_TAB_ID).catch(() => null) : null;
 
     if (popupWindowTab && !popupWindowTab.url.startsWith(browser.runtime.getURL("tabs/auth.html"))) {
       console.warn(`Auth popup URL (${popupWindowTab.url}) doesn't match "tabs/auth.html"`);
