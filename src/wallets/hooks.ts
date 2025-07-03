@@ -88,17 +88,15 @@ export function useActiveWallet() {
   );
 
   // active wallet
-  const wallet = useMemo(() => {
-    return !wallets || wallets.length === 0
-      ? null
-      : wallets.find(({ address }) => address === activeAddress) ||
-          ({
-            address: activeAddress,
-            nickname: "",
-            type: "local",
-            keyfile: "",
-          } satisfies StoredWallet);
-  }, [activeAddress, wallets]);
+  const wallet = useMemo(
+    () =>
+      wallets?.find(({ address }) => address === activeAddress) || {
+        address: activeAddress,
+        nickname: "",
+        type: "local",
+      },
+    [activeAddress, wallets],
+  );
 
   return wallet;
 }
