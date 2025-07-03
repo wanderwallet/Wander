@@ -194,6 +194,7 @@ const TitleMessage = styled(Text).attrs({
 const OptionsIcon = styled(Award03)`
   height: 20px;
   width: 20px;
+  color: #fff;
 `;
 
 const OptionsIconWrapper = styled.div`

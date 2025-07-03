@@ -23,6 +23,7 @@ export let tokenInfoMap = new Map<string, TokenInfo | Token>();
 export type AoInstance = ReturnType<typeof connect>;
 
 export const AR_PROCESS_ID = "AR" as const;
+export const WNDR_PROCESS_ID = "7GoQfmSOct_aUOWKM4xbKGg6DzAmOgdKwg8Kf-CbHm4" as const;
 export const WAR_PROCESS_ID = "xU9zFkq3X2ZQ6olwNVvr1vUWIjc3kXTWr7xKQD6dh10" as const;
 export const WUSDC_PROCESS_ID = "7zH9dlMNoxprab9loshv3Y7WG45DOny_Vrq9KrXObdQ" as const;
 export const PI_PROCESS_ID = "4hXj_E-5fAKmo4E8KjgQvuDJKAFk9P2grhycVmISDLs" as const;
@@ -57,11 +58,11 @@ export const defaultTokens = [
     processId: PI_PROCESS_ID,
   },
   {
-    Name: "Wrapped AR",
-    Ticker: "wAR",
-    Denomination: 12,
-    Logo: "L99jaxRKQKJt9CqoJtPaieGPEhJD3wNhR4iGqc8amXs",
-    processId: WAR_PROCESS_ID,
+    Name: "Wander",
+    Ticker: "WNDR",
+    Denomination: 18,
+    Logo: "0XHfUzekXXVbdWKLHuC9NrmxVyNxzbFqs3NVcejiUso",
+    processId: WNDR_PROCESS_ID,
   },
   {
     Name: "Astro USD",
@@ -69,6 +70,13 @@ export const defaultTokens = [
     Denomination: 12,
     Logo: "seXozJrsP0OgI0gvAnr8zmfxiHHb5iSlI9wMI8SdamE",
     processId: USDA_PROCESS_ID,
+  },
+  {
+    Name: "Wrapped AR",
+    Ticker: "wAR",
+    Denomination: 12,
+    Logo: "L99jaxRKQKJt9CqoJtPaieGPEhJD3wNhR4iGqc8amXs",
+    processId: WAR_PROCESS_ID,
   },
 ] as const satisfies TokenInfo[];
 
@@ -106,7 +114,7 @@ type CreateDataItemSigner = (wallet: any) => (args: CreateDataItemArgs) => Promi
 const { dryrun: customDryrun } = connect({ CU_URL: "https://cu.ardrive.io" });
 
 const getDryrunForProcess = (processId: string) => {
-  return processId === ARIO_PROCESS_ID || processId === USDA_PROCESS_ID
+  return processId === ARIO_PROCESS_ID || processId === USDA_PROCESS_ID || processId === WNDR_PROCESS_ID
     ? { dryrunFn: customDryrun, isCustomDryrun: true }
     : { dryrunFn: dryrun, isCustomDryrun: false };
 };

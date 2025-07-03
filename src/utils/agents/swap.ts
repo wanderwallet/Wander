@@ -21,6 +21,7 @@ import {
   AO_PROCESS_ID,
   defaultTokens,
   fetchTokenBalance,
+  getBotegaPrice,
   getTagValue,
   sendAoTransferForWallet,
 } from "~tokens/aoTokens/ao";
@@ -43,6 +44,8 @@ import { ExtensionStorage } from "~utils/storage";
 import browser from "webextension-polyfill";
 import { EventType, trackDirect } from "~utils/analytics";
 import { getSetting } from "~settings";
+import { saveWalletSavings } from "~utils/tier/utils";
+import { balanceToFractioned } from "~tokens/currency";
 
 let isSwapExecutionInProgress = false;
 let isSchedulingInProgress = false;
@@ -522,19 +525,16 @@ async function processAgentSwap(agent: AOYieldAgent, walletAddress: string): Pro
       return;
     }
 
-    // first we check if we are allowed to collect data
-    const enabled = await getSetting("analytics").getValue();
-    if (enabled) {
-      const recentTxs = await getRecentTxs();
-      await setRecentTxs([...recentTxs, { id: messageId, timestamp: Date.now(), queryCount: 0 }]);
+    // Add the swap to the recent txs list
+    const recentTxs = await getRecentTxs();
+    await setRecentTxs([...recentTxs, { id: messageId, timestamp: Date.now(), queryCount: 0 }]);
 
-      // Schedule alarm to check if the swap was successful
-      await browser.alarms.clear(AO_YIELD_AGENT_RECENT_TXS_CHECK_ALARM_NAME);
-      browser.alarms.create(AO_YIELD_AGENT_RECENT_TXS_CHECK_ALARM_NAME, {
-        delayInMinutes: 1,
-        periodInMinutes: 2,
-      });
-    }
+    // Schedule alarm to check if the swap was successful
+    await browser.alarms.clear(AO_YIELD_AGENT_RECENT_TXS_CHECK_ALARM_NAME);
+    browser.alarms.create(AO_YIELD_AGENT_RECENT_TXS_CHECK_ALARM_NAME, {
+      delayInMinutes: 1,
+      periodInMinutes: 2,
+    });
 
     log(LOG_GROUP.AGENTS, "Successfully processed swap for agent:", agent.id, "wallet:", walletAddress);
   } catch (error) {
@@ -629,11 +629,6 @@ export async function executeAutomaticSwapIfNeeded(): Promise<void> {
 export async function checkIfRecentTxSwapSucceeded(): Promise<boolean> {
   try {
     log(LOG_GROUP.AGENTS, "Checking if recent tx swap succeeded");
-    const enabled = await getSetting("analytics").getValue();
-    if (!enabled) {
-      await browser.alarms.clear(AO_YIELD_AGENT_RECENT_TXS_CHECK_ALARM_NAME);
-      return;
-    }
 
     if (isRecentTxCheckInProgress) return;
 
@@ -682,6 +677,12 @@ export async function checkIfRecentTxSwapSucceeded(): Promise<boolean> {
         dexUsed: getTagValue("Dex", tags),
         wanderFee: getTagValue("Swap-Fee", tags),
       };
+
+      // Save wallet savings
+      const feeSavings = getTagValue("Fee-Savings", tags);
+      const agentOwner = getTagValue("Agent-Owner", tags);
+      const walletAddress = edge.node.recipient || agentOwner;
+      await saveWalletSavings(walletAddress, feeSavings);
 
       try {
         return await trackDirect(EventType.AO_YIELD_AGENT_TRANSACTION, transactionData);
