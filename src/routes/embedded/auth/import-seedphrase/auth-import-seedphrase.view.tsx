@@ -10,7 +10,7 @@ export function AuthImportSeedphraseEmbeddedView() {
   const [loading, setLoading] = useState(false);
   const { navigate } = useLocation();
   const [seedPhrase, setSeedPhrase] = useState<string[]>([]);
-  const { importTempWallet, importedTempWalletAddress, deleteImportedTempWallet, registerWallet, wallets } =
+  const { importTempWallet, importedTempWalletAddress, deleteImportedTempWallet, registerWallet, wallets, authStatus } =
     useEmbedded();
 
   const validateSeedPhrase = useCallback(() => {
@@ -90,7 +90,7 @@ export function AuthImportSeedphraseEmbeddedView() {
 
   return importedTempWalletAddress ? (
     <OnboardingCard
-      headerText="Enter Seedphrase"
+      headerText={authStatus === "noWallets" ? "Enter Seedphrase" : "Restore wallet"}
       subtitle="Would you like to add this wallet to your account?"
       onBackButtonClick={() => navigate(`/auth/add-wallet`)}
       isLoading={loading}>
@@ -114,7 +114,7 @@ export function AuthImportSeedphraseEmbeddedView() {
     </OnboardingCard>
   ) : (
     <OnboardingCard
-      headerText="Enter Seedphrase"
+      headerText={authStatus === "noWallets" ? "Enter Seedphrase" : "Restore wallet"}
       subtitle="Enter your seedphrase to add your wallet to your account."
       onBackButtonClick={() => navigate(`/auth/add-wallet`)}
       isLoading={loading}>
