@@ -24,6 +24,8 @@ interface AnimatedStarContainerProps {
   gap?: number;
   stars?: StarConfig[];
   className?: string;
+  onClick?: () => void;
+  style?: React.CSSProperties;
 }
 
 export const defaultStars: StarConfig[] = [
@@ -42,9 +44,11 @@ export function AnimatedStarContainer({
   gap = 12,
   stars = defaultStars,
   className,
+  onClick,
+  style,
 }: AnimatedStarContainerProps) {
   return (
-    <AnimatedContainer className={className}>
+    <AnimatedContainer onClick={onClick} className={className} style={style}>
       <Flex
         direction="column"
         padding={padding}
@@ -56,7 +60,11 @@ export function AnimatedStarContainer({
           <CloseButtonWrapper>
             <IconButton
               icon={<XClose style={{ width: 24, height: 24, cursor: "pointer" }} />}
-              onClick={onClose}
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                onClose?.();
+              }}
               style={{ zIndex: 1 }}
             />
           </CloseButtonWrapper>

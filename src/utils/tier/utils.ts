@@ -1,5 +1,5 @@
 import { dryrun, message } from "@permaweb/aoconnect/browser";
-import { AO_PROCESS_ID, createDataItemSigner, getBotegaPrice, Id } from "~tokens/aoTokens/ao";
+import { AO_PROCESS_ID, createDataItemSigner, getBotegaPrice, getTagValue, Id } from "~tokens/aoTokens/ao";
 import { TIER_PROCESS_ID } from "./constants";
 import type { ActiveTier, DefiFeeDetails, Tier } from "./types";
 import { defiFeePercent, defiFeeReductionsInPercent } from "./constants";
@@ -34,6 +34,20 @@ export function getDefiFeeDetailsForTier(tier: Tier): DefiFeeDetails {
     finalFeePercent: finalPercent.toFixed(2),
     feeHasChanged: !finalPercent.eq(defiFeePercent),
   };
+}
+
+export async function getWalletSavings(walletAddress: string): Promise<string> {
+  const dryrunRes = await dryrun({
+    Id,
+    Owner: walletAddress,
+    process: TIER_PROCESS_ID,
+    tags: [{ name: "Action", value: "Get-Savings" }],
+  });
+
+  const message = dryrunRes.Messages?.[0];
+  const tags = message?.Tags || [];
+  const savings = getTagValue("Savings", tags) || "0";
+  return savings;
 }
 
 export async function saveWalletSavings(walletAddress: string, feeSavings: string) {

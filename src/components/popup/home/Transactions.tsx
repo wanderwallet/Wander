@@ -35,6 +35,7 @@ import { convertAnnouncementsToTransactions } from "~utils/announcements";
 import { Announcement01 } from "@untitled-ui/icons-react";
 import { Flex } from "~components/common/Flex";
 import { isURL } from "~utils/urls/isURL";
+import dayjs from "dayjs";
 
 interface TransactionsCache {
   transactions: ExtendedTransaction[];
@@ -316,6 +317,35 @@ export const AnnouncementItemComponent = ({ transaction }: { transaction: Extend
   );
 };
 
+export const TierTransactionItemComponent = ({ transaction }: { transaction: ExtendedTransaction }) => {
+  const { navigate } = useLocation();
+
+  return (
+    <TransactionItem showBackground={false}>
+      <Transaction padding="8px" onClick={() => navigate(`/transaction/${transaction.node.id}?back=/tier`)}>
+        <FlexContainer>
+          <Section>
+            <Main>{getTransactionDescription(transaction)}</Main>
+            <Secondary>
+              {transaction.date ? dayjs(transaction.date).format("MMM D, YYYY") : browser.i18n.getMessage("pending")}
+            </Secondary>
+          </Section>
+        </FlexContainer>
+        <Section alignRight>
+          <Amount success={transaction.transactionType === "received" || transaction.transactionType === "aoReceived"}>
+            {transaction.transactionType === "sent" ||
+            transaction.transactionType === "aoSent" ||
+            transaction.transactionType === "printArchive"
+              ? "-"
+              : "+"}
+            {getFormattedAmount(transaction)}
+          </Amount>
+        </Section>
+      </Transaction>
+    </TransactionItem>
+  );
+};
+
 const GroupedTransactions = styled.div`
   display: flex;
   flex-direction: column;
@@ -374,12 +404,12 @@ const Amount = styled(Text).attrs({
     props.success ? props.theme.success : props.theme.displayTheme === "light" ? "#121212" : "#EEEEEE"};
 `;
 
-const Transaction = styled.div`
+const Transaction = styled.div<{ padding?: string }>`
   display: flex;
   cursor: pointer;
   justify-content: space-between;
   align-items: center;
-  padding: 12px;
+  padding: ${({ padding }) => padding ?? "12px"};
   gap: 1rem;
   align-self: stretch;
 `;
@@ -388,9 +418,9 @@ const Section = styled.div<{ alignRight?: boolean }>`
   text-align: ${({ alignRight }) => (alignRight ? "right" : "left")};
 `;
 
-const TransactionItem = styled.div`
+const TransactionItem = styled.div<{ showBackground?: boolean }>`
   position: relative;
-  background: ${({ theme }) => theme.surfaceSecondary};
+  background: ${({ theme, showBackground }) => (showBackground ? theme.surfaceSecondary : "transparent")};
   border-radius: 8px;
 
   &:active {

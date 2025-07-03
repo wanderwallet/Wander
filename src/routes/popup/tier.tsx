@@ -1,46 +1,30 @@
 import browser from "webextension-polyfill";
 import styled from "styled-components";
 import HeadV2 from "~components/popup/HeadV2";
-import { Award03, Percent02, Star01 } from "@untitled-ui/icons-react";
+import { Award03 } from "@untitled-ui/icons-react";
 import { WanderIcon } from "~components/popup/tier/WanderIcon";
 import { SHOW_TIER_FEATURES, TierTypes } from "~utils/tier/constants";
-import { Button, Loading, Text } from "@arconnect/components-rebrand";
+import { Loading, Text } from "@arconnect/components-rebrand";
 import { Flex } from "~components/common/Flex";
 import wanderIcon from "~assets/ecosystem/wander.svg";
 import { defaultStars, AnimatedStarContainer } from "~components/common/AnimatedStarContainer";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { ExtensionStorage } from "~utils/storage";
-import powerupsIcon from "~assets/images/tier/powerups.svg";
 import { TierButton } from "~components/popup/tier/TierButton";
 import { TierWrapper } from "~components/popup/tier/TierWrapper";
 import { TierCard } from "~components/popup/tier/TierCard";
-import { useActiveTier } from "~utils/tier/hooks";
+import { useActiveTier, useWalletSavings } from "~utils/tier/hooks";
 import { balanceToFractioned } from "~tokens/currency";
 import { TiersPopup } from "~components/popup/tier/TiersPopup";
 import { TierProgress } from "~components/popup/tier/TierProgress";
 import starsImage from "~assets/images/tier/stars.png";
 import { WAR_PROCESS_ID } from "~tokens/aoTokens/ao";
 import { useActiveAddress, useTokenTransactions } from "~wallets/hooks";
-import { SectionList, SectionTitle, TransactionItemComponent } from "~components/popup/home/Transactions";
-import { getFullMonthNameWithYear } from "~lib/transactions";
+import { TierTransactionItemComponent } from "~components/popup/home/Transactions";
+import type { Tier } from "~utils/tier/types";
 
 const stars = defaultStars.toSpliced(1, 1);
-
-const features = [
-  {
-    icon: <Percent02 height={16} width={16} />,
-    title: "Exclusive feature access",
-  },
-  {
-    icon: <Star01 height={16} width={16} />,
-    title: "Exclusive feature access",
-  },
-  {
-    icon: <img src={powerupsIcon} alt="Powerups" height={16} width={16} />,
-    title: "Power ups with partners",
-  },
-];
 
 export function TierView() {
   const [isOpen, setOpen] = useState(false);
@@ -73,7 +57,7 @@ export function TierView() {
         <StarsBackground />
         <TierCard tier={tier}>
           <Flex direction="row" gap={4} align="center" justify="center">
-            <WanderIcon tier={tier} />
+            <WanderIcon height={15} width={32} tier={tier} />
             <Text size="xs" weight="semibold" noMargin>
               {tier}
             </Text>
@@ -94,27 +78,26 @@ export function TierView() {
         </TierButton>
 
         {showFeatures && (
-          <AnimatedStarContainer padding="16px" stars={stars} onClose={handleCloseCTA} showCloseButton>
-            <Flex direction="column" gap={12}>
-              {features.map((feature) => (
-                <Flex direction="row" gap={8}>
-                  <IconWrapper>{feature.icon}</IconWrapper>
-                  <Text weight="semibold" noMargin>
-                    {feature.title}
-                  </Text>
-                </Flex>
-              ))}
-            </Flex>
+          <AnimatedStarContainer
+            stars={stars}
+            onClick={() => setOpen(true)}
+            onClose={handleCloseCTA}
+            style={{ cursor: "pointer" }}
+            showCloseButton>
+            <Text weight="semibold" noMargin>
+              Explore tier benefits
+            </Text>
           </AnimatedStarContainer>
         )}
 
         <Flex direction="column" gap={32} style={{ marginTop: 16 }}>
           <TierProgress activeTier={activeTier} />
+          <LifeTimeSavings />
           <Flex direction="column" gap={16} width="100%">
             <Text weight="semibold" noMargin>
               Activity
             </Text>
-            <Activity />
+            <Activity tier={tier} />
           </Flex>
         </Flex>
       </TierWrapper>
@@ -124,22 +107,15 @@ export function TierView() {
   );
 }
 
-function Activity() {
+function Activity({ tier }: { tier: Tier }) {
   const activeAddress = useActiveAddress();
   const { transactions, loading, hasNextPage, fetchTransactions } = useTokenTransactions(activeAddress, WAR_PROCESS_ID);
 
   return (
-    <TransactionsWrapper>
-      {Object.keys(transactions).length > 0
-        ? Object.keys(transactions).map((monthYear) => (
-            <SectionList key={monthYear}>
-              <SectionTitle>{getFullMonthNameWithYear(monthYear)}</SectionTitle>
-              <TransactionItem>
-                {transactions[monthYear].map((transaction) => (
-                  <TransactionItemComponent key={transaction.node.id} transaction={transaction} />
-                ))}
-              </TransactionItem>
-            </SectionList>
+    <TransactionsWrapper gap={8}>
+      {transactions.length > 0
+        ? transactions.map((transaction) => (
+            <TierTransactionItemComponent key={transaction.node.id} transaction={transaction} />
           ))
         : !loading && (
             <Empty>
@@ -147,7 +123,8 @@ function Activity() {
             </Empty>
           )}
       {hasNextPage && (
-        <Button
+        <TierButton
+          tier={tier}
           fullWidth
           disabled={!hasNextPage || loading}
           style={{ alignSelf: "center", marginTop: "5px" }}
@@ -159,23 +136,41 @@ function Activity() {
           ) : (
             browser.i18n.getMessage("load_more") + "..."
           )}
-        </Button>
+        </TierButton>
       )}
     </TransactionsWrapper>
   );
 }
 
-const TransactionsWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-`;
+function LifeTimeSavings() {
+  const { data: savings = "0", isLoading } = useWalletSavings();
 
-const TransactionItem = styled.div`
-  gap: 8px;
+  const formattedSavings = useMemo(() => {
+    const savingsInUSD = Number(savings || 0);
+    if (savingsInUSD < 0.01) return "< $0.01";
+    return `$${savingsInUSD.toFixed(2)}`;
+  }, [savings]);
+
+  return (
+    <LifeTimeSavingsWrapper>
+      <Text variant="secondary" size="sm" weight="semibold" noMargin>
+        Your lifetime savings:
+      </Text>
+      {isLoading ? (
+        <Loading style={{ height: "20px", width: "20px" }} />
+      ) : (
+        <Text size="xl" weight="semibold" noMargin>
+          {formattedSavings}
+        </Text>
+      )}
+    </LifeTimeSavingsWrapper>
+  );
+}
+
+const TransactionsWrapper = styled.div<{ gap?: number }>`
   display: flex;
   flex-direction: column;
-  border-radius: 10px;
+  gap: ${({ gap }) => gap ?? 12}px;
 `;
 
 const Empty = styled.div`
@@ -206,22 +201,12 @@ const OptionsIconWrapper = styled.div`
   align-items: center;
   flex-shrink: 0;
   border-radius: 8px;
-  background: #2c2c2e;
+  background: ${(props) => props.theme.surfaceTertiary};
+  box-sizing: border-box;
 
   &:active ${OptionsIcon} {
     transform: scale(0.93);
   }
-`;
-
-const IconWrapper = styled.div`
-  width: 24px;
-  height: 24px;
-  flex-shrink: 0;
-  border-radius: 50%;
-  background: #342888;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 `;
 
 const StarsBackground = styled.div`
@@ -238,4 +223,20 @@ const StarsBackground = styled.div`
   pointer-events: none;
   z-index: 1;
   border-radius: 8px;
+  /* Ensure this decorative background doesn't interfere with content */
+  mix-blend-mode: screen;
+  opacity: 0.8;
+`;
+
+const LifeTimeSavingsWrapper = styled.div`
+  display: flex;
+  padding: 12px;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  align-self: stretch;
+
+  border-radius: 8px;
+  border: 1px solid ${(props) => props.theme.backgroundSecondary};
+  background: ${(props) => props.theme.surfaceDefault};
 `;

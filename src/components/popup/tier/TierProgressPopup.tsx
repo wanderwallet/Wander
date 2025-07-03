@@ -5,71 +5,12 @@ import { TierButton } from "./TierButton";
 import { Flex } from "~components/common/Flex";
 import { TierCard } from "./TierCard";
 import { WanderIcon } from "./WanderIcon";
-import type { Tier } from "~utils/tier/types";
-import coreCarouselBg from "~assets/images/tier/core_carousel_bg.png";
-import selectCarouselBg from "~assets/images/tier/select_carousel_bg.png";
-import plusCarouselBg from "~assets/images/tier/plus_carousel_bg.png";
-import primeCarouselBg from "~assets/images/tier/prime_carousel_bg.png";
-import eliteCarouselBg from "~assets/images/tier/elite_carousel_bg.png";
 import stars from "~assets/images/tier/stars.png";
 import { useActiveTier } from "~utils/tier/hooks";
 import { TierProgress } from "./TierProgress";
 import { StarIcon } from "./StarIcon";
 import browser from "webextension-polyfill";
-
-interface WandCarouselSlide {
-  tierName: Tier;
-  tierBenefits: string[];
-  carouselBg: string;
-}
-
-const carouselData: WandCarouselSlide[] = [
-  {
-    tierName: "Core",
-    tierBenefits: ["No benefits"],
-    carouselBg: coreCarouselBg,
-  },
-  {
-    tierName: "Select",
-    tierBenefits: [
-      "5% fee reduction on defi transactions",
-      "0% fee reduction on Transak purchases",
-      "Select will not have access to all features.  Certain features will be token gated",
-    ],
-    carouselBg: selectCarouselBg,
-  },
-  {
-    tierName: "Plus",
-    tierBenefits: [
-      "25% fee reduction on defi transactions",
-      "0% fee reduction on Transak purchases",
-      "Plus will have access to all standard features but certain premium features will be token gated",
-    ],
-    carouselBg: plusCarouselBg,
-  },
-  {
-    tierName: "Prime",
-    tierBenefits: [
-      "75% fee reduction on defi transactions",
-      "100% fee reduction on Transak purchases",
-      "Access to all features",
-      "Early access to new features",
-      "Dedicated support channel of their choice: Discord, Slack, Telegram, or Email",
-    ],
-    carouselBg: primeCarouselBg,
-  },
-  {
-    tierName: "Elite",
-    tierBenefits: [
-      "100% fee reduction on defi transactions",
-      "100% fee reduction on Transak purchases",
-      "Access to all features",
-      "Early access to new features",
-      "Dedicated support channel of their choice: Discord, Slack, Telegram, Email, or schedule a video call with the team",
-    ],
-    carouselBg: eliteCarouselBg,
-  },
-];
+import { carouselData } from "~utils/tier/carousel";
 
 export const TierProgressPopup = ({ isOpen, setOpen }) => {
   const { data: activeTier } = useActiveTier();

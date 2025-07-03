@@ -390,7 +390,7 @@ export function TransactionView({ params: { id, gateway: gw, message } }: Transa
             // tab items, which set `backPath = "/transactions"`, but pressing the back button would instead (but
             // correctly) navigate Home. Also, in the `else` block it looks like there are other options, but actually
             // there aren't; that branch always does `navigate("/")`:
-            if (backPath === "/notifications" || backPath === "/transactions") {
+            if (backPath === "/notifications" || backPath === "/transactions" || backPath === "/tier") {
               back();
             } else {
               navigate((backPath as WanderRoutePath) || "/");

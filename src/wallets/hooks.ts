@@ -427,7 +427,7 @@ export const useTokenTransactions = (activeAddress: string, tokenId: string, lim
   const [count, setCount] = useState({ current: 0, actual: 0 });
   const [cursors, setCursors] = useState(defaultCursors);
   const [hasNextPages, setHasNextPages] = useState(defaultHasNextPages);
-  const [transactions, setTransactions] = useState<GroupedTransactions>({});
+  const [transactions, setTransactions] = useState<ExtendedTransaction[]>([]);
   const [loading, setLoading] = useState(false);
 
   const hasNextPage = useMemo(() => hasNextPages.some((v) => v === true), [hasNextPages]);
@@ -517,33 +517,7 @@ export const useTokenTransactions = (activeAddress: string, tokenId: string, lim
         actual: prev.actual + actualCount,
       }));
 
-      const groupedTransactions = combinedTransactions.reduce((acc, transaction) => {
-        const monthYear = `${transaction.month}-${transaction.year}`;
-        if (!acc[monthYear]) {
-          acc[monthYear] = [];
-        }
-        if (!acc[monthYear].some((t) => t.node.id === transaction.node.id)) {
-          acc[monthYear].push(transaction);
-        }
-        return acc;
-      }, transactions);
-
-      // Get the month-year keys and sort them in descending order
-      const sortedMonthYears = Object.keys(groupedTransactions).sort((a, b) => {
-        const [monthA, yearA] = a.split("-").map(Number);
-        const [monthB, yearB] = b.split("-").map(Number);
-
-        // Sort by year first, then by month
-        return yearB - yearA || monthB - monthA;
-      });
-
-      // Create a new object with sorted keys
-      const sortedGroupedTransactions: GroupedTransactions = sortedMonthYears.reduce((acc, key) => {
-        acc[key] = groupedTransactions[key].sort(sortFn);
-        return acc;
-      }, {});
-
-      setTransactions(sortedGroupedTransactions);
+      setTransactions(combinedTransactions);
     } catch (error) {
       console.error("Error fetching transactions", error);
     } finally {
@@ -555,7 +529,7 @@ export const useTokenTransactions = (activeAddress: string, tokenId: string, lim
     setCursors(defaultCursors);
     setHasNextPages(defaultHasNextPages);
     setCount({ current: 0, actual: 0 });
-    setTransactions({});
+    setTransactions([]);
     fetchTransactions();
   }, [activeAddress, tokenId]);
 

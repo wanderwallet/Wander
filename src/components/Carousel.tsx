@@ -35,11 +35,7 @@ export function Carousel<T extends CarouselSlide = CarouselSlide>({
     containScroll: "trimSnaps",
   },
   showDots = true,
-  dotColor = "rgba(255, 255, 255, 0.4)",
-  activeDotColor = "white",
   showChevrons = false,
-  chevronColor = "rgba(255, 255, 255, 0.6)",
-  chevronActiveColor = "white",
   chevronSize = 24,
   onSlideChange,
   className,
@@ -83,35 +79,19 @@ export function Carousel<T extends CarouselSlide = CarouselSlide>({
       {showDots && slides.length > 1 && (
         <NavigationContainer showChevrons={showChevrons}>
           {showChevrons && (
-            <ChevronButton
-              onClick={scrollPrev}
-              disabled={!canScrollPrev()}
-              chevronColor={chevronColor}
-              chevronActiveColor={chevronActiveColor}
-              size={chevronSize}>
+            <ChevronButton onClick={scrollPrev} disabled={!canScrollPrev()} size={chevronSize}>
               <ChevronLeftIcon size={chevronSize} />
             </ChevronButton>
           )}
 
           <DotsContainer>
             {slides.map((_, index) => (
-              <Dot
-                key={`dot-${index}`}
-                active={index === selectedIndex}
-                dotColor={dotColor}
-                activeDotColor={activeDotColor}
-                onClick={() => scrollTo(index)}
-              />
+              <Dot key={`dot-${index}`} active={index === selectedIndex} onClick={() => scrollTo(index)} />
             ))}
           </DotsContainer>
 
           {showChevrons && (
-            <ChevronButton
-              onClick={scrollNext}
-              disabled={!canScrollNext()}
-              chevronColor={chevronColor}
-              chevronActiveColor={chevronActiveColor}
-              size={chevronSize}>
+            <ChevronButton onClick={scrollNext} disabled={!canScrollNext()} size={chevronSize}>
               <ChevronRightIcon size={chevronSize} />
             </ChevronButton>
           )}
@@ -156,34 +136,27 @@ const DotsContainer = styled.div`
 
 const Dot = styled.button<{
   active: boolean;
-  dotColor: string;
-  activeDotColor: string;
 }>`
   width: 8px;
   height: 8px;
   border-radius: 50%;
   border: none;
-  background: ${(props) => (props.active ? props.activeDotColor : props.dotColor)};
+  background: ${(props) => (props.active ? props.theme.primaryText : props.theme.tertiaryText)};
   cursor: pointer;
   transition: background 0.2s ease;
 
   &:hover {
-    background: ${(props) =>
-      props.active
-        ? props.activeDotColor
-        : props.dotColor.replace("0.4)", "0.6)").replace("rgba(255, 255, 255, 0.4)", "rgba(255, 255, 255, 0.6)")};
+    background: ${(props) => props.theme.primaryText};
   }
 `;
 
 const ChevronButton = styled.button<{
-  chevronColor: string;
-  chevronActiveColor: string;
   size: number;
 }>`
   background: none;
   border: none;
   cursor: pointer;
-  color: ${(props) => props.chevronColor};
+  color: ${(props) => props.theme.secondaryText};
   transition: color 0.2s ease;
   display: flex;
   align-items: center;
@@ -191,12 +164,12 @@ const ChevronButton = styled.button<{
   padding: 4px;
 
   &:hover:not(:disabled) {
-    color: ${(props) => props.chevronActiveColor};
+    color: ${(props) => props.theme.primaryText};
   }
 
   &:disabled {
-    opacity: 0.3;
-    cursor: not-allowed;
+    opacity: 0;
+    cursor: default;
   }
 `;
 
