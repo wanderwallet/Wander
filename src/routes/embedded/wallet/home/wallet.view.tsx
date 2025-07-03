@@ -65,7 +65,12 @@ export function WalletHomeEmbeddedView() {
         embedWallets.length === 1
           ? `Your account has been created!`
           : `Your wallet has been ${lastRegisteredWallet.source.type === "IMPORTED" ? "imported" : "created"}!`;
-      children = [<Button key="button" variant="link" onClick={clearLastRegisteredWallet} children="Dismiss" />];
+
+      children = (
+        <Button variant="primary" size="sm" onClick={clearLastRegisteredWallet}>
+          Dismiss
+        </Button>
+      );
     } else {
       const needsBackup = embedWallets.filter((wallet) => {
         return wallet.totalExports === 0 && wallet.totalBackups === 0 && wallet.status === "ENABLED";
@@ -84,8 +89,8 @@ export function WalletHomeEmbeddedView() {
               : `${needsBackup} of your ${embedWallets.length} wallets need to backed up.`;
         }
 
-        children = [
-          <p key="link" style={{ display: "flex", gap: "var(--spacing-2)" }}>
+        children = (
+          <p style={{ display: "flex", gap: "var(--spacing-2)" }}>
             <Button
               variant="secondary"
               size="sm"
@@ -97,8 +102,8 @@ export function WalletHomeEmbeddedView() {
             <Button variant="primary" size="sm" href={EmbeddedPaths.AccountBackupWallet}>
               Back up now
             </Button>
-          </p>,
-        ];
+          </p>
+        );
       }
     }
 
