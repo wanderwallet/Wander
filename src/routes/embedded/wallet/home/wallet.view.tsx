@@ -1,7 +1,7 @@
 import { useStorage } from "~utils/storage";
 import { ExtensionStorage } from "~utils/storage";
-import React, { useEffect, useMemo, useRef } from "react";
-import { trackEvent, EventType, trackPage, PageType, checkWalletBits } from "~utils/analytics";
+import React, { useEffect, useMemo } from "react";
+import { trackEvent, EventType, trackPage, PageType } from "~utils/analytics";
 import { useActiveWallet } from "~wallets/hooks";
 import { scheduleImportAoTokens } from "~tokens/aoTokens/sync";
 import { Card, Divider, AccountSelector, TabBar, Snackbar, type SnackbarVariant, Button } from "~components/embed/ui";
