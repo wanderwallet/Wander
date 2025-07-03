@@ -19,10 +19,11 @@ import { balanceToFractioned } from "~tokens/currency";
 import { TiersPopup } from "~components/popup/tier/TiersPopup";
 import { TierProgress } from "~components/popup/tier/TierProgress";
 import starsImage from "~assets/images/tier/stars.png";
-import { WAR_PROCESS_ID } from "~tokens/aoTokens/ao";
+import { WNDR_PROCESS_ID } from "~tokens/aoTokens/ao";
 import { useActiveAddress, useTokenTransactions } from "~wallets/hooks";
 import { TierTransactionItemComponent } from "~components/popup/home/Transactions";
 import type { Tier } from "~utils/tier/types";
+import { GetTokensButton } from "~components/popup/tier/GetTokensButton";
 
 const stars = defaultStars.toSpliced(1, 1);
 
@@ -73,9 +74,7 @@ export function TierView() {
           </Flex>
         </TierCard>
 
-        <TierButton tier={tier} onClick={() => browser.tabs.create({ url: "https://ao.arweave.net/#/delegate/" })}>
-          Get WNDR tokens
-        </TierButton>
+        <GetTokensButton tier={tier} />
 
         {showFeatures && (
           <AnimatedStarContainer
@@ -109,7 +108,10 @@ export function TierView() {
 
 function Activity({ tier }: { tier: Tier }) {
   const activeAddress = useActiveAddress();
-  const { transactions, loading, hasNextPage, fetchTransactions } = useTokenTransactions(activeAddress, WAR_PROCESS_ID);
+  const { transactions, loading, hasNextPage, fetchTransactions } = useTokenTransactions(
+    activeAddress,
+    WNDR_PROCESS_ID,
+  );
 
   return (
     <TransactionsWrapper gap={8}>

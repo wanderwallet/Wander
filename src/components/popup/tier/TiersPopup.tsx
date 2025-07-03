@@ -11,6 +11,7 @@ import stars from "~assets/images/tier/stars.png";
 import { StarIcon } from "./StarIcon";
 import browser from "webextension-polyfill";
 import { carouselData } from "~utils/tier/carousel";
+import { GetTokensButton } from "./GetTokensButton";
 
 interface WandCarouselSlide {
   tierName: Tier;
@@ -40,11 +41,7 @@ const renderSlide = (slide: WandCarouselSlide) => (
       padding="16px 16px 24px 16px"
       boxSizing="border-box"
       style={{ position: "relative", zIndex: 2 }}>
-      <TierButton
-        tier={slide.tierName}
-        onClick={() => browser.tabs.create({ url: "https://ao.arweave.net/#/delegate/" })}>
-        Get WNDR tokens
-      </TierButton>
+      <GetTokensButton tier={slide.tierName} />
       <Flex direction="column" gap={8} width="100%">
         {slide.tierBenefits.map((benefit) => (
           <Flex direction="row" gap={8} align="center">

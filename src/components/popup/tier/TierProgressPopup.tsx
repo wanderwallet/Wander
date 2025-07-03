@@ -11,6 +11,7 @@ import { TierProgress } from "./TierProgress";
 import { StarIcon } from "./StarIcon";
 import browser from "webextension-polyfill";
 import { carouselData } from "~utils/tier/carousel";
+import { GetTokensButton } from "./GetTokensButton";
 
 export const TierProgressPopup = ({ isOpen, setOpen }) => {
   const { data: activeTier } = useActiveTier();
@@ -61,11 +62,7 @@ export const TierProgressPopup = ({ isOpen, setOpen }) => {
           </Flex>
         </Flex>
         <Spacer y={1} />
-        <TierButton
-          tier={slide.tierName}
-          onClick={() => browser.tabs.create({ url: "https://ao.arweave.net/#/delegate/" })}>
-          Get WNDR tokens
-        </TierButton>
+        <GetTokensButton tier={slide.tierName} />
       </SliderContent>
     </SliderMenu>
   );

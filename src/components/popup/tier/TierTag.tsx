@@ -23,6 +23,7 @@ const boxShadows = {
 export function TierTag() {
   const { data: activeTier, isLoading } = useActiveTier();
   const { navigate } = useLocation();
+  const boxShadow = boxShadows[activeTier?.tier] || boxShadows[TierTypes.Core];
 
   const tier = useMemo(() => {
     if (isLoading || !activeTier) return browser.i18n.getMessage("benefits");
@@ -30,7 +31,7 @@ export function TierTag() {
   }, [activeTier, isLoading]);
 
   return (
-    <Tag boxShadow={boxShadows[activeTier?.tier]} onClick={() => navigate("/tier")}>
+    <Tag boxShadow={boxShadow} onClick={() => navigate("/tier")}>
       <WanderIcon height={9.37} width={20} tier={activeTier?.tier} />
       {isLoading ? (
         <Loading style={{ width: "20px", height: "20px" }} />

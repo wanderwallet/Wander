@@ -3676,7 +3676,7 @@
     "message": "token",
     "description": "Token text"
   },
-  "get_wand_tokens": {
+  "get_wander_tokens": {
     "message": "Get WNDR tokens",
     "description": "Get WNDR tokens text"
   },

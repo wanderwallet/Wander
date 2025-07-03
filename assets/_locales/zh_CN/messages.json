@@ -3636,7 +3636,7 @@
       "message": "代币",
       "description": "Token text"
     },
-    "get_wand_tokens": {
+    "get_wander_tokens": {
       "message": "获取 WNDR 代币",
       "description": "Get WNDR tokens text"
     },
