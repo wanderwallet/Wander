@@ -12,12 +12,7 @@ export function useActiveTier() {
     queryKey: ["active-tier", activeAddress],
     queryFn: async () => getActiveTier(activeAddress),
     enabled: !!activeAddress,
-    refetchInterval: 60_000,
-    staleTime: 60_000,
-    gcTime: 60_000,
-    retry: 3,
-    retryDelay: (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 30000),
-    refetchOnWindowFocus: true,
+    ...defaultOptions,
   });
 }
 

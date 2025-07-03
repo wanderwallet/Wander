@@ -12,6 +12,7 @@ export type TierProgress = {
 export type ActiveTier = {
   tier: Tier;
   progress: TierProgress;
+  snapshotTimestamp: number;
 };
 
 export type DefiFeeDetails = {

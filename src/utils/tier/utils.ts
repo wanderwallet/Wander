@@ -14,6 +14,7 @@ import { scheduleRefreshWalletLifetimeSavings } from "./alarms";
 
 const ONE_HUNDRED = BigNumber(100);
 const THREE_HOURS_MS = 10_800_000;
+const ONE_DAY_MS = 1000 * 60 * 60 * 24;
 
 export async function getWalletLifetimeSavingsFromStorage(walletAddress: string) {
   return ExtensionStorage.get<WalletSavings>(`wallet_lifetime_savings_${walletAddress}`);
@@ -28,6 +29,15 @@ export async function saveWalletLifetimeSavingsToStorage(walletAddress: string, 
 }
 
 export async function getActiveTier(walletAddress: string): Promise<ActiveTier> {
+  const savedActiveTier = await ExtensionStorage.get<ActiveTier>(`active_tier_${walletAddress}`);
+  if (
+    savedActiveTier &&
+    savedActiveTier?.snapshotTimestamp &&
+    savedActiveTier?.snapshotTimestamp + ONE_DAY_MS > Date.now()
+  ) {
+    return savedActiveTier;
+  }
+
   const dryrunRes = await dryrun({
     Id,
     Owner: walletAddress,
@@ -37,6 +47,9 @@ export async function getActiveTier(walletAddress: string): Promise<ActiveTier> 
 
   const message = dryrunRes.Messages?.[0];
   const data = JSON.parse(message?.Data || "{}");
+
+  await ExtensionStorage.set(`active_tier_${walletAddress}`, data);
+
   return data;
 }
 
