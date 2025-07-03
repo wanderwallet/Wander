@@ -23,7 +23,7 @@ import {
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 export function AuthEmailOtpEmbeddedView() {
-  const { navigate } = useLocation();
+  const { navigate, location } = useLocation();
   const { email, isAlreadyRegistered: isAlreadyRegisteredParam } = useSearchParams<{
     email: string;
     isAlreadyRegistered: string;
@@ -119,6 +119,9 @@ export function AuthEmailOtpEmbeddedView() {
           email,
           token: otpCode,
         });
+
+        // This is done to clear the search params (email and isAlreadyRegistered):
+        navigate(location, { search: { email } });
 
         setPreferredEmailAuth("otp");
       } catch (error) {
