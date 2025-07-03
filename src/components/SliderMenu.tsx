@@ -19,6 +19,7 @@ interface SliderMenuProps {
   style?: React.CSSProperties;
   closeIconColor?: string;
   centerTitle?: boolean;
+  closeButtonStyle?: React.CSSProperties;
 }
 
 export default function SliderMenu({
@@ -35,6 +36,7 @@ export default function SliderMenu({
   style,
   closeIconColor,
   centerTitle = false,
+  closeButtonStyle,
 }: SliderMenuProps) {
   const wrapperElementRef = useRef<HTMLDivElement | null>(null);
 
@@ -71,10 +73,10 @@ export default function SliderMenu({
               <Header>
                 {centerTitle && <div />}
                 <Title>{title}</Title>
-                <ExitButton onClick={onClose} color={closeIconColor} />
+                <ExitButton onClick={onClose} color={closeIconColor} style={closeButtonStyle} />
               </Header>
             ) : (
-              <AbsoluteExitButton onClick={onClose} color={closeIconColor} />
+              <AbsoluteExitButton onClick={onClose} color={closeIconColor} style={closeButtonStyle} />
             ))}
           {children}
         </Body>

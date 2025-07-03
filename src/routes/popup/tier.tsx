@@ -69,7 +69,7 @@ export function TierView() {
             <Text variant="secondary" weight="medium" noMargin>
               WNDR
             </Text>
-            <img src={wanderIcon} alt="Wander" height={24} width={24} />
+            <WanderRoundIcon src={wanderIcon} alt="Wander" />
           </Flex>
         </TierCard>
 
@@ -189,7 +189,7 @@ const TitleMessage = styled(Text).attrs({
 const OptionsIcon = styled(Award03)`
   height: 20px;
   width: 20px;
-  color: #fff;
+  color: ${(props) => props.theme.primaryText};
 `;
 
 const OptionsIconWrapper = styled.div`
@@ -239,4 +239,13 @@ const LifeTimeSavingsWrapper = styled.div`
   border-radius: 8px;
   border: 1px solid ${(props) => props.theme.backgroundSecondary};
   background: ${(props) => props.theme.surfaceDefault};
+`;
+
+const WanderRoundIcon = styled.img`
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  padding: 0;
+  align-self: baseline;
+  transform: translateY(4px);
 `;

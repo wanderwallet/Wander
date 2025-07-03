@@ -24,7 +24,12 @@ export const TierProgressPopup = ({ isOpen, setOpen }) => {
       onClose={() => setOpen(false)}
       paddingHorizontal={0}
       paddingVertical={0}
-      hasHeader={false}>
+      closeButtonStyle={{
+        position: "absolute",
+        top: 16,
+        right: 16,
+        zIndex: 1000,
+      }}>
       <SliderContent carouselBg={slide.carouselBg}>
         <StarsBackground />
         <TierCard

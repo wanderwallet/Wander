@@ -16,36 +16,21 @@ import { useTheme } from "styled-components";
 import styled from "styled-components";
 import { EventType, trackEvent } from "~utils/analytics";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
-import { useActiveTier } from "~utils/tier/hooks";
 import { WanderIcon } from "~components/popup/tier/WanderIcon";
 import { TierTypes } from "~utils/tier/constants";
 import type { ActiveTier } from "~utils/tier/types";
-import { TierProgressPopup } from "~components/popup/tier/TierProgressPopup";
-import { useState } from "react";
 
 interface AOYieldAgentListItemProps {
   aoAgent: AOYieldAgent;
   isHistory?: boolean;
 }
 
-const colors = {
-  Core: "#6B57F9",
-  Select: "#284956",
-  Plus: "#6EE098",
-  Prime: "#D4D4D4",
-  Elite: "#C89A3F",
-};
-
 const AOYieldAgentCreateListItem = () => {
-  const [isOpen, setIsOpen] = useState(false);
   const { navigate } = useLocation();
-  const { data: activeTier } = useActiveTier();
-  const color = colors[activeTier?.tier as keyof typeof colors] || "transparent";
 
   return (
     <div style={{ position: "relative" }}>
       <StyledCreateListItem
-        borderColor={color}
         title={browser.i18n.getMessage("ao_yield_agent")}
         subtitle={browser.i18n.getMessage("ao_yield_agent_description")}
         subtitleStyle={{ fontSize: 10, fontWeight: 500, lineHeight: "13px" }}
@@ -69,8 +54,8 @@ const AOYieldAgentCreateListItem = () => {
         }}
         style={{ width: "100%", textAlign: "left", padding: "12px 8px" }}
       />
-      <TierTag borderColor={color} activeTier={activeTier} setIsOpen={setIsOpen} />
-      <TierProgressPopup isOpen={isOpen} setOpen={setIsOpen} />
+      {/* <TierTag borderColor={color} activeTier={activeTier} setIsOpen={setIsOpen} /> */}
+      {/* <TierProgressPopup isOpen={isOpen} setOpen={setIsOpen} /> */}
     </div>
   );
 };
@@ -214,18 +199,8 @@ const StyledListItem = styled(ListItem)<{ isActive: boolean }>`
   `}
 `;
 
-const StyledCreateListItem = styled(ListItem)<{ borderColor: string }>`
+const StyledCreateListItem = styled(ListItem)`
   border-radius: 8px;
-  border: 1px solid ${({ borderColor }) => borderColor};
-
-  /* Label glass effect (Plus) */
-  box-shadow:
-    0px 1px 5px -20.902px rgba(131, 215, 245, 0.6) inset,
-    0px 1px 1.8px -1.96px rgba(255, 255, 255, 0.6) inset,
-    0px 57.481px 45.985px -31.354px rgba(131, 215, 245, 0.1) inset,
-    0px 2.613px 11.758px 0px rgba(8, 59, 88, 0.3) inset,
-    0px 0.653px 13.064px 0px rgba(13, 136, 207, 0.2) inset;
-  backdrop-filter: blur(7.550000190734863px);
 `;
 
 const Tag = styled.div<{ borderColor: string }>`
