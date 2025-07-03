@@ -148,13 +148,13 @@ export function AuthRecoverAccountOtpEmbeddedView() {
       onBackButtonClick={() => navigate(EmbeddedPaths.AuthRecoverAccount)}
       isLoading={isViewLoading}
       onSubmit={handleVerifyOtp}>
-      <Text variant={"bodySm"} alignment={"center"} style={{ color: "var(--text-color-secondary, #666666)" }}>
+      <Text variant="bodySm" alignment="center">
         Enter the 6-digit verification code from that email to recover your account. If you don't see the email, please
         check your spam folder.
       </Text>
 
       <Flex direction="column" gap={12} width="100%">
-        <Text alignment="center" variant={"bodySm"} style={{ color: "var(--text-color-secondary, #666666)" }}>
+        <Text alignment="center" variant="bodySm">
           Verification Code
         </Text>
 
