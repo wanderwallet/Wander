@@ -58,7 +58,7 @@ export function EnvPanel({}: EnvPanelProps) {
         authEnv = "production";
       }
 
-      if (EMBEDDED_SERVER_BASE_URL.includes("://localhost:")) {
+      if (EMBEDDED_SERVER_BASE_URL?.includes("://localhost:")) {
         serverEnv = "local";
       } else if (/^https?:\/\/embed-([a-z0-9]+)-community-labs.vercel.app$/.test(EMBEDDED_SERVER_BASE_URL)) {
         serverEnv = "preview";
