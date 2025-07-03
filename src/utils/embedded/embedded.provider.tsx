@@ -118,7 +118,6 @@ export const EmbeddedContext = createContext<EmbeddedContextData>({
   clearLastRegisteredWallet: () => null,
 
   // TODO: These should work for multiple wallets:
-  skipBackUp: () => null,
   downloadKeyfile: async () => null,
   copySeedphrase: async () => null,
   getSeedphrase: async () => null,
@@ -254,31 +253,6 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       };
     });
   }, []);
-
-  const skipBackUp = useCallback(
-    async (doNotAskAgainSetting: boolean) => {
-      log(LOG_GROUP.EMBEDDED_FLOWS, `skipBackUp(${doNotAskAgainSetting})`);
-
-      // TODO: Persist lastPromptData locally too?
-
-      if (doNotAskAgainSetting) {
-        const { wallet: updatedWallet } = await WalletService.doNotAskAgainForBackup({
-          walletId,
-        });
-
-        updateCurrentWallet((currentWallet) => ({
-          ...currentWallet,
-          ...updatedWallet,
-        }));
-      } else {
-        updateCurrentWallet((currentWallet) => ({
-          ...currentWallet,
-          doNotAskAgainSetting: true,
-        }));
-      }
-    },
-    [walletId, updateCurrentWallet],
-  );
 
   const downloadKeyfile = useCallback(async () => {
     log(LOG_GROUP.EMBEDDED_FLOWS, `downloadKeyfile()`);
@@ -1361,7 +1335,6 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
         registerWallet,
         clearLastRegisteredWallet,
-        skipBackUp,
         downloadKeyfile,
         copySeedphrase,
         getSeedphrase,
