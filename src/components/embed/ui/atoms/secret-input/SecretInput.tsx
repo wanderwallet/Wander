@@ -30,7 +30,7 @@ export function SecretInput({ className: classNameProp, secret, isLoading }: Sec
     timeoutIdRef.current = window.setTimeout(() => {
       setIsCopied(false);
     }, 3000);
-  }, []);
+  }, [secret]);
 
   const copyIcon = isCopied ? (
     <CheckIcon
@@ -51,13 +51,7 @@ export function SecretInput({ className: classNameProp, secret, isLoading }: Sec
   );
 
   const copyButton = (
-    <InputButton
-      variant="icon"
-      label={isCopied ? "Copied" : "Copy"}
-      icon={copyIcon}
-      disabled={isLoading}
-      onClick={copySecret}
-    />
+    <InputButton label={isCopied ? "Copied" : "Copy"} icon={copyIcon} disabled={isLoading} onClick={copySecret} />
   );
 
   const toggleIsVisible = useCallback(() => {

@@ -24,7 +24,10 @@ import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 export function AuthEmailOtpEmbeddedView() {
   const { navigate } = useLocation();
-  const { email } = useSearchParams<{ email: string }>();
+  const { email, isAlreadyRegistered: isAlreadyRegisteredParam } = useSearchParams<{
+    email: string;
+    isAlreadyRegistered: string;
+  }>();
   const { authStatus, authenticate } = useEmbedded();
 
   const [_, setPreferredEmailAuth] = useStorage<PreferredEmailAuth | undefined>({
@@ -186,11 +189,13 @@ export function AuthEmailOtpEmbeddedView() {
         )}
       </Text>
 
-      <Text variant="bodySm" alignment="center">
-        <Button variant="link" isDisabled={areButtonsDisabled} href={EmbeddedPaths.AuthEmailSignInPassword}>
-          Use password instead
-        </Button>
-      </Text>
+      {isAlreadyRegisteredParam === "0" ? null : (
+        <Text variant="bodySm" alignment="center">
+          <Button variant="link" isDisabled={areButtonsDisabled} href={EmbeddedPaths.AuthEmailSignInPassword}>
+            Use password instead
+          </Button>
+        </Text>
+      )}
     </OnboardingCard>
   );
 }

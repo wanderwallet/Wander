@@ -29,7 +29,10 @@ import type { PreferredEmailAuth } from "~utils/auth/auth.types";
 
 export function AuthEmbeddedView() {
   const { navigate } = useLocation();
-  const { email } = useSearchParams<{ email: string }>();
+  const { email, isAlreadyRegistered: isAlreadyRegisteredParam } = useSearchParams<{
+    email: string;
+    isAlreadyRegistered: string;
+  }>();
   const { authStatus, authenticate, recoverableAccount } = useEmbedded();
 
   const [preferredEmailAuth] = useStorage<PreferredEmailAuth | undefined>({
@@ -105,21 +108,26 @@ export function AuthEmbeddedView() {
           return;
         }
 
-        const { data: isAlreadyRegistered, error } = await supabase.rpc("user_exists_by_email", {
+        const { data, error } = await supabase.rpc("user_exists_by_email", {
           p_email: email,
         });
+
+        const isAlreadyRegistered = isAlreadyRegisteredParam === "0" ? false : !!data;
 
         if (error) {
           toast.error(getFriendlyAuthErrorMessage(error, error.message || "Error checking email"));
           return;
         }
 
+        // In order to make sure we hide the "Use password instead" link to both new and unverified users, the RPC call above would need to check whether the
+        // specific email is verified too. Passing around the `isAlreadyRegistered` URL param as we are doing is less reliable.
+
         navigate(
           !isAlreadyRegistered || preferredEmailAuth !== "password"
             ? EmbeddedPaths.AuthEmailOtp
             : EmbeddedPaths.AuthEmailSignInPassword,
           {
-            search: { email },
+            search: { email, isAlreadyRegistered: isAlreadyRegistered ? "1" : "0" },
           },
         );
       } catch (error) {
@@ -128,7 +136,7 @@ export function AuthEmbeddedView() {
         setIsCheckingEmail(false);
       }
     },
-    [preferredEmailAuth],
+    [preferredEmailAuth, isAlreadyRegisteredParam],
   );
 
   const emailInputButton = <InputButton type="submit" label="Next" loading={isCheckingEmail} />;
