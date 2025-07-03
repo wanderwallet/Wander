@@ -8,7 +8,7 @@ const TabBar = React.forwardRef<HTMLDivElement, TabBarBaseProps>(
   ({ tabs, className, setActiveTab, activeTab, ...props }, ref) => {
     const Component = "div";
     const tabIndex = activeTab;
-    const tabWidth = `${ 100 / tabs.length }%`;
+    const tabWidth = `${100 / tabs.length}%`;
     const currentTabIndicatorStyle = {
       ["--tabIndex"]: tabIndex,
       ["--tabWidth"]: tabWidth,

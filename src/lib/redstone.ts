@@ -1,9 +1,10 @@
 import type { GetPriceOptions } from "redstone-api/lib/types";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import useSetting from "~settings/hook";
 import redstone from "redstone-api";
 import { getPrice } from "./coingecko";
 import BigNumber from "bignumber.js";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 /**
  * Hook for the redstone token price API
@@ -19,30 +20,29 @@ export function usePrice(symbol?: string, isAoToken?: boolean, opts?: GetPriceOp
   // currency setting
   const [currency] = useSetting<string>("currency");
 
-  useEffect(() => {
-    (async () => {
-      if (!symbol || isAoToken) {
+  useAsyncEffect(async () => {
+    if (!symbol || isAoToken) {
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // fetch price from redstone
+      const res = await redstone.getPrice(symbol, opts);
+
+      if (!res?.value) {
+        setPrice(undefined);
         return;
       }
 
-      setLoading(true);
+      // get price in currency
+      const multiplier = currency !== "usd" ? await getPrice("usd", currency) : 1;
 
-      try {
-        // fetch price from redstone
-        const res = await redstone.getPrice(symbol, opts);
+      setPrice(BigNumber(res.value).multipliedBy(multiplier));
+    } catch {}
 
-        if (!res?.value) {
-          return setPrice(undefined);
-        }
-
-        // get price in currency
-        const multiplier = currency !== "usd" ? await getPrice("usd", currency) : 1;
-
-        setPrice(BigNumber(res.value).multipliedBy(multiplier));
-      } catch {}
-
-      setLoading(false);
-    })();
+    setLoading(false);
   }, [symbol, opts, currency]);
 
   return { price, currency, loading };
@@ -79,26 +79,24 @@ export function usePriceHistory(period: string, symbol?: string) {
     All: 3600 * 1000 * 24 * 31, // monthly
   };
 
-  useEffect(() => {
-    (async () => {
-      if (!symbol) {
-        return;
-      }
+  useAsyncEffect(async () => {
+    if (!symbol) {
+      return;
+    }
 
-      setLoading(true);
+    setLoading(true);
 
-      try {
-        const res = await redstone.getHistoricalPrice(symbol, {
-          startDate: startDates[period],
-          endDate: new Date().getTime(),
-          interval: intervals[period],
-        });
+    try {
+      const res = await redstone.getHistoricalPrice(symbol, {
+        startDate: startDates[period],
+        endDate: new Date().getTime(),
+        interval: intervals[period],
+      });
 
-        setPrices(res.map((p) => p.value));
-      } catch {}
+      setPrices(res.map((p) => p.value));
+    } catch {}
 
-      setLoading(false);
-    })();
+    setLoading(false);
   }, [symbol, period]);
 
   return { prices, loading };

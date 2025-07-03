@@ -5,6 +5,7 @@ import browser from "webextension-polyfill";
 import { Loading } from "@arconnect/components-rebrand";
 import TransactionGroup from "./components/TransactionGroup";
 import { AuthRequestCard } from "~components/embed/ui/molecules/card/auth-request-card/AuthRequestCard";
+import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 
 export function WalletTransactionsEmbeddedView() {
   const { address } = useActiveWallet();
@@ -14,7 +15,7 @@ export function WalletTransactionsEmbeddedView() {
   return (
     <AuthRequestCard
       headerText="Transaction History"
-      onBackButtonClick={() => navigate("/wallet")}>
+      onBackButtonClick={() => navigate(EmbeddedPaths.WalletHomeEmbeddedView)}>
       {count.current > 0 ? (
         Object.entries(transactions).map(([monthYear, transactions]) => (
           <TransactionGroup key={monthYear} monthYear={monthYear} transactions={transactions} />

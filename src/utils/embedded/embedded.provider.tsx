@@ -23,9 +23,10 @@ import type {
   RecoveryJSON,
   EmbeddedContextAuth,
   Wallet,
+  OAutProviderType,
+  AuthEmailParams,
 } from "~utils/embedded/embedded.types";
-import { setAuthTokenHeader, getSupabaseClient } from "~utils/embedded/embedded.utils";
-import { isInsideIframe } from "~utils/embedded/iframe.utils";
+import { setAuthTokenHeader, getSupabaseClient, signOut } from "~utils/embedded/embedded.utils";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import {
   AuthProviderType,
@@ -33,19 +34,15 @@ import {
   WalletSourceType,
   type DbSession,
   type RecoverableAccount,
+  type SupabaseUser,
 } from "embed-api";
 import { AuthenticationService } from "~utils/authentication/authentication.service";
-import {
-  AUTH_PROVIDER_TYPE_BY_PROVIDER_STR,
-  EMBEDDED_FEATURE_FLAGS,
-  EMBEDDED_SDK_AUTH_STATUS_BY_AUTH_STATUS,
-} from "~utils/embedded/embedded.constants";
+import { EMBEDDED_FEATURE_FLAGS, EMBEDDED_SDK_AUTH_STATUS_BY_AUTH_STATUS } from "~utils/embedded/embedded.constants";
 import { getDeviceNonce } from "~utils/embedded/device-nonce/device-nonce.utils";
 import { jwtDecode } from "jwt-decode";
 import type { SupabaseJwtPayload } from "~utils/authentication/authentication.types";
 import { isTempWalletPromiseExpired } from "~utils/embedded/utils/wallets/embedded-wallets.utils";
 import copy from "copy-to-clipboard";
-import { useHashLocation } from "wouter/use-hash-location";
 import { getIPAddress } from "~utils/ip_address";
 import {
   getAuthProviderTypeFromSupabaseUser,
@@ -54,8 +51,24 @@ import {
 } from "~utils/embedded/utils/messages/embedded-messages.utils";
 import { ExtensionStorage, PersistentStorage } from "~utils/storage";
 import { StorageKeys } from "~utils/storage/storage.constants";
-import { AO_TOKENS, AO_TOKENS_AUTO_IMPORT_RESTRICTED_IDS, AO_TOKENS_CACHE, AO_TOKENS_IDS, AO_TOKENS_IMPORT_TIMESTAMP, AO_TOKENS_LAST_BLOCK_HEIGHT } from "~tokens/aoTokens/sync";
+import {
+  AO_TOKENS,
+  AO_TOKENS_AUTO_IMPORT_RESTRICTED_IDS,
+  AO_TOKENS_CACHE,
+  AO_TOKENS_IDS,
+  AO_TOKENS_IMPORT_TIMESTAMP,
+  AO_TOKENS_LAST_BLOCK_HEIGHT,
+} from "~tokens/aoTokens/sync";
 import { loadTokens } from "~tokens/token";
+import {
+  getUnpartitionedStateStatus,
+  UNPARTITIONED_STATE_STATUS_CHANGE_EVENT,
+  type UnpartitionedStateStatusChangeEvent,
+} from "~iframe/storage/unpartitioned-storage/unpartitioned-storage.utils";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import { isomorphicOnMessage } from "~isomorphic-messaging";
+import { useTheme } from "~components/embed/contexts/ThemeContext";
+import { withRetry } from "~utils/promises/retry";
 
 export type AuthStatusCopy = AuthStatus;
 
@@ -68,6 +81,7 @@ const EMBEDDED_CONTEXT_INITIAL_STATE = {
   recoverableAccounts: null,
   recoverableAccount: null,
   recoverableAccountWallets: null,
+  requestPasswordChange: false,
 } as const satisfies EmbeddedContextState;
 
 const EMBEDDED_CONTEXT_INITIAL_AUTH = {
@@ -82,6 +96,7 @@ export const EmbeddedContext = createContext<EmbeddedContextData>({
   ...EMBEDDED_CONTEXT_INITIAL_AUTH,
 
   currentWallet: null,
+  unpartitionedStateStatus: getUnpartitionedStateStatus(),
 
   authenticate: async () => null,
   fetchRecoverableAccounts: async () => null,
@@ -91,6 +106,7 @@ export const EmbeddedContext = createContext<EmbeddedContextData>({
   fetchRecoverableAccountWallets: async () => null,
   recoverAccount: async () => null,
   recoverWallet: async () => null,
+  setRequestPasswordChange: () => null,
 
   generateTempWallet: async () => null,
   deleteGeneratedTempWallet: async () => null,
@@ -102,10 +118,10 @@ export const EmbeddedContext = createContext<EmbeddedContextData>({
   clearLastRegisteredWallet: () => null,
 
   // TODO: These should work for multiple wallets:
-  skipBackUp: () => null,
   downloadKeyfile: async () => null,
   copySeedphrase: async () => null,
   getSeedphrase: async () => null,
+  getDecryptedWallet: async () => null,
   generateRecoveryAndDownload: async () => null,
 });
 
@@ -115,7 +131,21 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
   const [embeddedContextAuth, setEmbeddedContextAuth] = useState<EmbeddedContextAuth>(EMBEDDED_CONTEXT_INITIAL_AUTH);
 
-  const [wocation] = useHashLocation();
+  const [unpartitionedStateStatus, setUnpartitionedStateStatus] = useState(() => getUnpartitionedStateStatus());
+
+  // Unpartitioned state:
+
+  useEffect(() => {
+    function handleBanner(event: UnpartitionedStateStatusChangeEvent) {
+      const { unpartitionedStateStatus } = event.detail;
+
+      if (unpartitionedStateStatus) setUnpartitionedStateStatus(unpartitionedStateStatus);
+    }
+
+    document.addEventListener(UNPARTITIONED_STATE_STATUS_CHANGE_EVENT, handleBanner);
+
+    return () => document.removeEventListener(UNPARTITIONED_STATE_STATUS_CHANGE_EVENT, handleBanner);
+  }, []);
 
   // Wallet props:
 
@@ -166,6 +196,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     if (!sdkAuthStatus) return;
 
     const userDetails = getUserDetailsFromSupabaseUser(user);
+
     postEmbeddedMessage({
       type: "embedded_auth",
       data: {
@@ -223,31 +254,6 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     });
   }, []);
 
-  const skipBackUp = useCallback(
-    async (doNotAskAgainSetting: boolean) => {
-      log(LOG_GROUP.EMBEDDED_FLOWS, `skipBackUp(${doNotAskAgainSetting})`);
-
-      // TODO: Persist lastPromptData locally too?
-
-      if (doNotAskAgainSetting) {
-        const { wallet: updatedWallet } = await WalletService.doNotAskAgainForBackup({
-          walletId,
-        });
-
-        updateCurrentWallet((currentWallet) => ({
-          ...currentWallet,
-          ...updatedWallet,
-        }));
-      } else {
-        updateCurrentWallet((currentWallet) => ({
-          ...currentWallet,
-          doNotAskAgainSetting: true,
-        }));
-      }
-    },
-    [walletId, updateCurrentWallet],
-  );
-
   const downloadKeyfile = useCallback(async () => {
     log(LOG_GROUP.EMBEDDED_FLOWS, `downloadKeyfile()`);
 
@@ -303,6 +309,38 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     },
     [walletId, walletAddress],
   );
+
+  const getDecryptedWallet = useCallback(async (): Promise<LocalWallet<JWKInterface>> => {
+    log(LOG_GROUP.EMBEDDED_FLOWS, `getDecryptedWallet()`);
+
+    const decryptedWallet = (await getKeyfile(walletAddress)) as LocalWallet<JWKInterface>;
+
+    /*
+
+    This is probably a bad idea, because seeing the QR code doesn't guarantee the user has a copy of it. I think we need
+    to update the backend to include a new QR type for this, and either make that type not update the export count (so
+    that we keep prompting users to back up) or include a download button that downloads the QR as GIF/video. In that
+    case, we only register this when they click download, not when we decrypt the keyfile. That means users should be
+    able to upload that QR code too. In that case, it might be easier to parse if we include the JWK JSON in it as
+    metadata (wondering if any upload service like Drive or Dropbox would automatically get rid of that metadata).
+
+    try {
+      const { wallet: updatedWallet } = await WalletService.registerWalletExport({
+        walletId,
+        type: "KEYFILE",
+      });
+
+      updateCurrentWallet((currentWallet) => ({
+        ...currentWallet,
+        ...updatedWallet,
+      }));
+    } catch (error) {
+      console.error("Failed to register wallet export:", error);
+    }
+    */
+
+    return decryptedWallet;
+  }, [walletId, walletAddress]);
 
   const copySeedphrase = useCallback(async () => {
     log(LOG_GROUP.EMBEDDED_FLOWS, `copySeedphrase()`);
@@ -445,7 +483,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     // TODO: We could consider calling `initEmbeddedWallet` again instead, which will make sure the wallet has been
     // properly added to the backend as well.
 
-    setEmbeddedContextState(({ wallets: prevWallets }) => {
+    setEmbeddedContextState(({ wallets: prevWallets, requestPasswordChange }) => {
       const wallets = [...prevWallets];
       const walletIDs = wallets.map((wallet) => wallet.id);
 
@@ -454,14 +492,11 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       }
 
       return {
+        ...EMBEDDED_CONTEXT_INITIAL_STATE,
         currentWalletId: wallet.id,
         wallets,
-        generatedTempWalletAddress: null,
-        importedTempWalletAddress: null,
         lastRegisteredWallet: isNewWallet ? wallet : null,
-        recoverableAccounts: null,
-        recoverableAccount: null,
-        recoverableAccountWallets: null,
+        requestPasswordChange,
       } satisfies EmbeddedContextState;
     });
 
@@ -618,6 +653,22 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     async (sourceType: WalletSourceType) => {
       log(LOG_GROUP.WALLET_GENERATION, `registerWallet(${sourceType})`);
 
+      if (authStatus === "noShares") {
+        await Promise.all(
+          wallets.map(({ id: walletId, status }) =>
+            status === "ENABLED" ? WalletService.updateWalletStatus({ walletId, status: "LOST" }) : null,
+          ),
+        );
+
+        setEmbeddedContextState((prevAuthContextState) => ({
+          ...prevAuthContextState,
+          wallets: prevAuthContextState.wallets.map((wallet) => ({
+            ...wallet,
+            status: wallet.status === "ENABLED" ? "LOST" : wallet.status,
+          })),
+        }));
+      }
+
       const promise =
         sourceType === "GENERATED"
           ? generatedTempWalletPromiseRef.current?.promise
@@ -663,7 +714,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
       return wallet;
     },
-    [userId],
+    [wallets, userId],
   );
 
   const clearLastRegisteredWallet = useCallback(() => {
@@ -914,6 +965,13 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     [session, userId, wallets],
   );
 
+  const setRequestPasswordChange = useCallback((requestPasswordChange: boolean) => {
+    setEmbeddedContextState((prevAuthContextState) => ({
+      ...prevAuthContextState,
+      requestPasswordChange,
+    }));
+  }, []);
+
   // AUTHENTICATION:
 
   /*
@@ -940,12 +998,10 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
   */
 
   const authenticate = useCallback(
-    async (authProviderType: AuthProviderType) => {
-      if (user) {
-        const supabase = await getSupabaseClient();
-        await supabase.auth.refreshSession();
-        return;
-      }
+    async (authParams: OAutProviderType | AuthEmailParams) => {
+      if (user) throw new Error("Already authenticated.");
+
+      const authProviderType: AuthProviderType = typeof authParams === "string" ? authParams : "EMAIL_N_PASSWORD";
 
       try {
         setEmbeddedContextAuth({
@@ -955,119 +1011,24 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
           session: null,
         });
 
-        const { url } = await AuthenticationService.authenticate(authProviderType);
-
-        if (!url) {
-          throw new Error(`Missing authentication URL.`)
-        }
-
-        // Calculate center position for the popup
-        const width = 500;
-        const height = 600;
-        const left = window.screenX + (window.outerWidth - width) / 2;
-        const top = window.screenY + (window.outerHeight - height) / 2;
-
-        let popup = window.open(
-          url,
-          "Auth",
-          [
-            `width=${width}`,
-            `height=${height}`,
-            `left=${left}`,
-            `top=${top}`,
-            "popup=1",
-            "location=1",
-            "status=1",
-            "resizable=no",
-            "toolbar=no",
-            "menubar=no",
-          ].join(","),
-        );
-
-        if (!popup) {
-          console.error("Popup blocked. Please allow popups for this site.");
-          // Redirect to Google's OAuth page
-          // Opening the URL on the current tab won't work when Embedded is loaded inside the iframe:
-
-          if (location.ancestorOrigins.length === 0) {
-            console.log(`Redirecting to ${url}...`);
-
-            window.location.href = url;
-          } else {
-            console.log(`Opening ${url}...`);
-
-            popup = window.open(url, "_blank");
-          }
-        }
-
-        if (popup) {
-          // Set up message listener and popup close checker
-          await Promise.race([
-            // Auth completion promise
-            new Promise<void>((resolve, reject) => {
-              const messageHandler = async (event: MessageEvent) => {
-                // Since same origin, we can check it exactly
-                if (event.origin !== window.location.origin) return;
-
-                if (event.data?.type === "AUTH_COMPLETE") {
-                  cleanup();
-                  if (event.data?.success) {
-                    const supabase = await getSupabaseClient();
-                    if (event.data?.data) {
-                      const { data } = event.data;
-                      await supabase.auth.refreshSession({
-                        refresh_token: data.refresh_token,
-                      });
-                    } else {
-                      await supabase.auth.refreshSession();
-                    }
-
-                    resolve();
-                  } else {
-                    reject(new Error("Authentication failed"));
-                  }
-                }
-              };
-
-              // Check for popup closure
-              const popupCheckInterval = setInterval(() => {
-                if (popup.closed) {
-                  cleanup();
-                  reject(new Error("Authentication cancelled - popup closed"));
-                }
-              }, 1000);
-
-              // Timeout after 5 minutes
-              const timeoutId = setTimeout(
-                () => {
-                  cleanup();
-                  reject(new Error("Authentication timeout"));
-                },
-                5 * 60 * 1000,
-              );
-
-              // Cleanup function
-              const cleanup = () => {
-                window.removeEventListener("message", messageHandler);
-                clearInterval(popupCheckInterval);
-                clearTimeout(timeoutId);
-              };
-
-              window.addEventListener("message", messageHandler);
-            }),
-          ]);
+        if (typeof authParams === "string") {
+          await AuthenticationService.authenticateWithOAuth(authParams);
+        } else if (authParams.method === "signInWithPassword") {
+          await AuthenticationService.signInWithPassword(authParams);
+        } else if (authParams.method === "verifyOtp") {
+          await AuthenticationService.verifyOtp(authParams);
         }
       } catch (error) {
-        console.error(`${authProviderType} authentication failed:`, error);
+        console.error(`authenticate(${authProviderType}) error =`, error);
 
-        // TODO: This should be `authStatus: "authError"` but the router will show a specific error handling route, while we might want to handle that
-        // in the same page we were.
         setEmbeddedContextAuth({
-          authStatus: "noAuth",
+          authStatus: "authError",
           authProviderType: null,
           user: null,
           session: null,
         });
+
+        throw error;
       }
     },
     [user],
@@ -1082,7 +1043,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
     lastUserIdRef.current = userId;
 
-    if (userId && userId !== await PersistentStorage.get<string>(StorageKeys.CONNECT.AUTH.USER_ID)) {
+    if (userId && userId !== (await PersistentStorage.get<string>(StorageKeys.CONNECT.AUTH.USER_ID))) {
       try {
         // TODO: This is a TEMP FIX to prevent users who share the same device from seeing someone else's tokens and
         // connected apps when logging in with a different account, until we properly namespace those settings by user
@@ -1134,6 +1095,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       recoverableAccounts: prevAuthContextState.recoverableAccounts,
       recoverableAccount: prevAuthContextState.recoverableAccount,
       recoverableAccountWallets: prevAuthContextState.recoverableAccountWallets,
+      requestPasswordChange: prevAuthContextState.requestPasswordChange,
     }));
 
     if (!userId || !session) {
@@ -1150,7 +1112,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       wallets,
     }));
 
-    let authStatus = "noAuth" as AuthStatus;
+    let authStatus: AuthStatus = wallets.length === 0 ? "noWallets" : "noShares";
 
     if (wallets.length > 0) {
       // TODO: The wallet activation can be deferred until the wallet is going to be used:
@@ -1161,61 +1123,32 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       // TODO: Create an issue for the new storage needs (e.g. expiration). Note that for wallets
       // that haven't been backup up, we must never delete a share without notifying the user.
 
-      // TODO: Add try-catch. If the initialization process fails, show an error...
+      let jwk: JWKInterface | null = null;
 
-      const { activatedWallet, rotationChallenge } = await WalletService.fetchFirstAvailableAuthShare(
-        wallets,
-        session,
-        userId,
-      );
+      try {
+        // TODO: Add some extra logic here to wait if there are other tabs activating a wallet at the same time.
+        // Do it by checking both a stored flag as well as by querying the backend (subscribe?).
 
-      if (activatedWallet) {
-        const { id: walletId, address: walletAddress } = activatedWallet;
+        const fetchFirstAvailableAuthShareReturn = await withRetry(() =>
+          WalletService.fetchFirstAvailableAuthShare(wallets, session, userId),
+        );
 
-        const jwk = await WalletUtils.generateWalletJWKFromShares(walletAddress, [
-          activatedWallet.authShare,
-          activatedWallet.deviceShare,
-        ]);
+        const { activatedWallet } = fetchFirstAvailableAuthShareReturn;
+        jwk = fetchFirstAvailableAuthShareReturn.jwk;
 
-        if (rotationChallenge) {
-          const { authShare, deviceShare } = await WalletUtils.generateWalletWorkShares(jwk);
-
-          activatedWallet.authShare = authShare;
-          activatedWallet.deviceShare = deviceShare;
-
-          const { shareHash: deviceShareHash, sharePublicKey: deviceSharePublicKey } =
-            await WalletUtils.generateShareHashAndPublicKey(deviceShare);
-
-          const challengeSolution = await ChallengeClientV1.solveChallenge({
-            challenge: rotationChallenge,
-            session,
-            shareHash: null,
-            jwk,
-          });
-
-          await WalletService.rotateAuthShare({
-            walletId,
-            authShare,
-            deviceShareHash,
-            deviceSharePublicKey,
-            challengeSolution,
-          });
-        }
-
-        await WalletUtils.storeDeviceShare(activatedWallet, userId);
-
-        try {
+        if (jwk && activatedWallet) {
+          await WalletUtils.storeDeviceShare(activatedWallet, userId);
           await addWallet(jwk, activatedWallet);
-        } finally {
-          freeDecryptedWallet(jwk);
-        }
 
-        authStatus = "unlocked";
-      } else {
-        authStatus = "noShares";
+          authStatus = "unlocked";
+        }
+      } catch (err) {
+        // All attempts failed, or activation suceded but some of the code afer that threw an error.
+
+        console.warn("Failed to activate wallet:", err);
+      } finally {
+        if (jwk) freeDecryptedWallet(jwk);
       }
-    } else {
-      authStatus = "noWallets";
     }
 
     setEmbeddedContextAuth((prevEmbeddedContextAuth) => ({
@@ -1224,61 +1157,130 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     }));
   }, []);
 
-  const completeAuth = useCallback(async (session: any) => {
-    window.opener.postMessage(
-      {
-        type: "AUTH_COMPLETE",
-        success: true,
-        data: session,
-      },
-      window.location.origin,
-    );
-
-    // waiting sometime before closing the popup
-    await sleep(500);
-
-    log(LOG_GROUP.EMBEDDED_FLOWS, "Closing popup window...");
-
-    // Close the popup after sending the message
-    window.close();
-  }, []);
-
   const areBackgroundServicesInitialized = useRef(false);
 
-  useEffect(() => {
+  useAsyncEffect(async () => {
     if (areBackgroundServicesInitialized.current) return;
 
     areBackgroundServicesInitialized.current = true;
 
-    async function init() {
-      log(LOG_GROUP.SETUP, `Initializing Wander Embedded background services...`);
+    log(LOG_GROUP.SETUP, `Initializing Wander Embedded background services...`);
 
-      setupBackgroundService();
-    }
-
-    init();
+    setupBackgroundService();
   }, []);
 
-  useEffect(() => {
-    let forceInitTimeoutID = 0;
-    let unsubscribe: any = () => {};
+  useAsyncEffect(async () => {
+    /*
+    KNOWN AUTHENTICATION ISSUES:
 
-    async function init() {
-      /*
-      KNOWN AUTHENTICATION ISSUES:
+    - The decoded JWT token sometimes is missing some properties (`deviceNonce`). Refreshing the
+      sessions seems to fix the issue, but not immediately. The `The current session is incomplete. Refreshing...` block
+      in `initEmbeddedWallet` is a dirty/temp fix for that.
+    */
 
-      - The decoded JWT token sometimes is missing some properties (`deviceNonce`). Refreshing the
-        sessions seems to fix the issue, but not immediately. The `The current session is incomplete. Refreshing...` block
-        in `initEmbeddedWallet` is a dirty/temp fix for that.
+    const supabase = await getSupabaseClient();
 
-      - The `onAuthStateChange` callback below is never invoked when running the app inside an iframe on a different
-        origin. The `setTimeout` below is a dirty/tem fix for that.
+    let isInitialAuthEventDispatched = false;
 
-        See https://stackoverflow.com/questions/71819128/supabase-auth-onauthstatechange-not-working-when-react-app-is-in-iframe
-      */
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (isInitialAuthEventDispatched && _event === "INITIAL_SESSION") return;
 
-      forceInitTimeoutID = window.setTimeout(() => {
-        console.warn("Forcing initialization...");
+      if (!isInitialAuthEventDispatched) {
+        isInitialAuthEventDispatched = true;
+
+        const cachedUser = session?.user as SupabaseUser;
+
+        // Send the initial state for the SDK button ASAP if there's cached data. Otherwise, the initial state will be
+        // sent by the `useEffect` above that sends `"embedded_auth"` events too.
+
+        if (cachedUser) {
+          if (_event === "INITIAL_SESSION") {
+            supabase.auth.refreshSession();
+          }
+
+          postEmbeddedMessage({
+            type: "embedded_auth",
+            data: {
+              authType: getAuthProviderTypeFromSupabaseUser(cachedUser),
+              authStatus: "loading",
+              userDetails: getUserDetailsFromSupabaseUser(cachedUser),
+            },
+          });
+        }
+      }
+
+      const accessToken = session?.access_token ?? null;
+      const user = (session?.user as SupabaseUser) ?? null;
+      const authProviderType = getAuthProviderTypeFromSupabaseUser(user);
+
+      if (process.env.NODE_ENV === "development" && user && authProviderType === null) {
+        alert(
+          `authProviderType = ${authProviderType}. Something wasn't properly mapped in AUTH_PROVIDER_TYPE_BY_PROVIDER_STR.`,
+        );
+      }
+
+      let dbSession: DbSession | null = null;
+
+      if (accessToken) {
+        const { sub, session_id: sessionId, sessionData } = jwtDecode<SupabaseJwtPayload>(accessToken);
+
+        dbSession = {
+          ...sessionData,
+          id: sessionId,
+          userId: sub,
+        };
+
+        const deviceNonce = await getDeviceNonce();
+
+        if (!dbSession.id || !dbSession.deviceNonce) {
+          console.warn("❌  The current session is incomplete =", dbSession);
+        } else if (dbSession.deviceNonce !== deviceNonce) {
+          console.warn(
+            `⚠️  The current session is complete, but the device nonce (${deviceNonce}) doesn't match =`,
+            dbSession,
+          );
+        } else {
+          console.log("✅  The current session is complete =", dbSession);
+        }
+
+        if (_event !== "TOKEN_REFRESHED" && (!dbSession.id || dbSession.deviceNonce !== deviceNonce)) {
+          console.log("🔃 Refreshing session...");
+
+          // We wait to leave some time for the trigger to update the session and make sure that, when we refresh, we
+          // get the updated session data:
+          await sleep(2500);
+
+          supabase.auth.refreshSession();
+
+          return;
+        }
+
+        dbSession = await getLatestSession(dbSession);
+      }
+
+      setAuthTokenHeader(accessToken);
+
+      initEmbeddedWallet(user?.id || null, dbSession);
+
+      if (authProviderType && user && dbSession) {
+        setEmbeddedContextAuth(({ authStatus }) => ({
+          authStatus: authStatus === "unknown" || authStatus === "authError" ? "authLoading" : authStatus,
+          authProviderType,
+          user,
+          session: dbSession,
+        }));
+      } else {
+        // TODO: Duplicated in initEmbeddedWallet()?
+        setEmbeddedContextState((prevAuthContextState) => ({
+          // ...prevAuthContextState,
+          ...EMBEDDED_CONTEXT_INITIAL_STATE,
+          recoverableAccounts: prevAuthContextState.recoverableAccounts,
+          recoverableAccount: prevAuthContextState.recoverableAccount,
+          recoverableAccountWallets: prevAuthContextState.recoverableAccountWallets,
+          requestPasswordChange: prevAuthContextState.requestPasswordChange,
+        }));
 
         setEmbeddedContextAuth({
           authStatus: "noAuth",
@@ -1286,160 +1288,25 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
           user: null,
           session: null,
         });
-
-        initEmbeddedWallet();
-      }, 2000);
-
-      const supabase = await getSupabaseClient();
-
-      let isInitialAuthEventDispatched = false;
-
-      const {
-        data: { subscription },
-      } = supabase.auth.onAuthStateChange(async (_event, session) => {
-        window.clearTimeout(forceInitTimeoutID);
-
-        if (isInitialAuthEventDispatched && _event === "INITIAL_SESSION") return;
-
-        if (!isInitialAuthEventDispatched) {
-          isInitialAuthEventDispatched = true;
-
-          const cachedUser = session?.user;
-
-          // Send the initial state for the SDK button ASAP if there's cached data. Otherwise, the initial state will be
-          // sent by the `useEffect` above that sends `"embedded_auth"` events too.
-
-          if (cachedUser) {
-            if (_event === "INITIAL_SESSION") {
-              supabase.auth.refreshSession();
-            }
-
-            postEmbeddedMessage({
-              type: "embedded_auth",
-              data: {
-                authType: getAuthProviderTypeFromSupabaseUser(cachedUser),
-                authStatus: "loading",
-                userDetails: getUserDetailsFromSupabaseUser(cachedUser),
-              },
-            });
-          }
-        }
-
-        if (!isInsideIframe()) {
-          if (session?.access_token && window.opener) {
-            completeAuth(session);
-          } else if (window.location.origin === "https://connect.wander.app") {
-            window.close();
-          } else {
-            console.warn("In production (https://connect.wander.app), the app would close right now.");
-          }
-
-          return;
-        }
-
-        const accessToken = session?.access_token ?? null;
-        const user = session?.user ?? null;
-        const authProviderType = getAuthProviderTypeFromSupabaseUser(user);
-
-        if (process.env.NODE_ENV === "development" && user && authProviderType === null) {
-          alert(
-            `authProviderType = ${authProviderType}. Something wasn't properly mapped in AUTH_PROVIDER_TYPE_BY_PROVIDER_STR.`,
-          );
-        }
-
-        let dbSession: DbSession | null = null;
-
-        if (accessToken) {
-          const { sub, session_id: sessionId, sessionData } = jwtDecode<SupabaseJwtPayload>(accessToken);
-
-          dbSession = {
-            ...sessionData,
-            id: sessionId,
-            userId: sub,
-          };
-
-          const deviceNonce = await getDeviceNonce();
-
-          if (!dbSession.id || !dbSession.deviceNonce) {
-            console.warn("❌  The current session is incomplete =", dbSession);
-          } else if (dbSession.deviceNonce !== deviceNonce) {
-            console.warn(`⚠️  The current session is complete, but the device nonce (${ deviceNonce }) doesn't match =`, dbSession);
-          } else {
-            console.log("✅  The current session is complete =", dbSession);
-          }
-
-          if (_event !== "TOKEN_REFRESHED" && (!dbSession.id || dbSession.deviceNonce !== deviceNonce)) {
-            console.log("🔃 Refreshing session...");
-
-            // We wait to leave some time for the trigger to update the session and make sure that, when we refresh, we
-            // get the updated session data:
-            await sleep(2500);
-
-            supabase.auth.refreshSession();
-
-            return;
-          }
-
-          dbSession = await getLatestSession(dbSession);
-        }
-
-        setAuthTokenHeader(accessToken);
-
-        initEmbeddedWallet(user?.id || null, dbSession);
-
-        if (authProviderType && user && dbSession) {
-          setEmbeddedContextAuth(({ authStatus }) => ({
-            authStatus: authStatus === "unknown" || authStatus === "authError" ? "authLoading" : authStatus,
-            authProviderType,
-            user,
-            session: dbSession,
-          }));
-        } else {
-          // TODO: Duplicated in initEmbeddedWallet()?
-          setEmbeddedContextState((prevAuthContextState) => ({
-            // ...prevAuthContextState,
-            ...EMBEDDED_CONTEXT_INITIAL_STATE,
-            recoverableAccounts: prevAuthContextState.recoverableAccounts,
-            recoverableAccount: prevAuthContextState.recoverableAccount,
-            recoverableAccountWallets: prevAuthContextState.recoverableAccountWallets,
-          }));
-
-          setEmbeddedContextAuth({
-            authStatus: "noAuth",
-            authProviderType: null,
-            user: null,
-            session: null,
-          });
-        }
-      });
-
-      unsubscribe = subscription.unsubscribe;
-    }
-
-    init();
+      }
+    });
 
     return () => {
-      window.clearTimeout(forceInitTimeoutID);
-      unsubscribe();
+      subscription.unsubscribe();
     };
   }, [initEmbeddedWallet]);
 
-  // TODO: Move to app entry/mount point and do not even start the app?
-  useEffect(() => {
-    if (wocation.startsWith("/access_token") && window.opener) {
-      // Get the hash fragment without the leading '#'
-      const hashParams = window.location.hash.substring(1);
-      // Create URLSearchParams from the hash fragment
-      const params = new URLSearchParams(hashParams);
-      const searchParams = Object.fromEntries(params.entries());
+  const { setMode } = useTheme();
 
-      // We have completeAuth() in the onAuthStateChange callback, but if it didn't work,
-      // we'll use a timeout to call it after a delay.
-      setTimeout(() => {
-        completeAuth(searchParams);
-      }, 5000);
-    }
-  }, [wocation]);
+  useEffect(() => {
+    isomorphicOnMessage("embedded_signOut", () => {
+      signOut(false);
+    });
+
+    isomorphicOnMessage("embedded_setTheme", ({ data }) => {
+      setMode(data);
+    });
+  }, []);
 
   return (
     <EmbeddedContext.Provider
@@ -1448,6 +1315,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         ...embeddedContextAuth,
 
         currentWallet,
+        unpartitionedStateStatus,
 
         authenticate,
         fetchRecoverableAccounts,
@@ -1457,6 +1325,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         setRecoverableAccountWallets,
         recoverAccount,
         recoverWallet,
+        setRequestPasswordChange,
 
         generateTempWallet,
         deleteGeneratedTempWallet,
@@ -1466,10 +1335,10 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
         registerWallet,
         clearLastRegisteredWallet,
-        skipBackUp,
         downloadKeyfile,
         copySeedphrase,
         getSeedphrase,
+        getDecryptedWallet,
         generateRecoveryAndDownload,
       }}>
       {children}

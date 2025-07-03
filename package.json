@@ -18,7 +18,7 @@
     "build:sdk": "cd ./wander-connect-sdk/ && pnpm build",
     "build:assets": "cp -r assets/forge dist/assets/forge && cp -r assets/animation dist/assets/animation",
     "build:wallet-api": "vite build --config vite.wallet-config.js",
-    "clean": "rm -rf yarn.lock node_modules",
+    "clean": "rm -rf .plasmo build dist",
     "nuke": "yarn clean && rm -rf yarn.lock node_modules",
     "fmt": "prettier --write .",
     "fmt:check": "prettier --check .",
@@ -85,11 +85,12 @@
     "copy-to-clipboard": "^3.3.2",
     "currency-symbol-map": "^5.1.0",
     "dayjs": "^1.11.6",
-    "embed-api": "https://github.com/wanderwallet/embed-api#5dbcb8722252cb6a0a7ca6092d93b18d4ac071d0",
+    "embed-api": "https://github.com/wanderwallet/embed-api#ec23a9586004c3742a3edb512bf753786d9dcdf5",
     "framer-motion": "^11.11.7",
     "human-crypto-keys": "^0.1.4",
     "js-confetti": "^0.12.0",
     "jwt-decode": "^4.0.0",
+    "liquidops": "^1.2.2",
     "lodash.throttle": "^4.1.1",
     "mitt": "^3.0.0",
     "nanoid": "5.0.4",
@@ -165,6 +166,6 @@
     "axios": "^1.7.2"
   },
   "lint-staged": {
-    "*.{js,ts,html,css,md,json}": "prettier --write"
+    "*.{js,ts,tsx,html,css,scss,md,json}": "prettier --write"
   }
 }

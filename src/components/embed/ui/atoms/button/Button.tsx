@@ -5,7 +5,7 @@ import { Loading } from "@arconnect/components";
 
 import styles from "./Button.module.scss";
 
-export function Button (props: ButtonProps) {
+export function Button(props: ButtonProps) {
   const {
     children,
     className: classNameProp,
@@ -17,7 +17,6 @@ export function Button (props: ButtonProps) {
     isLoading,
     isBlurry,
     icon,
-    hasBorder = true,
     style,
     tabIndex,
     href,
@@ -27,15 +26,13 @@ export function Button (props: ButtonProps) {
 
   const hasSize = !href || !isFullWidth;
 
-  const content = (<>
-    <span className={ styles.loaderCover}>
-      { isLoading ? (
-        <Loading />
-      ) : null }
-    </span>
-    { icon }
-    { children }
-  </>);
+  const content = (
+    <>
+      <span className={styles.loaderCover}>{isLoading ? <Loading /> : null}</span>
+      {icon}
+      {children}
+    </>
+  );
 
   const className = clsx(
     styles.button,
@@ -46,7 +43,6 @@ export function Button (props: ButtonProps) {
     isFullWidth && styles["button__full__width"],
     (isDisabled || isLoading) && styles["isDisabled"],
     isLoading && styles["isLoading"],
-    !hasBorder && styles["button__borderless"],
     classNameProp,
   );
 
@@ -55,11 +51,11 @@ export function Button (props: ButtonProps) {
       <Link
         to={href}
         className={className}
-        style={ style }
+        style={style}
         // disabled={isDisabled || isLoading}
         // tabIndex={ tabIndex }
-        onClick={ onClick as any }>
-        { content }
+        onClick={onClick as any}>
+        {content}
       </Link>
     );
   }
@@ -68,11 +64,11 @@ export function Button (props: ButtonProps) {
     <button
       type={type}
       className={className}
-      style={ style }
+      style={style}
       disabled={isDisabled || isLoading}
-      tabIndex={ tabIndex }
-      onClick={ onClick as any }>
-      { content }
+      tabIndex={tabIndex}
+      onClick={onClick as any}>
+      {content}
     </button>
   );
 }

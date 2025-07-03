@@ -3,6 +3,9 @@ import type { PropsWithChildren } from "react";
 import { Link as Wink } from "wouter";
 import browser from "~iframe/browser";
 import type { ExternalURL, WanderRoutePath } from "~wallets/router/router.types";
+import clsx from "clsx";
+
+import styles from "./Link.module.scss";
 
 export interface LinkProps extends PropsWithChildren {
   className?: string;
@@ -23,15 +26,17 @@ export function Link(props: LinkProps) {
     browser.tabs.create({
       url: props.to,
     });
-  }
+  };
 
   return isExternalLink ? (
     <a
-      { ...props }
+      {...props}
+      className={clsx(props.className, styles.root)}
       rel="noopener noreferrer"
       target="_blank"
       onClick={openExternalLink}
-      onMouseDown={ openExternalLink } />
+      onMouseDown={openExternalLink}
+    />
   ) : (
     <Wink {...props} />
   );

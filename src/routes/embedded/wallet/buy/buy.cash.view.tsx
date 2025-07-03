@@ -39,11 +39,7 @@ export function WalletBuyCashEmbeddedView() {
   } = useTransak(TRANSAK_API_KEY, true);
 
   const renderMainView = () => (
-    <DefaultCard
-      headerText="Buy Tokens"
-      hasFooter
-      onBackButtonClick={() => navigate("/wallet/receive/options")}>
-
+    <DefaultCard headerText="Buy Tokens" hasFooter onBackButtonClick={() => navigate("/wallet/receive/options")}>
       <div style={{ display: "flex", alignItems: "baseline" }}>
         <AutosizeInput
           value={purchaseAmount}
@@ -67,7 +63,7 @@ export function WalletBuyCashEmbeddedView() {
         {getDisplayAmount()}
       </Text>
 
-      <button className={ styles.buttonDropdown } onClick={openCurrencySelector}>
+      <button className={styles.buttonDropdown} onClick={openCurrencySelector}>
         <Text variant="bodyMd" style={{ color: "var(--color-divider-text)" }}>
           Currency
         </Text>
@@ -92,7 +88,7 @@ export function WalletBuyCashEmbeddedView() {
         </Row>
       </button>
 
-      <button className={ styles.buttonDropdown } onClick={openPaymentSelector}>
+      <button className={styles.buttonDropdown} onClick={openPaymentSelector}>
         <Text variant="bodyMd" style={{ color: "#666666" }}>
           Payment
         </Text>

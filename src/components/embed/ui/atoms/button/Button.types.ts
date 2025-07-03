@@ -52,11 +52,6 @@ export interface ButtonProps {
   icon?: React.ReactNode;
 
   /**
-   * Optional prop for the icon to be displayed within the ButtonBase component
-   */
-  hasBorder?: boolean;
-
-  /**
    * Optional prop for the alignment of the ButtonBase component
    */
   alignment?: Alignments;

@@ -5,9 +5,10 @@ import {
   ButtonCSSVars,
   ButtonOptions,
   ButtonStatus,
+  ThemeSetting,
 } from "../../wander-connect.types";
 import { getButtonTemplateContent } from "./button.template";
-import { addCSSVariables, mergeCSSVariablesOption } from "../../utils/styles/styles.utils";
+import { addCSSVariablesForTheme, mergeCSSVariablesOption } from "../../utils/styles/styles.utils";
 
 export class Button {
   static DEFAULT_LIGHT_CSS_VARS: ButtonCSSVars = {
@@ -73,7 +74,7 @@ export class Button {
       dark: Button.DEFAULT_DARK_CSS_VARS,
     },
     customStyles: "",
-    parent: document.body,
+    parent: typeof document !== "undefined" ? document.body : (null as any as HTMLElement),
     position: "bottom-right",
     wanderLogo: "default",
     label: true,
@@ -169,6 +170,8 @@ export class Button {
       cssVariableKeys: Object.keys(Button.DEFAULT_LIGHT_CSS_VARS),
     });
 
+    addCSSVariablesForTheme(host, config.cssVars, config.theme);
+
     shadow.appendChild(template.content);
 
     const button = shadow.querySelector(".button") as HTMLButtonElement;
@@ -198,9 +201,6 @@ export class Button {
     setTimeout(() => {
       host.style.opacity = "1";
     });
-
-    addCSSVariables(host, config.cssVars.light, "Light");
-    addCSSVariables(host, config.cssVars.dark, "Dark");
 
     label.textContent = config.i18n.signIn;
 
@@ -294,6 +294,10 @@ export class Button {
   unsetStatus(status: ButtonStatus) {
     this.status[status] = false;
     this.button.classList.remove(status);
+  }
+
+  setTheme(theme: ThemeSetting): void {
+    addCSSVariablesForTheme(this.host, this.config.cssVars, theme);
   }
 
   destroy() {

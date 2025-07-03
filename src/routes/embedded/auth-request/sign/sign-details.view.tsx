@@ -95,8 +95,8 @@ export function EmbeddedSignDetailsAuthRequestView() {
   return (
     <AuthRequestCard
       headerText="Transaction details"
-      onBackButtonClick={() => navigate(`/auth-request/${ authRequest.type }/${ authRequest.authID}`)}
-      onCancel={() => navigate(`/auth-request/${ authRequest.type }/${ authRequest.authID}`)}
+      onBackButtonClick={() => navigate(`/auth-request/${authRequest.type}/${authRequest.authID}`)}
+      onCancel={() => navigate(`/auth-request/${authRequest.type}/${authRequest.authID}`)}
       cancelLabel={browser.i18n.getMessage("back")}>
       <Box style={{ gap: "0.5rem" }} alignment="left">
         {transaction?.id && <TransactionTag name="Transaction ID" value={transaction.id} />}
@@ -131,9 +131,7 @@ export function EmbeddedSignDetailsAuthRequestView() {
         )}
       </Box>
 
-      <TransactionMessage
-        transaction={transaction}
-        detailsLink={null} />
+      <TransactionMessage transaction={transaction} detailsLink={null} />
     </AuthRequestCard>
   );
 }

@@ -26,7 +26,7 @@ export function TextInput({
 }: TextInputProps) {
   return (
     <label className={clsx(styles["wrapper"], className)} style={style}>
-      { startSlot }
+      {startSlot}
       <input
         ref={inputRef}
         type={type}
@@ -38,8 +38,9 @@ export function TextInput({
         className={styles["input"]}
         disabled={disabled}
         readOnly={readOnly}
-        autoFocus={autoFocus} />
-      { endSlot}
+        autoFocus={autoFocus}
+      />
+      {endSlot}
     </label>
   );
 }

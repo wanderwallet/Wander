@@ -58,7 +58,7 @@ export function EmbeddedConnectCustomAuthRequestView() {
   return (
     <AuthRequestCard
       headerText="Custom Permissions"
-      onBackButtonClick={() => navigate(`/auth-request/connect/${ authRequest.authID }/settings`)}>
+      onBackButtonClick={() => navigate(`/auth-request/connect/${authRequest.authID}/settings`)}>
       {Object.keys(permissionData).map((permissionName: PermissionType) => (
         <Box
           style={{ padding: 0 }}

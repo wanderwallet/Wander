@@ -10,13 +10,8 @@ export function AuthImportSeedphraseEmbeddedView() {
   const [loading, setLoading] = useState(false);
   const { navigate } = useLocation();
   const [seedPhrase, setSeedPhrase] = useState<string[]>([]);
-  const {
-    importTempWallet,
-    importedTempWalletAddress,
-    deleteImportedTempWallet,
-    registerWallet,
-    wallets,
-  } = useEmbedded();
+  const { importTempWallet, importedTempWalletAddress, deleteImportedTempWallet, registerWallet, wallets, authStatus } =
+    useEmbedded();
 
   const validateSeedPhrase = useCallback(() => {
     const parsedSeedPhrase = seedPhrase.filter((word) => !!word.trim());
@@ -28,7 +23,7 @@ export function AuthImportSeedphraseEmbeddedView() {
     }
 
     return true;
-  }, [seedPhrase])
+  }, [seedPhrase]);
 
   const handleImportWallet = useCallback(async () => {
     try {
@@ -95,10 +90,10 @@ export function AuthImportSeedphraseEmbeddedView() {
 
   return importedTempWalletAddress ? (
     <OnboardingCard
-      headerText="Enter Seedphrase"
+      headerText={authStatus === "noWallets" ? "Enter Seedphrase" : "Restore wallet"}
       subtitle="Would you like to add this wallet to your account?"
       onBackButtonClick={() => navigate(`/auth/add-wallet`)}
-      isLoading={ loading }>
+      isLoading={loading}>
       <Copyable
         isFullWidth
         style={{ padding: 0 }}
@@ -119,21 +114,15 @@ export function AuthImportSeedphraseEmbeddedView() {
     </OnboardingCard>
   ) : (
     <OnboardingCard
-      headerText="Enter Seedphrase"
+      headerText={authStatus === "noWallets" ? "Enter Seedphrase" : "Restore wallet"}
       subtitle="Enter your seedphrase to add your wallet to your account."
       onBackButtonClick={() => navigate(`/auth/add-wallet`)}
-      isLoading={ loading }>
-
+      isLoading={loading}>
       <SeedInput seedPhrase={seedPhrase} handleSubmit={handleImportWallet} handleInputChange={handleInputChange} />
 
-      <Button
-        isFullWidth
-        size="md"
-        onClick={handleImportWallet}
-        isDisabled={loading}>
+      <Button isFullWidth size="md" onClick={handleImportWallet} isDisabled={loading}>
         Next
       </Button>
-
     </OnboardingCard>
   );
 }

@@ -12,13 +12,13 @@ import type { ConnectAuthRoutePath } from "~wallets/router/auth/auth.embed.route
 
 interface TransactionMessaageProps {
   transaction: SplitTransaction | Transaction | RawDataItem;
-  detailsLink: null | Extract<ConnectAuthRoutePath, `/auth-request/sign/${string}/details` | `/auth-request/signDataItem/${string}/details`>;
+  detailsLink: null | Extract<
+    ConnectAuthRoutePath,
+    `/auth-request/sign/${string}/details` | `/auth-request/signDataItem/${string}/details`
+  >;
 }
 
-export default function TransactionMessage({
-  transaction,
-  detailsLink,
-}: TransactionMessaageProps) {
+export default function TransactionMessage({ transaction, detailsLink }: TransactionMessaageProps) {
   const { navigate } = useLocation();
   const [message, setMessage] = useState<string>("");
 

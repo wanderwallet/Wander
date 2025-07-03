@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Button, Card, SeedInput, WanderFooter } from "~components/embed/ui";
+import { Button, Card, SeedInput } from "~components/embed/ui";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useLocation } from "~wallets/router/router.utils";
 import { toast } from "react-toastify";
+import { WanderFooter } from "~components/embed/ui/templates/wander-footer/WanderFooter";
 export function AccountImportSeedphraseEmbeddedView() {
   const [loading, setLoading] = useState(false);
   const { back } = useLocation();

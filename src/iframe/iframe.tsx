@@ -2,7 +2,6 @@ import { useEffect } from "react";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { WanderThemeProvider } from "~components/hardware/HardwareWalletTheme";
-import { NavigationBar } from "~components/popup/Navigation";
 import { AuthRequestsProvider } from "~utils/auth/auth.provider";
 import { Routes } from "~wallets/router/routes.component";
 import { Router as Wouter } from "wouter";
@@ -34,7 +33,6 @@ export function WanderConnectApp() {
   return (
     <>
       <Routes routes={IFRAME_ROUTES} diffLocation />
-      <NavigationBar />
       <ThemeSetup />
     </>
   );

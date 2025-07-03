@@ -16,6 +16,6 @@
   line-height: var(--line-height-relaxed);
 
   &:hover {
-    background: rgba(var(--color-overlay-rgb), .0625)
+    background: rgba(var(--color-overlay-rgb), 0.0625);
   }
 }

@@ -1,5 +1,13 @@
 import { isInsideIframe } from "~utils/embedded/iframe.utils";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
+import {
+  HAS_SIMPLE_STORAGE_API,
+  setUnpartitionedStateStatus,
+  UNPARTITIONED_STATE_STATUS_CHANGE_EVENT,
+  type UnpartitionedStateStatus,
+  type UnpartitionedStateStatusChangeEvent,
+} from "./unpartitioned-storage.utils";
+import { isError } from "~utils/error/error.utils";
 
 type StorageType = "localStorage" | "sessionStorage";
 interface UnpartitionedStorageOptions {
@@ -378,7 +386,7 @@ export class StorageManager {
 }
 
 export class EnhancedStorage implements Storage {
-  protected storage: Storage;
+  public storage: Storage;
 
   public storageType: StorageType;
 
@@ -392,71 +400,150 @@ export class EnhancedStorage implements Storage {
     }
   }
 
-  protected async getStorageHandle(): Promise<Storage> {
-    // @ts-expect-error - requestStorageAccess should return a handle
-    const handle = await document.requestStorageAccess({
-      [this.storageType]: true,
-    });
-
-    return handle[this.storageType];
-  }
-
-  protected setupUserInteractionHandler() {
-    document.addEventListener(
-      "click",
-      async () => {
-        await this.requestAccessOnUserInteraction();
-      },
-      { once: true },
-    );
-  }
-
-  async requestStorageAccess() {
-    if (!isInsideIframe()) return;
-
+  protected async getStorageHandle(): Promise<void> {
     try {
-      // Check if API is supported
-      if (!document.hasStorageAccess) {
-        log(LOG_GROUP.STORAGE, "Storage Access API not supported, using default localStorage");
-        return;
-      }
+      log(LOG_GROUP.STORAGE, `Requesting ${this.storageType} access with typed API`);
 
-      // Check if we already have access
-      const hasAccess = await document.hasStorageAccess();
-      if (hasAccess) {
-        log(LOG_GROUP.STORAGE, "Already has storage access");
-        this.storage = await this.getStorageHandle();
-        return;
-      }
-
-      // Check permission state
-      const permission = await navigator.permissions.query({
-        name: "storage-access",
+      // @ts-expect-error - Newer API with types may not be recognized by TypeScript
+      const handle = await document.requestStorageAccess({
+        [this.storageType]: true,
       });
 
-      if (permission.state === "granted") {
-        this.storage = await this.getStorageHandle();
-        log(LOG_GROUP.STORAGE, "Storage access granted via permission");
-      } else if (permission.state === "prompt") {
-        log(LOG_GROUP.STORAGE, "Storage access requires user interaction");
-        this.setupUserInteractionHandler();
-      } else if (permission.state === "denied") {
-        log(LOG_GROUP.STORAGE, "Storage access denied by user");
+      // @ts-expect-error - Newer API may not be recognized by TypeScript
+      if (handle && handle[this.storageType]) {
+        this.dispatchUnpartitionedStateStatusChange("supported");
+        this.storage = handle[this.storageType];
+      } else {
+        this.dispatchUnpartitionedStateStatusChange("limited");
       }
     } catch (error) {
-      log(LOG_GROUP.STORAGE, "Error requesting storage access:", error);
+      this.dispatchUnpartitionedStateStatusChange(error);
     }
   }
 
-  async requestAccessOnUserInteraction() {
-    try {
-      if (!document.hasStorageAccess) return;
+  async requestStorageAccess(): Promise<void> {
+    if (!isInsideIframe()) return;
 
-      this.storage = await this.getStorageHandle();
-      log(LOG_GROUP.STORAGE, "Storage access granted after user interaction");
-    } catch (error) {
-      log(LOG_GROUP.STORAGE, "Error requesting storage access after interaction:", error);
+    // Check if Storage Access API is supported:
+
+    if (!HAS_SIMPLE_STORAGE_API) {
+      this.dispatchUnpartitionedStateStatusChange("unsupported");
+      return;
     }
+
+    try {
+      // Check if we already have access:
+
+      const hasAccess = await document.hasStorageAccess();
+
+      if (hasAccess) {
+        await this.getStorageHandle();
+
+        return;
+      }
+
+      // If no access, check permission state:
+
+      let permissionState: PermissionState = "prompt"; // Default
+
+      if (navigator.permissions) {
+        try {
+          const permission = await navigator.permissions.query({
+            name: "storage-access" as PermissionName,
+          });
+
+          permissionState = permission.state;
+
+          permission.addEventListener("change", () => {
+            log(LOG_GROUP.STORAGE, `Storage access permission changed to ${permission.state}`);
+
+            this.handleStorageAccessPermission(permission.state);
+          });
+        } catch (error) {
+          log(LOG_GROUP.STORAGE, "Error checking permission:", error);
+        }
+      }
+
+      this.handleStorageAccessPermission(permissionState);
+    } catch (error) {
+      this.dispatchUnpartitionedStateStatusChange(error);
+    }
+  }
+
+  private async handleStorageAccessPermission(permissionState: PermissionState) {
+    // Handle based on permission state
+    if (permissionState === "granted") {
+      // Already granted to another same-site embed, can request directly
+      await this.getStorageHandle();
+    } else if (permissionState === "prompt") {
+      // Need user interaction to request
+      this.setupUserInteractionHandler();
+    } else if (permissionState === "denied") {
+      // User has denied access
+      this.dispatchUnpartitionedStateStatusChange("rejected");
+    }
+  }
+
+  /**
+   * Set up a handler to request storage access on user interaction
+   * This is required by the Storage Access API for security
+   */
+  protected setupUserInteractionHandler(): void {
+    log(LOG_GROUP.STORAGE, "Waiting for user interaction to request storage access");
+
+    // Create a reusable handler function
+    const handleUserInteraction = async () => {
+      try {
+        await this.getStorageHandle();
+        log(LOG_GROUP.STORAGE, "Storage access granted after user interaction");
+
+        // Clean up event listeners after successful request
+        cleanupListeners();
+      } catch (error) {
+        log(LOG_GROUP.STORAGE, "Storage access denied after user interaction:", error);
+      }
+    };
+
+    // Function to clean up event listeners
+    const cleanupListeners = () => {
+      document.removeEventListener("click", handleUserInteraction);
+      document.removeEventListener("pointerdown", handleUserInteraction);
+    };
+
+    // Add event listeners with once:true to auto-remove after firing
+    document.addEventListener("click", handleUserInteraction, { once: true });
+    document.addEventListener("pointerdown", handleUserInteraction, {
+      once: true,
+    });
+
+    // Also clean up after a timeout if user never interacts
+    setTimeout(cleanupListeners, 300000); // 5 minutes
+  }
+
+  /**
+   * Handle the case when unpartitioned storage access is denied or unavailable
+   */
+  protected dispatchUnpartitionedStateStatusChange(
+    unpartitionedStateStatusOrError: UnpartitionedStateStatus | Error,
+  ): void {
+    const unpartitionedStateStatus = isError(unpartitionedStateStatusOrError)
+      ? "error"
+      : unpartitionedStateStatusOrError;
+    const error = isError(unpartitionedStateStatusOrError) ? unpartitionedStateStatusOrError : undefined;
+
+    log(LOG_GROUP.STORAGE, `Unpartitioned state access for = ${unpartitionedStateStatus} (${this.storageType})`);
+
+    setUnpartitionedStateStatus(unpartitionedStateStatus);
+
+    document.dispatchEvent(
+      new CustomEvent(UNPARTITIONED_STATE_STATUS_CHANGE_EVENT, {
+        detail: {
+          unpartitionedStateStatus,
+          error,
+        },
+        bubbles: true,
+      }) satisfies UnpartitionedStateStatusChangeEvent,
+    );
   }
 
   /**

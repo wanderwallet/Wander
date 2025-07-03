@@ -1,7 +1,6 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
-import { useCallback, useEffect, useState } from "react";
-
-import { Row, Upload, Copyable, Button, Text } from "~components/embed";
+import { useEffect, useState } from "react";
+import { Row, Upload, Copyable, Button, Text, Snackbar } from "~components/embed";
 import copy from "copy-to-clipboard";
 import { useLocation } from "~wallets/router/router.utils";
 import { toast } from "react-toastify";
@@ -13,12 +12,7 @@ export function AuthImportKeyfileEmbeddedView() {
   const { navigate } = useLocation();
   const [isAdding, setIsAdding] = useState(false);
 
-  const {
-    importTempWallet,
-    deleteImportedTempWallet,
-    registerWallet,
-    wallets,
-  } = useEmbedded();
+  const { importTempWallet, deleteImportedTempWallet, registerWallet, wallets, authStatus } = useEmbedded();
 
   const {
     data: uploadData,
@@ -79,10 +73,10 @@ export function AuthImportKeyfileEmbeddedView() {
 
   return importedWalletAddress ? (
     <OnboardingCard
-      headerText="Import Keyfile"
+      headerText={authStatus === "noWallets" ? "Import Keyfile" : "Restore wallet"}
       subtitle="Would you like to add this wallet to your account?"
       onBackButtonClick={() => navigate(`/auth/add-wallet`)}
-      isLoading={ isViewLoading }>
+      isLoading={isViewLoading}>
       <Copyable
         isFullWidth
         style={{ padding: 0 }}
@@ -103,26 +97,19 @@ export function AuthImportKeyfileEmbeddedView() {
     </OnboardingCard>
   ) : (
     <OnboardingCard
-      headerText="Import Keyfile"
+      headerText={authStatus === "noWallets" ? "Import Keyfile" : "Restore wallet"}
       subtitle="Upload your private key to add your wallet to your account."
       onBackButtonClick={() => navigate(`/auth/add-wallet`)}
-      isLoading={ isViewLoading }>
-
+      isLoading={isViewLoading}>
       <Upload
         isFullWidth
-        title={"Click to upload"}
-        description={"or drag and drop your keyfile"}
+        fileLabel="your keyfile"
         isLoading={isUploading}
         loadingText={"Recovering account..."}
         onFileParse={parseUpload}
       />
 
-      {uploadError && (
-        <Text alignment="left" variant="bodySm" style={{ color: "#D22B1F", alignSelf: "flex-start", marginTop: 8 }}>
-          { uploadError }
-        </Text>
-      )}
-
+      <Snackbar variant="error">{uploadError}</Snackbar>
     </OnboardingCard>
   );
 }

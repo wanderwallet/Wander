@@ -53,12 +53,7 @@ const KeystoneViews = [
 
 // TODO: Use a nested router instead:
 const ViewsBySetupMode = {
-  generate: [
-    PasswordWelcomeView,
-    PermissionsWelcomeView,
-    LoadingWelcomeView,
-    GenerateDoneWelcomeView,
-  ],
+  generate: [PasswordWelcomeView, PermissionsWelcomeView, LoadingWelcomeView, GenerateDoneWelcomeView],
   load: [OptionsWelcomView],
   recoveryPhraseLoad: LoadViews,
   keyfileLoad: LoadViews,
@@ -388,12 +383,12 @@ export const Wrapper = styled.div<{ linearBackground?: boolean }>`
   position: relative;
   ${({ theme, linearBackground }) =>
     linearBackground
-      ? `background: linear-gradient(180deg, ${
-          theme.displayTheme === "dark" ? "#26126F" : "#F0E8FF"
-        } 0%, ${theme.displayTheme === "dark" ? "#111" : "#F8F9FC"} 23.74%)`
-      : `background: radial-gradient(50% 50% at 50% 50%, ${
-          theme.displayTheme === "dark" ? "#26126f" : "#F0E8FF"
-        } 0%, ${theme.displayTheme === "dark" ? "#1c1c1d" : "#F8F9FC"} 86.5%)`}
+      ? `background: linear-gradient(180deg, ${theme.displayTheme === "dark" ? "#26126F" : "#F0E8FF"} 0%, ${
+          theme.displayTheme === "dark" ? "#111" : "#F8F9FC"
+        } 23.74%)`
+      : `background: radial-gradient(50% 50% at 50% 50%, ${theme.displayTheme === "dark" ? "#26126f" : "#F0E8FF"} 0%, ${
+          theme.displayTheme === "dark" ? "#1c1c1d" : "#F8F9FC"
+        } 86.5%)`}
 `;
 
 export const Image = styled.img`

@@ -44,7 +44,7 @@ const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
         style={closeButtonStyles}
         className={styles["card__close__btn"]}
         onClick={onCloseButtonClick ?? closeCard}
-        disabled={ isDisabled || isLoading }>
+        disabled={isDisabled || isLoading}>
         {customIcon ?? <MinimizeIcon fontSize={24} style={{ color: "var(--color-font-body)" }} />}
       </button>
     ) : null;
@@ -53,7 +53,7 @@ const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
       <button
         className={styles["card__back__btn"]}
         onClick={onBackButtonClick ?? back}
-        disabled={ isDisabled || isLoading }>
+        disabled={isDisabled || isLoading}>
         <ChevronLeft fontSize={24} style={{ color: "var(--color-font-body)" }} />
       </button>
     ) : null;
@@ -77,8 +77,8 @@ const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
         <div style={{ marginTop: "auto" }}></div>
         {footerElement}
 
-        <div className={ styles["card__loaderCover"]}>
-          { isLoading ? (
+        <div className={styles["card__loaderCover"]}>
+          {isLoading ? (
             <Loading
               style={{
                 position: "absolute",
@@ -88,7 +88,7 @@ const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
                 height: "32px",
               }}
             />
-          ) : null }
+          ) : null}
         </div>
       </Box>
     );

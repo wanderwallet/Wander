@@ -46,6 +46,7 @@ export interface NavigateOptions<S = any> {
   replace?: boolean;
   state?: S;
   search?: Record<string, string | number>;
+  params?: Record<string, string | number>;
 }
 
 export type NavigateFn<S = any> = (to: WanderRoutePath | NavigateAction, options?: NavigateOptions<S>) => void;

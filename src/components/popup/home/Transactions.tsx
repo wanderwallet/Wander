@@ -7,6 +7,7 @@ import { useStorage } from "~utils/storage";
 import { gql } from "~gateways/api";
 import styled from "styled-components";
 import {
+  AO_LIQUIDOPS_RECEIVER_QUERY,
   AO_RECEIVER_QUERY,
   AO_SENT_QUERY,
   AR_RECEIVER_QUERY,
@@ -70,25 +71,33 @@ export default function Transactions() {
             return;
           }
 
-          const queries = [AR_RECEIVER_QUERY, AR_SENT_QUERY, AO_SENT_QUERY, AO_RECEIVER_QUERY, PRINT_ARWEAVE_QUERY];
+          const queries = [
+            AR_RECEIVER_QUERY,
+            AR_SENT_QUERY,
+            AO_SENT_QUERY,
+            AO_RECEIVER_QUERY,
+            AO_LIQUIDOPS_RECEIVER_QUERY,
+            PRINT_ARWEAVE_QUERY,
+          ];
 
-          const [rawReceived, rawSent, rawAoSent, rawAoReceived, rawPrintArchive] = await Promise.allSettled(
-            queries.map((query, index) =>
-              retryWithDelay(async (attempt) => {
-                const data = await gql(
-                  query,
-                  { address: activeAddress },
-                  index !== 4
-                    ? txHistoryGateways[attempt % txHistoryGateways.length]
-                    : printTxWorkingGateways[attempt % printTxWorkingGateways.length],
-                );
-                if (data?.data === null && (data as any)?.errors?.length > 0) {
-                  throw new Error((data as any)?.errors?.[0]?.message || "GraphQL Error");
-                }
-                return data;
-              }, 2),
-            ),
-          );
+          const [rawReceived, rawSent, rawAoSent, rawAoReceived, rawLiquidOpsAoReceived, rawPrintArchive] =
+            await Promise.allSettled(
+              queries.map((query, index) =>
+                retryWithDelay(async (attempt) => {
+                  const data = await gql(
+                    query,
+                    { address: activeAddress },
+                    index !== 5
+                      ? txHistoryGateways[attempt % txHistoryGateways.length]
+                      : printTxWorkingGateways[attempt % printTxWorkingGateways.length],
+                  );
+                  if (data?.data === null && (data as any)?.errors?.length > 0) {
+                    throw new Error((data as any)?.errors?.[0]?.message || "GraphQL Error");
+                  }
+                  return data;
+                }, 2),
+              ),
+            );
 
           let sent = await processTransactions(rawSent, "sent");
           sent = sent.filter((tx) => BigNumber(tx.node.quantity.ar).gt(0));
@@ -96,6 +105,7 @@ export default function Transactions() {
           received = received.filter((tx) => BigNumber(tx.node.quantity.ar).gt(0));
           const aoSent = await processTransactions(rawAoSent, "aoSent", true);
           const aoReceived = await processTransactions(rawAoReceived, "aoReceived", true);
+          const liquidOpsAoReceived = await processTransactions(rawLiquidOpsAoReceived, "liquidOpsAoReceived", true);
           const printArchive = await processTransactions(rawPrintArchive, "printArchive");
 
           let combinedTransactions: ExtendedTransaction[] = [
@@ -103,6 +113,7 @@ export default function Transactions() {
             ...received,
             ...aoReceived,
             ...aoSent,
+            ...liquidOpsAoReceived,
             ...printArchive,
           ];
 

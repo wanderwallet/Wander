@@ -1,16 +1,94 @@
-import { Button, WalletIcon, SeedIcon, KeyIcon } from "~components/embed/ui";
+import { QrCode02 } from "@untitled-ui/icons-react";
+import { useMemo } from "react";
+import { Button, WalletIcon, SeedIcon, KeyIcon, Snackbar, type SnackbarVariant, Divider } from "~components/embed/ui";
 import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
+import { formatDate } from "~utils/agents/utils";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { signOut } from "~utils/embedded/embedded.utils";
+import browser from "webextension-polyfill";
 
 export function AuthRestoreSharesEmbeddedView() {
-  // TODO: Automatically retry loading wallets once before showing this screen?
+  const { wallets, unpartitionedStateStatus } = useEmbedded();
+  const hasMultipleWallets = wallets.length > 1;
+
+  // TODO: Let them know what type of backup/export they made and where? Let them check all available options?
+
+  const { lastRecovery, hasRecoverableWallets } = useMemo(() => {
+    let lastRecovery = 0;
+    let hasRecoverableWallets = false;
+
+    wallets.forEach(({ canBeRecovered, lastBackedUpAt, lastExportedAt }) => {
+      lastRecovery = canBeRecovered
+        ? Math.max(lastRecovery, lastBackedUpAt?.getTime() || 0, lastExportedAt?.getTime() || 0)
+        : lastRecovery;
+      hasRecoverableWallets = hasRecoverableWallets || canBeRecovered;
+    });
+
+    return {
+      lastRecovery,
+      hasRecoverableWallets,
+    };
+  }, []);
+
+  let createFirst = false;
+  let snackbarVariant: SnackbarVariant = "warning";
+  let title = "No wallets found on this device";
+  let message = "New device or browser? Did you clear your browser data? Select a method for restoring your wallet.";
+  let unpartitionedStorageMessage = "";
+
+  // Keep in mind users could have seen the QR or seedphrase backup but then they might not scan or save it, respectively. Also, users might have exported
+  // a keyfile or recovery file, but they might have lost it.
+
+  if (!hasRecoverableWallets) {
+    createFirst = true;
+    snackbarVariant = "error";
+    title = "No backups detected";
+    message = hasMultipleWallets
+      ? `It looks like your wallets are not recoverable. Unless you backed any of them up, they are lost forever.`
+      : `It looks like your wallet is not recoverable. Unless you backed it up, it's lost forever.`;
+
+    if (unpartitionedStateStatus !== "supported") {
+      // TODO: Let them know where they've previously signed in?
+      unpartitionedStorageMessage =
+        "If you've previously used Wander on a different site, your might still be able to backup your wallet from it.";
+    }
+  }
 
   return (
     <OnboardingCard
-      headerText="Restore wallet"
-      subtitle="Select a method for restoring your wallet."
-      onBackButtonClick={ () => signOut(false) }>
+      headerText="Restore Wallet"
+      subtitle="We need to restore you wallet on this device."
+      onBackButtonClick={() => signOut(false)}>
+      <Snackbar title={title} variant={snackbarVariant}>
+        <p>{message}</p>
+        {unpartitionedStorageMessage ? <p>{unpartitionedStorageMessage} </p> : null}
+        {lastRecovery ? <p>You last backed up your wallet on {formatDate(new Date(lastRecovery), "")}</p> : null}
+        <p>
+          Need help?{" "}
+          <Button
+            variant="link"
+            onClick={(e) => {
+              e.preventDefault();
+              browser.tabs.create({ url: "https://www.wander.app/help" });
+            }}>
+            Learn more
+          </Button>
+        </p>
+      </Snackbar>
+
+      {createFirst ? (
+        <>
+          <Button
+            variant="outlined"
+            isFullWidth
+            icon={<WalletIcon fontSize={24} />}
+            href="/auth/restore-shares/create-confirmation">
+            Create new wallet
+          </Button>
+
+          <Divider text={"OR"} />
+        </>
+      ) : null}
 
       {/* <Button
         variant="outlined"
@@ -53,6 +131,28 @@ export function AuthRestoreSharesEmbeddedView() {
       <Button variant="outlined" isFullWidth icon={<KeyIcon fontSize={24} />} href="/auth/restore-shares/keyfile">
         Import keyfile
       </Button>
+
+      <Button
+        variant="outlined"
+        isFullWidth
+        icon={<QrCode02 fontSize={24} color="currentColor" />}
+        href="/auth/restore-shares/qrcode">
+        Scan QR Code
+      </Button>
+
+      {createFirst ? null : (
+        <>
+          <Divider text={"OR"} />
+
+          <Button
+            variant="outlined"
+            isFullWidth
+            icon={<WalletIcon fontSize={24} />}
+            href="/auth/restore-shares/create-confirmation">
+            Create new wallet
+          </Button>
+        </>
+      )}
     </OnboardingCard>
   );
 }

@@ -27,6 +27,7 @@ import { HorizontalLine } from "~components/HorizontalLine";
 import SliderMenu from "~components/SliderMenu";
 import { getNameServiceProfile } from "~lib/nameservice";
 import { BackupSeedphraseWarning } from "~components/popup/settings/BackupSeedphraseWarning";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 export interface WalletViewParams {
   address: string;
@@ -69,13 +70,11 @@ export function WalletView({ params: { address } }: WalletViewProps) {
   // name service name
   const [nameServiceName, setNameServiceName] = useState<string>();
 
-  useEffect(() => {
-    (async () => {
-      if (!wallet) return;
+  useAsyncEffect(async () => {
+    if (!wallet) return;
 
-      const arnsProfile = await getNameServiceProfile(wallet.address);
-      setNameServiceName(arnsProfile?.name);
-    })();
+    const arnsProfile = await getNameServiceProfile(wallet.address);
+    setNameServiceName(arnsProfile?.name);
   }, [wallet?.address]);
 
   // wallet name input
@@ -253,7 +252,7 @@ export function WalletView({ params: { address } }: WalletViewProps) {
                     style={{
                       cursor: "pointer",
                       position: "absolute",
-                      right: "46%",
+                      right: "44%",
                       marginTop: "5px",
                     }}>
                     <Tooltip

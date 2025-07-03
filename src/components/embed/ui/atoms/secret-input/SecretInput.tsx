@@ -14,11 +14,7 @@ export interface SecretInputProps {
   isLoading?: boolean;
 }
 
-export function SecretInput({
-  className: classNameProp,
-  secret,
-  isLoading,
-}: SecretInputProps) {
+export function SecretInput({ className: classNameProp, secret, isLoading }: SecretInputProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
 
@@ -42,27 +38,30 @@ export function SecretInput({
         width: 22,
         height: 22,
         color: "#22c55e",
-      }}/>
+      }}
+    />
   ) : (
     <Copy01
       style={{
         width: 22,
         height: 22,
         color: "var(--text-color-tertiary)",
-      }}/>
+      }}
+    />
   );
 
   const copyButton = (
     <InputButton
       variant="icon"
       label={isCopied ? "Copied" : "Copy"}
-      icon={ copyIcon }
-      disabled={ isLoading }
-      onClick={ copySecret } />
+      icon={copyIcon}
+      disabled={isLoading}
+      onClick={copySecret}
+    />
   );
 
   const toggleIsVisible = useCallback(() => {
-    setIsVisible(prevIsVisible => !prevIsVisible);
+    setIsVisible((prevIsVisible) => !prevIsVisible);
   }, []);
 
   const visibilityIcon = isVisible ? (
@@ -73,7 +72,8 @@ export function SecretInput({
         height: 22,
         color: "var(--text-color-tertiary)",
       }}
-    />) : (
+    />
+  ) : (
     <Eye
       aria-label="Show secret"
       style={{
@@ -85,33 +85,29 @@ export function SecretInput({
   );
 
   const visibilityButton = (
-    <InputButton
-      icon={ visibilityIcon }
-      disabled={ isLoading }
-      onClick={ toggleIsVisible }
-      tabIndex={-1} />
+    <InputButton icon={visibilityIcon} disabled={isLoading} onClick={toggleIsVisible} tabIndex={-1} />
   );
 
-  const className = clsx(styles.root, {
-    [styles.isVisible]: isVisible,
-    [styles.isLoading]: isLoading,
-  }, classNameProp);
+  const className = clsx(
+    styles.root,
+    {
+      [styles.isVisible]: isVisible,
+      [styles.isLoading]: isLoading,
+    },
+    classNameProp,
+  );
 
   return (
-    <div className={ className }>
-      <div className={ styles.secret }>
-        { secret }
+    <div className={className}>
+      <div className={styles.secret}>
+        {secret}
 
-        <span className={ styles.loaderCover }>
-          { isLoading ? (
-            <Loading />
-          ) : null }
-        </span>
+        <span className={styles.loaderCover}>{isLoading ? <Loading /> : null}</span>
       </div>
 
-      <div className={ styles.buttons }>
-        { copyButton }
-        { visibilityButton }
+      <div className={styles.buttons}>
+        {copyButton}
+        {visibilityButton}
       </div>
     </div>
   );

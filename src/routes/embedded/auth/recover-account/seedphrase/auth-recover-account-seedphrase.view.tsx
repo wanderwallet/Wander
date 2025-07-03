@@ -1,7 +1,7 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation } from "~wallets/router/router.utils";
-import { Copyable, Row, Button, SeedInput } from "~components/embed/ui";
+import { Copyable, Row, Button, SeedInput, RecoverHeaderIcon } from "~components/embed/ui";
 import copy from "copy-to-clipboard";
 import { toast } from "react-toastify";
 import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
@@ -71,9 +71,10 @@ export function AuthRecoverAccountSeedphraseEmbeddedView() {
 
   return importedTempWalletAddress ? (
     <OnboardingCard
+      headerIcon={<RecoverHeaderIcon />}
       headerText="Enter Seedphrase"
       subtitle="Would you like to add this wallet to your account?"
-      onBackButtonClick={() => navigate(`/auth/recover-account`)}
+      onBackButtonClick={() => navigate(EmbeddedPaths.AuthRecoverAccount)}
       isLoading={loading}
       style={{ gap: 24 }}>
       <Copyable
@@ -101,11 +102,7 @@ export function AuthRecoverAccountSeedphraseEmbeddedView() {
       onBackButtonClick={() => navigate(`/auth/recover-account`)}
       isLoading={loading}>
       <SeedInput seedPhrase={seedPhrase} handleSubmit={handleImportWallet} handleInputChange={handleInputChange} />
-      <Button
-        isFullWidth
-        size="md"
-        onClick={handleImportWallet}
-        isDisabled={loading || isSeedPhraseIncomplete}>
+      <Button isFullWidth size="md" onClick={handleImportWallet} isDisabled={loading || isSeedPhraseIncomplete}>
         {isSeedPhraseIncomplete ? "Complete seedphrase" : "Next"}
       </Button>
     </OnboardingCard>

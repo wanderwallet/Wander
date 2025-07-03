@@ -3,7 +3,6 @@
 
 .button {
   all: unset;
-
   border-radius: var(--border-radius-xl);
   text-align: center;
   box-sizing: border-box;
@@ -94,42 +93,46 @@
 
 /* Button variants */
 .button__variant__primary {
-  background-color: var(--color-background-button-primary);
-  color: var(--color-button-primary-active);
-  border: 1px solid transparent;
+  background-color: var(--color-button-primary-background);
+  color: var(--color-button-primary-color);
+  border: var(--button-primary-border);
 
   &:hover:not(:disabled) {
-    filter: brightness(0.9);
-  }
-}
-
-.button__variant__icon {
-  background-color: inherit;
-  color: var(--color-button-outlined-active);
-  border: none;
-
-  &:hover:not(:disabled) {
-    background-color: rgba(0, 0, 0, 0.05);
-  }
-}
-
-.button__variant__outlined {
-  background-color: inherit;
-  color: var(--color-button-outlined-active);
-  border: 1px solid var(--color-button-outlined-border);
-
-  &:hover:not(:disabled) {
-    background-color: rgba(0, 0, 0, 0.05);
+    background-color: var(--color-button-primary-background-hover);
+    border: var(--button-primary-border-hover);
   }
 }
 
 .button__variant__secondary {
   background-color: var(--color-button-secondary-background);
-  color: var(--color-button-secondary-active);
-  border: 1px solid var(--color-button-secondary-border);
+  color: var(--color-button-secondary-color);
+  border: var(--button-secondary-border);
 
   &:hover:not(:disabled) {
-    background-color: var(--color-bg-tertiary);
+    background-color: var(--color-button-secondary-background-hover);
+    border: var(--button-secondary-border-hover);
+  }
+}
+
+.button__variant__outlined {
+  background-color: var(--color-button-outlined-background);
+  color: var(--color-button-outlined-color);
+  border: var(--button-outlined-border);
+
+  &:hover:not(:disabled) {
+    background-color: var(--color-button-outlined-background-hover);
+    border: var(--button-outlined-border-hover);
+  }
+}
+
+.button__variant__invisible {
+  background-color: transparent;
+  color: var(--color-button-outlined-color);
+  border: none;
+
+  &:hover:not(:disabled) {
+    text-decoration: underline;
+    text-decoration-style: dotted;
   }
 }
 
@@ -144,8 +147,17 @@
   margin: 0;
   padding: 0;
   width: auto;
-
   text-decoration: none;
+  font: inherit;
+  display: inline;
+
+  &:hover {
+    text-decoration: underline;
+    text-decoration-style: dotted;
+  }
+}
+
+.button__variant__unstyled {
 }
 
 /* Modifiers */
@@ -155,8 +167,4 @@
 
 .button__blurry {
   backdrop-filter: blur(10px);
-}
-
-.button__borderless {
-  border: none;
 }

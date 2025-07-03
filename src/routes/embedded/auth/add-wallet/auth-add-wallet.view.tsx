@@ -4,9 +4,12 @@ import { Button, KeyIcon, SeedIcon, WalletIcon } from "~components/embed";
 import type { WalletSourceType } from "embed-api";
 import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
 import { signOut } from "~utils/embedded/embedded.utils";
+import { QrCode02 } from "@untitled-ui/icons-react";
+import { navigate } from "wouter/use-hash-location";
+import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 
 export function AuthAddWalletEmbeddedView() {
-  const { generateTempWallet, registerWallet } = useEmbedded();
+  const { generateTempWallet, registerWallet, authStatus } = useEmbedded();
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -26,16 +29,17 @@ export function AuthAddWalletEmbeddedView() {
 
   return (
     <OnboardingCard
-      headerText="Add a wallet"
+      headerText={authStatus === "noWallets" ? "Add a wallet" : "Restore wallet"}
       subtitle="Add a wallet to your account to hold your funds. Create or add an existing wallet to continue."
-      onBackButtonClick={ () => signOut(false) }
-      isLoading={ isLoading }>
-
+      onBackButtonClick={() =>
+        authStatus === "noWallets" ? signOut(false) : navigate(EmbeddedPaths.AuthRestoreShares)
+      }
+      isLoading={isLoading}>
       <Button
         onClick={() => handleRegisterWallet("GENERATED")}
         variant="outlined"
         isFullWidth
-        icon={<SeedIcon fontSize={24} />}
+        icon={<WalletIcon fontSize={24} />}
         isDisabled={isLoading}>
         Create new wallet
       </Button>
@@ -43,7 +47,7 @@ export function AuthAddWalletEmbeddedView() {
       <Button
         variant="outlined"
         isFullWidth
-        icon={<WalletIcon fontSize={24} />}
+        icon={<SeedIcon fontSize={24} />}
         href="/auth/import-seedphrase"
         isDisabled={isLoading}>
         Enter Seed Phrase
@@ -56,6 +60,15 @@ export function AuthAddWalletEmbeddedView() {
         href="/auth/import-keyfile"
         isDisabled={isLoading}>
         Import Keyfile
+      </Button>
+
+      <Button
+        variant="outlined"
+        isFullWidth
+        icon={<QrCode02 fontSize={24} color="currentColor" />}
+        href="/auth/import-qrcode"
+        isDisabled={isLoading}>
+        Scan QR Code
       </Button>
 
       {/* {authProviderType === "PASSKEYS" ? (
@@ -80,7 +93,6 @@ export function AuthAddWalletEmbeddedView() {
           existing account
         </Button>
       )} */}
-
     </OnboardingCard>
   );
 }

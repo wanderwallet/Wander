@@ -122,6 +122,17 @@ export function useLocation() {
         }
       }
 
+      // Handle path parameters
+      if (options?.params) {
+        Object.entries(options.params).forEach(([key, value]) => {
+          if (process.env.NODE_ENV === "development" && toPath.indexOf(`:${key}`) === -1) {
+            throw new Error(`Path ${toPath} has no ${key} param.`);
+          }
+          toPath = toPath.replace(`:${key}`, value.toString()) as WanderRoutePath;
+        });
+      }
+
+      // Handle search parameters
       if (options?.search) {
         const searchParams = new URLSearchParams();
 
@@ -159,10 +170,12 @@ export function useLocation() {
 
   return {
     location: wocation,
+    previousLocation: customHistory[customHistory.length - 2]?.to,
     navigate,
     back,
   } as {
     location: WanderRoutePath;
+    previousLocation: WanderRoutePath;
     navigate: typeof navigate;
     back: typeof back;
   };

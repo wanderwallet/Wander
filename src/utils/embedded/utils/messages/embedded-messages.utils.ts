@@ -1,10 +1,10 @@
 import type { AuthProviderType, SupabaseUser } from "embed-api";
 import { nanoid } from "nanoid";
+import { getEmbeddedAncestorOrigin, isInsideIframe } from "~utils/embedded/iframe.utils";
 import { AUTH_PROVIDER_TYPE_BY_PROVIDER_STR } from "~utils/embedded/embedded.constants";
-import { isInsideIframe, getEmbeddedAncestorOrigin } from "~utils/embedded/iframe.utils";
 import type {
   EmbeddedAuthMessageData,
-  EmbeddedCall,
+  EmbeddedMessage,
   EmbeddedMessageId,
   EmbeddedMessageMap,
   EmbeddedUserDetails,
@@ -80,19 +80,19 @@ export function postEmbeddedMessage<K extends EmbeddedMessageId>({ type, data }:
     lastMessageKeyByType[type] = messageKey;
   }
 
-  const call: EmbeddedCall<K> = {
+  const message: EmbeddedMessage<K> = {
     id: nanoid(),
     type,
     data,
   };
 
   if (!isInsideIframe()) {
-    console.warn("Wander Embedded running as a standalone page. There's no parent Window to send this to =", call);
+    console.warn("Wander Embedded running as a standalone page. There's no parent Window to send this to =", message);
 
     return;
   }
 
-  window.parent.postMessage(call, getEmbeddedAncestorOrigin());
+  window.parent.postMessage(message, getEmbeddedAncestorOrigin());
 }
 
 export function getUserDetailsFromSupabaseUser(user: SupabaseUser | null): EmbeddedUserDetails {

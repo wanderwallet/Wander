@@ -15,10 +15,10 @@ import { Link } from "~routes/popup/token/[id]";
 import { useTheme } from "styled-components";
 import { Avatar, NoAvatarIcon } from "~components/popup/WalletHeader";
 import { QRCodeSVG } from "qrcode.react";
-import { QRCodeWrapper } from "~routes/popup/receive";
 import { Flex } from "~components/common/Flex";
 import { PinExtension } from "../PinExtension";
 import { TempTransactionStorage } from "~utils/storage";
+import { QRCodeWrapper } from "~components/QRCodeWrapper";
 
 export type GenerateDoneWelcomeViewProps = CommonRouteProps<SetupWelcomeViewParams>;
 

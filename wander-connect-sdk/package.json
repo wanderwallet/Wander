@@ -1,6 +1,6 @@
 {
   "name": "@wanderapp/connect",
-  "version": "0.1.1",
+  "version": "0.1.10",
   "description": "Wander Connect SDK.",
   "author": "wanderapp",
   "license": "MIT",
@@ -27,7 +27,7 @@
     "dev": "tsup --watch",
     "clean": "rm -rf sdk-dist wallet-api-dist",
     "nuke": "pnpm clean && rm -rf pnpm-lock.yaml node_modules",
-    "prepare": "yarn build"
+    "prepare": "pnpm build"
   },
   "devDependencies": {
     "tsup": "^8.4.0",

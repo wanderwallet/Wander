@@ -1,5 +1,5 @@
 import type React from "react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import styled, { type DefaultTheme } from "styled-components";
 import type { AppInfo, AppLogoInfo } from "~applications/application";
 import Application from "~applications/application";
@@ -8,6 +8,7 @@ import { useAuthRequests } from "~utils/auth/auth.hooks";
 import type { AuthRequestStatus } from "~utils/auth/auth.types";
 import browser from "webextension-polyfill";
 import { generateLogoPlaceholder } from "~utils/urls/getAppIconPlaceholder";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 export interface HeadAuthProps {
   title?: string;
@@ -34,23 +35,19 @@ export const HeadAuth: React.FC<HeadAuthProps> = ({
   const isConnectType = type === "connect";
   const [appLogoInfo, setAppLogoInfo] = useState<AppLogoInfo>(appInfoProp);
 
-  useEffect(() => {
-    async function loadAppInfo() {
-      if (!url || isConnectType) return;
+  useAsyncEffect(async () => {
+    if (!url || isConnectType) return;
 
-      const app = new Application(url);
-      const appInfo = await app.getAppData();
-      const appLogoPlaceholder = await generateLogoPlaceholder(url);
+    const app = new Application(url);
+    const appInfo = await app.getAppData();
+    const appLogoPlaceholder = await generateLogoPlaceholder(url);
 
-      setAppLogoInfo({
-        name: appInfo.name || fallbackName || new URL(url).hostname.split(".").slice(-2).join("."),
-        logo: appInfo.logo || fallbackLogo,
-        type: appLogoPlaceholder?.type,
-        placeholder: appLogoPlaceholder?.placeholder,
-      });
-    }
-
-    loadAppInfo();
+    setAppLogoInfo({
+      name: appInfo.name || fallbackName || new URL(url).hostname.split(".").slice(-2).join("."),
+      logo: appInfo.logo || fallbackLogo,
+      type: appLogoPlaceholder?.type,
+      placeholder: appLogoPlaceholder?.placeholder,
+    });
   }, [url, fallbackName, fallbackLogo, isConnectType]);
 
   const handleAppInfoClicked = tabID

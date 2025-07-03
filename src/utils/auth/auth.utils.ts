@@ -207,39 +207,47 @@ export async function createAuthPopup(authRequestData: null | AuthRequestData, m
   }
 }
 
+let isListeningForAuthResult = false;
+
 type AuthResultCallback<T> = (data: T) => void;
 
 const authResultCallbacks = new Map<string, AuthResultCallback<any>>();
 
-function addAuthResultListener<T>(authID: string, popupWindowTabID: number, fn: AuthResultCallback<T>) {
+function addAuthResultListener<T>(authID: string, fn: AuthResultCallback<T>) {
   authResultCallbacks.set(authID, fn);
 
-  if (authResultCallbacks.size === 1) {
-    isomorphicOnMessage("auth_result", ({ sender, data }) => {
-      // validate sender by it's tabId
-      if (sender.tabId !== popupWindowTabID) {
-        console.warn(
-          `auth_result for authID = ${authID} received from tabId = ${sender.tabId}, but ${popupWindowTabID} expected`,
-        );
-
-        return;
-      }
-
-      const authResultCallback = authResultCallbacks.get(data.authID);
-
-      if (!authResultCallback) {
-        console.warn(`authID = ${data.authID} doesn't have an "auth_result" listener`);
-
-        return;
-      }
-
-      authResultCallback(data);
-    });
-  }
+  if (!isListeningForAuthResult) setAuthResultListener();
 }
 
-function removeAuthResultListener(authID: string) {
-  authResultCallbacks.delete(authID);
+function setAuthResultListener() {
+  if (isListeningForAuthResult) return;
+
+  isListeningForAuthResult = true;
+
+  isomorphicOnMessage("auth_result", ({ sender, data }) => {
+    const { authID } = data;
+
+    // validate sender by it's tabId
+    if (sender.tabId !== POPUP_TAB_ID) {
+      console.warn(
+        `auth_result for authID = ${authID} received from tabId = ${sender.tabId}, but ${POPUP_TAB_ID} expected`,
+      );
+
+      return;
+    }
+
+    const authResultCallback = authResultCallbacks.get(data.authID);
+
+    authResultCallbacks.delete(data.authID);
+
+    if (!authResultCallback) {
+      console.warn(`authID = ${data.authID} doesn't have an "auth_result" listener`);
+
+      return;
+    }
+
+    authResultCallback(data);
+  });
 }
 
 /**
@@ -258,10 +266,9 @@ export function getPopupResponse<T>(authID: string, popupWindowTabID: number) {
       reject(ERR_MSG_UNLOCK_TIMEOUT);
     }, AUTH_POPUP_UNLOCK_REQUEST_TTL_MS);
 
-    addAuthResultListener<AuthSuccessResult<T>>(authID, popupWindowTabID, (data) => {
+    addAuthResultListener<AuthSuccessResult<T>>(authID, (data) => {
       stopKeepAlive(authID);
       clearTimeout(timeoutID);
-      removeAuthResultListener(authID);
 
       if (!data) {
         log(LOG_GROUP.AUTH, `auth_result for authID = "${authID}" = Empty)`);
@@ -270,7 +277,7 @@ export function getPopupResponse<T>(authID: string, popupWindowTabID: number) {
       } else if (isAuthErrorResult(data)) {
         log(LOG_GROUP.AUTH, `auth_result for authID = "${authID}" = Error (${data.error})`);
 
-        reject(data.error);
+        reject(new Error(data.error));
       } else {
         log(LOG_GROUP.AUTH, `auth_result for authID = "${authID}" = Success`);
 

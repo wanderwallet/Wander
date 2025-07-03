@@ -111,6 +111,7 @@ export function AppSettingsDashboardView({ noTitle = false, params: { url } }: A
         <>
           <Spacer y={0.45} />
           <AppName>{settings?.name || settings?.url}</AppName>
+          <Spacer y={1} />
           <AppUrl href={`https://${settings?.url || ""}`} target="_blank" rel="noopener noreferrer">
             <Text>
               {settings?.url}
@@ -119,6 +120,7 @@ export function AppSettingsDashboardView({ noTitle = false, params: { url } }: A
           </AppUrl>
         </>
       )}
+      <Spacer y={1} />
       <Title>{browser.i18n.getMessage("permissions")}</Title>
       {Object.keys(permissionData).map((permissionName: PermissionType, i) => {
         let formattedPermissionName = permissionName
@@ -157,7 +159,7 @@ export function AppSettingsDashboardView({ noTitle = false, params: { url } }: A
           </div>
         );
       })}
-      <Spacer y={1} />
+      <Spacer y={1.5} />
       <Title>{browser.i18n.getMessage("permission_settings")}</Title>
       <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
         {signPolicyOptions.map((option) => (
@@ -259,7 +261,7 @@ export function AppSettingsDashboardView({ noTitle = false, params: { url } }: A
           />
         </TooltipV2>
       </Text> */}
-      <Spacer y={1} />
+      <Spacer y={1.5} />
       <Title>{browser.i18n.getMessage("gateway")}</Title>
       <Select
         onChange={(e) => {
@@ -314,7 +316,7 @@ export function AppSettingsDashboardView({ noTitle = false, params: { url } }: A
           </InputWithBtn>
         </>
       )}
-      <Spacer y={1} />
+      <Spacer y={1.5} />
       <Title>{browser.i18n.getMessage("bundlrNode")}</Title>
       <Input
         value={settings.bundler}

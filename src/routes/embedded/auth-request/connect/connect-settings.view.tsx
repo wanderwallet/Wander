@@ -1,18 +1,19 @@
 import { permissionData, signPolicyOptions, type PermissionType } from "~applications/permissions";
-import { Box, Radio, Snackbar, InfoIcon, Text, Row, ChevronRight } from "~components/embed/ui";
+import { Box, Radio, Snackbar, Text, Row, ChevronRight } from "~components/embed/ui";
 import { useLocation } from "~wallets/router/router.utils";
 import browser from "webextension-polyfill";
 import { Spacer } from "@arconnect/components-rebrand";
 import type { SignPolicy } from "~applications/application";
 import { useCurrentAuthRequest } from "~utils/auth/auth.hooks";
 import { ExtensionStorage, useStorage } from "~utils/storage";
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useCallback } from "react";
 import Application from "~applications/application";
 import { Edit02 } from "@untitled-ui/icons-react";
 import { addApp } from "~applications";
 import { defaultGateway } from "~gateways/gateway";
 import AppIcons from "./components/AppIcons";
 import { AuthRequestCard } from "~components/embed/ui/molecules/card/auth-request-card/AuthRequestCard";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 export function EmbeddedConnectSettingsAuthRequestView() {
   const { navigate } = useLocation();
@@ -93,39 +94,36 @@ export function EmbeddedConnectSettingsAuthRequestView() {
     acceptRequest();
   }, [url, requestedPermissions, appInfo, signPolicy, gateway, acceptRequest]);
 
-  useEffect(() => {
-    (async () => {
-      const requested: PermissionType[] = authRequestPermissions;
+  useAsyncEffect(async () => {
+    const requested: PermissionType[] = authRequestPermissions;
 
-      // add existing permissions
-      if (url) {
-        const app = new Application(url);
-        const existing = await app.getPermissions();
+    // add existing permissions
+    if (url) {
+      const app = new Application(url);
+      const existing = await app.getPermissions();
 
-        for (const existingP of existing) {
-          if (requested.includes(existingP)) continue;
-          requested.push(existingP);
-        }
+      for (const existingP of existing) {
+        if (requested.includes(existingP)) continue;
+        requested.push(existingP);
       }
+    }
 
-      const requestedPermissions = await ExtensionStorage.get(`requested_permissions`);
+    const requestedPermissions = await ExtensionStorage.get(`requested_permissions`);
 
-      if (!requestedPermissions) {
-        setRequestedPermissions(requested.filter((p) => Object.keys(permissionData).includes(p)));
-      }
+    if (!requestedPermissions) {
+      setRequestedPermissions(requested.filter((p) => Object.keys(permissionData).includes(p)));
+    }
 
-      setRequestedPermCopy(requested.filter((p) => Object.keys(permissionData).includes(p)));
-    })();
+    setRequestedPermCopy(requested.filter((p) => Object.keys(permissionData).includes(p)));
   }, [url, authRequestPermissions]);
 
   return (
     <AuthRequestCard
-      onBackButtonClick={() => navigate(`/auth-request/connect/${ authRequest.authID }`)}
+      onBackButtonClick={() => navigate(`/auth-request/connect/${authRequest.authID}`)}
       onCancel={() => rejectRequest()}
       onConfirm={handleConfirm}
       confirmLabel={browser.i18n.getMessage("connect")}
       isDisabled={!signPolicy || !url}>
-
       <AppIcons appInfo={appInfo} />
 
       <Text variant="headingMd">Confirm permissions</Text>
@@ -145,7 +143,7 @@ export function EmbeddedConnectSettingsAuthRequestView() {
           alignment="left"
           justifyContent="between"
           style={{ cursor: "pointer" }}
-          onClick={() => navigate(`/auth-request/connect/${ authRequest.authID }/custom`)}>
+          onClick={() => navigate(`/auth-request/connect/${authRequest.authID}/custom`)}>
           <Text variant="headingMd" style={{ fontSize: 16, fontWeight: 500 }} alignment="left">
             {isCustomPermissions ? "Custom permissions set" : "Set custom permissions"}
           </Text>
@@ -155,16 +153,11 @@ export function EmbeddedConnectSettingsAuthRequestView() {
             <ChevronRight height={24} width={24} color="var(--color-font-body)" />
           )}
         </Row>
-        <Spacer y={1} />
-        <Snackbar
-          text={browser.i18n.getMessage(`${signPolicy}_description`)}
-          icon={<InfoIcon />}
-          backgroundColor="var(--color-background-default)"
-          iconColor="var(--color-font-body)"
-          textColor="var(--color-font-body)"
-        />
-      </Box>
 
+        <Spacer y={1} />
+
+        <Snackbar variant="info">{browser.i18n.getMessage(`${signPolicy}_description`)}</Snackbar>
+      </Box>
     </AuthRequestCard>
   );
 }

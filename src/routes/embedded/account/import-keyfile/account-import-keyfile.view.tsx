@@ -1,6 +1,7 @@
 import copy from "copy-to-clipboard";
 import { useCallback, useEffect, useState } from "react";
-import { Button, Card, Copyable, Row, Upload, WanderIcon, Text, WanderFooter } from "~components/embed/ui";
+import { Button, Card, Copyable, Row, Upload, WanderIcon, Text } from "~components/embed/ui";
+import { WanderFooter } from "~components/embed/ui/templates/wander-footer/WanderFooter";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useLocation } from "~wallets/router/router.utils";
 
@@ -85,8 +86,7 @@ export function AccountImportKeyfileEmbeddedView() {
       size="auto">
       <Upload
         isFullWidth
-        title={"Click to upload"}
-        description={"or drag and drop your private key"}
+        fileLabel="your private key"
         isLoading={loading}
         loadingText={"Recovering account..."}
         onFileParse={handleJsonParse}
