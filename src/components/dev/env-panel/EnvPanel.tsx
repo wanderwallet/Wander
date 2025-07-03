@@ -1,9 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "~wallets/router/router.utils";
-import { clsx } from "clsx";
+import { EMBEDDED_SERVER_BASE_URL } from "~utils/embedded/iframe.utils";
 
 import styles from "./EnvPanel.module.scss";
-import { EMBEDDED_SERVER_BASE_URL } from "~utils/embedded/iframe.utils";
 
 export interface EnvPanelProps {}
 
