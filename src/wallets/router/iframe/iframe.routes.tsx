@@ -35,7 +35,6 @@ import { AuthRecoverAccountSelectEmbeddedView } from "~routes/embedded/auth/reco
 import { AuthRecoverAccountConfirmEmbeddedView } from "~routes/embedded/auth/recover-account/confirm/auth-recover-confirm.view";
 
 // Account Management Views:
-import { AccountConfirmationEmbeddedView } from "~routes/embedded/account/confirmation/account-confirmation.view";
 import { AccountChangePasswordEmbeddedView } from "~routes/embedded/account/change-password/account-change-password.view";
 
 // Account Wallet Views:
@@ -44,7 +43,6 @@ import { AccountImportSeedphraseEmbeddedView } from "~routes/embedded/account/im
 import { AccountImportKeyfileEmbeddedView } from "~routes/embedded/account/import-keyfile/account-import-keyfile.view";
 
 // Account Backup Views:
-import { AccountBackupWalletReminderEmbeddedView } from "~routes/embedded/account/backup-wallet/backup-wallet-reminder.view";
 import { AccountBackupWalletEmbeddedView } from "~routes/embedded/account/backup-wallet/backup-wallet.view";
 import { AccountBackupCopySeedphraseEmbeddedView } from "~routes/embedded/account/backup-wallet/backup-wallet-copy-seedphrase.view";
 import { AccountBackupFullWalletEmbeddedView } from "~routes/embedded/account/backup-wallet/backup-full-wallet.view";
@@ -95,7 +93,6 @@ export type EmbeddedRoutePath =
   | "/auth/recover-account/select"
   | "/auth/recover-account/confirm"
   | "/account"
-  | "/account/confirmation"
   | "/account/change-password"
   // | "/account/add-provider"
   // | "/account/add-provider/more-providers"
@@ -108,7 +105,6 @@ export type EmbeddedRoutePath =
   | "/account/backup-wallet/recovery-file"
   | "/account/backup-wallet/qrcode"
   // | "/account/backup-shares/<backupProvider>"
-  | "/account/backup-wallet/reminder"
   | "/account/export-wallet"
   | "/"
   | "/wallet/receive"
@@ -160,7 +156,6 @@ export const EmbeddedPaths = {
   AuthRecoverAccountConfirm: "/auth/recover-account/confirm",
 
   // Account Management:
-  AccountConfirmation: "/account/confirmation",
   AccountChangePassword: "/account/change-password",
 
   // Account Wallets:
@@ -174,7 +169,6 @@ export const EmbeddedPaths = {
   AccountBackupCopySeedphrase: "/account/backup-wallet/copy-seedphrase",
   AccountBackupWalletRecoveryFile: "/account/backup-wallet/recovery-file",
   AccountBackupWalletQrCode: "/account/backup-wallet/qrcode",
-  AccountBackupWalletReminder: "/account/backup-wallet/reminder",
   AccountExportWallet: "/account/export-wallet",
 
   // Wallet:
@@ -301,10 +295,6 @@ const IFRAME_OWN_ROUTES = [
   // Account Management:
 
   {
-    path: EmbeddedPaths.AccountConfirmation,
-    component: AccountConfirmationEmbeddedView,
-  },
-  {
     path: EmbeddedPaths.AccountChangePassword,
     component: AccountChangePasswordEmbeddedView,
   },
@@ -326,10 +316,6 @@ const IFRAME_OWN_ROUTES = [
 
   // Account Backup:
 
-  {
-    path: EmbeddedPaths.AccountBackupWalletReminder,
-    component: AccountBackupWalletReminderEmbeddedView,
-  },
   {
     path: EmbeddedPaths.AccountBackupFullWallet,
     component: AccountBackupFullWalletEmbeddedView,
