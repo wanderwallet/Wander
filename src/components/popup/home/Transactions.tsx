@@ -243,7 +243,7 @@ export const TransactionItemComponent = ({ transaction }: { transaction: Extende
   }, [transaction.aoInfo?.logo]);
 
   return (
-    <TransactionItem>
+    <TransactionItem showBackground={true}>
       <Transaction onClick={() => navigate(`/transaction/${transaction.node.id}`)}>
         <FlexContainer>
           <Logo src={logoSource} alt="Token logo" />
@@ -275,7 +275,7 @@ export const AnnouncementItemComponent = ({ transaction }: { transaction: Extend
   const { navigate } = useLocation();
 
   return (
-    <TransactionItem>
+    <TransactionItem showBackground={true}>
       <Transaction onClick={() => navigate(`/announcement/${transaction.node.id}`)}>
         <Flex direction="column" gap={8}>
           <Flex direction="row" gap={4} align="center" justify="space-between">

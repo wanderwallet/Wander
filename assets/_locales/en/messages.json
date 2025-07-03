@@ -3691,5 +3691,9 @@
   "benefits": {
     "message": "Benefits",
     "description": "Benefits text"
+  },
+  "activity": {
+    "message": "Activity",
+    "description": "Activity text"
   }
 }

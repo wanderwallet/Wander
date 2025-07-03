@@ -3651,5 +3651,9 @@
     "benefits": {
       "message": "收益",
       "description": "Benefits text"
+    },
+    "activity": {
+      "message": "活动",
+      "description": "Activity text"
     }
 }

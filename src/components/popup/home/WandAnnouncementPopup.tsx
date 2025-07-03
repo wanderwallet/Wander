@@ -107,7 +107,7 @@ export const WandAnnouncementPopup = ({ isOpen, setOpen }) => {
             onClick={() => {
               browser.tabs.create({ url: "https://ao.arweave.net/#/delegate/" });
             }}>
-            {browser.i18n.getMessage("get_wand_tokens")}
+            {browser.i18n.getMessage("get_wander_tokens")}
           </Button>
           <LinkButton fullWidth onClick={() => navigate("/tier")}>
             {browser.i18n.getMessage("explore_tier_benefits")}

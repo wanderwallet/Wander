@@ -84,7 +84,7 @@ export function TierView() {
             style={{ cursor: "pointer" }}
             showCloseButton>
             <Text weight="semibold" noMargin>
-              Explore tier benefits
+              {browser.i18n.getMessage("explore_tier_benefits")}
             </Text>
           </AnimatedStarContainer>
         )}
@@ -94,7 +94,7 @@ export function TierView() {
           <LifeTimeSavings />
           <Flex direction="column" gap={16} width="100%">
             <Text weight="semibold" noMargin>
-              Activity
+              {browser.i18n.getMessage("activity")}
             </Text>
             <Activity tier={tier} />
           </Flex>
@@ -131,13 +131,7 @@ function Activity({ tier }: { tier: Tier }) {
           disabled={!hasNextPage || loading}
           style={{ alignSelf: "center", marginTop: "5px" }}
           onClick={fetchTransactions}>
-          {loading ? (
-            <>
-              Loading <Loading style={{ margin: "0.18rem" }} />
-            </>
-          ) : (
-            browser.i18n.getMessage("load_more") + "..."
-          )}
+          {loading ? <Loading style={{ margin: "0.18rem" }} /> : browser.i18n.getMessage("load_more") + "..."}
         </TierButton>
       )}
     </TransactionsWrapper>
