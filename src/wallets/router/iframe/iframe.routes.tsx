@@ -20,6 +20,7 @@ import { AuthAddAuthProviderEmbeddedView } from "~routes/embedded/auth/add-auth-
 
 // Shares Views:
 import { AuthRestoreSharesEmbeddedView } from "~routes/embedded/auth/restore-shares/auth-restore-shares.view";
+import { AuthRestoreSharesCreateConfirmationEmbeddedView } from "~routes/embedded/auth/restore-shares/create-confirmation/auth-restore-shares-create-confirmation.view";
 import { AuthRestoreSharesRecoveryFileEmbeddedView } from "~routes/embedded/auth/restore-shares/recovery-file/auth-restore-shares-recovery-file.view";
 import { AuthRestoreSharesSeedPhraseEmbeddedView } from "~routes/embedded/auth/restore-shares/seedphrase/auth-restore-shares-seedphrase.view";
 import { AuthRestoreSharesKeyfileEmbeddedView } from "~routes/embedded/auth/restore-shares/keyfile/auth-restore-shares-keyfile.view";
@@ -78,6 +79,7 @@ export type EmbeddedRoutePath =
   | "/auth/confirmation"
   | "/auth/add-auth-provider"
   | "/auth/restore-shares"
+  | "/auth/restore-shares/create-confirmation"
   | "/auth/restore-shares/recovery-file"
   | "/auth/restore-shares/seedphrase"
   | "/auth/restore-shares/keyfile"
@@ -145,6 +147,7 @@ export const EmbeddedPaths = {
 
   // Shares Recovery:
   AuthRestoreShares: "/auth/restore-shares",
+  AuthRestoreSharesCreateConfirmation: "/auth/restore-shares/create-confirmation",
   AuthRestoreSharesRecoveryFile: "/auth/restore-shares/recovery-file",
   AuthRestoreSharesSeedPhrase: "/auth/restore-shares/seedphrase",
   AuthRestoreSharesKeyfile: "/auth/restore-shares/keyfile",
@@ -249,6 +252,10 @@ const IFRAME_OWN_ROUTES = [
   {
     path: EmbeddedPaths.AuthRestoreShares,
     component: AuthRestoreSharesEmbeddedView,
+  },
+  {
+    path: EmbeddedPaths.AuthRestoreSharesCreateConfirmation,
+    component: AuthRestoreSharesCreateConfirmationEmbeddedView,
   },
   {
     path: EmbeddedPaths.AuthRestoreSharesRecoveryFile,
