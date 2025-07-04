@@ -8,7 +8,7 @@ import { Loading, Text } from "@arconnect/components-rebrand";
 import { Flex } from "~components/common/Flex";
 import wanderIcon from "~assets/ecosystem/wander.svg";
 import { defaultStars, AnimatedStarContainer } from "~components/common/AnimatedStarContainer";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { ExtensionStorage } from "~utils/storage";
 import { TierButton } from "~components/popup/tier/TierButton";
@@ -24,6 +24,7 @@ import { useActiveAddress, useTokenTransactions } from "~wallets/hooks";
 import { TierTransactionItemComponent } from "~components/popup/home/Transactions";
 import type { Tier } from "~utils/tier/types";
 import { GetTokensButton } from "~components/popup/tier/GetTokensButton";
+import { trackPage, PageType } from "~utils/analytics";
 
 const stars = defaultStars.toSpliced(1, 1);
 
@@ -42,6 +43,10 @@ export function TierView() {
   useAsyncEffect(async () => {
     const storedValue = await ExtensionStorage.get<boolean>(EXPLORE_TIER_BENEFITS);
     setShowExploreTierBenefits(storedValue ?? true);
+  }, []);
+
+  useEffect(() => {
+    trackPage(PageType.YOUR_TIER);
   }, []);
 
   return (
