@@ -11,6 +11,7 @@ import zeroFees from "~assets/images/wand-announcement/zero_fees.png";
 import wand from "~assets/images/wand-announcement/wand.png";
 import wandAnnouncementBackground from "~assets/images/wand-announcement/wand_announcement_bg.svg";
 import { useLocation } from "~wallets/router/router.utils";
+import { GetTokensButton } from "../tier/GetTokensButton";
 
 interface WandCarouselSlide {
   image: string;
@@ -102,13 +103,7 @@ export const WandAnnouncementPopup = ({ isOpen, setOpen }) => {
         </Flex>
 
         <Flex direction="column" width="100%">
-          <Button
-            fullWidth
-            onClick={() => {
-              browser.tabs.create({ url: "https://ao.arweave.net/#/delegate/" });
-            }}>
-            {browser.i18n.getMessage("get_wander_tokens")}
-          </Button>
+          <GetTokensButton variant="normal" />
           <LinkButton fullWidth onClick={() => navigate("/tier")}>
             {browser.i18n.getMessage("explore_tier_benefits")}
           </LinkButton>

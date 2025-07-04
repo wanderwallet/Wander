@@ -6,6 +6,7 @@ import { useLocation } from "~wallets/router/router.utils";
 import { WanderIcon } from "./WanderIcon";
 import { useMemo } from "react";
 import { TierTypes } from "~utils/tier/constants";
+import { EventType, trackEvent } from "~utils/analytics";
 
 const boxShadows = {
   [TierTypes.Elite]:
@@ -30,8 +31,13 @@ export function TierTag() {
     return activeTier?.tier;
   }, [activeTier, isLoading]);
 
+  function handleClick() {
+    trackEvent(EventType.VIEW_BENEFITS, {});
+    navigate("/tier");
+  }
+
   return (
-    <Tag boxShadow={boxShadow} onClick={() => navigate("/tier")}>
+    <Tag boxShadow={boxShadow} onClick={handleClick}>
       <WanderIcon height={9.37} width={20} tier={activeTier?.tier} />
       {isLoading ? (
         <Loading style={{ width: "20px", height: "20px" }} />
