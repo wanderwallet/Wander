@@ -50,7 +50,7 @@ const renderSlide = (slide: WandCarouselSlide) => (
         {slide.tierBenefits.map((benefit) => (
           <Flex direction="row" gap={8} align="start">
             <StarIcon tier={slide.tierName} />
-            <Text size="sm" weight="semibold" noMargin>
+            <Text size="sm" weight="medium" noMargin>
               {benefit}
             </Text>
           </Flex>
