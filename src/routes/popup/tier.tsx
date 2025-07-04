@@ -148,6 +148,7 @@ function LifeTimeSavings() {
 
   const formattedSavings = useMemo(() => {
     const savingsInUSD = Number(savings || 0);
+    if (savingsInUSD === 0) return "$0.00";
     if (savingsInUSD < 0.01) return "< $0.01";
     return `$${savingsInUSD.toFixed(2)}`;
   }, [savings]);

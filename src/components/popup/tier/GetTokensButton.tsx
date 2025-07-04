@@ -6,7 +6,7 @@ import { Button } from "@arconnect/components-rebrand";
 
 interface GetTokensButtonProps {
   tier?: Tier;
-  variant: "tier" | "normal";
+  variant?: "tier" | "normal";
 }
 
 export function GetTokensButton({ tier, variant = "tier" }: GetTokensButtonProps) {
