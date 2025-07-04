@@ -15,10 +15,11 @@ interface WandCarouselSlide {
   tierName: Tier;
   tierBenefits: string[];
   carouselBg: string;
+  carouselBgLight: string;
 }
 
 const renderSlide = (slide: WandCarouselSlide) => (
-  <SlideContent carouselBg={slide.carouselBg}>
+  <SlideContent carouselBg={slide.carouselBg} carouselBgLight={slide.carouselBgLight}>
     <StarsBackground />
     <TierCard
       tier={slide.tierName}
@@ -74,7 +75,7 @@ export const TiersPopup = ({ isOpen, setOpen }) => {
   );
 };
 
-const SlideContent = styled.div<{ carouselBg: string }>`
+const SlideContent = styled.div<{ carouselBg: string; carouselBgLight: string }>`
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -86,7 +87,9 @@ const SlideContent = styled.div<{ carouselBg: string }>`
   flex: 1;
   height: 100%;
   position: relative;
-  background: url(${({ carouselBg }) => carouselBg}) no-repeat center center;
+  background: url(${({ carouselBg, carouselBgLight, theme }) =>
+      theme.displayTheme === "dark" ? carouselBg : carouselBgLight})
+    no-repeat center center;
   background-size: 100% 100%;
 `;
 
