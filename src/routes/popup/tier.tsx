@@ -24,6 +24,7 @@ import { useActiveAddress, useTokenTransactions } from "~wallets/hooks";
 import { TierTransactionItemComponent } from "~components/popup/home/Transactions";
 import type { Tier } from "~utils/tier/types";
 import { GetTokensButton } from "~components/popup/tier/GetTokensButton";
+import CustomizableStars from "~components/popup/tier/CustomizableStars";
 
 const stars = defaultStars.toSpliced(1, 1);
 
@@ -55,8 +56,12 @@ export function TierView() {
         }
       />
       <TierWrapper tier={tier}>
-        <StarsBackground />
+        {/* <StarsBackground /> */}
         <TierCard tier={tier}>
+          <CustomizableStars
+            style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -65%)", zIndex: 1 }}
+            tier={tier}
+          />
           <Flex direction="row" gap={4} align="center" justify="center">
             <WanderIcon height={15} width={32} tier={tier} />
             <Text size="xs" weight="semibold" noMargin>

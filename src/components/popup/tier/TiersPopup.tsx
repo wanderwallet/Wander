@@ -10,6 +10,7 @@ import stars from "~assets/images/tier/stars.png";
 import { StarIcon } from "./StarIcon";
 import { carouselData } from "~utils/tier/carousel";
 import { GetTokensButton } from "./GetTokensButton";
+import CustomizableStars from "./CustomizableStars";
 
 interface WandCarouselSlide {
   tierName: Tier;
@@ -20,12 +21,16 @@ interface WandCarouselSlide {
 
 const renderSlide = (slide: WandCarouselSlide) => (
   <SlideContent carouselBg={slide.carouselBg} carouselBgLight={slide.carouselBgLight}>
-    <StarsBackground />
+    {/* <StarsBackground /> */}
     <TierCard
       tier={slide.tierName}
       style={{ width: "100%", position: "relative", zIndex: 2 }}
       hideBackground
       hideBorder>
+      <CustomizableStars
+        tier={slide.tierName}
+        style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -65%)", zIndex: 1 }}
+      />
       <Flex direction="column" gap={8} align="center" justify="center">
         <WanderIcon height={30} width={64} tier={slide.tierName} />
         <Text size="xl" weight="semibold" noMargin>

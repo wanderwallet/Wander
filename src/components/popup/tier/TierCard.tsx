@@ -35,6 +35,7 @@ export const TierCard = styled.div<{ tier: Tier; hideBorder?: boolean; hideBackg
   padding: 16px;
   gap: 8px;
   flex-direction: column;
+  position: relative;
   align-items: center;
   border-radius: 8px;
   border: ${(props) => (props.hideBorder ? "none" : "1px solid rgba(255, 255, 255, 0.1)")};
