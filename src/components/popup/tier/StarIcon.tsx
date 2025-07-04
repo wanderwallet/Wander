@@ -7,9 +7,9 @@ interface StarIconProps {
 const colors = {
   Core: "#6B57F9",
   Select: "#284956",
-  Plus: "#6EE098",
-  Prime: "#D4D4D4",
-  Elite: "#C89A3F",
+  Reserve: "#6EE098",
+  Edge: "#D4D4D4",
+  Prime: "#C89A3F",
 };
 
 export const StarIcon = ({ tier }: StarIconProps) => {

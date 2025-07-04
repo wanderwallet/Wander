@@ -16,19 +16,19 @@ const tierStyles = {
       hoverBackground: "#2f414a",
       activeBackground: "#1e2d32",
     },
-    Plus: {
+    Reserve: {
       border: "rgba(255, 255, 255, 0.2)",
       background: "#10291d",
       hoverBackground: "#143323",
       activeBackground: "#0c1f17",
     },
-    Prime: {
+    Edge: {
       border: "rgba(255, 255, 255, 0.2)",
       background: "#242424",
       hoverBackground: "#2f2f2f",
       activeBackground: "#1a1a1a",
     },
-    Elite: {
+    Prime: {
       border: "#ffeac2",
       background: "#26241b",
       hoverBackground: "#2f2c21",
@@ -48,19 +48,19 @@ const tierStyles = {
       hoverBackground: "#32494E",
       activeBackground: "#32494E",
     },
-    Plus: {
+    Reserve: {
       border: "rgba(255, 255, 255, 0.2)",
       background: "#10291D",
       hoverBackground: "#1A3A2A",
       activeBackground: "#1A3A2A",
     },
-    Prime: {
+    Edge: {
       border: "rgba(255, 255, 255, 0.2)",
       background: "#242424",
       hoverBackground: "#2E2E2E",
       activeBackground: "#2E2E2E",
     },
-    Elite: {
+    Prime: {
       border: "#ffeac2",
       background: "#26241B",
       hoverBackground: "#2F2C22",

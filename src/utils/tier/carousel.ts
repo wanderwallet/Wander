@@ -32,17 +32,17 @@ export const carouselData: WandCarouselSlide[] = [
     carouselBgLight: selectCarouselBgLight,
   },
   {
-    tierName: "Plus",
+    tierName: "Reserve",
     tierBenefits: [
       "25% fee reduction on defi transactions",
       "0% fee reduction on Transak purchases",
-      "Access to Plus features",
+      "Access to Reserve features",
     ],
     carouselBg: plusCarouselBg,
     carouselBgLight: plusCarouselBgLight,
   },
   {
-    tierName: "Prime",
+    tierName: "Edge",
     tierBenefits: [
       "75% fee reduction on defi transactions",
       "100% fee reduction on Transak purchases",
@@ -54,7 +54,7 @@ export const carouselData: WandCarouselSlide[] = [
     carouselBgLight: primeCarouselBgLight,
   },
   {
-    tierName: "Elite",
+    tierName: "Prime",
     tierBenefits: [
       "100% fee reduction on defi transactions",
       "100% fee reduction on Transak purchases",

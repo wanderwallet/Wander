@@ -17,16 +17,16 @@ const backgrounds = {
   dark: {
     Core: coreBackground,
     Select: selectBackground,
-    Plus: plusBackground,
-    Prime: primeBackground,
-    Elite: eliteBackground,
+    Reserve: plusBackground,
+    Edge: primeBackground,
+    Prime: eliteBackground,
   },
   light: {
     Core: coreBackgroundLight,
     Select: selectBackgroundLight,
-    Plus: plusBackgroundLight,
-    Prime: primeBackgroundLight,
-    Elite: eliteBackgroundLight,
+    Reserve: plusBackgroundLight,
+    Edge: primeBackgroundLight,
+    Prime: eliteBackgroundLight,
   },
 };
 

@@ -5,9 +5,9 @@ import type { Tier } from "~utils/tier/types";
 
 const colors = {
   light: {
-    [TierTypes.Elite]: "#D5AA0F",
-    [TierTypes.Prime]: "#A5A5A5",
-    [TierTypes.Plus]: "#56C980",
+    [TierTypes.Prime]: "#D5AA0F",
+    [TierTypes.Edge]: "#A5A5A5",
+    [TierTypes.Reserve]: "#56C980",
     [TierTypes.Select]: "#83D7F5",
     [TierTypes.Core]: "#9787FF",
   },

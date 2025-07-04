@@ -11,16 +11,16 @@ interface WanderIconProps {
 
 const colors = {
   dark: {
-    [TierTypes.Elite]: { stopColor: "white", stopColorOffsetOne: "white", stopColorOffsetTwo: "#FFDB97" },
-    [TierTypes.Prime]: { stopColor: "white", stopColorOffsetOne: "#CCCCCC", stopColorOffsetTwo: "#5E5E5E" },
-    [TierTypes.Plus]: { stopColor: "white", stopColorOffsetOne: "white", stopColorOffsetTwo: "#89CBBB" },
+    [TierTypes.Prime]: { stopColor: "white", stopColorOffsetOne: "white", stopColorOffsetTwo: "#FFDB97" },
+    [TierTypes.Edge]: { stopColor: "white", stopColorOffsetOne: "#CCCCCC", stopColorOffsetTwo: "#5E5E5E" },
+    [TierTypes.Reserve]: { stopColor: "white", stopColorOffsetOne: "white", stopColorOffsetTwo: "#89CBBB" },
     [TierTypes.Select]: { stopColor: "white", stopColorOffsetOne: "white", stopColorOffsetTwo: "#89B3CB" },
     [TierTypes.Core]: { stopColor: "white", stopColorOffsetOne: "white", stopColorOffsetTwo: "#C3A1FF" },
   },
   light: {
-    [TierTypes.Elite]: { stopColor: "#FFF4DE", stopColorOffsetOne: "#D5AA0F", stopColorOffsetTwo: "#FFDB97" },
-    [TierTypes.Prime]: { stopColor: "#ECE9E9", stopColorOffsetOne: "#676666", stopColorOffsetTwo: "#D0CECE" },
-    [TierTypes.Plus]: { stopColor: "#007229", stopColorOffsetOne: "#89CBBB", stopColorOffsetTwo: "#89CBBB" },
+    [TierTypes.Prime]: { stopColor: "#FFF4DE", stopColorOffsetOne: "#D5AA0F", stopColorOffsetTwo: "#FFDB97" },
+    [TierTypes.Edge]: { stopColor: "#ECE9E9", stopColorOffsetOne: "#676666", stopColorOffsetTwo: "#D0CECE" },
+    [TierTypes.Reserve]: { stopColor: "#007229", stopColorOffsetOne: "#89CBBB", stopColorOffsetTwo: "#89CBBB" },
     [TierTypes.Select]: { stopColor: "#074150", stopColorOffsetOne: "#89B3CB", stopColorOffsetTwo: "#89B3CB" },
     [TierTypes.Core]: { stopColor: "#26126F", stopColorOffsetOne: "#26126F", stopColorOffsetTwo: "#6B57F9" },
   },

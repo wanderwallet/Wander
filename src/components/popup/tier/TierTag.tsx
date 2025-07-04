@@ -14,19 +14,19 @@ import RaysSelect from "~assets/images/tier/rays_select.png";
 
 const rays = {
   [TierTypes.Core]: RaysCore,
-  [TierTypes.Elite]: RaysElite,
-  [TierTypes.Prime]: RaysPrime,
-  [TierTypes.Plus]: RaysPlus,
+  [TierTypes.Prime]: RaysElite,
+  [TierTypes.Edge]: RaysPrime,
+  [TierTypes.Reserve]: RaysPlus,
   [TierTypes.Select]: RaysSelect,
 };
 
 const boxShadows = {
   dark: {
-    [TierTypes.Elite]:
-      "inset 0px 1px 1px rgba(234, 208, 131, 0.6), inset 0px 1px 2px rgba(255, 255, 255, 0.6), inset 0px 2px 12px rgba(216, 187, 81, 0.3), inset 0px 1px 8px rgba(125, 102, 35, 0.2)",
     [TierTypes.Prime]:
+      "inset 0px 1px 1px rgba(234, 208, 131, 0.6), inset 0px 1px 2px rgba(255, 255, 255, 0.6), inset 0px 2px 12px rgba(216, 187, 81, 0.3), inset 0px 1px 8px rgba(125, 102, 35, 0.2)",
+    [TierTypes.Edge]:
       "inset 0px 1px 1px rgba(212, 212, 212, 0.6), inset 0px 1px 2px rgba(255, 255, 255, 0.6), inset 0px 2px 12px rgba(6, 45, 60, 0.3), inset 0px 1px 8px rgba(90, 93, 94, 0.2)",
-    [TierTypes.Plus]:
+    [TierTypes.Reserve]:
       "inset 0px 1px 1px rgba(134, 229, 169, 0.6), inset 0px 1px 2px rgba(255, 255, 255, 0.6), inset 0px 2px 12px rgba(8, 59, 88, 0.3), inset 0px 1px 8px rgba(90, 93, 94, 0.2)",
     [TierTypes.Select]:
       "inset 0px 1px 1px rgba(131, 215, 245, 0.6), inset 0px 1px 2px rgba(255, 255, 255, 0.6), inset 0px 2px 12px rgba(8, 59, 88, 0.3), inset 0px 1px 8px rgba(13, 136, 207, 0.2)",
@@ -34,11 +34,11 @@ const boxShadows = {
       "inset 0px 1px 1px rgba(151, 135, 255, 0.6), inset 0px 1px 2px rgba(255, 255, 255, 0.6), inset 0px 2px 12px rgba(107, 87, 249, 0.3), inset 0px 1px 8px rgba(107, 87, 249, 0.2)",
   },
   light: {
-    [TierTypes.Elite]:
-      "0px 1px 5px -20.902px rgba(185, 149, 42, 0.60) inset, 0px 1px 4.3px -1.96px rgba(255, 255, 255, 0.60) inset, 0px 2.613px 11.758px 0px rgba(255, 241, 189, 0.30) inset, 0px 0.653px 13.064px 0px rgba(234, 208, 131, 0.20) inset",
     [TierTypes.Prime]:
+      "0px 1px 5px -20.902px rgba(185, 149, 42, 0.60) inset, 0px 1px 4.3px -1.96px rgba(255, 255, 255, 0.60) inset, 0px 2.613px 11.758px 0px rgba(255, 241, 189, 0.30) inset, 0px 0.653px 13.064px 0px rgba(234, 208, 131, 0.20) inset",
+    [TierTypes.Edge]:
       "0px 1px 5px -20.902px rgba(153, 153, 153, 0.60) inset, 0px 1px 4.3px -1.96px rgba(255, 255, 255, 0.20) inset, 0px 0px 3.1px 0px rgba(6, 45, 60, 0.10) inset, 0px 0.653px 9.5px 0px rgba(153, 153, 153, 0.20) inset",
-    [TierTypes.Plus]:
+    [TierTypes.Reserve]:
       "0px 1px 5px -20.902px rgba(48, 171, 93, 0.60) inset, 0px 1px 4.3px -1.96px rgba(255, 255, 255, 0.60) inset, 0px 0.653px 13.064px 0px rgba(134, 229, 169, 0.20) inset",
     [TierTypes.Select]:
       "0px 1px 5px -20.902px rgba(34, 134, 172, 0.60) inset, 0px 1px 8.8px -1.96px rgba(255, 255, 255, 0.60) inset, 0px 2.613px 11.758px 0px rgba(131, 215, 245, 0.30) inset, 0px 0.653px 13.064px 0px rgba(131, 215, 245, 0.20) inset",
