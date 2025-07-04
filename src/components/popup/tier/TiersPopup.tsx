@@ -48,7 +48,7 @@ const renderSlide = (slide: WandCarouselSlide) => (
       <GetTokensButton tier={slide.tierName} />
       <Flex direction="column" gap={8} width="100%">
         {slide.tierBenefits.map((benefit) => (
-          <Flex direction="row" gap={8} align="center">
+          <Flex direction="row" gap={8} align="start">
             <StarIcon tier={slide.tierName} />
             <Text size="sm" weight="semibold" noMargin>
               {benefit}

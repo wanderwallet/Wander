@@ -22,7 +22,7 @@ export const StarIcon = ({ tier }: StarIconProps) => {
       height="14"
       viewBox="0 0 15 14"
       fill="none"
-      style={{ flexShrink: 0 }}>
+      style={{ flexShrink: 0, transform: "translateY(2px)" }}>
       <path
         d="M7.18056 0L8.64585 5.52003L14.1111 7L8.64585 8.47997L7.18056 14L5.71526 8.47997L0.25 7L5.71526 5.52003L7.18056 0Z"
         fill={color}
