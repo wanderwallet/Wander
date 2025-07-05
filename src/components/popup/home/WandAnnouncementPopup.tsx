@@ -41,7 +41,7 @@ export const WandAnnouncementPopup = ({ isOpen, setOpen }) => {
 
   async function handleClose() {
     setOpen(false);
-    await ExtensionStorage.set("wand_announcement_shown", true);
+    await ExtensionStorage.set("wander_announcement_shown", true);
   }
 
   const renderSlide = (slide: WandCarouselSlide) => (
@@ -84,9 +84,9 @@ export const WandAnnouncementPopup = ({ isOpen, setOpen }) => {
                   WebkitTextFillColor: "transparent",
                 }}
                 noMargin>
-                WNDR
+                $WNDR
               </Text>
-              <WhiteText size="3xl" weight="semibold" noMargin>
+              <WhiteText style={{ marginLeft: 4 }} size="3xl" weight="semibold" noMargin>
                 {browser.i18n.getMessage("token")}!
               </WhiteText>
             </Flex>
@@ -123,7 +123,6 @@ const SlideContent = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
 `;
 
 const CarouselImage = styled.img`
