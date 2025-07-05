@@ -8,7 +8,7 @@ interface TierProgressProps {
 }
 
 export function TierProgress({ activeTier }: TierProgressProps) {
-  const currentRank = activeTier?.progress?.currentRank ? `#${activeTier?.progress?.currentRank}` : "-";
+  const currentRank = activeTier?.rank ? `#${activeTier?.rank}` : "-";
 
   return (
     <Flex direction="column" gap={12}>
@@ -21,7 +21,7 @@ export function TierProgress({ activeTier }: TierProgressProps) {
         </Text>
       </Flex>
 
-      <ProgressBar progress={activeTier?.progress?.progressPercent ?? 0} />
+      <ProgressBar progress={activeTier?.progress ?? 0} />
     </Flex>
   );
 }

@@ -11,7 +11,9 @@ export type TierProgress = {
 
 export type ActiveTier = {
   tier: Tier;
-  progress: TierProgress;
+  balance: string;
+  rank: number;
+  progress: number;
   snapshotTimestamp: number;
 };
 

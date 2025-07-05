@@ -2,7 +2,7 @@ import { AnimatedStarContainer, defaultStars } from "~components/common/Animated
 import { Text } from "@arconnect/components-rebrand";
 import { useState } from "react";
 import { ExtensionStorage } from "~utils/storage";
-import { EXPLORE_TIER_BENEFITS } from "~utils/tier/constants";
+import { ACTIVITY_NOTIFICATIONS_NOTICE } from "~utils/tier/constants";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { Flex } from "~components/common/Flex";
 import { useTheme } from "styled-components";
@@ -14,12 +14,12 @@ export function ActivityNotificationsNotice() {
   const theme = useTheme();
 
   const handleCloseCTA = () => {
-    ExtensionStorage.set(EXPLORE_TIER_BENEFITS, false);
+    ExtensionStorage.set(ACTIVITY_NOTIFICATIONS_NOTICE, false);
     setOpen(false);
   };
 
   useAsyncEffect(async () => {
-    const storedValue = await ExtensionStorage.get<boolean>(EXPLORE_TIER_BENEFITS);
+    const storedValue = await ExtensionStorage.get<boolean>(ACTIVITY_NOTIFICATIONS_NOTICE);
     setOpen(storedValue ?? true);
   }, []);
 

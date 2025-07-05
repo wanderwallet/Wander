@@ -34,7 +34,7 @@ export function TierView() {
   const [showExploreTierBenefits, setShowExploreTierBenefits] = useState(false);
   const { data: activeTier } = useActiveTier();
 
-  const tier = activeTier?.tier ?? TierTypes.Select;
+  const tier = activeTier?.tier ?? TierTypes.Core;
 
   const handleCloseCTA = () => {
     ExtensionStorage.set(EXPLORE_TIER_BENEFITS, false);
@@ -75,7 +75,7 @@ export function TierView() {
           </Flex>
           <Flex direction="row" gap={4} align="baseline" justify="center">
             <Text size="4xl" weight="semibold" noMargin>
-              {balanceToFractioned(String(activeTier?.progress?.currentBalance ?? 0), { decimals: 12 }).toFixed(2)}
+              {balanceToFractioned(String(activeTier?.balance ?? 0), { decimals: 12 }).toFixed(2)}
             </Text>
             <Text variant="secondary" weight="medium" noMargin>
               WNDR

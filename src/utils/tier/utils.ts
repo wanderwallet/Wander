@@ -1,20 +1,12 @@
 import { dryrun, message } from "@permaweb/aoconnect/browser";
-import {
-  AO_PROCESS_ID,
-  createDataItemSigner,
-  getAOTokenPrice,
-  getBotegaPrice,
-  getTagValue,
-  Id,
-} from "~tokens/aoTokens/ao";
-import { TIER_PROCESS_ID } from "./constants";
+import { createDataItemSigner, getTagValue, Id } from "~tokens/aoTokens/ao";
+import { tierIdToTierName, TIER_PROCESS_ID } from "./constants";
 import type { ActiveTier, DefiFeeDetails, Tier, WalletSavings } from "./types";
 import { defiFeePercent, defiFeeReductionsInPercent } from "./constants";
 import BigNumber from "bignumber.js";
 import { getKeyfile, type DecryptedWallet } from "~wallets";
 import { freeDecryptedWallet } from "~wallets/encryption";
 import { isLocalWallet } from "~utils/assertions";
-import { balanceToFractioned } from "~tokens/currency";
 import { ExtensionStorage } from "~utils/storage";
 import { scheduleRefreshWalletLifetimeSavings } from "./alarms";
 
@@ -48,15 +40,20 @@ export async function getActiveTier(walletAddress: string): Promise<ActiveTier> 
     Id,
     Owner: walletAddress,
     process: TIER_PROCESS_ID,
-    tags: [{ name: "Action", value: "Get-Wallet-Tier" }],
+    tags: [{ name: "Action", value: "Get-Wallet-Info" }],
   });
 
   const message = dryrunRes.Messages?.[0];
   const data = JSON.parse(message?.Data || "{}");
 
-  await ExtensionStorage.set(`active_tier_${walletAddress}`, data);
+  const activeTier = {
+    ...data,
+    tier: tierIdToTierName[data.tier],
+  };
 
-  return data;
+  await ExtensionStorage.set(`active_tier_${walletAddress}`, activeTier);
+
+  return activeTier;
 }
 
 export function getDefiFeeDetailsForTier(tier: Tier): DefiFeeDetails {
