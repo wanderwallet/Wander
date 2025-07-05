@@ -5,10 +5,10 @@ import SliderMenu from "~components/SliderMenu";
 import { Carousel } from "~components/Carousel";
 import styled from "styled-components";
 import browser from "webextension-polyfill";
-import powerups from "~assets/images/wand-announcement/powerups.png";
-import exclusiveFeature from "~assets/images/wand-announcement/exclusive_feature.png";
-import zeroFees from "~assets/images/wand-announcement/zero_fees.png";
-import wand from "~assets/images/wand-announcement/wand.png";
+import powerups from "~assets/images/wand-announcement/powerups.svg";
+import exclusiveFeature from "~assets/images/wand-announcement/exclusive_feature.svg";
+import zeroFees from "~assets/images/wand-announcement/zero_fees.svg";
+import wand from "~assets/images/wand-announcement/wand.svg";
 import wandAnnouncementBackground from "~assets/images/wand-announcement/wand_announcement_bg.svg";
 import { useLocation } from "~wallets/router/router.utils";
 import { GetTokensButton } from "../tier/GetTokensButton";
@@ -42,7 +42,7 @@ export const WandAnnouncementPopup = ({ isOpen, setOpen }) => {
 
   async function handleClose() {
     setOpen(false);
-    await ExtensionStorage.set("wand_announcement_shown", true);
+    await ExtensionStorage.set("wander_announcement_shown", true);
   }
 
   const renderSlide = (slide: WandCarouselSlide) => (
@@ -85,9 +85,9 @@ export const WandAnnouncementPopup = ({ isOpen, setOpen }) => {
                   WebkitTextFillColor: "transparent",
                 }}
                 noMargin>
-                WNDR
+                $WNDR
               </Text>
-              <WhiteText size="3xl" weight="semibold" noMargin>
+              <WhiteText style={{ marginLeft: 4 }} size="3xl" weight="semibold" noMargin>
                 {browser.i18n.getMessage("token")}!
               </WhiteText>
             </Flex>
@@ -118,7 +118,6 @@ const SlideContent = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
 `;
 
 const CarouselImage = styled.img`

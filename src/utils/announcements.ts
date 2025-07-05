@@ -5,6 +5,7 @@ export type Announcement = {
   id: number;
   title: string;
   description: string;
+  body?: string;
   timestamp: number;
 };
 
@@ -21,6 +22,13 @@ export const ANNOUNCEMENTS: Announcement[] = [
     description: browser.i18n.getMessage("announcement_2_description"),
     timestamp: 1750857749000,
   },
+  {
+    id: 3,
+    title: browser.i18n.getMessage("announcement_3_title"),
+    description: browser.i18n.getMessage("announcement_3_description"),
+    body: browser.i18n.getMessage("announcement_3_body"),
+    timestamp: 1752105601000,
+  },
 ];
 
 /**
@@ -30,7 +38,8 @@ export const ANNOUNCEMENTS: Announcement[] = [
 export function convertAnnouncementsToTransactions(
   announcements: Announcement[] = ANNOUNCEMENTS,
 ): ExtendedTransaction[] {
-  return announcements.map((announcement) => {
+  const convertedAnnouncements = announcements.map((announcement) => {
+    if (announcement.timestamp > Date.now()) return null;
     const date = new Date(announcement.timestamp);
     const day = date.getDate();
     const month = date.getMonth() + 1;
@@ -64,6 +73,7 @@ export function convertAnnouncementsToTransactions(
       announcementData: announcement,
     } as ExtendedTransaction & { announcementData: Announcement };
   });
+  return convertedAnnouncements.filter((a) => a !== null);
 }
 
 export function getAnnouncement(id: string | number) {

@@ -62,7 +62,7 @@ export const defaultTokens = [
     Name: "Wander",
     Ticker: "WNDR",
     Denomination: 18,
-    Logo: "0XHfUzekXXVbdWKLHuC9NrmxVyNxzbFqs3NVcejiUso",
+    Logo: "xUO2tQglSYsW89aLYN8ErGivZqezoDaEn95JniaCBZk",
     processId: WNDR_PROCESS_ID,
   },
   {
