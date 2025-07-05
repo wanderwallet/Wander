@@ -3612,6 +3612,18 @@
       "message": "自动转换您的每日 AO 代币收益。",
       "description": "Announcement 2 description"
     },
+    "announcement_3_title": {
+      "message": "WNDR 代币已上线！",
+      "description": "Announcement 3 title"
+    },
+    "announcement_3_description": {
+      "message": "委托你的 AO 以赚取 WNDR 代币",
+      "description": "Announcement 3 description"
+    },
+    "announcement_3_body": {
+      "message": "1）访问 https://ao.arweave.net/#/delegate/ <br/> 2）连接你的 Wander 钱包 <br/> 3）在项目列表中找到 Wander <br/> 4）点击 “添加” 按钮 <br/> 5）设置你的委托百分比 <br/> 6）点击 “确认委托偏好” 按钮 <br/>  <br/> 完成！",
+      "description": "Announcement 3 body"
+    },
     "swipe_to_learn_more": {
       "message": "滑动了解更多",
       "description": "Swipe to learn more text"

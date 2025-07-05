@@ -16,8 +16,6 @@ export interface CarouselProps<T extends CarouselSlide = CarouselSlide> {
   dotColor?: string;
   activeDotColor?: string;
   showChevrons?: boolean;
-  chevronColor?: string;
-  chevronActiveColor?: string;
   chevronSize?: number;
   onSlideChange?: (index: number) => void;
   className?: string;
@@ -40,6 +38,8 @@ export function Carousel<T extends CarouselSlide = CarouselSlide>({
   onSlideChange,
   className,
   containerStyle,
+  dotColor,
+  activeDotColor,
 }: CarouselProps<T>) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [emblaRef, emblaApi] = useEmblaCarousel(options);
@@ -86,7 +86,13 @@ export function Carousel<T extends CarouselSlide = CarouselSlide>({
 
           <DotsContainer>
             {slides.map((_, index) => (
-              <Dot key={`dot-${index}`} active={index === selectedIndex} onClick={() => scrollTo(index)} />
+              <Dot
+                key={`dot-${index}`}
+                active={index === selectedIndex}
+                onClick={() => scrollTo(index)}
+                dotColor={dotColor}
+                activeDotColor={activeDotColor}
+              />
             ))}
           </DotsContainer>
 
@@ -136,17 +142,20 @@ const DotsContainer = styled.div`
 
 const Dot = styled.button<{
   active: boolean;
+  dotColor: string;
+  activeDotColor: string;
 }>`
   width: 8px;
   height: 8px;
   border-radius: 50%;
   border: none;
-  background: ${(props) => (props.active ? props.theme.primaryText : props.theme.tertiaryText)};
+  background: ${(props) =>
+    props.active ? props.activeDotColor || props.theme.primaryText : props.dotColor || props.theme.tertiaryText};
   cursor: pointer;
   transition: background 0.2s ease;
 
   &:hover {
-    background: ${(props) => props.theme.primaryText};
+    background: ${(props) => props.activeDotColor || props.theme.primaryText};
   }
 `;
 

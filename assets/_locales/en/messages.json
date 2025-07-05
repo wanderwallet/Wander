@@ -3652,6 +3652,18 @@
     "message": "Auto-convert your daily AO token earnings.",
     "description": "Announcement 2 description"
   },
+  "announcement_3_title": {
+    "message": "WNDR token is launched!",
+    "description": "Announcement 3 title"
+  },
+  "announcement_3_description": {
+    "message": "Delegate your AO to earn WNDR tokens",
+    "description": "Announcement 3 description"
+  },
+  "announcement_3_body": {
+    "message": "1) Go to https://ao.arweave.net/#/delegate/ <br/> 2) Connect your Wander wallet <br/> 3) Find Wander in the project list <br/> 4) Click the Add button <br/> 5) Set your delegating % <br/> 6) Click the Confirm Delegation Preferences button <br/>  <br/> Done!",
+    "description": "Announcement 3 body"
+  },
   "swipe_to_learn_more": {
     "message": "Swipe to learn more",
     "description": "Swipe to learn more text"
