@@ -145,10 +145,13 @@ const AnimatedContainer = styled.div`
     box-shadow: 0px 2px 3.3px 0px rgba(0, 0, 0, 0.07) inset;
 
     ${({ theme }) =>
-      theme.displayTheme === "dark" &&
-      css`
-        background: linear-gradient(180deg, #26126f 0%, #111 96.95%);
-      `}
+      theme.displayTheme === "dark"
+        ? css`
+            background: linear-gradient(180deg, #26126f 0%, #111 96.95%);
+          `
+        : css`
+            background: linear-gradient(180deg, #e3d8f6 0%, #fff 100%);
+          `}
   }
 `;
 

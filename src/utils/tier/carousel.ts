@@ -5,10 +5,17 @@ import plusCarouselBg from "~assets/images/tier/plus_carousel_bg.png";
 import primeCarouselBg from "~assets/images/tier/prime_carousel_bg.png";
 import eliteCarouselBg from "~assets/images/tier/elite_carousel_bg.png";
 
+import coreCarouselBgLight from "~assets/images/tier/core_carousel_bg_light.png";
+import selectCarouselBgLight from "~assets/images/tier/select_carousel_bg_light.png";
+import plusCarouselBgLight from "~assets/images/tier/plus_carousel_bg_light.png";
+import primeCarouselBgLight from "~assets/images/tier/prime_carousel_bg_light.png";
+import eliteCarouselBgLight from "~assets/images/tier/elite_carousel_bg_light.png";
+
 interface WandCarouselSlide {
   tierName: Tier;
   tierBenefits: string[];
   carouselBg: string;
+  carouselBgLight: string;
 }
 
 export const carouselData: WandCarouselSlide[] = [
@@ -16,23 +23,26 @@ export const carouselData: WandCarouselSlide[] = [
     tierName: "Core",
     tierBenefits: ["Wander as you know it"],
     carouselBg: coreCarouselBg,
+    carouselBgLight: coreCarouselBgLight,
   },
   {
     tierName: "Select",
     tierBenefits: ["5% fee reduction on defi transactions", "0% fee reduction on Transak purchases"],
     carouselBg: selectCarouselBg,
+    carouselBgLight: selectCarouselBgLight,
   },
   {
-    tierName: "Plus",
+    tierName: "Reserve",
     tierBenefits: [
       "25% fee reduction on defi transactions",
       "0% fee reduction on Transak purchases",
-      "Access to Plus features",
+      "Access to Reserve features",
     ],
     carouselBg: plusCarouselBg,
+    carouselBgLight: plusCarouselBgLight,
   },
   {
-    tierName: "Prime",
+    tierName: "Edge",
     tierBenefits: [
       "75% fee reduction on defi transactions",
       "100% fee reduction on Transak purchases",
@@ -41,9 +51,10 @@ export const carouselData: WandCarouselSlide[] = [
       "Dedicated support channel of their choice: Discord, Slack, Telegram, or Email",
     ],
     carouselBg: primeCarouselBg,
+    carouselBgLight: primeCarouselBgLight,
   },
   {
-    tierName: "Elite",
+    tierName: "Prime",
     tierBenefits: [
       "100% fee reduction on defi transactions",
       "100% fee reduction on Transak purchases",
@@ -52,5 +63,6 @@ export const carouselData: WandCarouselSlide[] = [
       "Dedicated support channel of their choice: Discord, Slack, Telegram, Email, or schedule a video call with the team",
     ],
     carouselBg: eliteCarouselBg,
+    carouselBgLight: eliteCarouselBgLight,
   },
 ];

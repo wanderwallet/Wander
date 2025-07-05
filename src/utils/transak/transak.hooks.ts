@@ -326,7 +326,7 @@ export const useTransakApiKey = () => {
   const { data: activeTier } = useActiveTier();
 
   return useMemo(() => {
-    const isTopTier = activeTier?.tier === TierTypes.Prime || activeTier?.tier === TierTypes.Elite;
+    const isTopTier = activeTier?.tier === TierTypes.Prime || activeTier?.tier === TierTypes.Edge;
     return isTopTier ? TRANSAK_TOP_TIER_API_KEY : TRANSAK_API_KEY;
   }, [activeTier?.tier]);
 };

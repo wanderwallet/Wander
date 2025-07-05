@@ -1,4 +1,4 @@
-export type Tier = "Elite" | "Prime" | "Plus" | "Select" | "Core";
+export type Tier = "Prime" | "Edge" | "Reserve" | "Select" | "Core";
 
 export type TierProgress = {
   balanceNeeded: string;
