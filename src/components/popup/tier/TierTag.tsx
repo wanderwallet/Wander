@@ -1,10 +1,8 @@
 import styled, { useTheme } from "styled-components";
 import { Loading, Text } from "@arconnect/components-rebrand";
 import { useActiveTier } from "~utils/tier/hooks";
-import browser from "webextension-polyfill";
 import { useLocation } from "~wallets/router/router.utils";
 import { WanderIcon } from "./WanderIcon";
-import { useMemo } from "react";
 import { TierTypes } from "~utils/tier/constants";
 import { EventType, trackEvent } from "~utils/analytics";
 import RaysCore from "~assets/images/tier/rays_core.png";
@@ -53,11 +51,7 @@ export function TierTag() {
   const theme = useTheme();
   const { navigate } = useLocation();
   const boxShadow = boxShadows[theme.displayTheme][activeTier?.tier] || boxShadows[theme.displayTheme][TierTypes.Core];
-
-  const tier = useMemo(() => {
-    if (isLoading || !activeTier) return browser.i18n.getMessage("benefits");
-    return activeTier?.tier;
-  }, [activeTier, isLoading]);
+  const raysBackground = rays[activeTier?.tier] || rays[TierTypes.Core];
 
   function handleClick() {
     trackEvent(EventType.VIEW_BENEFITS, {});
@@ -65,13 +59,13 @@ export function TierTag() {
   }
 
   return (
-    <Tag raysBackground={rays[tier]} boxShadow={boxShadow} onClick={() => navigate("/tier")}>
+    <Tag raysBackground={raysBackground} boxShadow={boxShadow} onClick={handleClick}>
       <WanderIcon height={9.37} width={20} tier={activeTier?.tier} />
       {isLoading ? (
         <Loading style={{ width: "20px", height: "20px" }} />
       ) : (
         <Text weight="medium" noMargin>
-          {tier}
+          {activeTier?.tier || TierTypes.Core}
         </Text>
       )}
     </Tag>
@@ -93,12 +87,12 @@ const Tag = styled.div<{ boxShadow: string; raysBackground: string }>`
   &::before {
     content: "";
     position: absolute;
-    top: -30px;
-    left: -20px;
+    top: -35px;
+    left: -15px;
     width: 114px;
     height: 114px;
     background-image: url(${(props) => props.raysBackground});
-    background-size: cover;
+    background-size: 90%;
     background-position: center;
     background-repeat: no-repeat;
     pointer-events: none;
