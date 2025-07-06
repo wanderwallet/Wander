@@ -36,7 +36,7 @@ export const LiquidOpsAgentListItem = ({ activeTokens }: Props) => {
       hideSquircle={true}
       icon={<SvgImageWithBackground height={44} width={40} shape="hexagon" src={LiquidOpsIcon} iconSize={24} />}
       active
-      style={{ width: "100%", textAlign: "left", padding: "12px 8px" }}
+      style={{ width: "100%", textAlign: "left", padding: "12px 8px", borderRadius: "8px" }}
       expandedText={browser.i18n.getMessage("hide")}
       collapsedText={browser.i18n.getMessage("show")}
       expandable

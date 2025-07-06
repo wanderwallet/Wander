@@ -12,7 +12,6 @@ import {
   setRecentTxs,
   updateAOYieldAgent,
   getAOYieldAgents,
-  queryClient,
 } from "./utils";
 import { getActiveAddress } from "~wallets/wallets.utils";
 import { getWallets } from "~wallets";
@@ -21,6 +20,7 @@ import {
   AO_PROCESS_ID,
   defaultTokens,
   fetchTokenBalance,
+  getAOTokenPrice,
   getTagValue,
   sendAoTransferForWallet,
 } from "~tokens/aoTokens/ao";
@@ -42,7 +42,9 @@ import type { DecodedTag } from "~api/modules/sign/tags";
 import { ExtensionStorage } from "~utils/storage";
 import browser from "webextension-polyfill";
 import { EventType, trackDirect } from "~utils/analytics";
-import { getSetting } from "~settings";
+import { getActiveTier, saveWalletLifetimeSavings } from "~utils/tier/utils";
+import { queryClient } from "~utils/tanstack";
+import { balanceToFractioned } from "~tokens/currency";
 
 let isSwapExecutionInProgress = false;
 let isSchedulingInProgress = false;
@@ -70,6 +72,11 @@ async function isCooldownActive() {
 
 function sortAscending(a: MintTransaction, b: MintTransaction): number {
   return a.timestamp - b.timestamp;
+}
+
+function convertQuantityToUsd(quantity: string, price: number): string {
+  const amount = balanceToFractioned(quantity, { decimals: 12 });
+  return BigNumber(amount.multipliedBy(price).toPrecision(8, BigNumber.ROUND_HALF_UP)).toFixed();
 }
 
 /**
@@ -522,19 +529,16 @@ async function processAgentSwap(agent: AOYieldAgent, walletAddress: string): Pro
       return;
     }
 
-    // first we check if we are allowed to collect data
-    const enabled = await getSetting("analytics").getValue();
-    if (enabled) {
-      const recentTxs = await getRecentTxs();
-      await setRecentTxs([...recentTxs, { id: messageId, timestamp: Date.now(), queryCount: 0 }]);
+    // Add the swap to the recent txs list
+    const recentTxs = await getRecentTxs();
+    await setRecentTxs([...recentTxs, { id: messageId, timestamp: Date.now(), queryCount: 0 }]);
 
-      // Schedule alarm to check if the swap was successful
-      await browser.alarms.clear(AO_YIELD_AGENT_RECENT_TXS_CHECK_ALARM_NAME);
-      browser.alarms.create(AO_YIELD_AGENT_RECENT_TXS_CHECK_ALARM_NAME, {
-        delayInMinutes: 1,
-        periodInMinutes: 2,
-      });
-    }
+    // Schedule alarm to check if the swap was successful
+    await browser.alarms.clear(AO_YIELD_AGENT_RECENT_TXS_CHECK_ALARM_NAME);
+    browser.alarms.create(AO_YIELD_AGENT_RECENT_TXS_CHECK_ALARM_NAME, {
+      delayInMinutes: 1,
+      periodInMinutes: 2,
+    });
 
     log(LOG_GROUP.AGENTS, "Successfully processed swap for agent:", agent.id, "wallet:", walletAddress);
   } catch (error) {
@@ -629,11 +633,6 @@ export async function executeAutomaticSwapIfNeeded(): Promise<void> {
 export async function checkIfRecentTxSwapSucceeded(): Promise<boolean> {
   try {
     log(LOG_GROUP.AGENTS, "Checking if recent tx swap succeeded");
-    const enabled = await getSetting("analytics").getValue();
-    if (!enabled) {
-      await browser.alarms.clear(AO_YIELD_AGENT_RECENT_TXS_CHECK_ALARM_NAME);
-      return;
-    }
 
     if (isRecentTxCheckInProgress) return;
 
@@ -675,13 +674,37 @@ export async function checkIfRecentTxSwapSucceeded(): Promise<boolean> {
       if (foundTxIds.has(txId)) return;
       foundTxIds.add(txId);
 
+      const activeTier = await queryClient
+        .fetchQuery({
+          queryKey: ["active-tier", activeAddress],
+          queryFn: () => getActiveTier(activeAddress),
+          ...defaultOptions,
+        })
+        .catch(() => ({ tier: "" }));
+
+      const swapFee = getTagValue("Swap-Fee", tags) || "0";
+      const feeSavingsQuantity = getTagValue("Fee-Savings", tags) || "0";
+      const agentOwner = getTagValue("Agent-Owner", tags);
+      const walletAddress = edge.node.recipient || agentOwner;
+
+      const aoPrice = await getAOTokenPrice();
+      const feeSavingsUsd = convertQuantityToUsd(feeSavingsQuantity, aoPrice);
+      const wanderFeeUsd = convertQuantityToUsd(swapFee, aoPrice);
+
       const transactionData = {
         buyAsset: getTagValue("Token-Out", tags),
         sellAmount: getTagValue("Amount-In", tags),
         buyAmount: getTagValue("Amount-Out", tags),
         dexUsed: getTagValue("Dex", tags),
-        wanderFee: getTagValue("Swap-Fee", tags),
+        wanderFee: swapFee,
+        wanderFeeUsd: wanderFeeUsd,
+        waivedFee: feeSavingsQuantity,
+        waivedFeeUsd: feeSavingsUsd,
+        tier: activeTier.tier || "",
       };
+
+      // Save wallet savings
+      await saveWalletLifetimeSavings(walletAddress, feeSavingsUsd);
 
       try {
         return await trackDirect(EventType.AO_YIELD_AGENT_TRANSACTION, transactionData);

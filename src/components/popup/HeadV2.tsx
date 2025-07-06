@@ -1,6 +1,6 @@
 import { type DisplayTheme, Section, Text, Tooltip } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
-import { Action, Avatar, CloseLayer, NoAvatarIcon } from "./WalletHeader";
+import { Action, CloseLayer } from "./WalletHeader";
 import { AnimatePresence } from "framer-motion";
 import { useTheme } from "~utils/theme";
 import { useStorage } from "~utils/storage";
@@ -20,6 +20,7 @@ import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-mes
 import { useNameServiceProfile } from "~lib/nameservice";
 import { concatGatewayURL } from "~gateways/utils";
 import { FULL_HISTORY, useGateway } from "~gateways/wayfinder";
+import { Avatar, NoAvatarIcon } from "~components/Avatar";
 
 export interface HeadV2Props {
   title: string;
@@ -31,6 +32,7 @@ export interface HeadV2Props {
   appInfo?: AppLogoInfo;
   onAppInfoClick?: () => void;
   backIcon?: React.ReactNode;
+  optionsIcon?: React.ReactNode;
 }
 
 export default function HeadV2({
@@ -42,6 +44,7 @@ export default function HeadV2({
   appInfo,
   onAppInfoClick,
   backIcon,
+  optionsIcon,
 }: HeadV2Props) {
   const theme = useTheme();
   const { back } = useLocation();
@@ -126,20 +129,23 @@ export default function HeadV2({
       {(showOptions || isEmbedded) && (
         <>
           <AvatarButton>
-            {showOptions && (
-              <ButtonAvatar
-                img={nameServiceProfile?.logo && concatGatewayURL(gateway) + "/" + nameServiceProfile.logo}
-                onClick={() => {
-                  setOpen(true);
-                }}>
-                {!nameServiceProfile?.logo && <NoAvatarIcon />}
-                <AnimatePresence initial={false}>
-                  {hardwareApi === "keystone" && (
-                    <HardwareWalletIcon icon={keystoneLogo} color="#2161FF" {...hwIconAnimateProps} />
-                  )}
-                </AnimatePresence>
-              </ButtonAvatar>
-            )}
+            {showOptions &&
+              (optionsIcon ? (
+                optionsIcon
+              ) : (
+                <ButtonAvatar
+                  img={nameServiceProfile?.logo && concatGatewayURL(gateway) + "/" + nameServiceProfile.logo}
+                  onClick={() => {
+                    setOpen(true);
+                  }}>
+                  {!nameServiceProfile?.logo && <NoAvatarIcon />}
+                  <AnimatePresence initial={false}>
+                    {hardwareApi === "keystone" && (
+                      <HardwareWalletIcon icon={keystoneLogo} color="#2161FF" {...hwIconAnimateProps} />
+                    )}
+                  </AnimatePresence>
+                </ButtonAvatar>
+              ))}
             {isEmbedded && (
               <Tooltip content={browser.i18n.getMessage("close")} position="bottomEnd">
                 <Action

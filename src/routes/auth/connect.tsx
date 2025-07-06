@@ -30,7 +30,7 @@ import { Flex } from "~components/common/Flex";
 import { useNameServiceProfile } from "~lib/nameservice";
 import { FULL_HISTORY, useGateway } from "~gateways/wayfinder";
 import { concatGatewayURL } from "~gateways/utils";
-import { NoAvatarIcon } from "~components/popup/WalletHeader";
+import { NoAvatarIcon } from "~components/Avatar";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 type Page = "unlock" | "connect" | "permissions" | "confirm";

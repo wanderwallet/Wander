@@ -68,6 +68,7 @@ export async function loadTokens() {
 
   const requiredTokens = [
     defaultTokens[4], // USDA // TODO: maybe remove later in next builds
+    defaultTokens[3], // WNDR
     defaultTokens[2], // PI
     defaultTokens[1], // AO
     defaultTokens[0], // AR

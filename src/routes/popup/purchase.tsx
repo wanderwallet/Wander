@@ -13,15 +13,14 @@ import CommonImage from "~components/common/Image";
 import getSymbolFromCurrency from "currency-symbol-map";
 import { WarningIcon } from "~components/popup/Token";
 import { Flex } from "~components/common/Flex";
-import { useTransak } from "~utils/transak/transak.hooks";
+import { useTransak, useTransakApiKey } from "~utils/transak/transak.hooks";
 import { paymentMethods } from "~utils/ramps";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import { InputButton } from "~components/common/InputButton";
 
-const TRANSAK_API_KEY = process.env.PLASMO_PUBLIC_TRANSAK_API_KEY;
-
 export function PurchaseView() {
   const theme = useTheme();
+  const apiKey = useTransakApiKey();
 
   const {
     purchaseAmount,
@@ -47,7 +46,7 @@ export function PurchaseView() {
     showCurrencySelector,
     showPaymentSelector,
     openTransak,
-  } = useTransak(TRANSAK_API_KEY, false);
+  } = useTransak(apiKey, false);
 
   const handleInputChange = (event: React.FormEvent<HTMLInputElement>) => {
     const input = event.currentTarget;

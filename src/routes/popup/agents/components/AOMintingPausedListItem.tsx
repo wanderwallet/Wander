@@ -1,7 +1,7 @@
 import { AlertCircle, XClose } from "@untitled-ui/icons-react";
 import { Flex } from "~components/common/Flex";
 import { Button, Text } from "@arconnect/components-rebrand";
-import { useTheme } from "styled-components";
+import styled, { useTheme } from "styled-components";
 import { useAOMintingStatus } from "~utils/agents/hooks";
 import { ExtensionStorage, useStorage } from "~utils/storage";
 import browser from "webextension-polyfill";
@@ -20,12 +20,11 @@ export function AOMintingPausedListItem() {
   if (!isFetched || isError || status === "Active" || !showCta) return null;
 
   return (
-    <Flex
+    <StyledListItem
       padding={8}
       gap={8}
       width="100%"
       align="center"
-      background="#372323"
       borderRadius={8}
       style={{ boxSizing: "border-box" }}>
       <AlertCircle height={24} width={24} color={theme.fail} />
@@ -41,6 +40,10 @@ export function AOMintingPausedListItem() {
           variant="secondary"
         />
       </Flex>
-    </Flex>
+    </StyledListItem>
   );
 }
+
+const StyledListItem = styled(Flex)`
+  background: ${(props) => (props.theme.displayTheme === "dark" ? "#372323" : "#FFE6E6")};
+`;

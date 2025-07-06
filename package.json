@@ -86,6 +86,7 @@
     "currency-symbol-map": "^5.1.0",
     "dayjs": "^1.11.6",
     "embed-api": "https://github.com/wanderwallet/embed-api#ec23a9586004c3742a3edb512bf753786d9dcdf5",
+    "embla-carousel-react": "^8.6.0",
     "framer-motion": "^11.11.7",
     "human-crypto-keys": "^0.1.4",
     "js-confetti": "^0.12.0",

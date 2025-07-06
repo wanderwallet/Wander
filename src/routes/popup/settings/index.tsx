@@ -18,7 +18,7 @@ import Online from "~components/Online";
 import type { StoredWallet } from "~wallets";
 import { useStorage } from "@plasmohq/storage/hook";
 import { ExtensionStorage } from "~utils/storage";
-import { NoAvatarIcon } from "~components/popup/WalletHeader";
+import { NoAvatarIcon } from "~components/Avatar";
 import { signOut } from "~utils/embedded/embedded.utils";
 import { BackupSeedphraseWarning } from "~components/popup/settings/BackupSeedphraseWarning";
 import { WalletName } from "~components/dashboard/list/WalletListItem";
