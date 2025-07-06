@@ -40,7 +40,7 @@ export const carouselData: WandCarouselSlide[] = [
     tierName: "Reserve",
     tierBenefits: [
       browser.i18n.getMessage("tier_benefit_fee_reduction_defi", "25"),
-      browser.i18n.getMessage("tier_benefit_access_features", browser.i18n.getMessage("tier_feature_type_reserve")),
+      browser.i18n.getMessage("tier_benefit_access_features", "Reserve"),
     ],
     carouselBg: plusCarouselBg,
     carouselBgLight: plusCarouselBgLight,
@@ -50,7 +50,7 @@ export const carouselData: WandCarouselSlide[] = [
     tierBenefits: [
       browser.i18n.getMessage("tier_benefit_fee_reduction_defi", "75"),
       browser.i18n.getMessage("tier_benefit_fee_reduction_transak", "100"),
-      browser.i18n.getMessage("tier_benefit_access_features", browser.i18n.getMessage("tier_feature_type_edge")),
+      browser.i18n.getMessage("tier_benefit_access_features", "Edge"),
       browser.i18n.getMessage("tier_benefit_early_access"),
       browser.i18n.getMessage("tier_benefit_support_channels", browser.i18n.getMessage("tier_support_channels_basic")),
     ],

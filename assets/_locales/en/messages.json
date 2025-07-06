@@ -3768,14 +3768,6 @@
       }
     }
   },
-  "tier_feature_type_reserve": {
-    "message": "Reserve",
-    "description": "Reserve tier feature type"
-  },
-  "tier_feature_type_edge": {
-    "message": "Edge",
-    "description": "Edge tier feature type"
-  },
   "tier_feature_type_all": {
     "message": "all",
     "description": "All features type"

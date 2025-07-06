@@ -3728,14 +3728,6 @@
         }
       }
     },
-    "tier_feature_type_reserve": {
-      "message": "储备",
-      "description": "Reserve tier feature type"
-    },
-    "tier_feature_type_edge": {
-      "message": "边缘",
-      "description": "Edge tier feature type"
-    },
     "tier_feature_type_all": {
       "message": "所有",
       "description": "All features type"
