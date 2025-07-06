@@ -4,7 +4,7 @@ import HeadV2 from "~components/popup/HeadV2";
 import { Award03 } from "@untitled-ui/icons-react";
 import { WanderIcon } from "~components/popup/tier/WanderIcon";
 import { EXPLORE_TIER_BENEFITS, TierTypes } from "~utils/tier/constants";
-import { Loading, Text } from "@arconnect/components-rebrand";
+import { Loading, Text, Tooltip } from "@arconnect/components-rebrand";
 import { Flex } from "~components/common/Flex";
 import wanderIcon from "~assets/ecosystem/wander.svg";
 import { defaultStars, AnimatedStarContainer } from "~components/common/AnimatedStarContainer";
@@ -18,20 +18,29 @@ import { useActiveTier, useWalletLifetimeSavings } from "~utils/tier/hooks";
 import { balanceToFractioned } from "~tokens/currency";
 import { TiersPopup } from "~components/popup/tier/TiersPopup";
 import { TierProgress } from "~components/popup/tier/TierProgress";
-import { WNDR_PROCESS_ID } from "~tokens/aoTokens/ao";
+import { defaultTokens, WNDR_PROCESS_ID } from "~tokens/aoTokens/ao";
 import { useActiveAddress, useTokenTransactions } from "~wallets/hooks";
 import { TierTransactionItemComponent } from "~components/popup/home/Transactions";
 import type { Tier } from "~utils/tier/types";
 import { GetTokensButton } from "~components/popup/tier/GetTokensButton";
 import { trackPage, PageType } from "~utils/analytics";
 import CustomizableStars from "~components/popup/tier/CustomizableStars";
+import { formatBalance } from "~utils/format";
 
 const stars = defaultStars.toSpliced(1, 1);
+const wanderTokenInfo = defaultTokens[3];
 
 export function TierView() {
   const [isOpen, setOpen] = useState(false);
   const [showExploreTierBenefits, setShowExploreTierBenefits] = useState(false);
   const { data: activeTier } = useActiveTier();
+
+  const formattedBalance = useMemo(() => {
+    const fractionedBalance = balanceToFractioned(String(activeTier?.balance ?? 0), {
+      decimals: wanderTokenInfo.Denomination,
+    });
+    return formatBalance(fractionedBalance);
+  }, [activeTier?.balance]);
 
   const tier = activeTier?.tier ?? TierTypes.Core;
 
@@ -72,9 +81,13 @@ export function TierView() {
             </Text>
           </Flex>
           <Flex direction="row" gap={4} align="baseline" justify="center">
-            <Text size="4xl" weight="semibold" noMargin>
-              {balanceToFractioned(String(activeTier?.balance ?? 0), { decimals: 12 }).toFixed(2)}
-            </Text>
+            {formattedBalance?.showTooltip ? (
+              <BalanceTooltip content={formattedBalance.tooltipBalance} position="top">
+                <NativeBalance showCursor>{formattedBalance.displayBalance}</NativeBalance>
+              </BalanceTooltip>
+            ) : (
+              <NativeBalance>{formattedBalance.displayBalance}</NativeBalance>
+            )}
             <Text variant="secondary" weight="medium" noMargin>
               WNDR
             </Text>
@@ -234,4 +247,18 @@ const WanderRoundIcon = styled.img`
   padding: 0;
   align-self: baseline;
   transform: translateY(4px);
+`;
+
+const NativeBalance = styled(Text).attrs({
+  noMargin: true,
+  weight: "semibold",
+  size: "4xl",
+})<{ showCursor?: boolean }>`
+  z-index: 1;
+  cursor: ${({ showCursor }) => (showCursor ? "pointer" : "default")};
+`;
+
+const BalanceTooltip = styled(Tooltip)`
+  margin-bottom: -16px;
+  z-index: 1;
 `;
