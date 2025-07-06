@@ -47,20 +47,28 @@ export function ProgressBar({
   const availableWidth = width - totalSeparatorWidth;
   const exactProgressWidth = (progress / 100) * width;
 
-  // Calculate segment positions and widths
+  // Calculate segment positions and widths with cumulative percentage ranges
+  let accumulatedPercentage = 0;
   let accumulatedWidth = 0;
   const segmentData = segments.map((segment, index) => {
     const actualWidth = (segment.percentage / 100) * availableWidth;
     const start = accumulatedWidth;
-    const isCompletelyFilled = exactProgressWidth >= start;
+    const startPercentage = accumulatedPercentage;
+    const endPercentage = accumulatedPercentage + segment.percentage;
 
-    // Update accumulated width for next iteration
+    // A segment is active if progress has entered its range
+    const isCompletelyFilled = progress > startPercentage;
+
+    // Update accumulated values for next iteration
+    accumulatedPercentage += segment.percentage;
     accumulatedWidth += actualWidth + (index < segments.length - 1 ? separatorWidth : 0);
 
     return {
       ...segment,
       actualWidth,
       start,
+      startPercentage,
+      endPercentage,
       isCompletelyFilled,
     };
   });
