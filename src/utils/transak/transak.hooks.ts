@@ -8,6 +8,11 @@ import { useLocation } from "~wallets/router/router.utils";
 import type { WanderRoutePath } from "~wallets/router/router.types";
 import getSymbolFromCurrency from "currency-symbol-map";
 import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
+import { useActiveTier } from "~utils/tier/hooks";
+import { TierTypes } from "~utils/tier/constants";
+
+const TRANSAK_API_KEY = process.env.PLASMO_PUBLIC_TRANSAK_API_KEY;
+const TRANSAK_TOP_TIER_API_KEY = process.env.PLASMO_PUBLIC_TRANSAK_TOP_TIER_API_KEY;
 
 export const BASE_URL = "https://api.transak.com";
 
@@ -315,4 +320,13 @@ export const useTransak = (apiKey: string, initialConversion = false) => {
     openTransak,
     getDisplayAmount,
   };
+};
+
+export const useTransakApiKey = () => {
+  const { data: activeTier } = useActiveTier();
+
+  return useMemo(() => {
+    const isTopTier = activeTier?.tier === TierTypes.Prime || activeTier?.tier === TierTypes.Edge;
+    return isTopTier ? TRANSAK_TOP_TIER_API_KEY : TRANSAK_API_KEY;
+  }, [activeTier?.tier]);
 };

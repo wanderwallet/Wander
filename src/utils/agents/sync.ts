@@ -1,6 +1,6 @@
 import { gql } from "~gateways/api";
 import { AO_YIELD_AGENT_SYNC_QUERY } from "./queries";
-import { getAOYieldAgentInfo, getAOYieldAgents, queryClient, setAOYieldAgents } from "./utils";
+import { getAOYieldAgentInfo, getAOYieldAgents, setAOYieldAgents } from "./utils";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import {
   AO_YIELD_AGENT_SYNC_ALARM_NAME_PREFIX,
@@ -8,11 +8,11 @@ import {
   SHOW_CREATE_WANDER_AGENT_CTA,
 } from "./constants";
 import browser from "webextension-polyfill";
-import { QueryClient } from "@tanstack/react-query";
 import type { AOYieldAgent, AOYieldAgentInfo } from "./types";
 import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 import { pLimit } from "plimit-lit";
 import { ExtensionStorage } from "~utils/storage";
+import { queryClient } from "~utils/tanstack";
 
 const limit = pLimit(10);
 

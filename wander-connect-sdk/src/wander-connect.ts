@@ -15,6 +15,7 @@ import {
 import { isEventMessage, isIncomingMessage, isWalletSwitchMessage } from "./utils/message/message.utils";
 import { getWanderConnectAppURL } from "./utils/url/url.utils";
 import { THEMES } from "./utils/styles/styles.utils";
+import { deepClone } from "./utils/deep-clone/deep-clone.utils";
 
 const NOOP = () => {};
 
@@ -274,15 +275,14 @@ export class WanderConnect {
 
     // Deep clone these objects so that we don't mutate the original, developer-provider ones:
 
-    const iframeOptions =
-      options.iframe instanceof HTMLElement ? options.iframe : structuredClone(options.iframe || {});
+    const iframeOptions = options.iframe instanceof HTMLElement ? options.iframe : deepClone(options.iframe || {});
 
     let buttonOptions: ButtonOptions | null = null;
 
     if (options.button === true) {
       buttonOptions = {};
     } else if (options.button) {
-      buttonOptions = { ...structuredClone({ ...options.button, parent: null }), parent: options.button.parent };
+      buttonOptions = { ...deepClone({ ...options.button, parent: null }), parent: options.button.parent };
     }
 
     const srcWithParams = getWanderConnectAppURL({

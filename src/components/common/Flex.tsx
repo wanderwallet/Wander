@@ -12,11 +12,13 @@ interface FlexProps extends React.HTMLAttributes<HTMLDivElement> {
   width?: CSSProperties["width"];
   height?: CSSProperties["height"];
   padding?: CSSProperties["padding"];
+  margin?: CSSProperties["margin"];
   cursor?: CSSProperties["cursor"];
   textAlign?: CSSProperties["textAlign"];
   background?: CSSProperties["background"];
   borderRadius?: CSSProperties["borderRadius"];
   overflow?: CSSProperties["overflow"];
+  boxSizing?: CSSProperties["boxSizing"];
 }
 
 export const Flex: React.FC<FlexProps> = ({
@@ -33,10 +35,12 @@ export const Flex: React.FC<FlexProps> = ({
   width,
   height,
   padding,
+  margin,
   cursor,
   textAlign,
   overflow,
   style,
+  boxSizing,
   ...props
 }) => {
   return (
@@ -52,12 +56,14 @@ export const Flex: React.FC<FlexProps> = ({
         width,
         height,
         padding,
+        margin,
         cursor,
         textAlign,
         background,
         borderRadius,
         flexShrink,
         overflow,
+        boxSizing,
         ...style,
       }}
       {...props}>

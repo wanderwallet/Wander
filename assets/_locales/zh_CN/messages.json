@@ -2766,9 +2766,9 @@
         "message": "您的其他账户",
         "description": "Your other accounts text"
     },
-    "activity": {
-        "message": "活动",
-        "description": "Activity text"
+    "feed": {
+        "message": "动态",
+        "description": "Feed text"
     },
     "manage_asset_list": {
         "message": "管理资产列表",
@@ -3579,5 +3579,173 @@
     "deposit_withdraw_failure_subtext": {
       "message": "似乎出现了问题，请重试。",
       "description": "Subtext about a failed deposit or withdrawal"
+    },
+    "filter": {
+      "message": "过滤器",
+      "description": "Filter text"
+    },
+    "announcements_only": {
+      "message": "仅公告",
+      "description": "Announcements only text"
+    },
+    "transactions_only": {
+      "message": "仅交易",
+      "description": "Transactions only text"
+    },
+    "no_filters": {
+      "message": "无过滤器",
+      "description": "No filters text"
+    },
+    "announcement": {
+      "message": "公告",
+      "description": "Announcement text"
+    },
+    "announcements": {
+      "message": "公告",
+      "description": "Announcements text"
+    },
+    "announcement_1_title": {
+      "message": "ArConnect 现已更名为 Wander！",
+      "description": "Announcement 1 title"
+    },
+    "announcement_1_description": {
+      "message": "了解更多请访问 https://wander.app。",
+      "description": "Announcement 1 description"
+    },
+    "announcement_2_title": {
+      "message": "推出 Wander 代理",
+      "description": "Announcement 2 title"
+    },
+    "announcement_2_description": {
+      "message": "自动转换您的每日 AO 代币收益。",
+      "description": "Announcement 2 description"
+    },
+    "announcement_3_title": {
+      "message": "WNDR 代币已上线！",
+      "description": "Announcement 3 title"
+    },
+    "announcement_3_description": {
+      "message": "委托你的 AO 以赚取 WNDR 代币",
+      "description": "Announcement 3 description"
+    },
+    "announcement_3_body": {
+      "message": "1）访问 https://ao.arweave.net/#/delegate/ <br/> 2）连接你的 Wander 钱包 <br/> 3）在项目列表中找到 Wander <br/> 4）点击 “添加” 按钮 <br/> 5）设置你的委托百分比 <br/> 6）点击 “确认委托偏好” 按钮 <br/>  <br/> 完成！",
+      "description": "Announcement 3 body"
+    },
+    "swipe_to_learn_more": {
+      "message": "滑动了解更多",
+      "description": "Swipe to learn more text"
+    },
+    "zero_fees": {
+      "message": "零费用",
+      "description": "Zero fees text"
+    },
+    "exclusive_feature_access": {
+      "message": "独家功能访问",
+      "description": "Exclusive feature access text"
+    },
+    "power_ups_with_partners": {
+      "message": "与合作伙伴的增强功能",
+      "description": "Power-ups with partners text"
+    },
+    "introducing_the": {
+      "message": "介绍",
+      "description": "Introducing the text"
+    },
+    "token": {
+      "message": "代币",
+      "description": "Token text"
+    },
+    "get_wander_tokens": {
+      "message": "获取 WNDR 代币",
+      "description": "Get WNDR tokens text"
+    },
+    "explore_tier_benefits": {
+      "message": "探索层级收益",
+      "description": "Explore tier benefits text"
+    },
+    "your_tier": {
+      "message": "您的层级",
+      "description": "Your tier text"
+    },
+    "benefits": {
+      "message": "收益",
+      "description": "Benefits text"
+    },
+    "activity": {
+      "message": "活动",
+      "description": "Activity text"
+    },
+    "your_lifetime_savings": {
+      "message": "您的终身节省",
+      "description": "Your lifetime savings text"
+    },
+    "your_position": {
+      "message": "您的位置",
+      "description": "Your position text"
+    },
+    "tier_core_title": {
+      "message": "获取您的第一个 WNDR 代币开始使用！",
+      "description": "Core tier title"
+    },
+    "tier_core_description": {
+      "message": "1. 打开 [AO 委托](https://ao.arweave.net/#/delegate/) <br/> 2. 连接您的 Wander 钱包 <br/> 3. 将 WNDR 代币添加到您的委托列表 <br/> 4. 收集并领取您的 WNDR 代币",
+      "description": "Core tier description with steps"
+    },
+    "tier_benefit_fee_reduction_defi": {
+      "message": "DeFi 交易手续费减免 $PERCENTAGE$%",
+      "description": "Fee reduction benefit for defi transactions",
+      "placeholders": {
+        "percentage": {
+          "content": "$1",
+          "example": "25"
+        }
+      }
+    },
+    "tier_benefit_fee_reduction_transak": {
+      "message": "Transak 购买手续费减免 $PERCENTAGE$%",
+      "description": "Fee reduction benefit for Transak purchases",
+      "placeholders": {
+        "percentage": {
+          "content": "$1",
+          "example": "100"
+        }
+      }
+    },
+    "tier_benefit_access_features": {
+      "message": "访问$FEATURE_TYPE$功能",
+      "description": "Access to specific tier features benefit",
+      "placeholders": {
+        "feature_type": {
+          "content": "$1",
+          "example": "储备"
+        }
+      }
+    },
+    "tier_benefit_early_access": {
+      "message": "新功能抢先体验",
+      "description": "Early access to new features benefit"
+    },
+    "tier_benefit_support_channels": {
+      "message": "专属支持渠道可选择：$CHANNELS$",
+      "description": "Dedicated support channels benefit",
+      "placeholders": {
+        "channels": {
+          "content": "$1",
+          "example": "Discord、Slack、Telegram 或邮件"
+        }
+      }
+    },
+    "tier_feature_type_all": {
+      "message": "所有",
+      "description": "All features type"
+    },
+    "tier_support_channels_basic": {
+      "message": "Discord、Slack、Telegram 或邮件",
+      "description": "Basic support channels list"
+    },
+    "tier_support_channels_premium": {
+      "message": "Discord、Slack、Telegram、邮件，或与团队安排视频通话",
+      "description": "Premium support channels list"
     }
 }

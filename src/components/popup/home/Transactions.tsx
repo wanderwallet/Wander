@@ -18,7 +18,7 @@ import { printTxWorkingGateways, txHistoryGateways } from "~gateways/gateway";
 import { ViewAll } from "../Title";
 import {
   getFormattedAmount,
-  getFullMonthName,
+  getMonthName,
   getTransactionDescription,
   groupTransactionsByMonth,
   processTransactions,
@@ -31,6 +31,11 @@ import { useLocation } from "~wallets/router/router.utils";
 import arLogoLight from "url:/assets/ar/logo_light.png";
 import { Logo } from "../Token";
 import { getUserAvatar } from "~lib/avatar";
+import { convertAnnouncementsToTransactions } from "~utils/announcements";
+import { Announcement01 } from "@untitled-ui/icons-react";
+import { Flex } from "~components/common/Flex";
+import dayjs from "dayjs";
+import { ParseTextWithLinks } from "~components/common/ParseTextWithLinks";
 
 interface TransactionsCache {
   transactions: ExtendedTransaction[];
@@ -127,6 +132,9 @@ export default function Transactions() {
             return true;
           });
 
+          const announcementTransactions = convertAnnouncementsToTransactions();
+          combinedTransactions = [...combinedTransactions, ...announcementTransactions];
+
           combinedTransactions.sort(sortFn);
 
           combinedTransactions = combinedTransactions.map((transaction) => {
@@ -175,11 +183,13 @@ export default function Transactions() {
   }, [activeAddress]);
 
   const groupedTransactions = useMemo(() => {
-    return groupTransactionsByMonth(transactions);
+    return groupTransactionsByMonth(transactions.slice(0, 20));
   }, [transactions]);
 
   const renderTransaction = (transaction: ExtendedTransaction) => {
-    return <TransactionItemComponent key={transaction.node.id} transaction={transaction} />;
+    const TransactionComponent =
+      transaction.transactionType === "announcement" ? AnnouncementItemComponent : TransactionItemComponent;
+    return <TransactionComponent key={transaction.node.id} transaction={transaction} />;
   };
 
   return (
@@ -233,7 +243,7 @@ export const TransactionItemComponent = ({ transaction }: { transaction: Extende
   }, [transaction.aoInfo?.logo]);
 
   return (
-    <TransactionItem>
+    <TransactionItem showBackground={true}>
       <Transaction onClick={() => navigate(`/transaction/${transaction.node.id}`)}>
         <FlexContainer>
           <Logo src={logoSource} alt="Token logo" />
@@ -241,8 +251,71 @@ export const TransactionItemComponent = ({ transaction }: { transaction: Extende
             <Main>{getTransactionDescription(transaction)}</Main>
             <Secondary>
               {transaction.date
-                ? `${getFullMonthName(`${transaction.month}-${transaction.year}`)} ${transaction.day}`
+                ? `${getMonthName(`${transaction.month}-${transaction.year}`)} ${transaction.day}`
                 : browser.i18n.getMessage("pending")}
+            </Secondary>
+          </Section>
+        </FlexContainer>
+        <Section alignRight>
+          <Amount success={transaction.transactionType === "received" || transaction.transactionType === "aoReceived"}>
+            {transaction.transactionType === "sent" ||
+            transaction.transactionType === "aoSent" ||
+            transaction.transactionType === "printArchive"
+              ? "-"
+              : "+"}
+            {getFormattedAmount(transaction)}
+          </Amount>
+        </Section>
+      </Transaction>
+    </TransactionItem>
+  );
+};
+
+export const AnnouncementItemComponent = ({ transaction }: { transaction: ExtendedTransaction }) => {
+  const { navigate } = useLocation();
+
+  return (
+    <TransactionItem showBackground={true}>
+      <Transaction onClick={() => navigate(`/announcement/${transaction.node.id}`)}>
+        <Flex direction="column" gap={8}>
+          <Flex direction="row" gap={4} align="center" justify="space-between">
+            <Flex direction="row" gap={4} align="center">
+              <AnnouncementIconWrapper>
+                <AnnouncementIcon />
+              </AnnouncementIconWrapper>
+              <Main style={{ whiteSpace: "nowrap" }}>{getTransactionDescription(transaction)}</Main>
+            </Flex>
+            <Secondary style={{ whiteSpace: "nowrap" }}>
+              {`${getMonthName(`${transaction.month}-${transaction.year}`, "short")} ${transaction.day}`}
+            </Secondary>
+          </Flex>
+          <Secondary
+            style={{
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              display: "block",
+              // width: "320px",
+            }}>
+            <ParseTextWithLinks text={transaction?.announcementData?.description || ""} />
+          </Secondary>
+        </Flex>
+      </Transaction>
+    </TransactionItem>
+  );
+};
+
+export const TierTransactionItemComponent = ({ transaction }: { transaction: ExtendedTransaction }) => {
+  const { navigate } = useLocation();
+
+  return (
+    <TransactionItem showBackground={false}>
+      <Transaction padding="8px" onClick={() => navigate(`/transaction/${transaction.node.id}?back=/tier`)}>
+        <FlexContainer>
+          <Section>
+            <Main>{getTransactionDescription(transaction)}</Main>
+            <Secondary>
+              {transaction.date ? dayjs(transaction.date).format("MMM D, YYYY") : browser.i18n.getMessage("pending")}
             </Secondary>
           </Section>
         </FlexContainer>
@@ -319,25 +392,32 @@ const Amount = styled(Text).attrs({
     props.success ? props.theme.success : props.theme.displayTheme === "light" ? "#121212" : "#EEEEEE"};
 `;
 
-const Transaction = styled.div`
+const Transaction = styled.div<{ padding?: string }>`
   display: flex;
   cursor: pointer;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 0;
+  padding: ${({ padding }) => padding ?? "12px"};
   gap: 1rem;
+  align-self: stretch;
 `;
 
 const Section = styled.div<{ alignRight?: boolean }>`
   text-align: ${({ alignRight }) => (alignRight ? "right" : "left")};
 `;
 
-const TransactionItem = styled.div`
+const TransactionItem = styled.div<{ showBackground?: boolean }>`
   position: relative;
+  background: ${({ theme, showBackground }) => (showBackground ? theme.surfaceSecondary : "transparent")};
+  border-radius: 8px;
 
   &:active {
     transform: scale(0.98);
     opacity: 0.8;
+  }
+
+  &:hover {
+    background: ${({ theme }) => theme.surfaceTertiary};
   }
 `;
 
@@ -345,4 +425,27 @@ const NoTransactions = styled(Text).attrs({
   noMargin: true,
 })`
   text-align: center;
+`;
+
+const AnnouncementIconWrapper = styled.div`
+  display: flex;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50px;
+  background: ${({ theme }) => theme.surfaceDefault};
+`;
+
+const AnnouncementIcon = styled(Announcement01)`
+  height: 12px;
+  width: 12px;
+  color: ${({ theme }) => theme.theme};
+`;
+
+const AnnouncementLink = styled.a`
+  color: ${({ theme }) => theme.theme};
+  text-decoration: none;
+  display: inline;
 `;
