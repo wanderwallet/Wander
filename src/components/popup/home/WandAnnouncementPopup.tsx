@@ -5,12 +5,12 @@ import SliderMenu from "~components/SliderMenu";
 import { Carousel } from "~components/Carousel";
 import styled from "styled-components";
 import browser from "webextension-polyfill";
-import powerups from "~assets/images/wand-announcement/powerups.svg";
-import exclusiveFeature from "~assets/images/wand-announcement/exclusive_feature.svg";
-import zeroFees from "~assets/images/wand-announcement/zero_fees.svg";
-import wand from "~assets/images/wand-announcement/wand.svg";
 import wandAnnouncementBackground from "~assets/images/wand-announcement/wand_announcement_bg.svg";
 import { useLocation } from "~wallets/router/router.utils";
+import { wandDataURL } from "../asset/wand-announcement/wand";
+import { zeroFeesDataURL } from "../asset/wand-announcement/zero_fees";
+import { exclusiveFeatureDataURL } from "../asset/wand-announcement/exclusive_feature";
+import { powerupsDataURL } from "../asset/wand-announcement/powerups";
 
 interface WandCarouselSlide {
   image: string;
@@ -19,19 +19,19 @@ interface WandCarouselSlide {
 
 const carouselData: WandCarouselSlide[] = [
   {
-    image: wand,
+    image: wandDataURL,
     title: browser.i18n.getMessage("swipe_to_learn_more"),
   },
   {
-    image: zeroFees,
+    image: zeroFeesDataURL,
     title: browser.i18n.getMessage("zero_fees"),
   },
   {
-    image: exclusiveFeature,
+    image: exclusiveFeatureDataURL,
     title: browser.i18n.getMessage("exclusive_feature_access"),
   },
   {
-    image: powerups,
+    image: powerupsDataURL,
     title: browser.i18n.getMessage("power_ups_with_partners"),
   },
 ];

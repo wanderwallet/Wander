@@ -1,3 +1,4 @@
+export const wandDataURL = `data:image/svg+xml;base64,${btoa(`
 <svg width="378" height="378" viewBox="0 0 378 378" xmlns="http://www.w3.org/2000/svg">
     <g id="svg0" opacity="1">
         <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.75;1" dur="2s" begin="0s" fill="freeze" />
@@ -734,9 +735,10 @@
                 </clipPath>
             </defs>
         </svg>
-        <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.15;0.75;1" dur="2s" begin="2.25s" fill="freeze" />
+        <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.15;0.75;1" dur="2s" begin="2.25s"
+            fill="freeze" />
     </g>
-    <g id="svg6" opacity="0"> 
+    <g id="svg6" opacity="0">
         <animate attributeName="opacity" values="0;1" keyTimes="0;1" dur="0.6s" begin="5s" fill="freeze" />
         <g>
             <svg width="330" height="330" x="20" y="16" viewBox="0 0 330 330" fill="none"
@@ -1001,3 +1003,4 @@
         </svg>
     </g>
 </svg>
+`)}`;

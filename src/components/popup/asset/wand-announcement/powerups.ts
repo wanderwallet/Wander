@@ -1,3 +1,4 @@
+export const powerupsDataURL = `data:image/svg+xml;base64,${btoa(`
 <svg width="378" height="378" viewBox="0 0 378 378" xmlns="http://www.w3.org/2000/svg">
     <g id="svg6" opacity="0">
         <animate attributeName="opacity" values="0;1" keyTimes="0;1" dur="0.6s" begin="0s" fill="freeze" />
@@ -208,3 +209,4 @@
         </svg>
     </g>
 </svg>
+`)}`;
