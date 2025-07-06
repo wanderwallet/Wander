@@ -18,7 +18,6 @@ import { useActiveTier, useWalletLifetimeSavings } from "~utils/tier/hooks";
 import { balanceToFractioned } from "~tokens/currency";
 import { TiersPopup } from "~components/popup/tier/TiersPopup";
 import { TierProgress } from "~components/popup/tier/TierProgress";
-import starsImage from "~assets/images/tier/stars.png";
 import { WNDR_PROCESS_ID } from "~tokens/aoTokens/ao";
 import { useActiveAddress, useTokenTransactions } from "~wallets/hooks";
 import { TierTransactionItemComponent } from "~components/popup/home/Transactions";
@@ -61,7 +60,6 @@ export function TierView() {
         }
       />
       <TierWrapper tier={tier}>
-        {/* <StarsBackground /> */}
         <TierCard tier={tier}>
           <CustomizableStars
             style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -65%)", zIndex: 1 }}
@@ -161,7 +159,7 @@ function LifeTimeSavings() {
   return (
     <LifeTimeSavingsWrapper>
       <Text variant="secondary" size="sm" weight="semibold" noMargin>
-        Your lifetime savings:
+        {browser.i18n.getMessage("your_lifetime_savings")}:
       </Text>
       {isLoading ? (
         <Loading style={{ height: "20px", width: "20px" }} />
@@ -214,25 +212,6 @@ const OptionsIconWrapper = styled.div`
   &:active ${OptionsIcon} {
     transform: scale(0.93);
   }
-`;
-
-const StarsBackground = styled.div`
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 245px;
-  height: 56.322px;
-  margin-left: 60px;
-  margin-top: 16px;
-  background: url(${starsImage}) no-repeat center center;
-  background-size: 100% 100%;
-  flex-shrink: 0;
-  pointer-events: none;
-  z-index: 1;
-  border-radius: 8px;
-  /* Ensure this decorative background doesn't interfere with content */
-  mix-blend-mode: screen;
-  opacity: 0.8;
 `;
 
 const LifeTimeSavingsWrapper = styled.div`

@@ -100,7 +100,7 @@ export function ProgressBar({
         </SegmentLabelsContainer>
       )}
 
-      {showProgressLine && exactProgressWidth > 0 && exactProgressWidth < width && (
+      {showProgressLine && exactProgressWidth >= 0 && exactProgressWidth <= width && (
         <ProgressLine
           $position={exactProgressWidth}
           $width={progressLineWidth}
