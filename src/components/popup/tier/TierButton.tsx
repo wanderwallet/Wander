@@ -38,33 +38,33 @@ const tierStyles = {
   light: {
     Core: {
       border: "rgba(17, 17, 17, 0.20)",
-      background: "linear-gradient(47deg, #5842F8 5.41%, #6B57F9 96%)",
-      hoverBackground: "#503ECE",
-      activeBackground: "#503ECE",
+      background: "#F9F8FF",
+      hoverBackground: "#F0EEFF",
+      activeBackground: "#E7E4FF",
     },
     Select: {
-      border: "rgba(255, 255, 255, 0.2)",
-      background: "#26373B",
-      hoverBackground: "#32494E",
-      activeBackground: "#32494E",
+      border: "rgba(34, 134, 172, 0.20)",
+      background: "#F8FDFF",
+      hoverBackground: "#EFF9FC",
+      activeBackground: "#E6F5F9",
     },
     Reserve: {
-      border: "rgba(255, 255, 255, 0.2)",
-      background: "#10291D",
-      hoverBackground: "#1A3A2A",
-      activeBackground: "#1A3A2A",
+      border: "rgba(48, 171, 93, 0.20)",
+      background: "#F8FFFA",
+      hoverBackground: "#EFFBF3",
+      activeBackground: "#E6F7EC",
     },
     Edge: {
-      border: "rgba(255, 255, 255, 0.2)",
-      background: "#242424",
-      hoverBackground: "#2E2E2E",
-      activeBackground: "#2E2E2E",
+      border: "rgba(153, 153, 153, 0.20)",
+      background: "#F8F8F8",
+      hoverBackground: "#EFEFEF",
+      activeBackground: "#E6E6E6",
     },
     Prime: {
-      border: "#ffeac2",
-      background: "#26241B",
-      hoverBackground: "#2F2C22",
-      activeBackground: "#2F2C22",
+      border: "rgba(185, 149, 42, 0.20)",
+      background: "#FFFEF7",
+      hoverBackground: "#F6F5EE",
+      activeBackground: "#EDECE5",
     },
   },
 };
@@ -78,6 +78,7 @@ export const TierButton = styled(Button).attrs({ fullWidth: true })<{ tier: Tier
   gap: 4px;
   align-self: stretch;
   border-radius: 12px;
+  color: ${({ theme }) => theme.primaryText};
   border: 1px solid ${(props) => tierStyles[props.theme.displayTheme][props.tier].border};
   background: ${(props) => tierStyles[props.theme.displayTheme][props.tier].background};
 
