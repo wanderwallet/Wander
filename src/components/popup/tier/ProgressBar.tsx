@@ -1,4 +1,5 @@
 import { Text } from "@arconnect/components-rebrand";
+import { useMemo } from "react";
 import styled from "styled-components";
 
 interface ProgressSegment {
@@ -43,35 +44,39 @@ export function ProgressBar({
   showSegmentLabels = true,
 }: ProgressBarProps) {
   // Calculate dimensions
-  const totalSeparatorWidth = (segments.length - 1) * separatorWidth;
-  const availableWidth = width - totalSeparatorWidth;
   const exactProgressWidth = (progress / 100) * width;
 
-  // Calculate segment positions and widths with cumulative percentage ranges
-  let accumulatedPercentage = 0;
-  let accumulatedWidth = 0;
-  const segmentData = segments.map((segment, index) => {
-    const actualWidth = (segment.percentage / 100) * availableWidth;
-    const start = accumulatedWidth;
-    const startPercentage = accumulatedPercentage;
-    const endPercentage = accumulatedPercentage + segment.percentage;
+  const segmentData = useMemo(() => {
+    const totalSeparatorWidth = (segments.length - 1) * separatorWidth;
+    const availableWidth = width - totalSeparatorWidth;
 
-    // A segment is active if progress has entered its range
-    const isCompletelyFilled = progress > startPercentage;
+    // Calculate segment positions and widths with cumulative percentage ranges
+    let accumulatedPercentage = 0;
+    let accumulatedWidth = 0;
 
-    // Update accumulated values for next iteration
-    accumulatedPercentage += segment.percentage;
-    accumulatedWidth += actualWidth + (index < segments.length - 1 ? separatorWidth : 0);
+    return segments.map((segment, index) => {
+      const actualWidth = (segment.percentage / 100) * availableWidth;
+      const start = accumulatedWidth;
+      const startPercentage = accumulatedPercentage;
+      const endPercentage = accumulatedPercentage + segment.percentage;
 
-    return {
-      ...segment,
-      actualWidth,
-      start,
-      startPercentage,
-      endPercentage,
-      isCompletelyFilled,
-    };
-  });
+      // A segment is active if progress has entered its range
+      const isCompletelyFilled = progress > startPercentage;
+
+      // Update accumulated values for next iteration
+      accumulatedPercentage += segment.percentage;
+      accumulatedWidth += actualWidth + (index < segments.length - 1 ? separatorWidth : 0);
+
+      return {
+        ...segment,
+        actualWidth,
+        start,
+        startPercentage,
+        endPercentage,
+        isCompletelyFilled,
+      };
+    });
+  }, [segments, separatorWidth, width, progress]);
 
   const activeSegment = segmentData.findLast((segment) => segment.isCompletelyFilled);
 
