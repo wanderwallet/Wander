@@ -46,6 +46,10 @@ export async function getActiveTier(walletAddress: string): Promise<ActiveTier> 
   const message = dryrunRes.Messages?.[0];
   const data = JSON.parse(message?.Data || "{}");
 
+  if (data?.tier === undefined || data?.tier === null) {
+    throw new Error("No tier data found");
+  }
+
   const activeTier = {
     ...data,
     tier: tierIdToTierName[data.tier],
