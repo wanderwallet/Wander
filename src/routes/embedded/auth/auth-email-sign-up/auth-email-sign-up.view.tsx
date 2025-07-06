@@ -1,20 +1,23 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { toast } from "react-toastify";
-import { Button } from "~components/embed";
+import { Button, TextInput } from "~components/embed";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getSupabaseClient } from "~utils/embedded/embedded.utils";
 import { useLocation, useSearchParams } from "~wallets/router/router.utils";
-import PasswordMatch from "~components/welcome/PasswordMatch";
 import PasswordStrength from "~components/welcome/PasswordStrength";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 import { PasswordInput } from "~components/embed/ui/atoms/password-input";
 import { useThrottledCallback } from "@swyg/corre";
 import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
 import { PersistentStorage } from "~utils/storage";
-import { getFriendlyAuthErrorMessage } from "~utils/authentication/authentication.utils";
+import { InputButton } from "~components/embed/ui/atoms/input-button/InputButton";
+import { EditIcon } from "@iconicicons/react";
+import { getFriendlyAuthErrorMessage, MIN_SUPABASE_PASSWORD_LENGTH } from "~utils/authentication/authentication.utils";
 import { StorageKeys } from "~utils/storage/storage.constants";
+import browser from "~iframe/browser";
+import type { SupabaseUserMetadata } from "embed-api";
 
-export function AuthEmailSignupEmbeddedView() {
+export function AuthEmailSignUpEmbeddedView() {
   const { navigate } = useLocation();
   const { email } = useSearchParams<{ email: string }>();
   const { authStatus } = useEmbedded();
@@ -39,6 +42,8 @@ export function AuthEmailSignupEmbeddedView() {
     password: "",
     passwordsMatch: false,
   });
+
+  const isPasswordValid = passwordsMatch && password.length >= MIN_SUPABASE_PASSWORD_LENGTH;
 
   const handlePasswordChange = useThrottledCallback(() => {
     const password = passwordInputRef.current.value;
@@ -68,13 +73,23 @@ export function AuthEmailSignupEmbeddedView() {
         }
 
         if (password !== repeatPassword) {
-          toast.error("Passwords do not match");
+          toast.error(browser.i18n.getMessage("passwords_not_match"));
           return;
         }
 
-        const { error, data } = await supabase.auth.signUp({
+        if (password.length < MIN_SUPABASE_PASSWORD_LENGTH) {
+          toast.error(`Password must be at least ${MIN_SUPABASE_PASSWORD_LENGTH} characters`);
+          return;
+        }
+
+        const { error } = await supabase.auth.signUp({
           email,
           password,
+          options: {
+            data: {
+              hasPassword: true,
+            } satisfies SupabaseUserMetadata,
+          },
         });
 
         if (error) {
@@ -82,7 +97,7 @@ export function AuthEmailSignupEmbeddedView() {
           return;
         }
 
-        await PersistentStorage.setItem(StorageKeys.CONNECT.AUTH.LAST_EMAIL_VERIFICATION, Date.now());
+        await PersistentStorage.setItem(StorageKeys.CONNECT.AUTH.LAST_OTP_EMAIL, Date.now());
 
         navigate(EmbeddedPaths.AuthEmailVerify, {
           search: { email },
@@ -106,13 +121,41 @@ export function AuthEmailSignupEmbeddedView() {
     }
   }, [email]);
 
+  const editIcon = (
+    <EditIcon
+      aria-label="Edit"
+      style={{
+        width: 22,
+        height: 22,
+        color: "var(--text-color-tertiary)",
+      }}
+    />
+  );
+
+  const emailInputButton = (
+    <InputButton
+      icon={editIcon}
+      disabled={areButtonsDisabled}
+      onClick={() => navigate("/auth", { search: { email } })}
+    />
+  );
+
   return (
     <OnboardingCard
       headerText="Create your password"
       subtitle="Enter a password to secure your Wander account."
-      onBackButtonClick={() => navigate(`/auth`)}
+      onBackButtonClick={() => navigate(EmbeddedPaths.Auth)}
       isLoading={isViewLoading}
       onSubmit={handleEmailSignUp}>
+      <TextInput
+        name="email"
+        placeholder="Enter your email"
+        value={email}
+        disabled={areButtonsDisabled}
+        readOnly
+        endSlot={emailInputButton}
+      />
+
       <PasswordInput
         name="password"
         placeholder="Enter your password"
@@ -130,11 +173,9 @@ export function AuthEmailSignupEmbeddedView() {
         onChange={handlePasswordChange}
       />
 
-      <PasswordMatch matches={passwordsMatch} />
+      <PasswordStrength password={password} passwordsMatch={passwordsMatch} minLength={MIN_SUPABASE_PASSWORD_LENGTH} />
 
-      <PasswordStrength password={password} />
-
-      <Button type="submit" isFullWidth isDisabled={areButtonsDisabled}>
+      <Button type="submit" isFullWidth isDisabled={areButtonsDisabled || !isPasswordValid}>
         Sign up
       </Button>
     </OnboardingCard>

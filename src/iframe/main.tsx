@@ -17,7 +17,7 @@ import {
   BACKGROUND_COLORS_BY_PROVIDER,
   OAUTH_ERROR_MSG_TYPE,
   OAUTH_SUCCESS_MSG_TYPE,
-  OAuthError,
+  OAuthErrorCode,
   POPUP_CONFIRMATION_TIMEOUT_MS,
   POPUP_ON_AUTH_TIMEOUT_MS,
 } from "~utils/authentication/authentication.utils";
@@ -71,7 +71,7 @@ if (window.location.hash.startsWith("#access_token=") && window.opener) {
       window.opener.postMessage(
         {
           type: OAUTH_ERROR_MSG_TYPE,
-          errorCode: OAuthError.OAUTH_TIMEOUT,
+          errorCode: OAuthErrorCode.OAUTH_TIMEOUT,
         } satisfies OAuthErrorMessage,
         window.location.origin,
       );

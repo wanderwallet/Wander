@@ -5,9 +5,11 @@ import type { WalletSourceType } from "embed-api";
 import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
 import { signOut } from "~utils/embedded/embedded.utils";
 import { QrCode02 } from "@untitled-ui/icons-react";
+import { navigate } from "wouter/use-hash-location";
+import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 
 export function AuthAddWalletEmbeddedView() {
-  const { generateTempWallet, registerWallet } = useEmbedded();
+  const { generateTempWallet, registerWallet, authStatus } = useEmbedded();
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -27,9 +29,11 @@ export function AuthAddWalletEmbeddedView() {
 
   return (
     <OnboardingCard
-      headerText="Add a wallet"
+      headerText={authStatus === "noWallets" ? "Add a wallet" : "Restore wallet"}
       subtitle="Add a wallet to your account to hold your funds. Create or add an existing wallet to continue."
-      onBackButtonClick={() => signOut(false)}
+      onBackButtonClick={() =>
+        authStatus === "noWallets" ? signOut(false) : navigate(EmbeddedPaths.AuthRestoreShares)
+      }
       isLoading={isLoading}>
       <Button
         onClick={() => handleRegisterWallet("GENERATED")}

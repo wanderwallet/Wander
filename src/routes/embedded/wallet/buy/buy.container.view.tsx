@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { Card, Button, Text, BuyWithCashIcon, BuyWithCryptoIcon, Row, Box } from "~components/embed/ui";
+import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 import { useLocation } from "~wallets/router/router.utils";
 
 export function WalletBuyEmbeddedView() {
@@ -10,7 +11,7 @@ export function WalletBuyEmbeddedView() {
       size="auto"
       headerText="Buy Tokens"
       hasBackButton={true}
-      onBackButtonClick={() => navigate("/wallet")}
+      onBackButtonClick={() => navigate(EmbeddedPaths.WalletHomeEmbeddedView)}
       style={{ padding: "32px" }}>
       <Box hasBorder style={{ marginTop: "16px" }}>
         <Button variant="link" onClick={() => navigate("/wallet/buy/cash")}>

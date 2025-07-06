@@ -6486,9 +6486,9 @@ elliptic@6.6.1, elliptic@^6.5.3, elliptic@^6.5.5, elliptic@^6.5.7:
     minimalistic-assert "^1.0.1"
     minimalistic-crypto-utils "^1.0.1"
 
-"embed-api@https://github.com/wanderwallet/embed-api#5dbcb8722252cb6a0a7ca6092d93b18d4ac071d0":
+"embed-api@https://github.com/wanderwallet/embed-api#ec23a9586004c3742a3edb512bf753786d9dcdf5":
   version "0.1.0"
-  resolved "https://github.com/wanderwallet/embed-api#5dbcb8722252cb6a0a7ca6092d93b18d4ac071d0"
+  resolved "https://github.com/wanderwallet/embed-api#ec23a9586004c3742a3edb512bf753786d9dcdf5"
   dependencies:
     "@prisma/client" "6.7.0"
     "@supabase/ssr" "^0.6.1"

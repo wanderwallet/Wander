@@ -1,7 +1,7 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useEffect, useState } from "react";
 import { useLocation } from "~wallets/router/router.utils";
-import { Row, Button, Copyable, Upload, Text, Snackbar } from "~components/embed";
+import { Row, Button, Copyable, Upload, Text, Snackbar, RecoverHeaderIcon } from "~components/embed";
 import copy from "copy-to-clipboard";
 import { toast } from "react-toastify";
 import { WalletUtils } from "~utils/wallets/wallets.utils";
@@ -86,6 +86,7 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
 
   return importedWalletAddress ? (
     <OnboardingCard
+      headerIcon={<RecoverHeaderIcon />}
       headerText="Import Keyfile"
       subtitle="Upload your private key to recover your account."
       onBackButtonClick={() => navigate(`/auth/recover-account`)}
@@ -111,14 +112,14 @@ export function AuthRecoverAccountKeyfileEmbeddedView() {
     </OnboardingCard>
   ) : (
     <OnboardingCard
+      headerIcon={<RecoverHeaderIcon />}
       headerText="Import Keyfile"
       subtitle="Upload your private key to recover your account."
-      onBackButtonClick={() => navigate(`/auth/recover-account`)}
+      onBackButtonClick={() => navigate(EmbeddedPaths.AuthRecoverAccount)}
       isLoading={isViewLoading}>
       <Upload
         isFullWidth
-        title={"Click to upload"}
-        description={"or drag and drop your keyfile"}
+        fileLabel="your keyfile"
         isLoading={isUploading}
         loadingText={"Recovering account..."}
         onFileParse={parseUpload}

@@ -5,7 +5,7 @@ const BeStorageKeys = {} as const;
 const ConnectStorageKeys = {
   AUTH: {
     USER_ID: "USER_ID",
-    LAST_EMAIL_VERIFICATION: "LAST_EMAIL_VERIFICATION",
+    LAST_OTP_EMAIL: "LAST_OTP_EMAIL",
   },
 } as const;
 

@@ -1,11 +1,17 @@
-import type {
-  OAuthErrorMessage,
-  OAuthResultMessage,
-  OAuthSuccessMessage,
-  SupabaseProvider,
+import type { SupabaseAuthError } from "embed-api";
+import {
+  isOAuthError,
+  isSupabaseAuthError,
+  type OAuthError,
+  type OAuthErrorMessage,
+  type OAuthResultMessage,
+  type OAuthSuccessMessage,
+  type SupabaseProvider,
 } from "~utils/authentication/authentication.types";
 
-export enum OAuthError {
+export const MIN_SUPABASE_PASSWORD_LENGTH = 6 as const;
+
+export enum OAuthErrorCode {
   MISSING_URL = "MISSING_URL",
   OAUTH_TIMEOUT = "OAUTH_TIMEOUT",
   CANNOT_OPEN_POPUP = "CANNOT_OPEN_POPUP",
@@ -15,7 +21,7 @@ export enum OAuthError {
   POPUP_TIMEOUT = "POPUP_TIMEOUT",
 }
 
-const AUTH_ERRORS_BY_CODE: Record<string | OAuthError, string> = {
+const AUTH_ERRORS_BY_CODE: Record<string | OAuthErrorCode, string> = {
   server_error:
     "There was a problem connecting to the authentication service. This could be due to network issues or server maintenance.",
   invalid_request:
@@ -31,21 +37,38 @@ const AUTH_ERRORS_BY_CODE: Record<string | OAuthError, string> = {
   unknown_error:
     "An unexpected error occurred during authentication. Please try again or contact support if the issue persists.",
   unexpected_failure: "We could not get your email. Please, try a different authentication method.",
+  over_email_send_rate_limit: "Wait 60 seconds before requesting a new code.",
+  otp_disabled: "No account found for this email.",
   // unexpected_failure description = Error+getting+user+email+from+external+provider
-  [OAuthError.MISSING_URL]: "Authentication error. Please, try again.",
-  [OAuthError.OAUTH_TIMEOUT]: "Authentication timeout. Please, try again.",
-  [OAuthError.CANNOT_OPEN_POPUP]: "Could not open authentication popup. Please, try again.",
-  [OAuthError.INVALID_OAUTH_MESSAGE]: "Authentication error. Please, try again.",
-  [OAuthError.CANNOT_CREATE_SESSION]: "Authentication error. Please, try again.",
-  [OAuthError.POPUP_CLOSED]: "Authentication cancelled.",
-  [OAuthError.POPUP_TIMEOUT]: "Authentication timeout. Please, try again.",
+  [OAuthErrorCode.MISSING_URL]: "Authentication error. Please, try again.",
+  [OAuthErrorCode.OAUTH_TIMEOUT]: "Authentication timeout. Please, try again.",
+  [OAuthErrorCode.CANNOT_OPEN_POPUP]: "Could not open authentication popup. Please, try again.",
+  [OAuthErrorCode.INVALID_OAUTH_MESSAGE]: "Authentication error. Please, try again.",
+  [OAuthErrorCode.CANNOT_CREATE_SESSION]: "Authentication error. Please, try again.",
+  [OAuthErrorCode.POPUP_CLOSED]: "Authentication cancelled.",
+  [OAuthErrorCode.POPUP_TIMEOUT]: "Authentication timeout. Please, try again.",
 };
 
-export function getFriendlyAuthErrorMessage(error: Error, defaultErrorMessage?: string): string {
+export function getFriendlyAuthErrorMessage(
+  error: Error | SupabaseAuthError | OAuthError,
+  defaultErrorMessage?: string,
+): string {
   if (process.env.NODE_ENV === "development") console.error("getFriendlyAuthErrorMessage() =", error);
 
-  const { message } = error;
-  const { errorCode = message, errorDescription = "" } = (error.cause || {}) as OAuthErrorMessage;
+  let errorCode = "";
+  let errorDescription = "";
+
+  if (isOAuthError(error)) {
+    errorCode = error.cause.errorCode;
+    errorDescription = error.cause.errorDescription;
+  } else if (isSupabaseAuthError(error)) {
+    errorCode = error.code || `${error.status}` || error.name;
+    errorDescription = error.message;
+  } else {
+    errorCode = error.name;
+    errorDescription = error.message;
+  }
+
   const mappedErrorMessage = AUTH_ERRORS_BY_CODE[errorCode];
 
   if (mappedErrorMessage) return mappedErrorMessage;

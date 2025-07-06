@@ -34,6 +34,7 @@ import {
   WalletSourceType,
   type DbSession,
   type RecoverableAccount,
+  type SupabaseUser,
 } from "embed-api";
 import { AuthenticationService } from "~utils/authentication/authentication.service";
 import { EMBEDDED_FEATURE_FLAGS, EMBEDDED_SDK_AUTH_STATUS_BY_AUTH_STATUS } from "~utils/embedded/embedded.constants";
@@ -67,6 +68,7 @@ import {
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { isomorphicOnMessage } from "~isomorphic-messaging";
 import { useTheme } from "~components/embed/contexts/ThemeContext";
+import { withRetry } from "~utils/promises/retry";
 
 export type AuthStatusCopy = AuthStatus;
 
@@ -79,6 +81,7 @@ const EMBEDDED_CONTEXT_INITIAL_STATE = {
   recoverableAccounts: null,
   recoverableAccount: null,
   recoverableAccountWallets: null,
+  requestPasswordChange: false,
 } as const satisfies EmbeddedContextState;
 
 const EMBEDDED_CONTEXT_INITIAL_AUTH = {
@@ -103,6 +106,7 @@ export const EmbeddedContext = createContext<EmbeddedContextData>({
   fetchRecoverableAccountWallets: async () => null,
   recoverAccount: async () => null,
   recoverWallet: async () => null,
+  setRequestPasswordChange: () => null,
 
   generateTempWallet: async () => null,
   deleteGeneratedTempWallet: async () => null,
@@ -114,7 +118,6 @@ export const EmbeddedContext = createContext<EmbeddedContextData>({
   clearLastRegisteredWallet: () => null,
 
   // TODO: These should work for multiple wallets:
-  skipBackUp: () => null,
   downloadKeyfile: async () => null,
   copySeedphrase: async () => null,
   getSeedphrase: async () => null,
@@ -250,31 +253,6 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       };
     });
   }, []);
-
-  const skipBackUp = useCallback(
-    async (doNotAskAgainSetting: boolean) => {
-      log(LOG_GROUP.EMBEDDED_FLOWS, `skipBackUp(${doNotAskAgainSetting})`);
-
-      // TODO: Persist lastPromptData locally too?
-
-      if (doNotAskAgainSetting) {
-        const { wallet: updatedWallet } = await WalletService.doNotAskAgainForBackup({
-          walletId,
-        });
-
-        updateCurrentWallet((currentWallet) => ({
-          ...currentWallet,
-          ...updatedWallet,
-        }));
-      } else {
-        updateCurrentWallet((currentWallet) => ({
-          ...currentWallet,
-          doNotAskAgainSetting: true,
-        }));
-      }
-    },
-    [walletId, updateCurrentWallet],
-  );
 
   const downloadKeyfile = useCallback(async () => {
     log(LOG_GROUP.EMBEDDED_FLOWS, `downloadKeyfile()`);
@@ -505,7 +483,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     // TODO: We could consider calling `initEmbeddedWallet` again instead, which will make sure the wallet has been
     // properly added to the backend as well.
 
-    setEmbeddedContextState(({ wallets: prevWallets }) => {
+    setEmbeddedContextState(({ wallets: prevWallets, requestPasswordChange }) => {
       const wallets = [...prevWallets];
       const walletIDs = wallets.map((wallet) => wallet.id);
 
@@ -514,14 +492,11 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       }
 
       return {
+        ...EMBEDDED_CONTEXT_INITIAL_STATE,
         currentWalletId: wallet.id,
         wallets,
-        generatedTempWalletAddress: null,
-        importedTempWalletAddress: null,
         lastRegisteredWallet: isNewWallet ? wallet : null,
-        recoverableAccounts: null,
-        recoverableAccount: null,
-        recoverableAccountWallets: null,
+        requestPasswordChange,
       } satisfies EmbeddedContextState;
     });
 
@@ -678,6 +653,22 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     async (sourceType: WalletSourceType) => {
       log(LOG_GROUP.WALLET_GENERATION, `registerWallet(${sourceType})`);
 
+      if (authStatus === "noShares") {
+        await Promise.all(
+          wallets.map(({ id: walletId, status }) =>
+            status === "ENABLED" ? WalletService.updateWalletStatus({ walletId, status: "LOST" }) : null,
+          ),
+        );
+
+        setEmbeddedContextState((prevAuthContextState) => ({
+          ...prevAuthContextState,
+          wallets: prevAuthContextState.wallets.map((wallet) => ({
+            ...wallet,
+            status: wallet.status === "ENABLED" ? "LOST" : wallet.status,
+          })),
+        }));
+      }
+
       const promise =
         sourceType === "GENERATED"
           ? generatedTempWalletPromiseRef.current?.promise
@@ -723,7 +714,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
       return wallet;
     },
-    [userId],
+    [wallets, userId],
   );
 
   const clearLastRegisteredWallet = useCallback(() => {
@@ -974,6 +965,13 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     [session, userId, wallets],
   );
 
+  const setRequestPasswordChange = useCallback((requestPasswordChange: boolean) => {
+    setEmbeddedContextState((prevAuthContextState) => ({
+      ...prevAuthContextState,
+      requestPasswordChange,
+    }));
+  }, []);
+
   // AUTHENTICATION:
 
   /*
@@ -1097,6 +1095,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       recoverableAccounts: prevAuthContextState.recoverableAccounts,
       recoverableAccount: prevAuthContextState.recoverableAccount,
       recoverableAccountWallets: prevAuthContextState.recoverableAccountWallets,
+      requestPasswordChange: prevAuthContextState.requestPasswordChange,
     }));
 
     if (!userId || !session) {
@@ -1113,7 +1112,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       wallets,
     }));
 
-    let authStatus = "noAuth" as AuthStatus;
+    let authStatus: AuthStatus = wallets.length === 0 ? "noWallets" : "noShares";
 
     if (wallets.length > 0) {
       // TODO: The wallet activation can be deferred until the wallet is going to be used:
@@ -1124,61 +1123,32 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       // TODO: Create an issue for the new storage needs (e.g. expiration). Note that for wallets
       // that haven't been backup up, we must never delete a share without notifying the user.
 
-      // TODO: Add try-catch. If the initialization process fails, show an error...
+      let jwk: JWKInterface | null = null;
 
-      const { activatedWallet, rotationChallenge } = await WalletService.fetchFirstAvailableAuthShare(
-        wallets,
-        session,
-        userId,
-      );
+      try {
+        // TODO: Add some extra logic here to wait if there are other tabs activating a wallet at the same time.
+        // Do it by checking both a stored flag as well as by querying the backend (subscribe?).
 
-      if (activatedWallet) {
-        const { id: walletId, address: walletAddress } = activatedWallet;
+        const fetchFirstAvailableAuthShareReturn = await withRetry(() =>
+          WalletService.fetchFirstAvailableAuthShare(wallets, session, userId),
+        );
 
-        const jwk = await WalletUtils.generateWalletJWKFromShares(walletAddress, [
-          activatedWallet.authShare,
-          activatedWallet.deviceShare,
-        ]);
+        const { activatedWallet } = fetchFirstAvailableAuthShareReturn;
+        jwk = fetchFirstAvailableAuthShareReturn.jwk;
 
-        if (rotationChallenge) {
-          const { authShare, deviceShare } = await WalletUtils.generateWalletWorkShares(jwk);
-
-          activatedWallet.authShare = authShare;
-          activatedWallet.deviceShare = deviceShare;
-
-          const { shareHash: deviceShareHash, sharePublicKey: deviceSharePublicKey } =
-            await WalletUtils.generateShareHashAndPublicKey(deviceShare);
-
-          const challengeSolution = await ChallengeClientV1.solveChallenge({
-            challenge: rotationChallenge,
-            session,
-            shareHash: null,
-            jwk,
-          });
-
-          await WalletService.rotateAuthShare({
-            walletId,
-            authShare,
-            deviceShareHash,
-            deviceSharePublicKey,
-            challengeSolution,
-          });
-        }
-
-        await WalletUtils.storeDeviceShare(activatedWallet, userId);
-
-        try {
+        if (jwk && activatedWallet) {
+          await WalletUtils.storeDeviceShare(activatedWallet, userId);
           await addWallet(jwk, activatedWallet);
-        } finally {
-          freeDecryptedWallet(jwk);
-        }
 
-        authStatus = "unlocked";
-      } else {
-        authStatus = "noShares";
+          authStatus = "unlocked";
+        }
+      } catch (err) {
+        // All attempts failed, or activation suceded but some of the code afer that threw an error.
+
+        console.warn("Failed to activate wallet:", err);
+      } finally {
+        if (jwk) freeDecryptedWallet(jwk);
       }
-    } else {
-      authStatus = "noWallets";
     }
 
     setEmbeddedContextAuth((prevEmbeddedContextAuth) => ({
@@ -1220,7 +1190,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       if (!isInitialAuthEventDispatched) {
         isInitialAuthEventDispatched = true;
 
-        const cachedUser = session?.user;
+        const cachedUser = session?.user as SupabaseUser;
 
         // Send the initial state for the SDK button ASAP if there's cached data. Otherwise, the initial state will be
         // sent by the `useEffect` above that sends `"embedded_auth"` events too.
@@ -1242,7 +1212,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       }
 
       const accessToken = session?.access_token ?? null;
-      const user = session?.user ?? null;
+      const user = (session?.user as SupabaseUser) ?? null;
       const authProviderType = getAuthProviderTypeFromSupabaseUser(user);
 
       if (process.env.NODE_ENV === "development" && user && authProviderType === null) {
@@ -1309,6 +1279,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
           recoverableAccounts: prevAuthContextState.recoverableAccounts,
           recoverableAccount: prevAuthContextState.recoverableAccount,
           recoverableAccountWallets: prevAuthContextState.recoverableAccountWallets,
+          requestPasswordChange: prevAuthContextState.requestPasswordChange,
         }));
 
         setEmbeddedContextAuth({
@@ -1354,6 +1325,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         setRecoverableAccountWallets,
         recoverAccount,
         recoverWallet,
+        setRequestPasswordChange,
 
         generateTempWallet,
         deleteGeneratedTempWallet,
@@ -1363,7 +1335,6 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
         registerWallet,
         clearLastRegisteredWallet,
-        skipBackUp,
         downloadKeyfile,
         copySeedphrase,
         getSeedphrase,

@@ -3,10 +3,16 @@ import { Spacer, Text } from "@arconnect/components-rebrand";
 import { useMemo } from "react";
 import browser from "webextension-polyfill";
 import styled from "styled-components";
-import { Check, X } from "@untitled-ui/icons-react";
+import { Check, X, AlertTriangle } from "@untitled-ui/icons-react";
 import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 
-export default function PasswordStrength({ password }: Props) {
+export interface PasswordStrengthProps {
+  password: string;
+  passwordsMatch: boolean;
+  minLength: number;
+}
+
+export default function PasswordStrength({ password, passwordsMatch, minLength }: PasswordStrengthProps) {
   // get strength
   const strength = useMemo(() => passwordStrength(password || ""), [password]);
 
@@ -61,48 +67,51 @@ export default function PasswordStrength({ password }: Props) {
   const { bars, color, text } = getStrengthInfo();
 
   return (
-    <div>
+    <div style={{ width: "100%" }}>
       <ProgressBar>
         {new Array(4).fill("").map((_, i) => (
           <Bar active={bars >= i + 1} key={i} />
         ))}
       </ProgressBar>
+
       <Spacer y={0.35} />
+
       <Text noMargin style={{ color }}>
         {browser.i18n.getMessage(text)}
       </Text>
-      <Spacer y={1.5} />
-      <StrengthChecklist>
-        {checklist.map((elem, i) => {
-          let valid = true;
 
-          for (const diversity of elem.validity) {
-            if (strength.contains.includes(diversity)) continue;
-            valid = false;
-          }
+      <Spacer y={1} />
+
+      <StrengthChecklist>
+        <StrengthCheck $status={passwordsMatch ? "valid" : "error"}>
+          {passwordsMatch ? <Check /> : <X />}
+          <Text variant="secondary" noMargin>
+            {browser.i18n.getMessage(passwordsMatch ? "passwords_match" : "passwords_not_match")}
+          </Text>
+        </StrengthCheck>
+        <StrengthCheck $status={strength.length >= minLength ? "valid" : "error"}>
+          {strength.length >= minLength ? <Check /> : <X />}
+          <Text variant="secondary" noMargin>
+            {browser.i18n.getMessage("password_strength_checklist_length", `${minLength}`)}
+          </Text>
+        </StrengthCheck>
+        {checklist.map((elem, i) => {
+          const valid = elem.validity.every((diversity) => {
+            return strength.contains.includes(diversity);
+          });
 
           return (
-            <StrengthCheck isValid={valid} key={i}>
-              {(valid && <Check />) || <X height={24} />}
+            <StrengthCheck $status={valid ? "valid" : "warning"} key={i}>
+              {valid ? <Check /> : <AlertTriangle />}
               <Text variant="secondary" noMargin>
                 {browser.i18n.getMessage(elem.display)}
               </Text>
             </StrengthCheck>
           );
         })}
-        <StrengthCheck isValid={password && password.length >= 5}>
-          {(password && password.length >= 5 && <Check height={24} />) || <X height={24} />}
-          <Text variant="secondary" noMargin>
-            {browser.i18n.getMessage("password_strength_checklist_length", "5")}
-          </Text>
-        </StrengthCheck>
       </StrengthChecklist>
     </div>
   );
-}
-
-interface Props {
-  password: string;
 }
 
 const ProgressBar = styled.div`
@@ -131,17 +140,27 @@ const StrengthChecklist = styled.div`
   gap: 0.45rem;
 `;
 
-const StrengthCheck = styled.div<{ isValid?: boolean; length?: number }>`
+const iconColors = IS_EMBEDDED_APP
+  ? ({
+      valid: "#007229",
+      warning: "#B90",
+      error: "#D22B1F",
+    } as const)
+  : ({
+      valid: "#56C980",
+      warning: "#B90",
+      error: "#F1655B",
+    } as const);
+
+const StrengthCheck = styled.div<{ $status: "valid" | "warning" | "error" }>`
   display: flex;
   align-items: center;
   gap: 0.45rem;
 
   svg {
-    font-size: 1rem;
-    width: 1.5em;
-    height: 1.5em;
-    color: ${(props) =>
-      props.isValid ? (IS_EMBEDDED_APP ? "#007229" : "#56C980") : IS_EMBEDDED_APP ? "#D22B1F" : "#F1655B"};
+    width: 1.25em;
+    height: 1.25em;
+    color: ${(props) => iconColors[props.$status]};
     transition: all 0.17s ease-in-out;
   }
 `;

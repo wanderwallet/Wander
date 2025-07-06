@@ -74,6 +74,7 @@ export interface EmbeddedContextState {
   recoverableAccounts: null | RecoverableAccount[];
   recoverableAccount: null | RecoverableAccount;
   recoverableAccountWallets: null | RecoverableAccountWallet[];
+  requestPasswordChange: boolean;
 }
 
 export interface EmbeddedContextAuth {
@@ -120,6 +121,7 @@ export interface EmbeddedContextData extends EmbeddedContextState, EmbeddedConte
   fetchRecoverableAccountWallets: (recoverableAccount: RecoverableAccount) => Promise<RecoverableAccountWallet[]>;
   recoverAccount: (authProviderType: AuthProviderType, accountToRecoverId: string) => Promise<void>;
   recoverWallet: (recoveryData?: RecoveryJSON | JWKInterface | string) => Promise<void>;
+  setRequestPasswordChange: (requestPasswordChange: boolean) => void;
 
   generateTempWallet: () => Promise<TempWallet>;
   deleteGeneratedTempWallet: () => Promise<void>;
@@ -130,7 +132,6 @@ export interface EmbeddedContextData extends EmbeddedContextState, EmbeddedConte
   registerWallet: (sourceType: WalletSourceType) => Promise<Wallet>;
   clearLastRegisteredWallet: () => void;
 
-  skipBackUp: (doNotAskAgain: boolean) => void | Promise<void>;
   downloadKeyfile: () => Promise<void>;
   copySeedphrase: () => Promise<boolean>;
   getDecryptedWallet: () => Promise<LocalWallet<JWKInterface>>;

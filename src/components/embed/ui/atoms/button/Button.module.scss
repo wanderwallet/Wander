@@ -148,6 +148,16 @@
   padding: 0;
   width: auto;
   text-decoration: none;
+  font: inherit;
+  display: inline;
+
+  &:hover {
+    text-decoration: underline;
+    text-decoration-style: dotted;
+  }
+}
+
+.button__variant__unstyled {
 }
 
 /* Modifiers */

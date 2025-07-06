@@ -649,6 +649,14 @@
       "message": "新密码不能与旧密码相同",
       "description": "Password must be different from old one"
   },
+  "set_password": {
+    "message": "设置密码",
+    "description": "Set password button text"
+  },
+  "change_password": {
+    "message": "更改密码",
+    "description": "Change password button text"
+  },
   "invalid_mnemonic": {
       "message": "无效的助记词",
       "description": "Invalid mnemonic seedphrase error notification"
@@ -3181,7 +3189,7 @@
     "manage_agent": {
         "message": "管理代理",
         "description": "Manage agent description"
-    },  
+    },
     "agent_activated_title": {
         "message": "代理已激活！",
         "description": "Agent activated title"

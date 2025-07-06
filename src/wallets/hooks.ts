@@ -7,7 +7,7 @@ import { ExtensionStorage } from "~utils/storage";
 import { findGateway } from "~gateways/wayfinder";
 import { retryWithDelay } from "~utils/promises/retry";
 import type { HardwareApi } from "./hardware";
-import type { StoredWallet } from "~wallets";
+import type { LocalWallet, StoredWallet } from "~wallets";
 import Arweave from "arweave";
 import { isPasswordFresh } from "./auth";
 import { useQuery } from "@tanstack/react-query";
@@ -93,11 +93,13 @@ export function useActiveWallet() {
   // active wallet
   const wallet = useMemo(
     () =>
-      wallets?.find(({ address }) => address === activeAddress) || {
+      wallets?.find(({ address }) => address === activeAddress) ||
+      ({
         address: activeAddress,
         nickname: "",
         type: "local",
-      },
+        keyfile: "",
+      } satisfies StoredWallet),
     [activeAddress, wallets],
   );
 

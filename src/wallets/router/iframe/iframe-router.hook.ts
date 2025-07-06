@@ -21,7 +21,7 @@ const AUTH_STATUS_TO_OVERRIDE: Record<AuthStatus, null | ExtensionRouteOverride>
 };
 
 export function useEmbeddedOverride(location?: RoutePath) {
-  const { authStatus, lastRegisteredWallet, currentWallet, recoverableAccount } = useEmbedded();
+  const { authStatus, currentWallet, recoverableAccount, requestPasswordChange } = useEmbedded();
 
   if (!location || authStatus === "unknown") {
     return "/__OVERRIDES/cover";
@@ -38,6 +38,7 @@ export function useEmbeddedOverride(location?: RoutePath) {
         EmbeddedPaths.AuthMoreProviders,
         // TODO: These could be simply "anything under  AuthRecoverAccount"
         EmbeddedPaths.AuthRecoverAccount,
+        EmbeddedPaths.AuthRecoverAccountOtp,
         EmbeddedPaths.AuthRecoverAccountSeedphrase,
         EmbeddedPaths.AuthRecoverAccountKeyfile,
         EmbeddedPaths.AuthRecoverAccountQrCode,
@@ -77,41 +78,31 @@ export function useEmbeddedOverride(location?: RoutePath) {
   if (authStatus === "noShares") {
     return routeTrapMatches(
       location,
-      // TODO: Do we allow simply generating a new wallet? EmbeddedPaths.AuthAddWallet
       [
+        // Restore:
         EmbeddedPaths.AuthRestoreShares,
+        EmbeddedPaths.AuthRestoreSharesCreateConfirmation,
         EmbeddedPaths.AuthRestoreSharesRecoveryFile,
         EmbeddedPaths.AuthRestoreSharesSeedPhrase,
         EmbeddedPaths.AuthRestoreSharesKeyfile,
         EmbeddedPaths.AuthRestoreSharesQrCode,
+
+        // Add wallet:
+        EmbeddedPaths.AuthAddWallet,
+        EmbeddedPaths.AuthImportSeedPhrase,
+        EmbeddedPaths.AuthAddWithQRCode,
+        EmbeddedPaths.AuthQRCodeScanner,
+        EmbeddedPaths.AuthImportKeyfile,
+        EmbeddedPaths.AuthImportQrCode,
       ],
       EmbeddedPaths.AuthRestoreShares,
     );
   }
 
   if (authStatus === "unlocked") {
-    if (lastRegisteredWallet) {
-      // TODO: Remove this unnecessary step and just include a confirmation in the dashboard.
-      // If an account or wallet has just been created, then show AuthAddWalletConfirmation:
-      return routeTrapMatches(location, [EmbeddedPaths.AccountConfirmation], EmbeddedPaths.AccountConfirmation);
-    }
-
-    // TODO: Make recovery mandatory if no unpartitioned storage support, or optional if it has (because it will be hard to find the original site they were they first created a wallet).
-    // TODO: Once we support multiple wallets, the condition here should instead check if ANY of the wallets hasn't been backed up yet:
-    if (currentWallet.totalExports === 0 && currentWallet.totalBackups === 0 && !currentWallet.doNotAskAgainSetting) {
-      return routeTrapMatches(
-        location,
-        [
-          EmbeddedPaths.AccountBackupWalletReminder,
-          EmbeddedPaths.AccountBackupWallet,
-          EmbeddedPaths.AccountBackupFullWallet,
-          EmbeddedPaths.AccountBackupWalletRecoveryFile,
-          EmbeddedPaths.AccountBackupCopySeedphrase,
-          EmbeddedPaths.AccountBackupWalletQrCode,
-          // TODO: Missing EmbeddedPaths.AccountBackupShares/<PROVIDER>
-        ],
-        EmbeddedPaths.AccountBackupWalletReminder,
-      );
+    if (requestPasswordChange) {
+      // TODO: Consider also including this as a box in the dashboard?
+      return routeTrapMatches(location, [EmbeddedPaths.AccountChangePassword], EmbeddedPaths.AccountChangePassword);
     }
 
     // TODO: What if we are here but the wallet, for whatever reason, is not in the wallet provider / ExtensionStore?
