@@ -7,6 +7,7 @@ import styled from "styled-components";
 import browser from "webextension-polyfill";
 import wandAnnouncementBackground from "~assets/images/wand-announcement/wand_announcement_bg.svg";
 import { useLocation } from "~wallets/router/router.utils";
+import { GetTokensButton } from "../tier/GetTokensButton";
 import { wandDataURL } from "../asset/wand-announcement/wand";
 import { zeroFeesDataURL } from "../asset/wand-announcement/zero_fees";
 import { exclusiveFeatureDataURL } from "../asset/wand-announcement/exclusive_feature";
@@ -102,13 +103,7 @@ export const WandAnnouncementPopup = ({ isOpen, setOpen }) => {
         </Flex>
 
         <Flex direction="column" width="100%">
-          <Button
-            fullWidth
-            onClick={() => {
-              browser.tabs.create({ url: "https://ao.arweave.net/#/delegate/" });
-            }}>
-            {browser.i18n.getMessage("get_wander_tokens")}
-          </Button>
+          <GetTokensButton variant="normal" />
           <LinkButton fullWidth onClick={() => navigate("/tier")}>
             {browser.i18n.getMessage("explore_tier_benefits")}
           </LinkButton>

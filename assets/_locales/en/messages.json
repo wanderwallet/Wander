@@ -3707,5 +3707,77 @@
   "activity": {
     "message": "Activity",
     "description": "Activity text"
+  },
+  "your_lifetime_savings": {
+    "message": "Your lifetime savings",
+    "description": "Your lifetime savings text"
+  },
+  "your_position": {
+    "message": "Your position",
+    "description": "Your position text"
+  },
+  "tier_core_title": {
+    "message": "Get your first WNDR token to get started!",
+    "description": "Core tier title"
+  },
+  "tier_core_description": {
+    "message": "1. Open [AO Delegate](https://ao.arweave.net/#/delegate/) <br/> 2. Connect your Wander wallet <br/> 3. Add the WNDR token to your delegation list <br/> 4. Collect and claim your WNDR tokens",
+    "description": "Core tier description with steps"
+  },
+  "tier_benefit_fee_reduction_defi": {
+    "message": "$PERCENTAGE$% fee reduction on defi transactions",
+    "description": "Fee reduction benefit for defi transactions",
+    "placeholders": {
+      "percentage": {
+        "content": "$1",
+        "example": "25"
+      }
+    }
+  },
+  "tier_benefit_fee_reduction_transak": {
+    "message": "$PERCENTAGE$% fee reduction on Transak purchases",
+    "description": "Fee reduction benefit for Transak purchases",
+    "placeholders": {
+      "percentage": {
+        "content": "$1",
+        "example": "100"
+      }
+    }
+  },
+  "tier_benefit_access_features": {
+    "message": "Access to $FEATURE_TYPE$ features",
+    "description": "Access to specific tier features benefit",
+    "placeholders": {
+      "feature_type": {
+        "content": "$1",
+        "example": "Reserve"
+      }
+    }
+  },
+  "tier_benefit_early_access": {
+    "message": "Early access to new features",
+    "description": "Early access to new features benefit"
+  },
+  "tier_benefit_support_channels": {
+    "message": "Dedicated support channel of their choice: $CHANNELS$",
+    "description": "Dedicated support channels benefit",
+    "placeholders": {
+      "channels": {
+        "content": "$1",
+        "example": "Discord, Slack, Telegram, or Email"
+      }
+    }
+  },
+  "tier_feature_type_all": {
+    "message": "all",
+    "description": "All features type"
+  },
+  "tier_support_channels_basic": {
+    "message": "Discord, Slack, Telegram, or Email",
+    "description": "Basic support channels list"
+  },
+  "tier_support_channels_premium": {
+    "message": "Discord, Slack, Telegram, Email, or schedule a video call with the team",
+    "description": "Premium support channels list"
   }
 }

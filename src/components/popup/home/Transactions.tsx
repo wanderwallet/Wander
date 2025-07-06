@@ -34,8 +34,8 @@ import { getUserAvatar } from "~lib/avatar";
 import { convertAnnouncementsToTransactions } from "~utils/announcements";
 import { Announcement01 } from "@untitled-ui/icons-react";
 import { Flex } from "~components/common/Flex";
-import { isURL } from "~utils/urls/isURL";
 import dayjs from "dayjs";
+import { ParseTextWithLinks } from "~components/common/ParseTextWithLinks";
 
 interface TransactionsCache {
   transactions: ExtendedTransaction[];
@@ -297,19 +297,7 @@ export const AnnouncementItemComponent = ({ transaction }: { transaction: Extend
               display: "block",
               // width: "320px",
             }}>
-            {transaction?.announcementData?.description?.split(" ").map((word, i) => {
-              const isLink = isURL(word);
-              if (isLink) {
-                const displayText = word.replace(/^(https?:\/\/|www\.)/, "");
-                const href = word.endsWith(".") ? word.slice(0, -1) : word;
-                return (
-                  <AnnouncementLink key={i} href={href} target="_blank" rel="noopener noreferrer">
-                    {displayText}
-                  </AnnouncementLink>
-                );
-              }
-              return ` ${word} `;
-            }) || "Announcement description"}
+            <ParseTextWithLinks text={transaction?.announcementData?.description || ""} />
           </Secondary>
         </Flex>
       </Transaction>

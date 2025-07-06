@@ -16,6 +16,7 @@ import BigNumber from "bignumber.js";
 import type { Token } from "~tokens/token";
 import { CACHE_API } from "~constants/api";
 import Arweave from "arweave";
+import { queryClient } from "~utils/tanstack";
 
 let tokens: TokenInfo[] = null;
 export let tokenInfoMap = new Map<string, TokenInfo | Token>();
@@ -518,4 +519,26 @@ export async function getBotegaPrices(tokenIds: string[]): Promise<Record<string
     console.error("Error fetching Botega prices:", error);
     return Object.fromEntries(tokenIds.map((id) => [id, null]));
   }
+}
+
+export async function getAOTokenPrice() {
+  let price = 0;
+
+  try {
+    const queryKey = ["tokenPrice", AO_PROCESS_ID];
+    const existingPrice = queryClient.getQueryState(queryKey);
+    if (!existingPrice?.data) {
+      price = await queryClient.fetchQuery({
+        queryKey,
+        queryFn: () => getBotegaPrice(AO_PROCESS_ID),
+        staleTime: 0,
+        retry: 3,
+        retryDelay: (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 30000),
+      });
+    } else {
+      price = Number(existingPrice.data);
+    }
+  } catch {}
+
+  return price;
 }

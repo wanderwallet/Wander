@@ -17,11 +17,9 @@ import WarIcon from "url:/assets/ecosystem/war.png";
 import wUSDCIcon from "url:/assets/ecosystem/wusdc.svg";
 import type { Asset } from "~utils/agents/types";
 import { AO_YIELD_AGENT_RECENT_TXS, WANDER_FEE_PROCESS_ID } from "../constants";
-import { QueryClient } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import { isURL } from "~utils/urls/isURL";
-
-export const queryClient = new QueryClient();
+import { queryClient } from "~utils/tanstack";
 
 /**
  * Initializes a default Arweave instance.
