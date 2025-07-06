@@ -5,23 +5,14 @@ import styled from "styled-components";
 import { Flex } from "~components/common/Flex";
 import { TierCard } from "./TierCard";
 import { WanderIcon } from "./WanderIcon";
-import type { Tier } from "~utils/tier/types";
-import stars from "~assets/images/tier/stars.png";
 import { StarIcon } from "./StarIcon";
-import { carouselData } from "~utils/tier/carousel";
+import { carouselData, type WandCarouselSlide } from "~utils/tier/carousel";
 import { GetTokensButton } from "./GetTokensButton";
 import CustomizableStars from "./CustomizableStars";
-
-interface WandCarouselSlide {
-  tierName: Tier;
-  tierBenefits: string[];
-  carouselBg: string;
-  carouselBgLight: string;
-}
+import { ParseTextWithLinks } from "~components/common/ParseTextWithLinks";
 
 const renderSlide = (slide: WandCarouselSlide) => (
   <SlideContent carouselBg={slide.carouselBg} carouselBgLight={slide.carouselBgLight}>
-    {/* <StarsBackground /> */}
     <TierCard
       tier={slide.tierName}
       style={{ width: "100%", position: "relative", zIndex: 2 }}
@@ -46,9 +37,19 @@ const renderSlide = (slide: WandCarouselSlide) => (
       boxSizing="border-box"
       style={{ position: "relative", zIndex: 2 }}>
       <GetTokensButton tier={slide.tierName} />
+      {slide.tierTitle && (
+        <Text style={{ fontSize: "13px", flexWrap: "nowrap" }} weight="semibold" noMargin>
+          {slide.tierTitle}
+        </Text>
+      )}
+      {slide.tierDescription && (
+        <Text variant="secondary" style={{ fontSize: "13px", flexWrap: "nowrap" }} weight="semibold" noMargin>
+          <ParseTextWithLinks text={slide.tierDescription} />
+        </Text>
+      )}
       <Flex direction="column" gap={8} width="100%">
-        {slide.tierBenefits.map((benefit) => (
-          <Flex direction="row" gap={8} align="start">
+        {slide.tierBenefits.map((benefit, index) => (
+          <Flex key={index} direction="row" gap={8} align="start">
             <StarIcon tier={slide.tierName} />
             <Text size="sm" weight="medium" noMargin>
               {benefit}
@@ -96,19 +97,4 @@ const SlideContent = styled.div<{ carouselBg: string; carouselBgLight: string }>
       theme.displayTheme === "dark" ? carouselBg : carouselBgLight})
     no-repeat center center;
   background-size: 100% 100%;
-`;
-
-const StarsBackground = styled.div`
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 245px;
-  height: 56.322px;
-  margin-left: 40px;
-  background: url(${stars}) no-repeat center center;
-  background-size: 100% 100%;
-  flex-shrink: 0;
-  pointer-events: none;
-  z-index: 1;
-  border-radius: 8px;
 `;

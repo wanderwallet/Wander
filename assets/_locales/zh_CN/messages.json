@@ -3667,5 +3667,85 @@
     "activity": {
       "message": "活动",
       "description": "Activity text"
+    },
+    "your_lifetime_savings": {
+      "message": "您的终身节省",
+      "description": "Your lifetime savings text"
+    },
+    "your_position": {
+      "message": "您的位置",
+      "description": "Your position text"
+    },
+    "tier_core_title": {
+      "message": "获取您的第一个 WNDR 代币开始使用！",
+      "description": "Core tier title"
+    },
+    "tier_core_description": {
+      "message": "1. 打开 [AO 委托](https://ao.arweave.net/#/delegate/) <br/> 2. 连接您的 Wander 钱包 <br/> 3. 将 WNDR 代币添加到您的委托列表 <br/> 4. 收集并领取您的 WNDR 代币",
+      "description": "Core tier description with steps"
+    },
+    "tier_benefit_fee_reduction_defi": {
+      "message": "DeFi 交易手续费减免 $PERCENTAGE$%",
+      "description": "Fee reduction benefit for defi transactions",
+      "placeholders": {
+        "percentage": {
+          "content": "$1",
+          "example": "25"
+        }
+      }
+    },
+    "tier_benefit_fee_reduction_transak": {
+      "message": "Transak 购买手续费减免 $PERCENTAGE$%",
+      "description": "Fee reduction benefit for Transak purchases",
+      "placeholders": {
+        "percentage": {
+          "content": "$1",
+          "example": "100"
+        }
+      }
+    },
+    "tier_benefit_access_features": {
+      "message": "访问$FEATURE_TYPE$功能",
+      "description": "Access to specific tier features benefit",
+      "placeholders": {
+        "feature_type": {
+          "content": "$1",
+          "example": "储备"
+        }
+      }
+    },
+    "tier_benefit_early_access": {
+      "message": "新功能抢先体验",
+      "description": "Early access to new features benefit"
+    },
+    "tier_benefit_support_channels": {
+      "message": "专属支持渠道可选择：$CHANNELS$",
+      "description": "Dedicated support channels benefit",
+      "placeholders": {
+        "channels": {
+          "content": "$1",
+          "example": "Discord、Slack、Telegram 或邮件"
+        }
+      }
+    },
+    "tier_feature_type_reserve": {
+      "message": "储备",
+      "description": "Reserve tier feature type"
+    },
+    "tier_feature_type_edge": {
+      "message": "边缘",
+      "description": "Edge tier feature type"
+    },
+    "tier_feature_type_all": {
+      "message": "所有",
+      "description": "All features type"
+    },
+    "tier_support_channels_basic": {
+      "message": "Discord、Slack、Telegram 或邮件",
+      "description": "Basic support channels list"
+    },
+    "tier_support_channels_premium": {
+      "message": "Discord、Slack、Telegram、邮件，或与团队安排视频通话",
+      "description": "Premium support channels list"
     }
 }
