@@ -5,26 +5,23 @@ import styled from "styled-components";
 import { Flex } from "~components/common/Flex";
 import { TierCard } from "./TierCard";
 import { WanderIcon } from "./WanderIcon";
-import type { Tier } from "~utils/tier/types";
-import stars from "~assets/images/tier/stars.png";
 import { StarIcon } from "./StarIcon";
-import { carouselData } from "~utils/tier/carousel";
+import { carouselData, type WandCarouselSlide } from "~utils/tier/carousel";
 import { GetTokensButton } from "./GetTokensButton";
-
-interface WandCarouselSlide {
-  tierName: Tier;
-  tierBenefits: string[];
-  carouselBg: string;
-}
+import CustomizableStars from "./CustomizableStars";
+import { ParseTextWithLinks } from "~components/common/ParseTextWithLinks";
 
 const renderSlide = (slide: WandCarouselSlide) => (
-  <SlideContent carouselBg={slide.carouselBg}>
-    <StarsBackground />
+  <SlideContent carouselBg={slide.carouselBg} carouselBgLight={slide.carouselBgLight}>
     <TierCard
       tier={slide.tierName}
       style={{ width: "100%", position: "relative", zIndex: 2 }}
       hideBackground
       hideBorder>
+      <CustomizableStars
+        tier={slide.tierName}
+        style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -65%)", zIndex: 1 }}
+      />
       <Flex direction="column" gap={8} align="center" justify="center">
         <WanderIcon height={30} width={64} tier={slide.tierName} />
         <Text size="xl" weight="semibold" noMargin>
@@ -40,11 +37,21 @@ const renderSlide = (slide: WandCarouselSlide) => (
       boxSizing="border-box"
       style={{ position: "relative", zIndex: 2 }}>
       <GetTokensButton tier={slide.tierName} />
+      {slide.tierTitle && (
+        <Text style={{ fontSize: "13px", flexWrap: "nowrap" }} weight="semibold" noMargin>
+          {slide.tierTitle}
+        </Text>
+      )}
+      {slide.tierDescription && (
+        <Text variant="secondary" style={{ fontSize: "13px", flexWrap: "nowrap" }} weight="semibold" noMargin>
+          <ParseTextWithLinks text={slide.tierDescription} />
+        </Text>
+      )}
       <Flex direction="column" gap={8} width="100%">
-        {slide.tierBenefits.map((benefit) => (
-          <Flex direction="row" gap={8} align="center">
+        {slide.tierBenefits.map((benefit, index) => (
+          <Flex key={index} direction="row" gap={8} align="start">
             <StarIcon tier={slide.tierName} />
-            <Text size="sm" weight="semibold" noMargin>
+            <Text size="sm" weight="medium" noMargin>
               {benefit}
             </Text>
           </Flex>
@@ -74,7 +81,7 @@ export const TiersPopup = ({ isOpen, setOpen }) => {
   );
 };
 
-const SlideContent = styled.div<{ carouselBg: string }>`
+const SlideContent = styled.div<{ carouselBg: string; carouselBgLight: string }>`
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -86,21 +93,8 @@ const SlideContent = styled.div<{ carouselBg: string }>`
   flex: 1;
   height: 100%;
   position: relative;
-  background: url(${({ carouselBg }) => carouselBg}) no-repeat center center;
+  background: url(${({ carouselBg, carouselBgLight, theme }) =>
+      theme.displayTheme === "dark" ? carouselBg : carouselBgLight})
+    no-repeat center center;
   background-size: 100% 100%;
-`;
-
-const StarsBackground = styled.div`
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 245px;
-  height: 56.322px;
-  margin-left: 40px;
-  background: url(${stars}) no-repeat center center;
-  background-size: 100% 100%;
-  flex-shrink: 0;
-  pointer-events: none;
-  z-index: 1;
-  border-radius: 8px;
 `;

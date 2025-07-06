@@ -5,12 +5,13 @@ import SliderMenu from "~components/SliderMenu";
 import { Carousel } from "~components/Carousel";
 import styled from "styled-components";
 import browser from "webextension-polyfill";
-import powerups from "~assets/images/wand-announcement/powerups.png";
-import exclusiveFeature from "~assets/images/wand-announcement/exclusive_feature.png";
-import zeroFees from "~assets/images/wand-announcement/zero_fees.png";
-import wand from "~assets/images/wand-announcement/wand.png";
 import wandAnnouncementBackground from "~assets/images/wand-announcement/wand_announcement_bg.svg";
 import { useLocation } from "~wallets/router/router.utils";
+import { GetTokensButton } from "../tier/GetTokensButton";
+import { wandDataURL } from "../asset/wand-announcement/wand";
+import { zeroFeesDataURL } from "../asset/wand-announcement/zero_fees";
+import { exclusiveFeatureDataURL } from "../asset/wand-announcement/exclusive_feature";
+import { powerupsDataURL } from "../asset/wand-announcement/powerups";
 
 interface WandCarouselSlide {
   image: string;
@@ -19,19 +20,19 @@ interface WandCarouselSlide {
 
 const carouselData: WandCarouselSlide[] = [
   {
-    image: wand,
+    image: wandDataURL,
     title: browser.i18n.getMessage("swipe_to_learn_more"),
   },
   {
-    image: zeroFees,
+    image: zeroFeesDataURL,
     title: browser.i18n.getMessage("zero_fees"),
   },
   {
-    image: exclusiveFeature,
+    image: exclusiveFeatureDataURL,
     title: browser.i18n.getMessage("exclusive_feature_access"),
   },
   {
-    image: powerups,
+    image: powerupsDataURL,
     title: browser.i18n.getMessage("power_ups_with_partners"),
   },
 ];
@@ -41,7 +42,7 @@ export const WandAnnouncementPopup = ({ isOpen, setOpen }) => {
 
   async function handleClose() {
     setOpen(false);
-    await ExtensionStorage.set("wand_announcement_shown", true);
+    await ExtensionStorage.set("wander_announcement_shown", true);
   }
 
   const renderSlide = (slide: WandCarouselSlide) => (
@@ -84,9 +85,9 @@ export const WandAnnouncementPopup = ({ isOpen, setOpen }) => {
                   WebkitTextFillColor: "transparent",
                 }}
                 noMargin>
-                WNDR
+                $WNDR
               </Text>
-              <WhiteText size="3xl" weight="semibold" noMargin>
+              <WhiteText style={{ marginLeft: 4 }} size="3xl" weight="semibold" noMargin>
                 {browser.i18n.getMessage("token")}!
               </WhiteText>
             </Flex>
@@ -102,13 +103,7 @@ export const WandAnnouncementPopup = ({ isOpen, setOpen }) => {
         </Flex>
 
         <Flex direction="column" width="100%">
-          <Button
-            fullWidth
-            onClick={() => {
-              browser.tabs.create({ url: "https://ao.arweave.net/#/delegate/" });
-            }}>
-            {browser.i18n.getMessage("get_wander_tokens")}
-          </Button>
+          <GetTokensButton variant="normal" />
           <LinkButton fullWidth onClick={() => navigate("/tier")}>
             {browser.i18n.getMessage("explore_tier_benefits")}
           </LinkButton>
@@ -123,7 +118,6 @@ const SlideContent = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
 `;
 
 const CarouselImage = styled.img`

@@ -164,7 +164,7 @@ export function TierTag({
 
   return (
     <Tag borderColor={borderColor} onClick={() => setIsOpen(true)}>
-      <WanderIcon height={7.5} width={16} tier={"Prime"} />
+      <WanderIcon height={7.5} width={16} tier={activeTier?.tier} />
       <Text size="2xs" weight="medium" noMargin>
         {activeTier?.tier}
       </Text>

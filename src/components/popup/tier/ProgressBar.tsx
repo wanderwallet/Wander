@@ -25,9 +25,9 @@ interface ProgressBarProps {
 const defaultSegments: ProgressSegment[] = [
   { percentage: 20, name: "Core", backgroundColor: "rgba(107, 87, 249, 0.20)", activeBackgroundColor: "#6B57F9" },
   { percentage: 30, name: "Select", backgroundColor: "rgba(40, 73, 86, 0.20)", activeBackgroundColor: "#284956" },
-  { percentage: 30, name: "Plus", backgroundColor: "rgba(110, 224, 152, 0.20)", activeBackgroundColor: "#6EE098" },
-  { percentage: 18, name: "Prime", backgroundColor: "rgba(212, 212, 212, 0.20)", activeBackgroundColor: "#D4D4D4" },
-  { percentage: 2, name: "Elite", backgroundColor: "rgba(212, 212, 212, 0.20)", activeBackgroundColor: "#C89A3F" },
+  { percentage: 30, name: "Reserve", backgroundColor: "rgba(110, 224, 152, 0.20)", activeBackgroundColor: "#6EE098" },
+  { percentage: 18, name: "Edge", backgroundColor: "rgba(212, 212, 212, 0.20)", activeBackgroundColor: "#D4D4D4" },
+  { percentage: 2, name: "Prime", backgroundColor: "rgba(212, 212, 212, 0.20)", activeBackgroundColor: "#C89A3F" },
 ];
 
 export function ProgressBar({
@@ -100,7 +100,7 @@ export function ProgressBar({
         </SegmentLabelsContainer>
       )}
 
-      {showProgressLine && exactProgressWidth > 0 && exactProgressWidth < width && (
+      {showProgressLine && exactProgressWidth >= 0 && exactProgressWidth <= width && (
         <ProgressLine
           $position={exactProgressWidth}
           $width={progressLineWidth}

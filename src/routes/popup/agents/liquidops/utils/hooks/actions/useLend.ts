@@ -3,6 +3,9 @@ import { LiquidOpsClient } from "../../LiquidOps";
 import { tokenInput } from "liquidops";
 import { getActiveAddress } from "~wallets";
 import { EventType, trackEvent } from "~utils/analytics";
+import { queryClient } from "~utils/tanstack";
+import { getActiveTier } from "~utils/tier/utils";
+import { defaultOptions } from "~tokens/hooks";
 
 interface LendParams {
   token: string;
@@ -104,7 +107,19 @@ export function useLend({ onSettled }: Params) {
           throw new Error(errorMessage);
         }
 
-        trackEvent(EventType.LIQUID_OPS_AGENT_WITHDRAW, { withdrawAsset: token, withdrawAmount: quantity.toString() });
+        const activeTier = await queryClient
+          .fetchQuery({
+            queryKey: ["active-tier", walletAddress],
+            queryFn: () => getActiveTier(walletAddress),
+            ...defaultOptions,
+          })
+          .catch(() => ({ tier: "" }));
+
+        trackEvent(EventType.LIQUID_OPS_AGENT_WITHDRAW, {
+          withdrawAsset: token,
+          withdrawAmount: quantity.toString(),
+          tier: activeTier.tier || "",
+        });
 
         return "Unlent assets";
       } finally {

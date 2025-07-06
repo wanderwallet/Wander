@@ -3,19 +3,28 @@ export const TIER_PROCESS_ID = "Unzzq_gNIBn-D-IrUPvXV4BKRqox3naPTees4I5-Gqo";
 export enum TierTypes {
   Core = "Core",
   Select = "Select",
-  Plus = "Plus",
+  Reserve = "Reserve",
+  Edge = "Edge",
   Prime = "Prime",
-  Elite = "Elite",
 }
 
 export const defiFeeReductionsInPercent = {
   [TierTypes.Core]: 0,
   [TierTypes.Select]: 5,
-  [TierTypes.Plus]: 25,
-  [TierTypes.Prime]: 75,
-  [TierTypes.Elite]: 100,
+  [TierTypes.Reserve]: 25,
+  [TierTypes.Edge]: 75,
+  [TierTypes.Prime]: 100,
+};
+
+export const tierIdToTierName = {
+  1: TierTypes.Prime,
+  2: TierTypes.Edge,
+  3: TierTypes.Reserve,
+  4: TierTypes.Select,
+  5: TierTypes.Core,
 };
 
 export const defiFeePercent = 1;
 
 export const EXPLORE_TIER_BENEFITS = "explore_tier_benefits";
+export const ACTIVITY_NOTIFICATIONS_NOTICE = "activity_notifications_notice";

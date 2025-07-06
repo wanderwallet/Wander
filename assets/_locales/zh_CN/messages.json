@@ -3612,6 +3612,18 @@
       "message": "自动转换您的每日 AO 代币收益。",
       "description": "Announcement 2 description"
     },
+    "announcement_3_title": {
+      "message": "WNDR 代币已上线！",
+      "description": "Announcement 3 title"
+    },
+    "announcement_3_description": {
+      "message": "委托你的 AO 以赚取 WNDR 代币",
+      "description": "Announcement 3 description"
+    },
+    "announcement_3_body": {
+      "message": "1）访问 https://ao.arweave.net/#/delegate/ <br/> 2）连接你的 Wander 钱包 <br/> 3）在项目列表中找到 Wander <br/> 4）点击 “添加” 按钮 <br/> 5）设置你的委托百分比 <br/> 6）点击 “确认委托偏好” 按钮 <br/>  <br/> 完成！",
+      "description": "Announcement 3 body"
+    },
     "swipe_to_learn_more": {
       "message": "滑动了解更多",
       "description": "Swipe to learn more text"
@@ -3655,5 +3667,77 @@
     "activity": {
       "message": "活动",
       "description": "Activity text"
+    },
+    "your_lifetime_savings": {
+      "message": "您的终身节省",
+      "description": "Your lifetime savings text"
+    },
+    "your_position": {
+      "message": "您的位置",
+      "description": "Your position text"
+    },
+    "tier_core_title": {
+      "message": "获取您的第一个 WNDR 代币开始使用！",
+      "description": "Core tier title"
+    },
+    "tier_core_description": {
+      "message": "1. 打开 [AO 委托](https://ao.arweave.net/#/delegate/) <br/> 2. 连接您的 Wander 钱包 <br/> 3. 将 WNDR 代币添加到您的委托列表 <br/> 4. 收集并领取您的 WNDR 代币",
+      "description": "Core tier description with steps"
+    },
+    "tier_benefit_fee_reduction_defi": {
+      "message": "DeFi 交易手续费减免 $PERCENTAGE$%",
+      "description": "Fee reduction benefit for defi transactions",
+      "placeholders": {
+        "percentage": {
+          "content": "$1",
+          "example": "25"
+        }
+      }
+    },
+    "tier_benefit_fee_reduction_transak": {
+      "message": "Transak 购买手续费减免 $PERCENTAGE$%",
+      "description": "Fee reduction benefit for Transak purchases",
+      "placeholders": {
+        "percentage": {
+          "content": "$1",
+          "example": "100"
+        }
+      }
+    },
+    "tier_benefit_access_features": {
+      "message": "访问$FEATURE_TYPE$功能",
+      "description": "Access to specific tier features benefit",
+      "placeholders": {
+        "feature_type": {
+          "content": "$1",
+          "example": "储备"
+        }
+      }
+    },
+    "tier_benefit_early_access": {
+      "message": "新功能抢先体验",
+      "description": "Early access to new features benefit"
+    },
+    "tier_benefit_support_channels": {
+      "message": "专属支持渠道可选择：$CHANNELS$",
+      "description": "Dedicated support channels benefit",
+      "placeholders": {
+        "channels": {
+          "content": "$1",
+          "example": "Discord、Slack、Telegram 或邮件"
+        }
+      }
+    },
+    "tier_feature_type_all": {
+      "message": "所有",
+      "description": "All features type"
+    },
+    "tier_support_channels_basic": {
+      "message": "Discord、Slack、Telegram 或邮件",
+      "description": "Basic support channels list"
+    },
+    "tier_support_channels_premium": {
+      "message": "Discord、Slack、Telegram、邮件，或与团队安排视频通话",
+      "description": "Premium support channels list"
     }
 }

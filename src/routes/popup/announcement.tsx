@@ -5,10 +5,10 @@ import type { CommonRouteProps } from "~wallets/router/router.types";
 import { getAnnouncement } from "~utils/announcements";
 import { useMemo } from "react";
 import { Flex } from "~components/common/Flex";
-import { isURL } from "~utils/urls/isURL";
 import dayjs from "dayjs";
 import { Text } from "@arconnect/components-rebrand";
 import { Announcement01 } from "@untitled-ui/icons-react";
+import { ParseTextWithLinks } from "~components/common/ParseTextWithLinks";
 
 export interface AnnouncementViewParams {
   id: string | number;
@@ -36,20 +36,19 @@ export function AnnouncementView({ params: { id } }: AnnouncementViewProps) {
             </Flex>
           </Flex>
           <SecondaryText>
-            {announcement?.description?.split(" ").map((word, i) => {
-              const isLink = isURL(word);
-              if (isLink) {
-                const displayText = word.replace(/^(https?:\/\/|www\.)/, "");
-                const href = word.endsWith(".") ? word.slice(0, -1) : word;
-                return (
-                  <AnnouncementLink key={i} href={href} target="_blank" rel="noopener noreferrer">
-                    {displayText}
-                  </AnnouncementLink>
-                );
-              }
-              return ` ${word} `;
-            }) || "Announcement description"}
+            <ParseTextWithLinks text={announcement?.description || ""} />
           </SecondaryText>
+
+          <ThertiaryText
+            style={{
+              whiteSpace: "wrap",
+              overflow: "hidden",
+              // textOverflow: "ellipsis",
+              display: "block",
+              // width: "320px",
+            }}>
+            <ParseTextWithLinks text={announcement?.body || ""} />
+          </ThertiaryText>
         </Flex>
       </div>
     </Wrapper>
@@ -88,6 +87,13 @@ const PrimaryText = styled(Text).attrs({
 const SecondaryText = styled(Text).attrs({
   noMargin: true,
   weight: "medium",
+  size: "sm",
+  variant: "secondary",
+})``;
+
+const ThertiaryText = styled(Text).attrs({
+  noMargin: true,
+  weight: "regular",
   size: "sm",
   variant: "secondary",
 })``;

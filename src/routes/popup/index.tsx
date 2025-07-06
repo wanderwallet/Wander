@@ -104,7 +104,7 @@ export function HomeView() {
       setLoggedIn(true);
     }
 
-    const wandAnnouncementShown = (await ExtensionStorage.get<boolean>("wand_announcement_shown")) ?? false;
+    const wandAnnouncementShown = (await ExtensionStorage.get<boolean>("wander_announcement_shown")) ?? false;
     setWandAnnouncementOpen(!wandAnnouncementShown);
 
     // WALLET.TYPE JUST FOR KEYSTONE POPUP

@@ -1,56 +1,75 @@
 import type { Tier } from "~utils/tier/types";
+import browser from "webextension-polyfill";
 import coreCarouselBg from "~assets/images/tier/core_carousel_bg.png";
 import selectCarouselBg from "~assets/images/tier/select_carousel_bg.png";
 import plusCarouselBg from "~assets/images/tier/plus_carousel_bg.png";
 import primeCarouselBg from "~assets/images/tier/prime_carousel_bg.png";
 import eliteCarouselBg from "~assets/images/tier/elite_carousel_bg.png";
 
-interface WandCarouselSlide {
+import coreCarouselBgLight from "~assets/images/tier/core_carousel_bg_light.png";
+import selectCarouselBgLight from "~assets/images/tier/select_carousel_bg_light.png";
+import plusCarouselBgLight from "~assets/images/tier/plus_carousel_bg_light.png";
+import primeCarouselBgLight from "~assets/images/tier/prime_carousel_bg_light.png";
+import eliteCarouselBgLight from "~assets/images/tier/elite_carousel_bg_light.png";
+
+export interface WandCarouselSlide {
   tierName: Tier;
+  tierTitle?: string;
+  tierDescription?: string;
   tierBenefits: string[];
   carouselBg: string;
+  carouselBgLight: string;
 }
 
 export const carouselData: WandCarouselSlide[] = [
   {
     tierName: "Core",
-    tierBenefits: ["Wander as you know it"],
+    tierTitle: browser.i18n.getMessage("tier_core_title"),
+    tierDescription: browser.i18n.getMessage("tier_core_description"),
+    tierBenefits: [],
     carouselBg: coreCarouselBg,
+    carouselBgLight: coreCarouselBgLight,
   },
   {
     tierName: "Select",
-    tierBenefits: ["5% fee reduction on defi transactions", "0% fee reduction on Transak purchases"],
+    tierBenefits: [browser.i18n.getMessage("tier_benefit_fee_reduction_defi", "5")],
     carouselBg: selectCarouselBg,
+    carouselBgLight: selectCarouselBgLight,
   },
   {
-    tierName: "Plus",
+    tierName: "Reserve",
     tierBenefits: [
-      "25% fee reduction on defi transactions",
-      "0% fee reduction on Transak purchases",
-      "Access to Plus features",
+      browser.i18n.getMessage("tier_benefit_fee_reduction_defi", "25"),
+      browser.i18n.getMessage("tier_benefit_access_features", "Reserve"),
     ],
     carouselBg: plusCarouselBg,
+    carouselBgLight: plusCarouselBgLight,
+  },
+  {
+    tierName: "Edge",
+    tierBenefits: [
+      browser.i18n.getMessage("tier_benefit_fee_reduction_defi", "75"),
+      browser.i18n.getMessage("tier_benefit_fee_reduction_transak", "100"),
+      browser.i18n.getMessage("tier_benefit_access_features", "Edge"),
+      browser.i18n.getMessage("tier_benefit_early_access"),
+      browser.i18n.getMessage("tier_benefit_support_channels", browser.i18n.getMessage("tier_support_channels_basic")),
+    ],
+    carouselBg: primeCarouselBg,
+    carouselBgLight: primeCarouselBgLight,
   },
   {
     tierName: "Prime",
     tierBenefits: [
-      "75% fee reduction on defi transactions",
-      "100% fee reduction on Transak purchases",
-      "Access to Ultra features",
-      "Early access to new features",
-      "Dedicated support channel of their choice: Discord, Slack, Telegram, or Email",
-    ],
-    carouselBg: primeCarouselBg,
-  },
-  {
-    tierName: "Elite",
-    tierBenefits: [
-      "100% fee reduction on defi transactions",
-      "100% fee reduction on Transak purchases",
-      "Access to ALL features",
-      "Early access to new features",
-      "Dedicated support channel of their choice: Discord, Slack, Telegram, Email, or schedule a video call with the team",
+      browser.i18n.getMessage("tier_benefit_fee_reduction_defi", "100"),
+      browser.i18n.getMessage("tier_benefit_fee_reduction_transak", "100"),
+      browser.i18n.getMessage("tier_benefit_access_features", browser.i18n.getMessage("tier_feature_type_all")),
+      browser.i18n.getMessage("tier_benefit_early_access"),
+      browser.i18n.getMessage(
+        "tier_benefit_support_channels",
+        browser.i18n.getMessage("tier_support_channels_premium"),
+      ),
     ],
     carouselBg: eliteCarouselBg,
+    carouselBgLight: eliteCarouselBgLight,
   },
 ];

@@ -1,14 +1,12 @@
 import { dryrun, message } from "@permaweb/aoconnect/browser";
-import { AO_PROCESS_ID, createDataItemSigner, getBotegaPrice, getTagValue, Id } from "~tokens/aoTokens/ao";
-import { TIER_PROCESS_ID } from "./constants";
+import { createDataItemSigner, getTagValue, Id } from "~tokens/aoTokens/ao";
+import { tierIdToTierName, TIER_PROCESS_ID } from "./constants";
 import type { ActiveTier, DefiFeeDetails, Tier, WalletSavings } from "./types";
 import { defiFeePercent, defiFeeReductionsInPercent } from "./constants";
 import BigNumber from "bignumber.js";
 import { getKeyfile, type DecryptedWallet } from "~wallets";
 import { freeDecryptedWallet } from "~wallets/encryption";
 import { isLocalWallet } from "~utils/assertions";
-import { balanceToFractioned } from "~tokens/currency";
-import { queryClient } from "~utils/agents/utils";
 import { ExtensionStorage } from "~utils/storage";
 import { scheduleRefreshWalletLifetimeSavings } from "./alarms";
 
@@ -42,15 +40,24 @@ export async function getActiveTier(walletAddress: string): Promise<ActiveTier> 
     Id,
     Owner: walletAddress,
     process: TIER_PROCESS_ID,
-    tags: [{ name: "Action", value: "Get-Wallet-Tier" }],
+    tags: [{ name: "Action", value: "Get-Wallet-Info" }],
   });
 
   const message = dryrunRes.Messages?.[0];
   const data = JSON.parse(message?.Data || "{}");
 
-  await ExtensionStorage.set(`active_tier_${walletAddress}`, data);
+  if (data?.tier === undefined || data?.tier === null) {
+    throw new Error("No tier data found");
+  }
 
-  return data;
+  const activeTier = {
+    ...data,
+    tier: tierIdToTierName[data.tier],
+  };
+
+  await ExtensionStorage.set(`active_tier_${walletAddress}`, activeTier);
+
+  return activeTier;
 }
 
 export function getDefiFeeDetailsForTier(tier: Tier): DefiFeeDetails {
@@ -92,31 +99,10 @@ export async function getWalletLifetimeSavings(walletAddress: string): Promise<s
   return savings;
 }
 
-export async function saveWalletLifetimeSavings(walletAddress: string, feeSavings: string) {
+export async function saveWalletLifetimeSavings(walletAddress: string, savingsInUsd: string) {
   let decryptedWallet: DecryptedWallet;
   try {
-    if (!walletAddress || !feeSavings || BigNumber(feeSavings).lte(0)) return;
-
-    let price = 0;
-
-    const queryKey = ["tokenPrice", AO_PROCESS_ID];
-    const existingPrice = queryClient.getQueryState(queryKey);
-    if (!existingPrice?.data) {
-      price = await queryClient.fetchQuery({
-        queryKey,
-        queryFn: () => getBotegaPrice(AO_PROCESS_ID),
-        staleTime: 0,
-        retry: 3,
-        retryDelay: (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 30000),
-      });
-    }
-
-    if (+price <= 0) return;
-
-    const feeSavingsAmount = balanceToFractioned(feeSavings, { decimals: 12 });
-    const savingsInUsd = BigNumber(
-      feeSavingsAmount.multipliedBy(price).toPrecision(8, BigNumber.ROUND_HALF_UP),
-    ).toFixed();
+    if (!walletAddress || !savingsInUsd || BigNumber(savingsInUsd).lte(0)) return;
 
     decryptedWallet = await getKeyfile(walletAddress);
     isLocalWallet(decryptedWallet);
