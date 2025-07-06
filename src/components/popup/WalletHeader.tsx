@@ -16,7 +16,7 @@ import keystoneLogo from "url:/assets/hardware/keystone.png";
 import useActiveTab from "~applications/useActiveTab";
 import AppIcon, { NoAppIcon } from "./home/AppIcon";
 import browser from "webextension-polyfill";
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 import copy from "copy-to-clipboard";
 import { type Gateway } from "~gateways/gateway";
 import { useNameServiceProfile } from "~lib/nameservice";
@@ -26,9 +26,26 @@ import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { TierTag } from "./tier/TierTag";
 import { Flex } from "~components/common/Flex";
 import { Avatar, NoAvatarIcon } from "~components/Avatar";
+import coreHeaderGlow from "~assets/images/tier/core_header_glow.svg";
+import selectHeaderGlow from "~assets/images/tier/select_header_glow.svg";
+import reserveHeaderGlow from "~assets/images/tier/reserve_header_glow.svg";
+import edgeHeaderGlow from "~assets/images/tier/edge_header_glow.svg";
+import primeHeaderGlow from "~assets/images/tier/prime_header_glow.svg";
+import { TierTypes } from "~utils/tier/constants";
+import { useActiveTier } from "~utils/tier/hooks";
+
+const glowBackgrounds = {
+  [TierTypes.Core]: coreHeaderGlow,
+  [TierTypes.Select]: selectHeaderGlow,
+  [TierTypes.Reserve]: reserveHeaderGlow,
+  [TierTypes.Edge]: edgeHeaderGlow,
+  [TierTypes.Prime]: primeHeaderGlow,
+};
 
 export default function WalletHeader() {
   const theme = useTheme();
+
+  const { data: activeTier } = useActiveTier();
 
   // current address
   const [activeAddress] = useStorage<string>({
@@ -146,8 +163,10 @@ export default function WalletHeader() {
   // copied address
   const [copied, setCopied] = useState(false);
 
+  const glowBackground = glowBackgrounds[activeTier?.tier || TierTypes.Core];
+
   return (
-    <Wrapper displayTheme={theme} scrolled={scrollY > 14}>
+    <Wrapper displayTheme={theme} scrolled={scrollY > 14} glowBackground={glowBackground}>
       <Flex align="center" gap="8px">
         <AppAction
           onClick={(e) => {
@@ -290,6 +309,7 @@ export default function WalletHeader() {
 const Wrapper = styled.nav<{
   displayTheme: DisplayTheme;
   scrolled: boolean;
+  glowBackground: string;
 }>`
   position: sticky;
   display: flex;
@@ -298,13 +318,28 @@ const Wrapper = styled.nav<{
   gap: 8px;
   z-index: 100;
   top: 0;
-  left: 0;
-  right: 0;
-  background-color: rgba(${(props) => props.theme.background}, 0.75);
-  backdrop-filter: blur(15px);
+  inset-inline: 0;
   transition: border 0.23s ease-in-out;
   user-select: none;
   padding: 24px;
+
+  ${({ scrolled }) =>
+    scrolled &&
+    css`
+      background-color: rgba(${(props) => props.theme.background}, 0.75);
+      backdrop-filter: blur(15px);
+    `}
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: url(${(props) => props.glowBackground}) center/100% no-repeat;
+    filter: blur(52.5px);
+    mix-blend-mode: color;
+    border-radius: 400.743px;
+    z-index: -1;
+  }
 `;
 
 const WalletName = styled.div`
