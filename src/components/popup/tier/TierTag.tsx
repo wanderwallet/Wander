@@ -96,7 +96,7 @@ const Tag = styled.div<{ boxShadow: string; raysBackground: string }>`
     background-position: center;
     background-repeat: no-repeat;
     pointer-events: none;
-    opacity: 0.4;
+    opacity: ${(props) => (props.theme.displayTheme === "dark" ? 0.4 : 1)};
     z-index: -3;
   }
 
