@@ -4,7 +4,6 @@ import { CollectibleView } from "~routes/popup/collectible/[id]";
 import { CollectiblesView } from "~routes/popup/collectibles";
 import { ConfirmPurchaseView } from "~routes/popup/confirm";
 import { MessageNotificationView } from "~routes/popup/notification/[id]";
-import { NotificationsView } from "~routes/popup/notifications";
 import { PendingPurchaseView } from "~routes/popup/pending";
 import { PurchaseView } from "~routes/popup/purchase";
 import { ReceiveView } from "~routes/popup/receive";
@@ -56,6 +55,8 @@ import { LiquidOpsAgent } from "~routes/popup/agents/liquidops/agent";
 import { LiquidOpsDepositWithdraw } from "~routes/popup/agents/liquidops/depositwithdraw";
 import { LiquidOpsConfirm } from "~routes/popup/agents/liquidops/confirm";
 import { LiquidOpsResult } from "~routes/popup/agents/liquidops/result";
+import { AnnouncementView } from "~routes/popup/announcement";
+import { TierView } from "~routes/popup/tier";
 
 export type PopupRoutePath =
   | "/"
@@ -82,6 +83,7 @@ export type PopupRoutePath =
   | `/collectible/${string}`
   | `/transaction/${string}`
   | `/transaction/${string}/${string}`
+  | `/announcement/${string}`
   | `/send/confirm/${string}/${string}/${string}`
   | `/send/confirm/${string}/${string}/${string}/${string}`
   | `/send/completed/${string}`
@@ -114,7 +116,8 @@ export type PopupRoutePath =
   | `/agents/liquidops/${string}`
   | `/agents/liquidops/${string}/${"deposit" | "withdraw"}`
   | `/agents/liquidops/${string}/${"deposit" | "withdraw"}/${string}/confirm`
-  | `/agents/liquidops/${string}/${"deposit" | "withdraw"}/result/${"success" | "failure"}`;
+  | `/agents/liquidops/${string}/${"deposit" | "withdraw"}/result/${"success" | "failure"}`
+  | `/tier`;
 
 export const PopupPaths = {
   Home: "/",
@@ -138,6 +141,7 @@ export const PopupPaths = {
   Collectibles: "/collectibles",
   Collectible: "/collectible/:id",
   Transaction: "/transaction/:id/:gateway?",
+  Announcement: "/announcement/:id",
   Confirm: "/send/confirm/:token/:qty/:recipient/:message?",
   TransactionCompleted: "/send/completed/:id",
   QuickSettings: "/quick-settings",
@@ -170,6 +174,7 @@ export const PopupPaths = {
   LiquidOpsDepositWithdraw: "/agents/liquidops/:ticker/:action",
   LiquidOpsResult: "/agents/liquidops/:ticker/:action/result/:result",
   LiquidOpsConfirm: "/agents/liquidops/:ticker/:action/:quantity/confirm",
+  Tier: "/tier",
 } as const satisfies Record<string, PopupRoutePath>;
 
 export const POPUP_ROUTES = [
@@ -234,10 +239,6 @@ export const POPUP_ROUTES = [
     component: TransactionsView,
   },
   {
-    path: PopupPaths.Notifications,
-    component: NotificationsView,
-  },
-  {
     path: PopupPaths.MessageNotification,
     component: MessageNotificationView,
   },
@@ -256,6 +257,10 @@ export const POPUP_ROUTES = [
   {
     path: PopupPaths.Transaction,
     component: TransactionView,
+  },
+  {
+    path: PopupPaths.Announcement,
+    component: AnnouncementView,
   },
   {
     // TODO: This route is incorrect/misleading as a lot of its params are actually ignored and loaded from a temp tx
@@ -390,5 +395,9 @@ export const POPUP_ROUTES = [
   {
     path: PopupPaths.LiquidOpsConfirm,
     component: LiquidOpsConfirm,
+  },
+  {
+    path: PopupPaths.Tier,
+    component: TierView,
   },
 ] as const satisfies RouteConfig[];

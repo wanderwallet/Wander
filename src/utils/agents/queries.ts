@@ -114,6 +114,7 @@ query ($parentTxIds: [String!]!) {
     edges {
       node {
         id
+        recipient
         tags { name, value }
       }
     }

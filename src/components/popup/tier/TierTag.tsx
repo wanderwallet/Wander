@@ -1,0 +1,124 @@
+import styled, { useTheme } from "styled-components";
+import { Loading, Text } from "@arconnect/components-rebrand";
+import { useActiveTier } from "~utils/tier/hooks";
+import { useLocation } from "~wallets/router/router.utils";
+import { WanderIcon } from "./WanderIcon";
+import { TierTypes } from "~utils/tier/constants";
+import { EventType, trackEvent } from "~utils/analytics";
+import RaysCore from "~assets/images/tier/rays_core.png";
+import RaysElite from "~assets/images/tier/rays_elite.png";
+import RaysPrime from "~assets/images/tier/rays_prime.png";
+import RaysPlus from "~assets/images/tier/rays_plus.png";
+import RaysSelect from "~assets/images/tier/rays_select.png";
+
+const rays = {
+  [TierTypes.Core]: RaysCore,
+  [TierTypes.Prime]: RaysElite,
+  [TierTypes.Edge]: RaysPrime,
+  [TierTypes.Reserve]: RaysPlus,
+  [TierTypes.Select]: RaysSelect,
+};
+
+const boxShadows = {
+  dark: {
+    [TierTypes.Prime]:
+      "inset 0px 1px 1px rgba(234, 208, 131, 0.6), inset 0px 1px 2px rgba(255, 255, 255, 0.6), inset 0px 2px 12px rgba(216, 187, 81, 0.3), inset 0px 1px 8px rgba(125, 102, 35, 0.2)",
+    [TierTypes.Edge]:
+      "inset 0px 1px 1px rgba(212, 212, 212, 0.6), inset 0px 1px 2px rgba(255, 255, 255, 0.6), inset 0px 2px 12px rgba(6, 45, 60, 0.3), inset 0px 1px 8px rgba(90, 93, 94, 0.2)",
+    [TierTypes.Reserve]:
+      "inset 0px 1px 1px rgba(134, 229, 169, 0.6), inset 0px 1px 2px rgba(255, 255, 255, 0.6), inset 0px 2px 12px rgba(8, 59, 88, 0.3), inset 0px 1px 8px rgba(90, 93, 94, 0.2)",
+    [TierTypes.Select]:
+      "inset 0px 1px 1px rgba(131, 215, 245, 0.6), inset 0px 1px 2px rgba(255, 255, 255, 0.6), inset 0px 2px 12px rgba(8, 59, 88, 0.3), inset 0px 1px 8px rgba(13, 136, 207, 0.2)",
+    [TierTypes.Core]:
+      "inset 0px 1px 1px rgba(151, 135, 255, 0.6), inset 0px 1px 2px rgba(255, 255, 255, 0.6), inset 0px 2px 12px rgba(107, 87, 249, 0.3), inset 0px 1px 8px rgba(107, 87, 249, 0.2)",
+  },
+  light: {
+    [TierTypes.Prime]:
+      "0px 1px 5px -20.902px rgba(185, 149, 42, 0.60) inset, 0px 1px 4.3px -1.96px rgba(255, 255, 255, 0.60) inset, 0px 2.613px 11.758px 0px rgba(255, 241, 189, 0.30) inset, 0px 0.653px 13.064px 0px rgba(234, 208, 131, 0.20) inset",
+    [TierTypes.Edge]:
+      "0px 1px 5px -20.902px rgba(153, 153, 153, 0.60) inset, 0px 1px 4.3px -1.96px rgba(255, 255, 255, 0.20) inset, 0px 0px 3.1px 0px rgba(6, 45, 60, 0.10) inset, 0px 0.653px 9.5px 0px rgba(153, 153, 153, 0.20) inset",
+    [TierTypes.Reserve]:
+      "0px 1px 5px -20.902px rgba(48, 171, 93, 0.60) inset, 0px 1px 4.3px -1.96px rgba(255, 255, 255, 0.60) inset, 0px 0.653px 13.064px 0px rgba(134, 229, 169, 0.20) inset",
+    [TierTypes.Select]:
+      "0px 1px 5px -20.902px rgba(34, 134, 172, 0.60) inset, 0px 1px 8.8px -1.96px rgba(255, 255, 255, 0.60) inset, 0px 2.613px 11.758px 0px rgba(131, 215, 245, 0.30) inset, 0px 0.653px 13.064px 0px rgba(131, 215, 245, 0.20) inset",
+    [TierTypes.Core]:
+      "0px 1px 5px -20.902px rgba(107, 87, 249, 0.60) inset, 0px 1px 8.8px -1.96px rgba(255, 255, 255, 0.60) inset, 0px 2.613px 11.758px 0px rgba(107, 87, 249, 0.30) inset, 0px 0.653px 13.064px 0px rgba(107, 87, 249, 0.20) inset",
+  },
+};
+
+export function TierTag() {
+  const { data: activeTier, isLoading } = useActiveTier();
+  const theme = useTheme();
+  const { navigate } = useLocation();
+  const boxShadow = boxShadows[theme.displayTheme][activeTier?.tier] || boxShadows[theme.displayTheme][TierTypes.Core];
+  const raysBackground = rays[activeTier?.tier] || rays[TierTypes.Core];
+
+  function handleClick() {
+    trackEvent(EventType.VIEW_BENEFITS, {});
+    navigate("/tier");
+  }
+
+  return (
+    <Tag raysBackground={raysBackground} boxShadow={boxShadow} onClick={handleClick}>
+      <WanderIcon height={9.37} width={20} tier={activeTier?.tier} />
+      {isLoading ? (
+        <Loading style={{ width: "20px", height: "20px" }} />
+      ) : (
+        <Text weight="medium" noMargin>
+          {activeTier?.tier || TierTypes.Core}
+        </Text>
+      )}
+    </Tag>
+  );
+}
+
+const Tag = styled.div<{ boxShadow: string; raysBackground: string }>`
+  display: flex;
+  padding: 4px 8px;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  position: relative;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: ${(props) => props.theme.surfaceDefault};
+  backdrop-filter: blur(7.550000190734863px);
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: -35px;
+    left: -15px;
+    width: 114px;
+    height: 114px;
+    background-image: url(${(props) => props.raysBackground});
+    background-size: 90%;
+    background-position: center;
+    background-repeat: no-repeat;
+    pointer-events: none;
+    opacity: ${(props) => (props.theme.displayTheme === "dark" ? 0.4 : 1)};
+    z-index: -3;
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: ${(props) => props.theme.surfaceDefault};
+    box-shadow: ${(props) => props.boxShadow};
+    backdrop-filter: blur(7.550000190734863px);
+    border-radius: 8px;
+    z-index: -2;
+  }
+
+  &:hover {
+    background: ${(props) => props.theme.surfaceSecondary};
+
+    &::after {
+      background: ${(props) => props.theme.surfaceSecondary};
+    }
+  }
+`;

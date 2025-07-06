@@ -90,7 +90,7 @@ export function AuthRecoverAccountEmbeddedView() {
     <OnboardingCard
       headerIcon={<RecoverHeaderIcon />}
       headerText="Recover your account"
-      subtitle="Select a method for logging in on new devices and recovering your account."
+      subtitle="Select a method for recovering your account."
       onBackButtonClick={() => navigate(`/auth`)}
       isLoading={isViewLoading}
       onSubmit={signInWithOtp}>

@@ -3,7 +3,7 @@ import { ExtensionStorage } from "~utils/storage";
 import { useEffect, useState } from "react";
 import WalletHeader from "~components/popup/WalletHeader";
 import Balance from "~components/popup/home/Balance";
-import { AnnouncementPopup } from "./announcement";
+import { KeystoneAnnouncementPopup } from "../../components/popup/home/KeystoneAnnouncementPopup";
 import { getDecryptionKey } from "~wallets/auth";
 import { trackEvent, EventType, trackPage, PageType, checkWalletBits } from "~utils/analytics";
 import styled, { useTheme } from "styled-components";
@@ -18,6 +18,8 @@ import browser from "webextension-polyfill";
 import CreateWanderAgentCTA from "./agents/components/CreateWanderAgentCTA";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { scheduleSwapExecution } from "~utils/agents/swap";
+import { WandAnnouncementPopup } from "~components/popup/home/WandAnnouncementPopup";
+import { ActivityNotificationsNotice } from "~components/popup/home/ActivityNotificationsNotice";
 
 export function HomeView() {
   const theme = useTheme();
@@ -25,6 +27,7 @@ export function HomeView() {
   const { navigate } = useLocation();
   const [loggedIn, setLoggedIn] = useState(false);
   const [isOpen, setOpen] = useState(false);
+  const [isWandAnnouncementOpen, setWandAnnouncementOpen] = useState(false);
 
   const [announcement, _] = useStorage<boolean>({
     key: "show_announcement",
@@ -101,6 +104,9 @@ export function HomeView() {
       setLoggedIn(true);
     }
 
+    const wandAnnouncementShown = (await ExtensionStorage.get<boolean>("wander_announcement_shown")) ?? false;
+    setWandAnnouncementOpen(!wandAnnouncementShown);
+
     // WALLET.TYPE JUST FOR KEYSTONE POPUP
     setOpen(announcement && wallet?.type === "hardware");
   }, [wallet, announcement]);
@@ -108,11 +114,13 @@ export function HomeView() {
   return (
     <HomeWrapper>
       {/* <AoBanner activeAddress={activeAddress} /> */}
-      {loggedIn && <AnnouncementPopup isOpen={isOpen} setOpen={setOpen} />}
+      {loggedIn && <KeystoneAnnouncementPopup isOpen={isOpen} setOpen={setOpen} />}
+      {loggedIn && <WandAnnouncementPopup isOpen={isWandAnnouncementOpen} setOpen={setWandAnnouncementOpen} />}
       <WalletHeader />
       <HomeContent>
         <Balance />
         <WalletActions />
+        <ActivityNotificationsNotice />
         <CreateWanderAgentCTA />
         <Tabs />
       </HomeContent>

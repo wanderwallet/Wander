@@ -25,6 +25,7 @@ import { defaultOptions } from "~tokens/hooks";
 import { checkIfMintingIsPaused, checkIfAgentHasRecentSwaps } from "./swap";
 import dayjs from "dayjs";
 import browser from "webextension-polyfill";
+import type { DefiFeeDetails } from "~utils/tier/types";
 
 interface UseAOYieldAgentsProps {
   status?: AOYieldAgentStatus;
@@ -244,7 +245,7 @@ export function useAODelegationInfo() {
   });
 }
 
-export function useAOYieldAgentProperties(agent: AOYieldAgentCreate | AOYieldAgent, wanderFee?: string) {
+export function useAOYieldAgentProperties(agent: AOYieldAgentCreate | AOYieldAgent, feeDetails?: DefiFeeDetails) {
   const properties = useMemo(() => {
     if (!agent) return [];
 
@@ -254,7 +255,7 @@ export function useAOYieldAgentProperties(agent: AOYieldAgentCreate | AOYieldAge
     const runningTime = runIndefinitely ? "∞ days" : `${days} ${days === 1 ? "day" : "days"}`;
     const endDateFormatted = runIndefinitely ? "∞" : dayjs(endDate).format("MMM D, YYYY");
 
-    const properties = [
+    const properties: Array<{ name: string; value: string; originalFeePercent?: string; feeHasChanged?: boolean }> = [
       { name: "daily_conversion", value: `${conversionPercentage}% of AO earnings` },
       { name: "buy_asset", value: asset?.ticker || "" },
       { name: "running_time", value: runningTime },
@@ -263,8 +264,13 @@ export function useAOYieldAgentProperties(agent: AOYieldAgentCreate | AOYieldAge
       { name: "slippage", value: `${slippage}%` },
     ];
 
-    if (wanderFee) {
-      properties.push({ name: "fee", value: browser.i18n.getMessage("percentage_of_each_conversion", [wanderFee]) });
+    if (feeDetails) {
+      properties.push({
+        name: "fee",
+        value: browser.i18n.getMessage("percentage_of_each_conversion", [feeDetails.finalFeePercent]),
+        originalFeePercent: feeDetails.originalFeePercent,
+        feeHasChanged: feeDetails.feeHasChanged,
+      });
     }
 
     return properties;

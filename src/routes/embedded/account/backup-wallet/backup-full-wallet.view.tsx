@@ -27,15 +27,15 @@ export function AccountBackupFullWalletEmbeddedView() {
       subtitle="Download your keyfile or copy your seedphrase to export your account."
       onBackButtonClick={() => navigate("/account/backup-wallet")}>
       <Snackbar variant="info" title="About this file:">
-        <Flex direction="row" gap={8} align="center">
+        <p style={{ display: "flex", gap: "8px" }}>
           <CheckIcon style={{ flexShrink: 0, color: "#22c55e" }} height={17} width={17} />
           This file can be used to import your wallet into other wallet apps.
-        </Flex>
+        </p>
 
-        <Flex direction="row" gap={8} align="center">
+        <p style={{ display: "flex", gap: "8px" }}>
           <CheckIcon style={{ flexShrink: 0, color: "#22c55e" }} height={17} width={17} />
           This file can be used to recover your account if you lose access to your credentials.
-        </Flex>
+        </p>
       </Snackbar>
 
       <Snackbar variant="warning" title="Do not share this with anyone!">

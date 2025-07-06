@@ -1,10 +1,7 @@
-import React from "react";
-import type { Sizes } from "../../../types";
-
 export interface FileUploadProps {
   // Basic props
-  title?: string;
-  description?: string;
+  placeholder?: string;
+  fileLabel?: string;
   loadingText?: string;
   className?: string;
   isFullWidth?: boolean;

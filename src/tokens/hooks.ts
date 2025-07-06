@@ -7,6 +7,8 @@ import {
   getBotegaPrice,
   getBotegaPrices,
   PI_PROCESS_ID,
+  USDA_PROCESS_ID,
+  WNDR_PROCESS_ID,
   type TokenInfo,
   type TokenInfoWithBalance,
 } from "./aoTokens/ao";
@@ -29,7 +31,7 @@ export const defaultOptions = {
   refetchOnWindowFocus: true,
 };
 
-const fixedTokenIds = [AR_PROCESS_ID, AO_PROCESS_ID, PI_PROCESS_ID];
+const fixedTokenIds = [AR_PROCESS_ID, AO_PROCESS_ID, PI_PROCESS_ID, WNDR_PROCESS_ID, USDA_PROCESS_ID];
 
 /**
  * Apply a fixed order to a list of tokens

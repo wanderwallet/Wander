@@ -132,7 +132,6 @@ export interface EmbeddedContextData extends EmbeddedContextState, EmbeddedConte
   registerWallet: (sourceType: WalletSourceType) => Promise<Wallet>;
   clearLastRegisteredWallet: () => void;
 
-  skipBackUp: (doNotAskAgain: boolean) => void | Promise<void>;
   downloadKeyfile: () => Promise<void>;
   copySeedphrase: () => Promise<boolean>;
   getDecryptedWallet: () => Promise<LocalWallet<JWKInterface>>;

@@ -219,6 +219,7 @@ declare module "styled-components" {
         secondaryAlt: string;
       };
     };
+    surfaceDefault: string;
     surfaceSecondary: string;
     surfaceTertiary: string;
     borderDefault: string;
