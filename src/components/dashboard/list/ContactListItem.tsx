@@ -1,6 +1,6 @@
 import { ListItem } from "@arconnect/components-rebrand";
 import type { HTMLProps } from "react";
-import { NoAvatarIcon } from "~components/popup/WalletHeader";
+import { NoAvatarIcon } from "~components/Avatar";
 
 export default function ContactListItem({
   name,

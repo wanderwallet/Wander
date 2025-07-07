@@ -19,9 +19,9 @@ interface SvgImageBackgroundProps {
   iconStyle?: React.CSSProperties;
 }
 
-export const SvgImage = styled.div<{ src: string; size: number; color?: string }>`
-  width: ${(props) => props.size}px;
-  height: ${(props) => props.size}px;
+export const SvgImage = styled.div<{ src: string; height?: number; width?: number; color?: string }>`
+  width: ${(props) => props.width}px;
+  height: ${(props) => props.height}px;
   flex-shrink: 0;
   ${(props) =>
     props.color
@@ -87,9 +87,8 @@ export const SvgImageWithBackground = ({
 
   const renderContent = () => {
     if (src) {
-      return (
-        <SvgImage src={src} size={iconSize || Math.min(width, height) * 0.6} color={iconColor} style={iconStyle} />
-      );
+      const size = iconSize || Math.min(width, height) * 0.6;
+      return <SvgImage src={src} width={size} height={size} color={iconColor} style={iconStyle} />;
     }
     return children;
   };

@@ -304,6 +304,70 @@ query($address: String!, $after: String) {
 }
 `;
 
+export const AO_RECEIVER_QUERY_FOR_TOKEN_WITH_CURSOR = `
+query($address: String!, $tokenId: String!, $after: String) {
+  transactions(
+    first: 10,
+    recipients: [$tokenId],
+    tags: [
+      {name: "Data-Protocol", values: ["ao"]},
+      {name: "Action", values: ["Transfer"]},
+      {name: "Recipient", values: [$address]}
+    ],
+    after: $after
+  ) {
+    pageInfo {
+      hasNextPage
+    }
+    edges {
+      cursor
+      node {
+        recipient
+        id
+        owner { address }
+        block { timestamp, height }
+        tags {
+          name
+          value
+        }
+      }
+    }
+  }
+}
+`;
+
+export const AO_SENT_QUERY_FOR_TOKEN_WITH_CURSOR = `
+query($address: String!, $tokenId: String!, $after: String) {
+  transactions(
+    first: 10,
+    owners: [$address],
+    recipients: [$tokenId],
+    tags: [
+      {name: "Data-Protocol", values: ["ao"]},
+      {name: "Action", values: ["Transfer"]}
+    ],
+    after: $after
+  ) {
+    pageInfo {
+      hasNextPage
+    }
+    edges {
+      cursor
+      node {
+        id
+        recipient
+        owner { address }
+        block { timestamp, height }
+        tags {
+          name
+          value
+        }
+      }
+    }
+  }
+}
+`;
+
 export const AO_LIQUIDOPS_RECEIVER_QUERY_WITH_CURSOR = `
 query($address: String!, $after: String) {
   transactions(

@@ -1,9 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "~wallets/router/router.utils";
-import { clsx } from "clsx";
+import { EMBEDDED_SERVER_BASE_URL } from "~utils/embedded/iframe.utils";
 
 import styles from "./EnvPanel.module.scss";
-import { EMBEDDED_SERVER_BASE_URL } from "~utils/embedded/iframe.utils";
 
 export interface EnvPanelProps {}
 
@@ -58,7 +57,7 @@ export function EnvPanel({}: EnvPanelProps) {
         authEnv = "production";
       }
 
-      if (EMBEDDED_SERVER_BASE_URL.includes("://localhost:")) {
+      if (EMBEDDED_SERVER_BASE_URL?.includes("://localhost:")) {
         serverEnv = "local";
       } else if (/^https?:\/\/embed-([a-z0-9]+)-community-labs.vercel.app$/.test(EMBEDDED_SERVER_BASE_URL)) {
         serverEnv = "preview";

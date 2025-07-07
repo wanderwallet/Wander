@@ -23,8 +23,13 @@ export function Page({ children }: PageProps) {
       exit="exit"
       variants={opacityAnimation}
       data-test-id="Page">
-      <ResizeEventObserver containerRef={containerRef} />
-      <EnvPanel />
+      {import.meta.env?.VITE_IS_EMBEDDED_APP === "1" ? (
+        <>
+          <ResizeEventObserver containerRef={containerRef} />
+          <EnvPanel />
+        </>
+      ) : null}
+
       {children}
     </Main>
   );

@@ -124,7 +124,7 @@ export function WalletHomeEmbeddedView() {
 
   return (
     <Card size="auto" style={{ padding: "32px" }} hasBackButton={false} closeButtonStyles={{ right: "2rem" }}>
-      <AccountSelector wallets={wallets} currentWallet={wallet} />
+      <AccountSelector wallets={wallets} currentWallet={wallet as StoredWallet} />
       <AppWarnings />
       <WalletHomeBalance />
       <Divider />

@@ -1,0 +1,10 @@
+<svg width="378" height="600" viewBox="0 0 378 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#paint0_angular_262_4866_clip_path)" data-figma-skip-parse="true"><g transform="matrix(0.1655 0.311 -0.19593 0.104265 -235 758.5)"><foreignObject x="-4052.37" y="-4052.37" width="8104.73" height="8104.73"><div xmlns="http://www.w3.org/1999/xhtml" style="background:conic-gradient(from 90deg,rgba(53, 29, 140, 1) 0deg,rgba(17, 17, 17, 1) 85.4661deg,rgba(53, 29, 140, 1) 360deg);height:100%;width:100%;opacity:1"></div></foreignObject></g></g><path d="M378 0H0V600H378V0Z" data-figma-gradient-fill="{&#34;type&#34;:&#34;GRADIENT_ANGULAR&#34;,&#34;stops&#34;:[{&#34;color&#34;:{&#34;r&#34;:0.20994362235069275,&#34;g&#34;:0.11680585145950317,&#34;b&#34;:0.55144858360290527,&#34;a&#34;:1.0},&#34;position&#34;:0.0},{&#34;color&#34;:{&#34;r&#34;:0.066666670143604279,&#34;g&#34;:0.066666670143604279,&#34;b&#34;:0.066666670143604279,&#34;a&#34;:1.0},&#34;position&#34;:0.23740582168102264}],&#34;stopsVar&#34;:[{&#34;color&#34;:{&#34;r&#34;:0.20994362235069275,&#34;g&#34;:0.11680585145950317,&#34;b&#34;:0.55144858360290527,&#34;a&#34;:1.0},&#34;position&#34;:0.0},{&#34;color&#34;:{&#34;r&#34;:0.066666670143604279,&#34;g&#34;:0.066666670143604279,&#34;b&#34;:0.066666670143604279,&#34;a&#34;:1.0},&#34;position&#34;:0.23740582168102264}],&#34;transform&#34;:{&#34;m00&#34;:330.99996948242188,&#34;m01&#34;:-391.85995483398438,&#34;m02&#34;:-204.56999206542969,&#34;m10&#34;:621.99993896484375,&#34;m11&#34;:208.52996826171875,&#34;m12&#34;:343.23507690429688},&#34;opacity&#34;:1.0,&#34;blendMode&#34;:&#34;NORMAL&#34;,&#34;visible&#34;:true}"/>
+<path d="M378 0H0V600H378V0Z" fill="url(#paint1_linear_262_4866)"/>
+<defs>
+<clipPath id="paint0_angular_262_4866_clip_path"><path d="M378 0H0V600H378V0Z"/></clipPath><linearGradient id="paint1_linear_262_4866" x1="189" y1="0" x2="189" y2="600" gradientUnits="userSpaceOnUse">
+<stop offset="0.460942" stop-color="#111111" stop-opacity="0"/>
+<stop offset="1" stop-color="#121212"/>
+</linearGradient>
+</defs>
+</svg>
