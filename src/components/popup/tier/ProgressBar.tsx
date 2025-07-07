@@ -61,7 +61,8 @@ export function ProgressBar({
       const endPercentage = accumulatedPercentage + segment.percentage;
 
       // A segment is active if progress has entered its range
-      const isCompletelyFilled = progress > startPercentage;
+      // Special case: show first segment as active when progress is 0
+      const isCompletelyFilled = progress > startPercentage || (progress === 0 && index === 0);
 
       // Update accumulated values for next iteration
       accumulatedPercentage += segment.percentage;
