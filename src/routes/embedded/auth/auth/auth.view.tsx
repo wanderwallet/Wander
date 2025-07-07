@@ -112,9 +112,12 @@ export function AuthEmbeddedView() {
           p_email: email,
         });
 
-        const isAlreadyRegistered = isAlreadyRegisteredParam === "0" ? false : !!data;
+        const isAlreadyRegistered =
+          isAlreadyRegisteredParam === "0"
+            ? false
+            : !!data || error?.message === "An account with this email already exists, but it is not using a password.";
 
-        if (error) {
+        if (error && error.message !== "An account with this email already exists, but it is not using a password.") {
           toast.error(getFriendlyAuthErrorMessage(error, error.message || "Error checking email"));
           return;
         }
