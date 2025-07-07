@@ -1,11 +1,8 @@
 import { Flex } from "~components/common/Flex";
 import { useCallback, useImperativeHandle, useRef } from "react";
+import { OTP_LENGTH } from "~utils/otp/otp.utils";
 
 import styles from "./CodeInput.module.scss";
-
-export const OTP_LENGTH = 6;
-
-export const OPT_COOLDOWN_DURATION_SEC = 60;
 
 export interface CodeInputHandle {
   getCode(): string;

@@ -29,7 +29,7 @@ export function AuthAddWalletEmbeddedView() {
 
   return (
     <OnboardingCard
-      headerText={authStatus === "noWallets" ? "Add a wallet" : "Restore wallet"}
+      headerText={authStatus === "noWallets" ? "Add a Wallet" : "Restore Wallet"}
       subtitle="Add a wallet to your account to hold your funds. Create or add an existing wallet to continue."
       onBackButtonClick={() =>
         authStatus === "noWallets" ? signOut(false) : navigate(EmbeddedPaths.AuthRestoreShares)

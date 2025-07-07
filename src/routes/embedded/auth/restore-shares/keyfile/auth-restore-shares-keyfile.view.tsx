@@ -84,7 +84,7 @@ export function AuthRestoreSharesKeyfileEmbeddedView({
 
   return importedWalletAddress ? (
     <OnboardingCard
-      headerText="Restore wallet"
+      headerText="Restore Wallet"
       subtitle="Confirm your wallet to restore it."
       onBackButtonClick={() => navigate("/auth/restore-shares")}
       isLoading={isViewLoading}>
@@ -108,7 +108,7 @@ export function AuthRestoreSharesKeyfileEmbeddedView({
     </OnboardingCard>
   ) : (
     <OnboardingCard
-      headerText="Restore wallet"
+      headerText="Restore Wallet"
       subtitle={`Upload your ${fileTypeLabel} to restore your wallet.`}
       onBackButtonClick={() => navigate("/auth/restore-shares")}
       isLoading={isViewLoading}>

@@ -84,7 +84,7 @@ export function AuthRestoreSharesSeedPhraseEmbeddedView() {
 
   return importedTempWalletAddress ? (
     <OnboardingCard
-      headerText="Restore wallet"
+      headerText="Restore Wallet"
       subtitle="Confirm your wallet to restore it."
       onBackButtonClick={() => navigate("/auth/restore-shares")}
       isLoading={loading}>
@@ -108,7 +108,7 @@ export function AuthRestoreSharesSeedPhraseEmbeddedView() {
     </OnboardingCard>
   ) : (
     <OnboardingCard
-      headerText="Restore wallet"
+      headerText="Restore Wallet"
       subtitle="Enter your seedphrase to restore your wallet."
       onBackButtonClick={() => navigate("/auth/restore-shares")}
       isLoading={loading}>

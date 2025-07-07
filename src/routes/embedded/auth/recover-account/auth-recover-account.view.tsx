@@ -9,11 +9,7 @@ import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { getSupabaseClient } from "~utils/embedded/embedded.utils";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 import { useLocation, useSearchParams } from "~wallets/router/router.utils";
-import { StorageKeys } from "~utils/storage/storage.constants";
-import { PersistentStorage } from "~utils/storage";
 import { getFriendlyAuthErrorMessage } from "~utils/authentication/authentication.utils";
-import { hasCooldownPassed } from "~utils/react/useCooldownCallback";
-import { OPT_COOLDOWN_DURATION_SEC } from "~components/embed/ui/atoms/code-input/CodeInput";
 
 export function AuthRecoverAccountEmbeddedView() {
   const { navigate } = useLocation();
@@ -26,18 +22,17 @@ export function AuthRecoverAccountEmbeddedView() {
 
   // Loading state:
 
-  const [isAuthenticating, setIsAuthenticating] = useState(false);
-  const areButtonsDisabled =
-    authStatus === "unknown" || authStatus === "loading" || authStatus === "authLoading" || isAuthenticating;
-  const isViewLoading = areButtonsDisabled && !isAuthenticating;
+  const [isCheckingEmail, setIsCheckingEmail] = useState(false);
+  const isViewLoading = authStatus === "unknown" || authStatus === "loading" || authStatus === "authLoading";
+  const areButtonsDisabled = isViewLoading || isCheckingEmail;
 
   // Handlers:
 
-  const signInWithOtp = useCallback(async (e: React.FormEvent) => {
+  const handleCheckEmail = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
-      setIsAuthenticating(true);
+      setIsCheckingEmail(true);
 
       const supabase = await getSupabaseClient();
 
@@ -48,43 +43,31 @@ export function AuthRecoverAccountEmbeddedView() {
         return;
       }
 
-      const shouldCallSignInWithOtp = await hasCooldownPassed({
-        key: StorageKeys.CONNECT.AUTH.LAST_OTP_EMAIL,
-        cooldownDuration: OPT_COOLDOWN_DURATION_SEC,
+      const { data: isAlreadyRegistered, error } = await supabase.rpc("user_exists_by_email", {
+        p_email: email,
       });
 
-      if (shouldCallSignInWithOtp) {
-        const { error } = await supabase.auth.signInWithOtp({
-          email,
-          options: {
-            shouldCreateUser: false,
-          },
-        });
+      if (error) {
+        toast.error(getFriendlyAuthErrorMessage(error, error.message || "Error checking email"));
+        return;
+      }
 
-        if (error && error.code !== "over_email_send_rate_limit") {
-          toast.error(getFriendlyAuthErrorMessage(error, "Error trying to recover account"));
-          return;
-        }
-
-        if (!error) {
-          await PersistentStorage.setItem(StorageKeys.CONNECT.AUTH.LAST_OTP_EMAIL, Date.now());
-        }
+      if (!isAlreadyRegistered) {
+        toast.error(`No account found for ${email}`);
+        return;
       }
 
       navigate(EmbeddedPaths.AuthRecoverAccountOtp, {
         search: { email },
       });
-
-      // Note we don't need to check if the email is verified or not. Once the user signs in using the OTP code, their
-      // email is verified if it wasn't already and the router redirects them to the right page (add wallet, backup reminder...).
     } catch (error) {
-      toast.error(getFriendlyAuthErrorMessage(error, "Error trying to recover account"));
+      toast.error(getFriendlyAuthErrorMessage(error, "Error checking email"));
     } finally {
-      setIsAuthenticating(false);
+      setIsCheckingEmail(false);
     }
   }, []);
 
-  const emailInputButton = <InputButton type="submit" label="Next" loading={isAuthenticating} />;
+  const emailInputButton = <InputButton type="submit" label="Next" loading={isCheckingEmail} />;
 
   return (
     <OnboardingCard
@@ -93,7 +76,7 @@ export function AuthRecoverAccountEmbeddedView() {
       subtitle="Select a method for recovering your account."
       onBackButtonClick={() => navigate(`/auth`)}
       isLoading={isViewLoading}
-      onSubmit={signInWithOtp}>
+      onSubmit={handleCheckEmail}>
       <TextInput
         name="email"
         placeholder="Enter your email"

@@ -1,16 +1,18 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { toast } from "react-toastify";
-import { Button, Text, RecoverHeaderIcon } from "~components/embed/ui";
-import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
-import { getSupabaseClient } from "~utils/embedded/embedded.utils";
-import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
+import { toast } from "react-toastify";
+import { Button, Text } from "~components/embed";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation, useSearchParams } from "~wallets/router/router.utils";
+import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
+import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
+import { getFriendlyAuthErrorMessage } from "~utils/authentication/authentication.utils";
 import { Flex } from "~components/common/Flex";
 import { CodeInput, type CodeInputHandle } from "~components/embed/ui/atoms/code-input/CodeInput";
 import { useCooldownCallback } from "~utils/react/useCooldownCallback";
-import { getFriendlyAuthErrorMessage } from "~utils/authentication/authentication.utils";
+import { getSupabaseClient } from "~utils/embedded/embedded.utils";
 import { StorageKeys } from "~utils/storage/storage.constants";
+import { PersistentStorage, useStorage } from "~utils/storage";
+import type { PreferredEmailAuth } from "~utils/auth/auth.types";
 import {
   checkNeedsNewOtp,
   clearOtpAvailable,
@@ -20,10 +22,18 @@ import {
 } from "~utils/otp/otp.utils";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
-export function AuthRecoverAccountOtpEmbeddedView() {
-  const { navigate } = useLocation();
-  const { email } = useSearchParams<{ email: string }>();
-  const { authStatus, authenticate, setRequestPasswordChange } = useEmbedded();
+export function AuthEmailOtpEmbeddedView() {
+  const { navigate, location } = useLocation();
+  const { email, isAlreadyRegistered: isAlreadyRegisteredParam } = useSearchParams<{
+    email: string;
+    isAlreadyRegistered: string;
+  }>();
+  const { authStatus, authenticate } = useEmbedded();
+
+  const [_, setPreferredEmailAuth] = useStorage<PreferredEmailAuth | undefined>({
+    key: StorageKeys.CONNECT.AUTH.PREFERRED_EMAIL_AUTH,
+    instance: PersistentStorage,
+  });
 
   // Loading state:
 
@@ -53,26 +63,21 @@ export function AuthRecoverAccountOtpEmbeddedView() {
 
         const supabase = await getSupabaseClient();
 
-        const { error } = await supabase.auth.signInWithOtp({
-          email,
-          options: {
-            shouldCreateUser: false,
-          },
-        });
+        const { error } = await supabase.auth.signInWithOtp({ email });
 
         if (error) {
-          toast.error(getFriendlyAuthErrorMessage(error, "Error sending account recovery email"));
+          toast.error(getFriendlyAuthErrorMessage(error, "Error sending email access code"));
           return;
         }
 
         setOtpAvailable();
 
-        if (showConfirmationToast) toast.success("Account recovery email resent successfully");
+        if (showConfirmationToast) toast.success("Email access code resent successfully");
 
         // Note we don't need to check if the email is verified or not. Once the user signs in using the OTP code, their
         // email is verified if it wasn't already and the router redirects them to the right page (add wallet, backup reminder...).
       } catch (error) {
-        toast.error(getFriendlyAuthErrorMessage(error, "Error sending account recovery email"));
+        toast.error(getFriendlyAuthErrorMessage(error, "Error sending email access code"));
       } finally {
         setIsResending(false);
       }
@@ -102,7 +107,7 @@ export function AuthRecoverAccountOtpEmbeddedView() {
       const otpCode = codeInputRef.current.getCode();
 
       if (otpCode.length !== OTP_LENGTH) {
-        toast.error(`Please enter all ${OTP_LENGTH} digits of the verification code`);
+        toast.error(`Please enter all ${OTP_LENGTH} digits of the access code`);
         return;
       }
 
@@ -115,9 +120,10 @@ export function AuthRecoverAccountOtpEmbeddedView() {
           token: otpCode,
         });
 
-        toast.success("Account recovered successfully");
+        // This is done to clear the search params (email and isAlreadyRegistered):
+        navigate(location, { search: { email } });
 
-        setRequestPasswordChange(true);
+        setPreferredEmailAuth("otp");
       } catch (error) {
         setIsVerifying(false);
         toast.error(getFriendlyAuthErrorMessage(error, "Invalid or expired code"));
@@ -142,20 +148,19 @@ export function AuthRecoverAccountOtpEmbeddedView() {
 
   return (
     <OnboardingCard
-      headerIcon={<RecoverHeaderIcon />}
-      headerText="Recover your account"
+      headerText="Sign In"
       subtitle={`We've sent an email to ${email}`}
-      onBackButtonClick={() => navigate(EmbeddedPaths.AuthRecoverAccount)}
+      onBackButtonClick={() => navigate(EmbeddedPaths.Auth)}
       isLoading={isViewLoading}
       onSubmit={handleVerifyOtp}>
-      <Text variant="bodySm" alignment="center">
-        Enter the 6-digit verification code from that email to recover your account. If you don't see the email, please
+      <Text variant={"bodySm"} alignment={"center"} style={{ color: "var(--text-color-secondary, #666666)" }}>
+        Enter the 6-digit access code from that email to sign in to your account. If you don't see the email, please
         check your spam folder.
       </Text>
 
       <Flex direction="column" gap={12} width="100%">
-        <Text alignment="center" variant="bodySm">
-          Verification Code
+        <Text alignment="center" variant={"bodySm"} style={{ color: "var(--text-color-secondary, #666666)" }}>
+          Access Code
         </Text>
 
         <CodeInput
@@ -173,7 +178,7 @@ export function AuthRecoverAccountOtpEmbeddedView() {
         isFullWidth
         isLoading={isResending}
         isDisabled={areButtonsDisabled || !isComplete}>
-        Recover account
+        Sign In
       </Button>
 
       <Text variant="bodySm" alignment="center">
@@ -186,6 +191,14 @@ export function AuthRecoverAccountOtpEmbeddedView() {
           <>Send again in {cooldownSeconds} seconds</>
         )}
       </Text>
+
+      {isAlreadyRegisteredParam === "0" ? null : (
+        <Text variant="bodySm" alignment="center">
+          <Button variant="link" isDisabled={areButtonsDisabled} href={EmbeddedPaths.AuthEmailSignInPassword}>
+            Use password instead
+          </Button>
+        </Text>
+      )}
     </OnboardingCard>
   );
 }
