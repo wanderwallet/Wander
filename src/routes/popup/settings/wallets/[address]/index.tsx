@@ -25,11 +25,12 @@ import {
 } from "@untitled-ui/icons-react";
 import { HorizontalLine } from "~components/HorizontalLine";
 import SliderMenu from "~components/SliderMenu";
-import { getNameServiceProfile } from "~lib/nameservice";
+import { getNameServiceProfile, useNameServiceProfile } from "~lib/nameservice";
 import { BackupSeedphraseWarning } from "~components/popup/settings/BackupSeedphraseWarning";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { ArioIcon } from "~components/embed";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
+import { isArNSNameProfile } from "~lib/arns";
 
 export interface WalletViewParams {
   address: string;
@@ -45,6 +46,12 @@ export function WalletView({ params: { address } }: WalletViewProps) {
   const [open, setOpen] = useState(false);
 
   const theme = useTheme();
+
+  const nameServiceProfile = useNameServiceProfile(address);
+
+  const showArNSCTA = useMemo(() => {
+    return nameServiceProfile ? !isArNSNameProfile(nameServiceProfile) : true;
+  }, [nameServiceProfile]);
 
   // wallets
   const [wallets, setWallets] = useStorage<StoredWallet[]>(
@@ -202,15 +209,17 @@ export function WalletView({ params: { address } }: WalletViewProps) {
             iconSize={24}
           />
 
-          <ListItem
-            // title={browser.i18n.getMessage("generate_qr_code")}
-            title={"Get ArNS"}
-            titleStyle={{ fontSize: 18, fontWeight: 500 }}
-            icon={<ArioIcon width="24px" height="24px" />}
-            hideSquircle
-            showArrow
-            onClick={() => navigate(PopupPaths.ArNSPurchaseStart)}
-          />
+          {showArNSCTA && (
+            <ListItem
+              // title={browser.i18n.getMessage("generate_qr_code")}
+              title={"Get ArNS"}
+              titleStyle={{ fontSize: 18, fontWeight: 500 }}
+              icon={<ArioIcon width="24px" height="24px" />}
+              hideSquircle
+              showArrow
+              onClick={() => navigate(PopupPaths.ArNSPurchaseStart)}
+            />
+          )}
           <HorizontalLine />
           {!isSeedphraseBackedUp && <BackupSeedphraseWarning />}
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>

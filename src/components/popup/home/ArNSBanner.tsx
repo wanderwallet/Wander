@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import styled, { useTheme } from "styled-components";
 import { useLocation } from "wouter";
 import { ArioIcon } from "~components/embed";
+import { isArNSNameProfile } from "~lib/arns";
+import { useNameServiceProfile } from "~lib/nameservice";
 import { ExtensionStorage } from "~utils/storage";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 
@@ -13,8 +15,10 @@ interface ArNSBannerProps {
 
 export default function ArNSBanner({ activeAddress }: ArNSBannerProps) {
   const theme = useTheme();
-  const [showBanner, setShowBanner] = useState(true);
+  const [showBanner, setShowBanner] = useState(false);
   const [, navigate] = useLocation();
+
+  const nameServiceProfile = useNameServiceProfile(activeAddress);
 
   const handleRegisterClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -28,15 +32,19 @@ export default function ArNSBanner({ activeAddress }: ArNSBannerProps) {
 
   useEffect(() => {
     if (activeAddress) {
-      ExtensionStorage.get(`arns_hide_banner_${activeAddress}`).then((hideBanner) => {
-        if (!hideBanner) {
-          setShowBanner(true);
-        } else {
-          setShowBanner(false);
-        }
-      });
+      if (isArNSNameProfile(nameServiceProfile)) {
+        setShowBanner(false);
+      } else {
+        ExtensionStorage.get(`arns_hide_banner_${activeAddress}`).then((hideBanner) => {
+          if (!hideBanner) {
+            setShowBanner(true);
+          } else {
+            setShowBanner(false);
+          }
+        });
+      }
     }
-  }, [activeAddress]);
+  }, [activeAddress, nameServiceProfile]);
 
   if (!activeAddress || !showBanner) {
     return null;

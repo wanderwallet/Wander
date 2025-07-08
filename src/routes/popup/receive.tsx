@@ -12,6 +12,8 @@ import { useActiveWallet } from "~wallets/hooks";
 import { CopyToClipboard } from "~components/CopyToClipboard";
 import { QRCodeWrapper } from "~components/QRCodeWrapper";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
+import { useNameServiceProfile } from "~lib/nameservice";
+import { isArNSNameProfile } from "~lib/arns";
 
 interface ReceiveViewProps extends CommonRouteProps {
   walletName?: string;
@@ -28,6 +30,12 @@ export function ReceiveView({ walletName, walletAddress }: ReceiveViewProps) {
   const effectiveAddress = useMemo(() => walletAddress || wallet?.address, [walletAddress, wallet]);
 
   const effectiveWalletName = useMemo(() => walletName || wallet?.nickname, [walletName, wallet]);
+
+  const nameServiceProfile = useNameServiceProfile(effectiveAddress);
+
+  const showArNSCTA = useMemo(() => {
+    return nameServiceProfile ? !isArNSNameProfile(nameServiceProfile) : true;
+  }, [nameServiceProfile]);
 
   //segment
   useEffect(() => {
@@ -64,17 +72,19 @@ export function ReceiveView({ walletName, walletAddress }: ReceiveViewProps) {
             <Text size="lg" weight="semibold" style={{ textAlign: "center" }} noMargin>
               {effectiveWalletName}
             </Text>
-            <button
-              style={{
-                color: "rgba(151, 135, 255, 1)",
-                cursor: "pointer",
-                paddingTop: ".5rem",
-                margin: 0,
-                fontSize: "1rem",
-              }}
-              onClick={() => navigate(PopupPaths.ArNSPurchaseStart)}>
-              Get your ArNS Name
-            </button>
+            {showArNSCTA && (
+              <button
+                style={{
+                  color: "rgba(151, 135, 255, 1)",
+                  cursor: "pointer",
+                  paddingTop: ".5rem",
+                  margin: 0,
+                  fontSize: "1rem",
+                }}
+                onClick={() => navigate(PopupPaths.ArNSPurchaseStart)}>
+                Get your ArNS Name
+              </button>
+            )}
           </div>
           <QRCodeWrapper>
             <QRCodeSVG fgColor="#fff" bgColor="transparent" size={176} value={effectiveAddress ?? ""} />

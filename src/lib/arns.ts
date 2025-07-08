@@ -145,3 +145,7 @@ export async function getArNSProfile(query: string): Promise<NameServiceProfile 
     return undefined;
   }
 }
+
+export function isArNSNameProfile(nameServiceProfile?: NameServiceProfile) {
+  return nameServiceProfile ? !nameServiceProfile.name.endsWith(".ar") : false;
+}
