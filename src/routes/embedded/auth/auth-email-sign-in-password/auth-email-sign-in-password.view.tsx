@@ -3,18 +3,25 @@ import { toast } from "react-toastify";
 import { Button, Text, TextInput } from "~components/embed";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation, useSearchParams } from "~wallets/router/router.utils";
-import { Flex } from "~components/common/Flex";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 import { PasswordInput } from "~components/embed/ui/atoms/password-input";
 import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
 import { InputButton } from "~components/embed/ui/atoms/input-button/InputButton";
 import { EditIcon } from "@iconicicons/react";
 import { getFriendlyAuthErrorMessage } from "~utils/authentication/authentication.utils";
+import { PersistentStorage, useStorage } from "~utils/storage";
+import type { PreferredEmailAuth } from "~utils/auth/auth.types";
+import { StorageKeys } from "~utils/storage/storage.constants";
 
-export function AuthEmailSignInEmbeddedView() {
+export function AuthEmailSignInPasswordEmbeddedView() {
   const { navigate } = useLocation();
   const { email } = useSearchParams<{ email: string }>();
   const { authStatus, authenticate } = useEmbedded();
+
+  const [_, setPreferredEmailAuth] = useStorage<PreferredEmailAuth | undefined>({
+    key: StorageKeys.CONNECT.AUTH.PREFERRED_EMAIL_AUTH,
+    instance: PersistentStorage,
+  });
 
   // Input refs:
 
@@ -23,11 +30,9 @@ export function AuthEmailSignInEmbeddedView() {
   // Loading state:
 
   const [isAuthenticating, setIsAuthenticating] = useState(false);
-
-  const areButtonsDisabled =
+  const isViewLoading =
     authStatus === "unknown" || authStatus === "loading" || authStatus === "authLoading" || isAuthenticating;
-
-  const isViewLoading = areButtonsDisabled;
+  const areButtonsDisabled = isViewLoading;
 
   // Handlers:
 
@@ -50,6 +55,8 @@ export function AuthEmailSignInEmbeddedView() {
           email,
           password,
         });
+
+        setPreferredEmailAuth("password");
       } catch (error) {
         if (error.code === "email_not_confirmed") {
           navigate(EmbeddedPaths.AuthEmailVerify);
@@ -123,6 +130,12 @@ export function AuthEmailSignInEmbeddedView() {
         Forgot your password?{" "}
         <Button variant="link" isDisabled={areButtonsDisabled} href={EmbeddedPaths.AuthRecoverAccount}>
           Recover account
+        </Button>
+      </Text>
+
+      <Text variant="bodySm" alignment="center">
+        <Button variant="link" isDisabled={areButtonsDisabled} href={EmbeddedPaths.AuthEmailOtp}>
+          Request email access code instead
         </Button>
       </Text>
     </OnboardingCard>

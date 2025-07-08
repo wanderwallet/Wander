@@ -73,7 +73,7 @@ export function AuthImportKeyfileEmbeddedView() {
 
   return importedWalletAddress ? (
     <OnboardingCard
-      headerText={authStatus === "noWallets" ? "Import Keyfile" : "Restore wallet"}
+      headerText={authStatus === "noWallets" ? "Import Keyfile" : "Restore Wallet"}
       subtitle="Would you like to add this wallet to your account?"
       onBackButtonClick={() => navigate(`/auth/add-wallet`)}
       isLoading={isViewLoading}>
@@ -97,7 +97,7 @@ export function AuthImportKeyfileEmbeddedView() {
     </OnboardingCard>
   ) : (
     <OnboardingCard
-      headerText={authStatus === "noWallets" ? "Import Keyfile" : "Restore wallet"}
+      headerText={authStatus === "noWallets" ? "Import Keyfile" : "Restore Wallet"}
       subtitle="Upload your private key to add your wallet to your account."
       onBackButtonClick={() => navigate(`/auth/add-wallet`)}
       isLoading={isViewLoading}>

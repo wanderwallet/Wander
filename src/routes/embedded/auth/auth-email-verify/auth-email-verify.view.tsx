@@ -9,24 +9,29 @@ import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-c
 import { Flex } from "~components/common/Flex";
 import { getFriendlyAuthErrorMessage } from "~utils/authentication/authentication.utils";
 import { StorageKeys } from "~utils/storage/storage.constants";
-import {
-  CodeInput,
-  OPT_COOLDOWN_DURATION_SEC,
-  OTP_LENGTH,
-  type CodeInputHandle,
-} from "~components/embed/ui/atoms/code-input/CodeInput";
+import { CodeInput, type CodeInputHandle } from "~components/embed/ui/atoms/code-input/CodeInput";
 import { useCooldownCallback } from "~utils/react/useCooldownCallback";
+import {
+  checkNeedsNewOtp,
+  clearOtpAvailable,
+  OTP_COOLDOWN_DURATION_SEC,
+  OTP_LENGTH,
+  setOtpAvailable,
+} from "~utils/otp/otp.utils";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 export function AuthEmailVerifyEmbeddedView() {
   const { navigate } = useLocation();
-  const { authenticate } = useEmbedded();
+  const { authStatus, authenticate } = useEmbedded();
   const { email } = useSearchParams<{ email: string }>();
 
   // Loading state:
 
   const [isResending, setIsResending] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
-  const isViewLoading = isResending || isVerifying;
+  const isViewLoading =
+    authStatus === "unknown" || authStatus === "loading" || authStatus === "authLoading" || isVerifying;
+  const areButtonsDisabled = isViewLoading || isResending;
 
   // Code input:
 
@@ -59,6 +64,8 @@ export function AuthEmailVerifyEmbeddedView() {
           return;
         }
 
+        setOtpAvailable();
+
         if (showConfirmationToast) toast.success("Verification email resent successfully");
       } catch (error) {
         toast.error(getFriendlyAuthErrorMessage(error, "Error sending verification email"));
@@ -68,13 +75,13 @@ export function AuthEmailVerifyEmbeddedView() {
     },
     {
       key: StorageKeys.CONNECT.AUTH.LAST_OTP_EMAIL,
-      cooldownDuration: OPT_COOLDOWN_DURATION_SEC,
+      cooldownDuration: OTP_COOLDOWN_DURATION_SEC,
     },
   );
 
-  useEffect(() => {
+  useAsyncEffect(async () => {
     try {
-      resendEmail(false);
+      if (await checkNeedsNewOtp()) resendEmail(false);
     } catch (err) {
       // When coming from `AuthEmailSignUpEmbeddedView` for the first time, `LAST_OTP_EMAIL` would already be set
       // in `localStorage`, so this call will throw an error. If the user doesn't confirm the email now and comes back
@@ -110,6 +117,8 @@ export function AuthEmailVerifyEmbeddedView() {
       } catch (error) {
         setIsVerifying(false);
         toast.error(getFriendlyAuthErrorMessage(error, "Invalid or expired code"));
+      } finally {
+        clearOtpAvailable();
       }
 
       // We leave isVerifying = true intentionally as the user will simply be redirected after verifying the account.
@@ -147,20 +156,25 @@ export function AuthEmailVerifyEmbeddedView() {
         <CodeInput
           name="otp-input"
           inputRef={codeInputRef}
-          disabled={isViewLoading}
+          disabled={areButtonsDisabled}
           onChange={handleCodeChange}
           autoFocus
         />
       </Flex>
 
-      <Button type="submit" variant="primary" isFullWidth isDisabled={isViewLoading || !isComplete}>
+      <Button
+        type="submit"
+        variant="primary"
+        isFullWidth
+        isLoading={isResending}
+        isDisabled={areButtonsDisabled || !isComplete}>
         Verify Code
       </Button>
 
       <Text variant="bodySm" alignment="center">
         Didn't receive the email?{" "}
         {cooldownSeconds === 0 ? (
-          <Button variant="link" onClick={() => resendEmail(true)} isDisabled={isViewLoading}>
+          <Button variant="link" onClick={() => resendEmail(true)} isDisabled={areButtonsDisabled}>
             Send again
           </Button>
         ) : (

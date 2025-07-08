@@ -195,16 +195,6 @@ async function verifyOtp(authParams: AuthVerifyOtpParams) {
 
   if (error) throw error;
 
-  if (!(data.user.user_metadata as SupabaseUserMetadata).hasPassword) {
-    // No need to handle error, we can re-attempt this lazily on the next sign in:
-    await supabase.auth.updateUser({
-      data: {
-        ...data.user.user_metadata,
-        hasPassword: true,
-      } satisfies SupabaseUserMetadata,
-    });
-  }
-
   return data;
 }
 
