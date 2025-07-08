@@ -23,18 +23,20 @@ interface WandCarouselSlide {
 
 const carouselData: WandCarouselSlide[] = [
   {
-    image: React.createElement(Lottie as any, {
-      options: {
-        loop: false,
-        autoplay: true,
-        animationData: wandTokenAnimationData,
-        rendererSettings: {
-          preserveAspectRatio: "xMidYMid slice",
-        },
-      },
-      height: "100%",
-      width: "100%",
-    }),
+    image: (
+      <Lottie
+        options={{
+          loop: false,
+          autoplay: true,
+          animationData: wandTokenAnimationData,
+          rendererSettings: {
+            preserveAspectRatio: "xMidYMid slice",
+          },
+        }}
+        height="100%"
+        width="100%"
+      />
+    ),
     title: browser.i18n.getMessage("swipe_to_learn_more"),
   },
   {
@@ -60,7 +62,7 @@ export const WandAnnouncementPopup = ({ isOpen, setOpen }) => {
       setShowFirstSlideContent(false);
       const timer = setTimeout(() => {
         setShowFirstSlideContent(true);
-      }, 3500);
+      }, 3700);
 
       return () => clearTimeout(timer);
     }
@@ -76,16 +78,16 @@ export const WandAnnouncementPopup = ({ isOpen, setOpen }) => {
       <Flex direction="column" gap={8} align="center" justify="center">
         {(index !== 0 || showFirstSlideContent) && (
           <BackgroundAnimation>
-            {React.createElement(Lottie as any, {
-              options: {
+            <Lottie
+              options={{
                 loop: true,
                 autoplay: true,
                 animationData: wandTokenBgLoop,
                 rendererSettings: { preserveAspectRatio: "xMidYMid slice" },
-              },
-              height: "100%",
-              width: "100%",
-            })}
+              }}
+              height="100%"
+              width="100%"
+            />
           </BackgroundAnimation>
         )}
         <SlideContentOverlay>
@@ -143,6 +145,9 @@ export const WandAnnouncementPopup = ({ isOpen, setOpen }) => {
             showDots={true}
             dotColor="rgba(255, 255, 255, 0.4)"
             activeDotColor="white"
+            showNavigationArrows
+            navigationArrowPosition="onSlides"
+            showNavigationArrowsOnHover
           />
         </Flex>
 

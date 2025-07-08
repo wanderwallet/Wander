@@ -74,7 +74,7 @@ export const TiersPopup = ({ isOpen, setOpen }) => {
         slides={carouselData}
         renderSlide={renderSlide}
         showDots={true}
-        showChevrons={true}
+        showNavigationArrows={true}
         options={{ loop: false }}
       />
     </SliderMenu>

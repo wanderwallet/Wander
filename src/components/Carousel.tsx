@@ -15,8 +15,10 @@ export interface CarouselProps<T extends CarouselSlide = CarouselSlide> {
   showDots?: boolean;
   dotColor?: string;
   activeDotColor?: string;
-  showChevrons?: boolean;
-  chevronSize?: number;
+  showNavigationArrows?: boolean;
+  navigationArrowSize?: number;
+  navigationArrowPosition?: "withDots" | "onSlides";
+  showNavigationArrowsOnHover?: boolean;
   onSlideChange?: (index: number) => void;
   className?: string;
   containerStyle?: React.CSSProperties;
@@ -33,8 +35,10 @@ export function Carousel<T extends CarouselSlide = CarouselSlide>({
     containScroll: "trimSnaps",
   },
   showDots = true,
-  showChevrons = false,
-  chevronSize = 24,
+  showNavigationArrows = false,
+  navigationArrowSize = 24,
+  navigationArrowPosition = "withDots",
+  showNavigationArrowsOnHover = false,
   onSlideChange,
   className,
   containerStyle,
@@ -68,20 +72,41 @@ export function Carousel<T extends CarouselSlide = CarouselSlide>({
 
   return (
     <CarouselContainer className={className} style={containerStyle}>
-      <EmblaViewport ref={emblaRef}>
-        <EmblaContainer>
-          {slides.map((slide, index) => (
-            <EmblaSlide key={`slide-${index}`}>{renderSlide(slide, index)}</EmblaSlide>
-          ))}
-        </EmblaContainer>
-      </EmblaViewport>
+      <CarouselViewportContainer $showNavigationArrowsOnHover={showNavigationArrowsOnHover}>
+        <EmblaViewport ref={emblaRef}>
+          <EmblaContainer>
+            {slides.map((slide, index) => (
+              <EmblaSlide key={`slide-${index}`}>{renderSlide(slide, index)}</EmblaSlide>
+            ))}
+          </EmblaContainer>
+        </EmblaViewport>
+
+        {showNavigationArrows && navigationArrowPosition === "onSlides" && (
+          <>
+            <OverlayNavigationArrowButton
+              position="left"
+              onClick={scrollPrev}
+              disabled={!canScrollPrev()}
+              size={navigationArrowSize}>
+              <ChevronLeftIcon size={navigationArrowSize} />
+            </OverlayNavigationArrowButton>
+            <OverlayNavigationArrowButton
+              position="right"
+              onClick={scrollNext}
+              disabled={!canScrollNext()}
+              size={navigationArrowSize}>
+              <ChevronRightIcon size={navigationArrowSize} />
+            </OverlayNavigationArrowButton>
+          </>
+        )}
+      </CarouselViewportContainer>
 
       {showDots && slides.length > 1 && (
-        <NavigationContainer showChevrons={showChevrons}>
-          {showChevrons && (
-            <ChevronButton onClick={scrollPrev} disabled={!canScrollPrev()} size={chevronSize}>
-              <ChevronLeftIcon size={chevronSize} />
-            </ChevronButton>
+        <NavigationContainer showNavigationArrows={showNavigationArrows && navigationArrowPosition === "withDots"}>
+          {showNavigationArrows && navigationArrowPosition === "withDots" && (
+            <NavigationArrowButton onClick={scrollPrev} disabled={!canScrollPrev()} size={navigationArrowSize}>
+              <ChevronLeftIcon size={navigationArrowSize} />
+            </NavigationArrowButton>
           )}
 
           <DotsContainer>
@@ -96,10 +121,10 @@ export function Carousel<T extends CarouselSlide = CarouselSlide>({
             ))}
           </DotsContainer>
 
-          {showChevrons && (
-            <ChevronButton onClick={scrollNext} disabled={!canScrollNext()} size={chevronSize}>
-              <ChevronRightIcon size={chevronSize} />
-            </ChevronButton>
+          {showNavigationArrows && navigationArrowPosition === "withDots" && (
+            <NavigationArrowButton onClick={scrollNext} disabled={!canScrollNext()} size={navigationArrowSize}>
+              <ChevronRightIcon size={navigationArrowSize} />
+            </NavigationArrowButton>
           )}
         </NavigationContainer>
       )}
@@ -109,6 +134,29 @@ export function Carousel<T extends CarouselSlide = CarouselSlide>({
 
 const CarouselContainer = styled.div`
   width: 100%;
+`;
+
+const CarouselViewportContainer = styled.div<{ $showNavigationArrowsOnHover?: boolean }>`
+  position: relative;
+
+  ${(props) =>
+    props.$showNavigationArrowsOnHover &&
+    `
+    & > button {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    &:hover > button {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    & > button:disabled {
+      opacity: 0;
+      pointer-events: none;
+    }
+  `}
 `;
 
 const EmblaViewport = styled.div`
@@ -126,10 +174,10 @@ const EmblaSlide = styled.div`
   min-width: 0;
 `;
 
-const NavigationContainer = styled.div<{ showChevrons: boolean }>`
+const NavigationContainer = styled.div<{ showNavigationArrows: boolean }>`
   display: flex;
   align-items: center;
-  justify-content: ${(props) => (props.showChevrons ? "space-between" : "center")};
+  justify-content: ${(props) => (props.showNavigationArrows ? "space-between" : "center")};
   margin-top: 20px;
   gap: 16px;
 `;
@@ -159,7 +207,7 @@ const Dot = styled.button<{
   }
 `;
 
-const ChevronButton = styled.button<{
+const NavigationArrowButton = styled.button<{
   size: number;
 }>`
   background: none;
@@ -174,6 +222,40 @@ const ChevronButton = styled.button<{
 
   &:hover:not(:disabled) {
     color: ${(props) => props.theme.primaryText};
+  }
+
+  &:disabled {
+    opacity: 0;
+    cursor: default;
+  }
+`;
+
+const OverlayNavigationArrowButton = styled.button<{
+  position: "left" | "right";
+  size: number;
+}>`
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  ${(props) => props.position}: -16px;
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.001);
+  border: none;
+  border-radius: 50%;
+  width: ${(props) => props.size + 8}px;
+  height: ${(props) => props.size + 8}px;
+  cursor: pointer;
+  color: ${(props) => props.theme.secondaryText};
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  &:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.05);
+    color: ${(props) => props.theme.primaryText};
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   }
 
   &:disabled {
