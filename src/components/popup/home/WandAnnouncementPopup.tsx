@@ -85,6 +85,7 @@ export const WandAnnouncementPopup = ({ isOpen, setOpen }) => {
                 animationData: wandTokenBgLoop,
                 rendererSettings: { preserveAspectRatio: "xMidYMid slice" },
               }}
+              isClickToPauseDisabled
               height="100%"
               width="100%"
             />
@@ -148,6 +149,8 @@ export const WandAnnouncementPopup = ({ isOpen, setOpen }) => {
             showNavigationArrows
             navigationArrowPosition="onSlides"
             showNavigationArrowsOnHover
+            options={{ loop: false }}
+            smoothSliding={false}
           />
         </Flex>
 

@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect, useMemo } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import styled from "styled-components";
 import type { EmblaOptionsType } from "embla-carousel";
@@ -19,6 +19,9 @@ export interface CarouselProps<T extends CarouselSlide = CarouselSlide> {
   navigationArrowSize?: number;
   navigationArrowPosition?: "withDots" | "onSlides";
   showNavigationArrowsOnHover?: boolean;
+  smoothSliding?: boolean;
+  slideDuration?: number;
+  slideEasing?: "ease" | "ease-in" | "ease-out" | "ease-in-out" | "linear" | string;
   onSlideChange?: (index: number) => void;
   className?: string;
   containerStyle?: React.CSSProperties;
@@ -27,18 +30,15 @@ export interface CarouselProps<T extends CarouselSlide = CarouselSlide> {
 export function Carousel<T extends CarouselSlide = CarouselSlide>({
   slides,
   renderSlide,
-  options = {
-    loop: true,
-    align: "center",
-    skipSnaps: false,
-    dragFree: false,
-    containScroll: "trimSnaps",
-  },
+  options,
   showDots = true,
   showNavigationArrows = false,
   navigationArrowSize = 24,
   navigationArrowPosition = "withDots",
   showNavigationArrowsOnHover = false,
+  smoothSliding = true,
+  slideDuration = 30,
+  slideEasing = "cubic-bezier(0.4, 0, 0.2, 1)",
   onSlideChange,
   className,
   containerStyle,
@@ -46,7 +46,26 @@ export function Carousel<T extends CarouselSlide = CarouselSlide>({
   activeDotColor,
 }: CarouselProps<T>) {
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [emblaRef, emblaApi] = useEmblaCarousel(options);
+
+  const mergedOptions = useMemo<EmblaOptionsType>(
+    () => ({
+      loop: true,
+      align: "center",
+      skipSnaps: false,
+      dragFree: false,
+      containScroll: "trimSnaps",
+      ...(smoothSliding && {
+        duration: slideDuration,
+        inViewThreshold: 0.7,
+        watchDrag: true,
+        watchResize: true,
+      }),
+      ...(options || {}),
+    }),
+    [smoothSliding, slideDuration, options],
+  );
+
+  const [emblaRef, emblaApi] = useEmblaCarousel(mergedOptions);
 
   const onSelect = useCallback(() => {
     if (!emblaApi) return;
@@ -73,10 +92,12 @@ export function Carousel<T extends CarouselSlide = CarouselSlide>({
   return (
     <CarouselContainer className={className} style={containerStyle}>
       <CarouselViewportContainer $showNavigationArrowsOnHover={showNavigationArrowsOnHover}>
-        <EmblaViewport ref={emblaRef}>
-          <EmblaContainer>
+        <EmblaViewport ref={emblaRef} $smoothSliding={smoothSliding}>
+          <EmblaContainer $smoothSliding={smoothSliding} $duration={slideDuration} $easing={slideEasing}>
             {slides.map((slide, index) => (
-              <EmblaSlide key={`slide-${index}`}>{renderSlide(slide, index)}</EmblaSlide>
+              <EmblaSlide key={`slide-${index}`} $smoothSliding={smoothSliding}>
+                {renderSlide(slide, index)}
+              </EmblaSlide>
             ))}
           </EmblaContainer>
         </EmblaViewport>
@@ -159,19 +180,40 @@ const CarouselViewportContainer = styled.div<{ $showNavigationArrowsOnHover?: bo
   `}
 `;
 
-const EmblaViewport = styled.div`
+const EmblaViewport = styled.div<{ $smoothSliding?: boolean }>`
   overflow: hidden;
+  ${(props) =>
+    props.$smoothSliding &&
+    `
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  `}
 `;
 
-const EmblaContainer = styled.div`
+const EmblaContainer = styled.div<{ $smoothSliding?: boolean; $duration?: number; $easing?: string }>`
   display: flex;
   touch-action: pan-y pinch-zoom;
   gap: 16px;
+  ${(props) =>
+    props.$smoothSliding &&
+    `
+    will-change: transform;
+    backface-visibility: hidden;
+    transition: transform ${props.$duration || 30}ms ${props.$easing || "cubic-bezier(0.4, 0, 0.2, 1)"};
+    transform: translateZ(0);
+  `}
 `;
 
-const EmblaSlide = styled.div`
+const EmblaSlide = styled.div<{ $smoothSliding?: boolean }>`
   flex: 0 0 100%;
   min-width: 0;
+  ${(props) =>
+    props.$smoothSliding &&
+    `
+    backface-visibility: hidden;
+    transform: translateZ(0);
+    will-change: transform;
+  `}
 `;
 
 const NavigationContainer = styled.div<{ showNavigationArrows: boolean }>`
