@@ -43,11 +43,14 @@ export function AuthRecoverAccountEmbeddedView() {
         return;
       }
 
-      const { data: isAlreadyRegistered, error } = await supabase.rpc("user_exists_by_email", {
+      const { data, error } = await supabase.rpc("user_exists_by_email", {
         p_email: email,
       });
 
-      if (error) {
+      const isAlreadyRegistered =
+        !!data || error?.message === "An account with this email already exists, but it is not using a password.";
+
+      if (error && error.message !== "An account with this email already exists, but it is not using a password.") {
         toast.error(getFriendlyAuthErrorMessage(error, error.message || "Error checking email"));
         return;
       }
