@@ -27,7 +27,7 @@ export const ANNOUNCEMENTS: Announcement[] = [
     title: browser.i18n.getMessage("announcement_3_title"),
     description: browser.i18n.getMessage("announcement_3_description"),
     body: browser.i18n.getMessage("announcement_3_body"),
-    timestamp: 1752105601000,
+    timestamp: 1752451200000,
   },
 ];
 
