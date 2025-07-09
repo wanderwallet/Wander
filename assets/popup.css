@@ -81,6 +81,18 @@
   }
 }
 
+@keyframes animated-focus {
+  0% {
+    box-shadow: 0 0 0 2px var(--color-link-primary, magenta);
+  }
+  40%, 60% {
+    box-shadow: 0 0 0 4px var(--color-link-primary, magenta);
+  }
+  100% {
+    box-shadow: 0 0 0 2px var(--color-link-primary, magenta);
+  }
+}
+
 /* Applies only to BE */
 
 html:not(#wanderConnectRoot) {

@@ -2,6 +2,7 @@
   --color-overlay-rgb: 255, 255, 255;
   --shadow-small: 0 0 16px rgba(var(--color-overlay-rgb), 0.25);
   --shadow-blurred: 0 0 32px rgba(var(--color-overlay-rgb), 0.25);
+  --default-focus-animation: animated-focus 2s forwards;
 
   --color-font-heading: var(--brand-color-gray-100);
   --color-font-body: var(--brand-color-neutral5);
