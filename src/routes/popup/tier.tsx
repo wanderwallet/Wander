@@ -214,9 +214,9 @@ function WanderTokenGetStarted() {
       </Text>
 
       <Link
-        href="https://docs.wander.com/en/wander-token/tier-system"
+        href="https://www.wander.app/blog/wndr-fair-launch"
         style={{ color: "inherit", gap: "4px", alignItems: "center", fontSize: 15, fontWeight: 600 }}>
-        Learn more <ArrowUpRight height={18} width={18} />
+        {browser.i18n.getMessage("learn_more")} <ArrowUpRight height={18} width={18} />
       </Link>
     </InfoCardWrapper>
   );

@@ -10,6 +10,8 @@ import { carouselData, type WandCarouselSlide } from "~utils/tier/carousel";
 import { GetTokensButton } from "./GetTokensButton";
 import CustomizableStars from "./CustomizableStars";
 import { ParseTextWithLinks } from "~components/common/ParseTextWithLinks";
+import { Link } from "~components/common/Link";
+import { ArrowUpRight } from "@untitled-ui/icons-react";
 
 const renderSlide = (slide: WandCarouselSlide) => (
   <SlideContent carouselBg={slide.carouselBg} carouselBgLight={slide.carouselBgLight}>
@@ -47,16 +49,25 @@ const renderSlide = (slide: WandCarouselSlide) => (
           <ParseTextWithLinks text={slide.tierDescription} />
         </Text>
       )}
-      <Flex direction="column" gap={8} width="100%">
-        {slide.tierBenefits.map((benefit, index) => (
-          <Flex key={index} direction="row" gap={8} align="start">
-            <StarIcon tier={slide.tierName} />
-            <Text size="sm" weight="medium" noMargin>
-              {benefit}
-            </Text>
-          </Flex>
-        ))}
-      </Flex>
+      {slide.tierBenefits.length > 0 && (
+        <Flex direction="column" gap={8} width="100%">
+          {slide.tierBenefits.map((benefit, index) => (
+            <Flex key={index} direction="row" gap={8} align="start">
+              <StarIcon tier={slide.tierName} />
+              <Text size="sm" weight="medium" noMargin>
+                {benefit}
+              </Text>
+            </Flex>
+          ))}
+        </Flex>
+      )}
+      {slide.tierLink && (
+        <Link
+          href={slide.tierLink.href}
+          style={{ color: "inherit", gap: "4px", alignItems: "center", fontSize: 15, fontWeight: 600 }}>
+          {slide.tierLink.text} <ArrowUpRight height={18} width={18} />
+        </Link>
+      )}
     </Flex>
   </SlideContent>
 );

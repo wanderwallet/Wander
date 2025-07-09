@@ -291,7 +291,7 @@ const SegmentLabelText = styled.div`
   position: absolute;
   top: 0;
   left: 0;
-  transform: translate(-50%, 0);
+  transform: translate(-40%, 0);
   white-space: nowrap;
   text-overflow: ellipsis;
 `;
