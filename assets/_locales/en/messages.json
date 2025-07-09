@@ -3791,5 +3791,9 @@
   "tiers": {
     "message": "Tiers",
     "description": "Tiers text"
+  },
+  "position_update_tooltip": {
+    "message": "Your position is updated every 24 hours at 12:00 GMT",
+    "description": "Tooltip text for position update"
   }
 }
