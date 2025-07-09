@@ -3753,7 +3753,7 @@
       "description": "Tiers text"
     },
     "position_update_tooltip": {
-      "message": "您的位置每24小时更新一次，时间为12:00 GMT",
+      "message": "您的位置每24小时更新一次，时间为4:00 PM GMT",
       "description": "Tooltip text for position update"
     }
 }

@@ -3793,7 +3793,7 @@
     "description": "Tiers text"
   },
   "position_update_tooltip": {
-    "message": "Your position is updated every 24 hours at 12:00 GMT",
+    "message": "Your position is updated every 24 hours at 4:00 PM GMT",
     "description": "Tooltip text for position update"
   }
 }

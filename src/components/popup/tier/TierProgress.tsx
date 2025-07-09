@@ -36,7 +36,7 @@ const HelpTooltip = () => {
   return (
     <StyledTooltip
       content={
-        <Text style={{ maxWidth: 200, textAlign: "center" }} size="sm" weight="medium" noMargin>
+        <Text style={{ maxWidth: 220, textAlign: "center" }} size="sm" weight="medium" noMargin>
           {browser.i18n.getMessage("position_update_tooltip")}
         </Text>
       }
