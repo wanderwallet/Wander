@@ -147,6 +147,8 @@ export const WandAnnouncementPopup = ({ isOpen, setOpen }) => {
             dotColor="rgba(255, 255, 255, 0.4)"
             activeDotColor="white"
             showNavigationArrows
+            navigationArrowColor="white"
+            navigationArrowActiveColor="white"
             navigationArrowPosition="onSlides"
             showNavigationArrowsOnHover
             options={{ loop: false }}

@@ -16,6 +16,8 @@ export interface CarouselProps<T extends CarouselSlide = CarouselSlide> {
   dotColor?: string;
   activeDotColor?: string;
   showNavigationArrows?: boolean;
+  navigationArrowColor?: string;
+  navigationArrowActiveColor?: string;
   navigationArrowSize?: number;
   navigationArrowPosition?: "withDots" | "onSlides";
   showNavigationArrowsOnHover?: boolean;
@@ -33,6 +35,8 @@ export function Carousel<T extends CarouselSlide = CarouselSlide>({
   options,
   showDots = true,
   showNavigationArrows = false,
+  navigationArrowColor,
+  navigationArrowActiveColor,
   navigationArrowSize = 24,
   navigationArrowPosition = "withDots",
   showNavigationArrowsOnHover = false,
@@ -108,15 +112,19 @@ export function Carousel<T extends CarouselSlide = CarouselSlide>({
               position="left"
               onClick={scrollPrev}
               disabled={!canScrollPrev()}
-              size={navigationArrowSize}>
-              <ChevronLeftIcon size={navigationArrowSize} />
+              size={navigationArrowSize}
+              color={navigationArrowColor}
+              activeColor={navigationArrowActiveColor}>
+              <ChevronLeftIcon size={navigationArrowSize} color={navigationArrowColor} />
             </OverlayNavigationArrowButton>
             <OverlayNavigationArrowButton
               position="right"
               onClick={scrollNext}
               disabled={!canScrollNext()}
-              size={navigationArrowSize}>
-              <ChevronRightIcon size={navigationArrowSize} />
+              size={navigationArrowSize}
+              color={navigationArrowColor}
+              activeColor={navigationArrowActiveColor}>
+              <ChevronRightIcon size={navigationArrowSize} color={navigationArrowColor} />
             </OverlayNavigationArrowButton>
           </>
         )}
@@ -125,8 +133,13 @@ export function Carousel<T extends CarouselSlide = CarouselSlide>({
       {showDots && slides.length > 1 && (
         <NavigationContainer showNavigationArrows={showNavigationArrows && navigationArrowPosition === "withDots"}>
           {showNavigationArrows && navigationArrowPosition === "withDots" && (
-            <NavigationArrowButton onClick={scrollPrev} disabled={!canScrollPrev()} size={navigationArrowSize}>
-              <ChevronLeftIcon size={navigationArrowSize} />
+            <NavigationArrowButton
+              onClick={scrollPrev}
+              disabled={!canScrollPrev()}
+              size={navigationArrowSize}
+              color={navigationArrowColor}
+              activeColor={navigationArrowActiveColor}>
+              <ChevronLeftIcon size={navigationArrowSize} color={navigationArrowColor} />
             </NavigationArrowButton>
           )}
 
@@ -143,8 +156,13 @@ export function Carousel<T extends CarouselSlide = CarouselSlide>({
           </DotsContainer>
 
           {showNavigationArrows && navigationArrowPosition === "withDots" && (
-            <NavigationArrowButton onClick={scrollNext} disabled={!canScrollNext()} size={navigationArrowSize}>
-              <ChevronRightIcon size={navigationArrowSize} />
+            <NavigationArrowButton
+              onClick={scrollNext}
+              disabled={!canScrollNext()}
+              size={navigationArrowSize}
+              color={navigationArrowColor}
+              activeColor={navigationArrowActiveColor}>
+              <ChevronRightIcon size={navigationArrowSize} color={navigationArrowColor} />
             </NavigationArrowButton>
           )}
         </NavigationContainer>
@@ -251,11 +269,13 @@ const Dot = styled.button<{
 
 const NavigationArrowButton = styled.button<{
   size: number;
+  color?: string;
+  activeColor?: string;
 }>`
   background: none;
   border: none;
   cursor: pointer;
-  color: ${(props) => props.theme.secondaryText};
+  color: ${(props) => props.color || props.theme.secondaryText};
   transition: color 0.2s ease;
   display: flex;
   align-items: center;
@@ -263,7 +283,7 @@ const NavigationArrowButton = styled.button<{
   padding: 4px;
 
   &:hover:not(:disabled) {
-    color: ${(props) => props.theme.primaryText};
+    color: ${(props) => props.activeColor || props.theme.primaryText};
   }
 
   &:disabled {
@@ -275,6 +295,8 @@ const NavigationArrowButton = styled.button<{
 const OverlayNavigationArrowButton = styled.button<{
   position: "left" | "right";
   size: number;
+  color?: string;
+  activeColor?: string;
 }>`
   position: absolute;
   top: 50%;
@@ -287,7 +309,7 @@ const OverlayNavigationArrowButton = styled.button<{
   width: ${(props) => props.size + 8}px;
   height: ${(props) => props.size + 8}px;
   cursor: pointer;
-  color: ${(props) => props.theme.secondaryText};
+  color: ${(props) => props.color || props.theme.secondaryText};
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
@@ -296,7 +318,7 @@ const OverlayNavigationArrowButton = styled.button<{
 
   &:hover:not(:disabled) {
     background: rgba(255, 255, 255, 0.05);
-    color: ${(props) => props.theme.primaryText};
+    color: ${(props) => props.activeColor || props.theme.primaryText};
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   }
 
