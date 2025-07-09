@@ -7,7 +7,7 @@ import { toast } from "react-toastify";
 import { WalletUtils } from "~utils/wallets/wallets.utils";
 import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
 import { useWebcamPermission } from "../hooks/useWebcamPermission";
-import { Link } from "~routes/popup/token/[id]";
+import { Link } from "~components/common/Link";
 import type { JWKInterface } from "@dha-team/arbundles";
 import type { WanderRoutePath } from "~wallets/router/router.types";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
