@@ -1,9 +1,8 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { LiquidOpsClient } from "../../LiquidOps";
 import { tokenInput } from "liquidops";
 import { getActiveAddress } from "~wallets";
 import { EventType, trackEvent } from "~utils/analytics";
-import { queryClient } from "~utils/tanstack";
 import { getActiveTier } from "~utils/tier/utils";
 import { defaultOptions } from "~tokens/hooks";
 
@@ -24,6 +23,8 @@ interface Params {
 }
 
 export function useLend({ onSettled }: Params) {
+  const queryClient = useQueryClient();
+
   const lendMutation = useMutation({
     mutationFn: async ({ token, quantity }: LendParams) => {
       const { client, free } = await LiquidOpsClient(true);

@@ -1,12 +1,25 @@
 import { Text } from "@arconnect/components-rebrand";
-import { useMemo } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useCallback, useMemo } from "react";
 import styled from "styled-components";
+import { ExtensionStorage } from "~utils/storage";
+import type { ActiveTier, Tier } from "~utils/tier/types";
+import { useActiveAddress } from "~wallets/hooks";
+import { useLocation } from "~wallets/router/router.utils";
 
 interface ProgressSegment {
   activeBackgroundColor: string;
   backgroundColor: string;
   percentage: number; // 0-100, segments should add up to 100
-  name: string;
+  name: Tier;
+}
+
+interface ProgressSegmentWithData extends ProgressSegment {
+  actualWidth: number;
+  start: number;
+  startPercentage: number;
+  endPercentage: number;
+  isCompletelyFilled: boolean;
 }
 
 interface ProgressBarProps {
@@ -43,6 +56,37 @@ export function ProgressBar({
   progressLineWidth = 4,
   showSegmentLabels = true,
 }: ProgressBarProps) {
+  const { back } = useLocation();
+  const queryClient = useQueryClient();
+  const activeAddress = useActiveAddress();
+
+  const handleSegmentClicked = useCallback(
+    async (segmentData: ProgressSegmentWithData) => {
+      if (process.env.NODE_ENV !== "development") return;
+
+      const index = segments.findIndex(({ name }) => name === segmentData.name);
+      const rank = segments.length - index;
+      const progress = segmentData.startPercentage + (segmentData.endPercentage - segmentData.startPercentage) / 2;
+      const balance = `${10 ** (18 + index)}`;
+      const activeTier: ActiveTier = {
+        tier: segmentData.name,
+        balance,
+        rank,
+        progress,
+        snapshotTimestamp: Date.now(),
+      };
+
+      await ExtensionStorage.set(`active_tier_${activeAddress}`, activeTier);
+
+      await queryClient.refetchQueries({
+        queryKey: ["active-tier", activeAddress],
+      });
+
+      back();
+    },
+    [queryClient, activeAddress, segments, back],
+  );
+
   // Calculate dimensions
   const exactProgressWidth = (progress / 100) * width;
 
@@ -55,7 +99,12 @@ export function ProgressBar({
     let accumulatedWidth = 0;
 
     return segments.map((segment, index) => {
-      const actualWidth = (segment.percentage / 100) * availableWidth;
+      // We adjust for rounding errors in the last one:
+      const actualWidth =
+        index === segments.length - 1
+          ? availableWidth - accumulatedWidth
+          : Math.round((segment.percentage / 100) * availableWidth);
+
       const start = accumulatedWidth;
       const startPercentage = accumulatedPercentage;
       const endPercentage = accumulatedPercentage + segment.percentage;
@@ -74,28 +123,28 @@ export function ProgressBar({
         startPercentage,
         endPercentage,
         isCompletelyFilled,
-      };
+      } satisfies ProgressSegmentWithData;
     });
   }, [segments, separatorWidth, width, progress]);
 
   const activeSegment = segmentData.findLast((segment) => segment.isCompletelyFilled);
 
   return (
-    <ProgressContainer width={width} height={height} $borderRadius={borderRadius} $showLabels={showSegmentLabels}>
-      <SegmentsContainer>
+    <ProgressContainer $width={width}>
+      <SegmentsContainer $height={height} $borderRadius={borderRadius}>
         {segmentData.map((segment, index) => (
-          <SegmentWrapper key={`segment-${index}`}>
-            <Segment
-              $width={segment.actualWidth}
-              $height={height}
-              $backgroundColor={activeSegment?.backgroundColor}
-              $isActive={segment.isCompletelyFilled}
-              $activeBackgroundColor={activeSegment?.activeBackgroundColor}
-              $isFirst={index === 0}
-              $isLast={index === segments.length - 1}
-              $borderRadius={borderRadius}
-            />
-          </SegmentWrapper>
+          <Segment
+            key={`segment-${index}`}
+            $width={segment.actualWidth}
+            $height={height}
+            $backgroundColor={activeSegment?.backgroundColor}
+            $isActive={segment.isCompletelyFilled}
+            $activeBackgroundColor={activeSegment?.activeBackgroundColor}
+            $isFirst={index === 0}
+            $isLast={index === segments.length - 1}
+            $borderRadius={borderRadius}
+            onClick={() => handleSegmentClicked(segment)}
+          />
         ))}
       </SegmentsContainer>
 
@@ -107,7 +156,7 @@ export function ProgressBar({
               $position={segment.start}
               $width={segment.actualWidth}
               $isActive={segment.isCompletelyFilled}>
-              {segment.name}
+              <SegmentLabelText>{segment.name}</SegmentLabelText>
             </SegmentLabel>
           ))}
         </SegmentLabelsContainer>
@@ -126,32 +175,22 @@ export function ProgressBar({
 }
 
 const ProgressContainer = styled.div<{
-  width?: number;
-  height: number;
-  $borderRadius: number;
-  $showLabels: boolean;
+  $width?: number;
 }>`
-  width: ${(props) => (props.width ? `${props.width}px` : "100%")};
-  height: ${(props) => props.height}px;
-  border-radius: ${(props) => props.$borderRadius}px;
   position: relative;
-  display: flex;
-  margin-bottom: ${(props) => (props.$showLabels ? "28px" : "0")};
+  width: ${(props) => (props.$width ? `${props.$width}px` : "100%")};
 `;
 
-const SegmentsContainer = styled.div`
+const SegmentsContainer = styled.div<{
+  $height: number;
+  $borderRadius: number;
+}>`
   display: flex;
+  align-items: center;
   width: 100%;
-  height: 100%;
+  height: ${(props) => props.$height}px;
   overflow: hidden;
-  border-radius: inherit;
-  align-items: center;
-`;
-
-const SegmentWrapper = styled.div`
-  display: flex;
-  height: 100%;
-  align-items: center;
+  border-radius: ${(props) => props.$borderRadius}px;
 `;
 
 const Segment = styled.div<{
@@ -175,7 +214,8 @@ const Segment = styled.div<{
     return "0";
   }};
 
-  border: ${(props) => (props.$isFirst || props.$isLast ? "none" : "1px solid rgba(255, 255, 255, 0.5)")};
+  box-sizing: border-box;
+  border-left: ${(props) => (props.$isFirst ? "none" : "1px solid rgba(255, 255, 255, 0.5)")};
 
   box-shadow:
     0px 22.862px 26.389px -20.902px rgba(238, 238, 238, 0.6) inset,
@@ -184,6 +224,20 @@ const Segment = styled.div<{
     0px 2.613px 11.758px 0px rgba(212, 212, 212, 0.3) inset,
     0px 0.653px 13.064px 0px rgba(212, 212, 212, 0.2) inset;
   backdrop-filter: blur(32.65992736816406px);
+
+  ${process.env.NODE_ENV === "development"
+    ? `
+    cursor: pointer;
+
+    &:hover {
+      background: magenta;
+    }
+  `
+    : ""}
+
+  &:last-child {
+    flex: 1;
+  }
 `;
 
 const ProgressLine = styled.div<{
@@ -201,15 +255,17 @@ const ProgressLine = styled.div<{
   box-shadow: 0 0 6px rgba(0, 0, 0, 0.4);
   border-radius: 50px;
   z-index: 10;
+  pointer-events: none;
 `;
 
 const SegmentLabelsContainer = styled.div`
-  position: absolute;
-  top: 100%;
-  left: 0;
-  width: 100%;
   display: flex;
+  width: 100%;
   margin-top: 12px;
+
+  &:before {
+    content: "\\200B";
+  }
 `;
 
 const SegmentLabel = styled(Text).attrs<{ $isActive: boolean }>(({ $isActive }) => ({
@@ -222,10 +278,19 @@ const SegmentLabel = styled(Text).attrs<{ $isActive: boolean }>(({ $isActive }) 
   $width: number;
   $isActive: boolean;
 }>`
-  position: absolute;
-  left: ${(props) => props.$position - 8}px;
+  position: relative;
   width: ${(props) => props.$width}px;
-  text-align: left;
+
+  &:last-child {
+    flex: 1;
+  }
+`;
+
+const SegmentLabelText = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: translate(-50%, 0);
   white-space: nowrap;
   text-overflow: ellipsis;
 `;
