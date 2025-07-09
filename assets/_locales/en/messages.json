@@ -3729,7 +3729,7 @@
     "description": "Core tier title"
   },
   "tier_core_description": {
-    "message": "1. Open [AO Delegate](https://ao.arweave.net/#/delegate/) <br/> 2. Connect your Wander wallet <br/> 3. Add the WNDR token to your delegation list <br/> 4. Collect and claim your WNDR tokens",
+    "message": "1. Open the [Fair Launch delegation website](https://ao.arweave.net/#/delegate/) <br/> 2. Connect your Wander wallet <br/> 3. Add WNDR to your delegation list <br/> 4. Collect and claim your WNDR tokens",
     "description": "Core tier description with steps"
   },
   "tier_benefit_fee_reduction_defi": {
@@ -3787,5 +3787,13 @@
   "tier_support_channels_premium": {
     "message": "Discord, Slack, Telegram, Email, or schedule a video call with the team",
     "description": "Premium support channels list"
+  },
+  "tiers": {
+    "message": "Tiers",
+    "description": "Tiers text"
+  },
+  "position_update_tooltip": {
+    "message": "Your position is updated every 24 hours at 4:00 PM GMT",
+    "description": "Tooltip text for position update"
   }
 }

@@ -2,7 +2,7 @@ import { concatGatewayURL } from "~gateways/utils";
 import { Section, Spacer, Text } from "@arconnect/components-rebrand";
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence } from "framer-motion";
-import { Link } from "../token/[id]";
+import { Link } from "~components/common/Link";
 import TokenLoading from "~components/popup/asset/Loading";
 import Thumbnail from "~components/popup/asset/Thumbnail";
 import Skeleton from "~components/Skeleton";
