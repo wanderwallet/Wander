@@ -45,7 +45,11 @@ const renderSlide = (slide: WandCarouselSlide) => (
         </Text>
       )}
       {slide.tierDescription && (
-        <Text variant="secondary" style={{ fontSize: "13px", flexWrap: "nowrap" }} weight="semibold" noMargin>
+        <Text
+          variant="secondary"
+          style={{ fontSize: "13px", flexWrap: "nowrap", lineHeight: "150%" }}
+          weight="semibold"
+          noMargin>
           <ParseTextWithLinks text={slide.tierDescription} />
         </Text>
       )}
