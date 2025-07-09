@@ -12,6 +12,7 @@ import type {
 
 const EMBEDDED_MESSAGE_IDS = [
   "embedded_auth",
+  "embedded_backup",
   "embedded_open",
   "embedded_close",
   "embedded_resize",
@@ -32,6 +33,9 @@ const messageKeyFnByType: {
         .sort((a, b) => a[0].localeCompare(b[0]))
         .map((v) => v[1]),
     ].join("|");
+  },
+  embedded_backup: (data) => {
+    return [data.backupsNeeded, data.backupMessage].join("|");
   },
   embedded_open: () => null,
   embedded_close: () => null,

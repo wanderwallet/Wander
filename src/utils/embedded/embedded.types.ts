@@ -75,6 +75,8 @@ export interface EmbeddedContextState {
   recoverableAccount: null | RecoverableAccount;
   recoverableAccountWallets: null | RecoverableAccountWallet[];
   requestPasswordChange: boolean;
+  backupsNeeded: number;
+  backupMessage?: string;
 }
 
 export interface EmbeddedContextAuth {
@@ -110,6 +112,7 @@ export interface RecoveryJSON {
 }
 
 export interface EmbeddedContextData extends EmbeddedContextState, EmbeddedContextAuth {
+  walletCount: number;
   currentWallet: Wallet | null;
   unpartitionedStateStatus: UnpartitionedStateStatus;
 

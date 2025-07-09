@@ -75,10 +75,12 @@ export const getButtonTemplateContent = ({
   .button::after {
     content: "";
     position: absolute;
-    inset: 0;
-    border-radius: var(--borderRadius);
-    border-bottom-right-radius: 0;
-    z-index: -1;
+    right: calc(4px + var(--borderWidth));
+    bottom: calc(4px + var(--borderWidth));
+    border-radius: 32px;
+    height: 22px;
+    width: 22px;
+    transform: translate(50%, 50%) scale(1);
   }
 
   .button:hover .wanderLogo {

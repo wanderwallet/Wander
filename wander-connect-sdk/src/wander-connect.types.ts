@@ -4,6 +4,8 @@ export type OpenReason = "manually" | "embedded_open" | "embedded_request";
 
 // Routes and layouts:
 
+export type DirectAccess = "backup";
+
 /**
  * Types of routes available in the Wander Connect SDK.
  */
@@ -225,6 +227,11 @@ export interface AuthInfoAuthenticated {
 
 export type AuthInfo = AuthInfoNative | AuthInfoNoAuth | AuthInfoLoading | AuthInfoOnboarding | AuthInfoAuthenticated;
 
+export interface BackupInfo {
+  backupsNeeded: number;
+  backupMessage?: string;
+}
+
 /** User's wallet balance information */
 export interface BalanceInfo {
   /**
@@ -303,6 +310,11 @@ export interface WanderConnectOptions {
    * @param userDetails User details object when signed in, or null when signed out
    */
   onAuth?: (authInfo: AuthInfo) => void;
+
+  /**
+   * Callback function called when the user needs or performs backups.
+   */
+  onBackup?: (backupInfo: BackupInfo) => void;
 
   /**
    * Callback function called when the wallet interface is opened.
@@ -480,6 +492,8 @@ export type ButtonNotifications =
   /** Show indicator without count */
   | "alert";
 
+export type ButtonNotificationType = Extract<keyof ButtonLabels, "backupNeeded" | "unexpectedError">;
+
 /**
  * Custom labels for button text.
  */
@@ -492,28 +506,40 @@ export interface ButtonLabels {
 
   /**
    * Title/tooltip to display when the balance is loading.
-   * @default "Loading Balance"
+   * @default "Loading balance"
    */
   loadingBalance: string;
 
   /**
    * Title/tooltip to display when the user is authenticated, but the onboarding
    * hasn't been completed.
-   * @default "Complete Sign Up"
+   * @default "Complete sign up"
    */
   completeSignUp: string;
 
   /**
    * Text to display when the user is not authenticated.
-   * @default "Sign In"
+   * @default "Sign in"
    */
   signIn: string;
 
   /**
    * Text to display when the user has request to review.
-   * @default "Review Requests"
+   * @default "Review requests"
    */
   reviewRequests: string;
+
+  /**
+   * Text to display when the user has wallets that need to be backed up.
+   * @default "Backup needed"
+   */
+  backupNeeded: string;
+
+  /**
+   * Text to display when some unexpected error needs the user attention.
+   * @default "Unexpected error"
+   */
+  unexpectedError: string;
 }
 
 /**
