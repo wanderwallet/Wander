@@ -3747,5 +3747,9 @@
     "tier_support_channels_premium": {
       "message": "Discord、Slack、Telegram、邮件，或与团队安排视频通话",
       "description": "Premium support channels list"
+    },
+    "tiers": {
+      "message": "层级",
+      "description": "Tiers text"
     }
 }

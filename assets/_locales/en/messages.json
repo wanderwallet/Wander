@@ -3787,5 +3787,9 @@
   "tier_support_channels_premium": {
     "message": "Discord, Slack, Telegram, Email, or schedule a video call with the team",
     "description": "Premium support channels list"
+  },
+  "tiers": {
+    "message": "Tiers",
+    "description": "Tiers text"
   }
 }

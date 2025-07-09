@@ -65,6 +65,9 @@ export function TierView() {
         optionsIcon={
           <OptionsIconWrapper onClick={() => setOpen(true)}>
             <OptionsIcon />
+            <Text weight="medium" noMargin>
+              {browser.i18n.getMessage("tiers")}
+            </Text>
           </OptionsIconWrapper>
         }
       />
@@ -212,18 +215,27 @@ const OptionsIcon = styled(Award03)`
 
 const OptionsIconWrapper = styled.div`
   display: flex;
-  width: 28px;
   height: 28px;
-  padding: 4px;
+  padding: 4px 8px;
   justify-content: center;
   align-items: center;
   flex-shrink: 0;
   border-radius: 8px;
-  background: ${(props) => props.theme.surfaceTertiary};
+  background: ${(props) => props.theme.surfaceDefault};
+  box-shadow:
+    inset 0 0 5px rgba(160, 160, 160, 0.4),
+    inset 0 1px 2px rgba(255, 255, 255, 0.6),
+    inset 0 1px 13px rgba(90, 93, 94, 0.2);
+  backdrop-filter: blur(7.55px);
   box-sizing: border-box;
+  gap: 5px;
 
-  &:active ${OptionsIcon} {
+  &:active {
     transform: scale(0.93);
+  }
+
+  &:hover {
+    background: ${(props) => props.theme.surfaceSecondary};
   }
 `;
 
