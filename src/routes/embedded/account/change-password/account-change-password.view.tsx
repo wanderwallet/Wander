@@ -12,15 +12,11 @@ import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-c
 import { getFriendlyAuthErrorMessage, MIN_SUPABASE_PASSWORD_LENGTH } from "~utils/authentication/authentication.utils";
 import { StorageKeys } from "~utils/storage/storage.constants";
 import browser from "~iframe/browser";
-import {
-  CodeInput,
-  OPT_COOLDOWN_DURATION_SEC,
-  OTP_LENGTH,
-  type CodeInputHandle,
-} from "~components/embed/ui/atoms/code-input/CodeInput";
+import { CodeInput, type CodeInputHandle } from "~components/embed/ui/atoms/code-input/CodeInput";
 import { useCooldownCallback } from "~utils/react/useCooldownCallback";
 import { Flex } from "~components/common/Flex";
 import { sleep } from "~utils/promises/sleep";
+import { clearOtpAvailable, OTP_COOLDOWN_DURATION_SEC, OTP_LENGTH, setOtpAvailable } from "~utils/otp/otp.utils";
 import type { SupabaseUserMetadata } from "embed-api";
 
 export function AccountChangePasswordEmbeddedView() {
@@ -37,13 +33,9 @@ export function AccountChangePasswordEmbeddedView() {
 
   const [isResending, setIsResending] = useState(false);
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
-  const areButtonsDisabled =
-    authStatus === "unknown" ||
-    authStatus === "loading" ||
-    authStatus === "authLoading" ||
-    isResending ||
-    isUpdatingPassword;
-  const isViewLoading = areButtonsDisabled;
+  const isViewLoading =
+    authStatus === "unknown" || authStatus === "loading" || authStatus === "authLoading" || isUpdatingPassword;
+  const areButtonsDisabled = isViewLoading || isResending;
 
   // Code input:
 
@@ -71,6 +63,8 @@ export function AccountChangePasswordEmbeddedView() {
           return;
         }
 
+        setOtpAvailable();
+
         if (showConfirmationToast) toast.success("Password confirmation email resent successfully");
       } catch (error) {
         toast.error(getFriendlyAuthErrorMessage(error, "Error sending password confirmation email"));
@@ -80,7 +74,7 @@ export function AccountChangePasswordEmbeddedView() {
     },
     {
       key: StorageKeys.CONNECT.AUTH.LAST_OTP_EMAIL,
-      cooldownDuration: OPT_COOLDOWN_DURATION_SEC,
+      cooldownDuration: OTP_COOLDOWN_DURATION_SEC,
     },
   );
 
@@ -169,6 +163,8 @@ export function AccountChangePasswordEmbeddedView() {
               } satisfies SupabaseUserMetadata),
         });
 
+        if (otpCodeInput) clearOtpAvailable();
+
         if (error) {
           const { message } = error;
 
@@ -245,7 +241,12 @@ export function AccountChangePasswordEmbeddedView() {
         />
       </Flex>
 
-      <Button type="submit" variant="primary" isFullWidth isDisabled={areButtonsDisabled || !isComplete}>
+      <Button
+        type="submit"
+        variant="primary"
+        isFullWidth
+        isLoading={isResending}
+        isDisabled={areButtonsDisabled || !isComplete}>
         {browser.i18n.getMessage(user_metadata.hasPassword ? "change_password" : "set_password")}
       </Button>
 

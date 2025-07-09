@@ -28,6 +28,7 @@ export async function saveWalletLifetimeSavingsToStorage(walletAddress: string, 
 
 export async function getActiveTier(walletAddress: string): Promise<ActiveTier> {
   const savedActiveTier = await ExtensionStorage.get<ActiveTier>(`active_tier_${walletAddress}`);
+
   if (
     savedActiveTier &&
     savedActiveTier?.snapshotTimestamp &&
@@ -53,7 +54,7 @@ export async function getActiveTier(walletAddress: string): Promise<ActiveTier> 
   const activeTier = {
     ...data,
     tier: tierIdToTierName[data.tier],
-  };
+  } satisfies ActiveTier;
 
   await ExtensionStorage.set(`active_tier_${walletAddress}`, activeTier);
 

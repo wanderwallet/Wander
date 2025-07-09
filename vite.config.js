@@ -53,6 +53,7 @@ export default defineConfig({
       ".prisma/client/index-browser": "./node_modules/.prisma/client/index-browser.js",
 
       // Assets:
+      "~assets": path.resolve(__dirname, "./assets"),
       "assets/lotties": path.resolve(__dirname, "./assets/lotties"),
       "url:/assets": path.resolve(__dirname, "./assets"),
       "url:assets": path.resolve(__dirname, "./assets"),

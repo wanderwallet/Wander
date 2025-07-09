@@ -109,10 +109,3 @@ export function useCooldownCallback<F extends Function>(
     cooldownSeconds: cooldownSeconds === -1 ? cooldownDuration : cooldownSeconds,
   };
 }
-
-export async function hasCooldownPassed({ key, cooldownDuration }: UseCooldownCallbackProps) {
-  const lastCalledAt = await PersistentStorage.getItem(key);
-  const elapsedSeconds = Math.round((Date.now() - parseInt(lastCalledAt || "0")) / 1000);
-
-  return elapsedSeconds >= cooldownDuration;
-}

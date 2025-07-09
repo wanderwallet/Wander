@@ -90,7 +90,7 @@ export function AuthImportSeedphraseEmbeddedView() {
 
   return importedTempWalletAddress ? (
     <OnboardingCard
-      headerText={authStatus === "noWallets" ? "Enter Seedphrase" : "Restore wallet"}
+      headerText={authStatus === "noWallets" ? "Enter Seedphrase" : "Restore Wallet"}
       subtitle="Would you like to add this wallet to your account?"
       onBackButtonClick={() => navigate(`/auth/add-wallet`)}
       isLoading={loading}>
@@ -114,7 +114,7 @@ export function AuthImportSeedphraseEmbeddedView() {
     </OnboardingCard>
   ) : (
     <OnboardingCard
-      headerText={authStatus === "noWallets" ? "Enter Seedphrase" : "Restore wallet"}
+      headerText={authStatus === "noWallets" ? "Enter Seedphrase" : "Restore Wallet"}
       subtitle="Enter your seedphrase to add your wallet to your account."
       onBackButtonClick={() => navigate(`/auth/add-wallet`)}
       isLoading={loading}>
