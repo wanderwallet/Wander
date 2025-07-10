@@ -12,7 +12,7 @@ export type TierProgress = {
 export type ActiveTier = {
   tier: Tier;
   balance: string;
-  rank: number;
+  rank: "" | number;
   progress: number;
   snapshotTimestamp: number;
   totalHolders: number;
