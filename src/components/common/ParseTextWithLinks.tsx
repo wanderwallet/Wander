@@ -7,8 +7,8 @@ interface ParseTextWithLinksProps {
 }
 
 const Link = styled.a`
-  color: ${({ theme }) => theme.theme};
-  text-decoration: none;
+  color: ${({ theme }) => theme.primaryText};
+  text-decoration: underline;
   display: inline;
 `;
 

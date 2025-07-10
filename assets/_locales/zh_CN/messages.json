@@ -3689,7 +3689,7 @@
       "description": "Core tier title"
     },
     "tier_core_description": {
-      "message": "1. 打开 [AO 委托](https://ao.arweave.net/#/delegate/) <br/> 2. 连接您的 Wander 钱包 <br/> 3. 将 WNDR 代币添加到您的委托列表 <br/> 4. 收集并领取您的 WNDR 代币",
+      "message": "1. 打开 [公平启动委托网站](https://ao.arweave.net/#/delegate/) <br/> 2. 连接你的 Wander 钱包 <br/> 3. 将 WNDR 添加到你的委托列表 <br/> 4. 领取并认领你的 WNDR 代币",
       "description": "Core tier description with steps"
     },
     "tier_benefit_fee_reduction_defi": {
@@ -3747,5 +3747,13 @@
     "tier_support_channels_premium": {
       "message": "Discord、Slack、Telegram、邮件，或与团队安排视频通话",
       "description": "Premium support channels list"
+    },
+    "tiers": {
+      "message": "层级",
+      "description": "Tiers text"
+    },
+    "position_update_tooltip": {
+      "message": "您的位置每24小时更新一次，时间为4:00 PM GMT",
+      "description": "Tooltip text for position update"
     }
 }

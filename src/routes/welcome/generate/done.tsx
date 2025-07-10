@@ -11,7 +11,7 @@ import { formatAddress } from "~utils/format";
 import { useLocation } from "~wallets/router/router.utils";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { useActiveWallet } from "~wallets/hooks";
-import { Link } from "~routes/popup/token/[id]";
+import { Link } from "~components/common/Link";
 import { useTheme } from "styled-components";
 import { Avatar, NoAvatarIcon } from "~components/Avatar";
 import { QRCodeSVG } from "qrcode.react";

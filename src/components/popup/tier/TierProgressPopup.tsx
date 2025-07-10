@@ -1,7 +1,6 @@
 import { Spacer, Text } from "@arconnect/components-rebrand";
 import SliderMenu from "~components/SliderMenu";
 import styled from "styled-components";
-import { TierButton } from "./TierButton";
 import { Flex } from "~components/common/Flex";
 import { TierCard } from "./TierCard";
 import { WanderIcon } from "./WanderIcon";
@@ -9,7 +8,6 @@ import stars from "~assets/images/tier/stars.png";
 import { useActiveTier } from "~utils/tier/hooks";
 import { TierProgress } from "./TierProgress";
 import { StarIcon } from "./StarIcon";
-import browser from "webextension-polyfill";
 import { carouselData } from "~utils/tier/carousel";
 import { GetTokensButton } from "./GetTokensButton";
 

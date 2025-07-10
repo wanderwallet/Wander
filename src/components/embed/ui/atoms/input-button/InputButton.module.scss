@@ -25,10 +25,10 @@
   overflow: visible;
   background: var(--color-background-default);
   color: var(--input-color);
+  transition: animation linear 1s;
 
-  &:not(:disabled):focus {
-    // TODO: Add --input-border-width and --input-border-color
-    border: 2px dashed black;
+  :global(.isFocusActive) &:global:focus {
+    animation: var(--default-focus-animation);
   }
 
   &::before {
@@ -69,10 +69,7 @@
     background: rgba(var(--color-overlay-rgb), 0.125);
   }
 
-  // TODO: Add a global isFocusActive class
-
-  &:not(:disabled):focus::before {
-    // TODO: Add --input-border-width and --input-border-color
-    border: 2px dashed black;
+  :global(.isFocusActive) &:global:focus {
+    animation: var(--default-focus-animation);
   }
 }
