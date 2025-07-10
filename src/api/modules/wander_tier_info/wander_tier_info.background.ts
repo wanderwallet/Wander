@@ -4,8 +4,8 @@ import { getActiveTier } from "~utils/tier/utils";
 import type { ActiveTier } from "~utils/tier/types";
 
 /**
- * Wander tier API background module
- * Returns the active tier for the current wallet
+ * Wander tier info API background module
+ * Returns the active tier info for the current wallet
  */
 const background: BackgroundModuleFunction<ActiveTier> = async (_) => {
   const activeAddress = await ExtensionStorage.get("active_address");

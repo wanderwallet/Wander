@@ -1,11 +1,8 @@
 import type { ModuleFunction } from "~api/module";
 
 /**
- * Wander tier API foreground module
- * No parameter transformation needed - simply returns active tier
+ * Wander tier info API foreground module
  */
-const foreground: ModuleFunction<void> = () => {
-  // No parameters needed for getting active tier
-};
+const foreground: ModuleFunction<void> = () => {};
 
 export default foreground;
