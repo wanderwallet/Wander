@@ -49,6 +49,8 @@ import userTokensModule from "../modules/user_tokens";
 import userTokens from "../modules/user_tokens/user_tokens.foreground";
 import tokenBalanceModule from "../modules/token_balance";
 import tokenBalance from "../modules/token_balance/token_balance.foreground";
+import wanderTierInfoModule from "../modules/wander_tier_info";
+import wanderTierInfo from "../modules/wander_tier_info/wander_tier_info.foreground";
 
 /**
  * @param result The result from the background script
@@ -112,4 +114,5 @@ export const foregroundModules: ForegroundModule[] = [
     function: batchSignDataItem,
     finalizer: batchSignDataItemFinalizer,
   },
+  { ...wanderTierInfoModule, function: wanderTierInfo },
 ];
