@@ -3,9 +3,9 @@ import type { ModuleProperties } from "~api/module";
 
 const permissions: PermissionType[] = ["ACCESS_ADDRESS"];
 
-const wanderTierModule: ModuleProperties = {
-  functionName: "wanderTier",
+const wanderTierInfoModule: ModuleProperties = {
+  functionName: "getWanderTierInfo",
   permissions,
 };
 
-export default wanderTierModule;
+export default wanderTierInfoModule;
