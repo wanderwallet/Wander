@@ -1,7 +1,7 @@
 import browser from "webextension-polyfill";
 import styled from "styled-components";
 import HeadV2 from "~components/popup/HeadV2";
-import { Award03 } from "@untitled-ui/icons-react";
+import { ArrowUpRight, Award03 } from "@untitled-ui/icons-react";
 import { WanderIcon } from "~components/popup/tier/WanderIcon";
 import { EXPLORE_TIER_BENEFITS, TierTypes } from "~utils/tier/constants";
 import { Loading, Text, Tooltip } from "@arconnect/components-rebrand";
@@ -26,6 +26,8 @@ import { GetTokensButton } from "~components/popup/tier/GetTokensButton";
 import { trackPage, PageType } from "~utils/analytics";
 import CustomizableStars from "~components/popup/tier/CustomizableStars";
 import { formatBalance } from "~utils/format";
+import { ParseTextWithLinks } from "~components/common/ParseTextWithLinks";
+import { Link } from "~components/common/Link";
 
 const stars = defaultStars.toSpliced(1, 1);
 const wanderTokenInfo = defaultTokens[3];
@@ -33,6 +35,7 @@ const wanderTokenInfo = defaultTokens[3];
 export function TierView() {
   const [isOpen, setOpen] = useState(false);
   const [showExploreTierBenefits, setShowExploreTierBenefits] = useState(false);
+  const { data: savings = "0", isLoading } = useWalletLifetimeSavings();
   const { data: activeTier } = useActiveTier();
 
   const formattedBalance = useMemo(() => {
@@ -43,6 +46,10 @@ export function TierView() {
   }, [activeTier?.balance]);
 
   const tier = activeTier?.tier ?? TierTypes.Core;
+
+  const showTierProgress = useMemo(() => {
+    return +(activeTier?.balance ?? 0) > 0 || Number(savings) > 0;
+  }, [activeTier?.balance, savings]);
 
   const handleCloseCTA = () => {
     ExtensionStorage.set(EXPLORE_TIER_BENEFITS, false);
@@ -64,7 +71,12 @@ export function TierView() {
         title={browser.i18n.getMessage("your_tier")}
         optionsIcon={
           <OptionsIconWrapper onClick={() => setOpen(true)}>
-            <OptionsIcon />
+            <div>
+              <OptionsIcon />
+              <Text weight="medium" noMargin>
+                {browser.i18n.getMessage("tiers")}
+              </Text>
+            </div>
           </OptionsIconWrapper>
         }
       />
@@ -110,9 +122,16 @@ export function TierView() {
           </AnimatedStarContainer>
         )}
 
-        <Flex direction="column" gap={32} style={{ marginTop: 16 }}>
-          <TierProgress activeTier={activeTier} />
-          <LifeTimeSavings />
+        <Flex direction="column" gap={24} style={{ marginTop: 8 }}>
+          {showTierProgress ? (
+            <>
+              <TierProgress activeTier={activeTier} />
+              <LifeTimeSavings savings={savings} isLoading={isLoading} />
+            </>
+          ) : (
+            <WanderTokenGetStarted />
+          )}
+
           <Flex direction="column" gap={16} width="100%">
             <Text weight="semibold" noMargin>
               {browser.i18n.getMessage("activity")}
@@ -159,9 +178,7 @@ function Activity({ tier }: { tier: Tier }) {
   );
 }
 
-function LifeTimeSavings() {
-  const { data: savings = "0", isLoading } = useWalletLifetimeSavings();
-
+function LifeTimeSavings({ savings, isLoading }: { savings: string; isLoading: boolean }) {
   const formattedSavings = useMemo(() => {
     const savingsInUSD = Number(savings || 0);
     if (savingsInUSD === 0) return "$0.00";
@@ -170,7 +187,7 @@ function LifeTimeSavings() {
   }, [savings]);
 
   return (
-    <LifeTimeSavingsWrapper>
+    <InfoCardWrapper>
       <Text variant="secondary" size="sm" weight="semibold" noMargin>
         {browser.i18n.getMessage("your_lifetime_savings")}:
       </Text>
@@ -181,7 +198,27 @@ function LifeTimeSavings() {
           {formattedSavings}
         </Text>
       )}
-    </LifeTimeSavingsWrapper>
+    </InfoCardWrapper>
+  );
+}
+
+function WanderTokenGetStarted() {
+  return (
+    <InfoCardWrapper alignItems="flex-start" gap="16px">
+      <Text size="sm" weight="semibold" noMargin>
+        {browser.i18n.getMessage("tier_core_title")}
+      </Text>
+
+      <Text variant="secondary" style={{ fontSize: 13, lineHeight: "150%" }} weight="medium" noMargin>
+        <ParseTextWithLinks text={browser.i18n.getMessage("tier_core_description")} />
+      </Text>
+
+      <Link
+        href="https://www.wander.app/blog/wndr-fair-launch"
+        style={{ color: "inherit", gap: "4px", alignItems: "center", fontSize: 15, fontWeight: 600 }}>
+        {browser.i18n.getMessage("learn_more")} <ArrowUpRight height={18} width={18} />
+      </Link>
+    </InfoCardWrapper>
   );
 }
 
@@ -211,28 +248,86 @@ const OptionsIcon = styled(Award03)`
 `;
 
 const OptionsIconWrapper = styled.div`
-  display: flex;
-  width: 28px;
-  height: 28px;
-  padding: 4px;
-  justify-content: center;
-  align-items: center;
-  flex-shrink: 0;
+  position: relative;
+  padding: 0.75px;
   border-radius: 8px;
-  background: ${(props) => props.theme.surfaceTertiary};
   box-sizing: border-box;
 
-  &:active ${OptionsIcon} {
+  @property --angle {
+    syntax: "<angle>";
+    initial-value: 0deg;
+    inherits: false;
+  }
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 8px;
+    --angle: 0deg;
+    background: conic-gradient(
+      from var(--angle),
+      #6b57f9 0deg,
+      rgba(151, 135, 255, 0.8) 45deg,
+      rgba(151, 135, 255, 0.4) 90deg,
+      rgba(151, 135, 255, 0.2) 135deg,
+      rgba(151, 135, 255, 0.3) 180deg,
+      rgba(151, 135, 255, 0.5) 225deg,
+      rgba(151, 135, 255, 0.8) 270deg,
+      rgba(151, 135, 255, 0.9) 315deg,
+      #6b57f9 360deg
+    );
+    animation: borderRotate 3s linear infinite;
+    z-index: 0;
+  }
+
+  @keyframes borderRotate {
+    from {
+      --angle: 0deg;
+    }
+    to {
+      --angle: 360deg;
+    }
+  }
+
+  & > div {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    height: 28px;
+    padding: 4px 8px;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+    border-radius: 8px;
+    background: ${(props) => props.theme.surfaceDefault};
+    box-shadow:
+      inset 0 0 5px rgba(160, 160, 160, 0.4),
+      inset 0 1px 2px rgba(255, 255, 255, 0.6),
+      inset 0 1px 13px rgba(90, 93, 94, 0.2);
+    backdrop-filter: blur(7.55px);
+    box-sizing: border-box;
+    gap: 5px;
+
+    &:hover {
+      background: ${(props) => props.theme.surfaceSecondary};
+    }
+  }
+
+  &:active {
     transform: scale(0.93);
   }
 `;
 
-const LifeTimeSavingsWrapper = styled.div`
+const InfoCardWrapper = styled.div<{ alignItems?: "center" | "flex-start"; gap?: string }>`
   display: flex;
   padding: 12px;
   flex-direction: column;
-  align-items: center;
-  gap: 8px;
+  align-items: ${({ alignItems }) => alignItems ?? "center"};
+  gap: ${({ gap }) => gap ?? "8px"};
   align-self: stretch;
 
   border-radius: 8px;

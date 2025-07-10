@@ -28,7 +28,7 @@ import { GettingStartedOnrampView } from "./gettingStarted/onramp";
 import { GettingStartedConnectView } from "./gettingStarted/connect";
 import { GettingStartedExploreView } from "./gettingStarted/explore";
 import { GettingStartedPersonalizeView } from "./gettingStarted/personalize";
-import { Link } from "~routes/popup/token/[id]";
+import { Link } from "~components/common/Link";
 import IconText from "~components/IconText";
 import WanderIcon from "url:assets/icon.svg";
 import { TempTransactionStorage, useStorage } from "~utils/storage";
