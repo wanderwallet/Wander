@@ -145,6 +145,8 @@
     "lint-staged": ">=10",
     "path-browserify": "^1.0.1",
     "plasmo": "0.90.3",
+    "postcss": "^8.0.0",
+    "postcss-modules": "^4.3.0",
     "prettier": "^3.5.3",
     "querystring-es3": "^0.2.1",
     "semantic-release": "^23.0.0",
