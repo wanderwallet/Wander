@@ -9,6 +9,7 @@ import { freeDecryptedWallet } from "~wallets/encryption";
 import { isLocalWallet } from "~utils/assertions";
 import { ExtensionStorage } from "~utils/storage";
 import { scheduleRefreshWalletLifetimeSavings } from "./alarms";
+import { retryWithDelay, withRetry } from "~utils/promises/retry";
 
 const ONE_HUNDRED = BigNumber(100);
 const THREE_HOURS_MS = 10_800_000;
@@ -26,7 +27,7 @@ export async function saveWalletLifetimeSavingsToStorage(walletAddress: string, 
   });
 }
 
-export async function getActiveTier(walletAddress: string): Promise<ActiveTier> {
+export async function getActiveTier(walletAddress: string, retry = false): Promise<ActiveTier> {
   const savedActiveTier = await ExtensionStorage.get<ActiveTier>(`active_tier_${walletAddress}`);
 
   if (
@@ -37,12 +38,21 @@ export async function getActiveTier(walletAddress: string): Promise<ActiveTier> 
     return savedActiveTier;
   }
 
-  const dryrunRes = await dryrun({
+  const dryrunParams = {
     Id,
     Owner: walletAddress,
     process: TIER_PROCESS_ID,
     tags: [{ name: "Action", value: "Get-Wallet-Info" }],
-  });
+  };
+
+  const dryrunRes = retry
+    ? await retryWithDelay(
+        () => dryrun(dryrunParams),
+        3,
+        1000,
+        (attempt) => Math.min(1000 * 2 ** attempt, 30000),
+      )
+    : await dryrun(dryrunParams);
 
   const message = dryrunRes.Messages?.[0];
   const data = JSON.parse(message?.Data || "{}");
