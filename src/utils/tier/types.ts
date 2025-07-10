@@ -15,6 +15,7 @@ export type ActiveTier = {
   rank: number;
   progress: number;
   snapshotTimestamp: number;
+  totalHolders: number;
 };
 
 export type DefiFeeDetails = {
