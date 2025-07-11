@@ -12,6 +12,7 @@ type TokenData = {
   image: string;
 };
 
+// List of non-transferable tokens
 const tokenData: Record<string, TokenData> = {
   EXP: {
     learnMoreLink: "https://x.com/ar_io_network/status/1879961321170706490",
