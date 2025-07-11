@@ -3,6 +3,7 @@ import { useRef } from "react";
 import browser from "webextension-polyfill";
 import expLogo from "url:/assets/ecosystem/exp-token-logo.png";
 import piLogo from "url:/assets/ecosystem/pi-token-logo.png";
+import wndrLogo from "url:/assets/ecosystem/wndr-token-logo.svg";
 import { HeaderText, CenterText, Content, ContentWrapper } from "~components/modals/Components";
 import { useTheme } from "styled-components";
 
@@ -19,6 +20,10 @@ const tokenData: Record<string, TokenData> = {
   PI: {
     learnMoreLink: "https://www.autonomous.finance/research/en-US/permaweb-index",
     image: piLogo,
+  },
+  WNDR: {
+    learnMoreLink: "https://www.wander.app/blog/wander-network-and-the-wndr-token",
+    image: wndrLogo,
   },
 } as const;
 
@@ -44,6 +49,7 @@ export const AnnouncementPopup = ({ isOpen, setOpen, ticker }: AnnouncementPopup
         <Content>
           <div>
             <img src={data.image} alt={`${ticker} logo`} style={{ width: "100px", height: "auto" }} />
+            <Spacer y={0.25} />
             <HeaderText noMargin heading>
               {browser.i18n.getMessage("token_send_popup_title", [ticker])}
             </HeaderText>
