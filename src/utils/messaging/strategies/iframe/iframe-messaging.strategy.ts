@@ -64,7 +64,8 @@ function getPostMessageFunction<K extends MessageID>(
           messageId === "event" ||
           messageId === "switch_wallet_event" ||
           messageId === "embedded_signOut" ||
-          messageId === "embedded_setTheme"
+          messageId === "embedded_setTheme" ||
+          messageId === "embedded_navigate"
         ) {
           postMessageTargetWindow.postMessage(
             {
@@ -188,7 +189,7 @@ function setPostMessageListener() {
   if (typeof window === "undefined") return;
 
   // This handles messages coming from outside the iframe and into the iframe, so wallet API calls (and chunks),
-  // `embedded_signOut` and `embedded_setTheme`.
+  // `embedded_signOut`, `embedded_setTheme` and `embedded_navigate`
 
   window.addEventListener("message", async ({ origin, data }: MessageEvent<ApiCall>) => {
     if (!data || typeof data !== "object" || origin !== getEmbeddedAncestorOrigin()) return;
@@ -198,7 +199,7 @@ function setPostMessageListener() {
     if (data.app === "wanderEmbedded") {
       messageId = data.type === "chunk" ? "chunk" : "api_call";
     } else {
-      // `embedded_signOut` and `embedded_setTheme` data is wrapped in an object automatically in
+      // `embedded_signOut`, `embedded_setTheme` and `embedded_navigate` data is wrapped in an object automatically in
       // `getPostMessageFunction` > `postMessage`, so we unwrap it here:
       data = data.data;
     }

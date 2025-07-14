@@ -1,11 +1,15 @@
 // INCOMING MESSAGES (iframe => SDK):
 
 import { InjectedEvents } from "wallet-api/src/utils/events";
-import { AuthInfo, AuthProviderType, BalanceInfo, RequestsInfo, RouteConfig } from "../../wander-connect.types";
+import { AuthInfo, BackupInfo, BalanceInfo, RequestsInfo, RouteConfig } from "../../wander-connect.types";
 
 // embedded_auth:
 
 export type IncomingAuthMessageData = AuthInfo;
+
+// embedded_backup:
+
+export type IncomingBackupMessageData = BackupInfo;
 
 // embedded_resize
 
@@ -29,6 +33,8 @@ export interface BaseIncomingMessage<K extends string = string, D = void> {
 
 export type IncomingAuthMessage = BaseIncomingMessage<"embedded_auth", IncomingAuthMessageData>;
 
+export type IncomingBackupMessage = BaseIncomingMessage<"embedded_backup", IncomingBackupMessageData>;
+
 export type IncomingOpenMessage = BaseIncomingMessage<"embedded_open", void>;
 
 export type IncomingCloseMessage = BaseIncomingMessage<"embedded_close", void>;
@@ -41,6 +47,7 @@ export type IncomingRequestMessage = BaseIncomingMessage<"embedded_request", Inc
 
 export type IncomingMessage =
   | IncomingAuthMessage
+  | IncomingBackupMessage
   | IncomingOpenMessage
   | IncomingCloseMessage
   | IncomingResizeMessage

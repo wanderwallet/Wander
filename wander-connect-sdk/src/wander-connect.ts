@@ -4,8 +4,10 @@ import { Iframe } from "./components/iframe/iframe.component";
 import { merge } from "ts-deepmerge";
 import {
   AuthInfo,
+  BackupInfo,
   BalanceInfo,
   ButtonOptions,
+  DirectAccess,
   OpenReason,
   RequestsInfo,
   RouteConfig,
@@ -63,6 +65,7 @@ export class WanderConnect {
 
   // Callbacks:
   private onAuth: (authInfo: AuthInfo) => void = NOOP;
+  private onBackup: (backupInfo: BackupInfo) => void = NOOP;
   private onOpen: () => void = NOOP;
   private onClose: () => void = NOOP;
   private onResize: (routeConfig: RouteConfig) => void = NOOP;
@@ -96,6 +99,11 @@ export class WanderConnect {
    * Current route configuration including dimensions and layout preferences.
    */
   public routeConfig: RouteConfig | null = null;
+
+  /**
+   * User's current backup information.
+   */
+  public backupInfo: BackupInfo | null = null;
 
   /**
    * User's current balance information.
@@ -141,6 +149,7 @@ export class WanderConnect {
 
     // Callbacks:
     this.onAuth = options.onAuth ?? NOOP;
+    this.onBackup = options.onBackup ?? NOOP;
     this.onOpen = options.onOpen ?? NOOP;
     this.onClose = options.onClose ?? NOOP;
     this.onResize = options.onResize ?? NOOP;
@@ -420,9 +429,12 @@ export class WanderConnect {
           if (authStatus === "authenticated") {
             this.dispatchWalletLoadedEvents();
           } else if (authStatus === "not-authenticated") {
+            this.backupInfo = null;
+            this.balanceInfo = null;
+            this.pendingRequests = 0;
             this.isWalletReady = false;
-            this.buttonComponent?.setNotifications(0);
             this.buttonComponent?.unsetStatus("isConnected");
+            this.updateButtonNotification();
           }
 
           // Update button for all authentication changes:
@@ -449,6 +461,14 @@ export class WanderConnect {
           this.signOutMethodCallback();
         }
 
+        break;
+
+      case "embedded_backup":
+        const backupInfo = message.data;
+        this.backupInfo = backupInfo.backupsNeeded === 0 ? null : backupInfo;
+
+        this.updateButtonNotification();
+        this.onBackup(backupInfo);
         break;
 
       case "embedded_open":
@@ -498,8 +518,7 @@ export class WanderConnect {
           this._close(true);
         }
 
-        this.buttonComponent?.setNotifications(pendingRequests);
-
+        this.updateButtonNotification();
         this.onRequest(message.data);
         break;
     }
@@ -507,12 +526,38 @@ export class WanderConnect {
 
   private handleButtonClick() {
     if (this.isOpen) this.close();
-    else this.open();
+    else this.open(this.backupInfo ? "backup" : undefined);
   }
 
-  private _open(openReason: OpenReason): void {
+  private updateButtonNotification() {
+    const { buttonComponent, pendingRequests, backupInfo } = this;
+
+    if (!buttonComponent) return;
+
+    if (pendingRequests > 0) {
+      // Pending requests have preference:
+      buttonComponent.setNotifications(pendingRequests);
+    } else if (backupInfo && backupInfo.backupsNeeded > 0) {
+      // Otherwise, we should the backup needed warning until the backup is done:
+      buttonComponent.setNotifications("backupNeeded");
+    } else {
+      buttonComponent.setNotifications(null);
+    }
+  }
+
+  private _open(openReason: OpenReason, directAccess?: DirectAccess): void {
     if (!this.iframeComponent && !this.buttonComponent) {
       console.warn("Wander Embedded's iframe and button has been created manually");
+    }
+
+    if (directAccess) {
+      isomorphicSendMessage({
+        destination: "background",
+        // @ts-ignore
+        messageId: "embedded_navigate",
+        // @ts-ignore
+        data: directAccess,
+      });
     }
 
     if (!this.isOpen) {
@@ -530,8 +575,8 @@ export class WanderConnect {
    *
    * @throws Error if Wander Embedded's iframe and button has been created manually
    */
-  public open(): void {
-    this._open("manually");
+  public open(directAccess?: DirectAccess): void {
+    this._open("manually", directAccess);
   }
 
   private _close(allowOpeningAutomatically = false): void {
