@@ -27,7 +27,7 @@ export const ToggleSwitch = ({ checked, setChecked, width = 44, height = 22, chi
     <Flex gap={8}>
       <SwitchWrapper width={width} height={height}>
         <Checkbox width={width} height={height} type="checkbox" onChange={handleChange} />
-        <Slider width={width} height={height} checked={state} />
+        <Slider width={width} height={height} $checked={state} />
       </SwitchWrapper>
       {children}
     </Flex>
@@ -42,14 +42,14 @@ const SwitchWrapper = styled.label<{ width: number; height: number }>`
   flex-shrink: 0;
 `;
 
-const Slider = styled.span<{ width: number; height: number; checked: boolean }>`
+const Slider = styled.span<{ width: number; height: number; $checked: boolean }>`
   position: absolute;
   cursor: pointer;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: ${(props) => (props.checked ? "linear-gradient(47deg, #5842F8 5.41%, #6B57F9 96%)" : "#E5E7EB")};
+  background: ${(props) => (props.$checked ? "linear-gradient(47deg, #5842F8 5.41%, #6B57F9 96%)" : "#E5E7EB")};
   transition: all 0.3s ease-in-out;
   border-radius: ${(props) => props.height / 2}px;
   will-change: transform, background;
@@ -64,7 +64,7 @@ const Slider = styled.span<{ width: number; height: number; checked: boolean }>`
     background-color: white;
     border-radius: 50%;
     box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.15);
-    transform: translate3d(${(props) => (props.checked ? props.width - props.height : 0)}px, 0, 0);
+    transform: translate3d(${(props) => (props.$checked ? props.width - props.height : 0)}px, 0, 0);
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     will-change: transform;
   }
