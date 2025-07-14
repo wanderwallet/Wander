@@ -42,10 +42,10 @@ export function WanderConnectAppRoot() {
   return (
     <WanderThemeProvider>
       <ThemeProvider>
-        <EmbeddedProvider>
-          <AuthRequestsProvider>
-            <QueryClientProvider client={queryClient}>
-              <Wouter hook={useEmbeddedLocation}>
+        <QueryClientProvider client={queryClient}>
+          <Wouter hook={useEmbeddedLocation}>
+            <EmbeddedProvider>
+              <AuthRequestsProvider>
                 <WanderConnectApp />
                 <ToastContainer
                   position="top-center"
@@ -53,10 +53,10 @@ export function WanderConnectAppRoot() {
                   hideProgressBar={false}
                   pauseOnFocusLoss={false}
                 />
-              </Wouter>
-            </QueryClientProvider>
-          </AuthRequestsProvider>
-        </EmbeddedProvider>
+              </AuthRequestsProvider>
+            </EmbeddedProvider>
+          </Wouter>
+        </QueryClientProvider>
       </ThemeProvider>
     </WanderThemeProvider>
   );

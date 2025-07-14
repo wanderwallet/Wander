@@ -63,6 +63,11 @@ import { WalletDepositTokensEmbeddedView } from "~routes/embedded/wallet/deposit
 import { WalletBuyInputEmbeddedView } from "~routes/embedded/wallet/buy/buy.input.view";
 import { WalletBuySuccessEmbeddedView } from "~routes/embedded/wallet/buy/buy.success.view";
 
+/**
+ * Developers can manually navigate to these flows:
+ */
+export type DirectAccess = "backup";
+
 export type EmbeddedRoutePath =
   | "/auth"
   | "/auth/otp"
