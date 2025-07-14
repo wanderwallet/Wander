@@ -13,8 +13,10 @@ import { TierTypes } from "~utils/tier/constants";
 
 const TRANSAK_API_KEY = process.env.PLASMO_PUBLIC_TRANSAK_API_KEY;
 const TRANSAK_TOP_TIER_API_KEY = process.env.PLASMO_PUBLIC_TRANSAK_TOP_TIER_API_KEY;
+const TRANSAK_ENVIRONMENT = process.env.PLASMO_PUBLIC_TRANSAK_ENVIRONMENT || "PRODUCTION";
 
-export const BASE_URL = "https://api.transak.com";
+export const TRANSAK_API_BASE_URL = `https://api${TRANSAK_ENVIRONMENT === "PRODUCTION" ? "" : "-stg"}.transak.com`;
+export const TRANSAK_PURCHASE_BASE_URL = `https://global${TRANSAK_ENVIRONMENT === "PRODUCTION" ? "" : "-stg"}.transak.com/`;
 
 export const useTransak = (apiKey: string, initialConversion = false) => {
   const { navigate } = useLocation();
@@ -100,7 +102,7 @@ export const useTransak = (apiKey: string, initialConversion = false) => {
       finishUp(null);
       return;
     }
-    const baseUrl = `${BASE_URL}/api/v1/pricing/public/quotes`;
+    const baseUrl = `${TRANSAK_API_BASE_URL}/api/v1/pricing/public/quotes`;
     const params = new URLSearchParams({
       partnerApiKey: apiKey,
       fiatCurrency: selectedCurrency?.symbol,
@@ -151,7 +153,7 @@ export const useTransak = (apiKey: string, initialConversion = false) => {
   // Fetch available currencies
   useEffect(() => {
     const fetchCurrencies = async () => {
-      const url = `${BASE_URL}/api/v2/currencies/fiat-currencies?apiKey=${apiKey}`;
+      const url = `${TRANSAK_API_BASE_URL}/api/v2/currencies/fiat-currencies?apiKey=${apiKey}`;
       try {
         const response = await fetch(url);
         if (!response.ok) {
@@ -180,7 +182,7 @@ export const useTransak = (apiKey: string, initialConversion = false) => {
     const fetchCountryCode = async () => {
       if (countryCode) return;
       try {
-        const responseJson = await (await fetch(`${BASE_URL}/fiat/public/v1/get/country`)).json();
+        const responseJson = await (await fetch(`${TRANSAK_API_BASE_URL}/fiat/public/v1/get/country`)).json();
         setCountryCode(responseJson.ipCountryCode);
       } catch {}
     };
@@ -231,7 +233,7 @@ export const useTransak = (apiKey: string, initialConversion = false) => {
     (walletAddress: string) => {
       if (!quote) return null;
 
-      const baseUrl = "https://global.transak.com/";
+      const baseUrl = TRANSAK_PURCHASE_BASE_URL;
       const params = new URLSearchParams({
         apiKey: apiKey,
         defaultCryptoCurrency: "AR",

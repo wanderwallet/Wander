@@ -11,7 +11,7 @@ import { Line } from "./purchase";
 import { useStorage } from "~utils/storage";
 import { formatAddress } from "~utils/format";
 import type { CommonRouteProps } from "~wallets/router/router.types";
-import { useTransakApiKey } from "~utils/transak/transak.hooks";
+import { TRANSAK_PURCHASE_BASE_URL, useTransakApiKey } from "~utils/transak/transak.hooks";
 
 export interface ConfirmPurchaseViewParams {
   quoteId: string;
@@ -40,7 +40,7 @@ export function ConfirmPurchaseView({ params: { quoteId: id } }: ConfirmPurchase
 
   const buyAR = async () => {
     try {
-      const baseUrl = "https://global.transak.com/";
+      const baseUrl = TRANSAK_PURCHASE_BASE_URL;
       const params = new URLSearchParams({
         apiKey: apiKey,
         defaultCryptoCurrency: "AR",
