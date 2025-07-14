@@ -20,7 +20,7 @@ interface Props {
 
 export const LiquidOpsAgentListItem = ({ activeTokens }: Props) => {
   const { navigate } = useLocation();
-  const availableTokens = useMemo(() => Object.values(tokenData).filter((token) => !token.deprecated), []);
+  const availableTokens = Object.values(tokenData).filter((token) => !token.deprecated);
   const activeCount = useMemo(() => activeTokens?.length || 0, [activeTokens]);
 
   return (

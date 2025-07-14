@@ -3,7 +3,7 @@ import { useLOSupplyAPYs } from "./useLOSupplyAPY";
 import { useMemo } from "react";
 
 export function useAPYOrder() {
-  const activeTokens = useMemo(() => Object.values(tokenData).filter((token) => !token.deprecated), []);
+  const activeTokens = Object.values(tokenData).filter((token) => !token.deprecated);
   const queries = useLOSupplyAPYs(activeTokens.map((token) => token.ticker));
 
   return useMemo(() => {
