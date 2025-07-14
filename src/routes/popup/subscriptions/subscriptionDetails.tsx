@@ -389,6 +389,7 @@ const SwitchWrapper = styled.label<{ width: number; height: number }>`
   display: inline-block;
   width: ${(props) => props.width}px;
   height: ${(props) => props.height}px;
+  flex-shrink: 0;
 `;
 
 const Slider = styled.span<{ width: number; height: number; checked: boolean }>`
