@@ -144,7 +144,7 @@
     "jsdom": "^26.0.0",
     "lint-staged": ">=10",
     "path-browserify": "^1.0.1",
-    "plasmo": "0.90.3",
+    "plasmo": "0.90.5",
     "postcss": "^8.0.0",
     "postcss-modules": "^4.3.0",
     "prettier": "^3.5.3",
