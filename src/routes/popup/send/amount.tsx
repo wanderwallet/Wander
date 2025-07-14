@@ -20,7 +20,13 @@ import SliderMenu from "~components/SliderMenu";
 import { type Contact } from "~components/Recipient";
 import { formatAddress } from "~utils/format";
 import { useContact } from "~contacts/hooks";
-import { AR_PROCESS_ID, defaultTokens, EXP_PROCESS_ID, PI_PROCESS_ID, type TokenInfo } from "~tokens/aoTokens/ao";
+import {
+  AR_PROCESS_ID,
+  defaultTokens,
+  EXP_PROCESS_ID,
+  nonTransferableTokenIds,
+  type TokenInfo,
+} from "~tokens/aoTokens/ao";
 import { useAoTokens } from "~tokens/hooks";
 import BigNumber from "bignumber.js";
 import { AnnouncementPopup } from "./announcement";
@@ -150,7 +156,7 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
     AR_PROCESS_ID,
   );
 
-  const showNonTransferableAnnouncement = tokenID === EXP_PROCESS_ID || tokenID === PI_PROCESS_ID;
+  const showNonTransferableAnnouncement = nonTransferableTokenIds.includes(tokenID);
 
   // currency setting
   const [currency] = useSetting<string>("currency");

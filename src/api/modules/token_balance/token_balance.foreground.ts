@@ -1,6 +1,6 @@
 import type { ModuleFunction } from "~api/module";
 
-// no need to transform anything in the foreground
-const foreground: ModuleFunction<void> = () => {};
+// pass through parameters to background
+const foreground: ModuleFunction<[string]> = (id: string) => [id];
 
 export default foreground;

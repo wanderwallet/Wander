@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect, useMemo } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import styled from "styled-components";
 import type { EmblaOptionsType } from "embla-carousel";
@@ -15,8 +15,15 @@ export interface CarouselProps<T extends CarouselSlide = CarouselSlide> {
   showDots?: boolean;
   dotColor?: string;
   activeDotColor?: string;
-  showChevrons?: boolean;
-  chevronSize?: number;
+  showNavigationArrows?: boolean;
+  navigationArrowColor?: string;
+  navigationArrowActiveColor?: string;
+  navigationArrowSize?: number;
+  navigationArrowPosition?: "withDots" | "onSlides";
+  showNavigationArrowsOnHover?: boolean;
+  smoothSliding?: boolean;
+  slideDuration?: number;
+  slideEasing?: "ease" | "ease-in" | "ease-out" | "ease-in-out" | "linear" | string;
   onSlideChange?: (index: number) => void;
   className?: string;
   containerStyle?: React.CSSProperties;
@@ -25,16 +32,17 @@ export interface CarouselProps<T extends CarouselSlide = CarouselSlide> {
 export function Carousel<T extends CarouselSlide = CarouselSlide>({
   slides,
   renderSlide,
-  options = {
-    loop: true,
-    align: "center",
-    skipSnaps: false,
-    dragFree: false,
-    containScroll: "trimSnaps",
-  },
+  options,
   showDots = true,
-  showChevrons = false,
-  chevronSize = 24,
+  showNavigationArrows = false,
+  navigationArrowColor,
+  navigationArrowActiveColor,
+  navigationArrowSize = 24,
+  navigationArrowPosition = "withDots",
+  showNavigationArrowsOnHover = false,
+  smoothSliding = true,
+  slideDuration = 30,
+  slideEasing = "cubic-bezier(0.4, 0, 0.2, 1)",
   onSlideChange,
   className,
   containerStyle,
@@ -42,7 +50,26 @@ export function Carousel<T extends CarouselSlide = CarouselSlide>({
   activeDotColor,
 }: CarouselProps<T>) {
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [emblaRef, emblaApi] = useEmblaCarousel(options);
+
+  const mergedOptions = useMemo<EmblaOptionsType>(
+    () => ({
+      loop: true,
+      align: "center",
+      skipSnaps: false,
+      dragFree: false,
+      containScroll: "trimSnaps",
+      ...(smoothSliding && {
+        duration: slideDuration,
+        inViewThreshold: 0.7,
+        watchDrag: true,
+        watchResize: true,
+      }),
+      ...(options || {}),
+    }),
+    [smoothSliding, slideDuration, options],
+  );
+
+  const [emblaRef, emblaApi] = useEmblaCarousel(mergedOptions);
 
   const onSelect = useCallback(() => {
     if (!emblaApi) return;
@@ -68,20 +95,52 @@ export function Carousel<T extends CarouselSlide = CarouselSlide>({
 
   return (
     <CarouselContainer className={className} style={containerStyle}>
-      <EmblaViewport ref={emblaRef}>
-        <EmblaContainer>
-          {slides.map((slide, index) => (
-            <EmblaSlide key={`slide-${index}`}>{renderSlide(slide, index)}</EmblaSlide>
-          ))}
-        </EmblaContainer>
-      </EmblaViewport>
+      <CarouselViewportContainer $showNavigationArrowsOnHover={showNavigationArrowsOnHover}>
+        <EmblaViewport ref={emblaRef} $smoothSliding={smoothSliding}>
+          <EmblaContainer $smoothSliding={smoothSliding} $duration={slideDuration} $easing={slideEasing}>
+            {slides.map((slide, index) => (
+              <EmblaSlide key={`slide-${index}`} $smoothSliding={smoothSliding}>
+                {renderSlide(slide, index)}
+              </EmblaSlide>
+            ))}
+          </EmblaContainer>
+        </EmblaViewport>
+
+        {showNavigationArrows && navigationArrowPosition === "onSlides" && (
+          <>
+            <OverlayNavigationArrowButton
+              position="left"
+              onClick={scrollPrev}
+              disabled={!canScrollPrev()}
+              size={navigationArrowSize}
+              color={navigationArrowColor}
+              activeColor={navigationArrowActiveColor}>
+              <ChevronLeftIcon size={navigationArrowSize} color={navigationArrowColor} />
+            </OverlayNavigationArrowButton>
+            <OverlayNavigationArrowButton
+              position="right"
+              onClick={scrollNext}
+              disabled={!canScrollNext()}
+              size={navigationArrowSize}
+              color={navigationArrowColor}
+              activeColor={navigationArrowActiveColor}>
+              <ChevronRightIcon size={navigationArrowSize} color={navigationArrowColor} />
+            </OverlayNavigationArrowButton>
+          </>
+        )}
+      </CarouselViewportContainer>
 
       {showDots && slides.length > 1 && (
-        <NavigationContainer showChevrons={showChevrons}>
-          {showChevrons && (
-            <ChevronButton onClick={scrollPrev} disabled={!canScrollPrev()} size={chevronSize}>
-              <ChevronLeftIcon size={chevronSize} />
-            </ChevronButton>
+        <NavigationContainer showNavigationArrows={showNavigationArrows && navigationArrowPosition === "withDots"}>
+          {showNavigationArrows && navigationArrowPosition === "withDots" && (
+            <NavigationArrowButton
+              onClick={scrollPrev}
+              disabled={!canScrollPrev()}
+              size={navigationArrowSize}
+              color={navigationArrowColor}
+              activeColor={navigationArrowActiveColor}>
+              <ChevronLeftIcon size={navigationArrowSize} color={navigationArrowColor} />
+            </NavigationArrowButton>
           )}
 
           <DotsContainer>
@@ -96,10 +155,15 @@ export function Carousel<T extends CarouselSlide = CarouselSlide>({
             ))}
           </DotsContainer>
 
-          {showChevrons && (
-            <ChevronButton onClick={scrollNext} disabled={!canScrollNext()} size={chevronSize}>
-              <ChevronRightIcon size={chevronSize} />
-            </ChevronButton>
+          {showNavigationArrows && navigationArrowPosition === "withDots" && (
+            <NavigationArrowButton
+              onClick={scrollNext}
+              disabled={!canScrollNext()}
+              size={navigationArrowSize}
+              color={navigationArrowColor}
+              activeColor={navigationArrowActiveColor}>
+              <ChevronRightIcon size={navigationArrowSize} color={navigationArrowColor} />
+            </NavigationArrowButton>
           )}
         </NavigationContainer>
       )}
@@ -111,25 +175,69 @@ const CarouselContainer = styled.div`
   width: 100%;
 `;
 
-const EmblaViewport = styled.div`
-  overflow: hidden;
+const CarouselViewportContainer = styled.div<{ $showNavigationArrowsOnHover?: boolean }>`
+  position: relative;
+
+  ${(props) =>
+    props.$showNavigationArrowsOnHover &&
+    `
+    & > button {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    &:hover > button {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    & > button:disabled {
+      opacity: 0;
+      pointer-events: none;
+    }
+  `}
 `;
 
-const EmblaContainer = styled.div`
+const EmblaViewport = styled.div<{ $smoothSliding?: boolean }>`
+  overflow: hidden;
+  ${(props) =>
+    props.$smoothSliding &&
+    `
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  `}
+`;
+
+const EmblaContainer = styled.div<{ $smoothSliding?: boolean; $duration?: number; $easing?: string }>`
   display: flex;
   touch-action: pan-y pinch-zoom;
   gap: 16px;
+  ${(props) =>
+    props.$smoothSliding &&
+    `
+    will-change: transform;
+    backface-visibility: hidden;
+    transition: transform ${props.$duration || 30}ms ${props.$easing || "cubic-bezier(0.4, 0, 0.2, 1)"};
+    transform: translateZ(0);
+  `}
 `;
 
-const EmblaSlide = styled.div`
+const EmblaSlide = styled.div<{ $smoothSliding?: boolean }>`
   flex: 0 0 100%;
   min-width: 0;
+  ${(props) =>
+    props.$smoothSliding &&
+    `
+    backface-visibility: hidden;
+    transform: translateZ(0);
+    will-change: transform;
+  `}
 `;
 
-const NavigationContainer = styled.div<{ showChevrons: boolean }>`
+const NavigationContainer = styled.div<{ showNavigationArrows: boolean }>`
   display: flex;
   align-items: center;
-  justify-content: ${(props) => (props.showChevrons ? "space-between" : "center")};
+  justify-content: ${(props) => (props.showNavigationArrows ? "space-between" : "center")};
   margin-top: 20px;
   gap: 16px;
 `;
@@ -159,13 +267,15 @@ const Dot = styled.button<{
   }
 `;
 
-const ChevronButton = styled.button<{
+const NavigationArrowButton = styled.button<{
   size: number;
+  color?: string;
+  activeColor?: string;
 }>`
   background: none;
   border: none;
   cursor: pointer;
-  color: ${(props) => props.theme.secondaryText};
+  color: ${(props) => props.color || props.theme.secondaryText};
   transition: color 0.2s ease;
   display: flex;
   align-items: center;
@@ -173,7 +283,43 @@ const ChevronButton = styled.button<{
   padding: 4px;
 
   &:hover:not(:disabled) {
-    color: ${(props) => props.theme.primaryText};
+    color: ${(props) => props.activeColor || props.theme.primaryText};
+  }
+
+  &:disabled {
+    opacity: 0;
+    cursor: default;
+  }
+`;
+
+const OverlayNavigationArrowButton = styled.button<{
+  position: "left" | "right";
+  size: number;
+  color?: string;
+  activeColor?: string;
+}>`
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  ${(props) => props.position}: -16px;
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.001);
+  border: none;
+  border-radius: 50%;
+  width: ${(props) => props.size + 8}px;
+  height: ${(props) => props.size + 8}px;
+  cursor: pointer;
+  color: ${(props) => props.color || props.theme.secondaryText};
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  &:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.05);
+    color: ${(props) => props.activeColor || props.theme.primaryText};
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   }
 
   &:disabled {
