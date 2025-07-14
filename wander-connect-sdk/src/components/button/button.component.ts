@@ -3,6 +3,7 @@ import {
   BalanceInfo,
   ButtonConfig,
   ButtonCSSVars,
+  ButtonNotificationType,
   ButtonOptions,
   ButtonStatus,
   ThemeSetting,
@@ -85,10 +86,12 @@ export class Button {
     notifications: "counter",
     i18n: {
       loading: "Loading",
-      loadingBalance: "Loading Balance",
-      completeSignUp: "Complete Sign Up",
+      loadingBalance: "Loading balance",
+      completeSignUp: "Complete sign up",
       signIn: "Sign in",
       reviewRequests: "Review requests",
+      backupNeeded: "Backup needed",
+      unexpectedError: "Unexpected error",
     },
   } as const satisfies ButtonConfig;
 
@@ -236,7 +239,7 @@ export class Button {
     if (this.balance.getAttribute("hidden")) return;
 
     this.balance.textContent = balanceInfo.formattedBalance;
-    this.balance.title = "";
+    this.balance.removeAttribute("title");
 
     if (balanceInfo.amount === null) {
       this.balance.classList.add("isHidden");
@@ -245,17 +248,23 @@ export class Button {
     }
   }
 
-  setNotifications(pendingRequests: number) {
+  setNotifications(notificationCountOrType: null | number | ButtonNotificationType) {
     const { notifications, i18n } = this.config;
 
     if (notifications === "off") return;
 
-    if (pendingRequests > 0) {
-      this.notifications.textContent = notifications === "counter" ? `${pendingRequests}` : "!";
-      this.label.textContent = i18n.reviewRequests;
-    } else {
+    if (!notificationCountOrType) {
       this.notifications.textContent = "";
+      this.button.removeAttribute("title");
       this.label.textContent = "";
+    } else if (typeof notificationCountOrType === "string") {
+      this.notifications.textContent = "!";
+      this.button.title = i18n[notificationCountOrType];
+      this.label.textContent = "";
+    } else {
+      this.notifications.textContent = notifications === "counter" ? `${notificationCountOrType}` : "!";
+      this.button.removeAttribute("title");
+      this.label.textContent = i18n.reviewRequests;
     }
   }
 
@@ -277,10 +286,10 @@ export class Button {
         this.label.title = this.config.i18n.completeSignUp;
       } else if (variant === "authenticated") {
         this.label.textContent = "";
-        this.label.title = "";
+        this.label.removeAttribute("title");
       } else {
         this.label.textContent = this.config.i18n.signIn;
-        this.label.title = "";
+        this.label.removeAttribute("title");
         this.balance.textContent = "";
       }
     }
