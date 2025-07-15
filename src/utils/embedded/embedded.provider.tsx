@@ -694,8 +694,6 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         }));
       }
 
-      debugger;
-
       const promise =
         sourceType === "GENERATED"
           ? generatedTempWalletPromiseRef.current?.promise
