@@ -11,6 +11,7 @@ import { formatAddress } from "~utils/format";
 import { Text } from "@arconnect/components-rebrand";
 import { Flex } from "~components/common/Flex";
 import { Wander2Icon, ArioIcon } from "~components/embed";
+import { PopupPaths } from "~wallets/router/popup/popup.routes";
 
 const Content = styled.main`
   padding: 1.5rem;
@@ -28,18 +29,6 @@ const LogoContainer = styled.div`
   margin-bottom: 1rem;
 `;
 
-const Logo = styled.div`
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px;
-  background-color: ${(props) => props.color};
-  color: white;
-  font-size: 1.5rem;
-`;
-
 const XIcon = styled.span`
   font-size: 1.5rem;
   color: rgb(var(--text-color-secondary, #666666));
@@ -51,14 +40,6 @@ const SectionTitle = styled.h2`
   margin: 0 0 1rem 0;
   text-align: center;
   color: rgb(var(--text-color));
-`;
-
-const Description = styled.p`
-  font-size: 0.9375rem;
-  line-height: 1.5;
-  color: rgb(var(--text-color-secondary, #666666));
-  text-align: center;
-  margin: 0 0 1rem 0;
 `;
 
 const FieldContainer = styled.div`
@@ -78,34 +59,6 @@ const FieldValue = styled.div`
   font-size: 0.875rem;
   color: ${(props) => props.theme.secondaryTextv2};
   text-align: right;
-`;
-
-const LearnMore = styled.a`
-  color: rgb(var(--theme-color));
-  font-size: 0.875rem;
-  text-decoration: none;
-  text-align: center;
-  display: block;
-  margin: 1rem 0 2rem;
-  cursor: pointer;
-`;
-
-const SearchButton = styled(ButtonV2).attrs({
-  fullWidth: true,
-  noMargin: true,
-})`
-  background: linear-gradient(90deg, #7b61ff 0%, #aa5bff 100%);
-  color: white;
-  border: none;
-  border-radius: 12px;
-  padding: 1rem;
-  font-size: 1rem;
-  font-weight: 600;
-  margin-top: auto;
-
-  &:hover {
-    opacity: 0.95;
-  }
 `;
 
 export const ArNSPurchaseStartView = () => {
@@ -166,6 +119,7 @@ export const ArNSPurchaseStartView = () => {
         </Flex>
 
         <button
+          onClick={() => window.open("https://docs.ar.io/arns", "_blank")}
           style={{
             color: "rgba(151, 135, 255, 1)",
             cursor: "pointer",
@@ -178,7 +132,9 @@ export const ArNSPurchaseStartView = () => {
 
         <div style={{ flexGrow: 1 }} />
 
-        <SearchButton onClick={handleSearch}>Search for a name</SearchButton>
+        <ButtonV2 fullWidth onClick={() => navigate(PopupPaths.ArNSPurchaseNameSearch)}>
+          Search for a name
+        </ButtonV2>
       </Content>
     </Flex>
   );
