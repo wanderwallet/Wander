@@ -26,6 +26,7 @@ import {
   handleAOYieldAgentRecentTxsCheck,
   handleAOYieldAgentSync,
 } from "./handlers/alarms/ao-yield-agent/ao-yield-agent-alarm.handler";
+import { handleTransakPurchaseAlarm } from "./handlers/alarms/transak-purchase/transak-purchase-alarm.handler";
 import { handleTabClosed, handleTabUpdate } from "~api/background/handlers/browser/tabs/tabs.handler";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { isomorphicOnMessage } from "~isomorphic-messaging";
@@ -136,6 +137,7 @@ export function setupBackgroundService() {
   browser.alarms.onAlarm.addListener(handleAOYieldAgentRecentTxsCheck);
   browser.alarms.onAlarm.addListener(handleAOYieldAgentSync);
   browser.alarms.onAlarm.addListener(handleRefreshWalletLifetimeSavingsAlarm);
+  browser.alarms.onAlarm.addListener(handleTransakPurchaseAlarm);
 
   // When the last window connected to the extension is closed, the decryption key will be removed from memory. This is no needed in the embedded wallet because
   // each wallet instance will be removed automatically when its tab/window is closed.

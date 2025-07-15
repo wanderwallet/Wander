@@ -10,6 +10,7 @@ import getSymbolFromCurrency from "currency-symbol-map";
 import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 import { useActiveTier } from "~utils/tier/hooks";
 import { TierTypes } from "~utils/tier/constants";
+import { scheduleTransakPurchaseAlarm } from "./transak.alarms";
 
 const TRANSAK_API_KEY = process.env.PLASMO_PUBLIC_TRANSAK_API_KEY;
 const TRANSAK_TOP_TIER_API_KEY = process.env.PLASMO_PUBLIC_TRANSAK_TOP_TIER_API_KEY;
@@ -276,6 +277,7 @@ export const useTransak = (apiKey: string, initialConversion = false) => {
           if (IS_EMBEDDED_APP) {
             window.open(url, "_blank");
           } else {
+            await scheduleTransakPurchaseAlarm();
             browser.tabs.create({ url });
           }
           navigate(navigateTo as WanderRoutePath);
