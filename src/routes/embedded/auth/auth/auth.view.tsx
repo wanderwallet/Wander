@@ -10,6 +10,7 @@ import {
   Text,
   Wander2Icon,
   RecoverHeaderIcon,
+  Snackbar,
 } from "~components/embed";
 import React, { useCallback, useRef, useState } from "react";
 import { getSupabaseClient } from "~utils/embedded/embedded.utils";
@@ -18,7 +19,7 @@ import { isValidEmail } from "~utils/email";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 import { sleep } from "~utils/promises/sleep";
-import { EMBEDDED_HIDE_BE } from "~utils/embedded/iframe.utils";
+import { EMBEDDED_HIDE_BE, EMBEDDED_INJECTED_BE } from "~utils/embedded/iframe.utils";
 import { InputButton } from "~components/embed/ui/atoms/input-button/InputButton";
 import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
 import type { OAutProviderType } from "~utils/embedded/embedded.types";
@@ -29,11 +30,25 @@ import type { PreferredEmailAuth } from "~utils/auth/auth.types";
 
 export function AuthEmbeddedView() {
   const { navigate } = useLocation();
+
   const { email, isAlreadyRegistered: isAlreadyRegisteredParam } = useSearchParams<{
     email: string;
     isAlreadyRegistered: string;
   }>();
+
   const { authStatus, authenticate, recoverableAccount } = useEmbedded();
+
+  const [isUsingNativeWallet, setIsUsingNativeWallet] = useStorage<boolean>(
+    {
+      key: StorageKeys.CONNECT.AUTH.IS_USING_BE,
+      instance: PersistentStorage,
+    },
+    (storedValue, isHydrated) => {
+      if (!isHydrated) return undefined;
+
+      return storedValue === undefined ? EMBEDDED_INJECTED_BE : storedValue;
+    },
+  );
 
   const [preferredEmailAuth] = useStorage<PreferredEmailAuth | undefined>({
     key: StorageKeys.CONNECT.AUTH.PREFERRED_EMAIL_AUTH,
@@ -89,6 +104,7 @@ export function AuthEmbeddedView() {
       // Reset this shortly after the modal is closed so that if the user opens
       // it again, they can pick a different option:
       setIsAuthenticating(false);
+      setIsUsingNativeWallet(true);
     }
   }, []);
 
@@ -143,6 +159,10 @@ export function AuthEmbeddedView() {
   );
 
   const emailInputButton = <InputButton type="submit" label="Next" loading={isCheckingEmail} />;
+  const showWanderExtensionButton = !EMBEDDED_HIDE_BE && window.arweaveWallet?.walletName === "ArConnect";
+  const showWanderExtensionMessage = showWanderExtensionButton && isUsingNativeWallet;
+
+  // TODO: Remember last selection and highlight that one / show it in the main screen (not in "More")
 
   return (
     <OnboardingCard
@@ -151,6 +171,13 @@ export function AuthEmbeddedView() {
       hasBackButton={false}
       isLoading={isViewLoading}
       onSubmit={handleCheckEmail}>
+      {showWanderExtensionMessage ? (
+        <Snackbar
+          variant="info"
+          children={`${window.arweaveWallet?.walletName ? `${window.arweaveWallet?.walletName} (browser extension) connected` : "a browser extension wallet"}. Authenticate to use Wander Connect.`}
+        />
+      ) : null}
+
       <TextInput
         name="email"
         placeholder="Enter your email"
@@ -172,12 +199,11 @@ export function AuthEmbeddedView() {
           <GoogleIcon fontSize={24} />
         </Button>
 
-        {EMBEDDED_HIDE_BE ||
-        (!!window.arweaveWallet?.walletName && window.arweaveWallet?.walletName !== "ArConnect") ? null : (
+        {showWanderExtensionButton ? (
           <Button variant="outlined" size="md" isDisabled={areButtonsDisabled} onClick={handleNativeWallet}>
             <Wander2Icon fontSize={24} />
           </Button>
-        )}
+        ) : null}
       </Row>
 
       <Button

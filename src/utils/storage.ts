@@ -54,12 +54,13 @@ export interface RawStoredTransfer {
 // /send/transfer to break on load, when the "init" value should have been used:
 export const useStorage: typeof usePlasmoStorage = IS_EMBEDDED_APP
   ? (((rawKey, onInit) => {
-      const [value, ...otherReturnValues] = usePlasmoStorage(rawKey, onInit);
+      const [value, setter, other] = usePlasmoStorage(rawKey, onInit);
+      const { isLoading } = other;
 
       const returnValue = useMemo(() => {
-        return typeof onInit === "function" ? onInit(value) : (value ?? onInit);
-      }, [value]);
+        return typeof onInit === "function" ? onInit(value, !isLoading) : (value ?? onInit);
+      }, [value, isLoading]);
 
-      return [returnValue, ...otherReturnValues];
+      return [returnValue, setter, other];
     }) as any)
   : usePlasmoStorage;

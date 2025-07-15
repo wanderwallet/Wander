@@ -694,6 +694,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         }));
       }
 
+      debugger;
+
       const promise =
         sourceType === "GENERATED"
           ? generatedTempWalletPromiseRef.current?.promise
@@ -1054,6 +1056,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         });
 
         throw error;
+      } finally {
+        PersistentStorage.set(StorageKeys.CONNECT.AUTH.IS_USING_BE, false);
       }
     },
     [user],
