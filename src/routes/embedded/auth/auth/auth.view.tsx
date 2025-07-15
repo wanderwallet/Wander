@@ -172,10 +172,7 @@ export function AuthEmbeddedView() {
       isLoading={isViewLoading}
       onSubmit={handleCheckEmail}>
       {showWanderExtensionMessage ? (
-        <Snackbar
-          variant="info"
-          children={`${window.arweaveWallet?.walletName ? `${window.arweaveWallet?.walletName} (browser extension) connected` : "a browser extension wallet"}. Authenticate to use Wander Connect.`}
-        />
+        <Snackbar variant="info" children="Wander (browser extension) connected. Authenticate to use Wander Connect." />
       ) : null}
 
       <TextInput
