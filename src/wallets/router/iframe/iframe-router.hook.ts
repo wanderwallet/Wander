@@ -33,7 +33,7 @@ export function useEmbeddedOverride(location?: RoutePath) {
     return "/__OVERRIDES/cover";
   }
 
-  if (unpartitionedStateStatus !== "supported" && !unpartitionedStateConfirmed) {
+  if (unpartitionedStateStatus !== "supported" && !unpartitionedStateConfirmed && authStatus == "noAuth") {
     return routeTrapMatches(
       location,
       [EmbeddedPaths.SupportUnpartitionedStateMissing],

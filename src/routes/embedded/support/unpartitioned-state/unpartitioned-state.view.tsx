@@ -21,8 +21,6 @@ export function UnpartitionedStateMissingEmbeddedView() {
 
   // TODO: Change footer messaging and move to top. Remove warning icon from wallet dashboard.
 
-  // TODO: Do not show this view if authenticating
-
   // TODO: Count errors and, if 3, change to "not supported"
 
   const [isChecked, setIsChecked] = useState(false);
@@ -74,6 +72,9 @@ export function UnpartitionedStateMissingEmbeddedView() {
   let headerText = "Limited browser support";
   let subtitle =
     "Your browser doesn't support cross-site authentication and wallet syncing. You'll need to manually import your wallet on each new site.";
+
+  // TODO: Consider adding Opera and some mobile browsers (maybe only if detected):
+
   let children = (
     <>
       <dl className={styles.supportList}>
@@ -81,15 +82,15 @@ export function UnpartitionedStateMissingEmbeddedView() {
         <dd className={styles.supportGroup}>
           <ul className={styles.browserList}>
             <li className={styles.browserItem}>
-              <Image className={styles.browserLogo} src={chromeLogoSrc} />
+              <Image width={18} height={18} src={chromeLogoSrc} />
               Chrome
             </li>
             <li className={styles.browserItem}>
-              <Image className={styles.browserLogo} src={edgeLogoSrc} />
+              <Image width={18} height={18} src={edgeLogoSrc} />
               Edge
             </li>
             <li className={styles.browserItem}>
-              <Image className={styles.browserLogo} src={braveLogoSrc} />
+              <Image width={18} height={18} src={braveLogoSrc} />
               Brave
             </li>
           </ul>
@@ -98,11 +99,11 @@ export function UnpartitionedStateMissingEmbeddedView() {
         <dd className={styles.supportGroup}>
           <ul className={styles.browserList}>
             <li className={styles.browserItem}>
-              <Image className={styles.browserLogo} src={safariLogoSrc} />
+              <Image width={18} height={18} src={safariLogoSrc} />
               Safari
             </li>
             <li className={styles.browserItem}>
-              <Image className={styles.browserLogo} src={firefoxLogoSrc} />
+              <Image width={18} height={18} src={firefoxLogoSrc} />
               Firefox
             </li>
           </ul>
