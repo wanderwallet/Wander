@@ -5,13 +5,19 @@ import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-c
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 import { Button, Checkbox } from "~components/embed";
 import { LocalStorage } from "~iframe/storage/unpartitioned-storage/local-storage";
+import chromeLogoSrc from "url:assets/icons/browsers/chrome-logo.png";
+import edgeLogoSrc from "url:assets/icons/browsers/edge-logo.png";
+import braveLogoSrc from "url:assets/icons/browsers/brave-logo.png";
+import safariLogoSrc from "url:assets/icons/browsers/safari-logo.png";
+import firefoxLogoSrc from "url:assets/icons/browsers/firefox-logo.png";
+import Image from "~components/common/Image";
+
+import styles from "./unpartitioned-state.module.scss";
 
 export function UnpartitionedStateMissingEmbeddedView() {
   const { navigate } = useLocation();
   const { authStatus, unpartitionedStateStatus, unpartitionedStateConfirmed, confirmUnpartitionedState } =
     useEmbedded();
-
-  // TODO: Style list.
 
   // TODO: Change footer messaging and move to top. Remove warning icon from wallet dashboard.
 
@@ -35,13 +41,13 @@ export function UnpartitionedStateMissingEmbeddedView() {
   const handleContinueAnyway = useCallback(async () => {
     try {
       setIsConfirming(true);
-      await confirmUnpartitionedState(false);
+      await confirmUnpartitionedState(isChecked);
       navigate(EmbeddedPaths.Auth);
     } catch (error) {
       // TODO: Add toast
       setIsConfirming(false);
     }
-  }, [confirmUnpartitionedState, navigate]);
+  }, [confirmUnpartitionedState, isChecked, navigate]);
 
   const handleRequestPermission = useCallback(async () => {
     try {
@@ -70,26 +76,41 @@ export function UnpartitionedStateMissingEmbeddedView() {
     "Your browser doesn't support cross-site authentication and wallet syncing. You'll need to manually import your wallet on each new site.";
   let children = (
     <>
-      <dl>
-        <dt>Fully supported</dt>
-        <dd>
-          <ul>
-            <li>Chrome</li>
-            <li>Edge</li>
-            <li>Brave</li>
+      <dl className={styles.supportList}>
+        <dt className={styles.fullySupportedLabel}>Fully supported</dt>
+        <dd className={styles.supportGroup}>
+          <ul className={styles.browserList}>
+            <li className={styles.browserItem}>
+              <Image className={styles.browserLogo} src={chromeLogoSrc} />
+              Chrome
+            </li>
+            <li className={styles.browserItem}>
+              <Image className={styles.browserLogo} src={edgeLogoSrc} />
+              Edge
+            </li>
+            <li className={styles.browserItem}>
+              <Image className={styles.browserLogo} src={braveLogoSrc} />
+              Brave
+            </li>
           </ul>
         </dd>
-        <dt>Limited support</dt>
-        <dd>
-          <ul>
-            <li>Safari</li>
-            <li>Firefox</li>
+        <dt className={styles.limitedSupportLabel}>Limited support</dt>
+        <dd className={styles.supportGroup}>
+          <ul className={styles.browserList}>
+            <li className={styles.browserItem}>
+              <Image className={styles.browserLogo} src={safariLogoSrc} />
+              Safari
+            </li>
+            <li className={styles.browserItem}>
+              <Image className={styles.browserLogo} src={firefoxLogoSrc} />
+              Firefox
+            </li>
           </ul>
         </dd>
       </dl>
 
       <Checkbox
-        style={{ padding: 0, margin: 0 }}
+        style={{ padding: 0, margin: "var(--spacing-3) 0" }}
         label="Don't show me this again on this site."
         isDisabled={areButtonsDisabled}
         handleChange={() => setIsChecked(!isChecked)}
