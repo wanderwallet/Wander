@@ -54,7 +54,7 @@ import {
   getUserDetailsFromSupabaseUser,
   postEmbeddedMessage,
 } from "~utils/embedded/utils/messages/embedded-messages.utils";
-import { ExtensionStorage, PersistentStorage } from "~utils/storage";
+import { ExtensionStorage, PersistentStorage, useStorage } from "~utils/storage";
 import { StorageKeys } from "~utils/storage/storage.constants";
 import {
   AO_TOKENS,
@@ -103,9 +103,12 @@ export const EmbeddedContext = createContext<EmbeddedContextData>({
   ...EMBEDDED_CONTEXT_INITIAL_STATE,
   ...EMBEDDED_CONTEXT_INITIAL_AUTH,
 
-  currentWallet: null,
   walletCount: 0,
+  currentWallet: null,
+
   unpartitionedStateStatus: getUnpartitionedStateStatus(),
+  unpartitionedStateConfirmed: null,
+  confirmUnpartitionedState: async () => null,
 
   authenticate: async () => null,
   fetchRecoverableAccounts: async () => null,
@@ -141,6 +144,19 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
   const [embeddedContextAuth, setEmbeddedContextAuth] = useState<EmbeddedContextAuth>(EMBEDDED_CONTEXT_INITIAL_AUTH);
 
   const [unpartitionedStateStatus, setUnpartitionedStateStatus] = useState(() => getUnpartitionedStateStatus());
+
+  const [unpartitionedStateConfirmed, setUnpartitionedStateConfirmed, { setRenderValue }] = useStorage<boolean>({
+    key: StorageKeys.CONNECT.SUPPORT.UNPARTITIONED_STATE_CONFIRMED,
+    instance: PersistentStorage,
+  });
+
+  const confirmUnpartitionedState = useCallback(
+    async (doNotAskAgain: boolean) => {
+      if (doNotAskAgain) return setUnpartitionedStateConfirmed(true);
+      else setRenderValue(true);
+    },
+    [setUnpartitionedStateConfirmed, setRenderValue],
+  );
 
   // Unpartitioned state:
 
@@ -1354,9 +1370,12 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         ...embeddedContextState,
         ...embeddedContextAuth,
 
-        currentWallet,
         walletCount,
+        currentWallet,
+
         unpartitionedStateStatus,
+        unpartitionedStateConfirmed,
+        confirmUnpartitionedState,
 
         authenticate,
         fetchRecoverableAccounts,

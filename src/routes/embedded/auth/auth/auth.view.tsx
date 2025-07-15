@@ -187,21 +187,26 @@ export function AuthEmbeddedView() {
 
       <Divider text={"OR"} />
 
-      <Row>
-        <Button
-          variant="outlined"
-          size="md"
-          isDisabled={areButtonsDisabled}
-          onClick={() => handleAuthenticate("GOOGLE")}>
-          <GoogleIcon fontSize={24} />
-        </Button>
+      {showWanderExtensionButton ? (
+        <Row>
+          <Button variant="outlined" onClick={() => handleAuthenticate("GOOGLE")} isDisabled={areButtonsDisabled}>
+            <GoogleIcon fontSize={24} />
+          </Button>
 
-        {showWanderExtensionButton ? (
-          <Button variant="outlined" size="md" isDisabled={areButtonsDisabled} onClick={handleNativeWallet}>
+          <Button variant="outlined" isDisabled={areButtonsDisabled} onClick={handleNativeWallet}>
             <Wander2Icon fontSize={24} />
           </Button>
-        ) : null}
-      </Row>
+        </Row>
+      ) : (
+        <Button
+          variant="outlined"
+          isFullWidth
+          icon={<GoogleIcon fontSize={24} />}
+          onClick={() => handleAuthenticate("GOOGLE")}
+          isDisabled={areButtonsDisabled}>
+          Continue with Google
+        </Button>
+      )}
 
       <Button
         variant="outlined"
