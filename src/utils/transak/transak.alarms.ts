@@ -69,8 +69,8 @@ export async function checkIfTransakPurchaseSucceeded(address: string): Promise<
       if (foundTxIds.has(orderId) || !orderId) return;
       foundTxIds.add(orderId);
 
-      const feeAmountUsd = getTagValue("Fee-Applied", tags);
-      const feeSavingsUsd = getTagValue("Fee-Savings", tags);
+      const feeAmountUsd = getTagValue("Fee-Applied", tags) || "0";
+      const feeSavingsUsd = getTagValue("Fee-Savings", tags) || "0";
 
       const transactionData = {
         orderId,
