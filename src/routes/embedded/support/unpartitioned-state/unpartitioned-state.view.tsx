@@ -146,7 +146,7 @@ export function UnpartitionedStateMissingEmbeddedView() {
     }
 
     subtitle =
-      "Before you continue, Wander Connect needs access to your browser's storage to enalbe cross-site authentication and wallet synching.";
+      "Before you continue, Wander Connect needs access to your browser's storage to enable cross-site authentication and wallet synching.";
 
     children = (
       <Button variant="primary" size="md" isDisabled={areButtonsDisabled} onClick={handleRequestPermission}>
