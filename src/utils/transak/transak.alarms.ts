@@ -19,7 +19,7 @@ import { getSetting } from "~settings";
 
 let isTransakPurchaseCheckInProgress = false;
 const TWO_HOURS_MS = 1000 * 60 * 60 * 2;
-const TWO_DAYS_MS = 1000 * 60 * 60 * 24 * 2;
+const ONE_DAY_MS = 1000 * 60 * 60 * 24;
 
 export async function checkIfTransakPurchaseSucceeded(address: string): Promise<boolean> {
   try {
@@ -42,8 +42,8 @@ export async function checkIfTransakPurchaseSucceeded(address: string): Promise<
 
     const response = await gql(TRANSAK_SAVINGS_QUERY, { wallet: address });
     let edges = response?.data?.transactions?.edges || [];
-    const twoDaysAgo = Date.now() - TWO_DAYS_MS;
-    edges = edges.filter((edge) => (edge.node.block?.timestamp || Date.now()) >= twoDaysAgo);
+    const oneDayAgo = Date.now() - ONE_DAY_MS;
+    edges = edges.filter((edge) => (edge.node.block?.timestamp || Date.now()) >= oneDayAgo);
 
     if (edges.length === 0) {
       log(LOG_GROUP.TRANSAK, "No transak purchases found");
