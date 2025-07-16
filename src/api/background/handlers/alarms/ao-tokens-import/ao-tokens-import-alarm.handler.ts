@@ -15,6 +15,8 @@ import { withRetry } from "~utils/promises/retry";
 import { timeoutPromise } from "~utils/promises/timeout";
 import { PersistentStorage } from "~utils/storage";
 import { getActiveAddress } from "~wallets";
+import { checkAndImportFairLaunchTokens } from "~utils/fair_launch/fair_launch.alarms";
+import { FAIR_LAUNCH_TOKENS_ALARM_NAME } from "~utils/fair_launch/fair_launch.constants";
 
 /**
  *  Import AO Tokens
@@ -108,4 +110,10 @@ export async function handleAoTokensImportAlarm(alarm: Alarms.Alarm) {
   } finally {
     await PersistentStorage.set(AO_TOKENS_IMPORT_TIMESTAMP, 0);
   }
+}
+
+export async function handleFairLaunchTokensImportAlarm(alarm: Alarms.Alarm) {
+  if (alarm?.name !== FAIR_LAUNCH_TOKENS_ALARM_NAME) return;
+
+  await checkAndImportFairLaunchTokens();
 }
