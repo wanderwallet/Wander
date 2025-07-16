@@ -9,6 +9,7 @@ import {
   AO_TOKENS_LAST_BLOCK_HEIGHT,
   gateway,
   getNoticeTransactions,
+  tokenStorageMutex,
   verifyCollectiblesType,
 } from "~tokens/aoTokens/sync";
 import { withRetry } from "~utils/promises/retry";
@@ -86,25 +87,30 @@ export async function handleAoTokensImportAlarm(alarm: Alarms.Alarm) {
 
     const updatedTokens = [...aoTokensCache, ...tokens];
 
-    aoTokens = await getAoTokens();
-    aoTokensIds = new Set(aoTokens.map(({ processId }) => processId));
-    tokenIdstoExclude = new Set([...aoTokensIds, ...removedTokenIds]);
+    const unlock = await tokenStorageMutex.lock();
+    try {
+      aoTokens = await getAoTokens();
+      aoTokensIds = new Set(aoTokens.map(({ processId }) => processId));
+      tokenIdstoExclude = new Set([...aoTokensIds, ...removedTokenIds]);
 
-    if (tokensToRestrict.length > 0) {
-      removedTokenIds.push(...tokensToRestrict.map(({ processId }) => processId));
-      await PersistentStorage.set(AO_TOKENS_AUTO_IMPORT_RESTRICTED_IDS, removedTokenIds);
+      if (tokensToRestrict.length > 0) {
+        removedTokenIds.push(...tokensToRestrict.map(({ processId }) => processId));
+        await PersistentStorage.set(AO_TOKENS_AUTO_IMPORT_RESTRICTED_IDS, removedTokenIds);
+      }
+
+      let newTokens = updatedTokens.filter((token) => !tokenIdstoExclude.has(token.processId));
+      if (newTokens.length === 0) return;
+
+      // Verify collectibles type
+      newTokens = await verifyCollectiblesType(newTokens, arweave);
+
+      newTokens.forEach((token) => aoTokens.push(token));
+      await PersistentStorage.set(AO_TOKENS, aoTokens);
+
+      console.log("Imported ao tokens!");
+    } finally {
+      unlock();
     }
-
-    let newTokens = updatedTokens.filter((token) => !tokenIdstoExclude.has(token.processId));
-    if (newTokens.length === 0) return;
-
-    // Verify collectibles type
-    newTokens = await verifyCollectiblesType(newTokens, arweave);
-
-    newTokens.forEach((token) => aoTokens.push(token));
-    await PersistentStorage.set(AO_TOKENS, aoTokens);
-
-    console.log("Imported ao tokens!");
   } catch (error: any) {
     console.log("Error importing tokens: ", error?.message);
   } finally {

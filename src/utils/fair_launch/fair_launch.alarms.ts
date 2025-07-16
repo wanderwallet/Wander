@@ -1,6 +1,6 @@
 import browser from "webextension-polyfill";
 import { getAoTokens, getAoTokensAutoImportRestrictedIds } from "~tokens";
-import { AO_TOKENS } from "~tokens/aoTokens/sync";
+import { AO_TOKENS, tokenStorageMutex } from "~tokens/aoTokens/sync";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { PersistentStorage } from "~utils/storage";
 import { getWallets } from "~wallets";
@@ -60,18 +60,23 @@ export async function checkAndImportFairLaunchTokens() {
 
     log(LOG_GROUP.FAIR_LAUNCH, "Importing fair launch tokens: ", flpTokensWithBalance);
 
-    const freshAoTokens = await getAoTokens();
-    const tokenIds = new Set(freshAoTokens.map(({ processId }) => processId));
+    const unlock = await tokenStorageMutex.lock();
+    try {
+      const freshAoTokens = await getAoTokens();
+      const tokenIds = new Set(freshAoTokens.map(({ processId }) => processId));
 
-    flpTokensWithBalance.forEach((token) => {
-      if (!tokenIds.has(token.processId)) {
-        freshAoTokens.push(token);
-      }
-    });
+      flpTokensWithBalance.forEach((token) => {
+        if (!tokenIds.has(token.processId)) {
+          freshAoTokens.push(token);
+        }
+      });
 
-    await PersistentStorage.set(AO_TOKENS, freshAoTokens);
+      await PersistentStorage.set(AO_TOKENS, freshAoTokens);
 
-    log(LOG_GROUP.FAIR_LAUNCH, "Imported fair launch tokens!");
+      log(LOG_GROUP.FAIR_LAUNCH, "Imported fair launch tokens!");
+    } finally {
+      unlock();
+    }
   } catch (error) {
     log(LOG_GROUP.FAIR_LAUNCH, "Error importing fair launch tokens: ", error);
   }
