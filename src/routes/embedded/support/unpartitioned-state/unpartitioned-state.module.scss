@@ -11,18 +11,15 @@
 }
 
 .browserList {
-  display: flex;
-  flex-direction: column;
-
-  & > li {
-    margin-top: var(--spacing-4);
-  }
+  display: grid;
+  grid-template-columns: 1fr 1fr;
 }
 
 .browserItem {
   display: flex;
   gap: var(--spacing-2);
   align-items: center;
+  margin-top: var(--spacing-4);
 }
 
 .fullySupportedLabel,

@@ -7,6 +7,7 @@ import { Button, Checkbox } from "~components/embed";
 import { LocalStorage } from "~iframe/storage/unpartitioned-storage/local-storage";
 import chromeLogoSrc from "url:assets/icons/browsers/chrome-logo.png";
 import edgeLogoSrc from "url:assets/icons/browsers/edge-logo.png";
+import operaLogoSrc from "url:assets/icons/browsers/opera-logo.png";
 import braveLogoSrc from "url:assets/icons/browsers/brave-logo.png";
 import safariLogoSrc from "url:assets/icons/browsers/safari-logo.png";
 import firefoxLogoSrc from "url:assets/icons/browsers/firefox-logo.png";
@@ -78,7 +79,11 @@ export function UnpartitionedStateMissingEmbeddedView() {
   let subtitle =
     "Your browser doesn't support cross-site authentication and wallet syncing. You'll need to manually import your wallet on each new site.";
 
-  // TODO: Consider adding Opera and some mobile browsers (maybe only if detected):
+  // Logos downloaded from https://github.com/alrra/browser-logos
+
+  // TODO: Consider showing different browsers in mobile than in desktop?
+
+  // TODO: Consider adding Android/Samsung browser?
 
   let children = (
     <>
@@ -93,6 +98,10 @@ export function UnpartitionedStateMissingEmbeddedView() {
             <li className={styles.browserItem}>
               <Image width={18} height={18} src={edgeLogoSrc} />
               Edge
+            </li>
+            <li className={styles.browserItem}>
+              <Image width={18} height={18} src={operaLogoSrc} />
+              Opera
             </li>
             <li className={styles.browserItem}>
               <Image width={18} height={18} src={braveLogoSrc} />
