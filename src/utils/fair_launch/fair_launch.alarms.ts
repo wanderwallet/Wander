@@ -46,6 +46,7 @@ export async function checkAndImportFairLaunchTokens() {
             if (+balance > 0) return true;
           } catch {}
         }
+        return false;
       } catch {
         return false;
       }
