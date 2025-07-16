@@ -3,7 +3,7 @@ import { getAoTokens, getAoTokensAutoImportRestrictedIds } from "~tokens";
 import { AO_TOKENS } from "~tokens/aoTokens/sync";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { PersistentStorage } from "~utils/storage";
-import { getActiveAddress } from "~wallets";
+import { getWallets } from "~wallets";
 import { getFairLaunchTokens } from "./fair_launch.utils";
 import { fetchTokenBalance } from "~tokens/aoTokens/ao";
 import { retryWithDelay } from "~utils/promises/retry";
@@ -26,38 +26,50 @@ export async function checkAndImportFairLaunchTokens() {
   try {
     log(LOG_GROUP.FAIR_LAUNCH, "Checking and importing fair launch tokens");
 
-    let [aoTokens, removedTokenIds = []] = await Promise.all([getAoTokens(), getAoTokensAutoImportRestrictedIds()]);
-    let tokenIdstoExclude = new Set([...aoTokens.map(({ processId }) => processId), ...removedTokenIds]);
+    const [aoTokens, removedTokenIds = []] = await Promise.all([getAoTokens(), getAoTokensAutoImportRestrictedIds()]);
+    const tokenIdstoExclude = new Set([...aoTokens.map(({ processId }) => processId), ...removedTokenIds]);
 
-    let flpTokens = await getFairLaunchTokens();
-    flpTokens = flpTokens.filter((token) => !tokenIdstoExclude.has(token.processId));
-
+    const flpTokens = (await getFairLaunchTokens()).filter((token) => !tokenIdstoExclude.has(token.processId));
     if (flpTokens.length === 0) {
-      log(LOG_GROUP.FAIR_LAUNCH, "No fair launch tokens to import");
+      log(LOG_GROUP.FAIR_LAUNCH, "No fair launch tokens to check");
       return;
     }
 
-    const activeAddress = await getActiveAddress();
+    const wallets = await getWallets();
+    const addresses = wallets.map((wallet) => wallet.address);
 
     const promises = flpTokens.map(async (token) => {
-      const balance = await retryWithDelay(() => fetchTokenBalance(token, activeAddress));
-      return balance || "0";
+      try {
+        for (const address of addresses) {
+          try {
+            const balance = await retryWithDelay(() => fetchTokenBalance(token, address));
+            if (+balance > 0) return true;
+          } catch {}
+        }
+      } catch {
+        return false;
+      }
     });
 
-    const results = await Promise.allSettled(promises);
-    const balances = results.map((result) => (result.status === "fulfilled" ? result.value : "0"));
-    const flpTokensWithBalance = flpTokens.filter((_, index) => +balances[index] > 0);
-
+    const results = await Promise.all(promises);
+    const flpTokensWithBalance = flpTokens.filter((_, index) => results[index]);
     if (flpTokensWithBalance.length === 0) {
-      log(LOG_GROUP.FAIR_LAUNCH, "No fair launch tokens to import");
+      log(LOG_GROUP.FAIR_LAUNCH, "No fair launch tokens with balance");
       return;
     }
 
     log(LOG_GROUP.FAIR_LAUNCH, "Importing fair launch tokens: ", flpTokensWithBalance);
 
-    aoTokens = await getAoTokens();
-    flpTokensWithBalance.forEach((token) => aoTokens.push(token));
-    await PersistentStorage.set(AO_TOKENS, aoTokens);
+    const freshAoTokens = await getAoTokens();
+    const tokenIds = new Set(freshAoTokens.map(({ processId }) => processId));
+
+    flpTokensWithBalance.forEach((token) => {
+      if (!tokenIds.has(token.processId)) {
+        freshAoTokens.push(token);
+      }
+    });
+
+    await PersistentStorage.set(AO_TOKENS, freshAoTokens);
 
     log(LOG_GROUP.FAIR_LAUNCH, "Imported fair launch tokens!");
   } catch (error) {

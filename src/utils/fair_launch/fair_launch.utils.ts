@@ -1,7 +1,7 @@
 import type { TokenInfo } from "~tokens/aoTokens/ao";
 import { retryWithDelay } from "~utils/promises/retry";
 
-const FAIR_LAUNCH_TOKENS_URL = "https://cdn.jsdelivr.net/gh/wanderwallet/wander-data@master/tokens/flp-tokens.json";
+const FAIR_LAUNCH_TOKENS_URL = "https://cdn.jsdelivr.net/gh/wanderwallet/wander-data@main/tokens/flp-tokens.min.json";
 
 export async function getFairLaunchTokens(): Promise<TokenInfo[]> {
   try {
