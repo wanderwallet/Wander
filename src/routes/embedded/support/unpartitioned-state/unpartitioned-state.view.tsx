@@ -50,8 +50,11 @@ export function UnpartitionedStateMissingEmbeddedView() {
   const handleRequestPermission = useCallback(async () => {
     try {
       await LocalStorage.getInstance();
+      console.log("COULD CONTINUE");
       navigate(EmbeddedPaths.Auth);
     } catch (error) {
+      console.log(error);
+
       // Brave throws a "NotAllowedError" error while trying to request access, even after a user interaction...
 
       toast.error("Unexpected error. Please, try again.");
@@ -129,6 +132,8 @@ export function UnpartitionedStateMissingEmbeddedView() {
       ) : null}
     </>
   );
+
+  console.log("errorsWhileRequestingAccess =", errorsWhileRequestingAccess);
 
   if (
     errorsWhileRequestingAccess < 3 &&
