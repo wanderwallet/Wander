@@ -13,15 +13,17 @@ import firefoxLogoSrc from "url:assets/icons/browsers/firefox-logo.png";
 import Image from "~components/common/Image";
 
 import styles from "./unpartitioned-state.module.scss";
+import { toast } from "react-toastify";
 
 export function UnpartitionedStateMissingEmbeddedView() {
   const { navigate } = useLocation();
   const { authStatus, unpartitionedStateStatus, unpartitionedStateConfirmed, confirmUnpartitionedState } =
     useEmbedded();
 
-  // TODO: Count errors and, if 3, change to "not supported"
+  // Checkbox and error handling:
 
   const [isChecked, setIsChecked] = useState(false);
+  const [errorsWhileRequestingAccess, setErrorsWhileRequestingAccess] = useState(0);
 
   // Loading state:
 
@@ -40,7 +42,7 @@ export function UnpartitionedStateMissingEmbeddedView() {
       await confirmUnpartitionedState(isChecked);
       navigate(EmbeddedPaths.Auth);
     } catch (error) {
-      // TODO: Add toast
+      toast.error("Unexpected error. Please, try again.");
       setIsConfirming(false);
     }
   }, [confirmUnpartitionedState, isChecked, navigate]);
@@ -50,10 +52,10 @@ export function UnpartitionedStateMissingEmbeddedView() {
       await LocalStorage.getInstance();
       navigate(EmbeddedPaths.Auth);
     } catch (error) {
-      if (error.name === "NotAllowedError") {
-      }
-      // TODO: Add toast
-      // toast.error(getFriendlyAuthErrorMessage(error, `Error signing in with ${authProviderType}`));
+      // Brave throws a "NotAllowedError" error while trying to request access, even after a user interaction...
+
+      toast.error("Unexpected error. Please, try again.");
+      setErrorsWhileRequestingAccess((prevErrorsWhileRequestingAccess) => prevErrorsWhileRequestingAccess + 1);
     }
   }, [navigate]);
 
@@ -128,7 +130,10 @@ export function UnpartitionedStateMissingEmbeddedView() {
     </>
   );
 
-  if (unpartitionedStateStatus === "rejected" || unpartitionedStateStatus === "error") {
+  if (
+    errorsWhileRequestingAccess < 3 &&
+    (unpartitionedStateStatus === "rejected" || unpartitionedStateStatus === "error")
+  ) {
     if (unpartitionedStateStatus === "rejected") {
       headerText = "Enable browser storage support";
     } else {
