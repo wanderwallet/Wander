@@ -57,8 +57,7 @@ export function AccountImportKeyfileEmbeddedView() {
         </Row>
       }
       hasBackButton={true}
-      onBackButtonClick={back}
-      size="auto">
+      onBackButtonClick={back}>
       <Copyable
         isFullWidth
         label="Your wallet address"
@@ -82,8 +81,7 @@ export function AccountImportKeyfileEmbeddedView() {
       subtitle="Upload your private key to connect your wallet to your account."
       footerElement={<WanderFooter />}
       hasBackButton={true}
-      onBackButtonClick={back}
-      size="auto">
+      onBackButtonClick={back}>
       <Upload
         isFullWidth
         fileLabel="your private key"

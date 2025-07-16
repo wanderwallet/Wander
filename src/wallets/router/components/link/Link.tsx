@@ -6,15 +6,29 @@ import clsx from "clsx";
 
 import styles from "./Link.module.scss";
 
-export interface LinkProps extends PropsWithChildren {
-  className?: string;
-  to: WanderRoutePath;
-  state?: unknown;
-  onClick?: React.MouseEventHandler<HTMLAnchorElement>;
-  style?: React.CSSProperties;
-  rel?: string;
+function disabledOnClickHandler(e: React.MouseEvent<HTMLAnchorElement>) {
+  e.preventDefault();
 }
 
-export function Link({ className, ...props }: LinkProps) {
-  return <Wink {...props} className={clsx(className, styles.root)} />;
+export interface LinkProps extends PropsWithChildren {
+  to: WanderRoutePath;
+  rel?: string;
+  state?: unknown;
+  onClick?: React.MouseEventHandler<HTMLAnchorElement>;
+  className?: string;
+  style?: React.CSSProperties;
+  disabled?: boolean;
+}
+
+export function Link({ to, onClick: onClickProp, className, disabled, ...props }: LinkProps) {
+  const onClick = disabled ? disabledOnClickHandler : onClickProp;
+
+  return (
+    <Wink
+      {...props}
+      to={to}
+      onClick={onClick}
+      className={clsx(className, styles.root, { [styles.disabled]: disabled })}
+    />
+  );
 }

@@ -29,8 +29,7 @@ export function AuthAddWithQRCodeEmbeddedView() {
       subtitle="Scan your wallet QR code to import your account."
       footerElement={<WanderFooter />}
       hasBackButton={true}
-      onBackButtonClick={back}
-      size="sm">
+      onBackButtonClick={back}>
       <Box>
         <Button variant="secondary" isFullWidth icon={<CameraIcon />} onClick={handleOpenWebcam} isLoading={isLoading}>
           Open webcam

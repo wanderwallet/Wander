@@ -33,6 +33,11 @@ export function useEmbeddedOverride(location?: RoutePath) {
     return "/__OVERRIDES/cover";
   }
 
+  console.log({
+    unpartitionedStateStatus,
+    unpartitionedStateConfirmed,
+  });
+
   if (unpartitionedStateStatus !== "supported" && !unpartitionedStateConfirmed && authStatus == "noAuth") {
     return routeTrapMatches(
       location,
@@ -45,6 +50,7 @@ export function useEmbeddedOverride(location?: RoutePath) {
     return routeTrapMatches(
       location,
       [
+        EmbeddedPaths.SupportUnpartitionedStateMissing,
         EmbeddedPaths.Auth,
         EmbeddedPaths.AuthEmailOtp,
         EmbeddedPaths.AuthEmailSignInPassword,

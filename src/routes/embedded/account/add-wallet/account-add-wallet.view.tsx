@@ -34,8 +34,7 @@ export function AccountAddWalletEmbeddedView() {
       subtitle="Add a wallet to your account to hold your funds. Create or add an existing wallet to continue."
       footerElement={<WanderFooter />}
       hasBackButton={true}
-      onBackButtonClick={back}
-      size="auto">
+      onBackButtonClick={back}>
       <Box>
         <Button
           onClick={() => handleRegisterWallet("GENERATED")}

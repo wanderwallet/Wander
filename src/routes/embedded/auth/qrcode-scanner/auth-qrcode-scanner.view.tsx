@@ -12,8 +12,7 @@ export function AuthQRCodeScannerEmbeddedView() {
       subtitle="Scan you wallet QR code to import your account."
       footerElement={<WanderFooter />}
       hasBackButton={true}
-      onBackButtonClick={back}
-      size="sm">
+      onBackButtonClick={back}>
       <QrReader />
     </Card>
   );

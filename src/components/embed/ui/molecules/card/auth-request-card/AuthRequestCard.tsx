@@ -70,7 +70,6 @@ export function AuthRequestCard({
   return (
     <Card
       {...cardProps}
-      size="auto"
       hasBackButton={!!onBackButtonClick}
       onBackButtonClick={onBackButtonClick}
       customIcon={<XClose fontSize={24} color={"#666666"} />}

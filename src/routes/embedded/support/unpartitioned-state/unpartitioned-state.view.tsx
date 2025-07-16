@@ -19,8 +19,6 @@ export function UnpartitionedStateMissingEmbeddedView() {
   const { authStatus, unpartitionedStateStatus, unpartitionedStateConfirmed, confirmUnpartitionedState } =
     useEmbedded();
 
-  // TODO: Change footer messaging and move to top. Remove warning icon from wallet dashboard.
-
   // TODO: Count errors and, if 3, change to "not supported"
 
   const [isChecked, setIsChecked] = useState(false);
@@ -60,7 +58,7 @@ export function UnpartitionedStateMissingEmbeddedView() {
   }, [navigate]);
 
   useEffect(() => {
-    if (unpartitionedStateStatus === "supported" || unpartitionedStateConfirmed) {
+    if (unpartitionedStateStatus === "supported") {
       if (process.env.NODE_ENV === "development") {
         throw new Error("This view should not be accessible if unpartitioned state is supported and accepted.");
       } else {
@@ -68,6 +66,8 @@ export function UnpartitionedStateMissingEmbeddedView() {
       }
     }
   }, [unpartitionedStateStatus]);
+
+  const needsConfirmation = !unpartitionedStateConfirmed && authStatus === "noAuth";
 
   let headerText = "Limited browser support";
   let subtitle =
@@ -110,17 +110,21 @@ export function UnpartitionedStateMissingEmbeddedView() {
         </dd>
       </dl>
 
-      <Checkbox
-        style={{ padding: 0, margin: "var(--spacing-3) 0" }}
-        label="Don't show me this again on this site."
-        isDisabled={areButtonsDisabled}
-        handleChange={() => setIsChecked(!isChecked)}
-        isChecked={isChecked}
-      />
+      {needsConfirmation ? (
+        <>
+          <Checkbox
+            style={{ padding: 0, margin: "var(--spacing-3) 0" }}
+            label="Don't show me this again on this site."
+            isDisabled={areButtonsDisabled}
+            handleChange={() => setIsChecked(!isChecked)}
+            isChecked={isChecked}
+          />
 
-      <Button variant="primary" size="md" isDisabled={areButtonsDisabled} onClick={handleContinueAnyway}>
-        Continue anyway
-      </Button>
+          <Button variant="primary" size="md" isDisabled={areButtonsDisabled} onClick={handleContinueAnyway}>
+            Continue anyway
+          </Button>
+        </>
+      ) : null}
     </>
   );
 
@@ -142,7 +146,11 @@ export function UnpartitionedStateMissingEmbeddedView() {
   }
 
   return (
-    <OnboardingCard headerText={headerText} subtitle={subtitle} hasBackButton={false} isLoading={isViewLoading}>
+    <OnboardingCard
+      headerText={headerText}
+      subtitle={subtitle}
+      hasBackButton={!needsConfirmation}
+      isLoading={isViewLoading}>
       {children}
     </OnboardingCard>
   );
