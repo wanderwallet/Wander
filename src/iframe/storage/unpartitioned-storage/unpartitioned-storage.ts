@@ -21,6 +21,11 @@ interface EnhancedStorageOptions {
   area?: "local" | "session";
 }
 
+const timesInstantiated: Record<StorageType, number> = {
+  localStorage: 0,
+  sessionStorage: 0,
+};
+
 export class EnhancedStorage implements Storage {
   public storage: Storage;
 
@@ -38,6 +43,18 @@ export class EnhancedStorage implements Storage {
   constructor({ area = "local" }: EnhancedStorageOptions = {}) {
     this.storageType = area === "local" ? "localStorage" : "sessionStorage";
     this.storage = globalThis[this.storageType];
+
+    const timesStorageTypeInstantiated = ++timesInstantiated[this.storageType];
+
+    if (timesStorageTypeInstantiated > 1) {
+      if (process.env.NODE_ENV === "development") {
+        throw new Error(
+          `${this.storageType} instantiated ${timesStorageTypeInstantiated} times. Was this intentional?`,
+        );
+      } else {
+        console.warn(`${this.storageType} instantiated ${timesStorageTypeInstantiated} times. Was this intentional?`);
+      }
+    }
 
     if (area === "session") {
       // We want to start fresh each time the app loads:
@@ -76,26 +93,18 @@ export class EnhancedStorage implements Storage {
 
     // Unpartitioned state access already accepted, limited or unsupported:
     if (["supported", "limited", "unsupported"].includes(this.status)) {
-      console.log("CACHED STATUS");
       return this.status;
     }
 
     // If the code below runs, this.status can only be null, "error" or "rejected":
 
     if (this.requestStorageAccessPromise && this.status === null) {
-      console.log("PROMISE REUSED");
       return this.requestStorageAccessPromise;
     }
 
-    console.trace("NEW STORAGE PROMISE");
-
     return (this.requestStorageAccessPromise = new Promise<UnpartitionedStateStatus>(async (resolve) => {
       // With this, calling dispatchUnpartitionedStateStatusChange() will automatically call resolve() too:
-      this.requestStorageAccessResolve = (status) => {
-        console.log("RESOLVED =", status);
-
-        resolve(status);
-      };
+      this.requestStorageAccessResolve = resolve;
 
       // Storage Access API not supported:
       if (!HAS_SIMPLE_STORAGE_API) return this.dispatchUnpartitionedStateStatusChange("unsupported");

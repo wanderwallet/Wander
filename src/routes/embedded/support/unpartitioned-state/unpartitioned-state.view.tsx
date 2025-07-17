@@ -241,7 +241,7 @@ export function UnpartitionedStateMissingEmbeddedView() {
           {requestAccessButtonText}
         </Button>
 
-        {errorsWhileRequestingAccess > 3 && needsConfirmation ? (
+        {errorsWhileRequestingAccess >= 3 && needsConfirmation ? (
           <Button variant="secondary" size="md" isDisabled={areButtonsDisabled} onClick={handleContinueAnyway}>
             Continue anyway
           </Button>
