@@ -25,7 +25,7 @@ import inAppScreenshotSrc from "url:assets/screenshots/unpartitioned-state/raw-i
 
 import styles from "./unpartitioned-state.module.scss";
 
-const pretendToBeBrave = false;
+const pretendToBeBrave = true;
 const isBrave = pretendToBeBrave || window.navigator.brave;
 
 const pretendToBeMobileChrome = false;
