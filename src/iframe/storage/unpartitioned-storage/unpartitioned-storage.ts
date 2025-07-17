@@ -28,6 +28,9 @@ export class EnhancedStorage implements Storage {
 
   public status: UnpartitionedStateStatus | null = null;
 
+  // TODO: Implement this:
+  public error: Error | null = null;
+
   private requestStorageAccessPromise: Promise<UnpartitionedStateStatus> | null = null;
 
   private requestStorageAccessResolve: (status: UnpartitionedStateStatus) => void = () => {};
@@ -86,9 +89,13 @@ export class EnhancedStorage implements Storage {
 
     console.log("NEW STORAGE PROMISE");
 
-    return (this.requestStorageAccessPromise = new Promise(async (resolve) => {
+    return (this.requestStorageAccessPromise = new Promise<UnpartitionedStateStatus>(async (resolve) => {
       // With this, calling dispatchUnpartitionedStateStatusChange() will automatically call resolve() too:
-      this.requestStorageAccessResolve = resolve;
+      this.requestStorageAccessResolve = (status) => {
+        console.log("RESOLVED =", status);
+
+        resolve(status);
+      };
 
       // Storage Access API not supported:
       if (!HAS_SIMPLE_STORAGE_API) return this.dispatchUnpartitionedStateStatusChange("unsupported");

@@ -76,6 +76,9 @@ export function UnpartitionedStateMissingEmbeddedView() {
 
       console.log("COULD CONTINUE", localStorage.status);
 
+      if (["rejected", "error"].includes(localStorage.status))
+        throw new Error(`Unpartitioned state status = "${localStorage.status}"`);
+
       navigate(EmbeddedPaths.Auth);
     } catch (error) {
       console.log(error);
@@ -165,6 +168,7 @@ export function UnpartitionedStateMissingEmbeddedView() {
   console.log("errorsWhileRequestingAccess =", errorsWhileRequestingAccess);
 
   if (
+    authStatus === "noAuth" &&
     errorsWhileRequestingAccess < 3 &&
     (unpartitionedStateStatus === "rejected" || unpartitionedStateStatus === "error" || isPretendingToBeAnotherBrowser)
   ) {
