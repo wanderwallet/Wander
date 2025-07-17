@@ -61,9 +61,9 @@ export class EnhancedStorage implements Storage {
       if (handle && handle[this.storageType]) {
         this.storage = handle[this.storageType];
         this.dispatchUnpartitionedStateStatusChange("supported");
+      } else {
+        this.dispatchUnpartitionedStateStatusChange("limited");
       }
-
-      this.dispatchUnpartitionedStateStatusChange("limited");
     } catch (error) {
       this.dispatchUnpartitionedStateStatusChange(error);
     }
@@ -197,7 +197,7 @@ export class EnhancedStorage implements Storage {
       : unpartitionedStateStatusOrError;
     const error = isError(unpartitionedStateStatusOrError) ? unpartitionedStateStatusOrError : undefined;
 
-    log(LOG_GROUP.STORAGE, `Unpartitioned state access for = ${unpartitionedStateStatus} (${this.storageType})`);
+    log(LOG_GROUP.STORAGE, `Unpartitioned state access for ${this.storageType} = ${unpartitionedStateStatus}`);
 
     setUnpartitionedStateStatus(unpartitionedStateStatus);
 

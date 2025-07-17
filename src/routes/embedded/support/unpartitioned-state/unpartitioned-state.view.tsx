@@ -100,6 +100,8 @@ export function UnpartitionedStateMissingEmbeddedView() {
     }
   }, [unpartitionedStateStatus]);
 
+  console.log("unpartitionedStateStatus =", unpartitionedStateStatus);
+
   const needsConfirmation = !unpartitionedStateConfirmed && authStatus === "noAuth";
   const requestAccessButtonText =
     unpartitionedStateStatus === "rejected" || errorsWhileRequestingAccess === 0 ? "Request access" : "Try again";
@@ -159,35 +161,14 @@ export function UnpartitionedStateMissingEmbeddedView() {
         />
       ) : null}
 
-      {authStatus === "noAuth" && unpartitionedStateConfirmed ? (
-        <Button variant="secondary" size="md" isDisabled={areButtonsDisabled} onClick={handleRequestPermission}>
-          {requestAccessButtonText}
-        </Button>
-      ) : null}
-
-      {unpartitionedStateConfirmed ? null : errorsWhileRequestingAccess > 0 ? (
-        <>
-          <Button variant="primary" size="md" isDisabled={areButtonsDisabled} onClick={handleRequestPermission}>
-            {requestAccessButtonText}
-          </Button>
-
-          <Button variant="secondary" size="md" isDisabled={areButtonsDisabled} onClick={handleContinueAnyway}>
-            Continue anyway
-          </Button>
-        </>
-      ) : (
-        <Button variant="primary" size="md" isDisabled={areButtonsDisabled} onClick={handleContinueAnyway}>
-          Continue anyway
-        </Button>
-      )}
+      <Button variant="primary" size="md" isDisabled={areButtonsDisabled} onClick={handleContinueAnyway}>
+        Continue anyway
+      </Button>
     </>
   );
 
-  console.log("errorsWhileRequestingAccess =", errorsWhileRequestingAccess);
-
   if (
     authStatus === "noAuth" &&
-    errorsWhileRequestingAccess < 3 &&
     (unpartitionedStateStatus === "rejected" || unpartitionedStateStatus === "error" || isPretendingToBeAnotherBrowser)
   ) {
     if (errorsWhileRequestingAccess === 0 || unpartitionedStateStatus === "rejected") {
@@ -255,6 +236,12 @@ export function UnpartitionedStateMissingEmbeddedView() {
         <Button variant="primary" size="md" isDisabled={areButtonsDisabled} onClick={handleRequestPermission}>
           {requestAccessButtonText}
         </Button>
+
+        {errorsWhileRequestingAccess === 0 ? null : (
+          <Button variant="secondary" size="md" isDisabled={areButtonsDisabled} onClick={handleContinueAnyway}>
+            Continue anyway
+          </Button>
+        )}
       </>
     );
   }
