@@ -73,6 +73,8 @@ export class EnhancedStorage implements Storage {
         [this.storageType]: true,
       });
 
+      console.log("GOT HANDLE =", handle);
+
       // @ts-expect-error - Newer API may not be recognized by TypeScript
       if (handle && handle[this.storageType]) {
         this.storage = handle[this.storageType];
@@ -89,6 +91,8 @@ export class EnhancedStorage implements Storage {
 
   async requestStorageAccess(): Promise<UnpartitionedStateStatus> {
     if (!isInsideIframe()) throw new Error("UnpartitionedStorage.foo() can only be called from within the iframe.");
+
+    console.log("INITIAL STATUS IS =", this.status);
 
     // Unpartitioned state access already accepted, limited or unsupported:
     if (["supported", "limited", "unsupported"].includes(this.status)) {
@@ -112,6 +116,8 @@ export class EnhancedStorage implements Storage {
         // Check if we already have access:
 
         const hasAccess = await document.hasStorageAccess();
+
+        console.log("hasAccess =", hasAccess);
 
         if (hasAccess) return await this.requestStorageAccessAndInitializeStorage();
 

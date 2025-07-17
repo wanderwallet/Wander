@@ -9,6 +9,7 @@ import Image from "~components/common/Image";
 import { toast } from "react-toastify";
 import { FormattedText } from "~components/embed/ui/atoms/formatted-text/FormattedText";
 import { useInterval } from "@swyg/corre";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 import chromeLogoSrc from "url:assets/icons/browsers/chrome-logo.png";
 import edgeLogoSrc from "url:assets/icons/browsers/edge-logo.png";
@@ -23,7 +24,6 @@ import chrome3ScreenshotSrc from "url:assets/screenshots/unpartitioned-state/raw
 import inAppScreenshotSrc from "url:assets/screenshots/unpartitioned-state/raw-in-app-dark.png";
 
 import styles from "./unpartitioned-state.module.scss";
-import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 const pretendToBeBrave = false;
 const isBrave = pretendToBeBrave || window.navigator.brave;
@@ -113,7 +113,7 @@ export function UnpartitionedStateMissingEmbeddedView() {
         }
       }
     },
-    shouldTryToGetAccess ? 500 : null,
+    shouldTryToGetAccess ? 1000 : null,
   );
 
   useEffect(() => {
