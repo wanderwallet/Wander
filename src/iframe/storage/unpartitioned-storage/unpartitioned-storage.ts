@@ -87,7 +87,7 @@ export class EnhancedStorage implements Storage {
       return this.requestStorageAccessPromise;
     }
 
-    console.log("NEW STORAGE PROMISE");
+    console.trace("NEW STORAGE PROMISE");
 
     return (this.requestStorageAccessPromise = new Promise<UnpartitionedStateStatus>(async (resolve) => {
       // With this, calling dispatchUnpartitionedStateStatusChange() will automatically call resolve() too:
