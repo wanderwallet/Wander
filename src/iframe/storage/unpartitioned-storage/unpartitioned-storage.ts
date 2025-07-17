@@ -33,7 +33,6 @@ export class EnhancedStorage implements Storage {
 
   public status: UnpartitionedStateStatus | null = null;
 
-  // TODO: Implement this:
   public error: Error | null = null;
 
   private requestStorageAccessPromise: Promise<UnpartitionedStateStatus> | null = null;
@@ -204,7 +203,14 @@ export class EnhancedStorage implements Storage {
     const unpartitionedStateStatus = isError(unpartitionedStateStatusOrError)
       ? "error"
       : unpartitionedStateStatusOrError;
-    const error = isError(unpartitionedStateStatusOrError) ? unpartitionedStateStatusOrError : undefined;
+
+    if (unpartitionedStateStatus === "error") {
+      this.error = isError(unpartitionedStateStatusOrError)
+        ? unpartitionedStateStatusOrError
+        : new Error("Unexpected unpartitioned state error");
+    } else {
+      this.error = null;
+    }
 
     log(LOG_GROUP.STORAGE, `Unpartitioned state access for ${this.storageType} = ${unpartitionedStateStatus}`);
 
@@ -214,7 +220,7 @@ export class EnhancedStorage implements Storage {
       new CustomEvent(UNPARTITIONED_STATE_STATUS_CHANGE_EVENT, {
         detail: {
           unpartitionedStateStatus,
-          error,
+          error: this.error,
         },
         bubbles: true,
       }) satisfies UnpartitionedStateStatusChangeEvent,
