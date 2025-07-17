@@ -1364,6 +1364,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     });
   }, []);
 
+  console.log("unpartitionedStateStatus =", unpartitionedStateStatus);
+
   return (
     <EmbeddedContext.Provider
       value={{
