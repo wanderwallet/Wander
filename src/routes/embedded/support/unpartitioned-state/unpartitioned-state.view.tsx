@@ -70,6 +70,8 @@ export function UnpartitionedStateMissingEmbeddedView() {
     }
   }, [confirmUnpartitionedState, isChecked, navigate]);
 
+  // TODO: Throttle it.
+
   const handleRequestPermission = useCallback(async () => {
     try {
       const localStorage = await LocalStorage.getInstance();
@@ -152,18 +154,20 @@ export function UnpartitionedStateMissingEmbeddedView() {
       </dl>
 
       {needsConfirmation ? (
-        <Checkbox
-          style={{ padding: 0, margin: "var(--spacing-3) 0" }}
-          label="Don't show me this again on this site."
-          isDisabled={areButtonsDisabled}
-          handleChange={() => setIsChecked(!isChecked)}
-          isChecked={isChecked}
-        />
-      ) : null}
+        <>
+          <Checkbox
+            style={{ padding: 0, margin: "var(--spacing-3) 0" }}
+            label="Don't show me this again on this site."
+            isDisabled={areButtonsDisabled}
+            handleChange={() => setIsChecked(!isChecked)}
+            isChecked={isChecked}
+          />
 
-      <Button variant="primary" size="md" isDisabled={areButtonsDisabled} onClick={handleContinueAnyway}>
-        Continue anyway
-      </Button>
+          <Button variant="primary" size="md" isDisabled={areButtonsDisabled} onClick={handleContinueAnyway}>
+            Continue anyway
+          </Button>
+        </>
+      ) : null}
     </>
   );
 
