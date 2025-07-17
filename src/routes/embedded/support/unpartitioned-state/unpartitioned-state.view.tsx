@@ -101,6 +101,8 @@ export function UnpartitionedStateMissingEmbeddedView() {
   }, [unpartitionedStateStatus]);
 
   const needsConfirmation = !unpartitionedStateConfirmed && authStatus === "noAuth";
+  const requestAccessButtonText =
+    unpartitionedStateStatus === "rejected" || errorsWhileRequestingAccess === 0 ? "Request access" : "Try again";
 
   let headerText = "Limited browser support";
   let subtitle =
@@ -157,9 +159,21 @@ export function UnpartitionedStateMissingEmbeddedView() {
             isChecked={isChecked}
           />
 
-          <Button variant="primary" size="md" isDisabled={areButtonsDisabled} onClick={handleContinueAnyway}>
-            Continue anyway
-          </Button>
+          {errorsWhileRequestingAccess > 0 ? (
+            <>
+              <Button variant="primary" size="md" isDisabled={areButtonsDisabled} onClick={handleRequestPermission}>
+                {requestAccessButtonText}
+              </Button>
+
+              <Button variant="secondary" size="md" isDisabled={areButtonsDisabled} onClick={handleContinueAnyway}>
+                Continue anyway
+              </Button>
+            </>
+          ) : (
+            <Button variant="primary" size="md" isDisabled={areButtonsDisabled} onClick={handleContinueAnyway}>
+              Continue anyway
+            </Button>
+          )}
         </>
       ) : null}
     </>
@@ -235,7 +249,7 @@ export function UnpartitionedStateMissingEmbeddedView() {
         {browserSpecificInstructions}
 
         <Button variant="primary" size="md" isDisabled={areButtonsDisabled} onClick={handleRequestPermission}>
-          {unpartitionedStateStatus === "rejected" ? "Request access" : "Try again"}
+          {requestAccessButtonText}
         </Button>
       </>
     );
