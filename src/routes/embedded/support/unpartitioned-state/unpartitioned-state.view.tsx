@@ -8,6 +8,7 @@ import { LocalStorage } from "~iframe/storage/unpartitioned-storage/local-storag
 import Image from "~components/common/Image";
 import { toast } from "react-toastify";
 import { FormattedText } from "~components/embed/ui/atoms/formatted-text/FormattedText";
+import { useInterval } from "@swyg/corre";
 
 import chromeLogoSrc from "url:assets/icons/browsers/chrome-logo.png";
 import edgeLogoSrc from "url:assets/icons/browsers/edge-logo.png";
@@ -43,19 +44,23 @@ export function UnpartitionedStateMissingEmbeddedView() {
   const { authStatus, unpartitionedStateStatus, unpartitionedStateConfirmed, confirmUnpartitionedState } =
     useEmbedded();
 
-  // Checkbox and error handling:
-
-  const [isChecked, setIsChecked] = useState(false);
-  const [errorsWhileRequestingAccess, setErrorsWhileRequestingAccess] = useState(0);
+  const shouldTryToGetAccess =
+    authStatus === "noAuth" &&
+    (unpartitionedStateStatus === "rejected" || unpartitionedStateStatus === "error" || isPretendingToBeAnotherBrowser);
 
   // Loading state:
 
   const [isConfirming, setIsConfirming] = useState(false);
+  const [isRequestingPermission, setIsRequestingPermission] = useState(false);
 
-  const areButtonsDisabled =
+  const isViewLoading =
     authStatus === "unknown" || authStatus === "loading" || authStatus === "authLoading" || isConfirming;
+  const areButtonsDisabled = isViewLoading || isRequestingPermission;
 
-  const isViewLoading = areButtonsDisabled;
+  // Checkbox and error handling:
+
+  const [isChecked, setIsChecked] = useState(false);
+  const [errorsWhileRequestingAccess, setErrorsWhileRequestingAccess] = useState(0);
 
   // Handlers:
 
@@ -70,27 +75,41 @@ export function UnpartitionedStateMissingEmbeddedView() {
     }
   }, [confirmUnpartitionedState, isChecked, navigate]);
 
-  // TODO: Throttle it.
-
   const handleRequestPermission = useCallback(async () => {
     try {
-      const localStorage = await LocalStorage.getInstance();
+      setIsRequestingPermission(true);
 
-      console.log("COULD CONTINUE", localStorage.status);
+      const localStorage = await LocalStorage.getInstance();
 
       if (["rejected", "error"].includes(localStorage.status))
         throw new Error(`Unpartitioned state status = "${localStorage.status}"`);
 
       navigate(EmbeddedPaths.Auth);
     } catch (error) {
-      console.log(error);
-
       // Brave throws a "NotAllowedError" error while trying to request access, even after a user interaction...
-
       toast.error("Unexpected error. Please, try again.");
       setErrorsWhileRequestingAccess((prevErrorsWhileRequestingAccess) => prevErrorsWhileRequestingAccess + 1);
+      setIsRequestingPermission(false);
     }
   }, [navigate]);
+
+  useInterval(
+    async () => {
+      if (isRequestingPermission) return;
+
+      const hasAccess = await document.hasStorageAccess();
+
+      if (hasAccess) {
+        const localStorage = await LocalStorage.getInstance();
+
+        if (!["rejected", "error"].includes(localStorage.status)) {
+          setIsRequestingPermission(true);
+          navigate(EmbeddedPaths.Auth);
+        }
+      }
+    },
+    shouldTryToGetAccess ? 500 : null,
+  );
 
   useEffect(() => {
     if (unpartitionedStateStatus === "supported") {
@@ -101,8 +120,6 @@ export function UnpartitionedStateMissingEmbeddedView() {
       }
     }
   }, [unpartitionedStateStatus]);
-
-  console.log("unpartitionedStateStatus =", unpartitionedStateStatus);
 
   const needsConfirmation = !unpartitionedStateConfirmed && authStatus === "noAuth";
   const requestAccessButtonText =
@@ -171,10 +188,7 @@ export function UnpartitionedStateMissingEmbeddedView() {
     </>
   );
 
-  if (
-    authStatus === "noAuth" &&
-    (unpartitionedStateStatus === "rejected" || unpartitionedStateStatus === "error" || isPretendingToBeAnotherBrowser)
-  ) {
+  if (shouldTryToGetAccess) {
     if (errorsWhileRequestingAccess === 0 || unpartitionedStateStatus === "rejected") {
       headerText = "Enable browser storage support";
     } else {
@@ -237,7 +251,12 @@ export function UnpartitionedStateMissingEmbeddedView() {
       <>
         {browserSpecificInstructions}
 
-        <Button variant="primary" size="md" isDisabled={areButtonsDisabled} onClick={handleRequestPermission}>
+        <Button
+          variant="primary"
+          size="md"
+          isDisabled={areButtonsDisabled}
+          isLoading={isRequestingPermission}
+          onClick={handleRequestPermission}>
           {requestAccessButtonText}
         </Button>
 
