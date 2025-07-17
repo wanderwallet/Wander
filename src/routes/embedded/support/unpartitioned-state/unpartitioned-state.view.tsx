@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { useLocation } from "~wallets/router/router.utils";
 import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
-import { Button, Checkbox } from "~components/embed";
+import { Button, Checkbox, Snackbar } from "~components/embed";
 import { LocalStorage } from "~iframe/storage/unpartitioned-storage/local-storage";
 import Image from "~components/common/Image";
 import { toast } from "react-toastify";
@@ -44,9 +44,9 @@ export function UnpartitionedStateMissingEmbeddedView() {
   const { authStatus, unpartitionedStateStatus, unpartitionedStateConfirmed, confirmUnpartitionedState } =
     useEmbedded();
 
-  const shouldTryToGetAccess =
-    authStatus === "noAuth" &&
-    (unpartitionedStateStatus === "rejected" || unpartitionedStateStatus === "error" || isPretendingToBeAnotherBrowser);
+  const couldProbablyGetAccess =
+    unpartitionedStateStatus === "rejected" || unpartitionedStateStatus === "error" || isPretendingToBeAnotherBrowser;
+  const shouldTryToGetAccess = authStatus === "noAuth" && couldProbablyGetAccess;
 
   // Loading state:
 
@@ -93,11 +93,15 @@ export function UnpartitionedStateMissingEmbeddedView() {
     }
   }, [navigate]);
 
+  console.log("shouldTryToGetAccess =", shouldTryToGetAccess);
+
   useInterval(
     async () => {
       if (isRequestingPermission) return;
 
       const hasAccess = await document.hasStorageAccess();
+
+      console.log("hasAccess =", hasAccess);
 
       if (hasAccess) {
         const localStorage = await LocalStorage.getInstance();
@@ -184,6 +188,13 @@ export function UnpartitionedStateMissingEmbeddedView() {
             Continue anyway
           </Button>
         </>
+      ) : null}
+
+      {couldProbablyGetAccess ? (
+        <Snackbar
+          variant="warning"
+          children="Your browser seems to be supported, but we could not get access browser storage. Please, log out to try again."
+        />
       ) : null}
     </>
   );
