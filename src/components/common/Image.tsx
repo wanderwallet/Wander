@@ -31,29 +31,16 @@ export default function Image({
   const [isLoaded, setIsLoaded] = useState(false);
 
   return (
-    <ImageWrapper width={width} height={height} className={className} borderRadius={borderRadius} style={style}>
-      <motion.div
-        initial={{ opacity: 1 }}
-        animate={{ opacity: isLoaded ? 0 : 1 }}
-        transition={{ duration: transitionDuration }}
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          width: "100%",
-          height: "100%",
-          borderRadius: typeof borderRadius === "number" ? `${borderRadius}px` : borderRadius,
-          overflow: "hidden",
-          backgroundImage: `url(${placeholderUrl})`,
-          backgroundSize: objectFit,
-          backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
-          zIndex: 1,
-        }}
-      />
-
+    <ImageWrapper
+      className={className}
+      style={style}
+      $borderRadius={borderRadius}
+      $placeholderUrl={placeholderUrl}
+      $objectFit={objectFit}>
       <motion.img
         src={src}
+        width={width}
+        height={height}
         alt={alt}
         draggable={false}
         initial={{ opacity: 0 }}
@@ -61,28 +48,32 @@ export default function Image({
         transition={{ duration: transitionDuration }}
         onLoad={() => setIsLoaded(true)}
         style={{
-          width: "100%",
-          height: "100%",
-          objectFit,
-          borderRadius: typeof borderRadius === "number" ? `${borderRadius}px` : borderRadius,
+          display: "block",
+          //width: "100%",
+          //height: "100%",
+          //objectFit,
+          //borderRadius: typeof borderRadius === "number" ? `${borderRadius}px` : borderRadius,
           background: backgroundColor,
-          position: "relative",
-          zIndex: 0,
+          //position: "relative",
+          //zIndex: 0,
         }}
       />
     </ImageWrapper>
   );
 }
 
-const ImageWrapper = styled.div<{
-  width: number | string;
-  height: number | string;
-  borderRadius: number | string;
+const ImageWrapper = styled.picture<{
+  $borderRadius: number | string;
+  $placeholderUrl: string;
+  $objectFit: string;
 }>`
-  position: relative;
-  width: ${(props) => (typeof props.width === "number" ? `${props.width}px` : props.width)};
-  height: ${(props) => (typeof props.height === "number" ? `${props.height}px` : props.height)};
+  display: block;
+  // position: relative;
   border-radius: ${(props) =>
-    typeof props.borderRadius === "number" ? `${props.borderRadius}px` : props.borderRadius};
+    typeof props.$borderRadius === "number" ? `${props.$borderRadius}px` : props.$borderRadius};
   overflow: hidden;
+  backgroundimage: ${(props) => props.$placeholderUrl};
+  backgroundsize: ${(props) => props.$objectFit};
+  backgroundposition: center;
+  backgroundrepeat: no-repeat;
 `;
