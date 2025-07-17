@@ -23,6 +23,7 @@ import chrome3ScreenshotSrc from "url:assets/screenshots/unpartitioned-state/raw
 import inAppScreenshotSrc from "url:assets/screenshots/unpartitioned-state/raw-in-app-dark.png";
 
 import styles from "./unpartitioned-state.module.scss";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 const pretendToBeBrave = false;
 const isBrave = pretendToBeBrave || window.navigator.brave;
@@ -124,6 +125,16 @@ export function UnpartitionedStateMissingEmbeddedView() {
       }
     }
   }, [unpartitionedStateStatus]);
+
+  useAsyncEffect(async () => {
+    const permissionTest = await navigator.permissions.query({
+      name: "storage-access" as PermissionName,
+    });
+
+    permissionTest.addEventListener("change", () => {
+      console.log("Permissions have changed =", permissionTest.state);
+    });
+  }, []);
 
   const needsConfirmation = !unpartitionedStateConfirmed && authStatus === "noAuth";
   const requestAccessButtonText =

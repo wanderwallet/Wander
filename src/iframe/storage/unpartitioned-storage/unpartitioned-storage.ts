@@ -26,14 +26,6 @@ const timesInstantiated: Record<StorageType, number> = {
   sessionStorage: 0,
 };
 
-const permissionTest = await navigator.permissions.query({
-  name: "storage-access" as PermissionName,
-});
-
-permissionTest.addEventListener("change", () => {
-  console.log("Permissions have changed =", permissionTest.state);
-});
-
 export class EnhancedStorage implements Storage {
   public storage: Storage;
 
