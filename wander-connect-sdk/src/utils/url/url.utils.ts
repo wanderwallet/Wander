@@ -13,6 +13,7 @@ const PARAM_CLIENT_ID = "client-id";
 const PARAM_THEME = "theme";
 const PARAM_ANCESTOR_ORIGIN = "ancestor-origin";
 const PARAM_HIDE_BE = "hide-be";
+const PARAM_INJECTED_BE = "injected-be";
 const PARAM_SERVER_BASE_URL = "server-base-url";
 
 export interface getWanderConnectAppURL {
@@ -20,10 +21,18 @@ export interface getWanderConnectAppURL {
   clientId: string;
   theme: ThemeSetting;
   hideBE?: boolean;
+  injectedBE?: boolean;
   baseServerURL?: string;
 }
 
-export function getWanderConnectAppURL({ baseURL, clientId, theme, hideBE, baseServerURL }: getWanderConnectAppURL) {
+export function getWanderConnectAppURL({
+  baseURL,
+  clientId,
+  theme,
+  hideBE,
+  injectedBE,
+  baseServerURL,
+}: getWanderConnectAppURL) {
   const url = new URL(baseURL);
   const { searchParams } = url;
 
@@ -33,6 +42,7 @@ export function getWanderConnectAppURL({ baseURL, clientId, theme, hideBE, baseS
 
   // Optional:
   if (hideBE) searchParams.set(PARAM_HIDE_BE, "1");
+  if (injectedBE) searchParams.set(PARAM_INJECTED_BE, "1");
   if (baseServerURL) searchParams.set(PARAM_SERVER_BASE_URL, baseServerURL);
 
   return url.toString();
