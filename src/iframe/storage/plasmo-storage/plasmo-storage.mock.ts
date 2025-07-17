@@ -1,10 +1,7 @@
 import { Storage as PlasmoStorage, type StorageCallbackMap, type StorageWatchCallback } from "@plasmohq/storage";
-import {
-  EnhancedStorage,
-  type ItemStorageOptions,
-  StorageManager,
-} from "../unpartitioned-storage/unpartitioned-storage";
-import { resolve } from "url";
+import { EnhancedStorage } from "../unpartitioned-storage/unpartitioned-storage";
+import type { ItemStorageOptions } from "~iframe/storage/storage-manager/storage-manager.utils";
+import type { StorageManager } from "~iframe/storage/storage-manager/storage-manager";
 
 export interface StorageMockInterface extends PlasmoStorage {
   setItem<T>(key: string, value: T, options?: ItemStorageOptions): Promise<void>;

@@ -134,7 +134,7 @@ async function fetchFirstAvailableAuthShare(
       const { id: walletId, address: walletAddress, deviceShare } = wallet;
 
       try {
-        if (deviceShare === null) {
+        if (deviceShare === null || wallet.status !== "ENABLED") {
           // If the device share is not present in the device, skip, otherwise
           // `WalletUtils.generateShareHashAndPrivateKey()` will throw an error.
           continue;

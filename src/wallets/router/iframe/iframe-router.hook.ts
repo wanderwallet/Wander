@@ -33,13 +33,16 @@ export function useEmbeddedOverride(location?: RoutePath) {
     return "/__OVERRIDES/cover";
   }
 
-  if (unpartitionedStateStatus !== "supported" && !unpartitionedStateConfirmed && authStatus == "noAuth") {
+  if (unpartitionedStateStatus !== "supported" && !unpartitionedStateConfirmed && authStatus === "noAuth") {
     return routeTrapMatches(
       location,
       [EmbeddedPaths.SupportUnpartitionedStateMissing],
       EmbeddedPaths.SupportUnpartitionedStateMissing,
     );
   }
+
+  // Always allowed to go here:
+  if (unpartitionedStateStatus !== "supported" && location === EmbeddedPaths.SupportUnpartitionedStateMissing) return;
 
   if (authStatus === "noAuth" || authStatus === "authLoading" || authStatus === "authError") {
     return routeTrapMatches(
