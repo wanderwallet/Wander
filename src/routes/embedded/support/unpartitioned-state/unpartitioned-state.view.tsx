@@ -204,7 +204,8 @@ export function UnpartitionedStateMissingEmbeddedView() {
       {couldProbablyGetAccess ? (
         <Snackbar
           variant="warning"
-          children="Your browser seems to be supported, but we could not get access browser storage. Please, log out to try again."
+          children="Your browser should be supported, but we could not access the browser's storage. Please, log out to try again."
+          className={styles.couldProbablyGetAccessDisclaimer}
         />
       ) : null}
     </>
