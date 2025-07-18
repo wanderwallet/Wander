@@ -19,8 +19,6 @@ export function AuthAddWalletEmbeddedView() {
     generateTempWallet();
   }, []);
 
-  // TODO: Remember last selection and highlight that one / show it in the main screen (not in "More")
-
   const handleRegisterWallet = useCallback(async (source: WalletSourceType) => {
     setIsLoading(true);
     await registerWallet(source);

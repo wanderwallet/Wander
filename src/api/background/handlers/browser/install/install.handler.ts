@@ -6,6 +6,7 @@ import { handleGatewayUpdateAlarm } from "~api/background/handlers/alarms/gatewa
 import { openOrSelectWelcomePage } from "~wallets";
 import { ExtensionStorage } from "~utils/storage";
 import { resetAllPermissions } from "./permissions.handler";
+import { scheduleFairLaunchTokensAlarm } from "~utils/fair_launch/fair_launch.alarms";
 
 /**
  * On extension installed event handler
@@ -48,4 +49,5 @@ export async function handleInstall(details: Runtime.OnInstalledDetailsType) {
   // wayfinder
   await scheduleGatewayUpdate();
   await handleGatewayUpdateAlarm();
+  await scheduleFairLaunchTokensAlarm();
 }

@@ -21,6 +21,7 @@ import { useStorage } from "@plasmohq/storage/hook";
 import { useArPrice } from "~lib/coingecko";
 import { defaultConfig } from "./aoTokens/config";
 import { connect } from "@permaweb/aoconnect";
+import { retryWithDelay } from "~utils/promises/retry";
 
 export const defaultOptions = {
   refetchInterval: 300_000,
@@ -84,13 +85,19 @@ export function useTokenBalance(token: TokenInfo, address: string, refresh?: boo
     queryKey: ["tokenBalance", token.processId, address],
     queryFn: async () => {
       try {
-        const balance = await fetchTokenBalance(token, address, refresh);
+        const balance = await retryWithDelay(
+          () => fetchTokenBalance(token, address, refresh),
+          4,
+          1000,
+          (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 30000),
+        );
         return balance || "0";
       } catch (error) {
         throw error;
       }
     },
     ...defaultOptions,
+    retry: false,
     select: (data) => data || "0",
     enabled: !!address && !!token.processId && isFinite(token?.Denomination),
   });

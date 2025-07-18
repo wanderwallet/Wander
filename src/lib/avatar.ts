@@ -3,6 +3,7 @@ import { getActiveKeyfile } from "~wallets";
 import { freeDecryptedWallet } from "~wallets/encryption";
 import { createData, ArweaveSigner } from "@dha-team/arbundles";
 import { uploadDataToTurbo } from "~api/modules/dispatch/uploader";
+import { isAddress } from "~utils/assertions";
 
 const MAX_FILE_SIZE = 500 * 1024; // 500KB
 
@@ -64,6 +65,9 @@ export async function uploadUserAvatar(avatar: File) {
 
 export const getUserAvatar = async (txId: string) => {
   try {
+    // validate txId
+    isAddress(txId);
+
     const data = await arweave.transactions.getData(txId, { decode: true });
     let mimeType = "image/png";
 
@@ -78,7 +82,7 @@ export const getUserAvatar = async (txId: string) => {
       }
     }
 
-    const blob = new Blob([buffer], { type: mimeType });
+    const blob = new Blob([buffer as BlobPart], { type: mimeType });
     const imageUrl = blob ? URL.createObjectURL(blob) : null;
     return imageUrl;
   } catch (e) {
