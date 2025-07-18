@@ -269,3 +269,9 @@ declare namespace NodeJS {
     BETA_VERSION?: string;
   }
 }
+
+declare global {
+  interface Navigator {
+    brave: any;
+  }
+}

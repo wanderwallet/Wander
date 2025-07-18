@@ -163,11 +163,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
   useEffect(() => {
     function handleUnpartitionedStateStatusChange({ unpartitionedStateStatus }: UnpartitionedStateStatusChangeData) {
-      console.log("unpartitionedStateStatus EVENT =", unpartitionedStateStatus);
       setUnpartitionedStateStatus(unpartitionedStateStatus);
     }
-
-    console.log("Started listening for unpartitionedStateStatus EVENT");
 
     addUnpartitionedStateStatusChangeListener(handleUnpartitionedStateStatusChange);
 
