@@ -22,7 +22,7 @@ import { useBalance } from "~wallets/hooks";
 import { useTokenBalance } from "~tokens/hooks";
 import { BalanceFetchError, NetworkError } from "~utils/error/error.utils";
 import { ToggleSwitch } from "~routes/popup/subscriptions/subscriptionDetails";
-import Image from "~components/common/Image";
+import Image from "~components/common/Image/Image";
 import { AO_PROCESS_ID } from "~tokens/aoTokens/ao";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
@@ -124,7 +124,13 @@ export default function Token({ onClick, disableClickEffect, disableCursor, ...p
       {(!aoConfettiShown || ref.current) && AO_PROCESS_ID === props.id && +fractBalance > 0 && <Canvas ref={ref} />}
       <InnerWrapper width={hasActionButton ? "86%" : "100%"} onClick={onClick}>
         <LogoAndDetails>
-          <Logo src={logo || ""} alt="" key={props.id} />
+          <Logo
+            src={logo || ""}
+            alt={`${props.name || props.ticker || "token"} logo`}
+            key={props.id}
+            width={40}
+            height={40}
+          />
           <div>
             <div style={{ display: "flex", gap: "0.5rem" }}>
               <TokenName>{props.name || props.ticker || "???"}</TokenName>
@@ -359,7 +365,7 @@ export const LogoWrapper = styled(Squircle)<{ small?: boolean }>`
 `;
 
 export const Logo = styled(Image).attrs({
-  draggable: false,
+  backgroundColor: "#fffefc",
 })`
   position: relative;
   width: 40px;
@@ -369,18 +375,6 @@ export const Logo = styled(Image).attrs({
   object-fit: cover;
   overflow: hidden;
   z-index: 1;
-
-  &::before {
-    content: "";
-    position: absolute;
-    top: 1px;
-    left: 1px;
-    right: 1px;
-    bottom: 1px;
-    background-color: #fffefc;
-    border-radius: 28px;
-    z-index: -1;
-  }
 
   ${(props) =>
     props.theme.displayTheme === "light" &&
@@ -450,118 +444,3 @@ interface Props extends Omit<Token, "balance"> {
   disableClickEffect?: boolean;
   disableCursor?: boolean;
 }
-
-// TODO: can this component be removed?
-export function ArToken({ onClick, disableClickEffect, disableCursor, ...props }: ArTokenProps) {
-  // currency setting
-  const [currency] = useSetting<string>("currency");
-
-  // load arweave price
-  const { data: price = "0" } = useArPrice(currency);
-  const { data: balance = "0", isLoading, error } = useBalance();
-
-  // active address
-  const [activeAddress] = useStorage<string>({
-    key: "active_address",
-    instance: ExtensionStorage,
-  });
-
-  // load ar balance
-  const [displayBalance, setDisplayBalance] = useState("0");
-  const [totalBalance, setTotalBalance] = useState("");
-  const [showTooltip, setShowTooltip] = useState(false);
-
-  const hasActionButton = props?.onAddClick || props?.onRemoveClick || props?.onSettingsClick || props?.onHideClick;
-
-  useAsyncEffect(async () => {
-    if (!activeAddress) return;
-
-    const formattedBalance = formatBalance(balance);
-    setTotalBalance(formattedBalance.tooltipBalance);
-    setShowTooltip(formattedBalance.showTooltip);
-    setDisplayBalance(formattedBalance.displayBalance);
-  }, [activeAddress, balance]);
-
-  const formattedFiatPrice = useMemo(() => {
-    if (!price) return undefined;
-    return formatFiatBalance(price, currency);
-  }, [price, currency]);
-
-  const fiatBalance = useMemo(() => {
-    if (!price) return undefined;
-    return formatFiatBalance(BigNumber(balance).multipliedBy(price).toString(), currency);
-  }, [balance, price, currency]);
-
-  return (
-    <Wrapper onClick={onClick} disableClickEffect={disableClickEffect} disableCursor={disableCursor}>
-      <InnerWrapper width={hasActionButton ? "86%" : "100%"} onClick={onClick}>
-        <LogoAndDetails>
-          <Logo src={arLogoLight} />
-          <div>
-            <TokenName>AR</TokenName>
-            {hasActionButton ? (
-              <FiatBalance>{balance}</FiatBalance>
-            ) : (
-              formattedFiatPrice && <FiatBalance>{formattedFiatPrice}</FiatBalance>
-            )}
-          </div>
-        </LogoAndDetails>
-        {!hasActionButton && (
-          <BalanceSection>
-            {isLoading ? (
-              <Skeleton width="80px" height="20px" />
-            ) : error instanceof BalanceFetchError ? (
-              <MessageTooltip content={DegradedMessage} position="left">
-                <WarningIcon />
-              </MessageTooltip>
-            ) : error instanceof NetworkError ? (
-              <MessageTooltip content={NetworkErrorMessage} position="left">
-                <NetworkErrorIcon />
-              </MessageTooltip>
-            ) : (
-              <>
-                {showTooltip ? (
-                  <BalanceTooltip content={totalBalance} position="topEnd">
-                    <NativeBalance>{displayBalance}</NativeBalance>
-                  </BalanceTooltip>
-                ) : (
-                  <NativeBalance>{displayBalance}</NativeBalance>
-                )}
-              </>
-            )}
-
-            <FiatBalance>{fiatBalance}</FiatBalance>
-          </BalanceSection>
-        )}
-      </InnerWrapper>
-      {hasActionButton && (
-        <div style={{ zIndex: 1 }}>
-          {props?.onAddClick ? (
-            <Button fullWidth onClick={props.onAddClick} style={{ padding: 0, minWidth: 40, maxWidth: 40 }}>
-              <PlusIcon />
-            </Button>
-          ) : props?.onSettingsClick ? (
-            <Button fullWidth onClick={props.onSettingsClick} style={{ padding: 0, minWidth: 40, maxWidth: 40 }}>
-              <SettingsIcon />
-            </Button>
-          ) : props?.onHideClick ? (
-            <ToggleSwitch
-              width={51}
-              height={31}
-              checked={!props.hidden}
-              setChecked={(checked) => props.onHideClick(!checked)}
-            />
-          ) : (
-            props?.onRemoveClick && (
-              <Button fullWidth onClick={props.onRemoveClick} style={{ padding: 0, minWidth: 40, maxWidth: 40 }}>
-                <TrashIcon />
-              </Button>
-            )
-          )}
-        </div>
-      )}
-    </Wrapper>
-  );
-}
-
-interface ArTokenProps extends Props {}

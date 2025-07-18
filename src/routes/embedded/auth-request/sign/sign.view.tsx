@@ -1,6 +1,6 @@
 import { Row, Text, Box, Divider, Snackbar } from "~components/embed/ui";
 import { useCurrentAuthRequest } from "~utils/auth/auth.hooks";
-import Image from "~components/common/Image";
+import Image from "~components/common/Image/Image";
 import { useMemo, useState } from "react";
 import Application, { type AppInfo } from "~applications/application";
 import { defaultGateway, type Gateway } from "~gateways/gateway";
@@ -68,8 +68,7 @@ export function EmbeddedSignAuthRequestView() {
           <Image
             height={48}
             width={48}
-            borderRadius={10}
-            objectFit="contain"
+            borderRadius="rounded"
             style={{ border: "1px solid #D6D6DD", flexShrink: 0 }}
             src={appInfo?.logo}
           />

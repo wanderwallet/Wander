@@ -12,7 +12,7 @@ import arLogo from "url:/assets/ecosystem/ar-logo.svg";
 import arLogoDark from "url:/assets/ar/logo_dark.png";
 import { getUserAvatar } from "~lib/avatar";
 import { useLocation } from "~wallets/router/router.utils";
-import CommonImage from "~components/common/Image";
+import CommonImage from "~components/common/Image/Image";
 import { AR_PROCESS_ID } from "~tokens/aoTokens/ao";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
@@ -82,7 +82,7 @@ export default function TokenListItem({ token, active, onClick }: Props) {
         hideSquircle
         active={active}
         dragControls={null}
-        icon={<TokenLogo src={image} />}
+        icon={<TokenLogo src={image} alt={`${token.name || token.ticker || "token"} logo`} width={40} height={40} />}
         height={64}
       />
     </Reorder.Item>
@@ -102,8 +102,6 @@ const DescriptionWrapper = styled.div`
 `;
 
 export const TokenLogo = styled(CommonImage).attrs({
-  alt: "token-logo",
-  draggable: false,
   backgroundColor: "#fffefc",
 })`
   height: 40px;

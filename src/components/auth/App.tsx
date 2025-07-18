@@ -49,9 +49,14 @@ export default function App({ appIcon, appName, appUrl, gateway, allowance, show
       )}
       <SidePaddingSection>
         <ListItem
-          title={<PrimaryText>{appName || appUrl}</PrimaryText>}
+          title={<PrimaryText style={{ display: "block" }}>{appName || appUrl}</PrimaryText>}
           img={appIcon}
-          subtitle={<SecondaryText>{`${browser.i18n.getMessage("gateway")}: ${gateway?.host || ""}`}</SecondaryText>}
+          subtitle={
+            <SecondaryText
+              style={{
+                display: "block",
+              }}>{`${browser.i18n.getMessage("gateway")}: ${gateway?.host || ""}`}</SecondaryText>
+          }
           style={{ pointerEvents: "none" }}
         />
         {/* <Wrapper displayTheme={theme}>

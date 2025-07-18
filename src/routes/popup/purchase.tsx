@@ -9,7 +9,7 @@ import { ExtensionStorage } from "~utils/storage";
 import SliderMenu from "~components/SliderMenu";
 import { useTheme } from "styled-components";
 import arLogo from "url:/assets/ecosystem/ar-logo.svg";
-import CommonImage from "~components/common/Image";
+import CommonImage from "~components/common/Image/Image";
 import getSymbolFromCurrency from "currency-symbol-map";
 import { WarningIcon } from "~components/popup/Token";
 import { Flex } from "~components/common/Flex";
@@ -287,7 +287,7 @@ const AR = () => {
         alignItems: "center",
         gap: "4px",
       }}>
-      <TokenLogo src={arLogo} />
+      <TokenLogo src={arLogo} alt="AR logo" width={40} height={40} />
       <Text noMargin>AR</Text>
     </div>
   );
@@ -312,7 +312,7 @@ const Tag = ({
         gap: "8px",
       }}
       onClick={onClick}>
-      <TokenLogo src={currencyLogo} />
+      <TokenLogo src={currencyLogo} alt={`${currency} logo`} width={40} height={40} />
       <Text weight="medium" noMargin>
         {currency}
       </Text>
@@ -397,7 +397,15 @@ const CurrencySelectorScreen = ({
               title={currency.symbol}
               subtitle={currency.name}
               hideSquircle
-              icon={<TokenLogo src={currency.logo} style={{ height: 40, width: 40 }} backgroundColor="transparent" />}
+              icon={
+                <TokenLogo
+                  src={currency.logo}
+                  alt={`${currency.name} logo`}
+                  width={40}
+                  height={40}
+                  backgroundColor="transparent"
+                />
+              }
               onClick={() => {
                 updateCurrency(currency);
                 onClose();
@@ -450,15 +458,12 @@ export const Line = styled.div<{ margin?: string }>`
 `;
 
 export const TokenLogo = styled(CommonImage).attrs((props) => ({
-  alt: "token-logo",
-  draggable: false,
+  borderRadius: "rounded",
   backgroundColor: props.backgroundColor || "#fffefc",
 }))<{ backgroundColor?: string }>`
   height: 24px;
   width: 24px;
   border-radius: 50%;
-  display: block;
-  vertical-align: middle;
 `;
 
 const WarningWrapper = styled.div`

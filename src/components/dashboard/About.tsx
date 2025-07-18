@@ -5,7 +5,7 @@ import { getPreReleaseVersionLabel, getVersionLabel } from "~utils/runtime";
 import { Flex } from "~components/common/Flex";
 import WanderIcon from "url:assets/icon.svg";
 import IconText from "~components/IconText";
-import Image from "~components/common/Image";
+import Image from "~components/common/Image/Image";
 import { Check } from "@untitled-ui/icons-react";
 
 export function AboutDashboardView() {
@@ -14,7 +14,7 @@ export function AboutDashboardView() {
   return (
     <Flex direction="column" justify="center" align="center" padding="2rem 0">
       <Flex direction="column" gap={32} justify="center" align="center">
-        <Image src={WanderIcon} alt="Wander Icon" width={126.314} height={59.199} />
+        <Image src={WanderIcon} alt="Wander Icon" width={126.314} height={59.199} placeholderURL="none" />
         <IconText width={256} height={52.866} />
       </Flex>
       <Spacer y={2} />

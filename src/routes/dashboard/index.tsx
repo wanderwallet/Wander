@@ -23,7 +23,7 @@ import { HorizontalLine } from "~components/HorizontalLine";
 import { Flex } from "~components/common/Flex";
 import WanderIcon from "url:assets/icon.svg";
 import IconText from "~components/IconText";
-import Image from "~components/common/Image";
+import Image from "~components/common/Image/Image";
 
 export interface SettingsDashboardViewParams {
   setting?: string;
@@ -85,7 +85,7 @@ export function SettingsDashboardView({ params }: SettingsDashboardViewProps) {
       <Panel normalPadding showRightBorder isMenu>
         <Flex gap={24} direction="column" padding="1rem 0.5rem">
           <Flex gap={10}>
-            <Image src={WanderIcon} alt="Wander Icon" width={57.61} height={27} />
+            <Image src={WanderIcon} alt="Wander Icon" width={57.61} height={27} placeholderURL="none" />
             <IconText width={116.759} height={24.111} />
           </Flex>
           <SettingsTitle>{browser.i18n.getMessage("settings")}</SettingsTitle>
@@ -259,7 +259,7 @@ const Panel = styled.div<{
     ${(props) =>
       props.isMenu &&
       `
-      height: 400px;  
+      height: 400px;
       min-height: unset;
     `}
 
@@ -277,7 +277,7 @@ const Panel = styled.div<{
     ${(props) =>
       props.isMenu &&
       `
-      height: 400px;  
+      height: 400px;
     `}
 
     &:nth-child(2) {
