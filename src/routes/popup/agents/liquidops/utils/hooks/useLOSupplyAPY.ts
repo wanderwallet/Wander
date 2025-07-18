@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQueries, useQuery } from "@tanstack/react-query";
 import { LiquidOpsClient } from "../LiquidOps";
 
 const defaultOptions = {
@@ -10,21 +10,35 @@ const defaultOptions = {
   refetchOnWindowFocus: true,
 };
 
+async function getLOSupplyAPY(ticker: string) {
+  try {
+    const { client } = await LiquidOpsClient();
+    const apr = await client.getSupplyAPR({ token: ticker.toUpperCase() });
+
+    return apr || 0;
+  } catch (error) {
+    throw error;
+  }
+}
+
 export function useLOSupplyAPY(ticker: string) {
   return useQuery({
     queryKey: ["liquidopsTokenAPY", ticker],
-    queryFn: async () => {
-      try {
-        const { client } = await LiquidOpsClient();
-        const apr = await client.getSupplyAPR({ token: ticker.toUpperCase() });
-
-        return apr || 0;
-      } catch (error) {
-        throw error;
-      }
-    },
+    queryFn: () => getLOSupplyAPY(ticker),
     ...defaultOptions,
     select: (data) => data || 0,
     enabled: !!ticker,
+  });
+}
+
+export function useLOSupplyAPYs(tickers: string[]) {
+  return useQueries({
+    queries: tickers.map((ticker) => ({
+      queryKey: ["liquidopsTokenAPY", ticker],
+      queryFn: () => getLOSupplyAPY(ticker),
+      ...defaultOptions,
+      select: (data) => data || 0,
+      enabled: !!ticker,
+    })),
   });
 }
