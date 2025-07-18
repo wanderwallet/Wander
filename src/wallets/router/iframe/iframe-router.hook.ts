@@ -48,7 +48,6 @@ export function useEmbeddedOverride(location?: RoutePath) {
     return routeTrapMatches(
       location,
       [
-        EmbeddedPaths.SupportUnpartitionedStateMissing,
         EmbeddedPaths.Auth,
         EmbeddedPaths.AuthEmailOtp,
         EmbeddedPaths.AuthEmailSignInPassword,
