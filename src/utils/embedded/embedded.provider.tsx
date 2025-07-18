@@ -164,8 +164,12 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     function handleBanner(event: UnpartitionedStateStatusChangeEvent) {
       const { unpartitionedStateStatus } = event.detail;
 
+      console.log("unpartitionedStateStatus EVENT =", unpartitionedStateStatus);
+
       if (unpartitionedStateStatus) setUnpartitionedStateStatus(unpartitionedStateStatus);
     }
+
+    console.log("Started listening for unpartitionedStateStatus EVENT");
 
     document.addEventListener(UNPARTITIONED_STATE_STATUS_CHANGE_EVENT, handleBanner);
 
