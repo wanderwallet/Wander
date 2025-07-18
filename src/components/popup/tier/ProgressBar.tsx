@@ -67,6 +67,8 @@ export function ProgressBar({
       const currentTier = await ExtensionStorage.get<ActiveTier>(`active_tier_${activeAddress}`);
 
       if (segmentData.name !== currentTier.tier || currentTier.totalHolders !== -1) {
+        // Select tier manually:
+
         const index = segments.findIndex(({ name }) => name === segmentData.name);
         const rank = segments.length - index;
         const progress = segmentData.startPercentage + (segmentData.endPercentage - segmentData.startPercentage) / 2;
@@ -88,6 +90,8 @@ export function ProgressBar({
 
         back();
       } else if (currentTier.totalHolders === -1) {
+        // Reset tier to the real value:
+
         await ExtensionStorage.remove(`active_tier_${activeAddress}`);
 
         await queryClient.refetchQueries({
@@ -95,8 +99,6 @@ export function ProgressBar({
         });
 
         back();
-      } else {
-        console.log("DO NOTHING");
       }
     },
     [queryClient, activeAddress, segments, back],
