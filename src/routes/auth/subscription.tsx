@@ -9,8 +9,8 @@ import {
   PaymentDetails,
   SubscriptionListItem,
   SubscriptionText,
-  ToggleSwitch,
 } from "~routes/popup/subscriptions/subscriptionDetails";
+import { ToggleSwitch } from "~components/ToggleSwitch";
 import { Content, Title } from "~components/popup/list/SubscriptionListItem";
 import dayjs from "dayjs";
 import { addSubscription } from "~subscriptions";

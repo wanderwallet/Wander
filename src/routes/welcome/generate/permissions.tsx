@@ -7,7 +7,7 @@ import { useLocation } from "~wallets/router/router.utils";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import styled from "styled-components";
 import { Button, Text, Spacer } from "@arconnect/components-rebrand";
-import { ToggleSwitch } from "~routes/popup/subscriptions/subscriptionDetails";
+import { ToggleSwitch } from "~components/ToggleSwitch";
 import { useStorage } from "@plasmohq/storage/hook";
 import { ExtensionStorage } from "~utils/storage";
 import { loadTokens } from "~tokens/token";

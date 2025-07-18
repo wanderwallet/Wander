@@ -9,7 +9,7 @@ import styled, { useTheme } from "styled-components";
 import { createCoinWithAnimation } from "~api/modules/sign/animation";
 import { arconfettiIcon } from "~api/modules/sign/utils";
 import { ErrorTypes } from "~utils/error/error.utils";
-import { ToggleSwitch } from "~routes/popup/subscriptions/subscriptionDetails";
+import { ToggleSwitch } from "~components/ToggleSwitch";
 
 export interface SettingDashboardViewProps {
   setting: SettingType;
