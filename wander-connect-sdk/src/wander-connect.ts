@@ -299,6 +299,7 @@ export class WanderConnect {
       clientId,
       theme,
       hideBE,
+      injectedBE: this.isBrowserWalletEnabled,
       baseServerURL,
     });
 
