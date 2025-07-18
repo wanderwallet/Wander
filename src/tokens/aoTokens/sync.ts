@@ -7,6 +7,7 @@ import { getActiveAddress } from "~wallets";
 import { type TokenInfo, Id, Owner, getTokenInfoFromData } from "./ao";
 import { withRetry } from "~utils/promises/retry";
 import { timeoutPromise } from "~utils/promises/timeout";
+import { Mutex } from "~utils/mutex";
 
 /** Tokens storage name */
 export const AO_TOKENS = "ao_tokens";
@@ -15,6 +16,13 @@ export const AO_TOKENS_IDS = "ao_tokens_ids";
 export const AO_TOKENS_IMPORT_TIMESTAMP = "ao_tokens_import_timestamp";
 export const AO_TOKENS_LAST_BLOCK_HEIGHT = "ao_tokens_last_block_height";
 export const AO_TOKENS_AUTO_IMPORT_RESTRICTED_IDS = "ao_tokens_auto_import_restricted_ids";
+
+/**
+ * Shared mutex for protecting AO token storage operations.
+ * This ensures that only one process can modify the AO_TOKENS storage at a time,
+ * preventing race conditions between different token import handlers.
+ */
+export const tokenStorageMutex = new Mutex();
 
 /** Variables for sync */
 let isSyncInProgress = false;
