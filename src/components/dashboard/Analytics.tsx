@@ -3,7 +3,7 @@ import browser from "webextension-polyfill";
 import styled from "styled-components";
 import { ExtensionStorage } from "~utils/storage";
 import { useStorage } from "@plasmohq/storage/hook";
-import { ToggleSwitch } from "~routes/popup/subscriptions/subscriptionDetails";
+import { ToggleSwitch } from "~components/ToggleSwitch";
 import { Share03 } from "@untitled-ui/icons-react";
 import { Flex } from "~components/common/Flex";
 

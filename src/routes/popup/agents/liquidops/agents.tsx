@@ -23,8 +23,8 @@ export function LiquidOpsAgentsView() {
     );
   }, [activeTokens]);
 
-  const { data: apys = {} } = useAPYOrder();
-  const apySort = (a: ActiveAgentToken, b: ActiveAgentToken) => apys[b.ticker] || 0 - apys[a.ticker] || 0;
+  const apys = useAPYOrder();
+  const apySort = (a: ActiveAgentToken, b: ActiveAgentToken) => (apys[b.ticker] || 0) - (apys[a.ticker] || 0);
 
   useEffect(() => {
     trackPage(PageType.LIQUID_OPS_AGENTS);

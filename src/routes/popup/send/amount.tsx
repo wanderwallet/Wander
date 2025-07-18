@@ -510,41 +510,49 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
         </BottomActions>
 
         <SliderMenu
-          height={"90%"}
+          height="90%"
           paddingVertical={32}
           title={browser.i18n.getMessage("select_token")}
           isOpen={showTokenSelector}
           onClose={() => {
             setShownTokenSelector(false);
           }}>
-          <Input variant="search" sizeVariant="small" fullWidth placeholder="Search token" {...tokenSearch.bindings} />
-          <Spacer y={1.5} />
-          <TokensList>
-            {assets.filter(filterFn).map((token) => (
-              <Token
-                key={token.id}
-                type={"asset"}
-                defaultLogo={token?.Logo}
-                id={token.id}
-                ticker={token.Ticker}
-                divisibility={token.Denomination}
-                fiatPrice={prices[token.id]}
-                onClick={() => updateSelectedToken(token.id)}
-              />
-            ))}
-          </TokensList>
-          <Spacer y={1.25} />
-          <CollectiblesList>
-            {collectibles.filter(filterFn).map((token, i) => (
-              <Collectible
-                id={token.id}
-                name={token.Name || token.Ticker}
-                divisibility={token.Denomination}
-                onClick={() => updateSelectedToken(token.id)}
-                key={i}
-              />
-            ))}
-          </CollectiblesList>
+          <Box>
+            <Input
+              variant="search"
+              sizeVariant="small"
+              fullWidth
+              placeholder="Search token"
+              {...tokenSearch.bindings}
+            />
+            <Spacer y={1.5} />
+            <TokensList>
+              {assets.filter(filterFn).map((token) => (
+                <Token
+                  key={token.id}
+                  type={"asset"}
+                  defaultLogo={token?.Logo}
+                  id={token.id}
+                  ticker={token.Ticker}
+                  divisibility={token.Denomination}
+                  fiatPrice={prices[token.id]}
+                  onClick={() => updateSelectedToken(token.id)}
+                />
+              ))}
+            </TokensList>
+            <Spacer y={1.25} />
+            <CollectiblesList>
+              {collectibles.filter(filterFn).map((token, i) => (
+                <Collectible
+                  id={token.id}
+                  name={token.Name || token.Ticker}
+                  divisibility={token.Denomination}
+                  onClick={() => updateSelectedToken(token.id)}
+                  key={i}
+                />
+              ))}
+            </CollectiblesList>
+          </Box>
         </SliderMenu>
       </Wrapper>
     </>

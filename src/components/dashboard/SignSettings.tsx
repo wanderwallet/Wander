@@ -2,7 +2,7 @@ import { Text, Input } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
 import styled from "styled-components";
 import { ExtensionStorage } from "~utils/storage";
-import { ToggleSwitch } from "~routes/popup/subscriptions/subscriptionDetails";
+import { ToggleSwitch } from "~components/ToggleSwitch";
 import { useStorage } from "~utils/storage";
 import { useState, useEffect } from "react";
 
