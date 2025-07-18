@@ -68,6 +68,8 @@ export class EnhancedStorage implements Storage {
     try {
       log(LOG_GROUP.STORAGE, `Requesting ${this.storageType} access with typed API`);
 
+      console.log("Getting handle...");
+
       // @ts-expect-error - Newer API with types may not be recognized by TypeScript
       const handle = await document.requestStorageAccess({
         [this.storageType]: true,
@@ -83,8 +85,11 @@ export class EnhancedStorage implements Storage {
         this.dispatchUnpartitionedStateStatusChange("limited");
       }
     } catch (error) {
+      console.log("CATCH", error);
       this.dispatchUnpartitionedStateStatusChange(error);
     }
+
+    console.log("this.status =", this.status);
 
     return this.status;
   }
