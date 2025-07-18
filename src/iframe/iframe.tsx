@@ -10,20 +10,10 @@ import { IFRAME_ROUTES } from "~wallets/router/iframe/iframe.routes";
 import { handleSyncLabelsAlarm } from "~api/background/handlers/alarms/sync-labels/sync-labels-alarm.handler";
 import { useEmbeddedLocation } from "~wallets/router/iframe/iframe-router.hook";
 import { EmbeddedProvider } from "~utils/embedded/embedded.provider";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "~components/embed/contexts/ThemeContext";
 import { ThemeSetup } from "~components/embed/ui/atoms/theme-setup/ThemeSetup";
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 300_000,
-      refetchInterval: 300_000,
-      retry: 2,
-      refetchOnWindowFocus: true,
-    },
-  },
-});
+import { queryClient } from "~utils/tanstack";
 
 export function WanderConnectApp() {
   useEffect(() => {

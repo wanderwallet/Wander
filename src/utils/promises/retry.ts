@@ -14,24 +14,19 @@ export async function retryWithDelay<T>(
   initialDelay: number = 1000,
   getDelay: (attempt: number) => number = () => initialDelay,
 ): Promise<T> {
-  let attempts = 0;
-
-  const attempt = async (): Promise<T> => {
+  for (let attempts = 0; attempts < maxAttempts; attempts++) {
     try {
       return await fn(attempts);
     } catch (error) {
-      attempts += 1;
-      if (attempts < maxAttempts) {
-        const currentDelay = getDelay(attempts);
-        // console.log(`Attempt ${attempts} failed, retrying...`)
-        return new Promise<T>((resolve) => setTimeout(() => resolve(attempt()), currentDelay));
-      } else {
+      if (attempts === maxAttempts - 1) {
         throw error;
       }
+      await sleep(getDelay(attempts));
     }
-  };
+  }
 
-  return attempt();
+  // This should never be reached due to throw in catch block
+  throw new Error("Max attempts reached");
 }
 
 /**
@@ -59,7 +54,7 @@ export async function retryWithDelayAndTimeout<T>(
     } catch (error) {
       if (attempt < maxAttempts) {
         // console.log(`Attempt ${attempt} failed: ${error.message}. Retrying in ${delay}ms...`);
-        await new Promise((resolve) => setTimeout(resolve, delay));
+        await sleep(delay);
       } else {
         throw error;
       }
