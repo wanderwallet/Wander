@@ -66,9 +66,10 @@ import {
 } from "~tokens/aoTokens/sync";
 import { loadTokens } from "~tokens/token";
 import {
+  addUnpartitionedStateStatusChangeListener,
   getUnpartitionedStateStatus,
-  UNPARTITIONED_STATE_STATUS_CHANGE_EVENT,
-  type UnpartitionedStateStatusChangeEvent,
+  removeUnpartitionedStateStatusChangeListener,
+  type UnpartitionedStateStatusChangeData,
 } from "~iframe/storage/unpartitioned-storage/unpartitioned-storage.utils";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { isomorphicOnMessage } from "~isomorphic-messaging";
@@ -161,19 +162,16 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
   // Unpartitioned state:
 
   useEffect(() => {
-    function handleBanner(event: UnpartitionedStateStatusChangeEvent) {
-      const { unpartitionedStateStatus } = event.detail;
-
+    function handleUnpartitionedStateStatusChange({ unpartitionedStateStatus }: UnpartitionedStateStatusChangeData) {
       console.log("unpartitionedStateStatus EVENT =", unpartitionedStateStatus);
-
-      if (unpartitionedStateStatus) setUnpartitionedStateStatus(unpartitionedStateStatus);
+      setUnpartitionedStateStatus(unpartitionedStateStatus);
     }
 
     console.log("Started listening for unpartitionedStateStatus EVENT");
 
-    document.addEventListener(UNPARTITIONED_STATE_STATUS_CHANGE_EVENT, handleBanner);
+    addUnpartitionedStateStatusChangeListener(handleUnpartitionedStateStatusChange);
 
-    return () => document.removeEventListener(UNPARTITIONED_STATE_STATUS_CHANGE_EVENT, handleBanner);
+    return () => removeUnpartitionedStateStatusChangeListener(handleUnpartitionedStateStatusChange);
   }, []);
 
   // Wallet props:

@@ -3,9 +3,7 @@ import { log, LOG_GROUP } from "~utils/log/log.utils";
 import {
   HAS_SIMPLE_STORAGE_API,
   setUnpartitionedStateStatus,
-  UNPARTITIONED_STATE_STATUS_CHANGE_EVENT,
   type UnpartitionedStateStatus,
-  type UnpartitionedStateStatusChangeEvent,
 } from "./unpartitioned-storage.utils";
 import { isError } from "~utils/error/error.utils";
 import {
@@ -227,17 +225,7 @@ export class EnhancedStorage implements Storage {
 
     log(LOG_GROUP.STORAGE, `Unpartitioned state access for ${this.storageType} = ${unpartitionedStateStatus}`);
 
-    setUnpartitionedStateStatus(unpartitionedStateStatus);
-
-    document.dispatchEvent(
-      new CustomEvent(UNPARTITIONED_STATE_STATUS_CHANGE_EVENT, {
-        detail: {
-          unpartitionedStateStatus,
-          error: this.error,
-        },
-        bubbles: true,
-      }) satisfies UnpartitionedStateStatusChangeEvent,
-    );
+    setUnpartitionedStateStatus(unpartitionedStateStatus, this.error);
 
     this.requestStorageAccessResolve(unpartitionedStateStatus);
 
