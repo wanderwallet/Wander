@@ -25,6 +25,7 @@ type UnpartitionedStateStatusChangeCallback = (data: UnpartitionedStateStatusCha
 const unpartitionedStateStatusChangeCallbacks = new Set<UnpartitionedStateStatusChangeCallback>();
 
 export function addUnpartitionedStateStatusChangeListener(fn: UnpartitionedStateStatusChangeCallback) {
+  fn({ unpartitionedStateStatus: _unpartitionedStateStatus });
   unpartitionedStateStatusChangeCallbacks.add(fn);
 }
 
