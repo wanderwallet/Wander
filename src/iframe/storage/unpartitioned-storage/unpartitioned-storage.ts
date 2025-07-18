@@ -88,8 +88,6 @@ export class EnhancedStorage implements Storage {
   async requestStorageAccess(): Promise<UnpartitionedStateStatus> {
     if (!isInsideIframe()) throw new Error("UnpartitionedStorage.foo() can only be called from within the iframe.");
 
-    console.trace("INITIAL STATUS IS =", this.status);
-
     // Unpartitioned state access already accepted, limited or unsupported:
     if (["supported", "limited", "unsupported"].includes(this.status)) {
       return this.status;

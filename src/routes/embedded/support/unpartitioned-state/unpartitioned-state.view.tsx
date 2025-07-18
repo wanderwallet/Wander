@@ -9,7 +9,6 @@ import Image from "~components/common/Image";
 import { toast } from "react-toastify";
 import { FormattedText } from "~components/embed/ui/atoms/formatted-text/FormattedText";
 import { useInterval } from "@swyg/corre";
-import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 import chromeLogoSrc from "url:assets/icons/browsers/chrome-logo.png";
 import edgeLogoSrc from "url:assets/icons/browsers/edge-logo.png";
@@ -94,15 +93,11 @@ export function UnpartitionedStateMissingEmbeddedView() {
     }
   }, [navigate]);
 
-  console.log("shouldTryToGetAccess =", shouldTryToGetAccess);
-
   useInterval(
     async () => {
       if (isRequestingPermission) return;
 
       const hasAccess = await document.hasStorageAccess();
-
-      console.log("hasAccess =", hasAccess);
 
       if (hasAccess) {
         const localStorage = await LocalStorage.getInstance();
@@ -125,16 +120,6 @@ export function UnpartitionedStateMissingEmbeddedView() {
       }
     }
   }, [unpartitionedStateStatus]);
-
-  useAsyncEffect(async () => {
-    const permissionTest = await navigator.permissions.query({
-      name: "storage-access" as PermissionName,
-    });
-
-    permissionTest.addEventListener("change", () => {
-      console.log("Permissions have changed =", permissionTest.state);
-    });
-  }, []);
 
   const needsConfirmation = !unpartitionedStateConfirmed && authStatus === "noAuth";
   const requestAccessButtonText =
