@@ -5,7 +5,7 @@ import { Spacer, Text, TooltipV2 } from "@arconnect/components";
 import browser from "webextension-polyfill";
 import { RadioWrapper, RadioItem } from "~components/dashboard/Setting";
 import HeadV2 from "~components/popup/HeadV2";
-import { ToggleSwitch } from "~routes/popup/subscriptions/subscriptionDetails";
+import { ToggleSwitch } from "~components/ToggleSwitch";
 import { InformationIcon } from "@iconicicons/react";
 import Checkbox from "~components/Checkbox";
 import { useLocation } from "~wallets/router/router.utils";
