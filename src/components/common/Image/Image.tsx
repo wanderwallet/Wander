@@ -4,6 +4,7 @@ import defaultPlaceholderUrl from "url:/assets/placeholder.png";
 import { sleep } from "~utils/promises/sleep";
 
 import styles from "./Image.module.scss";
+import { useTheme } from "~utils/theme";
 
 const fakeDelay = process.env.NODE_ENV === "development" ? 2500 : 0;
 
@@ -11,6 +12,7 @@ type BorderRadiusVariant = "none" | "rounded" | "circular";
 
 interface ImageProps {
   src: string;
+  srcDark?: string;
   width: number;
   height: number;
   alt?: string;
@@ -24,6 +26,7 @@ interface ImageProps {
 
 export default function Image({
   src,
+  srcDark,
   width,
   height,
   alt = "",
@@ -34,6 +37,8 @@ export default function Image({
   placeholderURL = defaultPlaceholderUrl,
   style,
 }: ImageProps) {
+  const displayTheme = useTheme();
+
   const [isLoaded, setIsLoaded] = useState(false);
 
   const pictureClassName = clsx(className, styles.root, {
@@ -61,9 +66,13 @@ export default function Image({
 
   return (
     <picture className={pictureClassName} style={pictureStyle}>
+      {srcDark ? (
+        <source srcSet={displayTheme === "light" ? src : srcDark} media="(prefers-color-scheme: dark)" />
+      ) : null}
+
       <img
         className={imgClassName}
-        src={src}
+        src={displayTheme === "dark" && srcDark ? srcDark : src}
         width={width}
         height={height}
         alt={alt}
