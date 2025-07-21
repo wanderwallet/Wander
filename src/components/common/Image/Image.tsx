@@ -52,7 +52,7 @@ export default function Image({
     "--imgHeight": fullWidth ? "auto" : `${height}px`,
     "--imgAspectRatio": fullWidth ? height / width : "auto",
     "--imgBackgroundColor": backgroundColor,
-    "--imgPlaceholderBackgroundURL": placeholderURL ? `url(${placeholderURL})` : "none",
+    "--imgPlaceholderBackgroundURL": placeholderURL && placeholderURL !== "none" ? `url(${placeholderURL})` : "none",
     ...style,
   };
 
