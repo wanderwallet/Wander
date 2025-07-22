@@ -58,7 +58,7 @@ export function HelpView() {
 
   return (
     <>
-      <HeadV2 title={browser.i18n.getMessage("help")} />
+      <HeadV2 title={browser.i18n.getMessage("help")} showOptions={false} />
       <Wrapper>
         <Flex direction="column" gap="12px">
           {items.map((setting) => (
