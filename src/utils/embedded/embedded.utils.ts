@@ -1,5 +1,4 @@
 import { createSupabaseClient, createTRPCClient } from "embed-api";
-import { jwtDecode } from "jwt-decode";
 import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 import { LocalStorage } from "~iframe/storage/unpartitioned-storage/local-storage";
 import { isInsideIframe, EMBEDDED_CLIENT_ID, EMBEDDED_ANCESTOR_ORIGIN, EMBEDDED_SERVER_BASE_URL } from "./iframe.utils";
@@ -79,7 +78,6 @@ function getTRPCClientAndUtils() {
       authToken: null,
       deviceNonce: undefined,
       clientId: EMBEDDED_CLIENT_ID,
-      applicationId: "",
       // Note: Errors like UNAUTHORIZED will de-authenticate the user automatically (without closing the modal):
       onAuthError: () => signOut(false),
     });
@@ -96,7 +94,6 @@ const {
   setDeviceNonceHeader,
   getClientIdHeader,
   setClientIdHeader,
-  setApplicationIdHeader,
 } = getTRPCClientAndUtils() || {};
 
 // Exporting the router from one repo to another might, in some scenarios, return incorrect types, but it can be fixed
@@ -150,31 +147,16 @@ export {
 // TODO: Move to embedded.provider and make sure it's called once deviceNonce has been loaded, and that a loader/spinner
 // is shown until this validation has happened.
 
-async function getSessionId() {
+async function insecurelyValidateApplication(sessionId: string) {
   try {
-    const supabase = await getSupabaseClient();
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    const jwtDecoded = jwtDecode(session?.access_token) as {
-      session_id: string;
-    };
-    return jwtDecoded.session_id;
-  } catch (err) {
-    return undefined;
-  }
-}
-
-async function insecurelyValidateApplication() {
-  try {
-    const sessionId = await getSessionId();
     const applicationId = await trpcVanilla.validateApplication.query({
       clientId: EMBEDDED_CLIENT_ID,
       applicationOrigin: EMBEDDED_ANCESTOR_ORIGIN,
       sessionId,
     });
 
-    setApplicationIdHeader(applicationId);
+    // TODO: applicationOrigin: EMBEDDED_ANCESTOR_ORIGIN is not needed. `validateApplication` will return a list of
+    // valid origins and only if EMBEDDED_ANCESTOR_ORIGIN is in that list we'll be sending messages to it.
   } catch (err: any) {
     // Only show errors if we're inside an iframe
     if (!isInsideIframe()) return;

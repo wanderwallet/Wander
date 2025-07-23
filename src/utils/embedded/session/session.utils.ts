@@ -1,6 +1,5 @@
-import type { AuthProviderType, DbSession, SupabaseSession, SupabaseUser } from "embed-api";
+import type { AuthProviderType, DbSession, SupabaseJwtPayload, SupabaseSession, SupabaseUser } from "embed-api";
 import { jwtDecode } from "jwt-decode";
-import type { SupabaseJwtPayload } from "~utils/authentication/authentication.types";
 import { getDeviceNonce } from "~utils/embedded/device-nonce/device-nonce.utils";
 import { getAuthProviderTypeFromSupabaseUser } from "~utils/embedded/utils/messages/embedded-messages.utils";
 

@@ -4013,9 +4013,9 @@
     "@supabase/node-fetch" "^2.6.14"
 
 "@supabase/supabase-js@^2.49.4":
-  version "2.52.0"
-  resolved "https://registry.yarnpkg.com/@supabase/supabase-js/-/supabase-js-2.52.0.tgz#f10f69b114c1c9773f7ee39088714140d6c8d86e"
-  integrity sha512-jbs3CV1f2+ge7sgBeEduboT9v/uGjF22v0yWi/5/XFn5tbM8MfWRccsMtsDwAwu24XK8H6wt2LJDiNnZLtx/bg==
+  version "2.52.1"
+  resolved "https://registry.yarnpkg.com/@supabase/supabase-js/-/supabase-js-2.52.1.tgz#f88e4a724a238fb76473c77cede3a2c6af54c147"
+  integrity sha512-IxYljprgl381j4SuFrW4JimjTb59WJ98DqxhMvEOJjpGJWuZ7kwttIWn7E4NBnvkYwZ948zJkJ7dSI6B0oO0Xw==
   dependencies:
     "@supabase/auth-js" "2.71.1"
     "@supabase/functions-js" "2.4.5"
@@ -6548,7 +6548,7 @@ elliptic@6.6.1, elliptic@^6.5.3, elliptic@^6.5.5, elliptic@^6.5.7:
 
 "embed-api@https://github.com/wanderwallet/embed-api#feat/arc-1198-eddsa-signatures":
   version "0.1.0"
-  resolved "https://github.com/wanderwallet/embed-api#79487940e2d4058ee799281661a845073c89356c"
+  resolved "https://github.com/wanderwallet/embed-api#dfc5e312b35bd7a621fd1146496169f2185e75d0"
   dependencies:
     "@noble/curves" "^1.9.4"
     "@prisma/client" "6.11.1"
