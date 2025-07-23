@@ -140,17 +140,20 @@ async function fetchFirstAvailableAuthShare(
           continue;
         }
 
-        let shareHash: string | null = null;
-        let sharePrivateKey: JWKInterface | Uint8Array | null = null;
-
-        let result = await WalletUtils.generateShareHashAndEdKeys(deviceShare);
-
-        shareHash = result.shareHash;
-        sharePrivateKey = result.sharePrivateKey;
-
-        const { activationChallenge } = await trpcVanilla.generateWalletActivationChallenge.mutate({
+        const generateShareHashAndEdKeysPromise = WalletUtils.generateShareHashAndEdKeys(deviceShare);
+        const generateWalletActivationChallengePromise = trpcVanilla.generateWalletActivationChallenge.mutate({
           walletId,
         });
+
+        const [generateShareHashAndEdKeysResult, generateWalletActivationChallengeResult] = await Promise.all([
+          generateShareHashAndEdKeysPromise,
+          generateWalletActivationChallengePromise,
+        ]);
+
+        let shareHash: string = generateShareHashAndEdKeysResult.shareHash;
+        let sharePrivateKey: JWKInterface | Uint8Array = generateShareHashAndEdKeysResult.sharePrivateKey;
+
+        const { activationChallenge } = generateWalletActivationChallengeResult;
 
         if (activationChallenge.version === "v1") {
           // If we got a v1 challenge, we still need to migrate this WorkKeyShare to EdDSA. To do that, we first need to
