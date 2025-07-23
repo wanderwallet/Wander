@@ -64,25 +64,42 @@ export function ProgressBar({
     async (segmentData: ProgressSegmentWithData) => {
       if (process.env.NODE_ENV !== "development") return;
 
-      const index = segments.findIndex(({ name }) => name === segmentData.name);
-      const rank = segments.length - index;
-      const progress = segmentData.startPercentage + (segmentData.endPercentage - segmentData.startPercentage) / 2;
-      const balance = `${10 ** (18 + index)}`;
-      const activeTier: ActiveTier = {
-        tier: segmentData.name,
-        balance,
-        rank,
-        progress,
-        snapshotTimestamp: Date.now(),
-      };
+      const currentTier = await ExtensionStorage.get<ActiveTier>(`active_tier_${activeAddress}`);
 
-      await ExtensionStorage.set(`active_tier_${activeAddress}`, activeTier);
+      if (segmentData.name !== currentTier.tier || currentTier.totalHolders !== -1) {
+        // Select tier manually:
 
-      await queryClient.refetchQueries({
-        queryKey: ["active-tier", activeAddress],
-      });
+        const index = segments.findIndex(({ name }) => name === segmentData.name);
+        const rank = segments.length - index;
+        const progress = segmentData.startPercentage + (segmentData.endPercentage - segmentData.startPercentage) / 2;
+        const balance = `${10 ** (18 + index)}`;
+        const activeTier: ActiveTier = {
+          tier: segmentData.name,
+          balance,
+          rank,
+          progress,
+          snapshotTimestamp: Date.now(),
+          totalHolders: -1,
+        };
 
-      back();
+        await ExtensionStorage.set(`active_tier_${activeAddress}`, activeTier);
+
+        await queryClient.refetchQueries({
+          queryKey: ["active-tier", activeAddress],
+        });
+
+        back();
+      } else if (currentTier.totalHolders === -1) {
+        // Reset tier to the real value:
+
+        await ExtensionStorage.remove(`active_tier_${activeAddress}`);
+
+        await queryClient.refetchQueries({
+          queryKey: ["active-tier", activeAddress],
+        });
+
+        back();
+      }
     },
     [queryClient, activeAddress, segments, back],
   );

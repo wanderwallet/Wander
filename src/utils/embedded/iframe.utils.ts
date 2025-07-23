@@ -42,6 +42,7 @@ const PARAM_CLIENT_ID = "client-id";
 const PARAM_THEME = "theme";
 const PARAM_ANCESTOR_ORIGIN = "ancestor-origin";
 const PARAM_HIDE_BE = "hide-be";
+const PARAM_INJECTED_BE = "injected-be";
 const PARAM_SERVER_BASE_URL = "server-base-url";
 
 export const EMBEDDED_CLIENT_ID = searchParams.get(PARAM_CLIENT_ID) || EMBEDDED_ENV_VARS.DEFAULT_EMBEDDED_CLIENT_ID;
@@ -51,6 +52,8 @@ export const EMBEDDED_THEME = (searchParams.get(PARAM_THEME) as ThemeMode) || "s
 export const EMBEDDED_ANCESTOR_ORIGIN = ancestorOrigin || searchParams.get(PARAM_ANCESTOR_ORIGIN);
 
 export const EMBEDDED_HIDE_BE = searchParams.get(PARAM_HIDE_BE) === "1" || false;
+
+export const EMBEDDED_INJECTED_BE = searchParams.get(PARAM_INJECTED_BE) === "1" || false;
 
 export const EMBEDDED_SERVER_BASE_URL =
   searchParams.get(PARAM_SERVER_BASE_URL) || EMBEDDED_ENV_VARS.DEFAULT_EMBEDDED_SERVER_BASE_URL;

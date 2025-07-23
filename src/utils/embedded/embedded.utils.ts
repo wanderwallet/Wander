@@ -5,6 +5,30 @@ import { LocalStorage } from "~iframe/storage/unpartitioned-storage/local-storag
 import { isInsideIframe, EMBEDDED_CLIENT_ID, EMBEDDED_ANCESTOR_ORIGIN, EMBEDDED_SERVER_BASE_URL } from "./iframe.utils";
 import { ExtensionStorage } from "~utils/storage";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
+import type { Wallet } from "~utils/embedded/embedded.types";
+
+export function getBackupsNeededAndMessage(wallets: Wallet[]) {
+  const backupsNeeded = wallets.filter((wallet) => {
+    return wallet.totalExports === 0 && wallet.totalBackups === 0 && wallet.status === "ENABLED";
+  }).length;
+
+  let backupMessage: undefined | string = undefined;
+
+  if (backupsNeeded === 1) {
+    backupMessage =
+      wallets.length === 1 ? "Your wallet needs to be backed up." : "One of your wallets needs to be backed up.";
+  } else if (backupsNeeded > 1) {
+    backupMessage =
+      wallets.length === backupsNeeded
+        ? `All your ${backupsNeeded} wallets need to be backed up.`
+        : `${backupsNeeded} of your ${wallets.length} wallets need to backed up.`;
+  }
+
+  return {
+    backupsNeeded,
+    backupMessage,
+  };
+}
 
 const signOutListeners = new Set<() => void>();
 

@@ -9,12 +9,15 @@ import {
   AO_TOKENS_LAST_BLOCK_HEIGHT,
   gateway,
   getNoticeTransactions,
+  tokenStorageMutex,
   verifyCollectiblesType,
 } from "~tokens/aoTokens/sync";
 import { withRetry } from "~utils/promises/retry";
 import { timeoutPromise } from "~utils/promises/timeout";
 import { PersistentStorage } from "~utils/storage";
 import { getActiveAddress } from "~wallets";
+import { checkAndImportFairLaunchTokens } from "~utils/fair_launch/fair_launch.alarms";
+import { FAIR_LAUNCH_TOKENS_ALARM_NAME } from "~utils/fair_launch/fair_launch.constants";
 
 /**
  *  Import AO Tokens
@@ -84,28 +87,39 @@ export async function handleAoTokensImportAlarm(alarm: Alarms.Alarm) {
 
     const updatedTokens = [...aoTokensCache, ...tokens];
 
-    aoTokens = await getAoTokens();
-    aoTokensIds = new Set(aoTokens.map(({ processId }) => processId));
-    tokenIdstoExclude = new Set([...aoTokensIds, ...removedTokenIds]);
+    const unlock = await tokenStorageMutex.lock();
+    try {
+      aoTokens = await getAoTokens();
+      aoTokensIds = new Set(aoTokens.map(({ processId }) => processId));
+      tokenIdstoExclude = new Set([...aoTokensIds, ...removedTokenIds]);
 
-    if (tokensToRestrict.length > 0) {
-      removedTokenIds.push(...tokensToRestrict.map(({ processId }) => processId));
-      await PersistentStorage.set(AO_TOKENS_AUTO_IMPORT_RESTRICTED_IDS, removedTokenIds);
+      if (tokensToRestrict.length > 0) {
+        removedTokenIds.push(...tokensToRestrict.map(({ processId }) => processId));
+        await PersistentStorage.set(AO_TOKENS_AUTO_IMPORT_RESTRICTED_IDS, removedTokenIds);
+      }
+
+      let newTokens = updatedTokens.filter((token) => !tokenIdstoExclude.has(token.processId));
+      if (newTokens.length === 0) return;
+
+      // Verify collectibles type
+      newTokens = await verifyCollectiblesType(newTokens, arweave);
+
+      newTokens.forEach((token) => aoTokens.push(token));
+      await PersistentStorage.set(AO_TOKENS, aoTokens);
+
+      console.log("Imported ao tokens!");
+    } finally {
+      unlock();
     }
-
-    let newTokens = updatedTokens.filter((token) => !tokenIdstoExclude.has(token.processId));
-    if (newTokens.length === 0) return;
-
-    // Verify collectibles type
-    newTokens = await verifyCollectiblesType(newTokens, arweave);
-
-    newTokens.forEach((token) => aoTokens.push(token));
-    await PersistentStorage.set(AO_TOKENS, aoTokens);
-
-    console.log("Imported ao tokens!");
   } catch (error: any) {
     console.log("Error importing tokens: ", error?.message);
   } finally {
     await PersistentStorage.set(AO_TOKENS_IMPORT_TIMESTAMP, 0);
   }
+}
+
+export async function handleFairLaunchTokensImportAlarm(alarm: Alarms.Alarm) {
+  if (alarm?.name !== FAIR_LAUNCH_TOKENS_ALARM_NAME) return;
+
+  await checkAndImportFairLaunchTokens();
 }

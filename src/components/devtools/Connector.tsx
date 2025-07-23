@@ -6,7 +6,7 @@ import { useState } from "react";
 import { getTab } from "~applications/tab";
 import { addApp } from "~applications";
 import browser from "webextension-polyfill";
-import { ToggleSwitch } from "~routes/popup/subscriptions/subscriptionDetails";
+import { ToggleSwitch } from "~components/ToggleSwitch";
 import { Flex } from "~components/common/Flex";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
