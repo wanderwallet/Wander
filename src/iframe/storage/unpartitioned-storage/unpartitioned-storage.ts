@@ -79,7 +79,9 @@ export class EnhancedStorage implements Storage {
         this.dispatchUnpartitionedStateStatusChange("limited");
       }
     } catch (error) {
-      this.dispatchUnpartitionedStateStatusChange(error);
+      console.warn("document.requestStorageAccess() failed:", error);
+
+      this.dispatchUnpartitionedStateStatusChange(error || "error");
     }
 
     return this.status;
