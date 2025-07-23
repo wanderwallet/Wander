@@ -894,7 +894,10 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
       const latestSession = await getLatestSession(session);
 
-      const { shareRecoveryChallenge } = await WalletService.generateWalletRecoveryChallenge({ walletId });
+      const { shareRecoveryChallenge } = await WalletService.generateWalletRecoveryChallenge({
+        walletId,
+        recoveryBackupShareHash,
+      });
 
       if (shareRecoveryChallenge.version === "v1") {
         const derivedRSAKeys = await WalletUtils.deriveRSAKeys(recoveryBackupShare);

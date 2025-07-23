@@ -257,9 +257,9 @@ async function generateShareHashAndEdKeys(share: string): Promise<GenerateShareH
   const ikm = encoder.encode(share);
   // TODO: Change to something else
   // const salt = crypto.getRandomValues(new Uint8Array(16)); // TODO: Need to be made not random
-  const salt = undefined;
+  const salt = new Uint8Array(16).fill(0); // For testing purposes, use a fixed salt
   // const info = encoder.encode("context");
-  const info = undefined;
+  const info = encoder.encode("");
 
   const baseKey = await crypto.subtle.importKey("raw", ikm, { name: "HKDF" }, false, ["deriveBits"]);
 
