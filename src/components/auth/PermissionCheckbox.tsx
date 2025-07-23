@@ -1,6 +1,6 @@
 import { Text } from "@arconnect/components-rebrand";
 import styled from "styled-components";
-import { ToggleSwitch } from "~routes/popup/subscriptions/subscriptionDetails";
+import { ToggleSwitch } from "~components/ToggleSwitch";
 
 const PermissionCheckbox = styled(ToggleSwitch)`
   align-items: flex-start;
