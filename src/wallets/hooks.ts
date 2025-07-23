@@ -14,7 +14,13 @@ import { useQuery } from "@tanstack/react-query";
 import { getNameServiceProfiles } from "~lib/nameservice";
 import type GQLResultInterface from "ar-gql/dist/faces";
 import { printTxWorkingGateways, txHistoryGateways } from "~gateways/gateway";
-import { sortFn, processTransactions, type GroupedTransactions, type ExtendedTransaction } from "~lib/transactions";
+import {
+  sortFn,
+  processTransactions,
+  type GroupedTransactions,
+  type ExtendedTransaction,
+  checkTransactionsStatus,
+} from "~lib/transactions";
 import {
   AO_RECEIVER_QUERY_WITH_CURSOR,
   AO_SENT_QUERY_WITH_CURSOR,
@@ -296,6 +302,12 @@ export const useTransactions = (activeAddress: string, limit?: number) => {
           }),
         );
 
+      const aoTransactions = [
+        ...(rawAoSent.status === "fulfilled" ? rawAoSent.value?.data?.transactions?.edges || [] : []),
+        ...(rawAoReceived.status === "fulfilled" ? rawAoReceived.value?.data?.transactions?.edges || [] : []),
+      ];
+      await checkTransactionsStatus(aoTransactions);
+
       let sent = await processTransactions(rawSent, "sent");
       let received = await processTransactions(rawReceived, "received");
       const aoSent = await processTransactions(rawAoSent, "aoSent", true);
@@ -466,6 +478,12 @@ export const useTokenTransactions = (activeAddress: string, tokenId: string, lim
               } as GQLResultInterface);
         }),
       );
+
+      const aoTransactions = [
+        ...(rawAoSent.status === "fulfilled" ? rawAoSent.value?.data?.transactions?.edges || [] : []),
+        ...(rawAoReceived.status === "fulfilled" ? rawAoReceived.value?.data?.transactions?.edges || [] : []),
+      ];
+      await checkTransactionsStatus(aoTransactions);
 
       const aoSent = await processTransactions(rawAoSent, "aoSent", true);
       const aoReceived = await processTransactions(rawAoReceived, "aoReceived", true);

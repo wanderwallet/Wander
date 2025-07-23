@@ -13,7 +13,7 @@ import type { RawTransaction } from "~api/background/handlers/alarms/notificatio
 import { fetchTokenByProcessId, getTagValue } from "~tokens/aoTokens/ao";
 import type { Announcement } from "~utils/announcements";
 
-const transactionErrorMap: Map<string, boolean> = new Map();
+export const transactionErrorMap = new Map<string, boolean>();
 
 export type ExtendedTransaction = RawTransaction & {
   cursor: string;
@@ -55,8 +55,8 @@ const processTransaction = (transaction: GQLEdgeInterface, type: string) => ({
   date: "",
 });
 
-export async function checkTransactionsStatus(messageIds: string[]): Promise<void> {
-  const uncheckedIds = messageIds.filter((id) => !transactionErrorMap.has(id));
+export async function checkTransactionsStatus(transactions: GQLEdgeInterface[]): Promise<void> {
+  const uncheckedIds = transactions.filter((tx) => !transactionErrorMap.has(tx.node.id)).map((tx) => tx.node.id);
   if (uncheckedIds.length === 0) return;
 
   const batchSize = 100;
@@ -148,8 +148,6 @@ export const processTransactions = async (
   if (rawData.status === "fulfilled") {
     const edges = rawData.value?.data?.transactions?.edges || [];
     if (isAo) {
-      const messageIds = edges.map((edge) => edge.node.id);
-      await checkTransactionsStatus(messageIds);
       return Promise.all(edges.map((transaction) => processAoTransaction(transaction, type))).then((transactions) =>
         transactions.filter(Boolean),
       );
