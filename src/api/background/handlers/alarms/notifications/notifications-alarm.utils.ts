@@ -1,6 +1,7 @@
 import BigNumber from "bignumber.js";
 import { gql } from "~gateways/api";
 import { suggestedGateways } from "~gateways/gateway";
+import { checkTransferStatus } from "~lib/transactions";
 import { combineAndSortTransactions, processTransactions } from "~notifications/utils";
 import { ExtensionStorage } from "~utils/storage";
 
@@ -60,6 +61,8 @@ export async function arNotificationsHandler(
     });
 
     const combinedTransactions = combineAndSortTransactions(responses);
+
+    await checkTransferStatus(combinedTransactions);
 
     const enrichedTransactions = processTransactions(combinedTransactions, address);
 

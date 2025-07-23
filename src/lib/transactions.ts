@@ -10,10 +10,11 @@ import { gql } from "~gateways/api";
 import { txHistoryGateways } from "~gateways/gateway";
 import { retryWithDelay } from "~utils/promises/retry";
 import type { RawTransaction } from "~api/background/handlers/alarms/notifications/notifications-alarm.utils";
-import { fetchTokenByProcessId, getTagValue } from "~tokens/aoTokens/ao";
+import { fetchTokenByProcessId, getTagValue, getTagValues } from "~tokens/aoTokens/ao";
 import type { Announcement } from "~utils/announcements";
+import { log, LOG_GROUP } from "~utils/log/log.utils";
 
-export const transactionErrorMap = new Map<string, boolean>();
+const transactionErrorMap = new Map<string, boolean>();
 
 export type ExtendedTransaction = RawTransaction & {
   cursor: string;
@@ -55,60 +56,70 @@ const processTransaction = (transaction: GQLEdgeInterface, type: string) => ({
   date: "",
 });
 
-export async function checkTransactionsStatus(transactions: GQLEdgeInterface[]): Promise<void> {
-  const uncheckedIds = transactions.filter((tx) => !transactionErrorMap.has(tx.node.id)).map((tx) => tx.node.id);
-  if (uncheckedIds.length === 0) return;
+export async function checkTransferStatus(transactions: GQLEdgeInterface[]): Promise<void> {
+  try {
+    const uncheckedIds = transactions
+      .filter((tx) => {
+        if (transactionErrorMap.has(tx.node.id)) return false;
+        const [protocol, action] = getTagValues(["Data-Protocol", "Action"], tx.node.tags || []);
+        return protocol === "ao" && action === "Transfer";
+      })
+      .map((tx) => tx.node.id);
+    if (uncheckedIds.length === 0) return;
 
-  const batchSize = 100;
-  const batchPromises: Promise<void>[] = [];
+    const batchSize = 100;
+    const batchPromises: Promise<void>[] = [];
 
-  for (let i = 0; i < uncheckedIds.length; i += batchSize) {
-    const batch = uncheckedIds.slice(i, i + batchSize);
+    for (let i = 0; i < uncheckedIds.length; i += batchSize) {
+      const batch = uncheckedIds.slice(i, i + batchSize);
 
-    const batchPromise = retryWithDelay(async (attempt) => {
-      const data = await gql(
-        TRANSFER_ERROR_QUERY,
-        { messageIds: batch },
-        txHistoryGateways[attempt % txHistoryGateways.length],
-      );
-
-      if (data?.data === null && (data as any)?.errors?.length > 0) {
-        throw new Error((data as any)?.errors?.[0]?.message || "GraphQL Error");
-      }
-
-      const edges = data.data.transactions.edges;
-
-      if (edges.length > 0) {
-        const errorIdSet = new Set(
-          edges
-            .map((edge) => {
-              const tags = edge.node.tags || [];
-              return getTagValue("Pushed-For", tags) || getTagValue("Message-Id", tags);
-            })
-            .filter(Boolean),
+      const batchPromise = retryWithDelay(async (attempt) => {
+        const data = await gql(
+          TRANSFER_ERROR_QUERY,
+          { messageIds: batch },
+          txHistoryGateways[attempt % txHistoryGateways.length],
         );
 
-        for (const id of batch) {
-          transactionErrorMap.set(id, errorIdSet.has(id));
+        if (data?.data === null && (data as any)?.errors?.length > 0) {
+          throw new Error((data as any)?.errors?.[0]?.message || "GraphQL Error");
         }
-      } else {
-        // Mark all as successful if no errors found
+
+        const edges = data.data.transactions.edges;
+
+        if (edges.length > 0) {
+          const errorIdSet = new Set(
+            edges
+              .map((edge) => {
+                const tags = edge.node.tags || [];
+                return getTagValue("Pushed-For", tags) || getTagValue("Message-Id", tags);
+              })
+              .filter(Boolean),
+          );
+
+          for (const id of batch) {
+            transactionErrorMap.set(id, errorIdSet.has(id));
+          }
+        } else {
+          // Mark all as successful if no errors found
+          for (const id of batch) {
+            transactionErrorMap.set(id, false);
+          }
+        }
+      }, 2).catch(() => {
+        // On error, mark all batch IDs as false (assume no error)
         for (const id of batch) {
           transactionErrorMap.set(id, false);
         }
-      }
-    }, 2).catch(() => {
-      // On error, mark all batch IDs as false (assume no error)
-      for (const id of batch) {
-        transactionErrorMap.set(id, false);
-      }
-    });
+      });
 
-    batchPromises.push(batchPromise);
+      batchPromises.push(batchPromise);
+    }
+
+    // Wait for all batches to complete in parallel
+    await Promise.all(batchPromises);
+  } catch (error) {
+    log(LOG_GROUP.TRANSACTIONS, "Error checking transfer transactions status", error);
   }
-
-  // Wait for all batches to complete in parallel
-  await Promise.all(batchPromises);
 }
 
 const processAoTransaction = async (transaction: GQLEdgeInterface, type: string) => {

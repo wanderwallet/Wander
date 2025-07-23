@@ -19,7 +19,7 @@ import {
   processTransactions,
   type GroupedTransactions,
   type ExtendedTransaction,
-  checkTransactionsStatus,
+  checkTransferStatus,
 } from "~lib/transactions";
 import {
   AO_RECEIVER_QUERY_WITH_CURSOR,
@@ -306,7 +306,7 @@ export const useTransactions = (activeAddress: string, limit?: number) => {
         ...(rawAoSent.status === "fulfilled" ? rawAoSent.value?.data?.transactions?.edges || [] : []),
         ...(rawAoReceived.status === "fulfilled" ? rawAoReceived.value?.data?.transactions?.edges || [] : []),
       ];
-      await checkTransactionsStatus(aoTransactions);
+      await checkTransferStatus(aoTransactions);
 
       let sent = await processTransactions(rawSent, "sent");
       let received = await processTransactions(rawReceived, "received");
@@ -483,7 +483,7 @@ export const useTokenTransactions = (activeAddress: string, tokenId: string, lim
         ...(rawAoSent.status === "fulfilled" ? rawAoSent.value?.data?.transactions?.edges || [] : []),
         ...(rawAoReceived.status === "fulfilled" ? rawAoReceived.value?.data?.transactions?.edges || [] : []),
       ];
-      await checkTransactionsStatus(aoTransactions);
+      await checkTransferStatus(aoTransactions);
 
       const aoSent = await processTransactions(rawAoSent, "aoSent", true);
       const aoReceived = await processTransactions(rawAoReceived, "aoReceived", true);

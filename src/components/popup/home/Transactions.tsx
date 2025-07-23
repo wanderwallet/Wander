@@ -17,7 +17,7 @@ import {
 import { printTxWorkingGateways, txHistoryGateways } from "~gateways/gateway";
 import { ViewAll } from "../Title";
 import {
-  checkTransactionsStatus,
+  checkTransferStatus,
   getFormattedAmount,
   getMonthName,
   getTransactionDescription,
@@ -109,7 +109,7 @@ export default function Transactions() {
             ...(rawAoSent.status === "fulfilled" ? rawAoSent.value?.data?.transactions?.edges || [] : []),
             ...(rawAoReceived.status === "fulfilled" ? rawAoReceived.value?.data?.transactions?.edges || [] : []),
           ];
-          await checkTransactionsStatus(aoTransactions);
+          await checkTransferStatus(aoTransactions);
 
           let sent = await processTransactions(rawSent, "sent");
           sent = sent.filter((tx) => BigNumber(tx.node.quantity.ar).gt(0));
