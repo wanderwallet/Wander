@@ -1,9 +1,8 @@
 import { extractGarItems, pingUpdater } from "~lib/wayfinder";
 import { type Alarms } from "webextension-polyfill";
-import { AOProcess } from "~lib/ao";
-import type { GatewayAddressRegistryItem, GatewayAddressRegistryItemData, PaginatedResult } from "~gateways/types";
+import type { GatewayAddressRegistryItem } from "~gateways/types";
 import { RETRY_ALARM, scheduleGatewayUpdate, UPDATE_ALARM, updateGatewayCache } from "~gateways/cache";
-import { ARIO_MAINNET_PROCESS_ID } from "@ar.io/sdk";
+import { ARIO } from "@ar.io/sdk";
 
 /**
  * Gateway cache update call. Usually called by an alarm,
@@ -18,16 +17,9 @@ export async function handleGatewayUpdateAlarm(alarm?: Alarms.Alarm) {
 
   try {
     // fetch cache
-    const ArIO = new AOProcess({ processId: ARIO_MAINNET_PROCESS_ID });
+    const ario = ARIO.mainnet();
 
-    const gatewaysResult = await ArIO.read<PaginatedResult<GatewayAddressRegistryItemData>>({
-      tags: [
-        { name: "Action", value: "Paginated-Gateways" },
-        { name: "Sort-By", value: "operatorStake" },
-        { name: "Sort-Order", value: "desc" },
-        { name: "Limit", value: "5" },
-      ],
-    });
+    const gatewaysResult = await ario.getGateways({ sortBy: "operatorStake", sortOrder: "desc", limit: 5 });
 
     const garItems = extractGarItems(gatewaysResult.items);
 
