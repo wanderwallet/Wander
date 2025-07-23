@@ -1178,6 +1178,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         }));
       } else {
         // TODO: Duplicated in initEmbeddedWallet()?
+        /*
         setEmbeddedContextState((prevAuthContextState) => ({
           // ...prevAuthContextState,
           ...EMBEDDED_CONTEXT_INITIAL_STATE,
@@ -1186,6 +1187,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
           recoverableAccountWallets: prevAuthContextState.recoverableAccountWallets,
           requestPasswordChange: prevAuthContextState.requestPasswordChange,
         }));
+        */
 
         setEmbeddedContextAuth({
           authStatus: "noAuth",
