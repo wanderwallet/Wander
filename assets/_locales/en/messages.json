@@ -3799,5 +3799,9 @@
   "position_update_tooltip": {
     "message": "Your position is updated every 24 hours at 4:00 PM GMT",
     "description": "Tooltip text for position update"
+  },
+  "earn": {
+    "message": "Earn",
+    "description": "Earn text"
   }
 }

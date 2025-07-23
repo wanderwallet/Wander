@@ -1,4 +1,4 @@
-import { Grid01, Home05 } from "@untitled-ui/icons-react";
+import { CurrencyDollarCircle, Grid01, Home05 } from "@untitled-ui/icons-react";
 import browser from "webextension-polyfill";
 import styled from "styled-components";
 import { useLocation } from "~wallets/router/router.utils";
@@ -28,6 +28,17 @@ const HedgehogIcon = ({ active }: { active: boolean }) => (
   />
 );
 
+const CurrencyDollarCircleActive = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="25" height="24" viewBox="0 0 25 24" fill="none">
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M12.25 1C6.17487 1 1.25 5.92487 1.25 12C1.25 18.0751 6.17487 23 12.25 23C18.3251 23 23.25 18.0751 23.25 12C23.25 5.92487 18.3251 1 12.25 1ZM13.25 5.5C13.25 4.94772 12.8023 4.5 12.25 4.5C11.6977 4.5 11.25 4.94772 11.25 5.5V6C9.317 6 7.75 7.567 7.75 9.5C7.75 11.433 9.317 13 11.25 13H13.25C14.0784 13 14.75 13.6716 14.75 14.5C14.75 15.3284 14.0784 16 13.25 16H11.0833C10.347 16 9.75 15.403 9.75 14.6667C9.75 14.1144 9.30229 13.6667 8.75 13.6667C8.19772 13.6667 7.75 14.1144 7.75 14.6667C7.75 16.5076 9.24238 18 11.0833 18H11.25V18.5C11.25 19.0523 11.6977 19.5 12.25 19.5C12.8023 19.5 13.25 19.0523 13.25 18.5V18C15.183 18 16.75 16.433 16.75 14.5C16.75 12.567 15.183 11 13.25 11H11.25C10.4216 11 9.75 10.3284 9.75 9.5C9.75 8.67157 10.4216 8 11.25 8H13.4167C14.153 8 14.75 8.59695 14.75 9.33333C14.75 9.88562 15.1977 10.3333 15.75 10.3333C16.3023 10.3333 16.75 9.88562 16.75 9.33333C16.75 7.49238 15.2576 6 13.4167 6H13.25V5.5Z"
+      fill="#6B57F9"
+    />
+  </svg>
+);
+
 const buttons = [
   {
     title: "Home",
@@ -44,6 +55,14 @@ const buttons = [
     iconActive: <HedgehogIcon active={true} />,
     size: "24px",
     route: "/agents",
+  },
+  {
+    title: "Earn",
+    dictionaryKey: "earn",
+    icon: <CurrencyDollarCircle />,
+    iconActive: <CurrencyDollarCircleActive />,
+    size: "24px",
+    route: "/earn",
   },
   {
     title: "Menu",

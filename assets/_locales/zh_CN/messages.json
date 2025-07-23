@@ -3759,5 +3759,9 @@
     "position_update_tooltip": {
       "message": "您的位置每24小时更新一次，时间为4:00 PM GMT",
       "description": "Tooltip text for position update"
+    },
+    "earn": {
+      "message": "赚取",
+      "description": "Earn text"
     }
 }
