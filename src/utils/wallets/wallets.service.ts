@@ -140,7 +140,11 @@ async function fetchFirstAvailableAuthShare(
           continue;
         }
 
-        const generateShareHashAndEdKeysPromise = WalletUtils.generateShareHashAndEdKeys(deviceShare);
+        const generateShareHashAndEdKeysPromise = WalletUtils.generateShareHashAndEdKeys({
+          deviceShare,
+          session,
+        });
+
         const generateWalletActivationChallengePromise = trpcVanilla.generateWalletActivationChallenge.mutate({
           walletId,
         });
@@ -197,7 +201,10 @@ async function fetchFirstAvailableAuthShare(
             activatedWallet.deviceShare = deviceShare;
 
             const { shareHash: deviceShareHash, sharePublicKeyB64: deviceSharePublicKey } =
-              await WalletUtils.generateShareHashAndEdKeys(deviceShare);
+              await WalletUtils.generateShareHashAndEdKeys({
+                deviceShare,
+                session,
+              });
 
             const challengeSolution = await solveChallenge({
               challenge: rotationChallenge,

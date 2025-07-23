@@ -14,6 +14,7 @@ import { EMBEDDED_FEATURE_FLAGS } from "~utils/embedded/embedded.constants";
 import { LocalStorage } from "~iframe/storage/unpartitioned-storage/local-storage";
 import { random, pki, util } from "node-forge";
 import { ed25519 } from "@noble/curves/ed25519.js";
+import type { DbSession } from "embed-api";
 
 // Node forge worker script location
 const workerScript = `/assets/forge/prime.worker.min.js`;
@@ -160,6 +161,20 @@ async function generateShareHash(share: string): Promise<string> {
   return Buffer.from(new Uint8Array(hashBuffer)).toString("base64");
 }
 
+export interface GenerateShareHashAndEdKeysFromDeviceShareParams {
+  deviceShare: string;
+  session: DbSession;
+}
+
+export interface GenerateShareHashAndEdKeysFromRecoveryBackupShareParams {
+  recoveryBackupShare: string;
+  session: DbSession;
+}
+
+export type GenerateShareHashAndEdKeysParams =
+  | GenerateShareHashAndEdKeysFromDeviceShareParams
+  | GenerateShareHashAndEdKeysFromRecoveryBackupShareParams;
+
 export interface GenerateShareHashAndEdKeysReturn {
   shareHash: string;
   sharePrivateKey: Uint8Array;
@@ -168,18 +183,42 @@ export interface GenerateShareHashAndEdKeysReturn {
   sharePublicKeyB64: string;
 }
 
-async function generateShareHashAndEdKeys(share: string): Promise<GenerateShareHashAndEdKeysReturn> {
+/**
+ * An Ed25519 key has a fixed size of 256 bits (or 32 bytes). This applies to both the public and private keys. Despite
+ * its small size, it offers a level of security comparable to much larger RSA keys, such as a 2048-bit or even
+ * 4096-bit RSA key.
+ */
+async function generateShareHashAndEdKeys(
+  params: GenerateShareHashAndEdKeysParams,
+): Promise<GenerateShareHashAndEdKeysReturn> {
   log(LOG_GROUP.WALLET_GENERATION, "generateShareHashAndEdKeys()");
 
   const encoder = new TextEncoder();
-  const ikm = encoder.encode(share);
-  // TODO: Change to something else
-  // const salt = crypto.getRandomValues(new Uint8Array(16)); // TODO: Need to be made not random
-  const salt = new Uint8Array(16).fill(0); // For testing purposes, use a fixed salt
-  // const info = encoder.encode("context");
+  const { session } = params;
+
+  // Input key material:
+
+  const share = "deviceShare" in params ? params.deviceShare : params.recoveryBackupShare;
+  const inputKeyMaterial = encoder.encode(share);
+
+  // Salt:
+  //
+  // Using salt adds significantly to the strength of HKDF, but it is not strictly necessary when the input key material
+  // is already sufficiently random, as it should be in our case. However, using a salt won't hurt either.
+
+  const saltContent = "deviceShare" in params ? `${session.userId}-${session.deviceNonce}` : session.userId;
+  const salt = encoder.encode(saltContent);
+
+  // Info:
+  //
+  // Used to derive different keys form the same input key material (`baseKey`). Not needed in our case.
+  // See https://crypto.stackexchange.com/questions/6553/what-information-to-include-is-the-info-input-for-hkdf
+
   const info = encoder.encode("");
 
-  const baseKey = await crypto.subtle.importKey("raw", ikm, { name: "HKDF" }, false, ["deriveBits"]);
+  // Key derivation with HKDF:
+
+  const baseKey = await crypto.subtle.importKey("raw", inputKeyMaterial, { name: "HKDF" }, false, ["deriveBits"]);
 
   const derivedBits = await crypto.subtle.deriveBits(
     {
@@ -192,13 +231,10 @@ async function generateShareHashAndEdKeys(share: string): Promise<GenerateShareH
     256, // bits
   );
 
-  // An Ed25519 key has a fixed size of 256 bits (or 32 bytes). This applies to both the public and private keys. Despite its small size, it offers a level of security comparable to much larger RSA keys, such as a 2048-bit or even 4096-bit RSA key, according to cryptography resources.
+  // Derived bits as `Uint8Array` are our private key:
+  const privateKey = new Uint8Array(derivedBits);
 
-  // Turn derived bits into a Uint8Array seed
-  const seed = new Uint8Array(derivedBits);
-
-  // Use noble to generate keypair from seed
-  const privateKey = seed;
+  // Use Noble to generate public key from private key:
   const publicKey = await ed25519.getPublicKey(privateKey);
 
   return {

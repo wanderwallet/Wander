@@ -6548,7 +6548,7 @@ elliptic@6.6.1, elliptic@^6.5.3, elliptic@^6.5.5, elliptic@^6.5.7:
 
 "embed-api@https://github.com/wanderwallet/embed-api#feat/arc-1198-eddsa-signatures":
   version "0.1.0"
-  resolved "https://github.com/wanderwallet/embed-api#12c98dd75cbf43389a8fd092cbfb7cf5c1266c79"
+  resolved "https://github.com/wanderwallet/embed-api#79487940e2d4058ee799281661a845073c89356c"
   dependencies:
     "@noble/curves" "^1.9.4"
     "@prisma/client" "6.11.1"
