@@ -14,7 +14,6 @@ import { EMBEDDED_FEATURE_FLAGS } from "~utils/embedded/embedded.constants";
 import { LocalStorage } from "~iframe/storage/unpartitioned-storage/local-storage";
 import { random, pki, util } from "node-forge";
 import { ed25519 } from "@noble/curves/ed25519.js";
-import type { U } from "vitest/dist/chunks/environment.d.cL3nLXbE";
 
 // Node forge worker script location
 const workerScript = `/assets/forge/prime.worker.min.js`;
@@ -159,87 +158,6 @@ async function generateShareHash(share: string): Promise<string> {
   const hashBuffer = await crypto.subtle.digest("SHA-256", Buffer.from(share));
 
   return Buffer.from(new Uint8Array(hashBuffer)).toString("base64");
-}
-
-async function testEdDSA(share: string) {
-  const t0 = performance.now();
-
-  const encoder = new TextEncoder();
-  const ikm = encoder.encode(share);
-  const salt = crypto.getRandomValues(new Uint8Array(16)); // TODO: Need to be made not random
-  const info = encoder.encode("context");
-
-  const baseKey = await crypto.subtle.importKey("raw", ikm, { name: "HKDF" }, false, ["deriveBits"]);
-
-  const derivedBits = await crypto.subtle.deriveBits(
-    {
-      name: "HKDF",
-      hash: "SHA-256",
-      salt,
-      info,
-    },
-    baseKey,
-    256, // bits
-  );
-
-  // An Ed25519 key has a fixed size of 256 bits (or 32 bytes). This applies to both the public and private keys. Despite its small size, it offers a level of security comparable to much larger RSA keys, such as a 2048-bit or even 4096-bit RSA key, according to cryptography resources.
-
-  // Turn derived bits into a Uint8Array seed
-  const seed = new Uint8Array(derivedBits);
-
-  // Use noble to generate keypair from seed
-  const privateKey = seed;
-  const publicKey = await ed25519.getPublicKey(privateKey);
-
-  console.log("DERIVED SIZES", privateKey.length, publicKey.length);
-  console.log(
-    "DERIVED SIZES (b64)",
-    Buffer.from(privateKey).toString("base64"),
-    Buffer.from(publicKey).toString("base64"),
-  );
-
-  const t1 = performance.now();
-
-  console.log(`Generation took ${((t1 - t0) / 1000).toFixed(2)}s`);
-
-  const msg = new Uint8Array(32).fill(1); // message hash (not message) in ecdsa
-  const sig = ed25519.sign(msg, privateKey); // `{prehash: true}` option is available
-
-  const t2 = performance.now();
-
-  console.log(`Library signature took ${((t2 - t1) / 1000).toFixed(2)}s`);
-
-  const isLibraryValid = ed25519.verify(sig, msg, publicKey) === true;
-
-  console.log("isLibraryValid =", isLibraryValid);
-
-  const t3 = performance.now();
-
-  console.log(`Library verification took ${((t3 - t2) / 1000).toFixed(2)}s`);
-
-  /*
-  // TODO: Code
-
-  const t4 = performance.now();
-
-  console.log(`Native signature took ${ ((t4 - t3) / 1000).toFixed(1) }s`);
-
-  // TODO: Code
-
-  const isNativeValid = false;
-
-  console.log("isNativeValid =", isNativeValid);
-
-  const t5 = performance.now();
-
-  console.log(`Native verification took ${ ((t5 - t4) / 1000).toFixed(1) }s`);
-  */
-
-  // Verify key sizes:
-  const priv = ed25519.utils.randomPrivateKey();
-  const pub = ed25519.getPublicKey(priv);
-
-  console.log("GENERATED SIZES", priv.length, pub.length);
 }
 
 export interface GenerateShareHashAndEdKeysReturn {
