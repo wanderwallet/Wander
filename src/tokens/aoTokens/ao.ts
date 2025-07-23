@@ -36,9 +36,18 @@ export const AO_OLD_PROCESS_ID = "m3PaWzK4PTG9lAaqYQPaPdOcXdO8hYqi5Fe9NWqXd0w" a
 export const AO_PROCESS_BALANCE_MIRROR = "Pi-WmAQp2-mh-oWH9lWpz5EthlUDj_W0IusAv-RXhRk" as const;
 export const AO_AUTHORITY_ID = "fcoN_xJeisVsPXA-trzVAuIiqO3ydLQxM-L4XbrQKzY" as const;
 
+export const VERIFIED_TOKENS = [
+  AO_PROCESS_ID,
+  AR_PROCESS_ID,
+  PI_PROCESS_ID,
+  ARIO_PROCESS_ID,
+  WNDR_PROCESS_ID,
+  USDA_PROCESS_ID,
+] as const;
+
 export const defaultTokens = [
   {
-    Name: "AR",
+    Name: "Arweave",
     Ticker: "AR",
     Denomination: 12,
     Logo: "jZ2XPRj37W-QNb3BwWWIyEelv-7nQjBHg0g6WLX91IM",

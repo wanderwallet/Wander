@@ -11,7 +11,7 @@ import {
   WNDR_PROCESS_ID,
   type TokenInfo,
   type TokenInfoWithBalance,
-} from "./aoTokens/ao";
+} from "../aoTokens/ao";
 import { useMemo } from "react";
 import useSetting from "~settings/hook";
 import { getConversionRate } from "~utils/currency";
@@ -19,7 +19,7 @@ import BigNumber from "bignumber.js";
 import { ExtensionStorage, PersistentStorage } from "~utils/storage";
 import { useStorage } from "@plasmohq/storage/hook";
 import { useArPrice } from "~lib/coingecko";
-import { defaultConfig } from "./aoTokens/config";
+import { defaultConfig } from "../aoTokens/config";
 import { connect } from "@permaweb/aoconnect";
 import { retryWithDelay } from "~utils/promises/retry";
 
@@ -80,9 +80,9 @@ export function useQueryCache<T = unknown>(queryKey: unknown[]) {
   return useQuery({ ...defaultQueryCache, queryKey });
 }
 
-export function useTokenBalance(token: TokenInfo, address: string, refresh?: boolean) {
+export function useTokenBalance(token: TokenInfo | null, address: string, refresh?: boolean) {
   return useQuery({
-    queryKey: ["tokenBalance", token.processId, address],
+    queryKey: ["tokenBalance", token?.processId, address],
     queryFn: async () => {
       try {
         const balance = await retryWithDelay(
@@ -99,7 +99,7 @@ export function useTokenBalance(token: TokenInfo, address: string, refresh?: boo
     ...defaultOptions,
     retry: false,
     select: (data) => data || "0",
-    enabled: !!address && !!token.processId && isFinite(token?.Denomination),
+    enabled: !!address && !!token?.processId && isFinite(token?.Denomination),
   });
 }
 
@@ -277,6 +277,35 @@ export function useAoTokens({
   }, [aoTokens, type, hidden, sortFn, skipSort]);
 
   return { tokens, loading: false, changeTokenVisibility };
+}
+
+export function useAoToken(id: string) {
+  const [aoTokens] = useStorage<TokenInfo[]>(
+    {
+      key: "ao_tokens",
+      instance: PersistentStorage,
+    },
+    [],
+  );
+
+  const token = useMemo(() => {
+    const token = aoTokens.find((t) => t.processId === id);
+    if (!token) return null;
+
+    return {
+      id: token.processId,
+      processId: token.processId,
+      balance: "0",
+      Ticker: token.Ticker,
+      Name: token.Name,
+      Denomination: Number(token.Denomination || 0),
+      Logo: token?.Logo,
+      type: token.type || "asset",
+      hidden: token?.hidden ?? false,
+    };
+  }, [aoTokens, id]);
+
+  return token;
 }
 
 export function useBalanceSortedTokens({

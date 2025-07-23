@@ -4,7 +4,7 @@ import redstone from "redstone-api";
 import { getConversionRate } from "~utils/currency";
 import { CACHE_API } from "~constants/api";
 import { withRetry } from "~utils/promises/retry";
-import { PersistentStorage } from "~utils/storage";
+import { ExtensionStorage, PersistentStorage } from "~utils/storage";
 
 /**
  * Compare two currencies
@@ -89,23 +89,6 @@ export function useArPrice(currency: string) {
   });
 }
 
-interface CoinGeckoPriceResult {
-  arweave: {
-    [key: string]: number;
-  };
-  [key: string]: {
-    [key: string]: number;
-  };
-}
-
-export async function getMarketChart(currency: string, days = "max") {
-  const data: CoinGeckoMarketChartResult = await (
-    await fetch(`https://api.coingecko.com/api/v3/coins/arweave/market_chart?vs_currency=${currency}&days=${days}`)
-  ).json();
-
-  return data;
-}
-
 /**
  * Get 24-hour price change for the AR token using the CoinGecko API
  *
@@ -133,4 +116,88 @@ interface CoinGeckoMarketChartResult {
   prices: [number, number][];
   market_caps: [number, number][];
   total_volumes: [number, number][];
+}
+
+interface CoinGeckoPriceResult {
+  arweave: {
+    [key: string]: number;
+  };
+  [key: string]: {
+    [key: string]: number;
+  };
+}
+
+async function fetchCoinGeckoChart(currency: string, days: string | number) {
+  try {
+    const response = await fetch(`${CACHE_API}/api/chart?days=${days}&currency=${currency}`);
+
+    const data = await response.json();
+
+    await ExtensionStorage.set(`saved_market_data_${days}`, {
+      prices: data.data.prices,
+      // cacheAge minus time now
+      timestamp: new Date(Date.now() - data.cacheAge * 1000).toISOString(),
+    });
+
+    return data.data;
+  } catch (error) {
+    const data: CoinGeckoMarketChartResult = await (
+      await fetch(`https://api.coingecko.com/api/v3/coins/arweave/market_chart?vs_currency=${currency}&days=${days}`)
+    ).json();
+
+    if (data.status?.error_code) throw new Error("CoinGecko API error");
+
+    await ExtensionStorage.set(`saved_market_data_${days}`, {
+      prices: data.prices,
+      timestamp: new Date().toISOString(),
+    });
+
+    return data;
+  }
+}
+
+export async function getMarketChart(currency: string, days = "max") {
+  try {
+    return await fetchCoinGeckoChart(currency, days);
+  } catch (error) {
+    throw error;
+  }
+}
+
+interface CoinGeckoMarketChartResult {
+  /** Prices: arrany of date in milliseconds and price */
+  prices: [number, number][];
+  market_caps: [number, number][];
+  total_volumes: [number, number][];
+  status?: any;
+}
+
+interface CoinGeckoMarketStatsResult {
+  market_data: {
+    market_cap: { [key: string]: number };
+    total_volume: { [key: string]: number };
+    fdv_to_tvl_ratio?: number;
+    mcap_to_tvl_ratio?: number;
+    circulating_supply: number;
+    total_supply: number;
+    max_supply: number;
+  };
+}
+
+export async function getMarketStats(currency: string = "usd") {
+  const data: CoinGeckoMarketStatsResult = await (
+    await fetch(
+      `https://api.coingecko.com/api/v3/coins/arweave?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=false`,
+    )
+  ).json();
+
+  return {
+    marketCap: data.market_data.market_cap[currency.toLowerCase()],
+    volume24h: data.market_data.total_volume[currency.toLowerCase()],
+    fdvRatio: data.market_data.fdv_to_tvl_ratio,
+    volMcapRatio: data.market_data.mcap_to_tvl_ratio,
+    circulatingSupply: data.market_data.circulating_supply,
+    totalSupply: data.market_data.total_supply,
+    maxSupply: data.market_data.max_supply,
+  };
 }

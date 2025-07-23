@@ -31,7 +31,6 @@ import { SubscriptionDetailsView } from "~routes/popup/subscriptions/subscriptio
 import { SubscriptionManagementView } from "~routes/popup/subscriptions/subscriptionManagement";
 import { SubscriptionPaymentView } from "~routes/popup/subscriptions/subscriptionPayment";
 import { SubscriptionsView } from "~routes/popup/subscriptions/subscriptions";
-import { TokensView } from "~routes/popup/tokens";
 import { TransactionView } from "~routes/popup/transaction/[id]";
 import { TransactionsView } from "~routes/popup/transaction/transactions";
 import { UnlockView } from "~routes/popup/unlock";
@@ -58,6 +57,8 @@ import { LiquidOpsResult } from "~routes/popup/agents/liquidops/result";
 import { AnnouncementView } from "~routes/popup/announcement";
 import { TierView } from "~routes/popup/tier";
 import { EarnView } from "~routes/popup/earn";
+import { TokensView } from "~routes/popup/tokens";
+import { TokenDetailView } from "~routes/popup/tokens/token-detail";
 
 export type PopupRoutePath =
   | "/"
@@ -79,7 +80,7 @@ export type PopupRoutePath =
   | `/notifications`
   | `/notification/${string}`
   | `/tokens`
-  | `/token/${string}`
+  | `/tokens/${string}`
   | `/collectibles`
   | `/collectible/${string}`
   | `/transaction/${string}`
@@ -139,7 +140,7 @@ export const PopupPaths = {
   Notifications: "/notifications",
   MessageNotification: "/notification/:id",
   Tokens: "/tokens",
-  Asset: "/token/:id",
+  TokenDetail: "/tokens/:id",
   Collectibles: "/collectibles",
   Collectible: "/collectible/:id",
   Transaction: "/transaction/:id/:gateway?",
@@ -248,6 +249,10 @@ export const POPUP_ROUTES = [
   {
     path: PopupPaths.Tokens,
     component: TokensView,
+  },
+  {
+    path: PopupPaths.TokenDetail,
+    component: TokenDetailView,
   },
   {
     path: PopupPaths.Collectibles,

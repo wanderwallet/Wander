@@ -360,15 +360,15 @@ export const LogoWrapper = styled(Squircle)<{ small?: boolean }>`
 
 export const Logo = styled(Image).attrs({
   draggable: false,
-})`
+})<{ width?: number; height?: number }>`
   position: relative;
-  width: 40px;
-  height: 40px;
   flex-shrink: 0;
   border-radius: 29px;
   object-fit: cover;
   overflow: hidden;
   z-index: 1;
+  width: ${(props) => (props.width ? `${props.width}px` : "40px")};
+  height: ${(props) => (props.height ? `${props.height}px` : "40px")};
 
   &::before {
     content: "";
