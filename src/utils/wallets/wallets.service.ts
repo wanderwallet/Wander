@@ -1,4 +1,4 @@
-import { ChallengeClientV1, ErrorMessages, type DbSession } from "embed-api";
+import { solveChallenge, ErrorMessages, type DbSession } from "embed-api";
 import type { Wallet, WalletActivationStatus } from "~utils/embedded/embedded.types";
 import { trpcVanilla } from "~utils/embedded/embedded.utils";
 import { isTRPCClientError } from "~utils/embedded/utils/trpc/trpc.utils";
@@ -140,26 +140,39 @@ async function fetchFirstAvailableAuthShare(
           continue;
         }
 
-        const { shareHash: deviceShareHash, sharePrivateKeyJWK: deviceSharePrivateKeyJWK } =
-          await WalletUtils.generateShareHashAndPrivateKey(deviceShare);
+        let shareHash: string | null = null;
+        let sharePrivateKey: JWKInterface | Uint8Array | null = null;
+
+        let result = await WalletUtils.generateShareHashAndEdKeys(deviceShare);
+
+        shareHash = result.shareHash;
+        sharePrivateKey = result.sharePrivateKey;
 
         const { activationChallenge } = await trpcVanilla.generateWalletActivationChallenge.mutate({
           walletId,
         });
 
-        const challengeSolution = await ChallengeClientV1.solveChallenge({
+        if (activationChallenge.version === "v1") {
+          // If we got a v1 challenge, we still need to migrate this WorkKeyShare to EdDSA. To do that, we first need to
+          // resolve a RSA challenge (old system). Then, we'll be able to reconstruct the private key and the backend
+          // will request the rotation of the WorkKeyShare, which is done using the wallet private key and only accepts
+          // EdDSA public keys.
+
+          const derivedRSAKeys = await WalletUtils.deriveRSAKeys(deviceShare);
+          sharePrivateKey = derivedRSAKeys.sharePrivateKeyJWK;
+        }
+
+        const challengeSolution = await solveChallenge({
           challenge: activationChallenge,
           session,
-          shareHash: deviceShareHash,
-          jwk: deviceSharePrivateKeyJWK,
+          shareHash,
+          privateKey: sharePrivateKey,
         });
 
         const { authShare, rotationChallenge } = await trpcVanilla.activateWallet.mutate({
           walletId,
           challengeSolution,
         });
-
-        // TODO: Better with zk: instead of hashes or use a challenge here?
 
         if (authShare) {
           // In case there was a previous one already in memory:
@@ -180,14 +193,14 @@ async function fetchFirstAvailableAuthShare(
             activatedWallet.authShare = authShare;
             activatedWallet.deviceShare = deviceShare;
 
-            const { shareHash: deviceShareHash, sharePublicKey: deviceSharePublicKey } =
-              await WalletUtils.generateShareHashAndPublicKey(deviceShare);
+            const { shareHash: deviceShareHash, sharePublicKeyB64: deviceSharePublicKey } =
+              await WalletUtils.generateShareHashAndEdKeys(deviceShare);
 
-            const challengeSolution = await ChallengeClientV1.solveChallenge({
+            const challengeSolution = await solveChallenge({
               challenge: rotationChallenge,
               session,
               shareHash: null,
-              jwk,
+              privateKey: jwk,
             });
 
             await rotateAuthShare({

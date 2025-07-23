@@ -30,7 +30,7 @@ import { setAuthTokenHeader, getSupabaseClient, signOut } from "~utils/embedded/
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import {
   AuthProviderType,
-  ChallengeClientV1,
+  solveChallenge,
   WalletSourceType,
   type DbSession,
   type RecoverableAccount,
@@ -380,8 +380,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     if (!recoveryFileData.recoveryBackupShare && !recoveryFileData.recoveryFileServerSignature) {
       const { recoveryAuthShare, recoveryBackupShare } = await WalletUtils.generateWalletRecoveryShares(jwk);
 
-      const { shareHash: recoveryBackupShareHash, sharePublicKey: recoveryBackupSharePublicKey } =
-        await WalletUtils.generateShareHashAndPublicKey(recoveryBackupShare);
+      const { shareHash: recoveryBackupShareHash, sharePublicKeyB64: recoveryBackupSharePublicKey } =
+        await WalletUtils.generateShareHashAndEdKeys(recoveryBackupShare);
 
       const { recoveryFileServerSignature, wallet: updatedWallet } = await WalletService.registerRecoveryShare({
         walletId,
@@ -678,8 +678,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
       const { authShare, deviceShare } = await WalletUtils.generateWalletWorkShares(jwk);
 
-      const { shareHash: deviceShareHash, sharePublicKey: deviceSharePublicKey } =
-        await WalletUtils.generateShareHashAndPublicKey(deviceShare);
+      const { shareHash: deviceShareHash, sharePublicKeyB64: deviceSharePublicKey } =
+        await WalletUtils.generateShareHashAndEdKeys(deviceShare);
 
       const { wallet: createdWallet } = await WalletService.createPublicWallet({
         address: walletAddress,
@@ -741,11 +741,11 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     const { fetchRecoverableWalletsChallenge } =
       await AuthenticationService.generateFetchRecoverableAccountsChallenge(walletAddress);
 
-    const challengeSolution = await ChallengeClientV1.solveChallenge({
+    const challengeSolution = await solveChallenge({
       challenge: fetchRecoverableWalletsChallenge,
       session: latestSession,
       shareHash: null,
-      jwk,
+      privateKey: jwk,
     });
 
     const { recoverableAccounts } = await AuthenticationService.fetchRecoverableAccounts(
@@ -778,11 +778,11 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       const { fetchRecoverableWalletsChallenge } =
         await AuthenticationService.generateFetchRecoverableAccountsChallenge(walletAddress);
 
-      const challengeSolution = await ChallengeClientV1.solveChallenge({
+      const challengeSolution = await solveChallenge({
         challenge: fetchRecoverableWalletsChallenge,
         session: latestSession,
         shareHash: null,
-        jwk,
+        privateKey: jwk,
       });
 
       const { recoverableAccountWallets } = await AuthenticationService.fetchRecoverableAccountWallets(
@@ -837,11 +837,11 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         accountToRecoverId,
       );
 
-      const challengeSolution = await ChallengeClientV1.solveChallenge({
+      const challengeSolution = await solveChallenge({
         challenge: accountRecoveryChallenge,
         session: latestSession,
         shareHash: null,
-        jwk,
+        privateKey: jwk,
       });
 
       await AuthenticationService.recoverAccount(accountToRecoverId, challengeSolution);
@@ -862,7 +862,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       let recoveryBackupShare: string | null = null;
       let recoveryFileServerSignature: string | null = null;
       let recoveryBackupShareHash: string | null = null;
-      let recoveryBackupSharePrivateKeyJWK: JWKInterface | null = null;
+      let privateKey: JWKInterface | Uint8Array = null;
       let isRecoveryJSON = true;
 
       if (
@@ -876,10 +876,11 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
           await WalletUtils.storeEncryptedSeedPhrase(walletId, seedPhrase, jwk).catch(() => {});
         }
         isRecoveryJSON = false;
+        privateKey = jwk;
       } else if (WalletUtils.isRecoveryJSON(recoveryData)) {
-        ({ walletId, recoveryBackupShare, recoveryFileServerSignature } = recoveryData as RecoveryJSON);
-        ({ shareHash: recoveryBackupShareHash, sharePrivateKeyJWK: recoveryBackupSharePrivateKeyJWK } =
-          await WalletUtils.generateShareHashAndPrivateKey(recoveryBackupShare));
+        ({ walletId, recoveryBackupShare, recoveryFileServerSignature } = recoveryData);
+        ({ shareHash: recoveryBackupShareHash, sharePrivateKey: privateKey } =
+          await WalletUtils.generateShareHashAndEdKeys(recoveryBackupShare));
         walletAddress = wallets.find(({ id }) => id === walletId)?.address;
       } else {
         // TODO: Move error to constant:
@@ -895,14 +896,20 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
       const { shareRecoveryChallenge } = await WalletService.generateWalletRecoveryChallenge({ walletId });
 
-      const challengeSolution = await ChallengeClientV1.solveChallenge({
+      if (shareRecoveryChallenge.version === "v1") {
+        const derivedRSAKeys = await WalletUtils.deriveRSAKeys(recoveryBackupShare);
+        privateKey = derivedRSAKeys.sharePrivateKeyJWK;
+      }
+
+      const challengeSolution = await solveChallenge({
         challenge: shareRecoveryChallenge,
         session: latestSession,
         shareHash: recoveryBackupShareHash,
-        jwk: recoveryBackupSharePrivateKeyJWK || jwk,
+        privateKey,
       });
 
       let recoverWalletParams = { walletId, challengeSolution };
+
       if (isRecoveryJSON) {
         recoverWalletParams = {
           ...recoverWalletParams,
@@ -927,15 +934,15 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
       const { authShare, deviceShare } = await WalletUtils.generateWalletWorkShares(jwk);
 
-      const rotateChallengeSignature = await ChallengeClientV1.solveChallenge({
+      const rotateChallengeSignature = await solveChallenge({
         challenge: rotationChallenge,
         session: latestSession,
         shareHash: null,
-        jwk,
+        privateKey: jwk,
       });
 
-      const { shareHash: deviceShareHash, sharePublicKey: deviceSharePublicKey } =
-        await WalletUtils.generateShareHashAndPublicKey(deviceShare);
+      const { shareHash: deviceShareHash, sharePublicKeyB64: deviceSharePublicKey } =
+        await WalletUtils.generateShareHashAndEdKeys(deviceShare);
 
       const registerAuthShareResponse = await WalletService.registerAuthShare({
         walletId,

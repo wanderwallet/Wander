@@ -14,6 +14,7 @@ import { EMBEDDED_FEATURE_FLAGS } from "~utils/embedded/embedded.constants";
 import { LocalStorage } from "~iframe/storage/unpartitioned-storage/local-storage";
 import { random, pki, util } from "node-forge";
 import { ed25519 } from "@noble/curves/ed25519.js";
+import type { U } from "vitest/dist/chunks/environment.d.cL3nLXbE";
 
 // Node forge worker script location
 const workerScript = `/assets/forge/prime.worker.min.js`;
@@ -160,7 +161,7 @@ async function generateShareHash(share: string): Promise<string> {
   return Buffer.from(new Uint8Array(hashBuffer)).toString("base64");
 }
 
-async function generateShareHashAndEdKeys(share: string) {
+async function testEdDSA(share: string) {
   const t0 = performance.now();
 
   const encoder = new TextEncoder();
@@ -191,6 +192,11 @@ async function generateShareHashAndEdKeys(share: string) {
   const publicKey = await ed25519.getPublicKey(privateKey);
 
   console.log("DERIVED SIZES", privateKey.length, publicKey.length);
+  console.log(
+    "DERIVED SIZES (b64)",
+    Buffer.from(privateKey).toString("base64"),
+    Buffer.from(publicKey).toString("base64"),
+  );
 
   const t1 = performance.now();
 
@@ -236,8 +242,58 @@ async function generateShareHashAndEdKeys(share: string) {
   console.log("GENERATED SIZES", priv.length, pub.length);
 }
 
-export interface GenerateShareHashAndPublicKeyReturn {
+export interface GenerateShareHashAndEdKeysReturn {
   shareHash: string;
+  sharePrivateKey: Uint8Array;
+  sharePublicKey: Uint8Array;
+  sharePrivateKeyB64: string;
+  sharePublicKeyB64: string;
+}
+
+async function generateShareHashAndEdKeys(share: string): Promise<GenerateShareHashAndEdKeysReturn> {
+  log(LOG_GROUP.WALLET_GENERATION, "generateShareHashAndEdKeys()");
+
+  const encoder = new TextEncoder();
+  const ikm = encoder.encode(share);
+  // TODO: Change to something else
+  // const salt = crypto.getRandomValues(new Uint8Array(16)); // TODO: Need to be made not random
+  const salt = undefined;
+  // const info = encoder.encode("context");
+  const info = undefined;
+
+  const baseKey = await crypto.subtle.importKey("raw", ikm, { name: "HKDF" }, false, ["deriveBits"]);
+
+  const derivedBits = await crypto.subtle.deriveBits(
+    {
+      name: "HKDF",
+      hash: "SHA-256",
+      salt,
+      info,
+    },
+    baseKey,
+    256, // bits
+  );
+
+  // An Ed25519 key has a fixed size of 256 bits (or 32 bytes). This applies to both the public and private keys. Despite its small size, it offers a level of security comparable to much larger RSA keys, such as a 2048-bit or even 4096-bit RSA key, according to cryptography resources.
+
+  // Turn derived bits into a Uint8Array seed
+  const seed = new Uint8Array(derivedBits);
+
+  // Use noble to generate keypair from seed
+  const privateKey = seed;
+  const publicKey = await ed25519.getPublicKey(privateKey);
+
+  return {
+    shareHash: await generateShareHash(share),
+    sharePrivateKey: privateKey,
+    sharePublicKey: publicKey,
+    sharePrivateKeyB64: Buffer.from(privateKey).toString("base64"),
+    sharePublicKeyB64: Buffer.from(publicKey).toString("base64"),
+  };
+}
+
+export interface DeriveRSAKeysReturn {
+  sharePrivateKeyJWK: JWKInterface;
   sharePublicKey: string;
 }
 
@@ -246,71 +302,8 @@ export interface GenerateShareHashAndPublicKeyReturn {
  * - https://github.com/framp/zero-knowledge-node/blob/master/keypair-auth/crypto-utils.js
  * - https://www.youtube.com/watch?v=cMoD0wIxIpQ
  */
-async function generateShareHashAndPublicKey(share: string): Promise<GenerateShareHashAndPublicKeyReturn> {
-  log(LOG_GROUP.WALLET_GENERATION, "generateShareHashAndPublicKey()");
-
-  if (!share) {
-    throw new Error("Share is missing — unable to generate share hash and public key.");
-  }
-
-  const sharePrng = random.createInstance();
-
-  sharePrng.seedFileSync = (needed) => {
-    let r = "",
-      i = 0,
-      j = 0;
-
-    while (i++ < needed) {
-      r += share[j++];
-      if (j === share.length) j = 0;
-    }
-
-    return r;
-  };
-
-  return new Promise((resolve, reject) => {
-    pki.rsa.generateKeyPair(
-      {
-        bits: 4096,
-        prng: sharePrng,
-        workerScript,
-      },
-      async (err, result) => {
-        if (err) {
-          reject(err);
-        } else {
-          const shareHash = await generateShareHash(share);
-          const publicKey = result.publicKey;
-          const sharePublicKey = bigintToBase64Url(publicKey.n);
-
-          resolve({
-            shareHash,
-            sharePublicKey,
-          });
-        }
-      },
-    );
-  });
-}
-
-export interface GenerateShareHashAndPrivateKeyReturn {
-  shareHash: string;
-  sharePrivateKeyJWK: JWKInterface;
-}
-
-/**
- * See:
- * - https://github.com/framp/zero-knowledge-node/blob/master/keypair-auth/crypto-utils.js
- * - https://www.youtube.com/watch?v=cMoD0wIxIpQ
- */
-async function generateShareHashAndPrivateKey(share: string): Promise<GenerateShareHashAndPrivateKeyReturn> {
-  log(LOG_GROUP.WALLET_GENERATION, "generateShareHashAndPrivateKey()");
-
-  console.log("EdDSA test:");
-
-  await generateShareHashAndEdKeys(share).catch((err) => {
-    console.log("Test error =", err);
-  });
+async function deriveRSAKeys(share: string): Promise<DeriveRSAKeysReturn> {
+  log(LOG_GROUP.WALLET_GENERATION, "deriveRSAKeys()");
 
   if (!share) {
     throw new Error("Share is missing — unable to generate share hash and private key.");
@@ -342,8 +335,7 @@ async function generateShareHashAndPrivateKey(share: string): Promise<GenerateSh
         if (err) {
           reject(err);
         } else {
-          const shareHash = await generateShareHash(share);
-          const privateKey = result.privateKey;
+          const { privateKey, publicKey } = result;
 
           // Extract and encode the RSA parameters into JWK format
           const sharePrivateKeyJWK = {
@@ -358,9 +350,11 @@ async function generateShareHashAndPrivateKey(share: string): Promise<GenerateSh
             qi: bigintToBase64Url(privateKey.qInv),
           };
 
+          const sharePublicKey = bigintToBase64Url(publicKey.n);
+
           resolve({
-            shareHash,
             sharePrivateKeyJWK,
+            sharePublicKey,
           });
         }
       },
@@ -778,8 +772,8 @@ export const WalletUtils = {
   generateWalletRecoveryShares,
   generateWalletJWKFromShares,
   generateShareHash,
-  generateShareHashAndPublicKey,
-  generateShareHashAndPrivateKey,
+  generateShareHashAndEdKeys,
+  deriveRSAKeys,
 
   // Getters:
   getDeviceSharesForUser,
