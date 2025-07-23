@@ -65,7 +65,7 @@ async function pingUpdater(
         newData[index].health = { status: "pending" };
         onUpdate(newData);
 
-        // const healthJson = await fetchResult.json();
+        const healthJson = await fetchResult.json();
         const propertyTxn = newData[index].settings.properties;
 
         newData[index].health = {
