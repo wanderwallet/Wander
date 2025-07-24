@@ -9,7 +9,7 @@ import {
   type AoArNSNameData,
   type AoANTState,
   type AoPrimaryName,
-} from "@ar.io/sdk";
+} from "@ar.io/sdk/web";
 import { connect } from "@permaweb/aoconnect/browser";
 
 // Query client for ArNS profile caching
