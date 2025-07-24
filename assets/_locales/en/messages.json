@@ -3733,7 +3733,7 @@
     "description": "Core tier title"
   },
   "tier_core_description": {
-    "message": "1. Open the [Fair Launch delegation website](https://ao.arweave.net/#/delegate/) <br/> 2. Connect your Wander wallet <br/> 3. Add WNDR to your delegation list <br/> 4. WNDR tokens deposited every 24 hours",
+    "message": "1. Open the [Fair Launch delegation website](https://ao.arweave.net/#/delegate/) <br/> 2. Connect your Wander wallet <br/> 3. Add WNDR to your delegation list <br/> 4. WNDR earnings are deposited every 24 hours",
     "description": "Core tier description with steps"
   },
   "tier_benefit_fee_reduction_defi": {
