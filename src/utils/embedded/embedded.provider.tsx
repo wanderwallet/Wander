@@ -72,7 +72,6 @@ import { useTheme } from "~components/embed/contexts/ThemeContext";
 import { withRetry } from "~utils/promises/retry";
 import { createAnonSession, INITIAL_ANON_SESSION, parseSupabaseSession } from "~utils/embedded/session/session.utils";
 import { useLocation } from "~wallets/router/router.utils";
-import type { M } from "vitest/dist/chunks/reporters.d.BFLkQcL6";
 
 export type AuthStatusCopy = AuthStatus;
 
