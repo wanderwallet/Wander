@@ -2,7 +2,7 @@ import { extractGarItems, pingUpdater } from "~lib/wayfinder";
 import { type Alarms } from "webextension-polyfill";
 import type { GatewayAddressRegistryItem } from "~gateways/types";
 import { RETRY_ALARM, scheduleGatewayUpdate, UPDATE_ALARM, updateGatewayCache } from "~gateways/cache";
-import { ARIO } from "@ar.io/sdk";
+import { ARIO } from "@ar.io/sdk/web";
 
 /**
  * Gateway cache update call. Usually called by an alarm,

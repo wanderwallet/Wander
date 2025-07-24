@@ -18,6 +18,7 @@
     },
     "resolveJsonModule": true,
     "baseUrl": ".",
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "moduleResolution": "bundler"
   }
 }
