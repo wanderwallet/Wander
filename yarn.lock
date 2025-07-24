@@ -30,7 +30,7 @@
 
 "@arconnect/components-rebrand@https://github.com/wanderwallet/components-rebrand.git#master":
   version "1.0.0"
-  resolved "https://github.com/wanderwallet/components-rebrand.git#1edc97010150af638e9bb813feca7476881feb97"
+  resolved "https://github.com/wanderwallet/components-rebrand.git#755398a39df5ee53b5426b411fefb7298554ed30"
   dependencies:
     "@iconicicons/react" "^1.5.1"
     "@untitled-ui/icons-react" "^0.1.4"
