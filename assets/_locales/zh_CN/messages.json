@@ -3763,5 +3763,99 @@
     "earn": {
       "message": "赚取",
       "description": "Earn text"
+    },
+    "price": {
+      "message": "价格",
+      "description": "Price text"
+    },
+    "stats": {
+      "message": "统计",
+      "description": "Stats text"
+    },
+    "about": {
+      "message": "关于",
+      "description": "About text"
+    },
+    "token_price": {
+        "message": "$NAME$ 价格",
+        "description": "Token price text",
+        "placeholders": {
+            "name": {
+                "content": "$1",
+                "example": "USDA"
+            }
+        }
+    },
+    "token_description_m3PaWzK4PTG9lAaqYQPaPdOcXdO8hYqi5Fe9NWqXd0w": {
+        "message": "AO 致力于为去中心化应用 (dApps) 提供安全、可扩展和互操作的计算环境，使用 AO 代币作为其原生货币来保障经济安全和流动性。",
+        "description": "AO 代币的描述"
+    },
+    "token_description_0syT13r0s0tgPmIed95bJnuSqaD29HQNN8D3ElLSrsc": {
+        "message": "AO 致力于为去中心化应用 (dApps) 提供安全、可扩展和互操作的计算环境，使用 AO 代币作为其原生货币来保障经济安全和流动性。",
+        "description": "AO 代币的描述（重复）"
+    },
+    "token_description_AR": {
+        "message": "Arweave 是一个去中心化存储平台，实现永久、不可变的数据存储。其原生代币 AR 用于数据存储和激励矿工维护数据。",
+        "description": "Arweave 代币的描述"
+    },
+    "token_description_xU9zFkq3X2ZQ6olwNVvr1vUWIjc3kXTWr7xKQD6dh10": {
+        "message": "包装 AR (wAR) 是通过跨链桥包装并跨链到 AO 网络的 AR 代币。AOX 跨链桥负责在 Arweave 和 AO 网络之间进行包装和桥接。",
+        "description": "包装 AR 代币的描述"
+    },
+    "token_description_NG_0lVX882MG5nhARrSzyprEK6ejonHpdUmaaMPsHE8": {
+        "message": "Q Arweave (qAR) 是量子桥的核心代币，在 AO 生态系统中代表 AR。它允许 AR 持有者参与基于 AO 的应用，同时保持与 Arweave 的连接。qAR 在 AO 中开启了新机遇，并实现潜在的双重奖励，让用户在保持 AR 持有者权益的同时获得 AO 激励。",
+        "description": "Q Arweave 代币的描述"
+    },
+    "token_description_4hXj_E_5fAKmo4E8KjgQvuDJKAFk9P2grhycVmISDLs": {
+        "message": "Permaweb Index（PI）是代表永久网生态系统的代币。它由 AO、Arweave（AR）和生态项目代币组成，使持有者能够通过一个代币实现对永久网的多元化投资。",
+        "description": "Permaweb Index 代币的描述"
+    },
+    "token_description_pazXumQI_HPH7iFGfTC_4_7biSnqz_U67oFAGry5zUY": {
+        "message": "Llama Land 是一个建立在 AO 上的 AI 驱动的大型多人在线游戏。Llama Coin 是 Llama Land 的官方测试代币。",
+        "description": "Llama Coin 代币的描述"
+    },
+    "token_description_DM3FoZUq_yebASPhgd8pEIRIzDW6muXEhxz5_JwbZwo": {
+    "message": "PIXL 是用于在通用内容市场购买原子资产的奖励代币。当用户通过 Bazar 或任何 UCM 平台购买原子资产时，他们有资格获得 PIXL 代币。",
+    "description": "PIXL 代币的描述"
+    },
+    "token_description_wOrb8b_V8QixWyXZub48Ki5B6OIDyf_p1ngoonsaRpQ": {
+        "message": "AO 上的第一个迷因代币",
+        "description": "第一个迷因代币的描述"
+    },
+    "token_description_8rbAftv7RaPxFjFk5FGUVAVCSjGQB4JHDcb9P9wCVhQ": {
+        "message": "超越按键，成为特工",
+        "description": "AGENT 代币的描述"
+    },
+    "token_description_agYcCFJtrMG6cqMuZfskIkFTGvUPddICmtQSBIoPdiA": {
+        "message": "ARIO (tARIO) 是 AR.IO 永久云网络的原生测试代币。该代币激励网关运营商提供重要服务，以促进永久网络的访问和实用性。此外, ARIO 可用于购买和管理 Arweave 名称系统 (ArNS) 域名以及参与委托质押。",
+        "description": "ARIO 测试代币的描述"
+    },
+    "token_description_qNvAoz0TgcH7DMg8BCVn8jF32QH5L6T29VjHxhHqqGE": {
+        "message": "ARIO 用于质押、网络奖励和在 AR.IO 永久云网络中购买去中心化智能域名。",
+        "description": "ARIO 代币的描述"
+    },
+    "token_description_aYrCboXVSl1AXL9gPFe3tfRxRf0ZmkOXH65mKT0HHZw": {
+        "message": "为 AR.IO 主网升级！参与永久云网络的任务以获得经验值 (EXP), 这是代表网络即将空投资格的链上代币。了解更多: https://ar.io/experience",
+        "description": "EXP 代币的描述"
+    },
+        "token_description_7GoQfmSOct_aUOWKM4xbKGg6DzAmOgdKwg8Kf_CbHm4": {
+        "message": "Wander Token 是 Wander Network 的代币。WNDR 是一种实用型代币，用于奖励 AO 和 Arweave 生态系统中有意义的互动。",
+        "description": "Wander 代币的描述"
+    },
+    "website": {
+        "message": "网站",
+        "description": "Website text"
+    },
+    "address": {
+        "message": "地址",
+        "description": "Address text"
+    },
+    "info": {
+        "message": "信息",
+        "description": "Info text"
+    },
+    "verified": {
+        "message": "已验证",
+        "description": "Verified text"
     }
 }

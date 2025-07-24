@@ -3803,5 +3803,99 @@
   "earn": {
     "message": "Earn",
     "description": "Earn text"
+  },
+  "price": {
+    "message": "Price",
+    "description": "Price text"
+  },
+  "stats": {
+    "message": "Stats",
+    "description": "Stats text"
+  },
+  "about": {
+    "message": "About",
+    "description": "About text"
+  },
+  "token_price": {
+    "message": "$NAME$ Price",
+    "description": "Token price text",
+    "placeholders": {
+      "name": {
+        "content": "$1",
+        "example": "USDA"
+      }
+    }
+  },
+  "token_description_m3PaWzK4PTG9lAaqYQPaPdOcXdO8hYqi5Fe9NWqXd0w": {
+    "message": "AO focuses on providing a secure, scalable, and interoperable compute environment for decentralized applications (dApps), using the AO token as its native currency for economic security and liquidity.",
+    "description": "Description for AO token"
+  },
+  "token_description_0syT13r0s0tgPmIed95bJnuSqaD29HQNN8D3ElLSrsc": {
+    "message": "AO focuses on providing a secure, scalable, and interoperable compute environment for decentralized applications (dApps), using the AO token as its native currency for economic security and liquidity.",
+    "description": "Description for AO token (duplicate)"
+  },
+  "token_description_AR": {
+    "message": "Arweave is a decentralized storage platform enabling permanent, immutable data storage. Its native token, AR, is used for data storage and incentivizing miners to maintain this data.",
+    "description": "Description for Arweave token"
+  },
+  "token_description_xU9zFkq3X2ZQ6olwNVvr1vUWIjc3kXTWr7xKQD6dh10": {
+    "message": "Wrapped AR (wAR) is the AR token wrapped and cross-chained to the AO network. The AOX cross-chain bridge does the wrapping and bridging between the Arweave and AO networks.",
+    "description": "Description for Wrapped AR token"
+  },
+  "token_description_NG_0lVX882MG5nhARrSzyprEK6ejonHpdUmaaMPsHE8": {
+    "message": "Q Arweave (qAR) is the core token of the Quantum bridge, representing AR within the AO ecosystem. It allows AR holders to engage with AO-based applications while maintaining their Arweave connection. qAR opens up new opportunities in AO and enables potential dual rewards, letting users benefit from AO incentives while keeping AR holder rights.",
+    "description": "Description for Q Arweave token"
+  },
+  "token_description_4hXj_E_5fAKmo4E8KjgQvuDJKAFk9P2grhycVmISDLs": {
+    "message": "Permaweb Index (PI) is a token representing the permaweb ecosystem. It is composed of AO, Arweave (AR), and ecosystem project tokens, allowing holders to gain diversified exposure to the permaweb through a single token.",
+    "description": "Description for Permaweb Index token"
+  },
+  "token_description_pazXumQI_HPH7iFGfTC_4_7biSnqz_U67oFAGry5zUY": {
+    "message": "Llama Land is an AI powered MMO game built on AO.  LLama Coin is the official test token of Llama Land",
+    "description": "Description for Llama Coin token"
+  },
+  "token_description_DM3FoZUq_yebASPhgd8pEIRIzDW6muXEhxz5_JwbZwo": {
+    "message": "PIXL is a rewards token for purchasing atomic assets on the Universal Content Marketplace. When users buy atomic assets via Bazar or any UCM platform, they become eligible to receive PIXL tokens.",
+    "description": "Description for PIXL token"
+  },
+  "token_description_wOrb8b_V8QixWyXZub48Ki5B6OIDyf_p1ngoonsaRpQ": {
+    "message": "The first Meme token on AO",
+    "description": "Description for first meme token"
+  },
+  "token_description_8rbAftv7RaPxFjFk5FGUVAVCSjGQB4JHDcb9P9wCVhQ": {
+    "message": "Transcend Keystroking, be an AGENT",
+    "description": "Description for AGENT token"
+  },
+  "token_description_agYcCFJtrMG6cqMuZfskIkFTGvUPddICmtQSBIoPdiA": {
+    "message": "ARIO (tARIO) is the native test token of the AR.IO permanent cloud network. The token incentivizes gateway operators to provide vital services that facilitate access to and utility of the permaweb. In addition, ARIO can be used for purchasing and managing Arweave Name System (ArNS) domains as well as for participation in delegated staking.",
+    "description": "Description for ARIO test token"
+  },
+  "token_description_qNvAoz0TgcH7DMg8BCVn8jF32QH5L6T29VjHxhHqqGE": {
+    "message": "ARIO is used for staking, network rewards, and purchasing decentralized smart domains within the AR.IO permanent cloud network.",
+    "description": "Description for ARIO token"
+  },
+  "token_description_aYrCboXVSl1AXL9gPFe3tfRxRf0ZmkOXH65mKT0HHZw": {
+    "message": "Level up for the AR.IO mainnet! Engage in quests with the Permanent Cloud Network to gain Experience Points (EXP), onchain tokens that represent potential eligibility for the network's forthcoming airdrops. Learn more at: https://ar.io/experience",
+    "description": "Description for EXP token"
+  },
+  "token_description_7GoQfmSOct_aUOWKM4xbKGg6DzAmOgdKwg8Kf_CbHm4": {
+    "message": "The Wander Token is the token of the Wander Network. WNDR is a utility token that rewards meaningful engagement across the AO and Arweave ecosystems.",
+    "description": "Description for Wander token"
+  },
+  "website": {
+    "message": "Website",
+    "description": "Website text"
+  },
+  "address": {
+    "message": "Address",
+    "description": "Address text"
+  },
+  "info": {
+    "message": "Info",
+    "description": "Info text"
+  },
+  "verified": {
+    "message": "Verified",
+    "description": "Verified text"
   }
 }

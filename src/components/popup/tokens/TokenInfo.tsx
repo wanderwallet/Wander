@@ -6,7 +6,6 @@ import { useAoToken, useTokenBalance, useTokenPrice } from "~tokens/hooks";
 import { useArChange } from "~tokens/hooks/useArChange";
 import { useFormattedArBalance } from "~tokens/hooks/useFormattedArBalance";
 import { useActiveAddress } from "~wallets/hooks";
-import PriceChart from "../asset/PriceChart";
 import useSetting from "~settings/hook";
 import { Text } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
@@ -16,9 +15,10 @@ import VerifiedIcon from "~components/icons/VerifiedIcon";
 import { Flex } from "~components/common/Flex";
 import { useMemo } from "react";
 import { ReceiveIcon } from "~components/icons/ReceiveIcon";
-import type { WanderRoutePath } from "~wallets/router/router.types";
 import { ActionButtons, type ButtonConfig } from "../ActionButtons";
 import arLogoDark from "url:/assets/ar/logo_dark.png";
+import { PriceChart } from "./PriceChart";
+import BigNumber from "bignumber.js";
 
 interface TokenInfoProps {
   id: string;
@@ -76,7 +76,7 @@ export const TokenInfo: React.FC<TokenInfoProps> = ({ id }) => {
       };
 
   const verified = VERIFIED_TOKENS.includes(id as (typeof VERIFIED_TOKENS)[number]);
-  const hasDescription = browser.i18n.getMessage(`token_descriptions.${id}`);
+  const tokenDescription = browser.i18n.getMessage(`token_description_${id.replaceAll("-", "_")}`);
 
   const buttons = useMemo<ButtonConfig[]>(
     () => [
@@ -141,69 +141,41 @@ export const TokenInfo: React.FC<TokenInfoProps> = ({ id }) => {
 
       <ActionButtons buttons={buttons} />
 
-      {/* {isAR && <PriceChart />} */}
+      {isAR && <PriceChart />}
 
-      {hasDescription ? (
+      {tokenDescription ? (
         <>
-          <div style={{ gap: 8 }}>
-            <Text
-              style={{
-                fontSize: 16,
-                fontFamily: "JakartaMedium",
-                lineHeight: 20.8,
-              }}>
-              {browser.i18n.getMessage("menu.about")}
+          <Flex direction="column" gap={8}>
+            <Text variant="secondary" weight="medium" noMargin>
+              {browser.i18n.getMessage("about")}
             </Text>
-            <Text
-              style={{
-                fontSize: 16,
-                fontFamily: "JakartaMedium",
-                lineHeight: 20.8,
-              }}>
-              {browser.i18n.getMessage(`token_descriptions.${id}`)}
+            <Text weight="medium" noMargin>
+              {tokenDescription}
             </Text>
-          </div>
+          </Flex>
           {verified && (
-            <div
-              style={{
-                flexDirection: "row",
-                alignSelf: "flex-start",
-                gap: 4,
-                padding: "4px 8px",
-                borderRadius: 50,
-                alignItems: "center",
-              }}>
-              <VerifiedIcon />
-              <Text
-                style={{
-                  color: "#fff",
-                  fontSize: 12,
-                  fontFamily: "ManropeSemiBold",
-                }}>
-                {browser.i18n.getMessage("token_information.verified")}
+            <Flex
+              direction="row"
+              align="center"
+              gap={4}
+              padding="4px 8px"
+              borderRadius={12}
+              background={theme.primary}
+              maxWidth="fit-content">
+              <VerifiedIcon color="white" />
+              <Text size="xs" weight="semibold" noMargin>
+                {browser.i18n.getMessage("verified")}
               </Text>
-            </div>
+            </Flex>
           )}
         </>
       ) : (
-        <div
-          style={{
-            gap: 16,
-            borderRadius: 8,
-            padding: 16,
-            flexDirection: "row",
-            alignItems: "center",
-          }}>
+        <Flex direction="row" align="center" gap={16} borderRadius={8} padding={16}>
           <Feather name="alert-triangle" />
-          <Text
-            style={{
-              fontSize: 14,
-              fontFamily: "ManropeSemiBold",
-              flex: 1,
-            }}>
+          <Text size="sm" weight="semibold" noMargin>
             {browser.i18n.getMessage("unknown_coin")}
           </Text>
-        </div>
+        </Flex>
       )}
     </Flex>
   );

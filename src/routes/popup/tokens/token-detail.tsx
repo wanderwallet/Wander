@@ -8,6 +8,7 @@ import { Logo } from "~components/popup/Token";
 import { useEffect, useState } from "react";
 import { getUserAvatar } from "~lib/avatar";
 import { TokenInfo } from "~components/popup/tokens/TokenInfo";
+import { TokenLinks } from "~components/popup/tokens/TokenLinks";
 
 export function TokenDetailView() {
   const { id } = useParams<{ id: string }>();
@@ -23,7 +24,7 @@ export function TokenDetailView() {
       }
     };
     fetchLogo();
-  }, [token, logo]);
+  }, [token?.Logo]);
 
   if (!token) return null;
 
@@ -43,6 +44,7 @@ export function TokenDetailView() {
       <Wrapper>
         <Flex direction="column" gap={24}>
           <TokenInfo id={id} />
+          <TokenLinks id={id} />
         </Flex>
       </Wrapper>
     </>
