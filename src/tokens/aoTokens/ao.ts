@@ -81,6 +81,8 @@ export const defaultTokens = [
   },
 ] as const satisfies TokenInfo[];
 
+export const nonTransferableTokenIds: Array<string> = [EXP_PROCESS_ID, PI_PROCESS_ID, WNDR_PROCESS_ID];
+
 /**
  * Dummy ID
  */
@@ -318,6 +320,11 @@ export async function getAoCollectibleBalance(
  * Find the value for a tag name
  */
 export const getTagValue = (tagName: string, tags: (Tag | DecodedTag)[]) => tags.find((t) => t.name === tagName)?.value;
+
+export const getTagValues = (tagNames: string[], tags: (Tag | DecodedTag)[]): (string | undefined)[] => {
+  const tagMap = new Map(tags.map((tag) => [tag.name, tag.value]));
+  return tagNames.map((name) => tagMap.get(name));
+};
 
 export const createDataItemSigner =
   (wallet: any) =>

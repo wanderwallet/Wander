@@ -24,6 +24,14 @@ export const tierIdToTierName = {
   5: TierTypes.Core,
 };
 
+export const tierNameToId = {
+  [TierTypes.Prime]: 1,
+  [TierTypes.Edge]: 2,
+  [TierTypes.Reserve]: 3,
+  [TierTypes.Select]: 4,
+  [TierTypes.Core]: 5,
+};
+
 export const defiFeePercent = 1;
 
 export const EXPLORE_TIER_BENEFITS = "explore_tier_benefits";

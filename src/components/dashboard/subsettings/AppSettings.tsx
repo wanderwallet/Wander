@@ -25,7 +25,7 @@ import Arweave from "arweave";
 import { defaultGateway, suggestedGateways, testnets } from "~gateways/gateway";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { LoadingView } from "~components/page/common/loading/loading.view";
-import { ToggleSwitch } from "~routes/popup/subscriptions/subscriptionDetails";
+import { ToggleSwitch } from "~components/ToggleSwitch";
 import { Flex } from "~components/common/Flex";
 
 export interface AppSettingsDashboardViewParams {

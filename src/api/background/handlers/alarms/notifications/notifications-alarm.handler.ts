@@ -79,32 +79,19 @@ export async function handleNotificationsAlarm(alarm?: Alarms.Alarm) {
     }
     const newTransactions = [...newAoTransactions, ...newArTransactions];
     if (newTransactions.length > 0) {
-      if (newTransactions.length > 1) {
-        // Case for multiple new transactions
-        const notificationMessage = `You have ${newTransactions.length} new transactions.`;
-        await browser.notifications.create({
-          type: "basic",
-          iconUrl,
-          title: "New Transactions",
-          message: notificationMessage,
-        });
-      } else {
-        // Case for a single new transaction
-        const notificationMessage = `You have 1 new transaction.`;
-        const notificationId = await browser.notifications.create({
-          type: "basic",
-          iconUrl,
-          title: "New Transactions",
-          message: notificationMessage,
-        });
+      const notificationId = await browser.notifications.create({
+        type: "basic",
+        iconUrl,
+        title: newTransactions.length === 1 ? "New Transaction" : "New Transactions",
+        message: `You have ${newTransactions.length} new transaction${newTransactions.length === 1 ? "" : "s"}.`,
+      });
 
-        // Listen for clicks on the notification
-        browser.notifications.onClicked.addListener((clickedNotificationId) => {
-          if (clickedNotificationId === notificationId) {
-            browser.tabs.create({ url: browser.runtime.getURL(`tabs/popup.html#/transactions`) });
-          }
-        });
-      }
+      // Listen for clicks on the notification
+      browser.notifications.onClicked.addListener((clickedNotificationId) => {
+        if (clickedNotificationId === notificationId) {
+          browser.tabs.create({ url: browser.runtime.getURL(`tabs/fullscreen.html?tab=feed`) });
+        }
+      });
     }
 
     await ExtensionStorage.set(

@@ -5,6 +5,7 @@ import "styled-components";
 import type { AuthRequestMessageData, AuthResult } from "~utils/auth/auth.types";
 import { EmbeddedMessage, EmbeddedCall } from "~utils/embedded/utils/messages/embedded-messages.types.ts";
 import type { ThemeMode } from "~components/embed/contexts/ThemeContext";
+import type { DirectAccess } from "~wallets/router/iframe/iframe.routes";
 
 declare module "@arconnect/webext-bridge" {
   export interface ProtocolMap {
@@ -92,6 +93,11 @@ declare module "@arconnect/webext-bridge" {
       return: void;
     };
 
+    embedded_backup: {
+      data: EmbeddedMessage<"embedded_backup">;
+      return: void;
+    };
+
     embedded_balance: {
       data: EmbeddedMessage<"embedded_balance">;
       return: void;
@@ -116,6 +122,11 @@ declare module "@arconnect/webext-bridge" {
 
     embedded_setTheme: {
       data: ThemeMode;
+      return: void;
+    };
+
+    embedded_navigate: {
+      data: DirectAccess;
       return: void;
     };
 

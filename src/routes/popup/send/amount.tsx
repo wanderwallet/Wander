@@ -20,7 +20,13 @@ import SliderMenu from "~components/SliderMenu";
 import { type Contact } from "~components/Recipient";
 import { formatAddress } from "~utils/format";
 import { useContact } from "~contacts/hooks";
-import { AR_PROCESS_ID, defaultTokens, EXP_PROCESS_ID, PI_PROCESS_ID, type TokenInfo } from "~tokens/aoTokens/ao";
+import {
+  AR_PROCESS_ID,
+  defaultTokens,
+  EXP_PROCESS_ID,
+  nonTransferableTokenIds,
+  type TokenInfo,
+} from "~tokens/aoTokens/ao";
 import { useAoTokens } from "~tokens/hooks";
 import BigNumber from "bignumber.js";
 import { AnnouncementPopup } from "./announcement";
@@ -150,7 +156,7 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
     AR_PROCESS_ID,
   );
 
-  const showNonTransferableAnnouncement = tokenID === EXP_PROCESS_ID || tokenID === PI_PROCESS_ID;
+  const showNonTransferableAnnouncement = nonTransferableTokenIds.includes(tokenID);
 
   // currency setting
   const [currency] = useSetting<string>("currency");
@@ -504,41 +510,49 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
         </BottomActions>
 
         <SliderMenu
-          height={"90%"}
+          height="90%"
           paddingVertical={32}
           title={browser.i18n.getMessage("select_token")}
           isOpen={showTokenSelector}
           onClose={() => {
             setShownTokenSelector(false);
           }}>
-          <Input variant="search" sizeVariant="small" fullWidth placeholder="Search token" {...tokenSearch.bindings} />
-          <Spacer y={1.5} />
-          <TokensList>
-            {assets.filter(filterFn).map((token) => (
-              <Token
-                key={token.id}
-                type={"asset"}
-                defaultLogo={token?.Logo}
-                id={token.id}
-                ticker={token.Ticker}
-                divisibility={token.Denomination}
-                fiatPrice={prices[token.id]}
-                onClick={() => updateSelectedToken(token.id)}
-              />
-            ))}
-          </TokensList>
-          <Spacer y={1.25} />
-          <CollectiblesList>
-            {collectibles.filter(filterFn).map((token, i) => (
-              <Collectible
-                id={token.id}
-                name={token.Name || token.Ticker}
-                divisibility={token.Denomination}
-                onClick={() => updateSelectedToken(token.id)}
-                key={i}
-              />
-            ))}
-          </CollectiblesList>
+          <Box>
+            <Input
+              variant="search"
+              sizeVariant="small"
+              fullWidth
+              placeholder="Search token"
+              {...tokenSearch.bindings}
+            />
+            <Spacer y={1.5} />
+            <TokensList>
+              {assets.filter(filterFn).map((token) => (
+                <Token
+                  key={token.id}
+                  type={"asset"}
+                  defaultLogo={token?.Logo}
+                  id={token.id}
+                  ticker={token.Ticker}
+                  divisibility={token.Denomination}
+                  fiatPrice={prices[token.id]}
+                  onClick={() => updateSelectedToken(token.id)}
+                />
+              ))}
+            </TokensList>
+            <Spacer y={1.25} />
+            <CollectiblesList>
+              {collectibles.filter(filterFn).map((token, i) => (
+                <Collectible
+                  id={token.id}
+                  name={token.Name || token.Ticker}
+                  divisibility={token.Denomination}
+                  onClick={() => updateSelectedToken(token.id)}
+                  key={i}
+                />
+              ))}
+            </CollectiblesList>
+          </Box>
         </SliderMenu>
       </Wrapper>
     </>

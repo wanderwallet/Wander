@@ -1,127 +1,61 @@
-import { pLimit } from "plimit-lit";
-import { AOProcess } from "./ao";
+import { QueryClient } from "@tanstack/react-query";
 import type { NameServiceProfile } from "./types";
+import {
+  ARIO,
+  ARIO_MAINNET_PROCESS_ID,
+  AOProcess,
+  ANT,
+  type AoANTInfo,
+  type AoArNSNameData,
+  type AoANTState,
+  type AoPrimaryName,
+} from "@ar.io/sdk";
+import { connect } from "@permaweb/aoconnect/browser";
 
-export const AO_ARNS_PROCESS = "qNvAoz0TgcH7DMg8BCVn8jF32QH5L6T29VjHxhHqqGE";
+// Query client for ArNS profile caching
+const arnsQueryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
-export type ProcessId = string;
-export type WalletAddress = string;
-export type RegistrationType = "lease" | "permabuy";
+const aoCuUrl = "https://cu.ardrive.io";
 
-export type AoArNSBaseNameData = {
-  processId: ProcessId;
-  startTimestamp: number;
-  type: RegistrationType;
-  undernameLimit: number;
-  purchasePrice: number;
-};
+export const AO_CLIENT = connect({
+  CU_URL: aoCuUrl,
+});
 
-export type ANTRecord = {
-  transactionId: string;
-  ttlSeconds: number;
-};
-
-export type AoANTState = {
-  Name: string;
-  Ticker: string;
-  Denomination: number;
-  Owner: WalletAddress;
-  Controllers: WalletAddress[];
-  Records: Record<string, ANTRecord>;
-  Balances: Record<WalletAddress, number>;
-  Logo: string;
-  TotalSupply: number;
-  Initialized: boolean;
-};
-
-export type AoArNSLeaseData = AoArNSBaseNameData & {
-  type: "lease";
-  endTimestamp: number; // At what unix time (seconds since epoch) the lease ends
-};
-
-export type AoArNSPermabuyData = AoArNSBaseNameData & {
-  type: "permabuy";
-};
-export type AoArNSNameData = AoArNSPermabuyData | AoArNSLeaseData;
-export type ANTInfo = {
-  Name: string;
-  Ticker: string;
-  Denomination: number;
-  Owner: string;
-};
-export type ArNSPrimaryName = {
-  owner: WalletAddress;
-  name: string;
-  startTimestamp: number;
-  processId: string;
-};
+export const ARIO_READ_SDK = ARIO.init({
+  process: new AOProcess({
+    processId: ARIO_MAINNET_PROCESS_ID,
+    ao: AO_CLIENT,
+  }),
+});
 
 export async function getArNSRecord(name: string): Promise<AoArNSNameData | undefined> {
-  const ArIO = new AOProcess({ processId: AO_ARNS_PROCESS });
-  const record = await ArIO.read<AoArNSNameData>({
-    tags: [
-      { name: "Action", value: "Record" },
-      { name: "Name", value: name },
-    ],
-  });
+  const record = await ARIO_READ_SDK.getArNSRecord({ name });
   return record;
 }
 
-export async function getArNSRecords(): Promise<Record<string, AoArNSNameData>> {
-  const ArIO = new AOProcess({ processId: AO_ARNS_PROCESS });
-  const record = await ArIO.read<Record<string, AoArNSNameData>>({
-    tags: [{ name: "Action", value: "Records" }],
+export async function getANTInfo(processId: string): Promise<AoANTInfo> {
+  const ant = ANT.init({
+    process: new AOProcess({ processId, ao: AO_CLIENT }),
   });
-  return record;
+
+  return ant.getInfo();
 }
 
-export async function getANTInfo(processId: string): Promise<ANTInfo> {
-  const ant = new AOProcess({ processId });
-  const tags = [{ name: "Action", value: "Info" }];
-  const info = await ant.read<ANTInfo>({ tags });
-  return info;
+export async function getANTState(processId: string): Promise<AoANTState> {
+  const ant = ANT.init({
+    process: new AOProcess({ processId, ao: AO_CLIENT }),
+  });
+
+  return ant.getState();
 }
-
-export async function getANTState(processId: string, retries = 3): Promise<AoANTState> {
-  const ant = new AOProcess({ processId });
-  const tags = [{ name: "Action", value: "State" }];
-  const res = await ant.read<AoANTState>({ tags, retries });
-  return res;
-}
-
-export const getAllArNSNames = async (address: WalletAddress): Promise<string[]> => {
-  if (!address) return [];
-
-  const throttle = pLimit(50);
-
-  const arnsRecords = await getArNSRecords().then((records) =>
-    Object.values(records).filter((record) => record.processId !== undefined),
-  );
-
-  // check the contract owner and controllers
-  const results = await Promise.all(
-    arnsRecords.map(async (record) =>
-      throttle(async () => {
-        try {
-          const state = await getANTState(record.processId, 1);
-
-          if (state.Owner === address || state.Controllers.includes(address)) {
-            return state.Name;
-          }
-          return;
-        } catch (err) {
-          return;
-        }
-      }),
-    ),
-  );
-
-  if (results.length === 0) {
-    return [];
-  }
-
-  return Array.from(new Set(results.filter((result) => result)));
-};
 
 export async function searchArNSName(name: string) {
   name = name.toLowerCase();
@@ -147,7 +81,7 @@ export async function searchArNSName(name: string) {
  * @param primaryName - The ArNSPrimaryName to fetch the logo for.
  * @returns The transaction ID of the logo if found, otherwise undefined.
  */
-export async function findLogo(primaryName: ArNSPrimaryName): Promise<string | undefined> {
+export async function findLogo(primaryName: AoPrimaryName): Promise<string | undefined> {
   try {
     // Fetch the ANT info to get the logo transaction ID
     const antInfo = await getANTState(primaryName.processId);
@@ -163,21 +97,11 @@ export async function findLogo(primaryName: ArNSPrimaryName): Promise<string | u
  * @param address - Wallet address to fetch the primary name for.
  * @returns Primary name record or undefined.
  */
-export async function getPrimaryArNSName(address: WalletAddress): Promise<ArNSPrimaryName | undefined> {
-  const ArIO = new AOProcess({ processId: AO_ARNS_PROCESS });
-  // Use retries of 1 as AOProcess is treating assertion errors (i.e., "Primary name not found") as
-  // a retry-able error.
-  const primaryName = ArIO.read<ArNSPrimaryName>({
-    tags: [
-      { name: "Action", value: "Primary-Name" },
-      { name: "Address", value: address },
-    ],
-    retries: 1,
-  });
-  return primaryName;
+export async function getPrimaryArNSName(address: string): Promise<AoPrimaryName | undefined> {
+  return ARIO_READ_SDK.getPrimaryName({ address });
 }
 
-export async function getArNSProfile(query: string): Promise<NameServiceProfile | undefined> {
+async function fetchArNSProfile(query: string): Promise<NameServiceProfile | undefined> {
   if (!query) {
     return undefined;
   }
@@ -194,7 +118,30 @@ export async function getArNSProfile(query: string): Promise<NameServiceProfile 
     };
   } catch (error) {
     console.error("Error fetching ArNS profile:", error);
+    return undefined;
+  }
+}
+
+export async function getArNSProfile(query: string): Promise<NameServiceProfile | undefined> {
+  if (!query) {
+    return undefined;
   }
 
-  return undefined;
+  try {
+    const result = await arnsQueryClient
+      .fetchQuery({
+        queryKey: ["arns-profile", query],
+        queryFn: () => fetchArNSProfile(query),
+        staleTime: 5 * 60 * 1000, // 5 minutes
+      })
+      .catch((error) => {
+        console.error(`Error in ArNS profile query for ${query}:`, error);
+        return undefined;
+      });
+
+    return result;
+  } catch (error) {
+    console.error(`Unexpected error in getArNSProfile for ${query}:`, error);
+    return undefined;
+  }
 }

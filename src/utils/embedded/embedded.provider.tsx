@@ -26,7 +26,12 @@ import type {
   OAutProviderType,
   AuthEmailParams,
 } from "~utils/embedded/embedded.types";
-import { setAuthTokenHeader, getSupabaseClient, signOut } from "~utils/embedded/embedded.utils";
+import {
+  setAuthTokenHeader,
+  getSupabaseClient,
+  signOut,
+  getBackupsNeededAndMessage,
+} from "~utils/embedded/embedded.utils";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import {
   AuthProviderType,
@@ -66,6 +71,7 @@ import { isomorphicOnMessage } from "~isomorphic-messaging";
 import { useTheme } from "~components/embed/contexts/ThemeContext";
 import { withRetry } from "~utils/promises/retry";
 import { parseSupabaseSession } from "~utils/embedded/session/session.utils";
+import { useLocation } from "~wallets/router/router.utils";
 
 export type AuthStatusCopy = AuthStatus;
 
@@ -79,6 +85,7 @@ const EMBEDDED_CONTEXT_INITIAL_STATE = {
   recoverableAccount: null,
   recoverableAccountWallets: null,
   requestPasswordChange: false,
+  backupsNeeded: 0,
 } as const satisfies EmbeddedContextState;
 
 const EMBEDDED_CONTEXT_INITIAL_AUTH = {
@@ -93,6 +100,7 @@ export const EmbeddedContext = createContext<EmbeddedContextData>({
   ...EMBEDDED_CONTEXT_INITIAL_AUTH,
 
   currentWallet: null,
+  walletCount: 0,
   unpartitionedStateStatus: getUnpartitionedStateStatus(),
 
   authenticate: async () => null,
@@ -148,20 +156,24 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
   const { currentWalletId: walletId, wallets } = embeddedContextState;
 
-  const currentWallet = useMemo(() => {
-    return (
+  const { currentWallet, walletCount } = useMemo(() => {
+    const currentWallet =
       wallets.find((wallet) => {
         return wallet.id === walletId;
-      }) || null
-    );
+      }) || null;
+
+    return {
+      currentWallet,
+      walletCount: wallets.length,
+    };
   }, [wallets, walletId]);
 
   const walletAddress = currentWallet?.address;
 
   // Auth props:
 
-  const { authProviderType, authStatus, user, session } = embeddedContextAuth;
-
+  const { authStatus, authProviderType, user, session } = embeddedContextAuth;
+  const { backupsNeeded, backupMessage } = embeddedContextState;
   const userId = user?.id || null;
 
   useEffect(() => {
@@ -172,9 +184,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         coverElement.setAttribute("aria-hidden", "true");
       }
     }
-  }, [authStatus]);
 
-  useEffect(() => {
     if (authStatus === "noAuth") {
       postEmbeddedMessage({
         type: "embedded_auth",
@@ -202,7 +212,19 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         userDetails,
       },
     });
-  }, [authProviderType, authStatus, user]);
+  }, [authStatus, authProviderType, user]);
+
+  useEffect(() => {
+    if (authStatus !== "unlocked") return;
+
+    postEmbeddedMessage({
+      type: "embedded_backup",
+      data: {
+        backupsNeeded,
+        backupMessage,
+      },
+    });
+  }, [authStatus, backupsNeeded, backupMessage]);
 
   const updateCurrentWallet = useCallback((walletUpdater: Wallet | ((currentWallet: Wallet) => Wallet)) => {
     setEmbeddedContextState((prevEmbeddedContextState) => {
@@ -221,6 +243,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       return {
         ...prevEmbeddedContextState,
         wallets,
+        ...getBackupsNeededAndMessage(wallets),
       };
     });
   }, []);
@@ -466,6 +489,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         ...EMBEDDED_CONTEXT_INITIAL_STATE,
         currentWalletId: wallet.id,
         wallets,
+        ...getBackupsNeededAndMessage(wallets),
         lastRegisteredWallet: isNewWallet ? wallet : null,
         requestPasswordChange,
       } satisfies EmbeddedContextState;
@@ -979,6 +1003,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         });
 
         throw error;
+      } finally {
+        PersistentStorage.set(StorageKeys.CONNECT.AUTH.IS_USING_BE, false);
       }
     },
     [user],
@@ -1062,6 +1088,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       ...prevAuthContextState,
       currentWalletId: wallets?.[0]?.id || null,
       wallets,
+      ...getBackupsNeededAndMessage(wallets),
     }));
 
     let authStatus: AuthStatus = wallets.length === 0 ? "noWallets" : "noShares";
@@ -1205,6 +1232,10 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
   const { setMode } = useTheme();
 
+  const { navigate } = useLocation();
+  const navigateRef = useRef(navigate);
+  navigateRef.current = navigate;
+
   useEffect(() => {
     isomorphicOnMessage("embedded_signOut", () => {
       signOut(false);
@@ -1212,6 +1243,14 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
     isomorphicOnMessage("embedded_setTheme", ({ data }) => {
       setMode(data);
+    });
+
+    isomorphicOnMessage("embedded_navigate", ({ data }) => {
+      const navigate = navigateRef.current;
+
+      if (data !== "backup" || !navigate) return;
+
+      navigate("/account/backup-wallet");
     });
   }, []);
 
@@ -1222,6 +1261,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         ...embeddedContextAuth,
 
         currentWallet,
+        walletCount,
         unpartitionedStateStatus,
 
         authenticate,

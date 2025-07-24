@@ -19,6 +19,10 @@ export interface WandCarouselSlide {
   tierBenefits: string[];
   carouselBg: string;
   carouselBgLight: string;
+  tierLink?: {
+    href: string;
+    text: string;
+  };
 }
 
 export const carouselData: WandCarouselSlide[] = [
@@ -29,6 +33,10 @@ export const carouselData: WandCarouselSlide[] = [
     tierBenefits: [],
     carouselBg: coreCarouselBg,
     carouselBgLight: coreCarouselBgLight,
+    tierLink: {
+      href: "https://www.wander.app/blog/wndr-fair-launch",
+      text: browser.i18n.getMessage("learn_more"),
+    },
   },
   {
     tierName: "Select",

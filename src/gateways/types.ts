@@ -16,7 +16,7 @@ export interface GatewaySettings {
   delegateRewardShareRatio: number;
   autoStake: boolean;
   note: string;
-  allowDelegatedStaking: boolean;
+  allowDelegatedStaking: string | boolean;
   label: string;
   properties:
     | string
@@ -68,12 +68,12 @@ export interface GatewayPendingCheck {
 
 export interface GatewaySuccessCheck {
   status: "success";
-  value: number;
+  value?: number;
 }
 
 export interface GatewayErrorCheck {
   status: "error";
-  error: "string";
+  error: string;
 }
 
 export type GatewayCheck = GatewayUnknownCheck | GatewayPendingCheck | GatewaySuccessCheck | GatewayErrorCheck;
@@ -84,4 +84,5 @@ export interface GatewayAddressRegistryItem extends GatewayAddressRegistryItemDa
   linkDisplay: string;
   ping: GatewayCheck;
   health: GatewayCheck;
+  properties?: string;
 }
