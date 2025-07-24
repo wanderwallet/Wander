@@ -1,4 +1,11 @@
-import type { AuthProviderType, DbSession, SupabaseJwtPayload, SupabaseSession, SupabaseUser } from "embed-api";
+import {
+  createAnonSession as createAnonSessionFromHeaders,
+  type AuthProviderType,
+  type DbSession,
+  type SupabaseJwtPayload,
+  type SupabaseSession,
+  type SupabaseUser,
+} from "embed-api";
 import { jwtDecode } from "jwt-decode";
 import { getDeviceNonce } from "~utils/embedded/device-nonce/device-nonce.utils";
 import { getAuthProviderTypeFromSupabaseUser } from "~utils/embedded/utils/messages/embedded-messages.utils";
@@ -47,11 +54,13 @@ export async function parseSupabaseSession(supabaseSession?: SupabaseSession): P
   }
 
   if (!accessToken || !user) {
+    const anonSession = await createAnonSession();
+
     return {
       accessToken: null,
       user: null,
       authProviderType: null,
-      session: null,
+      session: anonSession,
     };
   }
 
@@ -78,4 +87,21 @@ export async function parseSupabaseSession(supabaseSession?: SupabaseSession): P
     authProviderType,
     session,
   };
+}
+
+export const INITIAL_ANON_SESSION = createAnonSessionFromHeaders({
+  userAgent: navigator.userAgent,
+  deviceNonce: "",
+  ip: "",
+});
+
+export async function createAnonSession() {
+  const deviceNonce = await getDeviceNonce();
+  const userAgent = navigator.userAgent;
+
+  return createAnonSessionFromHeaders({
+    userAgent,
+    deviceNonce,
+    ip: "",
+  });
 }

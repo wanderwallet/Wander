@@ -83,7 +83,7 @@ export interface EmbeddedContextAuth {
   authStatus: AuthStatus;
   authProviderType: null | AuthProviderType;
   user: null | SupabaseUser;
-  session: null | DbSession;
+  session: DbSession;
 }
 
 export type OAutProviderType = Exclude<AuthProviderType, "EMAIL_N_PASSWORD" | "PASSKEYS">;

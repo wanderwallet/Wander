@@ -70,8 +70,9 @@ import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { isomorphicOnMessage } from "~isomorphic-messaging";
 import { useTheme } from "~components/embed/contexts/ThemeContext";
 import { withRetry } from "~utils/promises/retry";
-import { parseSupabaseSession } from "~utils/embedded/session/session.utils";
+import { createAnonSession, INITIAL_ANON_SESSION, parseSupabaseSession } from "~utils/embedded/session/session.utils";
 import { useLocation } from "~wallets/router/router.utils";
+import type { M } from "vitest/dist/chunks/reporters.d.BFLkQcL6";
 
 export type AuthStatusCopy = AuthStatus;
 
@@ -92,7 +93,7 @@ const EMBEDDED_CONTEXT_INITIAL_AUTH = {
   authStatus: "unknown",
   authProviderType: null,
   user: null,
-  session: null,
+  session: INITIAL_ANON_SESSION,
 } as const satisfies EmbeddedContextAuth;
 
 export const EmbeddedContext = createContext<EmbeddedContextData>({
@@ -886,7 +887,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         recoveryBackupShareHash,
       });
 
-      if (shareRecoveryChallenge.version === "v1") {
+      if (shareRecoveryChallenge.version === "v1" && recoveryBackupShare && recoveryBackupShareHash) {
         const derivedRSAKeys = await WalletUtils.deriveRSAKeys(recoveryBackupShare);
         privateKey = derivedRSAKeys.sharePrivateKeyJWK;
       }
@@ -982,7 +983,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
           authStatus: "authLoading",
           authProviderType,
           user: null,
-          session: null,
+          session: INITIAL_ANON_SESSION,
         });
 
         if (typeof authParams === "string") {
@@ -999,7 +1000,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
           authStatus: "authError",
           authProviderType: null,
           user: null,
-          session: null,
+          session: INITIAL_ANON_SESSION,
         });
 
         throw error;
@@ -1014,8 +1015,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
   const lastUserIdRef = useRef<string | null>(null);
 
-  const initEmbeddedWallet = useCallback(async (session?: DbSession | null) => {
-    const userId = session?.userId || null;
+  const initEmbeddedWallet = useCallback(async (session: DbSession) => {
+    const userId = session.userId || null;
 
     if (lastUserIdRef.current === userId) return;
 
@@ -1076,7 +1077,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       requestPasswordChange: prevAuthContextState.requestPasswordChange,
     }));
 
-    if (!userId || !session) {
+    if (!userId) {
       generateTempWallet();
 
       return;
@@ -1216,11 +1217,13 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         }));
         */
 
+        const anonSession = await createAnonSession();
+
         setEmbeddedContextAuth({
           authStatus: "noAuth",
           authProviderType: null,
           user: null,
-          session: null,
+          session: anonSession,
         });
       }
     });

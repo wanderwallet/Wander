@@ -94,6 +94,8 @@ export function AuthRecoverAccountConfirmEmbeddedView() {
     walletsRef.current = wallets;
   }, [wallets]);
 
+  // TODO: Only list enabled wallets
+
   return (
     <OnboardingCard
       headerIcon={<RecoverHeaderIcon />}
