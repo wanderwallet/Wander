@@ -7,6 +7,7 @@ import {
   Compass03,
   CreditCard01,
   Grid01,
+  HelpCircle,
   InfoCircle,
   Maximize01,
   Pencil02,
@@ -145,6 +146,11 @@ export const quickSettingsMenuItems: Omit<DashboardRouteConfig, "description">[]
     name: "subscriptions",
     displayName: "subscriptions",
     icon: CreditCard01,
+  },
+  {
+    name: "help",
+    displayName: "help",
+    icon: HelpCircle,
   },
   {
     name: "explore",
