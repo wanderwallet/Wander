@@ -5,18 +5,16 @@ import BigNumber from "bignumber.js";
 import browser from "webextension-polyfill";
 import { balanceToFractioned, formatFiatBalance } from "~tokens/currency";
 import { timeoutPromise } from "~utils/promises/timeout";
-import { AF_ERROR_QUERY } from "~notifications/utils";
+import { TRANSFER_ERROR_QUERY } from "~notifications/utils";
 import { gql } from "~gateways/api";
 import { txHistoryGateways } from "~gateways/gateway";
 import { retryWithDelay } from "~utils/promises/retry";
-import type {
-  RawTransaction,
-  Transaction,
-} from "~api/background/handlers/alarms/notifications/notifications-alarm.utils";
-import { fetchTokenByProcessId, getTagValue } from "~tokens/aoTokens/ao";
+import type { RawTransaction } from "~api/background/handlers/alarms/notifications/notifications-alarm.utils";
+import { fetchTokenByProcessId, getTagValue, getTagValues } from "~tokens/aoTokens/ao";
 import type { Announcement } from "~utils/announcements";
+import { log, LOG_GROUP } from "~utils/log/log.utils";
 
-const AGENT_TOKEN_ADDRESS = "8rbAftv7RaPxFjFk5FGUVAVCSjGQB4JHDcb9P9wCVhQ";
+const transactionErrorMap = new Map<string, boolean>();
 
 export type ExtendedTransaction = RawTransaction & {
   cursor: string;
@@ -58,31 +56,75 @@ const processTransaction = (transaction: GQLEdgeInterface, type: string) => ({
   date: "",
 });
 
-export async function checkTransactionError(transaction: GQLEdgeInterface | Transaction): Promise<boolean> {
-  if (transaction.node.recipient !== AGENT_TOKEN_ADDRESS) {
-    return false;
-  }
+export async function checkTransferStatus(transactions: GQLEdgeInterface[]): Promise<void> {
+  try {
+    const uncheckedIds = transactions
+      .filter((tx) => {
+        if (transactionErrorMap.has(tx.node.id)) return false;
+        const [protocol, action] = getTagValues(["Data-Protocol", "Action"], tx.node.tags || []);
+        return protocol === "ao" && action === "Transfer";
+      })
+      .map((tx) => tx.node.id);
+    if (uncheckedIds.length === 0) return;
 
-  return retryWithDelay(async (attempt) => {
-    const data = await gql(
-      AF_ERROR_QUERY,
-      { messageId: transaction.node.id },
-      txHistoryGateways[attempt % txHistoryGateways.length],
-    );
+    const batchSize = 100;
+    const batchPromises: Promise<void>[] = [];
 
-    if (data?.data === null && (data as any)?.errors?.length > 0) {
-      throw new Error((data as any)?.errors?.[0]?.message || "GraphQL Error");
+    for (let i = 0; i < uncheckedIds.length; i += batchSize) {
+      const batch = uncheckedIds.slice(i, i + batchSize);
+
+      const batchPromise = retryWithDelay(async (attempt) => {
+        const data = await gql(
+          TRANSFER_ERROR_QUERY,
+          { messageIds: batch },
+          txHistoryGateways[attempt % txHistoryGateways.length],
+        );
+
+        if (data?.data === null && (data as any)?.errors?.length > 0) {
+          throw new Error((data as any)?.errors?.[0]?.message || "GraphQL Error");
+        }
+
+        const edges = data.data.transactions.edges;
+
+        if (edges.length > 0) {
+          const errorIdSet = new Set(
+            edges
+              .map((edge) => {
+                const tags = edge.node.tags || [];
+                return getTagValue("Pushed-For", tags) || getTagValue("Message-Id", tags);
+              })
+              .filter(Boolean),
+          );
+
+          for (const id of batch) {
+            transactionErrorMap.set(id, errorIdSet.has(id));
+          }
+        } else {
+          // Mark all as successful if no errors found
+          for (const id of batch) {
+            transactionErrorMap.set(id, false);
+          }
+        }
+      }, 2).catch(() => {
+        // On error, mark all batch IDs as false (assume no error)
+        for (const id of batch) {
+          transactionErrorMap.set(id, false);
+        }
+      });
+
+      batchPromises.push(batchPromise);
     }
 
-    return data.data.transactions.edges.length > 0;
-  }, 2).catch(() => false);
+    // Wait for all batches to complete in parallel
+    await Promise.all(batchPromises);
+  } catch (error) {
+    log(LOG_GROUP.TRANSACTIONS, "Error checking transfer transactions status", error);
+  }
 }
 
 const processAoTransaction = async (transaction: GQLEdgeInterface, type: string) => {
-  const hasError = await checkTransactionError(transaction);
-  if (hasError) {
-    return null;
-  }
+  const hasError = transactionErrorMap.get(transaction.node.id);
+  if (hasError) return null;
 
   const tags = transaction.node.tags || [];
   const isLiquidOpsAoReceived = type === "liquidOpsAoReceived";

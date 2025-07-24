@@ -3897,5 +3897,29 @@
   "verified": {
     "message": "Verified",
     "description": "Verified text"
+  },
+  "help": {
+    "message": "Help",
+    "description": "Help text"
+  },
+  "help_center": {
+    "message": "Help Center",
+    "description": "Help Center text"
+  },
+  "discord": {
+    "message": "Discord",
+    "description": "Discord text"
+  },
+  "email": {
+    "message": "Email",
+    "description": "Email text"
+  },
+  "video_support": {
+    "message": "Video Support",
+    "description": "Video Support text"
+  },
+  "fastest": {
+    "message": "Fastest",
+    "description": "Fastest text"
   }
 }

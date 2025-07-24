@@ -59,6 +59,7 @@ import { TierView } from "~routes/popup/tier";
 import { EarnView } from "~routes/popup/earn";
 import { TokensView } from "~routes/popup/tokens";
 import { TokenDetailView } from "~routes/popup/tokens/token-detail";
+import { HelpView } from "~routes/popup/settings/help";
 
 export type PopupRoutePath =
   | "/"
@@ -104,6 +105,7 @@ export type PopupRoutePath =
   | `/quick-settings/contacts/new`
   | `/quick-settings/contacts/${string}`
   | `/quick-settings/notifications`
+  | `/quick-settings/help`
   | `/getting-started/${string}`
   | `/agents`
   | `/agents/ao-yield/create-agent`
@@ -163,6 +165,7 @@ export const PopupPaths = {
   NewContact: "/quick-settings/contacts/new",
   ContactSettings: "/quick-settings/contacts/:address",
   NotificationSettings: "/quick-settings/notifications",
+  Help: "/quick-settings/help",
   Agents: "/agents",
   CreateAOYieldAgent: "/agents/ao-yield/create-agent",
   ConfirmAOYieldAgent: "/agents/ao-yield/confirm-agent",
@@ -343,6 +346,10 @@ export const POPUP_ROUTES = [
   {
     path: PopupPaths.NotificationSettings,
     component: NotificationSettingsView,
+  },
+  {
+    path: PopupPaths.Help,
+    component: HelpView,
   },
   {
     path: WelcomePaths.GettingStarted,
