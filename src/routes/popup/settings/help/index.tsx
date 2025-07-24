@@ -158,6 +158,7 @@ const Wrapper = styled.div`
 const DiscordImage = styled.img`
   height: 24px;
   width: 24px;
+  object-fit: contain;
   filter: ${(props) => (props.theme.displayTheme === "light" ? "invert(1)" : "none")};
 `;
 
