@@ -3733,11 +3733,11 @@
     "description": "Core tier title"
   },
   "tier_core_description": {
-    "message": "1. Open the [Fair Launch delegation website](https://ao.arweave.net/#/delegate/) <br/> 2. Connect your Wander wallet <br/> 3. Add WNDR to your delegation list <br/> 4. Collect and claim your WNDR tokens",
+    "message": "1. Open the [Fair Launch delegation website](https://ao.arweave.net/#/delegate/) <br/> 2. Connect your Wander wallet <br/> 3. Add WNDR to your delegation list <br/> 4. WNDR tokens deposited every 24 hours",
     "description": "Core tier description with steps"
   },
   "tier_benefit_fee_reduction_defi": {
-    "message": "$PERCENTAGE$% fee reduction on defi transactions",
+    "message": "$PERCENTAGE$% Wander added fee reduction on defi transactions",
     "description": "Fee reduction benefit for defi transactions",
     "placeholders": {
       "percentage": {
@@ -3747,7 +3747,7 @@
     }
   },
   "tier_benefit_fee_reduction_transak": {
-    "message": "$PERCENTAGE$% fee reduction on Transak purchases",
+    "message": "$PERCENTAGE$% Wander added fee reduction on Transak purchases",
     "description": "Fee reduction benefit for Transak purchases",
     "placeholders": {
       "percentage": {
