@@ -1,5 +1,5 @@
 import type { JWKInterface } from "arweave/web/lib/wallet";
-import { createContext, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { setupBackgroundService } from "~api/background/background-setup";
 import { WalletService } from "~utils/wallets/wallets.service";
 import { WalletUtils } from "~utils/wallets/wallets.utils";
@@ -72,63 +72,11 @@ import { useTheme } from "~components/embed/contexts/ThemeContext";
 import { withRetry } from "~utils/promises/retry";
 import { createAnonSession, INITIAL_ANON_SESSION, parseSupabaseSession } from "~utils/embedded/session/session.utils";
 import { useLocation } from "~wallets/router/router.utils";
-
-export type AuthStatusCopy = AuthStatus;
-
-const EMBEDDED_CONTEXT_INITIAL_STATE = {
-  currentWalletId: "",
-  wallets: [],
-  generatedTempWalletAddress: null,
-  importedTempWalletAddress: null,
-  lastRegisteredWallet: null,
-  recoverableAccounts: null,
-  recoverableAccount: null,
-  recoverableAccountWallets: null,
-  requestPasswordChange: false,
-  backupsNeeded: 0,
-} as const satisfies EmbeddedContextState;
-
-const EMBEDDED_CONTEXT_INITIAL_AUTH = {
-  authStatus: "unknown",
-  authProviderType: null,
-  user: null,
-  session: INITIAL_ANON_SESSION,
-} as const satisfies EmbeddedContextAuth;
-
-export const EmbeddedContext = createContext<EmbeddedContextData>({
-  ...EMBEDDED_CONTEXT_INITIAL_STATE,
-  ...EMBEDDED_CONTEXT_INITIAL_AUTH,
-
-  currentWallet: null,
-  walletCount: 0,
-  unpartitionedStateStatus: getUnpartitionedStateStatus(),
-
-  authenticate: async () => null,
-  fetchRecoverableAccounts: async () => null,
-  clearRecoverableAccounts: async () => null,
-  setRecoverableAccount: async () => null,
-  setRecoverableAccountWallets: async () => null,
-  fetchRecoverableAccountWallets: async () => null,
-  recoverAccount: async () => null,
-  recoverWallet: async () => null,
-  setRequestPasswordChange: () => null,
-
-  generateTempWallet: async () => null,
-  deleteGeneratedTempWallet: async () => null,
-
-  importTempWallet: async () => null,
-  deleteImportedTempWallet: async () => null,
-
-  registerWallet: async () => null,
-  clearLastRegisteredWallet: () => null,
-
-  // TODO: These should work for multiple wallets:
-  downloadKeyfile: async () => null,
-  copySeedphrase: async () => null,
-  getSeedphrase: async () => null,
-  getDecryptedWallet: async () => null,
-  generateRecoveryAndDownload: async () => null,
-});
+import {
+  EMBEDDED_CONTEXT_INITIAL_AUTH,
+  EMBEDDED_CONTEXT_INITIAL_STATE,
+  EmbeddedContext,
+} from "~utils/embedded/embedded.context";
 
 export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
   const [embeddedContextState, setEmbeddedContextState] =

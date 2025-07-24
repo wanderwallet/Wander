@@ -191,7 +191,7 @@ export interface GenerateShareHashAndEdKeysReturn {
 async function generateShareHashAndEdKeys(
   params: GenerateShareHashAndEdKeysParams,
 ): Promise<GenerateShareHashAndEdKeysReturn> {
-  log(LOG_GROUP.WALLET_GENERATION, "generateShareHashAndEdKeys()");
+  log(LOG_GROUP.WALLET_GENERATION, "⚡ generateShareHashAndEdKeys()");
 
   const encoder = new TextEncoder();
   const { session } = params;
@@ -257,7 +257,7 @@ export interface DeriveRSAKeysReturn {
  * - https://www.youtube.com/watch?v=cMoD0wIxIpQ
  */
 async function deriveRSAKeys(share: string): Promise<DeriveRSAKeysReturn> {
-  log(LOG_GROUP.WALLET_GENERATION, "deriveRSAKeys()");
+  log(LOG_GROUP.WALLET_GENERATION, "🐌 deriveRSAKeys()");
 
   if (!share) {
     throw new Error("Share is missing — unable to generate share hash and private key.");
