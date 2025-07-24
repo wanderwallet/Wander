@@ -94,6 +94,7 @@ async function pingUpdater(
       };
       newData[index].health = {
         status: "error",
+        error: "Gateway ping check error",
       };
 
       onUpdate(newData);

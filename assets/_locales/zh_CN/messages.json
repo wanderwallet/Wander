@@ -3759,5 +3759,29 @@
     "position_update_tooltip": {
       "message": "您的位置每24小时更新一次，时间为4:00 PM GMT",
       "description": "Tooltip text for position update"
+    },
+    "help": {
+      "message": "帮助",
+      "description": "Help text"
+    },
+    "help_center": {
+      "message": "帮助中心",
+      "description": "Help Center text"
+    },
+    "discord": {
+      "message": "Discord",
+      "description": "Discord text"
+    },
+    "email": {
+      "message": "邮件",
+      "description": "Email text"
+    },
+    "video_support": {
+      "message": "视频支持",
+      "description": "Video Support text"
+    },
+    "fastest": {
+      "message": "最快",
+      "description": "Fastest text"
     }
 }
