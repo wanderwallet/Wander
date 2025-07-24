@@ -1,4 +1,4 @@
-import React from "react";
+import { useMemo } from "react";
 import styled, { useTheme } from "styled-components";
 import { LineChart as RechartsLineChart, Line, ResponsiveContainer, YAxis } from "recharts";
 import { Text, Loading } from "@arconnect/components-rebrand";
@@ -37,14 +37,11 @@ export const LineChart = ({
 }: LineChartProps) => {
   const theme = useTheme();
 
-  const strokeColor = React.useMemo(
-    () => (isNegative ? theme.fail : theme.success),
-    [isNegative, theme.fail, theme.success],
-  );
+  const strokeColor = useMemo(() => (isNegative ? theme.fail : theme.success), [isNegative, theme.fail, theme.success]);
 
   const targetDataPoints = maxDataPoints || 50;
 
-  const sampledData = React.useMemo(() => {
+  const sampledData = useMemo(() => {
     if (!data.length || data.length <= targetDataPoints) {
       return data;
     }
@@ -59,7 +56,7 @@ export const LineChart = ({
     return result;
   }, [data, targetDataPoints]);
 
-  const domainValues = React.useMemo(() => {
+  const domainValues = useMemo(() => {
     if (!sampledData.length) {
       return { minValue: undefined, maxValue: undefined };
     }

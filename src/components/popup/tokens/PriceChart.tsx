@@ -18,24 +18,26 @@ export const PriceChart: React.FC = React.memo(() => {
   const { chartData, loading, priceChangePercentage: percentage } = useARMarketData();
   const { data: arPrice = "0" } = useArPrice(currency);
 
-  const { fiatChange, chartPoints, percentageNumber, isNegative } = useMemo(() => {
+  const { fiatChange, percentageNumber, isNegative } = useMemo(() => {
     const percentageNum = percentage.toNumber();
     const negative = percentage.isNegative();
     const change = +arPrice - +arPrice / (1 + percentageNum / 100);
 
-    const points =
-      chartData?.map(([timestamp, value]) => ({
-        timestamp,
-        value,
-      })) || [];
-
     return {
       fiatChange: change,
-      chartPoints: points,
       percentageNumber: percentageNum,
       isNegative: negative,
     };
   }, [arPrice, chartData, percentage]);
+
+  const chartPoints = useMemo(() => {
+    return (
+      chartData?.map(([timestamp, value]) => ({
+        timestamp,
+        value,
+      })) || []
+    );
+  }, [chartData]);
 
   const handleOpen = useCallback(() => {
     setIsModalOpen(true);

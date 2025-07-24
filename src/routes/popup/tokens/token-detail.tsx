@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import { getUserAvatar } from "~lib/avatar";
 import { TokenInfo } from "~components/popup/tokens/TokenInfo";
 import { TokenLinks } from "~components/popup/tokens/TokenLinks";
+import { TokenActivity } from "~components/popup/tokens/TokenActivity";
 
 export function TokenDetailView() {
   const { id } = useParams<{ id: string }>();
@@ -45,6 +46,7 @@ export function TokenDetailView() {
         <Flex direction="column" gap={24}>
           <TokenInfo id={id} />
           <TokenLinks id={id} />
+          <TokenActivity id={id} />
         </Flex>
       </Wrapper>
     </>
@@ -59,5 +61,4 @@ const Wrapper = styled(Section)`
   justify-content: space-between;
   position: relative;
   overflow-y: auto;
-  padding-bottom: 100px;
 `;

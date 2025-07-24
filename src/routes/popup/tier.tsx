@@ -155,15 +155,19 @@ function Activity({ tier }: { tier: Tier }) {
 
   return (
     <TransactionsWrapper gap={8}>
-      {transactions.length > 0
-        ? transactions.map((transaction) => (
-            <TierTransactionItemComponent key={transaction.node.id} transaction={transaction} />
-          ))
-        : !loading && (
-            <Empty>
-              <TitleMessage>No activity yet</TitleMessage>
-            </Empty>
+      {transactions.length > 0 ? (
+        transactions.map((transaction) => (
+          <TierTransactionItemComponent key={transaction.node.id} transaction={transaction} />
+        ))
+      ) : (
+        <Empty>
+          {loading ? (
+            <Loading style={{ height: "20px", width: "20px" }} />
+          ) : (
+            <TitleMessage>No activity yet</TitleMessage>
           )}
+        </Empty>
+      )}
       {hasNextPage && (
         <TierButton
           tier={tier}

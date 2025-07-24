@@ -1,5 +1,5 @@
 import TriangleIcon from "~components/icons/TriangleIcon";
-import React, { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import styled, { useTheme } from "styled-components";
 import BigNumber from "bignumber.js";
 import browser from "webextension-polyfill";
@@ -48,7 +48,19 @@ export const PriceChartModal = ({ isOpen, setOpen }: PriceChartModalProps) => {
   const { chartData, priceChangePercentage: percentage, loading, error } = useARMarketData(getRangeDays(selectedRange));
   const fiatChange = +arPrice - +arPrice / (1 + percentage.toNumber() / 100);
 
-  const handleRangeChange = React.useCallback(
+  const chartPoints = useMemo(() => {
+    return (
+      chartData?.map(([timestamp, value]) => ({
+        timestamp,
+        value,
+      })) || []
+    );
+  }, [chartData]);
+
+  const isNegative = percentage.toNumber() < 0;
+  const strokeColor = isNegative ? theme.fail : theme.success;
+
+  const handleRangeChange = useCallback(
     (range: string) => {
       if (range === selectedRange) return;
 
@@ -56,15 +68,6 @@ export const PriceChartModal = ({ isOpen, setOpen }: PriceChartModalProps) => {
     },
     [selectedRange],
   );
-
-  const chartPoints =
-    chartData?.map(([timestamp, value]) => ({
-      timestamp,
-      value,
-    })) || [];
-
-  const isNegative = percentage.toNumber() < 0;
-  const strokeColor = isNegative ? theme.fail : theme.success;
 
   return (
     <SliderMenu
