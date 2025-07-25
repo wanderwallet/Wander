@@ -95,7 +95,7 @@ export const Agent = ({ ticker, running = false, profit = BigNumber(0) }: Props)
       style={{
         width: "100%",
         textAlign: "left",
-        padding: "12px 8px",
+        padding: "8px",
         ...(running
           ? {
               backgroundColor: `rgba(${theme === "dark" ? "37, 51, 39" : "233, 252, 236"}, 0.5)`,

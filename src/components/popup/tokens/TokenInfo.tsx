@@ -17,6 +17,7 @@ import { ReceiveIcon } from "~components/icons/ReceiveIcon";
 import { ActionButtons, type ButtonConfig } from "../ActionButtons";
 import arLogoDark from "url:/assets/ar/logo_dark.png";
 import { PriceChart } from "./PriceChart";
+import { ActiveAgentsSlider } from "./ActiveAgentsSlider";
 
 interface TokenInfoProps {
   id: string;
@@ -60,8 +61,6 @@ export const TokenInfo = ({ id }: TokenInfoProps) => {
     }),
     [tokenData, token],
   );
-
-  console.log({ tokenData, tokenDisplay });
 
   const verified = VERIFIED_TOKENS.includes(id as (typeof VERIFIED_TOKENS)[number]);
   const tokenDescription = browser.i18n.getMessage(`token_description_${id.replaceAll("-", "_")}`);
@@ -128,6 +127,8 @@ export const TokenInfo = ({ id }: TokenInfoProps) => {
       </TokenInfoItem>
 
       <ActionButtons buttons={buttons} />
+
+      <ActiveAgentsSlider id={id} />
 
       {(isAR || isAO) && <PriceChart symbol={isAR ? "arweave" : "ao-computer"} />}
 
