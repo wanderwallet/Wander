@@ -10,8 +10,10 @@ import { getUserAvatar } from "~lib/avatar";
 import { TokenInfo } from "~components/popup/tokens/TokenInfo";
 import { TokenLinks } from "~components/popup/tokens/TokenLinks";
 import { TokenActivity } from "~components/popup/tokens/TokenActivity";
+import { useLocation } from "~wallets/router/router.utils";
 
 export function TokenDetailView() {
+  const { navigate } = useLocation();
   const { id } = useParams<{ id: string }>();
   const token = useAoToken(id);
   const [logo, setLogo] = useState<string | null>(null);
@@ -40,6 +42,7 @@ export function TokenDetailView() {
             </Text>
           </Flex>
         }
+        back={() => navigate("/")}
       />
 
       <Wrapper>

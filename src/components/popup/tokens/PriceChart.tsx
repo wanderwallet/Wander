@@ -34,7 +34,7 @@ export const PriceChart = ({ symbol }: PriceChartProps) => {
       percentageNumber: percentageNum,
       isNegative: negative,
     };
-  }, [price, chartData, percentage]);
+  }, [price, percentage]);
 
   const chartPoints = useMemo(() => {
     return (

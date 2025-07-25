@@ -117,7 +117,7 @@ export function AgentInfo({ agentId, headerTitle, mintingStatus, isHistory = fal
         back={
           !isHistory
             ? () => {
-                if (previousLocation === "/agents/ao-yield/history") {
+                if (previousLocation === "/agents/ao-yield/history" || previousLocation.startsWith("/tokens/")) {
                   navigate(previousLocation);
                 } else {
                   navigate("/agents");
