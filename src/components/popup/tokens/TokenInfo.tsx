@@ -1,4 +1,4 @@
-import { AlertTriangle, QrCode02 } from "@untitled-ui/icons-react";
+import { AlertTriangle } from "@untitled-ui/icons-react";
 import styled, { useTheme } from "styled-components";
 import { AO_PROCESS_ID, VERIFIED_TOKENS } from "~tokens/aoTokens/ao";
 import { formatFiatBalance } from "~tokens/currency";
@@ -13,11 +13,9 @@ import TriangleIcon from "~components/icons/TriangleIcon";
 import VerifiedIcon from "~components/icons/VerifiedIcon";
 import { Flex } from "~components/common/Flex";
 import { useMemo } from "react";
-import { ReceiveIcon } from "~components/icons/ReceiveIcon";
-import { ActionButtons, type ButtonConfig } from "../ActionButtons";
-import arLogoDark from "url:/assets/ar/logo_dark.png";
 import { PriceChart } from "./PriceChart";
 import { ActiveAgentsSlider } from "./ActiveAgentsSlider";
+import { TokenActionButtons } from "./TokenActionButtons";
 
 interface TokenInfoProps {
   id: string;
@@ -65,31 +63,6 @@ export const TokenInfo = ({ id }: TokenInfoProps) => {
   const verified = VERIFIED_TOKENS.includes(id as (typeof VERIFIED_TOKENS)[number]);
   const tokenDescription = browser.i18n.getMessage(`token_description_${id.replaceAll("-", "_")}`);
 
-  const buttons = useMemo<ButtonConfig[]>(
-    () => [
-      {
-        text: browser.i18n.getMessage("buy_ar_button"),
-        icon: <img src={arLogoDark} style={{ height: 18.5, width: 18.5 }} alt="Buy AR" />,
-        href: "/purchase",
-        variant: "primary",
-        iconPosition: "right",
-      },
-      {
-        text: "",
-        icon: <ReceiveIcon flipped={true} />,
-        href: "/send/transfer",
-        variant: "secondary",
-      },
-      {
-        text: "",
-        icon: <QrCode02 style={{ height: 26, width: 26 }} />,
-        href: "/receive",
-        variant: "secondary",
-      },
-    ],
-    [],
-  );
-
   return (
     <Flex direction="column" gap={24}>
       <TokenInfoItem>
@@ -125,13 +98,9 @@ export const TokenInfo = ({ id }: TokenInfoProps) => {
           </Flex>
         </TokenBalance>
       </TokenInfoItem>
-
-      <ActionButtons buttons={buttons} />
-
+      <TokenActionButtons id={id} />
       <ActiveAgentsSlider id={id} />
-
       {(isAR || isAO) && <PriceChart symbol={isAR ? "arweave" : "ao-computer"} />}
-
       {tokenDescription ? (
         <>
           <Flex direction="column" gap={8}>
