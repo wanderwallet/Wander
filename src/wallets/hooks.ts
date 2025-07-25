@@ -458,29 +458,48 @@ export const useTokenTransactions = (activeAddress: string, tokenId: string) => 
         throw new Error("No active address provided");
       }
 
-      const { sentCursor = "", receivedCursor = "", skipSent = false, skipReceived = false } = pageParam || {};
+      const {
+        sentCursor = "",
+        receivedCursor = "",
+        liquidOpsReceivedCursor = "",
+        skipSent = false,
+        skipReceived = false,
+        skipLiquidOpsReceived = false,
+      } = pageParam || {};
       const isAr = tokenId === AR_PROCESS_ID;
       const queries = isAr
         ? [AR_SENT_QUERY_WITH_CURSOR, AR_RECEIVER_QUERY_WITH_CURSOR]
-        : [AO_SENT_QUERY_FOR_TOKEN_WITH_CURSOR, AO_RECEIVER_QUERY_FOR_TOKEN_WITH_CURSOR];
+        : [
+            AO_SENT_QUERY_FOR_TOKEN_WITH_CURSOR,
+            AO_RECEIVER_QUERY_FOR_TOKEN_WITH_CURSOR,
+            AO_LIQUIDOPS_RECEIVER_QUERY_WITH_CURSOR,
+          ];
 
       const fetchPromises = [
         createFetchPromise(queries[0], sentCursor, skipSent, { address: activeAddress, tokenId }),
         createFetchPromise(queries[1], receivedCursor, skipReceived, { address: activeAddress, tokenId }),
+        createFetchPromise(queries[2], liquidOpsReceivedCursor, isAr ? true : skipLiquidOpsReceived, {
+          address: activeAddress,
+          tokenId,
+        }),
       ];
 
-      const [rawSent, rawReceived] = await Promise.allSettled(fetchPromises);
+      const [rawSent, rawReceived, rawLiquidOpsReceived] = await Promise.allSettled(fetchPromises);
 
       const allTransactions = [
         ...(rawSent.status === "fulfilled" ? rawSent.value?.data?.transactions?.edges || [] : []),
         ...(rawReceived.status === "fulfilled" ? rawReceived.value?.data?.transactions?.edges || [] : []),
+        ...(rawLiquidOpsReceived.status === "fulfilled"
+          ? rawLiquidOpsReceived.value?.data?.transactions?.edges || []
+          : []),
       ];
       await checkTransferStatus(allTransactions);
 
       const sent = await processTransactions(rawSent, isAr ? "sent" : "aoSent", !isAr);
       const received = await processTransactions(rawReceived, isAr ? "received" : "aoReceived", !isAr);
+      const liquidOpsReceived = await processTransactions(rawLiquidOpsReceived, "liquidOpsAoReceived", !isAr);
 
-      let combinedTransactions: ExtendedTransaction[] = [...received, ...sent].sort(sortFn);
+      let combinedTransactions: ExtendedTransaction[] = [...received, ...sent, ...liquidOpsReceived].sort(sortFn);
 
       const now = new Date();
       combinedTransactions = combinedTransactions.map((transaction) => {
@@ -500,6 +519,8 @@ export const useTokenTransactions = (activeAddress: string, tokenId: string) => 
 
       const nextSentCursor = sent[sent.length - 1]?.cursor || sentCursor;
       const nextReceivedCursor = received[received.length - 1]?.cursor || receivedCursor;
+      const nextLiquidOpsReceivedCursor =
+        liquidOpsReceived[liquidOpsReceived.length - 1]?.cursor || liquidOpsReceivedCursor;
 
       const hasSentNext =
         !skipSent &&
@@ -515,7 +536,13 @@ export const useTokenTransactions = (activeAddress: string, tokenId: string) => 
         received.length > 0 &&
         nextReceivedCursor !== receivedCursor;
 
-      const hasNext = hasSentNext || hasReceivedNext;
+      const hasLiquidOpsReceivedNext =
+        !skipLiquidOpsReceived &&
+        rawLiquidOpsReceived.status === "fulfilled" &&
+        rawLiquidOpsReceived.value?.data?.transactions?.pageInfo?.hasNextPage &&
+        liquidOpsReceived.length > 0 &&
+        nextLiquidOpsReceivedCursor !== liquidOpsReceivedCursor;
+      const hasNext = hasSentNext || hasReceivedNext || hasLiquidOpsReceivedNext;
 
       return {
         transactions: combinedTransactions,
@@ -526,12 +553,21 @@ export const useTokenTransactions = (activeAddress: string, tokenId: string) => 
               receivedCursor: nextReceivedCursor,
               skipSent: !hasSentNext || sent.length === 0,
               skipReceived: !hasReceivedNext || received.length === 0,
+              skipLiquidOpsReceived: !hasLiquidOpsReceivedNext || liquidOpsReceived.length === 0,
+              liquidOpsReceivedCursor: nextLiquidOpsReceivedCursor,
             }
           : undefined,
       };
     },
     getNextPageParam: (lastPage) => lastPage.nextPageParam,
-    initialPageParam: { sentCursor: "", receivedCursor: "", skipSent: false, skipReceived: false },
+    initialPageParam: {
+      sentCursor: "",
+      receivedCursor: "",
+      liquidOpsReceivedCursor: "",
+      skipSent: false,
+      skipReceived: false,
+      skipLiquidOpsReceived: false,
+    },
     enabled: !!activeAddress && !!tokenId,
     staleTime: 300_000,
     refetchInterval: 300_000,
