@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useStorage } from "~utils/storage";
 import { PersistentStorage } from "~utils/storage";
 import { useBalance } from "~wallets/hooks";
-import { getAr24hChange, useArPrice } from "~lib/coingecko";
+import { getToken24hChange, useArPrice } from "~lib/coingecko";
 import useSetting from "~settings/hook";
 import styled, { useTheme } from "styled-components";
 import { Text } from "@arconnect/components-rebrand";
@@ -80,7 +80,7 @@ export default function Balance() {
     value: number;
     timestamp: string;
   }>({
-    key: "saved_ar_24h_change",
+    key: "saved_arweave_24h_change",
     instance: PersistentStorage,
   });
 
@@ -93,7 +93,7 @@ export default function Balance() {
         return;
       }
 
-      const ar24hChange = await getAr24hChange(currency);
+      const ar24hChange = await getToken24hChange("arweave", currency);
 
       setSavedAr24hChange({
         value: ar24hChange,

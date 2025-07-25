@@ -1,34 +1,40 @@
 import React, { useMemo, useCallback, useState } from "react";
 import styled, { useTheme } from "styled-components";
-import { useArPrice } from "~lib/coingecko";
+import { useArPrice, type CoinGeckoSymbol } from "~lib/coingecko";
 import { formatFiatBalance } from "~tokens/currency";
 import { Text } from "@arconnect/components-rebrand";
-import { useARMarketData } from "~tokens/hooks/useArMarketData";
+import { useTokenMarketData } from "~tokens/hooks/useTokenMarketData";
 import useSetting from "~settings/hook";
 import TriangleIcon from "~components/icons/TriangleIcon";
 import browser from "webextension-polyfill";
 import { Flex } from "~components/common/Flex";
 import { PriceChartModal } from "./PriceChartModal";
 import { LineChart } from "./LineChart";
+import { useTokenPrice } from "~tokens/hooks";
+import { AR_PROCESS_ID, AO_PROCESS_ID } from "~tokens/aoTokens/ao";
 
-export const PriceChart: React.FC = React.memo(() => {
+interface PriceChartProps {
+  symbol: CoinGeckoSymbol;
+}
+
+export const PriceChart = ({ symbol }: PriceChartProps) => {
   const theme = useTheme();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currency = "USD"] = useSetting("currency");
-  const { chartData, loading, priceChangePercentage: percentage } = useARMarketData();
-  const { data: arPrice = "0" } = useArPrice(currency);
+  const { chartData, loading, priceChangePercentage: percentage } = useTokenMarketData(symbol);
+  const { price = 0 } = useTokenPrice(symbol === "arweave" ? AR_PROCESS_ID : AO_PROCESS_ID, currency);
 
   const { fiatChange, percentageNumber, isNegative } = useMemo(() => {
     const percentageNum = percentage.toNumber();
     const negative = percentage.isNegative();
-    const change = +arPrice - +arPrice / (1 + percentageNum / 100);
+    const change = price - price / (1 + percentageNum / 100);
 
     return {
       fiatChange: change,
       percentageNumber: percentageNum,
       isNegative: negative,
     };
-  }, [arPrice, chartData, percentage]);
+  }, [price, chartData, percentage]);
 
   const chartPoints = useMemo(() => {
     return (
@@ -57,7 +63,7 @@ export const PriceChart: React.FC = React.memo(() => {
             <Flex justify="space-between" align="center">
               <Flex gap={4} direction="column">
                 <Text size="xl" weight="semibold" noMargin>
-                  {formatFiatBalance(arPrice, currency)}
+                  {formatFiatBalance(price, currency)}
                 </Text>
                 <Flex gap={4} align="center">
                   <FiatBalanceText>
@@ -75,10 +81,10 @@ export const PriceChart: React.FC = React.memo(() => {
           </Flex>
         </Flex>
       </PriceChartContainer>
-      <PriceChartModal isOpen={isModalOpen} setOpen={setIsModalOpen} />
+      <PriceChartModal isOpen={isModalOpen} setOpen={setIsModalOpen} symbol={symbol} />
     </>
   );
-});
+};
 
 const FiatBalanceText = styled(Text).attrs({ noMargin: true, variant: "secondary", weight: "medium" })``;
 

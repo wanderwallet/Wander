@@ -3881,5 +3881,9 @@
     "fastest": {
       "message": "最快",
       "description": "Fastest text"
+    },
+    "unknown_coin": {
+      "message": "没有关于此资产的信息。请谨慎行事，并自行承担风险",
+      "description": "此资产暂无相关信息。请谨慎操作，风险自负。"
     }
 }

@@ -1,11 +1,10 @@
-import { Feather, QrCode02 } from "@untitled-ui/icons-react";
+import { AlertTriangle, QrCode02 } from "@untitled-ui/icons-react";
 import styled, { useTheme } from "styled-components";
-import { VERIFIED_TOKENS } from "~tokens/aoTokens/ao";
+import { AO_PROCESS_ID, VERIFIED_TOKENS } from "~tokens/aoTokens/ao";
 import { formatFiatBalance } from "~tokens/currency";
-import { useAoToken, useTokenBalance, useTokenPrice } from "~tokens/hooks";
-import { useArChange } from "~tokens/hooks/useArChange";
-import { useFormattedArBalance } from "~tokens/hooks/useFormattedArBalance";
-import { useActiveAddress } from "~wallets/hooks";
+import { useAoToken } from "~tokens/hooks";
+import { useTokenPriceChange } from "~tokens/hooks/useTokenPriceChange";
+import { useFormattedTokenBalance } from "~tokens/hooks/useFormattedTokenBalance";
 import useSetting from "~settings/hook";
 import { Text } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
@@ -18,7 +17,6 @@ import { ReceiveIcon } from "~components/icons/ReceiveIcon";
 import { ActionButtons, type ButtonConfig } from "../ActionButtons";
 import arLogoDark from "url:/assets/ar/logo_dark.png";
 import { PriceChart } from "./PriceChart";
-import BigNumber from "bignumber.js";
 
 interface TokenInfoProps {
   id: string;
@@ -26,54 +24,44 @@ interface TokenInfoProps {
 
 const HYPHEN = "\u2011\u2011";
 
-export const TokenInfo: React.FC<TokenInfoProps> = ({ id }) => {
-  const activeAddress = useActiveAddress();
+export const TokenInfo = ({ id }: TokenInfoProps) => {
+  const isAR = id === "AR";
+  const isAO = id === AO_PROCESS_ID;
   const [currency = "USD"] = useSetting("currency");
   const token = useAoToken(id);
   const theme = useTheme();
+  const formattedBalance = useFormattedTokenBalance(id);
+  const tokenPriceChange = useTokenPriceChange(isAR ? "arweave" : isAO ? "ao-computer" : null, formattedBalance?.fiat);
 
-  const isAR = id === "AR";
+  const tokenData = useMemo(
+    () => ({
+      ...formattedBalance,
+      ...(formattedBalance.fiat !== null ? tokenPriceChange : { loading: false, percentage: null, fiatChange: null }),
+      loading: formattedBalance.loading,
+    }),
+    [formattedBalance, tokenPriceChange],
+  );
 
-  const { data: balance = "0" } = useTokenBalance(token, activeAddress!);
+  const tokenDisplay = useMemo(
+    () => ({
+      displayBalance: tokenData?.loading ? null : tokenData?.displayBalance || "0",
+      fiatBalance: tokenData?.loading ? null : tokenData?.fiatBalance || HYPHEN,
+      percentage: tokenData?.loading ? null : tokenData?.percentage?.toNumber() || 0,
+      fiatChange:
+        tokenData?.loading || !tokenData?.fiatBalance || !tokenData?.percentage
+          ? null
+          : formatFiatBalance(
+              ((tokenData.percentage?.toNumber() ?? 0) / 100) *
+                parseFloat(tokenData.fiatBalance.replace(/[^0-9.-]+/g, "")),
+              currency,
+            ),
+      ticker: token?.Ticker,
+      loading: tokenData?.loading,
+    }),
+    [tokenData, token],
+  );
 
-  // AR Hooks
-  const formattedBalance = useFormattedArBalance();
-
-  const arChange = useArChange(formattedBalance.fiat);
-
-  const arData = isAR
-    ? {
-        ...formattedBalance,
-        ...(formattedBalance.fiat !== null ? arChange : { loading: false, percentage: null, fiatChange: null }),
-        loading: formattedBalance.loading,
-      }
-    : null;
-
-  // AO Hooks
-  const { price } = useTokenPrice(id, currency);
-
-  const tokenDisplay = isAR
-    ? {
-        displayBalance: arData?.loading ? null : arData?.displayBalance,
-        fiatBalance: arData?.loading ? null : arData?.fiatBalance,
-        percentage: arData?.loading ? null : arData?.percentage?.toNumber(),
-        fiatChange:
-          arData?.loading || !arData?.fiatBalance
-            ? null
-            : formatFiatBalance(
-                ((arData.percentage?.toNumber() ?? 0) / 100) * parseFloat(arData.fiatBalance.replace(/[^0-9.-]+/g, "")),
-                currency,
-              ),
-        ticker: "AR",
-        loading: arData?.loading,
-      }
-    : {
-        displayBalance: balance || "0",
-        fiatBalance:
-          price && +balance! >= 0 ? formatFiatBalance(BigNumber(balance!).multipliedBy(price), currency) : HYPHEN,
-        ticker: token?.Ticker,
-        loading: !isAR && !balance,
-      };
+  console.log({ tokenData, tokenDisplay });
 
   const verified = VERIFIED_TOKENS.includes(id as (typeof VERIFIED_TOKENS)[number]);
   const tokenDescription = browser.i18n.getMessage(`token_description_${id.replaceAll("-", "_")}`);
@@ -120,7 +108,7 @@ export const TokenInfo: React.FC<TokenInfoProps> = ({ id }) => {
           </TokenBalanceText>
           <Flex direction="row" gap={8} justify="center">
             <FiatBalanceText>{tokenDisplay.fiatBalance}</FiatBalanceText>
-            {isAR &&
+            {(isAR || isAO) &&
               tokenDisplay.percentage !== undefined &&
               tokenDisplay.percentage !== null &&
               tokenDisplay.fiatChange && (
@@ -141,7 +129,7 @@ export const TokenInfo: React.FC<TokenInfoProps> = ({ id }) => {
 
       <ActionButtons buttons={buttons} />
 
-      {isAR && <PriceChart />}
+      {(isAR || isAO) && <PriceChart symbol={isAR ? "arweave" : "ao-computer"} />}
 
       {tokenDescription ? (
         <>
@@ -170,8 +158,17 @@ export const TokenInfo: React.FC<TokenInfoProps> = ({ id }) => {
           )}
         </>
       ) : (
-        <Flex direction="row" align="center" gap={16} borderRadius={8} padding={16}>
-          <Feather name="alert-triangle" />
+        <Flex
+          direction="row"
+          align="center"
+          gap={16}
+          borderRadius={8}
+          padding={16}
+          background={theme.backgroundSecondary}>
+          <AlertTriangle
+            style={{ height: 24, width: 24, flexShrink: 0 }}
+            color={theme.displayTheme === "dark" ? "#EDD44F" : "#F5A623"}
+          />
           <Text size="sm" weight="semibold" noMargin>
             {browser.i18n.getMessage("unknown_coin")}
           </Text>
@@ -180,7 +177,6 @@ export const TokenInfo: React.FC<TokenInfoProps> = ({ id }) => {
     </Flex>
   );
 };
-
 const TokenInfoItem = styled.div`
   display: flex;
   flex-direction: column;

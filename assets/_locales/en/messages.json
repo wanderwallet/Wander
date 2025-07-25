@@ -3921,5 +3921,9 @@
   "fastest": {
     "message": "Fastest",
     "description": "Fastest text"
+  },
+  "unknown_coin": {
+    "message": "There is no information available for this asset. Please proceed with caution and use at your own risk",
+    "description": "Unknown coin text"
   }
 }

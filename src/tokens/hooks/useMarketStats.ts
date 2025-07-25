@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getMarketStats } from "~lib/coingecko";
+import { getMarketStats, type CoinGeckoSymbol } from "~lib/coingecko";
 import useSetting from "~settings/hook";
 import { ExtensionStorage, useStorage } from "~utils/storage";
 
@@ -14,12 +14,12 @@ export interface SavedMarketStats {
   timestamp: string;
 }
 
-export function useMarketStats() {
+export function useMarketStats(symbol: CoinGeckoSymbol) {
   const [currency = "USD"] = useSetting("currency");
   const [loading, setLoading] = useState(false);
   const [marketStats, setMarketStats] = useState<SavedMarketStats | null>(null);
   const [savedMarketStats, setSavedMarketStats] = useStorage<SavedMarketStats>({
-    key: "saved_market_stats",
+    key: `saved_market_stats_${symbol}`,
     instance: ExtensionStorage,
   });
 
@@ -27,7 +27,7 @@ export function useMarketStats() {
     const fetchStats = async () => {
       setLoading(true);
       try {
-        const stats = await getMarketStats(currency.toLowerCase());
+        const stats = await getMarketStats(symbol, currency.toLowerCase());
         const formattedStats = {
           ...stats,
           timestamp: new Date().toISOString(),

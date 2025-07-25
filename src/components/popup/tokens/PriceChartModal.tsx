@@ -5,18 +5,21 @@ import BigNumber from "bignumber.js";
 import browser from "webextension-polyfill";
 import { Text } from "@arconnect/components-rebrand";
 import SliderMenu from "~components/SliderMenu";
-import { useArPrice } from "~lib/coingecko";
+import { type CoinGeckoSymbol } from "~lib/coingecko";
 import useSetting from "~settings/hook";
 import { formatFiatBalance, getCurrencySymbol } from "~tokens/currency";
-import { useARMarketData } from "~tokens/hooks/useArMarketData";
+import { useTokenMarketData } from "~tokens/hooks/useTokenMarketData";
 import { useMarketStats } from "~tokens/hooks/useMarketStats";
 import { formatBalance } from "~utils/format";
 import { Flex } from "~components/common/Flex";
 import { LineChart } from "./LineChart";
+import { useTokenPrice } from "~tokens/hooks";
+import { AO_PROCESS_ID, AR_PROCESS_ID } from "~tokens/aoTokens/ao";
 
 interface PriceChartModalProps {
   isOpen: boolean;
   setOpen: (open: boolean) => void;
+  symbol: CoinGeckoSymbol;
 }
 
 const getRangeDays = (range: string) => {
@@ -38,15 +41,21 @@ const getRangeDays = (range: string) => {
   }
 };
 
-export const PriceChartModal = ({ isOpen, setOpen }: PriceChartModalProps) => {
+export const PriceChartModal = ({ isOpen, setOpen, symbol }: PriceChartModalProps) => {
   const theme = useTheme();
   const [currency = "USD"] = useSetting("currency");
-  const { data: arPrice = "0" } = useArPrice(currency);
+  const { price = 0 } = useTokenPrice(symbol === "arweave" ? AR_PROCESS_ID : AO_PROCESS_ID, currency);
   const [selectedRange, setSelectedRange] = useState("24H");
-  const { marketStats } = useMarketStats();
+  const { marketStats } = useMarketStats(symbol);
 
-  const { chartData, priceChangePercentage: percentage, loading, error } = useARMarketData(getRangeDays(selectedRange));
-  const fiatChange = +arPrice - +arPrice / (1 + percentage.toNumber() / 100);
+  const {
+    chartData,
+    priceChangePercentage: percentage,
+    loading,
+    error,
+  } = useTokenMarketData(symbol, getRangeDays(selectedRange));
+
+  const fiatChange = price - price / (1 + percentage.toNumber() / 100);
 
   const chartPoints = useMemo(() => {
     return (
@@ -71,14 +80,14 @@ export const PriceChartModal = ({ isOpen, setOpen }: PriceChartModalProps) => {
 
   return (
     <SliderMenu
-      title={browser.i18n.getMessage("token_price", ["Arweave"])}
+      title={browser.i18n.getMessage("token_price", [symbol === "arweave" ? "Arweave" : "AO"])}
       isOpen={isOpen}
       onClose={() => setOpen(false)}
       height={"95vh"}
       maxHeight={"100vh"}>
       <Container>
         <PriceSection>
-          <PriceValue>{formatFiatBalance(arPrice, currency)}</PriceValue>
+          <PriceValue>{formatFiatBalance(price, currency)}</PriceValue>
           <Flex gap={4} align="center">
             <ChangeText>
               {percentage.isPositive() ? "+" : "-"}

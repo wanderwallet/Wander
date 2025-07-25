@@ -6,13 +6,15 @@ import { CACHE_API } from "~constants/api";
 import { withRetry } from "~utils/promises/retry";
 import { ExtensionStorage, PersistentStorage } from "~utils/storage";
 
+export type CoinGeckoSymbol = "arweave" | "ao-computer";
+
 /**
  * Compare two currencies
  *
  * @param symbol Symbol of the currency to get the price for
  * @param currency What to return the price in
  */
-export async function getPrice(symbol: string, currency: string) {
+export async function getPrice(symbol: CoinGeckoSymbol, currency: string) {
   try {
     const wanderData = await (
       await fetch(`${CACHE_API}/api/price?symbol=${symbol.toLowerCase()}&currency=${currency.toLowerCase()}`)
@@ -95,9 +97,9 @@ export function useArPrice(currency: string) {
  * @param currency Currency to get the price change in
  * @returns 24-hour price change percentage of AR
  */
-export async function getAr24hChange(currency: string): Promise<number> {
+export async function getToken24hChange(symbol: CoinGeckoSymbol, currency: string): Promise<number> {
   try {
-    const url = `https://api.coingecko.com/api/v3/simple/price?ids=arweave&vs_currencies=${currency.toLowerCase()}&include_24hr_change=true`;
+    const url = `https://api.coingecko.com/api/v3/simple/price?ids=${symbol}&vs_currencies=${currency.toLowerCase()}&include_24hr_change=true`;
     const response = await fetch(url);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -105,7 +107,7 @@ export async function getAr24hChange(currency: string): Promise<number> {
     const data = await response.json();
     const changeKey = `${currency.toLowerCase()}_24h_change`;
 
-    return data.arweave[changeKey];
+    return data[symbol][changeKey];
   } catch (error) {
     throw new Error("Failed to fetch AR price change");
   }
@@ -127,13 +129,13 @@ interface CoinGeckoPriceResult {
   };
 }
 
-async function fetchCoinGeckoChart(currency: string, days: string | number) {
+async function fetchCoinGeckoChart(symbol: CoinGeckoSymbol, currency: string, days: string | number) {
   try {
-    const response = await fetch(`${CACHE_API}/api/chart?days=${days}&currency=${currency}`);
+    const response = await fetch(`${CACHE_API}/api/chart?symbol=${symbol}&days=${days}&currency=${currency}`);
 
     const data = await response.json();
 
-    await ExtensionStorage.set(`saved_market_data_${days}`, {
+    await ExtensionStorage.set(`saved_market_data_${symbol}_${days}`, {
       prices: data.data.prices,
       // cacheAge minus time now
       timestamp: new Date(Date.now() - data.cacheAge * 1000).toISOString(),
@@ -142,12 +144,12 @@ async function fetchCoinGeckoChart(currency: string, days: string | number) {
     return data.data;
   } catch (error) {
     const data: CoinGeckoMarketChartResult = await (
-      await fetch(`https://api.coingecko.com/api/v3/coins/arweave/market_chart?vs_currency=${currency}&days=${days}`)
+      await fetch(`https://api.coingecko.com/api/v3/coins/${symbol}/market_chart?vs_currency=${currency}&days=${days}`)
     ).json();
 
     if (data.status?.error_code) throw new Error("CoinGecko API error");
 
-    await ExtensionStorage.set(`saved_market_data_${days}`, {
+    await ExtensionStorage.set(`saved_market_data_${symbol}_${days}`, {
       prices: data.prices,
       timestamp: new Date().toISOString(),
     });
@@ -156,9 +158,9 @@ async function fetchCoinGeckoChart(currency: string, days: string | number) {
   }
 }
 
-export async function getMarketChart(currency: string, days = "max") {
+export async function getMarketChart(symbol: CoinGeckoSymbol, currency: string, days = "max") {
   try {
-    return await fetchCoinGeckoChart(currency, days);
+    return await fetchCoinGeckoChart(symbol, currency, days);
   } catch (error) {
     throw error;
   }
@@ -184,10 +186,10 @@ interface CoinGeckoMarketStatsResult {
   };
 }
 
-export async function getMarketStats(currency: string = "usd") {
+export async function getMarketStats(symbol: CoinGeckoSymbol, currency: string = "usd") {
   const data: CoinGeckoMarketStatsResult = await (
     await fetch(
-      `https://api.coingecko.com/api/v3/coins/arweave?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=false`,
+      `https://api.coingecko.com/api/v3/coins/${symbol}?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=false`,
     )
   ).json();
 

@@ -1,28 +1,25 @@
 import { useMemo } from "react";
-import { useArPrice } from "~lib/coingecko";
 import { formatFiatBalance } from "~tokens/currency";
 import { formatBalance } from "~utils/format";
-import { useTokenBalance } from ".";
+import { useAoToken, useTokenBalance, useTokenPrice } from ".";
 import { useActiveAddress } from "~wallets/hooks";
-import { defaultTokens } from "~tokens/aoTokens/ao";
 import useSetting from "~settings/hook";
 import BigNumber from "bignumber.js";
 
-const arToken = defaultTokens[0];
-
-export function useFormattedArBalance() {
+export function useFormattedTokenBalance(id: string) {
+  const token = useAoToken(id);
   const activeAddress = useActiveAddress();
-  const { data: balance = "0", isFetched: balanceLoaded } = useTokenBalance(arToken, activeAddress);
+  const { data: balance = "0", isFetched: balanceLoaded } = useTokenBalance(token, activeAddress);
   const [currency = "USD"] = useSetting("currency");
-  const { data: price = "0", isLoading: loading } = useArPrice(currency);
+  const { price = 0, loading } = useTokenPrice(id, currency);
 
   const formattedBalance = useMemo(() => formatBalance(balance), [balance]);
 
-  const fiat = useMemo(() => BigNumber(price).multipliedBy(balance), [price, balance]);
+  const fiat = useMemo(() => (price ? BigNumber(price).multipliedBy(balance) : null), [price, balance]);
 
   return {
     displayBalance: formattedBalance.displayBalance,
-    fiatBalance: formatFiatBalance(fiat, currency),
+    fiatBalance: fiat ? formatFiatBalance(fiat, currency) : null,
     fiat,
     loading: loading || !balanceLoaded,
   };

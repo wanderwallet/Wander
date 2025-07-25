@@ -1,6 +1,6 @@
 import { useStorage } from "@plasmohq/storage/hook";
 import { useState, useEffect } from "react";
-import { getMarketChart } from "~lib/coingecko";
+import { getMarketChart, type CoinGeckoSymbol } from "~lib/coingecko";
 import useSetting from "~settings/hook";
 import { ExtensionStorage } from "~utils/storage";
 import BigNumber from "bignumber.js";
@@ -10,14 +10,14 @@ export interface SavedMarketData {
   timestamp: string;
 }
 
-export function useARMarketData(days = "1") {
+export function useTokenMarketData(symbol: CoinGeckoSymbol, days = "1") {
   const [currency = "USD"] = useSetting("currency");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
   const [chartData, setChartData] = useState<[number, number][]>([]);
   const [priceChangePercentage, setPriceChangePercentage] = useState<BigNumber>(new BigNumber(0));
   const [savedMarketData] = useStorage<SavedMarketData>({
-    key: `saved_market_data_${days}`,
+    key: `saved_market_data_${symbol}_${days}`,
     instance: ExtensionStorage,
   });
 
@@ -33,7 +33,9 @@ export function useARMarketData(days = "1") {
         const isFresh =
           savedMarketData?.timestamp && Date.now() - new Date(savedMarketData.timestamp).getTime() < 5 * 60 * 1000;
 
-        const prices = isFresh ? savedMarketData.prices : (await getMarketChart(currency.toLowerCase(), days)).prices;
+        const prices = isFresh
+          ? savedMarketData.prices
+          : (await getMarketChart(symbol, currency.toLowerCase(), days)).prices;
 
         setChartData(prices);
         const startPrice = prices[0][1];

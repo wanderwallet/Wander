@@ -1,20 +1,20 @@
 import { useState, useEffect } from "react";
-import { getMarketChart } from "~lib/coingecko";
+import { getMarketChart, type CoinGeckoSymbol } from "~lib/coingecko";
 import useSetting from "~settings/hook";
 import { formatFiatBalance } from "~tokens/currency";
 import { ExtensionStorage, useStorage } from "~utils/storage";
 import BigNumber from "bignumber.js";
 
-export function useArChange(fiat?: BigNumber) {
+export function useTokenPriceChange(symbol: CoinGeckoSymbol | null, fiat?: BigNumber) {
   const [currency = "USD"] = useSetting("currency");
   const [percentage, setPercentage] = useState(BigNumber("0"));
   const [savedAr24hChange] = useStorage<{
     value: number;
     timestamp: string;
-  }>({ key: "saved_ar_24h_change", instance: ExtensionStorage });
+  }>({ key: `saved_${symbol}_24h_change`, instance: ExtensionStorage });
 
   useEffect(() => {
-    if (!currency) return;
+    if (!currency || !symbol) return;
 
     (async () => {
       try {
@@ -22,7 +22,7 @@ export function useArChange(fiat?: BigNumber) {
         const savedData = await ExtensionStorage.get<{
           prices: [number, number][];
           timestamp: string;
-        }>(`saved_market_data_1`);
+        }>(`saved_market_data_${symbol}_1`);
         if (savedData) {
           const { prices, timestamp } = savedData;
           const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
@@ -37,7 +37,7 @@ export function useArChange(fiat?: BigNumber) {
         }
 
         // If no valid cached data, fetch new data
-        const data = await getMarketChart(currency.toLowerCase(), "1");
+        const data = await getMarketChart(symbol, currency.toLowerCase(), "1");
         const prices = data.prices;
         const startPrice = prices[0][1];
         const endPrice = prices[prices.length - 1][1];
@@ -52,7 +52,7 @@ export function useArChange(fiat?: BigNumber) {
         }
       }
     })();
-  }, [currency]);
+  }, [currency, symbol]);
 
   return {
     percentage,

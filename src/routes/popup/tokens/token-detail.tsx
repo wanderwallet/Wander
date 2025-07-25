@@ -36,7 +36,7 @@ export function TokenDetailView() {
           <Flex align="center" gap={8}>
             <Logo src={logo} alt={token.Name} height={24} width={24} />
             <Text size="lg" weight="bold" noMargin>
-              {token.Name}
+              {token?.Name?.length <= 15 ? token.Name : token.Ticker}
             </Text>
           </Flex>
         }
