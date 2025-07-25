@@ -1,4 +1,3 @@
-import { useStorage } from "@plasmohq/storage/hook";
 import { useState, useEffect } from "react";
 import { getMarketChart, type CoinGeckoSymbol } from "~lib/coingecko";
 import useSetting from "~settings/hook";
@@ -16,10 +15,6 @@ export function useTokenMarketData(symbol: CoinGeckoSymbol, days = "1") {
   const [error, setError] = useState(false);
   const [chartData, setChartData] = useState<[number, number][]>([]);
   const [priceChangePercentage, setPriceChangePercentage] = useState<BigNumber>(new BigNumber(0));
-  const [savedMarketData] = useStorage<SavedMarketData>({
-    key: `saved_market_data_${symbol}_${days}`,
-    instance: ExtensionStorage,
-  });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -29,6 +24,7 @@ export function useTokenMarketData(symbol: CoinGeckoSymbol, days = "1") {
       setPriceChangePercentage(new BigNumber(0));
 
       try {
+        const savedMarketData = await ExtensionStorage.get<SavedMarketData>(`saved_market_data_${symbol}_${days}`);
         // fresh is considered less than 5 min old
         const isFresh =
           savedMarketData?.timestamp && Date.now() - new Date(savedMarketData.timestamp).getTime() < 5 * 60 * 1000;
@@ -51,7 +47,7 @@ export function useTokenMarketData(symbol: CoinGeckoSymbol, days = "1") {
     };
 
     fetchData();
-  }, [currency, days, savedMarketData]);
+  }, [currency, days]);
 
   return { chartData, loading, priceChangePercentage, error };
 }
