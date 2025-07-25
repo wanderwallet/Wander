@@ -68,6 +68,7 @@ export const PriceChartModal = ({ isOpen, setOpen, symbol }: PriceChartModalProp
 
   const isNegative = percentage.toNumber() < 0;
   const strokeColor = isNegative ? theme.fail : theme.success;
+  const ticker = symbol === "arweave" ? "AR" : "AO";
 
   const handleRangeChange = useCallback(
     (range: string) => {
@@ -80,7 +81,7 @@ export const PriceChartModal = ({ isOpen, setOpen, symbol }: PriceChartModalProp
 
   return (
     <SliderMenu
-      title={browser.i18n.getMessage("token_price", [symbol === "arweave" ? "Arweave" : "AO"])}
+      title={browser.i18n.getMessage("token_price", [ticker])}
       isOpen={isOpen}
       onClose={() => setOpen(false)}
       height={"95vh"}
@@ -156,15 +157,21 @@ export const PriceChartModal = ({ isOpen, setOpen, symbol }: PriceChartModalProp
             </StatRow>
             <StatRow>
               <StatLabel>Total supply</StatLabel>
-              <StatValue>{formatBalance(BigNumber(marketStats?.totalSupply ?? 0)).displayBalance} AR</StatValue>
+              <StatValue>
+                {formatBalance(BigNumber(marketStats?.totalSupply ?? 0)).displayBalance} {ticker}
+              </StatValue>
             </StatRow>
             <StatRow>
               <StatLabel>Max. supply</StatLabel>
-              <StatValue>{formatBalance(BigNumber(marketStats?.maxSupply ?? 0)).displayBalance} AR</StatValue>
+              <StatValue>
+                {formatBalance(BigNumber(marketStats?.maxSupply ?? 0)).displayBalance} {ticker}
+              </StatValue>
             </StatRow>
             <StatRow>
               <StatLabel>Circulating supply</StatLabel>
-              <StatValue>{formatBalance(BigNumber(marketStats?.circulatingSupply ?? 0)).displayBalance} AR</StatValue>
+              <StatValue>
+                {formatBalance(BigNumber(marketStats?.circulatingSupply ?? 0)).displayBalance} {ticker}
+              </StatValue>
             </StatRow>
           </StatsGrid>
         </StatsSection>

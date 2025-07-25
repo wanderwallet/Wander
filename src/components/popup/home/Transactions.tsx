@@ -314,11 +314,26 @@ export const AnnouncementItemComponent = ({ transaction }: { transaction: Extend
 
 export const TierTransactionItemComponent = ({ transaction }: { transaction: ExtendedTransaction }) => {
   const { navigate } = useLocation();
+  const [logoSource, setLogoSource] = useState<string>();
+
+  useEffect(() => {
+    const fetchLogo = async () => {
+      if (transaction.aoInfo?.logo) {
+        const logo = await getUserAvatar(transaction.aoInfo.logo);
+        setLogoSource(logo!);
+      } else {
+        setLogoSource(arLogoLight);
+      }
+    };
+
+    fetchLogo();
+  }, [transaction.aoInfo?.logo]);
 
   return (
     <TransactionItem showBackground={false}>
       <Transaction padding="8px" onClick={() => navigate(`/transaction/${transaction.node.id}?back=/tier`)}>
         <FlexContainer>
+          <Logo src={logoSource} alt="Token logo" />
           <Section>
             <Main>{getTransactionDescription(transaction)}</Main>
             <Secondary>
