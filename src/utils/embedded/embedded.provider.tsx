@@ -39,6 +39,8 @@ import {
   WalletSourceType,
   type DbSession,
   type RecoverableAccount,
+  type SupabaseAuthChangeEvent,
+  type SupabaseSession,
   type SupabaseUser,
 } from "embed-api";
 import { AuthenticationService } from "~utils/authentication/authentication.service";
@@ -50,7 +52,7 @@ import {
   getUserDetailsFromSupabaseUser,
   postEmbeddedMessage,
 } from "~utils/embedded/utils/messages/embedded-messages.utils";
-import { ExtensionStorage, PersistentStorage } from "~utils/storage";
+import { ExtensionStorage, PersistentStorage, useStorage } from "~utils/storage";
 import { StorageKeys } from "~utils/storage/storage.constants";
 import {
   AO_TOKENS,
@@ -62,9 +64,10 @@ import {
 } from "~tokens/aoTokens/sync";
 import { loadTokens } from "~tokens/token";
 import {
+  addUnpartitionedStateStatusChangeListener,
   getUnpartitionedStateStatus,
-  UNPARTITIONED_STATE_STATUS_CHANGE_EVENT,
-  type UnpartitionedStateStatusChangeEvent,
+  removeUnpartitionedStateStatusChangeListener,
+  type UnpartitionedStateStatusChangeData,
 } from "~iframe/storage/unpartitioned-storage/unpartitioned-storage.utils";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { isomorphicOnMessage } from "~isomorphic-messaging";
@@ -86,18 +89,29 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
   const [unpartitionedStateStatus, setUnpartitionedStateStatus] = useState(() => getUnpartitionedStateStatus());
 
+  const [unpartitionedStateConfirmed, setUnpartitionedStateConfirmed, { setRenderValue }] = useStorage<boolean>({
+    key: StorageKeys.CONNECT.SUPPORT.UNPARTITIONED_STATE_CONFIRMED,
+    instance: PersistentStorage,
+  });
+
+  const confirmUnpartitionedState = useCallback(
+    async (doNotAskAgain: boolean) => {
+      if (doNotAskAgain) return setUnpartitionedStateConfirmed(true);
+      else setRenderValue(true);
+    },
+    [setUnpartitionedStateConfirmed, setRenderValue],
+  );
+
   // Unpartitioned state:
 
   useEffect(() => {
-    function handleBanner(event: UnpartitionedStateStatusChangeEvent) {
-      const { unpartitionedStateStatus } = event.detail;
-
-      if (unpartitionedStateStatus) setUnpartitionedStateStatus(unpartitionedStateStatus);
+    function handleUnpartitionedStateStatusChange({ unpartitionedStateStatus }: UnpartitionedStateStatusChangeData) {
+      setUnpartitionedStateStatus(unpartitionedStateStatus);
     }
 
-    document.addEventListener(UNPARTITIONED_STATE_STATUS_CHANGE_EVENT, handleBanner);
+    addUnpartitionedStateStatusChangeListener(handleUnpartitionedStateStatusChange);
 
-    return () => document.removeEventListener(UNPARTITIONED_STATE_STATUS_CHANGE_EVENT, handleBanner);
+    return () => removeUnpartitionedStateStatusChangeListener(handleUnpartitionedStateStatusChange);
   }, []);
 
   // Wallet props:
@@ -597,12 +611,6 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       log(LOG_GROUP.WALLET_GENERATION, `registerWallet(${sourceType})`);
 
       if (authStatus === "noShares") {
-        await Promise.all(
-          wallets.map(({ id: walletId, status }) =>
-            status === "ENABLED" ? WalletService.updateWalletStatus({ walletId, status: "LOST" }) : null,
-          ),
-        );
-
         setEmbeddedContextState((prevAuthContextState) => ({
           ...prevAuthContextState,
           wallets: prevAuthContextState.wallets.map((wallet) => ({
@@ -1109,15 +1117,26 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
     let isInitialAuthEventDispatched = false;
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, supabaseSession) => {
+    // This should never be invoked, but it could serve as a last-resort option in case there's a bug that prevents
+    // Supabase from invoking the handler when needed.
+
+    const authInitTimeoutID = window.setTimeout(() => {
+      if (isInitialAuthEventDispatched) return;
+
+      console.warn(`Supabase Auth initial auth state change event not received. Invoking manually...`);
+
+      handleOnAuthStateChange("INITIAL_SESSION", null);
+    }, 5000);
+
+    async function handleOnAuthStateChange(_event: SupabaseAuthChangeEvent, supabaseSession: SupabaseSession | null) {
+      window.clearTimeout(authInitTimeoutID);
+
       if (isInitialAuthEventDispatched && _event === "INITIAL_SESSION") return;
 
       if (!isInitialAuthEventDispatched) {
         isInitialAuthEventDispatched = true;
 
-        const cachedUser = supabaseSession?.user as SupabaseUser;
+        const cachedUser = supabaseSession?.user;
 
         // Send the initial state for the SDK button ASAP if there's cached data. Otherwise, the initial state will be
         // sent by the `useEffect` above that sends `"embedded_auth"` events too.
@@ -1173,15 +1192,19 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
           session: anonSession,
         });
       }
-    });
+    }
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(handleOnAuthStateChange);
 
     return () => {
       subscription.unsubscribe();
+      window.clearTimeout(authInitTimeoutID);
     };
   }, [initEmbeddedWallet]);
 
   const { setMode } = useTheme();
-
   const { navigate } = useLocation();
   const navigateRef = useRef(navigate);
   navigateRef.current = navigate;
@@ -1210,9 +1233,12 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         ...embeddedContextState,
         ...embeddedContextAuth,
 
-        currentWallet,
         walletCount,
+        currentWallet,
+
         unpartitionedStateStatus,
+        unpartitionedStateConfirmed,
+        confirmUnpartitionedState,
 
         authenticate,
         fetchRecoverableAccounts,

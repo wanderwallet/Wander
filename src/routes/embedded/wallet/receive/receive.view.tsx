@@ -16,7 +16,6 @@ export function WalletReceiveEmbeddedView() {
 
   return (
     <Card
-      size="auto"
       headerText="Receive"
       hasBackButton={true}
       onBackButtonClick={() => navigate(EmbeddedPaths.WalletHomeEmbeddedView)}

@@ -32,7 +32,6 @@ export function WalletTransactionCompleteEmbeddedView({ params: { id } }: Transa
 
   return (
     <Card
-      size="auto"
       hasBackButton={false}
       customIcon={<XClose fontSize={24} color={"#666666"} />}
       onCloseButtonClick={handleCancel}

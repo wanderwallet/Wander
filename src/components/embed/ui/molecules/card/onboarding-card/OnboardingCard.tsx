@@ -19,5 +19,5 @@ export function OnboardingCard({ onSubmit, children: childrenProp, ...cardProps 
     <div className={styles.childrenWrapper}>{childrenProp}</div>
   );
 
-  return <Card {...cardProps} footerElement={<WanderFooter />} size="auto" children={children} />;
+  return <Card {...cardProps} footerElement={<WanderFooter />} children={children} />;
 }

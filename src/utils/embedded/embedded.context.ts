@@ -27,9 +27,12 @@ export const EmbeddedContext = createContext<EmbeddedContextData>({
   ...EMBEDDED_CONTEXT_INITIAL_STATE,
   ...EMBEDDED_CONTEXT_INITIAL_AUTH,
 
-  currentWallet: null,
   walletCount: 0,
+  currentWallet: null,
+
   unpartitionedStateStatus: getUnpartitionedStateStatus(),
+  unpartitionedStateConfirmed: null,
+  confirmUnpartitionedState: async () => null,
 
   authenticate: async () => null,
   fetchRecoverableAccounts: async () => null,

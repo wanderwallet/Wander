@@ -31,8 +31,7 @@ export function AccountExportWalletEmbeddedView() {
       hasCloseButton={true}
       onCloseButtonClick={() => {
         window.history.back();
-      }}
-      size="auto">
+      }}>
       <Box>
         <Snackbar variant="warning">Do not share this with anyone.</Snackbar>
         <Copyable

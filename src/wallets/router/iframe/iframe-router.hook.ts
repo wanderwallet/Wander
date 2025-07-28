@@ -21,11 +21,28 @@ const AUTH_STATUS_TO_OVERRIDE: Record<AuthStatus, null | ExtensionRouteOverride>
 };
 
 export function useEmbeddedOverride(location?: RoutePath) {
-  const { authStatus, currentWallet, recoverableAccount, requestPasswordChange } = useEmbedded();
+  const {
+    authStatus,
+    recoverableAccount,
+    requestPasswordChange,
+    unpartitionedStateStatus,
+    unpartitionedStateConfirmed,
+  } = useEmbedded();
 
   if (!location || authStatus === "unknown") {
     return "/__OVERRIDES/cover";
   }
+
+  if (unpartitionedStateStatus !== "supported" && !unpartitionedStateConfirmed && authStatus === "noAuth") {
+    return routeTrapMatches(
+      location,
+      [EmbeddedPaths.SupportUnpartitionedStateMissing],
+      EmbeddedPaths.SupportUnpartitionedStateMissing,
+    );
+  }
+
+  // Always allowed to go here:
+  if (unpartitionedStateStatus !== "supported" && location === EmbeddedPaths.SupportUnpartitionedStateMissing) return;
 
   if (authStatus === "noAuth" || authStatus === "authLoading" || authStatus === "authError") {
     return routeTrapMatches(
