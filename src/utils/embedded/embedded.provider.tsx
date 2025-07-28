@@ -146,6 +146,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
   const [unpartitionedStateStatus, setUnpartitionedStateStatus] = useState(() => getUnpartitionedStateStatus());
 
+  console.log("unpartitionedStateStatus =", unpartitionedStateStatus);
+
   const [unpartitionedStateConfirmed, setUnpartitionedStateConfirmed, { setRenderValue }] = useStorage<boolean>({
     key: StorageKeys.CONNECT.SUPPORT.UNPARTITIONED_STATE_CONFIRMED,
     instance: PersistentStorage,
