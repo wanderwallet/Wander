@@ -193,6 +193,8 @@ export class EnhancedStorage implements Storage {
       // Already granted to another same-site embed, can request directly
       await this.requestStorageAccessAndInitializeStorage();
     } else if (permissionState === "prompt") {
+      this.dispatchUnpartitionedStateStatusChange("limited");
+
       // this.requestStorageAccessAndInitializeStorage();
       // Need user interaction to request
       this.setupUserInteractionHandler();
