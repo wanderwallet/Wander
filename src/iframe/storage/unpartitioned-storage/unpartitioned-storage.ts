@@ -1,6 +1,7 @@
 import { isInsideIframe } from "~utils/embedded/iframe.utils";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import {
+  getUnpartitionedStateStatus,
   HAS_SIMPLE_STORAGE_API,
   setUnpartitionedStateStatus,
   type UnpartitionedStateStatus,
@@ -197,7 +198,13 @@ export class EnhancedStorage implements Storage {
       // Not granted, so we need to wait for user interaction to request. We dispatch a "rejected" event while we wait
       // for permissions/access.
 
-      this.dispatchUnpartitionedStateStatusChange("rejected");
+      let unpartitionedStateStatus = getUnpartitionedStateStatus();
+
+      if (unpartitionedStateStatus !== "limited" && unpartitionedStateStatus !== "unsupported") {
+        unpartitionedStateStatus = "rejected";
+      }
+
+      this.dispatchUnpartitionedStateStatusChange(unpartitionedStateStatus);
       this.setupUserInteractionHandler();
     } else if (permissionState === "denied") {
       // User has denied access, so nothing to do, just dispatch the "rejected" event.
