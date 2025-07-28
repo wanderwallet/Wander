@@ -39,6 +39,8 @@ import {
   WalletSourceType,
   type DbSession,
   type RecoverableAccount,
+  type SupabaseAuthChangeEvent,
+  type SupabaseSession,
   type SupabaseUser,
 } from "embed-api";
 import { AuthenticationService } from "~utils/authentication/authentication.service";
@@ -1219,10 +1221,18 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
     let isInitialAuthEventDispatched = false;
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const authInitTimeoutID = window.setTimeout(() => {
+      if (isInitialAuthEventDispatched) return;
+
+      console.warn(`Supabase Auth initial auth state change event not received. Invoking manually...`);
+
+      handleOnAuthStateChange("INITIAL_SESSION", null);
+    }, 3000);
+
+    async function handleOnAuthStateChange(_event: SupabaseAuthChangeEvent, session: SupabaseSession | null) {
       console.log(_event, session);
+
+      window.clearTimeout(authInitTimeoutID);
 
       if (isInitialAuthEventDispatched && _event === "INITIAL_SESSION") return;
 
@@ -1332,10 +1342,15 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
           session: null,
         });
       }
-    });
+    }
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(handleOnAuthStateChange);
 
     return () => {
       subscription.unsubscribe();
+      window.clearTimeout(authInitTimeoutID);
     };
   }, [initEmbeddedWallet]);
 

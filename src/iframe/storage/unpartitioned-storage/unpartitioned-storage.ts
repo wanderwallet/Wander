@@ -61,8 +61,9 @@ export class EnhancedStorage implements Storage {
 
   protected async requestStorageAccessAndInitializeStorage(): Promise<UnpartitionedStateStatus> {
     if (!isInsideIframe()) {
-      console.trace("requestStorageAccessAndInitializeStorage");
-      // throw new Error("UnpartitionedStorage.requestStorageAccess() can only be called from within the iframe.");
+      console.warn(
+        "UnpartitionedStorage.requestStorageAccessAndInitializeStorage() should only be called from within an iframe. Regular, partitioned state will be used.",
+      );
       return;
     }
 
@@ -92,8 +93,9 @@ export class EnhancedStorage implements Storage {
 
   async requestStorageAccess(): Promise<UnpartitionedStateStatus> {
     if (!isInsideIframe()) {
-      console.trace("requestStorageAccess");
-      // throw new Error("UnpartitionedStorage.foo() can only be called from within the iframe.");
+      console.warn(
+        "UnpartitionedStorage.requestStorageAccess() should only be called from within an iframe. Regular, partitioned state will be used.",
+      );
       return;
     }
 
