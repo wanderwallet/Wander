@@ -1252,6 +1252,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       const user = (session?.user as SupabaseUser) ?? null;
       const authProviderType = getAuthProviderTypeFromSupabaseUser(user);
 
+      console.log({ accessToken, user, authProviderType });
+
       if (process.env.NODE_ENV === "development" && user && authProviderType === null) {
         alert(
           `authProviderType = ${authProviderType}. Something wasn't properly mapped in AUTH_PROVIDER_TYPE_BY_PROVIDER_STR.`,
@@ -1300,6 +1302,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       setAuthTokenHeader(accessToken);
 
       initEmbeddedWallet(user?.id || null, dbSession);
+
+      console.log({ authProviderType, user, dbSession });
 
       if (authProviderType && user && dbSession) {
         setEmbeddedContextAuth(({ authStatus }) => ({
