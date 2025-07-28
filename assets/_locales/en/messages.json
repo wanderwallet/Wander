@@ -3970,8 +3970,40 @@
     "message": "Primary",
     "description": "Primary text"
   },
+  "primary_count": {
+    "message": "Primary ($COUNT$)",
+    "description": "Primary count text",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
   "projects": {
     "message": "Projects",
     "description": "Projects text"
+  },
+  "projects_count": {
+    "message": "Projects ($COUNT$)",
+    "description": "Projects count text",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
+  "coming_soon": {
+    "message": "Coming Soon",
+    "description": "Coming soon text"
+  },
+  "no_projects_tokens": {
+    "message": "No projects tokens",
+    "description": "No projects tokens text"
+  },
+  "no_projects_tokens_description": {
+    "message": "Delegated AO allocation to ecosystem projects will appear here",
+    "description": "No projects tokens description text"
   }
 }

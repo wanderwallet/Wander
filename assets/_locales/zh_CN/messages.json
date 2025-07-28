@@ -3930,8 +3930,40 @@
       "message": "主要",
       "description": "Primary text"
     },
+    "primary_count": {
+      "message": "主要 ($COUNT$)",
+      "description": "Primary count text",
+      "placeholders": {
+        "count": {
+          "content": "$1",
+          "example": "2"
+        }
+      }
+    },
     "projects": {
       "message": "项目",
       "description": "Projects text"
+    },
+    "projects_count": {
+      "message": "项目 ($COUNT$)",
+      "description": "Projects count text",
+      "placeholders": {
+        "count": {
+          "content": "$1",
+          "example": "2"
+        }
+      }
+    },
+    "coming_soon": {
+      "message": "即将推出",
+      "description": "Coming soon text"
+    },
+    "no_projects_tokens": {
+      "message": "没有项目代币",
+      "description": "No projects tokens text"
+    },
+    "no_projects_tokens_description": {
+      "message": "委托给生态系统项目的 AO 分配将显示在这里",
+      "description": "No projects tokens description text"
     }
 }

@@ -7,6 +7,7 @@ interface TabType {
   id: number;
   name: string;
   component: () => JSX.Element;
+  nameSubstitutions?: string[];
 }
 
 interface TabsProps {
@@ -28,7 +29,7 @@ const Tab = ({ tab, active, setActiveTab }: TabProps) => (
     tabId={tab.id}
     onClick={() => setActiveTab(tab.id)}
     data-active={active ? "true" : "false"}>
-    {browser.i18n.getMessage(tab.name)}
+    {browser.i18n.getMessage(tab.name, tab.nameSubstitutions)}
   </StyledTab>
 );
 

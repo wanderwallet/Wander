@@ -15,63 +15,117 @@ import { formatBalance } from "~utils/format";
 import { useDelegationInfo, useFairLaunchTokens } from "~utils/fair_launch/fair_launch.hooks";
 import { PI_FLP_ID } from "~utils/fair_launch/fair_launch.constants";
 import type { FlpTokenInfo } from "~utils/fair_launch/fair_launch.types";
-
-const TABS_CONFIG = [
-  { id: 0, name: "primary", component: PrimaryTokens },
-  { id: 1, name: "projects", component: ProjectsTokens },
-] as const;
-
-const TAB_PARAM_TO_ID = Object.fromEntries(TABS_CONFIG.map((tab) => [tab.name, tab.id])) as Record<string, number>;
+import browser from "webextension-polyfill";
 
 export function EarnTabs() {
   const { navigate, location } = useLocation();
   const { tab } = useSearchParams<{ tab?: string }>();
+  const { data: delegationInfo = {} } = useDelegationInfo();
+  const activeAddress = useActiveAddress();
 
-  const activeTab = useMemo(() => TAB_PARAM_TO_ID[tab] ?? 0, [tab]);
+  const projectsCount = useMemo(() => {
+    return Object.keys(delegationInfo).filter((key) => key !== PI_FLP_ID && key !== activeAddress).length;
+  }, [delegationInfo, activeAddress]);
+
+  const tabConfig = useMemo(() => {
+    return [
+      { id: 0, name: `primary_count`, component: PrimaryTokens, nameSubstitutions: ["2"], searchParam: "primary" },
+      {
+        id: 1,
+        name: `projects_count`,
+        component: ProjectsTokens,
+        nameSubstitutions: [projectsCount.toString()],
+        searchParam: "projects",
+      },
+    ];
+  }, [projectsCount]);
+
+  const tabNameToId = useMemo(
+    () => Object.fromEntries(tabConfig.map((tab) => [tab.searchParam, tab.id])) as Record<string, number>,
+    [tabConfig],
+  );
+
+  const activeTab = useMemo(() => tabNameToId[tab] ?? 0, [tab, tabNameToId]);
 
   const setActiveTab = useCallback(
     (tabId: number) => {
       if (activeTab === tabId) return;
 
-      const tabConfig = TABS_CONFIG[tabId];
-      if (!tabConfig) return;
+      const tab = tabConfig[tabId];
+      if (!tab) return;
 
-      navigate(location, { search: { tab: tabConfig.name } });
+      navigate(location, { search: { tab: tab.searchParam } });
     },
-    [navigate, location, activeTab],
+    [navigate, location, activeTab, tabConfig],
   );
 
-  return <Tabs tabs={TABS_CONFIG} activeTab={activeTab} setActiveTab={setActiveTab} />;
+  return <Tabs tabs={tabConfig} activeTab={activeTab} setActiveTab={setActiveTab} />;
 }
 
 function PrimaryTokens() {
   const activeAddress = useActiveAddress();
-  const { data: delegationInfo, isLoading } = useDelegationInfo();
+  const { data: delegationInfo = {}, isLoading } = useDelegationInfo();
 
-  const coreTokens = useMemo(
-    () => [
-      { ...defaultTokens[1], percent: delegationInfo?.[activeAddress] || 0, comingSoon: false },
+  const coreTokens = useMemo(() => {
+    const aoPercent = delegationInfo?.[activeAddress] || 0;
+    const piPercent = delegationInfo?.[PI_FLP_ID] || 0;
+
+    return [
+      { ...defaultTokens[1], percent: aoPercent, comingSoon: false },
       {
         ...defaultTokens[2],
         Name: "Permaweb Index",
-        percent: delegationInfo?.[PI_FLP_ID] || 0,
+        percent: piPercent,
         comingSoon: false,
       },
       { ...defaultTokens[0], percent: 0, comingSoon: true },
-    ],
-    [delegationInfo, activeAddress],
-  );
+    ];
+  }, [delegationInfo, activeAddress]);
 
   return (
     <Flex direction="column" gap={16}>
       {coreTokens.map((token) => (
-        <PrimaryTokenItem key={token.processId} token={token} isLoading={isLoading} />
+        <TokenItem key={token.processId} token={token} isLoading={isLoading} />
       ))}
     </Flex>
   );
 }
 
-function PrimaryTokenItem({
+function ProjectsTokens() {
+  const { data: flpTokens = [], isLoading: isFlpTokensLoading } = useFairLaunchTokens();
+  const { data: delegationInfo = {}, isLoading } = useDelegationInfo();
+
+  const projects = useMemo(() => {
+    return flpTokens
+      .map((token) => ({
+        ...token,
+        percent: delegationInfo?.[token.flpId] || 0,
+        comingSoon: false,
+      }))
+      .filter((token) => token.percent > 0);
+  }, [flpTokens, delegationInfo]);
+
+  return (
+    <Flex direction="column" gap={16}>
+      {isFlpTokensLoading ? (
+        <Loading width={4} height={4} />
+      ) : projects.length > 0 ? (
+        projects.map((token) => <TokenItem key={token.processId} token={token} isLoading={isLoading} />)
+      ) : (
+        <Flex direction="column" gap={8} textAlign="center" padding="32px 0px">
+          <Text variant="secondary" weight="semibold" noMargin>
+            {browser.i18n.getMessage("no_projects_tokens")}
+          </Text>
+          <Text variant="secondary" weight="medium" size="sm" noMargin>
+            {browser.i18n.getMessage("no_projects_tokens_description")}
+          </Text>
+        </Flex>
+      )}
+    </Flex>
+  );
+}
+
+function TokenItem({
   token,
   isLoading,
 }: {
@@ -89,7 +143,7 @@ function PrimaryTokenItem({
 
   useEffect(() => {
     const fetchLogo = async () => {
-      if (!token.processId || logo) return;
+      if (!token.processId) return;
       if (token.Logo) {
         const logo = await getUserAvatar(token.Logo);
         setLogo(logo);
@@ -98,7 +152,7 @@ function PrimaryTokenItem({
       }
     };
     fetchLogo();
-  }, [token, arweaveLogo]);
+  }, [token.processId, token.Logo, arweaveLogo]);
 
   return (
     <Token key={token.processId}>
@@ -114,7 +168,7 @@ function PrimaryTokenItem({
             </Text>
           </Flex>
           <Text style={{ color: "#9787FF" }} weight="medium" noMargin>
-            Coming Soon
+            {browser.i18n.getMessage("coming_soon")}
           </Text>
         </Flex>
       ) : (
@@ -138,41 +192,6 @@ function PrimaryTokenItem({
         </Flex>
       )}
     </Token>
-  );
-}
-
-function ProjectsTokens() {
-  const { data: flpTokens = [], isLoading: isFlpTokensLoading } = useFairLaunchTokens();
-  const { data: delegationInfo = {}, isLoading } = useDelegationInfo();
-
-  const projects = useMemo(() => {
-    return flpTokens
-      .map((token) => ({
-        ...token,
-        percent: delegationInfo?.[token.flpId] || 0,
-      }))
-      .filter((token) => token.percent > 0);
-  }, [flpTokens, delegationInfo]);
-
-  console.log({ delegationInfo, flpTokens });
-
-  return (
-    <Flex direction="column" gap={16}>
-      {isFlpTokensLoading ? (
-        <Loading width={4} height={4} />
-      ) : projects.length > 0 ? (
-        projects.map((token) => <PrimaryTokenItem key={token.processId} token={token} isLoading={isLoading} />)
-      ) : (
-        <Flex direction="column" gap={8} textAlign="center" padding="32px 0px">
-          <Text variant="secondary" weight="semibold" noMargin>
-            No projects tokens
-          </Text>
-          <Text variant="secondary" weight="medium" size="sm" noMargin>
-            Delegated AO allocation to ecosystem projects will appear here
-          </Text>
-        </Flex>
-      )}
-    </Flex>
   );
 }
 
