@@ -188,18 +188,19 @@ export class EnhancedStorage implements Storage {
   private async handleStorageAccessPermission(permissionState: PermissionState) {
     console.log("handleStorageAccessPermission =", permissionState);
 
-    // Handle based on permission state
     if (permissionState === "granted") {
-      // Already granted to another same-site embed, can request directly
+      // Already granted, can request directly. `requestStorageAccessAndInitializeStorage()` will call
+      // `dispatchUnpartitionedStateStatusChange()`.
+
       await this.requestStorageAccessAndInitializeStorage();
     } else if (permissionState === "prompt") {
-      this.dispatchUnpartitionedStateStatusChange("limited");
+      // Not granted, so we need to wait for user interaction to request. We dispatch a "rejected" event while we wait
+      // for permissions/access.
 
-      // this.requestStorageAccessAndInitializeStorage();
-      // Need user interaction to request
+      this.dispatchUnpartitionedStateStatusChange("rejected");
       this.setupUserInteractionHandler();
     } else if (permissionState === "denied") {
-      // User has denied access
+      // User has denied access, so nothing to do, just dispatch the "rejected" event.
       this.dispatchUnpartitionedStateStatusChange("rejected");
     }
   }
