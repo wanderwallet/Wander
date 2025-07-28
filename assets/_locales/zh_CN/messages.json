@@ -3885,5 +3885,25 @@
     "unknown_coin": {
       "message": "没有关于此资产的信息。请谨慎行事，并自行承担风险",
       "description": "此资产暂无相关信息。请谨慎操作，风险自负。"
+    },
+    "earn_tokens_in_wander": {
+      "message": "在 Wander 中赚取代币！",
+      "description": "Earn tokens in Wander text"
+    },
+    "earn_tokens_in_wander_description": {
+      "message": "只需持有 AR 代币或质押 stETH 和 DAI 即可赚取多种代币。",
+      "description": "Earn tokens in Wander description text"
+    },
+    "earn_tokens_list_item_1": {
+      "message": "持有 AR 代币以自动赚取",
+      "description": "Earn tokens list item 1"
+    },
+    "earn_tokens_list_item_2": {
+      "message": "质押 stETH 或 DAI 以获得额外奖励",
+      "description": "Earn tokens list item 2"
+    },
+    "earn_tokens_list_item_3": {
+      "message": "选择要赚取的代币",
+      "description": "Earn tokens list item 3"
     }
 }

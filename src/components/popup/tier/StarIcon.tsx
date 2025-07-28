@@ -1,7 +1,8 @@
 import type { Tier } from "~utils/tier/types";
 
 interface StarIconProps {
-  tier: Tier;
+  tier?: Tier;
+  color?: string;
 }
 
 const colors = {
@@ -12,8 +13,8 @@ const colors = {
   Prime: "#C89A3F",
 };
 
-export const StarIcon = ({ tier }: StarIconProps) => {
-  const color = colors[tier] || colors.Core;
+export const StarIcon = ({ tier, color }: StarIconProps) => {
+  const starColor = color || colors[tier] || colors.Core;
 
   return (
     <svg
@@ -25,7 +26,7 @@ export const StarIcon = ({ tier }: StarIconProps) => {
       style={{ flexShrink: 0, transform: "translateY(2px)" }}>
       <path
         d="M7.18056 0L8.64585 5.52003L14.1111 7L8.64585 8.47997L7.18056 14L5.71526 8.47997L0.25 7L5.71526 5.52003L7.18056 0Z"
-        fill={color}
+        fill={starColor}
       />
     </svg>
   );
