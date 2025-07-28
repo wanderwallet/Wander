@@ -694,12 +694,6 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       log(LOG_GROUP.WALLET_GENERATION, `registerWallet(${sourceType})`);
 
       if (authStatus === "noShares") {
-        await Promise.all(
-          wallets.map(({ id: walletId, status }) =>
-            status === "ENABLED" ? WalletService.updateWalletStatus({ walletId, status: "LOST" }) : null,
-          ),
-        );
-
         setEmbeddedContextState((prevAuthContextState) => ({
           ...prevAuthContextState,
           wallets: prevAuthContextState.wallets.map((wallet) => ({

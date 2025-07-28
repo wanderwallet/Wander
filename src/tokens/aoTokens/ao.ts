@@ -321,6 +321,11 @@ export async function getAoCollectibleBalance(
  */
 export const getTagValue = (tagName: string, tags: (Tag | DecodedTag)[]) => tags.find((t) => t.name === tagName)?.value;
 
+export const getTagValues = (tagNames: string[], tags: (Tag | DecodedTag)[]): (string | undefined)[] => {
+  const tagMap = new Map(tags.map((tag) => [tag.name, tag.value]));
+  return tagNames.map((name) => tagMap.get(name));
+};
+
 export const createDataItemSigner =
   (wallet: any) =>
   async ({
