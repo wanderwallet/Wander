@@ -41,7 +41,6 @@ import {
   type RecoverableAccount,
   type SupabaseAuthChangeEvent,
   type SupabaseSession,
-  type SupabaseUser,
 } from "embed-api";
 import { AuthenticationService } from "~utils/authentication/authentication.service";
 import { EMBEDDED_FEATURE_FLAGS, EMBEDDED_SDK_AUTH_STATUS_BY_AUTH_STATUS } from "~utils/embedded/embedded.constants";
@@ -1142,10 +1141,6 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         // sent by the `useEffect` above that sends `"embedded_auth"` events too.
 
         if (cachedUser) {
-          if (_event === "INITIAL_SESSION") {
-            supabase.auth.refreshSession();
-          }
-
           postEmbeddedMessage({
             type: "embedded_auth",
             data: {
@@ -1156,6 +1151,9 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
           });
         }
       }
+
+      // This functions makes sure the Supabase session data is merged with the local values for `deviceNonce` and
+      // `userAgent`, so there's no need to force or wait for the session refresh to sync the session data:
 
       const { accessToken, user, authProviderType, session } = await parseSupabaseSession(supabaseSession);
 
@@ -1171,18 +1169,6 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
           session,
         }));
       } else {
-        // TODO: Duplicated in initEmbeddedWallet()?
-        /*
-        setEmbeddedContextState((prevAuthContextState) => ({
-          // ...prevAuthContextState,
-          ...EMBEDDED_CONTEXT_INITIAL_STATE,
-          recoverableAccounts: prevAuthContextState.recoverableAccounts,
-          recoverableAccount: prevAuthContextState.recoverableAccount,
-          recoverableAccountWallets: prevAuthContextState.recoverableAccountWallets,
-          requestPasswordChange: prevAuthContextState.requestPasswordChange,
-        }));
-        */
-
         const anonSession = await createAnonSession();
 
         setEmbeddedContextAuth({

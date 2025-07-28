@@ -8,30 +8,60 @@ import {
 } from "embed-api";
 import { jwtDecode } from "jwt-decode";
 import { getDeviceNonce } from "~utils/embedded/device-nonce/device-nonce.utils";
+import { getSupabaseClient } from "~utils/embedded/embedded.utils";
 import { getAuthProviderTypeFromSupabaseUser } from "~utils/embedded/utils/messages/embedded-messages.utils";
 
-function verifySessionSync(dbSession: DbSession, decodedSession: SupabaseJwtPayload): void {
-  if (process.env.NODE_ENV !== "development") return;
+let hasSessionBeenRefreshed = false;
+
+async function verifySessionSync(dbSession: DbSession, decodedSession: SupabaseJwtPayload): Promise<void> {
+  let shouldRefreshSession = false;
 
   if (dbSession.deviceNonce !== decodedSession.sessionData.deviceNonce) {
-    console.warn(
-      `⚠️  The current session's deviceNonce (${dbSession.deviceNonce}) doesn't match the decoded session's deviceNonce (${decodedSession.sessionData.deviceNonce}):`,
-      { dbSession, decodedSession },
-    );
+    shouldRefreshSession = true;
+
+    if (process.env.NODE_ENV === "development")
+      console.warn(
+        `⚠️  The current session's deviceNonce (${dbSession.deviceNonce}) doesn't match the decoded session's deviceNonce (${decodedSession.sessionData.deviceNonce}):`,
+        { dbSession, decodedSession },
+      );
   }
 
   if (dbSession.userAgent !== decodedSession.sessionData.userAgent) {
-    console.warn(
-      `⚠️  The current session's userAgent (${dbSession.userAgent}) doesn't match the decoded session's userAgent (${decodedSession.sessionData.userAgent}):`,
-      { dbSession, decodedSession },
-    );
+    shouldRefreshSession = true;
+
+    if (process.env.NODE_ENV === "development")
+      console.warn(
+        `⚠️  The current session's userAgent (${dbSession.userAgent}) doesn't match the decoded session's userAgent (${decodedSession.sessionData.userAgent}):`,
+        { dbSession, decodedSession },
+      );
   }
 
   if (dbSession.userId !== decodedSession.sub) {
-    console.warn(
-      `⚠️  The current session's userId (${dbSession.userId}) doesn't match the decoded session's sub (${decodedSession.sub}):`,
-      { dbSession, decodedSession },
-    );
+    shouldRefreshSession = true;
+
+    if (process.env.NODE_ENV === "development")
+      console.warn(
+        `⚠️  The current session's userId (${dbSession.userId}) doesn't match the decoded session's sub (${decodedSession.sub}):`,
+        { dbSession, decodedSession },
+      );
+  }
+
+  if (!shouldRefreshSession && process.env.NODE_ENV === "development") {
+    console.info(`✅  The current session's matches the decoded session:`, { dbSession, decodedSession });
+  }
+
+  if (shouldRefreshSession && !hasSessionBeenRefreshed) {
+    hasSessionBeenRefreshed = true;
+
+    try {
+      const supabase = await getSupabaseClient();
+
+      console.log("Refreshing session...");
+
+      await supabase.auth.refreshSession();
+    } catch (err) {
+      console.warn("Error refreshing session:", err);
+    }
   }
 }
 
