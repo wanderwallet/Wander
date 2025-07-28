@@ -12,7 +12,7 @@ import { useTokenMarketData } from "~tokens/hooks/useTokenMarketData";
 import { useMarketStats } from "~tokens/hooks/useMarketStats";
 import { formatBalance } from "~utils/format";
 import { Flex } from "~components/common/Flex";
-import { LineChart } from "./LineChart";
+import { LineChart } from "../chart/LineChart";
 import { useTokenPrice } from "~tokens/hooks";
 import { AO_PROCESS_ID, AR_PROCESS_ID } from "~tokens/aoTokens/ao";
 

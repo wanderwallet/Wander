@@ -3945,5 +3945,33 @@
   "earn_tokens_list_item_3": {
     "message": "Choose which tokens to earn",
     "description": "Earn tokens list item 3"
+  },
+  "allocation": {
+    "message": "Allocation",
+    "description": "Allocation text"
+  },
+  "allocation_description": {
+    "message": "This represents how you are currently allocating your AO Yield",
+    "description": "Allocation description text"
+  },
+  "view_full_breakdown_on_ao_website": {
+    "message": "View full breakdown on AO website",
+    "description": "View full breakdown on AO website text"
+  },
+  "earn_notice_title": {
+    "message": "Support projects & earn their tokens",
+    "description": "Earn notice title"
+  },
+  "earn_notice_description": {
+    "message": "Delegate your AO yield earnings to projects in the ecosystem.",
+    "description": "Earn notice description"
+  },
+  "primary": {
+    "message": "Primary",
+    "description": "Primary text"
+  },
+  "projects": {
+    "message": "Projects",
+    "description": "Projects text"
   }
 }

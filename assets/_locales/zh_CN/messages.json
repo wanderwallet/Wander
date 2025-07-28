@@ -3905,5 +3905,33 @@
     "earn_tokens_list_item_3": {
       "message": "选择要赚取的代币",
       "description": "Earn tokens list item 3"
+    },
+    "allocation": {
+      "message": "分配",
+      "description": "Allocation text"
+    },
+    "allocation_description": {
+      "message": "这代表了你当前在 AO 收益中的分配情况",
+      "description": "Allocation description text"
+    },
+    "view_full_breakdown_on_ao_website": {
+      "message": "在 AO 网站上查看完整分解",
+      "description": "View full breakdown on AO website text"
+    },
+    "earn_notice_title": {
+      "message": "支持项目并赚取他们的代币",
+      "description": "Earn notice title"
+    },
+    "earn_notice_description": {
+      "message": "将你的 AO 收益委托给生态系统中的项目。",
+      "description": "Earn notice description"
+    },
+    "primary": {
+      "message": "主要",
+      "description": "Primary text"
+    },
+    "projects": {
+      "message": "项目",
+      "description": "Projects text"
     }
 }
