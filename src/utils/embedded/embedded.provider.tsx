@@ -1217,27 +1217,22 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       in `initEmbeddedWallet` is a dirty/temp fix for that.
     */
 
-    console.log("getSupabaseClient()...");
-
     const supabase = await getSupabaseClient();
 
     let isInitialAuthEventDispatched = false;
 
-    console.log("GOT SUPABASE CLIENT");
+    // This should never be invoked, but it could serve as a last-resort option in case there's a bug that prevents
+    // Supabase from invoking the handler when needed.
 
     const authInitTimeoutID = window.setTimeout(() => {
-      console.log("TIMED OUT", isInitialAuthEventDispatched);
-
       if (isInitialAuthEventDispatched) return;
 
       console.warn(`Supabase Auth initial auth state change event not received. Invoking manually...`);
 
       handleOnAuthStateChange("INITIAL_SESSION", null);
-    }, 3000);
+    }, 5000);
 
     async function handleOnAuthStateChange(_event: SupabaseAuthChangeEvent, session: SupabaseSession | null) {
-      console.log(_event, session);
-
       window.clearTimeout(authInitTimeoutID);
 
       if (isInitialAuthEventDispatched && _event === "INITIAL_SESSION") return;
@@ -1269,8 +1264,6 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       const accessToken = session?.access_token ?? null;
       const user = (session?.user as SupabaseUser) ?? null;
       const authProviderType = getAuthProviderTypeFromSupabaseUser(user);
-
-      console.log({ accessToken, user, authProviderType });
 
       if (process.env.NODE_ENV === "development" && user && authProviderType === null) {
         alert(
@@ -1320,8 +1313,6 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       setAuthTokenHeader(accessToken);
 
       initEmbeddedWallet(user?.id || null, dbSession);
-
-      console.log({ authProviderType, user, dbSession });
 
       if (authProviderType && user && dbSession) {
         setEmbeddedContextAuth(({ authStatus }) => ({
@@ -1383,9 +1374,6 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       navigate("/account/backup-wallet");
     });
   }, []);
-
-  console.log("authStatus =", authStatus);
-  console.log("unpartitionedStateStatus =", unpartitionedStateStatus);
 
   return (
     <EmbeddedContext.Provider

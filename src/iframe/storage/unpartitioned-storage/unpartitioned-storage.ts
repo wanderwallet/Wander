@@ -61,8 +61,6 @@ export class EnhancedStorage implements Storage {
   }
 
   protected async requestStorageAccessAndInitializeStorage(): Promise<UnpartitionedStateStatus> {
-    console.log("REQUEST REAL ACCESS");
-
     if (!isInsideIframe()) {
       console.warn(
         "UnpartitionedStorage.requestStorageAccessAndInitializeStorage() should only be called from within an iframe. Regular, partitioned state will be used.",
@@ -109,13 +107,7 @@ export class EnhancedStorage implements Storage {
 
     // If the code below runs, this.status can only be null, "error" or "rejected":
 
-    if (this.requestStorageAccessPromise && this.status === null) {
-      console.log("REUSE PROMISE");
-
-      return this.requestStorageAccessPromise;
-    }
-
-    console.log("NEW PROMISE");
+    if (this.requestStorageAccessPromise && this.status === null) return this.requestStorageAccessPromise;
 
     return (this.requestStorageAccessPromise = new Promise<UnpartitionedStateStatus>(async (resolve) => {
       // With this, calling dispatchUnpartitionedStateStatusChange() will automatically call resolve() too:
@@ -129,8 +121,6 @@ export class EnhancedStorage implements Storage {
 
         const hasAccess = await document.hasStorageAccess();
 
-        console.log("hasAccess =", hasAccess);
-
         if (hasAccess) {
           return await this.requestStorageAccessAndInitializeStorage();
         }
@@ -139,31 +129,11 @@ export class EnhancedStorage implements Storage {
 
         let permissionState: PermissionState = "prompt"; // Default
 
-        console.log("navigator.permissions =", !!navigator.permissions);
-
         if (navigator.permissions) {
           try {
-            console.log("navigator.permissions.query...");
-
-            /*
-            console.log(
-              navigator.permissions.query({
-                name: "storage-access" as PermissionName,
-              })
-            )
-
-            console.log(
-              await navigator.permissions.query({
-                name: "storage-access" as PermissionName,
-              })
-            )
-              */
-
             const permission = await navigator.permissions.query({
               name: "storage-access" as PermissionName,
             });
-
-            console.log("PERMISSIOOOOOOOOOOOOOOOOOOOOOOOON =", permission);
 
             permissionState = permission.state;
 
@@ -179,15 +149,14 @@ export class EnhancedStorage implements Storage {
 
         this.handleStorageAccessPermission(permissionState);
       } catch (error) {
-        console.log("CATCH =", error);
-
         this.dispatchUnpartitionedStateStatusChange(error);
       }
     }));
   }
 
   private async handleStorageAccessPermission(permissionState: PermissionState) {
-    console.log("handleStorageAccessPermission =", permissionState);
+    // Note `dispatchUnpartitionedStateStatusChange()` is the function that calls `requestStorageAccessResolve()`, so we
+    // must be sure it's always invoked or the Promise created by `requestStorageAccess()` will never be invoked.
 
     if (permissionState === "granted") {
       // Already granted, can request directly. `requestStorageAccessAndInitializeStorage()` will call
@@ -221,12 +190,8 @@ export class EnhancedStorage implements Storage {
 
     // Create a reusable handler function
     const handleUserInteraction = async () => {
-      console.log("Handling user interaction...");
-
       try {
         await this.requestStorageAccess();
-
-        console.log("Got access");
 
         log(LOG_GROUP.STORAGE, "Storage access granted after user interaction");
 
@@ -261,8 +226,6 @@ export class EnhancedStorage implements Storage {
   protected dispatchUnpartitionedStateStatusChange(
     unpartitionedStateStatusOrError: UnpartitionedStateStatus | Error,
   ): UnpartitionedStateStatus {
-    console.log(`dispatchUnpartitionedStateStatusChange`, unpartitionedStateStatusOrError);
-
     const unpartitionedStateStatus = isError(unpartitionedStateStatusOrError)
       ? "error"
       : unpartitionedStateStatusOrError;
@@ -278,8 +241,6 @@ export class EnhancedStorage implements Storage {
     log(LOG_GROUP.STORAGE, `Unpartitioned state access for ${this.storageType} = ${unpartitionedStateStatus}`);
 
     setUnpartitionedStateStatus(unpartitionedStateStatus, this.error);
-
-    console.log("RESOLVE THE PROMISE!!!!!!!!!!!!!!");
 
     this.requestStorageAccessResolve(unpartitionedStateStatus);
 
