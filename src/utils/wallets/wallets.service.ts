@@ -98,12 +98,6 @@ async function createPublicWallet(wallet: CreatePublicWalletParams) {
   });
 }
 
-export type UpdateWalletStatusData = Exclude<Parameters<typeof trpcVanilla.updateWalletStatus.mutate>[0], void>;
-
-async function updateWalletStatus(updateWalletStatusData: UpdateWalletStatusData) {
-  return trpcVanilla.updateWalletStatus.mutate(updateWalletStatusData);
-}
-
 export type RegisterRecoveryShareData = Exclude<Parameters<typeof trpcVanilla.registerRecoveryShare.mutate>[0], void>;
 
 async function registerRecoveryShare(recoveryShareData: RegisterRecoveryShareData) {
@@ -279,7 +273,6 @@ async function registerAuthShare(registerAuthShareData: RegisterAuthShareData) {
 
 export const WalletService = {
   fetchWallets,
-  updateWalletStatus,
   createPublicWallet,
   registerRecoveryShare,
   registerWalletExport,
