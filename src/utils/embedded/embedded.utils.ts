@@ -137,6 +137,8 @@ export async function getSupabaseClient() {
   if (!supabaseInstance) {
     const storage = await LocalStorage.getInstance();
 
+    console.log("Finally unstuck!");
+
     supabaseInstance = createSupabaseClient(
       import.meta.env?.VITE_SUPABASE_URL || "",
       import.meta.env?.VITE_SUPABASE_ANON_KEY || "",

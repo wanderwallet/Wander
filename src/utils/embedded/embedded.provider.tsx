@@ -1217,11 +1217,17 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       in `initEmbeddedWallet` is a dirty/temp fix for that.
     */
 
+    console.log("getSupabaseClient()...");
+
     const supabase = await getSupabaseClient();
 
     let isInitialAuthEventDispatched = false;
 
+    console.log("GOT SUPABASE CLIENT");
+
     const authInitTimeoutID = window.setTimeout(() => {
+      console.log("TIMED OUT", isInitialAuthEventDispatched);
+
       if (isInitialAuthEventDispatched) return;
 
       console.warn(`Supabase Auth initial auth state change event not received. Invoking manually...`);

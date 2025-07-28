@@ -60,6 +60,8 @@ export class EnhancedStorage implements Storage {
   }
 
   protected async requestStorageAccessAndInitializeStorage(): Promise<UnpartitionedStateStatus> {
+    console.log("REQUEST REAL ACCESS");
+
     if (!isInsideIframe()) {
       console.warn(
         "UnpartitionedStorage.requestStorageAccessAndInitializeStorage() should only be called from within an iframe. Regular, partitioned state will be used.",
@@ -107,8 +109,12 @@ export class EnhancedStorage implements Storage {
     // If the code below runs, this.status can only be null, "error" or "rejected":
 
     if (this.requestStorageAccessPromise && this.status === null) {
+      console.log("REUSE PROMISE");
+
       return this.requestStorageAccessPromise;
     }
+
+    console.log("NEW PROMISE");
 
     return (this.requestStorageAccessPromise = new Promise<UnpartitionedStateStatus>(async (resolve) => {
       // With this, calling dispatchUnpartitionedStateStatusChange() will automatically call resolve() too:
@@ -122,17 +128,41 @@ export class EnhancedStorage implements Storage {
 
         const hasAccess = await document.hasStorageAccess();
 
-        if (hasAccess) return await this.requestStorageAccessAndInitializeStorage();
+        console.log("hasAccess =", hasAccess);
+
+        if (hasAccess) {
+          return await this.requestStorageAccessAndInitializeStorage();
+        }
 
         // If no access, check permission state:
 
         let permissionState: PermissionState = "prompt"; // Default
 
+        console.log("navigator.permissions =", !!navigator.permissions);
+
         if (navigator.permissions) {
           try {
+            console.log("navigator.permissions.query...");
+
+            /*
+            console.log(
+              navigator.permissions.query({
+                name: "storage-access" as PermissionName,
+              })
+            )
+
+            console.log(
+              await navigator.permissions.query({
+                name: "storage-access" as PermissionName,
+              })
+            )
+              */
+
             const permission = await navigator.permissions.query({
               name: "storage-access" as PermissionName,
             });
+
+            console.log("PERMISSIOOOOOOOOOOOOOOOOOOOOOOOON =", permission);
 
             permissionState = permission.state;
 
@@ -148,17 +178,22 @@ export class EnhancedStorage implements Storage {
 
         this.handleStorageAccessPermission(permissionState);
       } catch (error) {
+        console.log("CATCH =", error);
+
         this.dispatchUnpartitionedStateStatusChange(error);
       }
     }));
   }
 
   private async handleStorageAccessPermission(permissionState: PermissionState) {
+    console.log("handleStorageAccessPermission =", permissionState);
+
     // Handle based on permission state
     if (permissionState === "granted") {
       // Already granted to another same-site embed, can request directly
-      await this.requestStorageAccess();
+      await this.requestStorageAccessAndInitializeStorage();
     } else if (permissionState === "prompt") {
+      // this.requestStorageAccessAndInitializeStorage();
       // Need user interaction to request
       this.setupUserInteractionHandler();
     } else if (permissionState === "denied") {
@@ -176,8 +211,13 @@ export class EnhancedStorage implements Storage {
 
     // Create a reusable handler function
     const handleUserInteraction = async () => {
+      console.log("Handling user interaction...");
+
       try {
         await this.requestStorageAccess();
+
+        console.log("Got access");
+
         log(LOG_GROUP.STORAGE, "Storage access granted after user interaction");
 
         // Clean up event listeners after successful request
@@ -189,6 +229,8 @@ export class EnhancedStorage implements Storage {
 
     // Function to clean up event listeners
     const cleanupListeners = () => {
+      console.trace("Clean up listeners");
+
       document.removeEventListener("click", handleUserInteraction);
       document.removeEventListener("pointerdown", handleUserInteraction);
     };
@@ -209,6 +251,8 @@ export class EnhancedStorage implements Storage {
   protected dispatchUnpartitionedStateStatusChange(
     unpartitionedStateStatusOrError: UnpartitionedStateStatus | Error,
   ): UnpartitionedStateStatus {
+    console.log(`dispatchUnpartitionedStateStatusChange`, unpartitionedStateStatusOrError);
+
     const unpartitionedStateStatus = isError(unpartitionedStateStatusOrError)
       ? "error"
       : unpartitionedStateStatusOrError;
@@ -224,6 +268,8 @@ export class EnhancedStorage implements Storage {
     log(LOG_GROUP.STORAGE, `Unpartitioned state access for ${this.storageType} = ${unpartitionedStateStatus}`);
 
     setUnpartitionedStateStatus(unpartitionedStateStatus, this.error);
+
+    console.log("RESOLVE THE PROMISE!!!!!!!!!!!!!!");
 
     this.requestStorageAccessResolve(unpartitionedStateStatus);
 
