@@ -204,8 +204,6 @@ export class EnhancedStorage implements Storage {
 
     // Function to clean up event listeners
     const cleanupListeners = () => {
-      console.trace("Clean up listeners");
-
       document.removeEventListener("click", handleUserInteraction);
       document.removeEventListener("pointerdown", handleUserInteraction);
     };
