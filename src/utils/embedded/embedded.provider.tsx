@@ -39,6 +39,8 @@ import {
   WalletSourceType,
   type DbSession,
   type RecoverableAccount,
+  type SupabaseAuthChangeEvent,
+  type SupabaseSession,
   type SupabaseUser,
 } from "embed-api";
 import { AuthenticationService } from "~utils/authentication/authentication.service";
@@ -54,7 +56,7 @@ import {
   getUserDetailsFromSupabaseUser,
   postEmbeddedMessage,
 } from "~utils/embedded/utils/messages/embedded-messages.utils";
-import { ExtensionStorage, PersistentStorage } from "~utils/storage";
+import { ExtensionStorage, PersistentStorage, useStorage } from "~utils/storage";
 import { StorageKeys } from "~utils/storage/storage.constants";
 import {
   AO_TOKENS,
@@ -66,9 +68,10 @@ import {
 } from "~tokens/aoTokens/sync";
 import { loadTokens } from "~tokens/token";
 import {
+  addUnpartitionedStateStatusChangeListener,
   getUnpartitionedStateStatus,
-  UNPARTITIONED_STATE_STATUS_CHANGE_EVENT,
-  type UnpartitionedStateStatusChangeEvent,
+  removeUnpartitionedStateStatusChangeListener,
+  type UnpartitionedStateStatusChangeData,
 } from "~iframe/storage/unpartitioned-storage/unpartitioned-storage.utils";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { isomorphicOnMessage } from "~isomorphic-messaging";
@@ -103,9 +106,12 @@ export const EmbeddedContext = createContext<EmbeddedContextData>({
   ...EMBEDDED_CONTEXT_INITIAL_STATE,
   ...EMBEDDED_CONTEXT_INITIAL_AUTH,
 
-  currentWallet: null,
   walletCount: 0,
+  currentWallet: null,
+
   unpartitionedStateStatus: getUnpartitionedStateStatus(),
+  unpartitionedStateConfirmed: null,
+  confirmUnpartitionedState: async () => null,
 
   authenticate: async () => null,
   fetchRecoverableAccounts: async () => null,
@@ -142,18 +148,29 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
   const [unpartitionedStateStatus, setUnpartitionedStateStatus] = useState(() => getUnpartitionedStateStatus());
 
+  const [unpartitionedStateConfirmed, setUnpartitionedStateConfirmed, { setRenderValue }] = useStorage<boolean>({
+    key: StorageKeys.CONNECT.SUPPORT.UNPARTITIONED_STATE_CONFIRMED,
+    instance: PersistentStorage,
+  });
+
+  const confirmUnpartitionedState = useCallback(
+    async (doNotAskAgain: boolean) => {
+      if (doNotAskAgain) return setUnpartitionedStateConfirmed(true);
+      else setRenderValue(true);
+    },
+    [setUnpartitionedStateConfirmed, setRenderValue],
+  );
+
   // Unpartitioned state:
 
   useEffect(() => {
-    function handleBanner(event: UnpartitionedStateStatusChangeEvent) {
-      const { unpartitionedStateStatus } = event.detail;
-
-      if (unpartitionedStateStatus) setUnpartitionedStateStatus(unpartitionedStateStatus);
+    function handleUnpartitionedStateStatusChange({ unpartitionedStateStatus }: UnpartitionedStateStatusChangeData) {
+      setUnpartitionedStateStatus(unpartitionedStateStatus);
     }
 
-    document.addEventListener(UNPARTITIONED_STATE_STATUS_CHANGE_EVENT, handleBanner);
+    addUnpartitionedStateStatusChangeListener(handleUnpartitionedStateStatusChange);
 
-    return () => document.removeEventListener(UNPARTITIONED_STATE_STATUS_CHANGE_EVENT, handleBanner);
+    return () => removeUnpartitionedStateStatusChangeListener(handleUnpartitionedStateStatusChange);
   }, []);
 
   // Wallet props:
@@ -1204,9 +1221,20 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
     let isInitialAuthEventDispatched = false;
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    // This should never be invoked, but it could serve as a last-resort option in case there's a bug that prevents
+    // Supabase from invoking the handler when needed.
+
+    const authInitTimeoutID = window.setTimeout(() => {
+      if (isInitialAuthEventDispatched) return;
+
+      console.warn(`Supabase Auth initial auth state change event not received. Invoking manually...`);
+
+      handleOnAuthStateChange("INITIAL_SESSION", null);
+    }, 5000);
+
+    async function handleOnAuthStateChange(_event: SupabaseAuthChangeEvent, session: SupabaseSession | null) {
+      window.clearTimeout(authInitTimeoutID);
+
       if (isInitialAuthEventDispatched && _event === "INITIAL_SESSION") return;
 
       if (!isInitialAuthEventDispatched) {
@@ -1311,10 +1339,15 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
           session: null,
         });
       }
-    });
+    }
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(handleOnAuthStateChange);
 
     return () => {
       subscription.unsubscribe();
+      window.clearTimeout(authInitTimeoutID);
     };
   }, [initEmbeddedWallet]);
 
@@ -1348,9 +1381,12 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
         ...embeddedContextState,
         ...embeddedContextAuth,
 
-        currentWallet,
         walletCount,
+        currentWallet,
+
         unpartitionedStateStatus,
+        unpartitionedStateConfirmed,
+        confirmUnpartitionedState,
 
         authenticate,
         fetchRecoverableAccounts,

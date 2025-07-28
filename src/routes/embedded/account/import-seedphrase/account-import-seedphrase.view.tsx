@@ -51,8 +51,7 @@ export function AccountImportSeedphraseEmbeddedView() {
       subtitle="Enter your seedphrase to connect your wallet to your account."
       footerElement={<WanderFooter />}
       hasBackButton={true}
-      onBackButtonClick={back}
-      size="auto">
+      onBackButtonClick={back}>
       <SeedInput handleSubmit={handleImportWallet} seedPhrase={seedPhrase} handleInputChange={handleInputChange} />
       <Button
         isFullWidth

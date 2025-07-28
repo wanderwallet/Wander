@@ -1,0 +1,17 @@
+.root {
+  display: flex;
+  align-items: center;
+  background: var(--snackbar-background-warning);
+  color: var(--snackbar-color-warning);
+  gap: var(--spacing-3);
+  padding: var(--spacing-3);
+}
+
+.icon {
+  font-size: 24px;
+  white-space: nowrap;
+}
+
+.link {
+  margin-left: auto;
+}
