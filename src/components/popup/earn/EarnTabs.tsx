@@ -5,13 +5,16 @@ import { defaultTokens, type TokenInfo } from "~tokens/aoTokens/ao";
 import { Flex } from "~components/common/Flex";
 import styled, { useTheme } from "styled-components";
 import { Logo } from "../Token";
-import { Text } from "@arconnect/components-rebrand";
+import { Text, Loading } from "@arconnect/components-rebrand";
 import arLogoLight from "url:/assets/ar/logo_light.png";
 import arLogoDark from "url:/assets/ar/logo_dark.png";
 import { getUserAvatar } from "~lib/avatar";
 import { useTokenBalance } from "~tokens/hooks";
 import { useActiveAddress } from "~wallets/hooks";
 import { formatBalance } from "~utils/format";
+import { useDelegationInfo, useFairLaunchTokens } from "~utils/fair_launch/fair_launch.hooks";
+import { PI_FLP_ID } from "~utils/fair_launch/fair_launch.constants";
+import type { FlpTokenInfo } from "~utils/fair_launch/fair_launch.types";
 
 const TABS_CONFIG = [
   { id: 0, name: "primary", component: PrimaryTokens },
@@ -42,28 +45,45 @@ export function EarnTabs() {
 }
 
 function PrimaryTokens() {
-  const coreTokens = [
-    { ...defaultTokens[1], percentage: 80, comingSoon: false },
-    { ...defaultTokens[2], Name: "Permaweb Index", percentage: 20, comingSoon: false },
-    { ...defaultTokens[0], percentage: 0, comingSoon: true },
-  ];
+  const activeAddress = useActiveAddress();
+  const { data: delegationInfo, isLoading } = useDelegationInfo();
+
+  const coreTokens = useMemo(
+    () => [
+      { ...defaultTokens[1], percent: delegationInfo?.[activeAddress] || 0, comingSoon: false },
+      {
+        ...defaultTokens[2],
+        Name: "Permaweb Index",
+        percent: delegationInfo?.[PI_FLP_ID] || 0,
+        comingSoon: false,
+      },
+      { ...defaultTokens[0], percent: 0, comingSoon: true },
+    ],
+    [delegationInfo, activeAddress],
+  );
 
   return (
     <Flex direction="column" gap={16}>
       {coreTokens.map((token) => (
-        <PrimaryTokenItem key={token.processId} token={token} />
+        <PrimaryTokenItem key={token.processId} token={token} isLoading={isLoading} />
       ))}
     </Flex>
   );
 }
 
-function PrimaryTokenItem({ token }: { token: TokenInfo & { percentage: number; comingSoon: boolean } }) {
+function PrimaryTokenItem({
+  token,
+  isLoading,
+}: {
+  token: (TokenInfo | FlpTokenInfo) & { percent: number; comingSoon: boolean };
+  isLoading: boolean;
+}) {
   const theme = useTheme();
   const activeAddress = useActiveAddress();
   const [logo, setLogo] = useState<string | null>(null);
   const arweaveLogo = useMemo(() => (theme.displayTheme === "dark" ? arLogoDark : arLogoLight), [theme]);
 
-  const { data: balance = "0" } = useTokenBalance(token, activeAddress);
+  const { data: balance = "0", isLoading: isBalanceLoading } = useTokenBalance(token, activeAddress);
 
   const formattedBalance = useMemo(() => formatBalance(balance), [balance, token.processId]);
 
@@ -81,7 +101,7 @@ function PrimaryTokenItem({ token }: { token: TokenInfo & { percentage: number; 
   }, [token, arweaveLogo]);
 
   return (
-    <PrimaryToken key={token.processId}>
+    <Token key={token.processId}>
       <Logo src={logo} width={40} height={40} />
       {token.comingSoon ? (
         <Flex direction="row" width="100%" justify="space-between" align="center">
@@ -104,7 +124,7 @@ function PrimaryTokenItem({ token }: { token: TokenInfo & { percentage: number; 
               {token.Name}
             </Text>
             <Text weight="semibold" noMargin>
-              {token.percentage}%
+              {isLoading ? <Loading width={4} height={4} /> : `${token.percent}%`}
             </Text>
           </Flex>
           <Flex direction="row" gap={4} align="center" justify="space-between">
@@ -112,20 +132,51 @@ function PrimaryTokenItem({ token }: { token: TokenInfo & { percentage: number; 
               ${token.Ticker}
             </Text>
             <Text variant="secondary" weight="medium" size="xs" noMargin>
-              Balance: {formattedBalance.displayBalance}
+              Balance: {isBalanceLoading ? <Loading width={4} height={4} /> : formattedBalance.displayBalance}
             </Text>
           </Flex>
         </Flex>
       )}
-    </PrimaryToken>
+    </Token>
   );
 }
 
 function ProjectsTokens() {
-  return <div>ProjectsTokens</div>;
+  const { data: flpTokens = [], isLoading: isFlpTokensLoading } = useFairLaunchTokens();
+  const { data: delegationInfo = {}, isLoading } = useDelegationInfo();
+
+  const projects = useMemo(() => {
+    return flpTokens
+      .map((token) => ({
+        ...token,
+        percent: delegationInfo?.[token.flpId] || 0,
+      }))
+      .filter((token) => token.percent > 0);
+  }, [flpTokens, delegationInfo]);
+
+  console.log({ delegationInfo, flpTokens });
+
+  return (
+    <Flex direction="column" gap={16}>
+      {isFlpTokensLoading ? (
+        <Loading width={4} height={4} />
+      ) : projects.length > 0 ? (
+        projects.map((token) => <PrimaryTokenItem key={token.processId} token={token} isLoading={isLoading} />)
+      ) : (
+        <Flex direction="column" gap={8} textAlign="center" padding="32px 0px">
+          <Text variant="secondary" weight="semibold" noMargin>
+            No projects tokens
+          </Text>
+          <Text variant="secondary" weight="medium" size="sm" noMargin>
+            Delegated AO allocation to ecosystem projects will appear here
+          </Text>
+        </Flex>
+      )}
+    </Flex>
+  );
 }
 
-const PrimaryToken = styled.div`
+const Token = styled.div`
   display: flex;
   flex-direction: row;
   padding: 4px 0;

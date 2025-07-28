@@ -68,6 +68,7 @@ export async function checkAndImportFairLaunchTokens() {
 
       flpTokensWithBalance.forEach((token) => {
         if (!tokenIds.has(token.processId)) {
+          delete token.flpId;
           freshAoTokens.push(token);
         }
       });

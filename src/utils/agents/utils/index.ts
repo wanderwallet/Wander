@@ -20,6 +20,7 @@ import { AO_YIELD_AGENT_RECENT_TXS, WANDER_FEE_PROCESS_ID } from "../constants";
 import dayjs from "dayjs";
 import { isURL } from "~utils/urls/isURL";
 import { queryClient } from "~utils/tanstack";
+import { getDelegationInfo } from "~utils/fair_launch/fair_launch.utils";
 
 /**
  * Initializes a default Arweave instance.
@@ -430,25 +431,8 @@ export function formatTokenQuantity(value: string, decimals: number) {
 }
 
 export async function getAODelegationInfo(address?: string) {
-  address = address || (await getActiveAddress());
-
-  const aoInstance = connect(defaultConfig);
-
-  const dryrunRes = await aoInstance.dryrun({
-    Id,
-    Owner,
-    process: "cuxSKjGJ-WDB9PzSkVkVVrIBSh3DrYHYz44usQOj5yE",
-    tags: [
-      { name: "Action", value: "Get-Delegations" },
-      { name: "Wallet", value: address },
-    ],
-  });
-
-  const message = dryrunRes.Messages?.[0];
-  const delegationInfo = JSON.parse(message?.Data || "[]");
-  const hasAODelegation = delegationInfo?.delegationPrefs?.some(
-    (pref: { walletTo: string }) => pref.walletTo === address,
-  );
+  const delegationInfo = await getDelegationInfo(address);
+  const hasAODelegation = !!delegationInfo?.[address];
 
   return { hasAODelegation };
 }

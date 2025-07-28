@@ -242,6 +242,7 @@ export function useAODelegationInfo() {
     retry: 3,
     retryDelay: (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 30000),
     refetchOnWindowFocus: true,
+    enabled: !!activeAddress,
   });
 }
 

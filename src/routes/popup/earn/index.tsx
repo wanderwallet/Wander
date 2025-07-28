@@ -1,6 +1,6 @@
 import styled, { useTheme } from "styled-components";
 import HeadV2 from "~components/popup/HeadV2";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { EarnPopup } from "~components/popup/earn/EarnPopup";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { ExtensionStorage } from "~utils/storage";
@@ -13,6 +13,7 @@ import { Flex } from "~components/common/Flex";
 import { AnimatedStarContainer, defaultStars } from "~components/common/AnimatedStarContainer";
 import { Link } from "~components/common/Link";
 import { EarnTabs } from "~components/popup/earn/EarnTabs";
+import { useDelegationPercentByType } from "~utils/fair_launch/fair_launch.hooks";
 
 const stars = defaultStars.toSpliced(1, 1);
 
@@ -20,19 +21,23 @@ export function EarnView() {
   const theme = useTheme();
   const [showEarnPopup, setShowEarnPopup] = useState(false);
   const [showDelegateNotice, setShowDelegateNotice] = useState(false);
+  const { primaryPercent = 0, projectsPercent = 0 } = useDelegationPercentByType();
 
-  const allocationData = [
-    {
-      name: browser.i18n.getMessage("primary"),
-      value: 100,
-      color: "#9787ff",
-    },
-    {
-      name: browser.i18n.getMessage("projects"),
-      value: 0,
-      color: "#F5CD19",
-    },
-  ];
+  const allocationData = useMemo(
+    () => [
+      {
+        name: browser.i18n.getMessage("primary"),
+        value: primaryPercent,
+        color: "#9787ff",
+      },
+      {
+        name: browser.i18n.getMessage("projects"),
+        value: projectsPercent,
+        color: "#F5CD19",
+      },
+    ],
+    [primaryPercent, projectsPercent],
+  );
 
   function handleCloseDelegateNotice() {
     ExtensionStorage.set("earn_notice_shown", true);
@@ -77,7 +82,7 @@ export function EarnView() {
                 <Flex direction="row" gap={2}>
                   <AllocationBox color="#9787ff" />
                   <Text variant="secondary" size="xs" weight="medium" noMargin>
-                    100% {browser.i18n.getMessage("primary")}
+                    {primaryPercent}% {browser.i18n.getMessage("primary")}
                   </Text>
                 </Flex>
                 <Text variant="secondary" size="xs" weight="medium" noMargin>
@@ -86,7 +91,7 @@ export function EarnView() {
                 <Flex direction="row" gap={2}>
                   <AllocationBox color="#F5CD19" />
                   <Text variant="secondary" size="xs" weight="medium" noMargin>
-                    0% {browser.i18n.getMessage("projects")}
+                    {projectsPercent}% {browser.i18n.getMessage("projects")}
                   </Text>
                 </Flex>
               </Flex>
