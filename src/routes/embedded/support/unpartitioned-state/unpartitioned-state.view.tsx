@@ -23,6 +23,7 @@ import chrome3ScreenshotSrc from "url:assets/screenshots/unpartitioned-state/raw
 import inAppScreenshotSrc from "url:assets/screenshots/unpartitioned-state/raw-in-app-dark.png";
 
 import styles from "./unpartitioned-state.module.scss";
+import { HAS_ADVANCED_STORAGE_API } from "~iframe/storage/unpartitioned-storage/unpartitioned-storage.utils";
 
 const pretendToBeBrave = false;
 const isBrave = pretendToBeBrave || window.navigator.brave;
@@ -45,7 +46,8 @@ export function UnpartitionedStateMissingEmbeddedView() {
     useEmbedded();
 
   const couldProbablyGetAccess =
-    unpartitionedStateStatus === "rejected" || unpartitionedStateStatus === "error" || isPretendingToBeAnotherBrowser;
+    HAS_ADVANCED_STORAGE_API &&
+    (unpartitionedStateStatus === "rejected" || unpartitionedStateStatus === "error" || isPretendingToBeAnotherBrowser);
   const shouldTryToGetAccess = authStatus === "noAuth" && couldProbablyGetAccess;
 
   // Loading state:
