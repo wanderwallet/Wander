@@ -40,8 +40,12 @@ after user authenticates in any OAuth provider's page and is redirected back to 
 which then only needs to send an AUTH_COMPLETE_MSG_TYPE event back to the tab/iframe that opened it originally.
 */
 
+console.log(window.location.hash.startsWith("#access_token=") && window.opener ? "finish auth" : "no finish auth");
+
 if (window.location.hash.startsWith("#access_token=") && window.opener) {
   async function completeOAuthAuthentication() {
+    debugger;
+
     try {
       // Adjust the page background so that it's the same color as the provider's OAuth page:
 
