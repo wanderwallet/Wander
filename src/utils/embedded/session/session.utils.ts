@@ -53,12 +53,13 @@ async function verifySessionSync(dbSession: DbSession, decodedSession: SupabaseJ
   if (shouldRefreshSession && !hasSessionBeenRefreshed) {
     hasSessionBeenRefreshed = true;
 
+    if (process.env.NODE_ENV === "development") console.info("🔁  Refreshing session...");
+
     try {
       const supabase = await getSupabaseClient();
+      const refreshedSessionResponse = await supabase.auth.refreshSession();
 
-      console.log("Refreshing session...");
-
-      await supabase.auth.refreshSession();
+      if (process.env.NODE_ENV === "development") console.info("🔁  Refreshed session =", refreshedSessionResponse);
     } catch (err) {
       console.warn("Error refreshing session:", err);
     }
