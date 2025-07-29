@@ -9,6 +9,7 @@ import Image from "~components/common/Image";
 import { toast } from "react-toastify";
 import { FormattedText } from "~components/embed/ui/atoms/formatted-text/FormattedText";
 import { useInterval } from "@swyg/corre";
+import { HAS_ADVANCED_STORAGE_API } from "~iframe/storage/unpartitioned-storage/unpartitioned-storage.utils";
 
 import chromeLogoSrc from "url:assets/icons/browsers/chrome-logo.png";
 import edgeLogoSrc from "url:assets/icons/browsers/edge-logo.png";
@@ -23,7 +24,6 @@ import chrome3ScreenshotSrc from "url:assets/screenshots/unpartitioned-state/raw
 import inAppScreenshotSrc from "url:assets/screenshots/unpartitioned-state/raw-in-app-dark.png";
 
 import styles from "./unpartitioned-state.module.scss";
-import { HAS_ADVANCED_STORAGE_API } from "~iframe/storage/unpartitioned-storage/unpartitioned-storage.utils";
 
 const pretendToBeBrave = false;
 const isBrave = pretendToBeBrave || window.navigator.brave;
