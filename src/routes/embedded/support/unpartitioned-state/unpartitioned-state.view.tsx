@@ -9,6 +9,7 @@ import Image from "~components/common/Image";
 import { toast } from "react-toastify";
 import { FormattedText } from "~components/embed/ui/atoms/formatted-text/FormattedText";
 import { useInterval } from "@swyg/corre";
+import { HAS_ADVANCED_STORAGE_API } from "~iframe/storage/unpartitioned-storage/unpartitioned-storage.utils";
 
 import chromeLogoSrc from "url:assets/icons/browsers/chrome-logo.png";
 import edgeLogoSrc from "url:assets/icons/browsers/edge-logo.png";
@@ -45,7 +46,8 @@ export function UnpartitionedStateMissingEmbeddedView() {
     useEmbedded();
 
   const couldProbablyGetAccess =
-    unpartitionedStateStatus === "rejected" || unpartitionedStateStatus === "error" || isPretendingToBeAnotherBrowser;
+    HAS_ADVANCED_STORAGE_API &&
+    (unpartitionedStateStatus === "rejected" || unpartitionedStateStatus === "error" || isPretendingToBeAnotherBrowser);
   const shouldTryToGetAccess = authStatus === "noAuth" && couldProbablyGetAccess;
 
   // Loading state:
