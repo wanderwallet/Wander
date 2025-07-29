@@ -1,4 +1,6 @@
 import { unicodeToAscii, asciiToUnicode } from "puny-coder";
+import type { PurchaseType } from "./types";
+import { ARIO } from "@ar.io/sdk";
 
 export function encodeDomainToASCII(domain: string): string {
   const decodedDomain = unicodeToAscii(domain);
@@ -13,4 +15,8 @@ export function decodeDomainToASCII(domain: string): string {
 
 export function lowerCaseDomain(domain: string) {
   return encodeDomainToASCII(decodeURIComponent(domain.trim())).toLowerCase();
+}
+
+export function formatArio(amount: number) {
+  return amount > 1000 ? `${(amount / 1000).toFixed(2)}K` : amount.toFixed(2);
 }

@@ -1,4 +1,4 @@
-import { useLocation } from "wouter";
+import { useLocation } from "~wallets/router/router.utils";
 import { useEffect } from "react";
 import styled from "styled-components";
 import { ButtonV2 } from "@arconnect/components";
@@ -62,7 +62,7 @@ const FieldValue = styled.div`
 `;
 
 export const ArNSPurchaseStartView = () => {
-  const [, navigate] = useLocation();
+  const { navigate } = useLocation();
   const wallet = useActiveWallet();
   const [activeAddress] = useStorage<string>({
     key: "active_address",
@@ -72,11 +72,6 @@ export const ArNSPurchaseStartView = () => {
   useEffect(() => {
     trackPage(PageType.HOME); // Using HOME as a fallback since PURCHASE_START doesn't exist
   }, []);
-
-  const handleSearch = () => {
-    // TODO: Implement search functionality
-    console.log("Search for a name");
-  };
 
   return (
     <Flex direction="column" height="100vh">

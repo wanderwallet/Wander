@@ -2,7 +2,7 @@ import type { DisplayTheme } from "@arconnect/components";
 import { CloseIcon } from "@iconicicons/react";
 import { useEffect, useState } from "react";
 import styled, { useTheme } from "styled-components";
-import { useLocation } from "wouter";
+import { useLocation } from "~wallets/router/router.utils";
 import { ArioIcon } from "~components/embed";
 import { isArNSNameProfile } from "~lib/arns";
 import { useNameServiceProfile } from "~lib/nameservice";
@@ -16,7 +16,7 @@ interface ArNSBannerProps {
 export default function ArNSBanner({ activeAddress }: ArNSBannerProps) {
   const theme = useTheme();
   const [showBanner, setShowBanner] = useState(false);
-  const [, navigate] = useLocation();
+  const { navigate } = useLocation();
 
   const nameServiceProfile = useNameServiceProfile(activeAddress);
 

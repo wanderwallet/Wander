@@ -1,16 +1,31 @@
-import { QueryClient } from "@tanstack/react-query";
-import type { NameServiceProfile } from "./types";
 import {
+  ANT,
+  ANT_REGISTRY_ID,
+  ANTRegistry,
+  ANTVersions,
+  AOProcess,
   ARIO,
   ARIO_MAINNET_PROCESS_ID,
-  AOProcess,
-  ANT,
+  ArweaveSigner,
+  createAoSigner,
+  DEFAULT_SCHEDULER_ID,
+  spawnANT,
   type AoANTInfo,
-  type AoArNSNameData,
   type AoANTState,
+  type AoArNSNameData,
   type AoPrimaryName,
+  type SpawnANTState,
 } from "@ar.io/sdk/web";
 import { connect } from "@permaweb/aoconnect/browser";
+import { QueryClient, useQuery } from "@tanstack/react-query";
+import type { PurchaseType } from "~routes/popup/arns/types";
+import { isLocalWallet } from "~utils/assertions";
+import { getActiveKeyfile, type DecryptedWallet } from "~wallets";
+import { freeDecryptedWallet } from "~wallets/encryption";
+import type { NameServiceProfile } from "./types";
+
+export const LANDING_PAGE_TXID = "oork_YifB3-JQQZg8EgMPQJytua_QCHKNmMqt5kmnCo";
+export const DEFAULT_ANT_LOGO = "Sie_26dvgyok0PZD_-iQAFOhOd5YxDTkczOLoqTTL_A";
 
 // Query client for ArNS profile caching
 const arnsQueryClient = new QueryClient({
@@ -29,9 +44,11 @@ export const AO_CLIENT = connect({
   CU_URL: aoCuUrl,
 });
 
+export const ARIO_PROCESS_ID = process.env.PLASMO_PUBLIC_ARIO_PROCESS_ID ?? ARIO_MAINNET_PROCESS_ID;
+
 export const ARIO_READ_SDK = ARIO.init({
   process: new AOProcess({
-    processId: ARIO_MAINNET_PROCESS_ID,
+    processId: ARIO_PROCESS_ID,
     ao: AO_CLIENT,
   }),
 });
@@ -146,6 +163,27 @@ export async function getArNSProfile(query: string): Promise<NameServiceProfile 
   }
 }
 
+async function getTicker() {
+  try {
+    const info = await ARIO_READ_SDK.getInfo();
+    return info.Ticker;
+  } catch (error) {
+    console.error("Error fetching ARIO ticker:", error);
+    return "ARIO";
+  }
+}
+
+/** Hook for getting ARIO Ticker */
+export function useTicker() {
+  return useQuery({
+    queryKey: ["ario-ticker"],
+    queryFn: getTicker,
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+    placeholderData: "ARIO",
+  });
+}
+
 export function isArNSNameProfile(nameServiceProfile?: NameServiceProfile) {
   return nameServiceProfile ? !nameServiceProfile.name.endsWith(".ar") : false;
 }
@@ -175,6 +213,8 @@ export async function getDemandFactor() {
 const feeTable = [0, 1000000, 200000, 20000, 10000, 2500, 1500, 800, 500, 400, 350, 300, 250, 200];
 
 export type ArNSFeeDetails = {
+  arf: number;
+  af: number;
   oneYearLeaseFee: number;
   permabuyFee: number;
   undernameFee: number;
@@ -196,9 +236,151 @@ export async function getPriceDetails(name: string): Promise<ArNSFeeDetails | un
   const af = arf * 0.2;
 
   return {
+    arf,
+    af,
     oneYearLeaseFee: arf + af * 1,
     permabuyFee: arf + af * 20,
     undernameFee: baseFee * demandFactor * 0.001,
     permabuyUndernameFee: baseFee * demandFactor * 0.005,
   };
+}
+
+export function createDefaultAntState(state: Partial<SpawnANTState>): SpawnANTState {
+  return {
+    ticker: "aos",
+    name: "ANT",
+    controllers: [],
+    balances: {},
+    owner: "",
+    description: "",
+    keywords: [],
+    records: {
+      ["@"]: {
+        transactionId: LANDING_PAGE_TXID.toString(),
+        ttlSeconds: 900,
+      },
+    },
+    logo: DEFAULT_ANT_LOGO,
+    ...state,
+  };
+}
+
+async function getLatestANTVersion() {
+  return arnsQueryClient.fetchQuery({
+    queryKey: ["ant-latest-versions"],
+    queryFn: async () => {
+      const versionRegistry = ANTVersions.init({
+        process: new AOProcess({
+          processId: ANT_REGISTRY_ID,
+          ao: AO_CLIENT,
+        }),
+      });
+      return versionRegistry.getLatestANTVersion();
+    },
+    staleTime: Infinity, // these rarely change
+  });
+}
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export type PurchaseArNSNameParams = {
+  name: string;
+  purchaseType: PurchaseType;
+  purchaseYears?: number;
+  transactionListener: (state: string) => void;
+};
+
+export async function purchaseArNSName({
+  name,
+  purchaseType,
+  purchaseYears,
+  transactionListener,
+}: PurchaseArNSNameParams) {
+  let decryptedWallet: DecryptedWallet;
+
+  try {
+    decryptedWallet = await getActiveKeyfile();
+    isLocalWallet(decryptedWallet);
+    const signer = new ArweaveSigner(decryptedWallet.keyfile);
+
+    const state = createDefaultAntState({
+      owner: decryptedWallet.address,
+      controllers: [decryptedWallet.address],
+      balances: { [decryptedWallet.address]: 1 },
+      records: {
+        ["@"]: {
+          transactionId: LANDING_PAGE_TXID.toString(),
+          ttlSeconds: 900,
+        },
+      },
+    });
+
+    const latestANTVersion = await getLatestANTVersion();
+
+    // 1. Spawn new ANT
+    transactionListener("Spawning new ANT...");
+    const antProcessId = await spawnANT({
+      state,
+      signer: createAoSigner(signer),
+      ao: AO_CLIENT,
+      scheduler: DEFAULT_SCHEDULER_ID,
+      module: latestANTVersion.moduleId,
+    });
+
+    // 2. Register ANT with ANT Registry
+    transactionListener("Registering ANT with ANT Registry...");
+    const antRegistry = ANTRegistry.init({
+      process: new AOProcess({
+        processId: ANT_REGISTRY_ID,
+        ao: AO_CLIENT,
+      }),
+    });
+
+    let antRegistryUpdated = false;
+    let retries = 0;
+    const maxRetries = 10;
+    // We need to wait for the registration to get cranked
+    while (!antRegistryUpdated && retries <= maxRetries) {
+      await sleep(2000 * retries);
+      const aclRes = await antRegistry.accessControlList({
+        address: decryptedWallet.address,
+      });
+
+      const antIdSet = new Set([...aclRes.Controlled, ...aclRes.Owned]);
+      antRegistryUpdated = antIdSet.has(antProcessId);
+      retries++;
+    }
+    if (!antRegistryUpdated) {
+      throw new Error("Failed to register ANT, please try again later.");
+    }
+
+    const writeSDK = ARIO.init({
+      signer,
+      process: new AOProcess({
+        processId: ARIO_PROCESS_ID,
+        ao: AO_CLIENT,
+      }),
+    });
+
+    transactionListener("Purchasing name...");
+
+    const result = await writeSDK.buyRecord({
+      name,
+      type: purchaseType,
+      years: purchaseYears,
+      processId: antProcessId,
+      fundFrom: "balance", // TODO: add support for other funding sources
+    });
+
+    return {
+      success: true,
+      transactionId: result.id,
+    };
+  } finally {
+    if (decryptedWallet?.type === "local") {
+      freeDecryptedWallet(decryptedWallet.keyfile);
+    }
+  }
 }

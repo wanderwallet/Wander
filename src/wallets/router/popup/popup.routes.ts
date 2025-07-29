@@ -64,6 +64,9 @@ import { AllocationSetView } from "~routes/popup/earn/allocation-set";
 import { TokensView } from "~routes/popup/tokens";
 import { TokenDetailView } from "~routes/popup/tokens/token-detail";
 import { HelpView } from "~routes/popup/settings/help";
+import { ArNSNamePurchaseView } from "~routes/popup/arns/ArNSNamePurchaseView";
+import { ArNSConfirmPurchaseView } from "~routes/popup/arns/ArNSConfirmPurchaseView";
+import { ArNSPurchaseSuccessView } from "~routes/popup/arns/ArNSPurchaseSuccessView";
 
 export type PopupRoutePath =
   | "/"
@@ -131,13 +134,19 @@ export type PopupRoutePath =
   | `/earn/allocation-set`
   | `/arns-purchase-start`
   | `/arns`
-  | `/arns/purchase-name-search`;
+  | `/arns/purchase-name-search`
+  | `/arns/purchase-name/${string}`
+  | `/arns/confirm-purchase/${string}/${string}/${string}`
+  | `/arns/purchase-success/${string}/${string}/${string}/${string}`;
 
 export const PopupPaths = {
   Home: "/",
   Purchase: "/purchase",
   ArNSPurchaseStart: "/arns",
   ArNSPurchaseNameSearch: "/arns/purchase-name-search",
+  ArNSPurchaseName: "/arns/purchase-name/:name",
+  ArNSConfirmPurchase: "/arns/confirm-purchase/:name/:purchaseType/:purchaseYears?",
+  ArNSPurchaseSuccess: "/arns/purchase-success/:name/:purchaseType/:purchaseYears/:transactionId",
   ConfirmPurchase: "/confirm-purchase/:quoteId?",
   PendingPurchase: "/purchase-pending",
   Receive: "/receive",
@@ -447,5 +456,17 @@ export const POPUP_ROUTES = [
   {
     path: PopupPaths.ArNSPurchaseNameSearch,
     component: ArNSNameSearchView,
+  },
+  {
+    path: PopupPaths.ArNSPurchaseName,
+    component: ArNSNamePurchaseView,
+  },
+  {
+    path: PopupPaths.ArNSConfirmPurchase,
+    component: ArNSConfirmPurchaseView,
+  },
+  {
+    path: PopupPaths.ArNSPurchaseSuccess,
+    component: ArNSPurchaseSuccessView,
   },
 ] as const satisfies RouteConfig[];

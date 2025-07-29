@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useLocation } from "wouter";
+import { useLocation } from "~wallets/router/router.utils";
 import styled from "styled-components";
 import { ButtonV2 } from "@arconnect/components";
 import HeadV2 from "~components/popup/HeadV2";
@@ -8,10 +8,11 @@ import { Spacer, Text, useInput } from "@arconnect/components-rebrand";
 import { Flex } from "~components/common/Flex";
 import SearchInput from "~components/dashboard/SearchInput";
 import { ArioIcon } from "~components/embed";
-import { getArNSRecord, getPriceDetails, type ArNSFeeDetails } from "~lib/arns";
+import { getArNSRecord, getPriceDetails, useTicker, type ArNSFeeDetails } from "~lib/arns";
 import type { AoArNSNameData } from "@ar.io/sdk";
 import SvgSuccessCheckSimple from "~components/embed/ui/atoms/icon/SuccessCheckSimple";
-import { lowerCaseDomain } from "./utils";
+import { formatArio, lowerCaseDomain } from "./utils";
+import { WanderLoading } from "~routes/welcome/WanderLoading";
 
 // Types
 type SearchState = "ready" | "searching" | "found" | "notFound" | "error";
@@ -44,10 +45,6 @@ const ResultCard = styled(Flex)`
   max-width: 100%;
 `;
 
-const formatArio = (amount: number) => {
-  return amount > 1000 ? `${(amount / 1000).toFixed(2)}K` : amount.toFixed(2);
-};
-
 const validateArNSName = (name: string) => {
   const safeDomain = lowerCaseDomain(name.trim());
 
@@ -65,12 +62,13 @@ const validateArNSName = (name: string) => {
 };
 
 export const ArNSNameSearchView = () => {
-  const [, setLocation] = useLocation();
+  const { navigate } = useLocation();
   const [searchState, setSearchState] = useState<SearchState>("ready");
   const [searchResults, setSearchResults] = useState<{ arnsRecord: AoArNSNameData; priceDetails: ArNSFeeDetails }>();
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
 
   const searchInput = useInput();
+  const { data: ticker } = useTicker();
 
   // Debounce the search term
   const debouncedSearchTerm = useDebounce(searchInput.state, 500);
@@ -114,7 +112,6 @@ export const ArNSNameSearchView = () => {
           }
         }
       } catch (error: any) {
-        console.error("EXCEPTION THROWNNNNNNN");
         console.error(error);
         setErrorMessage("An error occurred while searching for the ArNS name. Please try again.");
         setSearchState("error");
@@ -124,10 +121,8 @@ export const ArNSNameSearchView = () => {
     search();
   }, [debouncedSearchTerm]);
 
-  // // Handle register button click
   const handleRegister = (name: string) => {
-    // Navigate to registration view with the selected name
-    setLocation(`/arns/register/${name}`);
+    navigate(`/arns/purchase-name/${name}`);
   };
 
   return (
@@ -154,8 +149,8 @@ export const ArNSNameSearchView = () => {
 
         {searchState === "searching" && (
           <StatusContainer>
+            <WanderLoading />
             <StatusDescription>Searching...</StatusDescription>
-            {/* Add loading spinner here */}
           </StatusContainer>
         )}
 
@@ -210,10 +205,10 @@ export const ArNSNameSearchView = () => {
                 </Flex>
                 <Flex direction="column" gap="0.2rem">
                   <Text size="xs" variant="secondary" style={{ textWrap: "nowrap", textAlign: "right" }}>
-                    {formatArio(searchResults.priceDetails.oneYearLeaseFee)} ARIO for 1 year; OR{" "}
+                    {formatArio(searchResults.priceDetails.oneYearLeaseFee)} {ticker} for 1 year; OR{" "}
                   </Text>
                   <Text size="xs" variant="secondary" style={{ textWrap: "nowrap", textAlign: "right" }}>
-                    {formatArio(searchResults.priceDetails.permabuyFee)} ARIO to permabuy
+                    {formatArio(searchResults.priceDetails.permabuyFee)} {ticker} to permabuy
                   </Text>
                 </Flex>
               </Flex>
