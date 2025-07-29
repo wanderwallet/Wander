@@ -9,7 +9,7 @@ export function AccountImportSeedphraseEmbeddedView() {
   const { back } = useLocation();
 
   const [seedPhrase, setSeedPhrase] = useState<string[]>([]);
-  const { importTempWallet, importedTempWalletAddress, deleteImportedTempWallet, registerWallet } = useEmbedded();
+  const { importTempWallet, deleteImportedTempWallet, registerWallet } = useEmbedded();
 
   const handleInputChange = useCallback((index: number, value: string) => {
     setSeedPhrase((prevSeedPhrase) => {
