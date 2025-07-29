@@ -96,6 +96,8 @@ async function authenticateWithOAuth(oAuthProviderType: OAutProviderType): Promi
 
   return new Promise<Session>((resolve, reject) => {
     async function authCompleteMessageHandler(event: MessageEvent<OAuthResultMessage>) {
+      if (event.data?.type === OAUTH_SUCCESS_MSG_TYPE) debugger;
+
       // Since same origin, we can check it exactly
       if (
         event.origin !== window.location.origin ||
