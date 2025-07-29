@@ -8,6 +8,7 @@ import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { useLocation } from "~wallets/router/router.utils";
 import type { PurchaseType } from "./types";
+import { LinkExternal02 } from "@untitled-ui/icons-react";
 
 export interface ArNSPurchaseSuccessParams {
   name: string;
@@ -29,7 +30,7 @@ export const ArNSPurchaseSuccessView = ({
         flexDirection: "column",
         height: "100%",
         minHeight: "100vh",
-        padding: "2rem",
+        padding: "1.5rem",
         boxSizing: "border-box",
       }}>
       <Flex justify="center" align="center">
@@ -62,6 +63,21 @@ export const ArNSPurchaseSuccessView = ({
           {truncateMiddle(transactionId, 13)}
         </Text>
       </Flex>
+      <a
+        href={`https://www.ao.link/#/message/${transactionId}`}
+        target="_blank"
+        title="View transaction on ao.link"
+        rel="noopener noreferrer"
+        style={{ margin: "1rem 0" }}>
+        <Flex gap="0.25rem">
+          <Text size="sm" style={{ color: "rgba(151, 135, 255, 1)" }}>
+            See transaction details
+          </Text>
+          <Text>
+            <LinkExternal02 width=".75rem" height=".75rem" />
+          </Text>
+        </Flex>
+      </a>
       <div style={{ flex: 1 }}></div>
       <div style={{ marginTop: "auto", paddingTop: "1rem" }}>
         <Flex direction="column" gap="0.5rem">
