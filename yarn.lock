@@ -6571,9 +6571,9 @@ elliptic@6.6.1, elliptic@^6.5.3, elliptic@^6.5.5, elliptic@^6.5.7:
     minimalistic-assert "^1.0.1"
     minimalistic-crypto-utils "^1.0.1"
 
-"embed-api@https://github.com/wanderwallet/embed-api#feat/arc-1198-eddsa-signatures":
+"embed-api@https://github.com/wanderwallet/embed-api#1b838e69570bb115b308404dac21dfe2ac7b2397":
   version "0.1.0"
-  resolved "https://github.com/wanderwallet/embed-api#3126a83251b2f327500d039b621007e0de4e0f32"
+  resolved "https://github.com/wanderwallet/embed-api#1b838e69570bb115b308404dac21dfe2ac7b2397"
   dependencies:
     "@noble/curves" "^1.9.4"
     "@prisma/client" "6.11.1"
