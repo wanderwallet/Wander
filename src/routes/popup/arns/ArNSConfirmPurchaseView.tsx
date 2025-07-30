@@ -1,17 +1,16 @@
-import styled from "styled-components";
-import HeadV2 from "~components/popup/HeadV2";
-import { Text, Card, Spacer } from "@arconnect/components-rebrand";
-import { Flex } from "~components/common/Flex";
-import type { CommonRouteProps } from "~wallets/router/router.types";
-import { useEffect, useMemo, useState } from "react";
-import { formatArio } from "./utils";
-import { getPriceDetails, purchaseArNSName, useTicker } from "~lib/arns";
 import { ButtonV2 } from "@arconnect/components";
-import type { PurchaseType } from "./types";
-import { Line } from "../purchase";
+import { Text } from "@arconnect/components-rebrand";
+import { useEffect, useState } from "react";
+import { Flex } from "~components/common/Flex";
 import { ArioIcon } from "~components/embed";
-import TransactionStatusModal from "./TransactionStatusModal";
+import HeadV2 from "~components/popup/HeadV2";
+import { getPriceDetails, purchaseArNSName, useTicker } from "~lib/arns";
+import type { CommonRouteProps } from "~wallets/router/router.types";
 import { useLocation } from "~wallets/router/router.utils";
+import { RegisteringCard } from "./RegisteringCard";
+import TransactionStatusModal from "./TransactionStatusModal";
+import type { PurchaseType } from "./types";
+import { formatArio } from "./utils";
 
 export interface ArNSConfirmPurchaseViewParams {
   name: string;
@@ -60,9 +59,12 @@ export const ArNSConfirmPurchaseView = ({
 
       if (result.success) {
         navigate(`/arns/purchase-success/${name}/${purchaseType}/${purchaseYears}/${result.transactionId}`);
+      } else {
+        navigate(`/arns/purchase-error/${name}/${purchaseType}/${purchaseYears}`);
       }
     } catch (error) {
       console.log(error);
+      navigate(`/arns/purchase-error/${name}/${purchaseType}/${purchaseYears}`);
     } finally {
       setProcessingTransaction(false);
       setTransactionState(undefined);
@@ -72,23 +74,12 @@ export const ArNSConfirmPurchaseView = ({
   return (
     <Flex direction="column" height="100vh">
       <HeadV2 title="Confirm Transaction" />
-      <RegisteringCard>
-        <Text noMargin variant="secondary" size="2xs">
-          REGISTERING
-        </Text>
-        <Text size="lg" weight="semibold" style={{ wordBreak: "break-all" }}>
-          ar://{name}
-        </Text>
-        <Line style={{ margin: ".25rem 0" }} />
-        <Flex width="100%">
-          <Text size="sm" variant="secondary" style={{ textAlign: "left", flexGrow: 1 }}>
-            Registration Period
-          </Text>
-          <Text size="sm" weight="semibold">
-            {purchaseType === "lease" ? `Lease (${purchaseYears} ${purchaseYears == 1 ? "Year" : "Years"})` : `Buy (∞)`}
-          </Text>
-        </Flex>
-      </RegisteringCard>
+      <RegisteringCard
+        style={{ margin: "0 1.5rem" }}
+        name={name}
+        purchaseType={purchaseType}
+        purchaseYears={purchaseYears}
+      />
       <Flex style={{ margin: "1rem" }} justify="center" align="center" gap=".25rem">
         <Text size="2xl" weight="semibold" style={{ textAlign: "center" }}>
           {totalFee}
@@ -97,7 +88,7 @@ export const ArNSConfirmPurchaseView = ({
         <ArioIcon width=".75rem" height=".75rem" />
       </Flex>
       <div style={{ flex: 1 }}></div>
-      <div style={{ margin: "1rem" }}>
+      <div style={{ margin: "1.5rem" }}>
         <ButtonV2 onClick={handleConfirmPurchase} fullWidth disabled={processingTransaction}>
           Confirm
         </ButtonV2>
@@ -112,15 +103,3 @@ export const ArNSConfirmPurchaseView = ({
     </Flex>
   );
 };
-
-const RegisteringCard = styled(Card)`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 1rem;
-  margin: 1rem;
-  text-align: center;
-  background: ${(props) => props.theme.surfaceSecondary};
-  border-radius: 12px;
-  gap: 0.5rem;
-`;

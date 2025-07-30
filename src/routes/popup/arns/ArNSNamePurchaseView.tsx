@@ -1,18 +1,18 @@
-import styled from "styled-components";
-import HeadV2 from "~components/popup/HeadV2";
-import { Text, Card } from "@arconnect/components-rebrand";
-import { Flex } from "~components/common/Flex";
-import type { CommonRouteProps } from "~wallets/router/router.types";
-import { useEffect, useMemo, useState } from "react";
-import { PlusCircleIcon, MinusCircleIcon, MinusIcon, PlusIcon } from "@iconicicons/react";
-import { formatArio } from "./utils";
-import { ARIO_PROCESS_ID, getPriceDetails, useTicker } from "~lib/arns";
 import { ButtonV2 } from "@arconnect/components";
-import type { PurchaseType } from "./types";
-import { useLocation } from "~wallets/router/router.utils";
+import { Card, Text } from "@arconnect/components-rebrand";
+import { MinusIcon, PlusIcon } from "@iconicicons/react";
+import { useEffect, useMemo, useState } from "react";
+import styled from "styled-components";
+import { Flex } from "~components/common/Flex";
+import HeadV2 from "~components/popup/HeadV2";
+import { ARIO_PROCESS_ID, getPriceDetails, useTicker } from "~lib/arns";
 import { fetchTokenBalance, type TokenInfoWithBalance } from "~tokens/aoTokens/ao";
 import { PersistentStorage, useStorage } from "~utils/storage";
 import { useActiveWallet } from "~wallets/hooks";
+import type { CommonRouteProps } from "~wallets/router/router.types";
+import { useLocation } from "~wallets/router/router.utils";
+import type { PurchaseType } from "./types";
+import { formatArio } from "./utils";
 
 export interface ArNSNamePurchaseViewParams {
   name: string;
@@ -91,7 +91,13 @@ export const ArNSNamePurchaseView = ({ params: { name } }: ArNSNamePurchaseViewP
         </TabButton>
       </div>
       {purchaseType === "lease" && (
-        <Flex style={{ margin: "0 1rem" }} textAlign="center" justify="center" padding="2rem" gap="1rem" align="center">
+        <Flex
+          style={{ margin: "0 1.5rem" }}
+          textAlign="center"
+          justify="center"
+          padding="2rem"
+          gap="1rem"
+          align="center">
           <CircleButton onClick={() => setPurchaseYears(Math.max(1, purchaseYears - 1))}>
             <MinusIcon />
           </CircleButton>
@@ -109,13 +115,13 @@ export const ArNSNamePurchaseView = ({ params: { name } }: ArNSNamePurchaseViewP
         </Flex>
       )}
       {purchaseType === "permabuy" && (
-        <Flex direction="column" style={{ margin: "0 1rem" }} textAlign="center" padding="2rem">
+        <Flex direction="column" style={{ margin: "0 1.5rem" }} textAlign="center" padding="2rem">
           <Text size="2xl" weight="semibold">
             Permanent
           </Text>
         </Flex>
       )}
-      <RegisteringCard style={{ margin: "0 1rem" }}>
+      <RegisteringCard style={{ margin: "0 1.5rem" }}>
         <Flex style={{ width: "100%" }}>
           <Text style={{ textAlign: "left", flexGrow: 1, fontSize: "1rem" }}>Price</Text>
           <Text style={{ fontSize: "1rem", fontWeight: 500 }}>
@@ -124,7 +130,7 @@ export const ArNSNamePurchaseView = ({ params: { name } }: ArNSNamePurchaseViewP
         </Flex>
       </RegisteringCard>
       <div style={{ flex: 1 }}></div>
-      <div style={{ margin: "1rem" }}>
+      <div style={{ margin: "1.5rem" }}>
         {balance !== undefined && totalFee > balance && (
           <Text size="sm" style={{ margin: "0.5rem 1rem", color: "red", textAlign: "center" }}>
             Insufficient balance
@@ -171,7 +177,7 @@ const RegisteringCard = styled(Card)`
   flex-direction: column;
   align-items: center;
   padding: 1rem;
-  margin: 1rem;
+  margin: 1rem 1.5rem;
   text-align: center;
   background: ${(props) => props.theme.surfaceSecondary};
   border-radius: 12px;

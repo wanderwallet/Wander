@@ -67,6 +67,7 @@ import { HelpView } from "~routes/popup/settings/help";
 import { ArNSNamePurchaseView } from "~routes/popup/arns/ArNSNamePurchaseView";
 import { ArNSConfirmPurchaseView } from "~routes/popup/arns/ArNSConfirmPurchaseView";
 import { ArNSPurchaseSuccessView } from "~routes/popup/arns/ArNSPurchaseSuccessView";
+import { ArNSPurchaseErrorView } from "~routes/popup/arns/ArNSPurchaseErrorView";
 
 export type PopupRoutePath =
   | "/"
@@ -137,7 +138,8 @@ export type PopupRoutePath =
   | `/arns/purchase-name-search`
   | `/arns/purchase-name/${string}`
   | `/arns/confirm-purchase/${string}/${string}/${string}`
-  | `/arns/purchase-success/${string}/${string}/${string}/${string}`;
+  | `/arns/purchase-success/${string}/${string}/${string}/${string}`
+  | `/arns/purchase-error/${string}/${string}/${string}`;
 
 export const PopupPaths = {
   Home: "/",
@@ -147,6 +149,7 @@ export const PopupPaths = {
   ArNSPurchaseName: "/arns/purchase-name/:name",
   ArNSConfirmPurchase: "/arns/confirm-purchase/:name/:purchaseType/:purchaseYears?",
   ArNSPurchaseSuccess: "/arns/purchase-success/:name/:purchaseType/:purchaseYears/:transactionId",
+  ArNSPurchaseError: "/arns/purchase-error/:name/:purchaseType/:purchaseYears",
   ConfirmPurchase: "/confirm-purchase/:quoteId?",
   PendingPurchase: "/purchase-pending",
   Receive: "/receive",
@@ -468,5 +471,9 @@ export const POPUP_ROUTES = [
   {
     path: PopupPaths.ArNSPurchaseSuccess,
     component: ArNSPurchaseSuccessView,
+  },
+  {
+    path: PopupPaths.ArNSPurchaseError,
+    component: ArNSPurchaseErrorView,
   },
 ] as const satisfies RouteConfig[];

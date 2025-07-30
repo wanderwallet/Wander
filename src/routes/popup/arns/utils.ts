@@ -1,6 +1,4 @@
 import { unicodeToAscii, asciiToUnicode } from "puny-coder";
-import type { PurchaseType } from "./types";
-import { ARIO } from "@ar.io/sdk";
 
 export function encodeDomainToASCII(domain: string): string {
   const decodedDomain = unicodeToAscii(domain);

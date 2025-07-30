@@ -9,7 +9,7 @@ import { Flex } from "~components/common/Flex";
 import SearchInput from "~components/dashboard/SearchInput";
 import { ArioIcon } from "~components/embed";
 import { getArNSRecord, getPriceDetails, useTicker, type ArNSFeeDetails } from "~lib/arns";
-import type { AoArNSNameData } from "@ar.io/sdk";
+import type { AoArNSNameData } from "@ar.io/sdk/web";
 import SvgSuccessCheckSimple from "~components/embed/ui/atoms/icon/SuccessCheckSimple";
 import { formatArio, lowerCaseDomain } from "./utils";
 import { WanderLoading } from "~routes/welcome/WanderLoading";
