@@ -1,5 +1,6 @@
-import { describe, test, expect, beforeAll, beforeEach, vi, afterEach, afterAll } from "vitest";
-import { EnhancedStorage, StorageManager } from "./unpartitioned-storage";
+import { describe, test, expect, beforeAll, beforeEach, vi, afterEach } from "vitest";
+import { EnhancedStorage } from "./unpartitioned-storage";
+import { StorageManager } from "../storage-manager/storage-manager";
 import { StorageMock } from "../plasmo-storage/plasmo-storage.mock";
 
 // Set global test timeout

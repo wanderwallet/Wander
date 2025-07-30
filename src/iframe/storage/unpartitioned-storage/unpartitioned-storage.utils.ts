@@ -1,10 +1,3 @@
-export const UNPARTITIONED_STATE_STATUS_CHANGE_EVENT = "UNPARTITIONED_STATE_STATUS_CHANGE" as const;
-
-export type UnpartitionedStateStatusChangeEvent = CustomEvent<{
-  unpartitionedStateStatus: UnpartitionedStateStatus;
-  error?: Error;
-}>;
-
 export const HAS_SIMPLE_STORAGE_API =
   import.meta.env?.VITE_IS_EMBEDDED_APP === "1" &&
   typeof document !== "undefined" &&
@@ -22,10 +15,32 @@ let _unpartitionedStateStatus: UnpartitionedStateStatus = HAS_SIMPLE_STORAGE_API
     : "limited"
   : "unsupported";
 
+export interface UnpartitionedStateStatusChangeData {
+  unpartitionedStateStatus: UnpartitionedStateStatus;
+  error?: Error;
+}
+
+type UnpartitionedStateStatusChangeCallback = (data: UnpartitionedStateStatusChangeData) => void;
+
+const unpartitionedStateStatusChangeCallbacks = new Set<UnpartitionedStateStatusChangeCallback>();
+
+export function addUnpartitionedStateStatusChangeListener(fn: UnpartitionedStateStatusChangeCallback) {
+  fn({ unpartitionedStateStatus: _unpartitionedStateStatus });
+  unpartitionedStateStatusChangeCallbacks.add(fn);
+}
+
+export function removeUnpartitionedStateStatusChangeListener(fn: UnpartitionedStateStatusChangeCallback) {
+  unpartitionedStateStatusChangeCallbacks.delete(fn);
+}
+
 export function getUnpartitionedStateStatus() {
   return _unpartitionedStateStatus;
 }
 
-export function setUnpartitionedStateStatus(unpartitionedStateStatus: UnpartitionedStateStatus) {
+export function setUnpartitionedStateStatus(unpartitionedStateStatus: UnpartitionedStateStatus, error?: Error) {
   _unpartitionedStateStatus = unpartitionedStateStatus;
+
+  unpartitionedStateStatusChangeCallbacks.forEach((cb) => {
+    cb({ unpartitionedStateStatus, error });
+  });
 }

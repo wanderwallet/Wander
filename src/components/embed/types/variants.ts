@@ -1,4 +1,4 @@
-export type ButtonVariants = "primary" | "secondary" | "outlined" | "invisible" | "link" | "unstyled";
+export type ButtonVariants = "primary" | "secondary" | "outlined" | "invisible" | "text" | "link" | "unstyled";
 
 export type TextVariants =
   | "headingXl" // xlarge

@@ -32,7 +32,6 @@ export function WalletBuyInputEmbeddedView() {
 
   return (
     <Card
-      size="auto"
       headerText="Buy Tokens"
       hasBackButton={true}
       hasCloseButton={true}

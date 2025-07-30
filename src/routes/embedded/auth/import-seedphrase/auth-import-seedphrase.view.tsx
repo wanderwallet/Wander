@@ -7,11 +7,22 @@ import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useLocation } from "~wallets/router/router.utils";
 
 export function AuthImportSeedphraseEmbeddedView() {
-  const [loading, setLoading] = useState(false);
   const { navigate } = useLocation();
-  const [seedPhrase, setSeedPhrase] = useState<string[]>([]);
   const { importTempWallet, importedTempWalletAddress, deleteImportedTempWallet, registerWallet, wallets, authStatus } =
     useEmbedded();
+
+  // Loading state:
+
+  const [isLoading, setIsLoading] = useState(false);
+
+  const isViewLoading =
+    authStatus === "unknown" || authStatus === "loading" || authStatus === "authLoading" || isLoading;
+
+  const areButtonsDisabled = isViewLoading;
+
+  // Seed phrase:
+
+  const [seedPhrase, setSeedPhrase] = useState<string[]>([]);
 
   const validateSeedPhrase = useCallback(() => {
     const parsedSeedPhrase = seedPhrase.filter((word) => !!word.trim());
@@ -31,13 +42,13 @@ export function AuthImportSeedphraseEmbeddedView() {
 
       if (!isSeedPhraseValid) return;
 
-      setLoading(true);
+      setIsLoading(true);
 
       await importTempWallet(seedPhrase.join(" "));
     } catch (error) {
       toast.error(error);
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   }, [seedPhrase]);
 
@@ -61,14 +72,13 @@ export function AuthImportSeedphraseEmbeddedView() {
         return;
       }
 
-      setLoading(true);
-
+      setIsLoading(true);
       await registerWallet("IMPORTED");
     } catch (error) {
       console.error(error);
       toast.error("An unexpected error happened.");
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   }, [registerWallet, seedPhrase, wallets, importedTempWalletAddress]);
 
@@ -93,7 +103,7 @@ export function AuthImportSeedphraseEmbeddedView() {
       headerText={authStatus === "noWallets" ? "Enter Seedphrase" : "Restore Wallet"}
       subtitle="Would you like to add this wallet to your account?"
       onBackButtonClick={() => navigate(`/auth/add-wallet`)}
-      isLoading={loading}>
+      isLoading={isViewLoading}>
       <Copyable
         isFullWidth
         style={{ padding: 0 }}
@@ -104,10 +114,10 @@ export function AuthImportSeedphraseEmbeddedView() {
         value={importedTempWalletAddress}
       />
       <Row>
-        <Button variant="secondary" size="md" onClick={deleteImportedTempWallet} isDisabled={loading}>
+        <Button variant="secondary" size="md" onClick={deleteImportedTempWallet} isDisabled={areButtonsDisabled}>
           No, try again
         </Button>
-        <Button variant="primary" size="md" onClick={handleAddWallet} isDisabled={loading}>
+        <Button variant="primary" size="md" onClick={handleAddWallet} isDisabled={areButtonsDisabled}>
           Yes, add
         </Button>
       </Row>
@@ -117,10 +127,10 @@ export function AuthImportSeedphraseEmbeddedView() {
       headerText={authStatus === "noWallets" ? "Enter Seedphrase" : "Restore Wallet"}
       subtitle="Enter your seedphrase to add your wallet to your account."
       onBackButtonClick={() => navigate(`/auth/add-wallet`)}
-      isLoading={loading}>
+      isLoading={isViewLoading}>
       <SeedInput seedPhrase={seedPhrase} handleSubmit={handleImportWallet} handleInputChange={handleInputChange} />
 
-      <Button isFullWidth size="md" onClick={handleImportWallet} isDisabled={loading}>
+      <Button isFullWidth size="md" onClick={handleImportWallet} isDisabled={areButtonsDisabled}>
         Next
       </Button>
     </OnboardingCard>

@@ -3,6 +3,9 @@ const SharedStorageKeys = {} as const;
 const BeStorageKeys = {} as const;
 
 const ConnectStorageKeys = {
+  SUPPORT: {
+    UNPARTITIONED_STATE_CONFIRMED: "UNPARTITIONED_STATE_CONFIRMED",
+  },
   AUTH: {
     USER_ID: "USER_ID",
     LAST_OTP_EMAIL: "LAST_OTP_EMAIL",
