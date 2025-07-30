@@ -4033,5 +4033,21 @@
   "delegation_info_save_failed": {
     "message": "Delegation info save failed",
     "description": "Delegation info save failed text"
+  },
+  "flp_claim_success": {
+    "message": "Claimed successfully",
+    "description": "Fair Launch claim success text"
+  },
+  "flp_claim_error": {
+    "message": "Failed to claim",
+    "description": "Fair Launch claim error text"
+  },
+  "claim": {
+    "message": "Claim",
+    "description": "Claim text"
+  },
+  "claiming": {
+    "message": "Claiming",
+    "description": "Claiming text"
   }
 }

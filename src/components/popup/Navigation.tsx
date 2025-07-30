@@ -8,6 +8,7 @@ import type { WanderRoutePath } from "~wallets/router/router.types";
 import HedgehogHeadIcon from "url:/assets/agents/images/hedgehog-head.svg";
 import { useAOMintingStatus } from "~utils/agents/hooks";
 import { EventType, trackEvent } from "~utils/analytics";
+import { useHasClaimableBalance } from "~utils/fair_launch/fair_launch.hooks";
 
 const Home05Active = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="25" height="24" viewBox="0 0 25 24" fill="none">
@@ -76,6 +77,7 @@ const buttons = [
 
 export const NavigationBar = () => {
   const { data: status } = useAOMintingStatus();
+  const hasClaimableBalance = useHasClaimableBalance();
   const { location, navigate } = useLocation();
   const [activeAddress] = useStorage(
     {
@@ -119,6 +121,7 @@ export const NavigationBar = () => {
               {active ? button.iconActive : button.icon}
               {!isSeedphraseBackedUp && button.route === "/quick-settings" && <PendingActionDot />}
               {status === "Paused" && button.route === "/agents" && <PendingActionDot color="#EE5A4F" />}
+              {hasClaimableBalance && button.route === "/earn" && <PendingActionDot color="#EEBD41" />}
             </IconWrapper>
 
             <div>{browser.i18n.getMessage(button.dictionaryKey)}</div>

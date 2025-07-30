@@ -1,5 +1,5 @@
 import { connect } from "@permaweb/aoconnect";
-import { createDataItemSigner, Id, Owner, type TokenInfo } from "~tokens/aoTokens/ao";
+import { createDataItemSigner, getTagValue, Id, Owner, type TokenInfo } from "~tokens/aoTokens/ao";
 import { defaultConfig } from "~tokens/aoTokens/config";
 import { retryWithDelay } from "~utils/promises/retry";
 import { getActiveAddress, getActiveKeyfile, type DecryptedWallet } from "~wallets";
@@ -7,6 +7,7 @@ import type { FlpTokenInfo } from "./fair_launch.types";
 import { isLocalWallet } from "~utils/assertions";
 import { freeDecryptedWallet } from "~wallets/encryption";
 import { queryClient } from "~utils/tanstack";
+import BigNumber from "bignumber.js";
 
 const FAIR_LAUNCH_TOKENS_URL =
   "https://cdn.jsdelivr.net/gh/wanderwallet/wander-data@chore/update-auto-claim/tokens/flp-tokens.min.json";
@@ -104,6 +105,56 @@ export async function updateDelegationInfo(delegationInfo: Record<string, number
     await Promise.allSettled(promises);
 
     await queryClient.invalidateQueries({ queryKey: ["ao-delegation-info", address] });
+  } finally {
+    if (decryptedWallet && decryptedWallet.type !== "hardware") {
+      // Free the keyfile from memory
+      freeDecryptedWallet(decryptedWallet.keyfile);
+    }
+  }
+}
+
+export async function getClaimableBalance(token: FlpTokenInfo, recipient: string) {
+  const aoInstance = connect(defaultConfig);
+
+  const dryrunRes = await aoInstance.dryrun({
+    Id,
+    Owner,
+    process: token.flpId,
+    tags: [
+      { name: "Action", value: "Get-Claimable-Balance" },
+      { name: "Recipient", value: recipient },
+    ],
+  });
+
+  const message = dryrunRes.Messages?.[0];
+  const tags = message?.Tags || [];
+  const balance = getTagValue("Balance", tags) || "0";
+
+  return BigNumber(balance).shiftedBy(-token.Denomination).toFixed();
+}
+
+export async function claimBalance(flpId: string, tokenId: string) {
+  let decryptedWallet: DecryptedWallet;
+  try {
+    const activeAddress = await getActiveAddress();
+    const aoInstance = connect(defaultConfig);
+
+    decryptedWallet = await getActiveKeyfile();
+    isLocalWallet(decryptedWallet);
+    const keyfile = decryptedWallet.keyfile;
+
+    const signer = createDataItemSigner(keyfile);
+
+    await aoInstance.message({
+      process: flpId,
+      tags: [{ name: "Action", value: "Withdraw-FLP-Token" }],
+      signer,
+    });
+
+    await queryClient.invalidateQueries({ queryKey: ["claimable-balance", flpId, activeAddress] });
+    await queryClient.invalidateQueries({ queryKey: ["tokenBalance", tokenId, activeAddress] });
+
+    // TODO: add token to token list if not already in the list
   } finally {
     if (decryptedWallet && decryptedWallet.type !== "hardware") {
       // Free the keyfile from memory

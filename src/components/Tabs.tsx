@@ -8,6 +8,7 @@ interface TabType {
   name: string;
   component: () => JSX.Element;
   nameSubstitutions?: string[];
+  icon?: React.ReactNode;
 }
 
 interface TabsProps {
@@ -30,6 +31,7 @@ const Tab = ({ tab, active, setActiveTab }: TabProps) => (
     onClick={() => setActiveTab(tab.id)}
     data-active={active ? "true" : "false"}>
     {browser.i18n.getMessage(tab.name, tab.nameSubstitutions)}
+    {tab.icon}
   </StyledTab>
 );
 
@@ -134,6 +136,7 @@ const StyledTab = styled.button<{ active?: boolean; tabId: number }>`
   z-index: 2;
   background: transparent;
   border: none;
+  gap: 4px;
 
   &:hover:not([data-active="true"]) {
     background: ${(props) => (props.theme.displayTheme === "dark" ? "#403785" : "rgba(255, 255, 255, 0.8)")};
