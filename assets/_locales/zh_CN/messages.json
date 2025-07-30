@@ -4009,5 +4009,17 @@
     "claiming": {
       "message": "领取中",
       "description": "Claiming text"
+    },
+    "ao_tokens_detected": {
+      "message": "检测到 AO 代币",
+      "description": "AO tokens detected text"
+    },
+    "diversify_portfolio": {
+      "message": "通过将您的 AO 收益委托给生态系统中的项目来多元化您的投资组合。",
+      "description": "Diversify portfolio text"
+    },
+    "start_delegating": {
+      "message": "开始委托",
+      "description": "Start delegating text"
     }
 }

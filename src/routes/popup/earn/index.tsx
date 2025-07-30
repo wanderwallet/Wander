@@ -1,28 +1,27 @@
 import styled, { useTheme } from "styled-components";
 import HeadV2 from "~components/popup/HeadV2";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { EarnPopup } from "~components/popup/earn/EarnPopup";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { ExtensionStorage } from "~utils/storage";
-import { ArrowUpRight, HelpCircle, LinkExternal01 } from "@untitled-ui/icons-react";
+import { HelpCircle, LinkExternal01 } from "@untitled-ui/icons-react";
 import { Section, Text, Tooltip, Button } from "@arconnect/components-rebrand";
 import { Divider } from "~components/Divider";
 import { PieChart } from "~components/popup/chart/PieChart";
 import browser from "webextension-polyfill";
 import { Flex } from "~components/common/Flex";
-import { AnimatedStarContainer, defaultStars } from "~components/common/AnimatedStarContainer";
-import { Link } from "~components/common/Link";
 import { EarnTabs } from "~components/popup/earn/EarnTabs";
 import { useDelegationPercentByType } from "~utils/fair_launch/fair_launch.hooks";
 import { useLocation } from "~wallets/router/router.utils";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
-
-const stars = defaultStars.toSpliced(1, 1);
+import { EarnDelegationNotice } from "~components/popup/earn/EarnDelegationNotice";
+import { EarnAOTokensDetectedNotice } from "~components/popup/earn/EarnAOTokensDetectedNotice";
 
 export function EarnView() {
   const theme = useTheme();
   const { navigate } = useLocation();
   const [showEarnPopup, setShowEarnPopup] = useState(false);
+  const [showAOTokensDetectedNotice, setShowAOTokensDetectedNotice] = useState(false);
   const [showDelegateNotice, setShowDelegateNotice] = useState(false);
   const { primaryPercent = 0, projectsPercent = 0 } = useDelegationPercentByType();
 
@@ -42,16 +41,23 @@ export function EarnView() {
     [primaryPercent, projectsPercent],
   );
 
-  function handleCloseDelegateNotice() {
+  const handleCloseDelegateNotice = useCallback(() => {
     ExtensionStorage.set("earn_notice_shown", true);
     setShowDelegateNotice(false);
-  }
+  }, []);
+
+  const handleCloseAOTokensDetectedNotice = useCallback(() => {
+    ExtensionStorage.set("ao_tokens_detected_notice_shown", true);
+    setShowAOTokensDetectedNotice(false);
+  }, []);
 
   useAsyncEffect(async () => {
     const popupShown = (await ExtensionStorage.get<boolean>("earn_popup_shown")) ?? false;
     const delegateShown = (await ExtensionStorage.get<boolean>("earn_notice_shown")) ?? false;
+    const aoTokensDetectedShown = (await ExtensionStorage.get<boolean>("ao_tokens_detected_notice_shown")) ?? false;
     setShowEarnPopup(!popupShown);
     setShowDelegateNotice(!delegateShown);
+    setShowAOTokensDetectedNotice(!aoTokensDetectedShown);
   }, []);
 
   return (
@@ -113,27 +119,9 @@ export function EarnView() {
           </BreakdownWrapper>
         </AllocationWrapper>
 
-        {showDelegateNotice && (
-          <AnimatedStarContainer
-            stars={stars}
-            padding="14px 12px 16px 12px"
-            onClose={handleCloseDelegateNotice}
-            showCloseButton>
-            <Flex direction="column" gap={8}>
-              <Text style={{ fontSize: 15 }} weight="medium" noMargin>
-                {browser.i18n.getMessage("earn_notice_title")}
-              </Text>
-              <Text variant="secondary" size="xs" weight="medium" noMargin>
-                {browser.i18n.getMessage("earn_notice_description")}
-              </Text>
-              <Link
-                href="https://www.wander.app/blog/wndr-fair-launch"
-                style={{ color: "#9787FF", gap: "4px", fontSize: 14, fontWeight: 600 }}>
-                {browser.i18n.getMessage("learn_more")} <ArrowUpRight height={18} width={18} />
-              </Link>
-            </Flex>
-          </AnimatedStarContainer>
-        )}
+        {/* TODO: Make sure only one notice based on the condition */}
+        {showDelegateNotice && <EarnDelegationNotice onClose={handleCloseDelegateNotice} />}
+        {showAOTokensDetectedNotice && <EarnAOTokensDetectedNotice onClose={handleCloseAOTokensDetectedNotice} />}
 
         <EarnTabs />
 

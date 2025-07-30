@@ -244,11 +244,7 @@ function Token({
             <Loading style={{ width: 14, height: 14 }} />
           </Flex>
         ) : (
-          <Link
-            onClick={handleClaim}
-            style={{ fontSize: 14, fontWeight: 600, color: "#9787FF" }}
-            href={`https://app.permaweb.io/earn/${token.flpId}`}
-            target="_blank">
+          <Link onClick={handleClaim} style={{ fontSize: 14, fontWeight: 600, color: "#9787FF" }}>
             {browser.i18n.getMessage("claim")} {formattedClaimableBalance.displayBalance} {token.Ticker}
           </Link>
         ))}

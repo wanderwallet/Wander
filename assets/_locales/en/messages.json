@@ -4049,5 +4049,17 @@
   "claiming": {
     "message": "Claiming",
     "description": "Claiming text"
+  },
+  "ao_tokens_detected": {
+    "message": "AO tokens detected",
+    "description": "AO tokens detected text"
+  },
+  "diversify_portfolio": {
+    "message": "Diversify you portfolio by delegating your AO yield earnings to projects in the ecosystem.",
+    "description": "Diversify portfolio text"
+  },
+  "start_delegating": {
+    "message": "Start delegating",
+    "description": "Start delegating text"
   }
 }
