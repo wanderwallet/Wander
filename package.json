@@ -7,7 +7,7 @@
   "packageManager": "yarn@1.22.18",
   "homepage": "https://www.wander.app",
   "scripts": {
-    "dev:chrome": "cross-env PARCEL_WORKER_BACKEND=process plasmo dev --verbose",
+    "dev:chrome": "cross-env PARCEL_WORKER_BACKEND=process plasmo dev",
     "build:chrome": "cross-env PARCEL_WORKER_BACKEND=process plasmo build --no-hoist",
     "dev:firefox": "plasmo dev --target=firefox-mv2",
     "build:firefox": "plasmo build --target=firefox-mv2 --no-hoist",

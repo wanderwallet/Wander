@@ -85,7 +85,7 @@ function PrimaryTokens() {
   return (
     <Flex direction="column" gap={16}>
       {coreTokens.map((token) => (
-        <TokenItem key={token.processId} token={token} isLoading={isLoading} />
+        <Token key={token.processId} token={token} isLoading={isLoading} />
       ))}
     </Flex>
   );
@@ -110,7 +110,7 @@ function ProjectsTokens() {
       {isFlpTokensLoading ? (
         <Loading width={4} height={4} />
       ) : projects.length > 0 ? (
-        projects.map((token) => <TokenItem key={token.processId} token={token} isLoading={isLoading} />)
+        projects.map((token) => <Token key={token.processId} token={token} isLoading={isLoading} />)
       ) : (
         <Flex direction="column" gap={8} textAlign="center" padding="32px 0px">
           <Text variant="secondary" weight="semibold" noMargin>
@@ -125,7 +125,7 @@ function ProjectsTokens() {
   );
 }
 
-function TokenItem({
+function Token({
   token,
   isLoading,
 }: {
@@ -155,7 +155,7 @@ function TokenItem({
   }, [token.processId, token.Logo, arweaveLogo]);
 
   return (
-    <Token key={token.processId}>
+    <TokenWrapper key={token.processId}>
       <Logo src={logo} width={40} height={40} />
       {token.comingSoon ? (
         <Flex direction="row" width="100%" justify="space-between" align="center">
@@ -191,11 +191,11 @@ function TokenItem({
           </Flex>
         </Flex>
       )}
-    </Token>
+    </TokenWrapper>
   );
 }
 
-const Token = styled.div`
+const TokenWrapper = styled.div`
   display: flex;
   flex-direction: row;
   padding: 4px 0;

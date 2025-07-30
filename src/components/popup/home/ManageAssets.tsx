@@ -62,7 +62,6 @@ export function ManageAssets({ open, close }: Props) {
               }}
               hidden={token.hidden}
               onHideClick={(hidden) => {
-                console.log(token, hidden);
                 changeTokenVisibility(token.id, hidden);
               }}
               disableClickEffect

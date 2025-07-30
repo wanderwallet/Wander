@@ -5,7 +5,7 @@ import { EarnPopup } from "~components/popup/earn/EarnPopup";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { ExtensionStorage } from "~utils/storage";
 import { ArrowUpRight, HelpCircle, LinkExternal01 } from "@untitled-ui/icons-react";
-import { Section, Text, Tooltip } from "@arconnect/components-rebrand";
+import { Section, Text, Tooltip, Button } from "@arconnect/components-rebrand";
 import { Divider } from "~components/Divider";
 import { PieChart } from "~components/popup/chart/PieChart";
 import browser from "webextension-polyfill";
@@ -14,11 +14,14 @@ import { AnimatedStarContainer, defaultStars } from "~components/common/Animated
 import { Link } from "~components/common/Link";
 import { EarnTabs } from "~components/popup/earn/EarnTabs";
 import { useDelegationPercentByType } from "~utils/fair_launch/fair_launch.hooks";
+import { useLocation } from "~wallets/router/router.utils";
+import { PopupPaths } from "~wallets/router/popup/popup.routes";
 
 const stars = defaultStars.toSpliced(1, 1);
 
 export function EarnView() {
   const theme = useTheme();
+  const { navigate } = useLocation();
   const [showEarnPopup, setShowEarnPopup] = useState(false);
   const [showDelegateNotice, setShowDelegateNotice] = useState(false);
   const { primaryPercent = 0, projectsPercent = 0 } = useDelegationPercentByType();
@@ -64,7 +67,7 @@ export function EarnView() {
           <Flex direction="row" gap={12} align="center" justify="space-between">
             <PieChart data={allocationData} width={40} height={40} innerRadius={10} outerRadius={20} />
             <Flex direction="column" gap={4}>
-              <Flex direction="row" gap={2} align="center">
+              <Flex direction="row" gap={4} align="center">
                 <Text weight="semibold" noMargin>
                   {browser.i18n.getMessage("allocation")}
                 </Text>
@@ -133,6 +136,10 @@ export function EarnView() {
         )}
 
         <EarnTabs />
+
+        <Button variant="secondary" onClick={() => navigate(PopupPaths.ManageEarnings)} fullWidth>
+          {browser.i18n.getMessage("manage_earnings")}
+        </Button>
       </Wrapper>
       <EarnPopup isOpen={showEarnPopup} setOpen={setShowEarnPopup} />
     </>

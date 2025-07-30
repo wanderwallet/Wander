@@ -3965,5 +3965,33 @@
     "no_projects_tokens_description": {
       "message": "委托给生态系统项目的 AO 分配将显示在这里",
       "description": "No projects tokens description text"
+    },
+    "manage_earnings": {
+      "message": "管理收益",
+      "description": "Manage earnings text"
+    },
+    "add_token": {
+      "message": "添加代币",
+      "description": "Add token text"
+    },
+    "explore_all_projects": {
+      "message": "探索所有项目",
+      "description": "Explore all projects text"
+    },
+    "ao_delegation_tooltip": {
+      "message": "您的 $$AO 分配将根据添加的代币进行调整。",
+      "description": "AO delegation tooltip text"
+    },
+    "remove_delegation_tooltip": {
+      "message": "将代币分配设置为小于 5% 将移除它",
+      "description": "Remove delegation tooltip text"
+    },
+    "delegation_info_saved": {
+      "message": "委托信息已保存",
+      "description": "Delegation info saved text"
+    },
+    "delegation_info_save_failed": {
+      "message": "委托信息保存失败",
+      "description": "Delegation info save failed text"
     }
 }

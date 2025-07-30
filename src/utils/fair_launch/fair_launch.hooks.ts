@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { getDelegationInfo, getFairLaunchTokens } from "./fair_launch.utils";
 import { defaultOptions } from "~tokens/hooks";
-import { ExtensionStorage, useStorage } from "~utils/storage";
 import { useActiveAddress } from "~wallets/hooks";
 import { useMemo } from "react";
 import { PI_FLP_ID } from "./fair_launch.constants";
