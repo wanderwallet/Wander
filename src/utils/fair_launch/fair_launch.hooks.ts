@@ -1,10 +1,13 @@
 import { useQueries, useQuery } from "@tanstack/react-query";
 import { getClaimableBalance, getDelegationInfo, getFairLaunchTokens } from "./fair_launch.utils";
-import { defaultOptions } from "~tokens/hooks";
+import { defaultOptions, useTokenBalance } from "~tokens/hooks";
 import { useActiveAddress } from "~wallets/hooks";
 import { useMemo } from "react";
 import { PI_FLP_ID } from "./fair_launch.constants";
 import type { FlpTokenInfo } from "./fair_launch.types";
+import { defaultTokens } from "~tokens/aoTokens/ao";
+
+const arToken = defaultTokens[0];
 
 export const useFairLaunchTokens = () => {
   return useQuery({
@@ -82,4 +85,19 @@ export function useHasClaimableBalance() {
   });
 
   return useMemo(() => queries.some((query) => !!query.data && query.data !== "0"), [queries]);
+}
+
+/**
+ * This hook is used to check if the user has delegated their AO yield to the primary or projects.
+ */
+export function useAOYieldDelegations() {
+  const { data: delegationInfo = {} } = useDelegationInfo();
+  const activeAddress = useActiveAddress();
+  const { data: arBalance = "0" } = useTokenBalance(arToken, activeAddress);
+
+  return useMemo(() => {
+    const hasNoAOYieldDelegations = +arBalance > 0 && delegationInfo[activeAddress] === 100;
+    const hasAOYieldDelegations = +arBalance > 0 && delegationInfo[activeAddress] !== 100;
+    return { hasNoAOYieldDelegations, hasAOYieldDelegations };
+  }, [arBalance, delegationInfo, activeAddress]);
 }

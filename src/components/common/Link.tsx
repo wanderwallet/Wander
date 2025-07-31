@@ -5,6 +5,7 @@ export const Link = styled.a.attrs({
   rel: "noopener noreferrer",
 })<{ color?: string }>`
   display: flex;
+  cursor: pointer;
   align-items: center;
   gap: 0.3rem;
   color: ${(props) => props.color || props.theme.secondaryText};

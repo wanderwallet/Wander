@@ -4021,5 +4021,29 @@
     "start_delegating": {
       "message": "开始委托",
       "description": "Start delegating text"
+    },
+    "balance": {
+      "message": "余额",
+      "description": "Balance text"
+    },
+    "start_allocating_ao_yield": {
+      "message": "开始分配您的 AO 收益，赚取更多收益。您可以随时更改。",
+      "description": "Start allocating your AO yield with more ways to earn text"
+    },
+    "note_earning_ao_tokens": {
+      "message": "注意：您实际上是在赚取 AO 代币，但将它们委托给项目以换取他们的代币。",
+      "description": "Note you are technically earning AO tokens text"
+    },
+    "allocation_set": {
+      "message": "分配设置！",
+      "description": "Allocation set text"
+    },
+    "allocation_set_description": {
+      "message": "您已成功添加新代币到您的委托列表。这些代币将自动显示在您的资产列表中。",
+      "description": "Allocation set description text"
+    },
+    "view_delegation_list": {
+      "message": "查看委托列表",
+      "description": "View delegation list text"
     }
 }

@@ -11,7 +11,11 @@ import { PieChart } from "~components/popup/chart/PieChart";
 import browser from "webextension-polyfill";
 import { Flex } from "~components/common/Flex";
 import { EarnTabs } from "~components/popup/earn/EarnTabs";
-import { useDelegationPercentByType } from "~utils/fair_launch/fair_launch.hooks";
+import {
+  useAOYieldDelegations,
+  useDelegationPercentByType,
+  useHasOnlyAODelegations,
+} from "~utils/fair_launch/fair_launch.hooks";
 import { useLocation } from "~wallets/router/router.utils";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import { EarnDelegationNotice } from "~components/popup/earn/EarnDelegationNotice";
@@ -24,6 +28,7 @@ export function EarnView() {
   const [showAOTokensDetectedNotice, setShowAOTokensDetectedNotice] = useState(false);
   const [showDelegateNotice, setShowDelegateNotice] = useState(false);
   const { primaryPercent = 0, projectsPercent = 0 } = useDelegationPercentByType();
+  const { hasNoAOYieldDelegations } = useAOYieldDelegations();
 
   const allocationData = useMemo(
     () => [
@@ -52,9 +57,12 @@ export function EarnView() {
   }, []);
 
   useAsyncEffect(async () => {
-    const popupShown = (await ExtensionStorage.get<boolean>("earn_popup_shown")) ?? false;
-    const delegateShown = (await ExtensionStorage.get<boolean>("earn_notice_shown")) ?? false;
-    const aoTokensDetectedShown = (await ExtensionStorage.get<boolean>("ao_tokens_detected_notice_shown")) ?? false;
+    const [popupShown, delegateShown, aoTokensDetectedShown] = await Promise.all([
+      ExtensionStorage.get<boolean>("earn_popup_shown").then((val) => val ?? false),
+      ExtensionStorage.get<boolean>("earn_notice_shown").then((val) => val ?? false),
+      ExtensionStorage.get<boolean>("ao_tokens_detected_notice_shown").then((val) => val ?? false),
+    ]);
+
     setShowEarnPopup(!popupShown);
     setShowDelegateNotice(!delegateShown);
     setShowAOTokensDetectedNotice(!aoTokensDetectedShown);
@@ -119,9 +127,10 @@ export function EarnView() {
           </BreakdownWrapper>
         </AllocationWrapper>
 
-        {/* TODO: Make sure only one notice based on the condition */}
-        {showDelegateNotice && <EarnDelegationNotice onClose={handleCloseDelegateNotice} />}
-        {showAOTokensDetectedNotice && <EarnAOTokensDetectedNotice onClose={handleCloseAOTokensDetectedNotice} />}
+        {showDelegateNotice && !hasNoAOYieldDelegations && <EarnDelegationNotice onClose={handleCloseDelegateNotice} />}
+        {showAOTokensDetectedNotice && hasNoAOYieldDelegations && (
+          <EarnAOTokensDetectedNotice onClose={handleCloseAOTokensDetectedNotice} />
+        )}
 
         <EarnTabs />
 

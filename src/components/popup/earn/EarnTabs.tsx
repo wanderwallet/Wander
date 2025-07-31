@@ -24,6 +24,7 @@ import browser from "webextension-polyfill";
 import { Link } from "~components/common/Link";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { claimBalance } from "~utils/fair_launch/fair_launch.utils";
+import { PopupPaths } from "~wallets/router/popup/popup.routes";
 
 export function EarnTabs() {
   const { navigate, location } = useLocation();
@@ -147,6 +148,7 @@ function Token({
   isLoading: boolean;
 }) {
   const theme = useTheme();
+  const { navigate } = useLocation();
   const { setToast } = useToasts();
   const activeAddress = useActiveAddress();
   const [isClaiming, setIsClaiming] = useState(false);
@@ -185,6 +187,16 @@ function Token({
     [token],
   );
 
+  const handleAdd = useCallback(
+    (e: React.MouseEvent<HTMLAnchorElement>) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      navigate(PopupPaths.ManageEarnings);
+    },
+    [navigate],
+  );
+
   useAsyncEffect(async () => {
     if (!token.processId) return;
     if (token.Logo) {
@@ -219,16 +231,23 @@ function Token({
               <Text size="md" weight="semibold" noMargin>
                 {token.Name}
               </Text>
-              <Text weight="semibold" noMargin>
-                {isLoading ? <Loading width={4} height={4} /> : `${token.percent}%`}
-              </Text>
+              {isLoading || token.percent > 0 ? (
+                <Text weight="semibold" noMargin>
+                  {isLoading ? <Loading width={4} height={4} /> : `${token.percent}%`}
+                </Text>
+              ) : (
+                <Link onClick={handleAdd} style={{ fontSize: 16, fontWeight: 500, color: "#9787FF" }}>
+                  {browser.i18n.getMessage("add")}
+                </Link>
+              )}
             </Flex>
             <Flex direction="row" gap={4} align="center" justify="space-between">
               <Text variant="secondary" weight="medium" size="xs" noMargin>
                 ${token.Ticker}
               </Text>
               <Text variant="secondary" weight="medium" size="xs" noMargin>
-                Balance: {isBalanceLoading ? <Loading width={4} height={4} /> : formattedBalance.displayBalance}
+                {browser.i18n.getMessage("balance")}:{" "}
+                {isBalanceLoading ? <Loading width={4} height={4} /> : formattedBalance.displayBalance}
               </Text>
             </Flex>
           </Flex>

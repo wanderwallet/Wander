@@ -3,8 +3,8 @@ import HeadV2 from "~components/popup/HeadV2";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Section, Button, Text, Tooltip, Loading, useToasts } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
-import { ArrowUpRight, HelpCircle, Plus, Trash02 } from "@untitled-ui/icons-react";
-import { useDelegationInfo, useFairLaunchTokens } from "~utils/fair_launch/fair_launch.hooks";
+import { ArrowUpRight, HelpCircle, InfoCircle, Plus, Trash02 } from "@untitled-ui/icons-react";
+import { useAOYieldDelegations, useDelegationInfo, useFairLaunchTokens } from "~utils/fair_launch/fair_launch.hooks";
 import { AO_PROCESS_ID, defaultTokens } from "~tokens/aoTokens/ao";
 import { PI_FLP_ID } from "~utils/fair_launch/fair_launch.constants";
 import { useActiveAddress } from "~wallets/hooks";
@@ -18,8 +18,12 @@ import { AddTokenPopup } from "~components/popup/earn/AddTokenPopup";
 import { Link } from "~components/common/Link";
 import { MinusIcon, PlusIcon } from "@iconicicons/react";
 import { updateDelegationInfo } from "~utils/fair_launch/fair_launch.utils";
+import { useLocation } from "~wallets/router/router.utils";
+import { PopupPaths } from "~wallets/router/popup/popup.routes";
 
 export function ManageEarningsView() {
+  const theme = useTheme();
+  const { navigate } = useLocation();
   const [isSaving, setIsSaving] = useState(false);
   const [updatedDelegationInfo, setUpdatedDelegationInfo] = useState<Record<string, number>>({});
   const [showAddTokenPopup, setShowAddTokenPopup] = useState(false);
@@ -27,6 +31,7 @@ export function ManageEarningsView() {
   const activeAddress = useActiveAddress();
   const { data: delegationInfo = {}, isLoading: isLoadingDelegationInfo } = useDelegationInfo();
   const { data: flpTokens = [], isLoading: isLoadingFlpTokens } = useFairLaunchTokens();
+  const { hasNoAOYieldDelegations, hasAOYieldDelegations } = useAOYieldDelegations();
 
   const primaryTokens = useMemo(
     () => [
@@ -74,6 +79,9 @@ export function ManageEarningsView() {
         }
       }
 
+      // If user was only earning the AO yield, we need to show the allocation set screen
+      const isAllAOYield = (delegationInfo[activeAddress] || 0) === 100;
+
       await updateDelegationInfo(changedDelegations, activeAddress);
 
       setToast({
@@ -81,6 +89,10 @@ export function ManageEarningsView() {
         content: browser.i18n.getMessage("delegation_info_saved"),
         duration: 2400,
       });
+
+      if (isAllAOYield) {
+        navigate(PopupPaths.AllocationSet);
+      }
     } catch {
       setToast({
         type: "error",
@@ -103,6 +115,26 @@ export function ManageEarningsView() {
 
       <Wrapper>
         <Flex direction="column" gap={8} style={{ overflow: "auto" }}>
+          {hasNoAOYieldDelegations && (
+            <InfoWrapper>
+              <InfoCircle style={{ flexShrink: 0, color: theme.secondaryText, height: 24, width: 24 }} />
+              <Text size="xs" weight="medium" noMargin>
+                {browser.i18n.getMessage("start_allocating_ao_yield")}
+              </Text>
+            </InfoWrapper>
+          )}
+          {hasAOYieldDelegations && (
+            <Flex direction="column" gap={8} style={{ paddingBottom: 8 }}>
+              <Text variant="secondary" style={{ fontSize: 11 }} weight="medium" noMargin>
+                {browser.i18n.getMessage("note_earning_ao_tokens")}
+              </Text>
+              <Link
+                style={{ fontSize: 12, fontWeight: 600, color: "#9787FF", gap: 2 }}
+                href="https://www.wander.app/blog/wndr-fair-launch">
+                {browser.i18n.getMessage("learn_more")} <ArrowUpRight style={{ width: 16, height: 16 }} />
+              </Link>
+            </Flex>
+          )}
           {isLoadingDelegationInfo || isLoadingFlpTokens ? (
             <Flex align="center" justify="center" padding="8px 0px">
               <Loading style={{ width: 24, height: 24 }} />
@@ -326,4 +358,15 @@ const RoundedButton = styled(Button).attrs({
       stroke-width: 2;
     }
   }
+`;
+
+const InfoWrapper = styled.div`
+  display: flex;
+  padding: 8px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 8px;
+  border: 1px solid ${({ theme }) => theme.borderDefault};
+  margin-bottom: 8px;
 `;

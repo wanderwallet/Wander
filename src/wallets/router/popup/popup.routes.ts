@@ -58,6 +58,7 @@ import { AnnouncementView } from "~routes/popup/announcement";
 import { TierView } from "~routes/popup/tier";
 import { EarnView } from "~routes/popup/earn";
 import { ManageEarningsView } from "~routes/popup/earn/manage";
+import { AllocationSetView } from "~routes/popup/earn/allocation-set";
 import { TokensView } from "~routes/popup/tokens";
 import { TokenDetailView } from "~routes/popup/tokens/token-detail";
 import { HelpView } from "~routes/popup/settings/help";
@@ -124,7 +125,8 @@ export type PopupRoutePath =
   | `/agents/liquidops/${string}/${"deposit" | "withdraw"}/result/${"success" | "failure"}`
   | `/tier`
   | `/earn`
-  | `/earn/manage`;
+  | `/earn/manage`
+  | `/earn/allocation-set`;
 
 export const PopupPaths = {
   Home: "/",
@@ -185,6 +187,7 @@ export const PopupPaths = {
   Tier: "/tier",
   Earn: "/earn",
   ManageEarnings: "/earn/manage",
+  AllocationSet: "/earn/allocation-set",
 } as const satisfies Record<string, PopupRoutePath>;
 
 export const POPUP_ROUTES = [
@@ -425,5 +428,9 @@ export const POPUP_ROUTES = [
   {
     path: PopupPaths.ManageEarnings,
     component: ManageEarningsView,
+  },
+  {
+    path: PopupPaths.AllocationSet,
+    component: AllocationSetView,
   },
 ] as const satisfies RouteConfig[];

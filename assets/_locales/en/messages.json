@@ -4061,5 +4061,29 @@
   "start_delegating": {
     "message": "Start delegating",
     "description": "Start delegating text"
+  },
+  "balance": {
+    "message": "Balance",
+    "description": "Balance text"
+  },
+  "start_allocating_ao_yield": {
+    "message": "Start allocating your AO yield with more ways to earn. You can change this at any time.",
+    "description": "Start allocating your AO yield with more ways to earn text"
+  },
+  "note_earning_ao_tokens": {
+    "message": "Note: You're technically earning AO tokens, but delegating them to projects in exchange for their tokens.",
+    "description": "Note you are technically earning AO tokens text"
+  },
+  "allocation_set": {
+    "message": "Allocation set!",
+    "description": "Allocation set text"
+  },
+  "allocation_set_description": {
+    "message": "You have successfully added new tokens to your delegation list. These tokens will show up on your asset list automatically.",
+    "description": "Allocation set description text"
+  },
+  "view_delegation_list": {
+    "message": "View delegation list",
+    "description": "View delegation list text"
   }
 }
