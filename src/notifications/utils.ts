@@ -71,28 +71,19 @@ query($address: String!) {
 }
 `;
 
-export const AF_ERROR_QUERY = `
-query($messageId: String!) {
+export const TRANSFER_ERROR_QUERY = `
+query($messageIds: [String!]!) {
   transactions(
-    first: 10,
+    first: 100,
     tags: [
       {name: "Data-Protocol", values: ["ao"]},
       {name: "Action", values: ["Transfer-Error"]},
-      {name: "Message-Id", values: [$messageId]},
+      {name: "Pushed-For", values: $messageIds},
     ]
   ) {
     edges {
-      cursor
       node {
-        recipient
         id
-        owner {
-          address
-        }
-        block {
-          timestamp
-          height
-        }
         tags {
           name
           value

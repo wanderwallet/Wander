@@ -15,8 +15,8 @@ import {
   isOAuthSuccessMessage,
   OAuthErrorCode,
 } from "~utils/authentication/authentication.utils";
-import type { OAuthResultMessage, SupabaseProvider } from "~utils/authentication/authentication.types";
-import type { SupabaseUserMetadata } from "embed-api";
+import type { OAuthResultMessage } from "~utils/authentication/authentication.types";
+import type { SupabaseUserMetadata, SupabaseProvider } from "embed-api";
 
 const SUPABASE_PROVIDER_BY_OAUTH_PROVIDER_TYPE: Record<OAutProviderType, SupabaseProvider | null> = {
   GOOGLE: "google",

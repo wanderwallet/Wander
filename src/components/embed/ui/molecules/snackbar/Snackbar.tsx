@@ -3,7 +3,6 @@ import clsx from "clsx";
 import { FormattedText } from "~components/embed/ui/atoms/formatted-text/FormattedText";
 import React from "react";
 import { AlertTriangle, XCircle, Check } from "@untitled-ui/icons-react";
-import { motion } from "framer-motion";
 
 import styles from "./Snackbar.module.scss";
 
@@ -51,5 +50,3 @@ export const Snackbar = React.forwardRef<HTMLDivElement, SnackbarBaseProps>(
     );
   },
 );
-
-export const MotionSnackbar = motion.create(Snackbar, { forwardMotionProps: true });

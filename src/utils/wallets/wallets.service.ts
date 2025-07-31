@@ -1,4 +1,4 @@
-import { ChallengeClientV1, ErrorMessages, type DbSession } from "embed-api";
+import { solveChallenge, ErrorMessages, type DbSession } from "embed-api";
 import type { Wallet, WalletActivationStatus } from "~utils/embedded/embedded.types";
 import { trpcVanilla } from "~utils/embedded/embedded.utils";
 import { isTRPCClientError } from "~utils/embedded/utils/trpc/trpc.utils";
@@ -98,12 +98,6 @@ async function createPublicWallet(wallet: CreatePublicWalletParams) {
   });
 }
 
-export type UpdateWalletStatusData = Exclude<Parameters<typeof trpcVanilla.updateWalletStatus.mutate>[0], void>;
-
-async function updateWalletStatus(updateWalletStatusData: UpdateWalletStatusData) {
-  return trpcVanilla.updateWalletStatus.mutate(updateWalletStatusData);
-}
-
 export type RegisterRecoveryShareData = Exclude<Parameters<typeof trpcVanilla.registerRecoveryShare.mutate>[0], void>;
 
 async function registerRecoveryShare(recoveryShareData: RegisterRecoveryShareData) {
@@ -134,32 +128,52 @@ async function fetchFirstAvailableAuthShare(
       const { id: walletId, address: walletAddress, deviceShare } = wallet;
 
       try {
-        if (deviceShare === null) {
+        if (deviceShare === null || wallet.status !== "ENABLED") {
           // If the device share is not present in the device, skip, otherwise
           // `WalletUtils.generateShareHashAndPrivateKey()` will throw an error.
           continue;
         }
 
-        const { shareHash: deviceShareHash, sharePrivateKeyJWK: deviceSharePrivateKeyJWK } =
-          await WalletUtils.generateShareHashAndPrivateKey(deviceShare);
+        const generateShareHashAndEdKeysPromise = WalletUtils.generateShareHashAndEdKeys({
+          deviceShare,
+          session,
+        });
 
-        const { activationChallenge } = await trpcVanilla.generateWalletActivationChallenge.mutate({
+        const generateWalletActivationChallengePromise = trpcVanilla.generateWalletActivationChallenge.mutate({
           walletId,
         });
 
-        const challengeSolution = await ChallengeClientV1.solveChallenge({
+        const [generateShareHashAndEdKeysResult, generateWalletActivationChallengeResult] = await Promise.all([
+          generateShareHashAndEdKeysPromise,
+          generateWalletActivationChallengePromise,
+        ]);
+
+        let shareHash: string = generateShareHashAndEdKeysResult.shareHash;
+        let sharePrivateKey: JWKInterface | Uint8Array = generateShareHashAndEdKeysResult.sharePrivateKey;
+
+        const { activationChallenge } = generateWalletActivationChallengeResult;
+
+        if (activationChallenge.version === "v1") {
+          // If we got a v1 challenge, we still need to migrate this WorkKeyShare to EdDSA. To do that, we first need to
+          // resolve a RSA challenge (old system). Then, we'll be able to reconstruct the private key and the backend
+          // will request the rotation of the WorkKeyShare, which is done using the wallet private key and only accepts
+          // EdDSA public keys.
+
+          const derivedRSAKeys = await WalletUtils.deriveRSAKeys(deviceShare);
+          sharePrivateKey = derivedRSAKeys.sharePrivateKeyJWK;
+        }
+
+        const challengeSolution = await solveChallenge({
           challenge: activationChallenge,
           session,
-          shareHash: deviceShareHash,
-          jwk: deviceSharePrivateKeyJWK,
+          shareHash,
+          privateKey: sharePrivateKey,
         });
 
         const { authShare, rotationChallenge } = await trpcVanilla.activateWallet.mutate({
           walletId,
           challengeSolution,
         });
-
-        // TODO: Better with zk: instead of hashes or use a challenge here?
 
         if (authShare) {
           // In case there was a previous one already in memory:
@@ -180,14 +194,17 @@ async function fetchFirstAvailableAuthShare(
             activatedWallet.authShare = authShare;
             activatedWallet.deviceShare = deviceShare;
 
-            const { shareHash: deviceShareHash, sharePublicKey: deviceSharePublicKey } =
-              await WalletUtils.generateShareHashAndPublicKey(deviceShare);
+            const { shareHash: deviceShareHash, sharePublicKeyB64: deviceSharePublicKey } =
+              await WalletUtils.generateShareHashAndEdKeys({
+                deviceShare,
+                session,
+              });
 
-            const challengeSolution = await ChallengeClientV1.solveChallenge({
+            const challengeSolution = await solveChallenge({
               challenge: rotationChallenge,
               session,
               shareHash: null,
-              jwk,
+              privateKey: jwk,
             });
 
             await rotateAuthShare({
@@ -279,7 +296,6 @@ async function registerAuthShare(registerAuthShareData: RegisterAuthShareData) {
 
 export const WalletService = {
   fetchWallets,
-  updateWalletStatus,
   createPublicWallet,
   registerRecoveryShare,
   registerWalletExport,

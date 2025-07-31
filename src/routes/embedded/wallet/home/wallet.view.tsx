@@ -10,7 +10,6 @@ import { WalletHomeActions } from "./actions.container";
 import { WalletHomeAssets } from "./assets.container";
 import { useBalanceSortedTokens } from "~/tokens/hooks";
 import { WalletHomeBalance } from "./balance.container";
-import { AppWarnings } from "~components/embed/ui/templates/app-warnings/AppWarnings";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 import browser from "webextension-polyfill";
@@ -101,9 +100,8 @@ export function WalletHomeEmbeddedView() {
   }, []);
 
   return (
-    <Card size="auto" style={{ padding: "32px" }} hasBackButton={false} closeButtonStyles={{ right: "2rem" }}>
+    <Card hasBackButton={false} withExtraPadding>
       <AccountSelector wallets={wallets} currentWallet={wallet as StoredWallet} />
-      <AppWarnings />
       <WalletHomeBalance />
       <Divider />
       <Snackbar title={title} variant={variant}>

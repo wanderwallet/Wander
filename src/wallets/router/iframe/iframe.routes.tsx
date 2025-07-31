@@ -3,6 +3,9 @@ import { getExtensionOverrides } from "~wallets/router/extension/extension.route
 import type { RouteConfig } from "~wallets/router/router.types";
 import { isRouteOverride } from "~wallets/router/router.utils";
 
+// Support Views:
+import { UnpartitionedStateMissingEmbeddedView } from "~routes/embedded/support/unpartitioned-state/unpartitioned-state.view";
+
 // Authentication Views:
 import { AuthEmbeddedView } from "~routes/embedded/auth/auth/auth.view";
 import { AuthEmailOtpEmbeddedView } from "~routes/embedded/auth/auth-email-otp/auth-email-otp.view";
@@ -51,6 +54,7 @@ import { AccountBackupWalletRecoveryFileEmbeddedView } from "~routes/embedded/ac
 import { AccountBackupWalletQrCodeEmbeddedView } from "~routes/embedded/account/backup-wallet/backup-wallet-qrcode";
 import { AccountExportWalletEmbeddedView } from "~routes/embedded/account/export-wallet/account-export-wallet.view";
 
+// Wallet Views:
 import { WalletHomeEmbeddedView } from "~routes/embedded/wallet/home/wallet.view";
 import { WalletReceiveEmbeddedView } from "~routes/embedded/wallet/receive/receive.view";
 import { WalletTransactionsEmbeddedView } from "~routes/embedded/wallet/transactions/transactions.view";
@@ -69,6 +73,7 @@ import { WalletBuySuccessEmbeddedView } from "~routes/embedded/wallet/buy/buy.su
 export type DirectAccess = "backup";
 
 export type EmbeddedRoutePath =
+  | "/support/unpartitioned-state"
   | "/auth"
   | "/auth/otp"
   | "/auth/email-signin/password"
@@ -129,6 +134,9 @@ export type EmbeddedRoutePath =
 
 export const EmbeddedPaths = {
   // TODO: Consider nesting these instead:
+
+  // Support:
+  SupportUnpartitionedStateMissing: "/support/unpartitioned-state",
 
   // Authentication:
   Auth: "/auth",
@@ -197,6 +205,13 @@ export const EmbeddedPaths = {
 } as const satisfies Record<string, EmbeddedRoutePath>;
 
 const IFRAME_OWN_ROUTES = [
+  // Support:
+
+  {
+    path: EmbeddedPaths.SupportUnpartitionedStateMissing,
+    component: UnpartitionedStateMissingEmbeddedView,
+  },
+
   // Authentication:
 
   {

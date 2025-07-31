@@ -57,6 +57,7 @@ import { LiquidOpsConfirm } from "~routes/popup/agents/liquidops/confirm";
 import { LiquidOpsResult } from "~routes/popup/agents/liquidops/result";
 import { AnnouncementView } from "~routes/popup/announcement";
 import { TierView } from "~routes/popup/tier";
+import { HelpView } from "~routes/popup/settings/help";
 
 export type PopupRoutePath =
   | "/"
@@ -102,6 +103,7 @@ export type PopupRoutePath =
   | `/quick-settings/contacts/new`
   | `/quick-settings/contacts/${string}`
   | `/quick-settings/notifications`
+  | `/quick-settings/help`
   | `/getting-started/${string}`
   | `/agents`
   | `/agents/ao-yield/create-agent`
@@ -160,6 +162,7 @@ export const PopupPaths = {
   NewContact: "/quick-settings/contacts/new",
   ContactSettings: "/quick-settings/contacts/:address",
   NotificationSettings: "/quick-settings/notifications",
+  Help: "/quick-settings/help",
   Agents: "/agents",
   CreateAOYieldAgent: "/agents/ao-yield/create-agent",
   ConfirmAOYieldAgent: "/agents/ao-yield/confirm-agent",
@@ -335,6 +338,10 @@ export const POPUP_ROUTES = [
   {
     path: PopupPaths.NotificationSettings,
     component: NotificationSettingsView,
+  },
+  {
+    path: PopupPaths.Help,
+    component: HelpView,
   },
   {
     path: WelcomePaths.GettingStarted,

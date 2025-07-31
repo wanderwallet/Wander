@@ -2978,14 +2978,6 @@
         "message": "无法显示数据：数据太大，无法显示。",
         "description": "Data too large text"
     },
-    "partitioned_storage_banner": {
-        "message": "您当前的浏览器不支持跨站身份验证和钱包同步。这意味着您每次访问使用 Wander Connect 的新网站时都需要手动导入钱包。\n为了享受跨站无缝体验，请使用 Chrome 或 Edge。",
-        "description": "Unpartitioned state banner message"
-    },
-    "partitioned_storage_banner_rejected": {
-        "message": "Wander Connect 需要访问您浏览器的存储空间才能启用跨站身份验证和钱包同步。拒绝访问意味着您每次访问使用 Wander Connect 的新网站时都需要手动导入钱包。\n为了享受跨站无缝体验，请允许访问您浏览器的存储空间。",
-        "description": "Unpartitioned state rejected banner message"
-    },
     "re_request_access": {
         "message": "重新请求访问",
         "description": "Re-request access text"
@@ -3693,11 +3685,11 @@
       "description": "Core tier title"
     },
     "tier_core_description": {
-      "message": "1. 打开 [公平启动委托网站](https://ao.arweave.net/#/delegate/) <br/> 2. 连接你的 Wander 钱包 <br/> 3. 将 WNDR 添加到你的委托列表 <br/> 4. 领取并认领你的 WNDR 代币",
+      "message": "1. 打开 [公平启动委托网站](https://ao.arweave.net/#/delegate/) <br/> 2. 连接你的 Wander 钱包 <br/> 3. 将 WNDR 添加到你的委托列表 <br/> 4. WNDR 收益每 24 小时发放一次",
       "description": "Core tier description with steps"
     },
     "tier_benefit_fee_reduction_defi": {
-      "message": "DeFi 交易手续费减免 $PERCENTAGE$%",
+      "message": "对 Wander 所加 DeFi 交易手续费减免 $PERCENTAGE$%",
       "description": "Fee reduction benefit for defi transactions",
       "placeholders": {
         "percentage": {
@@ -3707,7 +3699,7 @@
       }
     },
     "tier_benefit_fee_reduction_transak": {
-      "message": "Transak 购买手续费减免 $PERCENTAGE$%",
+      "message": "对 Wander 所加 Transak 购买手续费减免 $PERCENTAGE$%",
       "description": "Fee reduction benefit for Transak purchases",
       "placeholders": {
         "percentage": {
@@ -3759,5 +3751,29 @@
     "position_update_tooltip": {
       "message": "您的位置每24小时更新一次，时间为4:00 PM GMT",
       "description": "Tooltip text for position update"
+    },
+    "help": {
+      "message": "帮助",
+      "description": "Help text"
+    },
+    "help_center": {
+      "message": "帮助中心",
+      "description": "Help Center text"
+    },
+    "discord": {
+      "message": "Discord",
+      "description": "Discord text"
+    },
+    "email": {
+      "message": "邮件",
+      "description": "Email text"
+    },
+    "video_support": {
+      "message": "视频支持",
+      "description": "Video Support text"
+    },
+    "fastest": {
+      "message": "最快",
+      "description": "Fastest text"
     }
 }
