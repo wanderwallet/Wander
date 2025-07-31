@@ -40,7 +40,13 @@ export const AstroBetaAccessAnnouncementPopup = ({ isOpen, setOpen }) => {
             <Text
               size="sm"
               weight="medium"
-              style={{ fontFamily: "Satoshi", lineHeight: "140%", letterSpacing: "0.2px", color: "#EEE" }}
+              style={{
+                fontFamily: "Satoshi, sans-serif",
+                fontWeight: "500",
+                lineHeight: "140%",
+                letterSpacing: "0.2px",
+                color: "#EEE",
+              }}
               noMargin>
               {browser.i18n.getMessage("community_phase")}
             </Text>
@@ -66,7 +72,7 @@ export const AstroBetaAccessAnnouncementPopup = ({ isOpen, setOpen }) => {
               </Flex>
             </Flex>
           </Flex>
-          <Flex direction="column" gap={12} align="center" justify="center" flex={1} height="100%">
+          <Flex direction="column" gap={20} align="center" justify="center" flex={1} height="100%">
             <Flex direction="column" gap={12} align="center" justify="center">
               {tiers.map((tier) => (
                 <TierTag
@@ -98,7 +104,9 @@ const Title = styled(Text).attrs({
   noMargin: true,
 })`
   color: #fff;
-  font-family: Satoshi;
+  font-family: Satoshi, sans-serif;
+  font-weight: 700;
+
   span {
     color: #4ff37f;
   }
@@ -110,13 +118,14 @@ const Ticker = styled(Text).attrs({
   weight: "medium",
   noMargin: true,
 })`
-  font-family: Satoshi;
+  font-family: Satoshi, sans-serif;
+  font-weight: 500;
   color: #c4c4c4;
 `;
 
 const InstantAccessText = styled.span`
   text-align: center;
-  font-family: Satoshi;
+  font-family: Satoshi, sans-serif;
   font-size: 24px;
   font-style: normal;
   font-weight: 700;

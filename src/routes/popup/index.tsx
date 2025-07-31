@@ -21,7 +21,7 @@ import { scheduleSwapExecution } from "~utils/agents/swap";
 import { WandAnnouncementPopup } from "~components/popup/home/WandAnnouncementPopup";
 import { ActivityNotificationsNotice } from "~components/popup/home/ActivityNotificationsNotice";
 import { AstroBetaAccessAnnouncementPopup } from "~components/popup/home/AstroBetaAccessAnnouncementPopup";
-import { astroBetaAccessAnnouncementDuration } from "~utils/announcements";
+import { astroBetaAccessAnnouncementDuration, isAstroBetaAnnouncementActive } from "~utils/announcements";
 
 export function HomeView() {
   const theme = useTheme();
@@ -113,14 +113,7 @@ export function HomeView() {
     ]);
     setWandAnnouncementOpen(!wandAnnouncementShown);
 
-    // Check if astro beta announcement should show (within date range and not shown)
-    const isWithinAnnouncementPeriod = (() => {
-      const { startDate, endDate } = astroBetaAccessAnnouncementDuration;
-      const now = new Date();
-      return now >= startDate && now <= endDate;
-    })();
-
-    setAstroAnnouncementOpen(isWithinAnnouncementPeriod && !astroBetaAccessAnnouncementShown);
+    setAstroAnnouncementOpen(isAstroBetaAnnouncementActive() && !astroBetaAccessAnnouncementShown);
 
     // WALLET.TYPE JUST FOR KEYSTONE POPUP
     setOpen(announcement && wallet?.type === "hardware");

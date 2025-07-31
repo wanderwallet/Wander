@@ -90,7 +90,12 @@ export function getAnnouncement(id: string | number) {
 // -4:00 is used instead of -5:00 because during August, Eastern Time (ET)
 // observes Daylight Saving Time (EDT), which is UTC-4:00. ET only becomes
 // UTC-5:00 (EST) during winter months.
-export const astroBetaAccessAnnouncementDuration = {
+const astroBetaAnnouncement = {
   startDate: new Date("2025-08-04T10:00:00-04:00"), // EDT
   endDate: new Date("2025-08-10T23:59:00-04:00"), // EDT
+};
+
+export const isAstroBetaAnnouncementActive = () => {
+  const now = new Date();
+  return now >= astroBetaAnnouncement.startDate && now <= astroBetaAnnouncement.endDate;
 };
