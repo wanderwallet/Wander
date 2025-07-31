@@ -20,10 +20,16 @@ import firefoxLogoSrc from "url:assets/icons/browsers/firefox-logo.png";
 
 import braveScreenshotSrc from "url:assets/screenshots/unpartitioned-state/raw-brave-light.png";
 import braveScreenshotDarkSrc from "url:assets/screenshots/unpartitioned-state/raw-brave-dark.png";
-import chrome1ScreenshotSrc from "url:assets/screenshots/unpartitioned-state/raw-chrome-1-dark.png";
-import chrome2ScreenshotSrc from "url:assets/screenshots/unpartitioned-state/raw-chrome-2-dark.png";
-import chrome3ScreenshotSrc from "url:assets/screenshots/unpartitioned-state/raw-chrome-3-dark.png";
-import inAppScreenshotSrc from "url:assets/screenshots/unpartitioned-state/raw-in-app-dark.png";
+
+import chrome1ScreenshotSrc from "url:assets/screenshots/unpartitioned-state/raw-chrome-1-light.png";
+import chrome2ScreenshotSrc from "url:assets/screenshots/unpartitioned-state/raw-chrome-2-light.png";
+import chrome3ScreenshotSrc from "url:assets/screenshots/unpartitioned-state/raw-chrome-3-light.png";
+import chrome1ScreenshotDarkSrc from "url:assets/screenshots/unpartitioned-state/raw-chrome-1-dark.png";
+import chrome2ScreenshotDarkSrc from "url:assets/screenshots/unpartitioned-state/raw-chrome-2-dark.png";
+import chrome3ScreenshotDarkSrc from "url:assets/screenshots/unpartitioned-state/raw-chrome-3-dark.png";
+
+import inAppScreenshotSrc from "url:assets/screenshots/unpartitioned-state/raw-in-app-light.png";
+import inAppScreenshotDarkSrc from "url:assets/screenshots/unpartitioned-state/raw-in-app-dark.png";
 
 import styles from "./unpartitioned-state.module.scss";
 
@@ -242,13 +248,34 @@ export function UnpartitionedStateMissingEmbeddedView() {
               navigation bar:
             </p>,
             <p key="image1">
-              <Image fullWidth src={chrome1ScreenshotSrc} width={1080} height={147} borderRadius="rounded" />
+              <Image
+                fullWidth
+                src={chrome1ScreenshotSrc}
+                srcDark={chrome1ScreenshotDarkSrc}
+                width={1080}
+                height={147}
+                borderRadius="rounded"
+              />
             </p>,
             <p key="image2">
-              <Image fullWidth src={chrome2ScreenshotSrc} width={1080} height={786} borderRadius="rounded" />
+              <Image
+                fullWidth
+                src={chrome2ScreenshotSrc}
+                srcDark={chrome2ScreenshotDarkSrc}
+                width={1080}
+                height={786}
+                borderRadius="rounded"
+              />
             </p>,
             <p key="image3">
-              <Image fullWidth src={chrome3ScreenshotSrc} width={1080} height={1106} borderRadius="rounded" />
+              <Image
+                fullWidth
+                src={chrome3ScreenshotSrc}
+                srcDark={chrome3ScreenshotDarkSrc}
+                width={1080}
+                height={1106}
+                borderRadius="rounded"
+              />
             </p>,
           ]}
         />
@@ -259,7 +286,14 @@ export function UnpartitionedStateMissingEmbeddedView() {
           children={[
             <p key="text">You'll have to switch to your browser app to enable this:</p>,
             <p key="image">
-              <Image fullWidth src={inAppScreenshotSrc} width={1080} height={1326} borderRadius="rounded" />
+              <Image
+                fullWidth
+                src={inAppScreenshotSrc}
+                srcDark={inAppScreenshotDarkSrc}
+                width={1080}
+                height={1326}
+                borderRadius="rounded"
+              />
             </p>,
           ]}
         />
