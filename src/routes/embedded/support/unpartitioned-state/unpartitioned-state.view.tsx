@@ -17,7 +17,9 @@ import operaLogoSrc from "url:assets/icons/browsers/opera-logo.png";
 import braveLogoSrc from "url:assets/icons/browsers/brave-logo.png";
 import safariLogoSrc from "url:assets/icons/browsers/safari-logo.png";
 import firefoxLogoSrc from "url:assets/icons/browsers/firefox-logo.png";
-import braveScreenshotSrc from "url:assets/screenshots/unpartitioned-state/raw-brave-dark.png";
+
+import braveScreenshotSrc from "url:assets/screenshots/unpartitioned-state/raw-brave-light.png";
+import braveScreenshotDarkSrc from "url:assets/screenshots/unpartitioned-state/raw-brave-dark.png";
 import chrome1ScreenshotSrc from "url:assets/screenshots/unpartitioned-state/raw-chrome-1-dark.png";
 import chrome2ScreenshotSrc from "url:assets/screenshots/unpartitioned-state/raw-chrome-2-dark.png";
 import chrome3ScreenshotSrc from "url:assets/screenshots/unpartitioned-state/raw-chrome-3-dark.png";
@@ -140,19 +142,19 @@ export function UnpartitionedStateMissingEmbeddedView() {
         <dd className={styles.supportGroup}>
           <ul className={styles.browserList}>
             <li className={styles.browserItem}>
-              <Image width={18} height={18} src={chromeLogoSrc} />
+              <Image fullWidth width={18} height={18} src={chromeLogoSrc} />
               Chrome
             </li>
             <li className={styles.browserItem}>
-              <Image width={18} height={18} src={edgeLogoSrc} />
+              <Image fullWidth width={18} height={18} src={edgeLogoSrc} />
               Edge
             </li>
             <li className={styles.browserItem}>
-              <Image width={18} height={18} src={operaLogoSrc} />
+              <Image fullWidth width={18} height={18} src={operaLogoSrc} />
               Opera
             </li>
             <li className={styles.browserItem}>
-              <Image width={18} height={18} src={braveLogoSrc} />
+              <Image fullWidth width={18} height={18} src={braveLogoSrc} />
               Brave
             </li>
           </ul>
@@ -161,11 +163,11 @@ export function UnpartitionedStateMissingEmbeddedView() {
         <dd className={styles.supportGroup}>
           <ul className={styles.browserList}>
             <li className={styles.browserItem}>
-              <Image width={18} height={18} src={safariLogoSrc} />
+              <Image fullWidth width={18} height={18} src={safariLogoSrc} />
               Safari
             </li>
             <li className={styles.browserItem}>
-              <Image width={18} height={18} src={firefoxLogoSrc} />
+              <Image fullWidth width={18} height={18} src={firefoxLogoSrc} />
               Firefox
             </li>
           </ul>
@@ -219,7 +221,14 @@ export function UnpartitionedStateMissingEmbeddedView() {
               navigation bar:
             </p>,
             <p key="image">
-              <Image src={braveScreenshotSrc} borderRadius={8} />
+              <Image
+                fullWidth
+                src={braveScreenshotSrc}
+                srcDark={braveScreenshotDarkSrc}
+                width={867}
+                height={822}
+                borderRadius="rounded"
+              />
             </p>,
           ]}
         />
@@ -233,13 +242,13 @@ export function UnpartitionedStateMissingEmbeddedView() {
               navigation bar:
             </p>,
             <p key="image1">
-              <Image src={chrome1ScreenshotSrc} borderRadius={8} />
+              <Image fullWidth src={chrome1ScreenshotSrc} width={1080} height={147} borderRadius="rounded" />
             </p>,
             <p key="image2">
-              <Image src={chrome2ScreenshotSrc} borderRadius={8} />
+              <Image fullWidth src={chrome2ScreenshotSrc} width={1080} height={786} borderRadius="rounded" />
             </p>,
             <p key="image3">
-              <Image src={chrome3ScreenshotSrc} borderRadius={8} />
+              <Image fullWidth src={chrome3ScreenshotSrc} width={1080} height={1106} borderRadius="rounded" />
             </p>,
           ]}
         />
@@ -250,7 +259,7 @@ export function UnpartitionedStateMissingEmbeddedView() {
           children={[
             <p key="text">You'll have to switch to your browser app to enable this:</p>,
             <p key="image">
-              <Image src={inAppScreenshotSrc} borderRadius={8} />
+              <Image fullWidth src={inAppScreenshotSrc} width={1080} height={1326} borderRadius="rounded" />
             </p>,
           ]}
         />

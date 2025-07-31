@@ -2,9 +2,9 @@ import { useState } from "react";
 import clsx from "clsx";
 import defaultPlaceholderUrl from "url:/assets/placeholder.png";
 import { sleep } from "~utils/promises/sleep";
+import { useTheme } from "~components/embed/contexts/ThemeContext";
 
 import styles from "./Image.module.scss";
-import { useTheme } from "~utils/theme";
 
 const fakeDelay = process.env.NODE_ENV === "development" ? 2500 : 0;
 
@@ -37,11 +37,13 @@ export default function Image({
   placeholderURL = defaultPlaceholderUrl,
   style,
 }: ImageProps) {
-  const displayTheme = useTheme();
+  const theme = useTheme();
+  const displayTheme = theme.mode;
 
   const [isLoaded, setIsLoaded] = useState(false);
 
   const pictureClassName = clsx(className, styles.root, {
+    [styles.fullWidth]: fullWidth,
     [styles.isRounded]: borderRadius === "rounded",
     [styles.isCircular]: borderRadius === "circular",
     [styles.isLoaded]: isLoaded,
@@ -50,13 +52,15 @@ export default function Image({
   const pictureStyle = {
     "--imgWidth": `${width}px`,
     "--imgHeight": fullWidth ? "auto" : `${height}px`,
-    "--imgAspectRatio": fullWidth ? height / width : "auto",
+    "--imgAspectRatio": fullWidth ? width / height : "auto",
     "--imgBackgroundColor": backgroundColor,
     "--imgPlaceholderBackgroundURL": placeholderURL && placeholderURL !== "none" ? `url(${placeholderURL})` : "none",
     ...style,
   };
 
-  const imgClassName = clsx(styles.img, { [styles.isLoaded]: isLoaded });
+  const imgClassName = clsx(styles.img, {
+    [styles.isLoaded]: isLoaded,
+  });
 
   const handleImageLoaded = async () => {
     if (fakeDelay) await sleep(fakeDelay + Math.random() * fakeDelay * 2);

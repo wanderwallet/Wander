@@ -17,6 +17,11 @@
     transition: opacity linear 200ms;
   }
 
+  &.fullWidth {
+    width: 100%;
+    height: auto;
+  }
+
   &.isCircular {
     border-radius: 1024px;
   }
