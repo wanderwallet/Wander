@@ -5,7 +5,7 @@ const FAIR_LAUNCH_TOKENS_URL = "https://cdn.jsdelivr.net/gh/wanderwallet/wander-
 
 export async function getFairLaunchTokens(): Promise<TokenInfo[]> {
   try {
-    const response = await retryWithDelay(() => fetch(FAIR_LAUNCH_TOKENS_URL));
+    const response = await retryWithDelay(() => fetch(FAIR_LAUNCH_TOKENS_URL, { cache: "no-store" }));
     if (!response.ok) {
       throw new Error(`Failed to fetch tokens: ${response.status}`);
     }
