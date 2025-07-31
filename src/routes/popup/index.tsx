@@ -21,7 +21,7 @@ import { scheduleSwapExecution } from "~utils/agents/swap";
 import { WandAnnouncementPopup } from "~components/popup/home/WandAnnouncementPopup";
 import { ActivityNotificationsNotice } from "~components/popup/home/ActivityNotificationsNotice";
 import { AstroBetaAccessAnnouncementPopup } from "~components/popup/home/AstroBetaAccessAnnouncementPopup";
-import { astroBetaAccessAnnouncementDuration, isAstroBetaAnnouncementActive } from "~utils/announcements";
+import { isAstroBetaAnnouncementActive } from "~utils/announcements";
 
 export function HomeView() {
   const theme = useTheme();
