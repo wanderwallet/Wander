@@ -3787,5 +3787,21 @@
     "fastest": {
       "message": "最快",
       "description": "Fastest text"
+    },
+    "members_instant_access": {
+      "message": "成员立即访问",
+      "description": "Members get instant access text"
+    },
+    "get_access": {
+      "message": "获取访问",
+      "description": "Get access text"
+    },
+    "community_phase": {
+      "message": "社区阶段",
+      "description": "Community phase text"
+    },
+    "beta_access": {
+      "message": "测试版访问",
+      "description": "Beta access text"
     }
 }

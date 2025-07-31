@@ -3827,5 +3827,21 @@
   "fastest": {
     "message": "Fastest",
     "description": "Fastest text"
+  },
+  "members_instant_access": {
+    "message": "members get instant access",
+    "description": "Members get instant access text"
+  },
+  "get_access": {
+    "message": "Get access",
+    "description": "Get access text"
+  },
+  "community_phase": {
+    "message": "Community Phase",
+    "description": "Community phase text"
+  },
+  "beta_access": {
+    "message": "Beta Access",
+    "description": "Beta access text"
   }
 }

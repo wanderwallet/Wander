@@ -11,6 +11,8 @@ import { TierTag } from "../tier/TierTag";
 import { TierTypes } from "~utils/tier/constants";
 import browser from "webextension-polyfill";
 
+const tiers = [TierTypes.Reserve, TierTypes.Edge, TierTypes.Prime];
+
 export const AstroBetaAccessAnnouncementPopup = ({ isOpen, setOpen }) => {
   async function handleClose() {
     setOpen(false);
@@ -40,22 +42,15 @@ export const AstroBetaAccessAnnouncementPopup = ({ isOpen, setOpen }) => {
               weight="medium"
               style={{ fontFamily: "Satoshi", lineHeight: "140%", letterSpacing: "0.2px", color: "#EEE" }}
               noMargin>
-              Community Phase
+              {browser.i18n.getMessage("community_phase")}
             </Text>
             <Title>
-              <span>USDA</span> Beta Access
+              <span>USDA</span> {browser.i18n.getMessage("beta_access")}
             </Title>
           </Flex>
           <Flex direction="row" gap={18} align="center" justify="center">
             <Flex direction="column" gap={4} align="center" justify="center">
-              <Text
-                variant="secondary"
-                size="2xs"
-                weight="medium"
-                style={{ fontFamily: "Satoshi", color: "#c4c4c4" }}
-                noMargin>
-                $WNDR
-              </Text>
+              <Ticker>$WNDR</Ticker>
               <Flex direction="row" gap={4} align="center" justify="center">
                 <img width={26.994} height={12.651} src={wanderLogo} alt="wander" />
                 <Text weight="medium" style={{ color: "#fff" }} noMargin>
@@ -65,14 +60,7 @@ export const AstroBetaAccessAnnouncementPopup = ({ isOpen, setOpen }) => {
             </Flex>
             <CloseIcon color="#FFF" />
             <Flex direction="column" gap={4} align="center" justify="center">
-              <Text
-                variant="secondary"
-                size="2xs"
-                weight="medium"
-                style={{ fontFamily: "Satoshi", color: "#c4c4c4" }}
-                noMargin>
-                $USDA
-              </Text>
+              <Ticker>$USDA</Ticker>
               <Flex direction="row" gap={4} align="center" justify="center">
                 <img src={astroLogo} alt="astro" />
               </Flex>
@@ -80,39 +68,24 @@ export const AstroBetaAccessAnnouncementPopup = ({ isOpen, setOpen }) => {
           </Flex>
           <Flex direction="column" gap={12} align="center" justify="center" flex={1} height="100%">
             <Flex direction="column" gap={12} align="center" justify="center">
-              <TierTag
-                tier={TierTypes.Reserve}
-                iconHeight={12.932}
-                iconWidth={27.591}
-                textSize="22px"
-                gap={11}
-                boxShadowType="active"
-                theme={ARCONNECT_DARK_THEME}
-              />
-              <TierTag
-                tier={TierTypes.Edge}
-                iconHeight={12.932}
-                iconWidth={27.591}
-                textSize="22px"
-                gap={11}
-                boxShadowType="active"
-                theme={ARCONNECT_DARK_THEME}
-              />
-              <TierTag
-                tier={TierTypes.Prime}
-                iconHeight={12.932}
-                iconWidth={27.591}
-                textSize="22px"
-                gap={11}
-                boxShadowType="active"
-                theme={ARCONNECT_DARK_THEME}
-              />
+              {tiers.map((tier) => (
+                <TierTag
+                  key={`${tier}-tag`}
+                  tier={tier}
+                  iconHeight={12.932}
+                  iconWidth={27.591}
+                  textSize="22px"
+                  gap={11}
+                  boxShadowType="active"
+                  theme={ARCONNECT_DARK_THEME}
+                />
+              ))}
             </Flex>
-            <InstantAccessText>members get instant access</InstantAccessText>
+            <InstantAccessText>{browser.i18n.getMessage("members_instant_access")}</InstantAccessText>
           </Flex>
         </Flex>
         <Button fullWidth onClick={() => browser.tabs.create({ url: "http://bridge.astrousd.com/" })}>
-          Get access
+          {browser.i18n.getMessage("get_access")}
         </Button>
       </Flex>
     </SliderMenu>
@@ -129,6 +102,16 @@ const Title = styled(Text).attrs({
   span {
     color: #4ff37f;
   }
+`;
+
+const Ticker = styled(Text).attrs({
+  variant: "secondary",
+  size: "2xs",
+  weight: "medium",
+  noMargin: true,
+})`
+  font-family: Satoshi;
+  color: #c4c4c4;
 `;
 
 const InstantAccessText = styled.span`

@@ -30,7 +30,7 @@ export function HomeView() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [isOpen, setOpen] = useState(false);
   const [isWandAnnouncementOpen, setWandAnnouncementOpen] = useState(false);
-  const [isAstroBetaAccessAnnouncementOpen, setAstroBetaAccessAnnouncementOpen] = useState(false);
+  const [isAstroAnnouncementOpen, setAstroAnnouncementOpen] = useState(false);
 
   const [announcement, _] = useStorage<boolean>({
     key: "show_announcement",
@@ -107,16 +107,20 @@ export function HomeView() {
       setLoggedIn(true);
     }
 
-    const wandAnnouncementShown = (await ExtensionStorage.get<boolean>("wander_announcement_shown")) ?? false;
-    const astroBetaAccessAnnouncementShown =
-      (await ExtensionStorage.get<boolean>("astro_beta_access_announcement_shown")) ?? false;
+    const [wandAnnouncementShown, astroBetaAccessAnnouncementShown] = await Promise.all([
+      ExtensionStorage.get<boolean>("wander_announcement_shown").then((val) => val ?? false),
+      ExtensionStorage.get<boolean>("astro_beta_access_announcement_shown").then((val) => val ?? false),
+    ]);
     setWandAnnouncementOpen(!wandAnnouncementShown);
 
-    // show astro beta access announcement if it's between the start and end dates
-    const { startDate, endDate } = astroBetaAccessAnnouncementDuration;
-    const now = new Date();
-    const showAnnouncement = now >= startDate && now <= endDate && !astroBetaAccessAnnouncementShown;
-    setAstroBetaAccessAnnouncementOpen(showAnnouncement);
+    // Check if astro beta announcement should show (within date range and not shown)
+    const isWithinAnnouncementPeriod = (() => {
+      const { startDate, endDate } = astroBetaAccessAnnouncementDuration;
+      const now = new Date();
+      return now >= startDate && now <= endDate;
+    })();
+
+    setAstroAnnouncementOpen(isWithinAnnouncementPeriod && !astroBetaAccessAnnouncementShown);
 
     // WALLET.TYPE JUST FOR KEYSTONE POPUP
     setOpen(announcement && wallet?.type === "hardware");
@@ -125,13 +129,12 @@ export function HomeView() {
   return (
     <HomeWrapper>
       {/* <AoBanner activeAddress={activeAddress} /> */}
-      {loggedIn && <KeystoneAnnouncementPopup isOpen={isOpen} setOpen={setOpen} />}
-      {loggedIn && <WandAnnouncementPopup isOpen={isWandAnnouncementOpen} setOpen={setWandAnnouncementOpen} />}
       {loggedIn && (
-        <AstroBetaAccessAnnouncementPopup
-          isOpen={isAstroBetaAccessAnnouncementOpen}
-          setOpen={setAstroBetaAccessAnnouncementOpen}
-        />
+        <>
+          <KeystoneAnnouncementPopup isOpen={isOpen} setOpen={setOpen} />
+          <AstroBetaAccessAnnouncementPopup isOpen={isAstroAnnouncementOpen} setOpen={setAstroAnnouncementOpen} />
+          <WandAnnouncementPopup isOpen={isWandAnnouncementOpen} setOpen={setWandAnnouncementOpen} />
+        </>
       )}
       <WalletHeader />
       <HomeContent>
