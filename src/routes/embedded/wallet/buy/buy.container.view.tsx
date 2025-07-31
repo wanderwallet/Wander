@@ -8,7 +8,6 @@ export function WalletBuyEmbeddedView() {
 
   return (
     <Card
-      size="auto"
       headerText="Buy Tokens"
       hasBackButton={true}
       onBackButtonClick={() => navigate(EmbeddedPaths.WalletHomeEmbeddedView)}

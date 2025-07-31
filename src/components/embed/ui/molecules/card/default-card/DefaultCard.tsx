@@ -12,5 +12,5 @@ export interface DefaultCardProps
 export function DefaultCard({ children: childrenProp, hasFooter = false, ...cardProps }: DefaultCardProps) {
   const children = <div className={styles.childrenWrapper}>{childrenProp}</div>;
 
-  return <Card {...cardProps} footerElement={hasFooter ? <WanderFooter /> : null} size="auto" children={children} />;
+  return <Card {...cardProps} footerElement={hasFooter ? <WanderFooter /> : null} children={children} />;
 }

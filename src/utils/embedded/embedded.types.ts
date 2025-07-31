@@ -83,7 +83,7 @@ export interface EmbeddedContextAuth {
   authStatus: AuthStatus;
   authProviderType: null | AuthProviderType;
   user: null | SupabaseUser;
-  session: null | DbSession;
+  session: DbSession;
 }
 
 export type OAutProviderType = Exclude<AuthProviderType, "EMAIL_N_PASSWORD" | "PASSKEYS">;
@@ -114,7 +114,10 @@ export interface RecoveryJSON {
 export interface EmbeddedContextData extends EmbeddedContextState, EmbeddedContextAuth {
   walletCount: number;
   currentWallet: Wallet | null;
+
   unpartitionedStateStatus: UnpartitionedStateStatus;
+  unpartitionedStateConfirmed: boolean | null;
+  confirmUnpartitionedState: (doNotAskAgain: boolean) => Promise<void>;
 
   authenticate: (authParams: OAutProviderType | AuthEmailParams) => Promise<void>;
   fetchRecoverableAccounts: () => Promise<RecoverableAccount[]>;

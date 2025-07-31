@@ -144,6 +144,20 @@
   border: none;
 
   &:hover:not(:disabled) {
+    background-color: var(--color-button-outlined-background-hover);
+  }
+
+  :global(.isFocusActive) &:global:focus {
+    animation: var(--default-focus-animation);
+  }
+}
+
+.button__variant__text {
+  background-color: transparent;
+  color: var(--color-button-outlined-color);
+  border: none;
+
+  &:hover:not(:disabled) {
     text-decoration: underline;
     text-decoration-style: dotted;
   }

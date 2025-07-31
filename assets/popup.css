@@ -219,7 +219,7 @@ p {
   margin: 0;
 }
 
-ul, ol {
+ul, ol, dl, dd {
   margin: 0;
   padding: 0;
   list-style: none;

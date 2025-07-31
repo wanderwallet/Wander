@@ -1,10 +1,8 @@
 import { Storage as PlasmoStorage, type StorageCallbackMap, type StorageWatchCallback } from "@plasmohq/storage";
-import {
-  EnhancedStorage,
-  type ItemStorageOptions,
-  StorageManager,
-} from "../unpartitioned-storage/unpartitioned-storage";
-import { resolve } from "url";
+import { EnhancedStorage } from "../unpartitioned-storage/unpartitioned-storage";
+import type { ItemStorageOptions } from "~iframe/storage/storage-manager/storage-manager.utils";
+import type { StorageManager } from "~iframe/storage/storage-manager/storage-manager";
+import { LocalStorage } from "~iframe/storage/unpartitioned-storage/local-storage";
 
 export interface StorageMockInterface extends PlasmoStorage {
   setItem<T>(key: string, value: T, options?: ItemStorageOptions): Promise<void>;
@@ -47,16 +45,10 @@ export class StorageMock extends PlasmoStorage implements StorageMockInterface {
 
   constructor(area: "session" | "local" = "session") {
     super({ area });
-    this.storage = new EnhancedStorage({ area });
+
     this._area = area;
 
-    // This browser doesn't support the Storage Access API
-    // so let's just hope we have access!
-    if (!document.hasStorageAccess) return;
-
-    // TODO: Can this be postponed until authentication to avoid requesting permissions too soon?
-    // unpartitioned sessionStorage cannot be accessed from iframe as it is partitioned by both origin and browser tabs unlike localStorage.
-    if (area === "local") this.storage.requestStorageAccess();
+    this.storage = area === "local" ? LocalStorage.getInstanceWithoutWaiting() : new EnhancedStorage({ area });
   }
 
   get primaryClient(): chrome.storage.StorageArea {

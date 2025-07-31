@@ -1,5 +1,4 @@
 import React from "react";
-import type { Sizes } from "../../../types";
 
 export interface CardBaseProps {
   headerText?: string;
@@ -14,8 +13,7 @@ export interface CardBaseProps {
   hasCloseButton?: boolean;
   onBackButtonClick?: () => void;
   onCloseButtonClick?: () => void;
-  size?: Sizes;
   customIcon?: React.ReactNode;
   style?: React.CSSProperties;
-  closeButtonStyles?: React.CSSProperties;
+  withExtraPadding?: boolean;
 }
