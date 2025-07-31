@@ -16,5 +16,9 @@ export function lowerCaseDomain(domain: string) {
 }
 
 export function formatArio(amount: number) {
-  return amount > 1000 ? `${(amount / 1000).toFixed(2)}K` : amount.toFixed(2);
+  return amount > 1000000
+    ? `${(amount / 1000000).toFixed(2)}M`
+    : amount > 1000
+      ? `${(amount / 1000).toFixed(2)}K`
+      : amount.toFixed(2);
 }

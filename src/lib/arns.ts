@@ -14,6 +14,7 @@ import {
   type AoANTState,
   type AoArNSNameData,
   type AoPrimaryName,
+  type AoRegistrationFees,
   type SpawnANTState,
 } from "@ar.io/sdk/web";
 import { connect } from "@permaweb/aoconnect/browser";
@@ -188,19 +189,19 @@ export function isArNSNameProfile(nameServiceProfile?: NameServiceProfile) {
   return nameServiceProfile ? !nameServiceProfile.name.endsWith(".ar") : false;
 }
 
-export async function getDemandFactor() {
+export async function getRegistrationFees(): Promise<AoRegistrationFees | null> {
   try {
     const result = await arnsQueryClient
       .fetchQuery({
-        queryKey: ["arns-deman-factor"],
+        queryKey: ["arns-registration-fees"],
         queryFn: () => {
-          return ARIO_READ_SDK.getDemandFactor();
+          return ARIO_READ_SDK.getRegistrationFees();
         },
         staleTime: 24 * 60 * 60 * 1000, // 1 day, good for length of epoch
       })
       .catch((error) => {
         console.error(`Error in ArNS demand factor query:`, error);
-        return undefined;
+        return null;
       });
 
     return result;
@@ -209,42 +210,6 @@ export async function getDemandFactor() {
     return undefined;
   }
 }
-
-const feeTable = [0, 1000000, 200000, 20000, 10000, 2500, 1500, 800, 500, 400, 350, 300, 250, 200];
-
-export type ArNSFeeDetails = {
-  arf: number;
-  af: number;
-  oneYearLeaseFee: number;
-  permabuyFee: number;
-  undernameFee: number;
-  permabuyUndernameFee: number;
-};
-export async function getPriceDetails(name: string): Promise<ArNSFeeDetails | undefined> {
-  if (name.length == 0) {
-    return undefined;
-  }
-
-  const demandFactor = await getDemandFactor();
-
-  const index = Math.min(feeTable.length - 1, name.length);
-
-  const baseFee = feeTable[index];
-
-  // adjusted registration fee
-  const arf = baseFee * demandFactor;
-  const af = arf * 0.2;
-
-  return {
-    arf,
-    af,
-    oneYearLeaseFee: arf + af * 1,
-    permabuyFee: arf + af * 20,
-    undernameFee: baseFee * demandFactor * 0.001,
-    permabuyUndernameFee: baseFee * demandFactor * 0.005,
-  };
-}
-
 export function createDefaultAntState(state: Partial<SpawnANTState>): SpawnANTState {
   return {
     ticker: "aos",

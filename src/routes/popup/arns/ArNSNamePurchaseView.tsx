@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
 import { Flex } from "~components/common/Flex";
 import HeadV2 from "~components/popup/HeadV2";
-import { ARIO_PROCESS_ID, getPriceDetails, useTicker } from "~lib/arns";
+import { ARIO_PROCESS_ID, getRegistrationFees, useTicker } from "~lib/arns";
 import { fetchTokenBalance, type TokenInfoWithBalance } from "~tokens/aoTokens/ao";
 import { PersistentStorage, useStorage } from "~utils/storage";
 import { useActiveWallet } from "~wallets/hooks";
@@ -13,6 +13,7 @@ import type { CommonRouteProps } from "~wallets/router/router.types";
 import { useLocation } from "~wallets/router/router.utils";
 import type { PurchaseType } from "./types";
 import { formatArio } from "./utils";
+import { mARIOToken } from "@ar.io/sdk/web";
 
 export interface ArNSNamePurchaseViewParams {
   name: string;
@@ -59,10 +60,14 @@ export const ArNSNamePurchaseView = ({ params: { name } }: ArNSNamePurchaseViewP
 
   useEffect(() => {
     const fetchTotalFee = async () => {
-      const priceDetails = await getPriceDetails(name);
-      const arioPrice =
-        purchaseType === "lease" ? priceDetails.arf + priceDetails.af * purchaseYears : priceDetails.permabuyFee;
-      setTotalFee(arioPrice);
+      const registrationFees = await getRegistrationFees();
+
+      if (registrationFees) {
+        const fee = registrationFees[name.length.toString()];
+
+        const arioPrice = purchaseType === "lease" ? fee.lease[purchaseYears.toString()] : fee.permabuy;
+        setTotalFee(new mARIOToken(arioPrice).toARIO().valueOf());
+      }
     };
     fetchTotalFee();
   }, [purchaseType, purchaseYears]);

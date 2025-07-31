@@ -1,18 +1,18 @@
-import { useState, useEffect } from "react";
-import { useLocation } from "~wallets/router/router.utils";
-import styled from "styled-components";
+import { mARIOToken, type AoArNSNameData } from "@ar.io/sdk/web";
 import { ButtonV2 } from "@arconnect/components";
-import HeadV2 from "~components/popup/HeadV2";
-import { useDebounce } from "~wallets/hooks";
 import { Spacer, Text, useInput } from "@arconnect/components-rebrand";
+import { useEffect, useMemo, useState } from "react";
+import styled from "styled-components";
 import { Flex } from "~components/common/Flex";
 import SearchInput from "~components/dashboard/SearchInput";
 import { ArioIcon } from "~components/embed";
-import { getArNSRecord, getPriceDetails, useTicker, type ArNSFeeDetails } from "~lib/arns";
-import type { AoArNSNameData } from "@ar.io/sdk/web";
 import SvgSuccessCheckSimple from "~components/embed/ui/atoms/icon/SuccessCheckSimple";
-import { formatArio, lowerCaseDomain } from "./utils";
+import HeadV2 from "~components/popup/HeadV2";
+import { getArNSRecord, getRegistrationFees, useTicker } from "~lib/arns";
 import { WanderLoading } from "~routes/welcome/WanderLoading";
+import { useDebounce } from "~wallets/hooks";
+import { useLocation } from "~wallets/router/router.utils";
+import { formatArio, lowerCaseDomain } from "./utils";
 
 // Types
 type SearchState = "ready" | "searching" | "found" | "notFound" | "error";
@@ -64,11 +64,26 @@ const validateArNSName = (name: string) => {
 export const ArNSNameSearchView = () => {
   const { navigate } = useLocation();
   const [searchState, setSearchState] = useState<SearchState>("ready");
-  const [searchResults, setSearchResults] = useState<{ arnsRecord: AoArNSNameData; priceDetails: ArNSFeeDetails }>();
+  const [searchResults, setSearchResults] = useState<{
+    arnsRecord: AoArNSNameData;
+    fees: {
+      lease: Record<number, number>;
+      permabuy: number;
+    };
+  }>();
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
 
   const searchInput = useInput();
   const { data: ticker } = useTicker();
+
+  const formattedFees = useMemo(() => {
+    return searchResults
+      ? {
+          oneYearLeaseFee: formatArio(new mARIOToken(searchResults.fees.lease["1"]).toARIO().valueOf()),
+          permabuyFee: formatArio(new mARIOToken(searchResults.fees.permabuy).toARIO().valueOf()),
+        }
+      : undefined;
+  }, [searchResults]);
 
   // Debounce the search term
   const debouncedSearchTerm = useDebounce(searchInput.state, 500);
@@ -101,13 +116,14 @@ export const ArNSNameSearchView = () => {
         if (arnsRecord) {
           setSearchState("found");
         } else {
-          const priceDetails = await getPriceDetails(debouncedSearchTerm);
+          const registrationFees = await getRegistrationFees();
 
-          if (!priceDetails) {
+          if (!registrationFees) {
             setErrorMessage("An error occurred while searching for the ArNS name. Please try again.");
             setSearchState("error");
           } else {
-            setSearchResults({ arnsRecord, priceDetails });
+            const fees = registrationFees[debouncedSearchTerm.length.toString()];
+            setSearchResults({ arnsRecord, fees });
             setSearchState("notFound");
           }
         }
@@ -205,10 +221,10 @@ export const ArNSNameSearchView = () => {
                 </Flex>
                 <Flex direction="column" gap="0.2rem">
                   <Text size="xs" variant="secondary" style={{ textWrap: "nowrap", textAlign: "right" }}>
-                    {formatArio(searchResults.priceDetails.oneYearLeaseFee)} {ticker} for 1 year; OR{" "}
+                    {formattedFees?.oneYearLeaseFee} {ticker} for 1 year; OR{" "}
                   </Text>
                   <Text size="xs" variant="secondary" style={{ textWrap: "nowrap", textAlign: "right" }}>
-                    {formatArio(searchResults.priceDetails.permabuyFee)} {ticker} to permabuy
+                    {formattedFees?.permabuyFee} {ticker} to permabuy
                   </Text>
                 </Flex>
               </Flex>
