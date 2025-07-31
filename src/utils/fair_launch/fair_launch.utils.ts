@@ -87,8 +87,8 @@ export async function updateDelegationInfo(delegationInfo: Record<string, number
 
     const signer = createDataItemSigner(keyfile);
 
-    const promises = Object.entries(delegationInfo).map(async ([key, value]) => {
-      const messageId = await aoInstance.message({
+    Object.entries(delegationInfo).forEach(async ([key, value]) => {
+      await aoInstance.message({
         process: FAIR_LAUNCH_PROCESS_ID,
         tags: [{ name: "Action", value: "Set-Delegation" }],
         signer,
@@ -98,11 +98,7 @@ export async function updateDelegationInfo(delegationInfo: Record<string, number
           factor: value * 100,
         }),
       });
-
-      return messageId;
     });
-
-    await Promise.allSettled(promises);
 
     await queryClient.invalidateQueries({ queryKey: ["ao-delegation-info", address] });
   } finally {
