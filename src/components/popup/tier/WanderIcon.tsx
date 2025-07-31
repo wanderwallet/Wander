@@ -2,11 +2,13 @@ import { type Tier } from "~utils/tier/types";
 import { TierTypes } from "~utils/tier/constants";
 import { useTheme } from "styled-components";
 import { useId } from "react";
+import { type DefaultTheme } from "@arconnect/components-rebrand";
 
 interface WanderIconProps {
   tier: Tier;
   height?: number;
   width?: number;
+  theme?: DefaultTheme;
 }
 
 const colors = {
@@ -26,10 +28,11 @@ const colors = {
   },
 };
 
-export function WanderIcon({ tier, height = 10, width = 21 }: WanderIconProps) {
-  const theme = useTheme();
+export function WanderIcon({ tier, height = 10, width = 21, theme }: WanderIconProps) {
+  const currentTheme = useTheme();
+  const resolvedTheme = theme || currentTheme;
   const { stopColor, stopColorOffsetOne, stopColorOffsetTwo } =
-    colors[theme.displayTheme][tier] || colors[theme.displayTheme][TierTypes.Core];
+    colors[resolvedTheme.displayTheme][tier] || colors[resolvedTheme.displayTheme][TierTypes.Core];
   const gradientId = useId();
 
   return (
