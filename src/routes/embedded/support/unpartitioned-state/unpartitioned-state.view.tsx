@@ -5,7 +5,7 @@ import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-c
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 import { Button, Checkbox, Snackbar } from "~components/embed";
 import { LocalStorage } from "~iframe/storage/unpartitioned-storage/local-storage";
-import Image from "~components/common/Image";
+import Image from "~components/common/Image/Image";
 import { toast } from "react-toastify";
 import { FormattedText } from "~components/embed/ui/atoms/formatted-text/FormattedText";
 import { useInterval } from "@swyg/corre";
