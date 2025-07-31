@@ -143,7 +143,7 @@ const FastestLabel = styled.span`
   font-size: 10px;
   font-weight: 500;
   border: 1px solid ${(props) => props.theme.primary};
-  color: white;
+  color: ${(props) => props.theme.primaryText};
   line-height: 1.2;
 `;
 
