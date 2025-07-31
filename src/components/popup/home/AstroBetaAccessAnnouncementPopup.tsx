@@ -53,7 +53,7 @@ export const AstroBetaAccessAnnouncementPopup = ({ isOpen, setOpen }) => {
               <Ticker>$WNDR</Ticker>
               <Flex direction="row" gap={4} align="center" justify="center">
                 <img width={26.994} height={12.651} src={wanderLogo} alt="wander" />
-                <Text weight="medium" style={{ color: "#fff" }} noMargin>
+                <Text size="sm" style={{ color: "#fff" }} noMargin>
                   Wander
                 </Text>
               </Flex>

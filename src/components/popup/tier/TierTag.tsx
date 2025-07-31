@@ -116,6 +116,7 @@ export function TierTag({
   iconWidth = 16,
   textSize = "12px",
   boxShadowType = "normal",
+  gap = 4,
   theme,
 }: TierTagProps) {
   const currentTheme = useTheme();
@@ -126,7 +127,7 @@ export function TierTag({
     selectedBoxShadows[resolvedTheme.displayTheme][TierTypes.Core];
 
   return (
-    <Tag gap={4} boxShadow={boxShadow} theme={resolvedTheme}>
+    <Tag gap={gap} boxShadow={boxShadow} theme={resolvedTheme}>
       <WanderIcon height={iconHeight} width={iconWidth} tier={tier} theme={resolvedTheme} />
       <Text style={{ fontSize: textSize }} weight="medium" theme={resolvedTheme} noMargin>
         {tier}
