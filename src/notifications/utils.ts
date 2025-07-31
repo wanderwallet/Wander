@@ -390,6 +390,38 @@ query($address: String!, $after: String) {
 }
 `;
 
+export const AO_LIQUIDOPS_RECEIVER_QUERY_FOR_TOKEN_WITH_CURSOR = `
+query($address: String!, $tokenId: String!, $after: String) {
+  transactions(
+    first: 10,
+    recipients: [$address],
+    tags: [
+      {name: "Data-Protocol", values: ["ao"]},
+      {name: "Action", values: ["Mint-Confirmation"]},
+      {name: "From-Process", values: [$tokenId]},
+    ],
+    after: $after
+  ) {
+    pageInfo {
+      hasNextPage
+    }
+    edges {
+      cursor
+      node {
+        recipient
+        id
+        owner { address }
+        block { timestamp, height }
+        tags {
+          name
+          value
+        }
+      }
+    }
+  }
+}
+`;
+
 // PRINT ARWEAVE TRANSACTIONS
 export const PRINT_ARWEAVE_QUERY = `
 query ($address: String!) {

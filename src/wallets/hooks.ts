@@ -30,6 +30,7 @@ import {
   PRINT_ARWEAVE_QUERY_WITH_CURSOR,
   AO_SENT_QUERY_FOR_TOKEN_WITH_CURSOR,
   AO_RECEIVER_QUERY_FOR_TOKEN_WITH_CURSOR,
+  AO_LIQUIDOPS_RECEIVER_QUERY_FOR_TOKEN_WITH_CURSOR,
 } from "~notifications/utils";
 import { gql } from "~gateways/api";
 import BigNumber from "bignumber.js";
@@ -472,7 +473,7 @@ export const useTokenTransactions = (activeAddress: string, tokenId: string) => 
         : [
             AO_SENT_QUERY_FOR_TOKEN_WITH_CURSOR,
             AO_RECEIVER_QUERY_FOR_TOKEN_WITH_CURSOR,
-            AO_LIQUIDOPS_RECEIVER_QUERY_WITH_CURSOR,
+            AO_LIQUIDOPS_RECEIVER_QUERY_FOR_TOKEN_WITH_CURSOR,
           ];
 
       const fetchPromises = [
