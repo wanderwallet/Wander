@@ -140,7 +140,7 @@ const ExternalLinkIcon = styled(LinkExternal02)`
 const FastestLabel = styled.span`
   padding: 2px 6px;
   border-radius: 8px;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 500;
   border: 1px solid ${(props) => props.theme.primary};
   color: ${(props) => props.theme.primaryText};
