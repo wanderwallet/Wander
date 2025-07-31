@@ -8,7 +8,7 @@
   "homepage": "https://www.wander.app",
   "scripts": {
     "dev:chrome": "yarn patch:math-intrinsics && cross-env PARCEL_WORKER_BACKEND=process plasmo dev --verbose",
-    "build:chrome": "cross-env PARCEL_WORKER_BACKEND=process plasmo build --no-hoist",
+    "build:chrome": "yarn patch:math-intrinsics && cross-env PARCEL_WORKER_BACKEND=process plasmo build --no-hoist",
     "dev:firefox": "plasmo dev --target=firefox-mv2",
     "build:firefox": "plasmo build --target=firefox-mv2 --no-hoist",
     "dev:iframe": "vite",
