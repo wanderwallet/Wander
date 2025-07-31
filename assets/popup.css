@@ -47,6 +47,20 @@
     src: url(/assets/fonts/PlusJakartaSans-ExtraBold.ttf) format('ttf');
 }
 
+@font-face {
+    font-family: "Satoshi";
+    font-style: normal;
+    font-weight: 500;
+    src: url(/assets/fonts/Satoshi-Medium.ttf) format('ttf');
+}
+
+@font-face {
+    font-family: "Satoshi";
+    font-style: normal;
+    font-weight: 700;
+    src: url(/assets/fonts/Satoshi-Bold.ttf) format('ttf');
+}
+
 * {
   scrollbar-width: none;
 }
