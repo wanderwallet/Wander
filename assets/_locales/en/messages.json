@@ -2042,10 +2042,6 @@
     "message": "The EXP Token is non transferable",
     "description": "Popup description about ao token transfer"
   },
-  "PI_token_send_popup": {
-    "message": "The PI Token is non transferable",
-    "description": "Popup description about pi token transfer"
-  },
   "WNDR_token_send_popup": {
     "message": "The WNDR Token is non transferable until October 7th, 2025",
     "description": "Popup description about wndr token transfer"
@@ -3836,9 +3832,9 @@
     "message": "Get access",
     "description": "Get access text"
   },
-  "community_phase": {
-    "message": "Community Phase",
-    "description": "Community phase text"
+  "wndr_member_benefits": {
+    "message": "$$WNDR Member Benefits",
+    "description": "WNDR member benefits text"
   },
   "beta_access": {
     "message": "Beta Access",
