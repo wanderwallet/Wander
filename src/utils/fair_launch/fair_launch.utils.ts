@@ -12,6 +12,7 @@ import { CACHE_API } from "~constants/api";
 import { getAoTokens } from "~tokens";
 import { ExtensionStorage } from "~utils/storage";
 import { LOG_GROUP, log } from "~utils/log/log.utils";
+import { PI_FLP_ID } from "./fair_launch.constants";
 
 interface RawFlpToken {
   flp_token_name: string;
@@ -193,6 +194,8 @@ export async function getDelegationInfo(address?: string): Promise<Record<string
 
   // const factor = +(delegationInfo?.totalFactor || "10000") / 100;
   const delegationPrefs = data?.delegationPrefs || [];
+
+  if (delegationPrefs.length === 0) return { [PI_FLP_ID]: 100 };
 
   const delegationInfo = delegationPrefs.reduce((acc: any, pref: any) => {
     acc[pref.walletTo] = pref.factor / 100;

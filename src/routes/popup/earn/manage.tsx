@@ -106,18 +106,14 @@ export function ManageEarningsView() {
   }, [updatedDelegationInfo, delegationInfo, activeAddress]);
 
   useEffect(() => {
-    const hasAddressChanged = previousAddressRef.current && previousAddressRef.current !== activeAddress;
-    const isFirstLoad = Object.keys(updatedDelegationInfo).length === 0;
+    const hasAddressChanged = previousAddressRef.current !== activeAddress;
+    const isFirstLoad = !Object.keys(updatedDelegationInfo).length;
+    const hasDelegationInfo = Object.keys(delegationInfo).length > 0;
 
-    // Update when:
-    // 1. First time delegationInfo is received (empty updatedDelegationInfo)
-    // 2. Address changes (reset to current delegationInfo for the new address)
-    if ((isFirstLoad || hasAddressChanged) && Object.keys(delegationInfo).length > 0) {
+    if ((isFirstLoad || hasAddressChanged) && hasDelegationInfo) {
       setUpdatedDelegationInfo(delegationInfo);
+      previousAddressRef.current = activeAddress;
     }
-
-    // Update the previous address reference
-    previousAddressRef.current = activeAddress;
   }, [delegationInfo, activeAddress, updatedDelegationInfo]);
 
   return (
@@ -300,9 +296,11 @@ function Token({
               }}
             />
           )}
-          <Text weight="semibold" style={{ width: "40px", textAlign: "center" }} noMargin>
-            {isLoading ? <Loading width={4} height={4} /> : `${tokenDelegation}%`}
-          </Text>
+          <Flex justify="center" width={40}>
+            <Text weight="semibold" noMargin>
+              {isLoading ? <Loading width={4} height={4} /> : `${tokenDelegation}%`}
+            </Text>
+          </Flex>
           {isAO ? (
             <Tooltip
               position="left"
