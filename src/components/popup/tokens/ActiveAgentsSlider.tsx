@@ -36,7 +36,10 @@ export function ActiveAgentsSlider({ id }: ActiveAgentsSliderProps) {
   const aoAgent = useAOYieldLatestAgent();
   const { data: activeTokens } = useActiveTokens();
   const activeLOAgent = useMemo(() => activeTokens?.find((agent) => agent.address === id), [activeTokens, id]);
-  const activeAOAgent = useMemo(() => (aoAgent?.tokenOut === id || id === AO_PROCESS_ID) && aoAgent, [aoAgent, id]);
+  const activeAOAgent = useMemo(
+    () => (aoAgent?.tokenOut === id || id === AO_PROCESS_ID) && aoAgent?.status === "Active" && aoAgent,
+    [aoAgent, id],
+  );
 
   const carouselData = useMemo(() => {
     return [
