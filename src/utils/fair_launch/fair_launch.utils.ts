@@ -144,14 +144,7 @@ export async function getFairLaunchTokens<T extends boolean = false>(
   try {
     let flpTokens: FlpToken[] = [];
     try {
-      const response = await retryWithDelay(() =>
-        fetch(FAIR_LAUNCH_TOKENS_URL, {
-          cache: "force-cache",
-          headers: {
-            "Cache-Control": "public, max-age=300", // 5 minutes
-          },
-        }),
-      );
+      const response = await retryWithDelay(() => fetch(FAIR_LAUNCH_TOKENS_URL));
       if (!response.ok) throw new Error(`Failed to fetch tokens: ${response.status}`);
 
       ({ flpTokens } = await response.json());
