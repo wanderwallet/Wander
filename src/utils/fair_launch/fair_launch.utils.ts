@@ -1,4 +1,4 @@
-import { connect, dryrun } from "@permaweb/aoconnect";
+import { connect } from "@permaweb/aoconnect";
 import { createDataItemSigner, getTagValue, Id, Owner, WNDR_PROCESS_ID, type TokenInfo } from "~tokens/aoTokens/ao";
 import { defaultConfig } from "~tokens/aoTokens/config";
 import { retryWithDelay } from "~utils/promises/retry";
@@ -9,6 +9,9 @@ import { freeDecryptedWallet } from "~wallets/encryption";
 import { queryClient } from "~utils/tanstack";
 import BigNumber from "bignumber.js";
 import { CACHE_API } from "~constants/api";
+import { getAoTokens } from "~tokens";
+import { ExtensionStorage } from "~utils/storage";
+import { LOG_GROUP, log } from "~utils/log/log.utils";
 
 interface RawFlpToken {
   flp_token_name: string;
@@ -261,7 +264,7 @@ export async function getClaimableBalance(token: FlpTokenInfo, recipient: string
   return BigNumber(balance).shiftedBy(-token.Denomination).toFixed();
 }
 
-export async function claimBalance(flpId: string, tokenId: string) {
+export async function claimBalance(token: FlpTokenInfo) {
   let decryptedWallet: DecryptedWallet;
   try {
     const activeAddress = await getActiveAddress();
@@ -274,15 +277,16 @@ export async function claimBalance(flpId: string, tokenId: string) {
     const signer = createDataItemSigner(keyfile);
 
     await aoInstance.message({
-      process: flpId,
+      process: token.flpId,
       tags: [{ name: "Action", value: "Withdraw-FLP-Token" }],
       signer,
     });
 
-    await queryClient.invalidateQueries({ queryKey: ["claimable-balance", flpId, activeAddress] });
-    await queryClient.invalidateQueries({ queryKey: ["tokenBalance", tokenId, activeAddress] });
+    await queryClient.invalidateQueries({ queryKey: ["claimable-balance", token.flpId, activeAddress] });
+    await queryClient.invalidateQueries({ queryKey: ["tokenBalance", token.processId, activeAddress] });
 
-    // TODO: add token to token list if not already in the list
+    // import the token if not already in the list
+    await importFlpToken(token);
   } finally {
     if (decryptedWallet && decryptedWallet.type !== "hardware") {
       // Free the keyfile from memory
@@ -290,3 +294,28 @@ export async function claimBalance(flpId: string, tokenId: string) {
     }
   }
 }
+
+const importFlpToken = async (token: FlpTokenInfo) => {
+  try {
+    // Validate required fields first before doing any async operations
+    if (!token.Name || !token.Ticker || isNaN(+token.Denomination)) return;
+
+    const aoTokens = await getAoTokens();
+    if (aoTokens.some(({ processId }) => processId === token.processId)) return;
+
+    const tokenToImport: TokenInfo = {
+      Name: token.Name,
+      Ticker: token.Ticker,
+      Denomination: token.Denomination,
+      Logo: token.Logo,
+      processId: token.processId,
+      type: "asset",
+    };
+
+    aoTokens.push(tokenToImport);
+
+    await ExtensionStorage.set("ao_tokens", aoTokens);
+  } catch {
+    log(LOG_GROUP.FAIR_LAUNCH, "Error importing fair launch token: ", token);
+  }
+};

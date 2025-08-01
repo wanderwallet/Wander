@@ -168,7 +168,7 @@ function Token({
         if (token.autoClaim) return;
 
         setIsClaiming(true);
-        await claimBalance(token.flpId, token.processId);
+        await claimBalance(token);
         setToast({
           type: "success",
           content: browser.i18n.getMessage("flp_claim_success"),
