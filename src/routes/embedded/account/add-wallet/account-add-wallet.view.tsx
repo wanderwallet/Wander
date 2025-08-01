@@ -1,6 +1,6 @@
 import type { WalletSourceType } from "embed-api";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Box, Button, Card, KeyIcon, QRCodeIcon, SeedIcon, WalletIcon } from "~components/embed/ui";
+import { Box, Button, Card, KeyIcon, SeedIcon, WalletIcon } from "~components/embed/ui";
 import { WanderFooter } from "~components/embed/ui/templates/wander-footer/WanderFooter";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useLocation } from "~wallets/router/router.utils";
@@ -34,8 +34,7 @@ export function AccountAddWalletEmbeddedView() {
       subtitle="Add a wallet to your account to hold your funds. Create or add an existing wallet to continue."
       footerElement={<WanderFooter />}
       hasBackButton={true}
-      onBackButtonClick={back}
-      size="auto">
+      onBackButtonClick={back}>
       <Box>
         <Button
           onClick={() => handleRegisterWallet("GENERATED")}

@@ -284,8 +284,8 @@ export const AnnouncementItemComponent = ({ transaction }: { transaction: Extend
   return (
     <TransactionItem showBackground={true}>
       <Transaction onClick={() => navigate(`/announcement/${transaction.node.id}`)}>
-        <Flex direction="column" gap={8}>
-          <Flex direction="row" gap={4} align="center" justify="space-between">
+        <Flex direction="column" gap={8} width="100%">
+          <Flex direction="row" gap={4} align="center" justify="space-between" width="100%">
             <Flex direction="row" gap={4} align="center">
               <AnnouncementIconWrapper>
                 <AnnouncementIcon />

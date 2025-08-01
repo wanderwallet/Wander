@@ -140,10 +140,10 @@ const ExternalLinkIcon = styled(LinkExternal02)`
 const FastestLabel = styled.span`
   padding: 2px 6px;
   border-radius: 8px;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 500;
   border: 1px solid ${(props) => props.theme.primary};
-  color: white;
+  color: ${(props) => props.theme.primaryText};
   line-height: 1.2;
 `;
 
@@ -158,6 +158,7 @@ const Wrapper = styled.div`
 const DiscordImage = styled.img`
   height: 24px;
   width: 24px;
+  object-fit: contain;
   filter: ${(props) => (props.theme.displayTheme === "light" ? "invert(1)" : "none")};
 `;
 

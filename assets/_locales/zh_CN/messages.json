@@ -2978,14 +2978,6 @@
         "message": "无法显示数据：数据太大，无法显示。",
         "description": "Data too large text"
     },
-    "partitioned_storage_banner": {
-        "message": "您当前的浏览器不支持跨站身份验证和钱包同步。这意味着您每次访问使用 Wander Connect 的新网站时都需要手动导入钱包。\n为了享受跨站无缝体验，请使用 Chrome 或 Edge。",
-        "description": "Unpartitioned state banner message"
-    },
-    "partitioned_storage_banner_rejected": {
-        "message": "Wander Connect 需要访问您浏览器的存储空间才能启用跨站身份验证和钱包同步。拒绝访问意味着您每次访问使用 Wander Connect 的新网站时都需要手动导入钱包。\n为了享受跨站无缝体验，请允许访问您浏览器的存储空间。",
-        "description": "Unpartitioned state rejected banner message"
-    },
     "re_request_access": {
         "message": "重新请求访问",
         "description": "Re-request access text"
@@ -3636,6 +3628,18 @@
       "message": "1）访问 https://ao.arweave.net/#/delegate/ <br/> 2）连接你的 Wander 钱包 <br/> 3）在项目列表中找到 Wander <br/> 4）点击 “添加” 按钮 <br/> 5）设置你的委托百分比 <br/> 6）点击 “确认委托偏好” 按钮 <br/>  <br/> 完成！",
       "description": "Announcement 3 body"
     },
+    "announcement_4_title": {
+        "message": "USDA 测试版开放",
+        "description": "Announcement 4 title"
+    },
+    "announcement_4_description": {
+        "message": "Reserve、Edge 和 Prime 等级用户可立即访问 USDA 测试版",
+        "description": "Announcement 4 description"
+    },
+    "announcement_4_body": {
+        "message": "Wander 的 Reserve、Edge 和 Prime 等级用户可立即访问 USDA 测试版。连接您的 Wander 钱包，完成验证并解锁访问权限。立即前往 [Astro Bridge](https://bridge.astrousd.com/) 体验。",
+        "description": "Announcement 4 body"
+    },
     "swipe_to_learn_more": {
       "message": "滑动了解更多",
       "description": "Swipe to learn more text"
@@ -3693,11 +3697,11 @@
       "description": "Core tier title"
     },
     "tier_core_description": {
-      "message": "1. 打开 [公平启动委托网站](https://ao.arweave.net/#/delegate/) <br/> 2. 连接你的 Wander 钱包 <br/> 3. 将 WNDR 添加到你的委托列表 <br/> 4. 领取并认领你的 WNDR 代币",
+      "message": "1. 打开 [公平启动委托网站](https://ao.arweave.net/#/delegate/) <br/> 2. 连接你的 Wander 钱包 <br/> 3. 将 WNDR 添加到你的委托列表 <br/> 4. WNDR 收益每 24 小时发放一次",
       "description": "Core tier description with steps"
     },
     "tier_benefit_fee_reduction_defi": {
-      "message": "DeFi 交易手续费减免 $PERCENTAGE$%",
+      "message": "对 Wander 所加 DeFi 交易手续费减免 $PERCENTAGE$%",
       "description": "Fee reduction benefit for defi transactions",
       "placeholders": {
         "percentage": {
@@ -3707,7 +3711,7 @@
       }
     },
     "tier_benefit_fee_reduction_transak": {
-      "message": "Transak 购买手续费减免 $PERCENTAGE$%",
+      "message": "对 Wander 所加 Transak 购买手续费减免 $PERCENTAGE$%",
       "description": "Fee reduction benefit for Transak purchases",
       "placeholders": {
         "percentage": {
@@ -3885,5 +3889,21 @@
     "unknown_coin": {
       "message": "没有关于此资产的信息。请谨慎行事，并自行承担风险",
       "description": "此资产暂无相关信息。请谨慎操作，风险自负。"
+    },
+    "members_instant_access": {
+      "message": "成员立即访问",
+      "description": "Members get instant access text"
+    },
+    "get_access": {
+      "message": "获取访问",
+      "description": "Get access text"
+    },
+    "community_phase": {
+      "message": "社区阶段",
+      "description": "Community phase text"
+    },
+    "beta_access": {
+      "message": "测试版访问",
+      "description": "Beta access text"
     }
 }
