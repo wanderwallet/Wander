@@ -32,9 +32,15 @@ interface FlpToken {
 type DelegationRecord = Record<string, number>;
 
 const FAIR_LAUNCH_TOKENS_URL = `${CACHE_API}/api/flp-tokens`;
-const FAIR_LAUNCH_PROCESS_ID = "cuxSKjGJ-WDB9PzSkVkVVrIBSh3DrYHYz44usQOj5yE";
+const FLP_DELEGATION_PROCESS_ID = "cuxSKjGJ-WDB9PzSkVkVVrIBSh3DrYHYz44usQOj5yE";
+const FLP_AO_DELEGATION_TRACKER_PROCESS_ID = "NRP0xtzeV9MHgwLmgD254erUB7mUjMBhBkYkNYkbNEo";
+const FLP_REGISTRY_PROCESS_ID = "It-_AKlEfARBmJdbJew1nG9_hIaZt0t20wQc28mFGBE";
 
-const testTokenFlpIds = new Set([
+/**
+ * Test token FLP IDs that should be filtered out from the results.
+ * These are test tokens that should not appear in the results.
+ */
+const TEST_TOKEN_FLP_IDS = new Set([
   "T3M4QSF7VGa0le7KtxBDHOaIcjnZeC-SQ7nh3ABuufs",
   "So2HpldZaaVFbeH8mUGGzQBVdEzAx5HvMyMaZ47az_M",
   "4mowY7A-b6WJyVR-Tde2m3Zcl_JVxil21c15PXiHhfA",
@@ -48,20 +54,28 @@ const testTokenFlpIds = new Set([
   "gkcnuAZeFeqPvFvNABFKGRKGE_AsmA0T3I1_jOFF0MU",
 ]);
 
-const manualClaimableFlpIds = new Set([
-  "NXZjrPKh-fQx8BUCG_OXBUtB4Ix8Xf0gbUtREFoWQ2Q",
-  "rW7h9J9jE2Xp36y4SKn2HgZaOuzRmbMfBRPwrFFifHE",
-  "3eZ6_ry6FD9CB58ImCQs6Qx_rJdDUGhz-D2W1AqzHD8",
-  "Wc8Rg-owsWSvrmb5XAlmSs3_4UtHo9i5ui2o9UCFuTk",
+/**
+ * Manual claimable token FLP IDs that require manual intervention for claiming rewards.
+ * These tokens do not support auto-claim functionality and must be claimed manually by users.
+ */
+const MANUAL_CLAIMABLE_FLP_IDS = new Set([
+  "NXZjrPKh-fQx8BUCG_OXBUtB4Ix8Xf0gbUtREFoWQ2Q", // ACTION Token
+  "rW7h9J9jE2Xp36y4SKn2HgZaOuzRmbMfBRPwrFFifHE", // AR.IO Token
+  "3eZ6_ry6FD9CB58ImCQs6Qx_rJdDUGhz-D2W1AqzHD8", // PIXL Token
+  "Wc8Rg-owsWSvrmb5XAlmSs3_4UtHo9i5ui2o9UCFuTk", // Protocol Land
 ]);
 
 const aoInstance = connect(defaultConfig);
 
+/**
+ * Get the total delegation of AO by project.
+ * This is used to sort the flp tokens by the total delegation of AO.
+ */
 async function getTotalAODelegationByProject(): Promise<DelegationRecord> {
   try {
     const result = await retryWithDelay(() =>
       aoInstance.dryrun({
-        process: "NRP0xtzeV9MHgwLmgD254erUB7mUjMBhBkYkNYkbNEo",
+        process: FLP_AO_DELEGATION_TRACKER_PROCESS_ID,
         tags: [{ name: "Action", value: "Get-Total-Delegated-AO-By-Project" }],
       }),
     );
@@ -74,10 +88,13 @@ async function getTotalAODelegationByProject(): Promise<DelegationRecord> {
   }
 }
 
+/**
+ * Fetches FLP tokens from AO registry, filters test tokens, and sorts by delegation amount.
+ */
 async function getFlpTokensFromAo(): Promise<FlpToken[]> {
   const result = await retryWithDelay(() =>
     aoInstance.dryrun({
-      process: "It-_AKlEfARBmJdbJew1nG9_hIaZt0t20wQc28mFGBE",
+      process: FLP_REGISTRY_PROCESS_ID,
       tags: [{ name: "Action", value: "Get-FLPs" }],
     }),
   );
@@ -96,7 +113,7 @@ async function getFlpTokensFromAo(): Promise<FlpToken[]> {
         ticker: token.flp_token_ticker,
         denomination: +token.flp_token_denomination,
         logo: token.flp_token_logo,
-        autoClaim: !manualClaimableFlpIds.has(token.flp_id),
+        autoClaim: !MANUAL_CLAIMABLE_FLP_IDS.has(token.flp_id),
       };
     })
     .filter(
@@ -105,7 +122,7 @@ async function getFlpTokensFromAo(): Promise<FlpToken[]> {
         !!token.name &&
         !!token.ticker &&
         !isNaN(token.denomination) &&
-        !testTokenFlpIds.has(token.flpId),
+        !TEST_TOKEN_FLP_IDS.has(token.flpId),
     )
     .sort((a: FlpToken, b: FlpToken): number => {
       if (a.id === WNDR_PROCESS_ID) return -1;
@@ -161,7 +178,7 @@ export async function getDelegationInfo(address?: string): Promise<Record<string
   const dryrunRes = await aoInstance.dryrun({
     Id,
     Owner,
-    process: FAIR_LAUNCH_PROCESS_ID,
+    process: FLP_DELEGATION_PROCESS_ID,
     tags: [
       { name: "Action", value: "Get-Delegations" },
       { name: "Wallet", value: address },
@@ -204,7 +221,7 @@ export async function updateDelegationInfo(delegationInfo: Record<string, number
 
     Object.entries(delegationInfo).forEach(async ([key, value]) => {
       await aoInstance.message({
-        process: FAIR_LAUNCH_PROCESS_ID,
+        process: FLP_DELEGATION_PROCESS_ID,
         tags: [{ name: "Action", value: "Set-Delegation" }],
         signer,
         data: JSON.stringify({
