@@ -144,7 +144,7 @@ export const ArNSNameSearchView = () => {
   return (
     <Flex direction="column" height="100vh">
       <HeadV2 title="Purchase ArNS" />
-      <Flex direction="column" padding="0 1rem" flex={1}>
+      <Flex direction="column" padding="0 1.5rem" flex={1}>
         <SearchWrapper>
           <Text>Search for an ArNS Name</Text>
           <SearchInput small placeholder={"Search ArNS"} {...searchInput.bindings} />
