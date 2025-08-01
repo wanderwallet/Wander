@@ -48,7 +48,7 @@ export const AstroBetaAccessAnnouncementPopup = ({ isOpen, setOpen }) => {
                 color: "#EEE",
               }}
               noMargin>
-              {browser.i18n.getMessage("community_phase")}
+              {browser.i18n.getMessage("wndr_member_benefits")}
             </Text>
             <Title>
               <span>USDA</span> {browser.i18n.getMessage("beta_access")}

@@ -3836,9 +3836,9 @@
     "message": "Get access",
     "description": "Get access text"
   },
-  "community_phase": {
-    "message": "Community Phase",
-    "description": "Community phase text"
+  "wndr_member_benefits": {
+    "message": "$$WNDR Member Benefits",
+    "description": "WNDR member benefits text"
   },
   "beta_access": {
     "message": "Beta Access",

@@ -3796,9 +3796,9 @@
       "message": "获取访问",
       "description": "Get access text"
     },
-    "community_phase": {
-      "message": "社区阶段",
-      "description": "Community phase text"
+    "wndr_member_benefits": {
+        "message": "$$WNDR 会员福利",
+        "description": "WNDR member benefits text"
     },
     "beta_access": {
       "message": "测试版访问",
