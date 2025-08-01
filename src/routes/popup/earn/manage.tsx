@@ -80,10 +80,14 @@ export function ManageEarningsView() {
         }
       }
 
-      // If user was only earning the AO yield, we need to show the allocation set screen
-      const isAllAOYield = (delegationInfo[activeAddress] || 0) === 100;
+      // If user was only earning the AO or PI yield, we need to show the allocation set screen
+      const isBeforeAllAOorPIYield =
+        (delegationInfo[activeAddress] || 0) === 100 || (delegationInfo[PI_FLP_ID] || 0) === 100;
 
       await updateDelegationInfo(changedDelegations, activeAddress);
+
+      const isAfterAllAOorPIYield =
+        (updatedDelegationInfo[activeAddress] || 0) === 100 || (updatedDelegationInfo[PI_FLP_ID] || 0) === 100;
 
       setToast({
         type: "success",
@@ -91,7 +95,7 @@ export function ManageEarningsView() {
         duration: 2400,
       });
 
-      if (isAllAOYield) {
+      if (isBeforeAllAOorPIYield && !isAfterAllAOorPIYield) {
         navigate(PopupPaths.AllocationSet);
       }
     } catch {

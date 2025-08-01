@@ -96,8 +96,8 @@ export function useAOYieldDelegations() {
   const { data: arBalance = "0" } = useTokenBalance(arToken, activeAddress);
 
   return useMemo(() => {
-    const hasNoAOYieldDelegations = +arBalance > 0 && delegationInfo[activeAddress] === 100;
-    const hasAOYieldDelegations = +arBalance > 0 && delegationInfo[activeAddress] !== 100;
+    const hasNoAOYieldDelegations = delegationInfo[activeAddress] === 100 || delegationInfo[PI_FLP_ID] === 100;
+    const hasAOYieldDelegations = delegationInfo[activeAddress] !== 100 && delegationInfo[PI_FLP_ID] !== 100;
     return { hasNoAOYieldDelegations, hasAOYieldDelegations };
   }, [arBalance, delegationInfo, activeAddress]);
 }
