@@ -2992,14 +2992,6 @@
     "message": "Unable to display data: Data is too large to display.",
     "description": "Data too large text"
   },
-  "partitioned_storage_banner": {
-    "message": "Your current browser does not support cross-site authentication and wallet syncing. This means you’ll need to manually import your wallet each time you visit a new site that uses Wander Connect.\nTo enjoy a seamless experience across sites, please use Chrome or Edge.",
-    "description": "Unpartitioned state banner message"
-  },
-  "partitioned_storage_banner_rejected": {
-    "message": "Wander Connect needs access to your browser's storage to enable cross-site authentication and wallet syncing. Denying access means you’ll need to manually import your wallet each time you visit a new site that uses Wander Connect.\nTo enjoy a seamless experience across sites, please allow access to your browser's storage.",
-    "description": "Unpartitioned state rejected banner message"
-  },
   "re_request_access": {
     "message": "Re-request access",
     "description": "Re-request access text"
@@ -3676,6 +3668,18 @@
     "message": "1) Go to https://ao.arweave.net/#/delegate/ <br/> 2) Connect your Wander wallet <br/> 3) Find Wander in the project list <br/> 4) Click the Add button <br/> 5) Set your delegating % <br/> 6) Click the Confirm Delegation Preferences button <br/>  <br/> Done!",
     "description": "Announcement 3 body"
   },
+  "announcement_4_title": {
+    "message": "USDA Beta Access",
+    "description": "Announcement 4 title"
+  },
+  "announcement_4_description": {
+    "message": "Instant USDA Beta access for Reserve, Edge & Prime tier members",
+    "description": "Announcement 4 description"
+  },
+  "announcement_4_body": {
+    "message": "Wander Reserve, Edge, and Prime tier members get instant access to the USDA Beta. Connect your Wander wallet, get verified and unlock access. Try now on [Astro Bridge](https://bridge.astrousd.com/)",
+    "description": "Announcement 4 body"
+  },
   "swipe_to_learn_more": {
     "message": "Swipe to learn more",
     "description": "Swipe to learn more text"
@@ -3733,11 +3737,11 @@
     "description": "Core tier title"
   },
   "tier_core_description": {
-    "message": "1. Open the [Fair Launch delegation website](https://ao.arweave.net/#/delegate/) <br/> 2. Connect your Wander wallet <br/> 3. Add WNDR to your delegation list <br/> 4. Collect and claim your WNDR tokens",
+    "message": "1. Open the [Fair Launch delegation website](https://ao.arweave.net/#/delegate/) <br/> 2. Connect your Wander wallet <br/> 3. Add WNDR to your delegation list <br/> 4. WNDR earnings are deposited every 24 hours",
     "description": "Core tier description with steps"
   },
   "tier_benefit_fee_reduction_defi": {
-    "message": "$PERCENTAGE$% fee reduction on defi transactions",
+    "message": "$PERCENTAGE$% Wander added fee reduction on defi transactions",
     "description": "Fee reduction benefit for defi transactions",
     "placeholders": {
       "percentage": {
@@ -3747,7 +3751,7 @@
     }
   },
   "tier_benefit_fee_reduction_transak": {
-    "message": "$PERCENTAGE$% fee reduction on Transak purchases",
+    "message": "$PERCENTAGE$% Wander added fee reduction on Transak purchases",
     "description": "Fee reduction benefit for Transak purchases",
     "placeholders": {
       "percentage": {
@@ -4085,5 +4089,21 @@
   "view_delegation_list": {
     "message": "View delegation list",
     "description": "View delegation list text"
+  },
+  "members_instant_access": {
+    "message": "members get instant access",
+    "description": "Members get instant access text"
+  },
+  "get_access": {
+    "message": "Get access",
+    "description": "Get access text"
+  },
+  "community_phase": {
+    "message": "Community Phase",
+    "description": "Community phase text"
+  },
+  "beta_access": {
+    "message": "Beta Access",
+    "description": "Beta access text"
   }
 }

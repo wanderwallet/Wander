@@ -10,9 +10,9 @@ import { useWalletUpload } from "~utils/upload/wallet/use-wallet-upload.hook";
 
 export function AuthImportKeyfileEmbeddedView() {
   const { navigate } = useLocation();
-  const [isAdding, setIsAdding] = useState(false);
-
   const { importTempWallet, deleteImportedTempWallet, registerWallet, wallets, authStatus } = useEmbedded();
+
+  // Upload:
 
   const {
     data: uploadData,
@@ -28,8 +28,14 @@ export function AuthImportKeyfileEmbeddedView() {
     mustWalletExist: false,
   });
 
-  const areButtonsDisabled = isAdding || isUploading;
-  const isViewLoading = isAdding;
+  // Loading state:
+
+  const [isAdding, setIsAdding] = useState(false);
+
+  const isViewLoading =
+    authStatus === "unknown" || authStatus === "loading" || authStatus === "authLoading" || isAdding;
+
+  const areButtonsDisabled = isViewLoading || isUploading;
 
   const handleAddWallet = async () => {
     try {

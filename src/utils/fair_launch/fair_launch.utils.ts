@@ -18,7 +18,7 @@ export async function getFairLaunchTokens<T extends boolean = false>(
   options: { forImport?: T } = {},
 ): Promise<T extends true ? TokenInfo[] : FlpTokenInfo[]> {
   try {
-    const response = await retryWithDelay(() => fetch(FAIR_LAUNCH_TOKENS_URL, { cache: "no-cache" }));
+    const response = await retryWithDelay(() => fetch(FAIR_LAUNCH_TOKENS_URL, { cache: "no-store" }));
     if (!response.ok) throw new Error(`Failed to fetch tokens: ${response.status}`);
 
     const flpTokens = await response.json();

@@ -1,5 +1,5 @@
 import styled, { useTheme } from "styled-components";
-import { Loading, Text } from "@arconnect/components-rebrand";
+import { Loading, Text, DefaultTheme } from "@arconnect/components-rebrand";
 import { useActiveTier } from "~utils/tier/hooks";
 import { useLocation } from "~wallets/router/router.utils";
 import { WanderIcon } from "./WanderIcon";
@@ -24,25 +24,25 @@ const activeBoxShadows = {
     [TierTypes.Prime]:
       "inset 0px 1px 1px rgba(234, 208, 131, 0.6), inset 0px 1px 2px rgba(255, 255, 255, 0.6), inset 0px 2px 12px rgba(216, 187, 81, 0.3), inset 0px 1px 8px rgba(125, 102, 35, 0.2)",
     [TierTypes.Edge]:
-      "inset 0px 1px 1px rgba(212, 212, 212, 0.6), inset 0px 1px 2px rgba(255, 255, 255, 0.6), inset 0px 2px 12px rgba(6, 45, 60, 0.3), inset 0px 1px 8px rgba(90, 93, 94, 0.2)",
+      "inset 0px 1px 1px rgba(212, 212, 212, 0.6), inset 0px 1px 2px rgba(255, 255, 255, 0.6), inset 0px 2px 12px rgba(212, 212, 212, 0.3), inset 0px 1px 8px rgba(153, 153, 153, 0.2)",
     [TierTypes.Reserve]:
-      "inset 0px 1px 1px rgba(134, 229, 169, 0.6), inset 0px 1px 2px rgba(255, 255, 255, 0.6), inset 0px 2px 12px rgba(8, 59, 88, 0.3), inset 0px 1px 8px rgba(90, 93, 94, 0.2)",
+      "inset 0px 1px 1px rgba(134, 229, 169, 0.6), inset 0px 1px 2px rgba(255, 255, 255, 0.6), inset 0px 2px 12px rgba(134, 229, 169, 0.3), inset 0px 1px 8px rgba(48, 171, 93, 0.2)",
     [TierTypes.Select]:
-      "inset 0px 1px 1px rgba(131, 215, 245, 0.6), inset 0px 1px 2px rgba(255, 255, 255, 0.6), inset 0px 2px 12px rgba(8, 59, 88, 0.3), inset 0px 1px 8px rgba(13, 136, 207, 0.2)",
+      "inset 0px 1px 1px rgba(131, 215, 245, 0.6), inset 0px 1px 2px rgba(255, 255, 255, 0.6), inset 0px 2px 12px rgba(131, 215, 245, 0.3), inset 0px 1px 8px rgba(13, 136, 207, 0.2)",
     [TierTypes.Core]:
       "inset 0px 1px 1px rgba(151, 135, 255, 0.6), inset 0px 1px 2px rgba(255, 255, 255, 0.6), inset 0px 2px 12px rgba(107, 87, 249, 0.3), inset 0px 1px 8px rgba(107, 87, 249, 0.2)",
   },
   light: {
     [TierTypes.Prime]:
-      "0px 1px 5px -20.902px rgba(185, 149, 42, 0.60) inset, 0px 1px 4.3px -1.96px rgba(255, 255, 255, 0.60) inset, 0px 2.613px 11.758px 0px rgba(255, 241, 189, 0.30) inset, 0px 0.653px 13.064px 0px rgba(234, 208, 131, 0.20) inset",
+      "inset 0px 1px 1px rgba(185, 149, 42, 0.6), inset 0px 1px 2px rgba(255, 255, 255, 0.6), inset 0px 2px 12px rgba(255, 241, 189, 0.3), inset 0px 1px 8px rgba(234, 208, 131, 0.2)",
     [TierTypes.Edge]:
-      "0px 1px 5px -20.902px rgba(153, 153, 153, 0.60) inset, 0px 1px 4.3px -1.96px rgba(255, 255, 255, 0.20) inset, 0px 0px 3.1px 0px rgba(6, 45, 60, 0.10) inset, 0px 0.653px 9.5px 0px rgba(153, 153, 153, 0.20) inset",
+      "inset 0px 1px 1px rgba(153, 153, 153, 0.6), inset 0px 1px 2px rgba(255, 255, 255, 0.6), inset 0px 2px 12px rgba(212, 212, 212, 0.3), inset 0px 1px 8px rgba(153, 153, 153, 0.2)",
     [TierTypes.Reserve]:
-      "0px 1px 5px -20.902px rgba(48, 171, 93, 0.60) inset, 0px 1px 4.3px -1.96px rgba(255, 255, 255, 0.60) inset, 0px 0.653px 13.064px 0px rgba(134, 229, 169, 0.20) inset",
+      "inset 0px 1px 1px rgba(48, 171, 93, 0.6), inset 0px 1px 2px rgba(255, 255, 255, 0.6), inset 0px 2px 12px rgba(134, 229, 169, 0.3), inset 0px 1px 8px rgba(48, 171, 93, 0.2)",
     [TierTypes.Select]:
-      "0px 1px 5px -20.902px rgba(34, 134, 172, 0.60) inset, 0px 1px 8.8px -1.96px rgba(255, 255, 255, 0.60) inset, 0px 2.613px 11.758px 0px rgba(131, 215, 245, 0.30) inset, 0px 0.653px 13.064px 0px rgba(131, 215, 245, 0.20) inset",
+      "inset 0px 1px 1px rgba(34, 134, 172, 0.6), inset 0px 1px 2px rgba(255, 255, 255, 0.6), inset 0px 2px 12px rgba(131, 215, 245, 0.3), inset 0px 1px 8px rgba(34, 134, 172, 0.2)",
     [TierTypes.Core]:
-      "0px 1px 5px -20.902px rgba(107, 87, 249, 0.60) inset, 0px 1px 8.8px -1.96px rgba(255, 255, 255, 0.60) inset, 0px 2.613px 11.758px 0px rgba(107, 87, 249, 0.30) inset, 0px 0.653px 13.064px 0px rgba(107, 87, 249, 0.20) inset",
+      "inset 0px 1px 1px rgba(107, 87, 249, 0.6), inset 0px 1px 2px rgba(255, 255, 255, 0.6), inset 0px 2px 12px rgba(107, 87, 249, 0.3), inset 0px 1px 8px rgba(107, 87, 249, 0.2)",
   },
 };
 
@@ -75,6 +75,12 @@ const boxShadows = {
 
 interface TierTagProps {
   tier: TierTypes;
+  iconHeight?: number;
+  iconWidth?: number;
+  textSize?: string;
+  gap?: number;
+  boxShadowType?: "active" | "normal";
+  theme?: DefaultTheme;
 }
 
 export function ActiveTierTag() {
@@ -104,14 +110,26 @@ export function ActiveTierTag() {
   );
 }
 
-export function TierTag({ tier }: TierTagProps) {
-  const theme = useTheme();
-  const boxShadow = boxShadows[theme.displayTheme][tier] || boxShadows[theme.displayTheme][TierTypes.Core];
+export function TierTag({
+  tier,
+  iconHeight = 7.5,
+  iconWidth = 16,
+  textSize = "12px",
+  boxShadowType = "normal",
+  gap = 4,
+  theme,
+}: TierTagProps) {
+  const currentTheme = useTheme();
+  const resolvedTheme = theme || currentTheme;
+  const selectedBoxShadows = boxShadowType === "active" ? activeBoxShadows : boxShadows;
+  const boxShadow =
+    selectedBoxShadows[resolvedTheme.displayTheme][tier] ||
+    selectedBoxShadows[resolvedTheme.displayTheme][TierTypes.Core];
 
   return (
-    <Tag gap={4} boxShadow={boxShadow}>
-      <WanderIcon height={7.5} width={16} tier={tier} />
-      <Text size="2xs" weight="medium" noMargin>
+    <Tag gap={gap} boxShadow={boxShadow} theme={resolvedTheme}>
+      <WanderIcon height={iconHeight} width={iconWidth} tier={tier} theme={resolvedTheme} />
+      <Text style={{ fontSize: textSize }} weight="medium" theme={resolvedTheme} noMargin>
         {tier}
       </Text>
     </Tag>

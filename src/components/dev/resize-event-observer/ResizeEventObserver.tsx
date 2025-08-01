@@ -4,6 +4,7 @@ import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-mes
 import { locationToRouteType, routeTypeToPreferredLayout } from "~utils/embedded/utils/routes/embedded-routes.utils";
 
 import styles from "./ResizeEventObserver.module.scss";
+import { useEmbedded } from "~utils/embedded/embedded.hooks";
 
 export interface ResizeEventObserverProps {
   containerRef: React.MutableRefObject<HTMLElement>;
@@ -11,6 +12,7 @@ export interface ResizeEventObserverProps {
 
 export function ResizeEventObserver({ containerRef }: ResizeEventObserverProps) {
   const { location } = useLocation();
+  const { authStatus } = useEmbedded();
 
   const lineRef = useRef<HTMLDivElement>();
   const locationRef = useRef(location);
@@ -29,7 +31,7 @@ export function ResizeEventObserver({ containerRef }: ResizeEventObserverProps) 
 
     if (height <= 0) return;
 
-    const routeType = locationToRouteType(location);
+    const routeType = locationToRouteType(location, authStatus);
     const preferredLayoutType = routeTypeToPreferredLayout(routeType);
 
     postEmbeddedMessage({

@@ -8,11 +8,7 @@ import {
   EMBEDDED_SERVER_BASE_URL,
 } from "~utils/embedded/iframe.utils";
 import { getSupabaseClient } from "~utils/embedded/embedded.utils";
-import {
-  type SupabaseJwtPayload,
-  type OAuthSuccessMessage,
-  type OAuthErrorMessage,
-} from "~utils/authentication/authentication.types";
+import { type OAuthSuccessMessage, type OAuthErrorMessage } from "~utils/authentication/authentication.types";
 import {
   BACKGROUND_COLORS_BY_PROVIDER,
   OAUTH_ERROR_MSG_TYPE,
@@ -22,6 +18,7 @@ import {
   POPUP_ON_AUTH_TIMEOUT_MS,
 } from "~utils/authentication/authentication.utils";
 import { jwtDecode } from "jwt-decode";
+import type { SupabaseJwtPayload } from "embed-api";
 
 if (process.env.NODE_ENV === "development") {
   console.log("Wander Connect URL params =", {
