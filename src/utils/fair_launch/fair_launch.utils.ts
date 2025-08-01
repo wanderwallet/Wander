@@ -13,6 +13,7 @@ import { getAoTokens } from "~tokens";
 import { ExtensionStorage } from "~utils/storage";
 import { LOG_GROUP, log } from "~utils/log/log.utils";
 import { PI_FLP_ID } from "./fair_launch.constants";
+import { sleep } from "~utils/promises/sleep";
 
 interface RawFlpToken {
   flp_token_name: string;
@@ -224,8 +225,10 @@ export async function updateDelegationInfo(delegationInfo: Record<string, number
     const keyfile = decryptedWallet.keyfile;
 
     const signer = createDataItemSigner(keyfile);
+    const delegationInfoArray = Object.entries(delegationInfo);
+    delegationInfoArray.sort(([key1]) => (key1 === address ? -1 : 1));
 
-    Object.entries(delegationInfo).forEach(async ([key, value]) => {
+    for (const [key, value] of delegationInfoArray) {
       await aoInstance.message({
         process: FLP_DELEGATION_PROCESS_ID,
         tags: [{ name: "Action", value: "Set-Delegation" }],
@@ -236,7 +239,7 @@ export async function updateDelegationInfo(delegationInfo: Record<string, number
           factor: value * 100,
         }),
       });
-    });
+    }
 
     await queryClient.invalidateQueries({ queryKey: ["ao-delegation-info", address] });
   } finally {

@@ -11,11 +11,7 @@ import { PieChart } from "~components/popup/chart/PieChart";
 import browser from "webextension-polyfill";
 import { Flex } from "~components/common/Flex";
 import { EarnTabs } from "~components/popup/earn/EarnTabs";
-import {
-  useAOYieldDelegations,
-  useDelegationPercentByType,
-  useHasOnlyAODelegations,
-} from "~utils/fair_launch/fair_launch.hooks";
+import { useAOYieldDelegations, useDelegationPercentByType } from "~utils/fair_launch/fair_launch.hooks";
 import { useLocation } from "~wallets/router/router.utils";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import { EarnDelegationNotice } from "~components/popup/earn/EarnDelegationNotice";
@@ -73,7 +69,7 @@ export function EarnView() {
       <HeadV2
         title={browser.i18n.getMessage("earn")}
         backIcon={<HelpCircle color={theme.secondaryText} width={20} height={20} />}
-        back={() => {}}
+        back={() => setShowEarnPopup(true)}
       />
 
       <Wrapper>

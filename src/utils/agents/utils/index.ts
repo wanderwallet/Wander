@@ -20,7 +20,6 @@ import { AO_YIELD_AGENT_RECENT_TXS, WANDER_FEE_PROCESS_ID } from "../constants";
 import dayjs from "dayjs";
 import { isURL } from "~utils/urls/isURL";
 import { queryClient } from "~utils/tanstack";
-import { getDelegationInfo } from "~utils/fair_launch/fair_launch.utils";
 
 /**
  * Initializes a default Arweave instance.
@@ -428,13 +427,6 @@ export const tokenIdInfoMap = {
 
 export function formatTokenQuantity(value: string, decimals: number) {
   return formatBalance(balanceToFractioned(String(value), { decimals })).displayBalance;
-}
-
-export async function getAODelegationInfo(address?: string) {
-  const delegationInfo = await getDelegationInfo(address);
-  const hasAODelegation = !!delegationInfo?.[address];
-
-  return { hasAODelegation };
 }
 
 export function formatDate(date: Date | null, fallbackLabel: string) {

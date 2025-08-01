@@ -1,12 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  getAODelegationInfo,
-  getAOYieldAgentInfo,
-  getAOYieldAgents,
-  getWanderFee,
-  processTransactions,
-  tokenIdInfoMap,
-} from "./utils";
+import { getAOYieldAgentInfo, getAOYieldAgents, getWanderFee, processTransactions, tokenIdInfoMap } from "./utils";
 import type {
   AOYieldAgent,
   AOYieldAgentCreate,
@@ -26,6 +19,8 @@ import { checkIfMintingIsPaused, checkIfAgentHasRecentSwaps } from "./swap";
 import dayjs from "dayjs";
 import browser from "webextension-polyfill";
 import type { DefiFeeDetails } from "~utils/tier/types";
+import { useDelegationInfo } from "~utils/fair_launch/fair_launch.hooks";
+import { useActiveAddress } from "~wallets/hooks";
 
 interface UseAOYieldAgentsProps {
   status?: AOYieldAgentStatus;
@@ -231,19 +226,13 @@ export function useAOMintingStatus() {
 }
 
 export function useAODelegationInfo() {
-  const [activeAddress] = useStorage({ key: "active_address", instance: ExtensionStorage });
+  const activeAddress = useActiveAddress();
+  const { data: delegationInfo = {}, isLoading } = useDelegationInfo();
 
-  return useQuery<{ hasAODelegation: boolean }>({
-    queryKey: ["ao-delegation-info", activeAddress],
-    queryFn: () => getAODelegationInfo(activeAddress),
-    refetchInterval: 60_000,
-    staleTime: 60_000,
-    gcTime: 60_000,
-    retry: 3,
-    retryDelay: (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 30000),
-    refetchOnWindowFocus: true,
-    enabled: !!activeAddress,
-  });
+  return useMemo(() => {
+    if (isLoading || !activeAddress) return true;
+    return !!delegationInfo?.[activeAddress];
+  }, [activeAddress, delegationInfo, isLoading]);
 }
 
 export function useAOYieldAgentProperties(agent: AOYieldAgentCreate | AOYieldAgent, feeDetails?: DefiFeeDetails) {
