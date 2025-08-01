@@ -129,7 +129,12 @@ export function ManageEarningsView() {
                 {browser.i18n.getMessage("note_earning_ao_tokens")}
               </Text>
               <Link
-                style={{ fontSize: 12, fontWeight: 600, color: "#9787FF", gap: 2 }}
+                style={{
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: theme.displayTheme === "dark" ? "#9787FF" : "#6B57F9",
+                  gap: 2,
+                }}
                 href="https://www.wander.app/blog/wndr-fair-launch">
                 {browser.i18n.getMessage("learn_more")} <ArrowUpRight style={{ width: 16, height: 16 }} />
               </Link>
@@ -168,7 +173,9 @@ export function ManageEarningsView() {
             {browser.i18n.getMessage("save")}
           </Button>
           <Flex align="center" justify="center" padding="8px 0px">
-            <Link color="#9787FF" href="https://ao.arweave.net/#/delegate/">
+            <Link
+              color={theme.displayTheme === "dark" ? "#9787FF" : "#6B57F9"}
+              href="https://ao.arweave.net/#/delegate/">
               {browser.i18n.getMessage("explore_all_projects")} <ArrowUpRight height={20} width={20} />
             </Link>
           </Flex>
@@ -221,7 +228,7 @@ function Token({
     <TokenWrapper key={token.processId}>
       <Logo src={logo} width={40} height={40} />
 
-      <Flex direction="row" align="center" justify="space-between" gap={24} width="100%">
+      <Flex direction="row" align="center" justify="space-between" gap={16} width="100%">
         <Flex direction="column" gap={4}>
           <Text
             size="md"
@@ -249,10 +256,18 @@ function Token({
                     <Trash02 style={{ height: "12px", width: "12px" }} color="#EE5A4F" />
                   </Tooltip>
                 ) : (
-                  <MinusIcon height={20} width={20} />
+                  <MinusIcon height={20} width={20} style={{ color: theme.primaryText }} />
                 )
               }
-              backgroundColor={tokenDelegation <= 5 ? "#492C2C" : "rgba(102, 102, 102, 0.5)"}
+              backgroundColor={
+                tokenDelegation <= 5
+                  ? theme.displayTheme === "dark"
+                    ? "#492C2C"
+                    : "#FFE4D4"
+                  : theme.displayTheme === "dark"
+                    ? "rgba(102, 102, 102, 0.5)"
+                    : "rgba(170, 170, 170, 0.5)"
+              }
               onClick={() => {
                 setDelegationInfo((prev) => {
                   const aoDelegation = prev[activeAddress] || 0;
@@ -304,7 +319,7 @@ function Token({
                   return prev;
                 });
               }}
-              icon={<PlusIcon height={20} width={20} />}
+              icon={<PlusIcon height={20} width={20} style={{ color: theme.primaryText }} />}
             />
           )}
         </Flex>
@@ -339,7 +354,8 @@ const RoundedButton = styled(Button).attrs({
   height: "20px",
   width: "20px",
 })<{ backgroundColor?: string }>`
-  background: ${({ backgroundColor }) => backgroundColor || "rgba(102, 102, 102, 0.5)"};
+  background: ${({ backgroundColor, theme }) =>
+    backgroundColor || (theme.displayTheme === "dark" ? "rgba(102, 102, 102, 0.5)" : "rgba(170, 170, 170, 0.5)")};
   display: flex;
   align-items: center;
   justify-content: center;

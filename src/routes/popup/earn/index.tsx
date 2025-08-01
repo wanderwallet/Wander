@@ -166,7 +166,7 @@ const AllocationWrapper = styled.div`
 `;
 
 const BreakdownText = styled(Text).attrs({ size: "sm", weight: "semibold", noMargin: true })`
-  color: #9787ff;
+  color: ${({ theme }) => (theme.displayTheme === "dark" ? "#9787FF" : "#6B57F9")};
 `;
 
 const BreakdownWrapper = styled(Flex)`

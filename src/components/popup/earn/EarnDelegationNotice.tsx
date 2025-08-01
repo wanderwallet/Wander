@@ -4,6 +4,7 @@ import browser from "webextension-polyfill";
 import { Flex } from "~components/common/Flex";
 import { AnimatedStarContainer, defaultStars } from "~components/common/AnimatedStarContainer";
 import { Link } from "~components/common/Link";
+import { useTheme } from "styled-components";
 
 const stars = defaultStars.toSpliced(1, 1);
 
@@ -12,6 +13,7 @@ interface EarnDelegationNoticeProps {
 }
 
 export function EarnDelegationNotice({ onClose }: EarnDelegationNoticeProps) {
+  const theme = useTheme();
   return (
     <AnimatedStarContainer stars={stars} padding="14px 12px 16px 12px" onClose={onClose} showCloseButton>
       <Flex direction="column" gap={8}>
@@ -23,7 +25,12 @@ export function EarnDelegationNotice({ onClose }: EarnDelegationNoticeProps) {
         </Text>
         <Link
           href="https://www.wander.app/blog/wndr-fair-launch"
-          style={{ color: "#9787FF", gap: "4px", fontSize: 14, fontWeight: 600 }}>
+          style={{
+            color: theme.displayTheme === "dark" ? "#9787FF" : "#6B57F9",
+            gap: "4px",
+            fontSize: 14,
+            fontWeight: 600,
+          }}>
           {browser.i18n.getMessage("learn_more")} <ArrowUpRight height={18} width={18} />
         </Link>
       </Flex>

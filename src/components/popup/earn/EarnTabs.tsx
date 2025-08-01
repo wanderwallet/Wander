@@ -221,7 +221,7 @@ function Token({
                 ${token.Ticker}
               </Text>
             </Flex>
-            <Text style={{ color: "#9787FF" }} weight="medium" noMargin>
+            <Text style={{ color: theme.displayTheme === "dark" ? "#9787FF" : "#6B57F9" }} weight="medium" noMargin>
               {browser.i18n.getMessage("coming_soon")}
             </Text>
           </Flex>
@@ -236,7 +236,13 @@ function Token({
                   {isLoading ? <Loading width={4} height={4} /> : `${token.percent}%`}
                 </Text>
               ) : (
-                <Link onClick={handleAdd} style={{ fontSize: 16, fontWeight: 500, color: "#9787FF" }}>
+                <Link
+                  onClick={handleAdd}
+                  style={{
+                    fontSize: 16,
+                    fontWeight: 500,
+                    color: theme.displayTheme === "dark" ? "#9787FF" : "#6B57F9",
+                  }}>
                   {browser.i18n.getMessage("add")}
                 </Link>
               )}
@@ -263,7 +269,9 @@ function Token({
             <Loading style={{ width: 14, height: 14 }} />
           </Flex>
         ) : (
-          <Link onClick={handleClaim} style={{ fontSize: 14, fontWeight: 600, color: "#9787FF" }}>
+          <Link
+            onClick={handleClaim}
+            style={{ fontSize: 14, fontWeight: 600, color: theme.displayTheme === "dark" ? "#9787FF" : "#6B57F9" }}>
             {browser.i18n.getMessage("claim")} {formattedClaimableBalance.displayBalance} {token.Ticker}
           </Link>
         ))}

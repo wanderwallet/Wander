@@ -75,17 +75,9 @@ export function AddTokenPopup({ open, close, tokens, delegationInfo, setDelegati
   );
 
   return (
-    <SliderMenu
-      hasHeader={true}
-      title={browser.i18n.getMessage("add_token")}
-      height="90vh"
-      maxHeight="95vh"
-      isOpen={open}
-      onClose={close}>
+    <SliderMenu hasHeader={true} title={browser.i18n.getMessage("add_token")} isOpen={open} onClose={close}>
       <Container>
-        <div>
-          <Input fullWidth variant="search" placeholder="Search token" {...searchInput.bindings} />
-        </div>
+        <Input sizeVariant="small" fullWidth variant="search" placeholder="Search token" {...searchInput.bindings} />
 
         <TokensList>
           {filteredTokens.map((token) => (
@@ -185,4 +177,7 @@ const TokensList = styled(Section)`
   gap: 1rem;
   padding: 0;
   padding-bottom: 1.5rem;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
 `;

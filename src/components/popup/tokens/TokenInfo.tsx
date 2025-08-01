@@ -121,7 +121,7 @@ export const TokenInfo = ({ id }: TokenInfoProps) => {
               background={theme.primary}
               maxWidth="fit-content">
               <VerifiedIcon color="white" />
-              <Text size="xs" weight="semibold" noMargin>
+              <Text size="xs" weight="semibold" style={{ color: "#FFF" }} noMargin>
                 {browser.i18n.getMessage("verified")}
               </Text>
             </Flex>

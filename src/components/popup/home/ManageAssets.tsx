@@ -44,7 +44,7 @@ export function ManageAssets({ open, close }: Props) {
   return (
     <SliderMenu hasHeader={true} title={browser.i18n.getMessage("manage_asset_list")} isOpen={open} onClose={close}>
       <Container>
-        <Input fullWidth variant="search" placeholder="Search asset" {...searchInput.bindings} />
+        <Input sizeVariant="small" fullWidth variant="search" placeholder="Search asset" {...searchInput.bindings} />
         <TokensList>
           {filteredTokens.map((token) => (
             <Token
