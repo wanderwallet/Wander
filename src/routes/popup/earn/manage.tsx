@@ -383,6 +383,14 @@ const RoundedButton = styled(Button).attrs({
       stroke-width: 2;
     }
   }
+
+  &:hover,
+  &:active {
+    svg path {
+      fill: #fff;
+      stroke: #fff;
+    }
+  }
 `;
 
 const InfoWrapper = styled.div`
