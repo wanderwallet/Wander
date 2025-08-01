@@ -1,6 +1,6 @@
 import styled, { useTheme } from "styled-components";
 import HeadV2 from "~components/popup/HeadV2";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Section, Button, Text, Tooltip, Loading, useToasts } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
 import { ArrowUpRight, HelpCircle, InfoCircle, Plus, Trash02 } from "@untitled-ui/icons-react";
@@ -29,6 +29,7 @@ export function ManageEarningsView() {
   const [showAddTokenPopup, setShowAddTokenPopup] = useState(false);
   const { setToast } = useToasts();
   const activeAddress = useActiveAddress();
+  const previousAddressRef = useRef<string>();
   const { data: delegationInfo = {}, isLoading: isLoadingDelegationInfo } = useDelegationInfo();
   const { data: flpTokens = [], isLoading: isLoadingFlpTokens } = useFairLaunchTokens();
   const { hasNoAOYieldDelegations, hasAOYieldDelegations } = useAOYieldDelegations();
@@ -105,9 +106,19 @@ export function ManageEarningsView() {
   }, [updatedDelegationInfo, delegationInfo, activeAddress]);
 
   useEffect(() => {
-    if (Object.keys(updatedDelegationInfo).length > 0) return;
-    setUpdatedDelegationInfo(delegationInfo);
-  }, [delegationInfo]);
+    const hasAddressChanged = previousAddressRef.current && previousAddressRef.current !== activeAddress;
+    const isFirstLoad = Object.keys(updatedDelegationInfo).length === 0;
+
+    // Update when:
+    // 1. First time delegationInfo is received (empty updatedDelegationInfo)
+    // 2. Address changes (reset to current delegationInfo for the new address)
+    if ((isFirstLoad || hasAddressChanged) && Object.keys(delegationInfo).length > 0) {
+      setUpdatedDelegationInfo(delegationInfo);
+    }
+
+    // Update the previous address reference
+    previousAddressRef.current = activeAddress;
+  }, [delegationInfo, activeAddress, updatedDelegationInfo]);
 
   return (
     <>
