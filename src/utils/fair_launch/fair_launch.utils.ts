@@ -1,5 +1,5 @@
-import { connect } from "@permaweb/aoconnect";
-import { createDataItemSigner, getTagValue, Id, Owner, type TokenInfo } from "~tokens/aoTokens/ao";
+import { connect, dryrun } from "@permaweb/aoconnect";
+import { createDataItemSigner, getTagValue, Id, Owner, WNDR_PROCESS_ID, type TokenInfo } from "~tokens/aoTokens/ao";
 import { defaultConfig } from "~tokens/aoTokens/config";
 import { retryWithDelay } from "~utils/promises/retry";
 import { getActiveAddress, getActiveKeyfile, type DecryptedWallet } from "~wallets";
@@ -8,31 +8,148 @@ import { isLocalWallet } from "~utils/assertions";
 import { freeDecryptedWallet } from "~wallets/encryption";
 import { queryClient } from "~utils/tanstack";
 import BigNumber from "bignumber.js";
+import { CACHE_API } from "~constants/api";
 
-const FAIR_LAUNCH_TOKENS_URL =
-  "https://cdn.jsdelivr.net/gh/wanderwallet/wander-data@chore/update-auto-claim/tokens/flp-tokens.min.json";
+interface RawFlpToken {
+  flp_token_name: string;
+  flp_token_ticker: string;
+  flp_token_denomination: number;
+  flp_token_logo: string;
+  flp_token_process: string;
+  flp_id: string;
+}
 
+interface FlpToken {
+  name: string;
+  ticker: string;
+  denomination: number;
+  logo: string;
+  id: string;
+  flpId: string;
+  autoClaim: boolean;
+}
+
+type DelegationRecord = Record<string, number>;
+
+const FAIR_LAUNCH_TOKENS_URL = `${CACHE_API}/api/flp-tokens`;
 const FAIR_LAUNCH_PROCESS_ID = "cuxSKjGJ-WDB9PzSkVkVVrIBSh3DrYHYz44usQOj5yE";
+
+const testTokenFlpIds = new Set([
+  "T3M4QSF7VGa0le7KtxBDHOaIcjnZeC-SQ7nh3ABuufs",
+  "So2HpldZaaVFbeH8mUGGzQBVdEzAx5HvMyMaZ47az_M",
+  "4mowY7A-b6WJyVR-Tde2m3Zcl_JVxil21c15PXiHhfA",
+  "-ntvNGm4onpKXS8SZ6-5sFnmjRHfMNAwS_JuR-pO504",
+  "WRkDu1hOeNksAlli1R4LUUh674Q79DjSOSegdIiI68U",
+  "c0-R2wvW1yRnRjQdUqetgD9tDJSCGpeJjz1HthfXwQ8",
+  "wsT2snFHYQ7AX7OxnrFViyu4v5il6sIb9EYxTnBnMQc",
+  "FyQ9uMx1XevItG1kE65BMvbbqcvdOGJrC_nb-PPIawk",
+  "xswbZRtkjQQ8D1h6tx503iLaAxxPLWP10J2TvgbRZXk",
+  "NQy9H6oAE-m55BheXbGu70nEWiiGMsL8lM9YsNJ8gD4",
+  "gkcnuAZeFeqPvFvNABFKGRKGE_AsmA0T3I1_jOFF0MU",
+]);
+
+const manualClaimableFlpIds = new Set([
+  "NXZjrPKh-fQx8BUCG_OXBUtB4Ix8Xf0gbUtREFoWQ2Q",
+  "rW7h9J9jE2Xp36y4SKn2HgZaOuzRmbMfBRPwrFFifHE",
+  "3eZ6_ry6FD9CB58ImCQs6Qx_rJdDUGhz-D2W1AqzHD8",
+  "Wc8Rg-owsWSvrmb5XAlmSs3_4UtHo9i5ui2o9UCFuTk",
+]);
+
+const aoInstance = connect(defaultConfig);
+
+async function getTotalAODelegationByProject(): Promise<DelegationRecord> {
+  try {
+    const result = await retryWithDelay(() =>
+      aoInstance.dryrun({
+        process: "NRP0xtzeV9MHgwLmgD254erUB7mUjMBhBkYkNYkbNEo",
+        tags: [{ name: "Action", value: "Get-Total-Delegated-AO-By-Project" }],
+      }),
+    );
+
+    const data = result?.Messages[0]?.Data ?? "{}";
+    const totalDelegatedAOByProject = JSON.parse(data);
+    return totalDelegatedAOByProject?.combined ?? {};
+  } catch {
+    return {};
+  }
+}
+
+async function getFlpTokensFromAo(): Promise<FlpToken[]> {
+  const result = await retryWithDelay(() =>
+    aoInstance.dryrun({
+      process: "It-_AKlEfARBmJdbJew1nG9_hIaZt0t20wQc28mFGBE",
+      tags: [{ name: "Action", value: "Get-FLPs" }],
+    }),
+  );
+
+  const data = result?.Messages[0]?.Data ?? "{}";
+  const rawFlpTokens: RawFlpToken[] = JSON.parse(data);
+
+  const totalAODelegationByProject = await getTotalAODelegationByProject();
+
+  const flpTokens = rawFlpTokens
+    .map((token: RawFlpToken): FlpToken => {
+      return {
+        id: token.flp_token_process,
+        flpId: token.flp_id,
+        name: token.flp_token_name,
+        ticker: token.flp_token_ticker,
+        denomination: +token.flp_token_denomination,
+        logo: token.flp_token_logo,
+        autoClaim: !manualClaimableFlpIds.has(token.flp_id),
+      };
+    })
+    .filter(
+      (token: FlpToken): boolean =>
+        token.id !== undefined &&
+        !!token.name &&
+        !!token.ticker &&
+        !isNaN(token.denomination) &&
+        !testTokenFlpIds.has(token.flpId),
+    )
+    .sort((a: FlpToken, b: FlpToken): number => {
+      if (a.id === WNDR_PROCESS_ID) return -1;
+      if (b.id === WNDR_PROCESS_ID) return 1;
+      return (totalAODelegationByProject[b.flpId] ?? 0) - (totalAODelegationByProject[a.flpId] ?? 0);
+    });
+
+  return flpTokens;
+}
 
 export async function getFairLaunchTokens<T extends boolean = false>(
   options: { forImport?: T } = {},
 ): Promise<T extends true ? TokenInfo[] : FlpTokenInfo[]> {
   try {
-    const response = await retryWithDelay(() => fetch(FAIR_LAUNCH_TOKENS_URL, { cache: "no-store" }));
-    if (!response.ok) throw new Error(`Failed to fetch tokens: ${response.status}`);
+    let flpTokens: FlpToken[] = [];
+    try {
+      const response = await retryWithDelay(() =>
+        fetch(FAIR_LAUNCH_TOKENS_URL, {
+          cache: "force-cache",
+          headers: {
+            "Cache-Control": "public, max-age=300", // 5 minutes
+          },
+        }),
+      );
+      if (!response.ok) throw new Error(`Failed to fetch tokens: ${response.status}`);
 
-    const flpTokens = await response.json();
+      ({ flpTokens } = await response.json());
+    } catch {
+      flpTokens = await getFlpTokensFromAo();
+    }
+
     const { forImport = false } = options;
 
-    return flpTokens.map((token: any) => ({
-      Name: token.Name || token.name,
-      Ticker: token.Ticker || token.ticker,
-      Denomination: token.Denomination || token.denomination,
-      Logo: token.Logo || token.logo,
-      processId: token.Id || token.id,
+    const flpTokenInfos = flpTokens.map((token: FlpToken) => ({
+      Name: token.name,
+      Ticker: token.ticker,
+      Denomination: token.denomination,
+      Logo: token.logo,
+      processId: token.id,
       type: "asset",
       ...(forImport ? {} : { flpId: token.flpId, autoClaim: token.autoClaim }),
     }));
+
+    return flpTokenInfos as T extends true ? TokenInfo[] : FlpTokenInfo[];
   } catch {
     return [];
   }
@@ -40,8 +157,6 @@ export async function getFairLaunchTokens<T extends boolean = false>(
 
 export async function getDelegationInfo(address?: string): Promise<Record<string, number>> {
   address = address || (await getActiveAddress());
-
-  const aoInstance = connect(defaultConfig);
 
   const dryrunRes = await aoInstance.dryrun({
     Id,
