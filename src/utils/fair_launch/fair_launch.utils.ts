@@ -1,5 +1,13 @@
 import { connect } from "@permaweb/aoconnect";
-import { createDataItemSigner, getTagValue, Id, Owner, WNDR_PROCESS_ID, type TokenInfo } from "~tokens/aoTokens/ao";
+import {
+  createDataItemKeystoneSigner,
+  createDataItemSigner,
+  getTagValue,
+  Id,
+  Owner,
+  WNDR_PROCESS_ID,
+  type TokenInfo,
+} from "~tokens/aoTokens/ao";
 import { defaultConfig } from "~tokens/aoTokens/config";
 import { retryWithDelay } from "~utils/promises/retry";
 import { getActiveAddress, getActiveKeyfile, type DecryptedWallet } from "~wallets";
@@ -13,7 +21,8 @@ import { getAoTokens } from "~tokens";
 import { ExtensionStorage } from "~utils/storage";
 import { LOG_GROUP, log } from "~utils/log/log.utils";
 import { PI_FLP_ID } from "./fair_launch.constants";
-import { sleep } from "~utils/promises/sleep";
+import { KeystoneSigner } from "~wallets/hardware/keystone";
+import { nanoid } from "nanoid";
 
 interface RawFlpToken {
   flp_token_name: string;
@@ -208,24 +217,39 @@ export async function getDelegationInfo(address?: string): Promise<Record<string
   return delegationInfo;
 }
 
-export async function updateDelegationInfo(delegationInfo: Record<string, number>, address: string) {
+export async function updateDelegationInfo(
+  delegationInfo: Record<string, number>,
+  address: string,
+  keystoneSigner?: KeystoneSigner,
+) {
   let decryptedWallet: DecryptedWallet;
+  let dataItemSigner: KeystoneSigner | ReturnType<typeof createDataItemSigner>;
+
   try {
     const aoInstance = connect(defaultConfig);
-
     decryptedWallet = await getActiveKeyfile();
-    isLocalWallet(decryptedWallet);
-    const keyfile = decryptedWallet.keyfile;
 
-    const signer = createDataItemSigner(keyfile);
+    if (!keystoneSigner || decryptedWallet.type === "local") {
+      isLocalWallet(decryptedWallet);
+      dataItemSigner = createDataItemSigner(decryptedWallet.keyfile);
+    } else {
+      dataItemSigner = createDataItemKeystoneSigner(keystoneSigner);
+    }
+
     const delegationInfoArray = Object.entries(delegationInfo);
     delegationInfoArray.sort(([key1]) => (key1 === address ? -1 : 1));
 
     for (const [key, value] of delegationInfoArray) {
+      const tags = [{ name: "Action", value: "Set-Delegation" }];
+
+      if (keystoneSigner) {
+        tags.push({ name: "Nonce", value: nanoid() });
+      }
+
       await aoInstance.message({
         process: FLP_DELEGATION_PROCESS_ID,
-        tags: [{ name: "Action", value: "Set-Delegation" }],
-        signer,
+        tags,
+        signer: dataItemSigner as any,
         data: JSON.stringify({
           walletFrom: address,
           walletTo: key,

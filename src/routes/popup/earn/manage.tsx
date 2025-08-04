@@ -7,7 +7,7 @@ import { ArrowUpRight, HelpCircle, InfoCircle, Plus, Trash02 } from "@untitled-u
 import { useAOYieldDelegations, useDelegationInfo, useFairLaunchTokens } from "~utils/fair_launch/fair_launch.hooks";
 import { AO_PROCESS_ID, defaultTokens } from "~tokens/aoTokens/ao";
 import { PI_FLP_ID } from "~utils/fair_launch/fair_launch.constants";
-import { useActiveAddress } from "~wallets/hooks";
+import { useActiveAddress, useActiveWallet } from "~wallets/hooks";
 import { Flex } from "~components/common/Flex";
 import { Logo } from "~components/popup/Token";
 import { getUserAvatar } from "~lib/avatar";
@@ -20,11 +20,25 @@ import { MinusIcon, PlusIcon } from "@iconicicons/react";
 import { updateDelegationInfo } from "~utils/fair_launch/fair_launch.utils";
 import { useLocation } from "~wallets/router/router.utils";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
+import { UR } from "@ngraveio/bc-ur";
+import { decodeSignature, type KeystoneInteraction, KeystoneSigner } from "~wallets/hardware/keystone";
+import { useScanner } from "@arconnect/keystone-sdk";
+import AnimatedQRScanner from "~components/hardware/AnimatedQRScanner";
+import AnimatedQRPlayer from "~components/hardware/AnimatedQRPlayer";
+import { Spacer } from "~components/embed";
+import Progress from "~components/Progress";
+import { SignType } from "@keystonehq/bc-ur-registry-arweave";
+import Arweave from "arweave";
 
 export function ManageEarningsView() {
   const theme = useTheme();
+  const wallet = useActiveWallet();
   const { navigate } = useLocation();
+  const [transactionUR, setTransactionUR] = useState<UR>();
+  const [hardwareStatus, setHardwareStatus] = useState<"play" | "scan">();
   const [isSaving, setIsSaving] = useState(false);
+  const [currentTransactionCount, setCurrentTransactionCount] = useState(0);
+  const [transactionsCount, setTransactionsCount] = useState(0);
   const [updatedDelegationInfo, setUpdatedDelegationInfo] = useState<Record<string, number>>({});
   const [showAddTokenPopup, setShowAddTokenPopup] = useState(false);
   const { setToast } = useToasts();
@@ -33,6 +47,29 @@ export function ManageEarningsView() {
   const { data: delegationInfo = {}, isLoading: isLoadingDelegationInfo } = useDelegationInfo();
   const { data: flpTokens = [], isLoading: isLoadingFlpTokens } = useFairLaunchTokens();
   const { hasNoAOYieldDelegations, hasAOYieldDelegations } = useAOYieldDelegations();
+
+  const keystoneInteraction = useMemo(() => {
+    const keystoneInteraction: KeystoneInteraction = {
+      display(data) {
+        setCurrentTransactionCount((prev) => prev + 1);
+        setTransactionUR(data);
+        setHardwareStatus("play");
+        scanner.retry();
+      },
+    };
+    return keystoneInteraction;
+  }, []);
+
+  const keystoneSigner = useMemo(() => {
+    if (wallet?.type !== "hardware") return null;
+    const keystoneSigner = new KeystoneSigner(
+      Buffer.from(Arweave.utils.b64UrlToBuffer(wallet.publicKey)),
+      wallet.xfp,
+      SignType.DataItem,
+      keystoneInteraction,
+    );
+    return keystoneSigner;
+  }, [wallet, keystoneInteraction]);
 
   const primaryTokens = useMemo(
     () => [
@@ -80,11 +117,13 @@ export function ManageEarningsView() {
         }
       }
 
+      setTransactionsCount(Object.keys(changedDelegations).length);
+
       // If user was only earning the AO or PI yield, we need to show the allocation set screen
       const isBeforeAllAOorPIYield =
         (delegationInfo[activeAddress] || 0) === 100 || (delegationInfo[PI_FLP_ID] || 0) === 100;
 
-      await updateDelegationInfo(changedDelegations, activeAddress);
+      await updateDelegationInfo(changedDelegations, activeAddress, keystoneSigner);
 
       const isAfterAllAOorPIYield =
         (updatedDelegationInfo[activeAddress] || 0) === 100 || (updatedDelegationInfo[PI_FLP_ID] || 0) === 100;
@@ -106,8 +145,34 @@ export function ManageEarningsView() {
       });
     } finally {
       setIsSaving(false);
+      setHardwareStatus(null);
+      setCurrentTransactionCount(0);
+      setTransactionUR(null);
     }
-  }, [updatedDelegationInfo, delegationInfo, activeAddress]);
+  }, [updatedDelegationInfo, delegationInfo, activeAddress, keystoneSigner]);
+
+  const handleScannerResult = useCallback(
+    async (res: UR) => {
+      try {
+        if (!res) return;
+
+        if (wallet?.type !== "hardware") {
+          throw new Error("Wallet switched while signing");
+        }
+
+        // decode signature
+        const { signature } = await decodeSignature(res);
+
+        keystoneSigner.submitSignature(signature);
+      } catch (e) {
+        console.log(e);
+      }
+    },
+    [wallet, keystoneSigner],
+  );
+
+  // qr-tx scanner
+  const scanner = useScanner(handleScannerResult);
 
   useEffect(() => {
     const hasAddressChanged = previousAddressRef.current !== activeAddress;
@@ -125,63 +190,103 @@ export function ManageEarningsView() {
       <HeadV2 title={browser.i18n.getMessage("manage_earnings")} />
 
       <Wrapper>
-        <Flex direction="column" gap={8} style={{ overflow: "auto" }}>
-          {hasNoAOYieldDelegations && (
-            <InfoWrapper>
-              <InfoCircle style={{ flexShrink: 0, color: theme.secondaryText, height: 24, width: 24 }} />
-              <Text size="xs" weight="medium" noMargin>
-                {browser.i18n.getMessage("start_allocating_ao_yield")}
-              </Text>
-            </InfoWrapper>
-          )}
-          {hasAOYieldDelegations && (
-            <Flex direction="column" gap={8} style={{ paddingBottom: 8 }}>
-              <Text variant="secondary" style={{ fontSize: 11 }} weight="medium" noMargin>
-                {browser.i18n.getMessage("note_earning_ao_tokens")}
-              </Text>
-              <Link
-                style={{
-                  fontSize: 12,
-                  fontWeight: 600,
-                  color: theme.displayTheme === "dark" ? "#9787FF" : "#6B57F9",
-                  gap: 2,
-                }}
-                href="https://www.wander.app/blog/wndr-fair-launch">
-                {browser.i18n.getMessage("learn_more")} <ArrowUpRight style={{ width: 16, height: 16 }} />
-              </Link>
-            </Flex>
-          )}
-          {isLoadingDelegationInfo || isLoadingFlpTokens ? (
-            <Flex align="center" justify="center" padding="8px 0px">
-              <Loading style={{ width: 24, height: 24 }} />
-            </Flex>
-          ) : (
-            delegatedTokens.map((token) => (
-              <Token
-                key={token.flpId}
-                token={token}
-                delegationInfo={updatedDelegationInfo}
-                setDelegationInfo={setUpdatedDelegationInfo}
-                activeAddress={activeAddress}
-                isLoading={false}
-              />
-            ))
-          )}
-          <Button
-            variant="secondary"
-            icon={<Plus width={24} height={24} />}
-            fullWidth
-            onClick={() => setShowAddTokenPopup(true)}>
-            {browser.i18n.getMessage("add_token")}
-          </Button>
-        </Flex>
+        {(hardwareStatus === "play" && transactionUR) || hardwareStatus === "scan" ? (
+          <Flex direction="column" gap={8}>
+            <Text noMargin style={{ textAlign: "center" }}>
+              {currentTransactionCount}/{transactionsCount}
+            </Text>
+            {hardwareStatus === "play" && transactionUR && (
+              <Flex direction="column" align="center" justify="center" textAlign="center" gap={16}>
+                <Text weight="medium" noMargin>
+                  {browser.i18n.getMessage("sign_scan_qr")}
+                </Text>
+                <AnimatedQRPlayer data={transactionUR} />
+              </Flex>
+            )}
+            {hardwareStatus === "scan" && (
+              <Flex direction="column" align="center" justify="center" textAlign="center">
+                <AnimatedQRScanner
+                  {...scanner.bindings}
+                  onError={(error) =>
+                    setToast({
+                      type: "error",
+                      duration: 2300,
+                      content: browser.i18n.getMessage(`keystone_${error}`),
+                    })
+                  }
+                />
+                <Spacer y={1} />
+                <Text style={{ textAlign: "center" }} noMargin>
+                  {browser.i18n.getMessage("keystone_scan_progress", `${scanner.progress.toFixed(0)}%`)}
+                </Text>
+                <Progress percentage={scanner.progress} />
+              </Flex>
+            )}
+          </Flex>
+        ) : (
+          <Flex direction="column" gap={8} style={{ overflow: "auto" }}>
+            {hasNoAOYieldDelegations && (
+              <InfoWrapper>
+                <InfoCircle style={{ flexShrink: 0, color: theme.secondaryText, height: 24, width: 24 }} />
+                <Text size="xs" weight="medium" noMargin>
+                  {browser.i18n.getMessage("start_allocating_ao_yield")}
+                </Text>
+              </InfoWrapper>
+            )}
+            {hasAOYieldDelegations && (
+              <Flex direction="column" gap={8} style={{ paddingBottom: 8 }}>
+                <Text variant="secondary" style={{ fontSize: 11 }} weight="medium" noMargin>
+                  {browser.i18n.getMessage("note_earning_ao_tokens")}
+                </Text>
+                <Link
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: theme.displayTheme === "dark" ? "#9787FF" : "#6B57F9",
+                    gap: 2,
+                  }}
+                  href="https://www.wander.app/blog/wndr-fair-launch">
+                  {browser.i18n.getMessage("learn_more")} <ArrowUpRight style={{ width: 16, height: 16 }} />
+                </Link>
+              </Flex>
+            )}
+            {isLoadingDelegationInfo || isLoadingFlpTokens ? (
+              <Flex align="center" justify="center" padding="8px 0px">
+                <Loading style={{ width: 24, height: 24 }} />
+              </Flex>
+            ) : (
+              delegatedTokens.map((token) => (
+                <Token
+                  key={token.flpId}
+                  token={token}
+                  delegationInfo={updatedDelegationInfo}
+                  setDelegationInfo={setUpdatedDelegationInfo}
+                  activeAddress={activeAddress}
+                  isLoading={false}
+                />
+              ))
+            )}
+            <Button
+              variant="secondary"
+              icon={<Plus width={24} height={24} />}
+              fullWidth
+              onClick={() => setShowAddTokenPopup(true)}>
+              {browser.i18n.getMessage("add_token")}
+            </Button>
+          </Flex>
+        )}
         <Flex direction="column" gap={8}>
           <Button
             fullWidth
-            disabled={!isDelegationInfoUpdated || isSaving}
-            onClick={saveDelegationInfo}
-            loading={isSaving}>
-            {browser.i18n.getMessage("save")}
+            disabled={(!isDelegationInfoUpdated || isSaving) && !hardwareStatus}
+            onClick={async () => {
+              if (!isSaving) await saveDelegationInfo();
+              else if (hardwareStatus === "play") {
+                setHardwareStatus((val) => (val === "play" ? "scan" : "play"));
+              }
+            }}
+            loading={isSaving && !hardwareStatus}>
+            {hardwareStatus ? browser.i18n.getMessage("keystone_scan") : browser.i18n.getMessage("save")}
           </Button>
           <Flex align="center" justify="center" padding="8px 0px">
             <Link
