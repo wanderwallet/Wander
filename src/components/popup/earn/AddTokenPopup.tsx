@@ -13,6 +13,7 @@ import { ToggleSwitch } from "~components/ToggleSwitch";
 import type { FlpTokenInfo } from "~utils/fair_launch/fair_launch.types";
 import { useActiveAddress } from "~wallets/hooks";
 import { InnerWrapper, Logo, LogoAndDetails, TokenName, Wrapper } from "../Token";
+import { PI_FLP_ID } from "~utils/fair_launch/fair_launch.constants";
 
 interface Props {
   open: boolean;
@@ -41,9 +42,9 @@ export function AddTokenPopup({ open, close, tokens, delegationInfo, setDelegati
   const handleHideClick = useCallback(
     (token: FlpTokenInfo, hidden: boolean) => {
       if (!hidden) {
-        const total = Object.values(delegationInfo).reduce((acc, curr) => acc + curr, 0);
         const aoDelegation = delegationInfo[activeAddress] || 0;
-        if (total === 100 && aoDelegation === 0) {
+        const piDelegation = delegationInfo[PI_FLP_ID] || 0;
+        if (aoDelegation === 0 && piDelegation === 0) {
           setToast({
             type: "error",
             content: "Please remove some tokens allocation to add a new one",
@@ -55,6 +56,7 @@ export function AddTokenPopup({ open, close, tokens, delegationInfo, setDelegati
 
       setDelegationInfo((prev) => {
         const aoDelegation = prev[activeAddress] || 0;
+        const piDelegation = prev[PI_FLP_ID] || 0;
         const tokenDelegation = prev[token.flpId] || 0;
         if (hidden) {
           const { [token.flpId]: _, ...rest } = prev;
@@ -67,7 +69,7 @@ export function AddTokenPopup({ open, close, tokens, delegationInfo, setDelegati
         return {
           ...prev,
           [token.flpId]: 5,
-          [activeAddress]: aoDelegation - 5,
+          ...(aoDelegation > 0 ? { [activeAddress]: aoDelegation - 5 } : { [PI_FLP_ID]: piDelegation - 5 }),
         };
       });
     },
