@@ -77,27 +77,53 @@ const liquidopsActiveTokenIds = Object.values(tokenData)
 const aoAgentTokenIds = [AO_PROCESS_ID, WUSDC_PROCESS_ID, WAR_PROCESS_ID];
 const agentTokenIds = new Set([...liquidopsActiveTokenIds, ...aoAgentTokenIds]);
 
+const createSendButtonWithoutText = (id: string): ButtonConfig => ({
+  ...sendButtonConfigWithoutText,
+  href: `/send/transfer/${id}`,
+});
+
+const createSendButtonWithText = (id: string): ButtonConfig => ({
+  ...sendButtonConfig,
+  href: `/send/transfer/${id}`,
+});
+
+const getButtonsForTokenType = (id: string, hasEarn: boolean, hasAgent: boolean): ButtonConfig[] => {
+  if (id === "AR") {
+    return [purchaseButtonConfig, earnButtonConfigWithoutText, agentsButtonConfigWithoutText];
+  }
+
+  if (id === AO_PROCESS_ID) {
+    return [earnButtonConfig, createSendButtonWithoutText(id), agentsButtonConfigWithoutText];
+  }
+
+  if (hasEarn && hasAgent) {
+    return [earnButtonConfig, createSendButtonWithoutText(id), agentsButtonConfigWithoutText];
+  }
+
+  if (hasEarn && !hasAgent) {
+    return [earnButtonConfig, createSendButtonWithText(id)];
+  }
+
+  if (hasAgent && !hasEarn) {
+    return [agentsButtonConfig, createSendButtonWithText(id)];
+  }
+
+  return [createSendButtonWithText(id), receiveButtonConfig];
+};
+
 export const TokenActionButtons = ({ id }: TokenActionButtonsProps) => {
   const { data: fairLaunchTokens = [] } = useFairLaunchTokens();
+
   const earnTokenIds = useMemo(
     () => new Set([...corePermawebTokenIds, ...fairLaunchTokens.map((token) => token.processId)]),
     [fairLaunchTokens],
   );
 
   const buttons = useMemo<ButtonConfig[]>(() => {
-    if (id === "AR") {
-      return [purchaseButtonConfig, earnButtonConfigWithoutText, agentsButtonConfigWithoutText];
-    } else if (id === AO_PROCESS_ID) {
-      return [earnButtonConfig, sendButtonConfigWithoutText, agentsButtonConfigWithoutText];
-    } else if (earnTokenIds.has(id) && agentTokenIds.has(id)) {
-      return [earnButtonConfig, sendButtonConfigWithoutText, agentsButtonConfigWithoutText];
-    } else if (earnTokenIds.has(id) && !agentTokenIds.has(id)) {
-      return [earnButtonConfig, sendButtonConfig];
-    } else if (agentTokenIds.has(id) && !earnTokenIds.has(id)) {
-      return [agentsButtonConfig, sendButtonConfig];
-    } else {
-      return [sendButtonConfig, receiveButtonConfig];
-    }
+    const hasEarn = earnTokenIds.has(id);
+    const hasAgent = agentTokenIds.has(id);
+
+    return getButtonsForTokenType(id, hasEarn, hasAgent);
   }, [id, earnTokenIds]);
 
   return <ActionButtons buttons={buttons} />;
