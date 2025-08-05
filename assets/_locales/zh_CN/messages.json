@@ -3847,7 +3847,7 @@
         "description": "USDA 代币的描述"
     },
     "token_description_n2MhPK0O3yEvY2zW73sqcmWqDktJxAifJDrri4qireI": {
-        "message": "LiquidOps 是一个借贷协议，为用户提供通过 Arweave 和 AO 资产赚取利息的能力。LQD 是 LiquidOps 协议的治理代币",
+        "message": "LiquidOps 是一个借贷协议，用户可以通过它在 Arweave 和 AO 资产上赚取利息。LQD 是 LiquidOps 协议的治理代币。",
         "description": "LQD 代币的描述"
     },
     "token_description_Nx__Ichdp_9uO_ZKg2DLWPiRlg_DWrSa2uGvINxOjaE": {
@@ -3867,7 +3867,7 @@
         "description": "SMONEY 代币的描述"
     },
     "token_description_mqBYxpDsolZmJyBdTK8TJp_ftOuIUXVYcSQ8MYZdJg0": {
-        "message": "Apus 通过确定性 GPU 计算实现可验证的去中心化 AI。$APUS 代币是 Apus Network 的核心实用和治理代币，在保护网络、促进交易和赋能去中心化治理方面发挥核心作用。",
+        "message": "Apus 通过确定性 GPU 计算实现可验证的去中心化 AI。$$APUS 代币是 Apus Network 的核心实用和治理代币，在保护网络、促进交易和赋能去中心化治理方面发挥核心作用。",
         "description": "APUS 代币的描述"
     },
     "token_description_gx_jKk_hy8_sB4Wv5WEuvTTVyIRWW3We7rRHthcohBQ": {
