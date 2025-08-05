@@ -81,7 +81,7 @@ export const defaultTokens = [
   },
 ] as const satisfies TokenInfo[];
 
-export const nonTransferableTokenIds: Array<string> = [EXP_PROCESS_ID, PI_PROCESS_ID, WNDR_PROCESS_ID];
+export const nonTransferableTokenIds: Array<string> = [EXP_PROCESS_ID, WNDR_PROCESS_ID];
 
 /**
  * Dummy ID

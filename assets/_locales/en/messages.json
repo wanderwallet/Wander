@@ -2042,10 +2042,6 @@
     "message": "The EXP Token is non transferable",
     "description": "Popup description about ao token transfer"
   },
-  "PI_token_send_popup": {
-    "message": "The PI Token is non transferable",
-    "description": "Popup description about pi token transfer"
-  },
   "WNDR_token_send_popup": {
     "message": "The WNDR Token is non transferable until October 7th, 2025",
     "description": "Popup description about wndr token transfer"
@@ -3668,6 +3664,18 @@
     "message": "1) Go to https://ao.arweave.net/#/delegate/ <br/> 2) Connect your Wander wallet <br/> 3) Find Wander in the project list <br/> 4) Click the Add button <br/> 5) Set your delegating % <br/> 6) Click the Confirm Delegation Preferences button <br/>  <br/> Done!",
     "description": "Announcement 3 body"
   },
+  "announcement_4_title": {
+    "message": "USDA Beta Access",
+    "description": "Announcement 4 title"
+  },
+  "announcement_4_description": {
+    "message": "Instant USDA Beta access for Reserve, Edge & Prime tier members",
+    "description": "Announcement 4 description"
+  },
+  "announcement_4_body": {
+    "message": "Wander Reserve, Edge, and Prime tier members get instant access to the USDA Beta. Connect your Wander wallet, get verified and unlock access. Try now on [Astro Bridge](https://bridge.astrousd.com/)",
+    "description": "Announcement 4 body"
+  },
   "swipe_to_learn_more": {
     "message": "Swipe to learn more",
     "description": "Swipe to learn more text"
@@ -3815,5 +3823,21 @@
   "fastest": {
     "message": "Fastest",
     "description": "Fastest text"
+  },
+  "members_instant_access": {
+    "message": "members get instant access",
+    "description": "Members get instant access text"
+  },
+  "get_access": {
+    "message": "Get access",
+    "description": "Get access text"
+  },
+  "wndr_member_benefits": {
+    "message": "$$WNDR Member Benefits",
+    "description": "WNDR member benefits text"
+  },
+  "beta_access": {
+    "message": "Beta Access",
+    "description": "Beta access text"
   }
 }

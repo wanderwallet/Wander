@@ -20,6 +20,8 @@ import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { scheduleSwapExecution } from "~utils/agents/swap";
 import { WandAnnouncementPopup } from "~components/popup/home/WandAnnouncementPopup";
 import { ActivityNotificationsNotice } from "~components/popup/home/ActivityNotificationsNotice";
+import { AstroBetaAccessAnnouncementPopup } from "~components/popup/home/AstroBetaAccessAnnouncementPopup";
+import { isAstroBetaAnnouncementActive } from "~utils/announcements";
 
 export function HomeView() {
   const theme = useTheme();
@@ -28,6 +30,7 @@ export function HomeView() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [isOpen, setOpen] = useState(false);
   const [isWandAnnouncementOpen, setWandAnnouncementOpen] = useState(false);
+  const [isAstroAnnouncementOpen, setAstroAnnouncementOpen] = useState(false);
 
   const [announcement, _] = useStorage<boolean>({
     key: "show_announcement",
@@ -104,8 +107,13 @@ export function HomeView() {
       setLoggedIn(true);
     }
 
-    const wandAnnouncementShown = (await ExtensionStorage.get<boolean>("wander_announcement_shown")) ?? false;
+    const [wandAnnouncementShown, astroBetaAccessAnnouncementShown] = await Promise.all([
+      ExtensionStorage.get<boolean>("wander_announcement_shown").then((val) => val ?? false),
+      ExtensionStorage.get<boolean>("astro_beta_access_announcement_shown").then((val) => val ?? false),
+    ]);
     setWandAnnouncementOpen(!wandAnnouncementShown);
+
+    setAstroAnnouncementOpen(isAstroBetaAnnouncementActive() && !astroBetaAccessAnnouncementShown);
 
     // WALLET.TYPE JUST FOR KEYSTONE POPUP
     setOpen(announcement && wallet?.type === "hardware");
@@ -114,8 +122,13 @@ export function HomeView() {
   return (
     <HomeWrapper>
       {/* <AoBanner activeAddress={activeAddress} /> */}
-      {loggedIn && <KeystoneAnnouncementPopup isOpen={isOpen} setOpen={setOpen} />}
-      {loggedIn && <WandAnnouncementPopup isOpen={isWandAnnouncementOpen} setOpen={setWandAnnouncementOpen} />}
+      {loggedIn && (
+        <>
+          <KeystoneAnnouncementPopup isOpen={isOpen} setOpen={setOpen} />
+          <AstroBetaAccessAnnouncementPopup isOpen={isAstroAnnouncementOpen} setOpen={setAstroAnnouncementOpen} />
+          <WandAnnouncementPopup isOpen={isWandAnnouncementOpen} setOpen={setWandAnnouncementOpen} />
+        </>
+      )}
       <WalletHeader />
       <HomeContent>
         <Balance />
