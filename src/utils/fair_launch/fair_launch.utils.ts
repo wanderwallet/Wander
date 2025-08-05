@@ -66,6 +66,7 @@ const TEST_TOKEN_FLP_IDS = new Set([
   "xswbZRtkjQQ8D1h6tx503iLaAxxPLWP10J2TvgbRZXk",
   "NQy9H6oAE-m55BheXbGu70nEWiiGMsL8lM9YsNJ8gD4",
   "gkcnuAZeFeqPvFvNABFKGRKGE_AsmA0T3I1_jOFF0MU",
+  "Gmf5PyNLd1R4uENH2ITg03KxKMi25g1ZJl1F6AplQRc",
 ]);
 
 /**
