@@ -14,7 +14,7 @@ interface Props {
 const Wrapper = styled.div`
   position: relative;
   height: 18px;
-  background-color: ${(props) => props.theme.theme}1A;
+  background-color: ${(props) => props.theme.theme}26;
   border-radius: 9px;
   overflow: hidden;
 `;
