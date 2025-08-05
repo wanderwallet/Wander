@@ -1,5 +1,5 @@
 import { dataItemToUR, decodeSignature, messageToUR } from "~wallets/hardware/keystone";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useScanner } from "@arconnect/keystone-sdk";
 import { useActiveWallet } from "~wallets/hooks";
 import type { UR } from "@ngraveio/bc-ur";
@@ -20,13 +20,6 @@ export function SignKeystoneAuthRequestView() {
 
   const { keystoneSignType, data: dataToSign } = authRequest;
 
-  useAsyncEffect(async () => {
-    if (keystoneSignType === "DataItem" && !!dataToSign) {
-      await loadTransactionUR();
-      setPage("qr");
-    }
-  }, [keystoneSignType, dataToSign]);
-
   /**
    * Hardware wallet logic
    */
@@ -39,18 +32,6 @@ export function SignKeystoneAuthRequestView() {
 
   // load tx UR
   const [transactionUR, setTransactionUR] = useState<UR>();
-
-  async function loadTransactionUR() {
-    if (wallet.type !== "hardware" || !dataToSign) return;
-    // load the ur data
-    if (keystoneSignType === "DataItem") {
-      const ur = await dataItemToUR(dataToSign, wallet.xfp);
-      setTransactionUR(ur);
-    } else {
-      const ur = await messageToUR(dataToSign, wallet.xfp);
-      setTransactionUR(ur);
-    }
-  }
 
   // loading
   const [loading, setLoading] = useState(false);
@@ -88,6 +69,26 @@ export function SignKeystoneAuthRequestView() {
   // toast
   const { setToast } = useToasts();
 
+  const loadTransactionUR = useCallback(async () => {
+    if (wallet.type !== "hardware" || !dataToSign) return;
+
+    // load the ur data
+    if (keystoneSignType === "DataItem") {
+      const ur = await dataItemToUR(dataToSign, wallet.xfp);
+      setTransactionUR(ur);
+    } else {
+      const ur = await messageToUR(dataToSign, wallet.xfp);
+      setTransactionUR(ur);
+    }
+  }, [keystoneSignType, dataToSign, wallet]);
+
+  useAsyncEffect(async () => {
+    if (keystoneSignType === "DataItem" && !!dataToSign) {
+      await loadTransactionUR();
+      setPage("qr");
+    }
+  }, [keystoneSignType, dataToSign, loadTransactionUR]);
+
   // TODO: Could large `data` values cause issues with this component or `<Message>` below?
 
   return (
@@ -117,6 +118,7 @@ export function SignKeystoneAuthRequestView() {
                 />
                 <Spacer y={1} />
                 <Text>{browser.i18n.getMessage("keystone_scan_progress", `${scanner.progress.toFixed(0)}%`)}</Text>
+                <Spacer y={0.5} />
                 <Progress percentage={scanner.progress} />
               </>
             )}

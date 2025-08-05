@@ -133,7 +133,7 @@ export async function isomorphicSendMessage<K extends MessageID>(messageData: Me
 export function isomorphicOnMessage<K extends MessageID>(messageId: K, callback: OnMessageCallback<K>): void {
   webExtBridgeOnMessage(messageId, callback as any);
 
-  if (messageId === "auth_request") {
+  if (messageId === "auth_request" || messageId === "auth_chunk") {
     isomorphicSendMessage({
       destination: "background",
       messageId: `${messageId}${READY_MESSAGE_SUFFIX}` as any,

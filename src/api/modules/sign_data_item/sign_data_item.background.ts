@@ -12,6 +12,7 @@ import { createDataItem } from "~utils/data_item";
 import { EventType, trackDirect } from "~utils/analytics";
 import { checkIfUserNeedsToSign } from "../sign/sign_policy";
 import { createArweaveSignerWithOptions } from "~utils/signer.utils";
+import { generateAnchor } from "~wallets/hardware/keystone";
 
 const background: BackgroundModuleFunction<number[]> = async (
   appData,
@@ -114,6 +115,10 @@ const background: BackgroundModuleFunction<number[]> = async (
       ownerLength: 512,
       publicKey: Buffer.from(Arweave.utils.b64UrlToBuffer(activeWallet.publicKey)),
     };
+    if (!options?.anchor) {
+      // @ts-expect-error - anchor can be uint8array or string
+      options.anchor = generateAnchor();
+    }
     const dataEntry = createDataItem(binaryData, signerConfig, options);
     try {
       const data: AuthKeystoneData = {

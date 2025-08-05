@@ -190,3 +190,11 @@ export interface KeystoneAccount {
   owner: string;
   xfp: string;
 }
+
+/**
+ * Generate a random anchor for a data item
+ * Returns a 32 byte Buffer
+ */
+export function generateAnchor() {
+  return crypto.getRandomValues(new Uint8Array(32));
+}
