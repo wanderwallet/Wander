@@ -9,6 +9,7 @@ interface FlexProps extends React.HTMLAttributes<HTMLDivElement> {
   gap?: CSSProperties["gap"];
   flex?: CSSProperties["flex"];
   flexShrink?: CSSProperties["flexShrink"];
+  minWidth?: CSSProperties["minWidth"];
   width?: CSSProperties["width"];
   height?: CSSProperties["height"];
   padding?: CSSProperties["padding"];
@@ -33,6 +34,7 @@ export const Flex: React.FC<FlexProps> = ({
   flexShrink,
   gap = 0,
   flex,
+  minWidth,
   width,
   height,
   padding,
@@ -55,6 +57,7 @@ export const Flex: React.FC<FlexProps> = ({
         flexWrap: wrap,
         gap,
         flex,
+        minWidth,
         width,
         height,
         padding,

@@ -210,25 +210,22 @@ function Token({
       <Flex direction="row" gap={8} align="center" justify="space-between" width="100%">
         <Logo src={logo} width={40} height={40} />
         {token.comingSoon ? (
-          <Flex direction="row" width="100%" justify="space-between" align="center">
-            <Flex direction="column">
-              <Text size="md" weight="semibold" noMargin>
-                {token.Name}
-              </Text>
-              <Text variant="secondary" weight="medium" size="xs" noMargin>
-                ${token.Ticker}
-              </Text>
+          <Flex direction="row" width="100%" justify="space-between" align="center" gap={8} minWidth={0}>
+            <Flex direction="column" minWidth={0}>
+              <TokenName>{token.Name}</TokenName>
+              <Ticker>${token.Ticker}</Ticker>
             </Flex>
-            <Text style={{ color: theme.displayTheme === "dark" ? "#9787FF" : "#6B57F9" }} weight="medium" noMargin>
+            <Text
+              style={{ color: theme.displayTheme === "dark" ? "#9787FF" : "#6B57F9", flexShrink: 0 }}
+              weight="medium"
+              noMargin>
               {browser.i18n.getMessage("coming_soon")}
             </Text>
           </Flex>
         ) : (
-          <Flex direction="column" gap={4} width="100%">
-            <Flex direction="row" gap={4} align="center" justify="space-between">
-              <Text size="md" weight="semibold" noMargin>
-                {token.Name}
-              </Text>
+          <Flex direction="column" gap={4} width="100%" minWidth={0}>
+            <Flex direction="row" gap={8} align="center" justify="space-between" width="100%">
+              <TokenName>{token.Name}</TokenName>
               {isLoading || token.percent > 0 ? (
                 <Text weight="semibold" noMargin>
                   {isLoading ? <Loading width={4} height={4} /> : `${token.percent}%`}
@@ -246,9 +243,7 @@ function Token({
               )}
             </Flex>
             <Flex direction="row" gap={4} align="center" justify="space-between">
-              <Text variant="secondary" weight="medium" size="xs" noMargin>
-                ${token.Ticker}
-              </Text>
+              <Ticker>${token.Ticker}</Ticker>
               <Text variant="secondary" weight="medium" size="xs" noMargin>
                 {browser.i18n.getMessage("balance")}:{" "}
                 {isBalanceLoading ? <Loading width={4} height={4} /> : formattedBalance.displayBalance}
@@ -282,6 +277,7 @@ const TokenWrapper = styled.div`
   flex-direction: column;
   padding: 4px 0;
   gap: 12px;
+  width: 100%;
 `;
 
 const PendingDot = styled.div`
@@ -289,5 +285,26 @@ const PendingDot = styled.div`
   height: 6px;
   background-color: #eebd41;
   border-radius: 50%;
+  flex-shrink: 0;
+`;
+
+const TokenName = styled(Text).attrs({
+  size: "md",
+  weight: "semibold",
+  noMargin: true,
+})`
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+`;
+
+const Ticker = styled(Text).attrs({
+  size: "xs",
+  variant: "secondary",
+  weight: "medium",
+  noMargin: true,
+})`
   flex-shrink: 0;
 `;
