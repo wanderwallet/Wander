@@ -3930,6 +3930,166 @@
     "message": "There is no information available for this asset. Please proceed with caution and use at your own risk",
     "description": "Unknown coin text"
   },
+  "earn_tokens_in_wander": {
+    "message": "Earn Tokens in Wander!",
+    "description": "Earn tokens in Wander text"
+  },
+  "earn_tokens_in_wander_description": {
+    "message": "Earn a variety of tokens just from holding AR Token and/or staking stETH and DAI.",
+    "description": "Earn tokens in Wander description text"
+  },
+  "earn_tokens_list_item_1": {
+    "message": "Hold AR tokens to earn automatically",
+    "description": "Earn tokens list item 1"
+  },
+  "earn_tokens_list_item_2": {
+    "message": "Stake sETH or DAI for additional rewards",
+    "description": "Earn tokens list item 2"
+  },
+  "earn_tokens_list_item_3": {
+    "message": "Choose which tokens to earn",
+    "description": "Earn tokens list item 3"
+  },
+  "allocation": {
+    "message": "Allocation",
+    "description": "Allocation text"
+  },
+  "allocation_description": {
+    "message": "This represents how you are currently allocating your AO Yield",
+    "description": "Allocation description text"
+  },
+  "view_full_breakdown_on_ao_website": {
+    "message": "View full breakdown on AO website",
+    "description": "View full breakdown on AO website text"
+  },
+  "earn_notice_title": {
+    "message": "Support projects & earn their tokens",
+    "description": "Earn notice title"
+  },
+  "earn_notice_description": {
+    "message": "Delegate your AO yield earnings to projects in the ecosystem.",
+    "description": "Earn notice description"
+  },
+  "primary": {
+    "message": "Primary",
+    "description": "Primary text"
+  },
+  "primary_count": {
+    "message": "Primary ($COUNT$)",
+    "description": "Primary count text",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
+  "projects": {
+    "message": "Projects",
+    "description": "Projects text"
+  },
+  "projects_count": {
+    "message": "Projects ($COUNT$)",
+    "description": "Projects count text",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
+  "coming_soon": {
+    "message": "Coming Soon",
+    "description": "Coming soon text"
+  },
+  "no_projects_tokens": {
+    "message": "No projects tokens",
+    "description": "No projects tokens text"
+  },
+  "no_projects_tokens_description": {
+    "message": "Delegated AO allocation to ecosystem projects will appear here",
+    "description": "No projects tokens description text"
+  },
+  "manage_earnings": {
+    "message": "Manage earnings",
+    "description": "Manage earnings text"
+  },
+  "add_token": {
+    "message": "Add token",
+    "description": "Add token text"
+  },
+  "explore_all_projects": {
+    "message": "Explore all projects",
+    "description": "Explore all projects text"
+  },
+  "ao_delegation_tooltip": {
+    "message": "Your $$AO allocation will be adjusted according to tokens added.",
+    "description": "AO delegation tooltip text"
+  },
+  "remove_delegation_tooltip": {
+    "message": "Setting the token allocation to less than 5% will remove it",
+    "description": "Remove delegation tooltip text"
+  },
+  "delegation_info_saved": {
+    "message": "Delegation info saved",
+    "description": "Delegation info saved text"
+  },
+  "delegation_info_save_failed": {
+    "message": "Delegation info save failed",
+    "description": "Delegation info save failed text"
+  },
+  "flp_claim_success": {
+    "message": "Claimed successfully",
+    "description": "Fair Launch claim success text"
+  },
+  "flp_claim_error": {
+    "message": "Failed to claim",
+    "description": "Fair Launch claim error text"
+  },
+  "claim": {
+    "message": "Claim",
+    "description": "Claim text"
+  },
+  "claiming": {
+    "message": "Claiming",
+    "description": "Claiming text"
+  },
+  "ao_tokens_detected": {
+    "message": "AO tokens detected",
+    "description": "AO tokens detected text"
+  },
+  "diversify_portfolio": {
+    "message": "Diversify you portfolio by delegating your AO yield earnings to projects in the ecosystem.",
+    "description": "Diversify portfolio text"
+  },
+  "start_delegating": {
+    "message": "Start delegating",
+    "description": "Start delegating text"
+  },
+  "balance": {
+    "message": "Balance",
+    "description": "Balance text"
+  },
+  "start_allocating_ao_yield": {
+    "message": "Start allocating your AO yield with more ways to earn. You can change this at any time.",
+    "description": "Start allocating your AO yield with more ways to earn text"
+  },
+  "note_earning_ao_tokens": {
+    "message": "Note: You're technically earning AO tokens, but delegating them to projects in exchange for their tokens.",
+    "description": "Note you are technically earning AO tokens text"
+  },
+  "allocation_set": {
+    "message": "Allocation set!",
+    "description": "Allocation set text"
+  },
+  "allocation_set_description": {
+    "message": "You have successfully added new tokens to your delegation list. These tokens will show up on your asset list automatically.",
+    "description": "Allocation set description text"
+  },
+  "view_delegation_list": {
+    "message": "View delegation list",
+    "description": "View delegation list text"
+  },
   "members_instant_access": {
     "message": "members get instant access",
     "description": "Members get instant access text"

@@ -9,7 +9,7 @@ import TriangleIcon from "~components/icons/TriangleIcon";
 import browser from "webextension-polyfill";
 import { Flex } from "~components/common/Flex";
 import { PriceChartModal } from "./PriceChartModal";
-import { LineChart } from "./LineChart";
+import { LineChart } from "../chart/LineChart";
 import { useTokenPrice } from "~tokens/hooks";
 import { AR_PROCESS_ID, AO_PROCESS_ID } from "~tokens/aoTokens/ao";
 

@@ -3890,6 +3890,166 @@
       "message": "没有关于此资产的信息。请谨慎行事，并自行承担风险",
       "description": "此资产暂无相关信息。请谨慎操作，风险自负。"
     },
+    "earn_tokens_in_wander": {
+      "message": "在 Wander 中赚取代币！",
+      "description": "Earn tokens in Wander text"
+    },
+    "earn_tokens_in_wander_description": {
+      "message": "只需持有 AR 代币或质押 stETH 和 DAI 即可赚取多种代币。",
+      "description": "Earn tokens in Wander description text"
+    },
+    "earn_tokens_list_item_1": {
+      "message": "持有 AR 代币以自动赚取",
+      "description": "Earn tokens list item 1"
+    },
+    "earn_tokens_list_item_2": {
+      "message": "质押 stETH 或 DAI 以获得额外奖励",
+      "description": "Earn tokens list item 2"
+    },
+    "earn_tokens_list_item_3": {
+      "message": "选择要赚取的代币",
+      "description": "Earn tokens list item 3"
+    },
+    "allocation": {
+      "message": "分配",
+      "description": "Allocation text"
+    },
+    "allocation_description": {
+      "message": "这代表了你当前在 AO 收益中的分配情况",
+      "description": "Allocation description text"
+    },
+    "view_full_breakdown_on_ao_website": {
+      "message": "在 AO 网站上查看完整分解",
+      "description": "View full breakdown on AO website text"
+    },
+    "earn_notice_title": {
+      "message": "支持项目并赚取他们的代币",
+      "description": "Earn notice title"
+    },
+    "earn_notice_description": {
+      "message": "将你的 AO 收益委托给生态系统中的项目。",
+      "description": "Earn notice description"
+    },
+    "primary": {
+      "message": "主要",
+      "description": "Primary text"
+    },
+    "primary_count": {
+      "message": "主要 ($COUNT$)",
+      "description": "Primary count text",
+      "placeholders": {
+        "count": {
+          "content": "$1",
+          "example": "2"
+        }
+      }
+    },
+    "projects": {
+      "message": "项目",
+      "description": "Projects text"
+    },
+    "projects_count": {
+      "message": "项目 ($COUNT$)",
+      "description": "Projects count text",
+      "placeholders": {
+        "count": {
+          "content": "$1",
+          "example": "2"
+        }
+      }
+    },
+    "coming_soon": {
+      "message": "即将推出",
+      "description": "Coming soon text"
+    },
+    "no_projects_tokens": {
+      "message": "没有项目代币",
+      "description": "No projects tokens text"
+    },
+    "no_projects_tokens_description": {
+      "message": "委托给生态系统项目的 AO 分配将显示在这里",
+      "description": "No projects tokens description text"
+    },
+    "manage_earnings": {
+      "message": "管理收益",
+      "description": "Manage earnings text"
+    },
+    "add_token": {
+      "message": "添加代币",
+      "description": "Add token text"
+    },
+    "explore_all_projects": {
+      "message": "探索所有项目",
+      "description": "Explore all projects text"
+    },
+    "ao_delegation_tooltip": {
+      "message": "您的 $$AO 分配将根据添加的代币进行调整。",
+      "description": "AO delegation tooltip text"
+    },
+    "remove_delegation_tooltip": {
+      "message": "将代币分配设置为小于 5% 将移除它",
+      "description": "Remove delegation tooltip text"
+    },
+    "delegation_info_saved": {
+      "message": "委托信息已保存",
+      "description": "Delegation info saved text"
+    },
+    "delegation_info_save_failed": {
+      "message": "委托信息保存失败",
+      "description": "Delegation info save failed text"
+    },
+    "flp_claim_success": {
+      "message": "领取成功",
+      "description": "Fair Launch claim success text"
+    },
+    "flp_claim_error": {
+      "message": "领取失败",
+      "description": "Fair Launch claim error text"
+    },
+    "claim": {
+      "message": "领取",
+      "description": "Claim text"
+    },
+    "claiming": {
+      "message": "领取中",
+      "description": "Claiming text"
+    },
+    "ao_tokens_detected": {
+      "message": "检测到 AO 代币",
+      "description": "AO tokens detected text"
+    },
+    "diversify_portfolio": {
+      "message": "通过将您的 AO 收益委托给生态系统中的项目来多元化您的投资组合。",
+      "description": "Diversify portfolio text"
+    },
+    "start_delegating": {
+      "message": "开始委托",
+      "description": "Start delegating text"
+    },
+    "balance": {
+      "message": "余额",
+      "description": "Balance text"
+    },
+    "start_allocating_ao_yield": {
+      "message": "开始分配您的 AO 收益，赚取更多收益。您可以随时更改。",
+      "description": "Start allocating your AO yield with more ways to earn text"
+    },
+    "note_earning_ao_tokens": {
+      "message": "注意：您实际上是在赚取 AO 代币，但将它们委托给项目以换取他们的代币。",
+      "description": "Note you are technically earning AO tokens text"
+    },
+    "allocation_set": {
+      "message": "分配设置！",
+      "description": "Allocation set text"
+    },
+    "allocation_set_description": {
+      "message": "您已成功添加新代币到您的委托列表。这些代币将自动显示在您的资产列表中。",
+      "description": "Allocation set description text"
+    },
+    "view_delegation_list": {
+      "message": "查看委托列表",
+      "description": "View delegation list text"
+    },
     "members_instant_access": {
       "message": "成员立即访问",
       "description": "Members get instant access text"

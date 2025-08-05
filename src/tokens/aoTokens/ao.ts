@@ -359,6 +359,31 @@ export const createDataItemSigner =
     };
   };
 
+export const createDataItemKeystoneSigner =
+  (keystoneSigner: KeystoneSigner) =>
+  async ({
+    data,
+    tags = [],
+    target,
+    anchor,
+  }: {
+    data: any;
+    tags?: { name: string; value: string }[];
+    target?: string;
+    anchor?: string;
+  }): Promise<{ id: string; raw: ArrayBuffer }> => {
+    const signer = keystoneSigner;
+    const dataItem = createData(data, signer, { tags, target, anchor });
+    const serial = dataItem.getRaw();
+    const signature = await signer.sign(serial);
+    dataItem.setSignature(Buffer.from(signature));
+
+    return {
+      id: dataItem.id,
+      raw: dataItem.getRaw(),
+    };
+  };
+
 export const sendAoTransfer = async (
   ao: AoInstance,
   process: string,
@@ -427,28 +452,7 @@ export const sendAoTransferKeystone = async (
   keystoneSigner: KeystoneSigner,
 ) => {
   try {
-    const dataItemSigner = async ({
-      data,
-      tags = [],
-      target,
-      anchor,
-    }: {
-      data: any;
-      tags?: { name: string; value: string }[];
-      target?: string;
-      anchor?: string;
-    }): Promise<{ id: string; raw: ArrayBuffer }> => {
-      const signer = keystoneSigner;
-      const dataItem = createData(data, signer, { tags, target, anchor });
-      const serial = dataItem.getRaw();
-      const signature = await signer.sign(serial);
-      dataItem.setSignature(Buffer.from(signature));
-
-      return {
-        id: dataItem.id,
-        raw: dataItem.getRaw(),
-      };
-    };
+    const dataItemSigner = createDataItemKeystoneSigner(keystoneSigner);
     const transferID = await ao.message({
       process,
       signer: dataItemSigner,

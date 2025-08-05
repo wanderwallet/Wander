@@ -295,7 +295,7 @@ l-364 0 -47 141 c-82 245 -168 430 -282 607 -30 45 -54 85 -54 88 0 8 34 -4
   );
 };
 
-const Wrapper = styled.div<{
+export const Wrapper = styled.div<{
   disableClickEffect?: boolean;
   disableCursor?: boolean;
 }>`
@@ -324,7 +324,7 @@ const Wrapper = styled.div<{
   }
 `;
 
-const InnerWrapper = styled.div<{ width: string }>`
+export const InnerWrapper = styled.div<{ width: string }>`
   position: relative;
   display: flex;
   align-items: center;
