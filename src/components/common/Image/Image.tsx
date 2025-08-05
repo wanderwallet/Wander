@@ -73,7 +73,9 @@ export default function Image({
     setIsLoaded(true);
   };
 
-  const [pointer, setPointer] = useState(pointerProp);
+  const [devPointer, setDevPointer] = useState<[number, number] | null>(null);
+
+  const pointer = devPointer || pointerProp;
 
   const movePointer =
     process.env.NODE_ENV === "development"
@@ -87,7 +89,7 @@ export default function Image({
 
           console.log("pointer =", nextPointer);
 
-          setPointer(nextPointer);
+          setDevPointer(nextPointer);
         }
       : undefined;
 
@@ -116,12 +118,12 @@ export default function Image({
               ? {
                   top: `${pointer[1]}%`,
                   left: `${pointer[0]}%`,
-                  background: process.env.NODE_ENV === "development" ? "yellow" : undefined,
+                  background: process.env.NODE_ENV === "development" ? "magenta" : undefined,
                 }
               : {
                   top: `${pointer[1]}px`,
                   left: `${pointer[0]}px`,
-                  background: process.env.NODE_ENV === "development" ? "yellow" : undefined,
+                  background: process.env.NODE_ENV === "development" ? "magenta" : undefined,
                 }
           }
         />

@@ -13,3 +13,4 @@ Chrome mobile screenshot:
 In app browser screenshot:
 
 - Test page background should be #1B1D21 for dark mode and #FFFFFF for light mode.
+- Leave a 15px padding around the image when cropping it.

@@ -23,8 +23,13 @@
     height: auto;
   }
 
-  &.hasBorder {
+  &.hasBorder::after {
+    content: "";
+    position: absolute;
+    inset: 0;
     border: 1px solid var(--color-divider-default);
+    border-radius: var(--input-border-radius, 10px);
+    pointer-events: none;
   }
 
   &.isCircular {
