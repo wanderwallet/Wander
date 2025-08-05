@@ -60,7 +60,7 @@ export const TokenInfo = ({ id }: TokenInfoProps) => {
     [tokenData, token],
   );
 
-  const verified = VERIFIED_TOKENS.includes(id as (typeof VERIFIED_TOKENS)[number]);
+  const verified = VERIFIED_TOKENS.has(id);
   const tokenDescription = browser.i18n.getMessage(`token_description_${id.replaceAll("-", "_")}`);
 
   return (

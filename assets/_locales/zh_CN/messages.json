@@ -3790,13 +3790,9 @@
             }
         }
     },
-    "token_description_m3PaWzK4PTG9lAaqYQPaPdOcXdO8hYqi5Fe9NWqXd0w": {
-        "message": "AO 致力于为去中心化应用 (dApps) 提供安全、可扩展和互操作的计算环境，使用 AO 代币作为其原生货币来保障经济安全和流动性。",
-        "description": "AO 代币的描述"
-    },
     "token_description_0syT13r0s0tgPmIed95bJnuSqaD29HQNN8D3ElLSrsc": {
         "message": "AO 致力于为去中心化应用 (dApps) 提供安全、可扩展和互操作的计算环境，使用 AO 代币作为其原生货币来保障经济安全和流动性。",
-        "description": "AO 代币的描述（重复）"
+        "description": "AO 代币的描述"
     },
     "token_description_AR": {
         "message": "Arweave 是一个去中心化存储平台，实现永久、不可变的数据存储。其原生代币 AR 用于数据存储和激励矿工维护数据。",
@@ -3811,8 +3807,8 @@
         "description": "Q Arweave 代币的描述"
     },
     "token_description_4hXj_E_5fAKmo4E8KjgQvuDJKAFk9P2grhycVmISDLs": {
-        "message": "Permaweb Index（PI）是代表永久网生态系统的代币。它由 AO、Arweave（AR）和生态项目代币组成，使持有者能够通过一个代币实现对永久网的多元化投资。",
-        "description": "Permaweb Index 代币的描述"
+        "message": "Permaweb Index（PI）代币是由 AR、AO 和 Fair Launch 项目代币组成的指数代币。PI 也是用户通过持有 AR 或通过 Fair Launch 平台质押收益资产而获得的默认收益分配资产。",
+        "description": "PI 代币的描述"
     },
     "token_description_pazXumQI_HPH7iFGfTC_4_7biSnqz_U67oFAGry5zUY": {
         "message": "Llama Land 是一个建立在 AO 上的 AI 驱动的大型多人在线游戏。Llama Coin 是 Llama Land 的官方测试代币。",
@@ -3824,7 +3820,7 @@
     },
     "token_description_wOrb8b_V8QixWyXZub48Ki5B6OIDyf_p1ngoonsaRpQ": {
         "message": "AO 上的第一个迷因代币",
-        "description": "第一个迷因代币的描述"
+        "description": "Trunk 代币的描述"
     },
     "token_description_8rbAftv7RaPxFjFk5FGUVAVCSjGQB4JHDcb9P9wCVhQ": {
         "message": "超越按键，成为特工",
@@ -3842,9 +3838,45 @@
         "message": "为 AR.IO 主网升级！参与永久云网络的任务以获得经验值 (EXP), 这是代表网络即将空投资格的链上代币。了解更多: https://ar.io/experience",
         "description": "EXP 代币的描述"
     },
-        "token_description_7GoQfmSOct_aUOWKM4xbKGg6DzAmOgdKwg8Kf_CbHm4": {
-        "message": "Wander Token 是 Wander Network 的代币。WNDR 是一种实用型代币，用于奖励 AO 和 Arweave 生态系统中有意义的互动。",
-        "description": "Wander 代币的描述"
+    "token_description_7GoQfmSOct_aUOWKM4xbKGg6DzAmOgdKwg8Kf_CbHm4": {
+        "message": "WNDR 是 Wander Network 的代币。WNDR 是一种实用型代币，用于奖励 AO 和 Arweave 生态系统中有意义的互动。",
+        "description": "WNDR 代币的描述"
+    },
+    "token_description_FBt9A5GA_KXMMSxA2DJ0xZbAq8sLLU2ak_YJe9zDvg8": {
+        "message": "Astro 是为 AO 生态系统无缝集成而构建的流动性解决方案。通过将多种稳定币和法定货币聚合为单一统一资产 - USDA，Astro 确保了现实世界和链上应用程序之间的无摩擦价值交换。",
+        "description": "USDA 代币的描述"
+    },
+    "token_description_n2MhPK0O3yEvY2zW73sqcmWqDktJxAifJDrri4qireI": {
+        "message": "LiquidOps 是一个借贷协议，为用户提供通过 Arweave 和 AO 资产赚取利息的能力。LQD 是 LiquidOps 协议的治理代币",
+        "description": "LQD 代币的描述"
+    },
+    "token_description_Nx__Ichdp_9uO_ZKg2DLWPiRlg_DWrSa2uGvINxOjaE": {
+        "message": "Botega 是一个基于自主代理构建的去中心化金融（DeFi）平台，促进 AO 生态系统内各种模型的资产交换。",
+        "description": "BOTG 代币的描述"
+    },
+    "token_description_OiNYKJ16jP7uj7z0DJO7JZr9ClfioGacpItXTn9fKn8": {
+        "message": "ACTION 是 Basejump.xyz 的代币，这是一个基于 AO 去中心化计算层构建的网络，Action 基底支持主权世界、游戏、游戏资产和社区的创建和互操作性",
+        "description": "ACTION 代币的描述"
+    },
+    "token_description_Jc2bcfEbwHFQ_qY4jqm8L5hc_SggeVA1zlW6DOICWgo": {
+        "message": "Protocol.Land 是一个去中心化的源代码控制代码协作平台，您拥有自己的代码。从平台到链上的开源。全部永久存储在 Arweave 上，由您拥有。",
+        "description": "PL 代币的描述"
+    },
+    "token_description_K59Wi9uKXBQfTn3zw7L_t_lwHAoq3Fx_V9sCyOY3dFE": {
+        "message": "StarGrid 将快节奏的游戏玩法与加密原生奖励相结合，使用 AO 和 Arweave 不可变地记录每场比赛的结果。赢得游戏赚取 SMONEY",
+        "description": "SMONEY 代币的描述"
+    },
+    "token_description_mqBYxpDsolZmJyBdTK8TJp_ftOuIUXVYcSQ8MYZdJg0": {
+        "message": "Apus 通过确定性 GPU 计算实现可验证的去中心化 AI。$APUS 代币是 Apus Network 的核心实用和治理代币，在保护网络、促进交易和赋能去中心化治理方面发挥核心作用。",
+        "description": "APUS 代币的描述"
+    },
+    "token_description_gx_jKk_hy8_sB4Wv5WEuvTTVyIRWW3We7rRHthcohBQ": {
+        "message": "Load Network 的 EVM 和 AO 互操作性使其能够直接接入 AO 超并行计算，同时为 AO 提供对 EVM 世界广阔流动性和工具的即时访问。",
+        "description": "LOAD 代币的描述"
+    },
+    "token_description_7zH9dlMNoxprab9loshv3Y7WG45DOny_Vrq9KrXObdQ": {
+        "message": "包装 USDC（wUSDC）是在 ETH 上的 USDC 代币包装并跨链到 AO 网络。AOX 跨链桥负责在 EVM 和 AO 网络之间进行包装和桥接。",
+        "description": "wUSDC 代币的描述"
     },
     "website": {
         "message": "网站",
@@ -4065,5 +4097,9 @@
     "beta_access": {
       "message": "测试版访问",
       "description": "Beta access text"
+    },
+    "no_activity_yet": {
+      "message": "暂无活动",
+      "description": "No activity yet text"
     }
 }

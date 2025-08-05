@@ -28,7 +28,7 @@ export function TokenActivity({ id }: TokenActivityProps) {
             {loading ? (
               <Loading style={{ height: "20px", width: "20px" }} />
             ) : (
-              <TitleMessage>No activity yet</TitleMessage>
+              <TitleMessage>{browser.i18n.getMessage("no_activity_yet")}</TitleMessage>
             )}
           </Empty>
         )}
