@@ -13,7 +13,6 @@ import { Logo } from "~components/popup/Token";
 import { getUserAvatar } from "~lib/avatar";
 import type { FlpTokenInfo } from "~utils/fair_launch/fair_launch.types";
 import arLogoLight from "url:/assets/ar/logo_light.png";
-import arLogoDark from "url:/assets/ar/logo_dark.png";
 import { AddTokenPopup } from "~components/popup/earn/AddTokenPopup";
 import { Link } from "~components/common/Link";
 import { MinusIcon, PlusIcon } from "@iconicicons/react";
@@ -323,7 +322,6 @@ function Token({
 }) {
   const theme = useTheme();
   const [logo, setLogo] = useState<string | null>(null);
-  const arweaveLogo = useMemo(() => (theme.displayTheme === "dark" ? arLogoDark : arLogoLight), [theme]);
   const isAO = token.processId === AO_PROCESS_ID;
   const tokenDelegation = useMemo(() => delegationInfo[token.flpId] || 0, [delegationInfo, token.flpId]);
 
@@ -334,11 +332,11 @@ function Token({
         const logo = await getUserAvatar(token.Logo);
         setLogo(logo);
       } else {
-        setLogo(arweaveLogo);
+        setLogo(arLogoLight);
       }
     };
     fetchLogo();
-  }, [token.processId, token.Logo, arweaveLogo]);
+  }, [token.processId, token.Logo]);
 
   return (
     <TokenWrapper key={token.processId}>

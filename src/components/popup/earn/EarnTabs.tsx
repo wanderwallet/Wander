@@ -7,7 +7,6 @@ import styled, { useTheme } from "styled-components";
 import { Logo } from "../Token";
 import { Text, Loading, useToasts } from "@arconnect/components-rebrand";
 import arLogoLight from "url:/assets/ar/logo_light.png";
-import arLogoDark from "url:/assets/ar/logo_dark.png";
 import { getUserAvatar } from "~lib/avatar";
 import { useTokenBalance } from "~tokens/hooks";
 import { useActiveAddress } from "~wallets/hooks";
@@ -153,7 +152,6 @@ function Token({
   const activeAddress = useActiveAddress();
   const [isClaiming, setIsClaiming] = useState(false);
   const [logo, setLogo] = useState<string | null>(null);
-  const arweaveLogo = useMemo(() => (theme.displayTheme === "dark" ? arLogoDark : arLogoLight), [theme]);
   const { data: claimableBalance = "0" } = useClaimableBalance(token);
   const { data: balance = "0", isLoading: isBalanceLoading } = useTokenBalance(token, activeAddress);
   const formattedBalance = useMemo(() => formatBalance(balance), [balance, token.processId]);
@@ -203,9 +201,9 @@ function Token({
       const logo = await getUserAvatar(token.Logo);
       setLogo(logo);
     } else {
-      setLogo(arweaveLogo);
+      setLogo(arLogoLight);
     }
-  }, [token.processId, token.Logo, arweaveLogo]);
+  }, [token.processId, token.Logo]);
 
   return (
     <TokenWrapper key={token.processId}>

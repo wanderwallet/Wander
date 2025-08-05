@@ -2,18 +2,18 @@ import browser from "webextension-polyfill";
 import SliderMenu from "~components/SliderMenu";
 import { Input, Section, useInput } from "@arconnect/components-rebrand";
 import styled from "styled-components";
-import { useCallback, useEffect, useMemo, useState, type MouseEventHandler } from "react";
+import { useCallback, useMemo, useState, type MouseEventHandler } from "react";
 import { useTheme } from "~utils/theme";
 import { type Token } from "~tokens/token";
 import { Text, useToasts } from "@arconnect/components-rebrand";
 import arLogoLight from "url:/assets/ar/logo_light.png";
-import arLogoDark from "url:/assets/ar/logo_dark.png";
 import { getUserAvatar } from "~lib/avatar";
 import { ToggleSwitch } from "~components/ToggleSwitch";
 import type { FlpTokenInfo } from "~utils/fair_launch/fair_launch.types";
 import { useActiveAddress } from "~wallets/hooks";
 import { InnerWrapper, Logo, LogoAndDetails, TokenName, Wrapper } from "../Token";
 import { PI_FLP_ID } from "~utils/fair_launch/fair_launch.constants";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 interface Props {
   open: boolean;
@@ -108,25 +108,28 @@ export function AddTokenPopup({ open, close, tokens, delegationInfo, setDelegati
 
 function Token({ onClick, disableClickEffect, disableCursor, disabled, ...props }: TokenProps) {
   const theme = useTheme();
-  const arweaveLogo = useMemo(() => (theme === "dark" ? arLogoDark : arLogoLight), [theme]);
   const [logo, setLogo] = useState<string>();
 
-  useEffect(() => {
-    const fetchLogo = async () => {
-      if (!props?.id) return;
-      if (props.defaultLogo) {
-        const logo = await getUserAvatar(props.defaultLogo);
-        setLogo(logo);
-      } else {
-        setLogo(arweaveLogo);
-      }
-    };
-    fetchLogo();
-  }, [props.id, props.defaultLogo, arweaveLogo]);
+  useAsyncEffect(async () => {
+    if (!props?.id) return;
+    if (props.defaultLogo) {
+      const logo = await getUserAvatar(props.defaultLogo);
+      setLogo(logo);
+    } else {
+      setLogo(arLogoLight);
+    }
+  }, [props.id, props.defaultLogo]);
 
   return (
     <Wrapper disableClickEffect={disableClickEffect} disableCursor={disableCursor}>
-      <InnerWrapper width={"86%"} onClick={onClick}>
+      <InnerWrapper
+        style={{
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+        }}
+        width={"80%"}
+        onClick={onClick}>
         <LogoAndDetails>
           <Logo src={logo || ""} alt="" key={props.id} />
           <div>

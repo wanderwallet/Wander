@@ -7,7 +7,6 @@ import { ExtensionStorage } from "~utils/storage";
 import { Button, Text, Tooltip } from "@arconnect/components-rebrand";
 import { useArPrice } from "~lib/coingecko";
 import arLogoLight from "url:/assets/ar/logo_light.png";
-import arLogoDark from "url:/assets/ar/logo_dark.png";
 import Squircle from "~components/Squircle";
 import useSetting from "~settings/hook";
 import styled from "styled-components";
@@ -54,8 +53,6 @@ export default function Token({ onClick, disableClickEffect, disableCursor, ...p
 
   const { data: fractBalance = "0", isError, error, isLoading } = useTokenBalance(tokenInfo, activeAddress);
 
-  const arweaveLogo = useMemo(() => (theme === "dark" ? arLogoDark : arLogoLight), [theme]);
-
   const balance = useMemo(() => {
     if (isError) return "0";
     const formattedBalance = formatBalance(BigNumber(fractBalance));
@@ -94,11 +91,11 @@ export default function Token({ onClick, disableClickEffect, disableCursor, ...p
         const logo = await getUserAvatar(props.defaultLogo);
         setLogo(logo);
       } else {
-        setLogo(arweaveLogo);
+        setLogo(arLogoLight);
       }
     };
     fetchLogo();
-  }, [props, logo, arweaveLogo]);
+  }, [props, logo]);
 
   useEffect(() => {
     if (activeAddress && AO_PROCESS_ID === props.id) {
