@@ -101,7 +101,7 @@ export function SignKeystoneAuthRequestView() {
             <Message message={[...dataToSign]} />
           </Section>
         )) || (
-          <Section>
+          <Section showPaddingVertical={false}>
             <Text noMargin>{browser.i18n.getMessage("sign_scan_qr")}</Text>
             <Spacer y={1.5} />
             {(page === "qr" && <AnimatedQRPlayer data={transactionUR} />) || (
