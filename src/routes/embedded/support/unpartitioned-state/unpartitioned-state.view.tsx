@@ -18,18 +18,18 @@ import braveLogoSrc from "url:assets/icons/browsers/brave-logo.png";
 import safariLogoSrc from "url:assets/icons/browsers/safari-logo.png";
 import firefoxLogoSrc from "url:assets/icons/browsers/firefox-logo.png";
 
-import braveScreenshotSrc from "url:assets/screenshots/unpartitioned-state/raw-brave-light.png";
-import braveScreenshotDarkSrc from "url:assets/screenshots/unpartitioned-state/raw-brave-dark.png";
+import braveScreenshotSrc from "url:assets/screenshots/unpartitioned-state/brave-light.png";
+import braveScreenshotDarkSrc from "url:assets/screenshots/unpartitioned-state/brave-dark.png";
 
-import chrome1ScreenshotSrc from "url:assets/screenshots/unpartitioned-state/raw-chrome-1-light.png";
-import chrome2ScreenshotSrc from "url:assets/screenshots/unpartitioned-state/raw-chrome-2-light.png";
-import chrome3ScreenshotSrc from "url:assets/screenshots/unpartitioned-state/raw-chrome-3-light.png";
-import chrome1ScreenshotDarkSrc from "url:assets/screenshots/unpartitioned-state/raw-chrome-1-dark.png";
-import chrome2ScreenshotDarkSrc from "url:assets/screenshots/unpartitioned-state/raw-chrome-2-dark.png";
-import chrome3ScreenshotDarkSrc from "url:assets/screenshots/unpartitioned-state/raw-chrome-3-dark.png";
+import chrome1ScreenshotSrc from "url:assets/screenshots/unpartitioned-state/chrome-1-light.png";
+import chrome2ScreenshotSrc from "url:assets/screenshots/unpartitioned-state/chrome-2-light.png";
+import chrome3ScreenshotSrc from "url:assets/screenshots/unpartitioned-state/chrome-3-light.png";
+import chrome1ScreenshotDarkSrc from "url:assets/screenshots/unpartitioned-state/chrome-1-dark.png";
+import chrome2ScreenshotDarkSrc from "url:assets/screenshots/unpartitioned-state/chrome-2-dark.png";
+import chrome3ScreenshotDarkSrc from "url:assets/screenshots/unpartitioned-state/chrome-3-dark.png";
 
-import inAppScreenshotSrc from "url:assets/screenshots/unpartitioned-state/raw-in-app-light.png";
-import inAppScreenshotDarkSrc from "url:assets/screenshots/unpartitioned-state/raw-in-app-dark.png";
+import inAppScreenshotSrc from "url:assets/screenshots/unpartitioned-state/in-app-light.png";
+import inAppScreenshotDarkSrc from "url:assets/screenshots/unpartitioned-state/in-app-dark.png";
 
 import styles from "./unpartitioned-state.module.scss";
 
@@ -236,6 +236,7 @@ export function UnpartitionedStateMissingEmbeddedView() {
                 height={822}
                 border
                 borderRadius="rounded"
+                pointer={[85.43857142857143, 70.18072289156626]}
               />
             </p>,
           ]}
