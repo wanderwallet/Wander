@@ -27,7 +27,8 @@ export const PriceChart = ({ symbol }: PriceChartProps) => {
   const { fiatChange, percentageNumber, isNegative } = useMemo(() => {
     const percentageNum = percentage.toNumber();
     const negative = percentage.isNegative();
-    const change = price - price / (1 + percentageNum / 100);
+    const tokenPrice = price || 0;
+    const change = tokenPrice - tokenPrice / (1 + percentageNum / 100);
 
     return {
       fiatChange: change,

@@ -34,7 +34,6 @@ export const PieChart = ({
           fill="#8884d8"
           dataKey="value"
           stroke="none"
-          animationDuration={0}
           strokeWidth={0}
           paddingAngle={0}>
           {data.map((entry, index) => (

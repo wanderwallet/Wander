@@ -55,7 +55,16 @@ export const PriceChartModal = ({ isOpen, setOpen, symbol }: PriceChartModalProp
     error,
   } = useTokenMarketData(symbol, getRangeDays(selectedRange));
 
-  const fiatChange = price - price / (1 + percentage.toNumber() / 100);
+  const { fiatChange, strokeColor, isNegative } = useMemo(() => {
+    const tokenPrice = price || 0;
+    const isNegative = percentage.toNumber() < 0;
+    const strokeColor = isNegative ? theme.fail : theme.success;
+    const fiatChange = tokenPrice - tokenPrice / (1 + percentage.toNumber() / 100);
+
+    return { fiatChange, strokeColor, isNegative };
+  }, [price, percentage]);
+
+  const ticker = symbol === "arweave" ? "AR" : "AO";
 
   const chartPoints = useMemo(() => {
     return (
@@ -65,10 +74,6 @@ export const PriceChartModal = ({ isOpen, setOpen, symbol }: PriceChartModalProp
       })) || []
     );
   }, [chartData]);
-
-  const isNegative = percentage.toNumber() < 0;
-  const strokeColor = isNegative ? theme.fail : theme.success;
-  const ticker = symbol === "arweave" ? "AR" : "AO";
 
   const handleRangeChange = useCallback(
     (range: string) => {
