@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import clsx from "clsx";
 import defaultPlaceholderUrl from "url:/assets/placeholder.png";
 import { sleep } from "~utils/promises/sleep";
@@ -18,9 +18,11 @@ interface ImageProps {
   alt?: string;
   className?: string;
   fullWidth?: boolean;
+  border?: boolean;
   borderRadius?: BorderRadiusVariant;
   backgroundColor?: string;
   placeholderURL?: string;
+  pointer?: [number, number];
   style?: React.CSSProperties;
 }
 
@@ -32,9 +34,11 @@ export default function Image({
   alt = "",
   className,
   fullWidth,
+  border,
   borderRadius = "none",
   backgroundColor = "transparent",
   placeholderURL = defaultPlaceholderUrl,
+  pointer: pointerProp,
   style,
 }: ImageProps) {
   const theme = useTheme();
@@ -44,6 +48,7 @@ export default function Image({
 
   const pictureClassName = clsx(className, styles.root, {
     [styles.fullWidth]: fullWidth,
+    [styles.hasBorder]: border,
     [styles.isRounded]: borderRadius === "rounded",
     [styles.isCircular]: borderRadius === "circular",
     [styles.isLoaded]: isLoaded,
@@ -68,6 +73,24 @@ export default function Image({
     setIsLoaded(true);
   };
 
+  const [pointer, setPointer] = useState(pointerProp);
+
+  const movePointer =
+    process.env.NODE_ENV === "development"
+      ? (e: React.MouseEvent<HTMLSpanElement>) => {
+          const { offsetX, offsetY } = e.nativeEvent;
+          const { offsetWidth, offsetHeight } = e.currentTarget;
+
+          const nextPointer = (
+            fullWidth ? [(100 * offsetX) / offsetWidth, (100 * offsetY) / offsetHeight] : [offsetX, offsetY]
+          ) satisfies [number, number];
+
+          console.log("pointer =", nextPointer);
+
+          setPointer(nextPointer);
+        }
+      : undefined;
+
   return (
     <picture className={pictureClassName} style={pictureStyle}>
       {srcDark ? (
@@ -82,7 +105,27 @@ export default function Image({
         alt={alt}
         draggable={false}
         onLoad={handleImageLoaded}
+        onClick={movePointer}
       />
+
+      {pointer ? (
+        <span
+          className={styles.pointer}
+          style={
+            fullWidth
+              ? {
+                  top: `${pointer[1]}%`,
+                  left: `${pointer[0]}%`,
+                  background: process.env.NODE_ENV === "development" ? "yellow" : undefined,
+                }
+              : {
+                  top: `${pointer[1]}px`,
+                  left: `${pointer[0]}px`,
+                  background: process.env.NODE_ENV === "development" ? "yellow" : undefined,
+                }
+          }
+        />
+      ) : null}
     </picture>
   );
 }

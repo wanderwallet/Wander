@@ -33,7 +33,7 @@ import inAppScreenshotDarkSrc from "url:assets/screenshots/unpartitioned-state/r
 
 import styles from "./unpartitioned-state.module.scss";
 
-const pretendToBeBrave = false;
+const pretendToBeBrave = true;
 const isBrave = pretendToBeBrave || window.navigator.brave;
 
 const pretendToBeMobileChrome = false;
@@ -54,8 +54,9 @@ export function UnpartitionedStateMissingEmbeddedView() {
     useEmbedded();
 
   const couldProbablyGetAccess =
-    HAS_ADVANCED_STORAGE_API &&
-    (unpartitionedStateStatus === "rejected" || unpartitionedStateStatus === "error" || isPretendingToBeAnotherBrowser);
+    (HAS_ADVANCED_STORAGE_API && (unpartitionedStateStatus === "rejected" || unpartitionedStateStatus === "error")) ||
+    isPretendingToBeAnotherBrowser;
+
   const shouldTryToGetAccess = authStatus === "noAuth" && couldProbablyGetAccess;
 
   // Loading state:
@@ -148,19 +149,19 @@ export function UnpartitionedStateMissingEmbeddedView() {
         <dd className={styles.supportGroup}>
           <ul className={styles.browserList}>
             <li className={styles.browserItem}>
-              <Image fullWidth width={18} height={18} src={chromeLogoSrc} />
+              <Image width={18} height={18} src={chromeLogoSrc} />
               Chrome
             </li>
             <li className={styles.browserItem}>
-              <Image fullWidth width={18} height={18} src={edgeLogoSrc} />
+              <Image width={18} height={18} src={edgeLogoSrc} />
               Edge
             </li>
             <li className={styles.browserItem}>
-              <Image fullWidth width={18} height={18} src={operaLogoSrc} />
+              <Image width={18} height={18} src={operaLogoSrc} />
               Opera
             </li>
             <li className={styles.browserItem}>
-              <Image fullWidth width={18} height={18} src={braveLogoSrc} />
+              <Image width={18} height={18} src={braveLogoSrc} />
               Brave
             </li>
           </ul>
@@ -169,11 +170,11 @@ export function UnpartitionedStateMissingEmbeddedView() {
         <dd className={styles.supportGroup}>
           <ul className={styles.browserList}>
             <li className={styles.browserItem}>
-              <Image fullWidth width={18} height={18} src={safariLogoSrc} />
+              <Image width={18} height={18} src={safariLogoSrc} />
               Safari
             </li>
             <li className={styles.browserItem}>
-              <Image fullWidth width={18} height={18} src={firefoxLogoSrc} />
+              <Image width={18} height={18} src={firefoxLogoSrc} />
               Firefox
             </li>
           </ul>
@@ -233,6 +234,7 @@ export function UnpartitionedStateMissingEmbeddedView() {
                 srcDark={braveScreenshotDarkSrc}
                 width={867}
                 height={822}
+                border
                 borderRadius="rounded"
               />
             </p>,
@@ -254,6 +256,7 @@ export function UnpartitionedStateMissingEmbeddedView() {
                 srcDark={chrome1ScreenshotDarkSrc}
                 width={1080}
                 height={147}
+                border
                 borderRadius="rounded"
               />
             </p>,
@@ -264,6 +267,7 @@ export function UnpartitionedStateMissingEmbeddedView() {
                 srcDark={chrome2ScreenshotDarkSrc}
                 width={1080}
                 height={786}
+                border
                 borderRadius="rounded"
               />
             </p>,
@@ -274,6 +278,7 @@ export function UnpartitionedStateMissingEmbeddedView() {
                 srcDark={chrome3ScreenshotDarkSrc}
                 width={1080}
                 height={1106}
+                border
                 borderRadius="rounded"
               />
             </p>,
@@ -292,6 +297,7 @@ export function UnpartitionedStateMissingEmbeddedView() {
                 srcDark={inAppScreenshotDarkSrc}
                 width={1080}
                 height={1326}
+                border
                 borderRadius="rounded"
               />
             </p>,
