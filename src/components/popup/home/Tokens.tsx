@@ -18,7 +18,7 @@ export default function Tokens() {
   });
 
   function handleTokenClick(tokenId: string) {
-    navigate(`/send/transfer/${tokenId}`);
+    navigate(`/tokens/${tokenId}`);
   }
 
   return (

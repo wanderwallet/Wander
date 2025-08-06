@@ -36,6 +36,13 @@ export const ANNOUNCEMENTS: Announcement[] = [
     body: browser.i18n.getMessage("announcement_4_body"),
     timestamp: 1754265601000,
   },
+  {
+    id: 5,
+    title: browser.i18n.getMessage("announcement_5_title"),
+    description: browser.i18n.getMessage("announcement_5_description"),
+    body: browser.i18n.getMessage("announcement_5_body"),
+    timestamp: 1755000000000,
+  },
 ];
 
 /**

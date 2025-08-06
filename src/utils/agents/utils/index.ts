@@ -429,30 +429,6 @@ export function formatTokenQuantity(value: string, decimals: number) {
   return formatBalance(balanceToFractioned(String(value), { decimals })).displayBalance;
 }
 
-export async function getAODelegationInfo(address?: string) {
-  address = address || (await getActiveAddress());
-
-  const aoInstance = connect(defaultConfig);
-
-  const dryrunRes = await aoInstance.dryrun({
-    Id,
-    Owner,
-    process: "cuxSKjGJ-WDB9PzSkVkVVrIBSh3DrYHYz44usQOj5yE",
-    tags: [
-      { name: "Action", value: "Get-Delegations" },
-      { name: "Wallet", value: address },
-    ],
-  });
-
-  const message = dryrunRes.Messages?.[0];
-  const delegationInfo = JSON.parse(message?.Data || "[]");
-  const hasAODelegation = delegationInfo?.delegationPrefs?.some(
-    (pref: { walletTo: string }) => pref.walletTo === address,
-  );
-
-  return { hasAODelegation };
-}
-
 export function formatDate(date: Date | null, fallbackLabel: string) {
   return date ? dayjs(date).format("MMM D, YYYY") : fallbackLabel;
 }

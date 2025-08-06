@@ -159,7 +159,7 @@ const DiscordImage = styled.img`
   height: 24px;
   width: 24px;
   object-fit: contain;
-  filter: ${(props) => (props.theme.displayTheme === "light" ? "invert(1)" : "none")};
+  filter: ${(props) => (props.theme.displayTheme === "light" ? "none" : "invert(1)")};
 `;
 
 const DiscordIcon = () => <DiscordImage src={discordLogo} alt="discord" />;

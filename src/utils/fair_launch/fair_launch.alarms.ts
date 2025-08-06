@@ -29,7 +29,9 @@ export async function checkAndImportFairLaunchTokens() {
     const [aoTokens, removedTokenIds = []] = await Promise.all([getAoTokens(), getAoTokensAutoImportRestrictedIds()]);
     const tokenIdstoExclude = new Set([...aoTokens.map(({ processId }) => processId), ...removedTokenIds]);
 
-    const flpTokens = (await getFairLaunchTokens()).filter((token) => !tokenIdstoExclude.has(token.processId));
+    const flpTokens = (await getFairLaunchTokens({ forImport: true })).filter(
+      (token) => !tokenIdstoExclude.has(token.processId),
+    );
     if (flpTokens.length === 0) {
       log(LOG_GROUP.FAIR_LAUNCH, "No fair launch tokens to check");
       return;

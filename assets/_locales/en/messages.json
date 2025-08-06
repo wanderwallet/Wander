@@ -3676,6 +3676,18 @@
     "message": "Wander Reserve, Edge, and Prime tier members get instant access to the USDA Beta. Connect your Wander wallet, get verified and unlock access. Try now on [Astro Bridge](https://bridge.astrousd.com/)",
     "description": "Announcement 4 body"
   },
+  "announcement_5_title": {
+    "message": "Manage your FL allocations!",
+    "description": "Announcement 5 title"
+  },
+  "announcement_5_description": {
+    "message": "Manage your fair launch delegation directly inside of Wander",
+    "description": "Announcement 5 description"
+  },
+  "announcement_5_body": {
+    "message": "Easily manage and customize your your AO fair launch delegation allocations directly within the Wander browser extension by clicking the Earn button on your Dashboard.",
+    "description": "Announcement 5 body"
+  },
   "swipe_to_learn_more": {
     "message": "Swipe to learn more",
     "description": "Swipe to learn more text"
@@ -3800,6 +3812,136 @@
     "message": "Your position is updated every 24 hours at 4:00 PM GMT",
     "description": "Tooltip text for position update"
   },
+  "earn": {
+    "message": "Earn",
+    "description": "Earn text"
+  },
+  "price": {
+    "message": "Price",
+    "description": "Price text"
+  },
+  "stats": {
+    "message": "Stats",
+    "description": "Stats text"
+  },
+  "about": {
+    "message": "About",
+    "description": "About text"
+  },
+  "token_price": {
+    "message": "$NAME$ Price",
+    "description": "Token price text",
+    "placeholders": {
+      "name": {
+        "content": "$1",
+        "example": "USDA"
+      }
+    }
+  },
+  "token_description_0syT13r0s0tgPmIed95bJnuSqaD29HQNN8D3ElLSrsc": {
+    "message": "AO focuses on providing a secure, scalable, and interoperable compute environment for decentralized applications (dApps), using the AO token as its native currency for economic security and liquidity.",
+    "description": "Description for AO token"
+  },
+  "token_description_AR": {
+    "message": "Arweave is a decentralized storage platform enabling permanent, immutable data storage. Its native token, AR, is used for data storage and incentivizing miners to maintain this data.",
+    "description": "Description for Arweave token"
+  },
+  "token_description_xU9zFkq3X2ZQ6olwNVvr1vUWIjc3kXTWr7xKQD6dh10": {
+    "message": "Wrapped AR (wAR) is the AR token wrapped and cross-chained to the AO network. The AOX cross-chain bridge does the wrapping and bridging between the Arweave and AO networks.",
+    "description": "Description for Wrapped AR token"
+  },
+  "token_description_NG_0lVX882MG5nhARrSzyprEK6ejonHpdUmaaMPsHE8": {
+    "message": "Q Arweave (qAR) is the core token of the Quantum bridge, representing AR within the AO ecosystem. It allows AR holders to engage with AO-based applications while maintaining their Arweave connection. qAR opens up new opportunities in AO and enables potential dual rewards, letting users benefit from AO incentives while keeping AR holder rights.",
+    "description": "Description for Q Arweave token"
+  },
+  "token_description_4hXj_E_5fAKmo4E8KjgQvuDJKAFk9P2grhycVmISDLs": {
+    "message": "The Permaweb Index (PI) token is an index token that is made of AR, AO, and Fair Launch project tokens. PI is also the default yield allocation asset that users earn from holding AR or staking yield earning assets via the Fair Launch Platform.",
+    "description": "Description for PI token"
+  },
+  "token_description_pazXumQI_HPH7iFGfTC_4_7biSnqz_U67oFAGry5zUY": {
+    "message": "Llama Land is an AI powered MMO game built on AO.  LLama Coin is the official test token of Llama Land",
+    "description": "Description for Llama Coin token"
+  },
+  "token_description_DM3FoZUq_yebASPhgd8pEIRIzDW6muXEhxz5_JwbZwo": {
+    "message": "PIXL is a rewards token for purchasing atomic assets on the Universal Content Marketplace. When users buy atomic assets via Bazar or any UCM platform, they become eligible to receive PIXL tokens.",
+    "description": "Description for PIXL token"
+  },
+  "token_description_wOrb8b_V8QixWyXZub48Ki5B6OIDyf_p1ngoonsaRpQ": {
+    "message": "The first Meme token on AO",
+    "description": "Description for Trunk token"
+  },
+  "token_description_8rbAftv7RaPxFjFk5FGUVAVCSjGQB4JHDcb9P9wCVhQ": {
+    "message": "Transcend Keystroking, be an AGENT",
+    "description": "Description for AGENT token"
+  },
+  "token_description_agYcCFJtrMG6cqMuZfskIkFTGvUPddICmtQSBIoPdiA": {
+    "message": "ARIO (tARIO) is the native test token of the AR.IO permanent cloud network. The token incentivizes gateway operators to provide vital services that facilitate access to and utility of the permaweb. In addition, ARIO can be used for purchasing and managing Arweave Name System (ArNS) domains as well as for participation in delegated staking.",
+    "description": "Description for ARIO test token"
+  },
+  "token_description_qNvAoz0TgcH7DMg8BCVn8jF32QH5L6T29VjHxhHqqGE": {
+    "message": "ARIO is used for staking, network rewards, and purchasing decentralized smart domains within the AR.IO permanent cloud network.",
+    "description": "Description for ARIO token"
+  },
+  "token_description_aYrCboXVSl1AXL9gPFe3tfRxRf0ZmkOXH65mKT0HHZw": {
+    "message": "Level up for the AR.IO mainnet! Engage in quests with the Permanent Cloud Network to gain Experience Points (EXP), onchain tokens that represent potential eligibility for the network's forthcoming airdrops. Learn more at: https://ar.io/experience",
+    "description": "Description for EXP token"
+  },
+  "token_description_7GoQfmSOct_aUOWKM4xbKGg6DzAmOgdKwg8Kf_CbHm4": {
+    "message": "WNDR is the token of the Wander Network. WNDR is a utility token that rewards meaningful engagement across the AO and Arweave ecosystems",
+    "description": "Description for WNDR token"
+  },
+  "token_description_FBt9A5GA_KXMMSxA2DJ0xZbAq8sLLU2ak_YJe9zDvg8": {
+    "message": "Astro is the liquidity solution built for seamless integration within the AO ecosystem. By aggregating multiple stablecoins and fiat currencies into a single, unified asset - USDA, Astro ensures frictionless value exchange between real-world and on-chain applications.",
+    "description": "Description for USDA token"
+  },
+  "token_description_n2MhPK0O3yEvY2zW73sqcmWqDktJxAifJDrri4qireI": {
+    "message": "LiquidOps is a lending and borrowing protocol that provides users the ability to earn interest on their Arweave and AO assets. LQD is the governance token for the LiquidOps protocol",
+    "description": "Description for LQD token"
+  },
+  "token_description_Nx__Ichdp_9uO_ZKg2DLWPiRlg_DWrSa2uGvINxOjaE": {
+    "message": "Botega is a decentralized finance (DeFi) platform built on autonomous agents, facilitating the exchange of assets across various models within the AO ecosystem.",
+    "description": "Description for BOTG token"
+  },
+  "token_description_OiNYKJ16jP7uj7z0DJO7JZr9ClfioGacpItXTn9fKn8": {
+    "message": "ACTION is the token of Basejump.xyz, a network built on AO's decentralized compute layer, the Action substrate enables the creation and interoperability of sovereign worlds, games, game assets, and communities",
+    "description": "Description for ACTION token"
+  },
+  "token_description_Jc2bcfEbwHFQ_qY4jqm8L5hc_SggeVA1zlW6DOICWgo": {
+    "message": "Protocol.Land is a decentralized, source controlled, code collaboration where you own your code. Open-source, from platform to on-chain. All stored permanently on Arweave, owned by you.",
+    "description": "Description for PL token"
+  },
+  "token_description_K59Wi9uKXBQfTn3zw7L_t_lwHAoq3Fx_V9sCyOY3dFE": {
+    "message": "StarGrid combines fast-paced gameplay with crypto-native rewards, using AO and Arweave to immutably record every match outcome. Win games to earn SMONEY",
+    "description": "Description for SMONEY token"
+  },
+  "token_description_mqBYxpDsolZmJyBdTK8TJp_ftOuIUXVYcSQ8MYZdJg0": {
+    "message": "Apus is enabling verifiable decentralized AI through Deterministic GPU computing. The $$APUS token is the core utility and governance token of the Apus Network, playing a central role in securing the network, facilitating transactions, and empowering decentralized governance.",
+    "description": "Description for APUS token"
+  },
+  "token_description_gx_jKk_hy8_sB4Wv5WEuvTTVyIRWW3We7rRHthcohBQ": {
+    "message": "Load Network's EVM and AO interoperability allows it to tap directly into AO hyperparallel compute while giving AO instant access to the vast liquidity and tooling of the EVM world.",
+    "description": "Description for LOAD token"
+  },
+  "token_description_7zH9dlMNoxprab9loshv3Y7WG45DOny_Vrq9KrXObdQ": {
+    "message": "Wrapped USDC (wUSDC) is the USDC on ETH token wrapped and cross-chained to the AO network. The AOX cross-chain bridge does the wrapping and bridging between the EVM and AO networks.",
+    "description": "Description for wUSDC token"
+  },
+  "website": {
+    "message": "Website",
+    "description": "Website text"
+  },
+  "address": {
+    "message": "Address",
+    "description": "Address text"
+  },
+  "info": {
+    "message": "Info",
+    "description": "Info text"
+  },
+  "verified": {
+    "message": "Verified",
+    "description": "Verified text"
+  },
   "help": {
     "message": "Help",
     "description": "Help text"
@@ -3824,6 +3966,170 @@
     "message": "Fastest",
     "description": "Fastest text"
   },
+  "unknown_coin": {
+    "message": "There is no information available for this asset. Please proceed with caution and use at your own risk",
+    "description": "Unknown coin text"
+  },
+  "earn_tokens_in_wander": {
+    "message": "Earn Tokens in Wander!",
+    "description": "Earn tokens in Wander text"
+  },
+  "earn_tokens_in_wander_description": {
+    "message": "Earn a variety of tokens just from holding AR Token and/or staking stETH and DAI.",
+    "description": "Earn tokens in Wander description text"
+  },
+  "earn_tokens_list_item_1": {
+    "message": "Hold AR tokens to earn automatically",
+    "description": "Earn tokens list item 1"
+  },
+  "earn_tokens_list_item_2": {
+    "message": "Stake sETH or DAI for additional rewards",
+    "description": "Earn tokens list item 2"
+  },
+  "earn_tokens_list_item_3": {
+    "message": "Choose which tokens to earn",
+    "description": "Earn tokens list item 3"
+  },
+  "allocation": {
+    "message": "Allocation",
+    "description": "Allocation text"
+  },
+  "allocation_description": {
+    "message": "This represents how you are currently allocating your AO Yield",
+    "description": "Allocation description text"
+  },
+  "view_full_breakdown_on_ao_website": {
+    "message": "View full breakdown on AO website",
+    "description": "View full breakdown on AO website text"
+  },
+  "earn_notice_title": {
+    "message": "Support projects & earn their tokens",
+    "description": "Earn notice title"
+  },
+  "earn_notice_description": {
+    "message": "Delegate your AO yield earnings to projects in the ecosystem.",
+    "description": "Earn notice description"
+  },
+  "primary": {
+    "message": "Primary",
+    "description": "Primary text"
+  },
+  "primary_count": {
+    "message": "Primary ($COUNT$)",
+    "description": "Primary count text",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
+  "projects": {
+    "message": "Projects",
+    "description": "Projects text"
+  },
+  "projects_count": {
+    "message": "Projects ($COUNT$)",
+    "description": "Projects count text",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
+  "coming_soon": {
+    "message": "Coming Soon",
+    "description": "Coming soon text"
+  },
+  "no_projects_tokens": {
+    "message": "No projects tokens",
+    "description": "No projects tokens text"
+  },
+  "no_projects_tokens_description": {
+    "message": "Delegated AO allocation to ecosystem projects will appear here",
+    "description": "No projects tokens description text"
+  },
+  "manage_earnings": {
+    "message": "Manage earnings",
+    "description": "Manage earnings text"
+  },
+  "add_token": {
+    "message": "Add token",
+    "description": "Add token text"
+  },
+  "explore_all_projects": {
+    "message": "Explore all projects",
+    "description": "Explore all projects text"
+  },
+  "ao_delegation_tooltip": {
+    "message": "Your $$AO allocation will be adjusted according to tokens added.",
+    "description": "AO delegation tooltip text"
+  },
+  "remove_delegation_tooltip": {
+    "message": "Setting the token allocation to less than 5% will remove it",
+    "description": "Remove delegation tooltip text"
+  },
+  "delegation_info_saved": {
+    "message": "Delegation info saved",
+    "description": "Delegation info saved text"
+  },
+  "delegation_info_save_failed": {
+    "message": "Delegation info save failed",
+    "description": "Delegation info save failed text"
+  },
+  "flp_claim_success": {
+    "message": "Claimed successfully",
+    "description": "Fair Launch claim success text"
+  },
+  "flp_claim_error": {
+    "message": "Failed to claim",
+    "description": "Fair Launch claim error text"
+  },
+  "claim": {
+    "message": "Claim",
+    "description": "Claim text"
+  },
+  "claiming": {
+    "message": "Claiming",
+    "description": "Claiming text"
+  },
+  "ao_tokens_detected": {
+    "message": "AO tokens detected",
+    "description": "AO tokens detected text"
+  },
+  "diversify_portfolio": {
+    "message": "Diversify you portfolio by delegating your AO yield earnings to projects in the ecosystem.",
+    "description": "Diversify portfolio text"
+  },
+  "start_delegating": {
+    "message": "Start delegating",
+    "description": "Start delegating text"
+  },
+  "balance": {
+    "message": "Balance",
+    "description": "Balance text"
+  },
+  "start_allocating_ao_yield": {
+    "message": "Start allocating your AO yield with more ways to earn. You can change this at any time.",
+    "description": "Start allocating your AO yield with more ways to earn text"
+  },
+  "note_earning_ao_tokens": {
+    "message": "Note: You're technically earning AO tokens, but delegating them to projects in exchange for their tokens.",
+    "description": "Note you are technically earning AO tokens text"
+  },
+  "allocation_set": {
+    "message": "Allocation set!",
+    "description": "Allocation set text"
+  },
+  "allocation_set_description": {
+    "message": "You have successfully added new tokens to your delegation list. These tokens will show up on your asset list automatically.",
+    "description": "Allocation set description text"
+  },
+  "view_delegation_list": {
+    "message": "View delegation list",
+    "description": "View delegation list text"
+  },
   "members_instant_access": {
     "message": "members get instant access",
     "description": "Members get instant access text"
@@ -3839,5 +4145,9 @@
   "beta_access": {
     "message": "Beta Access",
     "description": "Beta access text"
+  },
+  "no_activity_yet": {
+    "message": "No activity yet",
+    "description": "No activity yet text"
   }
 }

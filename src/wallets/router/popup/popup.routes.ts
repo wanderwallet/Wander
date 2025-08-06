@@ -31,7 +31,6 @@ import { SubscriptionDetailsView } from "~routes/popup/subscriptions/subscriptio
 import { SubscriptionManagementView } from "~routes/popup/subscriptions/subscriptionManagement";
 import { SubscriptionPaymentView } from "~routes/popup/subscriptions/subscriptionPayment";
 import { SubscriptionsView } from "~routes/popup/subscriptions/subscriptions";
-import { TokensView } from "~routes/popup/tokens";
 import { TransactionView } from "~routes/popup/transaction/[id]";
 import { TransactionsView } from "~routes/popup/transaction/transactions";
 import { UnlockView } from "~routes/popup/unlock";
@@ -57,6 +56,11 @@ import { LiquidOpsConfirm } from "~routes/popup/agents/liquidops/confirm";
 import { LiquidOpsResult } from "~routes/popup/agents/liquidops/result";
 import { AnnouncementView } from "~routes/popup/announcement";
 import { TierView } from "~routes/popup/tier";
+import { EarnView } from "~routes/popup/earn";
+import { ManageEarningsView } from "~routes/popup/earn/manage";
+import { AllocationSetView } from "~routes/popup/earn/allocation-set";
+import { TokensView } from "~routes/popup/tokens";
+import { TokenDetailView } from "~routes/popup/tokens/token-detail";
 import { HelpView } from "~routes/popup/settings/help";
 
 export type PopupRoutePath =
@@ -79,7 +83,7 @@ export type PopupRoutePath =
   | `/notifications`
   | `/notification/${string}`
   | `/tokens`
-  | `/token/${string}`
+  | `/tokens/${string}`
   | `/collectibles`
   | `/collectible/${string}`
   | `/transaction/${string}`
@@ -119,7 +123,10 @@ export type PopupRoutePath =
   | `/agents/liquidops/${string}/${"deposit" | "withdraw"}`
   | `/agents/liquidops/${string}/${"deposit" | "withdraw"}/${string}/confirm`
   | `/agents/liquidops/${string}/${"deposit" | "withdraw"}/result/${"success" | "failure"}`
-  | `/tier`;
+  | `/tier`
+  | `/earn`
+  | `/earn/manage`
+  | `/earn/allocation-set`;
 
 export const PopupPaths = {
   Home: "/",
@@ -139,7 +146,7 @@ export const PopupPaths = {
   Notifications: "/notifications",
   MessageNotification: "/notification/:id",
   Tokens: "/tokens",
-  Asset: "/token/:id",
+  TokenDetail: "/tokens/:id",
   Collectibles: "/collectibles",
   Collectible: "/collectible/:id",
   Transaction: "/transaction/:id/:gateway?",
@@ -178,6 +185,9 @@ export const PopupPaths = {
   LiquidOpsResult: "/agents/liquidops/:ticker/:action/result/:result",
   LiquidOpsConfirm: "/agents/liquidops/:ticker/:action/:quantity/confirm",
   Tier: "/tier",
+  Earn: "/earn",
+  ManageEarnings: "/earn/manage",
+  AllocationSet: "/earn/allocation-set",
 } as const satisfies Record<string, PopupRoutePath>;
 
 export const POPUP_ROUTES = [
@@ -248,6 +258,10 @@ export const POPUP_ROUTES = [
   {
     path: PopupPaths.Tokens,
     component: TokensView,
+  },
+  {
+    path: PopupPaths.TokenDetail,
+    component: TokenDetailView,
   },
   {
     path: PopupPaths.Collectibles,
@@ -406,5 +420,17 @@ export const POPUP_ROUTES = [
   {
     path: PopupPaths.Tier,
     component: TierView,
+  },
+  {
+    path: PopupPaths.Earn,
+    component: EarnView,
+  },
+  {
+    path: PopupPaths.ManageEarnings,
+    component: ManageEarningsView,
+  },
+  {
+    path: PopupPaths.AllocationSet,
+    component: AllocationSetView,
   },
 ] as const satisfies RouteConfig[];
