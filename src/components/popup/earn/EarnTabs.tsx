@@ -5,7 +5,7 @@ import { defaultTokens } from "~tokens/aoTokens/ao";
 import { Flex } from "~components/common/Flex";
 import styled, { useTheme } from "styled-components";
 import { Logo } from "../Token";
-import { Text, Loading, useToasts } from "@arconnect/components-rebrand";
+import { Text, Loading, useToasts, Tooltip } from "@arconnect/components-rebrand";
 import arLogoLight from "url:/assets/ar/logo_light.png";
 import { getUserAvatar } from "~lib/avatar";
 import { useTokenBalance } from "~tokens/hooks";
@@ -24,6 +24,10 @@ import { Link } from "~components/common/Link";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { claimBalance } from "~utils/fair_launch/fair_launch.utils";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
+import { WarningIcon } from "~components/icons/WarningIcon";
+import { NetworkErrorIcon } from "~components/icons/NetworkErrorIcon";
+import { BalanceFetchError, NetworkError } from "~utils/error/error.utils";
+import { DegradedMessage, NetworkErrorMessage } from "../tokens/ErrorMessages";
 
 export function EarnTabs() {
   const { navigate, location } = useLocation();
@@ -153,7 +157,11 @@ function Token({
   const [isClaiming, setIsClaiming] = useState(false);
   const [logo, setLogo] = useState<string | null>(null);
   const { data: claimableBalance = "0" } = useClaimableBalance(token);
-  const { data: balance = "0", isLoading: isBalanceLoading } = useTokenBalance(token, activeAddress);
+  const {
+    data: balance = "0",
+    isLoading: isBalanceLoading,
+    error: balanceError,
+  } = useTokenBalance(token, activeAddress);
   const formattedBalance = useMemo(() => formatBalance(balance), [balance, token.processId]);
   const formattedClaimableBalance = useMemo(() => formatBalance(claimableBalance), [claimableBalance]);
 
@@ -244,10 +252,26 @@ function Token({
             </Flex>
             <Flex direction="row" gap={4} align="center" justify="space-between">
               <Ticker>${token.Ticker}</Ticker>
-              <Text variant="secondary" weight="medium" size="xs" noMargin>
-                {browser.i18n.getMessage("balance")}:{" "}
-                {isBalanceLoading ? <Loading width={4} height={4} /> : formattedBalance.displayBalance}
-              </Text>
+              <Flex direction="row" gap={4} align="center" justify="center">
+                <Text variant="secondary" weight="medium" size="xs" noMargin>
+                  {browser.i18n.getMessage("balance")}:
+                </Text>
+                {isBalanceLoading ? (
+                  <Loading width={4} height={4} />
+                ) : balanceError instanceof BalanceFetchError ? (
+                  <MessageTooltip content={DegradedMessage} position="left">
+                    <WarningIcon size={12} style={{ cursor: "pointer" }} />
+                  </MessageTooltip>
+                ) : balanceError instanceof NetworkError ? (
+                  <MessageTooltip content={NetworkErrorMessage} position="left">
+                    <NetworkErrorIcon size={12} style={{ cursor: "pointer" }} />
+                  </MessageTooltip>
+                ) : (
+                  <Text variant="secondary" weight="medium" size="xs" noMargin>
+                    {formattedBalance.displayBalance}
+                  </Text>
+                )}
+              </Flex>
             </Flex>
           </Flex>
         )}
@@ -307,4 +331,8 @@ const Ticker = styled(Text).attrs({
   noMargin: true,
 })`
   flex-shrink: 0;
+`;
+
+const MessageTooltip = styled(Tooltip)`
+  max-width: 290px;
 `;

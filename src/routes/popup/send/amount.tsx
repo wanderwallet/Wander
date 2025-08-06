@@ -3,7 +3,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import styled from "styled-components";
 import { Button, Input, Section, Spacer, Text, useInput, useToasts } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
-import Token, { Logo, LogoAndDetails, TokenName, WarningIcon } from "~components/popup/Token";
+import Token, { Logo, LogoAndDetails, TokenName } from "~components/popup/Token";
 import useSetting from "~settings/hook";
 import { formatFiatBalance, formatTokenBalance, fractionedToBalance } from "~tokens/currency";
 import { useStorage } from "@plasmohq/storage/hook";
@@ -39,6 +39,7 @@ import { ChevronDown, Pencil01, SwitchVertical02 } from "@untitled-ui/icons-reac
 import { SendInput } from "~components/SendInput";
 import { HorizontalLine } from "~components/HorizontalLine";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import { WarningIcon } from "~components/icons/WarningIcon";
 
 export enum AmountValidationState {
   Invalid = "Invalid",

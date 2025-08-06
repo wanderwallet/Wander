@@ -11,7 +11,7 @@ import { useTheme } from "styled-components";
 import arLogo from "url:/assets/ecosystem/ar-logo.svg";
 import CommonImage from "~components/common/Image";
 import getSymbolFromCurrency from "currency-symbol-map";
-import { WarningIcon } from "~components/popup/Token";
+import { WarningIcon } from "~components/icons/WarningIcon";
 import { Flex } from "~components/common/Flex";
 import { useTransak, useTransakApiKey } from "~utils/transak/transak.hooks";
 import { paymentMethods } from "~utils/ramps";
