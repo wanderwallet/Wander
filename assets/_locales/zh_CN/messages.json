@@ -2042,10 +2042,6 @@
     "message": "EXP代币无法转账",
     "description": "Popup description about ao token transfer"
   },
-  "PI_token_send_popup": {
-    "message": "PI代币无法转账",
-    "description": "Popup description about pi token transfer"
-  },
   "WNDR_token_send_popup": {
     "message": "WNDR代币无法转账，直到2025年10月7日",
     "description": "Popup description about wndr token transfer"
@@ -4090,9 +4086,9 @@
       "message": "获取访问",
       "description": "Get access text"
     },
-    "community_phase": {
-      "message": "社区阶段",
-      "description": "Community phase text"
+    "wndr_member_benefits": {
+        "message": "$$WNDR 会员福利",
+        "description": "WNDR member benefits text"
     },
     "beta_access": {
       "message": "测试版访问",

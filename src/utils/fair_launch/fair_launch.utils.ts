@@ -22,7 +22,6 @@ import { ExtensionStorage } from "~utils/storage";
 import { LOG_GROUP, log } from "~utils/log/log.utils";
 import { PI_FLP_ID } from "./fair_launch.constants";
 import { KeystoneSigner } from "~wallets/hardware/keystone";
-import { nanoid } from "nanoid";
 
 interface RawFlpToken {
   flp_token_name: string;
@@ -241,15 +240,9 @@ export async function updateDelegationInfo(
     delegationInfoArray.sort(([key1]) => (key1 === address ? -1 : 1));
 
     for (const [key, value] of delegationInfoArray) {
-      const tags = [{ name: "Action", value: "Set-Delegation" }];
-
-      if (keystoneSigner) {
-        tags.push({ name: "Nonce", value: nanoid() });
-      }
-
       await aoInstance.message({
         process: FLP_DELEGATION_PROCESS_ID,
-        tags,
+        tags: [{ name: "Action", value: "Set-Delegation" }],
         signer: dataItemSigner as any,
         data: JSON.stringify({
           walletFrom: address,

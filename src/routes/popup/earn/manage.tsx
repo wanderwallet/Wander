@@ -25,7 +25,6 @@ import { useScanner } from "@arconnect/keystone-sdk";
 import AnimatedQRScanner from "~components/hardware/AnimatedQRScanner";
 import AnimatedQRPlayer from "~components/hardware/AnimatedQRPlayer";
 import { Spacer } from "~components/embed";
-import Progress from "~components/Progress";
 import { SignType } from "@keystonehq/bc-ur-registry-arweave";
 import Arweave from "arweave";
 
@@ -218,7 +217,6 @@ export function ManageEarningsView() {
                 <Text style={{ textAlign: "center" }} noMargin>
                   {browser.i18n.getMessage("keystone_scan_progress", `${scanner.progress.toFixed(0)}%`)}
                 </Text>
-                <Progress percentage={scanner.progress} />
               </Flex>
             )}
           </Flex>
