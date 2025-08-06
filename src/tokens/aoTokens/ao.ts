@@ -6,7 +6,7 @@ import { ArweaveSigner, createData } from "@dha-team/arbundles";
 import { getActiveKeyfile, getKeyfile, type DecryptedWallet } from "~wallets";
 import { isLocalWallet } from "~utils/assertions";
 import { freeDecryptedWallet } from "~wallets/encryption";
-import type { KeystoneSigner } from "~wallets/hardware/keystone";
+import { generateAnchor, type KeystoneSigner } from "~wallets/hardware/keystone";
 import browser from "webextension-polyfill";
 import type { DecodedTag } from "~api/modules/sign/tags";
 import { isNetworkError, NetworkError, BalanceFetchError } from "~utils/error/error.utils";
@@ -355,6 +355,7 @@ export const createDataItemSigner =
 
     return {
       id: dataItem.id,
+      // @ts-ignore
       raw: dataItem.getRaw(),
     };
   };
@@ -373,6 +374,10 @@ export const createDataItemKeystoneSigner =
     anchor?: string;
   }): Promise<{ id: string; raw: ArrayBuffer }> => {
     const signer = keystoneSigner;
+    if (!anchor) {
+      // @ts-ignore - anchor can be uint8array or string
+      anchor = generateAnchor();
+    }
     const dataItem = createData(data, signer, { tags, target, anchor });
     const serial = dataItem.getRaw();
     const signature = await signer.sign(serial);
@@ -380,6 +385,7 @@ export const createDataItemKeystoneSigner =
 
     return {
       id: dataItem.id,
+      // @ts-ignore
       raw: dataItem.getRaw(),
     };
   };

@@ -17,6 +17,7 @@ const Wrapper = styled.div`
   background-color: ${(props) => props.theme.theme}26;
   border-radius: 9px;
   overflow: hidden;
+  width: 100%;
 `;
 
 const Line = styled.div`

@@ -116,7 +116,7 @@ const background: BackgroundModuleFunction<number[]> = async (
       publicKey: Buffer.from(Arweave.utils.b64UrlToBuffer(activeWallet.publicKey)),
     };
     if (!options?.anchor) {
-      // @ts-expect-error - anchor can be uint8array or string
+      // @ts-ignore - anchor can be uint8array or string
       options.anchor = generateAnchor();
     }
     const dataEntry = createDataItem(binaryData, signerConfig, options);
