@@ -1,6 +1,7 @@
 import { AnimatedQRPlayer as Player } from "@arconnect/keystone-sdk";
 import styled, { useTheme } from "styled-components";
 import { type ComponentProps, useMemo } from "react";
+import { Loading } from "@arconnect/components-rebrand";
 
 export default function AnimatedQRPlayer(props: ComponentProps<typeof Player>) {
   // global theme
@@ -21,7 +22,20 @@ export default function AnimatedQRPlayer(props: ComponentProps<typeof Player>) {
 
   return (
     <Wrapper>
-      <Player {...config} {...props} />
+      {props.data ? (
+        <Player {...config} {...props} />
+      ) : (
+        <Loading
+          style={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            width: "24px",
+            height: "24px",
+            color: theme.secondaryText,
+          }}
+        />
+      )}
     </Wrapper>
   );
 }
