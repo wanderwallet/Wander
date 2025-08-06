@@ -10,7 +10,7 @@ import type { HardwareApi } from "./hardware";
 import type { LocalWallet, StoredWallet } from "~wallets";
 import Arweave from "arweave";
 import { isPasswordFresh } from "./auth";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { getNameServiceProfiles } from "~lib/nameservice";
 import type GQLResultInterface from "ar-gql/dist/faces";
 import { printTxWorkingGateways, txHistoryGateways } from "~gateways/gateway";
@@ -30,11 +30,13 @@ import {
   PRINT_ARWEAVE_QUERY_WITH_CURSOR,
   AO_SENT_QUERY_FOR_TOKEN_WITH_CURSOR,
   AO_RECEIVER_QUERY_FOR_TOKEN_WITH_CURSOR,
+  AO_LIQUIDOPS_RECEIVER_QUERY_FOR_TOKEN_WITH_CURSOR,
 } from "~notifications/utils";
 import { gql } from "~gateways/api";
 import BigNumber from "bignumber.js";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { convertAnnouncementsToTransactions } from "~utils/announcements";
+import { AR_PROCESS_ID } from "~tokens/aoTokens/ao";
 
 /**
  * Wallets with details hook
@@ -247,6 +249,13 @@ export const useAskPassword = (): boolean => {
   return askPassword;
 };
 
+const emptyResponse = {
+  data: {
+    transaction: null,
+    transactions: { edges: [], pageInfo: { hasNextPage: false } },
+  },
+} as GQLResultInterface;
+
 export const useTransactions = (activeAddress: string, limit?: number) => {
   const defaultCursors = ["", "", "", "", "", ""];
   const defaultHasNextPages = [true, true, true, true, true, true];
@@ -291,14 +300,7 @@ export const useTransactions = (activeAddress: string, limit?: number) => {
                   }
                   return data;
                 }, 2)
-              : ({
-                  data: {
-                    transactions: {
-                      pageInfo: { hasNextPage: false },
-                      edges: [],
-                    },
-                  },
-                } as GQLResultInterface);
+              : Promise.resolve(emptyResponse);
           }),
         );
 
@@ -434,130 +436,175 @@ export const useTransactions = (activeAddress: string, limit?: number) => {
   };
 };
 
-export const useTokenTransactions = (activeAddress: string, tokenId: string, limit?: number) => {
-  const defaultCursors = ["", ""];
-  const defaultHasNextPages = [true, true];
-
-  const [count, setCount] = useState({ current: 0, actual: 0 });
-  const [cursors, setCursors] = useState(defaultCursors);
-  const [hasNextPages, setHasNextPages] = useState(defaultHasNextPages);
-  const [transactions, setTransactions] = useState<ExtendedTransaction[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  const hasNextPage = useMemo(() => hasNextPages.some((v) => v === true), [hasNextPages]);
-
-  const fetchTransactions = useCallback(async () => {
-    try {
-      if (!activeAddress || !hasNextPage) return;
-
-      setLoading(true);
-
-      const queries = [AO_SENT_QUERY_FOR_TOKEN_WITH_CURSOR, AO_RECEIVER_QUERY_FOR_TOKEN_WITH_CURSOR];
-
-      const [rawAoSent, rawAoReceived] = await Promise.allSettled(
-        queries.map((query, idx) => {
-          return hasNextPages[idx]
-            ? retryWithDelay(async (attempt) => {
-                const data = await gql(
-                  query,
-                  { address: activeAddress, tokenId, after: cursors[idx] },
-                  txHistoryGateways[attempt % txHistoryGateways.length],
-                );
-                if (data?.data === null && (data as any)?.errors?.length > 0) {
-                  throw new Error((data as any)?.errors?.[0]?.message || "GraphQL Error");
-                }
-                return data;
-              }, 2)
-            : ({
-                data: {
-                  transactions: {
-                    pageInfo: { hasNextPage: false },
-                    edges: [],
-                  },
-                },
-              } as GQLResultInterface);
-        }),
-      );
-
-      const aoTransactions = [
-        ...(rawAoSent.status === "fulfilled" ? rawAoSent.value?.data?.transactions?.edges || [] : []),
-        ...(rawAoReceived.status === "fulfilled" ? rawAoReceived.value?.data?.transactions?.edges || [] : []),
-      ];
-      await checkTransferStatus(aoTransactions);
-
-      const aoSent = await processTransactions(rawAoSent, "aoSent", true);
-      const aoReceived = await processTransactions(rawAoReceived, "aoReceived", true);
-
-      setCursors((prev) => [aoSent, aoReceived].map((data, idx) => data[data.length - 1]?.cursor ?? prev[idx]));
-
-      setHasNextPages(
-        [rawAoSent, rawAoReceived].map(
-          (result) =>
-            (result.status === "fulfilled" && result.value?.data?.transactions?.pageInfo?.hasNextPage) ?? true,
-        ),
-      );
-
-      let combinedTransactions: ExtendedTransaction[] = [...aoReceived, ...aoSent];
-
-      combinedTransactions.sort(sortFn);
-
-      combinedTransactions = combinedTransactions.map((transaction) => {
-        if (transaction.node.block && transaction.node.block.timestamp) {
-          const date = new Date(transaction.node.block.timestamp * 1000);
-          const day = date.getDate();
-          const month = date.getMonth() + 1;
-          const year = date.getFullYear();
-          return {
-            ...transaction,
-            day,
-            month,
-            year,
-            date: date.toISOString(),
-          };
-        } else {
-          const now = new Date();
-          return {
-            ...transaction,
-            day: now.getDate(),
-            month: now.getMonth() + 1,
-            year: now.getFullYear(),
-            date: null,
-          };
+const createFetchPromise = (query: string, cursor: string, skip: boolean, variables: Record<string, unknown>) =>
+  skip
+    ? Promise.resolve(emptyResponse)
+    : retryWithDelay(async (attempt) => {
+        const data = await gql(
+          query,
+          { ...variables, after: cursor },
+          txHistoryGateways[attempt % txHistoryGateways.length],
+        );
+        if (data?.data === null && (data as any)?.errors?.length > 0) {
+          throw new Error((data as any)?.errors?.[0]?.message || "GraphQL Error");
         }
+        return data;
+      }, 2);
+
+export const useTokenTransactions = (activeAddress: string, tokenId: string) => {
+  const { data, fetchNextPage, hasNextPage, isLoading, isFetching, isFetchingNextPage } = useInfiniteQuery({
+    queryKey: ["tokenTransactions", activeAddress, tokenId],
+    queryFn: async ({ pageParam }) => {
+      if (!activeAddress) {
+        throw new Error("No active address provided");
+      }
+
+      const {
+        sentCursor = "",
+        receivedCursor = "",
+        liquidOpsReceivedCursor = "",
+        skipSent = false,
+        skipReceived = false,
+        skipLiquidOpsReceived = false,
+      } = pageParam || {};
+      const isAr = tokenId === AR_PROCESS_ID;
+      const queries = isAr
+        ? [AR_SENT_QUERY_WITH_CURSOR, AR_RECEIVER_QUERY_WITH_CURSOR]
+        : [
+            AO_SENT_QUERY_FOR_TOKEN_WITH_CURSOR,
+            AO_RECEIVER_QUERY_FOR_TOKEN_WITH_CURSOR,
+            AO_LIQUIDOPS_RECEIVER_QUERY_FOR_TOKEN_WITH_CURSOR,
+          ];
+
+      const fetchPromises = [
+        createFetchPromise(queries[0], sentCursor, skipSent, { address: activeAddress, tokenId }),
+        createFetchPromise(queries[1], receivedCursor, skipReceived, { address: activeAddress, tokenId }),
+        createFetchPromise(queries[2], liquidOpsReceivedCursor, isAr ? true : skipLiquidOpsReceived, {
+          address: activeAddress,
+          tokenId,
+        }),
+      ];
+
+      const [rawSent, rawReceived, rawLiquidOpsReceived] = await Promise.allSettled(fetchPromises);
+
+      const allTransactions = [
+        ...(rawSent.status === "fulfilled" ? rawSent.value?.data?.transactions?.edges || [] : []),
+        ...(rawReceived.status === "fulfilled" ? rawReceived.value?.data?.transactions?.edges || [] : []),
+        ...(rawLiquidOpsReceived.status === "fulfilled"
+          ? rawLiquidOpsReceived.value?.data?.transactions?.edges || []
+          : []),
+      ];
+      await checkTransferStatus(allTransactions);
+
+      const sent = await processTransactions(rawSent, isAr ? "sent" : "aoSent", !isAr);
+      const received = await processTransactions(rawReceived, isAr ? "received" : "aoReceived", !isAr);
+      const liquidOpsReceived = await processTransactions(rawLiquidOpsReceived, "liquidOpsAoReceived", !isAr);
+
+      let combinedTransactions: ExtendedTransaction[] = [...received, ...sent, ...liquidOpsReceived].sort(sortFn);
+
+      const now = new Date();
+      combinedTransactions = combinedTransactions.map((transaction) => {
+        const timestamp = transaction.node.block?.timestamp;
+        const date = timestamp ? new Date(timestamp * 1000) : now;
+
+        return {
+          ...transaction,
+          day: date.getDate(),
+          month: date.getMonth() + 1,
+          year: date.getFullYear(),
+          date: timestamp ? date.toISOString() : null,
+        };
       });
 
       const actualCount = combinedTransactions.length;
 
-      if (limit) {
-        combinedTransactions = combinedTransactions.slice(0, limit);
-      }
+      const nextSentCursor = sent[sent.length - 1]?.cursor || sentCursor;
+      const nextReceivedCursor = received[received.length - 1]?.cursor || receivedCursor;
+      const nextLiquidOpsReceivedCursor =
+        liquidOpsReceived[liquidOpsReceived.length - 1]?.cursor || liquidOpsReceivedCursor;
 
-      setCount((prev) => ({
-        current: prev.current + combinedTransactions.length,
-        actual: prev.actual + actualCount,
-      }));
+      const hasSentNext =
+        !skipSent &&
+        rawSent.status === "fulfilled" &&
+        rawSent.value?.data?.transactions?.pageInfo?.hasNextPage &&
+        sent.length > 0 &&
+        nextSentCursor !== sentCursor;
 
-      setTransactions(combinedTransactions);
-    } catch (error) {
-      console.error("Error fetching transactions", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [activeAddress, hasNextPage, transactions, limit, tokenId]);
+      const hasReceivedNext =
+        !skipReceived &&
+        rawReceived.status === "fulfilled" &&
+        rawReceived.value?.data?.transactions?.pageInfo?.hasNextPage &&
+        received.length > 0 &&
+        nextReceivedCursor !== receivedCursor;
 
-  useEffect(() => {
-    setCursors(defaultCursors);
-    setHasNextPages(defaultHasNextPages);
-    setCount({ current: 0, actual: 0 });
-    setTransactions([]);
-    fetchTransactions();
-  }, [activeAddress, tokenId]);
+      const hasLiquidOpsReceivedNext =
+        !skipLiquidOpsReceived &&
+        rawLiquidOpsReceived.status === "fulfilled" &&
+        rawLiquidOpsReceived.value?.data?.transactions?.pageInfo?.hasNextPage &&
+        liquidOpsReceived.length > 0 &&
+        nextLiquidOpsReceivedCursor !== liquidOpsReceivedCursor;
+      const hasNext = hasSentNext || hasReceivedNext || hasLiquidOpsReceivedNext;
+
+      return {
+        transactions: combinedTransactions,
+        actualCount,
+        nextPageParam: hasNext
+          ? {
+              sentCursor: nextSentCursor,
+              receivedCursor: nextReceivedCursor,
+              skipSent: !hasSentNext || sent.length === 0,
+              skipReceived: !hasReceivedNext || received.length === 0,
+              skipLiquidOpsReceived: !hasLiquidOpsReceivedNext || liquidOpsReceived.length === 0,
+              liquidOpsReceivedCursor: nextLiquidOpsReceivedCursor,
+            }
+          : undefined,
+      };
+    },
+    getNextPageParam: (lastPage) => lastPage.nextPageParam,
+    initialPageParam: {
+      sentCursor: "",
+      receivedCursor: "",
+      liquidOpsReceivedCursor: "",
+      skipSent: false,
+      skipReceived: false,
+      skipLiquidOpsReceived: false,
+    },
+    enabled: !!activeAddress && !!tokenId,
+    staleTime: 300_000,
+    refetchInterval: 300_000,
+    gcTime: 600_000,
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    refetchOnWindowFocus: true,
+  });
+
+  const transactions = useMemo(() => {
+    if (!data?.pages) return [];
+
+    const seenIds = new Set<string>();
+    return data.pages
+      .flatMap((page) => page.transactions)
+      .filter((tx) => {
+        if (seenIds.has(tx.node.id)) return false;
+        seenIds.add(tx.node.id);
+        return true;
+      })
+      .sort(sortFn);
+  }, [data]);
+
+  const count = useMemo(() => {
+    if (!data?.pages) return { current: 0, actual: 0 };
+    return {
+      current: transactions.length,
+      actual: data.pages.reduce((sum, page) => sum + page.actualCount, 0),
+    };
+  }, [data, transactions]);
 
   return {
     transactions,
-    loading,
-    hasNextPage,
+    loading: isLoading || isFetching || isFetchingNextPage,
+    hasNextPage: !!hasNextPage,
     count,
-    fetchTransactions,
+    fetchTransactions: fetchNextPage,
   };
 };

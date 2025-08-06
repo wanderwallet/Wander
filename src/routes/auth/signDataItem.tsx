@@ -25,7 +25,7 @@ import { getPrice } from "~lib/coingecko";
 import { getTagValue, type TokenInfo } from "~tokens/aoTokens/ao";
 import { ChevronRightIcon } from "@iconicicons/react";
 import { getUserAvatar } from "~lib/avatar";
-import { LogoWrapper, Logo, WarningIcon } from "~components/popup/Token";
+import { LogoWrapper, Logo } from "~components/popup/Token";
 import arLogoLight from "url:/assets/ar/logo_light.png";
 import arLogoDark from "url:/assets/ar/logo_dark.png";
 import { useTheme } from "~utils/theme";
@@ -36,6 +36,7 @@ import { HeadAuth } from "~components/HeadAuth";
 import { AuthButtons } from "~components/auth/AuthButtons";
 import { useAskPassword } from "~wallets/hooks";
 import { humanizeTimestampTags } from "~utils/timestamp";
+import { WarningIcon } from "~components/icons/WarningIcon";
 
 export function SignDataItemAuthRequestView() {
   const { authRequest, acceptRequest, rejectRequest } = useCurrentAuthRequest("signDataItem");
