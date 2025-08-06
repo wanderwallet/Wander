@@ -85,7 +85,7 @@ export const TokenLinks: React.FC<TokenLinksProps> = ({ id }) => {
           )}
           {tokenInfo?.socials?.discord && (
             <SocialIconButton onClick={() => handleLinkPress(tokenInfo.socials.discord!)} aria-label="Discord">
-              <img src={discordLogo} style={{ width: "14px", height: "14px" }} alt="Discord" />
+              <img src={discordLogo} style={{ width: "14px", height: "14px", color: "black" }} alt="Discord" />
             </SocialIconButton>
           )}
           {tokenInfo?.socials?.github && (
