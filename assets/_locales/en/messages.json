@@ -3676,6 +3676,18 @@
     "message": "Wander Reserve, Edge, and Prime tier members get instant access to the USDA Beta. Connect your Wander wallet, get verified and unlock access. Try now on [Astro Bridge](https://bridge.astrousd.com/)",
     "description": "Announcement 4 body"
   },
+  "announcement_5_title": {
+    "message": "Manage your FL allocations!",
+    "description": "Announcement 5 title"
+  },
+  "announcement_5_description": {
+    "message": "Manage your fair launch delegation directly inside of Wander",
+    "description": "Announcement 5 description"
+  },
+  "announcement_5_body": {
+    "message": "Easily manage and customize your your AO fair launch delegation allocations directly within the Wander browser extension by clicking the Earn button on your Dashboard.",
+    "description": "Announcement 5 body"
+  },
   "swipe_to_learn_more": {
     "message": "Swipe to learn more",
     "description": "Swipe to learn more text"
