@@ -134,7 +134,7 @@ export function ManageEarningsView() {
         const tokenIds = changedTokens.map((t) => t.processId);
         const flpIds = changedTokens.map((t) => t.flpId);
 
-        await trackEvent(EventType.ALLOCATION_UPDATE, {
+        trackEvent(EventType.ALLOCATION_UPDATE, {
           tokenNames: changedTokens.map((t) => t.Name).join(","),
           tokenProcessIds: tokenIds.join(","),
           tokenPercentages: flpIds.map((id) => `${changedDelegations[id]}%`).join(","),
