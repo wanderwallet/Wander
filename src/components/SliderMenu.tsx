@@ -125,11 +125,13 @@ const Wrapper = styled(motion.div)<{
   position: fixed;
   bottom: 0;
   left: 0;
+  right: 0;
+  margin: 0 auto;
   height: ${({ height, fullscreen }) => (fullscreen ? "100vh" : height || "auto")};
   max-height: ${({ fullscreen, maxHeight }) => (fullscreen ? "100%" : maxHeight || "calc(100% - 66px)")};
   display: flex;
   flex-direction: column;
-  width: 100%;
+  width: 377px;
   z-index: 1000;
   overflow: scroll;
   background-color: ${({ theme }) => (theme.displayTheme === "light" ? "#ffffff" : "#1B1B1B")};

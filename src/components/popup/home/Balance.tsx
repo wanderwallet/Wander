@@ -1,9 +1,9 @@
 import { Loading } from "@arconnect/components-rebrand";
-import { useEffect, useMemo, useState, type HTMLProps } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useStorage } from "~utils/storage";
 import { PersistentStorage } from "~utils/storage";
 import { useBalance } from "~wallets/hooks";
-import { getAr24hChange, useArPrice } from "~lib/coingecko";
+import { getToken24hChange, useArPrice } from "~lib/coingecko";
 import useSetting from "~settings/hook";
 import styled, { useTheme } from "styled-components";
 import { Text } from "@arconnect/components-rebrand";
@@ -13,6 +13,7 @@ import NumberFlow from "@number-flow/react";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import TriangleIcon from "~components/icons/TriangleIcon";
 
 export default function Balance() {
   // balance in AR
@@ -79,7 +80,7 @@ export default function Balance() {
     value: number;
     timestamp: string;
   }>({
-    key: "saved_ar_24h_change",
+    key: "saved_arweave_24h_change",
     instance: PersistentStorage,
   });
 
@@ -92,7 +93,7 @@ export default function Balance() {
         return;
       }
 
-      const ar24hChange = await getAr24hChange(currency);
+      const ar24hChange = await getToken24hChange("arweave", currency);
 
       setSavedAr24hChange({
         value: ar24hChange,
@@ -197,26 +198,6 @@ function PriceChangeIndicator({
   );
 }
 
-interface TriangleIconProps {
-  width?: number;
-  height?: number;
-  color: string;
-  negative?: boolean;
-}
-
-const TriangleIcon: React.FC<TriangleIconProps> = ({ width = 8.66, height = 6, color, negative = false }) => {
-  return (
-    <svg
-      width={width}
-      height={height}
-      viewBox="0 0 9 7"
-      fill="none"
-      style={{ transform: `rotate(${negative ? "180deg" : "0deg"})` }}>
-      <path d="M4.49999 0.5L8.83012 6.5H0.169861L4.49999 0.5Z" fill={color || "#000000"} />
-    </svg>
-  );
-};
-
 const BalanceWrapper = styled.div<{ $hideBalance?: boolean }>`
   display: flex;
   flex-direction: column;
@@ -251,22 +232,3 @@ const BalanceText = styled(Text).attrs({
   text-align: center;
   ${IS_EMBEDDED_APP && "color: var(--color-font-heading)"}
 `;
-
-export const CompassIcon = (props: HTMLProps<SVGElement>) => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...(props as any)}>
-    <path
-      d="M11.75 19.5C16.0302 19.5 19.5 16.0302 19.5 11.75C19.5 7.46979 16.0302 4 11.75 4C7.46979 4 4 7.46979 4 11.75C4 16.0302 7.46979 19.5 11.75 19.5Z"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M13.8596 8.85612C14.2383 8.72991 14.4276 8.66681 14.5535 8.7117C14.663 8.75077 14.7492 8.83698 14.7883 8.94654C14.8332 9.07243 14.7701 9.26174 14.6439 9.64037L13.491 13.0989C13.4551 13.2067 13.4371 13.2607 13.4065 13.3054C13.3794 13.3451 13.3451 13.3794 13.3054 13.4065C13.2607 13.4371 13.2067 13.4551 13.0989 13.491L9.64037 14.6439C9.26174 14.7701 9.07243 14.8332 8.94654 14.7883C8.83698 14.7492 8.75077 14.663 8.7117 14.5535C8.66681 14.4276 8.72991 14.2383 8.85612 13.8596L10.009 10.4011C10.0449 10.2933 10.0629 10.2393 10.0935 10.1946C10.1206 10.1549 10.1549 10.1206 10.1946 10.0935C10.2393 10.0629 10.2933 10.0449 10.4011 10.009L13.8596 8.85612Z"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);

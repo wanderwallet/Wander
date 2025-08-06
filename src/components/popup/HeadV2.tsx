@@ -23,7 +23,7 @@ import { FULL_HISTORY, useGateway } from "~gateways/wayfinder";
 import { Avatar, NoAvatarIcon } from "~components/Avatar";
 
 export interface HeadV2Props {
-  title: string;
+  title: React.ReactNode;
   showOptions?: boolean;
   // allow opening the wallet switcher
   showBack?: boolean;
@@ -118,7 +118,9 @@ export default function HeadV2({
           {backIcon ? backIcon : <BackButtonIcon />}
         </BackButton>
       ) : null}
-      <PageTitle showLeftMargin={showBack && !showOptions && !!appName}>{title}</PageTitle>
+      <PageTitleWrapper showLeftMargin={showBack && !showOptions && !!appName}>
+        {typeof title === "string" ? <PageTitle>{title}</PageTitle> : title}
+      </PageTitleWrapper>
       {!showOptions && appName ? (
         <Tooltip content={appName} position="bottomEnd">
           <SquircleWrapper>
@@ -249,11 +251,12 @@ const BackButtonIcon = styled(ArrowNarrowLeft)`
   }
 `;
 
-const PageTitle = styled(Text).attrs({
-  noMargin: true,
-})<{ showLeftMargin: boolean }>`
+const PageTitle = styled(Text).attrs({ noMargin: true })`
   font-size: 1.375rem;
   font-weight: 500;
+`;
+
+const PageTitleWrapper = styled.div<{ showLeftMargin: boolean }>`
   ${(props) => props.showLeftMargin && `margin-left: 28px;`}
 `;
 
