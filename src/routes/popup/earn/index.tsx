@@ -16,6 +16,7 @@ import { useLocation } from "~wallets/router/router.utils";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import { EarnDelegationNotice } from "~components/popup/earn/EarnDelegationNotice";
 import { EarnAOTokensDetectedNotice } from "~components/popup/earn/EarnAOTokensDetectedNotice";
+import { EventType, PageType, trackEvent, trackPage } from "~utils/analytics";
 
 export function EarnView() {
   const theme = useTheme();
@@ -53,6 +54,8 @@ export function EarnView() {
   }, []);
 
   useAsyncEffect(async () => {
+    trackPage(PageType.EARN);
+
     const [popupShown, delegateShown, aoTokensDetectedShown] = await Promise.all([
       ExtensionStorage.get<boolean>("earn_popup_shown").then((val) => val ?? false),
       ExtensionStorage.get<boolean>("earn_notice_shown").then((val) => val ?? false),
@@ -130,7 +133,13 @@ export function EarnView() {
 
         <EarnTabs />
 
-        <Button variant="secondary" onClick={() => navigate(PopupPaths.ManageEarnings)} fullWidth>
+        <Button
+          variant="secondary"
+          onClick={() => {
+            trackEvent(EventType.MANAGE_EARNINGS_BUTTON, {});
+            navigate(PopupPaths.ManageEarnings);
+          }}
+          fullWidth>
           {browser.i18n.getMessage("manage_earnings")}
         </Button>
       </Wrapper>

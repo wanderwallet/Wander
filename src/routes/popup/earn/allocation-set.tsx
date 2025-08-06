@@ -6,9 +6,15 @@ import checkmarkAnimationData from "assets/lotties/checkmark.json";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import { Flex } from "~components/common/Flex";
 import browser from "webextension-polyfill";
+import { useEffect } from "react";
+import { trackPage, PageType } from "~utils/analytics";
 
 export function AllocationSetView() {
   const { navigate, back } = useLocation();
+
+  useEffect(() => {
+    trackPage(PageType.EARN_ALLOCATION_SET);
+  }, []);
 
   return (
     <Wrapper>
