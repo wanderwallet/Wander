@@ -1,14 +1,15 @@
-import { gql } from "~gateways/api";
+import { gql, gqlAll } from "~gateways/api";
 import { AO_YIELD_AGENT_SYNC_QUERY } from "./queries";
 import { getAOYieldAgentInfo, getAOYieldAgents, setAOYieldAgents } from "./utils";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import {
   AO_YIELD_AGENT_SYNC_ALARM_NAME_PREFIX,
+  AO_YIELD_AGENT_SYNC_STATUS_PREFIX_KEY,
   HAS_SHOWN_AGENTS_EXPLAINER_POPUP,
   SHOW_CREATE_WANDER_AGENT_CTA,
 } from "./constants";
 import browser from "webextension-polyfill";
-import type { AOYieldAgent, AOYieldAgentInfo } from "./types";
+import type { AOYieldAgent } from "./types";
 import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 import { pLimit } from "plimit-lit";
 import { ExtensionStorage } from "~utils/storage";
@@ -18,6 +19,11 @@ const limit = pLimit(10);
 
 export async function checkAndSyncAgents(address: string): Promise<void> {
   try {
+    await ExtensionStorage.set(AO_YIELD_AGENT_SYNC_STATUS_PREFIX_KEY + address, {
+      status: "in_progress",
+      timestamp: Date.now(),
+    });
+
     if (!address) {
       log(LOG_GROUP.AGENTS, "No address provided");
       return;
@@ -31,8 +37,7 @@ export async function checkAndSyncAgents(address: string): Promise<void> {
       return;
     }
 
-    const response = await gql(AO_YIELD_AGENT_SYNC_QUERY, { address });
-    const edges = response?.data?.transactions?.edges || [];
+    const edges = await gqlAll(AO_YIELD_AGENT_SYNC_QUERY, { address });
 
     if (edges.length === 0) {
       log(LOG_GROUP.AGENTS, "No agents found");
@@ -63,12 +68,7 @@ export async function checkAndSyncAgents(address: string): Promise<void> {
           log(LOG_GROUP.AGENTS, `Fetching agent info for ${agentId}`);
           const agentInfo = await queryClient.fetchQuery({
             queryKey: ["ao-yield-agent-info", agentId],
-            queryFn: async (): Promise<AOYieldAgentInfo> => {
-              const timeoutPromise = new Promise<never>((_, reject) => {
-                setTimeout(() => reject(new Error("Query timeout")), 10000);
-              });
-              return Promise.race([getAOYieldAgentInfo(agentId), timeoutPromise]);
-            },
+            queryFn: () => getAOYieldAgentInfo(agentId),
             staleTime: 0, // Force fresh data
             gcTime: 0,
             retry: 1,
@@ -118,6 +118,8 @@ export async function checkAndSyncAgents(address: string): Promise<void> {
     }
   } catch (error) {
     log(LOG_GROUP.AGENTS, "Error checking and syncing agents: ", error);
+  } finally {
+    await ExtensionStorage.remove(AO_YIELD_AGENT_SYNC_STATUS_PREFIX_KEY + address);
   }
 }
 

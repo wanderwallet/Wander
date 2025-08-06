@@ -20,6 +20,9 @@ import { AO_YIELD_AGENT_RECENT_TXS, WANDER_FEE_PROCESS_ID } from "../constants";
 import dayjs from "dayjs";
 import { isURL } from "~utils/urls/isURL";
 import { queryClient } from "~utils/tanstack";
+import { Mutex } from "~utils/mutex";
+
+const agentStorageMutex = new Mutex();
 
 /**
  * Initializes a default Arweave instance.
@@ -175,7 +178,12 @@ export async function getAOYieldAgents(activeAddress: string, status?: AOYieldAg
 }
 
 export async function setAOYieldAgents(activeAddress: string, agents: AOYieldAgent[]) {
-  await ExtensionStorage.set(`ao_yield_agents_${activeAddress}`, agents);
+  const unlock = await agentStorageMutex.lock();
+  try {
+    await ExtensionStorage.set(`ao_yield_agents_${activeAddress}`, agents);
+  } finally {
+    unlock();
+  }
 }
 
 /**
