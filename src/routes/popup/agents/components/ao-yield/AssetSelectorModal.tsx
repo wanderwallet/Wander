@@ -1,8 +1,8 @@
 import { ListItem } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
 import { Flex } from "~components/common/Flex";
+import { TokenLogo } from "~components/popup/TokenLogo";
 import SliderMenu from "~components/SliderMenu";
-import { TokenLogo } from "~routes/popup/purchase";
 import type { Asset } from "~utils/agents/types";
 import { assets } from "~utils/agents/utils";
 
@@ -52,7 +52,7 @@ const AssetSelectorScreen = ({
           squircleSize={40}
           title={asset.ticker}
           hideSquircle
-          icon={<TokenLogo src={asset.logo} style={{ height: 40, width: 40 }} backgroundColor="transparent" />}
+          icon={<TokenLogo token={asset.logo} name={asset.ticker} />}
           onClick={() => {
             updateAsset(asset);
             onClose();

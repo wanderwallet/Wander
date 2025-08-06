@@ -8,8 +8,6 @@ import { PageType, trackPage } from "~utils/analytics";
 import { ExtensionStorage } from "~utils/storage";
 import SliderMenu from "~components/SliderMenu";
 import { useTheme } from "styled-components";
-import arLogo from "url:/assets/ecosystem/ar-logo.svg";
-import CommonImage from "~components/common/Image/Image";
 import getSymbolFromCurrency from "currency-symbol-map";
 import { WarningIcon } from "~components/popup/Token";
 import { Flex } from "~components/common/Flex";
@@ -17,6 +15,8 @@ import { useTransak, useTransakApiKey } from "~utils/transak/transak.hooks";
 import { paymentMethods } from "~utils/ramps";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import { InputButton } from "~components/common/InputButton";
+import Image from "~components/common/Image/Image";
+import { TokenLogo } from "~components/popup/TokenLogo";
 
 export function PurchaseView() {
   const theme = useTheme();
@@ -287,7 +287,7 @@ const AR = () => {
         alignItems: "center",
         gap: "4px",
       }}>
-      <TokenLogo src={arLogo} alt="AR logo" width={40} height={40} />
+      <TokenLogo token="AR" size={24} />
       <Text noMargin>AR</Text>
     </div>
   );
@@ -312,10 +312,12 @@ const Tag = ({
         gap: "8px",
       }}
       onClick={onClick}>
-      <TokenLogo src={currencyLogo} alt={`${currency} logo`} width={40} height={40} />
+      <Image src={currencyLogo} alt={`${currency} logo`} width={24} height={24} borderRadius="circular" />
+
       <Text weight="medium" noMargin>
         {currency}
       </Text>
+
       <ChevronDown color={iconColor} />
     </div>
   );
@@ -398,12 +400,12 @@ const CurrencySelectorScreen = ({
               subtitle={currency.name}
               hideSquircle
               icon={
-                <TokenLogo
+                <Image
                   src={currency.logo}
                   alt={`${currency.name} logo`}
                   width={40}
                   height={40}
-                  backgroundColor="transparent"
+                  borderRadius="circular"
                 />
               }
               onClick={() => {
@@ -455,15 +457,6 @@ export const Line = styled.div<{ margin?: string }>`
   height: 1px;
   width: 100%;
   background-color: ${(props) => props.theme.borderDefault};
-`;
-
-export const TokenLogo = styled(CommonImage).attrs((props) => ({
-  borderRadius: "rounded",
-  backgroundColor: props.backgroundColor || "#fffefc",
-}))<{ backgroundColor?: string }>`
-  height: 24px;
-  width: 24px;
-  border-radius: 50%;
 `;
 
 const WarningWrapper = styled.div`

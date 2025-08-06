@@ -36,14 +36,18 @@ export const AO_OLD_PROCESS_ID = "m3PaWzK4PTG9lAaqYQPaPdOcXdO8hYqi5Fe9NWqXd0w" a
 export const AO_PROCESS_BALANCE_MIRROR = "Pi-WmAQp2-mh-oWH9lWpz5EthlUDj_W0IusAv-RXhRk" as const;
 export const AO_AUTHORITY_ID = "fcoN_xJeisVsPXA-trzVAuIiqO3ydLQxM-L4XbrQKzY" as const;
 
+export const AR_LOGO = "jZ2XPRj37W-QNb3BwWWIyEelv-7nQjBHg0g6WLX91IM";
+
+export const AR_TOKEN_INFO: TokenInfo = {
+  Name: "AR",
+  Ticker: "AR",
+  Denomination: 12,
+  Logo: AR_LOGO,
+  processId: AR_PROCESS_ID,
+};
+
 export const defaultTokens = [
-  {
-    Name: "AR",
-    Ticker: "AR",
-    Denomination: 12,
-    Logo: "jZ2XPRj37W-QNb3BwWWIyEelv-7nQjBHg0g6WLX91IM",
-    processId: AR_PROCESS_ID,
-  },
+  AR_TOKEN_INFO,
   {
     Name: "AO",
     Ticker: "AO",

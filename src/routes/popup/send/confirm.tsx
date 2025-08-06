@@ -81,7 +81,6 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
   const [networkFee, setNetworkFee] = useState<string>("");
   const [message, setMessage] = useState<string | undefined>();
   const [recipient, setRecipient] = useState<RecipientType | undefined>(undefined);
-  const [logo, setLogo] = useState<string | undefined>();
   const { setToast } = useToasts();
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -127,7 +126,6 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
           setIsAo(data.isAo);
           setRecipient(data.recipient);
           setToken(data.token);
-          setLogo(await getArweaveLink(data.token.Logo));
           setNetworkFee(data.networkFee);
           setAmount(data.qty);
           setEstimatedFiatAmount(data.estimatedFiat);
@@ -679,12 +677,8 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
                   }}>
                   <TransactionDirection>{browser.i18n.getMessage("send")}</TransactionDirection>
 
-                  <AdaptiveBalanceDisplay
-                    balance={amount}
-                    ticker={token.Ticker || "AR"}
-                    ao={{ isAo, tokenId: tokenID }}
-                    logo={logo}
-                  />
+                  <AdaptiveBalanceDisplay token={token} balance={amount} ao={{ isAo, tokenId: tokenID }} />
+
                   {!isNaN(parseFloat(estimatedFiatAmount)) && (
                     <FiatAmount>{formatFiatBalance(estimatedFiatAmount, currency)}</FiatAmount>
                   )}

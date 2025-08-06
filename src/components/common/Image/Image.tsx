@@ -15,6 +15,7 @@ interface ImageProps {
   srcDark?: string;
   width: number;
   height: number;
+  title?: string;
   alt?: string;
   className?: string;
   fullWidth?: boolean;
@@ -31,6 +32,7 @@ export default function Image({
   srcDark,
   width,
   height,
+  title,
   alt = "",
   className,
   fullWidth,
@@ -104,6 +106,7 @@ export default function Image({
         src={displayTheme === "dark" && srcDark ? srcDark : src}
         width={width}
         height={height}
+        title={title}
         alt={alt}
         draggable={false}
         onLoad={handleImageLoaded}

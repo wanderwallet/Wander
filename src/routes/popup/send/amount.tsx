@@ -3,15 +3,13 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import styled from "styled-components";
 import { Button, Input, Section, Spacer, Text, useInput, useToasts } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
-import Token, { Logo, LogoAndDetails, TokenName, WarningIcon } from "~components/popup/Token";
+import Token, { LogoAndDetails, TokenName, WarningIcon } from "~components/popup/Token";
 import useSetting from "~settings/hook";
 import { formatFiatBalance, formatTokenBalance, fractionedToBalance } from "~tokens/currency";
 import { useStorage } from "@plasmohq/storage/hook";
 import { ExtensionStorage, TempTransactionStorage } from "~utils/storage";
-import { loadTokenLogo, type Token as TokenInterface } from "~tokens/token";
+import { type Token as TokenInterface } from "~tokens/token";
 import { useTheme } from "~utils/theme";
-import arLogoLight from "url:/assets/ar/logo_light.png";
-import arLogoDark from "url:/assets/ar/logo_dark.png";
 import Collectible from "~components/popup/Collectible";
 import { retryWithGateways } from "~gateways/wayfinder";
 import { useLocation } from "~wallets/router/router.utils";
@@ -38,7 +36,7 @@ import { useActiveWallet } from "~wallets/hooks";
 import { ChevronDown, Pencil01, SwitchVertical02 } from "@untitled-ui/icons-react";
 import { SendInput } from "~components/SendInput";
 import { HorizontalLine } from "~components/HorizontalLine";
-import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import { TokenLogo } from "~components/popup/TokenLogo";
 
 export enum AmountValidationState {
   Invalid = "Invalid",
@@ -208,16 +206,6 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
     // field when note is set and returned to amount page
     // setQty("");
   }, []);
-
-  // token logo
-  const [logo, setLogo] = useState<string>();
-
-  useAsyncEffect(async () => {
-    setLogo(await loadTokenLogo(token.processId, token.Logo, theme));
-  }, [theme, token]);
-
-  //arweave logo
-  const arweaveLogo = useMemo(() => (theme === "light" ? arLogoLight : arLogoDark), [theme]);
 
   const contact = useContact(recipient);
 
@@ -486,7 +474,7 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
         <BottomActions>
           <TokenSelector onClick={() => setShownTokenSelector(true)}>
             <LogoAndDetails>
-              <Logo src={logo || arweaveLogo} />
+              <TokenLogo token={token || "AR"} />
               <Flex direction="column" gap={2}>
                 <TokenName>{token.type === "collectible" ? token.Name || token.Ticker : token.Ticker}</TokenName>
                 <Text size="sm" weight="medium" variant="secondary" noMargin>

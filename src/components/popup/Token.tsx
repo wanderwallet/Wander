@@ -5,34 +5,26 @@ import { type Token } from "~tokens/token";
 import { useStorage } from "~utils/storage";
 import { ExtensionStorage } from "~utils/storage";
 import { Button, Text, Tooltip } from "@arconnect/components-rebrand";
-import { useArPrice } from "~lib/coingecko";
-import arLogoLight from "url:/assets/ar/logo_light.png";
-import arLogoDark from "url:/assets/ar/logo_dark.png";
 import Squircle from "~components/Squircle";
 import useSetting from "~settings/hook";
 import styled from "styled-components";
-import { getUserAvatar } from "~lib/avatar";
 import { formatAddress, formatBalance } from "~utils/format";
 import Skeleton from "~components/Skeleton";
 import { TrashIcon, PlusIcon, SettingsIcon } from "@iconicicons/react";
 import BigNumber from "bignumber.js";
 import JSConfetti from "js-confetti";
 import browser from "webextension-polyfill";
-import { useBalance } from "~wallets/hooks";
 import { useTokenBalance } from "~tokens/hooks";
 import { BalanceFetchError, NetworkError } from "~utils/error/error.utils";
 import { ToggleSwitch } from "~components/ToggleSwitch";
-import Image from "~components/common/Image/Image";
 import { AO_PROCESS_ID } from "~tokens/aoTokens/ao";
-import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import { TokenLogo } from "~components/popup/TokenLogo";
 
 export default function Token({ onClick, disableClickEffect, disableCursor, ...props }: Props) {
   const ref = useRef(null);
   const [totalBalance, setTotalBalance] = useState("");
   const [showTooltip, setShowTooltip] = useState(false);
   const [aoConfettiShown, setAoConfettiShown] = useState(true);
-  // display theme
-  const theme = useTheme();
 
   const [activeAddress] = useStorage({
     key: "active_address",
@@ -54,8 +46,6 @@ export default function Token({ onClick, disableClickEffect, disableCursor, ...p
 
   const { data: fractBalance = "0", isError, error, isLoading } = useTokenBalance(tokenInfo, activeAddress);
 
-  const arweaveLogo = useMemo(() => (theme === "dark" ? arLogoDark : arLogoLight), [theme]);
-
   const balance = useMemo(() => {
     if (isError) return "0";
     const formattedBalance = formatBalance(BigNumber(fractBalance));
@@ -76,7 +66,6 @@ export default function Token({ onClick, disableClickEffect, disableCursor, ...p
   }, [props.fiatPrice, currency]);
 
   // token logo
-  const [logo, setLogo] = useState<string>();
 
   const hasActionButton = props?.onAddClick || props?.onRemoveClick || props?.onSettingsClick || props?.onHideClick;
 
@@ -86,19 +75,6 @@ export default function Token({ onClick, disableClickEffect, disableCursor, ...p
     setAoConfettiShown(true);
     await ExtensionStorage.set(`ao_confetti_shown_${activeAddress}`, true);
   };
-
-  useEffect(() => {
-    const fetchLogo = async () => {
-      if (!props?.id || logo) return;
-      if (props.defaultLogo) {
-        const logo = await getUserAvatar(props.defaultLogo);
-        setLogo(logo);
-      } else {
-        setLogo(arweaveLogo);
-      }
-    };
-    fetchLogo();
-  }, [props, logo, arweaveLogo]);
 
   useEffect(() => {
     if (activeAddress && AO_PROCESS_ID === props.id) {
@@ -124,13 +100,7 @@ export default function Token({ onClick, disableClickEffect, disableCursor, ...p
       {(!aoConfettiShown || ref.current) && AO_PROCESS_ID === props.id && +fractBalance > 0 && <Canvas ref={ref} />}
       <InnerWrapper width={hasActionButton ? "86%" : "100%"} onClick={onClick}>
         <LogoAndDetails>
-          <Logo
-            src={logo || ""}
-            alt={`${props.name || props.ticker || "token"} logo`}
-            key={props.id}
-            width={40}
-            height={40}
-          />
+          <TokenLogo key={props.id} token={props.defaultLogo || "ar"} name={props.name || props.ticker} />
           <div>
             <div style={{ display: "flex", gap: "0.5rem" }}>
               <TokenName>{props.name || props.ticker || "???"}</TokenName>
@@ -362,26 +332,6 @@ export const LogoWrapper = styled(Squircle)<{ small?: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
-`;
-
-export const Logo = styled(Image).attrs({
-  backgroundColor: "#fffefc",
-})`
-  position: relative;
-  width: 40px;
-  height: 40px;
-  flex-shrink: 0;
-  border-radius: 29px;
-  object-fit: cover;
-  overflow: hidden;
-  z-index: 1;
-
-  ${(props) =>
-    props.theme.displayTheme === "light" &&
-    `
-      border: 1px solid #E4E4EB;
-      box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.10), 0px 1px 2px 0px rgba(0, 0, 0, 0.06);
-    `}
 `;
 
 export const TokenName = styled(Text).attrs({

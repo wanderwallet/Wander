@@ -3,7 +3,6 @@ import { useEffect, useMemo, useState } from "react";
 import { ExtensionStorage } from "~utils/storage";
 import { Loading, Text } from "@arconnect/components-rebrand";
 import { useStorage } from "~utils/storage";
-
 import { gql } from "~gateways/api";
 import styled from "styled-components";
 import {
@@ -29,14 +28,12 @@ import {
 import BigNumber from "bignumber.js";
 import { retryWithDelay } from "~utils/promises/retry";
 import { useLocation } from "~wallets/router/router.utils";
-import arLogoLight from "url:/assets/ar/logo_light.png";
-import { Logo } from "../Token";
-import { getUserAvatar } from "~lib/avatar";
 import { convertAnnouncementsToTransactions } from "~utils/announcements";
 import { Announcement01 } from "@untitled-ui/icons-react";
 import { Flex } from "~components/common/Flex";
 import dayjs from "dayjs";
 import { ParseTextWithLinks } from "~components/common/ParseTextWithLinks";
+import { TokenLogo } from "~components/popup/TokenLogo";
 
 interface TransactionsCache {
   transactions: ExtendedTransaction[];
@@ -233,27 +230,13 @@ export default function Transactions() {
 }
 
 export const TransactionItemComponent = ({ transaction }: { transaction: ExtendedTransaction }) => {
-  const [logoSource, setLogoSource] = useState<string>();
   const { navigate } = useLocation();
-
-  useEffect(() => {
-    const fetchLogo = async () => {
-      if (transaction.aoInfo?.logo) {
-        const logo = await getUserAvatar(transaction.aoInfo.logo);
-        setLogoSource(logo!);
-      } else {
-        setLogoSource(arLogoLight);
-      }
-    };
-
-    fetchLogo();
-  }, [transaction.aoInfo?.logo]);
 
   return (
     <TransactionItem showBackground={true}>
       <Transaction onClick={() => navigate(`/transaction/${transaction.node.id}`)}>
         <FlexContainer>
-          <Logo src={logoSource} alt="Token logo" />
+          <TokenLogo token={transaction.aoInfo?.logo || "AR"} name={transaction.aoInfo?.tickerName} />
           <Section>
             <Main>{getTransactionDescription(transaction)}</Main>
             <Secondary>
