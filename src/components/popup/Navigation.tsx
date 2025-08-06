@@ -113,6 +113,8 @@ export const NavigationBar = () => {
             onClick={() => {
               if (button.route === "/agents") {
                 trackEvent(EventType.AGENT_DASHBOARD, {});
+              } else if (button.route === "/earn") {
+                trackEvent(EventType.EARN_BUTTON, {});
               }
 
               navigate(button.route as WanderRoutePath);

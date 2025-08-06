@@ -27,6 +27,8 @@ import AnimatedQRPlayer from "~components/hardware/AnimatedQRPlayer";
 import { Spacer } from "~components/embed";
 import { SignType } from "@keystonehq/bc-ur-registry-arweave";
 import Arweave from "arweave";
+import { EventType, PageType, trackEvent, trackPage } from "~utils/analytics";
+import { log, LOG_GROUP } from "~utils/log/log.utils";
 
 export function ManageEarningsView() {
   const theme = useTheme();
@@ -126,6 +128,21 @@ export function ManageEarningsView() {
       const isAfterAllAOorPIYield =
         (updatedDelegationInfo[activeAddress] || 0) === 100 || (updatedDelegationInfo[PI_FLP_ID] || 0) === 100;
 
+      try {
+        // track allocation update event
+        const changedTokens = tokens.filter((t) => t.flpId in changedDelegations);
+        const tokenIds = changedTokens.map((t) => t.processId);
+        const flpIds = changedTokens.map((t) => t.flpId);
+
+        trackEvent(EventType.ALLOCATION_UPDATE, {
+          tokenNames: changedTokens.map((t) => t.Name).join(","),
+          tokenProcessIds: tokenIds.join(","),
+          tokenPercentages: flpIds.map((id) => `${changedDelegations[id]}%`).join(","),
+        });
+      } catch (error) {
+        log(LOG_GROUP.EARN, "Failed to track allocation update event", error);
+      }
+
       setToast({
         type: "success",
         content: browser.i18n.getMessage("delegation_info_saved"),
@@ -147,7 +164,7 @@ export function ManageEarningsView() {
       setCurrentTransactionCount(0);
       setTransactionUR(null);
     }
-  }, [updatedDelegationInfo, delegationInfo, activeAddress, keystoneSigner]);
+  }, [updatedDelegationInfo, delegationInfo, activeAddress, keystoneSigner, tokens]);
 
   const handleScannerResult = useCallback(
     async (res: UR) => {
@@ -182,6 +199,10 @@ export function ManageEarningsView() {
       previousAddressRef.current = activeAddress;
     }
   }, [delegationInfo, activeAddress, updatedDelegationInfo]);
+
+  useEffect(() => {
+    trackPage(PageType.EARN_MANAGE);
+  }, []);
 
   return (
     <>
