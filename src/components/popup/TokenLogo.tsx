@@ -7,17 +7,8 @@ import { AR_LOGO, AR_PROCESS_ID, type TokenInfo } from "~tokens/aoTokens/ao";
 import { FULL_HISTORY, useGateway } from "~gateways/wayfinder";
 import { concatGatewayURL } from "~gateways/utils";
 
-// import arLogoLight from "url:/assets/ar/logo_light_solid.png";
-// import arLogoDark from "url:/assets/ar/logo_dark_solid.png";
-
 import arLogoLight from "url:/assets/ar/ar-logo-light.svg";
 import arLogoDark from "url:/assets/ar/ar-logo-dark.svg";
-
-// TODO: Replace all these occurrences with the new component:
-// import arLogoLight from "url:/assets/ar/logo_light.png";
-// import arLogoDark from "url:/assets/ar/logo_dark.png";
-// import aoLogo from "url:/assets/ecosystem/ao-logo.svg";
-// import arLogo from "url:/assets/ecosystem/ar-logo.svg";
 
 function isAr(token: string | Partial<Token>) {
   return typeof token === "string"
@@ -29,17 +20,14 @@ function isURI(token: string | Partial<Token>): token is string {
   return typeof token === "string" && (token.startsWith("chrome-extension://") || token.startsWith("https://"));
 }
 
-// TODO: Search for usages of ar/logo_light and ar/logo_dark and replace with this component.
-
-// TODO: Handle special state if there was an error loading the token?
-
 export interface TokenLogoProps {
   token: string | Partial<Token> | Partial<TokenInfo>;
   name?: string;
   size?: number;
+  style?: React.CSSProperties;
 }
 
-export function TokenLogo({ token: tokenProp, name, size = 40 }: TokenLogoProps) {
+export function TokenLogo({ token: tokenProp, name, size = 40, style }: TokenLogoProps) {
   const gateway = useGateway(FULL_HISTORY);
 
   const token = useMemo(() => {
@@ -106,6 +94,8 @@ export function TokenLogo({ token: tokenProp, name, size = 40 }: TokenLogoProps)
 
   // TODO: Cache this...
 
+  // TODO: Add special state if there was an error loading the token?
+
   useAsyncEffect(async () => {
     // These are handled in the `return` at the bottom:
     if (!token) return;
@@ -149,8 +139,9 @@ export function TokenLogo({ token: tokenProp, name, size = 40 }: TokenLogoProps)
       width={size}
       height={size}
       borderRadius="circular"
+      style={style}
     />
   ) : (
-    <Image src={logoSrc} alt={alt} title={title} width={size} height={size} borderRadius="circular" />
+    <Image src={logoSrc} alt={alt} title={title} width={size} height={size} borderRadius="circular" style={style} />
   );
 }

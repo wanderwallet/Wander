@@ -4,6 +4,7 @@ import styled from "styled-components";
 import type { WanderRoutePath } from "~wallets/router/router.types";
 import { useLocation } from "~wallets/router/router.utils";
 import browser from "webextension-polyfill";
+
 import arLogoDark from "url:/assets/ar/ar-logo-dark.svg";
 
 export default function WalletActions() {

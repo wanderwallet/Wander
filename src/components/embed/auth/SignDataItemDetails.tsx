@@ -1,7 +1,7 @@
 import { Loading } from "@arconnect/components";
 import { FiatAmount, AmountTitle } from "~routes/popup/transaction/[id]";
 import browser from "webextension-polyfill";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { formatAddress } from "~utils/format";
 import { PersistentStorage, useStorage } from "~utils/storage";
 import { ExtensionStorage } from "~utils/storage";
@@ -10,16 +10,14 @@ import prettyBytes from "pretty-bytes";
 import { formatFiatBalance } from "~tokens/currency";
 import useSetting from "~settings/hook";
 import { fetchTokenByProcessId, type TokenInfo } from "~tokens/aoTokens/ao";
-import { getUserAvatar } from "~lib/avatar";
-import { LogoWrapper, Logo } from "~components/popup/Token";
-import arLogoLight from "url:/assets/ar/logo_light.png";
 import { Box, ChevronRight, Spacer, Text, Row } from "../ui";
 import TransactionTag from "./TransactionTag";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import { TokenLogo } from "~components/popup/TokenLogo";
 
 export default function SignDataItemDetails({ params }) {
   const [loading, setLoading] = useState<boolean>(false);
-  const [tokenName, setTokenName] = useState<string>("");
-  const [logo, setLogo] = useState<string>("");
+  const [tokenInfo, setTokenInfo] = useState<TokenInfo | null>(null);
   const [amount, setAmount] = useState<Quantity | null>(null);
   const [showTags, setShowTags] = useState<boolean>(false);
 
@@ -27,52 +25,44 @@ export default function SignDataItemDetails({ params }) {
   const quantity = params?.tags?.find((tag) => tag.name === "Quantity")?.value || "0";
   const transfer = params?.tags?.some((tag) => tag.name === "Action" && tag.value === "Transfer");
 
-  const arweaveLogo = arLogoLight;
+  useAsyncEffect(async () => {
+    if (!process || !transfer) return;
 
-  useEffect(() => {
-    const fetchTokenInfo = async () => {
-      if (!process || !transfer) return;
+    let tokenInfo: TokenInfo;
 
-      let tokenInfo: TokenInfo;
+    try {
+      setLoading(true);
+
+      tokenInfo = await fetchTokenByProcessId(params.target);
+
+      if (!tokenInfo) {
+        throw new Error("Token not found");
+      }
+    } catch (err) {
+      // fallback
+      console.log("err", err);
 
       try {
-        setLoading(true);
-        tokenInfo = await fetchTokenByProcessId(params.target);
-        if (!tokenInfo) {
-          throw new Error("Token not found");
-        }
-      } catch (err) {
-        // fallback
-        console.log("err", err);
+        const [aoTokens = [], aoTokensCache = []] = await Promise.all([
+          PersistentStorage.get<TokenInfo[]>("ao_tokens"),
+          PersistentStorage.get<TokenInfo[]>("ao_tokens_cache"),
+        ]);
+        const aoTokensCombined = [...aoTokens, ...aoTokensCache];
+        const token = aoTokensCombined.find(({ processId }) => params.target === processId);
 
-        try {
-          const [aoTokens = [], aoTokensCache = []] = await Promise.all([
-            PersistentStorage.get<TokenInfo[]>("ao_tokens"),
-            PersistentStorage.get<TokenInfo[]>("ao_tokens_cache"),
-          ]);
-          const aoTokensCombined = [...aoTokens, ...aoTokensCache];
-          const token = aoTokensCombined.find(({ processId }) => params.target === processId);
-          if (token) {
-            tokenInfo = token;
-          }
-        } catch {}
-      } finally {
-        if (tokenInfo) {
-          if (tokenInfo?.Logo) {
-            const logo = await getUserAvatar(tokenInfo?.Logo);
-            setLogo(logo || "");
-          } else {
-            setLogo(arweaveLogo);
-          }
-
-          const tokenAmount = new Quantity(BigInt(quantity), BigInt(tokenInfo.Denomination));
-          setTokenName(tokenInfo.Name);
-          setAmount(tokenAmount);
+        if (token) {
+          tokenInfo = token;
         }
-        setLoading(false);
+      } catch {}
+    } finally {
+      if (tokenInfo) {
+        const tokenAmount = new Quantity(BigInt(quantity), BigInt(tokenInfo.Denomination));
+        setAmount(tokenAmount);
+        setTokenInfo(tokenInfo);
       }
-    };
-    fetchTokenInfo();
+
+      setLoading(false);
+    }
   }, [params]);
 
   // currency setting
@@ -108,11 +98,7 @@ export default function SignDataItemDetails({ params }) {
               justifyContent: "center",
               marginBottom: "4px",
             }}>
-            {!loading ? (
-              logo && <LogoWrapper img={logo} alt={`${tokenName} logo`} />
-            ) : (
-              <Loading style={{ width: "16px", height: "16px" }} />
-            )}
+            {loading || tokenInfo ? <TokenLogo token={tokenInfo || ""} /> : null}
           </div>
           {transfer && (
             <>
@@ -127,7 +113,7 @@ export default function SignDataItemDetails({ params }) {
                   color: "#666666",
                 }}>
                 {formattedAmount}
-                <span style={{ lineHeight: "1.5em" }}>{tokenName}</span>
+                <span style={{ lineHeight: "1.5em" }}>{tokenInfo?.Name}</span>
               </AmountTitle>
             </>
           )}

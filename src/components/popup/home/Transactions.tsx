@@ -236,7 +236,11 @@ export const TransactionItemComponent = ({ transaction }: { transaction: Extende
     <TransactionItem showBackground={true}>
       <Transaction onClick={() => navigate(`/transaction/${transaction.node.id}`)}>
         <FlexContainer>
-          <TokenLogo token={transaction.aoInfo?.logo || "AR"} name={transaction.aoInfo?.tickerName} />
+          <TokenLogo
+            token={transaction.aoInfo?.logo || "AR"}
+            name={transaction.aoInfo?.tickerName}
+            style={{ flex: "1 0 auto" }}
+          />
           <Section>
             <Main>{getTransactionDescription(transaction)}</Main>
             <Secondary>

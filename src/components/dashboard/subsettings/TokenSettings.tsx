@@ -141,7 +141,6 @@ export function TokenSettingsDashboardView({ params: { id } }: TokenSettingsDash
           <Select
             style={{ paddingLeft: "0px" }}
             onChange={(e) => {
-              // @ts-expect-error
               updateType(e.target.value as TokenType);
             }}
             fullWidth>

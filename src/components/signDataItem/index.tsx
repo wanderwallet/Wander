@@ -52,8 +52,10 @@ export default function SignDataItemDetails({ params }) {
       console.log("err", err);
 
       try {
-        const aoTokens = (await PersistentStorage.get<TokenInfo[]>("ao_tokens")) || [];
-        const aoTokensCache = (await PersistentStorage.get<TokenInfo[]>("ao_tokens_cache")) || [];
+        const [aoTokens = [], aoTokensCache = []] = await Promise.all([
+          PersistentStorage.get<TokenInfo[]>("ao_tokens"),
+          PersistentStorage.get<TokenInfo[]>("ao_tokens_cache"),
+        ]);
         const aoTokensCombined = [...aoTokens, ...aoTokensCache];
         const token = aoTokensCombined.find(({ processId }) => params.target === processId);
 
