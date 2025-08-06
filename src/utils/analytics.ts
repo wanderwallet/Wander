@@ -157,35 +157,35 @@ export const trackDirect = async (event: EventType, properties: Record<string, u
 };
 
 export const trackEvent = async (eventName: EventType, properties: any) => {
-  // Only track BE production events:
-  if (process.env.NODE_ENV === "development" || import.meta.env?.VITE_IS_EMBEDDED_APP === "1") return;
-
-  // first we check if we are allowed to collect data
-  const enabled = await getSetting("analytics").getValue();
-
-  if (!enabled) return;
-
-  const ONE_HOUR_IN_MS = 3600000;
-
-  // TODO:login is tracked only once and compared to an hour period before logged as another Login event
-  if (eventName === EventType.LOGIN) {
-    const storageTime = await TempTransactionStorage.get(EventType.LOGIN);
-
-    if (storageTime && Date.now() < Number(storageTime) + ONE_HOUR_IN_MS) {
-      return;
-    }
-  }
-
-  const activeAddress = await ExtensionStorage.get<string>("active_address");
-
-  if (eventName === EventType.FUNDED) {
-    const hasBeenTracked = await ExtensionStorage.get<boolean>(`wallet_funded_${activeAddress}`);
-    if (hasBeenTracked) {
-      return;
-    }
-  }
-
   try {
+    // Only track BE production events:
+    if (process.env.NODE_ENV === "development" || import.meta.env?.VITE_IS_EMBEDDED_APP === "1") return;
+
+    // first we check if we are allowed to collect data
+    const enabled = await getSetting("analytics").getValue();
+
+    if (!enabled) return;
+
+    const ONE_HOUR_IN_MS = 3600000;
+
+    // TODO:login is tracked only once and compared to an hour period before logged as another Login event
+    if (eventName === EventType.LOGIN) {
+      const storageTime = await TempTransactionStorage.get(EventType.LOGIN);
+
+      if (storageTime && Date.now() < Number(storageTime) + ONE_HOUR_IN_MS) {
+        return;
+      }
+    }
+
+    const activeAddress = await ExtensionStorage.get<string>("active_address");
+
+    if (eventName === EventType.FUNDED) {
+      const hasBeenTracked = await ExtensionStorage.get<boolean>(`wallet_funded_${activeAddress}`);
+      if (hasBeenTracked) {
+        return;
+      }
+    }
+
     const time = Date.now();
 
     await analytics.track(eventName, { ...properties });
