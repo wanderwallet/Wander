@@ -1,6 +1,6 @@
 import { gql, gqlAll } from "~gateways/api";
 import { AO_YIELD_AGENT_SYNC_QUERY } from "./queries";
-import { getAOYieldAgentInfo, getAOYieldAgents, setAOYieldAgents } from "./utils";
+import { getAOYieldAgentInfo, getAOYieldAgents, setAOYieldAgents, updateAOYieldAgent } from "./utils";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import {
   AO_YIELD_AGENT_SYNC_ALARM_NAME_PREFIX,
@@ -14,6 +14,7 @@ import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 import { pLimit } from "plimit-lit";
 import { ExtensionStorage } from "~utils/storage";
 import { queryClient } from "~utils/tanstack";
+import { isWalletUnlocked } from "~wallets/auth";
 
 const limit = pLimit(10);
 
@@ -29,7 +30,7 @@ export async function checkAndSyncAgents(address: string): Promise<void> {
       return;
     }
 
-    log(LOG_GROUP.AGENTS, "Checking and syncing agents");
+    log(LOG_GROUP.AGENTS, "Checking and syncing agents for: ", address);
 
     let agents = await getAOYieldAgents(address);
     if (agents.length > 0) {
@@ -115,6 +116,23 @@ export async function checkAndSyncAgents(address: string): Promise<void> {
     );
 
     await Promise.allSettled(agentInfoPromises);
+
+    try {
+      log(LOG_GROUP.AGENTS, "Checking for expired agents");
+      const aoAgents = await getAOYieldAgents(address);
+      const expiredAgents = aoAgents.filter((agent) => agent.status === "Active" && agent.endDate < Date.now());
+      const expiredPromises = expiredAgents.map(async (agent) => {
+        const walletUnlocked = await isWalletUnlocked();
+        if (walletUnlocked) {
+          await updateAOYieldAgent(agent.id, { status: "Completed" });
+        }
+      });
+
+      log(LOG_GROUP.AGENTS, `Updating ${expiredAgents.length} expired agents status to completed`);
+      await Promise.allSettled(expiredPromises);
+    } catch (error) {
+      log(LOG_GROUP.AGENTS, "Error checking for expired agents: ", error);
+    }
 
     if (successCount > 0) {
       log(LOG_GROUP.AGENTS, `Successfully synced ${successCount} agents progressively`);

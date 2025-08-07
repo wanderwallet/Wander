@@ -357,10 +357,12 @@ export async function updateAOYieldAgent(agentId: string, updateData: Partial<AO
     // Free the keyfile from memory
     freeDecryptedWallet(decryptedWallet.keyfile);
 
-    const result = await aoInstance.result({
-      process: agentId,
-      message: messageId,
-    });
+    const result = await aoInstance
+      .result({
+        process: agentId,
+        message: messageId,
+      })
+      .catch(() => ({ Error: undefined }));
 
     if (result.Error) {
       throw new Error(`Failed to update agent: ${result.Error}`);
