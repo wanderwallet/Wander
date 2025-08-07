@@ -1,5 +1,5 @@
 import { PersistentStorage } from "~utils/storage";
-import { AO_OLD_PROCESS_ID, defaultTokens, type TokenInfo } from "./aoTokens/ao";
+import { AO_OLD_PROCESS_ID, AR_PROCESS_ID, defaultTokens, type TokenInfo } from "./aoTokens/ao";
 
 export interface Token {
   id: string;
@@ -39,6 +39,13 @@ export async function loadTokens() {
       aoTokens.unshift(requiredToken);
     }
   });
+
+  // Previously, the AR token name was "AR" instead of "Arweave".
+  // This is a fix to ensure the token name is "Arweave" in the UI.
+  const arToken = aoTokens.find((t) => t.processId === AR_PROCESS_ID);
+  if (arToken?.Name === "AR") {
+    arToken.Name = "Arweave";
+  }
 
   await PersistentStorage.set("ao_tokens", aoTokens);
 }

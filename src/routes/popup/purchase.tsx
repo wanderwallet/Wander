@@ -9,7 +9,7 @@ import { ExtensionStorage } from "~utils/storage";
 import SliderMenu from "~components/SliderMenu";
 import { useTheme } from "styled-components";
 import getSymbolFromCurrency from "currency-symbol-map";
-import { WarningIcon } from "~components/popup/Token";
+import { WarningIcon } from "~components/icons/WarningIcon";
 import { Flex } from "~components/common/Flex";
 import { useTransak, useTransakApiKey } from "~utils/transak/transak.hooks";
 import { paymentMethods } from "~utils/ramps";

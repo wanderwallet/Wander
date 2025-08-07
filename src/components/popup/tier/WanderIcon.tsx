@@ -1,8 +1,7 @@
 import { type Tier } from "~utils/tier/types";
 import { TierTypes } from "~utils/tier/constants";
-import { useTheme } from "styled-components";
+import { useTheme, type DefaultTheme } from "styled-components";
 import { useId } from "react";
-import { type DefaultTheme } from "@arconnect/components-rebrand";
 
 interface WanderIconProps {
   tier: Tier;

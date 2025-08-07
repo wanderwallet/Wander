@@ -5,21 +5,24 @@ import { Button, Text } from "@arconnect/components-rebrand";
 import alertWarning from "url:/assets/agents/images/alert-warning.svg";
 import { useEffect, useState } from "react";
 import { useAODelegationInfo } from "~utils/agents/hooks";
+import { useLocation } from "~wallets/router/router.utils";
+import { PopupPaths } from "~wallets/router/popup/popup.routes";
 
 export function AODelegationModal() {
-  const { data: aoDelegationInfo } = useAODelegationInfo();
+  const { navigate } = useLocation();
+  const hasAODelegation = useAODelegationInfo();
   const [open, setOpen] = useState(false);
 
   function handleUpdatePreferences() {
     setOpen(false);
-    browser.tabs.create({ url: "https://ao.arweave.net/#/delegate/" });
+    navigate(PopupPaths.ManageEarnings);
   }
 
   useEffect(() => {
-    if (aoDelegationInfo && !aoDelegationInfo.hasAODelegation) {
+    if (!hasAODelegation) {
       setOpen(true);
     }
-  }, [aoDelegationInfo]);
+  }, [hasAODelegation]);
 
   return (
     <SliderMenu isOpen={open} onClose={() => setOpen(false)} paddingVertical={32}>

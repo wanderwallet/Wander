@@ -4,19 +4,31 @@ import { Flex } from "~components/common/Flex";
 
 interface ToggleSwitchProps {
   checked: boolean;
-  setChecked: Dispatch<SetStateAction<boolean>>;
+  setChecked: (value: boolean) => Promise<boolean | void> | boolean | void;
   width?: number;
   height?: number;
   children?: React.ReactNode;
+  disabled?: boolean;
 }
 
-export const ToggleSwitch = ({ checked, setChecked, width = 44, height = 22, children }: ToggleSwitchProps) => {
+export const ToggleSwitch = ({
+  checked,
+  setChecked,
+  width = 44,
+  height = 22,
+  children,
+  disabled,
+}: ToggleSwitchProps) => {
   const [state, setState] = useState(checked);
 
-  const handleChange = () => {
+  const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.stopPropagation();
     const newState = !state;
     setState(newState);
-    setChecked(newState);
+    const success = await setChecked(newState);
+    if (typeof success === "boolean" && !success) {
+      setState(!newState);
+    }
   };
 
   useEffect(() => {
@@ -26,8 +38,8 @@ export const ToggleSwitch = ({ checked, setChecked, width = 44, height = 22, chi
   return (
     <Flex gap={8}>
       <SwitchWrapper width={width} height={height}>
-        <Checkbox width={width} height={height} type="checkbox" onChange={handleChange} />
-        <Slider width={width} height={height} $checked={state} />
+        <Checkbox width={width} height={height} type="checkbox" onChange={handleChange} disabled={disabled} />
+        <Slider width={width} height={height} $checked={state} $disabled={disabled} />
       </SwitchWrapper>
       {children}
     </Flex>
@@ -42,9 +54,9 @@ const SwitchWrapper = styled.label<{ width: number; height: number }>`
   flex-shrink: 0;
 `;
 
-const Slider = styled.span<{ width: number; height: number; $checked: boolean }>`
+const Slider = styled.span<{ width: number; height: number; $checked: boolean; $disabled: boolean }>`
   position: absolute;
-  cursor: pointer;
+  cursor: ${(props) => (props.$disabled ? "not-allowed" : "pointer")};
   top: 0;
   left: 0;
   right: 0;

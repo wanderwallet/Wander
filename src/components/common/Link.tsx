@@ -3,11 +3,12 @@ import styled from "styled-components";
 export const Link = styled.a.attrs({
   target: "_blank",
   rel: "noopener noreferrer",
-})`
+})<{ color?: string }>`
   display: flex;
+  cursor: pointer;
   align-items: center;
   gap: 0.3rem;
-  color: ${(props) => props.theme.secondaryText};
+  color: ${(props) => props.color || props.theme.secondaryText};
   font-weight: 500;
   font-size: 1rem;
   text-decoration: none;

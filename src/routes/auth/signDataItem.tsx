@@ -21,10 +21,9 @@ import { Quantity, Token } from "ao-tokens";
 import prettyBytes from "pretty-bytes";
 import { formatFiatBalance } from "~tokens/currency";
 import useSetting from "~settings/hook";
-import { getPrice } from "~lib/coingecko";
+import { getPrice, type CoinGeckoSymbol } from "~lib/coingecko";
 import { getTagValue, type TokenInfo } from "~tokens/aoTokens/ao";
 import { ChevronRightIcon } from "@iconicicons/react";
-import { WarningIcon } from "~components/popup/Token";
 import { useTheme } from "~utils/theme";
 import { checkWalletBits, type WalletBitsCheck } from "~utils/analytics";
 import { Degraded, WarningWrapper } from "~routes/popup/send";
@@ -35,6 +34,7 @@ import { useAskPassword } from "~wallets/hooks";
 import { humanizeTimestampTags } from "~utils/timestamp";
 import { TokenLogo } from "~components/popup/TokenLogo";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import { WarningIcon } from "~components/icons/WarningIcon";
 
 export function SignDataItemAuthRequestView() {
   const { authRequest, acceptRequest, rejectRequest } = useCurrentAuthRequest("signDataItem");
@@ -125,7 +125,7 @@ export function SignDataItemAuthRequestView() {
   useEffect(() => {
     if (!tokenName) return;
 
-    getPrice(tokenName, currency)
+    getPrice(tokenName as CoinGeckoSymbol, currency)
       .then((res) => setPrice(res))
       .catch();
   }, [currency, tokenName]);

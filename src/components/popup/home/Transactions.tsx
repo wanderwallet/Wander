@@ -306,6 +306,7 @@ export const TierTransactionItemComponent = ({ transaction }: { transaction: Ext
     <TransactionItem showBackground={false}>
       <Transaction padding="8px" onClick={() => navigate(`/transaction/${transaction.node.id}?back=/tier`)}>
         <FlexContainer>
+          <TokenLogo token={transaction.aoInfo?.logo || "AR"} name={transaction.aoInfo?.tickerName} />
           <Section>
             <Main>{getTransactionDescription(transaction)}</Main>
             <Secondary>
