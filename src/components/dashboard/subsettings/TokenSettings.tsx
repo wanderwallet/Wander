@@ -97,7 +97,7 @@ export function TokenSettingsDashboardView({ params: { id } }: TokenSettingsDash
     <Wrapper>
       <Inner>
         <Flex gap={8} align="center">
-          <TokenLogo token={token} style={{ flex: "1 0 auto" }} />
+          <TokenLogo token={token} style={{ flex: "0 0 auto" }} />
           <TokenName>{token.name}</TokenName>
         </Flex>
         <div>
