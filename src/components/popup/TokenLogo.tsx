@@ -154,10 +154,20 @@ export function TokenLogo({ token: tokenProp, name, size = 40, style }: TokenLog
       title={title}
       width={size}
       height={size}
+      fill
       borderRadius="circular"
       style={style}
     />
   ) : (
-    <Image src={logoSrc} alt={alt} title={title} width={size} height={size} borderRadius="circular" style={style} />
+    <Image
+      src={logoSrc}
+      alt={alt}
+      title={title}
+      width={size}
+      height={size}
+      fill
+      borderRadius="circular"
+      style={style}
+    />
   );
 }

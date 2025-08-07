@@ -19,6 +19,7 @@ interface ImageProps {
   alt?: string;
   className?: string;
   fullWidth?: boolean;
+  fill?: boolean;
   border?: boolean;
   borderRadius?: BorderRadiusVariant;
   backgroundColor?: string;
@@ -36,6 +37,7 @@ export function Image({
   alt = "",
   className,
   fullWidth,
+  fill,
   border,
   borderRadius = "none",
   backgroundColor = "transparent",
@@ -66,7 +68,7 @@ export function Image({
   };
 
   const imgClassName = clsx(styles.img, {
-    [styles.isLoaded]: isLoaded,
+    [styles.fill]: fill,
   });
 
   const handleImageLoaded = async () => {
