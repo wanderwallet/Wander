@@ -38,6 +38,7 @@ export function EmbeddedSignDataAuthRequestView() {
   const quantity = useMemo(() => getTagValue("Quantity", tags) || "0", [tags]);
   const transfer = useMemo(() => tags.some((tag) => tag.name === "Action" && tag.value === "Transfer"), [tags]);
   const process = data?.target;
+  const tokenName = tokenInfo?.Name;
 
   const { data: balance = "0", isLoading: balanceLoading } = useTokenBalance(
     {
@@ -141,7 +142,7 @@ export function EmbeddedSignDataAuthRequestView() {
                 <Loading style={{ width: 16, height: 16, color: "#666666" }} />
               ) : (
                 <Text variant="bodyMd" style={{ color: "#121212" }}>
-                  {formattedBalance} {tokenInfo.Name}
+                  {formattedBalance} {tokenName}
                 </Text>
               )}
             </Row>
@@ -154,7 +155,7 @@ export function EmbeddedSignDataAuthRequestView() {
               <Loading style={{ width: 16, height: 16, color: "#666666" }} />
             ) : (
               <Text variant="bodySm" style={{ color: "#121212" }}>
-                {formattedAmount} {tokenInfo.Name}
+                {formattedAmount} {tokenName}
               </Text>
             )}
           </Row>
@@ -172,7 +173,7 @@ export function EmbeddedSignDataAuthRequestView() {
               Total
             </Text>
             <Text variant="bodySm" style={{ color: "#121212" }}>
-              {formattedAmount} {tokenInfo.Name}
+              {formattedAmount} {tokenName}
             </Text>
           </Row>
         </>
