@@ -25,7 +25,7 @@ import { useActiveWallet } from "~wallets/hooks";
 import Checkbox from "~components/Checkbox";
 import { ChevronRight, Edit02, InfoCircle, RefreshCcw01 } from "@untitled-ui/icons-react";
 import WanderIcon from "url:assets/icon.svg";
-import Image from "~components/common/Image/Image";
+import { Image } from "~components/common/Image/Image";
 import { Flex } from "~components/common/Flex";
 import { useNameServiceProfile } from "~lib/nameservice";
 import { FULL_HISTORY, useGateway } from "~gateways/wayfinder";

@@ -13,43 +13,48 @@ import { useMemo, useRef, useState } from "react";
 import { formatAddress } from "~utils/format";
 import { PersistentStorage, useStorage } from "~utils/storage";
 import { ExtensionStorage } from "~utils/storage";
-import { Quantity, Token } from "ao-tokens";
+import { Quantity } from "ao-tokens";
 import prettyBytes from "pretty-bytes";
 import { formatFiatBalance } from "~tokens/currency";
 import useSetting from "~settings/hook";
-import type { TokenInfo } from "~tokens/aoTokens/ao";
+import { fetchTokenByProcessId, type TokenInfo } from "~tokens/aoTokens/ao";
 import { ChevronUpIcon, ChevronDownIcon } from "@iconicicons/react";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { TokenLogo } from "~components/popup/TokenLogo";
+import type { RawDataItem } from "~api/modules/sign_data_item/types";
 
-export default function SignDataItemDetails({ params }) {
+export interface SignDataItemDetailsProps {
+  dataItem: RawDataItem;
+}
+
+export function SignDataItemDetails({ dataItem }: SignDataItemDetailsProps) {
   const [loading, setLoading] = useState<boolean>(false);
   const [tokenInfo, setTokenInfo] = useState<TokenInfo | null>(null);
   const [amount, setAmount] = useState<Quantity | null>(null);
   const [showTags, setShowTags] = useState<boolean>(false);
 
-  const recipient = params?.tags?.find((tag) => tag.name === "Recipient")?.value || "";
-  const quantity = params?.tags?.find((tag) => tag.name === "Quantity")?.value || "0";
-  const transfer = params?.tags?.some((tag) => tag.name === "Action" && tag.value === "Transfer");
+  const recipient = dataItem?.tags?.find((tag) => tag.name === "Recipient")?.value || "";
+  const quantity = dataItem?.tags?.find((tag) => tag.name === "Quantity")?.value || "0";
+  const transfer = dataItem?.tags?.some((tag) => tag.name === "Action" && tag.value === "Transfer");
+  const tokenName = tokenInfo?.Name;
 
   useAsyncEffect(async () => {
-    if (!process || !transfer) return;
+    // TODO: See if a daa item with no `target` property but a Target tag is valid, and update this code if needed.
+    if (!dataItem?.target || !transfer) return;
 
     let tokenInfo: TokenInfo;
 
     try {
       setLoading(true);
 
-      const token = await Token(params.target);
+      tokenInfo = await fetchTokenByProcessId(dataItem.target);
 
-      tokenInfo = {
-        ...token.info,
-        Denomination: Number(token.info.Denomination),
-        processId: token.id,
-      };
+      if (!tokenInfo) {
+        throw new Error("Token not found");
+      }
     } catch (err) {
       // fallback
-      console.log("err", err);
+      console.error("Error loading token info =", err);
 
       try {
         const [aoTokens = [], aoTokensCache = []] = await Promise.all([
@@ -57,7 +62,7 @@ export default function SignDataItemDetails({ params }) {
           PersistentStorage.get<TokenInfo[]>("ao_tokens_cache"),
         ]);
         const aoTokensCombined = [...aoTokens, ...aoTokensCache];
-        const token = aoTokensCombined.find(({ processId }) => params.target === processId);
+        const token = aoTokensCombined.find(({ processId }) => dataItem.target === processId);
 
         if (token) {
           tokenInfo = token;
@@ -72,7 +77,7 @@ export default function SignDataItemDetails({ params }) {
 
       setLoading(false);
     }
-  }, [params]);
+  }, [dataItem]);
 
   // currency setting
   const [currency] = useSetting<string>("currency");
@@ -82,9 +87,6 @@ export default function SignDataItemDetails({ params }) {
 
   // transaction price
   const fiatPrice = useMemo(() => +(amount || 0) * price, [amount]);
-
-  const process = params?.target;
-  const tokenName = tokenInfo?.Name;
 
   const formattedAmount = useMemo(() => (amount || 0).toLocaleString(), [amount]);
 
@@ -103,7 +105,7 @@ export default function SignDataItemDetails({ params }) {
 
   return (
     <>
-      {params ? (
+      {dataItem ? (
         <Section>
           <div
             style={{
@@ -133,10 +135,10 @@ export default function SignDataItemDetails({ params }) {
           )}
 
           <Properties>
-            {params?.target && (
+            {dataItem?.target && (
               <TransactionProperty>
                 <PropertyName>{browser.i18n.getMessage("process_id")}</PropertyName>
-                <PropertyValue>{formatAddress(params?.target, 6)}</PropertyValue>
+                <PropertyValue>{formatAddress(dataItem?.target, 6)}</PropertyValue>
               </TransactionProperty>
             )}
             <TransactionProperty>
@@ -156,7 +158,7 @@ export default function SignDataItemDetails({ params }) {
             </TransactionProperty>
             <TransactionProperty>
               <PropertyName>{browser.i18n.getMessage("transaction_size")}</PropertyName>
-              <PropertyValue>{prettyBytes(params?.data.length)}</PropertyValue>
+              <PropertyValue>{prettyBytes(dataItem?.data.length)}</PropertyValue>
             </TransactionProperty>
             <Spacer y={0.1} />
             <PropertyName
@@ -171,7 +173,7 @@ export default function SignDataItemDetails({ params }) {
             </PropertyName>
             <Spacer y={0.05} />
             {showTags &&
-              params?.tags?.map((tag, i) => (
+              dataItem?.tags?.map((tag, i) => (
                 <TransactionProperty key={i}>
                   <PropertyName>{tag.name}</PropertyName>
                   <TagValue>{tag.value}</TagValue>

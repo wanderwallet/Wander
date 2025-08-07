@@ -1,18 +1,19 @@
 import { useCurrentAuthRequest } from "~utils/auth/auth.hooks";
 import browser from "webextension-polyfill";
 import { useEffect, useState } from "react";
-import SignDataItemDetails from "~components/embed/auth/SignDataItemDetails";
+import { SignDataItemDetails } from "~components/embed/auth/SignDataItemDetails";
 import { Quantity } from "ao-tokens";
 import { timeoutPromise } from "~utils/promises/timeout";
 import { Box, Text, Row } from "~components/embed/ui";
-import { fetchTokenByProcessId } from "~tokens/aoTokens/ao";
+import { fetchTokenByProcessId, type TokenInfo } from "~tokens/aoTokens/ao";
 import { AuthRequestCard } from "~components/embed/ui/molecules/card/auth-request-card/AuthRequestCard";
+import type { RawDataItem } from "~api/modules/sign_data_item/types";
 
 export function EmbeddedBatchSignDataItemAuthRequestView() {
   const { authRequest, acceptRequest, rejectRequest } = useCurrentAuthRequest("batchSignDataItem");
   const { data, url } = authRequest;
   const [loading, setLoading] = useState<boolean>(false);
-  const [transaction, setTransaction] = useState<any | null>(null);
+  const [transaction, setTransaction] = useState<RawDataItem | null>(null);
   const [transactionList, setTransactionList] = useState<any | null>(null);
 
   useEffect(() => {
@@ -29,8 +30,9 @@ export function EmbeddedBatchSignDataItemAuthRequestView() {
               const transfer = item?.tags?.some((tag) => tag.name === "Action" && tag.value === "Transfer");
 
               if (transfer && quantity) {
-                let tokenInfo: any;
+                let tokenInfo: TokenInfo;
                 try {
+                  // TODO: See if a daa item with no `target` property but a Target tag is valid, and update this code if needed.
                   tokenInfo = await timeoutPromise(fetchTokenByProcessId(item.target), 6000);
                   if (!tokenInfo) {
                     throw new Error("Token not found");
@@ -44,6 +46,9 @@ export function EmbeddedBatchSignDataItemAuthRequestView() {
                   name = item.target;
                 }
               }
+
+              // TODO: Add the token logo or a "data" icon next to each item:
+
               return (
                 <Row
                   key={index}
@@ -86,7 +91,7 @@ export function EmbeddedBatchSignDataItemAuthRequestView() {
           {browser.i18n.getMessage("batch_sign_data_description", url)}
         </Text>
 
-        <SignDataItemDetails params={transaction} />
+        <SignDataItemDetails dataItem={transaction} />
       </Box>
     </AuthRequestCard>
   ) : (
