@@ -39,7 +39,7 @@ export function SignDataItemDetails({ dataItem }: SignDataItemDetailsProps) {
   const tokenName = tokenInfo?.Name;
 
   useAsyncEffect(async () => {
-    // TODO: See if a daa item with no `target` property but a Target tag is valid, and update this code if needed.
+    // TODO: See if dataItem with no `target` property but a Target tag is valid, and update this code if needed.
     if (!dataItem?.target || !transfer) return;
 
     let tokenInfo: TokenInfo;

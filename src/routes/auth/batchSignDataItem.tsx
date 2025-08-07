@@ -68,7 +68,7 @@ export function BatchSignDataItemAuthRequestView() {
             if (transfer && quantity) {
               let tokenInfo: TokenInfo;
               try {
-                // TODO: See if a daa item with no `target` property but a Target tag is valid, and update this code if needed.
+                // TODO: See if dataItem with no `target` property but a Target tag is valid, and update this code if needed.
                 tokenInfo = await timeoutPromise(fetchTokenByProcessId(item.target), 6000);
                 if (!tokenInfo) {
                   throw new Error("Token not found");
