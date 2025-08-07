@@ -204,10 +204,32 @@ export function isDateDisabled({ day, currentDate, startDate, isSelectingStart }
   return false;
 }
 
-export const formatDate = (date: Date | null) => {
+const LONG_MONTHS = new Set([8, 10, 11]); // Sep, Nov, Dec (0-indexed)
+
+/**
+ * Determines if a date should use short format based on month name length
+ * @param date The date to check
+ * @returns true if short format should be used
+ */
+export const shouldUseShortFormat = (date: Date | null): boolean => {
+  if (!date) return false;
+
+  const month = date.getMonth();
+
+  // Use short format for long month names
+  return LONG_MONTHS.has(month);
+};
+
+/**
+ * Formats a date with automatic short/long format detection
+ * @param date The date to format
+ * @param shortMonth If true, use short month format
+ * @returns Formatted date string
+ */
+export const formatDate = (date: Date | null, shortMonth?: boolean) => {
   if (!date) return "";
   return date.toLocaleDateString("en-US", {
-    month: "long",
+    month: shortMonth ? "short" : "long",
     day: "numeric",
     year: "numeric",
   });
