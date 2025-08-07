@@ -82,6 +82,11 @@ export async function checkAndSyncAgents(address: string): Promise<void> {
 
           log(LOG_GROUP.AGENTS, `Agent info fetched for ${agentId}`);
 
+          if (!agentInfo.agentVersion) {
+            log(LOG_GROUP.AGENTS, `Agent version not found for ${agentId}`);
+            return null;
+          }
+
           const agent: AOYieldAgent = {
             id: agentId,
             status: agentInfo.status,
@@ -91,7 +96,7 @@ export async function checkAndSyncAgents(address: string): Promise<void> {
             endDate: agentInfo.endDate,
             runIndefinitely: agentInfo.runIndefinitely,
             slippage: agentInfo.slippage,
-            version: agentInfo.version,
+            version: agentInfo.agentVersion,
           };
 
           // Store agent in correct position and update storage with ordered agents
