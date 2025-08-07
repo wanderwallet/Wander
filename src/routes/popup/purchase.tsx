@@ -15,7 +15,7 @@ import { useTransak, useTransakApiKey } from "~utils/transak/transak.hooks";
 import { paymentMethods } from "~utils/ramps";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import { InputButton } from "~components/common/InputButton";
-import Image from "~components/common/Image/Image";
+import { Image } from "~components/common/Image/Image";
 import { TokenLogo } from "~components/popup/TokenLogo";
 
 export function PurchaseView() {

@@ -5,7 +5,7 @@ import { getPreReleaseVersionLabel, getVersionLabel } from "~utils/runtime";
 import { Flex } from "~components/common/Flex";
 import WanderIcon from "url:assets/icon.svg";
 import IconText from "~components/IconText";
-import Image from "~components/common/Image/Image";
+import { Image } from "~components/common/Image/Image";
 import { Check } from "@untitled-ui/icons-react";
 
 export function AboutDashboardView() {

@@ -27,7 +27,7 @@ interface ImageProps {
   style?: React.CSSProperties;
 }
 
-export default function Image({
+export function Image({
   src,
   srcDark,
   width,

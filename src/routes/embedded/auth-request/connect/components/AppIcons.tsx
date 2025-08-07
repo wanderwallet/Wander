@@ -1,6 +1,6 @@
 import type { AppInfo } from "~applications/application";
 import { Row } from "~components/embed/ui";
-import Image from "~components/common/Image/Image";
+import { Image } from "~components/common/Image/Image";
 import WanderIcon from "url:assets/icon-embed.svg";
 
 export default function AppIcons({ appInfo }: { appInfo: AppInfo }) {

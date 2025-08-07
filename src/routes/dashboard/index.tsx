@@ -1,4 +1,4 @@
-import { Card, Input, Spacer, Text, useInput } from "@arconnect/components-rebrand";
+import { Input, Spacer, Text, useInput } from "@arconnect/components-rebrand";
 import SettingListItem from "~components/dashboard/list/SettingListItem";
 import { SettingsList } from "~components/dashboard/list/BaseElement";
 import { useEffect, useMemo, useState } from "react";
@@ -23,7 +23,7 @@ import { HorizontalLine } from "~components/HorizontalLine";
 import { Flex } from "~components/common/Flex";
 import WanderIcon from "url:assets/icon.svg";
 import IconText from "~components/IconText";
-import Image from "~components/common/Image/Image";
+import { Image } from "~components/common/Image/Image";
 
 export interface SettingsDashboardViewParams {
   setting?: string;

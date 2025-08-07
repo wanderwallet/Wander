@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import Image from "~components/common/Image/Image";
+import { Image } from "~components/common/Image/Image";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { getUserAvatar } from "~lib/avatar";
 import type { Token } from "~tokens/token";
