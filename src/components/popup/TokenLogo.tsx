@@ -21,9 +21,27 @@ function isURI(token: string | Partial<Token>): token is string {
 }
 
 export interface TokenLogoProps {
+  /**
+   * Valid values:
+   * - "AR", case-insensitive.
+   * - A `Token.defaultLogo` / `TokenInfo.Logo` value.
+   * - A https:// or chrome-extension:// URI.
+   *
+   * Note all values pointing to the AR logo in one way or another will be handled the same way: Displaying the
+   * theme-aware SVG from the repo.
+   */
   token: string | Partial<Token> | Partial<TokenInfo>;
+
+  /**
+   * Used for the `alt` attribute. Falls back to whatever we can extract from the `token` property, or simply "Token".
+   */
   name?: string;
+
+  /**
+   * @default 40
+   */
   size?: number;
+
   style?: React.CSSProperties;
 }
 
@@ -31,7 +49,7 @@ export function TokenLogo({ token: tokenProp, name, size = 40, style }: TokenLog
   const gateway = useGateway(FULL_HISTORY);
 
   const token = useMemo(() => {
-    if (typeof tokenProp === "string") return tokenProp;
+    if (typeof tokenProp !== "object") return tokenProp;
 
     // TokenInfo has property names that start with uppercase, while Token does not:
     if (Object.keys(tokenProp).every((propName) => propName[0] === propName[0].toLowerCase()))
@@ -92,8 +110,6 @@ export function TokenLogo({ token: tokenProp, name, size = 40, style }: TokenLog
   }
   */
 
-  // TODO: Cache this...
-
   // TODO: Add special state if there was an error loading the token?
 
   useAsyncEffect(async () => {
@@ -128,7 +144,7 @@ export function TokenLogo({ token: tokenProp, name, size = 40, style }: TokenLog
   const title = process.env.NODE_ENV === "development" ? `token=${JSON.stringify(token)}, name="${name}"` : undefined;
 
   const alt =
-    typeof token === "object" ? `${name || token.name || token.ticker || "token"} logo` : `${name || "token"} logo`;
+    typeof token === "object" ? `${name || token.name || token.ticker || "Token"} logo` : `${name || "token"} logo`;
 
   return isAr(token) ? (
     <Image
