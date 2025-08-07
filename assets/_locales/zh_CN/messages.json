@@ -3906,6 +3906,10 @@
       "message": "帮助",
       "description": "Help text"
     },
+    "help_description": {
+      "message": "获取 Wander 的帮助",
+      "description": "Help description"
+    },
     "help_center": {
       "message": "帮助中心",
       "description": "Help Center text"

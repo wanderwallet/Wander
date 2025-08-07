@@ -8,6 +8,8 @@ import { handleSyncLabelsAlarm } from "~api/background/handlers/alarms/sync-labe
 import { WalletsProvider } from "~utils/wallets/wallets.provider";
 import { ErrorBoundary } from "~utils/error/ErrorBoundary/errorBoundary";
 import { FallbackView } from "~components/page/common/Fallback/fallback.view";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { queryClient } from "~utils/tanstack";
 
 export function DashboardApp() {
   useEffect(() => {
@@ -22,9 +24,11 @@ export function DashboardAppRoot() {
     <WanderThemeProvider>
       <ErrorBoundary fallback={FallbackView}>
         <WalletsProvider>
-          <Wouter hook={useHashLocation}>
-            <DashboardApp />
-          </Wouter>
+          <QueryClientProvider client={queryClient}>
+            <Wouter hook={useHashLocation}>
+              <DashboardApp />
+            </Wouter>
+          </QueryClientProvider>
         </WalletsProvider>
       </ErrorBoundary>
     </WanderThemeProvider>
