@@ -3636,6 +3636,18 @@
         "message": "Wander 的 Reserve、Edge 和 Prime 等级用户可立即访问 USDA 测试版。连接您的 Wander 钱包，完成验证并解锁访问权限。立即前往 [Astro Bridge](https://bridge.astrousd.com/) 体验。",
         "description": "Announcement 4 body"
     },
+    "announcement_5_title": {
+        "message": "管理您的 FL 分配！",
+        "description": "Announcement 5 title"
+    },
+    "announcement_5_description": {
+        "message": "直接在 Wander 中管理你的公平启动委托",
+        "description": "Announcement 5 description"
+    },
+    "announcement_5_body": {
+        "message": "只需点击仪表板上的“赚取”按钮，即可在 Wander 浏览器扩展中轻松管理和自定义你的 AO 公平启动委托分配。",
+        "description": "Announcement 5 body"
+    },
     "swipe_to_learn_more": {
       "message": "滑动了解更多",
       "description": "Swipe to learn more text"
