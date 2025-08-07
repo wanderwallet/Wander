@@ -20,6 +20,36 @@ function isURI(token: string | Partial<Token>): token is string {
   return typeof token === "string" && (token.startsWith("chrome-extension://") || token.startsWith("https://"));
 }
 
+function getTokenFallbackImage(token: string | Partial<Token>, name: string) {
+  const fallbackSymbol = (typeof token === "object" && token.ticker) || (name.includes(" ") ? "" : name) || "?";
+
+  const fontSize = Math.max(1, 5 - Math.max(0, fallbackSymbol.length - 3) * 0.75);
+
+  const encoded = encodeURIComponent(`
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+      <style>
+        @font-face {
+          font-family: "Plus Jakarta Sans";
+          font-style: normal;
+          font-weight: 700;
+          src: url(/assets/fonts/PlusJakartaSans-Bold.ttf) format('ttf');
+        }
+
+        text {
+          font-family: "Plus Jakarta Sans", sans-serif;
+          font-weight: bold;
+        }
+      </style>
+      <circle fill="transparent" stroke="#9C9C9C" stroke-width="1px" cx="8px" cy="8px" r="7.5px"></circle>
+      <text x="50%" y="50%" text-anchor="middle" dy=".3em" fill="#9C9C9C" font-size="${fontSize}px">${fallbackSymbol}</text>
+    </svg>
+  `)
+    .replace(/'/g, "%27")
+    .replace(/"/g, "%22");
+
+  return `data:image/svg+xml,${encoded}`;
+}
+
 export interface TokenLogoProps {
   /**
    * Valid values:
@@ -80,37 +110,7 @@ export function TokenLogo({ token: tokenProp, name, size = 40, style }: TokenLog
     return null;
   });
 
-  // TODO: Old version. Logic is not exactly the same.
-
-  /*
-  export async function loadTokenLogo(id: string, defaultLogo?: string, theme?: DisplayTheme) {
-    // find gateway with wayfinder
-    const gateway = await findGateway({ startBlock: 0 });
-
-    // get token logo from settings
-    if (defaultLogo) {
-      return `${concatGatewayURL(gateway)}/${defaultLogo}`;
-    }
-
-    try {
-      // try to see if the token logo is the data
-      // of the token contract creation transaction
-      const res = await fetch(`${concatGatewayURL(gateway)}/${id}`);
-      const contentType = res.headers.get("content-type");
-
-      if (!contentType.includes("image")) {
-        throw new Error();
-      }
-
-      return URL.createObjectURL(await res.blob());
-    } catch {
-      // if there are no logos in settings, return the AR logo
-      return theme === "dark" ? arLogoLight : arLogoDark;
-    }
-  }
-  */
-
-  // TODO: Add special state if there was an error loading the token?
+  const [hasError, setHasError] = useState(false);
 
   useAsyncEffect(async () => {
     // These are handled in the `return` at the bottom:
@@ -135,9 +135,14 @@ export function TokenLogo({ token: tokenProp, name, size = 40, style }: TokenLog
     try {
       const logoSrc = await getUserAvatar(typeof token === "object" ? token.defaultLogo : token);
 
+      if (!logoSrc)
+        throw new Error(`Could not load logo for ${typeof token === "object" ? token.defaultLogo : token}.`);
+
       setLogoSrc(logoSrc);
-    } catch (err) {
-      // TODO: Add an "error" token?
+    } catch {
+      setHasError(true);
+
+      // TODO: Also show the error state / fallback if there's an error loading the token info on the parent component.
     }
   }, [token]);
 
@@ -160,7 +165,7 @@ export function TokenLogo({ token: tokenProp, name, size = 40, style }: TokenLog
     />
   ) : (
     <Image
-      src={logoSrc}
+      src={token && !hasError ? logoSrc : getTokenFallbackImage(token, name)}
       alt={alt}
       title={title}
       width={size}
@@ -168,6 +173,7 @@ export function TokenLogo({ token: tokenProp, name, size = 40, style }: TokenLog
       fill
       borderRadius="circular"
       style={style}
+      onError={() => setHasError(true)}
     />
   );
 }

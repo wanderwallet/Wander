@@ -101,7 +101,7 @@ export default function Token({ onClick, disableClickEffect, disableCursor, ...p
       {(!aoConfettiShown || ref.current) && AO_PROCESS_ID === props.id && +fractBalance > 0 && <Canvas ref={ref} />}
       <InnerWrapper width={hasActionButton ? "86%" : "100%"} onClick={onClick}>
         <LogoAndDetails>
-          <TokenLogo key={props.id} token={props.defaultLogo || "ar"} name={props.name || props.ticker} />
+          <TokenLogo key={props.id} token={props.defaultLogo || ""} name={props.name || props.ticker} />
           <div>
             <div style={{ display: "flex", gap: "0.5rem" }}>
               <TokenName>{props.name || props.ticker || "???"}</TokenName>

@@ -26,6 +26,7 @@ interface ImageProps {
   placeholderURL?: string;
   pointer?: [number, number];
   style?: React.CSSProperties;
+  onError?: React.ReactEventHandler<HTMLImageElement>;
 }
 
 export function Image({
@@ -44,6 +45,7 @@ export function Image({
   placeholderURL = defaultPlaceholderUrl,
   pointer: pointerProp,
   style,
+  onError,
 }: ImageProps) {
   const theme = useTheme();
   const displayTheme = theme.mode;
@@ -112,6 +114,7 @@ export function Image({
         alt={alt}
         draggable={false}
         onLoad={handleImageLoaded}
+        onError={onError}
         onClick={movePointer}
       />
 
