@@ -11,14 +11,14 @@ import { formatAddress } from "~utils/format";
 import { useLocation } from "~wallets/router/router.utils";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { useActiveWallet } from "~wallets/hooks";
-import { Link } from "~routes/popup/token/[id]";
+import { Link } from "~components/common/Link";
 import { useTheme } from "styled-components";
-import { Avatar, NoAvatarIcon } from "~components/popup/WalletHeader";
+import { Avatar, NoAvatarIcon } from "~components/Avatar";
 import { QRCodeSVG } from "qrcode.react";
-import { QRCodeWrapper } from "~routes/popup/receive";
 import { Flex } from "~components/common/Flex";
 import { PinExtension } from "../PinExtension";
 import { TempTransactionStorage } from "~utils/storage";
+import { QRCodeWrapper } from "~components/QRCodeWrapper";
 
 export type GenerateDoneWelcomeViewProps = CommonRouteProps<SetupWelcomeViewParams>;
 
@@ -82,7 +82,10 @@ export function GenerateDoneWelcomeView({ params }: GenerateDoneWelcomeViewProps
               <QRCodeSVG fgColor="#fff" bgColor="transparent" size={142} value={wallet.address} />
             </QRCodeWrapper>
             <Text variant="secondary" weight="medium" noMargin>
-              {browser.i18n.getMessage("scan_qr_code_seamless_transfer")}
+              {browser.i18n.getMessage(
+                "scan_qr_code_seamless_transfer",
+                browser.i18n.getMessage(setupMode === "generate" ? "new" : "imported").toLowerCase(),
+              )}
             </Text>
           </Flex>
         </InnerContent>

@@ -1,7 +1,7 @@
 import { Button, Input, Select, Spacer, Text, useInput, useToasts } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
 import { useEffect, useState } from "react";
-import { defaultTokens, getTokenInfo, type TokenInfo } from "~tokens/aoTokens/ao";
+import { AO_PROCESS_ID, defaultTokens, getTokenInfo, type TokenInfo } from "~tokens/aoTokens/ao";
 import styled from "styled-components";
 import { isAddress } from "~utils/assertions";
 import { getAoTokens } from "~tokens";
@@ -11,7 +11,6 @@ import type { TokenType } from "~tokens/token";
 import { concatGatewayURL } from "~gateways/utils";
 import { FULL_HISTORY, useGateway } from "~gateways/wayfinder";
 import type { CommonRouteProps } from "~wallets/router/router.types";
-import { AO_NATIVE_TOKEN } from "~utils/ao_import";
 import { ActionBar } from "~routes/popup/settings/tokens";
 
 export interface AddTokenDashboardViewProps extends CommonRouteProps {
@@ -45,7 +44,7 @@ export function AddTokenDashboardView({ isQuickSetting }: AddTokenDashboardViewP
         type: tokenType,
       };
 
-      if (tokenToImport.processId === AO_NATIVE_TOKEN) {
+      if (tokenToImport.processId === AO_PROCESS_ID) {
         aoTokens.unshift(tokenToImport);
       } else {
         aoTokens.push(tokenToImport);

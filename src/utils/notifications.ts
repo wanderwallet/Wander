@@ -1,7 +1,8 @@
 import { arPlaceholder } from "~routes/popup/send";
 import { ExtensionStorage } from "./storage";
-import type { Transaction } from "~notifications/api";
 import type { Token } from "~tokens/token";
+import { AR_PROCESS_ID } from "~tokens/aoTokens/ao";
+import type { Transaction } from "~api/background/handlers/alarms/notifications/notifications-alarm.utils";
 
 export const fetchNotifications = async (address: string) => {
   const n = await ExtensionStorage.get(`notifications_${address}`);
@@ -42,7 +43,7 @@ export const mergeAndSortNotifications = (arNotifications, aoNotifications): Tra
 };
 
 export const fetchTokenById = async (tokenId: string): Promise<Token> => {
-  if (tokenId === "AR") return arPlaceholder;
+  if (tokenId === AR_PROCESS_ID) return arPlaceholder;
 
   return null;
 };

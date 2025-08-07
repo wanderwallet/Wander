@@ -6,18 +6,19 @@ import nodePolyfills from "vite-plugin-node-stdlib-browser";
 
 // https://vite.dev/config/
 export default defineConfig({
-  // root: "./src/iframe/index.html",
   plugins: [
     react(),
     nodePolyfills(),
     // ,circleDependency() // uncomment this to see circular dependencies while building in the console
   ],
+
   define: {
     "process.env": {
-      ...(process?.env || {}),
-      "process.env.NODE_ENV": process.env.NODE_ENV || "development",
+      // DO NOT spread process.env. Manually add those you need.
+      NODE_ENV: process.env.NODE_ENV || "development",
     },
   },
+
   resolve: {
     alias: {
       "~": path.resolve(__dirname, "./src"),
@@ -52,6 +53,7 @@ export default defineConfig({
       ".prisma/client/index-browser": "./node_modules/.prisma/client/index-browser.js",
 
       // Assets:
+      "~assets": path.resolve(__dirname, "./assets"),
       "assets/lotties": path.resolve(__dirname, "./assets/lotties"),
       "url:/assets": path.resolve(__dirname, "./assets"),
       "url:assets": path.resolve(__dirname, "./assets"),

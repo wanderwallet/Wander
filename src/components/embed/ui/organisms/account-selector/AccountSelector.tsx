@@ -1,29 +1,18 @@
-import copy from "copy-to-clipboard";
-import { Avatar, Copyable, DownloadIcon, Row, Text, WalletIcon } from "~components/embed/ui";
+import { CopyToClipboard } from "~components/CopyToClipboard";
+import { Avatar, DownloadIcon, Row, Text, WalletIcon } from "~components/embed/ui";
 import Dropdown from "~components/embed/ui/molecules/dropdown/Dropdown/Dropdown";
 import DropdownItem from "~components/embed/ui/molecules/dropdown/DropdownItem/DropdownItem";
-import type { Wallet } from "~utils/embedded/embedded.types";
-
-import type { LocalWallet, StoredWallet } from "~wallets";
-import type { HardwareWallet } from "~wallets/hardware";
+import type { StoredWallet } from "~wallets";
 import { setActiveWallet } from "~wallets/hooks";
 import { Link } from "~wallets/router/components/link/Link";
 
-export function AccountSelector({
-  wallets,
-  activeWallet,
-}: {
-  wallets?: StoredWallet[];
-  activeWallet:
-    | HardwareWallet
-    | LocalWallet<string>
-    | {
-        address: string;
-        nickname: string;
-        type: string;
-      };
-}) {
-  const handleAccountClick = async (wallet: Wallet) => {
+export interface AccountSelectorProps {
+  wallets: StoredWallet[];
+  currentWallet: StoredWallet;
+}
+
+export function AccountSelector({ wallets, currentWallet }: AccountSelectorProps) {
+  const handleAccountClick = async (wallet: StoredWallet) => {
     return await setActiveWallet(wallet.address);
   };
 
@@ -52,14 +41,21 @@ export function AccountSelector({
           </Avatar>
         }
         buttonText={
-          <Text variant="bodyMd" style={{ color: "#121212" }}>
-            {activeWallet.nickname ?? activeWallet.address}
+          <Text
+            variant="bodyMd"
+            style={{
+              color: "#121212",
+              maxWidth: "calc(100vw - 8 * 32px)",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}>
+            {currentWallet ? currentWallet.nickname || currentWallet.address : null}
           </Text>
         }
         content={
           <>
             {wallets.map((wallet, id) => (
-              <DropdownItem key={id} onClick={handleAccountClick}>
+              <DropdownItem key={id} onClick={() => handleAccountClick(wallet)}>
                 <Row key={wallet.address} alignment="center" justifyContent="start" style={{ padding: "8px 16px" }}>
                   <Avatar fontColor={"#FFF"}>
                     <WalletIcon color="#FFF" style={{ height: 16, width: 16 }} />
@@ -70,20 +66,13 @@ export function AccountSelector({
                       fontWeight: 500,
                       color: "#121212",
                       width: "max-content",
+                      maxWidth: "calc(100vw - 8 * 32px)",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
                     }}>
                     {wallet.nickname ?? wallet.address}
                   </Text>
-                  <Copyable
-                    isButtonOnly
-                    hasBorder={false}
-                    value={wallet.address}
-                    style={{
-                      maxWidth: 140,
-                    }}
-                    onClick={() => {
-                      copy(wallet.address);
-                    }}
-                  />
+                  <CopyToClipboard text={wallet.address} />
                 </Row>
               </DropdownItem>
             ))}

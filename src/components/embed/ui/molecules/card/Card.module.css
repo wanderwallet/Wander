@@ -6,119 +6,87 @@
   justify-content: space-between;
   background-color: var(--color-card-background-default);
   height: fit-content;
-  transition: all 0.4s ease-in-out;
   position: relative;
   width: 100%;
   box-sizing: border-box;
   min-height: 100%;
+  height: auto;
+  font-size: var(--font-size-base);
+}
+
+.withExtraPadding {
+  padding: 32px;
+}
+
+.banner {
+  width: calc(100% + var(--spacing-6));
+  margin: calc(-1 * var(--spacing-3)) calc(-1 * var(--spacing-3)) var(--spacing-3);
+}
+
+.withExtraPadding .banner {
+  width: calc(100% + 64px);
+  margin: -32px -32px var(--spacing-4);
+}
+
+.header {
+  position: relative;
+  width: 100%;
 }
 
 /* Make sure all elements respect border-box */
+/* TODO: This should be in a global CSS reset */
 .card *,
 .card *::before,
 .card *::after {
   box-sizing: inherit;
 }
 
-.card__shadow {
-  box-shadow: 0 4px 40px 0 var(--color-card-shadow-default);
-  transition: 0.3s;
-}
-
-.card__blurry {
-  filter: blur(var(--spacing-2));
-}
-
-.card__sm {
-  width: var(--card-sm-width);
-  min-height: var(--card-sm-height);
-  font-size: var(--font-size-base);
-}
-
-.card__auto {
-  height: auto;
-  font-size: var(--font-size-base);
-}
-
-.card__md {
-  min-height: var(--card-default-height);
-  font-size: var(--font-size-base);
-}
-
-.card__header {
-  justify-self: flex-start;
+.card__disabled {
+  pointer-events: none;
 }
 
 .card__footer {
   justify-self: flex-end;
 }
 
-.card__back__btn {
-  left: 0.8rem;
-  width: 2rem;
-  height: 2rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: row;
-  text-align: center;
-  cursor: pointer;
+.card__back__btn,
+.card__close__btn {
   position: absolute;
+  top: calc(-1 * var(--spacing-2));
+  width: 40px;
+  height: 40px;
+  padding: var(--spacing-2);
   z-index: 9;
+}
+
+.card__back__btn {
+  left: calc(-1 * var(--spacing-2));
 }
 
 .card__close__btn {
-  right: 0.8rem;
-  width: 2rem;
-  height: 2rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  cursor: pointer !important;
+  right: calc(-1 * var(--spacing-2));
+}
+
+.withExtraPadding .card__back__btn {
+  top: 0;
+  left: 0;
+}
+
+.withExtraPadding .card__close__btn {
+  top: 0;
+}
+
+.card__loaderCover {
   position: absolute;
-  z-index: 9;
+  inset: 0;
+  backdrop-filter: blur(var(--spacing-2));
+  transition: opacity linear 150ms;
+  opacity: 0;
+  z-index: 10;
+  pointer-events: none;
 }
 
-.card__back__btn:hover {
-  background-color: var(--brand-color-gray-200);
-  border-radius: 50%;
-}
-
-.card__close__btn:hover {
-  background-color: var(--brand-color-gray-200);
-  border-radius: 50%;
-}
-
-.card_minimized__active {
-  height: var(--button-default-height);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-semi);
-  font-family: var(--font-family-serif);
-  width: var(--button-default-width);
-  gap: var(--spacing-2);
-
-  border-radius: var(--border-radius-lg);
-  -webkit-transform: scale(0.5) translate(50px, 50px);
-  transform: scale(0.5) translate(50px, 50px);
+.card__disabled > .card__loaderCover {
   opacity: 1;
-  background-color: var(--color-background-button-primary);
-
-  font-size: 0;
-}
-
-.card_minimized__active::after {
-  color: var(--color-button-primary-active);
-  position: absolute;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  height: var(--button-default-height);
-  width: var(--button-default-width);
-
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-semi);
-  font-family: var(--font-family-serif);
-  gap: var(--spacing-2);
+  pointer-events: auto;
 }

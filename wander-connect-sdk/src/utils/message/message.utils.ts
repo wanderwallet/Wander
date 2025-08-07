@@ -3,6 +3,7 @@ import {
   EventMessage,
   EventMessageData,
   IncomingAuthMessageData,
+  IncomingBackupMessageData,
   IncomingBalanceMessageData,
   IncomingMessage,
   IncomingMessageId,
@@ -68,6 +69,17 @@ export function isIncomingMessage(message: unknown): message is IncomingMessage 
         !!data.authType &&
         AUTH_STATUS.includes(data.authStatus) &&
         (data.userDetails === null || (!!data.userDetails && typeof data.userDetails === "object"))
+      );
+    }
+
+    case "embedded_backup": {
+      const data = message.data as IncomingBackupMessageData;
+
+      return !!(
+        data &&
+        typeof data === "object" &&
+        typeof data.backupsNeeded === "number" &&
+        (typeof data.backupMessage === "undefined" || typeof data.backupMessage === "string")
       );
     }
 

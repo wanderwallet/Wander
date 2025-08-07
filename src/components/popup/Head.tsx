@@ -1,5 +1,5 @@
 import { type DisplayTheme, Section, Text, Spacer } from "@arconnect/components";
-import { Avatar, CloseLayer, NoAvatarIcon } from "./WalletHeader";
+import { CloseLayer } from "./WalletHeader";
 import { AnimatePresence, motion } from "framer-motion";
 import { hoverEffect, useTheme } from "~utils/theme";
 import { useStorage } from "~utils/storage";
@@ -15,6 +15,7 @@ import { useLocation } from "~wallets/router/router.utils";
 import { useNameServiceProfile } from "~lib/nameservice";
 import { FULL_HISTORY, useGateway } from "~gateways/wayfinder";
 import { concatGatewayURL } from "~gateways/utils";
+import { Avatar, NoAvatarIcon } from "~components/Avatar";
 
 export default function Head({ title, showOptions = true, back: onBack, showBack = true, allowOpen = true }: Props) {
   const theme = useTheme();

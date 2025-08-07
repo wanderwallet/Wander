@@ -38,6 +38,19 @@ export enum EventType {
   UNSUBSCRIBED = "UNSUBSCRIBED",
   SUBSCRIPTION_PAYMENT = "SUBSCRIPTION_PAYMENT",
   BITS_LENGTH = "BITS_LENGTH",
+  AGENT_DASHBOARD = "AGENT_DASHBOARD",
+  AO_YIELD_AGENT_CREATED = "AO_YIELD_AGENT_CREATED",
+  AO_YIELD_AGENT_CANCEL = "AO_YIELD_AGENT_CANCEL",
+  AO_YIELD_AGENT_END = "AO_YIELD_AGENT_END",
+  AO_YIELD_AGENT_TRANSACTION = "AO_YIELD_AGENT_TRANSACTION",
+  SELECT_AGENT = "SELECT_AGENT",
+  LIQUID_OPS_AGENT_DEPOSIT = "LIQUID_OPS_AGENT_DEPOSIT",
+  LIQUID_OPS_AGENT_WITHDRAW = "LIQUID_OPS_AGENT_WITHDRAW",
+  VIEW_BENEFITS = "VIEW_BENEFITS",
+  GET_WANDER_TOKENS = "GET_WANDER_TOKENS",
+  EARN_BUTTON = "EARN_BUTTON",
+  MANAGE_EARNINGS_BUTTON = "MANAGE_EARNINGS_BUTTON",
+  ALLOCATION_UPDATE = "ALLOCATION_UPDATE",
 }
 
 export enum PageType {
@@ -70,6 +83,30 @@ export enum PageType {
   TRANSAK_CONFIRM_PURCHASE = "TRANSAK_CONFIRM_PURCHASE",
   TRANSAK_PURCHASE_PENDING = "TRANSAK_PURCHASE_PENDING",
   SUBSCRIPTIONS = "SUBSCRIPTIONS",
+  AGENTS = "AGENTS",
+  AO_YIELD_AGENT_CREATE = "AO_YIELD_AGENT_CREATE",
+  AO_YIELD_AGENT_CONFIRM = "AO_YIELD_AGENT_CONFIRM",
+  AO_YIELD_AGENT_ACTIVATED = "AO_YIELD_AGENT_ACTIVATED",
+  AO_YIELD_AGENT_ACTIVATION_FAILED = "AO_YIELD_AGENT_ACTIVATION_FAILED",
+  AO_YIELD_AGENT_MANAGE = "AO_YIELD_AGENT_MANAGE",
+  AO_YIELD_AGENT_EDIT = "AO_YIELD_AGENT_EDIT",
+  AO_YIELD_AGENT_TX_HISTORY = "AO_YIELD_AGENT_TX_HISTORY",
+  AO_YIELD_AGENT_HISTORY = "AO_YIELD_AGENT_HISTORY",
+  AO_YIELD_AGENT_HISTORY_DETAILS = "AO_YIELD_AGENT_HISTORY_DETAILS",
+  LIQUID_OPS_AGENTS = "LIQUID_OPS_AGENTS",
+  LIQUID_OPS_AGENT_DEPOSIT = "LIQUID_OPS_AGENT_DEPOSIT",
+  LIQUID_OPS_AGENT_WITHDRAW = "LIQUID_OPS_AGENT_WITHDRAW",
+  LIQUID_OPS_AGENT_CONFIRM_DEPOSIT = "LIQUID_OPS_AGENT_CONFIRM_DEPOSIT",
+  LIQUID_OPS_AGENT_CONFIRM_WITHDRAW = "LIQUID_OPS_AGENT_CONFIRM_WITHDRAW",
+  LIQUID_OPS_AGENT_DEPOSIT_SUCCESS = "LIQUID_OPS_AGENT_DEPOSIT_SUCCESS",
+  LIQUID_OPS_AGENT_WITHDRAW_SUCCESS = "LIQUID_OPS_AGENT_WITHDRAW_SUCCESS",
+  LIQUID_OPS_AGENT_DEPOSIT_FAILURE = "LIQUID_OPS_AGENT_DEPOSIT_FAILURE",
+  LIQUID_OPS_AGENT_WITHDRAW_FAILURE = "LIQUID_OPS_AGENT_WITHDRAW_FAILURE",
+  LIQUID_OPS_AGENT_MANAGE = "LIQUID_OPS_AGENT_MANAGE",
+  YOUR_TIER = "YOUR_TIER",
+  EARN = "EARN",
+  EARN_MANAGE = "EARN_MANAGE",
+  EARN_ALLOCATION_SET = "EARN_ALLOCATION_SET",
 }
 
 export const trackPage = async (title: PageType) => {
@@ -120,35 +157,35 @@ export const trackDirect = async (event: EventType, properties: Record<string, u
 };
 
 export const trackEvent = async (eventName: EventType, properties: any) => {
-  // Only track BE production events:
-  if (process.env.NODE_ENV === "development" || import.meta.env?.VITE_IS_EMBEDDED_APP === "1") return;
-
-  // first we check if we are allowed to collect data
-  const enabled = await getSetting("analytics").getValue();
-
-  if (!enabled) return;
-
-  const ONE_HOUR_IN_MS = 3600000;
-
-  // TODO:login is tracked only once and compared to an hour period before logged as another Login event
-  if (eventName === EventType.LOGIN) {
-    const storageTime = await TempTransactionStorage.get(EventType.LOGIN);
-
-    if (storageTime && Date.now() < Number(storageTime) + ONE_HOUR_IN_MS) {
-      return;
-    }
-  }
-
-  const activeAddress = await ExtensionStorage.get<string>("active_address");
-
-  if (eventName === EventType.FUNDED) {
-    const hasBeenTracked = await ExtensionStorage.get<boolean>(`wallet_funded_${activeAddress}`);
-    if (hasBeenTracked) {
-      return;
-    }
-  }
-
   try {
+    // Only track BE production events:
+    if (process.env.NODE_ENV === "development" || import.meta.env?.VITE_IS_EMBEDDED_APP === "1") return;
+
+    // first we check if we are allowed to collect data
+    const enabled = await getSetting("analytics").getValue();
+
+    if (!enabled) return;
+
+    const ONE_HOUR_IN_MS = 3600000;
+
+    // TODO:login is tracked only once and compared to an hour period before logged as another Login event
+    if (eventName === EventType.LOGIN) {
+      const storageTime = await TempTransactionStorage.get(EventType.LOGIN);
+
+      if (storageTime && Date.now() < Number(storageTime) + ONE_HOUR_IN_MS) {
+        return;
+      }
+    }
+
+    const activeAddress = await ExtensionStorage.get<string>("active_address");
+
+    if (eventName === EventType.FUNDED) {
+      const hasBeenTracked = await ExtensionStorage.get<boolean>(`wallet_funded_${activeAddress}`);
+      if (hasBeenTracked) {
+        return;
+      }
+    }
+
     const time = Date.now();
 
     await analytics.track(eventName, { ...properties });

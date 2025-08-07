@@ -67,7 +67,10 @@ export function TokenSettingsView({ params: { id } }: TokenSettingsProps) {
 
   return (
     <>
-      <HeadV2 title={token.name} back={() => navigate("/quick-settings/tokens")} />
+      <HeadV2
+        title={token?.name?.length <= 15 ? token.name : token.ticker}
+        back={() => navigate("/quick-settings/tokens")}
+      />
       <Wrapper>
         <div>
           <Spacer y={0.45} />

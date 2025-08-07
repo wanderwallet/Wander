@@ -9,6 +9,8 @@ import type { Transaction } from "@dha-team/arbundles";
 
 // COMMON:
 
+export type PreferredEmailAuth = "otp" | "password";
+
 export type AuthRequestStatus = "pending" | "accepted" | "rejected" | "aborted" | "error";
 
 interface CommonAuthRequestProps {

@@ -1,8 +1,22 @@
 import { isInsideIframe } from "~utils/embedded/iframe.utils";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
+import {
+  getUnpartitionedStateStatus,
+  HAS_SIMPLE_STORAGE_API,
+  setUnpartitionedStateStatus,
+  type UnpartitionedStateStatus,
+} from "./unpartitioned-storage.utils";
+import { isError } from "~utils/error/error.utils";
+import {
+  isComplexStorageItem,
+  type ItemStorageOptions,
+  type StorageItem,
+} from "~iframe/storage/storage-manager/storage-manager.utils";
+import { StorageManager } from "~iframe/storage/storage-manager/storage-manager";
 
 type StorageType = "localStorage" | "sessionStorage";
-interface UnpartitionedStorageOptions {
+
+interface EnhancedStorageOptions {
   area?: "local" | "session";
 }
 
@@ -390,7 +404,7 @@ export class StorageManager {
 }
 
 export class EnhancedStorage implements Storage {
-  protected storage: Storage;
+  public storage: Storage;
 
   public storageType: StorageType;
 
@@ -400,6 +414,18 @@ export class EnhancedStorage implements Storage {
   constructor({ area = "local" }: UnpartitionedStorageOptions = {}) {
     this.storageType = area === "local" ? "localStorage" : "sessionStorage";
     this.storage = globalThis[this.storageType];
+
+    const timesStorageTypeInstantiated = ++timesInstantiated[this.storageType];
+
+    if (timesStorageTypeInstantiated > 1) {
+      if (process.env.NODE_ENV === "development") {
+        throw new Error(
+          `${this.storageType} instantiated ${timesStorageTypeInstantiated} times. Was this intentional?`,
+        );
+      } else {
+        console.warn(`${this.storageType} instantiated ${timesStorageTypeInstantiated} times. Was this intentional?`);
+      }
+    }
 
     if (area === "session") {
       // We want to start fresh each time the app loads:
@@ -426,9 +452,7 @@ export class EnhancedStorage implements Storage {
     }
   }
 
-  protected setupUserInteractionHandler() {
-    document.addEventListener("click", async () => this.requestAccessOnUserInteraction(), { once: true });
-  }
+  dispatchUnpartitionedStateStatusChange() {}
 
   async requestStorageAccess() {
     if (!isInsideIframe()) {
@@ -438,11 +462,7 @@ export class EnhancedStorage implements Storage {
     }
 
     try {
-      // Check if API is supported
-      if (!document.hasStorageAccess) {
-        log(LOG_GROUP.STORAGE, "Storage Access API not supported, using default localStorage");
-        return;
-      }
+      log(LOG_GROUP.STORAGE, `Requesting ${this.storageType} access with typed API`);
 
       // Check if we already have access
       const hasAccess = await document.hasStorageAccess();
@@ -516,36 +536,109 @@ export class EnhancedStorage implements Storage {
         this.setupUserInteractionHandler();
       }
     } catch (error) {
-      log(LOG_GROUP.STORAGE, "Error requesting storage access:", error);
+      console.warn("document.requestStorageAccess() failed:", error);
+
+      this.dispatchUnpartitionedStateStatusChange(error || "error");
+    }
+
+    return this.status;
+  }
+
+  async DEV_requestStorageAccess(): Promise<UnpartitionedStateStatus> {
+    if (!isInsideIframe()) {
+      console.warn(
+        "UnpartitionedStorage.requestStorageAccess() should only be called from within an iframe. Regular, partitioned state will be used.",
+      );
+      return;
+    }
+
+    // Unpartitioned state access already accepted, limited or unsupported:
+    if (["supported", "limited", "unsupported"].includes(this.status)) {
+      return this.status;
+    }
+
+    // If the code below runs, this.status can only be null, "error" or "rejected":
+
+    if (this.requestStorageAccessPromise && this.status === null) return this.requestStorageAccessPromise;
+
+    return (this.requestStorageAccessPromise = new Promise<UnpartitionedStateStatus>(async (resolve) => {
+      // With this, calling dispatchUnpartitionedStateStatusChange() will automatically call resolve() too:
+      this.requestStorageAccessResolve = resolve;
+
+      // Storage Access API not supported:
+      if (!HAS_SIMPLE_STORAGE_API) return this.dispatchUnpartitionedStateStatusChange("unsupported");
+
+      try {
+        // Check if we already have access:
+
+        const hasAccess = await document.hasStorageAccess();
+
+        if (hasAccess) {
+          return await this.requestStorageAccessAndInitializeStorage();
+        }
+
+        // If no access, check permission state:
+
+        let permissionState: PermissionState = "prompt"; // Default
+
+        if (navigator.permissions) {
+          try {
+            const permission = await navigator.permissions.query({
+              name: "storage-access" as PermissionName,
+            });
+
+            permissionState = permission.state;
+
+            permission.addEventListener("change", () => {
+              log(LOG_GROUP.STORAGE, `Storage access permission changed to ${permission.state}`);
+
+              this.handleStorageAccessPermission(permission.state);
+            });
+          } catch (error) {
+            log(LOG_GROUP.STORAGE, "Error checking permission:", error);
+          }
+        }
+
+        this.handleStorageAccessPermission(permissionState);
+      } catch (error) {
+        this.dispatchUnpartitionedStateStatusChange(error);
+      }
+    }));
+  }
+
+  private async handleStorageAccessPermission(permissionState: PermissionState) {
+    // Note `dispatchUnpartitionedStateStatusChange()` is the function that calls `requestStorageAccessResolve()`, so we
+    // must be sure it's always invoked or the Promise created by `requestStorageAccess()` will never be invoked.
+
+    if (permissionState === "granted") {
+      // Already granted, can request directly. `requestStorageAccessAndInitializeStorage()` will call
+      // `dispatchUnpartitionedStateStatusChange()`.
+
+      await this.requestStorageAccessAndInitializeStorage();
+    } else if (permissionState === "prompt") {
+      // Not granted, so we need to wait for user interaction to request. We dispatch a "rejected" event while we wait
+      // for permissions/access.
+
+      let unpartitionedStateStatus = getUnpartitionedStateStatus();
+
+      if (unpartitionedStateStatus !== "limited" && unpartitionedStateStatus !== "unsupported") {
+        unpartitionedStateStatus = "rejected";
+      }
+
+      this.dispatchUnpartitionedStateStatusChange(unpartitionedStateStatus);
+      this.setupUserInteractionHandler();
+    } else if (permissionState === "denied") {
+      // User has denied access, so nothing to do, just dispatch the "rejected" event.
+      this.dispatchUnpartitionedStateStatusChange("rejected");
     }
   }
 
-  async requestAccessOnUserInteraction() {
-    try {
-      if (!document.hasStorageAccess) return;
-
-      // Try to get full storage access with handle
-      try {
-        this.storage = await this.getStorageHandle();
-        this.accessState = StorageAccessState.FULL_ACCESS;
-        log(LOG_GROUP.STORAGE, "Full storage access granted after user interaction");
-        return;
-      } catch (handleError) {
-        // If we couldn't get the handle, try to get just cookie access
-        try {
-          await document.requestStorageAccess();
-          const hasAccess = await document.hasStorageAccess();
-          if (hasAccess) {
-            this.accessState = StorageAccessState.COOKIES_ONLY;
-            log(LOG_GROUP.STORAGE, "Cookie access granted after user interaction");
-          }
-        } catch (cookieError) {
-          log(LOG_GROUP.STORAGE, "Error requesting cookie access after interaction:", cookieError);
-        }
-      }
-    } catch (error) {
-      log(LOG_GROUP.STORAGE, "Error requesting storage access after interaction:", error);
-    }
+  /**
+   * Set up a handler to request storage access on user interaction
+   * This is required by the Storage Access API for security
+   */
+  protected setupUserInteractionHandler(): void {
+    document.addEventListener("click", async () => this.requestAccessOnUserInteraction(), { once: true });
   }
 
   /**

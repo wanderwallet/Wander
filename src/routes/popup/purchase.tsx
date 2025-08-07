@@ -11,15 +11,16 @@ import { useTheme } from "styled-components";
 import arLogo from "url:/assets/ecosystem/ar-logo.svg";
 import CommonImage from "~components/common/Image";
 import getSymbolFromCurrency from "currency-symbol-map";
-import { WarningIcon } from "~components/popup/Token";
+import { WarningIcon } from "~components/icons/WarningIcon";
 import { Flex } from "~components/common/Flex";
-import { useTransak } from "~utils/transak/transak.hooks";
+import { useTransak, useTransakApiKey } from "~utils/transak/transak.hooks";
 import { paymentMethods } from "~utils/ramps";
-
-const TRANSAK_API_KEY = process.env.PLASMO_PUBLIC_TRANSAK_API_KEY;
+import { PopupPaths } from "~wallets/router/popup/popup.routes";
+import { InputButton } from "~components/common/InputButton";
 
 export function PurchaseView() {
   const theme = useTheme();
+  const apiKey = useTransakApiKey();
 
   const {
     purchaseAmount,
@@ -45,7 +46,7 @@ export function PurchaseView() {
     showCurrencySelector,
     showPaymentSelector,
     openTransak,
-  } = useTransak(TRANSAK_API_KEY, false);
+  } = useTransak(apiKey, false);
 
   const handleInputChange = (event: React.FormEvent<HTMLInputElement>) => {
     const input = event.currentTarget;
@@ -267,7 +268,7 @@ export function PurchaseView() {
           fullWidth
           onClick={async () => {
             await ExtensionStorage.set("transak_quote", quote);
-            await openTransak("/wallet/buy/success");
+            await openTransak(PopupPaths.PendingPurchase);
           }}>
           {!quote ? "Enter amount" : "Review"}
         </Button>
@@ -408,67 +409,6 @@ const CurrencySelectorScreen = ({
     </SelectorWrapper>
   );
 };
-
-const InputButton = ({
-  label,
-  body,
-  icon,
-  onClick,
-  disabled,
-  style,
-  innerStyle,
-  outerLabel,
-}: {
-  label: string;
-  body: string | React.ReactNode;
-  icon: React.ReactNode;
-  onClick: () => void;
-  disabled: boolean;
-  style?: React.CSSProperties;
-  innerStyle?: React.CSSProperties;
-  outerLabel?: boolean;
-}) => {
-  return (
-    <div>
-      {outerLabel && <Label outer={outerLabel}>{label}</Label>}
-      <InputButtonWrapper onClick={onClick} disabled={disabled} style={style}>
-        {!outerLabel && (
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              textAlign: "left",
-              gap: "4px",
-            }}>
-            <Text size="sm" noMargin weight="medium" variant="secondary">
-              {label}
-            </Text>
-            <div style={innerStyle}>{body}</div>
-          </div>
-        )}
-        {outerLabel && <div style={innerStyle}>{body}</div>}
-        {icon}
-      </InputButtonWrapper>
-    </div>
-  );
-};
-
-const InputButtonWrapper = styled.button`
-  background: ${(props) => props.style?.background ?? "none"};
-  color: ${(props) => props.theme.primaryTextv2};
-  font-size: ${(props) => props.style?.fontSize ?? "16px"};
-  display: flex;
-  height: ${(props) => props.style?.height ?? "42px"};
-  padding: 12px;
-  border-radius: 10px;
-  width: 100%;
-  justify-content: space-between;
-  cursor: ${(props) => (props.disabled ? "default" : "pointer")};
-
-  &:hover {
-    border-color: ${(props) => !props.disabled && props.theme.primaryTextv2};
-  }
-`;
 
 const Label = styled.div<{ outer?: boolean }>`
   margin: ${(props) => props.style?.margin || "0"};

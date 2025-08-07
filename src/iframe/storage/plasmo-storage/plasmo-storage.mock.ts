@@ -1,9 +1,8 @@
 import { Storage as PlasmoStorage, type StorageCallbackMap, type StorageWatchCallback } from "@plasmohq/storage";
-import {
-  EnhancedStorage,
-  type ItemStorageOptions,
-  StorageManager,
-} from "../unpartitioned-storage/unpartitioned-storage";
+import { EnhancedStorage } from "../unpartitioned-storage/unpartitioned-storage";
+import type { ItemStorageOptions } from "~iframe/storage/storage-manager/storage-manager.utils";
+import type { StorageManager } from "~iframe/storage/storage-manager/storage-manager";
+import { LocalStorage } from "~iframe/storage/unpartitioned-storage/local-storage";
 
 export interface StorageMockInterface extends PlasmoStorage {
   setItem<T>(key: string, value: T, options?: ItemStorageOptions): Promise<void>;
@@ -34,7 +33,6 @@ export interface StorageMockInterface extends PlasmoStorage {
     expiresIn?: number,
   ): Promise<void>;
   requestStorageAccess(): Promise<void>;
-  requestAccessOnUserInteraction(): Promise<void>;
   hasAvailableSpace(bytesNeeded: number): Promise<boolean>;
   getRaw(key: string): Promise<string | null>;
   setRaw(key: string, value: string): Promise<void>;
@@ -43,18 +41,14 @@ export interface StorageMockInterface extends PlasmoStorage {
 
 export class StorageMock extends PlasmoStorage implements StorageMockInterface {
   private storage: EnhancedStorage;
+  private _area: "session" | "local" = "session";
 
   constructor(area: "session" | "local" = "session") {
     super({ area });
-    this.storage = new EnhancedStorage({ area });
 
-    // This browser doesn't support the Storage Access API
-    // so let's just hope we have access!
-    if (!document.hasStorageAccess) return;
+    this._area = area;
 
-    // TODO: Can this be postponed until authentication to avoid requesting permissions too soon?
-    // unpartitioned sessionStorage cannot be accessed from iframe as it is partitioned by both origin and browser tabs unlike localStorage.
-    if (area === "local") this.storage.requestStorageAccess();
+    this.storage = area === "local" ? LocalStorage.getInstanceWithoutWaiting() : new EnhancedStorage({ area });
   }
 
   get primaryClient(): chrome.storage.StorageArea {
@@ -66,7 +60,7 @@ export class StorageMock extends PlasmoStorage implements StorageMockInterface {
   }
 
   get area(): "session" | "sync" | "local" | "managed" {
-    return "session";
+    return this._area;
   }
 
   get hasWebApi(): boolean {
@@ -145,8 +139,9 @@ export class StorageMock extends PlasmoStorage implements StorageMockInterface {
   removeMany: (keys: string[]) => Promise<void> = this.removeItems;
 
   removeAll: () => Promise<void> = () => {
-    return new Promise<void>(() => {
+    return new Promise<void>((resolve) => {
       this.storage.clear();
+      resolve();
     });
   };
 
@@ -206,10 +201,6 @@ export class StorageMock extends PlasmoStorage implements StorageMockInterface {
   // unpartitioned storage:
   async requestStorageAccess() {
     await this.storage.requestStorageAccess();
-  }
-
-  async requestAccessOnUserInteraction() {
-    await this.storage.requestAccessOnUserInteraction();
   }
 
   // Additional methods:

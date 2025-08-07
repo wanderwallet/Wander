@@ -9,19 +9,9 @@ import { useEffect } from "react";
 import { handleSyncLabelsAlarm } from "~api/background/handlers/alarms/sync-labels/sync-labels-alarm.handler";
 import { ErrorBoundary } from "~utils/error/ErrorBoundary/errorBoundary";
 import { FallbackView } from "~components/page/common/Fallback/fallback.view";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { useActivityTracking } from "~utils/inactivity/inactivity.hooks";
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 300_000,
-      refetchInterval: 300_000,
-      retry: 2,
-      refetchOnWindowFocus: true,
-    },
-  },
-});
+import { queryClient } from "~utils/tanstack";
 
 export function AuthApp() {
   useActivityTracking();

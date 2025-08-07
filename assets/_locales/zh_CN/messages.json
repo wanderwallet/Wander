@@ -649,6 +649,14 @@
       "message": "新密码不能与旧密码相同",
       "description": "Password must be different from old one"
   },
+  "set_password": {
+    "message": "设置密码",
+    "description": "Set password button text"
+  },
+  "change_password": {
+    "message": "更改密码",
+    "description": "Change password button text"
+  },
   "invalid_mnemonic": {
       "message": "无效的助记词",
       "description": "Invalid mnemonic seedphrase error notification"
@@ -696,6 +704,10 @@
   "cancel": {
       "message": "取消",
       "description": "Cancel button text"
+  },
+  "back": {
+    "message": "后退",
+    "description": "Back button text"
   },
   "export": {
       "message": "导出",
@@ -2026,17 +2038,13 @@
       }
     }
   },
-  "AO_token_send_popup": {
-    "message": "在2025年2月8日前，当AO代币铸造量达到15%之前，AO代币无法转账。",
-    "description": "Popup description about ao token transfer"
-  },
   "EXP_token_send_popup": {
     "message": "EXP代币无法转账",
     "description": "Popup description about ao token transfer"
   },
-  "ao_token_send_popup_title": {
-    "message": "AO代币转账公告",
-    "description": "Popup description about ao token transfer"
+  "WNDR_token_send_popup": {
+    "message": "WNDR代币无法转账，直到2025年10月7日",
+    "description": "Popup description about wndr token transfer"
   },
   "ao_token_send_popup_learn_more": {
     "message": "了解更多",
@@ -2522,10 +2530,6 @@
         "message": "保护您的账户",
         "description": "Secure your account button text"
     },
-    "secure_your_account_description": {
-        "message": "使用密码保护您的账户。这将用于确认在 Wander 中的活动和交易。",
-        "description": "Secure your account description"
-    },
     "backup_your_account": {
         "message": "备份您的账户",
         "description": "Backup your account button text"
@@ -2571,7 +2575,7 @@
         "description": "Enable notifications description"
     },
     "enable_analytics_description": {
-        "message": "启用分析功能，帮助我们为您提供最佳的Wander体验。",
+        "message": "启用匿名分析来帮助我们继续改进 Wander。",
         "description": "Enable analytics description"
     },
     "congratulations": {
@@ -2579,7 +2583,7 @@
         "description": "Congratulations title"
     },
     "congratulations_description": {
-        "message": "您已完成$TYPE$您的Wander账户。",
+        "message": "您已完成$TYPE$您的 Wander 账户，以下是您的钱包地址。",
         "description": "Congratulations description",
         "placeholders": {
             "type": {
@@ -2762,9 +2766,9 @@
         "message": "您的其他账户",
         "description": "Your other accounts text"
     },
-    "activity": {
-        "message": "活动",
-        "description": "Activity text"
+    "feed": {
+        "message": "动态",
+        "description": "Feed text"
     },
     "manage_asset_list": {
         "message": "管理资产列表",
@@ -2970,6 +2974,10 @@
         "message": "无法显示数据：数据太大，无法显示。",
         "description": "Data too large text"
     },
+    "re_request_access": {
+        "message": "重新请求访问",
+        "description": "Re-request access text"
+    },
     "set_up_a_password": {
         "message": "设置密码",
         "description": "Set up a password text"
@@ -3019,7 +3027,1087 @@
         "description": "Export keyfile tooltip"
     },
     "scan_qr_code_seamless_transfer": {
-        "message": "扫描二维码或复制地址以无缝转移",
-        "description": "Scan QR code seamless transfer text"
+        "message": "上述钱包地址和二维码对应您$TYPE$的 Wander 账户。如果您在交易所持有 AR 或 AO 代币，现在可以将其提取到此地址。",
+        "description": "Scan QR code seamless transfer text",
+        "placeholders": {
+            "type": {
+                "content": "$1",
+                "example": "new"
+            }
+        }
+    },
+    "imported": {
+        "message": "导入",
+        "description": "Imported text"
+    },
+    "agents": {
+        "message": "代理们",
+        "description": "Agents text"
+    },
+    "create_an_agent": {
+        "message": "创建一个代理",
+        "description": "Create an agent text"
+    },
+    "learn_more": {
+        "message": "了解更多",
+        "description": "Learn more text"
+    },
+    "introducing_the_agents": {
+        "message": "Wander代理现已推出！",
+        "description": "Introducing the Agents text"
+    },
+    "introducing_the_agents_description": {
+        "message": "轻松出借您的代币并赚取利息——设置一个代理，自动将您的AO收益转换为wAR或wUSDC每日一次。",
+        "description": "Introducing the Agents description"
+    },
+    "no_active_yield_agents": {
+        "message": "您没有活跃的收益代理",
+        "description": "You don't have any active yield agents text"
+    },
+    "ao_yield_agent": {
+        "message": "AO收益代理",
+        "description": "AO Yield Agent text"
+    },
+    "ao_yield_agent_description": {
+        "message": "自动将您的AO代币收益转换为wUSDC或wAR",
+        "description": "AO Yield Agent description"
+    },
+    "liquidops_agent": {
+        "message": "LiquidOps代理",
+        "description": "LiquidOps Agent text"
+    },
+    "liquidops_agent_description": {
+        "message": "$ACTIVE$个活跃代理，$AVAILABLE$个可用代理",
+        "description": "LiquidOps Agent description",
+        "placeholders": {
+            "active": {
+                "content": "$1",
+                "example": "0"
+            },
+            "available": {
+                "content": "$2",
+                "example": "3"
+            }
+        }
+    },
+    "select_buy_asset": {
+        "message": "选择购买资产",
+        "description": "Select buy asset text"
+    },
+    "buy_asset": {
+        "message": "购买资产",
+        "description": "Buy asset text"
+    },
+    "percentage_of_daily_ao_to_sell": {
+        "message": "每日待出售 AO 的百分比",
+        "description": "Percentage of daily AO to sell text"
+    },
+    "percentage_of_daily_ao_to_sell_description": {
+        "message": "你想要兑换的每日铸造 AO 数量",
+        "description": "Percentage of daily AO to sell description"
+    },
+    "running_time": {
+        "message": "运行时间",
+        "description": "Running time text"
+    },
+    "slippage": {
+        "message": "滑点",
+        "description": "Slippage text"
+    },
+    "slippage_description": {
+        "message": "如果价格变化超过滑点百分比，您的出售将被取消。",
+        "description": "Slippage description"
+    },
+    "auto": {
+        "message": "自动",
+        "description": "Auto text"
+    },
+    "run_indefinitely": {
+        "message": "持续运行",
+        "description": "Run indefinitely text"
+    },
+    "run_indefinitely_tooltip": {
+        "message": "除非您取消，否则代理将不会停止转换已铸造的AO。",
+        "description": "Run indefinitely tooltip"
+    },
+    "your_agents": {
+        "message": "您的代理们",
+        "description": "Your agents text"
+    },
+    "slippage_cannot_be_less_than_0_5": {
+        "message": "滑点不能小于0.5%",
+        "description": "Slippage cannot be less than 0.5% text"
+    },
+    "slippage_cannot_be_greater_than_10": {
+        "message": "滑点不能大于10%",
+        "description": "Slippage cannot be greater than 10% text"
+    },
+    "select_running_dates": {
+        "message": "选择运行日期",
+        "description": "Select running dates text"
+    },
+    "confirm_agent": {
+        "message": "确认代理",
+        "description": "Confirm agent text"
+    },
+    "activate_agent": {
+        "message": "激活代理",
+        "description": "Activate agent text"
+    },
+    "daily_conversion": {
+        "message": "每日兑换",
+        "description": "daily conversion text"
+    },
+    "start_date": {
+        "message": "开始日期",
+        "description": "Start date description"
+    },
+    "end_date": {
+        "message": "结束日期",
+        "description": "End date description"
+    },
+    "fee": {
+        "message": "费用",
+        "description": "Fee description"
+    },
+    "enter_password_confirm": {
+        "message": "输入密码以确认",
+        "description": "Enter password to confirm title"
+    },
+    "go_to_dashboard": {
+        "message": "前往仪表盘",
+        "description": "Goto dashboard description"
+    },
+    "manage_agent": {
+        "message": "管理代理",
+        "description": "Manage agent description"
+    },
+    "agent_activated_title": {
+        "message": "代理已激活！",
+        "description": "Agent activated title"
+    },
+    "agent_activated_description": {
+        "message": "您的 AO 收益代理已成功激活，并将开始转换您的 AO 收益。",
+        "description": "Agent activated title"
+    },
+    "agent_not_activated_title": {
+        "message": "代理无法激活",
+        "description": "Agent not activated title"
+    },
+    "agent_not_activated_description": {
+        "message": "似乎出了点问题，请重试。",
+        "description": "Agent not activated title"
+    },
+    "try_again": {
+        "message": "请重试",
+        "description": "Try again description"
+    },
+    "active": {
+        "message": "活跃",
+        "description": "Active text"
+    },
+    "cancelled": {
+        "message": "已取消",
+        "description": "Cancelled text"
+    },
+    "completed": {
+        "message": "已完成",
+        "description": "Completed text"
+    },
+    "paused": {
+        "message": "已暂停",
+        "description": "Paused text"
+    },
+    "percentage_of_each_conversion": {
+        "message": "$PERCENTAGE$% 每次转换",
+        "description": "Percentage of each conversion text",
+        "placeholders": {
+            "percentage": {
+                "content": "$1",
+                "example": "0.5"
+            }
+        }
+    },
+    "cancel_agent": {
+        "message": "取消代理",
+        "description": "Cancel agent text"
+    },
+    "agent_details": {
+        "message": "代理详情",
+        "description": "Agent details text"
+    },
+    "performance": {
+        "message": "性能",
+        "description": "Performance text"
+    },
+    "total_ao_sold": {
+        "message": "总AO已售出",
+        "description": "Total AO sold text"
+    },
+    "total_bought": {
+        "message": "总$ASSET$已购买",
+        "description": "Total bought text",
+        "placeholders": {
+            "asset": {
+                "content": "$1",
+                "example": "wUSDC"
+            }
+        }
+    },
+    "total_transactions": {
+        "message": "总交易次数",
+        "description": "Total transactions text"
+    },
+    "view_transaction_history": {
+        "message": "查看交易历史",
+        "description": "View transaction history text"
+    },
+    "edit_agent": {
+        "message": "编辑代理",
+        "description": "Edit agent text"
+    },
+    "error_updating_agent": {
+        "message": "更新代理失败",
+        "description": "Error updating agent text"
+    },
+    "agent_updated": {
+        "message": "代理已更新",
+        "description": "Agent updated text"
+    },
+    "agent_cancelled": {
+        "message": "代理已取消",
+        "description": "Agent cancelled text"
+    },
+    "agent_history": {
+        "message": "代理历史",
+        "description": "Agent history text"
+    },
+    "total_wander_fee": {
+        "message": "总Wander费用",
+        "description": "Total Wander fee text"
+    },
+    "load_more": {
+        "message": "加载更多",
+        "description": "Load more text"
+    },
+    "agent_cancel_title": {
+        "message": "确定要取消您的代理吗？",
+        "description": "Agent cancel title"
+    },
+    "agent_cancel_description": {
+        "message": "取消您的代理将停止您的自动AO代币转换。您也可以创建一个新的代理。",
+        "description": "Agent cancel description"
+    },
+    "i_understand": {
+        "message": "我明白",
+        "description": "I understand text"
+    },
+    "go_back": {
+        "message": "返回",
+        "description": "Go back text"
+    },
+    "no_agents": {
+        "message": "您没有代理",
+        "description": "No agents text"
+    },
+    "ao_delegation_title": {
+        "message": "未分配 AO 收益",
+        "description": "AO Delegation title"
+    },
+    "ao_delegation_description": {
+        "message": "您的钱包未分配任何 AO 收益。请更新您的 AO 收益委托偏好设置以开始接收 AO 代币并启用代理功能。",
+        "description": "AO Delegation description"
+    },
+    "update_preferences": {
+        "message": "更新偏好",
+        "description": "Update preferences text"
+    },
+    "ao_minting_paused": {
+        "message": "铸造已暂停",
+        "description": "AO Minting Paused text"
+    },
+    "month_january": {
+        "message": "一月",
+        "description": "Month name January"
+    },
+    "month_february": {
+        "message": "二月",
+        "description": "Month name February"
+    },
+    "month_march": {
+        "message": "三月",
+        "description": "Month name March"
+    },
+    "month_april": {
+        "message": "四月",
+        "description": "Month name April"
+    },
+    "month_may": {
+        "message": "五月",
+        "description": "Month name May"
+    },
+    "month_june": {
+        "message": "六月",
+        "description": "Month name June"
+    },
+    "month_july": {
+        "message": "七月",
+        "description": "Month name July"
+    },
+    "month_august": {
+        "message": "八月",
+        "description": "Month name August"
+    },
+    "month_september": {
+        "message": "九月",
+        "description": "Month name September"
+    },
+    "month_october": {
+        "message": "十月",
+        "description": "Month name October"
+    },
+    "month_november": {
+        "message": "十一月",
+        "description": "Month name November"
+    },
+    "month_december": {
+        "message": "十二月",
+        "description": "Month name December"
+    },
+    "day_sunday": {
+        "message": "日",
+        "description": "Abbreviated day name Sunday"
+    },
+    "day_monday": {
+        "message": "一",
+        "description": "Abbreviated day name Monday"
+    },
+    "day_tuesday": {
+        "message": "二",
+        "description": "Abbreviated day name Tuesday"
+    },
+    "day_wednesday": {
+        "message": "三",
+        "description": "Abbreviated day name Wednesday"
+    },
+    "day_thursday": {
+        "message": "四",
+        "description": "Abbreviated day name Thursday"
+    },
+    "day_friday": {
+        "message": "五",
+        "description": "Abbreviated day name Friday"
+    },
+    "day_saturday": {
+        "message": "六",
+        "description": "Abbreviated day name Saturday"
+    },
+    "active_agents": {
+      "message": "活跃代理",
+      "description": "Active agents text"
+    },
+    "available_agents": {
+      "message": "可用代理",
+      "description": "Available agents text"
+    },
+    "agent": {
+      "message": "代理",
+      "description": "Agent text"
+    },
+    "deposited": {
+      "message": "已存入",
+      "description": "Deposited amount text"
+    },
+    "deposit": {
+      "message": "存入",
+      "description": "Deposit text"
+    },
+    "withdraw": {
+      "message": "提取",
+      "description": "Withdraw text"
+    },
+    "apy_earned": {
+      "message": "已赚取年利率",
+      "description": "APY earned text"
+    },
+    "current_apy": {
+      "message": "当前年利率",
+      "description": "Current APY text"
+    },
+    "earned": {
+      "message": "已赚取",
+      "description": "Earned text"
+    },
+    "status": {
+      "message": "状态",
+      "description": "Status text"
+    },
+    "inactive": {
+      "message": "不活跃",
+      "description": "Inactive label"
+    },
+    "token_balance": {
+      "message": "$TICKER$ 余额",
+      "description": "Token (ticker) balance label",
+      "placeholders": {
+        "ticker": {
+          "content": "$1",
+          "example": "oUSDA"
+        }
+      }
+    },
+    "liquidops_open": {
+      "message": "在 LiquidOps 中打开",
+      "description": "Open in LiquidOps link text"
+    },
+    "you_deposit": {
+      "message": "您存入",
+      "description": "You deposit label"
+    },
+    "wander_fee": {
+      "message": "漂移费用",
+      "description": "Wander fee text"
+    },
+    "estimated_apy": {
+      "message": "预估年利率",
+      "description": "Estimated APY text"
+    },
+    "deposit_receive": {
+      "message": "您将收到 $OTOKEN$ 代币，以替代您存入的 $TICKER$ 代币。",
+      "description": "Note about getting oTokens for tokens",
+      "placeholders": {
+        "otoken": {
+          "content": "$1",
+          "example": "oUSDA"
+        },
+        "ticker": {
+          "content": "$2",
+          "example": "USDA"
+        }
+      }
+    },
+    "withdraw_receive": {
+      "message": "您将收到您存入的 $TICKER$ 代币以及所赚取的收益。",
+      "description": "Note about getting tokens for oTokens",
+      "placeholders": {
+        "ticker": {
+          "content": "$1",
+          "example": "USDA"
+        }
+      }
+    },
+    "withdrawing": {
+      "message": "正在提取",
+      "description": "Ongoing withdraw text"
+    },
+    "depositing": {
+      "message": "正在存入",
+      "description": "Ongoing deposit text"
+    },
+    "view_all_agents": {
+      "message": "查看所有代理",
+      "description": "View all agents button text"
+    },
+    "withdraw_success": {
+      "message": "$TICKER$ 提取成功！",
+      "description": "Note about withdrawing tokens",
+      "placeholders": {
+        "ticker": {
+          "content": "$1",
+          "example": "USDA"
+        }
+      }
+    },
+    "withdraw_failure": {
+      "message": "$TICKER$ 无法提取",
+      "description": "Note about error while withdrawing tokens",
+      "placeholders": {
+        "ticker": {
+          "content": "$1",
+          "example": "USDA"
+        }
+      }
+    },
+    "deposit_success": {
+      "message": "$TICKER$ 存入成功！",
+      "description": "Note about depositing tokens",
+      "placeholders": {
+        "ticker": {
+          "content": "$1",
+          "example": "USDA"
+        }
+      }
+    },
+    "deposit_failure": {
+      "message": "$TICKER$ 无法存入",
+      "description": "Note about error while depositing tokens",
+      "placeholders": {
+        "ticker": {
+          "content": "$1",
+          "example": "USDA"
+        }
+      }
+    },
+    "withdraw_success_subtext": {
+      "message": "您的 $TICKER$ 已成功提取，并包含您赚取的收益。",
+      "description": "Subtext about a successful withdrawal",
+      "placeholders": {
+        "ticker": {
+          "content": "$1",
+          "example": "USDA"
+        }
+      }
+    },
+    "deposit_success_subtext": {
+      "message": "您的 $TICKER$ 已成功存入，将开始产生收益。",
+      "description": "Subtext about a successful deposit",
+      "placeholders": {
+        "ticker": {
+          "content": "$1",
+          "example": "USDA"
+        }
+      }
+    },
+    "deposit_withdraw_failure_subtext": {
+      "message": "似乎出现了问题，请重试。",
+      "description": "Subtext about a failed deposit or withdrawal"
+    },
+    "filter": {
+      "message": "过滤器",
+      "description": "Filter text"
+    },
+    "announcements_only": {
+      "message": "仅公告",
+      "description": "Announcements only text"
+    },
+    "transactions_only": {
+      "message": "仅交易",
+      "description": "Transactions only text"
+    },
+    "no_filters": {
+      "message": "无过滤器",
+      "description": "No filters text"
+    },
+    "announcement": {
+      "message": "公告",
+      "description": "Announcement text"
+    },
+    "announcements": {
+      "message": "公告",
+      "description": "Announcements text"
+    },
+    "announcement_1_title": {
+      "message": "ArConnect 现已更名为 Wander！",
+      "description": "Announcement 1 title"
+    },
+    "announcement_1_description": {
+      "message": "了解更多请访问 https://wander.app。",
+      "description": "Announcement 1 description"
+    },
+    "announcement_2_title": {
+      "message": "推出 Wander 代理",
+      "description": "Announcement 2 title"
+    },
+    "announcement_2_description": {
+      "message": "自动转换您的每日 AO 代币收益。",
+      "description": "Announcement 2 description"
+    },
+    "announcement_3_title": {
+      "message": "WNDR 代币已上线！",
+      "description": "Announcement 3 title"
+    },
+    "announcement_3_description": {
+      "message": "委托你的 AO 以赚取 WNDR 代币",
+      "description": "Announcement 3 description"
+    },
+    "announcement_3_body": {
+      "message": "1）访问 https://ao.arweave.net/#/delegate/ <br/> 2）连接你的 Wander 钱包 <br/> 3）在项目列表中找到 Wander <br/> 4）点击 “添加” 按钮 <br/> 5）设置你的委托百分比 <br/> 6）点击 “确认委托偏好” 按钮 <br/>  <br/> 完成！",
+      "description": "Announcement 3 body"
+    },
+    "announcement_4_title": {
+        "message": "USDA 测试版开放",
+        "description": "Announcement 4 title"
+    },
+    "announcement_4_description": {
+        "message": "Reserve、Edge 和 Prime 等级用户可立即访问 USDA 测试版",
+        "description": "Announcement 4 description"
+    },
+    "announcement_4_body": {
+        "message": "Wander 的 Reserve、Edge 和 Prime 等级用户可立即访问 USDA 测试版。连接您的 Wander 钱包，完成验证并解锁访问权限。立即前往 [Astro Bridge](https://bridge.astrousd.com/) 体验。",
+        "description": "Announcement 4 body"
+    },
+    "announcement_5_title": {
+        "message": "管理您的 FL 分配！",
+        "description": "Announcement 5 title"
+    },
+    "announcement_5_description": {
+        "message": "直接在 Wander 中管理你的公平启动委托",
+        "description": "Announcement 5 description"
+    },
+    "announcement_5_body": {
+        "message": "只需点击仪表板上的“赚取”按钮，即可在 Wander 浏览器扩展中轻松管理和自定义你的 AO 公平启动委托分配。",
+        "description": "Announcement 5 body"
+    },
+    "swipe_to_learn_more": {
+      "message": "滑动了解更多",
+      "description": "Swipe to learn more text"
+    },
+    "zero_fees": {
+      "message": "零费用",
+      "description": "Zero fees text"
+    },
+    "exclusive_feature_access": {
+      "message": "独家功能访问",
+      "description": "Exclusive feature access text"
+    },
+    "power_ups_with_partners": {
+      "message": "与合作伙伴的增强功能",
+      "description": "Power-ups with partners text"
+    },
+    "introducing_the": {
+      "message": "介绍",
+      "description": "Introducing the text"
+    },
+    "token": {
+      "message": "代币",
+      "description": "Token text"
+    },
+    "get_wander_tokens": {
+      "message": "获取 WNDR 代币",
+      "description": "Get WNDR tokens text"
+    },
+    "explore_tier_benefits": {
+      "message": "探索层级收益",
+      "description": "Explore tier benefits text"
+    },
+    "your_tier": {
+      "message": "您的层级",
+      "description": "Your tier text"
+    },
+    "benefits": {
+      "message": "收益",
+      "description": "Benefits text"
+    },
+    "activity": {
+      "message": "活动",
+      "description": "Activity text"
+    },
+    "your_lifetime_savings": {
+      "message": "您的终身节省",
+      "description": "Your lifetime savings text"
+    },
+    "your_position": {
+      "message": "您的位置",
+      "description": "Your position text"
+    },
+    "tier_core_title": {
+      "message": "获取您的第一个 WNDR 代币开始使用！",
+      "description": "Core tier title"
+    },
+    "tier_core_description": {
+      "message": "1. 打开 [公平启动委托网站](https://ao.arweave.net/#/delegate/) <br/> 2. 连接你的 Wander 钱包 <br/> 3. 将 WNDR 添加到你的委托列表 <br/> 4. WNDR 收益每 24 小时发放一次",
+      "description": "Core tier description with steps"
+    },
+    "tier_benefit_fee_reduction_defi": {
+      "message": "对 Wander 所加 DeFi 交易手续费减免 $PERCENTAGE$%",
+      "description": "Fee reduction benefit for defi transactions",
+      "placeholders": {
+        "percentage": {
+          "content": "$1",
+          "example": "25"
+        }
+      }
+    },
+    "tier_benefit_fee_reduction_transak": {
+      "message": "对 Wander 所加 Transak 购买手续费减免 $PERCENTAGE$%",
+      "description": "Fee reduction benefit for Transak purchases",
+      "placeholders": {
+        "percentage": {
+          "content": "$1",
+          "example": "100"
+        }
+      }
+    },
+    "tier_benefit_access_features": {
+      "message": "访问$FEATURE_TYPE$功能",
+      "description": "Access to specific tier features benefit",
+      "placeholders": {
+        "feature_type": {
+          "content": "$1",
+          "example": "储备"
+        }
+      }
+    },
+    "tier_benefit_early_access": {
+      "message": "新功能抢先体验",
+      "description": "Early access to new features benefit"
+    },
+    "tier_benefit_support_channels": {
+      "message": "专属支持渠道可选择：$CHANNELS$",
+      "description": "Dedicated support channels benefit",
+      "placeholders": {
+        "channels": {
+          "content": "$1",
+          "example": "Discord、Slack、Telegram 或邮件"
+        }
+      }
+    },
+    "tier_feature_type_all": {
+      "message": "所有",
+      "description": "All features type"
+    },
+    "tier_support_channels_basic": {
+      "message": "Discord、Slack、Telegram 或邮件",
+      "description": "Basic support channels list"
+    },
+    "tier_support_channels_premium": {
+      "message": "Discord、Slack、Telegram、邮件，或与团队安排视频通话",
+      "description": "Premium support channels list"
+    },
+    "tiers": {
+      "message": "层级",
+      "description": "Tiers text"
+    },
+    "position_update_tooltip": {
+      "message": "您的位置每24小时更新一次，时间为4:00 PM GMT",
+      "description": "Tooltip text for position update"
+    },
+    "earn": {
+      "message": "赚取",
+      "description": "Earn text"
+    },
+    "price": {
+      "message": "价格",
+      "description": "Price text"
+    },
+    "stats": {
+      "message": "统计",
+      "description": "Stats text"
+    },
+    "about": {
+      "message": "关于",
+      "description": "About text"
+    },
+    "token_price": {
+        "message": "$NAME$ 价格",
+        "description": "Token price text",
+        "placeholders": {
+            "name": {
+                "content": "$1",
+                "example": "USDA"
+            }
+        }
+    },
+    "token_description_0syT13r0s0tgPmIed95bJnuSqaD29HQNN8D3ElLSrsc": {
+        "message": "AO 致力于为去中心化应用 (dApps) 提供安全、可扩展和互操作的计算环境，使用 AO 代币作为其原生货币来保障经济安全和流动性。",
+        "description": "AO 代币的描述"
+    },
+    "token_description_AR": {
+        "message": "Arweave 是一个去中心化存储平台，实现永久、不可变的数据存储。其原生代币 AR 用于数据存储和激励矿工维护数据。",
+        "description": "Arweave 代币的描述"
+    },
+    "token_description_xU9zFkq3X2ZQ6olwNVvr1vUWIjc3kXTWr7xKQD6dh10": {
+        "message": "包装 AR (wAR) 是通过跨链桥包装并跨链到 AO 网络的 AR 代币。AOX 跨链桥负责在 Arweave 和 AO 网络之间进行包装和桥接。",
+        "description": "包装 AR 代币的描述"
+    },
+    "token_description_NG_0lVX882MG5nhARrSzyprEK6ejonHpdUmaaMPsHE8": {
+        "message": "Q Arweave (qAR) 是量子桥的核心代币，在 AO 生态系统中代表 AR。它允许 AR 持有者参与基于 AO 的应用，同时保持与 Arweave 的连接。qAR 在 AO 中开启了新机遇，并实现潜在的双重奖励，让用户在保持 AR 持有者权益的同时获得 AO 激励。",
+        "description": "Q Arweave 代币的描述"
+    },
+    "token_description_4hXj_E_5fAKmo4E8KjgQvuDJKAFk9P2grhycVmISDLs": {
+        "message": "Permaweb Index（PI）代币是由 AR、AO 和 Fair Launch 项目代币组成的指数代币。PI 也是用户通过持有 AR 或通过 Fair Launch 平台质押收益资产而获得的默认收益分配资产。",
+        "description": "PI 代币的描述"
+    },
+    "token_description_pazXumQI_HPH7iFGfTC_4_7biSnqz_U67oFAGry5zUY": {
+        "message": "Llama Land 是一个建立在 AO 上的 AI 驱动的大型多人在线游戏。Llama Coin 是 Llama Land 的官方测试代币。",
+        "description": "Llama Coin 代币的描述"
+    },
+    "token_description_DM3FoZUq_yebASPhgd8pEIRIzDW6muXEhxz5_JwbZwo": {
+    "message": "PIXL 是用于在通用内容市场购买原子资产的奖励代币。当用户通过 Bazar 或任何 UCM 平台购买原子资产时，他们有资格获得 PIXL 代币。",
+    "description": "PIXL 代币的描述"
+    },
+    "token_description_wOrb8b_V8QixWyXZub48Ki5B6OIDyf_p1ngoonsaRpQ": {
+        "message": "AO 上的第一个迷因代币",
+        "description": "Trunk 代币的描述"
+    },
+    "token_description_8rbAftv7RaPxFjFk5FGUVAVCSjGQB4JHDcb9P9wCVhQ": {
+        "message": "超越按键，成为特工",
+        "description": "AGENT 代币的描述"
+    },
+    "token_description_agYcCFJtrMG6cqMuZfskIkFTGvUPddICmtQSBIoPdiA": {
+        "message": "ARIO (tARIO) 是 AR.IO 永久云网络的原生测试代币。该代币激励网关运营商提供重要服务，以促进永久网络的访问和实用性。此外, ARIO 可用于购买和管理 Arweave 名称系统 (ArNS) 域名以及参与委托质押。",
+        "description": "ARIO 测试代币的描述"
+    },
+    "token_description_qNvAoz0TgcH7DMg8BCVn8jF32QH5L6T29VjHxhHqqGE": {
+        "message": "ARIO 用于质押、网络奖励和在 AR.IO 永久云网络中购买去中心化智能域名。",
+        "description": "ARIO 代币的描述"
+    },
+    "token_description_aYrCboXVSl1AXL9gPFe3tfRxRf0ZmkOXH65mKT0HHZw": {
+        "message": "为 AR.IO 主网升级！参与永久云网络的任务以获得经验值 (EXP), 这是代表网络即将空投资格的链上代币。了解更多: https://ar.io/experience",
+        "description": "EXP 代币的描述"
+    },
+    "token_description_7GoQfmSOct_aUOWKM4xbKGg6DzAmOgdKwg8Kf_CbHm4": {
+        "message": "WNDR 是 Wander Network 的代币。WNDR 是一种实用型代币，用于奖励 AO 和 Arweave 生态系统中有意义的互动。",
+        "description": "WNDR 代币的描述"
+    },
+    "token_description_FBt9A5GA_KXMMSxA2DJ0xZbAq8sLLU2ak_YJe9zDvg8": {
+        "message": "Astro 是为 AO 生态系统无缝集成而构建的流动性解决方案。通过将多种稳定币和法定货币聚合为单一统一资产 - USDA，Astro 确保了现实世界和链上应用程序之间的无摩擦价值交换。",
+        "description": "USDA 代币的描述"
+    },
+    "token_description_n2MhPK0O3yEvY2zW73sqcmWqDktJxAifJDrri4qireI": {
+        "message": "LiquidOps 是一个借贷协议，用户可以通过它在 Arweave 和 AO 资产上赚取利息。LQD 是 LiquidOps 协议的治理代币。",
+        "description": "LQD 代币的描述"
+    },
+    "token_description_Nx__Ichdp_9uO_ZKg2DLWPiRlg_DWrSa2uGvINxOjaE": {
+        "message": "Botega 是一个基于自主代理构建的去中心化金融（DeFi）平台，促进 AO 生态系统内各种模型的资产交换。",
+        "description": "BOTG 代币的描述"
+    },
+    "token_description_OiNYKJ16jP7uj7z0DJO7JZr9ClfioGacpItXTn9fKn8": {
+        "message": "ACTION 是 Basejump.xyz 的代币，这是一个基于 AO 去中心化计算层构建的网络，Action 基底支持主权世界、游戏、游戏资产和社区的创建和互操作性",
+        "description": "ACTION 代币的描述"
+    },
+    "token_description_Jc2bcfEbwHFQ_qY4jqm8L5hc_SggeVA1zlW6DOICWgo": {
+        "message": "Protocol.Land 是一个去中心化的源代码控制代码协作平台，您拥有自己的代码。从平台到链上的开源。全部永久存储在 Arweave 上，由您拥有。",
+        "description": "PL 代币的描述"
+    },
+    "token_description_K59Wi9uKXBQfTn3zw7L_t_lwHAoq3Fx_V9sCyOY3dFE": {
+        "message": "StarGrid 将快节奏的游戏玩法与加密原生奖励相结合，使用 AO 和 Arweave 不可变地记录每场比赛的结果。赢得游戏赚取 SMONEY",
+        "description": "SMONEY 代币的描述"
+    },
+    "token_description_mqBYxpDsolZmJyBdTK8TJp_ftOuIUXVYcSQ8MYZdJg0": {
+        "message": "Apus 通过确定性 GPU 计算实现可验证的去中心化 AI。$$APUS 代币是 Apus Network 的核心实用和治理代币，在保护网络、促进交易和赋能去中心化治理方面发挥核心作用。",
+        "description": "APUS 代币的描述"
+    },
+    "token_description_gx_jKk_hy8_sB4Wv5WEuvTTVyIRWW3We7rRHthcohBQ": {
+        "message": "Load Network 的 EVM 和 AO 互操作性使其能够直接接入 AO 超并行计算，同时为 AO 提供对 EVM 世界广阔流动性和工具的即时访问。",
+        "description": "LOAD 代币的描述"
+    },
+    "token_description_7zH9dlMNoxprab9loshv3Y7WG45DOny_Vrq9KrXObdQ": {
+        "message": "包装 USDC（wUSDC）是在 ETH 上的 USDC 代币包装并跨链到 AO 网络。AOX 跨链桥负责在 EVM 和 AO 网络之间进行包装和桥接。",
+        "description": "wUSDC 代币的描述"
+    },
+    "website": {
+        "message": "网站",
+        "description": "Website text"
+    },
+    "address": {
+        "message": "地址",
+        "description": "Address text"
+    },
+    "info": {
+        "message": "信息",
+        "description": "Info text"
+    },
+    "verified": {
+        "message": "已验证",
+        "description": "Verified text"
+    },
+    "help": {
+      "message": "帮助",
+      "description": "Help text"
+    },
+    "help_center": {
+      "message": "帮助中心",
+      "description": "Help Center text"
+    },
+    "discord": {
+      "message": "Discord",
+      "description": "Discord text"
+    },
+    "email": {
+      "message": "邮件",
+      "description": "Email text"
+    },
+    "video_support": {
+      "message": "视频支持",
+      "description": "Video Support text"
+    },
+    "fastest": {
+      "message": "最快",
+      "description": "Fastest text"
+    },
+    "unknown_coin": {
+      "message": "没有关于此资产的信息。请谨慎行事，并自行承担风险",
+      "description": "此资产暂无相关信息。请谨慎操作，风险自负。"
+    },
+    "earn_tokens_in_wander": {
+      "message": "在 Wander 中赚取代币！",
+      "description": "Earn tokens in Wander text"
+    },
+    "earn_tokens_in_wander_description": {
+      "message": "只需持有 AR 代币或质押 stETH 和 DAI 即可赚取多种代币。",
+      "description": "Earn tokens in Wander description text"
+    },
+    "earn_tokens_list_item_1": {
+      "message": "持有 AR 代币以自动赚取",
+      "description": "Earn tokens list item 1"
+    },
+    "earn_tokens_list_item_2": {
+      "message": "质押 stETH 或 DAI 以获得额外奖励",
+      "description": "Earn tokens list item 2"
+    },
+    "earn_tokens_list_item_3": {
+      "message": "选择要赚取的代币",
+      "description": "Earn tokens list item 3"
+    },
+    "allocation": {
+      "message": "分配",
+      "description": "Allocation text"
+    },
+    "allocation_description": {
+      "message": "这代表了你当前在 AO 收益中的分配情况",
+      "description": "Allocation description text"
+    },
+    "view_full_breakdown_on_ao_website": {
+      "message": "在 AO 网站上查看完整分解",
+      "description": "View full breakdown on AO website text"
+    },
+    "earn_notice_title": {
+      "message": "支持项目并赚取他们的代币",
+      "description": "Earn notice title"
+    },
+    "earn_notice_description": {
+      "message": "将你的 AO 收益委托给生态系统中的项目。",
+      "description": "Earn notice description"
+    },
+    "primary": {
+      "message": "主要",
+      "description": "Primary text"
+    },
+    "primary_count": {
+      "message": "主要 ($COUNT$)",
+      "description": "Primary count text",
+      "placeholders": {
+        "count": {
+          "content": "$1",
+          "example": "2"
+        }
+      }
+    },
+    "projects": {
+      "message": "项目",
+      "description": "Projects text"
+    },
+    "projects_count": {
+      "message": "项目 ($COUNT$)",
+      "description": "Projects count text",
+      "placeholders": {
+        "count": {
+          "content": "$1",
+          "example": "2"
+        }
+      }
+    },
+    "coming_soon": {
+      "message": "即将推出",
+      "description": "Coming soon text"
+    },
+    "no_projects_tokens": {
+      "message": "没有项目代币",
+      "description": "No projects tokens text"
+    },
+    "no_projects_tokens_description": {
+      "message": "委托给生态系统项目的 AO 分配将显示在这里",
+      "description": "No projects tokens description text"
+    },
+    "manage_earnings": {
+      "message": "管理收益",
+      "description": "Manage earnings text"
+    },
+    "add_token": {
+      "message": "添加代币",
+      "description": "Add token text"
+    },
+    "explore_all_projects": {
+      "message": "探索所有项目",
+      "description": "Explore all projects text"
+    },
+    "ao_delegation_tooltip": {
+      "message": "您的 $$AO 分配将根据添加的代币进行调整。",
+      "description": "AO delegation tooltip text"
+    },
+    "remove_delegation_tooltip": {
+      "message": "将代币分配设置为小于 5% 将移除它",
+      "description": "Remove delegation tooltip text"
+    },
+    "delegation_info_saved": {
+      "message": "委托信息已保存",
+      "description": "Delegation info saved text"
+    },
+    "delegation_info_save_failed": {
+      "message": "委托信息保存失败",
+      "description": "Delegation info save failed text"
+    },
+    "flp_claim_success": {
+      "message": "领取成功",
+      "description": "Fair Launch claim success text"
+    },
+    "flp_claim_error": {
+      "message": "领取失败",
+      "description": "Fair Launch claim error text"
+    },
+    "claim": {
+      "message": "领取",
+      "description": "Claim text"
+    },
+    "claiming": {
+      "message": "领取中",
+      "description": "Claiming text"
+    },
+    "ao_tokens_detected": {
+      "message": "检测到 AO 代币",
+      "description": "AO tokens detected text"
+    },
+    "diversify_portfolio": {
+      "message": "通过将您的 AO 收益委托给生态系统中的项目来多元化您的投资组合。",
+      "description": "Diversify portfolio text"
+    },
+    "start_delegating": {
+      "message": "开始委托",
+      "description": "Start delegating text"
+    },
+    "balance": {
+      "message": "余额",
+      "description": "Balance text"
+    },
+    "start_allocating_ao_yield": {
+      "message": "开始分配您的 AO 收益，赚取更多收益。您可以随时更改。",
+      "description": "Start allocating your AO yield with more ways to earn text"
+    },
+    "note_earning_ao_tokens": {
+      "message": "注意：您实际上是在赚取 AO 代币，但将它们委托给项目以换取他们的代币。",
+      "description": "Note you are technically earning AO tokens text"
+    },
+    "allocation_set": {
+      "message": "分配设置！",
+      "description": "Allocation set text"
+    },
+    "allocation_set_description": {
+      "message": "您已成功添加新代币到您的委托列表。这些代币将自动显示在您的资产列表中。",
+      "description": "Allocation set description text"
+    },
+    "view_delegation_list": {
+      "message": "查看委托列表",
+      "description": "View delegation list text"
+    },
+    "members_instant_access": {
+      "message": "成员立即访问",
+      "description": "Members get instant access text"
+    },
+    "get_access": {
+      "message": "获取访问",
+      "description": "Get access text"
+    },
+    "wndr_member_benefits": {
+        "message": "$$WNDR 会员福利",
+        "description": "WNDR member benefits text"
+    },
+    "beta_access": {
+      "message": "测试版访问",
+      "description": "Beta access text"
+    },
+    "no_activity_yet": {
+      "message": "暂无活动",
+      "description": "No activity yet text"
     }
 }

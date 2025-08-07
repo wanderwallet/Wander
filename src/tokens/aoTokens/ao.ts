@@ -3,11 +3,10 @@ import { type Tag } from "arweave/web/lib/transaction";
 import { PersistentStorage } from "~utils/storage";
 import { Quantity } from "ao-tokens";
 import { ArweaveSigner, createData } from "@dha-team/arbundles";
-import { getActiveKeyfile } from "~wallets";
+import { getActiveKeyfile, getKeyfile, type DecryptedWallet } from "~wallets";
 import { isLocalWallet } from "~utils/assertions";
 import { freeDecryptedWallet } from "~wallets/encryption";
-import { AO_NATIVE_TOKEN_BALANCE_MIRROR } from "~utils/ao_import";
-import type { KeystoneSigner } from "~wallets/hardware/keystone";
+import { generateAnchor, type KeystoneSigner } from "~wallets/hardware/keystone";
 import browser from "webextension-polyfill";
 import type { DecodedTag } from "~api/modules/sign/tags";
 import { isNetworkError, NetworkError, BalanceFetchError } from "~utils/error/error.utils";
@@ -17,43 +16,105 @@ import BigNumber from "bignumber.js";
 import type { Token } from "~tokens/token";
 import { CACHE_API } from "~constants/api";
 import Arweave from "arweave";
+import { queryClient } from "~utils/tanstack";
 
 let tokens: TokenInfo[] = null;
 export let tokenInfoMap = new Map<string, TokenInfo | Token>();
 
 export type AoInstance = ReturnType<typeof connect>;
 
-export const defaultTokens: TokenInfo[] = [
+export const AR_PROCESS_ID = "AR" as const;
+export const WNDR_PROCESS_ID = "7GoQfmSOct_aUOWKM4xbKGg6DzAmOgdKwg8Kf-CbHm4" as const;
+export const WAR_PROCESS_ID = "xU9zFkq3X2ZQ6olwNVvr1vUWIjc3kXTWr7xKQD6dh10" as const;
+export const WUSDC_PROCESS_ID = "7zH9dlMNoxprab9loshv3Y7WG45DOny_Vrq9KrXObdQ" as const;
+export const PI_PROCESS_ID = "4hXj_E-5fAKmo4E8KjgQvuDJKAFk9P2grhycVmISDLs" as const;
+export const EXP_PROCESS_ID = "aYrCboXVSl1AXL9gPFe3tfRxRf0ZmkOXH65mKT0HHZw" as const;
+export const ARIO_PROCESS_ID = "qNvAoz0TgcH7DMg8BCVn8jF32QH5L6T29VjHxhHqqGE" as const;
+export const USDA_PROCESS_ID = "FBt9A5GA_KXMMSxA2DJ0xZbAq8sLLU2ak-YJe9zDvg8" as const;
+export const AO_PROCESS_ID = "0syT13r0s0tgPmIed95bJnuSqaD29HQNN8D3ElLSrsc" as const;
+export const AO_OLD_PROCESS_ID = "m3PaWzK4PTG9lAaqYQPaPdOcXdO8hYqi5Fe9NWqXd0w" as const;
+export const PIXL_PROCESS_ID = "DM3FoZUq_yebASPhgd8pEIRIzDW6muXEhxz5-JwbZwo" as const;
+export const TRUNK_PROCESS_ID = "wOrb8b_V8QixWyXZub48Ki5B6OIDyf_p1ngoonsaRpQ" as const;
+export const AGENT_PROCESS_ID = "8rbAftv7RaPxFjFk5FGUVAVCSjGQB4JHDcb9P9wCVhQ" as const;
+export const LQD_PROCESS_ID = "n2MhPK0O3yEvY2zW73sqcmWqDktJxAifJDrri4qireI" as const;
+export const BOTG_PROCESS_ID = "Nx-_Ichdp-9uO_ZKg2DLWPiRlg-DWrSa2uGvINxOjaE" as const;
+export const ACTION_PROCESS_ID = "OiNYKJ16jP7uj7z0DJO7JZr9ClfioGacpItXTn9fKn8" as const;
+export const PL_PROCESS_ID = "Jc2bcfEbwHFQ-qY4jqm8L5hc-SggeVA1zlW6DOICWgo" as const;
+export const SMONEY_PROCESS_ID = "K59Wi9uKXBQfTn3zw7L_t-lwHAoq3Fx-V9sCyOY3dFE" as const;
+export const APUS_PROCESS_ID = "mqBYxpDsolZmJyBdTK8TJp_ftOuIUXVYcSQ8MYZdJg0" as const;
+export const LOAD_PROCESS_ID = "gx_jKk-hy8-sB4Wv5WEuvTTVyIRWW3We7rRHthcohBQ" as const;
+
+export const AO_PROCESS_BALANCE_MIRROR = "Pi-WmAQp2-mh-oWH9lWpz5EthlUDj_W0IusAv-RXhRk" as const;
+export const AO_AUTHORITY_ID = "fcoN_xJeisVsPXA-trzVAuIiqO3ydLQxM-L4XbrQKzY" as const;
+
+export const VERIFIED_TOKENS = new Set<string>([
+  AR_PROCESS_ID,
+  WNDR_PROCESS_ID,
+  WAR_PROCESS_ID,
+  WUSDC_PROCESS_ID,
+  PI_PROCESS_ID,
+  EXP_PROCESS_ID,
+  ARIO_PROCESS_ID,
+  USDA_PROCESS_ID,
+  AO_PROCESS_ID,
+  PIXL_PROCESS_ID,
+  TRUNK_PROCESS_ID,
+  AGENT_PROCESS_ID,
+  LQD_PROCESS_ID,
+  BOTG_PROCESS_ID,
+  ACTION_PROCESS_ID,
+  PL_PROCESS_ID,
+  SMONEY_PROCESS_ID,
+  APUS_PROCESS_ID,
+  LOAD_PROCESS_ID,
+]);
+
+export const defaultTokens = [
   {
-    Name: "AR",
+    Name: "Arweave",
     Ticker: "AR",
     Denomination: 12,
     Logo: "jZ2XPRj37W-QNb3BwWWIyEelv-7nQjBHg0g6WLX91IM",
-    processId: "AR",
+    processId: AR_PROCESS_ID,
   },
   {
     Name: "AO",
     Ticker: "AO",
     Denomination: 12,
     Logo: "UkS-mdoiG8hcAClhKK8ch4ZhEzla0mCPDOix9hpdSFE",
-    // processId: "m3PaWzK4PTG9lAaqYQPaPdOcXdO8hYqi5Fe9NWqXd0w"
-    processId: "0syT13r0s0tgPmIed95bJnuSqaD29HQNN8D3ElLSrsc",
+    processId: AO_PROCESS_ID,
   },
   {
-    Name: "Q Arweave",
-    Ticker: "qAR",
+    Name: "Permaweb Index Token",
+    Ticker: "PI",
     Denomination: 12,
-    Logo: "26yDr08SuwvNQ4VnhAfV4IjJcOOlQ4tAQLc1ggrCPu0",
-    processId: "NG-0lVX882MG5nhARrSzyprEK6ejonHpdUmaaMPsHE8",
+    Logo: "zmQwyD6QiZge10OG2HasBqu27Zg0znGkdFRufOq6rv0",
+    processId: PI_PROCESS_ID,
+  },
+  {
+    Name: "Wander",
+    Ticker: "WNDR",
+    Denomination: 18,
+    Logo: "xUO2tQglSYsW89aLYN8ErGivZqezoDaEn95JniaCBZk",
+    processId: WNDR_PROCESS_ID,
+  },
+  {
+    Name: "Astro USD",
+    Ticker: "USDA",
+    Denomination: 12,
+    Logo: "seXozJrsP0OgI0gvAnr8zmfxiHHb5iSlI9wMI8SdamE",
+    processId: USDA_PROCESS_ID,
   },
   {
     Name: "Wrapped AR",
     Ticker: "wAR",
     Denomination: 12,
     Logo: "L99jaxRKQKJt9CqoJtPaieGPEhJD3wNhR4iGqc8amXs",
-    processId: "xU9zFkq3X2ZQ6olwNVvr1vUWIjc3kXTWr7xKQD6dh10",
+    processId: WAR_PROCESS_ID,
   },
-];
+] as const satisfies TokenInfo[];
+
+export const nonTransferableTokenIds: Array<string> = [EXP_PROCESS_ID, WNDR_PROCESS_ID];
 
 /**
  * Dummy ID
@@ -85,6 +146,14 @@ type DataItemResult = {
 };
 
 type CreateDataItemSigner = (wallet: any) => (args: CreateDataItemArgs) => Promise<DataItemResult>;
+
+const { dryrun: customDryrun } = connect({ CU_URL: "https://cu.ardrive.io" });
+
+const getDryrunForProcess = (processId: string) => {
+  return processId === ARIO_PROCESS_ID || processId === USDA_PROCESS_ID || processId === WNDR_PROCESS_ID
+    ? { dryrunFn: customDryrun, isCustomDryrun: true }
+    : { dryrunFn: dryrun, isCustomDryrun: false };
+};
 
 export function getTokenInfoFromData(res: any, id: string): TokenInfo {
   // find message with token info
@@ -218,11 +287,18 @@ export async function getAoTokenBalance(address: string, process: string, aoToke
     aoToken = aoTokens.find((token) => token.processId === process);
   }
 
-  const res = await dryrun({
+  const { dryrunFn, isCustomDryrun } = getDryrunForProcess(process);
+  const tags = [{ name: "Action", value: "Balance" }];
+
+  if (isCustomDryrun) {
+    tags.push({ name: "Referer", value: "Wander" });
+  }
+
+  const res = await dryrunFn({
     Id,
     Owner: address,
     process,
-    tags: [{ name: "Action", value: "Balance" }],
+    tags,
   });
 
   const errorMessage = (res as any)?.error || res?.Error;
@@ -273,72 +349,130 @@ export async function getAoCollectibleBalance(
     : new Quantity(0, BigInt(collectible.Denomination));
 }
 
-export async function getNativeTokenBalance(address: string): Promise<string> {
-  const res = await dryrun({
-    Id,
-    Owner: address,
-    process: AO_NATIVE_TOKEN_BALANCE_MIRROR,
-    tags: [{ name: "Action", value: "Balance" }],
-  });
-  const balance = res.Messages[0].Data;
-  return balance ? new Quantity(BigInt(balance), BigInt(12)).toString() : "0";
-}
-
 /**
  * Find the value for a tag name
  */
 export const getTagValue = (tagName: string, tags: (Tag | DecodedTag)[]) => tags.find((t) => t.name === tagName)?.value;
 
-export const sendAoTransfer = async (ao: AoInstance, process: string, recipient: string, amount: string) => {
+export const getTagValues = (tagNames: string[], tags: (Tag | DecodedTag)[]): (string | undefined)[] => {
+  const tagMap = new Map(tags.map((tag) => [tag.name, tag.value]));
+  return tagNames.map((name) => tagMap.get(name));
+};
+
+export const createDataItemSigner =
+  (wallet: any) =>
+  async ({
+    data,
+    tags = [],
+    target,
+    anchor,
+  }: {
+    data: any;
+    tags?: { name: string; value: string }[];
+    target?: string;
+    anchor?: string;
+  }): Promise<{ id: string; raw: ArrayBuffer }> => {
+    const signer = new ArweaveSigner(wallet);
+    const dataItem = createData(data, signer, { tags, target, anchor });
+
+    await dataItem.sign(signer);
+
+    return {
+      id: dataItem.id,
+      // @ts-ignore
+      raw: dataItem.getRaw(),
+    };
+  };
+
+export const createDataItemKeystoneSigner =
+  (keystoneSigner: KeystoneSigner) =>
+  async ({
+    data,
+    tags = [],
+    target,
+    anchor,
+  }: {
+    data: any;
+    tags?: { name: string; value: string }[];
+    target?: string;
+    anchor?: string;
+  }): Promise<{ id: string; raw: ArrayBuffer }> => {
+    const signer = keystoneSigner;
+    if (!anchor) {
+      // @ts-ignore - anchor can be uint8array or string
+      anchor = generateAnchor();
+    }
+    const dataItem = createData(data, signer, { tags, target, anchor });
+    const serial = dataItem.getRaw();
+    const signature = await signer.sign(serial);
+    dataItem.setSignature(Buffer.from(signature));
+
+    return {
+      id: dataItem.id,
+      // @ts-ignore
+      raw: dataItem.getRaw(),
+    };
+  };
+
+export const sendAoTransfer = async (
+  ao: AoInstance,
+  process: string,
+  recipient: string,
+  amount: string,
+  tags: (Tag | DecodedTag)[] = [],
+) => {
+  return sendAoTransferForWallet(ao, process, recipient, amount, tags);
+};
+
+/**
+ * Sends AO transfer for a specific wallet address
+ * @param ao - AO instance
+ * @param process - Process ID
+ * @param recipient - Recipient address
+ * @param amount - Amount to transfer
+ * @param walletAddress - Specific wallet address to use for signing
+ * @param tags - Additional tags
+ * @returns Message ID
+ */
+export async function sendAoTransferForWallet(
+  ao: AoInstance,
+  process: string,
+  recipient: string,
+  amount: string,
+  tags: (Tag | DecodedTag)[] = [],
+  walletAddress?: string,
+): Promise<string | undefined> {
+  let decryptedWallet: DecryptedWallet;
   try {
-    const decryptedWallet = await getActiveKeyfile();
+    decryptedWallet = walletAddress ? await getKeyfile(walletAddress) : await getActiveKeyfile();
     isLocalWallet(decryptedWallet);
     const keyfile = decryptedWallet.keyfile;
 
-    const createDataItemSigner =
-      (wallet: any) =>
-      async ({
-        data,
-        tags = [],
-        target,
-        anchor,
-      }: {
-        data: any;
-        tags?: { name: string; value: string }[];
-        target?: string;
-        anchor?: string;
-      }): Promise<{ id: string; raw: ArrayBuffer }> => {
-        const signer = new ArweaveSigner(wallet);
-        const dataItem = createData(data, signer, { tags, target, anchor });
-
-        await dataItem.sign(signer);
-
-        return {
-          id: dataItem.id,
-          raw: dataItem.getRaw(),
-        };
-      };
     const signer = createDataItemSigner(keyfile);
     const transferID = await ao.message({
       process,
       signer,
       tags: [
         { name: "Action", value: "Transfer" },
-        {
-          name: "Recipient",
-          value: recipient,
-        },
+        { name: "Recipient", value: recipient },
         { name: "Quantity", value: amount },
         { name: "Client", value: "Wander" },
         { name: "Client-Version", value: browser.runtime.getManifest().version },
+        ...tags,
       ],
     });
-    freeDecryptedWallet(decryptedWallet.keyfile);
+
     return transferID;
   } catch (err) {
     console.log("err", err);
+    return undefined;
+  } finally {
+    // Clean up keyfile from memory
+    if (decryptedWallet && decryptedWallet.type !== "hardware") {
+      freeDecryptedWallet(decryptedWallet.keyfile);
+    }
   }
-};
+}
 
 export const sendAoTransferKeystone = async (
   ao: AoInstance,
@@ -348,28 +482,7 @@ export const sendAoTransferKeystone = async (
   keystoneSigner: KeystoneSigner,
 ) => {
   try {
-    const dataItemSigner = async ({
-      data,
-      tags = [],
-      target,
-      anchor,
-    }: {
-      data: any;
-      tags?: { name: string; value: string }[];
-      target?: string;
-      anchor?: string;
-    }): Promise<{ id: string; raw: ArrayBuffer }> => {
-      const signer = keystoneSigner;
-      const dataItem = createData(data, signer, { tags, target, anchor });
-      const serial = dataItem.getRaw();
-      const signature = await signer.sign(serial);
-      dataItem.setSignature(Buffer.from(signature));
-
-      return {
-        id: dataItem.id,
-        raw: dataItem.getRaw(),
-      };
-    };
+    const dataItemSigner = createDataItemKeystoneSigner(keystoneSigner);
     const transferID = await ao.message({
       process,
       signer: dataItemSigner,
@@ -395,13 +508,11 @@ export interface TokenInfo {
   Ticker?: string;
   Logo?: string;
   Denomination: number;
-  processId?: string;
+  processId: string;
   lastUpdated?: string | null;
   type?: "asset" | "collectible";
   hidden?: boolean;
 }
-
-export type TokenInfoWithProcessId = TokenInfo & { processId: string };
 
 export interface TokenInfoWithBalance extends TokenInfo {
   id?: string;
@@ -410,7 +521,7 @@ export interface TokenInfoWithBalance extends TokenInfo {
 
 export async function fetchTokenBalance(token: TokenInfo, address: string, refresh?: boolean): Promise<string> {
   try {
-    if (token.processId === "AR") {
+    if (token.processId === AR_PROCESS_ID) {
       return await getArTokenBalance(address);
     } else {
       if (refresh) token = await fetchTokenByProcessId(token.processId);
@@ -458,4 +569,26 @@ export async function getBotegaPrices(tokenIds: string[]): Promise<Record<string
     console.error("Error fetching Botega prices:", error);
     return Object.fromEntries(tokenIds.map((id) => [id, null]));
   }
+}
+
+export async function getAOTokenPrice() {
+  let price = 0;
+
+  try {
+    const queryKey = ["tokenPrice", AO_PROCESS_ID];
+    const existingPrice = queryClient.getQueryState(queryKey);
+    if (!existingPrice?.data) {
+      price = await queryClient.fetchQuery({
+        queryKey,
+        queryFn: () => getBotegaPrice(AO_PROCESS_ID),
+        staleTime: 0,
+        retry: 3,
+        retryDelay: (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 30000),
+      });
+    } else {
+      price = Number(existingPrice.data);
+    }
+  } catch {}
+
+  return price;
 }

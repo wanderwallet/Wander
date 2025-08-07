@@ -13,6 +13,8 @@ import type { RecoveryJSON, Wallet } from "~utils/embedded/embedded.types";
 import { EMBEDDED_FEATURE_FLAGS } from "~utils/embedded/embedded.constants";
 import { LocalStorage } from "~iframe/storage/unpartitioned-storage/local-storage";
 import { random, pki, util } from "node-forge";
+import { ed25519 } from "@noble/curves/ed25519.js";
+import type { DbSession } from "embed-api";
 
 // Node forge worker script location
 const workerScript = `/assets/forge/prime.worker.min.js`;
@@ -159,8 +161,93 @@ async function generateShareHash(share: string): Promise<string> {
   return Buffer.from(new Uint8Array(hashBuffer)).toString("base64");
 }
 
-export interface GenerateShareHashAndPublicKeyReturn {
+export interface GenerateShareHashAndEdKeysFromDeviceShareParams {
+  deviceShare: string;
+  session: DbSession;
+}
+
+export interface GenerateShareHashAndEdKeysFromRecoveryBackupShareParams {
+  recoveryBackupShare: string;
+  session: DbSession;
+}
+
+export type GenerateShareHashAndEdKeysParams =
+  | GenerateShareHashAndEdKeysFromDeviceShareParams
+  | GenerateShareHashAndEdKeysFromRecoveryBackupShareParams;
+
+export interface GenerateShareHashAndEdKeysReturn {
   shareHash: string;
+  sharePrivateKey: Uint8Array;
+  sharePublicKey: Uint8Array;
+  sharePrivateKeyB64: string;
+  sharePublicKeyB64: string;
+}
+
+/**
+ * An Ed25519 key has a fixed size of 256 bits (or 32 bytes). This applies to both the public and private keys. Despite
+ * its small size, it offers a level of security comparable to much larger RSA keys, such as a 2048-bit or even
+ * 4096-bit RSA key.
+ */
+async function generateShareHashAndEdKeys(
+  params: GenerateShareHashAndEdKeysParams,
+): Promise<GenerateShareHashAndEdKeysReturn> {
+  log(LOG_GROUP.WALLET_GENERATION, "⚡ generateShareHashAndEdKeys()");
+
+  const encoder = new TextEncoder();
+  const { session } = params;
+
+  // Input key material:
+
+  const share = "deviceShare" in params ? params.deviceShare : params.recoveryBackupShare;
+  const inputKeyMaterial = encoder.encode(share);
+
+  // Salt:
+  //
+  // Using salt adds significantly to the strength of HKDF, but it is not strictly necessary when the input key material
+  // is already sufficiently random, as it should be in our case. However, using a salt won't hurt either.
+
+  const saltContent = "deviceShare" in params ? `${session.userId}-${session.deviceNonce}` : session.userId;
+  const salt = encoder.encode(saltContent);
+
+  // Info:
+  //
+  // Used to derive different keys form the same input key material (`baseKey`). Not needed in our case.
+  // See https://crypto.stackexchange.com/questions/6553/what-information-to-include-is-the-info-input-for-hkdf
+
+  const info = encoder.encode("");
+
+  // Key derivation with HKDF:
+
+  const baseKey = await crypto.subtle.importKey("raw", inputKeyMaterial, { name: "HKDF" }, false, ["deriveBits"]);
+
+  const derivedBits = await crypto.subtle.deriveBits(
+    {
+      name: "HKDF",
+      hash: "SHA-256",
+      salt,
+      info,
+    },
+    baseKey,
+    256, // bits
+  );
+
+  // Derived bits as `Uint8Array` are our private key:
+  const privateKey = new Uint8Array(derivedBits);
+
+  // Use Noble to generate public key from private key:
+  const publicKey = await ed25519.getPublicKey(privateKey);
+
+  return {
+    shareHash: await generateShareHash(share),
+    sharePrivateKey: privateKey,
+    sharePublicKey: publicKey,
+    sharePrivateKeyB64: Buffer.from(privateKey).toString("base64"),
+    sharePublicKeyB64: Buffer.from(publicKey).toString("base64"),
+  };
+}
+
+export interface DeriveRSAKeysReturn {
+  sharePrivateKeyJWK: JWKInterface;
   sharePublicKey: string;
 }
 
@@ -169,8 +256,12 @@ export interface GenerateShareHashAndPublicKeyReturn {
  * - https://github.com/framp/zero-knowledge-node/blob/master/keypair-auth/crypto-utils.js
  * - https://www.youtube.com/watch?v=cMoD0wIxIpQ
  */
-async function generateShareHashAndPublicKey(share: string): Promise<GenerateShareHashAndPublicKeyReturn> {
-  log(LOG_GROUP.WALLET_GENERATION, "generateShareHashAndPublicKey()");
+async function deriveRSAKeys(share: string): Promise<DeriveRSAKeysReturn> {
+  log(LOG_GROUP.WALLET_GENERATION, "🐌 deriveRSAKeys()");
+
+  if (!share) {
+    throw new Error("Share is missing — unable to generate share hash and private key.");
+  }
 
   const sharePrng = random.createInstance();
 
@@ -198,61 +289,7 @@ async function generateShareHashAndPublicKey(share: string): Promise<GenerateSha
         if (err) {
           reject(err);
         } else {
-          const shareHash = await generateShareHash(share);
-          const publicKey = result.publicKey;
-          const sharePublicKey = bigintToBase64Url(publicKey.n);
-
-          resolve({
-            shareHash,
-            sharePublicKey,
-          });
-        }
-      },
-    );
-  });
-}
-
-export interface GenerateShareHashAndPrivateKeyReturn {
-  shareHash: string;
-  sharePrivateKeyJWK: JWKInterface;
-}
-
-/**
- * See:
- * - https://github.com/framp/zero-knowledge-node/blob/master/keypair-auth/crypto-utils.js
- * - https://www.youtube.com/watch?v=cMoD0wIxIpQ
- */
-async function generateShareHashAndPrivateKey(share: string): Promise<GenerateShareHashAndPrivateKeyReturn> {
-  log(LOG_GROUP.WALLET_GENERATION, "generateShareHashAndPrivateKey()");
-
-  const sharePrng = random.createInstance();
-
-  sharePrng.seedFileSync = (needed) => {
-    let r = "",
-      i = 0,
-      j = 0;
-
-    while (i++ < needed) {
-      r += share[j++];
-      if (j === share.length) j = 0;
-    }
-
-    return r;
-  };
-
-  return new Promise((resolve, reject) => {
-    pki.rsa.generateKeyPair(
-      {
-        bits: 4096,
-        prng: sharePrng,
-        workerScript,
-      },
-      async (err, result) => {
-        if (err) {
-          reject(err);
-        } else {
-          const shareHash = await generateShareHash(share);
-          const privateKey = result.privateKey;
+          const { privateKey, publicKey } = result;
 
           // Extract and encode the RSA parameters into JWK format
           const sharePrivateKeyJWK = {
@@ -267,9 +304,11 @@ async function generateShareHashAndPrivateKey(share: string): Promise<GenerateSh
             qi: bigintToBase64Url(privateKey.qInv),
           };
 
+          const sharePublicKey = bigintToBase64Url(publicKey.n);
+
           resolve({
-            shareHash,
             sharePrivateKeyJWK,
+            sharePublicKey,
           });
         }
       },
@@ -648,7 +687,7 @@ async function storeEncryptedWalletJWK(jwk: JWKInterface): Promise<void> {
   return addWallet(jwk, randomPassword);
 }
 
-function isJWK(obj: unknown): boolean {
+function isJWK(obj: unknown): obj is JWKInterface {
   if (typeof obj !== "object" || obj === null) {
     return false;
   }
@@ -656,7 +695,21 @@ function isJWK(obj: unknown): boolean {
   return requiredKeys.every((key) => key in obj);
 }
 
-function isSeedPhrase(obj: unknown): boolean {
+function isRecoveryJSON(obj: unknown): obj is RecoveryJSON {
+  return (
+    typeof obj === "object" &&
+    typeof (obj as RecoveryJSON).version === "string" &&
+    !!(obj as RecoveryJSON).version &&
+    typeof (obj as RecoveryJSON).walletId === "string" &&
+    !!(obj as RecoveryJSON).walletId &&
+    typeof (obj as RecoveryJSON).recoveryBackupShare === "string" &&
+    !!(obj as RecoveryJSON).recoveryBackupShare &&
+    typeof (obj as RecoveryJSON).recoveryFileServerSignature === "string" &&
+    !!(obj as RecoveryJSON).recoveryFileServerSignature
+  );
+}
+
+function isSeedPhrase(obj: unknown) {
   try {
     isValidMnemonic(obj as string);
     return true;
@@ -673,8 +726,8 @@ export const WalletUtils = {
   generateWalletRecoveryShares,
   generateWalletJWKFromShares,
   generateShareHash,
-  generateShareHashAndPublicKey,
-  generateShareHashAndPrivateKey,
+  generateShareHashAndEdKeys,
+  deriveRSAKeys,
 
   // Getters:
   getDeviceSharesForUser,
@@ -692,6 +745,7 @@ export const WalletUtils = {
 
   // Validation:
   isJWK,
+  isRecoveryJSON,
   isSeedPhrase,
 };
 

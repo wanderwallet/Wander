@@ -1,16 +1,13 @@
-import { Row, Text, WanderIcon } from "../../atoms";
+import { WanderIcon } from "../../atoms";
 
-function WanderFooter() {
+import styles from "./WanderFooter.module.scss";
+
+export function WanderFooter() {
   return (
-    <Row style={{ gap: "4px", marginTop: "16px" }}>
-      <Text variant={"bodyXs"} style={{ marginBottom: 0 }}>
-        {"Secured by"}
-      </Text>
-      <WanderIcon color="#838383" />
-    </Row>
+    <footer className={styles.root}>
+      <div className={styles.attribution}>
+        Secured by <WanderIcon />
+      </div>
+    </footer>
   );
 }
-
-WanderFooter.displayName = "WanderFooter";
-
-export { WanderFooter };

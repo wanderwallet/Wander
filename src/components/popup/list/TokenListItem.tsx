@@ -3,13 +3,14 @@ import { formatAddress } from "~utils/format";
 import { useTheme } from "~utils/theme";
 import { FULL_HISTORY, useGateway } from "~gateways/wayfinder";
 import { concatGatewayURL } from "~gateways/utils";
-import aoLogo from "url:/assets/ecosystem/ao-logo.svg";
 import arLogoDark from "url:/assets/ar/logo_dark.png";
 import arLogoLight from "url:/assets/ar/logo_light.png";
 import { getUserAvatar } from "~lib/avatar";
 import type { Token } from "~tokens/token";
 import { useLocation } from "~wallets/router/router.utils";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import { AR_PROCESS_ID } from "~tokens/aoTokens/ao";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 export interface TokenListItemProps {
   token: Token;
@@ -34,24 +35,23 @@ export function TokenListItem({ token, onClick }: TokenListItemProps) {
   // gateway
   const gateway = useGateway(FULL_HISTORY);
 
-  useEffect(() => {
-    (async () => {
-      try {
-        // if it is a collectible, we don't need to determinate the logo
-        if (token.type === "collectible") {
-          return setImage(`${concatGatewayURL(gateway)}/${token.id}`);
-        }
+  useAsyncEffect(async () => {
+    try {
+      // if it is a collectible, we don't need to determinate the logo
+      if (token.type === "collectible") {
+        setImage(`${concatGatewayURL(gateway)}/${token.id}`);
+        return;
+      }
 
-        if (token.defaultLogo) {
-          const logo = await getUserAvatar(token.defaultLogo);
-          return setImage(logo);
-        } else {
-          return setImage(arLogoDark);
-        }
-      } catch {
+      if (token.defaultLogo) {
+        const logo = await getUserAvatar(token.defaultLogo);
+        setImage(logo);
+      } else {
         setImage(arLogoDark);
       }
-    })();
+    } catch {
+      setImage(arLogoDark);
+    }
   }, [token, theme, gateway]);
 
   const handleClick = () => {
@@ -69,7 +69,7 @@ export function TokenListItem({ token, onClick }: TokenListItemProps) {
       </DivTokenLogoWrapper>
       <div style={{ display: "flex", flexDirection: "column" }}>
         <DivTitleWrapper>{token.name}</DivTitleWrapper>
-        <DivDescriptionWrapper>{token.id !== "AR" && formattedAddress}</DivDescriptionWrapper>
+        <DivDescriptionWrapper>{token.id !== AR_PROCESS_ID && formattedAddress}</DivDescriptionWrapper>
       </div>
     </DivListItem>
   );

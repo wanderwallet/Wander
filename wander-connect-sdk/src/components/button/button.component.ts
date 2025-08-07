@@ -3,11 +3,13 @@ import {
   BalanceInfo,
   ButtonConfig,
   ButtonCSSVars,
+  ButtonNotificationType,
   ButtonOptions,
   ButtonStatus,
+  ThemeSetting,
 } from "../../wander-connect.types";
 import { getButtonTemplateContent } from "./button.template";
-import { addCSSVariables, mergeCSSVariablesOption } from "../../utils/styles/styles.utils";
+import { addCSSVariablesForTheme, mergeCSSVariablesOption } from "../../utils/styles/styles.utils";
 
 export class Button {
   static DEFAULT_LIGHT_CSS_VARS: ButtonCSSVars = {
@@ -73,7 +75,7 @@ export class Button {
       dark: Button.DEFAULT_DARK_CSS_VARS,
     },
     customStyles: "",
-    parent: document.body,
+    parent: typeof document !== "undefined" ? document.body : (null as any as HTMLElement),
     position: "bottom-right",
     wanderLogo: "default",
     label: true,
@@ -84,10 +86,12 @@ export class Button {
     notifications: "counter",
     i18n: {
       loading: "Loading",
-      loadingBalance: "Loading Balance",
-      completeSignUp: "Complete Sign Up",
+      loadingBalance: "Loading balance",
+      completeSignUp: "Complete sign up",
       signIn: "Sign in",
       reviewRequests: "Review requests",
+      backupNeeded: "Backup needed",
+      unexpectedError: "Unexpected error",
     },
   } as const satisfies ButtonConfig;
 
@@ -169,6 +173,8 @@ export class Button {
       cssVariableKeys: Object.keys(Button.DEFAULT_LIGHT_CSS_VARS),
     });
 
+    addCSSVariablesForTheme(host, config.cssVars, config.theme);
+
     shadow.appendChild(template.content);
 
     const button = shadow.querySelector(".button") as HTMLButtonElement;
@@ -198,9 +204,6 @@ export class Button {
     setTimeout(() => {
       host.style.opacity = "1";
     });
-
-    addCSSVariables(host, config.cssVars.light, "Light");
-    addCSSVariables(host, config.cssVars.dark, "Dark");
 
     label.textContent = config.i18n.signIn;
 
@@ -236,7 +239,7 @@ export class Button {
     if (this.balance.getAttribute("hidden")) return;
 
     this.balance.textContent = balanceInfo.formattedBalance;
-    this.balance.title = "";
+    this.balance.removeAttribute("title");
 
     if (balanceInfo.amount === null) {
       this.balance.classList.add("isHidden");
@@ -245,17 +248,23 @@ export class Button {
     }
   }
 
-  setNotifications(pendingRequests: number) {
+  setNotifications(notificationCountOrType: null | number | ButtonNotificationType) {
     const { notifications, i18n } = this.config;
 
     if (notifications === "off") return;
 
-    if (pendingRequests > 0) {
-      this.notifications.textContent = notifications === "counter" ? `${pendingRequests}` : "!";
-      this.label.textContent = i18n.reviewRequests;
-    } else {
+    if (!notificationCountOrType) {
       this.notifications.textContent = "";
+      this.button.removeAttribute("title");
       this.label.textContent = "";
+    } else if (typeof notificationCountOrType === "string") {
+      this.notifications.textContent = "!";
+      this.button.title = i18n[notificationCountOrType];
+      this.label.textContent = "";
+    } else {
+      this.notifications.textContent = notifications === "counter" ? `${notificationCountOrType}` : "!";
+      this.button.removeAttribute("title");
+      this.label.textContent = i18n.reviewRequests;
     }
   }
 
@@ -277,10 +286,10 @@ export class Button {
         this.label.title = this.config.i18n.completeSignUp;
       } else if (variant === "authenticated") {
         this.label.textContent = "";
-        this.label.title = "";
+        this.label.removeAttribute("title");
       } else {
         this.label.textContent = this.config.i18n.signIn;
-        this.label.title = "";
+        this.label.removeAttribute("title");
         this.balance.textContent = "";
       }
     }
@@ -294,6 +303,10 @@ export class Button {
   unsetStatus(status: ButtonStatus) {
     this.status[status] = false;
     this.button.classList.remove(status);
+  }
+
+  setTheme(theme: ThemeSetting): void {
+    addCSSVariablesForTheme(this.host, this.config.cssVars, theme);
   }
 
   destroy() {

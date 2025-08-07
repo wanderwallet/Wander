@@ -3,7 +3,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import styled from "styled-components";
 import { Button, Input, Section, Spacer, Text, useInput, useToasts } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
-import Token, { Logo, LogoAndDetails, TokenName, WarningIcon } from "~components/popup/Token";
+import Token, { Logo, LogoAndDetails, TokenName } from "~components/popup/Token";
 import useSetting from "~settings/hook";
 import { formatFiatBalance, formatTokenBalance, fractionedToBalance } from "~tokens/currency";
 import { useStorage } from "@plasmohq/storage/hook";
@@ -20,10 +20,15 @@ import SliderMenu from "~components/SliderMenu";
 import { type Contact } from "~components/Recipient";
 import { formatAddress } from "~utils/format";
 import { useContact } from "~contacts/hooks";
-import { defaultTokens, type TokenInfo } from "~tokens/aoTokens/ao";
+import {
+  AR_PROCESS_ID,
+  defaultTokens,
+  EXP_PROCESS_ID,
+  nonTransferableTokenIds,
+  type TokenInfo,
+} from "~tokens/aoTokens/ao";
 import { useAoTokens } from "~tokens/hooks";
 import BigNumber from "bignumber.js";
-import { EXP_TOKEN } from "~utils/ao_import";
 import { AnnouncementPopup } from "./announcement";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { useTokenBalance, useTokenPrice, useTokenPrices } from "~tokens/hooks";
@@ -33,15 +38,17 @@ import { useActiveWallet } from "~wallets/hooks";
 import { ChevronDown, Pencil01, SwitchVertical02 } from "@untitled-ui/icons-react";
 import { SendInput } from "~components/SendInput";
 import { HorizontalLine } from "~components/HorizontalLine";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import { WarningIcon } from "~components/icons/WarningIcon";
 
-enum AmountValidationState {
+export enum AmountValidationState {
   Invalid = "Invalid",
   Insufficient = "Insufficient",
   Valid = "Valid",
   Empty = "Empty",
 }
 
-function validateAmount(
+export function validateAmount(
   amount: string,
   balance: string,
   networkFee: string = "0",
@@ -70,7 +77,7 @@ function validateAmount(
   return AmountValidationState.Valid;
 }
 
-const getErrorMessage = (state: AmountValidationState) => {
+export const getErrorMessage = (state: AmountValidationState) => {
   switch (state) {
     case AmountValidationState.Insufficient:
       return browser.i18n.getMessage("insufficient_balance");
@@ -147,8 +154,10 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
       key: "last_send_token",
       instance: ExtensionStorage,
     },
-    "AR",
+    AR_PROCESS_ID,
   );
+
+  const showNonTransferableAnnouncement = nonTransferableTokenIds.includes(tokenID);
 
   // currency setting
   const [currency] = useSetting<string>("currency");
@@ -157,7 +166,9 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
   const { tokens: assets } = useAoTokens({ type: "asset" });
   const { tokens: collectibles } = useAoTokens({ type: "collectible" });
 
-  const { prices } = useTokenPrices(assets.map((t) => t.id).filter((id) => id !== "AR" && id !== EXP_TOKEN));
+  const { prices } = useTokenPrices(
+    assets.map((t) => t.id).filter((id) => id !== AR_PROCESS_ID && id !== EXP_PROCESS_ID),
+  );
 
   // set ao for following page
   const [isAo, setIsAo] = useState<boolean>(false);
@@ -166,9 +177,10 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
     const matchingTokenInAoToken = [...assets, ...collectibles].find((aoToken) => aoToken.id === tokenID) || {
       ...defaultTokens[0],
       id: defaultTokens[0].processId,
+      type: "asset",
     };
 
-    setIsAo(matchingTokenInAoToken.id !== "AR");
+    setIsAo(matchingTokenInAoToken.id !== AR_PROCESS_ID);
     return {
       Denomination: matchingTokenInAoToken.Denomination,
       id: matchingTokenInAoToken.id,
@@ -201,10 +213,8 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
   // token logo
   const [logo, setLogo] = useState<string>();
 
-  useEffect(() => {
-    (async () => {
-      setLogo(await loadTokenLogo(token.processId, token.Logo, theme));
-    })();
+  useAsyncEffect(async () => {
+    setLogo(await loadTokenLogo(token.processId, token.Logo, theme));
   }, [theme, token]);
 
   //arweave logo
@@ -239,7 +249,7 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
   const [networkFee, setNetworkFee] = useState<string>("0");
 
   useEffect(() => {
-    if (tokenID !== "AR") {
+    if (tokenID !== AR_PROCESS_ID) {
       setNetworkFee("0");
       return;
     }
@@ -255,7 +265,7 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
           arweave.transactions.getPrice(byte, recipient),
         );
 
-        if (tokenID === "AR") {
+        if (tokenID === AR_PROCESS_ID) {
           setNetworkFee(arweave.ar.winstonToAr(txPrice));
         } else {
           setNetworkFee("0");
@@ -309,7 +319,7 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
         id: token.id,
         decimals: token.Denomination,
       },
-      token.id === "AR" ? "AR" : "AO",
+      token.id === AR_PROCESS_ID ? "AR" : "AO",
     );
 
     await TempTransactionStorage.set("send", {
@@ -369,7 +379,7 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
         }}
         title={browser.i18n.getMessage("select_amount")}
       />
-      {EXP_TOKEN === tokenID && <AnnouncementPopup isOpen={isOpen} setOpen={setOpen} ticker={token.Ticker} />}
+      {showNonTransferableAnnouncement && <AnnouncementPopup isOpen={isOpen} setOpen={setOpen} ticker={token.Ticker} />}
       <Wrapper showPaddingVertical={false} showOverlay={degraded}>
         <SendForm>
           {/* TOP INPUT */}
@@ -491,7 +501,9 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
           </TokenSelector>
 
           <Button
-            disabled={invalidQty || parseFloat(qty) === 0 || qty === "" || recipient === "" || EXP_TOKEN === tokenID}
+            disabled={
+              invalidQty || parseFloat(qty) === 0 || qty === "" || recipient === "" || showNonTransferableAnnouncement
+            }
             fullWidth
             onClick={send}>
             {browser.i18n.getMessage(qty ? "next" : "enter_amount")}
@@ -499,41 +511,49 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
         </BottomActions>
 
         <SliderMenu
-          height={"90%"}
+          height="90%"
           paddingVertical={32}
           title={browser.i18n.getMessage("select_token")}
           isOpen={showTokenSelector}
           onClose={() => {
             setShownTokenSelector(false);
           }}>
-          <Input variant="search" sizeVariant="small" fullWidth placeholder="Search token" {...tokenSearch.bindings} />
-          <Spacer y={1.5} />
-          <TokensList>
-            {assets.filter(filterFn).map((token) => (
-              <Token
-                key={token.id}
-                type={"asset"}
-                defaultLogo={token?.Logo}
-                id={token.id}
-                ticker={token.Ticker}
-                divisibility={token.Denomination}
-                fiatPrice={prices[token.id]}
-                onClick={() => updateSelectedToken(token.id)}
-              />
-            ))}
-          </TokensList>
-          <Spacer y={1.25} />
-          <CollectiblesList>
-            {collectibles.filter(filterFn).map((token, i) => (
-              <Collectible
-                id={token.id}
-                name={token.Name || token.Ticker}
-                divisibility={token.Denomination}
-                onClick={() => updateSelectedToken(token.id)}
-                key={i}
-              />
-            ))}
-          </CollectiblesList>
+          <Box>
+            <Input
+              variant="search"
+              sizeVariant="small"
+              fullWidth
+              placeholder="Search token"
+              {...tokenSearch.bindings}
+            />
+            <Spacer y={1.5} />
+            <TokensList>
+              {assets.filter(filterFn).map((token) => (
+                <Token
+                  key={token.id}
+                  type={"asset"}
+                  defaultLogo={token?.Logo}
+                  id={token.id}
+                  ticker={token.Ticker}
+                  divisibility={token.Denomination}
+                  fiatPrice={prices[token.id]}
+                  onClick={() => updateSelectedToken(token.id)}
+                />
+              ))}
+            </TokensList>
+            <Spacer y={1.25} />
+            <CollectiblesList>
+              {collectibles.filter(filterFn).map((token, i) => (
+                <Collectible
+                  id={token.id}
+                  name={token.Name || token.Ticker}
+                  divisibility={token.Denomination}
+                  onClick={() => updateSelectedToken(token.id)}
+                  key={i}
+                />
+              ))}
+            </CollectiblesList>
+          </Box>
         </SliderMenu>
       </Wrapper>
     </>
@@ -546,7 +566,7 @@ const RecipientAmountWrapper = styled.div`
   gap: 18px;
 `;
 
-const MaxButton = styled.button`
+export const MaxButton = styled.button`
   display: flex;
   text-align: center;
   align-items: center;

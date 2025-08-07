@@ -9,8 +9,8 @@ import {
   PaymentDetails,
   SubscriptionListItem,
   SubscriptionText,
-  ToggleSwitch,
 } from "~routes/popup/subscriptions/subscriptionDetails";
+import { ToggleSwitch } from "~components/ToggleSwitch";
 import { Content, Title } from "~components/popup/list/SubscriptionListItem";
 import dayjs from "dayjs";
 import { addSubscription } from "~subscriptions";
@@ -28,6 +28,7 @@ import BigNumber from "bignumber.js";
 import { useCurrentAuthRequest } from "~utils/auth/auth.hooks";
 import { HeadAuth } from "~components/HeadAuth";
 import { AuthButtons } from "~components/auth/AuthButtons";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 export function SubscriptionAuthRequestView() {
   const { authRequest, acceptRequest, rejectRequest } = useCurrentAuthRequest("subscription");
@@ -41,15 +42,12 @@ export function SubscriptionAuthRequestView() {
   const theme = useTheme();
   const [price, setPrice] = useState<BigNumber | null>();
 
-  useEffect(() => {
-    async function fetchArPrice() {
-      const arPrice = await getPrice("arweave", currency);
-      if (arPrice) {
-        setPrice(BigNumber(arPrice).multipliedBy(subscriptionFeeAmount));
-      }
-    }
+  useAsyncEffect(async () => {
+    const arPrice = await getPrice("arweave", currency);
 
-    fetchArPrice();
+    if (arPrice) {
+      setPrice(BigNumber(arPrice).multipliedBy(subscriptionFeeAmount));
+    }
   }, [currency, subscriptionFeeAmount]);
 
   // TODO TRIGGER PAYMENT WHEN ADDING NEW SUBSCRIPTION

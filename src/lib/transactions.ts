@@ -5,17 +5,16 @@ import BigNumber from "bignumber.js";
 import browser from "webextension-polyfill";
 import { balanceToFractioned, formatFiatBalance } from "~tokens/currency";
 import { timeoutPromise } from "~utils/promises/timeout";
-import { AF_ERROR_QUERY } from "~notifications/utils";
+import { TRANSFER_ERROR_QUERY } from "~notifications/utils";
 import { gql } from "~gateways/api";
 import { txHistoryGateways } from "~gateways/gateway";
 import { retryWithDelay } from "~utils/promises/retry";
-import type {
-  RawTransaction,
-  Transaction,
-} from "~api/background/handlers/alarms/notifications/notifications-alarm.utils";
-import { fetchTokenByProcessId } from "~tokens/aoTokens/ao";
+import type { RawTransaction } from "~api/background/handlers/alarms/notifications/notifications-alarm.utils";
+import { fetchTokenByProcessId, getTagValue, getTagValues } from "~tokens/aoTokens/ao";
+import type { Announcement } from "~utils/announcements";
+import { log, LOG_GROUP } from "~utils/log/log.utils";
 
-const AGENT_TOKEN_ADDRESS = "8rbAftv7RaPxFjFk5FGUVAVCSjGQB4JHDcb9P9wCVhQ";
+const transactionErrorMap = new Map<string, boolean>();
 
 export type ExtendedTransaction = RawTransaction & {
   cursor: string;
@@ -30,6 +29,7 @@ export type ExtendedTransaction = RawTransaction & {
     quantity: string;
     logo?: string;
   };
+  announcementData?: Announcement;
 };
 
 export type GroupedTransactions = {
@@ -56,48 +56,95 @@ const processTransaction = (transaction: GQLEdgeInterface, type: string) => ({
   date: "",
 });
 
-export async function checkTransactionError(transaction: GQLEdgeInterface | Transaction): Promise<boolean> {
-  if (transaction.node.recipient !== AGENT_TOKEN_ADDRESS) {
-    return false;
-  }
+export async function checkTransferStatus(transactions: GQLEdgeInterface[]): Promise<void> {
+  try {
+    const uncheckedIds = transactions
+      .filter((tx) => {
+        if (transactionErrorMap.has(tx.node.id)) return false;
+        const [protocol, action] = getTagValues(["Data-Protocol", "Action"], tx.node.tags || []);
+        return protocol === "ao" && action === "Transfer";
+      })
+      .map((tx) => tx.node.id);
+    if (uncheckedIds.length === 0) return;
 
-  return retryWithDelay(async (attempt) => {
-    const data = await gql(
-      AF_ERROR_QUERY,
-      { messageId: transaction.node.id },
-      txHistoryGateways[attempt % txHistoryGateways.length],
-    );
+    const batchSize = 100;
+    const batchPromises: Promise<void>[] = [];
 
-    if (data?.data === null && (data as any)?.errors?.length > 0) {
-      throw new Error((data as any)?.errors?.[0]?.message || "GraphQL Error");
+    for (let i = 0; i < uncheckedIds.length; i += batchSize) {
+      const batch = uncheckedIds.slice(i, i + batchSize);
+
+      const batchPromise = retryWithDelay(async (attempt) => {
+        const data = await gql(
+          TRANSFER_ERROR_QUERY,
+          { messageIds: batch },
+          txHistoryGateways[attempt % txHistoryGateways.length],
+        );
+
+        if (data?.data === null && (data as any)?.errors?.length > 0) {
+          throw new Error((data as any)?.errors?.[0]?.message || "GraphQL Error");
+        }
+
+        const edges = data.data.transactions.edges;
+
+        if (edges.length > 0) {
+          const errorIdSet = new Set(
+            edges
+              .map((edge) => {
+                const tags = edge.node.tags || [];
+                return getTagValue("Pushed-For", tags) || getTagValue("Message-Id", tags);
+              })
+              .filter(Boolean),
+          );
+
+          for (const id of batch) {
+            transactionErrorMap.set(id, errorIdSet.has(id));
+          }
+        } else {
+          // Mark all as successful if no errors found
+          for (const id of batch) {
+            transactionErrorMap.set(id, false);
+          }
+        }
+      }, 2).catch(() => {
+        // On error, mark all batch IDs as false (assume no error)
+        for (const id of batch) {
+          transactionErrorMap.set(id, false);
+        }
+      });
+
+      batchPromises.push(batchPromise);
     }
 
-    return data.data.transactions.edges.length > 0;
-  }, 2).catch(() => false);
+    // Wait for all batches to complete in parallel
+    await Promise.all(batchPromises);
+  } catch (error) {
+    log(LOG_GROUP.TRANSACTIONS, "Error checking transfer transactions status", error);
+  }
 }
 
 const processAoTransaction = async (transaction: GQLEdgeInterface, type: string) => {
-  const hasError = await checkTransactionError(transaction);
-  if (hasError) {
-    return null;
-  }
+  const hasError = transactionErrorMap.get(transaction.node.id);
+  if (hasError) return null;
 
-  const tokenData = await timeoutPromise(fetchTokenByProcessId(transaction.node.recipient), 10000).catch(() => null);
-  const quantityTag = transaction.node.tags.find((tag) => tag.name === "Quantity");
+  const tags = transaction.node.tags || [];
+  const isLiquidOpsAoReceived = type === "liquidOpsAoReceived";
+  const processId = isLiquidOpsAoReceived ? getTagValue("From-Process", tags) : transaction.node.recipient;
+  const tokenData = await timeoutPromise(fetchTokenByProcessId(processId), 10000).catch(() => null);
+  const quantity = getTagValue("Quantity", tags) || getTagValue("Mint-Quantity", tags);
   const isCollectible = tokenData?.type === "collectible";
 
   return {
     ...transaction,
-    transactionType: type,
+    transactionType: isLiquidOpsAoReceived ? "aoReceived" : type,
     day: 0,
     month: 0,
     year: 0,
     date: "",
     aoInfo: {
-      quantity: quantityTag ? quantityTag.value : undefined,
+      quantity: quantity ? quantity : undefined,
       tickerName:
         (isCollectible ? tokenData?.Name! || tokenData?.Ticker! : tokenData?.Ticker! || tokenData?.Name!) ||
-        formatAddress(transaction.node.recipient, 4),
+        formatAddress(processId, 4),
       denomination: tokenData?.Denomination || 0,
       logo: tokenData?.Logo,
     },
@@ -141,7 +188,9 @@ export const getFormattedAmount = (transaction: ExtendedTransaction) => {
       }
       return "";
     case "printArchive":
-      return `${parseFloat(transaction.node.fee.ar).toFixed(3)} AR`;
+      return `${parseFloat((transaction.node as any).fee?.ar || "0").toFixed(3)} AR`;
+    case "announcement":
+      return ""; // Announcements don't have amounts
     default:
       return "";
   }
@@ -149,11 +198,15 @@ export const getFormattedAmount = (transaction: ExtendedTransaction) => {
 
 export const getFormattedFiatAmount = (transaction: ExtendedTransaction, arPrice: number, currency: string) => {
   try {
-    if (transaction.node.quantity && transaction.transactionType !== "printArchive") {
+    if (
+      transaction.node.quantity &&
+      transaction.transactionType !== "printArchive" &&
+      transaction.transactionType !== "announcement"
+    ) {
       const fiatBalance = BigNumber(transaction.node.quantity.ar).multipliedBy(arPrice);
       return formatFiatBalance(fiatBalance, currency);
-    } else if (transaction.node.fee && transaction.transactionType === "printArchive") {
-      const fiatBalance = BigNumber(transaction.node.fee.ar).multipliedBy(arPrice);
+    } else if ((transaction.node as any).fee && transaction.transactionType === "printArchive") {
+      const fiatBalance = BigNumber((transaction.node as any).fee.ar).multipliedBy(arPrice);
       return formatFiatBalance(fiatBalance, currency);
     }
   } catch {}
@@ -172,12 +225,14 @@ export const getTransactionDescription = (transaction: ExtendedTransaction) => {
       return `${browser.i18n.getMessage("received")} ${transaction.aoInfo.tickerName}`;
     case "printArchive":
       return browser.i18n.getMessage("print_archived");
+    case "announcement":
+      return (transaction as any).announcementData?.title || "Announcement";
     default:
       return "";
   }
 };
 
-type DateFormatOptions = { month: "long"; year?: "numeric" };
+type DateFormatOptions = { month: "long" | "short"; year?: "numeric" };
 
 const formatMonthYear = (monthYear: string, options: DateFormatOptions): string => {
   const [month, year] = monthYear.split("-").map(Number);
@@ -185,8 +240,8 @@ const formatMonthYear = (monthYear: string, options: DateFormatOptions): string 
   return date.toLocaleString("default", options);
 };
 
-export const getFullMonthName = (monthYear: string) => {
-  return formatMonthYear(monthYear, { month: "long" });
+export const getMonthName = (monthYear: string, monthType: DateFormatOptions["month"] = "long") => {
+  return formatMonthYear(monthYear, { month: monthType });
 };
 
 export const getFullMonthNameWithYear = (monthYear: string) => {

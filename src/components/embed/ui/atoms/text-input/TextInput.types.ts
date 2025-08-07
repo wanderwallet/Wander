@@ -1,14 +1,24 @@
 import React from "react";
 
-export type TextInputBaseProps = React.InputHTMLAttributes<HTMLInputElement> & {
+export interface TextInputProps {
+  // Moved over from `React.InputHTMLAttributes<HTMLInputElement` but made mandatory as needed. Please, do not extend as
+  // that adds a lot of noise and overhead to the compiler:
+  type?: "text" | "email" | "password";
+  name: string;
   placeholder: string;
-  hasButton?: boolean;
-  buttonLabel?: string;
-  buttonIcon?: React.ReactNode;
-  isDisabled?: boolean;
-  isSecure?: boolean;
-  buttonOnClick?: () => void;
-  style?: React.CSSProperties;
+  defaultValue?: string;
+  value?: string;
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  disabled?: boolean;
+  readOnly?: boolean;
+  autoFocus?: boolean;
+
+  // Custom input props:
+  inputRef?: React.Ref<HTMLInputElement>;
+  startSlot?: React.ReactElement;
+  endSlot?: React.ReactElement;
+
+  // Root element props:
   className?: string;
-  isLoading?: boolean;
-};
+  style?: React.CSSProperties;
+}

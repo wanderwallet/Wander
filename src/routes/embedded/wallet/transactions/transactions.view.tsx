@@ -1,9 +1,11 @@
-import { Card, Text, Box, Button } from "~components/embed/ui";
+import { Text, Box, Button } from "~components/embed/ui";
 import { useActiveWallet, useTransactions } from "~wallets/hooks";
 import { useLocation } from "~wallets/router/router.utils";
 import browser from "webextension-polyfill";
 import { Loading } from "@arconnect/components-rebrand";
 import TransactionGroup from "./components/TransactionGroup";
+import { AuthRequestCard } from "~components/embed/ui/molecules/card/auth-request-card/AuthRequestCard";
+import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 
 export function WalletTransactionsEmbeddedView() {
   const { address } = useActiveWallet();
@@ -11,12 +13,9 @@ export function WalletTransactionsEmbeddedView() {
   const { transactions, loading, hasNextPage, count } = useTransactions(address, 3);
 
   return (
-    <Card
-      size="auto"
+    <AuthRequestCard
       headerText="Transaction History"
-      hasBackButton={true}
-      onBackButtonClick={() => navigate("/wallet")}
-      style={{ padding: "2rem", overflowY: "auto" }}>
+      onBackButtonClick={() => navigate(EmbeddedPaths.WalletHomeEmbeddedView)}>
       {count.current > 0 ? (
         Object.entries(transactions).map(([monthYear, transactions]) => (
           <TransactionGroup key={monthYear} monthYear={monthYear} transactions={transactions} />
@@ -36,6 +35,6 @@ export function WalletTransactionsEmbeddedView() {
           View all transactions
         </Button>
       )}
-    </Card>
+    </AuthRequestCard>
   );
 }

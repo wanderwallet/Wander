@@ -24,7 +24,8 @@ import { fetchWalletBalances } from "~utils/balances";
 import useSetting from "~settings/hook";
 import QRModal from "~components/modals/QRModal";
 import { useArPrice } from "~lib/coingecko";
-import { NoAvatarIcon } from "./WalletHeader";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import { NoAvatarIcon } from "~components/Avatar";
 
 export default function WalletSwitcher({ open, close }: Props) {
   const theme = useTheme();
@@ -86,31 +87,29 @@ export default function WalletSwitcher({ open, close }: Props) {
   // update avatars flag
   const [updateAvatars, setUpdateAvatars] = useState(false);
 
-  useEffect(() => {
-    (async () => {
-      if (wallets.length === 0 || !updateAvatars) return;
+  useAsyncEffect(async () => {
+    if (wallets.length === 0 || !updateAvatars) return;
 
-      // get ans profiles
-      const profiles = await getNameServiceProfiles(wallets.map((val) => val.address));
-      const gateway = await findGateway({ startBlock: 0 });
+    // get ans profiles
+    const profiles = await getNameServiceProfiles(wallets.map((val) => val.address));
+    const gateway = await findGateway({ startBlock: 0 });
 
-      // update wallets state
-      setWallets((val) =>
-        val.map((wallet) => {
-          const profile = profiles.find(({ address }) => address === wallet.address);
+    // update wallets state
+    setWallets((val) =>
+      val.map((wallet) => {
+        const profile = profiles.find(({ address }) => address === wallet.address);
 
-          return {
-            ...wallet,
-            name: profile?.name || wallet.name,
-            avatar: profile?.logo && concatGatewayURL(gateway) + "/" + profile.logo,
-            hasAns: !!profile,
-          };
-        }),
-      );
+        return {
+          ...wallet,
+          name: profile?.name || wallet.name,
+          avatar: profile?.logo && concatGatewayURL(gateway) + "/" + profile.logo,
+          hasAns: !!profile,
+        };
+      }),
+    );
 
-      setLoadedAns(true);
-      setUpdateAvatars(false);
-    })();
+    setLoadedAns(true);
+    setUpdateAvatars(false);
   }, [wallets.length, updateAvatars]);
 
   useEffect(() => {

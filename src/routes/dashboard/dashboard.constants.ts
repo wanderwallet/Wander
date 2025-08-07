@@ -4,8 +4,10 @@ import {
   BarChart07,
   Bell03,
   Coins04,
+  Compass03,
   CreditCard01,
   Grid01,
+  HelpCircle,
   InfoCircle,
   Maximize01,
   Pencil02,
@@ -124,38 +126,37 @@ export const advancedSettings: (DashboardRouteConfig | Setting)[] = [
 
 export const allSettings: (DashboardRouteConfig | Setting)[] = [...basicSettings, ...advancedSettings];
 
-// Menu items are: wallets, apps, tokens, contact, notifications and "All Settings":
 export const quickSettingsMenuItems: Omit<DashboardRouteConfig, "description">[] = [
   {
     name: "apps",
     displayName: "connected_apps",
     icon: Grid01,
-    component: ApplicationsDashboardView,
   },
   {
     name: "tokens",
     displayName: "setting_tokens",
     icon: Coins04,
-    component: TokensDashboardView,
   },
   {
     name: "contacts",
     displayName: "setting_contacts",
     icon: UserSquare,
-    component: ContactsDashboardView,
   },
   {
     name: "subscriptions",
     displayName: "subscriptions",
     icon: CreditCard01,
-    component: NotificationSettingsDashboardView,
   },
   {
-    name: "about",
-    displayName: "setting_about",
-    icon: InfoCircle,
-    component: AboutDashboardView,
-    externalLink: "tabs/dashboard.html#/about",
+    name: "help",
+    displayName: "help",
+    icon: HelpCircle,
+  },
+  {
+    name: "explore",
+    displayName: "explore",
+    icon: Compass03,
+    externalLink: "https://www.wander.app/apps",
   },
   ...(location.pathname !== "/popup.html" || IS_EMBEDDED_APP
     ? []

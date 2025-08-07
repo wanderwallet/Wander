@@ -21,7 +21,7 @@ const SvgRecoverHeader = (props: SVGProps<SVGSVGElement>) => (
       rx="1.98674"
       transform="rotate(-15 14.1357 15.1348)"
       fill="url(#paint0_linear_10_4735)"
-      fill-opacity="0.8"
+      fillOpacity="0.8"
     />
     <rect
       x="45.4119"
@@ -65,8 +65,8 @@ const SvgRecoverHeader = (props: SVGProps<SVGSVGElement>) => (
         x2="35.1394"
         y2="15.1348"
         gradientUnits="userSpaceOnUse">
-        <stop stop-color="#6B57F9" />
-        <stop offset="1" stop-color="#9787FF" />
+        <stop stopColor="#6B57F9" />
+        <stop offset="1" stopColor="#9787FF" />
       </linearGradient>
     </defs>
   </svg>

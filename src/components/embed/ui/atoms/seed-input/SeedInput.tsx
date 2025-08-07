@@ -163,7 +163,7 @@ const SeedInput = forwardRef<HTMLDivElement, SeedInputBaseProps>(
             ))}
           </div>
         </div>
-        <form ref={formRef} onSubmit={onSubmit}>
+        <form ref={formRef} onSubmit={onSubmit} noValidate>
           <div className={styles["input-grid"]}>
             {Array.from({ length: numInputs }).map((_, index) => (
               <div key={index} className={styles["input-container"]}>

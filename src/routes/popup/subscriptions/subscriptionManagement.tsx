@@ -7,9 +7,10 @@ import styled from "styled-components";
 import { getSubscriptionData } from "~subscriptions";
 import { ButtonV2, ListItem } from "@arconnect/components";
 import { Degraded, WarningWrapper } from "../send";
-import { WarningIcon } from "~components/popup/Token";
+import { WarningIcon } from "~components/icons/WarningIcon";
 import Title from "~components/popup/Title";
 import type { CommonRouteProps } from "~wallets/router/router.types";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 export interface SubscriptionManagementViewParams {
   id?: string;
@@ -21,23 +22,19 @@ export function SubscriptionManagementView({ params: { id } }: SubscriptionManag
   const [subData, setSubData] = useState<SubscriptionData | null>(null);
   const [nextPayment, setNextPayment] = useState<Date | null>(null);
 
-  useEffect(() => {
-    async function getSubData() {
-      const address = await getActiveAddress();
+  useAsyncEffect(async () => {
+    const address = await getActiveAddress();
 
-      try {
-        if (address) {
-          const data = await getSubscriptionData(address);
-          // finding like this for now
-          const subscription = data.find((subscription) => subscription.arweaveAccountAddress === id);
-          setSubData(subscription);
-        }
-      } catch (error) {
-        console.error("Error fetching subscription data:", error);
+    try {
+      if (address) {
+        const data = await getSubscriptionData(address);
+        // finding like this for now
+        const subscription = data.find((subscription) => subscription.arweaveAccountAddress === id);
+        setSubData(subscription);
       }
+    } catch (error) {
+      console.error("Error fetching subscription data:", error);
     }
-
-    getSubData();
   }, []);
 
   useEffect(() => {

@@ -39,7 +39,7 @@ export const CenterText = styled(Text).attrs({
 `;
 
 export const HeaderText = styled(Text)<{ displayTheme?: DisplayTheme }>`
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 500;
   color: ${(props) => (props.theme.displayTheme === "light" ? "#191919" : "#FFFFFF")};
 `;

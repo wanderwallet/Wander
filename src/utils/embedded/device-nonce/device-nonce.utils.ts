@@ -51,6 +51,7 @@ export async function initializeDeviceNonce(): Promise<DeviceNonce> {
   if (_deviceNonce) return _deviceNonce;
 
   const loadedNonce = await loadDeviceNonce();
+
   _deviceNonce = loadedNonce || generateDeviceNonce();
 
   setDeviceNonceHeader(_deviceNonce);
@@ -61,6 +62,8 @@ export async function initializeDeviceNonce(): Promise<DeviceNonce> {
 
   return _deviceNonce;
 }
+
+// TODO: Consider always reading it from storage...
 
 export async function getDeviceNonce(): Promise<DeviceNonce> {
   await initializeDeviceNonce();

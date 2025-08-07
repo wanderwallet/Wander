@@ -6,6 +6,7 @@ import { arNotificationsHandler } from "~api/background/handlers/alarms/notifica
 import {
   ALL_AR_RECEIVER_QUERY,
   ALL_AR_SENT_QUERY,
+  AO_LIQUIDOPS_RECEIVER_QUERY,
   AO_RECEIVER_QUERY,
   AO_SENT_QUERY,
   AR_RECEIVER_QUERY,
@@ -67,47 +68,30 @@ export async function handleNotificationsAlarm(alarm?: Alarms.Alarm) {
           },
           {
             query: AO_SENT_QUERY,
-            variables: {
-              address,
-            },
+            variables: { address },
+          },
+          {
+            query: AO_LIQUIDOPS_RECEIVER_QUERY,
+            variables: { address },
           },
         ],
       );
     }
     const newTransactions = [...newAoTransactions, ...newArTransactions];
     if (newTransactions.length > 0) {
-      if (newTransactions.length > 1) {
-        // Case for multiple new transactions
-        const notificationMessage = `You have ${newTransactions.length} new transactions.`;
-        await browser.notifications.create({
-          type: "basic",
-          iconUrl,
-          title: "New Transactions",
-          message: notificationMessage,
-        });
-      } else {
-        // Case for a single new transaction
-        const notificationMessage = `You have 1 new transaction.`;
-        const notificationId = await browser.notifications.create({
-          type: "basic",
-          iconUrl,
-          title: "New Transactions",
-          message: notificationMessage,
-        });
+      const notificationId = await browser.notifications.create({
+        type: "basic",
+        iconUrl,
+        title: newTransactions.length === 1 ? "New Transaction" : "New Transactions",
+        message: `You have ${newTransactions.length} new transaction${newTransactions.length === 1 ? "" : "s"}.`,
+      });
 
-        // Listen for clicks on the notification
-        browser.notifications.onClicked.addListener((clickedNotificationId) => {
-          if (clickedNotificationId === notificationId) {
-            const txnId = newTransactions[0].node.id;
-            browser.tabs.create({
-              url:
-                Array.isArray(newAoTransactions) && newAoTransactions.length === 1
-                  ? `https://viewblock.io/ao/tx/${txnId}`
-                  : `https://viewblock.io/arweave/tx/${txnId}`,
-            });
-          }
-        });
-      }
+      // Listen for clicks on the notification
+      browser.notifications.onClicked.addListener((clickedNotificationId) => {
+        if (clickedNotificationId === notificationId) {
+          browser.tabs.create({ url: browser.runtime.getURL(`tabs/fullscreen.html?tab=feed`) });
+        }
+      });
     }
 
     await ExtensionStorage.set(

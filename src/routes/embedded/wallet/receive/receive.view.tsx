@@ -6,6 +6,7 @@ import { useActiveWallet } from "~wallets/hooks";
 import { useLocation } from "~wallets/router/router.utils";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import copy from "copy-to-clipboard";
+import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 
 export function WalletReceiveEmbeddedView() {
   const { currentWallet } = useEmbedded();
@@ -15,10 +16,9 @@ export function WalletReceiveEmbeddedView() {
 
   return (
     <Card
-      size="auto"
       headerText="Receive"
       hasBackButton={true}
-      onBackButtonClick={() => navigate("/wallet")}
+      onBackButtonClick={() => navigate(EmbeddedPaths.WalletHomeEmbeddedView)}
       style={{ padding: "32px" }}>
       <Box>
         {/* <Text
@@ -37,7 +37,6 @@ export function WalletReceiveEmbeddedView() {
         <Copyable
           isFullWidth
           value={effectiveAddress ?? ""}
-          hasBorder={false}
           style={{
             marginTop: "1rem",
             backgroundColor: "#EBEBF0",

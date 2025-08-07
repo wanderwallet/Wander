@@ -10,6 +10,7 @@ import SearchInput from "./SearchInput";
 import styled from "styled-components";
 import { useLocation } from "~wallets/router/router.utils";
 import type { CommonRouteProps } from "~wallets/router/router.types";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 export interface ApplicationsDashboardViewParams {
   app?: string;
@@ -34,24 +35,23 @@ export function ApplicationsDashboardView() {
   // apps
   const [apps, setApps] = useState<SettingsAppData[]>([]);
 
-  useEffect(() => {
-    (async () => {
-      if (!connectedApps) return;
-      const appsWithData: SettingsAppData[] = [];
+  useAsyncEffect(async () => {
+    if (!connectedApps) return;
 
-      for (const app of connectedApps) {
-        const appObj = new Application(app);
-        const appData = await appObj.getAppData();
+    const appsWithData: SettingsAppData[] = [];
 
-        appsWithData.push({
-          name: appData.name || app,
-          url: app,
-          icon: appData.logo,
-        });
-      }
+    for (const app of connectedApps) {
+      const appObj = new Application(app);
+      const appData = await appObj.getAppData();
 
-      setApps(appsWithData);
-    })();
+      appsWithData.push({
+        name: appData.name || app,
+        url: app,
+        icon: appData.logo,
+      });
+    }
+
+    setApps(appsWithData);
   }, [connectedApps]);
 
   // active subsetting val

@@ -3,6 +3,7 @@ import type { EmbeddedLayout, RouteType } from "~utils/embedded/utils/routes/emb
 
 export type EmbeddedMessageId =
   | "embedded_auth"
+  | "embedded_backup"
   | "embedded_open"
   | "embedded_close"
   | "embedded_resize"
@@ -52,6 +53,11 @@ export type EmbeddedAuthMessageData =
   | EmbeddedAuthLoadingMessageData
   | EmbeddedAuthCompletedMessageData;
 
+export interface EmbeddedBackupMessageData {
+  backupsNeeded: number;
+  backupMessage?: string;
+}
+
 export interface EmbeddedResizeMessageData {
   routeType: RouteType;
   preferredLayoutType: EmbeddedLayout;
@@ -72,6 +78,7 @@ export interface EmbeddedRequestMessageData {
 
 export interface EmbeddedMessageMap {
   embedded_auth: EmbeddedAuthMessageData;
+  embedded_backup: EmbeddedBackupMessageData;
   embedded_open: void;
   embedded_close: void;
   embedded_resize: EmbeddedResizeMessageData;
@@ -79,7 +86,7 @@ export interface EmbeddedMessageMap {
   embedded_request: EmbeddedRequestMessageData;
 }
 
-export interface EmbeddedCall<K extends EmbeddedMessageId> {
+export interface EmbeddedMessage<K extends EmbeddedMessageId> {
   id: string;
   type: K;
   data: EmbeddedMessageMap[K];

@@ -11,6 +11,7 @@ import {
   type DisplayTheme,
 } from "@arconnect/components-rebrand";
 import { ARCONNECT_THEME_BACKGROUND_COLOR, ARCONNECT_THEME_TEXT_COLOR } from "~utils/storage.utils";
+import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 
 /**
  * Modify the theme if the active wallet is a hardware wallet. We transform the
@@ -29,6 +30,8 @@ function noThemeModifier(theme: ArconnectTheme): ArconnectTheme {
   return theme;
 }
 
+export const IS_FOCUS_ACTIVE_CLS = "isFocusActive";
+
 export function WanderThemeProvider({ children }: PropsWithChildren<{}>) {
   const hardwareApi = useHardwareApi();
   const theme = useTheme();
@@ -43,6 +46,47 @@ export function WanderThemeProvider({ children }: PropsWithChildren<{}>) {
 
       MotionGlobalConfig.skipAnimations = true;
     }
+  }, []);
+
+  useEffect(() => {
+    function handleKeyDown({ code }: KeyboardEvent) {
+      switch (code) {
+        case "Tab": {
+          document.documentElement.classList.add(IS_FOCUS_ACTIVE_CLS);
+          break;
+        }
+
+        case "Escape": {
+          const hadFocusActive = document.documentElement.classList.contains(IS_FOCUS_ACTIVE_CLS);
+
+          document.documentElement.classList.remove(IS_FOCUS_ACTIVE_CLS);
+
+          if (
+            import.meta.env?.VITE_IS_EMBEDDED_APP === "1" &&
+            (!hadFocusActive || document.activeElement === document.documentElement)
+          ) {
+            postEmbeddedMessage({
+              type: "embedded_close",
+              data: null,
+            });
+          }
+
+          break;
+        }
+      }
+    }
+
+    function handleMouseDown({ target }: MouseEvent) {
+      if (document.activeElement !== target) document.documentElement.classList.remove(IS_FOCUS_ACTIVE_CLS);
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("mousedown", handleMouseDown);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("mousedown", handleMouseDown);
+    };
   }, []);
 
   return (

@@ -1,11 +1,14 @@
 import React from "react";
-import styles from "./Card.module.css";
 import type { CardBaseProps } from "./Card.types";
-import { Box, MinimizeIcon, ChevronLeft } from "../../atoms";
+import { Box, MinimizeIcon, ChevronLeft, Button } from "../../atoms";
 import { Header } from "../header";
-import { Footer } from "../footer";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 import { useLocation } from "~wallets/router/router.utils";
+import { Loading } from "@arconnect/components";
+import { NoUnpartitionedStateBanner } from "~components/embed/ui/templates/no-unpartitioned-state-banner/NoUnpartitionedStateBanner";
+import clsx from "clsx";
+
+import styles from "./Card.module.css";
 
 const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
   (
@@ -16,20 +19,18 @@ const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
       children,
       footerElement,
       className,
-      hasShadow = false,
-      isBlurry,
-      size = "md",
+      isDisabled,
+      isLoading,
       hasBackButton = true,
       hasCloseButton = true,
       onBackButtonClick,
       onCloseButtonClick,
-      closeButtonStyles,
       customIcon,
+      withExtraPadding,
       ...props
     },
     ref,
   ) => {
-    const [isMinimized, setIsMinimized] = React.useState(false);
     const { back } = useLocation();
 
     const closeCard = () => {
@@ -39,52 +40,60 @@ const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
       });
     };
 
-    const closeIcon = (
-      <button
-        style={closeButtonStyles}
+    const closeButton = hasCloseButton ? (
+      <Button
+        variant="invisible"
         className={styles["card__close__btn"]}
-        onClick={onCloseButtonClick ?? closeCard}>
-        {customIcon ?? <MinimizeIcon fontSize={24} style={{ color: "var(--color-font-body)" }} />}
-      </button>
-    );
+        onClick={onCloseButtonClick ?? closeCard}
+        isDisabled={isDisabled || isLoading}>
+        {customIcon ?? <MinimizeIcon fontSize={24} style={{ color: "var(--color-font-body)", margin: 0 }} />}
+      </Button>
+    ) : null;
+
+    const backButton = hasBackButton ? (
+      <Button
+        variant="invisible"
+        className={styles["card__back__btn"]}
+        onClick={onBackButtonClick ?? back}
+        isDisabled={isDisabled || isLoading}>
+        <ChevronLeft fontSize={24} style={{ color: "var(--color-font-body)", margin: 0 }} />
+      </Button>
+    ) : null;
+
+    // TODO: Use CSS shape-outside for the buttons and use <header> and <footer>. Also address all those paddings...
+
+    const rootClassName = clsx(styles.card, className, {
+      [styles.card__disabled]: isDisabled || isLoading,
+      [styles.withExtraPadding]: withExtraPadding,
+    });
 
     return (
-      <Box
-        ref={ref}
-        className={`
-        ${styles["card"]}
-        ${hasShadow && styles["card__shadow"]}
-        ${isBlurry && styles["card__blurry"]}
-        ${size && styles[`card__${size}`]}
-        ${isMinimized && styles[`card_minimized__active`]}
-        ${className}
-      `}
-        {...props}>
-        {!isMinimized ? (
-          <>
-            {hasBackButton && (
-              <button className={styles["card__back__btn"]} onClick={onBackButtonClick ?? back}>
-                <ChevronLeft fontSize={24} style={{ color: "var(--color-font-body)" }} />
-              </button>
-            )}
-            {hasCloseButton && closeIcon}
-            {headerText && <Header icon={headerIcon} title={headerText} subtitle={subtitle} />}
-            {children}
-            <div style={{ marginTop: "auto" }}></div>
-            {footerElement && <Footer children={footerElement} />}
-          </>
-        ) : (
-          <button
-            id="toggleBtn"
-            onClick={() => setIsMinimized(!isMinimized)}
-            style={{
-              width: "100%",
-              height: "100%",
-              zIndex: 100,
-              cursor: "pointer",
-            }}
-          />
-        )}
+      <Box ref={ref} className={rootClassName} {...props}>
+        <NoUnpartitionedStateBanner className={styles.banner} disableLink={isDisabled || isLoading} />
+
+        <header className={styles.header}>
+          {backButton}
+          {closeButton}
+          {headerText && <Header icon={headerIcon} title={headerText} subtitle={subtitle} />}
+        </header>
+
+        {children}
+        <div style={{ marginTop: "auto" }}></div>
+        {footerElement}
+
+        <div className={styles["card__loaderCover"]}>
+          {isLoading ? (
+            <Loading
+              style={{
+                position: "absolute",
+                top: "calc(50% - 16px)",
+                left: "calc(50% - 16px)",
+                width: "32px",
+                height: "32px",
+              }}
+            />
+          ) : null}
+        </div>
       </Box>
     );
   },

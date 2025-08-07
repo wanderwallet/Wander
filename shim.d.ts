@@ -3,7 +3,9 @@ import type { Chunk } from "~api/modules/sign/chunks";
 import type { InjectedEvents } from "~utils/events";
 import "styled-components";
 import type { AuthRequestMessageData, AuthResult } from "~utils/auth/auth.types";
-import { EmbeddedCall } from "~utils/embedded/utils/messages/embedded-messages.types.ts";
+import { EmbeddedMessage, EmbeddedCall } from "~utils/embedded/utils/messages/embedded-messages.types.ts";
+import type { ThemeMode } from "~components/embed/contexts/ThemeContext";
+import type { DirectAccess } from "~wallets/router/iframe/iframe.routes";
 
 declare module "@arconnect/webext-bridge" {
   export interface ProtocolMap {
@@ -87,22 +89,44 @@ declare module "@arconnect/webext-bridge" {
     // EMBEDDED:
 
     embedded_auth: {
-      data: EmbeddedCall<EmbeddedAuthMessageData>;
+      data: EmbeddedMessage<"embedded_auth">;
+      return: void;
+    };
+
+    embedded_backup: {
+      data: EmbeddedMessage<"embedded_backup">;
       return: void;
     };
 
     embedded_balance: {
-      data: EmbeddedCall<EmbeddedBalanceMessageData>;
+      data: EmbeddedMessage<"embedded_balance">;
       return: void;
     };
 
     embedded_resize: {
-      data: EmbeddedCall<EmbeddedResizeMessageData>;
+      data: EmbeddedMessage<"embedded_resize">;
       return: void;
     };
 
     embedded_close: {
-      data: EmbeddedCall<void>;
+      data: EmbeddedMessage<"embedded_close">;
+      return: void;
+    };
+
+    // Calls:
+
+    embedded_signOut: {
+      data: void;
+      return: void;
+    };
+
+    embedded_setTheme: {
+      data: ThemeMode;
+      return: void;
+    };
+
+    embedded_navigate: {
+      data: DirectAccess;
       return: void;
     };
 
@@ -206,6 +230,7 @@ declare module "styled-components" {
         secondaryAlt: string;
       };
     };
+    surfaceDefault: string;
     surfaceSecondary: string;
     surfaceTertiary: string;
     borderDefault: string;
@@ -242,5 +267,11 @@ declare module "styled-components" {
 declare namespace NodeJS {
   interface ProcessEnv {
     BETA_VERSION?: string;
+  }
+}
+
+declare global {
+  interface Navigator {
+    brave: any;
   }
 }

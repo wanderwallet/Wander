@@ -1,45 +1,51 @@
 import { ButtonV2, ModalV2, Spacer } from "@arconnect/components";
 import { useRef } from "react";
 import browser from "webextension-polyfill";
-import aoLogo from "url:/assets/ecosystem/ao-token-logo.png";
 import expLogo from "url:/assets/ecosystem/exp-token-logo.png";
-
+import wndrLogo from "url:/assets/ecosystem/wndr-token-logo.svg";
 import { HeaderText, CenterText, Content, ContentWrapper } from "~components/modals/Components";
+import { useTheme } from "styled-components";
 
-const tokenData = {
-  AO: {
-    learnMoreLink:
-      "https://mirror.xyz/0x1EE4bE8670E8Bd7E9E2E366F530467030BE4C840/-UWra0q0KWecSpgg2-c37dbZ0lnOMEScEEkabVm9qaQ",
-    image: aoLogo,
-  },
+type TokenData = {
+  learnMoreLink: string;
+  image: string;
+};
+
+// List of non-transferable tokens
+const tokenData: Record<string, TokenData> = {
   EXP: {
     learnMoreLink: "https://x.com/ar_io_network/status/1879961321170706490",
     image: expLogo,
   },
+  WNDR: {
+    learnMoreLink: "https://www.wander.app/blog/wander-network-and-the-wndr-token",
+    image: wndrLogo,
+  },
 } as const;
 
-export const AnnouncementPopup = ({ isOpen, setOpen, ticker }) => {
+const defaultTokenData: TokenData = {
+  learnMoreLink: "",
+  image: "",
+};
+
+type AnnouncementPopupProps = {
+  isOpen: boolean;
+  setOpen: (isOpen: boolean) => void;
+  ticker: string;
+};
+
+export const AnnouncementPopup = ({ isOpen, setOpen, ticker }: AnnouncementPopupProps) => {
   const modalRef = useRef(null);
+  const theme = useTheme();
+  const data = tokenData[ticker] || defaultTokenData;
 
   return (
     <ModalV2 root={document.getElementById("__plasmo")} open={isOpen} setOpen={setOpen}>
       <ContentWrapper ref={modalRef}>
         <Content>
           <div>
-            <img
-              src={(() => {
-                switch (ticker) {
-                  case "AO":
-                    return tokenData.AO.image;
-                  case "EXP":
-                    return tokenData.EXP.image;
-                  default:
-                    return "";
-                }
-              })()}
-              alt={`${ticker} logo`}
-              style={{ width: "100px", height: "auto" }}
-            />
+            <img src={data.image} alt={`${ticker} logo`} style={{ width: "100px", height: "auto" }} />
+            <Spacer y={0.25} />
             <HeaderText noMargin heading>
               {browser.i18n.getMessage("token_send_popup_title", [ticker])}
             </HeaderText>
@@ -48,18 +54,10 @@ export const AnnouncementPopup = ({ isOpen, setOpen, ticker }) => {
             <Spacer y={1} />
             <CenterText>
               <a
-                href={(() => {
-                  switch (ticker) {
-                    case "AO":
-                      return tokenData.AO.learnMoreLink;
-                    case "EXP":
-                      return tokenData.EXP.learnMoreLink;
-                    default:
-                      return "#";
-                  }
-                })()}
+                href={data.learnMoreLink}
                 target="_blank"
                 rel="noopener noreferrer"
+                style={{ color: theme.primary }}
                 onClick={(e) => e.stopPropagation()}>
                 {browser.i18n.getMessage("ao_token_send_popup_learn_more")}
               </a>

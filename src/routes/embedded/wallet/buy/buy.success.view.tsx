@@ -6,7 +6,6 @@ export function WalletBuySuccessEmbeddedView() {
 
   return (
     <Card
-      size="auto"
       headerText="Buy Tokens"
       hasBackButton={true}
       onBackButtonClick={() => navigate("/wallet/buy/cash")}

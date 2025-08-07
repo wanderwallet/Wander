@@ -1,6 +1,7 @@
-import { Card, Button, Text, Input, Row, Box, ChevronRight, Footer } from "~components/embed/ui";
+import { Card, Button, Text, Input, Row, Box, ChevronRight } from "~components/embed/ui";
 import { useLocation } from "~wallets/router/router.utils";
 import { useState } from "react";
+import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 
 export function WalletBuyInputEmbeddedView() {
   const { navigate } = useLocation();
@@ -31,12 +32,11 @@ export function WalletBuyInputEmbeddedView() {
 
   return (
     <Card
-      size="auto"
       headerText="Buy Tokens"
       hasBackButton={true}
       hasCloseButton={true}
       onBackButtonClick={() => navigate("/wallet/buy")}
-      onCloseButtonClick={() => navigate("/wallet")}
+      onCloseButtonClick={() => navigate(EmbeddedPaths.WalletHomeEmbeddedView)}
       style={{ padding: "24px" }}>
       <Box alignment="left" style={{ marginBottom: "24px" }}>
         <Text variant="bodyMd" style={{ color: "#666666", marginBottom: "8px" }}>
@@ -125,8 +125,6 @@ export function WalletBuyInputEmbeddedView() {
       <Button variant="primary" isFullWidth onClick={handleEnterAmount} isDisabled={!purchaseAmount || !payAmount}>
         Enter an amount
       </Button>
-
-      <Footer />
     </Card>
   );
 }

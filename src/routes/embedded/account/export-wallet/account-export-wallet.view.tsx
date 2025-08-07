@@ -1,19 +1,11 @@
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
-import {
-  Box,
-  Button,
-  Card,
-  Copyable,
-  KeyIcon,
-  SeedIcon,
-  Snackbar,
-  WarningIcon,
-  WanderFooter,
-} from "~components/embed/ui";
+import { Box, Button, Card, Copyable, KeyIcon, SeedIcon, Snackbar, WarningIcon } from "~components/embed/ui";
 import copy from "copy-to-clipboard";
 import { WalletUtils } from "~utils/wallets/wallets.utils";
 import { useEffect, useState } from "react";
 import { useLocation } from "~wallets/router/router.utils";
+import { WanderFooter } from "~components/embed/ui/templates/wander-footer/WanderFooter";
+
 export function AccountExportWalletEmbeddedView() {
   const { back } = useLocation();
   const { currentWallet, downloadKeyfile, copySeedphrase } = useEmbedded();
@@ -39,18 +31,9 @@ export function AccountExportWalletEmbeddedView() {
       hasCloseButton={true}
       onCloseButtonClick={() => {
         window.history.back();
-      }}
-      size="auto">
+      }}>
       <Box>
-        <Snackbar
-          isFullWidth
-          icon={<WarningIcon />}
-          text="Do not share this with anyone."
-          backgroundColor="#FFF9EA"
-          borderColor="#F2DC1320"
-          textColor="#757575"
-          iconColor="#BD8802"
-        />
+        <Snackbar variant="warning">Do not share this with anyone.</Snackbar>
         <Copyable
           style={{ margin: "32px 0" }}
           isFullWidth

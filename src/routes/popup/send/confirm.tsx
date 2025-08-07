@@ -25,7 +25,7 @@ import type { JWKInterface } from "@dha-team/arbundles";
 import { AutoContactPic, generateProfileIcon, ProfilePicture } from "~components/Recipient";
 import { formatFiatBalance, fractionedToBalance } from "~tokens/currency";
 import { useContact } from "~contacts/hooks";
-import { sendAoTransfer, sendAoTransferKeystone, type TokenInfo } from "~tokens/aoTokens/ao";
+import { AR_PROCESS_ID, sendAoTransfer, sendAoTransferKeystone, type TokenInfo } from "~tokens/aoTokens/ao";
 import { useAo } from "~tokens/hooks";
 import { useActiveWallet } from "~wallets/hooks";
 import { UR } from "@ngraveio/bc-ur";
@@ -53,6 +53,7 @@ import prettyBytes from "pretty-bytes";
 import { stringToBuffer } from "arweave/web/lib/utils";
 import useSetting from "~settings/hook";
 import { Flex } from "~components/common/Flex";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 export interface ConfirmViewParams {
   token: string;
@@ -179,7 +180,7 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
       // save tx json into the session
       // to be signed and submitted
       const storedTx: Partial<RawStoredTransfer> = {
-        type: tokenID === "AR" ? "native" : "token",
+        type: tokenID === AR_PROCESS_ID ? "native" : "token",
         gateway: gateway,
       };
 
@@ -389,7 +390,7 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
           });
           trackEvent(EventType.TX_SENT, {
             contact: toContact ? true : false,
-            amount: tokenID === "AR" ? +transactionAmount : 0,
+            amount: tokenID === AR_PROCESS_ID ? +transactionAmount : 0,
             fee: networkFee,
           });
           // Redirect
@@ -440,7 +441,7 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
           });
           trackEvent(EventType.TX_SENT, {
             contact: toContact ? true : false,
-            amount: tokenID === "AR" ? +transactionAmount : 0,
+            amount: tokenID === AR_PROCESS_ID ? +transactionAmount : 0,
             fee: networkFee,
           });
           navigate(`/send/completed/${convertedTransaction.id}?back=${encodeURIComponent("/")}`);
@@ -486,84 +487,85 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
     return keystoneSigner;
   }, [wallet, isAo, keystoneInteraction]);
 
-  useEffect(() => {
-    (async () => {
-      setIsLoading(true);
-      if (!recipient?.address) {
-        setIsLoading(false);
-        return;
-      }
+  useAsyncEffect(async () => {
+    setIsLoading(true);
 
-      // get the tx from storage
-      const prepared = await prepare(recipient.address);
+    if (!recipient?.address) {
+      setIsLoading(false);
+      return;
+    }
 
-      // redirect to transfer if the
-      // transaction was not found
-      if (!prepared || !prepared.transaction) {
-        return navigate("/send/transfer");
-      }
+    // get the tx from storage
+    const prepared = await prepare(recipient.address);
 
-      // check if the current wallet
-      // is a hardware wallet
-      if (wallet?.type !== "hardware") {
-        setIsLoading(false);
-        return;
-      }
+    // redirect to transfer if the
+    // transaction was not found
+    if (!prepared || !prepared.transaction) {
+      navigate("/send/transfer");
+      return;
+    }
 
-      if (isAo) {
-        try {
-          setPreparedTx(prepared);
-          const res = await sendAoTransferKeystone(
-            ao,
+    // check if the current wallet
+    // is a hardware wallet
+    if (wallet?.type !== "hardware") {
+      setIsLoading(false);
+      return;
+    }
+
+    if (isAo) {
+      try {
+        setPreparedTx(prepared);
+
+        const res = await sendAoTransferKeystone(
+          ao,
+          tokenID,
+          recipient.address,
+          fractionedToBalance(amount, { decimals: token.Denomination }, "AO"),
+          keystoneSigner,
+        );
+
+        if (res) {
+          saveAoTransactionToLocalStorage(
+            res,
             tokenID,
             recipient.address,
-            fractionedToBalance(amount, { decimals: token.Denomination }, "AO"),
-            keystoneSigner,
+            activeAddress,
+            amount,
+            token.Ticker,
+            networkFee,
+            message,
           );
-          if (res) {
-            saveAoTransactionToLocalStorage(
-              res,
-              tokenID,
-              recipient.address,
-              activeAddress,
-              amount,
-              token.Ticker,
-              networkFee,
-              message,
-            );
 
-            setToast({
-              type: "success",
-              content: browser.i18n.getMessage("sent_tx"),
-              duration: 2000,
-            });
-            navigate(`/send/completed/${res}?isAo=true`);
-            setIsLoading(false);
-          }
-          return res;
-        } catch (err) {
-          console.log("err in ao", err);
-          throw err;
+          setToast({
+            type: "success",
+            content: browser.i18n.getMessage("sent_tx"),
+            duration: 2000,
+          });
+          navigate(`/send/completed/${res}?isAo=true`);
+          setIsLoading(false);
         }
+      } catch (err) {
+        console.log("err in ao", err);
+        throw err;
       }
+    }
 
-      const arweave = new Arweave(prepared.gateway);
-      const convertedTransaction = arweave.transactions.fromRaw(prepared.transaction);
+    const arweave = new Arweave(prepared.gateway);
+    const convertedTransaction = arweave.transactions.fromRaw(prepared.transaction);
 
-      // get tx UR
-      try {
-        setIsLoading(false);
-        setTransactionUR(await transactionToUR(convertedTransaction, wallet.xfp, wallet.publicKey));
-        setPreparedTx(prepared);
-      } catch {
-        setToast({
-          type: "error",
-          duration: 2300,
-          content: browser.i18n.getMessage("transaction_auth_ur_fail"),
-        });
-        navigate("/send/transfer");
-      }
-    })();
+    // get tx UR
+    try {
+      setIsLoading(false);
+      setTransactionUR(await transactionToUR(convertedTransaction, wallet.xfp, wallet.publicKey));
+      setPreparedTx(prepared);
+    } catch {
+      setToast({
+        type: "error",
+        duration: 2300,
+        content: browser.i18n.getMessage("transaction_auth_ur_fail"),
+      });
+      navigate("/send/transfer");
+    }
   }, [wallet, recipient?.address, keystoneSigner, amount]);
 
   // current hardware wallet operation
@@ -620,7 +622,7 @@ export function ConfirmView({ params: { token: tokenID, subscription } }: Confir
         const latestTxQty = Number((await ExtensionStorage.get("last_send_qty")) || "0");
         trackEvent(EventType.TX_SENT, {
           contact: toContact ? true : false,
-          amount: tokenID === "AR" ? latestTxQty : 0,
+          amount: tokenID === AR_PROCESS_ID ? latestTxQty : 0,
           fee: networkFee,
         });
         navigate(`/send/completed/${transaction.id}?back=${encodeURIComponent("/")}`);

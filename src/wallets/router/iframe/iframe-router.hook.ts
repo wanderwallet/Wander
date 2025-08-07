@@ -1,20 +1,11 @@
 import { useHashLocation } from "wouter/use-hash-location";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
-import type { AuthStatus, Wallet } from "~utils/embedded/embedded.types";
-import { NOOP } from "~utils/misc";
+import type { AuthStatus } from "~utils/embedded/embedded.types";
 import { useAuthRequestsLocation } from "~wallets/router/auth/auth-router.hook";
 import type { ExtensionRouteOverride } from "~wallets/router/extension/extension.routes";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
-import { PopupPaths } from "~wallets/router/popup/popup.routes";
-import type { WanderRoutePath, BaseLocationHook, RoutePath, RouteRedirect } from "~wallets/router/router.types";
-import {
-  isRouteOverride,
-  isRouteRedirect,
-  routeTrapMatches,
-  routeTrapOutside,
-  useSearchParams,
-  withRouterRedirects,
-} from "~wallets/router/router.utils";
+import type { WanderRoutePath, BaseLocationHook, RoutePath } from "~wallets/router/router.types";
+import { isRouteOverride, routeTrapMatches, routeTrapOutside, withRouterRedirects } from "~wallets/router/router.utils";
 
 const AUTH_STATUS_TO_OVERRIDE: Record<AuthStatus, null | ExtensionRouteOverride> = {
   // TODO: Redefine these override paths:
@@ -29,123 +20,112 @@ const AUTH_STATUS_TO_OVERRIDE: Record<AuthStatus, null | ExtensionRouteOverride>
   unlocked: null,
 };
 
-export function useEmbeddedOverride(
-  location?: RoutePath,
-): null | ExtensionRouteOverride | RouteRedirect<WanderRoutePath> {
-  const { authStatus, lastRegisteredWallet, currentWallet, recoverableAccount } = useEmbedded();
-  const searchParams = useSearchParams<{
-    error?: string;
-    error_description?: string;
-  }>();
+export function useEmbeddedOverride(location?: RoutePath) {
+  const {
+    authStatus,
+    recoverableAccount,
+    requestPasswordChange,
+    unpartitionedStateStatus,
+    unpartitionedStateConfirmed,
+  } = useEmbedded();
 
-  // Handle OAuth redirect error URL from Supabase
-  if (searchParams.error && searchParams.error_description) {
-    // Supabase redirects with error parameters in the URL when OAuth fails
-    // Example: #error=server_error&error_description=OAuth+provider+error
-    return routeTrapMatches(location, [EmbeddedPaths.AuthError], EmbeddedPaths.AuthError);
-  }
-
-  if (!location || location.startsWith("/access_token") || authStatus === "unknown") {
+  if (!location || authStatus === "unknown") {
     return "/__OVERRIDES/cover";
   }
 
-  if (location) {
-    if (authStatus === "noAuth" || authStatus === "authLoading") {
-      return routeTrapMatches(
-        location,
-        [
-          EmbeddedPaths.Auth,
-          EmbeddedPaths.AuthEmailSignup,
-          EmbeddedPaths.AuthEmailVerify,
-          EmbeddedPaths.AuthEmailSignin,
-          EmbeddedPaths.AuthMoreProviders,
-          EmbeddedPaths.AuthAddWithQRCode,
-          // TODO: These could be simply "anything under  AuthRecoverAccount"
-          EmbeddedPaths.AuthRecoverAccount,
-          EmbeddedPaths.AuthRecoverAccountSeedphrase,
-          EmbeddedPaths.AuthRecoverAccountKeyfile,
-          EmbeddedPaths.Auth,
-          EmbeddedPaths.AuthMoreProviders,
-          EmbeddedPaths.AuthEmailSignin,
-          EmbeddedPaths.AuthEmailSignup,
-          EmbeddedPaths.AuthEmailVerify,
-          EmbeddedPaths.AuthRecoverAccountSelect,
-        ],
+  if (unpartitionedStateStatus !== "supported" && !unpartitionedStateConfirmed && authStatus === "noAuth") {
+    return routeTrapMatches(
+      location,
+      [EmbeddedPaths.SupportUnpartitionedStateMissing],
+      EmbeddedPaths.SupportUnpartitionedStateMissing,
+    );
+  }
+
+  // Always allowed to go here:
+  if (unpartitionedStateStatus !== "supported" && location === EmbeddedPaths.SupportUnpartitionedStateMissing) return;
+
+  if (authStatus === "noAuth" || authStatus === "authLoading" || authStatus === "authError") {
+    return routeTrapMatches(
+      location,
+      [
         EmbeddedPaths.Auth,
-      );
-    }
+        EmbeddedPaths.AuthEmailOtp,
+        EmbeddedPaths.AuthEmailSignInPassword,
+        EmbeddedPaths.AuthEmailVerify,
+        EmbeddedPaths.AuthMoreProviders,
+        // TODO: These could be simply "anything under  AuthRecoverAccount"
+        EmbeddedPaths.AuthRecoverAccount,
+        EmbeddedPaths.AuthRecoverAccountOtp,
+        EmbeddedPaths.AuthRecoverAccountSeedphrase,
+        EmbeddedPaths.AuthRecoverAccountKeyfile,
+        EmbeddedPaths.AuthRecoverAccountQrCode,
+        EmbeddedPaths.AuthRecoverAccountSelect,
+      ],
+      EmbeddedPaths.Auth,
+    );
+  }
 
-    if (authStatus === "authError") {
-      // TODO: Implement logic/screen for this:
-      throw new Error("Not implemented");
-    }
+  if ((authStatus === "noWallets" || authStatus === "noShares") && recoverableAccount) {
+    return routeTrapMatches(
+      location,
+      [EmbeddedPaths.AuthRecoverAccountConfirm],
+      EmbeddedPaths.AuthRecoverAccountConfirm,
+    );
+  }
 
-    if (authStatus === "noWallets" && recoverableAccount) {
-      return routeTrapMatches(
-        location,
-        [EmbeddedPaths.AuthRecoverAccountConfirm],
-        EmbeddedPaths.AuthRecoverAccountConfirm,
-      );
-    }
-
-    if (authStatus === "noWallets") {
-      return routeTrapMatches(
-        location,
-        [
-          EmbeddedPaths.AuthAddWallet,
-          EmbeddedPaths.AuthImportSeedPhrase,
-          EmbeddedPaths.AuthAddWithQRCode,
-          EmbeddedPaths.AuthQRCodeScanner,
-          EmbeddedPaths.AuthImportKeyfile,
-          EmbeddedPaths.AuthAddDevice,
-          EmbeddedPaths.AuthAddAuthProvider,
-          // EmbeddedPaths.AddDevice/<SOMETHING>
-          // EmbeddedPaths.AddAuthProvider/<SOMETHING>
-        ],
+  if (authStatus === "noWallets") {
+    return routeTrapMatches(
+      location,
+      [
         EmbeddedPaths.AuthAddWallet,
-      );
-    }
+        EmbeddedPaths.AuthImportSeedPhrase,
+        EmbeddedPaths.AuthAddWithQRCode,
+        EmbeddedPaths.AuthQRCodeScanner,
+        EmbeddedPaths.AuthImportKeyfile,
+        EmbeddedPaths.AuthImportQrCode,
+        EmbeddedPaths.AuthAddDevice,
+        EmbeddedPaths.AuthAddAuthProvider,
+        // EmbeddedPaths.AddDevice/<SOMETHING>
+        // EmbeddedPaths.AddAuthProvider/<SOMETHING>
+      ],
+      EmbeddedPaths.AuthAddWallet,
+    );
+  }
 
-    if (authStatus === "noShares") {
-      return routeTrapMatches(
-        location,
-        // TODO: Do we allow simply generating a new wallet? EmbeddedPaths.AuthAddWallet
-        [
-          EmbeddedPaths.AuthRestoreShares,
-          EmbeddedPaths.AuthRestoreSharesRecoveryFile,
-          EmbeddedPaths.AuthImportSeedPhrase,
-          EmbeddedPaths.AuthImportKeyfile,
-        ],
+  if (authStatus === "noShares") {
+    return routeTrapMatches(
+      location,
+      [
+        // Restore:
         EmbeddedPaths.AuthRestoreShares,
-      );
+        EmbeddedPaths.AuthRestoreSharesCreateConfirmation,
+        EmbeddedPaths.AuthRestoreSharesRecoveryFile,
+        EmbeddedPaths.AuthRestoreSharesSeedPhrase,
+        EmbeddedPaths.AuthRestoreSharesKeyfile,
+        EmbeddedPaths.AuthRestoreSharesQrCode,
+
+        // Add wallet:
+        EmbeddedPaths.AuthAddWallet,
+        EmbeddedPaths.AuthImportSeedPhrase,
+        EmbeddedPaths.AuthAddWithQRCode,
+        EmbeddedPaths.AuthQRCodeScanner,
+        EmbeddedPaths.AuthImportKeyfile,
+        EmbeddedPaths.AuthImportQrCode,
+      ],
+      EmbeddedPaths.AuthRestoreShares,
+    );
+  }
+
+  if (authStatus === "unlocked") {
+    if (requestPasswordChange) {
+      // TODO: Consider also including this as a box in the dashboard?
+      return routeTrapMatches(location, [EmbeddedPaths.AccountChangePassword], EmbeddedPaths.AccountChangePassword);
     }
 
-    if (authStatus === "unlocked") {
-      if (lastRegisteredWallet) {
-        // If an account or wallet has just been created, then show AuthAddWalletConfirmation:
-        return routeTrapMatches(location, [EmbeddedPaths.AccountConfirmation], EmbeddedPaths.AccountConfirmation);
-      }
+    // TODO: What if we are here but the wallet, for whatever reason, is not in the wallet provider / ExtensionStore?
+    // if (!currentWallet.isActive)
 
-      if (currentWallet.totalExports === 0 && currentWallet.totalBackups === 0 && !currentWallet.doNotAskAgainSetting) {
-        return routeTrapMatches(
-          location,
-          [
-            EmbeddedPaths.AccountBackupWalletReminder,
-            EmbeddedPaths.AccountBackupWallet,
-            EmbeddedPaths.AccountBackupFullWallet,
-            EmbeddedPaths.AccountBackupWalletRecoveryFile,
-            EmbeddedPaths.AccountBackupCopySeedphrase,
-            // TODO: Missing EmbeddedPaths.AccountBackupShares/<PROVIDER>
-          ],
-          EmbeddedPaths.AccountBackupWalletReminder,
-        );
-      }
-
-      // TODO: What if we are here but the wallet, for whatever reason, is not in the wallet provider / ExtensionStore?
-      // if (!currentWallet.isActive)
-
-      return routeTrapOutside(location, EmbeddedPaths.Auth, EmbeddedPaths.WalletHomeEmbeddedView);
-    }
+    return routeTrapOutside(location, EmbeddedPaths.Auth, EmbeddedPaths.WalletHomeEmbeddedView);
   }
 
   return AUTH_STATUS_TO_OVERRIDE[authStatus];
@@ -161,7 +141,8 @@ export const useEmbeddedLocation: BaseLocationHook = withRouterRedirects(() => {
   const [authRequestsLocation, authRequestsNavigate] = useAuthRequestsLocation();
 
   if (override) {
-    return [override, isRouteRedirect(override) ? wavigate : NOOP];
+    // return [override, isRouteRedirect(override) ? wavigate : NOOP];
+    return [override, wavigate];
   }
 
   if (authRequestsLocation && !isRouteOverride(authRequestsLocation)) {

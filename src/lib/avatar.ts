@@ -3,6 +3,19 @@ import { getActiveKeyfile } from "~wallets";
 import { freeDecryptedWallet } from "~wallets/encryption";
 import { createData, ArweaveSigner } from "@dha-team/arbundles";
 import { uploadDataToTurbo } from "~api/modules/dispatch/uploader";
+import { isAddress } from "~utils/assertions";
+import { QueryClient } from "@tanstack/react-query";
+
+// Create a new query client instance for avatar fetching
+const avatarQueryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const MAX_FILE_SIZE = 500 * 1024; // 500KB
 
@@ -62,8 +75,11 @@ export async function uploadUserAvatar(avatar: File) {
   }
 }
 
-export const getUserAvatar = async (txId: string) => {
+const fetchAvatarData = async (txId: string): Promise<string | null> => {
   try {
+    // validate txId
+    isAddress(txId);
+
     const data = await arweave.transactions.getData(txId, { decode: true });
     let mimeType = "image/png";
 
@@ -79,10 +95,40 @@ export const getUserAvatar = async (txId: string) => {
     }
 
     const blob = new Blob([buffer], { type: mimeType });
-    const imageUrl = blob ? URL.createObjectURL(blob) : null;
-    return imageUrl;
+    return blob ? URL.createObjectURL(blob) : null;
+  } catch (error) {
+    console.error(`Failed to fetch avatar data for tx ${txId}:`, error);
+    return null;
+  }
+};
+
+/**
+ * Fetches and caches an avatar image from Arweave using the transaction ID.
+ * The result is cached for 5 minutes.
+ *
+ * @param txId - The Arweave transaction ID of the avatar image
+ * @returns A promise that resolves to the image URL or null if not found
+ */
+export const getUserAvatar = async (txId: string): Promise<string | null> => {
+  if (!txId) return null;
+
+  try {
+    const result = await avatarQueryClient
+      .fetchQuery({
+        queryKey: ["avatar", txId],
+        queryFn: () => fetchAvatarData(txId),
+        staleTime: 5 * 60 * 1000, // 5 minutes
+        retry: 1,
+        gcTime: 5 * 60 * 1000, // 5 minutes cache time
+      })
+      .catch((error) => {
+        console.error(`Error in avatar query for tx ${txId}:`, error);
+        return null;
+      });
+
+    return result ?? null;
   } catch (e) {
-    console.error("Error fetching avatar:", e);
+    console.error(`Unexpected error in getUserAvatar for tx ${txId}:`, e);
     return null;
   }
 };

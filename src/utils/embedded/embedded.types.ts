@@ -8,6 +8,8 @@ import type {
   WalletSourceType,
   DbSession,
 } from "embed-api";
+import type { LocalWallet } from "~wallets/wallets.types";
+import type { UnpartitionedStateStatus } from "~iframe/storage/unpartitioned-storage/unpartitioned-storage.utils";
 
 export type AuthStatus =
   | "unknown"
@@ -72,17 +74,35 @@ export interface EmbeddedContextState {
   recoverableAccounts: null | RecoverableAccount[];
   recoverableAccount: null | RecoverableAccount;
   recoverableAccountWallets: null | RecoverableAccountWallet[];
-  authEmail: null | string;
-  authPassword: null | string;
+  requestPasswordChange: boolean;
+  backupsNeeded: number;
+  backupMessage?: string;
 }
 
 export interface EmbeddedContextAuth {
   authStatus: AuthStatus;
   authProviderType: null | AuthProviderType;
   user: null | SupabaseUser;
-  session: null | DbSession;
-  // accessToken?
+  session: DbSession;
 }
+
+export type OAutProviderType = Exclude<AuthProviderType, "EMAIL_N_PASSWORD" | "PASSKEYS">;
+
+export interface AuthSignInWithPasswordParams {
+  method: "signInWithPassword";
+  email: string;
+  password: string;
+}
+
+export interface AuthVerifyOtpParams {
+  method: "verifyOtp";
+  email: string;
+  token: string;
+}
+
+export type AuthEmailParams = AuthSignInWithPasswordParams | AuthVerifyOtpParams;
+
+export type AuthEmailParamsMethod = AuthEmailParams["method"];
 
 export interface RecoveryJSON {
   version: string;
@@ -92,16 +112,22 @@ export interface RecoveryJSON {
 }
 
 export interface EmbeddedContextData extends EmbeddedContextState, EmbeddedContextAuth {
+  walletCount: number;
   currentWallet: Wallet | null;
 
-  authenticate: (authProviderType: AuthProviderType, email?: string, password?: string) => Promise<void>;
+  unpartitionedStateStatus: UnpartitionedStateStatus;
+  unpartitionedStateConfirmed: boolean | null;
+  confirmUnpartitionedState: (doNotAskAgain: boolean) => Promise<void>;
+
+  authenticate: (authParams: OAutProviderType | AuthEmailParams) => Promise<void>;
   fetchRecoverableAccounts: () => Promise<RecoverableAccount[]>;
   clearRecoverableAccounts: () => void;
   setRecoverableAccount: (recoverableAccount: RecoverableAccount) => void;
   setRecoverableAccountWallets: (recoverableAccountWallets: RecoverableAccountWallet[]) => void;
   fetchRecoverableAccountWallets: (recoverableAccount: RecoverableAccount) => Promise<RecoverableAccountWallet[]>;
   recoverAccount: (authProviderType: AuthProviderType, accountToRecoverId: string) => Promise<void>;
-  recoverWallet: (recoveryData: RecoveryJSON | JWKInterface | string) => Promise<void>;
+  recoverWallet: (recoveryData?: RecoveryJSON | JWKInterface | string) => Promise<void>;
+  setRequestPasswordChange: (requestPasswordChange: boolean) => void;
 
   generateTempWallet: () => Promise<TempWallet>;
   deleteGeneratedTempWallet: () => Promise<void>;
@@ -112,11 +138,9 @@ export interface EmbeddedContextData extends EmbeddedContextState, EmbeddedConte
   registerWallet: (sourceType: WalletSourceType) => Promise<Wallet>;
   clearLastRegisteredWallet: () => void;
 
-  skipBackUp: (doNotAskAgain: boolean) => void | Promise<void>;
   downloadKeyfile: () => Promise<void>;
   copySeedphrase: () => Promise<boolean>;
+  getDecryptedWallet: () => Promise<LocalWallet<JWKInterface>>;
   getSeedphrase: (callbackFn?: (seedPhrase: string) => Promise<boolean>) => Promise<string>;
   generateRecoveryAndDownload: () => Promise<void>;
-  setAuthEmail: (email: string) => void;
-  setAuthPassword: (password: string) => void;
 }

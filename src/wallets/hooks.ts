@@ -7,24 +7,36 @@ import { ExtensionStorage } from "~utils/storage";
 import { findGateway } from "~gateways/wayfinder";
 import { retryWithDelay } from "~utils/promises/retry";
 import type { HardwareApi } from "./hardware";
-import type { StoredWallet } from "~wallets";
+import type { LocalWallet, StoredWallet } from "~wallets";
 import Arweave from "arweave";
 import { isPasswordFresh } from "./auth";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { getNameServiceProfiles } from "~lib/nameservice";
 import type GQLResultInterface from "ar-gql/dist/faces";
 import { printTxWorkingGateways, txHistoryGateways } from "~gateways/gateway";
-import { sortFn, processTransactions, type GroupedTransactions, type ExtendedTransaction } from "~lib/transactions";
+import {
+  sortFn,
+  processTransactions,
+  type GroupedTransactions,
+  type ExtendedTransaction,
+  checkTransferStatus,
+} from "~lib/transactions";
 import {
   AO_RECEIVER_QUERY_WITH_CURSOR,
   AO_SENT_QUERY_WITH_CURSOR,
   AR_RECEIVER_QUERY_WITH_CURSOR,
   AR_SENT_QUERY_WITH_CURSOR,
+  AO_LIQUIDOPS_RECEIVER_QUERY_WITH_CURSOR,
   PRINT_ARWEAVE_QUERY_WITH_CURSOR,
+  AO_SENT_QUERY_FOR_TOKEN_WITH_CURSOR,
+  AO_RECEIVER_QUERY_FOR_TOKEN_WITH_CURSOR,
+  AO_LIQUIDOPS_RECEIVER_QUERY_FOR_TOKEN_WITH_CURSOR,
 } from "~notifications/utils";
 import { gql } from "~gateways/api";
 import BigNumber from "bignumber.js";
-import { storage } from "~iframe/browser/storage/storage.mock";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import { convertAnnouncementsToTransactions } from "~utils/announcements";
+import { AR_PROCESS_ID } from "~tokens/aoTokens/ao";
 
 /**
  * Wallets with details hook
@@ -32,38 +44,36 @@ import { storage } from "~iframe/browser/storage/storage.mock";
 export function useWalletsDetails(wallets: JWKInterface[]) {
   const [walletDetails, setWalletDetails] = useState<WalletInterface[]>([]);
 
-  useEffect(() => {
-    (async () => {
-      const arweave = new Arweave(defaultGateway);
-      const details: WalletInterface[] = [];
+  useAsyncEffect(async () => {
+    const arweave = new Arweave(defaultGateway);
+    const details: WalletInterface[] = [];
 
-      // load wallet addresses
-      for (const wallet of wallets) {
-        const address = await arweave.wallets.getAddress(wallet);
+    // load wallet addresses
+    for (const wallet of wallets) {
+      const address = await arweave.wallets.getAddress(wallet);
 
-        // skip already added wallets
-        if (!!walletDetails.find((w) => w.address === address)) {
-          continue;
-        }
-
-        details.push({ address });
+      // skip already added wallets
+      if (!!walletDetails.find((w) => w.address === address)) {
+        continue;
       }
 
-      // load ans labels
-      try {
-        const profiles = await getNameServiceProfiles(details.map((w) => w.address));
+      details.push({ address });
+    }
 
-        for (const wallet of details) {
-          const profile = profiles.find((p) => p.address === wallet.address);
+    // load ans labels
+    try {
+      const profiles = await getNameServiceProfiles(details.map((w) => w.address));
 
-          if (!profile?.name) continue;
-          wallet.label = profile.name;
-        }
-      } catch {}
+      for (const wallet of details) {
+        const profile = profiles.find((p) => p.address === wallet.address);
 
-      // set details
-      setWalletDetails(details);
-    })();
+        if (!profile?.name) continue;
+        wallet.label = profile.name;
+      }
+    } catch {}
+
+    // set details
+    setWalletDetails(details);
   }, [wallets]);
 
   return walletDetails;
@@ -91,15 +101,29 @@ export function useActiveWallet() {
   // active wallet
   const wallet = useMemo(
     () =>
-      wallets?.find(({ address }) => address === activeAddress) || {
+      wallets?.find(({ address }) => address === activeAddress) ||
+      ({
         address: activeAddress,
         nickname: "",
         type: "local",
-      },
+        keyfile: "",
+      } satisfies StoredWallet),
     [activeAddress, wallets],
   );
 
   return wallet;
+}
+
+/**
+ * Active address
+ */
+export function useActiveAddress() {
+  const [activeAddress] = useStorage<string>({
+    key: "active_address",
+    instance: ExtensionStorage,
+  });
+
+  return activeAddress;
 }
 
 export function useAllWallets() {
@@ -115,21 +139,14 @@ export function useAllWallets() {
 }
 
 export async function setActiveWallet(address?: string) {
-  // verify address
-
-  const [wallets] = useStorage<StoredWallet[]>(
-    {
-      key: "wallets",
-      instance: ExtensionStorage,
-    },
-    [],
-  );
-
   // remove if the address is undefined
   if (!address) {
     return await ExtensionStorage.remove("active_address");
   }
 
+  const wallets = (await ExtensionStorage.get<StoredWallet[]>("wallets")) || [];
+
+  // verify address
   if (!wallets.find((wallet) => wallet.address === address)) {
     return;
   }
@@ -232,9 +249,16 @@ export const useAskPassword = (): boolean => {
   return askPassword;
 };
 
+const emptyResponse = {
+  data: {
+    transaction: null,
+    transactions: { edges: [], pageInfo: { hasNextPage: false } },
+  },
+} as GQLResultInterface;
+
 export const useTransactions = (activeAddress: string, limit?: number) => {
-  const defaultCursors = ["", "", "", "", ""];
-  const defaultHasNextPages = [true, true, true, true, true];
+  const defaultCursors = ["", "", "", "", "", ""];
+  const defaultHasNextPages = [true, true, true, true, true, true];
 
   const [count, setCount] = useState({ current: 0, actual: 0 });
   const [cursors, setCursors] = useState(defaultCursors);
@@ -255,44 +279,46 @@ export const useTransactions = (activeAddress: string, limit?: number) => {
         AR_SENT_QUERY_WITH_CURSOR,
         AO_SENT_QUERY_WITH_CURSOR,
         AO_RECEIVER_QUERY_WITH_CURSOR,
+        AO_LIQUIDOPS_RECEIVER_QUERY_WITH_CURSOR,
         PRINT_ARWEAVE_QUERY_WITH_CURSOR,
       ];
 
-      const [rawReceived, rawSent, rawAoSent, rawAoReceived, rawPrintArchive] = await Promise.allSettled(
-        queries.map((query, idx) => {
-          return hasNextPages[idx]
-            ? retryWithDelay(async (attempt) => {
-                const data = await gql(
-                  query,
-                  { address: activeAddress, after: cursors[idx] },
-                  idx !== 4
-                    ? txHistoryGateways[attempt % txHistoryGateways.length]
-                    : printTxWorkingGateways[attempt % printTxWorkingGateways.length],
-                );
-                if (data?.data === null && (data as any)?.errors?.length > 0) {
-                  throw new Error((data as any)?.errors?.[0]?.message || "GraphQL Error");
-                }
-                return data;
-              }, 2)
-            : ({
-                data: {
-                  transactions: {
-                    pageInfo: { hasNextPage: false },
-                    edges: [],
-                  },
-                },
-              } as GQLResultInterface);
-        }),
-      );
+      const [rawReceived, rawSent, rawAoSent, rawAoReceived, rawLiquidOpsAoReceived, rawPrintArchive] =
+        await Promise.allSettled(
+          queries.map((query, idx) => {
+            return hasNextPages[idx]
+              ? retryWithDelay(async (attempt) => {
+                  const data = await gql(
+                    query,
+                    { address: activeAddress, after: cursors[idx] },
+                    idx !== 5
+                      ? txHistoryGateways[attempt % txHistoryGateways.length]
+                      : printTxWorkingGateways[attempt % printTxWorkingGateways.length],
+                  );
+                  if (data?.data === null && (data as any)?.errors?.length > 0) {
+                    throw new Error((data as any)?.errors?.[0]?.message || "GraphQL Error");
+                  }
+                  return data;
+                }, 2)
+              : Promise.resolve(emptyResponse);
+          }),
+        );
+
+      const aoTransactions = [
+        ...(rawAoSent.status === "fulfilled" ? rawAoSent.value?.data?.transactions?.edges || [] : []),
+        ...(rawAoReceived.status === "fulfilled" ? rawAoReceived.value?.data?.transactions?.edges || [] : []),
+      ];
+      await checkTransferStatus(aoTransactions);
 
       let sent = await processTransactions(rawSent, "sent");
       let received = await processTransactions(rawReceived, "received");
       const aoSent = await processTransactions(rawAoSent, "aoSent", true);
       const aoReceived = await processTransactions(rawAoReceived, "aoReceived", true);
+      const liquidOpsAoReceived = await processTransactions(rawLiquidOpsAoReceived, "liquidOpsAoReceived", true);
       const printArchive = await processTransactions(rawPrintArchive, "printArchive");
 
       setCursors((prev) =>
-        [received, sent, aoSent, aoReceived, printArchive].map(
+        [received, sent, aoSent, aoReceived, liquidOpsAoReceived, printArchive].map(
           (data, idx) => data[data.length - 1]?.cursor ?? prev[idx],
         ),
       );
@@ -301,7 +327,7 @@ export const useTransactions = (activeAddress: string, limit?: number) => {
       received = received.filter((tx) => BigNumber(tx.node.quantity.ar).gt(0));
 
       setHasNextPages(
-        [rawReceived, rawSent, rawAoSent, rawAoReceived, rawPrintArchive].map(
+        [rawReceived, rawSent, rawAoSent, rawAoReceived, rawLiquidOpsAoReceived, rawPrintArchive].map(
           (result) =>
             (result.status === "fulfilled" && result.value?.data?.transactions?.pageInfo?.hasNextPage) ?? true,
         ),
@@ -312,8 +338,16 @@ export const useTransactions = (activeAddress: string, limit?: number) => {
         ...received,
         ...aoReceived,
         ...aoSent,
+        ...liquidOpsAoReceived,
         ...printArchive,
       ];
+
+      if (import.meta.env?.VITE_IS_EMBEDDED_APP !== "1") {
+        const announcementTransactions = convertAnnouncementsToTransactions();
+        combinedTransactions = [...combinedTransactions, ...announcementTransactions];
+      }
+
+      combinedTransactions.sort(sortFn);
 
       combinedTransactions = combinedTransactions.map((transaction) => {
         if (transaction.node.block && transaction.node.block.timestamp) {
@@ -399,5 +433,178 @@ export const useTransactions = (activeAddress: string, limit?: number) => {
     hasNextPage,
     count,
     fetchTransactions,
+  };
+};
+
+const createFetchPromise = (query: string, cursor: string, skip: boolean, variables: Record<string, unknown>) =>
+  skip
+    ? Promise.resolve(emptyResponse)
+    : retryWithDelay(async (attempt) => {
+        const data = await gql(
+          query,
+          { ...variables, after: cursor },
+          txHistoryGateways[attempt % txHistoryGateways.length],
+        );
+        if (data?.data === null && (data as any)?.errors?.length > 0) {
+          throw new Error((data as any)?.errors?.[0]?.message || "GraphQL Error");
+        }
+        return data;
+      }, 2);
+
+export const useTokenTransactions = (activeAddress: string, tokenId: string) => {
+  const { data, fetchNextPage, hasNextPage, isLoading, isFetching, isFetchingNextPage } = useInfiniteQuery({
+    queryKey: ["tokenTransactions", activeAddress, tokenId],
+    queryFn: async ({ pageParam }) => {
+      if (!activeAddress) {
+        throw new Error("No active address provided");
+      }
+
+      const {
+        sentCursor = "",
+        receivedCursor = "",
+        liquidOpsReceivedCursor = "",
+        skipSent = false,
+        skipReceived = false,
+        skipLiquidOpsReceived = false,
+      } = pageParam || {};
+      const isAr = tokenId === AR_PROCESS_ID;
+      const queries = isAr
+        ? [AR_SENT_QUERY_WITH_CURSOR, AR_RECEIVER_QUERY_WITH_CURSOR]
+        : [
+            AO_SENT_QUERY_FOR_TOKEN_WITH_CURSOR,
+            AO_RECEIVER_QUERY_FOR_TOKEN_WITH_CURSOR,
+            AO_LIQUIDOPS_RECEIVER_QUERY_FOR_TOKEN_WITH_CURSOR,
+          ];
+
+      const fetchPromises = [
+        createFetchPromise(queries[0], sentCursor, skipSent, { address: activeAddress, tokenId }),
+        createFetchPromise(queries[1], receivedCursor, skipReceived, { address: activeAddress, tokenId }),
+        createFetchPromise(queries[2], liquidOpsReceivedCursor, isAr ? true : skipLiquidOpsReceived, {
+          address: activeAddress,
+          tokenId,
+        }),
+      ];
+
+      const [rawSent, rawReceived, rawLiquidOpsReceived] = await Promise.allSettled(fetchPromises);
+
+      const allTransactions = [
+        ...(rawSent.status === "fulfilled" ? rawSent.value?.data?.transactions?.edges || [] : []),
+        ...(rawReceived.status === "fulfilled" ? rawReceived.value?.data?.transactions?.edges || [] : []),
+        ...(rawLiquidOpsReceived.status === "fulfilled"
+          ? rawLiquidOpsReceived.value?.data?.transactions?.edges || []
+          : []),
+      ];
+      await checkTransferStatus(allTransactions);
+
+      const sent = await processTransactions(rawSent, isAr ? "sent" : "aoSent", !isAr);
+      const received = await processTransactions(rawReceived, isAr ? "received" : "aoReceived", !isAr);
+      const liquidOpsReceived = await processTransactions(rawLiquidOpsReceived, "liquidOpsAoReceived", !isAr);
+
+      let combinedTransactions: ExtendedTransaction[] = [...received, ...sent, ...liquidOpsReceived].sort(sortFn);
+
+      const now = new Date();
+      combinedTransactions = combinedTransactions.map((transaction) => {
+        const timestamp = transaction.node.block?.timestamp;
+        const date = timestamp ? new Date(timestamp * 1000) : now;
+
+        return {
+          ...transaction,
+          day: date.getDate(),
+          month: date.getMonth() + 1,
+          year: date.getFullYear(),
+          date: timestamp ? date.toISOString() : null,
+        };
+      });
+
+      const actualCount = combinedTransactions.length;
+
+      const nextSentCursor = sent[sent.length - 1]?.cursor || sentCursor;
+      const nextReceivedCursor = received[received.length - 1]?.cursor || receivedCursor;
+      const nextLiquidOpsReceivedCursor =
+        liquidOpsReceived[liquidOpsReceived.length - 1]?.cursor || liquidOpsReceivedCursor;
+
+      const hasSentNext =
+        !skipSent &&
+        rawSent.status === "fulfilled" &&
+        rawSent.value?.data?.transactions?.pageInfo?.hasNextPage &&
+        sent.length > 0 &&
+        nextSentCursor !== sentCursor;
+
+      const hasReceivedNext =
+        !skipReceived &&
+        rawReceived.status === "fulfilled" &&
+        rawReceived.value?.data?.transactions?.pageInfo?.hasNextPage &&
+        received.length > 0 &&
+        nextReceivedCursor !== receivedCursor;
+
+      const hasLiquidOpsReceivedNext =
+        !skipLiquidOpsReceived &&
+        rawLiquidOpsReceived.status === "fulfilled" &&
+        rawLiquidOpsReceived.value?.data?.transactions?.pageInfo?.hasNextPage &&
+        liquidOpsReceived.length > 0 &&
+        nextLiquidOpsReceivedCursor !== liquidOpsReceivedCursor;
+      const hasNext = hasSentNext || hasReceivedNext || hasLiquidOpsReceivedNext;
+
+      return {
+        transactions: combinedTransactions,
+        actualCount,
+        nextPageParam: hasNext
+          ? {
+              sentCursor: nextSentCursor,
+              receivedCursor: nextReceivedCursor,
+              skipSent: !hasSentNext || sent.length === 0,
+              skipReceived: !hasReceivedNext || received.length === 0,
+              skipLiquidOpsReceived: !hasLiquidOpsReceivedNext || liquidOpsReceived.length === 0,
+              liquidOpsReceivedCursor: nextLiquidOpsReceivedCursor,
+            }
+          : undefined,
+      };
+    },
+    getNextPageParam: (lastPage) => lastPage.nextPageParam,
+    initialPageParam: {
+      sentCursor: "",
+      receivedCursor: "",
+      liquidOpsReceivedCursor: "",
+      skipSent: false,
+      skipReceived: false,
+      skipLiquidOpsReceived: false,
+    },
+    enabled: !!activeAddress && !!tokenId,
+    staleTime: 300_000,
+    refetchInterval: 300_000,
+    gcTime: 600_000,
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    refetchOnWindowFocus: true,
+  });
+
+  const transactions = useMemo(() => {
+    if (!data?.pages) return [];
+
+    const seenIds = new Set<string>();
+    return data.pages
+      .flatMap((page) => page.transactions)
+      .filter((tx) => {
+        if (seenIds.has(tx.node.id)) return false;
+        seenIds.add(tx.node.id);
+        return true;
+      })
+      .sort(sortFn);
+  }, [data]);
+
+  const count = useMemo(() => {
+    if (!data?.pages) return { current: 0, actual: 0 };
+    return {
+      current: transactions.length,
+      actual: data.pages.reduce((sum, page) => sum + page.actualCount, 0),
+    };
+  }, [data, transactions]);
+
+  return {
+    transactions,
+    loading: isLoading || isFetching || isFetchingNextPage,
+    hasNextPage: !!hasNextPage,
+    count,
+    fetchTransactions: fetchNextPage,
   };
 };

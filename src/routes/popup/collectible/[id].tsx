@@ -2,7 +2,7 @@ import { concatGatewayURL } from "~gateways/utils";
 import { Section, Spacer, Text } from "@arconnect/components-rebrand";
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence } from "framer-motion";
-import { Link } from "../token/[id]";
+import { Link } from "~components/common/Link";
 import TokenLoading from "~components/popup/asset/Loading";
 import Thumbnail from "~components/popup/asset/Thumbnail";
 import Skeleton from "~components/Skeleton";
@@ -16,6 +16,7 @@ import placeholderUrl from "url:/assets/placeholder.png";
 import { PersistentStorage, useStorage } from "~utils/storage";
 import { getTagValue, type TokenInfoWithBalance } from "~tokens/aoTokens/ao";
 import { gql } from "~gateways/api";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 export interface CollectibleViewParams {
   id: string;
@@ -42,8 +43,11 @@ export function CollectibleView({ params: { id } }: CollectibleViewProps) {
 
   const defaultGateway = useGateway(FULL_HISTORY);
 
-  async function getCollectionDescription() {
+  useAsyncEffect(async () => {
+    if (!id || description) return;
+
     setLoading(true);
+
     try {
       const { data } = await gql(
         `query ($id: ID!) {
@@ -65,11 +69,6 @@ export function CollectibleView({ params: { id } }: CollectibleViewProps) {
     } finally {
       setLoading(false);
     }
-  }
-
-  useEffect(() => {
-    if (!id || description) return;
-    getCollectionDescription();
   }, [id, description]);
 
   return (

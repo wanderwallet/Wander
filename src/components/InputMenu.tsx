@@ -9,6 +9,7 @@ import mastercard from "url:/assets/ecosystem/mastercard.svg";
 import visa from "url:/assets/ecosystem/visa.svg";
 import supportedCurrencies from "~utils/supported_currencies";
 import { getPaymentTypes } from "~lib/onramper";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 interface InputMenuProps {
   onPaymentMethodChange?: (methodId: string) => void;
@@ -61,19 +62,16 @@ export default function InputMenu({
     }
   }, [isPaymentMethod, selectedFiatCurrency]);
 
-  useEffect(() => {
-    async function getPayments() {
-      const payments = await getPaymentTypes(selectedFiatCurrency);
+  useAsyncEffect(async () => {
+    const payments = await getPaymentTypes(selectedFiatCurrency);
 
-      const isCurrentPaymentSupported = payments.some((payment) => payment.paymentTypeId === chosenOption.id);
+    const isCurrentPaymentSupported = payments.some((payment) => payment.paymentTypeId === chosenOption.id);
 
-      if (!isCurrentPaymentSupported && isPaymentMethod) {
-        setChosenOption(defaultPaymentMethod);
-      }
-
-      setSupportedPayments(payments);
+    if (!isCurrentPaymentSupported && isPaymentMethod) {
+      setChosenOption(defaultPaymentMethod);
     }
-    getPayments();
+
+    setSupportedPayments(payments);
   }, [selectedFiatCurrency, onFiatCurrencyChange, isPaymentMethod]);
 
   const options = isPaymentMethod

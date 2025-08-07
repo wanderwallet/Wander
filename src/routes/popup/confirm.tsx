@@ -11,6 +11,7 @@ import { Line } from "./purchase";
 import { useStorage } from "~utils/storage";
 import { formatAddress } from "~utils/format";
 import type { CommonRouteProps } from "~wallets/router/router.types";
+import { TRANSAK_PURCHASE_BASE_URL, useTransakApiKey } from "~utils/transak/transak.hooks";
 
 export interface ConfirmPurchaseViewParams {
   quoteId: string;
@@ -20,6 +21,7 @@ export type ConfirmPurchaseViewProps = CommonRouteProps<ConfirmPurchaseViewParam
 
 export function ConfirmPurchaseView({ params: { quoteId: id } }: ConfirmPurchaseViewProps) {
   const { navigate } = useLocation();
+  const apiKey = useTransakApiKey();
 
   const [activeAddress] = useStorage<string>({
     key: "active_address",
@@ -38,9 +40,9 @@ export function ConfirmPurchaseView({ params: { quoteId: id } }: ConfirmPurchase
 
   const buyAR = async () => {
     try {
-      const baseUrl = "https://global.transak.com/";
+      const baseUrl = TRANSAK_PURCHASE_BASE_URL;
       const params = new URLSearchParams({
-        apiKey: process.env.PLASMO_PUBLIC_TRANSAK_API_KEY,
+        apiKey: apiKey,
         defaultCryptoCurrency: "AR",
         defaultFiatAmount: (quote.fiatAmount + quote.totalFee).toString(),
         defaultFiatCurrency: quote.fiatCurrency,

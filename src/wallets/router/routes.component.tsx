@@ -1,6 +1,7 @@
 import { AnimatePresence } from "framer-motion";
 import React, { useEffect, useMemo, type PropsWithChildren } from "react";
 import { Switch, Route as Woute } from "wouter";
+import { NoUnpartitionedStateBanner } from "~components/embed/ui/templates/no-unpartitioned-state-banner/NoUnpartitionedStateBanner";
 import { Page } from "~components/page/page.component";
 import type { CommonRouteProps, RouteConfig } from "~wallets/router/router.types";
 import { BodyScroller, useLocation } from "~wallets/router/router.utils";

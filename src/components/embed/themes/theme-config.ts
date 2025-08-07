@@ -53,9 +53,9 @@ export const themeTokens = {
     secondary: "var(--color-loading-secondary)",
   },
   input: {
-    border: "var(--color-seed-input-border)",
+    // border: "var(--color-seed-input-border)",
     active: "var(--color-seed-input-active)",
-    background: "var(--color-seed-input-background)",
+    // background: "var(--color-seed-input-background)",
   },
   radio: {
     border: "var(--color-border-radio)",

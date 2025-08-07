@@ -22,10 +22,10 @@ import prettyBytes from "pretty-bytes";
 import { formatFiatBalance } from "~tokens/currency";
 import useSetting from "~settings/hook";
 import { getPrice } from "~lib/coingecko";
-import { getTagValue, type TokenInfo, type TokenInfoWithProcessId } from "~tokens/aoTokens/ao";
+import { getTagValue, type TokenInfo } from "~tokens/aoTokens/ao";
 import { ChevronRightIcon } from "@iconicicons/react";
 import { getUserAvatar } from "~lib/avatar";
-import { LogoWrapper, Logo, WarningIcon } from "~components/popup/Token";
+import { LogoWrapper, Logo } from "~components/popup/Token";
 import arLogoLight from "url:/assets/ar/logo_light.png";
 import arLogoDark from "url:/assets/ar/logo_dark.png";
 import { useTheme } from "~utils/theme";
@@ -36,6 +36,7 @@ import { HeadAuth } from "~components/HeadAuth";
 import { AuthButtons } from "~components/auth/AuthButtons";
 import { useAskPassword } from "~wallets/hooks";
 import { humanizeTimestampTags } from "~utils/timestamp";
+import { WarningIcon } from "~components/icons/WarningIcon";
 
 export function SignDataItemAuthRequestView() {
   const { authRequest, acceptRequest, rejectRequest } = useCurrentAuthRequest("signDataItem");
@@ -145,13 +146,14 @@ export function SignDataItemAuthRequestView() {
         tokenInfo = {
           ...token.info,
           Denomination: Number(token.info.Denomination),
+          processId: token.id,
         };
       } catch (err) {
         // fallback
         console.log("err", err);
         try {
-          const aoTokens = (await PersistentStorage.get<TokenInfoWithProcessId[]>("ao_tokens")) || [];
-          const aoTokensCache = (await PersistentStorage.get<TokenInfoWithProcessId[]>("ao_tokens_cache")) || [];
+          const aoTokens = (await PersistentStorage.get<TokenInfo[]>("ao_tokens")) || [];
+          const aoTokensCache = (await PersistentStorage.get<TokenInfo[]>("ao_tokens_cache")) || [];
           const aoTokensCombined = [...aoTokens, ...aoTokensCache];
           const token = aoTokensCombined.find(({ processId }) => data.target === processId);
           if (token) {

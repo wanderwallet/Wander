@@ -1,10 +1,10 @@
 import type { AuthProviderType, SupabaseUser } from "embed-api";
 import { nanoid } from "nanoid";
+import { getEmbeddedAncestorOrigin, isInsideIframe } from "~utils/embedded/iframe.utils";
 import { AUTH_PROVIDER_TYPE_BY_PROVIDER_STR } from "~utils/embedded/embedded.constants";
-import { isInsideIframe, getEmbeddedAncestorOrigin } from "~utils/embedded/iframe.utils";
 import type {
   EmbeddedAuthMessageData,
-  EmbeddedCall,
+  EmbeddedMessage,
   EmbeddedMessageId,
   EmbeddedMessageMap,
   EmbeddedUserDetails,
@@ -12,6 +12,7 @@ import type {
 
 const EMBEDDED_MESSAGE_IDS = [
   "embedded_auth",
+  "embedded_backup",
   "embedded_open",
   "embedded_close",
   "embedded_resize",
@@ -33,8 +34,11 @@ const messageKeyFnByType: {
         .map((v) => v[1]),
     ].join("|");
   },
-  embedded_open: (data) => null,
-  embedded_close: (data) => null,
+  embedded_backup: (data) => {
+    return [data.backupsNeeded, data.backupMessage].join("|");
+  },
+  embedded_open: () => null,
+  embedded_close: () => null,
   embedded_resize: (data) => {
     return [data.routeType, data.preferredLayoutType, data.width, data.height].join("|");
   },
@@ -80,19 +84,19 @@ export function postEmbeddedMessage<K extends EmbeddedMessageId>({ type, data }:
     lastMessageKeyByType[type] = messageKey;
   }
 
-  const call: EmbeddedCall<K> = {
+  const message: EmbeddedMessage<K> = {
     id: nanoid(),
     type,
     data,
   };
 
   if (!isInsideIframe()) {
-    console.warn("Wander Embedded running as a standalone page. There's no parent Window to send this to =", call);
+    console.warn("Wander Embedded running as a standalone page. There's no parent Window to send this to =", message);
 
     return;
   }
 
-  window.parent.postMessage(call, getEmbeddedAncestorOrigin());
+  window.parent.postMessage(message, getEmbeddedAncestorOrigin());
 }
 
 export function getUserDetailsFromSupabaseUser(user: SupabaseUser | null): EmbeddedUserDetails {

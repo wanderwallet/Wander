@@ -1,7 +1,7 @@
 import { Row, Text, Box } from "~components/embed/ui";
 import {
   getFormattedAmount,
-  getFullMonthName,
+  getMonthName,
   getTransactionDescription,
   type ExtendedTransaction,
 } from "~lib/transactions";
@@ -40,12 +40,12 @@ const TransactionItem = ({ transaction }: TransactionItemProps) => {
 
   const formattedDate = useMemo(() => {
     return transaction.date
-      ? `${getFullMonthName(`${transaction.month}-${transaction.year}`)} ${transaction.day}`
+      ? `${getMonthName(`${transaction.month}-${transaction.year}`)} ${transaction.day}`
       : browser.i18n.getMessage("pending");
   }, [transaction]);
 
   return (
-    <Box hasBorder style={{ margin: "1rem 0", cursor: "pointer" }} onClick={handleTransactionClick}>
+    <Box hasBorder style={{ cursor: "pointer" }} onClick={handleTransactionClick}>
       <Row isFullWidth style={{ width: "100%" }}>
         <Logo src={logoSource} alt={transaction.aoInfo?.tickerName} height={24} width={24} />
         <Box

@@ -57,19 +57,16 @@ function getPostMessageFunction<K extends MessageID>(
 
   if (postMessageTargetWindow && postMessageTargetOrigin) {
     return async function postMessage() {
-      console.log("POST MESSAGE CALLED", messageData, postMessageTargetOrigin);
-
-      /*
-      console.log(
-        `SEND (postMessage) ${messageId} to ${destination} (${postMessageTargetOrigin}), data =`,
-        data
-      );
-      */
-
       return new Promise<ApiResponse>(async (resolve) => {
         // These have no response, so there's no need to set another `message` listener.
         // TODO: Why is switch_wallet_event not just another "event type"?
-        if (messageId === "event" || messageId === "switch_wallet_event") {
+        if (
+          messageId === "event" ||
+          messageId === "switch_wallet_event" ||
+          messageId === "embedded_signOut" ||
+          messageId === "embedded_setTheme" ||
+          messageId === "embedded_navigate"
+        ) {
           postMessageTargetWindow.postMessage(
             {
               id: nanoid(),
@@ -96,10 +93,13 @@ function getPostMessageFunction<K extends MessageID>(
           let { data: res } = e;
 
           // validate return message
-          if (!data || `${data.type}_result` !== res.type) return;
+          if (!data || typeof data !== "object" || !res || typeof res !== "object") return;
 
           // only resolve when the result matching our callID is delivered
-          if (data.callID !== res.callID) return;
+          if (!("callID" in data) || data.callID !== res.callID) return;
+
+          // make sure this is a result message
+          if (`${data.type}_result` !== res.type) return;
 
           window.removeEventListener("message", callback);
 
@@ -110,13 +110,6 @@ function getPostMessageFunction<K extends MessageID>(
   }
 
   return async function sendMessageToCallback() {
-    /*
-    console.log(
-      `SEND (sendMessageToCallback) ${messageId} to ${destination}, data =`,
-      data
-    );
-    */
-
     const messageHandlers = messageHandlersByMessageID[messageId];
 
     if (!messageHandlers) {
@@ -184,27 +177,33 @@ export function isomorphicOnMessage<K extends MessageID>(messageId: K, callback:
   messageHandlersByMessageID[messageId] ??= new Set();
   messageHandlersByMessageID[messageId].add(callback);
 
-  /*
-  if (messageHandlersByMessageID[messageId].size > 1) {
-    console.warn(
-      `${messageHandlersByMessageID[messageId].size} handlers for ${messageId}`
-    );
-  } else {
-    console.log(`Handler added for ${messageId}`);
+  if (process.env.NODE_ENV === "development" && messageHandlersByMessageID[messageId].size > 1) {
+    console.warn(`${messageHandlersByMessageID[messageId].size} handlers for ${messageId}`);
   }
-  */
 
-  // TODO: Note that in Wander Embed, there are no ready messages, so the API/SDK must
+  // TODO: Note that in Wander Connect, there are no ready messages, so the API/SDK must
   // make sure the iframe is ready before accepting method calls...
 }
 
-if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1" && isInsideIframe()) {
-  // TODO: Set this up after first call to `iframeIsomorphicOnMessage`?
+function setPostMessageListener() {
+  if (typeof window === "undefined") return;
+
+  // This handles messages coming from outside the iframe and into the iframe, so wallet API calls (and chunks),
+  // `embedded_signOut`, `embedded_setTheme` and `embedded_navigate`
 
   window.addEventListener("message", async ({ origin, data }: MessageEvent<ApiCall>) => {
-    if (!data || origin !== getEmbeddedAncestorOrigin() || data.app !== "wanderEmbedded") return;
+    if (!data || typeof data !== "object" || origin !== getEmbeddedAncestorOrigin()) return;
 
-    const messageId = data.type === "chunk" ? "chunk" : "api_call";
+    let messageId = data.type;
+
+    if (data.app === "wanderEmbedded") {
+      messageId = data.type === "chunk" ? "chunk" : "api_call";
+    } else {
+      // `embedded_signOut`, `embedded_setTheme` and `embedded_navigate` data is wrapped in an object automatically in
+      // `getPostMessageFunction` > `postMessage`, so we unwrap it here:
+      data = data.data;
+    }
+
     const messageHandlers = messageHandlersByMessageID[messageId as keyof ProtocolMap];
 
     if (!messageHandlers) {
@@ -213,7 +212,7 @@ if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1" && isInsideIframe()) {
       return;
     }
 
-    if (messageHandlers.size > 1) {
+    if (process.env.NODE_ENV === "development" && messageHandlers.size > 1) {
       console.warn(
         `${messageHandlers.size} handlers found for ${messageId}. Only the first response will be returned.`,
       );
@@ -264,4 +263,8 @@ if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1" && isInsideIframe()) {
 
     window.parent.postMessage(result, getEmbeddedAncestorOrigin());
   });
+}
+
+if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1" && isInsideIframe()) {
+  setPostMessageListener();
 }

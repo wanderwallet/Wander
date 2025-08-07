@@ -1,11 +1,11 @@
-import { ExtensionStorage, PersistentStorage } from "~utils/storage";
-import type { TokenInfoWithProcessId } from "./aoTokens/ao";
+import { PersistentStorage } from "~utils/storage";
+import type { TokenInfo } from "./aoTokens/ao";
 
 /**
  * Get stored ao tokens
  */
 export async function getAoTokens() {
-  const tokens = await PersistentStorage.get<TokenInfoWithProcessId[]>("ao_tokens");
+  const tokens = await PersistentStorage.get<TokenInfo[]>("ao_tokens");
 
   return tokens || [];
 }
@@ -14,7 +14,7 @@ export async function getAoTokens() {
  * Get stored ao tokens cache
  */
 export async function getAoTokensCache() {
-  const tokens = await PersistentStorage.get<TokenInfoWithProcessId[]>("ao_tokens_cache");
+  const tokens = await PersistentStorage.get<TokenInfo[]>("ao_tokens_cache");
 
   return tokens || [];
 }
