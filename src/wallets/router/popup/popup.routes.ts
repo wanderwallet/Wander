@@ -62,6 +62,7 @@ import { AllocationSetView } from "~routes/popup/earn/allocation-set";
 import { TokensView } from "~routes/popup/tokens";
 import { TokenDetailView } from "~routes/popup/tokens/token-detail";
 import { HelpView } from "~routes/popup/settings/help";
+import { SwapView } from "~routes/popup/swap";
 
 export type PopupRoutePath =
   | "/"
@@ -126,7 +127,8 @@ export type PopupRoutePath =
   | `/tier`
   | `/earn`
   | `/earn/manage`
-  | `/earn/allocation-set`;
+  | `/earn/allocation-set`
+  | `/swap`;
 
 export const PopupPaths = {
   Home: "/",
@@ -188,6 +190,7 @@ export const PopupPaths = {
   Earn: "/earn",
   ManageEarnings: "/earn/manage",
   AllocationSet: "/earn/allocation-set",
+  Swap: "/swap",
 } as const satisfies Record<string, PopupRoutePath>;
 
 export const POPUP_ROUTES = [
@@ -432,5 +435,9 @@ export const POPUP_ROUTES = [
   {
     path: PopupPaths.AllocationSet,
     component: AllocationSetView,
+  },
+  {
+    path: PopupPaths.Swap,
+    component: SwapView,
   },
 ] as const satisfies RouteConfig[];

@@ -33,6 +33,9 @@ import edgeHeaderGlow from "~assets/images/tier/edge_header_glow.svg";
 import primeHeaderGlow from "~assets/images/tier/prime_header_glow.svg";
 import { TierTypes } from "~utils/tier/constants";
 import { useActiveTier } from "~utils/tier/hooks";
+import { QrCode02 } from "@untitled-ui/icons-react";
+import { IconButton } from "~components/common/IconButton";
+import { useLocation } from "~wallets/router/router.utils";
 
 const glowBackgrounds = {
   [TierTypes.Core]: coreHeaderGlow,
@@ -44,6 +47,7 @@ const glowBackgrounds = {
 
 export default function WalletHeader() {
   const theme = useTheme();
+  const { navigate } = useLocation();
 
   const { data: activeTier } = useActiveTier();
 
@@ -209,6 +213,9 @@ export default function WalletHeader() {
               style={{ width: "24px", height: "24px" }}
             />
           </Tooltip>
+          <IconButton onClick={() => navigate("/swap")}>
+            <QrCode02 style={{ width: "24px", height: "24px" }} />
+          </IconButton>
         </AddressContainer>
       </Flex>
 

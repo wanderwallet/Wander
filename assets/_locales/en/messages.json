@@ -4149,5 +4149,13 @@
   "no_activity_yet": {
     "message": "No activity yet",
     "description": "No activity yet text"
+  },
+  "token_swaps_available_now": {
+    "message": "Token swaps available now!",
+    "description": "Token swaps available now text"
+  },
+  "earn_wndr_tokens": {
+    "message": "Earn $$WNDR Tokens",
+    "description": "Earn $WNDR Tokens text"
   }
 }

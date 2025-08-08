@@ -152,7 +152,6 @@ export const WandAnnouncementPopup = ({ isOpen, setOpen }) => {
             navigationArrowPosition="onSlides"
             showNavigationArrowsOnHover
             options={{ loop: false }}
-            smoothSliding={false}
           />
         </Flex>
 

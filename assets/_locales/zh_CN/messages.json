@@ -4109,5 +4109,13 @@
     "no_activity_yet": {
       "message": "暂无活动",
       "description": "No activity yet text"
+    },
+    "token_swaps_available_now": {
+      "message": "代币交换现已可用！",
+      "description": "Token swaps available now text"
+    },
+    "earn_wndr_tokens": {
+      "message": "赚取 $$WNDR 代币",
+      "description": "Earn $WNDR Tokens text"
     }
 }

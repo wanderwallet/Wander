@@ -1,8 +1,8 @@
 import { ActionButtons, type ButtonConfig } from "../ActionButtons";
-import { QrCode02 } from "@untitled-ui/icons-react";
 import browser from "webextension-polyfill";
 import arLogoDark from "url:/assets/ar/logo_dark.png";
 import { ReceiveIcon } from "~components/icons/ReceiveIcon";
+import { SwapIcon } from "~routes/popup/swap/components/SwapIcon";
 
 const buttons: ButtonConfig[] = [
   {
@@ -20,8 +20,8 @@ const buttons: ButtonConfig[] = [
   },
   {
     text: "",
-    icon: <QrCode02 style={{ height: 26, width: 26 }} />,
-    href: "/receive",
+    icon: <SwapIcon />,
+    href: "/swap",
     variant: "secondary",
   },
 ];

@@ -19,9 +19,9 @@ import CreateWanderAgentCTA from "./agents/components/CreateWanderAgentCTA";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { scheduleSwapExecution } from "~utils/agents/swap";
 import { WandAnnouncementPopup } from "~components/popup/home/WandAnnouncementPopup";
-import { ActivityNotificationsNotice } from "~components/popup/home/ActivityNotificationsNotice";
 import { AstroBetaAccessAnnouncementPopup } from "~components/popup/home/AstroBetaAccessAnnouncementPopup";
 import { isAstroBetaAnnouncementActive } from "~utils/announcements";
+import { AnnouncementsCarousel } from "./swap/components/AnnouncementsCarousel";
 
 export function HomeView() {
   const theme = useTheme();
@@ -133,7 +133,7 @@ export function HomeView() {
       <HomeContent>
         <Balance />
         <WalletActions />
-        <ActivityNotificationsNotice />
+        <AnnouncementsCarousel />
         <CreateWanderAgentCTA />
         <Tabs />
       </HomeContent>

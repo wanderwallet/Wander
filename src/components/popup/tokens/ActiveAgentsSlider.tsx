@@ -69,6 +69,7 @@ export function ActiveAgentsSlider({ id }: ActiveAgentsSliderProps) {
         dotColor="rgba(102, 102, 102, 0.50)"
         activeDotColor={theme.primary}
         navigationArrowColor={theme.tertiaryText}
+        showSlideEdges={true}
       />
     </Flex>
   );
