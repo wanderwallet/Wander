@@ -57,6 +57,8 @@ export function UnpartitionedStateMissingEmbeddedView() {
   const { authStatus, unpartitionedStateStatus, unpartitionedStateConfirmed, confirmUnpartitionedState } =
     useEmbedded();
 
+  console.log("render unpartitionedStateStatus =", unpartitionedStateStatus);
+
   const couldProbablyGetAccess =
     (HAS_ADVANCED_STORAGE_API && (unpartitionedStateStatus === "rejected" || unpartitionedStateStatus === "error")) ||
     isPretendingToBeAnotherBrowser;
@@ -110,6 +112,7 @@ export function UnpartitionedStateMissingEmbeddedView() {
     }
   }, [navigate]);
 
+  /*
   useInterval(
     async () => {
       if (isRequestingPermission) return;
@@ -127,6 +130,7 @@ export function UnpartitionedStateMissingEmbeddedView() {
     },
     shouldTryToGetAccess ? 1000 : null,
   );
+  */
 
   useEffect(() => {
     if (unpartitionedStateStatus === "supported") {
