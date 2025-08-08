@@ -3,9 +3,16 @@ import { log, LOG_GROUP } from "~utils/log/log.utils";
 import {
   getUnpartitionedStateStatus,
   HAS_SIMPLE_STORAGE_API,
+  setUnpartitionedStateStatus,
   type UnpartitionedStateStatus,
 } from "./unpartitioned-storage.utils";
 import { StorageManager } from "~iframe/storage/storage-manager/storage-manager";
+import { isError } from "~utils/error/error.utils";
+import {
+  isComplexStorageItem,
+  type ItemStorageOptions,
+  type StorageItem,
+} from "~iframe/storage/storage-manager/storage-manager.utils";
 
 type StorageType = "localStorage" | "sessionStorage";
 
@@ -87,8 +94,6 @@ export class EnhancedStorage implements Storage {
     }
   }
 
-  dispatchUnpartitionedStateStatusChange() {}
-
   protected async requestStorageAccessAndInitializeStorage(): Promise<UnpartitionedStateStatus> {
     if (!isInsideIframe()) {
       console.warn(
@@ -104,78 +109,26 @@ export class EnhancedStorage implements Storage {
     try {
       log(LOG_GROUP.STORAGE, `Requesting ${this.storageType} access with typed API`);
 
-      // Check if we already have access
-      const hasAccess = await document.hasStorageAccess();
-      if (hasAccess) {
-        log(LOG_GROUP.STORAGE, "Already has storage access");
-        try {
-          this.storage = await this.getStorageHandle();
-          this.accessState = StorageAccessState.FULL_ACCESS;
-        } catch (error) {
-          // If we can't get the handle but have storage access, we have cookie access
-          this.accessState = StorageAccessState.COOKIES_ONLY;
-          log(LOG_GROUP.STORAGE, "Has cookie access but couldn't get storage handle");
-        }
-        return;
-      }
+      // @ts-expect-error - Newer API with types may not be recognized by TypeScript
+      const handle = await document.requestStorageAccess({
+        [this.storageType]: true,
+        cookies: true,
+      });
 
-      // Check permission state
-      try {
-        const permission = await navigator.permissions.query({
-          name: "storage-access",
-        });
-
-        if (permission.state === "granted") {
-          // If permission is granted, we can just call requestStorageAccess() without user interaction
-          try {
-            this.storage = await this.getStorageHandle();
-            this.accessState = StorageAccessState.FULL_ACCESS;
-            log(LOG_GROUP.STORAGE, "Full storage access granted via permission");
-          } catch (error) {
-            // Try to get just cookie access if we couldn't get the handle
-            try {
-              await document.requestStorageAccess();
-              const hasAccess = await document.hasStorageAccess();
-              if (hasAccess) {
-                this.accessState = StorageAccessState.COOKIES_ONLY;
-                log(LOG_GROUP.STORAGE, "Cookie access granted via permission");
-              }
-            } catch (cookieError) {
-              log(LOG_GROUP.STORAGE, "Failed to get cookie access:", cookieError);
-            }
-          }
-        } else if (permission.state === "prompt") {
-          log(LOG_GROUP.STORAGE, "Storage access requires user interaction");
-          this.setupUserInteractionHandler();
-        } else if (permission.state === "denied") {
-          log(LOG_GROUP.STORAGE, "Storage access denied by user");
-        }
-
-        // Set up permission change listener
-        permission.addEventListener("change", () => {
-          if (permission.state === "granted") {
-            document.hasStorageAccess().then((hasAccess) => {
-              if (hasAccess) {
-                this.getStorageHandle()
-                  .then((handle) => {
-                    this.storage = handle;
-                    this.accessState = StorageAccessState.FULL_ACCESS;
-                  })
-                  .catch(() => {
-                    this.accessState = StorageAccessState.COOKIES_ONLY;
-                  });
-              }
-            });
-          }
-          log(LOG_GROUP.STORAGE, `Storage access permission changed to: ${permission.state}`);
-        });
-      } catch (error) {
-        // This might happen if the browser doesn't support the "storage-access" permission
-        log(LOG_GROUP.STORAGE, "Error querying storage-access permission:", error);
-        // We'll still try to set up the user interaction handler
-        this.setupUserInteractionHandler();
+      // @ts-expect-error - Newer API may not be recognized by TypeScript
+      if (handle && handle[this.storageType]) {
+        this.storage = handle[this.storageType];
+        this.accessState = StorageAccessState.FULL_ACCESS;
+        this.dispatchUnpartitionedStateStatusChange("supported");
+      } else {
+        this.accessState = StorageAccessState.COOKIES_ONLY;
+        this.dispatchUnpartitionedStateStatusChange("limited");
       }
     } catch (error) {
+      // If we can't get the handle but have storage access, we have cookie access
+      this.accessState = StorageAccessState.COOKIES_ONLY;
+      log(LOG_GROUP.STORAGE, "Has cookie access but couldn't get storage handle");
+
       console.warn("document.requestStorageAccess() failed:", error);
 
       this.dispatchUnpartitionedStateStatusChange(error || "error");
@@ -236,6 +189,18 @@ export class EnhancedStorage implements Storage {
             });
           } catch (error) {
             log(LOG_GROUP.STORAGE, "Error checking permission:", error);
+
+            // Try to get just cookie access if we couldn't get the handle
+            try {
+              await document.requestStorageAccess();
+              const hasAccess = await document.hasStorageAccess();
+              if (hasAccess) {
+                this.accessState = StorageAccessState.COOKIES_ONLY;
+                log(LOG_GROUP.STORAGE, "Cookie access granted via permission");
+              }
+            } catch (cookieError) {
+              log(LOG_GROUP.STORAGE, "Failed to get cookie access:", cookieError);
+            }
           }
         }
 
@@ -278,7 +243,64 @@ export class EnhancedStorage implements Storage {
    * This is required by the Storage Access API for security
    */
   protected setupUserInteractionHandler(): void {
-    document.addEventListener("click", async () => this.requestAccessOnUserInteraction(), { once: true });
+    log(LOG_GROUP.STORAGE, "Waiting for user interaction to request storage access");
+
+    // Create a reusable handler function
+    const handleUserInteraction = async () => {
+      try {
+        await this.requestStorageAccess();
+
+        log(LOG_GROUP.STORAGE, "Storage access granted after user interaction");
+
+        // Clean up event listeners after successful request
+        cleanupListeners();
+      } catch (error) {
+        log(LOG_GROUP.STORAGE, "Storage access denied after user interaction:", error);
+      }
+    };
+
+    // Function to clean up event listeners
+    const cleanupListeners = () => {
+      document.removeEventListener("click", handleUserInteraction);
+      document.removeEventListener("pointerdown", handleUserInteraction);
+    };
+
+    // Add event listeners with once:true to auto-remove after firing
+    document.addEventListener("click", handleUserInteraction, { once: true });
+    document.addEventListener("pointerdown", handleUserInteraction, {
+      once: true,
+    });
+
+    // Also clean up after a timeout if user never interacts
+    setTimeout(cleanupListeners, 300000); // 5 minutes
+  }
+
+  /**
+   * Handle the case when unpartitioned storage access is denied or unavailable
+
+   */
+  protected dispatchUnpartitionedStateStatusChange(
+    unpartitionedStateStatusOrError: UnpartitionedStateStatus | Error,
+  ): UnpartitionedStateStatus {
+    const unpartitionedStateStatus = isError(unpartitionedStateStatusOrError)
+      ? "error"
+      : unpartitionedStateStatusOrError;
+
+    if (unpartitionedStateStatus === "error") {
+      this.error = isError(unpartitionedStateStatusOrError)
+        ? unpartitionedStateStatusOrError
+        : new Error("Unexpected unpartitioned state error");
+    } else {
+      this.error = null;
+    }
+
+    log(LOG_GROUP.STORAGE, `Unpartitioned state access for ${this.storageType} = ${unpartitionedStateStatus}`);
+
+    setUnpartitionedStateStatus(unpartitionedStateStatus, this.error);
+
+    this.requestStorageAccessResolve(unpartitionedStateStatus);
+
+    return (this.status = unpartitionedStateStatus);
   }
 
   /**
