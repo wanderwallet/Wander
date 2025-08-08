@@ -113,7 +113,11 @@ export class EnhancedStorage implements Storage {
 
     return (this.requestStorageAccessPromise = new Promise<UnpartitionedStateStatus>(async (resolve) => {
       // With this, calling dispatchUnpartitionedStateStatusChange() will automatically call resolve() too:
-      this.requestStorageAccessResolve = resolve;
+      this.requestStorageAccessResolve = (...args) => {
+        console.log("RESOLVED", args);
+
+        resolve(...args);
+      };
 
       // Storage Access API not supported:
       if (!HAS_SIMPLE_STORAGE_API) return this.dispatchUnpartitionedStateStatusChange("unsupported");
@@ -155,7 +159,7 @@ export class EnhancedStorage implements Storage {
 
         await this.handleStorageAccessPermission(permissionState);
       } catch (error) {
-        this.dispatchUnpartitionedStateStatusChange(error);
+        (console.log("ERROR =", error), this.dispatchUnpartitionedStateStatusChange(error));
       }
     }));
   }
