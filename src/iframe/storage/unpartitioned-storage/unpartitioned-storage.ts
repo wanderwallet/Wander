@@ -102,7 +102,7 @@ export class EnhancedStorage implements Storage {
       return;
     }
 
-    console.trace("requestStorageAccess status =", this.status);
+    console.log("requestStorageAccess status =", this.status);
 
     // Unpartitioned state access already accepted, limited or unsupported:
     if (["supported", "limited", "unsupported"].includes(this.status)) {
@@ -219,6 +219,8 @@ export class EnhancedStorage implements Storage {
 
     // Create a reusable handler function
     const handleUserInteraction = async () => {
+      console.log("HANDLING USER ACTION");
+
       try {
         await this.requestStorageAccess();
 
