@@ -3,15 +3,8 @@ import { log, LOG_GROUP } from "~utils/log/log.utils";
 import {
   getUnpartitionedStateStatus,
   HAS_SIMPLE_STORAGE_API,
-  setUnpartitionedStateStatus,
   type UnpartitionedStateStatus,
 } from "./unpartitioned-storage.utils";
-import { isError } from "~utils/error/error.utils";
-import {
-  isComplexStorageItem,
-  type ItemStorageOptions,
-  type StorageItem,
-} from "~iframe/storage/storage-manager/storage-manager.utils";
 import { StorageManager } from "~iframe/storage/storage-manager/storage-manager";
 
 type StorageType = "localStorage" | "sessionStorage";
