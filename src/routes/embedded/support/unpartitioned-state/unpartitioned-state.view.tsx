@@ -96,7 +96,7 @@ export function UnpartitionedStateMissingEmbeddedView() {
     try {
       setIsRequestingPermission(true);
 
-      console.trace("getInstance =");
+      console.log("getInstance =");
 
       const localStorage = await LocalStorage.getInstance();
 
