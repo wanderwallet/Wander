@@ -103,7 +103,11 @@ export function SignDataItemDetails({ dataItem }: SignDataItemDetailsProps) {
               justifyContent: "center",
               marginBottom: "4px",
             }}>
-            {loading || tokenInfo ? <TokenLogo token={tokenInfo || ""} /> : null}
+            {loading ? (
+              <Loading style={{ width: "16px", height: "16px" }} />
+            ) : (
+              tokenInfo && <TokenLogo token={tokenInfo || ""} />
+            )}
           </div>
           {transfer && (
             <>

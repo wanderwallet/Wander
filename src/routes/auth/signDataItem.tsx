@@ -1,4 +1,4 @@
-import { Input, Section, Spacer, Text, useInput, useToasts } from "@arconnect/components-rebrand";
+import { Input, Loading, Section, Spacer, Text, useInput, useToasts } from "@arconnect/components-rebrand";
 import {
   FiatAmount,
   AmountTitle,
@@ -240,7 +240,11 @@ export function SignDataItemAuthRequestView() {
               justifyContent: "center",
               marginBottom: "4px",
             }}>
-            {loading || tokenInfo ? <TokenLogo token={tokenInfo || ""} /> : null}
+            {loading ? (
+              <Loading style={{ width: "16px", height: "16px" }} />
+            ) : (
+              tokenInfo && <TokenLogo token={tokenInfo || ""} />
+            )}
           </div>
           {transfer && (
             <>
