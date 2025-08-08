@@ -100,6 +100,8 @@ export class EnhancedStorage implements Storage {
       return;
     }
 
+    console.log("this.status before check =", this.status);
+
     // Unpartitioned state access already accepted, limited or unsupported:
     if (["supported", "limited", "unsupported"].includes(this.status)) {
       return this.status;
@@ -122,6 +124,8 @@ export class EnhancedStorage implements Storage {
         // Check if we already have access:
 
         const hasAccess = await document.hasStorageAccess();
+
+        console.log("hasAccess =", hasAccess);
 
         if (hasAccess) {
           return await this.requestStorageAccessAndInitializeStorage();
@@ -157,6 +161,8 @@ export class EnhancedStorage implements Storage {
   }
 
   private async handleStorageAccessPermission(permissionState: PermissionState) {
+    console.log(`handleStorageAccessPermission(${permissionState})`);
+
     // Note `dispatchUnpartitionedStateStatusChange()` is the function that calls `requestStorageAccessResolve()`, so we
     // must be sure it's always invoked or the Promise created by `requestStorageAccess()` will never be invoked.
 
@@ -165,7 +171,11 @@ export class EnhancedStorage implements Storage {
       // `dispatchUnpartitionedStateStatusChange()`.
 
       await this.requestStorageAccessAndInitializeStorage();
-    } else if (permissionState === "prompt") {
+
+      return;
+    }
+
+    if (permissionState === "prompt") {
       // Not granted, so we need to wait for user interaction to request. We dispatch a "rejected" event while we wait
       // for permissions/access.
 
@@ -181,6 +191,8 @@ export class EnhancedStorage implements Storage {
       // User has denied access, so nothing to do, just dispatch the "rejected" event.
       this.dispatchUnpartitionedStateStatusChange("rejected");
     }
+
+    throw new Error("Could not get access to unpartitioned state.");
   }
 
   /**
@@ -188,6 +200,10 @@ export class EnhancedStorage implements Storage {
    * This is required by the Storage Access API for security
    */
   protected setupUserInteractionHandler(): void {
+    // TODO: Clean up multiple user interactions listeners.
+
+    console.log("setupUserInteractionHandler");
+
     log(LOG_GROUP.STORAGE, "Waiting for user interaction to request storage access");
 
     // Create a reusable handler function
