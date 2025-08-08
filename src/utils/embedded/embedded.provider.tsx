@@ -942,7 +942,6 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
         if (typeof authParams === "string") {
           await AuthenticationService.authenticateWithOAuth(authParams);
-          // TODO: await getSupabaseAuthFromUrl(url, authProviderType);
         } else if (authParams.method === "signInWithPassword") {
           await AuthenticationService.signInWithPassword(authParams);
         } else if (authParams.method === "verifyOtp") {
