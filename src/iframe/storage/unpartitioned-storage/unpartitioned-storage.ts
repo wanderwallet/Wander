@@ -41,6 +41,8 @@ export class EnhancedStorage implements Storage {
 
   private requestStorageAccessPromise: Promise<UnpartitionedStateStatus> | null = null;
 
+  private requestStorageAccessResolve: (status: UnpartitionedStateStatus) => void = () => {};
+
   /** Current state of storage access */
   public accessState: StorageAccessState = StorageAccessState.PARTITIONED;
 
@@ -87,10 +89,15 @@ export class EnhancedStorage implements Storage {
 
   dispatchUnpartitionedStateStatusChange() {}
 
-  async requestStorageAccess() {
+  protected async requestStorageAccessAndInitializeStorage(): Promise<UnpartitionedStateStatus> {
     if (!isInsideIframe()) {
+      console.warn(
+        "UnpartitionedStorage.requestStorageAccessAndInitializeStorage() should only be called from within an iframe. Regular, partitioned state will be used.",
+      );
+
       // Not in iframe, so we have direct access
       this.accessState = StorageAccessState.FULL_ACCESS;
+
       return;
     }
 
@@ -177,7 +184,7 @@ export class EnhancedStorage implements Storage {
     return this.status;
   }
 
-  async DEV_requestStorageAccess(): Promise<UnpartitionedStateStatus> {
+  async requestStorageAccess(): Promise<UnpartitionedStateStatus> {
     if (!isInsideIframe()) {
       console.warn(
         "UnpartitionedStorage.requestStorageAccess() should only be called from within an iframe. Regular, partitioned state will be used.",
