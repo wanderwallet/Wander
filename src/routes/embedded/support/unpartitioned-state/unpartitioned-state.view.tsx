@@ -147,8 +147,7 @@ export function UnpartitionedStateMissingEmbeddedView() {
   }, [unpartitionedStateStatus]);
 
   const needsConfirmation = !unpartitionedStateConfirmed && authStatus === "noAuth";
-  const requestAccessButtonText =
-    unpartitionedStateStatus === "rejected" || errorsWhileRequestingAccess === 0 ? "Request access" : "Try again";
+  const requestAccessButtonText = errorsWhileRequestingAccess === 0 ? "Request access" : "Try again";
 
   let headerText = "Limited browser support";
   let subtitle =
