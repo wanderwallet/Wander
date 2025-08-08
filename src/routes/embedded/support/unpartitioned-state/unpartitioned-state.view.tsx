@@ -57,7 +57,7 @@ export function UnpartitionedStateMissingEmbeddedView() {
   const { authStatus, unpartitionedStateStatus, unpartitionedStateConfirmed, confirmUnpartitionedState } =
     useEmbedded();
 
-  console.log("render unpartitionedStateStatus =", unpartitionedStateStatus);
+  console.warn("render unpartitionedStateStatus =", unpartitionedStateStatus);
 
   const couldProbablyGetAccess =
     (HAS_ADVANCED_STORAGE_API && (unpartitionedStateStatus === "rejected" || unpartitionedStateStatus === "error")) ||

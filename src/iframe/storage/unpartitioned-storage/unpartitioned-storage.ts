@@ -38,6 +38,8 @@ export class EnhancedStorage implements Storage {
 
   private requestStorageAccessResolve: (status: UnpartitionedStateStatus) => void = () => {};
 
+  private isWaitingForUserAction = false;
+
   constructor({ area = "local" }: EnhancedStorageOptions = {}) {
     this.storageType = area === "local" ? "localStorage" : "sessionStorage";
     this.storage = globalThis[this.storageType];
@@ -145,6 +147,8 @@ export class EnhancedStorage implements Storage {
 
             permissionState = permission.state;
 
+            console.log("SET PERMISSION EVENT");
+
             permission.addEventListener("change", () => {
               log(LOG_GROUP.STORAGE, `Storage access permission changed to ${permission.state}`);
 
@@ -203,9 +207,13 @@ export class EnhancedStorage implements Storage {
    * This is required by the Storage Access API for security
    */
   protected setupUserInteractionHandler(): void {
-    // TODO: Clean up multiple user interactions listeners.
+    console.log(this.isWaitingForUserAction ? "SKIP EVENT" : "SET EVENT");
 
-    console.log("setupUserInteractionHandler");
+    if (this.isWaitingForUserAction) return;
+
+    this.isWaitingForUserAction = true;
+
+    // TODO: Clean up multiple user interactions listeners.
 
     log(LOG_GROUP.STORAGE, "Waiting for user interaction to request storage access");
 
