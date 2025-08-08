@@ -100,7 +100,7 @@ export class EnhancedStorage implements Storage {
       return;
     }
 
-    console.trace("\n\nrequestStorageAccess status =", this.status);
+    console.trace("requestStorageAccess status =", this.status);
 
     // Unpartitioned state access already accepted, limited or unsupported:
     if (["supported", "limited", "unsupported"].includes(this.status)) {
@@ -155,11 +155,10 @@ export class EnhancedStorage implements Storage {
           }
         }
 
-        console.log("Calling here...");
-
         await this.handleStorageAccessPermission(permissionState);
       } catch (error) {
-        (console.log("ERROR =", error), this.dispatchUnpartitionedStateStatusChange(error));
+        console.log("ERROR =", error);
+        this.dispatchUnpartitionedStateStatusChange(error);
       }
     }));
   }
