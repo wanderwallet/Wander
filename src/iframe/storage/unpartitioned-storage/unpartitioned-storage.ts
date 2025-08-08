@@ -13,6 +13,11 @@ interface EnhancedStorageOptions {
   area?: "local" | "session";
 }
 
+const timesInstantiated: Record<StorageType, number> = {
+  localStorage: 0,
+  sessionStorage: 0,
+};
+
 /**
  * Represents the current state of storage access
  */
@@ -30,10 +35,16 @@ export class EnhancedStorage implements Storage {
 
   public storageType: StorageType;
 
+  public status: UnpartitionedStateStatus | null = null;
+
+  public error: Error | null = null;
+
+  private requestStorageAccessPromise: Promise<UnpartitionedStateStatus> | null = null;
+
   /** Current state of storage access */
   public accessState: StorageAccessState = StorageAccessState.PARTITIONED;
 
-  constructor({ area = "local" }: UnpartitionedStorageOptions = {}) {
+  constructor({ area = "local" }: EnhancedStorageOptions = {}) {
     this.storageType = area === "local" ? "localStorage" : "sessionStorage";
     this.storage = globalThis[this.storageType];
 
