@@ -3,13 +3,14 @@ import { EnhancedStorage } from "./unpartitioned-storage";
 import Cookies from "js-cookie";
 import type { CookieAttributes } from "node_modules/@types/js-cookie";
 import { getUnpartitionedStateStatus } from "~iframe/storage/unpartitioned-storage/unpartitioned-storage.utils";
+import { DEVICE_NONCE_KEY } from "~utils/embedded/device-nonce/device-nonce.utils";
+
+// TODO: Move to `embeda-pi`
+const SUPABASE_AUTH_TOKEN_KEY_REGEXP = /^sb\-\w+\-auth\-token$/;
 
 export class LocalStorage {
   private static instance: LocalStorage | null = null;
 
-  private static readonly DEVICE_NONCE_KEY = "DEVICE_NONCE";
-  private static readonly SUPABASE_AUTH_PREFIX = "sb-";
-  private static readonly SUPABASE_AUTH_SUFFIX = "-auth-token";
   private static readonly DEBUG_MODE = process.env.NODE_ENV === "development";
 
   // Maximum size for a single cookie chunk (about 4KB - some overhead)
@@ -28,17 +29,17 @@ export class LocalStorage {
     return {
       path: "/",
       sameSite: !this.isHttps ? "Lax" : "None",
-      secure: this.isHttps,
       expires: 365,
+      secure: this.isHttps,
     };
   }
 
   private get COOKIE_STORE_OPTIONS(): Omit<CookieInit, "name" | "value"> {
     return {
-      expires: Date.now() + 365 * 24 * 60 * 60 * 1000,
-      partitioned: false,
       path: "/",
       sameSite: !this.isHttps ? "lax" : "none",
+      expires: Date.now() + 365 * 24 * 60 * 60 * 1000,
+      partitioned: false,
     };
   }
 
@@ -93,26 +94,25 @@ export class LocalStorage {
    * Determine the primary storage strategy based on access state
    * @returns Whether to use cookies as primary storage
    */
+  /*
   private shouldUseCookiesAsPrimary(): boolean {
     // Only use cookies as primary when we have cookie access but not full access
     return this.storage.hasCookieAccess() && !this.storage.hasFullAccess();
   }
+  */
 
   /**
-   * Check if this key should be stored in cookies
+   * Returns `true` if the given key should be stored using cookies instead of localStorage. This only happens for the
+   * device nonce and the Supabsae auth token if and only if the unpartitioned state status is "limited", meaning,
+   * unpartitioned state is supported but only for cookies.
+   *
+   * In any other case, like not having unpartitioned state support at all or if unpartitioned state for localStorage
+   * is supported, we do not use cookies.
    */
   private shouldStoreInCookies(key: string): boolean {
-    return this.isAuthenticationKey(key);
-  }
+    if (getUnpartitionedStateStatus() !== "limited") return false;
 
-  /**
-   * Check if this is an authentication-related key
-   */
-  private isAuthenticationKey(key: string): boolean {
-    return (
-      key === LocalStorage.DEVICE_NONCE_KEY ||
-      (key.startsWith(LocalStorage.SUPABASE_AUTH_PREFIX) && key.endsWith(LocalStorage.SUPABASE_AUTH_SUFFIX))
-    );
+    return key === DEVICE_NONCE_KEY || SUPABASE_AUTH_TOKEN_KEY_REGEXP.test(key);
   }
 
   /**
@@ -150,6 +150,8 @@ export class LocalStorage {
       }
     } catch (e) {
       if (LocalStorage.DEBUG_MODE) console.warn(`Failed to set cookie for key '${key}'`, e);
+
+      /*
       try {
         Cookies.set(key, value, cookieOptions);
         let result = Cookies.get(key);
@@ -161,6 +163,7 @@ export class LocalStorage {
       } catch (fallbackError) {
         if (LocalStorage.DEBUG_MODE) console.warn(`Fallback cookie set also failed for key '${key}'`, fallbackError);
       }
+        */
 
       return false;
     }
@@ -180,11 +183,15 @@ export class LocalStorage {
       }
     } catch (e) {
       if (LocalStorage.DEBUG_MODE) console.warn(`Failed to get cookie for key '${key}'`, e);
+
+      /*
       try {
         return Cookies.get(key) || null;
       } catch (fallbackError) {
         if (LocalStorage.DEBUG_MODE) console.warn(`Fallback cookie get also failed for key '${key}'`, fallbackError);
       }
+      */
+
       return null;
     }
   }
@@ -209,14 +216,25 @@ export class LocalStorage {
       }
     } catch (e) {
       if (LocalStorage.DEBUG_MODE) console.warn(`Failed to get all cookies`, e);
+
+      /*
       try {
         return Cookies.get() || {};
       } catch (fallbackError) {
         if (LocalStorage.DEBUG_MODE) console.warn(`Fallback getAll cookies also failed`, fallbackError);
       }
+      */
 
       return {};
     }
+  }
+
+  private async getAllStorageCookieKeys(): Promise<string[]> {
+    const allCookies = await this.getAllCookies();
+
+    return Object.keys(allCookies).filter(
+      (key) => this.shouldStoreInCookies(key) || key.includes(LocalStorage.CHUNK_SUFFIX),
+    );
   }
 
   /**
@@ -246,13 +264,6 @@ export class LocalStorage {
       if (LocalStorage.DEBUG_MODE) console.warn(`Failed to set storage value for key '${key}'`, e);
       return false;
     }
-  }
-
-  /**
-   * Determine if we should use raw storage for a key
-   */
-  private shouldUseRawStorage(key: string): boolean {
-    return key.startsWith(LocalStorage.SUPABASE_AUTH_PREFIX) && key.endsWith(LocalStorage.SUPABASE_AUTH_SUFFIX);
   }
 
   /**
@@ -357,6 +368,8 @@ export class LocalStorage {
       // Check if any chunks are missing
       if (chunks.some((chunk) => chunk === null)) {
         if (LocalStorage.DEBUG_MODE) console.warn(`Incomplete chunked value for key ${key}, fallback to localStorage`);
+
+        /*
         const useRaw = this.shouldUseRawStorage(key);
         const localValue = this.getStorageValue<string>(key, useRaw);
 
@@ -364,6 +377,7 @@ export class LocalStorage {
           await this.setCookieWithChunkingIfNeeded(key, localValue);
           return localValue;
         }
+        */
 
         return null;
       }
@@ -431,23 +445,21 @@ export class LocalStorage {
   /**
    * Set an item in storage, with appropriate backup strategies
    */
-  async setItem<T>(key: string, value: T): Promise<void> {
+  async setItem<T>(key: string, value: T, useRaw = false): Promise<void> {
     if (!key) {
+      // TODO: Wouldn't this throw an error already? Otherwise, it should.
       if (LocalStorage.DEBUG_MODE) console.warn("Attempted to set a value with an empty key");
       return;
     }
 
-    const useRaw = this.shouldUseRawStorage(key);
-    const useCookiesAsPrimary = this.shouldUseCookiesAsPrimary();
-    const shouldBackupToCookies = this.shouldStoreInCookies(key);
+    const shouldStoreInCookies = this.shouldStoreInCookies(key);
 
     if (LocalStorage.DEBUG_MODE) {
-      console.log(
-        `Setting ${key} with strategy: ${useCookiesAsPrimary && shouldBackupToCookies ? "cookies-primary" : "localStorage-primary"}`,
-      );
+      // TODO: Use logger:
+      console.log(`Setting ${key} in ${shouldStoreInCookies ? "cookies" : "localStorage"}`);
     }
 
-    // Store in cookies if needed
+    /*
     if (shouldBackupToCookies && useCookiesAsPrimary) {
       if (LocalStorage.DEBUG_MODE) {
         const reason = useCookiesAsPrimary ? "cookies-only access" : "auth data backup";
@@ -466,28 +478,33 @@ export class LocalStorage {
       }
       this.setStorageValue(key, value, useRaw);
     }
+    */
+
+    if (shouldStoreInCookies) {
+      await this.setCookieWithChunkingIfNeeded(key, value as string);
+    } else {
+      this.setStorageValue(key, value, useRaw);
+    }
   }
 
   /**
    * Get an item from storage, with appropriate fallback strategies
    */
-  async getItem<T = string>(key: string): Promise<T | null> {
+  async getItem<T = string>(key: string, useRaw = false): Promise<T | null> {
     if (!key) {
+      // TODO: Wouldn't this throw an error already? Otherwise, it should.
       if (LocalStorage.DEBUG_MODE) console.warn("Attempted to get a value with an empty key");
       return null;
     }
 
-    const useRaw = this.shouldUseRawStorage(key);
-    const useCookiesAsPrimary = this.shouldUseCookiesAsPrimary();
-    const shouldBackupToCookies = this.shouldStoreInCookies(key);
+    const shouldStoreInCookies = this.shouldStoreInCookies(key);
 
     if (LocalStorage.DEBUG_MODE) {
-      console.log(
-        `Getting ${key} with strategy: ${useCookiesAsPrimary && shouldBackupToCookies ? "cookies-primary" : "localStorage-primary"}`,
-      );
+      // TODO: Use logger:
+      console.log(`Getting ${key} in ${shouldStoreInCookies ? "cookies" : "localStorage"}`);
     }
 
-    // If cookies are primary or we should check cookies for this key
+    /*
     if (useCookiesAsPrimary && shouldBackupToCookies) {
       try {
         if (LocalStorage.DEBUG_MODE) console.log(`Checking cookie for key '${key}'`);
@@ -527,6 +544,27 @@ export class LocalStorage {
 
     // If cookies aren't primary or we didn't find in cookies, try localStorage
     return this.getStorageValue<T>(key, useRaw);
+    */
+
+    if (shouldStoreInCookies) {
+      try {
+        if (LocalStorage.DEBUG_MODE) console.log(`Checking cookie for key '${key}'`);
+
+        let cookieValue = await this.getChunkedCookies(key);
+
+        // If not found as chunks, try regular cookie
+        if (cookieValue === null) {
+          cookieValue = await this.getCookieValue(key);
+        }
+
+        return cookieValue as unknown as T;
+      } catch (error) {
+        // TODO: Shouldn't this be thrown?
+        console.warn("Failed to get cookie:", error);
+      }
+    } else {
+      return this.getStorageValue<T>(key, useRaw);
+    }
   }
 
   /**
@@ -561,16 +599,9 @@ export class LocalStorage {
     this.storage.clear();
 
     try {
-      // Only check actual cookies rather than all potential keys
-      const cookies = await this.getAllCookies();
+      const storageCookieKeys = await this.getAllStorageCookieKeys();
+      const removePromises = storageCookieKeys.map((key) => this.removeCookie(key));
 
-      const removePromises = [];
-      for (const key of Object.keys(cookies)) {
-        if (this.shouldStoreInCookies(key) || key.includes(LocalStorage.CHUNK_SUFFIX)) {
-          if (LocalStorage.DEBUG_MODE) console.log(`Clearing cookie: ${key}`);
-          removePromises.push(this.removeCookie(key));
-        }
-      }
       await Promise.all(removePromises);
     } catch (error) {
       console.warn("Failed to clear cookies:", error);
@@ -582,7 +613,9 @@ export class LocalStorage {
    */
   async keys(): Promise<string[]> {
     try {
-      return this.storage.keys();
+      const storageCookieKeys = await this.getAllStorageCookieKeys();
+
+      return [...new Set([...this.storage.keys(), ...storageCookieKeys])];
     } catch (e) {
       if (LocalStorage.DEBUG_MODE) console.warn("Failed to get keys from storage", e);
       return [];

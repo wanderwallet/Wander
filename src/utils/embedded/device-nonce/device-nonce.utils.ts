@@ -3,7 +3,8 @@ import { LocalStorage } from "~iframe/storage/unpartitioned-storage/local-storag
 import { setDeviceNonceHeader } from "~utils/embedded/embedded.utils";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 
-const DEVICE_NONCE_KEY = "DEVICE_NONCE";
+export const DEVICE_NONCE_KEY = "DEVICE_NONCE";
+
 const INVALID_DEVICE_NONCE_ERR_MSG = "Invalid deviceNonce";
 const MISSING_DEVICE_NONCE_ERR_MSG = "Missing deviceNonce";
 
