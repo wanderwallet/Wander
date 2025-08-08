@@ -11,6 +11,7 @@ import {
   Wander2Icon,
   RecoverHeaderIcon,
   Snackbar,
+  KeyIcon,
 } from "~components/embed";
 import React, { useCallback, useRef, useState } from "react";
 import { getSupabaseClient } from "~utils/embedded/embedded.utils";
@@ -19,7 +20,7 @@ import { isValidEmail } from "~utils/email";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 import { sleep } from "~utils/promises/sleep";
-import { EMBEDDED_HIDE_BE, EMBEDDED_INJECTED_BE } from "~utils/embedded/iframe.utils";
+import { EMBEDDED_HIDE_BE, EMBEDDED_INJECTED_BE, isInsideIframe } from "~utils/embedded/iframe.utils";
 import { InputButton } from "~components/embed/ui/atoms/input-button/InputButton";
 import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
 import type { OAutProviderType } from "~utils/embedded/embedded.types";
@@ -27,6 +28,28 @@ import { getFriendlyAuthErrorMessage } from "~utils/authentication/authenticatio
 import { PersistentStorage, useStorage } from "~utils/storage";
 import { StorageKeys } from "~utils/storage/storage.constants";
 import type { PreferredEmailAuth } from "~utils/auth/auth.types";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+
+const IS_PASSKEYS_ENABLED = false;
+
+function isPasskeysSupportedByBrowser() {
+  return typeof window !== "undefined" && !!window.PublicKeyCredential && !isInsideIframe();
+}
+
+async function isPasskeysSupportedByContext() {
+  if (!isPasskeysSupportedByBrowser()) return false;
+
+  // If we're in an iframe, we need to check if the browser supports WebAuthn in iframes (the right values for the
+  // sandbox attribute must have been set):
+
+  try {
+    return await window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+  } catch (error) {
+    console.error("WebAuthn is not available in this context =", error);
+  }
+
+  return false;
+}
 
 export function AuthEmbeddedView() {
   const { navigate } = useLocation();
@@ -54,6 +77,14 @@ export function AuthEmbeddedView() {
     key: StorageKeys.CONNECT.AUTH.PREFERRED_EMAIL_AUTH,
     instance: PersistentStorage,
   });
+
+  // Passkeys:
+
+  const [isPasskeysSupported, setIsPasskeysSupported] = useState(() => isPasskeysSupportedByBrowser());
+
+  useAsyncEffect(async () => {
+    setIsPasskeysSupported(await isPasskeysSupportedByContext());
+  }, []);
 
   // Input refs:
 
@@ -186,6 +217,12 @@ export function AuthEmbeddedView() {
       />
 
       <Divider text={"OR"} />
+
+      {IS_PASSKEYS_ENABLED && isPasskeysSupported && (
+        <Button variant="outlined" isFullWidth icon={<KeyIcon fontSize={24} />} isDisabled={areButtonsDisabled}>
+          Continue with Passkeys
+        </Button>
+      )}
 
       {showWanderExtensionButton ? (
         <Row>
