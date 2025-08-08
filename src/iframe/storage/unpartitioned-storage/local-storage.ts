@@ -1,5 +1,5 @@
 import { isInsideIframe } from "~utils/embedded/iframe.utils";
-import { EnhancedStorage, StorageAccessState } from "./unpartitioned-storage";
+import { EnhancedStorage } from "./unpartitioned-storage";
 import Cookies, { type CookieAttributes } from "js-cookie";
 
 export class LocalStorage {
@@ -416,13 +416,6 @@ export class LocalStorage {
     } catch (e) {
       if (LocalStorage.debugMode) console.error("Error in removeChunkedCookies", e);
     }
-  }
-
-  /**
-   * Get the current storage access state for debugging or UI feedback
-   */
-  getStorageAccessState(): StorageAccessState {
-    return this.storage.accessState;
   }
 
   /**
