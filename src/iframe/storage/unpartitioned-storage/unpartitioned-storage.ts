@@ -117,6 +117,8 @@ export class EnhancedStorage implements Storage {
       if (!HAS_SIMPLE_STORAGE_API) return this.dispatchUnpartitionedStateStatusChange("unsupported");
 
       try {
+        debugger;
+
         // Check if we already have access:
 
         const hasAccess = await document.hasStorageAccess();
@@ -241,6 +243,8 @@ export class EnhancedStorage implements Storage {
     setUnpartitionedStateStatus(unpartitionedStateStatus, this.error);
 
     this.requestStorageAccessResolve(unpartitionedStateStatus);
+
+    console.log("this.status =", unpartitionedStateStatus);
 
     return (this.status = unpartitionedStateStatus);
   }

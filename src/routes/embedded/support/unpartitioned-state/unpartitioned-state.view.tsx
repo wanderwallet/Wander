@@ -96,6 +96,8 @@ export function UnpartitionedStateMissingEmbeddedView() {
 
       const localStorage = await LocalStorage.getInstance();
 
+      console.log("localStorage =", localStorage);
+
       if (["rejected", "error"].includes(localStorage.status))
         throw new Error(`Unpartitioned state status = "${localStorage.status}"`);
 
