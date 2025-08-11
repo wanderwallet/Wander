@@ -3946,6 +3946,10 @@
     "message": "Help",
     "description": "Help text"
   },
+  "help_description": {
+    "message": "Get help with Wander",
+    "description": "Help description"
+  },
   "help_center": {
     "message": "Help Center",
     "description": "Help Center text"
