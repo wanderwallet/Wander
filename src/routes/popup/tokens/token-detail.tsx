@@ -4,30 +4,16 @@ import HeadV2 from "~components/popup/HeadV2";
 import { useParams } from "wouter";
 import { useAoToken } from "~tokens/hooks";
 import { Flex } from "~components/common/Flex";
-import { Logo } from "~components/popup/Token";
-import { useEffect, useState } from "react";
-import { getUserAvatar } from "~lib/avatar";
 import { TokenInfo } from "~components/popup/tokens/TokenInfo";
 import { TokenLinks } from "~components/popup/tokens/TokenLinks";
 import { TokenActivity } from "~components/popup/tokens/TokenActivity";
 import { useLocation } from "~wallets/router/router.utils";
+import { TokenLogo } from "~components/popup/TokenLogo";
 
 export function TokenDetailView() {
   const { navigate } = useLocation();
   const { id } = useParams<{ id: string }>();
   const token = useAoToken(id);
-  const [logo, setLogo] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchLogo = async () => {
-      if (!token?.Logo) return;
-      if (token.Logo) {
-        const logo = await getUserAvatar(token.Logo);
-        setLogo(logo);
-      }
-    };
-    fetchLogo();
-  }, [token?.Logo]);
 
   if (!token) return null;
 
@@ -36,7 +22,7 @@ export function TokenDetailView() {
       <HeadV2
         title={
           <Flex align="center" gap={8}>
-            <Logo src={logo} alt={token.Name} height={24} width={24} />
+            <TokenLogo token={token} size={24} />
             <Text size="lg" weight="bold" noMargin>
               {token?.Name?.length <= 15 ? token.Name : token.Ticker}
             </Text>

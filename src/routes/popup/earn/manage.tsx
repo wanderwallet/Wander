@@ -9,10 +9,7 @@ import { AO_PROCESS_ID, defaultTokens } from "~tokens/aoTokens/ao";
 import { PI_FLP_ID } from "~utils/fair_launch/fair_launch.constants";
 import { useActiveAddress, useActiveWallet } from "~wallets/hooks";
 import { Flex } from "~components/common/Flex";
-import { Logo } from "~components/popup/Token";
-import { getUserAvatar } from "~lib/avatar";
 import type { FlpTokenInfo } from "~utils/fair_launch/fair_launch.types";
-import arLogoLight from "url:/assets/ar/logo_light.png";
 import { AddTokenPopup } from "~components/popup/earn/AddTokenPopup";
 import { Link } from "~components/common/Link";
 import { MinusIcon, PlusIcon } from "@iconicicons/react";
@@ -29,6 +26,7 @@ import { SignType } from "@keystonehq/bc-ur-registry-arweave";
 import Arweave from "arweave";
 import { EventType, PageType, trackEvent, trackPage } from "~utils/analytics";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
+import { TokenLogo } from "~components/popup/TokenLogo";
 
 export function ManageEarningsView() {
   const theme = useTheme();
@@ -340,26 +338,12 @@ function Token({
   delegationInfo: Record<string, number>;
 }) {
   const theme = useTheme();
-  const [logo, setLogo] = useState<string | null>(null);
   const isAO = token.processId === AO_PROCESS_ID;
   const tokenDelegation = useMemo(() => delegationInfo[token.flpId] || 0, [delegationInfo, token.flpId]);
 
-  useEffect(() => {
-    const fetchLogo = async () => {
-      if (!token.processId) return;
-      if (token.Logo) {
-        const logo = await getUserAvatar(token.Logo);
-        setLogo(logo);
-      } else {
-        setLogo(arLogoLight);
-      }
-    };
-    fetchLogo();
-  }, [token.processId, token.Logo]);
-
   return (
     <TokenWrapper key={token.processId}>
-      <Logo src={logo} width={40} height={40} />
+      <TokenLogo token={token} style={{ flex: "1 0 auto" }} />
 
       <Flex direction="row" align="center" justify="space-between" gap={16} width="100%">
         <Flex direction="column" gap={4}>

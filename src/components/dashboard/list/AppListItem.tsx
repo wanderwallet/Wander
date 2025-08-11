@@ -1,7 +1,7 @@
 import { ListItem } from "@arconnect/components-rebrand";
 import { GridIcon } from "@iconicicons/react";
 import type { HTMLProps } from "react";
-import Image from "~components/common/Image";
+import { Image } from "~components/common/Image/Image";
 
 export default function AppListItem({ name, url, icon, active, ...props }: Props & HTMLProps<HTMLDivElement>) {
   return (
@@ -9,7 +9,7 @@ export default function AppListItem({ name, url, icon, active, ...props }: Props
       title={name}
       subtitle={url}
       active={active}
-      icon={icon && <Image height={40} width={40} src={icon} />}
+      icon={icon && <Image height={40} width={40} src={icon} placeholderURL="none" alt={`${name} logo`} />}
       height={64}
       hideSquircle={!!icon}
       {...props}>

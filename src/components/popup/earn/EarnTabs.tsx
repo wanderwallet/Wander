@@ -4,10 +4,7 @@ import Tabs from "~components/Tabs";
 import { defaultTokens } from "~tokens/aoTokens/ao";
 import { Flex } from "~components/common/Flex";
 import styled, { useTheme } from "styled-components";
-import { Logo } from "../Token";
 import { Text, Loading, useToasts, Tooltip } from "@arconnect/components-rebrand";
-import arLogoLight from "url:/assets/ar/logo_light.png";
-import { getUserAvatar } from "~lib/avatar";
 import { useTokenBalance } from "~tokens/hooks";
 import { useActiveAddress } from "~wallets/hooks";
 import { formatBalance } from "~utils/format";
@@ -21,13 +18,13 @@ import { PI_FLP_ID } from "~utils/fair_launch/fair_launch.constants";
 import type { FlpTokenInfo } from "~utils/fair_launch/fair_launch.types";
 import browser from "webextension-polyfill";
 import { Link } from "~components/common/Link";
-import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { claimBalance } from "~utils/fair_launch/fair_launch.utils";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import { WarningIcon } from "~components/icons/WarningIcon";
 import { NetworkErrorIcon } from "~components/icons/NetworkErrorIcon";
 import { BalanceFetchError, NetworkError } from "~utils/error/error.utils";
 import { DegradedMessage, NetworkErrorMessage } from "../tokens/ErrorMessages";
+import { TokenLogo } from "~components/popup/TokenLogo";
 
 export function EarnTabs() {
   const { navigate, location } = useLocation();
@@ -155,7 +152,6 @@ function Token({
   const { setToast } = useToasts();
   const activeAddress = useActiveAddress();
   const [isClaiming, setIsClaiming] = useState(false);
-  const [logo, setLogo] = useState<string | null>(null);
   const { data: claimableBalance = "0" } = useClaimableBalance(token);
   const {
     data: balance = "0",
@@ -203,20 +199,10 @@ function Token({
     [navigate],
   );
 
-  useAsyncEffect(async () => {
-    if (!token.processId) return;
-    if (token.Logo) {
-      const logo = await getUserAvatar(token.Logo);
-      setLogo(logo);
-    } else {
-      setLogo(arLogoLight);
-    }
-  }, [token.processId, token.Logo]);
-
   return (
     <TokenWrapper key={token.processId}>
       <Flex direction="row" gap={8} align="center" justify="space-between" width="100%">
-        <Logo src={logo} width={40} height={40} />
+        <TokenLogo token={token} style={{ flex: "1 0 auto" }} />
         {token.comingSoon ? (
           <Flex direction="row" width="100%" justify="space-between" align="center" gap={8} minWidth={0}>
             <Flex direction="column" minWidth={0}>

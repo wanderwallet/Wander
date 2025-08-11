@@ -2,18 +2,15 @@ import browser from "webextension-polyfill";
 import SliderMenu from "~components/SliderMenu";
 import { Input, Section, useInput } from "@arconnect/components-rebrand";
 import styled from "styled-components";
-import { useCallback, useMemo, useState, type MouseEventHandler } from "react";
-import { useTheme } from "~utils/theme";
+import { useCallback, useMemo, type MouseEventHandler } from "react";
 import { type Token } from "~tokens/token";
 import { Text, useToasts } from "@arconnect/components-rebrand";
-import arLogoLight from "url:/assets/ar/logo_light.png";
-import { getUserAvatar } from "~lib/avatar";
 import { ToggleSwitch } from "~components/ToggleSwitch";
 import type { FlpTokenInfo } from "~utils/fair_launch/fair_launch.types";
 import { useActiveAddress } from "~wallets/hooks";
-import { InnerWrapper, Logo, LogoAndDetails, TokenName, Wrapper } from "../Token";
+import { InnerWrapper, LogoAndDetails, TokenName, Wrapper } from "../Token";
 import { PI_FLP_ID } from "~utils/fair_launch/fair_launch.constants";
-import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import { TokenLogo } from "~components/popup/TokenLogo";
 
 interface Props {
   open: boolean;
@@ -107,18 +104,16 @@ export function AddTokenPopup({ open, close, tokens, delegationInfo, setDelegati
 }
 
 function Token({ onClick, disableClickEffect, disableCursor, disabled, ...props }: TokenProps) {
-  const theme = useTheme();
-  const [logo, setLogo] = useState<string>();
-
-  useAsyncEffect(async () => {
-    if (!props?.id) return;
-    if (props.defaultLogo) {
-      const logo = await getUserAvatar(props.defaultLogo);
-      setLogo(logo);
-    } else {
-      setLogo(arLogoLight);
-    }
-  }, [props.id, props.defaultLogo]);
+  const tokenInfo = useMemo(() => {
+    return {
+      id: props.id,
+      processId: props.id,
+      Ticker: props.ticker,
+      Name: props.name,
+      Denomination: props.divisibility,
+      Logo: props.defaultLogo,
+    };
+  }, [props]);
 
   return (
     <Wrapper disableClickEffect={disableClickEffect} disableCursor={disableCursor}>
@@ -131,7 +126,7 @@ function Token({ onClick, disableClickEffect, disableCursor, disabled, ...props 
         width={"80%"}
         onClick={onClick}>
         <LogoAndDetails>
-          <Logo src={logo || ""} alt="" key={props.id} />
+          <TokenLogo key={props.id} token={tokenInfo} />
           <div>
             <div style={{ display: "flex", gap: "0.5rem" }}>
               <TokenName>{props.name}</TokenName>
