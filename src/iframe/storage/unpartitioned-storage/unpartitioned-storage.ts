@@ -199,7 +199,7 @@ export class EnhancedStorage implements Storage {
       this.dispatchUnpartitionedStateStatusChange("rejected");
     }
 
-    // throw new Error("Could not get access to unpartitioned state.");
+    throw new Error("Could not get access to unpartitioned state.");
   }
 
   /**
