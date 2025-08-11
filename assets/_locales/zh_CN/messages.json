@@ -3114,8 +3114,12 @@
         "message": "滑点",
         "description": "Slippage text"
     },
-    "slippage_description": {
+    "sell_slippage_description": {
         "message": "如果价格变化超过滑点百分比，您的出售将被取消。",
+        "description": "Slippage description"
+    },
+    "swap_slippage_description": {
+        "message": "如果价格变化超过滑点百分比，您的交易将被取消。",
         "description": "Slippage description"
     },
     "auto": {
@@ -4125,5 +4129,13 @@
     "agents_syncing": {
       "message": "代理同步中",
       "description": "Agents syncing text"
+    },
+    "you_send": {
+      "message": "你发送",
+      "description": "You send text"
+    },
+    "you_receive": {
+      "message": "你接收",
+      "description": "You receive text"
     }
 }

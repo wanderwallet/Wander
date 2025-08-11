@@ -3128,8 +3128,12 @@
     "message": "Slippage",
     "description": "Slippage text"
   },
-  "slippage_description": {
+  "sell_slippage_description": {
     "message": "Your sell will be cancelled if the price changes more than the slippage percentage.",
+    "description": "Slippage description"
+  },
+  "swap_slippage_description": {
+    "message": "Your swap will be cancelled if the price changes more than the slippage percentage.",
     "description": "Slippage description"
   },
   "auto": {
@@ -4165,5 +4169,13 @@
   "agents_syncing": {
     "message": "Agents syncing",
     "description": "Agents syncing text"
+  },
+  "you_send": {
+    "message": "You send",
+    "description": "You send text"
+  },
+  "you_receive": {
+    "message": "You receive",
+    "description": "You receive text"
   }
 }

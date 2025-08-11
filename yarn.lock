@@ -28,9 +28,9 @@
     winston "^3.13.0"
     zod "^3.23.8"
 
-"@arconnect/components-rebrand@https://github.com/wanderwallet/components-rebrand.git#master":
+"@arconnect/components-rebrand@https://github.com/wanderwallet/components-rebrand.git#refactor/update-input":
   version "1.0.0"
-  resolved "https://github.com/wanderwallet/components-rebrand.git#40894b27a1d3a29f6e90b33bc0d1efe152ab3801"
+  resolved "https://github.com/wanderwallet/components-rebrand.git#8b8c890b80a602e858fea33a58027d569999e0cc"
   dependencies:
     "@iconicicons/react" "^1.5.1"
     "@untitled-ui/icons-react" "^0.1.4"

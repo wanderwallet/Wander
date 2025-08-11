@@ -13,9 +13,16 @@ interface SlippageSelectorModalProps {
   onClose: () => void;
   slippage: number;
   onSelect: (slippage: number) => void;
+  type?: "sell" | "swap";
 }
 
-export function SlippageSelectorModal({ open, onClose, slippage, onSelect }: SlippageSelectorModalProps) {
+export function SlippageSelectorModal({
+  open,
+  onClose,
+  slippage,
+  onSelect,
+  type = "sell",
+}: SlippageSelectorModalProps) {
   const toasts = useToasts();
   const [selectedSlippage, setSelectedSlippage] = useState(slippage);
   const [isHolding, setIsHolding] = useState(false);
@@ -110,7 +117,7 @@ export function SlippageSelectorModal({ open, onClose, slippage, onSelect }: Sli
     <SliderMenu title={browser.i18n.getMessage("slippage")} isOpen={open} onClose={onClose}>
       <Flex direction="column" gap={24} height="100%" width="100%">
         <Text variant="secondary" size="sm" weight="medium" noMargin>
-          {browser.i18n.getMessage("slippage_description")}
+          {browser.i18n.getMessage(`${type}_slippage_description`)}
         </Text>
         <Flex direction="row" gap={16} align="center" justify="center" padding="20px 0" width="100%">
           <RoundedButton

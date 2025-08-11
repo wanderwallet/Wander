@@ -4,7 +4,7 @@ import { hoverEffect } from "~utils/theme";
 import { type Token } from "~tokens/token";
 import { useStorage } from "~utils/storage";
 import { ExtensionStorage } from "~utils/storage";
-import { Button, Text, Tooltip } from "@arconnect/components-rebrand";
+import { Button, Text, Tooltip, type TextProps } from "@arconnect/components-rebrand";
 import useSetting from "~settings/hook";
 import styled from "styled-components";
 import { formatAddress, formatBalance } from "~utils/format";
@@ -105,14 +105,16 @@ export default function Token({ onClick, disableClickEffect, disableCursor, ...p
           <div>
             <div style={{ display: "flex", gap: "0.5rem" }}>
               <TokenName>{props.name || props.ticker || "???"}</TokenName>
-              {props.showId && (
-                <Address>{formatAddress(props.id, 3)}</Address>
+              {props.showId && !props.addressOverFiat && (
+                <Address size={props.addressSize || "base"}>{formatAddress(props.id, 3)}</Address>
                 // <Tooltip content={props.id} position="top">
                 // </Tooltip>
               )}
             </div>
             {hasActionButton ? (
               <FiatBalance>{balance}</FiatBalance>
+            ) : props.addressOverFiat ? (
+              <Address size={props.addressSize || "base"}>{formatAddress(props.id, 3)}</Address>
             ) : (
               formattedFiatPrice && <FiatBalance>{formattedFiatPrice}</FiatBalance>
             )}
@@ -239,7 +241,7 @@ const Address = styled(Text).attrs({
   weight: "light",
   lineHeight: 1.4,
 })`
-  color: ${(props) => props.theme.secondaryTextv2};
+  color: ${(props) => props.theme.secondaryText};
 `;
 
 const NativeBalance = styled(Text).attrs({
@@ -287,4 +289,8 @@ interface Props extends Omit<Token, "balance"> {
   onClick?: MouseEventHandler<HTMLDivElement>;
   disableClickEffect?: boolean;
   disableCursor?: boolean;
+  /** If true, the address will be shown instead of the fiat balance */
+  addressOverFiat?: boolean;
+  /** Size of the address text. Defaults to "sm" */
+  addressSize?: TextProps["size"];
 }

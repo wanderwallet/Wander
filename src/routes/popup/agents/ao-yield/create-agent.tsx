@@ -4,12 +4,11 @@ import browser from "webextension-polyfill";
 import HeadV2 from "~components/popup/HeadV2";
 import { Flex } from "~components/common/Flex";
 import { ChevronDown, ClockRewind, HelpCircle } from "@untitled-ui/icons-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Slider } from "~components/Slider";
 import { InputButton } from "~components/common/InputButton";
 import { HorizontalLine } from "~components/HorizontalLine";
 import { AssetSelectorModal } from "../components/ao-yield/AssetSelectorModal";
-import { SlippageSelectorModal } from "../components/ao-yield/SlippageSelectorModal";
 import { DateSelectorModal } from "../components/ao-yield/DateSelectorModal";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import { useLocation } from "~wallets/router/router.utils";
@@ -18,6 +17,7 @@ import type { AOYieldAgentCreate, Asset } from "~utils/agents/types";
 import { assets, formatDate } from "~utils/agents/utils";
 import { trackPage, PageType } from "~utils/analytics";
 import { AODelegationModal } from "../components/AODelegationModal";
+import { SlippageInputButton } from "~routes/popup/swap/components/SlippageInputButton";
 
 export function CreateAOYieldAgentView() {
   const theme = useTheme();
@@ -29,7 +29,6 @@ export function CreateAOYieldAgentView() {
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [showAssetSelector, setShowAssetSelector] = useState(false);
-  const [showSlippageSelector, setShowSlippageSelector] = useState(false);
   const [showDateSelector, setShowDateSelector] = useState(false);
   const [initialSelection, setInitialSelection] = useState<"start" | "end">("start");
 
@@ -43,14 +42,6 @@ export function CreateAOYieldAgentView() {
 
   const closeAssetSelector = () => {
     setShowAssetSelector(false);
-  };
-
-  const openSlippageSelector = () => {
-    setShowSlippageSelector(true);
-  };
-
-  const closeSlippageSelector = () => {
-    setShowSlippageSelector(false);
   };
 
   const openDateSelector = (selection: "start" | "end") => {
@@ -200,31 +191,7 @@ export function CreateAOYieldAgentView() {
               </Tooltip>
             </Flex>
             <HorizontalLine />
-            <InputButton
-              style={{ background: theme.surfaceTertiary }}
-              onClick={openSlippageSelector}
-              disabled={false}
-              innerStyle={{ width: "100%" }}
-              body={
-                <Flex direction="row" gap={8} align="center" justify="space-between">
-                  <Text size="lg" weight="medium" noMargin>
-                    {browser.i18n.getMessage("slippage")}
-                  </Text>
-                  <Flex align="center" justify="center" gap={4}>
-                    {selectedSlippage === 0.5 && <Tag>{browser.i18n.getMessage("auto")}</Tag>}
-                    <Text weight="medium" noMargin>
-                      {selectedSlippage}%
-                    </Text>
-                  </Flex>
-                </Flex>
-              }
-              icon={
-                <Flex align="center" justify="center">
-                  <ChevronDown onClick={openSlippageSelector} />
-                </Flex>
-              }
-              outerLabel
-            />
+            <SlippageInputButton selectedSlippage={selectedSlippage} setSelectedSlippage={setSelectedSlippage} />
           </Flex>
         </Content>
         <Flex gap={8}>
@@ -244,12 +211,6 @@ export function CreateAOYieldAgentView() {
         onClose={closeAssetSelector}
         selectedAsset={selectedAsset}
         onSelect={setSelectedAsset}
-      />
-      <SlippageSelectorModal
-        open={showSlippageSelector}
-        onClose={closeSlippageSelector}
-        slippage={selectedSlippage}
-        onSelect={setSelectedSlippage}
       />
       <DateSelectorModal
         startDate={startDate}
