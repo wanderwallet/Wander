@@ -57,6 +57,8 @@ export function UnpartitionedStateMissingEmbeddedView() {
   const { authStatus, unpartitionedStateStatus, unpartitionedStateConfirmed, confirmUnpartitionedState } =
     useEmbedded();
 
+  console.warn("render unpartitionedStateStatus =", unpartitionedStateStatus);
+
   const couldProbablyGetAccess =
     (HAS_ADVANCED_STORAGE_API && (unpartitionedStateStatus === "rejected" || unpartitionedStateStatus === "error")) ||
     isPretendingToBeAnotherBrowser;
@@ -94,13 +96,19 @@ export function UnpartitionedStateMissingEmbeddedView() {
     try {
       setIsRequestingPermission(true);
 
+      console.log("getInstance =");
+
       const localStorage = await LocalStorage.getInstance();
+
+      console.log("localStorage =", localStorage);
 
       if (["rejected", "error"].includes(localStorage.status))
         throw new Error(`Unpartitioned state status = "${localStorage.status}"`);
 
       navigate(EmbeddedPaths.Auth);
     } catch (error) {
+      console.log("get instance error =", error);
+
       // Brave throws a "NotAllowedError" error while trying to request access, even after a user interaction...
       toast.error("Unexpected error. Please, try again.");
       setErrorsWhileRequestingAccess((prevErrorsWhileRequestingAccess) => prevErrorsWhileRequestingAccess + 1);
@@ -108,6 +116,7 @@ export function UnpartitionedStateMissingEmbeddedView() {
     }
   }, [navigate]);
 
+  /*
   useInterval(
     async () => {
       if (isRequestingPermission) return;
@@ -125,6 +134,7 @@ export function UnpartitionedStateMissingEmbeddedView() {
     },
     shouldTryToGetAccess ? 1000 : null,
   );
+  */
 
   useEffect(() => {
     if (unpartitionedStateStatus === "supported") {
@@ -137,8 +147,7 @@ export function UnpartitionedStateMissingEmbeddedView() {
   }, [unpartitionedStateStatus]);
 
   const needsConfirmation = !unpartitionedStateConfirmed && authStatus === "noAuth";
-  const requestAccessButtonText =
-    unpartitionedStateStatus === "rejected" || errorsWhileRequestingAccess === 0 ? "Request access" : "Try again";
+  const requestAccessButtonText = errorsWhileRequestingAccess === 0 ? "Request access" : "Try again";
 
   let headerText = "Limited browser support";
   let subtitle =
