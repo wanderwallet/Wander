@@ -122,9 +122,10 @@ query ($parentTxIds: [String!]!) {
 }`;
 
 export const AO_YIELD_AGENT_SYNC_QUERY = `
-query ($address: String!) {
+query ($address: String!, $after: String) {
   transactions(
-    first: 10,
+    first: 100,
+    after: $after,
     owners: [$address],
     tags: [
       {name: "Data-Protocol", values: ["ao"]},
@@ -133,7 +134,11 @@ query ($address: String!) {
       {name: "Name", values: ["ao-yield-agent"]},
     ]
   ) {
+    pageInfo {
+      hasNextPage
+    }
     edges {
+      cursor
       node {
         id
         block { timestamp, height }

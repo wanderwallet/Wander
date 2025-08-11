@@ -4113,5 +4113,9 @@
     "no_activity_yet": {
       "message": "暂无活动",
       "description": "No activity yet text"
+    },
+    "agents_syncing": {
+      "message": "代理同步中",
+      "description": "Agents syncing text"
     }
 }

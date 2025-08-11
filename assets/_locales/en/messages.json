@@ -4153,5 +4153,9 @@
   "no_activity_yet": {
     "message": "No activity yet",
     "description": "No activity yet text"
+  },
+  "agents_syncing": {
+    "message": "Agents syncing",
+    "description": "Agents syncing text"
   }
 }

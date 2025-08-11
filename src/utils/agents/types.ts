@@ -210,3 +210,8 @@ export interface MintQuantityResult {
   swapDateFrom: number;
   swapDateTo: number;
 }
+
+export interface AOYieldAgentSyncStatus {
+  status: "in_progress" | "completed";
+  timestamp: number;
+}
