@@ -31,6 +31,7 @@ import { Link } from "~components/common/Link";
 
 const stars = defaultStars.toSpliced(1, 1);
 const wanderTokenInfo = defaultTokens[3];
+const ALPHABET_REGEX = /[a-z]/i;
 
 export function TierView() {
   const [isOpen, setOpen] = useState(false);
@@ -39,11 +40,22 @@ export function TierView() {
   const { data: activeTier } = useActiveTier();
 
   const formattedBalance = useMemo(() => {
+    if (!activeTier) return { displayBalance: "0", tooltipBalance: "0", showTooltip: false };
     const fractionedBalance = balanceToFractioned(String(activeTier?.balance ?? 0), {
       decimals: wanderTokenInfo.Denomination,
     });
     return formatBalance(fractionedBalance);
   }, [activeTier?.balance]);
+
+  const { hasEllipsis, formattedDisplayBalance } = useMemo(() => {
+    const displayBalance = formattedBalance.displayBalance;
+    const hasEllipsis = displayBalance.length > 7 && !ALPHABET_REGEX.test(displayBalance);
+
+    return {
+      hasEllipsis,
+      formattedDisplayBalance: hasEllipsis ? displayBalance.slice(0, 7) : displayBalance,
+    };
+  }, [formattedBalance.displayBalance]);
 
   const tier = activeTier?.tier ?? TierTypes.Core;
 
@@ -93,9 +105,12 @@ export function TierView() {
             </Text>
           </Flex>
           <Flex direction="row" gap={4} align="baseline" justify="center">
-            {formattedBalance?.showTooltip ? (
+            {hasEllipsis || formattedBalance.showTooltip ? (
               <BalanceTooltip content={formattedBalance.tooltipBalance} position="top">
-                <NativeBalance showCursor>{formattedBalance.displayBalance}</NativeBalance>
+                <NativeBalance showCursor>
+                  {formattedDisplayBalance}
+                  {hasEllipsis && "…"}
+                </NativeBalance>
               </BalanceTooltip>
             ) : (
               <NativeBalance>{formattedBalance.displayBalance}</NativeBalance>
