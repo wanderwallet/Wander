@@ -31,7 +31,6 @@ import { Link } from "~components/common/Link";
 
 const stars = defaultStars.toSpliced(1, 1);
 const wanderTokenInfo = defaultTokens[3];
-const ALPHABET_REGEX = /[a-z]/i;
 
 export function TierView() {
   const [isOpen, setOpen] = useState(false);
@@ -40,7 +39,7 @@ export function TierView() {
   const { data: activeTier } = useActiveTier();
 
   const formattedBalance = useMemo(() => {
-    if (!activeTier) return { displayBalance: "0", tooltipBalance: "0", showTooltip: false };
+    if (!activeTier) return { displayBalance: "0", tooltipBalance: "0", showTooltip: false, hasSuffix: false };
     const fractionedBalance = balanceToFractioned(String(activeTier?.balance ?? 0), {
       decimals: wanderTokenInfo.Denomination,
     });
@@ -49,13 +48,13 @@ export function TierView() {
 
   const { hasEllipsis, formattedDisplayBalance } = useMemo(() => {
     const displayBalance = formattedBalance.displayBalance;
-    const hasEllipsis = displayBalance.length > 7 && !ALPHABET_REGEX.test(displayBalance);
+    const hasEllipsis = displayBalance.length > 7 && !formattedBalance.hasSuffix;
 
     return {
       hasEllipsis,
       formattedDisplayBalance: hasEllipsis ? displayBalance.slice(0, 7) : displayBalance,
     };
-  }, [formattedBalance.displayBalance]);
+  }, [formattedBalance.displayBalance, formattedBalance.hasSuffix]);
 
   const tier = activeTier?.tier ?? TierTypes.Core;
 

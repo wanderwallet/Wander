@@ -106,6 +106,7 @@ export function formatBalance(balance: BigNumber | string) {
   }
 
   const tooltipBalance = balance.toFormat(20, BigNumber.ROUND_FLOOR).replace(/\.?0*$/, "");
+  let suffix = "";
 
   if (balance.lte(1e4)) {
     displayBalance = BigNumber(balance.toPrecision(6, BigNumber.ROUND_FLOOR))
@@ -119,7 +120,6 @@ export function formatBalance(balance: BigNumber | string) {
     showTooltip = !balance.eq(displayBalance);
   } else {
     showTooltip = true;
-    let suffix = "";
     let divisor = 1;
 
     if (balance.gte(1e21)) {
@@ -154,7 +154,7 @@ export function formatBalance(balance: BigNumber | string) {
         .replace(/\.?0*$/, "") + suffix;
   }
 
-  return { displayBalance, tooltipBalance, showTooltip };
+  return { displayBalance, tooltipBalance, showTooltip, hasSuffix: suffix !== "" };
 }
 
 export function truncateMiddle(str: string, maxLength: number): string {
