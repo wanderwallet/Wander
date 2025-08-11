@@ -14,7 +14,7 @@ export function AboutDashboardView() {
   return (
     <Flex direction="column" justify="center" align="center" padding="2rem 0">
       <Flex direction="column" gap={32} justify="center" align="center">
-        <Image src={WanderIcon} alt="Wander Icon" width={126.314} height={59.199} placeholderURL="none" />
+        <Image src={WanderIcon} alt="Wander Icon" width={126.314} height={59.199} placeholderSrc="none" />
         <IconText width={256} height={52.866} />
       </Flex>
       <Spacer y={2} />

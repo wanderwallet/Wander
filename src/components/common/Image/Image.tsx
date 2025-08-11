@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import clsx from "clsx";
-import defaultPlaceholderUrl from "url:/assets/placeholder.png";
 import { sleep } from "~utils/promises/sleep";
-import { useTheme } from "~components/embed/contexts/ThemeContext";
+import { useTheme } from "~utils/theme";
+
+import defaultPlaceholderUrl from "url:/assets/placeholder.png";
 
 import styles from "./Image.module.scss";
 
@@ -23,7 +24,8 @@ interface ImageProps {
   border?: boolean;
   borderRadius?: BorderRadiusVariant;
   backgroundColor?: string;
-  placeholderURL?: string;
+  placeholderSrc?: string;
+  placeholderSrcDark?: string;
   pointer?: [number, number];
   style?: React.CSSProperties;
   onError?: React.ReactEventHandler<HTMLImageElement>;
@@ -42,13 +44,15 @@ export function Image({
   border,
   borderRadius = "none",
   backgroundColor = "transparent",
-  placeholderURL = defaultPlaceholderUrl,
+  placeholderSrc = defaultPlaceholderUrl,
+  placeholderSrcDark = placeholderSrc,
   pointer: pointerProp,
   style,
   onError,
 }: ImageProps) {
   const theme = useTheme();
-  const displayTheme = theme.mode;
+
+  console.log("theme =", theme);
 
   const [isLoaded, setIsLoaded] = useState(false);
 
@@ -60,12 +64,21 @@ export function Image({
     [styles.isLoaded]: isLoaded,
   });
 
+  const placeholderURL =
+    theme === "dark"
+      ? placeholderSrcDark && placeholderSrcDark !== "none"
+        ? `url(${placeholderSrcDark})`
+        : "none"
+      : placeholderSrc && placeholderSrc !== "none"
+        ? `url(${placeholderSrc})`
+        : "none";
+
   const pictureStyle = {
     "--imgWidth": `${width}px`,
     "--imgHeight": fullWidth ? "auto" : `${height}px`,
     "--imgAspectRatio": fullWidth ? width / height : "auto",
     "--imgBackgroundColor": backgroundColor,
-    "--imgPlaceholderBackgroundURL": placeholderURL && placeholderURL !== "none" ? `url(${placeholderURL})` : "none",
+    "--imgPlaceholderBackgroundURL": placeholderURL,
     ...style,
   };
 
@@ -101,13 +114,11 @@ export function Image({
 
   return (
     <picture className={pictureClassName} style={pictureStyle}>
-      {srcDark ? (
-        <source srcSet={displayTheme === "light" ? src : srcDark} media="(prefers-color-scheme: dark)" />
-      ) : null}
+      {srcDark ? <source srcSet={theme === "light" ? src : srcDark} media="(prefers-color-scheme: dark)" /> : null}
 
       <img
         className={imgClassName}
-        src={displayTheme === "dark" && srcDark ? srcDark : src}
+        src={theme === "dark" && srcDark ? srcDark : src}
         width={width}
         height={height}
         title={title}
