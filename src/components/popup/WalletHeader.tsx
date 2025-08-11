@@ -200,7 +200,7 @@ export default function WalletHeader() {
             </Avatar>
 
             <WalletName>
-              <Text weight="medium" noMargin>
+              <Text weight="medium" style={{ whiteSpace: "nowrap" }} noMargin>
                 {truncateMiddle(displayName, 9)}
               </Text>
             </WalletName>
@@ -213,7 +213,7 @@ export default function WalletHeader() {
               style={{ width: "24px", height: "24px" }}
             />
           </Tooltip>
-          <IconButton onClick={() => navigate("/swap")}>
+          <IconButton onClick={() => navigate("/receive")}>
             <QrCode02 style={{ width: "24px", height: "24px" }} />
           </IconButton>
         </AddressContainer>
