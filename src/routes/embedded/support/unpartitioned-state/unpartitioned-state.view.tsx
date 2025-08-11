@@ -112,7 +112,14 @@ export function UnpartitionedStateMissingEmbeddedView() {
       console.log("get instance error =", error);
 
       // Brave throws a "NotAllowedError" error while trying to request access, even after a user interaction...
-      toast.error("Unexpected error. Please, try again.");
+
+      toast.error(
+        error instanceof Error &&
+          (error.name === "NotAllowedError" || error.message === "Could not get access to unpartitioned state.")
+          ? "Could not get access. Did you enable it?"
+          : "Unexpected error. Please, try again.",
+      );
+
       setErrorsWhileRequestingAccess((prevErrorsWhileRequestingAccess) => prevErrorsWhileRequestingAccess + 1);
       setIsRequestingPermission(false);
     }
