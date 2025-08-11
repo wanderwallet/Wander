@@ -3946,6 +3946,10 @@
     "message": "Help",
     "description": "Help text"
   },
+  "help_description": {
+    "message": "Get help with Wander",
+    "description": "Help description"
+  },
   "help_center": {
     "message": "Help Center",
     "description": "Help Center text"
@@ -4157,5 +4161,9 @@
   "earn_wndr_tokens": {
     "message": "Earn $$WNDR Tokens",
     "description": "Earn $WNDR Tokens text"
+  },
+  "agents_syncing": {
+    "message": "Agents syncing",
+    "description": "Agents syncing text"
   }
 }

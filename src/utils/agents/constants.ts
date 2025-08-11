@@ -22,5 +22,6 @@ export const AO_YIELD_AGENT_COOLDOWN_KEY = "ao_yield_agent_cooldown_until";
 export const AO_YIELD_AGENT_ALARM_NAME = "ao-yield-agent-alarm";
 export const AO_YIELD_AGENT_RECENT_TXS_CHECK_ALARM_NAME = "ao-yield-agent-recent-txs-check-alarm";
 export const AO_YIELD_AGENT_SYNC_ALARM_NAME_PREFIX = "ao-yield-agent-sync-alarm-";
+export const AO_YIELD_AGENT_SYNC_STATUS_PREFIX_KEY = "ao-yield-agent-sync-status-";
 
 export const AGENT_VERSION = "1.0.0";

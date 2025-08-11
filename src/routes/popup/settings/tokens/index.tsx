@@ -84,30 +84,30 @@ export function TokensSettingsView() {
       <Wrapper>
         <div>
           <SearchInput small placeholder={browser.i18n.getMessage("search_tokens")} {...searchInput.bindings} />
+
           <Spacer y={1} />
-          <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+
+          <div style={{ display: "flex", flexDirection: "column" }}>
             {assets.length > 0 && (
               <>
-                <Label>{browser.i18n.getMessage("assets")}</Label>
+                <Label style={{ marginBottom: "1rem" }}>{browser.i18n.getMessage("assets")}</Label>
                 {assets.filter(filterSearchResults).map((token) => (
-                  <div onClick={() => handleTokenClick(token)} key={token.id}>
-                    <TokenListItem token={token} active={false} key={token.id} />
-                  </div>
+                  <TokenListItem key={token.id} token={token} active={false} onClick={() => handleTokenClick(token)} />
                 ))}
               </>
             )}
+
             {collectibles.length > 0 && (
               <>
-                <Label>{browser.i18n.getMessage("collectibles")}</Label>
+                <Label style={{ margin: "1rem 0" }}>{browser.i18n.getMessage("collectibles")}</Label>
                 {collectibles.filter(filterSearchResults).map((token) => (
-                  <div onClick={() => handleTokenClick(token)} key={token.id}>
-                    <TokenListItem token={token} active={false} key={token.id} />
-                  </div>
+                  <TokenListItem key={token.id} token={token} active={false} onClick={() => handleTokenClick(token)} />
                 ))}
               </>
             )}
           </div>
         </div>
+
         <ActionBar>
           <ButtonV2 fullWidth onClick={addToken}>
             {browser.i18n.getMessage("import_token")}

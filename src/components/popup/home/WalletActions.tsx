@@ -1,8 +1,9 @@
 import { ActionButtons, type ButtonConfig } from "../ActionButtons";
 import browser from "webextension-polyfill";
-import arLogoDark from "url:/assets/ar/logo_dark.png";
 import { ReceiveIcon } from "~components/icons/ReceiveIcon";
 import { SwapIcon } from "~routes/popup/swap/components/SwapIcon";
+
+import arLogoDark from "url:/assets/ar/ar-logo-dark.svg";
 
 const buttons: ButtonConfig[] = [
   {

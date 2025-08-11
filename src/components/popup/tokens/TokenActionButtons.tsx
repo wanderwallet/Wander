@@ -2,12 +2,13 @@ import { CurrencyDollarCircle } from "@untitled-ui/icons-react";
 import browser from "webextension-polyfill";
 import { useMemo } from "react";
 import { ActionButtons, type ButtonConfig } from "../ActionButtons";
-import arLogoDark from "url:/assets/ar/logo_dark.png";
-import HedgehogHeadIcon from "url:/assets/agents/images/hedgehog-head.svg";
 import { ReceiveIcon } from "~components/icons/ReceiveIcon";
 import { AO_PROCESS_ID, AR_PROCESS_ID, PI_PROCESS_ID, WAR_PROCESS_ID, WUSDC_PROCESS_ID } from "~tokens/aoTokens/ao";
 import { useFairLaunchTokens } from "~utils/fair_launch/fair_launch.hooks";
 import { tokenData } from "liquidops";
+
+import hedgehogHeadIcon from "url:/assets/agents/images/hedgehog-head.svg";
+import arLogoDark from "url:/assets/ar/ar-logo-dark.svg";
 
 interface TokenActionButtonsProps {
   id: string;
@@ -37,7 +38,7 @@ const earnButtonConfig: ButtonConfig = {
 
 const agentsButtonConfigWithoutText: ButtonConfig = {
   text: "",
-  icon: <img src={HedgehogHeadIcon} style={{ height: 26, width: 26 }} alt="Agents" />,
+  icon: <img src={hedgehogHeadIcon} style={{ height: 26, width: 26 }} alt="Agents" />,
   href: "/agents",
   variant: "secondary",
 };

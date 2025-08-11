@@ -21,7 +21,7 @@ export const InputButton = ({
   outerLabel?: boolean;
 }) => {
   return (
-    <div style={{ width: "100%" }}>
+    <div style={{ width: "100%", minWidth: 0 }}>
       {outerLabel && label && <Label outer={outerLabel}>{label}</Label>}
       <InputButtonWrapper onClick={onClick} disabled={disabled} style={style}>
         {!outerLabel && label && (

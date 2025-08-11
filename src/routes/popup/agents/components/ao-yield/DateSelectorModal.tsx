@@ -25,6 +25,7 @@ import {
   shouldConnectToNextMonth,
   isDateDisabled,
   formatDate,
+  shouldUseShortFormat,
 } from "~utils/agents/utils/date.utils";
 
 interface DateSelectorModalProps {
@@ -61,6 +62,9 @@ const dayNames = [
   browser.i18n.getMessage("day_friday"),
   browser.i18n.getMessage("day_saturday"),
 ];
+
+const startDatePlaceholder = browser.i18n.getMessage("start_date");
+const endDatePlaceholder = browser.i18n.getMessage("end_date");
 
 const monthOptions = monthNames.map((month, index) => ({
   value: index,
@@ -300,6 +304,14 @@ const DateSelectorScreen = ({
     [currentDate, startDate, isSelectingStart],
   );
 
+  const { formattedStartDate, formattedEndDate } = useMemo(() => {
+    const shortMonth = shouldUseShortFormat(startDate) || shouldUseShortFormat(endDate);
+    return {
+      formattedStartDate: startDate ? formatDate(startDate, shortMonth) : startDatePlaceholder,
+      formattedEndDate: endDate ? formatDate(endDate, shortMonth) : endDatePlaceholder,
+    };
+  }, [startDate, endDate]);
+
   const renderCalendar = () => {
     const { daysInMonth, firstDay } = currentMonthInfo;
     const days = [];
@@ -519,7 +531,7 @@ const DateSelectorScreen = ({
                 }
               }}>
               <Text size="sm" weight="medium" style={{ textAlign: "center" }} noMargin>
-                {startDate ? formatDate(startDate) : "Start date"}
+                {formattedStartDate}
               </Text>
             </DateInput>
             {!runIndefinitely && (
@@ -536,7 +548,7 @@ const DateSelectorScreen = ({
                     }
                   }}>
                   <Text size="sm" weight="medium" style={{ textAlign: "center" }} noMargin>
-                    {endDate ? formatDate(endDate) : "End date"}
+                    {formattedEndDate}
                   </Text>
                 </DateInput>
               </>

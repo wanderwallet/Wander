@@ -3906,6 +3906,10 @@
       "message": "帮助",
       "description": "Help text"
     },
+    "help_description": {
+      "message": "获取 Wander 的帮助",
+      "description": "Help description"
+    },
     "help_center": {
       "message": "帮助中心",
       "description": "Help Center text"
@@ -4117,5 +4121,9 @@
     "earn_wndr_tokens": {
       "message": "赚取 $$WNDR 代币",
       "description": "Earn $WNDR Tokens text"
+    },
+    "agents_syncing": {
+      "message": "代理同步中",
+      "description": "Agents syncing text"
     }
 }
