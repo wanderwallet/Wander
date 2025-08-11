@@ -1,15 +1,31 @@
-import { QueryClient, useQuery } from "@tanstack/react-query";
-import { getArNSProfile } from "./arns";
 import type { NameServiceProfile } from "./types";
+import { getArNSProfile } from "./arns";
+import { QueryClient, useQuery } from "@tanstack/react-query";
+import { persistQueryClient } from "@tanstack/react-query-persist-client";
+import { createExtensionStoragePersister } from "~utils/query/createExtensionStoragePersister";
 
 export const NAME_SERVICE_QUERY_CLIENT = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 5 * 60 * 1000, // 5 minutes
+      gcTime: 60 * 60 * 1000, // 1 hour
       retry: 1,
       refetchOnWindowFocus: false,
     },
   },
+});
+
+// Create and set up the persister
+const persister = createExtensionStoragePersister({
+  cacheKey: "name-service-cache",
+});
+
+// Persist the query client
+persistQueryClient({
+  queryClient: NAME_SERVICE_QUERY_CLIENT,
+  persister,
+  maxAge: 24 * 60 * 60 * 1000, // 24 hours
+  buster: "v1",
 });
 
 /**

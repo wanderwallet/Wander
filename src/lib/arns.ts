@@ -21,6 +21,8 @@ import { isLocalWallet } from "~utils/assertions";
 import { getActiveKeyfile, type DecryptedWallet } from "~wallets";
 import { freeDecryptedWallet } from "~wallets/encryption";
 import type { NameServiceProfile } from "./types";
+import { persistQueryClient } from "@tanstack/react-query-persist-client";
+import { createExtensionStoragePersister } from "~utils/query/createExtensionStoragePersister";
 
 export const LANDING_PAGE_TXID = "oork_YifB3-JQQZg8EgMPQJytua_QCHKNmMqt5kmnCo";
 export const DEFAULT_ANT_LOGO = "Sie_26dvgyok0PZD_-iQAFOhOd5YxDTkczOLoqTTL_A";
@@ -34,6 +36,19 @@ export const ARNS_QUERY_CLIENT = new QueryClient({
       refetchOnWindowFocus: false,
     },
   },
+});
+
+// Create and set up the persister for ARNS
+const arnsPersister = createExtensionStoragePersister({
+  cacheKey: "arns-cache",
+});
+
+// Use it with persistQueryClient
+persistQueryClient({
+  queryClient: ARNS_QUERY_CLIENT,
+  persister: arnsPersister,
+  maxAge: 24 * 60 * 60 * 1000, // 24 hours
+  buster: "v1",
 });
 
 const aoCuUrl = "https://cu.ardrive.io";
