@@ -14,6 +14,7 @@ import { useRemoveCover } from "~wallets/setup/non/non-wallet-setup.hook";
 import { useWallets } from "~utils/wallets/wallets.hooks";
 import { WalletsProvider } from "~utils/wallets/wallets.provider";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import { ThemeProvider } from "~components/embed/contexts/ThemeContext";
 
 function DevTools() {
   useRemoveCover();
@@ -67,11 +68,13 @@ function DevTools() {
 
 export default function DevToolsRoot() {
   return (
-    <WanderThemeProvider>
-      <WalletsProvider>
-        <DevTools />
-      </WalletsProvider>
-    </WanderThemeProvider>
+    <ThemeProvider>
+      <WanderThemeProvider>
+        <WalletsProvider>
+          <DevTools />
+        </WalletsProvider>
+      </WanderThemeProvider>
+    </ThemeProvider>
   );
 }
 

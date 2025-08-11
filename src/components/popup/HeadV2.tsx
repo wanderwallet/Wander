@@ -2,7 +2,6 @@ import { type DisplayTheme, Section, Text, Tooltip } from "@arconnect/components
 import browser from "webextension-polyfill";
 import { Action, CloseLayer } from "./WalletHeader";
 import { AnimatePresence } from "framer-motion";
-import { useTheme } from "~utils/theme";
 import { useStorage } from "~utils/storage";
 import { ExtensionStorage } from "~utils/storage";
 import HardwareWalletIcon, { hwIconAnimateProps } from "~components/hardware/HardwareWalletIcon";
@@ -21,6 +20,7 @@ import { useNameServiceProfile } from "~lib/nameservice";
 import { concatGatewayURL } from "~gateways/utils";
 import { FULL_HISTORY, useGateway } from "~gateways/wayfinder";
 import { Avatar, NoAvatarIcon } from "~components/Avatar";
+import { useTheme } from "~components/embed/contexts/ThemeContext";
 
 export interface HeadV2Props {
   title: React.ReactNode;
@@ -46,7 +46,7 @@ export default function HeadV2({
   backIcon,
   optionsIcon,
 }: HeadV2Props) {
-  const theme = useTheme();
+  const { displayTheme } = useTheme();
   const { back } = useLocation();
 
   // scroll position
@@ -103,7 +103,7 @@ export default function HeadV2({
 
   return (
     <HeadWrapper
-      displayTheme={theme}
+      displayTheme={displayTheme}
       collapse={scrollDirection === "down"}
       scrolled={scrolled}
       padding={padding}

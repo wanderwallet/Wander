@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import browser, { search } from "webextension-polyfill";
+import browser from "webextension-polyfill";
 import styled from "styled-components";
-import { useTheme, hoverEffect } from "~utils/theme";
+import { hoverEffect } from "~utils/theme";
 import type { DisplayTheme } from "@arconnect/components-rebrand";
 import { CloseIcon, ChevronDownIcon, SearchIcon } from "@iconicicons/react";
 import amex from "url:/assets/ecosystem/amex.svg";
@@ -10,6 +10,7 @@ import visa from "url:/assets/ecosystem/visa.svg";
 import supportedCurrencies from "~utils/supported_currencies";
 import { getPaymentTypes } from "~lib/onramper";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import { useTheme } from "~components/embed/contexts/ThemeContext";
 
 interface InputMenuProps {
   onPaymentMethodChange?: (methodId: string) => void;
@@ -26,7 +27,7 @@ export default function InputMenu({
   selectedPaymentMethod,
   selectedFiatCurrency,
 }: InputMenuProps) {
-  const theme = useTheme();
+  const { displayTheme } = useTheme();
 
   const [searchInput, setSearchInput] = useState("");
   const [chooseOption, setChooseOption] = useState(false);
@@ -87,12 +88,12 @@ export default function InputMenu({
       }));
 
   const OptionSelect = () => (
-    <SelectInput displayTheme={theme} onClick={() => setChooseOption(true)}>
+    <SelectInput displayTheme={displayTheme} onClick={() => setChooseOption(true)}>
       <OptionWrapper>
         <OptionIcon src={chosenOption.logo} alt={chosenOption.text} draggable={false} />
         {chosenOption.text}
       </OptionWrapper>
-      <SelectIcon displayTheme={theme} />
+      <SelectIcon displayTheme={displayTheme} />
     </SelectInput>
   );
 
@@ -103,8 +104,8 @@ export default function InputMenu({
   );
 
   const OptionModal = () => (
-    <Wrapper displayTheme={theme}>
-      <Content displayTheme={theme}>
+    <Wrapper displayTheme={displayTheme}>
+      <Content displayTheme={displayTheme}>
         <Header>
           <Title>
             {isPaymentMethod
@@ -124,10 +125,10 @@ export default function InputMenu({
           </BackWrapper>
         </Header>
         {!isPaymentMethod && (
-          <SearchWrapper displayTheme={theme}>
+          <SearchWrapper displayTheme={displayTheme}>
             <InputSearchIcon />
             <SearchInput
-              displayTheme={theme}
+              displayTheme={displayTheme}
               placeholder={browser.i18n.getMessage("search_currency_placeholder")}
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
@@ -139,7 +140,7 @@ export default function InputMenu({
             options.map((option) => (
               <Option
                 key={option.id}
-                displayTheme={theme}
+                displayTheme={displayTheme}
                 active={chosenOption.id === option.id}
                 onClick={() => {
                   setChosenOption(option);
@@ -171,7 +172,7 @@ export default function InputMenu({
             filteredOptions.map((option) => (
               <Option
                 key={option.id}
-                displayTheme={theme}
+                displayTheme={displayTheme}
                 active={chosenOption.id === option.id}
                 onClick={() => {
                   setChosenOption(option);

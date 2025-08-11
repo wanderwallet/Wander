@@ -1,13 +1,13 @@
 import styled from "styled-components";
 import { Flex } from "~components/common/Flex";
 import { Text, type DisplayTheme } from "@arconnect/components-rebrand";
-import { useTheme } from "~utils/theme";
+import { useTheme } from "~components/embed/contexts/ThemeContext";
 
 export const StatusLabel = ({ status, label }: Props) => {
-  const theme = useTheme();
+  const { displayTheme } = useTheme();
 
   return (
-    <StatusWrapper align="center" gap=".5rem" success={status} displayTheme={theme}>
+    <StatusWrapper align="center" gap=".5rem" success={status} displayTheme={displayTheme}>
       <StatusDot success={status} />
       <Text size="base" weight="medium" noMargin>
         {label}

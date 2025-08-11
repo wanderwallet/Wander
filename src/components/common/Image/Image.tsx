@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import clsx from "clsx";
 import { sleep } from "~utils/promises/sleep";
-import { useTheme } from "~utils/theme";
+import { useTheme } from "~components/embed/contexts/ThemeContext";
 
 import defaultPlaceholderUrl from "url:/assets/placeholder.png";
 
@@ -50,10 +50,7 @@ export function Image({
   style,
   onError,
 }: ImageProps) {
-  const theme = useTheme();
-
-  console.log("theme =", theme);
-
+  const { themeMode } = useTheme();
   const [isLoaded, setIsLoaded] = useState(false);
 
   const pictureClassName = clsx(className, styles.root, {
@@ -65,7 +62,7 @@ export function Image({
   });
 
   const placeholderURL =
-    theme === "dark"
+    themeMode === "dark"
       ? placeholderSrcDark && placeholderSrcDark !== "none"
         ? `url(${placeholderSrcDark})`
         : "none"
@@ -114,11 +111,11 @@ export function Image({
 
   return (
     <picture className={pictureClassName} style={pictureStyle}>
-      {srcDark ? <source srcSet={theme === "light" ? src : srcDark} media="(prefers-color-scheme: dark)" /> : null}
+      {srcDark ? <source srcSet={themeMode === "light" ? src : srcDark} media="(prefers-color-scheme: dark)" /> : null}
 
       <img
         className={imgClassName}
-        src={theme === "dark" && srcDark ? srcDark : src}
+        src={themeMode === "dark" && srcDark ? srcDark : src}
         width={width}
         height={height}
         title={title}

@@ -17,6 +17,7 @@ import UpdateSplash from "~routes/welcome/UpdateSplash";
 import StarIcons from "~components/welcome/StarIcons";
 import { useActivityTracking } from "~utils/inactivity/inactivity.hooks";
 import { queryClient } from "~utils/tanstack";
+import { ThemeProvider } from "~components/embed/contexts/ThemeContext";
 
 export function WanderBrowserExtensionApp() {
   const [showAnimation, setShowAnimation] = useState<boolean>(false);
@@ -68,17 +69,19 @@ export function WanderBrowserExtensionApp() {
 
 export function WanderBrowserExtensionAppRoot() {
   return (
-    <WanderThemeProvider>
-      <ErrorBoundary fallback={FallbackView}>
-        <WalletsProvider redirectToWelcome>
-          <QueryClientProvider client={queryClient}>
-            <Wouter hook={useExtensionLocation}>
-              <WanderBrowserExtensionApp />
-            </Wouter>
-          </QueryClientProvider>
-        </WalletsProvider>
-      </ErrorBoundary>
-    </WanderThemeProvider>
+    <ThemeProvider>
+      <WanderThemeProvider>
+        <ErrorBoundary fallback={FallbackView}>
+          <WalletsProvider redirectToWelcome>
+            <QueryClientProvider client={queryClient}>
+              <Wouter hook={useExtensionLocation}>
+                <WanderBrowserExtensionApp />
+              </Wouter>
+            </QueryClientProvider>
+          </WalletsProvider>
+        </ErrorBoundary>
+      </WanderThemeProvider>
+    </ThemeProvider>
   );
 }
 

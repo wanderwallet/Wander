@@ -24,7 +24,6 @@ import useSetting from "~settings/hook";
 import { getPrice, type CoinGeckoSymbol } from "~lib/coingecko";
 import { getTagValue, type TokenInfo } from "~tokens/aoTokens/ao";
 import { ChevronRightIcon } from "@iconicicons/react";
-import { useTheme } from "~utils/theme";
 import { checkWalletBits, type WalletBitsCheck } from "~utils/analytics";
 import { Degraded, WarningWrapper } from "~routes/popup/send";
 import { useCurrentAuthRequest } from "~utils/auth/auth.hooks";
@@ -35,6 +34,7 @@ import { humanizeTimestampTags } from "~utils/timestamp";
 import { TokenLogo } from "~components/popup/TokenLogo";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { WarningIcon } from "~components/icons/WarningIcon";
+import { useTheme } from "~components/embed/contexts/ThemeContext";
 
 export function SignDataItemAuthRequestView() {
   const { authRequest, acceptRequest, rejectRequest } = useCurrentAuthRequest("signDataItem");
@@ -79,7 +79,7 @@ export function SignDataItemAuthRequestView() {
     "",
   );
 
-  const theme = useTheme();
+  const { displayTheme } = useTheme();
 
   // currency setting
   const [currency] = useSetting<string>("currency");
@@ -217,7 +217,7 @@ export function SignDataItemAuthRequestView() {
         {mismatch && transfer && (
           <Degraded>
             <WarningWrapper>
-              <WarningIcon color={theme === "dark" ? "#fff" : "#000"} />{" "}
+              <WarningIcon color={displayTheme === "dark" ? "#fff" : "#000"} />{" "}
             </WarningWrapper>
             <div>
               <h4>{browser.i18n.getMessage("mismatch_warning_title")}</h4>

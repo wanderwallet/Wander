@@ -18,7 +18,6 @@ import { Content, Title, getColorByStatus } from "~components/popup/list/Subscri
 import { CreditCardUpload } from "@untitled-ui/icons-react";
 import { SettingIconWrapper, SettingImage } from "~components/dashboard/list/BaseElement";
 import { formatAddress } from "~utils/format";
-import { useTheme } from "~utils/theme";
 import { useLocation } from "~wallets/router/router.utils";
 import { getPrice } from "~lib/coingecko";
 import useSetting from "~settings/hook";
@@ -27,6 +26,7 @@ import BigNumber from "bignumber.js";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { ToggleSwitch } from "~components/ToggleSwitch";
+import { useTheme } from "~components/embed/contexts/ThemeContext";
 
 export interface SubscriptionDetailsViewParams {
   id?: string;
@@ -36,7 +36,7 @@ export type SubscriptionDetailsViewProps = CommonRouteProps<SubscriptionDetailsV
 
 export function SubscriptionDetailsView({ params: { id } }: SubscriptionDetailsViewProps) {
   const { navigate, back } = useLocation();
-  const theme = useTheme();
+  const { displayTheme } = useTheme();
   const [subData, setSubData] = useState<SubscriptionData | null>(null);
   const [checked, setChecked] = useState(false);
   const [autopayChecked, setAutopayChecked] = useState(false);
@@ -151,7 +151,9 @@ export function SubscriptionDetailsView({ params: { id } }: SubscriptionDetailsV
           <Main>
             <SubscriptionListItem>
               <Content style={{ cursor: "default" }}>
-                <SettingIconWrapper bg={theme === "light" ? "235,235,235" : "255, 255, 255"} customSize="2.625rem">
+                <SettingIconWrapper
+                  bg={displayTheme === "light" ? "235,235,235" : "255, 255, 255"}
+                  customSize="2.625rem">
                   {subData.applicationIcon && <SettingImage src={subData.applicationIcon} />}
                 </SettingIconWrapper>
                 <Title style={{ display: "flex", alignItems: "flex-end" }}>
@@ -171,7 +173,7 @@ export function SubscriptionDetailsView({ params: { id } }: SubscriptionDetailsV
                 </Title>
               </Content>
             </SubscriptionListItem>
-            <SubscriptionText displayTheme={theme} color={theme === "light" ? "#191919" : "#ffffff"}>
+            <SubscriptionText displayTheme={displayTheme} color={displayTheme === "light" ? "#191919" : "#ffffff"}>
               {browser.i18n.getMessage("subscription_application_address")}:{" "}
               <span>{formatAddress(subData.arweaveAccountAddress, 5)}</span>
             </SubscriptionText>
@@ -179,7 +181,7 @@ export function SubscriptionDetailsView({ params: { id } }: SubscriptionDetailsV
               <h6>Recurring payment amount</h6>
               <Body>
                 <h3>{subData.subscriptionFeeAmount} AR</h3>
-                <SubscriptionText fontSize="14px" color={theme === "light" ? "#191919" : "#ffffff"}>
+                <SubscriptionText fontSize="14px" color={displayTheme === "light" ? "#191919" : "#ffffff"}>
                   Subscription: {subData.recurringPaymentFrequency}
                 </SubscriptionText>
               </Body>
@@ -187,7 +189,7 @@ export function SubscriptionDetailsView({ params: { id } }: SubscriptionDetailsV
                 <SubscriptionText fontSize="14px">
                   ${price ? price.toFixed(2) : "--.--"} {currency}
                 </SubscriptionText>
-                <SubscriptionText fontSize="14px" color={theme === "light" ? "#191919" : "#ffffff"}>
+                <SubscriptionText fontSize="14px" color={displayTheme === "light" ? "#191919" : "#ffffff"}>
                   Next payment: {dayjs(subData.nextPaymentDue).format("MMM DD, YYYY")}
                 </SubscriptionText>
               </Body>
@@ -195,10 +197,10 @@ export function SubscriptionDetailsView({ params: { id } }: SubscriptionDetailsV
             <Divider />
             <div>
               <Body>
-                <SubscriptionText fontSize="14px" color={theme === "light" ? "#191919" : "#ffffff"}>
+                <SubscriptionText fontSize="14px" color={displayTheme === "light" ? "#191919" : "#ffffff"}>
                   Start
                 </SubscriptionText>
-                <SubscriptionText fontSize="14px" color={theme === "light" ? "#191919" : "#ffffff"}>
+                <SubscriptionText fontSize="14px" color={displayTheme === "light" ? "#191919" : "#ffffff"}>
                   End
                 </SubscriptionText>
               </Body>
@@ -209,12 +211,12 @@ export function SubscriptionDetailsView({ params: { id } }: SubscriptionDetailsV
             </div>
             {/* Toggle */}
             <Body>
-              <SubscriptionText color={theme === "light" ? "#191919" : "#ffffff"}>Auto-renewal</SubscriptionText>
+              <SubscriptionText color={displayTheme === "light" ? "#191919" : "#ffffff"}>Auto-renewal</SubscriptionText>
               <ToggleSwitch checked={checked} setChecked={setChecked} />
             </Body>
             {/* TODO: temporarily disabling threshold */}
             <Body>
-              <SubscriptionText color={theme === "light" ? "#191919" : "#ffffff"}>
+              <SubscriptionText color={displayTheme === "light" ? "#191919" : "#ffffff"}>
                 Auto-Pay
                 <TooltipV2 content={InfoText} position="bottom">
                   <InfoCircle />
@@ -225,7 +227,7 @@ export function SubscriptionDetailsView({ params: { id } }: SubscriptionDetailsV
             {/* <Threshold>
               <Body>
                 <SubscriptionText
-                  color={theme === "light" ? "#191919" : "#ffffff"}
+                  color={displayTheme === "light" ? "#191919" : "#ffffff"}
                 >
                   Allowance{" "}
                   <TooltipV2 content={InfoText} position="bottom">

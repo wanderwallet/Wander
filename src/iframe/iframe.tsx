@@ -30,8 +30,8 @@ export function WanderConnectApp() {
 
 export function WanderConnectAppRoot() {
   return (
-    <WanderThemeProvider>
-      <ThemeProvider>
+    <ThemeProvider>
+      <WanderThemeProvider>
         <QueryClientProvider client={queryClient}>
           <Wouter hook={useEmbeddedLocation}>
             <EmbeddedProvider>
@@ -47,7 +47,7 @@ export function WanderConnectAppRoot() {
             </EmbeddedProvider>
           </Wouter>
         </QueryClientProvider>
-      </ThemeProvider>
-    </WanderThemeProvider>
+      </WanderThemeProvider>
+    </ThemeProvider>
   );
 }

@@ -12,6 +12,7 @@ import { FallbackView } from "~components/page/common/Fallback/fallback.view";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { useActivityTracking } from "~utils/inactivity/inactivity.hooks";
 import { queryClient } from "~utils/tanstack";
+import { ThemeProvider } from "~components/embed/contexts/ThemeContext";
 
 export function AuthApp() {
   useActivityTracking();
@@ -25,19 +26,21 @@ export function AuthApp() {
 
 export function AuthAppRoot() {
   return (
-    <WanderThemeProvider>
-      <ErrorBoundary fallback={FallbackView}>
-        <WalletsProvider redirectToWelcome>
-          <AuthRequestsProvider>
-            <QueryClientProvider client={queryClient}>
-              <Wouter hook={useAuthRequestsLocation}>
-                <AuthApp />
-              </Wouter>
-            </QueryClientProvider>
-          </AuthRequestsProvider>
-        </WalletsProvider>
-      </ErrorBoundary>
-    </WanderThemeProvider>
+    <ThemeProvider>
+      <WanderThemeProvider>
+        <ErrorBoundary fallback={FallbackView}>
+          <WalletsProvider redirectToWelcome>
+            <AuthRequestsProvider>
+              <QueryClientProvider client={queryClient}>
+                <Wouter hook={useAuthRequestsLocation}>
+                  <AuthApp />
+                </Wouter>
+              </QueryClientProvider>
+            </AuthRequestsProvider>
+          </WalletsProvider>
+        </ErrorBoundary>
+      </WanderThemeProvider>
+    </ThemeProvider>
   );
 }
 

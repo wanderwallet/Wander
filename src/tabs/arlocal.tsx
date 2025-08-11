@@ -19,6 +19,7 @@ import { useRemoveCover } from "~wallets/setup/non/non-wallet-setup.hook";
 import { useWallets } from "~utils/wallets/wallets.hooks";
 import { WalletsProvider } from "~utils/wallets/wallets.provider";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import { ThemeProvider } from "~components/embed/contexts/ThemeContext";
 
 function ArLocal() {
   useRemoveCover();
@@ -188,10 +189,12 @@ function ArLocal() {
 
 export default function ArLocalRoot() {
   return (
-    <WanderThemeProvider>
-      <WalletsProvider>
-        <ArLocal />
-      </WalletsProvider>
-    </WanderThemeProvider>
+    <ThemeProvider>
+      <WanderThemeProvider>
+        <WalletsProvider>
+          <ArLocal />
+        </WalletsProvider>
+      </WanderThemeProvider>
+    </ThemeProvider>
   );
 }

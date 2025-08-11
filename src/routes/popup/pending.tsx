@@ -2,16 +2,16 @@ import { useEffect } from "react";
 import browser from "webextension-polyfill";
 import styled from "styled-components";
 import { ExtensionStorage } from "~utils/storage";
-import { useTheme } from "~utils/theme";
 import { ButtonV2, Section } from "@arconnect/components";
 import type { DisplayTheme } from "@arconnect/components";
 import { PageType, trackPage } from "~utils/analytics";
 import { useStorage } from "~utils/storage";
 import type { Quote } from "~lib/onramper";
 import { useLocation } from "~wallets/router/router.utils";
+import { useTheme } from "~components/embed/contexts/ThemeContext";
 
 export function PendingPurchaseView() {
-  const theme = useTheme();
+  const { displayTheme } = useTheme();
   const { navigate } = useLocation();
 
   const [quote] = useStorage<Quote>({
@@ -31,11 +31,11 @@ export function PendingPurchaseView() {
           <CheckIcon />
         </CheckGraphic>
         <CongratsTitle>{browser.i18n.getMessage("congrats_purchase_pending")}</CongratsTitle>
-        <PurchasePendingText displayTheme={theme}>
+        <PurchasePendingText displayTheme={displayTheme}>
           {browser.i18n.getMessage("info_purchase_pending")}
         </PurchasePendingText>
         {quote && (
-          <OrderID displayTheme={theme}>
+          <OrderID displayTheme={displayTheme}>
             {browser.i18n.getMessage("order_id_purchase_pending")} {quote.quoteId}
           </OrderID>
         )}

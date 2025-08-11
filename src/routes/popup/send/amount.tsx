@@ -9,7 +9,6 @@ import { formatFiatBalance, formatTokenBalance, fractionedToBalance } from "~tok
 import { useStorage } from "@plasmohq/storage/hook";
 import { ExtensionStorage, TempTransactionStorage } from "~utils/storage";
 import { type Token as TokenInterface } from "~tokens/token";
-import { useTheme } from "~utils/theme";
 import Collectible from "~components/popup/Collectible";
 import { retryWithGateways } from "~gateways/wayfinder";
 import { useLocation } from "~wallets/router/router.utils";
@@ -38,6 +37,7 @@ import { SendInput } from "~components/SendInput";
 import { HorizontalLine } from "~components/HorizontalLine";
 import { TokenLogo } from "~components/popup/TokenLogo";
 import { WarningIcon } from "~components/icons/WarningIcon";
+import { useTheme } from "~components/embed/contexts/ThemeContext";
 
 export enum AmountValidationState {
   Invalid = "Invalid",
@@ -112,7 +112,7 @@ export type AmountViewProps = CommonRouteProps<SendViewParams>;
 
 export function AmountView({ params: { id, recipient } }: AmountViewProps) {
   const { navigate, back } = useLocation();
-  const theme = useTheme();
+  const { displayTheme } = useTheme();
   const { setToast } = useToasts();
 
   const [isOpen, setOpen] = useState(true);
@@ -374,7 +374,7 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
           {degraded && (
             <Degraded>
               <WarningWrapper>
-                <WarningIcon color={theme === "dark" ? "#fff" : "#000"} />
+                <WarningIcon color={displayTheme === "dark" ? "#fff" : "#000"} />
               </WarningWrapper>
               <div>
                 <h4>{browser.i18n.getMessage("ao_degraded")}</h4>

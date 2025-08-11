@@ -1,6 +1,6 @@
 import { useEffect, type PropsWithChildren } from "react";
 import { useHardwareApi } from "~wallets/hooks";
-import { getFormattedColor, useTheme } from "~utils/theme";
+import { getFormattedColor } from "~utils/theme";
 import { useTheme as useStyledComponentsTheme } from "styled-components";
 import { MotionGlobalConfig } from "framer-motion";
 import {
@@ -12,6 +12,7 @@ import {
 } from "@arconnect/components-rebrand";
 import { ARCONNECT_THEME_BACKGROUND_COLOR, ARCONNECT_THEME_TEXT_COLOR } from "~utils/storage.utils";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
+import { useTheme } from "~components/embed/contexts/ThemeContext";
 
 /**
  * Modify the theme if the active wallet is a hardware wallet. We transform the
@@ -34,7 +35,7 @@ export const IS_FOCUS_ACTIVE_CLS = "isFocusActive";
 
 export function WanderThemeProvider({ children }: PropsWithChildren<{}>) {
   const hardwareApi = useHardwareApi();
-  const theme = useTheme();
+  const { displayTheme } = useTheme();
   const themeModifier = hardwareApi ? hardwareThemeModifier : noThemeModifier;
 
   useEffect(() => {
@@ -90,8 +91,8 @@ export function WanderThemeProvider({ children }: PropsWithChildren<{}>) {
   }, []);
 
   return (
-    <ThemeProvider theme={themeModifier(theme === "dark" ? ARCONNECT_DARK_THEME : ARCONNECT_LIGHT_THEME)}>
-      <ThemeBackgroundObserver theme={theme} />
+    <ThemeProvider theme={themeModifier(displayTheme === "dark" ? ARCONNECT_DARK_THEME : ARCONNECT_LIGHT_THEME)}>
+      <ThemeBackgroundObserver theme={displayTheme} />
 
       {children}
     </ThemeProvider>

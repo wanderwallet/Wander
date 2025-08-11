@@ -8,6 +8,7 @@ import { handleSyncLabelsAlarm } from "~api/background/handlers/alarms/sync-labe
 import { WalletsProvider } from "~utils/wallets/wallets.provider";
 import { ErrorBoundary } from "~utils/error/ErrorBoundary/errorBoundary";
 import { FallbackView } from "~components/page/common/Fallback/fallback.view";
+import { ThemeProvider } from "~components/embed/contexts/ThemeContext";
 
 export function DashboardApp() {
   useEffect(() => {
@@ -19,15 +20,17 @@ export function DashboardApp() {
 
 export function DashboardAppRoot() {
   return (
-    <WanderThemeProvider>
-      <ErrorBoundary fallback={FallbackView}>
-        <WalletsProvider>
-          <Wouter hook={useHashLocation}>
-            <DashboardApp />
-          </Wouter>
-        </WalletsProvider>
-      </ErrorBoundary>
-    </WanderThemeProvider>
+    <ThemeProvider>
+      <WanderThemeProvider>
+        <ErrorBoundary fallback={FallbackView}>
+          <WalletsProvider>
+            <Wouter hook={useHashLocation}>
+              <DashboardApp />
+            </Wouter>
+          </WalletsProvider>
+        </ErrorBoundary>
+      </WanderThemeProvider>
+    </ThemeProvider>
   );
 }
 
