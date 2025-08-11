@@ -18,7 +18,7 @@ export default function ArNSBanner({ activeAddress }: ArNSBannerProps) {
   const [showBanner, setShowBanner] = useState(false);
   const { navigate } = useLocation();
 
-  const nameServiceProfile = useNameServiceProfile(activeAddress);
+  const { data: nameServiceProfile } = useNameServiceProfile(activeAddress);
 
   const handleRegisterClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -31,7 +31,7 @@ export default function ArNSBanner({ activeAddress }: ArNSBannerProps) {
   }
 
   useEffect(() => {
-    if (activeAddress) {
+    if (activeAddress && nameServiceProfile) {
       if (isArNSNameProfile(nameServiceProfile)) {
         setShowBanner(false);
       } else {

@@ -82,7 +82,7 @@ export default function WalletHeader() {
   };
 
   // profile picture
-  const nameServiceProfile = useNameServiceProfile(activeAddress);
+  const { data: nameServiceProfile } = useNameServiceProfile(activeAddress);
   const gateway = useGateway(FULL_HISTORY);
 
   // wallet nickname for copy
@@ -104,6 +104,7 @@ export default function WalletHeader() {
       return wallet?.nickname || "Wallet";
     }
 
+    setDisplayName(nameServiceProfile.name);
     return nameServiceProfile.name;
   }, [wallets, nameServiceProfile, activeAddress]);
 

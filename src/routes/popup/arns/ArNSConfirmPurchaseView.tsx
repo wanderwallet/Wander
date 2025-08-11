@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Flex } from "~components/common/Flex";
 import { ArioIcon } from "~components/embed";
 import HeadV2 from "~components/popup/HeadV2";
-import { getRegistrationFees, purchaseArNSName, useTicker } from "~lib/arns";
+import { ARNS_QUERY_CLIENT, getRegistrationFees, purchaseArNSName, useTicker } from "~lib/arns";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { useLocation } from "~wallets/router/router.utils";
 import { RegisteringCard } from "./RegisteringCard";
@@ -12,6 +12,7 @@ import TransactionStatusModal from "./TransactionStatusModal";
 import type { PurchaseType } from "./types";
 import { formatArio } from "./utils";
 import { mARIOToken } from "@ar.io/sdk/web";
+import { useActiveWallet } from "~wallets/hooks";
 
 export interface ArNSConfirmPurchaseViewParams {
   name: string;
@@ -29,6 +30,8 @@ export const ArNSConfirmPurchaseView = ({
   const [processingTransaction, setProcessingTransaction] = useState<boolean>(false);
 
   const [transactionState, setTransactionState] = useState<string | undefined>();
+
+  const wallet = useActiveWallet();
 
   const { navigate } = useLocation();
 
@@ -52,6 +55,7 @@ export const ArNSConfirmPurchaseView = ({
     try {
       setProcessingTransaction(true);
       setTransactionState("Processing transactions...");
+
       const result = await purchaseArNSName({
         name,
         purchaseType,
@@ -65,6 +69,9 @@ export const ArNSConfirmPurchaseView = ({
       console.log("RESULT", result);
 
       if (result.success) {
+        await ARNS_QUERY_CLIENT.invalidateQueries({
+          queryKey: ["arns-records-for-address", wallet.address],
+        });
         navigate(`/arns/purchase-success/${name}/${purchaseType}/${purchaseYears}/${result.transactionId}`);
       } else {
         navigate(`/arns/purchase-error/${name}/${purchaseType}/${purchaseYears}`);

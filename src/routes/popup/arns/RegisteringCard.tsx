@@ -1,8 +1,7 @@
 import { Text } from "@arconnect/components-rebrand";
 import { Flex } from "~components/common/Flex";
 import { Line } from "../purchase";
-import { Card } from "@arconnect/components-rebrand";
-import styled from "styled-components";
+import { CardContainer } from "./CardContainer";
 import type { PurchaseType } from "./types";
 
 interface RegisteringCardProps {
@@ -33,15 +32,3 @@ export const RegisteringCard: React.FC<RegisteringCardProps> = ({ name, purchase
     </CardContainer>
   );
 };
-
-const CardContainer = styled(Card)`
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 1rem;
-  margin: 1rem 0;
-  background: ${(props) => props.theme.surfaceSecondary};
-  border-radius: 12px;
-  gap: 0.5rem;
-`;

@@ -1,70 +1,33 @@
-import { useState } from "react";
-import type { NameServiceProfile } from "./types";
+import { QueryClient, useQuery } from "@tanstack/react-query";
 import { getArNSProfile } from "./arns";
-import { ExtensionStorage } from "~utils/storage";
-import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import type { NameServiceProfile } from "./types";
 
-let IN_MEM_CACHE: Record<string, NameServiceProfile | null> = {};
-let isCacheInitialized = false;
-
-async function initializeNameServiceCache() {
-  if (isCacheInitialized) return IN_MEM_CACHE;
-
-  try {
-    const cache = await ExtensionStorage.get<Record<string, NameServiceProfile | null>>("name_service_cache");
-    IN_MEM_CACHE = cache || {};
-  } catch (e) {
-    console.error("Failed to initialize name service cache:", e);
-  }
-
-  isCacheInitialized = true;
-  return IN_MEM_CACHE;
-}
-
-async function getProfileFromCache(walletAddress: string): Promise<NameServiceProfile | null> {
-  const cache = await initializeNameServiceCache();
-  const cachedProfile = cache[walletAddress];
-  return cachedProfile;
-}
-
-async function setProfileInCache(walletAddress: string, profile: NameServiceProfile | undefined) {
-  const cache = await initializeNameServiceCache();
-  cache[walletAddress] = profile || null;
-
-  await ExtensionStorage.set("name_service_cache", cache).catch((e) => {
-    console.error("Failed to save name service profile to cache:", e);
-  });
-}
+export const NAME_SERVICE_QUERY_CLIENT = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 /**
  * Return a NameServiceProfile for a query
  *
  * @param walletAddress Address
- * @param refreshCache If true, refresh the profile from the network
  *
  * @returns NameServiceProfile | undefined
  */
-export async function getNameServiceProfile(
-  walletAddress: string,
-  refreshCache = false,
-): Promise<NameServiceProfile | undefined> {
-  try {
-    if (!walletAddress) return undefined;
+async function getNameServiceProfile(walletAddress: string): Promise<NameServiceProfile | undefined> {
+  const profile = NAME_SERVICE_QUERY_CLIENT.fetchQuery({
+    queryKey: ["name-service-profile", walletAddress],
+    queryFn: async () =>
+      (await getArNSProfile(walletAddress)) || null,
+    staleTime: 5 * 60 * 1000,
+  });
 
-    if (!refreshCache) {
-      const cachedProfile = await getProfileFromCache(walletAddress);
-      if (cachedProfile !== undefined) {
-        return cachedProfile === null ? undefined : cachedProfile;
-      }
-    }
-
-    const profile = await getArNSProfile(walletAddress);
-    await setProfileInCache(walletAddress, profile);
-    return profile;
-  } catch (e) {
-    console.error("Failed to fetch name service profile:", e);
-    return undefined;
-  }
+  return profile;
 }
 
 /**
@@ -77,18 +40,28 @@ export async function getNameServiceProfile(
  */
 export async function getNameServiceProfiles(
   walletAddresses: string[],
-  refreshCache = false,
 ): Promise<Array<NameServiceProfile>> {
   if (!walletAddresses || walletAddresses.length === 0) return [];
 
   const profiles = [];
   for (let wallet of walletAddresses) {
-    const profile = await getNameServiceProfile(wallet, refreshCache);
+    const profile = await getNameServiceProfile(wallet);
     if (profile) {
       profiles.push(profile);
     }
   }
   return profiles;
+}
+
+export function useNameServiceProfiles(walletAddress: string[]) {
+  return useQuery(
+    {
+      queryKey: ["name-service-profiles"],
+      queryFn: async () => getNameServiceProfiles(walletAddress),
+      staleTime: 5 * 60 * 1000,
+    },
+    NAME_SERVICE_QUERY_CLIENT,
+  );
 }
 
 /**
@@ -99,22 +72,14 @@ export async function getNameServiceProfiles(
  * @returns NameServiceProfile | undefined
  */
 export function useNameServiceProfile(walletAddress: string) {
-  const [profile, setProfile] = useState<NameServiceProfile>();
-
-  useAsyncEffect(async () => {
-    if (!walletAddress) {
-      setProfile(undefined);
-      return;
-    }
-
-    const profile = await getNameServiceProfile(walletAddress);
-
-    console.log("FOUND PROFILE for", walletAddress, profile);
-
-    setProfile(profile);
-  }, [walletAddress]);
-
-  return profile;
+  return useQuery(
+    {
+      queryKey: ["name-service-profile-hook", walletAddress],
+      queryFn: async () => getNameServiceProfile(walletAddress),
+      staleTime: 5 * 60 * 1000,
+      refetchOnWindowFocus: false,
+      enabled: !!walletAddress,
+    },
+    NAME_SERVICE_QUERY_CLIENT,
+  );
 }
-
-initializeNameServiceCache();

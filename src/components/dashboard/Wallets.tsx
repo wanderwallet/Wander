@@ -1,20 +1,17 @@
-import { concatGatewayURL } from "~gateways/utils";
 import { Button, Spacer, useInput } from "@arconnect/components-rebrand";
-import { useEffect, useMemo, useState } from "react";
-import { useStorage } from "~utils/storage";
-import { ExtensionStorage } from "~utils/storage";
-import { useRoute } from "wouter";
-import type { StoredWallet } from "~wallets";
 import { Reorder } from "framer-motion";
-import WalletListItem from "./list/WalletListItem";
-import browser from "webextension-polyfill";
-import SearchInput from "./SearchInput";
+import { useEffect, useMemo } from "react";
 import styled from "styled-components";
+import browser from "webextension-polyfill";
+import { useRoute } from "wouter";
+import { concatGatewayURL } from "~gateways/utils";
 import { FULL_HISTORY, useGateway } from "~gateways/wayfinder";
+import { useNameServiceProfiles } from "~lib/nameservice";
+import { ExtensionStorage, useStorage } from "~utils/storage";
+import type { StoredWallet } from "~wallets";
 import { useLocation } from "~wallets/router/router.utils";
-import { getNameServiceProfiles } from "~lib/nameservice";
-import type { NameServiceProfile } from "~lib/types";
-import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import WalletListItem from "./list/WalletListItem";
+import SearchInput from "./SearchInput";
 
 export function WalletsDashboardView() {
   const { navigate } = useLocation();
@@ -50,16 +47,7 @@ export function WalletsDashboardView() {
   }, [wallets, activeWalletSetting]);
 
   // ans data
-  const [nameServiceProfiles, setNameServiceProfiles] = useState<NameServiceProfile[]>([]);
-
-  useAsyncEffect(async () => {
-    if (!wallets) return;
-
-    // fetch profiles
-    const profiles = await getNameServiceProfiles(wallets.map((w) => w.address));
-
-    setNameServiceProfiles(profiles);
-  }, [wallets]);
+  const { data: nameServiceProfiles } = useNameServiceProfiles(wallets.map((w) => w.address));
 
   // ans shortcuts
   const findProfile = (address: string) => nameServiceProfiles.find((profile) => profile.address === address);

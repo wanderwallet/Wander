@@ -1,21 +1,18 @@
 import {
   ANT,
-  ANT_REGISTRY_ID,
-  ANTRegistry,
-  ANTVersions,
   AOProcess,
   ARIO,
   ARIO_MAINNET_PROCESS_ID,
   ArweaveSigner,
-  createAoSigner,
-  DEFAULT_SCHEDULER_ID,
-  spawnANT,
   type AoANTInfo,
   type AoANTState,
   type AoArNSNameData,
+  type AoArNSNameDataWithName,
   type AoPrimaryName,
   type AoRegistrationFees,
+  type PaginationParams,
   type SpawnANTState,
+  type WalletAddress,
 } from "@ar.io/sdk/web";
 import { connect } from "@permaweb/aoconnect/browser";
 import { QueryClient, useQuery } from "@tanstack/react-query";
@@ -29,7 +26,7 @@ export const LANDING_PAGE_TXID = "oork_YifB3-JQQZg8EgMPQJytua_QCHKNmMqt5kmnCo";
 export const DEFAULT_ANT_LOGO = "Sie_26dvgyok0PZD_-iQAFOhOd5YxDTkczOLoqTTL_A";
 
 // Query client for ArNS profile caching
-const arnsQueryClient = new QueryClient({
+export const ARNS_QUERY_CLIENT = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 5 * 60 * 1000, // 5 minutes
@@ -115,51 +112,49 @@ export async function findLogo(primaryName: AoPrimaryName): Promise<string | und
  * @param address - Wallet address to fetch the primary name for.
  * @returns Primary name record or undefined.
  */
-export async function getPrimaryArNSName(address: string): Promise<AoPrimaryName | undefined> {
+async function getPrimaryArNSName(address: string): Promise<AoPrimaryName | undefined> {
   return ARIO_READ_SDK.getPrimaryName({ address });
 }
 
-async function fetchArNSProfile(query: string): Promise<NameServiceProfile | undefined> {
-  if (!query) {
-    return undefined;
+async function fetchArNSProfile(walletAddress: string): Promise<NameServiceProfile | null> {
+  if (!walletAddress) {
+    return null;
   }
 
   try {
     // Fetch the primary name and logo
-    const primaryName = await getPrimaryArNSName(query);
+    const primaryName = await getPrimaryArNSName(walletAddress);
     const logo = await findLogo(primaryName);
 
     return {
-      address: query,
+      address: walletAddress,
       name: primaryName?.name,
       logo,
     };
   } catch (error) {
     console.error("Error fetching ArNS profile:", error);
-    return undefined;
+    throw error;
   }
 }
 
-export async function getArNSProfile(query: string): Promise<NameServiceProfile | undefined> {
-  if (!query) {
+export async function getArNSProfile(walletAddress: string): Promise<NameServiceProfile | undefined> {
+  if (!walletAddress) {
     return undefined;
   }
 
   try {
-    const result = await arnsQueryClient
-      .fetchQuery({
-        queryKey: ["arns-profile", query],
-        queryFn: () => fetchArNSProfile(query),
-        staleTime: 5 * 60 * 1000, // 5 minutes
-      })
-      .catch((error) => {
-        console.error(`Error in ArNS profile query for ${query}:`, error);
-        return undefined;
-      });
+    const result = await ARNS_QUERY_CLIENT.fetchQuery({
+      queryKey: ["arns-profile", walletAddress],
+      queryFn: () => fetchArNSProfile(walletAddress),
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    }).catch((error) => {
+      console.error(`Error in ArNS profile query for ${walletAddress}:`, error);
+      return undefined;
+    });
 
     return result;
   } catch (error) {
-    console.error(`Unexpected error in getArNSProfile for ${query}:`, error);
+    console.error(`Unexpected error in getArNSProfile for ${walletAddress}:`, error);
     return undefined;
   }
 }
@@ -176,13 +171,16 @@ async function getTicker() {
 
 /** Hook for getting ARIO Ticker */
 export function useTicker() {
-  return useQuery({
-    queryKey: ["ario-ticker"],
-    queryFn: getTicker,
-    staleTime: Infinity,
-    refetchOnWindowFocus: false,
-    placeholderData: "ARIO",
-  });
+  return useQuery(
+    {
+      queryKey: ["ario-ticker"],
+      queryFn: getTicker,
+      staleTime: Infinity,
+      refetchOnWindowFocus: false,
+      placeholderData: "ARIO",
+    },
+    ARNS_QUERY_CLIENT,
+  );
 }
 
 export function isArNSNameProfile(nameServiceProfile?: NameServiceProfile) {
@@ -191,18 +189,16 @@ export function isArNSNameProfile(nameServiceProfile?: NameServiceProfile) {
 
 export async function getRegistrationFees(): Promise<AoRegistrationFees | null> {
   try {
-    const result = await arnsQueryClient
-      .fetchQuery({
-        queryKey: ["arns-registration-fees"],
-        queryFn: () => {
-          return ARIO_READ_SDK.getRegistrationFees();
-        },
-        staleTime: 24 * 60 * 60 * 1000, // 1 day, good for length of epoch
-      })
-      .catch((error) => {
-        console.error(`Error in ArNS demand factor query:`, error);
-        return null;
-      });
+    const result = await ARNS_QUERY_CLIENT.fetchQuery({
+      queryKey: ["arns-registration-fees"],
+      queryFn: () => {
+        return ARIO_READ_SDK.getRegistrationFees();
+      },
+      staleTime: 24 * 60 * 60 * 1000, // 1 day, good for length of epoch
+    }).catch((error) => {
+      console.error(`Error in ArNS demand factor query:`, error);
+      return null;
+    });
 
     return result;
   } catch (error) {
@@ -230,26 +226,6 @@ export function createDefaultAntState(state: Partial<SpawnANTState>): SpawnANTSt
   };
 }
 
-async function getLatestANTVersion() {
-  return arnsQueryClient.fetchQuery({
-    queryKey: ["ant-latest-versions"],
-    queryFn: async () => {
-      const versionRegistry = ANTVersions.init({
-        process: new AOProcess({
-          processId: ANT_REGISTRY_ID,
-          ao: AO_CLIENT,
-        }),
-      });
-      return versionRegistry.getLatestANTVersion();
-    },
-    staleTime: Infinity, // these rarely change
-  });
-}
-
-function sleep(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 export type PurchaseArNSNameParams = {
   name: string;
   purchaseType: PurchaseType;
@@ -270,57 +246,6 @@ export async function purchaseArNSName({
     isLocalWallet(decryptedWallet);
     const signer = new ArweaveSigner(decryptedWallet.keyfile);
 
-    const state = createDefaultAntState({
-      owner: decryptedWallet.address,
-      controllers: [decryptedWallet.address],
-      balances: { [decryptedWallet.address]: 1 },
-      records: {
-        ["@"]: {
-          transactionId: LANDING_PAGE_TXID.toString(),
-          ttlSeconds: 900,
-        },
-      },
-    });
-
-    const latestANTVersion = await getLatestANTVersion();
-
-    // 1. Spawn new ANT
-    transactionListener("Spawning new ANT...");
-    const antProcessId = await spawnANT({
-      state,
-      signer: createAoSigner(signer),
-      ao: AO_CLIENT,
-      scheduler: DEFAULT_SCHEDULER_ID,
-      module: latestANTVersion.moduleId,
-    });
-
-    // 2. Register ANT with ANT Registry
-    transactionListener("Registering ANT with ANT Registry...");
-    const antRegistry = ANTRegistry.init({
-      process: new AOProcess({
-        processId: ANT_REGISTRY_ID,
-        ao: AO_CLIENT,
-      }),
-    });
-
-    let antRegistryUpdated = false;
-    let retries = 0;
-    const maxRetries = 10;
-    // We need to wait for the registration to get cranked
-    while (!antRegistryUpdated && retries <= maxRetries) {
-      await sleep(2000 * retries);
-      const aclRes = await antRegistry.accessControlList({
-        address: decryptedWallet.address,
-      });
-
-      const antIdSet = new Set([...aclRes.Controlled, ...aclRes.Owned]);
-      antRegistryUpdated = antIdSet.has(antProcessId);
-      retries++;
-    }
-    if (!antRegistryUpdated) {
-      throw new Error("Failed to register ANT, please try again later.");
-    }
-
     const writeSDK = ARIO.init({
       signer,
       process: new AOProcess({
@@ -331,13 +256,33 @@ export async function purchaseArNSName({
 
     transactionListener("Purchasing name...");
 
-    const result = await writeSDK.buyRecord({
-      name,
-      type: purchaseType,
-      years: purchaseYears,
-      processId: antProcessId,
-      fundFrom: "balance", // TODO: add support for other funding sources
-    });
+    const result = await writeSDK.buyRecord(
+      {
+        name,
+        type: purchaseType,
+        years: purchaseYears,
+        fundFrom: "balance", // TODO: add support for other funding sources
+        referrer: "Wander",
+      },
+      {
+        onSigningProgress: (step, payload) => {
+          if (step === "spawning-ant") {
+            console.log("Spawning ant:", payload);
+            transactionListener("Spawning ANT...");
+          } else if (step === "registering-ant") {
+            console.log("Registering ant:", payload);
+            transactionListener("Registering ANT...");
+          } else if (step === "verifying-state") {
+            console.log("Verifying state:", payload);
+            transactionListener("Verifying ANT state...");
+          } else if (step === "buying-name") {
+            transactionListener("Purchasing name...");
+          } else {
+            console.log("Unknown step:", step);
+          }
+        },
+      },
+    );
 
     return {
       success: true,
@@ -348,4 +293,86 @@ export async function purchaseArNSName({
       freeDecryptedWallet(decryptedWallet.keyfile);
     }
   }
+}
+
+export async function getArNSRecordsForAddress(
+  params: PaginationParams<AoArNSNameDataWithName> & {
+    antRegistryId?: string;
+    address: WalletAddress;
+  },
+) {
+  return ARIO_READ_SDK.getArNSRecordsForAddress(params);
+}
+
+export async function setPrimaryName({
+  name,
+  transactionListener,
+}: {
+  name: string;
+  transactionListener: (state: string) => void;
+}) {
+  let decryptedWallet: DecryptedWallet;
+
+  try {
+    decryptedWallet = await getActiveKeyfile();
+    isLocalWallet(decryptedWallet);
+    const signer = new ArweaveSigner(decryptedWallet.keyfile);
+
+    const writeSDK = ARIO.init({
+      signer,
+      process: new AOProcess({
+        processId: ARIO_PROCESS_ID,
+        ao: AO_CLIENT,
+      }),
+    });
+
+    const result = await writeSDK.setPrimaryName(
+      {
+        name,
+        referrer: "Wander",
+        fundFrom: "balance",
+      },
+      {
+        onSigningProgress: (step, payload) => {
+          if (step === "requesting-primary-name") {
+            transactionListener("Requesting primary name...");
+          } else if (step === "request-already-exists") {
+            transactionListener("Existing primary name request found...");
+          } else if (step === "approving-request") {
+            transactionListener("Approving primary name request...");
+          }
+        },
+      },
+    );
+
+    return {
+      success: true,
+      transactionId: result.id,
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      success: false,
+      error: error.message,
+    };
+  } finally {
+    if (decryptedWallet?.type === "local") {
+      freeDecryptedWallet(decryptedWallet.keyfile);
+    }
+  }
+}
+
+// HOOKS
+
+export function useArNSRecordsForAddress({ address }: { address: WalletAddress }) {
+  return useQuery(
+    {
+      queryKey: ["arns-records-for-address", address],
+      queryFn: async () => getArNSRecordsForAddress({ address }),
+      staleTime: 5 * 60 * 1000,
+      refetchOnWindowFocus: false,
+      enabled: !!address,
+    },
+    ARNS_QUERY_CLIENT,
+  );
 }

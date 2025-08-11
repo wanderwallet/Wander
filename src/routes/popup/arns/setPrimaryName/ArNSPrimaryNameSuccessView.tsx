@@ -7,21 +7,16 @@ import { truncateMiddle } from "~utils/format";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { useLocation } from "~wallets/router/router.utils";
-import type { PurchaseType } from "./types";
 import { LinkExternal02 } from "@untitled-ui/icons-react";
 
-export interface ArNSPurchaseSuccessParams {
+export interface ArNSPrimaryNameSuccessParams {
   name: string;
-  purchaseType: PurchaseType;
-  purchaseYears?: number;
   transactionId: string;
 }
-export type ArNSPurchaseSuccessProps = CommonRouteProps<ArNSPurchaseSuccessParams>;
+export type ArNSPrimaryNameSuccessProps = CommonRouteProps<ArNSPrimaryNameSuccessParams>;
 
-export const ArNSPurchaseSuccessView = ({
-  params: { name, purchaseType, purchaseYears, transactionId },
-}: ArNSPurchaseSuccessProps) => {
-  const { navigate } = useLocation();
+export const ArNSPrimaryNameSuccessView = ({ params: { name, transactionId } }: ArNSPrimaryNameSuccessProps) => {
+  const { navigate, back } = useLocation();
 
   return (
     <div
@@ -37,25 +32,14 @@ export const ArNSPurchaseSuccessView = ({
         <SuccessCheckIcon />
       </Flex>
       <Text size="lg" weight="semibold" style={{ margin: "0.5rem", textAlign: "center" }}>
-        Name registered!
+        Primary name set!
       </Text>
 
       <Text size="lg" style={{ wordBreak: "break-all", textAlign: "center" }}>
-        ar://{name}
-      </Text>
-      <Text variant="secondary" style={{ textAlign: "center" }}>
-        is now registered to this wallet.
+        {name}
       </Text>
 
-      <RegisteringCard>
-        <Text size="sm" variant="secondary" style={{ textAlign: "left", flexGrow: 1 }}>
-          Registration Period
-        </Text>
-        <Text size="sm" weight="semibold">
-          {purchaseType === "lease" ? `Lease (${purchaseYears} ${purchaseYears == 1 ? "Year" : "Years"})` : `Buy (∞)`}
-        </Text>
-      </RegisteringCard>
-      <Flex style={{ justifyContent: "space-between" }}>
+      <Flex style={{ justifyContent: "space-between", marginTop: "2rem" }}>
         <Text variant="secondary" size="sm">
           Transaction ID
         </Text>
@@ -81,7 +65,13 @@ export const ArNSPurchaseSuccessView = ({
       <div style={{ flex: 1 }}></div>
       <div style={{ marginTop: "auto", paddingTop: "1rem" }}>
         <Flex direction="column" gap="0.5rem">
-          <ButtonV2 onClick={() => navigate(PopupPaths.Home)} fullWidth>
+          <ButtonV2
+            onClick={() => {
+              // navigate two screens back
+              back();
+              back();
+            }}
+            fullWidth>
             Manage ArNS
           </ButtonV2>
           <ButtonV2 secondary onClick={() => navigate(PopupPaths.Home)} fullWidth>

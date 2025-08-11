@@ -1,18 +1,14 @@
-import { concatGatewayURL } from "~gateways/utils";
 import { Button, Section } from "@arconnect/components-rebrand";
-import { useState } from "react";
-import { useStorage } from "~utils/storage";
-import browser from "webextension-polyfill";
 import styled from "styled-components";
-import { FULL_HISTORY, useGateway } from "~gateways/wayfinder";
+import browser from "webextension-polyfill";
 import WalletListItem from "~components/dashboard/list/WalletListItem";
 import HeadV2 from "~components/popup/HeadV2";
-import { useLocation } from "~wallets/router/router.utils";
-import { ExtensionStorage } from "~utils/storage";
+import { concatGatewayURL } from "~gateways/utils";
+import { FULL_HISTORY, useGateway } from "~gateways/wayfinder";
+import { useNameServiceProfiles } from "~lib/nameservice";
+import { ExtensionStorage, useStorage } from "~utils/storage";
 import type { StoredWallet } from "~wallets";
-import { getNameServiceProfiles } from "~lib/nameservice";
-import type { NameServiceProfile } from "~lib/types";
-import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import { useLocation } from "~wallets/router/router.utils";
 
 export function WalletsView() {
   const { navigate } = useLocation();
@@ -33,16 +29,7 @@ export function WalletsView() {
   );
 
   // ans data
-  const [nameServiceProfiles, setNameServiceProfiles] = useState<NameServiceProfile[]>([]);
-
-  useAsyncEffect(async () => {
-    if (!wallets) return;
-
-    // fetch profiles
-    const profiles = await getNameServiceProfiles(wallets.map((w) => w.address));
-
-    setNameServiceProfiles(profiles);
-  }, [wallets]);
+  const { data: nameServiceProfiles } = useNameServiceProfiles(wallets?.map((w) => w.address));
 
   // ans shortcuts
   const findProfile = (address: string) => nameServiceProfiles.find((profile) => profile.address === address);
