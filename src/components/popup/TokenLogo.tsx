@@ -13,7 +13,10 @@ import arLogoDark from "url:/assets/ar/ar-logo-dark.svg";
 function isAr(token: string | Partial<Token>) {
   return typeof token === "string"
     ? token.toUpperCase() === AR_PROCESS_ID || token === AR_LOGO || token.endsWith(AR_LOGO)
-    : token.id === AR_PROCESS_ID || token.ticker === "AR" || token.name === "Arweave" || token.defaultLogo === AR_LOGO;
+    : token.id === AR_PROCESS_ID || token.defaultLogo === AR_LOGO;
+
+  // Note `|| token.ticker === "AR" || token.name === "Arweave"` could be added to the line below, but it is redundant
+  // and leads to tokens that are actually no AR to show the AR logo.
 }
 
 function isURI(token: string | Partial<Token>): token is string {
