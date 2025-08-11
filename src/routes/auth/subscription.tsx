@@ -28,7 +28,7 @@ import { useCurrentAuthRequest } from "~utils/auth/auth.hooks";
 import { HeadAuth } from "~components/HeadAuth";
 import { AuthButtons } from "~components/auth/AuthButtons";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
-import { useTheme } from "~components/embed/contexts/ThemeContext";
+import { useTheme } from "~utils/theme/theme.hook";
 
 export function SubscriptionAuthRequestView() {
   const { authRequest, acceptRequest, rejectRequest } = useCurrentAuthRequest("subscription");

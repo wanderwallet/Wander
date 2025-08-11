@@ -14,7 +14,7 @@ import { useStorage } from "@plasmohq/storage/hook";
 import BigNumber from "bignumber.js";
 import { useGateway } from "../../liquidops/utils/hooks/useGateway";
 import { formatNumber } from "../../liquidops/utils/format";
-import { useTheme } from "~components/embed/contexts/ThemeContext";
+import { useTheme } from "~utils/theme/theme.hook";
 
 export const Agent = ({ ticker, running = false, profit = BigNumber(0) }: Props) => {
   const { navigate } = useLocation();

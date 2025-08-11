@@ -1,14 +1,13 @@
 import { useHashLocation } from "wouter/use-hash-location";
 import { Router as Wouter, Route as Woute } from "wouter";
-
 import { SettingsDashboardView } from "~routes/dashboard";
-import { WanderThemeProvider } from "~components/hardware/HardwareWalletTheme";
+import { StyledComponentsThemeProvider } from "~utils/theme/styled-components/styled-components.provider";
 import { useEffect } from "react";
 import { handleSyncLabelsAlarm } from "~api/background/handlers/alarms/sync-labels/sync-labels-alarm.handler";
 import { WalletsProvider } from "~utils/wallets/wallets.provider";
 import { ErrorBoundary } from "~utils/error/ErrorBoundary/errorBoundary";
 import { FallbackView } from "~components/page/common/Fallback/fallback.view";
-import { ThemeProvider } from "~components/embed/contexts/ThemeContext";
+import { ThemeProvider } from "~utils/theme/theme.provider";
 
 export function DashboardApp() {
   useEffect(() => {
@@ -21,7 +20,7 @@ export function DashboardApp() {
 export function DashboardAppRoot() {
   return (
     <ThemeProvider>
-      <WanderThemeProvider>
+      <StyledComponentsThemeProvider>
         <ErrorBoundary fallback={FallbackView}>
           <WalletsProvider>
             <Wouter hook={useHashLocation}>
@@ -29,7 +28,7 @@ export function DashboardAppRoot() {
             </Wouter>
           </WalletsProvider>
         </ErrorBoundary>
-      </WanderThemeProvider>
+      </StyledComponentsThemeProvider>
     </ThemeProvider>
   );
 }

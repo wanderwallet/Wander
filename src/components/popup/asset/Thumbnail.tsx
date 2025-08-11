@@ -2,7 +2,7 @@ import type { DisplayTheme } from "@arconnect/components";
 import { MaximizeIcon } from "@iconicicons/react";
 import styled from "styled-components";
 import { useState } from "react";
-import { useTheme } from "~components/embed/contexts/ThemeContext";
+import { useTheme } from "~utils/theme/theme.hook";
 
 export default function Thumbnail({ src, fallback }: Props) {
   const { displayTheme } = useTheme();

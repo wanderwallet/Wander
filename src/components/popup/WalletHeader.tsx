@@ -32,7 +32,7 @@ import edgeHeaderGlow from "~assets/images/tier/edge_header_glow.svg";
 import primeHeaderGlow from "~assets/images/tier/prime_header_glow.svg";
 import { TierTypes } from "~utils/tier/constants";
 import { useActiveTier } from "~utils/tier/hooks";
-import { useTheme } from "~components/embed/contexts/ThemeContext";
+import { useTheme } from "~utils/theme/theme.hook";
 
 const glowBackgrounds = {
   [TierTypes.Core]: coreHeaderGlow,

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import clsx from "clsx";
 import { sleep } from "~utils/promises/sleep";
-import { useTheme } from "~components/embed/contexts/ThemeContext";
+import { useTheme } from "~utils/theme/theme.hook";
 
 import defaultPlaceholderUrl from "url:/assets/placeholder.png";
 

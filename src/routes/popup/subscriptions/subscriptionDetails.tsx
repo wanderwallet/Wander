@@ -26,7 +26,7 @@ import BigNumber from "bignumber.js";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { ToggleSwitch } from "~components/ToggleSwitch";
-import { useTheme } from "~components/embed/contexts/ThemeContext";
+import { useTheme } from "~utils/theme/theme.hook";
 
 export interface SubscriptionDetailsViewParams {
   id?: string;

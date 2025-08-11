@@ -1,36 +1,19 @@
-import { createContext, useState, useEffect, useContext, type ReactNode, useCallback, useRef, useMemo } from "react";
-import { themeTokens, commonTokens } from "../themes/theme-config";
-import type { DisplayTheme } from "@arconnect/components-rebrand";
+import { useState, useEffect, useCallback, useRef, useMemo, type PropsWithChildren } from "react";
+import { themeTokens, commonTokens } from "../../components/embed/themes/theme-config";
 import useSetting from "~settings/hook";
 import { isInsideIframe } from "~utils/embedded/iframe.utils";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { LocalStorage } from "~iframe/storage/unpartitioned-storage/local-storage";
+import { IS_FOCUS_ACTIVE_CLS, THEME_MODES } from "~utils/theme/theme.constants";
+import type { ThemeMode, ThemeContextState, ThemeContextValue } from "~utils/theme/theme.types";
+import { resolveThemeMode, darkModePreference } from "~utils/theme/theme.utils";
+import { ThemeContext } from "~utils/theme/theme.context";
+import { MotionGlobalConfig } from "framer-motion";
+import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
+import { ThemeBackgroundObserver } from "~utils/theme/observer/theme-observer.component";
+import { ARCONNECT_THEME_BACKGROUND_COLOR, ARCONNECT_THEME_TEXT_COLOR } from "~utils/storage.utils";
 
-export type ThemeMode = "light" | "dark" | "system";
-
-const THEME_MODES = ["light", "dark", "system"] as const satisfies ThemeMode[];
-
-const darkModePreference = typeof window === "undefined" ? null : window.matchMedia("(prefers-color-scheme: dark)");
-
-function resolveThemeMode(themeMode: ThemeMode) {
-  return themeMode === "system" ? (darkModePreference.matches ? "dark" : "light") : themeMode;
-}
-
-interface ThemeContextState {
-  themeMode: ThemeMode;
-  displayTheme: DisplayTheme;
-}
-
-interface ThemeContextValue extends ThemeContextState {
-  isDarkMode: boolean;
-  tokens: typeof themeTokens;
-  common: typeof commonTokens;
-  setTheme: (themeMode: ThemeMode) => Promise<ThemeContextState>;
-}
-
-const ThemeContext = createContext<ThemeContextValue>({} as ThemeContextValue);
-
-export const ThemeProvider = ({ children }: { children: ReactNode }) => {
+export function ThemeProvider({ children }: PropsWithChildren<{}>) {
   // User-defined setting, if any:
 
   const [themeSetting, setThemeSetting] = useSetting<ThemeMode>("display_theme");
@@ -41,6 +24,14 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
 
     // Delete old/duplicate theme localStorage value:
     localStorage.removeItem("theme");
+
+    // These should have never been set for Connect:
+    if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1") {
+      localStorage.removeItem(ARCONNECT_THEME_BACKGROUND_COLOR);
+      localStorage.removeItem(ARCONNECT_THEME_TEXT_COLOR);
+      window.localStorage.removeItem(ARCONNECT_THEME_BACKGROUND_COLOR);
+      window.localStorage.removeItem(ARCONNECT_THEME_TEXT_COLOR);
+    }
   }, []);
 
   // Logic to prioritize which theme value to use, and to resolve it (system => light / dark):
@@ -71,8 +62,6 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [themeState, setThemeState] = useState<ThemeContextState>(getThemeState);
 
   const { themeMode, displayTheme } = themeState;
-
-  console.log({ themeSetting, themeMode });
 
   useEffect(() => {
     setThemeState(getThemeState());
@@ -181,6 +170,64 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [themeState]);
 
+  // Reduced motion preference (for Framer Motion):
+
+  useEffect(() => {
+    const reducedMotionPreference = window.matchMedia("(prefers-reduced-motion)");
+
+    if (reducedMotionPreference.matches) {
+      // This could also be always set to `true` at the top of the file and then set to `false` after the application
+      // loads if we still notice some flicker due to any animation/transition playing when the view first loads.
+
+      MotionGlobalConfig.skipAnimations = true;
+    }
+  }, []);
+
+  // Focus active global class:
+
+  useEffect(() => {
+    function handleKeyDown({ code }: KeyboardEvent) {
+      switch (code) {
+        case "Tab": {
+          document.documentElement.classList.add(IS_FOCUS_ACTIVE_CLS);
+          break;
+        }
+
+        case "Escape": {
+          const hadFocusActive = document.documentElement.classList.contains(IS_FOCUS_ACTIVE_CLS);
+
+          document.documentElement.classList.remove(IS_FOCUS_ACTIVE_CLS);
+
+          if (
+            import.meta.env?.VITE_IS_EMBEDDED_APP === "1" &&
+            (!hadFocusActive || document.activeElement === document.documentElement)
+          ) {
+            postEmbeddedMessage({
+              type: "embedded_close",
+              data: null,
+            });
+          }
+
+          break;
+        }
+      }
+    }
+
+    function handleMouseDown({ target }: MouseEvent) {
+      if (document.activeElement !== target) document.documentElement.classList.remove(IS_FOCUS_ACTIVE_CLS);
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("mousedown", handleMouseDown);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("mousedown", handleMouseDown);
+    };
+  }, []);
+
+  // Memoize the context value for better performance:
+
   const themeContextValue: ThemeContextValue = useMemo(
     () => ({
       ...themeState,
@@ -192,7 +239,11 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     [themeState, setTheme],
   );
 
-  return <ThemeContext.Provider value={themeContextValue}>{children}</ThemeContext.Provider>;
-};
+  return (
+    <ThemeContext.Provider value={themeContextValue}>
+      <ThemeBackgroundObserver displayTheme={displayTheme} />
 
-export const useTheme = () => useContext(ThemeContext);
+      {children}
+    </ThemeContext.Provider>
+  );
+}

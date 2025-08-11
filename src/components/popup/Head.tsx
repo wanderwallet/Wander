@@ -16,7 +16,7 @@ import { useNameServiceProfile } from "~lib/nameservice";
 import { FULL_HISTORY, useGateway } from "~gateways/wayfinder";
 import { concatGatewayURL } from "~gateways/utils";
 import { Avatar, NoAvatarIcon } from "~components/Avatar";
-import { useTheme } from "~components/embed/contexts/ThemeContext";
+import { useTheme } from "~utils/theme/theme.hook";
 
 export default function Head({ title, showOptions = true, back: onBack, showBack = true, allowOpen = true }: Props) {
   const { displayTheme } = useTheme();

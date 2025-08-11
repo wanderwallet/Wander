@@ -4,7 +4,7 @@ import dayjs from "dayjs";
 import { SettingIconWrapper, SettingImage } from "~components/dashboard/list/BaseElement";
 import { RecurringPaymentFrequency, SubscriptionStatus } from "~subscriptions/subscription";
 import type { DisplayTheme } from "@arconnect/components";
-import { useTheme } from "~components/embed/contexts/ThemeContext";
+import { useTheme } from "~utils/theme/theme.hook";
 
 export interface SubscriptionListItemProps {
   id: string;

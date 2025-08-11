@@ -37,7 +37,7 @@ import { SendInput } from "~components/SendInput";
 import { HorizontalLine } from "~components/HorizontalLine";
 import { TokenLogo } from "~components/popup/TokenLogo";
 import { WarningIcon } from "~components/icons/WarningIcon";
-import { useTheme } from "~components/embed/contexts/ThemeContext";
+import { useTheme } from "~utils/theme/theme.hook";
 
 export enum AmountValidationState {
   Invalid = "Invalid",

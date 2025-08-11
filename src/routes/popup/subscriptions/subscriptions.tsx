@@ -9,7 +9,7 @@ import type { DisplayTheme } from "@arconnect/components";
 import { PageType, trackPage } from "~utils/analytics";
 import { SubscriptionListItem } from "~components/popup/list/SubscriptionListItem";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
-import { useTheme } from "~components/embed/contexts/ThemeContext";
+import { useTheme } from "~utils/theme/theme.hook";
 
 export function SubscriptionsView() {
   const [subData, setSubData] = useState<SubscriptionData[] | null>(null);

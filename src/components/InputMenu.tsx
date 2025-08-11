@@ -10,7 +10,7 @@ import visa from "url:/assets/ecosystem/visa.svg";
 import supportedCurrencies from "~utils/supported_currencies";
 import { getPaymentTypes } from "~lib/onramper";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
-import { useTheme } from "~components/embed/contexts/ThemeContext";
+import { useTheme } from "~utils/theme/theme.hook";
 
 interface InputMenuProps {
   onPaymentMethodChange?: (methodId: string) => void;

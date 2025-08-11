@@ -8,7 +8,7 @@ import { PageType, trackPage } from "~utils/analytics";
 import { useStorage } from "~utils/storage";
 import type { Quote } from "~lib/onramper";
 import { useLocation } from "~wallets/router/router.utils";
-import { useTheme } from "~components/embed/contexts/ThemeContext";
+import { useTheme } from "~utils/theme/theme.hook";
 
 export function PendingPurchaseView() {
   const { displayTheme } = useTheme();

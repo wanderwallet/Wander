@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import { Flex } from "~components/common/Flex";
 import { Text, type DisplayTheme } from "@arconnect/components-rebrand";
-import { useTheme } from "~components/embed/contexts/ThemeContext";
+import { useTheme } from "~utils/theme/theme.hook";
 
 export const StatusLabel = ({ status, label }: Props) => {
   const { displayTheme } = useTheme();

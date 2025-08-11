@@ -14,12 +14,12 @@ import Mint from "~components/arlocal/Mint";
 import browser from "webextension-polyfill";
 import Arweave from "arweave";
 import axios from "axios";
-import { WanderThemeProvider } from "~components/hardware/HardwareWalletTheme";
+import { StyledComponentsThemeProvider } from "~utils/theme/styled-components/styled-components.provider";
 import { useRemoveCover } from "~wallets/setup/non/non-wallet-setup.hook";
 import { useWallets } from "~utils/wallets/wallets.hooks";
 import { WalletsProvider } from "~utils/wallets/wallets.provider";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
-import { ThemeProvider } from "~components/embed/contexts/ThemeContext";
+import { ThemeProvider } from "~utils/theme/theme.provider";
 
 function ArLocal() {
   useRemoveCover();
@@ -190,11 +190,11 @@ function ArLocal() {
 export default function ArLocalRoot() {
   return (
     <ThemeProvider>
-      <WanderThemeProvider>
+      <StyledComponentsThemeProvider>
         <WalletsProvider>
           <ArLocal />
         </WalletsProvider>
-      </WanderThemeProvider>
+      </StyledComponentsThemeProvider>
     </ThemeProvider>
   );
 }

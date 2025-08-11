@@ -34,7 +34,7 @@ import { humanizeTimestampTags } from "~utils/timestamp";
 import { TokenLogo } from "~components/popup/TokenLogo";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { WarningIcon } from "~components/icons/WarningIcon";
-import { useTheme } from "~components/embed/contexts/ThemeContext";
+import { useTheme } from "~utils/theme/theme.hook";
 
 export function SignDataItemAuthRequestView() {
   const { authRequest, acceptRequest, rejectRequest } = useCurrentAuthRequest("signDataItem");
