@@ -3906,6 +3906,10 @@
       "message": "帮助",
       "description": "Help text"
     },
+    "help_description": {
+      "message": "获取 Wander 的帮助",
+      "description": "Help description"
+    },
     "help_center": {
       "message": "帮助中心",
       "description": "Help Center text"
@@ -4109,5 +4113,9 @@
     "no_activity_yet": {
       "message": "暂无活动",
       "description": "No activity yet text"
+    },
+    "agents_syncing": {
+      "message": "代理同步中",
+      "description": "Agents syncing text"
     }
 }

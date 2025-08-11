@@ -3946,6 +3946,10 @@
     "message": "Help",
     "description": "Help text"
   },
+  "help_description": {
+    "message": "Get help with Wander",
+    "description": "Help description"
+  },
   "help_center": {
     "message": "Help Center",
     "description": "Help Center text"
@@ -4149,5 +4153,9 @@
   "no_activity_yet": {
     "message": "No activity yet",
     "description": "No activity yet text"
+  },
+  "agents_syncing": {
+    "message": "Agents syncing",
+    "description": "Agents syncing text"
   }
 }
