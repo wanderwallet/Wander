@@ -63,6 +63,9 @@ import styles from "./unpartitioned-state.module.scss";
 const pretendToBeBrave = false;
 const isBrave = pretendToBeBrave || window.navigator.brave;
 
+const pretendToBeChrome = false;
+const isChrome = pretendToBeChrome;
+
 const pretendToBeEdge = false;
 const isEdge = pretendToBeEdge || window.navigator.userAgent.includes("Edg");
 
@@ -116,12 +119,14 @@ export function UnpartitionedStateMissingEmbeddedView() {
     try {
       setIsConfirming(true);
       await confirmUnpartitionedState(isChecked);
-      navigate(EmbeddedPaths.Auth);
+
+      if (!shouldTryToGetAccess || unpartitionedStateConfirmed) navigate(EmbeddedPaths.Auth);
+      else setIsConfirming(false);
     } catch (error) {
       toast.error("Unexpected error. Please, try again.");
       setIsConfirming(false);
     }
-  }, [confirmUnpartitionedState, isChecked, navigate]);
+  }, [unpartitionedStateConfirmed, confirmUnpartitionedState, isChecked, navigate]);
 
   const handleRequestPermission = useCallback(async () => {
     try {
@@ -183,7 +188,7 @@ export function UnpartitionedStateMissingEmbeddedView() {
   }, [unpartitionedStateStatus]);
 
   const needsConfirmation = !unpartitionedStateConfirmed && authStatus === "noAuth";
-  const requestAccessButtonText = errorsWhileRequestingAccess === 0 ? "Request access" : "Try again";
+  const requestAccessButtonText = errorsWhileRequestingAccess === 0 ? "Check access" : "Check access again";
   const accessTo = isBrave ? "embedded content" : "third-party cookies";
 
   let headerText = "Limited browser support";
@@ -230,28 +235,12 @@ export function UnpartitionedStateMissingEmbeddedView() {
         </dd>
       </dl>
 
-      {needsConfirmation ? (
-        <>
-          <Checkbox
-            style={{ padding: 0, margin: "var(--spacing-3) 0" }}
-            label="Don't show me this again on this site."
-            isDisabled={areButtonsDisabled}
-            handleChange={() => setIsChecked(!isChecked)}
-            isChecked={isChecked}
-          />
-
-          <Button variant="primary" size="md" isDisabled={areButtonsDisabled} onClick={handleContinueAnyway}>
-            Continue anyway
-          </Button>
-        </>
-      ) : null}
-
       {couldProbablyGetAccess ? (
         <Snackbar
           variant="warning"
           children={[
             <p key="text">
-              Your browser should be supported, but Wander could not get access tp ${accessTo}.
+              Your browser should be supported, but Wander could not get access to {accessTo}.
               {authStatus === "noAuth" ? "" : " Please, log out to try again."}
             </p>,
             <Button
@@ -268,19 +257,34 @@ export function UnpartitionedStateMissingEmbeddedView() {
           className={styles.couldProbablyGetAccessDisclaimer}
         />
       ) : null}
+
+      {needsConfirmation ? (
+        <Checkbox
+          style={{ padding: 0, margin: "var(--spacing-3) 0" }}
+          label="Don't show me this again on this site."
+          isDisabled={areButtonsDisabled}
+          handleChange={() => setIsChecked(!isChecked)}
+          isChecked={isChecked}
+        />
+      ) : null}
+
+      <Button variant="secondary" size="md" isDisabled={areButtonsDisabled} onClick={handleContinueAnyway}>
+        Continue without
+      </Button>
     </>
   );
 
   const allowRequestAfterConfirmation = tryAgain && authStatus === "noAuth";
 
   if (shouldTryToGetAccess && (!unpartitionedStateConfirmed || allowRequestAfterConfirmation)) {
-    if (errorsWhileRequestingAccess === 0 || unpartitionedStateStatus === "rejected") {
-      headerText = `Enable ${accessTo}`;
-    } else {
-      headerText = `Could not access ${accessTo}`;
-    }
-
+    headerText = `Enable ${accessTo}`;
     subtitle = `Before you continue, Wander Connect needs access to ${accessTo} to enable cross-site authentication and wallet synching.`;
+
+    const optionMissingButton = isOptionMissing ? null : (
+      <Button variant="link" onClick={() => setIsOptionMissing(true)}>
+        Not there? Try this instead.
+      </Button>
+    );
 
     let browserSpecificInstructions: React.ReactNode = null;
 
@@ -316,6 +320,8 @@ export function UnpartitionedStateMissingEmbeddedView() {
                 pointer={[85.43857142857143, 70.18072289156626]}
               />
             </p>,
+            optionMissingButton,
+            isOptionMissing ? <p>BRAVE INFO</p> : null,
           ]}
         />
       );
@@ -363,6 +369,8 @@ export function UnpartitionedStateMissingEmbeddedView() {
                 pointer={[87.7840909090909, 86.94444444444444]}
               />
             </p>,
+            optionMissingButton,
+            isOptionMissing ? <p>MOBILE CHROME INFO</p> : null,
           ]}
         />
       );
@@ -402,7 +410,7 @@ export function UnpartitionedStateMissingEmbeddedView() {
       browserSpecificInstructions = (
         <FormattedText
           children={[
-            <p key="text">
+            <p key="text1">
               You can enable this from the <em className={styles.inlineQuote}>Third-party cookies</em> option in the
               navigation bar:
             </p>,
@@ -430,6 +438,64 @@ export function UnpartitionedStateMissingEmbeddedView() {
                 pointer={[79.82954545454545, 78.90625]}
               />
             </p>,
+            optionMissingButton,
+            isOptionMissing ? (
+              <p key="text2">
+                In some Edge versions, this setting appears under the <em className={styles.inlineQuote}>About</em>{" "}
+                popup:
+              </p>
+            ) : null,
+            isOptionMissing ? (
+              <p key="image3">
+                <Image
+                  fullWidth
+                  src={edge3ScreenshotSrc}
+                  srcDark={edge3ScreenshotDarkSrc}
+                  width={866}
+                  height={144}
+                  border
+                  borderRadius="rounded"
+                  pointer={[8.238636363636363, 49.152542372881356]}
+                />
+              </p>
+            ) : null,
+            isOptionMissing ? (
+              <p key="image4">
+                <Image
+                  fullWidth
+                  src={edge4ScreenshotSrc}
+                  srcDark={edge4ScreenshotDarkSrc}
+                  width={1043}
+                  height={724}
+                  border
+                  borderRadius="rounded"
+                  pointer={[90.625, 61.885245901639344]}
+                />
+              </p>
+            ) : null,
+            isOptionMissing ? (
+              <p key="image5">
+                <Image
+                  fullWidth
+                  src={edge5ScreenshotSrc}
+                  srcDark={edge5ScreenshotDarkSrc}
+                  width={1043}
+                  height={724}
+                  border
+                  borderRadius="rounded"
+                  pointer={[90.625, 80.73770491803279]}
+                />
+              </p>
+            ) : null,
+            isOptionMissing ? (
+              <p key="text3">
+                You might also find this option in{" "}
+                <em className={styles.inlineQuote}>
+                  Settings › Privacy, search, and services › Block third-party cookies
+                </em>
+                .
+              </p>
+            ) : null,
           ]}
         />
       );
@@ -467,6 +533,61 @@ export function UnpartitionedStateMissingEmbeddedView() {
                 pointer={[85.51136363636364, 80.4635761589404]}
               />
             </p>,
+            optionMissingButton,
+            isOptionMissing ? (
+              <p key="text2">
+                In some {isChrome ? "Chrome versions" : "browsers"}, this setting appears under the{" "}
+                <em className={styles.inlineQuote}>Site information</em> popup:
+              </p>
+            ) : null,
+            isOptionMissing ? (
+              <p key="image3">
+                <Image
+                  fullWidth
+                  src={chrome3ScreenshotSrc}
+                  srcDark={chrome3ScreenshotDarkSrc}
+                  width={874}
+                  height={149}
+                  border
+                  borderRadius="rounded"
+                  pointer={[8.522727272727273, 50]}
+                />
+              </p>
+            ) : null,
+            isOptionMissing ? (
+              <p key="image4">
+                <Image
+                  fullWidth
+                  src={chrome4ScreenshotSrc}
+                  srcDark={chrome4ScreenshotDarkSrc}
+                  width={874}
+                  height={852}
+                  border
+                  borderRadius="rounded"
+                  pointer={[86.64772727272727, 48.10495626822158]}
+                />
+              </p>
+            ) : null,
+            isOptionMissing ? (
+              <p key="image5">
+                <Image
+                  fullWidth
+                  src={chrome5ScreenshotSrc}
+                  srcDark={chrome5ScreenshotDarkSrc}
+                  width={874}
+                  height={1197}
+                  border
+                  borderRadius="rounded"
+                  pointer={[84.6590909090909, 71.78423236514523]}
+                />
+              </p>
+            ) : null,
+            isOptionMissing ? (
+              <p key="text3">
+                You might also find this option in{" "}
+                <em className={styles.inlineQuote}>Settings › Privacy and security › Third-party cookies</em>.
+              </p>
+            ) : null,
           ]}
         />
       );
@@ -485,9 +606,9 @@ export function UnpartitionedStateMissingEmbeddedView() {
           {requestAccessButtonText}
         </Button>
 
-        {errorsWhileRequestingAccess >= 3 && needsConfirmation ? (
+        {errorsWhileRequestingAccess >= 1 || !needsConfirmation ? (
           <Button variant="secondary" size="md" isDisabled={areButtonsDisabled} onClick={handleContinueAnyway}>
-            Continue anyway
+            Continue without
           </Button>
         ) : null}
       </>
