@@ -1,6 +1,6 @@
 import { Card, Text } from "@arconnect/components-rebrand";
 import { PlusIcon } from "@iconicicons/react";
-import { Star01 } from "@untitled-ui/icons-react";
+import { LinkExternal02, Star01 } from "@untitled-ui/icons-react";
 import styled from "styled-components";
 import { Flex } from "~components/common/Flex";
 import HeadV2 from "~components/popup/HeadV2";
@@ -101,6 +101,21 @@ export const ArNSManageView = () => {
             </Flex>
           </button>
         </ManageCard>
+        <a
+          href={`https://arns.app`}
+          target="_blank"
+          title="Advanced ArNS management"
+          rel="noopener noreferrer"
+          style={{ textDecoration: "none", textAlign: "center", margin: "0 auto" }}>
+          <Flex gap="0.25rem">
+            <Text size="sm" style={{ color: "rgba(151, 135, 255, 1)" }}>
+              Advanced Management
+            </Text>
+            <Text>
+              <LinkExternal02 width=".75rem" height=".75rem" />
+            </Text>
+          </Flex>
+        </a>
       </Content>
     </Flex>
   );
