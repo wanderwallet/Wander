@@ -149,6 +149,8 @@ export class EnhancedStorage implements Storage {
 
             console.log("SET PERMISSION EVENT");
 
+            // TODO: Only add one listener?
+
             permission.addEventListener("change", () => {
               log(LOG_GROUP.STORAGE, `Storage access permission changed to ${permission.state}`);
 
@@ -163,6 +165,8 @@ export class EnhancedStorage implements Storage {
       } catch (error) {
         console.log("ERROR =", error);
         this.dispatchUnpartitionedStateStatusChange(error);
+
+        // TODO: Reject instead?
       }
     }));
   }

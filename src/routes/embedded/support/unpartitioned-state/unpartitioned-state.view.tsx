@@ -147,12 +147,16 @@ export function UnpartitionedStateMissingEmbeddedView() {
 
       // Brave throws a "NotAllowedError" error while trying to request access, even after a user interaction...
 
+      /*
       toast.error(
         error instanceof Error &&
           (error.name === "NotAllowedError" || error.message === "Could not get access to unpartitioned state.")
           ? "Could not get access. Did you enable it?"
           : "Unexpected error. Please, try again.",
       );
+      */
+
+      toast.error("Could not get access. Did you enable it?");
 
       setErrorsWhileRequestingAccess((prevErrorsWhileRequestingAccess) => prevErrorsWhileRequestingAccess + 1);
       setIsRequestingPermission(false);
@@ -281,7 +285,7 @@ export function UnpartitionedStateMissingEmbeddedView() {
     subtitle = `Before you continue, Wander Connect needs access to ${accessTo} to enable cross-site authentication and wallet synching.`;
 
     const optionMissingButton = isOptionMissing ? null : (
-      <Button variant="link" onClick={() => setIsOptionMissing(true)}>
+      <Button key="optionMissingButton" variant="link" onClick={() => setIsOptionMissing(true)}>
         Not there? Try this instead.
       </Button>
     );
@@ -503,7 +507,7 @@ export function UnpartitionedStateMissingEmbeddedView() {
       browserSpecificInstructions = (
         <FormattedText
           children={[
-            <p key="text">
+            <p key="text1">
               You can enable this from the <em className={styles.inlineQuote}>Third-party cookies</em> option in the
               navigation bar:
             </p>,
