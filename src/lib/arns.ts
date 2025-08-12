@@ -23,6 +23,10 @@ import { freeDecryptedWallet } from "~wallets/encryption";
 import type { NameServiceProfile } from "./types";
 import { persistQueryClient } from "@tanstack/react-query-persist-client";
 import { createExtensionStoragePersister } from "~utils/query/createExtensionStoragePersister";
+import { useActiveAddress, useActiveWallet } from "~wallets/hooks";
+import { PersistentStorage, useStorage } from "~utils/storage";
+import { fetchTokenBalance, type TokenInfoWithBalance } from "~tokens/aoTokens/ao";
+import { useEffect, useState } from "react";
 
 export const LANDING_PAGE_TXID = "oork_YifB3-JQQZg8EgMPQJytua_QCHKNmMqt5kmnCo";
 export const DEFAULT_ANT_LOGO = "Sie_26dvgyok0PZD_-iQAFOhOd5YxDTkczOLoqTTL_A";
@@ -390,4 +394,51 @@ export function useArNSRecordsForAddress({ address }: { address: WalletAddress }
     },
     ARNS_QUERY_CLIENT,
   );
+}
+
+export function usePrimaryNameCostDetails({ name }: { name: string }) {
+  const walletAddress = useActiveAddress();
+
+  return useQuery(
+    {
+      queryKey: ["cost-details"],
+      queryFn: async () => {
+        return ARIO_READ_SDK.getCostDetails({
+          intent: "Primary-Name-Request",
+          name,
+          fromAddress: walletAddress?.toString(),
+          fundFrom: "balance",
+        });
+      },
+      staleTime: 24 * 60 * 60 * 1000,
+      refetchOnWindowFocus: false,
+      enabled: !!walletAddress,
+    },
+    ARNS_QUERY_CLIENT,
+  );
+}
+
+export function useArioBalance() {
+  const [balance, setBalance] = useState<number | undefined>();
+  const activeWallet = useActiveWallet();
+
+  const [aoTokens] = useStorage<TokenInfoWithBalance[]>(
+    {
+      key: "ao_tokens",
+      instance: PersistentStorage,
+    },
+    [],
+  );
+
+  useEffect(() => {
+    const tokenInfo = aoTokens.find((token) => token.processId === ARIO_PROCESS_ID);
+
+    if (!tokenInfo) setBalance(undefined);
+
+    fetchTokenBalance(tokenInfo, activeWallet?.address).then((balance) => {
+      setBalance(parseFloat(balance));
+    });
+  }, [aoTokens]);
+
+  return balance;
 }

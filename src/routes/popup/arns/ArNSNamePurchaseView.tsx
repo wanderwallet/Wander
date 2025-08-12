@@ -1,3 +1,4 @@
+import { mARIOToken } from "@ar.io/sdk/web";
 import { ButtonV2 } from "@arconnect/components";
 import { Card, Text } from "@arconnect/components-rebrand";
 import { MinusIcon, PlusIcon } from "@iconicicons/react";
@@ -5,15 +6,11 @@ import { useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
 import { Flex } from "~components/common/Flex";
 import HeadV2 from "~components/popup/HeadV2";
-import { ARIO_PROCESS_ID, getRegistrationFees, useTicker } from "~lib/arns";
-import { fetchTokenBalance, type TokenInfoWithBalance } from "~tokens/aoTokens/ao";
-import { PersistentStorage, useStorage } from "~utils/storage";
-import { useActiveWallet } from "~wallets/hooks";
+import { getRegistrationFees, useArioBalance, useTicker } from "~lib/arns";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { useLocation } from "~wallets/router/router.utils";
 import type { PurchaseType } from "./types";
 import { formatArio } from "./utils";
-import { mARIOToken } from "@ar.io/sdk/web";
 
 export interface ArNSNamePurchaseViewParams {
   name: string;
@@ -24,26 +21,7 @@ export const ArNSNamePurchaseView = ({ params: { name } }: ArNSNamePurchaseViewP
   const { navigate } = useLocation();
 
   const { data: ticker } = useTicker();
-  const [balance, setBalance] = useState<number | undefined>();
-  const activeWallet = useActiveWallet();
-
-  const [aoTokens] = useStorage<TokenInfoWithBalance[]>(
-    {
-      key: "ao_tokens",
-      instance: PersistentStorage,
-    },
-    [],
-  );
-
-  useEffect(() => {
-    const tokenInfo = aoTokens.find((token) => token.processId === ARIO_PROCESS_ID);
-
-    if (!tokenInfo) setBalance(undefined);
-
-    fetchTokenBalance(tokenInfo, activeWallet?.address).then((balance) => {
-      setBalance(parseFloat(balance));
-    });
-  }, [aoTokens]);
+  const arioBalance = useArioBalance();
 
   const [purchaseType, setPurchaseType] = useState<PurchaseType>("lease");
   const [purchaseYears, setPurchaseYears] = useState(1);
@@ -136,18 +114,13 @@ export const ArNSNamePurchaseView = ({ params: { name } }: ArNSNamePurchaseViewP
       </RegisteringCard>
       <div style={{ flex: 1 }}></div>
       <div style={{ margin: "1.5rem" }}>
-        {balance !== undefined && totalFee > balance && (
-          <Text size="sm" style={{ margin: "0.5rem 1rem", color: "red", textAlign: "center" }}>
-            Insufficient balance
-          </Text>
-        )}
         <ButtonV2
           onClick={() => {
             navigate(`/arns/confirm-purchase/${name}/${purchaseType}/${purchaseYears}`);
           }}
           fullWidth
-          disabled={balance == undefined || totalFee > balance}>
-          Next
+          disabled={arioBalance == undefined || totalFee > arioBalance}>
+          {arioBalance == undefined ? "Loading balance..." : totalFee > arioBalance ? "Insufficient balance" : "Next"}
         </ButtonV2>
       </div>
     </Flex>

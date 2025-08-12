@@ -1,9 +1,9 @@
 import { ButtonV2 } from "@arconnect/components";
 import { Text } from "@arconnect/components-rebrand";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Flex } from "~components/common/Flex";
 import HeadV2 from "~components/popup/HeadV2";
-import { ARNS_QUERY_CLIENT, setPrimaryName } from "~lib/arns";
+import { ARNS_QUERY_CLIENT, setPrimaryName, useArioBalance, usePrimaryNameCostDetails, useTicker } from "~lib/arns";
 import { NAME_SERVICE_QUERY_CLIENT } from "~lib/nameservice";
 import { useActiveWallet } from "~wallets/hooks";
 import type { CommonRouteProps } from "~wallets/router/router.types";
@@ -11,6 +11,8 @@ import { useLocation } from "~wallets/router/router.utils";
 import { CardContainer } from "../CardContainer";
 import TransactionStatusModal from "../TransactionStatusModal";
 import { sleep } from "~utils/promises/sleep";
+import { formatArio } from "../utils";
+import { mARIOToken } from "@ar.io/sdk/web";
 
 export interface ArNSConfirmSetPrimaryNameViewParams {
   name: string;
@@ -21,6 +23,20 @@ export const ArNSConfirmSetPrimaryNameView = ({ params: { name } }: ArNSConfirmS
   const [processingTransaction, setProcessingTransaction] = useState<boolean>(false);
 
   const [transactionState, setTransactionState] = useState<string | undefined>();
+
+  const { data: costDetails } = usePrimaryNameCostDetails({ name });
+  const { data: ticker } = useTicker();
+
+  const costDetailsArio = useMemo(() => {
+    return costDetails ? new mARIOToken(costDetails.tokenCost).toARIO().valueOf() : undefined;
+  }, [costDetails]);
+  const formattedCost = useMemo(() => {
+    return costDetails ? formatArio(costDetailsArio) : undefined;
+  }, [costDetailsArio]);
+
+  const arioBalance = useArioBalance();
+
+  console.log("COST and Balance: ", costDetailsArio, arioBalance);
 
   const wallet = useActiveWallet();
 
@@ -78,10 +94,25 @@ export const ArNSConfirmSetPrimaryNameView = ({ params: { name } }: ArNSConfirmS
           {name}
         </Text>
       </CardContainer>
+      <Flex style={{ justifyContent: "space-between", margin: "0 2rem" }}>
+        <Text variant="secondary" size="sm">
+          Cost
+        </Text>
+        <Text size="sm" style={{ textAlign: "right" }}>
+          {formattedCost ?? "..."} {ticker}
+        </Text>
+      </Flex>
       <div style={{ flex: 1 }}></div>
       <div style={{ margin: "1.5rem" }}>
-        <ButtonV2 onClick={handleConfirmSetPrimaryName} fullWidth disabled={processingTransaction}>
-          Confirm
+        <ButtonV2
+          onClick={handleConfirmSetPrimaryName}
+          fullWidth
+          disabled={processingTransaction || !costDetails || !arioBalance || arioBalance < costDetailsArio}>
+          {arioBalance == undefined
+            ? "Loading balance..."
+            : arioBalance < costDetailsArio
+              ? "Insufficient balance"
+              : "Confirm"}
         </ButtonV2>
       </div>
       {processingTransaction && (
