@@ -292,7 +292,7 @@ export function UnpartitionedStateMissingEmbeddedView() {
       browserSpecificInstructions = (
         <FormattedText
           children={[
-            <p key="text">
+            <p key="text1">
               You can enable this from the <em className={styles.inlineQuote}>Embedded content</em> option in the
               navigation bar:
             </p>,
@@ -321,7 +321,7 @@ export function UnpartitionedStateMissingEmbeddedView() {
               />
             </p>,
             optionMissingButton,
-            isOptionMissing ? <p>BRAVE INFO</p> : null,
+            isOptionMissing ? <p key="text2">Alternatively, turning Shields down should also work.</p> : null,
           ]}
         />
       );
@@ -369,8 +369,6 @@ export function UnpartitionedStateMissingEmbeddedView() {
                 pointer={[87.7840909090909, 86.94444444444444]}
               />
             </p>,
-            optionMissingButton,
-            isOptionMissing ? <p>MOBILE CHROME INFO</p> : null,
           ]}
         />
       );
