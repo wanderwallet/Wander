@@ -387,7 +387,10 @@ export function useArNSRecordsForAddress({ address }: { address: WalletAddress }
   return useQuery(
     {
       queryKey: ["arns-records-for-address", address],
-      queryFn: async () => getArNSRecordsForAddress({ address }),
+      queryFn: async () => {
+        const results = await getArNSRecordsForAddress({ address });
+        return results.items.sort((a, b) => a.name.localeCompare(b.name));
+      },
       staleTime: 5 * 60 * 1000,
       refetchOnWindowFocus: false,
       enabled: !!address,
