@@ -1,31 +1,33 @@
-import { Text, Input, useInput, Section, Button } from "@arconnect/components-rebrand";
+import { Text, Section, Button } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
 import { ArrowDown, ClockRewind } from "@untitled-ui/icons-react";
 import styled from "styled-components";
 import HeadV2 from "~components/popup/HeadV2";
-import { useMemo, useState } from "react";
-import SliderMenu from "~components/SliderMenu";
+import { useState } from "react";
 import { useTheme } from "styled-components";
 import { Flex } from "~components/common/Flex";
 import { SwapInput } from "./components/SwapInput";
 import { defaultTokens, type TokenInfo } from "~tokens/aoTokens/ao";
 import { DisclosureButton, DisclosureContent } from "~routes/popup/swap/components/Disclosure";
 import { SlippageInputButton } from "./components/SlippageInputButton";
-import Token from "~components/popup/Token";
+import { useSwapSlippage } from "./utils/swap.hooks";
+import type { TokenSelectorType } from "./utils/swap.types";
+import { TokenSelectorPopup } from "./components/TokenSelectorPopup";
 
 const usdaToken = defaultTokens[4];
 const wndrToken = defaultTokens[3];
 
 export function SwapView() {
   const theme = useTheme();
+  const [selectedSlippage, setSelectedSlippage] = useSwapSlippage();
   const [isReversed, setIsReversed] = useState(false);
   const [openTokenSelector, setOpenTokenSelector] = useState(false);
   const [amount, setAmount] = useState("");
+  const [receiveAmount, setReceiveAmount] = useState("");
   const [sendToken, setSendToken] = useState<TokenInfo>(usdaToken);
   const [receiveToken, setReceiveToken] = useState<TokenInfo>(wndrToken);
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [selectedSlippage, setSelectedSlippage] = useState(0.5);
-  const [tokenSelectorType, setTokenSelectorType] = useState<"send" | "receive">("send");
+  const [tokenSelectorType, setTokenSelectorType] = useState<TokenSelectorType>("send");
 
   function handleSwitch() {
     setIsReversed((prev) => !prev);
@@ -61,7 +63,7 @@ export function SwapView() {
             </Switch>
             <SwapInput
               type="receive"
-              amount={""}
+              amount={receiveAmount}
               onAmountChange={() => {}}
               onTokenSwitcherClick={() => {
                 setTokenSelectorType("receive");
@@ -81,18 +83,35 @@ export function SwapView() {
             </Flex>
             <Flex justify="space-between">
               <Text variant="secondary" size="sm" weight="medium" noMargin>
-                Fees
+                Slippage
+              </Text>
+              <Flex gap={4} align="center" justify="center">
+                <Text size="sm" weight="medium" noMargin color={theme.secondaryText}>
+                  {selectedSlippage}%{" "}
+                </Text>
+                {selectedSlippage === 0.5 && (
+                  <AutoTag>
+                    <Text size="2xs" weight="medium" style={{ color: "#EEE" }} noMargin>
+                      Auto
+                    </Text>
+                  </AutoTag>
+                )}
+              </Flex>
+            </Flex>
+            <Flex justify="space-between">
+              <Text variant="secondary" size="sm" weight="medium" noMargin>
+                Network Fee
               </Text>
               <Text size="sm" weight="medium" noMargin>
-                0.01 AR
+                0.01 wAR
               </Text>
             </Flex>
             <Flex justify="space-between">
               <Text variant="secondary" size="sm" weight="medium" noMargin>
-                Price Impact
+                Wander Fee
               </Text>
-              <Text size="sm" weight="medium" noMargin color={theme.secondaryText}>
-                0.5%
+              <Text size="sm" weight="medium" noMargin>
+                0.95 wAR
               </Text>
             </Flex>
           </Flex>
@@ -116,76 +135,21 @@ export function SwapView() {
 
         <Flex gap={8}>
           <Button style={{ flex: 1 }} disabled={!amount} onClick={() => {}} fullWidth>
-            {browser.i18n.getMessage("enter_amount")}
+            {amount ? browser.i18n.getMessage("review") : browser.i18n.getMessage("enter_amount")}
           </Button>
           <Button width="72px" variant="secondary" icon={<ClockRewind height={24} width={24} />} onClick={() => {}} />
         </Flex>
       </Wrapper>
 
-      <SliderMenu
-        title={browser.i18n.getMessage(tokenSelectorType === "send" ? "you_send" : "you_receive")}
-        height="90vh"
-        isOpen={openTokenSelector}
-        onClose={() => setOpenTokenSelector(false)}>
-        <CurrencySelectorScreen
-          onClose={() => setOpenTokenSelector(false)}
-          updateToken={handleUpdateToken}
-          tokens={[wndrToken, usdaToken]}
-        />
-      </SliderMenu>
+      <TokenSelectorPopup
+        tokenSelectorType={tokenSelectorType}
+        openTokenSelector={openTokenSelector}
+        setOpenTokenSelector={setOpenTokenSelector}
+        handleUpdateToken={handleUpdateToken}
+      />
     </>
   );
 }
-
-const CurrencySelectorScreen = ({
-  onClose,
-  tokens,
-  updateToken,
-}: {
-  onClose: () => void;
-  tokens: TokenInfo[];
-  updateToken: (token: TokenInfo) => void;
-}) => {
-  const searchInput = useInput();
-
-  const filteredTokens = useMemo(() => {
-    if (!searchInput.state) {
-      return tokens;
-    }
-    return tokens.filter((currency) => {
-      const name = currency.Name?.toLowerCase() || "";
-      const symbol = currency.Ticker?.toLowerCase() || "";
-      const searchLower = searchInput.state.toLowerCase();
-      return name.includes(searchLower) || symbol.includes(searchLower);
-    });
-  }, [tokens, searchInput.state]);
-
-  return (
-    <SelectorWrapper>
-      <div style={{ paddingBottom: "18px" }}>
-        <Input placeholder="Search token" fullWidth variant="search" sizeVariant="small" {...searchInput.bindings} />
-      </div>
-      <Flex direction="column" gap={20}>
-        {filteredTokens.map((token) => {
-          return (
-            <Token
-              key={token.processId}
-              type={"asset"}
-              defaultLogo={token?.Logo}
-              id={token.processId}
-              showId={true}
-              ticker={token.Ticker}
-              divisibility={token.Denomination}
-              onClick={() => {}}
-              addressOverFiat
-              addressSize="sm"
-            />
-          );
-        })}
-      </Flex>
-    </SelectorWrapper>
-  );
-};
 
 const Wrapper = styled(Section).attrs({ showPaddingVertical: false })`
   height: calc(100vh - 100px);
@@ -206,10 +170,6 @@ const WrapperContent = styled.div`
   min-height: 0;
 `;
 
-const SelectorWrapper = styled.div`
-  width: 100%;
-`;
-
 const Switch = styled(Button).attrs({
   variant: "secondary",
   width: 40,
@@ -224,4 +184,16 @@ const Switch = styled(Button).attrs({
   box-sizing: border-box;
   transform: translate(-50%, -50%);
   z-index: 100;
+`;
+
+const AutoTag = styled.div`
+  display: flex;
+  height: 18px;
+  padding: 2px 4px;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  border-radius: 4px;
+  background: #403785;
+  box-sizing: border-box;
 `;

@@ -1,10 +1,17 @@
-import { Input, Text } from "@arconnect/components-rebrand";
+import { Input, Loading, Text } from "@arconnect/components-rebrand";
 import { useTheme } from "styled-components";
 import { Flex } from "~components/common/Flex";
 import browser from "webextension-polyfill";
 import { ChevronDown } from "@untitled-ui/icons-react";
 import { TokenLogo } from "~components/popup/TokenLogo";
 import type { TokenInfo } from "~tokens/aoTokens/ao";
+import { useTokenBalance, useTokenPrice } from "~tokens/hooks";
+import { useActiveAddress } from "~wallets/hooks";
+import { formatBalance } from "~utils/format";
+import { useMemo } from "react";
+import useSetting from "~settings/hook";
+import { formatFiatBalance } from "~tokens/currency";
+import BigNumber from "bignumber.js";
 
 interface SwapInputProps {
   type: "send" | "receive";
@@ -15,8 +22,18 @@ interface SwapInputProps {
 }
 
 export const SwapInput = ({ type, amount, onAmountChange, token, onTokenSwitcherClick }: SwapInputProps) => {
-  const theme = useTheme();
   const isSend = type === "send";
+  const theme = useTheme();
+  const [currency] = useSetting<string>("currency");
+  const activeAddress = useActiveAddress();
+  const { data: balance = "0", isLoading } = useTokenBalance(isSend ? token : null, activeAddress);
+  const { price = 0 } = useTokenPrice(amount ? token.processId : undefined, currency);
+
+  const formattedBalance = useMemo(() => formatBalance(balance), [balance]);
+  const fiatBalance = useMemo(
+    () => formatFiatBalance(BigNumber(balance || "0").times(price || 0), currency),
+    [balance, price, currency],
+  );
 
   const handleInputChange = (event: React.FormEvent<HTMLInputElement>) => {
     const input = event.currentTarget;
@@ -27,6 +44,7 @@ export const SwapInput = ({ type, amount, onAmountChange, token, onTokenSwitcher
     <Input
       stacked
       sizeVariant="large"
+      disabled={!isSend}
       value={amount}
       onInput={handleInputChange}
       onChange={(e: React.ChangeEvent<HTMLInputElement>) => onAmountChange(e.target.value)}
@@ -66,12 +84,16 @@ export const SwapInput = ({ type, amount, onAmountChange, token, onTokenSwitcher
             e.stopPropagation();
           }}>
           <Text size="xs" noMargin weight="medium" variant="tertiary">
-            ~$0.00
+            ~{fiatBalance}
           </Text>
           <Flex align="center" justify="center" gap={4}>
-            <Text size="xs" noMargin weight="medium" variant="tertiary">
-              0 AGENT
-            </Text>
+            {isLoading ? (
+              <Loading style={{ height: 12, width: 12 }} />
+            ) : (
+              <Text size="xs" noMargin weight="medium" variant="tertiary">
+                {formattedBalance.displayBalance} {token.Ticker}
+              </Text>
+            )}
             {isSend && (
               <Text
                 size="xs"
@@ -82,6 +104,7 @@ export const SwapInput = ({ type, amount, onAmountChange, token, onTokenSwitcher
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
+                  onAmountChange(formattedBalance.tooltipBalance);
                 }}>
                 Max
               </Text>
