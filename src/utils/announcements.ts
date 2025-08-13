@@ -120,7 +120,6 @@ const stargridAccessAnnouncement = {
 };
 
 export const isStargridAnnouncementActive = () => {
-  return true;
   const now = new Date();
   return now >= stargridAccessAnnouncement.startDate && now <= stargridAccessAnnouncement.endDate;
 };
