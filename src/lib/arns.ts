@@ -4,6 +4,7 @@ import {
   ARIO,
   ARIO_MAINNET_PROCESS_ID,
   ArweaveSigner,
+  mARIOToken,
   type AoANTInfo,
   type AoANTState,
   type AoArNSNameData,
@@ -204,6 +205,27 @@ export function useTicker() {
 
 export function isArNSNameProfile(nameServiceProfile?: NameServiceProfile) {
   return nameServiceProfile ? !nameServiceProfile.name.endsWith(".ar") : false;
+}
+
+export function useRegistrationFee(name: string, purchaseType: PurchaseType, purchaseYears?: number) {
+  return useQuery(
+    {
+      queryKey: ["registration-fee", name, purchaseType, purchaseYears],
+      queryFn: async () => {
+        const registrationFees = await getRegistrationFees();
+
+        if (!registrationFees) return 0;
+
+        const fee = registrationFees[name.length.toString()];
+        const arioPrice = purchaseType === "lease" ? fee.lease[purchaseYears.toString()] : fee.permabuy;
+
+        return new mARIOToken(arioPrice).toARIO().valueOf();
+      },
+      enabled: !!name,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    },
+    ARNS_QUERY_CLIENT,
+  );
 }
 
 export async function getRegistrationFees(): Promise<AoRegistrationFees | null> {

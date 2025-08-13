@@ -1,18 +1,16 @@
 import { ButtonV2 } from "@arconnect/components";
 import { Text } from "@arconnect/components-rebrand";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Flex } from "~components/common/Flex";
 import { ArioIcon } from "~components/embed";
 import HeadV2 from "~components/popup/HeadV2";
-import { ARNS_QUERY_CLIENT, getRegistrationFees, purchaseArNSName, useTicker } from "~lib/arns";
+import { ARNS_QUERY_CLIENT, purchaseArNSName, useRegistrationFee, useTicker } from "~lib/arns";
+import { useActiveWallet } from "~wallets/hooks";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { useLocation } from "~wallets/router/router.utils";
 import { RegisteringCard } from "./RegisteringCard";
 import TransactionStatusModal from "./TransactionStatusModal";
 import type { PurchaseType } from "./types";
-import { formatArio } from "./utils";
-import { mARIOToken } from "@ar.io/sdk/web";
-import { useActiveWallet } from "~wallets/hooks";
 
 export interface ArNSConfirmPurchaseViewParams {
   name: string;
@@ -26,7 +24,7 @@ export const ArNSConfirmPurchaseView = ({
 }: ArNSConfirmPurchaseViewProps) => {
   const { data: ticker } = useTicker();
 
-  const [totalFee, setTotalFee] = useState<string>("");
+  const { data: totalFee = 0 } = useRegistrationFee(name, purchaseType, purchaseYears);
   const [processingTransaction, setProcessingTransaction] = useState<boolean>(false);
 
   const [transactionState, setTransactionState] = useState<string | undefined>();
@@ -34,22 +32,6 @@ export const ArNSConfirmPurchaseView = ({
   const wallet = useActiveWallet();
 
   const { navigate } = useLocation();
-
-  useEffect(() => {
-    const fetchTotalFee = async () => {
-      const registrationFees = await getRegistrationFees();
-
-      if (registrationFees) {
-        const fee = registrationFees[name.length.toString()];
-
-        const mArioPrice = purchaseType === "lease" ? fee.lease[purchaseYears.toString()] : fee.permabuy;
-        const arioPrice = new mARIOToken(mArioPrice).toARIO().valueOf();
-
-        setTotalFee(formatArio(arioPrice));
-      }
-    };
-    fetchTotalFee();
-  }, [purchaseType, purchaseYears]);
 
   const handleConfirmPurchase = async () => {
     try {

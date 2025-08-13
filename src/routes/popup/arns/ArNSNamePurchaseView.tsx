@@ -1,12 +1,11 @@
-import { mARIOToken } from "@ar.io/sdk/web";
 import { ButtonV2 } from "@arconnect/components";
 import { Card, Text } from "@arconnect/components-rebrand";
 import { MinusIcon, PlusIcon } from "@iconicicons/react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import styled from "styled-components";
 import { Flex } from "~components/common/Flex";
 import HeadV2 from "~components/popup/HeadV2";
-import { getRegistrationFees, useArioBalance, useTicker } from "~lib/arns";
+import { useArioBalance, useRegistrationFee, useTicker } from "~lib/arns";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { useLocation } from "~wallets/router/router.utils";
 import type { PurchaseType } from "./types";
@@ -26,7 +25,7 @@ export const ArNSNamePurchaseView = ({ params: { name } }: ArNSNamePurchaseViewP
   const [purchaseType, setPurchaseType] = useState<PurchaseType>("lease");
   const [purchaseYears, setPurchaseYears] = useState(1);
 
-  const [totalFee, setTotalFee] = useState(0);
+  const { data: totalFee = 0 } = useRegistrationFee(name, purchaseType, purchaseYears);
 
   const totalFeeString = useMemo(() => {
     return formatArio(totalFee);
@@ -35,20 +34,6 @@ export const ArNSNamePurchaseView = ({ params: { name } }: ArNSNamePurchaseViewP
   const untilDateString = useMemo(() => {
     return new Date(Date.now() + purchaseYears * 365 * 24 * 60 * 60 * 1000).toLocaleDateString();
   }, [purchaseYears]);
-
-  useEffect(() => {
-    const fetchTotalFee = async () => {
-      const registrationFees = await getRegistrationFees();
-
-      if (registrationFees) {
-        const fee = registrationFees[name.length.toString()];
-
-        const arioPrice = purchaseType === "lease" ? fee.lease[purchaseYears.toString()] : fee.permabuy;
-        setTotalFee(new mARIOToken(arioPrice).toARIO().valueOf());
-      }
-    };
-    fetchTotalFee();
-  }, [purchaseType, purchaseYears]);
 
   return (
     <Flex direction="column" height="100vh">
