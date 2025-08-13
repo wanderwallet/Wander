@@ -59,27 +59,7 @@ import inApp1ScreenshotDarkSrc from "url:assets/screenshots/unpartitioned-state/
 import inApp2ScreenshotDarkSrc from "url:assets/screenshots/unpartitioned-state/in-app-2-dark.png";
 
 import styles from "./unpartitioned-state.module.scss";
-
-const pretendToBeBrave = false;
-const isBrave = pretendToBeBrave || window.navigator.brave;
-
-const pretendToBeChrome = false;
-const isChrome = pretendToBeChrome;
-
-const pretendToBeEdge = false;
-const isEdge = pretendToBeEdge || window.navigator.userAgent.includes("Edg");
-
-const pretendToBeMobileChrome = false;
-const isMobileChrome = pretendToBeMobileChrome || false;
-
-const pretendToBeInAppAndroidBrowser = false;
-const isInAppAndroidBrowser =
-  pretendToBeInAppAndroidBrowser ||
-  (navigator.userAgent.includes("Android") &&
-    (navigator.userAgent.includes("wv") || navigator.userAgent.includes("WebView")));
-
-// Note this flags are only useful to see the UI in those browsers, but not to reproduce their exact behavior.
-const isPretendingToBeAnotherBrowser = pretendToBeBrave || pretendToBeMobileChrome || pretendToBeInAppAndroidBrowser;
+import { browserInfo } from "~utils/browser-info/browser-info.utils";
 
 export function UnpartitionedStateMissingEmbeddedView() {
   const { navigate } = useLocation();
@@ -94,8 +74,7 @@ export function UnpartitionedStateMissingEmbeddedView() {
   const [isOptionMissing, setIsOptionMissing] = useState(false);
 
   const couldProbablyGetAccess =
-    (HAS_ADVANCED_STORAGE_API && (unpartitionedStateStatus === "rejected" || unpartitionedStateStatus === "error")) ||
-    isPretendingToBeAnotherBrowser;
+    HAS_ADVANCED_STORAGE_API && (unpartitionedStateStatus === "rejected" || unpartitionedStateStatus === "error");
 
   const shouldTryToGetAccess = authStatus === "noAuth" && couldProbablyGetAccess;
 
@@ -193,7 +172,7 @@ export function UnpartitionedStateMissingEmbeddedView() {
 
   const needsConfirmation = !unpartitionedStateConfirmed && authStatus === "noAuth";
   const requestAccessButtonText = errorsWhileRequestingAccess === 0 ? "Check access" : "Check access again";
-  const accessTo = isBrave ? "embedded content" : "third-party cookies";
+  const accessTo = browserInfo.isBrave ? "embedded content" : "third-party cookies";
 
   let headerText = "Limited browser support";
   let subtitle = couldProbablyGetAccess
@@ -292,7 +271,7 @@ export function UnpartitionedStateMissingEmbeddedView() {
 
     let browserSpecificInstructions: React.ReactNode = null;
 
-    if (isBrave) {
+    if (browserInfo.isBrave) {
       browserSpecificInstructions = (
         <FormattedText
           children={[
@@ -329,7 +308,7 @@ export function UnpartitionedStateMissingEmbeddedView() {
           ]}
         />
       );
-    } else if (isMobileChrome) {
+    } else if (browserInfo.isChromeAndroid || browserInfo.isChromeIOS) {
       browserSpecificInstructions = (
         <FormattedText
           children={[
@@ -376,7 +355,7 @@ export function UnpartitionedStateMissingEmbeddedView() {
           ]}
         />
       );
-    } else if (isInAppAndroidBrowser) {
+    } else if (browserInfo.isInAppAndroidBrowser) {
       browserSpecificInstructions = (
         <FormattedText
           children={[
@@ -408,7 +387,7 @@ export function UnpartitionedStateMissingEmbeddedView() {
           ]}
         />
       );
-    } else if (isEdge) {
+    } else if (browserInfo.isEdge) {
       browserSpecificInstructions = (
         <FormattedText
           children={[
@@ -538,7 +517,7 @@ export function UnpartitionedStateMissingEmbeddedView() {
             optionMissingButton,
             isOptionMissing ? (
               <p key="text2">
-                In some {isChrome ? "Chrome versions" : "browsers"}, this setting appears under the{" "}
+                In some {browserInfo.isChrome ? "Chrome versions" : "browsers"}, this setting appears under the{" "}
                 <em className={styles.inlineQuote}>Site information</em> popup:
               </p>
             ) : null,
