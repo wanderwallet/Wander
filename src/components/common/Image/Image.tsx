@@ -50,7 +50,7 @@ export function Image({
   style,
   onError,
 }: ImageProps) {
-  const { themeMode } = useTheme();
+  const { themeMode, displayTheme } = useTheme();
   const [isLoaded, setIsLoaded] = useState(false);
 
   const pictureClassName = clsx(className, styles.root, {
@@ -61,14 +61,9 @@ export function Image({
     [styles.isLoaded]: isLoaded,
   });
 
+  const themedPlaceholderSrc = displayTheme === "light" ? placeholderSrc : placeholderSrcDark;
   const placeholderURL =
-    themeMode === "dark"
-      ? placeholderSrcDark && placeholderSrcDark !== "none"
-        ? `url(${placeholderSrcDark})`
-        : "none"
-      : placeholderSrc && placeholderSrc !== "none"
-        ? `url(${placeholderSrc})`
-        : "none";
+    themedPlaceholderSrc && themedPlaceholderSrc !== "none" ? `url(${themedPlaceholderSrc})` : "none";
 
   const pictureStyle = {
     "--imgWidth": `${width}px`,
