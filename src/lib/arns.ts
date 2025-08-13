@@ -247,26 +247,6 @@ export async function getRegistrationFees(): Promise<AoRegistrationFees | null> 
     return undefined;
   }
 }
-export function createDefaultAntState(state: Partial<SpawnANTState>): SpawnANTState {
-  return {
-    ticker: "aos",
-    name: "ANT",
-    controllers: [],
-    balances: {},
-    owner: "",
-    description: "",
-    keywords: [],
-    records: {
-      ["@"]: {
-        transactionId: LANDING_PAGE_TXID.toString(),
-        ttlSeconds: 900,
-      },
-    },
-    logo: DEFAULT_ANT_LOGO,
-    ...state,
-  };
-}
-
 export type PurchaseArNSNameParams = {
   name: string;
   purchaseType: PurchaseType;
