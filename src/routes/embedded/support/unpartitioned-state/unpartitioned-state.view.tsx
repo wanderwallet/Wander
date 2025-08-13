@@ -262,6 +262,9 @@ export function UnpartitionedStateMissingEmbeddedView() {
     let browserSpecificInstructions: React.ReactNode = null;
 
     if (errorsWhileRequestingAccess > 0) {
+      // TODO: On iOS Brave (which uses Safari's engine most likely) the only option seems to be turn down Shields, so we
+      // might want to add a specific case for that. See https://community-labs-group.slack.com/archives/C05U48QHY0G/p1755097816534059?thread_ts=1754912705.245929&cid=C05U48QHY0G
+
       if (browserInfo.isBrave) {
         browserSpecificInstructions = (
           <FormattedText
