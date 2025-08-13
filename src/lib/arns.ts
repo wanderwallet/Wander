@@ -405,12 +405,12 @@ export function usePrimaryNameCostDetails({ name }: { name: string }) {
 
   return useQuery(
     {
-      queryKey: ["cost-details"],
+      queryKey: ["cost-details", name, walletAddress],
       queryFn: async () => {
         return ARIO_READ_SDK.getCostDetails({
           intent: "Primary-Name-Request",
           name,
-          fromAddress: walletAddress?.toString(),
+          fromAddress: walletAddress,
           fundFrom: "balance",
         });
       },
