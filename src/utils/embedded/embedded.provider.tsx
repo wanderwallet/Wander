@@ -184,32 +184,32 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     }: UnpartitionedStateStatusChangeData) {
       setUnpartitionedStateStatus(unpartitionedStateStatus);
 
-      if (unpartitionedStateStatus !== prevUnpartitionedStateStatus) {
-        // If the user is authenticated and the storage permissions changes, we sign them out and reload the page:
+      if (unpartitionedStateStatus === prevUnpartitionedStateStatus) return;
 
-        if (authStatus !== "noAuth") {
-          // TODO: Show cover.
+      // If the user is authenticated and the storage permissions changes, we sign them out and reload the page:
 
-          await signOut(false).catch((err) => {
-            console.warn("Error signing out: ", err);
-          });
-
-          window.location.reload();
-
-          return;
-        }
-
-        // If the user is not authenticated and the storage permission changes, we check if in the new localStorage instance there's a Supabase auth token. If
-        // there is, we reload the page to force re-authentication with that one:
-
-        const hasSupabaseAuthToken = await checkStoredSupabaseAuthToken();
-
-        if (!hasSupabaseAuthToken) return;
-
+      if (authStatus !== "noAuth") {
         // TODO: Show cover.
 
+        await signOut(false).catch((err) => {
+          console.warn("Error signing out: ", err);
+        });
+
         window.location.reload();
+
+        return;
       }
+
+      // If the user is not authenticated and the storage permission changes, we check if in the new localStorage instance there's a Supabase auth token. If
+      // there is, we reload the page to force re-authentication with that one:
+
+      const hasSupabaseAuthToken = await checkStoredSupabaseAuthToken();
+
+      if (!hasSupabaseAuthToken) return;
+
+      // TODO: Show cover.
+
+      window.location.reload();
     }
 
     addUnpartitionedStateStatusChangeListener(handleUnpartitionedStateStatusChange);
