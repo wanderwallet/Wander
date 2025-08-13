@@ -10,6 +10,8 @@ import { toast } from "react-toastify";
 import { FormattedText } from "~components/embed/ui/atoms/formatted-text/FormattedText";
 import { useInterval } from "@swyg/corre";
 import { HAS_ADVANCED_STORAGE_API } from "~iframe/storage/unpartitioned-storage/unpartitioned-storage.utils";
+import { browserInfo } from "~utils/browser-info/browser-info.utils";
+import { COULD_NOT_ACCESS_UNPARTITIONED_STATE_ERR_MESSAGE } from "~iframe/storage/unpartitioned-storage/unpartitioned-storage";
 
 // Logos downloaded from https://github.com/alrra/browser-logos
 import chromeLogoSrc from "url:assets/icons/browsers/chrome-logo.png";
@@ -59,14 +61,11 @@ import inApp1ScreenshotDarkSrc from "url:assets/screenshots/unpartitioned-state/
 import inApp2ScreenshotDarkSrc from "url:assets/screenshots/unpartitioned-state/in-app-2-dark.png";
 
 import styles from "./unpartitioned-state.module.scss";
-import { browserInfo } from "~utils/browser-info/browser-info.utils";
 
 export function UnpartitionedStateMissingEmbeddedView() {
   const { navigate } = useLocation();
   const { authStatus, unpartitionedStateStatus, unpartitionedStateConfirmed, confirmUnpartitionedState } =
     useEmbedded();
-
-  console.warn("render unpartitionedStateStatus =", unpartitionedStateStatus);
 
   // Requesting access logic:
 
@@ -111,31 +110,22 @@ export function UnpartitionedStateMissingEmbeddedView() {
     try {
       setIsRequestingPermission(true);
 
-      console.log("getInstance =");
-
       const localStorage = await LocalStorage.getInstance();
 
-      console.log("localStorage =", localStorage);
-
-      if (["rejected", "error"].includes(localStorage.status))
-        throw new Error(`Unpartitioned state status = "${localStorage.status}"`);
+      if (["rejected", "error"].includes(localStorage.status)) {
+        throw localStorage.error || new Error(COULD_NOT_ACCESS_UNPARTITIONED_STATE_ERR_MESSAGE);
+      }
 
       navigate(EmbeddedPaths.Auth);
     } catch (error) {
-      console.log("get instance error =", error);
-
       // Brave throws a "NotAllowedError" error while trying to request access, even after a user interaction...
 
-      /*
       toast.error(
         error instanceof Error &&
-          (error.name === "NotAllowedError" || error.message === "Could not get access to unpartitioned state.")
+          (error.name === "NotAllowedError" || error.message === COULD_NOT_ACCESS_UNPARTITIONED_STATE_ERR_MESSAGE)
           ? "Could not get access. Did you enable it?"
           : "Unexpected error. Please, try again.",
       );
-      */
-
-      toast.error("Could not get access. Did you enable it?");
 
       setErrorsWhileRequestingAccess((prevErrorsWhileRequestingAccess) => prevErrorsWhileRequestingAccess + 1);
       setIsRequestingPermission(false);
