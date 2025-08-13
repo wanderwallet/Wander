@@ -4157,5 +4157,17 @@
   "agents_syncing": {
     "message": "Agents syncing",
     "description": "Agents syncing text"
+  },
+  "stargrid_battle_pass": {
+    "message": "StarGrid Battle Pass",
+    "description": "StarGrid battle pass text"
+  },
+  "stargrid_claim_now": {
+    "message": "Claim Now!",
+    "description": "StarGrid claim now text"
+  },
+  "days": {
+    "message": "Days",
+    "description": "Days text"
   }
 }

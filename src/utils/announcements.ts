@@ -106,3 +106,13 @@ export const isAstroBetaAnnouncementActive = () => {
   const now = new Date();
   return now >= astroBetaAnnouncement.startDate && now <= astroBetaAnnouncement.endDate;
 };
+
+const stargridAccessAnnouncement = {
+  startDate: new Date("2025-08-18T10:00:00-04:00"), // EDT
+  endDate: new Date("2025-08-24T23:59:00-04:00"), // EDT
+};
+
+export const isStargridAnnouncementActive = () => {
+  const now = new Date();
+  return now >= stargridAccessAnnouncement.startDate && now <= stargridAccessAnnouncement.endDate;
+};

@@ -4117,5 +4117,17 @@
     "agents_syncing": {
       "message": "代理同步中",
       "description": "Agents syncing text"
+    },
+    "stargrid_battle_pass": {
+      "message": "StarGrid 战斗通行证",
+      "description": "StarGrid battle pass text"
+    },
+    "stargrid_claim_now": {
+      "message": "立即领取",
+      "description": "StarGrid claim now text"
+    },
+    "days": {
+      "message": "天",
+      "description": "Days text"
     }
 }
