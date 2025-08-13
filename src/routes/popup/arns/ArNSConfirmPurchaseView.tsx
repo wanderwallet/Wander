@@ -48,16 +48,10 @@ export const ArNSConfirmPurchaseView = ({
         },
       });
 
-      console.log("RESULT", result);
-
-      if (result.success) {
-        await ARNS_QUERY_CLIENT.invalidateQueries({
-          queryKey: ["arns-records-for-address", wallet.address],
-        });
-        navigate(`/arns/purchase-success/${name}/${purchaseType}/${purchaseYears}/${result.transactionId}`);
-      } else {
-        navigate(`/arns/purchase-error/${name}/${purchaseType}/${purchaseYears}`);
-      }
+      await ARNS_QUERY_CLIENT.invalidateQueries({
+        queryKey: ["arns-records-for-address", wallet.address],
+      });
+      navigate(`/arns/purchase-success/${name}/${purchaseType}/${purchaseYears}/${result.transactionId}`);
     } catch (error) {
       console.log(error);
       navigate(`/arns/purchase-error/${name}/${purchaseType}/${purchaseYears}`);

@@ -306,7 +306,6 @@ export async function purchaseArNSName({
     );
 
     return {
-      success: true,
       transactionId: result.id,
     };
   } finally {
