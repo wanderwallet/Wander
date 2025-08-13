@@ -30,6 +30,7 @@ import {
   getSupabaseClient,
   signOut,
   getBackupsNeededAndMessage,
+  checkStoredSupabaseAuthToken,
 } from "~utils/embedded/embedded.utils";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import {
@@ -99,18 +100,6 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     },
     [setUnpartitionedStateConfirmed, setRenderValue],
   );
-
-  // Unpartitioned state:
-
-  useEffect(() => {
-    function handleUnpartitionedStateStatusChange({ unpartitionedStateStatus }: UnpartitionedStateStatusChangeData) {
-      setUnpartitionedStateStatus(unpartitionedStateStatus);
-    }
-
-    addUnpartitionedStateStatusChangeListener(handleUnpartitionedStateStatusChange);
-
-    return () => removeUnpartitionedStateStatusChangeListener(handleUnpartitionedStateStatusChange);
-  }, []);
 
   // Wallet props:
 
@@ -186,6 +175,50 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     });
   }, [authStatus, backupsNeeded, backupMessage]);
 
+  // Unpartitioned state:
+
+  useEffect(() => {
+    async function handleUnpartitionedStateStatusChange({
+      unpartitionedStateStatus,
+      prevUnpartitionedStateStatus,
+    }: UnpartitionedStateStatusChangeData) {
+      setUnpartitionedStateStatus(unpartitionedStateStatus);
+
+      if (unpartitionedStateStatus !== prevUnpartitionedStateStatus) {
+        // If the user is authenticated and the storage permissions changes, we sign them out and reload the page:
+
+        if (authStatus !== "noAuth") {
+          // TODO: Show cover.
+
+          await signOut(false).catch((err) => {
+            console.warn("Error signing out: ", err);
+          });
+
+          window.location.reload();
+
+          return;
+        }
+
+        // If the user is not authenticated and the storage permission changes, we check if in the new localStorage instance there's a Supabase auth token. If
+        // there is, we reload the page to force re-authentication with that one:
+
+        const hasSupabaseAuthToken = await checkStoredSupabaseAuthToken();
+
+        if (!hasSupabaseAuthToken) return;
+
+        // TODO: Show cover.
+
+        window.location.reload();
+      }
+    }
+
+    addUnpartitionedStateStatusChangeListener(handleUnpartitionedStateStatusChange);
+
+    return () => removeUnpartitionedStateStatusChangeListener(handleUnpartitionedStateStatusChange);
+  }, [authStatus]);
+
+  // UPDATE CURRENT WALLET HELPER:
+
   const updateCurrentWallet = useCallback((walletUpdater: Wallet | ((currentWallet: Wallet) => Wallet)) => {
     setEmbeddedContextState((prevEmbeddedContextState) => {
       const currentWalletIndex = prevEmbeddedContextState.wallets.findIndex((wallet) => {
@@ -207,6 +240,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       };
     });
   }, []);
+
+  // WALLET EXPORT:
 
   const downloadKeyfile = useCallback(async () => {
     log(LOG_GROUP.EMBEDDED_FLOWS, `downloadKeyfile()`);
@@ -309,6 +344,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
     return successfulCopy;
   }, [getSeedphrase]);
+
+  // WALLET RECOVERY:
 
   const generateRecoveryAndDownload = useCallback(async () => {
     log(LOG_GROUP.EMBEDDED_FLOWS, `generateRecoveryAndDownload()`);
