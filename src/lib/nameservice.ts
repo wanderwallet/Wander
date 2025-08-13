@@ -69,11 +69,11 @@ export async function getNameServiceProfiles(
   return profiles;
 }
 
-export function useNameServiceProfiles(walletAddress: string[]) {
+export function useNameServiceProfiles(walletAddresses: string[]) {
   return useQuery(
     {
-      queryKey: ["name-service-profiles"],
-      queryFn: async () => getNameServiceProfiles(walletAddress),
+      queryKey: ["name-service-profiles", walletAddresses],
+      queryFn: async () => getNameServiceProfiles(walletAddresses),
       staleTime: 5 * 60 * 1000,
     },
     NAME_SERVICE_QUERY_CLIENT,
