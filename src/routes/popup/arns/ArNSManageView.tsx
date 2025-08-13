@@ -45,13 +45,9 @@ export const ArNSManageView = () => {
 
       <Content>
         {isError ? (
-          <Text margin="1rem auto" width="100%" style={{ textAlign: "center" }}>
-            Unable to load ArNS records
-          </Text>
+          <Text style={{ textAlign: "center", margin: ".5rem auto", width: "100%" }}>Unable to load ArNS records</Text>
         ) : isFetching || isProfileFetching ? (
-          <Text margin="1rem auto" width="100%" style={{ textAlign: "center" }}>
-            Loading...
-          </Text>
+          <Text style={{ textAlign: "center", margin: ".5rem auto", width: "100%" }}>Loading...</Text>
         ) : (
           <>
             {!!arnsRecords &&
@@ -86,6 +82,11 @@ export const ArNSManageView = () => {
                         <Text size="xs" variant="secondary">
                           Until {formatDate(new Date(arnsRecord.endTimestamp))}
                         </Text>
+                      </Flex>
+                    )}
+                    {arnsRecord.type === "permabuy" && (
+                      <Flex direction="column" style={{ flexShrink: 0, marginLeft: "auto", alignItems: "flex-end" }}>
+                        <Text size="sm">Permanent</Text>
                       </Flex>
                     )}
                   </Flex>
