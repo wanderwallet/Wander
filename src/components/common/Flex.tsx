@@ -21,10 +21,6 @@ interface FlexProps extends React.HTMLAttributes<HTMLDivElement> {
   overflow?: CSSProperties["overflow"];
   boxSizing?: CSSProperties["boxSizing"];
   maxWidth?: CSSProperties["maxWidth"];
-  paddingTop?: CSSProperties["paddingTop"];
-  paddingRight?: CSSProperties["paddingRight"];
-  paddingBottom?: CSSProperties["paddingBottom"];
-  paddingLeft?: CSSProperties["paddingLeft"];
   position?: CSSProperties["position"];
 }
 
@@ -43,10 +39,6 @@ export const Flex: React.FC<FlexProps> = ({
   width,
   height,
   padding,
-  paddingTop,
-  paddingRight,
-  paddingBottom,
-  paddingLeft,
   margin,
   cursor,
   textAlign,
@@ -81,10 +73,6 @@ export const Flex: React.FC<FlexProps> = ({
         boxSizing,
         maxWidth,
         padding,
-        paddingTop,
-        paddingRight,
-        paddingBottom,
-        paddingLeft,
         position,
         ...style,
       }}

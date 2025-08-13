@@ -38,7 +38,14 @@ export const StargridAccessAnnouncementPopup = ({ isOpen, setOpen }) => {
       closeIconColor="white"
       fullscreen>
       <Flex direction="column" justify="space-between" align="center" height="100%" width="100%" position="relative">
-        <Flex direction="column" gap={16} align="center" justify="center" height="100%" paddingBottom={12} width="100%">
+        <Flex
+          direction="column"
+          gap={16}
+          align="center"
+          justify="center"
+          height="100%"
+          style={{ paddingBottom: 12 }}
+          width="100%">
           <Flex direction="column" gap={8} align="center" justify="center">
             <Text
               size="sm"
@@ -61,7 +68,7 @@ export const StargridAccessAnnouncementPopup = ({ isOpen, setOpen }) => {
             </Flex>
           </Flex>
           <Flex direction="column" gap={20} align="center" justify="center" flex={1} height="100%">
-            <Flex direction="column" gap={32} align="center" justify="center" paddingTop={32}>
+            <Flex direction="column" gap={32} align="center" justify="center" style={{ paddingTop: 32 }}>
               {tiers.map((tier) => (
                 <Flex direction="column" gap={8} align="center" justify="center">
                   <TierTag
@@ -82,7 +89,12 @@ export const StargridAccessAnnouncementPopup = ({ isOpen, setOpen }) => {
             </Flex>
           </Flex>
           <Flex direction="row" align="center" justify="space-between" position="relative" margin="0 auto" width="100%">
-            <Flex direction="column" gap={9.41} align="center" justify="center" paddingTop={16} paddingLeft={16}>
+            <Flex
+              direction="column"
+              gap={9.41}
+              align="center"
+              justify="center"
+              style={{ paddingTop: 16, paddingLeft: 16 }}>
               <img width={37.8} height={17.7} src={wanderLogo} alt="wander" />
               <Text size="md" weight="medium" style={{ color: "#fff" }} noMargin>
                 Wander
