@@ -237,14 +237,14 @@ export async function getRegistrationFees(): Promise<AoRegistrationFees | null> 
       },
       staleTime: 24 * 60 * 60 * 1000, // 1 day, good for length of epoch
     }).catch((error) => {
-      console.error(`Error in ArNS demand factor query:`, error);
+      console.error(`Error in retrieving ArNS registration fees:`, error);
       return null;
     });
 
     return result;
   } catch (error) {
-    console.error(`Unexpected error in getDemandFactor:`, error);
-    return undefined;
+    console.error(`Unexpected error in getRegistrationFees:`, error);
+    return null;
   }
 }
 export type PurchaseArNSNameParams = {
