@@ -61,11 +61,17 @@ import inApp1ScreenshotDarkSrc from "url:assets/screenshots/unpartitioned-state/
 import inApp2ScreenshotDarkSrc from "url:assets/screenshots/unpartitioned-state/in-app-2-dark.png";
 
 import styles from "./unpartitioned-state.module.scss";
+import { signOut } from "~utils/embedded/embedded.utils";
 
 export function UnpartitionedStateMissingEmbeddedView() {
   const { navigate } = useLocation();
-  const { authStatus, unpartitionedStateStatus, unpartitionedStateConfirmed, confirmUnpartitionedState } =
-    useEmbedded();
+  const {
+    authStatus,
+    unpartitionedStateStatus,
+    unpartitionedStateConfirmed,
+    confirmUnpartitionedState,
+    backupsNeeded,
+  } = useEmbedded();
 
   // Requesting access logic:
 
@@ -214,18 +220,34 @@ export function UnpartitionedStateMissingEmbeddedView() {
           children={[
             <p key="text">
               Your browser should be supported, but Wander could not get access to {accessTo}.
-              {authStatus === "noAuth" ? "" : " Please, log out to try again."}
+              {authStatus === "noAuth"
+                ? ""
+                : backupsNeeded > 0
+                  ? " Please, back up your wallet and sign out to try again."
+                  : " Please, sign out to try again."}
             </p>,
-            <Button
-              key="button"
-              variant="link"
-              isDisabled={areButtonsDisabled}
-              onClick={(e) => {
-                e.preventDefault();
-                setTryAgain(true);
-              }}>
-              Try again
-            </Button>,
+            authStatus === "noAuth" ? (
+              <Button
+                key="button"
+                variant="link"
+                isDisabled={areButtonsDisabled}
+                onClick={(e) => {
+                  e.preventDefault();
+                  setTryAgain(true);
+                }}>
+                Try again
+              </Button>
+            ) : (
+              <Button
+                key="button"
+                variant="secondary"
+                size="sm"
+                href={backupsNeeded > 0 ? EmbeddedPaths.AccountBackupWallet : undefined}
+                onClick={backupsNeeded > 0 ? undefined : () => signOut(false)}
+                isDisabled={areButtonsDisabled}>
+                {backupsNeeded > 0 ? "Back up now" : "Sign out"}
+              </Button>
+            ),
           ]}
           className={styles.couldProbablyGetAccessDisclaimer}
         />
@@ -241,9 +263,11 @@ export function UnpartitionedStateMissingEmbeddedView() {
         />
       ) : null}
 
-      <Button variant="secondary" size="md" isDisabled={areButtonsDisabled} onClick={handleContinueAnyway}>
-        Continue without
-      </Button>
+      {authStatus === "noAuth" ? (
+        <Button variant="secondary" size="md" isDisabled={areButtonsDisabled} onClick={handleContinueAnyway}>
+          Continue without
+        </Button>
+      ) : null}
     </>
   );
 
