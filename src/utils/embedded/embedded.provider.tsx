@@ -184,6 +184,10 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     }: UnpartitionedStateStatusChangeData) {
       setUnpartitionedStateStatus(unpartitionedStateStatus);
 
+      // We want to prevent the app from using data from the partitioned state after the permissions has been granted, or from the unpartitioned state once the
+      // permission has been removed (as both options will lead to a mix of data from both storages), so we check here if the permissions have changed, and
+      // reload the app when needed:
+
       if (unpartitionedStateStatus === prevUnpartitionedStateStatus) return;
 
       // If the user is authenticated and the storage permissions changes, we sign them out and reload the page:
