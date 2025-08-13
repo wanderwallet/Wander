@@ -261,307 +261,309 @@ export function UnpartitionedStateMissingEmbeddedView() {
 
     let browserSpecificInstructions: React.ReactNode = null;
 
-    if (browserInfo.isBrave) {
-      browserSpecificInstructions = (
-        <FormattedText
-          children={[
-            <p key="text1">
-              You can enable this from the <em className={styles.inlineQuote}>Embedded content</em> option in the
-              navigation bar:
-            </p>,
-            <p key="image1">
-              <Image
-                fullWidth
-                src={brave1ScreenshotSrc}
-                srcDark={brave1ScreenshotDarkSrc}
-                width={867}
-                height={144}
-                border
-                borderRadius="rounded"
-                pointer={[61.07954545454545, 48.275862068965516]}
-              />
-            </p>,
-            <p key="image2">
-              <Image
-                fullWidth
-                src={brave2ScreenshotSrc}
-                srcDark={brave2ScreenshotDarkSrc}
-                width={867}
-                height={822}
-                border
-                borderRadius="rounded"
-                pointer={[85.43857142857143, 70.18072289156626]}
-              />
-            </p>,
-            optionMissingButton,
-            isOptionMissing ? <p key="text2">Alternatively, turning Shields down should also work.</p> : null,
-          ]}
-        />
-      );
-    } else if (browserInfo.isChromeAndroid || browserInfo.isChromeIOS) {
-      browserSpecificInstructions = (
-        <FormattedText
-          children={[
-            <p key="text">
-              You can enable this from the <em className={styles.inlineQuote}>Cookies and site data</em> option in the
-              navigation bar:
-            </p>,
-            <p key="image1">
-              <Image
-                fullWidth
-                src={chromeAndroid1ScreenshotSrc}
-                srcDark={chromeAndroid1ScreenshotDarkSrc}
-                width={1080}
-                height={147}
-                border
-                borderRadius="rounded"
-                pointer={[15.340909090909092, 50]}
-              />
-            </p>,
-            <p key="image2">
-              <Image
-                fullWidth
-                src={chromeAndroid2ScreenshotSrc}
-                srcDark={chromeAndroid2ScreenshotDarkSrc}
-                width={1080}
-                height={656}
-                border
-                borderRadius="rounded"
-                pointer={[8.65, 51.86915887850467]}
-              />
-            </p>,
-            <p key="image3">
-              <Image
-                fullWidth
-                src={chromeAndroid3ScreenshotSrc}
-                srcDark={chromeAndroid3ScreenshotDarkSrc}
-                width={1080}
-                height={1106}
-                border
-                borderRadius="rounded"
-                pointer={[87.7840909090909, 86.94444444444444]}
-              />
-            </p>,
-          ]}
-        />
-      );
-    } else if (browserInfo.isInAppAndroidBrowser) {
-      browserSpecificInstructions = (
-        <FormattedText
-          children={[
-            <p key="text">You'll have to switch to your browser app to enable this:</p>,
-            <p key="image1">
-              <Image
-                fullWidth
-                src={inApp1ScreenshotSrc}
-                srcDark={inApp1ScreenshotDarkSrc}
-                width={1080}
-                height={147}
-                border
-                borderRadius="rounded"
-                pointer={[93.1, 50]}
-              />
-            </p>,
-            <p key="image2">
-              <Image
-                fullWidth
-                src={inApp2ScreenshotSrc}
-                srcDark={inApp2ScreenshotDarkSrc}
-                width={1080}
-                height={1326}
-                border
-                borderRadius="rounded"
-                pointer={[56, 83.9907192575406]}
-              />
-            </p>,
-          ]}
-        />
-      );
-    } else if (browserInfo.isEdge) {
-      browserSpecificInstructions = (
-        <FormattedText
-          children={[
-            <p key="text1">
-              You can enable this from the <em className={styles.inlineQuote}>Third-party cookies</em> option in the
-              navigation bar:
-            </p>,
-            <p key="image1">
-              <Image
-                fullWidth
-                src={edge1ScreenshotSrc}
-                srcDark={edge1ScreenshotDarkSrc}
-                width={866}
-                height={144}
-                border
-                borderRadius="rounded"
-                pointer={[81.5340909090909, 49.152542372881356]}
-              />
-            </p>,
-            <p key="image2">
-              <Image
-                fullWidth
-                src={edge2ScreenshotSrc}
-                srcDark={edge2ScreenshotDarkSrc}
-                width={866}
-                height={629}
-                border
-                borderRadius="rounded"
-                pointer={[79.82954545454545, 78.90625]}
-              />
-            </p>,
-            optionMissingButton,
-            isOptionMissing ? (
-              <p key="text2">
-                In some Edge versions, this setting appears under the <em className={styles.inlineQuote}>About</em>{" "}
-                popup:
-              </p>
-            ) : null,
-            isOptionMissing ? (
+    if (errorsWhileRequestingAccess > 0) {
+      if (browserInfo.isBrave) {
+        browserSpecificInstructions = (
+          <FormattedText
+            children={[
+              <p key="text1">
+                You can enable this from the <em className={styles.inlineQuote}>Embedded content</em> option in the
+                navigation bar:
+              </p>,
+              <p key="image1">
+                <Image
+                  fullWidth
+                  src={brave1ScreenshotSrc}
+                  srcDark={brave1ScreenshotDarkSrc}
+                  width={867}
+                  height={144}
+                  border
+                  borderRadius="rounded"
+                  pointer={[61.07954545454545, 48.275862068965516]}
+                />
+              </p>,
+              <p key="image2">
+                <Image
+                  fullWidth
+                  src={brave2ScreenshotSrc}
+                  srcDark={brave2ScreenshotDarkSrc}
+                  width={867}
+                  height={822}
+                  border
+                  borderRadius="rounded"
+                  pointer={[85.43857142857143, 70.18072289156626]}
+                />
+              </p>,
+              optionMissingButton,
+              isOptionMissing ? <p key="text2">Alternatively, turning Shields down should also work.</p> : null,
+            ]}
+          />
+        );
+      } else if (browserInfo.isChromeAndroid || browserInfo.isChromeIOS) {
+        browserSpecificInstructions = (
+          <FormattedText
+            children={[
+              <p key="text">
+                You can enable this from the <em className={styles.inlineQuote}>Cookies and site data</em> option in the
+                navigation bar:
+              </p>,
+              <p key="image1">
+                <Image
+                  fullWidth
+                  src={chromeAndroid1ScreenshotSrc}
+                  srcDark={chromeAndroid1ScreenshotDarkSrc}
+                  width={1080}
+                  height={147}
+                  border
+                  borderRadius="rounded"
+                  pointer={[15.340909090909092, 50]}
+                />
+              </p>,
+              <p key="image2">
+                <Image
+                  fullWidth
+                  src={chromeAndroid2ScreenshotSrc}
+                  srcDark={chromeAndroid2ScreenshotDarkSrc}
+                  width={1080}
+                  height={656}
+                  border
+                  borderRadius="rounded"
+                  pointer={[8.65, 51.86915887850467]}
+                />
+              </p>,
               <p key="image3">
                 <Image
                   fullWidth
-                  src={edge3ScreenshotSrc}
-                  srcDark={edge3ScreenshotDarkSrc}
+                  src={chromeAndroid3ScreenshotSrc}
+                  srcDark={chromeAndroid3ScreenshotDarkSrc}
+                  width={1080}
+                  height={1106}
+                  border
+                  borderRadius="rounded"
+                  pointer={[87.7840909090909, 86.94444444444444]}
+                />
+              </p>,
+            ]}
+          />
+        );
+      } else if (browserInfo.isInAppAndroidBrowser) {
+        browserSpecificInstructions = (
+          <FormattedText
+            children={[
+              <p key="text">You'll have to switch to your browser app to enable this:</p>,
+              <p key="image1">
+                <Image
+                  fullWidth
+                  src={inApp1ScreenshotSrc}
+                  srcDark={inApp1ScreenshotDarkSrc}
+                  width={1080}
+                  height={147}
+                  border
+                  borderRadius="rounded"
+                  pointer={[93.1, 50]}
+                />
+              </p>,
+              <p key="image2">
+                <Image
+                  fullWidth
+                  src={inApp2ScreenshotSrc}
+                  srcDark={inApp2ScreenshotDarkSrc}
+                  width={1080}
+                  height={1326}
+                  border
+                  borderRadius="rounded"
+                  pointer={[56, 83.9907192575406]}
+                />
+              </p>,
+            ]}
+          />
+        );
+      } else if (browserInfo.isEdge) {
+        browserSpecificInstructions = (
+          <FormattedText
+            children={[
+              <p key="text1">
+                You can enable this from the <em className={styles.inlineQuote}>Third-party cookies</em> option in the
+                navigation bar:
+              </p>,
+              <p key="image1">
+                <Image
+                  fullWidth
+                  src={edge1ScreenshotSrc}
+                  srcDark={edge1ScreenshotDarkSrc}
                   width={866}
                   height={144}
                   border
                   borderRadius="rounded"
-                  pointer={[8.238636363636363, 49.152542372881356]}
+                  pointer={[81.5340909090909, 49.152542372881356]}
                 />
-              </p>
-            ) : null,
-            isOptionMissing ? (
-              <p key="image4">
+              </p>,
+              <p key="image2">
                 <Image
                   fullWidth
-                  src={edge4ScreenshotSrc}
-                  srcDark={edge4ScreenshotDarkSrc}
-                  width={1043}
-                  height={724}
+                  src={edge2ScreenshotSrc}
+                  srcDark={edge2ScreenshotDarkSrc}
+                  width={866}
+                  height={629}
                   border
                   borderRadius="rounded"
-                  pointer={[90.625, 61.885245901639344]}
+                  pointer={[79.82954545454545, 78.90625]}
                 />
-              </p>
-            ) : null,
-            isOptionMissing ? (
-              <p key="image5">
-                <Image
-                  fullWidth
-                  src={edge5ScreenshotSrc}
-                  srcDark={edge5ScreenshotDarkSrc}
-                  width={1043}
-                  height={724}
-                  border
-                  borderRadius="rounded"
-                  pointer={[90.625, 80.73770491803279]}
-                />
-              </p>
-            ) : null,
-            isOptionMissing ? (
-              <p key="text3">
-                You might also find this option in{" "}
-                <em className={styles.inlineQuote}>
-                  Settings › Privacy, search, and services › Block third-party cookies
-                </em>
-                .
-              </p>
-            ) : null,
-          ]}
-        />
-      );
-    } else {
-      // Chrome or, most likely, other Chromium-based browser with more or less the same UI (e.g. Opera):
+              </p>,
+              optionMissingButton,
+              isOptionMissing ? (
+                <p key="text2">
+                  In some Edge versions, this setting appears under the <em className={styles.inlineQuote}>About</em>{" "}
+                  popup:
+                </p>
+              ) : null,
+              isOptionMissing ? (
+                <p key="image3">
+                  <Image
+                    fullWidth
+                    src={edge3ScreenshotSrc}
+                    srcDark={edge3ScreenshotDarkSrc}
+                    width={866}
+                    height={144}
+                    border
+                    borderRadius="rounded"
+                    pointer={[8.238636363636363, 49.152542372881356]}
+                  />
+                </p>
+              ) : null,
+              isOptionMissing ? (
+                <p key="image4">
+                  <Image
+                    fullWidth
+                    src={edge4ScreenshotSrc}
+                    srcDark={edge4ScreenshotDarkSrc}
+                    width={1043}
+                    height={724}
+                    border
+                    borderRadius="rounded"
+                    pointer={[90.625, 61.885245901639344]}
+                  />
+                </p>
+              ) : null,
+              isOptionMissing ? (
+                <p key="image5">
+                  <Image
+                    fullWidth
+                    src={edge5ScreenshotSrc}
+                    srcDark={edge5ScreenshotDarkSrc}
+                    width={1043}
+                    height={724}
+                    border
+                    borderRadius="rounded"
+                    pointer={[90.625, 80.73770491803279]}
+                  />
+                </p>
+              ) : null,
+              isOptionMissing ? (
+                <p key="text3">
+                  You might also find this option in{" "}
+                  <em className={styles.inlineQuote}>
+                    Settings › Privacy, search, and services › Block third-party cookies
+                  </em>
+                  .
+                </p>
+              ) : null,
+            ]}
+          />
+        );
+      } else {
+        // Chrome or, most likely, other Chromium-based browser with more or less the same UI (e.g. Opera):
 
-      browserSpecificInstructions = (
-        <FormattedText
-          children={[
-            <p key="text1">
-              You can enable this from the <em className={styles.inlineQuote}>Third-party cookies</em> option in the
-              navigation bar:
-            </p>,
-            <p key="image1">
-              <Image
-                fullWidth
-                src={chrome1ScreenshotSrc}
-                srcDark={chrome1ScreenshotDarkSrc}
-                width={874}
-                height={149}
-                border
-                borderRadius="rounded"
-                pointer={[80.39772727272727, 51.666666666666664]}
-              />
-            </p>,
-            <p key="image2">
-              <Image
-                fullWidth
-                src={chrome2ScreenshotSrc}
-                srcDark={chrome2ScreenshotDarkSrc}
-                width={874}
-                height={751}
-                border
-                borderRadius="rounded"
-                pointer={[85.51136363636364, 80.4635761589404]}
-              />
-            </p>,
-            optionMissingButton,
-            isOptionMissing ? (
-              <p key="text2">
-                In some {browserInfo.isChrome ? "Chrome versions" : "browsers"}, this setting appears under the{" "}
-                <em className={styles.inlineQuote}>Site information</em> popup:
-              </p>
-            ) : null,
-            isOptionMissing ? (
-              <p key="image3">
+        browserSpecificInstructions = (
+          <FormattedText
+            children={[
+              <p key="text1">
+                You can enable this from the <em className={styles.inlineQuote}>Third-party cookies</em> option in the
+                navigation bar:
+              </p>,
+              <p key="image1">
                 <Image
                   fullWidth
-                  src={chrome3ScreenshotSrc}
-                  srcDark={chrome3ScreenshotDarkSrc}
+                  src={chrome1ScreenshotSrc}
+                  srcDark={chrome1ScreenshotDarkSrc}
                   width={874}
                   height={149}
                   border
                   borderRadius="rounded"
-                  pointer={[8.522727272727273, 50]}
+                  pointer={[80.39772727272727, 51.666666666666664]}
                 />
-              </p>
-            ) : null,
-            isOptionMissing ? (
-              <p key="image4">
+              </p>,
+              <p key="image2">
                 <Image
                   fullWidth
-                  src={chrome4ScreenshotSrc}
-                  srcDark={chrome4ScreenshotDarkSrc}
+                  src={chrome2ScreenshotSrc}
+                  srcDark={chrome2ScreenshotDarkSrc}
                   width={874}
-                  height={852}
+                  height={751}
                   border
                   borderRadius="rounded"
-                  pointer={[86.64772727272727, 48.10495626822158]}
+                  pointer={[85.51136363636364, 80.4635761589404]}
                 />
-              </p>
-            ) : null,
-            isOptionMissing ? (
-              <p key="image5">
-                <Image
-                  fullWidth
-                  src={chrome5ScreenshotSrc}
-                  srcDark={chrome5ScreenshotDarkSrc}
-                  width={874}
-                  height={1197}
-                  border
-                  borderRadius="rounded"
-                  pointer={[84.6590909090909, 71.78423236514523]}
-                />
-              </p>
-            ) : null,
-            isOptionMissing ? (
-              <p key="text3">
-                You might also find this option in{" "}
-                <em className={styles.inlineQuote}>Settings › Privacy and security › Third-party cookies</em>.
-              </p>
-            ) : null,
-          ]}
-        />
-      );
+              </p>,
+              optionMissingButton,
+              isOptionMissing ? (
+                <p key="text2">
+                  In some {browserInfo.isChrome ? "Chrome versions" : "browsers"}, this setting appears under the{" "}
+                  <em className={styles.inlineQuote}>Site information</em> popup:
+                </p>
+              ) : null,
+              isOptionMissing ? (
+                <p key="image3">
+                  <Image
+                    fullWidth
+                    src={chrome3ScreenshotSrc}
+                    srcDark={chrome3ScreenshotDarkSrc}
+                    width={874}
+                    height={149}
+                    border
+                    borderRadius="rounded"
+                    pointer={[8.522727272727273, 50]}
+                  />
+                </p>
+              ) : null,
+              isOptionMissing ? (
+                <p key="image4">
+                  <Image
+                    fullWidth
+                    src={chrome4ScreenshotSrc}
+                    srcDark={chrome4ScreenshotDarkSrc}
+                    width={874}
+                    height={852}
+                    border
+                    borderRadius="rounded"
+                    pointer={[86.64772727272727, 48.10495626822158]}
+                  />
+                </p>
+              ) : null,
+              isOptionMissing ? (
+                <p key="image5">
+                  <Image
+                    fullWidth
+                    src={chrome5ScreenshotSrc}
+                    srcDark={chrome5ScreenshotDarkSrc}
+                    width={874}
+                    height={1197}
+                    border
+                    borderRadius="rounded"
+                    pointer={[84.6590909090909, 71.78423236514523]}
+                  />
+                </p>
+              ) : null,
+              isOptionMissing ? (
+                <p key="text3">
+                  You might also find this option in{" "}
+                  <em className={styles.inlineQuote}>Settings › Privacy and security › Third-party cookies</em>.
+                </p>
+              ) : null,
+            ]}
+          />
+        );
+      }
     }
 
     children = (
@@ -577,7 +579,7 @@ export function UnpartitionedStateMissingEmbeddedView() {
           {requestAccessButtonText}
         </Button>
 
-        {errorsWhileRequestingAccess >= 1 || !needsConfirmation ? (
+        {errorsWhileRequestingAccess >= 2 || !needsConfirmation ? (
           <Button variant="secondary" size="md" isDisabled={areButtonsDisabled} onClick={handleContinueAnyway}>
             Continue without
           </Button>
