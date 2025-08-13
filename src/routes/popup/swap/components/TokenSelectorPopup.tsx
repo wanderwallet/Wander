@@ -14,6 +14,7 @@ interface TokenSelectorPopupProps {
   openTokenSelector: boolean;
   setOpenTokenSelector: React.Dispatch<React.SetStateAction<boolean>>;
   handleUpdateToken: (token: TokenInfo) => void;
+  filterTokenId?: string;
 }
 
 export function TokenSelectorPopup({
@@ -21,6 +22,7 @@ export function TokenSelectorPopup({
   openTokenSelector,
   setOpenTokenSelector,
   handleUpdateToken,
+  filterTokenId,
 }: TokenSelectorPopupProps) {
   return (
     <SliderMenu
@@ -32,6 +34,7 @@ export function TokenSelectorPopup({
         onClose={() => setOpenTokenSelector(false)}
         updateToken={handleUpdateToken}
         tokenSelectorType={tokenSelectorType}
+        filterTokenId={filterTokenId}
       />
     </SliderMenu>
   );
@@ -41,15 +44,17 @@ interface TokenSelectorScreenProps {
   onClose: () => void;
   updateToken: (token: TokenInfo) => void;
   tokenSelectorType: TokenSelectorType;
+  filterTokenId?: string;
 }
 
-const TokenSelectorScreen = ({ onClose, updateToken, tokenSelectorType }: TokenSelectorScreenProps) => {
+const TokenSelectorScreen = ({ onClose, updateToken, tokenSelectorType, filterTokenId }: TokenSelectorScreenProps) => {
   const searchInput = useInput();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const { tokens, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } = useTokensWithPagination(
     20,
     searchInput.state,
     tokenSelectorType,
+    filterTokenId,
   );
 
   const handleScroll = useCallback(

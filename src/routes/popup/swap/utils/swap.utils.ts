@@ -41,22 +41,24 @@ export async function getPermaswapPools() {
   const response = await fetch("https://api-ffpscan.permaswap.network/pools");
   const pools = (await response.json()) as PermaswapPool[];
 
-  const structuredPools = pools.map((pool) => ({
-    poolId: pool.process,
-    poolName: pool.name,
-    poolFee: String(pool.fee),
-    poolType: "permaswap",
-    tokenX: pool.x,
-    tokenY: pool.y,
-    tokenXDenomination: pool.decimalX,
-    tokenYDenomination: pool.decimalY,
-    tokenXTicker: pool.symbolX,
-    tokenYTicker: pool.symbolY,
-    tokenXName: pool.fullNameX,
-    tokenYName: pool.fullNameY,
-    tokenXLogo: pool.logoX,
-    tokenYLogo: pool.logoY,
-  })) satisfies Pool[];
+  const structuredPools = pools
+    .filter((pool) => +pool.px > 0 && +pool.py > 0)
+    .map((pool) => ({
+      poolId: pool.process,
+      poolName: pool.name,
+      poolFee: String(pool.fee),
+      poolType: "permaswap",
+      tokenX: pool.x,
+      tokenY: pool.y,
+      tokenXDenomination: pool.decimalX,
+      tokenYDenomination: pool.decimalY,
+      tokenXTicker: pool.symbolX,
+      tokenYTicker: pool.symbolY,
+      tokenXName: pool.fullNameX,
+      tokenYName: pool.fullNameY,
+      tokenXLogo: pool.logoX,
+      tokenYLogo: pool.logoY,
+    })) satisfies Pool[];
 
   return structuredPools;
 }
@@ -72,7 +74,9 @@ export async function getPools() {
   );
 }
 
-export const processToken = (uniqueTokens: Map<string, TokenInfo>, tokenId: string, tokenData: TokenInfo) => {
+export const processToken = (uniqueTokens: Map<string, TokenInfo>, tokenData: TokenInfo) => {
+  const tokenId = tokenData.processId;
+
   if (!uniqueTokens.has(tokenId)) {
     uniqueTokens.set(tokenId, tokenData);
   } else if (tokenData.Logo && !uniqueTokens.get(tokenId)?.Logo) {

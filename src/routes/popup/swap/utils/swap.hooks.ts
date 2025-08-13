@@ -2,7 +2,7 @@ import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { getPools, processToken } from "./swap.utils";
 import { defaultOptions, useAoTokens } from "~tokens/hooks";
 import { useMemo, useCallback } from "react";
-import type { TokenSelectorType } from "./swap.types";
+import type { Pool, TokenSelectorType } from "./swap.types";
 import { useStorage } from "@plasmohq/storage/hook";
 import { ExtensionStorage } from "~utils/storage";
 
@@ -14,19 +14,34 @@ export function usePools() {
   });
 }
 
-export function useTokenPools() {
+export function useGroupedPoolsByTokenPair() {
   const { data: pools = [], isLoading } = usePools();
 
   const tokenPools = useMemo(() => {
     return pools.reduce((acc, pool) => {
       const key = [pool.tokenX, pool.tokenY].sort().join("-");
-      if (!acc[key]) acc[key] = [];
-      acc[key].push(pool);
+      if (!acc[key]) acc[key] = { botega: [], permaswap: [] };
+      acc[key][pool.poolType].push(pool);
       return acc;
     }, {});
   }, [pools]);
 
   return { tokenPools, isLoading };
+}
+
+export function usePoolsForTokenPair(tokenX?: string, tokenY?: string) {
+  const { tokenPools, isLoading } = useGroupedPoolsByTokenPair();
+
+  const pairPools = useMemo<{
+    botega: Pool[];
+    permaswap: Pool[];
+  }>(() => {
+    if (!tokenX || !tokenY) return {};
+    const key = [tokenX, tokenY].sort().join("-");
+    return tokenPools[key] || {};
+  }, [tokenPools, tokenX, tokenY]);
+
+  return { pairPools, isLoading };
 }
 
 export function useTokens() {
@@ -37,7 +52,7 @@ export function useTokens() {
 
     for (const pool of pools) {
       // Process token X
-      processToken(uniqueTokens, pool.tokenX, {
+      processToken(uniqueTokens, {
         Name: pool.tokenXName,
         Ticker: pool.tokenXTicker,
         Denomination: pool.tokenXDenomination,
@@ -46,7 +61,7 @@ export function useTokens() {
       });
 
       // Process token Y
-      processToken(uniqueTokens, pool.tokenY, {
+      processToken(uniqueTokens, {
         Name: pool.tokenYName,
         Ticker: pool.tokenYTicker,
         Denomination: pool.tokenYDenomination,
@@ -65,6 +80,7 @@ export function useTokensWithPagination(
   pageSize: number = 20,
   searchTerm: string = "",
   tokenSelectorType: TokenSelectorType,
+  filterTokenId?: string,
 ) {
   const { tokens: poolTokens, isLoading: isPoolsLoading } = useTokens();
   const { tokens: userTokens } = useAoTokens({ type: "asset", hidden: false });
@@ -72,10 +88,10 @@ export function useTokensWithPagination(
   const allTokens = useMemo(() => {
     if (tokenSelectorType === "send") {
       const poolTokenIds = new Set(poolTokens.map((token) => token.processId));
-      return userTokens.filter((token) => poolTokenIds.has(token.id));
+      return userTokens.filter((token) => poolTokenIds.has(token.id) && token.id !== filterTokenId);
     }
-    return poolTokens;
-  }, [userTokens, poolTokens, tokenSelectorType]);
+    return poolTokens.filter((token) => token.processId !== filterTokenId);
+  }, [userTokens, poolTokens, tokenSelectorType, filterTokenId]);
 
   const filteredTokens = useMemo(() => {
     if (!searchTerm.trim()) return allTokens;
@@ -86,7 +102,7 @@ export function useTokensWithPagination(
       const symbol = token.Ticker?.toLowerCase() || "";
       return name.includes(searchLower) || symbol.includes(searchLower);
     });
-  }, [allTokens, searchTerm, tokenSelectorType]);
+  }, [allTokens, searchTerm, tokenSelectorType, filterTokenId]);
 
   const infiniteQuery = useInfiniteQuery({
     queryKey: ["tokens-with-pagination", filteredTokens.length, pageSize, searchTerm, tokenSelectorType],

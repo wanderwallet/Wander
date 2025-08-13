@@ -3,16 +3,18 @@ import browser from "webextension-polyfill";
 import { ArrowDown, ClockRewind } from "@untitled-ui/icons-react";
 import styled from "styled-components";
 import HeadV2 from "~components/popup/HeadV2";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTheme } from "styled-components";
 import { Flex } from "~components/common/Flex";
 import { SwapInput } from "./components/SwapInput";
 import { defaultTokens, type TokenInfo } from "~tokens/aoTokens/ao";
 import { DisclosureButton, DisclosureContent } from "~routes/popup/swap/components/Disclosure";
 import { SlippageInputButton } from "./components/SlippageInputButton";
-import { useSwapSlippage } from "./utils/swap.hooks";
+import { usePoolsForTokenPair, useSwapSlippage } from "./utils/swap.hooks";
 import type { TokenSelectorType } from "./utils/swap.types";
 import { TokenSelectorPopup } from "./components/TokenSelectorPopup";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import { getExpectedOutput } from "./utils/dex/swap.botega";
 
 const usdaToken = defaultTokens[4];
 const wndrToken = defaultTokens[3];
@@ -28,6 +30,7 @@ export function SwapView() {
   const [receiveToken, setReceiveToken] = useState<TokenInfo>(wndrToken);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [tokenSelectorType, setTokenSelectorType] = useState<TokenSelectorType>("send");
+  const { pairPools, isLoading } = usePoolsForTokenPair(sendToken?.processId, receiveToken?.processId);
 
   function handleSwitch() {
     setIsReversed((prev) => !prev);
@@ -41,6 +44,23 @@ export function SwapView() {
       setReceiveToken(token);
     }
   }
+
+  useAsyncEffect(async () => {
+    console.log(sendToken?.processId, receiveToken?.processId, pairPools);
+    if (!sendToken?.processId || !receiveToken?.processId || Object.keys(pairPools).length === 0) return;
+
+    const pool = pairPools?.botega?.[0];
+    if (!pool) return;
+
+    const response = await getExpectedOutput({
+      poolId: pool.poolId,
+      tokenIn: sendToken.processId,
+      amountIn: "1000000",
+      slippagePercentage: 0.5,
+    });
+
+    console.log("response: ", response);
+  }, [sendToken?.processId, receiveToken?.processId, pairPools]);
 
   return (
     <>
@@ -146,6 +166,7 @@ export function SwapView() {
         openTokenSelector={openTokenSelector}
         setOpenTokenSelector={setOpenTokenSelector}
         handleUpdateToken={handleUpdateToken}
+        filterTokenId={isReversed ? receiveToken?.processId : sendToken?.processId}
       />
     </>
   );
