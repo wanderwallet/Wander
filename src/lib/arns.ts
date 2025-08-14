@@ -167,9 +167,6 @@ export async function getArNSProfile(walletAddress: string): Promise<NameService
       queryKey: ["arns-profile", walletAddress],
       queryFn: () => fetchArNSProfile(walletAddress),
       staleTime: 5 * 60 * 1000, // 5 minutes
-    }).catch((error) => {
-      console.error(`Error in ArNS profile query for ${walletAddress}:`, error);
-      return undefined;
     });
 
     return result;
