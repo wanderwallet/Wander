@@ -36,7 +36,7 @@ function getTokenFallbackImage(token: string | Partial<Token>, name: string = ""
           font-family: "Plus Jakarta Sans";
           font-style: normal;
           font-weight: 700;
-          src: url(/assets/fonts/PlusJakartaSans-Bold.ttf) format('ttf');
+          src: url(/assets/fonts/PlusJakartaSans-Bold.ttf) format('truetype');
         }
 
         text {

@@ -109,6 +109,7 @@ const ExitButton = styled(CloseIcon)<{ color?: string }>`
 `;
 
 const AbsoluteExitButton = styled(ExitButton)`
+  z-index: 1;
   position: absolute;
   top: -8px;
   right: 0;
