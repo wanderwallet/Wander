@@ -27,6 +27,9 @@ export async function handleInstall(details: Runtime.OnInstalledDetailsType) {
       // initially set to false
       await ExtensionStorage.set("update_splash_screen_seen", false);
     }
+
+    // remove astro beta access announcement storage key
+    ExtensionStorage.remove("astro_beta_access_announcement_shown");
   }
 
   // init monthly AR
