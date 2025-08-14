@@ -10,9 +10,9 @@ import { useWalletUpload } from "~utils/upload/wallet/use-wallet-upload.hook";
 
 export function AuthImportKeyfileEmbeddedView() {
   const { navigate } = useLocation();
-  const [isAdding, setIsAdding] = useState(false);
-
   const { importTempWallet, deleteImportedTempWallet, registerWallet, wallets, authStatus } = useEmbedded();
+
+  // Upload:
 
   const {
     data: uploadData,
@@ -28,8 +28,14 @@ export function AuthImportKeyfileEmbeddedView() {
     mustWalletExist: false,
   });
 
-  const areButtonsDisabled = isAdding || isUploading;
-  const isViewLoading = isAdding;
+  // Loading state:
+
+  const [isAdding, setIsAdding] = useState(false);
+
+  const isViewLoading =
+    authStatus === "unknown" || authStatus === "loading" || authStatus === "authLoading" || isAdding;
+
+  const areButtonsDisabled = isViewLoading || isUploading;
 
   const handleAddWallet = async () => {
     try {
@@ -73,7 +79,7 @@ export function AuthImportKeyfileEmbeddedView() {
 
   return importedWalletAddress ? (
     <OnboardingCard
-      headerText={authStatus === "noWallets" ? "Import Keyfile" : "Restore wallet"}
+      headerText={authStatus === "noWallets" ? "Import Keyfile" : "Restore Wallet"}
       subtitle="Would you like to add this wallet to your account?"
       onBackButtonClick={() => navigate(`/auth/add-wallet`)}
       isLoading={isViewLoading}>
@@ -97,7 +103,7 @@ export function AuthImportKeyfileEmbeddedView() {
     </OnboardingCard>
   ) : (
     <OnboardingCard
-      headerText={authStatus === "noWallets" ? "Import Keyfile" : "Restore wallet"}
+      headerText={authStatus === "noWallets" ? "Import Keyfile" : "Restore Wallet"}
       subtitle="Upload your private key to add your wallet to your account."
       onBackButtonClick={() => navigate(`/auth/add-wallet`)}
       isLoading={isViewLoading}>

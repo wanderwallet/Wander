@@ -1,9 +1,9 @@
-import React, { forwardRef } from "react";
+import { forwardRef } from "react";
 import clsx from "clsx";
 import styles from "./Avatar.module.css";
 import type { AvatarBaseProps } from "./Avatar.types";
 import { Text } from "../text";
-import { useTheme } from "../../../contexts/ThemeContext";
+import { useTheme } from "../../../../../utils/theme/theme.hook";
 
 const Avatar = forwardRef<HTMLDivElement, AvatarBaseProps>(
   ({ children, className, backgroundColor, fontColor, isBlurry, size = "md", ...props }, ref) => {

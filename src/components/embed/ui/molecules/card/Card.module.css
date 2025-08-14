@@ -6,14 +6,35 @@
   justify-content: space-between;
   background-color: var(--color-card-background-default);
   height: fit-content;
-  transition: all 0.4s ease-in-out;
   position: relative;
   width: 100%;
   box-sizing: border-box;
   min-height: 100%;
+  height: auto;
+  font-size: var(--font-size-base);
+}
+
+.withExtraPadding {
+  padding: 32px;
+}
+
+.banner {
+  width: calc(100% + var(--spacing-6));
+  margin: calc(-1 * var(--spacing-3)) calc(-1 * var(--spacing-3)) var(--spacing-3);
+}
+
+.withExtraPadding .banner {
+  width: calc(100% + 64px);
+  margin: -32px -32px var(--spacing-4);
+}
+
+.header {
+  position: relative;
+  width: 100%;
 }
 
 /* Make sure all elements respect border-box */
+/* TODO: This should be in a global CSS reset */
 .card *,
 .card *::before,
 .card *::after {
@@ -24,65 +45,35 @@
   pointer-events: none;
 }
 
-.card__sm {
-  width: var(--card-sm-width);
-  min-height: var(--card-sm-height);
-  font-size: var(--font-size-base);
-}
-
-.card__auto {
-  height: auto;
-  font-size: var(--font-size-base);
-}
-
-.card__md {
-  min-height: var(--card-default-height);
-  font-size: var(--font-size-base);
-}
-
-.card__header {
-  justify-self: flex-start;
-}
-
 .card__footer {
   justify-self: flex-end;
 }
 
-.card__back__btn {
-  left: 0.8rem;
-  width: 2rem;
-  height: 2rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: row;
-  text-align: center;
-  cursor: pointer;
+.card__back__btn,
+.card__close__btn {
   position: absolute;
+  top: calc(-1 * var(--spacing-2));
+  width: 40px;
+  height: 40px;
+  padding: var(--spacing-2);
   z-index: 9;
+}
+
+.card__back__btn {
+  left: calc(-1 * var(--spacing-2));
 }
 
 .card__close__btn {
-  right: 0.8rem;
-  width: 2rem;
-  height: 2rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  cursor: pointer !important;
-  position: absolute;
-  z-index: 9;
+  right: calc(-1 * var(--spacing-2));
 }
 
-.card__back__btn:hover {
-  background-color: var(--brand-color-gray-200);
-  border-radius: 50%;
+.withExtraPadding .card__back__btn {
+  top: 0;
+  left: 0;
 }
 
-.card__close__btn:hover {
-  background-color: var(--brand-color-gray-200);
-  border-radius: 50%;
+.withExtraPadding .card__close__btn {
+  top: 0;
 }
 
 .card__loaderCover {

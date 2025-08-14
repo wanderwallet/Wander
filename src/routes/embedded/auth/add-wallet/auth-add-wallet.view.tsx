@@ -7,10 +7,19 @@ import { signOut } from "~utils/embedded/embedded.utils";
 import { QrCode02 } from "@untitled-ui/icons-react";
 import { navigate } from "wouter/use-hash-location";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
+import { toast } from "react-toastify";
 
 export function AuthAddWalletEmbeddedView() {
   const { generateTempWallet, registerWallet, authStatus } = useEmbedded();
+
+  // Loading state:
+
   const [isLoading, setIsLoading] = useState(false);
+
+  const areButtonsDisabled =
+    authStatus === "unknown" || authStatus === "loading" || authStatus === "authLoading" || isLoading;
+
+  const isViewLoading = areButtonsDisabled;
 
   useEffect(() => {
     // Pre-generation starts on app load, but this call will re-generate it again if it has expired, as we are trying to
@@ -19,28 +28,32 @@ export function AuthAddWalletEmbeddedView() {
     generateTempWallet();
   }, []);
 
-  // TODO: Remember last selection and highlight that one / show it in the main screen (not in "More")
-
   const handleRegisterWallet = useCallback(async (source: WalletSourceType) => {
-    setIsLoading(true);
-    await registerWallet(source);
-    setIsLoading(false);
+    try {
+      setIsLoading(true);
+      await registerWallet(source);
+    } catch (error) {
+      console.error(error);
+      toast.error("An unexpected error happened.");
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
   return (
     <OnboardingCard
-      headerText={authStatus === "noWallets" ? "Add a wallet" : "Restore wallet"}
+      headerText={authStatus === "noWallets" ? "Add a Wallet" : "Restore Wallet"}
       subtitle="Add a wallet to your account to hold your funds. Create or add an existing wallet to continue."
       onBackButtonClick={() =>
         authStatus === "noWallets" ? signOut(false) : navigate(EmbeddedPaths.AuthRestoreShares)
       }
-      isLoading={isLoading}>
+      isLoading={isViewLoading}>
       <Button
         onClick={() => handleRegisterWallet("GENERATED")}
         variant="outlined"
         isFullWidth
         icon={<WalletIcon fontSize={24} />}
-        isDisabled={isLoading}>
+        isDisabled={areButtonsDisabled}>
         Create new wallet
       </Button>
 
@@ -49,7 +62,7 @@ export function AuthAddWalletEmbeddedView() {
         isFullWidth
         icon={<SeedIcon fontSize={24} />}
         href="/auth/import-seedphrase"
-        isDisabled={isLoading}>
+        isDisabled={areButtonsDisabled}>
         Enter Seed Phrase
       </Button>
 
@@ -58,7 +71,7 @@ export function AuthAddWalletEmbeddedView() {
         isFullWidth
         icon={<KeyIcon fontSize={24} />}
         href="/auth/import-keyfile"
-        isDisabled={isLoading}>
+        isDisabled={areButtonsDisabled}>
         Import Keyfile
       </Button>
 
@@ -67,7 +80,7 @@ export function AuthAddWalletEmbeddedView() {
         isFullWidth
         icon={<QrCode02 fontSize={24} color="currentColor" />}
         href="/auth/import-qrcode"
-        isDisabled={isLoading}>
+        isDisabled={areButtonsDisabled}>
         Scan QR Code
       </Button>
 
@@ -77,7 +90,7 @@ export function AuthAddWalletEmbeddedView() {
           isFullWidth
           icon={<QRCodeIcon fontSize={24} />}
           href="/auth/add-device"
-          isDisabled={isLoading}
+          isDisabled={areButtonsDisabled}
         >
           Scan QR Code
         </Button>
@@ -87,7 +100,7 @@ export function AuthAddWalletEmbeddedView() {
           isFullWidth
           icon={<QRCodeIcon fontSize={24} />}
           href="/auth/add-auth-provider"
-          isDisabled={isLoading}
+          isDisabled={areButtonsDisabled}
         >
           Add {(authProviderType || "UNKNOWN").toLocaleUpperCase()} to an
           existing account

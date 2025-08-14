@@ -1,19 +1,19 @@
 import { SubscriptionStatus, type SubscriptionData } from "~subscriptions/subscription";
 import HeadV2 from "~components/popup/HeadV2";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { getActiveAddress } from "~wallets";
 import styled from "styled-components";
 import browser from "webextension-polyfill";
 import { getSubscriptionData, updateSubscription } from "~subscriptions";
-import { useTheme } from "~utils/theme";
 import type { DisplayTheme } from "@arconnect/components";
 import { PageType, trackPage } from "~utils/analytics";
 import { SubscriptionListItem } from "~components/popup/list/SubscriptionListItem";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import { useTheme } from "~utils/theme/theme.hook";
 
 export function SubscriptionsView() {
   const [subData, setSubData] = useState<SubscriptionData[] | null>(null);
-  const theme = useTheme();
+  const { displayTheme } = useTheme();
 
   useAsyncEffect(async () => {
     // Segment
@@ -72,7 +72,7 @@ export function SubscriptionsView() {
           })}
         </SubscriptionList>
       ) : (
-        <NoSubscriptionWrapper displayTheme={theme}>
+        <NoSubscriptionWrapper displayTheme={displayTheme}>
           <div>{browser.i18n.getMessage("no_subscriptions")}</div>
           <span>{browser.i18n.getMessage("no_subscriptions_description")}</span>
         </NoSubscriptionWrapper>

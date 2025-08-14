@@ -1,5 +1,5 @@
 import styled, { useTheme } from "styled-components";
-import { Button, Input, Section, useInput, useToasts } from "@arconnect/components-rebrand";
+import { Button, Input, Section, useInput, useToasts, Text } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
 import HeadV2 from "~components/popup/HeadV2";
 import { Flex } from "~components/common/Flex";
@@ -22,7 +22,8 @@ import { getAOYieldAgents, setAOYieldAgents } from "~utils/agents/utils";
 import { EventType, PageType, trackEvent, trackPage } from "~utils/analytics";
 import { scheduleSwapExecution } from "~utils/agents/swap";
 import { AGENT_VERSION } from "~utils/agents/constants";
-import { useAOYieldAgentProperties, useWanderFee } from "~utils/agents/hooks";
+import { useAOYieldAgentProperties } from "~utils/agents/hooks";
+import { useDefiFeeDetails } from "~utils/tier/hooks";
 
 export function ConfirmAOYieldAgentView() {
   const [isLoading, setIsLoading] = useState(false);
@@ -32,7 +33,7 @@ export function ConfirmAOYieldAgentView() {
   const passwordInput = useInput();
   const theme = useTheme();
   const [aoYieldAgent] = useStorage<AOYieldAgentCreate>({ key: "ao-yield-agent", instance: TempTransactionStorage });
-  const { data: wanderFee = "0.25" } = useWanderFee();
+  const defiFeeDetails = useDefiFeeDetails();
   const [transferRequirePassword] = useStorage(
     {
       key: "transfer_require_password",
@@ -46,7 +47,7 @@ export function ConfirmAOYieldAgentView() {
     [askPassword, transferRequirePassword, passwordInput.state],
   );
 
-  const properties = useAOYieldAgentProperties(aoYieldAgent, wanderFee);
+  const properties = useAOYieldAgentProperties(aoYieldAgent, defiFeeDetails);
 
   async function handleActivateAgent(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -188,6 +189,9 @@ export function ConfirmAOYieldAgentView() {
               <TransactionProperty key={`property-${i}`}>
                 <PropertyName>{browser.i18n.getMessage(property.name)}</PropertyName>
                 <PropertyValue>
+                  {property.name === "fee" && property.feeHasChanged && (
+                    <CrossedOutText>{property.originalFeePercent}%</CrossedOutText>
+                  )}
                   {property.value}
                   {i === 1 && aoYieldAgent?.asset?.logo && <img src={aoYieldAgent.asset.logo} height={18} width={18} />}
                 </PropertyValue>
@@ -235,4 +239,14 @@ const Content = styled.div`
   overflow-y: auto;
   height: 100%;
   gap: 16px;
+`;
+
+const CrossedOutText = styled(Text).attrs({
+  size: "sm",
+  weight: "medium",
+  noMargin: true,
+})`
+  color: #75747d;
+  text-align: center;
+  text-decoration-line: line-through;
 `;

@@ -47,6 +47,20 @@
     src: url(/assets/fonts/PlusJakartaSans-ExtraBold.ttf) format('ttf');
 }
 
+@font-face {
+    font-family: "Satoshi";
+    font-style: normal;
+    font-weight: 500;
+    src: url(/assets/fonts/Satoshi-Medium.ttf) format('ttf');
+}
+
+@font-face {
+    font-family: "Satoshi";
+    font-style: normal;
+    font-weight: 700;
+    src: url(/assets/fonts/Satoshi-Bold.ttf) format('ttf');
+}
+
 * {
   scrollbar-width: none;
 }
@@ -78,6 +92,18 @@
   }
   to {
     transform: rotate(360deg);
+  }
+}
+
+@keyframes animated-focus {
+  0% {
+    box-shadow: 0 0 0 2px var(--color-link-primary, magenta);
+  }
+  40%, 60% {
+    box-shadow: 0 0 0 4px var(--color-link-primary, magenta);
+  }
+  100% {
+    box-shadow: 0 0 0 2px var(--color-link-primary, magenta);
   }
 }
 
@@ -207,7 +233,7 @@ p {
   margin: 0;
 }
 
-ul, ol {
+ul, ol, dl, dd {
   margin: 0;
   padding: 0;
   list-style: none;

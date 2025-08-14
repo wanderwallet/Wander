@@ -20,17 +20,22 @@ import { handleGatewayUpdateAlarm } from "~api/background/handlers/alarms/gatewa
 import { handleSyncLabelsAlarm } from "~api/background/handlers/alarms/sync-labels/sync-labels-alarm.handler";
 import { handleWindowClose } from "~api/background/handlers/browser/window-close/window-close.handler";
 import { handleKeyRemovalAlarm } from "~api/background/handlers/alarms/key-removal/key-removal-alarm.handler";
-import { handleAoTokensImportAlarm } from "~api/background/handlers/alarms/ao-tokens-import/ao-tokens-import-alarm.handler";
+import {
+  handleAoTokensImportAlarm,
+  handleFairLaunchTokensImportAlarm,
+} from "~api/background/handlers/alarms/ao-tokens-import/ao-tokens-import-alarm.handler";
 import {
   handleAOYieldAgentAlarm,
   handleAOYieldAgentRecentTxsCheck,
   handleAOYieldAgentSync,
 } from "./handlers/alarms/ao-yield-agent/ao-yield-agent-alarm.handler";
+import { handleTransakPurchaseAlarm } from "./handlers/alarms/transak-purchase/transak-purchase-alarm.handler";
 import { handleTabClosed, handleTabUpdate } from "~api/background/handlers/browser/tabs/tabs.handler";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { isomorphicOnMessage } from "~isomorphic-messaging";
 import { handleAuthStateChange } from "./handlers/storage/auth-state-change/auth-state-change.handler";
 import { initInactivityTracking } from "~utils/inactivity/inactivity.utils";
+import { handleRefreshWalletLifetimeSavingsAlarm } from "./handlers/alarms/tiers/refresh-wallet-lifetime-savings-alarm.handler";
 
 export function setupBackgroundService() {
   log(
@@ -98,6 +103,7 @@ export function setupBackgroundService() {
   browser.alarms.onAlarm.addListener(handleKeyRemovalAlarm);
   browser.alarms.onAlarm.addListener(handleAoTokenCacheAlarm);
   browser.alarms.onAlarm.addListener(handleAoTokensImportAlarm);
+  browser.alarms.onAlarm.addListener(handleFairLaunchTokensImportAlarm);
 
   // handle keep alive alarm
   browser.alarms.onAlarm.addListener((alarm) => {
@@ -134,6 +140,8 @@ export function setupBackgroundService() {
   browser.alarms.onAlarm.addListener(handleAOYieldAgentAlarm);
   browser.alarms.onAlarm.addListener(handleAOYieldAgentRecentTxsCheck);
   browser.alarms.onAlarm.addListener(handleAOYieldAgentSync);
+  browser.alarms.onAlarm.addListener(handleRefreshWalletLifetimeSavingsAlarm);
+  browser.alarms.onAlarm.addListener(handleTransakPurchaseAlarm);
 
   // When the last window connected to the extension is closed, the decryption key will be removed from memory. This is no needed in the embedded wallet because
   // each wallet instance will be removed automatically when its tab/window is closed.

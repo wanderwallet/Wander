@@ -71,28 +71,19 @@ query($address: String!) {
 }
 `;
 
-export const AF_ERROR_QUERY = `
-query($messageId: String!) {
+export const TRANSFER_ERROR_QUERY = `
+query($messageIds: [String!]!) {
   transactions(
-    first: 10,
+    first: 100,
     tags: [
       {name: "Data-Protocol", values: ["ao"]},
       {name: "Action", values: ["Transfer-Error"]},
-      {name: "Message-Id", values: [$messageId]},
+      {name: "Pushed-For", values: $messageIds},
     ]
   ) {
     edges {
-      cursor
       node {
-        recipient
         id
-        owner {
-          address
-        }
-        block {
-          timestamp
-          height
-        }
         tags {
           name
           value
@@ -304,6 +295,70 @@ query($address: String!, $after: String) {
 }
 `;
 
+export const AO_RECEIVER_QUERY_FOR_TOKEN_WITH_CURSOR = `
+query($address: String!, $tokenId: String!, $after: String) {
+  transactions(
+    first: 10,
+    recipients: [$tokenId],
+    tags: [
+      {name: "Data-Protocol", values: ["ao"]},
+      {name: "Action", values: ["Transfer"]},
+      {name: "Recipient", values: [$address]}
+    ],
+    after: $after
+  ) {
+    pageInfo {
+      hasNextPage
+    }
+    edges {
+      cursor
+      node {
+        recipient
+        id
+        owner { address }
+        block { timestamp, height }
+        tags {
+          name
+          value
+        }
+      }
+    }
+  }
+}
+`;
+
+export const AO_SENT_QUERY_FOR_TOKEN_WITH_CURSOR = `
+query($address: String!, $tokenId: String!, $after: String) {
+  transactions(
+    first: 10,
+    owners: [$address],
+    recipients: [$tokenId],
+    tags: [
+      {name: "Data-Protocol", values: ["ao"]},
+      {name: "Action", values: ["Transfer"]}
+    ],
+    after: $after
+  ) {
+    pageInfo {
+      hasNextPage
+    }
+    edges {
+      cursor
+      node {
+        id
+        recipient
+        owner { address }
+        block { timestamp, height }
+        tags {
+          name
+          value
+        }
+      }
+    }
+  }
+}
+`;
+
 export const AO_LIQUIDOPS_RECEIVER_QUERY_WITH_CURSOR = `
 query($address: String!, $after: String) {
   transactions(
@@ -312,6 +367,38 @@ query($address: String!, $after: String) {
     tags: [
       {name: "Data-Protocol", values: ["ao"]},
       {name: "Action", values: ["Mint-Confirmation"]},
+    ],
+    after: $after
+  ) {
+    pageInfo {
+      hasNextPage
+    }
+    edges {
+      cursor
+      node {
+        recipient
+        id
+        owner { address }
+        block { timestamp, height }
+        tags {
+          name
+          value
+        }
+      }
+    }
+  }
+}
+`;
+
+export const AO_LIQUIDOPS_RECEIVER_QUERY_FOR_TOKEN_WITH_CURSOR = `
+query($address: String!, $tokenId: String!, $after: String) {
+  transactions(
+    first: 10,
+    recipients: [$address],
+    tags: [
+      {name: "Data-Protocol", values: ["ao"]},
+      {name: "Action", values: ["Mint-Confirmation"]},
+      {name: "From-Process", values: [$tokenId]},
     ],
     after: $after
   ) {

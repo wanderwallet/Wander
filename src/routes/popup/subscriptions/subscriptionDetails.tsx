@@ -1,6 +1,6 @@
 import { SubscriptionStatus, type SubscriptionData } from "~subscriptions/subscription";
 import HeadV2 from "~components/popup/HeadV2";
-import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
+import { useEffect, useState } from "react";
 import { getActiveAddress } from "~wallets";
 import browser from "webextension-polyfill";
 import styled from "styled-components";
@@ -18,15 +18,15 @@ import { Content, Title, getColorByStatus } from "~components/popup/list/Subscri
 import { CreditCardUpload } from "@untitled-ui/icons-react";
 import { SettingIconWrapper, SettingImage } from "~components/dashboard/list/BaseElement";
 import { formatAddress } from "~utils/format";
-import { useTheme } from "~utils/theme";
 import { useLocation } from "~wallets/router/router.utils";
 import { getPrice } from "~lib/coingecko";
 import useSetting from "~settings/hook";
 import { PageType, trackPage } from "~utils/analytics";
 import BigNumber from "bignumber.js";
 import type { CommonRouteProps } from "~wallets/router/router.types";
-import { Flex } from "~components/common/Flex";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import { ToggleSwitch } from "~components/ToggleSwitch";
+import { useTheme } from "~utils/theme/theme.hook";
 
 export interface SubscriptionDetailsViewParams {
   id?: string;
@@ -36,7 +36,7 @@ export type SubscriptionDetailsViewProps = CommonRouteProps<SubscriptionDetailsV
 
 export function SubscriptionDetailsView({ params: { id } }: SubscriptionDetailsViewProps) {
   const { navigate, back } = useLocation();
-  const theme = useTheme();
+  const { displayTheme } = useTheme();
   const [subData, setSubData] = useState<SubscriptionData | null>(null);
   const [checked, setChecked] = useState(false);
   const [autopayChecked, setAutopayChecked] = useState(false);
@@ -151,7 +151,9 @@ export function SubscriptionDetailsView({ params: { id } }: SubscriptionDetailsV
           <Main>
             <SubscriptionListItem>
               <Content style={{ cursor: "default" }}>
-                <SettingIconWrapper bg={theme === "light" ? "235,235,235" : "255, 255, 255"} customSize="2.625rem">
+                <SettingIconWrapper
+                  bg={displayTheme === "light" ? "235,235,235" : "255, 255, 255"}
+                  customSize="2.625rem">
                   {subData.applicationIcon && <SettingImage src={subData.applicationIcon} />}
                 </SettingIconWrapper>
                 <Title style={{ display: "flex", alignItems: "flex-end" }}>
@@ -171,7 +173,7 @@ export function SubscriptionDetailsView({ params: { id } }: SubscriptionDetailsV
                 </Title>
               </Content>
             </SubscriptionListItem>
-            <SubscriptionText displayTheme={theme} color={theme === "light" ? "#191919" : "#ffffff"}>
+            <SubscriptionText displayTheme={displayTheme} color={displayTheme === "light" ? "#191919" : "#ffffff"}>
               {browser.i18n.getMessage("subscription_application_address")}:{" "}
               <span>{formatAddress(subData.arweaveAccountAddress, 5)}</span>
             </SubscriptionText>
@@ -179,7 +181,7 @@ export function SubscriptionDetailsView({ params: { id } }: SubscriptionDetailsV
               <h6>Recurring payment amount</h6>
               <Body>
                 <h3>{subData.subscriptionFeeAmount} AR</h3>
-                <SubscriptionText fontSize="14px" color={theme === "light" ? "#191919" : "#ffffff"}>
+                <SubscriptionText fontSize="14px" color={displayTheme === "light" ? "#191919" : "#ffffff"}>
                   Subscription: {subData.recurringPaymentFrequency}
                 </SubscriptionText>
               </Body>
@@ -187,7 +189,7 @@ export function SubscriptionDetailsView({ params: { id } }: SubscriptionDetailsV
                 <SubscriptionText fontSize="14px">
                   ${price ? price.toFixed(2) : "--.--"} {currency}
                 </SubscriptionText>
-                <SubscriptionText fontSize="14px" color={theme === "light" ? "#191919" : "#ffffff"}>
+                <SubscriptionText fontSize="14px" color={displayTheme === "light" ? "#191919" : "#ffffff"}>
                   Next payment: {dayjs(subData.nextPaymentDue).format("MMM DD, YYYY")}
                 </SubscriptionText>
               </Body>
@@ -195,10 +197,10 @@ export function SubscriptionDetailsView({ params: { id } }: SubscriptionDetailsV
             <Divider />
             <div>
               <Body>
-                <SubscriptionText fontSize="14px" color={theme === "light" ? "#191919" : "#ffffff"}>
+                <SubscriptionText fontSize="14px" color={displayTheme === "light" ? "#191919" : "#ffffff"}>
                   Start
                 </SubscriptionText>
-                <SubscriptionText fontSize="14px" color={theme === "light" ? "#191919" : "#ffffff"}>
+                <SubscriptionText fontSize="14px" color={displayTheme === "light" ? "#191919" : "#ffffff"}>
                   End
                 </SubscriptionText>
               </Body>
@@ -209,12 +211,12 @@ export function SubscriptionDetailsView({ params: { id } }: SubscriptionDetailsV
             </div>
             {/* Toggle */}
             <Body>
-              <SubscriptionText color={theme === "light" ? "#191919" : "#ffffff"}>Auto-renewal</SubscriptionText>
+              <SubscriptionText color={displayTheme === "light" ? "#191919" : "#ffffff"}>Auto-renewal</SubscriptionText>
               <ToggleSwitch checked={checked} setChecked={setChecked} />
             </Body>
             {/* TODO: temporarily disabling threshold */}
             <Body>
-              <SubscriptionText color={theme === "light" ? "#191919" : "#ffffff"}>
+              <SubscriptionText color={displayTheme === "light" ? "#191919" : "#ffffff"}>
                 Auto-Pay
                 <TooltipV2 content={InfoText} position="bottom">
                   <InfoCircle />
@@ -225,7 +227,7 @@ export function SubscriptionDetailsView({ params: { id } }: SubscriptionDetailsV
             {/* <Threshold>
               <Body>
                 <SubscriptionText
-                  color={theme === "light" ? "#191919" : "#ffffff"}
+                  color={displayTheme === "light" ? "#191919" : "#ffffff"}
                 >
                   Allowance{" "}
                   <TooltipV2 content={InfoText} position="bottom">
@@ -350,79 +352,6 @@ const Wrapper = styled.div`
 
 export const SubscriptionListItem = styled.div`
   display: flex;
-`;
-
-interface ToggleSwitchProps {
-  checked: boolean;
-  setChecked: Dispatch<SetStateAction<boolean>>;
-  width?: number;
-  height?: number;
-  children?: React.ReactNode;
-}
-
-export const ToggleSwitch = ({ checked, setChecked, width = 44, height = 22, children }: ToggleSwitchProps) => {
-  const [state, setState] = useState(checked);
-
-  const handleChange = () => {
-    const newState = !state;
-    setState(newState);
-    setChecked(newState);
-  };
-
-  useEffect(() => {
-    setState(checked);
-  }, [checked]);
-
-  return (
-    <Flex gap={8}>
-      <SwitchWrapper width={width} height={height}>
-        <Checkbox width={width} height={height} type="checkbox" onChange={handleChange} />
-        <Slider width={width} height={height} checked={state} />
-      </SwitchWrapper>
-      {children}
-    </Flex>
-  );
-};
-
-const SwitchWrapper = styled.label<{ width: number; height: number }>`
-  position: relative;
-  display: inline-block;
-  width: ${(props) => props.width}px;
-  height: ${(props) => props.height}px;
-`;
-
-const Slider = styled.span<{ width: number; height: number; checked: boolean }>`
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: ${(props) => (props.checked ? "linear-gradient(47deg, #5842F8 5.41%, #6B57F9 96%)" : "#E5E7EB")};
-  transition: all 0.3s ease-in-out;
-  border-radius: ${(props) => props.height / 2}px;
-  will-change: transform, background;
-
-  &:before {
-    position: absolute;
-    content: "";
-    height: ${(props) => props.height - 5}px;
-    width: ${(props) => props.height - 5}px;
-    left: 2.5px;
-    bottom: 2.5px;
-    background-color: white;
-    border-radius: 50%;
-    box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.15);
-    transform: translate3d(${(props) => (props.checked ? props.width - props.height : 0)}px, 0, 0);
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    will-change: transform;
-  }
-`;
-
-const Checkbox = styled.input`
-  opacity: 0;
-  width: 0;
-  height: 0;
 `;
 
 export const InfoCircle = () => (

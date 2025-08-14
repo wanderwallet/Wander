@@ -175,6 +175,14 @@ export async function getDecryptionKey() {
 }
 
 /**
+ * Check if the wallet is unlocked
+ */
+export async function isWalletUnlocked() {
+  const decryptionKey = await getDecryptionKey();
+  return !!decryptionKey;
+}
+
+/**
  * Set wallet decryption key
  *
  * @param val Decryption key to set

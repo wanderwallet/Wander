@@ -1,6 +1,5 @@
 import { type DisplayTheme, Section, Text } from "@arconnect/components";
 import { type HTMLProps, type ReactNode, useMemo } from "react";
-import { useTheme as useDisplayTheme } from "~utils/theme";
 import styled, { useTheme } from "styled-components";
 
 export default function Graph({
@@ -10,11 +9,11 @@ export default function Graph({
   blur,
   ...props
 }: Omit<HTMLProps<HTMLDivElement>, "data"> & GraphProps) {
-  const theme = useDisplayTheme();
+  const { displayTheme } = useTheme();
 
   return (
     <GraphSection size="slim">
-      <Wrapper {...(props as any)} displayTheme={theme}>
+      <Wrapper {...(props as any)} displayTheme={displayTheme}>
         <Content>
           <ChildrenWrapper>{children}</ChildrenWrapper>
           {actionBar && <ActionBar>{actionBar}</ActionBar>}

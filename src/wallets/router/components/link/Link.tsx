@@ -8,36 +8,48 @@ import clsx from "clsx";
 import styles from "./Link.module.scss";
 
 export interface LinkProps extends PropsWithChildren {
-  className?: string;
   to: WanderRoutePath | ExternalURL;
   state?: unknown;
   onClick?: React.MouseEventHandler<HTMLAnchorElement>;
+  className?: string;
   style?: React.CSSProperties;
+  disabled?: boolean;
 }
 
-export function Link(props: LinkProps) {
-  const isExternalLink = !props.to?.startsWith("/");
+export function Link({ to, state, onClick, className, style, disabled }: LinkProps) {
+  const isExternalLink = !to?.startsWith("/");
 
-  const openExternalLink = (e: React.MouseEvent<HTMLAnchorElement>) => {
+  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (disabled) {
+      e.preventDefault();
+      return;
+    }
+
+    if (onClick) onClick(e);
+
+    if (!isExternalLink) return;
+
     if (e.type !== "click" && (e.type !== "mousedown" || e.button !== 1)) return;
 
     e.preventDefault();
 
     browser.tabs.create({
-      url: props.to,
+      url: to,
     });
   };
 
+  const rootClassName = clsx(className, styles.root, { [styles.disabled]: disabled });
+
   return isExternalLink ? (
     <a
-      {...props}
-      className={clsx(props.className, styles.root)}
+      className={rootClassName}
+      style={style}
       rel="noopener noreferrer"
       target="_blank"
-      onClick={openExternalLink}
-      onMouseDown={openExternalLink}
+      onClick={handleLinkClick}
+      onMouseDown={handleLinkClick}
     />
   ) : (
-    <Wink {...props} />
+    <Wink className={rootClassName} style={style} to={to} state={state} onClick={handleLinkClick} />
   );
 }

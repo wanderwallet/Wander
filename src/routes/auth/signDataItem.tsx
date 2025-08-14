@@ -21,14 +21,9 @@ import { Quantity, Token } from "ao-tokens";
 import prettyBytes from "pretty-bytes";
 import { formatFiatBalance } from "~tokens/currency";
 import useSetting from "~settings/hook";
-import { getPrice } from "~lib/coingecko";
+import { getPrice, type CoinGeckoSymbol } from "~lib/coingecko";
 import { getTagValue, type TokenInfo } from "~tokens/aoTokens/ao";
 import { ChevronRightIcon } from "@iconicicons/react";
-import { getUserAvatar } from "~lib/avatar";
-import { LogoWrapper, Logo, WarningIcon } from "~components/popup/Token";
-import arLogoLight from "url:/assets/ar/logo_light.png";
-import arLogoDark from "url:/assets/ar/logo_dark.png";
-import { useTheme } from "~utils/theme";
 import { checkWalletBits, type WalletBitsCheck } from "~utils/analytics";
 import { Degraded, WarningWrapper } from "~routes/popup/send";
 import { useCurrentAuthRequest } from "~utils/auth/auth.hooks";
@@ -36,15 +31,16 @@ import { HeadAuth } from "~components/HeadAuth";
 import { AuthButtons } from "~components/auth/AuthButtons";
 import { useAskPassword } from "~wallets/hooks";
 import { humanizeTimestampTags } from "~utils/timestamp";
+import { TokenLogo } from "~components/popup/TokenLogo";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import { WarningIcon } from "~components/icons/WarningIcon";
+import { useTheme } from "~utils/theme/theme.hook";
 
 export function SignDataItemAuthRequestView() {
   const { authRequest, acceptRequest, rejectRequest } = useCurrentAuthRequest("signDataItem");
-
   const { authID, data, url } = authRequest;
-
   const [loading, setLoading] = useState<boolean>(false);
-  const [tokenName, setTokenName] = useState<string>("");
-  const [logo, setLogo] = useState<string>("");
+  const [tokenInfo, setTokenInfo] = useState<TokenInfo | null>(null);
   const [amount, setAmount] = useState<Quantity | null>(null);
   const [showTags, setShowTags] = useState<boolean>(false);
   const [mismatch, setMismatch] = useState<boolean>(false);
@@ -65,6 +61,7 @@ export function SignDataItemAuthRequestView() {
   );
 
   const process = data?.target;
+  const tokenName = tokenInfo?.Name;
 
   const formattedAmount = useMemo(() => (amount || 0).toLocaleString(), [amount]);
 
@@ -82,9 +79,7 @@ export function SignDataItemAuthRequestView() {
     "",
   );
 
-  const theme = useTheme();
-
-  const arweaveLogo = useMemo(() => (theme === "dark" ? arLogoDark : arLogoLight), [theme]);
+  const { displayTheme } = useTheme();
 
   // currency setting
   const [currency] = useSetting<string>("currency");
@@ -129,53 +124,51 @@ export function SignDataItemAuthRequestView() {
 
   useEffect(() => {
     if (!tokenName) return;
-    getPrice(tokenName, currency)
+
+    getPrice(tokenName as CoinGeckoSymbol, currency)
       .then((res) => setPrice(res))
       .catch();
   }, [currency, tokenName]);
 
   // get ao token info
-  useEffect(() => {
-    const fetchTokenInfo = async () => {
-      if (!process || !transfer) return;
-      let tokenInfo: TokenInfo;
-      try {
-        setLoading(true);
-        const token = await Token(data.target);
-        tokenInfo = {
-          ...token.info,
-          Denomination: Number(token.info.Denomination),
-          processId: token.id,
-        };
-      } catch (err) {
-        // fallback
-        console.log("err", err);
-        try {
-          const aoTokens = (await PersistentStorage.get<TokenInfo[]>("ao_tokens")) || [];
-          const aoTokensCache = (await PersistentStorage.get<TokenInfo[]>("ao_tokens_cache")) || [];
-          const aoTokensCombined = [...aoTokens, ...aoTokensCache];
-          const token = aoTokensCombined.find(({ processId }) => data.target === processId);
-          if (token) {
-            tokenInfo = token;
-          }
-        } catch {}
-      } finally {
-        if (tokenInfo) {
-          if (tokenInfo?.Logo) {
-            const logo = await getUserAvatar(tokenInfo?.Logo);
-            setLogo(logo || "");
-          } else {
-            setLogo(arweaveLogo);
-          }
+  useAsyncEffect(async () => {
+    if (!process || !transfer) return;
 
-          const tokenAmount = new Quantity(BigInt(quantity), BigInt(tokenInfo.Denomination));
-          setTokenName(tokenInfo.Name);
-          setAmount(tokenAmount);
+    let tokenInfo: TokenInfo;
+
+    try {
+      setLoading(true);
+
+      const token = await Token(data.target);
+
+      tokenInfo = {
+        ...token.info,
+        Denomination: Number(token.info.Denomination),
+        processId: token.id,
+      };
+    } catch (err) {
+      // fallback
+      console.log("err", err);
+
+      try {
+        const aoTokens = (await PersistentStorage.get<TokenInfo[]>("ao_tokens")) || [];
+        const aoTokensCache = (await PersistentStorage.get<TokenInfo[]>("ao_tokens_cache")) || [];
+        const aoTokensCombined = [...aoTokens, ...aoTokensCache];
+        const token = aoTokensCombined.find(({ processId }) => data.target === processId);
+
+        if (token) {
+          tokenInfo = token;
         }
-        setLoading(false);
+      } catch {}
+    } finally {
+      if (tokenInfo) {
+        const tokenAmount = new Quantity(BigInt(quantity), BigInt(tokenInfo.Denomination));
+        setAmount(tokenAmount);
+        setTokenInfo(tokenInfo);
       }
-    };
-    fetchTokenInfo();
+
+      setLoading(false);
+    }
   }, [data]);
 
   // listen for enter to reset
@@ -190,12 +183,6 @@ export function SignDataItemAuthRequestView() {
 
     return () => window.removeEventListener("keydown", listener);
   }, [authID, transferRequirePassword, askPassword]);
-
-  useEffect(() => {
-    if (tokenName && !logo) {
-      setLogo(arweaveLogo);
-    }
-  }, [tokenName, logo, theme]);
 
   // check for if bits check exists, if it does, check mismatch
   useEffect(() => {
@@ -230,7 +217,7 @@ export function SignDataItemAuthRequestView() {
         {mismatch && transfer && (
           <Degraded>
             <WarningWrapper>
-              <WarningIcon color={theme === "dark" ? "#fff" : "#000"} />{" "}
+              <WarningIcon color={displayTheme === "dark" ? "#fff" : "#000"} />{" "}
             </WarningWrapper>
             <div>
               <h4>{browser.i18n.getMessage("mismatch_warning_title")}</h4>
@@ -253,14 +240,10 @@ export function SignDataItemAuthRequestView() {
               justifyContent: "center",
               marginBottom: "4px",
             }}>
-            {!loading ? (
-              logo && (
-                <LogoWrapper>
-                  <Logo src={logo} alt={`${tokenName} logo`} />
-                </LogoWrapper>
-              )
-            ) : (
+            {loading ? (
               <Loading style={{ width: "16px", height: "16px" }} />
+            ) : (
+              tokenInfo && <TokenLogo token={tokenInfo || ""} />
             )}
           </div>
           {transfer && (

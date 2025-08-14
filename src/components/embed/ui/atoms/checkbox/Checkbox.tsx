@@ -4,7 +4,7 @@ import styles from "./Checkbox.module.css";
 import type { CheckboxBaseProps } from "./Checkbox.types";
 import { CheckIcon } from "../icon";
 import { Text } from "../text";
-import { useTheme } from "../../../contexts/ThemeContext";
+import { useTheme } from "../../../../../utils/theme/theme.hook";
 
 const Checkbox = forwardRef<HTMLDivElement, CheckboxBaseProps>(
   (

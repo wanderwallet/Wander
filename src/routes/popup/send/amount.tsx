@@ -3,15 +3,12 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import styled from "styled-components";
 import { Button, Input, Section, Spacer, Text, useInput, useToasts } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
-import Token, { Logo, LogoAndDetails, TokenName, WarningIcon } from "~components/popup/Token";
+import Token, { LogoAndDetails, TokenName } from "~components/popup/Token";
 import useSetting from "~settings/hook";
 import { formatFiatBalance, formatTokenBalance, fractionedToBalance } from "~tokens/currency";
 import { useStorage } from "@plasmohq/storage/hook";
 import { ExtensionStorage, TempTransactionStorage } from "~utils/storage";
-import { loadTokenLogo, type Token as TokenInterface } from "~tokens/token";
-import { useTheme } from "~utils/theme";
-import arLogoLight from "url:/assets/ar/logo_light.png";
-import arLogoDark from "url:/assets/ar/logo_dark.png";
+import { type Token as TokenInterface } from "~tokens/token";
 import Collectible from "~components/popup/Collectible";
 import { retryWithGateways } from "~gateways/wayfinder";
 import { useLocation } from "~wallets/router/router.utils";
@@ -20,7 +17,13 @@ import SliderMenu from "~components/SliderMenu";
 import { type Contact } from "~components/Recipient";
 import { formatAddress } from "~utils/format";
 import { useContact } from "~contacts/hooks";
-import { AR_PROCESS_ID, defaultTokens, EXP_PROCESS_ID, PI_PROCESS_ID, type TokenInfo } from "~tokens/aoTokens/ao";
+import {
+  AR_PROCESS_ID,
+  defaultTokens,
+  EXP_PROCESS_ID,
+  nonTransferableTokenIds,
+  type TokenInfo,
+} from "~tokens/aoTokens/ao";
 import { useAoTokens } from "~tokens/hooks";
 import BigNumber from "bignumber.js";
 import { AnnouncementPopup } from "./announcement";
@@ -32,7 +35,9 @@ import { useActiveWallet } from "~wallets/hooks";
 import { ChevronDown, Pencil01, SwitchVertical02 } from "@untitled-ui/icons-react";
 import { SendInput } from "~components/SendInput";
 import { HorizontalLine } from "~components/HorizontalLine";
-import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import { TokenLogo } from "~components/popup/TokenLogo";
+import { WarningIcon } from "~components/icons/WarningIcon";
+import { useTheme } from "~utils/theme/theme.hook";
 
 export enum AmountValidationState {
   Invalid = "Invalid",
@@ -107,7 +112,7 @@ export type AmountViewProps = CommonRouteProps<SendViewParams>;
 
 export function AmountView({ params: { id, recipient } }: AmountViewProps) {
   const { navigate, back } = useLocation();
-  const theme = useTheme();
+  const { displayTheme } = useTheme();
   const { setToast } = useToasts();
 
   const [isOpen, setOpen] = useState(true);
@@ -150,7 +155,7 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
     AR_PROCESS_ID,
   );
 
-  const showNonTransferableAnnouncement = tokenID === EXP_PROCESS_ID || tokenID === PI_PROCESS_ID;
+  const showNonTransferableAnnouncement = nonTransferableTokenIds.includes(tokenID);
 
   // currency setting
   const [currency] = useSetting<string>("currency");
@@ -202,16 +207,6 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
     // field when note is set and returned to amount page
     // setQty("");
   }, []);
-
-  // token logo
-  const [logo, setLogo] = useState<string>();
-
-  useAsyncEffect(async () => {
-    setLogo(await loadTokenLogo(token.processId, token.Logo, theme));
-  }, [theme, token]);
-
-  //arweave logo
-  const arweaveLogo = useMemo(() => (theme === "light" ? arLogoLight : arLogoDark), [theme]);
 
   const contact = useContact(recipient);
 
@@ -379,7 +374,7 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
           {degraded && (
             <Degraded>
               <WarningWrapper>
-                <WarningIcon color={theme === "dark" ? "#fff" : "#000"} />
+                <WarningIcon color={displayTheme === "dark" ? "#fff" : "#000"} />
               </WarningWrapper>
               <div>
                 <h4>{browser.i18n.getMessage("ao_degraded")}</h4>
@@ -480,7 +475,7 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
         <BottomActions>
           <TokenSelector onClick={() => setShownTokenSelector(true)}>
             <LogoAndDetails>
-              <Logo src={logo || arweaveLogo} />
+              <TokenLogo token={token || "AR"} />
               <Flex direction="column" gap={2}>
                 <TokenName>{token.type === "collectible" ? token.Name || token.Ticker : token.Ticker}</TokenName>
                 <Text size="sm" weight="medium" variant="secondary" noMargin>
@@ -504,41 +499,49 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
         </BottomActions>
 
         <SliderMenu
-          height={"90%"}
+          height="90%"
           paddingVertical={32}
           title={browser.i18n.getMessage("select_token")}
           isOpen={showTokenSelector}
           onClose={() => {
             setShownTokenSelector(false);
           }}>
-          <Input variant="search" sizeVariant="small" fullWidth placeholder="Search token" {...tokenSearch.bindings} />
-          <Spacer y={1.5} />
-          <TokensList>
-            {assets.filter(filterFn).map((token) => (
-              <Token
-                key={token.id}
-                type={"asset"}
-                defaultLogo={token?.Logo}
-                id={token.id}
-                ticker={token.Ticker}
-                divisibility={token.Denomination}
-                fiatPrice={prices[token.id]}
-                onClick={() => updateSelectedToken(token.id)}
-              />
-            ))}
-          </TokensList>
-          <Spacer y={1.25} />
-          <CollectiblesList>
-            {collectibles.filter(filterFn).map((token, i) => (
-              <Collectible
-                id={token.id}
-                name={token.Name || token.Ticker}
-                divisibility={token.Denomination}
-                onClick={() => updateSelectedToken(token.id)}
-                key={i}
-              />
-            ))}
-          </CollectiblesList>
+          <Box>
+            <Input
+              variant="search"
+              sizeVariant="small"
+              fullWidth
+              placeholder="Search token"
+              {...tokenSearch.bindings}
+            />
+            <Spacer y={1.5} />
+            <TokensList>
+              {assets.filter(filterFn).map((token) => (
+                <Token
+                  key={token.id}
+                  type={"asset"}
+                  defaultLogo={token?.Logo}
+                  id={token.id}
+                  ticker={token.Ticker}
+                  divisibility={token.Denomination}
+                  fiatPrice={prices[token.id]}
+                  onClick={() => updateSelectedToken(token.id)}
+                />
+              ))}
+            </TokensList>
+            <Spacer y={1.25} />
+            <CollectiblesList>
+              {collectibles.filter(filterFn).map((token, i) => (
+                <Collectible
+                  id={token.id}
+                  name={token.Name || token.Ticker}
+                  divisibility={token.Denomination}
+                  onClick={() => updateSelectedToken(token.id)}
+                  key={i}
+                />
+              ))}
+            </CollectiblesList>
+          </Box>
         </SliderMenu>
       </Wrapper>
     </>

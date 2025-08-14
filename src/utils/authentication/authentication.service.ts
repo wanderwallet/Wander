@@ -15,8 +15,8 @@ import {
   isOAuthSuccessMessage,
   OAuthErrorCode,
 } from "~utils/authentication/authentication.utils";
-import type { OAuthResultMessage, SupabaseProvider } from "~utils/authentication/authentication.types";
-import type { SupabaseUserMetadata } from "embed-api";
+import type { OAuthResultMessage } from "~utils/authentication/authentication.types";
+import type { SupabaseUserMetadata, SupabaseProvider } from "embed-api";
 
 const SUPABASE_PROVIDER_BY_OAUTH_PROVIDER_TYPE: Record<OAutProviderType, SupabaseProvider | null> = {
   GOOGLE: "google",
@@ -194,16 +194,6 @@ async function verifyOtp(authParams: AuthVerifyOtpParams) {
   });
 
   if (error) throw error;
-
-  if (!(data.user.user_metadata as SupabaseUserMetadata).hasPassword) {
-    // No need to handle error, we can re-attempt this lazily on the next sign in:
-    await supabase.auth.updateUser({
-      data: {
-        ...data.user.user_metadata,
-        hasPassword: true,
-      } satisfies SupabaseUserMetadata,
-    });
-  }
 
   return data;
 }

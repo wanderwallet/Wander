@@ -31,7 +31,7 @@ import { ArrowNarrowLeft } from "@untitled-ui/icons-react";
 import { PermissionsWelcomeView } from "./generate/permissions";
 import { OptionsWelcomView } from "./load/options";
 import IconText from "~components/IconText";
-import { Link } from "~routes/popup/token/[id]";
+import { Link } from "~components/common/Link";
 import { LoadingWelcomeView } from "./generate/loading";
 
 // Wallet generate pages:

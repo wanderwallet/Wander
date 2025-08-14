@@ -43,7 +43,7 @@ export function WalletHomeAssets({
       ))}
 
       {hasMoreTokens && (
-        <Button variant="invisible" onClick={showAllTokens ? handleShowLess : handleLoadMore}>
+        <Button variant="text" onClick={showAllTokens ? handleShowLess : handleLoadMore}>
           {showAllTokens ? "Show less" : `View More (${tokens.length - 3})`}
         </Button>
       )}

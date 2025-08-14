@@ -4,7 +4,7 @@ import { ExtensionStorage } from "~utils/storage";
 import { Checkbox, Spacer, Text } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
 import { RadioWrapper } from "./Setting";
-import { ToggleSwitch } from "~routes/popup/subscriptions/subscriptionDetails";
+import { ToggleSwitch } from "~components/ToggleSwitch";
 
 export function NotificationSettingsDashboardView() {
   const [notificationSettings, setNotificationSettings] = useStorage(

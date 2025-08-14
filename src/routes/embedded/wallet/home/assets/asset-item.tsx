@@ -1,21 +1,16 @@
 import BigNumber from "bignumber.js";
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Row, Text, Box, Button } from "~components/embed/ui";
+import { useMemo, useRef, useState } from "react";
+import { Row, Text, Box } from "~components/embed/ui";
 import useSetting from "~settings/hook";
 import { formatFiatBalance } from "~tokens/currency";
 import { useTokenBalance } from "~tokens/hooks";
 import { formatBalance } from "~utils/format";
 import { ExtensionStorage, useStorage } from "~utils/storage";
-import arLogoLight from "../../../../../../assets/ar/logo_light.png";
-import arLogoDark from "../../../../../../assets/ar/logo_dark.png";
-import { useTheme } from "~utils/theme";
-import { Logo } from "~components/popup/Token";
-import { getArweaveLink } from "~gateways/utils";
+import { TokenLogo } from "~components/popup/TokenLogo";
 
 import styles from "./asset-item.module.scss";
 
 interface AssetItemProps {
-  activeWalletAddress: string;
   id: string;
   defaultLogo: string;
   tokenName: string;
@@ -25,11 +20,8 @@ interface AssetItemProps {
   divisibility: number;
 }
 
-export function AssetItem({ activeWalletAddress, id, defaultLogo, tokenName, ticker, amount, fiatPrice, divisibility }: AssetItemProps) {
-  const theme = useTheme();
-  const [logo, setLogo] = useState<string>();
+export function AssetItem({ id, defaultLogo, tokenName, ticker, amount, fiatPrice, divisibility }: AssetItemProps) {
   const [totalBalance, setTotalBalance] = useState("");
-
   const [currency] = useSetting("currency");
   const [activeAddress] = useStorage({
     key: "active_address",
@@ -49,8 +41,6 @@ export function AssetItem({ activeWalletAddress, id, defaultLogo, tokenName, tic
 
   const { data: fractBalance = "0", isError, error, isLoading } = useTokenBalance(tokenInfo, activeAddress);
 
-  const arweaveLogo = useMemo(() => (theme === "dark" ? arLogoDark : arLogoLight), [theme]);
-
   const balance = useMemo(() => {
     if (isError) return "0";
     const formattedBalance = formatBalance(BigNumber(fractBalance));
@@ -58,29 +48,13 @@ export function AssetItem({ activeWalletAddress, id, defaultLogo, tokenName, tic
     return formattedBalance.displayBalance;
   }, [fractBalance, isError]);
 
-  console.log(`amount = ${ amount }, balance = ${ balance }`)
-
   const formattedFiatPrice = useMemo(() => {
     if (!fiatPrice) return undefined;
     return formatFiatBalance(fiatPrice, currency);
   }, [fiatPrice, currency]);
 
-  useEffect(() => {
-    const fetchLogo = async () => {
-      if (!id || logo) return;
-      if (defaultLogo) {
-        const logo = await getArweaveLink(defaultLogo);
-        setLogo(logo);
-      } else {
-        setLogo(arweaveLogo);
-      }
-    };
-
-    fetchLogo();
-  }, [id, defaultLogo, arweaveLogo, logo]);
-
   const infoRef = useRef<HTMLDivElement>(null);
-  const nameRef = useRef<HTMLSpanElement>(null);
+  const nameRef = useRef<HTMLParagraphElement>(null);
   const balanceAndPriceRef = useRef<HTMLDivElement>(null);
   const balanceRef = useRef<HTMLSpanElement>(null);
   const tickerRef = useRef<HTMLSpanElement>(null);
@@ -175,11 +149,11 @@ export function AssetItem({ activeWalletAddress, id, defaultLogo, tokenName, tic
 
   return (
     <div className={ styles.root }>
-      <Logo
-        className={ styles.logo }
+      <TokenLogo
         key={`logo-${id}`}
-        src={logo || ""}
-        alt="" />
+        token={tokenInfo}
+        // className={ styles.logo }
+        style={{ flex: "0 0 auto", alignSelf: "center" }} />
 
       <div className={ styles.info } ref={ infoRef }>
         <Text variant="bodyMd" style={{ color: "#121212", ...nameStyle }} className={ styles.name } ref={ nameRef } onMouseEnter={ handleExpandName } onMouseLeave={ handleCollapse }>

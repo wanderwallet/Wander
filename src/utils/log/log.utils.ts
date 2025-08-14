@@ -11,6 +11,11 @@ export enum LOG_GROUP {
   SESSION = "SESSION",
   STORAGE = "STORAGE",
   AGENTS = "AGENTS",
+  TIERS = "TIERS",
+  TRANSAK = "TRANSAK",
+  FAIR_LAUNCH = "FAIR_LAUNCH",
+  TRANSACTIONS = "TRANSACTIONS",
+  EARN = "EARN",
 }
 
 const LOG_GROUPS_ENABLED: Record<LOG_GROUP, boolean> = {
@@ -26,6 +31,11 @@ const LOG_GROUPS_ENABLED: Record<LOG_GROUP, boolean> = {
   [LOG_GROUP.SESSION]: process.env.NODE_ENV === "development",
   [LOG_GROUP.STORAGE]: process.env.NODE_ENV === "development",
   [LOG_GROUP.AGENTS]: process.env.NODE_ENV === "development",
+  [LOG_GROUP.TIERS]: process.env.NODE_ENV === "development",
+  [LOG_GROUP.TRANSAK]: process.env.NODE_ENV === "development",
+  [LOG_GROUP.FAIR_LAUNCH]: process.env.NODE_ENV === "development",
+  [LOG_GROUP.TRANSACTIONS]: process.env.NODE_ENV === "development",
+  [LOG_GROUP.EARN]: process.env.NODE_ENV === "development",
 };
 
 function getColor() {

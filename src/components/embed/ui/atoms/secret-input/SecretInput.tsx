@@ -51,13 +51,7 @@ export function SecretInput({ className: classNameProp, secret, isLoading }: Sec
   );
 
   const copyButton = (
-    <InputButton
-      variant="icon"
-      label={isCopied ? "Copied" : "Copy"}
-      icon={copyIcon}
-      disabled={isLoading}
-      onClick={copySecret}
-    />
+    <InputButton label={isCopied ? "Copied" : "Copy"} icon={copyIcon} disabled={isLoading} onClick={copySecret} />
   );
 
   const toggleIsVisible = useCallback(() => {

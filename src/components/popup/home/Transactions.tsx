@@ -3,7 +3,6 @@ import { useEffect, useMemo, useState } from "react";
 import { ExtensionStorage } from "~utils/storage";
 import { Loading, Text } from "@arconnect/components-rebrand";
 import { useStorage } from "~utils/storage";
-
 import { gql } from "~gateways/api";
 import styled from "styled-components";
 import {
@@ -17,8 +16,9 @@ import {
 import { printTxWorkingGateways, txHistoryGateways } from "~gateways/gateway";
 import { ViewAll } from "../Title";
 import {
+  checkTransferStatus,
   getFormattedAmount,
-  getFullMonthName,
+  getMonthName,
   getTransactionDescription,
   groupTransactionsByMonth,
   processTransactions,
@@ -28,9 +28,12 @@ import {
 import BigNumber from "bignumber.js";
 import { retryWithDelay } from "~utils/promises/retry";
 import { useLocation } from "~wallets/router/router.utils";
-import arLogoLight from "url:/assets/ar/logo_light.png";
-import { Logo } from "../Token";
-import { getUserAvatar } from "~lib/avatar";
+import { convertAnnouncementsToTransactions } from "~utils/announcements";
+import { Announcement01 } from "@untitled-ui/icons-react";
+import { Flex } from "~components/common/Flex";
+import dayjs from "dayjs";
+import { ParseTextWithLinks } from "~components/common/ParseTextWithLinks";
+import { TokenLogo } from "~components/popup/TokenLogo";
 
 interface TransactionsCache {
   transactions: ExtendedTransaction[];
@@ -99,6 +102,12 @@ export default function Transactions() {
               ),
             );
 
+          const aoTransactions = [
+            ...(rawAoSent.status === "fulfilled" ? rawAoSent.value?.data?.transactions?.edges || [] : []),
+            ...(rawAoReceived.status === "fulfilled" ? rawAoReceived.value?.data?.transactions?.edges || [] : []),
+          ];
+          await checkTransferStatus(aoTransactions);
+
           let sent = await processTransactions(rawSent, "sent");
           sent = sent.filter((tx) => BigNumber(tx.node.quantity.ar).gt(0));
           let received = await processTransactions(rawReceived, "received");
@@ -126,6 +135,9 @@ export default function Transactions() {
             seenIds.add(id);
             return true;
           });
+
+          const announcementTransactions = convertAnnouncementsToTransactions();
+          combinedTransactions = [...combinedTransactions, ...announcementTransactions];
 
           combinedTransactions.sort(sortFn);
 
@@ -175,11 +187,13 @@ export default function Transactions() {
   }, [activeAddress]);
 
   const groupedTransactions = useMemo(() => {
-    return groupTransactionsByMonth(transactions);
+    return groupTransactionsByMonth(transactions.slice(0, 20));
   }, [transactions]);
 
   const renderTransaction = (transaction: ExtendedTransaction) => {
-    return <TransactionItemComponent key={transaction.node.id} transaction={transaction} />;
+    const TransactionComponent =
+      transaction.transactionType === "announcement" ? AnnouncementItemComponent : TransactionItemComponent;
+    return <TransactionComponent key={transaction.node.id} transaction={transaction} />;
   };
 
   return (
@@ -216,33 +230,87 @@ export default function Transactions() {
 }
 
 export const TransactionItemComponent = ({ transaction }: { transaction: ExtendedTransaction }) => {
-  const [logoSource, setLogoSource] = useState<string>();
   const { navigate } = useLocation();
 
-  useEffect(() => {
-    const fetchLogo = async () => {
-      if (transaction.aoInfo?.logo) {
-        const logo = await getUserAvatar(transaction.aoInfo.logo);
-        setLogoSource(logo!);
-      } else {
-        setLogoSource(arLogoLight);
-      }
-    };
-
-    fetchLogo();
-  }, [transaction.aoInfo?.logo]);
-
   return (
-    <TransactionItem>
+    <TransactionItem showBackground={true}>
       <Transaction onClick={() => navigate(`/transaction/${transaction.node.id}`)}>
         <FlexContainer>
-          <Logo src={logoSource} alt="Token logo" />
+          <TokenLogo
+            token={transaction.aoInfo?.logo || "AR"}
+            name={transaction.aoInfo?.tickerName}
+            style={{ flex: "1 0 auto" }}
+          />
           <Section>
             <Main>{getTransactionDescription(transaction)}</Main>
             <Secondary>
               {transaction.date
-                ? `${getFullMonthName(`${transaction.month}-${transaction.year}`)} ${transaction.day}`
+                ? `${getMonthName(`${transaction.month}-${transaction.year}`)} ${transaction.day}`
                 : browser.i18n.getMessage("pending")}
+            </Secondary>
+          </Section>
+        </FlexContainer>
+        <Section alignRight>
+          <Amount success={transaction.transactionType === "received" || transaction.transactionType === "aoReceived"}>
+            {transaction.transactionType === "sent" ||
+            transaction.transactionType === "aoSent" ||
+            transaction.transactionType === "printArchive"
+              ? "-"
+              : "+"}
+            {getFormattedAmount(transaction)}
+          </Amount>
+        </Section>
+      </Transaction>
+    </TransactionItem>
+  );
+};
+
+export const AnnouncementItemComponent = ({ transaction }: { transaction: ExtendedTransaction }) => {
+  const { navigate } = useLocation();
+
+  return (
+    <TransactionItem showBackground={true}>
+      <Transaction onClick={() => navigate(`/announcement/${transaction.node.id}`)}>
+        <Flex direction="column" gap={8} width="100%">
+          <Flex direction="row" gap={4} align="center" justify="space-between" width="100%">
+            <Flex direction="row" gap={4} align="center">
+              <AnnouncementIconWrapper>
+                <AnnouncementIcon />
+              </AnnouncementIconWrapper>
+              <Main style={{ whiteSpace: "nowrap" }}>{getTransactionDescription(transaction)}</Main>
+            </Flex>
+            <Secondary style={{ whiteSpace: "nowrap" }}>
+              {`${getMonthName(`${transaction.month}-${transaction.year}`, "short")} ${transaction.day}`}
+            </Secondary>
+          </Flex>
+          <Secondary
+            style={{
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              display: "block",
+              // width: "320px",
+            }}>
+            <ParseTextWithLinks text={transaction?.announcementData?.description || ""} />
+          </Secondary>
+        </Flex>
+      </Transaction>
+    </TransactionItem>
+  );
+};
+
+export const TierTransactionItemComponent = ({ transaction }: { transaction: ExtendedTransaction }) => {
+  const { navigate } = useLocation();
+
+  return (
+    <TransactionItem showBackground={false}>
+      <Transaction padding="8px" onClick={() => navigate(`/transaction/${transaction.node.id}?back=/tier`)}>
+        <FlexContainer>
+          <TokenLogo token={transaction.aoInfo?.logo || "AR"} name={transaction.aoInfo?.tickerName} />
+          <Section>
+            <Main>{getTransactionDescription(transaction)}</Main>
+            <Secondary>
+              {transaction.date ? dayjs(transaction.date).format("MMM D, YYYY") : browser.i18n.getMessage("pending")}
             </Secondary>
           </Section>
         </FlexContainer>
@@ -319,25 +387,32 @@ const Amount = styled(Text).attrs({
     props.success ? props.theme.success : props.theme.displayTheme === "light" ? "#121212" : "#EEEEEE"};
 `;
 
-const Transaction = styled.div`
+const Transaction = styled.div<{ padding?: string }>`
   display: flex;
   cursor: pointer;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 0;
+  padding: ${({ padding }) => padding ?? "12px"};
   gap: 1rem;
+  align-self: stretch;
 `;
 
 const Section = styled.div<{ alignRight?: boolean }>`
   text-align: ${({ alignRight }) => (alignRight ? "right" : "left")};
 `;
 
-const TransactionItem = styled.div`
+const TransactionItem = styled.div<{ showBackground?: boolean }>`
   position: relative;
+  background: ${({ theme, showBackground }) => (showBackground ? theme.surfaceSecondary : "transparent")};
+  border-radius: 8px;
 
   &:active {
     transform: scale(0.98);
     opacity: 0.8;
+  }
+
+  &:hover {
+    background: ${({ theme }) => theme.surfaceTertiary};
   }
 `;
 
@@ -345,4 +420,27 @@ const NoTransactions = styled(Text).attrs({
   noMargin: true,
 })`
   text-align: center;
+`;
+
+const AnnouncementIconWrapper = styled.div`
+  display: flex;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50px;
+  background: ${({ theme }) => theme.surfaceDefault};
+`;
+
+const AnnouncementIcon = styled(Announcement01)`
+  height: 12px;
+  width: 12px;
+  color: ${({ theme }) => theme.theme};
+`;
+
+const AnnouncementLink = styled.a`
+  color: ${({ theme }) => theme.theme};
+  text-decoration: none;
+  display: inline;
 `;

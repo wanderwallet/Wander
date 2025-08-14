@@ -150,7 +150,7 @@ export function EditAOYieldAgentView() {
                 <InputButton
                   style={{ background: theme.surfaceTertiary }}
                   body={
-                    <Text size="lg" weight="medium" noMargin>
+                    <Text size="lg" weight="medium" style={{ whiteSpace: "nowrap" }} noMargin>
                       {formatDate(startDate, "Start date")}
                     </Text>
                   }
@@ -164,7 +164,7 @@ export function EditAOYieldAgentView() {
                   disabled={runIndefinitely}
                   style={{ background: theme.surfaceTertiary }}
                   body={
-                    <Text size="lg" weight="medium" noMargin>
+                    <Text size="lg" weight="medium" style={{ whiteSpace: "nowrap" }} noMargin>
                       {runIndefinitely ? "∞" : formatDate(endDate, "End date")}
                     </Text>
                   }

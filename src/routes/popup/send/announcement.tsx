@@ -2,7 +2,7 @@ import { ButtonV2, ModalV2, Spacer } from "@arconnect/components";
 import { useRef } from "react";
 import browser from "webextension-polyfill";
 import expLogo from "url:/assets/ecosystem/exp-token-logo.png";
-import piLogo from "url:/assets/ecosystem/pi-token-logo.png";
+import wndrLogo from "url:/assets/ecosystem/wndr-token-logo.svg";
 import { HeaderText, CenterText, Content, ContentWrapper } from "~components/modals/Components";
 import { useTheme } from "styled-components";
 
@@ -11,14 +11,15 @@ type TokenData = {
   image: string;
 };
 
+// List of non-transferable tokens
 const tokenData: Record<string, TokenData> = {
   EXP: {
     learnMoreLink: "https://x.com/ar_io_network/status/1879961321170706490",
     image: expLogo,
   },
-  PI: {
-    learnMoreLink: "https://www.autonomous.finance/research/en-US/permaweb-index",
-    image: piLogo,
+  WNDR: {
+    learnMoreLink: "https://www.wander.app/blog/wander-network-and-the-wndr-token",
+    image: wndrLogo,
   },
 } as const;
 
@@ -44,6 +45,7 @@ export const AnnouncementPopup = ({ isOpen, setOpen, ticker }: AnnouncementPopup
         <Content>
           <div>
             <img src={data.image} alt={`${ticker} logo`} style={{ width: "100px", height: "auto" }} />
+            <Spacer y={0.25} />
             <HeaderText noMargin heading>
               {browser.i18n.getMessage("token_send_popup_title", [ticker])}
             </HeaderText>

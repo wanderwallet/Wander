@@ -9,14 +9,18 @@ interface FlexProps extends React.HTMLAttributes<HTMLDivElement> {
   gap?: CSSProperties["gap"];
   flex?: CSSProperties["flex"];
   flexShrink?: CSSProperties["flexShrink"];
+  minWidth?: CSSProperties["minWidth"];
   width?: CSSProperties["width"];
   height?: CSSProperties["height"];
   padding?: CSSProperties["padding"];
+  margin?: CSSProperties["margin"];
   cursor?: CSSProperties["cursor"];
   textAlign?: CSSProperties["textAlign"];
   background?: CSSProperties["background"];
   borderRadius?: CSSProperties["borderRadius"];
   overflow?: CSSProperties["overflow"];
+  boxSizing?: CSSProperties["boxSizing"];
+  maxWidth?: CSSProperties["maxWidth"];
 }
 
 export const Flex: React.FC<FlexProps> = ({
@@ -30,13 +34,17 @@ export const Flex: React.FC<FlexProps> = ({
   flexShrink,
   gap = 0,
   flex,
+  minWidth,
   width,
   height,
   padding,
+  margin,
   cursor,
   textAlign,
   overflow,
   style,
+  boxSizing,
+  maxWidth,
   ...props
 }) => {
   return (
@@ -49,15 +57,20 @@ export const Flex: React.FC<FlexProps> = ({
         flexWrap: wrap,
         gap,
         flex,
+        minWidth,
         width,
         height,
         padding,
+        margin,
         cursor,
         textAlign,
         background,
         borderRadius,
-        flexShrink,
+        // Only apply flexShrink if flex shorthand is not set to avoid conflicts
+        ...(flex === undefined && { flexShrink }),
         overflow,
+        boxSizing,
+        maxWidth,
         ...style,
       }}
       {...props}>

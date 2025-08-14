@@ -7,6 +7,7 @@ import {
   Compass03,
   CreditCard01,
   Grid01,
+  HelpCircle,
   InfoCircle,
   Maximize01,
   Pencil02,
@@ -25,6 +26,7 @@ import { TokensDashboardView } from "~components/dashboard/Tokens";
 import { ContactsDashboardView } from "~components/dashboard/Contacts";
 import { NotificationSettingsDashboardView } from "~components/dashboard/NotificationSettings";
 import { AboutDashboardView } from "~components/dashboard/About";
+import { HelpDashboardView } from "~components/dashboard/subsettings/Help";
 
 // Advance Settings:
 import { SignSettingsDashboardView } from "~components/dashboard/SignSettings";
@@ -80,6 +82,13 @@ export const basicSettings: (DashboardRouteConfig | Setting)[] = [
     component: NotificationSettingsDashboardView,
   },
   getSetting("gateways"),
+  {
+    name: "help",
+    displayName: "help",
+    description: "help_description",
+    icon: HelpCircle,
+    component: HelpDashboardView,
+  },
   {
     name: "about",
     displayName: "setting_about",
@@ -145,6 +154,11 @@ export const quickSettingsMenuItems: Omit<DashboardRouteConfig, "description">[]
     name: "subscriptions",
     displayName: "subscriptions",
     icon: CreditCard01,
+  },
+  {
+    name: "help",
+    displayName: "help",
+    icon: HelpCircle,
   },
   {
     name: "explore",

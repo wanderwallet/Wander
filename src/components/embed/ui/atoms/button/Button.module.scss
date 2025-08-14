@@ -3,6 +3,7 @@
 
 .button {
   all: unset;
+  position: relative;
   border-radius: var(--border-radius-xl);
   text-align: center;
   box-sizing: border-box;
@@ -101,6 +102,10 @@
     background-color: var(--color-button-primary-background-hover);
     border: var(--button-primary-border-hover);
   }
+
+  :global(.isFocusActive) &:global:focus {
+    animation: var(--default-focus-animation);
+  }
 }
 
 .button__variant__secondary {
@@ -111,6 +116,10 @@
   &:hover:not(:disabled) {
     background-color: var(--color-button-secondary-background-hover);
     border: var(--button-secondary-border-hover);
+  }
+
+  :global(.isFocusActive) &:global:focus {
+    animation: var(--default-focus-animation);
   }
 }
 
@@ -123,9 +132,27 @@
     background-color: var(--color-button-outlined-background-hover);
     border: var(--button-outlined-border-hover);
   }
+
+  :global(.isFocusActive) &:global:focus {
+    animation: var(--default-focus-animation);
+  }
 }
 
 .button__variant__invisible {
+  background-color: transparent;
+  color: var(--color-button-outlined-color);
+  border: none;
+
+  &:hover:not(:disabled) {
+    background-color: var(--color-button-outlined-background-hover);
+  }
+
+  :global(.isFocusActive) &:global:focus {
+    animation: var(--default-focus-animation);
+  }
+}
+
+.button__variant__text {
   background-color: transparent;
   color: var(--color-button-outlined-color);
   border: none;

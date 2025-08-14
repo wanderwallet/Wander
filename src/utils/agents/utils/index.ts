@@ -17,10 +17,12 @@ import WarIcon from "url:/assets/ecosystem/war.png";
 import wUSDCIcon from "url:/assets/ecosystem/wusdc.svg";
 import type { Asset } from "~utils/agents/types";
 import { AO_YIELD_AGENT_RECENT_TXS, WANDER_FEE_PROCESS_ID } from "../constants";
-import { QueryClient } from "@tanstack/react-query";
 import dayjs from "dayjs";
+import { isURL } from "~utils/urls/isURL";
+import { queryClient } from "~utils/tanstack";
+import { Mutex } from "~utils/mutex";
 
-export const queryClient = new QueryClient();
+const agentStorageMutex = new Mutex();
 
 /**
  * Initializes a default Arweave instance.
@@ -67,25 +69,6 @@ export function isArweaveAddress(address: any): boolean {
 }
 
 /**
- * Checks if a string is a valid URL.
- *
- * @param url - The string to be checked.
- * @returns True if the string is a valid URL, false otherwise.
- */
-export function isUrl(url?: string): boolean {
-  try {
-    if (!url || typeof url !== "string") {
-      return false;
-    }
-    // eslint-disable-next-line no-new
-    new URL(url);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-/**
  * Parses a string to an integer.
  * If parsing fails (i.e., the value is NaN), it returns the specified default value.
  *
@@ -116,7 +99,7 @@ export function parseUrl(value: string | undefined, defaultValue: string): strin
   if (value === undefined) {
     return defaultValue;
   }
-  const urlValid = isUrl(value);
+  const urlValid = isURL(value);
   if (!urlValid) {
     return defaultValue;
   }
@@ -195,7 +178,12 @@ export async function getAOYieldAgents(activeAddress: string, status?: AOYieldAg
 }
 
 export async function setAOYieldAgents(activeAddress: string, agents: AOYieldAgent[]) {
-  await ExtensionStorage.set(`ao_yield_agents_${activeAddress}`, agents);
+  const unlock = await agentStorageMutex.lock();
+  try {
+    await ExtensionStorage.set(`ao_yield_agents_${activeAddress}`, agents);
+  } finally {
+    unlock();
+  }
 }
 
 /**
@@ -369,10 +357,12 @@ export async function updateAOYieldAgent(agentId: string, updateData: Partial<AO
     // Free the keyfile from memory
     freeDecryptedWallet(decryptedWallet.keyfile);
 
-    const result = await aoInstance.result({
-      process: agentId,
-      message: messageId,
-    });
+    const result = await aoInstance
+      .result({
+        process: agentId,
+        message: messageId,
+      })
+      .catch(() => ({ Error: undefined }));
 
     if (result.Error) {
       throw new Error(`Failed to update agent: ${result.Error}`);
@@ -447,30 +437,6 @@ export const tokenIdInfoMap = {
 
 export function formatTokenQuantity(value: string, decimals: number) {
   return formatBalance(balanceToFractioned(String(value), { decimals })).displayBalance;
-}
-
-export async function getAODelegationInfo(address?: string) {
-  address = address || (await getActiveAddress());
-
-  const aoInstance = connect(defaultConfig);
-
-  const dryrunRes = await aoInstance.dryrun({
-    Id,
-    Owner,
-    process: "cuxSKjGJ-WDB9PzSkVkVVrIBSh3DrYHYz44usQOj5yE",
-    tags: [
-      { name: "Action", value: "Get-Delegations" },
-      { name: "Wallet", value: address },
-    ],
-  });
-
-  const message = dryrunRes.Messages?.[0];
-  const delegationInfo = JSON.parse(message?.Data || "[]");
-  const hasAODelegation = delegationInfo?.delegationPrefs?.some(
-    (pref: { walletTo: string }) => pref.walletTo === address,
-  );
-
-  return { hasAODelegation };
 }
 
 export function formatDate(date: Date | null, fallbackLabel: string) {

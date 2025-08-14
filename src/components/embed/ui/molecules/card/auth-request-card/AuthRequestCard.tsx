@@ -70,10 +70,9 @@ export function AuthRequestCard({
   return (
     <Card
       {...cardProps}
-      size="auto"
       hasBackButton={!!onBackButtonClick}
       onBackButtonClick={onBackButtonClick}
-      customIcon={<XClose fontSize={24} color={"#666666"} />}
+      customIcon={<XClose fontSize={24} style={{ color: "var(--color-font-body)", margin: 0 }} />}
       footerElement={footerElement}
       children={children}
       isDisabled={isDisabled}
