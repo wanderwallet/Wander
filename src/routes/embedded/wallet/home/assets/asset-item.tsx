@@ -61,6 +61,7 @@ export function AssetItem({ id, defaultLogo, tokenName, ticker, amount, fiatPric
   const balanceRef = useRef<HTMLSpanElement>(null);
   const tickerRef = useRef<HTMLSpanElement>(null);
 
+  const [isBalanceExpanded, setIsBalanceExpanded] = useState(false);
   const [balanceOffset, setBalanceOffset] = useState(undefined);
   const [balanceMaxWidth, setBalanceMaxWidth] = useState(undefined);
   const [nameMarqueeOffset, setNameMarqueeOffset] = useState(undefined);
@@ -94,16 +95,18 @@ export function AssetItem({ id, defaultLogo, tokenName, ticker, amount, fiatPric
   const [ellipseBalance, setEllipseBalance] = useState(false);
 
   const getEllipseBalance = useCallback(() => {
+    const nameElement = nameRef.current;
     const balanceElement = balanceRef.current;
     const infoElement = infoRef.current;
     const tickerElement = tickerRef.current;
 
-    if (!balanceElement || !infoElement || !tickerElement) return false;
+    if (!nameElement || !balanceElement || !infoElement || !tickerElement) return false;
 
+    const width = infoElement.offsetWidth - nameElement.offsetWidth - 16;
     const tickerWidth = tickerElement.offsetWidth;
     const balanceWidth = balanceElement.offsetWidth;
     const totalWidth = infoElement.offsetWidth - tickerWidth;
-    const visibleWidth = totalWidth / 2 - 16 - tickerWidth;
+    const visibleWidth = Math.max(width - tickerWidth, totalWidth / 2 - 16 - tickerWidth);
 
     return balanceWidth > visibleWidth;
   }, []);
@@ -114,19 +117,19 @@ export function AssetItem({ id, defaultLogo, tokenName, ticker, amount, fiatPric
 
     if (!nameElement || !infoElement) return false;
 
-    const width = infoElement.offsetWidth - nameElement.offsetWidth;
+    const width = infoElement.offsetWidth - nameElement.offsetWidth - 16;
     const halfTotalWidth = infoElement.offsetWidth / 2;
 
     return width > halfTotalWidth ? width : undefined;
   }, []);
 
   const throttledUpdateEllipseBalance = useThrottledCallback(() => {
-    setBalanceMaxWidth(getRealBalanceMaxWidth);
+    setBalanceMaxWidth(getRealBalanceMaxWidth());
     setEllipseBalance(getEllipseBalance());
   }, 500, []);
 
   useEffect(() => {
-    setBalanceMaxWidth(getRealBalanceMaxWidth);
+    setBalanceMaxWidth(getRealBalanceMaxWidth());
     setEllipseBalance(getEllipseBalance());
 
     window.addEventListener("resize", throttledUpdateEllipseBalance);
@@ -150,6 +153,8 @@ export function AssetItem({ id, defaultLogo, tokenName, ticker, amount, fiatPric
 
     if (balanceWidth <= visibleWidth) return;
 
+    setIsBalanceExpanded(true);
+
     setBalanceMaxWidth(infoElement.offsetWidth + 16);
 
     if (balanceWidth > totalWidth) {
@@ -160,8 +165,9 @@ export function AssetItem({ id, defaultLogo, tokenName, ticker, amount, fiatPric
   }
 
   const handleCollapse = () => {
+    setIsBalanceExpanded(false);
     setBalanceOffset(undefined);
-    setBalanceMaxWidth(undefined)
+    setBalanceMaxWidth(getRealBalanceMaxWidth())
 
     setNameMarqueeOffset(undefined);
     setBalanceMarqueeOffset(undefined)
@@ -202,10 +208,10 @@ export function AssetItem({ id, defaultLogo, tokenName, ticker, amount, fiatPric
           {tokenName}
         </Text>
 
-        <div className={ clsx(styles.balanceAndPrice, { [styles.ellipseBalance]: ellipseBalance && !balanceMaxWidth && !balanceMarqueeOffset }) } style={style} ref={ balanceAndPriceRef }>
+        <div className={ clsx(styles.balanceAndPrice, { [styles.ellipseBalance]: ellipseBalance && !isBalanceExpanded }) } style={style} ref={ balanceAndPriceRef }>
           <Text alignment="right" variant="bodyMd" style={{ color: "#121212" }} className={ styles.balance }>
             <span className={ styles.balanceAmountWrapper }>
-              <span className={ styles.balanceAmount } ref={ balanceRef } style={ balanceStyle } onMouseEnter={ handleExpandBalance } onMouseLeave={ handleCollapse }>{ balance }</span>
+              <span className={ styles.balanceAmount } ref={ balanceRef } style={ balanceStyle } onMouseEnter={ handleExpandBalance } onMouseLeave={ handleCollapse }>0.0000001</span>
             </span>
             <span className={ styles.balanceTicker } ref={ tickerRef }>{ ticker }</span>
           </Text>
