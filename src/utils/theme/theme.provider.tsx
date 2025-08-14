@@ -10,7 +10,6 @@ import { resolveThemeMode, darkModePreference } from "~utils/theme/theme.utils";
 import { ThemeContext } from "~utils/theme/theme.context";
 import { MotionGlobalConfig } from "framer-motion";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
-import { ThemeBackgroundObserver } from "~utils/theme/observer/theme-observer.component";
 import { ARCONNECT_THEME_BACKGROUND_COLOR, ARCONNECT_THEME_TEXT_COLOR } from "~utils/storage.utils";
 
 export function ThemeProvider({ children }: PropsWithChildren<{}>) {
@@ -164,10 +163,8 @@ export function ThemeProvider({ children }: PropsWithChildren<{}>) {
   useEffect(() => {
     if (import.meta.env?.VITE_IS_EMBEDDED_APP !== "1" || !isInsideIframe()) return;
 
-    if (window.parent !== window) {
-      // TODO: Update to use postEmbeddedMessage:
-      window.parent.postMessage({ type: "THEME_CHANGE", data: themeState }, "*");
-    }
+    // TODO: Update to use postEmbeddedMessage:
+    window.parent.postMessage({ type: "THEME_CHANGE", data: themeState }, "*");
   }, [themeState]);
 
   // Reduced motion preference (for Framer Motion):
@@ -239,11 +236,5 @@ export function ThemeProvider({ children }: PropsWithChildren<{}>) {
     [themeState, setTheme],
   );
 
-  return (
-    <ThemeContext.Provider value={themeContextValue}>
-      <ThemeBackgroundObserver displayTheme={displayTheme} />
-
-      {children}
-    </ThemeContext.Provider>
-  );
+  return <ThemeContext.Provider value={themeContextValue}>{children}</ThemeContext.Provider>;
 }

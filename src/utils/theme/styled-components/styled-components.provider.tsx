@@ -7,6 +7,7 @@ import {
   type ArconnectTheme,
 } from "@arconnect/components-rebrand";
 import { useTheme } from "~utils/theme/theme.hook";
+import { ThemeBackgroundObserver } from "~utils/theme/observer/theme-observer.component";
 
 /**
  * Modify the theme if the active wallet is a hardware wallet. We transform the
@@ -32,6 +33,8 @@ export function StyledComponentsThemeProvider({ children }: PropsWithChildren<{}
 
   return (
     <ThemeProvider theme={themeModifier(displayTheme === "dark" ? ARCONNECT_DARK_THEME : ARCONNECT_LIGHT_THEME)}>
+      <ThemeBackgroundObserver displayTheme={displayTheme} />
+
       {children}
     </ThemeProvider>
   );
