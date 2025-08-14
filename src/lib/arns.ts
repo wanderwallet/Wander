@@ -408,7 +408,8 @@ export function useArNSRecordsForAddress({ address }: { address: WalletAddress }
         const results = await getArNSRecordsForAddress({ address });
         return results.items.sort((a, b) => a.name.localeCompare(b.name));
       },
-      staleTime: 5 * 60 * 1000,
+      // 1 week; this should be refreshed when user mutates in app or user can use refresh button
+      staleTime: 7 * 24 * 60 * 60 * 1000,
       refetchOnWindowFocus: false,
       enabled: !!address,
     },

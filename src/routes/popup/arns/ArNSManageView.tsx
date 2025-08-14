@@ -1,7 +1,8 @@
 import { Card, Text } from "@arconnect/components-rebrand";
 import { PlusIcon } from "@iconicicons/react";
-import { LinkExternal02, Star01 } from "@untitled-ui/icons-react";
-import styled from "styled-components";
+import { LinkExternal02, Star01, RefreshCw01 } from "@untitled-ui/icons-react";
+import styled, { keyframes, css } from "styled-components";
+
 import { Flex } from "~components/common/Flex";
 import HeadV2 from "~components/popup/HeadV2";
 import { useArNSRecordsForAddress } from "~lib/arns";
@@ -11,7 +12,7 @@ import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import { useLocation } from "~wallets/router/router.utils";
 
 const Content = styled.main`
-  padding: 1.5rem;
+  padding: 0 1.5rem 1.5rem 1.5rem;
   flex: 1;
   flex-grow: 1;
   display: flex;
@@ -35,7 +36,14 @@ export const ArNSManageView = () => {
     instance: ExtensionStorage,
   });
 
-  const { data: arnsRecords, isFetching, isError } = useArNSRecordsForAddress({ address: activeAddress });
+  const {
+    data: arnsRecords,
+    isFetching,
+    isError,
+    refetch,
+  } = useArNSRecordsForAddress({
+    address: activeAddress,
+  });
 
   const { data: profile, isFetching: isProfileFetching } = useNameServiceProfile(activeAddress);
 
@@ -46,10 +54,14 @@ export const ArNSManageView = () => {
       <Content>
         {isError ? (
           <Text style={{ textAlign: "center", margin: ".5rem auto", width: "100%" }}>Unable to load ArNS records</Text>
-        ) : isFetching || isProfileFetching ? (
+        ) : !arnsRecords && (isFetching || isProfileFetching) ? (
           <Text style={{ textAlign: "center", margin: ".5rem auto", width: "100%" }}>Loading...</Text>
         ) : (
           <>
+            <Flex justify="space-between" align="center">
+              <Text>Your ArNS Names</Text>
+              <SpinningRefreshIcon isFetching={isFetching} onClick={() => refetch()} />
+            </Flex>
             {!!arnsRecords &&
               arnsRecords.map((arnsRecord) => (
                 <ManageCard
@@ -130,4 +142,23 @@ const ManageCard = styled(Card)`
 
 const StarToggle = styled(Star01)<{ selected: boolean }>`
   ${(props) => (props.selected ? `fill: rgba(255, 227, 66, 1); color: rgba(255, 227, 66, 1);` : "cursor: pointer;")}
+`;
+
+const spin = keyframes`
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+`;
+
+const SpinningRefreshIcon = styled(RefreshCw01)<{ isFetching: boolean }>`
+  cursor: pointer;
+  color: rgb(var(--theme-primary));
+  width: 1.25rem;
+  height: 1.25rem;
+  opacity: ${({ isFetching }) => (isFetching ? 0.5 : 1)};
+  transition: opacity 0.2s ease;
+  ${({ isFetching }) =>
+    isFetching &&
+    css`
+      animation: ${spin} 1s linear infinite;
+    `}
 `;
