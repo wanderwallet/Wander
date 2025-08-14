@@ -19,6 +19,7 @@ import Arweave from "arweave";
 import { queryClient } from "~utils/tanstack";
 
 let tokens: TokenInfo[] = null;
+
 export let tokenInfoMap = new Map<string, TokenInfo | Token>();
 
 export type AoInstance = ReturnType<typeof connect>;
@@ -69,14 +70,18 @@ export const VERIFIED_TOKENS = new Set<string>([
   LOAD_PROCESS_ID,
 ]);
 
+export const AR_LOGO = "jZ2XPRj37W-QNb3BwWWIyEelv-7nQjBHg0g6WLX91IM";
+
+export const AR_TOKEN_INFO: TokenInfo = {
+  Name: "AR",
+  Ticker: "AR",
+  Denomination: 12,
+  Logo: AR_LOGO,
+  processId: AR_PROCESS_ID,
+};
+
 export const defaultTokens = [
-  {
-    Name: "Arweave",
-    Ticker: "AR",
-    Denomination: 12,
-    Logo: "jZ2XPRj37W-QNb3BwWWIyEelv-7nQjBHg0g6WLX91IM",
-    processId: AR_PROCESS_ID,
-  },
+  AR_TOKEN_INFO,
   {
     Name: "AO",
     Ticker: "AO",

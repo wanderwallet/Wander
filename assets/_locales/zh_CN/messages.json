@@ -3648,6 +3648,18 @@
         "message": "只需点击仪表板上的“赚取”按钮，即可在 Wander 浏览器扩展中轻松管理和自定义你的 AO 公平启动委托分配。",
         "description": "Announcement 5 body"
     },
+    "announcement_6_title": {
+        "message": "StarGrid 战斗通行证！",
+        "description": "Announcement 6 title"
+    },
+    "announcement_6_description": {
+        "message": "WNDR 代币持有者专享",
+        "description": "Announcement 6 description"
+    },
+    "announcement_6_body": {
+        "message": "WNDR 代币持有者获得 StarGrid 战斗策略的即时访问权限。连接你的 Wander 钱包，完成验证并解锁访问权限。立即在 [StarGrid](https://stargrid.ar.io) 上尝试",
+        "description": "Announcement 6 body"
+    },
     "swipe_to_learn_more": {
       "message": "滑动了解更多",
       "description": "Swipe to learn more text"
@@ -3906,6 +3918,10 @@
       "message": "帮助",
       "description": "Help text"
     },
+    "help_description": {
+      "message": "获取 Wander 的帮助",
+      "description": "Help description"
+    },
     "help_center": {
       "message": "帮助中心",
       "description": "Help Center text"
@@ -4109,5 +4125,21 @@
     "no_activity_yet": {
       "message": "暂无活动",
       "description": "No activity yet text"
+    },
+    "agents_syncing": {
+      "message": "代理同步中",
+      "description": "Agents syncing text"
+    },
+    "stargrid_battle_pass": {
+      "message": "StarGrid 战斗通行证",
+      "description": "StarGrid battle pass text"
+    },
+    "stargrid_claim_now": {
+      "message": "立即领取",
+      "description": "StarGrid claim now text"
+    },
+    "days": {
+      "message": "天",
+      "description": "Days text"
     }
 }

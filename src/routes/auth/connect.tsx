@@ -25,7 +25,7 @@ import { useActiveWallet } from "~wallets/hooks";
 import Checkbox from "~components/Checkbox";
 import { ChevronRight, Edit02, InfoCircle, RefreshCcw01 } from "@untitled-ui/icons-react";
 import WanderIcon from "url:assets/icon.svg";
-import Image from "~components/common/Image";
+import { Image } from "~components/common/Image/Image";
 import { Flex } from "~components/common/Flex";
 import { useNameServiceProfile } from "~lib/nameservice";
 import { FULL_HISTORY, useGateway } from "~gateways/wayfinder";
@@ -455,12 +455,13 @@ const ConfirmPage = ({
 }) => (
   <ConnectPageContent>
     <Section showPaddingVertical={false} style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-      <div style={{ textAlign: "center" }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
         <PrimaryText fontSize={20} fontWeight={600}>
           {browser.i18n.getMessage("confirm_permissions", [appInfo.name || url])}
         </PrimaryText>
-        <SecondaryText>{url}</SecondaryText>
+        {appInfo.name !== url ? <SecondaryText>{url}</SecondaryText> : null}
       </div>
+
       <PolicyOptionContainer>
         {signPolicyOptions.map((option) => (
           <PolicyOption key={option} onClick={() => setSignPolicy(option)}>
@@ -527,8 +528,7 @@ const UnlockWrapper = styled(motion.div).attrs({
 const IconWrapper = styled(Image).attrs((props) => ({
   height: 48,
   width: 48,
-  borderRadius: 48,
-  objectFit: "contain",
+  borderRadius: "circular",
   backgroundColor: props.backgroundColor || "#fffefc",
 }))``;
 

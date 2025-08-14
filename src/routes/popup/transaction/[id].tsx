@@ -7,7 +7,7 @@ import { STAKED_GQL_FULL_HISTORY, useGateway, useGraphqlGateways } from "~gatewa
 import { useLocation, useSearchParams } from "~wallets/router/router.utils";
 import { ChevronDownIcon, ChevronUpIcon, DownloadIcon } from "@iconicicons/react";
 import { formatAddress } from "~utils/format";
-import { concatGatewayURL, getArweaveLink, urlToGateway } from "~gateways/utils";
+import { concatGatewayURL, urlToGateway } from "~gateways/utils";
 import { gql } from "~gateways/api";
 import CustomGatewayWarning from "~components/auth/CustomGatewayWarning";
 import Skeleton from "~components/Skeleton";
@@ -30,9 +30,15 @@ import type { WanderRoutePath, CommonRouteProps } from "~wallets/router/router.t
 import { ErrorTypes } from "~utils/error/error.utils";
 import { LinkExternal02 } from "@untitled-ui/icons-react";
 import { AdaptiveBalanceDisplay } from "~components/AdaptiveBalanceDisplay";
-import arweaveLogo from "url:/assets/ar/logo_light.png";
 import { useTokenPrice } from "~tokens/hooks";
-import { AO_AUTHORITY_ID, AR_PROCESS_ID, fetchTokenByProcessId, getTagValue } from "~tokens/aoTokens/ao";
+import {
+  AO_AUTHORITY_ID,
+  AR_PROCESS_ID,
+  AR_TOKEN_INFO,
+  fetchTokenByProcessId,
+  getTagValue,
+  type TokenInfo,
+} from "~tokens/aoTokens/ao";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 // pull contacts and check if to address is in contacts
@@ -67,7 +73,6 @@ export function TransactionView({ params: { id, gateway: gw, message } }: Transa
 
   // fetch tx data
   const [transaction, setTransaction] = useState<GQLNodeInterface>();
-  const [logo, setLogo] = useState<string | undefined>(undefined);
 
   const [wallets] = useStorage<StoredWallet[]>(
     {
@@ -105,10 +110,6 @@ export function TransactionView({ params: { id, gateway: gw, message } }: Transa
   // const [contact, setContact] = useState<any | undefined>(undefined);
   const fromContact = useContact(fromAddress);
   const toContact = useContact(toAddress);
-
-  const [ticker, setTicker] = useState<string | null>(null);
-
-  const [showTags, setShowTags] = useState<boolean>(false);
 
   // arweave gateway
   const defaultGateway = useGateway(STAKED_GQL_FULL_HISTORY);
@@ -153,6 +154,10 @@ export function TransactionView({ params: { id, gateway: gw, message } }: Transa
     navigate((backPath as WanderRoutePath) || "/");
   }
 
+  const [ticker, setTicker] = useState<string | null>(null);
+  const [showTags, setShowTags] = useState<boolean>(false);
+  const [tokenInfo, setTokenInfo] = useState<TokenInfo | null>(null);
+
   useEffect(() => {
     if (!id || !graphqlGateways.length) return;
 
@@ -178,16 +183,13 @@ export function TransactionView({ params: { id, gateway: gw, message } }: Transa
 
           try {
             const tokenInfo = await fetchTokenByProcessId(tokenIdTag.value);
-            if (tokenInfo?.Logo) {
-              const tokenLogo = await getArweaveLink(tokenInfo.Logo);
-              setLogo(tokenLogo);
-            } else {
-              setLogo(arweaveLogo);
-            }
+
+            setTokenInfo(tokenInfo);
           } catch {
-            setLogo(arweaveLogo);
+            setTokenInfo(null);
           }
         }
+
         return;
       }
 
@@ -246,30 +248,32 @@ export function TransactionView({ params: { id, gateway: gw, message } }: Transa
 
             if (aoQuantity) {
               const tokenInfo = await fetchTokenByProcessId(tokenId);
+
               if (tokenInfo) {
                 const amount = balanceToFractioned(aoQuantity, {
                   id: data.transaction.recipient,
                   decimals: Number(tokenInfo.Denomination),
                 });
+
                 setTicker(tokenInfo?.type === "collectible" ? tokenInfo.Name! : tokenInfo.Ticker!);
-                if (tokenInfo?.Logo) {
-                  const tokenLogo = await getArweaveLink(tokenInfo.Logo);
-                  setLogo(tokenLogo);
-                } else {
-                  setLogo(arweaveLogo);
-                }
+                setTokenInfo(tokenInfo);
+
                 data.transaction.quantity = {
                   ar: amount.toFixed(),
                   winston: "",
                 };
                 data.transaction.recipient = aoRecipient;
               } else {
-                setLogo(arweaveLogo);
+                // TODO: Should this case ever happen?
+
                 setTicker(formatAddress(data.transaction.recipient, 4));
+                setTokenInfo(AR_TOKEN_INFO);
+
                 const amount = balanceToFractioned(aoQuantity, {
                   id: data.transaction.recipient,
                   decimals: 0,
                 });
+
                 data.transaction.quantity = {
                   ar: amount.toFixed(),
                   winston: "",
@@ -277,10 +281,12 @@ export function TransactionView({ params: { id, gateway: gw, message } }: Transa
               }
             }
           } else {
-            setLogo(arweaveLogo);
+            setTokenInfo(AR_TOKEN_INFO);
           }
-        } catch {
-          //
+        } catch (err) {
+          console.error("Error fetching tx =", err);
+
+          setTokenInfo(null);
         }
 
         setTransaction(data.transaction);
@@ -409,12 +415,7 @@ export function TransactionView({ params: { id, gateway: gw, message } }: Transa
                     gap: 8,
                   }}>
                   {transactionDirection && <TransactionDirection>{transactionDirection}</TransactionDirection>}
-                  <AdaptiveBalanceDisplay
-                    balance={transaction.quantity.ar}
-                    ticker={ticker || "AR"}
-                    ao={ao}
-                    logo={logo}
-                  />
+                  <AdaptiveBalanceDisplay token={tokenInfo} balance={transaction.quantity.ar} ao={ao} />
                   {hasPrice && !loading && <FiatAmount>{formatFiatBalance(fiatPrice, currency)}</FiatAmount>}
                 </Section>
                 <AnimatePresence>{gw && <CustomGatewayWarning simple />}</AnimatePresence>

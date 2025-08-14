@@ -1,10 +1,10 @@
 import styled from "styled-components";
-import { useTheme } from "~utils/theme";
 import { useLocation } from "~wallets/router/router.utils";
 import dayjs from "dayjs";
 import { SettingIconWrapper, SettingImage } from "~components/dashboard/list/BaseElement";
 import { RecurringPaymentFrequency, SubscriptionStatus } from "~subscriptions/subscription";
 import type { DisplayTheme } from "@arconnect/components";
+import { useTheme } from "~utils/theme/theme.hook";
 
 export interface SubscriptionListItemProps {
   id: string;
@@ -18,7 +18,7 @@ export interface SubscriptionListItemProps {
 
 export const SubscriptionListItem = ({ title, expiration, status, frequency, amount, id, icon }) => {
   const { navigate } = useLocation();
-  const theme = useTheme();
+  const { displayTheme } = useTheme();
 
   let period: string = "";
   const color: string = getColorByStatus(status as SubscriptionStatus);
@@ -43,11 +43,11 @@ export const SubscriptionListItem = ({ title, expiration, status, frequency, amo
   return (
     <ListItem onClick={() => navigate(`/subscriptions/${id}`)}>
       <Content>
-        <SettingIconWrapper bg={theme === "light" ? "235,235,235" : "255, 255, 255"} customSize="2rem">
+        <SettingIconWrapper bg={displayTheme === "light" ? "235,235,235" : "255, 255, 255"} customSize="2rem">
           {icon && <SettingImage src={icon} />}
         </SettingIconWrapper>
         <ListDetails>
-          <Title displayTheme={theme}>
+          <Title displayTheme={displayTheme}>
             <h2>{title}</h2>
             <h3>Next payment date: {expiration ? <span>{dayjs(expiration).format("MMM DD, YYYY")} </span> : "--"}</h3>
           </Title>

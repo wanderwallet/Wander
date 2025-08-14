@@ -1,15 +1,13 @@
 import { Row, Text, Box, Divider, Snackbar } from "~components/embed/ui";
 import { useCurrentAuthRequest } from "~utils/auth/auth.hooks";
-import Image from "~components/common/Image";
-import { useEffect, useMemo, useState } from "react";
+import { Image } from "~components/common/Image/Image";
+import { useMemo, useState } from "react";
 import Application, { type AppInfo } from "~applications/application";
 import { type Gateway } from "~gateways/gateway";
 import { Quantity } from "ao-tokens";
-import { getUserAvatar } from "~lib/avatar";
 import { fetchTokenByProcessId, getTagValue, type TokenInfo } from "~tokens/aoTokens/ao";
 import { ExtensionStorage, PersistentStorage, useStorage } from "~utils/storage";
 import { humanizeTimestampTags } from "~utils/timestamp";
-import arLogoLight from "url:/assets/ar/logo_light.png";
 import { useTokenBalance } from "~tokens/hooks";
 import { Loading } from "@arconnect/components-rebrand";
 import TransactionMessage from "~components/embed/auth/TransactionMessage";
@@ -24,10 +22,8 @@ export function EmbeddedSignDataAuthRequestView() {
 
   const [appInfo, setAppInfo] = useState<AppInfo & { gateway: Gateway }>();
   const [loading, setLoading] = useState<boolean>(false);
-  const [tokenName, setTokenName] = useState<string>("");
-  const [logo, setLogo] = useState<string>("");
+  const [tokenInfo, setTokenInfo] = useState<TokenInfo | null>(null);
   const [amount, setAmount] = useState<Quantity | null>(null);
-  const [denomination, setDenomination] = useState<number>(null);
 
   // active address
   const [activeAddress] = useStorage<string>(
@@ -42,24 +38,21 @@ export function EmbeddedSignDataAuthRequestView() {
   const quantity = useMemo(() => getTagValue("Quantity", tags) || "0", [tags]);
   const transfer = useMemo(() => tags.some((tag) => tag.name === "Action" && tag.value === "Transfer"), [tags]);
   const process = data?.target;
+  const tokenName = tokenInfo?.Name;
 
-  const tokenInfo = useMemo(
-    () => ({
+  const { data: balance = "0", isLoading: balanceLoading } = useTokenBalance(
+    {
       processId: process,
-      Denomination: denomination,
-    }),
-    [process, denomination],
+      Denomination: tokenInfo?.Denomination,
+    },
+    activeAddress,
   );
-
-  const { data: balance = "0", isLoading: balanceLoading } = useTokenBalance(tokenInfo, activeAddress);
 
   const formattedBalance = useMemo(() => {
     return formatBalance(balance).displayBalance;
   }, [balance]);
 
   const formattedAmount = useMemo(() => (amount || 0).toLocaleString(), [amount]);
-
-  const arweaveLogo = arLogoLight;
 
   useAsyncEffect(async () => {
     if (!url) return;
@@ -72,53 +65,42 @@ export function EmbeddedSignDataAuthRequestView() {
   }, [url]);
 
   // get ao token info
-  useEffect(() => {
-    const fetchTokenInfo = async () => {
-      if (!process || !transfer) return;
-      let tokenInfo: TokenInfo;
+  useAsyncEffect(async () => {
+    if (!process || !transfer) return;
+
+    let tokenInfo: TokenInfo;
+
+    try {
+      setLoading(true);
+
+      tokenInfo = await fetchTokenByProcessId(data.target);
+
+      if (!tokenInfo) throw new Error("Token not found");
+    } catch (err) {
+      // fallback
+      console.log("err", err);
+
       try {
-        setLoading(true);
-        tokenInfo = await fetchTokenByProcessId(data.target);
-        if (!tokenInfo) throw new Error("Token not found");
-      } catch (err) {
-        // fallback
-        console.log("err", err);
-        try {
-          const [aoTokens = [], aoTokensCache = []] = await Promise.all([
-            PersistentStorage.get<TokenInfo[]>("ao_tokens"),
-            PersistentStorage.get<TokenInfo[]>("ao_tokens_cache"),
-          ]);
-          const aoTokensCombined = [...aoTokens, ...aoTokensCache];
-          const token = aoTokensCombined.find(({ processId }) => data.target === processId);
-          if (token) {
-            tokenInfo = token;
-          }
-        } catch {}
-      } finally {
-        if (tokenInfo) {
-          if (tokenInfo?.Logo) {
-            const logo = await getUserAvatar(tokenInfo?.Logo);
-            setLogo(logo || "");
-          } else {
-            setLogo(arweaveLogo);
-          }
-
-          const tokenAmount = new Quantity(BigInt(quantity), BigInt(tokenInfo.Denomination));
-          setTokenName(tokenInfo.Name);
-          setAmount(tokenAmount);
-          setDenomination(tokenInfo.Denomination);
+        const [aoTokens = [], aoTokensCache = []] = await Promise.all([
+          PersistentStorage.get<TokenInfo[]>("ao_tokens"),
+          PersistentStorage.get<TokenInfo[]>("ao_tokens_cache"),
+        ]);
+        const aoTokensCombined = [...aoTokens, ...aoTokensCache];
+        const token = aoTokensCombined.find(({ processId }) => data.target === processId);
+        if (token) {
+          tokenInfo = token;
         }
-        setLoading(false);
+      } catch {}
+    } finally {
+      if (tokenInfo) {
+        const tokenAmount = new Quantity(BigInt(quantity), BigInt(tokenInfo.Denomination));
+        setAmount(tokenAmount);
+        setTokenInfo(tokenInfo);
       }
-    };
-    fetchTokenInfo();
-  }, [data]);
 
-  useEffect(() => {
-    if (tokenName && !logo) {
-      setLogo(arweaveLogo);
+      setLoading(false);
     }
-  }, [tokenName, logo]);
+  }, [data]);
 
   return (
     <AuthRequestCard
@@ -132,8 +114,7 @@ export function EmbeddedSignDataAuthRequestView() {
           <Image
             height={48}
             width={48}
-            borderRadius={10}
-            objectFit="contain"
+            borderRadius="rounded"
             style={{ border: "1px solid #D6D6DD", flexShrink: 0 }}
             src={appInfo?.logo}
           />

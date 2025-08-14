@@ -4,7 +4,7 @@ import type { InjectedEvents } from "~utils/events";
 import "styled-components";
 import type { AuthRequestMessageData, AuthResult } from "~utils/auth/auth.types";
 import { EmbeddedMessage, EmbeddedCall } from "~utils/embedded/utils/messages/embedded-messages.types.ts";
-import type { ThemeMode } from "~components/embed/contexts/ThemeContext";
+import type { ThemeMode } from "~utils/theme/theme.hook";
 import type { DirectAccess } from "~wallets/router/iframe/iframe.routes";
 
 declare module "@arconnect/webext-bridge" {
