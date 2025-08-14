@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import styles from "./Dropdown.module.css";
 import type { DropdownBaseProps } from "./Dropdown.types";
 import { ArrowDownIcon, Avatar, Text } from "../../atoms";
-import { useTheme } from "../../../contexts/ThemeContext";
+import { useTheme } from "../../../../../utils/theme/theme.hook";
 
 const Dropdown = React.forwardRef<HTMLDivElement, DropdownBaseProps>(
   ({ className, children, label, ...props }, ref) => {

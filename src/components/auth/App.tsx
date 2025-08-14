@@ -1,16 +1,11 @@
 import { type DisplayTheme, Section, Spacer, Text, ListItem } from "@arconnect/components-rebrand";
-import { defaultGateway, type Gateway } from "~gateways/gateway";
-import { useTheme as useDisplayTheme } from "~utils/theme";
+import { type Gateway } from "~gateways/gateway";
 import type { Allowance } from "~applications/allowance";
-import { formatTokenBalance } from "~tokens/currency";
 import { GridIcon } from "@iconicicons/react";
-import { useMemo } from "react";
 import Squircle from "~components/Squircle";
 import browser from "webextension-polyfill";
-import Arweave from "arweave";
 import styled from "styled-components";
 import Label from "./Label";
-import { Quantity } from "ao-tokens";
 
 export default function App({ appIcon, appName, appUrl, gateway, allowance, showTitle = true }: Props) {
   // // allowance spent in AR
@@ -49,9 +44,14 @@ export default function App({ appIcon, appName, appUrl, gateway, allowance, show
       )}
       <SidePaddingSection>
         <ListItem
-          title={<PrimaryText>{appName || appUrl}</PrimaryText>}
+          title={<PrimaryText style={{ display: "block" }}>{appName || appUrl}</PrimaryText>}
           img={appIcon}
-          subtitle={<SecondaryText>{`${browser.i18n.getMessage("gateway")}: ${gateway?.host || ""}`}</SecondaryText>}
+          subtitle={
+            <SecondaryText
+              style={{
+                display: "block",
+              }}>{`${browser.i18n.getMessage("gateway")}: ${gateway?.host || ""}`}</SecondaryText>
+          }
           style={{ pointerEvents: "none" }}
         />
         {/* <Wrapper displayTheme={theme}>

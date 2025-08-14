@@ -6,30 +6,27 @@ import {
   type ExtendedTransaction,
 } from "~lib/transactions";
 import browser from "webextension-polyfill";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import arLogoLight from "url:/assets/ar/logo_light.png";
-import { Logo } from "~components/popup/Token";
-import { getArweaveLink } from "~gateways/utils";
+import { useCallback, useMemo } from "react";
+import { TokenLogo } from "~components/popup/TokenLogo";
+import type { TokenInfo } from "~tokens/aoTokens/ao";
 
 interface TransactionItemProps {
   transaction: ExtendedTransaction;
 }
 
 const TransactionItem = ({ transaction }: TransactionItemProps) => {
-  const [logoSource, setLogoSource] = useState<string>();
+  const tokenInfo = useMemo(() => {
+    const { aoInfo } = transaction;
 
-  useEffect(() => {
-    const fetchLogo = async () => {
-      if (transaction.aoInfo?.logo) {
-        const logo = await getArweaveLink(transaction.aoInfo.logo);
-        setLogoSource(logo!);
-      } else {
-        setLogoSource(arLogoLight);
-      }
-    };
-
-    fetchLogo();
-  }, [transaction.aoInfo?.logo]);
+    return aoInfo
+      ? ({
+          processId: "",
+          Denomination: aoInfo.denomination,
+          Logo: aoInfo.logo,
+          Ticker: aoInfo.tickerName,
+        } satisfies TokenInfo)
+      : "AR";
+  }, [transaction]);
 
   const handleTransactionClick = useCallback(() => {
     const id = transaction.node.id;
@@ -47,7 +44,7 @@ const TransactionItem = ({ transaction }: TransactionItemProps) => {
   return (
     <Box hasBorder style={{ cursor: "pointer" }} onClick={handleTransactionClick}>
       <Row isFullWidth style={{ width: "100%" }}>
-        <Logo src={logoSource} alt={transaction.aoInfo?.tickerName} height={24} width={24} />
+        <TokenLogo token={tokenInfo} size={24} />
         <Box
           style={{
             flex: 1,

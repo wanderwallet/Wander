@@ -24,7 +24,6 @@ import { uploadUserAvatar, getUserAvatar } from "~lib/avatar";
 import styled from "styled-components";
 import copy from "copy-to-clipboard";
 import { gql } from "~gateways/api";
-import { useTheme } from "~utils/theme";
 import { useLocation, useSearchParams } from "~wallets/router/router.utils";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { RemoveButton } from "~routes/popup/settings/wallets/[address]";
@@ -54,7 +53,6 @@ export function AddContactDashboardView({ isQuickSetting }: AddContactDashboardV
     instance: ExtensionStorage,
   });
 
-  const theme = useTheme();
   const { setToast } = useToasts();
 
   const [contact, setContact] = useState({

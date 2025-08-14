@@ -3,12 +3,14 @@ import { useLocation } from "~wallets/router/router.utils";
 import { useTransak } from "~utils/transak/transak.hooks";
 import browser from "webextension-polyfill";
 import AutosizeInput from "react-input-autosize";
-import arLogo from "url:/assets/ecosystem/ar-logo.svg";
 import { PaymentSelector, CurrencySelector } from "./components/selector";
 import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
+import { DefaultCard } from "~components/embed/ui/molecules/card/default-card/DefaultCard";
+
+// TODO: It would be better to use React component SVG that uses `currentColor`
+import arLogo from "url:/assets/ecosystem/ar-logo.svg";
 
 import styles from "./buy.module.scss";
-import { DefaultCard } from "~components/embed/ui/molecules/card/default-card/DefaultCard";
 
 const TRANSAK_API_KEY = import.meta.env?.VITE_TRANSAK_API_KEY;
 

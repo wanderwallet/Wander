@@ -3,7 +3,7 @@ import clsx from "clsx";
 import styles from "./Divider.module.css";
 import type { DividerBaseProps } from "./Divider.types";
 import { Text } from "../text";
-import { useTheme } from "../../../contexts/ThemeContext";
+import { useTheme } from "../../../../../utils/theme/theme.hook";
 
 const Divider = forwardRef<HTMLDivElement, DividerBaseProps>(
   ({ text, textPosition = "center", className, ...props }, ref) => {

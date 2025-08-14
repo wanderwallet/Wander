@@ -66,12 +66,6 @@ export function AuthImportSeedphraseEmbeddedView() {
         return;
       }
 
-      if (wallets.length > 0) {
-        toast.error("Can't add more than one wallet to your account.");
-
-        return;
-      }
-
       setIsLoading(true);
       await registerWallet("IMPORTED");
     } catch (error) {

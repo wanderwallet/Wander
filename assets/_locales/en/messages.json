@@ -3688,6 +3688,18 @@
     "message": "Easily manage and customize your your AO fair launch delegation allocations directly within the Wander browser extension by clicking the Earn button on your Dashboard.",
     "description": "Announcement 5 body"
   },
+  "announcement_6_title": {
+    "message": "StarGrid Battle Pass!",
+    "description": "Announcement 6 title"
+  },
+  "announcement_6_description": {
+    "message": "Exclusive for WNDR Token holders",
+    "description": "Announcement 6 description"
+  },
+  "announcement_6_body": {
+    "message": "WNDR Token holders receive instant access to the StarGrid Battle Tactics. Connect your Wander wallet, get verified and unlock access. Try now on [StarGrid](https://stargrid.ar.io)",
+    "description": "Announcement 6 body"
+  },
   "swipe_to_learn_more": {
     "message": "Swipe to learn more",
     "description": "Swipe to learn more text"
@@ -3946,6 +3958,10 @@
     "message": "Help",
     "description": "Help text"
   },
+  "help_description": {
+    "message": "Get help with Wander",
+    "description": "Help description"
+  },
   "help_center": {
     "message": "Help Center",
     "description": "Help Center text"
@@ -4149,5 +4165,21 @@
   "no_activity_yet": {
     "message": "No activity yet",
     "description": "No activity yet text"
+  },
+  "agents_syncing": {
+    "message": "Agents syncing",
+    "description": "Agents syncing text"
+  },
+  "stargrid_battle_pass": {
+    "message": "StarGrid Battle Pass",
+    "description": "StarGrid battle pass text"
+  },
+  "stargrid_claim_now": {
+    "message": "Claim Now!",
+    "description": "StarGrid claim now text"
+  },
+  "days": {
+    "message": "Days",
+    "description": "Days text"
   }
 }

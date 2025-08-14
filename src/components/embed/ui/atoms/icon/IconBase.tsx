@@ -1,5 +1,5 @@
 import React from "react";
-import { useTheme } from "../../../contexts/ThemeContext";
+import { useTheme } from "../../../../../utils/theme/theme.hook";
 
 export type IconBaseProps = {
   color?: string;
