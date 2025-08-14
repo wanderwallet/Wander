@@ -1,13 +1,13 @@
 import { useHashLocation } from "wouter/use-hash-location";
 import { Router as Wouter, Route as Woute } from "wouter";
-
 import { SettingsDashboardView } from "~routes/dashboard";
-import { WanderThemeProvider } from "~components/hardware/HardwareWalletTheme";
+import { StyledComponentsThemeProvider } from "~utils/theme/styled-components/styled-components.provider";
 import { useEffect } from "react";
 import { handleSyncLabelsAlarm } from "~api/background/handlers/alarms/sync-labels/sync-labels-alarm.handler";
 import { WalletsProvider } from "~utils/wallets/wallets.provider";
 import { ErrorBoundary } from "~utils/error/ErrorBoundary/errorBoundary";
 import { FallbackView } from "~components/page/common/Fallback/fallback.view";
+import { ThemeProvider } from "~utils/theme/theme.provider";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "~utils/tanstack";
 
@@ -21,17 +21,19 @@ export function DashboardApp() {
 
 export function DashboardAppRoot() {
   return (
-    <WanderThemeProvider>
-      <ErrorBoundary fallback={FallbackView}>
-        <WalletsProvider>
-          <QueryClientProvider client={queryClient}>
-            <Wouter hook={useHashLocation}>
-              <DashboardApp />
-            </Wouter>
-          </QueryClientProvider>
-        </WalletsProvider>
-      </ErrorBoundary>
-    </WanderThemeProvider>
+    <ThemeProvider>
+      <StyledComponentsThemeProvider>
+        <ErrorBoundary fallback={FallbackView}>
+          <WalletsProvider>
+            <QueryClientProvider client={queryClient}>
+              <Wouter hook={useHashLocation}>
+                <DashboardApp />
+              </Wouter>
+            </QueryClientProvider>
+          </WalletsProvider>
+        </ErrorBoundary>
+      </StyledComponentsThemeProvider>
+    </ThemeProvider>
   );
 }
 

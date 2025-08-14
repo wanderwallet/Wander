@@ -1,4 +1,4 @@
-import type { ThemeMode } from "~components/embed/contexts/ThemeContext";
+import type { ThemeMode } from "~utils/theme/theme.hook";
 
 const { search = "", ancestorOrigins = [] } =
   import.meta.env?.VITE_IS_EMBEDDED_APP === "1" && typeof document !== "undefined" ? document.location : {};

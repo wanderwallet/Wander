@@ -7,7 +7,6 @@ import { useHardwareApi } from "~wallets/hooks";
 import type { StoredWallet } from "~wallets";
 import { formatAddress, getAppURL, truncateMiddle } from "~utils/format";
 import { removeApp } from "~applications";
-import { useTheme } from "~utils/theme";
 import { Button, Card, type DisplayTheme, Text, useToasts, Tooltip } from "@arconnect/components-rebrand";
 import { CheckIcon, CopyIcon, GlobeIcon, LogOutIcon, SettingsIcon } from "@iconicicons/react";
 import WalletSwitcher, { popoverAnimation } from "./WalletSwitcher";
@@ -36,6 +35,7 @@ import { useActiveTier } from "~utils/tier/hooks";
 import { QrCode02 } from "@untitled-ui/icons-react";
 import { IconButton } from "~components/common/IconButton";
 import { useLocation } from "~wallets/router/router.utils";
+import { useTheme } from "~utils/theme/theme.hook";
 
 const glowBackgrounds = {
   [TierTypes.Core]: coreHeaderGlow,
@@ -46,8 +46,8 @@ const glowBackgrounds = {
 };
 
 export default function WalletHeader() {
-  const theme = useTheme();
   const { navigate } = useLocation();
+  const { displayTheme } = useTheme();
 
   const { data: activeTier } = useActiveTier();
 
@@ -170,7 +170,7 @@ export default function WalletHeader() {
   const glowBackground = glowBackgrounds[activeTier?.tier || TierTypes.Core];
 
   return (
-    <Wrapper displayTheme={theme} scrolled={scrollY > 14} glowBackground={glowBackground}>
+    <Wrapper displayTheme={displayTheme} scrolled={scrollY > 14} glowBackground={glowBackground}>
       <Flex align="center" gap="8px">
         <AppAction
           onClick={(e) => {
