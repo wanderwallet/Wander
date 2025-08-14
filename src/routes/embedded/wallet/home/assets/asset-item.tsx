@@ -211,7 +211,7 @@ export function AssetItem({ id, defaultLogo, tokenName, ticker, amount, fiatPric
         <div className={ clsx(styles.balanceAndPrice, { [styles.ellipseBalance]: ellipseBalance && !isBalanceExpanded }) } style={style} ref={ balanceAndPriceRef }>
           <Text alignment="right" variant="bodyMd" style={{ color: "#121212" }} className={ styles.balance }>
             <span className={ styles.balanceAmountWrapper }>
-              <span className={ styles.balanceAmount } ref={ balanceRef } style={ balanceStyle } onMouseEnter={ handleExpandBalance } onMouseLeave={ handleCollapse }>0.0000001</span>
+              <span className={ styles.balanceAmount } ref={ balanceRef } style={ balanceStyle } onMouseEnter={ handleExpandBalance } onMouseLeave={ handleCollapse }>{ balance }</span>
             </span>
             <span className={ styles.balanceTicker } ref={ tickerRef }>{ ticker }</span>
           </Text>
