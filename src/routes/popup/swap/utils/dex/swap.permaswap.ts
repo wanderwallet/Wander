@@ -79,8 +79,6 @@ export async function getLiquidity({ poolId, tokenIn, tokenOut }: GetLiquidityPa
   const reserveOut = getTagValue(isTokenInX ? "PY" : "PX", tags) || "0";
   const totalSupply = getTagValue("TotalSupply", tags) || "0";
 
-  const feeInfo = await getFee(poolId);
-
   return {
     poolId,
     tokenIn,
@@ -88,41 +86,11 @@ export async function getLiquidity({ poolId, tokenIn, tokenOut }: GetLiquidityPa
     reserveIn,
     reserveOut,
     totalSupply,
-    feeInfo,
   } satisfies GetLiquidityResponse;
-}
-
-export async function getFee(poolId: string) {
-  return {};
-  const response = await aoInstance.dryrun({
-    process: poolId,
-    tags: [{ name: "Action", value: "Info" }],
-  });
-
-  const tags = response?.Messages?.[0]?.Tags || [];
-  const poolFeePercentage = getTagValue("PoolFeeRatio", tags) || "0";
-
-  const settle = PERMASWAP_SETTLES[Math.floor(Math.random() * PERMASWAP_SETTLES.length)];
-
-  const settleResponse = await aoInstance.dryrun({
-    process: settle,
-    tags: [{ name: "Action", value: "Info" }],
-  });
-
-  const settleTags = settleResponse?.Messages?.[0]?.Tags || [];
-  const issuerFeePercentage = getTagValue("IssuerFeeRatio", settleTags) || "0";
-  const holderFeePercentage = getTagValue("HolderFeeRatio", settleTags) || "0";
-
-  return {
-    poolFeePercentage,
-    issuerFeePercentage,
-    holderFeePercentage,
-  };
 }
 
 export const permaswap = {
   getExpectedOutput,
   executeSwap,
   getLiquidity,
-  getFee,
 };

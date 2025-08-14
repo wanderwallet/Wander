@@ -63,7 +63,9 @@ export async function executeSwap({
   poolId,
   slippage,
   deadline,
-}: SwapExecutionParams) {}
+}: SwapExecutionParams) {
+  const nonce = `${Date.now()}-${Math.floor(Math.random() * 1000000)}`;
+}
 
 export async function getLiquidity({ poolId, tokenIn, tokenOut }: GetLiquidityParams): Promise<GetLiquidityResponse> {
   const response = await aoInstance.dryrun({
@@ -83,8 +85,6 @@ export async function getLiquidity({ poolId, tokenIn, tokenOut }: GetLiquidityPa
   const infoTags = infoResponse?.Messages?.[0]?.Tags || [];
   const totalSupply = getTagValue("TotalSupply", infoTags) || "0";
 
-  const feeInfo = await getFee(poolId);
-
   return {
     poolId,
     tokenIn,
@@ -92,32 +92,11 @@ export async function getLiquidity({ poolId, tokenIn, tokenOut }: GetLiquidityPa
     reserveIn,
     reserveOut,
     totalSupply,
-    feeInfo,
   } satisfies GetLiquidityResponse;
-}
-
-export async function getFee(poolId: string) {
-  return {};
-  const response = await aoInstance.dryrun({
-    process: poolId,
-    tags: [{ name: "Action", value: "Get-Fee-Percentage" }],
-  });
-
-  const tags = response?.Messages?.[0]?.Tags || [];
-  const protocolFeePercentage = getTagValue("Protocol-Fee-Percentage", tags) || "0";
-  const lpFeePercentage = getTagValue("LP-Fee-Percentage", tags) || "0";
-  const totalFeePercentage = getTagValue("Fee-Percentage", tags) || "0";
-
-  return {
-    protocolFeePercentage,
-    lpFeePercentage,
-    totalFeePercentage,
-  };
 }
 
 export const botega = {
   getExpectedOutput,
   executeSwap,
   getLiquidity,
-  getFee,
 };

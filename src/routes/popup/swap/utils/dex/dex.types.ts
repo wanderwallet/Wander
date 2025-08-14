@@ -41,5 +41,4 @@ export interface GetLiquidityResponse {
   reserveIn: string;
   reserveOut: string;
   totalSupply: string;
-  feeInfo: Record<string, any>;
 }
