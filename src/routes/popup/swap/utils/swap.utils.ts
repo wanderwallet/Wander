@@ -1,5 +1,6 @@
-import type { TokenInfo } from "~tokens/aoTokens/ao";
-import type { BotegaPool, PermaswapPool, Pool } from "./swap.types";
+import { type TokenInfo } from "~tokens/aoTokens/ao";
+import type { BotegaPool, BotegaPoolOverview, PermaswapPool, Pool } from "./swap.types";
+import BigNumber from "bignumber.js";
 
 const BOTEGA_POOL_OPTIONS = {
   headers: {
@@ -14,6 +15,26 @@ const BOTEGA_POOL_OPTIONS = {
 };
 
 export async function getBotegaPools() {
+  const [poolsResponse, poolsOverviewResponse] = await Promise.allSettled([
+    getBotegaGlobalLiquidity(),
+    getBotegaPoolsOverview(),
+  ]);
+
+  const pools = poolsResponse.status === "fulfilled" ? poolsResponse.value : [];
+  const poolsOverview = poolsOverviewResponse.status === "fulfilled" ? poolsOverviewResponse.value : [];
+
+  // Create a map of pool process ID to liquidity for quick lookup
+  const liquidityMap = new Map(poolsOverview.map((pool) => [pool.amm_process, +pool.liquidity_usd || 0]));
+
+  // Sort pools by liquidity_usd from poolsOverview
+  return pools.sort((a, b) => {
+    const liquidityA = liquidityMap.get(a.poolId) || 0;
+    const liquidityB = liquidityMap.get(b.poolId) || 0;
+    return liquidityB - liquidityA; // Sort in descending order
+  });
+}
+
+export async function getBotegaGlobalLiquidity() {
   const response = await fetch("https://kzmzniagsfcfnhgsjkpv.supabase.co/functions/v1/pools", BOTEGA_POOL_OPTIONS);
   const pools = (await response.json()) as BotegaPool[];
 
@@ -37,17 +58,27 @@ export async function getBotegaPools() {
   return structuredPools;
 }
 
+export async function getBotegaPoolsOverview() {
+  const response = await fetch("https://kzmzniagsfcfnhgsjkpv.supabase.co/functions/v1/overview", BOTEGA_POOL_OPTIONS);
+  const poolsOverview = (await response.json()) as BotegaPoolOverview[];
+
+  return poolsOverview;
+}
+
 export async function getPermaswapPools() {
   const response = await fetch("https://api-ffpscan.permaswap.network/pools");
   const pools = (await response.json()) as PermaswapPool[];
 
   const structuredPools = pools
     .filter((pool) => +pool.px > 0 && +pool.py > 0)
+    .sort((a, b) => +b.px - +a.px && +b.py - +a.py)
     .map((pool) => ({
       poolId: pool.process,
       poolName: pool.name,
       poolFee: String(pool.fee),
       poolType: "permaswap",
+      tokenXReserve: pool.px,
+      tokenYReserve: pool.py,
       tokenX: pool.x,
       tokenY: pool.y,
       tokenXDenomination: pool.decimalX,
@@ -84,3 +115,38 @@ export const processToken = (uniqueTokens: Map<string, TokenInfo>, tokenData: To
     uniqueTokens.set(tokenId, { ...existingToken, Logo: tokenData.Logo });
   }
 };
+
+/**
+ * Calculate price impact for a swap
+ * @param reserveIn - Reserve amount of input token (as string)
+ * @param reserveOut - Reserve amount of output token (as string)
+ * @param amountIn - Amount being swapped in (as string)
+ * @returns Price impact as a percentage string
+ */
+export function getPriceImpact(reserveIn: string, reserveOut: string, amountIn: string): string {
+  // Convert all values to BigNumber for precise calculations
+  const reserveInBN = new BigNumber(reserveIn);
+  const reserveOutBN = new BigNumber(reserveOut);
+  const amountInBN = new BigNumber(amountIn);
+
+  // Calculate constant product (K = x * y)
+  const K = reserveInBN.multipliedBy(reserveOutBN);
+
+  // Calculate output amount using constant product formula
+  // out = y - (K / (x + dx))
+  const amountOut = reserveOutBN.minus(K.dividedBy(reserveInBN.plus(amountInBN)));
+
+  // Calculate old price (y / x)
+  const oldPrice = reserveOutBN.dividedBy(reserveInBN);
+
+  // Calculate new price ((y - out) / (x + dx))
+  const newPrice = reserveOutBN.minus(amountOut).dividedBy(reserveInBN.plus(amountInBN));
+
+  if (oldPrice.isZero()) return "0";
+
+  // Calculate price impact: ((newPrice - oldPrice) / oldPrice) * 100
+  const priceImpact = newPrice.minus(oldPrice).multipliedBy(100).dividedBy(oldPrice);
+
+  // Return percentage with 2 decimal places
+  return priceImpact.toFixed(2);
+}

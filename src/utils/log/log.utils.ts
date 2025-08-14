@@ -16,6 +16,7 @@ export enum LOG_GROUP {
   FAIR_LAUNCH = "FAIR_LAUNCH",
   TRANSACTIONS = "TRANSACTIONS",
   EARN = "EARN",
+  SWAP = "SWAP",
 }
 
 const LOG_GROUPS_ENABLED: Record<LOG_GROUP, boolean> = {
@@ -36,6 +37,7 @@ const LOG_GROUPS_ENABLED: Record<LOG_GROUP, boolean> = {
   [LOG_GROUP.FAIR_LAUNCH]: process.env.NODE_ENV === "development",
   [LOG_GROUP.TRANSACTIONS]: process.env.NODE_ENV === "development",
   [LOG_GROUP.EARN]: process.env.NODE_ENV === "development",
+  [LOG_GROUP.SWAP]: process.env.NODE_ENV === "development",
 };
 
 function getColor() {

@@ -30,7 +30,7 @@
 
 "@arconnect/components-rebrand@https://github.com/wanderwallet/components-rebrand.git#refactor/update-input":
   version "1.0.0"
-  resolved "https://github.com/wanderwallet/components-rebrand.git#8b8c890b80a602e858fea33a58027d569999e0cc"
+  resolved "https://github.com/wanderwallet/components-rebrand.git#715b2f023b23f417a4c3227bd39c73fce7ff627a"
   dependencies:
     "@iconicicons/react" "^1.5.1"
     "@untitled-ui/icons-react" "^0.1.4"

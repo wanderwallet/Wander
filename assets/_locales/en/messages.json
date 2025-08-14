@@ -4177,5 +4177,9 @@
   "you_receive": {
     "message": "You receive",
     "description": "You receive text"
+  },
+  "swap": {
+    "message": "Swap",
+    "description": "Swap text"
   }
 }

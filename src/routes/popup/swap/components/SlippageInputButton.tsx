@@ -8,16 +8,12 @@ import { SlippageSelectorModal } from "~routes/popup/agents/components/ao-yield/
 import { useState } from "react";
 
 export interface SlippageInputButtonProps {
-  selectedSlippage: number;
-  setSelectedSlippage: React.Dispatch<React.SetStateAction<number>>;
+  slippage: number;
+  setSlippage: React.Dispatch<React.SetStateAction<number>>;
   type?: "sell" | "swap";
 }
 
-export function SlippageInputButton({
-  selectedSlippage,
-  setSelectedSlippage,
-  type = "sell",
-}: SlippageInputButtonProps) {
+export function SlippageInputButton({ slippage, setSlippage, type = "sell" }: SlippageInputButtonProps) {
   const theme = useTheme();
   const [showSlippageSelector, setShowSlippageSelector] = useState(false);
 
@@ -42,9 +38,9 @@ export function SlippageInputButton({
               {browser.i18n.getMessage("slippage")}
             </Text>
             <Flex align="center" justify="center" gap={4}>
-              {selectedSlippage === 0.5 && <Tag>{browser.i18n.getMessage("auto")}</Tag>}
+              {slippage === 0.5 && <Tag>{browser.i18n.getMessage("auto")}</Tag>}
               <Text weight="medium" noMargin>
-                {selectedSlippage}%
+                {slippage}%
               </Text>
             </Flex>
           </Flex>
@@ -59,8 +55,8 @@ export function SlippageInputButton({
       <SlippageSelectorModal
         open={showSlippageSelector}
         onClose={closeSlippageSelector}
-        slippage={selectedSlippage}
-        onSelect={setSelectedSlippage}
+        slippage={slippage}
+        onSelect={setSlippage}
         type={type}
       />
     </>

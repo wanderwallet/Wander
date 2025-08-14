@@ -1,10 +1,15 @@
 import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
-import { getPools, processToken } from "./swap.utils";
+import { getPools, getPriceImpact, processToken } from "./swap.utils";
 import { defaultOptions, useAoTokens } from "~tokens/hooks";
-import { useMemo, useCallback } from "react";
-import type { Pool, TokenSelectorType } from "./swap.types";
+import { useMemo, useCallback, useState } from "react";
+import type { Pool, SelectedPoolInfo, TokenSelectorType } from "./swap.types";
 import { useStorage } from "@plasmohq/storage/hook";
 import { ExtensionStorage } from "~utils/storage";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import { botega } from "./dex/swap.botega";
+import { permaswap } from "./dex/swap.permaswap";
+import type { GetExpectedOutputResponse, GetLiquidityResponse } from "./dex/dex.types";
+import { log, LOG_GROUP } from "~utils/log/log.utils";
 
 export function usePools() {
   return useQuery({
@@ -18,30 +23,120 @@ export function useGroupedPoolsByTokenPair() {
   const { data: pools = [], isLoading } = usePools();
 
   const tokenPools = useMemo(() => {
-    return pools.reduce((acc, pool) => {
-      const key = [pool.tokenX, pool.tokenY].sort().join("-");
-      if (!acc[key]) acc[key] = { botega: [], permaswap: [] };
-      acc[key][pool.poolType].push(pool);
-      return acc;
-    }, {});
+    return (
+      pools
+        // .sort((a, b) => +a.poolFee - +b.poolFee)
+        .reduce((acc, pool) => {
+          const key = [pool.tokenX, pool.tokenY].sort().join("-");
+          if (!acc[key]) acc[key] = { botega: [], permaswap: [] };
+          acc[key][pool.poolType].push(pool);
+          return acc;
+        }, {})
+    );
   }, [pools]);
 
   return { tokenPools, isLoading };
 }
 
-export function usePoolsForTokenPair(tokenX?: string, tokenY?: string) {
-  const { tokenPools, isLoading } = useGroupedPoolsByTokenPair();
+interface usePoolForTokenPairProps {
+  tokenIn?: string;
+  tokenOut?: string;
+  slippage?: number;
+  amountIn?: string;
+}
+
+export function usePoolForTokenPair({ tokenIn, tokenOut, slippage, amountIn }: usePoolForTokenPairProps) {
+  const { tokenPools } = useGroupedPoolsByTokenPair();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedPoolInfo, setSelectedPoolInfo] = useState<SelectedPoolInfo | null>(null);
 
   const pairPools = useMemo<{
     botega: Pool[];
     permaswap: Pool[];
   }>(() => {
-    if (!tokenX || !tokenY) return {};
-    const key = [tokenX, tokenY].sort().join("-");
+    if (!tokenIn || !tokenOut) return {};
+    const key = [tokenIn, tokenOut].sort().join("-");
     return tokenPools[key] || {};
-  }, [tokenPools, tokenX, tokenY]);
+  }, [tokenPools, tokenIn, tokenOut]);
 
-  return { pairPools, isLoading };
+  useAsyncEffect(async () => {
+    try {
+      if (!tokenIn || !tokenOut || !slippage || !amountIn || Object.keys(pairPools).length === 0) {
+        setSelectedPoolInfo(null);
+        return;
+      }
+
+      setIsLoading(true);
+
+      const botegaPool = pairPools?.botega?.[0];
+      const permaswapPool = pairPools?.permaswap?.[0];
+
+      if (!botegaPool && !permaswapPool) {
+        log(LOG_GROUP.SWAP, "No botega or permaswap pool found");
+        return;
+      }
+
+      console.log(pairPools);
+
+      const params = {
+        tokenIn,
+        amountIn,
+        slippage,
+      };
+
+      const [botegaResponse, permaswapResponse] = await Promise.allSettled([
+        botega.getExpectedOutput({ poolId: botegaPool.poolId, ...params }),
+        permaswap.getExpectedOutput({ poolId: permaswapPool.poolId, ...params }),
+      ]);
+
+      const botegaOutput = botegaResponse.status === "fulfilled" ? botegaResponse.value : null;
+      const permaswapOutput = permaswapResponse.status === "fulfilled" ? permaswapResponse.value : null;
+
+      console.log({ botegaOutput, permaswapOutput });
+
+      const finalOutput =
+        botegaOutput && permaswapOutput
+          ? botegaOutput.amountOut > permaswapOutput.amountOut
+            ? botegaOutput
+            : permaswapOutput
+          : botegaOutput || permaswapOutput;
+
+      const finalPool = botegaPool?.poolId === finalOutput.poolId ? botegaPool : permaswapPool;
+
+      if (!finalOutput) {
+        log(LOG_GROUP.SWAP, "No final output found");
+        setError("No final output found");
+        return;
+      }
+
+      let liquidity: GetLiquidityResponse;
+
+      if (finalOutput.type === "botega") {
+        liquidity = await botega.getLiquidity({ poolId: botegaPool.poolId, tokenIn, tokenOut });
+      } else {
+        liquidity = await permaswap.getLiquidity({ poolId: permaswapPool.poolId, tokenIn, tokenOut });
+      }
+
+      if (!liquidity) {
+        log(LOG_GROUP.SWAP, "No liquidity found");
+        setError("No liquidity found");
+        return;
+      }
+
+      const priceImpact = getPriceImpact(liquidity.reserveIn, liquidity.reserveOut, finalOutput.amountInWithoutFee);
+      console.log({ finalOutput, liquidity, priceImpact });
+
+      setSelectedPoolInfo({ pool: finalPool, quoteOutput: finalOutput, priceImpact });
+    } catch (error) {
+      log(LOG_GROUP.SWAP, "Error fetching pool for token pair", error);
+      setError("Error fetching pool for token pair");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [tokenIn, tokenOut, pairPools, slippage, amountIn]);
+
+  return { selectedPoolInfo, isLoading, error };
 }
 
 export function useTokens() {

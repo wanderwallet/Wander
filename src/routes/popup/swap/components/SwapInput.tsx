@@ -5,8 +5,7 @@ import browser from "webextension-polyfill";
 import { ChevronDown } from "@untitled-ui/icons-react";
 import { TokenLogo } from "~components/popup/TokenLogo";
 import type { TokenInfo } from "~tokens/aoTokens/ao";
-import { useTokenBalance, useTokenPrice } from "~tokens/hooks";
-import { useActiveAddress } from "~wallets/hooks";
+import { useTokenPrice } from "~tokens/hooks";
 import { formatBalance } from "~utils/format";
 import { useMemo } from "react";
 import useSetting from "~settings/hook";
@@ -15,25 +14,35 @@ import BigNumber from "bignumber.js";
 
 interface SwapInputProps {
   type: "send" | "receive";
-  amount: string;
+  status?: "default" | "error";
+  value: string;
+  balance: string;
+  balanceLoading: boolean;
   token: TokenInfo;
-  onAmountChange: (value: string) => void;
+  onValueChange: (value: string) => void;
   onTokenSwitcherClick: () => void;
 }
 
-export const SwapInput = ({ type, amount, onAmountChange, token, onTokenSwitcherClick }: SwapInputProps) => {
+export const SwapInput = ({
+  type,
+  value,
+  balance,
+  balanceLoading,
+  onValueChange,
+  token,
+  onTokenSwitcherClick,
+  status = "default",
+}: SwapInputProps) => {
   const isSend = type === "send";
   const theme = useTheme();
   const [currency] = useSetting<string>("currency");
-  const activeAddress = useActiveAddress();
-  const { data: balance = "0", isLoading } = useTokenBalance(isSend ? token : null, activeAddress);
-  const { price = 0 } = useTokenPrice(amount ? token.processId : undefined, currency);
+  const { price = 0 } = useTokenPrice(value ? token.processId : undefined, currency);
 
   const formattedBalance = useMemo(() => formatBalance(balance), [balance]);
-  const fiatBalance = useMemo(
-    () => formatFiatBalance(BigNumber(balance || "0").times(price || 0), currency),
-    [balance, price, currency],
-  );
+  const fiatValue = useMemo(() => {
+    if (!value || !price) return "--";
+    return `~${formatFiatBalance(BigNumber(value).times(price), currency)}`;
+  }, [value, price, currency]);
 
   const handleInputChange = (event: React.FormEvent<HTMLInputElement>) => {
     const input = event.currentTarget;
@@ -43,11 +52,12 @@ export const SwapInput = ({ type, amount, onAmountChange, token, onTokenSwitcher
   return (
     <Input
       stacked
+      status={status}
       sizeVariant="large"
       disabled={!isSend}
-      value={amount}
+      value={value}
       onInput={handleInputChange}
-      onChange={(e: React.ChangeEvent<HTMLInputElement>) => onAmountChange(e.target.value)}
+      onChange={(e: React.ChangeEvent<HTMLInputElement>) => onValueChange(e.target.value)}
       inputMode="numeric"
       placeholder="0"
       fullWidth
@@ -66,7 +76,7 @@ export const SwapInput = ({ type, amount, onAmountChange, token, onTokenSwitcher
         flexDirection: "column",
         padding: "12px",
         gap: "8px",
-        color: amount ? theme.primaryText : theme.input.placeholder.search,
+        color: value ? theme.primaryText : theme.input.placeholder.search,
       }}
       // @ts-ignore
       inputStyle={{
@@ -84,10 +94,10 @@ export const SwapInput = ({ type, amount, onAmountChange, token, onTokenSwitcher
             e.stopPropagation();
           }}>
           <Text size="xs" noMargin weight="medium" variant="tertiary">
-            ~{fiatBalance}
+            {fiatValue}
           </Text>
           <Flex align="center" justify="center" gap={4}>
-            {isLoading ? (
+            {balanceLoading ? (
               <Loading style={{ height: 12, width: 12 }} />
             ) : (
               <Text size="xs" noMargin weight="medium" variant="tertiary">
@@ -104,7 +114,7 @@ export const SwapInput = ({ type, amount, onAmountChange, token, onTokenSwitcher
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  onAmountChange(formattedBalance.tooltipBalance);
+                  onValueChange(formattedBalance.tooltipBalance);
                 }}>
                 Max
               </Text>

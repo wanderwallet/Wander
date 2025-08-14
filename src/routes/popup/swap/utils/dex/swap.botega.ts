@@ -3,24 +3,23 @@ import { getTagValue } from "~tokens/aoTokens/ao";
 import { defaultConfig } from "~tokens/aoTokens/config";
 import { getActiveAddress } from "~wallets";
 import BigNumber from "bignumber.js";
+import type {
+  GetExpectedOutputParams,
+  GetExpectedOutputResponse,
+  GetLiquidityParams,
+  GetLiquidityResponse,
+  SwapExecutionParams,
+} from "./dex.types";
 
 const aoInstance = connect(defaultConfig);
-
-interface GetExpectedOutputParams {
-  poolId: string;
-  tokenIn: string;
-  amountIn: string;
-  swapper?: string;
-  slippagePercentage?: number;
-}
 
 export async function getExpectedOutput({
   poolId,
   tokenIn,
   amountIn,
   swapper,
-  slippagePercentage,
-}: GetExpectedOutputParams) {
+  slippage,
+}: GetExpectedOutputParams): Promise<GetExpectedOutputResponse> {
   swapper = swapper || (await getActiveAddress());
   const response = await aoInstance.dryrun({
     process: poolId,
@@ -38,26 +37,22 @@ export async function getExpectedOutput({
   const protocolFeeQuantity = getTagValue("Protocol-Fee-Quantity", tags) || "0";
   const totalFeeQuantity = BigNumber(lpFeeQuantity).plus(protocolFeeQuantity).toFixed();
   const expectedMinOutput = BigNumber(amountOut)
-    .multipliedBy(BigNumber(1).minus(slippagePercentage || 0))
+    .multipliedBy(BigNumber(1).minus(slippage || 0))
     .div(100)
-    .toFixed();
+    .toFixed(0, BigNumber.ROUND_FLOOR);
+  const amountInWithoutFee = amountIn;
 
   return {
+    poolId,
+    tokenIn,
+    amountIn,
     amountOut,
     expectedMinOutput,
+    amountInWithoutFee,
     totalTokenOutFeeQuantity: totalFeeQuantity,
     totalTokenInFeeQuantity: "0",
-  };
-}
-
-export interface SwapExecutionParams {
-  tokenIn: string;
-  tokenOut: string;
-  amountIn: string;
-  minAmountOut: string;
-  poolId: string;
-  slippage?: number;
-  deadline?: number;
+    type: "botega",
+  } satisfies GetExpectedOutputResponse;
 }
 
 export async function executeSwap({
@@ -70,13 +65,7 @@ export async function executeSwap({
   deadline,
 }: SwapExecutionParams) {}
 
-interface GetLiquidityParams {
-  poolId: string;
-  tokenIn: string;
-  tokenOut: string;
-}
-
-export async function getLiquidity({ poolId, tokenIn, tokenOut }: GetLiquidityParams) {
+export async function getLiquidity({ poolId, tokenIn, tokenOut }: GetLiquidityParams): Promise<GetLiquidityResponse> {
   const response = await aoInstance.dryrun({
     process: poolId,
     tags: [{ name: "Action", value: "Get-Reserves" }],
@@ -104,10 +93,11 @@ export async function getLiquidity({ poolId, tokenIn, tokenOut }: GetLiquidityPa
     reserveOut,
     totalSupply,
     feeInfo,
-  };
+  } satisfies GetLiquidityResponse;
 }
 
 export async function getFee(poolId: string) {
+  return {};
   const response = await aoInstance.dryrun({
     process: poolId,
     tags: [{ name: "Action", value: "Get-Fee-Percentage" }],
@@ -124,3 +114,10 @@ export async function getFee(poolId: string) {
     totalFeePercentage,
   };
 }
+
+export const botega = {
+  getExpectedOutput,
+  executeSwap,
+  getLiquidity,
+  getFee,
+};
