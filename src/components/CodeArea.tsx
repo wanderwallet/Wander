@@ -1,14 +1,14 @@
 import type { DisplayTheme } from "@arconnect/components-rebrand";
 import type { PropsWithChildren } from "react";
-import { useTheme } from "~utils/theme";
 import styled from "styled-components";
+import { useTheme } from "~utils/theme/theme.hook";
 
 export default function CodeArea({ children }: PropsWithChildren<{}>) {
   // display theme
-  const theme = useTheme();
+  const { displayTheme } = useTheme();
 
   return (
-    <Wrapper displayTheme={theme}>
+    <Wrapper displayTheme={displayTheme}>
       <Code>{children}</Code>
     </Wrapper>
   );

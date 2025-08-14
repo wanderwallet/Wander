@@ -15,7 +15,6 @@ import {
 import { sleep } from "~utils/promises/sleep";
 import type {
   EmbeddedContextState,
-  EmbeddedContextData,
   EmbeddedProviderProps,
   TempWallet,
   AuthStatus,
@@ -70,7 +69,7 @@ import {
 } from "~iframe/storage/unpartitioned-storage/unpartitioned-storage.utils";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { isomorphicOnMessage } from "~isomorphic-messaging";
-import { useTheme } from "~components/embed/contexts/ThemeContext";
+import { useTheme } from "~utils/theme/theme.hook";
 import { withRetry } from "~utils/promises/retry";
 import { createAnonSession, INITIAL_ANON_SESSION, parseSupabaseSession } from "~utils/embedded/session/session.utils";
 import { useLocation } from "~wallets/router/router.utils";
@@ -1190,7 +1189,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     };
   }, [initEmbeddedWallet]);
 
-  const { setMode } = useTheme();
+  const { setTheme } = useTheme();
   const { navigate } = useLocation();
   const navigateRef = useRef(navigate);
   navigateRef.current = navigate;
@@ -1201,7 +1200,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     });
 
     isomorphicOnMessage("embedded_setTheme", ({ data }) => {
-      setMode(data);
+      setTheme(data);
     });
 
     isomorphicOnMessage("embedded_navigate", ({ data }) => {

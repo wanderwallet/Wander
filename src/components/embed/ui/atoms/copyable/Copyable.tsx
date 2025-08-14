@@ -6,7 +6,7 @@ import { Loading } from "../loading";
 import { Box } from "../box";
 import { Text } from "../text";
 import { CopyableIcon, CheckIcon } from "../icon";
-import { useTheme } from "../../../contexts/ThemeContext";
+import { useTheme } from "../../../../../utils/theme/theme.hook";
 
 const Copyable = forwardRef<HTMLDivElement, CopyableBaseProps>(
   (

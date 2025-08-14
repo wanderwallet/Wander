@@ -1,6 +1,6 @@
 import React from "react";
 import clsx from "clsx";
-import { useTheme } from "../../../contexts/ThemeContext";
+import { useTheme } from "../../../../../utils/theme/theme.hook";
 import styles from "./ThemeToggle.module.css";
 
 export interface ThemeToggleProps {

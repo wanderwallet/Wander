@@ -2,7 +2,7 @@ import React, { forwardRef } from "react";
 import clsx from "clsx";
 import styles from "./Text.module.css";
 import type { TextBaseProps } from "./Text.types";
-import { useTheme } from "../../../contexts/ThemeContext";
+import { useTheme } from "../../../../../utils/theme/theme.hook";
 
 const Text = forwardRef<HTMLParagraphElement, TextBaseProps>(
   ({ children, variant = "bodyMd", alignment = "left", className, style, ...props }, ref) => {
