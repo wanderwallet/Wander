@@ -84,7 +84,8 @@ function calculateStaleTimeFromEpochZeroTimestamp(nowMs: number = Date.now()): n
   const elapsedSinceEpochZero = nowMs - EPOCH_ZERO_TIMESTAMP;
   const msIntoCurrentEpoch = elapsedSinceEpochZero % EPOCH_LENGTH_MS;
   const msUntilNextEpoch = EPOCH_LENGTH_MS - msIntoCurrentEpoch;
-  return msUntilNextEpoch;
+  // add 10 second buffer to ensure we are in the next epocho esnure we are in the next epoch
+  return msUntilNextEpoch + 10_000;
 }
 
 ///
