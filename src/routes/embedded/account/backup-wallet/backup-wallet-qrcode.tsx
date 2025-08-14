@@ -13,7 +13,7 @@ import { dataToFrames } from "qrloop";
 import { freeDecryptedWallet } from "~wallets/encryption";
 import { QRCodeWrapper } from "~components/QRCodeWrapper";
 import { QRCodeLoop } from "~components/QRCodeLoop";
-import { useTheme } from "~components/embed/contexts/ThemeContext";
+import { useTheme } from "~utils/theme/theme.hook";
 
 export function AccountBackupWalletQrCodeEmbeddedView() {
   const { isDarkMode } = useTheme();

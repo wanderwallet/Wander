@@ -2,7 +2,7 @@ import React, { forwardRef, useCallback } from "react";
 import clsx from "clsx";
 import styles from "./Switch.module.css";
 import type { SwitchBaseProps } from "./Switch.types";
-import { useTheme } from "../../../contexts/ThemeContext";
+import { useTheme } from "../../../../../utils/theme/theme.hook";
 import { Text } from "~components/embed/ui";
 
 const Switch = forwardRef<HTMLInputElement, SwitchBaseProps>(

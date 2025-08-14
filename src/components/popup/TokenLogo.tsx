@@ -7,13 +7,17 @@ import { AR_LOGO, AR_PROCESS_ID, type TokenInfo } from "~tokens/aoTokens/ao";
 import { FULL_HISTORY, useGateway } from "~gateways/wayfinder";
 import { concatGatewayURL } from "~gateways/utils";
 
+import tokenPlaceholder from "url:/assets/images/tokens/loading-token.svg?no-inline";
 import arLogoLight from "url:/assets/ar/ar-logo-light.svg";
 import arLogoDark from "url:/assets/ar/ar-logo-dark.svg";
 
 function isAr(token: string | Partial<Token>) {
   return typeof token === "string"
     ? token.toUpperCase() === AR_PROCESS_ID || token === AR_LOGO || token.endsWith(AR_LOGO)
-    : token.id === AR_PROCESS_ID || token.ticker === "AR" || token.name === "Arweave" || token.defaultLogo === AR_LOGO;
+    : token.id === AR_PROCESS_ID || token.defaultLogo === AR_LOGO;
+
+  // Note `|| token.ticker === "AR" || token.name === "Arweave"` could be added to the line below, but it is redundant
+  // and leads to tokens that are actually no AR to show the AR logo.
 }
 
 function isURI(token: string | Partial<Token>): token is string {
@@ -155,6 +159,7 @@ export function TokenLogo({ token: tokenProp, name, size = 40, style }: TokenLog
     <Image
       src={arLogoLight}
       srcDark={arLogoDark}
+      placeholderSrc={tokenPlaceholder}
       alt="AR logo"
       title={title}
       width={size}
@@ -166,6 +171,7 @@ export function TokenLogo({ token: tokenProp, name, size = 40, style }: TokenLog
   ) : (
     <Image
       src={token && !hasError ? logoSrc : getTokenFallbackImage(token, name)}
+      placeholderSrc={tokenPlaceholder}
       alt={alt}
       title={title}
       width={size}

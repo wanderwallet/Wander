@@ -9,11 +9,12 @@ import NoWallets from "~components/devtools/NoWallets";
 import Application from "~applications/application";
 import browser from "webextension-polyfill";
 import styled from "styled-components";
-import { WanderThemeProvider } from "~components/hardware/HardwareWalletTheme";
+import { StyledComponentsThemeProvider } from "~utils/theme/styled-components/styled-components.provider";
 import { useRemoveCover } from "~wallets/setup/non/non-wallet-setup.hook";
 import { useWallets } from "~utils/wallets/wallets.hooks";
 import { WalletsProvider } from "~utils/wallets/wallets.provider";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import { ThemeProvider } from "~utils/theme/theme.provider";
 
 function DevTools() {
   useRemoveCover();
@@ -67,11 +68,13 @@ function DevTools() {
 
 export default function DevToolsRoot() {
   return (
-    <WanderThemeProvider>
-      <WalletsProvider>
-        <DevTools />
-      </WalletsProvider>
-    </WanderThemeProvider>
+    <ThemeProvider>
+      <StyledComponentsThemeProvider>
+        <WalletsProvider>
+          <DevTools />
+        </WalletsProvider>
+      </StyledComponentsThemeProvider>
+    </ThemeProvider>
   );
 }
 
