@@ -12,22 +12,21 @@ import {
   type AoPrimaryName,
   type AoRegistrationFees,
   type PaginationParams,
-  type SpawnANTState,
   type WalletAddress,
 } from "@ar.io/sdk/web";
 import { connect } from "@permaweb/aoconnect/browser";
 import { QueryClient, useQuery } from "@tanstack/react-query";
+import { persistQueryClient } from "@tanstack/react-query-persist-client";
+import { useEffect, useState } from "react";
 import type { PurchaseType } from "~routes/popup/arns/types";
+import { fetchTokenBalance, type TokenInfoWithBalance } from "~tokens/aoTokens/ao";
 import { isLocalWallet } from "~utils/assertions";
+import { createExtensionStoragePersister } from "~utils/query/createExtensionStoragePersister";
+import { PersistentStorage, useStorage } from "~utils/storage";
 import { getActiveKeyfile, type DecryptedWallet } from "~wallets";
 import { freeDecryptedWallet } from "~wallets/encryption";
-import type { NameServiceProfile } from "./types";
-import { persistQueryClient } from "@tanstack/react-query-persist-client";
-import { createExtensionStoragePersister } from "~utils/query/createExtensionStoragePersister";
 import { useActiveAddress, useActiveWallet } from "~wallets/hooks";
-import { PersistentStorage, useStorage } from "~utils/storage";
-import { fetchTokenBalance, type TokenInfoWithBalance } from "~tokens/aoTokens/ao";
-import { useEffect, useState } from "react";
+import type { NameServiceProfile } from "./types";
 
 export const LANDING_PAGE_TXID = "oork_YifB3-JQQZg8EgMPQJytua_QCHKNmMqt5kmnCo";
 export const DEFAULT_ANT_LOGO = "Sie_26dvgyok0PZD_-iQAFOhOd5YxDTkczOLoqTTL_A";
@@ -70,6 +69,25 @@ export const ARIO_READ_SDK = ARIO.init({
     ao: AO_CLIENT,
   }),
 });
+
+// UTILITY FOR STALE TIME
+
+const EPOCH_ZERO_TIMESTAMP = 1741176000000; // ms
+const EPOCH_LENGTH_MS = 86_400_000; // 24h in ms
+
+/**
+ * Calculates the stale time (in ms) until the next epoch begins.
+ * @param nowMs Current timestamp in ms (default: Date.now()).
+ * @returns Number of ms remaining until the next epoch.
+ */
+function calculateStaleTimeFromEpochZeroTimestamp(nowMs: number = Date.now()): number {
+  const elapsedSinceEpochZero = nowMs - EPOCH_ZERO_TIMESTAMP;
+  const msIntoCurrentEpoch = elapsedSinceEpochZero % EPOCH_LENGTH_MS;
+  const msUntilNextEpoch = EPOCH_LENGTH_MS - msIntoCurrentEpoch;
+  return msUntilNextEpoch;
+}
+
+///
 
 export async function getArNSRecord(name: string): Promise<AoArNSNameData | undefined> {
   const record = await ARIO_READ_SDK.getArNSRecord({ name });
@@ -190,7 +208,7 @@ async function getTicker() {
 export function useTicker() {
   return useQuery(
     {
-      queryKey: ["ario-ticker"],
+      queryKey: ["ario-ticker", ARIO_PROCESS_ID],
       queryFn: getTicker,
       staleTime: Infinity,
       refetchOnWindowFocus: false,
@@ -219,7 +237,7 @@ export function useRegistrationFee(name: string, purchaseType: PurchaseType, pur
         return new mARIOToken(arioPrice).toARIO().valueOf();
       },
       enabled: !!name,
-      staleTime: 5 * 60 * 1000, // 5 minutes
+      staleTime: calculateStaleTimeFromEpochZeroTimestamp(),
     },
     ARNS_QUERY_CLIENT,
   );
@@ -232,7 +250,7 @@ export async function getRegistrationFees(): Promise<AoRegistrationFees | null> 
       queryFn: () => {
         return ARIO_READ_SDK.getRegistrationFees();
       },
-      staleTime: 24 * 60 * 60 * 1000, // 1 day, good for length of epoch
+      staleTime: calculateStaleTimeFromEpochZeroTimestamp(),
     }).catch((error) => {
       console.error(`Error in retrieving ArNS registration fees:`, error);
       return null;
@@ -411,7 +429,7 @@ export function usePrimaryNameCostDetails({ name }: { name: string }) {
           fundFrom: "balance",
         });
       },
-      staleTime: 24 * 60 * 60 * 1000,
+      staleTime: calculateStaleTimeFromEpochZeroTimestamp(),
       refetchOnWindowFocus: false,
       enabled: !!walletAddress,
     },
