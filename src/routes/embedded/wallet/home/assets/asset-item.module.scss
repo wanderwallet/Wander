@@ -1,6 +1,6 @@
 @keyframes marqueeAnimation {
-    0%   { transform: translate(0deg); }
-    100% { transform: translate(var(--marqueeOffset, 0)); }
+  0%   { transform: translate(0deg); }
+  100% { transform: translate(var(--marqueeOffset, 0)); }
 }
 
 .root {
@@ -15,14 +15,8 @@
   transition: align-items linear 150ms;
 }
 
-.logo {
-  flex: 0 0 auto;
-  align-self: center;
-}
-
 .info {
   position: relative;
-  // background: pink;
   display: flex;
   flex: 1 1 auto;
   min-width: 0;
@@ -38,8 +32,6 @@
 }
 
 .name {
-  // flex: 1 0 auto;
-  // flex: 0 0 auto;
   white-space: nowrap;
 }
 
@@ -49,7 +41,7 @@
   top: 50%;
   max-width: var(--balanceMaxWidth, 50%);
   padding-left: var(--spacing-4);
-  transition: transform linear 150ms;
+  transition: max-width linear 150ms, transform linear 150ms;
   transform: translate(var(--balanceOffset, 0px), -50%);
   display: flex;
   flex-direction: column;
@@ -68,11 +60,6 @@
     height: 100%;
     background: linear-gradient(to left, var(--color-background-default) 50%, transparent);
   }
-
-
-  // overflow: hidden;
-  // text-overflow: ellipsis;
-  // white-space: nowrap;
 }
 
 .fiat {
@@ -82,53 +69,38 @@
   position: relative;
   display: flex;
   justify-content: flex-end;
-  // gap: var(--spacing-2);
   max-width: 100%;
-
-  // overflow: hidden;
-  // min-width: 0;
-  // width: 100%;
-  // background: yellow;
 }
 
 .balanceAmountWrapper {
   flex: 1 1 auto;
-  // min-width: 0;
-  // max-width: 100%;
   display: flex;
   justify-content: flex-start;
   overflow: hidden;
-
-  // text-align: left;
+  min-width: 26px;
 }
 
 .balanceAmount {
-  // flex: 1 0 auto;
-  // white-space: nowrap;
-
-  // text-align: left;
+  padding: 0 8px;
 }
 
 .balanceTicker {
-  padding-left: var(--spacing-2);
+  position: relative;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 100%;
+    height: 100%;
+    width: var(--spacing-2);
+    background: var(--color-background-default);
+    transition: all linear 150ms;
+  }
+
+  .ellipseBalance &::before {
+    width: var(--spacing-8);
+    background: linear-gradient(to left, var(--color-background-default) 50%, transparent);
+  }
 }
 
-/*
-.leftArea,
-.rightArea {
-  position: absolute;
-  inset: 0;
-}
-
-.leftArea {
-  position: absolute;
-  right: 50%;
-  // background: yellow;
-}
-
-.rightArea {
-  position: absolute;
-  left: 50%;
-  // background: red;
-}
-*/

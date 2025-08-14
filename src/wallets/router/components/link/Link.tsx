@@ -16,7 +16,7 @@ export interface LinkProps extends PropsWithChildren {
   disabled?: boolean;
 }
 
-export function Link({ to, state, onClick, className, style, disabled }: LinkProps) {
+export function Link({ to, state, onClick, className, style, disabled, children }: LinkProps) {
   const isExternalLink = !to?.startsWith("/");
 
   const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -48,8 +48,9 @@ export function Link({ to, state, onClick, className, style, disabled }: LinkPro
       target="_blank"
       onClick={handleLinkClick}
       onMouseDown={handleLinkClick}
+      children={children}
     />
   ) : (
-    <Wink className={rootClassName} style={style} to={to} state={state} onClick={handleLinkClick} />
+    <Wink className={rootClassName} style={style} to={to} state={state} onClick={handleLinkClick} children={children} />
   );
 }

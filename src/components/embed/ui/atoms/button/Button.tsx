@@ -52,7 +52,7 @@ export function Button(props: ButtonProps) {
         to={href}
         className={className}
         style={style}
-        // disabled={isDisabled || isLoading}
+        disabled={isDisabled || isLoading}
         // tabIndex={ tabIndex }
         onClick={onClick as any}>
         {content}

@@ -1,12 +1,14 @@
 import BigNumber from "bignumber.js";
-import { useMemo, useRef, useState } from "react";
-import { Row, Text, Box } from "~components/embed/ui";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Text } from "~components/embed/ui";
 import useSetting from "~settings/hook";
 import { formatFiatBalance } from "~tokens/currency";
 import { useTokenBalance } from "~tokens/hooks";
 import { formatBalance } from "~utils/format";
 import { ExtensionStorage, useStorage } from "~utils/storage";
 import { TokenLogo } from "~components/popup/TokenLogo";
+import clsx from "clsx";
+import { useThrottledCallback } from "@swyg/corre";
 
 import styles from "./asset-item.module.scss";
 
@@ -89,6 +91,51 @@ export function AssetItem({ id, defaultLogo, tokenName, ticker, amount, fiatPric
     }
   };
 
+  const [ellipseBalance, setEllipseBalance] = useState(false);
+
+  const getEllipseBalance = useCallback(() => {
+    const balanceElement = balanceRef.current;
+    const infoElement = infoRef.current;
+    const tickerElement = tickerRef.current;
+
+    if (!balanceElement || !infoElement || !tickerElement) return false;
+
+    const tickerWidth = tickerElement.offsetWidth;
+    const balanceWidth = balanceElement.offsetWidth;
+    const totalWidth = infoElement.offsetWidth - tickerWidth;
+    const visibleWidth = totalWidth / 2 - 16 - tickerWidth;
+
+    return balanceWidth > visibleWidth;
+  }, []);
+
+  const getRealBalanceMaxWidth = useCallback(() => {
+    const nameElement = nameRef.current;
+    const infoElement = infoRef.current;
+
+    if (!nameElement || !infoElement) return false;
+
+    const width = infoElement.offsetWidth - nameElement.offsetWidth;
+    const halfTotalWidth = infoElement.offsetWidth / 2;
+
+    return width > halfTotalWidth ? width : undefined;
+  }, []);
+
+  const throttledUpdateEllipseBalance = useThrottledCallback(() => {
+    setBalanceMaxWidth(getRealBalanceMaxWidth);
+    setEllipseBalance(getEllipseBalance());
+  }, 500, []);
+
+  useEffect(() => {
+    setBalanceMaxWidth(getRealBalanceMaxWidth);
+    setEllipseBalance(getEllipseBalance());
+
+    window.addEventListener("resize", throttledUpdateEllipseBalance);
+
+    return () => {
+      window.removeEventListener("resize", throttledUpdateEllipseBalance);
+    }
+  }, [tokenInfo, balance, getEllipseBalance, throttledUpdateEllipseBalance]);
+
   const handleExpandBalance = () => {
     const balanceElement = balanceRef.current;
     const infoElement = infoRef.current;
@@ -124,10 +171,6 @@ export function AssetItem({ id, defaultLogo, tokenName, ticker, amount, fiatPric
   //   ? `https://viewblock.io/arweave/address/${ activeWalletAddress }` as const
   //   : `https://www.ao.link/#/token/${id}` as const;
 
-  let b = balance;
-
-  b = "10.000000000000001";
-
   const style: React.CSSProperties = {} as any;
 
   if (balanceOffset !== undefined) style["--balanceOffset"] = `${ balanceOffset }px`;
@@ -136,14 +179,14 @@ export function AssetItem({ id, defaultLogo, tokenName, ticker, amount, fiatPric
   const nameStyle: React.CSSProperties = {} as any;
 
   if (nameMarqueeOffset) {
-    nameStyle.animation = `${ nameMarqueeOffset / 10 }s linear infinite alternate ${ styles.marqueeAnimation }`;
+    nameStyle.animation = `${ nameMarqueeOffset / 15 }s linear infinite alternate ${ styles.marqueeAnimation }`;
     nameStyle["--marqueeOffset"] = `${ -nameMarqueeOffset }px`;
   }
 
   const balanceStyle: React.CSSProperties = {} as any;
 
   if (balanceMarqueeOffset) {
-    balanceStyle.animation = `${ balanceMarqueeOffset / 10 }s linear infinite alternate ${ styles.marqueeAnimation }`;
+    balanceStyle.animation = `${ balanceMarqueeOffset / 15 }s linear infinite alternate ${ styles.marqueeAnimation }`;
     balanceStyle["--marqueeOffset"] = `${ -balanceMarqueeOffset }px`;
   }
 
@@ -152,18 +195,17 @@ export function AssetItem({ id, defaultLogo, tokenName, ticker, amount, fiatPric
       <TokenLogo
         key={`logo-${id}`}
         token={tokenInfo}
-        // className={ styles.logo }
         style={{ flex: "0 0 auto", alignSelf: "center" }} />
 
       <div className={ styles.info } ref={ infoRef }>
         <Text variant="bodyMd" style={{ color: "#121212", ...nameStyle }} className={ styles.name } ref={ nameRef } onMouseEnter={ handleExpandName } onMouseLeave={ handleCollapse }>
-          {tokenName}{tokenName}
+          {tokenName}
         </Text>
 
-        <div className={ styles.balanceAndPrice } style={style} ref={ balanceAndPriceRef }>
+        <div className={ clsx(styles.balanceAndPrice, { [styles.ellipseBalance]: ellipseBalance && !balanceMaxWidth && !balanceMarqueeOffset }) } style={style} ref={ balanceAndPriceRef }>
           <Text alignment="right" variant="bodyMd" style={{ color: "#121212" }} className={ styles.balance }>
             <span className={ styles.balanceAmountWrapper }>
-              <span className={ styles.balanceAmount } ref={ balanceRef } style={ balanceStyle } onMouseEnter={ handleExpandBalance } onMouseLeave={ handleCollapse }>{ b }</span>
+              <span className={ styles.balanceAmount } ref={ balanceRef } style={ balanceStyle } onMouseEnter={ handleExpandBalance } onMouseLeave={ handleCollapse }>{ balance }</span>
             </span>
             <span className={ styles.balanceTicker } ref={ tickerRef }>{ ticker }</span>
           </Text>
