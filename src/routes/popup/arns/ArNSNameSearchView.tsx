@@ -122,7 +122,7 @@ export const ArNSNameSearchView = () => {
             setErrorMessage("An error occurred while searching for the ArNS name. Please try again.");
             setSearchState("error");
           } else {
-            const fees = registrationFees[debouncedSearchTerm.length.toString()];
+            const fees = registrationFees[lowerCaseDomain(debouncedSearchTerm).length.toString()];
             setSearchResults({ arnsRecord, fees });
             setSearchState("notFound");
           }

@@ -11,6 +11,7 @@ import { useLocation } from "~wallets/router/router.utils";
 import { RegisteringCard } from "./RegisteringCard";
 import TransactionStatusModal from "./TransactionStatusModal";
 import type { PurchaseType } from "./types";
+import { decodeDomainToASCII, lowerCaseDomain } from "./utils";
 
 export interface ArNSConfirmPurchaseViewParams {
   name: string;
@@ -24,7 +25,7 @@ export const ArNSConfirmPurchaseView = ({
 }: ArNSConfirmPurchaseViewProps) => {
   const { data: ticker } = useTicker();
 
-  const { data: totalFee = 0 } = useRegistrationFee(name, purchaseType, purchaseYears);
+  const { data: totalFee } = useRegistrationFee(name, purchaseType, purchaseYears);
   const [processingTransaction, setProcessingTransaction] = useState<boolean>(false);
 
   const [transactionState, setTransactionState] = useState<string | undefined>();
@@ -38,8 +39,10 @@ export const ArNSConfirmPurchaseView = ({
       setProcessingTransaction(true);
       setTransactionState("Processing transactions...");
 
+      const safeDomain = lowerCaseDomain(name);
+
       const result = await purchaseArNSName({
-        name,
+        name: safeDomain,
         purchaseType,
         purchaseYears,
         transactionListener: (transactionState) => {
@@ -66,20 +69,20 @@ export const ArNSConfirmPurchaseView = ({
       <HeadV2 title="Confirm Transaction" />
       <RegisteringCard
         style={{ margin: "0 1.5rem" }}
-        name={name}
+        name={decodeDomainToASCII(name)}
         purchaseType={purchaseType}
         purchaseYears={purchaseYears}
       />
       <Flex style={{ margin: "1rem" }} justify="center" align="center" gap=".25rem">
         <Text size="2xl" weight="semibold" style={{ textAlign: "center" }}>
-          {totalFee}
+          {totalFee ?? "..."}
         </Text>
         <Text>{ticker}</Text>
         <ArioIcon width=".75rem" height=".75rem" />
       </Flex>
       <div style={{ flex: 1 }}></div>
       <div style={{ margin: "1.5rem" }}>
-        <ButtonV2 onClick={handleConfirmPurchase} fullWidth disabled={processingTransaction}>
+        <ButtonV2 onClick={handleConfirmPurchase} fullWidth disabled={processingTransaction || !totalFee}>
           Confirm
         </ButtonV2>
       </div>

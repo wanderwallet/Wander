@@ -27,6 +27,7 @@ import { getActiveKeyfile, type DecryptedWallet } from "~wallets";
 import { freeDecryptedWallet } from "~wallets/encryption";
 import { useActiveAddress, useActiveWallet } from "~wallets/hooks";
 import type { NameServiceProfile } from "./types";
+import { lowerCaseDomain } from "~routes/popup/arns/utils";
 
 export const LANDING_PAGE_TXID = "oork_YifB3-JQQZg8EgMPQJytua_QCHKNmMqt5kmnCo";
 export const DEFAULT_ANT_LOGO = "Sie_26dvgyok0PZD_-iQAFOhOd5YxDTkczOLoqTTL_A";
@@ -230,9 +231,9 @@ export function useRegistrationFee(name: string, purchaseType: PurchaseType, pur
       queryFn: async () => {
         const registrationFees = await getRegistrationFees();
 
-        if (!registrationFees) return 0;
+        if (!registrationFees) return null;
 
-        const fee = registrationFees[name.length.toString()];
+        const fee = registrationFees[lowerCaseDomain(name).length.toString()];
         const arioPrice = purchaseType === "lease" ? fee.lease[purchaseYears.toString()] : fee.permabuy;
 
         return new mARIOToken(arioPrice).toARIO().valueOf();

@@ -25,10 +25,10 @@ export const ArNSNamePurchaseView = ({ params: { name } }: ArNSNamePurchaseViewP
   const [purchaseType, setPurchaseType] = useState<PurchaseType>("lease");
   const [purchaseYears, setPurchaseYears] = useState(1);
 
-  const { data: totalFee = 0 } = useRegistrationFee(name, purchaseType, purchaseYears);
+  const { data: totalFee } = useRegistrationFee(name, purchaseType, purchaseYears);
 
   const totalFeeString = useMemo(() => {
-    return formatArio(totalFee);
+    return totalFee ? formatArio(totalFee) : "...";
   }, [totalFee]);
 
   const untilDateString = useMemo(() => {
@@ -104,8 +104,14 @@ export const ArNSNamePurchaseView = ({ params: { name } }: ArNSNamePurchaseViewP
             navigate(`/arns/confirm-purchase/${name}/${purchaseType}/${purchaseYears}`);
           }}
           fullWidth
-          disabled={arioBalance == undefined || totalFee > arioBalance}>
-          {arioBalance == undefined ? "Loading balance..." : totalFee > arioBalance ? "Insufficient balance" : "Next"}
+          disabled={arioBalance == undefined || totalFee == undefined || totalFee > arioBalance}>
+          {arioBalance == undefined
+            ? "Loading balance..."
+            : totalFee == undefined
+              ? "Calculating fee..."
+              : totalFee > arioBalance
+                ? "Insufficient balance"
+                : "Next"}
         </ButtonV2>
       </div>
     </Flex>
