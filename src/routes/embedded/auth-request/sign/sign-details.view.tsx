@@ -131,7 +131,7 @@ export function EmbeddedSignDetailsAuthRequestView() {
         )}
       </Box>
 
-      <TransactionMessage transaction={transaction} />
+      <TransactionMessage transaction={transaction} txDetailsPath={null} />
     </AuthRequestCard>
   );
 }

@@ -12,7 +12,7 @@ import type { ConnextTxDetailsRoutePath } from "~wallets/router/auth/auth.embed.
 
 interface TransactionMessageProps {
   transaction: SplitTransaction | Transaction | RawDataItem;
-  txDetailsPath?: ConnextTxDetailsRoutePath;
+  txDetailsPath: null | ConnextTxDetailsRoutePath;
 }
 
 export default function TransactionMessage({ transaction, txDetailsPath }: TransactionMessageProps) {
