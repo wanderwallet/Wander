@@ -21,6 +21,7 @@ interface FlexProps extends React.HTMLAttributes<HTMLDivElement> {
   overflow?: CSSProperties["overflow"];
   boxSizing?: CSSProperties["boxSizing"];
   maxWidth?: CSSProperties["maxWidth"];
+  position?: CSSProperties["position"];
 }
 
 export const Flex: React.FC<FlexProps> = ({
@@ -45,6 +46,7 @@ export const Flex: React.FC<FlexProps> = ({
   style,
   boxSizing,
   maxWidth,
+  position,
   ...props
 }) => {
   return (
@@ -60,17 +62,18 @@ export const Flex: React.FC<FlexProps> = ({
         minWidth,
         width,
         height,
-        padding,
         margin,
         cursor,
         textAlign,
         background,
         borderRadius,
         // Only apply flexShrink if flex shorthand is not set to avoid conflicts
-        ...(flex === undefined && { flexShrink }),
+        ...(flex === undefined && flexShrink !== undefined && { flexShrink }),
         overflow,
         boxSizing,
         maxWidth,
+        padding,
+        position,
         ...style,
       }}
       {...props}>
