@@ -166,7 +166,7 @@ export class EnhancedStorage implements Storage {
    */
   private async setupPermissionChangeHandlerAndGetCurrentValue(): Promise<PermissionState> {
     let permissionStatus = this.permissionStatusPromise ? await this.permissionStatusPromise : null;
-    let permissionState: PermissionState = permissionStatus?.state;
+    let permissionState: PermissionState = permissionStatus?.state || "prompt";
 
     if (navigator.permissions && !permissionStatus) {
       try {
@@ -177,17 +177,33 @@ export class EnhancedStorage implements Storage {
         permissionStatus = await this.permissionStatusPromise;
         permissionState = permissionStatus.state;
 
-        permissionStatus.addEventListener("change", () => {
-          log(LOG_GROUP.STORAGE, `Storage access permission changed to ${permissionStatus.state}`);
+        permissionStatus.addEventListener("change", async () => {
+          let nextPermissionState = permissionStatus.state;
 
-          this.handleStorageAccessPermission(permissionStatus.state);
+          if (nextPermissionState !== "granted" && (await document.hasStorageAccess())) {
+            console.warn(
+              `Storage access permission changed to ${nextPermissionState}, but document.hasStorageAccess() returned true`,
+            );
+
+            nextPermissionState = "granted";
+          } else {
+            log(LOG_GROUP.STORAGE, `Storage access permission changed to ${nextPermissionState}`);
+          }
+
+          this.handleStorageAccessPermission(nextPermissionState);
         });
       } catch (error) {
         log(LOG_GROUP.STORAGE, "Error checking permission:", error);
       }
     }
 
-    return permissionState || ((await document.hasStorageAccess()) ? "granted" : "prompt");
+    if (permissionState !== "granted" && (await document.hasStorageAccess())) {
+      console.warn(`document.hasStorageAccess() returned true while permissionState was ${permissionState}`);
+
+      permissionState = "granted";
+    }
+
+    return permissionState;
   }
 
   /**
