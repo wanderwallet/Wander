@@ -130,7 +130,6 @@ Go to the `embed-api` repo and run:
   `3000`).
 
 - `pnpm sdk:dev` - Only if you want to use a local instance of `embed-api`:
-
   - If local, then the `package.json` a the root of this project should say: "embed-api": "link:../embed-api/",
 
   - If you want to use the currently published version of `embed-api`, then it should say: "embed-api":

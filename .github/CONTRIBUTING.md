@@ -19,7 +19,6 @@ Thank you for your interest in contributing to the Wander extension! Below are t
    ```
 
 4. **Build the extension:**
-
    1. **Build from Source:** To build the extension for a specific target, run the build command followed by the target
       name. For example, to build for Chrome, use:
 
