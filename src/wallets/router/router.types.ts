@@ -2,7 +2,6 @@ import type React from "react";
 import type { RouteComponentProps as WouteComponentProps } from "wouter";
 import type { ConnectAuthRoutePath } from "~wallets/router/auth/auth.embed.routes";
 import type { AuthRoutePath } from "~wallets/router/auth/auth.routes";
-import type { ConAuthRoutePath } from "~wallets/router/auth/auth.embed.routes";
 import type { DashboardRoutePath } from "~wallets/router/dashboard/dashboard.routes";
 import type { EmbeddedRoutePath } from "~wallets/router/iframe/iframe.routes";
 import type { PopupRoutePath } from "~wallets/router/popup/popup.routes";

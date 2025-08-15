@@ -6,12 +6,12 @@ import { useExtensionStatusOverride } from "~wallets/router/extension/extension-
 import { ExtensionOverrides } from "~wallets/router/extension/extension.routes";
 import type { BaseLocationHook } from "~wallets/router/router.types";
 import { useHashLocation } from "wouter/use-hash-location";
-import { routeTrapInside, routeTrapOutside, withRouterRedirects } from "../router.utils";
+import { routeTrapInside, routeTrapOutside } from "../router.utils";
 import { useEffect } from "react";
 import { AUTH_POPUP_REQUEST_WAIT_MS } from "~utils/auth/auth.constants";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 
-export const useAuthRequestsLocation: BaseLocationHook = withRouterRedirects(() => {
+export const useAuthRequestsLocation: BaseLocationHook = () => {
   const override = useExtensionStatusOverride();
   const { authRequest: currentAuthRequest, closeAuthPopup } = useCurrentAuthRequest("any");
   const { authRequests, setCurrentAuthRequestIndex } = useAuthRequests();
@@ -86,4 +86,4 @@ export const useAuthRequestsLocation: BaseLocationHook = withRouterRedirects(() 
   }
 
   return [location, navigate];
-});
+};

@@ -420,28 +420,16 @@ export function AuthRequestsProvider({ children }: PropsWithChildren) {
       } else if (!isEmbedded) {
         const isLocked = !(await getDecryptionKey());
 
-        console.log("DEBUG", {
-          isEmbedded,
-          hasAuthRequests,
-          isDone,
-          isLocked,
-        });
-
-        // TODO: Swap?
         // Check if we're within the initial request arrival window (AUTH_POPUP_REQUEST_ARRIVAL_WINDOW_MS ms after mounting)
         // This gives time for pending auth requests to arrive before automatically closing the popup
         const isInRequestArrivalWindow = Date.now() - mountTimeRef.current < AUTH_POPUP_REQUEST_ARRIVAL_WINDOW_MS;
 
         if (isLocked) {
-          console.log("isLocked");
-
           // If the wallet is locked, the user has `AUTH_POPUP_UNLOCK_REQUEST_TTL_MS` (15 minutes) to unlock it before
           // we close it automatically. While that's happening, AuthRequest might or might not be in this provide
           // already:
           clearCloseAuthPopupTimeout = closeAuthPopup(AUTH_POPUP_UNLOCK_REQUEST_TTL_MS);
         } else if (!hasAuthRequests && !isInRequestArrivalWindow) {
-          console.log({ hasAuthRequests, isInRequestArrivalWindow });
-
           // Once the wallet is unlocked, we close the popup if an AuthRequest doesn't arrive in less than
           // `AUTH_POPUP_REQUEST_WAIT_MS` (1 second) but only if the component is not in the initial request arrival window:
           clearCloseAuthPopupTimeout = closeAuthPopup(AUTH_POPUP_REQUEST_WAIT_MS);
