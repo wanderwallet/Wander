@@ -5,7 +5,7 @@ const permissions: PermissionType[] = ["SIGN_TRANSACTION"];
 
 const signDataItem: ModuleProperties = {
   functionName: "signDataItem",
-  permissions
+  permissions,
 };
 
 export default signDataItem;

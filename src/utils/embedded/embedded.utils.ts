@@ -1,36 +1,56 @@
 import { createSupabaseClient, createTRPCClient } from "embed-api";
-import { jwtDecode } from "jwt-decode";
 import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 import { LocalStorage } from "~iframe/storage/unpartitioned-storage/local-storage";
-import {
-  isInsideIframe,
-  EMBEDDED_ANCESTOR_ORIGIN,
-  EMBEDDED_CLIENT_ID,
-  EMBEDDED_SERVER_BASE_URL
-} from "./iframe.utils";
+import { isInsideIframe, EMBEDDED_CLIENT_ID, EMBEDDED_ANCESTOR_ORIGIN, EMBEDDED_SERVER_BASE_URL } from "./iframe.utils";
 import { ExtensionStorage } from "~utils/storage";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
+import type { Wallet } from "~utils/embedded/embedded.types";
 
-// Then, its tRPC client will be initialized with the following headers:
-// - authorization (getAuthTokenHeader / setAuthTokenHeader)
-// - x-device-nonce (getDeviceNonceHeader / setDeviceNonceHeader)
-// - x-client-id (getClientIdHeader / setClientIdHeader)
-// - x-application-id (getApplicationIdHeader / setApplicationIdHeader)
-//
-// The code/functions below run in the context of Wander Embedded iframe/domain.
+export function getBackupsNeededAndMessage(wallets: Wallet[]) {
+  const backupsNeeded = wallets.filter((wallet) => {
+    return wallet.totalExports === 0 && wallet.totalBackups === 0 && wallet.status === "ENABLED";
+  }).length;
 
-// Note: This is run when trpc detects UNAUTHORIZED error.
-export async function signOut() {
+  let backupMessage: undefined | string = undefined;
+
+  if (backupsNeeded === 1) {
+    backupMessage =
+      wallets.length === 1 ? "Your wallet needs to be backed up." : "One of your wallets needs to be backed up.";
+  } else if (backupsNeeded > 1) {
+    backupMessage =
+      wallets.length === backupsNeeded
+        ? `All your ${backupsNeeded} wallets need to be backed up.`
+        : `${backupsNeeded} of your ${wallets.length} wallets need to backed up.`;
+  }
+
+  return {
+    backupsNeeded,
+    backupMessage,
+  };
+}
+
+const signOutListeners = new Set<() => void>();
+
+export function addSignOutListener(listener: () => void) {
+  signOutListeners.add(listener);
+}
+
+export function removeSignOutListener(listener: () => void) {
+  signOutListeners.delete(listener);
+}
+
+export async function signOut(close = true) {
   try {
-    postEmbeddedMessage({
-      type: "embedded_close",
-      data: null
-    });
+    // We send "embedded_close", instead of just closing the modal on "embedded_auth" (log out), because log out can be
+    // triggered by the user clicking the sign out button (which should close the modal) or also automatically by
+    // Supabase Auth callback, which should not close it.
 
-    postEmbeddedMessage({
-      type: "embedded_disconnect",
-      data: null
-    });
+    if (close) {
+      postEmbeddedMessage({
+        type: "embedded_close",
+        data: null,
+      });
+    }
 
     ExtensionStorage.removeAll();
   } catch (err) {
@@ -39,36 +59,56 @@ export async function signOut() {
 
   try {
     const supabase = await getSupabaseClient();
-    await supabase.auth.signOut();
+    const { error } = await supabase.auth.signOut();
+
+    if (error) throw error;
   } catch (err) {
     console.error("Error signing out:", err);
+
+    const storage = await LocalStorage.getInstance();
+
+    const supabaseAuthTokenKeys = storage.keys().filter((key) => key.endsWith("-auth-token"));
+
+    storage.removeItems(supabaseAuthTokenKeys);
 
     window.location.href = "#/";
     window.location.reload();
   }
+
+  try {
+    signOutListeners.forEach((listener) => listener());
+  } catch (err) {
+    console.error("Error invoking sign out listeners:", err);
+  }
 }
 
-// Create a singleton instance of `TRPCClient`
-let trpcInstance: ReturnType<typeof createTRPCClient> | null = null;
+let trpcClientAndUtils: ReturnType<typeof createTRPCClient> | null = null;
 
+/**
+ * Create (if needed) and return a tRPC client instance (singleton) and initialized with the following headers:
+ * - authorization (getAuthTokenHeader / setAuthTokenHeader)
+ * - x-device-nonce (getDeviceNonceHeader / setDeviceNonceHeader)
+ * - x-client-id (getClientIdHeader / setClientIdHeader)
+ * - x-application-id (getApplicationIdHeader / setApplicationIdHeader)
+ *
+ * @returns A configured tRPC client instance.
+ */
 function getTRPCClientAndUtils() {
   if (!IS_EMBEDDED_APP) return null;
 
-  if (!trpcInstance) {
-    trpcInstance = createTRPCClient({
+  if (!trpcClientAndUtils) {
+    trpcClientAndUtils = createTRPCClient({
       baseURL: EMBEDDED_SERVER_BASE_URL,
       authToken: null,
       deviceNonce: undefined,
       clientId: EMBEDDED_CLIENT_ID,
-      applicationId: "",
-      onAuthError: signOut
+      // Note: Errors like UNAUTHORIZED will de-authenticate the user automatically (without closing the modal):
+      onAuthError: () => signOut(false),
     });
   }
 
-  return trpcInstance;
+  return trpcClientAndUtils;
 }
-
-const trpcClientAndUtils = getTRPCClientAndUtils();
 
 const {
   client: trpcVanilla,
@@ -78,8 +118,7 @@ const {
   setDeviceNonceHeader,
   getClientIdHeader,
   setClientIdHeader,
-  setApplicationIdHeader
-} = trpcClientAndUtils || {};
+} = getTRPCClientAndUtils() || {};
 
 // Exporting the router from one repo to another might, in some scenarios, return incorrect types, but it can be fixed
 // by also importing the right AppRouter type and overriding the `client` type:
@@ -106,10 +145,10 @@ export async function getSupabaseClient() {
           storage: {
             getItem: (key: string) => storage.getRaw(key),
             setItem: (key: string, value: string) => storage.setRaw(key, value),
-            removeItem: (key: string) => storage.removeItem(key)
-          }
-        }
-      }
+            removeItem: (key: string) => storage.removeItem(key),
+          },
+        },
+      },
     );
   }
 
@@ -126,60 +165,37 @@ export {
   getDeviceNonceHeader,
   setDeviceNonceHeader,
   getClientIdHeader,
-  setClientIdHeader
+  setClientIdHeader,
 };
-
-// TODO: When developers set up a new app/domain, we should probably use a mechanism like Google Search Console where
-// they need to create a file at the root of their domain, or add an HTML tag, so that we can verify it's actually theirs.
 
 // TODO: Move to embedded.provider and make sure it's called once deviceNonce has been loaded, and that a loader/spinner
 // is shown until this validation has happened.
 
-async function getSessionId() {
+async function insecurelyValidateApplication(sessionId: string) {
   try {
-    const supabase = await getSupabaseClient();
-    const {
-      data: { session }
-    } = await supabase.auth.getSession();
-    const jwtDecoded = jwtDecode(session?.access_token) as {
-      session_id: string;
-    };
-    return jwtDecoded.session_id;
-  } catch (err) {
-    return undefined;
-  }
-}
-
-async function insecurelyValidateApplication() {
-  try {
-    const sessionId = await getSessionId();
     const applicationId = await trpcVanilla.validateApplication.query({
       clientId: EMBEDDED_CLIENT_ID,
       applicationOrigin: EMBEDDED_ANCESTOR_ORIGIN,
-      sessionId
+      sessionId,
     });
 
-    setApplicationIdHeader(applicationId);
+    // TODO: applicationOrigin: EMBEDDED_ANCESTOR_ORIGIN is not needed. `validateApplication` will return a list of
+    // valid origins and only if EMBEDDED_ANCESTOR_ORIGIN is in that list we'll be sending messages to it.
   } catch (err: any) {
     // Only show errors if we're inside an iframe
     if (!isInsideIframe()) return;
 
     // Only show errors for validation failures
     // TRPC errors will have data.code property
-    if (
-      !err.data?.code ||
-      !["NOT_FOUND", "BAD_REQUEST", "FORBIDDEN"].includes(err.data.code)
-    ) {
+    if (!err.data?.code || !["NOT_FOUND", "BAD_REQUEST", "FORBIDDEN"].includes(err.data.code)) {
       console.error("Unexpected error during validation:", err);
       return;
     }
 
     const errorMessages = {
-      NOT_FOUND:
-        "Invalid application configuration. Please verify your clientId.",
+      NOT_FOUND: "Invalid application configuration. Please verify your clientId.",
       BAD_REQUEST: `Invalid origin URL provided`,
-      FORBIDDEN:
-        err.message || "This domain is not authorized to use this application."
+      FORBIDDEN: err.message || "This domain is not authorized to use this application.",
     };
 
     const errorMessage = errorMessages[err.data.code];
@@ -194,9 +210,7 @@ async function insecurelyValidateApplication() {
     window.stop();
 
     // Replace the entire document content
-    location.replace(
-      `data:text/html;charset=utf-8,${encodeURIComponent(html)}`
-    );
+    location.replace(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`);
 
     throw new Error("Application validation failed");
   }

@@ -2,21 +2,21 @@ import { useEffect } from "react";
 import browser from "webextension-polyfill";
 import styled from "styled-components";
 import { ExtensionStorage } from "~utils/storage";
-import { useTheme } from "~utils/theme";
 import { ButtonV2, Section } from "@arconnect/components";
 import type { DisplayTheme } from "@arconnect/components";
 import { PageType, trackPage } from "~utils/analytics";
 import { useStorage } from "~utils/storage";
 import type { Quote } from "~lib/onramper";
 import { useLocation } from "~wallets/router/router.utils";
+import { useTheme } from "~utils/theme/theme.hook";
 
 export function PendingPurchaseView() {
-  const theme = useTheme();
+  const { displayTheme } = useTheme();
   const { navigate } = useLocation();
 
   const [quote] = useStorage<Quote>({
     key: "transak_quote",
-    instance: ExtensionStorage
+    instance: ExtensionStorage,
   });
 
   //segment
@@ -30,16 +30,13 @@ export function PendingPurchaseView() {
         <CheckGraphic>
           <CheckIcon />
         </CheckGraphic>
-        <CongratsTitle>
-          {browser.i18n.getMessage("congrats_purchase_pending")}
-        </CongratsTitle>
-        <PurchasePendingText displayTheme={theme}>
+        <CongratsTitle>{browser.i18n.getMessage("congrats_purchase_pending")}</CongratsTitle>
+        <PurchasePendingText displayTheme={displayTheme}>
           {browser.i18n.getMessage("info_purchase_pending")}
         </PurchasePendingText>
         {quote && (
-          <OrderID displayTheme={theme}>
-            {browser.i18n.getMessage("order_id_purchase_pending")}{" "}
-            {quote.quoteId}
+          <OrderID displayTheme={displayTheme}>
+            {browser.i18n.getMessage("order_id_purchase_pending")} {quote.quoteId}
           </OrderID>
         )}
       </MainContent>
@@ -53,13 +50,7 @@ export function PendingPurchaseView() {
 }
 
 const CheckIcon = () => (
-  <svg
-    width="46.67px"
-    height="33.33px"
-    viewBox="0 0 11 8"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
+  <svg width="46.67px" height="33.33px" viewBox="0 0 11 8" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path
       d="M3.67794 6.31171L1.30728 3.82401L0.5 4.66517L3.67794 8L10.5 0.841163L9.69841 0L3.67794 6.31171Z"
       fill="white"

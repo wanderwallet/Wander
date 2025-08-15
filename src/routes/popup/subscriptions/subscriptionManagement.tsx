@@ -7,51 +7,41 @@ import styled from "styled-components";
 import { getSubscriptionData } from "~subscriptions";
 import { ButtonV2, ListItem } from "@arconnect/components";
 import { Degraded, WarningWrapper } from "../send";
-import { WarningIcon } from "~components/popup/Token";
+import { WarningIcon } from "~components/icons/WarningIcon";
 import Title from "~components/popup/Title";
 import type { CommonRouteProps } from "~wallets/router/router.types";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 export interface SubscriptionManagementViewParams {
   id?: string;
 }
 
-export type SubscriptionManagementViewProps =
-  CommonRouteProps<SubscriptionManagementViewParams>;
+export type SubscriptionManagementViewProps = CommonRouteProps<SubscriptionManagementViewParams>;
 
-export function SubscriptionManagementView({
-  params: { id }
-}: SubscriptionManagementViewProps) {
+export function SubscriptionManagementView({ params: { id } }: SubscriptionManagementViewProps) {
   const [subData, setSubData] = useState<SubscriptionData | null>(null);
   const [nextPayment, setNextPayment] = useState<Date | null>(null);
 
-  useEffect(() => {
-    async function getSubData() {
-      const address = await getActiveAddress();
+  useAsyncEffect(async () => {
+    const address = await getActiveAddress();
 
-      try {
-        if (address) {
-          const data = await getSubscriptionData(address);
-          // finding like this for now
-          const subscription = data.find(
-            (subscription) => subscription.arweaveAccountAddress === id
-          );
-          setSubData(subscription);
-        }
-      } catch (error) {
-        console.error("Error fetching subscription data:", error);
+    try {
+      if (address) {
+        const data = await getSubscriptionData(address);
+        // finding like this for now
+        const subscription = data.find((subscription) => subscription.arweaveAccountAddress === id);
+        setSubData(subscription);
       }
+    } catch (error) {
+      console.error("Error fetching subscription data:", error);
     }
-
-    getSubData();
   }, []);
 
   useEffect(() => {
     const getAlarms = async () => {
       try {
         const alarms = await browser.alarms.getAll();
-        const nextPaymentAlarm = alarms.find(
-          (alarm) => alarm.name === `subscription-alarm-${id}`
-        );
+        const nextPaymentAlarm = alarms.find((alarm) => alarm.name === `subscription-alarm-${id}`);
         if (nextPaymentAlarm) {
           setNextPayment(new Date(nextPaymentAlarm.scheduledTime));
         }
@@ -77,9 +67,7 @@ export function SubscriptionManagementView({
                     <span>
                       <Title style={{ margin: 0 }}>Next Payment</Title>
                       <p style={{ margin: 0 }}>
-                        {nextPayment
-                          ? nextPayment.toLocaleString()
-                          : "No upcoming payment scheduled."}
+                        {nextPayment ? nextPayment.toLocaleString() : "No upcoming payment scheduled."}
                       </p>
                     </span>
                   </div>
@@ -97,7 +85,7 @@ export function SubscriptionManagementView({
                       key={index}
                       onClick={() =>
                         browser.tabs.create({
-                          url: `https://viewblock.io/arweave/tx/${payment.txId}`
+                          url: `https://viewblock.io/arweave/tx/${payment.txId}`,
                         })
                       }
                     />
@@ -110,10 +98,7 @@ export function SubscriptionManagementView({
         <ButtonV2
           fullWidth
           style={{ fontWeight: "500" }}
-          onClick={() =>
-            browser.tabs.create({ url: subData.subscriptionManagementUrl })
-          }
-        >
+          onClick={() => browser.tabs.create({ url: subData.subscriptionManagementUrl })}>
           View Subscription
         </ButtonV2>
       </Wrapper>

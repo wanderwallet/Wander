@@ -35,8 +35,7 @@ export default function Collectibles() {
           onClick={() => {
             if (collectibles.length === 0) return;
             navigate("/collectibles");
-          }}
-        >
+          }}>
           {browser.i18n.getMessage("view_all")} ({collectibles.length})
         </ViewAll>
       )}
@@ -51,7 +50,7 @@ const CollectiblesList = styled.div`
 `;
 
 const NoAssets = styled(Text).attrs({
-  noMargin: true
+  noMargin: true,
 })`
   text-align: center;
 `;

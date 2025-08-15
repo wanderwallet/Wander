@@ -26,9 +26,7 @@ export const Paginator = styled.div`
 export const Page = styled.div<{ active?: boolean }>`
   width: 2.5rem;
   height: 2px;
-  background-color: rgba(
-    ${(props) => props.theme.theme + ", " + (props.active ? "1" : ".45")}
-  );
+  background-color: rgba(${(props) => props.theme.theme + ", " + (props.active ? "1" : ".45")});
   transition: all 0.23s ease-in-out;
 `;
 
@@ -42,8 +40,7 @@ export const Container = styled.div<{
   height: 100%;
   gap: 24px;
   ${({ alignItems }) => alignItems && `align-items: ${alignItems}`};
-  ${({ justifyContent }) =>
-    justifyContent && `justify-content: ${justifyContent}`};
+  ${({ justifyContent }) => justifyContent && `justify-content: ${justifyContent}`};
 `;
 
 export const Content = styled.div<{
@@ -54,8 +51,7 @@ export const Content = styled.div<{
   display: flex;
   flex: 1;
   flex-direction: column;
-  ${({ justifyContent }) =>
-    justifyContent && `justify-content: ${justifyContent}`};
+  ${({ justifyContent }) => justifyContent && `justify-content: ${justifyContent}`};
   ${({ alignItems }) => alignItems && `align-items: ${alignItems}`};
   ${({ textAlign }) => textAlign && `text-align: ${textAlign}`};
   gap: 24px;

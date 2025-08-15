@@ -58,7 +58,7 @@ const RATES = {
   TWD: 32.733051,
   UAH: 41.834357,
   VND: 25446.896969,
-  ZAR: 18.820624
+  ZAR: 18.820624,
 };
 
 async function getExchangeRates(): Promise<Record<string, number>> {
@@ -85,24 +85,18 @@ async function getExchangeRates(): Promise<Record<string, number>> {
     const data: ExchangeRateResponse = await response.json();
 
     // Validate API response
-    if (
-      !data.rates ||
-      typeof data.rates !== "object" ||
-      !data.time_next_update_unix
-    ) {
+    if (!data.rates || typeof data.rates !== "object" || !data.time_next_update_unix) {
       throw new Error("Invalid API response format");
     }
 
     const rates = Object.fromEntries(
-      Object.entries(data.rates).filter(([currency, _]) =>
-        currencies.includes(currency)
-      )
+      Object.entries(data.rates).filter(([currency, _]) => currencies.includes(currency)),
     );
 
     // Cache the new rates
     const newCache: CacheData = {
       rates,
-      expiry: data.time_next_update_unix * 1000
+      expiry: data.time_next_update_unix * 1000,
     };
 
     try {
@@ -132,10 +126,7 @@ async function getExchangeRates(): Promise<Record<string, number>> {
   }
 }
 
-export async function convertUSDTo(
-  amount: number,
-  targetCurrency: string
-): Promise<number> {
+export async function convertUSDTo(amount: number, targetCurrency: string): Promise<number> {
   const rates = await getExchangeRates();
   const rate = rates[targetCurrency.toUpperCase()];
 
@@ -146,9 +137,7 @@ export async function convertUSDTo(
   return amount * rate;
 }
 
-export async function getConversionRate(
-  targetCurrency: string
-): Promise<number> {
+export async function getConversionRate(targetCurrency: string): Promise<number> {
   if (targetCurrency === "USD") return 1;
   const rates = await getExchangeRates();
   return rates[targetCurrency.toUpperCase()];
@@ -199,5 +188,5 @@ export const currencies = [
   "UAH",
   "VEF",
   "VND",
-  "ZAR"
+  "ZAR",
 ];

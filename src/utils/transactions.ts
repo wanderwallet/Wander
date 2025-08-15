@@ -21,7 +21,7 @@ export function saveAoTransactionToLocalStorage(
   amount: string,
   ticker: string,
   networkFee: string,
-  message?: string
+  message?: string,
 ) {
   localStorage.setItem(
     "latest_tx",
@@ -32,7 +32,7 @@ export function saveAoTransactionToLocalStorage(
       quantity: { ar: amount },
       fee: { ar: networkFee },
       data: {
-        size: message ? new TextEncoder().encode(message).length : 0
+        size: message ? new TextEncoder().encode(message).length : 0,
       },
       tags: [
         { name: "Data-Protocol", value: "ao" },
@@ -41,8 +41,8 @@ export function saveAoTransactionToLocalStorage(
         { name: "Token-Address", value: tokenId },
         { name: "Recipient", value: recipient },
         { name: "Quantity", value: amount },
-        { name: "Ticker", value: ticker }
-      ]
-    })
+        { name: "Ticker", value: ticker },
+      ],
+    }),
   );
 }

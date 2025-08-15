@@ -1,18 +1,9 @@
-import {
-  dataItemToUR,
-  decodeSignature,
-  messageToUR
-} from "~wallets/hardware/keystone";
-import { useEffect, useState } from "react";
+import { dataItemToUR, decodeSignature, messageToUR } from "~wallets/hardware/keystone";
+import { useCallback, useState } from "react";
 import { useScanner } from "@arconnect/keystone-sdk";
 import { useActiveWallet } from "~wallets/hooks";
 import type { UR } from "@ngraveio/bc-ur";
-import {
-  Section,
-  Spacer,
-  Text,
-  useToasts
-} from "@arconnect/components-rebrand";
+import { Section, Spacer, Text, useToasts } from "@arconnect/components-rebrand";
 import AnimatedQRScanner from "~components/hardware/AnimatedQRScanner";
 import AnimatedQRPlayer from "~components/hardware/AnimatedQRPlayer";
 import Wrapper from "~components/auth/Wrapper";
@@ -22,21 +13,12 @@ import Message from "~components/auth/Message";
 import { useCurrentAuthRequest } from "~utils/auth/auth.hooks";
 import { HeadAuth } from "~components/HeadAuth";
 import { AuthButtons } from "~components/auth/AuthButtons";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 export function SignKeystoneAuthRequestView() {
-  const { authRequest, acceptRequest, rejectRequest } =
-    useCurrentAuthRequest("signKeystone");
+  const { authRequest, acceptRequest, rejectRequest } = useCurrentAuthRequest("signKeystone");
 
   const { keystoneSignType, data: dataToSign } = authRequest;
-
-  useEffect(() => {
-    (async () => {
-      if (keystoneSignType === "DataItem" && !!dataToSign) {
-        await loadTransactionUR();
-        setPage("qr");
-      }
-    })();
-  }, [keystoneSignType, dataToSign]);
 
   /**
    * Hardware wallet logic
@@ -50,18 +32,6 @@ export function SignKeystoneAuthRequestView() {
 
   // load tx UR
   const [transactionUR, setTransactionUR] = useState<UR>();
-
-  async function loadTransactionUR() {
-    if (wallet.type !== "hardware" || !dataToSign) return;
-    // load the ur data
-    if (keystoneSignType === "DataItem") {
-      const ur = await dataItemToUR(dataToSign, wallet.xfp);
-      setTransactionUR(ur);
-    } else {
-      const ur = await messageToUR(dataToSign, wallet.xfp);
-      setTransactionUR(ur);
-    }
-  }
 
   // loading
   const [loading, setLoading] = useState(false);
@@ -87,9 +57,7 @@ export function SignKeystoneAuthRequestView() {
       await acceptRequest(data);
     } catch (e) {
       // log error
-      console.error(
-        `[Wander] Error decoding signature from keystone\n${e?.message || e}`
-      );
+      console.error(`[Wander] Error decoding signature from keystone\n${e?.message || e}`);
 
       // reply to request
       await rejectRequest("Failed to decode signature from keystone");
@@ -100,6 +68,26 @@ export function SignKeystoneAuthRequestView() {
 
   // toast
   const { setToast } = useToasts();
+
+  const loadTransactionUR = useCallback(async () => {
+    if (wallet.type !== "hardware" || !dataToSign) return;
+
+    // load the ur data
+    if (keystoneSignType === "DataItem") {
+      const ur = await dataItemToUR(dataToSign, wallet.xfp);
+      setTransactionUR(ur);
+    } else {
+      const ur = await messageToUR(dataToSign, wallet.xfp);
+      setTransactionUR(ur);
+    }
+  }, [keystoneSignType, dataToSign, wallet]);
+
+  useAsyncEffect(async () => {
+    if (keystoneSignType === "DataItem" && !!dataToSign) {
+      await loadTransactionUR();
+      setPage("qr");
+    }
+  }, [keystoneSignType, dataToSign, loadTransactionUR]);
 
   // TODO: Could large `data` values cause issues with this component or `<Message>` below?
 
@@ -113,7 +101,7 @@ export function SignKeystoneAuthRequestView() {
             <Message message={[...dataToSign]} />
           </Section>
         )) || (
-          <Section>
+          <Section showPaddingVertical={false}>
             <Text noMargin>{browser.i18n.getMessage("sign_scan_qr")}</Text>
             <Spacer y={1.5} />
             {(page === "qr" && <AnimatedQRPlayer data={transactionUR} />) || (
@@ -124,17 +112,13 @@ export function SignKeystoneAuthRequestView() {
                     setToast({
                       type: "error",
                       duration: 2300,
-                      content: browser.i18n.getMessage(`keystone_${error}`)
+                      content: browser.i18n.getMessage(`keystone_${error}`),
                     });
                   }}
                 />
                 <Spacer y={1} />
-                <Text>
-                  {browser.i18n.getMessage(
-                    "keystone_scan_progress",
-                    `${scanner.progress.toFixed(0)}%`
-                  )}
-                </Text>
+                <Text>{browser.i18n.getMessage("keystone_scan_progress", `${scanner.progress.toFixed(0)}%`)}</Text>
+                <Spacer y={0.5} />
                 <Progress percentage={scanner.progress} />
               </>
             )}
@@ -160,11 +144,11 @@ export function SignKeystoneAuthRequestView() {
                       // update page
                       setPage((val) => (!val ? "qr" : "scanner"));
                     } else await acceptRequest();
-                  }
+                  },
                 }
           }
           secondaryButtonProps={{
-            onClick: () => rejectRequest()
+            onClick: () => rejectRequest(),
           }}
         />
       </Section>

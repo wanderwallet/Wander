@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { NameServiceProfile } from "./types";
 import { getAnsNameServiceProfile } from "./ans";
 import { getArNSProfile } from "./arns";
 import { ExtensionStorage } from "~utils/storage";
 import { getWallets } from "~wallets";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 let IN_MEM_CACHE: Record<string, NameServiceProfile | "none"> = {};
 
@@ -18,9 +19,7 @@ async function updateCache() {
   const newMemCache = {};
 
   for (let walletAddress of walletAddresses) {
-    const profile =
-      (await getArNSProfile(walletAddress)) ||
-      (await getAnsNameServiceProfile(walletAddress));
+    const profile = (await getArNSProfile(walletAddress)) || (await getAnsNameServiceProfile(walletAddress));
 
     newMemCache[walletAddress] = profile || "none";
   }
@@ -48,17 +47,13 @@ ExtensionStorage.get<Record<string, NameServiceProfile>>("name_service_cache")
  *
  * @returns NameServiceProfile | undefined
  */
-export async function getNameServiceProfile(
-  walletAddress: string
-): Promise<NameServiceProfile | undefined> {
+export async function getNameServiceProfile(walletAddress: string): Promise<NameServiceProfile | undefined> {
   const cached = IN_MEM_CACHE[walletAddress];
   if (cached) {
     return cached === "none" ? undefined : cached;
   }
 
-  const profile =
-    (await getArNSProfile(walletAddress)) ||
-    (await getAnsNameServiceProfile(walletAddress));
+  const profile = (await getArNSProfile(walletAddress)) || (await getAnsNameServiceProfile(walletAddress));
 
   IN_MEM_CACHE[walletAddress] = profile || "none";
   ExtensionStorage.set("name_service_cache", IN_MEM_CACHE);
@@ -73,9 +68,7 @@ export async function getNameServiceProfile(
  *
  * @returns NameServiceProfile[] | undefined
  */
-export async function getNameServiceProfiles(
-  walletAddress: string[]
-): Promise<Array<NameServiceProfile>> {
+export async function getNameServiceProfiles(walletAddress: string[]): Promise<Array<NameServiceProfile>> {
   const profiles = [];
   for (let wallet of walletAddress) {
     const profile = await getNameServiceProfile(wallet);
@@ -96,16 +89,15 @@ export async function getNameServiceProfiles(
 export function useNameServiceProfile(walletAddress: string) {
   const [profile, setProfile] = useState<NameServiceProfile>();
 
-  useEffect(() => {
-    (async () => {
-      if (!walletAddress) {
-        return setProfile(undefined);
-      }
+  useAsyncEffect(async () => {
+    if (!walletAddress) {
+      setProfile(undefined);
+      return;
+    }
 
-      const profile = await getNameServiceProfile(walletAddress);
+    const profile = await getNameServiceProfile(walletAddress);
 
-      setProfile(profile);
-    })();
+    setProfile(profile);
   }, [walletAddress]);
 
   return profile;

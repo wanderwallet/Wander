@@ -10,11 +10,7 @@ interface WanderLogoProps {
   setShowSplash: (showSplash: boolean) => void;
 }
 
-const UpdateSplash: React.FC<WanderLogoProps> = ({
-  width = 250,
-  height = 250,
-  setShowSplash
-}) => {
+const UpdateSplash: React.FC<WanderLogoProps> = ({ width = 250, height = 250, setShowSplash }) => {
   const theme = useTheme();
   const isLight = theme.displayTheme === "light";
 
@@ -23,16 +19,14 @@ const UpdateSplash: React.FC<WanderLogoProps> = ({
     autoplay: true,
     animationData: isLight ? wanderLogoLight : wanderLogo,
     rendererSettings: {
-      preserveAspectRatio: "xMidYMid slice"
-    }
+      preserveAspectRatio: "xMidYMid slice",
+    },
   };
 
   return (
     <div style={{ width, height }}>
       <Lottie
-        eventListeners={[
-          { eventName: "complete", callback: () => setShowSplash(false) }
-        ]}
+        eventListeners={[{ eventName: "complete", callback: () => setShowSplash(false) }]}
         options={defaultOptions}
         height={250}
         width={250}

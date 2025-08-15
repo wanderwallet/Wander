@@ -3,10 +3,7 @@ import { type Gateway } from "~gateways/gateway";
 import { Storage } from "@plasmohq/storage";
 import { useStorage as usePlasmoStorage } from "@plasmohq/storage/hook";
 import { useMemo } from "react";
-import {
-  StorageMock,
-  type StorageMockInterface
-} from "~iframe/storage/plasmo-storage/plasmo-storage.mock";
+import { StorageMock, type StorageMockInterface } from "~iframe/storage/plasmo-storage/plasmo-storage.mock";
 import { IS_EMBEDDED_APP } from "./embedded/embedded.constants";
 
 /**
@@ -16,13 +13,9 @@ import { IS_EMBEDDED_APP } from "./embedded/embedded.constants";
  *   version needs to persist are stored manually in `localStorage` (e.g. `deviceNonce`, shares...)
  */
 
-export const ExtensionStorage = IS_EMBEDDED_APP
-  ? new StorageMock("session")
-  : new Storage({ area: "local" });
+export const ExtensionStorage = IS_EMBEDDED_APP ? new StorageMock("session") : new Storage({ area: "local" });
 
-export const PersistentStorage = IS_EMBEDDED_APP
-  ? new StorageMock("local")
-  : ExtensionStorage;
+export const PersistentStorage = IS_EMBEDDED_APP ? new StorageMock("local") : ExtensionStorage;
 
 /**
  * Temporary storage for submitted transfers, with values
@@ -31,7 +24,7 @@ export const PersistentStorage = IS_EMBEDDED_APP
 export const TempTransactionStorage = IS_EMBEDDED_APP
   ? ExtensionStorage
   : new Storage({
-      area: "session"
+      area: "session",
       // This copies the data to localStorage, NOT to sessionStorage:
       // allCopied: true,
     });
@@ -61,14 +54,13 @@ export interface RawStoredTransfer {
 // /send/transfer to break on load, when the "init" value should have been used:
 export const useStorage: typeof usePlasmoStorage = IS_EMBEDDED_APP
   ? (((rawKey, onInit) => {
-      const [value, ...otherReturnValues] = usePlasmoStorage(rawKey, onInit);
+      const [value, setter, other] = usePlasmoStorage(rawKey, onInit);
+      const { isLoading } = other;
 
       const returnValue = useMemo(() => {
-        return typeof onInit === "function" ? onInit(value) : value ?? onInit;
-      }, [value]);
+        return typeof onInit === "function" ? onInit(value, !isLoading) : (value ?? onInit);
+      }, [value, isLoading]);
 
-      if (returnValue === null) debugger;
-
-      return [returnValue, ...otherReturnValues];
+      return [returnValue, setter, other];
     }) as any)
   : usePlasmoStorage;

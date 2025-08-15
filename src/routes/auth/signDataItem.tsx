@@ -1,12 +1,4 @@
-import {
-  Input,
-  Loading,
-  Section,
-  Spacer,
-  Text,
-  useInput,
-  useToasts
-} from "@arconnect/components-rebrand";
+import { Input, Loading, Section, Spacer, Text, useInput, useToasts } from "@arconnect/components-rebrand";
 import {
   FiatAmount,
   AmountTitle,
@@ -15,7 +7,7 @@ import {
   PropertyName,
   PropertyValue,
   TagValue,
-  useAdjustAmountTitleWidth
+  useAdjustAmountTitleWidth,
 } from "~routes/popup/transaction/[id]";
 import Wrapper from "~components/auth/Wrapper";
 import browser from "webextension-polyfill";
@@ -29,18 +21,9 @@ import { Quantity, Token } from "ao-tokens";
 import prettyBytes from "pretty-bytes";
 import { formatFiatBalance } from "~tokens/currency";
 import useSetting from "~settings/hook";
-import { getPrice } from "~lib/coingecko";
-import {
-  getTagValue,
-  type TokenInfo,
-  type TokenInfoWithProcessId
-} from "~tokens/aoTokens/ao";
+import { getPrice, type CoinGeckoSymbol } from "~lib/coingecko";
+import { getTagValue, type TokenInfo } from "~tokens/aoTokens/ao";
 import { ChevronRightIcon } from "@iconicicons/react";
-import { getUserAvatar } from "~lib/avatar";
-import { LogoWrapper, Logo, WarningIcon } from "~components/popup/Token";
-import arLogoLight from "url:/assets/ar/logo_light.png";
-import arLogoDark from "url:/assets/ar/logo_dark.png";
-import { useTheme } from "~utils/theme";
 import { checkWalletBits, type WalletBitsCheck } from "~utils/analytics";
 import { Degraded, WarningWrapper } from "~routes/popup/send";
 import { useCurrentAuthRequest } from "~utils/auth/auth.hooks";
@@ -48,16 +31,16 @@ import { HeadAuth } from "~components/HeadAuth";
 import { AuthButtons } from "~components/auth/AuthButtons";
 import { useAskPassword } from "~wallets/hooks";
 import { humanizeTimestampTags } from "~utils/timestamp";
+import { TokenLogo } from "~components/popup/TokenLogo";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import { WarningIcon } from "~components/icons/WarningIcon";
+import { useTheme } from "~utils/theme/theme.hook";
 
 export function SignDataItemAuthRequestView() {
-  const { authRequest, acceptRequest, rejectRequest } =
-    useCurrentAuthRequest("signDataItem");
-
+  const { authRequest, acceptRequest, rejectRequest } = useCurrentAuthRequest("signDataItem");
   const { authID, data, url } = authRequest;
-
   const [loading, setLoading] = useState<boolean>(false);
-  const [tokenName, setTokenName] = useState<string>("");
-  const [logo, setLogo] = useState<string>("");
+  const [tokenInfo, setTokenInfo] = useState<TokenInfo | null>(null);
   const [amount, setAmount] = useState<Quantity | null>(null);
   const [showTags, setShowTags] = useState<boolean>(false);
   const [mismatch, setMismatch] = useState<boolean>(false);
@@ -67,25 +50,20 @@ export function SignDataItemAuthRequestView() {
   const tags = useMemo(() => humanizeTimestampTags(data?.tags || []), [data]);
   const recipient = useMemo(() => getTagValue("Recipient", tags) || "", [tags]);
   const quantity = useMemo(() => getTagValue("Quantity", tags) || "0", [tags]);
-  const transfer = useMemo(
-    () => tags.some((tag) => tag.name === "Action" && tag.value === "Transfer"),
-    [tags]
-  );
+  const transfer = useMemo(() => tags.some((tag) => tag.name === "Action" && tag.value === "Transfer"), [tags]);
 
   const [transferRequirePassword] = useStorage<boolean>(
     {
       key: "transfer_require_password",
-      instance: ExtensionStorage
+      instance: ExtensionStorage,
     },
-    false
+    false,
   );
 
   const process = data?.target;
+  const tokenName = tokenInfo?.Name;
 
-  const formattedAmount = useMemo(
-    () => (amount || 0).toLocaleString(),
-    [amount]
-  );
+  const formattedAmount = useMemo(() => (amount || 0).toLocaleString(), [amount]);
 
   // adjust amount title font sizes
   const parentRef = useRef(null);
@@ -96,17 +74,12 @@ export function SignDataItemAuthRequestView() {
   const [activeAddress] = useStorage<string>(
     {
       key: "active_address",
-      instance: ExtensionStorage
+      instance: ExtensionStorage,
     },
-    ""
+    "",
   );
 
-  const theme = useTheme();
-
-  const arweaveLogo = useMemo(
-    () => (theme === "dark" ? arLogoDark : arLogoLight),
-    [theme]
-  );
+  const { displayTheme } = useTheme();
 
   // currency setting
   const [currency] = useSetting<string>("currency");
@@ -123,9 +96,7 @@ export function SignDataItemAuthRequestView() {
     if (!tags?.length) return browser.i18n.getMessage("sign_item");
 
     const actionValue = getTagValue("Action", tags);
-    const isAOTransaction = tags.some(
-      (tag) => tag.name === "Data-Protocol" && tag.value === "ao"
-    );
+    const isAOTransaction = tags.some((tag) => tag.name === "Data-Protocol" && tag.value === "ao");
 
     if (isAOTransaction && actionValue) {
       return actionValue.replace(/-/g, " ");
@@ -142,7 +113,7 @@ export function SignDataItemAuthRequestView() {
         setToast({
           type: "error",
           content: browser.i18n.getMessage("invalidPassword"),
-          duration: 2400
+          duration: 2400,
         });
         return;
       }
@@ -153,63 +124,51 @@ export function SignDataItemAuthRequestView() {
 
   useEffect(() => {
     if (!tokenName) return;
-    getPrice(tokenName, currency)
+
+    getPrice(tokenName as CoinGeckoSymbol, currency)
       .then((res) => setPrice(res))
       .catch();
   }, [currency, tokenName]);
 
   // get ao token info
-  useEffect(() => {
-    const fetchTokenInfo = async () => {
-      if (!process || !transfer) return;
-      let tokenInfo: TokenInfo;
-      try {
-        setLoading(true);
-        const token = await Token(data.target);
-        tokenInfo = {
-          ...token.info,
-          Denomination: Number(token.info.Denomination)
-        };
-      } catch (err) {
-        // fallback
-        console.log("err", err);
-        try {
-          const aoTokens =
-            (await PersistentStorage.get<TokenInfoWithProcessId[]>(
-              "ao_tokens"
-            )) || [];
-          const aoTokensCache =
-            (await PersistentStorage.get<TokenInfoWithProcessId[]>(
-              "ao_tokens_cache"
-            )) || [];
-          const aoTokensCombined = [...aoTokens, ...aoTokensCache];
-          const token = aoTokensCombined.find(
-            ({ processId }) => data.target === processId
-          );
-          if (token) {
-            tokenInfo = token;
-          }
-        } catch {}
-      } finally {
-        if (tokenInfo) {
-          if (tokenInfo?.Logo) {
-            const logo = await getUserAvatar(tokenInfo?.Logo);
-            setLogo(logo || "");
-          } else {
-            setLogo(arweaveLogo);
-          }
+  useAsyncEffect(async () => {
+    if (!process || !transfer) return;
 
-          const tokenAmount = new Quantity(
-            BigInt(quantity),
-            BigInt(tokenInfo.Denomination)
-          );
-          setTokenName(tokenInfo.Name);
-          setAmount(tokenAmount);
+    let tokenInfo: TokenInfo;
+
+    try {
+      setLoading(true);
+
+      const token = await Token(data.target);
+
+      tokenInfo = {
+        ...token.info,
+        Denomination: Number(token.info.Denomination),
+        processId: token.id,
+      };
+    } catch (err) {
+      // fallback
+      console.log("err", err);
+
+      try {
+        const aoTokens = (await PersistentStorage.get<TokenInfo[]>("ao_tokens")) || [];
+        const aoTokensCache = (await PersistentStorage.get<TokenInfo[]>("ao_tokens_cache")) || [];
+        const aoTokensCombined = [...aoTokens, ...aoTokensCache];
+        const token = aoTokensCombined.find(({ processId }) => data.target === processId);
+
+        if (token) {
+          tokenInfo = token;
         }
-        setLoading(false);
+      } catch {}
+    } finally {
+      if (tokenInfo) {
+        const tokenAmount = new Quantity(BigInt(quantity), BigInt(tokenInfo.Denomination));
+        setAmount(tokenAmount);
+        setTokenInfo(tokenInfo);
       }
-    };
-    fetchTokenInfo();
+
+      setLoading(false);
+    }
   }, [data]);
 
   // listen for enter to reset
@@ -225,12 +184,6 @@ export function SignDataItemAuthRequestView() {
     return () => window.removeEventListener("keydown", listener);
   }, [authID, transferRequirePassword, askPassword]);
 
-  useEffect(() => {
-    if (tokenName && !logo) {
-      setLogo(arweaveLogo);
-    }
-  }, [tokenName, logo, theme]);
-
   // check for if bits check exists, if it does, check mismatch
   useEffect(() => {
     const walletCheck = async () => {
@@ -240,9 +193,7 @@ export function SignDataItemAuthRequestView() {
       }
       try {
         const storageKey = `bits_check_${activeAddress}`;
-        const storedCheck = await ExtensionStorage.get<
-          WalletBitsCheck | boolean
-        >(storageKey);
+        const storedCheck = await ExtensionStorage.get<WalletBitsCheck | boolean>(storageKey);
 
         if (typeof storedCheck !== "object") {
           const bits = await checkWalletBits();
@@ -266,7 +217,7 @@ export function SignDataItemAuthRequestView() {
         {mismatch && transfer && (
           <Degraded>
             <WarningWrapper>
-              <WarningIcon color={theme === "dark" ? "#fff" : "#000"} />{" "}
+              <WarningIcon color={displayTheme === "dark" ? "#fff" : "#000"} />{" "}
             </WarningWrapper>
             <div>
               <h4>{browser.i18n.getMessage("mismatch_warning_title")}</h4>
@@ -279,9 +230,7 @@ export function SignDataItemAuthRequestView() {
           </Degraded>
         )}
         <Description>
-          <Text noMargin>
-            {browser.i18n.getMessage("sign_data_description", url)}
-          </Text>
+          <Text noMargin>{browser.i18n.getMessage("sign_data_description", url)}</Text>
         </Description>
         <Section>
           <div
@@ -289,26 +238,17 @@ export function SignDataItemAuthRequestView() {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              marginBottom: "4px"
-            }}
-          >
-            {!loading ? (
-              logo && (
-                <LogoWrapper>
-                  <Logo src={logo} alt={`${tokenName} logo`} />
-                </LogoWrapper>
-              )
-            ) : (
+              marginBottom: "4px",
+            }}>
+            {loading ? (
               <Loading style={{ width: "16px", height: "16px" }} />
+            ) : (
+              tokenInfo && <TokenLogo token={tokenInfo || ""} />
             )}
           </div>
           {transfer && (
             <>
-              {+fiatPrice > 0 && (
-                <FiatAmount>
-                  {formatFiatBalance(fiatPrice, currency)}
-                </FiatAmount>
-              )}
+              {+fiatPrice > 0 && <FiatAmount>{formatFiatBalance(fiatPrice, currency)}</FiatAmount>}
               <AmountTitle
                 ref={childRef}
                 style={{
@@ -316,9 +256,8 @@ export function SignDataItemAuthRequestView() {
                   flexWrap: "wrap",
                   justifyContent: "center",
                   alignItems: "flex-end",
-                  marginBottom: "16px"
-                }}
-              >
+                  marginBottom: "16px",
+                }}>
                 {formattedAmount}
                 <span style={{ lineHeight: "1.5em" }}>{tokenName}</span>
               </AmountTitle>
@@ -328,37 +267,27 @@ export function SignDataItemAuthRequestView() {
           <Properties>
             {data?.target && (
               <TransactionProperty>
-                <PropertyName>
-                  {browser.i18n.getMessage("process_id")}
-                </PropertyName>
+                <PropertyName>{browser.i18n.getMessage("process_id")}</PropertyName>
                 <PropertyValue>{formatAddress(data.target, 6)}</PropertyValue>
               </TransactionProperty>
             )}
             <TransactionProperty>
-              <PropertyName>
-                {browser.i18n.getMessage("transaction_from")}
-              </PropertyName>
+              <PropertyName>{browser.i18n.getMessage("transaction_from")}</PropertyName>
               <PropertyValue>{formatAddress(activeAddress, 6)}</PropertyValue>
             </TransactionProperty>
             {recipient && (
               <TransactionProperty>
-                <PropertyName>
-                  {browser.i18n.getMessage("transaction_to")}
-                </PropertyName>
+                <PropertyName>{browser.i18n.getMessage("transaction_to")}</PropertyName>
                 <PropertyValue>{formatAddress(recipient, 6)}</PropertyValue>
               </TransactionProperty>
             )}
 
             <TransactionProperty>
-              <PropertyName>
-                {browser.i18n.getMessage("transaction_fee")}
-              </PropertyName>
+              <PropertyName>{browser.i18n.getMessage("transaction_fee")}</PropertyName>
               <PropertyValue>0 AR</PropertyValue>
             </TransactionProperty>
             <TransactionProperty>
-              <PropertyName>
-                {browser.i18n.getMessage("transaction_size")}
-              </PropertyName>
+              <PropertyName>{browser.i18n.getMessage("transaction_size")}</PropertyName>
               <PropertyValue>{prettyBytes(data.data.length)}</PropertyValue>
             </TransactionProperty>
             <Spacer y={0.1} />
@@ -366,10 +295,9 @@ export function SignDataItemAuthRequestView() {
               style={{
                 cursor: "pointer",
                 display: "flex",
-                alignItems: "center"
+                alignItems: "center",
               }}
-              onClick={() => setShowTags(!showTags)}
-            >
+              onClick={() => setShowTags(!showTags)}>
               {browser.i18n.getMessage("transaction_tags")}
               <AnimatedChevron $open={showTags}>
                 <ChevronRightIcon />
@@ -411,10 +339,10 @@ export function SignDataItemAuthRequestView() {
           authRequest={authRequest}
           primaryButtonProps={{
             label: browser.i18n.getMessage("signature_authorize"),
-            onClick: sign
+            onClick: sign,
           }}
           secondaryButtonProps={{
-            onClick: () => rejectRequest()
+            onClick: () => rejectRequest(),
           }}
         />
       </Section>

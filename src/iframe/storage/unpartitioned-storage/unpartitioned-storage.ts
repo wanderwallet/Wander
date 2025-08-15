@@ -1,402 +1,58 @@
 import { isInsideIframe } from "~utils/embedded/iframe.utils";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import {
-  PARTITIONED_STORAGE_BANNER_DISMISSAL_KEY,
-  PARTITIONED_STORAGE_BANNER_EVENT
+  getUnpartitionedStateStatus,
+  HAS_SIMPLE_STORAGE_API,
+  setUnpartitionedStateStatus,
+  type UnpartitionedStateStatus,
 } from "./unpartitioned-storage.utils";
-import browser from "webextension-polyfill";
+import { isError } from "~utils/error/error.utils";
+import {
+  isComplexStorageItem,
+  type ItemStorageOptions,
+  type StorageItem,
+} from "~iframe/storage/storage-manager/storage-manager.utils";
+import { StorageManager } from "~iframe/storage/storage-manager/storage-manager";
 
 type StorageType = "localStorage" | "sessionStorage";
-interface UnpartitionedStorageOptions {
+
+interface EnhancedStorageOptions {
   area?: "local" | "session";
 }
 
-export type StorageItem<T = string> =
-  | T
-  | {
-      /**
-       * The value to store.
-       */
-      value: T;
-      /**
-       * The expiration unix timestamp of the item.
-       * Optional, but either this or priority should be present.
-       */
-      expiresAt?: number;
-      /**
-       * Higher number = higher priority (less likely to be evicted).
-       * Optional, but either this or expiresAt should be present.
-       */
-      priority?: number;
-    };
-
-export interface ItemStorageOptions {
-  expiresIn?: number;
-  priority?: number;
-}
-
-/**
- * Helper method to determine if a parsed item is a complex StorageItem with metadata
- */
-function isComplexStorageItem<T>(
-  item: any,
-  requiredMetadata: {
-    expiresAt?: boolean;
-    priority?: boolean;
-  } = {}
-): item is { value: T; expiresAt?: number; priority?: number } {
-  // Early bailout checks for non-objects
-  if (!item || typeof item !== "object" || item === null) {
-    return false;
-  }
-
-  // Check for required value property
-  if (!("value" in item)) {
-    return false;
-  }
-
-  // Check for at least one metadata property
-  const hasExpiresAt = "expiresAt" in item;
-  const hasPriority = "priority" in item;
-
-  if (!hasExpiresAt && !hasPriority) {
-    return false;
-  }
-
-  // Check specific required options if provided
-  if (requiredMetadata.expiresAt && !hasExpiresAt) {
-    return false;
-  }
-
-  if (requiredMetadata.priority && !hasPriority) {
-    return false;
-  }
-
-  return true;
-}
-
-/**
- * Storage Manager for handling localStorage and sessionStorage eviction policies
- */
-export class StorageManager {
-  public static readonly MAX_STORAGE_SIZE = 5 * 1024 * 1024; // 5MB default limit
-  public static readonly DEFAULT_PRIORITY = 10; // Critical priority (scale of 1-10)
-  public static readonly PRIORITY_LEVELS = {
-    CRITICAL: 10, // System-critical data that should never be evicted
-    HIGH: 8, // Important user preferences/settings
-    MEDIUM: 5, // Regular application data
-    LOW: 3, // Cache data that can be regenerated
-    TEMPORARY: 1 // Short-lived or disposable data
-  };
-
-  // Add a last cleanup timestamp to avoid too frequent cleanups
-  private static lastCleanupTime = 0;
-  private static readonly CLEANUP_INTERVAL = 60000; // 1 minute
-
-  /**
-   * Evict items from storage based on priority and expiration
-   * @param storage The storage object to manage
-   * @param bytesNeeded Estimated bytes needed
-   * @param options Eviction options
-   * @returns True if eviction was successful or not needed
-   */
-  static evictItems(
-    storage: Storage,
-    bytesNeeded: number = 0,
-    options: { bufferSize?: number; aggressive?: boolean } = {}
-  ): boolean {
-    const initialLength = storage.length;
-    // Setup options with defaults
-    const bufferSize = options.bufferSize ?? 1024;
-    const aggressive = options.aggressive ?? false;
-
-    // First, clear any expired items
-    this.clearExpiredItems(storage, aggressive);
-
-    // Calculate current usage
-    const usage = this.calculateStorageUsage(storage);
-
-    // No eviction needed if we have enough space
-    if (usage.currentSize + bytesNeeded + bufferSize <= this.MAX_STORAGE_SIZE) {
-      return true;
-    }
-
-    // Sort items by priority and expiration
-    const sortedItems = this.getSortedStorageItems(storage);
-
-    // Early exit if no items are available for eviction
-    if (sortedItems.length === 0) {
-      return false;
-    }
-
-    // Calculate target size - how much space we want to have after eviction
-    const targetSize = this.MAX_STORAGE_SIZE - bytesNeeded - bufferSize;
-
-    // Track current size instead of using initial usage
-    let currentSize = usage.currentSize;
-    let evictedCount = 0;
-
-    // Determine the eviction threshold based on aggressiveness
-    const evictionThreshold = aggressive
-      ? this.PRIORITY_LEVELS.HIGH
-      : this.PRIORITY_LEVELS.CRITICAL;
-
-    // Evict items until we have enough space
-    for (const item of sortedItems) {
-      if (item.priority >= evictionThreshold) {
-        continue;
-      }
-
-      try {
-        storage.removeItem(item.key);
-        currentSize -= item.size;
-        evictedCount++;
-      } catch (error) {
-        // Log error but continue with other items
-        console.error(`Failed to evict item ${item.key}:`, error);
-        continue;
-      }
-
-      // Check progress periodically for performance
-      if (evictedCount % 10 === 0) {
-        if (currentSize <= targetSize) {
-          return true;
-        }
-      }
-    }
-
-    // Verify storage wasn't modified during eviction
-    if (storage.length !== initialLength - evictedCount) {
-      // Storage was modified during eviction, recalculate
-      const finalUsage = this.calculateStorageUsage(storage);
-      return finalUsage.currentSize + bytesNeeded <= this.MAX_STORAGE_SIZE;
-    }
-
-    return currentSize + bytesNeeded <= this.MAX_STORAGE_SIZE;
-  }
-
-  /**
-   * Clear all expired items from storage
-   */
-  static clearExpiredItems(storage: Storage, force = false): number {
-    const now = Date.now();
-    // Skip if we recently cleaned up and force isn't true
-    if (!force && now - this.lastCleanupTime < this.CLEANUP_INTERVAL) {
-      return 0;
-    }
-
-    // Skip if storage is empty
-    if (storage.length === 0) {
-      this.lastCleanupTime = now;
-      return 0;
-    }
-
-    let clearedCount = 0;
-
-    for (const key of Object.keys(storage)) {
-      const rawValue = storage.getItem(key);
-      if (!rawValue) continue;
-
-      try {
-        const parsed = JSON.parse(rawValue);
-
-        if (
-          isComplexStorageItem(parsed, { expiresAt: true }) &&
-          parsed.expiresAt < now
-        ) {
-          storage.removeItem(key);
-          clearedCount++;
-        }
-      } catch (e) {
-        // Skip items that can't be parsed
-      }
-    }
-
-    this.lastCleanupTime = now;
-    return clearedCount;
-  }
-
-  /**
-   * Efficiently calculates storage usage (in bytes) and item count for the given Storage object.
-   * Uses TextEncoder to correctly handle multi-byte characters.
-   *
-   * @param storage The Storage object (localStorage or sessionStorage)
-   * @returns An object with the total size in bytes and the item count.
-   */
-  static calculateStorageUsage(storage: Storage): {
-    currentSize: number;
-    itemCount: number;
-  } {
-    // Create encoder once and reuse
-    const encoder = new TextEncoder();
-    let totalBytes = 0;
-    const count = storage.length;
-
-    // Use a single array to store concatenated strings
-    const buffer = new Array<string>(2);
-
-    for (let i = 0; i < count; i++) {
-      const key = storage.key(i);
-      if (key !== null) {
-        // Avoid string concatenation, use array positions instead
-        buffer[0] = key;
-        buffer[1] = storage.getItem(key) ?? "";
-        // Join only when encoding to reduce string operations
-        totalBytes += encoder.encode(buffer.join("")).length;
-      }
-    }
-
-    return { currentSize: totalBytes, itemCount: count };
-  }
-
-  static calculateStorageUsageByKey(storage: Storage, key: string): number {
-    const encoder = new TextEncoder();
-    const buffer = new Array<string>(2);
-    buffer[0] = key;
-    buffer[1] = storage.getItem(key) ?? "";
-    return encoder.encode(buffer.join("")).length;
-  }
-
-  static calculateStorageUsageByKeys(storage: Storage, keys: string[]): number {
-    return keys.reduce(
-      (acc, key) => acc + this.calculateStorageUsageByKey(storage, key),
-      0
-    );
-  }
-
-  /**
-   * Get all storage items sorted by eviction criteria
-   */
-  static getSortedStorageItems(storage: Storage): Array<{
-    key: string;
-    size: number;
-    priority: number;
-    expiresAt: number;
-  }> {
-    const encoder = new TextEncoder();
-    const now = Date.now();
-    const items: Array<{
-      key: string;
-      size: number;
-      priority: number;
-      expiresAt: number;
-    }> = [];
-
-    // Extract all items with metadata
-    Object.keys(storage).forEach((key) => {
-      const rawValue = storage.getItem(key);
-      if (!rawValue) return;
-
-      const size = encoder.encode(key + rawValue).length;
-
-      try {
-        const parsed = JSON.parse(rawValue);
-
-        // Check if it's a complex item with metadata
-        if (isComplexStorageItem(parsed)) {
-          items.push({
-            key,
-            size,
-            priority: parsed.priority ?? this.DEFAULT_PRIORITY,
-            expiresAt: parsed.expiresAt ?? Number.MAX_SAFE_INTEGER
-          });
-        } else {
-          // Simple items get default priority
-          items.push({
-            key,
-            size,
-            priority: this.DEFAULT_PRIORITY,
-            expiresAt: Number.MAX_SAFE_INTEGER
-          });
-        }
-      } catch (e) {
-        // Non-JSON items get lowest priority
-        items.push({
-          key,
-          size,
-          priority: this.DEFAULT_PRIORITY,
-          expiresAt: Number.MAX_SAFE_INTEGER
-        });
-      }
-    });
-
-    // Multi-level sorting:
-    // 1. Expired items first
-    // 2. Then by priority (lowest first)
-    // 3. Then by size (largest first to free up more space quickly)
-    // 4. Finally by expiration (soonest first)
-    return items.sort((a, b) => {
-      // Expired items first (can be combined with priority if both are expired)
-      const aExpired = a.expiresAt < now;
-      const bExpired = b.expiresAt < now;
-
-      if (aExpired && !bExpired) return -1;
-      if (!aExpired && bExpired) return 1;
-
-      // Then by priority (lowest first)
-      if (a.priority !== b.priority) {
-        return a.priority - b.priority;
-      }
-
-      // Then by size (largest first)
-      if (a.size !== b.size) {
-        return b.size - a.size;
-      }
-
-      // Finally by expiration date
-      return a.expiresAt - b.expiresAt;
-    });
-  }
-
-  /**
-   * Get priority levels for use in application code
-   */
-  static get PRIORITY(): typeof StorageManager.PRIORITY_LEVELS {
-    return this.PRIORITY_LEVELS;
-  }
-
-  /**
-   * Estimate size of an item before storing
-   * @param key The key to store
-   * @param value The value to store
-   */
-  static estimateItemSize<T>(key: string, value: T): number {
-    const serialized = JSON.stringify(value);
-    // 2 bytes per character for UTF-16 encoding + key length
-    return (key.length + serialized.length) * 2;
-  }
-
-  /**
-   * Get the current storage limit
-   */
-  static getStorageLimit(): number {
-    return this.MAX_STORAGE_SIZE;
-  }
-
-  /**
-   * Get the current storage usage percentage
-   */
-  static getStorageUsage(storage: Storage): {
-    bytes: number;
-    percentage: number;
-    items: number;
-  } {
-    const usage = this.calculateStorageUsage(storage);
-    return {
-      bytes: usage.currentSize,
-      percentage: (usage.currentSize / this.MAX_STORAGE_SIZE) * 100,
-      items: usage.itemCount
-    };
-  }
-}
+const timesInstantiated: Record<StorageType, number> = {
+  localStorage: 0,
+  sessionStorage: 0,
+};
 
 export class EnhancedStorage implements Storage {
-  protected storage: Storage;
-  protected storageType: StorageType;
+  public storage: Storage;
 
-  constructor({ area = "local" }: UnpartitionedStorageOptions = {}) {
+  public storageType: StorageType;
+
+  public status: UnpartitionedStateStatus | null = null;
+
+  public error: Error | null = null;
+
+  private requestStorageAccessPromise: Promise<UnpartitionedStateStatus> | null = null;
+
+  private requestStorageAccessResolve: (status: UnpartitionedStateStatus) => void = () => {};
+
+  constructor({ area = "local" }: EnhancedStorageOptions = {}) {
     this.storageType = area === "local" ? "localStorage" : "sessionStorage";
     this.storage = globalThis[this.storageType];
+
+    const timesStorageTypeInstantiated = ++timesInstantiated[this.storageType];
+
+    if (timesStorageTypeInstantiated > 1) {
+      if (process.env.NODE_ENV === "development") {
+        throw new Error(
+          `${this.storageType} instantiated ${timesStorageTypeInstantiated} times. Was this intentional?`,
+        );
+      } else {
+        console.warn(`${this.storageType} instantiated ${timesStorageTypeInstantiated} times. Was this intentional?`);
+      }
+    }
 
     if (area === "session") {
       // We want to start fresh each time the app loads:
@@ -404,112 +60,124 @@ export class EnhancedStorage implements Storage {
     }
   }
 
-  protected async getStorageHandle(): Promise<void> {
-    try {
-      if (!document.requestStorageAccess) return;
-
-      log(
-        LOG_GROUP.STORAGE,
-        `Requesting ${this.storageType} access with typed API`
+  protected async requestStorageAccessAndInitializeStorage(): Promise<UnpartitionedStateStatus> {
+    if (!isInsideIframe()) {
+      console.warn(
+        "UnpartitionedStorage.requestStorageAccessAndInitializeStorage() should only be called from within an iframe. Regular, partitioned state will be used.",
       );
+      return;
+    }
+
+    try {
+      log(LOG_GROUP.STORAGE, `Requesting ${this.storageType} access with typed API`);
 
       // @ts-expect-error - Newer API with types may not be recognized by TypeScript
       const handle = await document.requestStorageAccess({
-        [this.storageType]: true
+        [this.storageType]: true,
       });
 
       // @ts-expect-error - Newer API may not be recognized by TypeScript
       if (handle && handle[this.storageType]) {
         this.storage = handle[this.storageType];
-        log(
-          LOG_GROUP.STORAGE,
-          `Unpartitioned ${this.storageType} access granted with handle`
-        );
-        return;
+        this.dispatchUnpartitionedStateStatusChange("supported");
       } else {
-        throw new Error(
-          `Unpartitioned ${this.storageType} access not granted with handle`
-        );
+        this.dispatchUnpartitionedStateStatusChange("limited");
       }
     } catch (error) {
-      log(LOG_GROUP.STORAGE, "Failed to get storage access:", error);
-      throw error;
+      console.warn("document.requestStorageAccess() failed:", error);
+
+      this.dispatchUnpartitionedStateStatusChange(error || "error");
     }
+
+    return this.status;
   }
 
-  async requestStorageAccess(): Promise<void> {
-    if (!isInsideIframe()) return;
-
-    // Check if Storage Access API is supported
-    if (!document.hasStorageAccess && !document.requestStorageAccess) {
-      log(LOG_GROUP.STORAGE, "Storage Access API not supported");
-      this.handlePartitionedStorage("open", "dismiss");
+  async requestStorageAccess(): Promise<UnpartitionedStateStatus> {
+    if (!isInsideIframe()) {
+      console.warn(
+        "UnpartitionedStorage.requestStorageAccess() should only be called from within an iframe. Regular, partitioned state will be used.",
+      );
       return;
     }
 
-    try {
-      // Check if we already have access
-      let hasAccess = false;
-      if (document.hasStorageAccess) {
-        hasAccess = await document.hasStorageAccess();
-      }
+    // Unpartitioned state access already accepted, limited or unsupported:
+    if (["supported", "limited", "unsupported"].includes(this.status)) {
+      return this.status;
+    }
 
-      if (hasAccess) {
-        log(LOG_GROUP.STORAGE, "Already has storage access");
-        await this.getStorageHandle();
-        return;
-      }
+    // If the code below runs, this.status can only be null, "error" or "rejected":
 
-      // If no access, check permission state
-      let permissionState = "prompt"; // Default
+    if (this.requestStorageAccessPromise && this.status === null) return this.requestStorageAccessPromise;
+
+    return (this.requestStorageAccessPromise = new Promise<UnpartitionedStateStatus>(async (resolve) => {
+      // With this, calling dispatchUnpartitionedStateStatusChange() will automatically call resolve() too:
+      this.requestStorageAccessResolve = resolve;
+
+      // Storage Access API not supported:
+      if (!HAS_SIMPLE_STORAGE_API) return this.dispatchUnpartitionedStateStatusChange("unsupported");
+
       try {
-        if (navigator.permissions) {
-          const permission = await navigator.permissions.query({
-            name: "storage-access" as PermissionName
-          });
-          permissionState = permission.state;
+        // Check if we already have access:
 
-          // Listen for permission changes
-          permission.addEventListener("change", () => {
-            if (permission.state === "granted") {
-              this.getStorageHandle()
-                .then(() => {
-                  log(
-                    LOG_GROUP.STORAGE,
-                    "Storage access granted via permission change"
-                  );
-                })
-                .catch((error) => {
-                  log(
-                    LOG_GROUP.STORAGE,
-                    "Error getting storage after permission change:",
-                    error
-                  );
-                });
-            }
-          });
+        const hasAccess = await document.hasStorageAccess();
+
+        if (hasAccess) {
+          return await this.requestStorageAccessAndInitializeStorage();
         }
-      } catch (e) {
-        log(LOG_GROUP.STORAGE, "Error checking permission:", e);
+
+        // If no access, check permission state:
+
+        let permissionState: PermissionState = "prompt"; // Default
+
+        if (navigator.permissions) {
+          try {
+            const permission = await navigator.permissions.query({
+              name: "storage-access" as PermissionName,
+            });
+
+            permissionState = permission.state;
+
+            permission.addEventListener("change", () => {
+              log(LOG_GROUP.STORAGE, `Storage access permission changed to ${permission.state}`);
+
+              this.handleStorageAccessPermission(permission.state);
+            });
+          } catch (error) {
+            log(LOG_GROUP.STORAGE, "Error checking permission:", error);
+          }
+        }
+
+        this.handleStorageAccessPermission(permissionState);
+      } catch (error) {
+        this.dispatchUnpartitionedStateStatusChange(error);
+      }
+    }));
+  }
+
+  private async handleStorageAccessPermission(permissionState: PermissionState) {
+    // Note `dispatchUnpartitionedStateStatusChange()` is the function that calls `requestStorageAccessResolve()`, so we
+    // must be sure it's always invoked or the Promise created by `requestStorageAccess()` will never be invoked.
+
+    if (permissionState === "granted") {
+      // Already granted, can request directly. `requestStorageAccessAndInitializeStorage()` will call
+      // `dispatchUnpartitionedStateStatusChange()`.
+
+      await this.requestStorageAccessAndInitializeStorage();
+    } else if (permissionState === "prompt") {
+      // Not granted, so we need to wait for user interaction to request. We dispatch a "rejected" event while we wait
+      // for permissions/access.
+
+      let unpartitionedStateStatus = getUnpartitionedStateStatus();
+
+      if (unpartitionedStateStatus !== "limited" && unpartitionedStateStatus !== "unsupported") {
+        unpartitionedStateStatus = "rejected";
       }
 
-      // Handle based on permission state
-      if (permissionState === "granted") {
-        // Already granted to another same-site embed, can request directly
-        await this.getStorageHandle();
-        log(LOG_GROUP.STORAGE, "Storage access granted via permission");
-      } else if (permissionState === "prompt") {
-        // Need user interaction to request
-        this.setupUserInteractionHandler();
-        this.handlePartitionedStorage("open", "re-request");
-      } else if (permissionState === "denied") {
-        // User has denied access
-        log(LOG_GROUP.STORAGE, "Storage access permanently denied");
-        this.handlePartitionedStorage("open", "re-request");
-      }
-    } catch (error) {
-      log(LOG_GROUP.STORAGE, "Error in storage access flow:", error);
-      this.handlePartitionedStorage("open", "re-request");
+      this.dispatchUnpartitionedStateStatusChange(unpartitionedStateStatus);
+      this.setupUserInteractionHandler();
+    } else if (permissionState === "denied") {
+      // User has denied access, so nothing to do, just dispatch the "rejected" event.
+      this.dispatchUnpartitionedStateStatusChange("rejected");
     }
   }
 
@@ -518,28 +186,19 @@ export class EnhancedStorage implements Storage {
    * This is required by the Storage Access API for security
    */
   protected setupUserInteractionHandler(): void {
-    log(
-      LOG_GROUP.STORAGE,
-      "Waiting for user interaction to request storage access"
-    );
+    log(LOG_GROUP.STORAGE, "Waiting for user interaction to request storage access");
 
     // Create a reusable handler function
     const handleUserInteraction = async () => {
       try {
-        await this.getStorageHandle();
+        await this.requestStorageAccess();
+
         log(LOG_GROUP.STORAGE, "Storage access granted after user interaction");
 
         // Clean up event listeners after successful request
         cleanupListeners();
-
-        this.handlePartitionedStorage("close", "dismiss");
       } catch (error) {
-        log(
-          LOG_GROUP.STORAGE,
-          "Storage access denied after user interaction:",
-          error
-        );
-        this.handlePartitionedStorage("open", "dismiss");
+        log(LOG_GROUP.STORAGE, "Storage access denied after user interaction:", error);
       }
     };
 
@@ -552,7 +211,7 @@ export class EnhancedStorage implements Storage {
     // Add event listeners with once:true to auto-remove after firing
     document.addEventListener("click", handleUserInteraction, { once: true });
     document.addEventListener("pointerdown", handleUserInteraction, {
-      once: true
+      once: true,
     });
 
     // Also clean up after a timeout if user never interacts
@@ -562,32 +221,28 @@ export class EnhancedStorage implements Storage {
   /**
    * Handle the case when unpartitioned storage access is denied or unavailable
    */
-  protected handlePartitionedStorage(
-    eventType: "open" | "close" = "open",
-    actionButtonType: "dismiss" | "re-request" = "dismiss"
-  ): void {
-    const isDismissed =
-      localStorage.getItem(PARTITIONED_STORAGE_BANNER_DISMISSAL_KEY) === "true";
-    if (isDismissed) return;
+  protected dispatchUnpartitionedStateStatusChange(
+    unpartitionedStateStatusOrError: UnpartitionedStateStatus | Error,
+  ): UnpartitionedStateStatus {
+    const unpartitionedStateStatus = isError(unpartitionedStateStatusOrError)
+      ? "error"
+      : unpartitionedStateStatusOrError;
 
-    setTimeout(
-      () =>
-        document.dispatchEvent(
-          new CustomEvent(PARTITIONED_STORAGE_BANNER_EVENT, {
-            detail: {
-              type: eventType,
-              message: browser.i18n.getMessage("partitioned_storage_banner"),
-              actionButtonType
-            },
-            bubbles: true
-          })
-        ),
-      0
-    );
-
-    if (actionButtonType === "re-request") {
-      this.setupUserInteractionHandler();
+    if (unpartitionedStateStatus === "error") {
+      this.error = isError(unpartitionedStateStatusOrError)
+        ? unpartitionedStateStatusOrError
+        : new Error("Unexpected unpartitioned state error");
+    } else {
+      this.error = null;
     }
+
+    log(LOG_GROUP.STORAGE, `Unpartitioned state access for ${this.storageType} = ${unpartitionedStateStatus}`);
+
+    setUnpartitionedStateStatus(unpartitionedStateStatus, this.error);
+
+    this.requestStorageAccessResolve(unpartitionedStateStatus);
+
+    return (this.status = unpartitionedStateStatus);
   }
 
   /**
@@ -607,8 +262,7 @@ export class EnhancedStorage implements Storage {
    */
   getItem<T = string>(key: string, defaultValue?: T): T | null {
     const rawValue = this.getRaw(key);
-    defaultValue =
-      defaultValue === undefined && arguments.length < 2 ? null : defaultValue;
+    defaultValue = defaultValue === undefined && arguments.length < 2 ? null : defaultValue;
     if (!rawValue) return defaultValue;
 
     try {
@@ -716,13 +370,9 @@ export class EnhancedStorage implements Storage {
    * @param keys The keys to retrieve
    * @returns An object with the keys and their values
    */
-  getItems<T = string>(
-    keys: string[],
-    defaultValue?: T
-  ): Record<string, T | null> {
+  getItems<T = string>(keys: string[], defaultValue?: T): Record<string, T | null> {
     const result: Record<string, T | null> = {};
-    defaultValue =
-      defaultValue === undefined && arguments.length < 2 ? null : defaultValue;
+    defaultValue = defaultValue === undefined && arguments.length < 2 ? null : defaultValue;
 
     for (const key of keys) {
       result[key] = this.getItem<T>(key, defaultValue);
@@ -763,11 +413,11 @@ export class EnhancedStorage implements Storage {
     key: string,
     value: T,
     priority: keyof typeof StorageManager.PRIORITY_LEVELS,
-    expiresIn?: number
+    expiresIn?: number,
   ): void {
     this.setItem(key, value, {
       priority: StorageManager.PRIORITY[priority],
-      expiresIn
+      expiresIn,
     });
   }
 
@@ -831,10 +481,7 @@ export class EnhancedStorage implements Storage {
    * @param options Configuration options
    * @returns True if space was ensured, false if impossible
    */
-  ensureSpace(
-    bytesNeeded: number,
-    options: { skipCheck?: boolean; forceEviction?: boolean } = {}
-  ): boolean {
+  ensureSpace(bytesNeeded: number, options: { skipCheck?: boolean; forceEviction?: boolean } = {}): boolean {
     // Skip availability check if requested
     if (!options.skipCheck) {
       const hasSpace = this.hasAvailableSpace(bytesNeeded);
@@ -858,7 +505,7 @@ export class EnhancedStorage implements Storage {
 
     return StorageManager.evictItems(this.storage, bytesNeeded, {
       bufferSize,
-      aggressive
+      aggressive,
     });
   }
 
@@ -878,7 +525,7 @@ export class EnhancedStorage implements Storage {
       bytes: usage.currentSize,
       percentage: (usage.currentSize / limit) * 100,
       items: usage.itemCount,
-      available: limit - usage.currentSize
+      available: limit - usage.currentSize,
     };
   }
 }

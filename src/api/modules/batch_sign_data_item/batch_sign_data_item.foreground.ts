@@ -2,11 +2,13 @@ import type { TransformFinalizer } from "~api/foreground/foreground-modules";
 import type { ModuleFunction } from "~api/module";
 import type { RawDataItem, SignDataItemParams } from "../sign_data_item/types";
 import { isArrayBuffer } from "~utils/assertions";
+import type { SignatureOptions } from "arweave/web/lib/crypto/crypto-interface";
 
 const MAX_TOTAL_SIZE = 200 * 1024;
 
 const foreground: ModuleFunction<Record<any, any>[]> = async (
-  dataItems: SignDataItemParams[]
+  dataItems: SignDataItemParams[],
+  signatureOptions?: SignatureOptions,
 ) => {
   if (!Array.isArray(dataItems)) {
     throw new Error("Input must be an array of data items");
@@ -14,9 +16,7 @@ const foreground: ModuleFunction<Record<any, any>[]> = async (
 
   const totalSize = dataItems.reduce((acc, dataItem) => {
     const dataSize =
-      typeof dataItem.data === "string"
-        ? new TextEncoder().encode(dataItem.data).length
-        : dataItem.data.length;
+      typeof dataItem.data === "string" ? new TextEncoder().encode(dataItem.data).length : dataItem.data.length;
     return acc + dataSize;
   }, 0);
 
@@ -32,19 +32,19 @@ const foreground: ModuleFunction<Record<any, any>[]> = async (
 
       rawDataItem = {
         ...dataItem,
-        data: Array.from(dataItem.data)
+        data: Array.from(dataItem.data),
       };
     } else {
       rawDataItem = {
         ...dataItem,
-        data: Array.from(new TextEncoder().encode(dataItem.data))
+        data: Array.from(new TextEncoder().encode(dataItem.data)),
       };
     }
 
     return rawDataItem;
   });
 
-  return [rawDataItems];
+  return [rawDataItems, signatureOptions];
 };
 
 export const finalizer: TransformFinalizer<number[][]> = (result) => {

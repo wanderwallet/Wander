@@ -5,16 +5,7 @@ import type { JWKInterface } from "arweave/web/lib/wallet";
 import { checkPassword } from "~wallets/auth";
 import { useEffect, useState } from "react";
 import { addWallet, getWalletKeyLength } from "~wallets";
-import {
-  Text,
-  useInput,
-  Spacer,
-  useToasts,
-  Button,
-  Input,
-  useModal,
-  Tooltip
-} from "@arconnect/components-rebrand";
+import { Text, useInput, Spacer, useToasts, Button, Input, useModal, Tooltip } from "@arconnect/components-rebrand";
 import BackupWalletPage from "~components/welcome/generate/BackupWalletPage";
 import KeystoneButton from "~components/hardware/KeystoneButton";
 import SeedInput from "~components/SeedInput";
@@ -40,9 +31,7 @@ export function AddWalletDashboardView() {
   // wallet generation taking longer
   const [showLongWaitMessage, setShowLongWaitMessage] = useState(false);
 
-  const [inputType, setInputType] = useState<"seedphrase" | "keyfile">(
-    "seedphrase"
-  );
+  const [inputType, setInputType] = useState<"seedphrase" | "keyfile">("seedphrase");
 
   // toasts
   const { setToast } = useToasts();
@@ -90,10 +79,7 @@ export function AddWalletDashboardView() {
     setIncorrectPasswordError(false);
 
     // validate if recovery phrase or key file is provided
-    if (
-      !providedWallet &&
-      (passwordInput.state === undefined || passwordInput.state === "")
-    ) {
+    if (!providedWallet && (passwordInput.state === undefined || passwordInput.state === "")) {
       setError(true);
       return;
     }
@@ -105,10 +91,7 @@ export function AddWalletDashboardView() {
     }
 
     // validate if recovery phrase or key file is not provided but password is provided
-    if (
-      !providedWallet &&
-      (passwordInput.state !== undefined || passwordInput.state !== "")
-    ) {
+    if (!providedWallet && (passwordInput.state !== undefined || passwordInput.state !== "")) {
       setMissingRecoveryError(true);
       return;
     }
@@ -116,8 +99,7 @@ export function AddWalletDashboardView() {
 
     // prevent user from closing the window
     // while Wander is loading the wallet
-    window.onbeforeunload = () =>
-      browser.i18n.getMessage("close_tab_load_wallet_message");
+    window.onbeforeunload = () => browser.i18n.getMessage("close_tab_load_wallet_message");
 
     const finishUp = () => {
       // reset before unload
@@ -135,7 +117,7 @@ export function AddWalletDashboardView() {
         setToast({
           type: "error",
           content: browser.i18n.getMessage("invalid_mnemonic"),
-          duration: 2000
+          duration: 2000,
         });
         finishUp();
       }
@@ -144,10 +126,7 @@ export function AddWalletDashboardView() {
     try {
       const startTime = Date.now();
       // load jwk from seedphrase input state
-      let jwk =
-        typeof providedWallet === "string"
-          ? await jwkFromMnemonic(providedWallet)
-          : providedWallet;
+      let jwk = typeof providedWallet === "string" ? await jwkFromMnemonic(providedWallet) : providedWallet;
 
       let { actualLength, expectedLength } = await getWalletKeyLength(jwk);
       if (expectedLength !== actualLength) {
@@ -170,7 +149,7 @@ export function AddWalletDashboardView() {
       setToast({
         type: "success",
         content: browser.i18n.getMessage("added_wallet"),
-        duration: 2300
+        duration: 2300,
       });
 
       // redirect to the wallet in settings
@@ -247,7 +226,7 @@ export function AddWalletDashboardView() {
       return setToast({
         type: "error",
         content: browser.i18n.getMessage("error_generating_wallet"),
-        duration: 2200
+        duration: 2200,
       });
     }
 
@@ -256,7 +235,7 @@ export function AddWalletDashboardView() {
       return setToast({
         type: "error",
         content: browser.i18n.getMessage("enter_pw_gen_wallet"),
-        duration: 2200
+        duration: 2200,
       });
     }
 
@@ -264,7 +243,7 @@ export function AddWalletDashboardView() {
       return setToast({
         type: "error",
         content: browser.i18n.getMessage("invalidPassword"),
-        duration: 2200
+        duration: 2200,
       });
     }
 
@@ -276,20 +255,18 @@ export function AddWalletDashboardView() {
       setToast({
         type: "success",
         content: browser.i18n.getMessage("generated_wallet_dashboard"),
-        duration: 2200
+        duration: 2200,
       });
 
       // redirect to the wallet in settings
       const arweave = new Arweave(defaultGateway);
 
-      navigate(
-        `/wallets/${await arweave.wallets.jwkToAddress(generatedWallet.jwk)}`
-      );
+      navigate(`/wallets/${await arweave.wallets.jwkToAddress(generatedWallet.jwk)}`);
     } catch {
       setToast({
         type: "error",
         content: browser.i18n.getMessage("error_generating_wallet"),
-        duration: 2200
+        duration: 2200,
       });
     }
   }
@@ -305,54 +282,39 @@ export function AddWalletDashboardView() {
   return (
     <Wrapper>
       <div>
-        {(!generating &&
-          isAddGeneratedWallet &&
-          generatedWallet?.seedphrase && (
-            <BackupWalletPage seed={generatedWallet.seedphrase} />
-          )) || (
+        {(!generating && isAddGeneratedWallet && generatedWallet?.seedphrase && (
+          <BackupWalletPage seed={generatedWallet.seedphrase} />
+        )) || (
           <>
             <Spacer y={0.45} />
             <Title>{browser.i18n.getMessage("add_account")}</Title>
-            <Text>
-              {browser.i18n.getMessage("provide_keyfile_seedphrase_paragraph")}
-            </Text>
+            <Text>{browser.i18n.getMessage("provide_keyfile_seedphrase_paragraph")}</Text>
             <Flex
               justify="end"
               cursor="pointer"
-              onClick={() =>
-                setInputType((prev) =>
-                  prev === "seedphrase" ? "keyfile" : "seedphrase"
-                )
-              }
-            >
+              onClick={() => setInputType((prev) => (prev === "seedphrase" ? "keyfile" : "seedphrase"))}>
               <Text weight="medium" noMargin style={{ color: "#9787ff" }}>
                 {browser.i18n.getMessage("i_have_a_import_type", [
                   inputType === "seedphrase"
                     ? browser.i18n.getMessage("keyfile").toLowerCase()
-                    : browser.i18n.getMessage("seedphrase").toLowerCase()
+                    : browser.i18n.getMessage("seedphrase").toLowerCase(),
                 ])}
               </Text>
               {inputType === "seedphrase" && (
-                <Tooltip
-                  content={browser.i18n.getMessage("keyfile_info_tooltip")}
-                  position="left"
-                >
+                <Tooltip content={browser.i18n.getMessage("keyfile_info_tooltip")} position="left">
                   <InfoCircle
                     style={{
                       marginLeft: "4px",
                       color: "#9787ff",
                       width: "20px",
-                      height: "20px"
+                      height: "20px",
                     }}
                   />
                 </Tooltip>
               )}
             </Flex>
             <Spacer y={0.5} />
-            <SeedInput
-              onChange={(val) => setProvidedWallet(val)}
-              inputType={inputType}
-            />
+            <SeedInput onChange={(val) => setProvidedWallet(val)} inputType={inputType} />
           </>
         )}
         <Input
@@ -367,12 +329,7 @@ export function AddWalletDashboardView() {
           }}
         />
         <Spacer y={1} />
-        <Button
-          fullWidth
-          onClick={handleAddButton}
-          loading={loading}
-          disabled={generating && isAddGeneratedWallet}
-        >
+        <Button fullWidth onClick={handleAddButton} loading={loading} disabled={generating && isAddGeneratedWallet}>
           <PlusIcon />
           {browser.i18n.getMessage("add_account")}
         </Button>
@@ -393,12 +350,10 @@ export function AddWalletDashboardView() {
             setIsAddGeneratedWallet(true);
 
             // warn the user about closing the window
-            window.onbeforeunload = () =>
-              browser.i18n.getMessage("close_tab_generate_wallet_message");
+            window.onbeforeunload = () => browser.i18n.getMessage("close_tab_generate_wallet_message");
           }}
           loading={generating && isAddGeneratedWallet}
-          disabled={!generating && isAddGeneratedWallet}
-        >
+          disabled={!generating && isAddGeneratedWallet}>
           <SettingsIcon />
           {browser.i18n.getMessage("generate_wallet")}
         </Button>
@@ -424,7 +379,7 @@ const Wrapper = styled.div`
 const Title = styled(Text).attrs({
   size: "xl",
   weight: "semibold",
-  noMargin: true
+  noMargin: true,
 })`
   font-weight: 600;
 `;
@@ -434,7 +389,7 @@ const Error = styled(Text).attrs({ noMargin: true })`
 `;
 
 const Or = styled(Text).attrs({
-  noMargin: true
+  noMargin: true,
 })`
   text-align: center;
 `;

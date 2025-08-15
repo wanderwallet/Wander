@@ -16,16 +16,9 @@ import {
   PropertyName,
   PropertyValue,
   TagValue,
-  TransactionProperty
+  TransactionProperty,
 } from "~routes/popup/transaction/[id]";
-import {
-  Input,
-  Section,
-  Spacer,
-  Text,
-  useInput,
-  useToasts
-} from "@arconnect/components-rebrand";
+import { Input, Section, Spacer, Text, useInput, useToasts } from "@arconnect/components-rebrand";
 import AnimatedQRScanner from "~components/hardware/AnimatedQRScanner";
 import AnimatedQRPlayer from "~components/hardware/AnimatedQRPlayer";
 import Wrapper from "~components/auth/Wrapper";
@@ -48,8 +41,7 @@ import { ExtensionStorage, useStorage } from "~utils/storage";
 import { AnimatedChevron } from "./signDataItem";
 
 export function SignAuthRequestView() {
-  const { authRequest, acceptRequest, rejectRequest } =
-    useCurrentAuthRequest("sign");
+  const { authRequest, acceptRequest, rejectRequest } = useCurrentAuthRequest("sign");
 
   const { address, transaction, requestedAt } = authRequest;
 
@@ -77,19 +69,16 @@ export function SignAuthRequestView() {
   const [transferRequirePassword] = useStorage<boolean>(
     {
       key: "transfer_require_password",
-      instance: ExtensionStorage
+      instance: ExtensionStorage,
     },
-    false
+    false,
   );
 
   // arweave price
   const { data: arPrice = "0" } = useArPrice(currency);
 
   // transaction price
-  const fiatPrice = useMemo(
-    () => quantity.multipliedBy(arPrice),
-    [quantity.toString(), arPrice]
-  );
+  const fiatPrice = useMemo(() => quantity.multipliedBy(arPrice), [quantity.toString(), arPrice]);
 
   // transaction fee
   const fee = useMemo(() => {
@@ -117,7 +106,7 @@ export function SignAuthRequestView() {
     const tags = transaction.get("tags") as Tag[];
     const decodedTags = tags.map((tag) => ({
       name: tag.get("name", { decode: true, string: true }),
-      value: tag.get("value", { decode: true, string: true })
+      value: tag.get("value", { decode: true, string: true }),
     }));
 
     return humanizeTimestampTags(decodedTags);
@@ -127,9 +116,7 @@ export function SignAuthRequestView() {
     if (!tags.length) return browser.i18n.getMessage("titles_sign");
 
     const actionValue = getTagValue("Action", tags);
-    const isAOTransaction = tags.some(
-      (tag) => tag.name === "Data-Protocol" && tag.value === "ao"
-    );
+    const isAOTransaction = tags.some((tag) => tag.name === "Data-Protocol" && tag.value === "ao");
 
     if (isAOTransaction && actionValue) {
       return actionValue.replace(/-/g, " ");
@@ -140,10 +127,7 @@ export function SignAuthRequestView() {
 
   // Check if it's a printTx
   const isPrintTx = useMemo(() => {
-    return (
-      tags.some((tag) => tag.name === "print:title") &&
-      tags.some((tag) => tag.name === "print:timestamp")
-    );
+    return tags.some((tag) => tag.name === "print:title") && tags.some((tag) => tag.name === "print:timestamp");
   }, [tags]);
 
   const recipient = useMemo(() => {
@@ -175,12 +159,7 @@ export function SignAuthRequestView() {
   const [transactionUR, setTransactionUR] = useState<UR>();
 
   async function loadTransactionUR() {
-    if (
-      wallet.type !== "hardware" ||
-      !transaction ||
-      isSplitTransaction(transaction)
-    )
-      return;
+    if (wallet.type !== "hardware" || !transaction || isSplitTransaction(transaction)) return;
 
     // load the ur data
     // TODO: This function is actually mutating the transaction!
@@ -213,9 +192,7 @@ export function SignAuthRequestView() {
       await acceptRequest(data);
     } catch (e) {
       // log error
-      console.error(
-        `[Wander] Error decoding signature from keystone\n${e?.message || e}`
-      );
+      console.error(`[Wander] Error decoding signature from keystone\n${e?.message || e}`);
 
       await rejectRequest("Failed to decode signature from keystone");
     }
@@ -234,7 +211,7 @@ export function SignAuthRequestView() {
         setToast({
           type: "error",
           content: browser.i18n.getMessage("invalidPassword"),
-          duration: 2400
+          duration: 2400,
         });
         return;
       }
@@ -260,19 +237,12 @@ export function SignAuthRequestView() {
                 style={{
                   display: "flex",
                   flexDirection: "column",
-                  alignItems: "center"
-                }}
-              >
-                <PropertyName>
-                  {browser.i18n.getMessage("transaction_fee")}
-                </PropertyName>
+                  alignItems: "center",
+                }}>
+                <PropertyName>{browser.i18n.getMessage("transaction_fee")}</PropertyName>
               </div>
             ) : (
-              +fiatPrice > 0 && (
-                <FiatAmount>
-                  {formatFiatBalance(fiatPrice, currency)}
-                </FiatAmount>
-              )
+              +fiatPrice > 0 && <FiatAmount>{formatFiatBalance(fiatPrice, currency)}</FiatAmount>
             )}
             <AmountTitle>
               {isPrintTx
@@ -282,31 +252,23 @@ export function SignAuthRequestView() {
                 : formatTokenBalance(quantity)}
               <span>AR</span>
             </AmountTitle>
-            {isPrintTx && (
-              <FiatAmount>{formatFiatBalance(fee, currency)}</FiatAmount>
-            )}
+            {isPrintTx && <FiatAmount>{formatFiatBalance(fee, currency)}</FiatAmount>}
             <Properties>
               <TransactionProperty>
-                <PropertyName>
-                  {browser.i18n.getMessage("transaction_from")}
-                </PropertyName>
+                <PropertyName>{browser.i18n.getMessage("transaction_from")}</PropertyName>
                 <PropertyValue>{formatAddress(address, 6)}</PropertyValue>
               </TransactionProperty>
 
               {transaction?.target && (
                 <TransactionProperty>
-                  <PropertyName>
-                    {browser.i18n.getMessage("transaction_to")}
-                  </PropertyName>
+                  <PropertyName>{browser.i18n.getMessage("transaction_to")}</PropertyName>
                   <PropertyValue>{formatAddress(recipient, 6)}</PropertyValue>
                 </TransactionProperty>
               )}
 
               {!isPrintTx && (
                 <TransactionProperty>
-                  <PropertyName>
-                    {browser.i18n.getMessage("transaction_fee")}
-                  </PropertyName>
+                  <PropertyName>{browser.i18n.getMessage("transaction_fee")}</PropertyName>
                   <PropertyValue>
                     {fee}
                     {" AR"}
@@ -315,9 +277,7 @@ export function SignAuthRequestView() {
               )}
 
               <TransactionProperty>
-                <PropertyName>
-                  {browser.i18n.getMessage("transaction_size")}
-                </PropertyName>
+                <PropertyName>{browser.i18n.getMessage("transaction_size")}</PropertyName>
                 <PropertyValue>{prettyBytes(size)}</PropertyValue>
               </TransactionProperty>
 
@@ -327,10 +287,9 @@ export function SignAuthRequestView() {
                 style={{
                   cursor: "pointer",
                   display: "flex",
-                  alignItems: "center"
+                  alignItems: "center",
                 }}
-                onClick={() => setShowTags(!showTags)}
-              >
+                onClick={() => setShowTags(!showTags)}>
                 {browser.i18n.getMessage("transaction_tags")}
                 <AnimatedChevron $open={showTags}>
                   <ChevronRightIcon />
@@ -360,17 +319,12 @@ export function SignAuthRequestView() {
                     setToast({
                       type: "error",
                       duration: 2300,
-                      content: browser.i18n.getMessage(`keystone_${error}`)
+                      content: browser.i18n.getMessage(`keystone_${error}`),
                     })
                   }
                 />
                 <Spacer y={1} />
-                <Text>
-                  {browser.i18n.getMessage(
-                    "keystone_scan_progress",
-                    `${scanner.progress.toFixed(0)}%`
-                  )}
-                </Text>
+                <Text>{browser.i18n.getMessage("keystone_scan_progress", `${scanner.progress.toFixed(0)}%`)}</Text>
                 <Progress percentage={scanner.progress} />
               </>
             )}
@@ -404,17 +358,14 @@ export function SignAuthRequestView() {
             page === "scanner"
               ? undefined
               : {
-                  label: !page
-                    ? browser.i18n.getMessage("sign_authorize")
-                    : browser.i18n.getMessage("keystone_scan"),
-                  disabled:
-                    !transaction || loading || authRequest.status !== "pending",
+                  label: !page ? browser.i18n.getMessage("sign_authorize") : browser.i18n.getMessage("keystone_scan"),
+                  disabled: !transaction || loading || authRequest.status !== "pending",
                   loading: !transaction || loading,
-                  onClick: sign
+                  onClick: sign,
                 }
           }
           secondaryButtonProps={{
-            onClick: () => rejectRequest()
+            onClick: () => rejectRequest(),
           }}
         />
       </Section>

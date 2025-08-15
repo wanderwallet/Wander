@@ -8,10 +8,20 @@ interface FlexProps extends React.HTMLAttributes<HTMLDivElement> {
   wrap?: CSSProperties["flexWrap"];
   gap?: CSSProperties["gap"];
   flex?: CSSProperties["flex"];
+  flexShrink?: CSSProperties["flexShrink"];
+  minWidth?: CSSProperties["minWidth"];
   width?: CSSProperties["width"];
   height?: CSSProperties["height"];
   padding?: CSSProperties["padding"];
+  margin?: CSSProperties["margin"];
   cursor?: CSSProperties["cursor"];
+  textAlign?: CSSProperties["textAlign"];
+  background?: CSSProperties["background"];
+  borderRadius?: CSSProperties["borderRadius"];
+  overflow?: CSSProperties["overflow"];
+  boxSizing?: CSSProperties["boxSizing"];
+  maxWidth?: CSSProperties["maxWidth"];
+  position?: CSSProperties["position"];
 }
 
 export const Flex: React.FC<FlexProps> = ({
@@ -20,13 +30,23 @@ export const Flex: React.FC<FlexProps> = ({
   align = "stretch",
   justify = "flex-start",
   wrap = "nowrap",
+  background,
+  borderRadius,
+  flexShrink,
   gap = 0,
   flex,
+  minWidth,
   width,
   height,
   padding,
+  margin,
   cursor,
+  textAlign,
+  overflow,
   style,
+  boxSizing,
+  maxWidth,
+  position,
   ...props
 }) => {
   return (
@@ -39,14 +59,24 @@ export const Flex: React.FC<FlexProps> = ({
         flexWrap: wrap,
         gap,
         flex,
+        minWidth,
         width,
         height,
-        padding,
+        margin,
         cursor,
-        ...style
+        textAlign,
+        background,
+        borderRadius,
+        // Only apply flexShrink if flex shorthand is not set to avoid conflicts
+        ...(flex === undefined && flexShrink !== undefined && { flexShrink }),
+        overflow,
+        boxSizing,
+        maxWidth,
+        padding,
+        position,
+        ...style,
       }}
-      {...props}
-    >
+      {...props}>
       {children}
     </div>
   );

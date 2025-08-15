@@ -5,7 +5,7 @@ const permissions: PermissionType[] = [];
 
 const connect: ModuleProperties = {
   functionName: "connect",
-  permissions
+  permissions,
 };
 
 export default connect;

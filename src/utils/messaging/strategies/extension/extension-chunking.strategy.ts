@@ -16,15 +16,12 @@ export function sendChunk(chunk: Chunk) {
 
     // construct message
     const message: ApiCall = {
-      app:
-        import.meta.env?.VITE_IS_EMBEDDED_APP === "1"
-          ? "wanderEmbedded"
-          : "wander",
+      app: import.meta.env?.VITE_IS_EMBEDDED_APP === "1" ? "wanderEmbedded" : "wander",
       // TODO: Add Wallet API version:
       version: "",
       callID,
       type: "chunk",
-      data: chunk
+      data: chunk,
     };
 
     // send message

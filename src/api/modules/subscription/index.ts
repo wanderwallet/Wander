@@ -5,7 +5,7 @@ const permissions: PermissionType[] = ["ACCESS_ADDRESS"];
 
 const subscriptionModule: ModuleProperties = {
   functionName: "subscription",
-  permissions
+  permissions,
 };
 
 export default subscriptionModule;

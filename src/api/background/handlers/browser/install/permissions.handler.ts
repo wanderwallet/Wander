@@ -11,9 +11,7 @@ let isResetInProgress = false;
  */
 export const resetAllPermissions = async (): Promise<void> => {
   try {
-    const isPermissionsReset = await PersistentStorage.get(
-      IS_PERMISSIONS_RESET
-    );
+    const isPermissionsReset = await PersistentStorage.get(IS_PERMISSIONS_RESET);
     // Check both storage and memory flags
     if (isPermissionsReset || isResetInProgress) {
       return;
@@ -31,10 +29,7 @@ export const resetAllPermissions = async (): Promise<void> => {
 
     // Process apps in batches to prevent overwhelming the system
     const BATCH_SIZE = 5;
-    const validApps = connectedApps.filter(
-      (appUrl): appUrl is string =>
-        Boolean(appUrl) && typeof appUrl === "string"
-    );
+    const validApps = connectedApps.filter((appUrl): appUrl is string => Boolean(appUrl) && typeof appUrl === "string");
 
     for (let i = 0; i < validApps.length; i += BATCH_SIZE) {
       const batch = validApps.slice(i, i + BATCH_SIZE);
@@ -44,13 +39,13 @@ export const resetAllPermissions = async (): Promise<void> => {
             const app = new Application(appUrl);
             await app.updateSettings((val) => ({
               ...val,
-              permissions: []
+              permissions: [],
             }));
           } catch (error) {
             console.error(`Failed to reset permissions for ${appUrl}:`, error);
             throw error;
           }
-        })
+        }),
       );
 
       // Log failures for this batch

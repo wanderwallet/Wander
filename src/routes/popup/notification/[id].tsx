@@ -1,22 +1,16 @@
 import type { CommonRouteProps } from "~wallets/router/router.types";
-import {
-  TransactionView,
-  type TransactionViewParams
-} from "../transaction/[id]";
+import { TransactionView, type TransactionViewParams } from "../transaction/[id]";
 
 export interface MessageNotificationViewParams {
   id: string;
 }
 
-export type MessageNotificationViewProps =
-  CommonRouteProps<MessageNotificationViewParams>;
+export type MessageNotificationViewProps = CommonRouteProps<MessageNotificationViewParams>;
 
-export function MessageNotificationView({
-  params: { id }
-}: MessageNotificationViewProps) {
+export function MessageNotificationView({ params: { id } }: MessageNotificationViewProps) {
   const params: TransactionViewParams = {
     id,
-    message: true
+    message: true,
   };
 
   return <TransactionView params={params} />;

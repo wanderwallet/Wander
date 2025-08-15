@@ -1,20 +1,11 @@
 import { useCurrentAuthRequest } from "~utils/auth/auth.hooks";
-import {
-  Input,
-  ListItem,
-  Section,
-  Spacer,
-  Text,
-  useInput,
-  useToasts
-} from "@arconnect/components-rebrand";
+import { Input, ListItem, Section, Spacer, Text, useInput, useToasts } from "@arconnect/components-rebrand";
 import Wrapper from "~components/auth/Wrapper";
 import browser from "webextension-polyfill";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import styled from "styled-components";
-
-import SignDataItemDetails from "~components/signDataItem";
-import { Quantity, Token } from "ao-tokens";
+import { SignDataItemDetails } from "~components/SignDataItemsDetails";
+import { Quantity } from "ao-tokens";
 import { checkPassword } from "~wallets/auth";
 import { timeoutPromise } from "~utils/promises/timeout";
 import { HeadAuth } from "~components/HeadAuth";
@@ -22,14 +13,16 @@ import { AuthButtons } from "~components/auth/AuthButtons";
 import { useAskPassword } from "~wallets/hooks";
 import { ExtensionStorage } from "~utils/storage";
 import { useStorage } from "~utils/storage";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import type { RawDataItem } from "~api/modules/sign_data_item/types";
+import { fetchTokenByProcessId, type TokenInfo } from "~tokens/aoTokens/ao";
 
 export function BatchSignDataItemAuthRequestView() {
-  const { authRequest, acceptRequest, rejectRequest } =
-    useCurrentAuthRequest("batchSignDataItem");
+  const { authRequest, acceptRequest, rejectRequest } = useCurrentAuthRequest("batchSignDataItem");
   const { data, url } = authRequest;
   const { setToast } = useToasts();
   const [loading, setLoading] = useState<boolean>(false);
-  const [transaction, setTransaction] = useState<any | null>(null);
+  const [transaction, setTransaction] = useState<RawDataItem | null>(null);
   const [transactionList, setTransactionList] = useState<any | null>(null);
   const passwordInput = useInput();
   const askPassword = useAskPassword();
@@ -37,9 +30,9 @@ export function BatchSignDataItemAuthRequestView() {
   const [transferRequirePassword] = useStorage<boolean>(
     {
       key: "transfer_require_password",
-      instance: ExtensionStorage
+      instance: ExtensionStorage,
     },
-    false
+    false,
   );
 
   async function sign() {
@@ -50,7 +43,7 @@ export function BatchSignDataItemAuthRequestView() {
         setToast({
           type: "error",
           content: browser.i18n.getMessage("invalidPassword"),
-          duration: 2400
+          duration: 2400,
         });
 
         return;
@@ -60,62 +53,54 @@ export function BatchSignDataItemAuthRequestView() {
     acceptRequest();
   }
 
-  useEffect(() => {
-    const fetchTransactionList = async () => {
-      setLoading(true);
+  useAsyncEffect(async () => {
+    setLoading(true);
 
-      try {
-        if (Array.isArray(data)) {
-          const listItems = await Promise.all(
-            data.map(async (item, index) => {
-              let amount = "";
-              let name = "";
-              const quantity =
-                item?.tags?.find((tag) => tag.name === "Quantity")?.value ||
-                "0";
-              const transfer = item?.tags?.some(
-                (tag) => tag.name === "Action" && tag.value === "Transfer"
-              );
+    try {
+      if (Array.isArray(data)) {
+        const listItems = await Promise.all(
+          data.map(async (item, index) => {
+            let amount = "";
+            let name = "";
+            const quantity = item?.tags?.find((tag) => tag.name === "Quantity")?.value || "0";
+            const transfer = item?.tags?.some((tag) => tag.name === "Action" && tag.value === "Transfer");
 
-              if (transfer && quantity) {
-                let tokenInfo: any;
-                try {
-                  const token = await timeoutPromise(Token(item.target), 6000);
-                  tokenInfo = {
-                    ...token.info,
-                    Denomination: Number(token.info.Denomination)
-                  };
-                  const tokenAmount = new Quantity(
-                    BigInt(quantity),
-                    BigInt(tokenInfo.Denomination)
-                  );
-                  amount = tokenAmount.toLocaleString();
-                  name = tokenInfo.Name;
-                } catch (error) {
-                  console.error("Token fetch timed out or failed", error);
-                  amount = quantity;
-                  name = item.target;
+            if (transfer && quantity) {
+              let tokenInfo: TokenInfo;
+              try {
+                // TODO: See if dataItem with no `target` property but a Target tag is valid, and update this code if needed.
+                tokenInfo = await timeoutPromise(fetchTokenByProcessId(item.target), 6000);
+                if (!tokenInfo) {
+                  throw new Error("Token not found");
                 }
+                const tokenAmount = new Quantity(BigInt(quantity), BigInt(tokenInfo.Denomination));
+                amount = tokenAmount.toLocaleString();
+                name = tokenInfo.Name;
+              } catch (error) {
+                console.error("Token fetch timed out or failed", error);
+                amount = quantity;
+                name = item.target;
               }
-              return (
-                <ListItem
-                  key={index}
-                  title={`Transaction ${index + 1}`}
-                  subtitle={formatTransactionDescription(amount, name)}
-                  small
-                  onClick={() => setTransaction(item)}
-                />
-              );
-            })
-          );
-          setTransactionList(listItems);
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
+            }
 
-    fetchTransactionList();
+            // TODO: Add the token logo or a "data" icon next to each item:
+
+            return (
+              <ListItem
+                key={index}
+                title={`Transaction ${index + 1}`}
+                subtitle={formatTransactionDescription(amount, name)}
+                small
+                onClick={() => setTransaction(item)}
+              />
+            );
+          }),
+        );
+        setTransactionList(listItems);
+      }
+    } finally {
+      setLoading(false);
+    }
   }, [data]);
 
   return (
@@ -127,17 +112,13 @@ export function BatchSignDataItemAuthRequestView() {
         />
 
         <Description>
-          <Text noMargin>
-            {browser.i18n.getMessage("batch_sign_data_description", url)}
-          </Text>
+          <Text noMargin>{browser.i18n.getMessage("batch_sign_data_description", url)}</Text>
         </Description>
 
         {transaction ? (
-          <SignDataItemDetails params={transaction} />
+          <SignDataItemDetails dataItem={transaction} />
         ) : (
-          <div style={{ paddingLeft: "16px", paddingRight: "16px" }}>
-            {transactionList}
-          </div>
+          <div style={{ paddingLeft: "16px", paddingRight: "16px" }}>{transactionList}</div>
         )}
       </div>
 
@@ -168,15 +149,11 @@ export function BatchSignDataItemAuthRequestView() {
               authRequest={authRequest}
               primaryButtonProps={{
                 label: browser.i18n.getMessage("sign_authorize_all"),
-                disabled:
-                  (transferRequirePassword &&
-                    askPassword &&
-                    !passwordInput.state) ||
-                  loading,
-                onClick: sign
+                disabled: (transferRequirePassword && askPassword && !passwordInput.state) || loading,
+                onClick: sign,
               }}
               secondaryButtonProps={{
-                onClick: () => rejectRequest()
+                onClick: () => rejectRequest(),
               }}
             />
           </>
@@ -184,7 +161,7 @@ export function BatchSignDataItemAuthRequestView() {
           <AuthButtons
             authRequest={authRequest}
             primaryButtonProps={{
-              onClick: () => setTransaction(null)
+              onClick: () => setTransaction(null),
             }}
           />
         )}
@@ -193,10 +170,7 @@ export function BatchSignDataItemAuthRequestView() {
   );
 }
 
-function formatTransactionDescription(
-  amount?: string,
-  tokenName?: string
-): string {
+function formatTransactionDescription(amount?: string, tokenName?: string): string {
   if (amount && tokenName) {
     return `Sending ${amount} of ${tokenName}`;
   }

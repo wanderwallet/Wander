@@ -5,7 +5,7 @@ const permissions: PermissionType[] = ["ACCESS_PUBLIC_KEY"];
 
 const publicKey: ModuleProperties = {
   functionName: "getActivePublicKey",
-  permissions
+  permissions,
 };
 
 export default publicKey;

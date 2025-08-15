@@ -8,8 +8,8 @@ export const finalizer: ModuleFunction<void> = () => {
   // dispatch custom event
   dispatchEvent(
     new CustomEvent("walletSwitch", {
-      detail: { address: undefined }
-    })
+      detail: { address: undefined },
+    }),
   );
 };
 

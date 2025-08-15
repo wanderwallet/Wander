@@ -1,9 +1,5 @@
 import { getMissingPermissions, type PermissionType } from "./permissions";
-import {
-  type Allowance,
-  type AllowanceBigNumber,
-  defaultAllowance
-} from "./allowance";
+import { type Allowance, type AllowanceBigNumber, defaultAllowance } from "./allowance";
 import { PersistentStorage, useStorage } from "~utils/storage";
 import type { Storage } from "@plasmohq/storage";
 import { defaultGateway, type Gateway } from "~gateways/gateway";
@@ -29,9 +25,7 @@ export default class Application {
    * @returns settings objects or an empty object
    */
   async #getSettings() {
-    const settings = await this.#storage.get<Record<string, any>>(
-      `${PREFIX}${this.url}`
-    );
+    const settings = await this.#storage.get<Record<string, any>>(`${PREFIX}${this.url}`);
 
     return settings || {};
   }
@@ -44,9 +38,7 @@ export default class Application {
   async updateSettings(
     val:
       | Partial<InitAppParams>
-      | ((
-          current: Record<string, any>
-        ) => Partial<InitAppParams> | Promise<Partial<InitAppParams>>)
+      | ((current: Record<string, any>) => Partial<InitAppParams> | Promise<Partial<InitAppParams>>),
   ) {
     const settings = await this.#getSettings();
 
@@ -73,7 +65,7 @@ export default class Application {
 
     return {
       name: settings.name,
-      logo: settings.logo
+      logo: settings.logo,
     };
   }
 
@@ -105,7 +97,7 @@ export default class Application {
     return {
       result: missing.length === 0,
       has: existingPermissions,
-      missing
+      missing,
     };
   }
 
@@ -157,16 +149,14 @@ export default class Application {
     return {
       enabled: allowance.enabled,
       limit: BigNumber(allowance.limit),
-      spent: BigNumber(allowance.spent)
+      spent: BigNumber(allowance.spent),
     };
   }
 
   /**
    * Sign policy for the app
    */
-  async getSignPolicy(): Promise<
-    "always_ask" | "ask_when_spending" | "auto_confirm"
-  > {
+  async getSignPolicy(): Promise<"always_ask" | "ask_when_spending" | "auto_confirm"> {
     const settings = await this.#getSettings();
 
     return settings.signPolicy || "always_ask";
@@ -185,7 +175,7 @@ export default class Application {
     return useStorage<InitAppParams>(
       {
         key: `${PREFIX}${this.url}`,
-        instance: PersistentStorage
+        instance: PersistentStorage,
       },
       (val) => {
         if (typeof val === "undefined") return val;
@@ -196,11 +186,11 @@ export default class Application {
           // TODO: wayfinder
           gateway: defaultGateway,
           bundler: defaultBundler,
-          ...val
+          ...val,
         };
 
         return values;
-      }
+      },
     );
   }
 }

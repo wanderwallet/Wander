@@ -1,12 +1,4 @@
-import {
-  Text,
-  Spacer,
-  Button,
-  useModal,
-  Modal,
-  useToasts,
-  type DisplayTheme
-} from "@arconnect/components-rebrand";
+import { Text, Spacer, Button, useModal, Modal, useToasts, type DisplayTheme } from "@arconnect/components-rebrand";
 import { TrashIcon } from "@iconicicons/react";
 import browser from "webextension-polyfill";
 import styled from "styled-components";
@@ -32,7 +24,7 @@ export function ResetDashboardView() {
       setToast({
         type: "error",
         content: browser.i18n.getMessage("reset_error"),
-        duration: 2300
+        duration: 2300,
       });
     }
 
@@ -59,14 +51,11 @@ export function ResetDashboardView() {
           <RemoveButton fullWidth onClick={reset}>
             {browser.i18n.getMessage("confirm")}
           </RemoveButton>
-        }
-      >
+        }>
         <ModalText size="xl" weight="medium">
           {browser.i18n.getMessage("reset")}
         </ModalText>
-        <ModalText>
-          {browser.i18n.getMessage("setting_reset_description")}
-        </ModalText>
+        <ModalText>{browser.i18n.getMessage("setting_reset_description")}</ModalText>
         <Spacer y={0.75} />
       </Modal>
     </>
@@ -79,7 +68,7 @@ const Warning = styled(Text)`
 
 export const ResetButton = styled(Button).attrs({
   secondary: true,
-  fullWidth: true
+  fullWidth: true,
 })<{ displayTheme?: DisplayTheme }>`
   background-color: ${(props) => props.theme.delete};
   border: 1.5px solid ${(props) => props.theme.fail};

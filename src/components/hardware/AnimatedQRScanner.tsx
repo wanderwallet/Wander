@@ -1,9 +1,10 @@
 import { Loading, Spacer, Text, useToasts } from "@arconnect/components";
 import { AnimatedQRScanner as Scanner } from "@arconnect/keystone-sdk";
-import { type ComponentProps, useEffect, useMemo, useState } from "react";
+import { type ComponentProps, useMemo, useState } from "react";
 import { CameraOffIcon } from "@iconicicons/react";
 import browser from "webextension-polyfill";
 import styled from "styled-components";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 export default function AnimatedQRScanner({ className, ...props }: Props) {
   // toasts
@@ -12,39 +13,34 @@ export default function AnimatedQRScanner({ className, ...props }: Props) {
   // camera allowed
   const [cameraAllowed, setCameraAllowed] = useState(true);
 
-  const isWebWorkerAvailable = useMemo(
-    () => typeof Worker !== "undefined",
-    [Worker]
-  );
+  const isWebWorkerAvailable = useMemo(() => typeof Worker !== "undefined", [Worker]);
 
-  useEffect(() => {
-    (async () => {
-      // get if camera permission is granted
-      const cameraPerms = await navigator.permissions.query({
-        // @ts-expect-error
-        name: "camera"
-      });
-      const listener = () => {
-        setCameraAllowed(cameraPerms.state === "granted");
-
-        if (cameraPerms.state !== "granted") return;
-
-        // notify the user to refresh the page
-        // when they grant camera permissions
-        setToast({
-          type: "info",
-          duration: 4500,
-          content: browser.i18n.getMessage("keystone_allowed_camera")
-        });
-      };
-
+  useAsyncEffect(async () => {
+    // get if camera permission is granted
+    const cameraPerms = await navigator.permissions.query({
+      // @ts-expect-error
+      name: "camera",
+    });
+    const listener = () => {
       setCameraAllowed(cameraPerms.state === "granted");
 
-      // listen for camera permission changes
-      cameraPerms.addEventListener("change", listener);
+      if (cameraPerms.state !== "granted") return;
 
-      return () => cameraPerms.removeEventListener("change", listener);
-    })();
+      // notify the user to refresh the page
+      // when they grant camera permissions
+      setToast({
+        type: "info",
+        duration: 4500,
+        content: browser.i18n.getMessage("keystone_allowed_camera"),
+      });
+    };
+
+    setCameraAllowed(cameraPerms.state === "granted");
+
+    // listen for camera permission changes
+    cameraPerms.addEventListener("change", listener);
+
+    return () => cameraPerms.removeEventListener("change", listener);
   }, []);
 
   return (
@@ -54,17 +50,13 @@ export default function AnimatedQRScanner({ className, ...props }: Props) {
           <>
             <LoadingCamera />
             <Spacer y={0.85} />
-            <ModalText>
-              {browser.i18n.getMessage("keystone_loading_camera")}
-            </ModalText>
+            <ModalText>{browser.i18n.getMessage("keystone_loading_camera")}</ModalText>
           </>
         )) || (
           <>
             <DeniedCamera />
             <Spacer y={0.85} />
-            <ModalText>
-              {browser.i18n.getMessage("keystone_disabled_camera")}
-            </ModalText>
+            <ModalText>{browser.i18n.getMessage("keystone_disabled_camera")}</ModalText>
           </>
         )}
       </LoadingSection>
@@ -94,7 +86,7 @@ const LoadingSection = styled.div`
 `;
 
 const ModalText = styled(Text).attrs({
-  noMargin: true
+  noMargin: true,
 })`
   text-align: center;
 `;

@@ -1,6 +1,6 @@
 {
   "extends": "plasmo/templates/tsconfig.base",
-  "exclude": ["node_modules", "wander-embedded-sdk"],
+  "exclude": ["node_modules", "wander-connect-sdk"],
   "include": [
     ".plasmo/index.d.ts",
     ".plasmo/**/*",
@@ -13,15 +13,12 @@
   "compilerOptions": {
     "paths": {
       "~*": ["./src/*"],
-      "~isomorphic-messaging": [
-        "./src/utils/messaging/strategies/extension/extension-messaging.strategy.ts"
-      ],
-      "~isomorphic-chunking": [
-        "./src/utils/messaging/strategies/extension/extension-chunking.strategy.ts"
-      ]
+      "~isomorphic-messaging": ["./src/utils/messaging/strategies/extension/extension-messaging.strategy.ts"],
+      "~isomorphic-chunking": ["./src/utils/messaging/strategies/extension/extension-chunking.strategy.ts"]
     },
     "resolveJsonModule": true,
     "baseUrl": ".",
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "moduleResolution": "bundler"
   }
 }

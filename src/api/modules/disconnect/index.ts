@@ -5,7 +5,7 @@ const permissions: PermissionType[] = [];
 
 const disconnect: ModuleProperties = {
   functionName: "disconnect",
-  permissions
+  permissions,
 };
 
 export default disconnect;

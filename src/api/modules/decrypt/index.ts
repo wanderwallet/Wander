@@ -5,7 +5,7 @@ const permissions: PermissionType[] = ["DECRYPT"];
 
 const decrypt: ModuleProperties = {
   functionName: "decrypt",
-  permissions
+  permissions,
 };
 
 export default decrypt;

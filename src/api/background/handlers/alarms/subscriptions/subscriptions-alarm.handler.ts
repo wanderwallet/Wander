@@ -20,13 +20,9 @@ export async function handleSubscriptionsAlarm(alarmInfo?: Alarms.Alarm) {
 
   const activeAddress = await getActiveAddress();
 
-  const subscriptionData: SubscriptionData[] = await getSubscriptionData(
-    activeAddress
-  );
+  const subscriptionData: SubscriptionData[] = await getSubscriptionData(activeAddress);
 
-  const matchingSubscription = subscriptionData.find(
-    (sub) => sub.arweaveAccountAddress === subAddress
-  );
+  const matchingSubscription = subscriptionData.find((sub) => sub.arweaveAccountAddress === subAddress);
 
   if (matchingSubscription) {
     const updated = await handleSubscriptionPayment(matchingSubscription);

@@ -12,20 +12,20 @@ export type WelcomeRoutePath =
 export const WelcomePaths = {
   Home: "/",
   GettingStarted: "/getting-started/:page",
-  Setup: "/:setupMode/:page"
+  Setup: "/:setupMode/:page",
 } as const;
 
 export const WELCOME_ROUTES = [
   {
     path: WelcomePaths.Home,
-    component: HomeWelcomeView
+    component: HomeWelcomeView,
   },
   {
     path: WelcomePaths.GettingStarted,
-    component: GettingStartedSetupWelcomeView
+    component: GettingStartedSetupWelcomeView,
   },
   {
     path: WelcomePaths.Setup,
-    component: SetupWelcomeView
-  }
+    component: SetupWelcomeView,
+  },
 ] as const satisfies RouteConfig[];

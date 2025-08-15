@@ -1,32 +1,21 @@
 import { isExactly, isNotUndefined, isString } from "typed-assert";
 import { isApiCall } from "~utils/assertions";
 import Application from "~applications/application";
-import type {
-  ApiErrorResponse,
-  ApiResponse,
-  ApiSuccessResponse,
-  BaseApiMessage
-} from "shim";
+import type { ApiErrorResponse, ApiResponse, ApiSuccessResponse, BaseApiMessage } from "shim";
 import browser from "webextension-polyfill";
 import { getTab } from "~applications/tab";
 import { pushEvent } from "~utils/events";
 import { getAppURL } from "~utils/format";
-import {
-  backgroundModules,
-  type ModuleAppData
-} from "~api/background/background-modules";
+import { backgroundModules, type ModuleAppData } from "~api/background/background-modules";
 import type { OnMessageCallback } from "~utils/messaging/messaging.types";
 import { recordActivity } from "~utils/inactivity/inactivity.utils";
 
-export const handleApiCallMessage: OnMessageCallback<"api_call"> = async ({
-  data,
-  sender
-}): Promise<ApiResponse> => {
+export const handleApiCallMessage: OnMessageCallback<"api_call"> = async ({ data, sender }): Promise<ApiResponse> => {
   // construct base message to extend and return
   const baseMessage: BaseApiMessage = {
     callID: data.callID,
     type: `${data.type}_result`,
-    data: undefined
+    data: undefined,
   };
 
   try {
@@ -34,15 +23,13 @@ export const handleApiCallMessage: OnMessageCallback<"api_call"> = async ({
     isExactly(
       sender.context,
       "content-script",
-      "API call messages are only accepted from the injected-script -> content-script"
+      "API call messages are only accepted from the injected-script -> content-script",
     );
     isApiCall(data);
 
     // fix params
     if (data.data?.params) {
-      data.data.params = data.data.params.map((val) =>
-        val === null ? undefined : val
-      );
+      data.data.params = data.data.params.map((val) => (val === null ? undefined : val));
     }
 
     // grab the tab where the API call came from
@@ -53,9 +40,7 @@ export const handleApiCallMessage: OnMessageCallback<"api_call"> = async ({
 
     // find module to execute
     const functionName = data.type.replace("api_", "");
-    const mod = backgroundModules.find(
-      (mod) => mod.functionName === functionName
-    );
+    const mod = backgroundModules.find((mod) => mod.functionName === functionName);
 
     // if we cannot find the module, we return with an error
     isNotUndefined(mod, `API function "${functionName}" not found`);
@@ -72,7 +57,7 @@ export const handleApiCallMessage: OnMessageCallback<"api_call"> = async ({
     if (typeof sender.frameId !== "undefined") {
       const frame = await browser.webNavigation.getFrame({
         frameId: sender.frameId,
-        tabId: sender.tabId
+        tabId: sender.tabId,
       });
 
       // update app value with the app belonging to the frame
@@ -85,11 +70,7 @@ export const handleApiCallMessage: OnMessageCallback<"api_call"> = async ({
     const permissionCheck = await app.hasPermissions(mod.permissions);
 
     if (!permissionCheck.result) {
-      throw new Error(
-        `Missing permission(s) for "${functionName}": ${permissionCheck.missing.join(
-          ", "
-        )}`
-      );
+      throw new Error(`Missing permission(s) for "${functionName}": ${permissionCheck.missing.join(", ")}`);
     }
 
     // check if site is blocked
@@ -101,7 +82,7 @@ export const handleApiCallMessage: OnMessageCallback<"api_call"> = async ({
     await pushEvent({
       type: data.type,
       app: app.url,
-      date: Date.now()
+      date: Date.now(),
     });
 
     // Record user activity for inactivity tracking
@@ -112,27 +93,24 @@ export const handleApiCallMessage: OnMessageCallback<"api_call"> = async ({
       {
         tabID: tab.id,
         url: app.url,
-        favicon: tab.favIconUrl
+        favicon: tab.favIconUrl,
       } satisfies ModuleAppData,
-      ...(data.data.params || [])
+      ...(data.data.params || []),
     );
 
     // return result
     return {
       ...baseMessage,
-      data: functionResult
+      data: functionResult,
     } satisfies ApiSuccessResponse;
   } catch (e) {
-    console.error(
-      `[Wander API] (${baseMessage.type} / ${data.type})`,
-      e?.message || e
-    );
+    console.error(`[Wander API] (${baseMessage.type} / ${data.type})`, e?.message || e);
 
     // return error
     return {
       ...baseMessage,
       error: true,
-      data: e?.message || e
+      data: e?.message || e,
     } satisfies ApiErrorResponse;
   }
 };

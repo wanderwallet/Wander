@@ -20,18 +20,10 @@ const Radio = forwardRef<HTMLDivElement, RadioBaseProps>(
       size,
       ...props
     },
-    ref
+    ref,
   ) => {
     return (
-      <div
-        className={clsx(
-          styles.radio,
-          isBlurry && styles.radio__blurry,
-          className
-        )}
-        ref={ref}
-        {...props}
-      >
+      <div className={clsx(styles.radio, isBlurry && styles.radio__blurry, className)} ref={ref} {...props}>
         <label className={styles.radio__label} htmlFor={id}>
           <div>
             <input
@@ -57,7 +49,7 @@ const Radio = forwardRef<HTMLDivElement, RadioBaseProps>(
         </label>
       </div>
     );
-  }
+  },
 );
 
 Radio.displayName = "Radio";

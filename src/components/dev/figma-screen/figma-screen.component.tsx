@@ -28,11 +28,11 @@ export function DevFigmaScreen({
   config: configProp,
   width = 420,
   isLoading: isLoadingProp,
-  children
+  children,
 }: DevFigmaScreenProps) {
   const [screenState, setScreenState] = useState<DevFigmaScreenState>({
     isLoading: false,
-    errorMessage: false
+    errorMessage: false,
   });
 
   const isLoading = isLoadingProp || screenState.isLoading;
@@ -51,14 +51,14 @@ export function DevFigmaScreen({
           if (isPromise(onClickReturn)) {
             setScreenState({
               isLoading: true,
-              errorMessage: false
+              errorMessage: false,
             });
 
             onClickReturn
               .then((value) => {
                 setScreenState({
                   isLoading: false,
-                  errorMessage: false
+                  errorMessage: false,
                 });
 
                 return value;
@@ -68,7 +68,7 @@ export function DevFigmaScreen({
 
                 setScreenState({
                   isLoading: false,
-                  errorMessage: getFriendlyErrorMessage(asyncErr)
+                  errorMessage: getFriendlyErrorMessage(asyncErr),
                 });
               });
           }
@@ -79,14 +79,14 @@ export function DevFigmaScreen({
 
           setScreenState({
             isLoading: false,
-            errorMessage: getFriendlyErrorMessage(err)
+            errorMessage: getFriendlyErrorMessage(err),
           });
         }
       };
 
       return {
         ...buttonConfig,
-        onClick
+        onClick,
       };
     });
   }, [configProp]);
@@ -111,13 +111,9 @@ export function DevFigmaScreen({
         <div className={styles.children}>
           {children}
           {errorMessage ? (
-            <p className={styles.errorMessage}>
-              {errorMessage === true ? "Unexpected error." : errorMessage}
-            </p>
+            <p className={styles.errorMessage}>{errorMessage === true ? "Unexpected error." : errorMessage}</p>
           ) : null}
-          {config ? (
-            <DevButtons config={config} isDisabled={isLoading} />
-          ) : null}
+          {config ? <DevButtons config={config} isDisabled={isLoading} /> : null}
         </div>
       ) : null}
 

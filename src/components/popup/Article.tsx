@@ -5,14 +5,7 @@ import browser from "webextension-polyfill";
 import styled from "styled-components";
 import dayjs from "dayjs";
 
-export default function Article({
-  source,
-  title,
-  date,
-  link,
-  content,
-  cover
-}: ArticleInterface) {
+export default function Article({ source, title, date, link, content, cover }: ArticleInterface) {
   return (
     <Wrapper onClick={() => browser.tabs.create({ url: link })}>
       <Date>
@@ -27,9 +20,7 @@ export default function Article({
           <Spacer y={0.35} />
           <ArticleContent>{content}</ArticleContent>
           <Spacer y={0.45} />
-          <ReadMore>
-            {browser.i18n.getMessage("explore_article_read_more")}
-          </ReadMore>
+          <ReadMore>{browser.i18n.getMessage("explore_article_read_more")}</ReadMore>
         </div>
         <ArticleCoverImage src={cover} />
       </Content>
@@ -71,7 +62,9 @@ export const LoadingArticle = () => (
 const Wrapper = styled(Section)`
   position: relative;
   cursor: pointer;
-  transition: transform 0.07s ease-in-out, opacity 0.23s ease-in-out;
+  transition:
+    transform 0.07s ease-in-out,
+    opacity 0.23s ease-in-out;
 
   ${hoverEffect}
 
@@ -100,7 +93,7 @@ const Content = styled.div`
 
 const ArticleTitle = styled(Text).attrs({
   noMargin: true,
-  heading: true
+  heading: true,
 })`
   display: -webkit-box;
   font-size: 1rem;
@@ -113,7 +106,7 @@ const ArticleTitle = styled(Text).attrs({
 `;
 
 const ArticleContent = styled(Text).attrs({
-  noMargin: true
+  noMargin: true,
 })`
   display: -webkit-box;
   font-size: 0.735rem;

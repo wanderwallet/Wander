@@ -11,17 +11,8 @@ export default function ReorderIcon({ dragControls }: Props) {
   }
 
   return (
-    <Wrapper
-      onPointerDown={handler}
-      title={browser.i18n.getMessage("click_and_drag")}
-    >
-      <Icon
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
+    <Wrapper onPointerDown={handler} title={browser.i18n.getMessage("click_and_drag")}>
+      <Icon width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path
           d="M4.25 8.75H19.25"
           stroke="currentColor"

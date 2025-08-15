@@ -9,10 +9,7 @@ export function NewTokenSettingsView() {
 
   return (
     <>
-      <HeadV2
-        title={browser.i18n.getMessage("import_token")}
-        back={() => navigate("/quick-settings/tokens")}
-      />
+      <HeadV2 title={browser.i18n.getMessage("import_token")} back={() => navigate("/quick-settings/tokens")} />
       <Wrapper>
         <AddTokenDashboardView isQuickSetting params={{}} />
       </Wrapper>

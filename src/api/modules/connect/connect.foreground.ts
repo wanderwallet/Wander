@@ -9,7 +9,7 @@ import { getAppLogo } from "~utils/embedded/utils/logo/logo.utils";
 const foreground: ModuleFunction<any[]> = async (
   permissions: PermissionType[],
   appInfo: AppInfo = {},
-  gateway?: Gateway
+  gateway?: Gateway,
 ) => {
   // check permissions
   if (!permissions || permissions.length === 0) {

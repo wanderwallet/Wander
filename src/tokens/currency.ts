@@ -3,41 +3,31 @@ import BigNumber from "bignumber.js";
 
 /** Token formatting config */
 export const tokenConfig: Intl.NumberFormatOptions = {
-  maximumFractionDigits: 2
+  maximumFractionDigits: 2,
 };
 
 /**
  * Format token balance
  */
-export function formatTokenBalance(
-  balance: string | number | BigNumber | Quantity,
-  config?: number
-) {
-  const bigNum = BigNumber.isBigNumber(balance)
-    ? balance
-    : BigNumber(balance.toString());
-  return bigNum
-    .toFormat(config ? config : tokenConfig.maximumFractionDigits)
-    .replace(/\.?0*$/, "");
+export function formatTokenBalance(balance: string | number | BigNumber | Quantity, config?: number) {
+  const bigNum = BigNumber.isBigNumber(balance) ? balance : BigNumber(balance.toString());
+  return bigNum.toFormat(config ? config : tokenConfig.maximumFractionDigits).replace(/\.?0*$/, "");
 }
 
 /** Fiat formatting config */
 export const fiatConfig: Intl.NumberFormatOptions = {
   style: "currency",
   currencyDisplay: "symbol",
-  maximumFractionDigits: 2
+  maximumFractionDigits: 2,
 };
 
 /**
  * Format fiat balance
  */
-export function formatFiatBalance(
-  balance: string | number | BigNumber | Quantity,
-  currency?: string
-) {
+export function formatFiatBalance(balance: string | number | BigNumber | Quantity, currency?: string) {
   return (+balance).toLocaleString(undefined, {
     ...fiatConfig,
-    currency: currency?.toLowerCase()
+    currency: currency?.toLowerCase(),
   });
 }
 
@@ -48,7 +38,7 @@ export function getCurrencySymbol(currency: string) {
   const zeroBal = (0).toLocaleString(undefined, {
     currency,
     ...fiatConfig,
-    maximumFractionDigits: 0
+    maximumFractionDigits: 0,
   });
 
   return zeroBal.replace("0", "");
@@ -58,7 +48,7 @@ export function getCurrencySymbol(currency: string) {
  * Manual config for legacy token decimals
  */
 const MANUAL_DECIMALS = {
-  "TlqASNDLA1Uh8yFiH-BzR_1FDag4s735F3PoUFEv2Mo": 12
+  "TlqASNDLA1Uh8yFiH-BzR_1FDag4s735F3PoUFEv2Mo": 12,
 };
 
 /**
@@ -77,11 +67,7 @@ export function getDecimals(cfg: DivisibilityOrDecimals) {
   let decimals = cfg.decimals || 0;
 
   // no fractions support
-  if (
-    (!cfg.divisibility && !decimals) ||
-    cfg.divisibility <= 0 ||
-    decimals < 0
-  ) {
+  if ((!cfg.divisibility && !decimals) || cfg.divisibility <= 0 || decimals < 0) {
     return 0;
   }
 
@@ -103,10 +89,7 @@ export function getDecimals(cfg: DivisibilityOrDecimals) {
  * Some legacy tokens are need to be manually updated to support this.
  * See the specs at specs.arweave.dev
  */
-export function balanceToFractioned(
-  balance: string,
-  cfg: DivisibilityOrDecimals
-) {
+export function balanceToFractioned(balance: string, cfg: DivisibilityOrDecimals) {
   if (!balance) return BigNumber("0");
 
   // parse decimals
@@ -120,11 +103,7 @@ export function balanceToFractioned(
  * Convert displayed (fractioned) token balance back to
  * the units used by the contract.
  */
-export function fractionedToBalance(
-  balance: string,
-  cfg: DivisibilityOrDecimals,
-  tokenType: "AO" | "AR"
-) {
+export function fractionedToBalance(balance: string, cfg: DivisibilityOrDecimals, tokenType: "AO" | "AR") {
   if (!balance) return "0";
 
   // parse decimals

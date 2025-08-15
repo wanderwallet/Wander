@@ -10,6 +10,7 @@ import type { CommonRouteProps } from "~wallets/router/router.types";
 import { useLocation } from "~wallets/router/router.utils";
 import { useActiveWallet } from "~wallets/hooks";
 import { CopyToClipboard } from "~components/CopyToClipboard";
+import { QRCodeWrapper } from "~components/QRCodeWrapper";
 
 interface ReceiveViewProps extends CommonRouteProps {
   walletName?: string;
@@ -23,15 +24,9 @@ export function ReceiveView({ walletName, walletAddress }: ReceiveViewProps) {
 
   const [copied, setCopied] = useState(false);
 
-  const effectiveAddress = useMemo(
-    () => walletAddress || wallet?.address,
-    [walletAddress, wallet]
-  );
+  const effectiveAddress = useMemo(() => walletAddress || wallet?.address, [walletAddress, wallet]);
 
-  const effectiveWalletName = useMemo(
-    () => walletName || wallet?.nickname,
-    [walletName, wallet]
-  );
+  const effectiveWalletName = useMemo(() => walletName || wallet?.nickname, [walletName, wallet]);
 
   //segment
   useEffect(() => {
@@ -62,19 +57,13 @@ export function ReceiveView({ walletName, walletAddress }: ReceiveViewProps) {
             gap: 32,
             alignItems: "center",
             justifyContent: "center",
-            flex: 1
-          }}
-        >
+            flex: 1,
+          }}>
           <Text size="lg" weight="semibold" noMargin>
             {effectiveWalletName}
           </Text>
           <QRCodeWrapper>
-            <QRCodeSVG
-              fgColor="#fff"
-              bgColor="transparent"
-              size={176}
-              value={effectiveAddress ?? ""}
-            />
+            <QRCodeSVG fgColor="#fff" bgColor="transparent" size={176} value={effectiveAddress ?? ""} />
           </QRCodeWrapper>
           <AddressField>
             <Text size="sm" weight="medium" noMargin>
@@ -145,15 +134,4 @@ export const CopyAction = styled(CopyIcon)`
   &:active {
     transform: scale(0.92);
   }
-`;
-
-export const QRCodeWrapper = styled.div<{ size?: number }>`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: ${(props) => props.theme.primary};
-  border-radius: 24px;
-  padding: 16px;
-  width: ${(props) => props.size ?? 176}px;
-  height: ${(props) => props.size ?? 176}px;
 `;

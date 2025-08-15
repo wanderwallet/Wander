@@ -34,7 +34,7 @@ export async function isGateway(url: string): Promise<boolean> {
       "network",
       "height",
       "current",
-      "blocks"
+      "blocks",
     ];
 
     return requiredKeys.every((key) => key in data);

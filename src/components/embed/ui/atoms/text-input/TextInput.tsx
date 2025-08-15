@@ -1,51 +1,46 @@
-import React, { forwardRef } from "react";
 import clsx from "clsx";
-import styles from "./TextInput.module.css";
-import type { TextInputBaseProps } from "./TextInput.types";
+import type { TextInputProps } from "./TextInput.types";
 
-const TextInput = forwardRef<HTMLInputElement, TextInputBaseProps>(
-  (
-    {
-      placeholder,
-      hasButton = false,
-      buttonLabel,
-      isDisabled,
-      isSecure,
-      buttonOnClick,
-      className,
-      style,
-      ...props
-    },
-    ref
-  ) => {
-    const Component = "div";
-    const type = isSecure ? "password" : "text";
-    return (
-      <Component className={clsx(styles["wrapper"], className)} {...props}>
-        <input
-          ref={ref}
-          type={type}
-          placeholder={placeholder}
-          className={styles["input"]}
-          disabled={isDisabled}
-        />
-        {hasButton && buttonLabel && (
-          <button
-            className={clsx(
-              styles["button"],
-              styles["button__text"],
-              className
-            )}
-            onClick={buttonOnClick}
-          >
-            {buttonLabel}
-          </button>
-        )}
-      </Component>
-    );
-  }
-);
+import styles from "./TextInput.module.scss";
 
-TextInput.displayName = "TextInput";
+export function TextInput({
+  // React.InputHTMLAttributes<HTMLInputElement:
+  type = "text",
+  name,
+  placeholder,
+  defaultValue,
+  value,
+  onChange,
+  disabled,
+  readOnly,
+  autoFocus,
 
-export { TextInput };
+  // Custom input props:
+  inputRef,
+  startSlot,
+  endSlot,
+
+  // Root element props:
+  className,
+  style,
+}: TextInputProps) {
+  return (
+    <label className={clsx(styles["wrapper"], className)} style={style}>
+      {startSlot}
+      <input
+        ref={inputRef}
+        type={type}
+        name={name}
+        placeholder={placeholder}
+        defaultValue={defaultValue}
+        value={value}
+        onChange={onChange}
+        className={styles["input"]}
+        disabled={disabled}
+        readOnly={readOnly}
+        autoFocus={autoFocus}
+      />
+      {endSlot}
+    </label>
+  );
+}

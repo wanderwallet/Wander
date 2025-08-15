@@ -1,14 +1,7 @@
 import * as React from "react";
 import type { SVGProps } from "react";
 const SvgWander2 = (props: SVGProps<SVGSVGElement>) => (
-  <svg
-    width="35"
-    height="17"
-    viewBox="0 0 35 17"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    {...props}
-  >
+  <svg width="35" height="17" viewBox="0 0 35 17" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
     <path
       fillRule="evenodd"
       clipRule="evenodd"
@@ -30,8 +23,7 @@ const SvgWander2 = (props: SVGProps<SVGSVGElement>) => (
         y1="13.8386"
         x2="17.7183"
         y2="0.5"
-        gradientUnits="userSpaceOnUse"
-      >
+        gradientUnits="userSpaceOnUse">
         <stop stopColor="#6B57F9" />
         <stop offset="1" stopColor="#9787FF" />
       </linearGradient>
@@ -41,8 +33,7 @@ const SvgWander2 = (props: SVGProps<SVGSVGElement>) => (
         y1="11.1184"
         x2="29.8229"
         y2="15.8456"
-        gradientUnits="userSpaceOnUse"
-      >
+        gradientUnits="userSpaceOnUse">
         <stop stopColor="#6B57F9" />
         <stop offset="1" stopColor="#9787FF" />
       </linearGradient>
@@ -52,8 +43,7 @@ const SvgWander2 = (props: SVGProps<SVGSVGElement>) => (
         y1="11.1184"
         x2="5.67707"
         y2="15.8456"
-        gradientUnits="userSpaceOnUse"
-      >
+        gradientUnits="userSpaceOnUse">
         <stop stopColor="#6B57F9" />
         <stop offset="1" stopColor="#9787FF" />
       </linearGradient>

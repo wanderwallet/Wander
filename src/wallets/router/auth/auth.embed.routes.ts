@@ -5,17 +5,17 @@ import { SubscriptionAuthRequestView } from "~routes/auth/subscription";
 import { UnlockAuthRequestView } from "~routes/auth/unlock";
 import { getExtensionOverrides } from "~wallets/router/extension/extension.routes";
 import type { RouteConfig } from "~wallets/router/router.types";
-import { EmbeddedConnectAuthRequestView } from "~routes/embedded/wallet/connect/dapp-connect.view";
-import { EmbeddedSignDataAuthRequestView } from "~routes/embedded/wallet/sign/transaction-signdata.view";
-import { EmbeddedDecryptAuthRequestView } from "~routes/embedded/wallet/decrypt/decrypt.view";
-import { EmbeddedSignatureAuthRequestView } from "~routes/embedded/wallet/signature/signature.view";
-import { EmbeddedSignAuthRequestView } from "~routes/embedded/wallet/sign/transaction.sign.view";
-import { EmbeddedBatchSignDataItemAuthRequestView } from "~routes/embedded/wallet/sign/transaction-batch-signdata.view";
-import { WalletPermissionsRequestEmbeddedView } from "~routes/embedded/wallet/settings/settings.request.view";
-import { WalletSettingsCustomEmbeddedView } from "~routes/embedded/wallet/settings/settings.custom.view";
-import { WalletTransactionDetailsEmbeddedView } from "~routes/embedded/wallet/sign/transaction.details.view";
+import { EmbeddedConnectAuthRequestView } from "~routes/embedded/auth-request/connect/connect.view";
+import { EmbeddedSignDataAuthRequestView } from "~routes/embedded/auth-request/sign/signDataItem.view";
+import { EmbeddedDecryptAuthRequestView } from "~routes/embedded/auth-request/decrypt/decrypt.view";
+import { EmbeddedSignatureAuthRequestView } from "~routes/embedded/auth-request/signature/signature.view";
+import { EmbeddedSignAuthRequestView } from "~routes/embedded/auth-request/sign/sign.view";
+import { EmbeddedBatchSignDataItemAuthRequestView } from "~routes/embedded/auth-request/sign/batchSignDataItem.view";
+import { EmbeddedConnectSettingsAuthRequestView } from "~routes/embedded/auth-request/connect/connect-settings.view";
+import { EmbeddedConnectCustomAuthRequestView } from "~routes/embedded/auth-request/connect/connect-custom.view";
+import { EmbeddedSignDetailsAuthRequestView } from "~routes/embedded/auth-request/sign/sign-details.view";
 
-export type ConAuthRoutePath =
+export type ConnectAuthRoutePath =
   | "/auth-request"
   | `/auth-request/connect/${string}`
   | `/auth-request/connect/${string}/settings`
@@ -24,23 +24,23 @@ export type ConAuthRoutePath =
   | `/auth-request/token/${string}`
   | `/auth-request/decrypt/${string}`
   | `/auth-request/sign/${string}`
-  | `/auth-request/sign/${string}/tx`
+  | `/auth-request/sign/${string}/details`
   | `/auth-request/signKeystone/${string}`
-  // | `/auth-request/signKeystone/${string}/tx`
+  // | `/auth-request/signKeystone/${string}/details
   | `/auth-request/signature/${string}`
   | `/auth-request/signDataItem/${string}`
-  | `/auth-request/signDataItem/${string}/tx`
+  | `/auth-request/signDataItem/${string}/details`
   | `/auth-request/batchSignDataItem/${string}`
   | `/auth-request/subscription/${string}`;
 
-export type ConTxDetailsRoutePath = Extract<
-  ConAuthRoutePath,
-  | `/auth-request/sign/${string}/tx`
-  // | `/auth-request/signKeystone/${string}/tx`
-  | `/auth-request/signDataItem/${string}/tx`
+export type ConnextTxDetailsRoutePath = Extract<
+  ConnectAuthRoutePath,
+  | `/auth-request/sign/${string}/details`
+  // | `/auth-request/signKeystone/${string}/details`
+  | `/auth-request/signDataItem/${string}/details`
 >;
 
-export const ConAuthPaths = {
+export const ConnectAuthPaths = {
   Connect: "/auth-request/connect/:authID",
   ConnectSettings: "/auth-request/connect/:authID/settings",
   ConnectSettingsCustom: "/auth-request/connect/:authID/settings/custom",
@@ -48,75 +48,75 @@ export const ConAuthPaths = {
   Token: "/auth-request/token/:authID",
   Decrypt: "/auth-request/decrypt/:authID",
   Sign: "/auth-request/sign/:authID",
-  SignDetails: "/auth-request/sign/:authID/tx",
+  SignDetails: "/auth-request/sign/:authID/details",
   SignKeystone: "/auth-request/signKeystone/:authID",
-  // SignKeystoneDetails: "/auth-request/signKeystone/:authID/tx",
+  // SignKeystoneDetails: "/auth-request/signKeystone/:authID/details",
   Signature: "/auth-request/signature/:authID",
   SignDataItem: "/auth-request/signDataItem/:authID",
-  SignDataItemDetails: "/auth-request/signDataItem/:authID/tx",
+  SignDataItemDetails: "/auth-request/signDataItem/:authID/details",
   BatchSignDataItem: "/auth-request/batchSignDataItem/:authID",
-  Subscription: "/auth-request/subscription/:authID"
-} as const satisfies Record<string, ConAuthRoutePath>;
+  Subscription: "/auth-request/subscription/:authID",
+} as const satisfies Record<string, ConnectAuthRoutePath>;
 
-export const CON_AUTH_ROUTES = [
+export const CONNECT_AUTH_ROUTES = [
   ...getExtensionOverrides({
     unlockView: UnlockAuthRequestView,
-    loadingView: LoadingAuthRequestView
+    loadingView: LoadingAuthRequestView,
   }),
   {
-    path: ConAuthPaths.Connect,
-    component: EmbeddedConnectAuthRequestView
+    path: ConnectAuthPaths.Connect,
+    component: EmbeddedConnectAuthRequestView,
   },
   {
-    path: ConAuthPaths.ConnectSettings,
-    component: WalletPermissionsRequestEmbeddedView
+    path: ConnectAuthPaths.ConnectSettings,
+    component: EmbeddedConnectSettingsAuthRequestView,
   },
   {
-    path: ConAuthPaths.ConnectSettingsCustom,
-    component: WalletSettingsCustomEmbeddedView
+    path: ConnectAuthPaths.ConnectSettingsCustom,
+    component: EmbeddedConnectCustomAuthRequestView,
   },
   {
-    path: ConAuthPaths.Allowance,
-    component: AllowanceAuthRequestView
+    path: ConnectAuthPaths.Allowance,
+    component: AllowanceAuthRequestView,
   },
   {
-    path: ConAuthPaths.Decrypt,
-    component: EmbeddedDecryptAuthRequestView
+    path: ConnectAuthPaths.Decrypt,
+    component: EmbeddedDecryptAuthRequestView,
   },
   {
-    path: ConAuthPaths.Sign,
-    component: EmbeddedSignAuthRequestView
+    path: ConnectAuthPaths.Sign,
+    component: EmbeddedSignAuthRequestView,
   },
   {
-    path: ConAuthPaths.SignDetails,
-    component: WalletTransactionDetailsEmbeddedView
+    path: ConnectAuthPaths.SignDetails,
+    component: EmbeddedSignDetailsAuthRequestView,
   },
   {
-    path: ConAuthPaths.SignKeystone,
-    component: SignKeystoneAuthRequestView
+    path: ConnectAuthPaths.SignKeystone,
+    component: SignKeystoneAuthRequestView,
   },
   // {
   //   path: ConAuthPaths.SignKeystoneDetails,
   //   component: WalletTransactionDetailsEmbeddedView
   // },
   {
-    path: ConAuthPaths.Signature,
-    component: EmbeddedSignatureAuthRequestView
+    path: ConnectAuthPaths.Signature,
+    component: EmbeddedSignatureAuthRequestView,
   },
   {
-    path: ConAuthPaths.SignDataItem,
-    component: EmbeddedSignDataAuthRequestView
+    path: ConnectAuthPaths.SignDataItem,
+    component: EmbeddedSignDataAuthRequestView,
   },
   {
-    path: ConAuthPaths.SignDataItemDetails,
-    component: WalletTransactionDetailsEmbeddedView
+    path: ConnectAuthPaths.SignDataItemDetails,
+    component: EmbeddedSignDetailsAuthRequestView,
   },
   {
-    path: ConAuthPaths.BatchSignDataItem,
-    component: EmbeddedBatchSignDataItemAuthRequestView
+    path: ConnectAuthPaths.BatchSignDataItem,
+    component: EmbeddedBatchSignDataItemAuthRequestView,
   },
   {
-    path: ConAuthPaths.Subscription,
-    component: SubscriptionAuthRequestView
-  }
+    path: ConnectAuthPaths.Subscription,
+    component: SubscriptionAuthRequestView,
+  },
 ] as const satisfies RouteConfig[];

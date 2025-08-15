@@ -9,9 +9,7 @@ export default function TransactionTag({ name, value }: DecodedTag) {
       <Text variant="bodySm" style={{ color: "#666666" }}>
         {name}
       </Text>
-      <Text variant="bodySm">
-        {isAddress ? formatAddress(value, 6) : value}
-      </Text>
+      <Text variant="bodySm">{isAddress ? formatAddress(value, 6) : value}</Text>
     </Row>
   );
 }

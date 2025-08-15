@@ -1,10 +1,7 @@
 import type { HTMLProps } from "react";
 import styled from "styled-components";
 
-const Progress = ({
-  percentage,
-  ...props
-}: HTMLProps<HTMLDivElement> & Props) => (
+const Progress = ({ percentage, ...props }: HTMLProps<HTMLDivElement> & Props) => (
   <Wrapper {...(props as any)}>
     <Line style={{ width: `${percentage}%` }} />
   </Wrapper>
@@ -17,9 +14,10 @@ interface Props {
 const Wrapper = styled.div`
   position: relative;
   height: 18px;
-  background-color: rgba(${(props) => props.theme.theme}, 0.15);
+  background-color: ${(props) => props.theme.theme}26;
   border-radius: 9px;
   overflow: hidden;
+  width: 100%;
 `;
 
 const Line = styled.div`
@@ -28,7 +26,7 @@ const Line = styled.div`
   left: 0;
   bottom: 0;
   height: 100%;
-  background-color: rgb(${(props) => props.theme.theme});
+  background-color: ${(props) => props.theme.theme};
   border-radius: 9px;
   transition: all 0.23s ease-in-out;
 `;

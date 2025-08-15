@@ -1,17 +1,17 @@
-import { Compass03, Grid01, Home05, Users01 } from "@untitled-ui/icons-react";
+import { CurrencyDollarCircle, Grid01, Home05 } from "@untitled-ui/icons-react";
 import browser from "webextension-polyfill";
 import styled from "styled-components";
 import { useLocation } from "~wallets/router/router.utils";
 import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
+import { useStorage, ExtensionStorage } from "~utils/storage";
+import type { WanderRoutePath } from "~wallets/router/router.types";
+import HedgehogHeadIcon from "url:/assets/agents/images/hedgehog-head.svg";
+import { useAOMintingStatus } from "~utils/agents/hooks";
+import { EventType, trackEvent } from "~utils/analytics";
+import { useHasClaimableBalance } from "~utils/fair_launch/fair_launch.hooks";
 
 const Home05Active = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="25"
-    height="24"
-    viewBox="0 0 25 24"
-    fill="none"
-  >
+  <svg xmlns="http://www.w3.org/2000/svg" width="25" height="24" viewBox="0 0 25 24" fill="none">
     <path
       fillRule="evenodd"
       clipRule="evenodd"
@@ -21,18 +21,20 @@ const Home05Active = () => (
   </svg>
 );
 
-const Compass03Active = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="25"
-    height="24"
-    viewBox="0 0 25 24"
-    fill="none"
-  >
+const HedgehogIcon = ({ active }: { active: boolean }) => (
+  <img
+    src={HedgehogHeadIcon}
+    alt="Agents"
+    style={{ height: 32, width: 32, filter: active ? "none" : "grayscale(100%)" }}
+  />
+);
+
+const CurrencyDollarCircleActive = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="25" height="24" viewBox="0 0 25 24" fill="none">
     <path
       fillRule="evenodd"
       clipRule="evenodd"
-      d="M12.6459 3C7.67531 3 3.64587 7.02944 3.64587 12C3.64587 16.9706 7.67531 21 12.6459 21C17.6164 21 21.6459 16.9706 21.6459 12C21.6459 7.02944 17.6164 3 12.6459 3ZM15.6055 8.79222C15.4726 8.74483 15.2728 8.81145 14.873 8.94469L11.2218 10.1618C11.108 10.1997 11.051 10.2187 11.0038 10.251C10.9619 10.2797 10.9257 10.3158 10.8971 10.3577C10.8648 10.405 10.8458 10.4619 10.8078 10.5757L9.59075 14.227C9.45751 14.6267 9.39089 14.8266 9.43828 14.9595C9.47953 15.0751 9.57054 15.1662 9.6862 15.2074C9.81911 15.2548 10.019 15.1882 10.4187 15.0549L14.0699 13.8378C14.1838 13.7999 14.2407 13.7809 14.288 13.7486C14.3298 13.72 14.366 13.6838 14.3947 13.6419C14.427 13.5946 14.446 13.5377 14.4839 13.4239L15.701 9.77263C15.8342 9.37291 15.9008 9.17305 15.8535 9.04014C15.8122 8.92448 15.7212 8.83347 15.6055 8.79222Z"
+      d="M12.25 1C6.17487 1 1.25 5.92487 1.25 12C1.25 18.0751 6.17487 23 12.25 23C18.3251 23 23.25 18.0751 23.25 12C23.25 5.92487 18.3251 1 12.25 1ZM13.25 5.5C13.25 4.94772 12.8023 4.5 12.25 4.5C11.6977 4.5 11.25 4.94772 11.25 5.5V6C9.317 6 7.75 7.567 7.75 9.5C7.75 11.433 9.317 13 11.25 13H13.25C14.0784 13 14.75 13.6716 14.75 14.5C14.75 15.3284 14.0784 16 13.25 16H11.0833C10.347 16 9.75 15.403 9.75 14.6667C9.75 14.1144 9.30229 13.6667 8.75 13.6667C8.19772 13.6667 7.75 14.1144 7.75 14.6667C7.75 16.5076 9.24238 18 11.0833 18H11.25V18.5C11.25 19.0523 11.6977 19.5 12.25 19.5C12.8023 19.5 13.25 19.0523 13.25 18.5V18C15.183 18 16.75 16.433 16.75 14.5C16.75 12.567 15.183 11 13.25 11H11.25C10.4216 11 9.75 10.3284 9.75 9.5C9.75 8.67157 10.4216 8 11.25 8H13.4167C14.153 8 14.75 8.59695 14.75 9.33333C14.75 9.88562 15.1977 10.3333 15.75 10.3333C16.3023 10.3333 16.75 9.88562 16.75 9.33333C16.75 7.49238 15.2576 6 13.4167 6H13.25V5.5Z"
       fill="#6B57F9"
     />
   </svg>
@@ -45,15 +47,23 @@ const buttons = [
     icon: <Home05 />,
     iconActive: <Home05Active />,
     size: "24px",
-    route: "/"
+    route: "/",
   },
   {
-    title: "Explore",
-    dictionaryKey: "explore",
-    icon: <Compass03 />,
-    iconActive: <Compass03Active />,
+    title: "Agents",
+    dictionaryKey: "agents",
+    icon: <HedgehogIcon active={false} />,
+    iconActive: <HedgehogIcon active={true} />,
     size: "24px",
-    route: "/explore"
+    route: "/agents",
+  },
+  {
+    title: "Earn",
+    dictionaryKey: "earn",
+    icon: <CurrencyDollarCircle />,
+    iconActive: <CurrencyDollarCircleActive />,
+    size: "24px",
+    route: "/earn",
   },
   {
     title: "Menu",
@@ -61,16 +71,31 @@ const buttons = [
     icon: <Grid01 />,
     iconActive: <Grid01 color="#6B57F9" fill="#6B57F9" />,
     size: "24px",
-    route: "/quick-settings"
-  }
+    route: "/quick-settings",
+  },
 ] as const;
 
 export const NavigationBar = () => {
+  const { data: status } = useAOMintingStatus();
+  const hasClaimableBalance = useHasClaimableBalance();
   const { location, navigate } = useLocation();
-
-  const shouldShowNavigationBar = buttons.some(
-    (button) => location === button.route
+  const [activeAddress] = useStorage(
+    {
+      key: "active_address",
+      instance: ExtensionStorage,
+    },
+    "",
   );
+
+  const [isSeedphraseBackedUp = true] = useStorage(
+    {
+      key: `recovery_phrase_backedup_${activeAddress}`,
+      instance: ExtensionStorage,
+    },
+    true,
+  );
+
+  const shouldShowNavigationBar = buttons.some((button) => location === button.route);
 
   if (!shouldShowNavigationBar) {
     return null;
@@ -85,11 +110,22 @@ export const NavigationBar = () => {
             active={active}
             data-active={active ? "true" : "false"}
             key={index}
-            onClick={() => navigate(button.route)}
-          >
+            onClick={() => {
+              if (button.route === "/agents") {
+                trackEvent(EventType.AGENT_DASHBOARD, {});
+              } else if (button.route === "/earn") {
+                trackEvent(EventType.EARN_BUTTON, {});
+              }
+
+              navigate(button.route as WanderRoutePath);
+            }}>
             <IconWrapper size={button.size}>
               {active ? button.iconActive : button.icon}
+              {!isSeedphraseBackedUp && button.route === "/quick-settings" && <PendingActionDot />}
+              {status === "Paused" && button.route === "/agents" && <PendingActionDot color="#EE5A4F" />}
+              {hasClaimableBalance && button.route === "/earn" && <PendingActionDot color="#EEBD41" />}
             </IconWrapper>
+
             <div>{browser.i18n.getMessage(button.dictionaryKey)}</div>
           </NavigationButton>
         );
@@ -113,8 +149,7 @@ const NavigationBarWrapper = styled.nav`
 const NavigationButton = styled.button<{
   active?: boolean;
 }>`
-  color: ${(props) =>
-    props.active ? props.theme.primaryText : props.theme.secondaryText};
+  color: ${(props) => (props.active ? props.theme.primaryText : props.theme.secondaryText)};
   font-weight: 600;
   font-size: 12px;
   display: flex;
@@ -143,8 +178,20 @@ const IconWrapper = styled.div<{ size: string }>`
   justify-content: center;
   align-items: center;
   transition: transform 0.2s ease;
+  position: relative;
 
   ${NavigationButton}:not([data-active="true"]):hover & {
     transform: scale(1.1);
   }
+`;
+
+const PendingActionDot = styled.div<{ color?: string }>`
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 8px;
+  height: 8px;
+  background-color: ${(props) => props.color || "#eebd41"};
+  border-radius: 50%;
+  flex-shrink: 0;
 `;

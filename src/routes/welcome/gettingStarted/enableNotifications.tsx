@@ -10,11 +10,11 @@ import { ExtensionStorage } from "~utils/storage";
 export function EnableNotificationsWelcomeView() {
   const [notifications, setNotifications] = useStorage<boolean>({
     key: "setting_notifications",
-    instance: ExtensionStorage
+    instance: ExtensionStorage,
   });
   const [, setShowAnnouncement] = useStorage<boolean>({
     key: "show_announcement",
-    instance: ExtensionStorage
+    instance: ExtensionStorage,
   });
 
   useEffect(() => {
@@ -27,22 +27,15 @@ export function EnableNotificationsWelcomeView() {
   return (
     <Wrapper>
       <div>
-        <Text heading>
-          {browser.i18n.getMessage("enable_notifications_title")}
-        </Text>
-        <Paragraph>
-          {browser.i18n.getMessage("enable_notifications_paragraph")}
-        </Paragraph>
+        <Text heading>{browser.i18n.getMessage("enable_notifications_title")}</Text>
+        <Paragraph>{browser.i18n.getMessage("enable_notifications_paragraph")}</Paragraph>
         <Checkbox
           checked={!!notifications}
           onChange={(checked) => {
             setNotifications(checked);
             setShowAnnouncement(false);
-          }}
-        >
-          {notifications
-            ? browser.i18n.getMessage("enabled")
-            : browser.i18n.getMessage("disabled")}
+          }}>
+          {notifications ? browser.i18n.getMessage("enabled") : browser.i18n.getMessage("disabled")}
         </Checkbox>
       </div>
       <Container>

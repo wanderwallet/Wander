@@ -1,5 +1,5 @@
 import type React from "react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import styled, { type DefaultTheme } from "styled-components";
 import type { AppInfo, AppLogoInfo } from "~applications/application";
 import Application from "~applications/application";
@@ -8,6 +8,7 @@ import { useAuthRequests } from "~utils/auth/auth.hooks";
 import type { AuthRequestStatus } from "~utils/auth/auth.types";
 import browser from "webextension-polyfill";
 import { generateLogoPlaceholder } from "~utils/urls/getAppIconPlaceholder";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 export interface HeadAuthProps {
   title?: string;
@@ -20,45 +21,33 @@ export const HeadAuth: React.FC<HeadAuthProps> = ({
   title,
   back,
   appInfo: appInfoProp = { name: "Wander" },
-  showHead = true
+  showHead = true,
 }) => {
   const [areLogsExpanded, setAreLogsExpanded] = useState(false);
-  const { authRequests, currentAuthRequestIndex, setCurrentAuthRequestIndex } =
-    useAuthRequests();
+  const { authRequests, currentAuthRequestIndex, setCurrentAuthRequestIndex } = useAuthRequests();
 
   // Load the AppInfo to get the logo of the application. Note that data is not available to `Application` until
   // `/src/routes/auth/connect.tsx` calls `addApp()`, so the `appInfo` prop (`appInfoProp`) is used as initial /
   // fallback value:
 
   const { name: fallbackName, logo: fallbackLogo } = appInfoProp;
-  const {
-    tabID = null,
-    url = "",
-    type
-  } = authRequests[currentAuthRequestIndex] || {};
+  const { tabID = null, url = "", type } = authRequests[currentAuthRequestIndex] || {};
   const isConnectType = type === "connect";
   const [appLogoInfo, setAppLogoInfo] = useState<AppLogoInfo>(appInfoProp);
 
-  useEffect(() => {
-    async function loadAppInfo() {
-      if (!url || isConnectType) return;
+  useAsyncEffect(async () => {
+    if (!url || isConnectType) return;
 
-      const app = new Application(url);
-      const appInfo = await app.getAppData();
-      const appLogoPlaceholder = await generateLogoPlaceholder(url);
+    const app = new Application(url);
+    const appInfo = await app.getAppData();
+    const appLogoPlaceholder = await generateLogoPlaceholder(url);
 
-      setAppLogoInfo({
-        name:
-          appInfo.name ||
-          fallbackName ||
-          new URL(url).hostname.split(".").slice(-2).join("."),
-        logo: appInfo.logo || fallbackLogo,
-        type: appLogoPlaceholder?.type,
-        placeholder: appLogoPlaceholder?.placeholder
-      });
-    }
-
-    loadAppInfo();
+    setAppLogoInfo({
+      name: appInfo.name || fallbackName || new URL(url).hostname.split(".").slice(-2).join("."),
+      logo: appInfo.logo || fallbackLogo,
+      type: appLogoPlaceholder?.type,
+      placeholder: appLogoPlaceholder?.placeholder,
+    });
   }, [url, fallbackName, fallbackLogo, isConnectType]);
 
   const handleAppInfoClicked = tabID
@@ -88,13 +77,7 @@ export const HeadAuth: React.FC<HeadAuthProps> = ({
         <DivTransactionTracker>
           <DivTransactionsList>
             {process.env.NODE_ENV === "development" ? (
-              <ButtonExpandLogs
-                onClick={() =>
-                  setAreLogsExpanded(
-                    (prevAreLogsExpanded) => !prevAreLogsExpanded
-                  )
-                }
-              />
+              <ButtonExpandLogs onClick={() => setAreLogsExpanded((prevAreLogsExpanded) => !prevAreLogsExpanded)} />
             ) : null}
 
             {authRequests.map((authRequest, i) => (
@@ -122,8 +105,7 @@ export const HeadAuth: React.FC<HeadAuthProps> = ({
                   <PreLogItem
                     key={authRequest.authID}
                     isCurrent={i === currentAuthRequestIndex}
-                    status={authRequest.status}
-                  >
+                    status={authRequest.status}>
                     {JSON.stringify(authRequest, null, "  ")}
                   </PreLogItem>
                 );
@@ -145,9 +127,7 @@ const DivTransactionsList = styled.div`
   display: flex;
   gap: 8px;
   padding: 16px;
-  border-bottom: 1px solid
-    ${({ theme }) =>
-      theme.displayTheme === "dark" ? "rgb(31, 30, 47)" : "rgb(224, 225, 208)"};
+  border-bottom: 1px solid ${({ theme }) => (theme.displayTheme === "dark" ? "rgb(31, 30, 47)" : "rgb(224, 225, 208)")};
   height: 12px;
 `;
 
@@ -157,31 +137,19 @@ interface AuthRequestIndicatorProps {
   theme: DefaultTheme;
 }
 
-const colorsByStatus: Record<
-  AuthRequestStatus,
-  { light: string; dark: string }
-> = {
+const colorsByStatus: Record<AuthRequestStatus, { light: string; dark: string }> = {
   pending: { light: "black", dark: "white" },
   accepted: { light: "green", dark: "green" },
   rejected: { light: "red", dark: "red" },
   aborted: { light: "grey", dark: "grey" },
-  error: { light: "red", dark: "red" }
+  error: { light: "red", dark: "red" },
 };
 
-function getAuthRequestButtonIndicatorBorderColor({
-  status,
-  theme
-}: AuthRequestIndicatorProps) {
-  return theme.displayTheme === "dark"
-    ? colorsByStatus[status].dark
-    : colorsByStatus[status].light;
+function getAuthRequestButtonIndicatorBorderColor({ status, theme }: AuthRequestIndicatorProps) {
+  return theme.displayTheme === "dark" ? colorsByStatus[status].dark : colorsByStatus[status].light;
 }
 
-function getAuthRequestButtonIndicatorBackgroundColor({
-  isCurrent,
-  status,
-  theme
-}: AuthRequestIndicatorProps) {
+function getAuthRequestButtonIndicatorBackgroundColor({ isCurrent, status, theme }: AuthRequestIndicatorProps) {
   return isCurrent
     ? theme.displayTheme === "dark"
       ? colorsByStatus[status].dark
@@ -199,34 +167,27 @@ const ButtonTransactionButton = styled.button<AuthRequestIndicatorProps>`
 `;
 
 const DivTransactionButtonSpacer = styled.button`
-  background: ${({ theme }) =>
-    theme.displayTheme === "dark"
-      ? "rgba(255, 255, 255, 0.125)"
-      : "rgba(0, 0, 0, 0.125)"};
+  background: ${({ theme }) => (theme.displayTheme === "dark" ? "rgba(255, 255, 255, 0.125)" : "rgba(0, 0, 0, 0.125)")};
   border-radius: 128px;
   flex: 1 0 auto;
 `;
 
 const ButtonExpandLogs = styled.button`
-  border: 2px solid
-    ${({ theme }) => (theme.displayTheme === "dark" ? "white" : "black")};
+  border: 2px solid ${({ theme }) => (theme.displayTheme === "dark" ? "white" : "black")};
   border-radius: 128px;
   width: 12px;
 `;
 
 const DivLogWrapper = styled.div`
   position: absolute;
-  background: ${({ theme }) =>
-    theme.displayTheme === "dark" ? "black" : "white"};
+  background: ${({ theme }) => (theme.displayTheme === "dark" ? "black" : "white")};
   top: 100%;
   left: 0;
   right: 0;
   height: 50vh;
   overflow: scroll;
   z-index: 1;
-  border-bottom: 1px solid
-    ${({ theme }) =>
-      theme.displayTheme === "dark" ? "rgb(31, 30, 47)" : "rgb(224, 225, 208)"};
+  border-bottom: 1px solid ${({ theme }) => (theme.displayTheme === "dark" ? "rgb(31, 30, 47)" : "rgb(224, 225, 208)")};
 `;
 
 function getAuthRequestLogIndicatorStyles(props: AuthRequestIndicatorProps) {

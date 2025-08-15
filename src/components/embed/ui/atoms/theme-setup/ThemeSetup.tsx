@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { useTheme } from "../../../contexts/ThemeContext";
+import { useTheme } from "../../../../../utils/theme/theme.hook";
 
 export const ThemeSetup: React.FC = () => {
   const { setMode } = useTheme();

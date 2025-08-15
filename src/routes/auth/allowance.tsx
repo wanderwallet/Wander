@@ -1,18 +1,8 @@
-import {
-  type Allowance,
-  type AllowanceBigNumber,
-  defaultAllowance
-} from "~applications/allowance";
+import { type AllowanceBigNumber, defaultAllowance } from "~applications/allowance";
 import Application, { type AppInfo } from "~applications/application";
 import { checkPassword } from "~wallets/auth";
 import { useEffect, useState } from "react";
-import {
-  Input,
-  Section,
-  Spacer,
-  useInput,
-  useToasts
-} from "@arconnect/components-rebrand";
+import { Input, Section, Spacer, useInput, useToasts } from "@arconnect/components-rebrand";
 import Wrapper from "~components/auth/Wrapper";
 import browser from "webextension-polyfill";
 import App from "~components/auth/App";
@@ -23,12 +13,12 @@ import BigNumber from "bignumber.js";
 import { useCurrentAuthRequest } from "~utils/auth/auth.hooks";
 import { HeadAuth } from "~components/HeadAuth";
 import { AuthButtons } from "~components/auth/AuthButtons";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 export function AllowanceAuthRequestView() {
   const arweave = new Arweave(defaultGateway);
 
-  const { authRequest, acceptRequest, rejectRequest } =
-    useCurrentAuthRequest("allowance");
+  const { authRequest, acceptRequest, rejectRequest } = useCurrentAuthRequest("allowance");
 
   const { url } = authRequest;
 
@@ -59,16 +49,14 @@ export function AllowanceAuthRequestView() {
   // app data
   const [appData, setAppData] = useState<AppInfo>();
 
-  useEffect(() => {
-    (async () => {
-      if (!url) return;
+  useAsyncEffect(async () => {
+    if (!url) return;
 
-      // construct app
-      const app = new Application(url);
+    // construct app
+    const app = new Application(url);
 
-      setAllowance(await app.getAllowance());
-      setAppData(await app.getAppData());
-    })();
+    setAllowance(await app.getAllowance());
+    setAppData(await app.getAppData());
   }, [url]);
 
   // password input
@@ -85,7 +73,7 @@ export function AllowanceAuthRequestView() {
       return setToast({
         type: "error",
         content: browser.i18n.getMessage("invalidPassword"),
-        duration: 2200
+        duration: 2200,
       });
     }
 
@@ -96,18 +84,13 @@ export function AllowanceAuthRequestView() {
     await app.updateSettings(() => {
       const updatedAllowance: AllowanceBigNumber = {
         ...defaultAllowance,
-        ...allowance
+        ...allowance,
       };
 
       if (limitInput.state !== "") {
-        const limitInputState = BigNumber(
-          arweave.ar.arToWinston(limitInput.state)
-        );
+        const limitInputState = BigNumber(arweave.ar.arToWinston(limitInput.state));
 
-        if (
-          !limitInputState.eq(allowance?.limit || 0) &&
-          limitInputState.gt(0)
-        ) {
+        if (!limitInputState.eq(allowance?.limit || 0) && limitInputState.gt(0)) {
           updatedAllowance.limit = limitInputState;
         }
       }
@@ -118,8 +101,8 @@ export function AllowanceAuthRequestView() {
         allowance: {
           enabled: updatedAllowance.enabled,
           limit: updatedAllowance.limit.toString(),
-          spent: updatedAllowance.spent.toString()
-        }
+          spent: updatedAllowance.spent.toString(),
+        },
       };
     });
 
@@ -139,7 +122,7 @@ export function AllowanceAuthRequestView() {
             allowance && {
               enabled: allowance.enabled,
               limit: allowance.limit.toFixed(),
-              spent: allowance.spent.toFixed()
+              spent: allowance.spent.toFixed(),
             }
           }
         />
@@ -173,10 +156,10 @@ export function AllowanceAuthRequestView() {
           authRequest={authRequest}
           primaryButtonProps={{
             label: browser.i18n.getMessage("reset_spent"),
-            onClick: reset
+            onClick: reset,
           }}
           secondaryButtonProps={{
-            onClick: () => rejectRequest()
+            onClick: () => rejectRequest(),
           }}
         />
       </Section>

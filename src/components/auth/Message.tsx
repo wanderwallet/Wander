@@ -6,15 +6,7 @@ import styled from "styled-components";
 export default function Message({ message }: Props) {
   // message decode type
   const [decodeType, setDecodeType] = useState("UTF-8");
-  const availableDecodeTypes = [
-    "utf-8",
-    "hex",
-    "ibm866",
-    "mac",
-    "windows-1251",
-    "gbk",
-    "utf-16"
-  ];
+  const availableDecodeTypes = ["utf-8", "hex", "ibm866", "mac", "windows-1251", "gbk", "utf-16"];
 
   // current message
   const msg = useMemo(() => {
@@ -23,9 +15,7 @@ export default function Message({ message }: Props) {
 
     // handle hex
     if (decodeType === "hex") {
-      return [...new Uint8Array(messageBytes.buffer)]
-        .map((v) => "0x" + v.toString(16).padStart(2, "0"))
-        .join(" ");
+      return [...new Uint8Array(messageBytes.buffer)].map((v) => "0x" + v.toString(16).padStart(2, "0")).join(" ");
     }
 
     // handle other types

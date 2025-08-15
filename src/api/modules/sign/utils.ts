@@ -47,8 +47,7 @@ export async function arconfettiIcon(): Promise<string | false> {
  */
 export async function calculateReward({ reward }: Transaction) {
   // fetch fee multiplier
-  const multiplier =
-    (await getSetting("fee_multiplier").getValue<number>()) || 1;
+  const multiplier = (await getSetting("fee_multiplier").getValue<number>()) || 1;
 
   // if the multiplier is 1, we don't do anything
   if (multiplier === 1) return reward;
@@ -71,7 +70,7 @@ export async function signNotification(
   price: number | BigNumber,
   id: string,
   appURL: string,
-  type: "sign" | "dispatch" = "sign"
+  type: "sign" | "dispatch" = "sign",
 ) {
   async function getNotificationSetting() {
     return await ExtensionStorage.get("setting_sign_notification");
@@ -105,20 +104,16 @@ export async function signNotification(
 
   // transaction message
   const message = browser.i18n.getMessage(
-    type === "sign"
-      ? "notification_description_native_tx"
-      : "notification_description_dispatch_tx",
-    formattedPrice
+    type === "sign" ? "notification_description_native_tx" : "notification_description_dispatch_tx",
+    formattedPrice,
   );
 
   // create the notification
   await browser.notifications.create(notificationID, {
     iconUrl,
     type: "basic",
-    title: browser.i18n.getMessage(
-      `notification_title_${type === "sign" ? "native" : "dispatched"}_tx`
-    ),
-    message
+    title: browser.i18n.getMessage(`notification_title_${type === "sign" ? "native" : "dispatched"}_tx`),
+    message,
   });
 
   // listener for clicks
@@ -128,7 +123,7 @@ export async function signNotification(
 
     // open transaction in new tab
     await browser.tabs.create({
-      url: `${gateway.protocol}://${gateway.host}/${id}`
+      url: `${gateway.protocol}://${gateway.host}/${id}`,
     });
 
     // remove notification & event listener after click

@@ -3,9 +3,7 @@ import type { JWKInterface } from "arweave/web/lib/wallet";
 export function pemToBase64(pem: string) {
   // PKCS#1 header => `-----BEGIN RSA PUBLIC KEY-----`
   // PKCS#8 header => `-----BEGIN PUBLIC KEY-----`
-  return pem
-    .replace(/^-+(BEGIN|END) (RSA )?(PRIVATE|PUBLIC) KEY-+$/gm, "")
-    .replace(/\s+/g, "");
+  return pem.replace(/^-+(BEGIN|END) (RSA )?(PRIVATE|PUBLIC) KEY-+$/gm, "").replace(/\s+/g, "");
 }
 
 export async function pemToJWK(pem: string): Promise<JWKInterface> {
@@ -20,16 +18,13 @@ export async function pemToJWK(pem: string): Promise<JWKInterface> {
     binaryDer,
     {
       name: "RSASSA-PKCS1-v1_5",
-      hash: "SHA-256"
+      hash: "SHA-256",
     },
     true,
-    ["sign"]
+    ["sign"],
   );
 
-  return window.crypto.subtle.exportKey(
-    "jwk",
-    importedKey as any
-  ) as Promise<JWKInterface>;
+  return window.crypto.subtle.exportKey("jwk", importedKey as any) as Promise<JWKInterface>;
 }
 
 export async function privateKeyDerToJWK(der: string): Promise<JWKInterface> {
@@ -40,16 +35,13 @@ export async function privateKeyDerToJWK(der: string): Promise<JWKInterface> {
     binaryDer,
     {
       name: "RSASSA-PKCS1-v1_5",
-      hash: "SHA-256"
+      hash: "SHA-256",
     },
     true,
-    ["sign"]
+    ["sign"],
   );
 
-  return window.crypto.subtle.exportKey(
-    "jwk",
-    importedKey
-  ) as Promise<JWKInterface>;
+  return window.crypto.subtle.exportKey("jwk", importedKey) as Promise<JWKInterface>;
 }
 
 function str2ab(str) {

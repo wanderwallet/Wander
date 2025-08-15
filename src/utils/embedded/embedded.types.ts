@@ -6,8 +6,10 @@ import type {
   SupabaseUser,
   RecoverableAccount,
   WalletSourceType,
-  DbSession
+  DbSession,
 } from "embed-api";
+import type { LocalWallet } from "~wallets/wallets.types";
+import type { UnpartitionedStateStatus } from "~iframe/storage/unpartitioned-storage/unpartitioned-storage.utils";
 
 export type AuthStatus =
   | "unknown"
@@ -20,6 +22,8 @@ export type AuthStatus =
   | "loading"
   | "locked"
   | "unlocked";
+
+export type EmbeddedSdkAuthStatus = "loading" | "onboarding" | "authenticated" | "not-authenticated";
 
 export type WalletActivationStatus =
   // The wallet is DISABLED, READONLY or LOST.
@@ -59,6 +63,8 @@ export interface TempWalletPromise {
 
 export interface EmbeddedProviderProps extends PropsWithChildren {}
 
+export interface RecoverableAccountWallet extends Pick<Wallet, "canBeRecovered" | "address"> {}
+
 export interface EmbeddedContextState {
   currentWalletId: string;
   wallets: Wallet[];
@@ -66,15 +72,37 @@ export interface EmbeddedContextState {
   importedTempWalletAddress: null | string;
   lastRegisteredWallet: null | Wallet;
   recoverableAccounts: null | RecoverableAccount[];
+  recoverableAccount: null | RecoverableAccount;
+  recoverableAccountWallets: null | RecoverableAccountWallet[];
+  requestPasswordChange: boolean;
+  backupsNeeded: number;
+  backupMessage?: string;
 }
 
 export interface EmbeddedContextAuth {
   authStatus: AuthStatus;
   authProviderType: null | AuthProviderType;
   user: null | SupabaseUser;
-  session: null | DbSession;
-  // accessToken?
+  session: DbSession;
 }
+
+export type OAutProviderType = Exclude<AuthProviderType, "EMAIL_N_PASSWORD" | "PASSKEYS">;
+
+export interface AuthSignInWithPasswordParams {
+  method: "signInWithPassword";
+  email: string;
+  password: string;
+}
+
+export interface AuthVerifyOtpParams {
+  method: "verifyOtp";
+  email: string;
+  token: string;
+}
+
+export type AuthEmailParams = AuthSignInWithPasswordParams | AuthVerifyOtpParams;
+
+export type AuthEmailParamsMethod = AuthEmailParams["method"];
 
 export interface RecoveryJSON {
   version: string;
@@ -83,39 +111,36 @@ export interface RecoveryJSON {
   recoveryFileServerSignature: string;
 }
 
-export interface EmbeddedContextData
-  extends EmbeddedContextState,
-    EmbeddedContextAuth {
+export interface EmbeddedContextData extends EmbeddedContextState, EmbeddedContextAuth {
+  walletCount: number;
   currentWallet: Wallet | null;
 
-  authenticate: (
-    authProviderType: AuthProviderType,
-    email?: string,
-    password?: string
-  ) => Promise<void>;
+  unpartitionedStateStatus: UnpartitionedStateStatus;
+  unpartitionedStateConfirmed: boolean | null;
+  confirmUnpartitionedState: (doNotAskAgain: boolean) => Promise<void>;
+
+  authenticate: (authParams: OAutProviderType | AuthEmailParams) => Promise<void>;
   fetchRecoverableAccounts: () => Promise<RecoverableAccount[]>;
   clearRecoverableAccounts: () => void;
-  recoverAccount: (
-    authProviderType: AuthProviderType,
-    accountToRecoverId: string
-  ) => Promise<void>;
-  recoverWallet: (
-    recoveryData: RecoveryJSON | JWKInterface | string
-  ) => Promise<void>;
+  setRecoverableAccount: (recoverableAccount: RecoverableAccount) => void;
+  setRecoverableAccountWallets: (recoverableAccountWallets: RecoverableAccountWallet[]) => void;
+  fetchRecoverableAccountWallets: (recoverableAccount: RecoverableAccount) => Promise<RecoverableAccountWallet[]>;
+  recoverAccount: (authProviderType: AuthProviderType, accountToRecoverId: string) => Promise<void>;
+  recoverWallet: (recoveryData?: RecoveryJSON | JWKInterface | string) => Promise<void>;
+  setRequestPasswordChange: (requestPasswordChange: boolean) => void;
 
   generateTempWallet: () => Promise<TempWallet>;
   deleteGeneratedTempWallet: () => Promise<void>;
 
-  importTempWallet: (
-    jwkOrSeedPhrase: JWKInterface | string
-  ) => Promise<TempWallet>;
+  importTempWallet: (jwkOrSeedPhrase: JWKInterface | string) => Promise<TempWallet>;
   deleteImportedTempWallet: () => Promise<void>;
 
   registerWallet: (sourceType: WalletSourceType) => Promise<Wallet>;
   clearLastRegisteredWallet: () => void;
 
-  skipBackUp: (doNotAskAgain: boolean) => void | Promise<void>;
   downloadKeyfile: () => Promise<void>;
   copySeedphrase: () => Promise<boolean>;
+  getDecryptedWallet: () => Promise<LocalWallet<JWKInterface>>;
+  getSeedphrase: (callbackFn?: (seedPhrase: string) => Promise<boolean>) => Promise<string>;
   generateRecoveryAndDownload: () => Promise<void>;
 }

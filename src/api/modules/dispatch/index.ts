@@ -5,7 +5,7 @@ const permissions: PermissionType[] = ["DISPATCH"];
 
 const dispatch: ModuleProperties = {
   functionName: "dispatch",
-  permissions
+  permissions,
 };
 
 export interface DispatchResult {

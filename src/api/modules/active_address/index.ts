@@ -5,7 +5,7 @@ const permissions: PermissionType[] = ["ACCESS_ADDRESS"];
 
 const activeAddress: ModuleProperties = {
   functionName: "getActiveAddress",
-  permissions
+  permissions,
 };
 
 export default activeAddress;

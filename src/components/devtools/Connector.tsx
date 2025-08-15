@@ -2,12 +2,13 @@ import { permissionData, type PermissionType } from "~applications/permissions";
 import { Button, Spacer, useToasts, Text } from "@arconnect/components-rebrand";
 import type { AppInfo } from "~applications/application";
 import { PermissionDescription } from "~components/auth/PermissionCheckbox";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { getTab } from "~applications/tab";
 import { addApp } from "~applications";
 import browser from "webextension-polyfill";
-import { ToggleSwitch } from "~routes/popup/subscriptions/subscriptionDetails";
+import { ToggleSwitch } from "~components/ToggleSwitch";
 import { Flex } from "~components/common/Flex";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 export default function Connector({ appUrl }: Props) {
   // permissions to "force-connect" the app with
@@ -18,15 +19,13 @@ export default function Connector({ appUrl }: Props) {
 
   const [appData, setAppData] = useState<AppInfo>({});
 
-  useEffect(() => {
-    (async () => {
-      const tab = await getTab(browser.devtools.inspectedWindow.tabId);
+  useAsyncEffect(async () => {
+    const tab = await getTab(browser.devtools.inspectedWindow.tabId);
 
-      setAppData({
-        name: tab?.title?.slice(0, 14),
-        logo: tab?.favIconUrl
-      });
-    })();
+    setAppData({
+      name: tab?.title?.slice(0, 14),
+      logo: tab?.favIconUrl,
+    });
   }, []);
 
   // force connect
@@ -39,14 +38,14 @@ export default function Connector({ appUrl }: Props) {
       await addApp({
         ...appData,
         url: appUrl,
-        permissions: permsToConnect
+        permissions: permsToConnect,
       });
     } catch (e) {
       console.log("Failed to connect to app", e);
       setToast({
         type: "error",
         content: browser.i18n.getMessage("connectionFailure"),
-        duration: 2300
+        duration: 2300,
       });
     }
 
@@ -70,27 +69,19 @@ export default function Connector({ appUrl }: Props) {
                 return val;
               })
             }
-            checked={permsToConnect.includes(permissionName)}
-          >
+            checked={permsToConnect.includes(permissionName)}>
             <Flex direction="column">
               <Text size="md" weight="medium" noMargin>
                 {permissionName}
               </Text>
-              <PermissionDescription>
-                {browser.i18n.getMessage(permissionData[permissionName])}
-              </PermissionDescription>
+              <PermissionDescription>{browser.i18n.getMessage(permissionData[permissionName])}</PermissionDescription>
             </Flex>
           </ToggleSwitch>
           <Spacer y={0.8} />
         </div>
       ))}
       <Spacer y={1.15} />
-      <Button
-        fullWidth
-        disabled={permsToConnect.length === 0}
-        onClick={forceConnect}
-        loading={loading}
-      >
+      <Button fullWidth disabled={permsToConnect.length === 0} onClick={forceConnect} loading={loading}>
         {browser.i18n.getMessage("forceConnect")}
       </Button>
     </>

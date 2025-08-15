@@ -1,4 +1,4 @@
-import type { DataItemCreateOptions } from "arbundles";
+import type { DataItemCreateOptions } from "@dha-team/arbundles";
 
 export interface SignDataItemParams extends DataItemCreateOptions {
   data: string | Uint8Array;

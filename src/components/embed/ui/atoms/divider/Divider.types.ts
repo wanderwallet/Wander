@@ -1,4 +1,4 @@
-import { Alignments } from "../../../types";
+import type { Alignments } from "../../../types";
 
 export type DividerBaseProps = {
   text?: string;

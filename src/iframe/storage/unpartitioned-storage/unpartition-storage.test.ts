@@ -1,14 +1,6 @@
-import {
-  describe,
-  test,
-  expect,
-  beforeAll,
-  beforeEach,
-  vi,
-  afterEach,
-  afterAll
-} from "vitest";
-import { EnhancedStorage, StorageManager } from "./unpartitioned-storage";
+import { describe, test, expect, beforeAll, beforeEach, vi, afterEach } from "vitest";
+import { EnhancedStorage } from "./unpartitioned-storage";
+import { StorageManager } from "../storage-manager/storage-manager";
 import { StorageMock } from "../plasmo-storage/plasmo-storage.mock";
 
 // Set global test timeout
@@ -19,15 +11,15 @@ vi.mock("~utils/embedded/iframe.utils", () => ({
   isInsideIframe: vi.fn().mockReturnValue(true),
   ancestorOrigin: vi.fn().mockReturnValue("https://test.com"),
   searchParams: new URLSearchParams({
-    PARAM_CLIENT_ID: "test-client-id"
-  })
+    PARAM_CLIENT_ID: "test-client-id",
+  }),
 }));
 
 vi.mock("~utils/log/log.utils", () => ({
   log: vi.fn(),
   LOG_GROUP: {
-    STORAGE: "storage"
-  }
+    STORAGE: "storage",
+  },
 }));
 
 // Setup global browser objects that might not be in JSDOM
@@ -46,14 +38,12 @@ beforeAll(() => {
   if (!navigator.permissions) {
     Object.defineProperty(navigator, "permissions", {
       value: {
-        query: vi.fn().mockResolvedValue({ state: "prompt" })
+        query: vi.fn().mockResolvedValue({ state: "prompt" }),
       },
-      configurable: true
+      configurable: true,
     });
   } else if (!navigator.permissions.query) {
-    navigator.permissions.query = vi
-      .fn()
-      .mockResolvedValue({ state: "prompt" });
+    navigator.permissions.query = vi.fn().mockResolvedValue({ state: "prompt" });
   }
 });
 
@@ -116,8 +106,8 @@ describe("EnhancedStorage", () => {
       key,
       JSON.stringify({
         value: "expired value",
-        expiresAt: Date.now() - 1000 // Expired 1 second ago
-      })
+        expiresAt: Date.now() - 1000, // Expired 1 second ago
+      }),
     );
 
     const retrieved = storage.getItem(key);
@@ -170,7 +160,7 @@ describe("StorageManager", () => {
       // Set up test data directly in sessionStorage
       const testData = {
         key1: "value1",
-        key2: '{"complex":"value"}'
+        key2: '{"complex":"value"}',
       };
 
       Object.entries(testData).forEach(([key, value]) => {
@@ -179,12 +169,7 @@ describe("StorageManager", () => {
 
       const usage = StorageManager.calculateStorageUsage(sessionStorage);
 
-      expect(usage.currentSize).toBe(
-        StorageManager.calculateStorageUsageByKeys(sessionStorage, [
-          "key1",
-          "key2"
-        ])
-      );
+      expect(usage.currentSize).toBe(StorageManager.calculateStorageUsageByKeys(sessionStorage, ["key1", "key2"]));
       expect(usage.itemCount).toBe(2);
     });
   });
@@ -196,25 +181,22 @@ describe("StorageManager", () => {
         "item1",
         JSON.stringify({
           value: "test1",
-          expiresAt: Date.now() - 1000 // expired
-        })
+          expiresAt: Date.now() - 1000, // expired
+        }),
       );
       sessionStorage.setItem(
         "item2",
         JSON.stringify({
           value: "test2",
-          expiresAt: Date.now() + 10000 // not expired
-        })
+          expiresAt: Date.now() + 10000, // not expired
+        }),
       );
       sessionStorage.setItem(
         "item3",
-        JSON.stringify({ simple: "value" }) // no expiration
+        JSON.stringify({ simple: "value" }), // no expiration
       );
 
-      const clearedCount = StorageManager.clearExpiredItems(
-        sessionStorage,
-        true
-      );
+      const clearedCount = StorageManager.clearExpiredItems(sessionStorage, true);
 
       expect(clearedCount).toBe(1);
       expect(sessionStorage.getItem("item1")).toBeNull();
@@ -238,9 +220,7 @@ describe("StorageManager", () => {
 
       // Verify priorities
       expect(simpleItem.priority).toBe(StorageManager.PRIORITY_LEVELS.CRITICAL);
-      expect(nonJsonItem.priority).toBe(
-        StorageManager.PRIORITY_LEVELS.CRITICAL
-      );
+      expect(nonJsonItem.priority).toBe(StorageManager.PRIORITY_LEVELS.CRITICAL);
     });
   });
 });
@@ -306,7 +286,7 @@ describe("StorageMock", () => {
     const items = {
       key1: "value1",
       key2: "value2",
-      key3: { complex: true }
+      key3: { complex: true },
     };
 
     await storageMock.setItems(items);
@@ -396,7 +376,7 @@ describe("Storage Eviction", () => {
       { key: "high", size: 3, priority: "HIGH" }, // 3KB
       { key: "medium", size: 5, priority: "MEDIUM" }, // 5KB
       { key: "low", size: 10, priority: "LOW" }, // 10KB
-      { key: "temp", size: 20, priority: "TEMPORARY" } // 20KB
+      { key: "temp", size: 20, priority: "TEMPORARY" }, // 20KB
     ];
 
     // Store items
@@ -404,7 +384,7 @@ describe("Storage Eviction", () => {
       storage.setPrioritizedItem(
         item.key,
         chunk.repeat(item.size),
-        item.priority as keyof typeof StorageManager.PRIORITY_LEVELS
+        item.priority as keyof typeof StorageManager.PRIORITY_LEVELS,
       );
     }
 
@@ -412,9 +392,7 @@ describe("Storage Eviction", () => {
     storage.ensureSpace(15 * 1024); // Try to ensure 15KB space
 
     // Verify eviction behavior
-    const remaining = items.filter(
-      (item) => storage.getItem(item.key) !== null
-    );
+    const remaining = items.filter((item) => storage.getItem(item.key) !== null);
 
     // Higher priority items should remain
     expect(storage.getItem("critical")).not.toBeNull();
@@ -468,13 +446,13 @@ describe("Storage Eviction", () => {
 
     // Set items with explicit expiration timestamps
     storage.setItem("expired1", "value1", {
-      expiresIn: -1000 // Expired 1 second ago
+      expiresIn: -1000, // Expired 1 second ago
     });
     storage.setItem("expired2", "value2", {
-      expiresIn: -2000 // Expired 2 seconds ago
+      expiresIn: -2000, // Expired 2 seconds ago
     });
     storage.setItem("valid", "value3", {
-      expiresIn: 10000 // Valid for 10 more seconds
+      expiresIn: 10000, // Valid for 10 more seconds
     });
 
     // Force eviction
@@ -555,7 +533,7 @@ describe("Storage Eviction", () => {
       { key: "high1", priority: "HIGH", value: "value2" },
       { key: "medium1", priority: "MEDIUM", value: "value3" },
       { key: "low1", priority: "LOW", value: "value4" },
-      { key: "temp1", priority: "TEMPORARY", value: "value5" }
+      { key: "temp1", priority: "TEMPORARY", value: "value5" },
     ];
 
     // Store all items
@@ -567,9 +545,7 @@ describe("Storage Eviction", () => {
     storage.evictIfNeeded(2000, true);
 
     // Verify eviction order
-    const remaining = items.filter(
-      (item) => localStorage.getItem(item.key) !== null
-    );
+    const remaining = items.filter((item) => localStorage.getItem(item.key) !== null);
 
     // Check that remaining items are in priority order
     remaining.forEach((item, index) => {
@@ -590,7 +566,7 @@ describe("Storage Eviction", () => {
     const results = await Promise.all([
       storage.evictIfNeeded(500),
       storage.evictIfNeeded(500),
-      storage.evictIfNeeded(500)
+      storage.evictIfNeeded(500),
     ]);
 
     // All requests should complete successfully

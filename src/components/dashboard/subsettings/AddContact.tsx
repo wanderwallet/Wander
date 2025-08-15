@@ -11,15 +11,9 @@ import {
   ContactInput,
   ContactNotes,
   SubTitle,
-  Title
+  Title,
 } from "./ContactSettings";
-import {
-  Button,
-  Modal,
-  Spacer,
-  useModal,
-  useToasts
-} from "@arconnect/components-rebrand";
+import { Button, Modal, Spacer, useModal, useToasts } from "@arconnect/components-rebrand";
 import { useStorage } from "~utils/storage";
 import { ExtensionStorage } from "~utils/storage";
 import { useEffect, useState } from "react";
@@ -30,19 +24,17 @@ import { uploadUserAvatar, getUserAvatar } from "~lib/avatar";
 import styled from "styled-components";
 import copy from "copy-to-clipboard";
 import { gql } from "~gateways/api";
-import { useTheme } from "~utils/theme";
 import { useLocation, useSearchParams } from "~wallets/router/router.utils";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { RemoveButton } from "~routes/popup/settings/wallets/[address]";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 // import { isAddressFormat } from "~utils/format";
 
 export interface AddContactDashboardViewProps extends CommonRouteProps {
   isQuickSetting?: boolean;
 }
 
-export function AddContactDashboardView({
-  isQuickSetting
-}: AddContactDashboardViewProps) {
+export function AddContactDashboardView({ isQuickSetting }: AddContactDashboardViewProps) {
   const { navigate } = useLocation();
   const { address } = useSearchParams<{ address: string }>();
 
@@ -50,18 +42,17 @@ export function AddContactDashboardView({
   const [storedContacts, setStoredContacts] = useStorage(
     {
       key: "contacts",
-      instance: ExtensionStorage
+      instance: ExtensionStorage,
     },
-    []
+    [],
   );
 
   // active address
   const [activeAddress] = useStorage<string>({
     key: "active_address",
-    instance: ExtensionStorage
+    instance: ExtensionStorage,
   });
 
-  const theme = useTheme();
   const { setToast } = useToasts();
 
   const [contact, setContact] = useState({
@@ -70,7 +61,7 @@ export function AddContactDashboardView({
     profileIcon: "",
     notes: "",
     ArNSAddress: "",
-    avatarId: ""
+    avatarId: "",
   });
 
   useEffect(() => {
@@ -103,18 +94,18 @@ export function AddContactDashboardView({
           duration: 5000,
           action: {
             name: browser.i18n.getMessage("copyId"),
-            task: () => copy(avatarTxId)
-          }
+            task: () => copy(avatarTxId),
+          },
         });
         setContact({
           ...contact,
-          avatarId: avatarTxId
+          avatarId: avatarTxId,
         });
       } catch (error) {
         setToast({
           type: "error",
           content: `File size too large. ${error}`,
-          duration: 5000
+          duration: 5000,
         });
         console.error("Error uploading avatar:", error);
       }
@@ -128,7 +119,7 @@ export function AddContactDashboardView({
           console.log("fetched avatar:", imageUrl);
           setContact({
             ...contact,
-            profileIcon: imageUrl
+            profileIcon: imageUrl,
           });
         })
         .catch((error) => {
@@ -141,7 +132,7 @@ export function AddContactDashboardView({
     const { name, value } = e.target;
     setContact({
       ...contact,
-      [name]: value
+      [name]: value,
     });
   };
 
@@ -158,53 +149,47 @@ export function AddContactDashboardView({
   //   }
   // }
 
-  useEffect(() => {
+  useAsyncEffect(async () => {
     // if (contact.address && isAddressFormat(contact.address)) {
     //   fetchArnsAddresses(contact.address);
     // }
 
-    (async () => {
-      if (!activeAddress) return;
-      const gateway = await findGateway({ graphql: true });
+    if (!activeAddress) return;
 
-      // fetch last outgoing txs
-      const { data } = await gql(
-        `
-          query($address: [String!]) {
-            transactions(owners: $address, first: 100) {
-              edges {
-                node {
-                  recipient
-                }
+    const gateway = await findGateway({ graphql: true });
+
+    // fetch last outgoing txs
+    const { data } = await gql(
+      `
+        query($address: [String!]) {
+          transactions(owners: $address, first: 100) {
+            edges {
+              node {
+                recipient
               }
             }
           }
-        `,
-        { address: activeAddress },
-        gateway
-      );
+        }
+      `,
+      { address: activeAddress },
+      gateway,
+    );
 
-      // filter addresses
-      const recipients = data.transactions.edges
-        .filter((tx) => tx.node.recipient !== "")
-        .map((tx) => tx.node.recipient);
+    // filter addresses
+    const recipients = data.transactions.edges.filter((tx) => tx.node.recipient !== "").map((tx) => tx.node.recipient);
 
-      console.log(recipients);
-      setLastRecipients([...new Set(recipients)]);
-    })();
+    setLastRecipients([...new Set(recipients)]);
   }, [contact.address, activeAddress]);
 
   const saveNewContact = async () => {
     // check if the contact address already exists
-    const addressUsed = storedContacts.some(
-      (existingContact) => existingContact.address === contact.address
-    );
+    const addressUsed = storedContacts.some((existingContact) => existingContact.address === contact.address);
 
     if (addressUsed) {
       setToast({
         type: "error",
         content: browser.i18n.getMessage("address_in_use"),
-        duration: 3000
+        duration: 3000,
       });
       return;
     }
@@ -215,7 +200,7 @@ export function AddContactDashboardView({
       profileIcon: contact.profileIcon,
       notes: contact.notes,
       ArNSAddress: contact.ArNSAddress,
-      avatarId: contact.avatarId
+      avatarId: contact.avatarId,
     };
 
     try {
@@ -228,12 +213,10 @@ export function AddContactDashboardView({
         profileIcon: "",
         notes: "",
         ArNSAddress: "",
-        avatarId: ""
+        avatarId: "",
       });
 
-      navigate(
-        `/${isQuickSetting ? "quick-settings/" : ""}contacts/${contact.address}`
-      );
+      navigate(`/${isQuickSetting ? "quick-settings/" : ""}contacts/${contact.address}`);
     } catch (error) {
       console.error("Error updating contacts:", error);
     }
@@ -249,7 +232,7 @@ export function AddContactDashboardView({
       profileIcon: "",
       notes: "",
       ArNSAddress: "",
-      avatarId: ""
+      avatarId: "",
     });
 
     removeContactModal.setOpen(false);
@@ -271,17 +254,11 @@ export function AddContactDashboardView({
             </Header>
           </div>
         )}
-        <SubTitle color="primary">
-          {browser.i18n.getMessage("contact_avatar")}
-        </SubTitle>
+        <SubTitle color="primary">{browser.i18n.getMessage("contact_avatar")}</SubTitle>
         <PicWrapper>
-          {contact.avatarId && contact.profileIcon && (
-            <ContactPic small={isQuickSetting} src={contact.profileIcon} />
-          )}
+          {contact.avatarId && contact.profileIcon && <ContactPic small={isQuickSetting} src={contact.profileIcon} />}
           {!contact.avatarId && !contact.profileIcon && (
-            <AutoContactPic small={isQuickSetting}>
-              {generateProfileIcon(contact.name, contact.address)}
-            </AutoContactPic>
+            <AutoContactPic small={isQuickSetting}>{generateProfileIcon(contact.name, contact.address)}</AutoContactPic>
           )}
           <label htmlFor="avatarUpload" style={{ cursor: "pointer" }}>
             <UploadIcon />
@@ -306,9 +283,7 @@ export function AddContactDashboardView({
             onChange={handleInputChange}
           />
         </InputWrapper>
-        <SubTitle color="primary">
-          {browser.i18n.getMessage("arweave_account_address")}*
-        </SubTitle>
+        <SubTitle color="primary">{browser.i18n.getMessage("arweave_account_address")}*</SubTitle>
         <InputWrapper>
           <AddressInput
             style={{ paddingLeft: "0px" }}
@@ -317,11 +292,7 @@ export function AddContactDashboardView({
             fullWidth
             small={isQuickSetting}
             name="address"
-            placeholder={
-              contact.address
-                ? contact.address
-                : browser.i18n.getMessage("account_address")
-            }
+            placeholder={contact.address ? contact.address : browser.i18n.getMessage("account_address")}
             value={contact.address}
             onChange={handleInputChange}
           />
@@ -370,19 +341,10 @@ export function AddContactDashboardView({
       </div>
       <>
         <Footer>
-          <Button
-            fullWidth
-            onClick={saveNewContact}
-            disabled={areFieldsEmpty()}
-          >
-            {browser.i18n.getMessage(
-              isQuickSetting ? "save_contact" : "save_new_contact"
-            )}
+          <Button fullWidth onClick={saveNewContact} disabled={areFieldsEmpty()}>
+            {browser.i18n.getMessage(isQuickSetting ? "save_contact" : "save_new_contact")}
           </Button>
-          <RemoveButton
-            fullWidth
-            onClick={() => removeContactModal.setOpen(true)}
-          >
+          <RemoveButton fullWidth onClick={() => removeContactModal.setOpen(true)}>
             {browser.i18n.getMessage("remove_contact")}
           </RemoveButton>
         </Footer>
@@ -391,26 +353,19 @@ export function AddContactDashboardView({
           root={document.getElementById("__plasmo")}
           actions={
             <>
-              <Button
-                fullWidth
-                variant="secondary"
-                onClick={() => removeContactModal.setOpen(false)}
-              >
+              <Button fullWidth variant="secondary" onClick={() => removeContactModal.setOpen(false)}>
                 {browser.i18n.getMessage("no")}
               </Button>
               <Button fullWidth onClick={confirmRemoveContact}>
                 {browser.i18n.getMessage("yes")}
               </Button>
             </>
-          }
-        >
+          }>
           <CenterText size="xl" weight="semibold">
             {browser.i18n.getMessage("remove_contact")}
           </CenterText>
           <Spacer y={0.75} />
-          <CenterText noMargin>
-            {browser.i18n.getMessage("remove_contact_question")}
-          </CenterText>
+          <CenterText noMargin>{browser.i18n.getMessage("remove_contact_question")}</CenterText>
           <Spacer y={1} />
         </Modal>
       </>

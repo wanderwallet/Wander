@@ -17,8 +17,8 @@ const hwIconAnimation: Variants = {
     scale: 0,
     transition: {
       type: "spring",
-      duration: 0.4
-    }
+      duration: 0.4,
+    },
   },
   shown: {
     scale: 1,
@@ -26,16 +26,16 @@ const hwIconAnimation: Variants = {
       type: "spring",
       duration: 0.4,
       delayChildren: 0.2,
-      staggerChildren: 0.05
-    }
-  }
+      staggerChildren: 0.05,
+    },
+  },
 };
 
 export const hwIconAnimateProps = {
   initial: "hidden",
   animate: "shown",
   exit: "hidden",
-  variants: hwIconAnimation
+  variants: hwIconAnimation,
 };
 
 interface Props {

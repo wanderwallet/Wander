@@ -1,73 +1,52 @@
+import { InfoIcon } from "../../atoms";
+import clsx from "clsx";
+import { FormattedText } from "~components/embed/ui/atoms/formatted-text/FormattedText";
 import React from "react";
-import styles from "./Snackbar.module.css";
-import type { SnackbarBaseProps } from "./Snackbar.types";
-import { Text, Row } from "../../atoms";
-import { useTheme } from "../../../contexts/ThemeContext";
+import { AlertTriangle, XCircle, Check } from "@untitled-ui/icons-react";
 
-const Snackbar = React.forwardRef<HTMLDivElement, SnackbarBaseProps>(
-  (
-    {
-      text,
-      textColor,
-      icon,
-      iconColor,
-      borderColor,
-      backgroundColor,
-      isFullWidth,
-      className,
-      ...props
-    },
-    ref
-  ) => {
-    const { isDarkMode } = useTheme();
+import styles from "./Snackbar.module.scss";
 
-    const defaultBorderColor = isDarkMode
-      ? "var(--color-border-box)"
-      : borderColor || "var(--color-border-box)";
+export type SnackbarVariant = "info" | "warning" | "error" | "success";
 
-    const defaultBackgroundColor = isDarkMode
-      ? "var(--color-card-background-default)"
-      : backgroundColor || "var(--color-background-default)";
+const SNACKBAR_ICON_BY_VARIANT: Record<SnackbarVariant, (props: React.SVGProps<SVGSVGElement>) => JSX.Element> = {
+  info: InfoIcon,
+  warning: AlertTriangle,
+  error: XCircle,
+  success: Check,
+};
 
-    const defaultIconColor = isDarkMode ? "var(--color-font-body)" : iconColor;
+export interface SnackbarBaseProps extends FormattedText {
+  variant: SnackbarVariant;
+  title?: string;
+  // TODO: Once we migrate to React 19:
+  // ref?: React.Ref<HTMLDivElement>;
+}
 
-    const defaultTextColor = isDarkMode ? "var(--color-font-body)" : textColor;
+export const Snackbar = React.forwardRef<HTMLDivElement, SnackbarBaseProps>(
+  ({ variant, title, className: classNameProp, children }: SnackbarBaseProps, ref) => {
+    if (!children) return null;
+
+    const className = clsx(
+      styles.root,
+      styles[`${variant}Variant`],
+      styles[`${title ? "with" : "no"}Title`],
+      classNameProp,
+    );
+    const Icon = SNACKBAR_ICON_BY_VARIANT[variant];
+    const icon = Icon ? <Icon className={styles.icon} /> : null;
 
     return (
-      <Row
-        ref={ref}
-        alignment="center"
-        className={`
-          ${styles["snackbar"]}
-          ${isFullWidth && styles["snackbar__isFullWidth"]}
-          ${className}
-        `}
-        style={{
-          borderColor: defaultBorderColor,
-          backgroundColor: defaultBackgroundColor
-        }}
-        {...props}
-      >
-        {icon && (
-          <div
-            className={styles["snackbar__icon"]}
-            style={{ color: defaultIconColor }}
-          >
-            {icon}
-          </div>
+      <div className={className} ref={ref}>
+        {title ? (
+          <strong className={styles.title}>
+            {icon} {title}
+          </strong>
+        ) : (
+          icon
         )}
-        <Text
-          variant="bodySm"
-          alignment="left"
-          style={{ color: defaultTextColor }}
-        >
-          {text}
-        </Text>
-      </Row>
+
+        <FormattedText className={styles.content}>{children}</FormattedText>
+      </div>
     );
-  }
+  },
 );
-
-Snackbar.displayName = "Snackbar";
-
-export { Snackbar };

@@ -1,10 +1,9 @@
 import PasswordStrength from "../../../components/welcome/PasswordStrength";
-import PasswordMatch from "~components/welcome/PasswordMatch";
 import Paragraph from "~components/Paragraph";
 import { useContext, useMemo, useEffect, useState } from "react";
 import browser from "webextension-polyfill";
 import { PasswordContext, type SetupWelcomeViewParams } from "../setup";
-import { useInput, useModal, useToasts } from "@arconnect/components";
+import { useInput, useToasts } from "@arconnect/components";
 import { PageType, trackPage } from "~utils/analytics";
 import { useLocation } from "~wallets/router/router.utils";
 import type { CommonRouteProps } from "~wallets/router/router.types";
@@ -35,7 +34,7 @@ export function PasswordWelcomeView({ params }: PasswordWelcomeViewProps) {
       return setToast({
         type: "error",
         content: browser.i18n.getMessage("passwords_not_match"),
-        duration: 2300
+        duration: 2300,
       });
     }
 
@@ -44,7 +43,7 @@ export function PasswordWelcomeView({ params }: PasswordWelcomeViewProps) {
       return setToast({
         type: "error",
         content: browser.i18n.getMessage("password_not_strong"),
-        duration: 2300
+        duration: 2300,
       });
     }
 
@@ -61,12 +60,12 @@ export function PasswordWelcomeView({ params }: PasswordWelcomeViewProps) {
   }
 
   // passwords match
-  const matches = useMemo(
-    () =>
-      passwordInput.state === validPasswordInput.state &&
-      passwordInput.state?.length >= 5,
-    [passwordInput, validPasswordInput]
+  const passwordsMatch = useMemo(
+    () => passwordInput.state === validPasswordInput.state && passwordInput.state?.length >= 5,
+    [passwordInput, validPasswordInput],
   );
+
+  const isPasswordValid = passwordsMatch && passwordInput.state.length >= 5;
 
   // Segment
   // TODO: specify if this is an imported or new wallet
@@ -77,9 +76,7 @@ export function PasswordWelcomeView({ params }: PasswordWelcomeViewProps) {
   return (
     <Container>
       <Content>
-        <Paragraph>
-          {browser.i18n.getMessage("create_password_paragraph")}
-        </Paragraph>
+        <Paragraph>{browser.i18n.getMessage("create_password_paragraph")}</Paragraph>
         <div>
           <Input
             type="password"
@@ -103,14 +100,13 @@ export function PasswordWelcomeView({ params }: PasswordWelcomeViewProps) {
               done();
             }}
           />
-          <PasswordMatch matches={matches} />
         </div>
         <div>
-          <PasswordStrength password={passwordInput.state} />
+          <PasswordStrength password={passwordInput.state} passwordsMatch={passwordsMatch} minLength={5} />
         </div>
       </Content>
-      <Button fullWidth onClick={() => done()} disabled={!matches}>
-        {browser.i18n.getMessage(matches ? "next" : "enter_password")}
+      <Button fullWidth onClick={() => done()} disabled={!isPasswordValid}>
+        {browser.i18n.getMessage(isPasswordValid ? "next" : "enter_password")}
       </Button>
       {/* <PasswordWarningModal
         done={done}

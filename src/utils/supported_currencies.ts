@@ -1,376 +1,376 @@
 const supportedCurrencies = [
   {
     id: "aed",
-    name: "United Arab Emirates Dirham"
+    name: "United Arab Emirates Dirham",
   },
   {
     id: "aud",
-    name: "Australian Dollar"
+    name: "Australian Dollar",
   },
   {
     id: "azn",
-    name: "Azerbaijan Manat"
+    name: "Azerbaijan Manat",
   },
   {
     id: "bgn",
-    name: "Bulgarian Lev"
+    name: "Bulgarian Lev",
   },
   {
     id: "bhd",
-    name: "Bahraini Dinar"
+    name: "Bahraini Dinar",
   },
   {
     id: "brl",
-    name: "Brazilian Real"
+    name: "Brazilian Real",
   },
   {
     id: "cad",
-    name: "Canadian Dollar"
+    name: "Canadian Dollar",
   },
   {
     id: "clp",
-    name: "Chilean Peso"
+    name: "Chilean Peso",
   },
   {
     id: "cop",
-    name: "Colombian Peso"
+    name: "Colombian Peso",
   },
   {
     id: "crc",
-    name: "Costa Rican Colón"
+    name: "Costa Rican Colón",
   },
   {
     id: "czk",
-    name: "Czech Republic Koruna"
+    name: "Czech Republic Koruna",
   },
   {
     id: "dkk",
-    name: "Danish Krone"
+    name: "Danish Krone",
   },
   {
     id: "dop",
-    name: "Dominican Peso"
+    name: "Dominican Peso",
   },
   {
     id: "eur",
-    name: "Euro Member Countries"
+    name: "Euro Member Countries",
   },
   {
     id: "gbp",
-    name: "British Pound Sterling"
+    name: "British Pound Sterling",
   },
   {
     id: "gel",
-    name: "Georgian Lari"
+    name: "Georgian Lari",
   },
   {
     id: "gtq",
-    name: "Guatemalan Quetzal"
+    name: "Guatemalan Quetzal",
   },
   {
     id: "hkd",
-    name: "Hong Kong Dollar"
+    name: "Hong Kong Dollar",
   },
   {
     id: "hnl",
-    name: "Honduran Lempira"
+    name: "Honduran Lempira",
   },
   {
     id: "huf",
-    name: "Hungarian Forint"
+    name: "Hungarian Forint",
   },
   {
     id: "idr",
-    name: "Indonesian Rupiah"
+    name: "Indonesian Rupiah",
   },
   {
     id: "ils",
-    name: "Israeli New Shekel"
+    name: "Israeli New Shekel",
   },
   {
     id: "inr",
-    name: "Indian Rupee"
+    name: "Indian Rupee",
   },
   {
     id: "krw",
-    name: "South Korean Won"
+    name: "South Korean Won",
   },
   {
     id: "kwd",
-    name: "Kuwaiti Dinar"
+    name: "Kuwaiti Dinar",
   },
   {
     id: "mdl",
-    name: "Moldovan Leu"
+    name: "Moldovan Leu",
   },
   {
     id: "mxn",
-    name: "Mexican Peso"
+    name: "Mexican Peso",
   },
   {
     id: "myr",
-    name: "Malaysian Ringgit"
+    name: "Malaysian Ringgit",
   },
   {
     id: "nok",
-    name: "Norwegian Krone"
+    name: "Norwegian Krone",
   },
   {
     id: "nzd",
-    name: "New Zealand Dollar"
+    name: "New Zealand Dollar",
   },
   {
     id: "omr",
-    name: "Omani Rial"
+    name: "Omani Rial",
   },
   {
     id: "pen",
-    name: "Peruvian Nuevo Sol"
+    name: "Peruvian Nuevo Sol",
   },
   {
     id: "php",
-    name: "Philippine Peso"
+    name: "Philippine Peso",
   },
   {
     id: "pln",
-    name: "Polish Złoty"
+    name: "Polish Złoty",
   },
   {
     id: "pyg",
-    name: "Paraguayan Guarani"
+    name: "Paraguayan Guarani",
   },
   {
     id: "ron",
-    name: "Romanian Leu"
+    name: "Romanian Leu",
   },
   {
     id: "rwf",
-    name: "Rwandan Franc"
+    name: "Rwandan Franc",
   },
   {
     id: "sek",
-    name: "Swedish Krona"
+    name: "Swedish Krona",
   },
   {
     id: "thb",
-    name: "Thai Baht"
+    name: "Thai Baht",
   },
   {
     id: "try",
-    name: "Turkish Lira"
+    name: "Turkish Lira",
   },
   {
     id: "twd",
-    name: "New Taiwan Dollar"
+    name: "New Taiwan Dollar",
   },
   {
     id: "usd",
-    name: "United States Dollar"
+    name: "United States Dollar",
   },
   {
     id: "uyu",
-    name: "Uruguayan Peso"
+    name: "Uruguayan Peso",
   },
   {
     id: "vnd",
-    name: "Vietnamese Đồng"
+    name: "Vietnamese Đồng",
   },
   {
     id: "zar",
-    name: "South African Rand"
+    name: "South African Rand",
   },
   {
     id: "chf",
-    name: "Swiss Franc"
+    name: "Swiss Franc",
   },
   {
     id: "jpy",
-    name: "Japanese Yen"
+    name: "Japanese Yen",
   },
   {
     id: "isk",
-    name: "Icelandic Króna"
+    name: "Icelandic Króna",
   },
   {
     id: "bzd",
-    name: "Belize Dollar"
+    name: "Belize Dollar",
   },
   {
     id: "jmd",
-    name: "Jamaican Dollar"
+    name: "Jamaican Dollar",
   },
   {
     id: "bbd",
-    name: "Barbadian Dollar"
+    name: "Barbadian Dollar",
   },
   {
     id: "xof",
-    name: "CFA Franc BCEAO"
+    name: "CFA Franc BCEAO",
   },
   {
     id: "xcd",
-    name: "East Caribbean Dollar"
+    name: "East Caribbean Dollar",
   },
   {
     id: "kmf",
-    name: "Comorian Franc"
+    name: "Comorian Franc",
   },
   {
     id: "scr",
-    name: "Seychellois Rupee"
+    name: "Seychellois Rupee",
   },
   {
     id: "aoa",
-    name: "Angolan Kwanza"
+    name: "Angolan Kwanza",
   },
   {
     id: "kgs",
-    name: "Kyrgyzstani Som"
+    name: "Kyrgyzstani Som",
   },
   {
     id: "mga",
-    name: "Malagasy Ariary"
+    name: "Malagasy Ariary",
   },
   {
     id: "mzn",
-    name: "Mozambican Metical"
+    name: "Mozambican Metical",
   },
   {
     id: "tzs",
-    name: "Tanzanian Shilling"
+    name: "Tanzanian Shilling",
   },
   {
     id: "khr",
-    name: "Cambodian Riel"
+    name: "Cambodian Riel",
   },
   {
     id: "sgd",
-    name: "Singapore Dollar"
+    name: "Singapore Dollar",
   },
   {
     id: "kes",
-    name: "Kenyan Shilling"
+    name: "Kenyan Shilling",
   },
   {
     id: "ngn",
-    name: "Nigerian Naira"
+    name: "Nigerian Naira",
   },
   {
     id: "fjd",
-    name: "Fijian Dollar"
+    name: "Fijian Dollar",
   },
   {
     id: "bmd",
-    name: "Bermudian Dollar"
+    name: "Bermudian Dollar",
   },
   {
     id: "fkp",
-    name: "Falkland Islands Pound"
+    name: "Falkland Islands Pound",
   },
   {
     id: "gip",
-    name: "Gibraltar Pound"
+    name: "Gibraltar Pound",
   },
   {
     id: "bnd",
-    name: "Brunei Dollar"
+    name: "Brunei Dollar",
   },
   {
     id: "xaf",
-    name: "CFA Franc BEAC"
+    name: "CFA Franc BEAC",
   },
   {
     id: "djf",
-    name: "Djiboutian Franc"
+    name: "Djiboutian Franc",
   },
   {
     id: "kzt",
-    name: "Kazakhstani Tenge"
+    name: "Kazakhstani Tenge",
   },
   {
     id: "mwk",
-    name: "Malawian Kwacha"
+    name: "Malawian Kwacha",
   },
   {
     id: "mru",
-    name: "Mauritanian Ouguiya"
+    name: "Mauritanian Ouguiya",
   },
   {
     id: "pgk",
-    name: "Kina"
+    name: "Kina",
   },
   {
     id: "stn",
-    name: "Dobra"
+    name: "Dobra",
   },
   {
     id: "sbd",
-    name: "Solomon Islands Dollar"
+    name: "Solomon Islands Dollar",
   },
   {
     id: "srd",
-    name: "Suriname Dollar"
+    name: "Suriname Dollar",
   },
   {
     id: "szl",
-    name: "Lilangeni"
+    name: "Lilangeni",
   },
   {
     id: "tjs",
-    name: "Somoni"
+    name: "Somoni",
   },
   {
     id: "top",
-    name: "Pa’anga"
+    name: "Pa’anga",
   },
   {
     id: "tmt",
-    name: "Turkmenistan New Manat"
+    name: "Turkmenistan New Manat",
   },
   {
     id: "mkd",
-    name: "Macedonia Denar"
+    name: "Macedonia Denar",
   },
   {
     id: "amd",
-    name: "Armenian dram"
+    name: "Armenian dram",
   },
   {
     id: "jod",
-    name: "Jordanian Dinar"
+    name: "Jordanian Dinar",
   },
   {
     id: "ghs",
-    name: "Ghana Cedi"
+    name: "Ghana Cedi",
   },
   {
     id: "rsd",
-    name: "Serbia Dinar"
+    name: "Serbia Dinar",
   },
   {
     id: "ang",
-    name: "Netherlands Antilles Guilder"
+    name: "Netherlands Antilles Guilder",
   },
   {
     id: "bsd",
-    name: "Bahamas Dollar"
+    name: "Bahamas Dollar",
   },
   {
     id: "kyd",
-    name: "Cayman Islands Dollar"
+    name: "Cayman Islands Dollar",
   },
   {
     id: "bam",
-    name: "Bosnia and Herzegovina Convertible Mark"
+    name: "Bosnia and Herzegovina Convertible Mark",
   },
   {
     id: "ttd",
-    name: "Trinidad and Tobago Dollar"
+    name: "Trinidad and Tobago Dollar",
   },
   {
     id: "pab",
-    name: "Panama Balboa"
-  }
+    name: "Panama Balboa",
+  },
 ];
 
 export default supportedCurrencies;

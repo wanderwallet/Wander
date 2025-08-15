@@ -1,14 +1,7 @@
 import * as React from "react";
 import type { SVGProps } from "react";
 const SvgGDrive = (props: SVGProps<SVGSVGElement>) => (
-  <svg
-    width="27"
-    height="25"
-    viewBox="0 0 27 25"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    {...props}
-  >
+  <svg width="27" height="25" viewBox="0 0 27 25" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
     <g clipPath="url(#clip0_9_2081)">
       <path
         d="M2.10011 21.0693L3.28472 23.1154C3.53087 23.5462 3.88472 23.8847 4.30011 24.1308L8.53087 16.8077H0.0693359C0.0693359 17.2847 0.192413 17.7616 0.438567 18.1924L2.10011 21.0693Z"
@@ -37,12 +30,7 @@ const SvgGDrive = (props: SVGProps<SVGSVGElement>) => (
     </g>
     <defs>
       <clipPath id="clip0_9_2081">
-        <rect
-          width="26.8615"
-          height="24"
-          fill="white"
-          transform="translate(0.0693359 0.5)"
-        />
+        <rect width="26.8615" height="24" fill="white" transform="translate(0.0693359 0.5)" />
       </clipPath>
     </defs>
   </svg>

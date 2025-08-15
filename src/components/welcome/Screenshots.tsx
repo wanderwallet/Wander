@@ -37,15 +37,15 @@ const Wrapper = styled.div`
 const Column = styled(motion.div).attrs<{ fromTop?: boolean }>((props) => ({
   initial: {
     translateY: props.fromTop ? "-150%" : "30%",
-    opacity: 0.4
+    opacity: 0.4,
   },
   animate: {
     translateY: props.fromTop ? "-50%" : "-70%",
-    opacity: 1
+    opacity: 1,
   },
   transition: {
-    duration: 1
-  }
+    duration: 1,
+  },
 }))<{ fromTop?: boolean }>`
   display: flex;
   flex-direction: column;
@@ -53,7 +53,7 @@ const Column = styled(motion.div).attrs<{ fromTop?: boolean }>((props) => ({
 `;
 
 const Screenshot = styled.img.attrs({
-  draggable: false
+  draggable: false,
 })`
   width: 100%;
   user-select: none;

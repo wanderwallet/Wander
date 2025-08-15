@@ -2,19 +2,14 @@ import { freeDecryptedWallet } from "~wallets/encryption";
 import type { BackgroundModuleFunction } from "~api/background/background-modules";
 import { getActiveKeyfile } from "~wallets";
 import { isString } from "typed-assert";
-import {
-  isArrayBuffer,
-  isLocalWallet,
-  isNumberArray,
-  isSignMessageOptions
-} from "~utils/assertions";
+import { isArrayBuffer, isLocalWallet, isNumberArray, isSignMessageOptions } from "~utils/assertions";
 
 const background: BackgroundModuleFunction<boolean> = async (
   appData,
   data: unknown,
   signature: unknown,
   publicKey: unknown,
-  options = { hashAlgorithm: "SHA-256" }
+  options = { hashAlgorithm: "SHA-256" },
 ) => {
   // validate input
   isNumberArray(data);
@@ -58,7 +53,7 @@ const background: BackgroundModuleFunction<boolean> = async (
     e: "AQAB",
     ext: true,
     kty: "RSA",
-    n: publicKey
+    n: publicKey,
   };
 
   // get signing key using the jwk
@@ -67,19 +62,14 @@ const background: BackgroundModuleFunction<boolean> = async (
     publicJWK,
     {
       name: "RSA-PSS",
-      hash: options.hashAlgorithm
+      hash: options.hashAlgorithm,
     },
     false,
-    ["verify"]
+    ["verify"],
   );
 
   // verify signature
-  const result = await crypto.subtle.verify(
-    { name: "RSA-PSS", saltLength: 32 },
-    cryptoKey,
-    binarySignature,
-    hash
-  );
+  const result = await crypto.subtle.verify({ name: "RSA-PSS", saltLength: 32 }, cryptoKey, binarySignature, hash);
 
   return result;
 };

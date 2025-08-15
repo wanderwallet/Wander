@@ -65,7 +65,7 @@ const Seed = styled.p<{ shown: boolean }>`
 `;
 
 const CopySeed = styled(Text).attrs({
-  noMargin: true
+  noMargin: true,
 })`
   display: flex;
   align-items: center;

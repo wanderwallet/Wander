@@ -11,5 +11,5 @@ export type CheckboxBaseProps = {
   isChecked?: boolean;
   isBlurry?: boolean;
   hasBorder?: boolean;
-  handleChange: (e: React.MouseEvent<HTMLInputElement>) => void;
+  handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 };

@@ -4,33 +4,29 @@ import { sleep } from "~utils/promises/sleep";
  * Retries a given function up to a maximum number of attempts.
  * @param fn - The asynchronous function to retry, which should return a Promise.
  * @param maxAttempts - The maximum number of attempts to make.
- * @param delay - The delay between attempts in milliseconds.
+ * @param initialDelay - The delay between attempts in milliseconds.
+ * @param getDelay - A function that returns the delay for a given attempt.
  * @return A Promise that resolves with the result of the function or rejects after all attempts fail.
  */
 export async function retryWithDelay<T>(
   fn: (attempt: number) => Promise<T>,
   maxAttempts: number = 3,
-  delay: number = 1000
+  initialDelay: number = 1000,
+  getDelay: (attempt: number) => number = () => initialDelay,
 ): Promise<T> {
-  let attempts = 0;
-
-  const attempt = async (): Promise<T> => {
+  for (let attempts = 0; attempts < maxAttempts; attempts++) {
     try {
       return await fn(attempts);
     } catch (error) {
-      attempts += 1;
-      if (attempts < maxAttempts) {
-        // console.log(`Attempt ${attempts} failed, retrying...`)
-        return new Promise<T>((resolve) =>
-          setTimeout(() => resolve(attempt()), delay)
-        );
-      } else {
+      if (attempts === maxAttempts - 1) {
         throw error;
       }
+      await sleep(getDelay(attempts));
     }
-  };
+  }
 
-  return attempt();
+  // This should never be reached due to throw in catch block
+  throw new Error("Max attempts reached");
 }
 
 /**
@@ -45,22 +41,20 @@ export async function retryWithDelayAndTimeout<T>(
   fn: () => Promise<T>,
   maxAttempts: number = 3,
   delay: number = 1000,
-  timeout: number = 10000
+  timeout: number = 10000,
 ): Promise<T> {
   for (let attempt = 0; attempt <= maxAttempts; attempt++) {
     try {
       // Create a race between the function and the timeout
       const result = await Promise.race([
         fn(),
-        new Promise<T>((_, reject) =>
-          setTimeout(() => reject(new Error("Request timed out")), timeout)
-        )
+        new Promise<T>((_, reject) => setTimeout(() => reject(new Error("Request timed out")), timeout)),
       ]);
       return result;
     } catch (error) {
       if (attempt < maxAttempts) {
         // console.log(`Attempt ${attempt} failed: ${error.message}. Retrying in ${delay}ms...`);
-        await new Promise((resolve) => setTimeout(resolve, delay));
+        await sleep(delay);
       } else {
         throw error;
       }
@@ -78,11 +72,7 @@ export async function retryWithDelayAndTimeout<T>(
  * @param retryDelay - Delay between retries in milliseconds.
  * @returns A promise of the type that the async function returns.
  */
-export async function withRetry<T>(
-  fn: () => Promise<T>,
-  maxRetries: number = 3,
-  retryDelay: number = 100
-): Promise<T> {
+export async function withRetry<T>(fn: () => Promise<T>, maxRetries: number = 3, retryDelay: number = 100): Promise<T> {
   let lastError: any;
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -95,10 +85,7 @@ export async function withRetry<T>(
         // console.log(`Attempt ${attempt} failed, retrying in ${waitTime}ms...`);
         await sleep(waitTime);
       } else {
-        console.error(
-          `All ${maxRetries} attempts failed. Last error:`,
-          lastError
-        );
+        console.error(`All ${maxRetries} attempts failed. Last error:`, lastError);
       }
     }
   }

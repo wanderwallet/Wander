@@ -1,16 +1,12 @@
 import BigNumber from "bignumber.js";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Row, Text, Box } from "~components/embed/ui";
 import useSetting from "~settings/hook";
 import { formatFiatBalance } from "~tokens/currency";
 import { useTokenBalance } from "~tokens/hooks";
 import { formatBalance } from "~utils/format";
 import { ExtensionStorage, useStorage } from "~utils/storage";
-import arLogoLight from "../../../../../assets/ar/logo_light.png";
-import arLogoDark from "../../../../../assets/ar/logo_dark.png";
-import { useTheme } from "~utils/theme";
-import { Logo } from "~components/popup/Token";
-import { getArweaveLink } from "~gateways/utils";
+import { TokenLogo } from "~components/popup/TokenLogo";
 
 interface AssetItemProps {
   id: string;
@@ -22,23 +18,12 @@ interface AssetItemProps {
   divisibility: number;
 }
 
-export function AssetItem({
-  id,
-  defaultLogo,
-  tokenName,
-  ticker,
-  amount,
-  fiatPrice,
-  divisibility
-}: AssetItemProps) {
-  const theme = useTheme();
-  const [logo, setLogo] = useState<string>();
+export function AssetItem({ id, defaultLogo, tokenName, ticker, amount, fiatPrice, divisibility }: AssetItemProps) {
   const [totalBalance, setTotalBalance] = useState("");
-
   const [currency] = useSetting("currency");
   const [activeAddress] = useStorage({
     key: "active_address",
-    instance: ExtensionStorage
+    instance: ExtensionStorage,
   });
 
   const tokenInfo = useMemo(() => {
@@ -48,21 +33,11 @@ export function AssetItem({
       Ticker: ticker,
       Name: tokenName,
       Denomination: divisibility,
-      Logo: defaultLogo
+      Logo: defaultLogo,
     };
   }, [id, ticker, tokenName, divisibility, defaultLogo]);
 
-  const {
-    data: fractBalance = "0",
-    isError,
-    error,
-    isLoading
-  } = useTokenBalance(tokenInfo, activeAddress);
-
-  const arweaveLogo = useMemo(
-    () => (theme === "dark" ? arLogoDark : arLogoLight),
-    [theme]
-  );
+  const { data: fractBalance = "0", isError, error, isLoading } = useTokenBalance(tokenInfo, activeAddress);
 
   const balance = useMemo(() => {
     if (isError) return "0";
@@ -76,30 +51,15 @@ export function AssetItem({
     return formatFiatBalance(fiatPrice, currency);
   }, [fiatPrice, currency]);
 
-  useEffect(() => {
-    const fetchLogo = async () => {
-      if (!id || logo) return;
-      if (defaultLogo) {
-        const logo = await getArweaveLink(defaultLogo);
-        setLogo(logo);
-      } else {
-        setLogo(arweaveLogo);
-      }
-    };
-
-    fetchLogo();
-  }, [id, defaultLogo, arweaveLogo, logo]);
-
   return (
     <Row
       alignment="center"
       justifyContent="between"
       style={{
         cursor: "pointer",
-        height: "62px"
-      }}
-    >
-      <Logo src={logo || ""} alt="" key={`logo-${id}`} />
+        height: "62px",
+      }}>
+      <TokenLogo token={tokenInfo} style={{ flex: "1 0 auto" }} />
       <Text variant="bodyMd" style={{ color: "#121212", minWidth: "100px" }}>
         {tokenName}
       </Text>

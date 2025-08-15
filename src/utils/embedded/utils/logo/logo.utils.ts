@@ -21,10 +21,7 @@ interface WebAppManifest {
 /**
  * Converts a relative URL to an absolute URL
  */
-const getAbsoluteUrl = (
-  url: string,
-  origin = window.location.origin
-): string | undefined => {
+const getAbsoluteUrl = (url: string, origin = window.location.origin): string | undefined => {
   if (!url) return;
 
   try {
@@ -38,7 +35,7 @@ const getAbsoluteUrl = (
 const fetchWithTimeout = async (
   url: string,
   options: RequestInit = {},
-  timeoutMs: number = FETCH_TIMEOUT_MS
+  timeoutMs: number = FETCH_TIMEOUT_MS,
 ): Promise<Response> => {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
@@ -46,7 +43,7 @@ const fetchWithTimeout = async (
   try {
     const response = await fetch(url, {
       ...options,
-      signal: controller.signal
+      signal: controller.signal,
     });
     return response;
   } finally {
@@ -77,7 +74,7 @@ const getLogoFromManifest = async (): Promise<string | undefined> => {
     const response = await fetchWithTimeout(manifestUrl, {
       method: "GET",
       cache: "force-cache",
-      credentials: "same-origin"
+      credentials: "same-origin",
     });
 
     if (!response.ok) {
@@ -124,7 +121,7 @@ const getLogoFromDOM = (): string | undefined => {
     "link[rel='apple-touch-icon-precomposed']",
     "link[rel='shortcut icon']",
     "img[alt*='logo']",
-    "img[src*='logo']"
+    "img[src*='logo']",
   ];
 
   for (const selector of faviconSelectors) {
@@ -133,9 +130,7 @@ const getLogoFromDOM = (): string | undefined => {
 
     // Filter for valid elements only
     const elementsArray = Array.from(elements).filter(
-      (el) =>
-        (el instanceof HTMLLinkElement && el.href) ||
-        (el instanceof HTMLImageElement && el.src)
+      (el) => (el instanceof HTMLLinkElement && el.href) || (el instanceof HTMLImageElement && el.src),
     );
 
     if (!elementsArray.length) continue;
@@ -169,11 +164,7 @@ const checkDefaultFavicon = async (): Promise<string | undefined> => {
   const defaultFavicon = `${window.location.origin}/favicon.ico`;
 
   try {
-    const response = await fetchWithTimeout(
-      defaultFavicon,
-      { method: "HEAD" },
-      FAVICON_TIMEOUT_MS
-    );
+    const response = await fetchWithTimeout(defaultFavicon, { method: "HEAD" }, FAVICON_TIMEOUT_MS);
 
     return response.ok ? defaultFavicon : undefined;
   } catch {}

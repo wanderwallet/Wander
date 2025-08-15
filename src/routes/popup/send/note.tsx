@@ -11,9 +11,9 @@ export function NoteView() {
   const [note, setNote] = useStorage<string>(
     {
       key: "last_send_note",
-      instance: TempTransactionStorage
+      instance: TempTransactionStorage,
     },
-    ""
+    "",
   );
 
   // Segment
@@ -23,15 +23,9 @@ export function NoteView() {
 
   return (
     <>
-      <HeadV2
-        title={browser.i18n.getMessage("add_a_note")}
-        showOptions={false}
-      />
+      <HeadV2 title={browser.i18n.getMessage("add_a_note")} showOptions={false} />
 
-      <Section
-        style={{ height: "calc(100vh - 100px)" }}
-        showPaddingVertical={false}
-      >
+      <Section style={{ height: "calc(100vh - 100px)" }} showPaddingVertical={false}>
         <NoteInput
           placeholder={browser.i18n.getMessage("add_a_note")}
           value={note}

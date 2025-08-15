@@ -1,25 +1,16 @@
 import type { WalletSourceType } from "embed-api";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  Box,
-  Button,
-  Card,
-  KeyIcon,
-  QRCodeIcon,
-  SeedIcon,
-  WalletIcon,
-  WanderFooter
-} from "~components/embed/ui";
+import { Box, Button, Card, KeyIcon, SeedIcon, WalletIcon } from "~components/embed/ui";
+import { WanderFooter } from "~components/embed/ui/templates/wander-footer/WanderFooter";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useLocation } from "~wallets/router/router.utils";
 
 export function AccountAddWalletEmbeddedView() {
   const { back } = useLocation();
-  const { authProviderType, generateTempWallet, registerWallet } =
-    useEmbedded();
+  const { authProviderType, generateTempWallet, registerWallet } = useEmbedded();
   const [isLoading, setIsLoading] = useState({
     calledId: "",
-    status: false
+    status: false,
   });
 
   useEffect(() => {
@@ -29,18 +20,13 @@ export function AccountAddWalletEmbeddedView() {
     generateTempWallet();
   }, []);
 
-  // TODO: Remember last selection and highlight that one / show it in the main screen (not in "More")
-
   const handleRegisterWallet = useCallback(async (source: WalletSourceType) => {
     setIsLoading({ calledId: source, status: true });
     await registerWallet(source);
     setIsLoading({ calledId: "", status: false });
   }, []);
 
-  const isDisabled = useMemo(
-    () => isLoading.status === true,
-    [isLoading.status]
-  );
+  const isDisabled = useMemo(() => isLoading.status === true, [isLoading.status]);
 
   return (
     <Card
@@ -48,9 +34,7 @@ export function AccountAddWalletEmbeddedView() {
       subtitle="Add a wallet to your account to hold your funds. Create or add an existing wallet to continue."
       footerElement={<WanderFooter />}
       hasBackButton={true}
-      onBackButtonClick={back}
-      size="auto"
-    >
+      onBackButtonClick={back}>
       <Box>
         <Button
           onClick={() => handleRegisterWallet("GENERATED")}
@@ -58,10 +42,7 @@ export function AccountAddWalletEmbeddedView() {
           isFullWidth
           isDisabled={isDisabled}
           icon={<SeedIcon fontSize={24} />}
-          isLoading={
-            isLoading.calledId === "generated" && isLoading.status === true
-          }
-        >
+          isLoading={isLoading.calledId === "generated" && isLoading.status === true}>
           Create new wallet
         </Button>
         <Button
@@ -69,8 +50,7 @@ export function AccountAddWalletEmbeddedView() {
           isFullWidth
           isDisabled={isDisabled}
           icon={<WalletIcon fontSize={24} />}
-          href="#/auth/import-seedphrase"
-        >
+          href="/auth/import-seedphrase">
           Enter Seed Phrase
         </Button>
         <Button
@@ -78,8 +58,7 @@ export function AccountAddWalletEmbeddedView() {
           isFullWidth
           isDisabled={isDisabled}
           icon={<KeyIcon fontSize={24} />}
-          href="#/auth/import-keyfile"
-        >
+          href="/auth/import-keyfile">
           Import Keyfile
         </Button>
         {/* {authProviderType === "PASSKEYS" ? (
@@ -88,7 +67,7 @@ export function AccountAddWalletEmbeddedView() {
             isFullWidth
             isDisabled={isDisabled}
             icon={<QRCodeIcon fontSize={24} />}
-            href="#/auth/add-device"
+            href="/auth/add-device"
           >
             Add this device to an existing account
           </Button>
@@ -98,7 +77,7 @@ export function AccountAddWalletEmbeddedView() {
             isFullWidth
             isDisabled={isDisabled}
             icon={<QRCodeIcon fontSize={24} />}
-            href="#/auth/add-auth-provider"
+            href="/auth/add-auth-provider"
           >
             Add {authProviderType.toLocaleUpperCase()} to an existing account
           </Button>

@@ -5,7 +5,7 @@ const permissions: PermissionType[] = ["ACCESS_TOKENS"];
 
 const tokenBalanceModule: ModuleProperties = {
   functionName: "tokenBalance",
-  permissions
+  permissions,
 };
 
 export default tokenBalanceModule;

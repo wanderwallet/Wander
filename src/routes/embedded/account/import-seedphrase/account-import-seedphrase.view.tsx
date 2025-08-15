@@ -1,19 +1,15 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Button, Card, SeedInput, WanderFooter } from "~components/embed/ui";
+import { Button, Card, SeedInput } from "~components/embed/ui";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import { useLocation } from "~wallets/router/router.utils";
 import { toast } from "react-toastify";
+import { WanderFooter } from "~components/embed/ui/templates/wander-footer/WanderFooter";
 export function AccountImportSeedphraseEmbeddedView() {
   const [loading, setLoading] = useState(false);
   const { back } = useLocation();
 
   const [seedPhrase, setSeedPhrase] = useState<string[]>([]);
-  const {
-    importTempWallet,
-    importedTempWalletAddress,
-    deleteImportedTempWallet,
-    registerWallet
-  } = useEmbedded();
+  const { importTempWallet, deleteImportedTempWallet, registerWallet } = useEmbedded();
 
   const handleInputChange = useCallback((index: number, value: string) => {
     setSeedPhrase((prevSeedPhrase) => {
@@ -55,21 +51,14 @@ export function AccountImportSeedphraseEmbeddedView() {
       subtitle="Enter your seedphrase to connect your wallet to your account."
       footerElement={<WanderFooter />}
       hasBackButton={true}
-      onBackButtonClick={back}
-      size="auto"
-    >
-      <SeedInput
-        handleSubmit={handleImportWallet}
-        seedPhrase={seedPhrase}
-        handleInputChange={handleInputChange}
-      />
+      onBackButtonClick={back}>
+      <SeedInput handleSubmit={handleImportWallet} seedPhrase={seedPhrase} handleInputChange={handleInputChange} />
       <Button
         isFullWidth
         size="md"
         onClick={handleImportWallet}
         isLoading={loading}
-        isDisabled={isSeedPhraseIncomplete}
-      >
+        isDisabled={isSeedPhraseIncomplete}>
         Recover
       </Button>
     </Card>

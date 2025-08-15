@@ -30,9 +30,9 @@ export async function jwkFromMnemonic(mnemonic: string) {
     seedBuffer,
     {
       id: "rsa",
-      modulusLength: 4096
+      modulusLength: 4096,
     },
-    { privateKeyFormat: "pkcs8-der" }
+    { privateKeyFormat: "pkcs8-der" },
   );
   const jwk = pkcs8ToJwk(privateKey as any);
 
@@ -45,16 +45,10 @@ export async function jwkFromMnemonic(mnemonic: string) {
  * @param privateKey PKCS8 private key to convert
  * @returns JWK
  */
-export async function pkcs8ToJwk(
-  privateKey: Uint8Array
-): Promise<JWKInterface> {
-  const key = await window.crypto.subtle.importKey(
-    "pkcs8",
-    privateKey,
-    { name: "RSA-PSS", hash: "SHA-256" },
-    true,
-    ["sign"]
-  );
+export async function pkcs8ToJwk(privateKey: Uint8Array): Promise<JWKInterface> {
+  const key = await window.crypto.subtle.importKey("pkcs8", privateKey, { name: "RSA-PSS", hash: "SHA-256" }, true, [
+    "sign",
+  ]);
   const jwk = await window.crypto.subtle.exportKey("jwk", key);
 
   return {
@@ -66,7 +60,7 @@ export async function pkcs8ToJwk(
     q: jwk.q,
     dp: jwk.dp,
     dq: jwk.dq,
-    qi: jwk.qi
+    qi: jwk.qi,
   };
 }
 

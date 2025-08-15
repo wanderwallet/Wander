@@ -13,8 +13,8 @@ export const initThemeBridge = () => {
       // This assumes you have a global method or event system to update theme
       window.dispatchEvent(
         new CustomEvent("THEME_UPDATE", {
-          detail: { mode: event.data.mode }
-        })
+          detail: { mode: event.data.mode },
+        }),
       );
     }
   });
@@ -25,8 +25,8 @@ export const initThemeBridge = () => {
     const newTheme = e.matches ? "dark" : "light";
     window.dispatchEvent(
       new CustomEvent("THEME_UPDATE", {
-        detail: { mode: "system", systemPreference: newTheme }
-      })
+        detail: { mode: "system", systemPreference: newTheme },
+      }),
     );
   });
 

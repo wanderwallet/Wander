@@ -1,6 +1,6 @@
 import React from "react";
 import clsx from "clsx";
-import { useTheme } from "../../../contexts/ThemeContext";
+import { useTheme } from "../../../../../utils/theme/theme.hook";
 import styles from "./ThemeToggle.module.css";
 
 export interface ThemeToggleProps {
@@ -15,16 +15,9 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({ className }) => {
       className={clsx(styles.themeToggle, className)}
       onClick={toggleTheme}
       aria-label={`Switch to ${isDarkMode ? "light" : "dark"} mode`}
-      type="button"
-    >
+      type="button">
       {isDarkMode ? (
-        <svg
-          width="20"
-          height="20"
-          viewBox="0 0 20 20"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
             fillRule="evenodd"
             clipRule="evenodd"
@@ -33,13 +26,7 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({ className }) => {
           />
         </svg>
       ) : (
-        <svg
-          width="20"
-          height="20"
-          viewBox="0 0 20 20"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
             fillRule="evenodd"
             clipRule="evenodd"

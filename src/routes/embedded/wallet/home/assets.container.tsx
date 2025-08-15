@@ -5,7 +5,7 @@ import type { TokenInfoWithBalance } from "~tokens/aoTokens/ao";
 
 export function WalletHomeAssets({
   tokens,
-  prices
+  prices,
 }: {
   tokens: TokenInfoWithBalance[];
   prices: Record<string, number>;
@@ -40,18 +40,7 @@ export function WalletHomeAssets({
       ))}
 
       {hasMoreTokens && (
-        <Button
-          variant="secondary"
-          hasBorder={false}
-          style={{
-            color: "var(--color-copyable-text-value)",
-            backgroundColor: "transparent",
-            cursor: "pointer",
-            padding: "12px 0",
-            textAlign: "center"
-          }}
-          onClick={showAllTokens ? handleShowLess : handleLoadMore}
-        >
+        <Button variant="text" onClick={showAllTokens ? handleShowLess : handleLoadMore}>
           {showAllTokens ? "Show less" : `View More (${tokens.length - 3})`}
         </Button>
       )}

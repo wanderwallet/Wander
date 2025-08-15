@@ -1,10 +1,5 @@
 import { Text, type TextProps } from "@arconnect/components-rebrand";
-import {
-  useCallback,
-  useMemo,
-  type HTMLAttributes,
-  type HTMLProps
-} from "react";
+import { useCallback, useMemo, type HTMLAttributes, type HTMLProps } from "react";
 import styled from "styled-components";
 
 export const Checkbox = ({
@@ -13,7 +8,7 @@ export const Checkbox = ({
   id,
   size = 24,
   label,
-  labelProps
+  labelProps,
 }: CheckboxProps & Omit<HTMLProps<HTMLDivElement>, "onChange">) => {
   const effectiveId = useMemo(() => id || generateUniqueId(), [id]);
 
@@ -24,18 +19,13 @@ export const Checkbox = ({
 
       onChange?.(!checked);
     },
-    [onChange, checked]
+    [onChange, checked],
   );
 
   return (
     <CheckboxContainer size={size} onClick={toggle}>
       <CheckboxWrapper>
-        <CheckboxInput
-          checked={checked}
-          id={effectiveId}
-          aria-checked={checked}
-          role="checkbox"
-        />
+        <CheckboxInput checked={checked} id={effectiveId} aria-checked={checked} role="checkbox" />
         <Label htmlFor={effectiveId} size={size} />
       </CheckboxWrapper>
       {label && (
@@ -128,7 +118,7 @@ const Label = styled.label<{ size: number }>`
 
 const CheckboxLabel = styled(Text).attrs({
   weight: "medium",
-  noMargin: true
+  noMargin: true,
 })<{ size?: number }>`
   font-size: ${(props) => Math.max(14, props.size ? props.size * 0.6 : 14)}px;
   display: flex;

@@ -15,9 +15,7 @@ export async function getTab(id: number) {
 /**
  * Run code for each tab
  */
-export async function forEachTab(
-  fn: (tab: browser.Tabs.Tab) => void | Promise<void>
-) {
+export async function forEachTab(fn: (tab: browser.Tabs.Tab) => void | Promise<void>) {
   // get all tabs
   const tabs = await browser.tabs.query({});
 

@@ -1,4 +1,1 @@
-export type SignatureAlgorithm =
-  | AlgorithmIdentifier
-  | RsaPssParams
-  | EcdsaParams;
+export type SignatureAlgorithm = AlgorithmIdentifier | RsaPssParams | EcdsaParams;

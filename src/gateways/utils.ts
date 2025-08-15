@@ -22,7 +22,7 @@ export function urlToGateway(url: string): Gateway {
   return {
     host: gatewayURL.hostname,
     port: gatewayURL.port === "" ? 443 : Number(gatewayURL.port),
-    protocol: gatewayURL.protocol?.replace(":", "") || "http"
+    protocol: gatewayURL.protocol?.replace(":", "") || "http",
   };
 }
 /**
@@ -31,10 +31,7 @@ export function urlToGateway(url: string): Gateway {
  * @returns Same or not
  */
 
-export function compareGateways(
-  first: Partial<Gateway>,
-  second: Partial<Gateway>
-) {
+export function compareGateways(first: Partial<Gateway>, second: Partial<Gateway>) {
   // compare the count of keys each object has
   if (Object.keys(first).length !== Object.keys(second).length) {
     return false;

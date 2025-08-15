@@ -18,7 +18,7 @@ export const paymentMethods = (paymentMethod: PaymentType) => {
     // "pm_astropay": "",
     // "inr_bank_transfer": "",
     // "inr_upi": "",
-    "pm_us_wire_bank_transfer ": "Wire Transfer"
+    "pm_us_wire_bank_transfer ": "Wire Transfer",
   };
 
   if (customPaymentMethodNames.hasOwnProperty(paymentMethod?.id)) {

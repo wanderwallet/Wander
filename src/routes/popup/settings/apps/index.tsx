@@ -1,5 +1,5 @@
 import { Spacer, Text, useInput } from "@arconnect/components";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { PersistentStorage, useStorage } from "~utils/storage";
 import Application from "~applications/application";
 import browser from "webextension-polyfill";
@@ -11,6 +11,7 @@ import HeadV2 from "~components/popup/HeadV2";
 import useActiveTab from "~applications/useActiveTab";
 import { getAppURL } from "~utils/format";
 import { useLocation } from "~wallets/router/router.utils";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 interface SettingsAppData {
   name: string;
@@ -25,32 +26,31 @@ export function ApplicationsView() {
   const [connectedApps] = useStorage<string[]>(
     {
       key: "apps",
-      instance: PersistentStorage
+      instance: PersistentStorage,
     },
-    []
+    [],
   );
 
   // apps
   const [apps, setApps] = useState<SettingsAppData[]>([]);
 
-  useEffect(() => {
-    (async () => {
-      if (!connectedApps) return;
-      const appsWithData: SettingsAppData[] = [];
+  useAsyncEffect(async () => {
+    if (!connectedApps) return;
 
-      for (const app of connectedApps) {
-        const appObj = new Application(app);
-        const appData = await appObj.getAppData();
+    const appsWithData: SettingsAppData[] = [];
 
-        appsWithData.push({
-          name: appData.name || app,
-          url: app,
-          icon: appData.logo
-        });
-      }
+    for (const app of connectedApps) {
+      const appObj = new Application(app);
+      const appData = await appObj.getAppData();
 
-      setApps(appsWithData);
-    })();
+      appsWithData.push({
+        name: appData.name || app,
+        url: app,
+        icon: appData.logo,
+      });
+    }
+
+    setApps(appsWithData);
   }, [connectedApps]);
 
   // active app
@@ -74,25 +74,15 @@ export function ApplicationsView() {
       return true;
     }
 
-    return (
-      app.name.toLowerCase().includes(query.toLowerCase()) ||
-      app.url.toLowerCase().includes(query.toLowerCase())
-    );
+    return app.name.toLowerCase().includes(query.toLowerCase()) || app.url.toLowerCase().includes(query.toLowerCase());
   }
 
   return (
     <>
-      <HeadV2
-        title={browser.i18n.getMessage("setting_apps")}
-        back={() => navigate("/quick-settings")}
-      />
+      <HeadV2 title={browser.i18n.getMessage("setting_apps")} back={() => navigate("/quick-settings")} />
       <Wrapper>
         <SearchWrapper>
-          <SearchInput
-            small
-            placeholder={browser.i18n.getMessage("search_apps")}
-            {...searchInput.bindings}
-          />
+          <SearchInput small placeholder={browser.i18n.getMessage("search_apps")} {...searchInput.bindings} />
         </SearchWrapper>
         <Spacer y={1} />
         <SettingsList>
@@ -114,9 +104,7 @@ export function ApplicationsView() {
               }
               icon={app.icon}
               active={false}
-              onClick={() =>
-                navigate(`/quick-settings/apps/${encodeURIComponent(app.url)}`)
-              }
+              onClick={() => navigate(`/quick-settings/apps/${encodeURIComponent(app.url)}`)}
               key={i}
             />
           ))}

@@ -7,4 +7,5 @@ export type TextBaseProps = {
   style?: React.CSSProperties;
   variant?: TextVariants;
   className?: string;
+  onClick?: () => void;
 };

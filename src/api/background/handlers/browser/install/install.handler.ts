@@ -2,11 +2,11 @@ import { scheduleGatewayUpdate } from "~gateways/cache";
 import browser, { type Runtime } from "webextension-polyfill";
 import { loadTokens } from "~tokens/token";
 import { initializeARBalanceMonitor } from "~utils/analytics";
-import { updateAoToken } from "~utils/ao_import";
 import { handleGatewayUpdateAlarm } from "~api/background/handlers/alarms/gateway-update/gateway-update-alarm.handler";
 import { openOrSelectWelcomePage } from "~wallets";
 import { ExtensionStorage } from "~utils/storage";
 import { resetAllPermissions } from "./permissions.handler";
+import { scheduleFairLaunchTokensAlarm } from "~utils/fair_launch/fair_launch.alarms";
 
 /**
  * On extension installed event handler
@@ -21,14 +21,15 @@ export async function handleInstall(details: Runtime.OnInstalledDetailsType) {
     // reset permissions
     await resetAllPermissions();
 
-    const isSplashSeen = Boolean(
-      await ExtensionStorage.get("update_splash_screen_seen")
-    );
+    const isSplashSeen = Boolean(await ExtensionStorage.get("update_splash_screen_seen"));
     // if this is undefined, set update_splash_screen_seen
     if (!isSplashSeen) {
       // initially set to false
       await ExtensionStorage.set("update_splash_screen_seen", false);
     }
+
+    // remove astro beta access announcement storage key
+    ExtensionStorage.remove("astro_beta_access_announcement_shown");
   }
 
   // init monthly AR
@@ -42,16 +43,14 @@ export async function handleInstall(details: Runtime.OnInstalledDetailsType) {
 
   // initialize alarm to update tokens once a week
   browser.alarms.create("update_ao_tokens", {
-    periodInMinutes: 10080
+    periodInMinutes: 10080,
   });
 
   // initialize tokens in wallet
   await loadTokens();
 
-  // update old ao token to new ao token
-  await updateAoToken();
-
   // wayfinder
   await scheduleGatewayUpdate();
   await handleGatewayUpdateAlarm();
+  await scheduleFairLaunchTokensAlarm();
 }

@@ -5,7 +5,7 @@ const permissions: PermissionType[] = ["ENCRYPT"];
 
 const encrypt: ModuleProperties = {
   functionName: "encrypt",
-  permissions
+  permissions,
 };
 
 export default encrypt;

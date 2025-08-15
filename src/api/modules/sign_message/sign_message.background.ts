@@ -1,11 +1,7 @@
 import { freeDecryptedWallet } from "~wallets/encryption";
 import type { BackgroundModuleFunction } from "~api/background/background-modules";
 import { getActiveKeyfile } from "~wallets";
-import {
-  isArrayBuffer,
-  isNumberArray,
-  isSignMessageOptions
-} from "~utils/assertions";
+import { isArrayBuffer, isNumberArray, isSignMessageOptions } from "~utils/assertions";
 import { signAuthKeystone, type AuthKeystoneData } from "../sign/sign_auth";
 import Arweave from "arweave";
 import { requestUserAuthorization } from "~utils/auth/auth.utils";
@@ -15,7 +11,7 @@ import Application from "~applications/application";
 const background: BackgroundModuleFunction<number[]> = async (
   appData,
   data: unknown,
-  options = { hashAlgorithm: "SHA-256" }
+  options = { hashAlgorithm: "SHA-256" },
 ) => {
   // validate input
   isNumberArray(data);
@@ -32,19 +28,15 @@ const background: BackgroundModuleFunction<number[]> = async (
   const app = new Application(appData.url);
   const signPolicy = await app.getSignPolicy();
 
-  const alwaysAsk = checkIfUserNeedsToSign(
-    signPolicy,
-    undefined,
-    activeWallet?.type
-  );
+  const alwaysAsk = checkIfUserNeedsToSign(signPolicy, undefined, activeWallet?.type);
 
   if (alwaysAsk) {
     await requestUserAuthorization(
       {
         type: "signature",
-        message: data
+        message: data,
       },
-      appData
+      appData,
     );
   }
 
@@ -60,19 +52,15 @@ const background: BackgroundModuleFunction<number[]> = async (
       activeWallet.keyfile,
       {
         name: "RSA-PSS",
-        hash: options.hashAlgorithm
+        hash: options.hashAlgorithm,
       },
       false,
-      ["sign"]
+      ["sign"],
     );
 
     // hashing 2 times ensures that the app is not draining the user's wallet
     // credits to Arweave.app
-    const signature = await crypto.subtle.sign(
-      { name: "RSA-PSS", saltLength: 32 },
-      cryptoKey,
-      hash
-    );
+    const signature = await crypto.subtle.sign({ name: "RSA-PSS", saltLength: 32 }, cryptoKey, hash);
 
     // remove wallet from memory
     freeDecryptedWallet(activeWallet.keyfile);
@@ -81,7 +69,7 @@ const background: BackgroundModuleFunction<number[]> = async (
   } else {
     const data: AuthKeystoneData = {
       type: "Message",
-      data: dataToSign
+      data: dataToSign,
     };
     const res = await signAuthKeystone(appData, data);
     const sig = Arweave.utils.b64UrlToBuffer(res.data.signature);

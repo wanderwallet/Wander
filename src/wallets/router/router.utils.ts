@@ -1,8 +1,5 @@
 import { useCallback, useEffect, useMemo } from "react";
-import {
-  useSearch as useWearch,
-  useLocation as useWouterLocation
-} from "wouter";
+import { useSearch as useWearch, useLocation as useWouterLocation } from "wouter";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import {
   type RouteConfig,
@@ -13,62 +10,53 @@ import {
   type NavigateFn,
   type NavigateOptions,
   type NavigateAction,
-  type BaseLocationHook
+  type BaseLocationHook,
 } from "~wallets/router/router.types";
 
 export const OVERRIDES_PREFIX = "/__OVERRIDES/" as const;
 export const REDIRECT_PREFIX = "/__REDIRECT/" as const;
 
-export function isRouteOverride(
-  path: RoutePath | RouteOverride | RouteRedirect
-): path is RouteOverride {
+export function isRouteOverride(path: RoutePath | RouteOverride | RouteRedirect): path is RouteOverride {
   return path.startsWith(OVERRIDES_PREFIX);
 }
 
 export function isRouteRedirect<T extends RoutePath>(
-  path: RoutePath | RouteOverride | RouteRedirect<T>
+  path: RoutePath | RouteOverride | RouteRedirect<T>,
 ): path is RouteRedirect<T> {
   return path.startsWith(REDIRECT_PREFIX);
 }
 
-export function isNavigateAction(
-  to: WanderRoutePath | NavigateAction
-): to is NavigateAction {
+export function isNavigateAction(to: WanderRoutePath | NavigateAction): to is NavigateAction {
   return typeof to === "number" || !to.startsWith("/");
 }
 
-export function parseRouteRedirect<T extends RoutePath>(
-  routeRedirect: RouteRedirect<T>
-): T {
+export function parseRouteRedirect<T extends RoutePath>(routeRedirect: RouteRedirect<T>): T {
   return routeRedirect.slice(REDIRECT_PREFIX.length - 1) as T;
 }
 
-export function routeTrapInside<T extends RoutePath>(
-  location: RoutePath,
-  baseRoute: T
-): null | RouteRedirect<T> {
+export function routeTrapInside<T extends RoutePath>(location: RoutePath, baseRoute: T): T | RouteRedirect<T> {
   return location === baseRoute || location.startsWith(`${baseRoute}/`)
-    ? null
+    ? (location as T)
     : (`${REDIRECT_PREFIX}${baseRoute.slice(1)}` as RouteRedirect<T>);
 }
 
-export function routeTrapMatches<T extends RoutePath>(
+export function routeTrapMatches<T extends RoutePath, R extends RoutePath>(
   location: RoutePath,
   validRoutes: T[],
-  redirectTo: T
-): null | RouteRedirect<T> {
+  redirectTo: R,
+): T | RouteRedirect<R> {
   return validRoutes.includes(location as T)
-    ? null
-    : (`${REDIRECT_PREFIX}${redirectTo.slice(1)}` as RouteRedirect<T>);
+    ? (location as T)
+    : (`${REDIRECT_PREFIX}${redirectTo.slice(1)}` as RouteRedirect<R>);
 }
 
-export function routeTrapOutside<T extends RoutePath>(
+export function routeTrapOutside<T extends RoutePath, R extends RoutePath>(
   location: RoutePath,
   baseRoute: T,
-  redirectTo: T
-): null | RouteRedirect<T> {
+  redirectTo: R,
+): null | RouteRedirect<R> {
   return location === baseRoute || location.startsWith(`${baseRoute}/`)
-    ? (`${REDIRECT_PREFIX}${redirectTo.slice(1)}` as RouteRedirect<T>)
+    ? (`${REDIRECT_PREFIX}${redirectTo.slice(1)}` as RouteRedirect<R>)
     : null;
 }
 
@@ -105,10 +93,7 @@ export function useLocation() {
   const [wocation, wavigate] = useWouterLocation();
 
   const navigate = useCallback(
-    <S = any>(
-      to: WanderRoutePath | NavigateAction,
-      options?: NavigateOptions<S>
-    ) => {
+    <S = any>(to: WanderRoutePath | NavigateAction, options?: NavigateOptions<S>) => {
       let toPath = to as WanderRoutePath;
 
       if (isNavigateAction(to)) {
@@ -121,10 +106,7 @@ export function useLocation() {
         } else if (typeof to === "string") {
           const page = parseInt(lastPart);
 
-          if (isNaN(page))
-            throw new Error(
-              `The current location "${location}" doesn't end with an index`
-            );
+          if (isNaN(page)) throw new Error(`The current location "${location}" doesn't end with an index`);
 
           if (to === "prev") {
             if (page === 1) throw new Error(`Page 0 out of bounds`);
@@ -140,6 +122,17 @@ export function useLocation() {
         }
       }
 
+      // Handle path parameters
+      if (options?.params) {
+        Object.entries(options.params).forEach(([key, value]) => {
+          if (process.env.NODE_ENV === "development" && toPath.indexOf(`:${key}`) === -1) {
+            throw new Error(`Path ${toPath} has no ${key} param.`);
+          }
+          toPath = toPath.replace(`:${key}`, value.toString()) as WanderRoutePath;
+        });
+      }
+
+      // Handle search parameters
       if (options?.search) {
         const searchParams = new URLSearchParams();
 
@@ -157,7 +150,7 @@ export function useLocation() {
 
       return wavigate(toPath, options);
     },
-    [wocation, wavigate]
+    [wocation, wavigate],
   ) satisfies NavigateFn;
 
   const back = useCallback(() => {
@@ -177,10 +170,12 @@ export function useLocation() {
 
   return {
     location: wocation,
+    previousLocation: customHistory[customHistory.length - 2]?.to,
     navigate,
-    back
+    back,
   } as {
     location: WanderRoutePath;
+    previousLocation: WanderRoutePath;
     navigate: typeof navigate;
     back: typeof back;
   };
@@ -198,14 +193,10 @@ export function useSearchParams<S>() {
   }, [searchString]) as S;
 }
 
-export function withRouterRedirects(
-  locationHook: BaseLocationHook
-): BaseLocationHook {
+export function withRouterRedirects(locationHook: BaseLocationHook): BaseLocationHook {
   const locationHookWithRedirects: BaseLocationHook = () => {
     const [location, navigate] = locationHook();
-    const redirectLocation = isRouteRedirect(location)
-      ? parseRouteRedirect(location)
-      : undefined;
+    const redirectLocation = isRouteRedirect(location) ? parseRouteRedirect(location) : undefined;
 
     useEffect(() => {
       if (!redirectLocation) return;

@@ -1,8 +1,4 @@
-import {
-  Button,
-  Spacer,
-  type ButtonProps
-} from "@arconnect/components-rebrand";
+import { Button, Spacer, type ButtonProps } from "@arconnect/components-rebrand";
 import { useThrottledRequestAnimationFrame } from "@swyg/corre";
 import { useRef, type MouseEvent } from "react";
 import styled from "styled-components";
@@ -29,14 +25,12 @@ export function AuthButtons({
   authRequest,
   primaryButtonProps,
   secondaryButtonProps,
-  showAuthStatus = true
+  showAuthStatus = true,
 }: AuthButtonsProps) {
   const showPrimaryButton = !!primaryButtonProps?.onClick;
   const showSecondaryButton = !!secondaryButtonProps?.onClick;
-  const primaryButtonLabel =
-    primaryButtonProps?.label || browser.i18n.getMessage("continue");
-  const secondaryButtonLabel =
-    secondaryButtonProps?.label || browser.i18n.getMessage("cancel");
+  const primaryButtonLabel = primaryButtonProps?.label || browser.i18n.getMessage("continue");
+  const secondaryButtonLabel = secondaryButtonProps?.label || browser.i18n.getMessage("cancel");
 
   // TODO: Consider using the red `<ResetButton>` for cancel.
 
@@ -59,17 +53,14 @@ export function AuthButtons({
     <>
       {showAuthStatus && authRequest ? (
         <PStatusLabel status={authRequest.status}>
-          {browser.i18n.getMessage(`${authRequest.status}TransactionStatusAt`) +
-            " "}
+          {browser.i18n.getMessage(`${authRequest.status}TransactionStatusAt`) + " "}
           <span ref={requestedAtElementRef}>{prettyDate(requestedAt)}</span>
         </PStatusLabel>
       ) : null}
 
       {!authRequest || authRequest.status === "pending" ? (
         <>
-          {showPrimaryButton || showSecondaryButton ? (
-            <Spacer y={0.75} />
-          ) : null}
+          {showPrimaryButton || showSecondaryButton ? <Spacer y={0.75} /> : null}
 
           {showPrimaryButton ? (
             <Button {...primaryButtonProps} fullWidth>
@@ -77,9 +68,7 @@ export function AuthButtons({
             </Button>
           ) : null}
 
-          {showPrimaryButton && showSecondaryButton ? (
-            <Spacer y={0.75} />
-          ) : null}
+          {showPrimaryButton && showSecondaryButton ? <Spacer y={0.75} /> : null}
 
           {showSecondaryButton ? (
             <Button {...secondaryButtonProps} variant="secondary" fullWidth>

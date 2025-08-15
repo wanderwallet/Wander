@@ -6,7 +6,7 @@ const permissions: PermissionType[] = ["SIGN_TRANSACTION"];
 
 const sign: ModuleProperties = {
   functionName: "sign",
-  permissions
+  permissions,
 };
 
 export default sign;

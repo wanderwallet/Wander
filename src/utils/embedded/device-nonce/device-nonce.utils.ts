@@ -7,20 +7,18 @@ const DEVICE_NONCE_KEY = "DEVICE_NONCE";
 const INVALID_DEVICE_NONCE_ERR_MSG = "Invalid deviceNonce";
 const MISSING_DEVICE_NONCE_ERR_MSG = "Missing deviceNonce";
 
-export type DeviceNonce =
-  `${number}-${number}-${number}T${number}:${number}:${number}.${number}Z-${string}`;
+export type DeviceNonce = `${number}-${number}-${number}T${number}:${number}:${number}.${number}Z-${string}`;
 
 let _deviceNonce: DeviceNonce | null = null;
 
 export async function loadDeviceNonce(): Promise<DeviceNonce | null> {
   const storage = await LocalStorage.getInstance();
+
   let deviceNonce = storage.getItem(DEVICE_NONCE_KEY) || null;
 
   if (
     deviceNonce === null ||
-    /\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z)\-[\w_-]{21}/.test(
-      deviceNonce
-    )
+    /\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z)\-[\w_-]{21}/.test(deviceNonce)
   ) {
     return deviceNonce as DeviceNonce;
   }
@@ -38,14 +36,13 @@ export function generateDeviceNonce(): DeviceNonce {
   return `${new Date().toISOString()}-${nanoid()}` as DeviceNonce;
 }
 
-export async function storeDeviceNonce(
-  deviceNonce: DeviceNonce
-): Promise<DeviceNonce> {
+export async function storeDeviceNonce(deviceNonce: DeviceNonce): Promise<DeviceNonce> {
   log(LOG_GROUP.WALLET_GENERATION, "storeDeviceNonce()");
 
   setDeviceNonceHeader(deviceNonce);
 
   const storage = await LocalStorage.getInstance();
+
   storage.setItem(DEVICE_NONCE_KEY, deviceNonce);
 
   return (_deviceNonce = deviceNonce);
@@ -55,6 +52,7 @@ export async function initializeDeviceNonce(): Promise<DeviceNonce> {
   if (_deviceNonce) return _deviceNonce;
 
   const loadedNonce = await loadDeviceNonce();
+
   _deviceNonce = loadedNonce || generateDeviceNonce();
 
   setDeviceNonceHeader(_deviceNonce);
@@ -66,6 +64,8 @@ export async function initializeDeviceNonce(): Promise<DeviceNonce> {
   return _deviceNonce;
 }
 
+// TODO: Consider always reading it from storage...
+
 export async function getDeviceNonce(): Promise<DeviceNonce> {
   await initializeDeviceNonce();
 
@@ -74,6 +74,7 @@ export async function getDeviceNonce(): Promise<DeviceNonce> {
   }
 
   const storage = await LocalStorage.getInstance();
+
   let storedDeviceNonce = storage.getItem(DEVICE_NONCE_KEY) || null;
 
   if (storedDeviceNonce === _deviceNonce) return _deviceNonce;
@@ -84,7 +85,7 @@ export async function getDeviceNonce(): Promise<DeviceNonce> {
 if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1") {
   initializeDeviceNonce().catch((err) => {
     log(LOG_GROUP.WALLET_GENERATION, "initializeDeviceNonce() error: ", {
-      err
+      err,
     });
   });
 }

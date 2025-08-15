@@ -2,7 +2,7 @@ import { WANDER_PRINTER_ID } from "~api/background/handlers/browser/printer/prin
 import { uploadDataToTurbo } from "~api/modules/dispatch/uploader";
 import { getActiveKeyfile, type DecryptedWallet } from "~wallets";
 import { freeDecryptedWallet } from "~wallets/encryption";
-import { createData, ArweaveSigner } from "arbundles";
+import { createData, ArweaveSigner } from "@dha-team/arbundles";
 import { concatGatewayURL } from "~gateways/utils";
 import { findGateway } from "~gateways/wayfinder";
 import browser from "webextension-polyfill";
@@ -19,10 +19,7 @@ type PrintCallback = (result: string) => void;
 /**
  * Handles the request from the user to print the page to Arweave
  */
-export async function handlePrint(
-  printJob: chrome.printerProvider.PrintJob,
-  resultCallback: PrintCallback
-) {
+export async function handlePrint(printJob: chrome.printerProvider.PrintJob, resultCallback: PrintCallback) {
   // only print for the Wander printer
   if (printJob.printerId !== WANDER_PRINTER_ID) return;
 
@@ -36,8 +33,7 @@ export async function handlePrint(
     // get user wallet
     decryptedWallet = await getActiveKeyfile();
 
-    if (decryptedWallet.type === "hardware")
-      throw new Error("Cannot print with a hardware wallet.");
+    if (decryptedWallet.type === "hardware") throw new Error("Cannot print with a hardware wallet.");
 
     // extension manifest
     const manifest = browser.runtime.getManifest();
@@ -49,7 +45,7 @@ export async function handlePrint(
       { name: "Type", value: "Print-Archive" },
       { name: "Content-Type", value: printJob.contentType },
       { name: "print:title", value: printJob.title },
-      { name: "print:timestamp", value: new Date().getTime().toString() }
+      { name: "print:timestamp", value: new Date().getTime().toString() },
     ];
 
     let transactionId: string;
@@ -64,9 +60,7 @@ export async function handlePrint(
     const dataEntry = createData(transactionData, dataSigner, { tags });
 
     // calculate reward for the transaction
-    const reward = await arweave.transactions.getPrice(
-      transactionData.byteLength
-    );
+    const reward = await arweave.transactions.getPrice(transactionData.byteLength);
 
     // get active tab
     const activeTab = await getActiveTab();
@@ -74,15 +68,15 @@ export async function handlePrint(
     await signAuth(
       {
         tabID: activeTab.id,
-        url: activeTab.url
+        url: activeTab.url,
       },
       // @ts-expect-error
       {
         ...dataEntry.toJSON(),
         reward,
-        sizeInBytes: transactionData.byteLength
+        sizeInBytes: transactionData.byteLength,
       },
-      decryptedWallet.address
+      decryptedWallet.address,
     );
 
     try {
@@ -99,10 +93,7 @@ export async function handlePrint(
     } catch (error) {
       // sign & post if there is something wrong with turbo
 
-      const transaction = await arweave.createTransaction(
-        { data: transactionData },
-        decryptedWallet.keyfile
-      );
+      const transaction = await arweave.createTransaction({ data: transactionData }, decryptedWallet.keyfile);
 
       for (const tag of tags) {
         transaction.addTag(tag.name, tag.value);
@@ -126,7 +117,7 @@ export async function handlePrint(
 
     // open in new tab
     await chrome.tabs.create({
-      url: `${concatGatewayURL(gateway)}/${transactionId}`
+      url: `${concatGatewayURL(gateway)}/${transactionId}`,
     });
   } catch (e) {
     console.log("Printing failed:\n", e);
@@ -134,6 +125,5 @@ export async function handlePrint(
   }
 
   // free wallet from memory
-  if (decryptedWallet?.type == "local")
-    freeDecryptedWallet(decryptedWallet.keyfile);
+  if (decryptedWallet?.type == "local") freeDecryptedWallet(decryptedWallet.keyfile);
 }

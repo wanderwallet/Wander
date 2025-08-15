@@ -1,11 +1,5 @@
 import { AnimatePresence, motion, type Variants } from "framer-motion";
-import {
-  type DragEvent,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState
-} from "react";
+import { type DragEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { CloseIcon, FolderIcon, WalletIcon } from "@iconicicons/react";
 import type { JWKInterface } from "arweave/web/lib/wallet";
 import styled, { keyframes, useTheme } from "styled-components";
@@ -24,7 +18,7 @@ export default function SeedInput({
   defaultLength = 12,
   verifyWords,
   inputType = "seedphrase",
-  loading = false
+  loading = false,
 }: Props) {
   const theme = useTheme();
 
@@ -36,21 +30,18 @@ export default function SeedInput({
   const [mismatchedWords, setMismatchedWords] = useState<{
     [key: number]: boolean;
   }>({});
-  const [wordsToConfirm, setWordsToConfirm] = useState<
-    { [key: number]: string } | undefined
-  >();
+  const [wordsToConfirm, setWordsToConfirm] = useState<{ [key: number]: string } | undefined>();
 
   const handleInputBlur = useCallback(
     (index: number) => {
       if (!verifyMode) return;
       setMismatchedWords((val) => {
         const newMismatchedWords = { ...val };
-        newMismatchedWords[index] =
-          words[index] && words[index] !== verifyWords?.[index];
+        newMismatchedWords[index] = words[index] && words[index] !== verifyWords?.[index];
         return newMismatchedWords;
       });
     },
-    [words]
+    [words],
   );
 
   const handleMnemonicLengthChange = () => {
@@ -86,7 +77,7 @@ export default function SeedInput({
         .join(" ")
         .replaceAll(/\s+/g, " ")
         .trim(),
-    [words, activeLength]
+    [words, activeLength],
   );
 
   // onchange event
@@ -175,8 +166,7 @@ export default function SeedInput({
 
         // trigger event
         triggerWalletRead(file);
-      }}
-    >
+      }}>
       <AnimatePresence>
         {dropShow && (
           <DragLayer>
@@ -193,29 +183,16 @@ export default function SeedInput({
             )}
             <AnimatePresence>
               {(loadedFileName && (
-                <motion.div
-                  initial="hidden"
-                  animate="shown"
-                  variants={scaleAppearAnimation}
-                  key="walleticon"
-                >
+                <motion.div initial="hidden" animate="shown" variants={scaleAppearAnimation} key="walleticon">
                   <WalletIcon color={theme.primaryText} />
                 </motion.div>
               )) || (
-                <motion.div
-                  initial="hidden"
-                  animate="shown"
-                  variants={scaleAppearAnimation}
-                  key="fileicon"
-                >
+                <motion.div initial="hidden" animate="shown" variants={scaleAppearAnimation} key="fileicon">
                   <FolderIcon color={theme.primaryText} />
                 </motion.div>
               )}
             </AnimatePresence>
-            <DragText>
-              {loadedFileName ||
-                browser.i18n.getMessage("drag_and_drop_wallet")}
-            </DragText>
+            <DragText>{loadedFileName || browser.i18n.getMessage("drag_and_drop_wallet")}</DragText>
           </DragLayer>
         )}
       </AnimatePresence>
@@ -242,8 +219,7 @@ export default function SeedInput({
               // remove input
               input.remove();
             });
-          }}
-        >
+          }}>
           {loading ? (
             <>
               <Loading style={{ height: 32, width: 32 }} />
@@ -259,12 +235,9 @@ export default function SeedInput({
                   textAlign: "center",
                   display: "flex",
                   flexDirection: "column",
-                  gap: 4
-                }}
-              >
-                <ClickToUploadText>
-                  {browser.i18n.getMessage("click_to_upload")}
-                </ClickToUploadText>
+                  gap: 4,
+                }}>
+                <ClickToUploadText>{browser.i18n.getMessage("click_to_upload")}</ClickToUploadText>
                 <Text size="sm" weight="medium" variant="secondary" noMargin>
                   {browser.i18n.getMessage("or_drag_and_drop_your_keyfile")}
                 </Text>
@@ -283,18 +256,13 @@ export default function SeedInput({
                 isConfirmed={verifyMode && wordsToConfirm?.[i] === words[i]}
                 isMismatched={mismatchedWords[i]}
                 onBlur={() => handleInputBlur(i)}
-                key={i}
-              >
+                key={i}>
                 <Text variant="secondary" noMargin>
                   {i + 1}.
                 </Text>
                 <SuggestionWrapper>
                   <WordInputSuggestion>
-                    {(word !== "" &&
-                      wordlists.english.filter((val) =>
-                        val.startsWith(word)
-                      )[0]) ||
-                      ""}
+                    {(word !== "" && wordlists.english.filter((val) => val.startsWith(word))[0]) || ""}
                   </WordInputSuggestion>
                   <WordInput
                     onPaste={(e) => {
@@ -304,9 +272,7 @@ export default function SeedInput({
                       if (verifyMode) return e.preventDefault();
 
                       // get pasted words
-                      const pastedWords = e.clipboardData
-                        .getData("Text")
-                        .split(" ");
+                      const pastedWords = e.clipboardData.getData("Text").split(" ");
 
                       // check length
                       if (pastedWords.length <= 1) return;
@@ -337,14 +303,9 @@ export default function SeedInput({
                     }}
                     onKeyDown={(e) => {
                       // autocomplete
-                      if (
-                        (e.key === "Tab" || e.key === "Enter") &&
-                        word !== ""
-                      ) {
+                      if ((e.key === "Tab" || e.key === "Enter") && word !== "") {
                         // get suggested word
-                        const suggestedWord = wordlists.english.filter((val) =>
-                          val.startsWith(word)
-                        )[0];
+                        const suggestedWord = wordlists.english.filter((val) => val.startsWith(word))[0];
 
                         // fill input with the suggested word
                         if (suggestedWord) {
@@ -380,26 +341,18 @@ export default function SeedInput({
                       // progress to the next input
                       inputs[currentInputIndex + 1].focus();
                     }}
-                    aria-invalid={
-                      !wordlists.english.find((v) => v === word) && word !== ""
-                    }
+                    aria-invalid={!wordlists.english.find((v) => v === word) && word !== ""}
                   />
                 </SuggestionWrapper>
-                {verifyMode &&
-                  mismatchedWords[i] &&
-                  wordsToConfirm?.[i] !== words[i] && (
-                    <ErrorText>
-                      {browser.i18n.getMessage("word_mismatch_error")}
-                    </ErrorText>
-                  )}
+                {verifyMode && mismatchedWords[i] && wordsToConfirm?.[i] !== words[i] && (
+                  <ErrorText>{browser.i18n.getMessage("word_mismatch_error")}</ErrorText>
+                )}
               </WordInputWrapper>
             ))}
           </WordsWrapper>
           {!verifyMode && (
             <LengthSelector onClick={handleMnemonicLengthChange}>
-              {browser.i18n.getMessage("recovery_phrase_length_selector", [
-                activeLength === 12 ? "24" : "12"
-              ])}
+              {browser.i18n.getMessage("recovery_phrase_length_selector", [activeLength === 12 ? "24" : "12"])}
             </LengthSelector>
           )}
         </>
@@ -418,7 +371,7 @@ const Wrapper = styled.div<{ dragging?: boolean }>`
 const LengthSelector = styled(Text).attrs({
   noMargin: true,
   size: "sm",
-  weight: "semibold"
+  weight: "semibold",
 })`
   color: #9787ff;
   padding-bottom: 1rem;
@@ -449,8 +402,7 @@ const WordInputWrapper = styled.div<{
   background: ${(props) => props.theme.input.background.default.default};
   box-sizing: border-box;
   ${(props) =>
-    (props.isConfirmed || props.isMismatched) &&
-    `border: 1px solid ${props.isConfirmed ? "#56C980" : "#F1655B"};`}
+    (props.isConfirmed || props.isMismatched) && `border: 1px solid ${props.isConfirmed ? "#56C980" : "#F1655B"};`}
   ${(props) => props.hide && `display: none;`}
 `;
 
@@ -476,7 +428,7 @@ const errorShake = keyframes`
 `;
 
 const WordInput = styled.input.attrs({
-  type: "text"
+  type: "text",
 })`
   display: flex;
   flex: 1;
@@ -524,14 +476,14 @@ const SuggestionWrapper = styled.div`
 
 const dragLayerVariants: Variants = {
   hidden: { opacity: 0 },
-  show: { opacity: 1 }
+  show: { opacity: 1 },
 };
 
 const DragLayer = styled(motion.div).attrs({
   initial: "hidden",
   animate: "show",
   exit: "hidden",
-  variants: dragLayerVariants
+  variants: dragLayerVariants,
 })`
   position: absolute;
   display: flex;
@@ -605,7 +557,7 @@ const KeyfileInput = styled(motion.div)`
 
 const ClickToUploadText = styled(Text).attrs({
   weight: "medium",
-  noMargin: true
+  noMargin: true,
 })`
   color: ${(props) => props.theme.input.icons.searchActive};
 `;
@@ -616,8 +568,8 @@ const scaleAppearAnimation: Variants = {
     scale: 0.6,
     transition: {
       type: "spring",
-      duration: 0.4
-    }
+      duration: 0.4,
+    },
   },
   shown: {
     opacity: 1,
@@ -626,9 +578,9 @@ const scaleAppearAnimation: Variants = {
       type: "spring",
       duration: 0.4,
       delayChildren: 0.2,
-      staggerChildren: 0.05
-    }
-  }
+      staggerChildren: 0.05,
+    },
+  },
 };
 
 interface Props {

@@ -75,9 +75,7 @@ export const readFileString = (file: File) =>
 function downloadFile(content: string, contentType: string, fileName: string) {
   // create element that downloads the virtual file
   const el = document.createElement("a");
-  const url = `data:${contentType};charset=utf-8,${encodeURIComponent(
-    content
-  )}`;
+  const url = `data:${contentType};charset=utf-8,${encodeURIComponent(content)}`;
 
   el.setAttribute("href", url);
   el.setAttribute("download", fileName);
@@ -88,11 +86,7 @@ function downloadFile(content: string, contentType: string, fileName: string) {
 }
 
 export function downloadKeyfile(address: string, jwk: JWKInterface) {
-  downloadFile(
-    JSON.stringify(jwk, null, 2),
-    "application/json",
-    `arweave-keyfile-${address}.json`
-  );
+  downloadFile(JSON.stringify(jwk, null, 2), "application/json", `arweave-keyfile-${address}.json`);
 }
 
 export interface DownloadRecoveryFileData {
@@ -101,12 +95,8 @@ export interface DownloadRecoveryFileData {
   recoveryFileServerSignature: string;
 }
 
-export function downloadRecoveryFile(
-  address: string,
-  downloadRecoveryFileData: DownloadRecoveryFileData
-) {
-  const { walletId, recoveryBackupShare, recoveryFileServerSignature } =
-    downloadRecoveryFileData;
+export function downloadRecoveryFile(address: string, downloadRecoveryFileData: DownloadRecoveryFileData) {
+  const { walletId, recoveryBackupShare, recoveryFileServerSignature } = downloadRecoveryFileData;
 
   downloadFile(
     JSON.stringify(
@@ -114,12 +104,12 @@ export function downloadRecoveryFile(
         version: "1",
         walletId,
         recoveryBackupShare,
-        recoveryFileServerSignature
+        recoveryFileServerSignature,
       } satisfies RecoveryJSON,
       null,
-      2
+      2,
     ),
     "application/json",
-    `wander-embedded-recovery-file-${address}.json`
+    `wander-embedded-recovery-file-${address}.json`,
   );
 }

@@ -6,24 +6,20 @@ import { useActiveWallet } from "~wallets/hooks";
 import { useLocation } from "~wallets/router/router.utils";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
 import copy from "copy-to-clipboard";
+import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 
 export function WalletReceiveEmbeddedView() {
   const { currentWallet } = useEmbedded();
   const { navigate } = useLocation();
 
-  const effectiveAddress = useMemo(
-    () => currentWallet.address,
-    [currentWallet]
-  );
+  const effectiveAddress = useMemo(() => currentWallet.address, [currentWallet]);
 
   return (
     <Card
-      size="auto"
       headerText="Receive"
       hasBackButton={true}
-      onBackButtonClick={() => navigate("/wallet")}
-      style={{ padding: "32px" }}
-    >
+      onBackButtonClick={() => navigate(EmbeddedPaths.WalletHomeEmbeddedView)}
+      style={{ padding: "32px" }}>
       <Box>
         {/* <Text
           variant="bodyLg"
@@ -36,22 +32,16 @@ export function WalletReceiveEmbeddedView() {
           {effectiveWalletName}
         </Text> */}
         <div className="wrapper">
-          <QRCodeSVG
-            fgColor="#FFFFFF"
-            bgColor="#0D6CE9"
-            size={224}
-            value={effectiveAddress ?? ""}
-          />
+          <QRCodeSVG fgColor="#FFFFFF" bgColor="#0D6CE9" size={224} value={effectiveAddress ?? ""} />
         </div>
         <Copyable
           isFullWidth
           value={effectiveAddress ?? ""}
-          hasBorder={false}
           style={{
             marginTop: "1rem",
             backgroundColor: "#EBEBF0",
             borderRadius: "8px",
-            color: "#666666"
+            color: "#666666",
           }}
           onClick={() => {
             copy(effectiveAddress ?? "");

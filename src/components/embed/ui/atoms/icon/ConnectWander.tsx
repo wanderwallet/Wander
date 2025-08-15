@@ -1,10 +1,6 @@
 import * as React from "react";
 import type { SVGProps } from "react";
-const SvgConnectWander = ({
-  width = 56,
-  height = 56,
-  ...props
-}: SVGProps<SVGSVGElement>) => (
+const SvgConnectWander = ({ width = 56, height = 56, ...props }: SVGProps<SVGSVGElement>) => (
   <svg
     width={width}
     height={height}
@@ -12,8 +8,7 @@ const SvgConnectWander = ({
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
     {...props}
-    color="currentColor"
-  >
+    color="currentColor">
     <rect x="0.5" y="0.5" width="55" height="55" rx="27.5" fill="#F9F9F9" />
     <rect x="0.5" y="0.5" width="55" height="55" rx="27.5" stroke="#D6D6DD" />
     <path

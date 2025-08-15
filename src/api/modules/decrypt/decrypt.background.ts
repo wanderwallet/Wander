@@ -8,14 +8,14 @@ import {
   isEncryptionAlgorithm,
   isLegacyEncryptionOptions,
   isLocalWallet,
-  isRawArrayBuffer
+  isRawArrayBuffer,
 } from "~utils/assertions";
 import { requestUserAuthorization } from "~utils/auth/auth.utils";
 
 const background: BackgroundModuleFunction<string | Uint8Array> = async (
   appData,
   data: unknown,
-  options: Record<string, unknown>
+  options: Record<string, unknown>,
 ) => {
   // validate data
   isRawArrayBuffer(data);
@@ -36,7 +36,7 @@ const background: BackgroundModuleFunction<string | Uint8Array> = async (
   const privateKey = {
     ...decryptedWallet.keyfile,
     alg: "RSA-OAEP-256",
-    ext: true
+    ext: true,
   };
 
   // remove wallet from memory
@@ -55,37 +55,25 @@ const background: BackgroundModuleFunction<string | Uint8Array> = async (
       {
         name: options.algorithm,
         hash: {
-          name: options.hash
-        }
+          name: options.hash,
+        },
       },
       false,
-      ["decrypt"]
+      ["decrypt"],
     );
 
     // prepare encrypted data
-    const encryptedKey = new Uint8Array(
-      new Uint8Array(Object.values(data)).slice(0, 512)
-    );
-    const encryptedData = new Uint8Array(
-      new Uint8Array(Object.values(data)).slice(512)
-    );
+    const encryptedKey = new Uint8Array(new Uint8Array(Object.values(data)).slice(0, 512));
+    const encryptedData = new Uint8Array(new Uint8Array(Object.values(data)).slice(512));
 
     // create arweave client
     const arweave = new Arweave(defaultGateway);
 
     // decrypt key
-    const decryptedKey = await crypto.subtle.decrypt(
-      { name: options.algorithm },
-      key,
-      encryptedKey
-    );
+    const decryptedKey = await crypto.subtle.decrypt({ name: options.algorithm }, key, encryptedKey);
 
     // decrypt data
-    decryptedData = await arweave.crypto.decrypt(
-      encryptedData,
-      new Uint8Array(decryptedKey),
-      options.salt
-    );
+    decryptedData = await arweave.crypto.decrypt(encryptedData, new Uint8Array(decryptedKey), options.salt);
 
     // remove wallet from memory
     freeDecryptedWallet(privateKey);
@@ -94,10 +82,7 @@ const background: BackgroundModuleFunction<string | Uint8Array> = async (
     if (options.salt) {
       const rawSalt = new TextEncoder().encode(options.salt);
 
-      decryptedData = decryptedData.slice(
-        0,
-        decryptedData.length - rawSalt.length
-      );
+      decryptedData = decryptedData.slice(0, decryptedData.length - rawSalt.length);
     }
   } else if (options.name) {
     // validate
@@ -109,10 +94,10 @@ const background: BackgroundModuleFunction<string | Uint8Array> = async (
       privateKey,
       {
         name: "RSA-OAEP",
-        hash: "SHA-256"
+        hash: "SHA-256",
       },
       false,
-      ["decrypt"]
+      ["decrypt"],
     );
 
     const decrypted = await crypto.subtle.decrypt(options, key, data);
@@ -132,9 +117,9 @@ const background: BackgroundModuleFunction<string | Uint8Array> = async (
   await requestUserAuthorization(
     {
       type: "decrypt",
-      message: Object.values(decryptedData)
+      message: Object.values(decryptedData),
     },
-    appData
+    appData,
   );
 
   return decryptedData;

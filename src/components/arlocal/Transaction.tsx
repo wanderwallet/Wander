@@ -8,15 +8,7 @@ import { IconButton } from "~components/IconButton";
 import { readFileBinary } from "~utils/file";
 import { useRef, useState } from "react";
 import { unlock } from "~wallets/auth";
-import {
-  Button,
-  Input,
-  Spacer,
-  useInput,
-  Text,
-  FileInput,
-  useToasts
-} from "@arconnect/components-rebrand";
+import { Button, Input, Spacer, useInput, Text, FileInput, useToasts } from "@arconnect/components-rebrand";
 import type Arweave from "arweave";
 import browser from "webextension-polyfill";
 import styled from "styled-components";
@@ -48,23 +40,17 @@ export function ArLocalTransaction({ arweave }: Props) {
 
     // check required fields
     if (!file) {
-      if (
-        (!txQtyInput.state || txQtyInput.state === "") &&
-        txTargetInput.state !== ""
-      ) {
+      if ((!txQtyInput.state || txQtyInput.state === "") && txTargetInput.state !== "") {
         return setToast({
           type: "error",
           content: browser.i18n.getMessage("fillOutQtyField"),
-          duration: 2400
+          duration: 2400,
         });
-      } else if (
-        txQtyInput.state !== "" &&
-        (!txTargetInput.state || txTargetInput.state === "")
-      ) {
+      } else if (txQtyInput.state !== "" && (!txTargetInput.state || txTargetInput.state === "")) {
         return setToast({
           type: "error",
           content: browser.i18n.getMessage("fillOutTargetField"),
-          duration: 2400
+          duration: 2400,
         });
       } else if (
         (txQtyInput.state === "" || !txQtyInput.state) &&
@@ -74,7 +60,7 @@ export function ArLocalTransaction({ arweave }: Props) {
         return setToast({
           type: "error",
           content: browser.i18n.getMessage("addFileError"),
-          duration: 2400
+          duration: 2400,
         });
       }
     }
@@ -93,7 +79,7 @@ export function ArLocalTransaction({ arweave }: Props) {
       setToast({
         type: "error",
         content: browser.i18n.getMessage("couldNotReadTxData"),
-        duration: 2400
+        duration: 2400,
       });
       setSendingTx(false);
       return;
@@ -108,7 +94,7 @@ export function ArLocalTransaction({ arweave }: Props) {
         setToast({
           type: "error",
           content: browser.i18n.getMessage("invalidPassword"),
-          duration: 2400
+          duration: 2400,
         });
         setSendingTx(false);
         return;
@@ -123,7 +109,7 @@ export function ArLocalTransaction({ arweave }: Props) {
         return setToast({
           duration: 2200,
           type: "error",
-          content: browser.i18n.getMessage("wallet_hardware_unsupported")
+          content: browser.i18n.getMessage("wallet_hardware_unsupported"),
         });
       }
 
@@ -131,19 +117,14 @@ export function ArLocalTransaction({ arweave }: Props) {
 
       // create tx
       let initParams: Partial<CreateTransactionInterface> = {
-        data: txData
+        data: txData,
       };
 
-      if (
-        !!txTargetInput.state &&
-        txTargetInput.state !== "" &&
-        !!txQtyInput.state &&
-        txQtyInput.state !== ""
-      ) {
+      if (!!txTargetInput.state && txTargetInput.state !== "" && !!txQtyInput.state && txQtyInput.state !== "") {
         initParams = {
           ...initParams,
           target: txTargetInput.state,
-          quantity: arweave.ar.arToWinston(txQtyInput.state)
+          quantity: arweave.ar.arToWinston(txQtyInput.state),
         };
       }
 
@@ -157,10 +138,7 @@ export function ArLocalTransaction({ arweave }: Props) {
       }
 
       // add content-type tag if there isn't one already
-      if (
-        file &&
-        !tags.find((tag) => tag.name.toLowerCase() === "content-type")
-      ) {
+      if (file && !tags.find((tag) => tag.name.toLowerCase() === "content-type")) {
         transaction.addTag("Content-Type", file.type);
       }
 
@@ -188,8 +166,8 @@ export function ArLocalTransaction({ arweave }: Props) {
         duration: 2400,
         action: {
           name: browser.i18n.getMessage("copyId"),
-          task: () => copy(transaction.id)
-        }
+          task: () => copy(transaction.id),
+        },
       });
 
       // reset inputs
@@ -205,7 +183,7 @@ export function ArLocalTransaction({ arweave }: Props) {
       setToast({
         type: "error",
         content: browser.i18n.getMessage("transaction_send_error"),
-        duration: 2400
+        duration: 2400,
       });
     }
 
@@ -258,9 +236,9 @@ export function ArLocalTransaction({ arweave }: Props) {
                       return {
                         ...t,
                         // @ts-expect-error
-                        name: e.target.value
+                        name: e.target.value,
                       };
-                    })
+                    }),
                   )
                 }
               />
@@ -280,35 +258,26 @@ export function ArLocalTransaction({ arweave }: Props) {
                       return {
                         ...t,
                         // @ts-expect-error
-                        value: e.target.value
+                        value: e.target.value,
                       };
-                    })
+                    }),
                   )
                 }
               />
             </InputWrapper>
-            <IconButton
-              variant="secondary"
-              onClick={() => setTags((val) => val.filter((_, j) => j !== i))}
-            >
+            <IconButton variant="secondary" onClick={() => setTags((val) => val.filter((_, j) => j !== i))}>
               <TrashIcon /> Trash
             </IconButton>
           </InputWithBtn>
           <Spacer y={1} />
         </div>
       ))}
-      <Button
-        fullWidth
-        variant="secondary"
-        onClick={() => setTags((val) => [...val, { name: "", value: "" }])}
-      >
+      <Button fullWidth variant="secondary" onClick={() => setTags((val) => [...val, { name: "", value: "" }])}>
         <PlusIcon /> {browser.i18n.getMessage("addTag")}
       </Button>
       <Spacer y={1} />
       <Text>{browser.i18n.getMessage("data")}</Text>
-      <FileInput inputRef={fileInput}>
-        {browser.i18n.getMessage("dragAndDropFile")}
-      </FileInput>
+      <FileInput inputRef={fileInput}>{browser.i18n.getMessage("dragAndDropFile")}</FileInput>
       {walletStatus === "locked" && (
         <>
           <Spacer y={1} />

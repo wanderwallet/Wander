@@ -30,12 +30,7 @@ const Wrapper = styled.div`
 const Period = styled.div<{ active: boolean }>`
   padding: 0.5rem 0;
   border-radius: 10px;
-  background-color: rgba(
-    255,
-    255,
-    255,
-    ${(props) => (props.active ? ".1" : "0")}
-  );
+  background-color: rgba(255, 255, 255, ${(props) => (props.active ? ".1" : "0")});
   cursor: pointer;
   text-align: center;
   color: rgba(255, 255, 255, ${(props) => (props.active ? "1" : ".5")});

@@ -8,13 +8,7 @@ import { PageType, trackPage } from "~utils/analytics";
 import { useLocation } from "~wallets/router/router.utils";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { Button, Spacer, Text } from "@arconnect/components-rebrand";
-import {
-  AlertTriangle,
-  Check,
-  Copy01,
-  Eye,
-  EyeOff
-} from "@untitled-ui/icons-react";
+import { AlertTriangle, Check, Copy01, Eye, EyeOff } from "@untitled-ui/icons-react";
 
 export type BackupWelcomeViewProps = CommonRouteProps<SetupWelcomeViewParams>;
 
@@ -52,9 +46,7 @@ export function BackupWelcomeView({ params }: BackupWelcomeViewProps) {
   return (
     <Container>
       <Content>
-        <Paragraph>
-          {browser.i18n.getMessage("backup_wallet_content")}
-        </Paragraph>
+        <Paragraph>{browser.i18n.getMessage("backup_wallet_content")}</Paragraph>
         <div>
           <SeedContainer onClick={() => setShown((val) => !val)}>
             <Seed shown={shown}>{generatedWallet.mnemonic || ""}</Seed>
@@ -73,12 +65,7 @@ export function BackupWelcomeView({ params }: BackupWelcomeViewProps) {
           </Text>
         </WarningContainer>
       </Content>
-      <Button
-        fullWidth
-        onClick={() =>
-          navigate(`/${params.setupMode}/${Number(params.page) + 1}`)
-        }
-      >
+      <Button fullWidth onClick={() => navigate(`/${params.setupMode}/${Number(params.page) + 1}`)}>
         {browser.i18n.getMessage("continue")}
       </Button>
     </Container>
@@ -142,7 +129,7 @@ const Seed = styled(Text).attrs({ size: "sm" })<{ shown: boolean }>`
 const CopySeed = styled(Text).attrs({
   noMargin: true,
   variant: "secondary",
-  weight: "medium"
+  weight: "medium",
 })`
   display: flex;
   align-items: center;
@@ -165,6 +152,5 @@ const WarningContainer = styled.div`
   gap: 12px;
   align-self: stretch;
   border-radius: 8px;
-  background: ${(props) =>
-    props.theme.displayTheme === "dark" ? "#363225" : "#F5F5F5"};
+  background: ${(props) => (props.theme.displayTheme === "dark" ? "#363225" : "#F5F5F5")};
 `;

@@ -9,10 +9,7 @@ import { getActiveKeyfile } from "~wallets";
 import { isString } from "typed-assert";
 import { signAuth } from "./sign_auth";
 import { signedTxTags } from "./tags";
-import {
-  constructTransaction,
-  deconstructSignedTransaction
-} from "./transaction_builder";
+import { constructTransaction, deconstructSignedTransaction } from "./transaction_builder";
 import Application from "~applications/application";
 import browser from "webextension-polyfill";
 import Arweave from "arweave";
@@ -24,7 +21,7 @@ const background: BackgroundModuleFunction<BackgroundResult> = async (
   appData,
   tx: unknown,
   options: unknown | undefined | null,
-  chunkCollectionID: unknown
+  chunkCollectionID: unknown,
 ) => {
   // validate input
   isSplitTransaction(tx);
@@ -51,7 +48,7 @@ const background: BackgroundModuleFunction<BackgroundResult> = async (
   // reconstruct the transaction from the chunks
   let transaction = arweave.transactions.fromRaw({
     ...constructTransaction(tx, chunks || []),
-    owner: keyfile?.n
+    owner: keyfile?.n,
   });
 
   // clean up chunks
@@ -84,20 +81,13 @@ const background: BackgroundModuleFunction<BackgroundResult> = async (
   const signPolicy = await app.getSignPolicy();
 
   // check if user needs to sign
-  const userNeedsToSign = checkIfUserNeedsToSign(
-    signPolicy,
-    transaction,
-    activeWallet.type
-  );
+  const userNeedsToSign = checkIfUserNeedsToSign(signPolicy, transaction, activeWallet.type);
 
   // check if user needs to sign
   // if userNeedsToSign is true, then we'll need to signAuth popup
   if (userNeedsToSign) {
     // get address of keyfile
-    const addr =
-      activeWallet.type === "local"
-        ? await arweave.wallets.jwkToAddress(keyfile)
-        : activeWallet.address;
+    const addr = activeWallet.type === "local" ? await arweave.wallets.jwkToAddress(keyfile) : activeWallet.address;
 
     try {
       // auth before signing
@@ -106,7 +96,7 @@ const background: BackgroundModuleFunction<BackgroundResult> = async (
       if (res.data && activeWallet.type === "hardware") {
         transaction.setSignature({
           ...res.data,
-          owner: activeWallet.publicKey
+          owner: activeWallet.publicKey,
         });
       }
     } catch {
@@ -133,7 +123,7 @@ const background: BackgroundModuleFunction<BackgroundResult> = async (
     await arweave.transactions.sign(transaction, keyfile, options);
 
     browser.alarms.create(`scheduled-fee.${transaction.id}.${appData.url}`, {
-      when: Date.now() + 2000
+      when: Date.now() + 2000,
     });
   }
 
@@ -157,13 +147,13 @@ const background: BackgroundModuleFunction<BackgroundResult> = async (
   // analytics
   await trackDirect(EventType.SIGNED, {
     appUrl: appData.url,
-    totalInAR: arweave.ar.winstonToAr(price.toString())
+    totalInAR: arweave.ar.winstonToAr(price.toString()),
   });
 
   // return de-constructed transaction
   return {
     transaction: returnTransaction,
-    arConfetti: await arconfettiIcon()
+    arConfetti: await arconfettiIcon(),
   };
 };
 

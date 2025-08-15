@@ -11,17 +11,13 @@ export const RETRY_ALARM = "update_gateway_retry";
  * Get cache of ar.io gateway list
  */
 export async function getGatewayCache() {
-  return await ExtensionStorage.get<GatewayAddressRegistryItem[]>(
-    CACHE_STORAGE_NAME
-  );
+  return await ExtensionStorage.get<GatewayAddressRegistryItem[]>(CACHE_STORAGE_NAME);
 }
 
 /**
  * Update ar.io gateway list cache
  */
-export async function updateGatewayCache(
-  gateways: GatewayAddressRegistryItem[]
-) {
+export async function updateGatewayCache(gateways: GatewayAddressRegistryItem[]) {
   return await ExtensionStorage.set(CACHE_STORAGE_NAME, gateways);
 }
 
@@ -36,8 +32,6 @@ export async function scheduleGatewayUpdate(retry = false) {
   if (!retry && !!gatewayUpdateAlarm) return;
 
   browser.alarms.create(retry ? RETRY_ALARM : UPDATE_ALARM, {
-    [retry ? "when" : "periodInMinutes"]: retry
-      ? Date.now() + 60 * 60 * 1000
-      : 12 * 60
+    [retry ? "when" : "periodInMinutes"]: retry ? Date.now() + 60 * 60 * 1000 : 12 * 60,
   });
 }

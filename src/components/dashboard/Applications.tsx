@@ -10,13 +10,13 @@ import SearchInput from "./SearchInput";
 import styled from "styled-components";
 import { useLocation } from "~wallets/router/router.utils";
 import type { CommonRouteProps } from "~wallets/router/router.types";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 export interface ApplicationsDashboardViewParams {
   app?: string;
 }
 
-export type ApplicationsDashboardViewProps =
-  CommonRouteProps<ApplicationsDashboardViewParams>;
+export type ApplicationsDashboardViewProps = CommonRouteProps<ApplicationsDashboardViewParams>;
 
 export function ApplicationsDashboardView() {
   const { navigate } = useLocation();
@@ -27,39 +27,35 @@ export function ApplicationsDashboardView() {
   const [connectedApps] = useStorage<string[]>(
     {
       key: "apps",
-      instance: PersistentStorage
+      instance: PersistentStorage,
     },
-    []
+    [],
   );
 
   // apps
   const [apps, setApps] = useState<SettingsAppData[]>([]);
 
-  useEffect(() => {
-    (async () => {
-      if (!connectedApps) return;
-      const appsWithData: SettingsAppData[] = [];
+  useAsyncEffect(async () => {
+    if (!connectedApps) return;
 
-      for (const app of connectedApps) {
-        const appObj = new Application(app);
-        const appData = await appObj.getAppData();
+    const appsWithData: SettingsAppData[] = [];
 
-        appsWithData.push({
-          name: appData.name || app,
-          url: app,
-          icon: appData.logo
-        });
-      }
+    for (const app of connectedApps) {
+      const appObj = new Application(app);
+      const appData = await appObj.getAppData();
 
-      setApps(appsWithData);
-    })();
+      appsWithData.push({
+        name: appData.name || app,
+        url: app,
+        icon: appData.logo,
+      });
+    }
+
+    setApps(appsWithData);
   }, [connectedApps]);
 
   // active subsetting val
-  const activeApp = useMemo(
-    () => (params?.app ? decodeURIComponent(params.app) : undefined),
-    [params]
-  );
+  const activeApp = useMemo(() => (params?.app ? decodeURIComponent(params.app) : undefined), [params]);
 
   useEffect(() => {
     const firstApp = connectedApps?.[0];
@@ -82,19 +78,13 @@ export function ApplicationsDashboardView() {
       return true;
     }
 
-    return (
-      app.name.toLowerCase().includes(query.toLowerCase()) ||
-      app.url.toLowerCase().includes(query.toLowerCase())
-    );
+    return app.name.toLowerCase().includes(query.toLowerCase()) || app.url.toLowerCase().includes(query.toLowerCase());
   }
 
   return (
     <Wrapper>
       <SearchWrapper>
-        <SearchInput
-          placeholder={browser.i18n.getMessage("search_apps")}
-          {...searchInput.bindings}
-        />
+        <SearchInput placeholder={browser.i18n.getMessage("search_apps")} {...searchInput.bindings} />
       </SearchWrapper>
       <Spacer y={1} />
       <SettingsList>

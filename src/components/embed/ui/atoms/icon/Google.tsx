@@ -1,11 +1,7 @@
 import * as React from "react";
 import type { SVGProps } from "react";
 
-const SvgGoogle = ({
-  width = 24,
-  height = 24,
-  ...props
-}: SVGProps<SVGSVGElement>) => (
+const SvgGoogle = ({ width = 24, height = 24, ...props }: SVGProps<SVGSVGElement>) => (
   <svg
     width={width}
     height={height}
@@ -13,8 +9,7 @@ const SvgGoogle = ({
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
     {...props}
-    color="currentColor"
-  >
+    color="currentColor">
     <g clipPath="url(#clip0_1230_25)">
       <path
         d="M24.0163 12.2763C24.0163 11.4605 23.9501 10.6404 23.809 9.83789H12.4902V14.4589H18.972C18.703 15.9492 17.8388 17.2676 16.5733 18.1054V21.1037H20.4403C22.7111 19.0137 24.0163 15.9272 24.0163 12.2763Z"

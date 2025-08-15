@@ -653,6 +653,14 @@
     "message": "New password cannot be the same as your old password",
     "description": "Password must be different from old one"
   },
+  "set_password": {
+    "message": "Set password",
+    "description": "Set password button text"
+  },
+  "change_password": {
+    "message": "Change password",
+    "description": "Change password button text"
+  },
   "invalid_mnemonic": {
     "message": "Invalid mnemonic seedphrase",
     "description": "Invalid mnemonic seedphrase error notification"
@@ -700,6 +708,10 @@
   "cancel": {
     "message": "Cancel",
     "description": "Cancel button text"
+  },
+  "back": {
+    "message": "Back",
+    "description": "Back button text"
   },
   "export": {
     "message": "Export",
@@ -2026,13 +2038,13 @@
     "message": "Congrats on earning AO Tokens for hodling AR! 🥳",
     "description": "ao token announcement title text"
   },
-  "AO_token_send_popup": {
-    "message": "The AO token is non transferable until February 8th, 2025 when 15% of AO has been minted.",
-    "description": "Popup description about ao token transfer"
-  },
   "EXP_token_send_popup": {
     "message": "The EXP Token is non transferable",
     "description": "Popup description about ao token transfer"
+  },
+  "WNDR_token_send_popup": {
+    "message": "The WNDR Token is non transferable until October 7th, 2025",
+    "description": "Popup description about wndr token transfer"
   },
   "token_send_popup_title": {
     "message": "$TOKEN$ Token Transfer Notice",
@@ -2528,6 +2540,10 @@
     "message": "Name your account",
     "description": "Name your account input placeholder"
   },
+  "secure_your_account": {
+    "message": "Secure your account",
+    "description": "Secure your account button text"
+  },
   "backup_your_account": {
     "message": "Backup your account",
     "description": "Backup your account button text"
@@ -2573,19 +2589,15 @@
     "description": "Enable notifications description"
   },
   "enable_analytics_description": {
-    "message": "Enable analytics to help us provide the best experience for you on Wander.",
+    "message": "Enable anonymous analytics to help us continue making Wander better.",
     "description": "Enable analytics description"
-  },
-  "go_to_dashboard": {
-    "message": "Go to dashboard",
-    "description": "Go to dashboard button text"
   },
   "congratulations": {
     "message": "Congratulations!",
     "description": "Congratulations title"
   },
   "congratulations_description": {
-    "message": "You have now finished $TYPE$ your Wander account",
+    "message": "You have now finished $TYPE$ your Wander account. Your wallet address is below:",
     "description": "Congratulations description",
     "placeholders": {
       "type": {
@@ -2601,10 +2613,6 @@
   "copy_failed": {
     "message": "Failed to copy",
     "description": "Failed to copy text"
-  },
-  "your_wallet_address_is": {
-    "message": "Your wallet address is",
-    "description": "Your wallet address is"
   },
   "choose_how_to_add_your_account": {
     "message": "Choose how you want to add your account.",
@@ -2696,6 +2704,10 @@
     "message": "Take a tour",
     "description": "Take a tour button text"
   },
+  "take_the_tour": {
+    "message": "Take the tour",
+    "description": "Take the tour button text"
+  },
   "getting_started": {
     "message": "Getting started",
     "description": "Getting started title"
@@ -2720,16 +2732,20 @@
     "message": "Explore and connect to apps directly on Wander.",
     "description": "Getting started explore title"
   },
+  "getting_started_pin_title": {
+    "message": "Pin the Wander extension on your browser.",
+    "description": "Getting started pin title"
+  },
   "finish": {
     "message": "Finish",
     "description": "Finish button text"
   },
   "importing": {
-    "message": "Importing",
+    "message": "importing",
     "description": "Importing text"
   },
   "creating": {
-    "message": "Creating",
+    "message": "creating",
     "description": "Creating text"
   },
   "sign_into_wander": {
@@ -2764,9 +2780,9 @@
     "message": "Your other accounts",
     "description": "Your other accounts text"
   },
-  "activity": {
-    "message": "Activity",
-    "description": "Activity text"
+  "feed": {
+    "message": "Feed",
+    "description": "Feed text"
   },
   "manage_asset_list": {
     "message": "Manage asset list",
@@ -2821,7 +2837,7 @@
     "description": "Verify the full address text"
   },
   "verify_full_address_description": {
-    "message": "You haven’t interacted with this address recently. Please ensure the entire address is correct.",
+    "message": "You haven't interacted with this address recently. Please ensure the entire address is correct.",
     "description": "Verify the full address description"
   },
   "select_token": {
@@ -2958,10 +2974,6 @@
     "message": "Exchange rate",
     "description": "Exchange rate text"
   },
-  "partitioned_storage_banner": {
-    "message": "Your wallets will not be automatically available on other sites. You may need to manually import them when visiting other sites.",
-    "description": "Partitioned storage banner message"
-  },
   "data_content_type_not_supported": {
     "message": "Unable to display data: The content type $TYPE$ is not supported for preview.",
     "description": "Data content type not supported text",
@@ -2979,5 +2991,1195 @@
   "re_request_access": {
     "message": "Re-request access",
     "description": "Re-request access text"
+  },
+  "set_up_a_password": {
+    "message": "Set up a password",
+    "description": "Set up a password text"
+  },
+  "generating_your_account": {
+    "message": "Generating your account!",
+    "description": "Generating your account text"
+  },
+  "generating_your_account_description": {
+    "message": "This process typically takes 1-2 minutes.",
+    "description": "Generating your account description"
+  },
+  "pin_wander": {
+    "message": "Pin Wander",
+    "description": "Pin Wander text"
+  },
+  "pin_wander_rest": {
+    "message": "in your extension menu for quick and seamless access.",
+    "description": "Pin Wander rest"
+  },
+  "personalize_your_experience": {
+    "message": "Personalize your experience",
+    "description": "Personalize your experience text"
+  },
+  "account_name_save_description": {
+    "message": "Your account name is stored locally and will only be visible to you.",
+    "description": "Account name save description"
+  },
+  "backup_recovery_phrase": {
+    "message": "Back up recovery phrase",
+    "description": "Back up recovery phrase text"
+  },
+  "reveal_recovery_phrase": {
+    "message": "Reveal recovery phrase?",
+    "description": "Reveal recovery phrase text"
+  },
+  "you_can_only_see_your_recovery_phrase_once": {
+    "message": "You can only see your recovery phrase once. Please write it down in a secure place and do not share it with anyone.",
+    "description": "You can only see your recovery phrase once text"
+  },
+  "recovery_phrase": {
+    "message": "Recovery phrase",
+    "description": "Recovery phrase text"
+  },
+  "export_keyfile_tooltip": {
+    "message": "Your wallet's encrypted keyfile is used to securely sign transactions and access your Arweave account.",
+    "description": "Export keyfile tooltip"
+  },
+  "scan_qr_code_seamless_transfer": {
+    "message": "The above wallet address and QR code correspond to your $TYPE$ Wander account. If you own AR or AO tokens on an exchange, you can now withdraw them to this address.",
+    "description": "Scan QR code seamless transfer text",
+    "placeholders": {
+      "type": {
+        "content": "$1",
+        "example": "new"
+      }
+    }
+  },
+  "imported": {
+    "message": "imported",
+    "description": "Imported text"
+  },
+  "agents": {
+    "message": "Agents",
+    "description": "Agents text"
+  },
+  "create_an_agent": {
+    "message": "Create an Agent",
+    "description": "Create an agent text"
+  },
+  "learn_more": {
+    "message": "Learn more",
+    "description": "Learn more text"
+  },
+  "introducing_the_agents": {
+    "message": "Introducing Agents in Wander!",
+    "description": "Introducing the Agents text"
+  },
+  "introducing_the_agents_description": {
+    "message": "Easily lend your tokens and earn interest—set up an agent to auto-convert your AO earnings into wAR or wUSDC daily.",
+    "description": "Introducing the Agents description"
+  },
+  "no_active_yield_agents": {
+    "message": "You don't have any active yield agents",
+    "description": "You don't have any active yield agents text"
+  },
+  "ao_yield_agent": {
+    "message": "AO Yield Agent",
+    "description": "AO Yield Agent text"
+  },
+  "ao_yield_agent_description": {
+    "message": "Automatically convert your AO to wUSDC or wAR",
+    "description": "AO Yield Agent description"
+  },
+  "liquidops_agent": {
+    "message": "LiquidOps Agent",
+    "description": "LiquidOps Agent text"
+  },
+  "liquidops_agent_description": {
+    "message": "$ACTIVE$ agents active, $AVAILABLE$ agents available",
+    "description": "LiquidOps Agent description",
+    "placeholders": {
+      "active": {
+        "content": "$1",
+        "example": "0"
+      },
+      "available": {
+        "content": "$2",
+        "example": "3"
+      }
+    }
+  },
+  "select_buy_asset": {
+    "message": "Select buy asset",
+    "description": "Select buy asset text"
+  },
+  "buy_asset": {
+    "message": "Buy asset",
+    "description": "Buy asset text"
+  },
+  "percentage_of_daily_ao_to_sell": {
+    "message": "% of daily AO to sell",
+    "description": "Percentage of daily AO to sell text"
+  },
+  "percentage_of_daily_ao_to_sell_description": {
+    "message": "The amount of AO minted daily you want to convert",
+    "description": "Percentage of daily AO to sell description"
+  },
+  "running_time": {
+    "message": "Running time",
+    "description": "Running time text"
+  },
+  "slippage": {
+    "message": "Slippage",
+    "description": "Slippage text"
+  },
+  "slippage_description": {
+    "message": "Your sell will be cancelled if the price changes more than the slippage percentage.",
+    "description": "Slippage description"
+  },
+  "auto": {
+    "message": "Auto",
+    "description": "Auto text"
+  },
+  "run_indefinitely": {
+    "message": "Run indefinitely",
+    "description": "Run indefinitely text"
+  },
+  "run_indefinitely_tooltip": {
+    "message": "The agent will not stop converting minted AO unless you cancel it.",
+    "description": "Run indefinitely tooltip"
+  },
+  "your_agents": {
+    "message": "Your agents",
+    "description": "Your agents text"
+  },
+  "slippage_cannot_be_less_than_0_5": {
+    "message": "Slippage cannot be less than 0.5%",
+    "description": "Slippage cannot be less than 0.5% text"
+  },
+  "slippage_cannot_be_greater_than_10": {
+    "message": "Slippage cannot be greater than 10%",
+    "description": "Slippage cannot be greater than 10% text"
+  },
+  "select_running_dates": {
+    "message": "Select running dates",
+    "description": "Select running dates text"
+  },
+  "confirm_agent": {
+    "message": "Confirm agent",
+    "description": "Confirm agent text"
+  },
+  "activate_agent": {
+    "message": "Activate agent",
+    "description": "Activate agent text"
+  },
+  "daily_conversion": {
+    "message": "Daily conversion",
+    "description": "daily conversion text"
+  },
+  "start_date": {
+    "message": "Start date",
+    "description": "Start date description"
+  },
+  "end_date": {
+    "message": "End date",
+    "description": "End date description"
+  },
+  "fee": {
+    "message": "Fee",
+    "description": "Fee description"
+  },
+  "enter_password_confirm": {
+    "message": "Enter password to confirm",
+    "description": "Enter password to confirm title"
+  },
+  "go_to_dashboard": {
+    "message": "Go to dashboard",
+    "description": "Goto dashboard description"
+  },
+  "manage_agent": {
+    "message": "Manage agent",
+    "description": "Manage agent description"
+  },
+  "agent_activated_title": {
+    "message": "Agent Activated!",
+    "description": "Agent activated title"
+  },
+  "agent_activated_description": {
+    "message": "Your AO Yield Agent has been successfully activated and will start converting your AO earnings.",
+    "description": "Agent activated title"
+  },
+  "agent_not_activated_title": {
+    "message": "Agent could not be activated",
+    "description": "Agent not activated title"
+  },
+  "agent_not_activated_description": {
+    "message": "Looks like something went wrong, please try again.",
+    "description": "Agent not activated title"
+  },
+  "cancelled": {
+    "message": "Cancelled",
+    "description": "Cancelled text"
+  },
+  "completed": {
+    "message": "Completed",
+    "description": "Completed text"
+  },
+  "paused": {
+    "message": "Paused",
+    "description": "Paused text"
+  },
+  "percentage_of_each_conversion": {
+    "message": "$PERCENTAGE$% of each conversion",
+    "description": "Percentage of each conversion text",
+    "placeholders": {
+      "percentage": {
+        "content": "$1",
+        "example": "0.5"
+      }
+    }
+  },
+  "cancel_agent": {
+    "message": "Cancel agent",
+    "description": "Cancel agent text"
+  },
+  "agent_details": {
+    "message": "Agent details",
+    "description": "Agent details text"
+  },
+  "performance": {
+    "message": "Performance",
+    "description": "Performance text"
+  },
+  "total_ao_sold": {
+    "message": "Total AO sold",
+    "description": "Total AO sold text"
+  },
+  "total_bought": {
+    "message": "Total $ASSET$ bought",
+    "description": "Total bought text",
+    "placeholders": {
+      "asset": {
+        "content": "$1",
+        "example": "wUSDC"
+      }
+    }
+  },
+  "total_transactions": {
+    "message": "Total transactions",
+    "description": "Total transactions text"
+  },
+  "view_transaction_history": {
+    "message": "View transaction history",
+    "description": "View transaction history text"
+  },
+  "active_agents": {
+    "message": "Active agents",
+    "description": "Active agents text"
+  },
+  "available_agents": {
+    "message": "Available agents",
+    "description": "Available agents text"
+  },
+  "agent": {
+    "message": "Agent",
+    "description": "Agent text"
+  },
+  "deposited": {
+    "message": "Deposited",
+    "description": "Deposited amount text"
+  },
+  "deposit": {
+    "message": "Deposit",
+    "description": "Deposit text"
+  },
+  "withdraw": {
+    "message": "Withdraw",
+    "description": "Withdraw text"
+  },
+  "apy_earned": {
+    "message": "APY earned",
+    "description": "APY earned text"
+  },
+  "current_apy": {
+    "message": "Current APY",
+    "description": "Current APY text"
+  },
+  "earned": {
+    "message": "Earned",
+    "description": "Earned text"
+  },
+  "status": {
+    "message": "Status",
+    "description": "Status text"
+  },
+  "edit_agent": {
+    "message": "Edit agent",
+    "description": "Edit agent text"
+  },
+  "error_updating_agent": {
+    "message": "Error updating agent",
+    "description": "Error updating agent text"
+  },
+  "agent_updated": {
+    "message": "Agent updated",
+    "description": "Agent updated text"
+  },
+  "agent_cancelled": {
+    "message": "Agent cancelled",
+    "description": "Agent cancelled text"
+  },
+  "agent_history": {
+    "message": "Agent history",
+    "description": "Agent history text"
+  },
+  "total_wander_fee": {
+    "message": "Total Wander fee",
+    "description": "Total Wander fee text"
+  },
+  "load_more": {
+    "message": "Load more",
+    "description": "Load more text"
+  },
+  "agent_cancel_title": {
+    "message": "Are you sure your want to cancel your agent?",
+    "description": "Agent cancel title"
+  },
+  "agent_cancel_description": {
+    "message": "Cancelling your agent will stop your automatic AO token conversions. You can also create a new agent.",
+    "description": "Agent cancel description"
+  },
+  "i_understand": {
+    "message": "I understand",
+    "description": "I understand text"
+  },
+  "go_back": {
+    "message": "Go back",
+    "description": "Go back text"
+  },
+  "ao_minting_paused_title": {
+    "message": "AO minting process error",
+    "description": "AO Minting Paused title"
+  },
+  "ao_minting_paused_description": {
+    "message": "AO minting has stopped due to a network error. You will receive your missing tokens when minting resumes.",
+    "description": "AO Minting Paused description"
+  },
+  "ao_minting_paused_action_description": {
+    "message": "You do not need to take any action.",
+    "description": "AO Minting Paused action description"
+  },
+  "ao_minting_resumed_title": {
+    "message": "AO minting resumed",
+    "description": "AO Minting Resumed title"
+  },
+  "ao_minting_resumed_description": {
+    "message": "You have received your missing tokens and the appropriate amounts have been converted to $ASSET$.",
+    "description": "AO Minting Resumed description",
+    "placeholders": {
+      "asset": {
+        "content": "$1",
+        "example": "wUSDC"
+      }
+    }
+  },
+  "no_agents": {
+    "message": "You don't have any agents",
+    "description": "No agents text"
+  },
+  "ao_delegation_title": {
+    "message": "No AO yield allocated",
+    "description": "AO Delegation title"
+  },
+  "ao_delegation_description": {
+    "message": "You haven't allocated any AO yield to your wallet. Update your AO yield delegation preferences to start receiving AO tokens and enable agent functionality.",
+    "description": "AO Delegation description"
+  },
+  "update_preferences": {
+    "message": "Update preferences",
+    "description": "Update preferences text"
+  },
+  "ao_minting_paused": {
+    "message": "Minting is paused",
+    "description": "AO Minting Paused text"
+  },
+  "month_january": {
+    "message": "January",
+    "description": "Month name January"
+  },
+  "month_february": {
+    "message": "February",
+    "description": "Month name February"
+  },
+  "month_march": {
+    "message": "March",
+    "description": "Month name March"
+  },
+  "month_april": {
+    "message": "April",
+    "description": "Month name April"
+  },
+  "month_may": {
+    "message": "May",
+    "description": "Month name May"
+  },
+  "month_june": {
+    "message": "June",
+    "description": "Month name June"
+  },
+  "month_july": {
+    "message": "July",
+    "description": "Month name July"
+  },
+  "month_august": {
+    "message": "August",
+    "description": "Month name August"
+  },
+  "month_september": {
+    "message": "September",
+    "description": "Month name September"
+  },
+  "month_october": {
+    "message": "October",
+    "description": "Month name October"
+  },
+  "month_november": {
+    "message": "November",
+    "description": "Month name November"
+  },
+  "month_december": {
+    "message": "December",
+    "description": "Month name December"
+  },
+  "day_sunday": {
+    "message": "Su",
+    "description": "Abbreviated day name Sunday"
+  },
+  "day_monday": {
+    "message": "Mo",
+    "description": "Abbreviated day name Monday"
+  },
+  "day_tuesday": {
+    "message": "Tu",
+    "description": "Abbreviated day name Tuesday"
+  },
+  "day_wednesday": {
+    "message": "We",
+    "description": "Abbreviated day name Wednesday"
+  },
+  "day_thursday": {
+    "message": "Th",
+    "description": "Abbreviated day name Thursday"
+  },
+  "day_friday": {
+    "message": "Fr",
+    "description": "Abbreviated day name Friday"
+  },
+  "day_saturday": {
+    "message": "Sat",
+    "description": "Abbreviated day name Saturday"
+  },
+  "active": {
+    "message": "Active",
+    "description": "Active label"
+  },
+  "inactive": {
+    "message": "Inactive",
+    "description": "Inactive label"
+  },
+  "token_balance": {
+    "message": "$TICKER$ balance",
+    "description": "Token (ticker) balance label",
+    "placeholders": {
+      "ticker": {
+        "content": "$1",
+        "example": "oUSDA"
+      }
+    }
+  },
+  "liquidops_open": {
+    "message": "Open in LiquidOps",
+    "description": "Open in LiquidOps link text"
+  },
+  "you_deposit": {
+    "message": "You deposit",
+    "description": "You deposit label"
+  },
+  "wander_fee": {
+    "message": "Wander fee",
+    "description": "Wander fee text"
+  },
+  "estimated_apy": {
+    "message": "Estimated APY",
+    "description": "Estimated APY text"
+  },
+  "deposit_receive": {
+    "message": "You will receive $OTOKEN$ tokens in place of your deposited $TICKER$ tokens.",
+    "description": "Note about getting oTokens for tokens",
+    "placeholders": {
+      "otoken": {
+        "content": "$1",
+        "example": "oUSDA"
+      },
+      "ticker": {
+        "content": "$2",
+        "example": "USDA"
+      }
+    }
+  },
+  "withdraw_receive": {
+    "message": "You will receive your deposited $TICKER$ tokens along with the yield you have earned.",
+    "description": "Note about getting tokens for oTokens",
+    "placeholders": {
+      "ticker": {
+        "content": "$1",
+        "example": "USDA"
+      }
+    }
+  },
+  "withdrawing": {
+    "message": "Withdrawing",
+    "description": "Ongoing withdraw text"
+  },
+  "depositing": {
+    "message": "Depositing",
+    "description": "Ongoing deposit text"
+  },
+  "view_all_agents": {
+    "message": "View all agents",
+    "description": "View all agents button text"
+  },
+  "try_again": {
+    "message": "Try again",
+    "description": "Try again button text"
+  },
+  "withdraw_success": {
+    "message": "$TICKER$ withdrawn!",
+    "description": "Note about withdrawing tokens",
+    "placeholders": {
+      "ticker": {
+        "content": "$1",
+        "example": "USDA"
+      }
+    }
+  },
+  "withdraw_failure": {
+    "message": "$TICKER$ could not be withdrawn",
+    "description": "Note about error while withdrawing tokens",
+    "placeholders": {
+      "ticker": {
+        "content": "$1",
+        "example": "USDA"
+      }
+    }
+  },
+  "deposit_success": {
+    "message": "$TICKER$ deposited!",
+    "description": "Note about depositing tokens",
+    "placeholders": {
+      "ticker": {
+        "content": "$1",
+        "example": "USDA"
+      }
+    }
+  },
+  "deposit_failure": {
+    "message": "$TICKER$ could not be deposited",
+    "description": "Note about error while depositing tokens",
+    "placeholders": {
+      "ticker": {
+        "content": "$1",
+        "example": "USDA"
+      }
+    }
+  },
+  "withdraw_success_subtext": {
+    "message": "Your $TICKER$ has been successfully withdrawn along with your earned yield.",
+    "description": "Subtext about a successful withdrawal",
+    "placeholders": {
+      "ticker": {
+        "content": "$1",
+        "example": "USDA"
+      }
+    }
+  },
+  "deposit_success_subtext": {
+    "message": "Your $TICKER$ has been successfully deposited and will start earning yield.",
+    "description": "Subtext about a successful deposit",
+    "placeholders": {
+      "ticker": {
+        "content": "$1",
+        "example": "USDA"
+      }
+    }
+  },
+  "deposit_withdraw_failure_subtext": {
+    "message": "Looks like something went wrong, please try again.",
+    "description": "Subtext about a failed deposit or withdrawal"
+  },
+  "filter": {
+    "message": "Filter",
+    "description": "Filter text"
+  },
+  "announcements_only": {
+    "message": "Announcements only",
+    "description": "Announcements only text"
+  },
+  "transactions_only": {
+    "message": "Transactions only",
+    "description": "Transactions only text"
+  },
+  "no_filters": {
+    "message": "No filters",
+    "description": "No filters text"
+  },
+  "announcement": {
+    "message": "Announcement",
+    "description": "Announcement text"
+  },
+  "announcements": {
+    "message": "Announcements",
+    "description": "Announcements text"
+  },
+  "announcement_1_title": {
+    "message": "ArConnect is now Wander!",
+    "description": "Announcement 1 title"
+  },
+  "announcement_1_description": {
+    "message": "To learn more visit https://wander.app.",
+    "description": "Announcement 1 description"
+  },
+  "announcement_2_title": {
+    "message": "Introducing Wander Agents",
+    "description": "Announcement 2 title"
+  },
+  "announcement_2_description": {
+    "message": "Auto-convert your daily AO token earnings.",
+    "description": "Announcement 2 description"
+  },
+  "announcement_3_title": {
+    "message": "WNDR token is launched!",
+    "description": "Announcement 3 title"
+  },
+  "announcement_3_description": {
+    "message": "Delegate your AO to earn WNDR tokens",
+    "description": "Announcement 3 description"
+  },
+  "announcement_3_body": {
+    "message": "1) Go to https://ao.arweave.net/#/delegate/ <br/> 2) Connect your Wander wallet <br/> 3) Find Wander in the project list <br/> 4) Click the Add button <br/> 5) Set your delegating % <br/> 6) Click the Confirm Delegation Preferences button <br/>  <br/> Done!",
+    "description": "Announcement 3 body"
+  },
+  "announcement_4_title": {
+    "message": "USDA Beta Access",
+    "description": "Announcement 4 title"
+  },
+  "announcement_4_description": {
+    "message": "Instant USDA Beta access for Reserve, Edge & Prime tier members",
+    "description": "Announcement 4 description"
+  },
+  "announcement_4_body": {
+    "message": "Wander Reserve, Edge, and Prime tier members get instant access to the USDA Beta. Connect your Wander wallet, get verified and unlock access. Try now on [Astro Bridge](https://bridge.astrousd.com/)",
+    "description": "Announcement 4 body"
+  },
+  "announcement_5_title": {
+    "message": "Manage your FL allocations!",
+    "description": "Announcement 5 title"
+  },
+  "announcement_5_description": {
+    "message": "Manage your fair launch delegation directly inside of Wander",
+    "description": "Announcement 5 description"
+  },
+  "announcement_5_body": {
+    "message": "Easily manage and customize your your AO fair launch delegation allocations directly within the Wander browser extension by clicking the Earn button on your Dashboard.",
+    "description": "Announcement 5 body"
+  },
+  "announcement_6_title": {
+    "message": "StarGrid Battle Pass!",
+    "description": "Announcement 6 title"
+  },
+  "announcement_6_description": {
+    "message": "Exclusive for WNDR Token holders",
+    "description": "Announcement 6 description"
+  },
+  "announcement_6_body": {
+    "message": "WNDR Token holders receive instant access to the StarGrid Battle Tactics. Connect your Wander wallet, get verified and unlock access. Try now on [StarGrid](https://stargrid.ar.io)",
+    "description": "Announcement 6 body"
+  },
+  "swipe_to_learn_more": {
+    "message": "Swipe to learn more",
+    "description": "Swipe to learn more text"
+  },
+  "zero_fees": {
+    "message": "Zero fees",
+    "description": "Zero fees text"
+  },
+  "exclusive_feature_access": {
+    "message": "Exclusive feature access",
+    "description": "Exclusive feature access text"
+  },
+  "power_ups_with_partners": {
+    "message": "Power-ups with partners",
+    "description": "Power-ups with partners text"
+  },
+  "introducing_the": {
+    "message": "Introducing the",
+    "description": "Introducing the text"
+  },
+  "token": {
+    "message": "token",
+    "description": "Token text"
+  },
+  "get_wander_tokens": {
+    "message": "Get WNDR tokens",
+    "description": "Get WNDR tokens text"
+  },
+  "explore_tier_benefits": {
+    "message": "Explore tier benefits",
+    "description": "Explore tier benefits text"
+  },
+  "your_tier": {
+    "message": "Your tier",
+    "description": "Your tier text"
+  },
+  "benefits": {
+    "message": "Benefits",
+    "description": "Benefits text"
+  },
+  "activity": {
+    "message": "Activity",
+    "description": "Activity text"
+  },
+  "your_lifetime_savings": {
+    "message": "Your lifetime savings",
+    "description": "Your lifetime savings text"
+  },
+  "your_position": {
+    "message": "Your position",
+    "description": "Your position text"
+  },
+  "tier_core_title": {
+    "message": "Get your first WNDR token to get started!",
+    "description": "Core tier title"
+  },
+  "tier_core_description": {
+    "message": "1. Open the [Fair Launch delegation website](https://ao.arweave.net/#/delegate/) <br/> 2. Connect your Wander wallet <br/> 3. Add WNDR to your delegation list <br/> 4. WNDR earnings are deposited every 24 hours",
+    "description": "Core tier description with steps"
+  },
+  "tier_benefit_fee_reduction_defi": {
+    "message": "$PERCENTAGE$% Wander added fee reduction on defi transactions",
+    "description": "Fee reduction benefit for defi transactions",
+    "placeholders": {
+      "percentage": {
+        "content": "$1",
+        "example": "25"
+      }
+    }
+  },
+  "tier_benefit_fee_reduction_transak": {
+    "message": "$PERCENTAGE$% Wander added fee reduction on Transak purchases",
+    "description": "Fee reduction benefit for Transak purchases",
+    "placeholders": {
+      "percentage": {
+        "content": "$1",
+        "example": "100"
+      }
+    }
+  },
+  "tier_benefit_access_features": {
+    "message": "Access to $FEATURE_TYPE$ features",
+    "description": "Access to specific tier features benefit",
+    "placeholders": {
+      "feature_type": {
+        "content": "$1",
+        "example": "Reserve"
+      }
+    }
+  },
+  "tier_benefit_early_access": {
+    "message": "Early access to new features",
+    "description": "Early access to new features benefit"
+  },
+  "tier_benefit_support_channels": {
+    "message": "Dedicated support channel of their choice: $CHANNELS$",
+    "description": "Dedicated support channels benefit",
+    "placeholders": {
+      "channels": {
+        "content": "$1",
+        "example": "Discord, Slack, Telegram, or Email"
+      }
+    }
+  },
+  "tier_feature_type_all": {
+    "message": "all",
+    "description": "All features type"
+  },
+  "tier_support_channels_basic": {
+    "message": "Discord, Slack, Telegram, or Email",
+    "description": "Basic support channels list"
+  },
+  "tier_support_channels_premium": {
+    "message": "Discord, Slack, Telegram, Email, or schedule a video call with the team",
+    "description": "Premium support channels list"
+  },
+  "tiers": {
+    "message": "Tiers",
+    "description": "Tiers text"
+  },
+  "position_update_tooltip": {
+    "message": "Your position is updated every 24 hours at 4:00 PM GMT",
+    "description": "Tooltip text for position update"
+  },
+  "earn": {
+    "message": "Earn",
+    "description": "Earn text"
+  },
+  "price": {
+    "message": "Price",
+    "description": "Price text"
+  },
+  "stats": {
+    "message": "Stats",
+    "description": "Stats text"
+  },
+  "about": {
+    "message": "About",
+    "description": "About text"
+  },
+  "token_price": {
+    "message": "$NAME$ Price",
+    "description": "Token price text",
+    "placeholders": {
+      "name": {
+        "content": "$1",
+        "example": "USDA"
+      }
+    }
+  },
+  "token_description_0syT13r0s0tgPmIed95bJnuSqaD29HQNN8D3ElLSrsc": {
+    "message": "AO focuses on providing a secure, scalable, and interoperable compute environment for decentralized applications (dApps), using the AO token as its native currency for economic security and liquidity.",
+    "description": "Description for AO token"
+  },
+  "token_description_AR": {
+    "message": "Arweave is a decentralized storage platform enabling permanent, immutable data storage. Its native token, AR, is used for data storage and incentivizing miners to maintain this data.",
+    "description": "Description for Arweave token"
+  },
+  "token_description_xU9zFkq3X2ZQ6olwNVvr1vUWIjc3kXTWr7xKQD6dh10": {
+    "message": "Wrapped AR (wAR) is the AR token wrapped and cross-chained to the AO network. The AOX cross-chain bridge does the wrapping and bridging between the Arweave and AO networks.",
+    "description": "Description for Wrapped AR token"
+  },
+  "token_description_NG_0lVX882MG5nhARrSzyprEK6ejonHpdUmaaMPsHE8": {
+    "message": "Q Arweave (qAR) is the core token of the Quantum bridge, representing AR within the AO ecosystem. It allows AR holders to engage with AO-based applications while maintaining their Arweave connection. qAR opens up new opportunities in AO and enables potential dual rewards, letting users benefit from AO incentives while keeping AR holder rights.",
+    "description": "Description for Q Arweave token"
+  },
+  "token_description_4hXj_E_5fAKmo4E8KjgQvuDJKAFk9P2grhycVmISDLs": {
+    "message": "The Permaweb Index (PI) token is an index token that is made of AR, AO, and Fair Launch project tokens. PI is also the default yield allocation asset that users earn from holding AR or staking yield earning assets via the Fair Launch Platform.",
+    "description": "Description for PI token"
+  },
+  "token_description_pazXumQI_HPH7iFGfTC_4_7biSnqz_U67oFAGry5zUY": {
+    "message": "Llama Land is an AI powered MMO game built on AO.  LLama Coin is the official test token of Llama Land",
+    "description": "Description for Llama Coin token"
+  },
+  "token_description_DM3FoZUq_yebASPhgd8pEIRIzDW6muXEhxz5_JwbZwo": {
+    "message": "PIXL is a rewards token for purchasing atomic assets on the Universal Content Marketplace. When users buy atomic assets via Bazar or any UCM platform, they become eligible to receive PIXL tokens.",
+    "description": "Description for PIXL token"
+  },
+  "token_description_wOrb8b_V8QixWyXZub48Ki5B6OIDyf_p1ngoonsaRpQ": {
+    "message": "The first Meme token on AO",
+    "description": "Description for Trunk token"
+  },
+  "token_description_8rbAftv7RaPxFjFk5FGUVAVCSjGQB4JHDcb9P9wCVhQ": {
+    "message": "Transcend Keystroking, be an AGENT",
+    "description": "Description for AGENT token"
+  },
+  "token_description_agYcCFJtrMG6cqMuZfskIkFTGvUPddICmtQSBIoPdiA": {
+    "message": "ARIO (tARIO) is the native test token of the AR.IO permanent cloud network. The token incentivizes gateway operators to provide vital services that facilitate access to and utility of the permaweb. In addition, ARIO can be used for purchasing and managing Arweave Name System (ArNS) domains as well as for participation in delegated staking.",
+    "description": "Description for ARIO test token"
+  },
+  "token_description_qNvAoz0TgcH7DMg8BCVn8jF32QH5L6T29VjHxhHqqGE": {
+    "message": "ARIO is used for staking, network rewards, and purchasing decentralized smart domains within the AR.IO permanent cloud network.",
+    "description": "Description for ARIO token"
+  },
+  "token_description_aYrCboXVSl1AXL9gPFe3tfRxRf0ZmkOXH65mKT0HHZw": {
+    "message": "Level up for the AR.IO mainnet! Engage in quests with the Permanent Cloud Network to gain Experience Points (EXP), onchain tokens that represent potential eligibility for the network's forthcoming airdrops. Learn more at: https://ar.io/experience",
+    "description": "Description for EXP token"
+  },
+  "token_description_7GoQfmSOct_aUOWKM4xbKGg6DzAmOgdKwg8Kf_CbHm4": {
+    "message": "WNDR is the token of the Wander Network. WNDR is a utility token that rewards meaningful engagement across the AO and Arweave ecosystems",
+    "description": "Description for WNDR token"
+  },
+  "token_description_FBt9A5GA_KXMMSxA2DJ0xZbAq8sLLU2ak_YJe9zDvg8": {
+    "message": "Astro is the liquidity solution built for seamless integration within the AO ecosystem. By aggregating multiple stablecoins and fiat currencies into a single, unified asset - USDA, Astro ensures frictionless value exchange between real-world and on-chain applications.",
+    "description": "Description for USDA token"
+  },
+  "token_description_n2MhPK0O3yEvY2zW73sqcmWqDktJxAifJDrri4qireI": {
+    "message": "LiquidOps is a lending and borrowing protocol that provides users the ability to earn interest on their Arweave and AO assets. LQD is the governance token for the LiquidOps protocol",
+    "description": "Description for LQD token"
+  },
+  "token_description_Nx__Ichdp_9uO_ZKg2DLWPiRlg_DWrSa2uGvINxOjaE": {
+    "message": "Botega is a decentralized finance (DeFi) platform built on autonomous agents, facilitating the exchange of assets across various models within the AO ecosystem.",
+    "description": "Description for BOTG token"
+  },
+  "token_description_OiNYKJ16jP7uj7z0DJO7JZr9ClfioGacpItXTn9fKn8": {
+    "message": "ACTION is the token of Basejump.xyz, a network built on AO's decentralized compute layer, the Action substrate enables the creation and interoperability of sovereign worlds, games, game assets, and communities",
+    "description": "Description for ACTION token"
+  },
+  "token_description_Jc2bcfEbwHFQ_qY4jqm8L5hc_SggeVA1zlW6DOICWgo": {
+    "message": "Protocol.Land is a decentralized, source controlled, code collaboration where you own your code. Open-source, from platform to on-chain. All stored permanently on Arweave, owned by you.",
+    "description": "Description for PL token"
+  },
+  "token_description_K59Wi9uKXBQfTn3zw7L_t_lwHAoq3Fx_V9sCyOY3dFE": {
+    "message": "StarGrid combines fast-paced gameplay with crypto-native rewards, using AO and Arweave to immutably record every match outcome. Win games to earn SMONEY",
+    "description": "Description for SMONEY token"
+  },
+  "token_description_mqBYxpDsolZmJyBdTK8TJp_ftOuIUXVYcSQ8MYZdJg0": {
+    "message": "Apus is enabling verifiable decentralized AI through Deterministic GPU computing. The $$APUS token is the core utility and governance token of the Apus Network, playing a central role in securing the network, facilitating transactions, and empowering decentralized governance.",
+    "description": "Description for APUS token"
+  },
+  "token_description_gx_jKk_hy8_sB4Wv5WEuvTTVyIRWW3We7rRHthcohBQ": {
+    "message": "Load Network's EVM and AO interoperability allows it to tap directly into AO hyperparallel compute while giving AO instant access to the vast liquidity and tooling of the EVM world.",
+    "description": "Description for LOAD token"
+  },
+  "token_description_7zH9dlMNoxprab9loshv3Y7WG45DOny_Vrq9KrXObdQ": {
+    "message": "Wrapped USDC (wUSDC) is the USDC on ETH token wrapped and cross-chained to the AO network. The AOX cross-chain bridge does the wrapping and bridging between the EVM and AO networks.",
+    "description": "Description for wUSDC token"
+  },
+  "website": {
+    "message": "Website",
+    "description": "Website text"
+  },
+  "address": {
+    "message": "Address",
+    "description": "Address text"
+  },
+  "info": {
+    "message": "Info",
+    "description": "Info text"
+  },
+  "verified": {
+    "message": "Verified",
+    "description": "Verified text"
+  },
+  "help": {
+    "message": "Help",
+    "description": "Help text"
+  },
+  "help_description": {
+    "message": "Get help with Wander",
+    "description": "Help description"
+  },
+  "help_center": {
+    "message": "Help Center",
+    "description": "Help Center text"
+  },
+  "discord": {
+    "message": "Discord",
+    "description": "Discord text"
+  },
+  "email": {
+    "message": "Email",
+    "description": "Email text"
+  },
+  "video_support": {
+    "message": "Video Support",
+    "description": "Video Support text"
+  },
+  "fastest": {
+    "message": "Fastest",
+    "description": "Fastest text"
+  },
+  "unknown_coin": {
+    "message": "There is no information available for this asset. Please proceed with caution and use at your own risk",
+    "description": "Unknown coin text"
+  },
+  "earn_tokens_in_wander": {
+    "message": "Earn Tokens in Wander!",
+    "description": "Earn tokens in Wander text"
+  },
+  "earn_tokens_in_wander_description": {
+    "message": "Earn a variety of tokens just from holding AR Token and/or staking stETH and DAI.",
+    "description": "Earn tokens in Wander description text"
+  },
+  "earn_tokens_list_item_1": {
+    "message": "Hold AR tokens to earn automatically",
+    "description": "Earn tokens list item 1"
+  },
+  "earn_tokens_list_item_2": {
+    "message": "Stake sETH or DAI for additional rewards",
+    "description": "Earn tokens list item 2"
+  },
+  "earn_tokens_list_item_3": {
+    "message": "Choose which tokens to earn",
+    "description": "Earn tokens list item 3"
+  },
+  "allocation": {
+    "message": "Allocation",
+    "description": "Allocation text"
+  },
+  "allocation_description": {
+    "message": "This represents how you are currently allocating your AO Yield",
+    "description": "Allocation description text"
+  },
+  "view_full_breakdown_on_ao_website": {
+    "message": "View full breakdown on AO website",
+    "description": "View full breakdown on AO website text"
+  },
+  "earn_notice_title": {
+    "message": "Support projects & earn their tokens",
+    "description": "Earn notice title"
+  },
+  "earn_notice_description": {
+    "message": "Delegate your AO yield earnings to projects in the ecosystem.",
+    "description": "Earn notice description"
+  },
+  "primary": {
+    "message": "Primary",
+    "description": "Primary text"
+  },
+  "primary_count": {
+    "message": "Primary ($COUNT$)",
+    "description": "Primary count text",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
+  "projects": {
+    "message": "Projects",
+    "description": "Projects text"
+  },
+  "projects_count": {
+    "message": "Projects ($COUNT$)",
+    "description": "Projects count text",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
+  "coming_soon": {
+    "message": "Coming Soon",
+    "description": "Coming soon text"
+  },
+  "no_projects_tokens": {
+    "message": "No projects tokens",
+    "description": "No projects tokens text"
+  },
+  "no_projects_tokens_description": {
+    "message": "Delegated AO allocation to ecosystem projects will appear here",
+    "description": "No projects tokens description text"
+  },
+  "manage_earnings": {
+    "message": "Manage earnings",
+    "description": "Manage earnings text"
+  },
+  "add_token": {
+    "message": "Add token",
+    "description": "Add token text"
+  },
+  "explore_all_projects": {
+    "message": "Explore all projects",
+    "description": "Explore all projects text"
+  },
+  "ao_delegation_tooltip": {
+    "message": "Your $$AO allocation will be adjusted according to tokens added.",
+    "description": "AO delegation tooltip text"
+  },
+  "remove_delegation_tooltip": {
+    "message": "Setting the token allocation to less than 5% will remove it",
+    "description": "Remove delegation tooltip text"
+  },
+  "delegation_info_saved": {
+    "message": "Delegation info saved",
+    "description": "Delegation info saved text"
+  },
+  "delegation_info_save_failed": {
+    "message": "Delegation info save failed",
+    "description": "Delegation info save failed text"
+  },
+  "flp_claim_success": {
+    "message": "Claimed successfully",
+    "description": "Fair Launch claim success text"
+  },
+  "flp_claim_error": {
+    "message": "Failed to claim",
+    "description": "Fair Launch claim error text"
+  },
+  "claim": {
+    "message": "Claim",
+    "description": "Claim text"
+  },
+  "claiming": {
+    "message": "Claiming",
+    "description": "Claiming text"
+  },
+  "ao_tokens_detected": {
+    "message": "AO tokens detected",
+    "description": "AO tokens detected text"
+  },
+  "diversify_portfolio": {
+    "message": "Diversify you portfolio by delegating your AO yield earnings to projects in the ecosystem.",
+    "description": "Diversify portfolio text"
+  },
+  "start_delegating": {
+    "message": "Start delegating",
+    "description": "Start delegating text"
+  },
+  "balance": {
+    "message": "Balance",
+    "description": "Balance text"
+  },
+  "start_allocating_ao_yield": {
+    "message": "Start allocating your AO yield with more ways to earn. You can change this at any time.",
+    "description": "Start allocating your AO yield with more ways to earn text"
+  },
+  "note_earning_ao_tokens": {
+    "message": "Note: You're technically earning AO tokens, but delegating them to projects in exchange for their tokens.",
+    "description": "Note you are technically earning AO tokens text"
+  },
+  "allocation_set": {
+    "message": "Allocation set!",
+    "description": "Allocation set text"
+  },
+  "allocation_set_description": {
+    "message": "You have successfully added new tokens to your delegation list. These tokens will show up on your asset list automatically.",
+    "description": "Allocation set description text"
+  },
+  "view_delegation_list": {
+    "message": "View delegation list",
+    "description": "View delegation list text"
+  },
+  "members_instant_access": {
+    "message": "members get instant access",
+    "description": "Members get instant access text"
+  },
+  "get_access": {
+    "message": "Get access",
+    "description": "Get access text"
+  },
+  "wndr_member_benefits": {
+    "message": "$$WNDR Member Benefits",
+    "description": "WNDR member benefits text"
+  },
+  "beta_access": {
+    "message": "Beta Access",
+    "description": "Beta access text"
+  },
+  "no_activity_yet": {
+    "message": "No activity yet",
+    "description": "No activity yet text"
+  },
+  "agents_syncing": {
+    "message": "Agents syncing",
+    "description": "Agents syncing text"
+  },
+  "stargrid_battle_pass": {
+    "message": "StarGrid Battle Pass",
+    "description": "StarGrid battle pass text"
+  },
+  "stargrid_claim_now": {
+    "message": "Claim Now!",
+    "description": "StarGrid claim now text"
+  },
+  "days": {
+    "message": "Days",
+    "description": "Days text"
   }
 }

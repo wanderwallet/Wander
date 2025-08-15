@@ -4,13 +4,7 @@ import type { HTMLProps } from "react";
 import styled from "styled-components";
 
 const TokenLoading = (props: HTMLProps<HTMLDivElement>) => (
-  <LoadingWrapper
-    variants={opacityAnimation}
-    initial="hidden"
-    animate="shown"
-    exit="hidden"
-    {...(props as any)}
-  >
+  <LoadingWrapper variants={opacityAnimation} initial="hidden" animate="shown" exit="hidden" {...(props as any)}>
     <Spinner />
   </LoadingWrapper>
 );
@@ -29,7 +23,7 @@ const LoadingWrapper = styled(motion.div)`
 
 const opacityAnimation: Variants = {
   hidden: { opacity: 0 },
-  shown: { opacity: 1 }
+  shown: { opacity: 1 },
 };
 
 export default TokenLoading;

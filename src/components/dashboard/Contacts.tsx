@@ -15,32 +15,28 @@ import { EventType, trackEvent } from "~utils/analytics";
 import type { Contacts } from "~components/Recipient";
 import { useLocation } from "~wallets/router/router.utils";
 import type { CommonRouteProps } from "~wallets/router/router.types";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 export interface ContactsDashboardViewParams {
   contact?: string;
 }
 
-export interface ContactsDashboardViewProps
-  extends CommonRouteProps<ContactsDashboardViewParams> {
+export interface ContactsDashboardViewProps extends CommonRouteProps<ContactsDashboardViewParams> {
   isQuickSetting?: boolean;
 }
 
-export function ContactsDashboardView({
-  isQuickSetting
-}: ContactsDashboardViewProps) {
+export function ContactsDashboardView({ isQuickSetting }: ContactsDashboardViewProps) {
   const { navigate } = useLocation();
   // TODO: Replace with useParams:
-  const [matches, params] = useRoute<{ contact?: string }>(
-    "/contacts/:contact?"
-  );
+  const [matches, params] = useRoute<{ contact?: string }>("/contacts/:contact?");
 
   // contacts
   const [storedContacts, setStoredContacts] = useStorage(
     {
       key: "contacts",
-      instance: ExtensionStorage
+      instance: ExtensionStorage,
     },
-    []
+    [],
   );
 
   const [contacts, setContacts] = useState<SettingsContactData[]>([]);
@@ -49,45 +45,35 @@ export function ContactsDashboardView({
     trackEvent(EventType.CONTACTS, {});
   }, []);
 
-  useEffect(() => {
-    async function fetchContacts() {
-      const storedContacts = await ExtensionStorage.get<Contacts>("contacts");
+  useAsyncEffect(async () => {
+    const storedContacts = await ExtensionStorage.get<Contacts>("contacts");
 
-      if (storedContacts) {
-        const namedContacts = storedContacts.filter((contact) => contact.name);
-        const addressOnlyContacts = storedContacts.filter(
-          (contact) => !contact.name
-        );
+    if (!storedContacts) return;
 
-        namedContacts.sort((a, b) => {
-          const nameComparison = a.name.localeCompare(b.name);
-          if (nameComparison !== 0) {
-            return nameComparison;
-          }
+    const namedContacts = storedContacts.filter((contact) => contact.name);
+    const addressOnlyContacts = storedContacts.filter((contact) => !contact.name);
 
-          return multiSort([a, b])[0] === a ? -1 : 1;
-        });
-
-        const sortedAddressOnlyContacts = multiSort(addressOnlyContacts);
-
-        const sortedContacts = [...namedContacts, ...sortedAddressOnlyContacts];
-
-        const enrichedContacts = await Promise.all(
-          sortedContacts.map(async (contact) => await enrichContact(contact))
-        );
-
-        setContacts(enrichedContacts);
+    namedContacts.sort((a, b) => {
+      const nameComparison = a.name.localeCompare(b.name);
+      if (nameComparison !== 0) {
+        return nameComparison;
       }
-    }
 
-    fetchContacts();
+      return multiSort([a, b])[0] === a ? -1 : 1;
+    });
+
+    const sortedAddressOnlyContacts = multiSort(addressOnlyContacts);
+
+    const sortedContacts = [...namedContacts, ...sortedAddressOnlyContacts];
+
+    const enrichedContacts = await Promise.all(sortedContacts.map(async (contact) => await enrichContact(contact)));
+
+    setContacts(enrichedContacts);
   }, [storedContacts]);
 
   function groupContactsByFirstLetter(contacts) {
     return contacts.reduce((groups, contact) => {
-      let firstLetter = contact.name
-        ? contact.name[0].toUpperCase()
-        : contact.address[0].toUpperCase();
+      let firstLetter = contact.name ? contact.name[0].toUpperCase() : contact.address[0].toUpperCase();
 
       if (!firstLetter.match(/[A-Z]/)) {
         firstLetter = "0-9";
@@ -101,24 +87,14 @@ export function ContactsDashboardView({
     }, {});
   }
 
-  const groupedContacts = useMemo(
-    () => groupContactsByFirstLetter(contacts),
-    [contacts]
-  );
+  const groupedContacts = useMemo(() => groupContactsByFirstLetter(contacts), [contacts]);
 
   // active subsetting
-  const activeContact = useMemo(
-    () => (params?.contact ? decodeURIComponent(params.contact) : undefined),
-    [params]
-  );
+  const activeContact = useMemo(() => (params?.contact ? decodeURIComponent(params.contact) : undefined), [params]);
 
   // Update the URL when a contact is clicked
   const handleContactClick = (contactAddress: string) => {
-    navigate(
-      `/${isQuickSetting ? "quick-settings/" : ""}contacts/${encodeURIComponent(
-        contactAddress
-      )}`
-    );
+    navigate(`/${isQuickSetting ? "quick-settings/" : ""}contacts/${encodeURIComponent(contactAddress)}`);
   };
 
   const searchInput = useInput();
@@ -228,8 +204,7 @@ const SearchWrapper = styled.div<{ small?: boolean }>`
   right: 0;
   z-index: 20;
   grid-template-columns: auto auto;
-  ${(props) =>
-    !props.small && `background-color: rgb(${props.theme.cardBackground})`}
+  ${(props) => !props.small && `background-color: rgb(${props.theme.cardBackground})`}
 `;
 
 const AddContactButton = styled(Button)`

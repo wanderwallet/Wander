@@ -16,5 +16,5 @@ export default {
   runtime,
   storage,
   tabs,
-  windows
+  windows,
 };

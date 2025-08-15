@@ -28,8 +28,7 @@ export function SettingListItem({
       active={active}
       rightIcon={isExternalLink && <ExternalLinkIcon />}
       showArrow={!isExternalLink}
-      {...props}
-    >
+      {...props}>
       <ListItemIcon as={icon} />
     </ListItem>
   );

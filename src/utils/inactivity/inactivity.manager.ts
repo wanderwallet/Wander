@@ -14,9 +14,10 @@ export class InactivityManager {
   private async getSettings(): Promise<AutoLockSettings> {
     if (this.settingsCache) return this.settingsCache;
 
-    const settings = (await ExtensionStorage.get<AutoLockSettings>(
-      INACTIVITY.STORAGE.AUTO_LOCK
-    )) ?? { enabled: false, timeout: INACTIVITY.DEFAULT_TIMEOUT_MINUTES };
+    const settings = (await ExtensionStorage.get<AutoLockSettings>(INACTIVITY.STORAGE.AUTO_LOCK)) ?? {
+      enabled: false,
+      timeout: INACTIVITY.DEFAULT_TIMEOUT_MINUTES,
+    };
 
     this.settingsCache = settings;
 
@@ -35,10 +36,7 @@ export class InactivityManager {
 
   private async clearAllInactivityAlarms(): Promise<void> {
     try {
-      await Promise.all([
-        browser.alarms.clear(INACTIVITY.ALARM.TIMER),
-        browser.alarms.clear(INACTIVITY.ALARM.CHECK)
-      ]);
+      await Promise.all([browser.alarms.clear(INACTIVITY.ALARM.TIMER), browser.alarms.clear(INACTIVITY.ALARM.CHECK)]);
       log(LOG_GROUP.SESSION, "Cleared all inactivity alarms");
     } catch (error) {
       log(LOG_GROUP.SESSION, `Failed to clear alarms: ${error.message}`);
@@ -54,9 +52,7 @@ export class InactivityManager {
     }
   }
 
-  private async handleSettingsChange(
-    newValue: AutoLockSettings
-  ): Promise<void> {
+  private async handleSettingsChange(newValue: AutoLockSettings): Promise<void> {
     this.settingsCache = newValue;
     this.setupPeriodicCheck(newValue.enabled);
 
@@ -81,7 +77,7 @@ export class InactivityManager {
 
     try {
       browser.alarms.create(INACTIVITY.ALARM.TIMER, {
-        delayInMinutes: timeout
+        delayInMinutes: timeout,
       });
       log(LOG_GROUP.SESSION, `Auto-lock in ${timeout}min`);
     } catch (error) {
@@ -93,10 +89,8 @@ export class InactivityManager {
     if (!window.width || !window.height || !window.focused) return false;
 
     return (
-      Math.abs(window.width - INACTIVITY.POPUP.WIDTH) <=
-        INACTIVITY.POPUP.SIZE_TOLERANCE &&
-      Math.abs(window.height - INACTIVITY.POPUP.HEIGHT) <=
-        INACTIVITY.POPUP.SIZE_TOLERANCE
+      Math.abs(window.width - INACTIVITY.POPUP.WIDTH) <= INACTIVITY.POPUP.SIZE_TOLERANCE &&
+      Math.abs(window.height - INACTIVITY.POPUP.HEIGHT) <= INACTIVITY.POPUP.SIZE_TOLERANCE
     );
   };
 
@@ -111,7 +105,7 @@ export class InactivityManager {
 
     const [lastActivity, timeout] = await Promise.all([
       ExtensionStorage.get<number>(INACTIVITY.STORAGE.LAST_ACTIVITY),
-      this.getTimeout()
+      this.getTimeout(),
     ]);
 
     const timeoutMs = timeout * 60 * 1000;
@@ -140,19 +134,17 @@ export class InactivityManager {
         log(LOG_GROUP.SESSION, "Recording activity");
         await Promise.all([
           ExtensionStorage.set(INACTIVITY.STORAGE.LAST_ACTIVITY, Date.now()),
-          this.clearInactivityAlarm()
+          this.clearInactivityAlarm(),
         ]);
       } catch (error) {
         log(LOG_GROUP.SESSION, `Failed to record activity: ${error.message}`);
       }
     },
     INACTIVITY.THROTTLE_TIME,
-    { leading: true, trailing: false }
+    { leading: true, trailing: false },
   );
 
-  async checkAndHandleSessionState(
-    popupWindow: boolean = false
-  ): Promise<void> {
+  async checkAndHandleSessionState(popupWindow: boolean = false): Promise<void> {
     try {
       if (!(await this.isEnabled())) {
         log(LOG_GROUP.SESSION, "Auto-lock disabled");
@@ -161,7 +153,7 @@ export class InactivityManager {
 
       if (popupWindow) {
         const windows = await browser.windows.getAll({
-          windowTypes: ["popup", "panel"]
+          windowTypes: ["popup", "panel"],
         });
 
         if (windows.some(this.isPopupWindow)) {
@@ -186,7 +178,7 @@ export class InactivityManager {
 
       const [lastActivity, timeout] = await Promise.all([
         ExtensionStorage.get<number>(INACTIVITY.STORAGE.LAST_ACTIVITY),
-        this.getTimeout()
+        this.getTimeout(),
       ]);
 
       const now = Date.now();
@@ -207,11 +199,9 @@ export class InactivityManager {
 
     // Watch for settings changes
     ExtensionStorage.watch({
-      [INACTIVITY.STORAGE.AUTO_LOCK]: ({
-        newValue
-      }: StorageChange<AutoLockSettings>) => {
+      [INACTIVITY.STORAGE.AUTO_LOCK]: ({ newValue }: StorageChange<AutoLockSettings>) => {
         this.handleSettingsChange(newValue);
-      }
+      },
     });
 
     this.setupListeners();
@@ -224,9 +214,7 @@ export class InactivityManager {
         this.checkAndHandleSessionState(true);
       }
     });
-    browser.windows.onRemoved.addListener(() =>
-      this.checkAndHandleSessionState(true)
-    );
+    browser.windows.onRemoved.addListener(() => this.checkAndHandleSessionState(true));
 
     // Alarm listeners
     browser.alarms.onAlarm.addListener(async (alarm) => {

@@ -37,9 +37,7 @@ export function AccountWelcomeView({ params }: AccountWelcomeViewProps) {
   return (
     <Container>
       <Content>
-        <Paragraph>
-          {browser.i18n.getMessage("create_a_new_account_description")}
-        </Paragraph>
+        <Paragraph>{browser.i18n.getMessage("create_a_new_account_description")}</Paragraph>
         <Input
           type="text"
           {...accountInput.bindings}

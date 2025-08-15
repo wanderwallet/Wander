@@ -1,8 +1,9 @@
 import { useCallback, useState } from "react";
-import { Box, Button, CameraIcon, Card, WanderFooter } from "~components/embed";
+import { Box, Button, CameraIcon, Card } from "~components/embed";
 import { useLocation } from "~wallets/router/router.utils";
 import { useWebcamPermission } from "./hooks/useWebcamPermission";
 import { toast } from "react-toastify";
+import { WanderFooter } from "~components/embed/ui/templates/wander-footer/WanderFooter";
 
 export function AuthAddWithQRCodeEmbeddedView() {
   const { navigate, back } = useLocation();
@@ -28,17 +29,9 @@ export function AuthAddWithQRCodeEmbeddedView() {
       subtitle="Scan your wallet QR code to import your account."
       footerElement={<WanderFooter />}
       hasBackButton={true}
-      onBackButtonClick={back}
-      size="sm"
-    >
+      onBackButtonClick={back}>
       <Box>
-        <Button
-          variant="secondary"
-          isFullWidth
-          icon={<CameraIcon />}
-          onClick={handleOpenWebcam}
-          isLoading={isLoading}
-        >
+        <Button variant="secondary" isFullWidth icon={<CameraIcon />} onClick={handleOpenWebcam} isLoading={isLoading}>
           Open webcam
         </Button>
       </Box>

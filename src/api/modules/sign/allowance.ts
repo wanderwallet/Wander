@@ -1,7 +1,4 @@
-import {
-  type AllowanceBigNumber,
-  defaultAllowance
-} from "~applications/allowance";
+import { type AllowanceBigNumber, defaultAllowance } from "~applications/allowance";
 import Application from "~applications/application";
 import { requestUserAuthorization } from "../../../utils/auth/auth.utils";
 import BigNumber from "bignumber.js";
@@ -28,10 +25,7 @@ export async function getAllowance(tabURL: string) {
  * @param price Price to update the allowance spent amount
  * with (quantity + reward)
  */
-export async function updateAllowance(
-  tabURL: string,
-  price: number | BigNumber
-) {
+export async function updateAllowance(tabURL: string, price: number | BigNumber) {
   // construct application
   const app = new Application(tabURL);
 
@@ -43,8 +37,8 @@ export async function updateAllowance(
         ...allowance,
         spent: BigNumber(allowance?.spent || 0)
           .plus(price)
-          .toString()
-      }
+          .toString(),
+      },
     };
   });
 }
@@ -62,7 +56,7 @@ export async function allowanceAuth(
   appData: ModuleAppData,
   allowance: AllowanceBigNumber,
   price: number | BigNumber,
-  override: boolean = false
+  override: boolean = false,
 ) {
   // spent amount after this transaction
   const total = allowance.spent.plus(price);
@@ -77,9 +71,9 @@ export async function allowanceAuth(
   await requestUserAuthorization(
     {
       type: "allowance",
-      spendingLimitReached: !hasEnoughAllowance
+      spendingLimitReached: !hasEnoughAllowance,
     },
-    appData
+    appData,
   );
 
   // get updated allowance

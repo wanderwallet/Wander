@@ -15,23 +15,20 @@ export const PaymentSelector = ({
   selectedCurrency,
   paymentMethod,
   setPaymentMethod,
-  onClose
+  onClose,
 }: PaymentSelectorProps) => {
   return (
     <SelectorContainer title="Select Payment Method" onClose={onClose}>
-      <div
+      <ul
         style={{
-          overflowY: "auto",
-          overflowX: "hidden",
-          flexGrow: 1,
           display: "flex",
           flexDirection: "column",
-          gap: "8px",
+          gap: "var(--spacing-3)",
           width: "100%",
-          height: "100%",
-          maxHeight: "calc(100% - 16px)"
-        }}
-      >
+          padding: 0,
+          margin: 0,
+          listStyle: "none",
+        }}>
         {(selectedCurrency?.paymentOptions || [])
           .filter((payment: any) => payment.isActive)
           .map((payment: any) => {
@@ -49,9 +46,9 @@ export const PaymentSelector = ({
                   src={payment.icon}
                   alt={payment.name}
                   style={{
-                    width: "24px",
-                    height: "24px",
-                    objectFit: "contain"
+                    width: "1.5em",
+                    height: "1.5em",
+                    objectFit: "contain",
                   }}
                 />
               );
@@ -64,9 +61,7 @@ export const PaymentSelector = ({
                 key={payment.id}
                 icon={paymentIcon}
                 title={paymentMethods(payment)}
-                subtitle={`Processing time ${
-                  payment.processingTime || "standard"
-                }`}
+                subtitle={`Processing time ${payment.processingTime || "standard"}`}
                 isSelected={payment.id === paymentMethod?.id}
                 onClick={(e) => {
                   e.preventDefault();
@@ -76,7 +71,7 @@ export const PaymentSelector = ({
               />
             );
           })}
-      </div>
+      </ul>
     </SelectorContainer>
   );
 };

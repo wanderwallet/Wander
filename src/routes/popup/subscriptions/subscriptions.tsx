@@ -1,69 +1,55 @@
-import {
-  SubscriptionStatus,
-  type SubscriptionData
-} from "~subscriptions/subscription";
+import { SubscriptionStatus, type SubscriptionData } from "~subscriptions/subscription";
 import HeadV2 from "~components/popup/HeadV2";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { getActiveAddress } from "~wallets";
 import styled from "styled-components";
 import browser from "webextension-polyfill";
 import { getSubscriptionData, updateSubscription } from "~subscriptions";
-import { useTheme } from "~utils/theme";
 import type { DisplayTheme } from "@arconnect/components";
 import { PageType, trackPage } from "~utils/analytics";
 import { SubscriptionListItem } from "~components/popup/list/SubscriptionListItem";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import { useTheme } from "~utils/theme/theme.hook";
 
 export function SubscriptionsView() {
   const [subData, setSubData] = useState<SubscriptionData[] | null>(null);
-  const theme = useTheme();
+  const { displayTheme } = useTheme();
 
-  useEffect(() => {
-    async function getSubData() {
-      const address = await getActiveAddress();
-
-      try {
-        const data = await getSubscriptionData(address);
-        // updates status if it's past due
-        data.forEach(async (subscription) => {
-          if (
-            subscription.subscriptionStatus === SubscriptionStatus.ACTIVE ||
-            subscription.subscriptionStatus ===
-              SubscriptionStatus.AWAITING_PAYMENT
-          ) {
-            const nextPaymentDue = new Date(subscription.nextPaymentDue);
-            const now = new Date();
-            if (nextPaymentDue < now) {
-              const daysPastDue = Math.floor(
-                (now.getTime() - nextPaymentDue.getTime()) /
-                  (1000 * 60 * 60 * 24)
-              );
-
-              if (daysPastDue >= 2) {
-                await updateSubscription(
-                  address,
-                  subscription.arweaveAccountAddress,
-                  SubscriptionStatus.EXPIRED
-                );
-              } else {
-                await updateSubscription(
-                  address,
-                  subscription.arweaveAccountAddress,
-                  SubscriptionStatus.AWAITING_PAYMENT
-                );
-              }
-            }
-          }
-        });
-        setSubData(data);
-      } catch (error) {
-        console.error("Error fetching subscription data:", error);
-      }
-    }
-
+  useAsyncEffect(async () => {
     // Segment
     trackPage(PageType.SUBSCRIPTIONS);
 
-    getSubData();
+    const address = await getActiveAddress();
+
+    try {
+      const data = await getSubscriptionData(address);
+      // updates status if it's past due
+      data.forEach(async (subscription) => {
+        if (
+          subscription.subscriptionStatus === SubscriptionStatus.ACTIVE ||
+          subscription.subscriptionStatus === SubscriptionStatus.AWAITING_PAYMENT
+        ) {
+          const nextPaymentDue = new Date(subscription.nextPaymentDue);
+          const now = new Date();
+          if (nextPaymentDue < now) {
+            const daysPastDue = Math.floor((now.getTime() - nextPaymentDue.getTime()) / (1000 * 60 * 60 * 24));
+
+            if (daysPastDue >= 2) {
+              await updateSubscription(address, subscription.arweaveAccountAddress, SubscriptionStatus.EXPIRED);
+            } else {
+              await updateSubscription(
+                address,
+                subscription.arweaveAccountAddress,
+                SubscriptionStatus.AWAITING_PAYMENT,
+              );
+            }
+          }
+        }
+      });
+      setSubData(data);
+    } catch (error) {
+      console.error("Error fetching subscription data:", error);
+    }
   }, []);
 
   return (
@@ -86,7 +72,7 @@ export function SubscriptionsView() {
           })}
         </SubscriptionList>
       ) : (
-        <NoSubscriptionWrapper displayTheme={theme}>
+        <NoSubscriptionWrapper displayTheme={displayTheme}>
           <div>{browser.i18n.getMessage("no_subscriptions")}</div>
           <span>{browser.i18n.getMessage("no_subscriptions_description")}</span>
         </NoSubscriptionWrapper>
@@ -120,8 +106,7 @@ const NoSubscriptionWrapper = styled.div<{ displayTheme?: DisplayTheme }>`
   span {
     font-size: 16px;
     font-weight: 400;
-    color: ${(props) =>
-      props.displayTheme === "dark" ? "#a3a3a3" : "#757575"};
+    color: ${(props) => (props.displayTheme === "dark" ? "#a3a3a3" : "#757575")};
   }
 `;
 

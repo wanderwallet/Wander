@@ -31,12 +31,7 @@ export const storage = {
   */
 
   onChanged: {
-    addListener: (
-      callback: (
-        changes: Record<string, StorageChange<any>>,
-        areaName: string
-      ) => void
-    ) => {
+    addListener: (callback: (changes: Record<string, StorageChange<any>>, areaName: string) => void) => {
       // Note from the docs (meaning, this is probably not working / not needed in Wander Embedded):
       //
       // Note: This won't work on the same browsing context that is making the changes — it is really a way for other
@@ -51,12 +46,12 @@ export const storage = {
         const changes: Record<string, StorageChange<any>> = {
           [event.key]: {
             newValue: event.newValue,
-            oldValue: event.oldValue
-          }
+            oldValue: event.oldValue,
+          },
         };
 
         callback(changes, "local");
       });
-    }
-  }
+    },
+  },
 };

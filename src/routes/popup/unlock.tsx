@@ -1,13 +1,6 @@
 import { unlock } from "~wallets/auth";
 import browser from "webextension-polyfill";
-import {
-  Button,
-  Input,
-  Section,
-  Text,
-  useInput,
-  useToasts
-} from "@arconnect/components-rebrand";
+import { Button, Input, Section, Text, useInput, useToasts } from "@arconnect/components-rebrand";
 import styled, { useTheme } from "styled-components";
 import WanderIcon from "url:assets/icon.svg";
 import IconText from "~components/IconText";
@@ -32,7 +25,7 @@ export function UnlockView() {
       return setToast({
         type: "error",
         content: browser.i18n.getMessage("invalidPassword"),
-        duration: 2200
+        duration: 2200,
       });
     }
   }
@@ -42,12 +35,7 @@ export function UnlockView() {
       <Content>
         <StarIcons screen="unlock" />
         <IconsContainer>
-          <Image
-            src={WanderIcon}
-            alt="Wander Icon"
-            width={90.965}
-            height={42.632}
-          />
+          <Image src={WanderIcon} alt="Wander Icon" width={90.965} height={42.632} />
           <IconText width={184.358} height={38.071} />
         </IconsContainer>
         <InputContainer>
@@ -64,9 +52,7 @@ export function UnlockView() {
               if (e.key !== "Enter") return;
               unlockWallet();
             }}
-            inputContainerStyle={
-              displayTheme === "dark" ? { background: "#403785" } : {}
-            }
+            inputContainerStyle={displayTheme === "dark" ? { background: "#403785" } : {}}
             autoFocus
           />
         </InputContainer>

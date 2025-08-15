@@ -47,6 +47,8 @@ import userTokensModule from "../modules/user_tokens";
 import userTokens from "../modules/user_tokens/user_tokens.background";
 import tokenBalanceModule from "../modules/token_balance";
 import tokenBalance from "../modules/token_balance/token_balance.background";
+import wanderTierInfoModule from "../modules/wander_tier_info";
+import wanderTierInfo from "../modules/wander_tier_info/wander_tier_info.background";
 
 export interface ModuleAppData {
   tabID: number;
@@ -91,5 +93,6 @@ export const backgroundModules: BackgroundModule<any>[] = [
   { ...subscriptionModule, function: subscription },
   { ...userTokensModule, function: userTokens },
   { ...tokenBalanceModule, function: tokenBalance },
-  { ...batchSignDataItemModule, function: batchSignDataItem }
+  { ...batchSignDataItemModule, function: batchSignDataItem },
+  { ...wanderTierInfoModule, function: wanderTierInfo },
 ];

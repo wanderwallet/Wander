@@ -5,7 +5,7 @@ const Paragraph = styled(Text).attrs({
   weight: "medium",
   variant: "secondary",
   noMargin: true,
-  lineHeight: 1.3
+  lineHeight: 1.3,
 })``;
 
 export default Paragraph;

@@ -7,7 +7,7 @@ const foreground: ModuleFunction<any[]> = (
   data: ArrayBuffer,
   signature: ArrayBuffer | string,
   publicKey?: string,
-  options?: SignMessageOptions
+  options?: SignMessageOptions,
 ) => {
   // validate
   isArrayBuffer(data);

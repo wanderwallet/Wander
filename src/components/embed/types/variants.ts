@@ -1,13 +1,4 @@
-export type ButtonVariants =
-  | "primary"
-  | "secondary"
-  | "outlined"
-  | "error"
-  | "success"
-  | "warning"
-  | "info"
-  | "icon"
-  | "link";
+export type ButtonVariants = "primary" | "secondary" | "outlined" | "invisible" | "text" | "link" | "unstyled";
 
 export type TextVariants =
   | "headingXl" // xlarge
@@ -19,5 +10,3 @@ export type TextVariants =
   | "bodyMd" // medium
   | "bodySm" // small
   | "bodyXs"; // xsmall
-
-export type ButtonIconPositionVariants = "start" | "end";

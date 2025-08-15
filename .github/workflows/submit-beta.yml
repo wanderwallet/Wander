@@ -20,10 +20,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-yarn-
       - name: Install dependencies
-        run: yarn install
+        run: yarn install --frozen-lockfile
       - name: Create .env file
         run: |
           echo "PLASMO_PUBLIC_TRANSAK_API_KEY=${{ secrets.TRANSAK_API_KEY }}" >> .env
+          echo "PLASMO_PUBLIC_TRANSAK_TOP_TIER_API_KEY=${{ secrets.TRANSAK_TOP_TIER_API_KEY }}" >> .env
 
       - name: Modify package.json and icons for BETA
         if: github.ref == 'refs/heads/staging'
@@ -39,5 +40,7 @@ jobs:
       - name: Browser Platform Publish
         uses: PlasmoHQ/bpp@v3
         with:
-          keys: ${{ github.ref == 'refs/heads/production' && secrets.SUBMIT_KEYS_PRODUCTION || secrets.SUBMIT_KEYS_STAGING }}
+          keys:
+            ${{ github.ref == 'refs/heads/production' && secrets.SUBMIT_KEYS_PRODUCTION || secrets.SUBMIT_KEYS_STAGING
+            }}
           artifact: build/chrome-mv3-prod.zip

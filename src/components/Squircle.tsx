@@ -1,7 +1,8 @@
-import { type HTMLProps, useEffect, useMemo, useState } from "react";
-import { v4 as uuid } from "uuid";
+import { type HTMLProps, useMemo, useState } from "react";
 import styled from "styled-components";
 import axios from "axios";
+import { nanoid } from "nanoid";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 export interface SquircleProps {
   img?: string;
@@ -18,31 +19,30 @@ export default function Squircle({
 }: HTMLProps<HTMLDivElement> & SquircleProps) {
   const [imageData, setImageData] = useState<string>();
 
-  const svgPathId = useMemo(() => uuid(), [img]);
+  const svgPathId = useMemo(() => nanoid(), [img]);
 
   // load the image with axios
   // we use this to have a nicer loading
   // because otherwise the background looks
   // weird for a second
-  useEffect(() => {
-    (async () => {
-      if (!img) {
-        return setImageData(img);
-      }
+  useAsyncEffect(async () => {
+    if (!img) {
+      setImageData(img);
+      return;
+    }
 
-      try {
-        const { data, headers } = await axios.get(img, {
-          responseType: "arraybuffer"
-        });
-        const base64 = Buffer.from(data, "binary").toString("base64");
-        const prefix = "data:" + headers["content-type"] + ";base64, ";
+    try {
+      const { data, headers } = await axios.get(img, {
+        responseType: "arraybuffer",
+      });
+      const base64 = Buffer.from(data, "binary").toString("base64");
+      const prefix = "data:" + headers["content-type"] + ";base64, ";
 
-        // append the base64 image string
-        setImageData(prefix + base64);
-      } catch (error) {
-        setImageData(img);
-      }
-    })();
+      // append the base64 image string
+      setImageData(prefix + base64);
+    } catch (error) {
+      setImageData(img);
+    }
   }, [img]);
 
   const outlinePath =
@@ -52,29 +52,11 @@ export default function Squircle({
 
   return (
     <Wrapper {...(props as any)}>
-      <SquircleSvg
-        width="60"
-        height="60"
-        viewBox="0 0 60 60"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
+      <SquircleSvg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
         {imageData && (
           <defs>
-            <pattern
-              id={svgPathId}
-              patternUnits="userSpaceOnUse"
-              width="60"
-              height="60"
-            >
-              <image
-                xlinkHref={imageData}
-                x="0"
-                y="0"
-                width="60"
-                height="60"
-                preserveAspectRatio="xMidYMid slice"
-              />
+            <pattern id={svgPathId} patternUnits="userSpaceOnUse" width="60" height="60">
+              <image xlinkHref={imageData} x="0" y="0" width="60" height="60" preserveAspectRatio="xMidYMid slice" />
             </pattern>
           </defs>
         )}
@@ -87,14 +69,7 @@ export default function Squircle({
         />
 
         {imageData ? null : (
-          <text
-            x="50%"
-            y="50%"
-            alignmentBaseline="central"
-            textAnchor="middle"
-            fill="white"
-            fontSize="2em"
-          >
+          <text x="50%" y="50%" alignmentBaseline="central" textAnchor="middle" fill="white" fontSize="2em">
             {placeholderText}
           </text>
         )}

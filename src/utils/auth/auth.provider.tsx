@@ -1,41 +1,24 @@
-import {
-  createContext,
-  useCallback,
-  useEffect,
-  useState,
-  type PropsWithChildren
-} from "react";
+import { createContext, useCallback, useEffect, useRef, useState, type PropsWithChildren } from "react";
 import {
   AUTH_POPUP_CLOSING_DELAY_MS,
   AUTH_POPUP_REQUEST_WAIT_MS,
+  AUTH_POPUP_REQUEST_ARRIVAL_WINDOW_MS,
   AUTH_POPUP_UNLOCK_REQUEST_TTL_MS,
-  ERR_MSG_USER_CANCELLED_AUTH
+  ERR_MSG_USER_CANCELLED_AUTH,
 } from "~utils/auth/auth.constants";
-import type {
-  AuthRequest,
-  AuthRequestStatus,
-  SignAuthRequest,
-  SignKeystoneAuthRequest
-} from "~utils/auth/auth.types";
-import {
-  compareConnectAuthRequests,
-  replyToAuthRequest,
-  stopKeepAlive
-} from "~utils/auth/auth.utils";
+import type { AuthRequest, AuthRequestStatus, SignAuthRequest, SignKeystoneAuthRequest } from "~utils/auth/auth.types";
+import { compareConnectAuthRequests, replyToAuthRequest, stopKeepAlive } from "~utils/auth/auth.utils";
 import type { Chunk } from "~api/modules/sign/chunks";
 import { defaultGateway } from "~gateways/gateway";
 import Arweave from "arweave";
-import {
-  bytesFromChunks,
-  constructTransaction,
-  type SplitTransaction
-} from "~api/modules/sign/transaction_builder";
+import { bytesFromChunks, constructTransaction, type SplitTransaction } from "~api/modules/sign/transaction_builder";
 import { isomorphicOnMessage } from "~isomorphic-messaging";
 import type { IBridgeMessage } from "@arconnect/webext-bridge";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { isError } from "~utils/error/error.utils";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 import { getDecryptionKey } from "~wallets/auth";
+import { addSignOutListener, removeSignOutListener } from "~utils/embedded/embedded.utils";
 
 interface AuthRequestsContextState {
   authRequests: AuthRequest[];
@@ -52,66 +35,40 @@ interface AuthRequestsContextData extends AuthRequestsContextState {
 const AUTH_REQUESTS_CONTEXT_INITIAL_STATE: AuthRequestsContextState = {
   authRequests: [],
   currentAuthRequestIndex: 0,
-  lastCompletedAuthRequest: null
+  lastCompletedAuthRequest: null,
 };
 
 export const AuthRequestsContext = createContext<AuthRequestsContextData>({
   ...AUTH_REQUESTS_CONTEXT_INITIAL_STATE,
   setCurrentAuthRequestIndex: () => {},
   completeAuthRequest: async () => {},
-  closeAuthPopup: (delay?: number) => () => {}
+  closeAuthPopup: (delay?: number) => () => {},
 });
 
 export function AuthRequestsProvider({ children }: PropsWithChildren) {
-  const [
-    { authRequests, currentAuthRequestIndex, lastCompletedAuthRequest },
-    setAuthRequestContextState
-  ] = useState<AuthRequestsContextState>(AUTH_REQUESTS_CONTEXT_INITIAL_STATE);
+  const [{ authRequests, currentAuthRequestIndex, lastCompletedAuthRequest }, setAuthRequestContextState] =
+    useState<AuthRequestsContextState>(AUTH_REQUESTS_CONTEXT_INITIAL_STATE);
 
-  const setCurrentAuthRequestIndex = useCallback(
-    (currentAuthRequestIndex: number) => {
-      setAuthRequestContextState((prevAuthRequestContextState) => {
-        return {
-          ...prevAuthRequestContextState,
-          currentAuthRequestIndex
-        };
-      });
-    },
-    []
-  );
+  // Track when the component mounted
+  const mountTimeRef = useRef<number>(Date.now());
+
+  const setCurrentAuthRequestIndex = useCallback((currentAuthRequestIndex: number) => {
+    setAuthRequestContextState((prevAuthRequestContextState) => {
+      return {
+        ...prevAuthRequestContextState,
+        currentAuthRequestIndex,
+      };
+    });
+  }, []);
 
   const closeAuthPopup = useCallback((delay: number = 0) => {
-    console.trace("closeAuthPopup");
-
     function closeOrClear() {
       if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1") {
         setAuthRequestContextState(AUTH_REQUESTS_CONTEXT_INITIAL_STATE);
 
-        /*
-
-        // This message below is already sent when the last request is handled / completed:
-
-        postEmbeddedMessage({
-          type: "embedded_request",
-          data: {
-            pendingRequests: 0,
-            hasNewConnectRequest: false,
-          }
-        });
-
-        // And this other one is not needed as the SDK will close the modal when receiving a "embedded_request" message
-        // with pendingRequests === 0.
-
-        postEmbeddedMessage({
-          type: "embedded_close",
-          data: null
-        });
-
-        // However, note the wait-before-closing functionality won't work for Embed with this implementation. One
+        // Note the wait-before-closing functionality won't work for Embed with this implementation. One
         // possible fix would be to add a shouldClose = true property to the "embedded_request" message being sent from
         // here.
-
-        */
       } else {
         window.top.close();
       }
@@ -130,9 +87,7 @@ export function AuthRequestsProvider({ children }: PropsWithChildren) {
 
   const completeAuthRequest = useCallback(
     async (authID: string, data: any) => {
-      const completedAuthRequest = authRequests.find(
-        (authRequest) => authRequest.authID === authID
-      );
+      const completedAuthRequest = authRequests.find((authRequest) => authRequest.authID === authID);
 
       const completedAuthRequests = [completedAuthRequest];
       const completedAuthRequestType = completedAuthRequest.type;
@@ -152,15 +107,14 @@ export function AuthRequestsProvider({ children }: PropsWithChildren) {
 
       if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1") {
         const pendingRequests =
-          authRequests.filter((authRequest) => authRequest.status === "pending")
-            .length - completedAuthRequests.length;
+          authRequests.filter((authRequest) => authRequest.status === "pending").length - completedAuthRequests.length;
 
         postEmbeddedMessage({
           type: "embedded_request",
           data: {
             pendingRequests,
-            hasNewConnectRequest: false
-          }
+            hasNewConnectRequest: false,
+          },
         });
       }
 
@@ -168,13 +122,9 @@ export function AuthRequestsProvider({ children }: PropsWithChildren) {
 
       const status: AuthRequestStatus = isError(data) ? "rejected" : "accepted";
 
-      const authRequestRepliesPromises: Promise<AuthRequestStatus>[] =
-        completedAuthRequests.map((completedAuthRequest) => {
-          return replyToAuthRequest(
-            completedAuthRequest.type,
-            completedAuthRequest.authID,
-            data
-          )
+      const authRequestRepliesPromises: Promise<AuthRequestStatus>[] = completedAuthRequests.map(
+        (completedAuthRequest) => {
+          return replyToAuthRequest(completedAuthRequest.type, completedAuthRequest.authID, data)
             .then(() => {
               return status;
             })
@@ -183,36 +133,28 @@ export function AuthRequestsProvider({ children }: PropsWithChildren) {
 
               return "error";
             });
-        });
-
-      const completedAuthRequestsStatus = await Promise.all(
-        authRequestRepliesPromises
+        },
       );
+
+      const completedAuthRequestsStatus = await Promise.all(authRequestRepliesPromises);
 
       log(
         LOG_GROUP.AUTH,
-        `completeAuthRequest(authID = "${authID}", status = "${status}") => ${completedAuthRequestsStatus.join(
-          ", "
-        )}`
+        `completeAuthRequest(authID = "${authID}", status = "${status}") => ${completedAuthRequestsStatus.join(", ")}`,
       );
 
       // If it is any other type of `AuthRequest`, we mark it as accepted/cancelled and move on to the next one:
       setAuthRequestContextState((prevAuthRequestContextState) => {
-        const { authRequests, currentAuthRequestIndex } =
-          prevAuthRequestContextState;
+        const { authRequests, currentAuthRequestIndex } = prevAuthRequestContextState;
 
         if (authID !== authRequests[currentAuthRequestIndex]?.authID) {
-          console.warn(
-            `Mismatch between authID="${authID}" and AuthRequest[${currentAuthRequestIndex}]?.authID`
-          );
+          console.warn(`Mismatch between authID="${authID}" and AuthRequest[${currentAuthRequestIndex}]?.authID`);
 
           return prevAuthRequestContextState;
         }
 
         if (authID !== completedAuthRequests[0]?.authID) {
-          console.warn(
-            `Mismatch between authID="${authID}" and completedAuthRequests[0]?.authID`
-          );
+          console.warn(`Mismatch between authID="${authID}" and completedAuthRequests[0]?.authID`);
 
           return prevAuthRequestContextState;
         }
@@ -223,13 +165,11 @@ export function AuthRequestsProvider({ children }: PropsWithChildren) {
 
         completedAuthRequests.forEach((completedAuthRequest, i) => {
           const completedAuthRequestIndex = nextAuthRequests.findIndex(
-            (authRequest) => authRequest.authID === completedAuthRequest.authID
+            (authRequest) => authRequest.authID === completedAuthRequest.authID,
           );
 
           if (completedAuthRequestIndex === -1) {
-            console.warn(
-              `Could not find AuthRequest with authID="${completedAuthRequestsStatus}"`
-            );
+            console.warn(`Could not find AuthRequest with authID="${completedAuthRequestsStatus}"`);
 
             return;
           }
@@ -237,20 +177,17 @@ export function AuthRequestsProvider({ children }: PropsWithChildren) {
           nextAuthRequests[completedAuthRequestIndex] = {
             ...nextAuthRequests[completedAuthRequestIndex],
             completedAt: Date.now(),
-            status: completedAuthRequestsStatus[i]
+            status: completedAuthRequestsStatus[i],
           };
 
-          if (i === 0)
-            nextLastCompletedAuthRequest =
-              nextAuthRequests[completedAuthRequestIndex];
+          if (i === 0) nextLastCompletedAuthRequest = nextAuthRequests[completedAuthRequestIndex];
         });
 
         // Find the index of the next "pending" `AuthRequest`, or keep it unchanged if there are none left:
         let nextCurrentAuthRequestIndex = currentAuthRequestIndex;
 
         do {
-          nextCurrentAuthRequestIndex =
-            (nextCurrentAuthRequestIndex + 1) % nextAuthRequests.length;
+          nextCurrentAuthRequestIndex = (nextCurrentAuthRequestIndex + 1) % nextAuthRequests.length;
         } while (
           nextCurrentAuthRequestIndex !== currentAuthRequestIndex &&
           nextAuthRequests[nextCurrentAuthRequestIndex].status !== "pending"
@@ -263,11 +200,11 @@ export function AuthRequestsProvider({ children }: PropsWithChildren) {
         return {
           authRequests: nextAuthRequests,
           currentAuthRequestIndex: nextCurrentAuthRequestIndex,
-          lastCompletedAuthRequest: nextLastCompletedAuthRequest
+          lastCompletedAuthRequest: nextLastCompletedAuthRequest,
         };
       });
     },
-    [authRequests]
+    [authRequests],
   );
 
   useEffect(() => {
@@ -287,11 +224,7 @@ export function AuthRequestsProvider({ children }: PropsWithChildren) {
       const authRequest = authRequestMessage.data;
 
       setAuthRequestContextState((prevAuthRequestContextState) => {
-        const {
-          authRequests,
-          currentAuthRequestIndex,
-          lastCompletedAuthRequest
-        } = prevAuthRequestContextState;
+        const { authRequests, currentAuthRequestIndex, lastCompletedAuthRequest } = prevAuthRequestContextState;
 
         // TODO: Additional considerations when enqueueing new `AuthRequest`s:
         //
@@ -302,22 +235,17 @@ export function AuthRequestsProvider({ children }: PropsWithChildren) {
         //   (except maybe for the current `AuthRequest`, as otherwise the UI would constantly change as new requests
         //   are added to the batch).
 
-        const nextAuthRequests = [
-          ...authRequests,
-          { ...authRequest, status: "pending" }
-        ] satisfies AuthRequest[];
+        const nextAuthRequests = [...authRequests, { ...authRequest, status: "pending" }] satisfies AuthRequest[];
 
         if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1") {
-          const pendingRequests = nextAuthRequests.filter(
-            (authRequest) => authRequest.status === "pending"
-          ).length;
+          const pendingRequests = nextAuthRequests.filter((authRequest) => authRequest.status === "pending").length;
 
           postEmbeddedMessage({
             type: "embedded_request",
             data: {
               pendingRequests,
-              hasNewConnectRequest: authRequest.type === "connect"
-            }
+              hasNewConnectRequest: authRequest.type === "connect",
+            },
           });
         }
 
@@ -327,7 +255,7 @@ export function AuthRequestsProvider({ children }: PropsWithChildren) {
         return {
           authRequests: nextAuthRequests,
           currentAuthRequestIndex,
-          lastCompletedAuthRequest
+          lastCompletedAuthRequest,
         };
       });
     });
@@ -343,7 +271,7 @@ export function AuthRequestsProvider({ children }: PropsWithChildren) {
         const {
           authRequests: prevAuthRequests,
           currentAuthRequestIndex,
-          lastCompletedAuthRequest
+          lastCompletedAuthRequest,
         } = prevAuthRequestContextState;
 
         let pendingRequestsCount = 0;
@@ -355,7 +283,7 @@ export function AuthRequestsProvider({ children }: PropsWithChildren) {
             return {
               ...authRequest,
               completedAt: Date.now(),
-              status: "aborted"
+              status: "aborted",
             } satisfies AuthRequest;
           }
 
@@ -376,7 +304,7 @@ export function AuthRequestsProvider({ children }: PropsWithChildren) {
         return {
           authRequests,
           currentAuthRequestIndex,
-          lastCompletedAuthRequest
+          lastCompletedAuthRequest,
         };
       });
     }
@@ -397,10 +325,7 @@ export function AuthRequestsProvider({ children }: PropsWithChildren) {
 
       const { type, collectionID } = data;
 
-      log(
-        LOG_GROUP.CHUNKS,
-        `auth_chunk(type ="${type}", collectionID = "${collectionID})"`
-      );
+      log(LOG_GROUP.CHUNKS, `auth_chunk(type ="${type}", collectionID = "${collectionID})"`);
 
       if (type === "start") {
         chunksByCollectionID[collectionID] = [];
@@ -411,13 +336,12 @@ export function AuthRequestsProvider({ children }: PropsWithChildren) {
           const {
             authRequests: prevAuthRequests,
             currentAuthRequestIndex,
-            lastCompletedAuthRequest
+            lastCompletedAuthRequest,
           } = prevAuthRequestContextState;
 
           const targetAuthRequest = prevAuthRequests.find((authRequest) => {
             return (
-              (authRequest.type === "sign" ||
-                authRequest.type === "signKeystone") &&
+              (authRequest.type === "sign" || authRequest.type === "signKeystone") &&
               authRequest.collectionID === collectionID
             );
           }) as SignAuthRequest | SignKeystoneAuthRequest;
@@ -430,24 +354,23 @@ export function AuthRequestsProvider({ children }: PropsWithChildren) {
             const transaction = arweave.transactions.fromRaw(
               constructTransaction(
                 targetAuthRequest.transaction as SplitTransaction,
-                chunksByCollectionID[collectionID]
-              )
+                chunksByCollectionID[collectionID],
+              ),
             );
 
             const authRequests = prevAuthRequests.map((authRequest) => {
-              if (authRequest.authID !== targetAuthRequest.authID)
-                return authRequest;
+              if (authRequest.authID !== targetAuthRequest.authID) return authRequest;
 
               return {
                 ...authRequest,
-                transaction
+                transaction,
               } as SignAuthRequest;
             });
 
             return {
               authRequests,
               currentAuthRequestIndex,
-              lastCompletedAuthRequest
+              lastCompletedAuthRequest,
             };
           }
 
@@ -457,19 +380,18 @@ export function AuthRequestsProvider({ children }: PropsWithChildren) {
           const data = Buffer.from(bytes);
 
           const authRequests = prevAuthRequests.map((authRequest) => {
-            if (authRequest.authID !== targetAuthRequest.authID)
-              return authRequest;
+            if (authRequest.authID !== targetAuthRequest.authID) return authRequest;
 
             return {
               ...authRequest,
-              data
+              data,
             } as SignKeystoneAuthRequest;
           });
 
           return {
             authRequests,
             currentAuthRequestIndex,
-            lastCompletedAuthRequest
+            lastCompletedAuthRequest,
           };
         });
       } else {
@@ -488,17 +410,13 @@ export function AuthRequestsProvider({ children }: PropsWithChildren) {
     async function setCloseTimers() {
       const isEmbedded = import.meta.env?.VITE_IS_EMBEDDED_APP === "1";
       const hasAuthRequests = authRequests.length > 0;
-      const isDone =
-        hasAuthRequests &&
-        authRequests.every((authRequest) => authRequest.status !== "pending");
+      const isDone = hasAuthRequests && authRequests.every((authRequest) => authRequest.status !== "pending");
 
       if (isDone) {
         // Close the window if the last request has been handled:
         // TODO: Add setting to decide whether this closes automatically or stays open in a "done" state.
 
-        clearCloseAuthPopupTimeout = closeAuthPopup(
-          AUTH_POPUP_CLOSING_DELAY_MS
-        );
+        clearCloseAuthPopupTimeout = closeAuthPopup(AUTH_POPUP_CLOSING_DELAY_MS);
       } else if (!isEmbedded) {
         const isLocked = !(await getDecryptionKey());
 
@@ -506,10 +424,13 @@ export function AuthRequestsProvider({ children }: PropsWithChildren) {
           isEmbedded,
           hasAuthRequests,
           isDone,
-          isLocked
+          isLocked,
         });
 
         // TODO: Swap?
+        // Check if we're within the initial request arrival window (AUTH_POPUP_REQUEST_ARRIVAL_WINDOW_MS ms after mounting)
+        // This gives time for pending auth requests to arrive before automatically closing the popup
+        const isInRequestArrivalWindow = Date.now() - mountTimeRef.current < AUTH_POPUP_REQUEST_ARRIVAL_WINDOW_MS;
 
         if (isLocked) {
           console.log("isLocked");
@@ -517,43 +438,39 @@ export function AuthRequestsProvider({ children }: PropsWithChildren) {
           // If the wallet is locked, the user has `AUTH_POPUP_UNLOCK_REQUEST_TTL_MS` (15 minutes) to unlock it before
           // we close it automatically. While that's happening, AuthRequest might or might not be in this provide
           // already:
-          clearCloseAuthPopupTimeout = closeAuthPopup(
-            AUTH_POPUP_UNLOCK_REQUEST_TTL_MS
-          );
-        } else if (!hasAuthRequests) {
-          console.log("!hasAuthRequests");
+          clearCloseAuthPopupTimeout = closeAuthPopup(AUTH_POPUP_UNLOCK_REQUEST_TTL_MS);
+        } else if (!hasAuthRequests && !isInRequestArrivalWindow) {
+          console.log({ hasAuthRequests, isInRequestArrivalWindow });
 
           // Once the wallet is unlocked, we close the popup if an AuthRequest doesn't arrive in less than
-          // `AUTH_POPUP_REQUEST_WAIT_MS` (1 second):
-          clearCloseAuthPopupTimeout = closeAuthPopup(
-            AUTH_POPUP_REQUEST_WAIT_MS
-          );
+          // `AUTH_POPUP_REQUEST_WAIT_MS` (1 second) but only if the component is not in the initial request arrival window:
+          clearCloseAuthPopupTimeout = closeAuthPopup(AUTH_POPUP_REQUEST_WAIT_MS);
         }
       }
     }
 
     setCloseTimers();
 
-    // Not needed in the embedded wallet, but can be left alone. It won't do anything:
-    function handleBeforeUnload() {
+    function rejectPendingAuthRequests() {
+      closeAuthPopup();
+
       authRequests.forEach((authRequest) => {
         if (authRequest.status !== "pending") return;
 
-        // Send cancel event for all pending requests if the popup is closed by the user:
-        replyToAuthRequest(
-          authRequest.type,
-          authRequest.authID,
-          new Error(ERR_MSG_USER_CANCELLED_AUTH)
-        );
+        // Send cancel event for all pending requests if the popup is closed by
+        // the user (BE) or if the user signs out (Connect):
+        replyToAuthRequest(authRequest.type, authRequest.authID, new Error(ERR_MSG_USER_CANCELLED_AUTH));
       });
     }
 
-    window.addEventListener("beforeunload", handleBeforeUnload);
+    if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1") addSignOutListener(rejectPendingAuthRequests);
+    else window.addEventListener("beforeunload", rejectPendingAuthRequests);
 
     return () => {
       clearCloseAuthPopupTimeout();
 
-      window.removeEventListener("beforeunload", handleBeforeUnload);
+      if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1") removeSignOutListener(rejectPendingAuthRequests);
+      else window.removeEventListener("beforeunload", rejectPendingAuthRequests);
     };
   }, [authRequests, currentAuthRequestIndex, closeAuthPopup]);
 
@@ -565,9 +482,8 @@ export function AuthRequestsProvider({ children }: PropsWithChildren) {
         lastCompletedAuthRequest,
         setCurrentAuthRequestIndex,
         completeAuthRequest,
-        closeAuthPopup
-      }}
-    >
+        closeAuthPopup,
+      }}>
       {children}
     </AuthRequestsContext.Provider>
   );

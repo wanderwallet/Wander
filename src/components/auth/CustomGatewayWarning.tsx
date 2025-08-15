@@ -6,18 +6,11 @@ import styled from "styled-components";
 
 export default function CustomGatewayWarning({ simple = false }: Props) {
   return (
-    <motion.div
-      variants={animation}
-      initial="hidden"
-      animate="shown"
-      exit="hidden"
-    >
+    <motion.div variants={animation} initial="hidden" animate="shown" exit="hidden">
       <Section showPaddingVertical={false}>
         <Alert>
           <Icon />
-          {browser.i18n.getMessage(
-            simple ? "custom_gateway_warning_simple" : "custom_gateway_warning"
-          )}
+          {browser.i18n.getMessage(simple ? "custom_gateway_warning_simple" : "custom_gateway_warning")}
         </Alert>
       </Section>
     </motion.div>
@@ -43,7 +36,7 @@ export const Icon = styled(WarningTriangleIcon)`
 
 const animation: Variants = {
   hidden: { opacity: 0 },
-  shown: { opacity: 1 }
+  shown: { opacity: 1 },
 };
 
 interface Props {

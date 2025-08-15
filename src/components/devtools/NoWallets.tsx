@@ -7,16 +7,10 @@ export default function NoWallets() {
   return (
     <Layout>
       <Container>
-        <NoWalletText title>
-          {browser.i18n.getMessage("no_wallets_added")}
-        </NoWalletText>
-        <NoWalletText>
-          {browser.i18n.getMessage("no_wallets_added_paragraph")}
-        </NoWalletText>
+        <NoWalletText title>{browser.i18n.getMessage("no_wallets_added")}</NoWalletText>
+        <NoWalletText>{browser.i18n.getMessage("no_wallets_added_paragraph")}</NoWalletText>
         <Spacer y={0.85} />
-        <SetupButton onClick={() => openOrSelectWelcomePage(true)}>
-          {browser.i18n.getMessage("setup")}
-        </SetupButton>
+        <SetupButton onClick={() => openOrSelectWelcomePage(true)}>{browser.i18n.getMessage("setup")}</SetupButton>
       </Container>
     </Layout>
   );
@@ -41,13 +35,13 @@ const Container = styled.div`
 `;
 
 const NoWalletText = styled(Text).attrs({
-  noMargin: true
+  noMargin: true,
 })`
   text-align: center;
 `;
 
 const SetupButton = styled(Button).attrs({
-  secondary: true
+  secondary: true,
 })`
   margin: 0 auto;
 `;

@@ -1,5 +1,5 @@
 import { Card, Spacer, Text } from "@arconnect/components-rebrand";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { PersistentStorage, useStorage } from "~utils/storage";
 import { getTab } from "~applications/tab";
 import { getAppURL } from "~utils/format";
@@ -9,10 +9,12 @@ import NoWallets from "~components/devtools/NoWallets";
 import Application from "~applications/application";
 import browser from "webextension-polyfill";
 import styled from "styled-components";
-import { WanderThemeProvider } from "~components/hardware/HardwareWalletTheme";
+import { StyledComponentsThemeProvider } from "~utils/theme/styled-components/styled-components.provider";
 import { useRemoveCover } from "~wallets/setup/non/non-wallet-setup.hook";
 import { useWallets } from "~utils/wallets/wallets.hooks";
 import { WalletsProvider } from "~utils/wallets/wallets.provider";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import { ThemeProvider } from "~utils/theme/theme.provider";
 
 function DevTools() {
   useRemoveCover();
@@ -20,24 +22,22 @@ function DevTools() {
   // fetch app data
   const [app, setApp] = useState<Application>();
 
-  useEffect(() => {
-    (async () => {
-      // get if app is connected
-      const tab = await getTab(browser.devtools.inspectedWindow.tabId);
-      const appURL = getAppURL(tab.url);
-      const app = new Application(appURL);
+  useAsyncEffect(async () => {
+    // get if app is connected
+    const tab = await getTab(browser.devtools.inspectedWindow.tabId);
+    const appURL = getAppURL(tab.url);
+    const app = new Application(appURL);
 
-      setApp(app);
-    })();
+    setApp(app);
   }, []);
 
   // connected apps
   const [connectedApps] = useStorage<string[]>(
     {
       key: "apps",
-      instance: PersistentStorage
+      instance: PersistentStorage,
     },
-    []
+    [],
   );
 
   // app connected
@@ -55,16 +55,12 @@ function DevTools() {
       <CardBody>
         <Title>Wander {browser.i18n.getMessage("devtools")}</Title>
         <ConnectionText>
-          {browser.i18n.getMessage(
-            connected ? "appConnected" : "appNotConnected"
-          )}
+          {browser.i18n.getMessage(connected ? "appConnected" : "appNotConnected")}
           <ConnectionStatus connected={connected} />
         </ConnectionText>
         <Spacer y={1.5} />
         {(!connected && app && <Connector appUrl={app.url} />) ||
-          (connected && app && (
-            <AppSettingsDashboardView noTitle params={{ url: app.url }} />
-          ))}
+          (connected && app && <AppSettingsDashboardView noTitle params={{ url: app.url }} />)}
       </CardBody>
     </Wrapper>
   );
@@ -72,11 +68,13 @@ function DevTools() {
 
 export default function DevToolsRoot() {
   return (
-    <WanderThemeProvider>
-      <WalletsProvider>
-        <DevTools />
-      </WalletsProvider>
-    </WanderThemeProvider>
+    <ThemeProvider>
+      <StyledComponentsThemeProvider>
+        <WalletsProvider>
+          <DevTools />
+        </WalletsProvider>
+      </StyledComponentsThemeProvider>
+    </ThemeProvider>
   );
 }
 
@@ -92,7 +90,7 @@ export const CardBody = styled(Card)`
 
 export const Title = styled(Text).attrs({
   subtitle: true,
-  noMargin: true
+  noMargin: true,
 })`
   display: flex;
   align-items: flex-start;
@@ -100,7 +98,7 @@ export const Title = styled(Text).attrs({
 `;
 
 export const ConnectionText = styled(Text).attrs({
-  noMargin: true
+  noMargin: true,
 })`
   display: flex;
   align-items: center;

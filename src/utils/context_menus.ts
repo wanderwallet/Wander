@@ -33,9 +33,9 @@ export async function createContextMenus(hasPerms: boolean) {
         id: "copy_address_context_menu",
         title: "Copy current address",
         contexts: [actionContext],
-        onclick: !isManifestv3() ? onCopyAddressClicked : undefined
+        onclick: !isManifestv3() ? onCopyAddressClicked : undefined,
       },
-      () => browser.runtime.lastError
+      () => browser.runtime.lastError,
     );
   }
 
@@ -48,11 +48,9 @@ export async function createContextMenus(hasPerms: boolean) {
         id: "disconnect_context_menu",
         title: "Disconnect from current site",
         contexts: [actionContext, "page"],
-        onclick: !isManifestv3()
-          ? (_, tab) => onDisconnectClicked(tab)
-          : undefined
+        onclick: !isManifestv3() ? (_, tab) => onDisconnectClicked(tab) : undefined,
       },
-      () => browser.runtime.lastError
+      () => browser.runtime.lastError,
     );
   }
 
@@ -94,7 +92,7 @@ async function onCopyAddressClicked() {
   await isomorphicSendMessage({
     destination: `content-script@${activeTab.id}`,
     messageId: "copy_address",
-    data: activeAddress
+    data: activeAddress,
   });
 }
 

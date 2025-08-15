@@ -21,10 +21,7 @@ export default function Theme() {
         {browser.i18n.getMessage("dark_theme")}
       </ThemeOption>
       <Spacer y={0.5} />
-      <ThemeOption
-        active={theme === "system"}
-        onClick={() => setTheme("system")}
-      >
+      <ThemeOption active={theme === "system"} onClick={() => setTheme("system")}>
         <DashboardIcon />
         {browser.i18n.getMessage("system_theme")}
       </ThemeOption>
@@ -41,16 +38,12 @@ const ThemeOption = styled.div<{ active: boolean }>`
   font-weight: 500;
   padding: 1.35rem 1.45rem;
   color: rgb(${(props) => props.theme.theme});
-  background-color: ${(props) =>
-    props.active ? "rgba(" + props.theme.theme + ", .2)" : "transparent"};
+  background-color: ${(props) => (props.active ? "rgba(" + props.theme.theme + ", .2)" : "transparent")};
   border-radius: 25px;
   cursor: pointer;
   transition: all 0.23s ease-in-out;
 
   &:hover {
-    background-color: rgba(
-      ${(props) => props.theme.theme},
-      ${(props) => (props.active ? ".2" : ".1")}
-    );
+    background-color: rgba(${(props) => props.theme.theme}, ${(props) => (props.active ? ".2" : ".1")});
   }
 `;

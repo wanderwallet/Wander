@@ -10,13 +10,7 @@ export default function IconText({ width, height }: IconTextProps) {
   const color = theme.primaryText;
 
   return (
-    <svg
-      width={width}
-      height={height}
-      viewBox="0 0 256 54"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
+    <svg width={width} height={height} viewBox="0 0 256 54" fill="none" xmlns="http://www.w3.org/2000/svg">
       <g id="Group 209">
         <path
           id="Vector"

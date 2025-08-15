@@ -5,15 +5,7 @@ import { useLocation } from "~wallets/router/router.utils";
 import { quickSettingsMenuItems } from "~routes/dashboard/dashboard.constants";
 import { SettingListItem } from "~components/popup/list/SettingListItem";
 import type { PopupRoutePath } from "~wallets/router/popup/popup.routes";
-import {
-  Button,
-  ListItem,
-  ListItemIcon,
-  Section,
-  Spacer,
-  Text,
-  Tooltip
-} from "@arconnect/components-rebrand";
+import { Button, ListItem, ListItemIcon, Section, Spacer, Text, Tooltip } from "@arconnect/components-rebrand";
 import { useActiveWallet } from "~wallets/hooks";
 import { formatAddress } from "~utils/format";
 import { Users01 } from "@untitled-ui/icons-react";
@@ -26,11 +18,10 @@ import Online from "~components/Online";
 import type { StoredWallet } from "~wallets";
 import { useStorage } from "@plasmohq/storage/hook";
 import { ExtensionStorage } from "~utils/storage";
-import { Action, NoAvatarIcon } from "~components/popup/WalletHeader";
-import { MinimizeIcon } from "@iconicicons/react";
-import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
+import { NoAvatarIcon } from "~components/Avatar";
 import { signOut } from "~utils/embedded/embedded.utils";
-import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
+import { BackupSeedphraseWarning } from "~components/popup/settings/BackupSeedphraseWarning";
+import { WalletName } from "~components/dashboard/list/WalletListItem";
 
 export interface QuickSettingsViewParams {
   setting?: string;
@@ -51,64 +42,58 @@ export function MenuView({ params }: QuickSettingsViewProps) {
   const [wallets] = useStorage<StoredWallet[]>(
     {
       key: "wallets",
-      instance: ExtensionStorage
+      instance: ExtensionStorage,
     },
-    []
+    [],
   );
+
+  const [isSeedphraseBackedUp] = useStorage(
+    {
+      key: `recovery_phrase_backedup_${wallet.address}`,
+      instance: ExtensionStorage,
+    },
+    true,
+  );
+
+  function handleItemClick(setting: (typeof quickSettingsMenuItems)[number]) {
+    if (setting.externalLink) {
+      const url = setting.name === "explore" ? setting.externalLink : browser.runtime.getURL(setting.externalLink);
+      browser.tabs.create({ url });
+    } else {
+      if (setting.name === "subscriptions") {
+        return navigate(`/${setting.name}`);
+      }
+      navigate(`/quick-settings/${setting.name}` as PopupRoutePath);
+    }
+  }
 
   return (
     <Section style={{ paddingBottom: 100 }}>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 8
+      <ListItem
+        height={56}
+        style={{ width: "100%" }}
+        title={
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <WalletName>{wallet?.nickname}</WalletName>
+            <Online />
+          </div>
+        }
+        titleStyle={{ fontWeight: 500 }}
+        subtitle={formatAddress(wallet.address, 4)}
+        squircleSize={40}
+        showArrow
+        onClick={() => {
+          navigate(`/quick-settings/wallets/${wallet.address}` as PopupRoutePath);
         }}
-      >
-        <ListItem
-          height={56}
-          style={{ width: "100%" }}
-          title={
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              {wallet?.nickname}
-              <Online />
-            </div>
-          }
-          titleStyle={{ fontWeight: 500 }}
-          subtitle={formatAddress(wallet.address, 4)}
-          squircleSize={40}
-          showArrow
-          onClick={() => {
-            navigate(
-              `/quick-settings/wallets/${wallet.address}` as PopupRoutePath
-            );
-          }}
-          img={avatar}
-        >
-          {!avatar && (
-            <ListItemIcon>
-              <NoAvatarIcon size="1.8em" />
-            </ListItemIcon>
-          )}
-        </ListItem>
-        {IS_EMBEDDED_APP && (
-          <Tooltip
-            content={browser.i18n.getMessage("close")}
-            position="bottomEnd"
-          >
-            <Action
-              as={MinimizeIcon}
-              onClick={() => {
-                postEmbeddedMessage({
-                  type: "embedded_close",
-                  data: null
-                });
-              }}
-              style={{ width: "24px", height: "24px" }}
-            />
-          </Tooltip>
+        img={avatar}>
+        {!avatar && (
+          <ListItemIcon>
+            <NoAvatarIcon size="1.8em" />
+          </ListItemIcon>
         )}
-      </div>
+      </ListItem>
+      <Spacer y={0.75} />
+      {!isSeedphraseBackedUp && <BackupSeedphraseWarning />}
       <Spacer y={0.75} />
       <ListItem
         height={40}
@@ -119,8 +104,7 @@ export function MenuView({ params }: QuickSettingsViewProps) {
         showArrow
         onClick={() => {
           navigate("/quick-settings/wallets" as PopupRoutePath);
-        }}
-      >
+        }}>
         <Users01 height={24} width={24} color={theme.primaryText} />
       </ListItem>
       <HorizontalLine marginVertical={12} />
@@ -131,18 +115,7 @@ export function MenuView({ params }: QuickSettingsViewProps) {
             icon={setting.icon}
             active={activeSetting === setting.name}
             isExternalLink={!!setting.externalLink}
-            onClick={() => {
-              if (setting.externalLink) {
-                browser.tabs.create({
-                  url: browser.runtime.getURL(setting.externalLink)
-                });
-              } else {
-                if (setting.name === "subscriptions") {
-                  return navigate(`/${setting.name}`);
-                }
-                navigate(`/quick-settings/${setting.name}` as PopupRoutePath);
-              }
-            }}
+            onClick={() => handleItemClick(setting)}
             key={i}
           />
         ))}
@@ -151,11 +124,7 @@ export function MenuView({ params }: QuickSettingsViewProps) {
       <Button variant="secondary" fullWidth onClick={() => setOpen(true)}>
         {browser.i18n.getMessage("sign_out")}
       </Button>
-      <SliderMenu
-        hasHeader={false}
-        isOpen={open}
-        onClose={() => setOpen(false)}
-      >
+      <SliderMenu hasHeader={false} isOpen={open} onClose={() => setOpen(false)}>
         <Section
           showPaddingHorizontal={false}
           showPaddingVertical={false}
@@ -164,9 +133,8 @@ export function MenuView({ params }: QuickSettingsViewProps) {
             gap: 24,
             height: "60vh",
             justifyContent: "space-between",
-            textAlign: "center"
-          }}
-        >
+            textAlign: "center",
+          }}>
           <div
             style={{
               flex: 1,
@@ -174,35 +142,20 @@ export function MenuView({ params }: QuickSettingsViewProps) {
               flexDirection: "column",
               gap: 24,
               alignItems: "center",
-              justifyContent: "center"
-            }}
-          >
-            <img
-              src={WanderIcon}
-              alt="Wander Icon"
-              width={102.418}
-              height={48}
-            />
+              justifyContent: "center",
+            }}>
+            <img src={WanderIcon} alt="Wander Icon" width={102.418} height={48} />
             <Text size="xl" weight="semibold" lineHeight={1.3}>
               {browser.i18n.getMessage("sign_out_description")}
             </Text>
           </div>
           <div style={{ display: "flex", gap: 8, width: "100%" }}>
-            <Button
-              fullWidth
-              variant="secondary"
-              onClick={() => setOpen(false)}
-            >
+            <Button fullWidth variant="secondary" onClick={() => setOpen(false)}>
               {browser.i18n.getMessage("cancel")}
             </Button>
             <Button
               fullWidth
-              onClick={
-                import.meta.env?.VITE_IS_EMBEDDED_APP === "1"
-                  ? signOut
-                  : removeDecryptionKey
-              }
-            >
+              onClick={import.meta.env?.VITE_IS_EMBEDDED_APP === "1" ? () => signOut : removeDecryptionKey}>
               {browser.i18n.getMessage("sign_out")}
             </Button>
           </div>

@@ -12,15 +12,12 @@ const timestampFormatter = new Intl.DateTimeFormat("en-US", {
   hour: "2-digit",
   minute: "2-digit",
   second: "2-digit",
-  hour12: false
+  hour12: false,
 });
 
-const isTimestampTag = (tag: string): tag is TimestampTag =>
-  TIMESTAMP_TAG_SET.has(tag as TimestampTag);
+const isTimestampTag = (tag: string): tag is TimestampTag => TIMESTAMP_TAG_SET.has(tag as TimestampTag);
 
-export const humanizeTimestamp = (
-  timestamp: string | number | Date | undefined
-): string => {
+export const humanizeTimestamp = (timestamp: string | number | Date | undefined): string => {
   if (!timestamp) return "";
 
   try {
@@ -34,9 +31,7 @@ export const humanizeTimestamp = (
 
 export const humanizeTimestampTags = (tags: DecodedTag[]): DecodedTag[] => {
   return tags.map(({ name, ...rest }) =>
-    isTimestampTag(name)
-      ? { name, ...rest, value: humanizeTimestamp(rest.value) }
-      : { name, ...rest }
+    isTimestampTag(name) ? { name, ...rest, value: humanizeTimestamp(rest.value) } : { name, ...rest },
   );
 };
 

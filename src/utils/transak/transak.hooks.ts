@@ -8,8 +8,16 @@ import { useLocation } from "~wallets/router/router.utils";
 import type { WanderRoutePath } from "~wallets/router/router.types";
 import getSymbolFromCurrency from "currency-symbol-map";
 import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
+import { useActiveTier } from "~utils/tier/hooks";
+import { TierTypes } from "~utils/tier/constants";
+import { scheduleTransakPurchaseAlarm } from "./transak.alarms";
 
-export const BASE_URL = "https://api.transak.com";
+const TRANSAK_API_KEY = process.env.PLASMO_PUBLIC_TRANSAK_API_KEY;
+const TRANSAK_TOP_TIER_API_KEY = process.env.PLASMO_PUBLIC_TRANSAK_TOP_TIER_API_KEY;
+const TRANSAK_ENVIRONMENT = process.env.PLASMO_PUBLIC_TRANSAK_ENVIRONMENT || "PRODUCTION";
+
+export const TRANSAK_API_BASE_URL = `https://api${TRANSAK_ENVIRONMENT === "PRODUCTION" ? "" : "-stg"}.transak.com`;
+export const TRANSAK_PURCHASE_BASE_URL = `https://global${TRANSAK_ENVIRONMENT === "PRODUCTION" ? "" : "-stg"}.transak.com/`;
 
 export const useTransak = (apiKey: string, initialConversion = false) => {
   const { navigate } = useLocation();
@@ -31,7 +39,7 @@ export const useTransak = (apiKey: string, initialConversion = false) => {
 
   const [activeAddress] = useStorage<string>({
     key: "active_address",
-    instance: ExtensionStorage
+    instance: ExtensionStorage,
   });
 
   // Handle amount input change
@@ -61,9 +69,7 @@ export const useTransak = (apiKey: string, initialConversion = false) => {
       setSelectedCurrency(currency);
     }
 
-    const activePaymentOptions = (currency?.paymentOptions ?? []).filter(
-      (payment: any) => payment.isActive
-    );
+    const activePaymentOptions = (currency?.paymentOptions ?? []).filter((payment: any) => payment.isActive);
     setPaymentMethod(activePaymentOptions[0] || null);
   }, []);
 
@@ -72,9 +78,7 @@ export const useTransak = (apiKey: string, initialConversion = false) => {
     if (arConversion) {
       const symbol = getSymbolFromCurrency(selectedCurrency?.symbol || "USD");
       // If arConversion is true, show the fiat equivalent
-      return `${symbol}${quote?.fiatAmount.toFixed(2) || "0.00"} ${
-        selectedCurrency?.symbol || "USD"
-      }`;
+      return `${symbol}${quote?.fiatAmount.toFixed(2) || "0.00"} ${selectedCurrency?.symbol || "USD"}`;
     } else {
       // If arConversion is false, show the AR equivalent
       return `${quote?.cryptoAmount.toFixed(6) || "0.00"} AR`;
@@ -84,43 +88,29 @@ export const useTransak = (apiKey: string, initialConversion = false) => {
   const fetchQuote = useCallback(async () => {
     setLoading(true);
     setQuote(null);
-    if (
-      Number(debouncedAmount) <= 0 ||
-      debouncedAmount === "" ||
-      !selectedCurrency ||
-      !paymentMethod
-    ) {
+    if (Number(debouncedAmount) <= 0 || debouncedAmount === "" || !selectedCurrency || !paymentMethod) {
       finishUp(null);
       return;
     }
-    if (
-      !arConversion &&
-      (+debouncedAmount > paymentMethod.maxAmount ||
-        +debouncedAmount < paymentMethod.minAmount)
-    ) {
+    if (!arConversion && (+debouncedAmount > paymentMethod.maxAmount || +debouncedAmount < paymentMethod.minAmount)) {
       const isExceedMaxAmount = +debouncedAmount > paymentMethod.maxAmount;
       setError(
-        browser.i18n.getMessage(
-          isExceedMaxAmount ? "max_buy_amount" : "min_buy_amount",
-          [
-            isExceedMaxAmount
-              ? paymentMethod.maxAmount
-              : paymentMethod.minAmount,
-            selectedCurrency?.symbol
-          ]
-        )
+        browser.i18n.getMessage(isExceedMaxAmount ? "max_buy_amount" : "min_buy_amount", [
+          isExceedMaxAmount ? paymentMethod.maxAmount : paymentMethod.minAmount,
+          selectedCurrency?.symbol,
+        ]),
       );
       finishUp(null);
       return;
     }
-    const baseUrl = `${BASE_URL}/api/v1/pricing/public/quotes`;
+    const baseUrl = `${TRANSAK_API_BASE_URL}/api/v1/pricing/public/quotes`;
     const params = new URLSearchParams({
       partnerApiKey: apiKey,
       fiatCurrency: selectedCurrency?.symbol,
       cryptoCurrency: "AR",
       isBuyOrSell: "BUY",
       network: "mainnet",
-      paymentMethod: paymentMethod.id
+      paymentMethod: paymentMethod.id,
     });
     if (arConversion) {
       params.append("cryptoAmount", debouncedAmount);
@@ -159,19 +149,12 @@ export const useTransak = (apiKey: string, initialConversion = false) => {
       setError(browser.i18n.getMessage("transak_unavailable"));
       finishUp(null);
     }
-  }, [
-    apiKey,
-    debouncedAmount,
-    selectedCurrency,
-    paymentMethod,
-    arConversion,
-    countryCode
-  ]);
+  }, [apiKey, debouncedAmount, selectedCurrency, paymentMethod, arConversion, countryCode]);
 
   // Fetch available currencies
   useEffect(() => {
     const fetchCurrencies = async () => {
-      const url = `${BASE_URL}/api/v2/currencies/fiat-currencies?apiKey=${apiKey}`;
+      const url = `${TRANSAK_API_BASE_URL}/api/v2/currencies/fiat-currencies?apiKey=${apiKey}`;
       try {
         const response = await fetch(url);
         if (!response.ok) {
@@ -187,7 +170,7 @@ export const useTransak = (apiKey: string, initialConversion = false) => {
               ? `https://kapowaz.github.io/square-flags/flags/${currency.logoSymbol.toLowerCase()}.svg`
               : `https://cdn.onramper.com/icons/tokens/${currency.symbol.toLowerCase()}.svg`,
             name: currency.name,
-            paymentOptions: currency.paymentOptions
+            paymentOptions: currency.paymentOptions,
           }));
         setCurrencies(currencyInfo || []);
         setSelectedCurrency(currencyInfo[0]);
@@ -200,9 +183,7 @@ export const useTransak = (apiKey: string, initialConversion = false) => {
     const fetchCountryCode = async () => {
       if (countryCode) return;
       try {
-        const responseJson = await (
-          await fetch(`${BASE_URL}/fiat/public/v1/get/country`)
-        ).json();
+        const responseJson = await (await fetch(`${TRANSAK_API_BASE_URL}/fiat/public/v1/get/country`)).json();
         setCountryCode(responseJson.ipCountryCode);
       } catch {}
     };
@@ -228,20 +209,14 @@ export const useTransak = (apiKey: string, initialConversion = false) => {
       arConversion &&
       quote &&
       paymentMethod &&
-      (quote.fiatAmount > paymentMethod.maxAmount ||
-        quote.fiatAmount < paymentMethod.minAmount)
+      (quote.fiatAmount > paymentMethod.maxAmount || quote.fiatAmount < paymentMethod.minAmount)
     ) {
       const isExceedMaxAmount = quote.fiatAmount > paymentMethod.maxAmount;
       setError(
-        browser.i18n.getMessage(
-          isExceedMaxAmount ? "max_buy_amount" : "min_buy_amount",
-          [
-            isExceedMaxAmount
-              ? paymentMethod.maxAmount
-              : paymentMethod.minAmount,
-            selectedCurrency?.symbol
-          ]
-        )
+        browser.i18n.getMessage(isExceedMaxAmount ? "max_buy_amount" : "min_buy_amount", [
+          isExceedMaxAmount ? paymentMethod.maxAmount : paymentMethod.minAmount,
+          selectedCurrency?.symbol,
+        ]),
       );
       setInvalidFiatAmount(true);
     } else {
@@ -259,19 +234,19 @@ export const useTransak = (apiKey: string, initialConversion = false) => {
     (walletAddress: string) => {
       if (!quote) return null;
 
-      const baseUrl = "https://global.transak.com/";
+      const baseUrl = TRANSAK_PURCHASE_BASE_URL;
       const params = new URLSearchParams({
         apiKey: apiKey,
         defaultCryptoCurrency: "AR",
         defaultFiatAmount: quote.fiatAmount.toString(),
         defaultFiatCurrency: quote.fiatCurrency,
         walletAddress: walletAddress,
-        defaultPaymentMethod: quote.paymentMethod
+        defaultPaymentMethod: quote.paymentMethod,
       });
 
       return `${baseUrl}?${params.toString()}`;
     },
-    [apiKey, quote]
+    [apiKey, quote],
   );
 
   const openCurrencySelector = useCallback((e?: React.MouseEvent) => {
@@ -302,6 +277,7 @@ export const useTransak = (apiKey: string, initialConversion = false) => {
           if (IS_EMBEDDED_APP) {
             window.open(url, "_blank");
           } else {
+            await scheduleTransakPurchaseAlarm();
             browser.tabs.create({ url });
           }
           navigate(navigateTo as WanderRoutePath);
@@ -310,7 +286,7 @@ export const useTransak = (apiKey: string, initialConversion = false) => {
         console.error("Error buying AR:", error);
       }
     },
-    [activeAddress, createPurchaseUrl, navigate]
+    [activeAddress, createPurchaseUrl, navigate],
   );
 
   return {
@@ -346,6 +322,15 @@ export const useTransak = (apiKey: string, initialConversion = false) => {
     closeCurrencySelector,
     closePaymentSelector,
     openTransak,
-    getDisplayAmount
+    getDisplayAmount,
   };
+};
+
+export const useTransakApiKey = () => {
+  const { data: activeTier } = useActiveTier();
+
+  return useMemo(() => {
+    const isTopTier = activeTier?.tier === TierTypes.Prime || activeTier?.tier === TierTypes.Edge;
+    return isTopTier ? TRANSAK_TOP_TIER_API_KEY : TRANSAK_API_KEY;
+  }, [activeTier?.tier]);
 };

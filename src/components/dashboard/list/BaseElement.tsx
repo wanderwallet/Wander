@@ -42,8 +42,7 @@ const SettingWrapper = styled.div<{ active: boolean; ao?: boolean }>`
   cursor: ${(props) => (props.ao ? "default" : "pointer")};
   background-color: rgba(
     ${(props) => props.theme.theme},
-    ${(props) =>
-      props.active ? (props.theme.displayTheme === "light" ? ".2" : ".1") : "0"}
+    ${(props) => (props.active ? (props.theme.displayTheme === "light" ? ".2" : ".1") : "0")}
   );
   transition: all 0.23s ease-in-out;
   ${(props) =>
@@ -59,8 +58,8 @@ const SettingWrapper = styled.div<{ active: boolean; ao?: boolean }>`
               ? ".24"
               : ".14"
             : props.theme.displayTheme === "light"
-            ? ".14"
-            : ".04")
+              ? ".14"
+              : ".04")
         }
       );
     }
@@ -98,7 +97,7 @@ export const SettingIcon = styled(SettingsIcon)`
 
 const SettingName = styled(Text).attrs({
   noMargin: true,
-  heading: true
+  heading: true,
 })`
   font-weight: 500;
   font-size: 1.2rem;
@@ -109,14 +108,14 @@ const SettingName = styled(Text).attrs({
 `;
 
 const SettingDescription = styled(Text).attrs({
-  noMargin: true
+  noMargin: true,
 })`
   font-size: 0.82rem;
 `;
 
 export const SettingImage = styled.img.attrs({
   alt: "icon",
-  draggable: false
+  draggable: false,
 })`
   position: absolute;
   top: 50%;

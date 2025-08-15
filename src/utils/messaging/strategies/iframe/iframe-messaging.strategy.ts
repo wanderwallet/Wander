@@ -1,78 +1,85 @@
 import type { ProtocolMap, RuntimeContext } from "@arconnect/webext-bridge";
 import { nanoid } from "nanoid";
 import type { ApiCall, ApiResponse } from "shim";
-import {
-  EMBEDDED_ANCESTOR_TAB_ID,
-  EMBEDDED_IFRAME_TAB_ID
-} from "~utils/embedded/embedded.constants";
-import {
-  getEmbeddedAncestorOrigin,
-  isInsideIframe
-} from "~utils/embedded/iframe.utils";
+import { EMBEDDED_ANCESTOR_TAB_ID, EMBEDDED_IFRAME_TAB_ID } from "~utils/embedded/embedded.constants";
+import { getEmbeddedAncestorOrigin, isInsideIframe } from "~utils/embedded/iframe.utils";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
-import type {
-  MessageData,
-  MessageID,
-  OnMessageCallback
-} from "~utils/messaging/messaging.types";
+import type { MessageData, MessageID, OnMessageCallback } from "~utils/messaging/messaging.types";
 
-const messageHandlersByMessageID: Partial<
-  Record<MessageID, Set<OnMessageCallback<MessageID>>>
-> = {};
+const messageHandlersByMessageID: Partial<Record<MessageID, Set<OnMessageCallback<MessageID>>>> = {};
 
-let targetIframe: HTMLIFrameElement = null;
-let targetOrigin = "";
+let embedWindow: Window = null;
+let embedOrigin = "";
 
 const contextByMessageId: Partial<Record<MessageID, RuntimeContext>> = {
   auth_chunk: "background",
   event: "background",
   switch_wallet_event: "background",
-  copy_address: "background"
+  copy_address: "background",
 };
 
+/**
+ * Stores a reference to the Embed iframe and its origin. This function is only called from the SDK.
+ * @param iframeElement
+ */
 export function setEmbeddedTargetIframe(iframeElement: HTMLIFrameElement) {
-  targetIframe = iframeElement;
-  targetOrigin = new URL(iframeElement.src).origin;
+  embedWindow = iframeElement.contentWindow;
+  embedOrigin = new URL(iframeElement.src).origin;
 }
 
 let messageCounter = 0;
 
 function getPostMessageFunction<K extends MessageID>(
-  messageData: MessageData<K>
+  messageData: MessageData<K>,
 ): () => Promise<ReturnType<OnMessageCallback<K>>> {
+  let postMessageTargetWindow: Window | null = null;
   let postMessageTargetOrigin = "";
 
   const { destination, messageId, data } = messageData;
 
-  // TODO: isInsideIframe is an incorrect check because we might be running the app standalone.
-
   if (destination === "background") {
-    if (!isInsideIframe()) postMessageTargetOrigin = targetOrigin;
+    if (!isInsideIframe()) {
+      postMessageTargetWindow = embedWindow;
+      postMessageTargetOrigin = embedOrigin;
+    }
   } else if (destination.startsWith("content-script")) {
     if (!isInsideIframe())
-      throw new Error(
-        `Can only send messages to the "content-script" (SDK) from the "background" (iframe context).`
-      );
+      throw new Error(`Can only send messages to the "content-script" (SDK) from the "background" (iframe context).`);
+
+    postMessageTargetWindow = window.parent;
     postMessageTargetOrigin = getEmbeddedAncestorOrigin();
   } else if (destination.startsWith("web_accessible")) {
     if (!isInsideIframe())
       throw new Error(
-        `Can only send messages to "web_accessible" (auth popup) from the "background" (iframe context).`
+        `Can only send messages to "web_accessible" (auth popup) from the "background" (iframe context).`,
       );
-    postMessageTargetOrigin = "";
   }
 
-  if (postMessageTargetOrigin) {
+  if (postMessageTargetWindow && postMessageTargetOrigin) {
     return async function postMessage() {
-      /*
-      console.log(
-        `SEND (postMessage) ${messageId} to ${destination} (${postMessageTargetOrigin}), data =`,
-        data
-      );
-      */
-
       return new Promise<ApiResponse>(async (resolve) => {
-        targetIframe.contentWindow.postMessage(data, postMessageTargetOrigin);
+        // These have no response, so there's no need to set another `message` listener.
+        // TODO: Why is switch_wallet_event not just another "event type"?
+        if (
+          messageId === "event" ||
+          messageId === "switch_wallet_event" ||
+          messageId === "embedded_signOut" ||
+          messageId === "embedded_setTheme" ||
+          messageId === "embedded_navigate"
+        ) {
+          postMessageTargetWindow.postMessage(
+            {
+              id: nanoid(),
+              type: messageId,
+              data,
+            },
+            postMessageTargetOrigin,
+          );
+
+          return;
+        }
+
+        postMessageTargetWindow.postMessage(data, postMessageTargetOrigin);
 
         // TODO: Wait for response and return, but use the callbacks stored above.
 
@@ -86,10 +93,13 @@ function getPostMessageFunction<K extends MessageID>(
           let { data: res } = e;
 
           // validate return message
-          if (!data || `${data.type}_result` !== res.type) return;
+          if (!data || typeof data !== "object" || !res || typeof res !== "object") return;
 
           // only resolve when the result matching our callID is delivered
-          if (data.callID !== res.callID) return;
+          if (!("callID" in data) || data.callID !== res.callID) return;
+
+          // make sure this is a result message
+          if (`${data.type}_result` !== res.type) return;
 
           window.removeEventListener("message", callback);
 
@@ -100,13 +110,6 @@ function getPostMessageFunction<K extends MessageID>(
   }
 
   return async function sendMessageToCallback() {
-    /*
-    console.log(
-      `SEND (sendMessageToCallback) ${messageId} to ${destination}, data =`,
-      data
-    );
-    */
-
     const messageHandlers = messageHandlersByMessageID[messageId];
 
     if (!messageHandlers) {
@@ -117,7 +120,7 @@ function getPostMessageFunction<K extends MessageID>(
 
     if (messageHandlers.size > 1) {
       console.warn(
-        `${messageHandlers.size} handlers found for ${messageId}. Only the first response will be returned.`
+        `${messageHandlers.size} handlers found for ${messageId}. Only the first response will be returned.`,
       );
     }
 
@@ -129,9 +132,9 @@ function getPostMessageFunction<K extends MessageID>(
         timestamp: Date.now(),
         sender: {
           tabId: EMBEDDED_IFRAME_TAB_ID,
-          context: contextByMessageId[messageId] || null
+          context: contextByMessageId[messageId] || null,
         },
-        data
+        data,
       });
     });
 
@@ -144,9 +147,7 @@ function getPostMessageFunction<K extends MessageID>(
  * because no one is listening, listen for `<messageId>${ READY_MESSAGE_SUFFIX }` messages for 6 seconds, and try to send the message again
  * once that's received, or throw a time out error otherwise.
  */
-export async function isomorphicSendMessage<K extends MessageID>(
-  messageData: MessageData<K>
-) {
+export async function isomorphicSendMessage<K extends MessageID>(messageData: MessageData<K>) {
   // See the "Receive API calls" comment in `ArConnect/src/contents/api.ts` for more on message passing.
 
   const { destination, messageId } = messageData;
@@ -162,10 +163,7 @@ export async function isomorphicSendMessage<K extends MessageID>(
   const sendMessageFunction = getPostMessageFunction(messageData);
 
   return new Promise<ReturnType<OnMessageCallback<K>>>(async (resolve) => {
-    log(
-      LOG_GROUP.MSG,
-      `[${currentMessage}] Sending ${messageId} to ${destination}`
-    );
+    log(LOG_GROUP.MSG, `[${currentMessage}] Sending ${messageId} to ${destination}`);
 
     sendMessageFunction().then((result) => {
       log(LOG_GROUP.MSG, `[${currentMessage}] ${messageId} sent`);
@@ -175,57 +173,52 @@ export async function isomorphicSendMessage<K extends MessageID>(
   });
 }
 
-export function isomorphicOnMessage<K extends MessageID>(
-  messageId: K,
-  callback: OnMessageCallback<K>
-): void {
+export function isomorphicOnMessage<K extends MessageID>(messageId: K, callback: OnMessageCallback<K>): void {
   messageHandlersByMessageID[messageId] ??= new Set();
   messageHandlersByMessageID[messageId].add(callback);
 
-  /*
-  if (messageHandlersByMessageID[messageId].size > 1) {
-    console.warn(
-      `${messageHandlersByMessageID[messageId].size} handlers for ${messageId}`
-    );
-  } else {
-    console.log(`Handler added for ${messageId}`);
+  if (process.env.NODE_ENV === "development" && messageHandlersByMessageID[messageId].size > 1) {
+    console.warn(`${messageHandlersByMessageID[messageId].size} handlers for ${messageId}`);
   }
-  */
 
-  // TODO: Note that in Wander Embed, there are no ready messages, so the API/SDK must
+  // TODO: Note that in Wander Connect, there are no ready messages, so the API/SDK must
   // make sure the iframe is ready before accepting method calls...
 }
 
-if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1" && isInsideIframe()) {
-  // TODO: Set this up after first call to `iframeIsomorphicOnMessage`?
+function setPostMessageListener() {
+  if (typeof window === "undefined") return;
 
-  window.addEventListener(
-    "message",
-    async ({ origin, data }: MessageEvent<ApiCall>) => {
-      if (
-        !data ||
-        origin !== getEmbeddedAncestorOrigin() ||
-        data.app !== "wanderEmbedded"
-      )
-        return;
+  // This handles messages coming from outside the iframe and into the iframe, so wallet API calls (and chunks),
+  // `embedded_signOut`, `embedded_setTheme` and `embedded_navigate`
 
-      const messageId = data.type === "chunk" ? "chunk" : "api_call";
-      const messageHandlers =
-        messageHandlersByMessageID[messageId as keyof ProtocolMap];
+  window.addEventListener("message", async ({ origin, data }: MessageEvent<ApiCall>) => {
+    if (!data || typeof data !== "object" || origin !== getEmbeddedAncestorOrigin()) return;
 
-      if (!messageHandlers) {
-        console.warn(`No listeners registered for ${messageId}.`);
+    let messageId = data.type;
 
-        return;
-      }
+    if (data.app === "wanderEmbedded") {
+      messageId = data.type === "chunk" ? "chunk" : "api_call";
+    } else {
+      // `embedded_signOut`, `embedded_setTheme` and `embedded_navigate` data is wrapped in an object automatically in
+      // `getPostMessageFunction` > `postMessage`, so we unwrap it here:
+      data = data.data;
+    }
 
-      if (messageHandlers.size > 1) {
-        console.warn(
-          `${messageHandlers.size} handlers found for ${messageId}. Only the first response will be returned.`
-        );
-      }
+    const messageHandlers = messageHandlersByMessageID[messageId as keyof ProtocolMap];
 
-      /*
+    if (!messageHandlers) {
+      console.warn(`No listeners registered for ${messageId}.`);
+
+      return;
+    }
+
+    if (process.env.NODE_ENV === "development" && messageHandlers.size > 1) {
+      console.warn(
+        `${messageHandlers.size} handlers found for ${messageId}. Only the first response will be returned.`,
+      );
+    }
+
+    /*
       const [messageHandler] = messageHandlers;
 
       let result: any = null;
@@ -250,27 +243,28 @@ if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1" && isInsideIframe()) {
       }
       */
 
-      const resultPromises = Array.from(messageHandlers).map(
-        (messageHandler) => {
-          return messageHandler({
-            id: nanoid(),
-            timestamp: Date.now(),
-            data,
-            sender: {
-              tabId: EMBEDDED_ANCESTOR_TAB_ID,
-              context: "content-script"
-            }
-          });
-        }
-      );
+    const resultPromises = Array.from(messageHandlers).map((messageHandler) => {
+      return messageHandler({
+        id: nanoid(),
+        timestamp: Date.now(),
+        data,
+        sender: {
+          tabId: EMBEDDED_ANCESTOR_TAB_ID,
+          context: "content-script",
+        },
+      });
+    });
 
-      const result = await Promise.race(resultPromises);
+    const result = await Promise.race(resultPromises);
 
-      if (window.parent === null) {
-        throw new Error("Unexpected `null` parent Window.");
-      }
-
-      window.parent.postMessage(result, getEmbeddedAncestorOrigin());
+    if (window.parent === null) {
+      throw new Error("Unexpected `null` parent Window.");
     }
-  );
+
+    window.parent.postMessage(result, getEmbeddedAncestorOrigin());
+  });
+}
+
+if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1" && isInsideIframe()) {
+  setPostMessageListener();
 }

@@ -8,10 +8,9 @@ export function LoadingAuthRequestView() {
   return (
     <LoadingView
       label={browser.i18n.getMessage(
-        !lastCompletedAuthRequest ||
-          lastCompletedAuthRequest.status === "accepted"
+        !lastCompletedAuthRequest || lastCompletedAuthRequest.status === "accepted"
           ? `${lastCompletedAuthRequest?.type || "default"}RequestLoading`
-          : `abortingRequestLoading`
+          : `abortingRequestLoading`,
       )}
     />
   );

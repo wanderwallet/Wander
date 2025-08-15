@@ -9,24 +9,16 @@ import {
   PaymentDetails,
   SubscriptionListItem,
   SubscriptionText,
-  ToggleSwitch
 } from "~routes/popup/subscriptions/subscriptionDetails";
+import { ToggleSwitch } from "~components/ToggleSwitch";
 import { Content, Title } from "~components/popup/list/SubscriptionListItem";
 import dayjs from "dayjs";
 import { addSubscription } from "~subscriptions";
 import { getActiveAddress } from "~wallets";
-import {
-  type RecurringPaymentFrequency,
-  type SubscriptionData,
-  SubscriptionStatus
-} from "~subscriptions/subscription";
-import {
-  SettingIconWrapper,
-  SettingImage
-} from "~components/dashboard/list/BaseElement";
-import { useTheme } from "~utils/theme";
+import { type RecurringPaymentFrequency, type SubscriptionData, SubscriptionStatus } from "~subscriptions/subscription";
+import { SettingIconWrapper, SettingImage } from "~components/dashboard/list/BaseElement";
 import { formatAddress } from "~utils/format";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { getPrice } from "~lib/coingecko";
 import useSetting from "~settings/hook";
 import { EventType, trackEvent } from "~utils/analytics";
@@ -35,10 +27,11 @@ import BigNumber from "bignumber.js";
 import { useCurrentAuthRequest } from "~utils/auth/auth.hooks";
 import { HeadAuth } from "~components/HeadAuth";
 import { AuthButtons } from "~components/auth/AuthButtons";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import { useTheme } from "~utils/theme/theme.hook";
 
 export function SubscriptionAuthRequestView() {
-  const { authRequest, acceptRequest, rejectRequest } =
-    useCurrentAuthRequest("subscription");
+  const { authRequest, acceptRequest, rejectRequest } = useCurrentAuthRequest("subscription");
 
   const { url, subscriptionFeeAmount } = authRequest;
 
@@ -46,18 +39,15 @@ export function SubscriptionAuthRequestView() {
   const [currency] = useSetting<string>("currency");
   const [checked, setChecked] = useState<boolean>(false);
   const [autopayChecked, setAutopayChecked] = useState<boolean>(false);
-  const theme = useTheme();
+  const { displayTheme } = useTheme();
   const [price, setPrice] = useState<BigNumber | null>();
 
-  useEffect(() => {
-    async function fetchArPrice() {
-      const arPrice = await getPrice("arweave", currency);
-      if (arPrice) {
-        setPrice(BigNumber(arPrice).multipliedBy(subscriptionFeeAmount));
-      }
-    }
+  useAsyncEffect(async () => {
+    const arPrice = await getPrice("arweave", currency);
 
-    fetchArPrice();
+    if (arPrice) {
+      setPrice(BigNumber(arPrice).multipliedBy(subscriptionFeeAmount));
+    }
   }, [currency, subscriptionFeeAmount]);
 
   // TODO TRIGGER PAYMENT WHEN ADDING NEW SUBSCRIPTION
@@ -77,17 +67,14 @@ export function SubscriptionAuthRequestView() {
         subscriptionFeeAmount: subscriptionParams.subscriptionFeeAmount,
         subscriptionManagementUrl: subscriptionParams.subscriptionManagementUrl,
         subscriptionStatus: SubscriptionStatus.ACTIVE,
-        recurringPaymentFrequency:
-          subscriptionParams.recurringPaymentFrequency as RecurringPaymentFrequency,
+        recurringPaymentFrequency: subscriptionParams.recurringPaymentFrequency as RecurringPaymentFrequency,
 
         // If this is left blank, this will automatically be set to the subfee amount
         // applicationAllowance: !isNaN(Number(allowanceInput.state))
         //   ? Number(allowanceInput.state)
         //   : params.subscriptionFeeAmount,
 
-        applicationAllowance: autopayChecked
-          ? subscriptionParams.subscriptionFeeAmount
-          : 0,
+        applicationAllowance: autopayChecked ? subscriptionParams.subscriptionFeeAmount : 0,
 
         nextPaymentDue: new Date(),
 
@@ -95,7 +82,7 @@ export function SubscriptionAuthRequestView() {
         subscriptionStartDate: new Date(),
         subscriptionEndDate: new Date(subscriptionParams.subscriptionEndDate),
         applicationIcon: subscriptionParams.applicationIcon,
-        applicationAutoRenewal: checked
+        applicationAutoRenewal: checked,
       };
 
       const updated = await handleSubscriptionPayment(subscriptionData, true);
@@ -114,7 +101,7 @@ export function SubscriptionAuthRequestView() {
         subscriptionFeeAmount: subscriptionData.subscriptionFeeAmount,
         applicationUrl: url || subscriptionParams.subscriptionManagementUrl,
         autoPay: autopayChecked,
-        autoRenewal: checked
+        autoRenewal: checked,
       });
 
       await acceptRequest();
@@ -123,7 +110,7 @@ export function SubscriptionAuthRequestView() {
       setToast({
         type: "error",
         content: browser.i18n.getMessage("subscription_add_failure"),
-        duration: 2200
+        duration: 2200,
       });
     }
   }
@@ -135,13 +122,8 @@ export function SubscriptionAuthRequestView() {
         <Main>
           <SubscriptionListItem>
             <Content>
-              <SettingIconWrapper
-                bg={theme === "light" ? "235,235,235" : "255, 255, 255"}
-                customSize="2.625rem"
-              >
-                {authRequest.applicationIcon && (
-                  <SettingImage src={authRequest.applicationIcon} />
-                )}
+              <SettingIconWrapper bg={displayTheme === "light" ? "235,235,235" : "255, 255, 255"} customSize="2.625rem">
+                {authRequest.applicationIcon && <SettingImage src={authRequest.applicationIcon} />}
               </SettingIconWrapper>
               <Title>
                 <h2>{authRequest.applicationName}</h2>
@@ -151,7 +133,7 @@ export function SubscriptionAuthRequestView() {
               </Title>
             </Content>
           </SubscriptionListItem>
-          <SubscriptionText color={theme === "light" ? "#191919" : "#ffffff"}>
+          <SubscriptionText color={displayTheme === "light" ? "#191919" : "#ffffff"}>
             {browser.i18n.getMessage("subscription_application_address")}:{" "}
             <span>{formatAddress(authRequest.arweaveAccountAddress, 8)}</span>
           </SubscriptionText>
@@ -159,10 +141,7 @@ export function SubscriptionAuthRequestView() {
             <h6>Recurring payment amount</h6>
             <Body>
               <h3>{authRequest.subscriptionFeeAmount} AR</h3>
-              <SubscriptionText
-                fontSize="14px"
-                color={theme === "light" ? "#191919" : "#ffffff"}
-              >
+              <SubscriptionText fontSize="14px" color={displayTheme === "light" ? "#191919" : "#ffffff"}>
                 {browser.i18n.getMessage("subscriptions")}:{" "}
                 {browser.i18n.getMessage(authRequest.recurringPaymentFrequency)}
               </SubscriptionText>
@@ -171,63 +150,46 @@ export function SubscriptionAuthRequestView() {
               <SubscriptionText fontSize="14px">
                 ${price ? price.toFixed(2) : "--.--"} {currency}
               </SubscriptionText>
-              <SubscriptionText
-                fontSize="14px"
-                color={theme === "light" ? "#191919" : "#ffffff"}
-              >
-                {browser.i18n.getMessage("next_payment")}:{" "}
-                {dayjs(authRequest.nextPaymentDue).format("MMM DD, YYYY")}
+              <SubscriptionText fontSize="14px" color={displayTheme === "light" ? "#191919" : "#ffffff"}>
+                {browser.i18n.getMessage("next_payment")}: {dayjs(authRequest.nextPaymentDue).format("MMM DD, YYYY")}
               </SubscriptionText>
             </Body>
           </PaymentDetails>
           <div />
           <div>
             <Body>
-              <SubscriptionText
-                fontSize="14px"
-                color={theme === "light" ? "#191919" : "#ffffff"}
-              >
+              <SubscriptionText fontSize="14px" color={displayTheme === "light" ? "#191919" : "#ffffff"}>
                 {browser.i18n.getMessage("start")}
               </SubscriptionText>
-              <SubscriptionText
-                fontSize="14px"
-                color={theme === "light" ? "#191919" : "#ffffff"}
-              >
+              <SubscriptionText fontSize="14px" color={displayTheme === "light" ? "#191919" : "#ffffff"}>
                 {browser.i18n.getMessage("end")}
               </SubscriptionText>
             </Body>
             <Body>
-              <SubscriptionText>
-                {dayjs().format("MMM D, YYYY")}
-              </SubscriptionText>
-              <SubscriptionText>
-                {dayjs(authRequest.subscriptionEndDate).format("MMM D, YYYY")}
-              </SubscriptionText>
+              <SubscriptionText>{dayjs().format("MMM D, YYYY")}</SubscriptionText>
+              <SubscriptionText>{dayjs(authRequest.subscriptionEndDate).format("MMM D, YYYY")}</SubscriptionText>
             </Body>
           </div>
           {/* Toggle */}
           <Body>
-            <SubscriptionText color={theme === "light" ? "#191919" : "#ffffff"}>
+            <SubscriptionText color={displayTheme === "light" ? "#191919" : "#ffffff"}>
               {browser.i18n.getMessage("auto_renewal")}
             </SubscriptionText>
             <ToggleSwitch checked={checked} setChecked={setChecked} />
           </Body>
           <Body>
-            <SubscriptionText color={theme === "light" ? "#191919" : "#ffffff"}>
+            <SubscriptionText color={displayTheme === "light" ? "#191919" : "#ffffff"}>
               {browser.i18n.getMessage("auto_pay")}
               <Tooltip content={InfoText} position="bottom">
                 <InfoCircle />
               </Tooltip>
             </SubscriptionText>
-            <ToggleSwitch
-              checked={autopayChecked}
-              setChecked={setAutopayChecked}
-            />
+            <ToggleSwitch checked={autopayChecked} setChecked={setAutopayChecked} />
           </Body>
           {/* <Threshold>
               <Body>
                 <SubscriptionText
-                  color={theme === "light" ? "#191919" : "#ffffff"}
+                  color={displayTheme === "light" ? "#191919" : "#ffffff"}
                 >
                   Allowance{" "}
                   <TooltipV2 content={InfoText} position="bottom">
@@ -242,20 +204,19 @@ export function SubscriptionAuthRequestView() {
           style={{
             display: "flex",
             flexDirection: "column",
-            gap: "8px"
-          }}
-        >
+            gap: "8px",
+          }}>
           <AuthButtons
             authRequest={authRequest}
             primaryButtonProps={{
               label: browser.i18n.getMessage("confirm_subscription"),
               onClick: done,
-              style: { fontWeight: "500" }
+              style: { fontWeight: "500" },
             }}
             secondaryButtonProps={{
               label: browser.i18n.getMessage("cancel"),
               onClick: () => rejectRequest(),
-              style: { fontWeight: "500", backgroundColor: "#8C1A1A" }
+              style: { fontWeight: "500", backgroundColor: "#8C1A1A" },
             }}
           />
         </div>

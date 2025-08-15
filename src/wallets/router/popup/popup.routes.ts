@@ -3,9 +3,7 @@ import { HomeView } from "~routes/popup";
 import { CollectibleView } from "~routes/popup/collectible/[id]";
 import { CollectiblesView } from "~routes/popup/collectibles";
 import { ConfirmPurchaseView } from "~routes/popup/confirm";
-import { ExploreView } from "~routes/popup/explore";
 import { MessageNotificationView } from "~routes/popup/notification/[id]";
-import { NotificationsView } from "~routes/popup/notifications";
 import { PendingPurchaseView } from "~routes/popup/pending";
 import { PurchaseView } from "~routes/popup/purchase";
 import { ReceiveView } from "~routes/popup/receive";
@@ -33,13 +31,37 @@ import { SubscriptionDetailsView } from "~routes/popup/subscriptions/subscriptio
 import { SubscriptionManagementView } from "~routes/popup/subscriptions/subscriptionManagement";
 import { SubscriptionPaymentView } from "~routes/popup/subscriptions/subscriptionPayment";
 import { SubscriptionsView } from "~routes/popup/subscriptions/subscriptions";
-import { TokensView } from "~routes/popup/tokens";
 import { TransactionView } from "~routes/popup/transaction/[id]";
 import { TransactionsView } from "~routes/popup/transaction/transactions";
 import { UnlockView } from "~routes/popup/unlock";
 import { getExtensionOverrides } from "~wallets/router/extension/extension.routes";
 import type { RouteConfig } from "~wallets/router/router.types";
 import { NoteView } from "~routes/popup/send/note";
+import { WelcomePaths } from "../welcome/welcome.routes";
+import { GettingStartedSetupWelcomeView } from "~routes/popup/gettingStarted";
+import { RecoveryPhraseView } from "~routes/popup/settings/wallets/[address]/recovery-phrase";
+import { AgentsView } from "~routes/popup/agents";
+import { CreateAOYieldAgentView } from "~routes/popup/agents/ao-yield/create-agent";
+import { ConfirmAOYieldAgentView } from "~routes/popup/agents/ao-yield/confirm-agent";
+import { AOYieldAgentActivatedView } from "~routes/popup/agents/ao-yield/agent-activated";
+import { ManageAOYieldAgentView } from "~routes/popup/agents/ao-yield/manage-agent";
+import { EditAOYieldAgentView } from "~routes/popup/agents/ao-yield/edit-agent";
+import { AOYieldAgentHistoryView } from "~routes/popup/agents/ao-yield/agent-history";
+import { AOYieldAgentInfoView } from "~routes/popup/agents/ao-yield/agent-info";
+import { AOYieldAgentTransactionHistoryView } from "~routes/popup/agents/ao-yield/agent-transaction-history";
+import { LiquidOpsAgentsView } from "~routes/popup/agents/liquidops/agents";
+import { LiquidOpsAgent } from "~routes/popup/agents/liquidops/agent";
+import { LiquidOpsDepositWithdraw } from "~routes/popup/agents/liquidops/depositwithdraw";
+import { LiquidOpsConfirm } from "~routes/popup/agents/liquidops/confirm";
+import { LiquidOpsResult } from "~routes/popup/agents/liquidops/result";
+import { AnnouncementView } from "~routes/popup/announcement";
+import { TierView } from "~routes/popup/tier";
+import { EarnView } from "~routes/popup/earn";
+import { ManageEarningsView } from "~routes/popup/earn/manage";
+import { AllocationSetView } from "~routes/popup/earn/allocation-set";
+import { TokensView } from "~routes/popup/tokens";
+import { TokenDetailView } from "~routes/popup/tokens/token-detail";
+import { HelpView } from "~routes/popup/settings/help";
 
 export type PopupRoutePath =
   | "/"
@@ -61,11 +83,12 @@ export type PopupRoutePath =
   | `/notifications`
   | `/notification/${string}`
   | `/tokens`
-  | `/token/${string}`
+  | `/tokens/${string}`
   | `/collectibles`
   | `/collectible/${string}`
   | `/transaction/${string}`
   | `/transaction/${string}/${string}`
+  | `/announcement/${string}`
   | `/send/confirm/${string}/${string}/${string}`
   | `/send/confirm/${string}/${string}/${string}/${string}`
   | `/send/completed/${string}`
@@ -83,7 +106,27 @@ export type PopupRoutePath =
   | `/quick-settings/contacts`
   | `/quick-settings/contacts/new`
   | `/quick-settings/contacts/${string}`
-  | `/quick-settings/notifications`;
+  | `/quick-settings/notifications`
+  | `/quick-settings/help`
+  | `/getting-started/${string}`
+  | `/agents`
+  | `/agents/ao-yield/create-agent`
+  | `/agents/ao-yield/confirm-agent`
+  | `/agents/ao-yield/manage-agent`
+  | `/agents/ao-yield/edit-agent`
+  | `/agents/ao-yield/activated`
+  | `/agents/ao-yield/history`
+  | `/agents/ao-yield/info/${string}`
+  | `/agents/ao-yield/transaction-history/${string}`
+  | `/agents/liquidops/agents`
+  | `/agents/liquidops/${string}`
+  | `/agents/liquidops/${string}/${"deposit" | "withdraw"}`
+  | `/agents/liquidops/${string}/${"deposit" | "withdraw"}/${string}/confirm`
+  | `/agents/liquidops/${string}/${"deposit" | "withdraw"}/result/${"success" | "failure"}`
+  | `/tier`
+  | `/earn`
+  | `/earn/manage`
+  | `/earn/allocation-set`;
 
 export const PopupPaths = {
   Home: "/",
@@ -95,7 +138,6 @@ export const PopupPaths = {
   Amount: "/send/amount/:recipient/:id?",
   Note: "/send/note",
   SendAuth: "/send/auth/:tokenID?",
-  Explore: "/explore",
   Subscriptions: "/subscriptions",
   SubscriptionDetails: "/subscriptions/:id",
   SubscriptionManagement: "/subscriptions/:id/manage",
@@ -104,10 +146,11 @@ export const PopupPaths = {
   Notifications: "/notifications",
   MessageNotification: "/notification/:id",
   Tokens: "/tokens",
-  Asset: "/token/:id",
+  TokenDetail: "/tokens/:id",
   Collectibles: "/collectibles",
   Collectible: "/collectible/:id",
   Transaction: "/transaction/:id/:gateway?",
+  Announcement: "/announcement/:id",
   Confirm: "/send/confirm/:token/:qty/:recipient/:message?",
   TransactionCompleted: "/send/completed/:id",
   QuickSettings: "/quick-settings",
@@ -115,6 +158,7 @@ export const PopupPaths = {
   Wallet: "/quick-settings/wallets/:address",
   ExportWallet: "/quick-settings/wallets/:address/export",
   GenerateQR: "/quick-settings/wallets/:address/qr",
+  RecoveryPhrase: "/quick-settings/wallets/:address/recovery-phrase",
   Applications: "/quick-settings/apps",
   AppSettings: "/quick-settings/apps/:url",
   AppPermissions: "/quick-settings/apps/:url/permissions",
@@ -124,166 +168,269 @@ export const PopupPaths = {
   Contacts: "/quick-settings/contacts",
   NewContact: "/quick-settings/contacts/new",
   ContactSettings: "/quick-settings/contacts/:address",
-  NotificationSettings: "/quick-settings/notifications"
+  NotificationSettings: "/quick-settings/notifications",
+  Help: "/quick-settings/help",
+  Agents: "/agents",
+  CreateAOYieldAgent: "/agents/ao-yield/create-agent",
+  ConfirmAOYieldAgent: "/agents/ao-yield/confirm-agent",
+  ManageAOYieldAgent: "/agents/ao-yield/manage-agent",
+  EditAOYieldAgent: "/agents/ao-yield/edit-agent",
+  AOYieldAgentActivated: "/agents/ao-yield/activated",
+  AOYieldAgentHistory: "/agents/ao-yield/history",
+  AOYieldAgentInfo: "/agents/ao-yield/info/:id",
+  AOYieldAgentTransactionHistory: "/agents/ao-yield/transaction-history/:id",
+  LiquidOpsAgentsList: "/agents/liquidops/agents",
+  LiquidOpsAgent: "/agents/liquidops/:ticker",
+  LiquidOpsDepositWithdraw: "/agents/liquidops/:ticker/:action",
+  LiquidOpsResult: "/agents/liquidops/:ticker/:action/result/:result",
+  LiquidOpsConfirm: "/agents/liquidops/:ticker/:action/:quantity/confirm",
+  Tier: "/tier",
+  Earn: "/earn",
+  ManageEarnings: "/earn/manage",
+  AllocationSet: "/earn/allocation-set",
 } as const satisfies Record<string, PopupRoutePath>;
 
 export const POPUP_ROUTES = [
   ...getExtensionOverrides({
     unlockView: UnlockView,
-    loadingView: LoadingView
+    loadingView: LoadingView,
   }),
   {
     path: PopupPaths.Home,
-    component: HomeView
+    component: HomeView,
   },
   {
     path: PopupPaths.Purchase,
-    component: PurchaseView
+    component: PurchaseView,
   },
   {
     path: PopupPaths.ConfirmPurchase,
-    component: ConfirmPurchaseView
+    component: ConfirmPurchaseView,
   },
   {
     path: PopupPaths.PendingPurchase,
-    component: PendingPurchaseView
+    component: PendingPurchaseView,
   },
   {
     path: PopupPaths.Receive,
-    component: ReceiveView
+    component: ReceiveView,
   },
   {
     path: PopupPaths.Send,
-    component: SendView
+    component: SendView,
   },
   {
     path: PopupPaths.Amount,
-    component: AmountView
+    component: AmountView,
   },
   {
     path: PopupPaths.Note,
-    component: NoteView
+    component: NoteView,
   },
   {
     path: PopupPaths.SendAuth,
-    component: SendAuthView
-  },
-  {
-    path: PopupPaths.Explore,
-    component: ExploreView
+    component: SendAuthView,
   },
   {
     path: PopupPaths.Subscriptions,
-    component: SubscriptionsView
+    component: SubscriptionsView,
   },
   {
     path: PopupPaths.SubscriptionDetails,
-    component: SubscriptionDetailsView
+    component: SubscriptionDetailsView,
   },
   {
     path: PopupPaths.SubscriptionManagement,
-    component: SubscriptionManagementView
+    component: SubscriptionManagementView,
   },
   {
     path: PopupPaths.SubscriptionPayment,
-    component: SubscriptionPaymentView
+    component: SubscriptionPaymentView,
   },
   {
     path: PopupPaths.Transactions,
-    component: TransactionsView
-  },
-  {
-    path: PopupPaths.Notifications,
-    component: NotificationsView
+    component: TransactionsView,
   },
   {
     path: PopupPaths.MessageNotification,
-    component: MessageNotificationView
+    component: MessageNotificationView,
   },
   {
     path: PopupPaths.Tokens,
-    component: TokensView
+    component: TokensView,
+  },
+  {
+    path: PopupPaths.TokenDetail,
+    component: TokenDetailView,
   },
   {
     path: PopupPaths.Collectibles,
-    component: CollectiblesView
+    component: CollectiblesView,
   },
   {
     path: PopupPaths.Collectible,
-    component: CollectibleView
+    component: CollectibleView,
   },
   {
     path: PopupPaths.Transaction,
-    component: TransactionView
+    component: TransactionView,
+  },
+  {
+    path: PopupPaths.Announcement,
+    component: AnnouncementView,
   },
   {
     // TODO: This route is incorrect/misleading as a lot of its params are actually ignored and loaded from a temp tx
     // stored in the temp storage:
     path: PopupPaths.Confirm,
-    component: ConfirmView
+    component: ConfirmView,
   },
   {
     path: PopupPaths.TransactionCompleted,
-    component: TransactionCompletedView
+    component: TransactionCompletedView,
   },
   {
     path: PopupPaths.QuickSettings,
-    component: MenuView
+    component: MenuView,
   },
   {
     path: PopupPaths.Wallets,
-    component: WalletsView
+    component: WalletsView,
   },
   {
     path: PopupPaths.Wallet,
-    component: WalletView
+    component: WalletView,
   },
   {
     path: PopupPaths.ExportWallet,
-    component: ExportWalletView
+    component: ExportWalletView,
   },
   {
     path: PopupPaths.GenerateQR,
-    component: GenerateQRView
+    component: GenerateQRView,
+  },
+  {
+    path: PopupPaths.RecoveryPhrase,
+    component: RecoveryPhraseView,
   },
   {
     path: PopupPaths.Applications,
-    component: ApplicationsView
+    component: ApplicationsView,
   },
   {
     path: PopupPaths.AppSettings,
-    component: AppSettingsView
+    component: AppSettingsView,
   },
   {
     path: PopupPaths.AppPermissions,
-    component: AppPermissionsView
+    component: AppPermissionsView,
   },
   {
     path: PopupPaths.TokensSettings,
-    component: TokensSettingsView
+    component: TokensSettingsView,
   },
   {
     path: PopupPaths.NewTokenSettings,
-    component: NewTokenSettingsView
+    component: NewTokenSettingsView,
   },
   {
     path: PopupPaths.TokenSettings,
-    component: TokenSettingsView
+    component: TokenSettingsView,
   },
   {
     path: PopupPaths.Contacts,
-    component: ContactsView
+    component: ContactsView,
   },
   {
     path: PopupPaths.NewContact,
-    component: NewContactView
+    component: NewContactView,
   },
   {
     path: PopupPaths.ContactSettings,
-    component: ContactSettingsView
+    component: ContactSettingsView,
   },
   {
     path: PopupPaths.NotificationSettings,
-    component: NotificationSettingsView
-  }
+    component: NotificationSettingsView,
+  },
+  {
+    path: PopupPaths.Help,
+    component: HelpView,
+  },
+  {
+    path: WelcomePaths.GettingStarted,
+    component: GettingStartedSetupWelcomeView,
+  },
+  {
+    path: PopupPaths.Agents,
+    component: AgentsView,
+  },
+  {
+    path: PopupPaths.CreateAOYieldAgent,
+    component: CreateAOYieldAgentView,
+  },
+  {
+    path: PopupPaths.ConfirmAOYieldAgent,
+    component: ConfirmAOYieldAgentView,
+  },
+  {
+    path: PopupPaths.ManageAOYieldAgent,
+    component: ManageAOYieldAgentView,
+  },
+  {
+    path: PopupPaths.EditAOYieldAgent,
+    component: EditAOYieldAgentView,
+  },
+  {
+    path: PopupPaths.AOYieldAgentActivated,
+    component: AOYieldAgentActivatedView,
+  },
+  {
+    path: PopupPaths.AOYieldAgentHistory,
+    component: AOYieldAgentHistoryView,
+  },
+  {
+    path: PopupPaths.AOYieldAgentInfo,
+    component: AOYieldAgentInfoView,
+  },
+  {
+    path: PopupPaths.AOYieldAgentTransactionHistory,
+    component: AOYieldAgentTransactionHistoryView,
+  },
+  {
+    path: PopupPaths.LiquidOpsAgentsList,
+    component: LiquidOpsAgentsView,
+  },
+  {
+    path: PopupPaths.LiquidOpsAgent,
+    component: LiquidOpsAgent,
+  },
+  {
+    path: PopupPaths.LiquidOpsDepositWithdraw,
+    component: LiquidOpsDepositWithdraw,
+  },
+  {
+    path: PopupPaths.LiquidOpsResult,
+    component: LiquidOpsResult,
+  },
+  {
+    path: PopupPaths.LiquidOpsConfirm,
+    component: LiquidOpsConfirm,
+  },
+  {
+    path: PopupPaths.Tier,
+    component: TierView,
+  },
+  {
+    path: PopupPaths.Earn,
+    component: EarnView,
+  },
+  {
+    path: PopupPaths.ManageEarnings,
+    component: ManageEarningsView,
+  },
+  {
+    path: PopupPaths.AllocationSet,
+    component: AllocationSetView,
+  },
 ] as const satisfies RouteConfig[];

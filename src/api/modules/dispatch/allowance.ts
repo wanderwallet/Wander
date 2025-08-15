@@ -4,7 +4,7 @@ import type { ModuleAppData } from "~api/background/background-modules";
 import { defaultGateway } from "~gateways/gateway";
 import { signAuth } from "../sign/sign_auth";
 import Arweave from "arweave";
-import type { DataItem } from "arbundles";
+import type { DataItem } from "@dha-team/arbundles";
 import type Transaction from "arweave/web/lib/transaction";
 import type BigNumber from "bignumber.js";
 import type { JWKInterface } from "arweave/web/lib/wallet";
@@ -18,7 +18,7 @@ export async function ensureAllowanceDispatch(
   allowance: AllowanceBigNumber,
   keyfile: JWKInterface,
   price: number | BigNumber,
-  alwaysAsk?: boolean
+  alwaysAsk?: boolean,
 ) {
   const arweave = new Arweave(defaultGateway);
 
@@ -31,16 +31,18 @@ export async function ensureAllowanceDispatch(
         appData,
         // @ts-expect-error
         dataEntry.toJSON(),
-        address
+        address,
       );
     }
 
     // if (allowance.enabled) {
     //   await allowanceAuth(appData, allowance, price, alwaysAsk);
     // }
-  } catch (e) {
+  } catch (err) {
     freeDecryptedWallet(keyfile);
-    throw new Error(e?.message || e);
+
+    throw err;
   }
+
   return;
 }

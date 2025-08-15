@@ -14,8 +14,8 @@ export const runtime = {
       version,
       manifest_version: 3,
       browser_action: {
-        default_popup: "popup.html"
-      }
+        default_popup: "popup.html",
+      },
     };
   },
 
@@ -23,14 +23,14 @@ export const runtime = {
     addListener: (fn) => {
       fn({
         reason: "install",
-        temporary: false
+        temporary: false,
       } satisfies Runtime.OnInstalledDetailsType);
-    }
+    },
   },
 
   onConnect: {
     addListener: (fn) => {
       console.trace("onConnect.addEventListener", fn);
-    }
-  }
+    },
+  },
 };

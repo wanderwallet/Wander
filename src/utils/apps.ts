@@ -10,7 +10,7 @@ import {
   MessageSmileCircle,
   Scales02,
   Server04,
-  Users03
+  Users03,
 } from "@untitled-ui/icons-react";
 import BotegaIcon from "url:/assets/ecosystem/botega.svg";
 import CoinMakerIcon from "url:/assets/ecosystem/coinmaker.svg";
@@ -118,74 +118,74 @@ export const apps: App[] = [
     name: "LiquidOps",
     category: "DeFi",
     url: "https://liquidops.io/",
-    icon: LiquidOpsIcon
+    icon: LiquidOpsIcon,
   },
   {
     name: "Astro Labs",
     category: "DeFi",
     url: "https://www.astrousd.com/",
     icon: AstroIcon,
-    objectFit: "cover"
+    objectFit: "cover",
   },
   {
     name: "Botega",
     category: "DeFi",
     url: "https://botega.arweave.net/",
-    icon: BotegaIcon
+    icon: BotegaIcon,
   },
   {
     name: "Dexi",
     category: "DeFi",
     url: "https://dexi.arweave.net/",
-    icon: DexiIcon
+    icon: DexiIcon,
   },
   {
     name: "CoinMaker",
     category: "DeFi",
     url: "https://coin.arweave.net/",
-    icon: CoinMakerIcon
+    icon: CoinMakerIcon,
   },
   {
     name: "Perplex",
     category: "DeFi",
     url: "https://perplex.finance/",
-    icon: PerplexIcon
+    icon: PerplexIcon,
   },
   {
     name: "EverPay",
     category: "DeFi",
     url: "https://www.everpay.io/",
-    icon: EverpayIcon
+    icon: EverpayIcon,
   },
   {
     name: "PermaSwap",
     category: "DeFi",
     url: "https://aopsn.com/",
-    icon: PermaswapIcon
+    icon: PermaswapIcon,
   },
   {
     name: "Outcome",
     category: "DeFi",
     url: "https://www.outcome.gg/",
-    icon: OutcomeIcon
+    icon: OutcomeIcon,
   },
   {
     name: "Tesser",
     category: "DeFi",
     url: "https://tesser.pro/",
-    icon: TesserIcon
+    icon: TesserIcon,
   },
   {
     name: "Trunk",
     category: "DeFi",
     url: "https://trunkao.xyz",
-    icon: TrunkIcon
+    icon: TrunkIcon,
   },
   {
     name: "tracki.io",
     category: "DeFi",
     url: "https://www.tracki.io/",
-    icon: TrackiIcon
+    icon: TrackiIcon,
   },
 
   // Bridges
@@ -193,19 +193,19 @@ export const apps: App[] = [
     name: "Quantum",
     category: "Bridge",
     url: "https://bridge.astrousd.com/",
-    icon: QuantumIcon
+    icon: QuantumIcon,
   },
   {
     name: "AOX",
     category: "Bridge",
     url: "https://aox.xyz/",
-    icon: AoxIcon
+    icon: AoxIcon,
   },
   {
     name: "AO Mint",
     category: "Bridge",
     url: "https://ao.arweave.net/#/mint",
-    icon: AoIcon
+    icon: AoIcon,
   },
 
   // Games
@@ -213,85 +213,85 @@ export const apps: App[] = [
     name: "Basejump",
     category: "Games",
     url: "https://www.basejump.xyz",
-    icon: BasejumpIcon
+    icon: BasejumpIcon,
   },
   {
     name: "Llama Land",
     category: "Games",
     url: "https://llamaland.arweave.net/",
-    icon: LlamaLandIcon
+    icon: LlamaLandIcon,
   },
   {
     name: "Dumverse",
     category: "Games",
     url: "https://udatfq2ef3xeb7dgk2tw3ibgoelokcht4wuwirgocolve66xyfua.arweave.net/oMEyw0Qu7kD8ZlanbaAmcRblCPPlqWREzhOXUnvXwWg/",
-    icon: DumverseIcon
+    icon: DumverseIcon,
   },
   {
     name: "Cyberbeavers",
     category: "Games",
     url: "https://beavers.warp.cc/",
-    icon: CyberweaversIcon
+    icon: CyberweaversIcon,
   },
   {
     name: "DumDumUp!",
     category: "Games",
     url: "https://dumdumup.vercel.app/",
-    icon: DumDumUpIcon
+    icon: DumDumUpIcon,
   },
   {
     name: "Hang Out",
     category: "Games",
     url: "https://hangout.aogames.org/",
-    icon: HangoutIcon
+    icon: HangoutIcon,
   },
   {
     name: "AO Craft",
     category: "Games",
     url: "https://ao-craft.vercel.app/",
-    icon: AoCraftIcon
+    icon: AoCraftIcon,
   },
   {
     name: "AO War",
     category: "Games",
     url: "https://aowar.arweave.net/",
-    icon: AoWarIcon
+    icon: AoWarIcon,
   },
   {
     name: "BazARmash",
     category: "Games",
     url: "https://bazarmash.vercel.app/",
-    icon: BazarmashIcon
+    icon: BazarmashIcon,
   },
   {
     name: "CasinAO",
     category: "Games",
     url: "https://agcpzmllwtabfgpx6szogbps2b2qcxpqolkzvpq7zu2rwpx5oosq.arweave.net/AYT8sWu0wBKZ9_Sy4wXy0HUBXfBy1Zq-H801Gz79c6U/",
-    icon: CasinaoIcon
+    icon: CasinaoIcon,
   },
   {
     name: "Happy Farm",
     category: "Games",
     url: "https://happytown.ar-io.net/",
-    icon: HappyfarmIcon
+    icon: HappyfarmIcon,
   },
   {
     name: "DimensionLife",
     category: "Games",
     url: "https://ar.dimension-life.rootmud.xyz/",
-    icon: DimensionlifeIcon
+    icon: DimensionlifeIcon,
   },
   {
     name: "AO Classic Blackjack",
     category: "Games",
     url: "https://blackjack.arweave.net/",
-    icon: AoClassicBlackJackIcon
+    icon: AoClassicBlackJackIcon,
   },
   {
     name: "Dum Dum Dum",
     category: "Games",
     url: "https://qtvgmiqdhqmjzpeajspzovhopa56egwi2e6njkdkrc44pyooqquq.arweave.net/hOpmIgM8GJy8gEyfl1TueDviGsjRPNSoaoi5x-HOhCk/",
-    icon: DumdumDumIcon
+    icon: DumdumDumIcon,
   },
   {
     name: "Ctrl Play",
@@ -299,7 +299,7 @@ export const apps: App[] = [
     url: "https://ctrlplayfrontend_arlink.arweave.net",
     icon: CtrlPlayIcon,
     useAppIconWrapper: true,
-    backgroundColor: "#000000"
+    backgroundColor: "#000000",
   },
   {
     name: "Pet or Rekt",
@@ -307,14 +307,14 @@ export const apps: App[] = [
     url: "https://dumdum.arweave.net/",
     icon: PetOrRektIcon,
     useAppIconWrapper: true,
-    backgroundColor: "#000000"
+    backgroundColor: "#000000",
   },
   {
     name: "Rimbox",
     category: "Games",
     url: "https://rimbox.vercel.app/",
     icon: RimboxIcon,
-    backgroundColor: "#fff"
+    backgroundColor: "#fff",
   },
   {
     name: "Aolotto",
@@ -323,7 +323,7 @@ export const apps: App[] = [
     icon: AolottoIcon,
 
     imageSize: "32px",
-    backgroundColor: "#FFF"
+    backgroundColor: "#FFF",
   },
 
   // DeAI
@@ -331,13 +331,13 @@ export const apps: App[] = [
     name: "AOS-Llama",
     category: "Decentralized AI",
     url: "https://github.com/samcamwilliams/aos-llama",
-    icon: AosLlamaIcon
+    icon: AosLlamaIcon,
   },
   {
     name: "Apus Network",
     category: "Decentralized AI",
     url: "https://www.apus.network/",
-    icon: ApusIcon
+    icon: ApusIcon,
   },
 
   // NFTs
@@ -345,7 +345,7 @@ export const apps: App[] = [
     name: "BazAR",
     category: "NFTs",
     url: "https://bazar.arweave.net/",
-    icon: BazarIcon
+    icon: BazarIcon,
   },
   {
     name: "AOction House",
@@ -353,7 +353,7 @@ export const apps: App[] = [
     url: "https://1of1_aoction-house.arweave.net",
     icon: AoctionHouseIcon,
     imageSize: "32px",
-    useAppIconWrapper: true
+    useAppIconWrapper: true,
   },
 
   // Social
@@ -367,37 +367,37 @@ export const apps: App[] = [
     name: "Typr",
     category: "Social",
     url: "https://iamgamelover.arweave.net/",
-    icon: TyprIcon
+    icon: TyprIcon,
   },
   {
     name: "Bodhi",
     category: "Social",
     url: "https://bodhi.wtf/",
-    icon: BodhiIcon
+    icon: BodhiIcon,
   },
   {
     name: "WeaveChat",
     category: "Social",
     url: "https://weavechat.vercel.app/",
-    icon: WeavechatIcon
+    icon: WeavechatIcon,
   },
   {
     name: "GatherChat",
     category: "Social",
     url: "https://gatherchat.ar-io.net/#/",
-    icon: GatherchatIcon
+    icon: GatherchatIcon,
   },
   {
     name: "Permapages",
     category: "Social",
     url: "https://permapages.app/",
-    icon: PermapagesIcon
+    icon: PermapagesIcon,
   },
   {
     name: "AO Trends",
     category: "Social",
     url: "https://trends_arlink.arweave.net/",
-    icon: AoTrendsIcon
+    icon: AoTrendsIcon,
   },
   {
     name: "DecentraMind",
@@ -405,33 +405,33 @@ export const apps: App[] = [
     url: "https://decentramind.club/",
     icon: DecentraMindIcon,
     useAppIconWrapper: true,
-    backgroundColor: "#fff"
+    backgroundColor: "#fff",
   },
   {
     name: "Elyssium",
     category: "Social",
     url: "https://elyssium.live/",
     icon: ElyssiumIcon,
-    backgroundColor: "#000"
+    backgroundColor: "#000",
   },
   {
     name: "Arbit Studio",
     category: "Social",
     url: "https://arbitstudio.ar.io",
-    icon: ArbitStudioIcon
+    icon: ArbitStudioIcon,
   },
   {
     name: "AO Store",
     category: "Social",
     url: "https://arstore_arlink.arweave.net/",
     icon: AoStoreIcon,
-    backgroundColor: "#000"
+    backgroundColor: "#000",
   },
   {
     name: "Velocity",
     category: "Social",
     url: "https://velocity.ar.io/",
-    icon: VelocityIcon
+    icon: VelocityIcon,
   },
   {
     name: "MetaLinks",
@@ -439,7 +439,7 @@ export const apps: App[] = [
     url: "https://metalinks.ar.io/",
     icon: MetaLinksIcon,
     backgroundColor: "black",
-    padding: "4px"
+    padding: "4px",
   },
 
   // Storage
@@ -448,19 +448,19 @@ export const apps: App[] = [
     category: "Storage",
     url: "https://ardrive.io/",
     icon: ArDriveIcon,
-    objectFit: "cover"
+    objectFit: "cover",
   },
   {
     name: "ArFleet",
     category: "Storage",
     url: "https://arfleet.arweave.net/#/",
-    icon: ArfleetIcon
+    icon: ArfleetIcon,
   },
   {
     name: "Alex",
     category: "Storage",
     url: "https://alex.arweave.net/",
-    icon: AlexIcon
+    icon: AlexIcon,
   },
 
   // Explorers
@@ -468,13 +468,13 @@ export const apps: App[] = [
     name: "AO Link",
     category: "Explorers",
     url: "https://www.ao.link/",
-    icon: AolinkIcon
+    icon: AolinkIcon,
   },
   {
     name: "ViewBlock",
     category: "Explorers",
     url: "https://viewblock.io/arweave",
-    icon: ViewblockIcon
+    icon: ViewblockIcon,
   },
 
   // Dev Tools
@@ -482,93 +482,93 @@ export const apps: App[] = [
     name: "Protocol.Land",
     category: "Dev Tools",
     url: "https://protocol.land/",
-    icon: ProtocolLandIcon
+    icon: ProtocolLandIcon,
   },
   {
     name: "Ar.io",
     category: "Dev Tools",
     url: "https://ar.io/",
-    icon: ArioIcon
+    icon: ArioIcon,
   },
   {
     name: "ArNS",
     category: "Dev Tools",
     url: "https://ar.io/arns",
-    icon: ArioIcon
+    icon: ArioIcon,
   },
   {
     name: "Redstone",
     category: "Dev Tools",
     url: "https://redstone.finance/",
-    icon: RedstoneIcon
+    icon: RedstoneIcon,
   },
   {
     name: "Orbit",
     category: "Dev Tools",
     url: "https://0rbit.co/",
-    icon: OrbitIcon
+    icon: OrbitIcon,
   },
   {
     name: "Tau Oracle",
     category: "Dev Tools",
     url: "https://tauoracle.com/",
-    icon: TauOracleIcon
+    icon: TauOracleIcon,
   },
   {
     name: "WeavEVM",
     category: "Dev Tools",
     url: "https://www.wvm.dev/",
-    icon: WeaveEVMIcon
+    icon: WeaveEVMIcon,
   },
   {
     name: "WeaveDB",
     category: "Dev Tools",
     url: "https://weavedb.dev/",
-    icon: WeaveDBIcon
+    icon: WeaveDBIcon,
   },
   {
     name: "Arweave Wallet Kit",
     category: "Dev Tools",
     url: "https://docs.arweavekit.com/wallets/wallet-kit",
-    icon: ArweaveWalletKitIcon
+    icon: ArweaveWalletKitIcon,
   },
   {
     name: "BetterIDEa",
     category: "Dev Tools",
     url: "https://betteridea.dev/",
-    icon: BetterIdeaIcon
+    icon: BetterIdeaIcon,
   },
   {
     name: "ArWiki",
     category: "Dev Tools",
     url: "https://arwiki.wiki",
-    icon: ArweaveCommunityIcon
+    icon: ArweaveCommunityIcon,
   },
   {
     name: "VouchDAO",
     category: "Dev Tools",
     url: "https://vouch-dao.arweave.net",
     icon: VouchDAOIcon,
-    useAppIconWrapper: true
+    useAppIconWrapper: true,
   },
   {
     name: "Stamp Protocol",
     category: "Dev Tools",
     url: "https://stamps.live/",
     icon: StampProtocolIcon,
-    useAppIconWrapper: true
+    useAppIconWrapper: true,
   },
   {
     name: "tiny4VR",
     category: "Dev Tools",
     url: "https://tiny4vr.ar.io/",
-    icon: Tiny4VRIcon
+    icon: Tiny4VRIcon,
   },
   {
     name: "ArLink",
     category: "Dev Tools",
     url: "https://arlink.arweave.net/",
-    icon: ArLinkIcon
+    icon: ArLinkIcon,
   },
 
   // Community
@@ -576,43 +576,43 @@ export const apps: App[] = [
     name: "Weavers",
     category: "Community",
     url: "https://www.weaversofficial.com/",
-    icon: WeaversIcon
+    icon: WeaversIcon,
   },
   {
     name: "Longview Labs",
     category: "Community",
     url: "https://www.longviewlabs.co/",
-    icon: LongviewLabsIcon
+    icon: LongviewLabsIcon,
   },
   {
     name: "PermaDAO",
     category: "Community",
     url: "https://permadao.com/",
-    icon: PermaDAOIcon
+    icon: PermaDAOIcon,
   },
   {
     name: "Arweave Oasis",
     category: "Community",
     url: "https://arweaveoasis.com/",
-    icon: ArweaveOasisIcon
+    icon: ArweaveOasisIcon,
   },
   {
     name: "Arweave India",
     category: "Community",
     url: "https://www.arweaveindia.com/",
-    icon: ArweaveCommunityIcon
+    icon: ArweaveCommunityIcon,
   },
   {
     name: "Arweave Philippines",
     category: "Community",
     url: "https://linktr.ee/arweaveph",
-    icon: ArweavePIIcon
+    icon: ArweavePIIcon,
   },
   {
     name: "Arweave Africa",
     category: "Community",
     url: "https://x.com/ArweaveAfrica",
-    icon: ArweaveAfricaIcon
+    icon: ArweaveAfricaIcon,
   },
 
   // Analytics
@@ -620,8 +620,8 @@ export const apps: App[] = [
     name: "DataOS",
     category: "Analytics",
     url: "https://stats.dataos.so/",
-    icon: DataOSIcon
-  }
+    icon: DataOSIcon,
+  },
 ];
 
 export const categories = [
@@ -636,5 +636,5 @@ export const categories = [
   { title: "Explorers", icon: Globe02 },
   { title: "Dev Tools", icon: CodeBrowser },
   { title: "Community", icon: Users03 },
-  { title: "Analytics", icon: BarChartSquare01 }
+  { title: "Analytics", icon: BarChartSquare01 },
 ];

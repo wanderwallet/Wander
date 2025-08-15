@@ -10,7 +10,7 @@ const foreground: ModuleFunction<SubscriptionData[]> = (data) => {
     "subscriptionFeeAmount",
     "recurringPaymentFrequency",
     "subscriptionManagementUrl",
-    "subscriptionEndDate"
+    "subscriptionEndDate",
   ];
 
   for (const field of requiredFields) {
@@ -31,8 +31,8 @@ const foreground: ModuleFunction<SubscriptionData[]> = (data) => {
   return [
     {
       ...data,
-      applicationIcon: data.applicationIcon
-    }
+      applicationIcon: data.applicationIcon,
+    },
   ];
 };
 

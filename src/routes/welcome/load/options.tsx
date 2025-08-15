@@ -30,32 +30,27 @@ export function OptionsWelcomView({ params }: OptionsWelcomViewProps) {
   return (
     <Container>
       <Content>
-        <Paragraph>
-          {browser.i18n.getMessage("choose_how_to_add_your_account")}
-        </Paragraph>
+        <Paragraph>{browser.i18n.getMessage("choose_how_to_add_your_account")}</Paragraph>
         <ListContainer>
           <ListItem
             title={"Recovery phrase"}
             description=""
             onClick={() => setSelected("recoveryPhraseLoad")}
-            active={selected === "recoveryPhraseLoad"}
-          >
+            active={selected === "recoveryPhraseLoad"}>
             <Icon as={FolderShield} />
           </ListItem>
           <ListItem
             title={"Keyfile"}
             description=""
             onClick={() => setSelected("keyfileLoad")}
-            active={selected === "keyfileLoad"}
-          >
+            active={selected === "keyfileLoad"}>
             <Icon as={Key01} />
           </ListItem>
           <ListItem
             title={"QR Code"}
             description=""
             onClick={() => setSelected("qrLoad")}
-            active={selected === "qrLoad"}
-          >
+            active={selected === "qrLoad"}>
             <Icon as={QrCode02} />
           </ListItem>
           <ListItem
@@ -63,8 +58,7 @@ export function OptionsWelcomView({ params }: OptionsWelcomViewProps) {
             description=""
             onClick={() => setSelected("keystoneLoad")}
             active={selected === "keystoneLoad"}
-            hideSquircle
-          >
+            hideSquircle>
             <Image src={KeystoneIcon} alt="Keystone Wallet" />
           </ListItem>
         </ListContainer>

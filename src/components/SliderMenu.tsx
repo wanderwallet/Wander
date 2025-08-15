@@ -14,6 +14,12 @@ interface SliderMenuProps {
   paddingVertical?: number;
   children?: React.ReactNode;
   height?: number | string;
+  maxHeight?: number | string;
+  fullscreen?: boolean;
+  style?: React.CSSProperties;
+  closeIconColor?: string;
+  centerTitle?: boolean;
+  closeButtonStyle?: React.CSSProperties;
 }
 
 export default function SliderMenu({
@@ -24,7 +30,13 @@ export default function SliderMenu({
   paddingHorizontal,
   paddingVertical,
   height,
-  children
+  children,
+  maxHeight,
+  fullscreen = false,
+  style,
+  closeIconColor,
+  centerTitle = false,
+  closeButtonStyle,
 }: SliderMenuProps) {
   const wrapperElementRef = useRef<HTMLDivElement | null>(null);
 
@@ -43,7 +55,9 @@ export default function SliderMenu({
       />
 
       <Wrapper
+        fullscreen={fullscreen}
         height={height}
+        maxHeight={maxHeight}
         hasHeader={hasHeader && !!title}
         paddingHorizontal={paddingHorizontal}
         paddingVertical={paddingVertical}
@@ -52,30 +66,30 @@ export default function SliderMenu({
         initial="hidden"
         animate="shown"
         exit="hidden"
-      >
+        style={style}>
         <Body>
-          {hasHeader && title && (
-            <Header>
-              <Title>{title}</Title>
-              <ExitButton onClick={onClose} />
-            </Header>
-          )}
+          {hasHeader &&
+            (title ? (
+              <Header>
+                {centerTitle && <div />}
+                <Title>{title}</Title>
+                <ExitButton onClick={onClose} color={closeIconColor} style={closeButtonStyle} />
+              </Header>
+            ) : (
+              <AbsoluteExitButton onClick={onClose} color={closeIconColor} style={closeButtonStyle} />
+            ))}
           {children}
         </Body>
       </Wrapper>
     </>
   ) : null;
 
-  return createPortal(
-    <AnimatePresence>{contentElement}</AnimatePresence>,
-    document.body
-  );
+  return createPortal(<AnimatePresence>{contentElement}</AnimatePresence>, document.body);
 }
 
-const ExitButton = styled(CloseIcon)`
+const ExitButton = styled(CloseIcon)<{ color?: string }>`
   cursor: pointer;
-  color: ${({ theme }) =>
-    `${theme.displayTheme === "light" ? "#000000" : "#FFFFFF"}`};
+  color: ${({ theme, color }) => color || `${theme.displayTheme === "light" ? "#000000" : "#FFFFFF"}`};
   transition: transform 0.2s ease;
 
   &:hover {
@@ -85,6 +99,20 @@ const ExitButton = styled(CloseIcon)`
   & path {
     stroke-width: 2;
   }
+
+  /* Prevent rendering artifacts on hover */
+  &:hover {
+    transform-origin: center;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+`;
+
+const AbsoluteExitButton = styled(ExitButton)`
+  z-index: 1;
+  position: absolute;
+  top: -8px;
+  right: 0;
 `;
 
 const Wrapper = styled(motion.div)<{
@@ -92,47 +120,51 @@ const Wrapper = styled(motion.div)<{
   paddingVertical?: number;
   hasHeader?: boolean;
   height?: number | string;
+  maxHeight?: number | string;
+  fullscreen?: boolean;
 }>`
   position: fixed;
   bottom: 0;
   left: 0;
-  height: ${({ height }) => height || "auto"};
-  max-height: calc(100% - 66px);
+  right: 0;
+  margin: 0 auto;
+  height: ${({ height, fullscreen }) => (fullscreen ? "100vh" : height || "auto")};
+  max-height: ${({ fullscreen, maxHeight }) => (fullscreen ? "100%" : maxHeight || "calc(100% - 66px)")};
   display: flex;
   flex-direction: column;
-  width: 100%;
+  width: 377px;
   z-index: 1000;
   overflow: scroll;
-  background-color: ${({ theme }) =>
-    theme.displayTheme === "light" ? "#ffffff" : "#1B1B1B"};
-  border-radius: 24px 24px 0px 0px;
-  padding: ${({ paddingVertical = 24, paddingHorizontal = 24 }) =>
-    `${paddingVertical}px ${paddingHorizontal}px`};
+  background-color: ${({ theme }) => (theme.displayTheme === "light" ? "#ffffff" : "#1B1B1B")};
+  border-radius: ${({ fullscreen }) => (fullscreen ? "0px" : "24px 24px 0px 0px")};
+  padding: ${({ paddingVertical = 24, paddingHorizontal = 24 }) => `${paddingVertical}px ${paddingHorizontal}px`};
   ${({ hasHeader }) => hasHeader && "padding-top: 0;"}
   box-sizing: border-box;
 `;
 
-export const animationSlideFromBottom: Variants = {
+const animationSlideFromBottom: Variants = {
   hidden: {
     y: "100vh",
     transition: {
       duration: 0.2,
-      ease: "easeOut"
-    }
+      ease: "easeOut",
+    },
   },
   shown: {
     y: "0",
     transition: {
       duration: 0.2,
-      ease: "easeInOut"
-    }
-  }
+      ease: "easeInOut",
+    },
+  },
 };
 
 const Body = styled.div`
   display: flex;
   flex-direction: column;
   position: relative;
+  height: 100%;
+  flex: 1;
 `;
 
 const Header = styled.div`
@@ -141,8 +173,7 @@ const Header = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: ${({ theme }) =>
-    theme.displayTheme === "light" ? "#ffffff" : "#1B1B1B"};
+  background-color: ${({ theme }) => (theme.displayTheme === "light" ? "#ffffff" : "#1B1B1B")};
   z-index: 2;
   padding-bottom: 24px;
   padding-top: 32px;
@@ -167,8 +198,7 @@ const Title = styled.h2`
   font-style: normal;
   font-weight: 500;
   line-height: normal;
-  color: ${({ theme }) =>
-    `${theme.displayTheme === "light" ? "#000000" : "#FFFFFF"}`};
+  color: ${({ theme }) => `${theme.displayTheme === "light" ? "#000000" : "#FFFFFF"}`};
 `;
 
 export const CloseLayer = styled(motion.div)`
@@ -181,6 +211,5 @@ export const CloseLayer = styled(motion.div)`
   width: 100vw;
   height: 100vh;
   cursor: default;
-  background-color: ${({ theme }) =>
-    `rgba(0, 0, 0, ${theme.displayTheme === "light" ? 0.3 : 0.7})`};
+  background-color: ${({ theme }) => `rgba(0, 0, 0, ${theme.displayTheme === "light" ? 0.3 : 0.7})`};
 `;

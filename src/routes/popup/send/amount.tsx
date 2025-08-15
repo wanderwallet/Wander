@@ -1,34 +1,14 @@
 import { PageType, trackPage } from "~utils/analytics";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import styled from "styled-components";
-import {
-  Button,
-  Input,
-  Section,
-  Spacer,
-  Text,
-  useInput,
-  useToasts
-} from "@arconnect/components-rebrand";
+import { Button, Input, Section, Spacer, Text, useInput, useToasts } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
-import Token, {
-  Logo,
-  LogoAndDetails,
-  TokenName,
-  WarningIcon
-} from "~components/popup/Token";
+import Token, { LogoAndDetails, TokenName } from "~components/popup/Token";
 import useSetting from "~settings/hook";
-import {
-  formatFiatBalance,
-  formatTokenBalance,
-  fractionedToBalance
-} from "~tokens/currency";
+import { formatFiatBalance, formatTokenBalance, fractionedToBalance } from "~tokens/currency";
 import { useStorage } from "@plasmohq/storage/hook";
 import { ExtensionStorage, TempTransactionStorage } from "~utils/storage";
-import { loadTokenLogo, type Token as TokenInterface } from "~tokens/token";
-import { useTheme } from "~utils/theme";
-import arLogoLight from "url:/assets/ar/logo_light.png";
-import arLogoDark from "url:/assets/ar/logo_dark.png";
+import { type Token as TokenInterface } from "~tokens/token";
 import Collectible from "~components/popup/Collectible";
 import { retryWithGateways } from "~gateways/wayfinder";
 import { useLocation } from "~wallets/router/router.utils";
@@ -37,37 +17,41 @@ import SliderMenu from "~components/SliderMenu";
 import { type Contact } from "~components/Recipient";
 import { formatAddress } from "~utils/format";
 import { useContact } from "~contacts/hooks";
-import { defaultTokens, type TokenInfo } from "~tokens/aoTokens/ao";
+import {
+  AR_PROCESS_ID,
+  defaultTokens,
+  EXP_PROCESS_ID,
+  nonTransferableTokenIds,
+  type TokenInfo,
+} from "~tokens/aoTokens/ao";
 import { useAoTokens } from "~tokens/hooks";
 import BigNumber from "bignumber.js";
-import { EXP_TOKEN } from "~utils/ao_import";
 import { AnnouncementPopup } from "./announcement";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { useTokenBalance, useTokenPrice, useTokenPrices } from "~tokens/hooks";
 import Box from "~components/common/Box";
 import { Flex } from "~components/common/Flex";
 import { useActiveWallet } from "~wallets/hooks";
-import {
-  ChevronDown,
-  Pencil01,
-  SwitchVertical02
-} from "@untitled-ui/icons-react";
+import { ChevronDown, Pencil01, SwitchVertical02 } from "@untitled-ui/icons-react";
 import { SendInput } from "~components/SendInput";
 import { HorizontalLine } from "~components/HorizontalLine";
+import { TokenLogo } from "~components/popup/TokenLogo";
+import { WarningIcon } from "~components/icons/WarningIcon";
+import { useTheme } from "~utils/theme/theme.hook";
 
-enum AmountValidationState {
+export enum AmountValidationState {
   Invalid = "Invalid",
   Insufficient = "Insufficient",
   Valid = "Valid",
-  Empty = "Empty"
+  Empty = "Empty",
 }
 
-function validateAmount(
+export function validateAmount(
   amount: string,
   balance: string,
   networkFee: string = "0",
   qtyMode: QtyMode,
-  price: string | number
+  price: string | number,
 ): AmountValidationState {
   if (amount.trim() === "") {
     return AmountValidationState.Empty;
@@ -82,8 +66,7 @@ function validateAmount(
     return AmountValidationState.Invalid;
   }
 
-  const amountInTokens =
-    qtyMode === "fiat" ? amountBN.dividedBy(priceBN) : amountBN;
+  const amountInTokens = qtyMode === "fiat" ? amountBN.dividedBy(priceBN) : amountBN;
 
   if (amountInTokens.plus(networkFeeBN).gt(balanceBN)) {
     return AmountValidationState.Insufficient;
@@ -92,7 +75,7 @@ function validateAmount(
   return AmountValidationState.Valid;
 }
 
-const getErrorMessage = (state: AmountValidationState) => {
+export const getErrorMessage = (state: AmountValidationState) => {
   switch (state) {
     case AmountValidationState.Insufficient:
       return browser.i18n.getMessage("insufficient_balance");
@@ -129,7 +112,7 @@ export type AmountViewProps = CommonRouteProps<SendViewParams>;
 
 export function AmountView({ params: { id, recipient } }: AmountViewProps) {
   const { navigate, back } = useLocation();
-  const theme = useTheme();
+  const { displayTheme } = useTheme();
   const { setToast } = useToasts();
 
   const [isOpen, setOpen] = useState(true);
@@ -141,36 +124,38 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
   const [qty, setQty] = useStorage<string>(
     {
       key: "last_send_qty",
-      instance: ExtensionStorage
+      instance: ExtensionStorage,
     },
-    ""
+    "",
   );
 
   const [note] = useStorage<string>(
     {
       key: "last_send_note",
-      instance: TempTransactionStorage
+      instance: TempTransactionStorage,
     },
-    ""
+    "",
   );
 
   // qty mode (fiat/token)
   const [qtyMode, setQtyMode] = useStorage<QtyMode>(
     {
       key: "last_send_qty_mode",
-      instance: ExtensionStorage
+      instance: ExtensionStorage,
     },
-    "token"
+    "token",
   );
 
   // token that the user is going to send
   const [tokenID, setTokenID] = useStorage<"AR" | string>(
     {
       key: "last_send_token",
-      instance: ExtensionStorage
+      instance: ExtensionStorage,
     },
-    "AR"
+    AR_PROCESS_ID,
   );
+
+  const showNonTransferableAnnouncement = nonTransferableTokenIds.includes(tokenID);
 
   // currency setting
   const [currency] = useSetting<string>("currency");
@@ -180,21 +165,20 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
   const { tokens: collectibles } = useAoTokens({ type: "collectible" });
 
   const { prices } = useTokenPrices(
-    assets.map((t) => t.id).filter((id) => id !== "AR" && id !== EXP_TOKEN)
+    assets.map((t) => t.id).filter((id) => id !== AR_PROCESS_ID && id !== EXP_PROCESS_ID),
   );
 
   // set ao for following page
   const [isAo, setIsAo] = useState<boolean>(false);
 
   const token = useMemo(() => {
-    const matchingTokenInAoToken = [...assets, ...collectibles].find(
-      (aoToken) => aoToken.id === tokenID
-    ) || {
+    const matchingTokenInAoToken = [...assets, ...collectibles].find((aoToken) => aoToken.id === tokenID) || {
       ...defaultTokens[0],
-      id: defaultTokens[0].processId
+      id: defaultTokens[0].processId,
+      type: "asset",
     };
 
-    setIsAo(matchingTokenInAoToken.id !== "AR");
+    setIsAo(matchingTokenInAoToken.id !== AR_PROCESS_ID);
     return {
       Denomination: matchingTokenInAoToken.Denomination,
       id: matchingTokenInAoToken.id,
@@ -202,14 +186,11 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
       Name: matchingTokenInAoToken.Name,
       Ticker: matchingTokenInAoToken.Ticker,
       type: matchingTokenInAoToken.type || "asset",
-      Logo: matchingTokenInAoToken.Logo
+      Logo: matchingTokenInAoToken.Logo,
     };
   }, [tokenID, assets, collectibles]);
 
-  const { data: balance = "0", isLoading } = useTokenBalance(
-    token,
-    wallet?.address
-  );
+  const { data: balance = "0", isLoading } = useTokenBalance(token, wallet?.address);
 
   const degraded = useMemo(() => {
     if (isLoading) return false;
@@ -227,21 +208,6 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
     // setQty("");
   }, []);
 
-  // token logo
-  const [logo, setLogo] = useState<string>();
-
-  useEffect(() => {
-    (async () => {
-      setLogo(await loadTokenLogo(token.processId, token.Logo, theme));
-    })();
-  }, [theme, token]);
-
-  //arweave logo
-  const arweaveLogo = useMemo(
-    () => (theme === "light" ? arLogoLight : arLogoDark),
-    [theme]
-  );
-
   const contact = useContact(recipient);
 
   // token price
@@ -252,14 +218,11 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
     (token: TokenInfo) => {
       const searchValue = tokenSearch.state?.toLowerCase();
       if (searchValue) {
-        return (
-          token.Ticker.toLowerCase().includes(searchValue) ||
-          token.Name?.toLowerCase().includes(searchValue)
-        );
+        return token.Ticker.toLowerCase().includes(searchValue) || token.Name?.toLowerCase().includes(searchValue);
       }
       return true;
     },
-    [tokenSearch.state]
+    [tokenSearch.state],
   );
 
   // quantity in the other currency
@@ -274,7 +237,7 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
   const [networkFee, setNetworkFee] = useState<string>("0");
 
   useEffect(() => {
-    if (tokenID !== "AR") {
+    if (tokenID !== AR_PROCESS_ID) {
       setNetworkFee("0");
       return;
     }
@@ -286,11 +249,11 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
           byte = new TextEncoder().encode(note).byteLength;
         }
 
-        const { result: txPrice, arweave } = await retryWithGateways(
-          (arweave) => arweave.transactions.getPrice(byte, recipient)
+        const { result: txPrice, arweave } = await retryWithGateways((arweave) =>
+          arweave.transactions.getPrice(byte, recipient),
         );
 
-        if (tokenID === "AR") {
+        if (tokenID === AR_PROCESS_ID) {
           setNetworkFee(arweave.ar.winstonToAr(txPrice));
         } else {
           setNetworkFee("0");
@@ -312,10 +275,7 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
   const max = useMemo(() => {
     const balanceBigNum = BigNumber(balance);
     const networkFeeBigNum = BigNumber(networkFee);
-    const maxAmountToken =
-      token.id === "AR"
-        ? BigNumber.max(0, balanceBigNum.minus(networkFeeBigNum))
-        : balanceBigNum;
+    const maxAmountToken = token.id === "AR" ? BigNumber.max(0, balanceBigNum.minus(networkFeeBigNum)) : balanceBigNum;
 
     return maxAmountToken.multipliedBy(qtyMode === "fiat" ? price : 1);
   }, [balance, token, networkFee, qtyMode]);
@@ -345,9 +305,9 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
       qty,
       {
         id: token.id,
-        decimals: token.Denomination
+        decimals: token.Denomination,
       },
-      token.id === "AR" ? "AR" : "AO"
+      token.id === AR_PROCESS_ID ? "AR" : "AO",
     );
 
     await TempTransactionStorage.set("send", {
@@ -359,7 +319,7 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
       estimatedNetworkFee: BigNumber(networkFee).multipliedBy(price).toFixed(),
       message: note,
       qtyMode,
-      isAo
+      isAo,
     });
 
     // continue to confirmation page
@@ -377,8 +337,7 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
   // invalid qty
   const invalidQty = useMemo(() => {
     return (
-      amountValidationState !== AmountValidationState.Valid &&
-      amountValidationState !== AmountValidationState.Empty
+      amountValidationState !== AmountValidationState.Valid && amountValidationState !== AmountValidationState.Empty
     );
   }, [amountValidationState]);
 
@@ -387,7 +346,7 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
       setToast({
         type: "error",
         content: browser.i18n.getMessage("cannot_send_to_self"),
-        duration: 2400
+        duration: 2400,
       });
       back();
     }
@@ -408,28 +367,18 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
         }}
         title={browser.i18n.getMessage("select_amount")}
       />
-      {EXP_TOKEN === tokenID && (
-        <AnnouncementPopup
-          isOpen={isOpen}
-          setOpen={setOpen}
-          ticker={token.Ticker}
-        />
-      )}
+      {showNonTransferableAnnouncement && <AnnouncementPopup isOpen={isOpen} setOpen={setOpen} ticker={token.Ticker} />}
       <Wrapper showPaddingVertical={false} showOverlay={degraded}>
         <SendForm>
           {/* TOP INPUT */}
           {degraded && (
             <Degraded>
               <WarningWrapper>
-                <WarningIcon color={theme === "dark" ? "#fff" : "#000"} />
+                <WarningIcon color={displayTheme === "dark" ? "#fff" : "#000"} />
               </WarningWrapper>
               <div>
                 <h4>{browser.i18n.getMessage("ao_degraded")}</h4>
-                <span>
-                  {browser.i18n
-                    .getMessage("ao_degraded_description")
-                    .replace("<br/>", "")}
-                </span>
+                <span>{browser.i18n.getMessage("ao_degraded_description").replace("<br/>", "")}</span>
               </div>
             </Degraded>
           )}
@@ -464,28 +413,17 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
                 errorMessage={getErrorMessage(amountValidationState)}
                 onChange={(e) => setQty((e.target as HTMLInputElement).value)}
                 onKeyDown={(e) => {
-                  if (
-                    e.key !== "Enter" ||
-                    invalidQty ||
-                    parseFloat(qty) === 0 ||
-                    qty === "" ||
-                    recipient === ""
-                  )
+                  if (e.key !== "Enter" || invalidQty || parseFloat(qty) === 0 || qty === "" || recipient === "")
                     return;
                   send();
                 }}
                 fullWidth
                 iconRight={
-                  <MaxButton
-                    disabled={degraded}
-                    onClick={() => setQty(max.toFixed())}
-                  >
+                  <MaxButton disabled={degraded} onClick={() => setQty(max.toFixed())}>
                     MAX
                   </MaxButton>
                 }
-                ticker={
-                  qtyMode === "fiat" ? "USD" : token?.Ticker?.toUpperCase()
-                }
+                ticker={qtyMode === "fiat" ? "USD" : token?.Ticker?.toUpperCase()}
                 autoFocus
               />
               {!!+price && (
@@ -493,15 +431,10 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
                   gap={10}
                   align="center"
                   cursor="pointer"
-                  onClick={() =>
-                    setQtyMode(qtyMode === "fiat" ? "token" : "fiat")
-                  }
-                >
+                  onClick={() => setQtyMode(qtyMode === "fiat" ? "token" : "fiat")}>
                   <SwitchIcon />
                   <Text variant="secondary" weight="medium" noMargin>
-                    {qtyMode === "fiat"
-                      ? formatTokenBalance(secondaryQty)
-                      : formatFiatBalance(secondaryQty, currency)}
+                    {qtyMode === "fiat" ? formatTokenBalance(secondaryQty) : formatFiatBalance(secondaryQty, currency)}
                     {qtyMode === "fiat" && " " + token.Ticker}
                   </Text>
                 </Flex>
@@ -517,18 +450,10 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
             </Text>
           </Datas>
           <Flex direction="column" gap={8}>
-            <AddNote
-              as={Flex}
-              gap={6}
-              align="center"
-              cursor="pointer"
-              onClick={handleAddNote}
-            >
+            <AddNote as={Flex} gap={6} align="center" cursor="pointer" onClick={handleAddNote}>
               <Pencil01 />
               <Text variant="secondary" weight="medium" noMargin>
-                {browser.i18n.getMessage(
-                  note.length > 0 ? "edit_note" : "add_a_note"
-                )}
+                {browser.i18n.getMessage(note.length > 0 ? "edit_note" : "add_a_note")}
               </Text>
             </AddNote>
             <Text
@@ -536,13 +461,12 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
                 height: 38,
                 overflow: "hidden",
                 textOverflow: "ellipsis",
-                whiteSpace: "nowrap"
+                whiteSpace: "nowrap",
               }}
               variant="secondary"
               size="sm"
               weight="medium"
-              noMargin
-            >
+              noMargin>
               {note}
             </Text>
           </Flex>
@@ -551,13 +475,9 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
         <BottomActions>
           <TokenSelector onClick={() => setShownTokenSelector(true)}>
             <LogoAndDetails>
-              <Logo src={logo || arweaveLogo} />
+              <TokenLogo token={token || "AR"} />
               <Flex direction="column" gap={2}>
-                <TokenName>
-                  {token.type === "collectible"
-                    ? token.Name || token.Ticker
-                    : token.Ticker}
-                </TokenName>
+                <TokenName>{token.type === "collectible" ? token.Name || token.Ticker : token.Ticker}</TokenName>
                 <Text size="sm" weight="medium" variant="secondary" noMargin>
                   {balance} {token.Ticker}
                 </Text>
@@ -570,62 +490,58 @@ export function AmountView({ params: { id, recipient } }: AmountViewProps) {
 
           <Button
             disabled={
-              invalidQty ||
-              parseFloat(qty) === 0 ||
-              qty === "" ||
-              recipient === "" ||
-              EXP_TOKEN === tokenID
+              invalidQty || parseFloat(qty) === 0 || qty === "" || recipient === "" || showNonTransferableAnnouncement
             }
             fullWidth
-            onClick={send}
-          >
+            onClick={send}>
             {browser.i18n.getMessage(qty ? "next" : "enter_amount")}
           </Button>
         </BottomActions>
 
         <SliderMenu
-          height={"90%"}
+          height="90%"
           paddingVertical={32}
           title={browser.i18n.getMessage("select_token")}
           isOpen={showTokenSelector}
           onClose={() => {
             setShownTokenSelector(false);
-          }}
-        >
-          <Input
-            variant="search"
-            sizeVariant="small"
-            fullWidth
-            placeholder="Search token"
-            {...tokenSearch.bindings}
-          />
-          <Spacer y={1.5} />
-          <TokensList>
-            {assets.filter(filterFn).map((token) => (
-              <Token
-                key={token.id}
-                type={"asset"}
-                defaultLogo={token?.Logo}
-                id={token.id}
-                ticker={token.Ticker}
-                divisibility={token.Denomination}
-                fiatPrice={prices[token.id]}
-                onClick={() => updateSelectedToken(token.id)}
-              />
-            ))}
-          </TokensList>
-          <Spacer y={1.25} />
-          <CollectiblesList>
-            {collectibles.filter(filterFn).map((token, i) => (
-              <Collectible
-                id={token.id}
-                name={token.Name || token.Ticker}
-                divisibility={token.Denomination}
-                onClick={() => updateSelectedToken(token.id)}
-                key={i}
-              />
-            ))}
-          </CollectiblesList>
+          }}>
+          <Box>
+            <Input
+              variant="search"
+              sizeVariant="small"
+              fullWidth
+              placeholder="Search token"
+              {...tokenSearch.bindings}
+            />
+            <Spacer y={1.5} />
+            <TokensList>
+              {assets.filter(filterFn).map((token) => (
+                <Token
+                  key={token.id}
+                  type={"asset"}
+                  defaultLogo={token?.Logo}
+                  id={token.id}
+                  ticker={token.Ticker}
+                  divisibility={token.Denomination}
+                  fiatPrice={prices[token.id]}
+                  onClick={() => updateSelectedToken(token.id)}
+                />
+              ))}
+            </TokensList>
+            <Spacer y={1.25} />
+            <CollectiblesList>
+              {collectibles.filter(filterFn).map((token, i) => (
+                <Collectible
+                  id={token.id}
+                  name={token.Name || token.Ticker}
+                  divisibility={token.Denomination}
+                  onClick={() => updateSelectedToken(token.id)}
+                  key={i}
+                />
+              ))}
+            </CollectiblesList>
+          </Box>
         </SliderMenu>
       </Wrapper>
     </>
@@ -638,7 +554,7 @@ const RecipientAmountWrapper = styled.div`
   gap: 18px;
 `;
 
-const MaxButton = styled.button`
+export const MaxButton = styled.button`
   display: flex;
   text-align: center;
   align-items: center;
@@ -767,7 +683,8 @@ const TokenSelector = styled.div`
   background: ${(props) => props.theme.surfaceSecondary};
 
   /* xsmall shadow */
-  box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.1),
+  box-shadow:
+    0px 1px 3px 0px rgba(0, 0, 0, 0.1),
     0px 1px 2px 0px rgba(0, 0, 0, 0.06);
   transition: all 0.12s ease-;
   z-index: 20;
@@ -808,7 +725,7 @@ const TokensList = styled.ul`
 `;
 
 const CollectiblesList = styled(Section).attrs({
-  showPaddingHorizontal: false
+  showPaddingHorizontal: false,
 })`
   display: grid;
   grid-template-columns: 1fr 1fr;

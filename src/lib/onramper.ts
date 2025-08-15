@@ -55,11 +55,7 @@ export type Quote = {
  * @param paymentMethod How the user plans to pay for AR
  * @param amount How much fiat currency to buy AR with
  */
-export async function getQuote(
-  currency: string,
-  paymentMethod: string,
-  amount: number
-) {
+export async function getQuote(currency: string, paymentMethod: string, amount: number) {
   try {
     const apiKey = process.env.PLASMO_PUBLIC_ONRAMPER_API_KEY;
 
@@ -71,9 +67,9 @@ export async function getQuote(
       `https://api.onramper.com/quotes/${currency}/ar_arweave?paymentMethod=${paymentMethod}&amount=${amount}`,
       {
         headers: {
-          Authorization: apiKey
-        }
-      }
+          Authorization: apiKey,
+        },
+      },
     );
 
     if (!response.ok) {
@@ -116,7 +112,7 @@ export async function buyRequest(
   source: string,
   amount: number,
   paymentMethod: string,
-  wallet: { address: string }
+  wallet: { address: string },
 ) {
   try {
     const apiKey = process.env.PLASMO_PUBLIC_ONRAMPER_API_KEY;
@@ -135,18 +131,18 @@ export async function buyRequest(
       type: "buy",
       paymentMethod,
       wallet: {
-        address: wallet.address
+        address: wallet.address,
       },
-      network: "arweave"
+      network: "arweave",
     };
 
     const response = await fetch(url, {
       method: "POST",
       headers: {
         Authorization: apiKey,
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify(requestBody)
+      body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) {
@@ -175,14 +171,11 @@ export async function getPaymentTypes(currency: string) {
       throw new Error("API key is undefined");
     }
 
-    const response = await fetch(
-      `https://api.onramper.com/supported/payment-types/transak/${currency}/ar_arweave`,
-      {
-        headers: {
-          Authorization: apiKey
-        }
-      }
-    );
+    const response = await fetch(`https://api.onramper.com/supported/payment-types/transak/${currency}/ar_arweave`, {
+      headers: {
+        Authorization: apiKey,
+      },
+    });
     console.log("response", response, currency);
 
     if (!response.ok) {

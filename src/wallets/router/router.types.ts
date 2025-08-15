@@ -1,5 +1,6 @@
 import type React from "react";
 import type { RouteComponentProps as WouteComponentProps } from "wouter";
+import type { ConnectAuthRoutePath } from "~wallets/router/auth/auth.embed.routes";
 import type { AuthRoutePath } from "~wallets/router/auth/auth.routes";
 import type { ConAuthRoutePath } from "~wallets/router/auth/auth.embed.routes";
 import type { DashboardRoutePath } from "~wallets/router/dashboard/dashboard.routes";
@@ -9,8 +10,7 @@ import type { WelcomeRoutePath } from "~wallets/router/welcome/welcome.routes";
 
 // Routes:
 
-export interface CommonRouteProps<T = any>
-  extends Omit<WouteComponentProps, "params"> {
+export interface CommonRouteProps<T = any> extends Omit<WouteComponentProps, "params"> {
   params: T;
 }
 
@@ -22,9 +22,7 @@ export type RouteRedirect<T extends RoutePath = RoutePath> = `/__REDIRECT${T}`;
 
 export type RouteAuthType = "auth" | "anon";
 
-export interface RouteConfig<
-  P extends RoutePath | RouteOverride = RoutePath | RouteOverride
-> {
+export interface RouteConfig<P extends RoutePath | RouteOverride = RoutePath | RouteOverride> {
   key?: string;
   path: P;
   component: React.ComponentType<CommonRouteProps>;
@@ -34,7 +32,7 @@ export interface RouteConfig<
 export type WanderRoutePath =
   | WelcomeRoutePath
   | AuthRoutePath
-  | ConAuthRoutePath
+  | ConnectAuthRoutePath
   | PopupRoutePath
   | DashboardRoutePath
   | EmbeddedRoutePath;
@@ -47,16 +45,11 @@ export interface NavigateOptions<S = any> {
   replace?: boolean;
   state?: S;
   search?: Record<string, string | number>;
+  params?: Record<string, string | number>;
 }
 
-export type NavigateFn<S = any> = (
-  to: WanderRoutePath | NavigateAction,
-  options?: NavigateOptions<S>
-) => void;
+export type NavigateFn<S = any> = (to: WanderRoutePath | NavigateAction, options?: NavigateOptions<S>) => void;
 
 // Location hooks:
 
-export type BaseLocationHook = () => [
-  RoutePath,
-  (to: RoutePath, options?: any) => void
-];
+export type BaseLocationHook = () => [RoutePath, (to: RoutePath, options?: any) => void];

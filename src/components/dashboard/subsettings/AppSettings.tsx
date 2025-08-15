@@ -1,9 +1,5 @@
 import { InputWithBtn, InputWrapper } from "~components/arlocal/InputWrapper";
-import {
-  permissionData,
-  signPolicyOptions,
-  type PermissionType
-} from "~applications/permissions";
+import { permissionData, signPolicyOptions, type PermissionType } from "~applications/permissions";
 import { EditIcon } from "@iconicicons/react";
 import { useEffect, useMemo, useState } from "react";
 import { IconButton } from "~components/IconButton";
@@ -19,7 +15,7 @@ import {
   Text,
   useInput,
   useModal,
-  useToasts
+  useToasts,
 } from "@arconnect/components-rebrand";
 import { concatGatewayURL, urlToGateway } from "~gateways/utils";
 import Application from "~applications/application";
@@ -29,22 +25,18 @@ import Arweave from "arweave";
 import { defaultGateway, suggestedGateways, testnets } from "~gateways/gateway";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { LoadingView } from "~components/page/common/loading/loading.view";
-import { ToggleSwitch } from "~routes/popup/subscriptions/subscriptionDetails";
+import { ToggleSwitch } from "~components/ToggleSwitch";
 import { Flex } from "~components/common/Flex";
 
 export interface AppSettingsDashboardViewParams {
   url: string;
 }
 
-export interface AppSettingsDashboardViewProps
-  extends CommonRouteProps<AppSettingsDashboardViewParams> {
+export interface AppSettingsDashboardViewProps extends CommonRouteProps<AppSettingsDashboardViewParams> {
   noTitle?: boolean;
 }
 
-export function AppSettingsDashboardView({
-  noTitle = false,
-  params: { url }
-}: AppSettingsDashboardViewProps) {
+export function AppSettingsDashboardView({ noTitle = false, params: { url } }: AppSettingsDashboardViewProps) {
   const app = useMemo(() => {
     return new Application(decodeURIComponent(url));
   }, [url]);
@@ -85,9 +77,7 @@ export function AppSettingsDashboardView({
 
   // is the current gateway a custom one
   const isCustom = useMemo(() => {
-    const gatewayUrls = suggestedGateways
-      .concat(testnets)
-      .map((g) => concatGatewayURL(g));
+    const gatewayUrls = suggestedGateways.concat(testnets).map((g) => concatGatewayURL(g));
 
     return !gatewayUrls.includes(gateway);
   }, [gateway]);
@@ -121,11 +111,8 @@ export function AppSettingsDashboardView({
         <>
           <Spacer y={0.45} />
           <AppName>{settings?.name || settings?.url}</AppName>
-          <AppUrl
-            href={`https://${settings?.url || ""}`}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+          <Spacer y={1} />
+          <AppUrl href={`https://${settings?.url || ""}`} target="_blank" rel="noopener noreferrer">
             <Text>
               {settings?.url}
               {settings?.blocked && <BlockedText>Blocked</BlockedText>}
@@ -133,6 +120,7 @@ export function AppSettingsDashboardView({
           </AppUrl>
         </>
       )}
+      <Spacer y={1} />
       <Title>{browser.i18n.getMessage("permissions")}</Title>
       {Object.keys(permissionData).map((permissionName: PermissionType, i) => {
         let formattedPermissionName = permissionName
@@ -153,50 +141,36 @@ export function AppSettingsDashboardView({
                   if (checked && !val.permissions.includes(permissionName)) {
                     val.permissions.push(permissionName);
                   } else if (!checked) {
-                    val.permissions = val.permissions.filter(
-                      (p) => p !== permissionName
-                    );
+                    val.permissions = val.permissions.filter((p) => p !== permissionName);
                   }
 
                   return val;
                 })
               }
-              checked={settings.permissions.includes(permissionName)}
-            >
+              checked={settings.permissions.includes(permissionName)}>
               <Flex direction="column">
                 <Text size="md" weight="medium" noMargin>
                   {formattedPermissionName}
                 </Text>
-                <PermissionDescription>
-                  {browser.i18n.getMessage(permissionData[permissionName])}
-                </PermissionDescription>
+                <PermissionDescription>{browser.i18n.getMessage(permissionData[permissionName])}</PermissionDescription>
               </Flex>
             </ToggleSwitch>
             {i !== Object.keys(permissionData).length - 1 && <Spacer y={0.8} />}
           </div>
         );
       })}
-      <Spacer y={1} />
+      <Spacer y={1.5} />
       <Title>{browser.i18n.getMessage("permission_settings")}</Title>
       <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
         {signPolicyOptions.map((option) => (
-          <PolicyOption
-            key={option}
-            onClick={() =>
-              updateSettings((val) => ({ ...val, signPolicy: option }))
-            }
-          >
+          <PolicyOption key={option} onClick={() => updateSettings((val) => ({ ...val, signPolicy: option }))}>
             <Checkbox
               size={20}
-              onChange={() =>
-                updateSettings((val) => ({ ...val, signPolicy: option }))
-              }
+              onChange={() => updateSettings((val) => ({ ...val, signPolicy: option }))}
               checked={settings?.signPolicy === option}
             />
             <div>
-              <PrimaryText fontSize={16}>
-                {browser.i18n.getMessage(option)}
-              </PrimaryText>
+              <PrimaryText fontSize={16}>{browser.i18n.getMessage(option)}</PrimaryText>
             </div>
           </PolicyOption>
         ))}
@@ -287,7 +261,7 @@ export function AppSettingsDashboardView({
           />
         </TooltipV2>
       </Text> */}
-      <Spacer y={1} />
+      <Spacer y={1.5} />
       <Title>{browser.i18n.getMessage("gateway")}</Title>
       <Select
         onChange={(e) => {
@@ -300,11 +274,10 @@ export function AppSettingsDashboardView({
           updateSettings((val) => ({
             ...val,
             // @ts-expect-error
-            gateway: urlToGateway(e.target.value)
+            gateway: urlToGateway(e.target.value),
           }));
         }}
-        fullWidth
-      >
+        fullWidth>
         {suggestedGateways.concat(testnets).map((g, i) => {
           const url = concatGatewayURL(g);
 
@@ -323,33 +296,27 @@ export function AppSettingsDashboardView({
           <Spacer y={0.8} />
           <InputWithBtn>
             <InputWrapper>
-              <Input
-                {...customGatewayInput.bindings}
-                type="text"
-                placeholder="https://arweave.net:443"
-                fullWidth
-              />
+              <Input {...customGatewayInput.bindings} type="text" placeholder="https://arweave.net:443" fullWidth />
             </InputWrapper>
             <IconButton
               variant="secondary"
               onClick={() => {
                 updateSettings((val) => ({
                   ...val,
-                  gateway: urlToGateway(customGatewayInput.state)
+                  gateway: urlToGateway(customGatewayInput.state),
                 }));
                 setToast({
                   type: "info",
                   content: browser.i18n.getMessage("setCustomGateway"),
-                  duration: 3000
+                  duration: 3000,
                 });
-              }}
-            >
+              }}>
               Save
             </IconButton>
           </InputWithBtn>
         </>
       )}
-      <Spacer y={1} />
+      <Spacer y={1.5} />
       <Title>{browser.i18n.getMessage("bundlrNode")}</Title>
       <Input
         value={settings.bundler}
@@ -357,7 +324,7 @@ export function AppSettingsDashboardView({
           updateSettings((val) => ({
             ...val,
             // @ts-expect-error
-            bundler: e.target.value
+            bundler: e.target.value,
           }))
         }
         fullWidth
@@ -374,10 +341,9 @@ export function AppSettingsDashboardView({
         onClick={() =>
           updateSettings((val) => ({
             ...val,
-            blocked: !val.blocked
+            blocked: !val.blocked,
           }))
-        }
-      >
+        }>
         {browser.i18n.getMessage(settings.blocked ? "unblock" : "block")}
       </Button>
       <Modal
@@ -385,23 +351,15 @@ export function AppSettingsDashboardView({
         root={document.getElementById("__plasmo")}
         actions={
           <>
-            <Button
-              variant="secondary"
-              onClick={() => removeModal.setOpen(false)}
-            >
+            <Button variant="secondary" onClick={() => removeModal.setOpen(false)}>
               {browser.i18n.getMessage("cancel")}
             </Button>
-            <Button onClick={() => removeApp(app.url)}>
-              {browser.i18n.getMessage("remove")}
-            </Button>
+            <Button onClick={() => removeApp(app.url)}>{browser.i18n.getMessage("remove")}</Button>
           </>
-        }
-      >
+        }>
         <CenterText>{browser.i18n.getMessage("removeApp")}</CenterText>
         <Spacer y={0.55} />
-        <CenterText noMargin>
-          {browser.i18n.getMessage("removeAppNote")}
-        </CenterText>
+        <CenterText noMargin>{browser.i18n.getMessage("removeAppNote")}</CenterText>
         <Spacer y={0.75} />
       </Modal>
     </div>
@@ -411,7 +369,7 @@ export function AppSettingsDashboardView({
 const AppName = styled(Text).attrs({
   size: "3xl",
   weight: "bold",
-  noMargin: true
+  noMargin: true,
 })`
   font-weight: 600;
 `;
@@ -435,7 +393,7 @@ const BlockedText = styled.span`
 `;
 
 const Title = styled(Text).attrs({
-  heading: true
+  heading: true,
 })`
   margin-bottom: 0.6em;
 `;
@@ -448,7 +406,7 @@ const ResetButton = styled.span`
 
 const EmptyInput = styled.input.attrs({
   type: "number",
-  focus: true
+  focus: true,
 })`
   border: none;
   outline: none;
@@ -495,7 +453,7 @@ const PolicyOption = styled.div`
 `;
 
 const PrimaryText = styled(Text).attrs({
-  noMargin: true
+  noMargin: true,
 })<{ fontSize?: number; fontWeight?: number; textAlign?: string }>`
   color: ${(props) => props.theme.primaryTextv2};
   font-size: ${(props) => props.fontSize || 14}px;
