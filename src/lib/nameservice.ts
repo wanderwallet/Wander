@@ -3,42 +3,39 @@ import type { NameServiceProfile } from "./types";
 import { getAnsNameServiceProfile } from "./ans";
 import { getArNSProfile } from "./arns";
 import { ExtensionStorage } from "~utils/storage";
-import { getWallets } from "~wallets";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 let IN_MEM_CACHE: Record<string, NameServiceProfile | "none"> = {};
+let isCacheInitialized = false;
 
-/**
- * Refreshes memory and storage caches with latest from name services.
- */
-async function updateCache() {
-  // use wallets from storage to clear out any stale cache
-  const wallets = await getWallets();
-  const walletAddresses = wallets.map((w) => w.address);
+async function initializeNameServiceCache() {
+  if (isCacheInitialized) return IN_MEM_CACHE;
 
-  const newMemCache = {};
-
-  for (let walletAddress of walletAddresses) {
-    const profile = (await getArNSProfile(walletAddress)) || (await getAnsNameServiceProfile(walletAddress));
-
-    newMemCache[walletAddress] = profile || "none";
+  try {
+    const cache = await ExtensionStorage.get<Record<string, NameServiceProfile | "none">>("name_service_cache");
+    IN_MEM_CACHE = cache || {};
+  } catch (e) {
+    console.error("Failed to initialize name service cache:", e);
   }
 
-  IN_MEM_CACHE = newMemCache;
-  ExtensionStorage.set("name_service_cache", newMemCache);
+  isCacheInitialized = true;
+  return IN_MEM_CACHE;
 }
 
-// load cache from storage and then do background update
-ExtensionStorage.get<Record<string, NameServiceProfile>>("name_service_cache")
-  .then((cache) => {
-    if (cache) {
-      IN_MEM_CACHE = cache;
-    }
-    updateCache();
-  })
-  .catch((e) => {
-    console.error(e);
+async function getProfileFromCache(walletAddress: string): Promise<NameServiceProfile | "none"> {
+  const cache = await initializeNameServiceCache();
+  const cachedProfile = cache[walletAddress];
+  return cachedProfile;
+}
+
+async function setProfileInCache(walletAddress: string, profile: NameServiceProfile | undefined) {
+  const cache = await initializeNameServiceCache();
+  cache[walletAddress] = profile || "none";
+
+  await ExtensionStorage.set("name_service_cache", cache).catch((e) => {
+    console.error("Failed to save name service profile to cache:", e);
   });
+}
 
 /**
  * Return a NameServiceProfile for a query
@@ -47,18 +44,27 @@ ExtensionStorage.get<Record<string, NameServiceProfile>>("name_service_cache")
  *
  * @returns NameServiceProfile | undefined
  */
-export async function getNameServiceProfile(walletAddress: string): Promise<NameServiceProfile | undefined> {
-  const cached = IN_MEM_CACHE[walletAddress];
-  if (cached) {
-    return cached === "none" ? undefined : cached;
+export async function getNameServiceProfile(
+  walletAddress: string,
+  refresh = false,
+): Promise<NameServiceProfile | undefined> {
+  try {
+    if (!walletAddress) return undefined;
+
+    if (!refresh) {
+      const cachedProfile = await getProfileFromCache(walletAddress);
+      if (cachedProfile) {
+        return cachedProfile === "none" ? undefined : cachedProfile;
+      }
+    }
+
+    const profile = (await getArNSProfile(walletAddress)) || (await getAnsNameServiceProfile(walletAddress));
+    await setProfileInCache(walletAddress, profile);
+    return profile;
+  } catch (e) {
+    console.error("Failed to fetch name service profile:", e);
+    return undefined;
   }
-
-  const profile = (await getArNSProfile(walletAddress)) || (await getAnsNameServiceProfile(walletAddress));
-
-  IN_MEM_CACHE[walletAddress] = profile || "none";
-  ExtensionStorage.set("name_service_cache", IN_MEM_CACHE);
-
-  return profile;
 }
 
 /**
@@ -68,10 +74,15 @@ export async function getNameServiceProfile(walletAddress: string): Promise<Name
  *
  * @returns NameServiceProfile[] | undefined
  */
-export async function getNameServiceProfiles(walletAddress: string[]): Promise<Array<NameServiceProfile>> {
+export async function getNameServiceProfiles(
+  walletAddresses: string[],
+  refresh = false,
+): Promise<Array<NameServiceProfile>> {
+  if (!walletAddresses || walletAddresses.length === 0) return [];
+
   const profiles = [];
-  for (let wallet of walletAddress) {
-    const profile = await getNameServiceProfile(wallet);
+  for (let wallet of walletAddresses) {
+    const profile = await getNameServiceProfile(wallet, refresh);
     if (profile) {
       profiles.push(profile);
     }
@@ -102,3 +113,5 @@ export function useNameServiceProfile(walletAddress: string) {
 
   return profile;
 }
+
+initializeNameServiceCache();
