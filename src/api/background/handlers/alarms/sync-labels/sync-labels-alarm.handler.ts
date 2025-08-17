@@ -8,7 +8,7 @@ import { getWallets } from "~wallets";
  */
 export async function handleSyncLabelsAlarm(alarm?: Alarms.Alarm) {
   // check alarm name if called from an alarm
-  if (!alarm || alarm.name !== "sync_labels") return;
+  if (alarm?.name !== "sync_labels") return;
 
   // get wallets
   const wallets = await getWallets();
