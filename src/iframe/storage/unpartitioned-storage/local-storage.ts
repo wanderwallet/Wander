@@ -20,9 +20,9 @@ export class LocalStorage {
   private static readonly CHUNK_SUFFIX = "_chunk_";
   private static readonly CHUNK_META_SUFFIX = "_chunk_meta";
 
-  private storage: EnhancedStorage;
   private cookieStoreAvailable: boolean = false;
   private isHttps: boolean;
+  private storage: EnhancedStorage;
 
   private get JS_COOKIE_OPTIONS(): CookieAttributes {
     return {
@@ -59,6 +59,13 @@ export class LocalStorage {
         console.log(`jsCookie will be used, with options =`, this.JS_COOKIE_OPTIONS);
       }
     }
+  }
+
+  get unpartitionedState() {
+    return {
+      status: this.storage.status,
+      error: this.storage.error,
+    };
   }
 
   static async getInstance(): Promise<LocalStorage> {
