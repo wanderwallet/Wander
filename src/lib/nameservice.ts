@@ -5,14 +5,14 @@ import { getArNSProfile } from "./arns";
 import { ExtensionStorage } from "~utils/storage";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
-let IN_MEM_CACHE: Record<string, NameServiceProfile | "none"> = {};
+let IN_MEM_CACHE: Record<string, NameServiceProfile | null> = {};
 let isCacheInitialized = false;
 
 async function initializeNameServiceCache() {
   if (isCacheInitialized) return IN_MEM_CACHE;
 
   try {
-    const cache = await ExtensionStorage.get<Record<string, NameServiceProfile | "none">>("name_service_cache");
+    const cache = await ExtensionStorage.get<Record<string, NameServiceProfile | null>>("name_service_cache");
     IN_MEM_CACHE = cache || {};
   } catch (e) {
     console.error("Failed to initialize name service cache:", e);
@@ -22,7 +22,7 @@ async function initializeNameServiceCache() {
   return IN_MEM_CACHE;
 }
 
-async function getProfileFromCache(walletAddress: string): Promise<NameServiceProfile | "none"> {
+async function getProfileFromCache(walletAddress: string): Promise<NameServiceProfile | null> {
   const cache = await initializeNameServiceCache();
   const cachedProfile = cache[walletAddress];
   return cachedProfile;
@@ -30,7 +30,7 @@ async function getProfileFromCache(walletAddress: string): Promise<NameServicePr
 
 async function setProfileInCache(walletAddress: string, profile: NameServiceProfile | undefined) {
   const cache = await initializeNameServiceCache();
-  cache[walletAddress] = profile || "none";
+  cache[walletAddress] = profile || null;
 
   await ExtensionStorage.set("name_service_cache", cache).catch((e) => {
     console.error("Failed to save name service profile to cache:", e);
@@ -53,8 +53,8 @@ export async function getNameServiceProfile(
 
     if (!refresh) {
       const cachedProfile = await getProfileFromCache(walletAddress);
-      if (cachedProfile) {
-        return cachedProfile === "none" ? undefined : cachedProfile;
+      if (cachedProfile !== undefined) {
+        return cachedProfile === null ? undefined : cachedProfile;
       }
     }
 

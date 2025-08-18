@@ -30,6 +30,9 @@ export async function handleInstall(details: Runtime.OnInstalledDetailsType) {
 
     // remove astro beta access announcement storage key
     ExtensionStorage.remove("astro_beta_access_announcement_shown");
+
+    // remove name service cache
+    ExtensionStorage.remove("name_service_cache");
   }
 
   // init monthly AR

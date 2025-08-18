@@ -70,9 +70,8 @@ export const StargridAccessAnnouncementPopup = ({ isOpen, setOpen }) => {
           <Flex direction="column" gap={20} align="center" justify="center" flex={1} height="100%">
             <Flex direction="column" gap={32} align="center" justify="center" style={{ paddingTop: 32 }}>
               {tiers.map((tier) => (
-                <Flex direction="column" gap={8} align="center" justify="center">
+                <Flex key={`${tier}-tag`} direction="column" gap={8} align="center" justify="center">
                   <TierTag
-                    key={`${tier}-tag`}
                     tier={tier}
                     iconHeight={10.6}
                     iconWidth={22.7}
