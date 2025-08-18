@@ -4,10 +4,11 @@ import { getAoTokensCache } from "~tokens";
 import type { GQLTransactionsResultInterface } from "ar-gql/dist/faces";
 import { PersistentStorage } from "~utils/storage";
 import { getActiveAddress } from "~wallets";
-import { type TokenInfo, Id, Owner, getTokenInfoFromData } from "./ao";
+import { type TokenInfo, getTokenInfoFromData } from "./ao";
 import { withRetry } from "~utils/promises/retry";
 import { timeoutPromise } from "~utils/promises/timeout";
 import { Mutex } from "~utils/mutex";
+import { Id, Owner } from "~tokens/aoTokens/ao.constants";
 
 /** Tokens storage name */
 export const AO_TOKENS = "ao_tokens";

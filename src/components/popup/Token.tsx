@@ -15,11 +15,11 @@ import JSConfetti from "js-confetti";
 import { useTokenBalance } from "~tokens/hooks";
 import { BalanceFetchError, NetworkError } from "~utils/error/error.utils";
 import { ToggleSwitch } from "~components/ToggleSwitch";
-import { AO_PROCESS_ID } from "~tokens/aoTokens/ao";
 import { TokenLogo } from "~components/popup/TokenLogo";
 import { NetworkErrorIcon } from "~components/icons/NetworkErrorIcon";
 import { WarningIcon } from "~components/icons/WarningIcon";
 import { DegradedMessage, NetworkErrorMessage } from "~components/popup/tokens/ErrorMessages";
+import { AO_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 
 export default function Token({ onClick, disableClickEffect, disableCursor, ...props }: Props) {
   const ref = useRef(null);

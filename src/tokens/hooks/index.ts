@@ -1,14 +1,8 @@
 import { useQuery, useQueries } from "@tanstack/react-query";
 import {
-  AO_PROCESS_ID,
-  AR_PROCESS_ID,
-  EXP_PROCESS_ID,
   fetchTokenBalance,
   getBotegaPrice,
   getBotegaPrices,
-  PI_PROCESS_ID,
-  USDA_PROCESS_ID,
-  WNDR_PROCESS_ID,
   type TokenInfo,
   type TokenInfoWithBalance,
 } from "../aoTokens/ao";
@@ -22,6 +16,14 @@ import { useArPrice } from "~lib/coingecko";
 import { defaultConfig } from "../aoTokens/config";
 import { connect } from "@permaweb/aoconnect";
 import { retryWithDelay } from "~utils/promises/retry";
+import {
+  AR_PROCESS_ID,
+  AO_PROCESS_ID,
+  WNDR_PROCESS_ID,
+  PI_PROCESS_ID,
+  USDA_PROCESS_ID,
+  EXP_PROCESS_ID,
+} from "~tokens/aoTokens/ao.constants";
 
 export const defaultOptions = {
   refetchInterval: 300_000,

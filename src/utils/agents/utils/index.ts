@@ -4,7 +4,7 @@ import { ExtensionStorage } from "~utils/storage";
 import type { AOYieldAgent, AOYieldAgentInfo, AOYieldAgentStatus, MintingStatus, RecentTx, Tag } from "../types";
 import { connect } from "@permaweb/aoconnect";
 import { defaultConfig } from "~tokens/aoTokens/config";
-import { createDataItemSigner, getTagValue, Id, Owner, WAR_PROCESS_ID, WUSDC_PROCESS_ID } from "~tokens/aoTokens/ao";
+import { createDataItemSigner, getTagValue } from "~tokens/aoTokens/ao";
 import { getActiveAddress, getActiveKeyfile } from "~wallets";
 import { isLocalWallet } from "~utils/assertions";
 import { retryWithDelay } from "~utils/promises/retry";
@@ -21,6 +21,7 @@ import dayjs from "dayjs";
 import { isURL } from "~utils/urls/isURL";
 import { queryClient } from "~utils/tanstack";
 import { Mutex } from "~utils/mutex";
+import { Id, Owner, WAR_PROCESS_ID, WUSDC_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 
 const agentStorageMutex = new Mutex();
 

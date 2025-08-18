@@ -1,6 +1,6 @@
 // JUST AR TRANSFER NOTIFICATIONS
 
-import { AR_PROCESS_ID } from "~tokens/aoTokens/ao";
+import { AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 
 export const AR_RECEIVER_QUERY = `
 query ($address: String!) {
