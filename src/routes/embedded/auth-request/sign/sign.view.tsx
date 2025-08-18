@@ -130,7 +130,10 @@ export function EmbeddedSignAuthRequestView() {
         </Snackbar>
       )}
 
-      <TransactionMessage transaction={transaction} detailsLink={`/auth-request/sign/${authRequest.authID}/details`} />
+      <TransactionMessage
+        transaction={transaction}
+        txDetailsPath={`/auth-request/sign/${authRequest.authID}/details`}
+      />
     </AuthRequestCard>
   );
 }
