@@ -1,13 +1,13 @@
 import { type TokenInfo } from "~tokens/aoTokens/ao";
 import type { BotegaPool, BotegaPoolOverview, PermaswapPool, Pool } from "./swap.types";
 import BigNumber from "bignumber.js";
+import { BOTEGA_API_KEY, BOTEGA_SUPABASE_URL } from "./data-source/data-source.constants";
 
 const BOTEGA_POOL_OPTIONS = {
   headers: {
     accept: "*/*",
     "accept-language": "en-US,en;q=0.9",
-    authorization:
-      "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6bXpuaWFnc2ZjZm5oZ3Nqa3B2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg0MjI5NDEsImV4cCI6MjA2Mzk5ODk0MX0.IjB7j34CjhqUXQcO_dKM_9k3okmSomSpu9dtyPV2agU",
+    authorization: `Bearer ${BOTEGA_API_KEY}`,
     "content-type": "application/json",
   },
   body: "{}",
@@ -35,7 +35,7 @@ export async function getBotegaPools() {
 }
 
 export async function getBotegaGlobalLiquidity() {
-  const response = await fetch("https://kzmzniagsfcfnhgsjkpv.supabase.co/functions/v1/pools", BOTEGA_POOL_OPTIONS);
+  const response = await fetch(`${BOTEGA_SUPABASE_URL}/functions/v1/pools`, BOTEGA_POOL_OPTIONS);
   const pools = (await response.json()) as BotegaPool[];
 
   const structuredPools = pools.map((pool) => ({
@@ -59,7 +59,7 @@ export async function getBotegaGlobalLiquidity() {
 }
 
 export async function getBotegaPoolsOverview() {
-  const response = await fetch("https://kzmzniagsfcfnhgsjkpv.supabase.co/functions/v1/overview", BOTEGA_POOL_OPTIONS);
+  const response = await fetch(`${BOTEGA_SUPABASE_URL}/functions/v1/overview`, BOTEGA_POOL_OPTIONS);
   const poolsOverview = (await response.json()) as BotegaPoolOverview[];
 
   return poolsOverview;

@@ -364,6 +364,18 @@ export const getTagValues = (tagNames: string[], tags: (Tag | DecodedTag)[]): (s
   return tagNames.map((name) => tagMap.get(name));
 };
 
+/**
+ * Flatten tags to a key value object
+ */
+export const flattenTags = (tags: Tag[]) =>
+  tags.reduce(
+    (acc, tag) => {
+      acc[tag.name] = tag.value;
+      return acc;
+    },
+    {} as Record<string, string>,
+  );
+
 export const createDataItemSigner =
   (wallet: any) =>
   async ({
