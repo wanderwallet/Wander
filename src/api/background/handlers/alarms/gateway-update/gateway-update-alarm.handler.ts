@@ -9,9 +9,7 @@ import { ARIO } from "@ar.io/sdk/web";
  * but will also be executed on install.
  */
 export async function handleGatewayUpdateAlarm(alarm?: Alarms.Alarm) {
-  if (alarm && ![UPDATE_ALARM, RETRY_ALARM].includes(alarm.name)) {
-    return;
-  }
+  if (![UPDATE_ALARM, RETRY_ALARM].includes(alarm?.name)) return;
 
   let garItemsWithChecks: GatewayAddressRegistryItem[] = [];
 

@@ -19,29 +19,38 @@ export type ConnectAuthRoutePath =
   | "/auth-request"
   | `/auth-request/connect/${string}`
   | `/auth-request/connect/${string}/settings`
-  | `/auth-request/connect/${string}/custom`
+  | `/auth-request/connect/${string}/settings/custom`
   | `/auth-request/allowance/${string}`
   | `/auth-request/token/${string}`
   | `/auth-request/decrypt/${string}`
   | `/auth-request/sign/${string}`
   | `/auth-request/sign/${string}/details`
   | `/auth-request/signKeystone/${string}`
+  // | `/auth-request/signKeystone/${string}/details
   | `/auth-request/signature/${string}`
   | `/auth-request/signDataItem/${string}`
   | `/auth-request/signDataItem/${string}/details`
   | `/auth-request/batchSignDataItem/${string}`
   | `/auth-request/subscription/${string}`;
 
+export type ConnextTxDetailsRoutePath = Extract<
+  ConnectAuthRoutePath,
+  | `/auth-request/sign/${string}/details`
+  // | `/auth-request/signKeystone/${string}/details`
+  | `/auth-request/signDataItem/${string}/details`
+>;
+
 export const ConnectAuthPaths = {
   Connect: "/auth-request/connect/:authID",
   ConnectSettings: "/auth-request/connect/:authID/settings",
-  ConnectCustom: "/auth-request/connect/:authID/custom",
+  ConnectSettingsCustom: "/auth-request/connect/:authID/settings/custom",
   Allowance: "/auth-request/allowance/:authID",
   Token: "/auth-request/token/:authID",
   Decrypt: "/auth-request/decrypt/:authID",
   Sign: "/auth-request/sign/:authID",
   SignDetails: "/auth-request/sign/:authID/details",
   SignKeystone: "/auth-request/signKeystone/:authID",
+  // SignKeystoneDetails: "/auth-request/signKeystone/:authID/details",
   Signature: "/auth-request/signature/:authID",
   SignDataItem: "/auth-request/signDataItem/:authID",
   SignDataItemDetails: "/auth-request/signDataItem/:authID/details",
@@ -63,7 +72,7 @@ export const CONNECT_AUTH_ROUTES = [
     component: EmbeddedConnectSettingsAuthRequestView,
   },
   {
-    path: ConnectAuthPaths.ConnectCustom,
+    path: ConnectAuthPaths.ConnectSettingsCustom,
     component: EmbeddedConnectCustomAuthRequestView,
   },
   {
@@ -86,6 +95,10 @@ export const CONNECT_AUTH_ROUTES = [
     path: ConnectAuthPaths.SignKeystone,
     component: SignKeystoneAuthRequestView,
   },
+  // {
+  //   path: ConAuthPaths.SignKeystoneDetails,
+  //   component: WalletTransactionDetailsEmbeddedView
+  // },
   {
     path: ConnectAuthPaths.Signature,
     component: EmbeddedSignatureAuthRequestView,
