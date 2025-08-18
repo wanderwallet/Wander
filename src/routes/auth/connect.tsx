@@ -63,7 +63,7 @@ export function ConnectAuthRequestView() {
 
   const [avatar, setAvatar] = useState("");
 
-  const nameServiceProfile = useNameServiceProfile(wallet?.address);
+  const { data: nameServiceProfile } = useNameServiceProfile(wallet?.address);
   const nsGateway = useGateway(FULL_HISTORY);
 
   useEffect(() => {

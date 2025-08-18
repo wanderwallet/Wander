@@ -27,7 +27,7 @@ import { getActiveKeyfile, type DecryptedWallet } from "~wallets";
 import { freeDecryptedWallet } from "~wallets/encryption";
 import { useActiveAddress, useActiveWallet } from "~wallets/hooks";
 import type { NameServiceProfile } from "./types";
-import { lowerCaseDomain } from "~routes/popup/arns/utils";
+import { decodeDomainToASCII, lowerCaseDomain } from "~routes/popup/arns/utils";
 
 export const LANDING_PAGE_TXID = "oork_YifB3-JQQZg8EgMPQJytua_QCHKNmMqt5kmnCo";
 export const DEFAULT_ANT_LOGO = "Sie_26dvgyok0PZD_-iQAFOhOd5YxDTkczOLoqTTL_A";
@@ -168,7 +168,7 @@ async function fetchArNSProfile(walletAddress: string): Promise<NameServiceProfi
 
     return {
       address: walletAddress,
-      name: primaryName?.name,
+      name: decodeDomainToASCII(primaryName?.name),
       logo,
     };
   } catch (error) {

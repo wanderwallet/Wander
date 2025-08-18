@@ -13,6 +13,7 @@ import TransactionStatusModal from "../TransactionStatusModal";
 import { sleep } from "~utils/promises/sleep";
 import { formatArio } from "../utils";
 import { mARIOToken } from "@ar.io/sdk/web";
+import { ProfileName } from "~components/ProfileName";
 
 export interface ArNSConfirmSetPrimaryNameViewParams {
   name: string;
@@ -91,7 +92,7 @@ export const ArNSConfirmSetPrimaryNameView = ({ params: { name } }: ArNSConfirmS
           SET PRIMARY NAME
         </Text>
         <Text size="xl" weight="semibold">
-          {name}
+          <ProfileName name={name} />
         </Text>
       </CardContainer>
       <Flex style={{ justifyContent: "space-between", margin: "0 2rem" }}>

@@ -10,6 +10,7 @@ import { useLocation } from "~wallets/router/router.utils";
 import type { PurchaseType } from "./types";
 import { LinkExternal02 } from "@untitled-ui/icons-react";
 import { decodeDomainToASCII } from "./utils";
+import { ProfileName } from "~components/ProfileName";
 
 export interface ArNSPurchaseSuccessParams {
   name: string;
@@ -42,7 +43,8 @@ export const ArNSPurchaseSuccessView = ({
       </Text>
 
       <Text size="lg" style={{ wordBreak: "break-all", textAlign: "center" }}>
-        ar://{decodeDomainToASCII(name)}
+        ar://
+        <ProfileName name={name} />
       </Text>
       <Text variant="secondary" style={{ textAlign: "center" }}>
         is now registered to this wallet.

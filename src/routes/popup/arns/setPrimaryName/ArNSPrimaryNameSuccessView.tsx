@@ -8,6 +8,7 @@ import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { useLocation } from "~wallets/router/router.utils";
 import { LinkExternal02 } from "@untitled-ui/icons-react";
+import { ProfileName } from "~components/ProfileName";
 
 export interface ArNSPrimaryNameSuccessParams {
   name: string;
@@ -36,7 +37,7 @@ export const ArNSPrimaryNameSuccessView = ({ params: { name, transactionId } }: 
       </Text>
 
       <Text size="lg" style={{ wordBreak: "break-all", textAlign: "center" }}>
-        {name}
+        <ProfileName name={name} />
       </Text>
 
       <Flex style={{ justifyContent: "space-between", marginTop: "2rem" }}>

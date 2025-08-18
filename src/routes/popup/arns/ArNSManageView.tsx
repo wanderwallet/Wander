@@ -10,6 +10,8 @@ import { useNameServiceProfile } from "~lib/nameservice";
 import { ExtensionStorage, useStorage } from "~utils/storage";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import { useLocation } from "~wallets/router/router.utils";
+import { decodeDomainToASCII } from "./utils";
+import { ProfileName } from "~components/ProfileName";
 
 const Content = styled.main`
   padding: 0 1.5rem 1.5rem 1.5rem;
@@ -79,13 +81,14 @@ export const ArNSManageView = () => {
                     />
                     <Flex direction="column" style={{ flex: 1, minWidth: 0 }}>
                       <Text style={{ textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap" }}>
-                        {arnsRecord.name}
+                        <ProfileName name={arnsRecord.name} />
                       </Text>
                       <Text
                         size="xs"
                         variant="secondary"
                         style={{ textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap" }}>
-                        arns://{arnsRecord.name}
+                        arns://
+                        <ProfileName name={arnsRecord.name} />
                       </Text>
                     </Flex>
                     {arnsRecord.type === "lease" && (
