@@ -20,6 +20,8 @@ interface EnhancedStorageOptions {
   area?: "local" | "session";
 }
 
+export const COULD_NOT_ACCESS_UNPARTITIONED_STATE_ERR_MESSAGE = "Could not get access to unpartitioned state";
+
 const timesInstantiated: Record<StorageType, number> = {
   localStorage: 0,
   sessionStorage: 0,
@@ -37,6 +39,10 @@ export class EnhancedStorage implements Storage {
   private requestStorageAccessPromise: Promise<UnpartitionedStateStatus> | null = null;
 
   private requestStorageAccessResolve: (status: UnpartitionedStateStatus) => void = () => {};
+
+  private permissionStatusPromise: Promise<PermissionStatus> | null = null;
+
+  private isWaitingForUserAction = false;
 
   constructor({ area = "local" }: EnhancedStorageOptions = {}) {
     this.storageType = area === "local" ? "localStorage" : "sessionStorage";
@@ -97,6 +103,7 @@ export class EnhancedStorage implements Storage {
       console.warn(
         "UnpartitionedStorage.requestStorageAccess() should only be called from within an iframe. Regular, partitioned state will be used.",
       );
+
       return;
     }
 
@@ -117,37 +124,10 @@ export class EnhancedStorage implements Storage {
       if (!HAS_SIMPLE_STORAGE_API) return this.dispatchUnpartitionedStateStatusChange("unsupported");
 
       try {
-        // Check if we already have access:
+        // Get the current permissionState and start listening for permission changes:
+        const permissionState = await this.setupPermissionChangeHandlerAndGetCurrentValue();
 
-        const hasAccess = await document.hasStorageAccess();
-
-        if (hasAccess) {
-          return await this.requestStorageAccessAndInitializeStorage();
-        }
-
-        // If no access, check permission state:
-
-        let permissionState: PermissionState = "prompt"; // Default
-
-        if (navigator.permissions) {
-          try {
-            const permission = await navigator.permissions.query({
-              name: "storage-access" as PermissionName,
-            });
-
-            permissionState = permission.state;
-
-            permission.addEventListener("change", () => {
-              log(LOG_GROUP.STORAGE, `Storage access permission changed to ${permission.state}`);
-
-              this.handleStorageAccessPermission(permission.state);
-            });
-          } catch (error) {
-            log(LOG_GROUP.STORAGE, "Error checking permission:", error);
-          }
-        }
-
-        this.handleStorageAccessPermission(permissionState);
+        await this.handleStorageAccessPermission(permissionState);
       } catch (error) {
         this.dispatchUnpartitionedStateStatusChange(error);
       }
@@ -182,31 +162,82 @@ export class EnhancedStorage implements Storage {
   }
 
   /**
+   * Returns the current PermissionState and starts listening for permission changes, making sure only one listener is added.
+   */
+  private async setupPermissionChangeHandlerAndGetCurrentValue(): Promise<PermissionState> {
+    let permissionStatus = this.permissionStatusPromise ? await this.permissionStatusPromise : null;
+    let permissionState: PermissionState = permissionStatus?.state || "prompt";
+
+    if (navigator.permissions && !permissionStatus) {
+      try {
+        this.permissionStatusPromise = navigator.permissions.query({
+          name: "storage-access" as PermissionName,
+        });
+
+        permissionStatus = await this.permissionStatusPromise;
+        permissionState = permissionStatus.state;
+
+        permissionStatus.addEventListener("change", async () => {
+          let nextPermissionState = permissionStatus.state;
+
+          if (nextPermissionState !== "granted" && (await document.hasStorageAccess())) {
+            console.warn(
+              `Storage access permission changed to ${nextPermissionState}, but document.hasStorageAccess() returned true`,
+            );
+
+            nextPermissionState = "granted";
+          } else {
+            log(LOG_GROUP.STORAGE, `Storage access permission changed to ${nextPermissionState}`);
+          }
+
+          this.handleStorageAccessPermission(nextPermissionState);
+        });
+      } catch (error) {
+        log(LOG_GROUP.STORAGE, "Error checking permission:", error);
+      }
+    }
+
+    if (permissionState !== "granted" && (await document.hasStorageAccess())) {
+      console.warn(`document.hasStorageAccess() returned true while permissionState was ${permissionState}`);
+
+      permissionState = "granted";
+    }
+
+    return permissionState;
+  }
+
+  /**
    * Set up a handler to request storage access on user interaction
    * This is required by the Storage Access API for security
    */
-  protected setupUserInteractionHandler(): void {
+  private setupUserInteractionHandler(): void {
+    if (this.isWaitingForUserAction) return;
+
+    this.isWaitingForUserAction = true;
+
     log(LOG_GROUP.STORAGE, "Waiting for user interaction to request storage access");
 
-    // Create a reusable handler function
-    const handleUserInteraction = async () => {
-      try {
-        await this.requestStorageAccess();
-
-        log(LOG_GROUP.STORAGE, "Storage access granted after user interaction");
-
-        // Clean up event listeners after successful request
-        cleanupListeners();
-      } catch (error) {
-        log(LOG_GROUP.STORAGE, "Storage access denied after user interaction:", error);
-      }
-    };
-
-    // Function to clean up event listeners
-    const cleanupListeners = () => {
+    function cleanupListeners() {
       document.removeEventListener("click", handleUserInteraction);
       document.removeEventListener("pointerdown", handleUserInteraction);
-    };
+    }
+
+    async function handleUserInteraction() {
+      try {
+        const status = await this.requestStorageAccess();
+
+        log(
+          LOG_GROUP.STORAGE,
+          status === "supported" || status === "limited"
+            ? `Storage access granted after user interaction = ${status}`
+            : `Storage access denied after user interaction = ${status}`,
+        );
+      } catch (error) {
+        log(LOG_GROUP.STORAGE, "Storage access error after user interaction:", error);
+      }
+
+      cleanupListeners();
+    }
 
     // Add event listeners with once:true to auto-remove after firing
     document.addEventListener("click", handleUserInteraction, { once: true });
