@@ -4,9 +4,9 @@ import { Quantity } from "ao-tokens";
 import { useEffect, useState } from "react";
 import styled, { useTheme } from "styled-components";
 import browser from "webextension-polyfill";
-import { AO_PROCESS_BALANCE_MIRROR, Id } from "~tokens/aoTokens/ao";
 import { ExtensionStorage } from "~utils/storage";
 import { useAo } from "~tokens/hooks";
+import { AO_PROCESS_BALANCE_MIRROR, Id } from "~tokens/aoTokens/ao.constants";
 
 interface AoBannerProps {
   activeAddress: string;

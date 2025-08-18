@@ -1,6 +1,6 @@
 import { AlertTriangle } from "@untitled-ui/icons-react";
 import styled, { useTheme } from "styled-components";
-import { AO_PROCESS_ID, VERIFIED_TOKENS } from "~tokens/aoTokens/ao";
+import { AO_PROCESS_ID, VERIFIED_TOKENS } from "~tokens/aoTokens/ao.constants";
 import { formatFiatBalance } from "~tokens/currency";
 import { useAoToken } from "~tokens/hooks";
 import { useTokenPriceChange } from "~tokens/hooks/useTokenPriceChange";

@@ -8,7 +8,7 @@ import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import { useLocation } from "~wallets/router/router.utils";
 import { SvgImageWithBackground } from "./SvgImage";
 import type { AOYieldAgent } from "~utils/agents/types";
-import { WAR_PROCESS_ID } from "~tokens/aoTokens/ao";
+import { WAR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 import dayjs from "dayjs";
 import { useAOMintingStatus, useAOYieldAgentInfo } from "~utils/agents/hooks";
 import { getStatusColor, getStatusText, tokenIdInfoMap, updateLocalAOYieldAgent } from "~utils/agents/utils";

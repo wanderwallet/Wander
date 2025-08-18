@@ -1,13 +1,5 @@
 import { connect } from "@permaweb/aoconnect";
-import {
-  createDataItemKeystoneSigner,
-  createDataItemSigner,
-  getTagValue,
-  Id,
-  Owner,
-  WNDR_PROCESS_ID,
-  type TokenInfo,
-} from "~tokens/aoTokens/ao";
+import { createDataItemKeystoneSigner, createDataItemSigner, getTagValue, type TokenInfo } from "~tokens/aoTokens/ao";
 import { defaultConfig } from "~tokens/aoTokens/config";
 import { retryWithDelay } from "~utils/promises/retry";
 import { getActiveAddress, getActiveKeyfile, type DecryptedWallet } from "~wallets";
@@ -22,6 +14,7 @@ import { ExtensionStorage } from "~utils/storage";
 import { LOG_GROUP, log } from "~utils/log/log.utils";
 import { PI_FLP_ID } from "./fair_launch.constants";
 import { KeystoneSigner } from "~wallets/hardware/keystone";
+import type { WNDR_PROCESS_ID, Id, Owner } from "~tokens/aoTokens/ao.constants";
 
 interface RawFlpToken {
   flp_token_name: string;
