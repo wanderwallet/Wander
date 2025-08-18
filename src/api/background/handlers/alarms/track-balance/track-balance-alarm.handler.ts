@@ -6,7 +6,7 @@ import BigNumber from "bignumber.js";
 import { EventType, setToStartOfNextMonth, trackDirect } from "~utils/analytics";
 
 export async function handleTrackBalanceAlarm(alarmInfo?: Alarms.Alarm) {
-  if (alarmInfo && !alarmInfo.name.startsWith("track-balance")) return;
+  if (!alarmInfo?.name.startsWith("track-balance")) return;
 
   const wallets = await getWallets();
   const arweave = new Arweave(defaultGateway);

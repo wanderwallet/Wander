@@ -43,10 +43,7 @@ export async function handleWalletsChange({ newValue, oldValue }: StorageChange<
   if (wallets.length > 0 && previousWallets.length === 0) {
     // add scheduled label refresh if
     // Wander has just been set up
-    browser.alarms.create("sync_labels", {
-      delayInMinutes: 1,
-      periodInMinutes: 60,
-    });
+    browser.alarms.create("sync_labels", { delayInMinutes: 1, periodInMinutes: 360 });
   } else if (wallets.length === 0 && previousWallets.length > 0) {
     // remove scheduled label refresh if
     // Wander has just been reset
