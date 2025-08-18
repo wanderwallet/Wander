@@ -1203,7 +1203,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
       initEmbeddedWallet(session);
 
-      if (authProviderType && user && session) {
+      if (accessToken) {
         setEmbeddedContextAuth(({ authStatus }) => ({
           authStatus: authStatus === "unknown" || authStatus === "authError" ? "authLoading" : authStatus,
           authProviderType,
