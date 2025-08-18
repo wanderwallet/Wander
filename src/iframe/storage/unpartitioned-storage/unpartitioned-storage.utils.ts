@@ -17,6 +17,7 @@ let _unpartitionedStateStatus: UnpartitionedStateStatus = HAS_SIMPLE_STORAGE_API
 
 export interface UnpartitionedStateStatusChangeData {
   unpartitionedStateStatus: UnpartitionedStateStatus;
+  prevUnpartitionedStateStatus: UnpartitionedStateStatus;
   error?: Error;
 }
 
@@ -25,7 +26,7 @@ type UnpartitionedStateStatusChangeCallback = (data: UnpartitionedStateStatusCha
 const unpartitionedStateStatusChangeCallbacks = new Set<UnpartitionedStateStatusChangeCallback>();
 
 export function addUnpartitionedStateStatusChangeListener(fn: UnpartitionedStateStatusChangeCallback) {
-  fn({ unpartitionedStateStatus: _unpartitionedStateStatus });
+  fn({ unpartitionedStateStatus: _unpartitionedStateStatus, prevUnpartitionedStateStatus: _unpartitionedStateStatus });
   unpartitionedStateStatusChangeCallbacks.add(fn);
 }
 
@@ -38,9 +39,11 @@ export function getUnpartitionedStateStatus() {
 }
 
 export function setUnpartitionedStateStatus(unpartitionedStateStatus: UnpartitionedStateStatus, error?: Error) {
+  const prevUnpartitionedStateStatus = _unpartitionedStateStatus;
+
   _unpartitionedStateStatus = unpartitionedStateStatus;
 
   unpartitionedStateStatusChangeCallbacks.forEach((cb) => {
-    cb({ unpartitionedStateStatus, error });
+    cb({ unpartitionedStateStatus, prevUnpartitionedStateStatus, error });
   });
 }

@@ -8,17 +8,14 @@ import { useLocation } from "~wallets/router/router.utils";
 import browser from "webextension-polyfill";
 import Arweave from "arweave";
 import type { RawDataItem } from "~api/modules/sign_data_item/types";
-import type { ConnectAuthRoutePath } from "~wallets/router/auth/auth.embed.routes";
+import type { ConnextTxDetailsRoutePath } from "~wallets/router/auth/auth.embed.routes";
 
-interface TransactionMessaageProps {
+interface TransactionMessageProps {
   transaction: SplitTransaction | Transaction | RawDataItem;
-  detailsLink: null | Extract<
-    ConnectAuthRoutePath,
-    `/auth-request/sign/${string}/details` | `/auth-request/signDataItem/${string}/details`
-  >;
+  txDetailsPath: null | ConnextTxDetailsRoutePath;
 }
 
-export default function TransactionMessage({ transaction, detailsLink }: TransactionMessaageProps) {
+export default function TransactionMessage({ transaction, txDetailsPath }: TransactionMessageProps) {
   const { navigate } = useLocation();
   const [message, setMessage] = useState<string>("");
 
@@ -102,7 +99,7 @@ export default function TransactionMessage({ transaction, detailsLink }: Transac
     processTransactionData();
   }, [transaction, getContentType]);
 
-  if (!message && !detailsLink) return null;
+  if (!message && !txDetailsPath) return null;
 
   return (
     <Box hasBorder>
@@ -126,12 +123,12 @@ export default function TransactionMessage({ transaction, detailsLink }: Transac
         </Box>
       )}
 
-      {detailsLink && (
+      {txDetailsPath && (
         <Row
           isFullWidth
           justifyContent="between"
           style={{ marginTop: "0.5rem", cursor: "pointer" }}
-          onClick={() => navigate(detailsLink)}>
+          onClick={() => navigate(txDetailsPath)}>
           <Text variant="bodySm" style={{ color: "#666666" }}>
             Transaction details
           </Text>
