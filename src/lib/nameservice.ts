@@ -1,6 +1,5 @@
 import { useState } from "react";
 import type { NameServiceProfile } from "./types";
-import { getAnsNameServiceProfile } from "./ans";
 import { getArNSProfile } from "./arns";
 import { ExtensionStorage } from "~utils/storage";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
@@ -59,7 +58,7 @@ export async function getNameServiceProfile(
       }
     }
 
-    const profile = (await getArNSProfile(walletAddress)) || (await getAnsNameServiceProfile(walletAddress));
+    const profile = await getArNSProfile(walletAddress);
     await setProfileInCache(walletAddress, profile);
     return profile;
   } catch (e) {
