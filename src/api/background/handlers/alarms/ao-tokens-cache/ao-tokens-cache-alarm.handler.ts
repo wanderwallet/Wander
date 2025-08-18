@@ -8,7 +8,7 @@ import { timeoutPromise } from "~utils/promises/timeout";
  * Alarm handler for syncing ao tokens
  */
 export const handleAoTokenCacheAlarm = async (alarmInfo?: Alarms.Alarm) => {
-  if (alarmInfo && !alarmInfo.name.startsWith("update_ao_tokens")) return;
+  if (!alarmInfo?.name.startsWith("update_ao_tokens")) return;
 
   const aoTokens = (await PersistentStorage.get<TokenInfo[]>("ao_tokens")) || [];
 

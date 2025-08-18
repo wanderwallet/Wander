@@ -13,7 +13,7 @@ import type { SubscriptionData } from "~subscriptions/subscription";
  */
 
 export async function handleSubscriptionsAlarm(alarmInfo?: Alarms.Alarm) {
-  if (alarmInfo && !alarmInfo.name.startsWith("subscription-alarm-")) return;
+  if (!alarmInfo?.name.startsWith("subscription-alarm-")) return;
 
   const prefixLength = "subscription-alarm-".length;
   const subAddress = alarmInfo.name.substring(prefixLength);

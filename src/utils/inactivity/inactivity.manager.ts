@@ -170,7 +170,7 @@ export class InactivityManager {
   }
 
   private async handleAutoSignOut(alarm?: browser.Alarms.Alarm): Promise<void> {
-    if (alarm && alarm.name !== INACTIVITY.ALARM.TIMER) return;
+    if (alarm?.name !== INACTIVITY.ALARM.TIMER) return;
 
     try {
       const decryptionKey = await getDecryptionKey();
