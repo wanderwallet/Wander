@@ -21,7 +21,7 @@ export class LocalStorage {
   private static readonly CHUNK_META_SUFFIX = "_chunk_meta";
 
   private storage: EnhancedStorage;
-  private cookieStoreAvailable: boolean;
+  private cookieStoreAvailable: boolean = false;
   private isHttps: boolean;
 
   // Cookie options
@@ -48,8 +48,8 @@ export class LocalStorage {
 
     this.isHttps = typeof location !== "undefined" && location.protocol === "https:";
 
-    this.cookieStoreAvailable =
-      typeof window !== "undefined" && "cookieStore" in window && window.cookieStore !== undefined;
+    // this.cookieStoreAvailable =
+    //  typeof window !== "undefined" && "cookieStore" in window && window.cookieStore !== undefined;
 
     if (LocalStorage.DEBUG_MODE) {
       console.log(`Storage initialized: isHttps=${this.isHttps}, cookieStoreAvailable=${this.cookieStoreAvailable}`);
@@ -140,16 +140,25 @@ export class LocalStorage {
 
         await cookieStore.set(cookieOptions);
         const result = await this.getCookieValue(key);
-        if (result !== value) throw new Error(`Failed to set cookie for key '${key}'`);
+
+        if (result !== value) {
+          throw new Error(`Failed to set cookie "${key}" = "${value}" ("${result}" read).`);
+        }
+
         return result === value;
       } else {
         // Fallback to js-cookie
         Cookies.set(key, value, cookieOptions);
         const result = Cookies.get(key);
+
+        if (result !== value) {
+          throw new Error(`Failed to set jsCookie "${key}" = "${value}" ("${result}" read).`);
+        }
+
         return result === value;
       }
-    } catch (e) {
-      if (LocalStorage.DEBUG_MODE) console.warn(`Failed to set cookie for key '${key}'`, e);
+    } catch (err) {
+      if (LocalStorage.DEBUG_MODE) console.warn(`Error setting cookie "${key}":`, err);
 
       /*
       try {
@@ -177,12 +186,17 @@ export class LocalStorage {
       const cookieStore = this.getCookieStore();
       if (cookieStore) {
         const cookie = await cookieStore.get(key);
+
+        console.warn(`Getting cookie "${key}" =`, cookie);
+
         return cookie?.value || null;
       } else {
+        console.warn(`Getting jsCookie "${key}" =`, Cookies.get(key));
+
         return Cookies.get(key) || null;
       }
-    } catch (e) {
-      if (LocalStorage.DEBUG_MODE) console.warn(`Failed to get cookie for key '${key}'`, e);
+    } catch (err) {
+      if (LocalStorage.DEBUG_MODE) console.warn(`Failed to get cookie "${key}":`, err);
 
       /*
       try {
@@ -501,7 +515,7 @@ export class LocalStorage {
 
     if (LocalStorage.DEBUG_MODE) {
       // TODO: Use logger:
-      console.log(`Getting ${key} in ${shouldStoreInCookies ? "cookies" : "localStorage"}`);
+      console.log(`Getting ${key} from ${shouldStoreInCookies ? "cookies" : "localStorage"}`);
     }
 
     /*
