@@ -104,7 +104,7 @@ export class LocalStorage {
    * is supported, we do not use cookies.
    */
   private shouldStoreInCookies(key: string): boolean {
-    console.log("shouldStoreInCookies getUnpartitionedStateStatus() =", getUnpartitionedStateStatus());
+    console.warn("shouldStoreInCookies getUnpartitionedStateStatus() =", getUnpartitionedStateStatus());
 
     if (getUnpartitionedStateStatus() !== "limited") return false;
 
