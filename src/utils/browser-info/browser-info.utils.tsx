@@ -6,6 +6,7 @@ const isChromeIOS = userAgent.match("CriOS");
 const isEdge = userAgent.includes("Edg");
 const isFirefox = userAgent.includes("Firefox");
 const isOpera = typeof (window as any).opr !== "undefined";
+const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
 const isChrome =
   isChromium &&
@@ -28,5 +29,6 @@ export const browserInfo = {
   isEdge,
   isFirefox,
   isOpera,
+  isSafari,
   isInAppAndroidBrowser,
 };

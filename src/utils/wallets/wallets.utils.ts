@@ -754,11 +754,11 @@ if (!EMBEDDED_FEATURE_FLAGS.STORE_SEED_PHRASE) {
   (async () => {
     const storage = await LocalStorage.getInstance();
     const keys = await storage.keys();
-    for (const key of keys) {
-      if (key.startsWith(ENCRYPTED_SEED_PHRASE_KEY)) {
-        await storage.removeItem(key);
-      }
-    }
+    const keysToRemovePromises = keys
+      .filter((key) => key.startsWith(ENCRYPTED_SEED_PHRASE_KEY))
+      .map((keyToRemove) => storage.removeItem(keyToRemove));
+
+    await Promise.allSettled(keysToRemovePromises);
   })();
 }
 
@@ -767,10 +767,10 @@ if (!EMBEDDED_FEATURE_FLAGS.STORE_RECOVERY_SHARES) {
   (async () => {
     const storage = await LocalStorage.getInstance();
     const keys = await storage.keys();
-    for (const key of keys) {
-      if (key.startsWith(ENCRYPTED_RECOVERY_SHARE_KEY)) {
-        await storage.removeItem(key);
-      }
-    }
+    const keysToRemovePromises = keys
+      .filter((key) => key.startsWith(ENCRYPTED_RECOVERY_SHARE_KEY))
+      .map((keyToRemove) => storage.removeItem(keyToRemove));
+
+    await Promise.allSettled(keysToRemovePromises);
   })();
 }

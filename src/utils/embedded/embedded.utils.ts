@@ -1,11 +1,13 @@
-import { AuthProviderType, createSupabaseClient, createTRPCClient } from "embed-api";
+import { createSupabaseClient, createTRPCClient } from "embed-api";
 import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 import { LocalStorage } from "~iframe/storage/unpartitioned-storage/local-storage";
 import { isInsideIframe, EMBEDDED_CLIENT_ID, EMBEDDED_ANCESTOR_ORIGIN, EMBEDDED_SERVER_BASE_URL } from "./iframe.utils";
 import { ExtensionStorage } from "~utils/storage";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
-import { isDeviceNonceValid, storeDeviceNonce } from "./device-nonce/device-nonce.utils";
 import type { Wallet } from "~utils/embedded/embedded.types";
+
+// TODO: Move to `embed-api`
+export const SUPABASE_AUTH_TOKEN_KEY_REGEXP = /^sb\-\w+\-auth\-token$/;
 
 export function getBackupsNeededAndMessage(wallets: Wallet[]) {
   const backupsNeeded = wallets.filter((wallet) => {
@@ -67,10 +69,13 @@ export async function signOut(close = true) {
     console.error("Error signing out:", err);
 
     const storage = await LocalStorage.getInstance();
+    const storageKeys = await storage.keys();
+    const supabaseAuthTokenKeys = storageKeys.filter((key) => SUPABASE_AUTH_TOKEN_KEY_REGEXP.test(key));
+    const supabaseAuthTokenRemovePromises = supabaseAuthTokenKeys.map((supabaseAuthTokenKey) => {
+      return storage.removeItem(supabaseAuthTokenKey);
+    });
 
-    const supabaseAuthTokenKeys = storage.keys().filter((key) => key.endsWith("-auth-token"));
-
-    storage.removeItems(supabaseAuthTokenKeys);
+    await Promise.all(supabaseAuthTokenRemovePromises);
 
     window.location.href = "#/";
     window.location.reload();
@@ -85,8 +90,8 @@ export async function signOut(close = true) {
 
 export async function checkStoredSupabaseAuthToken() {
   const storage = await LocalStorage.getInstance();
-
-  const supabaseAuthTokenKeys = storage.keys().filter((key) => key.endsWith("-auth-token"));
+  const storageKeys = await storage.keys();
+  const supabaseAuthTokenKeys = storageKeys.filter((key) => SUPABASE_AUTH_TOKEN_KEY_REGEXP.test(key));
 
   return supabaseAuthTokenKeys.length > 0;
 }
