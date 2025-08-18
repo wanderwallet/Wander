@@ -111,15 +111,13 @@ export class LocalStorage {
    * is supported, we do not use cookies.
    */
   private shouldStoreInCookies(key: string): boolean {
-    console.warn("shouldStoreInCookies getUnpartitionedStateStatus() =", getUnpartitionedStateStatus());
-
-    if (getUnpartitionedStateStatus() !== "limited") return false;
+    if (!["limited", "rejected"].includes(getUnpartitionedStateStatus())) return false;
 
     const shouldStoreInCookies = key === DEVICE_NONCE_KEY || SUPABASE_AUTH_TOKEN_KEY_REGEXP.test(key);
 
     if (window.location.hostname === "localhost" && shouldStoreInCookies) {
       console.warn(
-        `${key} should be read/stored in cookies, but that won't work in localhost, so localStorage will be used instead. Please, retest in a preview environment.`,
+        `${key} should be read/stored in cookies, but that won't work in localhost, so localStorage will be used instead. Please, retest in a preview environment. unpartitionedStateStatus = "${getUnpartitionedStateStatus()}."`,
       );
 
       return false;
