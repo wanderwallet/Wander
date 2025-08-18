@@ -1,8 +1,8 @@
 import { Text } from "@arconnect/components-rebrand";
-import type { GQLNodeInterface } from "ar-gql/dist/faces";
 import styled from "styled-components";
 import { formatTokenBalance } from "~tokens/currency";
-import { Logo } from "./popup/Token";
+import { TokenLogo } from "~components/popup/TokenLogo";
+import type { TokenInfo } from "~tokens/aoTokens/ao";
 
 const Container = styled.div<{ isLongBalance: boolean }>`
   display: flex;
@@ -32,17 +32,15 @@ const Ticker = styled(Text).attrs({
   weight: "medium",
 })``;
 
-const TokenLogo = styled(Logo)`
-  width: 16px;
-  height: 16px;
-`;
+// TODO: This component should accept the same interfaces as TokenLogo
+
+// TODO: Handle special state if there was an error loading the token?
 
 export const AdaptiveBalanceDisplay: React.FC<{
+  token?: TokenInfo | null;
   balance: string;
   ao: { isAo: boolean; tokenId?: string | null };
-  ticker: string | null;
-  logo?: string;
-}> = ({ balance, ao, ticker, logo }) => {
+}> = ({ token, balance, ao }) => {
   const formattedBalance = !ao.isAo ? formatTokenBalance(balance || "0") : balance;
 
   const isLongBalance = formattedBalance.length > 8;
@@ -51,8 +49,8 @@ export const AdaptiveBalanceDisplay: React.FC<{
     <Container isLongBalance={isLongBalance}>
       <Balance isLongBalance={isLongBalance}>{formattedBalance}</Balance>
       <TokenContainer>
-        <Ticker>{ticker || "AR"}</Ticker>
-        {logo && <TokenLogo src={logo} />}
+        <Ticker>{token?.Ticker || (ao.isAo ? "" : "AR")}</Ticker>
+        <TokenLogo token={token || ""} size={16} />
       </TokenContainer>
     </Container>
   );

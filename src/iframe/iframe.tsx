@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { WanderThemeProvider } from "~components/hardware/HardwareWalletTheme";
+import { StyledComponentsThemeProvider } from "~utils/theme/styled-components/styled-components.provider";
 import { AuthRequestsProvider } from "~utils/auth/auth.provider";
 import { Routes } from "~wallets/router/routes.component";
 import { Router as Wouter } from "wouter";
@@ -11,9 +11,9 @@ import { handleSyncLabelsAlarm } from "~api/background/handlers/alarms/sync-labe
 import { useEmbeddedLocation } from "~wallets/router/iframe/iframe-router.hook";
 import { EmbeddedProvider } from "~utils/embedded/embedded.provider";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { ThemeProvider } from "~components/embed/contexts/ThemeContext";
 import { ThemeSetup } from "~components/embed/ui/atoms/theme-setup/ThemeSetup";
 import { queryClient } from "~utils/tanstack";
+import { ThemeProvider } from "~utils/theme/theme.provider";
 
 export function WanderConnectApp() {
   useEffect(() => {
@@ -30,8 +30,8 @@ export function WanderConnectApp() {
 
 export function WanderConnectAppRoot() {
   return (
-    <WanderThemeProvider>
-      <ThemeProvider>
+    <ThemeProvider>
+      <StyledComponentsThemeProvider>
         <QueryClientProvider client={queryClient}>
           <Wouter hook={useEmbeddedLocation}>
             <EmbeddedProvider>
@@ -47,7 +47,7 @@ export function WanderConnectAppRoot() {
             </EmbeddedProvider>
           </Wouter>
         </QueryClientProvider>
-      </ThemeProvider>
-    </WanderThemeProvider>
+      </StyledComponentsThemeProvider>
+    </ThemeProvider>
   );
 }

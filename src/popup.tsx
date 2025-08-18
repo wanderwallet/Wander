@@ -1,5 +1,5 @@
 import { NavigationBar } from "~components/popup/Navigation";
-import { WanderThemeProvider } from "~components/hardware/HardwareWalletTheme";
+import { StyledComponentsThemeProvider } from "~utils/theme/styled-components/styled-components.provider";
 import { Routes } from "~wallets/router/routes.component";
 import { POPUP_ROUTES } from "~wallets/router/popup/popup.routes";
 import { Router as Wouter } from "wouter";
@@ -17,6 +17,7 @@ import UpdateSplash from "~routes/welcome/UpdateSplash";
 import StarIcons from "~components/welcome/StarIcons";
 import { useActivityTracking } from "~utils/inactivity/inactivity.hooks";
 import { queryClient } from "~utils/tanstack";
+import { ThemeProvider } from "~utils/theme/theme.provider";
 
 export function WanderBrowserExtensionApp() {
   const [showAnimation, setShowAnimation] = useState<boolean>(false);
@@ -68,17 +69,19 @@ export function WanderBrowserExtensionApp() {
 
 export function WanderBrowserExtensionAppRoot() {
   return (
-    <WanderThemeProvider>
-      <ErrorBoundary fallback={FallbackView}>
-        <WalletsProvider redirectToWelcome>
-          <QueryClientProvider client={queryClient}>
-            <Wouter hook={useExtensionLocation}>
-              <WanderBrowserExtensionApp />
-            </Wouter>
-          </QueryClientProvider>
-        </WalletsProvider>
-      </ErrorBoundary>
-    </WanderThemeProvider>
+    <ThemeProvider>
+      <StyledComponentsThemeProvider>
+        <ErrorBoundary fallback={FallbackView}>
+          <WalletsProvider redirectToWelcome>
+            <QueryClientProvider client={queryClient}>
+              <Wouter hook={useExtensionLocation}>
+                <WanderBrowserExtensionApp />
+              </Wouter>
+            </QueryClientProvider>
+          </WalletsProvider>
+        </ErrorBoundary>
+      </StyledComponentsThemeProvider>
+    </ThemeProvider>
   );
 }
 

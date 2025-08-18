@@ -81,10 +81,14 @@ export async function getDeviceNonce(): Promise<DeviceNonce> {
   return storeDeviceNonce(_deviceNonce);
 }
 
-// TODO: We probably want to remove this an initialize it lazily instead of eagerly. Also, we need a way to handle users
-// that already have a deviceNonce value in browsers with no unpartitioned state. In that case, the value already
-// present in localStorage should be moved to cookies.
+if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1") {
+  // TODO: We probably want to remove this an initialize it lazily instead of eagerly. Also, we need a way to handle
+  // users that already have a deviceNonce value in browsers with no unpartitioned state. In that case, the value already
+  // present in localStorage should be moved to cookies.
 
-initializeDeviceNonce().catch((err) => {
-  log(LOG_GROUP.WALLET_GENERATION, "initializeDeviceNonce() error: ", { err });
-});
+  initializeDeviceNonce().catch((err) => {
+    log(LOG_GROUP.WALLET_GENERATION, "initializeDeviceNonce() error: ", {
+      err,
+    });
+  });
+}

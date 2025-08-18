@@ -15,7 +15,6 @@ import {
 import { sleep } from "~utils/promises/sleep";
 import type {
   EmbeddedContextState,
-  EmbeddedContextData,
   EmbeddedProviderProps,
   TempWallet,
   AuthStatus,
@@ -31,6 +30,7 @@ import {
   getSupabaseClient,
   signOut,
   getBackupsNeededAndMessage,
+  checkStoredSupabaseAuthToken,
 } from "~utils/embedded/embedded.utils";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import {
@@ -70,7 +70,7 @@ import {
 } from "~iframe/storage/unpartitioned-storage/unpartitioned-storage.utils";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { isomorphicOnMessage } from "~isomorphic-messaging";
-import { useTheme } from "~components/embed/contexts/ThemeContext";
+import { useTheme } from "~utils/theme/theme.hook";
 import { withRetry } from "~utils/promises/retry";
 import { createAnonSession, INITIAL_ANON_SESSION, parseSupabaseSession } from "~utils/embedded/session/session.utils";
 import { useLocation } from "~wallets/router/router.utils";
@@ -100,18 +100,6 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     },
     [setUnpartitionedStateConfirmed, setRenderValue],
   );
-
-  // Unpartitioned state:
-
-  useEffect(() => {
-    function handleUnpartitionedStateStatusChange({ unpartitionedStateStatus }: UnpartitionedStateStatusChangeData) {
-      setUnpartitionedStateStatus(unpartitionedStateStatus);
-    }
-
-    addUnpartitionedStateStatusChangeListener(handleUnpartitionedStateStatusChange);
-
-    return () => removeUnpartitionedStateStatusChangeListener(handleUnpartitionedStateStatusChange);
-  }, []);
 
   // Wallet props:
 
@@ -187,6 +175,54 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     });
   }, [authStatus, backupsNeeded, backupMessage]);
 
+  // Unpartitioned state:
+
+  useEffect(() => {
+    async function handleUnpartitionedStateStatusChange({
+      unpartitionedStateStatus,
+      prevUnpartitionedStateStatus,
+    }: UnpartitionedStateStatusChangeData) {
+      setUnpartitionedStateStatus(unpartitionedStateStatus);
+
+      // We want to prevent the app from using data from the partitioned state after the permissions has been granted, or from the unpartitioned state once the
+      // permission has been removed (as both options will lead to a mix of data from both storages), so we check here if the permissions have changed, and
+      // reload the app when needed:
+
+      if (unpartitionedStateStatus === prevUnpartitionedStateStatus) return;
+
+      // If the user is authenticated and the storage permissions changes, we sign them out and reload the page:
+
+      if (authStatus !== "noAuth") {
+        // TODO: Show cover.
+
+        await signOut(false).catch((err) => {
+          console.warn("Error signing out: ", err);
+        });
+
+        window.location.reload();
+
+        return;
+      }
+
+      // If the user is not authenticated and the storage permission changes, we check if in the new localStorage instance there's a Supabase auth token. If
+      // there is, we reload the page to force re-authentication with that one:
+
+      const hasSupabaseAuthToken = await checkStoredSupabaseAuthToken();
+
+      if (!hasSupabaseAuthToken) return;
+
+      // TODO: Show cover.
+
+      window.location.reload();
+    }
+
+    addUnpartitionedStateStatusChangeListener(handleUnpartitionedStateStatusChange);
+
+    return () => removeUnpartitionedStateStatusChangeListener(handleUnpartitionedStateStatusChange);
+  }, [authStatus]);
+
+  // UPDATE CURRENT WALLET HELPER:
+
   const updateCurrentWallet = useCallback((walletUpdater: Wallet | ((currentWallet: Wallet) => Wallet)) => {
     setEmbeddedContextState((prevEmbeddedContextState) => {
       const currentWalletIndex = prevEmbeddedContextState.wallets.findIndex((wallet) => {
@@ -208,6 +244,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       };
     });
   }, []);
+
+  // WALLET EXPORT:
 
   const downloadKeyfile = useCallback(async () => {
     log(LOG_GROUP.EMBEDDED_FLOWS, `downloadKeyfile()`);
@@ -310,6 +348,8 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
 
     return successfulCopy;
   }, [getSeedphrase]);
+
+  // WALLET RECOVERY:
 
   const generateRecoveryAndDownload = useCallback(async () => {
     log(LOG_GROUP.EMBEDDED_FLOWS, `generateRecoveryAndDownload()`);
@@ -1190,7 +1230,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     };
   }, [initEmbeddedWallet]);
 
-  const { setMode } = useTheme();
+  const { setTheme } = useTheme();
   const { navigate } = useLocation();
   const navigateRef = useRef(navigate);
   navigateRef.current = navigate;
@@ -1201,7 +1241,7 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
     });
 
     isomorphicOnMessage("embedded_setTheme", ({ data }) => {
-      setMode(data);
+      setTheme(data);
     });
 
     isomorphicOnMessage("embedded_navigate", ({ data }) => {

@@ -83,6 +83,14 @@ export async function signOut(close = true) {
   }
 }
 
+export async function checkStoredSupabaseAuthToken() {
+  const storage = await LocalStorage.getInstance();
+
+  const supabaseAuthTokenKeys = storage.keys().filter((key) => key.endsWith("-auth-token"));
+
+  return supabaseAuthTokenKeys.length > 0;
+}
+
 let trpcClientAndUtils: ReturnType<typeof createTRPCClient> | null = null;
 
 /**

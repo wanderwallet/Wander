@@ -11,14 +11,14 @@
   font-family: "Satoshi Sans";
   font-style: normal;
   font-weight: 500;
-  src: url(/assets/fonts/Satoshi-Variable.ttf) format("ttf");
+  src: url(/assets/fonts/Satoshi-Variable.ttf) format("truetype");
 }
 
 @font-face {
   font-family: "Satoshi Sans";
   font-style: normal;
   font-weight: 600;
-  src: url(/assets/fonts/Satoshi-VariableItalic.ttf) format("ttf");
+  src: url(/assets/fonts/Satoshi-VariableItalic.ttf) format("truetype");
 }
 
 :root {
