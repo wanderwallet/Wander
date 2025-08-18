@@ -14,7 +14,7 @@ import { checkAndSyncAgents } from "~utils/agents/sync";
  */
 
 export async function handleAOYieldAgentAlarm(alarmInfo?: Alarms.Alarm) {
-  if (alarmInfo && alarmInfo.name !== AO_YIELD_AGENT_ALARM_NAME) return;
+  if (alarmInfo?.name !== AO_YIELD_AGENT_ALARM_NAME) return;
 
   await executeAutomaticSwapIfNeeded();
 }
@@ -24,7 +24,7 @@ export async function handleAOYieldAgentAlarm(alarmInfo?: Alarms.Alarm) {
  * Checks if any recent txs have succeeded and updates the recent txs list.
  */
 export async function handleAOYieldAgentRecentTxsCheck(alarmInfo?: Alarms.Alarm) {
-  if (alarmInfo && alarmInfo.name !== AO_YIELD_AGENT_RECENT_TXS_CHECK_ALARM_NAME) return;
+  if (alarmInfo?.name !== AO_YIELD_AGENT_RECENT_TXS_CHECK_ALARM_NAME) return;
 
   await checkIfRecentTxSwapSucceeded();
 }
@@ -34,7 +34,7 @@ export async function handleAOYieldAgentRecentTxsCheck(alarmInfo?: Alarms.Alarm)
  * Checks if any agents need to be synced and syncs them if conditions are met.
  */
 export async function handleAOYieldAgentSync(alarmInfo?: Alarms.Alarm) {
-  if (alarmInfo && !alarmInfo.name.startsWith(AO_YIELD_AGENT_SYNC_ALARM_NAME_PREFIX)) return;
+  if (!alarmInfo?.name.startsWith(AO_YIELD_AGENT_SYNC_ALARM_NAME_PREFIX)) return;
 
   const address = alarmInfo.name.replace(AO_YIELD_AGENT_SYNC_ALARM_NAME_PREFIX, "");
   await checkAndSyncAgents(address);

@@ -7,7 +7,7 @@ import { getWalletLifetimeSavingsFromStorage, saveWalletLifetimeSavingsToStorage
  */
 
 export async function handleRefreshWalletLifetimeSavingsAlarm(alarmInfo?: Alarms.Alarm) {
-  if (alarmInfo && !alarmInfo.name.startsWith("wallet_lifetime_savings_")) return;
+  if (!alarmInfo?.name.startsWith("wallet_lifetime_savings_")) return;
 
   const address = alarmInfo.name.replace("wallet_lifetime_savings_", "");
 

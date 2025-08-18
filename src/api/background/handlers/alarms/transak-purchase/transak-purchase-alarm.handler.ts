@@ -7,7 +7,7 @@ import { TRANSAK_PURCHASE_ALARM_NAME_PREFIX } from "~utils/transak/transak.const
  * Checks if any transak purchase has succeeded and updates the transak purchase list.
  */
 export async function handleTransakPurchaseAlarm(alarmInfo?: Alarms.Alarm) {
-  if (alarmInfo && !alarmInfo.name.startsWith(TRANSAK_PURCHASE_ALARM_NAME_PREFIX)) return;
+  if (!alarmInfo?.name.startsWith(TRANSAK_PURCHASE_ALARM_NAME_PREFIX)) return;
 
   const address = alarmInfo.name.replace(TRANSAK_PURCHASE_ALARM_NAME_PREFIX, "");
   await checkIfTransakPurchaseSucceeded(address);
