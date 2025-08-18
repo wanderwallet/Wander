@@ -33,6 +33,9 @@ export async function handleInstall(details: Runtime.OnInstalledDetailsType) {
 
     // remove name service cache
     ExtensionStorage.remove("name_service_cache");
+
+    // create alarm to sync labels every 6 hours
+    browser.alarms.create("sync_labels", { delayInMinutes: 1, periodInMinutes: 360 });
   }
 
   // init monthly AR
