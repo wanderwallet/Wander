@@ -1,13 +1,10 @@
 import { createSupabaseClient, createTRPCClient } from "embed-api";
-import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
+import { IS_EMBEDDED_APP, SUPABASE_AUTH_TOKEN_KEY_REGEXP } from "~utils/embedded/embedded.constants";
 import { LocalStorage } from "~iframe/storage/unpartitioned-storage/local-storage";
 import { isInsideIframe, EMBEDDED_CLIENT_ID, EMBEDDED_ANCESTOR_ORIGIN, EMBEDDED_SERVER_BASE_URL } from "./iframe.utils";
 import { ExtensionStorage } from "~utils/storage";
 import { postEmbeddedMessage } from "~utils/embedded/utils/messages/embedded-messages.utils";
 import type { Wallet } from "~utils/embedded/embedded.types";
-
-// TODO: Move to `embed-api`
-export const SUPABASE_AUTH_TOKEN_KEY_REGEXP = /^sb\-\w+\-auth\-token$/;
 
 export function getBackupsNeededAndMessage(wallets: Wallet[]) {
   const backupsNeeded = wallets.filter((wallet) => {
