@@ -177,7 +177,10 @@ export function useTotalFiatBalance() {
 
   const conversionRateQuery = useQueryCache<number>(["conversionRate", currency]);
 
-  const tokenIds = tokens.map((token) => token.id).filter((id) => id !== EXP_PROCESS_ID && id !== AR_PROCESS_ID);
+  const tokenIds = useMemo(
+    () => tokens.map((token) => token.id).filter((id) => id !== EXP_PROCESS_ID && id !== AR_PROCESS_ID),
+    [tokens],
+  );
 
   const pricesQuery = useQueryCache<Record<string, number>>(["tokenPrices", tokenIds?.slice().sort().join(",")]);
 
@@ -194,14 +197,18 @@ export function useTotalFiatBalance() {
 
     const conversionRate = conversionRateQuery.data || 1;
 
-    tokens.forEach((token, index) => {
-      const balance = tokenBalanceQueries[index].data;
-      const price = token.id === AR_PROCESS_ID ? +arPrice : pricesQuery.data?.[token.id] || 0;
+    for (let i = 0; i < tokens.length; i++) {
+      const token = tokens[i];
+      const balance = tokenBalanceQueries[i].data;
+      if (!balance || balance === "0") continue;
 
-      if (balance && price) {
-        total = total.plus(BigNumber(balance).times(price).times(conversionRate));
-      }
-    });
+      const isArToken = token.id === AR_PROCESS_ID;
+      const price = +(isArToken ? arPrice : pricesQuery.data?.[token.id] || 0);
+      if (!price) continue;
+
+      const multiplier = isArToken ? 1 : conversionRate;
+      total = total.plus(BigNumber(balance).times(price).times(multiplier));
+    }
 
     return total;
   }, [tokens, address, conversionRateQuery.data, pricesQuery.data, tokenBalanceQueries, arPrice]);
