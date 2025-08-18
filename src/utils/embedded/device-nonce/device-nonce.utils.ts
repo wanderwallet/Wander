@@ -1,9 +1,8 @@
 import { nanoid } from "nanoid";
 import { LocalStorage } from "~iframe/storage/unpartitioned-storage/local-storage";
+import { DEVICE_NONCE_KEY } from "~utils/embedded/device-nonce/device-nonce.constants";
 import { setDeviceNonceHeader } from "~utils/embedded/embedded.utils";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
-
-export const DEVICE_NONCE_KEY = "DEVICE_NONCE";
 
 const INVALID_DEVICE_NONCE_ERR_MSG = "Invalid deviceNonce";
 const MISSING_DEVICE_NONCE_ERR_MSG = "Missing deviceNonce";

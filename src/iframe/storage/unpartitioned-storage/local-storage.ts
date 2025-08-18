@@ -3,10 +3,10 @@ import { EnhancedStorage } from "./unpartitioned-storage";
 import Cookies from "js-cookie";
 import type { CookieAttributes } from "node_modules/@types/js-cookie";
 import { getUnpartitionedStateStatus } from "~iframe/storage/unpartitioned-storage/unpartitioned-storage.utils";
-import { DEVICE_NONCE_KEY } from "~utils/embedded/device-nonce/device-nonce.utils";
 import { browserInfo } from "~utils/browser-info/browser-info.utils";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { SUPABASE_AUTH_TOKEN_KEY_REGEXP } from "~utils/embedded/embedded.constants";
+import { DEVICE_NONCE_KEY } from "~utils/embedded/device-nonce/device-nonce.constants";
 
 export class LocalStorage {
   private static instance: LocalStorage | null = null;

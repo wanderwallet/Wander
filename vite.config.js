@@ -9,7 +9,7 @@ export default defineConfig({
   plugins: [
     react(),
     nodePolyfills(),
-    // ,circleDependency() // uncomment this to see circular dependencies while building in the console
+    // circleDependency(), // uncomment this to see circular dependencies while building in the console
   ],
 
   define: {
