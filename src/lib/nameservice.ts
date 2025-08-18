@@ -41,17 +41,18 @@ async function setProfileInCache(walletAddress: string, profile: NameServiceProf
  * Return a NameServiceProfile for a query
  *
  * @param walletAddress Address
+ * @param refreshCache If true, refresh the profile from the network
  *
  * @returns NameServiceProfile | undefined
  */
 export async function getNameServiceProfile(
   walletAddress: string,
-  refresh = false,
+  refreshCache = false,
 ): Promise<NameServiceProfile | undefined> {
   try {
     if (!walletAddress) return undefined;
 
-    if (!refresh) {
+    if (!refreshCache) {
       const cachedProfile = await getProfileFromCache(walletAddress);
       if (cachedProfile !== undefined) {
         return cachedProfile === null ? undefined : cachedProfile;
@@ -70,19 +71,20 @@ export async function getNameServiceProfile(
 /**
  * Return NameServiceProfile[] for a wallet addresses
  *
- * @param walletAddress Address[]
+ * @param walletAddresses Address[]
+ * @param refreshCache If true, refresh the profiles from the network
  *
  * @returns NameServiceProfile[] | undefined
  */
 export async function getNameServiceProfiles(
   walletAddresses: string[],
-  refresh = false,
+  refreshCache = false,
 ): Promise<Array<NameServiceProfile>> {
   if (!walletAddresses || walletAddresses.length === 0) return [];
 
   const profiles = [];
   for (let wallet of walletAddresses) {
-    const profile = await getNameServiceProfile(wallet, refresh);
+    const profile = await getNameServiceProfile(wallet, refreshCache);
     if (profile) {
       profiles.push(profile);
     }
