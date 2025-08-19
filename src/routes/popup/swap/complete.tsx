@@ -1,11 +1,10 @@
 import { Section, Button, Text, Loading } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
-import styled from "styled-components";
+import styled, { useTheme } from "styled-components";
 import HeadV2 from "~components/popup/HeadV2";
 import { Flex } from "~components/common/Flex";
 import { type TokenInfo } from "~tokens/aoTokens/ao";
 import { TokenLogo } from "~components/popup/TokenLogo";
-import { HorizontalLine } from "~components/HorizontalLine";
 import { AutoTag } from "./components/AutoTag";
 import { WanderFeeTag } from "./components/WanderFeeTag";
 import { useMemo } from "react";
@@ -14,29 +13,21 @@ import { TempTransactionStorage } from "~utils/storage";
 import type { SwapData } from "./utils/swap.types";
 import BigNumber from "bignumber.js";
 import { formatBalance } from "~utils/format";
-import { usePoolQuote } from "./utils/swap.hooks";
 import { useLocation } from "~wallets/router/router.utils";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import { TokenValueWithTooltip } from "./components/TokenValueWithTooltip";
+import { ArrowRight, LinkExternal02 } from "@untitled-ui/icons-react";
+import checkmarkAnimationData from "assets/lotties/checkmark.json";
+import Lottie from "react-lottie";
 import { TransactionDetailItem } from "./components/TransactionDetailItem";
+import { HorizontalLine } from "~components/HorizontalLine";
 
-export function SwapReviewView() {
+export function SwapCompleteView() {
+  const theme = useTheme();
   const { navigate } = useLocation();
   const [swapData] = useStorage<SwapData>({ key: "swap-data", instance: TempTransactionStorage });
 
-  const { sendToken, receiveToken, wanderFee, slippage, amountIn } = swapData || {};
-
-  const { selectedPoolInfo: selectedPoolInfoQuote, isLoading } = usePoolQuote({
-    tokenIn: sendToken?.processId,
-    tokenOut: receiveToken?.processId,
-    slippage,
-    amountIn,
-    pool: swapData?.selectedPoolInfo?.pool,
-  });
-
-  const selectedPoolInfo = useMemo(() => {
-    return selectedPoolInfoQuote || swapData?.selectedPoolInfo;
-  }, [selectedPoolInfoQuote, swapData?.selectedPoolInfo]);
+  const { sendToken, receiveToken, wanderFee, slippage, amountIn, selectedPoolInfo } = swapData || {};
 
   const rate = useMemo(() => {
     if (!selectedPoolInfo?.quoteOutput || !sendToken || !receiveToken) return "--";
@@ -94,11 +85,6 @@ export function SwapReviewView() {
 
   const valueInFormatted = useMemo(() => formatBalance(valueIn || "0"), [valueIn]);
 
-  function handleSwap() {
-    TempTransactionStorage.set("swap-data", { ...swapData, selectedPoolInfo: selectedPoolInfoQuote });
-    navigate(PopupPaths.SwapProgress);
-  }
-
   if (!swapData) {
     return (
       <>
@@ -119,27 +105,35 @@ export function SwapReviewView() {
 
   return (
     <>
-      <HeadV2 title={browser.i18n.getMessage("review")} />
+      <HeadV2 title="Swap complete" showBack={false} />
       <Wrapper>
         <WrapperContent>
-          <Flex direction="column" gap={16}>
-            <Flex direction="column" gap={8}>
-              <Text variant="secondary" size="sm" weight="medium" noMargin>
-                {browser.i18n.getMessage("you_send")}
-              </Text>
-              <Flex direction="row" align="center" gap={4}>
-                <TokenLogo size={24} token={sendToken} />
-                <TokenValueWithTooltip formattedValue={valueInFormatted} ticker={sendToken?.Ticker} />
-              </Flex>
+          <Flex direction="column" justify="center" align="center" gap={4}>
+            <Lottie
+              options={{
+                loop: false,
+                autoplay: true,
+                animationData: checkmarkAnimationData,
+                rendererSettings: {
+                  preserveAspectRatio: "xMidYMid slice",
+                },
+              }}
+              height={120}
+              width={120}
+            />
+            <Text size="xl" weight="bold" noMargin>
+              Swap success!
+            </Text>
+          </Flex>
+          <Flex direction="row" justify="center" align="center" gap={16}>
+            <Flex direction="row" align="center" gap={4}>
+              <TokenLogo size={24} token={sendToken} />
+              <TokenValueWithTooltip formattedValue={valueInFormatted} ticker={sendToken?.Ticker} textSize="base" />
             </Flex>
-            <Flex direction="column" gap={8}>
-              <Text variant="secondary" size="sm" weight="medium" noMargin>
-                {browser.i18n.getMessage("you_receive")}
-              </Text>
-              <Flex direction="row" align="center" gap={4}>
-                <TokenLogo size={24} token={receiveToken} />
-                <TokenValueWithTooltip formattedValue={valueOutFormatted} ticker={receiveToken?.Ticker} />
-              </Flex>
+            <ArrowRight style={{ width: 24, height: 24, color: theme.secondaryText }} />
+            <Flex direction="row" align="center" gap={4}>
+              <TokenLogo size={24} token={receiveToken} />
+              <TokenValueWithTooltip formattedValue={valueOutFormatted} ticker={receiveToken?.Ticker} textSize="base" />
             </Flex>
           </Flex>
           <HorizontalLine />
@@ -186,9 +180,16 @@ export function SwapReviewView() {
           </Flex>
         </WrapperContent>
 
-        <Flex gap={8}>
-          <Button style={{ flex: 1 }} disabled={isLoading} loading={isLoading} onClick={handleSwap} fullWidth>
-            {browser.i18n.getMessage("swap")}
+        <Flex direction="column" gap={12}>
+          <Button onClick={() => navigate(PopupPaths.Home)} fullWidth>
+            {browser.i18n.getMessage("done")}
+          </Button>
+          <Button
+            variant="secondary"
+            fullWidth
+            onClick={() => browser.tabs.create({ url: `https://www.ao.link/#/message/id` })}>
+            AO Link
+            <LinkExternal02 style={{ marginLeft: "8px" }} />
           </Button>
         </Flex>
       </Wrapper>

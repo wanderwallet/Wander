@@ -64,6 +64,8 @@ import { TokenDetailView } from "~routes/popup/tokens/token-detail";
 import { HelpView } from "~routes/popup/settings/help";
 import { SwapView } from "~routes/popup/swap";
 import { SwapReviewView } from "~routes/popup/swap/review";
+import { SwapProgressView } from "~routes/popup/swap/progress";
+import { SwapCompleteView } from "~routes/popup/swap/complete";
 
 export type PopupRoutePath =
   | "/"
@@ -130,7 +132,9 @@ export type PopupRoutePath =
   | `/earn/manage`
   | `/earn/allocation-set`
   | `/swap`
-  | `/swap/review`;
+  | `/swap/review`
+  | `/swap/progress`
+  | `/swap/complete`;
 
 export const PopupPaths = {
   Home: "/",
@@ -194,6 +198,8 @@ export const PopupPaths = {
   AllocationSet: "/earn/allocation-set",
   Swap: "/swap",
   SwapReview: "/swap/review",
+  SwapProgress: "/swap/progress",
+  SwapComplete: "/swap/complete",
 } as const satisfies Record<string, PopupRoutePath>;
 
 export const POPUP_ROUTES = [
@@ -446,5 +452,13 @@ export const POPUP_ROUTES = [
   {
     path: PopupPaths.SwapReview,
     component: SwapReviewView,
+  },
+  {
+    path: PopupPaths.SwapProgress,
+    component: SwapProgressView,
+  },
+  {
+    path: PopupPaths.SwapComplete,
+    component: SwapCompleteView,
   },
 ] as const satisfies RouteConfig[];

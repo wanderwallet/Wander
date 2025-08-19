@@ -206,7 +206,7 @@ export function usePoolQuote({ tokenIn, tokenOut, slippage, amountIn, pool }: us
   useEffect(() => {
     if (!tokenIn || !tokenOut || !slippage || !amountIn || !pool) return;
 
-    fetchPoolQuote();
+    // fetchPoolQuote();
 
     const interval = setInterval(fetchPoolQuote, 10000);
 
