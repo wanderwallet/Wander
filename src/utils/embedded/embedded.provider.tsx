@@ -1204,12 +1204,17 @@ export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
       initEmbeddedWallet(session);
 
       if (accessToken) {
-        setEmbeddedContextAuth(({ authStatus }) => ({
-          authStatus: authStatus === "unknown" || authStatus === "authError" ? "authLoading" : authStatus,
-          authProviderType,
-          user,
-          session,
-        }));
+        setEmbeddedContextAuth(({ authStatus }) => {
+          return {
+            authStatus:
+              authStatus === "unknown" || authStatus === "authError" || authStatus === "noAuth"
+                ? "authLoading"
+                : authStatus,
+            authProviderType,
+            user,
+            session,
+          };
+        });
       } else {
         const anonSession = await createAnonSession();
 
