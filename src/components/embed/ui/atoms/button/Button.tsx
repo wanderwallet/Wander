@@ -19,9 +19,12 @@ export function Button(props: ButtonProps) {
     icon,
     style,
     tabIndex,
+    href,
+    type = "button",
+    onClick,
   } = props;
 
-  const hasSize = !("href" in props) || !isFullWidth;
+  const hasSize = !href || !isFullWidth;
 
   const content = (
     <>
@@ -43,24 +46,19 @@ export function Button(props: ButtonProps) {
     classNameProp,
   );
 
-  if ("href" in props) {
-    const { href, onClick } = props;
-
+  if (href) {
     return (
       <Link
         to={href}
-        rel="noopener noreferrer"
         className={className}
         style={style}
-        // disabled={isDisabled || isLoading}
+        disabled={isDisabled || isLoading}
         // tabIndex={ tabIndex }
-        onClick={onClick}>
+        onClick={onClick as any}>
         {content}
       </Link>
     );
   }
-
-  const { type = "button", onClick } = props;
 
   return (
     <button
@@ -69,7 +67,7 @@ export function Button(props: ButtonProps) {
       style={style}
       disabled={isDisabled || isLoading}
       tabIndex={tabIndex}
-      onClick={onClick}>
+      onClick={onClick as any}>
       {content}
     </button>
   );
