@@ -17,13 +17,7 @@ import SliderMenu from "~components/SliderMenu";
 import { type Contact } from "~components/Recipient";
 import { formatAddress } from "~utils/format";
 import { useContact } from "~contacts/hooks";
-import {
-  AR_PROCESS_ID,
-  defaultTokens,
-  EXP_PROCESS_ID,
-  nonTransferableTokenIds,
-  type TokenInfo,
-} from "~tokens/aoTokens/ao";
+import type { TokenInfo } from "~tokens/aoTokens/ao";
 import { useAoTokens } from "~tokens/hooks";
 import BigNumber from "bignumber.js";
 import { AnnouncementPopup } from "./announcement";
@@ -38,6 +32,7 @@ import { HorizontalLine } from "~components/HorizontalLine";
 import { TokenLogo } from "~components/popup/TokenLogo";
 import { WarningIcon } from "~components/icons/WarningIcon";
 import { useTheme } from "~utils/theme/theme.hook";
+import { AR_PROCESS_ID, nonTransferableTokenIds, EXP_PROCESS_ID, defaultTokens } from "~tokens/aoTokens/ao.constants";
 
 export enum AmountValidationState {
   Invalid = "Invalid",

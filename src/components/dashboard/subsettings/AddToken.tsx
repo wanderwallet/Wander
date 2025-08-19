@@ -1,17 +1,18 @@
 import { Button, Input, Select, Spacer, Text, useInput, useToasts } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
 import { useEffect, useState } from "react";
-import { AO_PROCESS_ID, defaultTokens, getTokenInfo, type TokenInfo } from "~tokens/aoTokens/ao";
+import { getTokenInfo, type TokenInfo } from "~tokens/aoTokens/ao";
 import styled from "styled-components";
 import { isAddress } from "~utils/assertions";
 import { getAoTokens } from "~tokens";
-import { ExtensionStorage, PersistentStorage } from "~utils/storage";
+import { PersistentStorage } from "~utils/storage";
 import { SubTitle } from "./ContactSettings";
 import type { TokenType } from "~tokens/token";
 import { concatGatewayURL } from "~gateways/utils";
 import { FULL_HISTORY, useGateway } from "~gateways/wayfinder";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { ActionBar } from "~routes/popup/settings/tokens";
+import { AO_PROCESS_ID, defaultTokens } from "~tokens/aoTokens/ao.constants";
 
 export interface AddTokenDashboardViewProps extends CommonRouteProps {
   isQuickSetting?: boolean;

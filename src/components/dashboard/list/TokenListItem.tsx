@@ -5,7 +5,7 @@ import { ListItem } from "@arconnect/components-rebrand";
 import { formatAddress } from "~utils/format";
 import styled from "styled-components";
 import { useLocation } from "~wallets/router/router.utils";
-import { AR_PROCESS_ID } from "~tokens/aoTokens/ao";
+import { AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 import { TokenLogo } from "~components/popup/TokenLogo";
 
 import aoLogo from "url:/assets/ecosystem/ao-logo.svg";

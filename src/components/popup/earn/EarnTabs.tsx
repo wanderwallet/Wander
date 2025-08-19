@@ -1,7 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 import { useLocation, useSearchParams } from "~wallets/router/router.utils";
 import Tabs from "~components/Tabs";
-import { defaultTokens } from "~tokens/aoTokens/ao";
 import { Flex } from "~components/common/Flex";
 import styled, { useTheme } from "styled-components";
 import { Text, Loading, useToasts, Tooltip } from "@arconnect/components-rebrand";
@@ -25,6 +24,7 @@ import { NetworkErrorIcon } from "~components/icons/NetworkErrorIcon";
 import { BalanceFetchError, NetworkError } from "~utils/error/error.utils";
 import { DegradedMessage, NetworkErrorMessage } from "../tokens/ErrorMessages";
 import { TokenLogo } from "~components/popup/TokenLogo";
+import { defaultTokens } from "~tokens/aoTokens/ao.constants";
 
 export function EarnTabs() {
   const { navigate, location } = useLocation();
