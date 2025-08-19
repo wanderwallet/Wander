@@ -140,5 +140,5 @@ export interface SwapData {
   receiveToken: TokenInfo;
   wanderFee: WanderFee;
   slippage: number;
-  valueIn: string;
+  amountIn: string;
 }

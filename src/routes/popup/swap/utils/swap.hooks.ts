@@ -1,14 +1,14 @@
 import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { getPools, getPriceImpact, processToken } from "./swap.utils";
 import { defaultOptions, useAoTokens } from "~tokens/hooks";
-import { useMemo, useCallback, useState } from "react";
+import { useMemo, useCallback, useState, useEffect } from "react";
 import type { Pool, SelectedPoolInfo, TokenSelectorType } from "./swap.types";
 import { useStorage } from "@plasmohq/storage/hook";
 import { ExtensionStorage } from "~utils/storage";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { botega } from "./dex/swap.botega";
 import { permaswap } from "./dex/swap.permaswap";
-import type { GetExpectedOutputResponse, GetLiquidityResponse } from "./dex/dex.types";
+import type { GetLiquidityResponse } from "./dex/dex.types";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 
 export function usePools() {
@@ -135,6 +135,83 @@ export function usePoolForTokenPair({ tokenIn, tokenOut, slippage, amountIn }: u
       setIsLoading(false);
     }
   }, [tokenIn, tokenOut, pairPools, slippage, amountIn]);
+
+  return { selectedPoolInfo, isLoading, error };
+}
+
+interface usePoolQuoteProps {
+  tokenIn?: string;
+  tokenOut?: string;
+  slippage?: number;
+  amountIn?: string;
+  pool: Pool;
+}
+
+export function usePoolQuote({ tokenIn, tokenOut, slippage, amountIn, pool }: usePoolQuoteProps) {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedPoolInfo, setSelectedPoolInfo] = useState<SelectedPoolInfo | null>(null);
+
+  const fetchPoolQuote = useCallback(async () => {
+    try {
+      console.log({ tokenIn, tokenOut, slippage, amountIn, pool });
+      if (!tokenIn || !tokenOut || !slippage || !amountIn || !pool) {
+        setSelectedPoolInfo(null);
+        return;
+      }
+
+      setIsLoading(true);
+
+      const params = {
+        tokenIn,
+        amountIn,
+        slippage,
+      };
+
+      const output = await (pool.poolType === "botega"
+        ? botega.getExpectedOutput({ poolId: pool.poolId, ...params })
+        : permaswap.getExpectedOutput({ poolId: pool.poolId, ...params }));
+
+      if (!output) {
+        log(LOG_GROUP.SWAP, "No final output found");
+        setError("No final output found");
+        return;
+      }
+
+      let liquidity: GetLiquidityResponse;
+
+      if (output.type === "botega") {
+        liquidity = await botega.getLiquidity({ poolId: pool.poolId, tokenIn, tokenOut });
+      } else {
+        liquidity = await permaswap.getLiquidity({ poolId: pool.poolId, tokenIn, tokenOut });
+      }
+
+      if (!liquidity) {
+        log(LOG_GROUP.SWAP, "No liquidity found");
+        setError("No liquidity found");
+        return;
+      }
+
+      const priceImpact = getPriceImpact(liquidity.reserveIn, liquidity.reserveOut, output.amountInWithoutFee);
+
+      setSelectedPoolInfo({ pool, quoteOutput: output, priceImpact });
+    } catch (error) {
+      log(LOG_GROUP.SWAP, "Error fetching pool for token pair", error);
+      setError("Error fetching pool for token pair");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [tokenIn, tokenOut, slippage, amountIn, pool]);
+
+  useEffect(() => {
+    if (!tokenIn || !tokenOut || !slippage || !amountIn || !pool) return;
+
+    fetchPoolQuote();
+
+    const interval = setInterval(fetchPoolQuote, 10000);
+
+    return () => clearInterval(interval);
+  }, [fetchPoolQuote, tokenIn, tokenOut, slippage, amountIn, pool]);
 
   return { selectedPoolInfo, isLoading, error };
 }

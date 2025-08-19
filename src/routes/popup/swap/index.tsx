@@ -7,7 +7,7 @@ import { useMemo, useState } from "react";
 import { useTheme } from "styled-components";
 import { Flex } from "~components/common/Flex";
 import { SwapInput } from "./components/SwapInput";
-import { defaultTokens, type TokenInfo } from "~tokens/aoTokens/ao";
+import { type TokenInfo } from "~tokens/aoTokens/ao";
 import { DisclosureButton, DisclosureContent } from "~routes/popup/swap/components/Disclosure";
 import { SlippageInputButton } from "./components/SlippageInputButton";
 import { usePoolForTokenPair, useSwapSlippage } from "./utils/swap.hooks";
@@ -21,6 +21,7 @@ import { TempTransactionStorage } from "~utils/storage";
 import { useLocation } from "~wallets/router/router.utils";
 import { AutoTag } from "./components/AutoTag";
 import { WanderFeeTag } from "./components/WanderFeeTag";
+import { defaultTokens } from "~tokens/aoTokens/ao.constants";
 
 // TODO: Uncomment this after testing
 // const usdaToken = defaultTokens[4];
@@ -47,7 +48,7 @@ export function SwapView() {
   const { data: balanceOut = "0", isLoading: balanceOutLoading } = useTokenBalance(receiveToken, activeAddress);
 
   const amountIn = useMemo(() => {
-    if (!valueIn) return "";
+    if (!valueIn || !sendToken) return "";
     return BigNumber(valueIn).shiftedBy(sendToken.Denomination).toFixed();
   }, [valueIn, sendToken]);
 
@@ -63,7 +64,7 @@ export function SwapView() {
     return "";
   }, [valueIn, balanceIn]);
 
-  const { selectedPoolInfo, isLoading } = usePoolForTokenPair({
+  const { selectedPoolInfo, isLoading, error } = usePoolForTokenPair({
     tokenIn: sendToken?.processId,
     tokenOut: receiveToken?.processId,
     slippage: slippage,
@@ -71,7 +72,7 @@ export function SwapView() {
   });
 
   const valueOut = useMemo(() => {
-    if (!valueIn || !selectedPoolInfo?.quoteOutput?.amountOut) return "";
+    if (!valueIn || !selectedPoolInfo?.quoteOutput?.amountOut || !receiveToken) return "";
     return BigNumber(selectedPoolInfo?.quoteOutput?.amountOut || "0")
       .shiftedBy(-receiveToken.Denomination)
       .toFixed();
@@ -123,7 +124,7 @@ export function SwapView() {
 
     return {
       hasChanged: defiFeeDetails.feeHasChanged,
-      originalFee: `${originalFee.toFixed(8)} ${sendToken.Ticker}`,
+      originalFee: `${originalFee.toFixed(8)}`,
       finalFee: `${finalFee.toFixed(8)} ${sendToken.Ticker}`,
     };
   }, [selectedPoolInfo, sendToken]);
@@ -154,7 +155,7 @@ export function SwapView() {
       sendToken,
       receiveToken,
       wanderFee,
-      valueIn,
+      amountIn,
     } satisfies SwapData;
 
     await TempTransactionStorage.set("swap-data", swapData);
@@ -214,7 +215,7 @@ export function SwapView() {
                 Slippage
               </Text>
               <Flex gap={4} align="center" justify="center">
-                <Text size="sm" weight="medium" noMargin color={theme.secondaryText}>
+                <Text variant="secondary" size="sm" weight="medium" noMargin>
                   {slippage}%{" "}
                 </Text>
                 <AutoTag slippage={slippage} />

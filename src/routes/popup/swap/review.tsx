@@ -14,11 +14,24 @@ import { TempTransactionStorage } from "~utils/storage";
 import type { SwapData } from "./utils/swap.types";
 import BigNumber from "bignumber.js";
 import { formatBalance } from "~utils/format";
+import { usePoolQuote } from "./utils/swap.hooks";
 
 export function SwapReviewView() {
   const [swapData] = useStorage<SwapData>({ key: "swap-data", instance: TempTransactionStorage });
 
-  const { selectedPoolInfo, sendToken, receiveToken, wanderFee, slippage, valueIn } = swapData || {};
+  const { sendToken, receiveToken, wanderFee, slippage, amountIn } = swapData || {};
+
+  const { selectedPoolInfo: selectedPoolInfoQuote, isLoading } = usePoolQuote({
+    tokenIn: sendToken?.processId,
+    tokenOut: receiveToken?.processId,
+    slippage,
+    amountIn,
+    pool: swapData?.selectedPoolInfo?.pool,
+  });
+
+  const selectedPoolInfo = useMemo(() => {
+    return selectedPoolInfoQuote || swapData?.selectedPoolInfo;
+  }, [selectedPoolInfoQuote, swapData?.selectedPoolInfo]);
 
   const rate = useMemo(() => {
     if (!selectedPoolInfo?.quoteOutput || !sendToken || !receiveToken) return "--";
@@ -59,6 +72,11 @@ export function SwapReviewView() {
     return fees.join(" + ");
   }, [selectedPoolInfo, sendToken, receiveToken]);
 
+  const valueIn = useMemo(() => {
+    if (!amountIn || !sendToken) return "";
+    return BigNumber(amountIn).shiftedBy(-sendToken.Denomination).toFixed();
+  }, [amountIn, sendToken]);
+
   const valueOutFormatted = useMemo(() => {
     if (!valueIn || !selectedPoolInfo?.quoteOutput?.amountOut || !receiveToken) return formatBalance("0");
 
@@ -84,10 +102,10 @@ export function SwapReviewView() {
         <Wrapper>
           <WrapperContent>
             <Flex direction="row" gap={8} align="center" justify="center" style={{ height: "100%" }}>
-              <Text variant="secondary" size="lg" noMargin>
+              <Text variant="secondary" noMargin>
                 Loading swap data...
               </Text>
-              <Loading style={{ height: 24, width: 24 }} />
+              <Loading style={{ height: 20, width: 20 }} />
             </Flex>
           </WrapperContent>
         </Wrapper>
@@ -131,6 +149,7 @@ export function SwapReviewView() {
                 title={"Provider"}
                 value={selectedPoolInfo?.pool?.poolType === "botega" ? "Botega" : "Permaswap"}
               />
+              <TransactionDetailItem title={"Est. Swap Time"} value={"15s"} />
               <TransactionDetailItem title={"Network fee"} value={networkFee} />
               <TransactionDetailItem
                 title={"Wander Fee"}
@@ -144,14 +163,27 @@ export function SwapReviewView() {
                   </Flex>
                 }
               />
-              <TransactionDetailItem title={"Slippage"} value={<AutoTag slippage={slippage || 0.5} />} />
-              <TransactionDetailItem title={"Price Impact"} value={selectedPoolInfo?.priceImpact || "--"} />
+              <TransactionDetailItem
+                title={"Slippage"}
+                value={
+                  <Flex gap={4} align="center" justify="center">
+                    <Text variant="secondary" size="sm" weight="medium" noMargin>
+                      {slippage}%{" "}
+                    </Text>
+                    <AutoTag slippage={slippage} />
+                  </Flex>
+                }
+              />
+              <TransactionDetailItem
+                title={"Price Impact"}
+                value={selectedPoolInfo?.priceImpact ? `${selectedPoolInfo.priceImpact}%` : "--"}
+              />
             </Flex>
           </Flex>
         </WrapperContent>
 
         <Flex gap={8}>
-          <Button style={{ flex: 1 }} disabled={false} loading={false} onClick={() => {}} fullWidth>
+          <Button style={{ flex: 1 }} disabled={isLoading} loading={isLoading} onClick={() => {}} fullWidth>
             {browser.i18n.getMessage("swap")}
           </Button>
         </Flex>
