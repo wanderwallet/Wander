@@ -6,7 +6,7 @@ import { Flex } from "~components/common/Flex";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { useTransactions } from "~utils/agents/hooks";
 import dayjs from "dayjs";
-import { WAR_PROCESS_ID, WUSDC_PROCESS_ID } from "~tokens/aoTokens/ao";
+import { WAR_PROCESS_ID, WUSDC_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 import { SvgImageWithBackground } from "../components/SvgImage";
 import aoLogo from "url:/assets/ecosystem/ao-logo.svg";
 import WarIcon from "url:/assets/ecosystem/war.png";

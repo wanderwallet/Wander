@@ -9,11 +9,12 @@ import browser from "webextension-polyfill";
 import styled from "styled-components";
 import copy from "copy-to-clipboard";
 import { formatAddress } from "~utils/format";
-import { defaultTokens, type TokenInfo } from "~tokens/aoTokens/ao";
+import { type TokenInfo } from "~tokens/aoTokens/ao";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { Flex } from "~components/common/Flex";
 import { RemoveButton } from "~routes/popup/settings/wallets/[address]";
 import { TokenLogo } from "~components/popup/TokenLogo";
+import { defaultTokens } from "~tokens/aoTokens/ao.constants";
 
 export interface TokenSettingsDashboardViewParams {
   id: string;

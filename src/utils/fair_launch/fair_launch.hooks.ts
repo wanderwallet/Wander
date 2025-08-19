@@ -5,7 +5,7 @@ import { useActiveAddress } from "~wallets/hooks";
 import { useMemo } from "react";
 import { PI_FLP_ID } from "./fair_launch.constants";
 import type { FlpTokenInfo } from "./fair_launch.types";
-import { defaultTokens } from "~tokens/aoTokens/ao";
+import { defaultTokens } from "~tokens/aoTokens/ao.constants";
 
 const arToken = defaultTokens[0];
 

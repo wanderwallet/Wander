@@ -3,9 +3,10 @@ import { Image } from "~components/common/Image/Image";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { getUserAvatar } from "~lib/avatar";
 import type { Token } from "~tokens/token";
-import { AR_LOGO, AR_PROCESS_ID, type TokenInfo } from "~tokens/aoTokens/ao";
+import type { TokenInfo } from "~tokens/aoTokens/ao";
 import { FULL_HISTORY, useGateway } from "~gateways/wayfinder";
 import { concatGatewayURL } from "~gateways/utils";
+import { AR_PROCESS_ID, AR_LOGO } from "~tokens/aoTokens/ao.constants";
 
 import tokenPlaceholder from "url:/assets/images/tokens/loading-token.svg?no-inline";
 import arLogoLight from "url:/assets/ar/ar-logo-light.svg";
