@@ -29,7 +29,7 @@ const LOG_GROUPS_ENABLED: Record<LOG_GROUP, boolean> = {
   [LOG_GROUP.SETUP]: false,
   [LOG_GROUP.WALLET_GENERATION]: false,
   [LOG_GROUP.SESSION]: false,
-  [LOG_GROUP.STORAGE]: process.env.NODE_ENV === "development",
+  [LOG_GROUP.STORAGE]: false,
   [LOG_GROUP.AGENTS]: false,
   [LOG_GROUP.TIERS]: false,
   [LOG_GROUP.TRANSAK]: false,
