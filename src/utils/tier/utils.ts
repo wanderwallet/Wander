@@ -1,5 +1,5 @@
 import { dryrun, message } from "@permaweb/aoconnect/browser";
-import { createDataItemSigner, getTagValue, Id } from "~tokens/aoTokens/ao";
+import { createDataItemSigner, getTagValue } from "~tokens/aoTokens/ao";
 import { tierIdToTierName, TIER_PROCESS_ID } from "./constants";
 import type { ActiveTier, DefiFeeDetails, Tier, WalletSavings } from "./types";
 import { defiFeePercent, defiFeeReductionsInPercent } from "./constants";
@@ -9,7 +9,8 @@ import { freeDecryptedWallet } from "~wallets/encryption";
 import { isLocalWallet } from "~utils/assertions";
 import { ExtensionStorage } from "~utils/storage";
 import { scheduleRefreshWalletLifetimeSavings } from "./alarms";
-import { retryWithDelay, withRetry } from "~utils/promises/retry";
+import { retryWithDelay } from "~utils/promises/retry";
+import { Id } from "~tokens/aoTokens/ao.constants";
 
 const ONE_HUNDRED = BigNumber(100);
 const THREE_HOURS_MS = 10_800_000;

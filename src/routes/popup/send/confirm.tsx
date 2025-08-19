@@ -20,12 +20,12 @@ import { getActiveKeyfile, getActiveWallet, type StoredWallet } from "~wallets";
 import { isLocalWallet } from "~utils/assertions";
 import { decryptWallet, freeDecryptedWallet } from "~wallets/encryption";
 import { EventType, PageType, trackEvent, trackPage } from "~utils/analytics";
-import { concatGatewayURL, getArweaveLink } from "~gateways/utils";
+import { concatGatewayURL } from "~gateways/utils";
 import type { JWKInterface } from "@dha-team/arbundles";
 import { AutoContactPic, generateProfileIcon, ProfilePicture } from "~components/Recipient";
 import { formatFiatBalance, fractionedToBalance } from "~tokens/currency";
 import { useContact } from "~contacts/hooks";
-import { AR_PROCESS_ID, sendAoTransfer, sendAoTransferKeystone, type TokenInfo } from "~tokens/aoTokens/ao";
+import { sendAoTransfer, sendAoTransferKeystone, type TokenInfo } from "~tokens/aoTokens/ao";
 import { useAo } from "~tokens/hooks";
 import { useActiveWallet } from "~wallets/hooks";
 import { UR } from "@ngraveio/bc-ur";
@@ -54,6 +54,7 @@ import { stringToBuffer } from "arweave/web/lib/utils";
 import useSetting from "~settings/hook";
 import { Flex } from "~components/common/Flex";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import { AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 
 export interface ConfirmViewParams {
   token: string;

@@ -31,15 +31,9 @@ import { ErrorTypes } from "~utils/error/error.utils";
 import { LinkExternal02 } from "@untitled-ui/icons-react";
 import { AdaptiveBalanceDisplay } from "~components/AdaptiveBalanceDisplay";
 import { useTokenPrice } from "~tokens/hooks";
-import {
-  AO_AUTHORITY_ID,
-  AR_PROCESS_ID,
-  AR_TOKEN_INFO,
-  fetchTokenByProcessId,
-  getTagValue,
-  type TokenInfo,
-} from "~tokens/aoTokens/ao";
+import { fetchTokenByProcessId, getTagValue, type TokenInfo } from "~tokens/aoTokens/ao";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import { AO_AUTHORITY_ID, AR_TOKEN_INFO, AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 
 // pull contacts and check if to address is in contacts
 
