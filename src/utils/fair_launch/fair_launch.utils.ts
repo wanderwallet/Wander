@@ -14,7 +14,7 @@ import { ExtensionStorage } from "~utils/storage";
 import { LOG_GROUP, log } from "~utils/log/log.utils";
 import { PI_FLP_ID } from "./fair_launch.constants";
 import { KeystoneSigner } from "~wallets/hardware/keystone";
-import type { WNDR_PROCESS_ID, Id, Owner } from "~tokens/aoTokens/ao.constants";
+import { Id, Owner, WNDR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 
 interface RawFlpToken {
   flp_token_name: string;
