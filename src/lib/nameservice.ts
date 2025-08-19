@@ -7,7 +7,7 @@ import { createExtensionStoragePersister } from "~utils/query/createExtensionSto
 export const NAME_SERVICE_QUERY_CLIENT = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes
+      staleTime: 60 * 60 * 1000, // 1 hour
       gcTime: 60 * 60 * 1000, // 1 hour
       retry: 1,
       refetchOnWindowFocus: false,
@@ -40,7 +40,7 @@ async function getNameServiceProfile(walletAddress: string): Promise<NameService
     queryKey: ["name-service-profile", walletAddress],
     queryFn: async () =>
       (await getArNSProfile(walletAddress)) || null,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 60 * 60 * 1000,
   });
 
   return profile;
@@ -74,7 +74,7 @@ export function useNameServiceProfiles(walletAddresses: string[]) {
     {
       queryKey: ["name-service-profiles", walletAddresses],
       queryFn: async () => getNameServiceProfiles(walletAddresses),
-      staleTime: 5 * 60 * 1000,
+      staleTime: 60 * 60 * 1000,
     },
     NAME_SERVICE_QUERY_CLIENT,
   );
@@ -92,7 +92,7 @@ export function useNameServiceProfile(walletAddress: string) {
     {
       queryKey: ["name-service-profile-hook", walletAddress],
       queryFn: async () => getNameServiceProfile(walletAddress),
-      staleTime: 5 * 60 * 1000,
+      staleTime: 60 * 60 * 1000,
       refetchOnWindowFocus: false,
       enabled: !!walletAddress,
     },
