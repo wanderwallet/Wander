@@ -9,7 +9,6 @@ import type { CommonRouteProps } from "~wallets/router/router.types";
 import { useLocation } from "~wallets/router/router.utils";
 import type { PurchaseType } from "./types";
 import { LinkExternal02 } from "@untitled-ui/icons-react";
-import { decodeDomainToASCII } from "./utils";
 import { ProfileName } from "~components/ProfileName";
 
 export interface ArNSPurchaseSuccessParams {
@@ -84,7 +83,12 @@ export const ArNSPurchaseSuccessView = ({
       <div style={{ flex: 1 }}></div>
       <div style={{ marginTop: "auto", paddingTop: "1rem" }}>
         <Flex direction="column" gap="0.5rem">
-          <ButtonV2 onClick={() => navigate(PopupPaths.Home)} fullWidth>
+          <ButtonV2
+            onClick={() => {
+              navigate(PopupPaths.Home);
+              navigate(PopupPaths.ArNSManage);
+            }}
+            fullWidth>
             Manage ArNS
           </ButtonV2>
           <ButtonV2 secondary onClick={() => navigate(PopupPaths.Home)} fullWidth>

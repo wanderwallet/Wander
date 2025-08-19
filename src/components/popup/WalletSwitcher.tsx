@@ -82,14 +82,11 @@ export default function WalletSwitcher({ open, close }: Props) {
     setUpdateAvatars(true);
   }, [storedWallets]);
 
-  // load ANS data for wallet
-  const [loadedAns, setLoadedAns] = useState(true);
-
   // update avatars flag
   const [updateAvatars, setUpdateAvatars] = useState(false);
 
   useAsyncEffect(async () => {
-    if (wallets.length === 0 || !updateAvatars) return;
+    if (wallets.length === 0 || !updateAvatars || !profiles) return;
 
     // get ans profiles
     const gateway = await findGateway({ startBlock: 0 });
@@ -108,7 +105,6 @@ export default function WalletSwitcher({ open, close }: Props) {
       }),
     );
 
-    setLoadedAns(true);
     setUpdateAvatars(false);
   }, [profiles, wallets.length, updateAvatars]);
 
