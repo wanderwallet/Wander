@@ -54,6 +54,7 @@ import { stringToBuffer } from "arweave/web/lib/utils";
 import useSetting from "~settings/hook";
 import { Flex } from "~components/common/Flex";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import { AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 
 export interface ConfirmViewParams {
   token: string;
