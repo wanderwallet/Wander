@@ -14,7 +14,7 @@ import {
 } from "~notifications/utils";
 
 export async function handleNotificationsAlarm(alarm?: Alarms.Alarm) {
-  if (alarm && !alarm.name.startsWith("notifications")) return;
+  if (!alarm?.name.startsWith("notifications")) return;
 
   const notificationSetting: boolean = await ExtensionStorage.get("setting_notifications");
   let aoNotificationSetting: string[] | undefined = await ExtensionStorage.get("setting_notifications_customize");

@@ -36,7 +36,7 @@ import { gql } from "~gateways/api";
 import BigNumber from "bignumber.js";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { convertAnnouncementsToTransactions } from "~utils/announcements";
-import { AR_PROCESS_ID } from "~tokens/aoTokens/ao";
+import { AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 
 /**
  * Wallets with details hook

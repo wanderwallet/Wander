@@ -12,14 +12,14 @@ import Tabs from "~components/Tabs";
 import { useContacts, type Recipient } from "~contacts/hooks";
 import { formatAddress, isAddressFormat } from "~utils/format";
 import { calculateDaysSinceTimestamp, humanizeTimestampForRecipient } from "~utils/timestamp";
-import { isANS, getAnsProfileByLabel } from "~lib/ans";
 import { searchArNSName } from "~lib/arns";
 import SliderMenu from "~components/SliderMenu";
 import { useLocation } from "~wallets/router/router.utils";
 import { ExtensionStorage, TempTransactionStorage } from "~utils/storage";
-import { AR_PROCESS_ID, type TokenInfo } from "~tokens/aoTokens/ao";
+import type { TokenInfo } from "~tokens/aoTokens/ao";
 import { useStorage } from "@plasmohq/storage/hook";
 import { NoAvatarIcon } from "~components/Avatar";
+import { AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 
 // default size for the qty text
 export const arPlaceholder: TokenInterface = {
@@ -264,18 +264,6 @@ export function SendView({ params: { id } }: SendViewProps) {
         }
         recipientAddress = input;
         setRecipient({ address: input });
-      } else if (isANS(input)) {
-        const result = await getAnsProfileByLabel(input.slice(0, -3));
-        if (!result) {
-          setToast({
-            type: "error",
-            content: browser.i18n.getMessage("incorrect_address"),
-            duration: 2400,
-          });
-        } else {
-          recipientAddress = result.user;
-          setRecipient({ address: result.user });
-        }
       } else if (input.startsWith("ar://")) {
         const result = await searchArNSName(input.slice(5));
         if (result.success) {

@@ -3,7 +3,13 @@ import browser from "webextension-polyfill";
 import { useMemo } from "react";
 import { ActionButtons, type ButtonConfig } from "../ActionButtons";
 import { ReceiveIcon } from "~components/icons/ReceiveIcon";
-import { AO_PROCESS_ID, AR_PROCESS_ID, PI_PROCESS_ID, WAR_PROCESS_ID, WUSDC_PROCESS_ID } from "~tokens/aoTokens/ao";
+import {
+  AO_PROCESS_ID,
+  AR_PROCESS_ID,
+  PI_PROCESS_ID,
+  WAR_PROCESS_ID,
+  WUSDC_PROCESS_ID,
+} from "~tokens/aoTokens/ao.constants";
 import { useFairLaunchTokens } from "~utils/fair_launch/fair_launch.hooks";
 import { tokenData } from "liquidops";
 

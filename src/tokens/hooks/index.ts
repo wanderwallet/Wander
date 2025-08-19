@@ -1,14 +1,8 @@
 import { useQuery, useQueries } from "@tanstack/react-query";
 import {
-  AO_PROCESS_ID,
-  AR_PROCESS_ID,
-  EXP_PROCESS_ID,
   fetchTokenBalance,
   getBotegaPrice,
   getBotegaPrices,
-  PI_PROCESS_ID,
-  USDA_PROCESS_ID,
-  WNDR_PROCESS_ID,
   type TokenInfo,
   type TokenInfoWithBalance,
 } from "../aoTokens/ao";
@@ -22,6 +16,14 @@ import { useArPrice } from "~lib/coingecko";
 import { defaultConfig } from "../aoTokens/config";
 import { connect } from "@permaweb/aoconnect";
 import { retryWithDelay } from "~utils/promises/retry";
+import {
+  AR_PROCESS_ID,
+  AO_PROCESS_ID,
+  WNDR_PROCESS_ID,
+  PI_PROCESS_ID,
+  USDA_PROCESS_ID,
+  EXP_PROCESS_ID,
+} from "~tokens/aoTokens/ao.constants";
 
 export const defaultOptions = {
   refetchInterval: 300_000,
@@ -177,7 +179,10 @@ export function useTotalFiatBalance() {
 
   const conversionRateQuery = useQueryCache<number>(["conversionRate", currency]);
 
-  const tokenIds = tokens.map((token) => token.id).filter((id) => id !== EXP_PROCESS_ID && id !== AR_PROCESS_ID);
+  const tokenIds = useMemo(
+    () => tokens.map((token) => token.id).filter((id) => id !== EXP_PROCESS_ID && id !== AR_PROCESS_ID),
+    [tokens],
+  );
 
   const pricesQuery = useQueryCache<Record<string, number>>(["tokenPrices", tokenIds?.slice().sort().join(",")]);
 
@@ -194,14 +199,18 @@ export function useTotalFiatBalance() {
 
     const conversionRate = conversionRateQuery.data || 1;
 
-    tokens.forEach((token, index) => {
-      const balance = tokenBalanceQueries[index].data;
-      const price = token.id === AR_PROCESS_ID ? +arPrice : pricesQuery.data?.[token.id] || 0;
+    for (let i = 0; i < tokens.length; i++) {
+      const token = tokens[i];
+      const balance = tokenBalanceQueries[i].data;
+      if (!balance || balance === "0") continue;
 
-      if (balance && price) {
-        total = total.plus(BigNumber(balance).times(price).times(conversionRate));
-      }
-    });
+      const isArToken = token.id === AR_PROCESS_ID;
+      const price = +(isArToken ? arPrice : pricesQuery.data?.[token.id] || 0);
+      if (!price) continue;
+
+      const multiplier = isArToken ? 1 : conversionRate;
+      total = total.plus(BigNumber(balance).times(price).times(multiplier));
+    }
 
     return total;
   }, [tokens, address, conversionRateQuery.data, pricesQuery.data, tokenBalanceQueries, arPrice]);
