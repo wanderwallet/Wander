@@ -36,7 +36,7 @@ export const DEFAULT_ANT_LOGO = "Sie_26dvgyok0PZD_-iQAFOhOd5YxDTkczOLoqTTL_A";
 export const ARNS_QUERY_CLIENT = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes
+      staleTime: 60 * 60 * 1000, // 1 hour
       retry: 1,
       refetchOnWindowFocus: false,
     },
@@ -186,7 +186,7 @@ export async function getArNSProfile(walletAddress: string): Promise<NameService
     const result = await ARNS_QUERY_CLIENT.fetchQuery({
       queryKey: ["arns-profile", walletAddress],
       queryFn: () => fetchArNSProfile(walletAddress),
-      staleTime: 5 * 60 * 1000, // 5 minutes
+      staleTime: 60 * 60 * 1000, // 1 hour
     });
 
     return result;
