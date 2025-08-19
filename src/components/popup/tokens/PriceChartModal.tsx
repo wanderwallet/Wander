@@ -14,7 +14,7 @@ import { formatBalance } from "~utils/format";
 import { Flex } from "~components/common/Flex";
 import { LineChart } from "../chart/LineChart";
 import { useTokenPrice } from "~tokens/hooks";
-import { AO_PROCESS_ID, AR_PROCESS_ID } from "~tokens/aoTokens/ao";
+import { AO_PROCESS_ID, AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 
 interface PriceChartModalProps {
   isOpen: boolean;
