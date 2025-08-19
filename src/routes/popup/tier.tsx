@@ -18,7 +18,6 @@ import { useActiveTier, useWalletLifetimeSavings } from "~utils/tier/hooks";
 import { balanceToFractioned } from "~tokens/currency";
 import { TiersPopup } from "~components/popup/tier/TiersPopup";
 import { TierProgress } from "~components/popup/tier/TierProgress";
-import { defaultTokens, WNDR_PROCESS_ID } from "~tokens/aoTokens/ao";
 import { useActiveAddress, useTokenTransactions } from "~wallets/hooks";
 import { TierTransactionItemComponent } from "~components/popup/home/Transactions";
 import type { Tier } from "~utils/tier/types";
@@ -28,6 +27,7 @@ import CustomizableStars from "~components/popup/tier/CustomizableStars";
 import { formatBalance } from "~utils/format";
 import { ParseTextWithLinks } from "~components/common/ParseTextWithLinks";
 import { Link } from "~components/common/Link";
+import { defaultTokens, WNDR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 
 const stars = defaultStars.toSpliced(1, 1);
 const wanderTokenInfo = defaultTokens[3];

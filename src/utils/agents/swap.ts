@@ -16,14 +16,7 @@ import {
 import { getActiveAddress } from "~wallets/wallets.utils";
 import { getWallets } from "~wallets";
 import BigNumber from "bignumber.js";
-import {
-  AO_PROCESS_ID,
-  defaultTokens,
-  fetchTokenBalance,
-  getAOTokenPrice,
-  getTagValue,
-  sendAoTransferForWallet,
-} from "~tokens/aoTokens/ao";
+import { fetchTokenBalance, getAOTokenPrice, getTagValue, sendAoTransferForWallet } from "~tokens/aoTokens/ao";
 import { connect } from "@permaweb/aoconnect";
 import { defaultConfig } from "~tokens/aoTokens/config";
 import { defaultOptions } from "~tokens/hooks";
@@ -45,6 +38,7 @@ import { EventType, trackDirect } from "~utils/analytics";
 import { getActiveTier, saveWalletLifetimeSavings } from "~utils/tier/utils";
 import { queryClient } from "~utils/tanstack";
 import { balanceToFractioned } from "~tokens/currency";
+import { AO_PROCESS_ID, defaultTokens } from "~tokens/aoTokens/ao.constants";
 
 let isSwapExecutionInProgress = false;
 let isSchedulingInProgress = false;

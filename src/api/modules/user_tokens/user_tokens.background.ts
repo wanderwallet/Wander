@@ -1,6 +1,7 @@
 import type { BackgroundModuleFunction } from "~api/background/background-modules";
 import { ExtensionStorage, PersistentStorage } from "~utils/storage";
-import { AR_PROCESS_ID, getAoTokenBalance, type TokenInfo, type TokenInfoWithBalance } from "~tokens/aoTokens/ao";
+import { getAoTokenBalance, type TokenInfo, type TokenInfoWithBalance } from "~tokens/aoTokens/ao";
+import { AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 
 const background: BackgroundModuleFunction<TokenInfoWithBalance[] | TokenInfo[]> = async (
   _,

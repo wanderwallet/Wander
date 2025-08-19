@@ -1,5 +1,6 @@
 import { PersistentStorage } from "~utils/storage";
-import { AO_OLD_PROCESS_ID, AR_PROCESS_ID, defaultTokens, type TokenInfo } from "./aoTokens/ao";
+import { type TokenInfo } from "./aoTokens/ao";
+import { defaultTokens, AO_OLD_PROCESS_ID, AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 
 export interface Token {
   id: string;

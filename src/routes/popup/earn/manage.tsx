@@ -5,7 +5,6 @@ import { Section, Button, Text, Tooltip, Loading, useToasts } from "@arconnect/c
 import browser from "webextension-polyfill";
 import { ArrowUpRight, HelpCircle, InfoCircle, Plus, Trash02 } from "@untitled-ui/icons-react";
 import { useAOYieldDelegations, useDelegationInfo, useFairLaunchTokens } from "~utils/fair_launch/fair_launch.hooks";
-import { AO_PROCESS_ID, defaultTokens } from "~tokens/aoTokens/ao";
 import { PI_FLP_ID } from "~utils/fair_launch/fair_launch.constants";
 import { useActiveAddress, useActiveWallet } from "~wallets/hooks";
 import { Flex } from "~components/common/Flex";
@@ -27,6 +26,7 @@ import Arweave from "arweave";
 import { EventType, PageType, trackEvent, trackPage } from "~utils/analytics";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { TokenLogo } from "~components/popup/TokenLogo";
+import { defaultTokens, AO_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 
 export function ManageEarningsView() {
   const theme = useTheme();

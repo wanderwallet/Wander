@@ -3,7 +3,7 @@ import { formatAddress } from "~utils/format";
 import type { Token } from "~tokens/token";
 import { useLocation } from "~wallets/router/router.utils";
 import { useMemo } from "react";
-import { AR_PROCESS_ID } from "~tokens/aoTokens/ao";
+import { AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 import { TokenLogo } from "~components/popup/TokenLogo";
 
 export interface TokenListItemProps {

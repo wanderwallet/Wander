@@ -1,7 +1,7 @@
 import { arPlaceholder } from "~routes/popup/send";
 import { ExtensionStorage } from "./storage";
 import type { Token } from "~tokens/token";
-import { AR_PROCESS_ID } from "~tokens/aoTokens/ao";
+import { AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 import type { Transaction } from "~api/background/handlers/alarms/notifications/notifications-alarm.utils";
 
 export const fetchNotifications = async (address: string) => {
