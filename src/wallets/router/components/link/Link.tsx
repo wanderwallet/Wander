@@ -1,18 +1,14 @@
 import type React from "react";
 import type { PropsWithChildren } from "react";
 import { Link as Wink } from "wouter";
-import type { WanderRoutePath } from "~wallets/router/router.types";
+import browser from "~iframe/browser";
+import type { ExternalURL, WanderRoutePath } from "~wallets/router/router.types";
 import clsx from "clsx";
 
 import styles from "./Link.module.scss";
 
-function disabledOnClickHandler(e: React.MouseEvent<HTMLAnchorElement>) {
-  e.preventDefault();
-}
-
 export interface LinkProps extends PropsWithChildren {
-  to: WanderRoutePath;
-  rel?: string;
+  to: WanderRoutePath | ExternalURL;
   state?: unknown;
   onClick?: React.MouseEventHandler<HTMLAnchorElement>;
   className?: string;
@@ -20,15 +16,41 @@ export interface LinkProps extends PropsWithChildren {
   disabled?: boolean;
 }
 
-export function Link({ to, onClick: onClickProp, className, disabled, ...props }: LinkProps) {
-  const onClick = disabled ? disabledOnClickHandler : onClickProp;
+export function Link({ to, state, onClick, className, style, disabled, children }: LinkProps) {
+  const isExternalLink = !to?.startsWith("/");
 
-  return (
-    <Wink
-      {...props}
-      to={to}
-      onClick={onClick}
-      className={clsx(className, styles.root, { [styles.disabled]: disabled })}
+  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (disabled) {
+      e.preventDefault();
+      return;
+    }
+
+    if (onClick) onClick(e);
+
+    if (!isExternalLink) return;
+
+    if (e.type !== "click" && (e.type !== "mousedown" || e.button !== 1)) return;
+
+    e.preventDefault();
+
+    browser.tabs.create({
+      url: to,
+    });
+  };
+
+  const rootClassName = clsx(className, styles.root, { [styles.disabled]: disabled });
+
+  return isExternalLink ? (
+    <a
+      className={rootClassName}
+      style={style}
+      rel="noopener noreferrer"
+      target="_blank"
+      onClick={handleLinkClick}
+      onMouseDown={handleLinkClick}
+      children={children}
     />
+  ) : (
+    <Wink className={rootClassName} style={style} to={to} state={state} onClick={handleLinkClick} children={children} />
   );
 }

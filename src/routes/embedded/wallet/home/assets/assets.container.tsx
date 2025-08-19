@@ -4,9 +4,11 @@ import { AssetItem } from "./asset-item";
 import type { TokenInfoWithBalance } from "~tokens/aoTokens/ao";
 
 export function WalletHomeAssets({
+  activeWalletAddress,
   tokens,
   prices,
 }: {
+  activeWalletAddress: string;
   tokens: TokenInfoWithBalance[];
   prices: Record<string, number>;
 }) {
@@ -28,6 +30,7 @@ export function WalletHomeAssets({
     <>
       {displayedTokens.map((token) => (
         <AssetItem
+          activeWalletAddress={activeWalletAddress}
           key={token.id}
           id={token.id}
           defaultLogo={token.Logo}
