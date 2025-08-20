@@ -28,6 +28,8 @@ export interface RouteConfig<P extends RoutePath | RouteOverride = RoutePath | R
   authType?: RouteAuthType;
 }
 
+export type ExternalURL = `https://${string}`;
+
 export type WanderRoutePath =
   | WelcomeRoutePath
   | AuthRoutePath
