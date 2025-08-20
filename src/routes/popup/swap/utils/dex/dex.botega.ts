@@ -1,5 +1,5 @@
-import { connect, createDataItemSigner } from "@permaweb/aoconnect";
-import { getTagValue } from "~tokens/aoTokens/ao";
+import { connect } from "@permaweb/aoconnect";
+import { createDataItemSigner, getTagValue } from "~tokens/aoTokens/ao";
 import { defaultConfig } from "~tokens/aoTokens/config";
 import { getActiveAddress, getActiveKeyfile, type DecryptedWallet } from "~wallets";
 import BigNumber from "bignumber.js";
@@ -15,6 +15,7 @@ import { isLocalWallet } from "~utils/assertions";
 import { getLinkedMessages, OrderError } from "./dex.utils";
 import { retryWithDelay } from "~utils/promises/retry";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
+import { queryClient } from "~utils/tanstack";
 
 /**
  * Fetch the result of a swap message
@@ -104,14 +105,11 @@ export async function executeSwap({ tokenIn, amountIn, minAmountOut, poolId }: S
       ],
     });
 
-    const [tokensReceived, confirmationId] = await retryWithDelay(
-      () => readSwapResult(transferId),
-      1000,
-      2000,
-      (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 30000),
-    );
+    // Invalidate transfered token balance
+    const activeAddress = await getActiveAddress();
+    queryClient.invalidateQueries({ queryKey: ["tokenBalance", tokenIn, activeAddress] });
 
-    console.log({ tokensReceived, confirmationId });
+    return transferId;
   } catch (err) {
     log(LOG_GROUP.SWAP, "Error executing swap", err);
     throw err;
@@ -151,8 +149,25 @@ export async function getLiquidity({ poolId, tokenIn, tokenOut }: GetLiquidityPa
   } satisfies GetLiquidityResponse;
 }
 
+export async function waitForSwapResult(transferId: string): Promise<boolean> {
+  try {
+    await retryWithDelay(
+      () => readSwapResult(transferId),
+      1000,
+      2000,
+      (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    );
+
+    return true;
+  } catch (err) {
+    log(LOG_GROUP.SWAP, "Error waiting for swap result", err);
+    return false;
+  }
+}
+
 export const botega = {
   getExpectedOutput,
   executeSwap,
   getLiquidity,
+  waitForSwapResult,
 };

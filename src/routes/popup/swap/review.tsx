@@ -8,7 +8,7 @@ import { TokenLogo } from "~components/popup/TokenLogo";
 import { HorizontalLine } from "~components/HorizontalLine";
 import { AutoTag } from "./components/AutoTag";
 import { WanderFeeTag } from "./components/WanderFeeTag";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useStorage } from "@plasmohq/storage/hook";
 import { TempTransactionStorage } from "~utils/storage";
 import type { SwapData } from "./utils/swap.types";
@@ -19,9 +19,13 @@ import { useLocation } from "~wallets/router/router.utils";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import { TokenValueWithTooltip } from "./components/TokenValueWithTooltip";
 import { TransactionDetailItem } from "./components/TransactionDetailItem";
+import { botega } from "./utils/dex/dex.botega";
+import { permaswap } from "./utils/dex/dex.permaswap";
+import { log, LOG_GROUP } from "~utils/log/log.utils";
 
 export function SwapReviewView() {
   const { navigate } = useLocation();
+  const [isExecutingSwap, setIsExecutingSwap] = useState(false);
   const [swapData] = useStorage<SwapData>({ key: "swap-data", instance: TempTransactionStorage });
 
   const { sendToken, receiveToken, wanderFee, slippage, amountIn } = swapData || {};
@@ -32,6 +36,7 @@ export function SwapReviewView() {
     slippage,
     amountIn,
     pool: swapData?.selectedPoolInfo?.pool,
+    stopFetching: isExecutingSwap,
   });
 
   const selectedPoolInfo = useMemo(() => {
@@ -94,9 +99,26 @@ export function SwapReviewView() {
 
   const valueInFormatted = useMemo(() => formatBalance(valueIn || "0"), [valueIn]);
 
-  function handleSwap() {
-    TempTransactionStorage.set("swap-data", { ...swapData, selectedPoolInfo: selectedPoolInfoQuote });
-    navigate(PopupPaths.SwapProgress);
+  async function handleSwap() {
+    try {
+      setIsExecutingSwap(true);
+
+      const executeSwapFn = selectedPoolInfo?.pool?.poolType === "botega" ? botega.executeSwap : permaswap.executeSwap;
+      const transferId = await executeSwapFn({
+        tokenIn: sendToken?.processId,
+        tokenOut: receiveToken?.processId,
+        amountIn,
+        minAmountOut: selectedPoolInfo.quoteOutput.amountOut,
+        poolId: selectedPoolInfo.pool.poolId,
+      });
+
+      TempTransactionStorage.set("swap-data", { ...swapData, selectedPoolInfo: selectedPoolInfoQuote, transferId });
+      navigate(PopupPaths.SwapProgress);
+    } catch (err) {
+      log(LOG_GROUP.SWAP, "Error executing swap", err);
+    } finally {
+      setIsExecutingSwap(false);
+    }
   }
 
   if (!swapData) {
@@ -187,7 +209,12 @@ export function SwapReviewView() {
         </WrapperContent>
 
         <Flex gap={8}>
-          <Button style={{ flex: 1 }} disabled={isLoading} loading={isLoading} onClick={handleSwap} fullWidth>
+          <Button
+            style={{ flex: 1 }}
+            disabled={isExecutingSwap || isLoading}
+            loading={isExecutingSwap || isLoading}
+            onClick={handleSwap}
+            fullWidth>
             {browser.i18n.getMessage("swap")}
           </Button>
         </Flex>

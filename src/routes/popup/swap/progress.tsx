@@ -3,7 +3,7 @@ import browser from "webextension-polyfill";
 import styled, { useTheme } from "styled-components";
 import HeadV2 from "~components/popup/HeadV2";
 import { Flex } from "~components/common/Flex";
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { useStorage } from "@plasmohq/storage/hook";
 import { TempTransactionStorage } from "~utils/storage";
 import type { SwapData } from "./utils/swap.types";
@@ -15,13 +15,18 @@ import { ArrowRight, LinkExternal02 } from "@untitled-ui/icons-react";
 import BigNumber from "bignumber.js";
 import { useLocation } from "~wallets/router/router.utils";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import { botega } from "./utils/dex/dex.botega";
+import { permaswap } from "./utils/dex/dex.permaswap";
+import { getActiveAddress } from "~wallets";
+import { queryClient } from "~utils/tanstack";
 
 export function SwapProgressView() {
   const theme = useTheme();
-  const { navigate } = useLocation();
+  const { navigate, back } = useLocation();
   const [swapData] = useStorage<SwapData>({ key: "swap-data", instance: TempTransactionStorage });
 
-  const { sendToken, receiveToken, amountIn, selectedPoolInfo } = swapData || {};
+  const { sendToken, receiveToken, amountIn, selectedPoolInfo, transferId } = swapData || {};
 
   const valueIn = useMemo(() => {
     if (!amountIn || !sendToken) return "";
@@ -40,11 +45,21 @@ export function SwapProgressView() {
 
   const valueInFormatted = useMemo(() => formatBalance(valueIn || "0"), [valueIn]);
 
-  useEffect(() => {
-    setTimeout(() => {
+  useAsyncEffect(async () => {
+    if (!transferId || !selectedPoolInfo) return;
+
+    const waitForSwapResultFn =
+      selectedPoolInfo?.pool?.poolType === "botega" ? botega.waitForSwapResult : permaswap.waitForSwapResult;
+
+    const isSuccess = await waitForSwapResultFn(transferId);
+    if (isSuccess) {
+      const activeAddress = await getActiveAddress();
+      queryClient.invalidateQueries({ queryKey: ["tokenBalance", receiveToken?.processId, activeAddress] });
       navigate(PopupPaths.SwapComplete);
-    }, 5000);
-  }, []);
+    } else {
+      back();
+    }
+  }, [transferId, selectedPoolInfo]);
 
   if (!swapData) {
     return (
@@ -96,7 +111,7 @@ export function SwapProgressView() {
           <Button
             variant="secondary"
             fullWidth
-            onClick={() => browser.tabs.create({ url: `https://www.ao.link/#/message/id` })}>
+            onClick={() => browser.tabs.create({ url: `https://www.ao.link/#/message/${transferId}` })}>
             AO Link
             <LinkExternal02 style={{ marginLeft: "8px" }} />
           </Button>

@@ -135,6 +135,7 @@ export interface WanderFee {
 }
 
 export interface SwapData {
+  transferId?: string;
   selectedPoolInfo: SelectedPoolInfo;
   sendToken: TokenInfo;
   receiveToken: TokenInfo;

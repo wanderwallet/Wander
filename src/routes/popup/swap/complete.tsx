@@ -27,7 +27,7 @@ export function SwapCompleteView() {
   const { navigate } = useLocation();
   const [swapData] = useStorage<SwapData>({ key: "swap-data", instance: TempTransactionStorage });
 
-  const { sendToken, receiveToken, wanderFee, slippage, amountIn, selectedPoolInfo } = swapData || {};
+  const { sendToken, receiveToken, wanderFee, slippage, amountIn, selectedPoolInfo, transferId } = swapData || {};
 
   const rate = useMemo(() => {
     if (!selectedPoolInfo?.quoteOutput || !sendToken || !receiveToken) return "--";
@@ -187,7 +187,7 @@ export function SwapCompleteView() {
           <Button
             variant="secondary"
             fullWidth
-            onClick={() => browser.tabs.create({ url: `https://www.ao.link/#/message/id` })}>
+            onClick={() => browser.tabs.create({ url: `https://www.ao.link/#/message/${transferId}` })}>
             AO Link
             <LinkExternal02 style={{ marginLeft: "8px" }} />
           </Button>

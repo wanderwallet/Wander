@@ -6,8 +6,8 @@ import type { Pool, SelectedPoolInfo, TokenSelectorType } from "./swap.types";
 import { useStorage } from "@plasmohq/storage/hook";
 import { ExtensionStorage } from "~utils/storage";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
-import { botega } from "./dex/swap.botega";
-import { permaswap } from "./dex/swap.permaswap";
+import { botega } from "./dex/dex.botega";
+import { permaswap } from "./dex/dex.permaswap";
 import type { GetLiquidityResponse } from "./dex/dex.types";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 
@@ -145,9 +145,10 @@ interface usePoolQuoteProps {
   slippage?: number;
   amountIn?: string;
   pool: Pool;
+  stopFetching?: boolean;
 }
 
-export function usePoolQuote({ tokenIn, tokenOut, slippage, amountIn, pool }: usePoolQuoteProps) {
+export function usePoolQuote({ tokenIn, tokenOut, slippage, amountIn, pool, stopFetching }: usePoolQuoteProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedPoolInfo, setSelectedPoolInfo] = useState<SelectedPoolInfo | null>(null);
@@ -204,14 +205,14 @@ export function usePoolQuote({ tokenIn, tokenOut, slippage, amountIn, pool }: us
   }, [tokenIn, tokenOut, slippage, amountIn, pool]);
 
   useEffect(() => {
-    if (!tokenIn || !tokenOut || !slippage || !amountIn || !pool) return;
+    if (!tokenIn || !tokenOut || !slippage || !amountIn || !pool || stopFetching) return;
 
     // fetchPoolQuote();
 
     const interval = setInterval(fetchPoolQuote, 10000);
 
     return () => clearInterval(interval);
-  }, [fetchPoolQuote, tokenIn, tokenOut, slippage, amountIn, pool]);
+  }, [fetchPoolQuote, tokenIn, tokenOut, slippage, amountIn, pool, stopFetching]);
 
   return { selectedPoolInfo, isLoading, error };
 }
