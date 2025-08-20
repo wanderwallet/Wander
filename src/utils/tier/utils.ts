@@ -1,7 +1,7 @@
 import { dryrun, message } from "@permaweb/aoconnect/browser";
 import { createDataItemSigner, getTagValue } from "~tokens/aoTokens/ao";
 import { tierIdToTierName, TIER_PROCESS_ID } from "./constants";
-import type { ActiveTier, DefiFeeDetails, Tier, WalletSavings } from "./types";
+import type { ActiveTier, ActiveTierFromApi, DefiFeeDetails, Tier, WalletSavings } from "./types";
 import { defiFeePercent, defiFeeReductionsInPercent } from "./constants";
 import BigNumber from "bignumber.js";
 import { getKeyfile, type DecryptedWallet } from "~wallets";
@@ -11,6 +11,7 @@ import { ExtensionStorage } from "~utils/storage";
 import { scheduleRefreshWalletLifetimeSavings } from "./alarms";
 import { retryWithDelay } from "~utils/promises/retry";
 import { Id } from "~tokens/aoTokens/ao.constants";
+import { CACHE_API } from "~constants/api";
 
 const ONE_HUNDRED = BigNumber(100);
 const THREE_HOURS_MS = 10_800_000;
@@ -28,6 +29,19 @@ export async function saveWalletLifetimeSavingsToStorage(walletAddress: string, 
   });
 }
 
+function isValidTierInfo(data: ActiveTierFromApi): data is ActiveTierFromApi {
+  return (
+    data &&
+    typeof data === "object" &&
+    typeof data.tier === "number" &&
+    typeof data.balance === "string" &&
+    typeof data.rank === "number" &&
+    typeof data.progress === "number" &&
+    typeof data.snapshotTimestamp === "number" &&
+    typeof data.totalHolders === "number"
+  );
+}
+
 export async function getActiveTier(walletAddress: string, retry = false): Promise<ActiveTier> {
   const savedActiveTier = await ExtensionStorage.get<ActiveTier>(`active_tier_${walletAddress}`);
 
@@ -39,27 +53,46 @@ export async function getActiveTier(walletAddress: string, retry = false): Promi
     return savedActiveTier;
   }
 
-  const dryrunParams = {
-    Id,
-    Owner: walletAddress,
-    process: TIER_PROCESS_ID,
-    tags: [{ name: "Action", value: "Get-Wallet-Info" }],
-  };
+  let data: ActiveTierFromApi;
 
-  const dryrunRes = retry
-    ? await retryWithDelay(
-        () => dryrun(dryrunParams),
-        3,
-        1000,
-        (attempt) => Math.min(1000 * 2 ** attempt, 30000),
-      )
-    : await dryrun(dryrunParams);
+  try {
+    const response = await fetch(`${CACHE_API}/api/tier-info?address=${walletAddress}`);
+    if (!response.ok) {
+      throw new Error("Failed to fetch tier info from cache API");
+    }
 
-  const message = dryrunRes.Messages?.[0];
-  const data = JSON.parse(message?.Data || "{}");
+    const responseData = await response.json();
 
-  if (data?.tier === undefined || data?.tier === null) {
-    throw new Error("No tier data found");
+    if (!isValidTierInfo(responseData)) {
+      throw new Error("Invalid tier info data format from cache API");
+    }
+
+    data = responseData;
+  } catch {
+    const dryrunParams = {
+      Id,
+      Owner: walletAddress,
+      process: TIER_PROCESS_ID,
+      tags: [{ name: "Action", value: "Get-Wallet-Info" }],
+    };
+
+    const dryrunRes = retry
+      ? await retryWithDelay(
+          () => dryrun(dryrunParams),
+          3,
+          1000,
+          (attempt) => Math.min(1000 * 2 ** attempt, 30000),
+        )
+      : await dryrun(dryrunParams);
+
+    const message = dryrunRes.Messages?.[0];
+    const parsedData = JSON.parse(message?.Data || "{}");
+
+    if (!isValidTierInfo(parsedData)) {
+      throw new Error("Invalid tier info data from WNDR tier process");
+    }
+
+    data = parsedData;
   }
 
   const activeTier = {
