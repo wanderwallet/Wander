@@ -1,9 +1,9 @@
 import { nanoid } from "nanoid";
 import { LocalStorage } from "~iframe/storage/unpartitioned-storage/local-storage";
+import { DEVICE_NONCE_KEY } from "~utils/embedded/device-nonce/device-nonce.constants";
 import { setDeviceNonceHeader } from "~utils/embedded/embedded.utils";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 
-const DEVICE_NONCE_KEY = "DEVICE_NONCE";
 const INVALID_DEVICE_NONCE_ERR_MSG = "Invalid deviceNonce";
 const MISSING_DEVICE_NONCE_ERR_MSG = "Missing deviceNonce";
 
@@ -11,15 +11,15 @@ export type DeviceNonce = `${number}-${number}-${number}T${number}:${number}:${n
 
 let _deviceNonce: DeviceNonce | null = null;
 
+export function isDeviceNonceValid(deviceNonce: string): boolean {
+  return /\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z)\-[\w_-]{21}/.test(deviceNonce);
+}
+
 export async function loadDeviceNonce(): Promise<DeviceNonce | null> {
   const storage = await LocalStorage.getInstance();
+  let deviceNonce = (await storage.getItem(DEVICE_NONCE_KEY)) || null;
 
-  let deviceNonce = storage.getItem(DEVICE_NONCE_KEY) || null;
-
-  if (
-    deviceNonce === null ||
-    /\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z)\-[\w_-]{21}/.test(deviceNonce)
-  ) {
+  if (deviceNonce === null || isDeviceNonceValid(deviceNonce)) {
     return deviceNonce as DeviceNonce;
   }
 
@@ -42,8 +42,7 @@ export async function storeDeviceNonce(deviceNonce: DeviceNonce): Promise<Device
   setDeviceNonceHeader(deviceNonce);
 
   const storage = await LocalStorage.getInstance();
-
-  storage.setItem(DEVICE_NONCE_KEY, deviceNonce);
+  await storage.setItem(DEVICE_NONCE_KEY, deviceNonce);
 
   return (_deviceNonce = deviceNonce);
 }
@@ -74,18 +73,23 @@ export async function getDeviceNonce(): Promise<DeviceNonce> {
   }
 
   const storage = await LocalStorage.getInstance();
-
-  let storedDeviceNonce = storage.getItem(DEVICE_NONCE_KEY) || null;
+  let storedDeviceNonce = (await storage.getItem(DEVICE_NONCE_KEY)) || null;
 
   if (storedDeviceNonce === _deviceNonce) return _deviceNonce;
 
   return storeDeviceNonce(_deviceNonce);
 }
 
+/*
 if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1") {
+  // TODO: We probably want to remove this an initialize it lazily instead of eagerly. Also, we need a way to handle
+  // users that already have a deviceNonce value in browsers with no unpartitioned state. In that case, the value already
+  // present in localStorage should be moved to cookies.
+
   initializeDeviceNonce().catch((err) => {
     log(LOG_GROUP.WALLET_GENERATION, "initializeDeviceNonce() error: ", {
       err,
     });
   });
 }
+*/

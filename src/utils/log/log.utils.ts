@@ -19,23 +19,23 @@ export enum LOG_GROUP {
 }
 
 const LOG_GROUPS_ENABLED: Record<LOG_GROUP, boolean> = {
-  [LOG_GROUP.API]: process.env.NODE_ENV === "development",
+  [LOG_GROUP.API]: false,
   [LOG_GROUP.AUTH]: process.env.NODE_ENV === "development",
   [LOG_GROUP.CHUNKS]: false,
-  [LOG_GROUP.EMBEDDED_FLOWS]: process.env.NODE_ENV === "development",
+  [LOG_GROUP.EMBEDDED_FLOWS]: false,
   [LOG_GROUP.GATEWAYS]: false,
   [LOG_GROUP.MSG]: false,
   [LOG_GROUP.ROUTING]: false,
-  [LOG_GROUP.SETUP]: process.env.NODE_ENV === "development",
-  [LOG_GROUP.WALLET_GENERATION]: process.env.NODE_ENV === "development",
-  [LOG_GROUP.SESSION]: process.env.NODE_ENV === "development",
-  [LOG_GROUP.STORAGE]: process.env.NODE_ENV === "development",
-  [LOG_GROUP.AGENTS]: process.env.NODE_ENV === "development",
-  [LOG_GROUP.TIERS]: process.env.NODE_ENV === "development",
-  [LOG_GROUP.TRANSAK]: process.env.NODE_ENV === "development",
-  [LOG_GROUP.FAIR_LAUNCH]: process.env.NODE_ENV === "development",
-  [LOG_GROUP.TRANSACTIONS]: process.env.NODE_ENV === "development",
-  [LOG_GROUP.EARN]: process.env.NODE_ENV === "development",
+  [LOG_GROUP.SETUP]: false,
+  [LOG_GROUP.WALLET_GENERATION]: false,
+  [LOG_GROUP.SESSION]: false,
+  [LOG_GROUP.STORAGE]: false,
+  [LOG_GROUP.AGENTS]: false,
+  [LOG_GROUP.TIERS]: false,
+  [LOG_GROUP.TRANSAK]: false,
+  [LOG_GROUP.FAIR_LAUNCH]: false,
+  [LOG_GROUP.TRANSACTIONS]: false,
+  [LOG_GROUP.EARN]: false,
 };
 
 function getColor() {
