@@ -111,6 +111,8 @@ export class LocalStorage {
    * is supported, we do not use cookies.
    */
   private shouldStoreInCookies(key: string): boolean {
+    return false;
+
     // if (!["limited", "rejected"].includes(getUnpartitionedStateStatus())) return false;
 
     // This should work for "rejected" too, so that we use cookies for devices that support unpartitioned state but did't get access. However, that will fail
@@ -118,6 +120,7 @@ export class LocalStorage {
     // (sometimes it is embed content and sometimes it's third-party cookies). So, for now, this option will just be disabled and not having unpartitioned state
     // access on browsers that support it will require users to re-authenticate on each tab.
 
+    /*
     if (!["limited"].includes(getUnpartitionedStateStatus())) return false;
 
     const shouldStoreInCookies = key === DEVICE_NONCE_KEY || SUPABASE_AUTH_TOKEN_KEY_REGEXP.test(key);
@@ -131,6 +134,7 @@ export class LocalStorage {
     }
 
     return shouldStoreInCookies;
+    */
   }
 
   /**
