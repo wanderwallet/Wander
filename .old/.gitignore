@@ -1,0 +1,47 @@
+# dependencies
+node_modules
+/.pnp
+.pnp.js
+
+# testing
+/coverage
+
+#cache
+.turbo
+.next
+.vercel
+
+# misc
+.DS_Store
+*.pem
+.vscode
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+
+# Exclude all .env files
+.env
+.env*
+# Except for .env.example
+!.env.example
+
+out/
+build/
+dist/
+sdk-dist
+wander-connect-sdk/wallet-api-dist/
+# plasmo - https://www.plasmo.com
+.plasmo
+
+# bpp - http://bpp.browser.market/
+keys.json
+
+# typescript
+.tsbuildinfo
+
+# temporary remove development icon
+assets/icon.development.png
