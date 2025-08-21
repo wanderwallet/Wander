@@ -24,6 +24,7 @@ import { WanderFeeTag } from "./components/WanderFeeTag";
 import {
   AO_TOKEN_INFO,
   AR_PROCESS_ID,
+  AR_TOKEN_INFO,
   defaultTokens,
   USDA_TOKEN_INFO,
   WAR_PROCESS_ID,
@@ -37,8 +38,8 @@ import { getErrorMessage, validateAmount } from "../send/amount";
 // const wndrToken = WNDR_TOKEN_INFO;
 
 // TODO: Remove this after testing
-const usdaToken = AO_TOKEN_INFO;
-const wndrToken = WAR_TOKEN_INFO;
+const usdaToken = WAR_TOKEN_INFO;
+const wndrToken = AR_TOKEN_INFO;
 
 const wARToken = defaultTokens[5];
 

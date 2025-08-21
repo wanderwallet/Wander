@@ -24,6 +24,7 @@ import {
   Owner,
   AR_PROCESS_ID,
   AO_PROCESS_ID,
+  WAR_PROCESS_ID,
 } from "~tokens/aoTokens/ao.constants";
 import type { Token } from "~tokens/token";
 
@@ -52,11 +53,14 @@ type DataItemResult = {
 };
 
 const { dryrun: customDryrun } = connect({ CU_URL: "https://cu.ardrive.io" });
+const { dryrun: wARDryrun } = connect({ CU_URL: "https://ao.arweave.asia" });
 
 const getDryrunForProcess = (processId: string) => {
   return processId === ARIO_PROCESS_ID || processId === USDA_PROCESS_ID || processId === WNDR_PROCESS_ID
     ? { dryrunFn: customDryrun, isCustomDryrun: true }
-    : { dryrunFn: dryrun, isCustomDryrun: false };
+    : processId === WAR_PROCESS_ID
+      ? { dryrunFn: wARDryrun, isCustomDryrun: true }
+      : { dryrunFn: dryrun, isCustomDryrun: false };
 };
 
 export function getTokenInfoFromData(res: any, id: string): TokenInfo {
@@ -192,7 +196,11 @@ export async function getAoTokenBalance(address: string, process: string, aoToke
   }
 
   const { dryrunFn, isCustomDryrun } = getDryrunForProcess(process);
-  const tags = [{ name: "Action", value: "Balance" }];
+  const tags = [
+    { name: "Action", value: "Balance" },
+    { name: "Recipient", value: address },
+    { name: "Target", value: address },
+  ];
 
   if (isCustomDryrun) {
     tags.push({ name: "Referer", value: "Wander" });
