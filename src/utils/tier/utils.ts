@@ -35,7 +35,7 @@ function isValidTierInfo(data: ActiveTierFromApi): data is ActiveTierFromApi {
     typeof data === "object" &&
     typeof data.tier === "number" &&
     typeof data.balance === "string" &&
-    typeof data.rank === "number" &&
+    (typeof data.rank === "number" || data.rank === "") &&
     typeof data.progress === "number" &&
     typeof data.snapshotTimestamp === "number" &&
     typeof data.totalHolders === "number"
