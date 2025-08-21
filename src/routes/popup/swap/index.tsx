@@ -22,22 +22,15 @@ import { useLocation } from "~wallets/router/router.utils";
 import { AutoTag } from "./components/AutoTag";
 import { WanderFeeTag } from "./components/WanderFeeTag";
 import {
-  AO_TOKEN_INFO,
   AR_PROCESS_ID,
   AR_TOKEN_INFO,
   defaultTokens,
-  USDA_TOKEN_INFO,
   WAR_PROCESS_ID,
   WAR_TOKEN_INFO,
-  WNDR_TOKEN_INFO,
 } from "~tokens/aoTokens/ao.constants";
 import { getErrorMessage, validateAmount } from "../send/amount";
 
-// TODO: Uncomment this after testing
-// const usdaToken = USDA_TOKEN_INFO;
-// const wndrToken = WNDR_TOKEN_INFO;
-
-// TODO: Remove this after testing
+// TODO: Update this after testing
 const usdaToken = WAR_TOKEN_INFO;
 const wndrToken = AR_TOKEN_INFO;
 
@@ -55,7 +48,7 @@ export function SwapView() {
   const [receiveToken, setReceiveToken] = useState<TokenInfo>(wndrToken);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [tokenSelectorType, setTokenSelectorType] = useState<TokenSelectorType>("send");
-  const { arNetworkFee, isLoading: isNetworkFeeLoading } = useARNetworkFee({ tokenID: sendToken.processId });
+  const { networkFee, isLoading: isNetworkFeeLoading } = useARNetworkFee({ tokenID: sendToken.processId });
 
   const { data: balanceIn = "0", isLoading: balanceInLoading } = useTokenBalance(sendToken, activeAddress);
   const { data: balanceOut = "0", isLoading: balanceOutLoading } = useTokenBalance(receiveToken, activeAddress);
@@ -68,10 +61,10 @@ export function SwapView() {
   const errorMessage = useMemo(() => {
     if (!valueIn || !balanceIn || !sendToken || !receiveToken) return "";
 
-    const fee = sendToken.processId === AR_PROCESS_ID && receiveToken.processId === WAR_PROCESS_ID ? arNetworkFee : "0";
+    const fee = sendToken.processId === AR_PROCESS_ID && receiveToken.processId === WAR_PROCESS_ID ? networkFee : "0";
     const state = validateAmount(valueIn, balanceIn, fee, "token", 1);
     return getErrorMessage(state);
-  }, [valueIn, balanceIn, sendToken, receiveToken, arNetworkFee]);
+  }, [valueIn, balanceIn, sendToken, receiveToken, networkFee]);
 
   const { selectedPoolInfo, isLoading, error } = usePoolForTokenPair({
     tokenIn: sendToken?.processId,
@@ -101,12 +94,8 @@ export function SwapView() {
     return `1 ${sendToken.Ticker} ≈ ${valueOutForUnitValueIn.toFixed(8)} ${receiveToken.Ticker}`;
   }, [selectedPoolInfo, sendToken, receiveToken]);
 
-  const networkFee = useMemo(() => {
+  const providerNetworkFee = useMemo(() => {
     if (!selectedPoolInfo?.quoteOutput || !sendToken || !receiveToken) return "--";
-
-    if (sendToken.processId === AR_PROCESS_ID && receiveToken.processId === WAR_PROCESS_ID) {
-      return `${arNetworkFee} ${sendToken.Ticker}`;
-    }
 
     const tokenInFee = BigNumber(selectedPoolInfo.quoteOutput.totalTokenInFeeQuantity || "0");
     const tokenOutFee = BigNumber(selectedPoolInfo.quoteOutput.totalTokenOutFeeQuantity || "0");
@@ -128,7 +117,7 @@ export function SwapView() {
     }
 
     return fees.join(" + ");
-  }, [selectedPoolInfo, sendToken, receiveToken, arNetworkFee]);
+  }, [selectedPoolInfo, sendToken, receiveToken]);
 
   const wanderFee = useMemo(() => {
     if (!valueIn || !defiFeeDetails) return { originalFee: "--", finalFee: "--", hasChanged: false };
@@ -199,7 +188,7 @@ export function SwapView() {
               }}
               onMaxClick={() => {
                 if (sendToken.processId === AR_PROCESS_ID) {
-                  setValueIn(BigNumber(balanceIn).minus(arNetworkFee).toFixed());
+                  setValueIn(BigNumber(balanceIn).minus(networkFee).toFixed());
                 } else {
                   setValueIn(balanceIn);
                 }
@@ -247,7 +236,7 @@ export function SwapView() {
                 Network Fee
               </Text>
               <Text size="sm" weight="medium" noMargin>
-                {networkFee}
+                {providerNetworkFee}
               </Text>
             </Flex>
             <Flex justify="space-between">

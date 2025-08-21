@@ -16,7 +16,7 @@ const BOTEGA_POOL_OPTIONS = {
   method: "POST",
 };
 
-export const BRIDGE_TOKENS = new Set<string>([AR_PROCESS_ID, WAR_PROCESS_ID]);
+export const BRIDGE_TOKEN_IDS = new Set<string>([AR_PROCESS_ID, WAR_PROCESS_ID]);
 
 export async function getBotegaPools() {
   const [poolsResponse, poolsOverviewResponse] = await Promise.allSettled([

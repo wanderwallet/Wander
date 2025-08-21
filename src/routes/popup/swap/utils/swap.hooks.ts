@@ -1,5 +1,5 @@
 import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
-import { BRIDGE_TOKENS, getPools, getPriceImpact, processToken } from "./swap.utils";
+import { BRIDGE_TOKEN_IDS, getPools, getPriceImpact, processToken } from "./swap.utils";
 import { defaultOptions, useAoTokens } from "~tokens/hooks";
 import { useMemo, useCallback, useState, useEffect } from "react";
 import type { Pool, SelectedPoolInfo, TokenPools, TokenSelectorType } from "./swap.types";
@@ -10,11 +10,12 @@ import { botega } from "./dex/dex.botega";
 import { permaswap } from "./dex/dex.permaswap";
 import type { GetLiquidityResponse } from "./dex/dex.types";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
-import { AR_PROCESS_ID, AR_TOKEN_INFO } from "~tokens/aoTokens/ao.constants";
+import { AR_PROCESS_ID, AR_TOKEN_INFO, WAR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 import { aox } from "./bridge/bridge.aox";
 import { retryWithGateways } from "~gateways/wayfinder";
 import { useBridgeInfo } from "./bridge/bridge.hooks";
 import { PoolTypeEnum } from "./swap.constants";
+import BigNumber from "bignumber.js";
 
 export function usePools() {
   return useQuery({
@@ -77,7 +78,7 @@ export function usePoolForTokenPair({ tokenIn, tokenOut, slippage, amountIn }: u
 
       setIsLoading(true);
 
-      if (BRIDGE_TOKENS.has(tokenIn) && BRIDGE_TOKENS.has(tokenOut)) {
+      if (BRIDGE_TOKEN_IDS.has(tokenIn) && BRIDGE_TOKEN_IDS.has(tokenOut)) {
         const aoxPool = pairPools?.aox?.[0];
         const aoxOutput = await aox.getExpectedOutput({ poolId: aoxPool.poolId, tokenIn, amountIn });
 
@@ -232,7 +233,7 @@ export function usePoolQuote({ tokenIn, tokenOut, slippage, amountIn, pool, stop
       !amountIn ||
       !pool ||
       stopFetching ||
-      (BRIDGE_TOKENS.has(tokenIn) && BRIDGE_TOKENS.has(tokenOut))
+      (BRIDGE_TOKEN_IDS.has(tokenIn) && BRIDGE_TOKEN_IDS.has(tokenOut))
     ) {
       return;
     }
@@ -373,13 +374,15 @@ export function useSwapSlippage() {
 }
 
 export function useARNetworkFee({ tokenID, note }: { tokenID: string; note?: string }) {
-  const [arNetworkFee, setArNetworkFee] = useState<string>("0");
-  const { data: bridgeInfo, isLoading: isBridgeInfoLoading } = useBridgeInfo({ enabled: tokenID === AR_PROCESS_ID });
+  const [networkFee, setNetworkFee] = useState<string>("0");
+  const { data: bridgeInfo, isLoading: isBridgeInfoLoading } = useBridgeInfo({
+    enabled: tokenID === AR_PROCESS_ID,
+  });
   const [isLoading, setIsLoading] = useState(false);
 
   useAsyncEffect(async () => {
     if (!tokenID || tokenID !== AR_PROCESS_ID || isBridgeInfoLoading || !bridgeInfo) {
-      setArNetworkFee("0");
+      setNetworkFee("0");
       return;
     }
 
@@ -395,18 +398,15 @@ export function useARNetworkFee({ tokenID, note }: { tokenID: string; note?: str
         arweave.transactions.getPrice(byte, bridgeInfo.arToken.locker),
       );
 
-      if (tokenID === AR_PROCESS_ID) {
-        setArNetworkFee(arweave.ar.winstonToAr(txPrice));
-      } else {
-        setArNetworkFee("0");
-      }
+      const networkFee = arweave.ar.winstonToAr(txPrice);
+      setNetworkFee(networkFee);
     } catch (error) {
       console.error("Error calculating network fee:", error);
-      setArNetworkFee("0");
+      setNetworkFee("0");
     } finally {
       setIsLoading(false);
     }
   }, [tokenID, note, bridgeInfo]);
 
-  return { arNetworkFee, isLoading };
+  return { networkFee, isLoading };
 }

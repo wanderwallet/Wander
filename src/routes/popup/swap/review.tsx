@@ -22,7 +22,6 @@ import { TransactionDetailItem } from "./components/TransactionDetailItem";
 import { botega } from "./utils/dex/dex.botega";
 import { permaswap } from "./utils/dex/dex.permaswap";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
-import { AR_PROCESS_ID, WAR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 import { getProviderName, getSwapTime } from "./utils/swap.utils";
 import { PoolTypeEnum } from "./utils/swap.constants";
 import { aox } from "./utils/bridge/bridge.aox";
@@ -35,7 +34,7 @@ export function SwapReviewView() {
 
   const { sendToken, receiveToken, wanderFee, slippage, amountIn } = swapData || {};
 
-  const { arNetworkFee, isLoading: isNetworkFeeLoading } = useARNetworkFee({ tokenID: sendToken?.processId });
+  const { networkFee, isLoading: isNetworkFeeLoading } = useARNetworkFee({ tokenID: sendToken?.processId });
 
   const { selectedPoolInfo: selectedPoolInfoQuote, isLoading } = usePoolQuote({
     tokenIn: sendToken?.processId,
@@ -64,12 +63,8 @@ export function SwapReviewView() {
     return `1 ${sendToken.Ticker} ≈ ${valueOutForUnitValueIn.toFixed(8)} ${receiveToken.Ticker}`;
   }, [selectedPoolInfo, sendToken, receiveToken]);
 
-  const networkFee = useMemo(() => {
+  const providerNetworkFee = useMemo(() => {
     if (!selectedPoolInfo?.quoteOutput || !sendToken || !receiveToken) return "--";
-
-    if (sendToken.processId === AR_PROCESS_ID && receiveToken.processId === WAR_PROCESS_ID) {
-      return `${arNetworkFee} ${sendToken.Ticker}`;
-    }
 
     const tokenInFee = BigNumber(selectedPoolInfo.quoteOutput.totalTokenInFeeQuantity || "0");
     const tokenOutFee = BigNumber(selectedPoolInfo.quoteOutput.totalTokenOutFeeQuantity || "0");
@@ -91,7 +86,7 @@ export function SwapReviewView() {
     }
 
     return fees.join(" + ");
-  }, [selectedPoolInfo, sendToken, receiveToken, arNetworkFee]);
+  }, [selectedPoolInfo, sendToken, receiveToken, networkFee]);
 
   const valueIn = useMemo(() => {
     if (!amountIn || !sendToken) return "";
@@ -191,7 +186,7 @@ export function SwapReviewView() {
               <TransactionDetailItem title={"Rate"} value={rate} />
               <TransactionDetailItem title={"Provider"} value={getProviderName(selectedPoolInfo?.pool?.poolType)} />
               <TransactionDetailItem title={"Est. Swap Time"} value={getSwapTime(selectedPoolInfo?.pool?.poolType)} />
-              <TransactionDetailItem title={"Network fee"} value={networkFee} />
+              <TransactionDetailItem title={"Network fee"} value={providerNetworkFee} />
               <TransactionDetailItem
                 title={"Wander Fee"}
                 value={
