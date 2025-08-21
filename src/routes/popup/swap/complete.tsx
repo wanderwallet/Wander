@@ -21,6 +21,7 @@ import checkmarkAnimationData from "assets/lotties/checkmark.json";
 import Lottie from "react-lottie";
 import { TransactionDetailItem } from "./components/TransactionDetailItem";
 import { HorizontalLine } from "~components/HorizontalLine";
+import { getProviderName, getSwapTime } from "./utils/swap.utils";
 
 export function SwapCompleteView() {
   const theme = useTheme();
@@ -109,6 +110,7 @@ export function SwapCompleteView() {
       <Wrapper>
         <WrapperContent>
           <Flex direction="column" justify="center" align="center" gap={4}>
+            {/* @ts-expect-error - Lottie is not typed */}
             <Lottie
               options={{
                 loop: false,
@@ -143,11 +145,8 @@ export function SwapCompleteView() {
             </Text>
             <Flex direction="column" gap={8}>
               <TransactionDetailItem title={"Rate"} value={rate} />
-              <TransactionDetailItem
-                title={"Provider"}
-                value={selectedPoolInfo?.pool?.poolType === "botega" ? "Botega" : "Permaswap"}
-              />
-              <TransactionDetailItem title={"Est. Swap Time"} value={"15s"} />
+              <TransactionDetailItem title={"Provider"} value={getProviderName(selectedPoolInfo?.pool?.poolType)} />
+              <TransactionDetailItem title={"Est. Swap Time"} value={getSwapTime(selectedPoolInfo?.pool?.poolType)} />
               <TransactionDetailItem title={"Network fee"} value={networkFee} />
               <TransactionDetailItem
                 title={"Wander Fee"}
@@ -175,6 +174,7 @@ export function SwapCompleteView() {
               <TransactionDetailItem
                 title={"Price Impact"}
                 value={selectedPoolInfo?.priceImpact ? `${selectedPoolInfo.priceImpact}%` : "--"}
+                valueColor={+selectedPoolInfo?.priceImpact > 10 && theme.fail}
               />
             </Flex>
           </Flex>

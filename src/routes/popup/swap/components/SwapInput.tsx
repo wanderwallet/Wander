@@ -21,6 +21,7 @@ interface SwapInputProps {
   token: TokenInfo;
   onValueChange: (value: string) => void;
   onTokenSwitcherClick: () => void;
+  onMaxClick?: () => void;
 }
 
 export const SwapInput = ({
@@ -31,6 +32,7 @@ export const SwapInput = ({
   onValueChange,
   token,
   onTokenSwitcherClick,
+  onMaxClick,
   status = "default",
 }: SwapInputProps) => {
   const isSend = type === "send";
@@ -114,7 +116,11 @@ export const SwapInput = ({
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  onValueChange(formattedBalance.tooltipBalance);
+                  if (onMaxClick) {
+                    onMaxClick();
+                  } else {
+                    onValueChange(formattedBalance.tooltipBalance);
+                  }
                 }}>
                 Max
               </Text>

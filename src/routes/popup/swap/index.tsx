@@ -10,7 +10,7 @@ import { SwapInput } from "./components/SwapInput";
 import { type TokenInfo } from "~tokens/aoTokens/ao";
 import { DisclosureButton, DisclosureContent } from "~routes/popup/swap/components/Disclosure";
 import { SlippageInputButton } from "./components/SlippageInputButton";
-import { usePoolForTokenPair, useSwapSlippage } from "./utils/swap.hooks";
+import { useARNetworkFee, usePoolForTokenPair, useSwapSlippage } from "./utils/swap.hooks";
 import type { SwapData, TokenSelectorType } from "./utils/swap.types";
 import { TokenSelectorPopup } from "./components/TokenSelectorPopup";
 import BigNumber from "bignumber.js";
@@ -21,15 +21,26 @@ import { TempTransactionStorage } from "~utils/storage";
 import { useLocation } from "~wallets/router/router.utils";
 import { AutoTag } from "./components/AutoTag";
 import { WanderFeeTag } from "./components/WanderFeeTag";
-import { defaultTokens } from "~tokens/aoTokens/ao.constants";
+import {
+  AO_TOKEN_INFO,
+  AR_PROCESS_ID,
+  defaultTokens,
+  USDA_TOKEN_INFO,
+  WAR_PROCESS_ID,
+  WAR_TOKEN_INFO,
+  WNDR_TOKEN_INFO,
+} from "~tokens/aoTokens/ao.constants";
+import { getErrorMessage, validateAmount } from "../send/amount";
 
 // TODO: Uncomment this after testing
-// const usdaToken = defaultTokens[4];
-// const wndrToken = defaultTokens[3];
+// const usdaToken = USDA_TOKEN_INFO;
+// const wndrToken = WNDR_TOKEN_INFO;
 
 // TODO: Remove this after testing
-const usdaToken = defaultTokens[1];
-const wndrToken = defaultTokens[5];
+const usdaToken = AO_TOKEN_INFO;
+const wndrToken = WAR_TOKEN_INFO;
+
+const wARToken = defaultTokens[5];
 
 export function SwapView() {
   const theme = useTheme();
@@ -43,6 +54,7 @@ export function SwapView() {
   const [receiveToken, setReceiveToken] = useState<TokenInfo>(wndrToken);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [tokenSelectorType, setTokenSelectorType] = useState<TokenSelectorType>("send");
+  const { arNetworkFee, isLoading: isNetworkFeeLoading } = useARNetworkFee({ tokenID: sendToken.processId });
 
   const { data: balanceIn = "0", isLoading: balanceInLoading } = useTokenBalance(sendToken, activeAddress);
   const { data: balanceOut = "0", isLoading: balanceOutLoading } = useTokenBalance(receiveToken, activeAddress);
@@ -53,16 +65,12 @@ export function SwapView() {
   }, [valueIn, sendToken]);
 
   const errorMessage = useMemo(() => {
-    if (!valueIn || !balanceIn) return "";
+    if (!valueIn || !balanceIn || !sendToken || !receiveToken) return "";
 
-    const valueBN = BigNumber(valueIn);
-    const balanceBN = BigNumber(balanceIn);
-
-    if (valueBN.isNaN() || valueBN.lte(0)) return browser.i18n.getMessage("invalid_amount");
-    if (valueBN.gt(balanceBN)) return browser.i18n.getMessage("insufficient_balance");
-
-    return "";
-  }, [valueIn, balanceIn]);
+    const fee = sendToken.processId === AR_PROCESS_ID && receiveToken.processId === WAR_PROCESS_ID ? arNetworkFee : "0";
+    const state = validateAmount(valueIn, balanceIn, fee, "token", 1);
+    return getErrorMessage(state);
+  }, [valueIn, balanceIn, sendToken, receiveToken, arNetworkFee]);
 
   const { selectedPoolInfo, isLoading, error } = usePoolForTokenPair({
     tokenIn: sendToken?.processId,
@@ -95,6 +103,10 @@ export function SwapView() {
   const networkFee = useMemo(() => {
     if (!selectedPoolInfo?.quoteOutput || !sendToken || !receiveToken) return "--";
 
+    if (sendToken.processId === AR_PROCESS_ID && receiveToken.processId === WAR_PROCESS_ID) {
+      return `${arNetworkFee} ${sendToken.Ticker}`;
+    }
+
     const tokenInFee = BigNumber(selectedPoolInfo.quoteOutput.totalTokenInFeeQuantity || "0");
     const tokenOutFee = BigNumber(selectedPoolInfo.quoteOutput.totalTokenOutFeeQuantity || "0");
 
@@ -115,7 +127,7 @@ export function SwapView() {
     }
 
     return fees.join(" + ");
-  }, [selectedPoolInfo, sendToken, receiveToken]);
+  }, [selectedPoolInfo, sendToken, receiveToken, arNetworkFee]);
 
   const wanderFee = useMemo(() => {
     if (!valueIn || !defiFeeDetails) return { originalFee: "--", finalFee: "--", hasChanged: false };
@@ -140,6 +152,9 @@ export function SwapView() {
   function handleUpdateToken(token: TokenInfo) {
     if (tokenSelectorType === "send") {
       setSendToken(token);
+      if (token.processId === AR_PROCESS_ID) {
+        setReceiveToken(wARToken);
+      }
     } else {
       setReceiveToken(token);
     }
@@ -163,8 +178,6 @@ export function SwapView() {
     navigate("/swap/review");
   }
 
-  console.log(selectedPoolInfo);
-
   return (
     <>
       <HeadV2 title={browser.i18n.getMessage("swap")} />
@@ -182,6 +195,13 @@ export function SwapView() {
               onTokenSwitcherClick={() => {
                 setTokenSelectorType("send");
                 setOpenTokenSelector(true);
+              }}
+              onMaxClick={() => {
+                if (sendToken.processId === AR_PROCESS_ID) {
+                  setValueIn(BigNumber(balanceIn).minus(arNetworkFee).toFixed());
+                } else {
+                  setValueIn(balanceIn);
+                }
               }}
             />
             <Switch onClick={handleSwitch} isError={!!errorMessage}>
@@ -259,7 +279,7 @@ export function SwapView() {
         <Flex gap={8}>
           <Button
             style={{ flex: 1 }}
-            disabled={!valueIn || isLoading || !!errorMessage}
+            disabled={!valueIn || isLoading || isNetworkFeeLoading || !!errorMessage}
             loading={isLoading}
             onClick={handleSwap}
             fullWidth>

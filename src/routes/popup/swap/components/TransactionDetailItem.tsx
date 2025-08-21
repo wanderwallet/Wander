@@ -4,9 +4,10 @@ import { Flex } from "~components/common/Flex";
 interface TransactionDetailItemProps {
   title: React.ReactNode;
   value: React.ReactNode;
+  valueColor?: string;
 }
 
-export function TransactionDetailItem({ title, value }: TransactionDetailItemProps) {
+export function TransactionDetailItem({ title, value, valueColor }: TransactionDetailItemProps) {
   const titleElement =
     typeof title === "string" ? (
       <Text variant="secondary" size="sm" weight="medium" noMargin>
@@ -18,7 +19,7 @@ export function TransactionDetailItem({ title, value }: TransactionDetailItemPro
 
   const valueElement =
     typeof value === "string" ? (
-      <Text size="sm" weight="medium" noMargin>
+      <Text size="sm" weight="medium" noMargin style={{ color: valueColor }}>
         {value}
       </Text>
     ) : (

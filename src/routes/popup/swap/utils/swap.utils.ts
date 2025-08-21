@@ -1,7 +1,9 @@
 import { type TokenInfo } from "~tokens/aoTokens/ao";
-import type { BotegaPool, BotegaPoolOverview, PermaswapPool, Pool } from "./swap.types";
+import type { BotegaPool, BotegaPoolOverview, PermaswapPool, Pool, PoolType } from "./swap.types";
 import BigNumber from "bignumber.js";
 import { BOTEGA_API_KEY, BOTEGA_SUPABASE_URL } from "./data-source/data-source.constants";
+import { AR_PROCESS_ID, AR_TOKEN_INFO, WAR_PROCESS_ID, WAR_TOKEN_INFO } from "~tokens/aoTokens/ao.constants";
+import { PoolTypeEnum } from "./swap.constants";
 
 const BOTEGA_POOL_OPTIONS = {
   headers: {
@@ -13,6 +15,8 @@ const BOTEGA_POOL_OPTIONS = {
   body: "{}",
   method: "POST",
 };
+
+export const BRIDGE_TOKENS = new Set<string>([AR_PROCESS_ID, WAR_PROCESS_ID]);
 
 export async function getBotegaPools() {
   const [poolsResponse, poolsOverviewResponse] = await Promise.allSettled([
@@ -42,7 +46,7 @@ export async function getBotegaGlobalLiquidity() {
     poolId: pool.amm_process,
     poolName: pool.amm_name,
     poolFee: String(pool.pool_fee_bps),
-    poolType: "botega",
+    poolType: PoolTypeEnum.BOTEGA,
     tokenX: pool.token0,
     tokenY: pool.token1,
     tokenXDenomination: pool.token0_denominator,
@@ -76,7 +80,7 @@ export async function getPermaswapPools() {
       poolId: pool.process,
       poolName: pool.name,
       poolFee: String(pool.fee),
-      poolType: "permaswap",
+      poolType: PoolTypeEnum.PERMASWAP,
       tokenXReserve: pool.px,
       tokenYReserve: pool.py,
       tokenX: pool.x,
@@ -94,13 +98,38 @@ export async function getPermaswapPools() {
   return structuredPools;
 }
 
+// Mimic other pools
+export async function getAoxPools() {
+  return [
+    {
+      poolId: "AR-WAR",
+      poolName: "AR/WAR",
+      poolFee: "0",
+      poolType: PoolTypeEnum.AOX,
+      tokenXReserve: "0",
+      tokenYReserve: "0",
+      tokenX: AR_PROCESS_ID,
+      tokenY: WAR_PROCESS_ID,
+      tokenXDenomination: 12,
+      tokenYDenomination: 12,
+      tokenXTicker: "AR",
+      tokenYTicker: "wAR",
+      tokenXName: "Arweave",
+      tokenYName: "Wrapped Arweave",
+      tokenXLogo: AR_TOKEN_INFO.Logo,
+      tokenYLogo: WAR_TOKEN_INFO.Logo,
+    },
+  ] satisfies Pool[];
+}
+
 export async function getPools() {
-  const promises = await Promise.allSettled([getBotegaPools(), getPermaswapPools()]);
+  const promises = await Promise.allSettled([getBotegaPools(), getPermaswapPools(), getAoxPools()]);
 
   const botegaPools = promises[0].status === "fulfilled" ? promises[0].value : [];
   const permaswapPools = promises[1].status === "fulfilled" ? promises[1].value : [];
+  const aoxPools = promises[2].status === "fulfilled" ? promises[2].value : [];
 
-  return [...botegaPools, ...permaswapPools].filter(
+  return [...botegaPools, ...permaswapPools, ...aoxPools].filter(
     (pool) => +pool.tokenXDenomination >= 0 && +pool.tokenYDenomination >= 0 && pool.tokenXTicker && pool.tokenYTicker,
   );
 }
@@ -149,4 +178,22 @@ export function getPriceImpact(reserveIn: string, reserveOut: string, amountIn: 
 
   // Return percentage with 2 decimal places
   return priceImpact.toFixed(2);
+}
+
+export function getProviderName(poolType: PoolType) {
+  switch (poolType) {
+    case PoolTypeEnum.BOTEGA:
+      return "Botega";
+    case PoolTypeEnum.PERMASWAP:
+      return "Permaswap";
+    case PoolTypeEnum.AOX:
+      return "AOX";
+    default:
+      return "";
+  }
+}
+
+export function getSwapTime(poolType: PoolType) {
+  if (poolType === PoolTypeEnum.AOX) return "30-60m";
+  return "15s";
 }

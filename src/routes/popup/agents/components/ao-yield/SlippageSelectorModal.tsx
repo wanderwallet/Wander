@@ -14,6 +14,8 @@ interface SlippageSelectorModalProps {
   slippage: number;
   onSelect: (slippage: number) => void;
   type?: "sell" | "swap";
+  minSlippage?: number;
+  maxSlippage?: number;
 }
 
 export function SlippageSelectorModal({
@@ -22,6 +24,8 @@ export function SlippageSelectorModal({
   slippage,
   onSelect,
   type = "sell",
+  minSlippage = 0.5,
+  maxSlippage = 10,
 }: SlippageSelectorModalProps) {
   const toasts = useToasts();
   const [selectedSlippage, setSelectedSlippage] = useState(slippage);
@@ -34,11 +38,11 @@ export function SlippageSelectorModal({
   const throttledSlippageChange = useThrottledCallback(
     (amount: number, isIncrease: boolean) => {
       const newValue = Number((selectedSlippage + (isIncrease ? amount : -amount)).toFixed(1));
-      const isAtLimit = isIncrease ? selectedSlippage >= 10 : selectedSlippage <= 0.5;
+      const isAtLimit = isIncrease ? selectedSlippage >= maxSlippage : selectedSlippage <= minSlippage;
 
       if (isAtLimit && amount > 0) {
         if (!isToastShowing.current) {
-          showToast(toasts, !isIncrease);
+          showToast(toasts, !isIncrease, minSlippage, maxSlippage);
           isToastShowing.current = true;
           setTimeout(() => {
             isToastShowing.current = false;
@@ -47,10 +51,10 @@ export function SlippageSelectorModal({
         return;
       }
 
-      setSelectedSlippage(isIncrease ? Math.min(newValue, 10) : Math.max(newValue, 0.5));
+      setSelectedSlippage(isIncrease ? Math.min(newValue, maxSlippage) : Math.max(newValue, minSlippage));
     },
     100,
-    [selectedSlippage, toasts],
+    [selectedSlippage, toasts, minSlippage, maxSlippage],
   );
 
   useTimeout(
@@ -150,11 +154,16 @@ export function SlippageSelectorModal({
   );
 }
 
-function showToast(toasts: ReturnType<typeof useToasts>, isMinSlippage: boolean) {
+function showToast(
+  toasts: ReturnType<typeof useToasts>,
+  isMinSlippage: boolean,
+  minSlippage: number,
+  maxSlippage: number,
+) {
   toasts.setToast({
     content: isMinSlippage
-      ? browser.i18n.getMessage("slippage_cannot_be_less_than_0_5")
-      : browser.i18n.getMessage("slippage_cannot_be_greater_than_10"),
+      ? browser.i18n.getMessage("slippage_cannot_be_less_than", [minSlippage.toString()])
+      : browser.i18n.getMessage("slippage_cannot_be_greater_than", [maxSlippage.toString()]),
     type: "info",
     duration: 3000,
     showProgress: true,

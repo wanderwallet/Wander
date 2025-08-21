@@ -59,7 +59,7 @@ export type BotegaPool = {
   amm_discovered_at_ts: number;
 };
 
-export type PoolType = "botega" | "permaswap";
+export type PoolType = "botega" | "permaswap" | "aox";
 
 export interface Pool {
   poolId: string;
@@ -75,6 +75,9 @@ export interface Pool {
   tokenXTicker: string;
   tokenYTicker: string;
   tokenXName: string;
+  tokenYName: string;
+  tokenXLogo: string;
+  tokenYLogo: string;
 }
 
 export interface BotegaPoolOverview {
@@ -142,4 +145,10 @@ export interface SwapData {
   wanderFee: WanderFee;
   slippage: number;
   amountIn: string;
+}
+
+export interface TokenPools {
+  botega: Pool[];
+  permaswap: Pool[];
+  aox: Pool[];
 }

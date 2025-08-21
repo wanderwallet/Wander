@@ -56,43 +56,53 @@ export const AR_TOKEN_INFO: TokenInfo = {
   processId: AR_PROCESS_ID,
 };
 
+export const AO_TOKEN_INFO: TokenInfo = {
+  Name: "AO",
+  Ticker: "AO",
+  Denomination: 12,
+  Logo: "UkS-mdoiG8hcAClhKK8ch4ZhEzla0mCPDOix9hpdSFE",
+  processId: AO_PROCESS_ID,
+};
+
+export const PI_TOKEN_INFO: TokenInfo = {
+  Name: "Permaweb Index Token",
+  Ticker: "PI",
+  Denomination: 12,
+  Logo: "zmQwyD6QiZge10OG2HasBqu27Zg0znGkdFRufOq6rv0",
+  processId: PI_PROCESS_ID,
+};
+
+export const WNDR_TOKEN_INFO: TokenInfo = {
+  Name: "Wander",
+  Ticker: "WNDR",
+  Denomination: 18,
+  Logo: "xUO2tQglSYsW89aLYN8ErGivZqezoDaEn95JniaCBZk",
+  processId: WNDR_PROCESS_ID,
+};
+
+export const USDA_TOKEN_INFO: TokenInfo = {
+  Name: "Astro USD",
+  Ticker: "USDA",
+  Denomination: 12,
+  Logo: "seXozJrsP0OgI0gvAnr8zmfxiHHb5iSlI9wMI8SdamE",
+  processId: USDA_PROCESS_ID,
+};
+
+export const WAR_TOKEN_INFO: TokenInfo = {
+  Name: "Wrapped AR",
+  Ticker: "wAR",
+  Denomination: 12,
+  Logo: "L99jaxRKQKJt9CqoJtPaieGPEhJD3wNhR4iGqc8amXs",
+  processId: WAR_PROCESS_ID,
+};
+
 export const defaultTokens = [
   AR_TOKEN_INFO,
-  {
-    Name: "AO",
-    Ticker: "AO",
-    Denomination: 12,
-    Logo: "UkS-mdoiG8hcAClhKK8ch4ZhEzla0mCPDOix9hpdSFE",
-    processId: AO_PROCESS_ID,
-  },
-  {
-    Name: "Permaweb Index Token",
-    Ticker: "PI",
-    Denomination: 12,
-    Logo: "zmQwyD6QiZge10OG2HasBqu27Zg0znGkdFRufOq6rv0",
-    processId: PI_PROCESS_ID,
-  },
-  {
-    Name: "Wander",
-    Ticker: "WNDR",
-    Denomination: 18,
-    Logo: "xUO2tQglSYsW89aLYN8ErGivZqezoDaEn95JniaCBZk",
-    processId: WNDR_PROCESS_ID,
-  },
-  {
-    Name: "Astro USD",
-    Ticker: "USDA",
-    Denomination: 12,
-    Logo: "seXozJrsP0OgI0gvAnr8zmfxiHHb5iSlI9wMI8SdamE",
-    processId: USDA_PROCESS_ID,
-  },
-  {
-    Name: "Wrapped AR",
-    Ticker: "wAR",
-    Denomination: 12,
-    Logo: "L99jaxRKQKJt9CqoJtPaieGPEhJD3wNhR4iGqc8amXs",
-    processId: WAR_PROCESS_ID,
-  },
+  AO_TOKEN_INFO,
+  PI_TOKEN_INFO,
+  WNDR_TOKEN_INFO,
+  USDA_TOKEN_INFO,
+  WAR_TOKEN_INFO,
 ] as const satisfies TokenInfo[];
 
 export const nonTransferableTokenIds: Array<string> = [EXP_PROCESS_ID, WNDR_PROCESS_ID];

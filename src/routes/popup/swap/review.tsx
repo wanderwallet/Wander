@@ -1,6 +1,6 @@
 import { Section, Button, Text, Loading } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
-import styled from "styled-components";
+import styled, { useTheme } from "styled-components";
 import HeadV2 from "~components/popup/HeadV2";
 import { Flex } from "~components/common/Flex";
 import { type TokenInfo } from "~tokens/aoTokens/ao";
@@ -14,7 +14,7 @@ import { TempTransactionStorage } from "~utils/storage";
 import type { SwapData } from "./utils/swap.types";
 import BigNumber from "bignumber.js";
 import { formatBalance } from "~utils/format";
-import { usePoolQuote } from "./utils/swap.hooks";
+import { useARNetworkFee, usePoolQuote } from "./utils/swap.hooks";
 import { useLocation } from "~wallets/router/router.utils";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import { TokenValueWithTooltip } from "./components/TokenValueWithTooltip";
@@ -22,13 +22,20 @@ import { TransactionDetailItem } from "./components/TransactionDetailItem";
 import { botega } from "./utils/dex/dex.botega";
 import { permaswap } from "./utils/dex/dex.permaswap";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
+import { AR_PROCESS_ID, WAR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
+import { getProviderName, getSwapTime } from "./utils/swap.utils";
+import { PoolTypeEnum } from "./utils/swap.constants";
+import { aox } from "./utils/bridge/bridge.aox";
 
 export function SwapReviewView() {
   const { navigate } = useLocation();
+  const theme = useTheme();
   const [isExecutingSwap, setIsExecutingSwap] = useState(false);
   const [swapData] = useStorage<SwapData>({ key: "swap-data", instance: TempTransactionStorage });
 
   const { sendToken, receiveToken, wanderFee, slippage, amountIn } = swapData || {};
+
+  const { arNetworkFee, isLoading: isNetworkFeeLoading } = useARNetworkFee({ tokenID: sendToken?.processId });
 
   const { selectedPoolInfo: selectedPoolInfoQuote, isLoading } = usePoolQuote({
     tokenIn: sendToken?.processId,
@@ -60,6 +67,10 @@ export function SwapReviewView() {
   const networkFee = useMemo(() => {
     if (!selectedPoolInfo?.quoteOutput || !sendToken || !receiveToken) return "--";
 
+    if (sendToken.processId === AR_PROCESS_ID && receiveToken.processId === WAR_PROCESS_ID) {
+      return `${arNetworkFee} ${sendToken.Ticker}`;
+    }
+
     const tokenInFee = BigNumber(selectedPoolInfo.quoteOutput.totalTokenInFeeQuantity || "0");
     const tokenOutFee = BigNumber(selectedPoolInfo.quoteOutput.totalTokenOutFeeQuantity || "0");
 
@@ -80,7 +91,7 @@ export function SwapReviewView() {
     }
 
     return fees.join(" + ");
-  }, [selectedPoolInfo, sendToken, receiveToken]);
+  }, [selectedPoolInfo, sendToken, receiveToken, arNetworkFee]);
 
   const valueIn = useMemo(() => {
     if (!amountIn || !sendToken) return "";
@@ -103,7 +114,14 @@ export function SwapReviewView() {
     try {
       setIsExecutingSwap(true);
 
-      const executeSwapFn = selectedPoolInfo?.pool?.poolType === "botega" ? botega.executeSwap : permaswap.executeSwap;
+      const poolType = selectedPoolInfo?.pool?.poolType;
+
+      const executeSwapFn =
+        poolType === PoolTypeEnum.BOTEGA
+          ? botega.executeSwap
+          : poolType === PoolTypeEnum.PERMASWAP
+            ? permaswap.executeSwap
+            : aox.executeSwap;
       const transferId = await executeSwapFn({
         tokenIn: sendToken?.processId,
         tokenOut: receiveToken?.processId,
@@ -171,11 +189,8 @@ export function SwapReviewView() {
             </Text>
             <Flex direction="column" gap={8}>
               <TransactionDetailItem title={"Rate"} value={rate} />
-              <TransactionDetailItem
-                title={"Provider"}
-                value={selectedPoolInfo?.pool?.poolType === "botega" ? "Botega" : "Permaswap"}
-              />
-              <TransactionDetailItem title={"Est. Swap Time"} value={"15s"} />
+              <TransactionDetailItem title={"Provider"} value={getProviderName(selectedPoolInfo?.pool?.poolType)} />
+              <TransactionDetailItem title={"Est. Swap Time"} value={getSwapTime(selectedPoolInfo?.pool?.poolType)} />
               <TransactionDetailItem title={"Network fee"} value={networkFee} />
               <TransactionDetailItem
                 title={"Wander Fee"}
@@ -203,6 +218,7 @@ export function SwapReviewView() {
               <TransactionDetailItem
                 title={"Price Impact"}
                 value={selectedPoolInfo?.priceImpact ? `${selectedPoolInfo.priceImpact}%` : "--"}
+                valueColor={+selectedPoolInfo?.priceImpact > 10 && theme.fail}
               />
             </Flex>
           </Flex>
@@ -211,7 +227,7 @@ export function SwapReviewView() {
         <Flex gap={8}>
           <Button
             style={{ flex: 1 }}
-            disabled={isExecutingSwap || isLoading}
+            disabled={isExecutingSwap || isLoading || isNetworkFeeLoading}
             loading={isExecutingSwap || isLoading}
             onClick={handleSwap}
             fullWidth>

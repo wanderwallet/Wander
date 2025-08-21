@@ -20,6 +20,7 @@ import { botega } from "./utils/dex/dex.botega";
 import { permaswap } from "./utils/dex/dex.permaswap";
 import { getActiveAddress } from "~wallets";
 import { queryClient } from "~utils/tanstack";
+import { PoolTypeEnum } from "./utils/swap.constants";
 
 export function SwapProgressView() {
   const theme = useTheme();
@@ -27,6 +28,8 @@ export function SwapProgressView() {
   const [swapData] = useStorage<SwapData>({ key: "swap-data", instance: TempTransactionStorage });
 
   const { sendToken, receiveToken, amountIn, selectedPoolInfo, transferId } = swapData || {};
+
+  const isAoxBridge = useMemo(() => selectedPoolInfo?.pool?.poolType === PoolTypeEnum.AOX, [selectedPoolInfo]);
 
   const valueIn = useMemo(() => {
     if (!amountIn || !sendToken) return "";
@@ -46,10 +49,10 @@ export function SwapProgressView() {
   const valueInFormatted = useMemo(() => formatBalance(valueIn || "0"), [valueIn]);
 
   useAsyncEffect(async () => {
-    if (!transferId || !selectedPoolInfo) return;
+    if (!transferId || !selectedPoolInfo || isAoxBridge) return;
 
     const waitForSwapResultFn =
-      selectedPoolInfo?.pool?.poolType === "botega" ? botega.waitForSwapResult : permaswap.waitForSwapResult;
+      selectedPoolInfo?.pool?.poolType === PoolTypeEnum.BOTEGA ? botega.waitForSwapResult : permaswap.waitForSwapResult;
 
     const isSuccess = await waitForSwapResultFn(transferId);
     if (isSuccess) {
@@ -59,7 +62,7 @@ export function SwapProgressView() {
     } else {
       back();
     }
-  }, [transferId, selectedPoolInfo]);
+  }, [transferId, selectedPoolInfo, isAoxBridge]);
 
   if (!swapData) {
     return (
@@ -102,12 +105,18 @@ export function SwapProgressView() {
               </Flex>
             </Flex>
             <Text variant="secondary" weight="medium" noMargin>
-              Your swap is in progress. This may take a few minutes to complete.
+              Your swap is in progress. This may take {isAoxBridge ? "between 30-60 minutes" : "a few minutes"} to
+              complete.
             </Text>
           </Flex>
         </WrapperContent>
 
-        <Flex gap={8}>
+        <Flex gap={12}>
+          {isAoxBridge && (
+            <Button fullWidth onClick={() => navigate(PopupPaths.Home)}>
+              Go to dashboard
+            </Button>
+          )}
           <Button
             variant="secondary"
             fullWidth

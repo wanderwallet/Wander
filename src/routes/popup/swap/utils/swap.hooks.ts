@@ -1,8 +1,8 @@
 import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
-import { getPools, getPriceImpact, processToken } from "./swap.utils";
+import { BRIDGE_TOKENS, getPools, getPriceImpact, processToken } from "./swap.utils";
 import { defaultOptions, useAoTokens } from "~tokens/hooks";
 import { useMemo, useCallback, useState, useEffect } from "react";
-import type { Pool, SelectedPoolInfo, TokenSelectorType } from "./swap.types";
+import type { Pool, SelectedPoolInfo, TokenPools, TokenSelectorType } from "./swap.types";
 import { useStorage } from "@plasmohq/storage/hook";
 import { ExtensionStorage } from "~utils/storage";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
@@ -10,6 +10,11 @@ import { botega } from "./dex/dex.botega";
 import { permaswap } from "./dex/dex.permaswap";
 import type { GetLiquidityResponse } from "./dex/dex.types";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
+import { AR_PROCESS_ID, AR_TOKEN_INFO } from "~tokens/aoTokens/ao.constants";
+import { aox } from "./bridge/bridge.aox";
+import { retryWithGateways } from "~gateways/wayfinder";
+import { useBridgeInfo } from "./bridge/bridge.hooks";
+import { PoolTypeEnum } from "./swap.constants";
 
 export function usePools() {
   return useQuery({
@@ -22,13 +27,13 @@ export function usePools() {
 export function useGroupedPoolsByTokenPair() {
   const { data: pools = [], isLoading } = usePools();
 
-  const tokenPools = useMemo(() => {
+  const tokenPools = useMemo<Record<string, TokenPools>>(() => {
     return (
       pools
         // .sort((a, b) => +a.poolFee - +b.poolFee)
         .reduce((acc, pool) => {
           const key = [pool.tokenX, pool.tokenY].sort().join("-");
-          if (!acc[key]) acc[key] = { botega: [], permaswap: [] };
+          if (!acc[key]) acc[key] = { botega: [], permaswap: [], aox: [] };
           acc[key][pool.poolType].push(pool);
           return acc;
         }, {})
@@ -51,23 +56,39 @@ export function usePoolForTokenPair({ tokenIn, tokenOut, slippage, amountIn }: u
   const [error, setError] = useState<string | null>(null);
   const [selectedPoolInfo, setSelectedPoolInfo] = useState<SelectedPoolInfo | null>(null);
 
-  const pairPools = useMemo<{
-    botega: Pool[];
-    permaswap: Pool[];
-  }>(() => {
-    if (!tokenIn || !tokenOut) return {};
+  const pairPools = useMemo(() => {
+    if (!tokenIn || !tokenOut) return { botega: [], permaswap: [], aox: [] };
     const key = [tokenIn, tokenOut].sort().join("-");
-    return tokenPools[key] || {};
+    return tokenPools[key] || { botega: [], permaswap: [], aox: [] };
   }, [tokenPools, tokenIn, tokenOut]);
 
   useAsyncEffect(async () => {
     try {
-      if (!tokenIn || !tokenOut || !slippage || !amountIn || Object.keys(pairPools).length === 0) {
+      if (
+        !tokenIn ||
+        !tokenOut ||
+        !slippage ||
+        !amountIn ||
+        Object.values(pairPools).every((pools) => pools.length === 0)
+      ) {
         setSelectedPoolInfo(null);
         return;
       }
 
       setIsLoading(true);
+
+      if (BRIDGE_TOKENS.has(tokenIn) && BRIDGE_TOKENS.has(tokenOut)) {
+        const aoxPool = pairPools?.aox?.[0];
+        const aoxOutput = await aox.getExpectedOutput({ poolId: aoxPool.poolId, tokenIn, amountIn });
+
+        setSelectedPoolInfo({
+          pool: pairPools?.aox?.[0],
+          quoteOutput: aoxOutput,
+          priceImpact: "0.00",
+        });
+
+        return;
+      }
 
       const botegaPool = pairPools?.botega?.[0];
       const permaswapPool = pairPools?.permaswap?.[0];
@@ -155,8 +176,7 @@ export function usePoolQuote({ tokenIn, tokenOut, slippage, amountIn, pool, stop
 
   const fetchPoolQuote = useCallback(async () => {
     try {
-      console.log({ tokenIn, tokenOut, slippage, amountIn, pool });
-      if (!tokenIn || !tokenOut || !slippage || !amountIn || !pool) {
+      if (!tokenIn || !tokenOut || !slippage || !amountIn || !pool || stopFetching) {
         setSelectedPoolInfo(null);
         return;
       }
@@ -169,7 +189,7 @@ export function usePoolQuote({ tokenIn, tokenOut, slippage, amountIn, pool, stop
         slippage,
       };
 
-      const output = await (pool.poolType === "botega"
+      const output = await (pool.poolType === PoolTypeEnum.BOTEGA
         ? botega.getExpectedOutput({ poolId: pool.poolId, ...params })
         : permaswap.getExpectedOutput({ poolId: pool.poolId, ...params }));
 
@@ -181,7 +201,7 @@ export function usePoolQuote({ tokenIn, tokenOut, slippage, amountIn, pool, stop
 
       let liquidity: GetLiquidityResponse;
 
-      if (output.type === "botega") {
+      if (output.type === PoolTypeEnum.BOTEGA) {
         liquidity = await botega.getLiquidity({ poolId: pool.poolId, tokenIn, tokenOut });
       } else {
         liquidity = await permaswap.getLiquidity({ poolId: pool.poolId, tokenIn, tokenOut });
@@ -205,7 +225,17 @@ export function usePoolQuote({ tokenIn, tokenOut, slippage, amountIn, pool, stop
   }, [tokenIn, tokenOut, slippage, amountIn, pool]);
 
   useEffect(() => {
-    if (!tokenIn || !tokenOut || !slippage || !amountIn || !pool || stopFetching) return;
+    if (
+      !tokenIn ||
+      !tokenOut ||
+      !slippage ||
+      !amountIn ||
+      !pool ||
+      stopFetching ||
+      (BRIDGE_TOKENS.has(tokenIn) && BRIDGE_TOKENS.has(tokenOut))
+    ) {
+      return;
+    }
 
     // fetchPoolQuote();
 
@@ -221,7 +251,11 @@ export function useTokens() {
   const { data: pools = [], isLoading } = usePools();
 
   const tokens = useMemo(() => {
+    if (pools.length === 0) return [];
+
     const uniqueTokens = new Map();
+
+    processToken(uniqueTokens, AR_TOKEN_INFO);
 
     for (const pool of pools) {
       // Process token X
@@ -336,4 +370,43 @@ export function useTokensWithPagination(
 
 export function useSwapSlippage() {
   return useStorage({ key: "swap_selected_slippage", instance: ExtensionStorage }, 0.5);
+}
+
+export function useARNetworkFee({ tokenID, note }: { tokenID: string; note?: string }) {
+  const [arNetworkFee, setArNetworkFee] = useState<string>("0");
+  const { data: bridgeInfo, isLoading: isBridgeInfoLoading } = useBridgeInfo({ enabled: tokenID === AR_PROCESS_ID });
+  const [isLoading, setIsLoading] = useState(false);
+
+  useAsyncEffect(async () => {
+    if (!tokenID || tokenID !== AR_PROCESS_ID || isBridgeInfoLoading || !bridgeInfo) {
+      setArNetworkFee("0");
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      let byte = 0;
+      if (note) {
+        byte = new TextEncoder().encode(note).byteLength;
+      }
+
+      const { result: txPrice, arweave } = await retryWithGateways((arweave) =>
+        arweave.transactions.getPrice(byte, bridgeInfo.arToken.locker),
+      );
+
+      if (tokenID === AR_PROCESS_ID) {
+        setArNetworkFee(arweave.ar.winstonToAr(txPrice));
+      } else {
+        setArNetworkFee("0");
+      }
+    } catch (error) {
+      console.error("Error calculating network fee:", error);
+      setArNetworkFee("0");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [tokenID, note, bridgeInfo]);
+
+  return { arNetworkFee, isLoading };
 }

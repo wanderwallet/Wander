@@ -15,7 +15,7 @@ export interface GetExpectedOutputResponse {
   amountInWithoutFee: string;
   totalTokenOutFeeQuantity: string;
   totalTokenInFeeQuantity: string;
-  type: "botega" | "permaswap";
+  type: "aox" | "botega" | "permaswap";
 }
 
 export interface SwapExecutionParams {
