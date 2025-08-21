@@ -8,9 +8,6 @@ import { TokenLogo } from "~components/popup/TokenLogo";
 import { AutoTag } from "./components/AutoTag";
 import { WanderFeeTag } from "./components/WanderFeeTag";
 import { useMemo } from "react";
-import { useStorage } from "@plasmohq/storage/hook";
-import { TempTransactionStorage } from "~utils/storage";
-import type { SwapData } from "./utils/swap.types";
 import BigNumber from "bignumber.js";
 import { formatBalance } from "~utils/format";
 import { useLocation } from "~wallets/router/router.utils";
@@ -21,12 +18,13 @@ import checkmarkAnimationData from "assets/lotties/checkmark.json";
 import Lottie from "react-lottie";
 import { TransactionDetailItem } from "./components/TransactionDetailItem";
 import { HorizontalLine } from "~components/HorizontalLine";
-import { getProviderName, getSwapTime } from "./utils/swap.utils";
+import { getPriceImpactColor, getProviderName, getSwapTime } from "./utils/swap.utils";
+import { useSavedSwapData } from "./utils/swap.hooks";
 
 export function SwapCompleteView() {
   const theme = useTheme();
   const { navigate } = useLocation();
-  const [swapData] = useStorage<SwapData>({ key: "swap-data", instance: TempTransactionStorage });
+  const [swapData] = useSavedSwapData();
 
   const { sendToken, receiveToken, wanderFee, slippage, amountIn, selectedPoolInfo, transferId } = swapData || {};
 
@@ -174,7 +172,7 @@ export function SwapCompleteView() {
               <TransactionDetailItem
                 title={"Price Impact"}
                 value={selectedPoolInfo?.priceImpact ? `${selectedPoolInfo.priceImpact}%` : "--"}
-                valueColor={+selectedPoolInfo?.priceImpact > 10 && theme.fail}
+                valueColor={getPriceImpactColor(selectedPoolInfo?.priceImpact, theme)}
               />
             </Flex>
           </Flex>

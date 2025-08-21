@@ -4,6 +4,7 @@ import BigNumber from "bignumber.js";
 import { BOTEGA_API_KEY, BOTEGA_SUPABASE_URL } from "./data-source/data-source.constants";
 import { AR_PROCESS_ID, AR_TOKEN_INFO, WAR_PROCESS_ID, WAR_TOKEN_INFO } from "~tokens/aoTokens/ao.constants";
 import { PoolTypeEnum } from "./swap.constants";
+import type { DefaultTheme } from "styled-components";
 
 const BOTEGA_POOL_OPTIONS = {
   headers: {
@@ -196,4 +197,10 @@ export function getProviderName(poolType: PoolType) {
 export function getSwapTime(poolType: PoolType) {
   if (poolType === PoolTypeEnum.AOX) return "30-60m";
   return "15s";
+}
+
+export function getPriceImpactColor(priceImpact: string, theme: DefaultTheme) {
+  const priceImpactNumber = +priceImpact;
+  if (priceImpactNumber >= 10) return theme.fail;
+  if (priceImpactNumber >= 5) return "#EEBD41";
 }

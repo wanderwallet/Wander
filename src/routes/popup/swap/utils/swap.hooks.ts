@@ -4,7 +4,7 @@ import { defaultOptions, useAoTokens } from "~tokens/hooks";
 import { useMemo, useCallback, useState, useEffect } from "react";
 import type { Pool, SelectedPoolInfo, TokenPools, TokenSelectorType } from "./swap.types";
 import { useStorage } from "@plasmohq/storage/hook";
-import { ExtensionStorage } from "~utils/storage";
+import { ExtensionStorage, TempTransactionStorage } from "~utils/storage";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { botega } from "./dex/dex.botega";
 import { permaswap } from "./dex/dex.permaswap";
@@ -15,7 +15,6 @@ import { aox } from "./bridge/bridge.aox";
 import { retryWithGateways } from "~gateways/wayfinder";
 import { useBridgeInfo } from "./bridge/bridge.hooks";
 import { PoolTypeEnum } from "./swap.constants";
-import BigNumber from "bignumber.js";
 
 export function usePools() {
   return useQuery({
@@ -409,4 +408,8 @@ export function useARNetworkFee({ tokenID, note }: { tokenID: string; note?: str
   }, [tokenID, note, bridgeInfo]);
 
   return { networkFee, isLoading };
+}
+
+export function useSavedSwapData() {
+  return useStorage({ key: "swap-data", instance: TempTransactionStorage });
 }

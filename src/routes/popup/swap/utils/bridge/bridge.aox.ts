@@ -10,11 +10,11 @@ import type {
 } from "../dex/dex.types";
 import { freeDecryptedWallet } from "~wallets/encryption";
 import { isLocalWallet } from "~utils/assertions";
-import { getLinkedMessages, OrderError } from "../dex/dex.utils";
+import { OrderError } from "../dex/dex.utils";
 import { retryWithDelay } from "~utils/promises/retry";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { queryClient } from "~utils/tanstack";
-import { getBridgeInfo } from "./bridge.utils";
+import { getBridgeInfo, getBridgeTransaction } from "./bridge.utils";
 import { defaultOptions } from "~tokens/hooks";
 import { findGateway } from "~gateways/wayfinder";
 import Arweave from "arweave";
@@ -28,20 +28,15 @@ import BigNumber from "bignumber.js";
  * Fetch the result of a swap message
  */
 export async function readSwapResult(orderID: string): Promise<[bigint, string]> {
-  const messages = await getLinkedMessages(undefined, undefined, false, orderID);
+  const transaction = await getBridgeTransaction(orderID);
 
-  const error = messages.find((msg) => msg.tags["Action"] === "Order-Error");
-  if (error) throw new OrderError(error.tags["Result"]);
+  const isError = transaction.status === "error";
+  if (isError) throw new OrderError(transaction.status);
 
-  const confirmation = messages.find((msg) => msg.tags["Action"] === "Order-Confirmation");
-  if (!confirmation) throw new Error("Confirmation not found");
+  const statusSuccess = transaction.status === "success";
+  if (!statusSuccess) throw new Error("Transaction not success yet");
 
-  const tokensReceived = confirmation.tags["To-Quantity"];
-  if (!tokensReceived) throw new OrderError("Confirmation response malformed");
-
-  console.log("onConfirmationId", confirmation.id);
-
-  return [BigInt(tokensReceived), confirmation.id];
+  return [BigInt(transaction.quantity), transaction.targetChainTxHash];
 }
 
 const aoInstance = connect(defaultConfig);
@@ -151,7 +146,7 @@ export async function executeSwap({ tokenIn, amountIn, tokenOut }: SwapExecution
       const response = await fetch(`https://api.aox.xyz/cacheUnPackagedTx?timestamp=${Date.now()}`, {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          txType: "burn",
+          txType: tokenIn === AR_PROCESS_ID ? "mint" : "burn",
           chainType: "arweave",
           tokenId: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
           wrappedTokenId: WAR_PROCESS_ID,
@@ -194,12 +189,7 @@ export async function getLiquidity({ poolId, tokenIn, tokenOut }: GetLiquidityPa
 
 export async function waitForSwapResult(transferId: string): Promise<boolean> {
   try {
-    await retryWithDelay(
-      () => readSwapResult(transferId),
-      1000,
-      2000,
-      (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 30000),
-    );
+    await retryWithDelay(() => readSwapResult(transferId), 1000, 300000);
 
     return true;
   } catch (err) {

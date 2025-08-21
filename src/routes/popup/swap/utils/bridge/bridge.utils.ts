@@ -1,4 +1,5 @@
-import type { BridgeInfo } from "./bridge.types";
+import { getActiveAddress } from "~wallets";
+import type { BridgeInfo, BridgeTransaction } from "./bridge.types";
 import { WAR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 
 export async function getBridgeInfo() {
@@ -15,4 +16,17 @@ export async function getBridgeInfo() {
   const arBurnDisabled = bridgeInfo.closeServer.closeArweaveBurn || false;
 
   return { arToken, warToken, arBurnLimit, arMintLimit, arMintDisabled, arBurnDisabled };
+}
+
+export async function getBridgeTransaction(txId: string) {
+  const activeAddress = await getActiveAddress();
+  const response = await fetch(`https://api.aox.xyz/txs?address=${activeAddress}&count=30`);
+  if (!response.ok) throw new Error("Failed to fetch bridge transaction");
+
+  const { txs } = (await response.json()) as { txs: BridgeTransaction[] };
+  const transaction = txs.find((tx) => tx.txId === txId);
+
+  if (!transaction) throw new Error("Transaction not found");
+
+  return transaction;
 }

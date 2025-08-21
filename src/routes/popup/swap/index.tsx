@@ -29,10 +29,11 @@ import {
   WAR_TOKEN_INFO,
 } from "~tokens/aoTokens/ao.constants";
 import { getErrorMessage, validateAmount } from "../send/amount";
+import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 
 // TODO: Update this after testing
-const usdaToken = WAR_TOKEN_INFO;
-const wndrToken = AR_TOKEN_INFO;
+const usdaToken = AR_TOKEN_INFO;
+const wndrToken = WAR_TOKEN_INFO;
 
 const wARToken = defaultTokens[5];
 
@@ -66,7 +67,11 @@ export function SwapView() {
     return getErrorMessage(state);
   }, [valueIn, balanceIn, sendToken, receiveToken, networkFee]);
 
-  const { selectedPoolInfo, isLoading, error } = usePoolForTokenPair({
+  const {
+    selectedPoolInfo,
+    isLoading,
+    error: poolError,
+  } = usePoolForTokenPair({
     tokenIn: sendToken?.processId,
     tokenOut: receiveToken?.processId,
     slippage: slippage,
@@ -168,6 +173,22 @@ export function SwapView() {
     navigate("/swap/review");
   }
 
+  useAsyncEffect(async () => {
+    const swapData = await TempTransactionStorage.get<SwapData>("swap-data");
+    if (swapData) {
+      const sendToken = swapData.sendToken;
+      const receiveToken = swapData.receiveToken;
+      const amountIn = swapData.amountIn;
+      const slippage = swapData.slippage;
+      const valueIn = BigNumber(amountIn).shiftedBy(-sendToken.Denomination).toFixed();
+
+      setSendToken(sendToken);
+      setReceiveToken(receiveToken);
+      setValueIn(valueIn);
+      setSlippage(slippage);
+    }
+  }, []);
+
   return (
     <>
       <HeadV2 title={browser.i18n.getMessage("swap")} />
@@ -209,7 +230,7 @@ export function SwapView() {
               }}
               token={receiveToken}
             />
-            {errorMessage && <ErrorMsg>{errorMessage}</ErrorMsg>}
+            {(errorMessage || poolError) && <ErrorMsg>{errorMessage || poolError}</ErrorMsg>}
           </Flex>
           <Flex direction="column" gap={8}>
             <Flex justify="space-between">
@@ -269,7 +290,7 @@ export function SwapView() {
         <Flex gap={8}>
           <Button
             style={{ flex: 1 }}
-            disabled={!valueIn || isLoading || isNetworkFeeLoading || !!errorMessage}
+            disabled={!valueIn || isLoading || isNetworkFeeLoading || !!errorMessage || !!poolError}
             loading={isLoading}
             onClick={handleSwap}
             fullWidth>

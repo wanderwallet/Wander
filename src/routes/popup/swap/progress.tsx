@@ -4,9 +4,6 @@ import styled, { useTheme } from "styled-components";
 import HeadV2 from "~components/popup/HeadV2";
 import { Flex } from "~components/common/Flex";
 import { useMemo } from "react";
-import { useStorage } from "@plasmohq/storage/hook";
-import { TempTransactionStorage } from "~utils/storage";
-import type { SwapData } from "./utils/swap.types";
 import { WanderLoading } from "~routes/welcome/WanderLoading";
 import { formatBalance } from "~utils/format";
 import { TokenLogo } from "~components/popup/TokenLogo";
@@ -21,11 +18,13 @@ import { permaswap } from "./utils/dex/dex.permaswap";
 import { getActiveAddress } from "~wallets";
 import { queryClient } from "~utils/tanstack";
 import { PoolTypeEnum } from "./utils/swap.constants";
+import { useSavedSwapData } from "./utils/swap.hooks";
+import { aox } from "./utils/bridge/bridge.aox";
 
 export function SwapProgressView() {
   const theme = useTheme();
-  const { navigate, back } = useLocation();
-  const [swapData] = useStorage<SwapData>({ key: "swap-data", instance: TempTransactionStorage });
+  const { navigate } = useLocation();
+  const [swapData] = useSavedSwapData();
 
   const { sendToken, receiveToken, amountIn, selectedPoolInfo, transferId } = swapData || {};
 
@@ -49,10 +48,16 @@ export function SwapProgressView() {
   const valueInFormatted = useMemo(() => formatBalance(valueIn || "0"), [valueIn]);
 
   useAsyncEffect(async () => {
-    if (!transferId || !selectedPoolInfo || isAoxBridge) return;
+    if (!transferId || !selectedPoolInfo) return;
+
+    const poolType = selectedPoolInfo?.pool?.poolType;
 
     const waitForSwapResultFn =
-      selectedPoolInfo?.pool?.poolType === PoolTypeEnum.BOTEGA ? botega.waitForSwapResult : permaswap.waitForSwapResult;
+      poolType === PoolTypeEnum.BOTEGA
+        ? botega.waitForSwapResult
+        : poolType === PoolTypeEnum.AOX
+          ? aox.waitForSwapResult
+          : permaswap.waitForSwapResult;
 
     const isSuccess = await waitForSwapResultFn(transferId);
     if (isSuccess) {
@@ -60,9 +65,9 @@ export function SwapProgressView() {
       queryClient.invalidateQueries({ queryKey: ["tokenBalance", receiveToken?.processId, activeAddress] });
       navigate(PopupPaths.SwapComplete);
     } else {
-      back();
+      navigate(PopupPaths.SwapFailed);
     }
-  }, [transferId, selectedPoolInfo, isAoxBridge]);
+  }, [transferId, selectedPoolInfo]);
 
   if (!swapData) {
     return (

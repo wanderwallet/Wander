@@ -53,3 +53,26 @@ export interface BridgeInfo {
     closeTransfer: boolean;
   };
 }
+
+export interface BridgeTransaction {
+  rawId: number;
+  createdAt: string;
+  updatedAt: string;
+  txType: string;
+  chainType: string;
+  txId: string;
+  sender: string;
+  recipient: string;
+  quantity: string;
+  symbol: string;
+  decimals: number;
+  blockHeight: number;
+  fromTokenId: string;
+  toTokenId: string;
+  fee: string;
+  feeRecipient: string;
+  confirmNum: number;
+  confirmRange: number;
+  status: string;
+  targetChainTxHash: string;
+}

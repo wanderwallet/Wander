@@ -9,12 +9,10 @@ import { HorizontalLine } from "~components/HorizontalLine";
 import { AutoTag } from "./components/AutoTag";
 import { WanderFeeTag } from "./components/WanderFeeTag";
 import { useMemo, useState } from "react";
-import { useStorage } from "@plasmohq/storage/hook";
 import { TempTransactionStorage } from "~utils/storage";
-import type { SwapData } from "./utils/swap.types";
 import BigNumber from "bignumber.js";
 import { formatBalance } from "~utils/format";
-import { useARNetworkFee, usePoolQuote } from "./utils/swap.hooks";
+import { useARNetworkFee, usePoolQuote, useSavedSwapData } from "./utils/swap.hooks";
 import { useLocation } from "~wallets/router/router.utils";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import { TokenValueWithTooltip } from "./components/TokenValueWithTooltip";
@@ -22,7 +20,7 @@ import { TransactionDetailItem } from "./components/TransactionDetailItem";
 import { botega } from "./utils/dex/dex.botega";
 import { permaswap } from "./utils/dex/dex.permaswap";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
-import { getProviderName, getSwapTime } from "./utils/swap.utils";
+import { getPriceImpactColor, getProviderName, getSwapTime } from "./utils/swap.utils";
 import { PoolTypeEnum } from "./utils/swap.constants";
 import { aox } from "./utils/bridge/bridge.aox";
 
@@ -30,7 +28,7 @@ export function SwapReviewView() {
   const { navigate } = useLocation();
   const theme = useTheme();
   const [isExecutingSwap, setIsExecutingSwap] = useState(false);
-  const [swapData] = useStorage<SwapData>({ key: "swap-data", instance: TempTransactionStorage });
+  const [swapData] = useSavedSwapData();
 
   const { sendToken, receiveToken, wanderFee, slippage, amountIn } = swapData || {};
 
@@ -213,7 +211,7 @@ export function SwapReviewView() {
               <TransactionDetailItem
                 title={"Price Impact"}
                 value={selectedPoolInfo?.priceImpact ? `${selectedPoolInfo.priceImpact}%` : "--"}
-                valueColor={+selectedPoolInfo?.priceImpact > 10 && theme.fail}
+                valueColor={getPriceImpactColor(selectedPoolInfo?.priceImpact, theme)}
               />
             </Flex>
           </Flex>
