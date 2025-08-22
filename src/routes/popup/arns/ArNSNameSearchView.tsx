@@ -147,7 +147,7 @@ export const ArNSNameSearchView = () => {
       <Flex direction="column" padding="0 1.5rem" flex={1}>
         <SearchWrapper>
           <Text>Search for an ArNS Name</Text>
-          <SearchInput small placeholder={"Search ArNS"} {...searchInput.bindings} />
+          <SearchInput small placeholder={"Search ArNS"} autoFocus={true} {...searchInput.bindings} />
         </SearchWrapper>
         {errorMessage && (
           <Text variant="secondary" size="xs" style={{ textAlign: "center", color: "red", marginTop: "0.5rem" }}>
