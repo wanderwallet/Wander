@@ -8,8 +8,10 @@ export interface ButtonConfig {
   text: string;
   icon: ReactNode;
   href: WanderRoutePath;
+  disabledTag?: ReactNode;
   variant?: "primary" | "secondary";
   iconPosition?: "left" | "right";
+  disabled?: boolean;
 }
 
 interface ActionButtonsProps {
@@ -24,24 +26,34 @@ export function ActionButtons({ buttons }: ActionButtonsProps) {
   return (
     <Container>
       {buttonConfigs.map((button, index) => (
-        <ConfigurableButton
-          key={index}
-          onClick={() => navigate(button.href)}
-          variant={button.variant || "secondary"}
-          icon={button.icon}
-          iconPosition={button.iconPosition}
-          $buttonCount={buttonCount}
-          $isFirst={index === 0 && buttonCount === 3}>
-          {button.text}
-        </ConfigurableButton>
+        <ConfigurableButtonWrapper key={index} $buttonCount={buttonCount} $isFirst={index === 0 && buttonCount === 3}>
+          <ConfigurableButton
+            onClick={() => navigate(button.href)}
+            variant={button.variant || "secondary"}
+            icon={button.icon}
+            iconPosition={button.iconPosition}
+            disabled={button.disabled}>
+            {button.text}
+          </ConfigurableButton>
+          {button.disabled && button.disabledTag && <DisabledTag>{button.disabledTag}</DisabledTag>}
+        </ConfigurableButtonWrapper>
       ))}
     </Container>
   );
 }
 
-const ConfigurableButton = styled(Button)<{ $buttonCount: number; $isFirst: boolean }>`
+const ConfigurableButton = styled(Button)`
   box-sizing: border-box;
   min-width: 0;
+  width: 100%;
+
+  &:disabled {
+    pointer-events: none;
+  }
+`;
+
+const ConfigurableButtonWrapper = styled.div<{ $buttonCount: number; $isFirst: boolean }>`
+  position: relative;
 
   ${({ $buttonCount, $isFirst }) => {
     if ($buttonCount === 2) {
@@ -79,9 +91,14 @@ const ConfigurableButton = styled(Button)<{ $buttonCount: number; $isFirst: bool
   }}
 `;
 
+const DisabledTag = styled.div`
+  position: absolute;
+  top: -8px;
+  right: -8px;
+`;
+
 const Container = styled.div`
   display: flex;
   width: 100%;
   box-sizing: border-box;
-  overflow: hidden;
 `;
