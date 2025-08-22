@@ -88,6 +88,12 @@ export const ArNSNameSearchView = () => {
   // Debounce the search term
   const debouncedSearchTerm = useDebounce(searchInput.state, 500);
 
+  useEffect(() => {
+    // show searching state when user starts typing
+    setSearchResults(undefined);
+    setSearchState("searching");
+  }, [searchInput.state]);
+
   // Handle search when debounced search term changes
   useEffect(() => {
     const search = async () => {
