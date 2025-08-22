@@ -76,3 +76,12 @@ export interface BridgeTransaction {
   status: string;
   targetChainTxHash: string;
 }
+
+export interface BridgeInfoResult {
+  arToken: BridgeInfo["chainTokens"][number];
+  warToken: BridgeInfo["wrappedTokens"][number];
+  warBurnLimit: BridgeInfo["burnLimits"][string];
+  arMintLimit: number;
+  arMintDisabled: boolean;
+  warBurnDisabled: boolean;
+}

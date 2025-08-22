@@ -10,11 +10,12 @@ import { botega } from "./dex/dex.botega";
 import { permaswap } from "./dex/dex.permaswap";
 import type { GetLiquidityResponse } from "./dex/dex.types";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
-import { AR_PROCESS_ID, AR_TOKEN_INFO, WAR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
+import { AR_PROCESS_ID, AR_TOKEN_INFO } from "~tokens/aoTokens/ao.constants";
 import { aox } from "./bridge/bridge.aox";
 import { retryWithGateways } from "~gateways/wayfinder";
 import { useBridgeInfo } from "./bridge/bridge.hooks";
 import { PoolTypeEnum } from "./swap.constants";
+import { validateBridgeTransaction } from "./bridge/bridge.utils";
 
 export function usePools() {
   return useQuery({
@@ -55,6 +56,7 @@ export function usePoolForTokenPair({ tokenIn, tokenOut, slippage, amountIn }: u
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedPoolInfo, setSelectedPoolInfo] = useState<SelectedPoolInfo | null>(null);
+  const { data: bridgeInfo } = useBridgeInfo({ enabled: tokenIn === AR_PROCESS_ID });
 
   const pairPools = useMemo(() => {
     if (!tokenIn || !tokenOut) return { botega: [], permaswap: [], aox: [] };
@@ -78,6 +80,12 @@ export function usePoolForTokenPair({ tokenIn, tokenOut, slippage, amountIn }: u
       setIsLoading(true);
 
       if (BRIDGE_TOKEN_IDS.has(tokenIn) && BRIDGE_TOKEN_IDS.has(tokenOut)) {
+        const validationError = validateBridgeTransaction(amountIn, bridgeInfo, tokenIn, tokenOut);
+        if (validationError) {
+          setError(validationError);
+          return;
+        }
+
         const aoxPool = pairPools?.aox?.[0];
         const aoxOutput = await aox.getExpectedOutput({ poolId: aoxPool.poolId, tokenIn, amountIn });
 
@@ -146,7 +154,6 @@ export function usePoolForTokenPair({ tokenIn, tokenOut, slippage, amountIn }: u
       }
 
       const priceImpact = getPriceImpact(liquidity.reserveIn, liquidity.reserveOut, finalOutput.amountInWithoutFee);
-      console.log({ finalOutput, liquidity, priceImpact });
 
       setSelectedPoolInfo({ pool: finalPool, quoteOutput: finalOutput, priceImpact });
     } catch (error) {
@@ -155,7 +162,7 @@ export function usePoolForTokenPair({ tokenIn, tokenOut, slippage, amountIn }: u
     } finally {
       setIsLoading(false);
     }
-  }, [tokenIn, tokenOut, pairPools, slippage, amountIn]);
+  }, [tokenIn, tokenOut, pairPools, slippage, amountIn, bridgeInfo]);
 
   return { selectedPoolInfo, isLoading, error };
 }
