@@ -1,5 +1,6 @@
 {
   "extends": "../../tsconfig.base.json",
+
   "compilerOptions": {
     "outDir": "dist",
     "tsBuildInfoFile": "dist/tsconfig.app.tsbuildinfo",
@@ -11,9 +12,21 @@
       "@nx/react/typings/image.d.ts",
       "vite/client"
     ],
-    "rootDir": "src"
+    "rootDir": "src",
+
+    // Added:
+
+    "paths": {
+      "~*": ["./src/*"],
+      "~isomorphic-messaging": ["./src/utils/messaging/strategies/extension/extension-messaging.strategy.ts"],
+      "~isomorphic-chunking": ["./src/utils/messaging/strategies/extension/extension-chunking.strategy.ts"]
+    },
   },
+
+  // Modified:
+
   "exclude": [
+    "node_modules", // Added
     "out-tsc",
     "dist",
     "src/**/*.spec.ts",
@@ -28,5 +41,21 @@
     "eslint.config.cjs",
     "eslint.config.mjs"
   ],
-  "include": ["src/**/*.js", "src/**/*.jsx", "src/**/*.ts", "src/**/*.tsx"]
+
+  "include": [
+    ".plasmo/index.d.ts",
+    // ".plasmo/**/*",
+    "src/**/*.js",
+    "src/**/*.jsx",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "./shim.d.ts"
+    // "vite.config.js",
+    // "vite.config.js"
+  ]
+
+  // Added:
+
+  // Removed:
+  // "extends": "plasmo/templates/tsconfig.base",
 }

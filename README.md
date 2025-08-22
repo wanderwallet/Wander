@@ -87,5 +87,6 @@ And join the Nx community:
 TODO:
 =====
 
+- [ ] SDK `package.json` has some paths from the previous version that should be addressed (`sdk-dist`).
 - [ ] The original README is missing.
 - [ ] tsconfig files for `wander-connect-sdk` as well as the root one have not been merged into the new `tsconfig.base.json` one nor into the app/lib-specific one.

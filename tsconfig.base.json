@@ -5,7 +5,6 @@
     "emitDeclarationOnly": true,
     "importHelpers": true,
     "isolatedModules": true,
-    "lib": ["es2022"],
     "module": "esnext",
     "moduleResolution": "bundler",
     "noEmitOnError": true,
@@ -15,7 +14,20 @@
     "noUnusedLocals": true,
     "skipLibCheck": true,
     "strict": true,
-    "target": "es2022",
+
+    // Modified:
+    // "lib": ["es2022"],
+    "lib": ["DOM", "ESNext"],
+    //"target": "es2022",
+    "target": "es2020",
+
+    // Added:
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "sourceMap": true,
+    "resolveJsonModule": true,
+
+    // Removed:
     // "customConditions": ["development"]
   }
 }
