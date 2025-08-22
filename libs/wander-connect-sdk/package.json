@@ -16,8 +16,8 @@
       "development": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
-      "default": "./dist/index.js"   ,
-      "require": "OLD_./sdk-dist/index.cjs"
+      "require": "OLD_./sdk-dist/index.cjs",
+      "default": "./dist/index.js"
     }
   },
   "type": "module",
@@ -36,5 +36,8 @@
   },
   "nx": {
     "name": "wander-connect-sdk"
+  },
+  "dependencies": {
+    "ts-deepmerge": "^7.0.3"
   }
 }
