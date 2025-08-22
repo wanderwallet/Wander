@@ -26,20 +26,6 @@
   "unpkg": "OLD_sdk-dist/index.global.js",
   "jsdelivr": "OLD_sdk-dist/index.global.js",
   "types": "./dist/index.d.ts",
-  "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch",
-    "clean": "rm -rf sdk-dist wallet-api-dist",
-    "nuke": "pnpm clean && rm -rf pnpm-lock.yaml node_modules",
-    "prepare": "pnpm build"
-  },
-  "devDependencies": {
-    "tsup": "^8.4.0",
-    "typescript": "^5.8.3"
-  },
-  "dependencies": {
-    "ts-deepmerge": "^7.0.3"
-  },
   "homepage": "https://www.wander.app/connect",
   "repository": {
     "type": "git",
