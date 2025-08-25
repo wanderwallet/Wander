@@ -1,5 +1,5 @@
 import { IS_EMBEDDED_APP } from "~utils/_embedded/embedded.constants";
-import { version } from "../../../../package.json";
+import { version } from "../../../../../.old/package.json";
 
 export interface DecodedTag {
   name: string;

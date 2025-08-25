@@ -1,6 +1,6 @@
 import type { DisplayTheme } from "@arconnect/components-rebrand";
 import type { Chunk } from "~api/modules/sign/chunks";
-import type { InjectedEvents } from "~utils/events";
+import type { InjectedEvents } from "../.old-already-moved/src/utils/events";
 import "styled-components";
 import type { AuthRequestMessageData, AuthResult } from "~utils/auth/auth.types";
 import { EmbeddedMessage, EmbeddedCall } from "~utils/_embedded/utils/messages/embedded-messages.types";
