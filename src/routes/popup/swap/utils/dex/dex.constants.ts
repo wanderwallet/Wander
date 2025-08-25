@@ -117,3 +117,27 @@ query($address: String!, $pushedFors: [String!]!) {
     }
   }
 }`;
+
+export const AOX_SWAP_QUERY = `
+query($address: String!, $txIds: [ID!]!) {
+  transactions(
+    ids: $txIds,
+    first: 10,
+    tags: [
+      {name: "Action", values: ["Transfer", "Burn"]},
+      { name: "X-Client", values: ["Roam"]},
+      { name: "X-Type", values: ["Swap"]},
+    ],
+    owners: [$address],
+  ) {
+    edges {
+      node {
+        id
+        recipient
+        owner { address }
+        block { timestamp, height }
+        tags { name, value }
+      }
+    }
+  }
+}`;

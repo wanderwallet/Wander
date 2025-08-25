@@ -1,21 +1,23 @@
 import styled from "styled-components";
-import { Section } from "@arconnect/components-rebrand";
+import { Button, Loading, Section } from "@arconnect/components-rebrand";
 import HeadV2 from "~components/popup/HeadV2";
 import { ListItem, Text } from "@arconnect/components-rebrand";
 import { Flex } from "~components/common/Flex";
-import aoLogo from "url:/assets/ecosystem/ao-logo.svg";
-import WarIcon from "url:/assets/ecosystem/war.png";
-import { getStatusColor } from "~utils/agents/utils";
 import { useTheme } from "styled-components";
-import { SvgImageWithBackground } from "../agents/components/SvgImage";
 import { useLocation } from "~wallets/router/router.utils";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import { useTransactions } from "./utils/swap.hooks";
+import type { ParsedSwapTransaction } from "./utils/swap.types";
+import browser from "webextension-polyfill";
+import dayjs from "dayjs";
+import { getStatusColor } from "./utils/swap.utils";
+import { useMemo } from "react";
+import { formatBalance } from "~utils/format";
+import BigNumber from "bignumber.js";
+import { TokenLogo } from "~components/popup/TokenLogo";
 
 export function SwapHistoryView() {
   const { transactions, loading, hasNextPage, fetchTransactions } = useTransactions();
-
-  console.log({ transactions, loading, hasNextPage });
 
   return (
     <>
@@ -23,25 +25,69 @@ export function SwapHistoryView() {
 
       <Wrapper>
         <Flex gap={12} direction="column">
-          <SwapHistoryListItem />
+          {transactions.map((tx, index) => (
+            <SwapHistoryListItem key={`${tx.txId}-${index}`} tx={tx} />
+          ))}
+          {!loading && transactions.length === 0 && (
+            <Text size="md" weight="medium" noMargin style={{ textAlign: "center" }}>
+              {browser.i18n.getMessage("no_transactions")}
+            </Text>
+          )}
         </Flex>
+        {hasNextPage && (
+          <Button
+            fullWidth
+            disabled={!hasNextPage || loading}
+            style={{ alignSelf: "center", marginTop: "5px" }}
+            onClick={fetchTransactions}>
+            {loading ? (
+              <>
+                Loading <Loading style={{ margin: "0.18rem" }} />
+              </>
+            ) : (
+              browser.i18n.getMessage("load_more") + "..."
+            )}
+          </Button>
+        )}
       </Wrapper>
     </>
   );
 }
 
-interface SwapHistoryListItemProps {}
+interface SwapHistoryListItemProps {
+  tx: ParsedSwapTransaction;
+}
 
-const SwapHistoryListItem = ({}: SwapHistoryListItemProps) => {
+const SwapHistoryListItem = ({ tx }: SwapHistoryListItemProps) => {
   const theme = useTheme();
   const { navigate } = useLocation();
+
+  const valueInFormatted = useMemo(() => {
+    if (!tx.amountIn || !tx.tokenIn) return formatBalance("0");
+
+    const value = BigNumber(tx.amountIn || "0")
+      .shiftedBy(-tx.tokenIn.Denomination)
+      .toFixed();
+
+    return formatBalance(value);
+  }, [tx.amountIn, tx.tokenIn.Denomination]);
+
+  const valueOutFormatted = useMemo(() => {
+    if (!tx.amountOut || !tx.tokenOut) return formatBalance("0");
+
+    const value = BigNumber(tx.amountOut || "0")
+      .shiftedBy(-tx.tokenOut.Denomination)
+      .toFixed();
+
+    return formatBalance(value);
+  }, [tx.amountOut, tx.tokenOut]);
 
   return (
     <StyledListItem
       title={
         <Flex justify="space-between" align="center" width="100%">
           <Text weight="semibold" noMargin>
-            waR &gt; AGENT
+            {tx.tokenIn.Ticker} &gt; {tx.tokenOut.Ticker}
           </Text>
           <Flex align="center" gap={4}>
             <div
@@ -49,11 +95,11 @@ const SwapHistoryListItem = ({}: SwapHistoryListItemProps) => {
                 height: 6,
                 width: 6,
                 borderRadius: "50%",
-                backgroundColor: getStatusColor("Active", "Active"),
+                backgroundColor: getStatusColor(tx.status),
               }}
             />
             <Text size="sm" weight="medium" noMargin>
-              Completed
+              {tx.status}
             </Text>
           </Flex>
         </Flex>
@@ -61,10 +107,11 @@ const SwapHistoryListItem = ({}: SwapHistoryListItemProps) => {
       subtitle={
         <Flex justify="space-between" align="center" width="100%">
           <Text size="sm" variant="secondary" weight="medium" noMargin>
-            1 wAR &gt; 11.8758 AGENT
+            {valueInFormatted.displayBalance} {tx.tokenIn.Ticker} &gt; {valueOutFormatted.displayBalance}{" "}
+            {tx.tokenOut.Ticker}
           </Text>
           <Text size="sm" variant="secondary" weight="medium" noMargin>
-            July 30
+            {dayjs(tx.timestamp).format("MMM D")}
           </Text>
         </Flex>
       }
@@ -72,24 +119,12 @@ const SwapHistoryListItem = ({}: SwapHistoryListItemProps) => {
       hideSquircle={true}
       icon={
         <Flex direction="row" style={{ width: 32, position: "relative" }}>
-          <SvgImageWithBackground
-            height={20}
-            width={20}
-            style={{
-              position: "absolute",
-              top: -17,
-              left: 2,
-              border: `1px solid ${theme.displayTheme === "dark" ? "#333333" : "#D6D6DD"}`,
-            }}
-            src={aoLogo}
-            iconSize={16}
-            iconColor="black"
-          />
-          <img src={WarIcon} height={24} width={24} style={{ position: "absolute", bottom: -17, right: -6 }} />
+          <TokenLogo token={tx.tokenIn} size={24} style={{ position: "absolute", top: -17, left: 2 }} />
+          <TokenLogo token={tx.tokenOut} size={24} style={{ position: "absolute", bottom: -17, right: -6 }} />
         </Flex>
       }
       active
-      onClick={() => navigate(PopupPaths.SwapTransactionDetails, { params: { id: "1" } })}
+      onClick={() => navigate(PopupPaths.SwapTransactionDetails, { params: { id: tx.txId } })}
     />
   );
 };
@@ -107,7 +142,7 @@ const StyledListItem = styled(ListItem)`
 `;
 
 const Wrapper = styled(Section)`
-  height: 100%;
+  height: calc(100vh - 100px);
   padding-top: 0px;
   display: flex;
   flex-direction: column;

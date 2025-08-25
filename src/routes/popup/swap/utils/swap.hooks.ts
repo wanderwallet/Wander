@@ -462,13 +462,9 @@ export const useTransactions = () => {
         }),
       );
 
-      console.log({ botegaResult, permaswapResult, aoxResult });
-
       const botegaData = botegaResult.status === "fulfilled" ? botegaResult.value : emptyResponse;
       const permaswapData = permaswapResult.status === "fulfilled" ? permaswapResult.value : emptyResponse;
       const aoxData = aoxResult.status === "fulfilled" ? aoxResult.value : emptyResponse;
-
-      console.log({ botegaData, permaswapData, aoxData });
 
       setCursors([botegaData.cursor, permaswapData.cursor, aoxData.cursor]);
       setHasNextPages([botegaData.hasNextPage, permaswapData.hasNextPage, aoxData.hasNextPage]);
@@ -481,7 +477,7 @@ export const useTransactions = () => {
         return timestampB - timestampA;
       });
 
-      setTransactions(combinedTransactions);
+      setTransactions((prev) => [...prev, ...combinedTransactions]);
     } catch (error) {
       console.error("Error fetching transactions", error);
     } finally {

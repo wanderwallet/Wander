@@ -188,6 +188,8 @@ export async function getBotegaTransactions(address: string, cursor = "") {
     validateGqlResponse(data);
 
     const edges = data?.data?.transactions?.edges || [];
+    if (edges.length === 0) return { txs: [], hasNextPage: false, cursor };
+
     cursor = edges[edges.length - 1].cursor;
     const hasNextPage = data?.data?.transactions?.pageInfo?.hasNextPage || false;
 
@@ -234,6 +236,8 @@ export async function getPermaswapTransactions(address: string, cursor = "") {
     validateGqlResponse(data);
 
     const edges = data?.data?.transactions?.edges || [];
+    if (edges.length === 0) return { txs: [], hasNextPage: false, cursor };
+
     cursor = edges[edges.length - 1].cursor;
     const hasNextPage = data?.data?.transactions?.pageInfo?.hasNextPage || false;
 
@@ -252,7 +256,9 @@ export async function getPermaswapTransactions(address: string, cursor = "") {
 
       const edges = data?.data?.transactions?.edges || [];
       for (const edge of edges) {
-        const swapTx = txMap.get(edge.node.id);
+        const tags = edge?.node?.tags || [];
+        const pushedFor = getTagValue("Pushed-For", tags);
+        const swapTx = txMap.get(pushedFor);
         if (swapTx) {
           edge.node.tags.push(...swapTx.node.tags);
         }

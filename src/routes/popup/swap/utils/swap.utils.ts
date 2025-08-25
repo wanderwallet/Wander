@@ -269,3 +269,16 @@ export function validateGqlResponse(data: GQLResultInterface) {
     throw new Error((data as any)?.errors?.[0]?.message || "GraphQL Error");
   }
 }
+
+export function getStatusColor(status: ParsedSwapTransaction["status"]) {
+  switch (status) {
+    case "Pending":
+      return "#FFE342";
+    case "Failed":
+      return "#EE5A4F";
+    case "Completed":
+      return "#04AA3E";
+    default:
+      return "#04AA3E";
+  }
+}

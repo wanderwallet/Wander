@@ -167,5 +167,5 @@ export interface ParsedSwapTransaction {
   tokenOut: TokenInfo;
   amountIn: string;
   amountOut: string;
-  status: string;
+  status: "Pending" | "Completed" | "Failed";
 }
