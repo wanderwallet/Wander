@@ -11,15 +11,15 @@ export function createExtensionStoragePersister({ cacheKey }: { cacheKey: string
   return {
     persistClient: async (persistClient: PersistedClient) => {
       try {
-        await ExtensionStorage.set(cacheKey, JSON.stringify(persistClient));
+        await ExtensionStorage.set(cacheKey, persistClient);
       } catch (error) {
         console.error(`Error persisting query client (${cacheKey}):`, error);
       }
     },
     restoreClient: async () => {
       try {
-        const cached = await ExtensionStorage.get<string>(cacheKey);
-        return cached ? (JSON.parse(cached) as PersistedClient) : null;
+        const cached = await ExtensionStorage.get<PersistedClient>(cacheKey);
+        return cached ? cached : null;
       } catch (error) {
         console.error(`Error restoring query client (${cacheKey}):`, error);
         return null;
