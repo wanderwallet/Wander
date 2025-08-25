@@ -16,7 +16,7 @@ import { TokenSelectorPopup } from "./components/TokenSelectorPopup";
 import BigNumber from "bignumber.js";
 import { useDefiFeeDetails } from "~utils/tier/hooks";
 import { useTokenBalance } from "~tokens/hooks";
-import { useActiveAddress } from "~wallets/hooks";
+import { useActiveAddress, useDebounce } from "~wallets/hooks";
 import { TempTransactionStorage } from "~utils/storage";
 import { useLocation } from "~wallets/router/router.utils";
 import { AutoTag } from "./components/AutoTag";
@@ -52,22 +52,23 @@ export function SwapView() {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [tokenSelectorType, setTokenSelectorType] = useState<TokenSelectorType>("send");
   const { networkFee, isLoading: isNetworkFeeLoading } = useARNetworkFee({ tokenID: sendToken.processId });
+  const debouncedValueIn = useDebounce(valueIn, 300);
 
   const { data: balanceIn = "0", isLoading: balanceInLoading } = useTokenBalance(sendToken, activeAddress);
   const { data: balanceOut = "0", isLoading: balanceOutLoading } = useTokenBalance(receiveToken, activeAddress);
 
   const amountIn = useMemo(() => {
-    if (!valueIn || !sendToken) return "";
-    return BigNumber(valueIn).shiftedBy(sendToken.Denomination).toFixed();
-  }, [valueIn, sendToken]);
+    if (!debouncedValueIn || !sendToken) return "";
+    return BigNumber(debouncedValueIn).shiftedBy(sendToken.Denomination).toFixed();
+  }, [debouncedValueIn, sendToken]);
 
   const errorMessage = useMemo(() => {
-    if (!valueIn || !balanceIn || !sendToken || !receiveToken) return "";
+    if (!debouncedValueIn || !balanceIn || !sendToken || !receiveToken) return "";
 
     const fee = sendToken.processId === AR_PROCESS_ID && receiveToken.processId === WAR_PROCESS_ID ? networkFee : "0";
-    const state = validateAmount(valueIn, balanceIn, fee, "token", 1);
+    const state = validateAmount(debouncedValueIn, balanceIn, fee, "token", 1);
     return getErrorMessage(state);
-  }, [valueIn, balanceIn, sendToken, receiveToken, networkFee]);
+  }, [debouncedValueIn, balanceIn, sendToken, receiveToken, networkFee]);
 
   const {
     selectedPoolInfo,
@@ -81,11 +82,11 @@ export function SwapView() {
   });
 
   const valueOut = useMemo(() => {
-    if (!valueIn || !selectedPoolInfo?.quoteOutput?.amountOut || !receiveToken) return "";
+    if (!debouncedValueIn || !selectedPoolInfo?.quoteOutput?.amountOut || !receiveToken) return "";
     return BigNumber(selectedPoolInfo?.quoteOutput?.amountOut || "0")
       .shiftedBy(-receiveToken.Denomination)
       .toFixed();
-  }, [selectedPoolInfo, receiveToken, valueIn]);
+  }, [selectedPoolInfo, receiveToken, debouncedValueIn]);
 
   const rate = useMemo(() => {
     if (!selectedPoolInfo?.quoteOutput || !sendToken || !receiveToken) return "--";
@@ -127,9 +128,9 @@ export function SwapView() {
   }, [selectedPoolInfo, sendToken, receiveToken]);
 
   const wanderFee = useMemo(() => {
-    if (!valueIn || !defiFeeDetails) return { originalFee: "--", finalFee: "--", hasChanged: false };
-    const originalFee = BigNumber(valueIn).multipliedBy(defiFeeDetails.originalFeePercent).dividedBy(100);
-    const finalFee = BigNumber(valueIn).multipliedBy(defiFeeDetails.finalFeePercent).dividedBy(100);
+    if (!debouncedValueIn || !defiFeeDetails) return { originalFee: "--", finalFee: "--", hasChanged: false };
+    const originalFee = BigNumber(debouncedValueIn).multipliedBy(defiFeeDetails.originalFeePercent).dividedBy(100);
+    const finalFee = BigNumber(debouncedValueIn).multipliedBy(defiFeeDetails.finalFeePercent).dividedBy(100);
 
     return {
       hasChanged: defiFeeDetails.feeHasChanged,
@@ -292,11 +293,11 @@ export function SwapView() {
         <Flex gap={8}>
           <Button
             style={{ flex: 1 }}
-            disabled={!valueIn || isLoading || isNetworkFeeLoading || !!errorMessage || !!poolError}
+            disabled={!debouncedValueIn || isLoading || isNetworkFeeLoading || !!errorMessage || !!poolError}
             loading={isLoading}
             onClick={handleSwap}
             fullWidth>
-            {valueIn ? browser.i18n.getMessage("review") : browser.i18n.getMessage("enter_amount")}
+            {debouncedValueIn ? browser.i18n.getMessage("review") : browser.i18n.getMessage("enter_amount")}
           </Button>
           <Button
             width="72px"

@@ -107,7 +107,14 @@ export async function getExpectedOutput({
   } satisfies GetExpectedOutputResponse;
 }
 
-export async function executeSwap({ tokenIn, tokenOut, amountIn, minAmountOut, poolId }: SwapExecutionParams) {
+export async function executeSwap({
+  tokenIn,
+  tokenOut,
+  amountIn,
+  minAmountOut,
+  poolId,
+  tags = [],
+}: SwapExecutionParams) {
   let decryptedWallet: DecryptedWallet;
   try {
     decryptedWallet = await getActiveKeyfile();
@@ -146,8 +153,7 @@ export async function executeSwap({ tokenIn, tokenOut, amountIn, minAmountOut, p
         { name: "Quantity", value: amountIn },
         { name: "X-FFP-For", value: "Settle" },
         { name: "X-FFP-NoteIDs", value: JSON.stringify([noteId]) },
-        { name: "X-App-Name", value: "Wander" },
-        { name: "X-Tx-Type", value: "Swap" },
+        ...tags,
       ],
     });
 

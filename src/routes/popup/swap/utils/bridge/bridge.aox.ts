@@ -69,7 +69,7 @@ export async function getExpectedOutput({
   } satisfies GetExpectedOutputResponse;
 }
 
-export async function executeSwap({ tokenIn, amountIn, tokenOut }: SwapExecutionParams) {
+export async function executeSwap({ tokenIn, amountIn, tags = [] }: SwapExecutionParams) {
   let decryptedWallet: DecryptedWallet;
   try {
     const bridgeInfo = await queryClient.fetchQuery({
@@ -97,6 +97,7 @@ export async function executeSwap({ tokenIn, amountIn, tokenOut }: SwapExecution
       transaction.addTag("Type", "Transfer");
       transaction.addTag("Client", "Wander");
       transaction.addTag("Client-Version", browser.runtime.getManifest().version);
+      tags.forEach((tag) => transaction.addTag(tag.name, tag.value));
 
       await arweave.transactions.sign(transaction, keyfile);
       const result = await arweave.transactions.post(transaction);
@@ -115,8 +116,7 @@ export async function executeSwap({ tokenIn, amountIn, tokenOut }: SwapExecution
           { name: "Recipient", value: activeAddress },
           { name: "Quantity", value: amountIn },
           { name: "Timestamp", value: Date.now().toString() },
-          { name: "X-App-Name", value: "Wander" },
-          { name: "X-Tx-Type", value: "Swap" },
+          ...tags,
         ],
       });
 

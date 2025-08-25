@@ -105,6 +105,19 @@ export function SwapReviewView() {
 
   async function handleSwap() {
     try {
+      if (
+        !selectedPoolInfo ||
+        !sendToken ||
+        !receiveToken ||
+        !amountIn ||
+        !slippage ||
+        !rate ||
+        !providerNetworkFee ||
+        !wanderFee
+      ) {
+        return;
+      }
+
       setIsExecutingSwap(true);
 
       const poolType = selectedPoolInfo?.pool?.poolType;
@@ -115,12 +128,47 @@ export function SwapReviewView() {
           : poolType === PoolTypeEnum.PERMASWAP
             ? permaswap.executeSwap
             : aox.executeSwap;
+
+      const tags = [
+        { name: "X-Client", value: "Roam" }, // TODO: change this to the actual client name
+        { name: "X-Type", value: "Swap" },
+        { name: "X-Rate", value: rate },
+        { name: "X-Provider", value: getProviderName(poolType) },
+        { name: "X-Network-Fee", value: providerNetworkFee || `0 ${sendToken?.Ticker}` },
+        { name: "X-Client-Fee", value: wanderFee?.finalFee || `0 ${sendToken?.Ticker}` },
+        { name: "X-Slippage", value: `${slippage}%` },
+        { name: "X-Price-Impact", value: `${selectedPoolInfo?.priceImpact || "0"}%` },
+        {
+          name: "X-Token-In",
+          value: JSON.stringify({
+            Name: sendToken.Name,
+            Ticker: sendToken.Ticker,
+            Denomination: sendToken.Denomination,
+            Logo: sendToken.Logo,
+            processId: sendToken.processId || sendToken.id,
+          }),
+        },
+        {
+          name: "X-Token-Out",
+          value: JSON.stringify({
+            Name: receiveToken.Name,
+            Ticker: receiveToken.Ticker,
+            Denomination: receiveToken.Denomination,
+            Logo: receiveToken.Logo,
+            processId: receiveToken.processId || receiveToken.id,
+          }),
+        },
+        { name: "X-Amount-In", value: amountIn },
+        { name: "X-Amount-Out", value: selectedPoolInfo.quoteOutput.amountOut },
+      ];
+
       const transferId = await executeSwapFn({
         tokenIn: sendToken?.processId,
         tokenOut: receiveToken?.processId,
         amountIn,
         minAmountOut: selectedPoolInfo.quoteOutput.amountOut,
         poolId: selectedPoolInfo.pool.poolId,
+        tags,
       });
 
       TempTransactionStorage.set("swap-data", { ...swapData, selectedPoolInfo, transferId });

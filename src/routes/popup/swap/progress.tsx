@@ -116,7 +116,7 @@ export function SwapProgressView() {
           </Flex>
         </WrapperContent>
 
-        <Flex gap={12}>
+        <Flex direction="column" gap={12}>
           {isAoxBridge && (
             <Button fullWidth onClick={() => navigate(PopupPaths.Home)}>
               Go to dashboard

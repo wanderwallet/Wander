@@ -81,7 +81,7 @@ export async function getExpectedOutput({
   } satisfies GetExpectedOutputResponse;
 }
 
-export async function executeSwap({ tokenIn, amountIn, minAmountOut, poolId }: SwapExecutionParams) {
+export async function executeSwap({ tokenIn, amountIn, minAmountOut, poolId, tags = [] }: SwapExecutionParams) {
   let decryptedWallet: DecryptedWallet;
   try {
     const swapNonce = `${Date.now()}-${Math.floor(Math.random() * 1000000000)}`;
@@ -102,8 +102,7 @@ export async function executeSwap({ tokenIn, amountIn, minAmountOut, poolId }: S
         { name: "X-Expected-Min-Output", value: minAmountOut },
         { name: "X-Swap-Nonce", value: swapNonce },
         { name: "X-Action", value: "Swap" },
-        { name: "X-App-Name", value: "Wander" },
-        { name: "X-Tx-Type", value: "Swap" },
+        ...tags,
       ],
     });
 

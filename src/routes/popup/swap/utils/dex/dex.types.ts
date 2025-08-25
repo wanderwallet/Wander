@@ -1,3 +1,5 @@
+import type { Tag } from "~utils/agents/types";
+
 export interface GetExpectedOutputParams {
   poolId: string;
   tokenIn: string;
@@ -26,6 +28,7 @@ export interface SwapExecutionParams {
   poolId: string;
   slippage?: number;
   deadline?: number;
+  tags?: Tag[];
 }
 
 export interface GetLiquidityParams {
