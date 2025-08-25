@@ -35,8 +35,6 @@ export const ArNSConfirmSetPrimaryNameView = ({ params: { name } }: ArNSConfirmS
 
   const arioBalance = useArioBalance();
 
-  console.log("COST and Balance: ", costDetailsArio, arioBalance);
-
   const wallet = useActiveWallet();
 
   const { navigate } = useLocation();
