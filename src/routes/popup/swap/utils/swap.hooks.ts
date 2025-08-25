@@ -74,6 +74,7 @@ export function usePoolForTokenPair({ tokenIn, tokenOut, slippage, amountIn }: u
         Object.values(pairPools).every((pools) => pools.length === 0)
       ) {
         setSelectedPoolInfo(null);
+        setError(null);
         return;
       }
 
@@ -95,6 +96,8 @@ export function usePoolForTokenPair({ tokenIn, tokenOut, slippage, amountIn }: u
           priceImpact: "0.00",
         });
 
+        setError(null);
+
         return;
       }
 
@@ -103,6 +106,7 @@ export function usePoolForTokenPair({ tokenIn, tokenOut, slippage, amountIn }: u
 
       if (!botegaPool && !permaswapPool) {
         log(LOG_GROUP.SWAP, "No botega or permaswap pool found");
+        setError("No botega or permaswap pool found");
         return;
       }
 
@@ -156,6 +160,7 @@ export function usePoolForTokenPair({ tokenIn, tokenOut, slippage, amountIn }: u
       const priceImpact = getPriceImpact(liquidity.reserveIn, liquidity.reserveOut, finalOutput.amountInWithoutFee);
 
       setSelectedPoolInfo({ pool: finalPool, quoteOutput: finalOutput, priceImpact });
+      setError(null);
     } catch (error) {
       log(LOG_GROUP.SWAP, "Error fetching pool for token pair", error);
       setError("Error fetching pool for token pair");
@@ -185,6 +190,7 @@ export function usePoolQuote({ tokenIn, tokenOut, slippage, amountIn, pool, stop
     try {
       if (!tokenIn || !tokenOut || !slippage || !amountIn || !pool || stopFetching) {
         setSelectedPoolInfo(null);
+        setError(null);
         return;
       }
 
@@ -223,6 +229,7 @@ export function usePoolQuote({ tokenIn, tokenOut, slippage, amountIn, pool, stop
       const priceImpact = getPriceImpact(liquidity.reserveIn, liquidity.reserveOut, output.amountInWithoutFee);
 
       setSelectedPoolInfo({ pool, quoteOutput: output, priceImpact });
+      setError(null);
     } catch (error) {
       log(LOG_GROUP.SWAP, "Error fetching pool for token pair", error);
       setError("Error fetching pool for token pair");

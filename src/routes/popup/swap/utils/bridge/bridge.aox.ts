@@ -115,7 +115,8 @@ export async function executeSwap({ tokenIn, amountIn, tokenOut }: SwapExecution
           { name: "Recipient", value: activeAddress },
           { name: "Quantity", value: amountIn },
           { name: "Timestamp", value: Date.now().toString() },
-          { name: "App-Name", value: "Wander" },
+          { name: "X-App-Name", value: "Wander" },
+          { name: "X-Tx-Type", value: "Swap" },
         ],
       });
 

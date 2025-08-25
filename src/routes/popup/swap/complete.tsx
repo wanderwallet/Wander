@@ -18,7 +18,7 @@ import checkmarkAnimationData from "assets/lotties/checkmark.json";
 import Lottie from "react-lottie";
 import { TransactionDetailItem } from "./components/TransactionDetailItem";
 import { HorizontalLine } from "~components/HorizontalLine";
-import { getPriceImpactColor, getProviderName, getSwapTime } from "./utils/swap.utils";
+import { getPriceImpactColor, getProviderName, getSwapTime, toFixed } from "./utils/swap.utils";
 import { useSavedSwapData } from "./utils/swap.hooks";
 
 export function SwapCompleteView() {
@@ -39,7 +39,7 @@ export function SwapCompleteView() {
     if (valueIn.isZero()) return "--";
 
     const valueOutForUnitValueIn = valueOut.dividedBy(valueIn);
-    return `1 ${sendToken.Ticker} ≈ ${valueOutForUnitValueIn.toFixed(8)} ${receiveToken.Ticker}`;
+    return `1 ${sendToken.Ticker} ≈ ${toFixed(valueOutForUnitValueIn, 8)} ${receiveToken.Ticker}`;
   }, [selectedPoolInfo, sendToken, receiveToken]);
 
   const networkFee = useMemo(() => {
@@ -49,7 +49,7 @@ export function SwapCompleteView() {
     const tokenOutFee = BigNumber(selectedPoolInfo.quoteOutput.totalTokenOutFeeQuantity || "0");
 
     const formatFee = (amount: BigNumber, token: TokenInfo) =>
-      `${amount.shiftedBy(-token.Denomination).toFixed(8)} ${token.Ticker}`;
+      `${toFixed(amount.shiftedBy(-token.Denomination), 8)} ${token.Ticker}`;
 
     if (tokenInFee.isZero() && tokenOutFee.isZero()) {
       return `0 ${sendToken.Ticker}`;

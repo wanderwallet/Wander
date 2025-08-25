@@ -8,4 +8,5 @@ export const HorizontalLine = styled.div<{
   height: ${({ height }) => height || 1}px;
   background: ${({ theme }) => theme.borderSecondary};
   margin: ${({ marginVertical }) => marginVertical || 0}px 0;
+  flex-shrink: 0;
 `;

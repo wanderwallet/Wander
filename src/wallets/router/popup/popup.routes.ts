@@ -67,6 +67,8 @@ import { SwapReviewView } from "~routes/popup/swap/review";
 import { SwapProgressView } from "~routes/popup/swap/progress";
 import { SwapCompleteView } from "~routes/popup/swap/complete";
 import { SwapFailedView } from "~routes/popup/swap/failed";
+import { SwapHistoryView } from "~routes/popup/swap/history";
+import { SwapTransactionDetailsView } from "~routes/popup/swap/transaction-details";
 
 export type PopupRoutePath =
   | "/"
@@ -136,7 +138,9 @@ export type PopupRoutePath =
   | `/swap/review`
   | `/swap/progress`
   | `/swap/complete`
-  | `/swap/failed`;
+  | `/swap/failed`
+  | `/swap/history`
+  | `/swap/transaction-details/${string}`;
 
 export const PopupPaths = {
   Home: "/",
@@ -203,6 +207,8 @@ export const PopupPaths = {
   SwapProgress: "/swap/progress",
   SwapComplete: "/swap/complete",
   SwapFailed: "/swap/failed",
+  SwapHistory: "/swap/history",
+  SwapTransactionDetails: "/swap/transaction-details/:id",
 } as const satisfies Record<string, PopupRoutePath>;
 
 export const POPUP_ROUTES = [
@@ -467,5 +473,13 @@ export const POPUP_ROUTES = [
   {
     path: PopupPaths.SwapFailed,
     component: SwapFailedView,
+  },
+  {
+    path: PopupPaths.SwapHistory,
+    component: SwapHistoryView,
+  },
+  {
+    path: PopupPaths.SwapTransactionDetails,
+    component: SwapTransactionDetailsView,
   },
 ] as const satisfies RouteConfig[];

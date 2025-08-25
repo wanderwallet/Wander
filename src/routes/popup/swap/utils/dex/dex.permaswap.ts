@@ -47,6 +47,23 @@ export async function readSwapResult(orderID: string): Promise<[bigint, string]>
   return [BigInt(tokensReceived), confirmation.id];
 }
 
+/**
+ * Fetch the result of a swap message
+ */
+export async function readRequestOrderResult(requestOrderId: string) {
+  const messages = await getLinkedMessages(undefined, undefined, false, requestOrderId);
+
+  const orderMadeNoticeMessage = messages.find((msg) => msg.tags["Action"] === "OrderMade-Notice");
+  if (!orderMadeNoticeMessage) throw new Error("Order made notice not found");
+
+  const orderMadeNoticeTags = orderMadeNoticeMessage.tags || {};
+
+  const noteId = orderMadeNoticeTags["NoteID"];
+  const noteSettle = orderMadeNoticeTags["NoteSettle"];
+
+  return { noteId, noteSettle };
+}
+
 export async function getExpectedOutput({
   poolId,
   tokenIn,
@@ -111,11 +128,12 @@ export async function executeSwap({ tokenIn, tokenOut, amountIn, minAmountOut, p
       ],
     });
 
-    const requestResult = await retryWithDelay(() => aoInstance.result({ message: requestMessageId, process: poolId }));
-    const tags = requestResult.Messages?.[0]?.Tags || [];
-
-    const noteId = getTagValue("NoteID", tags);
-    const noteSettle = getTagValue("NoteSettle", tags);
+    const { noteId, noteSettle } = await retryWithDelay(
+      () => readRequestOrderResult(requestMessageId),
+      10,
+      1000,
+      (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    );
 
     if (!noteId || !noteSettle) throw new Error("Failed to create Permaswap order");
 
@@ -128,6 +146,8 @@ export async function executeSwap({ tokenIn, tokenOut, amountIn, minAmountOut, p
         { name: "Quantity", value: amountIn },
         { name: "X-FFP-For", value: "Settle" },
         { name: "X-FFP-NoteIDs", value: JSON.stringify([noteId]) },
+        { name: "X-App-Name", value: "Wander" },
+        { name: "X-Tx-Type", value: "Swap" },
       ],
     });
 

@@ -102,6 +102,8 @@ export async function executeSwap({ tokenIn, amountIn, minAmountOut, poolId }: S
         { name: "X-Expected-Min-Output", value: minAmountOut },
         { name: "X-Swap-Nonce", value: swapNonce },
         { name: "X-Action", value: "Swap" },
+        { name: "X-App-Name", value: "Wander" },
+        { name: "X-Tx-Type", value: "Swap" },
       ],
     });
 

@@ -26,14 +26,14 @@ export function DisclosureButton({
 
   return (
     <Wrapper onClick={() => setShowAdvanced((prev) => !prev)}>
-      <HorizontalLine />
+      <HorizontalLine style={{ flexShrink: 1 }} />
       <Flex gap={4} align="center" justify="center">
         <Text style={{ whiteSpace: "nowrap" }} variant={textVariant} size="xs" weight="medium" noMargin>
           {browser.i18n.getMessage(showAdvanced ? expandedMessageName : collapsedMessageName)}
         </Text>
         <Action as={showAdvanced ? ChevronUp : ChevronDown} />
       </Flex>
-      <HorizontalLine />
+      <HorizontalLine style={{ flexShrink: 1 }} />
     </Wrapper>
   );
 }

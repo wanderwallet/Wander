@@ -30,6 +30,8 @@ import {
 } from "~tokens/aoTokens/ao.constants";
 import { getErrorMessage, validateAmount } from "../send/amount";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import { PopupPaths } from "~wallets/router/popup/popup.routes";
+import { toFixed } from "./utils/swap.utils";
 
 // TODO: Update this after testing
 const usdaToken = AR_TOKEN_INFO;
@@ -96,7 +98,7 @@ export function SwapView() {
     if (valueIn.isZero()) return "--";
 
     const valueOutForUnitValueIn = valueOut.dividedBy(valueIn);
-    return `1 ${sendToken.Ticker} ≈ ${valueOutForUnitValueIn.toFixed(8)} ${receiveToken.Ticker}`;
+    return `1 ${sendToken.Ticker} ≈ ${toFixed(valueOutForUnitValueIn, 8)} ${receiveToken.Ticker}`;
   }, [selectedPoolInfo, sendToken, receiveToken]);
 
   const providerNetworkFee = useMemo(() => {
@@ -106,7 +108,7 @@ export function SwapView() {
     const tokenOutFee = BigNumber(selectedPoolInfo.quoteOutput.totalTokenOutFeeQuantity || "0");
 
     const formatFee = (amount: BigNumber, token: TokenInfo) =>
-      `${amount.shiftedBy(-token.Denomination).toFixed(8)} ${token.Ticker}`;
+      `${toFixed(amount.shiftedBy(-token.Denomination), 8)} ${token.Ticker}`;
 
     if (tokenInFee.isZero() && tokenOutFee.isZero()) {
       return `0 ${sendToken.Ticker}`;
@@ -131,8 +133,8 @@ export function SwapView() {
 
     return {
       hasChanged: defiFeeDetails.feeHasChanged,
-      originalFee: `${originalFee.toFixed(8)}`,
-      finalFee: `${finalFee.toFixed(8)} ${sendToken.Ticker}`,
+      originalFee: toFixed(originalFee, 8),
+      finalFee: `${toFixed(finalFee, 8)} ${sendToken.Ticker}`,
     };
   }, [selectedPoolInfo, sendToken]);
 
@@ -296,7 +298,12 @@ export function SwapView() {
             fullWidth>
             {valueIn ? browser.i18n.getMessage("review") : browser.i18n.getMessage("enter_amount")}
           </Button>
-          <Button width="72px" variant="secondary" icon={<ClockRewind height={24} width={24} />} onClick={() => {}} />
+          <Button
+            width="72px"
+            variant="secondary"
+            icon={<ClockRewind height={24} width={24} />}
+            onClick={() => navigate(PopupPaths.SwapHistory)}
+          />
         </Flex>
       </Wrapper>
 

@@ -20,7 +20,7 @@ import { TransactionDetailItem } from "./components/TransactionDetailItem";
 import { botega } from "./utils/dex/dex.botega";
 import { permaswap } from "./utils/dex/dex.permaswap";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
-import { getPriceImpactColor, getProviderName, getSwapTime } from "./utils/swap.utils";
+import { getPriceImpactColor, getProviderName, getSwapTime, toFixed } from "./utils/swap.utils";
 import { PoolTypeEnum } from "./utils/swap.constants";
 import { aox } from "./utils/bridge/bridge.aox";
 
@@ -58,7 +58,7 @@ export function SwapReviewView() {
     if (valueIn.isZero()) return "--";
 
     const valueOutForUnitValueIn = valueOut.dividedBy(valueIn);
-    return `1 ${sendToken.Ticker} ≈ ${valueOutForUnitValueIn.toFixed(8)} ${receiveToken.Ticker}`;
+    return `1 ${sendToken.Ticker} ≈ ${toFixed(valueOutForUnitValueIn, 8)} ${receiveToken.Ticker}`;
   }, [selectedPoolInfo, sendToken, receiveToken]);
 
   const providerNetworkFee = useMemo(() => {
@@ -68,7 +68,7 @@ export function SwapReviewView() {
     const tokenOutFee = BigNumber(selectedPoolInfo.quoteOutput.totalTokenOutFeeQuantity || "0");
 
     const formatFee = (amount: BigNumber, token: TokenInfo) =>
-      `${amount.shiftedBy(-token.Denomination).toFixed(8)} ${token.Ticker}`;
+      `${toFixed(amount.shiftedBy(-token.Denomination), 8)} ${token.Ticker}`;
 
     if (tokenInFee.isZero() && tokenOutFee.isZero()) {
       return `0 ${sendToken.Ticker}`;
@@ -123,7 +123,7 @@ export function SwapReviewView() {
         poolId: selectedPoolInfo.pool.poolId,
       });
 
-      TempTransactionStorage.set("swap-data", { ...swapData, selectedPoolInfo: selectedPoolInfoQuote, transferId });
+      TempTransactionStorage.set("swap-data", { ...swapData, selectedPoolInfo, transferId });
       navigate(PopupPaths.SwapProgress);
     } catch (err) {
       log(LOG_GROUP.SWAP, "Error executing swap", err);
