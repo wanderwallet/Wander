@@ -36,11 +36,7 @@ export default function ArNSBanner({ activeAddress }: ArNSBannerProps) {
         setShowBanner(false);
       } else {
         ExtensionStorage.get(`arns_hide_banner_${activeAddress}`).then((hideBanner) => {
-          if (!hideBanner) {
-            setShowBanner(true);
-          } else {
-            setShowBanner(false);
-          }
+          setShowBanner(!hideBanner);
         });
       }
     }
