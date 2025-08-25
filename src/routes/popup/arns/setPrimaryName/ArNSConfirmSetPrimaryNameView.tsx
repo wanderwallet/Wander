@@ -10,9 +10,8 @@ import { useLocation } from "~wallets/router/router.utils";
 import { CardContainer } from "../CardContainer";
 import TransactionStatusModal from "../TransactionStatusModal";
 import { sleep } from "~utils/promises/sleep";
-import { formatArio } from "../utils";
+import { decodeDomainToASCII, formatArio } from "../utils";
 import { mARIOToken } from "@ar.io/sdk/web";
-import { ProfileName } from "~components/ProfileName";
 
 export interface ArNSConfirmSetPrimaryNameViewParams {
   name: string;
@@ -91,7 +90,7 @@ export const ArNSConfirmSetPrimaryNameView = ({ params: { name } }: ArNSConfirmS
           SET PRIMARY NAME
         </Text>
         <Text size="xl" weight="semibold">
-          <ProfileName name={name} />
+          {decodeDomainToASCII(name)}
         </Text>
       </CardContainer>
       <Flex style={{ justifyContent: "space-between", margin: "0 2rem" }}>

@@ -20,10 +20,9 @@ import { HorizontalLine } from "~components/HorizontalLine";
 import { LoadingView } from "~components/page/common/loading/loading.view";
 import HeadV2 from "~components/popup/HeadV2";
 import { BackupSeedphraseWarning } from "~components/popup/settings/BackupSeedphraseWarning";
-import { ProfileName } from "~components/ProfileName";
 import SliderMenu from "~components/SliderMenu";
-import { isArNSNameProfile } from "~lib/arns";
 import { useNameServiceProfile } from "~lib/nameservice";
+import { decodeDomainToASCII } from "~routes/popup/arns/utils";
 import { formatAddress, truncateMiddle } from "~utils/format";
 import { ExtensionStorage, useStorage } from "~utils/storage";
 import { removeWallet, type StoredWallet } from "~wallets";
@@ -148,7 +147,7 @@ export function WalletView({ params: { address } }: WalletViewProps) {
                 gap: "1rem",
               }}>
               <WalletName>
-                <ProfileName name={nameServiceProfile?.name || wallet.nickname} />
+                {decodeDomainToASCII(nameServiceProfile?.name || wallet.nickname)}
                 {wallet.type === "hardware" && (
                   <Tooltip content={wallet.api.slice(0, 1).toUpperCase() + wallet.api.slice(1)} position="bottom">
                     <HardwareWalletIcon src={wallet.api === "keystone" ? keystoneLogo : undefined} />
