@@ -67,6 +67,7 @@ export const ArNSManageView = () => {
             {!!arnsRecords &&
               arnsRecords.map((arnsRecord) => (
                 <ManageCard
+                  key={arnsRecord.name}
                   style={{
                     padding: "0.5rem 0.75rem",
                   }}>
