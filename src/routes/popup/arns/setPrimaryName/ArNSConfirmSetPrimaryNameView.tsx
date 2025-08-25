@@ -53,6 +53,9 @@ export const ArNSConfirmSetPrimaryNameView = ({ params: { name } }: ArNSConfirmS
       });
 
       if (result.success) {
+        // wait to account for delay in message cranking in AO
+        // cranking usually has either a slight delay or is hung, and this
+        // accounts for the common case of the slight delay
         await sleep(2000);
 
         await ARNS_QUERY_CLIENT.invalidateQueries({
