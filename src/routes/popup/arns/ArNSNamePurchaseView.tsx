@@ -47,12 +47,12 @@ export const ArNSNamePurchaseView = ({ params: { name } }: ArNSNamePurchaseViewP
         </Text>
       </RegisteringCard>
       <div style={{ margin: "0 2rem", display: "grid", gridTemplateColumns: "1fr 1fr" }}>
-        <TabButton onClick={() => setPurchaseType("lease")} selected={purchaseType === "lease"}>
+        <TabButton onClick={() => setPurchaseType("lease")} $selected={purchaseType === "lease"}>
           <Text weight="semibold" variant={purchaseType === "lease" ? "primary" : "secondary"}>
             Lease
           </Text>
         </TabButton>
-        <TabButton onClick={() => setPurchaseType("permabuy")} selected={purchaseType === "permabuy"}>
+        <TabButton onClick={() => setPurchaseType("permabuy")} $selected={purchaseType === "permabuy"}>
           <Text weight="semibold" variant={purchaseType === "permabuy" ? "primary" : "secondary"}>
             Purchase
           </Text>
@@ -153,10 +153,10 @@ const RegisteringCard = styled(Card)`
   gap: 0.5rem;
 `;
 
-const TabButton = styled.button<{ selected: boolean }>`
+const TabButton = styled.button<{ $selected: boolean }>`
   padding: 0.5rem;
   flex-grow: 0.5;
   border-bottom: 2px solid transparent;
   cursor: pointer;
-  ${(props) => props.selected && `border-bottom-color: #5842F8;`}
+  ${(props) => props.$selected && `border-bottom-color: #5842F8;`}
 `;

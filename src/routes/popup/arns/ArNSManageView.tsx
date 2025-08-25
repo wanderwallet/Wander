@@ -62,7 +62,7 @@ export const ArNSManageView = () => {
           <>
             <Flex justify="space-between" align="center">
               <Text>Your ArNS Names</Text>
-              <SpinningRefreshIcon isFetching={isFetching} onClick={() => refetch()} />
+              <SpinningRefreshIcon $isFetching={isFetching} onClick={() => refetch()} />
             </Flex>
             {!!arnsRecords &&
               arnsRecords.map((arnsRecord) => (
@@ -72,7 +72,7 @@ export const ArNSManageView = () => {
                   }}>
                   <Flex direction="row" gap="0.5rem" style={{ alignItems: "center" }}>
                     <StarToggle
-                      selected={profile?.name === arnsRecord.name}
+                      $selected={profile?.name === arnsRecord.name}
                       onClick={() => {
                         if (profile?.name !== arnsRecord.name) {
                           navigate(PopupPaths.ArNSConfirmSetPrimaryName, { params: { name: arnsRecord.name } });
@@ -143,8 +143,8 @@ const ManageCard = styled(Card)`
   padding: 0;
 `;
 
-const StarToggle = styled(Star01)<{ selected: boolean }>`
-  ${(props) => (props.selected ? `fill: rgba(255, 227, 66, 1); color: rgba(255, 227, 66, 1);` : "cursor: pointer;")}
+const StarToggle = styled(Star01)<{ $selected: boolean }>`
+  ${(props) => (props.$selected ? `fill: rgba(255, 227, 66, 1); color: rgba(255, 227, 66, 1);` : "cursor: pointer;")}
 `;
 
 const spin = keyframes`
@@ -152,15 +152,15 @@ const spin = keyframes`
   to { transform: rotate(360deg); }
 `;
 
-const SpinningRefreshIcon = styled(RefreshCw01)<{ isFetching: boolean }>`
+const SpinningRefreshIcon = styled(RefreshCw01)<{ $isFetching: boolean }>`
   cursor: pointer;
   color: rgb(var(--theme-primary));
   width: 1.25rem;
   height: 1.25rem;
-  opacity: ${({ isFetching }) => (isFetching ? 0.5 : 1)};
+  opacity: ${({ $isFetching }) => ($isFetching ? 0.5 : 1)};
   transition: opacity 0.2s ease;
-  ${({ isFetching }) =>
-    isFetching &&
+  ${({ $isFetching }) =>
+    $isFetching &&
     css`
       animation: ${spin} 1s linear infinite;
     `}
