@@ -10,7 +10,6 @@ interface Props {
 
 const TransactionStatusModal = ({ isOpen, setOpen, statusText }: Props) => {
   const modalRef = useRef(null);
-  console.log("StatusText", statusText);
 
   return (
     <Modal root={document.getElementById("__plasmo")} open={isOpen} setOpen={() => {}}>
