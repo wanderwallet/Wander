@@ -73,9 +73,9 @@ export const ArNSManageView = () => {
                   }}>
                   <Flex direction="row" gap="0.5rem" style={{ alignItems: "center" }}>
                     <StarToggle
-                      $selected={profile?.name === arnsRecord.name}
+                      $selected={profile?.name === decodeDomainToASCII(arnsRecord.name)}
                       onClick={() => {
-                        if (profile?.name !== arnsRecord.name) {
+                        if (profile?.name !== decodeDomainToASCII(arnsRecord.name)) {
                           navigate(PopupPaths.ArNSConfirmSetPrimaryName, { params: { name: arnsRecord.name } });
                         }
                       }}
