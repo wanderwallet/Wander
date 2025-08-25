@@ -10,8 +10,13 @@ import { useTheme } from "styled-components";
 import { SvgImageWithBackground } from "../agents/components/SvgImage";
 import { useLocation } from "~wallets/router/router.utils";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
+import { useTransactions } from "./utils/swap.hooks";
 
 export function SwapHistoryView() {
+  const { transactions, loading, hasNextPage, fetchTransactions } = useTransactions();
+
+  console.log({ transactions, loading, hasNextPage });
+
   return (
     <>
       <HeadV2 title="Swap History" />

@@ -1,10 +1,19 @@
-import { type TokenInfo } from "~tokens/aoTokens/ao";
-import type { BotegaPool, BotegaPoolOverview, PermaswapPool, Pool, PoolType } from "./swap.types";
+import { getTagValue, type TokenInfo } from "~tokens/aoTokens/ao";
+import type {
+  BotegaPool,
+  BotegaPoolOverview,
+  ParsedSwapTransaction,
+  PermaswapPool,
+  Pool,
+  PoolType,
+} from "./swap.types";
 import BigNumber from "bignumber.js";
 import { BOTEGA_API_KEY, BOTEGA_SUPABASE_URL } from "./data-source/data-source.constants";
 import { AR_PROCESS_ID, AR_TOKEN_INFO, WAR_PROCESS_ID, WAR_TOKEN_INFO } from "~tokens/aoTokens/ao.constants";
 import { PoolTypeEnum } from "./swap.constants";
 import type { DefaultTheme } from "styled-components";
+import type { GQLEdgeInterface } from "ar-gql/dist/faces";
+import type GQLResultInterface from "ar-gql/dist/faces";
 
 const BOTEGA_POOL_OPTIONS = {
   headers: {
@@ -75,7 +84,6 @@ export async function getPermaswapPools() {
   const pools = (await response.json()) as PermaswapPool[];
 
   const structuredPools = pools
-    .filter((pool) => +pool.px > 0 && +pool.py > 0)
     .sort((a, b) => +b.px - +a.px && +b.py - +a.py)
     .map((pool) => ({
       poolId: pool.process,
@@ -207,4 +215,57 @@ export function getPriceImpactColor(priceImpact: string, theme: DefaultTheme) {
 
 export function toFixed(value: BigNumber, decimals: number) {
   return value.decimalPlaces(decimals, BigNumber.ROUND_DOWN).toString();
+}
+
+export function parseSwapTransaction(transaction: GQLEdgeInterface): ParsedSwapTransaction {
+  const tags = transaction.node.tags || [];
+
+  const timestamp = transaction.node.block?.timestamp ? transaction.node.block.timestamp * 1000 : Date.now();
+  const isAo = getTagValue("Data-Protocol", tags) === "ao";
+  const pushedFor = getTagValue("Pushed-For", tags);
+  const txId = pushedFor || transaction.node.id;
+  const action = getTagValue("Action", tags);
+  const orderStatus = getTagValue("OrderStatus", tags);
+  const bridgeStatus = getTagValue("Bridge-Status", tags);
+  const rate = getTagValue("X-Rate", tags);
+  const provider = getTagValue("X-Provider", tags);
+  const networkFee = getTagValue("X-Network-Fee", tags);
+  const wanderFee = getTagValue("X-Client-Fee", tags);
+  const slippage = getTagValue("X-Slippage", tags);
+  const priceImpact = getTagValue("X-Price-Impact", tags);
+  const tokenIn = JSON.parse(getTagValue("X-Token-In", tags));
+  const tokenOut = JSON.parse(getTagValue("X-Token-Out", tags));
+  const amountIn = getTagValue("X-Amount-In", tags);
+  const amountOut =
+    getTagValue("To-Quantity", tags) ||
+    getTagValue("Quantity", tags) ||
+    getTagValue("AmountOut", tags) ||
+    getTagValue("X-Amount-Out", tags);
+
+  const error = action === "Order-Error" || (orderStatus && orderStatus !== "Swapped");
+  const isPending = bridgeStatus && bridgeStatus !== "success";
+  const status = error ? "Failed" : isPending ? "Pending" : "Completed";
+
+  return {
+    txId,
+    isAo,
+    rate,
+    timestamp,
+    provider,
+    networkFee,
+    wanderFee,
+    slippage,
+    priceImpact,
+    tokenIn,
+    tokenOut,
+    amountIn,
+    amountOut,
+    status,
+  };
+}
+
+export function validateGqlResponse(data: GQLResultInterface) {
+  if (data?.data === null && (data as any)?.errors?.length > 0) {
+    throw new Error((data as any)?.errors?.[0]?.message || "GraphQL Error");
+  }
 }

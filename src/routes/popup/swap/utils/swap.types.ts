@@ -152,3 +152,20 @@ export interface TokenPools {
   permaswap: Pool[];
   aox: Pool[];
 }
+
+export interface ParsedSwapTransaction {
+  txId: string;
+  isAo: boolean;
+  rate: string;
+  timestamp: number;
+  provider: string;
+  networkFee: string;
+  wanderFee: string;
+  slippage: string;
+  priceImpact: string;
+  tokenIn: TokenInfo;
+  tokenOut: TokenInfo;
+  amountIn: string;
+  amountOut: string;
+  status: string;
+}

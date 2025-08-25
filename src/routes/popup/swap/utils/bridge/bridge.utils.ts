@@ -1,7 +1,14 @@
 import { getActiveAddress } from "~wallets";
-import type { BridgeInfo, BridgeTransaction, BridgeInfoResult } from "./bridge.types";
+import type { BridgeInfo, BridgeInfoResult, BridgeTransaction, BridgeTransactionResponse } from "./bridge.types";
 import { AR_PROCESS_ID, WAR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 import BigNumber from "bignumber.js";
+import { gql } from "~gateways/api";
+import { retryWithDelay } from "~utils/promises/retry";
+import { SWAP_TRANSFER_QUERY } from "../dex/dex.constants";
+import { parseSwapTransaction, validateGqlResponse } from "../swap.utils";
+import { goldskyGateway } from "~gateways/gateway";
+
+const bridgeTxTypes = new Set(["mint", "burn"]);
 
 export async function getBridgeInfo(): Promise<BridgeInfoResult> {
   const response = await fetch("https://api.aox.xyz/info");
@@ -24,7 +31,7 @@ export async function getBridgeTransaction(txId: string) {
   const response = await fetch(`https://api.aox.xyz/txs?address=${activeAddress}&count=30`);
   if (!response.ok) throw new Error("Failed to fetch bridge transaction");
 
-  const { txs } = (await response.json()) as { txs: BridgeTransaction[] };
+  const { txs } = (await response.json()) as BridgeTransactionResponse;
   const transaction = txs.find((tx) => tx.txId === txId);
 
   if (!transaction) throw new Error("Transaction not found");
@@ -80,4 +87,46 @@ export function validateBridgeTransaction(
   }
 
   return null;
+}
+
+export async function getAoxTransactions(address: string, cursor = "0") {
+  const result = await retryWithDelay(async () => {
+    const data = await fetch(`https://api.aox.xyz/txs?address=${address}&count=10&cursor=${cursor}`);
+    if (!data.ok) throw new Error("Failed to fetch bridge transaction");
+
+    const { txs, hasNextPage } = (await data.json()) as BridgeTransactionResponse;
+
+    if (txs.length === 0) return { txs: [], hasNextPage, cursor };
+
+    cursor = txs[txs.length - 1].rawId.toString();
+
+    const arweaveTxs = txs.filter((tx) => tx.chainType === "arweave" && bridgeTxTypes.has(tx.txType));
+
+    const txMap = new Map<string, BridgeTransaction>();
+
+    for (const tx of arweaveTxs) {
+      txMap.set(tx.txId, tx);
+    }
+
+    const pushedFors = Array.from(txMap.keys());
+    const orderNoticesResult = await retryWithDelay(async () => {
+      const data = await gql(SWAP_TRANSFER_QUERY, { address, pushedFors }, goldskyGateway);
+
+      validateGqlResponse(data);
+
+      const edges = data?.data?.transactions?.edges || [];
+      for (const edge of edges) {
+        const swapTx = txMap.get(edge.node.id);
+        if (swapTx) {
+          edge.node.tags.push({ name: "Bridge-Status", value: swapTx.status });
+        }
+      }
+
+      return edges;
+    });
+
+    return { txs: Array.from(orderNoticesResult).map(parseSwapTransaction), hasNextPage, cursor };
+  }, 2);
+
+  return result;
 }

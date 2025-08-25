@@ -1,7 +1,17 @@
-import { type dryrun } from "@permaweb/aoconnect";
 import type { GQLEdgeInterface } from "ar-gql/dist/faces";
-import type { Tag } from "arweave/web/lib/transaction";
+import type { Message } from "postcss";
 import { gql } from "~gateways/api";
+import type { AoMessage } from "./dex.types";
+import { retryWithDelay } from "~utils/promises/retry";
+import {
+  BOTEGA_SWAP_QUERY_WITH_CURSOR,
+  PERMASWAP_ORDER_NOTICE_QUERY,
+  PERMASWAP_SWAP_QUERY_WITH_CURSOR,
+  SWAP_TRANSFER_QUERY,
+} from "./dex.constants";
+import { getTagValue } from "~tokens/aoTokens/ao";
+import { parseSwapTransaction, validateGqlResponse } from "../swap.utils";
+import { goldskyGateway } from "~gateways/gateway";
 
 export class OrderError extends Error {
   constructor(message: string) {
@@ -9,28 +19,6 @@ export class OrderError extends Error {
     this.name = "OrderError";
   }
 }
-
-export interface Message {
-  Tags: Tag[];
-}
-
-export interface AoMessage {
-  id: string;
-  type: string;
-  from: string;
-  to: string;
-  blockHeight: number;
-  schedulerId: string;
-  blockTimestamp: Date;
-  action: string;
-  tags: Record<string, string>;
-  systemTags: Record<string, string>;
-  userTags: Record<string, string>;
-  cursor: string;
-  dataSize: number;
-}
-
-export type DryRunResult = Awaited<ReturnType<typeof dryrun>>;
 
 export const linkedMessagesQuery = (includeCount = false) => `
 query($messageId: String!, $limit: Int!, $sortOrder: SortOrder!, $cursor: String) {
@@ -190,4 +178,91 @@ export async function getLinkedMessages(
   } catch (error) {
     return [];
   }
+}
+
+export async function getBotegaTransactions(address: string, cursor = "") {
+  const result = await retryWithDelay(async () => {
+    const data = await gql(BOTEGA_SWAP_QUERY_WITH_CURSOR, { address, after: cursor }, goldskyGateway);
+
+    // validate the response
+    validateGqlResponse(data);
+
+    const edges = data?.data?.transactions?.edges || [];
+    cursor = edges[edges.length - 1].cursor;
+    const hasNextPage = data?.data?.transactions?.pageInfo?.hasNextPage || false;
+
+    let successfulTxs = [];
+    let failedTxs = [];
+
+    for (const edge of edges) {
+      const tags = edge.node.tags || [];
+      const action = getTagValue("Action", tags);
+      if (action === "Order-Confirmation") {
+        successfulTxs.push(edge);
+      } else {
+        failedTxs.push(edge);
+      }
+    }
+
+    if (failedTxs.length > 0) {
+      const pushedFors = failedTxs.map((e) => e.node.id);
+      const swapTransferResult = await retryWithDelay(async () => {
+        const data = await gql(SWAP_TRANSFER_QUERY, { address, pushedFors }, goldskyGateway);
+
+        // validate the response
+        validateGqlResponse(data);
+
+        return data;
+      }, 2);
+
+      const swapTransferTxs = swapTransferResult?.data?.transactions?.edges || [];
+      const allTxs = [...successfulTxs, ...swapTransferTxs];
+      return { txs: allTxs.map(parseSwapTransaction), hasNextPage, cursor };
+    }
+
+    return { txs: successfulTxs.map(parseSwapTransaction), hasNextPage, cursor };
+  }, 2);
+
+  return result;
+}
+
+export async function getPermaswapTransactions(address: string, cursor = "") {
+  const result = await retryWithDelay(async () => {
+    const data = await gql(PERMASWAP_SWAP_QUERY_WITH_CURSOR, { address, after: cursor }, goldskyGateway);
+
+    // validate the response
+    validateGqlResponse(data);
+
+    const edges = data?.data?.transactions?.edges || [];
+    cursor = edges[edges.length - 1].cursor;
+    const hasNextPage = data?.data?.transactions?.pageInfo?.hasNextPage || false;
+
+    const txMap = new Map<string, GQLEdgeInterface>();
+
+    for (const edge of edges) {
+      txMap.set(edge.node.id, edge);
+    }
+
+    const pushedFors = Array.from(txMap.keys());
+    const orderNoticesResult = await retryWithDelay(async () => {
+      const data = await gql(PERMASWAP_ORDER_NOTICE_QUERY, { address, pushedFors }, goldskyGateway);
+
+      // validate the response
+      validateGqlResponse(data);
+
+      const edges = data?.data?.transactions?.edges || [];
+      for (const edge of edges) {
+        const swapTx = txMap.get(edge.node.id);
+        if (swapTx) {
+          edge.node.tags.push(...swapTx.node.tags);
+        }
+      }
+
+      return edges;
+    });
+
+    return { txs: Array.from(orderNoticesResult).map(parseSwapTransaction), hasNextPage, cursor };
+  }, 2);
+
+  return result;
 }

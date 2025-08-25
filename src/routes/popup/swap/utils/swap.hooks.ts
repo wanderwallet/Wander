@@ -2,7 +2,7 @@ import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { BRIDGE_TOKEN_IDS, getPools, getPriceImpact, processToken } from "./swap.utils";
 import { defaultOptions, useAoTokens } from "~tokens/hooks";
 import { useMemo, useCallback, useState, useEffect } from "react";
-import type { Pool, SelectedPoolInfo, TokenPools, TokenSelectorType } from "./swap.types";
+import type { ParsedSwapTransaction, Pool, SelectedPoolInfo, TokenPools, TokenSelectorType } from "./swap.types";
 import { useStorage } from "@plasmohq/storage/hook";
 import { ExtensionStorage, TempTransactionStorage } from "~utils/storage";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
@@ -15,7 +15,9 @@ import { aox } from "./bridge/bridge.aox";
 import { retryWithGateways } from "~gateways/wayfinder";
 import { useBridgeInfo } from "./bridge/bridge.hooks";
 import { PoolTypeEnum } from "./swap.constants";
-import { validateBridgeTransaction } from "./bridge/bridge.utils";
+import { getAoxTransactions, validateBridgeTransaction } from "./bridge/bridge.utils";
+import { getBotegaTransactions, getPermaswapTransactions } from "./dex/dex.utils";
+import { useActiveAddress } from "~wallets/hooks";
 
 export function usePools() {
   return useQuery({
@@ -427,3 +429,77 @@ export function useARNetworkFee({ tokenID, note }: { tokenID: string; note?: str
 export function useSavedSwapData() {
   return useStorage({ key: "swap-data", instance: TempTransactionStorage });
 }
+
+const emptyResponse = {
+  txs: [],
+  hasNextPage: false,
+  cursor: "",
+};
+
+const defaultCursors = ["", "", "0"];
+const defaultHasNextPages = [true, true, true];
+
+export const useTransactions = () => {
+  const activeAddress = useActiveAddress();
+  const [cursors, setCursors] = useState(defaultCursors);
+  const [hasNextPages, setHasNextPages] = useState(defaultHasNextPages);
+  const [transactions, setTransactions] = useState<ParsedSwapTransaction[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const hasNextPage = useMemo(() => hasNextPages.some((v) => v === true), [hasNextPages]);
+
+  const fetchTransactions = useCallback(async () => {
+    try {
+      if (!activeAddress || !hasNextPage) return;
+
+      setLoading(true);
+
+      const queriesFn = [getBotegaTransactions, getPermaswapTransactions, getAoxTransactions];
+
+      const [botegaResult, permaswapResult, aoxResult] = await Promise.allSettled(
+        queriesFn.map((queryFn, idx) => {
+          return hasNextPages[idx] ? queryFn(activeAddress, cursors[idx]) : Promise.resolve(emptyResponse);
+        }),
+      );
+
+      console.log({ botegaResult, permaswapResult, aoxResult });
+
+      const botegaData = botegaResult.status === "fulfilled" ? botegaResult.value : emptyResponse;
+      const permaswapData = permaswapResult.status === "fulfilled" ? permaswapResult.value : emptyResponse;
+      const aoxData = aoxResult.status === "fulfilled" ? aoxResult.value : emptyResponse;
+
+      console.log({ botegaData, permaswapData, aoxData });
+
+      setCursors([botegaData.cursor, permaswapData.cursor, aoxData.cursor]);
+      setHasNextPages([botegaData.hasNextPage, permaswapData.hasNextPage, aoxData.hasNextPage]);
+
+      let combinedTransactions: ParsedSwapTransaction[] = [...botegaData.txs, ...permaswapData.txs, ...aoxData.txs];
+
+      combinedTransactions.sort((a: ParsedSwapTransaction, b: ParsedSwapTransaction) => {
+        const timestampA = a.timestamp || Number.MAX_SAFE_INTEGER;
+        const timestampB = b.timestamp || Number.MAX_SAFE_INTEGER;
+        return timestampB - timestampA;
+      });
+
+      setTransactions(combinedTransactions);
+    } catch (error) {
+      console.error("Error fetching transactions", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [activeAddress, hasNextPage, cursors, hasNextPages]);
+
+  useEffect(() => {
+    setCursors(defaultCursors);
+    setHasNextPages(defaultHasNextPages);
+    setTransactions([]);
+    fetchTransactions();
+  }, [activeAddress]);
+
+  return {
+    transactions,
+    loading,
+    hasNextPage,
+    fetchTransactions,
+  };
+};

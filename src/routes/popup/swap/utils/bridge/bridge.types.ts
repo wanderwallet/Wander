@@ -77,6 +77,11 @@ export interface BridgeTransaction {
   targetChainTxHash: string;
 }
 
+export interface BridgeTransactionResponse {
+  txs: BridgeTransaction[];
+  hasNextPage: boolean;
+}
+
 export interface BridgeInfoResult {
   arToken: BridgeInfo["chainTokens"][number];
   warToken: BridgeInfo["wrappedTokens"][number];

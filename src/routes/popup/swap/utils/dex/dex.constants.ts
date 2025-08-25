@@ -10,3 +10,110 @@ export const PERMASWAP_SETTLES = [
 
 export const PERMASWAP_ORDERBOOK = "rKpOUxssKxgfXQOpaCq22npHno6oRw66L3kZeoo_Ndk" as const;
 export const BOTEGA_AMM_FACTORY = "3XBGLrygs11K63F_7mldWz4veNx6Llg6hI2yZs8LKHo" as const;
+
+export const BOTEGA_SWAP_QUERY_WITH_CURSOR = `
+query($address: String!, $after: String) {
+  transactions(
+    first: 10,
+    tags: [
+      {name: "Data-Protocol", values: ["ao"]},
+      {name: "Action", values: ["Order-Confirmation", "Order-Error"]},
+      { name: "X-Client", values: ["Roam"]},
+      { name: "X-Type", values: ["Swap"]} 
+    ],
+    recipients: [$address],
+    after: $after
+  ) {
+    pageInfo {
+      hasNextPage
+    }
+    edges {
+      cursor
+      node {
+        id
+        recipient
+        owner { address }
+        block { timestamp, height }
+        tags { name, value }
+      }
+    }
+  }
+}`;
+
+export const PERMASWAP_SWAP_QUERY_WITH_CURSOR = `
+query($address: String!, $after: String) {
+  transactions(
+    first: 10,
+    tags: [
+      {name: "Data-Protocol", values: ["ao"]},
+      {name: "Action", values: ["Transfer"]},
+      { name: "X-Client", values: ["Roam"]},
+      { name: "X-Type", values: ["Swap"]} 
+    ],
+    owners: [$address],
+    after: $after
+  ) {
+    pageInfo {
+      hasNextPage
+    }
+    edges {
+      cursor
+      node {
+        id
+        recipient
+        owner { address }
+        block { timestamp, height }
+        tags { name, value }
+      }
+    }
+  }
+}`;
+
+export const PERMASWAP_ORDER_NOTICE_QUERY = `
+query($address: String!, $pushedFors: [String!]!) {
+  transactions(
+    first: 10,
+    tags: [
+      { name: "Data-Protocol", values: ["ao"] },
+      { name: "Action", values: ["Order-Notice"] },
+      { name: "User", values: [$address] },
+      { name: "Pushed-For", values: $pushedFors },
+    ],
+  ) {
+    edges {
+      cursor
+      node {
+        id
+        recipient
+        owner { address }
+        block { timestamp, height }
+        tags { name, value }
+      }
+    }
+  }
+}`;
+
+export const SWAP_TRANSFER_QUERY = `
+query($address: String!, $pushedFors: [String!]!) {
+  transactions(
+    first: 10,
+    tags: [
+      {name: "Data-Protocol", values: ["ao"]},
+      {name: "Action", values: ["Transfer"]},
+      { name: "X-Client", values: ["Roam"]},
+      { name: "X-Type", values: ["Swap"]},
+      { name: "Pushed-For", values: $pushedFors },
+    ],
+    owners: [$address],
+  ) {
+    edges {
+      node {
+        id
+        recipient
+        owner { address }
+        block { timestamp, height }
+        tags { name, value }
+      }
+    }
+  }
+}`;

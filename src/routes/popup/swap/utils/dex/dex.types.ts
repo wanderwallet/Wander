@@ -1,3 +1,4 @@
+import type { dryrun } from "@permaweb/aoconnect";
 import type { Tag } from "~utils/agents/types";
 
 export interface GetExpectedOutputParams {
@@ -45,3 +46,25 @@ export interface GetLiquidityResponse {
   reserveOut: string;
   totalSupply: string;
 }
+
+export interface Message {
+  Tags: Tag[];
+}
+
+export interface AoMessage {
+  id: string;
+  type: string;
+  from: string;
+  to: string;
+  blockHeight: number;
+  schedulerId: string;
+  blockTimestamp: Date;
+  action: string;
+  tags: Record<string, string>;
+  systemTags: Record<string, string>;
+  userTags: Record<string, string>;
+  cursor: string;
+  dataSize: number;
+}
+
+export type DryRunResult = Awaited<ReturnType<typeof dryrun>>;
