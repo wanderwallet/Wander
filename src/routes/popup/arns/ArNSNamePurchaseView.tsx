@@ -1,5 +1,4 @@
-import { ButtonV2 } from "@arconnect/components";
-import { Card, Text } from "@arconnect/components-rebrand";
+import { Button, Card, Text } from "@arconnect/components-rebrand";
 import { MinusIcon, PlusIcon } from "@iconicicons/react";
 import { useMemo, useState } from "react";
 import styled from "styled-components";
@@ -99,7 +98,7 @@ export const ArNSNamePurchaseView = ({ params: { name } }: ArNSNamePurchaseViewP
       </RegisteringCard>
       <div style={{ flex: 1 }}></div>
       <div style={{ margin: "1.5rem" }}>
-        <ButtonV2
+        <Button
           onClick={() => {
             navigate(`/arns/confirm-purchase/${name}/${purchaseType}/${purchaseYears}`);
           }}
@@ -112,7 +111,7 @@ export const ArNSNamePurchaseView = ({ params: { name } }: ArNSNamePurchaseViewP
               : totalFee > arioBalance
                 ? "Insufficient balance"
                 : "Next"}
-        </ButtonV2>
+        </Button>
       </div>
     </Flex>
   );

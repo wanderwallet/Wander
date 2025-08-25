@@ -1,5 +1,4 @@
-import { ButtonV2 } from "@arconnect/components";
-import { Text } from "@arconnect/components-rebrand";
+import { Button, Text } from "@arconnect/components-rebrand";
 import { useState } from "react";
 import { Flex } from "~components/common/Flex";
 import { ArioIcon } from "~components/embed";
@@ -82,9 +81,9 @@ export const ArNSConfirmPurchaseView = ({
       </Flex>
       <div style={{ flex: 1 }}></div>
       <div style={{ margin: "1.5rem" }}>
-        <ButtonV2 onClick={handleConfirmPurchase} fullWidth disabled={processingTransaction || !totalFee}>
+        <Button onClick={handleConfirmPurchase} fullWidth disabled={processingTransaction || !totalFee}>
           Confirm
-        </ButtonV2>
+        </Button>
       </div>
       {processingTransaction && (
         <TransactionStatusModal

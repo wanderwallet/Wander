@@ -1,7 +1,7 @@
 import { useLocation } from "~wallets/router/router.utils";
 import { useEffect } from "react";
 import styled from "styled-components";
-import { ButtonV2 } from "@arconnect/components";
+import { Button } from "@arconnect/components-rebrand";
 import { PageType, trackPage } from "~utils/analytics";
 import HeadV2 from "~components/popup/HeadV2";
 import { useStorage } from "~utils/storage";
@@ -127,9 +127,9 @@ export const ArNSPurchaseStartView = () => {
 
         <div style={{ flexGrow: 1 }} />
 
-        <ButtonV2 fullWidth onClick={() => navigate(PopupPaths.ArNSPurchaseNameSearch)}>
+        <Button fullWidth onClick={() => navigate(PopupPaths.ArNSPurchaseNameSearch)}>
           Search for a name
-        </ButtonV2>
+        </Button>
       </Content>
     </Flex>
   );

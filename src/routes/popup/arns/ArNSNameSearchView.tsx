@@ -1,6 +1,5 @@
 import { mARIOToken, type AoArNSNameData } from "@ar.io/sdk/web";
-import { ButtonV2 } from "@arconnect/components";
-import { Spacer, Text, useInput } from "@arconnect/components-rebrand";
+import { Button, Spacer, Text, useInput } from "@arconnect/components-rebrand";
 import { useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
 import { Flex } from "~components/common/Flex";
@@ -234,9 +233,9 @@ export const ArNSNameSearchView = () => {
                   </Text>
                 </Flex>
               </Flex>
-              <ButtonV2 onClick={() => handleRegister(debouncedSearchTerm)} fullWidth>
+              <Button onClick={() => handleRegister(debouncedSearchTerm)} fullWidth>
                 Register
-              </ButtonV2>
+              </Button>
             </ResultCard>
           </Flex>
         )}

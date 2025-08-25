@@ -1,4 +1,4 @@
-import { ButtonV2 } from "@arconnect/components";
+import { Button } from "@arconnect/components-rebrand";
 import { Card, Text } from "@arconnect/components-rebrand";
 import styled from "styled-components";
 import { Flex } from "~components/common/Flex";
@@ -66,7 +66,7 @@ export const ArNSPrimaryNameSuccessView = ({ params: { name, transactionId } }: 
       <div style={{ flex: 1 }}></div>
       <div style={{ marginTop: "auto", paddingTop: "1rem" }}>
         <Flex direction="column" gap="0.5rem">
-          <ButtonV2
+          <Button
             onClick={() => {
               // navigate two screens back
               back();
@@ -74,10 +74,10 @@ export const ArNSPrimaryNameSuccessView = ({ params: { name, transactionId } }: 
             }}
             fullWidth>
             Manage ArNS
-          </ButtonV2>
-          <ButtonV2 secondary onClick={() => navigate(PopupPaths.Home)} fullWidth>
+          </Button>
+          <Button variant="secondary" onClick={() => navigate(PopupPaths.Home)} fullWidth>
             Go to dashboard
-          </ButtonV2>
+          </Button>
         </Flex>
       </div>
     </div>

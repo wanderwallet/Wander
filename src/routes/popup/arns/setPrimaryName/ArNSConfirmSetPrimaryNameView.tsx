@@ -1,5 +1,4 @@
-import { ButtonV2 } from "@arconnect/components";
-import { Text } from "@arconnect/components-rebrand";
+import { Button, Text } from "@arconnect/components-rebrand";
 import { useMemo, useState } from "react";
 import { Flex } from "~components/common/Flex";
 import HeadV2 from "~components/popup/HeadV2";
@@ -105,7 +104,7 @@ export const ArNSConfirmSetPrimaryNameView = ({ params: { name } }: ArNSConfirmS
       </Flex>
       <div style={{ flex: 1 }}></div>
       <div style={{ margin: "1.5rem" }}>
-        <ButtonV2
+        <Button
           onClick={handleConfirmSetPrimaryName}
           fullWidth
           disabled={processingTransaction || !costDetails || !arioBalance || arioBalance < costDetailsArio}>
@@ -114,7 +113,7 @@ export const ArNSConfirmSetPrimaryNameView = ({ params: { name } }: ArNSConfirmS
             : arioBalance < costDetailsArio
               ? "Insufficient balance"
               : "Confirm"}
-        </ButtonV2>
+        </Button>
       </div>
       {processingTransaction && (
         <TransactionStatusModal

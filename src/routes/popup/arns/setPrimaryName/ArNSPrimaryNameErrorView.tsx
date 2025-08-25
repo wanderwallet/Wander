@@ -1,5 +1,4 @@
-import { ButtonV2 } from "@arconnect/components";
-import { Text } from "@arconnect/components-rebrand";
+import { Button, Text } from "@arconnect/components-rebrand";
 import { Flex } from "~components/common/Flex";
 import { WarningCircledIcon } from "~components/embed";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
@@ -38,12 +37,12 @@ export const ArNSPrimaryNameErrorView = ({ params: { name } }: ArNSPrimaryNameEr
       </Flex>
       <div style={{ marginTop: "auto", paddingTop: "1rem" }}>
         <Flex direction="column" gap="0.5rem">
-          <ButtonV2 onClick={() => back()} fullWidth>
+          <Button onClick={() => back()} fullWidth>
             Try again
-          </ButtonV2>
-          <ButtonV2 secondary onClick={() => navigate(PopupPaths.Home)} fullWidth>
+          </Button>
+          <Button variant="secondary" onClick={() => navigate(PopupPaths.Home)} fullWidth>
             Go to dashboard
-          </ButtonV2>
+          </Button>
         </Flex>
       </div>
     </div>

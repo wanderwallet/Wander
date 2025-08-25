@@ -1,5 +1,4 @@
-import { ButtonV2 } from "@arconnect/components";
-import { Card, Text } from "@arconnect/components-rebrand";
+import { Card, Text, Button } from "@arconnect/components-rebrand";
 import styled from "styled-components";
 import { Flex } from "~components/common/Flex";
 import { SuccessCheckIcon } from "~components/embed";
@@ -83,17 +82,17 @@ export const ArNSPurchaseSuccessView = ({
       <div style={{ flex: 1 }}></div>
       <div style={{ marginTop: "auto", paddingTop: "1rem" }}>
         <Flex direction="column" gap="0.5rem">
-          <ButtonV2
+          <Button
             onClick={() => {
               navigate(PopupPaths.Home);
               navigate(PopupPaths.ArNSManage);
             }}
             fullWidth>
             Manage ArNS
-          </ButtonV2>
-          <ButtonV2 secondary onClick={() => navigate(PopupPaths.Home)} fullWidth>
+          </Button>
+          <Button variant="secondary" onClick={() => navigate(PopupPaths.Home)} fullWidth>
             Go to dashboard
-          </ButtonV2>
+          </Button>
         </Flex>
       </div>
     </div>
