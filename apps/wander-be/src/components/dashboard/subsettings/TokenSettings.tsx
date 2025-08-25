@@ -1,0 +1,206 @@
+import { Button, Select, Spacer, Text, Tooltip, useToasts } from "@arconnect/components-rebrand";
+import type { TokenType } from "~tokens/token";
+import { Token as aoToken } from "ao-tokens";
+import { PersistentStorage, useStorage } from "~utils/storage";
+import { removeToken } from "~tokens";
+import { useMemo, useState } from "react";
+import { CopyButton } from "./WalletSettings";
+import browser from "webextension-polyfill";
+import styled from "styled-components";
+import copy from "copy-to-clipboard";
+import { formatAddress } from "~utils/format";
+import { type TokenInfo } from "~tokens/aoTokens/ao";
+import type { CommonRouteProps } from "~wallets/router/router.types";
+import { Flex } from "~components/common/Flex";
+import { RemoveButton } from "~routes/popup/settings/wallets/[address]";
+import { TokenLogo } from "~components/popup/TokenLogo";
+import { defaultTokens } from "~tokens/aoTokens/ao.constants";
+
+export interface TokenSettingsDashboardViewParams {
+  id: string;
+}
+
+export type TokenSettingsDashboardViewProps = CommonRouteProps<TokenSettingsDashboardViewParams>;
+
+export function TokenSettingsDashboardView({ params: { id } }: TokenSettingsDashboardViewProps) {
+  // ao tokens
+  const [aoTokens, setAoTokens] = useStorage<TokenInfo[] | any[]>(
+    {
+      key: "ao_tokens",
+      instance: PersistentStorage,
+    },
+    [],
+  );
+
+  const { setToast } = useToasts();
+
+  const [loading, setLoading] = useState(false);
+
+  const token = useMemo(() => {
+    const aoToken = aoTokens.find((ao) => ao.processId === id);
+    if (!aoToken) return;
+
+    return {
+      ...aoToken,
+      id: aoToken.processId,
+      name: aoToken.Name,
+      ticker: aoToken.Ticker,
+    };
+  }, [aoTokens, id]);
+
+  // update token type
+  function updateType(type: TokenType) {
+    setAoTokens((allTokens) => {
+      const tokenIndex = allTokens.findIndex((t) => t.processId === id);
+      if (tokenIndex !== -1) {
+        allTokens[tokenIndex].type = type;
+      }
+      return [...allTokens];
+    });
+  }
+
+  const refreshToken = async () => {
+    setLoading(true);
+    const defaultToken = defaultTokens.find((t) => t.processId === token.id);
+    if (!defaultToken) {
+      try {
+        const tokenInfo = (await aoToken(token.id)).info;
+        if (tokenInfo) {
+          const updatedTokens = aoTokens.map((t) =>
+            t.processId === token.id
+              ? {
+                  ...t,
+                  Name: tokenInfo.Name,
+                  Ticker: tokenInfo.Ticker,
+                  Logo: tokenInfo.Logo,
+                  Denomination: Number(tokenInfo.Denomination),
+                  processId: token.id,
+                  lastUpdated: new Date().toISOString(),
+                }
+              : t,
+          );
+          setAoTokens(updatedTokens);
+          setLoading(false);
+        }
+      } catch (err) {
+        console.error("Error fetching token info:", err);
+        setLoading(false);
+      }
+    } else {
+      setLoading(false);
+      return;
+    }
+  };
+
+  if (!token) return null;
+
+  return (
+    <Wrapper>
+      <Inner>
+        <Flex gap={8} align="center">
+          <TokenLogo token={token} style={{ flex: "0 0 auto" }} />
+          <TokenName>{token.name}</TokenName>
+        </Flex>
+        <div>
+          <Title>Symbol:</Title>
+          <Spacer y={0.5} />
+          <Text weight="medium" noMargin>
+            {token.ticker}
+          </Text>
+        </div>
+        <div>
+          <Title>Address:</Title>
+          <Spacer y={0.5} />
+          <Flex gap={4} align="center">
+            <Text weight="medium" noMargin>
+              {token.id}
+            </Text>
+            <Tooltip content={browser.i18n.getMessage("copy_address")}>
+              <CopyButton
+                onClick={() => {
+                  copy(token.id);
+                  setToast({
+                    type: "info",
+                    content: browser.i18n.getMessage("copied_address", [formatAddress(token.id, 8)]),
+                    duration: 2200,
+                  });
+                }}
+              />
+            </Tooltip>
+          </Flex>
+        </div>
+        <div>
+          <Title>Denomination:</Title>
+          <Spacer y={0.5} />
+          <Text weight="medium" noMargin>
+            {token?.Denomination}
+          </Text>
+        </div>
+        <div>
+          <Title>{browser.i18n.getMessage("token_type")}</Title>
+          <Spacer y={0.5} />
+          <Select
+            style={{ paddingLeft: "0px" }}
+            onChange={(e) => {
+              updateType(e.target.value as TokenType);
+            }}
+            fullWidth>
+            <option value="asset" selected={token.type === "asset"}>
+              {browser.i18n.getMessage("token_type_asset")}
+            </option>
+            <option value="collectible" selected={token.type === "collectible"}>
+              {browser.i18n.getMessage("token_type_collectible")}
+            </option>
+          </Select>
+        </div>
+      </Inner>
+      <ButtonWrapper>
+        <Button
+          fullWidth
+          onClick={async () => {
+            await refreshToken();
+          }}
+          loading={loading}>
+          {browser.i18n.getMessage("refresh_token")}
+        </Button>
+
+        <RemoveButton fullWidth onClick={() => removeToken(id)}>
+          {browser.i18n.getMessage("remove_token")}
+        </RemoveButton>
+      </ButtonWrapper>
+    </Wrapper>
+  );
+}
+
+const Inner = styled.div`
+  gap: 24px;
+  display: flex;
+  flex-direction: column;
+`;
+
+const ButtonWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+`;
+
+const Wrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+`;
+
+const TokenName = styled(Text).attrs({
+  size: "3xl",
+  weight: "bold",
+  noMargin: true,
+})`
+  font-weight: 600;
+`;
+
+const Title = styled(Text).attrs({
+  noMargin: true,
+  variant: "secondary",
+  weight: "medium",
+})``;

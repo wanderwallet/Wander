@@ -17,6 +17,12 @@
     },
     {
       "path": "./libs/wander-connect-sdk"
+    },
+    {
+      "path": "./libs/isomorphic-messaging"
+    },
+    {
+      "path": "./libs/core"
     }
   ]
 }

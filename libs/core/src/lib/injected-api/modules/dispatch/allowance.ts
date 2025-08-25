@@ -1,0 +1,48 @@
+import { freeDecryptedWallet } from "~wallets/encryption";
+import type { AllowanceBigNumber } from "~applications/allowance";
+import type { ModuleAppData } from "~api/background/background-modules";
+import { defaultGateway } from "~gateways/gateway";
+import { signAuth } from "../sign/sign_auth.js";
+import Arweave from "arweave";
+import type { DataItem } from "@dha-team/arbundles";
+import type Transaction from "arweave/web/lib/transaction";
+import type BigNumber from "bignumber.js";
+import type { JWKInterface } from "arweave/web/lib/wallet";
+
+/**
+ * Ensure allowance for dispatch
+ */
+export async function ensureAllowanceDispatch(
+  dataEntry: DataItem | Transaction,
+  appData: ModuleAppData,
+  allowance: AllowanceBigNumber,
+  keyfile: JWKInterface,
+  price: number | BigNumber,
+  alwaysAsk?: boolean,
+) {
+  const arweave = new Arweave(defaultGateway);
+
+  // allowance or sign auth
+  try {
+    if (alwaysAsk) {
+      const address = await arweave.wallets.jwkToAddress(keyfile);
+
+      await signAuth(
+        appData,
+        // @ts-expect-error
+        dataEntry.toJSON(),
+        address,
+      );
+    }
+
+    // if (allowance.enabled) {
+    //   await allowanceAuth(appData, allowance, price, alwaysAsk);
+    // }
+  } catch (err) {
+    freeDecryptedWallet(keyfile);
+
+    throw err;
+  }
+
+  return;
+}

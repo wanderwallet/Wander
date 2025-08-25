@@ -1,0 +1,37 @@
+@import "../../../tokens/index.css";
+
+.loading {
+  display: inline-block;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  border-top-color: var(--color-primary);
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Size variants */
+.loading__sm {
+  width: var(--loading-size-sm, 16px);
+  height: var(--loading-size-sm, 16px);
+  border-width: 1.5px;
+}
+
+.loading__md {
+  width: var(--loading-size-md, 24px);
+  height: var(--loading-size-md, 24px);
+  border-width: 2px;
+}
+
+.loading__lg {
+  width: var(--loading-size-lg, 32px);
+  height: var(--loading-size-lg, 32px);
+  border-width: 2.5px;
+}

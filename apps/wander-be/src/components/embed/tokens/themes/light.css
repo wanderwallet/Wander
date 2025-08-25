@@ -1,0 +1,83 @@
+/*
+ * Light Theme Colors
+ */
+:root,
+[data-theme="light"],
+.light {
+  --color-overlay-rgb: 0, 0, 0;
+  --shadow-small: 0 0 8px rgba(var(--color-overlay-rgb), 0.25);
+  --shadow-blurred: 0 0 32px rgba(var(--color-overlay-rgb), 0.25);
+  --default-focus-animation: animated-focus 2s forwards;
+
+  --color-font-heading: var(--brand-color-gray-950);
+  --color-font-body: var(--brand-color-neutral3);
+
+  --color-background-default: var(--brand-color-neutral6);
+  --color-divider-default: var(--brand-color-gray-200);
+  --color-divider-text: #666;
+
+  --color-link-primary: var(--brand-color-primary3);
+  --color-link-secondary: var(--brand-color-secondary5);
+  --color-link-disabled: var(--brand-color-gray-300);
+  --color-loading-primary: var(--brand-color-neutral6);
+  --color-loading-secondary: var(--brand-color-neutral5);
+
+  --color-card-background-default: var(--brand-color-neutral6);
+  --color-card-shadow-default: var(--brand-color-gray-200);
+  --color-card-border-default: var(--brand-color-gray-100);
+
+  --color-button-primary-background: var(--brand-color-primary3);
+  --color-button-primary-background-hover: var(--brand-color-primary3-darker);
+  --color-button-primary-color: var(--brand-color-neutral6);
+  --button-primary-border: 1px solid transparent;
+  --button-primary-border-hover: 1px solid transparent;
+
+  --color-button-secondary-background: var(--brand-color-gray-100);
+  --color-button-secondary-background-hover: var(--brand-color-gray-200);
+  --color-button-secondary-color: var(--brand-color-neutral1);
+  --button-secondary-border: 1px solid var(--brand-color-gray-200);
+  --button-secondary-border-hover: 1px solid var(--brand-color-gray-200);
+
+  --color-button-outlined-background: transparent;
+  --color-button-outlined-background-hover: rgba(var(--color-overlay-rgb), 0.0625);
+  --color-button-outlined-color: var(--brand-color-neutral1);
+  --button-outlined-border: 1px solid var(--brand-color-gray-200);
+  --button-outlined-border-hover: 1px solid var(--brand-color-gray-200);
+
+  --snackbar-background-info: var(--input-background);
+  --snackbar-background-warning: #fff9ea;
+  --snackbar-background-error: #ffeaea;
+  --snackbar-background-success: #eaffed;
+
+  --snackbar-color-info: var(--input-color);
+  --snackbar-color-warning: #bd8802;
+  --snackbar-color-error: #bd0202;
+  --snackbar-color-success: #02bd59;
+
+  --color-text-footer: var(--brand-color-neutral5);
+
+  --color-background-box: var(--brand-color-secondary7);
+  --color-border-box: var(--brand-color-secondary5);
+  --color-border-popover: var(--brand-color-gray-200);
+
+  --color-copyable-border: var(--brand-color-gray-200);
+  --color-copyable-text-label: var(--brand-color-neutral3);
+  --color-copyable-text-value: var(--brand-color-neutral1);
+
+  --color-seed-input-active: var(--brand-color-primary3);
+
+  --color-border-radio: var(--brand-color-primary3);
+  --color-non-checked-background-radio: var(--brand-color-secondary7);
+
+  --color-background-switch-enabled: var(--brand-color-primary3);
+  --color-background-button-disabled: var(--brand-color-neutral3);
+  --avatar-background: #0d6ce9;
+
+  --input-height: 48px;
+  --input-background: #f2f2f7;
+  --input-color: var(--brand-color-neutral1); /* In the other input, this is #121212 and #ffffff in dark mode */
+  --input-border-radius: var(--border-radius-xl);
+  --input-border: none;
+  --input-shadow: none;
+  --input-child-offset: 4px;
+}

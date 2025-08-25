@@ -1,0 +1,40 @@
+{
+  "name": "@wanderapp/core",
+  "version": "0.0.1",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "!**/*.tsbuildinfo"
+  ],
+  "nx": {
+    "targets": {
+      "build": {
+        "executor": "@nx/esbuild:esbuild",
+        "outputs": [
+          "{options.outputPath}"
+        ],
+        "options": {
+          "outputPath": "libs/core/dist",
+          "main": "libs/core/src/index.ts",
+          "tsConfig": "libs/core/tsconfig.lib.json",
+          "format": [
+            "esm"
+          ],
+          "declarationRootDir": "libs/core/src"
+        }
+      }
+    }
+  },
+  "dependencies": {}
+}

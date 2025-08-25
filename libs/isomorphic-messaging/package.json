@@ -1,0 +1,41 @@
+{
+  "name": "@wanderapp/isomorphic-messaging",
+  "version": "0.0.1",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "!**/*.tsbuildinfo"
+  ],
+  "nx": {
+    "name": "isomorphic-messaging",
+    "targets": {
+      "build": {
+        "executor": "@nx/esbuild:esbuild",
+        "outputs": [
+          "{options.outputPath}"
+        ],
+        "options": {
+          "outputPath": "libs/isomorphic-messaging/dist",
+          "main": "libs/isomorphic-messaging/src/index.ts",
+          "tsConfig": "libs/isomorphic-messaging/tsconfig.lib.json",
+          "format": [
+            "esm"
+          ],
+          "declarationRootDir": "libs/isomorphic-messaging/src"
+        }
+      }
+    }
+  },
+  "dependencies": {}
+}

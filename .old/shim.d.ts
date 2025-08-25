@@ -3,7 +3,7 @@ import type { Chunk } from "~api/modules/sign/chunks";
 import type { InjectedEvents } from "~utils/events";
 import "styled-components";
 import type { AuthRequestMessageData, AuthResult } from "~utils/auth/auth.types";
-import { EmbeddedMessage, EmbeddedCall } from "~utils/embedded/utils/messages/embedded-messages.types.ts";
+import { EmbeddedMessage, EmbeddedCall } from "~utils/_embedded/utils/messages/embedded-messages.types";
 import type { ThemeMode } from "~utils/theme/theme.hook";
 import type { DirectAccess } from "~wallets/router/iframe/iframe.routes";
 

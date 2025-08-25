@@ -1,0 +1,197 @@
+@import "../../../tokens/index.css";
+@import "../../../styles/mixins.css";
+
+.button {
+  all: unset;
+  position: relative;
+  border-radius: var(--border-radius-xl);
+  text-align: center;
+  box-sizing: border-box;
+  width: 100%;
+  height: var(--button-default-height);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* margin: var(--spacing-2) 0; */
+
+  cursor: pointer;
+  overflow: hidden;
+  transition: all 0.2s;
+  padding: 0 var(--spacing-3);
+  user-select: none;
+
+  /* Base interactive states */
+  &:disabled,
+  &.isDisabled {
+    cursor: not-allowed;
+  }
+
+  &.isDisabled {
+    opacity: 0.5;
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+
+  & > svg {
+    margin-right: 8px;
+  }
+}
+
+.loaderCover {
+  position: absolute;
+  inset: 0;
+  backdrop-filter: blur(var(--spacing-1));
+  transition: opacity linear 150ms;
+  opacity: 0;
+  z-index: 10;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+
+  .isLoading > & {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+/* Alignment variants */
+.button__center {
+  justify-content: center;
+}
+
+.button__start {
+  justify-content: flex-start;
+}
+
+.button__end {
+  justify-content: flex-end;
+}
+
+/* Size variants */
+.button__sm {
+  height: var(--button-sm-height);
+  padding: 0 var(--spacing-3);
+  font-size: var(--font-size-sm);
+}
+
+.button__md {
+  height: var(--button-default-height);
+  padding: 0 var(--spacing-4);
+  font-size: var(--font-size-base);
+}
+
+.button__lg {
+  height: var(--button-lg-height);
+  padding: 0 var(--spacing-6);
+  font-size: var(--font-size-lg);
+}
+
+/* Button variants */
+.button__variant__primary {
+  background-color: var(--color-button-primary-background);
+  color: var(--color-button-primary-color);
+  border: var(--button-primary-border);
+
+  &:hover:not(:disabled) {
+    background-color: var(--color-button-primary-background-hover);
+    border: var(--button-primary-border-hover);
+  }
+
+  :global(.isFocusActive) &:global:focus {
+    animation: var(--default-focus-animation);
+  }
+}
+
+.button__variant__secondary {
+  background-color: var(--color-button-secondary-background);
+  color: var(--color-button-secondary-color);
+  border: var(--button-secondary-border);
+
+  &:hover:not(:disabled) {
+    background-color: var(--color-button-secondary-background-hover);
+    border: var(--button-secondary-border-hover);
+  }
+
+  :global(.isFocusActive) &:global:focus {
+    animation: var(--default-focus-animation);
+  }
+}
+
+.button__variant__outlined {
+  background-color: var(--color-button-outlined-background);
+  color: var(--color-button-outlined-color);
+  border: var(--button-outlined-border);
+
+  &:hover:not(:disabled) {
+    background-color: var(--color-button-outlined-background-hover);
+    border: var(--button-outlined-border-hover);
+  }
+
+  :global(.isFocusActive) &:global:focus {
+    animation: var(--default-focus-animation);
+  }
+}
+
+.button__variant__invisible {
+  background-color: transparent;
+  color: var(--color-button-outlined-color);
+  border: none;
+
+  &:hover:not(:disabled) {
+    background-color: var(--color-button-outlined-background-hover);
+  }
+
+  :global(.isFocusActive) &:global:focus {
+    animation: var(--default-focus-animation);
+  }
+}
+
+.button__variant__text {
+  background-color: transparent;
+  color: var(--color-button-outlined-color);
+  border: none;
+
+  &:hover:not(:disabled) {
+    text-decoration: underline;
+    text-decoration-style: dotted;
+  }
+}
+
+.button__variant__link {
+  background-color: transparent;
+  color: var(--color-link-primary);
+  padding: 0;
+  height: auto;
+  text-decoration: none;
+  cursor: pointer;
+  border: none;
+  margin: 0;
+  padding: 0;
+  width: auto;
+  text-decoration: none;
+  font: inherit;
+  display: inline;
+
+  &:hover {
+    text-decoration: underline;
+    text-decoration-style: dotted;
+  }
+}
+
+.button__variant__unstyled {
+}
+
+/* Modifiers */
+.button__full__width {
+  width: 100%;
+}
+
+.button__blurry {
+  backdrop-filter: blur(10px);
+}

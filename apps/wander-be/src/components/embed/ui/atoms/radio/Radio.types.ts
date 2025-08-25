@@ -1,0 +1,16 @@
+import React from "react";
+
+export type RadioBaseProps = {
+  label: string;
+  name?: string;
+  description?: string;
+  id?: string;
+  className?: string;
+  isDisabled?: boolean;
+  isRequired?: boolean;
+  isChecked?: boolean;
+  isBlurry?: boolean;
+  handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  style?: React.CSSProperties;
+  size?: number;
+};

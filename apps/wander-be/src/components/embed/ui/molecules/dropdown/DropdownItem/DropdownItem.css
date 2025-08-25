@@ -1,0 +1,9 @@
+.dropdown-item {
+  width: auto;
+  cursor: pointer;
+  border-radius: calc(var(--border-radius-xl) - var(--input-child-offset));
+}
+
+.dropdown-item:hover {
+  background-color: var(--input-background);
+}
