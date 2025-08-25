@@ -1,5 +1,5 @@
 import type { BackgroundModuleFunction } from "~api/background/background-modules";
-import { ExtensionStorage } from "~utils/storage";
+import { ExtensionStorage } from "~utils/storage/storage";
 import { getAoTokenBalance } from "~tokens/aoTokens/ao";
 import { isAddress } from "~utils/assertions";
 

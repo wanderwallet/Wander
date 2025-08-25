@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { getMarketChart, type CoinGeckoSymbol } from "~lib/coingecko";
 import useSetting from "~settings/hook";
-import { ExtensionStorage } from "~utils/storage";
+import { ExtensionStorage } from "~utils/storage/storage";
 import BigNumber from "bignumber.js";
 
 export interface SavedMarketData {

@@ -14,7 +14,7 @@ import TransactionMessage from "~components/embed/auth/TransactionMessage";
 import { formatBalance } from "~utils/format";
 import { AuthRequestCard } from "~components/embed/ui/molecules/card/auth-request-card/AuthRequestCard";
 import browser from "~iframe/browser";
-import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import { useAsyncEffect } from "../../../../../../libs/core/src/lib/utils/react/useAsyncEffect";
 
 export function EmbeddedSignDataAuthRequestView() {
   const { authRequest, rejectRequest, acceptRequest } = useCurrentAuthRequest("signDataItem");

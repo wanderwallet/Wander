@@ -1,5 +1,5 @@
 import { dryrun } from "@permaweb/aoconnect";
-import { PersistentStorage } from "~utils/storage";
+import { PersistentStorage } from "~utils/storage/storage";
 import type { Alarms } from "webextension-polyfill";
 import { type TokenInfo, getTokenInfoFromData } from "~tokens/aoTokens/ao";
 import { timeoutPromise } from "~utils/promises/timeout";

@@ -1,5 +1,5 @@
 import { concatGatewayURL } from "~gateways/utils";
-import { isAddressFormat } from "~utils/format";
+import { isAddressFormat } from "~utils/format/format";
 import { type Gateway } from "./gateway";
 
 const PROTOCOL_PREFIX = "ar";

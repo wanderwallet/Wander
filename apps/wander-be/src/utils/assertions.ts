@@ -11,7 +11,7 @@ import type Transaction from "arweave/web/lib/transaction";
 import type { DecodedTag } from "~api/modules/sign/tags";
 import type { AppInfo } from "~applications/application";
 import type { Chunk } from "~api/modules/sign/chunks";
-import { isAddressFormat } from "./format";
+import { isAddressFormat } from "../../../../libs/core/src/lib/utils/format/format";
 import type { EncryptionAlgorithm, LegacyEncryptionOptions } from "~api/modules/encrypt/types";
 import type { ApiCall } from "shim";
 import {

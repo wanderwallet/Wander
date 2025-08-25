@@ -1,4 +1,4 @@
-import { ExtensionStorage } from "~utils/storage";
+import { ExtensionStorage } from "~utils/storage/storage";
 import type { StoredWallet } from "./wallets.types";
 import browser from "webextension-polyfill";
 import { log, LOG_GROUP } from "~utils/log/log.utils";

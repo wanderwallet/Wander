@@ -1,9 +1,9 @@
 import type { WalletInterface } from "~components/welcome/load/Migrate";
 import type { JWKInterface } from "arweave/web/lib/wallet";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useStorage } from "~utils/storage";
+import { useStorage } from "~utils/storage/storage";
 import { defaultGateway } from "~gateways/gateway";
-import { ExtensionStorage } from "~utils/storage";
+import { ExtensionStorage } from "~utils/storage/storage";
 import { findGateway } from "~gateways/wayfinder";
 import { retryWithDelay } from "~utils/promises/retry";
 import type { HardwareApi } from "./hardware";
@@ -53,7 +53,7 @@ export function useWalletsDetails(wallets: JWKInterface[]) {
       const address = await arweave.wallets.getAddress(wallet);
 
       // skip already added wallets
-      if (!!walletDetails.find((w) => w.address === address)) {
+      if (walletDetails.find((w) => w.address === address)) {
         continue;
       }
 
@@ -136,23 +136,6 @@ export function useAllWallets() {
   );
 
   return wallets;
-}
-
-export async function setActiveWallet(address?: string) {
-  // remove if the address is undefined
-  if (!address) {
-    return await ExtensionStorage.remove("active_address");
-  }
-
-  const wallets = (await ExtensionStorage.get<StoredWallet[]>("wallets")) || [];
-
-  // verify address
-  if (!wallets.find((wallet) => wallet.address === address)) {
-    return;
-  }
-
-  // save new active address
-  await ExtensionStorage.set("active_address", address);
 }
 
 /**

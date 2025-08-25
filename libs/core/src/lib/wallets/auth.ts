@@ -1,7 +1,7 @@
 import { decryptWallet, freeDecryptedWallet } from "./encryption";
 import browser from "webextension-polyfill";
 import { type LocalWallet, type StoredWallet } from "./wallets.types";
-import { ExtensionStorage } from "~utils/storage";
+import { ExtensionStorage } from "~utils/storage/storage";
 import { createAuthPopup, onPopupClosed } from "~utils/auth/auth.utils";
 import type { ModuleAppData } from "~api/background/background-modules";
 import type { StorageChange } from "~utils/runtime";

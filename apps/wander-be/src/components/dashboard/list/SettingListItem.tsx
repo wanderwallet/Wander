@@ -1,5 +1,5 @@
 import { ListItem } from "@arconnect/components-rebrand";
-import type { Icon } from "~settings/setting";
+import type { Icon } from "../../../../../../libs/core/src/lib/utils/settings/setting";
 import browser from "webextension-polyfill";
 import type { HTMLProps } from "react";
 import styled, { type DefaultTheme } from "styled-components";

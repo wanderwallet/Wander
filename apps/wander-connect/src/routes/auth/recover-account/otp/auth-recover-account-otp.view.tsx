@@ -18,7 +18,7 @@ import {
   OTP_LENGTH,
   setOtpAvailable,
 } from "~utils/otp/otp.utils";
-import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import { useAsyncEffect } from "../../../../../../../libs/core/src/lib/utils/react/useAsyncEffect";
 
 export function AuthRecoverAccountOtpEmbeddedView() {
   const { navigate } = useLocation();

@@ -6,12 +6,7 @@
     "tsBuildInfoFile": "dist/tsconfig.app.tsbuildinfo",
     "jsx": "react-jsx",
     "lib": ["dom"],
-    "types": [
-      "node",
-      "@nx/react/typings/cssmodule.d.ts",
-      "@nx/react/typings/image.d.ts",
-      "vite/client"
-    ],
+    "types": ["node", "@nx/react/typings/cssmodule.d.ts", "@nx/react/typings/image.d.ts", "vite/client"],
     "rootDir": "src",
 
     // Added:
@@ -20,7 +15,7 @@
       "~*": ["./src/*"],
       "~isomorphic-messaging": ["./src/utils/messaging/strategies/extension/extension-messaging.strategy.ts"],
       "~isomorphic-chunking": ["./src/utils/messaging/strategies/extension/extension-chunking.strategy.ts"]
-    },
+    }
   },
 
   // Modified:
@@ -49,9 +44,14 @@
     "src/**/*.jsx",
     "src/**/*.ts",
     "src/**/*.tsx",
-    "./shim.d.ts"
-    // "vite.config.js",
-    // "vite.config.js"
+    "./shim.d.ts",
+    "../../libs/core/src/lib/utils/storage/storage.ts", // "vite.config.js",
+    "../../libs/core/src/lib/utils/format/format.ts" // "vite.config.js"
+  ],
+  "references": [
+    {
+      "path": "../../libs/core/tsconfig.lib.json"
+    }
   ]
 
   // Added:

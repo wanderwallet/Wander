@@ -1,4 +1,4 @@
-import { PersistentStorage } from "~utils/storage";
+import { PersistentStorage } from "~utils/storage/storage";
 import type { TokenInfo } from "./aoTokens/ao";
 
 /**

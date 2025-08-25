@@ -16,7 +16,7 @@ import {
   UserSquare,
 } from "@untitled-ui/icons-react";
 import settings, { getSetting } from "~settings";
-import type Setting from "~settings/setting";
+import type Setting from "../../../../../libs/core/src/lib/utils/settings/setting";
 
 // Basic Settings:
 import { WalletsDashboardView } from "~components/dashboard/Wallets";

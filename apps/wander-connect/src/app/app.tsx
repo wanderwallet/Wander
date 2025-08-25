@@ -1,52 +1,53 @@
-// Uncomment this line to use CSS modules
-// import styles from './app.module.scss';
-import NxWelcome from './nx-welcome';
+import { useEffect } from "react";
+import { ToastContainer } from "react-toastify";
+import { StyledComponentsThemeProvider } from "~utils/theme/styled-components/styled-components.provider";
+import { AuthRequestsProvider } from "~utils/auth/auth.provider";
+import { Routes } from "~wallets/router/routes.component";
+import { Router as Wouter } from "wouter";
+import { IFRAME_ROUTES } from "~wallets/router/iframe/iframe.routes";
+import { handleSyncLabelsAlarm } from "~api/background/handlers/alarms/sync-labels/sync-labels-alarm.handler";
+import { useEmbeddedLocation } from "~wallets/router/iframe/iframe-router.hook";
+import { EmbeddedProvider } from "~utils/embedded/embedded.provider";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { ThemeSetup } from "~components/embed/ui/atoms/theme-setup/ThemeSetup";
+import { queryClient } from "@wanderapp/core";
+import { ThemeProvider } from "~utils/theme/theme.provider";
 
-import { Route, Routes, Link } from 'react-router-dom';
+import "react-toastify/dist/ReactToastify.css";
 
-export function App() {
+export function WanderConnectApp() {
+  useEffect(() => {
+    handleSyncLabelsAlarm();
+  }, []);
+
   return (
-    <div>
-      <NxWelcome title="@org/wander-connect" />
-
-      {/* START: routes */}
-      {/* These routes and navigation have been generated for you */}
-      {/* Feel free to move and update them to fit your needs */}
-      <br />
-      <hr />
-      <br />
-      <div role="navigation">
-        <ul>
-          <li>
-            <Link to="/">Home</Link>
-          </li>
-          <li>
-            <Link to="/page-2">Page 2</Link>
-          </li>
-        </ul>
-      </div>
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <div>
-              This is the generated root route.{' '}
-              <Link to="/page-2">Click here for page 2.</Link>
-            </div>
-          }
-        />
-        <Route
-          path="/page-2"
-          element={
-            <div>
-              <Link to="/">Click here to go back to root page.</Link>
-            </div>
-          }
-        />
-      </Routes>
-      {/* END: routes */}
-    </div>
+    <>
+      <Routes routes={IFRAME_ROUTES} diffLocation />
+      <ThemeSetup />
+    </>
   );
 }
 
-export default App;
+export function WanderConnectAppRoot() {
+  return (
+    <ThemeProvider>
+      <StyledComponentsThemeProvider>
+        <QueryClientProvider client={queryClient}>
+          <Wouter hook={useEmbeddedLocation}>
+            <EmbeddedProvider>
+              <AuthRequestsProvider>
+                <WanderConnectApp />
+                <ToastContainer
+                  position="top-center"
+                  autoClose={2000}
+                  hideProgressBar={false}
+                  pauseOnFocusLoss={false}
+                />
+              </AuthRequestsProvider>
+            </EmbeddedProvider>
+          </Wouter>
+        </QueryClientProvider>
+      </StyledComponentsThemeProvider>
+    </ThemeProvider>
+  );
+}

@@ -1,4 +1,4 @@
-import { PersistentStorage } from "~utils/storage";
+import { PersistentStorage } from "~utils/storage/storage";
 import { type TokenInfo } from "./aoTokens/ao";
 import { defaultTokens, AO_OLD_PROCESS_ID, AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 

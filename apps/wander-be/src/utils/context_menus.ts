@@ -2,7 +2,7 @@ import browser, { type Menus, type Tabs } from "webextension-polyfill";
 import { getActiveAddress, getWallets } from "~wallets";
 import { getActiveTab, removeApp } from "~applications";
 import { isManifestv3 } from "./runtime";
-import { getAppURL } from "./format";
+import { getAppURL } from "../../../../libs/core/src/lib/utils/format/format";
 import { isomorphicSendMessage } from "~isomorphic-messaging";
 
 /**

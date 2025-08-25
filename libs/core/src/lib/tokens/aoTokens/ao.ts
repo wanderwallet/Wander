@@ -1,6 +1,6 @@
 import { connect, dryrun } from "@permaweb/aoconnect";
 import { type Tag } from "arweave/web/lib/transaction";
-import { PersistentStorage } from "~utils/storage";
+import { PersistentStorage } from "~utils/storage/storage";
 import { Quantity } from "ao-tokens";
 import { ArweaveSigner, createData } from "@dha-team/arbundles";
 import { getActiveKeyfile, getKeyfile, type DecryptedWallet } from "~wallets";
@@ -28,28 +28,9 @@ import {
 import type { Token } from "~tokens/token";
 
 export let tokens: TokenInfo[] = null;
-export let tokenInfoMap = new Map<string, TokenInfo | Token>();
+export const tokenInfoMap = new Map<string, TokenInfo | Token>();
 
 export type AoInstance = ReturnType<typeof connect>;
-
-export interface Message {
-  Anchor: string;
-  Tags: Tag[];
-  Target: string;
-  Data: string;
-}
-
-type CreateDataItemArgs = {
-  data: any;
-  tags?: Tag[];
-  target?: string;
-  anchor?: string;
-};
-
-type DataItemResult = {
-  id: string;
-  raw: ArrayBuffer;
-};
 
 const { dryrun: customDryrun } = connect({ CU_URL: "https://cu.ardrive.io" });
 

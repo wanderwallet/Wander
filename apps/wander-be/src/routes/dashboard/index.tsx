@@ -15,7 +15,7 @@ import {
   isDashboardRouteConfig,
   type DashboardRouteConfig,
 } from "~routes/dashboard/dashboard.constants";
-import type Setting from "~settings/setting";
+import type Setting from "../../../../../libs/core/src/lib/utils/settings/setting";
 import { DASHBOARD_SUB_SETTING_ROUTES, type DashboardRoutePath } from "~wallets/router/dashboard/dashboard.routes";
 import { Redirect } from "~wallets/router/components/redirect/Redirect";
 import { Routes } from "~wallets/router/routes.component";

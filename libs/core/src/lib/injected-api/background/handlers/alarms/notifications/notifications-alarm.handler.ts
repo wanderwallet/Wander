@@ -1,4 +1,4 @@
-import { ExtensionStorage } from "~utils/storage";
+import { ExtensionStorage } from "~utils/storage/storage";
 import { getActiveAddress } from "~wallets";
 import iconUrl from "url:/assets/icon512.png";
 import browser, { type Alarms } from "webextension-polyfill";

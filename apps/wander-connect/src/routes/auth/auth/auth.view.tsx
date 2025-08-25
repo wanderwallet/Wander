@@ -28,7 +28,7 @@ import { getFriendlyAuthErrorMessage } from "~utils/authentication/authenticatio
 import { PersistentStorage, useStorage } from "~utils/storage";
 import { StorageKeys } from "~utils/storage/storage.constants";
 import type { PreferredEmailAuth } from "~utils/auth/auth.types";
-import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import { useAsyncEffect } from "../../../../../../libs/core/src/lib/utils/react/useAsyncEffect";
 
 const IS_PASSKEYS_ENABLED = false;
 

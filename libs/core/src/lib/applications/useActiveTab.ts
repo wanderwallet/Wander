@@ -1,7 +1,7 @@
 import browser, { type Tabs } from "webextension-polyfill";
-import { getActiveTab } from "~applications";
 import { useState } from "react";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import { getActiveTab } from "~applications/application.utils";
 
 export default function useActiveTab() {
   const [activeTab, setActiveTab] = useState<Tabs.Tab>();

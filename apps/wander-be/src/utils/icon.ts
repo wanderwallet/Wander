@@ -35,7 +35,7 @@ import devLocked128 from "url:/assets/icons/locked/logo128.development.png";
 import devLocked256 from "url:/assets/icons/locked/logo256.development.png";
 
 import browser from "webextension-polyfill";
-import { ExtensionStorage } from "./storage";
+import { ExtensionStorage } from "../../../../libs/core/src/lib/utils/storage/storage";
 import { postEmbeddedMessage } from "~utils/_embedded/utils/messages/embedded-messages.utils";
 
 interface LogosBySize {

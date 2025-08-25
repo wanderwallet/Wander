@@ -14,20 +14,15 @@
     "noUnusedLocals": true,
     "skipLibCheck": true,
     "strict": true,
-
-    // Modified:
-    // "lib": ["es2022"],
     "lib": ["DOM", "ESNext"],
-    //"target": "es2022",
     "target": "es2020",
-
-    // Added:
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "sourceMap": true,
     "resolveJsonModule": true,
-
-    // Removed:
-    // "customConditions": ["development"]
-  }
+    "paths": {
+      "@wanderapp/core": ["./libs/core/src/index.ts"]
+    }
+  },
+  "exclude": [".old", ".old-already-moved"]
 }

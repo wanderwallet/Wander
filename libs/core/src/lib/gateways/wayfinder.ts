@@ -1,8 +1,8 @@
-import { sortGatewaysByOperatorStake } from "~lib/wayfinder";
+import { sortGatewaysByOperatorStake } from "~utils/wayfinder/wayfinder";
 import { clGateway, defaultGateway, defaultGateways, goldskyGateway, suggestedGateways, type Gateway } from "./gateway";
 import { useEffect, useState } from "react";
 import { getGatewayCache } from "./cache";
-import { getSetting } from "~settings";
+import { getSetting } from "~utils/settings/index";
 import Arweave from "arweave";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 

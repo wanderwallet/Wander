@@ -14,7 +14,7 @@ import {
 } from "~tokens/aoTokens/sync";
 import { withRetry } from "~utils/promises/retry";
 import { timeoutPromise } from "~utils/promises/timeout";
-import { PersistentStorage } from "~utils/storage";
+import { PersistentStorage } from "~utils/storage/storage";
 import { getActiveAddress } from "~wallets";
 import { checkAndImportFairLaunchTokens } from "~utils/fair_launch/fair_launch.alarms";
 import { FAIR_LAUNCH_TOKENS_ALARM_NAME } from "~utils/fair_launch/fair_launch.constants";

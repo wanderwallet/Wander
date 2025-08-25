@@ -1,6 +1,6 @@
 import { Checkbox, Input, Text, useInput } from "@arconnect/components-rebrand";
 import { setting_element_padding } from "./list/BaseElement";
-import type SettingType from "~settings/setting";
+import type SettingType from "../../../../../libs/core/src/lib/utils/settings/setting";
 import browser from "webextension-polyfill";
 import Squircle from "~components/Squircle";
 import SearchInput from "./SearchInput";

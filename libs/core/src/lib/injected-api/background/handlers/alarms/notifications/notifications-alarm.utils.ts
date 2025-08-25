@@ -3,7 +3,7 @@ import { gql } from "~gateways/api";
 import { suggestedGateways } from "~gateways/gateway";
 import { checkTransferStatus } from "~lib/transactions";
 import { combineAndSortTransactions, processTransactions } from "~notifications/utils";
-import { ExtensionStorage } from "~utils/storage";
+import { ExtensionStorage } from "~utils/storage/storage";
 
 export type RawTransaction = {
   node: {

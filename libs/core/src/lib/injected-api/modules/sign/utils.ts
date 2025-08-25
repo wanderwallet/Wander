@@ -2,7 +2,7 @@ import { getSetting } from "~settings";
 import { nanoid } from "nanoid";
 import type Transaction from "arweave/web/lib/transaction";
 import Application from "~applications/application";
-import { ExtensionStorage } from "~utils/storage";
+import { ExtensionStorage } from "~utils/storage/storage";
 import iconUrl from "url:/assets/icon512.png";
 import browser from "webextension-polyfill";
 import Arweave from "arweave";

@@ -1,4 +1,4 @@
-import { PersistentStorage } from "~utils/storage";
+import { PersistentStorage } from "~utils/storage/storage";
 import Application from "~applications/application";
 
 const IS_PERMISSIONS_RESET = "is_permissions_reset";

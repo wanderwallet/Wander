@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { getAoTokens } from "~tokens";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
-import { PersistentStorage, useStorage } from "~utils/storage";
+import { PersistentStorage, useStorage } from "~utils/storage/storage";
 
 export function useTokenIDs(): [string[], boolean] {
   // all token ids

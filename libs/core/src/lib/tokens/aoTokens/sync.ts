@@ -2,7 +2,7 @@ import Arweave from "arweave";
 import browser from "webextension-polyfill";
 import { getAoTokensCache } from "~tokens";
 import type { GQLTransactionsResultInterface } from "ar-gql/dist/faces";
-import { PersistentStorage } from "~utils/storage";
+import { PersistentStorage } from "~utils/storage/storage";
 import { getActiveAddress } from "~wallets";
 import { type TokenInfo, getTokenInfoFromData } from "./ao";
 import { withRetry } from "~utils/promises/retry";

@@ -68,7 +68,7 @@ import {
   removeUnpartitionedStateStatusChangeListener,
   type UnpartitionedStateStatusChangeData,
 } from "~iframe/storage/unpartitioned-storage/unpartitioned-storage.utils";
-import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import { useAsyncEffect } from "../../../../libs/core/src/lib/utils/react/useAsyncEffect";
 import { isomorphicOnMessage } from "~isomorphic-messaging";
 import { useTheme } from "~utils/theme/theme.hook";
 import { withRetry } from "~utils/promises/retry";

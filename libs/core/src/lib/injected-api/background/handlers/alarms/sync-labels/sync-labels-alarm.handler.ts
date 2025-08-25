@@ -1,6 +1,6 @@
 import type { Alarms } from "webextension-polyfill";
 import { getNameServiceProfiles } from "~lib/nameservice";
-import { ExtensionStorage } from "~utils/storage";
+import { ExtensionStorage } from "~utils/storage/storage";
 import { getWallets } from "~wallets";
 
 /**

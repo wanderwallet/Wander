@@ -10,7 +10,7 @@ import { useMemo } from "react";
 import useSetting from "~settings/hook";
 import { getConversionRate } from "~utils/currency";
 import BigNumber from "bignumber.js";
-import { ExtensionStorage, PersistentStorage } from "~utils/storage";
+import { ExtensionStorage, PersistentStorage } from "~utils/storage/storage";
 import { useStorage } from "@plasmohq/storage/hook";
 import { useArPrice } from "~lib/coingecko";
 import { defaultConfig } from "../aoTokens/config";

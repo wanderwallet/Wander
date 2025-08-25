@@ -1,4 +1,4 @@
-import { ExtensionStorage } from "~utils/storage";
+import { ExtensionStorage } from "~utils/storage/storage";
 import { getWallets } from "~wallets";
 
 /**

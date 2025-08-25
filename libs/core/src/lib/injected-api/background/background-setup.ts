@@ -1,5 +1,5 @@
 import handleFeeAlarm from "~api/modules/sign/fee";
-import { ExtensionStorage, PersistentStorage } from "~utils/storage";
+import { ExtensionStorage, PersistentStorage } from "~utils/storage/storage.js";
 import browser from "webextension-polyfill";
 import { handleApiCallMessage } from "~api/background/handlers/message/api-call-message/api-call-message.handler";
 import { handleChunkMessage } from "~api/background/handlers/message/chunk-message/chunk-message.handler";

@@ -13,7 +13,7 @@ import { addApp } from "~applications";
 import { defaultGateway } from "~gateways/gateway";
 import AppIcons from "./components/AppIcons";
 import { AuthRequestCard } from "~components/embed/ui/molecules/card/auth-request-card/AuthRequestCard";
-import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import { useAsyncEffect } from "../../../../../../libs/core/src/lib/utils/react/useAsyncEffect";
 
 export function EmbeddedConnectSettingsAuthRequestView() {
   const { navigate } = useLocation();

@@ -4,7 +4,7 @@ import { loadTokens } from "~tokens/token";
 import { initializeARBalanceMonitor } from "~utils/analytics";
 import { handleGatewayUpdateAlarm } from "~api/background/handlers/alarms/gateway-update/gateway-update-alarm.handler";
 import { openOrSelectWelcomePage } from "~wallets";
-import { ExtensionStorage } from "~utils/storage";
+import { ExtensionStorage } from "~utils/storage/storage.js";
 import { resetAllPermissions } from "./permissions.handler.js";
 import { scheduleFairLaunchTokensAlarm } from "~utils/fair_launch/fair_launch.alarms";
 

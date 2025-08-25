@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { getMarketChart, type CoinGeckoSymbol } from "~lib/coingecko";
 import useSetting from "~settings/hook";
 import { formatFiatBalance } from "~tokens/currency";
-import { ExtensionStorage, useStorage } from "~utils/storage";
+import { ExtensionStorage, useStorage } from "~utils/storage/storage";
 import BigNumber from "bignumber.js";
 
 export function useTokenPriceChange(symbol: CoinGeckoSymbol | null, fiat?: BigNumber) {

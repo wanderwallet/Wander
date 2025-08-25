@@ -44,7 +44,7 @@ export async function gql(query: string, variables?: Record<string, unknown>, ga
 export async function gqlAll(query: string, variables?: Record<string, unknown>, gateway?: Gateway) {
   let hasNextPage = true;
   let edges: GQLEdgeInterface[] = [];
-  let cursor: string = "";
+  let cursor = "";
 
   while (hasNextPage) {
     try {

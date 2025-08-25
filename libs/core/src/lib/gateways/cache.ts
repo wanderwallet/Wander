@@ -1,6 +1,6 @@
 import browser from "webextension-polyfill";
 import type { GatewayAddressRegistryItem } from "~gateways/types";
-import { ExtensionStorage } from "~utils/storage";
+import { ExtensionStorage } from "~utils/storage/storage";
 
 /** Cache storage name */
 export const CACHE_STORAGE_NAME = "gateways";

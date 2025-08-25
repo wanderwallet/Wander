@@ -3,7 +3,7 @@ import { Button, Snackbar, WarningIcon } from "~components/embed/ui";
 import { SecretInput } from "~components/embed/ui/atoms/secret-input/SecretInput";
 import { OnboardingCard } from "~components/embed/ui/molecules/card/onboarding-card/OnboardingCard";
 import { useEmbedded } from "~utils/embedded/embedded.hooks";
-import { useAsyncEffect } from "~utils/react/useAsyncEffect";
+import { useAsyncEffect } from "../../../../../../libs/core/src/lib/utils/react/useAsyncEffect";
 import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
 import { useLocation } from "~wallets/router/router.utils";
 

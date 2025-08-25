@@ -1,5 +1,5 @@
 import type { JWKInterface } from "arweave/node/lib/wallet";
-import { ExtensionStorage } from "~utils/storage";
+import { ExtensionStorage } from "~utils/storage/storage";
 import Arweave from "arweave/web/common";
 import { decryptWallet, encryptWallet, freeDecryptedWallet } from "./encryption";
 import { checkPassword, getDecryptionKeyOrRequestUnlock, setDecryptionKey } from "./auth";
