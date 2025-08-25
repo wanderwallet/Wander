@@ -1,5 +1,5 @@
 import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
-import { BRIDGE_TOKEN_IDS, getPools, getPriceImpact, processToken } from "./swap.utils";
+import { BRIDGE_TOKEN_IDS, getPools, getPriceImpact, getSwapTransaction, processToken } from "./swap.utils";
 import { defaultOptions, useAoTokens } from "~tokens/hooks";
 import { useMemo, useCallback, useState, useEffect } from "react";
 import type { ParsedSwapTransaction, Pool, SelectedPoolInfo, TokenPools, TokenSelectorType } from "./swap.types";
@@ -439,7 +439,7 @@ const emptyResponse = {
 const defaultCursors = ["", "", "0"];
 const defaultHasNextPages = [true, true, true];
 
-export const useTransactions = () => {
+export const useSwapTransactions = () => {
   const activeAddress = useActiveAddress();
   const [cursors, setCursors] = useState(defaultCursors);
   const [hasNextPages, setHasNextPages] = useState(defaultHasNextPages);
@@ -499,3 +499,24 @@ export const useTransactions = () => {
     fetchTransactions,
   };
 };
+
+export function useSwapTransaction(txId: string) {
+  const [transaction, setTransaction] = useState<ParsedSwapTransaction | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useAsyncEffect(async () => {
+    if (!txId) return;
+
+    setLoading(true);
+    try {
+      const transaction = await getSwapTransaction(txId);
+      setTransaction(transaction);
+    } catch (error) {
+      console.error("Error fetching transaction", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [txId]);
+
+  return { transaction, loading };
+}

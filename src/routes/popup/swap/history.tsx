@@ -3,10 +3,9 @@ import { Button, Loading, Section } from "@arconnect/components-rebrand";
 import HeadV2 from "~components/popup/HeadV2";
 import { ListItem, Text } from "@arconnect/components-rebrand";
 import { Flex } from "~components/common/Flex";
-import { useTheme } from "styled-components";
 import { useLocation } from "~wallets/router/router.utils";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
-import { useTransactions } from "./utils/swap.hooks";
+import { useSwapTransactions } from "./utils/swap.hooks";
 import type { ParsedSwapTransaction } from "./utils/swap.types";
 import browser from "webextension-polyfill";
 import dayjs from "dayjs";
@@ -17,7 +16,7 @@ import BigNumber from "bignumber.js";
 import { TokenLogo } from "~components/popup/TokenLogo";
 
 export function SwapHistoryView() {
-  const { transactions, loading, hasNextPage, fetchTransactions } = useTransactions();
+  const { transactions, loading, hasNextPage, fetchTransactions } = useSwapTransactions();
 
   return (
     <>
@@ -59,7 +58,6 @@ interface SwapHistoryListItemProps {
 }
 
 const SwapHistoryListItem = ({ tx }: SwapHistoryListItemProps) => {
-  const theme = useTheme();
   const { navigate } = useLocation();
 
   const valueInFormatted = useMemo(() => {
@@ -80,7 +78,7 @@ const SwapHistoryListItem = ({ tx }: SwapHistoryListItemProps) => {
       .toFixed();
 
     return formatBalance(value);
-  }, [tx.amountOut, tx.tokenOut]);
+  }, [tx.amountOut, tx.tokenOut.Denomination]);
 
   return (
     <StyledListItem

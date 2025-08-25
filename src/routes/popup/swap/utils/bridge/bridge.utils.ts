@@ -118,14 +118,19 @@ export async function getAoxTransactions(address: string, cursor = "0") {
       for (const edge of edges) {
         const swapTx = txMap.get(edge.node.id);
         if (swapTx) {
-          edge.node.tags.push({ name: "Bridge-Status", value: swapTx.status });
+          edge.node.tags.push(
+            ...[
+              { name: "Bridge-Status", value: swapTx.status },
+              { name: "To-Quantity", value: swapTx.quantity },
+            ],
+          );
         }
       }
 
       return edges;
     });
 
-    return { txs: Array.from(orderNoticesResult).map(parseSwapTransaction), hasNextPage, cursor };
+    return { txs: orderNoticesResult.map(parseSwapTransaction), hasNextPage, cursor };
   }, 2);
 
   return result;

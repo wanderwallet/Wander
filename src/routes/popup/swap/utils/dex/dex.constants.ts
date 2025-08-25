@@ -11,7 +11,7 @@ export const PERMASWAP_SETTLES = [
 export const PERMASWAP_ORDERBOOK = "rKpOUxssKxgfXQOpaCq22npHno6oRw66L3kZeoo_Ndk" as const;
 export const BOTEGA_AMM_FACTORY = "3XBGLrygs11K63F_7mldWz4veNx6Llg6hI2yZs8LKHo" as const;
 
-export const BOTEGA_SWAP_QUERY_WITH_CURSOR = `
+export const BOTEGA_SWAP_CONFIRMATION_QUERY_WITH_CURSOR = `
 query($address: String!, $after: String) {
   transactions(
     first: 10,
@@ -69,7 +69,7 @@ query($address: String!, $after: String) {
   }
 }`;
 
-export const PERMASWAP_ORDER_NOTICE_QUERY = `
+export const PERMASWAP_SWAP_CONFIRMATION_QUERY = `
 query($address: String!, $pushedFors: [String!]!) {
   transactions(
     first: 10,
@@ -105,6 +105,51 @@ query($address: String!, $pushedFors: [String!]!) {
       { name: "Pushed-For", values: $pushedFors },
     ],
     owners: [$address],
+  ) {
+    edges {
+      node {
+        id
+        recipient
+        owner { address }
+        block { timestamp, height }
+        tags { name, value }
+      }
+    }
+  }
+}`;
+
+export const SWAP_QUERY = `
+query($txId: ID!) {
+  transactions(
+    first: 1,
+    tags: [
+      {name: "Action", values: ["Transfer", "Burn"]},
+      { name: "X-Client", values: ["Roam"]},
+      { name: "X-Type", values: ["Swap"]} 
+    ],
+    ids: [$txId],
+  ) {
+    edges {
+      node {
+        id
+        recipient
+        owner { address }
+        block { timestamp, height }
+        tags { name, value }
+      }
+    }
+  }
+}`;
+
+export const SWAP_CONFIRMATION_QUERY = `
+query($pushedFor: String!) {
+  transactions(
+    first: 1,
+    tags: [
+      {name: "Data-Protocol", values: ["ao"]},
+      {name: "Action", values: ["Order-Confirmation", "Order-Error", "Order-Notice"]},
+      { name: "Pushed-For", values: [$pushedFor] }
+    ],
   ) {
     edges {
       node {

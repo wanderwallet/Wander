@@ -6,6 +6,7 @@ import type {
   PermaswapPool,
   Pool,
   PoolType,
+  Provider,
 } from "./swap.types";
 import BigNumber from "bignumber.js";
 import { BOTEGA_API_KEY, BOTEGA_SUPABASE_URL } from "./data-source/data-source.constants";
@@ -14,6 +15,11 @@ import { PoolTypeEnum } from "./swap.constants";
 import type { DefaultTheme } from "styled-components";
 import type { GQLEdgeInterface } from "ar-gql/dist/faces";
 import type GQLResultInterface from "ar-gql/dist/faces";
+import { retryWithDelay } from "~utils/promises/retry";
+import { gql } from "~gateways/api";
+import { goldskyGateway } from "~gateways/gateway";
+import { SWAP_CONFIRMATION_QUERY, SWAP_QUERY } from "./dex/dex.constants";
+import type { BridgeTransaction } from "./bridge/bridge.types";
 
 const BOTEGA_POOL_OPTIONS = {
   headers: {
@@ -202,8 +208,9 @@ export function getProviderName(poolType: PoolType) {
   }
 }
 
-export function getSwapTime(poolType: PoolType) {
-  if (poolType === PoolTypeEnum.AOX) return "30-60m";
+export function getSwapTime(poolType: PoolType | Provider) {
+  const poolTypeLower = poolType.toLowerCase();
+  if (poolTypeLower === PoolTypeEnum.AOX) return "30-60m";
   return "15s";
 }
 
@@ -228,7 +235,7 @@ export function parseSwapTransaction(transaction: GQLEdgeInterface): ParsedSwapT
   const orderStatus = getTagValue("OrderStatus", tags);
   const bridgeStatus = getTagValue("Bridge-Status", tags);
   const rate = getTagValue("X-Rate", tags);
-  const provider = getTagValue("X-Provider", tags);
+  const provider = getTagValue("X-Provider", tags) as Provider;
   const networkFee = getTagValue("X-Network-Fee", tags);
   const wanderFee = getTagValue("X-Client-Fee", tags);
   const slippage = getTagValue("X-Slippage", tags);
@@ -281,4 +288,65 @@ export function getStatusColor(status: ParsedSwapTransaction["status"]) {
     default:
       return "#04AA3E";
   }
+}
+
+export async function getSwapTransaction(txId: string) {
+  const result = await retryWithDelay(async () => {
+    const response = await gql(SWAP_QUERY, { txId }, goldskyGateway);
+
+    // validate the response
+    validateGqlResponse(response);
+
+    const tx = response?.data?.transactions?.edges[0];
+    const tags = tx.node.tags;
+    const provider = getTagValue("X-Provider", tags);
+    if (provider !== "AOX") {
+      const confirmationResponse = await gql(SWAP_CONFIRMATION_QUERY, { pushedFor: txId }, goldskyGateway);
+
+      console.log(confirmationResponse);
+
+      // validate the response
+      validateGqlResponse(confirmationResponse);
+
+      const confirmationTx = confirmationResponse?.data?.transactions?.edges[0];
+      const confirmationTags = confirmationTx.node.tags;
+      tx.node.tags.unshift(
+        ...[
+          {
+            name: "OrderStatus",
+            value: getTagValue("OrderStatus", confirmationTags),
+          },
+          {
+            name: "Action",
+            value: getTagValue("Action", confirmationTags),
+          },
+          {
+            name: "Quantity",
+            value: getTagValue("Quantity", confirmationTags),
+          },
+          {
+            name: "To-Quantity",
+            value: getTagValue("To-Quantity", confirmationTags),
+          },
+          {
+            name: "AmountOut",
+            value: getTagValue("AmountOut", confirmationTags),
+          },
+        ],
+      );
+    } else {
+      const confirmationResponse = await fetch(`https://api.aox.xyz/tx/${txId}`);
+      const confirmationTx = (await confirmationResponse.json()) as BridgeTransaction;
+      tx.node.tags.push(
+        ...[
+          { name: "Bridge-Status", value: confirmationTx.status },
+          { name: "To-Quantity", value: confirmationTx.quantity },
+        ],
+      );
+    }
+
+    return tx;
+  }, 2);
+
+  return parseSwapTransaction(result);
 }

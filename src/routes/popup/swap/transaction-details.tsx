@@ -8,14 +8,15 @@ import browser from "webextension-polyfill";
 import { TokenValueWithTooltip } from "./components/TokenValueWithTooltip";
 import { HorizontalLine } from "~components/HorizontalLine";
 import { TokenLogo } from "~components/popup/TokenLogo";
-import { AutoTag } from "./components/AutoTag";
 import { TransactionDetailItem } from "./components/TransactionDetailItem";
-import { getPriceImpactColor } from "./utils/swap.utils";
+import { getPriceImpactColor, getSwapTime } from "./utils/swap.utils";
 import { LinkExternal02 } from "@untitled-ui/icons-react";
-import { AO_TOKEN_INFO, WAR_TOKEN_INFO } from "~tokens/aoTokens/ao.constants";
 import { useMemo } from "react";
 import { formatBalance } from "~utils/format";
 import { useLocation } from "~wallets/router/router.utils";
+import { useSwapTransaction } from "./utils/swap.hooks";
+import BigNumber from "bignumber.js";
+import Skeleton from "~components/Skeleton";
 
 export interface SwapTransactionDetailsParams {
   id: string;
@@ -23,79 +24,146 @@ export interface SwapTransactionDetailsParams {
 
 export type SwapTransactionDetailsViewProps = CommonRouteProps<SwapTransactionDetailsParams>;
 
-export function SwapTransactionDetailsView({}: SwapTransactionDetailsViewProps) {
+export function SwapTransactionDetailsView({ params: { id } }: SwapTransactionDetailsViewProps) {
   const theme = useTheme();
   const { back } = useLocation();
 
-  const valueInFormatted = useMemo(() => formatBalance("1"), []);
-  const valueOutFormatted = useMemo(() => formatBalance("11.8758"), []);
-  const slippage = 0.5;
-  const priceImpact = "0.5";
+  const { transaction, loading } = useSwapTransaction(id);
+
+  const valueInFormatted = useMemo(() => {
+    if (!transaction || !transaction.amountIn || !transaction.tokenIn) return formatBalance("0");
+
+    const value = BigNumber(transaction.amountIn || "0")
+      .shiftedBy(-transaction.tokenIn.Denomination)
+      .toFixed();
+
+    return formatBalance(value);
+  }, [transaction]);
+
+  const valueOutFormatted = useMemo(() => {
+    if (!transaction || !transaction.amountOut || !transaction.tokenOut) return formatBalance("0");
+
+    const value = BigNumber(transaction.amountOut || "0")
+      .shiftedBy(-transaction.tokenOut.Denomination)
+      .toFixed();
+
+    return formatBalance(value);
+  }, [transaction]);
+
+  function handleOpen() {
+    const url = transaction.isAo ? `https://www.ao.link/#/message/${id}` : `https://viewblock.io/arweave/tx/${id}`;
+
+    browser.tabs.create({ url });
+  }
 
   return (
     <>
       <HeadV2 title="Transaction details" />
       <Wrapper>
-        <WrapperContent>
-          <Flex direction="column" gap={16}>
-            <Flex direction="column" gap={8}>
-              <Text variant="secondary" size="sm" weight="medium" noMargin>
-                {browser.i18n.getMessage("you_send")}
-              </Text>
-              <Flex direction="row" align="center" gap={4}>
-                <TokenLogo size={24} token={AO_TOKEN_INFO} />
-                <TokenValueWithTooltip formattedValue={valueInFormatted} ticker={AO_TOKEN_INFO.Ticker} />
-              </Flex>
-            </Flex>
-            <Flex direction="column" gap={8}>
-              <Text variant="secondary" size="sm" weight="medium" noMargin>
-                {browser.i18n.getMessage("you_receive")}
-              </Text>
-              <Flex direction="row" align="center" gap={4}>
-                <TokenLogo size={24} token={WAR_TOKEN_INFO} />
-                <TokenValueWithTooltip formattedValue={valueOutFormatted} ticker={WAR_TOKEN_INFO.Ticker} />
-              </Flex>
-            </Flex>
-          </Flex>
-          <HorizontalLine />
-          <Flex direction="column" gap={16}>
-            <Text weight="medium" noMargin>
-              Transactions details
-            </Text>
-            <Flex direction="column" gap={8}>
-              <TransactionDetailItem title={"Rate"} value="1 wAR ≈ 11.8758 AGENT" />
-              <TransactionDetailItem title={"Provider"} value="Botega" />
-              <TransactionDetailItem title={"Est. Swap Time"} value="15s" />
-              <TransactionDetailItem title={"Fees"} value="0.01 AR" />
-              <TransactionDetailItem
-                title={"Slippage"}
-                value={
-                  <Flex gap={4} align="center" justify="center">
-                    <Text variant="secondary" size="sm" weight="medium" noMargin>
-                      {slippage}%{" "}
-                    </Text>
-                    <AutoTag slippage={slippage} />
+        {loading || !transaction ? (
+          <>
+            <WrapperContent>
+              <Flex direction="column" gap={16}>
+                <Flex direction="column" gap={8}>
+                  <Text variant="secondary" size="sm" weight="medium" noMargin>
+                    <Skeleton width="4rem" />
+                  </Text>
+                  <Flex direction="row" align="center" gap={4}>
+                    <SkeletonTokenLogo />
+                    <Skeleton width="8rem" />
                   </Flex>
-                }
-              />
-              <TransactionDetailItem
-                title={"Price Impact"}
-                value={priceImpact ? `${priceImpact}%` : "--"}
-                valueColor={getPriceImpactColor(priceImpact, theme)}
-              />
-            </Flex>
-          </Flex>
-        </WrapperContent>
+                </Flex>
+                <Flex direction="column" gap={8}>
+                  <Text variant="secondary" size="sm" weight="medium" noMargin>
+                    <Skeleton width="5rem" />
+                  </Text>
+                  <Flex direction="row" align="center" gap={4}>
+                    <SkeletonTokenLogo />
+                    <Skeleton width="6rem" />
+                  </Flex>
+                </Flex>
+              </Flex>
+              <HorizontalLine />
+              <Flex direction="column" gap={16}>
+                <Text weight="medium" noMargin>
+                  <Skeleton width="8rem" />
+                </Text>
+                <Flex direction="column" gap={8}>
+                  {new Array(7).fill("").map((_, i) => (
+                    <TransactionDetailItem
+                      key={i}
+                      title={<Skeleton width="6rem" />}
+                      value={<Skeleton width="5rem" />}
+                    />
+                  ))}
+                </Flex>
+              </Flex>
+            </WrapperContent>
 
-        <Flex direction="column" gap={12}>
-          <Button fullWidth onClick={() => back()}>
-            {browser.i18n.getMessage("done")}
-          </Button>
-          <Button variant="secondary" fullWidth onClick={() => browser.tabs.create({ url: "https://ao.link/tx/1" })}>
-            {true ? "AOLink" : "Viewblock"}
-            <LinkExternal02 style={{ marginLeft: "8px" }} />
-          </Button>
-        </Flex>
+            <Flex direction="column" gap={12}>
+              <Button fullWidth disabled>
+                <Skeleton width="3rem" />
+              </Button>
+              <Button variant="secondary" fullWidth disabled>
+                <Skeleton width="4rem" />
+              </Button>
+            </Flex>
+          </>
+        ) : (
+          <>
+            <WrapperContent>
+              <Flex direction="column" gap={16}>
+                <Flex direction="column" gap={8}>
+                  <Text variant="secondary" size="sm" weight="medium" noMargin>
+                    {browser.i18n.getMessage("you_send")}
+                  </Text>
+                  <Flex direction="row" align="center" gap={4}>
+                    <TokenLogo size={24} token={transaction.tokenIn} />
+                    <TokenValueWithTooltip formattedValue={valueInFormatted} ticker={transaction.tokenIn.Ticker} />
+                  </Flex>
+                </Flex>
+                <Flex direction="column" gap={8}>
+                  <Text variant="secondary" size="sm" weight="medium" noMargin>
+                    {browser.i18n.getMessage("you_receive")}
+                  </Text>
+                  <Flex direction="row" align="center" gap={4}>
+                    <TokenLogo size={24} token={transaction.tokenOut} />
+                    <TokenValueWithTooltip formattedValue={valueOutFormatted} ticker={transaction.tokenOut.Ticker} />
+                  </Flex>
+                </Flex>
+              </Flex>
+              <HorizontalLine />
+              <Flex direction="column" gap={16}>
+                <Text weight="medium" noMargin>
+                  Transactions details
+                </Text>
+                <Flex direction="column" gap={8}>
+                  <TransactionDetailItem title={"Rate"} value={transaction.rate} />
+                  <TransactionDetailItem title={"Provider"} value={transaction.provider} />
+                  <TransactionDetailItem title={"Est. Swap Time"} value={getSwapTime(transaction.provider)} />
+                  <TransactionDetailItem title={"Network Fee"} value={transaction.networkFee} />
+                  <TransactionDetailItem title={"Wander Fee"} value={transaction.wanderFee} />
+                  <TransactionDetailItem title={"Slippage"} value={transaction.slippage} />
+                  <TransactionDetailItem
+                    title={"Price Impact"}
+                    value={transaction.priceImpact}
+                    valueColor={getPriceImpactColor(transaction.priceImpact.replace("%", ""), theme)}
+                  />
+                </Flex>
+              </Flex>
+            </WrapperContent>
+
+            <Flex direction="column" gap={12}>
+              <Button fullWidth onClick={() => back()}>
+                {browser.i18n.getMessage("done")}
+              </Button>
+              <Button variant="secondary" fullWidth onClick={handleOpen}>
+                {transaction.isAo ? "AOLink" : "Viewblock"}
+                <LinkExternal02 style={{ marginLeft: "8px" }} />
+              </Button>
+            </Flex>
+          </>
+        )}
       </Wrapper>
     </>
   );
@@ -119,4 +187,11 @@ const WrapperContent = styled.div`
   flex: 1;
   overflow-y: auto;
   min-height: 0;
+`;
+
+const SkeletonTokenLogo = styled(Skeleton)`
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  flex-shrink: 0;
 `;

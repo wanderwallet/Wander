@@ -60,6 +60,7 @@ export type BotegaPool = {
 };
 
 export type PoolType = "botega" | "permaswap" | "aox";
+export type Provider = "Botega" | "Permaswap" | "AOX";
 
 export interface Pool {
   poolId: string;
@@ -158,7 +159,7 @@ export interface ParsedSwapTransaction {
   isAo: boolean;
   rate: string;
   timestamp: number;
-  provider: string;
+  provider: Provider;
   networkFee: string;
   wanderFee: string;
   slippage: string;

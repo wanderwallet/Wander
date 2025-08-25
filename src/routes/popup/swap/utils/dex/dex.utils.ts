@@ -4,8 +4,8 @@ import { gql } from "~gateways/api";
 import type { AoMessage } from "./dex.types";
 import { retryWithDelay } from "~utils/promises/retry";
 import {
-  BOTEGA_SWAP_QUERY_WITH_CURSOR,
-  PERMASWAP_ORDER_NOTICE_QUERY,
+  BOTEGA_SWAP_CONFIRMATION_QUERY_WITH_CURSOR,
+  PERMASWAP_SWAP_CONFIRMATION_QUERY,
   PERMASWAP_SWAP_QUERY_WITH_CURSOR,
   SWAP_TRANSFER_QUERY,
 } from "./dex.constants";
@@ -182,7 +182,7 @@ export async function getLinkedMessages(
 
 export async function getBotegaTransactions(address: string, cursor = "") {
   const result = await retryWithDelay(async () => {
-    const data = await gql(BOTEGA_SWAP_QUERY_WITH_CURSOR, { address, after: cursor }, goldskyGateway);
+    const data = await gql(BOTEGA_SWAP_CONFIRMATION_QUERY_WITH_CURSOR, { address, after: cursor }, goldskyGateway);
 
     // validate the response
     validateGqlResponse(data);
@@ -249,7 +249,7 @@ export async function getPermaswapTransactions(address: string, cursor = "") {
 
     const pushedFors = Array.from(txMap.keys());
     const orderNoticesResult = await retryWithDelay(async () => {
-      const data = await gql(PERMASWAP_ORDER_NOTICE_QUERY, { address, pushedFors }, goldskyGateway);
+      const data = await gql(PERMASWAP_SWAP_CONFIRMATION_QUERY, { address, pushedFors }, goldskyGateway);
 
       // validate the response
       validateGqlResponse(data);
@@ -260,14 +260,30 @@ export async function getPermaswapTransactions(address: string, cursor = "") {
         const pushedFor = getTagValue("Pushed-For", tags);
         const swapTx = txMap.get(pushedFor);
         if (swapTx) {
-          edge.node.tags.push(...swapTx.node.tags);
+          edge.node.tags.unshift(
+            ...[
+              {
+                name: "OrderStatus",
+                value: getTagValue("OrderStatus", tags),
+              },
+              {
+                name: "Action",
+                value: getTagValue("Action", tags),
+              },
+
+              {
+                name: "AmountOut",
+                value: getTagValue("AmountOut", tags),
+              },
+            ],
+          );
         }
       }
 
       return edges;
     });
 
-    return { txs: Array.from(orderNoticesResult).map(parseSwapTransaction), hasNextPage, cursor };
+    return { txs: orderNoticesResult.map(parseSwapTransaction), hasNextPage, cursor };
   }, 2);
 
   return result;
