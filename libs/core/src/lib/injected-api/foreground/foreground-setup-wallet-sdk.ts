@@ -5,7 +5,6 @@ import { foregroundModules, type ForegroundModule } from "~api/foreground/foregr
 import mitt from "mitt";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { version } from "../../../../wander-wallet-api/package.json";
-import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 import { isApiErrorResponse } from "~utils/messaging/common/messaging.utils";
 // import { version as sdkVersion } from "../../../wander-connect-sdk/package.json";
 
@@ -17,7 +16,7 @@ export async function injectWanderWalletAPI(targetWindow: Window = window, embed
 
   // TODO: Can we get the right type here?:
   const walletAPI = {
-    walletName: IS_EMBEDDED_APP ? "Wander Connect" : "ArConnect",
+    walletName: import.meta.env?.VITE_IS_EMBEDDED_APP === "1" ? "Wander Connect" : "ArConnect",
     walletVersion: version,
     events,
   } as const;
@@ -51,7 +50,7 @@ export async function injectWanderWalletAPI(targetWindow: Window = window, embed
       // 3. Prepare the message & payload to send:
       const callID = nanoid();
       const data: ApiCall = {
-        app: IS_EMBEDDED_APP ? "wanderEmbedded" : "wander",
+        app: import.meta.env?.VITE_IS_EMBEDDED_APP === "1" ? "wanderEmbedded" : "wander",
         version,
         callID,
         type: `api_${functionName}`,
@@ -62,7 +61,7 @@ export async function injectWanderWalletAPI(targetWindow: Window = window, embed
 
       // 4. Send message to background script (Wander BE) or to the iframe window (Wander Embedded):
 
-      const targetOrigin = IS_EMBEDDED_APP ? embeddedOrigin : window.location.origin;
+      const targetOrigin = import.meta.env?.VITE_IS_EMBEDDED_APP === "1" ? embeddedOrigin : window.location.origin;
 
       targetWindow.postMessage(data, targetOrigin);
 
@@ -89,7 +88,7 @@ export async function injectWanderWalletAPI(targetWindow: Window = window, embed
         // TODO: Make sure the response comes from targetWindow.
         // See https://stackoverflow.com/questions/16266474/javascript-listen-for-postmessage-events-from-specific-iframe.
 
-        let { data: res } = e;
+        const { data: res } = e;
 
         // validate return message
         if (!data || `${data.type}_result` !== res.type) return;
@@ -185,7 +184,7 @@ export async function injectWanderWalletAPI(targetWindow: Window = window, embed
 
   // ...we can instead monkey patch `window.addEventListener` and re-dispatch the "arweaveWalletLoaded" event as soon as a new listener is added:
 
-  let addEventListener_ = Window.prototype.addEventListener;
+  const addEventListener_ = Window.prototype.addEventListener;
 
   Window.prototype.addEventListener = function (eventName: string, ...args) {
     if (eventName === "arweaveWalletLoaded") {

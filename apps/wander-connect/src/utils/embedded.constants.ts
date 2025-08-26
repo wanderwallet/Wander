@@ -1,10 +1,8 @@
 import type { AuthProviderType } from "embed-api";
-import type { AuthStatus, EmbeddedSdkAuthStatus } from "~utils/_embedded/embedded.types";
+import { AuthStatus, EmbeddedSdkAuthStatus } from "./embedded.types";
 
 // TODO: Move to `embed-api`
 export const SUPABASE_AUTH_TOKEN_KEY_REGEXP = /^sb\-\w+\-auth\-token$/;
-
-export const IS_EMBEDDED_APP = import.meta.env?.VITE_IS_EMBEDDED_APP === "1";
 
 export const EMBEDDED_ANCESTOR_TAB_ID = -42;
 

@@ -6,9 +6,9 @@ import {
   EMBEDDED_ANCESTOR_ORIGIN,
   EMBEDDED_HIDE_BE,
   EMBEDDED_SERVER_BASE_URL,
-} from "~utils/iframe.utils";
-import { getSupabaseClient } from "~utils/embedded.utils";
-import { type OAuthSuccessMessage, type OAuthErrorMessage } from "~domains/authentication/authentication.types";
+} from "./utils/iframe.utils";
+import { getSupabaseClient } from "./utils/embedded.utils";
+import { type OAuthSuccessMessage, type OAuthErrorMessage } from "./domains/authentication/authentication.types";
 import {
   BACKGROUND_COLORS_BY_PROVIDER,
   OAUTH_ERROR_MSG_TYPE,
@@ -16,7 +16,7 @@ import {
   OAuthErrorCode,
   POPUP_CONFIRMATION_TIMEOUT_MS,
   POPUP_ON_AUTH_TIMEOUT_MS,
-} from "~domains/authentication/authentication.utils";
+} from "./domains/authentication/authentication.utils";
 import { jwtDecode } from "jwt-decode";
 
 if (process.env.NODE_ENV === "development") {

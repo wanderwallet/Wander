@@ -1,4 +1,3 @@
-import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 import { version } from "../../../../../wander-wallet-api/package.json";
 
 export interface DecodedTag {
@@ -9,7 +8,7 @@ export interface DecodedTag {
 export const signedTxTags = [
   {
     name: "Signing-Client",
-    value: IS_EMBEDDED_APP ? "Wander Connect" : "Wander",
+    value: import.meta.env?.VITE_IS_EMBEDDED_APP === "1" ? "Wander Connect" : "Wander",
   },
   {
     name: "Signing-Client-Version",

@@ -1,9 +1,9 @@
-import { PersistentStorage } from "~utils/storage";
 import type { Storage } from "@plasmohq/storage";
-import { getGatewayCache } from "~gateways/cache";
-import { clGateway, defaultGateway, defaultGateways, type Gateway } from "~gateways/gateway";
+import { PersistentStorage } from "../storage/storage";
+import { getGatewayCache } from "../../gateways/cache";
+import { clGateway, defaultGateway, defaultGateways, Gateway } from "../../gateways/gateway";
 
-export const PREFIX = "setting_";
+export const SETTING_PREFIX = "setting_";
 
 export default class Setting {
   /** Name of the setting */
@@ -45,7 +45,7 @@ export default class Setting {
     this.icon = icon;
     this.inputPlaceholder = inputPlaceholder;
     // set storage name
-    this.storageName = `${PREFIX}${name}`;
+    this.storageName = `${SETTING_PREFIX}${name}`;
 
     // init storage
     this.#storage = PersistentStorage;

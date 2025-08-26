@@ -1,14 +1,13 @@
 import type { ApiCall, Event } from "shim";
 import type { MittInjectedEvents } from "~utils/events";
 import { nanoid } from "nanoid";
-import { foregroundModules, type ForegroundModule } from "~api/foreground/foreground-modules";
 import mitt from "mitt";
-import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { version } from "../../../../wander-wallet-api/package.json";
-import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
 import { isApiErrorResponse } from "~utils/messaging/common/messaging.utils";
 import { isomorphicSendMessage } from "~isomorphic-messaging";
 import { setEmbeddedTargetIframe } from "~utils/messaging/strategies/iframe/iframe-messaging.strategy";
+import { foregroundModules, type ForegroundModule } from "./foreground-modules";
+import { log, LOG_GROUP } from '../../utils/log/log.utils';
 // import { version as sdkVersion } from "../../../wander-connect-sdk/package.json";
 
 export function injectWanderConnectWalletAPI(targetWindowOrIframe: Window | HTMLIFrameElement = window) {
@@ -25,7 +24,7 @@ export function injectWanderConnectWalletAPI(targetWindowOrIframe: Window | HTML
 
   // TODO: Can we get the right type here?:
   const walletAPI = {
-    walletName: IS_EMBEDDED_APP ? "Wander Connect" : "ArConnect",
+    walletName: import.meta.env?.VITE_IS_EMBEDDED_APP === "1" ? "Wander Connect" : "ArConnect",
     walletVersion: version,
     events,
   } as const;
@@ -59,7 +58,7 @@ export function injectWanderConnectWalletAPI(targetWindowOrIframe: Window | HTML
       // 3. Prepare the message & payload to send:
       const callID = nanoid();
       const data: ApiCall = {
-        app: IS_EMBEDDED_APP ? "wanderEmbedded" : "wander",
+        app: import.meta.env?.VITE_IS_EMBEDDED_APP === "1" ? "wanderEmbedded" : "wander",
         version,
         callID,
         type: `api_${functionName}`,

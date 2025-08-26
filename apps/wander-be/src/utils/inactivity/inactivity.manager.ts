@@ -144,7 +144,7 @@ export class InactivityManager {
     { leading: true, trailing: false },
   );
 
-  async checkAndHandleSessionState(popupWindow: boolean = false): Promise<void> {
+  async checkAndHandleSessionState(popupWindow = false): Promise<void> {
     try {
       if (!(await this.isEnabled())) {
         log(LOG_GROUP.SESSION, "Auto-lock disabled");

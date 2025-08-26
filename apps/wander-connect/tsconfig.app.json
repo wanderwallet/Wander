@@ -6,11 +6,7 @@
     "jsx": "react-jsx",
     "lib": ["dom"],
     "types": ["node", "@nx/react/typings/cssmodule.d.ts", "@nx/react/typings/image.d.ts", "vite/client"],
-    "rootDir": "src",
-    "paths": {
-      "~*": ["./src/*"],
-      "@wanderapp/core": ["./libs/core/src/index.ts"]
-    }
+    "rootDir": "src"
   },
   "exclude": [
     "out-tsc",

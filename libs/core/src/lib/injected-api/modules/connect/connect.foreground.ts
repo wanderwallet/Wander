@@ -1,12 +1,11 @@
-import type { PermissionType } from "~applications/permissions";
-import type { AppInfo } from "~applications/application";
-import type { ModuleFunction } from "~api/module";
-import { type Gateway } from "~gateways/gateway";
-import { getAppURL } from "~utils/format";
-import { IS_EMBEDDED_APP } from "~utils/embedded/embedded.constants";
-import { getAppLogo } from "~utils/embedded/utils/logo/logo.utils";
+import { getAppURL } from "../../../utils/format/format";
+import { getAppLogo } from "../../../utils/logo/logo.utils";
+import type { Gateway } from "../../../gateways/gateway";
+import type { AppInfo } from "../../../applications/application.class";
+import { ModuleFunction } from "../../module";
+import { PermissionType } from "../../../applications/permissions";
 
-const foreground: ModuleFunction<any[]> = async (
+const foreground: ModuleFunction<[PermissionType[], AppInfo, Gateway | undefined]> = async (
   permissions: PermissionType[],
   appInfo: AppInfo = {},
   gateway?: Gateway,
@@ -26,11 +25,11 @@ const foreground: ModuleFunction<any[]> = async (
     appInfo.name = siteTitle.length < 11 ? siteTitle : tabURL;
   }
 
-  if (IS_EMBEDDED_APP && !appInfo.logo) {
+  if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1" && !appInfo.logo) {
     appInfo.logo = await getAppLogo();
   }
 
   return [permissions, appInfo, gateway];
-};
+}
 
 export default foreground;

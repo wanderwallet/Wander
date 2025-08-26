@@ -1,10 +1,10 @@
 import { createSupabaseClient, createTRPCClient } from "embed-api";
-import { IS_EMBEDDED_APP, SUPABASE_AUTH_TOKEN_KEY_REGEXP } from "~utils/_embedded/embedded.constants";
-import { LocalStorage } from "~iframe/storage/unpartitioned-storage/local-storage";
 import { isInsideIframe, EMBEDDED_CLIENT_ID, EMBEDDED_ANCESTOR_ORIGIN, EMBEDDED_SERVER_BASE_URL } from "./iframe.utils";
-import { ExtensionStorage } from "~utils/storage";
-import { postEmbeddedMessage } from "~utils/_embedded/utils/messages/embedded-messages.utils";
-import type { Wallet } from "~utils/_embedded/embedded.types";
+import { SUPABASE_AUTH_TOKEN_KEY_REGEXP } from "./embedded.constants";
+import { LocalStorage } from "./storage/unpartitioned-storage/local-storage";
+import { postEmbeddedMessage } from "./utils/messages/embedded-messages.utils";
+import { Wallet } from "./embedded.types";
+import { ExtensionStorage } from "@wanderapp/core";
 
 export function getBackupsNeededAndMessage(wallets: Wallet[]) {
   const backupsNeeded = wallets.filter((wallet) => {
@@ -105,7 +105,7 @@ let trpcClientAndUtils: ReturnType<typeof createTRPCClient> | null = null;
  * @returns A configured tRPC client instance.
  */
 function getTRPCClientAndUtils() {
-  if (!IS_EMBEDDED_APP) return null;
+  if (import.meta.env?.VITE_IS_EMBEDDED_APP === "0") return null;
 
   if (!trpcClientAndUtils) {
     trpcClientAndUtils = createTRPCClient({
@@ -140,7 +140,7 @@ const {
 let supabaseInstance: ReturnType<typeof createSupabaseClient> | null = null;
 
 export async function getSupabaseClient() {
-  if (!IS_EMBEDDED_APP) return null;
+  if (import.meta.env?.VITE_IS_EMBEDDED_APP === "0") return null;
 
   if (!supabaseInstance) {
     const storage = await LocalStorage.getInstance();
@@ -230,7 +230,7 @@ async function insecurelyValidateApplication(sessionId: string) {
 // Validate immediately on load
 // insecurelyValidateApplication();
 
-if (IS_EMBEDDED_APP && process.env.NODE_ENV === "development") {
+if (import.meta.env?.VITE_IS_EMBEDDED_APP === "1" && process.env.NODE_ENV === "development") {
   (window as any).signOut = signOut;
   (window as any).logOut = signOut;
 }

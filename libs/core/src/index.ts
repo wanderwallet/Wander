@@ -43,6 +43,21 @@ export * from "./lib/tokens/knownTokens";
 export * from "./lib/tokens/token";
 export * from "./lib/tokens/useRemoveCover";
 
+export * from "./lib/utils/format/format";
+export * from "./lib/utils/log/log.utils";
+export * from "./lib/utils/logo/logo.utils";
+export * from "./lib/utils/promises/isPromise";
+export * from "./lib/utils/promises/resolvable";
+export * from "./lib/utils/promises/retry";
+export * from "./lib/utils/promises/sleep";
+export * from "./lib/utils/promises/timeout";
+export * from "./lib/utils/react/useAsyncEffect";
+export * from "./lib/utils/react/useCooldownCallback";
+export * from "./lib/utils/settings/hook";
+export * from "./lib/utils/settings/setting";
+export * from "./lib/utils/storage/storage";
+export * from "./lib/utils/wayfinder/wayfinder";
+
 export * from "./lib/wallets/hardware/index";
 export * from "./lib/wallets/hardware/keystone";
 export * from "./lib/wallets/auth";

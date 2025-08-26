@@ -1,10 +1,8 @@
 import type Transaction from "arweave/web/lib/transaction";
-import { type Gateway } from "~gateways/gateway";
 import { Storage } from "@plasmohq/storage";
 import { useStorage as usePlasmoStorage } from "@plasmohq/storage/hook";
 import { useMemo } from "react";
 import { StorageMock, type StorageMockInterface } from "~iframe/storage/plasmo-storage/plasmo-storage.mock";
-import { IS_EMBEDDED_APP } from "./_embedded/embedded.constants";
 
 /**
  * Default extension storage:
@@ -13,15 +11,15 @@ import { IS_EMBEDDED_APP } from "./_embedded/embedded.constants";
  *   version needs to persist are stored manually in `localStorage` (e.g. `deviceNonce`, shares...)
  */
 
-export const ExtensionStorage = IS_EMBEDDED_APP ? new StorageMock("session") : new Storage({ area: "local" });
+export const ExtensionStorage = import.meta.env?.VITE_IS_EMBEDDED_APP === "1" ? new StorageMock("session") : new Storage({ area: "local" });
 
-export const PersistentStorage = IS_EMBEDDED_APP ? new StorageMock("local") : ExtensionStorage;
+export const PersistentStorage = import.meta.env?.VITE_IS_EMBEDDED_APP === "1" ? new StorageMock("local") : ExtensionStorage;
 
 /**
  * Temporary storage for submitted transfers, with values
  * that are NOT copied to window.sessionStorage
  */
-export const TempTransactionStorage = IS_EMBEDDED_APP
+export const TempTransactionStorage = import.meta.env?.VITE_IS_EMBEDDED_APP === "1"
   ? ExtensionStorage
   : new Storage({
       area: "session",
@@ -52,7 +50,7 @@ export interface RawStoredTransfer {
 
 // In Embedded, the value coming from the `onInit` param doesn't seem to work well, causing some views like
 // /send/transfer to break on load, when the "init" value should have been used:
-export const useStorage: typeof usePlasmoStorage = IS_EMBEDDED_APP
+export const useStorage: typeof usePlasmoStorage = import.meta.env?.VITE_IS_EMBEDDED_APP === "1"
   ? (((rawKey, onInit) => {
       const [value, setter, other] = usePlasmoStorage(rawKey, onInit);
       const { isLoading } = other;

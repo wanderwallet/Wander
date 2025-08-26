@@ -21,7 +21,8 @@
     "sourceMap": true,
     "resolveJsonModule": true,
     "paths": {
-      "@wanderapp/core": ["./libs/core/src/index.ts"]
+      "@wanderapp/core": ["./libs/core/src/index.ts"],
+      "@wanderapp/ui": ["./libs/ui/src/index.ts"],
     }
   },
   "exclude": [".old", ".old-already-moved"]
