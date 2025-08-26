@@ -50,7 +50,7 @@ export async function getExpectedOutput({
   wanderFee,
 }: GetExpectedOutputParams): Promise<GetExpectedOutputResponse> {
   swapper = swapper || (await getActiveAddress());
-  const amountInWithoutWanderFee = BigNumber(amountIn).minus(wanderFee).toFixed();
+  const amountInWithoutWanderFee = BigNumber(amountIn).minus(wanderFee).toFixed(0, BigNumber.ROUND_DOWN);
   const response = await aoInstance.dryrun({
     process: poolId,
     tags: [
@@ -65,7 +65,7 @@ export async function getExpectedOutput({
   const amountOut = getTagValue("Output", tags) || "0";
   const lpFeeQuantity = getTagValue("LP-Fee-Quantity", tags) || "0";
   const protocolFeeQuantity = getTagValue("Protocol-Fee-Quantity", tags) || "0";
-  const tokenOutFee = BigNumber(lpFeeQuantity).plus(protocolFeeQuantity).toFixed();
+  const tokenOutFee = BigNumber(lpFeeQuantity).plus(protocolFeeQuantity).toFixed(0, BigNumber.ROUND_DOWN);
   const minAmountOut = BigNumber(amountOut)
     .multipliedBy(BigNumber(1).minus(slippage || 0))
     .div(100)

@@ -59,10 +59,11 @@ export async function getExpectedOutput({
   const isARToWAR = tokenIn === AR_PROCESS_ID;
   const amountInBN = BigNumber(amountIn);
   const mintOrBurnFee = isARToWAR ? bridgeInfo.warToken.mintFee : bridgeInfo.warToken.burnFee;
+  const networkProviderFee = BigNumber(networkFee).plus(mintOrBurnFee);
   const networkWanderFee = BigNumber(networkFee).plus(wanderFee);
   const totalFee = BigNumber(mintOrBurnFee).plus(networkWanderFee);
-  const transferAmountIn = amountInBN.minus(networkWanderFee).toFixed();
-  const amountOut = amountInBN.minus(totalFee).toFixed();
+  const transferAmountIn = amountInBN.minus(networkWanderFee).toFixed(0, BigNumber.ROUND_DOWN);
+  const amountOut = amountInBN.minus(totalFee).toFixed(0, BigNumber.ROUND_DOWN);
 
   return {
     poolId,
@@ -72,8 +73,8 @@ export async function getExpectedOutput({
     transferAmountIn,
     minAmountOut: amountOut,
     poolAmountIn: transferAmountIn,
-    tokenOutFee: isARToWAR ? "0" : totalFee.toFixed(),
-    tokenInFee: isARToWAR ? totalFee.toFixed() : "0",
+    tokenOutFee: isARToWAR ? "0" : networkProviderFee.toFixed(0, BigNumber.ROUND_DOWN),
+    tokenInFee: isARToWAR ? networkProviderFee.toFixed(0, BigNumber.ROUND_DOWN) : "0",
     wanderFee,
     networkFee,
     type: "aox",

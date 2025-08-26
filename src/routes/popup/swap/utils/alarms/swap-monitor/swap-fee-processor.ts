@@ -21,7 +21,7 @@ import { trackEvent, EventType } from "~utils/analytics";
 import { getDefiFeeDetailsForTier } from "~utils/tier/utils";
 
 // TODO: Replace with actual recipient CDoilQgKg6Pmp4Q0LJ4d84VXRgB3Ay9pIJ_SA617cVk
-const WANDER_FEE_RECIPIENT = "C4ckfndXuRWYgs_5h-zwCuOBbJWer0ostMmDNy9sTCA";
+const WANDER_FEE_RECIPIENT = "5glNksg7gRpA0JIXXvCBjlx6U2RHpMG73Msfftke2lY";
 
 const aoInstance = connect(defaultConfig);
 

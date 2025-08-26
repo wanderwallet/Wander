@@ -459,13 +459,12 @@ export function useARNetworkFee({ tokenID, note }: { tokenID: string; note?: str
         byte = new TextEncoder().encode(note).byteLength;
       }
 
-      const { result: txPrice, arweave } = await retryWithGateways((arweave) =>
+      const { result: txPrice } = await retryWithGateways((arweave) =>
         arweave.transactions.getPrice(byte, bridgeInfo.arToken.locker),
       );
 
-      const networkFee = arweave.ar.winstonToAr(txPrice);
       // twice the network fee to account for the wander fee to be paid
-      setNetworkFee(BigNumber(networkFee).multipliedBy(2).toFixed());
+      setNetworkFee(BigNumber(txPrice).multipliedBy(2).toFixed());
     } catch (error) {
       console.error("Error calculating network fee:", error);
       setNetworkFee("0");
