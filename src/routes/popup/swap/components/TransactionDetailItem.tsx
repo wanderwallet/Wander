@@ -10,7 +10,7 @@ interface TransactionDetailItemProps {
 export function TransactionDetailItem({ title, value, valueColor }: TransactionDetailItemProps) {
   const titleElement =
     typeof title === "string" ? (
-      <Text variant="secondary" size="sm" weight="medium" noMargin>
+      <Text variant="secondary" size="sm" weight="medium" style={{ flexShrink: 0 }} noMargin>
         {title}
       </Text>
     ) : (
@@ -19,7 +19,16 @@ export function TransactionDetailItem({ title, value, valueColor }: TransactionD
 
   const valueElement =
     typeof value === "string" ? (
-      <Text size="sm" weight="medium" noMargin style={{ color: valueColor }}>
+      <Text
+        size="sm"
+        weight="medium"
+        noMargin
+        style={{
+          color: valueColor,
+          textAlign: "right",
+          wordBreak: "break-word",
+          overflowWrap: "break-word",
+        }}>
         {value}
       </Text>
     ) : (
@@ -27,9 +36,11 @@ export function TransactionDetailItem({ title, value, valueColor }: TransactionD
     );
 
   return (
-    <Flex justify="space-between" gap={8}>
+    <Flex justify="space-between" gap={8} style={{ minWidth: 0 }}>
       {titleElement}
-      {valueElement}
+      <Flex flex={1} minWidth={0} justify="flex-end" align="center">
+        {valueElement}
+      </Flex>
     </Flex>
   );
 }

@@ -72,4 +72,14 @@ export interface AoMessage {
   dataSize: number;
 }
 
+export interface ReadSwapResultResponse {
+  amountOut: string;
+  confirmationTxId: string;
+}
+
+export interface WaitForSwapResultResponse {
+  success: boolean;
+  result: ReadSwapResultResponse | null;
+}
+
 export type DryRunResult = Awaited<ReturnType<typeof dryrun>>;

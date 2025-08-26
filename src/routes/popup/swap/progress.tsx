@@ -3,7 +3,7 @@ import browser from "webextension-polyfill";
 import styled, { useTheme } from "styled-components";
 import HeadV2 from "~components/popup/HeadV2";
 import { Flex } from "~components/common/Flex";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { WanderLoading } from "~routes/welcome/WanderLoading";
 import { formatBalance } from "~utils/format";
 import { TokenLogo } from "~components/popup/TokenLogo";
@@ -20,6 +20,10 @@ import { queryClient } from "~utils/tanstack";
 import { PoolTypeEnum } from "./utils/swap.constants";
 import { useSavedSwapData } from "./utils/swap.hooks";
 import { aox } from "./utils/bridge/bridge.aox";
+import { AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
+import { trackPage, PageType } from "~utils/analytics";
+import { swapsArray } from "./utils/swap.utils";
+import { log, LOG_GROUP } from "~utils/log/log.utils";
 
 export function SwapProgressView() {
   const theme = useTheme();
@@ -47,8 +51,27 @@ export function SwapProgressView() {
 
   const valueInFormatted = useMemo(() => formatBalance(valueIn || "0"), [valueIn]);
 
+  function handleOpen() {
+    const url =
+      isAoxBridge && sendToken?.processId === AR_PROCESS_ID
+        ? `https://viewblock.io/arweave/tx/${transferId}`
+        : `https://www.ao.link/#/message/${transferId}`;
+
+    browser.tabs.create({ url });
+  }
+
   useAsyncEffect(async () => {
     if (!transferId || !selectedPoolInfo) return;
+
+    // Check if swap is already completed in storage
+    const existingSwap = await swapsArray.find((s) => s.transferId === transferId);
+    if (existingSwap?.status === "completed") {
+      navigate(PopupPaths.SwapComplete);
+      return;
+    } else if (existingSwap?.status === "failed") {
+      navigate(PopupPaths.SwapFailed);
+      return;
+    }
 
     const poolType = selectedPoolInfo?.pool?.poolType;
 
@@ -59,15 +82,39 @@ export function SwapProgressView() {
           ? aox.waitForSwapResult
           : permaswap.waitForSwapResult;
 
-    const isSuccess = await waitForSwapResultFn(transferId);
-    if (isSuccess) {
-      const activeAddress = await getActiveAddress();
-      queryClient.invalidateQueries({ queryKey: ["tokenBalance", receiveToken?.processId, activeAddress] });
-      navigate(PopupPaths.SwapComplete);
-    } else {
-      navigate(PopupPaths.SwapFailed);
+    try {
+      const { success, result } = await waitForSwapResultFn(transferId);
+      if (success) {
+        const activeAddress = await getActiveAddress();
+        queryClient.invalidateQueries({ queryKey: ["tokenBalance", receiveToken?.processId, activeAddress] });
+        queryClient.invalidateQueries({ queryKey: ["tokenBalance", sendToken?.processId, activeAddress] });
+
+        // Update swap status in storage
+        await swapsArray.updateWhere(
+          (s) => s.transferId === transferId,
+          (s) => {
+            const expectedOutput = s.selectedPoolInfo.quoteOutput.amountOut;
+            s.selectedPoolInfo.quoteOutput.amountOut = result?.amountOut || expectedOutput;
+            return { ...s, status: "completed" as const, completedAt: Date.now() };
+          },
+        );
+
+        navigate(PopupPaths.SwapComplete);
+      } else {
+        await swapsArray.updateWhere(
+          (s) => s.transferId === transferId,
+          (s) => ({ ...s, status: "failed" as const, completedAt: Date.now() }),
+        );
+        navigate(PopupPaths.SwapFailed);
+      }
+    } catch (error) {
+      log(LOG_GROUP.SWAP, "Error checking swap status in progress view", error);
     }
   }, [transferId, selectedPoolInfo]);
+
+  useEffect(() => {
+    trackPage(PageType.SWAP_PROGRESS);
+  }, []);
 
   if (!swapData) {
     return (
@@ -122,10 +169,7 @@ export function SwapProgressView() {
               Go to dashboard
             </Button>
           )}
-          <Button
-            variant="secondary"
-            fullWidth
-            onClick={() => browser.tabs.create({ url: `https://www.ao.link/#/message/${transferId}` })}>
+          <Button variant="secondary" fullWidth onClick={handleOpen}>
             AO Link
             <LinkExternal02 style={{ marginLeft: "8px" }} />
           </Button>

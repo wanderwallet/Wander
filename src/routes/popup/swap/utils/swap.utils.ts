@@ -1,12 +1,13 @@
 import { getTagValue, type TokenInfo } from "~tokens/aoTokens/ao";
-import type {
-  BotegaPool,
-  BotegaPoolOverview,
-  ParsedSwapTransaction,
-  PermaswapPool,
-  Pool,
-  PoolType,
-  Provider,
+import {
+  type SwapData,
+  type BotegaPool,
+  type BotegaPoolOverview,
+  type ParsedSwapTransaction,
+  type PermaswapPool,
+  type Pool,
+  type PoolType,
+  type Provider,
 } from "./swap.types";
 import BigNumber from "bignumber.js";
 import { BOTEGA_API_KEY, BOTEGA_SUPABASE_URL } from "./data-source/data-source.constants";
@@ -20,6 +21,7 @@ import { gql } from "~gateways/api";
 import { goldskyGateway } from "~gateways/gateway";
 import { SWAP_CONFIRMATION_QUERY, SWAP_QUERY } from "./dex/dex.constants";
 import type { BridgeTransaction } from "./bridge/bridge.types";
+import { createStorageArray } from "./storage/storage.array";
 
 const BOTEGA_POOL_OPTIONS = {
   headers: {
@@ -221,8 +223,9 @@ export function getPriceImpactColor(priceImpact: string, theme: DefaultTheme) {
 }
 
 export function toFixed(value: any, decimals: number) {
-  if (!BigNumber.isBigNumber(value)) return value;
-  return value.decimalPlaces(decimals, BigNumber.ROUND_DOWN).toString();
+  const valueBN = BigNumber(value);
+  if (valueBN.isNaN()) return value;
+  return valueBN.decimalPlaces(decimals, BigNumber.ROUND_DOWN).toString();
 }
 
 export function parseSwapTransaction(transaction: GQLEdgeInterface): ParsedSwapTransaction {
@@ -351,3 +354,8 @@ export async function getSwapTransaction(txId: string) {
 
   return parseSwapTransaction(result);
 }
+
+export const swapsArray = createStorageArray<SwapData>("swaps", {
+  preventDuplicates: true,
+  uniqueKey: "transferId",
+});

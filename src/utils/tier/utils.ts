@@ -80,6 +80,7 @@ export function getDefiFeeDetailsForTier(tier: Tier): DefiFeeDetails {
     originalFeePercent: defiFeePercent.toFixed(2),
     finalFeePercent: finalPercent.toFixed(2),
     feeHasChanged: !finalPercent.eq(defiFeePercent),
+    tier,
   };
 }
 

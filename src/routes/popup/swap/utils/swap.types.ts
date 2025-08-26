@@ -1,5 +1,6 @@
 import type { TokenInfo } from "~tokens/aoTokens/ao";
 import type { GetExpectedOutputResponse } from "./dex/dex.types";
+import type { Tier } from "~utils/tier/types";
 
 export interface PermaswapPool {
   process: string;
@@ -146,6 +147,15 @@ export interface SwapData {
   wanderFee: WanderFee;
   slippage: number;
   amountIn: string;
+  swapper: string;
+  tier: Tier;
+  wanderFeeSent?: boolean;
+  analyticsSent?: boolean;
+  status?: "pending" | "completed" | "failed";
+  timestamp?: number;
+  completedAt?: number;
+  feeProcessedAt?: number;
+  monitoringStarted?: boolean;
 }
 
 export interface TokenPools {

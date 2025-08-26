@@ -3,6 +3,8 @@ import styled from "styled-components";
 import type { WanderRoutePath } from "~wallets/router/router.types";
 import { useLocation } from "~wallets/router/router.utils";
 import type { ReactNode } from "react";
+import { PopupPaths } from "~wallets/router/popup/popup.routes";
+import { EventType, trackEvent } from "~utils/analytics";
 
 export interface ButtonConfig {
   text: string;
@@ -28,7 +30,12 @@ export function ActionButtons({ buttons }: ActionButtonsProps) {
       {buttonConfigs.map((button, index) => (
         <ConfigurableButtonWrapper key={index} $buttonCount={buttonCount} $isFirst={index === 0 && buttonCount === 3}>
           <ConfigurableButton
-            onClick={() => navigate(button.href)}
+            onClick={() => {
+              if (button.href === PopupPaths.Swap) {
+                trackEvent(EventType.SWAP_BUTTON, {});
+              }
+              navigate(button.href);
+            }}
             variant={button.variant || "secondary"}
             icon={button.icon}
             iconPosition={button.iconPosition}

@@ -19,6 +19,7 @@ export type ActiveTier = {
 };
 
 export type DefiFeeDetails = {
+  tier: Tier;
   originalFeePercent: string;
   finalFeePercent: string;
   feeHasChanged: boolean;

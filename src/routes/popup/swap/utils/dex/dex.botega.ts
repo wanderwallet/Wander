@@ -8,7 +8,9 @@ import type {
   GetExpectedOutputResponse,
   GetLiquidityParams,
   GetLiquidityResponse,
+  ReadSwapResultResponse,
   SwapExecutionParams,
+  WaitForSwapResultResponse,
 } from "./dex.types";
 import { freeDecryptedWallet } from "~wallets/encryption";
 import { isLocalWallet } from "~utils/assertions";
@@ -20,7 +22,7 @@ import { queryClient } from "~utils/tanstack";
 /**
  * Fetch the result of a swap message
  */
-export async function readSwapResult(orderID: string): Promise<[bigint, string]> {
+export async function readSwapResult(orderID: string): Promise<ReadSwapResultResponse> {
   const messages = await getLinkedMessages(undefined, undefined, false, orderID);
 
   const error = messages.find((msg) => msg.tags["Action"] === "Order-Error");
@@ -29,12 +31,12 @@ export async function readSwapResult(orderID: string): Promise<[bigint, string]>
   const confirmation = messages.find((msg) => msg.tags["Action"] === "Order-Confirmation");
   if (!confirmation) throw new Error("Confirmation not found");
 
-  const tokensReceived = confirmation.tags["To-Quantity"];
-  if (!tokensReceived) throw new OrderError("Confirmation response malformed");
+  const amountOut = confirmation.tags["To-Quantity"];
+  if (!amountOut) throw new OrderError("Confirmation response malformed");
 
   console.log("onConfirmationId", confirmation.id);
 
-  return [BigInt(tokensReceived), confirmation.id];
+  return { amountOut, confirmationTxId: confirmation.id };
 }
 
 const aoInstance = connect(defaultConfig);
@@ -155,19 +157,19 @@ export async function getLiquidity({ poolId, tokenIn, tokenOut }: GetLiquidityPa
   } satisfies GetLiquidityResponse;
 }
 
-export async function waitForSwapResult(transferId: string): Promise<boolean> {
+export async function waitForSwapResult(transferId: string): Promise<WaitForSwapResultResponse> {
   try {
-    await retryWithDelay(
+    const result = await retryWithDelay(
       () => readSwapResult(transferId),
       1000,
       2000,
       (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 30000),
     );
 
-    return true;
+    return { success: true, result };
   } catch (err) {
     log(LOG_GROUP.SWAP, "Error waiting for swap result", err);
-    return false;
+    return { success: false, result: null };
   }
 }
 

@@ -1,6 +1,10 @@
-export function WanderFeeTag() {
+interface WanderFeeTagProps {
+  style?: React.CSSProperties;
+}
+
+export function WanderFeeTag({ style }: WanderFeeTagProps) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="19" height="18" fill="none">
+    <svg xmlns="http://www.w3.org/2000/svg" width="19" height="18" fill="none" style={style}>
       <g clipPath="url(#a)">
         <rect width="18" height="18" x=".5" fill="#242426" rx="4" />
         <foreignObject width="148.64" height="148.64" x="-64.82" y="-65.32">

@@ -7,7 +7,7 @@ import { type TokenInfo } from "~tokens/aoTokens/ao";
 import { TokenLogo } from "~components/popup/TokenLogo";
 import { AutoTag } from "./components/AutoTag";
 import { WanderFeeTag } from "./components/WanderFeeTag";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import BigNumber from "bignumber.js";
 import { formatBalance } from "~utils/format";
 import { useLocation } from "~wallets/router/router.utils";
@@ -20,6 +20,7 @@ import { TransactionDetailItem } from "./components/TransactionDetailItem";
 import { HorizontalLine } from "~components/HorizontalLine";
 import { getPriceImpactColor, getProviderName, getSwapTime, toFixed } from "./utils/swap.utils";
 import { useSavedSwapData } from "./utils/swap.hooks";
+import { PageType, trackPage } from "~utils/analytics";
 
 export function SwapCompleteView() {
   const theme = useTheme();
@@ -81,6 +82,10 @@ export function SwapCompleteView() {
   }, [selectedPoolInfo, receiveToken, valueIn]);
 
   const valueInFormatted = useMemo(() => formatBalance(valueIn || "0"), [valueIn]);
+
+  useEffect(() => {
+    trackPage(PageType.SWAP_COMPLETE);
+  }, []);
 
   if (!swapData) {
     return (
@@ -147,12 +152,22 @@ export function SwapCompleteView() {
               <TransactionDetailItem
                 title={"Wander Fee"}
                 value={
-                  <Flex justify="center" align="center" gap={4}>
-                    {wanderFee?.hasChanged && <CrossedOutText>{wanderFee?.originalFee}</CrossedOutText>}
-                    <Text size="sm" weight="medium" style={{ color: "#9787FF" }} noMargin>
-                      {wanderFee?.finalFee || "--"}
+                  <Flex justify="flex-end" align="center" gap={4} textAlign="right" wrap="wrap">
+                    {wanderFee?.hasChanged && (
+                      <CrossedOutText style={{ order: 1 }}>{toFixed(wanderFee?.originalFee, 8)}</CrossedOutText>
+                    )}
+                    <Text
+                      size="sm"
+                      weight="medium"
+                      style={{
+                        color: "#9787FF",
+                        order: 2,
+                        textAlign: "right",
+                      }}
+                      noMargin>
+                      {wanderFee?.finalFee !== "--" ? `${toFixed(wanderFee?.finalFee, 8)} ${sendToken.Ticker}` : "--"}
                     </Text>
-                    <WanderFeeTag />
+                    {wanderFee.finalFee !== "--" && <WanderFeeTag style={{ order: 3 }} />}
                   </Flex>
                 }
               />

@@ -2,7 +2,7 @@ import { Section, Button, Text, Loading } from "@arconnect/components-rebrand";
 import styled, { useTheme } from "styled-components";
 import { Flex } from "~components/common/Flex";
 import { TokenLogo } from "~components/popup/TokenLogo";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import BigNumber from "bignumber.js";
 import { formatBalance } from "~utils/format";
 import { useLocation } from "~wallets/router/router.utils";
@@ -11,6 +11,7 @@ import { TokenValueWithTooltip } from "./components/TokenValueWithTooltip";
 import { ArrowRight } from "@untitled-ui/icons-react";
 import { ErrorIcon } from "./components/ErrorIcon";
 import { useSavedSwapData } from "./utils/swap.hooks";
+import { PageType, trackPage } from "~utils/analytics";
 
 export function SwapFailedView() {
   const theme = useTheme();
@@ -35,6 +36,10 @@ export function SwapFailedView() {
   }, [selectedPoolInfo, receiveToken, valueIn]);
 
   const valueInFormatted = useMemo(() => formatBalance(valueIn || "0"), [valueIn]);
+
+  useEffect(() => {
+    trackPage(PageType.SWAP_FAILED);
+  }, []);
 
   if (!swapData) {
     return (

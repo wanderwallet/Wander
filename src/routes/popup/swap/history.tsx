@@ -10,13 +10,18 @@ import type { ParsedSwapTransaction } from "./utils/swap.types";
 import browser from "webextension-polyfill";
 import dayjs from "dayjs";
 import { getStatusColor } from "./utils/swap.utils";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { formatBalance } from "~utils/format";
 import BigNumber from "bignumber.js";
 import { TokenLogo } from "~components/popup/TokenLogo";
+import { PageType, trackPage } from "~utils/analytics";
 
 export function SwapHistoryView() {
   const { transactions, loading, hasNextPage, fetchTransactions } = useSwapTransactions();
+
+  useEffect(() => {
+    trackPage(PageType.SWAP_HISTORY);
+  }, []);
 
   return (
     <>

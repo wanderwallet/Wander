@@ -2,7 +2,14 @@ import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { BRIDGE_TOKEN_IDS, getPools, getPriceImpact, getSwapTransaction, processToken } from "./swap.utils";
 import { defaultOptions, useAoTokens } from "~tokens/hooks";
 import { useMemo, useCallback, useState, useEffect } from "react";
-import type { ParsedSwapTransaction, Pool, SelectedPoolInfo, TokenPools, TokenSelectorType } from "./swap.types";
+import type {
+  ParsedSwapTransaction,
+  Pool,
+  SelectedPoolInfo,
+  SwapData,
+  TokenPools,
+  TokenSelectorType,
+} from "./swap.types";
 import { useStorage } from "@plasmohq/storage/hook";
 import { ExtensionStorage, TempTransactionStorage } from "~utils/storage";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
@@ -244,6 +251,7 @@ export function usePoolQuote({
         amountIn,
         slippage,
         wanderFee,
+        networkFee: "0",
       };
 
       const output = await (pool.poolType === PoolTypeEnum.BOTEGA
@@ -470,7 +478,7 @@ export function useARNetworkFee({ tokenID, note }: { tokenID: string; note?: str
 }
 
 export function useSavedSwapData() {
-  return useStorage({ key: "swap-data", instance: TempTransactionStorage });
+  return useStorage<SwapData>({ key: "swap-data", instance: TempTransactionStorage });
 }
 
 const emptyResponse = {

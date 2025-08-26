@@ -8,7 +8,7 @@ import { TokenLogo } from "~components/popup/TokenLogo";
 import { HorizontalLine } from "~components/HorizontalLine";
 import { AutoTag } from "./components/AutoTag";
 import { WanderFeeTag } from "./components/WanderFeeTag";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { TempTransactionStorage } from "~utils/storage";
 import BigNumber from "bignumber.js";
 import { formatBalance } from "~utils/format";
@@ -20,10 +20,12 @@ import { TransactionDetailItem } from "./components/TransactionDetailItem";
 import { botega } from "./utils/dex/dex.botega";
 import { permaswap } from "./utils/dex/dex.permaswap";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
-import { getPriceImpactColor, getProviderName, getSwapTime, toFixed } from "./utils/swap.utils";
+import { getPriceImpactColor, getProviderName, getSwapTime, swapsArray, toFixed } from "./utils/swap.utils";
 import { PoolTypeEnum } from "./utils/swap.constants";
 import { aox } from "./utils/bridge/bridge.aox";
 import { useDefiFeeDetails } from "~utils/tier/hooks";
+import { PageType, trackPage } from "~utils/analytics";
+import { startSwapMonitoring } from "./utils/alarms/swap-monitor/swap-monitor-alarm.handler";
 
 export function SwapReviewView() {
   const { navigate } = useLocation();
@@ -172,7 +174,20 @@ export function SwapReviewView() {
         tags,
       });
 
-      TempTransactionStorage.set("swap-data", { ...swapData, selectedPoolInfo, transferId });
+      const updatedSwapData = {
+        ...swapData,
+        selectedPoolInfo,
+        transferId,
+        timestamp: Date.now(),
+        status: "pending" as const,
+        monitoringStarted: true,
+      };
+      await TempTransactionStorage.set("swap-data", updatedSwapData);
+      await swapsArray.push(updatedSwapData);
+
+      // Start background monitoring
+      await startSwapMonitoring();
+
       navigate(PopupPaths.SwapProgress);
     } catch (err) {
       log(LOG_GROUP.SWAP, "Error executing swap", err);
@@ -180,6 +195,10 @@ export function SwapReviewView() {
       setIsExecutingSwap(false);
     }
   }
+
+  useEffect(() => {
+    trackPage(PageType.SWAP_REVIEW);
+  }, []);
 
   if (!swapData) {
     return (
@@ -237,12 +256,22 @@ export function SwapReviewView() {
               <TransactionDetailItem
                 title={"Wander Fee"}
                 value={
-                  <Flex justify="center" align="center" gap={4}>
-                    {wanderFee?.hasChanged && <CrossedOutText>{wanderFee?.originalFee}</CrossedOutText>}
-                    <Text size="sm" weight="medium" style={{ color: "#9787FF" }} noMargin>
-                      {wanderFee?.finalFee || "--"}
+                  <Flex justify="flex-end" align="center" gap={4} textAlign="right" wrap="wrap">
+                    {wanderFee?.hasChanged && (
+                      <CrossedOutText style={{ order: 1 }}>{toFixed(wanderFee?.originalFee, 8)}</CrossedOutText>
+                    )}
+                    <Text
+                      size="sm"
+                      weight="medium"
+                      style={{
+                        color: "#9787FF",
+                        order: 2,
+                        textAlign: "right",
+                      }}
+                      noMargin>
+                      {wanderFee?.finalFee !== "--" ? `${toFixed(wanderFee?.finalFee, 8)} ${sendToken.Ticker}` : "--"}
                     </Text>
-                    <WanderFeeTag />
+                    {wanderFee.finalFee !== "--" && <WanderFeeTag style={{ order: 3 }} />}
                   </Flex>
                 }
               />

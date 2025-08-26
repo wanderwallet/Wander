@@ -6,7 +6,9 @@ import type {
   GetExpectedOutputResponse,
   GetLiquidityParams,
   GetLiquidityResponse,
+  ReadSwapResultResponse,
   SwapExecutionParams,
+  WaitForSwapResultResponse,
 } from "../dex/dex.types";
 import { freeDecryptedWallet } from "~wallets/encryption";
 import { isLocalWallet } from "~utils/assertions";
@@ -27,7 +29,7 @@ import BigNumber from "bignumber.js";
 /**
  * Fetch the result of a swap message
  */
-export async function readSwapResult(orderID: string): Promise<[bigint, string]> {
+export async function readSwapResult(orderID: string): Promise<ReadSwapResultResponse> {
   const transaction = await getBridgeTransaction(orderID);
 
   const isError = transaction.status === "error";
@@ -36,7 +38,7 @@ export async function readSwapResult(orderID: string): Promise<[bigint, string]>
   const statusSuccess = transaction.status === "success";
   if (!statusSuccess) throw new Error("Transaction not success yet");
 
-  return [BigInt(transaction.quantity), transaction.targetChainTxHash];
+  return { amountOut: transaction.quantity, confirmationTxId: transaction.targetChainTxHash };
 }
 
 const aoInstance = connect(defaultConfig);
@@ -135,7 +137,7 @@ export async function executeSwap({ tokenIn, amountIn, tags = [] }: SwapExecutio
         const { Error, Messages } = await aoInstance.result({ message: transferId, process: tokenIn });
         if (Error) {
           transferError = "Failed to unwrap WAR tokens";
-        } else if (Messages.length === 0) {
+        } else if (Messages.length > 0) {
           const hasValidTag = Messages.some((message) =>
             message?.Tags?.some((tag: DecodedTag) => tag.name === "Action" && tag.value === "Burn-Notice"),
           );
@@ -197,14 +199,14 @@ export async function getLiquidity({ poolId, tokenIn, tokenOut }: GetLiquidityPa
   } satisfies GetLiquidityResponse;
 }
 
-export async function waitForSwapResult(transferId: string): Promise<boolean> {
+export async function waitForSwapResult(transferId: string): Promise<WaitForSwapResultResponse> {
   try {
-    await retryWithDelay(() => readSwapResult(transferId), 1000, 300000);
+    const result = await retryWithDelay(() => readSwapResult(transferId), 1000, 300000);
 
-    return true;
+    return { success: true, result };
   } catch (err) {
     log(LOG_GROUP.SWAP, "Error waiting for swap result", err);
-    return false;
+    return { success: false, result: null };
   }
 }
 

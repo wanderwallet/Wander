@@ -26,6 +26,8 @@ import { getErrorMessage, validateAmount } from "../send/amount";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import { toFixed } from "./utils/swap.utils";
+import { PageType, trackPage } from "~utils/analytics";
+import { TransactionDetailItem } from "./components/TransactionDetailItem";
 
 // TODO: Update this after testing
 const usdaToken = AR_TOKEN_INFO;
@@ -118,16 +120,22 @@ export function SwapView() {
   }, [selectedPoolInfo, sendToken, receiveToken]);
 
   const wanderFee = useMemo(() => {
-    if (!debouncedValueIn || !defiFeeDetails) return { originalFee: "--", finalFee: "--", hasChanged: false };
-    const originalFee = BigNumber(debouncedValueIn).multipliedBy(defiFeeDetails.originalFeePercent).dividedBy(100);
-    const finalFee = BigNumber(debouncedValueIn).multipliedBy(defiFeeDetails.finalFeePercent).dividedBy(100);
+    if (!debouncedValueIn || !defiFeeDetails || !sendToken) {
+      return { originalFee: "--", finalFee: "--", hasChanged: false };
+    }
+
+    const originalFee = BigNumber(debouncedValueIn)
+      .multipliedBy(defiFeeDetails.originalFeePercent)
+      .dividedBy(100)
+      .toFixed();
+    const finalFee = BigNumber(debouncedValueIn).multipliedBy(defiFeeDetails.finalFeePercent).dividedBy(100).toFixed();
 
     return {
       hasChanged: defiFeeDetails.feeHasChanged,
-      originalFee: toFixed(originalFee, 8),
-      finalFee: `${toFixed(finalFee, 8)} ${sendToken.Ticker}`,
+      originalFee,
+      finalFee,
     };
-  }, [selectedPoolInfo, sendToken]);
+  }, [sendToken, debouncedValueIn, defiFeeDetails]);
 
   function handleSwitch() {
     const tempSendToken = sendToken;
@@ -159,6 +167,8 @@ export function SwapView() {
       receiveToken,
       wanderFee,
       amountIn,
+      swapper: activeAddress,
+      tier: defiFeeDetails.tier,
     } satisfies SwapData;
 
     await TempTransactionStorage.set("swap-data", swapData);
@@ -167,6 +177,8 @@ export function SwapView() {
   }
 
   useAsyncEffect(async () => {
+    trackPage(PageType.SWAP);
+
     const swapData = await TempTransactionStorage.get<SwapData>("swap-data");
     if (swapData) {
       const sendToken = swapData.sendToken;
@@ -219,45 +231,41 @@ export function SwapView() {
             {(errorMessage || poolError) && <ErrorMsg>{errorMessage || poolError}</ErrorMsg>}
           </Flex>
           <Flex direction="column" gap={8}>
-            <Flex justify="space-between">
-              <Text variant="secondary" size="sm" weight="medium" noMargin>
-                Rate
-              </Text>
-              <Text size="sm" weight="medium" noMargin>
-                {rate}
-              </Text>
-            </Flex>
-            <Flex justify="space-between">
-              <Text variant="secondary" size="sm" weight="medium" noMargin>
-                Slippage
-              </Text>
-              <Flex gap={4} align="center" justify="center">
-                <Text variant="secondary" size="sm" weight="medium" noMargin>
-                  {slippage}%{" "}
-                </Text>
-                <AutoTag slippage={slippage} />
-              </Flex>
-            </Flex>
-            <Flex justify="space-between">
-              <Text variant="secondary" size="sm" weight="medium" noMargin>
-                Network Fee
-              </Text>
-              <Text size="sm" weight="medium" noMargin>
-                {providerNetworkFee}
-              </Text>
-            </Flex>
-            <Flex justify="space-between">
-              <Text variant="secondary" size="sm" weight="medium" noMargin>
-                Wander Fee
-              </Text>
-              <Flex justify="center" align="center" gap={4}>
-                {wanderFee.hasChanged && <CrossedOutText>{wanderFee.originalFee}</CrossedOutText>}
-                <Text size="sm" weight="medium" style={{ color: "#9787FF" }} noMargin>
-                  {wanderFee.finalFee}
-                </Text>
-                {wanderFee.finalFee !== "--" && <WanderFeeTag />}
-              </Flex>
-            </Flex>
+            <TransactionDetailItem title={"Rate"} value={rate} />
+            <TransactionDetailItem
+              title={"Slippage"}
+              value={
+                <Flex gap={4} align="center" justify="center">
+                  <Text variant="secondary" size="sm" weight="medium" noMargin>
+                    {slippage}%{" "}
+                  </Text>
+                  <AutoTag slippage={slippage} />
+                </Flex>
+              }
+            />
+            <TransactionDetailItem title={"Network fee"} value={providerNetworkFee} />
+            <TransactionDetailItem
+              title={"Wander Fee"}
+              value={
+                <Flex justify="flex-end" align="center" gap={4} textAlign="right" wrap="wrap">
+                  {wanderFee?.hasChanged && (
+                    <CrossedOutText style={{ order: 1 }}>{toFixed(wanderFee?.originalFee, 8)}</CrossedOutText>
+                  )}
+                  <Text
+                    size="sm"
+                    weight="medium"
+                    style={{
+                      color: "#9787FF",
+                      order: 2,
+                      textAlign: "right",
+                    }}
+                    noMargin>
+                    {wanderFee?.finalFee !== "--" ? `${toFixed(wanderFee?.finalFee, 8)} ${sendToken.Ticker}` : "--"}
+                  </Text>
+                  {wanderFee.finalFee !== "--" && <WanderFeeTag style={{ order: 3 }} />}
+                </Flex>
+              }
+            />
           </Flex>
 
           <DisclosureButton
