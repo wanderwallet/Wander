@@ -45,14 +45,16 @@ export async function getExpectedOutput({
   amountIn,
   swapper,
   slippage,
+  wanderFee,
 }: GetExpectedOutputParams): Promise<GetExpectedOutputResponse> {
   swapper = swapper || (await getActiveAddress());
+  const amountInWithoutWanderFee = BigNumber(amountIn).minus(wanderFee).toFixed();
   const response = await aoInstance.dryrun({
     process: poolId,
     tags: [
       { name: "Action", value: "Get-Swap-Output" },
       { name: "Token", value: tokenIn },
-      { name: "Quantity", value: amountIn },
+      { name: "Quantity", value: amountInWithoutWanderFee },
       { name: "Swapper", value: swapper },
     ],
   });
@@ -61,22 +63,25 @@ export async function getExpectedOutput({
   const amountOut = getTagValue("Output", tags) || "0";
   const lpFeeQuantity = getTagValue("LP-Fee-Quantity", tags) || "0";
   const protocolFeeQuantity = getTagValue("Protocol-Fee-Quantity", tags) || "0";
-  const totalFeeQuantity = BigNumber(lpFeeQuantity).plus(protocolFeeQuantity).toFixed();
-  const expectedMinOutput = BigNumber(amountOut)
+  const tokenOutFee = BigNumber(lpFeeQuantity).plus(protocolFeeQuantity).toFixed();
+  const minAmountOut = BigNumber(amountOut)
     .multipliedBy(BigNumber(1).minus(slippage || 0))
     .div(100)
     .toFixed(0, BigNumber.ROUND_FLOOR);
-  const amountInWithoutFee = amountIn;
+  const poolAmountIn = amountInWithoutWanderFee;
 
   return {
     poolId,
     tokenIn,
     amountIn,
     amountOut,
-    expectedMinOutput,
-    amountInWithoutFee,
-    totalTokenOutFeeQuantity: totalFeeQuantity,
-    totalTokenInFeeQuantity: "0",
+    wanderFee,
+    minAmountOut,
+    poolAmountIn,
+    tokenOutFee,
+    tokenInFee: "0",
+    networkFee: "0",
+    transferAmountIn: amountInWithoutWanderFee,
     type: "botega",
   } satisfies GetExpectedOutputResponse;
 }

@@ -220,7 +220,8 @@ export function getPriceImpactColor(priceImpact: string, theme: DefaultTheme) {
   if (priceImpactNumber >= 5) return "#EEBD41";
 }
 
-export function toFixed(value: BigNumber, decimals: number) {
+export function toFixed(value: any, decimals: number) {
+  if (!BigNumber.isBigNumber(value)) return value;
   return value.decimalPlaces(decimals, BigNumber.ROUND_DOWN).toString();
 }
 

@@ -5,6 +5,8 @@ export interface GetExpectedOutputParams {
   poolId: string;
   tokenIn: string;
   amountIn: string;
+  wanderFee: string;
+  networkFee: string;
   swapper?: string;
   slippage?: number;
 }
@@ -14,10 +16,13 @@ export interface GetExpectedOutputResponse {
   tokenIn: string;
   amountIn: string;
   amountOut: string;
-  expectedMinOutput: string;
-  amountInWithoutFee: string;
-  totalTokenOutFeeQuantity: string;
-  totalTokenInFeeQuantity: string;
+  wanderFee: string;
+  networkFee: string;
+  transferAmountIn: string;
+  minAmountOut: string;
+  poolAmountIn: string;
+  tokenOutFee: string;
+  tokenInFee: string;
   type: "aox" | "botega" | "permaswap";
 }
 

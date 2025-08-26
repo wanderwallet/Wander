@@ -18,6 +18,7 @@ import { PoolTypeEnum } from "./swap.constants";
 import { getAoxTransactions, validateBridgeTransaction } from "./bridge/bridge.utils";
 import { getBotegaTransactions, getPermaswapTransactions } from "./dex/dex.utils";
 import { useActiveAddress } from "~wallets/hooks";
+import BigNumber from "bignumber.js";
 
 export function usePools() {
   return useQuery({
@@ -51,9 +52,18 @@ interface usePoolForTokenPairProps {
   tokenOut?: string;
   slippage?: number;
   amountIn?: string;
+  wanderFeePercent?: number;
+  networkFee?: string;
 }
 
-export function usePoolForTokenPair({ tokenIn, tokenOut, slippage, amountIn }: usePoolForTokenPairProps) {
+export function usePoolForTokenPair({
+  tokenIn,
+  tokenOut,
+  slippage,
+  amountIn,
+  wanderFeePercent,
+  networkFee,
+}: usePoolForTokenPairProps) {
   const { tokenPools } = useGroupedPoolsByTokenPair();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -73,6 +83,7 @@ export function usePoolForTokenPair({ tokenIn, tokenOut, slippage, amountIn }: u
         !tokenOut ||
         !slippage ||
         !amountIn ||
+        isNaN(wanderFeePercent) ||
         Object.values(pairPools).every((pools) => pools.length === 0)
       ) {
         setSelectedPoolInfo(null);
@@ -82,15 +93,33 @@ export function usePoolForTokenPair({ tokenIn, tokenOut, slippage, amountIn }: u
 
       setIsLoading(true);
 
+      const wanderFee = BigNumber(amountIn)
+        .multipliedBy(wanderFeePercent)
+        .dividedBy(100)
+        .toFixed(0, BigNumber.ROUND_FLOOR);
+
       if (BRIDGE_TOKEN_IDS.has(tokenIn) && BRIDGE_TOKEN_IDS.has(tokenOut)) {
-        const validationError = validateBridgeTransaction(amountIn, bridgeInfo, tokenIn, tokenOut);
+        const validationError = validateBridgeTransaction(
+          amountIn,
+          wanderFee,
+          networkFee,
+          bridgeInfo,
+          tokenIn,
+          tokenOut,
+        );
         if (validationError) {
           setError(validationError);
           return;
         }
 
         const aoxPool = pairPools?.aox?.[0];
-        const aoxOutput = await aox.getExpectedOutput({ poolId: aoxPool.poolId, tokenIn, amountIn });
+        const aoxOutput = await aox.getExpectedOutput({
+          poolId: aoxPool.poolId,
+          tokenIn,
+          amountIn,
+          wanderFee,
+          networkFee,
+        });
 
         setSelectedPoolInfo({
           pool: pairPools?.aox?.[0],
@@ -112,12 +141,12 @@ export function usePoolForTokenPair({ tokenIn, tokenOut, slippage, amountIn }: u
         return;
       }
 
-      console.log(pairPools);
-
       const params = {
         tokenIn,
         amountIn,
         slippage,
+        wanderFee,
+        networkFee,
       };
 
       const [botegaResponse, permaswapResponse] = await Promise.allSettled([
@@ -127,8 +156,6 @@ export function usePoolForTokenPair({ tokenIn, tokenOut, slippage, amountIn }: u
 
       const botegaOutput = botegaResponse.status === "fulfilled" ? botegaResponse.value : null;
       const permaswapOutput = permaswapResponse.status === "fulfilled" ? permaswapResponse.value : null;
-
-      console.log({ botegaOutput, permaswapOutput });
 
       const finalOutput =
         botegaOutput && permaswapOutput
@@ -159,7 +186,7 @@ export function usePoolForTokenPair({ tokenIn, tokenOut, slippage, amountIn }: u
         return;
       }
 
-      const priceImpact = getPriceImpact(liquidity.reserveIn, liquidity.reserveOut, finalOutput.amountInWithoutFee);
+      const priceImpact = getPriceImpact(liquidity.reserveIn, liquidity.reserveOut, finalOutput.poolAmountIn);
 
       setSelectedPoolInfo({ pool: finalPool, quoteOutput: finalOutput, priceImpact });
       setError(null);
@@ -169,7 +196,7 @@ export function usePoolForTokenPair({ tokenIn, tokenOut, slippage, amountIn }: u
     } finally {
       setIsLoading(false);
     }
-  }, [tokenIn, tokenOut, pairPools, slippage, amountIn, bridgeInfo]);
+  }, [tokenIn, tokenOut, pairPools, slippage, amountIn, bridgeInfo, wanderFeePercent, networkFee]);
 
   return { selectedPoolInfo, isLoading, error };
 }
@@ -181,16 +208,25 @@ interface usePoolQuoteProps {
   amountIn?: string;
   pool: Pool;
   stopFetching?: boolean;
+  wanderFeePercent?: number;
 }
 
-export function usePoolQuote({ tokenIn, tokenOut, slippage, amountIn, pool, stopFetching }: usePoolQuoteProps) {
+export function usePoolQuote({
+  tokenIn,
+  tokenOut,
+  slippage,
+  amountIn,
+  pool,
+  stopFetching,
+  wanderFeePercent,
+}: usePoolQuoteProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedPoolInfo, setSelectedPoolInfo] = useState<SelectedPoolInfo | null>(null);
 
   const fetchPoolQuote = useCallback(async () => {
     try {
-      if (!tokenIn || !tokenOut || !slippage || !amountIn || !pool || stopFetching) {
+      if (!tokenIn || !tokenOut || !slippage || !amountIn || !pool || isNaN(wanderFeePercent) || stopFetching) {
         setSelectedPoolInfo(null);
         setError(null);
         return;
@@ -198,10 +234,16 @@ export function usePoolQuote({ tokenIn, tokenOut, slippage, amountIn, pool, stop
 
       setIsLoading(true);
 
+      const wanderFee = BigNumber(amountIn)
+        .multipliedBy(wanderFeePercent)
+        .dividedBy(100)
+        .toFixed(0, BigNumber.ROUND_FLOOR);
+
       const params = {
         tokenIn,
         amountIn,
         slippage,
+        wanderFee,
       };
 
       const output = await (pool.poolType === PoolTypeEnum.BOTEGA
@@ -228,7 +270,7 @@ export function usePoolQuote({ tokenIn, tokenOut, slippage, amountIn, pool, stop
         return;
       }
 
-      const priceImpact = getPriceImpact(liquidity.reserveIn, liquidity.reserveOut, output.amountInWithoutFee);
+      const priceImpact = getPriceImpact(liquidity.reserveIn, liquidity.reserveOut, output.poolAmountIn);
 
       setSelectedPoolInfo({ pool, quoteOutput: output, priceImpact });
       setError(null);
@@ -238,7 +280,7 @@ export function usePoolQuote({ tokenIn, tokenOut, slippage, amountIn, pool, stop
     } finally {
       setIsLoading(false);
     }
-  }, [tokenIn, tokenOut, slippage, amountIn, pool]);
+  }, [tokenIn, tokenOut, slippage, amountIn, pool, wanderFeePercent]);
 
   useEffect(() => {
     if (
@@ -414,7 +456,8 @@ export function useARNetworkFee({ tokenID, note }: { tokenID: string; note?: str
       );
 
       const networkFee = arweave.ar.winstonToAr(txPrice);
-      setNetworkFee(networkFee);
+      // twice the network fee to account for the wander fee to be paid
+      setNetworkFee(BigNumber(networkFee).multipliedBy(2).toFixed());
     } catch (error) {
       console.error("Error calculating network fee:", error);
       setNetworkFee("0");

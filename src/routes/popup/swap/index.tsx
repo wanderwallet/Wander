@@ -21,13 +21,7 @@ import { TempTransactionStorage } from "~utils/storage";
 import { useLocation } from "~wallets/router/router.utils";
 import { AutoTag } from "./components/AutoTag";
 import { WanderFeeTag } from "./components/WanderFeeTag";
-import {
-  AR_PROCESS_ID,
-  AR_TOKEN_INFO,
-  defaultTokens,
-  WAR_PROCESS_ID,
-  WAR_TOKEN_INFO,
-} from "~tokens/aoTokens/ao.constants";
+import { AR_PROCESS_ID, AR_TOKEN_INFO, defaultTokens, WAR_TOKEN_INFO } from "~tokens/aoTokens/ao.constants";
 import { getErrorMessage, validateAmount } from "../send/amount";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
@@ -65,10 +59,9 @@ export function SwapView() {
   const errorMessage = useMemo(() => {
     if (!debouncedValueIn || !balanceIn || !sendToken || !receiveToken) return "";
 
-    const fee = sendToken.processId === AR_PROCESS_ID && receiveToken.processId === WAR_PROCESS_ID ? networkFee : "0";
-    const state = validateAmount(debouncedValueIn, balanceIn, fee, "token", 1);
+    const state = validateAmount(debouncedValueIn, balanceIn, "0", "token", 1);
     return getErrorMessage(state);
-  }, [debouncedValueIn, balanceIn, sendToken, receiveToken, networkFee]);
+  }, [debouncedValueIn, balanceIn, sendToken, receiveToken]);
 
   const {
     selectedPoolInfo,
@@ -79,6 +72,8 @@ export function SwapView() {
     tokenOut: receiveToken?.processId,
     slippage: slippage,
     amountIn: errorMessage ? "" : amountIn,
+    wanderFeePercent: +defiFeeDetails.finalFeePercent,
+    networkFee,
   });
 
   const valueOut = useMemo(() => {
@@ -89,24 +84,19 @@ export function SwapView() {
   }, [selectedPoolInfo, receiveToken, debouncedValueIn]);
 
   const rate = useMemo(() => {
-    if (!selectedPoolInfo?.quoteOutput || !sendToken || !receiveToken) return "--";
+    if (!selectedPoolInfo?.quoteOutput || !sendToken || !receiveToken || !debouncedValueIn) return "--";
 
-    const valueIn = BigNumber(selectedPoolInfo.quoteOutput.amountInWithoutFee || "0").shiftedBy(
-      -sendToken.Denomination,
-    );
     const valueOut = BigNumber(selectedPoolInfo.quoteOutput.amountOut || "0").shiftedBy(-receiveToken.Denomination);
 
-    if (valueIn.isZero()) return "--";
-
-    const valueOutForUnitValueIn = valueOut.dividedBy(valueIn);
+    const valueOutForUnitValueIn = valueOut.dividedBy(debouncedValueIn);
     return `1 ${sendToken.Ticker} ≈ ${toFixed(valueOutForUnitValueIn, 8)} ${receiveToken.Ticker}`;
-  }, [selectedPoolInfo, sendToken, receiveToken]);
+  }, [selectedPoolInfo, sendToken, receiveToken, debouncedValueIn]);
 
   const providerNetworkFee = useMemo(() => {
     if (!selectedPoolInfo?.quoteOutput || !sendToken || !receiveToken) return "--";
 
-    const tokenInFee = BigNumber(selectedPoolInfo.quoteOutput.totalTokenInFeeQuantity || "0");
-    const tokenOutFee = BigNumber(selectedPoolInfo.quoteOutput.totalTokenOutFeeQuantity || "0");
+    const tokenInFee = BigNumber(selectedPoolInfo.quoteOutput.tokenInFee || "0");
+    const tokenOutFee = BigNumber(selectedPoolInfo.quoteOutput.tokenOutFee || "0");
 
     const formatFee = (amount: BigNumber, token: TokenInfo) =>
       `${toFixed(amount.shiftedBy(-token.Denomination), 8)} ${token.Ticker}`;
@@ -209,13 +199,6 @@ export function SwapView() {
               onTokenSwitcherClick={() => {
                 setTokenSelectorType("send");
                 setOpenTokenSelector(true);
-              }}
-              onMaxClick={() => {
-                if (sendToken.processId === AR_PROCESS_ID) {
-                  setValueIn(BigNumber(balanceIn).minus(networkFee).toFixed());
-                } else {
-                  setValueIn(balanceIn);
-                }
               }}
             />
             <Switch onClick={handleSwitch} isError={!!errorMessage}>

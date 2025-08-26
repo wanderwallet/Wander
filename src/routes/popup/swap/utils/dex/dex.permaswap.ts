@@ -70,14 +70,16 @@ export async function getExpectedOutput({
   amountIn,
   swapper,
   slippage,
+  wanderFee,
 }: GetExpectedOutputParams): Promise<GetExpectedOutputResponse> {
   swapper = swapper || (await getActiveAddress());
+  const amountInWithoutWanderFee = BigNumber(amountIn).minus(wanderFee).toFixed();
   const response = await aoInstance.dryrun({
     process: poolId,
     tags: [
       { name: "Action", value: "GetAmountOut" },
       { name: "TokenIn", value: tokenIn },
-      { name: "AmountIn", value: amountIn },
+      { name: "AmountIn", value: amountInWithoutWanderFee },
     ],
   });
 
@@ -86,23 +88,26 @@ export async function getExpectedOutput({
   const issuerFeeQuantity = getTagValue("IssuerFee", tags) || "0";
   const poolFeeQuantity = getTagValue("PoolFee", tags) || "0";
   const holderFeeQuantity = getTagValue("HolderFee", tags) || "0";
-  const inputFeeQuantity = BigNumber(issuerFeeQuantity).plus(BigNumber(poolFeeQuantity)).toFixed();
-  const outputFeeQuantity = BigNumber(holderFeeQuantity).toFixed();
-  const expectedMinOutput = BigNumber(amountOut)
+  const tokenInFee = BigNumber(issuerFeeQuantity).plus(poolFeeQuantity).toFixed();
+  const tokenOutFee = BigNumber(holderFeeQuantity).toFixed();
+  const minAmountOut = BigNumber(amountOut)
     .multipliedBy(BigNumber(1).minus(slippage))
     .div(100)
     .toFixed(0, BigNumber.ROUND_FLOOR);
-  const amountInWithoutFee = BigNumber(amountIn).minus(inputFeeQuantity).toFixed();
+  const poolAmountIn = BigNumber(amountInWithoutWanderFee).minus(tokenInFee).toFixed();
 
   return {
     poolId,
     tokenIn,
     amountIn,
     amountOut,
-    expectedMinOutput,
-    amountInWithoutFee,
-    totalTokenInFeeQuantity: inputFeeQuantity,
-    totalTokenOutFeeQuantity: outputFeeQuantity,
+    wanderFee,
+    minAmountOut,
+    poolAmountIn,
+    tokenInFee,
+    tokenOutFee,
+    networkFee: "0",
+    transferAmountIn: amountInWithoutWanderFee,
     type: "permaswap",
   } satisfies GetExpectedOutputResponse;
 }

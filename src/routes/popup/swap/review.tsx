@@ -23,12 +23,14 @@ import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { getPriceImpactColor, getProviderName, getSwapTime, toFixed } from "./utils/swap.utils";
 import { PoolTypeEnum } from "./utils/swap.constants";
 import { aox } from "./utils/bridge/bridge.aox";
+import { useDefiFeeDetails } from "~utils/tier/hooks";
 
 export function SwapReviewView() {
   const { navigate } = useLocation();
   const theme = useTheme();
   const [isExecutingSwap, setIsExecutingSwap] = useState(false);
   const [swapData] = useSavedSwapData();
+  const defiFeeDetails = useDefiFeeDetails();
 
   const { sendToken, receiveToken, wanderFee, slippage, amountIn } = swapData || {};
 
@@ -41,6 +43,7 @@ export function SwapReviewView() {
     amountIn,
     pool: swapData?.selectedPoolInfo?.pool,
     stopFetching: isExecutingSwap,
+    wanderFeePercent: +defiFeeDetails.finalFeePercent,
   });
 
   const selectedPoolInfo = useMemo(() => {
@@ -48,24 +51,22 @@ export function SwapReviewView() {
   }, [selectedPoolInfoQuote, swapData?.selectedPoolInfo]);
 
   const rate = useMemo(() => {
-    if (!selectedPoolInfo?.quoteOutput || !sendToken || !receiveToken) return "--";
+    if (!selectedPoolInfo?.quoteOutput || !sendToken || !receiveToken || !amountIn) return "--";
 
-    const valueIn = BigNumber(selectedPoolInfo.quoteOutput.amountInWithoutFee || "0").shiftedBy(
-      -sendToken.Denomination,
-    );
+    const valueIn = BigNumber(amountIn).shiftedBy(-sendToken.Denomination);
     const valueOut = BigNumber(selectedPoolInfo.quoteOutput.amountOut || "0").shiftedBy(-receiveToken.Denomination);
 
     if (valueIn.isZero()) return "--";
 
     const valueOutForUnitValueIn = valueOut.dividedBy(valueIn);
     return `1 ${sendToken.Ticker} ≈ ${toFixed(valueOutForUnitValueIn, 8)} ${receiveToken.Ticker}`;
-  }, [selectedPoolInfo, sendToken, receiveToken]);
+  }, [selectedPoolInfo, sendToken, receiveToken, amountIn]);
 
   const providerNetworkFee = useMemo(() => {
     if (!selectedPoolInfo?.quoteOutput || !sendToken || !receiveToken) return "--";
 
-    const tokenInFee = BigNumber(selectedPoolInfo.quoteOutput.totalTokenInFeeQuantity || "0");
-    const tokenOutFee = BigNumber(selectedPoolInfo.quoteOutput.totalTokenOutFeeQuantity || "0");
+    const tokenInFee = BigNumber(selectedPoolInfo.quoteOutput.tokenInFee || "0");
+    const tokenOutFee = BigNumber(selectedPoolInfo.quoteOutput.tokenOutFee || "0");
 
     const formatFee = (amount: BigNumber, token: TokenInfo) =>
       `${toFixed(amount.shiftedBy(-token.Denomination), 8)} ${token.Ticker}`;
@@ -165,7 +166,7 @@ export function SwapReviewView() {
       const transferId = await executeSwapFn({
         tokenIn: sendToken?.processId,
         tokenOut: receiveToken?.processId,
-        amountIn,
+        amountIn: selectedPoolInfo.quoteOutput.transferAmountIn,
         minAmountOut: selectedPoolInfo.quoteOutput.amountOut,
         poolId: selectedPoolInfo.pool.poolId,
         tags,

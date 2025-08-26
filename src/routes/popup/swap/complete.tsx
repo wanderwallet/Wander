@@ -29,24 +29,22 @@ export function SwapCompleteView() {
   const { sendToken, receiveToken, wanderFee, slippage, amountIn, selectedPoolInfo, transferId } = swapData || {};
 
   const rate = useMemo(() => {
-    if (!selectedPoolInfo?.quoteOutput || !sendToken || !receiveToken) return "--";
+    if (!selectedPoolInfo?.quoteOutput || !sendToken || !receiveToken || !amountIn) return "--";
 
-    const valueIn = BigNumber(selectedPoolInfo.quoteOutput.amountInWithoutFee || "0").shiftedBy(
-      -sendToken.Denomination,
-    );
+    const valueIn = BigNumber(amountIn).shiftedBy(-sendToken.Denomination);
     const valueOut = BigNumber(selectedPoolInfo.quoteOutput.amountOut || "0").shiftedBy(-receiveToken.Denomination);
 
     if (valueIn.isZero()) return "--";
 
     const valueOutForUnitValueIn = valueOut.dividedBy(valueIn);
     return `1 ${sendToken.Ticker} ≈ ${toFixed(valueOutForUnitValueIn, 8)} ${receiveToken.Ticker}`;
-  }, [selectedPoolInfo, sendToken, receiveToken]);
+  }, [selectedPoolInfo, sendToken, receiveToken, amountIn]);
 
   const networkFee = useMemo(() => {
     if (!selectedPoolInfo?.quoteOutput || !sendToken || !receiveToken) return "--";
 
-    const tokenInFee = BigNumber(selectedPoolInfo.quoteOutput.totalTokenInFeeQuantity || "0");
-    const tokenOutFee = BigNumber(selectedPoolInfo.quoteOutput.totalTokenOutFeeQuantity || "0");
+    const tokenInFee = BigNumber(selectedPoolInfo.quoteOutput.tokenInFee || "0");
+    const tokenOutFee = BigNumber(selectedPoolInfo.quoteOutput.tokenOutFee || "0");
 
     const formatFee = (amount: BigNumber, token: TokenInfo) =>
       `${toFixed(amount.shiftedBy(-token.Denomination), 8)} ${token.Ticker}`;

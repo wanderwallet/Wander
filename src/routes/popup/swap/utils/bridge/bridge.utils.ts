@@ -41,14 +41,16 @@ export async function getBridgeTransaction(txId: string) {
 
 export function validateBridgeTransaction(
   amountIn: string,
+  wanderFee: string,
+  networkFee: string,
   bridgeInfo: BridgeInfoResult,
   tokenIn: string,
   tokenOut: string,
 ): string | null {
   if (!bridgeInfo) return null;
 
-  const amountInBN = BigNumber(amountIn);
-  const valueInBN = BigNumber(amountIn).shiftedBy(-12);
+  const amountInBN = BigNumber(amountIn).minus(wanderFee).minus(networkFee);
+  const valueInBN = amountInBN.shiftedBy(-12);
   const isARToWAR = tokenIn === AR_PROCESS_ID;
   const isWARToAR = tokenOut === AR_PROCESS_ID;
 

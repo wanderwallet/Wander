@@ -45,6 +45,8 @@ export async function getExpectedOutput({
   poolId,
   tokenIn,
   amountIn,
+  wanderFee,
+  networkFee,
 }: GetExpectedOutputParams): Promise<GetExpectedOutputResponse> {
   const bridgeInfo = await queryClient.fetchQuery({
     queryKey: ["bridge-info"],
@@ -52,19 +54,26 @@ export async function getExpectedOutput({
     ...defaultOptions,
   });
 
-  const fee = tokenIn === AR_PROCESS_ID ? bridgeInfo.warToken.mintFee : bridgeInfo.warToken.burnFee;
-
-  const amountOut = BigNumber(amountIn).minus(fee).toFixed();
+  const isARToWAR = tokenIn === AR_PROCESS_ID;
+  const amountInBN = BigNumber(amountIn);
+  const mintOrBurnFee = isARToWAR ? bridgeInfo.warToken.mintFee : bridgeInfo.warToken.burnFee;
+  const networkWanderFee = BigNumber(networkFee).plus(wanderFee);
+  const totalFee = BigNumber(mintOrBurnFee).plus(networkWanderFee);
+  const transferAmountIn = amountInBN.minus(networkWanderFee).toFixed();
+  const amountOut = amountInBN.minus(totalFee).toFixed();
 
   return {
     poolId,
     tokenIn,
     amountIn,
     amountOut,
-    expectedMinOutput: amountOut,
-    amountInWithoutFee: amountIn,
-    totalTokenOutFeeQuantity: fee,
-    totalTokenInFeeQuantity: "0",
+    transferAmountIn,
+    minAmountOut: amountOut,
+    poolAmountIn: transferAmountIn,
+    tokenOutFee: isARToWAR ? "0" : totalFee.toFixed(),
+    tokenInFee: isARToWAR ? totalFee.toFixed() : "0",
+    wanderFee,
+    networkFee,
     type: "aox",
   } satisfies GetExpectedOutputResponse;
 }
