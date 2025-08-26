@@ -245,8 +245,8 @@ export function parseSwapTransaction(transaction: GQLEdgeInterface): ParsedSwapT
   const amountIn = getTagValue("X-Amount-In", tags);
   const amountOut =
     getTagValue("To-Quantity", tags) ||
-    getTagValue("Quantity", tags) ||
     getTagValue("AmountOut", tags) ||
+    getTagValue("Quantity", tags) ||
     getTagValue("X-Amount-Out", tags);
 
   const error = action === "Order-Error" || (orderStatus && orderStatus !== "Swapped");

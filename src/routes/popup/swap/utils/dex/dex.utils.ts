@@ -260,28 +260,12 @@ export async function getPermaswapTransactions(address: string, cursor = "") {
         const pushedFor = getTagValue("Pushed-For", tags);
         const swapTx = txMap.get(pushedFor);
         if (swapTx) {
-          edge.node.tags.unshift(
-            ...[
-              {
-                name: "OrderStatus",
-                value: getTagValue("OrderStatus", tags),
-              },
-              {
-                name: "Action",
-                value: getTagValue("Action", tags),
-              },
-
-              {
-                name: "AmountOut",
-                value: getTagValue("AmountOut", tags),
-              },
-            ],
-          );
+          edge.node.tags.push(...swapTx.node.tags);
         }
       }
 
       return edges;
-    });
+    }, 2);
 
     return { txs: orderNoticesResult.map(parseSwapTransaction), hasNextPage, cursor };
   }, 2);
