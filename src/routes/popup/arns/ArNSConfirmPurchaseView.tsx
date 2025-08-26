@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Flex } from "~components/common/Flex";
 import { ArioIcon } from "~components/embed";
 import HeadV2 from "~components/popup/HeadV2";
-import { ARNS_QUERY_CLIENT, purchaseArNSName, useRegistrationFee, useTicker } from "~lib/arns";
+import { ARIO_PROCESS_ID, ARNS_QUERY_CLIENT, purchaseArNSName, useRegistrationFee, useTicker } from "~lib/arns";
 import { useActiveWallet } from "~wallets/hooks";
 import type { CommonRouteProps } from "~wallets/router/router.types";
 import { useLocation } from "~wallets/router/router.utils";
@@ -11,6 +11,7 @@ import { RegisteringCard } from "./RegisteringCard";
 import TransactionStatusModal from "./TransactionStatusModal";
 import type { PurchaseType } from "./types";
 import { decodeDomainToASCII, lowerCaseDomain } from "./utils";
+import { queryClient } from "~utils/tanstack";
 
 export interface ArNSConfirmPurchaseViewParams {
   name: string;
@@ -53,6 +54,8 @@ export const ArNSConfirmPurchaseView = ({
       await ARNS_QUERY_CLIENT.invalidateQueries({
         queryKey: ["arns-records-for-address", wallet.address],
       });
+      await queryClient.invalidateQueries({ queryKey: ["tokenBalance", ARIO_PROCESS_ID, wallet.address] });
+
       navigate(`/arns/purchase-success/${name}/${purchaseType}/${purchaseYears}/${result.transactionId}`);
     } catch (error) {
       console.log(error);

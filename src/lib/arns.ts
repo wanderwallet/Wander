@@ -17,17 +17,17 @@ import {
 import { connect } from "@permaweb/aoconnect/browser";
 import { QueryClient, useQuery } from "@tanstack/react-query";
 import { persistQueryClient } from "@tanstack/react-query-persist-client";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import type { PurchaseType } from "~routes/popup/arns/types";
-import { fetchTokenBalance, type TokenInfoWithBalance } from "~tokens/aoTokens/ao";
+import { decodeDomainToASCII, lowerCaseDomain } from "~routes/popup/arns/utils";
+import { type TokenInfo } from "~tokens/aoTokens/ao";
+import { useTokenBalance } from "~tokens/hooks";
 import { isLocalWallet } from "~utils/assertions";
 import { createExtensionStoragePersister } from "~utils/query/createExtensionStoragePersister";
-import { PersistentStorage, useStorage } from "~utils/storage";
 import { getActiveKeyfile, type DecryptedWallet } from "~wallets";
 import { freeDecryptedWallet } from "~wallets/encryption";
 import { useActiveAddress, useActiveWallet } from "~wallets/hooks";
 import type { NameServiceProfile } from "./types";
-import { decodeDomainToASCII, lowerCaseDomain } from "~routes/popup/arns/utils";
 
 export const LANDING_PAGE_TXID = "oork_YifB3-JQQZg8EgMPQJytua_QCHKNmMqt5kmnCo";
 export const DEFAULT_ANT_LOGO = "Sie_26dvgyok0PZD_-iQAFOhOd5YxDTkczOLoqTTL_A";
@@ -440,27 +440,18 @@ export function usePrimaryNameCostDetails({ name }: { name: string }) {
   );
 }
 
+const ARIO_TOKEN_INFO: TokenInfo = {
+  Denomination: 6,
+  processId: ARIO_PROCESS_ID,
+};
 export function useArioBalance() {
-  const [balance, setBalance] = useState<number | undefined>();
   const activeWallet = useActiveWallet();
 
-  const [aoTokens] = useStorage<TokenInfoWithBalance[]>(
-    {
-      key: "ao_tokens",
-      instance: PersistentStorage,
-    },
-    [],
-  );
+  const { data: arioBalanceString } = useTokenBalance(ARIO_TOKEN_INFO, activeWallet?.address);
 
-  useEffect(() => {
-    const tokenInfo = aoTokens.find((token) => token.processId === ARIO_PROCESS_ID);
+  const arioBalance = useMemo(() => {
+    return arioBalanceString ? parseFloat(arioBalanceString) : undefined;
+  }, [arioBalanceString]);
 
-    if (!tokenInfo) setBalance(undefined);
-
-    fetchTokenBalance(tokenInfo, activeWallet?.address).then((balance) => {
-      setBalance(parseFloat(balance));
-    });
-  }, [aoTokens]);
-
-  return balance;
+  return arioBalance;
 }

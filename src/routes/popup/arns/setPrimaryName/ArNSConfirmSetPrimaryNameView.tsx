@@ -2,7 +2,14 @@ import { Button, Text } from "@arconnect/components-rebrand";
 import { useMemo, useState } from "react";
 import { Flex } from "~components/common/Flex";
 import HeadV2 from "~components/popup/HeadV2";
-import { ARNS_QUERY_CLIENT, setPrimaryName, useArioBalance, usePrimaryNameCostDetails, useTicker } from "~lib/arns";
+import {
+  ARIO_PROCESS_ID,
+  ARNS_QUERY_CLIENT,
+  setPrimaryName,
+  useArioBalance,
+  usePrimaryNameCostDetails,
+  useTicker,
+} from "~lib/arns";
 import { NAME_SERVICE_QUERY_CLIENT } from "~lib/nameservice";
 import { useActiveWallet } from "~wallets/hooks";
 import type { CommonRouteProps } from "~wallets/router/router.types";
@@ -12,6 +19,7 @@ import TransactionStatusModal from "../TransactionStatusModal";
 import { sleep } from "~utils/promises/sleep";
 import { decodeDomainToASCII, formatArio } from "../utils";
 import { mARIOToken } from "@ar.io/sdk/web";
+import { queryClient } from "~utils/tanstack";
 
 export interface ArNSConfirmSetPrimaryNameViewParams {
   name: string;
@@ -70,6 +78,7 @@ export const ArNSConfirmSetPrimaryNameView = ({ params: { name } }: ArNSConfirmS
         await NAME_SERVICE_QUERY_CLIENT.invalidateQueries({
           queryKey: ["name-service-profiles"],
         });
+        await queryClient.invalidateQueries({ queryKey: ["tokenBalance", ARIO_PROCESS_ID, wallet.address] });
         navigate(`/arns/primary-name-success/${name}/${result.transactionId}`);
       } else {
         navigate(`/arns/primary-name-error/${name}`);
