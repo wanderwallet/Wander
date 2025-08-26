@@ -91,6 +91,7 @@ export const ArNSPurchaseSuccessView = ({
             Set as Primary Name
           </Button>
           <Button
+            variant="secondary"
             onClick={() => {
               navigate(PopupPaths.Home);
               navigate(PopupPaths.ArNSManage);
