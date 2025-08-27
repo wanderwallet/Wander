@@ -6,6 +6,7 @@ import {
   getPriceImpact,
   getSwapTransaction,
   processToken,
+  toFixed,
   VENTO_BRIDGE_TOKEN_IDS,
 } from "./swap.utils";
 import { defaultOptions, useAoTokens } from "~tokens/hooks";
@@ -51,6 +52,7 @@ import { useActiveAddress } from "~wallets/hooks";
 import BigNumber from "bignumber.js";
 import { vento, VENTO_BRIDGE_ADDRESS } from "./bridge/bridge.vento";
 import type { TokenInfo } from "~tokens/aoTokens/ao";
+import type { DefiFeeDetails } from "~utils/tier/types";
 
 export function usePools() {
   return useQuery({
@@ -725,4 +727,96 @@ export function useSwapTransaction(txId: string) {
     loading,
     error,
   };
+}
+
+export function useWanderFee({
+  valueIn,
+  defiFeeDetails,
+  token,
+}: {
+  valueIn: string;
+  defiFeeDetails: DefiFeeDetails;
+  token: TokenInfo;
+}) {
+  return useMemo(() => {
+    if (!valueIn || !defiFeeDetails || !token) {
+      return { originalFee: "--", finalFee: "--", hasChanged: false };
+    }
+
+    const originalFee = BigNumber(valueIn).multipliedBy(defiFeeDetails.originalFeePercent).dividedBy(100).toFixed();
+    const finalFee = BigNumber(valueIn).multipliedBy(defiFeeDetails.finalFeePercent).dividedBy(100).toFixed();
+
+    return {
+      hasChanged: defiFeeDetails.feeHasChanged,
+      originalFee,
+      finalFee,
+    };
+  }, [valueIn, defiFeeDetails, token]);
+}
+
+export function useProviderNetworkFee({
+  selectedPoolInfo,
+  sendToken,
+  receiveToken,
+  networkFee,
+}: {
+  selectedPoolInfo: SelectedPoolInfo;
+  sendToken: TokenInfo;
+  receiveToken: TokenInfo;
+  networkFee: string;
+}) {
+  return useMemo(() => {
+    if (!selectedPoolInfo?.quoteOutput || !sendToken || !receiveToken) return "--";
+
+    let tokenInFee = BigNumber(selectedPoolInfo.quoteOutput.tokenInFee || "0");
+    let tokenOutFee = BigNumber(selectedPoolInfo.quoteOutput.tokenOutFee || "0");
+
+    if (selectedPoolInfo.pool.poolType === "aox" || selectedPoolInfo.pool.poolType === "vento") {
+      if (sendToken.processId === AR_PROCESS_ID) {
+        tokenInFee = tokenInFee.plus(networkFee);
+      } else {
+        tokenOutFee = tokenOutFee.plus(networkFee);
+      }
+    }
+
+    const formatFee = (amount: BigNumber, token: TokenInfo) =>
+      `${toFixed(amount.shiftedBy(-token.Denomination), 8)} ${token.Ticker}`;
+
+    if (tokenInFee.isZero() && tokenOutFee.isZero()) {
+      return `0 ${sendToken.Ticker}`;
+    }
+
+    const fees = [];
+    if (!tokenInFee.isZero()) {
+      fees.push(formatFee(tokenInFee, sendToken));
+    }
+
+    if (!tokenOutFee.isZero()) {
+      fees.push(formatFee(tokenOutFee, receiveToken));
+    }
+
+    return fees.join(" + ");
+  }, [selectedPoolInfo, sendToken, receiveToken, networkFee]);
+}
+
+export function useSwapRate({
+  selectedPoolInfo,
+  sendToken,
+  receiveToken,
+  amountIn,
+}: {
+  selectedPoolInfo: SelectedPoolInfo;
+  sendToken: TokenInfo;
+  receiveToken: TokenInfo;
+  amountIn: string;
+}) {
+  return useMemo(() => {
+    if (!selectedPoolInfo?.quoteOutput || !sendToken || !receiveToken || !amountIn) return "--";
+
+    const valueIn = BigNumber(amountIn).shiftedBy(-sendToken.Denomination);
+    const valueOut = BigNumber(selectedPoolInfo.quoteOutput.amountOut || "0").shiftedBy(-receiveToken.Denomination);
+
+    const valueOutForUnitValueIn = valueOut.dividedBy(valueIn);
+    return `1 ${sendToken.Ticker} ≈ ${toFixed(valueOutForUnitValueIn, 8)} ${receiveToken.Ticker}`;
+  }, [selectedPoolInfo, sendToken, receiveToken, amountIn]);
 }

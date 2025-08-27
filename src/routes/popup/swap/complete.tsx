@@ -3,12 +3,10 @@ import browser from "webextension-polyfill";
 import styled, { useTheme } from "styled-components";
 import HeadV2 from "~components/popup/HeadV2";
 import { Flex } from "~components/common/Flex";
-import { type TokenInfo } from "~tokens/aoTokens/ao";
 import { TokenLogo } from "~components/popup/TokenLogo";
 import { AutoTag } from "./components/AutoTag";
 import { WanderFeeTag } from "./components/WanderFeeTag";
 import { useEffect, useMemo } from "react";
-import BigNumber from "bignumber.js";
 import { formatBalance } from "~utils/format";
 import { useLocation } from "~wallets/router/router.utils";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
@@ -18,8 +16,8 @@ import checkmarkAnimationData from "assets/lotties/checkmark.json";
 import Lottie from "react-lottie";
 import { TransactionDetailItem } from "./components/TransactionDetailItem";
 import { HorizontalLine } from "~components/HorizontalLine";
-import { getPriceImpactColor, getProviderName, getSwapTime, toFixed } from "./utils/swap.utils";
-import { useSavedSwapData } from "./utils/swap.hooks";
+import { fromTokenBaseUnits, getPriceImpactColor, getProviderName, getSwapTime, toFixed } from "./utils/swap.utils";
+import { useARNetworkFee, useProviderNetworkFee, useSavedSwapData, useSwapRate } from "./utils/swap.hooks";
 import { PageType, trackPage } from "~utils/analytics";
 import { TempTransactionStorage } from "~utils/storage";
 
@@ -30,55 +28,24 @@ export function SwapCompleteView() {
 
   const { sendToken, receiveToken, wanderFee, slippage, amountIn, selectedPoolInfo, transferId } = swapData || {};
 
-  const rate = useMemo(() => {
-    if (!selectedPoolInfo?.quoteOutput || !sendToken || !receiveToken || !amountIn) return "--";
+  const { networkFee } = useARNetworkFee({
+    tokenIn: sendToken?.processId,
+    tokenOut: receiveToken?.processId,
+  });
 
-    const valueIn = BigNumber(amountIn).shiftedBy(-sendToken.Denomination);
-    const valueOut = BigNumber(selectedPoolInfo.quoteOutput.amountOut || "0").shiftedBy(-receiveToken.Denomination);
+  const rate = useSwapRate({ selectedPoolInfo, sendToken, receiveToken, amountIn });
 
-    if (valueIn.isZero()) return "--";
-
-    const valueOutForUnitValueIn = valueOut.dividedBy(valueIn);
-    return `1 ${sendToken.Ticker} ≈ ${toFixed(valueOutForUnitValueIn, 8)} ${receiveToken.Ticker}`;
-  }, [selectedPoolInfo, sendToken, receiveToken, amountIn]);
-
-  const providerNetworkFee = useMemo(() => {
-    if (!selectedPoolInfo?.quoteOutput || !sendToken || !receiveToken) return "--";
-
-    const tokenInFee = BigNumber(selectedPoolInfo.quoteOutput.tokenInFee || "0");
-    const tokenOutFee = BigNumber(selectedPoolInfo.quoteOutput.tokenOutFee || "0");
-
-    const formatFee = (amount: BigNumber, token: TokenInfo) =>
-      `${toFixed(amount.shiftedBy(-token.Denomination), 8)} ${token.Ticker}`;
-
-    if (tokenInFee.isZero() && tokenOutFee.isZero()) {
-      return `0 ${sendToken.Ticker}`;
-    }
-
-    const fees = [];
-    if (!tokenInFee.isZero()) {
-      fees.push(formatFee(tokenInFee, sendToken));
-    }
-
-    if (!tokenOutFee.isZero()) {
-      fees.push(formatFee(tokenOutFee, receiveToken));
-    }
-
-    return fees.join(" + ");
-  }, [selectedPoolInfo, sendToken, receiveToken]);
+  const providerNetworkFee = useProviderNetworkFee({ selectedPoolInfo, sendToken, receiveToken, networkFee });
 
   const valueIn = useMemo(() => {
     if (!amountIn || !sendToken) return "";
-    return BigNumber(amountIn).shiftedBy(-sendToken.Denomination).toFixed();
+    return fromTokenBaseUnits(amountIn, sendToken.Denomination);
   }, [amountIn, sendToken]);
 
   const valueOutFormatted = useMemo(() => {
     if (!valueIn || !selectedPoolInfo?.quoteOutput?.amountOut || !receiveToken) return formatBalance("0");
 
-    const value = BigNumber(selectedPoolInfo.quoteOutput.amountOut || "0")
-      .shiftedBy(-receiveToken.Denomination)
-      .toFixed();
-
+    const value = fromTokenBaseUnits(selectedPoolInfo.quoteOutput.amountOut, receiveToken.Denomination);
     return formatBalance(value);
   }, [selectedPoolInfo, receiveToken, valueIn]);
 

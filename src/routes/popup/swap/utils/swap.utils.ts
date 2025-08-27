@@ -455,3 +455,69 @@ export function getExpectedOutputFn(poolType: PoolType, params: GetExpectedOutpu
       return vento.getExpectedOutput(params);
   }
 }
+
+/**
+ * Converts human-readable string (e.g. "1.5") to base units (wei or token smallest unit)
+ * @param value - Human-readable string/number (e.g. "1.5" or 1.5)
+ * @param denomination - Denomination of the token (e.g. 12 for WAR)
+ * @param returnType - Return type: "BigNumber" or "string" (default: "string")
+ * @returns Base units as string or BigNumber based on returnType
+ * @throws {Error} When value is invalid or denomination is negative
+ */
+export function toTokenBaseUnits<T extends "BigNumber" | "string" = "string">(
+  value: string | number | BigNumber,
+  denomination: string | number,
+  returnType?: T,
+): T extends "BigNumber" ? BigNumber : string {
+  value = value || "0";
+  const denomNum = Number(denomination) || 0;
+
+  const valueBN = value instanceof BigNumber ? value : new BigNumber(value);
+
+  if (valueBN.isNaN()) {
+    throw new Error(`Invalid numeric value: ${value}`);
+  }
+
+  if (valueBN.isNegative()) {
+    throw new Error(`Value cannot be negative: ${value}`);
+  }
+
+  const shiftedValue = valueBN.shiftedBy(denomNum);
+
+  return (
+    returnType === "BigNumber" ? shiftedValue : shiftedValue.toFixed(0, BigNumber.ROUND_DOWN)
+  ) as T extends "BigNumber" ? BigNumber : string;
+}
+
+/**
+ * Converts from base units to human-readable value
+ * @param units - Base units (e.g. "1500000000000000000")
+ * @param denomination - Denomination of the token (e.g. 12 for WAR)
+ * @param returnType - Return type: "BigNumber" or "string" (default: "string")
+ * @returns Human-readable value as string or BigNumber based on returnType
+ * @throws {Error} When units is invalid or denomination is negative
+ */
+export function fromTokenBaseUnits<T extends "BigNumber" | "string" = "string">(
+  units: string | number | BigNumber,
+  denomination: string | number,
+  returnType?: T,
+): T extends "BigNumber" ? BigNumber : string {
+  units = units || "0";
+  const denomNum = Number(denomination) || 0;
+
+  const unitsBN = units instanceof BigNumber ? units : new BigNumber(units);
+
+  if (unitsBN.isNaN()) {
+    throw new Error(`Invalid numeric units: ${units}`);
+  }
+
+  if (unitsBN.isNegative()) {
+    throw new Error(`Units cannot be negative: ${units}`);
+  }
+
+  const shiftedValue = unitsBN.shiftedBy(-denomNum);
+
+  return (returnType === "BigNumber" ? shiftedValue : shiftedValue.toFixed()) as T extends "BigNumber"
+    ? BigNumber
+    : string;
+}

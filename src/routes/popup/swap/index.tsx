@@ -13,13 +13,15 @@ import { SlippageInputButton } from "./components/SlippageInputButton";
 import {
   useARNetworkFee,
   usePoolForTokenPair,
+  useProviderNetworkFee,
+  useSwapRate,
   useSwapReceiveToken,
   useSwapSendToken,
   useSwapSlippage,
+  useWanderFee,
 } from "./utils/swap.hooks";
 import type { SwapData, TokenInfoWithPoolPartners, TokenSelectorType } from "./utils/swap.types";
 import { TokenSelectorPopup } from "./components/TokenSelectorPopup";
-import BigNumber from "bignumber.js";
 import { useDefiFeeDetails } from "~utils/tier/hooks";
 import { useTokenBalance } from "~tokens/hooks";
 import { useActiveAddress, useDebounce } from "~wallets/hooks";
@@ -31,7 +33,7 @@ import { AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 import { getErrorMessage, validateAmount } from "../send/amount";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
-import { toFixed } from "./utils/swap.utils";
+import { fromTokenBaseUnits, toFixed, toTokenBaseUnits } from "./utils/swap.utils";
 import { PageType, trackPage } from "~utils/analytics";
 import { TransactionDetailItem } from "./components/TransactionDetailItem";
 
@@ -59,7 +61,7 @@ export function SwapView() {
 
   const amountIn = useMemo(() => {
     if (!debouncedValueIn || !sendToken) return "";
-    return BigNumber(debouncedValueIn).shiftedBy(sendToken.Denomination).toFixed();
+    return toTokenBaseUnits(debouncedValueIn, sendToken.Denomination);
   }, [debouncedValueIn, sendToken]);
 
   const errorMessage = useMemo(() => {
@@ -82,71 +84,30 @@ export function SwapView() {
   });
 
   const valueOut = useMemo(() => {
-    if (!debouncedValueIn || !selectedPoolInfo?.quoteOutput?.amountOut || !receiveToken) return "";
-    return BigNumber(selectedPoolInfo?.quoteOutput?.amountOut || "0")
-      .shiftedBy(-receiveToken.Denomination)
-      .toFixed();
+    const amountOut = selectedPoolInfo?.quoteOutput?.amountOut;
+    if (!debouncedValueIn || !amountOut || !receiveToken) return "";
+    return fromTokenBaseUnits(amountOut, receiveToken.Denomination);
   }, [selectedPoolInfo, receiveToken, debouncedValueIn]);
 
-  const rate = useMemo(() => {
-    if (!selectedPoolInfo?.quoteOutput || !sendToken || !receiveToken || !debouncedValueIn) return "--";
+  const rate = useSwapRate({
+    selectedPoolInfo,
+    sendToken,
+    receiveToken,
+    amountIn,
+  });
 
-    const valueOut = BigNumber(selectedPoolInfo.quoteOutput.amountOut || "0").shiftedBy(-receiveToken.Denomination);
+  const providerNetworkFee = useProviderNetworkFee({
+    selectedPoolInfo,
+    sendToken,
+    receiveToken,
+    networkFee,
+  });
 
-    const valueOutForUnitValueIn = valueOut.dividedBy(debouncedValueIn);
-    return `1 ${sendToken.Ticker} ≈ ${toFixed(valueOutForUnitValueIn, 8)} ${receiveToken.Ticker}`;
-  }, [selectedPoolInfo, sendToken, receiveToken, debouncedValueIn]);
-
-  const providerNetworkFee = useMemo(() => {
-    if (!selectedPoolInfo?.quoteOutput || !sendToken || !receiveToken) return "--";
-
-    let tokenInFee = BigNumber(selectedPoolInfo.quoteOutput.tokenInFee || "0");
-    let tokenOutFee = BigNumber(selectedPoolInfo.quoteOutput.tokenOutFee || "0");
-
-    if (selectedPoolInfo.pool.poolType === "aox" || selectedPoolInfo.pool.poolType === "vento") {
-      if (sendToken.processId === AR_PROCESS_ID) {
-        tokenInFee = tokenInFee.plus(networkFee);
-      } else {
-        tokenOutFee = tokenOutFee.plus(networkFee);
-      }
-    }
-
-    const formatFee = (amount: BigNumber, token: TokenInfo) =>
-      `${toFixed(amount.shiftedBy(-token.Denomination), 8)} ${token.Ticker}`;
-
-    if (tokenInFee.isZero() && tokenOutFee.isZero()) {
-      return `0 ${sendToken.Ticker}`;
-    }
-
-    const fees = [];
-    if (!tokenInFee.isZero()) {
-      fees.push(formatFee(tokenInFee, sendToken));
-    }
-
-    if (!tokenOutFee.isZero()) {
-      fees.push(formatFee(tokenOutFee, receiveToken));
-    }
-
-    return fees.join(" + ");
-  }, [selectedPoolInfo, sendToken, receiveToken, networkFee]);
-
-  const wanderFee = useMemo(() => {
-    if (!debouncedValueIn || !defiFeeDetails || !sendToken) {
-      return { originalFee: "--", finalFee: "--", hasChanged: false };
-    }
-
-    const originalFee = BigNumber(debouncedValueIn)
-      .multipliedBy(defiFeeDetails.originalFeePercent)
-      .dividedBy(100)
-      .toFixed();
-    const finalFee = BigNumber(debouncedValueIn).multipliedBy(defiFeeDetails.finalFeePercent).dividedBy(100).toFixed();
-
-    return {
-      hasChanged: defiFeeDetails.feeHasChanged,
-      originalFee,
-      finalFee,
-    };
-  }, [sendToken, debouncedValueIn, defiFeeDetails]);
+  const wanderFee = useWanderFee({
+    valueIn: debouncedValueIn,
+    defiFeeDetails,
+    token: sendToken,
+  });
 
   function handleSwitch() {
     const tempSendToken = sendToken;
@@ -204,7 +165,7 @@ export function SwapView() {
       const receiveToken = swapData.receiveToken;
       const amountIn = swapData.amountIn;
       const slippage = swapData.slippage;
-      const valueIn = BigNumber(amountIn).shiftedBy(-sendToken.Denomination).toFixed();
+      const valueIn = fromTokenBaseUnits(amountIn, sendToken.Denomination);
 
       setSendToken(sendToken);
       setReceiveToken(receiveToken);
@@ -233,11 +194,12 @@ export function SwapView() {
               }}
               onMaxClick={() => {
                 if (sendToken.processId === AR_PROCESS_ID) {
-                  const finalBalanceIn = BigNumber(balanceIn)
-                    .shiftedBy(sendToken.Denomination)
-                    .minus(networkFee)
-                    .shiftedBy(-sendToken.Denomination);
-                  setValueIn(finalBalanceIn.toFixed());
+                  const balanceInBaseUnits = toTokenBaseUnits(balanceIn, sendToken.Denomination, "BigNumber");
+                  const finalBalanceIn = fromTokenBaseUnits(
+                    balanceInBaseUnits.minus(networkFee),
+                    sendToken.Denomination,
+                  );
+                  setValueIn(finalBalanceIn);
                 } else {
                   setValueIn(balanceIn);
                 }

@@ -3,7 +3,6 @@ import browser from "webextension-polyfill";
 import styled, { useTheme } from "styled-components";
 import HeadV2 from "~components/popup/HeadV2";
 import { Flex } from "~components/common/Flex";
-import { type TokenInfo } from "~tokens/aoTokens/ao";
 import { TokenLogo } from "~components/popup/TokenLogo";
 import { HorizontalLine } from "~components/HorizontalLine";
 import { AutoTag } from "./components/AutoTag";
@@ -12,7 +11,13 @@ import { useEffect, useMemo, useState } from "react";
 import { TempTransactionStorage } from "~utils/storage";
 import BigNumber from "bignumber.js";
 import { formatBalance } from "~utils/format";
-import { useARNetworkFee, usePoolQuote, useSavedSwapData } from "./utils/swap.hooks";
+import {
+  useARNetworkFee,
+  usePoolQuote,
+  useProviderNetworkFee,
+  useSavedSwapData,
+  useSwapRate,
+} from "./utils/swap.hooks";
 import { useLocation } from "~wallets/router/router.utils";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import { TokenValueWithTooltip } from "./components/TokenValueWithTooltip";
@@ -20,6 +25,7 @@ import { TransactionDetailItem } from "./components/TransactionDetailItem";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import {
   executeSwapFn,
+  fromTokenBaseUnits,
   getPriceImpactColor,
   getProviderName,
   getSwapTime,
@@ -29,7 +35,6 @@ import {
 import { useDefiFeeDetails } from "~utils/tier/hooks";
 import { PageType, trackPage } from "~utils/analytics";
 import { startSwapMonitoring } from "./utils/alarms/swap-monitor/swap-monitor-alarm.handler";
-import { AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 
 export function SwapReviewView() {
   const { navigate } = useLocation();
@@ -59,63 +64,20 @@ export function SwapReviewView() {
     return selectedPoolInfoQuote || swapData?.selectedPoolInfo;
   }, [selectedPoolInfoQuote, swapData?.selectedPoolInfo]);
 
-  const rate = useMemo(() => {
-    if (!selectedPoolInfo?.quoteOutput || !sendToken || !receiveToken || !amountIn) return "--";
+  const rate = useSwapRate({ selectedPoolInfo, sendToken, receiveToken, amountIn });
 
-    const valueIn = BigNumber(amountIn).shiftedBy(-sendToken.Denomination);
-    const valueOut = BigNumber(selectedPoolInfo.quoteOutput.amountOut || "0").shiftedBy(-receiveToken.Denomination);
-
-    if (valueIn.isZero()) return "--";
-
-    const valueOutForUnitValueIn = valueOut.dividedBy(valueIn);
-    return `1 ${sendToken.Ticker} ≈ ${toFixed(valueOutForUnitValueIn, 8)} ${receiveToken.Ticker}`;
-  }, [selectedPoolInfo, sendToken, receiveToken, amountIn]);
-
-  const providerNetworkFee = useMemo(() => {
-    if (!selectedPoolInfo?.quoteOutput || !sendToken || !receiveToken) return "--";
-
-    let tokenInFee = BigNumber(selectedPoolInfo.quoteOutput.tokenInFee || "0");
-    let tokenOutFee = BigNumber(selectedPoolInfo.quoteOutput.tokenOutFee || "0");
-
-    if (selectedPoolInfo.pool.poolType === "aox" || selectedPoolInfo.pool.poolType === "vento") {
-      if (sendToken.processId === AR_PROCESS_ID) {
-        tokenInFee = tokenInFee.plus(networkFee);
-      } else {
-        tokenOutFee = tokenOutFee.plus(networkFee);
-      }
-    }
-
-    const formatFee = (amount: BigNumber, token: TokenInfo) =>
-      `${toFixed(amount.shiftedBy(-token.Denomination), 8)} ${token.Ticker}`;
-
-    if (tokenInFee.isZero() && tokenOutFee.isZero()) {
-      return `0 ${sendToken.Ticker}`;
-    }
-
-    const fees = [];
-    if (!tokenInFee.isZero()) {
-      fees.push(formatFee(tokenInFee, sendToken));
-    }
-
-    if (!tokenOutFee.isZero()) {
-      fees.push(formatFee(tokenOutFee, receiveToken));
-    }
-
-    return fees.join(" + ");
-  }, [selectedPoolInfo, sendToken, receiveToken, networkFee]);
+  const providerNetworkFee = useProviderNetworkFee({ selectedPoolInfo, sendToken, receiveToken, networkFee });
 
   const valueIn = useMemo(() => {
     if (!amountIn || !sendToken) return "";
-    return BigNumber(amountIn).shiftedBy(-sendToken.Denomination).toFixed();
+    return fromTokenBaseUnits(amountIn, sendToken.Denomination);
   }, [amountIn, sendToken]);
 
   const valueOutFormatted = useMemo(() => {
-    if (!valueIn || !selectedPoolInfo?.quoteOutput?.amountOut || !receiveToken) return formatBalance("0");
+    const amountOut = selectedPoolInfo?.quoteOutput?.amountOut;
+    if (!valueIn || !amountOut || !receiveToken) return formatBalance("0");
 
-    const value = BigNumber(selectedPoolInfo.quoteOutput.amountOut || "0")
-      .shiftedBy(-receiveToken.Denomination)
-      .toFixed();
-
+    const value = fromTokenBaseUnits(selectedPoolInfo.quoteOutput.amountOut, receiveToken.Denomination);
     return formatBalance(value);
   }, [selectedPoolInfo, receiveToken, valueIn]);
 
