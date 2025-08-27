@@ -76,7 +76,7 @@ export const SwapInput = ({
         alignItems: "flex-start",
         justifyContent: "space-between",
         flexDirection: "column",
-        padding: "12px",
+        padding: "16px 12px",
         gap: "8px",
         color: value ? theme.primaryText : theme.input.placeholder.search,
       }}

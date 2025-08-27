@@ -21,6 +21,7 @@ import { HorizontalLine } from "~components/HorizontalLine";
 import { getPriceImpactColor, getProviderName, getSwapTime, toFixed } from "./utils/swap.utils";
 import { useSavedSwapData } from "./utils/swap.hooks";
 import { PageType, trackPage } from "~utils/analytics";
+import { TempTransactionStorage } from "~utils/storage";
 
 export function SwapCompleteView() {
   const theme = useTheme();
@@ -85,6 +86,10 @@ export function SwapCompleteView() {
 
   useEffect(() => {
     trackPage(PageType.SWAP_COMPLETE);
+
+    return () => {
+      TempTransactionStorage.remove("swap-data");
+    };
   }, []);
 
   if (!swapData) {

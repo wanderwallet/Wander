@@ -3,7 +3,7 @@ import browser from "webextension-polyfill";
 import { ArrowDown, ClockRewind } from "@untitled-ui/icons-react";
 import styled from "styled-components";
 import HeadV2 from "~components/popup/HeadV2";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTheme } from "styled-components";
 import { Flex } from "~components/common/Flex";
 import { SwapInput } from "./components/SwapInput";
@@ -18,10 +18,10 @@ import { useDefiFeeDetails } from "~utils/tier/hooks";
 import { useTokenBalance } from "~tokens/hooks";
 import { useActiveAddress, useDebounce } from "~wallets/hooks";
 import { TempTransactionStorage } from "~utils/storage";
-import { useLocation } from "~wallets/router/router.utils";
+import { useLocation, useSearchParams } from "~wallets/router/router.utils";
 import { AutoTag } from "./components/AutoTag";
 import { WanderFeeTag } from "./components/WanderFeeTag";
-import { AR_PROCESS_ID, AR_TOKEN_INFO, defaultTokens, WAR_TOKEN_INFO } from "~tokens/aoTokens/ao.constants";
+import { AR_PROCESS_ID, USDA_TOKEN_INFO, WAR_TOKEN_INFO, WNDR_TOKEN_INFO } from "~tokens/aoTokens/ao.constants";
 import { getErrorMessage, validateAmount } from "../send/amount";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
@@ -29,15 +29,14 @@ import { toFixed } from "./utils/swap.utils";
 import { PageType, trackPage } from "~utils/analytics";
 import { TransactionDetailItem } from "./components/TransactionDetailItem";
 
-// TODO: Update this after testing
-const usdaToken = AR_TOKEN_INFO;
-const wndrToken = WAR_TOKEN_INFO;
-
-const wARToken = defaultTokens[5];
+const usdaToken = USDA_TOKEN_INFO;
+const wndrToken = WNDR_TOKEN_INFO;
+const wARToken = WAR_TOKEN_INFO;
 
 export function SwapView() {
   const theme = useTheme();
   const { navigate } = useLocation();
+  const { loadSwapData } = useSearchParams<{ loadSwapData: string }>();
   const activeAddress = useActiveAddress();
   const [slippage, setSlippage] = useSwapSlippage();
   const defiFeeDetails = useDefiFeeDetails();
@@ -176,8 +175,12 @@ export function SwapView() {
     navigate("/swap/review");
   }
 
-  useAsyncEffect(async () => {
+  useEffect(() => {
     trackPage(PageType.SWAP);
+  }, []);
+
+  useAsyncEffect(async () => {
+    if (loadSwapData !== "true") return;
 
     const swapData = await TempTransactionStorage.get<SwapData>("swap-data");
     if (swapData) {
@@ -192,7 +195,7 @@ export function SwapView() {
       setValueIn(valueIn);
       setSlippage(slippage);
     }
-  }, []);
+  }, [loadSwapData]);
 
   return (
     <>
@@ -213,7 +216,7 @@ export function SwapView() {
                 setOpenTokenSelector(true);
               }}
             />
-            <Switch onClick={handleSwitch} isError={!!errorMessage}>
+            <Switch onClick={handleSwitch} isError={!!errorMessage || !!poolError}>
               <ArrowDown style={{ height: 24, width: 24 }} color={theme.primaryText} />
             </Switch>
             <SwapInput
@@ -248,7 +251,7 @@ export function SwapView() {
               title={"Wander Fee"}
               value={
                 <Flex justify="flex-end" align="center" gap={4} textAlign="right" wrap="wrap">
-                  {wanderFee?.hasChanged && (
+                  {selectedPoolInfo && wanderFee?.hasChanged && (
                     <CrossedOutText style={{ order: 1 }}>{toFixed(wanderFee?.originalFee, 8)}</CrossedOutText>
                   )}
                   <Text
@@ -260,9 +263,11 @@ export function SwapView() {
                       textAlign: "right",
                     }}
                     noMargin>
-                    {wanderFee?.finalFee !== "--" ? `${toFixed(wanderFee?.finalFee, 8)} ${sendToken.Ticker}` : "--"}
+                    {selectedPoolInfo && wanderFee?.finalFee !== "--"
+                      ? `${toFixed(wanderFee?.finalFee, 8)} ${sendToken.Ticker}`
+                      : "--"}
                   </Text>
-                  {wanderFee.finalFee !== "--" && <WanderFeeTag style={{ order: 3 }} />}
+                  {selectedPoolInfo && wanderFee.finalFee !== "--" && <WanderFeeTag style={{ order: 3 }} />}
                 </Flex>
               }
             />

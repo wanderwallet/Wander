@@ -85,16 +85,10 @@ export function usePoolForTokenPair({
 
   useAsyncEffect(async () => {
     try {
-      if (
-        !tokenIn ||
-        !tokenOut ||
-        !slippage ||
-        !amountIn ||
-        isNaN(wanderFeePercent) ||
-        Object.values(pairPools).every((pools) => pools.length === 0)
-      ) {
+      const noPools = Object.values(pairPools).every((pools) => pools.length === 0);
+      if (!tokenIn || !tokenOut || !slippage || !amountIn || isNaN(wanderFeePercent) || noPools) {
         setSelectedPoolInfo(null);
-        setError(null);
+        setError(amountIn && tokenIn && tokenOut && noPools ? "No liquidity pools found for this token pair" : null);
         return;
       }
 

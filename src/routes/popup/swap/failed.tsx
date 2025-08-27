@@ -12,6 +12,7 @@ import { ArrowRight } from "@untitled-ui/icons-react";
 import { ErrorIcon } from "./components/ErrorIcon";
 import { useSavedSwapData } from "./utils/swap.hooks";
 import { PageType, trackPage } from "~utils/analytics";
+import { TempTransactionStorage } from "~utils/storage";
 
 export function SwapFailedView() {
   const theme = useTheme();
@@ -82,10 +83,16 @@ export function SwapFailedView() {
       </WrapperContent>
 
       <Flex direction="column" gap={12}>
-        <Button onClick={() => navigate(PopupPaths.Swap)} fullWidth>
+        <Button onClick={() => navigate(PopupPaths.Swap, { params: { loadSwapData: "true" } })} fullWidth>
           Try again
         </Button>
-        <Button variant="secondary" fullWidth onClick={() => navigate(PopupPaths.Home)}>
+        <Button
+          variant="secondary"
+          fullWidth
+          onClick={() => {
+            TempTransactionStorage.remove("swap-data");
+            navigate(PopupPaths.Home);
+          }}>
           Go to dashboard
         </Button>
       </Flex>
