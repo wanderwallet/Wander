@@ -132,9 +132,8 @@ async function handleSwapSuccess(swap: SwapData) {
     // Process Wander fee
     const feeProcessed = await processWanderFee(swap);
 
-    // Update swap status in storage - only update if not already completed
     await swapsArray.updateWhere(
-      (s) => s.transferId === swap.transferId && s.status !== "completed",
+      (s) => s.transferId === swap.transferId && !s.wanderFeeSent,
       (s) => {
         const expectedOutput = s.selectedPoolInfo.quoteOutput.amountOut;
         s.selectedPoolInfo.quoteOutput.amountOut = swap.selectedPoolInfo.quoteOutput.amountOut || expectedOutput;
