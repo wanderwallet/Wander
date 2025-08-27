@@ -21,11 +21,11 @@ import { TempTransactionStorage } from "~utils/storage";
 import { useLocation, useSearchParams } from "~wallets/router/router.utils";
 import { AutoTag } from "./components/AutoTag";
 import { WanderFeeTag } from "./components/WanderFeeTag";
-import { USDA_TOKEN_INFO, WNDR_TOKEN_INFO } from "~tokens/aoTokens/ao.constants";
+import { AR_PROCESS_ID, USDA_TOKEN_INFO, WNDR_TOKEN_INFO } from "~tokens/aoTokens/ao.constants";
 import { getErrorMessage, validateAmount } from "../send/amount";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
-import { toFixed } from "./utils/swap.utils";
+import { AOX_BRIDGE_TOKEN_IDS, toFixed } from "./utils/swap.utils";
 import { PageType, trackPage } from "~utils/analytics";
 import { TransactionDetailItem } from "./components/TransactionDetailItem";
 
@@ -73,7 +73,6 @@ export function SwapView() {
     slippage: slippage,
     amountIn: errorMessage ? "" : amountIn,
     wanderFeePercent: +defiFeeDetails.finalFeePercent,
-    networkFee,
   });
 
   const valueOut = useMemo(() => {
@@ -95,8 +94,16 @@ export function SwapView() {
   const providerNetworkFee = useMemo(() => {
     if (!selectedPoolInfo?.quoteOutput || !sendToken || !receiveToken) return "--";
 
-    const tokenInFee = BigNumber(selectedPoolInfo.quoteOutput.tokenInFee || "0");
-    const tokenOutFee = BigNumber(selectedPoolInfo.quoteOutput.tokenOutFee || "0");
+    let tokenInFee = BigNumber(selectedPoolInfo.quoteOutput.tokenInFee || "0");
+    let tokenOutFee = BigNumber(selectedPoolInfo.quoteOutput.tokenOutFee || "0");
+
+    if (selectedPoolInfo.pool.poolType === "aox" || selectedPoolInfo.pool.poolType === "vento") {
+      if (sendToken.processId === AR_PROCESS_ID) {
+        tokenInFee = tokenInFee.plus(networkFee);
+      } else {
+        tokenOutFee = tokenOutFee.plus(networkFee);
+      }
+    }
 
     const formatFee = (amount: BigNumber, token: TokenInfo) =>
       `${toFixed(amount.shiftedBy(-token.Denomination), 8)} ${token.Ticker}`;
@@ -115,7 +122,7 @@ export function SwapView() {
     }
 
     return fees.join(" + ");
-  }, [selectedPoolInfo, sendToken, receiveToken]);
+  }, [selectedPoolInfo, sendToken, receiveToken, networkFee]);
 
   const wanderFee = useMemo(() => {
     if (!debouncedValueIn || !defiFeeDetails || !sendToken) {
@@ -210,6 +217,17 @@ export function SwapView() {
               onTokenSwitcherClick={() => {
                 setTokenSelectorType("send");
                 setOpenTokenSelector(true);
+              }}
+              onMaxClick={() => {
+                if (sendToken.processId === AR_PROCESS_ID) {
+                  const finalBalanceIn = BigNumber(balanceIn)
+                    .shiftedBy(sendToken.Denomination)
+                    .minus(networkFee)
+                    .shiftedBy(-sendToken.Denomination);
+                  setValueIn(finalBalanceIn.toFixed());
+                } else {
+                  setValueIn(balanceIn);
+                }
               }}
             />
             <Switch onClick={handleSwitch} isError={!!errorMessage || !!poolError}>

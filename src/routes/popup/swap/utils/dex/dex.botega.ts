@@ -82,7 +82,6 @@ export async function getExpectedOutput({
     poolAmountIn,
     tokenOutFee,
     tokenInFee: "0",
-    networkFee: "0",
     transferAmountIn: amountInWithoutWanderFee,
     type: "botega",
   } satisfies GetExpectedOutputResponse;

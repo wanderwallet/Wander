@@ -6,7 +6,6 @@ export interface GetExpectedOutputParams {
   tokenIn: string;
   amountIn: string;
   wanderFee: string;
-  networkFee: string;
   swapper?: string;
   slippage?: number;
 }
@@ -17,7 +16,6 @@ export interface GetExpectedOutputResponse {
   amountIn: string;
   amountOut: string;
   wanderFee: string;
-  networkFee: string;
   transferAmountIn: string;
   minAmountOut: string;
   poolAmountIn: string;

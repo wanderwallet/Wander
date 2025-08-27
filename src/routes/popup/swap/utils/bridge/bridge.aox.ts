@@ -48,7 +48,6 @@ export async function getExpectedOutput({
   tokenIn,
   amountIn,
   wanderFee,
-  networkFee,
 }: GetExpectedOutputParams): Promise<GetExpectedOutputResponse> {
   const bridgeInfo = await queryClient.fetchQuery({
     queryKey: ["aox-bridge-info"],
@@ -59,10 +58,9 @@ export async function getExpectedOutput({
   const isARToWAR = tokenIn === AR_PROCESS_ID;
   const amountInBN = BigNumber(amountIn);
   const mintOrBurnFee = isARToWAR ? bridgeInfo.warToken.mintFee : bridgeInfo.warToken.burnFee;
-  const networkProviderFee = BigNumber(networkFee).plus(mintOrBurnFee);
-  const networkWanderFee = BigNumber(networkFee).plus(wanderFee);
-  const totalFee = BigNumber(mintOrBurnFee).plus(networkWanderFee);
-  const transferAmountIn = amountInBN.minus(networkWanderFee).toFixed(0, BigNumber.ROUND_DOWN);
+  const providerFee = BigNumber(mintOrBurnFee);
+  const totalFee = BigNumber(mintOrBurnFee).plus(wanderFee);
+  const transferAmountIn = amountInBN.minus(wanderFee).toFixed(0, BigNumber.ROUND_DOWN);
   const amountOut = amountInBN.minus(totalFee).toFixed(0, BigNumber.ROUND_DOWN);
 
   return {
@@ -73,10 +71,9 @@ export async function getExpectedOutput({
     transferAmountIn,
     minAmountOut: amountOut,
     poolAmountIn: transferAmountIn,
-    tokenOutFee: isARToWAR ? "0" : networkProviderFee.toFixed(0, BigNumber.ROUND_DOWN),
-    tokenInFee: isARToWAR ? networkProviderFee.toFixed(0, BigNumber.ROUND_DOWN) : "0",
+    tokenOutFee: isARToWAR ? "0" : providerFee.toFixed(0, BigNumber.ROUND_DOWN),
+    tokenInFee: isARToWAR ? providerFee.toFixed(0, BigNumber.ROUND_DOWN) : "0",
     wanderFee,
-    networkFee,
     type: "aox",
   } satisfies GetExpectedOutputResponse;
 }

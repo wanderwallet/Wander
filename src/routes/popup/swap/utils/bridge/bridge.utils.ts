@@ -76,14 +76,13 @@ export async function getVentoBridgeTransaction(txId: string) {
 export function validateAoxBridgeTransaction(
   amountIn: string,
   wanderFee: string,
-  networkFee: string,
   bridgeInfo: AoxBridgeInfoResult,
   tokenIn: string,
   tokenOut: string,
 ): string | null {
   if (!bridgeInfo) return null;
 
-  const amountInBN = BigNumber(amountIn).minus(wanderFee).minus(networkFee);
+  const amountInBN = BigNumber(amountIn).minus(wanderFee);
   const valueInBN = amountInBN.shiftedBy(-12);
   const isARToWAR = tokenIn === AR_PROCESS_ID;
   const isWARToAR = tokenOut === AR_PROCESS_ID;
@@ -128,14 +127,13 @@ export function validateAoxBridgeTransaction(
 export function validateVentoBridgeTransaction(
   amountIn: string,
   wanderFee: string,
-  networkFee: string,
   bridgeInfo: VentoBridgeInfoResult,
   tokenIn: string,
   tokenOut: string,
 ): string | null {
   if (!bridgeInfo) return null;
 
-  const amountInBN = BigNumber(amountIn).minus(wanderFee).minus(networkFee);
+  const amountInBN = BigNumber(amountIn).minus(wanderFee);
 
   if (bridgeInfo && !bridgeInfo.isHealthy) {
     return "Bridge temporarily closed. Try again later";

@@ -113,7 +113,9 @@ export async function processWanderFee(swap: SwapData): Promise<boolean> {
         { name: "Client-Version", value: browser.runtime.getManifest().version },
       ];
 
-      const isARSwap = swap.selectedPoolInfo.pool.poolType === "aox" && swap.sendToken.processId === AR_PROCESS_ID;
+      const isARSwap =
+        (swap.selectedPoolInfo.pool.poolType === "aox" || swap.selectedPoolInfo.pool.poolType === "vento") &&
+        swap.sendToken.processId === AR_PROCESS_ID;
 
       if (isARSwap) {
         const gateway = await findGateway({ random: true });

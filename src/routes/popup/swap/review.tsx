@@ -29,6 +29,7 @@ import {
 import { useDefiFeeDetails } from "~utils/tier/hooks";
 import { PageType, trackPage } from "~utils/analytics";
 import { startSwapMonitoring } from "./utils/alarms/swap-monitor/swap-monitor-alarm.handler";
+import { AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 
 export function SwapReviewView() {
   const { navigate } = useLocation();
@@ -73,8 +74,16 @@ export function SwapReviewView() {
   const providerNetworkFee = useMemo(() => {
     if (!selectedPoolInfo?.quoteOutput || !sendToken || !receiveToken) return "--";
 
-    const tokenInFee = BigNumber(selectedPoolInfo.quoteOutput.tokenInFee || "0");
-    const tokenOutFee = BigNumber(selectedPoolInfo.quoteOutput.tokenOutFee || "0");
+    let tokenInFee = BigNumber(selectedPoolInfo.quoteOutput.tokenInFee || "0");
+    let tokenOutFee = BigNumber(selectedPoolInfo.quoteOutput.tokenOutFee || "0");
+
+    if (selectedPoolInfo.pool.poolType === "aox" || selectedPoolInfo.pool.poolType === "vento") {
+      if (sendToken.processId === AR_PROCESS_ID) {
+        tokenInFee = tokenInFee.plus(networkFee);
+      } else {
+        tokenOutFee = tokenOutFee.plus(networkFee);
+      }
+    }
 
     const formatFee = (amount: BigNumber, token: TokenInfo) =>
       `${toFixed(amount.shiftedBy(-token.Denomination), 8)} ${token.Ticker}`;

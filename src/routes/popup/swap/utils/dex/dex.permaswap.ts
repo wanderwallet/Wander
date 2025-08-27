@@ -108,7 +108,6 @@ export async function getExpectedOutput({
     poolAmountIn,
     tokenInFee,
     tokenOutFee,
-    networkFee: "0",
     transferAmountIn: amountInWithoutWanderFee,
     type: "permaswap",
   } satisfies GetExpectedOutputResponse;

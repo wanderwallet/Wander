@@ -51,15 +51,13 @@ export async function getExpectedOutput({
   tokenIn,
   amountIn,
   wanderFee,
-  networkFee,
 }: GetExpectedOutputParams): Promise<GetExpectedOutputResponse> {
   const isARToVAR = tokenIn === AR_PROCESS_ID;
   const amountInBN = BigNumber(amountIn);
   const mintOrBurnFee = amountInBN.dividedBy(100).toFixed(0, BigNumber.ROUND_DOWN); // 1% fee
-  const networkProviderFee = BigNumber(networkFee).plus(mintOrBurnFee);
-  const networkWanderFee = BigNumber(networkFee).plus(wanderFee);
-  const totalFee = BigNumber(mintOrBurnFee).plus(networkWanderFee);
-  const transferAmountIn = amountInBN.minus(networkWanderFee).toFixed(0, BigNumber.ROUND_DOWN);
+  const providerFee = BigNumber(mintOrBurnFee);
+  const totalFee = BigNumber(mintOrBurnFee).plus(wanderFee);
+  const transferAmountIn = amountInBN.minus(wanderFee).toFixed(0, BigNumber.ROUND_DOWN);
   const amountOut = amountInBN.minus(totalFee).toFixed(0, BigNumber.ROUND_DOWN);
 
   return {
@@ -70,10 +68,9 @@ export async function getExpectedOutput({
     transferAmountIn,
     minAmountOut: amountOut,
     poolAmountIn: transferAmountIn,
-    tokenOutFee: isARToVAR ? "0" : networkProviderFee.toFixed(0, BigNumber.ROUND_DOWN),
-    tokenInFee: isARToVAR ? networkProviderFee.toFixed(0, BigNumber.ROUND_DOWN) : "0",
+    tokenOutFee: isARToVAR ? "0" : providerFee.toFixed(0, BigNumber.ROUND_DOWN),
+    tokenInFee: isARToVAR ? providerFee.toFixed(0, BigNumber.ROUND_DOWN) : "0",
     wanderFee,
-    networkFee,
     type: "vento",
   } satisfies GetExpectedOutputResponse;
 }

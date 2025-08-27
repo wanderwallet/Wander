@@ -80,7 +80,6 @@ interface usePoolForTokenPairProps {
   slippage?: number;
   amountIn?: string;
   wanderFeePercent?: number;
-  networkFee?: string;
 }
 
 export function usePoolForTokenPair({
@@ -89,7 +88,6 @@ export function usePoolForTokenPair({
   slippage,
   amountIn,
   wanderFeePercent,
-  networkFee,
 }: usePoolForTokenPairProps) {
   const { tokenPools } = useGroupedPoolsByTokenPair();
   const [isLoading, setIsLoading] = useState(false);
@@ -125,14 +123,7 @@ export function usePoolForTokenPair({
         .toFixed(0, BigNumber.ROUND_FLOOR);
 
       if (AOX_BRIDGE_TOKEN_IDS.has(tokenIn) && AOX_BRIDGE_TOKEN_IDS.has(tokenOut)) {
-        const validationError = validateAoxBridgeTransaction(
-          amountIn,
-          wanderFee,
-          networkFee,
-          aoxBridgeInfo,
-          tokenIn,
-          tokenOut,
-        );
+        const validationError = validateAoxBridgeTransaction(amountIn, wanderFee, aoxBridgeInfo, tokenIn, tokenOut);
         if (validationError) {
           setError(validationError);
           return;
@@ -144,7 +135,6 @@ export function usePoolForTokenPair({
           tokenIn,
           amountIn,
           wanderFee,
-          networkFee,
         });
 
         setSelectedPoolInfo({
@@ -159,14 +149,7 @@ export function usePoolForTokenPair({
       }
 
       if (VENTO_BRIDGE_TOKEN_IDS.has(tokenIn) && VENTO_BRIDGE_TOKEN_IDS.has(tokenOut)) {
-        const validationError = validateVentoBridgeTransaction(
-          amountIn,
-          wanderFee,
-          networkFee,
-          ventoBridgeInfo,
-          tokenIn,
-          tokenOut,
-        );
+        const validationError = validateVentoBridgeTransaction(amountIn, wanderFee, ventoBridgeInfo, tokenIn, tokenOut);
         if (validationError) {
           setError(validationError);
           return;
@@ -178,7 +161,6 @@ export function usePoolForTokenPair({
           tokenIn,
           amountIn,
           wanderFee,
-          networkFee,
         });
 
         setSelectedPoolInfo({
@@ -206,7 +188,6 @@ export function usePoolForTokenPair({
         amountIn,
         slippage,
         wanderFee,
-        networkFee,
       };
 
       const [botegaResponse, permaswapResponse] = await Promise.allSettled([
@@ -256,7 +237,7 @@ export function usePoolForTokenPair({
     } finally {
       setIsLoading(false);
     }
-  }, [tokenIn, tokenOut, pairPools, slippage, amountIn, aoxBridgeInfo, ventoBridgeInfo, wanderFeePercent, networkFee]);
+  }, [tokenIn, tokenOut, pairPools, slippage, amountIn, aoxBridgeInfo, ventoBridgeInfo, wanderFeePercent]);
 
   return { selectedPoolInfo, isLoading, error };
 }
@@ -304,7 +285,6 @@ export function usePoolQuote({
         amountIn,
         slippage,
         wanderFee,
-        networkFee: "0",
       };
 
       const output = await getExpectedOutputFn(pool.poolType, { poolId: pool.poolId, ...params });
