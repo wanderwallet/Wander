@@ -545,104 +545,184 @@ export function useSwapReceiveToken() {
   return useStorage<TokenInfo>({ key: "swap_receive_token", instance: ExtensionStorage }, WNDR_TOKEN_INFO);
 }
 
-const emptyResponse = {
+const EMPTY_RESPONSE = {
   txs: [],
   hasNextPage: false,
   cursor: "",
+} as const;
+
+const SWAP_SOURCES = [
+  { name: "botega", queryFn: getBotegaTransactions, defaultCursor: "" },
+  { name: "permaswap", queryFn: getPermaswapTransactions, defaultCursor: "" },
+  { name: "aox", queryFn: getAoxBridgeTransactions, defaultCursor: "0" },
+  { name: "vento", queryFn: getVentoBridgeTransactions, defaultCursor: "" },
+] as const;
+
+interface PageParam {
+  botegaCursor: string;
+  permaswapCursor: string;
+  aoxCursor: string;
+  ventoCursor: string;
+  skipBotega: boolean;
+  skipPermaswap: boolean;
+  skipAox: boolean;
+  skipVento: boolean;
+}
+
+interface TransactionPage {
+  transactions: ParsedSwapTransaction[];
+  actualCount: number;
+  nextPageParam?: PageParam;
+}
+
+const sortTransactionsByTimestamp = (a: ParsedSwapTransaction, b: ParsedSwapTransaction) => {
+  const timestampA = a.timestamp || Number.MAX_SAFE_INTEGER;
+  const timestampB = b.timestamp || Number.MAX_SAFE_INTEGER;
+  return timestampB - timestampA;
 };
 
-const defaultCursors = ["", "", "0", ""];
-const defaultHasNextPages = [true, true, true, true];
+const hasChangedCursor = (newCursor: string, oldCursor: string) => newCursor !== oldCursor;
+
+const hasNextPageData = (data: any, newCursor: string, oldCursor: string) =>
+  data.hasNextPage && hasChangedCursor(newCursor, oldCursor);
 
 export const useSwapTransactions = () => {
   const activeAddress = useActiveAddress();
-  const [cursors, setCursors] = useState(defaultCursors);
-  const [hasNextPages, setHasNextPages] = useState(defaultHasNextPages);
-  const [transactions, setTransactions] = useState<ParsedSwapTransaction[]>([]);
-  const [loading, setLoading] = useState(false);
 
-  const hasNextPage = useMemo(() => hasNextPages.some((v) => v === true), [hasNextPages]);
+  const { data, fetchNextPage, hasNextPage, isLoading, isFetching, isFetchingNextPage } =
+    useInfiniteQuery<TransactionPage>({
+      queryKey: ["swapTransactions", activeAddress],
+      queryFn: async ({ pageParam }): Promise<TransactionPage> => {
+        if (!activeAddress) {
+          throw new Error("No active address provided");
+        }
 
-  const fetchTransactions = useCallback(async () => {
-    try {
-      if (!activeAddress || !hasNextPage) return;
+        const {
+          botegaCursor = "",
+          permaswapCursor = "",
+          aoxCursor = "0",
+          ventoCursor = "",
+          skipBotega = false,
+          skipPermaswap = false,
+          skipAox = false,
+          skipVento = false,
+        } = (pageParam as PageParam) || {};
 
-      setLoading(true);
+        // Execute all queries in parallel
+        const cursors = [botegaCursor, permaswapCursor, aoxCursor, ventoCursor];
+        const skipFlags = [skipBotega, skipPermaswap, skipAox, skipVento];
 
-      const queriesFn = [
-        getBotegaTransactions,
-        getPermaswapTransactions,
-        getAoxBridgeTransactions,
-        getVentoBridgeTransactions,
-      ];
+        const results = await Promise.allSettled(
+          SWAP_SOURCES.map((source, idx) =>
+            !skipFlags[idx] ? source.queryFn(activeAddress, cursors[idx]) : Promise.resolve(EMPTY_RESPONSE),
+          ),
+        );
 
-      const [botegaResult, permaswapResult, aoxResult, ventoResult] = await Promise.allSettled(
-        queriesFn.map((queryFn, idx) => {
-          return hasNextPages[idx] ? queryFn(activeAddress, cursors[idx]) : Promise.resolve(emptyResponse);
-        }),
-      );
+        // Process results and extract data
+        const dataResults = results.map((result) => (result.status === "fulfilled" ? result.value : EMPTY_RESPONSE));
 
-      const botegaData = botegaResult.status === "fulfilled" ? botegaResult.value : emptyResponse;
-      const permaswapData = permaswapResult.status === "fulfilled" ? permaswapResult.value : emptyResponse;
-      const aoxData = aoxResult.status === "fulfilled" ? aoxResult.value : emptyResponse;
-      const ventoData = ventoResult.status === "fulfilled" ? ventoResult.value : emptyResponse;
+        const [botegaData, permaswapData, aoxData, ventoData] = dataResults;
 
-      setCursors([botegaData.cursor, permaswapData.cursor, aoxData.cursor, ventoData.cursor]);
-      setHasNextPages([botegaData.hasNextPage, permaswapData.hasNextPage, aoxData.hasNextPage, ventoData.hasNextPage]);
+        // Combine and sort transactions
+        const combinedTransactions = [...botegaData.txs, ...permaswapData.txs, ...aoxData.txs, ...ventoData.txs].sort(
+          sortTransactionsByTimestamp,
+        );
 
-      let combinedTransactions: ParsedSwapTransaction[] = [
-        ...botegaData.txs,
-        ...permaswapData.txs,
-        ...aoxData.txs,
-        ...ventoData.txs,
-      ];
+        // Calculate new cursors and pagination state
+        const newCursors = [
+          hasChangedCursor(botegaData.cursor, botegaCursor) ? botegaData.cursor : botegaCursor,
+          hasChangedCursor(permaswapData.cursor, permaswapCursor) ? permaswapData.cursor : permaswapCursor,
+          hasChangedCursor(aoxData.cursor, aoxCursor) ? aoxData.cursor : aoxCursor,
+          hasChangedCursor(ventoData.cursor, ventoCursor) ? ventoData.cursor : ventoCursor,
+        ];
 
-      combinedTransactions.sort((a: ParsedSwapTransaction, b: ParsedSwapTransaction) => {
-        const timestampA = a.timestamp || Number.MAX_SAFE_INTEGER;
-        const timestampB = b.timestamp || Number.MAX_SAFE_INTEGER;
-        return timestampB - timestampA;
-      });
+        const hasNextPageFlags = [
+          hasNextPageData(botegaData, newCursors[0], botegaCursor),
+          hasNextPageData(permaswapData, newCursors[1], permaswapCursor),
+          hasNextPageData(aoxData, newCursors[2], aoxCursor),
+          hasNextPageData(ventoData, newCursors[3], ventoCursor),
+        ];
 
-      setTransactions((prev) => [...prev, ...combinedTransactions]);
-    } catch (error) {
-      console.error("Error fetching transactions", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [activeAddress, hasNextPage, cursors, hasNextPages]);
+        const hasNext = hasNextPageFlags.some(Boolean);
 
-  useEffect(() => {
-    setCursors(defaultCursors);
-    setHasNextPages(defaultHasNextPages);
-    setTransactions([]);
-    fetchTransactions();
-  }, [activeAddress]);
+        return {
+          transactions: combinedTransactions,
+          actualCount: combinedTransactions.length,
+          nextPageParam: hasNext
+            ? {
+                botegaCursor: newCursors[0],
+                permaswapCursor: newCursors[1],
+                aoxCursor: newCursors[2],
+                ventoCursor: newCursors[3],
+                skipBotega: !hasNextPageFlags[0] || botegaData.txs.length === 0,
+                skipPermaswap: !hasNextPageFlags[1] || permaswapData.txs.length === 0,
+                skipAox: !hasNextPageFlags[2] || aoxData.txs.length === 0,
+                skipVento: !hasNextPageFlags[3] || ventoData.txs.length === 0,
+              }
+            : undefined,
+        };
+      },
+      getNextPageParam: (lastPage) => lastPage.nextPageParam,
+      initialPageParam: {
+        botegaCursor: "",
+        permaswapCursor: "",
+        aoxCursor: "0",
+        ventoCursor: "",
+        skipBotega: false,
+        skipPermaswap: false,
+        skipAox: false,
+        skipVento: false,
+      } as PageParam,
+      enabled: !!activeAddress,
+      ...defaultOptions,
+    });
+
+  const transactions = useMemo(() => {
+    if (!data?.pages) return [];
+
+    const seenIds = new Set<string>();
+    return data.pages
+      .flatMap((page) => page.transactions)
+      .filter((tx) => {
+        if (seenIds.has(tx.txId)) return false;
+        seenIds.add(tx.txId);
+        return true;
+      })
+      .sort(sortTransactionsByTimestamp);
+  }, [data]);
+
+  const count = useMemo(() => {
+    if (!data?.pages) return { current: 0, actual: 0 };
+    return {
+      current: transactions.length,
+      actual: data.pages.reduce((sum, page) => sum + page.actualCount, 0),
+    };
+  }, [data, transactions]);
 
   return {
     transactions,
-    loading,
-    hasNextPage,
-    fetchTransactions,
+    loading: isLoading || isFetching || isFetchingNextPage,
+    hasNextPage: !!hasNextPage,
+    count,
+    fetchTransactions: fetchNextPage,
   };
 };
 
 export function useSwapTransaction(txId: string) {
-  const [transaction, setTransaction] = useState<ParsedSwapTransaction | null>(null);
-  const [loading, setLoading] = useState(false);
+  const {
+    data: transaction,
+    isLoading: loading,
+    error,
+  } = useQuery({
+    queryKey: ["swapTransaction", txId],
+    queryFn: () => getSwapTransaction(txId),
+    enabled: !!txId,
+    ...defaultOptions,
+  });
 
-  useAsyncEffect(async () => {
-    if (!txId) return;
-
-    setLoading(true);
-    try {
-      const transaction = await getSwapTransaction(txId);
-      setTransaction(transaction);
-    } catch (error) {
-      console.error("Error fetching transaction", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [txId]);
-
-  return { transaction, loading };
+  return {
+    transaction: transaction || null,
+    loading,
+    error,
+  };
 }

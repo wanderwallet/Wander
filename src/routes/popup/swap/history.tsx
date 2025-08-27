@@ -29,13 +29,18 @@ export function SwapHistoryView() {
 
       <Wrapper>
         <Flex gap={12} direction="column">
-          {transactions.map((tx, index) => (
-            <SwapHistoryListItem key={`${tx.txId}-${index}`} tx={tx} />
-          ))}
-          {!loading && transactions.length === 0 && (
-            <Text size="md" weight="medium" noMargin style={{ textAlign: "center" }}>
-              {browser.i18n.getMessage("no_transactions")}
-            </Text>
+          {transactions.length > 0 ? (
+            transactions.map((tx, index) => <SwapHistoryListItem key={`${tx.txId}-${index}`} tx={tx} />)
+          ) : (
+            <Empty>
+              {loading ? (
+                <Loading style={{ height: "20px", width: "20px" }} />
+              ) : (
+                <Text size="md" weight="medium" noMargin style={{ textAlign: "center" }}>
+                  {browser.i18n.getMessage("no_transactions")}
+                </Text>
+              )}
+            </Empty>
           )}
         </Flex>
         {hasNextPage && (
@@ -43,7 +48,7 @@ export function SwapHistoryView() {
             fullWidth
             disabled={!hasNextPage || loading}
             style={{ alignSelf: "center", marginTop: "5px" }}
-            onClick={fetchTransactions}>
+            onClick={() => fetchTransactions()}>
             {loading ? (
               <>
                 Loading <Loading style={{ margin: "0.18rem" }} />
@@ -154,3 +159,18 @@ const Wrapper = styled(Section)`
   overflow-y: auto;
   gap: 12px;
 `;
+
+const Empty = styled.div`
+  width: 100%;
+  height: calc(100% - 64.59px);
+  margin-top: 50%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+`;
+
+const TitleMessage = styled(Text).attrs({
+  weight: "semibold",
+  noMargin: true,
+})``;
