@@ -1,9 +1,6 @@
 import type { Alarms } from "webextension-polyfill";
 import browser from "webextension-polyfill";
-import { swapsArray } from "../../swap.utils";
-import { botega } from "../../dex/dex.botega";
-import { permaswap } from "../../dex/dex.permaswap";
-import { aox } from "../../bridge/bridge.aox";
+import { swapsArray, waitForSwapResultFn } from "../../swap.utils";
 import { PoolTypeEnum } from "../../swap.constants";
 import { queryClient } from "~utils/tanstack";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
@@ -87,16 +84,8 @@ async function checkSingleSwap(swap: SwapData) {
 
   const poolType = swap.selectedPoolInfo.pool.poolType;
 
-  // Select appropriate status checking function
-  const waitForSwapResultFn =
-    poolType === PoolTypeEnum.BOTEGA
-      ? botega.waitForSwapResult
-      : poolType === PoolTypeEnum.AOX
-        ? aox.waitForSwapResult
-        : permaswap.waitForSwapResult;
-
   try {
-    const { success, result } = await waitForSwapResultFn(swap.transferId);
+    const { success, result } = await waitForSwapResultFn(poolType, swap.transferId);
 
     if (success) {
       const expectedOutput = swap.selectedPoolInfo.quoteOutput.amountOut;

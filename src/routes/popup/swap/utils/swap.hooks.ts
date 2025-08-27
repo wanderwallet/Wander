@@ -1,5 +1,13 @@
 import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
-import { BRIDGE_TOKEN_IDS, getPools, getPriceImpact, getSwapTransaction, processToken } from "./swap.utils";
+import {
+  AOX_BRIDGE_TOKEN_IDS,
+  getExpectedOutputFn,
+  getPools,
+  getPriceImpact,
+  getSwapTransaction,
+  processToken,
+  VENTO_BRIDGE_TOKEN_IDS,
+} from "./swap.utils";
 import { defaultOptions, useAoTokens } from "~tokens/hooks";
 import { useMemo, useCallback, useState, useEffect } from "react";
 import type {
@@ -17,15 +25,27 @@ import { botega } from "./dex/dex.botega";
 import { permaswap } from "./dex/dex.permaswap";
 import type { GetLiquidityResponse } from "./dex/dex.types";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
-import { AR_PROCESS_ID, AR_TOKEN_INFO } from "~tokens/aoTokens/ao.constants";
+import {
+  AR_PROCESS_ID,
+  AR_TOKEN_INFO,
+  VAR_PROCESS_ID,
+  VAR_TOKEN_INFO,
+  WAR_PROCESS_ID,
+  WAR_TOKEN_INFO,
+} from "~tokens/aoTokens/ao.constants";
 import { aox } from "./bridge/bridge.aox";
 import { retryWithGateways } from "~gateways/wayfinder";
-import { useBridgeInfo } from "./bridge/bridge.hooks";
+import { useAoxBridgeInfo, useVentoBridgeInfo } from "./bridge/bridge.hooks";
 import { PoolTypeEnum } from "./swap.constants";
-import { getAoxTransactions, validateBridgeTransaction } from "./bridge/bridge.utils";
+import {
+  getAoxBridgeTransactions,
+  validateAoxBridgeTransaction,
+  validateVentoBridgeTransaction,
+} from "./bridge/bridge.utils";
 import { getBotegaTransactions, getPermaswapTransactions } from "./dex/dex.utils";
 import { useActiveAddress } from "~wallets/hooks";
 import BigNumber from "bignumber.js";
+import { vento, VENTO_BRIDGE_ADDRESS } from "./bridge/bridge.vento";
 
 export function usePools() {
   return useQuery({
@@ -44,7 +64,7 @@ export function useGroupedPoolsByTokenPair() {
         // .sort((a, b) => +a.poolFee - +b.poolFee)
         .reduce((acc, pool) => {
           const key = [pool.tokenX, pool.tokenY].sort().join("-");
-          if (!acc[key]) acc[key] = { botega: [], permaswap: [], aox: [] };
+          if (!acc[key]) acc[key] = { botega: [], permaswap: [], aox: [], vento: [] };
           acc[key][pool.poolType].push(pool);
           return acc;
         }, {})
@@ -75,12 +95,17 @@ export function usePoolForTokenPair({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedPoolInfo, setSelectedPoolInfo] = useState<SelectedPoolInfo | null>(null);
-  const { data: bridgeInfo } = useBridgeInfo({ enabled: tokenIn === AR_PROCESS_ID });
+  const { data: aoxBridgeInfo } = useAoxBridgeInfo({
+    enabled: tokenIn === AR_PROCESS_ID && tokenOut === WAR_PROCESS_ID,
+  });
+  const { data: ventoBridgeInfo } = useVentoBridgeInfo({
+    enabled: tokenIn === AR_PROCESS_ID && tokenOut === VAR_PROCESS_ID,
+  });
 
   const pairPools = useMemo(() => {
-    if (!tokenIn || !tokenOut) return { botega: [], permaswap: [], aox: [] };
+    if (!tokenIn || !tokenOut) return { botega: [], permaswap: [], aox: [], vento: [] };
     const key = [tokenIn, tokenOut].sort().join("-");
-    return tokenPools[key] || { botega: [], permaswap: [], aox: [] };
+    return tokenPools[key] || { botega: [], permaswap: [], aox: [], vento: [] };
   }, [tokenPools, tokenIn, tokenOut]);
 
   useAsyncEffect(async () => {
@@ -99,12 +124,12 @@ export function usePoolForTokenPair({
         .dividedBy(100)
         .toFixed(0, BigNumber.ROUND_FLOOR);
 
-      if (BRIDGE_TOKEN_IDS.has(tokenIn) && BRIDGE_TOKEN_IDS.has(tokenOut)) {
-        const validationError = validateBridgeTransaction(
+      if (AOX_BRIDGE_TOKEN_IDS.has(tokenIn) && AOX_BRIDGE_TOKEN_IDS.has(tokenOut)) {
+        const validationError = validateAoxBridgeTransaction(
           amountIn,
           wanderFee,
           networkFee,
-          bridgeInfo,
+          aoxBridgeInfo,
           tokenIn,
           tokenOut,
         );
@@ -125,6 +150,40 @@ export function usePoolForTokenPair({
         setSelectedPoolInfo({
           pool: pairPools?.aox?.[0],
           quoteOutput: aoxOutput,
+          priceImpact: "0.00",
+        });
+
+        setError(null);
+
+        return;
+      }
+
+      if (VENTO_BRIDGE_TOKEN_IDS.has(tokenIn) && VENTO_BRIDGE_TOKEN_IDS.has(tokenOut)) {
+        const validationError = validateVentoBridgeTransaction(
+          amountIn,
+          wanderFee,
+          networkFee,
+          ventoBridgeInfo,
+          tokenIn,
+          tokenOut,
+        );
+        if (validationError) {
+          setError(validationError);
+          return;
+        }
+
+        const ventoPool = pairPools?.vento?.[0];
+        const ventoOutput = await vento.getExpectedOutput({
+          poolId: ventoPool.poolId,
+          tokenIn,
+          amountIn,
+          wanderFee,
+          networkFee,
+        });
+
+        setSelectedPoolInfo({
+          pool: pairPools?.vento?.[0],
+          quoteOutput: ventoOutput,
           priceImpact: "0.00",
         });
 
@@ -197,7 +256,7 @@ export function usePoolForTokenPair({
     } finally {
       setIsLoading(false);
     }
-  }, [tokenIn, tokenOut, pairPools, slippage, amountIn, bridgeInfo, wanderFeePercent, networkFee]);
+  }, [tokenIn, tokenOut, pairPools, slippage, amountIn, aoxBridgeInfo, ventoBridgeInfo, wanderFeePercent, networkFee]);
 
   return { selectedPoolInfo, isLoading, error };
 }
@@ -248,9 +307,7 @@ export function usePoolQuote({
         networkFee: "0",
       };
 
-      const output = await (pool.poolType === PoolTypeEnum.BOTEGA
-        ? botega.getExpectedOutput({ poolId: pool.poolId, ...params })
-        : permaswap.getExpectedOutput({ poolId: pool.poolId, ...params }));
+      const output = await getExpectedOutputFn(pool.poolType, { poolId: pool.poolId, ...params });
 
       if (!output) {
         log(LOG_GROUP.SWAP, "No final output found");
@@ -292,7 +349,8 @@ export function usePoolQuote({
       !amountIn ||
       !pool ||
       stopFetching ||
-      (BRIDGE_TOKEN_IDS.has(tokenIn) && BRIDGE_TOKEN_IDS.has(tokenOut))
+      (AOX_BRIDGE_TOKEN_IDS.has(tokenIn) && AOX_BRIDGE_TOKEN_IDS.has(tokenOut)) ||
+      (VENTO_BRIDGE_TOKEN_IDS.has(tokenIn) && VENTO_BRIDGE_TOKEN_IDS.has(tokenOut))
     ) {
       return;
     }
@@ -316,6 +374,8 @@ export function useTokens() {
     const uniqueTokens = new Map();
 
     processToken(uniqueTokens, AR_TOKEN_INFO);
+    processToken(uniqueTokens, WAR_TOKEN_INFO);
+    processToken(uniqueTokens, VAR_TOKEN_INFO);
 
     for (const pool of pools) {
       // Process token X
@@ -432,15 +492,21 @@ export function useSwapSlippage() {
   return useStorage({ key: "swap_selected_slippage", instance: ExtensionStorage }, 0.5);
 }
 
-export function useARNetworkFee({ tokenID, note }: { tokenID: string; note?: string }) {
+export function useARNetworkFee({ tokenIn, tokenOut }: { tokenIn: string; tokenOut: string }) {
   const [networkFee, setNetworkFee] = useState<string>("0");
-  const { data: bridgeInfo, isLoading: isBridgeInfoLoading } = useBridgeInfo({
-    enabled: tokenID === AR_PROCESS_ID,
+  const isAoxBridge = useMemo(() => tokenIn === AR_PROCESS_ID && tokenOut === WAR_PROCESS_ID, [tokenIn, tokenOut]);
+  const { data: aoxBridgeInfo, isLoading: isBridgeInfoLoading } = useAoxBridgeInfo({
+    enabled: isAoxBridge,
   });
   const [isLoading, setIsLoading] = useState(false);
 
   useAsyncEffect(async () => {
-    if (!tokenID || tokenID !== AR_PROCESS_ID || isBridgeInfoLoading || !bridgeInfo) {
+    if (
+      !tokenIn ||
+      !tokenOut ||
+      tokenIn !== AR_PROCESS_ID ||
+      (isAoxBridge && (!aoxBridgeInfo || isBridgeInfoLoading))
+    ) {
       setNetworkFee("0");
       return;
     }
@@ -448,13 +514,8 @@ export function useARNetworkFee({ tokenID, note }: { tokenID: string; note?: str
     setIsLoading(true);
 
     try {
-      let byte = 0;
-      if (note) {
-        byte = new TextEncoder().encode(note).byteLength;
-      }
-
       const { result: txPrice } = await retryWithGateways((arweave) =>
-        arweave.transactions.getPrice(byte, bridgeInfo.arToken.locker),
+        arweave.transactions.getPrice(0, isAoxBridge ? aoxBridgeInfo.arToken.locker : VENTO_BRIDGE_ADDRESS),
       );
 
       // twice the network fee to account for the wander fee to be paid
@@ -465,7 +526,7 @@ export function useARNetworkFee({ tokenID, note }: { tokenID: string; note?: str
     } finally {
       setIsLoading(false);
     }
-  }, [tokenID, note, bridgeInfo]);
+  }, [tokenIn, tokenOut, aoxBridgeInfo, isAoxBridge]);
 
   return { networkFee, isLoading };
 }
@@ -498,7 +559,7 @@ export const useSwapTransactions = () => {
 
       setLoading(true);
 
-      const queriesFn = [getBotegaTransactions, getPermaswapTransactions, getAoxTransactions];
+      const queriesFn = [getBotegaTransactions, getPermaswapTransactions, getAoxBridgeTransactions];
 
       const [botegaResult, permaswapResult, aoxResult] = await Promise.allSettled(
         queriesFn.map((queryFn, idx) => {

@@ -17,12 +17,15 @@ import { useLocation } from "~wallets/router/router.utils";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import { TokenValueWithTooltip } from "./components/TokenValueWithTooltip";
 import { TransactionDetailItem } from "./components/TransactionDetailItem";
-import { botega } from "./utils/dex/dex.botega";
-import { permaswap } from "./utils/dex/dex.permaswap";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
-import { getPriceImpactColor, getProviderName, getSwapTime, swapsArray, toFixed } from "./utils/swap.utils";
-import { PoolTypeEnum } from "./utils/swap.constants";
-import { aox } from "./utils/bridge/bridge.aox";
+import {
+  executeSwapFn,
+  getPriceImpactColor,
+  getProviderName,
+  getSwapTime,
+  swapsArray,
+  toFixed,
+} from "./utils/swap.utils";
 import { useDefiFeeDetails } from "~utils/tier/hooks";
 import { PageType, trackPage } from "~utils/analytics";
 import { startSwapMonitoring } from "./utils/alarms/swap-monitor/swap-monitor-alarm.handler";
@@ -36,7 +39,10 @@ export function SwapReviewView() {
 
   const { sendToken, receiveToken, wanderFee, slippage, amountIn } = swapData || {};
 
-  const { networkFee, isLoading: isNetworkFeeLoading } = useARNetworkFee({ tokenID: sendToken?.processId });
+  const { networkFee, isLoading: isNetworkFeeLoading } = useARNetworkFee({
+    tokenIn: sendToken?.processId,
+    tokenOut: receiveToken?.processId,
+  });
 
   const { selectedPoolInfo: selectedPoolInfoQuote, isLoading } = usePoolQuote({
     tokenIn: sendToken?.processId,
@@ -125,13 +131,6 @@ export function SwapReviewView() {
 
       const poolType = selectedPoolInfo?.pool?.poolType;
 
-      const executeSwapFn =
-        poolType === PoolTypeEnum.BOTEGA
-          ? botega.executeSwap
-          : poolType === PoolTypeEnum.PERMASWAP
-            ? permaswap.executeSwap
-            : aox.executeSwap;
-
       const tags = [
         { name: "X-Client", value: "Roam" }, // TODO: change this to the actual client name
         { name: "X-Type", value: "Swap" },
@@ -148,7 +147,7 @@ export function SwapReviewView() {
             Ticker: sendToken.Ticker,
             Denomination: sendToken.Denomination,
             Logo: sendToken.Logo,
-            processId: sendToken.processId || sendToken.id,
+            processId: sendToken.processId,
           }),
         },
         {
@@ -158,14 +157,14 @@ export function SwapReviewView() {
             Ticker: receiveToken.Ticker,
             Denomination: receiveToken.Denomination,
             Logo: receiveToken.Logo,
-            processId: receiveToken.processId || receiveToken.id,
+            processId: receiveToken.processId,
           }),
         },
         { name: "X-Amount-In", value: amountIn },
         { name: "X-Amount-Out", value: selectedPoolInfo.quoteOutput.amountOut },
       ];
 
-      const transferId = await executeSwapFn({
+      const transferId = await executeSwapFn(poolType, {
         tokenIn: sendToken?.processId,
         tokenOut: receiveToken?.processId,
         amountIn: selectedPoolInfo.quoteOutput.transferAmountIn,

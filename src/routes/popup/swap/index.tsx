@@ -21,17 +21,13 @@ import { TempTransactionStorage } from "~utils/storage";
 import { useLocation, useSearchParams } from "~wallets/router/router.utils";
 import { AutoTag } from "./components/AutoTag";
 import { WanderFeeTag } from "./components/WanderFeeTag";
-import { AR_PROCESS_ID, USDA_TOKEN_INFO, WAR_TOKEN_INFO, WNDR_TOKEN_INFO } from "~tokens/aoTokens/ao.constants";
+import { USDA_TOKEN_INFO, WNDR_TOKEN_INFO } from "~tokens/aoTokens/ao.constants";
 import { getErrorMessage, validateAmount } from "../send/amount";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import { toFixed } from "./utils/swap.utils";
 import { PageType, trackPage } from "~utils/analytics";
 import { TransactionDetailItem } from "./components/TransactionDetailItem";
-
-const usdaToken = USDA_TOKEN_INFO;
-const wndrToken = WNDR_TOKEN_INFO;
-const wARToken = WAR_TOKEN_INFO;
 
 export function SwapView() {
   const theme = useTheme();
@@ -42,11 +38,14 @@ export function SwapView() {
   const defiFeeDetails = useDefiFeeDetails();
   const [openTokenSelector, setOpenTokenSelector] = useState(false);
   const [valueIn, setValueIn] = useState("");
-  const [sendToken, setSendToken] = useState<TokenInfo>(usdaToken);
-  const [receiveToken, setReceiveToken] = useState<TokenInfo>(wndrToken);
+  const [sendToken, setSendToken] = useState<TokenInfo>(USDA_TOKEN_INFO);
+  const [receiveToken, setReceiveToken] = useState<TokenInfo>(WNDR_TOKEN_INFO);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [tokenSelectorType, setTokenSelectorType] = useState<TokenSelectorType>("send");
-  const { networkFee, isLoading: isNetworkFeeLoading } = useARNetworkFee({ tokenID: sendToken.processId });
+  const { networkFee, isLoading: isNetworkFeeLoading } = useARNetworkFee({
+    tokenIn: sendToken.processId,
+    tokenOut: receiveToken.processId,
+  });
   const debouncedValueIn = useDebounce(valueIn, 300);
 
   const { data: balanceIn = "0", isLoading: balanceInLoading } = useTokenBalance(sendToken, activeAddress);
@@ -147,9 +146,6 @@ export function SwapView() {
   function handleUpdateToken(token: TokenInfo) {
     if (tokenSelectorType === "send") {
       setSendToken(token);
-      if (token.processId === AR_PROCESS_ID) {
-        setReceiveToken(wARToken);
-      }
     } else {
       setReceiveToken(token);
     }
@@ -172,7 +168,7 @@ export function SwapView() {
 
     await TempTransactionStorage.set("swap-data", swapData);
 
-    navigate("/swap/review");
+    navigate(PopupPaths.SwapReview);
   }
 
   useEffect(() => {

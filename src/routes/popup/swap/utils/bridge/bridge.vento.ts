@@ -12,33 +12,36 @@ import type {
 } from "../dex/dex.types";
 import { freeDecryptedWallet } from "~wallets/encryption";
 import { isLocalWallet } from "~utils/assertions";
-import { OrderError } from "../dex/dex.utils";
 import { retryWithDelay } from "~utils/promises/retry";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { queryClient } from "~utils/tanstack";
-import { getAoxBridgeInfo, getAoxBridgeTransaction } from "./bridge.utils";
-import { defaultOptions } from "~tokens/hooks";
+import { getVentoBridgeTransaction } from "./bridge.utils";
 import { findGateway } from "~gateways/wayfinder";
 import Arweave from "arweave";
 import browser from "webextension-polyfill";
-import { AR_PROCESS_ID, WAR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
+import { AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 import { createDataItemSigner } from "~tokens/aoTokens/ao";
 import type { DecodedTag } from "~api/modules/sign/tags";
 import BigNumber from "bignumber.js";
+import { OrderError } from "../dex/dex.utils";
+
+export const VENTO_BRIDGE_ADDRESS = "mFRKcHsO6Tlv2E2wZcrcbv3mmzxzD7vYPbyybI3KCVA";
 
 /**
  * Fetch the result of a swap message
  */
 export async function readSwapResult(orderID: string): Promise<ReadSwapResultResponse> {
-  const transaction = await getAoxBridgeTransaction(orderID);
+  const transaction = await getVentoBridgeTransaction(orderID);
 
-  const isError = transaction.status === "error";
-  if (isError) throw new OrderError(transaction.status);
+  if (transaction.failureReason && transaction.failureReason !== "") {
+    throw new OrderError(transaction.failureReason);
+  }
 
-  const statusSuccess = transaction.status === "success";
-  if (!statusSuccess) throw new Error("Transaction not success yet");
+  if (transaction.status !== "filled") {
+    throw new Error("Transaction not filled yet");
+  }
 
-  return { amountOut: transaction.quantity, confirmationTxId: transaction.targetChainTxHash };
+  return { amountOut: transaction.outputAmountRaw, confirmationTxId: transaction.outputTxId };
 }
 
 const aoInstance = connect(defaultConfig);
@@ -50,15 +53,9 @@ export async function getExpectedOutput({
   wanderFee,
   networkFee,
 }: GetExpectedOutputParams): Promise<GetExpectedOutputResponse> {
-  const bridgeInfo = await queryClient.fetchQuery({
-    queryKey: ["aox-bridge-info"],
-    queryFn: getAoxBridgeInfo,
-    ...defaultOptions,
-  });
-
-  const isARToWAR = tokenIn === AR_PROCESS_ID;
+  const isARToVAR = tokenIn === AR_PROCESS_ID;
   const amountInBN = BigNumber(amountIn);
-  const mintOrBurnFee = isARToWAR ? bridgeInfo.warToken.mintFee : bridgeInfo.warToken.burnFee;
+  const mintOrBurnFee = amountInBN.dividedBy(100).toFixed(0, BigNumber.ROUND_DOWN); // 1% fee
   const networkProviderFee = BigNumber(networkFee).plus(mintOrBurnFee);
   const networkWanderFee = BigNumber(networkFee).plus(wanderFee);
   const totalFee = BigNumber(mintOrBurnFee).plus(networkWanderFee);
@@ -73,23 +70,17 @@ export async function getExpectedOutput({
     transferAmountIn,
     minAmountOut: amountOut,
     poolAmountIn: transferAmountIn,
-    tokenOutFee: isARToWAR ? "0" : networkProviderFee.toFixed(0, BigNumber.ROUND_DOWN),
-    tokenInFee: isARToWAR ? networkProviderFee.toFixed(0, BigNumber.ROUND_DOWN) : "0",
+    tokenOutFee: isARToVAR ? "0" : networkProviderFee.toFixed(0, BigNumber.ROUND_DOWN),
+    tokenInFee: isARToVAR ? networkProviderFee.toFixed(0, BigNumber.ROUND_DOWN) : "0",
     wanderFee,
     networkFee,
-    type: "aox",
+    type: "vento",
   } satisfies GetExpectedOutputResponse;
 }
 
 export async function executeSwap({ tokenIn, amountIn, tags = [] }: SwapExecutionParams) {
   let decryptedWallet: DecryptedWallet;
   try {
-    const bridgeInfo = await queryClient.fetchQuery({
-      queryKey: ["aox-bridge-info"],
-      queryFn: getAoxBridgeInfo,
-      ...defaultOptions,
-    });
-
     decryptedWallet = await getActiveKeyfile();
     isLocalWallet(decryptedWallet);
     const keyfile = decryptedWallet.keyfile;
@@ -102,13 +93,15 @@ export async function executeSwap({ tokenIn, amountIn, tags = [] }: SwapExecutio
       const gateway = await findGateway({ random: true });
       const arweave = new Arweave(gateway);
       const transaction = await arweave.createTransaction({
-        target: bridgeInfo.arToken.locker,
+        target: VENTO_BRIDGE_ADDRESS,
         quantity: amountIn,
       });
 
       transaction.addTag("Type", "Transfer");
+      transaction.addTag("Action", "BridgeARToVAR");
       transaction.addTag("Client", "Wander");
       transaction.addTag("Client-Version", browser.runtime.getManifest().version);
+      transaction.addTag("Forward-Wallet", activeAddress);
       tags.forEach((tag) => transaction.addTag(tag.name, tag.value));
 
       await arweave.transactions.sign(transaction, keyfile);
@@ -126,6 +119,7 @@ export async function executeSwap({ tokenIn, amountIn, tags = [] }: SwapExecutio
         tags: [
           { name: "Action", value: "Burn" },
           { name: "Recipient", value: activeAddress },
+          { name: "Forward-Wallet", value: activeAddress },
           { name: "Quantity", value: amountIn },
           { name: "Timestamp", value: Date.now().toString() },
           ...tags,
@@ -137,14 +131,18 @@ export async function executeSwap({ tokenIn, amountIn, tags = [] }: SwapExecutio
       try {
         const { Error, Messages } = await aoInstance.result({ message: transferId, process: tokenIn });
         if (Error) {
-          transferError = "Failed to unwrap WAR tokens";
+          transferError = "Failed to unwrap vAR tokens";
         } else if (Messages.length > 0) {
           const hasValidTag = Messages.some((message) =>
-            message?.Tags?.some((tag: DecodedTag) => tag.name === "Action" && tag.value === "Burn-Notice"),
+            message?.Tags?.some(
+              (tag: DecodedTag) =>
+                (tag.name === "Event" && tag.value === "Burn") ||
+                (tag.name === "Action" && tag.value === "Debit-Notice"),
+            ),
           );
 
           if (!hasValidTag) {
-            transferError = "Failed to unwrap WAR tokens";
+            transferError = "Failed to unwrap vAR tokens";
           }
         }
       } catch {}
@@ -154,25 +152,6 @@ export async function executeSwap({ tokenIn, amountIn, tags = [] }: SwapExecutio
         throw new Error(transferError);
       }
     }
-
-    await retryWithDelay(async () => {
-      const response = await fetch(`https://api.aox.xyz/cacheUnPackagedTx?timestamp=${Date.now()}`, {
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          txType: tokenIn === AR_PROCESS_ID ? "mint" : "burn",
-          chainType: "arweave",
-          tokenId: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-          wrappedTokenId: WAR_PROCESS_ID,
-          txId: transferId,
-          sender: activeAddress,
-          recipient: activeAddress,
-          amount: amountIn,
-        }),
-        method: "POST",
-      });
-
-      if (!response.ok) throw new Error("Failed to cache transaction");
-    });
 
     // Invalidate transfered token balance
     queryClient.invalidateQueries({ queryKey: ["tokenBalance", tokenIn, activeAddress] });
@@ -211,7 +190,7 @@ export async function waitForSwapResult(transferId: string): Promise<WaitForSwap
   }
 }
 
-export const aox = {
+export const vento = {
   getExpectedOutput,
   executeSwap,
   getLiquidity,

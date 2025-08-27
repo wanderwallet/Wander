@@ -13,16 +13,13 @@ import BigNumber from "bignumber.js";
 import { useLocation } from "~wallets/router/router.utils";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
-import { botega } from "./utils/dex/dex.botega";
-import { permaswap } from "./utils/dex/dex.permaswap";
 import { getActiveAddress } from "~wallets";
 import { queryClient } from "~utils/tanstack";
 import { PoolTypeEnum } from "./utils/swap.constants";
 import { useSavedSwapData } from "./utils/swap.hooks";
-import { aox } from "./utils/bridge/bridge.aox";
 import { AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 import { trackPage, PageType } from "~utils/analytics";
-import { swapsArray } from "./utils/swap.utils";
+import { swapsArray, waitForSwapResultFn } from "./utils/swap.utils";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 
 export function SwapProgressView() {
@@ -75,15 +72,8 @@ export function SwapProgressView() {
 
     const poolType = selectedPoolInfo?.pool?.poolType;
 
-    const waitForSwapResultFn =
-      poolType === PoolTypeEnum.BOTEGA
-        ? botega.waitForSwapResult
-        : poolType === PoolTypeEnum.AOX
-          ? aox.waitForSwapResult
-          : permaswap.waitForSwapResult;
-
     try {
-      const { success, result } = await waitForSwapResultFn(transferId);
+      const { success, result } = await waitForSwapResultFn(poolType, transferId);
       if (success) {
         const activeAddress = await getActiveAddress();
         queryClient.invalidateQueries({ queryKey: ["tokenBalance", receiveToken?.processId, activeAddress] });

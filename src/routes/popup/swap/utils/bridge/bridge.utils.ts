@@ -1,5 +1,13 @@
-import { getActiveAddress } from "~wallets";
-import type { BridgeInfo, BridgeInfoResult, BridgeTransaction, BridgeTransactionResponse } from "./bridge.types";
+import type {
+  AoxBridgeInfo,
+  AoxBridgeInfoResult,
+  AoxBridgeTransaction,
+  AoxBridgeTransactionResponse,
+  VentoBridgeInfo,
+  VentoBridgeInfoResult,
+  VentoBridgeTransactionResponse,
+  VentoHealthInfo,
+} from "./bridge.types";
 import { AR_PROCESS_ID, WAR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 import BigNumber from "bignumber.js";
 import { gql } from "~gateways/api";
@@ -7,14 +15,15 @@ import { retryWithDelay } from "~utils/promises/retry";
 import { SWAP_TXS_QUERY } from "../dex/dex.constants";
 import { parseSwapTransaction, validateGqlResponse } from "../swap.utils";
 import { goldskyGateway } from "~gateways/gateway";
+import { PoolTypeEnum } from "../swap.constants";
 
-const bridgeTxTypes = new Set(["mint", "burn"]);
+const aoxBridgeTxTypes = new Set(["mint", "burn"]);
 
-export async function getBridgeInfo(): Promise<BridgeInfoResult> {
+export async function getAoxBridgeInfo(): Promise<AoxBridgeInfoResult> {
   const response = await fetch("https://api.aox.xyz/info");
   if (!response.ok) throw new Error("Failed to fetch bridge info");
 
-  const bridgeInfo = (await response.json()) as BridgeInfo;
+  const bridgeInfo = (await response.json()) as AoxBridgeInfo;
 
   const arToken = bridgeInfo.chainTokens.find((token) => token.chainType === "arweave");
   const warToken = bridgeInfo.wrappedTokens.find((token) => token.wrappedTokenId === WAR_PROCESS_ID);
@@ -23,27 +32,52 @@ export async function getBridgeInfo(): Promise<BridgeInfoResult> {
   const arMintDisabled = bridgeInfo.closeServer.closeArweaveMint || false;
   const warBurnDisabled = bridgeInfo.closeServer.closeArweaveBurn || false;
 
-  return { arToken, warToken, warBurnLimit, arMintLimit, arMintDisabled, warBurnDisabled };
+  return { arToken, warToken, warBurnLimit, arMintLimit, arMintDisabled, warBurnDisabled, bridge: PoolTypeEnum.AOX };
 }
 
-export async function getBridgeTransaction(txId: string) {
-  const activeAddress = await getActiveAddress();
-  const response = await fetch(`https://api.aox.xyz/txs?address=${activeAddress}&count=30`);
+export async function getVentoBridgeInfo(): Promise<VentoBridgeInfoResult> {
+  const [bridgeResponse, healthResponse] = await Promise.all([
+    fetch("https://api.ventoswap.com/bridge"),
+    fetch("https://api.ventoswap.com/bridge/health"),
+  ]);
+  if (!bridgeResponse.ok) throw new Error("Failed to fetch bridge info");
+
+  const bridgeInfo = (await bridgeResponse.json()) as VentoBridgeInfo;
+  const healthInfo = (await healthResponse.json()) as VentoHealthInfo;
+
+  const minArBridge = bridgeInfo.MININUM_ARWEAVE_BRIDGE;
+  const isHealthy = healthInfo.status === "healthy" && healthInfo.apiStatus === 200;
+
+  return { minArBridge, bridge: PoolTypeEnum.VENTO, isHealthy };
+}
+
+export async function getAoxBridgeTransaction(txId: string) {
+  const response = await fetch(`https://api.aox.xyz/tx/${txId}`);
   if (!response.ok) throw new Error("Failed to fetch bridge transaction");
 
-  const { txs } = (await response.json()) as BridgeTransactionResponse;
-  const transaction = txs.find((tx) => tx.txId === txId);
-
-  if (!transaction) throw new Error("Transaction not found");
-
-  return transaction;
+  const tx = (await response.json()) as AoxBridgeTransaction;
+  return tx;
 }
 
-export function validateBridgeTransaction(
+export async function getVentoBridgeTransaction(txId: string) {
+  let response: Response;
+  try {
+    response = await fetch(`https://api.ventoswap.com/bridge/status/arweave/${txId}`);
+    if (!response.ok) throw new Error("Failed to fetch bridge transaction");
+  } catch {
+    response = await fetch(`https://api.ventoswap.com/bridge/status/ao/${txId}`);
+    if (!response.ok) throw new Error("Failed to fetch bridge transaction");
+  }
+
+  const tx = (await response.json()) as VentoBridgeTransactionResponse;
+  return tx;
+}
+
+export function validateAoxBridgeTransaction(
   amountIn: string,
   wanderFee: string,
   networkFee: string,
-  bridgeInfo: BridgeInfoResult,
+  bridgeInfo: AoxBridgeInfoResult,
   tokenIn: string,
   tokenOut: string,
 ): string | null {
@@ -91,20 +125,43 @@ export function validateBridgeTransaction(
   return null;
 }
 
-export async function getAoxTransactions(address: string, cursor = "0") {
+export function validateVentoBridgeTransaction(
+  amountIn: string,
+  wanderFee: string,
+  networkFee: string,
+  bridgeInfo: VentoBridgeInfoResult,
+  tokenIn: string,
+  tokenOut: string,
+): string | null {
+  if (!bridgeInfo) return null;
+
+  const amountInBN = BigNumber(amountIn).minus(wanderFee).minus(networkFee);
+
+  if (bridgeInfo && !bridgeInfo.isHealthy) {
+    return "Bridge temporarily closed. Try again later";
+  }
+
+  if (bridgeInfo && amountInBN.lt(bridgeInfo.minArBridge)) {
+    return `Amount too low. Minimum: ${BigNumber(bridgeInfo.minArBridge).shiftedBy(-12).toFixed()} AR`;
+  }
+
+  return null;
+}
+
+export async function getAoxBridgeTransactions(address: string, cursor = "0") {
   const result = await retryWithDelay(async () => {
     const data = await fetch(`https://api.aox.xyz/txs?address=${address}&count=10&cursor=${cursor}`);
     if (!data.ok) throw new Error("Failed to fetch bridge transaction");
 
-    const { txs, hasNextPage } = (await data.json()) as BridgeTransactionResponse;
+    const { txs, hasNextPage } = (await data.json()) as AoxBridgeTransactionResponse;
 
     if (txs.length === 0) return { txs: [], hasNextPage, cursor };
 
     cursor = txs[txs.length - 1].rawId.toString();
 
-    const arweaveTxs = txs.filter((tx) => tx.chainType === "arweave" && bridgeTxTypes.has(tx.txType));
+    const arweaveTxs = txs.filter((tx) => tx.chainType === "arweave" && aoxBridgeTxTypes.has(tx.txType));
 
-    const txMap = new Map<string, BridgeTransaction>();
+    const txMap = new Map<string, AoxBridgeTransaction>();
 
     for (const tx of arweaveTxs) {
       txMap.set(tx.txId, tx);

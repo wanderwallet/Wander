@@ -1,4 +1,4 @@
-export interface BridgeInfo {
+export interface AoxBridgeInfo {
   bridgePid: string;
   arLocker: string;
   chainTokens: Array<{
@@ -54,7 +54,17 @@ export interface BridgeInfo {
   };
 }
 
-export interface BridgeTransaction {
+export interface VentoBridgeInfo {
+  MININUM_ARWEAVE_BRIDGE: string;
+  MININUM_USDC_BRIDGE: string;
+}
+
+export interface VentoHealthInfo {
+  status: string;
+  apiStatus: number;
+}
+
+export interface AoxBridgeTransaction {
   rawId: number;
   createdAt: string;
   updatedAt: string;
@@ -77,16 +87,52 @@ export interface BridgeTransaction {
   targetChainTxHash: string;
 }
 
-export interface BridgeTransactionResponse {
-  txs: BridgeTransaction[];
+export interface AoxBridgeTransactionResponse {
+  txs: AoxBridgeTransaction[];
   hasNextPage: boolean;
 }
 
-export interface BridgeInfoResult {
-  arToken: BridgeInfo["chainTokens"][number];
-  warToken: BridgeInfo["wrappedTokens"][number];
-  warBurnLimit: BridgeInfo["burnLimits"][string];
+export interface VentoBridgeTransaction {
+  _id: string;
+  txId: string;
+  type: "deposit" | "burn";
+  failureReason: string;
+  status: "pending confirmation" | "filled";
+  inputChain: "arweave" | "ao";
+  inputTokenType: "arweave" | "ao";
+  inputTokenAddress: "AR";
+  inputAmountRaw: string;
+  openedAt: string;
+  closedAt: string;
+  outputChain: "arweave" | "ao";
+  outputTokenType: "arweave" | "ao";
+  outputTokenAddress: string;
+  outputAmountRaw: string;
+  outputTxId: string;
+  senderWallet: string;
+  recipientWallet: string;
+  feeChargedRaw: string;
+  networkFeeRaw: string;
+  retryCount: number;
+  availableAt: string;
+  claimedAt: string;
+  updatedAt: string;
+}
+
+export interface VentoBridgeTransactionResponse extends VentoBridgeTransaction {}
+
+export interface AoxBridgeInfoResult {
+  bridge: "aox" | "vento";
+  arToken: AoxBridgeInfo["chainTokens"][number];
+  warToken: AoxBridgeInfo["wrappedTokens"][number];
+  warBurnLimit: AoxBridgeInfo["burnLimits"][string];
   arMintLimit: number;
   arMintDisabled: boolean;
   warBurnDisabled: boolean;
+}
+
+export interface VentoBridgeInfoResult {
+  bridge: "aox" | "vento";
+  minArBridge: string;
+  isHealthy: boolean;
 }

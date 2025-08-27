@@ -20,6 +20,7 @@ export const PL_PROCESS_ID = "Jc2bcfEbwHFQ-qY4jqm8L5hc-SggeVA1zlW6DOICWgo" as co
 export const SMONEY_PROCESS_ID = "K59Wi9uKXBQfTn3zw7L_t-lwHAoq3Fx-V9sCyOY3dFE" as const;
 export const APUS_PROCESS_ID = "mqBYxpDsolZmJyBdTK8TJp_ftOuIUXVYcSQ8MYZdJg0" as const;
 export const LOAD_PROCESS_ID = "gx_jKk-hy8-sB4Wv5WEuvTTVyIRWW3We7rRHthcohBQ" as const;
+export const VAR_PROCESS_ID = "y-p7CPhs6JMUStAuE4KeTnMXN7qYBvEi2hiBFk8ZhjM" as const;
 
 export const AO_PROCESS_BALANCE_MIRROR = "Pi-WmAQp2-mh-oWH9lWpz5EthlUDj_W0IusAv-RXhRk" as const;
 export const AO_AUTHORITY_ID = "fcoN_xJeisVsPXA-trzVAuIiqO3ydLQxM-L4XbrQKzY" as const;
@@ -94,6 +95,14 @@ export const WAR_TOKEN_INFO: TokenInfo = {
   Denomination: 12,
   Logo: "L99jaxRKQKJt9CqoJtPaieGPEhJD3wNhR4iGqc8amXs",
   processId: WAR_PROCESS_ID,
+};
+
+export const VAR_TOKEN_INFO: TokenInfo = {
+  Name: "Vento Arweave",
+  Ticker: "vAR",
+  Denomination: 12,
+  Logo: "XQKXtuxDGDn13z0JBqYvbkNXPu3Y3aE1WaK2XftQ3cA",
+  processId: VAR_PROCESS_ID,
 };
 
 export const defaultTokens = [

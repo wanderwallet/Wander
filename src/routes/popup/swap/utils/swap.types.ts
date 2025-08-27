@@ -60,8 +60,8 @@ export type BotegaPool = {
   amm_discovered_at_ts: number;
 };
 
-export type PoolType = "botega" | "permaswap" | "aox";
-export type Provider = "Botega" | "Permaswap" | "AOX";
+export type PoolType = "botega" | "permaswap" | "aox" | "vento";
+export type Provider = "Botega" | "Permaswap" | "AOX" | "Vento";
 
 export interface Pool {
   poolId: string;
@@ -162,6 +162,7 @@ export interface TokenPools {
   botega: Pool[];
   permaswap: Pool[];
   aox: Pool[];
+  vento: Pool[];
 }
 
 export interface ParsedSwapTransaction {

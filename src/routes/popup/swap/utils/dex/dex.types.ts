@@ -23,7 +23,7 @@ export interface GetExpectedOutputResponse {
   poolAmountIn: string;
   tokenOutFee: string;
   tokenInFee: string;
-  type: "aox" | "botega" | "permaswap";
+  type: "aox" | "botega" | "permaswap" | "vento";
 }
 
 export interface SwapExecutionParams {

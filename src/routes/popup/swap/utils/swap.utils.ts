@@ -11,7 +11,14 @@ import {
 } from "./swap.types";
 import BigNumber from "bignumber.js";
 import { BOTEGA_API_KEY, BOTEGA_SUPABASE_URL } from "./data-source/data-source.constants";
-import { AR_PROCESS_ID, AR_TOKEN_INFO, WAR_PROCESS_ID, WAR_TOKEN_INFO } from "~tokens/aoTokens/ao.constants";
+import {
+  AR_PROCESS_ID,
+  AR_TOKEN_INFO,
+  VAR_PROCESS_ID,
+  VAR_TOKEN_INFO,
+  WAR_PROCESS_ID,
+  WAR_TOKEN_INFO,
+} from "~tokens/aoTokens/ao.constants";
 import { PoolTypeEnum } from "./swap.constants";
 import type { DefaultTheme } from "styled-components";
 import type { GQLEdgeInterface } from "ar-gql/dist/faces";
@@ -20,9 +27,14 @@ import { retryWithDelay } from "~utils/promises/retry";
 import { gql } from "~gateways/api";
 import { goldskyGateway } from "~gateways/gateway";
 import { SWAP_CONFIRMATION_QUERY, SWAP_TX_QUERY } from "./dex/dex.constants";
-import type { BridgeTransaction } from "./bridge/bridge.types";
+import type { AoxBridgeTransaction } from "./bridge/bridge.types";
 import { createStorageArray } from "./storage/storage.array";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
+import { aox } from "./bridge/bridge.aox";
+import { botega } from "./dex/dex.botega";
+import { permaswap } from "./dex/dex.permaswap";
+import { vento } from "./bridge/bridge.vento";
+import type { GetExpectedOutputParams, SwapExecutionParams } from "./dex/dex.types";
 
 const BOTEGA_POOL_OPTIONS = {
   headers: {
@@ -35,7 +47,8 @@ const BOTEGA_POOL_OPTIONS = {
   method: "POST",
 };
 
-export const BRIDGE_TOKEN_IDS = new Set<string>([AR_PROCESS_ID, WAR_PROCESS_ID]);
+export const AOX_BRIDGE_TOKEN_IDS = new Set<string>([AR_PROCESS_ID, WAR_PROCESS_ID]);
+export const VENTO_BRIDGE_TOKEN_IDS = new Set<string>([AR_PROCESS_ID, VAR_PROCESS_ID]);
 
 export async function getBotegaPools() {
   const [poolsResponse, poolsOverviewResponse] = await Promise.allSettled([
@@ -128,26 +141,51 @@ export async function getAoxPools() {
       tokenYReserve: "0",
       tokenX: AR_PROCESS_ID,
       tokenY: WAR_PROCESS_ID,
-      tokenXDenomination: 12,
-      tokenYDenomination: 12,
-      tokenXTicker: "AR",
-      tokenYTicker: "wAR",
-      tokenXName: "Arweave",
-      tokenYName: "Wrapped Arweave",
+      tokenXDenomination: AR_TOKEN_INFO.Denomination,
+      tokenYDenomination: WAR_TOKEN_INFO.Denomination,
+      tokenXTicker: AR_TOKEN_INFO.Ticker,
+      tokenYTicker: WAR_TOKEN_INFO.Ticker,
+      tokenXName: AR_TOKEN_INFO.Name,
+      tokenYName: WAR_TOKEN_INFO.Name,
       tokenXLogo: AR_TOKEN_INFO.Logo,
       tokenYLogo: WAR_TOKEN_INFO.Logo,
     },
   ] satisfies Pool[];
 }
 
+// Mimic other pools
+export async function getVentoPools() {
+  return [
+    {
+      poolId: "AR-VAR",
+      poolName: "AR/VAR",
+      poolFee: "1",
+      poolType: PoolTypeEnum.VENTO,
+      tokenXReserve: "0",
+      tokenYReserve: "0",
+      tokenX: AR_PROCESS_ID,
+      tokenY: VAR_PROCESS_ID,
+      tokenXDenomination: AR_TOKEN_INFO.Denomination,
+      tokenYDenomination: VAR_TOKEN_INFO.Denomination,
+      tokenXTicker: AR_TOKEN_INFO.Ticker,
+      tokenYTicker: VAR_TOKEN_INFO.Ticker,
+      tokenXName: AR_TOKEN_INFO.Name,
+      tokenYName: VAR_TOKEN_INFO.Name,
+      tokenXLogo: AR_TOKEN_INFO.Logo,
+      tokenYLogo: VAR_TOKEN_INFO.Logo,
+    },
+  ] satisfies Pool[];
+}
+
 export async function getPools() {
-  const promises = await Promise.allSettled([getBotegaPools(), getPermaswapPools(), getAoxPools()]);
+  const promises = await Promise.allSettled([getBotegaPools(), getPermaswapPools(), getAoxPools(), getVentoPools()]);
 
   const botegaPools = promises[0].status === "fulfilled" ? promises[0].value : [];
   const permaswapPools = promises[1].status === "fulfilled" ? promises[1].value : [];
   const aoxPools = promises[2].status === "fulfilled" ? promises[2].value : [];
+  const ventoPools = promises[3].status === "fulfilled" ? promises[3].value : [];
 
-  return [...botegaPools, ...permaswapPools, ...aoxPools].filter(
+  return [...aoxPools, ...ventoPools, ...botegaPools, ...permaswapPools].filter(
     (pool) => +pool.tokenXDenomination >= 0 && +pool.tokenYDenomination >= 0 && pool.tokenXTicker && pool.tokenYTicker,
   );
 }
@@ -206,6 +244,8 @@ export function getProviderName(poolType: PoolType) {
       return "Permaswap";
     case PoolTypeEnum.AOX:
       return "AOX";
+    case PoolTypeEnum.VENTO:
+      return "Vento";
     default:
       return "";
   }
@@ -214,6 +254,7 @@ export function getProviderName(poolType: PoolType) {
 export function getSwapTime(poolType: PoolType | Provider) {
   const poolTypeLower = poolType.toLowerCase();
   if (poolTypeLower === PoolTypeEnum.AOX) return "30-60m";
+  if (poolTypeLower === PoolTypeEnum.VENTO) return "10-30m";
   return "15s";
 }
 
@@ -345,7 +386,7 @@ export async function getSwapTransaction(txId: string) {
       );
     } else {
       const confirmationResponse = await fetch(`https://api.aox.xyz/tx/${txId}`);
-      const confirmationTx = (await confirmationResponse.json()) as BridgeTransaction;
+      const confirmationTx = (await confirmationResponse.json()) as AoxBridgeTransaction;
       tx.node.tags.push(
         ...[
           { name: "Bridge-Status", value: confirmationTx.status },
@@ -364,3 +405,42 @@ export const swapsArray = createStorageArray<SwapData>("swaps", {
   preventDuplicates: true,
   uniqueKey: "transferId",
 });
+
+export function executeSwapFn(poolType: PoolType, params: SwapExecutionParams) {
+  switch (poolType) {
+    case PoolTypeEnum.BOTEGA:
+      return botega.executeSwap(params);
+    case PoolTypeEnum.PERMASWAP:
+      return permaswap.executeSwap(params);
+    case PoolTypeEnum.AOX:
+      return aox.executeSwap(params);
+    case PoolTypeEnum.VENTO:
+      return vento.executeSwap(params);
+  }
+}
+
+export function waitForSwapResultFn(poolType: PoolType, transferId: string) {
+  switch (poolType) {
+    case PoolTypeEnum.BOTEGA:
+      return botega.waitForSwapResult(transferId);
+    case PoolTypeEnum.PERMASWAP:
+      return permaswap.waitForSwapResult(transferId);
+    case PoolTypeEnum.AOX:
+      return aox.waitForSwapResult(transferId);
+    case PoolTypeEnum.VENTO:
+      return vento.waitForSwapResult(transferId);
+  }
+}
+
+export function getExpectedOutputFn(poolType: PoolType, params: GetExpectedOutputParams) {
+  switch (poolType) {
+    case PoolTypeEnum.BOTEGA:
+      return botega.getExpectedOutput(params);
+    case PoolTypeEnum.PERMASWAP:
+      return permaswap.getExpectedOutput(params);
+    case PoolTypeEnum.AOX:
+      return aox.getExpectedOutput(params);
+    case PoolTypeEnum.VENTO:
+      return vento.getExpectedOutput(params);
+  }
+}

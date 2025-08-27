@@ -42,7 +42,7 @@ export function SwapCompleteView() {
     return `1 ${sendToken.Ticker} ≈ ${toFixed(valueOutForUnitValueIn, 8)} ${receiveToken.Ticker}`;
   }, [selectedPoolInfo, sendToken, receiveToken, amountIn]);
 
-  const networkFee = useMemo(() => {
+  const providerNetworkFee = useMemo(() => {
     if (!selectedPoolInfo?.quoteOutput || !sendToken || !receiveToken) return "--";
 
     const tokenInFee = BigNumber(selectedPoolInfo.quoteOutput.tokenInFee || "0");
@@ -153,7 +153,7 @@ export function SwapCompleteView() {
               <TransactionDetailItem title={"Rate"} value={rate} />
               <TransactionDetailItem title={"Provider"} value={getProviderName(selectedPoolInfo?.pool?.poolType)} />
               <TransactionDetailItem title={"Est. Swap Time"} value={getSwapTime(selectedPoolInfo?.pool?.poolType)} />
-              <TransactionDetailItem title={"Network fee"} value={networkFee} />
+              <TransactionDetailItem title={"Network fee"} value={providerNetworkFee} />
               <TransactionDetailItem
                 title={"Wander Fee"}
                 value={
