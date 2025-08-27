@@ -219,10 +219,12 @@ export async function getBotegaTransactions(address: string, cursor = "") {
 
       const swapTransferTxs = swapTransferResult?.data?.transactions?.edges || [];
       const allTxs = [...successfulTxs, ...swapTransferTxs];
-      return { txs: allTxs.map(parseSwapTransaction), hasNextPage, cursor };
+      const parsedTransactions = allTxs.map(parseSwapTransaction).filter(Boolean);
+      return { txs: parsedTransactions, hasNextPage, cursor };
     }
 
-    return { txs: successfulTxs.map(parseSwapTransaction), hasNextPage, cursor };
+    const parsedTransactions = successfulTxs.map(parseSwapTransaction).filter(Boolean);
+    return { txs: parsedTransactions, hasNextPage, cursor };
   }, 2);
 
   return result;
@@ -248,7 +250,7 @@ export async function getPermaswapTransactions(address: string, cursor = "") {
     }
 
     const pushedFors = Array.from(txMap.keys());
-    const orderNoticesResult = await retryWithDelay(async () => {
+    const orderNotices = await retryWithDelay(async () => {
       const data = await gql(PERMASWAP_SWAP_CONFIRMATION_QUERY, { address, pushedFors }, goldskyGateway);
 
       // validate the response
@@ -267,7 +269,8 @@ export async function getPermaswapTransactions(address: string, cursor = "") {
       return edges;
     }, 2);
 
-    return { txs: orderNoticesResult.map(parseSwapTransaction), hasNextPage, cursor };
+    const parsedTransactions = orderNotices.map(parseSwapTransaction).filter(Boolean);
+    return { txs: parsedTransactions, hasNextPage, cursor };
   }, 2);
 
   return result;

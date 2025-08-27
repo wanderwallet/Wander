@@ -19,9 +19,10 @@ import type GQLResultInterface from "ar-gql/dist/faces";
 import { retryWithDelay } from "~utils/promises/retry";
 import { gql } from "~gateways/api";
 import { goldskyGateway } from "~gateways/gateway";
-import { SWAP_CONFIRMATION_QUERY, SWAP_QUERY } from "./dex/dex.constants";
+import { SWAP_CONFIRMATION_QUERY, SWAP_TX_QUERY } from "./dex/dex.constants";
 import type { BridgeTransaction } from "./bridge/bridge.types";
 import { createStorageArray } from "./storage/storage.array";
+import { log, LOG_GROUP } from "~utils/log/log.utils";
 
 const BOTEGA_POOL_OPTIONS = {
   headers: {
@@ -229,50 +230,54 @@ export function toFixed(value: any, decimals: number) {
 }
 
 export function parseSwapTransaction(transaction: GQLEdgeInterface): ParsedSwapTransaction {
-  const tags = transaction.node.tags || [];
+  try {
+    const tags = transaction.node.tags || [];
 
-  const timestamp = transaction.node.block?.timestamp ? transaction.node.block.timestamp * 1000 : Date.now();
-  const isAo = getTagValue("Data-Protocol", tags) === "ao";
-  const pushedFor = getTagValue("Pushed-For", tags);
-  const txId = pushedFor || transaction.node.id;
-  const action = getTagValue("Action", tags);
-  const orderStatus = getTagValue("OrderStatus", tags);
-  const bridgeStatus = getTagValue("Bridge-Status", tags);
-  const rate = getTagValue("X-Rate", tags);
-  const provider = getTagValue("X-Provider", tags) as Provider;
-  const networkFee = getTagValue("X-Network-Fee", tags);
-  const wanderFee = getTagValue("X-Client-Fee", tags);
-  const slippage = getTagValue("X-Slippage", tags);
-  const priceImpact = getTagValue("X-Price-Impact", tags);
-  const tokenIn = JSON.parse(getTagValue("X-Token-In", tags));
-  const tokenOut = JSON.parse(getTagValue("X-Token-Out", tags));
-  const amountIn = getTagValue("X-Amount-In", tags);
-  const amountOut =
-    getTagValue("To-Quantity", tags) ||
-    getTagValue("AmountOut", tags) ||
-    getTagValue("Quantity", tags) ||
-    getTagValue("X-Amount-Out", tags);
+    const timestamp = transaction.node.block?.timestamp ? transaction.node.block.timestamp * 1000 : Date.now();
+    const isAo = getTagValue("Data-Protocol", tags) === "ao";
+    const pushedFor = getTagValue("Pushed-For", tags);
+    const txId = pushedFor || transaction.node.id;
+    const action = getTagValue("Action", tags);
+    const orderStatus = getTagValue("OrderStatus", tags);
+    const bridgeStatus = getTagValue("Bridge-Status", tags);
+    const rate = getTagValue("X-Rate", tags);
+    const provider = getTagValue("X-Provider", tags) as Provider;
+    const networkFee = getTagValue("X-Network-Fee", tags);
+    const wanderFee = getTagValue("X-Client-Fee", tags);
+    const slippage = getTagValue("X-Slippage", tags);
+    const priceImpact = getTagValue("X-Price-Impact", tags);
+    const tokenIn = JSON.parse(getTagValue("X-Token-In", tags));
+    const tokenOut = JSON.parse(getTagValue("X-Token-Out", tags));
+    const amountIn = getTagValue("X-Amount-In", tags);
+    const amountOut =
+      getTagValue("To-Quantity", tags) ||
+      getTagValue("AmountOut", tags) ||
+      getTagValue("Quantity", tags) ||
+      getTagValue("X-Amount-Out", tags);
 
-  const error = action === "Order-Error" || (orderStatus && orderStatus !== "Swapped");
-  const isPending = bridgeStatus && bridgeStatus !== "success";
-  const status = error ? "Failed" : isPending ? "Pending" : "Completed";
+    const error = action === "Order-Error" || (orderStatus && orderStatus !== "Swapped");
+    const isPending = bridgeStatus && bridgeStatus !== "success";
+    const status = error ? "Failed" : isPending ? "Pending" : "Completed";
 
-  return {
-    txId,
-    isAo,
-    rate,
-    timestamp,
-    provider,
-    networkFee,
-    wanderFee,
-    slippage,
-    priceImpact,
-    tokenIn,
-    tokenOut,
-    amountIn,
-    amountOut,
-    status,
-  };
+    return {
+      txId,
+      isAo,
+      rate,
+      timestamp,
+      provider,
+      networkFee,
+      wanderFee,
+      slippage,
+      priceImpact,
+      tokenIn,
+      tokenOut,
+      amountIn,
+      amountOut,
+      status,
+    };
+  } catch (err) {
+    log(LOG_GROUP.SWAP, "parseSwapTransaction failed", { err, tx: transaction });
+  }
 }
 
 export function validateGqlResponse(data: GQLResultInterface) {
@@ -296,7 +301,7 @@ export function getStatusColor(status: ParsedSwapTransaction["status"]) {
 
 export async function getSwapTransaction(txId: string) {
   const result = await retryWithDelay(async () => {
-    const response = await gql(SWAP_QUERY, { txId }, goldskyGateway);
+    const response = await gql(SWAP_TX_QUERY, { txId }, goldskyGateway);
 
     // validate the response
     validateGqlResponse(response);

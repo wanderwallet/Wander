@@ -4,7 +4,7 @@ import { AR_PROCESS_ID, WAR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 import BigNumber from "bignumber.js";
 import { gql } from "~gateways/api";
 import { retryWithDelay } from "~utils/promises/retry";
-import { AOX_SWAP_QUERY } from "../dex/dex.constants";
+import { SWAP_TXS_QUERY } from "../dex/dex.constants";
 import { parseSwapTransaction, validateGqlResponse } from "../swap.utils";
 import { goldskyGateway } from "~gateways/gateway";
 
@@ -111,8 +111,8 @@ export async function getAoxTransactions(address: string, cursor = "0") {
     }
 
     const txIds = Array.from(txMap.keys());
-    const orderNoticesResult = await retryWithDelay(async () => {
-      const data = await gql(AOX_SWAP_QUERY, { address, txIds }, goldskyGateway);
+    const transactions = await retryWithDelay(async () => {
+      const data = await gql(SWAP_TXS_QUERY, { txIds }, goldskyGateway);
 
       validateGqlResponse(data);
 
@@ -130,9 +130,10 @@ export async function getAoxTransactions(address: string, cursor = "0") {
       }
 
       return edges;
-    });
+    }, 2);
 
-    return { txs: orderNoticesResult.map(parseSwapTransaction), hasNextPage, cursor };
+    const parsedTransactions = transactions.map(parseSwapTransaction).filter(Boolean);
+    return { txs: parsedTransactions, hasNextPage, cursor };
   }, 2);
 
   return result;

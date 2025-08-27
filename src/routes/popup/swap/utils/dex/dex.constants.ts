@@ -118,14 +118,13 @@ query($address: String!, $pushedFors: [String!]!) {
   }
 }`;
 
-export const SWAP_QUERY = `
+export const SWAP_TX_QUERY = `
 query($txId: ID!) {
   transactions(
     first: 1,
     tags: [
-      {name: "Action", values: ["Transfer", "Burn"]},
       { name: "X-Client", values: ["Roam"]},
-      { name: "X-Type", values: ["Swap"]} 
+      { name: "X-Type", values: ["Swap"]},
     ],
     ids: [$txId],
   ) {
@@ -163,17 +162,15 @@ query($pushedFor: String!) {
   }
 }`;
 
-export const AOX_SWAP_QUERY = `
-query($address: String!, $txIds: [ID!]!) {
+export const SWAP_TXS_QUERY = `
+query($txIds: [ID!]!) {
   transactions(
     ids: $txIds,
-    first: 10,
     tags: [
-      {name: "Action", values: ["Transfer", "Burn"]},
       { name: "X-Client", values: ["Roam"]},
       { name: "X-Type", values: ["Swap"]},
     ],
-    owners: [$address],
+    first: 10,
   ) {
     edges {
       node {
