@@ -213,4 +213,5 @@ export const aox = {
   executeSwap,
   getLiquidity,
   waitForSwapResult,
+  readSwapResult,
 };

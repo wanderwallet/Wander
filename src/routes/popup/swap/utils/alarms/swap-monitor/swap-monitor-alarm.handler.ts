@@ -1,12 +1,12 @@
 import type { Alarms } from "webextension-polyfill";
 import browser from "webextension-polyfill";
-import { swapsArray, waitForSwapResultFn } from "../../swap.utils";
-import { PoolTypeEnum } from "../../swap.constants";
+import { readSwapResultFn, swapsArray } from "../../swap.utils";
 import { queryClient } from "~utils/tanstack";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import type { SwapData } from "../../swap.types";
 import { processWanderFee, cleanupFeeProcessingMutex, trackSwapAnalytics } from "./swap-fee-processor";
 import { sendSwapNotification } from "./swap-notifications";
+import { OrderError } from "../../dex/dex.utils";
 
 const SWAP_MONITOR_ALARM_NAME = "swap-monitor";
 const SWAP_CHECK_INTERVAL_MINUTES = 2; // Check every 2 minutes
@@ -83,32 +83,28 @@ async function checkSingleSwap(swap: SwapData) {
   }
 
   const poolType = swap.selectedPoolInfo.pool.poolType;
+  if (!poolType) {
+    log(LOG_GROUP.SWAP, "Invalid pool type", swap);
+    return;
+  }
 
   try {
-    const { success, result } = await waitForSwapResultFn(poolType, swap.transferId);
-
-    if (success) {
-      const expectedOutput = swap.selectedPoolInfo.quoteOutput.amountOut;
-      swap.selectedPoolInfo.quoteOutput.amountOut = result?.amountOut || expectedOutput;
-      await handleSwapSuccess(swap);
+    const result = await readSwapResultFn(poolType, swap.transferId);
+    const expectedOutput = swap.selectedPoolInfo.quoteOutput.amountOut;
+    swap.selectedPoolInfo.quoteOutput.amountOut = result?.amountOut || expectedOutput;
+    await handleSwapSuccess(swap);
+  } catch (error) {
+    if (error instanceof OrderError) {
+      await handleSwapFailure(swap);
     } else {
-      // For failed swaps, we should check if enough time has passed
+      // If there's an error checking status, treat as potential failure after timeout
       const swapAge = Date.now() - (swap.timestamp || Date.now());
-      const maxWaitTime = poolType === PoolTypeEnum.AOX ? 7200000 : 600000; // 2 hours for AOX, 10 min for others
+      const maxWaitTime = 86400000;
 
       if (swapAge > maxWaitTime) {
+        log(LOG_GROUP.SWAP, `Swap ${swap.transferId} timed out with error`, error);
         await handleSwapFailure(swap);
       }
-      // If not timed out yet, continue monitoring
-    }
-  } catch (error) {
-    // If there's an error checking status, treat as potential failure after timeout
-    const swapAge = Date.now() - (swap.timestamp || Date.now());
-    const maxWaitTime = poolType === PoolTypeEnum.AOX ? 7200000 : 600000; // 2 hours for AOX, 10 min for others
-
-    if (swapAge > maxWaitTime) {
-      log(LOG_GROUP.SWAP, `Swap ${swap.transferId} timed out with error`, error);
-      await handleSwapFailure(swap);
     }
   }
 }

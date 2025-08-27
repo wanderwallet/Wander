@@ -177,4 +177,5 @@ export const botega = {
   executeSwap,
   getLiquidity,
   waitForSwapResult,
+  readSwapResult,
 };

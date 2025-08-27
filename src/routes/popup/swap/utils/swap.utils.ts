@@ -456,6 +456,19 @@ export function getExpectedOutputFn(poolType: PoolType, params: GetExpectedOutpu
   }
 }
 
+export function readSwapResultFn(poolType: PoolType, transferId: string) {
+  switch (poolType) {
+    case PoolTypeEnum.BOTEGA:
+      return botega.readSwapResult(transferId);
+    case PoolTypeEnum.PERMASWAP:
+      return permaswap.readSwapResult(transferId);
+    case PoolTypeEnum.AOX:
+      return aox.readSwapResult(transferId);
+    case PoolTypeEnum.VENTO:
+      return vento.readSwapResult(transferId);
+  }
+}
+
 /**
  * Converts human-readable string (e.g. "1.5") to base units (wei or token smallest unit)
  * @param value - Human-readable string/number (e.g. "1.5" or 1.5)

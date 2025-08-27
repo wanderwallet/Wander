@@ -115,10 +115,8 @@ export async function executeSwap({ tokenIn, amountIn, tags = [] }: SwapExecutio
         signer,
         tags: [
           { name: "Action", value: "Burn" },
-          { name: "Recipient", value: activeAddress },
           { name: "Forward-Wallet", value: activeAddress },
           { name: "Quantity", value: amountIn },
-          { name: "Timestamp", value: Date.now().toString() },
           ...tags,
         ],
       });
@@ -192,4 +190,5 @@ export const vento = {
   executeSwap,
   getLiquidity,
   waitForSwapResult,
+  readSwapResult,
 };

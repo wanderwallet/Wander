@@ -19,6 +19,7 @@ import type { DecodedTag } from "~api/modules/sign/tags";
 import { getSetting } from "~settings";
 import { trackEvent, EventType } from "~utils/analytics";
 import { getDefiFeeDetailsForTier } from "~utils/tier/utils";
+import { fromTokenBaseUnits } from "../../swap.utils";
 
 // TODO: Replace with actual recipient CDoilQgKg6Pmp4Q0LJ4d84VXRgB3Ay9pIJ_SA617cVk
 const WANDER_FEE_RECIPIENT = "5glNksg7gRpA0JIXXvCBjlx6U2RHpMG73Msfftke2lY";
@@ -281,42 +282,46 @@ export async function trackSwapAnalytics(swap: SwapData, status: "Success" | "Fa
 
     const defiFeeDetails = getDefiFeeDetailsForTier(swap.tier);
     const amountInBN = BigNumber(swap.amountIn);
+    const valueInBN = fromTokenBaseUnits(amountInBN, swap.sendToken.Denomination, "BigNumber");
     const amountOutBN = BigNumber(swap.selectedPoolInfo.quoteOutput.amountOut);
-    const originalFee = amountInBN
+    const valueOutBN = fromTokenBaseUnits(amountOutBN, swap.receiveToken.Denomination, "BigNumber");
+    const originalFeeAmount = amountInBN
       .multipliedBy(defiFeeDetails.originalFeePercent)
       .dividedBy(100)
       .toFixed(0, BigNumber.ROUND_DOWN);
-    const finalFee = amountInBN
+    const finalFeeAmount = amountInBN
       .multipliedBy(defiFeeDetails.finalFeePercent)
       .dividedBy(100)
       .toFixed(0, BigNumber.ROUND_DOWN);
-    const discountFee = BigNumber(originalFee).minus(finalFee).toFixed(0, BigNumber.ROUND_DOWN);
+    const finalFeeValueBN = fromTokenBaseUnits(finalFeeAmount, swap.sendToken.Denomination, "BigNumber");
+    const discountFeeAmount = BigNumber(originalFeeAmount).minus(finalFeeAmount).toFixed(0, BigNumber.ROUND_DOWN);
+    const discountFeeValueBN = fromTokenBaseUnits(discountFeeAmount, swap.sendToken.Denomination, "BigNumber");
 
-    const buyTokenPrice = await getTokenPrice(swap.sendToken.processId);
-    const sellTokenPrice = await getTokenPrice(swap.receiveToken.processId);
+    const sellTokenPrice = await getTokenPrice(swap.sendToken.processId);
+    const buyTokenPrice = await getTokenPrice(swap.receiveToken.processId);
 
-    const wanderFeeAmountUsd = BigNumber(finalFee).multipliedBy(buyTokenPrice).toFixed();
-    const wanderFeeDiscountAmountUsd = BigNumber(discountFee).multipliedBy(buyTokenPrice).toFixed();
-    const buyTokenAmountUsd = amountInBN.multipliedBy(buyTokenPrice).toFixed();
-    const sellTokenAmountUsd = amountOutBN.multipliedBy(sellTokenPrice).toFixed();
+    const wanderFeeAmountUsd = finalFeeValueBN.multipliedBy(sellTokenPrice).toFixed();
+    const wanderFeeDiscountAmountUsd = discountFeeValueBN.multipliedBy(sellTokenPrice).toFixed();
+    const sellTokenAmountUsd = valueInBN.multipliedBy(sellTokenPrice).toFixed();
+    const buyTokenAmountUsd = valueOutBN.multipliedBy(buyTokenPrice).toFixed();
 
     const swapCompletedData = {
-      buyTokenName: swap.sendToken.Name,
-      buyTokenProcessId: swap.sendToken.processId,
-      buyTokenAmount: swap.amountIn,
-      buyTokenAmountUsd,
-      sellTokenName: swap.receiveToken.Name,
-      sellTokenProcessId: swap.receiveToken.processId,
+      sellTokenName: swap.sendToken.Name,
+      sellTokenProcessId: swap.sendToken.processId,
       sellTokenAmount: swap.amountIn,
       sellTokenAmountUsd,
+      buyTokenName: swap.receiveToken.Name,
+      buyTokenProcessId: swap.receiveToken.processId,
+      buyTokenAmount: swap.selectedPoolInfo.quoteOutput.amountOut,
+      buyTokenAmountUsd,
       provider: swap.selectedPoolInfo.pool.poolType,
       status,
       userWanderTier: swap.tier,
-      wanderFeeAmount: finalFee,
+      wanderFeeAmount: finalFeeAmount,
       wanderFeeAmountUsd,
       wanderFeeTokenName: swap.sendToken.Name,
       wanderFeeTokenProcessId: swap.sendToken.processId,
-      wanderFeeDiscountAmount: discountFee,
+      wanderFeeDiscountAmount: discountFeeAmount,
       wanderFeeDiscountAmountUsd,
     };
 

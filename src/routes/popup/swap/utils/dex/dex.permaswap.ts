@@ -222,4 +222,5 @@ export const permaswap = {
   executeSwap,
   getLiquidity,
   waitForSwapResult,
+  readSwapResult,
 };
