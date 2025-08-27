@@ -9,23 +9,23 @@ export default defineConfig(() => ({
 
   resolve: {
     alias: {
-      "~": path.resolve(__dirname, "./src"),
-      "~domains": path.resolve(__dirname, "./src/domains"),
-      "~constants": path.resolve(__dirname, "./src/constants"),
-      "~api": path.resolve(__dirname, "./src/api"),
-      "~applications": path.resolve(__dirname, "./src/applications"),
-      "~components": path.resolve(__dirname, "./src/components"),
-      "~contacts": path.resolve(__dirname, "./src/contacts"),
-      "~gateways": path.resolve(__dirname, "./src/gateways"),
-      "~iframe": path.resolve(__dirname, "./src/iframe"),
-      "~lib": path.resolve(__dirname, "./src/lib"),
-      "~notifications": path.resolve(__dirname, "./src/notifications"),
-      "~routes": path.resolve(__dirname, "./src/routes"),
-      "~settings": path.resolve(__dirname, "./src/settings"),
-      "~subscriptions": path.resolve(__dirname, "./src/subscriptions"),
-      "~tokens": path.resolve(__dirname, "./src/tokens"),
-      "~utils": path.resolve(__dirname, "./src/utils"),
-      "~wallets": path.resolve(__dirname, "./src/wallets"),
+      // "~": path.resolve(__dirname, "./src"),
+      // "~domains": path.resolve(__dirname, "./src/domains"),
+      // "~constants": path.resolve(__dirname, "./src/constants"),
+      // "~api": path.resolve(__dirname, "./src/api"),
+      // "~applications": path.resolve(__dirname, "./src/applications"),
+      // "~components": path.resolve(__dirname, "./src/components"),
+      // "~contacts": path.resolve(__dirname, "./src/contacts"),
+      // "~gateways": path.resolve(__dirname, "./src/gateways"),
+      // "~iframe": path.resolve(__dirname, "./src/iframe"),
+      // "~lib": path.resolve(__dirname, "./src/lib"),
+      // "~notifications": path.resolve(__dirname, "./src/notifications"),
+      // "~routes": path.resolve(__dirname, "./src/routes"),
+      // "~settings": path.resolve(__dirname, "./src/settings"),
+      // "~subscriptions": path.resolve(__dirname, "./src/subscriptions"),
+      // "~tokens": path.resolve(__dirname, "./src/tokens"),
+      // "~utils": path.resolve(__dirname, "./src/utils"),
+      // "~wallets": path.resolve(__dirname, "./src/wallets"),
 
       // BE or Embed (iframe) strategies for messaging and chunking:
       "~isomorphic-messaging": path.resolve(
@@ -36,6 +36,7 @@ export default defineConfig(() => ({
         __dirname,
         "./src/utils/messaging/strategies/iframe/iframe-chunking.strategy.ts",
       ),
+
       // Prisma Enum Fix:
       // See https://github.com/prisma/prisma/issues/12504#issuecomment-1136126199
       // See https://github.com/sveltejs/kit/issues/4444

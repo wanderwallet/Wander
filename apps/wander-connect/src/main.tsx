@@ -18,6 +18,7 @@ import {
   POPUP_ON_AUTH_TIMEOUT_MS,
 } from "./domains/authentication/authentication.utils";
 import { jwtDecode } from "jwt-decode";
+import { SupabaseJwtPayload } from "embed-api";
 
 if (process.env.NODE_ENV === "development") {
   console.log("Wander Connect URL params =", {
@@ -105,7 +106,7 @@ if (window.location.hash.startsWith("#access_token=") && window.opener) {
   let errorDescription: string | undefined;
 
   try {
-    const searchParams = new URLSearchParams(location.search);
+    const searchParams = new URLSearchParams(window.location.search);
 
     errorCode ||= searchParams.get("error");
     errorDescription ||= searchParams.get("error_description");

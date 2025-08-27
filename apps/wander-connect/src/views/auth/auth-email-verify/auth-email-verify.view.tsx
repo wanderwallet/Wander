@@ -1,13 +1,14 @@
 import { toast } from "react-toastify";
 import { Text, Button, OnboardingCard, Flex, CodeInput, type CodeInputHandle } from "@wanderapp/ui";
-import React, { useCallback, useEffect, useRef, useState, useCooldownCallback } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation, useSearchParams, StorageKeys,
   checkNeedsNewOtp,
   clearOtpAvailable,
   OTP_COOLDOWN_DURATION_SEC,
   OTP_LENGTH,
   setOtpAvailable,
-  useAsyncEffect
+  useAsyncEffect,
+  useCooldownCallback
 } from "@wanderapp/core";
 import { getFriendlyAuthErrorMessage } from "../../../domains/authentication/authentication.utils";
 import { EmbeddedPaths } from "../../../router/dashboard/iframe.routes";

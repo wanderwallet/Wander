@@ -37,5 +37,7 @@
       }
     }
   },
-  "dependencies": {}
+  "dependencies": {
+    "@arconnect/webext-bridge": "^5.0.6"
+  }
 }

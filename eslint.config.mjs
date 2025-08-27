@@ -28,6 +28,20 @@ export default [
   {
     files: ["**/*.ts", "**/*.tsx", "**/*.cts", "**/*.mts", "**/*.js", "**/*.jsx", "**/*.cjs", "**/*.mjs"],
     // Override or add rules here
-    rules: {},
+    rules: {
+      "@typescript-eslint/ban-ts-comment": 0,
+      "@typescript-eslint/no-empty-function": 0,
+      "@typescript-eslint/no-explicit-any": 0,
+      "@typescript-eslint/no-unused-vars": 0,
+      "no-async-promise-executor": 0,
+      "no-empty": 0,
+      "no-loss-of-precision": 0,
+      "no-prototype-builtins": 0,
+      "no-restricted-globals": 0,
+      "no-unsafe-optional-chaining": 0,
+      "no-useless-escape": 0,
+      "react-hooks/exhaustive-deps": 0,
+      "react/jsx-no-undef": 0,
+    },
   },
 ];

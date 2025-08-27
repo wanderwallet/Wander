@@ -21,6 +21,7 @@
     "sourceMap": true,
     "resolveJsonModule": true,
     "paths": {
+      "@wanderapp/isomorphic-messaging": ["./libs/isomorphic-messaging/src/index.ts"],
       "@wanderapp/core": ["./libs/core/src/index.ts"],
       "@wanderapp/ui": ["./libs/ui/src/index.ts"]
     }

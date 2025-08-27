@@ -51,7 +51,7 @@ import {
   removeUnpartitionedStateStatusChangeListener,
   type UnpartitionedStateStatusChangeData,
 } from "./storage/unpartitioned-storage/unpartitioned-storage.utils";
-import { isomorphicOnMessage } from "~isomorphic-messaging";
+import { isomorphicOnMessage } from "@wanderapp/isomorphic-messaging";
 import { useTheme } from "@wanderapp/ui";
 import { createAnonSession, INITIAL_ANON_SESSION, parseSupabaseSession } from "../domains/session/session.utils";
 import {

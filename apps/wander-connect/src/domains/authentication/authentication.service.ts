@@ -15,7 +15,7 @@ import {
 } from "./authentication.utils";
 import type { OAuthResultMessage } from "./authentication.types";
 import type { SupabaseUserMetadata, SupabaseProvider } from "embed-api";
-import { getSupabaseClient } from "../../utils/embedded.utils";
+import { getSupabaseClient, trpcVanilla } from "../../utils/embedded.utils";
 import { isInsideIframe } from "../../utils/iframe.utils";
 
 const SUPABASE_PROVIDER_BY_OAUTH_PROVIDER_TYPE: Record<OAutProviderType, SupabaseProvider | null> = {
