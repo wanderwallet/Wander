@@ -39,6 +39,7 @@ import { useAoxBridgeInfo, useVentoBridgeInfo } from "./bridge/bridge.hooks";
 import { PoolTypeEnum } from "./swap.constants";
 import {
   getAoxBridgeTransactions,
+  getVentoBridgeTransactions,
   validateAoxBridgeTransaction,
   validateVentoBridgeTransaction,
 } from "./bridge/bridge.utils";
@@ -521,8 +522,8 @@ const emptyResponse = {
   cursor: "",
 };
 
-const defaultCursors = ["", "", "0"];
-const defaultHasNextPages = [true, true, true];
+const defaultCursors = ["", "", "0", ""];
+const defaultHasNextPages = [true, true, true, true];
 
 export const useSwapTransactions = () => {
   const activeAddress = useActiveAddress();
@@ -539,9 +540,14 @@ export const useSwapTransactions = () => {
 
       setLoading(true);
 
-      const queriesFn = [getBotegaTransactions, getPermaswapTransactions, getAoxBridgeTransactions];
+      const queriesFn = [
+        getBotegaTransactions,
+        getPermaswapTransactions,
+        getAoxBridgeTransactions,
+        getVentoBridgeTransactions,
+      ];
 
-      const [botegaResult, permaswapResult, aoxResult] = await Promise.allSettled(
+      const [botegaResult, permaswapResult, aoxResult, ventoResult] = await Promise.allSettled(
         queriesFn.map((queryFn, idx) => {
           return hasNextPages[idx] ? queryFn(activeAddress, cursors[idx]) : Promise.resolve(emptyResponse);
         }),
@@ -550,11 +556,17 @@ export const useSwapTransactions = () => {
       const botegaData = botegaResult.status === "fulfilled" ? botegaResult.value : emptyResponse;
       const permaswapData = permaswapResult.status === "fulfilled" ? permaswapResult.value : emptyResponse;
       const aoxData = aoxResult.status === "fulfilled" ? aoxResult.value : emptyResponse;
+      const ventoData = ventoResult.status === "fulfilled" ? ventoResult.value : emptyResponse;
 
-      setCursors([botegaData.cursor, permaswapData.cursor, aoxData.cursor]);
-      setHasNextPages([botegaData.hasNextPage, permaswapData.hasNextPage, aoxData.hasNextPage]);
+      setCursors([botegaData.cursor, permaswapData.cursor, aoxData.cursor, ventoData.cursor]);
+      setHasNextPages([botegaData.hasNextPage, permaswapData.hasNextPage, aoxData.hasNextPage, ventoData.hasNextPage]);
 
-      let combinedTransactions: ParsedSwapTransaction[] = [...botegaData.txs, ...permaswapData.txs, ...aoxData.txs];
+      let combinedTransactions: ParsedSwapTransaction[] = [
+        ...botegaData.txs,
+        ...permaswapData.txs,
+        ...aoxData.txs,
+        ...ventoData.txs,
+      ];
 
       combinedTransactions.sort((a: ParsedSwapTransaction, b: ParsedSwapTransaction) => {
         const timestampA = a.timestamp || Number.MAX_SAFE_INTEGER;

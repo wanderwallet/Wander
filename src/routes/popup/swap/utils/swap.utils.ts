@@ -35,6 +35,7 @@ import { botega } from "./dex/dex.botega";
 import { permaswap } from "./dex/dex.permaswap";
 import { vento } from "./bridge/bridge.vento";
 import type { GetExpectedOutputParams, SwapExecutionParams } from "./dex/dex.types";
+import { getAoxBridgeTransaction, getVentoBridgeTransaction } from "./bridge/bridge.utils";
 
 const BOTEGA_POOL_OPTIONS = {
   headers: {
@@ -297,7 +298,7 @@ export function parseSwapTransaction(transaction: GQLEdgeInterface): ParsedSwapT
       getTagValue("X-Amount-Out", tags);
 
     const error = action === "Order-Error" || (orderStatus && orderStatus !== "Swapped");
-    const isPending = bridgeStatus && bridgeStatus !== "success";
+    const isPending = bridgeStatus && bridgeStatus !== "success" && bridgeStatus !== "filled";
     const status = error ? "Failed" : isPending ? "Pending" : "Completed";
 
     return {
@@ -350,10 +351,8 @@ export async function getSwapTransaction(txId: string) {
     const tx = response?.data?.transactions?.edges[0];
     const tags = tx.node.tags;
     const provider = getTagValue("X-Provider", tags);
-    if (provider !== "AOX") {
+    if (provider !== "AOX" && provider !== "Vento") {
       const confirmationResponse = await gql(SWAP_CONFIRMATION_QUERY, { pushedFor: txId }, goldskyGateway);
-
-      console.log(confirmationResponse);
 
       // validate the response
       validateGqlResponse(confirmationResponse);
@@ -385,14 +384,27 @@ export async function getSwapTransaction(txId: string) {
         ],
       );
     } else {
-      const confirmationResponse = await fetch(`https://api.aox.xyz/tx/${txId}`);
-      const confirmationTx = (await confirmationResponse.json()) as AoxBridgeTransaction;
-      tx.node.tags.push(
-        ...[
-          { name: "Bridge-Status", value: confirmationTx.status },
-          { name: "To-Quantity", value: confirmationTx.quantity },
-        ],
-      );
+      if (provider === "AOX") {
+        const confirmationTx = await getAoxBridgeTransaction(txId);
+        tx.node.tags.push(
+          ...[
+            { name: "Bridge-Status", value: confirmationTx.status },
+            { name: "To-Quantity", value: confirmationTx.quantity },
+          ],
+        );
+      } else {
+        const confirmationTx = await getVentoBridgeTransaction(txId);
+        tx.node.tags.push(
+          ...[
+            { name: "Bridge-Status", value: confirmationTx.status },
+            { name: "To-Quantity", value: confirmationTx.outputAmountRaw },
+            {
+              name: "OrderStatus",
+              value: confirmationTx.failureReason && confirmationTx.failureReason !== "" ? "Error" : "Swapped",
+            },
+          ],
+        );
+      }
     }
 
     return tx;

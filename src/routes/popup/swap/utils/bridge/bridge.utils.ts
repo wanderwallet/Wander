@@ -12,10 +12,11 @@ import { AR_PROCESS_ID, WAR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 import BigNumber from "bignumber.js";
 import { gql } from "~gateways/api";
 import { retryWithDelay } from "~utils/promises/retry";
-import { SWAP_TXS_QUERY } from "../dex/dex.constants";
+import { SWAP_TXS_QUERY, VENTO_SWAP_QUERY_WITH_CURSOR } from "../dex/dex.constants";
 import { parseSwapTransaction, validateGqlResponse } from "../swap.utils";
 import { goldskyGateway } from "~gateways/gateway";
 import { PoolTypeEnum } from "../swap.constants";
+import type { GQLEdgeInterface } from "ar-gql/dist/faces";
 
 const aoxBridgeTxTypes = new Set(["mint", "burn"]);
 
@@ -188,6 +189,52 @@ export async function getAoxBridgeTransactions(address: string, cursor = "0") {
     }, 2);
 
     const parsedTransactions = transactions.map(parseSwapTransaction).filter(Boolean);
+    return { txs: parsedTransactions, hasNextPage, cursor };
+  }, 2);
+
+  return result;
+}
+
+export async function getVentoBridgeTransactions(address: string, cursor = "0") {
+  const result = await retryWithDelay(async () => {
+    const data = await gql(VENTO_SWAP_QUERY_WITH_CURSOR, { address, after: cursor }, goldskyGateway);
+
+    validateGqlResponse(data);
+
+    const edges = data?.data?.transactions?.edges || [];
+    if (edges.length === 0) return { txs: [], hasNextPage: false, cursor };
+
+    cursor = edges[edges.length - 1].cursor;
+    const hasNextPage = data?.data?.transactions?.pageInfo?.hasNextPage || false;
+
+    const txMap = new Map<string, GQLEdgeInterface>();
+
+    for (const edge of edges) {
+      txMap.set(edge.node.id, edge);
+    }
+
+    const finalEdges = [];
+
+    const txIds = Array.from(txMap.keys());
+    const results = await Promise.allSettled(txIds.map(getVentoBridgeTransaction));
+    for (const result of results) {
+      if (result.status === "fulfilled") {
+        const tx = result.value;
+        const swapTx = txMap.get(tx.txId);
+        if (swapTx) {
+          swapTx.node.tags.push(
+            ...[
+              { name: "Bridge-Status", value: tx.status },
+              { name: "To-Quantity", value: tx.outputAmountRaw },
+              { name: "OrderStatus", value: tx.failureReason && tx.failureReason !== "" ? "Error" : "Swapped" },
+            ],
+          );
+          finalEdges.push(swapTx);
+        }
+      }
+    }
+
+    const parsedTransactions = finalEdges.map(parseSwapTransaction).filter(Boolean);
     return { txs: parsedTransactions, hasNextPage, cursor };
   }, 2);
 
