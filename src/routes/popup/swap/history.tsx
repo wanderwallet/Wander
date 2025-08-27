@@ -108,12 +108,12 @@ const SwapHistoryListItem = ({ tx }: SwapHistoryListItemProps) => {
         </Flex>
       }
       subtitle={
-        <Flex justify="space-between" align="center" width="100%">
+        <Flex gap={8} justify="space-between" align="flex-start" width="100%">
           <Text size="sm" variant="secondary" weight="medium" noMargin>
             {valueInFormatted.displayBalance} {tx.tokenIn.Ticker} &gt; {valueOutFormatted.displayBalance}{" "}
             {tx.tokenOut.Ticker}
           </Text>
-          <Text size="sm" variant="secondary" weight="medium" noMargin>
+          <Text size="sm" variant="secondary" weight="medium" style={{ flexShrink: 0 }} noMargin>
             {dayjs(tx.timestamp).format("MMM D")}
           </Text>
         </Flex>
@@ -152,4 +152,5 @@ const Wrapper = styled(Section)`
   justify-content: space-between;
   position: relative;
   overflow-y: auto;
+  gap: 12px;
 `;
