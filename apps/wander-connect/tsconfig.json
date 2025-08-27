@@ -3,6 +3,9 @@
   "include": [],
   "references": [
     {
+      "path": "../../libs/ui"
+    },
+    {
       "path": "../../libs/core"
     },
     {

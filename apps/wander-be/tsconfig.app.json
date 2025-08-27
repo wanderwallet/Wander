@@ -48,7 +48,7 @@
   ],
   "references": [
     {
-      "path": "../../libs/core/tsconfig.lib.json"
+      "path": "../../libs/ui/tsconfig.lib.json"
     }
   ]
 

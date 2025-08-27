@@ -3,7 +3,7 @@
   "include": [],
   "references": [
     {
-      "path": "../../libs/core"
+      "path": "../../libs/ui"
     },
     {
       "path": "./tsconfig.app.json"
