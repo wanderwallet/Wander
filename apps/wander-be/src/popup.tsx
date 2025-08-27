@@ -7,7 +7,7 @@ import { useExtensionLocation } from "~wallets/router/extension/extension-router
 import { WalletsProvider } from "~utils/wallets/wallets.provider";
 import { useEffect, useState } from "react";
 import { handleSyncLabelsAlarm } from "~api/background/handlers/alarms/sync-labels/sync-labels-alarm.handler";
-import { ErrorBoundary } from "~utils/error/ErrorBoundary/errorBoundary";
+import { ErrorBoundary } from "../../../libs/core-2/src/lib/utils/error/ErrorBoundary/errorBoundary";
 import { FallbackView } from "~components/page/common/Fallback/fallback.view";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ExtensionStorage } from "~utils/storage";

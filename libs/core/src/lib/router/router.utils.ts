@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo } from "react";
 import { useSearch as useWearch, useLocation as useWouterLocation } from "wouter";
-import { log, LOG_GROUP } from "~utils/log/log.utils";
 import {
   type RouteConfig,
   type WanderRoutePath,
@@ -11,7 +10,8 @@ import {
   type NavigateOptions,
   type NavigateAction,
   type BaseLocationHook,
-} from "~wallets/router/router.types";
+} from "./router.types";
+import { log, LOG_GROUP } from "../utils/log/log.utils";
 
 export const OVERRIDES_PREFIX = "/__OVERRIDES/" as const;
 export const REDIRECT_PREFIX = "/__REDIRECT/" as const;
@@ -58,16 +58,6 @@ export function routeTrapOutside<T extends RoutePath, R extends RoutePath>(
   return location === baseRoute || location.startsWith(`${baseRoute}/`)
     ? (`${REDIRECT_PREFIX}${redirectTo.slice(1)}` as RouteRedirect<R>)
     : null;
-}
-
-export function BodyScroller() {
-  const { location } = useLocation();
-
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [location]);
-
-  return null;
 }
 
 // TODO: This doesn't work at all when using <Link /> as its updates won't be pushed to `customHistory`...

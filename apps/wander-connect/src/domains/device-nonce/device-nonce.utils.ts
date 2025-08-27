@@ -1,8 +1,8 @@
 import { nanoid } from "nanoid";
-import { LocalStorage } from "~iframe/storage/unpartitioned-storage/local-storage";
-import { DEVICE_NONCE_KEY } from "~utils/_embedded/device-nonce/device-nonce.constants";
-import { setDeviceNonceHeader } from "~utils/_embedded/embedded.utils";
-import { log, LOG_GROUP } from "~utils/log/log.utils";
+import { DEVICE_NONCE_KEY } from "./device-nonce.constants";
+import { setDeviceNonceHeader } from "../../utils/embedded.utils";
+import { log, LOG_GROUP } from "@wanderapp/core";
+import { LocalStorage } from "../../utils/storage/unpartitioned-storage/local-storage";
 
 const INVALID_DEVICE_NONCE_ERR_MSG = "Invalid deviceNonce";
 const MISSING_DEVICE_NONCE_ERR_MSG = "Missing deviceNonce";
@@ -17,7 +17,7 @@ export function isDeviceNonceValid(deviceNonce: string): boolean {
 
 export async function loadDeviceNonce(): Promise<DeviceNonce | null> {
   const storage = await LocalStorage.getInstance();
-  let deviceNonce = (await storage.getItem(DEVICE_NONCE_KEY)) || null;
+  const deviceNonce = (await storage.getItem(DEVICE_NONCE_KEY)) || null;
 
   if (deviceNonce === null || isDeviceNonceValid(deviceNonce)) {
     return deviceNonce as DeviceNonce;
@@ -73,7 +73,7 @@ export async function getDeviceNonce(): Promise<DeviceNonce> {
   }
 
   const storage = await LocalStorage.getInstance();
-  let storedDeviceNonce = (await storage.getItem(DEVICE_NONCE_KEY)) || null;
+  const storedDeviceNonce = (await storage.getItem(DEVICE_NONCE_KEY)) || null;
 
   if (storedDeviceNonce === _deviceNonce) return _deviceNonce;
 

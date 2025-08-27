@@ -1,5 +1,5 @@
 import { ListItem } from "@arconnect/components-rebrand";
-import type { Icon } from "../../../../../../libs/core/src/lib/utils/settings/setting";
+import type { Icon } from "../../../../../../libs/core-2/src/lib/utils/settings/setting";
 import type { HTMLProps } from "react";
 import { LinkExternal02 } from "@untitled-ui/icons-react";
 import browser from "webextension-polyfill";

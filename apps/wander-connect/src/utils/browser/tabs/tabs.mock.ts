@@ -1,9 +1,9 @@
-import { EMBEDDED_ANCESTOR_TAB_ID } from "~utils/embedded/embedded.constants";
-import { getEmbeddedAncestorOrigin } from "~utils/embedded/iframe.utils";
-import { isExternalURL } from "~utils/urls/isExternalURL";
+import { isExternalURL } from "@wanderapp/core";
+import { getEmbeddedAncestorOrigin } from "../../iframe.utils";
+import { EMBEDDED_ANCESTOR_TAB_ID } from "../../embedded.constants";
 
 export const tabs = {
-  create: async ({ url }) => {
+  create: async ({ url }: { url: string }) => {
     if (process.env.NODE_ENV === "development") console.log(`tabs.create({ ${url} })`);
 
     const externalUrl = isExternalURL(url);

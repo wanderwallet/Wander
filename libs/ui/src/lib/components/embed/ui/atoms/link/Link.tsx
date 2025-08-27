@@ -5,7 +5,7 @@ import type { LinkBaseProps } from "./Link.types";
 
 // TODO: Prevent middle button click for non-external links.
 
-const Link = forwardRef<HTMLAnchorElement, LinkBaseProps>(
+const UNUSED_Link = forwardRef<HTMLAnchorElement, LinkBaseProps>(
   (
     {
       href,
@@ -50,6 +50,6 @@ const Link = forwardRef<HTMLAnchorElement, LinkBaseProps>(
   },
 );
 
-Link.displayName = "Link";
+UNUSED_Link.displayName = "Link";
 
-export { Link };
+export { UNUSED_Link };

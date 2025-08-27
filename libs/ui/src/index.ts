@@ -1,8 +1,34 @@
+export * from "./lib/components/be/Balance";
+export * from "./lib/components/be/CopyToClipboard";
+export * from "./lib/components/be/PasswordStrength";
+export * from "./lib/components/be/QRCodeLoop";
+export * from "./lib/components/be/QRCodeWrapper";
+export * from "./lib/components/be/TokenLogo";
+
+export * from "./lib/components/common/AnimatedStarContainer";
+export * from "./lib/components/common/Box";
+export * from "./lib/components/common/Flex";
+export * from "./lib/components/common/IconButton";
+export * from "./lib/components/common/Image/Image";
+export * from "./lib/components/common/InputButton";
+export * from "./lib/components/common/Link";
+export * from "./lib/components/common/ParseTextWithLinks";
+
+export * from "./lib/components/dev/button/button.component";
+export * from "./lib/components/dev/buttons/buttons.component";
+export * from "./lib/components/dev/env-panel/EnvPanel";
+export * from "./lib/components/dev/figma-screen/figma-screen.component";
+export * from "./lib/components/dev/resize-event-observer/ResizeEventObserver";
+export * from "./lib/components/dev/spinner/spinner.component";
+export * from "./lib/components/dev/spinner-cover/spinner-cover.component";
+
 export * from "./lib/components/embed/auth/Message";
 export * from "./lib/components/embed/auth/SignDataItem";
 export * from "./lib/components/embed/auth/SignDataItemDetails";
 export * from "./lib/components/embed/auth/TransactionMessage";
 export * from "./lib/components/embed/auth/TransactionTag";
+
+export * from "./lib/components/embed/icons/index";
 
 export * from "./lib/components/embed/ui/atoms/avatar/Avatar";
 export * from "./lib/components/embed/ui/atoms/avatar/Avatar.types";
@@ -64,6 +90,15 @@ export * from "./lib/components/embed/ui/organisms/qr-loop-scanner/QRLoopScanner
 
 export * from "./lib/components/embed/ui/templates/no-unpartitioned-state-banner/NoUnpartitionedStateBanner";
 export * from "./lib/components/embed/ui/templates/wander-footer/WanderFooter";
+
+export * from "./lib/router/body-scroller/body-scroller.component";
+export * from "./lib/router/link/Link";
+export * from "./lib/router/page/page.component";
+export * from "./lib/router/page/page.utils";
+export * from "./lib/router/page/common/Fallback/fallback.view";
+export * from "./lib/router/page/common/loading/loading.view";
+export * from "./lib/router/redirect/Redirect";
+export * from "./lib/router/routes.component";
 
 export * from "./lib/theme/observer/theme-observer.component";
 export * from "./lib/theme/styled-components/styled-components.provider";

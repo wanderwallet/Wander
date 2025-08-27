@@ -44,9 +44,7 @@
     "src/**/*.jsx",
     "src/**/*.ts",
     "src/**/*.tsx",
-    "./shim.d.ts",
-    "../../libs/core/src/lib/utils/storage/storage.ts", // "vite.config.js",
-    "../../libs/core/src/lib/utils/format/format.ts" // "vite.config.js"
+    "./shim.d.ts"
   ],
   "references": [
     {

@@ -1,3 +1,3 @@
-export default function SignDataItem() {
+export function SignDataItem() {
   return <div>SignDataItem</div>;
 }

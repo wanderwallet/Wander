@@ -3,8 +3,8 @@ import { isInsideIframe, EMBEDDED_CLIENT_ID, EMBEDDED_ANCESTOR_ORIGIN, EMBEDDED_
 import { SUPABASE_AUTH_TOKEN_KEY_REGEXP } from "./embedded.constants";
 import { LocalStorage } from "./storage/unpartitioned-storage/local-storage";
 import { postEmbeddedMessage } from "./utils/messages/embedded-messages.utils";
-import { Wallet } from "./embedded.types";
-import { ExtensionStorage } from "@wanderapp/core";
+import { RecoveryJSON, Wallet } from "./embedded.types";
+import { ExtensionStorage, downloadFile } from "@wanderapp/core";
 
 export function getBackupsNeededAndMessage(wallets: Wallet[]) {
   const backupsNeeded = wallets.filter((wallet) => {
@@ -27,6 +27,31 @@ export function getBackupsNeededAndMessage(wallets: Wallet[]) {
     backupsNeeded,
     backupMessage,
   };
+}
+
+export interface DownloadRecoveryFileData {
+  walletId: string;
+  recoveryBackupShare: string;
+  recoveryFileServerSignature: string;
+}
+
+export function downloadRecoveryFile(address: string, downloadRecoveryFileData: DownloadRecoveryFileData) {
+  const { walletId, recoveryBackupShare, recoveryFileServerSignature } = downloadRecoveryFileData;
+
+  downloadFile(
+    JSON.stringify(
+      {
+        version: "1",
+        walletId,
+        recoveryBackupShare,
+        recoveryFileServerSignature,
+      } satisfies RecoveryJSON,
+      null,
+      2,
+    ),
+    "application/json",
+    `wander-embedded-recovery-file-${address}.json`,
+  );
 }
 
 const signOutListeners = new Set<() => void>();

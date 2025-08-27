@@ -1,11 +1,9 @@
-import { getSupabaseClient, trpcVanilla } from "~utils/_embedded/embedded.utils";
 import type { Session } from "@supabase/supabase-js";
 import type {
   AuthSignInWithPasswordParams,
   AuthVerifyOtpParams,
   OAutProviderType,
-} from "~utils/_embedded/embedded.types";
-import { isInsideIframe } from "~utils/_embedded/iframe.utils";
+} from "../../utils/embedded.types";
 import {
   POPUP_CHECK_INTERVAL_MS,
   POPUP_AUTHENTICATION_TIMEOUT_MS,
@@ -14,9 +12,11 @@ import {
   isOAuthErrorMessage,
   isOAuthSuccessMessage,
   OAuthErrorCode,
-} from "~utils/authentication/authentication.utils";
-import type { OAuthResultMessage } from "~utils/authentication/authentication.types";
+} from "./authentication.utils";
+import type { OAuthResultMessage } from "./authentication.types";
 import type { SupabaseUserMetadata, SupabaseProvider } from "embed-api";
+import { getSupabaseClient } from "../../utils/embedded.utils";
+import { isInsideIframe } from "../../utils/iframe.utils";
 
 const SUPABASE_PROVIDER_BY_OAUTH_PROVIDER_TYPE: Record<OAutProviderType, SupabaseProvider | null> = {
   GOOGLE: "google",

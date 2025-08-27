@@ -15,7 +15,7 @@ interface TransactionMessageProps {
   txDetailsPath: null | ConnextTxDetailsRoutePath;
 }
 
-export default function TransactionMessage({ transaction, txDetailsPath }: TransactionMessageProps) {
+export function TransactionMessage({ transaction, txDetailsPath }: TransactionMessageProps) {
   const { navigate } = useLocation();
   const [message, setMessage] = useState<string>("");
 

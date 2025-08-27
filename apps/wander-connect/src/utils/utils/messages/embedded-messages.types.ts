@@ -1,5 +1,5 @@
 import type { AuthProviderType } from "embed-api";
-import type { EmbeddedLayout, RouteType } from "~utils/_embedded/utils/routes/embedded-routes.utils";
+import type { EmbeddedLayout, RouteType } from "../routes/embedded-routes.utils";
 
 export type EmbeddedMessageId =
   | "embedded_auth"

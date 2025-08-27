@@ -1,6 +1,6 @@
 import type { Alarms } from "webextension-polyfill";
 
-interface AlarmWithTimer extends Alarms.Alarm {
+export interface AlarmWithTimer extends Alarms.Alarm {
   timeoutID?: number;
   intervalID?: number;
 }

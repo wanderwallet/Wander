@@ -1,8 +1,8 @@
 import { Storage as PlasmoStorage, type StorageCallbackMap, type StorageWatchCallback } from "@plasmohq/storage";
 import { EnhancedStorage } from "../unpartitioned-storage/unpartitioned-storage";
-import type { ItemStorageOptions } from "~iframe/storage/storage-manager/storage-manager.utils";
-import type { StorageManager } from "~iframe/storage/storage-manager/storage-manager";
-import { LocalStorage } from "~iframe/storage/unpartitioned-storage/local-storage";
+import { ItemStorageOptions } from "../storage-manager/storage-manager.utils";
+import { StorageManager } from "../storage-manager/storage-manager";
+import { LocalStorage } from "../unpartitioned-storage/local-storage";
 
 export interface StorageMockInterface extends PlasmoStorage {
   setItem<T>(key: string, value: T, options?: ItemStorageOptions): Promise<void>;
@@ -224,7 +224,7 @@ export class StorageMock extends PlasmoStorage implements StorageMockInterface {
   /**
    * Store cache data with automatic expiration and lower priority
    */
-  setCache<T>(key: string, value: T, maxAge: number = 3600000): Promise<void> {
+  setCache<T>(key: string, value: T, maxAge = 3600000): Promise<void> {
     return new Promise((resolve) => {
       this.storage.setCache(key, value, maxAge);
       resolve();
@@ -244,7 +244,7 @@ export class StorageMock extends PlasmoStorage implements StorageMockInterface {
   /**
    * Store temporary data that can be easily evicted
    */
-  setTemporary<T>(key: string, value: T, maxAge: number = 300000): Promise<void> {
+  setTemporary<T>(key: string, value: T, maxAge = 300000): Promise<void> {
     return new Promise((resolve) => {
       this.storage.setTemporary(key, value, maxAge);
       resolve();
@@ -264,7 +264,7 @@ export class StorageMock extends PlasmoStorage implements StorageMockInterface {
   /**
    * Check if storage is near capacity and evict items if needed
    */
-  async evictIfNeeded(bytesNeeded: number = 0): Promise<boolean> {
+  async evictIfNeeded(bytesNeeded = 0): Promise<boolean> {
     return this.storage.evictIfNeeded(bytesNeeded);
   }
 

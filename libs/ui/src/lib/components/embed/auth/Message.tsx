@@ -2,7 +2,7 @@ import browser from "webextension-polyfill";
 import { useMemo, useState } from "react";
 import { Box, Row, Text } from "../ui";
 
-export default function Message({ message }: Props) {
+export function Message({ message }: Props) {
   const [decodeType, setDecodeType] = useState("UTF-8");
   const availableDecodeTypes = ["utf-8", "hex", "ibm866", "mac", "windows-1251", "gbk", "utf-16"];
 

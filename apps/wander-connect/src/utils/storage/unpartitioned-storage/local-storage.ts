@@ -1,12 +1,10 @@
-import { isInsideIframe } from "~utils/embedded/iframe.utils";
 import { EnhancedStorage } from "./unpartitioned-storage";
-import Cookies from "js-cookie";
-import type { CookieAttributes } from "node_modules/@types/js-cookie";
-import { getUnpartitionedStateStatus } from "~iframe/storage/unpartitioned-storage/unpartitioned-storage.utils";
-import { browserInfo } from "~utils/browser-info/browser-info.utils";
-import { log, LOG_GROUP } from "~utils/log/log.utils";
-import { SUPABASE_AUTH_TOKEN_KEY_REGEXP } from "~utils/embedded/embedded.constants";
-import { DEVICE_NONCE_KEY } from "~utils/embedded/device-nonce/device-nonce.constants";
+import JsCookie from "js-cookie";
+import { log, LOG_GROUP, browserInfo } from "@wanderapp/core";
+import { isInsideIframe } from "../../iframe.utils";
+import { getUnpartitionedStateStatus } from "./unpartitioned-storage.utils";
+
+type CookieAttributes = typeof JsCookie["attributes"];
 
 export class LocalStorage {
   private static instance: LocalStorage | null = null;
@@ -20,7 +18,7 @@ export class LocalStorage {
   private static readonly CHUNK_SUFFIX = "_chunk_";
   private static readonly CHUNK_META_SUFFIX = "_chunk_meta";
 
-  private cookieStoreAvailable: boolean = false;
+  private cookieStoreAvailable = false;
   private isHttps: boolean;
   private storage: EnhancedStorage;
 
@@ -171,8 +169,8 @@ export class LocalStorage {
 
       try {
         // Fallback to js-cookie
-        Cookies.set(key, value, this.JS_COOKIE_OPTIONS);
-        const result = Cookies.get(key);
+        JsCookie.set(key, value, this.JS_COOKIE_OPTIONS);
+        const result = JsCookie.get(key);
 
         if (result !== value) {
           throw new Error(`Failed to set jsCookie "${key}" = "${value}" ("${result}" read).`);
@@ -199,10 +197,10 @@ export class LocalStorage {
     } catch (err) {
       if (err.message !== LocalStorage.NO_COOKIE_STORE_ERR) console.warn(`Error reading cookie "${key}":`, err);
 
-      console.warn(`Getting jsCookie "${key}" =`, Cookies.get(key));
+      console.warn(`Getting jsCookie "${key}" =`, JsCookie.get(key));
 
       try {
-        return Cookies.get(key) || null;
+        return JsCookie.get(key) || null;
       } catch (jsCookieError) {
         console.warn(`Error reading jsCookie "${key}":`, jsCookieError);
       }
@@ -407,7 +405,7 @@ export class LocalStorage {
       if (err.message !== LocalStorage.NO_COOKIE_STORE_ERR) console.warn(`Error removing cookie "${key}":`, err);
 
       try {
-        Cookies.remove(key, this.JS_COOKIE_OPTIONS);
+        JsCookie.remove(key, this.JS_COOKIE_OPTIONS);
       } catch (jsCookieError) {
         console.warn(`Error removing jsCookie "${key}":`, jsCookieError);
       }

@@ -2,7 +2,7 @@ import { Card } from "~components/embed/ui/molecules/card/Card";
 import type { CardBaseProps } from "~components/embed/ui/molecules/card/Card.types";
 import { XClose } from "@untitled-ui/icons-react";
 import { Button } from "~components/embed/ui/atoms";
-import browser from "~iframe/browser";
+import browser from "webextension-polyfill";
 import { useEffect } from "react";
 
 import styles from "./AuthRequestCard.module.scss";

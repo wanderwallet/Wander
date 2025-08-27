@@ -1,5 +1,5 @@
 import browser from "webextension-polyfill";
-import { ExtensionStorage } from "../../../../../libs/core/src/lib/utils/storage/storage";
+import { ExtensionStorage } from "../../../../../libs/core-2/src/lib/utils/storage/storage";
 import { getDecryptionKey, removeDecryptionKey } from "~wallets/auth";
 import { log, LOG_GROUP } from "../log/log.utils";
 import { INACTIVITY } from "./inactivity.constants";

@@ -1,18 +1,14 @@
 import type { JWKInterface } from "arweave/web/lib/wallet";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { setupBackgroundService } from "~api/background/background-setup";
-import { WalletService } from "~utils/wallets/wallets.service";
-import { WalletUtils } from "~utils/wallets/wallets.utils";
-import { getKeyfile, getWallets, type LocalWallet } from "~wallets";
+import { setupBackgroundService, WalletService, WalletUtils, getKeyfile, getWallets, type LocalWallet, defaultGateway, freeDecryptedWallet,
+  downloadKeyfile as downloadKeyfileUtil, sleep, log, LOG_GROUP, ExtensionStorage, PersistentStorage, useStorage, StorageKeys,
+  AO_TOKENS,
+  AO_TOKENS_AUTO_IMPORT_RESTRICTED_IDS,
+  AO_TOKENS_CACHE,
+  AO_TOKENS_IDS,
+  AO_TOKENS_IMPORT_TIMESTAMP,
+  AO_TOKENS_LAST_BLOCK_HEIGHT, loadTokens, useAsyncEffect, withRetry, useLocation } from "@wanderapp/core";
 import Arweave from "arweave";
-import { defaultGateway } from "~gateways/gateway";
-import { freeDecryptedWallet } from "~wallets/encryption";
-import {
-  downloadKeyfile as downloadKeyfileUtil,
-  downloadRecoveryFile,
-  type DownloadRecoveryFileData,
-} from "~utils/file";
-import { sleep } from "~utils/promises/sleep";
 import type {
   EmbeddedContextState,
   EmbeddedProviderProps,
@@ -24,15 +20,14 @@ import type {
   Wallet,
   OAutProviderType,
   AuthEmailParams,
-} from "~utils/_embedded/embedded.types";
+} from "./embedded.types";
 import {
   setAuthTokenHeader,
   getSupabaseClient,
   signOut,
   getBackupsNeededAndMessage,
   checkStoredSupabaseAuthToken,
-} from "~utils/_embedded/embedded.utils";
-import { log, LOG_GROUP } from "~utils/log/log.utils";
+} from "./embedded.utils";
 import {
   AuthProviderType,
   solveChallenge,
@@ -42,43 +37,29 @@ import {
   type SupabaseAuthChangeEvent,
   type SupabaseSession,
 } from "embed-api";
-import { AuthenticationService } from "~utils/authentication/authentication.service";
-import { EMBEDDED_FEATURE_FLAGS, EMBEDDED_SDK_AUTH_STATUS_BY_AUTH_STATUS } from "~utils/_embedded/embedded.constants";
-import { isTempWalletPromiseExpired } from "~utils/_embedded/utils/wallets/embedded-wallets.utils";
+import { AuthenticationService } from "../domains/authentication/authentication.service";
+import { EMBEDDED_FEATURE_FLAGS, EMBEDDED_SDK_AUTH_STATUS_BY_AUTH_STATUS } from "./embedded.constants";
 import copy from "copy-to-clipboard";
 import {
   getAuthProviderTypeFromSupabaseUser,
   getUserDetailsFromSupabaseUser,
   postEmbeddedMessage,
-} from "~utils/_embedded/utils/messages/embedded-messages.utils";
-import { ExtensionStorage, PersistentStorage, useStorage } from "~utils/storage";
-import { StorageKeys } from "~utils/storage/storage.constants";
-import {
-  AO_TOKENS,
-  AO_TOKENS_AUTO_IMPORT_RESTRICTED_IDS,
-  AO_TOKENS_CACHE,
-  AO_TOKENS_IDS,
-  AO_TOKENS_IMPORT_TIMESTAMP,
-  AO_TOKENS_LAST_BLOCK_HEIGHT,
-} from "~tokens/aoTokens/sync";
-import { loadTokens } from "~tokens/token";
+} from "./utils/messages/embedded-messages.utils";
 import {
   addUnpartitionedStateStatusChangeListener,
   getUnpartitionedStateStatus,
   removeUnpartitionedStateStatusChangeListener,
   type UnpartitionedStateStatusChangeData,
-} from "~iframe/storage/unpartitioned-storage/unpartitioned-storage.utils";
-import { useAsyncEffect } from "../../../../libs/core/src/lib/utils/react/useAsyncEffect";
+} from "./storage/unpartitioned-storage/unpartitioned-storage.utils";
 import { isomorphicOnMessage } from "~isomorphic-messaging";
-import { useTheme } from "~utils/theme/theme.hook";
-import { withRetry } from "~utils/promises/retry";
-import { createAnonSession, INITIAL_ANON_SESSION, parseSupabaseSession } from "~utils/_embedded/session/session.utils";
-import { useLocation } from "~wallets/router/router.utils";
+import { useTheme } from "@wanderapp/ui";
+import { createAnonSession, INITIAL_ANON_SESSION, parseSupabaseSession } from "../domains/session/session.utils";
 import {
   EMBEDDED_CONTEXT_INITIAL_AUTH,
   EMBEDDED_CONTEXT_INITIAL_STATE,
   EmbeddedContext,
-} from "~utils/_embedded/embedded.context";
+} from "./embedded.context";
+import { isTempWalletPromiseExpired } from "./utils/wallets/embedded-wallets.utils";
 
 export function EmbeddedProvider({ children }: EmbeddedProviderProps) {
   const [embeddedContextState, setEmbeddedContextState] =

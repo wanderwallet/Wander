@@ -8,8 +8,8 @@ import type {
   WalletSourceType,
   DbSession,
 } from "embed-api";
-import type { LocalWallet } from "~wallets/wallets.types";
-import type { UnpartitionedStateStatus } from "~iframe/storage/unpartitioned-storage/unpartitioned-storage.utils";
+import { LocalWallet } from "@wanderapp/core";
+import { UnpartitionedStateStatus } from "./storage/unpartitioned-storage/unpartitioned-storage.utils";
 
 export type AuthStatus =
   | "unknown"
@@ -61,9 +61,9 @@ export interface TempWalletPromise {
   controller: AbortController;
 }
 
-export interface EmbeddedProviderProps extends PropsWithChildren {}
+export type EmbeddedProviderProps = PropsWithChildren
 
-export interface RecoverableAccountWallet extends Pick<Wallet, "canBeRecovered" | "address"> {}
+export type RecoverableAccountWallet = Pick<Wallet, "canBeRecovered" | "address">
 
 export interface EmbeddedContextState {
   currentWalletId: string;

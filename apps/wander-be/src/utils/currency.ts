@@ -1,4 +1,4 @@
-import { ExtensionStorage } from "../../../../libs/core/src/lib/utils/storage/storage";
+import { ExtensionStorage } from "../../../../libs/core-2/src/lib/utils/storage/storage";
 
 interface ExchangeRateResponse {
   result: string;

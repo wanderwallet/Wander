@@ -9,7 +9,7 @@ import { useMemo } from "react";
 import discordLogo from "url:/assets/setup/discord-logo.svg";
 import { useActiveTier } from "~utils/tier/hooks";
 import { tierNameToId, TierTypes } from "~utils/tier/constants";
-import type { Icon } from "../../../../../libs/core/src/lib/utils/settings/setting";
+import type { Icon } from "../../../../../libs/core-2/src/lib/utils/settings/setting";
 import type { HTMLProps } from "react";
 
 export function HelpListItems() {

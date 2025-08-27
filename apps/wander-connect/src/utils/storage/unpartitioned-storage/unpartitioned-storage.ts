@@ -1,18 +1,17 @@
-import { isInsideIframe } from "~utils/embedded/iframe.utils";
-import { log, LOG_GROUP } from "~utils/log/log.utils";
+import { log, LOG_GROUP, isError } from "@wanderapp/core";
 import {
   getUnpartitionedStateStatus,
   HAS_SIMPLE_STORAGE_API,
   setUnpartitionedStateStatus,
   type UnpartitionedStateStatus,
 } from "./unpartitioned-storage.utils";
-import { isError } from "~utils/error/error.utils";
 import {
   isComplexStorageItem,
   type ItemStorageOptions,
   type StorageItem,
-} from "~iframe/storage/storage-manager/storage-manager.utils";
-import { StorageManager } from "~iframe/storage/storage-manager/storage-manager";
+} from "../storage-manager/storage-manager.utils";
+import { StorageManager } from "../storage-manager/storage-manager";
+import { isInsideIframe } from "../../iframe.utils";
 
 type StorageType = "localStorage" | "sessionStorage";
 
@@ -461,7 +460,7 @@ export class EnhancedStorage implements Storage {
    * @param value The value to store
    * @param maxAge Maximum age in milliseconds
    */
-  setCache<T>(key: string, value: T, maxAge: number = 3600000): void {
+  setCache<T>(key: string, value: T, maxAge = 3600000): void {
     this.setPrioritizedItem(key, value, "LOW", maxAge);
   }
 
@@ -480,7 +479,7 @@ export class EnhancedStorage implements Storage {
    * @param value The value to store
    * @param maxAge Maximum age in milliseconds (default 5 minutes)
    */
-  setTemporary<T>(key: string, value: T, maxAge: number = 300000): void {
+  setTemporary<T>(key: string, value: T, maxAge = 300000): void {
     this.setPrioritizedItem(key, value, "TEMPORARY", maxAge);
   }
 
@@ -532,7 +531,7 @@ export class EnhancedStorage implements Storage {
    * @param aggressive If true, uses more aggressive eviction strategy
    * @returns True if eviction was successful, false if impossible
    */
-  evictIfNeeded(bytesNeeded: number, aggressive: boolean = false): boolean {
+  evictIfNeeded(bytesNeeded: number, aggressive = false): boolean {
     // Calculate target eviction size with different buffer strategies
     const limit = StorageManager.getStorageLimit();
     const bufferSize = aggressive ? 1024 : Math.max(limit * 0.1, 5120); // 5KB or 10%

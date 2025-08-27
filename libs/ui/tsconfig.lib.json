@@ -8,6 +8,7 @@
     "tsBuildInfoFile": "dist/tsconfig.lib.tsbuildinfo"
   },
   "exclude": [
+    "**/node_modules",
     "out-tsc",
     "dist",
     "**/*.spec.ts",

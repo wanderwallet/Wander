@@ -1,6 +1,7 @@
+import { asArray } from "@wanderapp/core";
+
 import enDic from "url:/assets/_locales/en/messages.json";
 import zhCnDic from "url:/assets/_locales/zh_CN/messages.json";
-import { asArray } from "~utils/array";
 
 const dictionaries = {
   en: enDic as unknown as Record<string, { message: string; description: string }>,

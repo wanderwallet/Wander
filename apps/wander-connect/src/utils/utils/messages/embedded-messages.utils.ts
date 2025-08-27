@@ -1,14 +1,14 @@
 import type { AuthProviderType, SupabaseUser } from "embed-api";
 import { nanoid } from "nanoid";
-import { getEmbeddedAncestorOrigin, isInsideIframe } from "~utils/_embedded/iframe.utils";
-import { AUTH_PROVIDER_TYPE_BY_PROVIDER_STR } from "~utils/_embedded/embedded.constants";
+import { getEmbeddedAncestorOrigin, isInsideIframe } from "../../iframe.utils";
+import { AUTH_PROVIDER_TYPE_BY_PROVIDER_STR } from "../../embedded.constants";
 import type {
   EmbeddedAuthMessageData,
   EmbeddedMessage,
   EmbeddedMessageId,
   EmbeddedMessageMap,
   EmbeddedUserDetails,
-} from "~utils/_embedded/utils/messages/embedded-messages.types";
+} from "./embedded-messages.types";
 
 const EMBEDDED_MESSAGE_IDS = [
   "embedded_auth",

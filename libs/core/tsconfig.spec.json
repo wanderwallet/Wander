@@ -3,8 +3,7 @@
   "compilerOptions": {
     "outDir": "./out-tsc/vitest",
     "types": ["vitest/globals", "vitest/importMeta", "vite/client", "node", "vitest"],
-    "module": "nodenext",
-    "moduleResolution": "nodenext"
+    "jsx": "react-jsx"
   },
   "include": [
     "vite.config.ts",

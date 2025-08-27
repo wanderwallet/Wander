@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { ExtensionStorage } from "../../../../../libs/core/src/lib/utils/storage/storage";
+import { ExtensionStorage } from "../../../../../libs/core-2/src/lib/utils/storage/storage";
 import { INACTIVITY } from "./inactivity.constants";
 import { inactivityManager } from "./inactivity.manager";
 import type { AutoLockSettings } from "./inactivity.types";

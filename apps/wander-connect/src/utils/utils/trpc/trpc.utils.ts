@@ -1,5 +1,5 @@
 import type { HttpStatusCode } from "axios";
-import type { trpcVanilla } from "~utils/_embedded/embedded.utils";
+import { trpcVanilla } from "../../embedded.utils";
 
 export interface TRPCErrorData {
   code: string;

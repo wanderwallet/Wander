@@ -2,7 +2,7 @@ import React, { forwardRef } from "react";
 import clsx from "clsx";
 import styles from "./Checkbox.module.css";
 import type { CheckboxBaseProps } from "./Checkbox.types";
-import { CheckIcon } from "../icon";
+import { CheckIcon } from "../../../icons";
 import { Text } from "../text";
 import { useTheme } from "../../../../../utils/theme/theme.hook";
 

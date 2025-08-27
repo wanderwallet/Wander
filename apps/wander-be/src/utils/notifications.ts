@@ -1,5 +1,5 @@
 import { arPlaceholder } from "~routes/popup/send";
-import { ExtensionStorage } from "../../../../libs/core/src/lib/utils/storage/storage";
+import { ExtensionStorage } from "../../../../libs/core-2/src/lib/utils/storage/storage";
 import type { Token } from "~tokens/token";
 import { AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 import type { Transaction } from "~api/background/handlers/alarms/notifications/notifications-alarm.utils";

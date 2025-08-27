@@ -1,6 +1,6 @@
 import type { SupabaseAuthError } from "embed-api";
 import type { Session } from "@supabase/supabase-js";
-import type { OAuthErrorCode } from "~utils/authentication/authentication.utils";
+import { OAuthErrorCode } from "./authentication.utils";
 
 export interface OAuthSuccessMessage {
   type: "OAUTH_SUCCESS";

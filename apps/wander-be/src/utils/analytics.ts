@@ -1,5 +1,5 @@
 import { getSetting } from "~settings";
-import { ExtensionStorage, TempTransactionStorage } from "../../../../libs/core/src/lib/utils/storage/storage";
+import { ExtensionStorage, TempTransactionStorage } from "../../../../libs/core-2/src/lib/utils/storage/storage";
 import { AnalyticsBrowser } from "@segment/analytics-next";
 import { getActiveKeyfile, getActiveAddress, getWalletKeyLength } from "~wallets";
 import browser from "webextension-polyfill";

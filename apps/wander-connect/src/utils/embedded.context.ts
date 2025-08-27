@@ -1,7 +1,7 @@
 import { createContext } from "react";
-import { getUnpartitionedStateStatus } from "~iframe/storage/unpartitioned-storage/unpartitioned-storage.utils";
-import type { EmbeddedContextAuth, EmbeddedContextData, EmbeddedContextState } from "~utils/_embedded/embedded.types";
-import { INITIAL_ANON_SESSION } from "~utils/_embedded/session/session.utils";
+import { INITIAL_ANON_SESSION } from "../domains/session/session.utils";
+import { EmbeddedContextAuth, EmbeddedContextData, EmbeddedContextState } from "./embedded.types";
+import { getUnpartitionedStateStatus } from "./storage/unpartitioned-storage/unpartitioned-storage.utils";
 
 export const EMBEDDED_CONTEXT_INITIAL_STATE = {
   currentWalletId: "",

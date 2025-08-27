@@ -1,7 +1,7 @@
-import { EMBEDDED_IFRAME_TAB_ID } from "~utils/embedded/embedded.constants";
+import { EMBEDDED_IFRAME_TAB_ID } from "../../embedded.constants";
 
 export const windows = {
-  create: async ({ url }) => {
+  create: async ({ url }: { url: string }) => {
     // URL =
     // browser.runtime.getURL("tabs/welcome.html")
     // browser.runtime.getURL("tabs/dashboard.html#/contacts")

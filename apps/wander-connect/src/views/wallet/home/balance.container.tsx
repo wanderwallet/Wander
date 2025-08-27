@@ -1,0 +1,12 @@
+import { Text, Box, Balance } from "@wanderapp/ui";
+
+export function WalletHomeBalance() {
+  return (
+    <Box alignment="center" style={{ gap: "0.5rem", marginTop: "var(--spacing-6)" }}>
+      <Text variant="bodySm" style={{ color: "var(--color-font-body)" }}>
+        Your Balance
+      </Text>
+      <Balance />
+    </Box>
+  );
+}

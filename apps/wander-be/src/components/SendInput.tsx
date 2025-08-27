@@ -2,7 +2,7 @@ import { type InputStatus, Text } from "@arconnect/components-rebrand";
 import { ChevronDown, AlertCircle, SearchSm } from "@untitled-ui/icons-react";
 import { type HTMLProps, useState, useMemo, type CSSProperties, type ReactNode } from "react";
 import styled from "styled-components";
-import { Flex } from "./common/Flex";
+import { Flex } from "../../../../libs/ui/src/lib/components/common/Flex";
 
 const heights = {
   small: "52px",

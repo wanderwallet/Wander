@@ -5,7 +5,7 @@ import { StyledComponentsThemeProvider } from "~utils/theme/styled-components/st
 import { useEffect } from "react";
 import { handleSyncLabelsAlarm } from "~api/background/handlers/alarms/sync-labels/sync-labels-alarm.handler";
 import { WalletsProvider } from "~utils/wallets/wallets.provider";
-import { ErrorBoundary } from "~utils/error/ErrorBoundary/errorBoundary";
+import { ErrorBoundary } from "../../../../libs/core-2/src/lib/utils/error/ErrorBoundary/errorBoundary";
 import { FallbackView } from "~components/page/common/Fallback/fallback.view";
 import { ThemeProvider } from "~utils/theme/theme.provider";
 import { QueryClientProvider } from "@tanstack/react-query";

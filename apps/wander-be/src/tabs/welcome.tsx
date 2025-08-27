@@ -6,7 +6,7 @@ import { BodyScroller } from "~wallets/router/router.utils";
 import { AnimatePresence } from "framer-motion";
 import { Routes } from "~wallets/router/routes.component";
 import { WELCOME_ROUTES } from "~wallets/router/welcome/welcome.routes";
-import { ErrorBoundary } from "~utils/error/ErrorBoundary/errorBoundary";
+import { ErrorBoundary } from "../../../../libs/core-2/src/lib/utils/error/ErrorBoundary/errorBoundary";
 import { FallbackView } from "~components/page/common/Fallback/fallback.view";
 import { ThemeProvider } from "~utils/theme/theme.provider";
 

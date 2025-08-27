@@ -8,7 +8,7 @@ import type {
   MintingStatus,
   SwapSuccessTransaction,
 } from "./types";
-import { ExtensionStorage, useStorage } from "../../../../../libs/core/src/lib/utils/storage/storage";
+import { ExtensionStorage, useStorage } from "../../../../../libs/core-2/src/lib/utils/storage/storage";
 import type GQLResultInterface from "ar-gql/dist/faces";
 import { gql } from "~gateways/api";
 import { retryWithDelay } from "~utils/promises/retry";

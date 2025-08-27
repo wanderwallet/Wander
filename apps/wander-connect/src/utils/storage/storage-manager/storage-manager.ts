@@ -1,4 +1,4 @@
-import { isComplexStorageItem } from "~iframe/storage/storage-manager/storage-manager.utils";
+import { isComplexStorageItem } from "./storage-manager.utils";
 
 /**
  * Storage Manager for handling localStorage and sessionStorage eviction policies
@@ -27,7 +27,7 @@ export class StorageManager {
    */
   static evictItems(
     storage: Storage,
-    bytesNeeded: number = 0,
+    bytesNeeded = 0,
     options: { bufferSize?: number; aggressive?: boolean } = {},
   ): boolean {
     const initialLength = storage.length;

@@ -1,6 +1,6 @@
-import type { AuthStatus } from "~utils/_embedded/embedded.types";
-import { EmbeddedPaths } from "~wallets/router/iframe/iframe.routes";
-import type { WanderRoutePath } from "~wallets/router/router.types";
+import type { AuthStatus } from "../../embedded.types";
+import { EmbeddedPaths } from "../../../router/dashboard/iframe.routes";
+import { WanderRoutePath } from "@wanderapp/core";
 
 export type RouteType = "auth" | "account" | "settings" | "auth-request" | "default";
 

@@ -7,9 +7,9 @@ import {
   type SupabaseUser,
 } from "embed-api";
 import { jwtDecode } from "jwt-decode";
-import { getDeviceNonce } from "~utils/_embedded/device-nonce/device-nonce.utils";
-import { getSupabaseClient } from "~utils/_embedded/embedded.utils";
-import { getAuthProviderTypeFromSupabaseUser } from "~utils/_embedded/utils/messages/embedded-messages.utils";
+import { getDeviceNonce } from "../device-nonce/device-nonce.utils";
+import { getSupabaseClient } from "../../utils/embedded.utils";
+import { getAuthProviderTypeFromSupabaseUser } from "../../utils/utils/messages/embedded-messages.utils";
 
 let hasSessionBeenRefreshed = false;
 
