@@ -181,3 +181,7 @@ export interface ParsedSwapTransaction {
   amountOut: string;
   status: "Pending" | "Completed" | "Failed";
 }
+
+export interface TokenInfoWithPoolPartners extends TokenInfo {
+  poolPartners: Set<string>;
+}

@@ -10,8 +10,14 @@ import { SwapInput } from "./components/SwapInput";
 import { type TokenInfo } from "~tokens/aoTokens/ao";
 import { DisclosureButton, DisclosureContent } from "~routes/popup/swap/components/Disclosure";
 import { SlippageInputButton } from "./components/SlippageInputButton";
-import { useARNetworkFee, usePoolForTokenPair, useSwapSlippage } from "./utils/swap.hooks";
-import type { SwapData, TokenSelectorType } from "./utils/swap.types";
+import {
+  useARNetworkFee,
+  usePoolForTokenPair,
+  useSwapReceiveToken,
+  useSwapSendToken,
+  useSwapSlippage,
+} from "./utils/swap.hooks";
+import type { SwapData, TokenInfoWithPoolPartners, TokenSelectorType } from "./utils/swap.types";
 import { TokenSelectorPopup } from "./components/TokenSelectorPopup";
 import BigNumber from "bignumber.js";
 import { useDefiFeeDetails } from "~utils/tier/hooks";
@@ -21,11 +27,11 @@ import { TempTransactionStorage } from "~utils/storage";
 import { useLocation, useSearchParams } from "~wallets/router/router.utils";
 import { AutoTag } from "./components/AutoTag";
 import { WanderFeeTag } from "./components/WanderFeeTag";
-import { AR_PROCESS_ID, USDA_TOKEN_INFO, WNDR_TOKEN_INFO } from "~tokens/aoTokens/ao.constants";
+import { AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 import { getErrorMessage, validateAmount } from "../send/amount";
 import { useAsyncEffect } from "~utils/react/useAsyncEffect";
 import { PopupPaths } from "~wallets/router/popup/popup.routes";
-import { AOX_BRIDGE_TOKEN_IDS, toFixed } from "./utils/swap.utils";
+import { toFixed } from "./utils/swap.utils";
 import { PageType, trackPage } from "~utils/analytics";
 import { TransactionDetailItem } from "./components/TransactionDetailItem";
 
@@ -38,8 +44,8 @@ export function SwapView() {
   const defiFeeDetails = useDefiFeeDetails();
   const [openTokenSelector, setOpenTokenSelector] = useState(false);
   const [valueIn, setValueIn] = useState("");
-  const [sendToken, setSendToken] = useState<TokenInfo>(USDA_TOKEN_INFO);
-  const [receiveToken, setReceiveToken] = useState<TokenInfo>(WNDR_TOKEN_INFO);
+  const [sendToken, setSendToken] = useSwapSendToken();
+  const [receiveToken, setReceiveToken] = useSwapReceiveToken();
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [tokenSelectorType, setTokenSelectorType] = useState<TokenSelectorType>("send");
   const { networkFee, isLoading: isNetworkFeeLoading } = useARNetworkFee({
@@ -150,11 +156,18 @@ export function SwapView() {
     setValueIn("");
   }
 
-  function handleUpdateToken(token: TokenInfo) {
+  function handleUpdateToken(token: TokenInfoWithPoolPartners) {
+    const finalToken: TokenInfo = {
+      Name: token.Name,
+      Denomination: token.Denomination,
+      Ticker: token.Ticker,
+      Logo: token.Logo,
+      processId: token.processId,
+    };
     if (tokenSelectorType === "send") {
-      setSendToken(token);
+      setSendToken(finalToken);
     } else {
-      setReceiveToken(token);
+      setReceiveToken(finalToken);
     }
     setValueIn("");
   }
@@ -374,7 +387,7 @@ const CrossedOutText = styled(Text).attrs({
   text-decoration-line: line-through;
 `;
 
-export const ErrorMsg = styled(Text).attrs({
+const ErrorMsg = styled(Text).attrs({
   size: "xs",
   weight: "medium",
   noMargin: true,

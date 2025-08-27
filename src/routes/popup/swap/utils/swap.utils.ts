@@ -27,7 +27,6 @@ import { retryWithDelay } from "~utils/promises/retry";
 import { gql } from "~gateways/api";
 import { goldskyGateway } from "~gateways/gateway";
 import { SWAP_CONFIRMATION_QUERY, SWAP_TX_QUERY } from "./dex/dex.constants";
-import type { AoxBridgeTransaction } from "./bridge/bridge.types";
 import { createStorageArray } from "./storage/storage.array";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { aox } from "./bridge/bridge.aox";
@@ -253,9 +252,9 @@ export function getProviderName(poolType: PoolType) {
 }
 
 export function getSwapTime(poolType: PoolType | Provider) {
+  if (!poolType) return "15s";
   const poolTypeLower = poolType.toLowerCase();
-  if (poolTypeLower === PoolTypeEnum.AOX) return "30-60m";
-  if (poolTypeLower === PoolTypeEnum.VENTO) return "10-30m";
+  if (poolTypeLower === PoolTypeEnum.AOX || poolTypeLower === PoolTypeEnum.VENTO) return "30-60m";
   return "15s";
 }
 

@@ -4,7 +4,7 @@ import { Flex } from "~components/common/Flex";
 import SliderMenu from "~components/SliderMenu";
 import type { TokenInfo } from "~tokens/aoTokens/ao";
 import { useTokensWithPagination } from "../utils/swap.hooks";
-import type { TokenSelectorType } from "../utils/swap.types";
+import type { TokenInfoWithPoolPartners, TokenSelectorType } from "../utils/swap.types";
 import styled from "styled-components";
 import browser from "webextension-polyfill";
 import Token from "~components/popup/Token";
@@ -13,7 +13,7 @@ interface TokenSelectorPopupProps {
   tokenSelectorType: TokenSelectorType;
   openTokenSelector: boolean;
   setOpenTokenSelector: React.Dispatch<React.SetStateAction<boolean>>;
-  handleUpdateToken: (token: TokenInfo) => void;
+  handleUpdateToken: (token: TokenInfoWithPoolPartners) => void;
   filterTokenId?: string;
 }
 

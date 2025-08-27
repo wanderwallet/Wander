@@ -15,6 +15,7 @@ import type {
   Pool,
   SelectedPoolInfo,
   SwapData,
+  TokenInfoWithPoolPartners,
   TokenPools,
   TokenSelectorType,
 } from "./swap.types";
@@ -28,10 +29,12 @@ import { log, LOG_GROUP } from "~utils/log/log.utils";
 import {
   AR_PROCESS_ID,
   AR_TOKEN_INFO,
+  USDA_TOKEN_INFO,
   VAR_PROCESS_ID,
   VAR_TOKEN_INFO,
   WAR_PROCESS_ID,
   WAR_TOKEN_INFO,
+  WNDR_TOKEN_INFO,
 } from "~tokens/aoTokens/ao.constants";
 import { aox } from "./bridge/bridge.aox";
 import { retryWithGateways } from "~gateways/wayfinder";
@@ -47,6 +50,7 @@ import { getBotegaTransactions, getPermaswapTransactions } from "./dex/dex.utils
 import { useActiveAddress } from "~wallets/hooks";
 import BigNumber from "bignumber.js";
 import { vento, VENTO_BRIDGE_ADDRESS } from "./bridge/bridge.vento";
+import type { TokenInfo } from "~tokens/aoTokens/ao";
 
 export function usePools() {
   return useQuery({
@@ -349,10 +353,11 @@ export function usePoolQuote({
 export function useTokens() {
   const { data: pools = [], isLoading } = usePools();
 
-  const tokens = useMemo(() => {
+  const tokens = useMemo<TokenInfoWithPoolPartners[]>(() => {
     if (pools.length === 0) return [];
 
     const uniqueTokens = new Map();
+    const tokenPoolPartners = new Map<string, Set<string>>();
 
     processToken(uniqueTokens, AR_TOKEN_INFO);
     processToken(uniqueTokens, WAR_TOKEN_INFO);
@@ -376,9 +381,22 @@ export function useTokens() {
         Logo: pool.tokenYLogo,
         processId: pool.tokenY,
       });
+
+      if (!tokenPoolPartners.has(pool.tokenX)) {
+        tokenPoolPartners.set(pool.tokenX, new Set());
+      }
+      if (!tokenPoolPartners.has(pool.tokenY)) {
+        tokenPoolPartners.set(pool.tokenY, new Set());
+      }
+
+      tokenPoolPartners.get(pool.tokenX).add(pool.tokenY);
+      tokenPoolPartners.get(pool.tokenY).add(pool.tokenX);
     }
 
-    return Array.from(uniqueTokens.values());
+    return Array.from(uniqueTokens.values()).map((token) => ({
+      ...token,
+      poolPartners: tokenPoolPartners.get(token.processId) || new Set(),
+    }));
   }, [pools]);
 
   return { tokens, isLoading };
@@ -398,7 +416,10 @@ export function useTokensWithPagination(
       const poolTokenIds = new Set(poolTokens.map((token) => token.processId));
       return userTokens.filter((token) => poolTokenIds.has(token.id) && token.id !== filterTokenId);
     }
-    return poolTokens.filter((token) => token.processId !== filterTokenId);
+    const tokenToFilter = poolTokens.find((token) => token.processId === filterTokenId);
+    return poolTokens.filter(
+      (token) => token.processId !== filterTokenId && token.poolPartners.has(tokenToFilter.processId),
+    );
   }, [userTokens, poolTokens, tokenSelectorType, filterTokenId]);
 
   const filteredTokens = useMemo(() => {
@@ -514,6 +535,14 @@ export function useARNetworkFee({ tokenIn, tokenOut }: { tokenIn: string; tokenO
 
 export function useSavedSwapData() {
   return useStorage<SwapData>({ key: "swap-data", instance: TempTransactionStorage });
+}
+
+export function useSwapSendToken() {
+  return useStorage<TokenInfo>({ key: "swap_send_token", instance: ExtensionStorage }, USDA_TOKEN_INFO);
+}
+
+export function useSwapReceiveToken() {
+  return useStorage<TokenInfo>({ key: "swap_receive_token", instance: ExtensionStorage }, WNDR_TOKEN_INFO);
 }
 
 const emptyResponse = {
