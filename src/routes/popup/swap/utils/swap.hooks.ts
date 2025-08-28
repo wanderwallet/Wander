@@ -91,7 +91,7 @@ export function usePoolForTokenPair({
   amountIn,
   wanderFeePercent,
 }: usePoolForTokenPairProps) {
-  const { tokenPools } = useGroupedPoolsByTokenPair();
+  const { tokenPools, isLoading: isLoadingPools } = useGroupedPoolsByTokenPair();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedPoolInfo, setSelectedPoolInfo] = useState<SelectedPoolInfo | null>(null);
@@ -106,6 +106,8 @@ export function usePoolForTokenPair({
 
   useAsyncEffect(async () => {
     try {
+      if (isLoadingPools) return;
+
       const noPools = Object.values(pairPools).every((pools) => pools.length === 0);
       if (!tokenIn || !tokenOut || !slippage || !amountIn || isNaN(wanderFeePercent) || noPools) {
         setSelectedPoolInfo(null);
@@ -237,9 +239,19 @@ export function usePoolForTokenPair({
     } finally {
       setIsLoading(false);
     }
-  }, [tokenIn, tokenOut, pairPools, slippage, amountIn, aoxBridgeInfo, ventoBridgeInfo, wanderFeePercent]);
+  }, [
+    tokenIn,
+    tokenOut,
+    pairPools,
+    slippage,
+    amountIn,
+    aoxBridgeInfo,
+    ventoBridgeInfo,
+    wanderFeePercent,
+    isLoadingPools,
+  ]);
 
-  return { selectedPoolInfo, isLoading, error };
+  return { selectedPoolInfo, isLoading: isLoadingPools || isLoading, error };
 }
 
 interface usePoolQuoteProps {

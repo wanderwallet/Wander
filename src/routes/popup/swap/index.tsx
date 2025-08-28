@@ -280,7 +280,7 @@ export function SwapView() {
           <Button
             style={{ flex: 1 }}
             disabled={!debouncedValueIn || isLoading || isNetworkFeeLoading || !!errorMessage || !!poolError}
-            loading={isLoading}
+            loading={amountIn && isLoading}
             onClick={handleSwap}
             fullWidth>
             {debouncedValueIn ? browser.i18n.getMessage("review") : browser.i18n.getMessage("enter_amount")}
