@@ -1,5 +1,5 @@
 import { connect } from "@permaweb/aoconnect";
-import { createDataItemSigner, getTagValue } from "~tokens/aoTokens/ao";
+import { createDataItemKeystoneSigner, createDataItemSigner, getTagValue } from "~tokens/aoTokens/ao";
 import { defaultConfig } from "~tokens/aoTokens/config";
 import { getActiveAddress, getActiveKeyfile, type DecryptedWallet } from "~wallets";
 import BigNumber from "bignumber.js";
@@ -87,16 +87,30 @@ export async function getExpectedOutput({
   } satisfies GetExpectedOutputResponse;
 }
 
-export async function executeSwap({ tokenIn, amountIn, minAmountOut, poolId, tags = [] }: SwapExecutionParams) {
+export async function executeSwap({
+  tokenIn,
+  amountIn,
+  minAmountOut,
+  poolId,
+  tags = [],
+  keystoneSigner,
+}: SwapExecutionParams) {
   let decryptedWallet: DecryptedWallet;
   try {
     const swapNonce = `${Date.now()}-${Math.floor(Math.random() * 1000000000)}`;
 
     decryptedWallet = await getActiveKeyfile();
-    isLocalWallet(decryptedWallet);
-    const keyfile = decryptedWallet.keyfile;
 
-    const signer = createDataItemSigner(keyfile);
+    let signer;
+    if (keystoneSigner) {
+      // Hardware wallet case
+      signer = createDataItemKeystoneSigner(keystoneSigner);
+    } else {
+      // Local wallet case
+      isLocalWallet(decryptedWallet);
+      const keyfile = decryptedWallet.keyfile;
+      signer = createDataItemSigner(keyfile);
+    }
 
     const transferId = await aoInstance.message({
       process: tokenIn,
@@ -122,7 +136,7 @@ export async function executeSwap({ tokenIn, amountIn, minAmountOut, poolId, tag
     throw err;
   } finally {
     // Clean up keyfile from memory
-    if (decryptedWallet && decryptedWallet.type !== "hardware") {
+    if (decryptedWallet && decryptedWallet.type !== "hardware" && !keystoneSigner) {
       freeDecryptedWallet(decryptedWallet.keyfile);
     }
   }

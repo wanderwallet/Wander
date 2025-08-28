@@ -1,5 +1,6 @@
 import type { dryrun } from "@permaweb/aoconnect";
 import type { Tag } from "~utils/agents/types";
+import type { KeystoneSigner } from "~wallets/hardware/keystone";
 
 export interface GetExpectedOutputParams {
   poolId: string;
@@ -33,6 +34,7 @@ export interface SwapExecutionParams {
   slippage?: number;
   deadline?: number;
   tags?: Tag[];
+  keystoneSigner?: KeystoneSigner | null;
 }
 
 export interface GetLiquidityParams {

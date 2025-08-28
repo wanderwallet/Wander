@@ -1,4 +1,4 @@
-import { Section, Button, Text, Loading } from "@arconnect/components-rebrand";
+import { Section, Button, Text, Loading, useToasts } from "@arconnect/components-rebrand";
 import browser from "webextension-polyfill";
 import styled, { useTheme } from "styled-components";
 import HeadV2 from "~components/popup/HeadV2";
@@ -7,7 +7,7 @@ import { TokenLogo } from "~components/popup/TokenLogo";
 import { HorizontalLine } from "~components/HorizontalLine";
 import { AutoTag } from "./components/AutoTag";
 import { WanderFeeTag } from "./components/WanderFeeTag";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { TempTransactionStorage } from "~utils/storage";
 import { formatBalance } from "~utils/format";
 import {
@@ -34,15 +34,53 @@ import {
 import { useDefiFeeDetails } from "~utils/tier/hooks";
 import { PageType, trackPage } from "~utils/analytics";
 import { startSwapMonitoring } from "./utils/alarms/swap-monitor/swap-monitor-alarm.handler";
+import { useActiveWallet } from "~wallets/hooks";
+import { UR } from "@ngraveio/bc-ur";
+import { decodeSignature, type KeystoneInteraction, KeystoneSigner } from "~wallets/hardware/keystone";
+import { useScanner } from "@arconnect/keystone-sdk";
+import AnimatedQRScanner from "~components/hardware/AnimatedQRScanner";
+import AnimatedQRPlayer from "~components/hardware/AnimatedQRPlayer";
+import { Spacer } from "~components/embed";
+import { SignType } from "@keystonehq/bc-ur-registry-arweave";
+import Arweave from "arweave";
 
 export function SwapReviewView() {
   const { navigate } = useLocation();
   const theme = useTheme();
+  const wallet = useActiveWallet();
+  const { setToast } = useToasts();
   const [isExecutingSwap, setIsExecutingSwap] = useState(false);
   const [swapData] = useSavedSwapData();
   const defiFeeDetails = useDefiFeeDetails();
+  const [transactionUR, setTransactionUR] = useState<UR>();
+  const [hardwareStatus, setHardwareStatus] = useState<"play" | "scan">();
+  const [currentTransactionCount, setCurrentTransactionCount] = useState(0);
+  const [transactionsCount, setTransactionsCount] = useState(0);
 
   const { sendToken, receiveToken, wanderFee, slippage, amountIn } = swapData || {};
+
+  const keystoneInteraction = useMemo(() => {
+    const keystoneInteraction: KeystoneInteraction = {
+      display(data) {
+        setCurrentTransactionCount((prev) => prev + 1);
+        setTransactionUR(data);
+        setHardwareStatus("play");
+        scanner.retry();
+      },
+    };
+    return keystoneInteraction;
+  }, []);
+
+  const keystoneSigner = useMemo(() => {
+    if (wallet?.type !== "hardware") return null;
+    const keystoneSigner = new KeystoneSigner(
+      Buffer.from(Arweave.utils.b64UrlToBuffer(wallet.publicKey)),
+      wallet.xfp,
+      SignType.DataItem,
+      keystoneInteraction,
+    );
+    return keystoneSigner;
+  }, [wallet, keystoneInteraction]);
 
   const { networkFee, isLoading: isNetworkFeeLoading } = useARNetworkFee({
     tokenIn: sendToken?.processId,
@@ -81,6 +119,29 @@ export function SwapReviewView() {
   }, [selectedPoolInfo, receiveToken, valueIn]);
 
   const valueInFormatted = useMemo(() => formatBalance(valueIn || "0"), [valueIn]);
+
+  const handleScannerResult = useCallback(
+    async (res: UR) => {
+      try {
+        if (!res) return;
+
+        if (wallet?.type !== "hardware") {
+          throw new Error("Wallet switched while signing");
+        }
+
+        // decode signature
+        const { signature } = await decodeSignature(res);
+
+        keystoneSigner.submitSignature(signature);
+      } catch (e) {
+        console.log(e);
+      }
+    },
+    [wallet, keystoneSigner],
+  );
+
+  // qr-tx scanner
+  const scanner = useScanner(handleScannerResult);
 
   async function handleSwap() {
     try {
@@ -134,6 +195,11 @@ export function SwapReviewView() {
         { name: "X-Amount-Out", value: selectedPoolInfo.quoteOutput.amountOut },
       ];
 
+      // Set transaction count for hardware wallets
+      if (wallet?.type === "hardware") {
+        setTransactionsCount(1);
+      }
+
       const transferId = await executeSwapFn(poolType, {
         tokenIn: sendToken?.processId,
         tokenOut: receiveToken?.processId,
@@ -141,6 +207,7 @@ export function SwapReviewView() {
         minAmountOut: selectedPoolInfo.quoteOutput.amountOut,
         poolId: selectedPoolInfo.pool.poolId,
         tags,
+        keystoneSigner: wallet?.type === "hardware" ? keystoneSigner : undefined,
       });
 
       const updatedSwapData = {
@@ -160,8 +227,16 @@ export function SwapReviewView() {
       navigate(PopupPaths.SwapProgress);
     } catch (err) {
       log(LOG_GROUP.SWAP, "Error executing swap", err);
+      setToast({
+        type: "error",
+        content: browser.i18n.getMessage("swap_execution_failed"),
+        duration: 2400,
+      });
     } finally {
       setIsExecutingSwap(false);
+      setHardwareStatus(null);
+      setCurrentTransactionCount(0);
+      setTransactionUR(null);
     }
   }
 
@@ -191,93 +266,134 @@ export function SwapReviewView() {
     <>
       <HeadV2 title={browser.i18n.getMessage("review")} />
       <Wrapper>
-        <WrapperContent>
-          <Flex direction="column" gap={16}>
+        {(hardwareStatus === "play" && transactionUR) || hardwareStatus === "scan" ? (
+          <WrapperContent>
             <Flex direction="column" gap={8}>
-              <Text variant="secondary" size="sm" weight="medium" noMargin>
-                {browser.i18n.getMessage("you_send")}
+              <Text noMargin style={{ textAlign: "center" }}>
+                {currentTransactionCount}/{transactionsCount}
               </Text>
-              <Flex direction="row" align="center" gap={4}>
-                <TokenLogo size={24} token={sendToken} />
-                <TokenValueWithTooltip formattedValue={valueInFormatted} ticker={sendToken?.Ticker} />
+              {hardwareStatus === "play" && transactionUR && (
+                <Flex direction="column" align="center" justify="center" textAlign="center" gap={16}>
+                  <Text weight="medium" noMargin>
+                    {browser.i18n.getMessage("sign_scan_qr")}
+                  </Text>
+                  <AnimatedQRPlayer data={transactionUR} />
+                </Flex>
+              )}
+              {hardwareStatus === "scan" && (
+                <Flex direction="column" align="center" justify="center" textAlign="center">
+                  <AnimatedQRScanner
+                    {...scanner.bindings}
+                    onError={(error) =>
+                      setToast({
+                        type: "error",
+                        duration: 2300,
+                        content: browser.i18n.getMessage(`keystone_${error}`),
+                      })
+                    }
+                  />
+                  <Spacer y={1} />
+                  <Text style={{ textAlign: "center" }} noMargin>
+                    {browser.i18n.getMessage("keystone_scan_progress", `${scanner.progress.toFixed(0)}%`)}
+                  </Text>
+                </Flex>
+              )}
+            </Flex>
+          </WrapperContent>
+        ) : (
+          <WrapperContent>
+            <Flex direction="column" gap={16}>
+              <Flex direction="column" gap={8}>
+                <Text variant="secondary" size="sm" weight="medium" noMargin>
+                  {browser.i18n.getMessage("you_send")}
+                </Text>
+                <Flex direction="row" align="center" gap={4}>
+                  <TokenLogo size={24} token={sendToken} />
+                  <TokenValueWithTooltip formattedValue={valueInFormatted} ticker={sendToken?.Ticker} />
+                </Flex>
+              </Flex>
+              <Flex direction="column" gap={8}>
+                <Text variant="secondary" size="sm" weight="medium" noMargin>
+                  {browser.i18n.getMessage("you_receive")}
+                </Text>
+                <Flex direction="row" align="center" gap={4}>
+                  <TokenLogo size={24} token={receiveToken} />
+                  <TokenValueWithTooltip formattedValue={valueOutFormatted} ticker={receiveToken?.Ticker} />
+                </Flex>
               </Flex>
             </Flex>
-            <Flex direction="column" gap={8}>
-              <Text variant="secondary" size="sm" weight="medium" noMargin>
-                {browser.i18n.getMessage("you_receive")}
+            <HorizontalLine />
+            <Flex direction="column" gap={16}>
+              <Text weight="medium" noMargin>
+                {browser.i18n.getMessage("transactions_details")}
               </Text>
-              <Flex direction="row" align="center" gap={4}>
-                <TokenLogo size={24} token={receiveToken} />
-                <TokenValueWithTooltip formattedValue={valueOutFormatted} ticker={receiveToken?.Ticker} />
+              <Flex direction="column" gap={8}>
+                <TransactionDetailItem title={browser.i18n.getMessage("rate")} value={rate} />
+                <TransactionDetailItem
+                  title={browser.i18n.getMessage("provider")}
+                  value={getProviderName(selectedPoolInfo?.pool?.poolType)}
+                />
+                <TransactionDetailItem
+                  title={browser.i18n.getMessage("est_swap_time")}
+                  value={getSwapTime(selectedPoolInfo?.pool?.poolType)}
+                />
+                <TransactionDetailItem title={browser.i18n.getMessage("network_fee")} value={providerNetworkFee} />
+                <TransactionDetailItem
+                  title={browser.i18n.getMessage("wander_fee")}
+                  value={
+                    <Flex justify="flex-end" align="center" gap={4} textAlign="right" wrap="wrap">
+                      {wanderFee?.hasChanged && (
+                        <CrossedOutText style={{ order: 1 }}>{toFixed(wanderFee?.originalFee, 8)}</CrossedOutText>
+                      )}
+                      <Text
+                        size="sm"
+                        weight="medium"
+                        style={{
+                          color: "#9787FF",
+                          order: 2,
+                          textAlign: "right",
+                        }}
+                        noMargin>
+                        {wanderFee?.finalFee !== "--" ? `${toFixed(wanderFee?.finalFee, 8)} ${sendToken.Ticker}` : "--"}
+                      </Text>
+                      {wanderFee.finalFee !== "--" && <WanderFeeTag style={{ order: 3 }} />}
+                    </Flex>
+                  }
+                />
+                <TransactionDetailItem
+                  title={browser.i18n.getMessage("slippage")}
+                  value={
+                    <Flex gap={4} align="center" justify="center">
+                      <Text variant="secondary" size="sm" weight="medium" noMargin>
+                        {slippage}%{" "}
+                      </Text>
+                      <AutoTag slippage={slippage} />
+                    </Flex>
+                  }
+                />
+                <TransactionDetailItem
+                  title={browser.i18n.getMessage("price_impact")}
+                  value={selectedPoolInfo?.priceImpact ? `${selectedPoolInfo.priceImpact}%` : "--"}
+                  valueColor={getPriceImpactColor(selectedPoolInfo?.priceImpact, theme)}
+                />
               </Flex>
             </Flex>
-          </Flex>
-          <HorizontalLine />
-          <Flex direction="column" gap={16}>
-            <Text weight="medium" noMargin>
-              {browser.i18n.getMessage("transactions_details")}
-            </Text>
-            <Flex direction="column" gap={8}>
-              <TransactionDetailItem title={browser.i18n.getMessage("rate")} value={rate} />
-              <TransactionDetailItem
-                title={browser.i18n.getMessage("provider")}
-                value={getProviderName(selectedPoolInfo?.pool?.poolType)}
-              />
-              <TransactionDetailItem
-                title={browser.i18n.getMessage("est_swap_time")}
-                value={getSwapTime(selectedPoolInfo?.pool?.poolType)}
-              />
-              <TransactionDetailItem title={browser.i18n.getMessage("network_fee")} value={providerNetworkFee} />
-              <TransactionDetailItem
-                title={browser.i18n.getMessage("wander_fee")}
-                value={
-                  <Flex justify="flex-end" align="center" gap={4} textAlign="right" wrap="wrap">
-                    {wanderFee?.hasChanged && (
-                      <CrossedOutText style={{ order: 1 }}>{toFixed(wanderFee?.originalFee, 8)}</CrossedOutText>
-                    )}
-                    <Text
-                      size="sm"
-                      weight="medium"
-                      style={{
-                        color: "#9787FF",
-                        order: 2,
-                        textAlign: "right",
-                      }}
-                      noMargin>
-                      {wanderFee?.finalFee !== "--" ? `${toFixed(wanderFee?.finalFee, 8)} ${sendToken.Ticker}` : "--"}
-                    </Text>
-                    {wanderFee.finalFee !== "--" && <WanderFeeTag style={{ order: 3 }} />}
-                  </Flex>
-                }
-              />
-              <TransactionDetailItem
-                title={browser.i18n.getMessage("slippage")}
-                value={
-                  <Flex gap={4} align="center" justify="center">
-                    <Text variant="secondary" size="sm" weight="medium" noMargin>
-                      {slippage}%{" "}
-                    </Text>
-                    <AutoTag slippage={slippage} />
-                  </Flex>
-                }
-              />
-              <TransactionDetailItem
-                title={browser.i18n.getMessage("price_impact")}
-                value={selectedPoolInfo?.priceImpact ? `${selectedPoolInfo.priceImpact}%` : "--"}
-                valueColor={getPriceImpactColor(selectedPoolInfo?.priceImpact, theme)}
-              />
-            </Flex>
-          </Flex>
-        </WrapperContent>
+          </WrapperContent>
+        )}
 
         <Flex gap={8}>
           <Button
             style={{ flex: 1 }}
             disabled={isExecutingSwap || isLoading || isNetworkFeeLoading}
-            loading={isExecutingSwap || isLoading}
-            onClick={handleSwap}
+            loading={isExecutingSwap && !hardwareStatus}
+            onClick={async () => {
+              if (!isExecutingSwap) await handleSwap();
+              else if (hardwareStatus === "play") {
+                setHardwareStatus((val) => (val === "play" ? "scan" : "play"));
+              }
+            }}
             fullWidth>
-            {browser.i18n.getMessage("swap")}
+            {hardwareStatus ? browser.i18n.getMessage("keystone_scan") : browser.i18n.getMessage("swap")}
           </Button>
         </Flex>
       </Wrapper>

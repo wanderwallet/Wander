@@ -4110,6 +4110,10 @@
     "message": "Delegation info save failed",
     "description": "Delegation info save failed text"
   },
+  "swap_execution_failed": {
+    "message": "Swap execution failed",
+    "description": "Error message when swap execution fails"
+  },
   "flp_claim_success": {
     "message": "Claimed successfully",
     "description": "Fair Launch claim success text"

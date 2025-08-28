@@ -1,5 +1,5 @@
 import { connect } from "@permaweb/aoconnect";
-import { createDataItemSigner, getTagValue } from "~tokens/aoTokens/ao";
+import { createDataItemKeystoneSigner, createDataItemSigner, getTagValue } from "~tokens/aoTokens/ao";
 import { defaultConfig } from "~tokens/aoTokens/config";
 import { getActiveAddress, getActiveKeyfile, type DecryptedWallet } from "~wallets";
 import BigNumber from "bignumber.js";
@@ -120,14 +120,22 @@ export async function executeSwap({
   minAmountOut,
   poolId,
   tags = [],
+  keystoneSigner,
 }: SwapExecutionParams) {
   let decryptedWallet: DecryptedWallet;
   try {
     decryptedWallet = await getActiveKeyfile();
-    isLocalWallet(decryptedWallet);
-    const keyfile = decryptedWallet.keyfile;
 
-    const signer = createDataItemSigner(keyfile);
+    let signer;
+    if (keystoneSigner) {
+      // Hardware wallet case
+      signer = createDataItemKeystoneSigner(keystoneSigner);
+    } else {
+      // Local wallet case
+      isLocalWallet(decryptedWallet);
+      const keyfile = decryptedWallet.keyfile;
+      signer = createDataItemSigner(keyfile);
+    }
 
     const requestMessageId = await aoInstance.message({
       process: poolId,
@@ -173,7 +181,7 @@ export async function executeSwap({
     throw err;
   } finally {
     // Clean up keyfile from memory
-    if (decryptedWallet && decryptedWallet.type !== "hardware") {
+    if (decryptedWallet && decryptedWallet.type !== "hardware" && !keystoneSigner) {
       freeDecryptedWallet(decryptedWallet.keyfile);
     }
   }

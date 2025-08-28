@@ -4066,10 +4066,14 @@
       "message": "委托信息已保存",
       "description": "Delegation info saved text"
     },
-    "delegation_info_save_failed": {
-      "message": "委托信息保存失败",
-      "description": "Delegation info save failed text"
-    },
+      "delegation_info_save_failed": {
+    "message": "委托信息保存失败",
+    "description": "Delegation info save failed text"
+  },
+  "swap_execution_failed": {
+    "message": "交换执行失败",
+    "description": "Error message when swap execution fails"
+  },
     "flp_claim_success": {
       "message": "领取成功",
       "description": "Fair Launch claim success text"

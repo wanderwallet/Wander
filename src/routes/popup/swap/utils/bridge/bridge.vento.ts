@@ -20,7 +20,7 @@ import { findGateway } from "~gateways/wayfinder";
 import Arweave from "arweave";
 import browser from "webextension-polyfill";
 import { AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
-import { createDataItemSigner } from "~tokens/aoTokens/ao";
+import { createDataItemKeystoneSigner, createDataItemSigner } from "~tokens/aoTokens/ao";
 import type { DecodedTag } from "~api/modules/sign/tags";
 import BigNumber from "bignumber.js";
 import { OrderError } from "../dex/dex.utils";
@@ -75,18 +75,27 @@ export async function getExpectedOutput({
   } satisfies GetExpectedOutputResponse;
 }
 
-export async function executeSwap({ tokenIn, amountIn, tags = [] }: SwapExecutionParams) {
+export async function executeSwap({ tokenIn, amountIn, tags = [], keystoneSigner }: SwapExecutionParams) {
   let decryptedWallet: DecryptedWallet;
   try {
     decryptedWallet = await getActiveKeyfile();
-    isLocalWallet(decryptedWallet);
-    const keyfile = decryptedWallet.keyfile;
+
+    // Get keyfile only for local wallets
+    let keyfile;
+    if (!keystoneSigner) {
+      isLocalWallet(decryptedWallet);
+      keyfile = decryptedWallet.keyfile;
+    }
 
     const activeAddress = await getActiveAddress();
 
     let transferId: string;
 
     if (tokenIn === AR_PROCESS_ID) {
+      if (keystoneSigner) {
+        throw new Error("Hardware wallets don't support AR swaps on Vento bridge yet");
+      }
+
       const gateway = await findGateway({ random: true });
       const arweave = new Arweave(gateway);
       const transaction = await arweave.createTransaction({
@@ -108,7 +117,7 @@ export async function executeSwap({ tokenIn, amountIn, tags = [] }: SwapExecutio
 
       transferId = transaction.id;
     } else {
-      const signer = createDataItemSigner(keyfile);
+      const signer = keystoneSigner ? createDataItemKeystoneSigner(keystoneSigner) : createDataItemSigner(keyfile);
 
       transferId = await aoInstance.message({
         process: tokenIn,
@@ -157,7 +166,7 @@ export async function executeSwap({ tokenIn, amountIn, tags = [] }: SwapExecutio
     throw err;
   } finally {
     // Clean up keyfile from memory
-    if (decryptedWallet && decryptedWallet.type !== "hardware") {
+    if (decryptedWallet && decryptedWallet.type !== "hardware" && !keystoneSigner) {
       freeDecryptedWallet(decryptedWallet.keyfile);
     }
   }
