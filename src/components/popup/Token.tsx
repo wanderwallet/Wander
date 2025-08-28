@@ -114,7 +114,7 @@ export default function Token({ onClick, disableClickEffect, disableCursor, ...p
             {hasActionButton ? (
               <FiatBalance>{balance}</FiatBalance>
             ) : props.addressOverFiat ? (
-              <Address size={props.addressSize || "base"}>{formatAddress(props.id, 3)}</Address>
+              <Address size={props.addressSize || "base"}>{formatAddress(props.id, 4)}</Address>
             ) : (
               formattedFiatPrice && <FiatBalance>{formattedFiatPrice}</FiatBalance>
             )}

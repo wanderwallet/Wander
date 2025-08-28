@@ -8,6 +8,7 @@ import { tierNameToId, TierTypes } from "~utils/tier/constants";
 import styled, { useTheme } from "styled-components";
 import { WanderIcon } from "../tier/WanderIcon";
 import { SwapGatingPopup } from "~routes/popup/swap/components/SwapGatingPopup";
+import { SWAP_DISABLED_FOR_LOWER_TIERS } from "~routes/popup/swap/utils/swap.constants";
 
 import arLogoDark from "url:/assets/ar/ar-logo-dark.svg";
 
@@ -28,21 +29,13 @@ const sendButtonConfig: ButtonConfig = {
 
 const reserveTierId = tierNameToId[TierTypes.Reserve];
 
-// Launch timestamp (2025-09-01 00:00:00 EDT)
-const SWAP_LAUNCH_TIMESTAMP = Date.parse("2025-09-01T00:00:00-04:00");
-
-// 14 days in ms (86_400_000 ms = 1 day)
-const TWO_WEEKS_MS = 1_209_600_000;
-
-const isSwapDisabledForLowerTiers = Date.now() < SWAP_LAUNCH_TIMESTAMP + TWO_WEEKS_MS;
-
 export default function WalletActions() {
   const [isOpen, setIsOpen] = useState(false);
   const { data: activeTier } = useActiveTier();
 
   const buttons: ButtonConfig[] = useMemo(() => {
     const tierId = tierNameToId[activeTier?.tier || TierTypes.Core];
-    const disabled = tierId > reserveTierId && isSwapDisabledForLowerTiers;
+    const disabled = tierId > reserveTierId && SWAP_DISABLED_FOR_LOWER_TIERS;
 
     const swapButtonConfig: ButtonConfig = {
       text: "",
