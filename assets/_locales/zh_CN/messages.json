@@ -4177,5 +4177,149 @@
     "days": {
       "message": "天",
       "description": "Days text"
+    },
+    "unlock_tier_to_use_feature": {
+      "message": "解锁 $$TIER 以使用此功能",
+      "description": "Unlock tier to use feature text",
+      "placeholders": {
+        "tier": {
+          "content": "$1",
+          "example": "Tier 1"
+        }
+      }
+    },
+    "swap_gating_reserve_tier_benefits_1": {
+      "message": "某些费用降低 25%",
+      "description": "Swap gating reserve tier benefits 1 text"
+    },
+    "swap_gating_reserve_tier_benefits_2": {
+      "message": "完全访问所有功能",
+      "description": "Swap gating reserve tier benefits 2 text"
+    },
+    "swap_gating_reserve_tier_benefits_2_subtitle": {
+      "message": "（某些高级功能需要更高的等级）",
+      "description": "Swap gating reserve tier benefits 2 subtitle text"
+    },
+    "search_token": {
+      "message": "搜索代币",
+      "description": "Search token text"
+    },
+    "no_tokens_found": {
+      "message": "没有找到代币",
+      "description": "No tokens found text"
+    },
+    "swap_complete": {
+      "message": "交换完成",
+      "description": "Swap complete text"
+    },
+    "swap_success": {
+      "message": "交换成功！",
+      "description": "Swap success text"
+    },
+    "transactions_details": {
+      "message": "交易详情",
+      "description": "Transactions details text"
+    },
+    "rate": {
+      "message": "费率",
+      "description": "Rate text"
+    },
+    "provider": {
+      "message": "提供者",
+      "description": "Provider text"
+    },
+    "est_swap_time": {
+      "message": "预计交换时间",
+      "description": "Est. Swap Time text"
+    },
+    "price_impact": {
+      "message": "价格影响",
+      "description": "Price Impact text"
+    },
+    "swap_not_completed": {
+      "message": "交换未完成",
+      "description": "Swap not completed text"
+    },
+    "swap_not_completed_description": {
+      "message": "看起来出了点问题，请再试一次。",
+      "description": "Swap not completed description text"
+    },
+    "swap_history": {
+      "message": "交换历史",
+      "description": "Swap history text"
+    },
+    "swap_in_progress": {
+      "message": "交换进行中",
+      "description": "Swap in progress text"
+    },
+    "swap_in_progress_description": {
+      "message": "你的交换正在进行中。这可能需要 $TIME$ 完成。",
+      "description": "Swap in progress description text",
+      "placeholders": {
+        "time": {
+          "content": "$1",
+          "example": "30-60 minutes"
+        }
+      }
+    },
+    "between_30_60_minutes": {
+      "message": "30-60 分钟",
+      "description": "Between 30-60 minutes text"
+    },
+    "a_few_minutes": {
+      "message": "几分钟",
+      "description": "A few minutes text"
+    },
+    "no_liquidity_pools_found": {
+      "message": "没有找到流动性池",
+      "description": "No liquidity pools found for this token pair text"
+    },
+    "unable_to_retrieve_quote": {
+      "message": "无法获取报价",
+      "description": "Unable to retrieve quote text"
+    },
+    "bridge_temporarily_closed": {
+      "message": "桥接暂时关闭。请稍后再试",
+      "description": "Bridge temporarily closed text"
+    },
+    "amount_too_low": {
+      "message": "金额太低。最低要求：$MIN$",
+      "description": "Amount too low text",
+      "placeholders": {
+        "min": {
+          "content": "$1",
+          "example": "0.000000000001"
+        }
+      }
+    },
+    "amount_too_high": {
+      "message": "金额太高。最高允许：$MAX$",
+      "description": "Amount too high text",
+      "placeholders": {
+        "max": {
+          "content": "$1",
+          "example": "0.000000000001"
+        }
+      }
+    },
+    "amount_exceeds_per_transaction_limit": {
+      "message": "金额超过每笔交易限制。最高允许：$MAX$",
+      "description": "Amount exceeds per-transaction limit text",
+      "placeholders": {
+        "max": {
+          "content": "$1",
+          "example": "0.000000000001"
+        }
+      }
+    },
+    "daily_limit_reached": {
+      "message": "每日限额已达到。剩余配额今日：$MAX$",
+      "description": "Daily limit reached text",
+      "placeholders": {
+        "max": {
+          "content": "$1",
+          "example": "0.000000000001"
+        }
+      }
     }
 }

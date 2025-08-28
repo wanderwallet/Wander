@@ -17,6 +17,7 @@ import { parseSwapTransaction, validateGqlResponse } from "../swap.utils";
 import { goldskyGateway } from "~gateways/gateway";
 import { PoolTypeEnum } from "../swap.constants";
 import type { GQLEdgeInterface } from "ar-gql/dist/faces";
+import browser from "webextension-polyfill";
 
 const aoxBridgeTxTypes = new Set(["mint", "burn"]);
 
@@ -90,16 +91,19 @@ export function validateAoxBridgeTransaction(
 
   // Check if AR -> wAR bridge is disabled
   if (isARToWAR && bridgeInfo.arMintDisabled) {
-    return "Bridge temporarily closed. Try again later";
+    return browser.i18n.getMessage("bridge_temporarily_closed");
   }
 
   // Check if wAR -> AR bridge is disabled
   if (isWARToAR && bridgeInfo.warBurnDisabled) {
-    return "Bridge temporarily closed. Try again later";
+    return browser.i18n.getMessage("bridge_temporarily_closed");
   }
 
   if (isWARToAR && amountInBN.lt(bridgeInfo.warToken.minBurnAmt)) {
-    return `Amount too low. Minimum: ${BigNumber(bridgeInfo.warToken.minBurnAmt).shiftedBy(-12).toFixed()} wAR`;
+    return browser.i18n.getMessage(
+      "amount_too_low",
+      `${BigNumber(bridgeInfo.warToken.minBurnAmt).shiftedBy(-12).toFixed()} wAR`,
+    );
   }
 
   // Check wAR -> AR burn limits
@@ -109,17 +113,23 @@ export function validateAoxBridgeTransaction(
     const remainingDailyLimitBN = BigNumber(dailyLimit).minus(dailyBurned);
 
     if (valueInBN.gt(perLimitBN)) {
-      return `Amount too high. Max per transaction: ${perLimitBN.shiftedBy(-12).toFixed()} wAR`;
+      return browser.i18n.getMessage(
+        "amount_exceeds_per_transaction_limit",
+        `${perLimitBN.shiftedBy(-12).toFixed()} wAR`,
+      );
     }
 
     if (valueInBN.gt(remainingDailyLimitBN)) {
-      return `Daily limit reached. Available today: ${remainingDailyLimitBN.shiftedBy(-12).toFixed()} wAR`;
+      return browser.i18n.getMessage("daily_limit_reached", `${remainingDailyLimitBN.shiftedBy(-12).toFixed()} wAR`);
     }
   }
 
   // Check AR -> wAR mint limits
   if (isARToWAR && bridgeInfo.arMintLimit && valueInBN.gt(bridgeInfo.arMintLimit)) {
-    return `Amount too high. Maximum allowed: ${BigNumber(bridgeInfo.arMintLimit).shiftedBy(-12).toFixed()} AR`;
+    return browser.i18n.getMessage(
+      "amount_too_high",
+      `${BigNumber(bridgeInfo.arMintLimit).shiftedBy(-12).toFixed()} AR`,
+    );
   }
 
   return null;
@@ -129,19 +139,20 @@ export function validateVentoBridgeTransaction(
   amountIn: string,
   wanderFee: string,
   bridgeInfo: VentoBridgeInfoResult,
-  tokenIn: string,
-  tokenOut: string,
 ): string | null {
   if (!bridgeInfo) return null;
 
   const amountInBN = BigNumber(amountIn).minus(wanderFee);
 
   if (bridgeInfo && !bridgeInfo.isHealthy) {
-    return "Bridge temporarily closed. Try again later";
+    return browser.i18n.getMessage("bridge_temporarily_closed");
   }
 
   if (bridgeInfo && amountInBN.lt(bridgeInfo.minArBridge)) {
-    return `Amount too low. Minimum: ${BigNumber(bridgeInfo.minArBridge).shiftedBy(-12).toFixed()} AR`;
+    return browser.i18n.getMessage(
+      "amount_too_low",
+      `${BigNumber(bridgeInfo.minArBridge).shiftedBy(-12).toFixed()} AR`,
+    );
   }
 
   return null;

@@ -1,5 +1,6 @@
 import { Text } from "@arconnect/components-rebrand";
 import styled from "styled-components";
+import browser from "webextension-polyfill";
 
 interface AutoTagProps {
   slippage: number;
@@ -11,7 +12,7 @@ export function AutoTag({ slippage }: AutoTagProps) {
   return (
     <AutoTagWrapper>
       <Text size="2xs" weight="medium" style={{ color: "#EEE" }} noMargin>
-        Auto
+        {browser.i18n.getMessage("auto")}
       </Text>
     </AutoTagWrapper>
   );

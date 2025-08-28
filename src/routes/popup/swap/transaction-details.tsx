@@ -58,7 +58,7 @@ export function SwapTransactionDetailsView({ params: { id } }: SwapTransactionDe
 
   return (
     <>
-      <HeadV2 title="Transaction details" />
+      <HeadV2 title={browser.i18n.getMessage("transaction_details")} />
       <Wrapper>
         {loading || !transaction ? (
           <>
@@ -135,17 +135,23 @@ export function SwapTransactionDetailsView({ params: { id } }: SwapTransactionDe
               <HorizontalLine />
               <Flex direction="column" gap={16}>
                 <Text weight="medium" noMargin>
-                  Transactions details
+                  {browser.i18n.getMessage("transactions_details")}
                 </Text>
                 <Flex direction="column" gap={8}>
-                  <TransactionDetailItem title={"Rate"} value={transaction.rate} />
-                  <TransactionDetailItem title={"Provider"} value={transaction.provider} />
-                  <TransactionDetailItem title={"Est. Swap Time"} value={getSwapTime(transaction.provider)} />
-                  <TransactionDetailItem title={"Network Fee"} value={transaction.networkFee} />
-                  <TransactionDetailItem title={"Wander Fee"} value={transaction.wanderFee} />
-                  <TransactionDetailItem title={"Slippage"} value={transaction.slippage} />
+                  <TransactionDetailItem title={browser.i18n.getMessage("rate")} value={transaction.rate} />
+                  <TransactionDetailItem title={browser.i18n.getMessage("provider")} value={transaction.provider} />
                   <TransactionDetailItem
-                    title={"Price Impact"}
+                    title={browser.i18n.getMessage("est_swap_time")}
+                    value={getSwapTime(transaction.provider)}
+                  />
+                  <TransactionDetailItem
+                    title={browser.i18n.getMessage("network_fee")}
+                    value={transaction.networkFee}
+                  />
+                  <TransactionDetailItem title={browser.i18n.getMessage("wander_fee")} value={transaction.wanderFee} />
+                  <TransactionDetailItem title={browser.i18n.getMessage("slippage")} value={transaction.slippage} />
+                  <TransactionDetailItem
+                    title={browser.i18n.getMessage("price_impact")}
                     value={transaction.priceImpact}
                     valueColor={getPriceImpactColor(transaction.priceImpact.replace("%", ""), theme)}
                   />

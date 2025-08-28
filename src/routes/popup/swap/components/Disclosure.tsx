@@ -1,6 +1,6 @@
 import { Text } from "@arconnect/components-rebrand";
 import { HorizontalLine } from "~components/HorizontalLine";
-import { Flex } from "../../../../components/common/Flex";
+import { Flex } from "~components/common/Flex";
 import { ChevronDown, ChevronUp } from "@untitled-ui/icons-react";
 import styled from "styled-components";
 import { AnimatePresence, motion } from "framer-motion";

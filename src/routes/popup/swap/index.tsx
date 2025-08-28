@@ -223,9 +223,9 @@ export function SwapView() {
             {(errorMessage || poolError) && <ErrorMsg>{errorMessage || poolError}</ErrorMsg>}
           </Flex>
           <Flex direction="column" gap={8}>
-            <TransactionDetailItem title={"Rate"} value={rate} />
+            <TransactionDetailItem title={browser.i18n.getMessage("rate")} value={rate} />
             <TransactionDetailItem
-              title={"Slippage"}
+              title={browser.i18n.getMessage("slippage")}
               value={
                 <Flex gap={4} align="center" justify="center">
                   <Text variant="secondary" size="sm" weight="medium" noMargin>
@@ -235,9 +235,9 @@ export function SwapView() {
                 </Flex>
               }
             />
-            <TransactionDetailItem title={"Network fee"} value={providerNetworkFee} />
+            <TransactionDetailItem title={browser.i18n.getMessage("network_fee")} value={providerNetworkFee} />
             <TransactionDetailItem
-              title={"Wander Fee"}
+              title={browser.i18n.getMessage("wander_fee")}
               value={
                 <Flex justify="flex-end" align="center" gap={4} textAlign="right" wrap="wrap">
                   {selectedPoolInfo && wanderFee?.hasChanged && (

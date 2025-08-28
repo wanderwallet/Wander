@@ -1068,7 +1068,7 @@
     "description": "Optional message field"
   },
   "network_fee": {
-    "message": "network fee",
+    "message": "Network fee",
     "description": "Transaction network fee text"
   },
   "estimated": {
@@ -4217,5 +4217,149 @@
   "days": {
     "message": "Days",
     "description": "Days text"
+  },
+  "unlock_tier_to_use_feature": {
+    "message": "Unlock $$TIER to use this feature",
+    "description": "Unlock tier to use feature text",
+    "placeholders": {
+      "tier": {
+        "content": "$1",
+        "example": "Tier 1"
+      }
+    }
+  },
+  "swap_gating_reserve_tier_benefits_1": {
+    "message": "25% reduction on certain fees",
+    "description": "Swap gating reserve tier benefits 1 text"
+  },
+  "swap_gating_reserve_tier_benefits_2": {
+    "message": "Full feature access",
+    "description": "Swap gating reserve tier benefits 2 text"
+  },
+  "swap_gating_reserve_tier_benefits_2_subtitle": {
+    "message": "(some premium functions require a higher tier)",
+    "description": "Swap gating reserve tier benefits 2 subtitle text"
+  },
+  "search_token": {
+    "message": "Search token",
+    "description": "Search token text"
+  },
+  "no_tokens_found": {
+    "message": "No tokens found",
+    "description": "No tokens found text"
+  },
+  "swap_complete": {
+    "message": "Swap complete",
+    "description": "Swap complete text"
+  },
+  "swap_success": {
+    "message": "Swap success!",
+    "description": "Swap success text"
+  },
+  "transactions_details": {
+    "message": "Transactions details",
+    "description": "Transactions details text"
+  },
+  "rate": {
+    "message": "Rate",
+    "description": "Rate text"
+  },
+  "provider": {
+    "message": "Provider",
+    "description": "Provider text"
+  },
+  "est_swap_time": {
+    "message": "Est. Swap Time",
+    "description": "Est. Swap Time text"
+  },
+  "price_impact": {
+    "message": "Price Impact",
+    "description": "Price Impact text"
+  },
+  "swap_not_completed": {
+    "message": "Swap could not be completed",
+    "description": "Swap not completed text"
+  },
+  "swap_not_completed_description": {
+    "message": "Looks like something went wrong, please try again.",
+    "description": "Swap not completed description text"
+  },
+  "swap_history": {
+    "message": "Swap History",
+    "description": "Swap history text"
+  },
+  "swap_in_progress": {
+    "message": "Swap in progress",
+    "description": "Swap in progress text"
+  },
+  "swap_in_progress_description": {
+    "message": "Your swap is in progress. This may take $TIME$ to complete.",
+    "placeholders": {
+      "time": {
+        "content": "$1",
+        "example": "30-60 minutes"
+      }
+    },
+    "description": "Swap in progress description text"
+  },
+  "between_30_60_minutes": {
+    "message": "between 30-60 minutes",
+    "description": "Between 30-60 minutes text"
+  },
+  "a_few_minutes": {
+    "message": "a few minutes",
+    "description": "A few minutes text"
+  },
+  "no_liquidity_pools_found": {
+    "message": "No liquidity pools found for this token pair",
+    "description": "No liquidity pools found for this token pair text"
+  },
+  "unable_to_retrieve_quote": {
+    "message": "Unable to retrieve quote",
+    "description": "Unable to retrieve quote text"
+  },
+  "bridge_temporarily_closed": {
+    "message": "Bridge temporarily closed. Try again later",
+    "description": "Bridge temporarily closed text"
+  },
+  "amount_too_low": {
+    "message": "Amount too low. Minimum required: $MIN$",
+    "description": "Amount too low text",
+    "placeholders": {
+      "min": {
+        "content": "$1",
+        "example": "0.000000000001"
+      }
+    }
+  },
+  "amount_too_high": {
+    "message": "Amount too high. Maximum allowed: $MAX$",
+    "description": "Amount too high text",
+    "placeholders": {
+      "max": {
+        "content": "$1",
+        "example": "0.000000000001"
+      }
+    }
+  },
+  "amount_exceeds_per_transaction_limit": {
+    "message": "Amount exceeds per-transaction limit. Maximum allowed: $MAX$",
+    "description": "Amount exceeds per-transaction limit text",
+    "placeholders": {
+      "max": {
+        "content": "$1",
+        "example": "0.000000000001"
+      }
+    }
+  },
+  "daily_limit_reached": {
+    "message": "Daily limit reached. Remaining quota today: $MAX$",
+    "description": "Daily limit reached text",
+    "placeholders": {
+      "max": {
+        "content": "$1",
+        "example": "0.000000000001"
+      }
+    }
   }
 }

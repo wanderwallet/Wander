@@ -20,6 +20,8 @@ import { fromTokenBaseUnits, getPriceImpactColor, getProviderName, getSwapTime, 
 import { useARNetworkFee, useProviderNetworkFee, useSavedSwapData, useSwapRate } from "./utils/swap.hooks";
 import { PageType, trackPage } from "~utils/analytics";
 import { TempTransactionStorage } from "~utils/storage";
+import { AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
+import { PoolTypeEnum } from "./utils/swap.constants";
 
 export function SwapCompleteView() {
   const theme = useTheme();
@@ -27,6 +29,13 @@ export function SwapCompleteView() {
   const [swapData] = useSavedSwapData();
 
   const { sendToken, receiveToken, wanderFee, slippage, amountIn, selectedPoolInfo, transferId } = swapData || {};
+
+  const swap = useMemo(() => {
+    const poolType = selectedPoolInfo?.pool?.poolType;
+    const isBridge = poolType === PoolTypeEnum.AOX || poolType === PoolTypeEnum.VENTO;
+    const isAo = sendToken?.processId !== AR_PROCESS_ID;
+    return { isBridge, isAo };
+  }, [selectedPoolInfo, sendToken]);
 
   const { networkFee } = useARNetworkFee({
     tokenIn: sendToken?.processId,
@@ -51,6 +60,14 @@ export function SwapCompleteView() {
 
   const valueInFormatted = useMemo(() => formatBalance(valueIn || "0"), [valueIn]);
 
+  function handleOpen() {
+    const url = swap.isAo
+      ? `https://www.ao.link/#/message/${transferId}`
+      : `https://viewblock.io/arweave/tx/${transferId}`;
+
+    browser.tabs.create({ url });
+  }
+
   useEffect(() => {
     trackPage(PageType.SWAP_COMPLETE);
 
@@ -67,7 +84,7 @@ export function SwapCompleteView() {
           <WrapperContent>
             <Flex direction="row" gap={8} align="center" justify="center" style={{ height: "100%" }}>
               <Text variant="secondary" noMargin>
-                Loading swap data...
+                {browser.i18n.getMessage("loading")}
               </Text>
               <Loading style={{ height: 20, width: 20 }} />
             </Flex>
@@ -79,14 +96,14 @@ export function SwapCompleteView() {
 
   return (
     <>
-      <HeadV2 title="Swap complete" showBack={false} />
+      <HeadV2 title={browser.i18n.getMessage("swap_complete")} showBack={false} />
       <Wrapper>
         <WrapperContent>
           <Flex direction="column" justify="center" align="center" gap={4}>
             {/* @ts-expect-error - Lottie is not typed */}
             <Lottie
               options={{
-                loop: false,
+                loop: true,
                 autoplay: true,
                 animationData: checkmarkAnimationData,
                 rendererSettings: {
@@ -97,7 +114,7 @@ export function SwapCompleteView() {
               width={120}
             />
             <Text size="xl" weight="bold" noMargin>
-              Swap success!
+              {browser.i18n.getMessage("swap_success")}
             </Text>
           </Flex>
           <Flex direction="row" justify="center" align="center" gap={16}>
@@ -114,15 +131,21 @@ export function SwapCompleteView() {
           <HorizontalLine />
           <Flex direction="column" gap={16}>
             <Text weight="medium" noMargin>
-              Transactions details
+              {browser.i18n.getMessage("transactions_details")}
             </Text>
             <Flex direction="column" gap={8}>
-              <TransactionDetailItem title={"Rate"} value={rate} />
-              <TransactionDetailItem title={"Provider"} value={getProviderName(selectedPoolInfo?.pool?.poolType)} />
-              <TransactionDetailItem title={"Est. Swap Time"} value={getSwapTime(selectedPoolInfo?.pool?.poolType)} />
-              <TransactionDetailItem title={"Network fee"} value={providerNetworkFee} />
+              <TransactionDetailItem title={browser.i18n.getMessage("rate")} value={rate} />
               <TransactionDetailItem
-                title={"Wander Fee"}
+                title={browser.i18n.getMessage("provider")}
+                value={getProviderName(selectedPoolInfo?.pool?.poolType)}
+              />
+              <TransactionDetailItem
+                title={browser.i18n.getMessage("est_swap_time")}
+                value={getSwapTime(selectedPoolInfo?.pool?.poolType)}
+              />
+              <TransactionDetailItem title={browser.i18n.getMessage("network_fee")} value={providerNetworkFee} />
+              <TransactionDetailItem
+                title={browser.i18n.getMessage("wander_fee")}
                 value={
                   <Flex justify="flex-end" align="center" gap={4} textAlign="right" wrap="wrap">
                     {wanderFee?.hasChanged && (
@@ -144,7 +167,7 @@ export function SwapCompleteView() {
                 }
               />
               <TransactionDetailItem
-                title={"Slippage"}
+                title={browser.i18n.getMessage("slippage")}
                 value={
                   <Flex gap={4} align="center" justify="center">
                     <Text variant="secondary" size="sm" weight="medium" noMargin>
@@ -155,7 +178,7 @@ export function SwapCompleteView() {
                 }
               />
               <TransactionDetailItem
-                title={"Price Impact"}
+                title={browser.i18n.getMessage("price_impact")}
                 value={selectedPoolInfo?.priceImpact ? `${selectedPoolInfo.priceImpact}%` : "--"}
                 valueColor={getPriceImpactColor(selectedPoolInfo?.priceImpact, theme)}
               />
@@ -167,11 +190,8 @@ export function SwapCompleteView() {
           <Button onClick={() => navigate(PopupPaths.Home)} fullWidth>
             {browser.i18n.getMessage("done")}
           </Button>
-          <Button
-            variant="secondary"
-            fullWidth
-            onClick={() => browser.tabs.create({ url: `https://www.ao.link/#/message/${transferId}` })}>
-            AO Link
+          <Button variant="secondary" fullWidth onClick={handleOpen}>
+            {swap.isAo ? "AOLink" : "Viewblock"}
             <LinkExternal02 style={{ marginLeft: "8px" }} />
           </Button>
         </Flex>

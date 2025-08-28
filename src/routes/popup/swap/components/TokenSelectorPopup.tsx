@@ -82,7 +82,7 @@ const TokenSelectorScreen = ({ onClose, updateToken, tokenSelectorType, filterTo
     <SelectorWrapper>
       <div>
         <Input
-          placeholder="Search token"
+          placeholder={browser.i18n.getMessage("search_token")}
           fullWidth
           variant="search"
           sizeVariant="small"
@@ -118,7 +118,7 @@ const TokenSelectorScreen = ({ onClose, updateToken, tokenSelectorType, filterTo
               {searchInput.state && tokens.length === 0 && (
                 <Flex justify="center" align="center" style={{ height: "100px" }}>
                   <Text variant="secondary" size="sm">
-                    No tokens found
+                    {browser.i18n.getMessage("no_tokens_found")}
                   </Text>
                 </Flex>
               )}

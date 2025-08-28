@@ -25,7 +25,7 @@ export function SwapHistoryView() {
 
   return (
     <>
-      <HeadV2 title="Swap History" />
+      <HeadV2 title={browser.i18n.getMessage("swap_history")} />
 
       <Wrapper>
         <Flex gap={12} direction="column">
@@ -48,14 +48,9 @@ export function SwapHistoryView() {
             fullWidth
             disabled={!hasNextPage || loading}
             style={{ alignSelf: "center", marginTop: "5px" }}
+            loading={loading}
             onClick={() => fetchTransactions()}>
-            {loading ? (
-              <>
-                Loading <Loading style={{ margin: "0.18rem" }} />
-              </>
-            ) : (
-              browser.i18n.getMessage("load_more") + "..."
-            )}
+            {browser.i18n.getMessage("load_more")} + "..."
           </Button>
         )}
       </Wrapper>
@@ -169,8 +164,3 @@ const Empty = styled.div`
   justify-content: center;
   align-items: center;
 `;
-
-const TitleMessage = styled(Text).attrs({
-  weight: "semibold",
-  noMargin: true,
-})``;

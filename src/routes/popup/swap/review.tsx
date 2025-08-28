@@ -9,7 +9,6 @@ import { AutoTag } from "./components/AutoTag";
 import { WanderFeeTag } from "./components/WanderFeeTag";
 import { useEffect, useMemo, useState } from "react";
 import { TempTransactionStorage } from "~utils/storage";
-import BigNumber from "bignumber.js";
 import { formatBalance } from "~utils/format";
 import {
   useARNetworkFee,
@@ -178,7 +177,7 @@ export function SwapReviewView() {
           <WrapperContent>
             <Flex direction="row" gap={8} align="center" justify="center" style={{ height: "100%" }}>
               <Text variant="secondary" noMargin>
-                Loading swap data...
+                {browser.i18n.getMessage("loading")}
               </Text>
               <Loading style={{ height: 20, width: 20 }} />
             </Flex>
@@ -216,15 +215,21 @@ export function SwapReviewView() {
           <HorizontalLine />
           <Flex direction="column" gap={16}>
             <Text weight="medium" noMargin>
-              Transactions details
+              {browser.i18n.getMessage("transactions_details")}
             </Text>
             <Flex direction="column" gap={8}>
-              <TransactionDetailItem title={"Rate"} value={rate} />
-              <TransactionDetailItem title={"Provider"} value={getProviderName(selectedPoolInfo?.pool?.poolType)} />
-              <TransactionDetailItem title={"Est. Swap Time"} value={getSwapTime(selectedPoolInfo?.pool?.poolType)} />
-              <TransactionDetailItem title={"Network fee"} value={providerNetworkFee} />
+              <TransactionDetailItem title={browser.i18n.getMessage("rate")} value={rate} />
               <TransactionDetailItem
-                title={"Wander Fee"}
+                title={browser.i18n.getMessage("provider")}
+                value={getProviderName(selectedPoolInfo?.pool?.poolType)}
+              />
+              <TransactionDetailItem
+                title={browser.i18n.getMessage("est_swap_time")}
+                value={getSwapTime(selectedPoolInfo?.pool?.poolType)}
+              />
+              <TransactionDetailItem title={browser.i18n.getMessage("network_fee")} value={providerNetworkFee} />
+              <TransactionDetailItem
+                title={browser.i18n.getMessage("wander_fee")}
                 value={
                   <Flex justify="flex-end" align="center" gap={4} textAlign="right" wrap="wrap">
                     {wanderFee?.hasChanged && (
@@ -246,7 +251,7 @@ export function SwapReviewView() {
                 }
               />
               <TransactionDetailItem
-                title={"Slippage"}
+                title={browser.i18n.getMessage("slippage")}
                 value={
                   <Flex gap={4} align="center" justify="center">
                     <Text variant="secondary" size="sm" weight="medium" noMargin>
@@ -257,7 +262,7 @@ export function SwapReviewView() {
                 }
               />
               <TransactionDetailItem
-                title={"Price Impact"}
+                title={browser.i18n.getMessage("price_impact")}
                 value={selectedPoolInfo?.priceImpact ? `${selectedPoolInfo.priceImpact}%` : "--"}
                 valueColor={getPriceImpactColor(selectedPoolInfo?.priceImpact, theme)}
               />

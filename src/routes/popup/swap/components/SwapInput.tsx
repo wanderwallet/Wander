@@ -37,7 +37,7 @@ export const SwapInput = ({
 }: SwapInputProps) => {
   const isSend = type === "send";
   const theme = useTheme();
-  const [currency] = useSetting<string>("currency");
+  const [currency = "USD"] = useSetting<string>("currency");
   const { price = 0 } = useTokenPrice(value ? token.processId : undefined, currency);
 
   const formattedBalance = useMemo(() => formatBalance(balance), [balance]);

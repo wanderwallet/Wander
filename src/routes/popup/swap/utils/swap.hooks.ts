@@ -53,6 +53,7 @@ import BigNumber from "bignumber.js";
 import { vento, VENTO_BRIDGE_ADDRESS } from "./bridge/bridge.vento";
 import type { TokenInfo } from "~tokens/aoTokens/ao";
 import type { DefiFeeDetails } from "~utils/tier/types";
+import browser from "webextension-polyfill";
 
 export function usePools() {
   return useQuery({
@@ -118,7 +119,9 @@ export function usePoolForTokenPair({
       const noPools = Object.values(pairPools).every((pools) => pools.length === 0);
       if (!tokenIn || !tokenOut || !slippage || !amountIn || isNaN(wanderFeePercent) || noPools) {
         setSelectedPoolInfo(null);
-        setError(amountIn && tokenIn && tokenOut && noPools ? "No liquidity pools found for this token pair" : null);
+        setError(
+          amountIn && tokenIn && tokenOut && noPools ? browser.i18n.getMessage("no_liquidity_pools_found") : null,
+        );
         return;
       }
 
@@ -186,7 +189,7 @@ export function usePoolForTokenPair({
 
       if (!botegaPool && !permaswapPool) {
         log(LOG_GROUP.SWAP, "No botega or permaswap pool found");
-        setError("No botega or permaswap pool found");
+        setError(browser.i18n.getMessage("no_liquidity_pools_found"));
         return;
       }
 
@@ -216,7 +219,7 @@ export function usePoolForTokenPair({
 
       if (!finalOutput) {
         log(LOG_GROUP.SWAP, "No final output found");
-        setError("No final output found");
+        setError(browser.i18n.getMessage("unable_to_retrieve_quote"));
         return;
       }
 
@@ -230,7 +233,7 @@ export function usePoolForTokenPair({
 
       if (!liquidity) {
         log(LOG_GROUP.SWAP, "No liquidity found");
-        setError("No liquidity found");
+        setError(browser.i18n.getMessage("unable_to_retrieve_quote"));
         return;
       }
 
@@ -240,7 +243,7 @@ export function usePoolForTokenPair({
       setError(null);
     } catch (error) {
       log(LOG_GROUP.SWAP, "Error fetching pool for token pair", error);
-      setError("Error fetching pool for token pair");
+      setError(browser.i18n.getMessage("unable_to_retrieve_quote"));
     } finally {
       setIsLoading(false);
     }
@@ -298,7 +301,7 @@ export function usePoolQuote({
 
       if (!output) {
         log(LOG_GROUP.SWAP, "No final output found");
-        setError("No final output found");
+        setError(browser.i18n.getMessage("unable_to_retrieve_quote"));
         return;
       }
 
@@ -312,7 +315,7 @@ export function usePoolQuote({
 
       if (!liquidity) {
         log(LOG_GROUP.SWAP, "No liquidity found");
-        setError("No liquidity found");
+        setError(browser.i18n.getMessage("unable_to_retrieve_quote"));
         return;
       }
 
@@ -322,7 +325,7 @@ export function usePoolQuote({
       setError(null);
     } catch (error) {
       log(LOG_GROUP.SWAP, "Error fetching pool for token pair", error);
-      setError("Error fetching pool for token pair");
+      setError(browser.i18n.getMessage("unable_to_retrieve_quote"));
     } finally {
       setIsLoading(false);
     }
@@ -525,7 +528,7 @@ export function useARNetworkFee({ tokenIn, tokenOut }: { tokenIn: string; tokenO
       // twice the network fee to account for the wander fee to be paid
       setNetworkFee(BigNumber(txPrice).multipliedBy(2).toFixed());
     } catch (error) {
-      console.error("Error calculating network fee:", error);
+      log(LOG_GROUP.SWAP, "Error calculating network fee:", error);
       setNetworkFee("0");
     } finally {
       setIsLoading(false);

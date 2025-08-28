@@ -9,18 +9,18 @@ import { TierCard } from "~components/popup/tier/TierCard";
 import { TierProgress } from "~components/popup/tier/TierProgress";
 import { WanderIcon } from "~components/popup/tier/WanderIcon";
 import { StarIcon } from "~components/popup/tier/StarIcon";
-import { TierTypes } from "~utils/tier/constants";
 import CustomizableStars from "~components/popup/tier/CustomizableStars";
+import browser from "webextension-polyfill";
 
-const slide = carouselData.find((slide) => slide.tierName === TierTypes.Reserve);
+const slide = carouselData[2];
 
 const tierBenefits = [
   {
-    title: "25% reduction on certain fees",
+    title: browser.i18n.getMessage("swap_gating_reserve_tier_benefits_1"),
   },
   {
-    title: "Full feature access",
-    subtitle: "(some premium functions require a higher tier)",
+    title: browser.i18n.getMessage("swap_gating_reserve_tier_benefits_2"),
+    subtitle: browser.i18n.getMessage("swap_gating_reserve_tier_benefits_2_subtitle"),
   },
 ];
 
@@ -57,7 +57,7 @@ export const SwapGatingPopup = ({ isOpen, setOpen }) => {
           </Flex>
         </TierCard>
         <Text size="md" weight="semibold" noMargin style={{ padding: "16px 0" }}>
-          Unlock {slide.tierName} to use this feature
+          {browser.i18n.getMessage("unlock_tier_to_use_feature", slide.tierName)}
         </Text>
         <Flex direction="column" gap={32} width="100%" boxSizing="border-box" style={{ marginTop: 16 }}>
           <TierProgress activeTier={activeTier} highlightTierLabel={slide.tierName} />

@@ -29,7 +29,12 @@ export function SwapProgressView() {
 
   const { sendToken, receiveToken, amountIn, selectedPoolInfo, transferId } = swapData || {};
 
-  const isAoxBridge = useMemo(() => selectedPoolInfo?.pool?.poolType === PoolTypeEnum.AOX, [selectedPoolInfo]);
+  const swap = useMemo(() => {
+    const poolType = selectedPoolInfo?.pool?.poolType;
+    const isBridge = poolType === PoolTypeEnum.AOX || poolType === PoolTypeEnum.VENTO;
+    const isAo = sendToken?.processId !== AR_PROCESS_ID;
+    return { isBridge, isAo };
+  }, [selectedPoolInfo, sendToken]);
 
   const valueIn = useMemo(() => {
     if (!amountIn || !sendToken) return "";
@@ -49,10 +54,9 @@ export function SwapProgressView() {
   const valueInFormatted = useMemo(() => formatBalance(valueIn || "0"), [valueIn]);
 
   function handleOpen() {
-    const url =
-      isAoxBridge && sendToken?.processId === AR_PROCESS_ID
-        ? `https://viewblock.io/arweave/tx/${transferId}`
-        : `https://www.ao.link/#/message/${transferId}`;
+    const url = swap.isAo
+      ? `https://www.ao.link/#/message/${transferId}`
+      : `https://viewblock.io/arweave/tx/${transferId}`;
 
     browser.tabs.create({ url });
   }
@@ -114,7 +118,7 @@ export function SwapProgressView() {
           <WrapperContent>
             <Flex direction="row" gap={8} align="center" justify="center" style={{ height: "100%" }}>
               <Text variant="secondary" noMargin>
-                Loading swap data...
+                {browser.i18n.getMessage("loading")}
               </Text>
               <Loading style={{ height: 20, width: 20 }} />
             </Flex>
@@ -126,7 +130,7 @@ export function SwapProgressView() {
 
   return (
     <>
-      <HeadV2 title="Swap in progress" />
+      <HeadV2 title={browser.i18n.getMessage("swap_in_progress")} />
       <Wrapper>
         <WrapperContent>
           <WanderLoading />
@@ -147,20 +151,24 @@ export function SwapProgressView() {
               </Flex>
             </Flex>
             <Text variant="secondary" weight="medium" noMargin>
-              Your swap is in progress. This may take {isAoxBridge ? "between 30-60 minutes" : "a few minutes"} to
-              complete.
+              {browser.i18n.getMessage(
+                "swap_in_progress_description",
+                swap.isBridge
+                  ? browser.i18n.getMessage("between_30_60_minutes")
+                  : browser.i18n.getMessage("a_few_minutes"),
+              )}
             </Text>
           </Flex>
         </WrapperContent>
 
         <Flex direction="column" gap={12}>
-          {isAoxBridge && (
+          {swap.isBridge && (
             <Button fullWidth onClick={() => navigate(PopupPaths.Home)}>
-              Go to dashboard
+              {browser.i18n.getMessage("go_to_dashboard")}
             </Button>
           )}
           <Button variant="secondary" fullWidth onClick={handleOpen}>
-            AO Link
+            {swap.isAo ? "AOLink" : "Viewblock"}
             <LinkExternal02 style={{ marginLeft: "8px" }} />
           </Button>
         </Flex>

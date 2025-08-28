@@ -13,6 +13,7 @@ import { ErrorIcon } from "./components/ErrorIcon";
 import { useSavedSwapData } from "./utils/swap.hooks";
 import { PageType, trackPage } from "~utils/analytics";
 import { TempTransactionStorage } from "~utils/storage";
+import browser from "webextension-polyfill";
 
 export function SwapFailedView() {
   const theme = useTheme();
@@ -48,7 +49,7 @@ export function SwapFailedView() {
         <WrapperContent>
           <Flex direction="row" gap={8} align="center" justify="center" style={{ height: "100%" }}>
             <Text variant="secondary" noMargin>
-              Loading swap data...
+              {browser.i18n.getMessage("loading")}
             </Text>
             <Loading style={{ height: 20, width: 20 }} />
           </Flex>
@@ -63,11 +64,11 @@ export function SwapFailedView() {
         <Flex direction="column" justify="center" align="center" gap={24} textAlign="center">
           <ErrorIcon />
           <Text size="lg" weight="bold" noMargin>
-            Swap could not be completed
+            {browser.i18n.getMessage("swap_not_completed")}
           </Text>
         </Flex>
         <Text variant="secondary" weight="medium" noMargin>
-          Looks like something went wrong, please try again.
+          {browser.i18n.getMessage("swap_not_completed_description")}
         </Text>
         <Flex direction="row" justify="center" align="center" gap={16}>
           <Flex direction="row" align="center" gap={4}>
@@ -84,7 +85,7 @@ export function SwapFailedView() {
 
       <Flex direction="column" gap={12}>
         <Button onClick={() => navigate(PopupPaths.Swap, { params: { loadSwapData: "true" } })} fullWidth>
-          Try again
+          {browser.i18n.getMessage("try_again")}
         </Button>
         <Button
           variant="secondary"
@@ -93,7 +94,7 @@ export function SwapFailedView() {
             TempTransactionStorage.remove("swap-data");
             navigate(PopupPaths.Home);
           }}>
-          Go to dashboard
+          {browser.i18n.getMessage("go_to_dashboard")}
         </Button>
       </Flex>
     </Wrapper>
