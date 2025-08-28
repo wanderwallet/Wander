@@ -18,8 +18,7 @@ import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { queryClient } from "~utils/tanstack";
 import { getAoxBridgeInfo, getAoxBridgeTransaction } from "./bridge.utils";
 import { defaultOptions } from "~tokens/hooks";
-import { findGateway } from "~gateways/wayfinder";
-import Arweave from "arweave";
+import { retryWithGateways } from "~gateways/wayfinder";
 import browser from "webextension-polyfill";
 import { AR_PROCESS_ID, WAR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 import { createDataItemSigner } from "~tokens/aoTokens/ao";
@@ -96,12 +95,12 @@ export async function executeSwap({ tokenIn, amountIn, tags = [] }: SwapExecutio
     let transferId: string;
 
     if (tokenIn === AR_PROCESS_ID) {
-      const gateway = await findGateway({ random: true });
-      const arweave = new Arweave(gateway);
-      const transaction = await arweave.createTransaction({
-        target: bridgeInfo.arToken.locker,
-        quantity: amountIn,
-      });
+      const { result: transaction, arweave } = await retryWithGateways((arweave) =>
+        arweave.createTransaction({
+          target: bridgeInfo.arToken.locker,
+          quantity: amountIn,
+        }),
+      );
 
       transaction.addTag("Type", "Transfer");
       transaction.addTag("Client", "Wander");

@@ -13,8 +13,7 @@ import { AO_PROCESS_ID, AR_PROCESS_ID } from "~tokens/aoTokens/ao.constants";
 import { Mutex } from "~utils/mutex";
 import BigNumber from "bignumber.js";
 import browser from "webextension-polyfill";
-import Arweave from "arweave";
-import { findGateway } from "~gateways/wayfinder";
+import { retryWithGateways } from "~gateways/wayfinder";
 import type { DecodedTag } from "~api/modules/sign/tags";
 import { getSetting } from "~settings";
 import { EventType, trackDirect } from "~utils/analytics";
@@ -119,12 +118,12 @@ export async function processWanderFee(swap: SwapData): Promise<boolean> {
         swap.sendToken.processId === AR_PROCESS_ID;
 
       if (isARSwap) {
-        const gateway = await findGateway({ random: true });
-        const arweave = new Arweave(gateway);
-        const transaction = await arweave.createTransaction({
-          target: WANDER_FEE_RECIPIENT,
-          quantity,
-        });
+        const { result: transaction, arweave } = await retryWithGateways((arweave) =>
+          arweave.createTransaction({
+            target: WANDER_FEE_RECIPIENT,
+            quantity,
+          }),
+        );
 
         tags.forEach((tag) => transaction.addTag(tag.name, tag.value));
 
