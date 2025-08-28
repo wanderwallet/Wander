@@ -17,7 +17,7 @@ import Arweave from "arweave";
 import { findGateway } from "~gateways/wayfinder";
 import type { DecodedTag } from "~api/modules/sign/tags";
 import { getSetting } from "~settings";
-import { trackEvent, EventType } from "~utils/analytics";
+import { EventType, trackDirect } from "~utils/analytics";
 import { getDefiFeeDetailsForTier } from "~utils/tier/utils";
 import { fromTokenBaseUnits } from "../../swap.utils";
 
@@ -272,7 +272,7 @@ export async function getTokenPrice(tokenId: string) {
     });
   } catch {}
 
-  return price;
+  return price || 0;
 }
 
 export async function trackSwapAnalytics(swap: SwapData, status: "Success" | "Failed") {
@@ -327,7 +327,7 @@ export async function trackSwapAnalytics(swap: SwapData, status: "Success" | "Fa
 
     log(LOG_GROUP.SWAP, "Swap completed data: ", swapCompletedData);
 
-    await trackEvent(EventType.SWAP_COMPLETED, swapCompletedData);
+    await trackDirect(EventType.SWAP_COMPLETED, swapCompletedData);
   } catch (error) {
     log(LOG_GROUP.SWAP, "Error tracking swap analytics", error);
   }
