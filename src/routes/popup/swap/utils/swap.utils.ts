@@ -26,7 +26,7 @@ import type GQLResultInterface from "ar-gql/dist/faces";
 import { retryWithDelay } from "~utils/promises/retry";
 import { gql } from "~gateways/api";
 import { goldskyGateway } from "~gateways/gateway";
-import { SWAP_CONFIRMATION_QUERY, SWAP_TX_QUERY } from "./dex/dex.constants";
+import { SWAP_CONFIRMATION_QUERY, SWAP_TX_AO_QUERY, SWAP_TX_QUERY } from "./dex/dex.constants";
 import { createStorageArray } from "./storage/storage.array";
 import { log, LOG_GROUP } from "~utils/log/log.utils";
 import { aox } from "./bridge/bridge.aox";
@@ -46,9 +46,6 @@ const BOTEGA_POOL_OPTIONS = {
   body: "{}",
   method: "POST",
 };
-
-export const AOX_BRIDGE_TOKEN_IDS = new Set<string>([AR_PROCESS_ID, WAR_PROCESS_ID]);
-export const VENTO_BRIDGE_TOKEN_IDS = new Set<string>([AR_PROCESS_ID, VAR_PROCESS_ID]);
 
 export async function getBotegaPools() {
   const [poolsResponse, poolsOverviewResponse] = await Promise.allSettled([
@@ -341,8 +338,9 @@ export function getStatusColor(status: ParsedSwapTransaction["status"]) {
 }
 
 export async function getSwapTransaction(txId: string) {
-  const result = await retryWithDelay(async () => {
-    const response = await gql(SWAP_TX_QUERY, { txId }, goldskyGateway);
+  const result = await retryWithDelay(async (attempt) => {
+    const swapQuery = attempt % 2 === 0 ? SWAP_TX_QUERY : SWAP_TX_AO_QUERY;
+    const response = await gql(swapQuery, { txId }, goldskyGateway);
 
     // validate the response
     validateGqlResponse(response);

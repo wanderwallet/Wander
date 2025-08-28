@@ -50,7 +50,7 @@ export function SwapHistoryView() {
             style={{ alignSelf: "center", marginTop: "5px" }}
             loading={loading}
             onClick={() => fetchTransactions()}>
-            {browser.i18n.getMessage("load_more")} + "..."
+            {browser.i18n.getMessage("load_more")}...
           </Button>
         )}
       </Wrapper>

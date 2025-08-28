@@ -133,6 +133,6 @@ export interface AoxBridgeInfoResult {
 
 export interface VentoBridgeInfoResult {
   bridge: "aox" | "vento";
-  minArBridge: string;
+  minBridgeAmount: string;
   isHealthy: boolean;
 }

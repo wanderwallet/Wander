@@ -130,6 +130,29 @@ query($txId: ID!) {
   }
 }`;
 
+export const SWAP_TX_AO_QUERY = `
+query($txId: ID!) {
+  transactions(
+    first: 1,
+    tags: [
+      { name: "Data-Protocol", values: ["ao"] },
+      { name: "X-Client", values: ["Roam"]},
+      { name: "X-Type", values: ["Swap"]},
+    ],
+    ids: [$txId],
+  ) {
+    edges {
+      node {
+        id
+        recipient
+        owner { address }
+        block { timestamp, height }
+        tags { name, value }
+      }
+    }
+  }
+}`;
+
 export const SWAP_CONFIRMATION_QUERY = `
 query($pushedFor: String!) {
   transactions(
