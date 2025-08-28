@@ -268,9 +268,10 @@ export function SwapView() {
             expandedMessageName="advanced"
             collapsedMessageName="advanced"
             textVariant="tertiary"
+            enableScroll={true}
           />
 
-          <DisclosureContent expanded={showAdvanced}>
+          <DisclosureContent expanded={showAdvanced} style={{ paddingBottom: 8 }}>
             <SlippageInputButton type="swap" slippage={slippage} setSlippage={setSlippage} />
           </DisclosureContent>
         </WrapperContent>
@@ -321,6 +322,7 @@ const WrapperContent = styled.div`
   flex: 1;
   overflow-y: auto;
   min-height: 0;
+  bottom: 16px;
 `;
 
 const Switch = styled(Button).attrs({

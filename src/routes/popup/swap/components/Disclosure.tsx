@@ -5,6 +5,7 @@ import { ChevronDown, ChevronUp } from "@untitled-ui/icons-react";
 import styled from "styled-components";
 import { AnimatePresence, motion } from "framer-motion";
 import browser from "webextension-polyfill";
+import { useRef, useCallback } from "react";
 
 export interface DisclosureButtonProps {
   showAdvanced: boolean;
@@ -12,6 +13,7 @@ export interface DisclosureButtonProps {
   expandedMessageName?: string;
   collapsedMessageName?: string;
   textVariant?: "primary" | "secondary" | "tertiary";
+  enableScroll?: boolean;
 }
 
 export function DisclosureButton({
@@ -20,12 +22,30 @@ export function DisclosureButton({
   expandedMessageName,
   collapsedMessageName,
   textVariant = "secondary",
+  enableScroll = false,
 }: DisclosureButtonProps) {
+  const buttonRef = useRef<HTMLDivElement>(null);
   expandedMessageName = expandedMessageName || "less_settings";
   collapsedMessageName = collapsedMessageName || "more_settings";
 
+  const handleClick = useCallback(() => {
+    const newShowAdvanced = !showAdvanced;
+    setShowAdvanced(newShowAdvanced);
+
+    // Scroll when expanding if enabled
+    if (enableScroll && newShowAdvanced && buttonRef.current) {
+      const timeout = setTimeout(() => {
+        buttonRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+        clearTimeout(timeout);
+      }, 100);
+    }
+  }, [showAdvanced, setShowAdvanced, enableScroll]);
+
   return (
-    <Wrapper onClick={() => setShowAdvanced((prev) => !prev)}>
+    <Wrapper ref={buttonRef} onClick={handleClick}>
       <HorizontalLine style={{ flexShrink: 1 }} />
       <Flex gap={4} align="center" justify="center">
         <Text style={{ whiteSpace: "nowrap" }} variant={textVariant} size="xs" weight="medium" noMargin>
