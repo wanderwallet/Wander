@@ -4219,7 +4219,7 @@
     "description": "Days text"
   },
   "unlock_tier_to_use_feature": {
-    "message": "Unlock $$TIER to use this feature",
+    "message": "Unlock $TIER$ to use this feature",
     "description": "Unlock tier to use feature text",
     "placeholders": {
       "tier": {

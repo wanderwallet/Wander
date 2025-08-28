@@ -320,7 +320,7 @@ export async function cleanupOldSwaps() {
 async function markSwapForCompletionDisplay(transferId: string) {
   try {
     await swapsArray.updateWhere(
-      (swap) => swap.transferId === transferId,
+      (swap) => swap.transferId === transferId && typeof swap.showCompletionScreen !== "boolean",
       (swap) => ({
         ...swap,
         showCompletionScreen: true,

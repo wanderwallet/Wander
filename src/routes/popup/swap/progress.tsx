@@ -89,7 +89,7 @@ export function SwapProgressView() {
           (s) => {
             const expectedOutput = s.selectedPoolInfo.quoteOutput.amountOut;
             s.selectedPoolInfo.quoteOutput.amountOut = result?.amountOut || expectedOutput;
-            return { ...s, status: "completed" as const, completedAt: Date.now() };
+            return { ...s, status: "completed" as const, completedAt: Date.now(), showCompletionScreen: false };
           },
         );
 

@@ -4179,7 +4179,7 @@
       "description": "Days text"
     },
     "unlock_tier_to_use_feature": {
-      "message": "解锁 $$TIER 以使用此功能",
+      "message": "解锁 $TIER$ 以使用此功能",
       "description": "Unlock tier to use feature text",
       "placeholders": {
         "tier": {

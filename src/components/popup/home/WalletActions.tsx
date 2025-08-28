@@ -28,13 +28,21 @@ const sendButtonConfig: ButtonConfig = {
 
 const reserveTierId = tierNameToId[TierTypes.Reserve];
 
+// Launch timestamp (2025-09-01 00:00:00 EDT)
+const SWAP_LAUNCH_TIMESTAMP = Date.parse("2025-09-01T00:00:00-04:00");
+
+// 14 days in ms (86_400_000 ms = 1 day)
+const TWO_WEEKS_MS = 1_209_600_000;
+
+const isSwapDisabledForLowerTiers = Date.now() < SWAP_LAUNCH_TIMESTAMP + TWO_WEEKS_MS;
+
 export default function WalletActions() {
   const [isOpen, setIsOpen] = useState(false);
   const { data: activeTier } = useActiveTier();
 
   const buttons: ButtonConfig[] = useMemo(() => {
     const tierId = tierNameToId[activeTier?.tier || TierTypes.Core];
-    const disabled = tierId > reserveTierId; // TODO: add a check for 2 weeks time
+    const disabled = tierId > reserveTierId && isSwapDisabledForLowerTiers;
 
     const swapButtonConfig: ButtonConfig = {
       text: "",
