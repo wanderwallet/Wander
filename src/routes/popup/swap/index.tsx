@@ -36,6 +36,7 @@ import { PopupPaths } from "~wallets/router/popup/popup.routes";
 import { fromTokenBaseUnits, toFixed, toTokenBaseUnits } from "./utils/swap.utils";
 import { PageType, trackPage } from "~utils/analytics";
 import { TransactionDetailItem } from "./components/TransactionDetailItem";
+import { ErrorIcon } from "./components/ErrorIcon";
 
 export function SwapView() {
   const theme = useTheme();
@@ -220,7 +221,11 @@ export function SwapView() {
               }}
               token={receiveToken}
             />
-            {(errorMessage || poolError) && <ErrorMsg>{errorMessage || poolError}</ErrorMsg>}
+            {(errorMessage || poolError) && (
+              <ErrorMsg>
+                {errorMessage || poolError} <ErrorIcon style={{ verticalAlign: "text-top" }} size={14} />
+              </ErrorMsg>
+            )}
           </Flex>
           <Flex direction="column" gap={8}>
             <TransactionDetailItem title={browser.i18n.getMessage("rate")} value={rate} />
