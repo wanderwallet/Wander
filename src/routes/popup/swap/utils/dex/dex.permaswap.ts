@@ -52,16 +52,20 @@ export async function readSwapResult(orderID: string): Promise<ReadSwapResultRes
 /**
  * Fetch the result of a swap message
  */
-export async function readRequestOrderResult(requestOrderId: string) {
-  const messages = await getLinkedMessages(undefined, undefined, false, requestOrderId);
+export async function readRequestOrderResult(poolId: string, requestOrderId: string) {
+  const result = await aoInstance.dryrun({
+    process: poolId,
+    tags: [
+      { name: "Action", value: "GetNote" },
+      { name: "MakeTx", value: requestOrderId },
+    ],
+  });
 
-  const orderMadeNoticeMessage = messages.find((msg) => msg.tags["Action"] === "OrderMade-Notice");
-  if (!orderMadeNoticeMessage) throw new Error("Order made notice not found");
+  const tags = result?.Messages?.[0]?.Tags || [];
+  const noteId = getTagValue("NoteID", tags) || "";
+  const noteSettle = getTagValue("NoteSettle", tags) || "";
 
-  const orderMadeNoticeTags = orderMadeNoticeMessage.tags || {};
-
-  const noteId = orderMadeNoticeTags["NoteID"];
-  const noteSettle = orderMadeNoticeTags["NoteSettle"];
+  if (!noteId || !noteSettle) throw new Error("Failed to get note ID or settle for Permaswap order");
 
   return { noteId, noteSettle };
 }
@@ -142,7 +146,7 @@ export async function executeSwap({
     });
 
     const { noteId, noteSettle } = await retryWithDelay(
-      () => readRequestOrderResult(requestMessageId),
+      () => readRequestOrderResult(poolId, requestMessageId),
       10,
       1000,
       (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 30000),

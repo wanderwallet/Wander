@@ -189,7 +189,10 @@ export function SwapReviewView() {
 
   return (
     <>
-      <HeadV2 title={browser.i18n.getMessage("review")} />
+      <HeadV2
+        title={browser.i18n.getMessage("review")}
+        back={() => navigate(PopupPaths.Swap, { search: { loadSwapData: "true" } })}
+      />
       <Wrapper>
         <WrapperContent>
           <Flex direction="column" gap={16}>

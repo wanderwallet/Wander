@@ -84,7 +84,7 @@ export function SwapFailedView() {
       </WrapperContent>
 
       <Flex direction="column" gap={12}>
-        <Button onClick={() => navigate(PopupPaths.Swap, { params: { loadSwapData: "true" } })} fullWidth>
+        <Button onClick={() => navigate(PopupPaths.Swap, { search: { loadSwapData: "true" } })} fullWidth>
           {browser.i18n.getMessage("try_again")}
         </Button>
         <Button

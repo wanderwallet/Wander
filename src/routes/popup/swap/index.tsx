@@ -177,7 +177,7 @@ export function SwapView() {
 
   return (
     <>
-      <HeadV2 title={browser.i18n.getMessage("swap")} />
+      <HeadV2 title={browser.i18n.getMessage("swap")} back={() => navigate(PopupPaths.Home)} />
       <Wrapper>
         <WrapperContent>
           <Flex direction="column" gap={8} style={{ position: "relative" }}>
